@@ -156,7 +156,6 @@ void DeriveCommandLine(const GURL& start_url,
     ::switches::kUseCras,
 #endif
     ::switches::kUseGL,
-    ::switches::kUseNormalPriorityForTileTaskWorkerThreads,
     ::switches::kUserDataDir,
     ::switches::kV,
     ::switches::kVModule,

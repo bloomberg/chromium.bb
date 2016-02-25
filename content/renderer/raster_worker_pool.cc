@@ -124,9 +124,7 @@ RasterWorkerPool::RasterWorkerPool()
       has_namespaces_with_finished_running_tasks_cv_(&lock_),
       shutdown_(false) {}
 
-void RasterWorkerPool::Start(
-    int num_threads,
-    const base::SimpleThread::Options& thread_options) {
+void RasterWorkerPool::Start(int num_threads) {
   DCHECK(threads_.empty());
 
   // Start |num_threads| threads for foreground work, including nonconcurrent
@@ -140,7 +138,7 @@ void RasterWorkerPool::Start(
         base::StringPrintf("CompositorTileWorker%u",
                            static_cast<unsigned>(threads_.size() + 1))
             .c_str(),
-        thread_options, this, foreground_categories,
+        base::SimpleThread::Options(), this, foreground_categories,
         &has_ready_to_run_foreground_tasks_cv_));
     thread->Start();
     threads_.push_back(std::move(thread));
@@ -149,6 +147,13 @@ void RasterWorkerPool::Start(
   // Start a single thread for background work.
   std::vector<cc::TaskCategory> background_categories;
   background_categories.push_back(cc::TASK_CATEGORY_BACKGROUND);
+
+  // Use background priority for background thread.
+  base::SimpleThread::Options thread_options;
+#if !defined(OS_MACOSX)
+  thread_options.set_priority(base::ThreadPriority::BACKGROUND);
+#endif
+
   scoped_ptr<base::SimpleThread> thread(new RasterWorkerPoolThread(
       base::StringPrintf("CompositorTileWorker%u",
                          static_cast<unsigned>(threads_.size() + 1))

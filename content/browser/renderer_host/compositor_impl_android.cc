@@ -195,8 +195,7 @@ int g_surface_id_namespace = 0;
 class SingleThreadTaskGraphRunner : public cc::SingleThreadTaskGraphRunner {
  public:
   SingleThreadTaskGraphRunner() {
-    Start("CompositorTileWorker1",
-          base::SimpleThread::Options(base::ThreadPriority::BACKGROUND));
+    Start("CompositorTileWorker1", base::SimpleThread::Options());
   }
 
   ~SingleThreadTaskGraphRunner() override {

@@ -55,8 +55,7 @@ class CONTENT_EXPORT RasterWorkerPool : public base::TaskRunner,
 
   // Spawn |num_threads| number of threads and start running work on the
   // worker threads.
-  void Start(int num_threads,
-             const base::SimpleThread::Options& thread_options);
+  void Start(int num_threads);
 
   // Finish running all the posted tasks (and nested task posted by those tasks)
   // of all the associated task runners.

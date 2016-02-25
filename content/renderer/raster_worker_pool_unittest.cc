@@ -20,7 +20,7 @@ class RasterWorkerPoolTestDelegate {
       : raster_worker_pool_(new content::RasterWorkerPool()) {}
 
   void StartTaskRunner() {
-    raster_worker_pool_->Start(kNumThreads, SimpleThread::Options());
+    raster_worker_pool_->Start(kNumThreads);
   }
 
   scoped_refptr<content::RasterWorkerPool> GetTaskRunner() {
@@ -45,7 +45,7 @@ class RasterWorkerPoolSequencedTestDelegate {
       : raster_worker_pool_(new content::RasterWorkerPool()) {}
 
   void StartTaskRunner() {
-    raster_worker_pool_->Start(kNumThreads, SimpleThread::Options());
+    raster_worker_pool_->Start(kNumThreads);
   }
 
   scoped_refptr<base::SequencedTaskRunner> GetTaskRunner() {
@@ -77,7 +77,7 @@ class RasterWorkerPoolTaskGraphRunnerTestDelegate {
       : raster_worker_pool_(new content::RasterWorkerPool()) {}
 
   void StartTaskGraphRunner() {
-    raster_worker_pool_->Start(NumThreads, base::SimpleThread::Options());
+    raster_worker_pool_->Start(NumThreads);
   }
 
   cc::TaskGraphRunner* GetTaskGraphRunner() {

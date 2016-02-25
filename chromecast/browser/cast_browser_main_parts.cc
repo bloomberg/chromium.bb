@@ -215,9 +215,6 @@ DefaultCommandLineSwitch g_default_switches[] = {
 #endif  // defined(OS_LINUX)
   // Enable prefixed EME until all Cast partner apps are moved off of it.
   { switches::kEnablePrefixedEncryptedMedia, "" },
-  // Needed to fix a bug where the raster thread doesn't get scheduled for a
-  // substantial time (~5 seconds).  See https://crbug.com/441895.
-  { switches::kUseNormalPriorityForTileTaskWorkerThreads, "" },
   // Needed so that our call to GpuDataManager::SetGLStrings doesn't race
   // against GPU process creation (which is otherwise triggered from
   // BrowserThreadsStarted).  The GPU process will be created as soon as a

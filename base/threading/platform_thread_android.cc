@@ -24,14 +24,13 @@ namespace base {
 
 namespace internal {
 
-// - BACKGROUND is 9 due to it being the nicest value we can use that's still
-// above an Android system threshold that enables heavy throttling starting at
-// 10; we want to be lower-priority than Chrome's other threads without
-// incurring this behavior.
+// - BACKGROUND corresponds to Android's PRIORITY_BACKGROUND = 10 value and can
+// result in heavy throttling and force the thread onto a little core on
+// big.LITTLE devices.
 // - DISPLAY corresponds to Android's PRIORITY_DISPLAY = -4 value.
-// - REALTIME_AUDIO corresponds to Android's THREAD_PRIORITY_AUDIO = -16 value.
+// - REALTIME_AUDIO corresponds to Android's PRIORITY_AUDIO = -16 value.
 const ThreadPriorityToNiceValuePair kThreadPriorityToNiceValueMap[4] = {
-    {ThreadPriority::BACKGROUND, 9},
+    {ThreadPriority::BACKGROUND, 10},
     {ThreadPriority::NORMAL, 0},
     {ThreadPriority::DISPLAY, -4},
     {ThreadPriority::REALTIME_AUDIO, -16},

@@ -836,15 +836,7 @@ void RenderThreadImpl::Init() {
   are_image_decode_tasks_enabled_ = true;
 #endif
 
-  base::SimpleThread::Options thread_options;
-#if defined(OS_ANDROID) || defined(OS_LINUX)
-  if (!command_line.HasSwitch(
-          switches::kUseNormalPriorityForTileTaskWorkerThreads)) {
-    thread_options.set_priority(base::ThreadPriority::BACKGROUND);
-  }
-#endif
-
-  raster_worker_pool_->Start(num_raster_threads, thread_options);
+  raster_worker_pool_->Start(num_raster_threads);
 
   // TODO(boliu): In single process, browser main loop should set up the
   // discardable memory manager, and should skip this if kSingleProcess.

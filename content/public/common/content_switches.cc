@@ -857,11 +857,6 @@ const char kVideoImageTextureTarget[] = "video-image-texture-target";
 // Set when Chromium should use a mobile user agent.
 const char kUseMobileUserAgent[] = "use-mobile-user-agent";
 
-// Use normal priority for tile task worker threads.  Otherwise they may
-// be run at background priority on some platforms.
-const char kUseNormalPriorityForTileTaskWorkerThreads[] =
-    "use-normal-priority-for-tile-task-worker-threads";
-
 // Use remote compositor for the renderer.
 const char kUseRemoteCompositing[] = "use-remote-compositing";
 

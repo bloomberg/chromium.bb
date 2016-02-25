@@ -412,14 +412,6 @@ void ProxyImpl::RenewTreePriority() {
           : ScrollHandlerState::SCROLL_DOES_NOT_AFFECT_SCROLL_HANDLER;
   scheduler_->SetTreePrioritiesAndScrollState(tree_priority,
                                               scroll_handler_state);
-
-  // Notify the the client of this compositor via the output surface.
-  // TODO(epenner): Route this to compositor-thread instead of output-surface
-  // after GTFO refactor of compositor-thread (http://crbug/170828).
-  if (layer_tree_host_impl_->output_surface()) {
-    layer_tree_host_impl_->output_surface()->UpdateSmoothnessTakesPriority(
-        tree_priority == SMOOTHNESS_TAKES_PRIORITY);
-  }
 }
 
 void ProxyImpl::PostDelayedAnimationTaskOnImplThread(const base::Closure& task,

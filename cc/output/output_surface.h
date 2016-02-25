@@ -137,10 +137,6 @@ class CC_EXPORT OutputSurface : public base::trace_event::MemoryDumpProvider {
   virtual void SwapBuffers(CompositorFrame* frame) = 0;
   virtual void OnSwapBuffersComplete();
 
-  // Notifies frame-rate smoothness preference. If true, all non-critical
-  // processing should be stopped, or lowered in priority.
-  virtual void UpdateSmoothnessTakesPriority(bool prefer_smoothness) {}
-
   bool HasClient() { return !!client_; }
 
   // Get the class capable of informing cc of hardware overlay capability.

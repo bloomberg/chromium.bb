@@ -45,10 +45,6 @@ CompositorOutputSurface::CompositorOutputSurface(
                                  ->compositor_message_filter()),
       frame_swap_message_queue_(swap_frame_message_queue),
       routing_id_(routing_id),
-#if defined(OS_ANDROID)
-      prefers_smoothness_(false),
-      main_thread_runner_(base::MessageLoop::current()->task_runner()),
-#endif
       layout_test_mode_(RenderThreadImpl::current()->layout_test_mode()),
       weak_ptrs_(this) {
   DCHECK(output_surface_filter_.get());
@@ -86,7 +82,6 @@ bool CompositorOutputSurface::BindToClient(
 void CompositorOutputSurface::DetachFromClient() {
   if (!HasClient())
     return;
-  UpdateSmoothnessTakesPriority(false);
   if (output_surface_proxy_.get())
     output_surface_proxy_->ClearOutputSurface();
   output_surface_filter_->RemoveHandlerOnCompositorThread(
@@ -200,34 +195,6 @@ void CompositorOutputSurface::OnReclaimResources(
 
 bool CompositorOutputSurface::Send(IPC::Message* message) {
   return message_sender_->Send(message);
-}
-
-#if defined(OS_ANDROID)
-namespace {
-void SetThreadPriorityToIdle() {
-  base::PlatformThread::SetCurrentThreadPriority(
-      base::ThreadPriority::BACKGROUND);
-}
-void SetThreadPriorityToDefault() {
-  base::PlatformThread::SetCurrentThreadPriority(base::ThreadPriority::NORMAL);
-}
-}  // namespace
-#endif
-
-void CompositorOutputSurface::UpdateSmoothnessTakesPriority(
-    bool prefers_smoothness) {
-#if defined(OS_ANDROID)
-  if (prefers_smoothness_ == prefers_smoothness)
-    return;
-  prefers_smoothness_ = prefers_smoothness;
-  if (prefers_smoothness) {
-    main_thread_runner_->PostTask(FROM_HERE,
-                                  base::Bind(&SetThreadPriorityToIdle));
-  } else {
-    main_thread_runner_->PostTask(FROM_HERE,
-                                  base::Bind(&SetThreadPriorityToDefault));
-  }
-#endif
 }
 
 }  // namespace content
