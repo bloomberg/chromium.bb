@@ -20,7 +20,7 @@ PassRefPtr<JSONObject> RemoteObjectIdBase::parseInjectedScriptId(const String& o
     if (!parsedValue || parsedValue->type() != JSONValue::TypeObject)
         return nullptr;
 
-    RefPtr<JSONObject> parsedObjectId = parsedValue->asObject();
+    RefPtr<JSONObject> parsedObjectId = JSONObject::cast(parsedValue.release());
     bool success = parsedObjectId->getNumber("injectedScriptId", &m_injectedScriptId);
     if (success)
         return parsedObjectId.release();

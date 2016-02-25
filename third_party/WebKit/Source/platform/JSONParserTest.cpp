@@ -57,8 +57,8 @@ TEST(JSONParserTest, Reading)
     EXPECT_EQ("sample string", strVal);
     root = parseJSON("[1, /* comment, 2 ] */ \n 3]");
     ASSERT_TRUE(root.get());
-    RefPtr<JSONArray> list;
-    ASSERT_TRUE(root->asArray(&list));
+    RefPtr<JSONArray> list = JSONArray::cast(root);
+    ASSERT_TRUE(list);
     EXPECT_EQ(2u, list->length());
     tmpValue = list->get(0);
     ASSERT_TRUE(tmpValue.get());
@@ -70,7 +70,8 @@ TEST(JSONParserTest, Reading)
     EXPECT_EQ(3, intVal);
     root = parseJSON("[1, /*a*/2, 3]");
     ASSERT_TRUE(root.get());
-    ASSERT_TRUE(root->asArray(&list));
+    list = JSONArray::cast(root);
+    ASSERT_TRUE(list);
     EXPECT_EQ(3u, list->length());
     root = parseJSON("/* comment **/42");
     ASSERT_TRUE(root.get());
@@ -252,21 +253,24 @@ TEST(JSONParserTest, Reading)
     root = parseJSON("[true, false, null]");
     ASSERT_TRUE(root.get());
     EXPECT_EQ(JSONValue::TypeArray, root->type());
-    ASSERT_TRUE(root->asArray(&list));
+    list = JSONArray::cast(root);
+    ASSERT_TRUE(list);
     EXPECT_EQ(3U, list->length());
 
     // Empty array
     root = parseJSON("[]");
     ASSERT_TRUE(root.get());
     EXPECT_EQ(JSONValue::TypeArray, root->type());
-    ASSERT_TRUE(root->asArray(&list));
+    list = JSONArray::cast(root);
+    ASSERT_TRUE(list);
     EXPECT_EQ(0U, list->length());
 
     // Nested arrays
     root = parseJSON("[[true], [], [false, [], [null]], null]");
     ASSERT_TRUE(root.get());
     EXPECT_EQ(JSONValue::TypeArray, root->type());
-    ASSERT_TRUE(root->asArray(&list));
+    list = JSONArray::cast(root);
+    ASSERT_TRUE(list);
     EXPECT_EQ(4U, list->length());
 
     // Invalid, missing close brace.
@@ -288,7 +292,8 @@ TEST(JSONParserTest, Reading)
     root = parseJSON("[true]");
     ASSERT_TRUE(root.get());
     EXPECT_EQ(JSONValue::TypeArray, root->type());
-    ASSERT_TRUE(root->asArray(&list));
+    list = JSONArray::cast(root);
+    ASSERT_TRUE(list);
     EXPECT_EQ(1U, list->length());
     tmpValue = list->get(0);
     ASSERT_TRUE(tmpValue.get());
@@ -315,8 +320,8 @@ TEST(JSONParserTest, Reading)
     root = parseJSON("{\"number\":9.87654321, \"null\":null , \"\\x53\" : \"str\" }");
     ASSERT_TRUE(root.get());
     EXPECT_EQ(JSONValue::TypeObject, root->type());
-    RefPtr<JSONObject> objectVal;
-    ASSERT_TRUE(root->asObject(&objectVal));
+    RefPtr<JSONObject> objectVal = JSONObject::cast(root);
+    ASSERT_TRUE(objectVal);
     doubleVal = 0.0;
     EXPECT_TRUE(objectVal->getNumber("number", &doubleVal));
     EXPECT_DOUBLE_EQ(9.87654321, doubleVal);
@@ -349,7 +354,8 @@ TEST(JSONParserTest, Reading)
     root = parseJSON("{\"inner\":{\"array\":[true]},\"false\":false,\"d\":{}}");
     ASSERT_TRUE(root.get());
     EXPECT_EQ(JSONValue::TypeObject, root->type());
-    ASSERT_TRUE(root->asObject(&objectVal));
+    objectVal = JSONObject::cast(root);
+    ASSERT_TRUE(objectVal);
     RefPtr<JSONObject> innerObject = objectVal->getObject("inner");
     ASSERT_TRUE(innerObject.get());
     RefPtr<JSONArray> innerArray = innerObject->getArray("array");
@@ -365,7 +371,8 @@ TEST(JSONParserTest, Reading)
     root = parseJSON("{\"a.b\":3,\"c\":2,\"d.e.f\":{\"g.h.i.j\":1}}");
     ASSERT_TRUE(root.get());
     EXPECT_EQ(JSONValue::TypeObject, root->type());
-    ASSERT_TRUE(root->asObject(&objectVal));
+    objectVal = JSONObject::cast(root);
+    ASSERT_TRUE(objectVal);
     int integerValue = 0;
     EXPECT_TRUE(objectVal->getNumber("a.b", &integerValue));
     EXPECT_EQ(3, integerValue);
@@ -380,7 +387,8 @@ TEST(JSONParserTest, Reading)
     root = parseJSON("{\"a\":{\"b\":2},\"a.b\":1}");
     ASSERT_TRUE(root.get());
     EXPECT_EQ(JSONValue::TypeObject, root->type());
-    ASSERT_TRUE(root->asObject(&objectVal));
+    objectVal = JSONObject::cast(root);
+    ASSERT_TRUE(objectVal);
     innerObject = objectVal->getObject("a");
     ASSERT_TRUE(innerObject.get());
     EXPECT_TRUE(innerObject->getNumber("b", &integerValue));
@@ -438,7 +446,8 @@ TEST(JSONParserTest, Reading)
     root = parseJSON(notEvil.toString());
     ASSERT_TRUE(root.get());
     EXPECT_EQ(JSONValue::TypeArray, root->type());
-    ASSERT_TRUE(root->asArray(&list));
+    list = JSONArray::cast(root);
+    ASSERT_TRUE(list);
     EXPECT_EQ(5001U, list->length());
 
     // Test utf8 encoded input
@@ -452,7 +461,8 @@ TEST(JSONParserTest, Reading)
     root = parseJSON("{\"path\": \"/tmp/\\xc3\\xa0\\xc3\\xa8\\xc3\\xb2.png\"}");
     ASSERT_TRUE(root.get());
     EXPECT_EQ(JSONValue::TypeObject, root->type());
-    EXPECT_TRUE(root->asObject(&objectVal));
+    objectVal = JSONObject::cast(root);
+    ASSERT_TRUE(objectVal);
     EXPECT_TRUE(objectVal->getString("path", &strVal));
     UChar tmp5[] = {0x2f, 0x74, 0x6d, 0x70, 0x2f, 0xe0, 0xe8, 0xf2, 0x2e, 0x70, 0x6e, 0x67};
     EXPECT_EQ(String(tmp5, WTF_ARRAY_LENGTH(tmp5)), strVal);

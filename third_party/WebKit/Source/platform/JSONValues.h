@@ -56,7 +56,6 @@ class PLATFORM_EXPORT JSONValue : public RefCounted<JSONValue> {
 public:
     static const int maxDepth = 1000;
 
-    JSONValue() : m_type(TypeNull) { }
     virtual ~JSONValue() { }
 
     static PassRefPtr<JSONValue> null()
@@ -84,10 +83,6 @@ public:
     virtual bool asNumber(unsigned long* output) const;
     virtual bool asNumber(unsigned* output) const;
     virtual bool asString(String* output) const;
-    virtual bool asObject(RefPtr<JSONObject>* output);
-    virtual bool asArray(RefPtr<JSONArray>* output);
-    virtual PassRefPtr<JSONObject> asObject();
-    virtual PassRefPtr<JSONArray> asArray();
 
     String toJSONString() const;
     String toPrettyJSONString() const;
@@ -97,12 +92,13 @@ public:
     static String quoteString(const String&);
 
 protected:
+    JSONValue() : m_type(TypeNull) { }
     explicit JSONValue(Type type) : m_type(type) { }
     virtual void prettyWriteJSONInternal(StringBuilder* output, int depth) const;
 
 private:
-    friend class JSONObjectBase;
-    friend class JSONArrayBase;
+    friend class JSONObject;
+    friend class JSONArray;
 
     Type m_type;
 };
@@ -168,7 +164,7 @@ private:
     String m_stringValue;
 };
 
-class PLATFORM_EXPORT JSONObjectBase : public JSONValue {
+class PLATFORM_EXPORT JSONObject : public JSONValue {
 private:
     typedef HashMap<String, RefPtr<JSONValue>> Dictionary;
 
@@ -176,17 +172,21 @@ public:
     typedef Dictionary::iterator iterator;
     typedef Dictionary::const_iterator const_iterator;
 
-    PassRefPtr<JSONObject> asObject() override;
-    JSONObject* openAccessors();
+    static PassRefPtr<JSONObject> create()
+    {
+        return adoptRef(new JSONObject());
+    }
+
+    static PassRefPtr<JSONObject> cast(PassRefPtr<JSONValue> value)
+    {
+        if (!value || value->type() != TypeObject)
+            return nullptr;
+        return adoptRef(static_cast<JSONObject*>(value.leakRef()));
+    }
 
     void writeJSON(StringBuilder* output) const override;
 
     int size() const { return m_data.size(); }
-
-protected:
-    ~JSONObjectBase() override;
-
-    bool asObject(RefPtr<JSONObject>* output) override;
 
     void setBoolean(const String& name, bool);
     void setNumber(const String& name, double);
@@ -214,71 +214,42 @@ protected:
 
     void remove(const String& name);
 
-    void prettyWriteJSONInternal(StringBuilder* output, int depth) const override;
-
     iterator begin() { return m_data.begin(); }
     iterator end() { return m_data.end(); }
     const_iterator begin() const { return m_data.begin(); }
     const_iterator end() const { return m_data.end(); }
+    ~JSONObject() override;
 
 protected:
-    JSONObjectBase();
+    void prettyWriteJSONInternal(StringBuilder* output, int depth) const override;
 
 private:
+    JSONObject();
+
     Dictionary m_data;
     Vector<String> m_order;
 };
 
-class PLATFORM_EXPORT JSONObject : public JSONObjectBase {
-public:
-    static PassRefPtr<JSONObject> create()
-    {
-        return adoptRef(new JSONObject());
-    }
-
-    using JSONObjectBase::asObject;
-
-    using JSONObjectBase::setBoolean;
-    using JSONObjectBase::setNumber;
-    using JSONObjectBase::setString;
-    using JSONObjectBase::setValue;
-    using JSONObjectBase::setObject;
-    using JSONObjectBase::setArray;
-
-    using JSONObjectBase::find;
-    using JSONObjectBase::getBoolean;
-    using JSONObjectBase::getNumber;
-    using JSONObjectBase::getString;
-    using JSONObjectBase::getObject;
-    using JSONObjectBase::getArray;
-    using JSONObjectBase::get;
-
-    using JSONObjectBase::booleanProperty;
-
-    using JSONObjectBase::remove;
-
-    using JSONObjectBase::begin;
-    using JSONObjectBase::end;
-
-    using JSONObjectBase::size;
-};
-
-
-class PLATFORM_EXPORT JSONArrayBase : public JSONValue {
+class PLATFORM_EXPORT JSONArray : public JSONValue {
 public:
     typedef Vector<RefPtr<JSONValue>>::iterator iterator;
     typedef Vector<RefPtr<JSONValue>>::const_iterator const_iterator;
 
-    PassRefPtr<JSONArray> asArray() override;
+    static PassRefPtr<JSONArray> create()
+    {
+        return adoptRef(new JSONArray());
+    }
 
-    unsigned length() const { return m_data.size(); }
+    static PassRefPtr<JSONArray> cast(PassRefPtr<JSONValue> value)
+    {
+        if (!value || value->type() != TypeArray)
+            return nullptr;
+        return adoptRef(static_cast<JSONArray*>(value.leakRef()));
+    }
+
+    ~JSONArray() override;
 
     void writeJSON(StringBuilder* output) const override;
-
-protected:
-    ~JSONArrayBase() override;
-
-    bool asArray(RefPtr<JSONArray>* output) override;
 
     void pushBoolean(bool);
     void pushInt(int);
@@ -289,8 +260,7 @@ protected:
     void pushArray(PassRefPtr<JSONArray>);
 
     PassRefPtr<JSONValue> get(size_t index);
-
-    void prettyWriteJSONInternal(StringBuilder* output, int depth) const override;
+    unsigned length() const { return m_data.size(); }
 
     iterator begin() { return m_data.begin(); }
     iterator end() { return m_data.end(); }
@@ -298,33 +268,11 @@ protected:
     const_iterator end() const { return m_data.end(); }
 
 protected:
-    JSONArrayBase();
+    void prettyWriteJSONInternal(StringBuilder* output, int depth) const override;
 
 private:
+    JSONArray();
     Vector<RefPtr<JSONValue>> m_data;
-};
-
-class PLATFORM_EXPORT JSONArray : public JSONArrayBase {
-public:
-    static PassRefPtr<JSONArray> create()
-    {
-        return adoptRef(new JSONArray());
-    }
-
-    using JSONArrayBase::asArray;
-
-    using JSONArrayBase::pushBoolean;
-    using JSONArrayBase::pushInt;
-    using JSONArrayBase::pushNumber;
-    using JSONArrayBase::pushString;
-    using JSONArrayBase::pushValue;
-    using JSONArrayBase::pushObject;
-    using JSONArrayBase::pushArray;
-
-    using JSONArrayBase::get;
-
-    using JSONArrayBase::begin;
-    using JSONArrayBase::end;
 };
 
 PLATFORM_EXPORT void escapeStringForJSON(const String&, StringBuilder*);
