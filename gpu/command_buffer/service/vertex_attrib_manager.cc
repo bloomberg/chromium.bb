@@ -88,7 +88,7 @@ bool VertexAttrib::CanAccess(GLuint index) const {
   uint32_t usable_size = buffer_size - offset_;
   GLuint num_elements = usable_size / real_stride_ +
       ((usable_size % real_stride_) >=
-       (GLES2Util::GetGLTypeSizeForTexturesAndBuffers(type_) * size_) ? 1 : 0);
+       (GLES2Util::GetGroupSizeForBufferType(size_, type_)) ? 1 : 0);
   return index < num_elements;
 }
 

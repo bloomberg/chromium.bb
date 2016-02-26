@@ -8908,22 +8908,22 @@ error::Error GLES2DecoderImpl::HandleVertexAttribIPointer(
         GL_INVALID_VALUE, "glVertexAttribIPointer", "offset < 0");
     return error::kNoError;
   }
-  GLsizei component_size =
-      GLES2Util::GetGLTypeSizeForTexturesAndBuffers(type);
-  // component_size must be a power of two to use & as optimized modulo.
-  DCHECK(GLES2Util::IsPOT(component_size));
-  if (offset & (component_size - 1)) {
+  GLsizei type_size = GLES2Util::GetGLTypeSizeForBuffers(type);
+  // type_size must be a power of two to use & as optimized modulo.
+  DCHECK(GLES2Util::IsPOT(type_size));
+  if (offset & (type_size - 1)) {
     LOCAL_SET_GL_ERROR(
         GL_INVALID_OPERATION,
         "glVertexAttribIPointer", "offset not valid for type");
     return error::kNoError;
   }
-  if (stride & (component_size - 1)) {
+  if (stride & (type_size - 1)) {
     LOCAL_SET_GL_ERROR(
         GL_INVALID_OPERATION,
         "glVertexAttribIPointer", "stride not valid for type");
     return error::kNoError;
   }
+  GLsizei group_size = GLES2Util::GetGroupSizeForBufferType(size, type);
   state_.vertex_attrib_manager
       ->SetAttribInfo(indx,
                       state_.bound_array_buffer.get(),
@@ -8931,7 +8931,7 @@ error::Error GLES2DecoderImpl::HandleVertexAttribIPointer(
                       type,
                       GL_FALSE,
                       stride,
-                      stride != 0 ? stride : component_size * size,
+                      stride != 0 ? stride : group_size,
                       offset,
                       GL_TRUE);
   glVertexAttribIPointer(indx, size, type, stride, ptr);
@@ -9002,22 +9002,22 @@ error::Error GLES2DecoderImpl::HandleVertexAttribPointer(
         GL_INVALID_VALUE, "glVertexAttribPointer", "offset < 0");
     return error::kNoError;
   }
-  GLsizei component_size =
-      GLES2Util::GetGLTypeSizeForTexturesAndBuffers(type);
-  // component_size must be a power of two to use & as optimized modulo.
-  DCHECK(GLES2Util::IsPOT(component_size));
-  if (offset & (component_size - 1)) {
+  GLsizei type_size = GLES2Util::GetGLTypeSizeForBuffers(type);
+  // type_size must be a power of two to use & as optimized modulo.
+  DCHECK(GLES2Util::IsPOT(type_size));
+  if (offset & (type_size - 1)) {
     LOCAL_SET_GL_ERROR(
         GL_INVALID_OPERATION,
         "glVertexAttribPointer", "offset not valid for type");
     return error::kNoError;
   }
-  if (stride & (component_size - 1)) {
+  if (stride & (type_size - 1)) {
     LOCAL_SET_GL_ERROR(
         GL_INVALID_OPERATION,
         "glVertexAttribPointer", "stride not valid for type");
     return error::kNoError;
   }
+  GLsizei group_size = GLES2Util::GetGroupSizeForBufferType(size, type);
   state_.vertex_attrib_manager
       ->SetAttribInfo(indx,
                       state_.bound_array_buffer.get(),
@@ -9025,7 +9025,7 @@ error::Error GLES2DecoderImpl::HandleVertexAttribPointer(
                       type,
                       normalized,
                       stride,
-                      stride != 0 ? stride : component_size * size,
+                      stride != 0 ? stride : group_size,
                       offset,
                       GL_FALSE);
   // We support GL_FIXED natively on EGL/GLES2 implementations

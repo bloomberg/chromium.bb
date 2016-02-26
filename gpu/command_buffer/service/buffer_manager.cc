@@ -223,7 +223,7 @@ bool Buffer::GetMaxValueForRange(
 
   uint32_t size;
   if (!SafeMultiplyUint32(
-      count, GLES2Util::GetGLTypeSizeForTexturesAndBuffers(type), &size)) {
+      count, GLES2Util::GetGLTypeSizeForBuffers(type), &size)) {
     return false;
   }
 

@@ -795,7 +795,7 @@ uint32_t GLES2Util::GetElementCountForUniformType(int type) {
   }
 }
 
-size_t GLES2Util::GetGLTypeSizeForTexturesAndBuffers(uint32_t type) {
+size_t GLES2Util::GetGLTypeSizeForBuffers(uint32_t type) {
   switch (type) {
     case GL_BYTE:
       return sizeof(GLbyte);  // NOLINT
@@ -824,6 +824,15 @@ size_t GLES2Util::GetGLTypeSizeForTexturesAndBuffers(uint32_t type) {
   }
 }
 
+size_t GLES2Util::GetGroupSizeForBufferType(uint32_t count, uint32_t type) {
+  size_t type_size = GetGLTypeSizeForBuffers(type);
+  // For packed types, group size equals to the type size.
+  if (type == GL_INT_2_10_10_10_REV || type == GL_UNSIGNED_INT_2_10_10_10_REV) {
+    DCHECK_EQ(4u, count);
+    return type_size;
+  }
+  return type_size * count;
+}
 size_t GLES2Util::GetComponentCountForGLTransformType(uint32_t type) {
   switch (type) {
     case GL_TRANSLATE_X_CHROMIUM:

@@ -515,8 +515,7 @@ bool VertexArrayObjectManager::SetupSimulatedClientSideBuffers(
     const VertexArrayObject::VertexAttrib& attrib = vertex_attribs[ii];
     if (attrib.IsClientSide() && attrib.enabled()) {
       size_t bytes_per_element =
-          GLES2Util::GetGLTypeSizeForTexturesAndBuffers(attrib.type()) *
-          attrib.size();
+          GLES2Util::GetGroupSizeForBufferType(attrib.size(), attrib.type());
       GLsizei elements = (primcount && attrib.divisor() > 0) ?
           ((primcount - 1) / attrib.divisor() + 1) : num_elements;
       total_size += RoundUpToMultipleOf4(bytes_per_element * elements);
@@ -532,8 +531,7 @@ bool VertexArrayObjectManager::SetupSimulatedClientSideBuffers(
     const VertexArrayObject::VertexAttrib& attrib = vertex_attribs[ii];
     if (attrib.IsClientSide() && attrib.enabled()) {
       size_t bytes_per_element =
-          GLES2Util::GetGLTypeSizeForTexturesAndBuffers(attrib.type()) *
-          attrib.size();
+          GLES2Util::GetGroupSizeForBufferType(attrib.size(), attrib.type());
       GLsizei real_stride = attrib.stride() ?
           attrib.stride() : static_cast<GLsizei>(bytes_per_element);
       GLsizei elements = (primcount && attrib.divisor() > 0) ?
@@ -616,8 +614,7 @@ bool VertexArrayObjectManager::SetupSimulatedIndexAndClientSideBuffers(
         break;
     }
     gl_helper->BindBuffer(GL_ELEMENT_ARRAY_BUFFER, element_array_buffer_id_);
-    GLsizei bytes_per_element =
-        GLES2Util::GetGLTypeSizeForTexturesAndBuffers(type);
+    GLsizei bytes_per_element = GLES2Util::GetGLTypeSizeForBuffers(type);
     GLsizei bytes_needed = bytes_per_element * count;
     if (bytes_needed > element_array_buffer_size_) {
       element_array_buffer_size_ = bytes_needed;
