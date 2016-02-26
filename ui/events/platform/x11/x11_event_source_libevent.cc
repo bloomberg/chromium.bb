@@ -9,6 +9,7 @@
 
 #include "base/message_loop/message_loop.h"
 #include "ui/events/event.h"
+#include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_code_conversion_x.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/events/x/events_x_utils.h"
@@ -147,7 +148,13 @@ void X11EventSourceLibevent::RemoveXEventDispatcher(
 void X11EventSourceLibevent::ProcessXEvent(XEvent* xevent) {
   scoped_ptr<ui::Event> translated_event = TranslateXEventToEvent(*xevent);
   if (translated_event) {
-    DispatchEvent(translated_event.get());
+    // The ui::Events produced by TranslateXEventToEvent() don't use
+    // base::NativeEvent constructors. To trigger any additional checks that
+    // occur in the base::NativeEvent constructor (eg. check for double click)
+    // we create a copy here.
+    scoped_ptr<ui::Event> event_copy =
+        ui::EventFromNative(translated_event.get());
+    DispatchEvent(event_copy.get());
   } else {
     // Only if we can't translate XEvent into ui::Event, try to dispatch XEvent
     // directly to XEventDispatchers.

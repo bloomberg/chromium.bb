@@ -47,8 +47,11 @@ bool X11WindowOzone::CanDispatchEvent(const PlatformEvent& event) {
 }
 
 uint32_t X11WindowOzone::DispatchEvent(const PlatformEvent& platform_event) {
-  Event* event = static_cast<Event*>(platform_event);
-  delegate()->DispatchEvent(event);
+  // This is unfortunately needed otherwise events that depend on global state
+  // (eg. double click) are broken.
+  DispatchEventFromNativeUiEvent(
+      platform_event, base::Bind(&PlatformWindowDelegate::DispatchEvent,
+                                 base::Unretained(delegate())));
   return POST_DISPATCH_STOP_PROPAGATION;
 }
 
