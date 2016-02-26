@@ -4047,9 +4047,6 @@ Even if you have downloaded files from this website before, the website might ha
         <message name="IDS_EXTENSION_PROMPT_WARNING_SETTINGS_PRIVATE" desc="Permission string for access to settings.">
           Read and change user and device settings
         </message>
-        <message name="IDS_EXTENSION_PROMPT_WARNING_SEARCH_ENGINES_PRIVATE" desc="Permission string for access to search engines.">
-          Read and change default and custom search engines
-        </message>
         <message name="IDS_EXTENSION_PROMPT_WARNING_AUTOFILL_PRIVATE" desc="Permission string for access to autofill settings.">
           Read and change autofill settings
         </message>

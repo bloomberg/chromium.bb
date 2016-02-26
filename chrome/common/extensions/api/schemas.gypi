@@ -69,7 +69,6 @@
       'preferences_private.json',
       'resources_private.idl',
       'screenlock_private.idl',
-      'search_engines_private.idl',
       'sessions.json',
       'settings_private.idl',
       'signed_in_devices.idl',

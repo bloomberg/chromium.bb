@@ -191,8 +191,6 @@ std::vector<APIPermissionInfo*> ChromeAPIPermissions::GetAllPermissions()
       {APIPermission::kInlineInstallPrivate, "inlineInstallPrivate"},
       {APIPermission::kSettingsPrivate, "settingsPrivate",
        APIPermissionInfo::kFlagCannotBeOptional},
-      {APIPermission::kSearchEnginesPrivate, "searchEnginesPrivate",
-       APIPermissionInfo::kFlagCannotBeOptional},
       {APIPermission::kAutofillPrivate, "autofillPrivate",
        APIPermissionInfo::kFlagCannotBeOptional},
       {APIPermission::kWebstoreWidgetPrivate, "webstoreWidgetPrivate",

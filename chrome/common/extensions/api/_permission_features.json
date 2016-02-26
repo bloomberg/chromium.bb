@@ -911,11 +911,6 @@
     "extension_types": ["platform_app"],
     "location": "component"
   },
-  "searchEnginesPrivate": {
-    "channel": "trunk",
-    "extension_types": ["extension", "platform_app"],
-    "location": "component"
-  },
   "screensaver": {
     "channel": "stable",
     "extension_types": ["legacy_packaged_app", "hosted_app", "platform_app"]
