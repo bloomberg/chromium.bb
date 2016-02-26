@@ -30,9 +30,8 @@ enum AlphaDisposition {
     DontPremultiplyAlpha,
 };
 
-class CORE_EXPORT ImageBitmap final : public RefCountedWillBeGarbageCollectedFinalized<ImageBitmap>, public ScriptWrappable, public ImageLoaderClient, public CanvasImageSource, public ImageBitmapSource {
+class CORE_EXPORT ImageBitmap final : public RefCountedWillBeGarbageCollectedFinalized<ImageBitmap>, public ScriptWrappable, public CanvasImageSource, public ImageBitmapSource {
     DEFINE_WRAPPERTYPEINFO();
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ImageBitmap);
 public:
     static PassRefPtrWillBeRawPtr<ImageBitmap> create(HTMLImageElement*, const IntRect&, Document*, const ImageBitmapOptions& = ImageBitmapOptions());
     static PassRefPtrWillBeRawPtr<ImageBitmap> create(HTMLVideoElement*, const IntRect&, Document*, const ImageBitmapOptions& = ImageBitmapOptions());
@@ -76,10 +75,6 @@ private:
     ImageBitmap(ImageBitmap*, const IntRect&, const ImageBitmapOptions&);
     ImageBitmap(PassRefPtr<StaticBitmapImage>);
     ImageBitmap(PassRefPtr<StaticBitmapImage>, const IntRect&, const ImageBitmapOptions&);
-
-    // ImageLoaderClient
-    void notifyImageSourceChanged() override;
-    bool requestsHighLiveResourceCachePriority() override { return true; }
 
     RefPtr<StaticBitmapImage> m_image;
     bool m_isNeutered = false;

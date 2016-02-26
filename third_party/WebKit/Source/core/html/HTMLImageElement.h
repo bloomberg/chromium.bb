@@ -87,9 +87,6 @@ public:
 
     bool canContainRangeEndPoint() const override { return false; }
 
-    void addClient(ImageLoaderClient* client) { imageLoader().addClient(client); }
-    void removeClient(ImageLoaderClient* client) { imageLoader().removeClient(client); }
-
     const AtomicString imageSourceURL() const override;
 
     HTMLFormElement* formOwner() const override;

@@ -156,7 +156,6 @@ ImageLoader::ImageLoader(Element* element)
     , m_loadingImageDocument(false)
     , m_elementIsProtected(false)
     , m_suppressErrorEvents(false)
-    , m_highPriorityClientCount(0)
 {
     WTF_LOG(Timers, "new ImageLoader %p", this);
 #if ENABLE(OILPAN)
@@ -181,11 +180,6 @@ void ImageLoader::dispose()
         m_pendingTask->clearLoader();
 #endif
 
-#if ENABLE(OILPAN)
-    for (const auto& client : m_clients)
-        willRemoveClient(*client);
-#endif
-
     if (m_image) {
         m_image->removeClient(this);
         m_image = nullptr;
@@ -202,28 +196,10 @@ void ImageLoader::dispose()
 #endif
 }
 
-#if ENABLE(OILPAN)
-void ImageLoader::clearWeakMembers(Visitor* visitor)
-{
-    Vector<UntracedMember<ImageLoaderClient>> deadClients;
-    for (const auto& client : m_clients) {
-        if (!Heap::isHeapObjectAlive(client)) {
-            willRemoveClient(*client);
-            deadClients.append(client);
-        }
-    }
-    for (unsigned i = 0; i < deadClients.size(); ++i)
-        m_clients.remove(deadClients[i]);
-}
-#endif
-
 DEFINE_TRACE(ImageLoader)
 {
     visitor->trace(m_image);
     visitor->trace(m_element);
-#if ENABLE(OILPAN)
-    visitor->template registerWeakMembers<ImageLoader, &ImageLoader::clearWeakMembers>(this);
-#endif
 }
 
 void ImageLoader::setImage(ImageResource* newImage)
@@ -240,7 +216,6 @@ void ImageLoader::setImageWithoutConsideringPendingLoadEvent(ImageResource* newI
     ASSERT(m_failedLoadURL.isEmpty());
     ImageResource* oldImage = m_image.get();
     if (newImage != oldImage) {
-        sourceImageChanged();
         m_image = newImage;
         if (m_hasPendingLoadEvent) {
             loadEventSender().cancelEvent(this);
@@ -373,9 +348,6 @@ void ImageLoader::doUpdateFromElement(BypassMainWorldBehavior bypassBehavior, Up
     if (updateBehavior == UpdateSizeChanged && m_element->layoutObject() && m_element->layoutObject()->isImage() && newImage == oldImage) {
         toLayoutImage(m_element->layoutObject())->intrinsicSizeChanged();
     } else {
-        if (newImage != oldImage)
-            sourceImageChanged();
-
         if (m_hasPendingLoadEvent) {
             loadEventSender().cancelEvent(this);
             m_hasPendingLoadEvent = false;
@@ -635,31 +607,6 @@ void ImageLoader::dispatchPendingErrorEvent()
     updatedHasPendingEvent();
 }
 
-void ImageLoader::addClient(ImageLoaderClient* client)
-{
-    if (client->requestsHighLiveResourceCachePriority()) {
-        if (m_image && !m_highPriorityClientCount++)
-            memoryCache()->updateDecodedResource(m_image.get(), UpdateForPropertyChange, MemoryCacheLiveResourcePriorityHigh);
-    }
-    m_clients.add(client);
-}
-
-void ImageLoader::willRemoveClient(ImageLoaderClient& client)
-{
-    if (client.requestsHighLiveResourceCachePriority()) {
-        ASSERT(m_highPriorityClientCount);
-        m_highPriorityClientCount--;
-        if (m_image && !m_highPriorityClientCount)
-            memoryCache()->updateDecodedResource(m_image.get(), UpdateForPropertyChange, MemoryCacheLiveResourcePriorityLow);
-    }
-}
-
-void ImageLoader::removeClient(ImageLoaderClient* client)
-{
-    willRemoveClient(*client);
-    m_clients.remove(client);
-}
-
 bool ImageLoader::getImageAnimationPolicy(ImageResource*, ImageAnimationPolicy& policy)
 {
     if (!element()->document().settings())
@@ -685,14 +632,6 @@ void ImageLoader::elementDidMoveToNewDocument()
         m_loadDelayCounter->documentChanged(m_element->document());
     clearFailedLoadURL();
     setImage(0);
-}
-
-void ImageLoader::sourceImageChanged()
-{
-    for (auto& client : m_clients) {
-        ImageLoaderClient* handle = client;
-        handle->notifyImageSourceChanged();
-    }
 }
 
 } // namespace blink

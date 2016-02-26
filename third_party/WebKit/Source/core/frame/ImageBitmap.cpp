@@ -361,10 +361,6 @@ ScriptPromise ImageBitmap::createImageBitmap(ScriptState* scriptState, EventTarg
     return ImageBitmapSource::fulfillImageBitmap(scriptState, create(this, IntRect(sx, sy, sw, sh), options));
 }
 
-void ImageBitmap::notifyImageSourceChanged()
-{
-}
-
 PassRefPtr<Image> ImageBitmap::getSourceImageForCanvas(SourceImageStatus* status, AccelerationHint, SnapshotReason) const
 {
     *status = NormalSourceImageStatus;
@@ -382,7 +378,6 @@ FloatSize ImageBitmap::elementSize() const
 
 DEFINE_TRACE(ImageBitmap)
 {
-    ImageLoaderClient::trace(visitor);
 }
 
 } // namespace blink
