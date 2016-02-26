@@ -163,11 +163,13 @@ AccountId EasyUnlockServiceRegular::GetAccountId() const {
   // |profile| has to be a signed-in profile with SigninManager already
   // created. Otherwise, just crash to collect stack.
   DCHECK(signin_manager);
-  const std::string user_email =
-      signin_manager->GetAuthenticatedAccountInfo().email;
-  return user_email.empty()
+  const AccountInfo account_info =
+      signin_manager->GetAuthenticatedAccountInfo();
+  return account_info.email.empty()
              ? EmptyAccountId()
-             : AccountId::FromUserEmail(gaia::CanonicalizeEmail(user_email));
+             : AccountId::FromUserEmailGaiaId(
+                   gaia::CanonicalizeEmail(account_info.email),
+                   account_info.gaia);
 }
 
 void EasyUnlockServiceRegular::LaunchSetup() {

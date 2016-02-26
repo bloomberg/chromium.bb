@@ -45,7 +45,9 @@ namespace {
 
 // IDs for fake users used in tests.
 const char kTestUserPrimary[] = "primary_user@nowhere.com";
+const char kPrimaryGaiaId[] = "1111111111";
 const char kTestUserSecondary[] = "secondary_user@nowhere.com";
+const char kSecondaryGaiaId[] = "2222222222";
 
 // App manager to be used in EasyUnlockService tests.
 // This effectivelly abstracts the extension system from the tests.
@@ -222,7 +224,8 @@ class EasyUnlockServiceTest : public testing::Test {
     ON_CALL(*mock_user_manager_, IsCurrentUserNonCryptohomeDataEphemeral())
         .WillByDefault(Return(false));
 
-    SetUpProfile(&profile_, AccountId::FromUserEmail(kTestUserPrimary));
+    SetUpProfile(&profile_, AccountId::FromUserEmailGaiaId(
+        kTestUserPrimary, kPrimaryGaiaId));
   }
 
   void TearDown() override {
@@ -267,7 +270,8 @@ class EasyUnlockServiceTest : public testing::Test {
 
   void SetUpSecondaryProfile() {
     SetUpProfile(&secondary_profile_,
-                 AccountId::FromUserEmail(kTestUserSecondary));
+                 AccountId::FromUserEmailGaiaId(kTestUserSecondary,
+                 kSecondaryGaiaId));
   }
 
  private:
@@ -287,7 +291,7 @@ class EasyUnlockServiceTest : public testing::Test {
 
     SigninManagerBase* signin_manager =
         SigninManagerFactory::GetForProfile(profile->get());
-    signin_manager->SetAuthenticatedAccountInfo(account_id.GetUserEmail(),
+    signin_manager->SetAuthenticatedAccountInfo(account_id.GetGaiaId(),
                                                 account_id.GetUserEmail());
   }
 
@@ -373,6 +377,16 @@ TEST_F(EasyUnlockServiceTest, NotAllowedForEphemeralAccounts) {
   EXPECT_FALSE(EasyUnlockService::Get(profile_.get())->IsAllowed());
   EXPECT_TRUE(
       EasyUnlockAppInState(profile_.get(), TestAppManager::STATE_NOT_LOADED));
+}
+
+TEST_F(EasyUnlockServiceTest, GetAccountId) {
+  EXPECT_EQ(AccountId::FromUserEmailGaiaId(kTestUserPrimary, kPrimaryGaiaId),
+            EasyUnlockService::Get(profile_.get())->GetAccountId());
+
+  SetUpSecondaryProfile();
+  EXPECT_EQ(AccountId::FromUserEmailGaiaId(kTestUserSecondary,
+                                           kSecondaryGaiaId),
+            EasyUnlockService::Get(secondary_profile_.get())->GetAccountId());
 }
 
 }  // namespace

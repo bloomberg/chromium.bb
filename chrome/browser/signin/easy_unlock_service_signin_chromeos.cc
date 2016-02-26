@@ -338,8 +338,7 @@ void EasyUnlockServiceSignin::OnFocusedUserChanged(
   // these
   // cases update the app state. Otherwise, it's enough to notify the app the
   // user data has been updated.
-  const bool should_update_app_state =
-      account_id_.is_valid() != account_id.is_valid();
+  const bool should_update_app_state = (account_id_ != account_id);
   account_id_ = account_id;
   user_pod_last_focused_timestamp_ = base::TimeTicks::Now();
 
@@ -375,7 +374,7 @@ void EasyUnlockServiceSignin::LoadCurrentUserDataIfNeeded() {
   if (!base::SysInfo::IsRunningOnChromeOS())
     return;
 
-  if (account_id_.is_valid() || !service_active_)
+  if (!account_id_.is_valid() || !service_active_)
     return;
 
   const auto it = user_data_.find(account_id_);
@@ -467,7 +466,7 @@ void EasyUnlockServiceSignin::OnUserDataLoaded(
 
 const EasyUnlockServiceSignin::UserData*
     EasyUnlockServiceSignin::FindLoadedDataForCurrentUser() const {
-  if (account_id_.is_valid())
+  if (!account_id_.is_valid())
     return nullptr;
 
   const auto it = user_data_.find(account_id_);
