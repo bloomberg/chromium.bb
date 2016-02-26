@@ -103,9 +103,6 @@ class Port(object):
         ('mac10.11', 'x86'),
         ('win7', 'x86'),
         ('win10', 'x86'),
-        # FIXME: We handle 32bit Linux similarly to Mac retina above treating it
-        # as a different system for now.
-        ('linux32', 'x86'),
         ('precise', 'x86_64'),
         ('trusty', 'x86_64'),
         # FIXME: Technically this should be 'arm', but adding a third architecture type breaks TestConfigurationConverter.
@@ -116,7 +113,7 @@ class Port(object):
     CONFIGURATION_SPECIFIER_MACROS = {
         'mac': ['retina', 'mavericks', 'mac10.10', 'mac10.11'],
         'win': ['win7', 'win10'],
-        'linux': ['linux32', 'precise', 'trusty'],
+        'linux': ['precise', 'trusty'],
         'android': ['icecreamsandwich'],
     }
 

@@ -44,7 +44,6 @@ _exact_matches = {
     # FIXME: Rename this to 'WebKit Linux Precise'
     "WebKit Linux": {"port_name": "linux-precise", "specifiers": ['Precise', 'Release']},
     "WebKit Linux Trusty": {"port_name": "linux-trusty", "specifiers": ['Trusty', 'Release']},
-    "WebKit Linux 32": {"port_name": "linux-x86", "specifiers": ['Linux32', 'Release']},
     "WebKit Linux (dbg)": {"port_name": "linux-precise", "specifiers": ['Precise', 'Debug']},
     "WebKit Mac10.9": {"port_name": "mac-mavericks", "specifiers": ['Mavericks', 'Release']},
     "WebKit Mac10.10": {"port_name": "mac-mac10.10", "specifiers": ['Mac10.10', 'Release']},

@@ -43,76 +43,28 @@ _log = logging.getLogger(__name__)
 class LinuxPort(base.Port):
     port_name = 'linux'
 
-    SUPPORTED_VERSIONS = ('linux32', 'precise', 'trusty')
+    SUPPORTED_VERSIONS = ('precise', 'trusty')
 
     FALLBACK_PATHS = {}
     FALLBACK_PATHS['trusty'] = ['linux'] + win.WinPort.latest_platform_fallback_path()
     FALLBACK_PATHS['precise'] = ['linux-precise'] + FALLBACK_PATHS['trusty']
-    FALLBACK_PATHS['linux32'] = ['linux-x86'] + FALLBACK_PATHS['precise']
 
     DEFAULT_BUILD_DIRECTORIES = ('out',)
 
     BUILD_REQUIREMENTS_URL = 'https://chromium.googlesource.com/chromium/src/+/master/docs/linux_build_instructions.md'
-
-    @classmethod
-    def _determine_driver_path_statically(cls, host, options):
-        config_object = config.Config(host.executive, host.filesystem)
-        build_directory = getattr(options, 'build_directory', None)
-        finder = WebKitFinder(host.filesystem)
-        webkit_base = finder.webkit_base()
-        chromium_base = finder.chromium_base()
-        driver_name = getattr(options, 'driver_name', None)
-        if driver_name is None:
-            driver_name = cls.CONTENT_SHELL_NAME
-        if hasattr(options, 'configuration') and options.configuration:
-            configuration = options.configuration
-        else:
-            configuration = config_object.default_configuration()
-        return cls._static_build_path(host.filesystem, build_directory, chromium_base, configuration, [driver_name])
-
-    @staticmethod
-    def _determine_architecture(filesystem, executive, driver_path):
-        file_output = ''
-        if filesystem.isfile(driver_path):
-            # The --dereference flag tells file to follow symlinks
-            file_output = executive.run_command(['file', '--brief', '--dereference', driver_path], return_stderr=True)
-
-        if re.match(r'ELF 32-bit LSB\s+(executable|shared object)', file_output):
-            return 'x86'
-        if re.match(r'ELF 64-bit LSB\s+(executable|shared object)', file_output):
-            return 'x86_64'
-        if file_output:
-            _log.warning('Could not determine architecture from "file" output: %s' % file_output)
-
-        # We don't know what the architecture is; default to 'x86_64' because
-        # maybe we're rebaselining and the binary doesn't actually exist,
-        # or something else weird is going on. It's okay to do this because
-        # if we actually try to use the binary, check_build() should fail.
-        return 'x86_64'
-
     @classmethod
     def determine_full_port_name(cls, host, options, port_name):
         if port_name.endswith('linux'):
-            arch = cls._determine_architecture(host.filesystem, host.executive,
-                                               cls._determine_driver_path_statically(host, options))
-            if arch == 'x86':
-                return port_name + '-x86'
-            else:
-                return port_name + '-' + host.platform.os_version  # e.g. linux-trusty
+            assert host.platform.is_linux()
+            version = host.platform.os_version
+            return port_name + '-' + version
         return port_name
+
 
     def __init__(self, host, port_name, **kwargs):
         super(LinuxPort, self).__init__(host, port_name, **kwargs)
-
-        # FIXME: Rename 32-bit port name from linux-x86 to linux-linux32 to avoid confusion.
-        assert port_name.startswith('linux-')
-        port_name_suffix = port_name.replace('linux-', '', 1)
-        if port_name_suffix == "x86":
-            self._version = "linux32"
-            self._architecture = "x86"
-        else:
-            self._version = port_name_suffix
-            self._architecture = "x86_64"
+        self._version = port_name[port_name.index('linux-') + len('linux-'):]
+        self._architecture = "x86_64"
         assert self._version in self.SUPPORTED_VERSIONS
 
         if not self.get_option('disable_breakpad'):

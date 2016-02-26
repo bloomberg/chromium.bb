@@ -178,7 +178,6 @@ class BaselineOptimizerTest(unittest.TestCase):
         self._assertOptimization({
             'platform/mac': '1',
             'platform/linux': '1',
-            'platform/linux-x86': '1',
             'platform/linux-precise': '1',
         }, {
             'platform/mac': '1',
@@ -190,7 +189,6 @@ class BaselineOptimizerTest(unittest.TestCase):
             'platform/mac-snowleopard': '1',
             'platform/win': '1',
             'platform/linux': '1',
-            'platform/linux-x86': '1',
             'platform/linux-precise': '1',
         }, {
             'platform/mac-snowleopard': '1',
