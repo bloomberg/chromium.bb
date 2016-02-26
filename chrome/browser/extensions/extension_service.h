@@ -464,12 +464,7 @@ class ExtensionService
     external_updates_finished_callback_ = callback;
   }
 
-
  private:
-  // Creates an ExtensionDownloader for use by the updater.
-  scoped_ptr<extensions::ExtensionDownloader> CreateExtensionDownloader(
-      extensions::ExtensionDownloaderDelegate* delegate);
-
   // Reloads the specified extension, sending the onLaunched() event to it if it
   // currently has any window showing. |be_noisy| determines whether noisy
   // failures are allowed for unpacked extension installs.
@@ -600,19 +595,19 @@ class ExtensionService
       const base::FilePath& extension_path);
 
   // The normal profile associated with this ExtensionService.
-  Profile* profile_;
+  Profile* profile_ = nullptr;
 
   // The ExtensionSystem for the profile above.
-  extensions::ExtensionSystem* system_;
+  extensions::ExtensionSystem* system_ = nullptr;
 
   // Preferences for the owning profile.
-  extensions::ExtensionPrefs* extension_prefs_;
+  extensions::ExtensionPrefs* extension_prefs_ = nullptr;
 
   // Blacklist for the owning profile.
-  extensions::Blacklist* blacklist_;
+  extensions::Blacklist* blacklist_ = nullptr;
 
   // Sets of enabled/disabled/terminated/blacklisted extensions. Not owned.
-  extensions::ExtensionRegistry* registry_;
+  extensions::ExtensionRegistry* registry_ = nullptr;
 
   // Set of greylisted extensions. These extensions are disabled if they are
   // already installed in Chromium at the time when they are added to
@@ -634,14 +629,14 @@ class ExtensionService
   base::FilePath install_directory_;
 
   // Whether or not extensions are enabled.
-  bool extensions_enabled_;
+  bool extensions_enabled_ = true;
 
   // Whether to notify users when they attempt to install an extension.
-  bool show_extensions_prompts_;
+  bool show_extensions_prompts_ = true;
 
   // Whether to delay installing of extension updates until the extension is
   // idle.
-  bool install_updates_when_idle_;
+  bool install_updates_when_idle_ = true;
 
   // Signaled when all extensions are loaded.
   extensions::OneShotEvent* const ready_;
@@ -652,13 +647,13 @@ class ExtensionService
   // Map unloaded extensions' ids to their paths. When a temporarily loaded
   // extension is unloaded, we lose the information about it and don't have
   // any in the extension preferences file.
-  typedef std::map<std::string, base::FilePath> UnloadedExtensionPathMap;
+  using UnloadedExtensionPathMap = std::map<std::string, base::FilePath>;
   UnloadedExtensionPathMap unloaded_extension_paths_;
 
   // Map of DevToolsAgentHost instances that are detached,
   // waiting for an extension to be reloaded.
-  typedef std::map<std::string, scoped_refptr<content::DevToolsAgentHost> >
-      OrphanedDevTools;
+  using OrphanedDevTools =
+      std::map<std::string, scoped_refptr<content::DevToolsAgentHost>>;
   OrphanedDevTools orphaned_dev_tools_;
 
   content::NotificationRegistrar registrar_;
@@ -676,7 +671,7 @@ class ExtensionService
   // has to wait for the external providers.  Used in
   // OnAllExternalProvidersReady() to determine if an update check is needed to
   // install pending extensions.
-  bool update_once_all_providers_are_ready_;
+  bool update_once_all_providers_are_ready_ = false;
 
   // A callback to be called when all external providers are ready and their
   // extensions have been installed. Normally this is a null callback, but
@@ -686,21 +681,21 @@ class ExtensionService
   // Set when the browser is terminating. Prevents us from installing or
   // updating additional extensions and allows in-progress installations to
   // decide to abort.
-  bool browser_terminating_;
+  bool browser_terminating_ = false;
 
   // Set to true to delay all new extension installations. Acts as a lock to
   // allow background processing of garbage collection of on-disk state without
   // needing to worry about race conditions caused by extension installation and
   // reinstallation.
-  bool installs_delayed_for_gc_;
+  bool installs_delayed_for_gc_ = false;
 
   // Set to true if this is the first time this ExtensionService has run.
   // Used for specially handling external extensions that are installed the
   // first time.
-  bool is_first_run_;
+  bool is_first_run_ = false;
 
   // Set to true if extensions are all to be blocked.
-  bool block_extensions_;
+  bool block_extensions_ = false;
 
   // Store the ids of reloading extensions. We use this to re-enable extensions
   // which were disabled for a reload.
