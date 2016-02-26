@@ -199,11 +199,6 @@ private:
 
     String localLayerTreeAsText(unsigned flags) const;
 
-    // Paints the area for the given rect into a DragImage.
-    // The rect is in the coordinate space of the frame.
-    PassOwnPtr<DragImage> paintIntoDragImage(const GlobalPaintFlags,
-        IntRect paintingRect, Node* draggedNode = nullptr, float opacity = 1);
-
     void enableNavigation() { --m_navigationDisableCount; }
     void disableNavigation() { ++m_navigationDisableCount; }
 

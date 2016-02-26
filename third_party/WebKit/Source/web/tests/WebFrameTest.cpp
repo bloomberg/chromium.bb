@@ -6899,6 +6899,15 @@ static void nodeImageTestValidation(const IntSize& referenceBitmapSize, DragImag
     EXPECT_EQ(0, memcmp(bitmap.getPixels(), dragBitmap.getPixels(), bitmap.getSize()));
 }
 
+TEST_P(ParameterizedWebFrameTest, NodeImageTestCSSTransformDescendant)
+{
+    FrameTestHelpers::WebViewHelper webViewHelper(this);
+    OwnPtr<DragImage> dragImage = nodeImageTestSetup(&webViewHelper, std::string("case-css-3dtransform-descendant"));
+    EXPECT_TRUE(dragImage);
+
+    nodeImageTestValidation(IntSize(40, 40), dragImage.get());
+}
+
 TEST_P(ParameterizedWebFrameTest, NodeImageTestCSSTransform)
 {
     FrameTestHelpers::WebViewHelper webViewHelper(this);
@@ -6914,7 +6923,7 @@ TEST_P(ParameterizedWebFrameTest, NodeImageTestCSS3DTransform)
     OwnPtr<DragImage> dragImage = nodeImageTestSetup(&webViewHelper, std::string("case-css-3dtransform"));
     EXPECT_TRUE(dragImage);
 
-    nodeImageTestValidation(IntSize(20, 40), dragImage.get());
+    nodeImageTestValidation(IntSize(40, 40), dragImage.get());
 }
 
 TEST_P(ParameterizedWebFrameTest, NodeImageTestInlineBlock)

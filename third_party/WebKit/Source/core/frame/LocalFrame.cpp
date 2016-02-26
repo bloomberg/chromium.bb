@@ -97,7 +97,7 @@ namespace {
 class DragImageBuilder {
     STACK_ALLOCATED();
 public:
-    DragImageBuilder(const LocalFrame* localFrame, const IntRect& bounds, Node* draggedNode, float opacity = 1)
+    DragImageBuilder(const LocalFrame* localFrame, const FloatRect& bounds, Node* draggedNode, float opacity = 1)
         : m_localFrame(localFrame)
         , m_draggedNode(draggedNode)
         , m_bounds(bounds)
@@ -140,7 +140,7 @@ public:
 private:
     RawPtrWillBeMember<const LocalFrame> m_localFrame;
     RawPtrWillBeMember<Node> m_draggedNode;
-    IntRect m_bounds;
+    FloatRect m_bounds;
     float m_opacity;
     OwnPtr<SkPictureBuilder> m_pictureBuilder;
 };
@@ -631,18 +631,6 @@ double LocalFrame::devicePixelRatio() const
     return ratio;
 }
 
-PassOwnPtr<DragImage> LocalFrame::paintIntoDragImage(const GlobalPaintFlags globalPaintFlags,
-    IntRect paintingRect, Node* draggedNode, float opacity)
-{
-    ASSERT(document()->isActive());
-    // Not flattening compositing layers will result in a broken image being painted.
-    ASSERT(globalPaintFlags & GlobalPaintFlattenCompositingLayers);
-
-    DragImageBuilder dragImageBuilder(this, paintingRect, draggedNode, opacity);
-    m_view->paintContents(dragImageBuilder.context(), globalPaintFlags, paintingRect);
-    return dragImageBuilder.createImage();
-}
-
 PassOwnPtr<DragImage> LocalFrame::nodeImage(Node& node)
 {
     m_view->updateAllLifecyclePhases();
@@ -650,23 +638,20 @@ PassOwnPtr<DragImage> LocalFrame::nodeImage(Node& node)
     if (!layoutObject)
         return nullptr;
 
-    // Directly paint boxes as if they are a stacking context.
-    if (layoutObject->isBox() && layoutObject->container()) {
-        IntRect boundingBox = layoutObject->absoluteBoundingBoxRectIncludingDescendants();
-        LayoutPoint paintOffset = boundingBox.location() - layoutObject->offsetFromContainer(layoutObject->container(), LayoutPoint());
-
-        DragImageBuilder dragImageBuilder(this, boundingBox, &node);
-        {
-            PaintInfo paintInfo(dragImageBuilder.context(), boundingBox, PaintPhase::PaintPhaseForeground, GlobalPaintFlattenCompositingLayers, 0);
-            ObjectPainter(*layoutObject).paintAsPseudoStackingContext(paintInfo, LayoutPoint(paintOffset));
-        }
-        return dragImageBuilder.createImage();
+    // Paint starting at the nearest self painting layer, clipped to the object itself.
+    // TODO(pdr): This will also paint the content behind the object if the object contains
+    // transparency but the layer is opaque. We could directly call layoutObject->paint(...)
+    // (see ObjectPainter::paintAsPseudoStackingContext) but this would skip self-painting children.
+    PaintLayer* layer = layoutObject->enclosingLayer()->enclosingSelfPaintingLayer();
+    IntRect absoluteBoundingBox = layoutObject->absoluteBoundingBoxRectIncludingDescendants();
+    FloatRect boundingBox = layer->layoutObject()->absoluteToLocalQuad(FloatQuad(absoluteBoundingBox), UseTransforms).boundingBox();
+    DragImageBuilder dragImageBuilder(this, boundingBox, &node);
+    {
+        PaintLayerPaintingInfo paintingInfo(layer, LayoutRect(boundingBox), GlobalPaintFlattenCompositingLayers, LayoutSize(), 0);
+        PaintLayerFlags flags = PaintLayerHaveTransparency | PaintLayerAppliedTransform | PaintLayerUncachedClipRects;
+        PaintLayerPainter(*layer).paintLayer(dragImageBuilder.context(), paintingInfo, flags);
     }
-
-    // TODO(pdr): This will also paint the background if the object contains transparency. We can
-    // directly call layoutObject->paint(...) (see: ObjectPainter::paintAsPseudoStackingContext) but
-    // painters are inconsistent about which transform space they expect (see: svg, inlines, etc.)
-    return paintIntoDragImage(GlobalPaintFlattenCompositingLayers, layoutObject->absoluteBoundingBoxRectIncludingDescendants(), &node);
+    return dragImageBuilder.createImage();
 }
 
 PassOwnPtr<DragImage> LocalFrame::dragImageForSelection(float opacity)
@@ -675,9 +660,13 @@ PassOwnPtr<DragImage> LocalFrame::dragImageForSelection(float opacity)
         return nullptr;
 
     m_view->updateAllLifecyclePhases();
+    ASSERT(document()->isActive());
 
-    return paintIntoDragImage(GlobalPaintSelectionOnly | GlobalPaintFlattenCompositingLayers,
-        enclosingIntRect(selection().bounds()), nullptr, opacity);
+    FloatRect paintingRect = FloatRect(selection().bounds());
+    DragImageBuilder dragImageBuilder(this, paintingRect, nullptr, opacity);
+    GlobalPaintFlags paintFlags = GlobalPaintSelectionOnly | GlobalPaintFlattenCompositingLayers;
+    m_view->paintContents(dragImageBuilder.context(), paintFlags, enclosingIntRect(paintingRect));
+    return dragImageBuilder.createImage();
 }
 
 String LocalFrame::selectedText() const

@@ -2452,6 +2452,14 @@ void PaintLayer::updateSelfPaintingLayer()
         parent()->dirtyAncestorChainHasSelfPaintingLayerDescendantStatus();
 }
 
+PaintLayer* PaintLayer::enclosingSelfPaintingLayer()
+{
+    PaintLayer* layer = this;
+    while (layer && !layer->isSelfPaintingLayer())
+        layer = layer->parent();
+    return layer;
+}
+
 bool PaintLayer::hasNonEmptyChildLayoutObjects() const
 {
     // Some HTML can cause whitespace text nodes to have layoutObjects, like:

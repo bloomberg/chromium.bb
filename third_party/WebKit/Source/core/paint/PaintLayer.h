@@ -610,6 +610,9 @@ public:
     void updateOrRemoveFilterEffectBuilder();
 
     void updateSelfPaintingLayer();
+    // This is O(depth) so avoid calling this in loops. Instead use optimizations like
+    // those in PaintInvalidationState.
+    PaintLayer* enclosingSelfPaintingLayer();
 
     PaintLayer* enclosingTransformedAncestor() const;
     LayoutPoint computeOffsetFromTransformedAncestor() const;
