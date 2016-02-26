@@ -13,7 +13,6 @@
 #include "core/animation/InvalidatableInterpolation.h"
 #include "core/animation/LegacyStyleInterpolation.h"
 #include "core/animation/LengthBoxStyleInterpolation.h"
-#include "core/animation/LengthPairStyleInterpolation.h"
 #include "core/animation/LengthStyleInterpolation.h"
 #include "core/animation/ListStyleInterpolation.h"
 #include "core/animation/PropertyInterpolationTypesMapping.h"
@@ -173,14 +172,6 @@ PassRefPtr<Interpolation> StringKeyframe::CSSPropertySpecificKeyframe::maybeCrea
         if (property == CSSPropertyBaselineShift)
             return createLegacyStyleInterpolation(property, end, element, baseStyle);
 
-        break;
-
-    case CSSPropertyBorderBottomLeftRadius:
-    case CSSPropertyBorderBottomRightRadius:
-    case CSSPropertyBorderTopLeftRadius:
-    case CSSPropertyBorderTopRightRadius:
-        if (LengthPairStyleInterpolation::canCreateFrom(*fromCSSValue) && LengthPairStyleInterpolation::canCreateFrom(*toCSSValue))
-            return LengthPairStyleInterpolation::create(*fromCSSValue, *toCSSValue, property, RangeNonNegative);
         break;
 
     case CSSPropertyTransformOrigin: {
