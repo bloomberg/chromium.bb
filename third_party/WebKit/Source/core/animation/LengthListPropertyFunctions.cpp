@@ -83,6 +83,7 @@ ValueRange LengthListPropertyFunctions::valueRange(CSSPropertyID property)
     case CSSPropertyBackgroundPositionY:
     case CSSPropertyObjectPosition:
     case CSSPropertyPerspectiveOrigin:
+    case CSSPropertyTransformOrigin:
     case CSSPropertyWebkitMaskPositionX:
     case CSSPropertyWebkitMaskPositionY:
         return ValueRangeAll;
@@ -121,6 +122,15 @@ static Vector<Length> toVector(const LengthSize& size)
     return result;
 }
 
+static Vector<Length> toVector(const TransformOrigin& transformOrigin)
+{
+    Vector<Length> result(3);
+    result[0] = transformOrigin.x();
+    result[1] = transformOrigin.y();
+    result[2] = Length(transformOrigin.z(), Fixed);
+    return result;
+}
+
 Vector<Length> LengthListPropertyFunctions::getLengthList(CSSPropertyID property, const ComputedStyle& style)
 {
     switch (property) {
@@ -141,6 +151,8 @@ Vector<Length> LengthListPropertyFunctions::getLengthList(CSSPropertyID property
         return toVector(style.borderTopLeftRadius());
     case CSSPropertyBorderTopRightRadius:
         return toVector(style.borderTopRightRadius());
+    case CSSPropertyTransformOrigin:
+        return toVector(style.transformOrigin());
     default:
         break;
     }
@@ -167,6 +179,12 @@ static LengthSize sizeFromVector(const Vector<Length>& list)
     return LengthSize(list[0], list[1]);
 }
 
+static TransformOrigin transformOriginFromVector(const Vector<Length>& list)
+{
+    ASSERT(list.size() == 3);
+    return TransformOrigin(list[0], list[1], list[2].pixels());
+}
+
 void LengthListPropertyFunctions::setLengthList(CSSPropertyID property, ComputedStyle& style, Vector<Length>&& lengthList)
 {
     switch (property) {
@@ -190,6 +208,9 @@ void LengthListPropertyFunctions::setLengthList(CSSPropertyID property, Computed
         return;
     case CSSPropertyBorderTopRightRadius:
         style.setBorderTopRightRadius(sizeFromVector(lengthList));
+        return;
+    case CSSPropertyTransformOrigin:
+        style.setTransformOrigin(transformOriginFromVector(lengthList));
         return;
     default:
         break;
