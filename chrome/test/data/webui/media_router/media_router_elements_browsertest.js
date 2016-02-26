@@ -44,9 +44,7 @@ TEST_F('MediaRouterElementsBrowserTest', 'MediaRouterElementsTest', function() {
   issue_banner.registerTests();
   media_router_container.registerTests();
   media_router_header.registerTests();
-  // TODO(crbug.com/590177): media_router_search_highlighter is disabled,
-  // as it fails on Linux Tests (dbg).
-  // media_router_search_highlighter.registerTests();
+  media_router_search_highlighter.registerTests();
   route_details.registerTests();
 
   // Run all registered tests.
