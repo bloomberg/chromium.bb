@@ -57,6 +57,9 @@ SyncSessionSnapshot::SyncSessionSnapshot(
       is_initialized_(true) {
 }
 
+SyncSessionSnapshot::SyncSessionSnapshot(const SyncSessionSnapshot& other) =
+    default;
+
 SyncSessionSnapshot::~SyncSessionSnapshot() {}
 
 scoped_ptr<base::DictionaryValue> SyncSessionSnapshot::ToValue() const {

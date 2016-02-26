@@ -219,6 +219,7 @@ struct SYNC_EXPORT EntryKernel {
 
  public:
   EntryKernel();
+  EntryKernel(const EntryKernel& other);
   ~EntryKernel();
 
   // Set the dirty bit, and optionally add this entry's metahandle to

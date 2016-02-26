@@ -15,6 +15,7 @@ namespace syncer {
 // Container for datatype association results.
 struct SYNC_EXPORT DataTypeAssociationStats {
   DataTypeAssociationStats();
+  DataTypeAssociationStats(const DataTypeAssociationStats& other);
   ~DataTypeAssociationStats();
 
   // The state of the world before association.

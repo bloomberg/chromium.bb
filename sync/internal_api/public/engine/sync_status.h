@@ -24,6 +24,7 @@ namespace syncer {
 // DictionaryValue used to populate the about:sync summary tab.
 struct SYNC_EXPORT SyncStatus {
   SyncStatus();
+  SyncStatus(const SyncStatus& other);
   ~SyncStatus();
 
   // TODO(akalin): Replace this with a NotificationsDisabledReason

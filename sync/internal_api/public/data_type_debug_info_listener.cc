@@ -9,6 +9,9 @@ namespace syncer {
 DataTypeConfigurationStats::DataTypeConfigurationStats()
     : model_type(UNSPECIFIED) {}
 
+DataTypeConfigurationStats::DataTypeConfigurationStats(
+    const DataTypeConfigurationStats& other) = default;
+
 DataTypeConfigurationStats::~DataTypeConfigurationStats() {}
 
 }  // namespace syncer

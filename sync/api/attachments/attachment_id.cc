@@ -74,6 +74,8 @@ const sync_pb::AttachmentIdProto& AttachmentId::GetProto() const {
 AttachmentId::AttachmentId(sync_pb::AttachmentIdProto* proto)
     : proto_(proto) {}
 
+AttachmentId::AttachmentId(const AttachmentId& other) = default;
+
 size_t AttachmentId::GetSize() const {
   return proto_.Get().size_bytes();
 }

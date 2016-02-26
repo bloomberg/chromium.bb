@@ -19,6 +19,7 @@ namespace sessions {
 // model types.
 struct SYNC_EXPORT ModelNeutralState {
   ModelNeutralState();
+  ModelNeutralState(const ModelNeutralState& other);
   ~ModelNeutralState();
 
   // The set of types for which updates were requested from the server.

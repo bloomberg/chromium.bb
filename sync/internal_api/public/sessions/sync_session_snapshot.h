@@ -45,6 +45,7 @@ class SYNC_EXPORT SyncSessionSnapshot {
       const std::vector<int>& num_entries_by_type,
       const std::vector<int>& num_to_delete_entries_by_type,
       sync_pb::GetUpdatesCallerInfo::GetUpdatesSource legacy_updates_source);
+  SyncSessionSnapshot(const SyncSessionSnapshot& other);
   ~SyncSessionSnapshot();
 
   scoped_ptr<base::DictionaryValue> ToValue() const;

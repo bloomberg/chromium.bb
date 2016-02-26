@@ -50,6 +50,8 @@ SyncProtocolError::SyncProtocolError()
       action(UNKNOWN_ACTION) {
 }
 
+SyncProtocolError::SyncProtocolError(const SyncProtocolError& other) = default;
+
 SyncProtocolError::~SyncProtocolError() {
 }
 

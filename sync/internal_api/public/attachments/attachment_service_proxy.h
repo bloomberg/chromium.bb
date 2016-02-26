@@ -48,6 +48,8 @@ class SYNC_EXPORT AttachmentServiceProxy : public AttachmentService {
       const scoped_refptr<base::SequencedTaskRunner>& wrapped_task_runner,
       const base::WeakPtr<syncer::AttachmentService>& wrapped);
 
+  AttachmentServiceProxy(const AttachmentServiceProxy& other);
+
   ~AttachmentServiceProxy() override;
 
   void GetOrDownloadAttachments(const AttachmentIdList& attachment_ids,

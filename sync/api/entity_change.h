@@ -25,6 +25,7 @@ class SYNC_EXPORT EntityChange {
   static EntityChange CreateUpdate(std::string client_tag, EntityDataPtr data);
   static EntityChange CreateDelete(std::string client_tag);
 
+  EntityChange(const EntityChange& other);
   virtual ~EntityChange();
 
   std::string client_tag() const { return client_tag_; }

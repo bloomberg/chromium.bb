@@ -32,6 +32,7 @@ struct SYNC_EXPORT ConfigurationParams {
       const ModelSafeRoutingInfo& routing_info,
       const base::Closure& ready_task,
       const base::Closure& retry_task);
+  ConfigurationParams(const ConfigurationParams& other);
   ~ConfigurationParams();
 
   // Source for the configuration.
@@ -48,6 +49,7 @@ struct SYNC_EXPORT ConfigurationParams {
 
 struct SYNC_EXPORT ClearParams {
   explicit ClearParams(const base::Closure& report_success_task);
+  ClearParams(const ClearParams& other);
   ~ClearParams();
 
   // Callback to invoke on successful completion.

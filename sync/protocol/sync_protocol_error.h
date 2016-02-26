@@ -84,6 +84,7 @@ struct SYNC_EXPORT SyncProtocolError {
   ClientAction action;
   ModelTypeSet error_data_types;
   SyncProtocolError();
+  SyncProtocolError(const SyncProtocolError& other);
   ~SyncProtocolError();
   base::DictionaryValue* ToValue() const;
 };

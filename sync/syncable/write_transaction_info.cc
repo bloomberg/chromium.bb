@@ -25,6 +25,9 @@ WriteTransactionInfo::WriteTransactionInfo(
 WriteTransactionInfo::WriteTransactionInfo()
     : id(-1), writer(INVALID) {}
 
+WriteTransactionInfo::WriteTransactionInfo(const WriteTransactionInfo& other) =
+    default;
+
 WriteTransactionInfo::~WriteTransactionInfo() {}
 
 base::DictionaryValue* WriteTransactionInfo::ToValue(

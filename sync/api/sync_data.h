@@ -39,6 +39,7 @@ class SYNC_EXPORT SyncData {
  public:
   // Creates an empty and invalid SyncData.
   SyncData();
+  SyncData(const SyncData& other);
   ~SyncData();
 
   // Default copy and assign welcome.

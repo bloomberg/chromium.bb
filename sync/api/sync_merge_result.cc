@@ -18,6 +18,8 @@ SyncMergeResult::SyncMergeResult(ModelType type)
     pre_association_version_(0) {
 }
 
+SyncMergeResult::SyncMergeResult(const SyncMergeResult& other) = default;
+
 SyncMergeResult::~SyncMergeResult() {
 }
 

@@ -17,6 +17,8 @@ namespace syncer {
 ChangeRecord::ChangeRecord()
     : id(kInvalidId), action(ACTION_ADD) {}
 
+ChangeRecord::ChangeRecord(const ChangeRecord& other) = default;
+
 ChangeRecord::~ChangeRecord() {}
 
 scoped_ptr<base::DictionaryValue> ChangeRecord::ToValue() const {

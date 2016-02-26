@@ -13,6 +13,8 @@ JsEventDetails::JsEventDetails() {}
 JsEventDetails::JsEventDetails(base::DictionaryValue* details)
     : details_(details) {}
 
+JsEventDetails::JsEventDetails(const JsEventDetails& other) = default;
+
 JsEventDetails::~JsEventDetails() {}
 
 const base::DictionaryValue& JsEventDetails::Get() const {

@@ -24,6 +24,8 @@ EntryKernel::EntryKernel() : dirty_(false) {
   }
 }
 
+EntryKernel::EntryKernel(const EntryKernel& other) = default;
+
 EntryKernel::~EntryKernel() {}
 
 ModelType EntryKernel::GetModelType() const {

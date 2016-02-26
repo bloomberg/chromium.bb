@@ -58,6 +58,7 @@ class SYNC_EXPORT InMemoryAttachmentStore : public AttachmentStoreBackend,
   struct AttachmentEntry {
     AttachmentEntry(const Attachment& attachment,
                     AttachmentStore::Component initial_reference_component);
+    AttachmentEntry(const AttachmentEntry& other);
     ~AttachmentEntry();
 
     Attachment attachment;

@@ -27,6 +27,7 @@ namespace syncer {
 // equivalent.
 class SYNC_EXPORT AttachmentId {
  public:
+  AttachmentId(const AttachmentId& other);
   ~AttachmentId();
 
   // Default copy and assignment are welcome.

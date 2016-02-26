@@ -26,6 +26,7 @@ namespace syncer {
 // It is cheap to copy Attachments. Feel free to store and return by value.
 class SYNC_EXPORT Attachment {
  public:
+  Attachment(const Attachment& other);
   ~Attachment();
 
   // Default copy and assignment are welcome.

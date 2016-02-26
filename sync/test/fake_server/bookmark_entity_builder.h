@@ -21,6 +21,8 @@ class BookmarkEntityBuilder {
                         const std::string& originator_cache_guid,
                         const std::string& originator_client_item_id);
 
+  BookmarkEntityBuilder(const BookmarkEntityBuilder& other);
+
   ~BookmarkEntityBuilder();
 
   // Sets the parent ID of the bookmark to be built. If this is not called,

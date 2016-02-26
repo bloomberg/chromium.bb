@@ -22,6 +22,9 @@ DataTypeAssociationStats::DataTypeAssociationStats()
     had_error(false) {
 }
 
+DataTypeAssociationStats::DataTypeAssociationStats(
+    const DataTypeAssociationStats& other) = default;
+
 DataTypeAssociationStats::~DataTypeAssociationStats() {
 }
 

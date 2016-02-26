@@ -42,6 +42,9 @@ BookmarkEntityBuilder::BookmarkEntityBuilder(
       originator_client_item_id_(originator_client_item_id) {
 }
 
+BookmarkEntityBuilder::BookmarkEntityBuilder(
+    const BookmarkEntityBuilder& other) = default;
+
 BookmarkEntityBuilder::~BookmarkEntityBuilder() {
 }
 

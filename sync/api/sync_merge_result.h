@@ -24,6 +24,7 @@ class SYNC_EXPORT SyncMergeResult {
  public:
   // Initialize an empty merge result for model type |type|.
   explicit SyncMergeResult(ModelType type);
+  SyncMergeResult(const SyncMergeResult& other);
   ~SyncMergeResult();
 
   // Default copy and assign welcome.

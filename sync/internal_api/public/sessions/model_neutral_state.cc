@@ -25,6 +25,8 @@ ModelNeutralState::ModelNeutralState()
       items_committed(false) {
 }
 
+ModelNeutralState::ModelNeutralState(const ModelNeutralState& other) = default;
+
 ModelNeutralState::~ModelNeutralState() {}
 
 bool HasSyncerError(const ModelNeutralState& state) {

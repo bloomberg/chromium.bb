@@ -107,12 +107,15 @@ ConfigurationParams::ConfigurationParams(
       retry_task(retry_task) {
   DCHECK(!ready_task.is_null());
 }
+ConfigurationParams::ConfigurationParams(const ConfigurationParams& other) =
+    default;
 ConfigurationParams::~ConfigurationParams() {}
 
 ClearParams::ClearParams(const base::Closure& report_success_task)
     : report_success_task(report_success_task) {
   DCHECK(!report_success_task.is_null());
 }
+ClearParams::ClearParams(const ClearParams& other) = default;
 ClearParams::~ClearParams() {}
 
 SyncSchedulerImpl::WaitInterval::WaitInterval()

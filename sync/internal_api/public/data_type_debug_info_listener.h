@@ -14,6 +14,7 @@ namespace syncer {
 
 struct SYNC_EXPORT DataTypeConfigurationStats {
   DataTypeConfigurationStats();
+  DataTypeConfigurationStats(const DataTypeConfigurationStats& other);
   ~DataTypeConfigurationStats();
 
   // The datatype that was configured.

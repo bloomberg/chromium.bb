@@ -11,6 +11,8 @@
 
 namespace syncer {
 
+Attachment::Attachment(const Attachment& other) = default;
+
 Attachment::~Attachment() {}
 
 // Static.

@@ -49,6 +49,7 @@ struct SYNC_EXPORT ChangeRecord {
     ACTION_UPDATE,
   };
   ChangeRecord();
+  ChangeRecord(const ChangeRecord& other);
   ~ChangeRecord();
 
   scoped_ptr<base::DictionaryValue> ToValue() const;

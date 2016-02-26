@@ -77,6 +77,8 @@ SyncData::SyncData(int64_t id,
       attachment_service_(attachment_service),
       is_valid_(true) {}
 
+SyncData::SyncData(const SyncData& other) = default;
+
 SyncData::~SyncData() {}
 
 // Static.

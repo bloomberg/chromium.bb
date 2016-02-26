@@ -156,6 +156,9 @@ InMemoryAttachmentStore::AttachmentEntry::AttachmentEntry(
   components.insert(initial_reference_component);
 }
 
+InMemoryAttachmentStore::AttachmentEntry::AttachmentEntry(
+    const AttachmentEntry& other) = default;
+
 InMemoryAttachmentStore::AttachmentEntry::~AttachmentEntry() {
 }
 

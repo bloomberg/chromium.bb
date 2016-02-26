@@ -28,6 +28,8 @@ EntityChange::EntityChange(std::string client_tag,
                            EntityDataPtr data)
     : client_tag_(client_tag), type_(type), data_(data) {}
 
+EntityChange::EntityChange(const EntityChange& other) = default;
+
 EntityChange::~EntityChange() {}
 
 }  // namespace syncer_v2

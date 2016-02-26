@@ -66,6 +66,7 @@ class SyncSessionSnapshot;
 // Contains everything needed to talk to and identify a user account.
 struct SYNC_EXPORT SyncCredentials {
   SyncCredentials();
+  SyncCredentials(const SyncCredentials& other);
   ~SyncCredentials();
 
   // Account_id of signed in account.

@@ -23,6 +23,7 @@ struct WriteTransactionInfo {
                        WriterTag writer,
                        ImmutableEntryKernelMutationMap mutations);
   WriteTransactionInfo();
+  WriteTransactionInfo(const WriteTransactionInfo& other);
   ~WriteTransactionInfo();
 
   // Caller owns the return value.

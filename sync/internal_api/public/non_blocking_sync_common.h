@@ -21,6 +21,7 @@ static const int64_t kUncommittedVersion = -1;
 
 struct SYNC_EXPORT CommitRequestData {
   CommitRequestData();
+  CommitRequestData(const CommitRequestData& other);
   ~CommitRequestData();
 
   EntityDataPtr entity;
@@ -44,6 +45,7 @@ struct SYNC_EXPORT CommitResponseData {
 
 struct SYNC_EXPORT UpdateResponseData {
   UpdateResponseData();
+  UpdateResponseData(const UpdateResponseData& other);
   ~UpdateResponseData();
 
   EntityDataPtr entity;

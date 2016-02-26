@@ -8,6 +8,8 @@ namespace syncer {
 
 SyncCredentials::SyncCredentials() {}
 
+SyncCredentials::SyncCredentials(const SyncCredentials& other) = default;
+
 SyncCredentials::~SyncCredentials() {}
 
 SyncManager::ChangeDelegate::~ChangeDelegate() {}

@@ -46,6 +46,9 @@ AttachmentServiceProxy::AttachmentServiceProxy(
   DCHECK(core_.get());
 }
 
+AttachmentServiceProxy::AttachmentServiceProxy(
+    const AttachmentServiceProxy& other) = default;
+
 AttachmentServiceProxy::~AttachmentServiceProxy() {
 }
 

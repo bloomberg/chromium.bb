@@ -25,6 +25,8 @@ class SYNC_EXPORT JsEventDetails {
   // Takes over the data in |details|, leaving |details| empty.
   explicit JsEventDetails(base::DictionaryValue* details);
 
+  JsEventDetails(const JsEventDetails& other);
+
   ~JsEventDetails();
 
   const base::DictionaryValue& Get() const;
