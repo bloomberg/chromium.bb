@@ -21,6 +21,7 @@ import org.chromium.chrome.browser.EmbedContentViewActivity;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.sessions.SessionTabHelper;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.components.variations.VariationsAssociatedData;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.common.Referrer;
 
@@ -30,6 +31,15 @@ import org.chromium.content_public.common.Referrer;
 public class DataUseTabUIManager {
 
     private static final String SHARED_PREF_DATA_USE_DIALOG_OPT_OUT = "data_use_dialog_opt_out";
+    private static final String FIELD_TRIAL_NAME = "ExternalDataUseObserver";
+
+    /**
+     * Data use ended dialog will not be shown if {@link DISABLE_DATA_USE_ENDED_DIALOG_PARAM}
+     * fieldtrial parameter is set to {@value DISABLE_DATA_USE_ENDED_DIALOG_PARAM_VALUE}.
+     */
+    private static final String DISABLE_DATA_USE_ENDED_DIALOG_PARAM =
+            "disable_data_use_ended_dialog";
+    private static final String DISABLE_DATA_USE_ENDED_DIALOG_PARAM_VALUE = "true";
 
     /**
      * Represents the possible user actions with the data use snackbars and dialog. This must
@@ -126,7 +136,7 @@ public class DataUseTabUIManager {
     public static boolean shouldOverrideUrlLoading(Activity activity,
             final Tab tab, final String url, final int pageTransitionType,
             final String referrerUrl) {
-        if (!getOptedOutOfDataUseDialog(activity)
+        if (!shouldShowDataUseEndedSnackbar(activity)
                 && wouldDataUseTrackingEnd(tab, url, pageTransitionType)) {
             startDataUseDialog(activity, tab, url, pageTransitionType, referrerUrl);
             return true;
@@ -197,14 +207,19 @@ public class DataUseTabUIManager {
     }
 
     /**
-     * Returns true if the user has opted out of seeing the data use dialog.
+     * Returns true if the data use ended snackbar should be shown instead of the dialog. The
+     * snackbar will be shown if the user has opted out of seeing the data use ended dialog or if
+     * the dialog is diabled by the fieldtrial.
      *
      * @param context An Android context.
-     * @return true If the user has opted out of seeing the data use dialog.
+     * @return true If the data use ended snackbar should be shown.
      */
-    public static boolean getOptedOutOfDataUseDialog(Context context) {
+    public static boolean shouldShowDataUseEndedSnackbar(Context context) {
         return PreferenceManager.getDefaultSharedPreferences(context).getBoolean(
-                SHARED_PREF_DATA_USE_DIALOG_OPT_OUT, false);
+                       SHARED_PREF_DATA_USE_DIALOG_OPT_OUT, false)
+                || DISABLE_DATA_USE_ENDED_DIALOG_PARAM_VALUE.equals(
+                           VariationsAssociatedData.getVariationParamValue(
+                                   FIELD_TRIAL_NAME, DISABLE_DATA_USE_ENDED_DIALOG_PARAM));
     }
 
     /**

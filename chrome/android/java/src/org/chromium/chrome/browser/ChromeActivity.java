@@ -485,7 +485,8 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             public void didFirstVisuallyNonEmptyPaint(Tab tab) {
                 if (DataUseTabUIManager.checkAndResetDataUseTrackingStarted(tab)) {
                     mDataUseSnackbarController.showDataUseTrackingStartedBar();
-                } else if (DataUseTabUIManager.getOptedOutOfDataUseDialog(getApplicationContext())
+                } else if (DataUseTabUIManager.shouldShowDataUseEndedSnackbar(
+                                   getApplicationContext())
                         && DataUseTabUIManager.checkAndResetDataUseTrackingEnded(tab)) {
                     mDataUseSnackbarController.showDataUseTrackingEndedBar();
                 }
