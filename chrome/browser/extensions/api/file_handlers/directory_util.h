@@ -27,12 +27,6 @@ class FileSystemURL;
 namespace extensions {
 namespace app_file_handler_util {
 
-// The callback parameter contains the result and is required for support of
-// non native local path directories that require a callback.
-void EntryIsDirectory(Profile* profile,
-                      const base::FilePath& path,
-                      const base::Callback<void(bool)>& callback);
-
 class IsDirectoryCollector {
  public:
   typedef base::Callback<void(scoped_ptr<std::set<base::FilePath>>)>

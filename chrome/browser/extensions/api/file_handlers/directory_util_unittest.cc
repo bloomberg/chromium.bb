@@ -24,10 +24,6 @@ namespace {
 
 const char kRandomPath[] = "/random/path";
 
-void OnEntryIsDirectoryResult(bool* output, bool is_directory) {
-  *output = is_directory;
-}
-
 void OnCollectForEntriesPath(
     std::set<base::FilePath>* output,
     scoped_ptr<std::set<base::FilePath>> path_directory_set) {
@@ -52,32 +48,6 @@ class IsDirectoryUtilTest : public testing::Test {
   base::FilePath dir_path_;
   base::FilePath file_path_;
 };
-
-TEST_F(IsDirectoryUtilTest, EntryIsDirectory) {
-  {
-    bool result = false;
-    EntryIsDirectory(&profile_, dir_path_,
-                     base::Bind(&OnEntryIsDirectoryResult, &result));
-    content::RunAllBlockingPoolTasksUntilIdle();
-    EXPECT_TRUE(result);
-  }
-
-  {
-    bool result = true;
-    EntryIsDirectory(&profile_, base::FilePath::FromUTF8Unsafe(kRandomPath),
-                     base::Bind(&OnEntryIsDirectoryResult, &result));
-    content::RunAllBlockingPoolTasksUntilIdle();
-    EXPECT_FALSE(result);
-  }
-
-  {
-    bool result = true;
-    EntryIsDirectory(&profile_, file_path_,
-                     base::Bind(&OnEntryIsDirectoryResult, &result));
-    content::RunAllBlockingPoolTasksUntilIdle();
-    EXPECT_FALSE(result);
-  }
-}
 
 TEST_F(IsDirectoryUtilTest, CollectForEntriesPaths) {
   std::vector<base::FilePath> paths;

@@ -19,6 +19,23 @@
 namespace extensions {
 namespace app_file_handler_util {
 
+namespace {
+
+void GetIsDirectoryFromFileInfo(const base::FilePath& path,
+                                bool* is_directory) {
+  base::File::Info file_info;
+  *is_directory = GetFileInfo(path, &file_info) && file_info.is_directory;
+}
+
+void OnGetIsDirectoryFromFileInfoCompleted(
+    scoped_ptr<bool> is_directory,
+    const base::Callback<void(bool)>& callback) {
+  callback.Run(*is_directory);
+}
+
+// The callback parameter contains the result and is required to support
+// both native local directories to avoid UI thread and non native local
+// path directories for the IsNonNativeLocalPathDirectory API.
 void EntryIsDirectory(Profile* profile,
                       const base::FilePath& path,
                       const base::Callback<void(bool)>& callback) {
@@ -29,11 +46,17 @@ void EntryIsDirectory(Profile* profile,
   }
 #endif
 
-  base::File::Info file_info;
-  bool is_directory = GetFileInfo(path, &file_info) && file_info.is_directory;
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, is_directory));
+  scoped_ptr<bool> is_directory(new bool);
+  bool* const is_directory_ptr = is_directory.get();
+
+  content::BrowserThread::PostBlockingPoolTaskAndReply(
+      FROM_HERE,
+      base::Bind(&GetIsDirectoryFromFileInfo, path, is_directory_ptr),
+      base::Bind(&OnGetIsDirectoryFromFileInfoCompleted,
+                 base::Passed(&is_directory), callback));
 }
+
+}  // namespace
 
 IsDirectoryCollector::IsDirectoryCollector(Profile* profile)
     : profile_(profile), left_(0), weak_ptr_factory_(this) {}
