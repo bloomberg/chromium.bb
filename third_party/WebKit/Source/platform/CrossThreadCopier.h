@@ -156,6 +156,11 @@ struct CrossThreadCopier<WeakMember<T>*> {
     }
 };
 
+template<typename T>
+struct CrossThreadCopier<CrossThreadWeakPersistentThisPointer<T>> : public CrossThreadCopierPassThrough<CrossThreadWeakPersistentThisPointer<T>> {
+    STATIC_ONLY(CrossThreadCopier);
+};
+
 template <>
 struct CrossThreadCopier<KURL> {
     STATIC_ONLY(CrossThreadCopier);

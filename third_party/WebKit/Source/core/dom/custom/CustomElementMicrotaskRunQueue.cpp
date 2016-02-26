@@ -37,22 +37,14 @@ void CustomElementMicrotaskRunQueue::enqueue(HTMLImportLoader* parentLoader, Pas
     requestDispatchIfNeeded();
 }
 
-void CustomElementMicrotaskRunQueue::dispatchIfAlive(WeakPtrWillBeWeakPersistent<CustomElementMicrotaskRunQueue> self)
-{
-    if (self.get()) {
-        RefPtrWillBeRawPtr<CustomElementMicrotaskRunQueue> protect(self.get());
-        self->dispatch();
-    }
-}
-
 void CustomElementMicrotaskRunQueue::requestDispatchIfNeeded()
 {
     if (m_dispatchIsPending || isEmpty())
         return;
 #if ENABLE(OILPAN)
-    Microtask::enqueueMicrotask(WTF::bind(&CustomElementMicrotaskRunQueue::dispatchIfAlive, WeakPersistent<CustomElementMicrotaskRunQueue>(this)));
+    Microtask::enqueueMicrotask(WTF::bind(&CustomElementMicrotaskRunQueue::dispatch, WeakPersistentThisPointer<CustomElementMicrotaskRunQueue>(this)));
 #else
-    Microtask::enqueueMicrotask(WTF::bind(&CustomElementMicrotaskRunQueue::dispatchIfAlive, m_weakFactory.createWeakPtr()));
+    Microtask::enqueueMicrotask(WTF::bind(&CustomElementMicrotaskRunQueue::dispatch, m_weakFactory.createWeakPtr()));
 #endif
     m_dispatchIsPending = true;
 }
@@ -65,6 +57,7 @@ DEFINE_TRACE(CustomElementMicrotaskRunQueue)
 
 void CustomElementMicrotaskRunQueue::dispatch()
 {
+    RefPtrWillBeRawPtr<CustomElementMicrotaskRunQueue> protect(this);
     m_dispatchIsPending = false;
     m_syncQueue->dispatch();
     if (m_syncQueue->isEmpty())

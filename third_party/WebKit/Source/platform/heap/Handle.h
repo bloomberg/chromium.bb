@@ -1321,6 +1321,16 @@ private:
 // (like CrossThreadWeakPersistent<>), drop the restriction on weak persistent
 // use by function closures (and rename this ad-hoc type.)
 template<typename T>
+class WeakPersistentThisPointer {
+    STACK_ALLOCATED();
+public:
+    explicit WeakPersistentThisPointer(T* value) : m_value(value) { }
+    WeakPersistent<T> value() const { return m_value; }
+private:
+    WeakPersistent<T> m_value;
+};
+
+template<typename T>
 class CrossThreadWeakPersistentThisPointer {
     STACK_ALLOCATED();
 public:
@@ -1452,6 +1462,22 @@ template<typename T>
 struct ParamStorageTraits<RawPtr<T>> : public PointerParamStorageTraits<T*, blink::IsGarbageCollectedType<T>::value> {
     STATIC_ONLY(ParamStorageTraits);
     static_assert(sizeof(T), "T must be fully defined");
+};
+
+template<typename T>
+struct ParamStorageTraits<blink::WeakPersistentThisPointer<T>> {
+    STATIC_ONLY(ParamStorageTraits);
+    static_assert(sizeof(T), "T must be fully defined");
+    using StorageType = blink::WeakPersistent<T>;
+
+    static StorageType wrap(const blink::WeakPersistentThisPointer<T>& value) { return value.value(); }
+
+    // WTF::FunctionWrapper<> handles WeakPtr<>, so recast this weak persistent
+    // into it.
+    //
+    // TODO(sof): remove this hack once wtf/Functional.h can also work with a type like
+    // WeakPersistent<>.
+    static WeakPtr<T> unwrap(const StorageType& value) { return WeakPtr<T>(WeakReference<T>::create(value.get())); }
 };
 
 template<typename T>
