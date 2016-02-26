@@ -12,7 +12,7 @@
     <style>
       :root {
         --settings-secondary: {
-          color: #969696;
+          color: var(--paper-grey-500);
           font-weight: 400;
         }
       }
@@ -28,11 +28,11 @@
       }
 
       iron-icon {
-        color: #969696;
+        color: var(--paper-grey-300);
       }
 
       iron-icon[icon=done] {
-        color: rgb(0, 128, 0);
+        color: var(--google-green-500);
       }
 
       paper-button {
@@ -41,7 +41,7 @@
       }
 
       paper-button[toggles][active] {
-        background-color: LightGray;
+        background-color: var(--paper-grey-300);
       }
 
       span ~ a {
@@ -52,9 +52,8 @@
       [is='action-link']:active,
       [is='action-link']:hover,
       [is='action-link']:visited,
-      paper-button.primary-button {
-        /* TODO(dbeam): change all other colors in this file into --google or
-         * --paper where applicable. */
+      paper-button.primary-button,
+      paper-button.tertiary-button {
         color: var(--google-blue-700);
       }
 
@@ -74,7 +73,7 @@
 
       paper-button.secondary-button {
         --paper-button: {
-          color: #5a5a5a;
+          color: var(--paper-grey-700);
           text-decoration: none;
           font-weight: 500;
         };
@@ -82,7 +81,6 @@
 
       paper-button.tertiary-button {
         --paper-button: {
-          color: rgb(51, 103, 214);
           font-weight: 400;
           text-decoration: none;
         };
@@ -91,7 +89,7 @@
       paper-radio-button {
         --paper-radio-button-checked-color: var(--google-blue-500);
         --paper-radio-button-label-spacing: 18px;
-        --paper-radio-button-unchecked-color: #969696;
+        --paper-radio-button-unchecked-color: var(--paper-grey-500);
         -webkit-margin-start: 2px;
       }
 
@@ -137,9 +135,8 @@
       /* This button has no ink ripple */
       .list-item.list-button {
         @apply(--layout-center);
-        color: rgb(66, 133, 244);
+        color: var(--google-blue-500);
         font-weight: 500;
-        text-decoration: none;
       }
 
       .list-item iron-icon {
@@ -163,13 +160,6 @@
 
       .list-item > paper-icon-item {
         padding: 0;
-      }
-
-      /* This button has no ink ripple. */
-      .list-item.list-button {
-        @apply(--layout-center);
-        color: rgb(66, 133, 244);
-        font-weight: 500;
       }
 
       .settings-card {
