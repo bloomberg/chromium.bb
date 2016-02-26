@@ -2149,6 +2149,8 @@ ping_handler(struct weston_surface *surface, uint32_t serial)
 		return;
 	if (shsurf->surface == shsurf->shell->grab_surface)
 		return;
+	if (!shsurf->owner)
+		return;
 
 	handle_xdg_ping(shsurf, serial);
 }
@@ -3778,7 +3780,8 @@ shell_get_shell_surface(struct wl_client *client,
 	wl_resource_set_implementation(shsurf->resource,
 				       &shell_surface_implementation,
 				       shsurf, shell_destroy_shell_surface);
-	wl_list_init(wl_resource_get_link(shsurf->resource));
+	wl_list_insert(&sc->surface_list,
+		       wl_resource_get_link(shsurf->resource));
 }
 
 static bool
@@ -5864,6 +5867,8 @@ handle_shell_client_destroy(struct wl_listener *listener, void *data)
 {
 	struct shell_client *sc =
 		container_of(listener, struct shell_client, destroy_listener);
+	struct wl_resource *shsurf_resource;
+	struct shell_surface *shsurf;
 
 	if (sc->ping_timer)
 		wl_event_source_remove(sc->ping_timer);
@@ -5872,6 +5877,10 @@ handle_shell_client_destroy(struct wl_listener *listener, void *data)
 	 * head of the surface list so we don't use that freed list node
 	 * during surface clean up later on.
 	 */
+	wl_resource_for_each(shsurf_resource, &sc->surface_list) {
+		shsurf = wl_resource_get_user_data(shsurf_resource);
+		shsurf->owner = NULL;
+	}
 	wl_list_remove(&sc->surface_list);
 
 	free(sc);
