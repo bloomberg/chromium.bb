@@ -39,7 +39,10 @@ MediaRouterElementsBrowserTest.prototype = {
 };
 
 // Runs all tests.
-TEST_F('MediaRouterElementsBrowserTest', 'MediaRouterElementsTest', function() {
+// TODO(crbug.com/590177, crbug.com/582649): This test is disabled, as it
+// consistently fails on Linux Tests, and is flaky on Win7 and other bots.
+TEST_F('MediaRouterElementsBrowserTest', 'DISABLED_MediaRouterElementsTest',
+    function() {
   // Register mocha tests for each element.
   issue_banner.registerTests();
   media_router_container.registerTests();
