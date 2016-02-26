@@ -279,6 +279,13 @@ void ContentSettingsRegistry::Init() {
            WhitelistedSchemes(), ValidSettings(),
            WebsiteSettingsInfo::TOP_LEVEL_DOMAIN_ONLY_SCOPE,
            ContentSettingsInfo::INHERIT_IN_INCOGNITO);
+
+  Register(CONTENT_SETTINGS_TYPE_BLUETOOTH_GUARD, "bluetooth-guard",
+           CONTENT_SETTING_ASK, WebsiteSettingsInfo::UNSYNCABLE,
+           WhitelistedSchemes(),
+           ValidSettings(CONTENT_SETTING_ASK, CONTENT_SETTING_BLOCK),
+           WebsiteSettingsInfo::REQUESTING_ORIGIN_AND_TOP_LEVEL_ORIGIN_SCOPE,
+           ContentSettingsInfo::INHERIT_IN_INCOGNITO);
 }
 
 void ContentSettingsRegistry::Register(

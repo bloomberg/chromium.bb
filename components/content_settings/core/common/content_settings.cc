@@ -53,6 +53,7 @@ ContentSettingsType kHistogramOrder[] = {
     CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT,
     CONTENT_SETTINGS_TYPE_DURABLE_STORAGE,
     CONTENT_SETTINGS_TYPE_KEYGEN,
+    CONTENT_SETTINGS_TYPE_BLUETOOTH_GUARD,
 };
 
 int ContentSettingTypeToHistogramValue(ContentSettingsType content_setting,

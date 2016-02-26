@@ -44,6 +44,7 @@ enum class WebBluetoothError {
     NoBluetoothAdapter,
     ChosenDeviceVanished,
     ChooserCancelled,
+    ChooserDisabled,
     ChooserDeniedPermission,
     ServiceNotFound,
     CharacteristicNotFound,

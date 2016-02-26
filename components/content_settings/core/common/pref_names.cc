@@ -38,6 +38,8 @@ const char kManagedDefaultPopupsSetting[] =
     "profile.managed_default_content_settings.popups";
 const char kManagedDefaultKeygenSetting[] =
     "profile.managed_default_content_settings.keygen";
+const char kManagedDefaultWebBluetoothGuardSetting[] =
+    "profile.managed_default_content_settings.web_bluetooth_guard";
 
 // Preferences that are exclusively used to store managed
 // content settings patterns.

@@ -137,7 +137,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 319
+#   For your editing convenience: highest ID currently used: 320
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -3074,6 +3074,38 @@
           'desc': '''Allows you to set whether websites are allowed to get access to media capture devices. Access to media capture devices can be allowed by default, or the user can be asked every time a website wants to get access to media capture devices.
 
           If this policy is left not set, 'PromptOnAccess' will be used and the user will be able to change it.''',
+        },
+        {
+          'name': 'DefaultWebBluetoothGuardSetting',
+          'type': 'int-enum',
+          'schema': {
+            'type': 'integer',
+            'enum': [ 2, 3 ],
+          },
+          'items': [
+            {
+              'name': 'BlockWebBluetooth',
+              'value': 2,
+              'caption': '''Do not allow any site to request access to Bluetooth devices via the Web Bluetooth API''',
+            },
+            {
+              'name': 'AskWebBluetooth',
+              'value': 3,
+              'caption': '''Allow sites to ask the user to grant access to a nearby Bluetooth device''',
+            },
+          ],
+          'supported_on': ['chrome_os:50-', 'android:50-', 'chrome.*:50-'],
+          'features': {
+            'dynamic_refresh': True,
+            'per_profile': True,
+          },
+          'example_value': 2,
+          'id': 320,
+          'caption': '''Control use of the Web Bluetooth API''',
+          'tags': ['website-sharing'],
+          'desc': '''Allows you to set whether websites are allowed to get access to nearby Bluetooth devices. Access can be completely blocked, or the user can be asked every time a website wants to get access to nearby Bluetooth devices.
+
+          If this policy is left not set, '3' will be used, and the user will be able to change it.''',
         },
         {
           'name': 'DefaultKeygenSetting',

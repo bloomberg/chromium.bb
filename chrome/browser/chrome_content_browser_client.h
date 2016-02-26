@@ -172,6 +172,9 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
 #endif  // defined(ENABLE_WEBRTC)
 
   bool AllowKeygen(const GURL& url, content::ResourceContext* context) override;
+  bool AllowWebBluetooth(content::BrowserContext* browser_context,
+                         const url::Origin& requesting_origin,
+                         const url::Origin& embedding_origin) override;
 
   net::URLRequestContext* OverrideRequestContextForURL(
       const GURL& url,

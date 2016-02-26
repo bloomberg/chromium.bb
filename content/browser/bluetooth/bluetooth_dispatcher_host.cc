@@ -25,6 +25,7 @@
 #include "content/browser/bluetooth/first_device_bluetooth_chooser.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/common/bluetooth/bluetooth_messages.h"
+#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "device/bluetooth/bluetooth_adapter.h"
@@ -1081,18 +1082,25 @@ void BluetoothDispatcherHost::OnRequestDeviceImpl(
 
   RenderFrameHostImpl* render_frame_host =
       RenderFrameHostImpl::FromID(render_process_id_, frame_routing_id);
+  WebContents* web_contents =
+      WebContents::FromRenderFrameHost(render_frame_host);
 
-  if (!render_frame_host) {
-    DLOG(WARNING)
-        << "Got a requestDevice IPC without a matching RenderFrameHost: "
-        << render_process_id_ << ", " << frame_routing_id;
+  if (!render_frame_host || !web_contents) {
+    DLOG(WARNING) << "Got a requestDevice IPC without a matching "
+                  << "RenderFrameHost or WebContents: " << render_process_id_
+                  << ", " << frame_routing_id;
     RecordRequestDeviceOutcome(UMARequestDeviceOutcome::NO_RENDER_FRAME);
     Send(new BluetoothMsg_RequestDeviceError(
         thread_id, request_id, WebBluetoothError::RequestDeviceWithoutFrame));
     return;
   }
 
-  if (render_frame_host->GetLastCommittedOrigin().unique()) {
+  const url::Origin requesting_origin =
+      render_frame_host->GetLastCommittedOrigin();
+  const url::Origin embedding_origin =
+      web_contents->GetMainFrame()->GetLastCommittedOrigin();
+
+  if (requesting_origin.unique()) {
     VLOG(1) << "Request device with unique origin.";
     Send(new BluetoothMsg_RequestDeviceError(
         thread_id, request_id,
@@ -1118,23 +1126,29 @@ void BluetoothDispatcherHost::OnRequestDeviceImpl(
     return;
   }
 
+  if (!GetContentClient()->browser()->AllowWebBluetooth(
+          web_contents->GetBrowserContext(), requesting_origin,
+          embedding_origin)) {
+    RecordRequestDeviceOutcome(
+        UMARequestDeviceOutcome::BLUETOOTH_CHOOSER_GLOBALLY_DISABLED);
+    Send(new BluetoothMsg_RequestDeviceError(
+        thread_id, request_id, WebBluetoothError::ChooserDisabled));
+    return;
+  }
+
   // Create storage for the information that backs the chooser, and show the
   // chooser.
-  RequestDeviceSession* const session =
-      new RequestDeviceSession(thread_id, request_id, frame_routing_id,
-                               render_frame_host->GetLastCommittedOrigin(),
-                               filters, optional_services_blacklist_filtered);
+  RequestDeviceSession* const session = new RequestDeviceSession(
+      thread_id, request_id, frame_routing_id, requesting_origin, filters,
+      optional_services_blacklist_filtered);
   int chooser_id = request_device_sessions_.Add(session);
 
   BluetoothChooser::EventHandler chooser_event_handler =
       base::Bind(&BluetoothDispatcherHost::OnBluetoothChooserEvent,
                  weak_ptr_on_ui_thread_, chooser_id);
-  if (WebContents* web_contents =
-          WebContents::FromRenderFrameHost(render_frame_host)) {
-    if (WebContentsDelegate* delegate = web_contents->GetDelegate()) {
-      session->chooser = delegate->RunBluetoothChooser(render_frame_host,
-                                                       chooser_event_handler);
-    }
+  if (WebContentsDelegate* delegate = web_contents->GetDelegate()) {
+    session->chooser =
+        delegate->RunBluetoothChooser(render_frame_host, chooser_event_handler);
   }
   if (!session->chooser) {
     LOG(WARNING)

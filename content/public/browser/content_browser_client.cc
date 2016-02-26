@@ -222,6 +222,13 @@ bool ContentBrowserClient::AllowKeygen(const GURL& url,
   return true;
 }
 
+bool ContentBrowserClient::AllowWebBluetooth(
+    content::BrowserContext* browser_context,
+    const url::Origin& requesting_origin,
+    const url::Origin& embedding_origin) {
+  return true;
+}
+
 QuotaPermissionContext* ContentBrowserClient::CreateQuotaPermissionContext() {
   return nullptr;
 }

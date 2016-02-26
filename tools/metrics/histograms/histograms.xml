@@ -5592,6 +5592,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="ContentSettings.DefaultWebBluetoothGuardSetting"
+    enum="ContentSetting">
+  <owner>jyasskin@chromium.org</owner>
+  <summary>
+    The default permission setting for Web Bluetooth at profile open.
+  </summary>
+</histogram>
+
 <histogram name="ContentSettings.LastSettingParsed" enum="LastSettingParsed">
   <obsolete>
     Deprecated 2015-10-05 in Issue 433475. Histogram was used temorarily for
@@ -63712,6 +63720,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="319"
       label="Allow the auto launched with zero delay kiosk app to control
              ChromeOS version"/>
+  <int value="320" label="Control use of the Web Bluetooth API"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations" type="int">
@@ -82935,6 +82944,9 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="12" label="Bluetooth Overview Help link pressed."/>
   <int value="13" label="Adapter Off Help link pressed."/>
   <int value="14" label="Need Location Help link pressed."/>
+  <int value="15"
+      label="Chooser insta-closed because user or enterprise policy has
+             disabled it"/>
 </enum>
 
 <enum name="WebCertVerifyAgreement" type="int">

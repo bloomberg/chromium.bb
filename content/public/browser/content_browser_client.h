@@ -84,6 +84,10 @@ namespace ui {
 class SelectFilePolicy;
 }
 
+namespace url {
+class Origin;
+}
+
 namespace storage {
 class ExternalMountPoints;
 class FileSystemBackend;
@@ -409,6 +413,12 @@ class CONTENT_EXPORT ContentBrowserClient {
 
   // Allow the embedder to control whether we can use <keygen>.
   virtual bool AllowKeygen(const GURL& url, content::ResourceContext* context);
+
+  // Allow the embedder to control whether we can use Web Bluetooth.
+  // TODO(crbug.com/589228): Replace this with a use of the permission system.
+  virtual bool AllowWebBluetooth(content::BrowserContext* browser_context,
+                                 const url::Origin& requesting_origin,
+                                 const url::Origin& embedding_origin);
 
   // Allow the embedder to override the request context based on the URL for
   // certain operations, like cookie access. Returns nullptr to indicate the

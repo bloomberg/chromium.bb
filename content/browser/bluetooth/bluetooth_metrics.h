@@ -67,6 +67,7 @@ enum class UMARequestDeviceOutcome {
   BLUETOOTH_OVERVIEW_HELP_LINK_PRESSED = 12,
   ADAPTER_OFF_HELP_LINK_PRESSED = 13,
   NEED_LOCATION_HELP_LINK_PRESSED = 14,
+  BLUETOOTH_CHOOSER_GLOBALLY_DISABLED = 15,
   // NOTE: Add new requestDevice() outcomes immediately above this line. Make
   // sure to update the enum list in
   // tools/metrics/histograms/histograms.xml accordingly.

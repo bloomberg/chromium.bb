@@ -110,6 +110,7 @@
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
+#include "components/content_settings/core/common/content_settings_types.h"
 #include "components/data_reduction_proxy/content/browser/data_reduction_proxy_message_filter.h"
 #include "components/dom_distiller/core/dom_distiller_switches.h"
 #include "components/dom_distiller/core/url_constants.h"
@@ -163,6 +164,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/resources/grit/ui_resources.h"
+#include "url/gurl.h"
+#include "url/origin.h"
 
 #if defined(OS_WIN)
 #include "base/strings/string_tokenizer.h"
@@ -1986,6 +1989,21 @@ bool ChromeContentBrowserClient::AllowKeygen(
   return content_settings->GetContentSetting(
              url, url, CONTENT_SETTINGS_TYPE_KEYGEN, std::string()) ==
          CONTENT_SETTING_ALLOW;
+}
+
+bool ChromeContentBrowserClient::AllowWebBluetooth(
+    content::BrowserContext* browser_context,
+    const url::Origin& requesting_origin,
+    const url::Origin& embedding_origin) {
+  const HostContentSettingsMap* const content_settings =
+      HostContentSettingsMapFactory::GetForProfile(
+          Profile::FromBrowserContext(browser_context));
+
+  return content_settings->GetContentSetting(
+             GURL(requesting_origin.Serialize()),
+             GURL(embedding_origin.Serialize()),
+             CONTENT_SETTINGS_TYPE_BLUETOOTH_GUARD,
+             std::string()) != CONTENT_SETTING_BLOCK;
 }
 
 net::URLRequestContext*
