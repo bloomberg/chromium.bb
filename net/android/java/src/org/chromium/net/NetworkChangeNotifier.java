@@ -76,6 +76,13 @@ public class NetworkChangeNotifier {
     }
 
     @CalledByNative
+    public int getCurrentConnectionSubtype() {
+        return mAutoDetector == null
+                ? ConnectionSubtype.SUBTYPE_UNKNOWN
+                : mAutoDetector.getCurrentConnectionSubtype(mAutoDetector.getCurrentNetworkState());
+    }
+
+    @CalledByNative
     public double getCurrentMaxBandwidthInMbps() {
         return mCurrentMaxBandwidth;
     }

@@ -546,6 +546,9 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
         return mConnectivityManagerDelegate.getDefaultNetId();
     }
 
+    /**
+     * Returns the connection type for the given NetworkState.
+     */
     public int getCurrentConnectionType(NetworkState networkState) {
         if (!networkState.isConnected()) {
             return ConnectionType.CONNECTION_NONE;
@@ -589,25 +592,10 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
         }
     }
 
-    /*
-     * Returns the bandwidth of the current connection in Mbps. The result is
-     * derived from the NetInfo v3 specification's mapping from network type to
-     * max link speed. In cases where more information is available, such as wifi,
-     * that is used instead. For more on NetInfo, see http://w3c.github.io/netinfo/.
+    /**
+     * Returns the connection subtype for the given NetworkState.
      */
-    public double getCurrentMaxBandwidthInMbps(NetworkState networkState) {
-        if (getCurrentConnectionType(networkState) == ConnectionType.CONNECTION_WIFI) {
-            final int link_speed = mWifiManagerDelegate.getLinkSpeedInMbps();
-            if (link_speed != UNKNOWN_LINK_SPEED) {
-                return link_speed;
-            }
-        }
-
-        return NetworkChangeNotifier.getMaxBandwidthForConnectionSubtype(
-                getCurrentConnectionSubtype(networkState));
-    }
-
-    private int getCurrentConnectionSubtype(NetworkState networkState) {
+    public int getCurrentConnectionSubtype(NetworkState networkState) {
         if (!networkState.isConnected()) {
             return ConnectionSubtype.SUBTYPE_NONE;
         }
@@ -657,6 +645,24 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
             default:
                 return ConnectionSubtype.SUBTYPE_UNKNOWN;
         }
+    }
+
+    /**
+     * Returns the bandwidth of the current connection in Mbps. The result is
+     * derived from the NetInfo v3 specification's mapping from network type to
+     * max link speed. In cases where more information is available, such as wifi,
+     * that is used instead. For more on NetInfo, see http://w3c.github.io/netinfo/.
+     */
+    public double getCurrentMaxBandwidthInMbps(NetworkState networkState) {
+        if (getCurrentConnectionType(networkState) == ConnectionType.CONNECTION_WIFI) {
+            final int link_speed = mWifiManagerDelegate.getLinkSpeedInMbps();
+            if (link_speed != UNKNOWN_LINK_SPEED) {
+                return link_speed;
+            }
+        }
+
+        return NetworkChangeNotifier.getMaxBandwidthForConnectionSubtype(
+                getCurrentConnectionSubtype(networkState));
     }
 
     private String getCurrentWifiSSID(NetworkState networkState) {

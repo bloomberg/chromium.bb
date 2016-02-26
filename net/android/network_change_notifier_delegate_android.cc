@@ -109,6 +109,15 @@ NetworkChangeNotifierDelegateAndroid::GetCurrentConnectionType() const {
   return connection_type_;
 }
 
+NetworkChangeNotifier::ConnectionSubtype
+NetworkChangeNotifierDelegateAndroid::GetCurrentConnectionSubtype() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return ConvertConnectionSubtype(
+      Java_NetworkChangeNotifier_getCurrentConnectionSubtype(
+          base::android::AttachCurrentThread(),
+          java_network_change_notifier_.obj()));
+}
+
 void NetworkChangeNotifierDelegateAndroid::
     GetCurrentMaxBandwidthAndConnectionType(
         double* max_bandwidth_mbps,

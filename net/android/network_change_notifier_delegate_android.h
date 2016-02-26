@@ -107,6 +107,9 @@ class NET_EXPORT_PRIVATE NetworkChangeNotifierDelegateAndroid {
   NetworkHandle GetCurrentDefaultNetwork() const;
   void GetCurrentlyConnectedNetworks(NetworkList* network_list) const;
 
+  // Can only be called from the main (Java) thread.
+  NetworkChangeNotifier::ConnectionSubtype GetCurrentConnectionSubtype() const;
+
   // Initializes JNI bindings.
   static bool Register(JNIEnv* env);
 
@@ -153,4 +156,4 @@ class NET_EXPORT_PRIVATE NetworkChangeNotifierDelegateAndroid {
 
 }  // namespace net
 
-#endif  // NET_ANDROID_NETWORK_CHANGE_NOTIFIER_DELEGATE_H_
+#endif  // NET_ANDROID_NETWORK_CHANGE_NOTIFIER_DELEGATE_ANDROID_H_

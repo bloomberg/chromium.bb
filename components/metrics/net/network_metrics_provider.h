@@ -29,7 +29,7 @@ class NetworkMetricsProvider
 
  private:
   // MetricsProvider:
-  void OnDidCreateMetricsLog() override;
+  void ProvideGeneralMetrics(ChromeUserMetricsExtension* uma_proto) override;
   void ProvideSystemProfileMetrics(SystemProfileProto* system_profile) override;
 
   // ConnectionTypeObserver:

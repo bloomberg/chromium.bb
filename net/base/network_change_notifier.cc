@@ -420,7 +420,7 @@ class NetworkChangeNotifier::NetworkChangeCalculator
     : public ConnectionTypeObserver,
       public IPAddressObserver {
  public:
-  NetworkChangeCalculator(const NetworkChangeCalculatorParams& params)
+  explicit NetworkChangeCalculator(const NetworkChangeCalculatorParams& params)
       : params_(params),
         have_announced_(false),
         last_announced_connection_type_(CONNECTION_NONE),
@@ -730,14 +730,19 @@ void NetworkChangeNotifier::ShutdownHistogramWatcher() {
 }
 
 // static
+void NetworkChangeNotifier::FinalizingMetricsLogRecord() {
+  if (!g_network_change_notifier)
+    return;
+  g_network_change_notifier->OnFinalizingMetricsLogRecord();
+}
+
+// static
 void NetworkChangeNotifier::LogOperatorCodeHistogram(ConnectionType type) {
 #if defined(OS_ANDROID)
-  // On a connection type change to 2/3/4G, log the network operator MCC/MNC.
+  // On a connection type change to cellular, log the network operator MCC/MNC.
   // Log zero in other cases.
   unsigned mcc_mnc = 0;
-  if (type == NetworkChangeNotifier::CONNECTION_2G ||
-      type == NetworkChangeNotifier::CONNECTION_3G ||
-      type == NetworkChangeNotifier::CONNECTION_4G) {
+  if (NetworkChangeNotifier::IsConnectionCellular(type)) {
     // Log zero if not perfectly converted.
     if (!base::StringToUint(android::GetTelephonyNetworkOperator(), &mcc_mnc)) {
       mcc_mnc = 0;
@@ -758,7 +763,7 @@ NetworkChangeNotifier::GetAddressTracker() {
 
 // static
 bool NetworkChangeNotifier::IsOffline() {
-   return GetConnectionType() == CONNECTION_NONE;
+  return GetConnectionType() == CONNECTION_NONE;
 }
 
 // static

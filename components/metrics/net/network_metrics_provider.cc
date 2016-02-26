@@ -38,11 +38,11 @@ NetworkMetricsProvider::~NetworkMetricsProvider() {
   net::NetworkChangeNotifier::RemoveConnectionTypeObserver(this);
 }
 
-void NetworkMetricsProvider::OnDidCreateMetricsLog() {
-#if defined(OS_ANDROID)
-  net::NetworkChangeNotifier::LogOperatorCodeHistogram(
-      net::NetworkChangeNotifier::GetConnectionType());
-#endif  // OS_ANDROID
+void NetworkMetricsProvider::ProvideGeneralMetrics(
+    ChromeUserMetricsExtension*) {
+  // ProvideGeneralMetrics is called on the main thread, at the time a metrics
+  // record is being finalized.
+  net::NetworkChangeNotifier::FinalizingMetricsLogRecord();
 }
 
 void NetworkMetricsProvider::ProvideSystemProfileMetrics(

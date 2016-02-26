@@ -22630,6 +22630,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="NCN.CellularConnectionSubtype" enum="ConnectionSubtype">
+  <owner>bmcquade@chromium.org</owner>
+  <summary>
+    The connection subtype of the network the client is connected to, when the
+    client is on a cellular connection. This histogram is logged once per UMA
+    record, if the user is on a cellular connection, at the time the record is
+    finalized.
+  </summary>
+</histogram>
+
 <histogram name="NCN.CM.FastestRTTOn2G" units="ms">
   <owner>pauljensen@chromium.org</owner>
   <summary>
@@ -60784,6 +60794,42 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="0" label="Offline"/>
   <int value="1" label="Connected"/>
   <int value="2" label="Online"/>
+</enum>
+
+<enum name="ConnectionSubtype" type="int">
+  <int value="0" label="UNKNOWN"/>
+  <int value="1" label="NONE"/>
+  <int value="2" label="OTHER"/>
+  <int value="3" label="GSM"/>
+  <int value="4" label="IDEN"/>
+  <int value="5" label="CDMA"/>
+  <int value="6" label="1XRTT"/>
+  <int value="7" label="GPRS"/>
+  <int value="8" label="EDGE"/>
+  <int value="9" label="UMTS"/>
+  <int value="10" label="EVDO_REV_0"/>
+  <int value="11" label="EVDO_REV_A"/>
+  <int value="12" label="HSPA"/>
+  <int value="13" label="EVDO_REV_B"/>
+  <int value="14" label="HSDPA"/>
+  <int value="15" label="HSUPA"/>
+  <int value="16" label="EHRPD"/>
+  <int value="17" label="HSPAP"/>
+  <int value="18" label="LTE"/>
+  <int value="19" label="LTE_ADVANCED"/>
+  <int value="20" label="BLUETOOTH_1_2"/>
+  <int value="21" label="BLUETOOTH_2_1"/>
+  <int value="22" label="BLUETOOTH_3_0"/>
+  <int value="23" label="BLUETOOTH_4_0"/>
+  <int value="24" label="ETHERNET"/>
+  <int value="25" label="FAST_ETHERNET"/>
+  <int value="26" label="GIGABIT_ETHERNET"/>
+  <int value="27" label="10_GIGABIT_ETHERNET"/>
+  <int value="28" label="WIFI_B"/>
+  <int value="29" label="WIFI_G"/>
+  <int value="30" label="WIFI_N"/>
+  <int value="31" label="WIFI_AC"/>
+  <int value="32" label="WIFI_AD"/>
 </enum>
 
 <enum name="ConnectionType" type="int">

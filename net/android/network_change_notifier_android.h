@@ -73,6 +73,9 @@ class NET_EXPORT_PRIVATE NetworkChangeNotifierAndroid
   // delegate class.
   using NetworkChangeNotifier::GetMaxBandwidthForConnectionSubtype;
 
+ protected:
+  void OnFinalizingMetricsLogRecord() override;
+
  private:
   friend class NetworkChangeNotifierAndroidTest;
   friend class NetworkChangeNotifierFactoryAndroid;
