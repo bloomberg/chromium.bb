@@ -8,8 +8,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <string>
-
 #include "base/strings/string16.h"
 #include "sandbox/win/src/sandbox_types.h"
 #include "sandbox/win/src/security_level.h"
@@ -253,11 +251,9 @@ class TargetPolicy {
   virtual ResultCode AddKernelObjectToClose(const wchar_t* handle_type,
                                             const wchar_t* handle_name) = 0;
 
-  // Adds a handle that will be shared with the target process.
-  // Returns the handle which was actually shared with the target. This is
-  // achieved by duplicating the handle to ensure that it is inheritable by
-  // the target. The caller should treat this as an opaque value.
-  virtual void* AddHandleToShare(HANDLE handle) = 0;
+  // Adds a handle that will be shared with the target process. Does not take
+  // ownership of the handle.
+  virtual void AddHandleToShare(HANDLE handle) = 0;
 };
 
 }  // namespace sandbox

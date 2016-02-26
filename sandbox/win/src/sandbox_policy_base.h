@@ -15,6 +15,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/process/launch.h"
 #include "base/strings/string16.h"
 #include "base/win/scoped_handle.h"
 #include "sandbox/win/src/crosscall_server.h"
@@ -31,8 +32,6 @@ class AppContainerAttributes;
 class LowLevelPolicy;
 class TargetProcess;
 struct PolicyGlobal;
-
-typedef std::vector<base::win::ScopedHandle*> HandleList;
 
 class PolicyBase final : public TargetPolicy {
  public:
@@ -71,7 +70,7 @@ class PolicyBase final : public TargetPolicy {
   ResultCode AddDllToUnload(const wchar_t* dll_name) override;
   ResultCode AddKernelObjectToClose(const base::char16* handle_type,
                                     const base::char16* handle_name) override;
-  void* AddHandleToShare(HANDLE handle) override;
+  void AddHandleToShare(HANDLE handle) override;
 
   // Creates a Job object with the level specified in a previous call to
   // SetJobLevel().
@@ -103,10 +102,7 @@ class PolicyBase final : public TargetPolicy {
   HANDLE GetStderrHandle();
 
   // Returns the list of handles being shared with the target process.
-  const HandleList& GetHandlesBeingShared();
-
-  // Closes the handles being shared with the target and clears out the list.
-  void ClearSharedHandles();
+  const base::HandlesToInheritVector& GetHandlesBeingShared();
 
  private:
   ~PolicyBase();
@@ -170,7 +166,7 @@ class PolicyBase final : public TargetPolicy {
   // Contains the list of handles being shared with the target process.
   // This list contains handles other than the stderr/stdout handles which are
   // shared with the target at times.
-  HandleList handles_to_share_;
+  base::HandlesToInheritVector handles_to_share_;
 
   DISALLOW_COPY_AND_ASSIGN(PolicyBase);
 };

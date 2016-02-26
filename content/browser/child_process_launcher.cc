@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
+#include "base/process/launch.h"
 #include "base/process/process.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/synchronization/lock.h"
@@ -132,7 +133,8 @@ void LaunchOnLauncherThread(const NotifyCallback& callback,
     options.start_hidden = true;
     process = base::LaunchElevatedProcess(*cmd_line, options);
   } else {
-    process = StartSandboxedProcess(delegate, cmd_line);
+    process = StartSandboxedProcess(
+        delegate, cmd_line, base::HandlesToInheritVector());
   }
 #elif defined(OS_POSIX)
   std::string process_type =

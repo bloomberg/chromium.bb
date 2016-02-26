@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
+#include "base/process/launch.h"
 #include "base/process/process.h"
 #include "base/process/process_handle.h"
 #include "base/thread_task_runner_handle.h"
@@ -108,8 +109,8 @@ void NaClBrokerListener::OnLaunchLoaderThroughBroker(
     cmd_line->AppendSwitchASCII(switches::kProcessChannelID,
                                 loader_channel_id);
 
-    base::Process loader_process = content::StartSandboxedProcess(this,
-                                                                  cmd_line);
+    base::Process loader_process = content::StartSandboxedProcess(
+        this, cmd_line, base::HandlesToInheritVector());
     if (loader_process.IsValid()) {
       // Note: PROCESS_DUP_HANDLE is necessary here, because:
       // 1) The current process is the broker, which is the loader's parent.

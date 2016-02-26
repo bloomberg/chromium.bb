@@ -8,6 +8,7 @@
 #include "base/files/scoped_file.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
+#include "base/process/launch.h"
 #include "base/process/process.h"
 #include "base/process/process_handle.h"
 #include "build/build_config.h"
@@ -60,10 +61,13 @@ CONTENT_EXPORT bool BrokerDuplicateHandle(HANDLE source_handle,
 CONTENT_EXPORT bool BrokerAddTargetPeer(HANDLE peer_process);
 
 // Launch a sandboxed process. |delegate| may be NULL. If |delegate| is non-NULL
-// then it just has to outlive this method call.
+// then it just has to outlive this method call. |handles_to_inherit| is a list
+// of handles for the child process to inherit. The caller retains ownership of
+// the handles.
 CONTENT_EXPORT base::Process StartSandboxedProcess(
     SandboxedProcessLauncherDelegate* delegate,
-    base::CommandLine* cmd_line);
+    base::CommandLine* cmd_line,
+    const base::HandlesToInheritVector& handles_to_inherit);
 
 #elif defined(OS_MACOSX)
 

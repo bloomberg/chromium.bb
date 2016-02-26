@@ -142,8 +142,6 @@ PolicyBase::PolicyBase()
 }
 
 PolicyBase::~PolicyBase() {
-  ClearSharedHandles();
-
   TargetSet::iterator it;
   for (it = targets_.begin(); it != targets_.end(); ++it) {
     TargetProcess* target = (*it);
@@ -425,28 +423,19 @@ ResultCode PolicyBase::AddKernelObjectToClose(const base::char16* handle_type,
   return handle_closer_.AddHandle(handle_type, handle_name);
 }
 
-void* PolicyBase::AddHandleToShare(HANDLE handle) {
-  if (base::win::GetVersion() < base::win::VERSION_VISTA)
-    return nullptr;
+void PolicyBase::AddHandleToShare(HANDLE handle) {
+  CHECK(handle && handle != INVALID_HANDLE_VALUE);
 
-  if (!handle)
-    return nullptr;
+  // Ensure the handle can be inherited.
+  BOOL result = SetHandleInformation(handle, HANDLE_FLAG_INHERIT,
+                                     HANDLE_FLAG_INHERIT);
+  PCHECK(result);
 
-  HANDLE duped_handle = nullptr;
-  if (!::DuplicateHandle(::GetCurrentProcess(), handle, ::GetCurrentProcess(),
-                         &duped_handle, 0, TRUE, DUPLICATE_SAME_ACCESS)) {
-    return nullptr;
-  }
-  handles_to_share_.push_back(new base::win::ScopedHandle(duped_handle));
-  return duped_handle;
+  handles_to_share_.push_back(handle);
 }
 
-const HandleList& PolicyBase::GetHandlesBeingShared() {
+const base::HandlesToInheritVector& PolicyBase::GetHandlesBeingShared() {
   return handles_to_share_;
-}
-
-void PolicyBase::ClearSharedHandles() {
-  STLDeleteElements(&handles_to_share_);
 }
 
 ResultCode PolicyBase::MakeJobObject(base::win::ScopedHandle* job) {

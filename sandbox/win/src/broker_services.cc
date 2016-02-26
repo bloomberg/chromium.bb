@@ -377,10 +377,11 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
     if (stderr_handle != stdout_handle && stderr_handle != INVALID_HANDLE_VALUE)
       inherited_handle_list.push_back(stderr_handle);
 
-    const HandleList& policy_handle_list = policy_base->GetHandlesBeingShared();
+    const base::HandlesToInheritVector& policy_handle_list =
+        policy_base->GetHandlesBeingShared();
 
-    for (auto handle : policy_handle_list)
-      inherited_handle_list.push_back(handle->Get());
+    for (HANDLE handle : policy_handle_list)
+      inherited_handle_list.push_back(handle);
 
     if (inherited_handle_list.size())
       ++attribute_count;
@@ -441,8 +442,6 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
 
   DWORD win_result = target->Create(exe_path, command_line, inherit_handles,
                                     startup_info, &process_info);
-
-  policy_base->ClearSharedHandles();
 
   if (ERROR_SUCCESS != win_result) {
     SpawnCleanup(target, win_result);

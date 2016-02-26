@@ -232,6 +232,13 @@ Process LaunchProcess(const string16& cmdline,
         return Process();
       }
 
+      // Ensure the handles can be inherited.
+      for (HANDLE handle : *options.handles_to_inherit) {
+        BOOL result = SetHandleInformation(handle, HANDLE_FLAG_INHERIT,
+                                           HANDLE_FLAG_INHERIT);
+        PCHECK(result);
+      }
+
       if (!startup_info_wrapper.InitializeProcThreadAttributeList(1)) {
         DPLOG(ERROR);
         return Process();

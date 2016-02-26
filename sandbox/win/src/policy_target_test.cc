@@ -382,13 +382,13 @@ TEST(PolicyTargetTest, ShareHandleTest) {
   GetModuleFileNameW(NULL, prog_name, MAX_PATH);
 
   TargetPolicy* policy = broker->CreatePolicy();
-  void* shared_handle =
-      policy->AddHandleToShare(read_only_view.handle().GetHandle());
+  policy->AddHandleToShare(read_only_view.handle().GetHandle());
 
   base::string16 arguments(L"\"");
   arguments += prog_name;
   arguments += L"\" -child 0 shared_memory_handle ";
-  arguments += base::UintToString16(base::win::HandleToUint32(shared_handle));
+  arguments += base::UintToString16(
+      base::win::HandleToUint32(read_only_view.handle().GetHandle()));
 
   // Launch the app.
   ResultCode result = SBOX_ALL_OK;
