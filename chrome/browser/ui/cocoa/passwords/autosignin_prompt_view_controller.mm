@@ -47,7 +47,8 @@
   // Title.
   base::string16 titleText =
       self.bridge->GetDialogController()->GetAutoSigninPromoTitle();
-  NSTextView* titleView = TitleLabelWithLink(titleText, gfx::Range(), self);
+  NSTextView* titleView =
+      TitleDialogLabelWithLink(titleText, gfx::Range(), self);
   // The text container by default track the view's width only. Set the width to
   // a big number so the container is resized too.
   [titleView setFrameSize:NSMakeSize(MAXFLOAT, 0)];

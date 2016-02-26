@@ -47,10 +47,17 @@ NSSecureTextField* PasswordLabel(const base::string16& text);
 // Returns a button of the standard style for the bubble.
 NSButton* DialogButton(NSString* title);
 
-// Returns a title label with |text|. Nonempty |range| may specify a link range.
-HyperlinkTextView* TitleLabelWithLink(const base::string16& text,
-                                      gfx::Range range,
-                                      id<NSTextViewDelegate> delegate);
+// Returns a title label with |text| for a bubble. Nonempty |range| may specify
+// a link range.
+HyperlinkTextView* TitleBubbleLabelWithLink(const base::string16& text,
+                                            gfx::Range range,
+                                            id<NSTextViewDelegate> delegate);
+
+// Returns a title label with |text| for a dialog. Nonempty |range| may specify
+// a link range.
+HyperlinkTextView* TitleDialogLabelWithLink(const base::string16& text,
+                                            gfx::Range range,
+                                            id<NSTextViewDelegate> delegate);
 
 // Returns a label with |text| and small font. Nonempty |range| may specify a
 // link range.

@@ -65,7 +65,8 @@
   // Title.
   std::pair<base::string16, gfx::Range> title_text =
       bridge_->GetDialogController()->GetAccoutChooserTitle();
-  titleView_ = TitleLabelWithLink(title_text.first, title_text.second, self);
+  titleView_ =
+      TitleDialogLabelWithLink(title_text.first, title_text.second, self);
   // Force the text to wrap to fit in the bubble size.
   [titleView_ setVerticallyResizable:YES];
   const CGFloat width = kDesiredBubbleWidth - 2*kFramePadding;

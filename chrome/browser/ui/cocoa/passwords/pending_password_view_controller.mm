@@ -85,7 +85,7 @@ const SkColor kWarmWelcomeColor = SkColorSetRGB(0x64, 0x64, 0x64);
 
   // Title.
   ManagePasswordsBubbleModel* model = [self model];
-  HyperlinkTextView* titleView = TitleLabelWithLink(
+  HyperlinkTextView* titleView = TitleBubbleLabelWithLink(
       model->title(), model->title_brand_link_range(), self);
 
   // Force the text to wrap to fit in the bubble size.

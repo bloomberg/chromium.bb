@@ -7,7 +7,6 @@
 #include "base/logging.h"
 #include "base/mac/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/passwords/passwords_bubble_utils.h"
-#include "ui/base/resource/resource_bundle.h"
 
 @implementation BasePasswordsContentViewController
 @synthesize delegate = delegate_;
@@ -39,10 +38,7 @@
   [label setDrawsBackground:NO];
   [label setBezeled:NO];
   [label setStringValue:title];
-  [label setFont:ResourceBundle::GetSharedInstance()
-                     .GetFontList(ResourceBundle::MediumFont)
-                     .GetPrimaryFont()
-                     .GetNativeFont()];
+  [label setFont:[NSFont systemFontOfSize:[NSFont systemFontSize]]];
   [label sizeToFit];
   [view addSubview:label.get()];
   return label.autorelease();

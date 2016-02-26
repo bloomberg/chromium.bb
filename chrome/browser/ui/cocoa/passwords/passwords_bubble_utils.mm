@@ -17,16 +17,12 @@ namespace {
 
 HyperlinkTextView* LabelWithLink(const base::string16& text,
                                  SkColor color,
-                                 ui::ResourceBundle::FontStyle fontSize,
+                                 NSFont* font,
                                  gfx::Range range,
                                  id<NSTextViewDelegate> delegate) {
   base::scoped_nsobject<HyperlinkTextView> textView(
       [[HyperlinkTextView alloc] initWithFrame:NSZeroRect]);
   NSColor* textColor = skia::SkColorToCalibratedNSColor(color);
-  NSFont* font = ResourceBundle::GetSharedInstance()
-                     .GetFontList(fontSize)
-                     .GetPrimaryFont()
-                     .GetNativeFont();
   [textView setMessage:base::SysUTF16ToNSString(text)
               withFont:font
           messageColor:textColor];
@@ -111,16 +107,36 @@ NSButton* DialogButton(NSString* title) {
   return button.autorelease();
 }
 
-HyperlinkTextView* TitleLabelWithLink(const base::string16& text,
-                                      gfx::Range range,
-                                      id<NSTextViewDelegate> delegate) {
-  return LabelWithLink(text, SK_ColorBLACK, ResourceBundle::MediumFont, range,
-                       delegate);
+HyperlinkTextView* TitleBubbleLabelWithLink(const base::string16& text,
+                                            gfx::Range range,
+                                            id<NSTextViewDelegate> delegate) {
+  return LabelWithLink(
+      text, SK_ColorBLACK,
+      [NSFont systemFontOfSize:[NSFont systemFontSize]],
+      range, delegate);
+}
+
+HyperlinkTextView* TitleDialogLabelWithLink(const base::string16& text,
+                                            gfx::Range range,
+                                            id<NSTextViewDelegate> delegate) {
+  return LabelWithLink(
+      text, SK_ColorBLACK,
+      ResourceBundle::GetSharedInstance()
+          .GetFontList(chrome_style::kTitleFontStyle)
+          .GetPrimaryFont()
+          .GetNativeFont(),
+      range, delegate);
 }
 
 HyperlinkTextView* LabelWithLink(const base::string16& text,
                                  SkColor color,
                                  gfx::Range range,
                                  id<NSTextViewDelegate> delegate) {
-  return LabelWithLink(text, color, ResourceBundle::SmallFont, range, delegate);
+  return LabelWithLink(
+      text, color,
+      ResourceBundle::GetSharedInstance()
+          .GetFontList(ResourceBundle::SmallFont)
+          .GetPrimaryFont()
+          .GetNativeFont(),
+      range, delegate);
 }
