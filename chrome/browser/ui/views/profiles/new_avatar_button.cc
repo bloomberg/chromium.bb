@@ -195,7 +195,7 @@ void NewAvatarButton::Update() {
   const bool use_generic_button =
       !profile_->IsGuestSession() &&
       storage.GetNumberOfProfiles() == 1 &&
-      storage.GetAllProfilesAttributes().front()->IsAuthenticated();
+      !storage.GetAllProfilesAttributes().front()->IsAuthenticated();
 
   SetText(use_generic_button
               ? base::string16()
