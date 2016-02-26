@@ -18,6 +18,7 @@ import signal
 import subprocess
 import sys
 
+from chromite.lib import locking
 from chromite.lib import osutils
 from chromite.lib import process_util
 from chromite.lib import proctitle
@@ -140,6 +141,10 @@ def CreatePidNs():
       # For all other errors, abort.  They shouldn't happen.
       raise
 
+  # Used to make sure process groups are in the right state before we try to
+  # forward the controlling terminal.
+  lock = locking.PipeLock()
+
   # Now that we're in the new pid namespace, fork.  The parent is the master
   # of it in the original namespace, so it only monitors the child inside it.
   # It is only allowed to fork once too.
@@ -153,6 +158,10 @@ def CreatePidNs():
 
     # Forward the control of the terminal to the child so it can manage input.
     _SafeTcSetPgrp(sys.stdin.fileno(), pid)
+
+    # Signal our child it can move forward.
+    lock.Post()
+    del lock
 
     # Reap the children as the parent of the new namespace.
     process_util.ExitAsStatus(_ReapChildren(pid))
@@ -170,6 +179,13 @@ def CreatePidNs():
                   osutils.MS_NOSUID | osutils.MS_NODEV | osutils.MS_NOEXEC |
                   osutils.MS_RELATIME)
 
+    # Wait for our parent to finish initialization.
+    lock.Wait()
+    del lock
+
+    # Resetup the locks for the next phase.
+    lock = locking.PipeLock()
+
     pid = os.fork()
     if pid:
       proctitle.settitle('pid ns', 'init')
@@ -186,9 +202,17 @@ def CreatePidNs():
       # Forward the control of the terminal to the child so it can manage input.
       _SafeTcSetPgrp(sys.stdin.fileno(), pid)
 
+      # Signal our child it can move forward.
+      lock.Post()
+      del lock
+
       # Watch all of the children.  We need to act as the master inside the
       # namespace and reap old processes.
       process_util.ExitAsStatus(_ReapChildren(pid))
+
+  # Wait for our parent to finish initialization.
+  lock.Wait()
+  del lock
 
   # Create a process group for the grandchild so it can manage things
   # independent of the init process.
