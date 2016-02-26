@@ -13,7 +13,6 @@
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
 #include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/printing/print_preview_dialog_controller.h"
-#include "chrome/browser/printing/print_view_manager_observer.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
 #include "chrome/common/chrome_content_client.h"
 #include "components/printing/common/print_messages.h"
@@ -59,7 +58,6 @@ namespace printing {
 
 PrintViewManager::PrintViewManager(content::WebContents* web_contents)
     : PrintViewManagerBase(web_contents),
-      observer_(NULL),
       print_preview_state_(NOT_PREVIEWING),
       scripted_print_preview_rph_(NULL) {
   if (PrintPreviewDialogController::IsPrintPreviewDialog(web_contents)) {
@@ -74,7 +72,11 @@ PrintViewManager::~PrintViewManager() {
 }
 
 #if defined(ENABLE_BASIC_PRINTING)
-bool PrintViewManager::PrintForSystemDialogNow() {
+bool PrintViewManager::PrintForSystemDialogNow(
+    const base::Closure& dialog_shown_callback) {
+  DCHECK(!dialog_shown_callback.is_null());
+  DCHECK(on_print_dialog_shown_callback_.is_null());
+  on_print_dialog_shown_callback_ = dialog_shown_callback;
   return PrintNowInternal(new PrintMsg_PrintForSystemDialog(routing_id()));
 }
 
@@ -137,11 +139,6 @@ void PrintViewManager::PrintPreviewDone() {
   print_preview_state_ = NOT_PREVIEWING;
 }
 
-void PrintViewManager::set_observer(PrintViewManagerObserver* observer) {
-  DCHECK(!observer || !observer_);
-  observer_ = observer;
-}
-
 void PrintViewManager::RenderFrameCreated(
     content::RenderFrameHost* render_frame_host) {
   if (PrintPreviewDialogController::IsPrintPreviewDialog(web_contents())) {
@@ -156,8 +153,9 @@ void PrintViewManager::RenderProcessGone(base::TerminationStatus status) {
 }
 
 void PrintViewManager::OnDidShowPrintDialog() {
-  if (observer_)
-    observer_->OnPrintDialogShown();
+  if (!on_print_dialog_shown_callback_.is_null())
+    on_print_dialog_shown_callback_.Run();
+  on_print_dialog_shown_callback_.Reset();
 }
 
 void PrintViewManager::OnSetupScriptedPrintPreview(IPC::Message* reply_msg) {

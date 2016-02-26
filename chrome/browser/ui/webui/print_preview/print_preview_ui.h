@@ -113,11 +113,6 @@ class PrintPreviewUI : public ConstrainedWebDialogUI {
   void OnPreviewDataIsAvailable(int expected_pages_count,
                                 int preview_request_id);
 
-  // Notifies the Web UI that preview dialog has been destroyed. This is the
-  // last chance to communicate with the initiator before the association is
-  // erased.
-  void OnPrintPreviewDialogDestroyed();
-
   // Notifies the Web UI that the print preview failed to render.
   void OnPrintPreviewFailed();
 

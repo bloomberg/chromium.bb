@@ -598,10 +598,6 @@ void PrintPreviewUI::OnPreviewDataIsAvailable(int expected_pages_count,
                                    ui_preview_request_id);
 }
 
-void PrintPreviewUI::OnPrintPreviewDialogDestroyed() {
-  handler_->OnPrintPreviewDialogDestroyed();
-}
-
 void PrintPreviewUI::OnFileSelectionCancelled() {
   web_ui()->CallJavascriptFunction("fileSelectionCancelled");
 }

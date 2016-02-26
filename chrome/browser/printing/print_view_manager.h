@@ -15,8 +15,6 @@ class RenderProcessHost;
 
 namespace printing {
 
-class PrintViewManagerObserver;
-
 // Manages the print commands for a WebContents.
 class PrintViewManager : public PrintViewManagerBase,
                          public content::WebContentsUserData<PrintViewManager> {
@@ -26,7 +24,8 @@ class PrintViewManager : public PrintViewManagerBase,
 #if defined(ENABLE_BASIC_PRINTING)
   // Same as PrintNow(), but for the case where a user prints with the system
   // dialog from print preview.
-  bool PrintForSystemDialogNow();
+  // |dialog_shown_callback| is called when the print dialog is shown.
+  bool PrintForSystemDialogNow(const base::Closure& dialog_shown_callback);
 
   // Same as PrintNow(), but for the case where a user press "ctrl+shift+p" to
   // show the native system dialog. This can happen from both initiator and
@@ -47,11 +46,6 @@ class PrintViewManager : public PrintViewManagerBase,
   // Notify PrintViewManager that print preview has finished. Unfreeze the
   // renderer in the case of scripted print preview.
   void PrintPreviewDone();
-
-  // Sets |observer| as the current PrintViewManagerObserver. Pass in NULL to
-  // remove the current observer. |observer| may always be NULL, but |observer_|
-  // must be NULL if |observer| is non-NULL.
-  void set_observer(PrintViewManagerObserver* observer);
 
   // content::WebContentsObserver implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
@@ -79,9 +73,7 @@ class PrintViewManager : public PrintViewManagerBase,
   void OnShowScriptedPrintPreview(bool source_is_modifiable);
   void OnScriptedPrintPreviewReply(IPC::Message* reply_msg);
 
-  // Weak pointer to an observer that is notified when the print dialog is
-  // shown.
-  PrintViewManagerObserver* observer_;
+  base::Closure on_print_dialog_shown_callback_;
 
   // Current state of print preview for this view.
   PrintPreviewState print_preview_state_;

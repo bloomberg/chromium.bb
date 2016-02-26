@@ -2460,7 +2460,6 @@
       'browser/printing/print_preview_message_handler.h',
       'browser/printing/print_view_manager.cc',
       'browser/printing/print_view_manager.h',
-      'browser/printing/print_view_manager_observer.h',
       'browser/printing/printer_manager_dialog.h',
       'browser/printing/printer_manager_dialog_linux.cc',
       'browser/printing/printer_manager_dialog_mac.mm',

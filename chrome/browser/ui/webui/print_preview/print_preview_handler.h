@@ -13,7 +13,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/printing/print_view_manager_observer.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_distiller.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "content/public/browser/web_ui_message_handler.h"
@@ -49,7 +48,6 @@ class PrintPreviewHandler
       public cloud_print::PrivetLocalPrintOperation::Delegate,
 #endif
       public ui::SelectFileDialog::Listener,
-      public printing::PrintViewManagerObserver,
       public GaiaCookieManagerService::Observer {
  public:
   PrintPreviewHandler();
@@ -64,18 +62,10 @@ class PrintPreviewHandler
                     void* params) override;
   void FileSelectionCanceled(void* params) override;
 
-  // PrintViewManagerObserver implementation.
-  void OnPrintDialogShown() override;
-
   // GaiaCookieManagerService::Observer implementation.
   void OnAddAccountToCookieCompleted(
       const std::string& account_id,
       const GoogleServiceAuthError& error) override;
-
-  // Called when the print preview dialog is destroyed. This is the last time
-  // this object has access to the PrintViewManager in order to disconnect the
-  // observer.
-  void OnPrintPreviewDialogDestroyed();
 
   // Called when print preview failed.
   void OnPrintPreviewFailed();

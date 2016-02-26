@@ -487,15 +487,6 @@ void PrintPreviewDialogController::RemovePreviewDialog(
     PrintViewManager::FromWebContents(initiator)->PrintPreviewDone();
   }
 
-  // Print preview WebContents is destroyed. Notify |PrintPreviewUI| to abort
-  // the initiator preview request.
-  if (content::WebUI* web_ui = preview_dialog->GetWebUI()) {
-    PrintPreviewUI* print_preview_ui =
-        static_cast<PrintPreviewUI*>(web_ui->GetController());
-    if (print_preview_ui)
-      print_preview_ui->OnPrintPreviewDialogDestroyed();
-  }
-
   preview_dialog_map_.erase(preview_dialog);
   RemoveObservers(preview_dialog);
 }
