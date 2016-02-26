@@ -179,10 +179,14 @@ void UserMediaClientImpl::requestUserMedia(
       controls.audio.requested = true;
       // Check if this input device should be used to select a matching output
       // device for audio rendering.
-      if (!user_media_request.audioConstraints()
-               .basic()
-               .renderToAssociatedSink.matches(false)) {
-        enable_automatic_output_device_selection = true;
+      enable_automatic_output_device_selection = true;  // On by default.
+      for (const auto& advanced_constraint :
+           user_media_request.audioConstraints().advanced()) {
+        if (advanced_constraint.renderToAssociatedSink.hasExact()) {
+          enable_automatic_output_device_selection =
+              advanced_constraint.renderToAssociatedSink.exact();
+          break;
+        }
       }
     }
     if (user_media_request.video()) {
