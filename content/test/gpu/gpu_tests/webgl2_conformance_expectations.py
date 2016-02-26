@@ -334,11 +334,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac'], bug=584994)
     self.Fail('conformance2/state/gl-object-get-calls.html',
         ['mac'], bug=483282)
-    self.Fail('conformance2/textures/image_bitmap_from_image_data/*',
-        ['mac'], bug=589930)
     self.Fail('conformance2/textures/image_bitmap_from_image/*',
-        ['mac'], bug=589930)
-    self.Fail('conformance2/textures/image_bitmap_from_video/*',
         ['mac'], bug=589930)
 
     # Mac Retina NVIDIA
