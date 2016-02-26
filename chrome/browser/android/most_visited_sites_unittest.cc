@@ -45,28 +45,30 @@ static const size_t kNumSites = 4;
 class MostVisitedSitesTest : public testing::Test {
  protected:
   void Check(const std::vector<TitleURL>& popular_sites,
+             const std::vector<TitleURL>& whitelist_entry_points,
              const std::vector<TitleURL>& personal_sites,
              const std::vector<std::string>& old_sites_url,
              const std::vector<bool>& old_sites_is_personal,
              const std::vector<bool>& expected_sites_is_personal,
              const std::vector<TitleURL>& expected_sites) {
-    ScopedVector<MostVisitedSites::Suggestion> personal_suggestions;
-    personal_suggestions.reserve(personal_sites.size());
+    MostVisitedSites::SuggestionsVector personal_suggestions;
     for (const TitleURL& site : personal_sites)
-      personal_suggestions.push_back(MakeSuggestionFrom(site, true));
-    ScopedVector<MostVisitedSites::Suggestion> popular_suggestions;
-    popular_suggestions.reserve(popular_sites.size());
+      personal_suggestions.push_back(MakeSuggestionFrom(site, true, false));
+    MostVisitedSites::SuggestionsVector whitelist_suggestions;
+    for (const TitleURL& site : whitelist_entry_points)
+      whitelist_suggestions.push_back(MakeSuggestionFrom(site, false, true));
+    MostVisitedSites::SuggestionsVector popular_suggestions;
     for (const TitleURL& site : popular_sites)
-      popular_suggestions.push_back(MakeSuggestionFrom(site, false));
-    ScopedVector<MostVisitedSites::Suggestion> result_suggestions =
-        MostVisitedSites::MergeSuggestions(&personal_suggestions,
-                                           &popular_suggestions, old_sites_url,
-                                           old_sites_is_personal);
+      popular_suggestions.push_back(MakeSuggestionFrom(site, false, false));
+    MostVisitedSites::SuggestionsVector result_suggestions =
+        MostVisitedSites::MergeSuggestions(
+            &personal_suggestions, &whitelist_suggestions, &popular_suggestions,
+            old_sites_url, old_sites_is_personal);
     std::vector<TitleURL> result_sites;
     std::vector<bool> result_is_personal;
     result_sites.reserve(result_suggestions.size());
     result_is_personal.reserve(result_suggestions.size());
-    for (const MostVisitedSites::Suggestion* suggestion : result_suggestions) {
+    for (const auto& suggestion : result_suggestions) {
       result_sites.push_back(
           TitleURL(suggestion->title, suggestion->url.spec()));
       result_is_personal.push_back(suggestion->source !=
@@ -77,10 +79,13 @@ class MostVisitedSitesTest : public testing::Test {
   }
   static scoped_ptr<MostVisitedSites::Suggestion> MakeSuggestionFrom(
       const TitleURL& title_url,
-      bool is_personal) {
+      bool is_personal,
+      bool whitelist) {
     return make_scoped_ptr(new MostVisitedSites::Suggestion(
         title_url.title, title_url.url,
-        is_personal ? MostVisitedSites::TOP_SITES : MostVisitedSites::POPULAR));
+        whitelist ? MostVisitedSites::WHITELIST
+                  : (is_personal ? MostVisitedSites::TOP_SITES
+                                 : MostVisitedSites::POPULAR)));
   }
 };
 
@@ -98,8 +103,8 @@ TEST_F(MostVisitedSitesTest, PersonalSitesDefaultOrder) {
   // Without any previous ordering or popular suggestions, the result after
   // merge should be the personal suggestions themselves.
   std::vector<bool> expected_sites_source(kNumSites, true /*personal source*/);
-  Check(std::vector<TitleURL>(), personal_sites, old_sites_url,
-        old_sites_source, expected_sites_source, personal_sites);
+  Check(std::vector<TitleURL>(), std::vector<TitleURL>(), personal_sites,
+        old_sites_url, old_sites_source, expected_sites_source, personal_sites);
 }
 
 TEST_F(MostVisitedSitesTest, PersonalSitesDefinedOrder) {
@@ -120,7 +125,7 @@ TEST_F(MostVisitedSitesTest, PersonalSitesDefinedOrder) {
       TitleURL("Site 3", "https://www.site3.com/"),
   };
   std::vector<bool> expected_sites_source(kNumSites, true /*personal source*/);
-  Check(std::vector<TitleURL>(),
+  Check(std::vector<TitleURL>(), std::vector<TitleURL>(),
         std::vector<TitleURL>(personal, personal + arraysize(personal)),
         std::vector<std::string>(old, old + arraysize(old)), old_sites_source,
         expected_sites_source,
@@ -140,8 +145,8 @@ TEST_F(MostVisitedSitesTest, PopularSitesDefaultOrder) {
   // Without any previous ordering or personal suggestions, the result after
   // merge should be the popular suggestions themselves.
   std::vector<bool> expected_sites_source(kNumSites, false /*popular source*/);
-  Check(popular_sites, std::vector<TitleURL>(), old_sites_url, old_sites_source,
-        expected_sites_source, popular_sites);
+  Check(popular_sites, std::vector<TitleURL>(), std::vector<TitleURL>(),
+        old_sites_url, old_sites_source, expected_sites_source, popular_sites);
 }
 
 TEST_F(MostVisitedSitesTest, PopularSitesDefinedOrder) {
@@ -163,7 +168,7 @@ TEST_F(MostVisitedSitesTest, PopularSitesDefinedOrder) {
   };
   std::vector<bool> expected_sites_source(kNumSites, false /*popular source*/);
   Check(std::vector<TitleURL>(popular, popular + arraysize(popular)),
-        std::vector<TitleURL>(),
+        std::vector<TitleURL>(), std::vector<TitleURL>(),
         std::vector<std::string>(old, old + arraysize(old)), old_sites_source,
         expected_sites_source,
         std::vector<TitleURL>(expected, expected + arraysize(expected)));
@@ -188,6 +193,7 @@ TEST_F(MostVisitedSitesTest, PopularAndPersonalDefaultOrder) {
   };
   bool expected_source_is_personal[] = {true, true, false, false};
   Check(std::vector<TitleURL>(popular, popular + arraysize(popular)),
+        std::vector<TitleURL>(),
         std::vector<TitleURL>(personal, personal + arraysize(personal)),
         std::vector<std::string>(), std::vector<bool>(),
         std::vector<bool>(expected_source_is_personal,
@@ -220,6 +226,7 @@ TEST_F(MostVisitedSitesTest, PopularAndPersonalDefinedOrder) {
   };
   bool expected_source_is_personal[] = {false, true, true, false};
   Check(std::vector<TitleURL>(popular, popular + arraysize(popular)),
+        std::vector<TitleURL>(),
         std::vector<TitleURL>(personal, personal + arraysize(personal)),
         std::vector<std::string>(old, old + arraysize(old)), old_sites_source,
         std::vector<bool>(expected_source_is_personal,

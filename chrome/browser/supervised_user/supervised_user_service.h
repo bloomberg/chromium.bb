@@ -109,6 +109,10 @@ class SupervisedUserService : public KeyedService,
   // Returns the whitelist service.
   SupervisedUserWhitelistService* GetWhitelistService();
 
+  const std::vector<scoped_refptr<SupervisedUserSiteList>>& whitelists() const {
+    return whitelists_;
+  }
+
   // Whether the user can request to get access to blocked URLs or to new
   // extensions.
   bool AccessRequestsEnabled();
@@ -388,6 +392,8 @@ class SupervisedUserService : public KeyedService,
   scoped_ptr<FileDownloader> blacklist_downloader_;
 
   scoped_ptr<SupervisedUserWhitelistService> whitelist_service_;
+
+  std::vector<scoped_refptr<SupervisedUserSiteList>> whitelists_;
 
   // Used to create permission requests.
   ScopedVector<PermissionRequestCreator> permissions_creators_;
