@@ -141,11 +141,7 @@ int NaClLogDefaultLogVerbosity(void) {
   char *env_verbosity;
 
   if (NULL != (env_verbosity = getenv("NACLVERBOSITY"))) {
-    int v = strtol(env_verbosity, (char **) 0, 0);
-
-    if (v >= 0) {
-      return v;
-    }
+    return strtol(env_verbosity, (char **) 0, 0);
   }
   return 0;
 }
