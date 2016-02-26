@@ -21,6 +21,8 @@ class SCHEDULER_EXPORT VirtualTimeDomain : public TimeDomain {
   // TimeDomain implementation:
   LazyNow CreateLazyNow() const override;
   base::TimeTicks Now() const override;
+  base::TimeTicks ComputeDelayedRunTime(base::TimeTicks time_domain_now,
+                                        base::TimeDelta delay) const override;
   bool MaybeAdvanceTime() override;
   const char* GetName() const override;
 
