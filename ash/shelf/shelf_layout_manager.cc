@@ -37,6 +37,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "ui/aura/client/cursor_client.h"
+#include "ui/aura/mus/mus_util.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/compositor/layer.h"
@@ -291,8 +292,7 @@ void ShelfLayoutManager::LayoutShelf() {
     // the ShelfView for a vertical shelf are set when |shelf_|'s bounds
     // are changed via UpdateBoundsAndOpacity(). This sets the origin and the
     // dimension in the other direction.
-    shelf_->shelf()->SetShelfViewBounds(
-        target_bounds.shelf_bounds_in_shelf);
+    shelf_->shelf()->SetShelfViewBounds(target_bounds.shelf_bounds_in_shelf);
     // Update insets in ShelfWindowTargeter when shelf bounds change.
     FOR_EACH_OBSERVER(ShelfLayoutManagerObserver, observers_,
                       WillChangeVisibilityState(visibility_state()));
@@ -680,9 +680,12 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(
       status_animation_setter.AddObserver(observer);
 
     GetLayer(shelf_)->SetOpacity(target_bounds.opacity);
-    shelf_->SetBounds(ScreenUtil::ConvertRectToScreen(
-        shelf_->GetNativeView()->parent(),
-        target_bounds.shelf_bounds_in_root));
+    // mash::wm::ShelfLayout manages window bounds when running mash_shell.
+    if (!aura::GetMusWindow(shelf_->GetNativeWindow())) {
+      shelf_->SetBounds(ScreenUtil::ConvertRectToScreen(
+          shelf_->GetNativeView()->parent(),
+          target_bounds.shelf_bounds_in_root));
+    }
 
     GetLayer(shelf_->status_area_widget())->SetOpacity(
         target_bounds.status_opacity);
@@ -702,10 +705,13 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(
                         target_bounds.shelf_bounds_in_root.x());
     status_bounds.set_y(status_bounds.y() +
                         target_bounds.shelf_bounds_in_root.y());
-    shelf_->status_area_widget()->SetBounds(
-        ScreenUtil::ConvertRectToScreen(
-            shelf_->status_area_widget()->GetNativeView()->parent(),
-            status_bounds));
+    // mash::wm::ShelfLayout manages window bounds when running mash_shell.
+    if (!aura::GetMusWindow(shelf_->GetNativeWindow())) {
+      shelf_->status_area_widget()->SetBounds(
+          ScreenUtil::ConvertRectToScreen(
+              shelf_->status_area_widget()->GetNativeView()->parent(),
+              status_bounds));
+    }
     if (!state_.is_screen_locked) {
       gfx::Insets insets;
       // If user session is blocked (login to new user session or add user to

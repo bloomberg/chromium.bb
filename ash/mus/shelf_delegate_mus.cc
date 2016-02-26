@@ -4,13 +4,20 @@
 
 #include "ash/mus/shelf_delegate_mus.h"
 
+#include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_item_delegate.h"
 #include "ash/shelf/shelf_item_delegate_manager.h"
+#include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_model.h"
+#include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "base/strings/string_util.h"
+#include "components/mus/public/cpp/property_type_converters.h"
+#include "components/mus/public/cpp/window.h"
+#include "components/mus/public/cpp/window_property.h"
 #include "mojo/common/common_type_converters.h"
 #include "mojo/shell/public/cpp/shell.h"
+#include "ui/aura/mus/mus_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/views/mus/window_manager_connection.h"
@@ -92,7 +99,19 @@ ShelfDelegateMus::ShelfDelegateMus(ShelfModel* model)
 ShelfDelegateMus::~ShelfDelegateMus() {}
 
 void ShelfDelegateMus::OnShelfCreated(Shelf* shelf) {
-  NOTIMPLEMENTED();
+  ash::ShelfWidget* widget = shelf->shelf_widget();
+  ash::ShelfLayoutManager* layout_manager = widget->shelf_layout_manager();
+  mus::Window* window = aura::GetMusWindow(widget->GetNativeWindow());
+  gfx::Size size = layout_manager->GetIdealBounds().size();
+  window->SetSharedProperty<gfx::Size>(
+      mus::mojom::WindowManager::kPreferredSize_Property, size);
+
+  ash::StatusAreaWidget* status_widget = widget->status_area_widget();
+  mus::Window* status_window =
+      aura::GetMusWindow(status_widget->GetNativeWindow());
+  gfx::Size status_size = status_widget->GetWindowBoundsInScreen().size();
+  status_window->SetSharedProperty<gfx::Size>(
+      mus::mojom::WindowManager::kPreferredSize_Property, status_size);
 }
 
 void ShelfDelegateMus::OnShelfDestroyed(Shelf* shelf) {

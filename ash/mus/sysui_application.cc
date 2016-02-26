@@ -19,6 +19,7 @@
 #include "base/path_service.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "components/mus/public/cpp/property_type_converters.h"
+#include "mash/wm/public/interfaces/ash_window_type.mojom.h"
 #include "mash/wm/public/interfaces/container.mojom.h"
 #include "ui/aura/env.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -51,9 +52,24 @@ mash::wm::mojom::Container GetContainerId(aura::Window* container) {
   int id = container->id();
   if (id == kShellWindowId_DesktopBackgroundContainer)
     return mash::wm::mojom::Container::USER_BACKGROUND;
-  if (id == kShellWindowId_ShelfContainer)
+  // mash::wm::ShelfLayout manages both the shelf and the status area.
+  if (id == kShellWindowId_ShelfContainer ||
+      id == kShellWindowId_StatusContainer) {
     return mash::wm::mojom::Container::USER_SHELF;
+  }
   return mash::wm::mojom::Container::COUNT;
+}
+
+// Tries to determine the corresponding ash window type from the ash container
+// for the widget.
+mash::wm::mojom::AshWindowType GetAshWindowType(aura::Window* container) {
+  DCHECK(container);
+  int id = container->id();
+  if (id == kShellWindowId_ShelfContainer)
+    return mash::wm::mojom::AshWindowType::SHELF;
+  if (id == kShellWindowId_StatusContainer)
+    return mash::wm::mojom::AshWindowType::STATUS_AREA;
+  return mash::wm::mojom::AshWindowType::COUNT;
 }
 
 // Creates a StubWindow, which means this window never receives any input event,
@@ -107,6 +123,12 @@ class NativeWidgetFactory {
         properties[mash::wm::mojom::kWindowContainer_Property] =
             mojo::TypeConverter<const std::vector<uint8_t>, int32_t>::Convert(
                 static_cast<int32_t>(container));
+      }
+      mash::wm::mojom::AshWindowType type = GetAshWindowType(params.parent);
+      if (type != mash::wm::mojom::AshWindowType::COUNT) {
+        properties[mash::wm::mojom::kAshWindowType_Property] =
+            mojo::TypeConverter<const std::vector<uint8_t>, int32_t>::Convert(
+                static_cast<int32_t>(type));
       }
     }
 

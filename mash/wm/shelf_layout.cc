@@ -8,14 +8,28 @@
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_property.h"
 #include "mash/wm/property_util.h"
+#include "mash/wm/public/interfaces/ash_window_type.mojom.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace mash {
 namespace wm {
 
+namespace {
+
+mojom::AshWindowType GetAshWindowType(const mus::Window* window) {
+  if (!window->HasSharedProperty(mojom::kAshWindowType_Property))
+    return mojom::AshWindowType::COUNT;
+
+  return static_cast<mojom::AshWindowType>(
+      window->GetSharedProperty<int32_t>(mojom::kAshWindowType_Property));
+}
+
+}  // namespace
+
 ShelfLayout::ShelfLayout(mus::Window* owner) : LayoutManager(owner) {
   AddLayoutProperty(mus::mojom::WindowManager::kPreferredSize_Property);
 }
+
 ShelfLayout::~ShelfLayout() {}
 
 // We explicitly don't make assertions about the number of children in this
@@ -23,13 +37,18 @@ ShelfLayout::~ShelfLayout() {}
 // shelf restarts.
 
 void ShelfLayout::LayoutWindow(mus::Window* window) {
-  gfx::Size preferred_size = GetWindowPreferredSize(window);
-
-  gfx::Rect container_bounds = owner()->bounds();
-  container_bounds.set_origin(
-      gfx::Point(0, container_bounds.height() - preferred_size.height()));
-  container_bounds.set_height(preferred_size.height());
-  window->SetBounds(container_bounds);
+  // TODO(msw): Support additional shelf alignments and RTL UI.
+  const gfx::Size size = GetWindowPreferredSize(window);
+  const int y = owner()->bounds().height() - size.height();
+  const mojom::AshWindowType ash_window_type = GetAshWindowType(window);
+  if (ash_window_type == mojom::AshWindowType::SHELF) {
+    window->SetBounds(gfx::Rect(0, y, size.width(), size.height()));
+  } else if (ash_window_type == mojom::AshWindowType::STATUS_AREA) {
+    window->SetBounds(gfx::Rect(owner()->bounds().width() - size.width(), y,
+                                size.width(), size.height()));
+  } else {
+    NOTREACHED() << "Unknown window in USER_SHELF container.";
+  }
 }
 
 }  // namespace wm
