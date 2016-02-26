@@ -84,7 +84,7 @@ void AndroidDeferredRenderingBackingStrategy::Cleanup(
 
   // If we're rendering to a SurfaceTexture we can make a copy of the current
   // front buffer so that the PictureBuffer textures are still valid.
-  if (surface_texture_)
+  if (surface_texture_ && have_context)
     CopySurfaceTextureToPictures(buffers);
 
   // Now that no AVDACodecImages refer to the SurfaceTexture's texture, delete
@@ -269,14 +269,6 @@ void AndroidDeferredRenderingBackingStrategy::CopySurfaceTextureToPictures(
   gpu::gles2::GLES2Decoder* gl_decoder = state_provider_->GetGlDecoder().get();
   if (!gl_decoder)
     return;
-
-  scoped_ptr<ui::ScopedMakeCurrent> scoped_make_current;
-  if (!shared_state_->context()->IsCurrent(NULL)) {
-    scoped_make_current.reset(new ui::ScopedMakeCurrent(
-        shared_state_->context(), shared_state_->surface()));
-    if (!scoped_make_current->Succeeded())
-      return;
-  }
 
   const gfx::Size size = state_provider_->GetSize();
 
