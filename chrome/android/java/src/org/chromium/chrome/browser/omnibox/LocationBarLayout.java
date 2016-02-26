@@ -1290,13 +1290,12 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
                 mNavigationButton.setImageDrawable(null);
                 break;
             case OFFLINE:
-                mNavigationButton.setImageResource(R.drawable.offline_bolt);
+                mNavigationButton.setImageResource(
+                        mUseDarkColors ? R.drawable.offline_bolt : R.drawable.offline_bolt_light);
                 break;
             default:
                 assert false;
         }
-
-        mNavigationButton.setAlpha(buttonType == NavigationButtonType.OFFLINE ? 0.54f : 1.0f);
 
         if (mNavigationButton.getVisibility() != VISIBLE) {
             mNavigationButton.setVisibility(VISIBLE);
@@ -1314,10 +1313,20 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
     private void updateVerboseStatusVisibility() {
         boolean verboseStatusVisible =
                 mNavigationButtonType == NavigationButtonType.OFFLINE && !mUrlHasFocus;
+
         int verboseStatusVisibility = verboseStatusVisible ? VISIBLE : GONE;
+
+        mVerboseStatusTextView.setTextColor(ApiCompatibilityUtils.getColor(getResources(),
+                mUseDarkColors ? R.color.locationbar_verbose_status_color
+                        : R.color.locationbar_light_verbose_status_color));
         mVerboseStatusTextView.setVisibility(verboseStatusVisibility);
-        findViewById(R.id.location_bar_verbose_status_separator)
-                .setVisibility(verboseStatusVisibility);
+
+        View separator = findViewById(R.id.location_bar_verbose_status_separator);
+        separator.setBackgroundColor(ApiCompatibilityUtils.getColor(getResources(), mUseDarkColors
+                ? R.color.locationbar_status_separator_color
+                : R.color.locationbar_light_status_separator_color));
+        separator.setVisibility(verboseStatusVisibility);
+
         findViewById(R.id.location_bar_verbose_status_extra_space)
                 .setVisibility(verboseStatusVisibility);
     }
