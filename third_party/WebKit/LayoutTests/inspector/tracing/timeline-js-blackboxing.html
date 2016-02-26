@@ -288,11 +288,11 @@ function test()
     var dataProvider = new WebInspector.TimelineFlameChartDataProvider(tracingTimelineModel, new WebInspector.TracingTimelineFrameModel());
 
     InspectorTest.addResult("\nBlackboxed url: lib_script.js");
-    WebInspector.blackboxManager.blackboxURL("lib_script.js");
+    WebInspector.blackboxManager._blackboxURL("lib_script.js");
     printTimelineData(dataProvider);
 
     InspectorTest.addResult("\nUnblackboxed url: lib_script.js");
-    WebInspector.blackboxManager.unblackbox("lib_script.js", false);
+    WebInspector.blackboxManager._unblackboxURL("lib_script.js");
     printTimelineData(dataProvider);
 
     InspectorTest.completeTest();
