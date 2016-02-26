@@ -16,7 +16,7 @@
 namespace scheduler {
 
 class RendererSchedulerImpl;
-class ThrottledTimeDomain;
+class VirtualTimeDomain;
 class WebFrameSchedulerImpl;
 
 class SCHEDULER_EXPORT ThrottlingHelper : public TimeDomain::Observer {
@@ -42,7 +42,7 @@ class SCHEDULER_EXPORT ThrottlingHelper : public TimeDomain::Observer {
   // Removes |task_queue| from |throttled_queues_|.
   void UnregisterTaskQueue(TaskQueue* task_queue);
 
-  const ThrottledTimeDomain* time_domain() const { return time_domain_.get(); }
+  const VirtualTimeDomain* time_domain() const { return time_domain_.get(); }
 
   static base::TimeTicks ThrottledRunTime(base::TimeTicks unthrottled_runtime);
 
@@ -67,7 +67,7 @@ class SCHEDULER_EXPORT ThrottlingHelper : public TimeDomain::Observer {
   RendererSchedulerImpl* renderer_scheduler_;  // NOT OWNED
   base::TickClock* tick_clock_;                // NOT OWNED
   const char* tracing_category_;               // NOT OWNED
-  scoped_ptr<ThrottledTimeDomain> time_domain_;
+  scoped_ptr<VirtualTimeDomain> time_domain_;
 
   CancelableClosureHolder suspend_timers_when_backgrounded_closure_;
   base::TimeTicks pending_pump_throttled_tasks_runtime_;

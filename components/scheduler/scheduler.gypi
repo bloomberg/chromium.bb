@@ -80,8 +80,6 @@
       'renderer/render_widget_signals.h',
       'renderer/task_cost_estimator.cc',
       'renderer/task_cost_estimator.h',
-      'renderer/throttled_time_domain.cc',
-      'renderer/throttled_time_domain.h',
       'renderer/throttling_helper.cc',
       'renderer/throttling_helper.h',
       'renderer/web_frame_scheduler_impl.cc',

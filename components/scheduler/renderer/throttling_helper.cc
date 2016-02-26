@@ -6,9 +6,9 @@
 
 #include "base/logging.h"
 #include "components/scheduler/base/real_time_domain.h"
+#include "components/scheduler/base/virtual_time_domain.h"
 #include "components/scheduler/child/scheduler_tqm_delegate.h"
 #include "components/scheduler/renderer/renderer_scheduler_impl.h"
-#include "components/scheduler/renderer/throttled_time_domain.h"
 #include "components/scheduler/renderer/web_frame_scheduler_impl.h"
 #include "third_party/WebKit/public/platform/WebFrameScheduler.h"
 
@@ -20,7 +20,7 @@ ThrottlingHelper::ThrottlingHelper(RendererSchedulerImpl* renderer_scheduler,
       renderer_scheduler_(renderer_scheduler),
       tick_clock_(renderer_scheduler->tick_clock()),
       tracing_category_(tracing_category),
-      time_domain_(new ThrottledTimeDomain(this, tick_clock_)),
+      time_domain_(new VirtualTimeDomain(this, tick_clock_->NowTicks())),
       weak_factory_(this) {
   suspend_timers_when_backgrounded_closure_.Reset(base::Bind(
       &ThrottlingHelper::PumpThrottledTasks, weak_factory_.GetWeakPtr()));

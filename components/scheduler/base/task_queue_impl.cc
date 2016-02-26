@@ -186,14 +186,11 @@ bool TaskQueueImpl::PostDelayedTaskImpl(
     EnqueueOrder sequence_number =
         main_thread_only().task_queue_manager->GetNextSequenceNumber();
 
-    base::TimeTicks time_domain_now = main_thread_only().time_domain->Now();
-    base::TimeTicks time_domain_delayed_run_time =
-        main_thread_only().time_domain->ComputeDelayedRunTime(time_domain_now,
-                                                              delay);
+    base::TimeTicks now = main_thread_only().time_domain->Now();
     PushOntoDelayedIncomingQueueFromMainThread(
-        Task(from_here, task, time_domain_delayed_run_time, sequence_number,
+        Task(from_here, task, now + delay, sequence_number,
              task_type != TaskType::NON_NESTABLE),
-        time_domain_now);
+        now);
   } else {
     // NOTE posting a delayed task from a different thread is not expected to
     // be common. This pathway is less optimal than perhaps it could be
@@ -206,12 +203,9 @@ bool TaskQueueImpl::PostDelayedTaskImpl(
     EnqueueOrder sequence_number =
         any_thread().task_queue_manager->GetNextSequenceNumber();
 
-    base::TimeTicks time_domain_now = any_thread().time_domain->Now();
-    base::TimeTicks time_domain_delayed_run_time =
-        any_thread().time_domain->ComputeDelayedRunTime(time_domain_now, delay);
     PushOntoDelayedIncomingQueueLocked(
-        Task(from_here, task, time_domain_delayed_run_time, sequence_number,
-             task_type != TaskType::NON_NESTABLE));
+        Task(from_here, task, any_thread().time_domain->Now() + delay,
+             sequence_number, task_type != TaskType::NON_NESTABLE));
   }
   return true;
 }

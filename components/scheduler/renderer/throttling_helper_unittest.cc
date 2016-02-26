@@ -328,34 +328,4 @@ TEST_F(ThrottlingHelperTest,
                   base::TimeTicks() + base::TimeDelta::FromSeconds(16)));
 }
 
-TEST_F(ThrottlingHelperTest, TaskDelayIsBasedOnRealTime) {
-  std::vector<base::TimeTicks> run_times;
-
-  throttling_helper_->IncreaseThrottleRefCount(timer_queue_.get());
-
-  // Post an initial task that should run at the first aligned time period.
-  timer_queue_->PostDelayedTask(FROM_HERE,
-                                base::Bind(&TestTask, &run_times, clock_.get()),
-                                base::TimeDelta::FromMilliseconds(900.0));
-
-  mock_task_runner_->RunUntilIdle();
-
-  // Advance realtime.
-  clock_->Advance(base::TimeDelta::FromMilliseconds(250));
-
-  // Post a task that due to real time + delay must run in the third aligned
-  // time period.
-  timer_queue_->PostDelayedTask(FROM_HERE,
-                                base::Bind(&TestTask, &run_times, clock_.get()),
-                                base::TimeDelta::FromMilliseconds(900.0));
-
-  mock_task_runner_->RunUntilIdle();
-
-  EXPECT_THAT(
-      run_times,
-      ElementsAre(
-          base::TimeTicks() + base::TimeDelta::FromMilliseconds(1000.0),
-          base::TimeTicks() + base::TimeDelta::FromMilliseconds(3000.0)));
-}
-
 }  // namespace scheduler
