@@ -218,9 +218,7 @@
 #endif
 
 #if defined(ENABLE_MOJO_MEDIA)
-#include "mojo/public/cpp/bindings/interface_request.h"
-#include "mojo/shell/public/cpp/connect.h"
-#include "mojo/shell/public/interfaces/shell.mojom.h"
+#include "content/renderer/media/media_interface_provider.h"
 #endif
 
 #if defined(ENABLE_MOJO_CDM)
@@ -2503,7 +2501,7 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
 
 #if defined(ENABLE_MOJO_RENDERER)
   scoped_ptr<media::RendererFactory> media_renderer_factory(
-      new media::MojoRendererFactory(GetMediaServiceFactory()));
+      new media::MojoRendererFactory(GetMediaInterfaceProvider()));
 #else
   scoped_ptr<media::RendererFactory> media_renderer_factory =
       GetContentClient()->renderer()->CreateMediaRendererFactory(
@@ -5988,25 +5986,14 @@ media::MediaPermission* RenderFrameImpl::GetMediaPermission() {
 }
 
 #if defined(ENABLE_MOJO_MEDIA)
-media::interfaces::ServiceFactory* RenderFrameImpl::GetMediaServiceFactory() {
-  if (!media_service_factory_) {
-    mojo::shell::mojom::InterfaceProviderPtr interface_provider =
-        ConnectToApplication(GURL("mojo:media"));
-    mojo::GetInterface(interface_provider.get(), &media_service_factory_);
-    media_service_factory_.set_connection_error_handler(
-        base::Bind(&RenderFrameImpl::OnMediaServiceFactoryConnectionError,
-                   base::Unretained(this)));
+mojo::shell::mojom::InterfaceProvider*
+RenderFrameImpl::GetMediaInterfaceProvider() {
+  if (!media_interface_provider_) {
+    media_interface_provider_.reset(new MediaInterfaceProvider(base::Bind(
+        &RenderFrameImpl::ConnectToApplication, base::Unretained(this))));
   }
 
-  return media_service_factory_.get();
-}
-
-void RenderFrameImpl::OnMediaServiceFactoryConnectionError() {
-  // TODO(xhwang): Resetting |media_service_factory_| could cause access
-  // violation on the old |media_service_factory_| by outstanding
-  // media::CdmFactory or media::RendererFactory. Find a better way to handle
-  // this.
-  // media_service_factory_.reset();
+  return media_interface_provider_.get();
 }
 #endif  // defined(ENABLE_MOJO_MEDIA)
 
@@ -6030,7 +6017,7 @@ media::CdmFactory* RenderFrameImpl::GetCdmFactory() {
     DCHECK(frame_);
 
 #if defined(ENABLE_MOJO_CDM)
-    cdm_factory_.reset(new media::MojoCdmFactory(GetMediaServiceFactory()));
+    cdm_factory_.reset(new media::MojoCdmFactory(GetMediaInterfaceProvider()));
 #else
     cdm_factory_.reset(new RenderCdmFactory(
 #if defined(ENABLE_PEPPER_CDMS)

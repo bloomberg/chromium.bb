@@ -4,24 +4,22 @@
 
 #include "media/mojo/services/mojo_cdm_factory.h"
 
-#include <utility>
-
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "media/base/key_systems.h"
 #include "media/cdm/aes_decryptor.h"
-#include "media/mojo/interfaces/service_factory.mojom.h"
 #include "media/mojo/services/mojo_cdm.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/shell/public/cpp/connect.h"
+#include "mojo/shell/public/interfaces/interface_provider.mojom.h"
 
 namespace media {
 
-MojoCdmFactory::MojoCdmFactory(interfaces::ServiceFactory* service_factory)
-    : service_factory_(service_factory) {
-  DCHECK(service_factory_);
+MojoCdmFactory::MojoCdmFactory(
+    mojo::shell::mojom::InterfaceProvider* interface_provider)
+    : interface_provider_(interface_provider) {
+  DCHECK(interface_provider_);
 }
 
 MojoCdmFactory::~MojoCdmFactory() {
@@ -38,7 +36,6 @@ void MojoCdmFactory::Create(
     const SessionExpirationUpdateCB& session_expiration_update_cb,
     const CdmCreatedCB& cdm_created_cb) {
   DVLOG(2) << __FUNCTION__ << ": " << key_system;
-  DCHECK(service_factory_);
 
   if (!security_origin.is_valid()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -56,7 +53,8 @@ void MojoCdmFactory::Create(
   }
 
   interfaces::ContentDecryptionModulePtr cdm_ptr;
-  service_factory_->CreateCdm(mojo::GetProxy(&cdm_ptr));
+  mojo::GetInterface<interfaces::ContentDecryptionModule>(interface_provider_,
+                                                          &cdm_ptr);
 
   MojoCdm::Create(key_system, security_origin, cdm_config, std::move(cdm_ptr),
                   session_message_cb, session_closed_cb,

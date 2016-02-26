@@ -4,19 +4,17 @@
 
 #include "media/mojo/services/mojo_renderer_factory.h"
 
-#include <utility>
-
 #include "base/single_thread_task_runner.h"
-#include "media/mojo/interfaces/service_factory.mojom.h"
 #include "media/mojo/services/mojo_renderer_impl.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/shell/public/cpp/connect.h"
+#include "mojo/shell/public/interfaces/interface_provider.mojom.h"
 
 namespace media {
 
 MojoRendererFactory::MojoRendererFactory(
-    interfaces::ServiceFactory* service_factory)
-    : service_factory_(service_factory) {
-  DCHECK(service_factory_);
+    mojo::shell::mojom::InterfaceProvider* interface_provider)
+    : interface_provider_(interface_provider) {
+  DCHECK(interface_provider_);
 }
 
 MojoRendererFactory::~MojoRendererFactory() {
@@ -28,13 +26,11 @@ scoped_ptr<Renderer> MojoRendererFactory::CreateRenderer(
     AudioRendererSink* /* audio_renderer_sink */,
     VideoRendererSink* /* video_renderer_sink */,
     const RequestSurfaceCB& /* request_surface_cb */) {
-  DCHECK(service_factory_);
-
-  interfaces::RendererPtr mojo_renderer;
-  service_factory_->CreateRenderer(mojo::GetProxy(&mojo_renderer));
+  interfaces::RendererPtr renderer_ptr;
+  mojo::GetInterface<interfaces::Renderer>(interface_provider_, &renderer_ptr);
 
   return scoped_ptr<Renderer>(
-      new MojoRendererImpl(media_task_runner, std::move(mojo_renderer)));
+      new MojoRendererImpl(media_task_runner, std::move(renderer_ptr)));
 }
 
 }  // namespace media

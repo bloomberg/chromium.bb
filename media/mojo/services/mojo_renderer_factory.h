@@ -8,18 +8,22 @@
 #include "base/macros.h"
 #include "media/base/renderer_factory.h"
 #include "media/mojo/interfaces/renderer.mojom.h"
-#include "mojo/public/cpp/bindings/interface_ptr.h"
+
+namespace mojo {
+namespace shell {
+namespace mojom {
+class InterfaceProvider;
+}
+}
+}
 
 namespace media {
-
-namespace interfaces {
-class ServiceFactory;
-}
 
 // The default factory class for creating MojoRendererImpl.
 class MojoRendererFactory : public RendererFactory {
  public:
-  explicit MojoRendererFactory(interfaces::ServiceFactory* service_factory);
+  explicit MojoRendererFactory(
+      mojo::shell::mojom::InterfaceProvider* interface_provider);
   ~MojoRendererFactory() final;
 
   scoped_ptr<Renderer> CreateRenderer(
@@ -30,7 +34,7 @@ class MojoRendererFactory : public RendererFactory {
       const RequestSurfaceCB& request_surface_cb) final;
 
  private:
-  interfaces::ServiceFactory* service_factory_;
+  mojo::shell::mojom::InterfaceProvider* interface_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoRendererFactory);
 };

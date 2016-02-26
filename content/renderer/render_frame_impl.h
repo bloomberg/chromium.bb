@@ -119,6 +119,7 @@ class DocumentState;
 class ExternalPopupMenu;
 class GeolocationDispatcher;
 class ManifestManager;
+class MediaInterfaceProvider;
 class MediaStreamDispatcher;
 class MediaStreamRendererFactory;
 class MediaPermissionDispatcher;
@@ -946,10 +947,7 @@ class CONTENT_EXPORT RenderFrameImpl
   bool AreSecureCodecsSupported();
 
 #if defined(ENABLE_MOJO_MEDIA)
-  media::interfaces::ServiceFactory* GetMediaServiceFactory();
-
-  // Called when a connection error happened on |media_service_factory_|.
-  void OnMediaServiceFactoryConnectionError();
+  mojo::shell::mojom::InterfaceProvider* GetMediaInterfaceProvider();
 #endif
 
   media::CdmFactory* GetCdmFactory();
@@ -1106,8 +1104,8 @@ class CONTENT_EXPORT RenderFrameImpl
   scoped_ptr<MediaPermissionDispatcher> media_permission_dispatcher_;
 
 #if defined(ENABLE_MOJO_MEDIA)
-  // The media factory attached to this frame, lazily initialized.
-  media::interfaces::ServiceFactoryPtr media_service_factory_;
+  // The media interface provider attached to this frame, lazily initialized.
+  scoped_ptr<MediaInterfaceProvider> media_interface_provider_;
 #endif
 
   // MidiClient attached to this frame; lazily initialized.

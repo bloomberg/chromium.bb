@@ -220,6 +220,11 @@ source_set("renderer") {
   }
 
   if (enable_mojo_media) {
+    sources += [
+      "media/media_interface_provider.cc",
+      "media/media_interface_provider.h",
+    ]
+
     deps += [
       "//media/mojo/interfaces",
       "//media/mojo/services:proxy",
