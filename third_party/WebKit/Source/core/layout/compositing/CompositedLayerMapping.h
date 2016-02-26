@@ -146,7 +146,7 @@ public:
     bool verifyLayerInSquashingVector(const PaintLayer*);
 #endif
 
-    void finishAccumulatingSquashingLayers(size_t nextSquashedLayerIndex);
+    void finishAccumulatingSquashingLayers(size_t nextSquashedLayerIndex, Vector<PaintLayer*>& layersNeedingPaintInvalidation);
     void updateRenderingContext();
     void updateShouldFlattenTransform();
     void updateElementIdAndCompositorMutableProperties();

@@ -56,14 +56,15 @@ void CompositingLayerAssigner::assign(PaintLayer* updateRoot, Vector<PaintLayer*
     SquashingState squashingState;
     assignLayersToBackingsInternal(updateRoot, squashingState, layersNeedingPaintInvalidation);
     if (squashingState.hasMostRecentMapping)
-        squashingState.mostRecentMapping->finishAccumulatingSquashingLayers(squashingState.nextSquashedLayerIndex);
+        squashingState.mostRecentMapping->finishAccumulatingSquashingLayers(squashingState.nextSquashedLayerIndex, layersNeedingPaintInvalidation);
 }
 
-void CompositingLayerAssigner::SquashingState::updateSquashingStateForNewMapping(CompositedLayerMapping* newCompositedLayerMapping, bool hasNewCompositedLayerMapping)
+void CompositingLayerAssigner::SquashingState::updateSquashingStateForNewMapping(CompositedLayerMapping* newCompositedLayerMapping, bool hasNewCompositedLayerMapping,
+    Vector<PaintLayer*>& layersNeedingPaintInvalidation)
 {
     // The most recent backing is done accumulating any more squashing layers.
     if (hasMostRecentMapping)
-        mostRecentMapping->finishAccumulatingSquashingLayers(nextSquashedLayerIndex);
+        mostRecentMapping->finishAccumulatingSquashingLayers(nextSquashedLayerIndex, layersNeedingPaintInvalidation);
 
     nextSquashedLayerIndex = 0;
     boundingRect = IntRect();
@@ -294,7 +295,7 @@ void CompositingLayerAssigner::assignLayersToBackingsInternal(PaintLayer* layer,
     // At this point, if the layer is to be separately composited, then its backing becomes the most recent in paint-order.
     if (layer->compositingState() == PaintsIntoOwnBacking) {
         ASSERT(!requiresSquashing(layer->compositingReasons()));
-        squashingState.updateSquashingStateForNewMapping(layer->compositedLayerMapping(), layer->hasCompositedLayerMapping());
+        squashingState.updateSquashingStateForNewMapping(layer->compositedLayerMapping(), layer->hasCompositedLayerMapping(), layersNeedingPaintInvalidation);
     }
 
     if (layer->scrollParent())

@@ -61,7 +61,7 @@ private:
             , nextSquashedLayerIndex(0)
             , totalAreaOfSquashedRects(0) { }
 
-        void updateSquashingStateForNewMapping(CompositedLayerMapping*, bool hasNewCompositedPaintLayerMapping);
+        void updateSquashingStateForNewMapping(CompositedLayerMapping*, bool hasNewCompositedPaintLayerMapping, Vector<PaintLayer*>& layersNeedingPaintInvalidation);
 
         // The most recent composited backing that the layer should squash onto if needed.
         CompositedLayerMapping* mostRecentMapping;

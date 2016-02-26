@@ -2498,7 +2498,7 @@ bool CompositedLayerMapping::verifyLayerInSquashingVector(const PaintLayer* laye
 }
 #endif
 
-void CompositedLayerMapping::finishAccumulatingSquashingLayers(size_t nextSquashedLayerIndex)
+void CompositedLayerMapping::finishAccumulatingSquashingLayers(size_t nextSquashedLayerIndex, Vector<PaintLayer*>& layersNeedingPaintInvalidation)
 {
     if (nextSquashedLayerIndex < m_squashedLayers.size()) {
         // Any additional squashed Layers in the array no longer belong here, but they might have been
@@ -2507,6 +2507,7 @@ void CompositedLayerMapping::finishAccumulatingSquashingLayers(size_t nextSquash
         for (size_t i = nextSquashedLayerIndex; i < m_squashedLayers.size(); ++i) {
             if (invalidateLayerIfNoPrecedingEntry(i))
                 m_squashedLayers[i].paintLayer->setGroupedMapping(nullptr, PaintLayer::DoNotInvalidateLayerAndRemoveFromMapping);
+            layersNeedingPaintInvalidation.append(m_squashedLayers[i].paintLayer);
         }
 
         m_squashedLayers.remove(nextSquashedLayerIndex, m_squashedLayers.size() - nextSquashedLayerIndex);
