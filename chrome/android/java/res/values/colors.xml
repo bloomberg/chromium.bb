@@ -79,11 +79,8 @@
 
     <!-- First Run Experience Colors -->
     <color name="fre_text_color">#000000</color>
+    <color name="fre_light_text_color">#494949</color>
     <color name="fre_title_color">#161616</color>
-    
-    <!-- Account Signin Colors -->
-    <!-- As in dimens.xml, signin uses values from the First Run Experience -->
-    <color name="signin_light_text_color">#494949</color>
 
     <!-- Sad Tab colors -->
     <color name="sad_tab_header_text_color">#333333</color>

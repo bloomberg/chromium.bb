@@ -31,7 +31,7 @@ public class TosAndUmaView extends FrameLayout {
         LinearLayout wrapper = (LinearLayout) findViewById(R.id.text_wrapper);
         MarginLayoutParams params = (MarginLayoutParams) wrapper.getLayoutParams();
         int paddingStart = 0;
-        if (width >= 2 * getResources().getDimension(R.dimen.signin_image_carousel_width)
+        if (width >= 2 * getResources().getDimension(R.dimen.fre_image_carousel_width)
                 && width > height) {
             content.setOrientation(LinearLayout.HORIZONTAL);
             paddingStart = getResources().getDimensionPixelSize(R.dimen.fre_margin);

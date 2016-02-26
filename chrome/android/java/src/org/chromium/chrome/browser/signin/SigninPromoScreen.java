@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.signin;
 
 import android.app.Activity;
-import android.app.FragmentManager;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -15,6 +14,7 @@ import android.widget.LinearLayout;
 
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.firstrun.AccountFirstRunView;
 import org.chromium.chrome.browser.firstrun.ProfileDataCache;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
@@ -31,9 +31,9 @@ import org.chromium.sync.signin.ChromeSigninController;
 /**
  * This class implements the dialog UI for the signin promo.
  */
-public class SigninPromoScreen extends AlwaysDismissedDialog
-        implements AccountSigninView.Listener, AccountSigninView.Delegate {
-    private AccountSigninView mAccountFirstRunView;
+public class SigninPromoScreen
+        extends AlwaysDismissedDialog implements AccountFirstRunView.Listener {
+    private AccountFirstRunView mAccountFirstRunView;
     private ProfileDataCache mProfileDataCache;
     private String mAccountName;
 
@@ -75,13 +75,12 @@ public class SigninPromoScreen extends AlwaysDismissedDialog
         setOwnerActivity(activity);
 
         LayoutInflater inflater = LayoutInflater.from(activity);
-        View view = inflater.inflate(R.layout.account_signin_view, null);
+        View view = inflater.inflate(R.layout.fre_choose_account, null);
         mProfileDataCache = new ProfileDataCache(activity, Profile.getLastUsedProfile());
-        mAccountFirstRunView = (AccountSigninView) view.findViewById(R.id.account_layout);
+        mAccountFirstRunView = (AccountFirstRunView) view.findViewById(R.id.fre_account_layout);
         mAccountFirstRunView.init(mProfileDataCache);
         mAccountFirstRunView.configureForAddAccountPromo();
         mAccountFirstRunView.setListener(this);
-        mAccountFirstRunView.setDelegate(this);
 
         setContentView(view, new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT));
@@ -153,10 +152,5 @@ public class SigninPromoScreen extends AlwaysDismissedDialog
     @Override
     public void onFailedToSetForcedAccount(String forcedAccountName) {
         assert false : "No forced accounts in SigninPromoScreen";
-    }
-
-    @Override
-    public FragmentManager getFragmentManager() {
-        return getOwnerActivity().getFragmentManager();
     }
 }

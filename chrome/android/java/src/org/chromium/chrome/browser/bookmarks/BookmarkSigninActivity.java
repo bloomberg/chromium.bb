@@ -127,6 +127,7 @@ public class BookmarkSigninActivity extends BookmarkActivityBase implements
     @Override
     public void onNewAccount() {
         RecordUserAction.record("Stars_SignInPromoActivity_NewAccount");
+        RecordUserAction.record("Signin_AddAccountToDevice");
     }
 
     @Override

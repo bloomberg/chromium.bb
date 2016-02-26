@@ -56,7 +56,4 @@
         <attr name="backgroundColor" format="reference|color" />
     </declare-styleable>
 
-    <declare-styleable name="RadioButtonWithDescription">
-        <attr name="titleText" format="string" />
-    </declare-styleable>
 </resources>

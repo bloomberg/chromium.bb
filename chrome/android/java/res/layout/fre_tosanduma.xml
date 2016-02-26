@@ -41,7 +41,7 @@
 
                 <ImageView
                     android:layout_width="wrap_content"
-                    android:layout_height="@dimen/fre_image_height"
+                    android:layout_height="@dimen/fre_image_carousel_height"
                     android:layout_marginBottom="@dimen/fre_margin"
                     android:contentDescription="@null"
                     android:src="@drawable/fre_product_logo" />

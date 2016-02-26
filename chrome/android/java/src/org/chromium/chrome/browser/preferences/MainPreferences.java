@@ -4,25 +4,36 @@
 
 package org.chromium.chrome.browser.preferences;
 
-import android.content.Intent;
+import android.app.DialogFragment;
+import android.app.FragmentManager;
+import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceFragment;
 
+import org.chromium.base.Callback;
+import org.chromium.base.VisibleForTesting;
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.PasswordUIView;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.preferences.datareduction.DataReductionPreferences;
-import org.chromium.chrome.browser.signin.AccountSigninActivity;
+import org.chromium.chrome.browser.signin.AccountAdder;
+import org.chromium.chrome.browser.signin.AddGoogleAccountDialogFragment;
+import org.chromium.chrome.browser.signin.AddGoogleAccountDialogFragment.AddGoogleAccountListener;
 import org.chromium.chrome.browser.signin.SigninAccessPoint;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.signin.SigninManager.SignInStateObserver;
+import org.chromium.chrome.browser.sync.ui.ChooseAccountFragment;
 import org.chromium.chrome.browser.util.FeatureUtilities;
+import org.chromium.sync.signin.AccountManagerHelper;
 import org.chromium.sync.signin.ChromeSigninController;
+
+import java.util.List;
 
 /**
  * The main settings screen, shown when the user first opens Settings.
@@ -87,21 +98,13 @@ public class MainPreferences extends PreferenceFragment implements SignInStateOb
         mSignInPreference.setOnPreferenceClickListener(new OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
-                if (ChromeSigninController.get(getActivity()).isSignedIn()) return false;
-                if (!SigninManager.get(getActivity()).isSignInAllowed()) {
-                    if (SigninManager.get(getActivity()).isSigninDisabledByPolicy()) {
-                        ManagedPreferencesUtils.showManagedByAdministratorToast(getActivity());
-                    }
-                    return false;
+                if (!ChromeSigninController.get(getActivity()).isSignedIn()) {
+                    displayAccountPicker();
+                    return true;
                 }
-
-                mSignInPreference.setEnabled(false);
-                SigninManager.logSigninStartAccessPoint(SigninAccessPoint.SETTINGS);
-                startActivity(new Intent(getActivity(), AccountSigninActivity.class));
-                return true;
+                return false;
             }
         });
-        mSignInPreference.setEnabled(true);
 
         Preference documentMode = findPreference(PREF_DOCUMENT_MODE);
         if (FeatureUtilities.isDocumentModeEligible(getActivity())) {
@@ -160,6 +163,80 @@ public class MainPreferences extends PreferenceFragment implements SignInStateOb
             mSignInPreference.unregisterForUpdates();
             mSignInPreference = null;
         }
+    }
+
+    private void displayAccountPicker() {
+        displayAccountPicker(new Callback<DialogFragment>() {
+            @Override
+            public void onResult(DialogFragment fragment) {}
+        });
+    }
+
+    /**
+     * Displays the account picker or the add account dialog and signs the user in.
+     *
+     * @param callback Called with the fragment that was shown, or null. Used for testing.
+     */
+    @VisibleForTesting
+    public void displayAccountPicker(final Callback<DialogFragment> callback) {
+        Context context = getActivity();
+        if (context == null) {
+            postCallback(callback, null);
+            return;
+        }
+
+        if (!SigninManager.get(context).isSignInAllowed()) {
+            if (SigninManager.get(context).isSigninDisabledByPolicy()) {
+                ManagedPreferencesUtils.showManagedByAdministratorToast(context);
+            }
+            postCallback(callback, null);
+            return;
+        }
+
+        AccountManagerHelper.get(context).getGoogleAccountNames(new Callback<List<String>>() {
+            @Override
+            public void onResult(List<String> accountNames) {
+                FragmentManager fragmentManager = getFragmentManager();
+                if (fragmentManager == null) {
+                    // Preferences were closed since the click happened; abort.
+                    callback.onResult(null);
+                    return;
+                }
+
+                if (!accountNames.isEmpty()) {
+                    if (fragmentManager.findFragmentByTag(ACCOUNT_PICKER_DIALOG_TAG) != null) {
+                        callback.onResult(null);
+                    } else {
+                        ChooseAccountFragment chooserFragment =
+                                new ChooseAccountFragment(accountNames);
+                        chooserFragment.show(fragmentManager, ACCOUNT_PICKER_DIALOG_TAG);
+                        callback.onResult(chooserFragment);
+                        SigninManager.logSigninStartAccessPoint(SigninAccessPoint.SETTINGS);
+                    }
+                } else {
+                    AddGoogleAccountDialogFragment dialog = new AddGoogleAccountDialogFragment();
+                    dialog.setListener(new AddGoogleAccountListener() {
+                        @Override
+                        public void onAddAccountClicked() {
+                            RecordUserAction.record("Signin_AddAccountToDevice");
+                            AccountAdder.getInstance().addAccount(
+                                    MainPreferences.this, AccountAdder.ADD_ACCOUNT_RESULT);
+                        }
+                    });
+                    dialog.show(fragmentManager, null);
+                    callback.onResult(dialog);
+                }
+            }
+        });
+    }
+
+    private <V> void postCallback(final Callback<V> callback, final V result) {
+        new Handler().post(new Runnable() {
+            @Override
+            public void run() {
+                callback.onResult(result);
+            }
+        });
     }
 
     // SignInStateObserver

@@ -600,7 +600,9 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
                                 RecordUserAction.record("Signin_Signin_FromRecentTabs");
                             }
                             @Override
-                            public void onNewAccount() {}
+                            public void onNewAccount() {
+                                RecordUserAction.record("Signin_AddAccountToDevice");
+                            }
                             @Override
                             public void onAccountSelectionCancelled() {
                                 mRecentTabsManager.setSigninPromoDeclined();

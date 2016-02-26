@@ -12,24 +12,23 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.signin.AccountSigninView;
 
 /**
  * A {@link Fragment} meant to handle sync setup for the first run experience.
  */
-public class AccountFirstRunFragment extends FirstRunPage implements AccountSigninView.Delegate {
+public class AccountFirstRunFragment extends FirstRunPage {
     // Per-page parameters:
     public static final String FORCE_SIGNIN_ACCOUNT_TO = "ForceSigninAccountTo";
     public static final String PRESELECT_BUT_ALLOW_TO_CHANGE = "PreselectButAllowToChange";
     public static final String IS_CHILD_ACCOUNT = "IsChildAccount";
 
-    private AccountSigninView mView;
+    private AccountFirstRunView mView;
 
     @Override
     public View onCreateView(
             LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        mView = (AccountSigninView) inflater.inflate(
-                R.layout.account_signin_view, container, false);
+        mView = (AccountFirstRunView) inflater.inflate(
+                R.layout.fre_choose_account, container, false);
         return mView;
     }
 
@@ -37,7 +36,7 @@ public class AccountFirstRunFragment extends FirstRunPage implements AccountSign
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        mView.setListener(new AccountSigninView.Listener() {
+        mView.setListener(new AccountFirstRunView.Listener() {
             @Override
             public void onAccountSelectionCanceled() {
                 getPageDelegate().refuseSignIn();
@@ -71,8 +70,8 @@ public class AccountFirstRunFragment extends FirstRunPage implements AccountSign
                 // The user would have to go through the FRE again.
                 getPageDelegate().abortFirstRunExperience();
             }
+
         });
-        mView.setDelegate(this);
 
         mView.init(getPageDelegate().getProfileDataCache());
 

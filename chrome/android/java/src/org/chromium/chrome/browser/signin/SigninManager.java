@@ -23,6 +23,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 import org.chromium.chrome.browser.externalauth.UserRecoverableErrorHandler;
+import org.chromium.signin.InvestigatedScenario;
 import org.chromium.sync.signin.AccountManagerHelper;
 import org.chromium.sync.signin.ChromeSigninController;
 
@@ -291,7 +292,7 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
     public void onSystemAccountsSeedingComplete() {
         if (mSignInState != null && mSignInState.blockedOnAccountSeeding) {
             mSignInState.blockedOnAccountSeeding = false;
-            progressSignInFlowCheckPolicy();
+            progressSignInFlowInvestigateScenario();
         }
     }
 
@@ -365,7 +366,7 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
 
     private void progressSignInFlowSeedSystemAccounts() {
         if (AccountTrackerService.get(mContext).checkAndSeedSystemAccounts()) {
-            progressSignInFlowCheckPolicy();
+            progressSignInFlowInvestigateScenario();
         } else if (AccountIdProvider.getInstance().canBeUsed(mContext)) {
             mSignInState.blockedOnAccountSeeding = true;
         } else {
@@ -380,16 +381,51 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
     }
 
     /**
-     * Continues the signin flow by checking if there is a policy that the account is subject to.
+     * If sign-in is interactive and the user is changing accounts, display a confirmation dialog.
      */
-    private void progressSignInFlowCheckPolicy() {
-        if (mSignInState == null) {
-            Log.w(TAG, "Ignoring sign in progress request as no pending sign in.");
+    private void progressSignInFlowInvestigateScenario() {
+        if (!mSignInState.isInteractive()) {
+            progressSignInFlowCheckPolicy();
             return;
         }
 
         if (mSignInState.isActivityDestroyed()) {
             abortSignIn();
+            return;
+        }
+
+        // TODO(skym): Warn for high risk upgrade scenario, crbug.com/572754.
+        if (SigninInvestigator.investigate(mSignInState.account.name)
+                == InvestigatedScenario.DIFFERENT_ACCOUNT) {
+            mSignInState.displayedDialog =
+                    ConfirmAccountChangeFragment.newInstance(mSignInState.account.name);
+            mSignInState.displayedDialog.show(
+                    mSignInState.activity.getFragmentManager(), CONFIRM_ACCOUNT_CHANGED_DIALOG_TAG);
+        } else {
+            // Do not display dialog, just sign-in.
+            progressSignInFlowCheckPolicy();
+        }
+    }
+
+    /**
+     * Called from ConfirmAccountChangeFragment if the new account name was confirmed.
+     */
+    void progressInteractiveSignInFlowAccountConfirmed() {
+        if (mSignInState == null || mSignInState.displayedDialog == null) {
+            // Stop if sign-in was cancelled or this is a duplicate click event.
+            return;
+        }
+        mSignInState.displayedDialog = null;
+
+        progressSignInFlowCheckPolicy();
+    }
+
+    /**
+     * Continues the signin flow by checking if there is a policy that the account is subject to.
+     */
+    private void progressSignInFlowCheckPolicy() {
+        if (mSignInState == null) {
+            Log.w(TAG, "Ignoring sign in progress request as no pending sign in.");
             return;
         }
 
@@ -429,7 +465,6 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
             return;
         }
 
-        // TODO(peconn): Move this and other UI interactions into AccountSigninView.
         Log.d(TAG, "Account has policy management");
         mSignInState.displayedDialog = ConfirmManagedSigninFragment.newInstance(managementDomain);
         mSignInState.displayedDialog.show(
