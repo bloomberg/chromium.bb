@@ -28,6 +28,7 @@
 #include "bindings/core/v8/ArrayValue.h"
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/V8ArrayBufferView.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8DOMError.h"
@@ -117,17 +118,24 @@ bool Dictionary::hasProperty(const String& key) const
 
 bool Dictionary::getKey(const String& key, v8::Local<v8::Value>& value) const
 {
-    v8::Local<v8::Object> object;
-    if (!toObject(object))
+    if (!m_isolate)
         return false;
 
-    ASSERT(m_isolate);
-    ASSERT(m_isolate == v8::Isolate::GetCurrent());
-    ASSERT(m_exceptionState);
-    v8::Local<v8::String> v8Key = v8String(m_isolate, key);
-    if (!v8CallBoolean(object->Has(v8Context(), v8Key)))
-        return false;
-    return object->Get(v8Context(), v8Key).ToLocal(&value);
+    return getInternal(v8String(m_isolate, key), value);
+}
+
+DictionaryIterator Dictionary::getIterator(ExecutionContext* executionContext) const
+{
+    v8::Local<v8::Value> iteratorGetter;
+    // TODO(alancutter): Support callable objects as well as functions.
+    if (!getInternal(v8::Symbol::GetIterator(m_isolate), iteratorGetter) || !iteratorGetter->IsFunction())
+        return nullptr;
+    v8::Local<v8::Value> iterator;
+    if (!v8Call(ScriptController::callFunction(executionContext, v8::Local<v8::Function>::Cast(iteratorGetter), m_options, 0, nullptr, m_isolate), iterator))
+        return nullptr;
+    if (!iterator->IsObject())
+        return nullptr;
+    return DictionaryIterator(v8::Local<v8::Object>::Cast(iterator), m_isolate);
 }
 
 bool Dictionary::get(const String& key, v8::Local<v8::Value>& value) const
@@ -148,6 +156,20 @@ bool Dictionary::get(const String& key, Dictionary& value) const
     }
 
     return true;
+}
+
+bool Dictionary::getInternal(const v8::Local<v8::Value>& key, v8::Local<v8::Value>& result) const
+{
+    v8::Local<v8::Object> object;
+    if (!toObject(object))
+        return false;
+
+    ASSERT(m_isolate);
+    ASSERT(m_isolate == v8::Isolate::GetCurrent());
+    ASSERT(m_exceptionState);
+    if (!v8CallBoolean(object->Has(v8Context(), key)))
+        return false;
+    return object->Get(v8Context(), key).ToLocal(&result);
 }
 
 static inline bool propertyKey(v8::Local<v8::Context> v8Context, v8::Local<v8::Array> properties, uint32_t index, v8::Local<v8::String>& key)

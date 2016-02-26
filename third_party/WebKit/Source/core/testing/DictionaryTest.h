@@ -40,6 +40,8 @@ public:
     void setDerived(const InternalDictionaryDerived&);
     void getDerived(InternalDictionaryDerived&);
 
+    String stringFromIterable(ExecutionContext*, Dictionary iterable, ExceptionState&) const;
+
     DECLARE_TRACE();
 
 private:

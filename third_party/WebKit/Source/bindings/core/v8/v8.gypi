@@ -30,6 +30,8 @@
             'Dictionary.h',
             'DictionaryHelperForBindings.h',
             'DictionaryHelperForCore.cpp',
+            'DictionaryIterator.cpp',
+            'DictionaryIterator.h',
             'ExceptionMessages.cpp',
             'ExceptionMessages.h',
             'ExceptionState.cpp',

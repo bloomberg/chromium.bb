@@ -11,4 +11,6 @@
 
     void setDerived(InternalDictionaryDerived derived);
     InternalDictionaryDerived getDerived();
+
+    [CallWith=ExecutionContext, RaisesException] DOMString stringFromIterable(Dictionary iterableDictionary);
 };

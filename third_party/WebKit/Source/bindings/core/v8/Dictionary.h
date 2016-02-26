@@ -26,6 +26,7 @@
 #ifndef Dictionary_h
 #define Dictionary_h
 
+#include "bindings/core/v8/DictionaryIterator.h"
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/Nullable.h"
@@ -41,6 +42,8 @@
 #include <v8.h>
 
 namespace blink {
+
+class ExecutionContext;
 
 // Dictionary class provides ways to retrieve property values as C++ objects
 // from a V8 object. Instances of this class must not outlive V8's handle scope
@@ -75,8 +78,10 @@ public:
     }
 
     bool getKey(const String& key, v8::Local<v8::Value>&) const;
+    DictionaryIterator getIterator(ExecutionContext*) const;
 
 private:
+    bool getInternal(const v8::Local<v8::Value>& key, v8::Local<v8::Value>& result) const;
     bool toObject(v8::Local<v8::Object>&) const;
 
     v8::Local<v8::Value> m_options;
