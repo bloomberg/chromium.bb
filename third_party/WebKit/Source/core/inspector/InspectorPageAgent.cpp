@@ -676,7 +676,7 @@ void InspectorPageAgent::didRunJavaScriptDialog(bool result)
 void InspectorPageAgent::didUpdateLayout()
 {
     if (m_enabled && m_client)
-        m_client->pageLayoutInvalidated();
+        m_client->pageLayoutInvalidated(false);
 }
 
 void InspectorPageAgent::didResizeMainFrame()
@@ -685,7 +685,7 @@ void InspectorPageAgent::didResizeMainFrame()
         return;
 #if !OS(ANDROID)
     if (m_enabled && m_client)
-        m_client->pageLayoutInvalidated();
+        m_client->pageLayoutInvalidated(true);
 #endif
     frontend()->frameResized();
 }
@@ -693,7 +693,7 @@ void InspectorPageAgent::didResizeMainFrame()
 void InspectorPageAgent::didRecalculateStyle(int)
 {
     if (m_enabled && m_client)
-        m_client->pageLayoutInvalidated();
+        m_client->pageLayoutInvalidated(false);
 }
 
 void InspectorPageAgent::windowCreated(LocalFrame* created)

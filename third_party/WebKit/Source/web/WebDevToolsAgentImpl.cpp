@@ -309,7 +309,7 @@ PassOwnPtrWillBeRawPtr<WebDevToolsAgentImpl> WebDevToolsAgentImpl::create(WebLoc
     // TODO(dgozman): we should actually pass the view instead of frame, but during
     // remote->local transition we cannot access mainFrameImpl() yet, so we have to store the
     // frame which will become the main frame later.
-    agent->registerAgent(InspectorRenderingAgent::create(frame));
+    agent->registerAgent(InspectorRenderingAgent::create(frame, agent->m_overlay.get()));
     agent->registerAgent(InspectorEmulationAgent::create(frame, agent));
     // TODO(dgozman): migrate each of the following agents to frame once module is ready.
     agent->registerAgent(InspectorDatabaseAgent::create(view->page()));
@@ -680,10 +680,10 @@ void WebDevToolsAgentImpl::resumeStartup()
     m_client->resumeStartup();
 }
 
-void WebDevToolsAgentImpl::pageLayoutInvalidated()
+void WebDevToolsAgentImpl::pageLayoutInvalidated(bool resized)
 {
     if (m_overlay)
-        m_overlay->pageLayoutInvalidated();
+        m_overlay->pageLayoutInvalidated(resized);
 }
 
 void WebDevToolsAgentImpl::setPausedInDebuggerMessage(const String& message)

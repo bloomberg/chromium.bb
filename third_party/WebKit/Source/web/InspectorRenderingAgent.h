@@ -9,6 +9,7 @@
 
 namespace blink {
 
+class InspectorOverlay;
 class WebLocalFrameImpl;
 class WebViewImpl;
 
@@ -17,13 +18,14 @@ using ErrorString = String;
 class InspectorRenderingAgent final : public InspectorBaseAgent<InspectorRenderingAgent, protocol::Frontend::Rendering>, public protocol::Dispatcher::RenderingCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorRenderingAgent);
 public:
-    static PassOwnPtrWillBeRawPtr<InspectorRenderingAgent> create(WebLocalFrameImpl*);
+    static PassOwnPtrWillBeRawPtr<InspectorRenderingAgent> create(WebLocalFrameImpl*, InspectorOverlay*);
 
     // protocol::Dispatcher::PageCommandHandler implementation.
     void setShowPaintRects(ErrorString*, bool show) override;
     void setShowDebugBorders(ErrorString*, bool show) override;
     void setShowFPSCounter(ErrorString*, bool show) override;
     void setShowScrollBottleneckRects(ErrorString*, bool show) override;
+    void setShowViewportSizeOnResize(ErrorString*, bool show) override;
 
     // InspectorBaseAgent overrides.
     void disable(ErrorString*) override;
@@ -32,11 +34,12 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    explicit InspectorRenderingAgent(WebLocalFrameImpl*);
+    InspectorRenderingAgent(WebLocalFrameImpl*, InspectorOverlay*);
     bool compositingEnabled(ErrorString*);
     WebViewImpl* webViewImpl();
 
     RawPtrWillBeMember<WebLocalFrameImpl> m_webLocalFrameImpl;
+    RawPtrWillBeMember<InspectorOverlay> m_overlay;
 };
 
 

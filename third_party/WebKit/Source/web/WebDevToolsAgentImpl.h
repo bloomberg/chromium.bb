@@ -123,7 +123,7 @@ private:
     void resumeStartup() override;
 
     // InspectorPageAgent::Client implementation.
-    void pageLayoutInvalidated() override;
+    void pageLayoutInvalidated(bool resized) override;
     void setPausedInDebuggerMessage(const String&) override;
     void waitForCreateWindow(LocalFrame*) override;
 

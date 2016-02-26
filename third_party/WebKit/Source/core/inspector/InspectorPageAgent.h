@@ -62,7 +62,7 @@ public:
     class Client {
     public:
         virtual ~Client() { }
-        virtual void pageLayoutInvalidated() { }
+        virtual void pageLayoutInvalidated(bool resized) { }
         virtual void setPausedInDebuggerMessage(const String&) { }
         virtual void waitForCreateWindow(LocalFrame*) { }
     };
