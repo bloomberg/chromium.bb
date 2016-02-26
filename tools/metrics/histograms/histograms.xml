@@ -250,6 +250,24 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Android.Activity.ChromeTabbedActivity.StopReason"
+    enum="AndroidActivityStopReason">
+  <owner>dfalcantara@chromium.org</owner>
+  <summary>
+    What caused ChromeTabbedActivity#onStop() to be called, which indicates that
+    Chrome is sent to the background.
+  </summary>
+</histogram>
+
+<histogram name="Android.Activity.ChromeTabbedActivity.SystemBackAction"
+    enum="AndroidActivitySystemBackAction">
+  <owner>dfalcantara@chromium.org</owner>
+  <summary>
+    What happened when the user hit the system back button in
+    ChromeTabbedActivity.
+  </summary>
+</histogram>
+
 <histogram name="Android.ArmFpu" enum="AndroidArmFpu">
   <owner>fdegans@chromium.org</owner>
   <summary>
@@ -58023,6 +58041,44 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="3" label="Preferences"/>
   <int value="4" label="WebappActivity"/>
   <int value="5" label="FullScreenActivity"/>
+</enum>
+
+<enum name="AndroidActivityStopReason" type="int">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Chrome sent to background by system back">
+    The user pressed the system back button, sending Chrome to the background.
+  </int>
+  <int value="2" label="Return button closed app">
+    The user hit the return UI button to close the tab and return to the
+    previous app.
+  </int>
+  <int value="3" label="Immediately launched child CustomTabActivity">
+    The Activity immediately launched a CustomTabActivity on top of itself.
+  </int>
+  <int value="4" label="Child CustomTabActivity closed itself">
+    The child CustomTabActivity was closed by the user, so this Activity sent
+    itself to the background to return the user to the previous app.
+  </int>
+  <int value="5" label="Another Chrome Activity took focus">
+    Another of Chrome's Activities (e.g. Settings or Bookmarks) launched and
+    took focus.
+  </int>
+</enum>
+
+<enum name="AndroidActivitySystemBackAction" type="int">
+  <int value="0" label="Nothing happened"/>
+  <int value="1"
+      label="The foreground tab contained a help article and was closed"/>
+  <int value="2"
+      label="Chrome was minimized and the foreground tab was kept open"/>
+  <int value="3"
+      label="Chrome was minimized and the foreground tab was closed"/>
+  <int value="4"
+      label="The foreground tab was closed, but Chrome stayed visible"/>
+  <int value="5" label="Error: No tab is currently being displayed"/>
+  <int value="6" label="User exited the tab switcher"/>
+  <int value="7" label="User exited fullscreen mode"/>
+  <int value="8" label="User navigated backward in the tab's history"/>
 </enum>
 
 <enum name="AndroidArmFpu" type="int">

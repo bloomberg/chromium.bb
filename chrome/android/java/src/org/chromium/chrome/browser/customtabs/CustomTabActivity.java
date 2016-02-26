@@ -237,6 +237,7 @@ public class CustomTabActivity extends ChromeActivity {
                         if (mIntentDataProvider.isOpenedByBrowser()) {
                             createHerbResultIntent(RESULT_CLOSED);
                         }
+                        RecordUserAction.record("CustomTabs.CloseButtonClicked");
                         CustomTabActivity.this.finish();
                     }
                 });
@@ -438,6 +439,8 @@ public class CustomTabActivity extends ChromeActivity {
 
     @Override
     protected boolean handleBackPressed() {
+        RecordUserAction.record("CustomTabs.SystemBack");
+
         if (getActivityTab() == null) return false;
 
         if (exitFullscreenIfShowing()) return true;
@@ -471,6 +474,8 @@ public class CustomTabActivity extends ChromeActivity {
                                 ApiCompatibilityUtils.getCreatorPackage(params.getPendingIntent());
                         if (mIntentDataProvider.finishAfterOpeningInBrowser()
                                 && TextUtils.equals(getPackageName(), creatorPackage)) {
+                            RecordUserAction.record(
+                                    "TaskManagement.OpenInChromeActionButtonClicked");
                             openCurrentUrlInBrowser();
                             finish();
                         } else {

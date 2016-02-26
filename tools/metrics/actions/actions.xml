@@ -2521,6 +2521,18 @@ should be able to be added at any place in this file.
   <obsolete>Deprecated as of 11/2015.</obsolete>
 </action>
 
+<action name="CustomTabs.CloseButtonClicked">
+  <owner>dfalcantara@chromium.org</owner>
+  <description>Close button of the CustomTabActivity was clicked.</description>
+</action>
+
+<action name="CustomTabs.SystemBack">
+  <owner>dfalcantara@chromium.org</owner>
+  <description>
+    User hit the 'back' button in the CustomTabActivity.
+  </description>
+</action>
+
 <action name="CustomTabsCustomActionButtonClick">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of the metric.</description>
@@ -13025,8 +13037,15 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="SystemBackForNavigation">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>dfalcantara@chromium.org</owner>
+  <description>
+    The user navigated backward in the tab's history using the system back
+    button.
+  </description>
+  <obsolete>
+    Deprecated as of 02/2016. Now recorded in the histogram
+    &quot;Android.Activity.ChromeTabbedActivity.SystemBackAction&quot;.
+  </obsolete>
 </action>
 
 <action name="TabContextMenu_BookmarkAllTabs">
@@ -13175,6 +13194,24 @@ should be able to be added at any place in this file.
 <action name="Tab_DropURLOnTab">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+</action>
+
+<action name="TaskManagement.OpenInChromeActionButtonClicked">
+  <owner>dfalcantara@chromium.org</owner>
+  <description>
+    User hit the &quot;Open in Chrome&quot; action button.
+  </description>
+</action>
+
+<action name="TaskManagement.ReturnButtonClicked">
+  <owner>dfalcantara@chromium.org</owner>
+  <description>
+    User hit the &quot;X&quot; button to close the tab. The return button is an
+    explicit &quot;close this tab and return to the previous app&quot; button
+    that may appear to the left of the Omnibox.  This is different from regular
+    tab closing buttons because those doesn't send the user back to the previous
+    app.
+  </description>
 </action>
 
 <action name="TaskManager">

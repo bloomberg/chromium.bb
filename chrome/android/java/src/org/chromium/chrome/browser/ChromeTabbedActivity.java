@@ -14,6 +14,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.provider.Browser;
+import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.view.KeyEvent;
@@ -60,6 +61,7 @@ import org.chromium.chrome.browser.firstrun.FirstRunActivity;
 import org.chromium.chrome.browser.firstrun.FirstRunFlowSequencer;
 import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
+import org.chromium.chrome.browser.metrics.ActivityStopMetrics;
 import org.chromium.chrome.browser.metrics.LaunchMetrics;
 import org.chromium.chrome.browser.metrics.StartupMetrics;
 import org.chromium.chrome.browser.metrics.UmaUtils;
@@ -99,6 +101,9 @@ import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.widget.Toast;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+
 /**
  * This is the main activity for ChromeMobile when not running in document mode.  All the tabs
  * are accessible via a chrome specific tab switching UI.
@@ -107,6 +112,30 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
 
     private static final int FIRST_RUN_EXPERIENCE_RESULT = 101;
     private static final int CCT_RESULT = 102;
+
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef({
+        BACK_PRESSED_NOTHING_HAPPENED,
+        BACK_PRESSED_HELP_URL_CLOSED,
+        BACK_PRESSED_MINIMIZED_NO_TAB_CLOSED,
+        BACK_PRESSED_MINIMIZED_TAB_CLOSED,
+        BACK_PRESSED_TAB_CLOSED,
+        BACK_PRESSED_TAB_IS_NULL,
+        BACK_PRESSED_EXITED_TAB_SWITCHER,
+        BACK_PRESSED_EXITED_FULLSCREEN,
+        BACK_PRESSED_NAVIGATED_BACK
+    })
+    private @interface BackPressedResult {}
+    private static final int BACK_PRESSED_NOTHING_HAPPENED = 0;
+    private static final int BACK_PRESSED_HELP_URL_CLOSED = 1;
+    private static final int BACK_PRESSED_MINIMIZED_NO_TAB_CLOSED = 2;
+    private static final int BACK_PRESSED_MINIMIZED_TAB_CLOSED = 3;
+    private static final int BACK_PRESSED_TAB_CLOSED = 4;
+    private static final int BACK_PRESSED_TAB_IS_NULL = 5;
+    private static final int BACK_PRESSED_EXITED_TAB_SWITCHER = 6;
+    private static final int BACK_PRESSED_EXITED_FULLSCREEN = 7;
+    private static final int BACK_PRESSED_NAVIGATED_BACK = 8;
+    private static final int BACK_PRESSED_COUNT = 9;
 
     private static final String TAG = "ChromeTabbedActivity";
 
@@ -138,6 +167,8 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
      */
     private static final String ACTION_CLOSE_TABS =
             "com.google.android.apps.chrome.ACTION_CLOSE_TABS";
+
+    private final ActivityStopMetrics mActivityStopMetrics = new ActivityStopMetrics();
 
     private FindToolbarManager mFindToolbarManager;
 
@@ -322,6 +353,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
             // This may happen when onStop get called very early in UI test.
         }
         StartupMetrics.getInstance().recordHistogram(true);
+        mActivityStopMetrics.onStopWithNative(this);
     }
 
     @Override
@@ -475,7 +507,11 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
             getToolbarManager().getToolbar().setReturnButtonListener(new OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if (getActivityTab() != null) handleBackPressedWithoutBackStack(true);
+                    if (getActivityTab() == null) return;
+                    mActivityStopMetrics.setStopReason(
+                            ActivityStopMetrics.STOP_REASON_RETURN_BUTTON);
+                    RecordUserAction.record("TaskManagement.ReturnButtonClicked");
+                    sendToBackground(getActivityTab());
                 }
             });
 
@@ -613,7 +649,10 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
                         data.getDataString()), TabLaunchType.FROM_CHROME_UI, null);
             } else if ((resultCode == CustomTabActivity.RESULT_BACK_PRESSED
                     || resultCode == CustomTabActivity.RESULT_CLOSED) && data != null) {
+                // Herb UMA should have already been recorded by the CustomTabActivity.
                 Log.d(TAG, "Herb: Sending app to the background");
+                mActivityStopMetrics.setStopReason(
+                        ActivityStopMetrics.STOP_REASON_CUSTOM_TAB_STOPPED);
                 sendToBackground(null);
             }
             return true;
@@ -770,6 +809,8 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
                     && ChromeLauncherActivity.canBeHijackedByHerb(intent)
                     && TextUtils.equals(ChromeSwitches.HERB_FLAVOR_DILL, herbFlavor)) {
                 Log.d(TAG, "Sending to CustomTabActivity");
+                mActivityStopMetrics.setStopReason(
+                        ActivityStopMetrics.STOP_REASON_CUSTOM_TAB_STARTED);
 
                 Intent newIntent = ChromeLauncherActivity.createCustomTabActivityIntent(
                         ChromeTabbedActivity.this, intent, false);
@@ -1037,90 +1078,69 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
         return true;
     }
 
+    private void recordBackPressedUma(String logMessage, @BackPressedResult int action) {
+        Log.i(TAG, "Back pressed: " + logMessage);
+        RecordHistogram.recordEnumeratedHistogram(
+                "Android.Activity.ChromeTabbedActivity.SystemBackAction",
+                action, BACK_PRESSED_COUNT);
+    }
+
     @Override
     public boolean handleBackPressed() {
+        RecordUserAction.record("SystemBack");
+
         if (!mUIInitialized) return false;
         final Tab currentTab = getActivityTab();
 
         if (currentTab == null) {
-            if (getToolbarManager().back()) {
-                RecordUserAction.record("SystemBackForNavigation");
-                RecordUserAction.record("MobileTabClobbered");
-            } else {
-                moveTaskToBack(true);
-            }
-            RecordUserAction.record("SystemBack");
-            Log.i(TAG, "handleBackPressed() - currentTab is null");
+            recordBackPressedUma("currentTab is null", BACK_PRESSED_TAB_IS_NULL);
+            moveTaskToBack(true);
             return true;
         }
 
         // If we are in overview mode and not a tablet, then leave overview mode on back.
         if (mLayoutManager.overviewVisible() && !isTablet()) {
+            recordBackPressedUma("Hid overview", BACK_PRESSED_EXITED_TAB_SWITCHER);
             mLayoutManager.hideOverview(true);
-            // TODO(benm): Record any user metrics in this case?
-            Log.i(TAG, "handleBackPressed() - hide overview");
             return true;
         }
 
         if (exitFullscreenIfShowing()) {
-            Log.i(TAG, "handleBackPressed() - exit fullscreen");
+            recordBackPressedUma("Exited fullscreen", BACK_PRESSED_EXITED_FULLSCREEN);
             return true;
         }
 
-        if (!getToolbarManager().back()) {
-            Log.i(TAG, "handleBackPressed() - no back stack");
-            if (handleBackPressedWithoutBackStack(false)) return true;
-        } else {
-            Log.i(TAG, "handleBackPressed() - moving back in navigation");
-            RecordUserAction.record("SystemBackForNavigation");
+        if (getToolbarManager().back()) {
+            recordBackPressedUma("Navigating backward", BACK_PRESSED_NAVIGATED_BACK);
             RecordUserAction.record("MobileTabClobbered");
+            return true;
         }
-        RecordUserAction.record("SystemBack");
-
-        return true;
-    }
-
-    /**
-     * Additional logic for handling situations where a user hits a 'back' or 'return' button.
-     *
-     * May result in closing the foreground tab or returning to the app that opened Chrome.
-     *
-     * @param alwaysAllowTabClosure Setting this to true always allows a tab opened by an external
-     *                              app to be closed.
-     * @return Whether the tab closed was opened for a help page.
-     */
-    private boolean handleBackPressedWithoutBackStack(boolean alwaysAllowTabClosure) {
-        final Tab currentTab = getActivityTab();
-        final TabLaunchType type = currentTab.getLaunchType();
-        final int parentId = currentTab.getParentId();
-        final boolean helpUrl = currentTab.getUrl().startsWith(HELP_URL_PREFIX);
 
         // If the current tab url is HELP_URL, then the back button should close the tab to
         // get back to the previous state. The reason for startsWith check is that the
         // actual redirected URL is a different system language based help url.
+        final TabLaunchType type = currentTab.getLaunchType();
+        final boolean helpUrl = currentTab.getUrl().startsWith(HELP_URL_PREFIX);
         if (type == TabLaunchType.FROM_CHROME_UI && helpUrl) {
             getCurrentTabModel().closeTab(currentTab);
-            Log.i(TAG, "handleBackPressedWithoutBackStack() - help url");
+            recordBackPressedUma("Closed tab for help URL", BACK_PRESSED_HELP_URL_CLOSED);
             return true;
         }
 
-        // Herb: Current spec says that tabs are closed only when there is NO "X" visible, i.e. when
-        //       the tab is NOT allowed to return to the external app.
+        // The current spec says that tabs are closed only when there is NO "X" visible, i.e. when
+        // the tab is NOT allowed to return to the external app.
         boolean isAllowedToCloseTab = true;
-        if (alwaysAllowTabClosure) {
-            isAllowedToCloseTab = true;
-        } else {
-            String herbFlavor = FeatureUtilities.getHerbFlavor();
-            if (TextUtils.equals(ChromeSwitches.HERB_FLAVOR_BASIL, herbFlavor)
-                    || TextUtils.equals(ChromeSwitches.HERB_FLAVOR_CHIVE, herbFlavor)) {
-                isAllowedToCloseTab = !currentTab.isAllowedToReturnToExternalApp();
-            }
+        String herbFlavor = FeatureUtilities.getHerbFlavor();
+        if (TextUtils.equals(ChromeSwitches.HERB_FLAVOR_BASIL, herbFlavor)
+                || TextUtils.equals(ChromeSwitches.HERB_FLAVOR_CHIVE, herbFlavor)) {
+            isAllowedToCloseTab = !currentTab.isAllowedToReturnToExternalApp();
         }
 
         // [true]: Reached the bottom of the back stack on a tab the user did not explicitly
         // create (i.e. it was created by an external app or opening a link in background, etc).
         // [false]: Reached the bottom of the back stack on a tab that the user explicitly
         // created (e.g. selecting "new tab" from menu).
+        final int parentId = currentTab.getParentId();
         final boolean shouldCloseTab = type == TabLaunchType.FROM_LINK
                 || (type == TabLaunchType.FROM_EXTERNAL_APP && isAllowedToCloseTab)
                 || type == TabLaunchType.FROM_LONGPRESS_FOREGROUND
@@ -1134,10 +1154,25 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
         final boolean minimizeApp = !shouldCloseTab || currentTab.isCreatedForExternalApp();
 
         if (minimizeApp) {
-            sendToBackground(shouldCloseTab ? currentTab : null);
+            if (shouldCloseTab) {
+                recordBackPressedUma("Minimized and closed tab", BACK_PRESSED_MINIMIZED_TAB_CLOSED);
+                mActivityStopMetrics.setStopReason(ActivityStopMetrics.STOP_REASON_BACK_BUTTON);
+                sendToBackground(currentTab);
+                return true;
+            } else {
+                recordBackPressedUma("Minimized, kept tab", BACK_PRESSED_MINIMIZED_NO_TAB_CLOSED);
+                mActivityStopMetrics.setStopReason(ActivityStopMetrics.STOP_REASON_BACK_BUTTON);
+                sendToBackground(null);
+                return true;
+            }
         } else if (shouldCloseTab) {
+            recordBackPressedUma("Tab closed", BACK_PRESSED_TAB_CLOSED);
             getCurrentTabModel().closeTab(currentTab, true, false, false);
+            return true;
         }
+
+        assert false : "The back button should have already been handled by this point";
+        recordBackPressedUma("Unhandled", BACK_PRESSED_NOTHING_HAPPENED);
         return false;
     }
 
