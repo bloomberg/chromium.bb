@@ -65621,6 +65621,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1105" label="ACCESSIBILITY_PRIVATE_SETKEYBOARDLISTENER"/>
   <int value="1106" label="INPUT_IME_ACTIVATE"/>
   <int value="1107" label="INPUT_IME_DEACTIVATE"/>
+  <int value="1108" label="ENTERPRISE_PLATFORMKEYS_CHALLENGEMACHINEKEY"/>
+  <int value="1109" label="ENTERPRISE_PLATFORMKEYS_CHALLENGEUSERKEY"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

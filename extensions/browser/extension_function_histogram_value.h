@@ -1166,6 +1166,8 @@ enum HistogramValue {
   ACCESSIBILITY_PRIVATE_SETKEYBOARDLISTENER,
   INPUT_IME_ACTIVATE,
   INPUT_IME_DEACTIVATE,
+  ENTERPRISE_PLATFORMKEYS_CHALLENGEMACHINEKEY,
+  ENTERPRISE_PLATFORMKEYS_CHALLENGEUSERKEY,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY

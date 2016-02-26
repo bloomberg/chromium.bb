@@ -31,6 +31,14 @@ const char kErrorInternal[] = "Internal Error.";
 const char kErrorInvalidX509Cert[] =
     "Certificate is not a valid X.509 certificate.";
 
+std::vector<char> VectorFromString(const std::string& s) {
+  return std::vector<char>(s.begin(), s.end());
+}
+
+std::string StringFromVector(const std::vector<char>& v) {
+  return std::string(v.begin(), v.end());
+}
+
 }  // namespace
 
 EnterprisePlatformKeysInternalGenerateKeyFunction::
@@ -234,6 +242,87 @@ void EnterprisePlatformKeysInternalGetTokensFunction::OnGotTokens(
   }
 
   Respond(ArgumentList(api_epki::GetTokens::Results::Create(token_ids)));
+}
+
+EnterprisePlatformKeysChallengeMachineKeyFunction::
+    EnterprisePlatformKeysChallengeMachineKeyFunction()
+    : default_impl_(new EPKPChallengeMachineKey), impl_(default_impl_.get()) {}
+
+EnterprisePlatformKeysChallengeMachineKeyFunction::
+    EnterprisePlatformKeysChallengeMachineKeyFunction(
+        EPKPChallengeMachineKey* impl_for_testing)
+    : impl_(impl_for_testing) {}
+
+EnterprisePlatformKeysChallengeMachineKeyFunction::
+    ~EnterprisePlatformKeysChallengeMachineKeyFunction() = default;
+
+ExtensionFunction::ResponseAction
+EnterprisePlatformKeysChallengeMachineKeyFunction::Run() {
+  scoped_ptr<api_epk::ChallengeMachineKey::Params> params(
+      api_epk::ChallengeMachineKey::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+  ChallengeKeyCallback callback = base::Bind(
+      &EnterprisePlatformKeysChallengeMachineKeyFunction::OnChallengedKey,
+      this);
+  // base::Unretained is safe on impl_ since its life-cycle matches |this| and
+  // |callback| holds a reference to |this|.
+  base::Closure task = base::Bind(
+      &EPKPChallengeMachineKey::Run, base::Unretained(impl_),
+      scoped_refptr<UIThreadExtensionFunction>(AsUIThreadExtensionFunction()),
+      callback, StringFromVector(params->challenge));
+  content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE, task);
+  return RespondLater();
+}
+
+void EnterprisePlatformKeysChallengeMachineKeyFunction::OnChallengedKey(
+    bool success,
+    const std::string& data) {
+  if (success) {
+    Respond(ArgumentList(
+        api_epk::ChallengeMachineKey::Results::Create(VectorFromString(data))));
+  } else {
+    Respond(Error(data));
+  }
+}
+
+EnterprisePlatformKeysChallengeUserKeyFunction::
+    EnterprisePlatformKeysChallengeUserKeyFunction()
+    : default_impl_(new EPKPChallengeUserKey), impl_(default_impl_.get()) {}
+
+EnterprisePlatformKeysChallengeUserKeyFunction::
+    EnterprisePlatformKeysChallengeUserKeyFunction(
+        EPKPChallengeUserKey* impl_for_testing)
+    : impl_(impl_for_testing) {}
+
+EnterprisePlatformKeysChallengeUserKeyFunction::
+    ~EnterprisePlatformKeysChallengeUserKeyFunction() = default;
+
+ExtensionFunction::ResponseAction
+EnterprisePlatformKeysChallengeUserKeyFunction::Run() {
+  scoped_ptr<api_epk::ChallengeUserKey::Params> params(
+      api_epk::ChallengeUserKey::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+  ChallengeKeyCallback callback = base::Bind(
+      &EnterprisePlatformKeysChallengeUserKeyFunction::OnChallengedKey, this);
+  // base::Unretained is safe on impl_ since its life-cycle matches |this| and
+  // |callback| holds a reference to |this|.
+  base::Closure task = base::Bind(
+      &EPKPChallengeUserKey::Run, base::Unretained(impl_),
+      scoped_refptr<UIThreadExtensionFunction>(AsUIThreadExtensionFunction()),
+      callback, StringFromVector(params->challenge), params->register_key);
+  content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE, task);
+  return RespondLater();
+}
+
+void EnterprisePlatformKeysChallengeUserKeyFunction::OnChallengedKey(
+    bool success,
+    const std::string& data) {
+  if (success) {
+    Respond(ArgumentList(
+        api_epk::ChallengeUserKey::Results::Create(VectorFromString(data))));
+  } else {
+    Respond(Error(data));
+  }
 }
 
 }  // namespace extensions
