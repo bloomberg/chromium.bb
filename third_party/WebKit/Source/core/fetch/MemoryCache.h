@@ -58,14 +58,6 @@ class ExecutionContext;
 // Enable this macro to periodically log information about the memory cache.
 #undef MEMORY_CACHE_STATS
 
-// Determines the order in which CachedResources are evicted
-// from the decoded resources cache.
-enum MemoryCacheLiveResourcePriority {
-    MemoryCacheLiveResourcePriorityLow = 0,
-    MemoryCacheLiveResourcePriorityHigh,
-    MemoryCacheLiveResourcePriorityUnknown
-};
-
 enum UpdateReason {
     UpdateForAccess,
     UpdateForPropertyChange
@@ -86,7 +78,6 @@ public:
     RefPtrWillBeMember<Resource> m_resource;
     bool m_inLiveDecodedResourcesList;
     unsigned m_accessCount;
-    MemoryCacheLiveResourcePriority m_liveResourcePriority;
     double m_lastDecodedAccessTime; // Used as a thrash guard
 
     Member<MemoryCacheEntry> m_previousInLiveResourcesList;
@@ -99,7 +90,6 @@ private:
         : m_resource(resource)
         , m_inLiveDecodedResourcesList(false)
         , m_accessCount(0)
-        , m_liveResourcePriority(MemoryCacheLiveResourcePriorityLow)
         , m_lastDecodedAccessTime(0.0)
         , m_previousInLiveResourcesList(nullptr)
         , m_nextInLiveResourcesList(nullptr)
@@ -201,7 +191,7 @@ public:
     // Called to adjust a resource's size, lru list position, and access count.
     void update(Resource*, size_t oldSize, size_t newSize, bool wasAccessed = false);
     void updateForAccess(Resource* resource) { update(resource, resource->size(), resource->size(), true); }
-    void updateDecodedResource(Resource*, UpdateReason, MemoryCacheLiveResourcePriority = MemoryCacheLiveResourcePriorityUnknown);
+    void updateDecodedResource(Resource*, UpdateReason);
 
     void makeLive(Resource*);
     void makeDead(Resource*);
@@ -220,9 +210,6 @@ public:
     size_t capacity() const { return m_capacity; }
     size_t liveSize() const { return m_liveSize; }
     size_t deadSize() const { return m_deadSize; }
-
-    // Exposed for testing
-    MemoryCacheLiveResourcePriority priority(Resource*) const;
 
     // TaskObserver implementation
     void willProcessTask() override;
@@ -300,8 +287,7 @@ private:
     HeapVector<MemoryCacheLRUList, 32> m_allResources;
 
     // Lists just for live resources with decoded data. Access to this list is based off of painting the resource.
-    // The lists are ordered by decode priority, with higher indices having higher priorities.
-    MemoryCacheLRUList m_liveDecodedResources[MemoryCacheLiveResourcePriorityHigh + 1];
+    MemoryCacheLRUList m_liveDecodedResources;
 
     // A URL-based map of all resources that are in the cache (including the freshest version of objects that are currently being
     // referenced by a Web page).

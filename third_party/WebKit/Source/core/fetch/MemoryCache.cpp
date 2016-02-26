@@ -122,8 +122,7 @@ MemoryCache::~MemoryCache()
 DEFINE_TRACE(MemoryCache)
 {
     visitor->trace(m_allResources);
-    for (size_t i = 0; i < WTF_ARRAY_LENGTH(m_liveDecodedResources); ++i)
-        visitor->trace(m_liveDecodedResources[i]);
+    visitor->trace(m_liveDecodedResources);
     visitor->trace(m_resourceMaps);
 }
 
@@ -252,28 +251,25 @@ void MemoryCache::pruneLiveResources(PruneStrategy strategy)
     // greater than the current->m_lastDecodedFrameTimeStamp.
     // For more details see: https://bugs.webkit.org/show_bug.cgi?id=30209
 
-    // Start pruning from the lowest priority list.
-    for (int priority = MemoryCacheLiveResourcePriorityLow; priority <= MemoryCacheLiveResourcePriorityHigh; ++priority) {
-        MemoryCacheEntry* current = m_liveDecodedResources[priority].m_tail;
-        while (current) {
-            MemoryCacheEntry* previous = current->m_previousInLiveResourcesList;
-            ASSERT(current->m_resource->hasClients());
-            if (current->m_resource->isLoaded() && current->m_resource->decodedSize()) {
-                // Check to see if the remaining resources are too new to prune.
-                double elapsedTime = m_pruneFrameTimeStamp - current->m_lastDecodedAccessTime;
-                if (strategy == AutomaticPrune && elapsedTime < m_delayBeforeLiveDecodedPrune)
-                    return;
+    MemoryCacheEntry* current = m_liveDecodedResources.m_tail;
+    while (current) {
+        MemoryCacheEntry* previous = current->m_previousInLiveResourcesList;
+        ASSERT(current->m_resource->hasClients());
+        if (current->m_resource->isLoaded() && current->m_resource->decodedSize()) {
+            // Check to see if the remaining resources are too new to prune.
+            double elapsedTime = m_pruneFrameTimeStamp - current->m_lastDecodedAccessTime;
+            if (strategy == AutomaticPrune && elapsedTime < m_delayBeforeLiveDecodedPrune)
+                return;
 
-                // Destroy our decoded data if possible. This will remove us
-                // from m_liveDecodedResources, and possibly move us to a
-                // different LRU list in m_allResources.
-                current->m_resource->prune();
+            // Destroy our decoded data if possible. This will remove us
+            // from m_liveDecodedResources, and possibly move us to a
+            // different LRU list in m_allResources.
+            current->m_resource->prune();
 
-                if (targetSize && m_liveSize <= targetSize)
-                    return;
-            }
-            current = previous;
+            if (targetSize && m_liveSize <= targetSize)
+                return;
         }
+        current = previous;
     }
 }
 
@@ -457,8 +453,6 @@ void MemoryCache::removeFromLiveDecodedResourcesList(MemoryCacheEntry* entry)
 
     entry->m_inLiveDecodedResourcesList = false;
 
-    MemoryCacheLRUList* list = &m_liveDecodedResources[entry->m_liveResourcePriority];
-
     MemoryCacheEntry* next = entry->m_nextInLiveResourcesList;
     MemoryCacheEntry* previous = entry->m_previousInLiveResourcesList;
 
@@ -468,12 +462,12 @@ void MemoryCache::removeFromLiveDecodedResourcesList(MemoryCacheEntry* entry)
     if (next)
         next->m_previousInLiveResourcesList = previous;
     else
-        list->m_tail = previous;
+        m_liveDecodedResources.m_tail = previous;
 
     if (previous)
         previous->m_nextInLiveResourcesList = next;
     else
-        list->m_head = next;
+        m_liveDecodedResources.m_head = next;
 
     ASSERT(!containedInLiveDecodedResourcesList(entry));
 }
@@ -484,22 +478,20 @@ void MemoryCache::insertInLiveDecodedResourcesList(MemoryCacheEntry* entry)
 
     entry->m_inLiveDecodedResourcesList = true;
 
-    MemoryCacheLRUList* list = &m_liveDecodedResources[entry->m_liveResourcePriority];
-    entry->m_nextInLiveResourcesList = list->m_head;
-    if (list->m_head)
-        list->m_head->m_previousInLiveResourcesList = entry;
-    list->m_head = entry;
+    entry->m_nextInLiveResourcesList = m_liveDecodedResources.m_head;
+    if (m_liveDecodedResources.m_head)
+        m_liveDecodedResources.m_head->m_previousInLiveResourcesList = entry;
+    m_liveDecodedResources.m_head = entry;
 
     if (!entry->m_nextInLiveResourcesList)
-        list->m_tail = entry;
+        m_liveDecodedResources.m_tail = entry;
 
     ASSERT(containedInLiveDecodedResourcesList(entry));
 }
 
 bool MemoryCache::containedInLiveDecodedResourcesList(MemoryCacheEntry* entry)
 {
-    MemoryCacheLRUList* list = &m_liveDecodedResources[entry->m_liveResourcePriority];
-    for (MemoryCacheEntry* current = list->m_head; current; current = current->m_nextInLiveResourcesList) {
+    for (MemoryCacheEntry* current = m_liveDecodedResources.m_head; current; current = current->m_nextInLiveResourcesList) {
         if (current == entry) {
             ASSERT(entry->m_inLiveDecodedResourcesList);
             return true;
@@ -552,15 +544,13 @@ void MemoryCache::update(Resource* resource, size_t oldSize, size_t newSize, boo
     }
 }
 
-void MemoryCache::updateDecodedResource(Resource* resource, UpdateReason reason, MemoryCacheLiveResourcePriority priority)
+void MemoryCache::updateDecodedResource(Resource* resource, UpdateReason reason)
 {
     MemoryCacheEntry* entry = getEntryForResource(resource);
     if (!entry)
         return;
 
     removeFromLiveDecodedResourcesList(entry);
-    if (priority != MemoryCacheLiveResourcePriorityUnknown && priority != entry->m_liveResourcePriority)
-        entry->m_liveResourcePriority = priority;
     if (resource->decodedSize() && resource->hasClients())
         insertInLiveDecodedResourcesList(entry);
 
@@ -571,14 +561,6 @@ void MemoryCache::updateDecodedResource(Resource* resource, UpdateReason reason,
     if (!timestamp)
         timestamp = currentTime();
     entry->m_lastDecodedAccessTime = timestamp;
-}
-
-MemoryCacheLiveResourcePriority MemoryCache::priority(Resource* resource) const
-{
-    MemoryCacheEntry* entry = getEntryForResource(resource);
-    if (!entry)
-        return MemoryCacheLiveResourcePriorityUnknown;
-    return entry->m_liveResourcePriority;
 }
 
 void MemoryCache::removeURLFromCache(const KURL& url)
