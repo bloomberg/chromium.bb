@@ -434,6 +434,19 @@ void TabAndroid::InitWebContents(
   content_layer_->InsertChild(content_view_core->GetLayer(), 0);
 }
 
+void TabAndroid::UpdateDelegates(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jobject>& jweb_contents_delegate,
+    const JavaParamRef<jobject>& jcontext_menu_populator) {
+  ContextMenuHelper::FromWebContents(web_contents())->SetPopulator(
+      jcontext_menu_populator);
+  web_contents_delegate_.reset(
+      new chrome::android::TabWebContentsDelegateAndroid(
+          env, jweb_contents_delegate));
+  web_contents()->SetDelegate(web_contents_delegate_.get());
+}
+
 void TabAndroid::DestroyWebContents(JNIEnv* env,
                                     const JavaParamRef<jobject>& obj,
                                     jboolean delete_native) {

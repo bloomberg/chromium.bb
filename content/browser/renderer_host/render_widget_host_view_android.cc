@@ -1759,12 +1759,10 @@ void RenderWidgetHostViewAndroid::SetContentViewCore(
     selection_controller_.reset();
     ReleaseLocksOnSurface();
     resize = true;
-    if (content_view_core_) {
-      if (!content_view_core)
-        content_view_core_->RemoveObserver(this);
-      else
-        content_view_core->AddObserver(this);
-    }
+    if (content_view_core_)
+      content_view_core_->RemoveObserver(this);
+    if (content_view_core)
+      content_view_core->AddObserver(this);
   }
 
   content_view_core_ = content_view_core;

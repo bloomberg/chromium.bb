@@ -24,10 +24,23 @@ public class AsyncTabParamsManager {
     }
 
     /**
-     * @return Whether there are any saved {@link AsyncTabParams} with the given tab id.
+     * @return Whether there is already an {@link AsyncTabParams} added for the given ID.
      */
     public static boolean hasParamsForTabId(int tabId) {
         return sAsyncTabParams.get(tabId) != null;
+    }
+
+    /**
+     * @return Whether there are any saved {@link AsyncTabParams} with a tab to reparent. All
+     *         implementations of this are keyed off of a user gesture so the likelihood of having
+     *         more than one is zero.
+     */
+    public static boolean hasParamsWithTabToReparent() {
+        for (int i = 0; i < sAsyncTabParams.size(); i++) {
+            if (sAsyncTabParams.get(sAsyncTabParams.keyAt(i)).getTabToReparent() == null) continue;
+            return true;
+        }
+        return false;
     }
 
     /**

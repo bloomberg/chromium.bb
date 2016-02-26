@@ -172,6 +172,11 @@ public class SingleTabModel implements TabModel {
     }
 
     @Override
+    public void removeTab(Tab tab) {
+        assert false;
+    }
+
+    @Override
     public void addObserver(TabModelObserver observer) {
         mObservers.addObserver(observer);
     }

@@ -677,7 +677,10 @@ public class ChromeLauncherActivity extends Activity
         // re-delivered when a Chrome Activity is restarted.
         boolean isWebContentsPending = false;
         int tabId = ActivityDelegate.getTabIdFromIntent(intent);
-        AsyncTabParamsManager.add(tabId, asyncParams);
+        if (!AsyncTabParamsManager.hasParamsForTabId(tabId)) {
+            AsyncTabParamsManager.add(tabId, asyncParams);
+        }
+
         isWebContentsPending = asyncParams.getWebContents() != null;
 
         Bundle options = null;
@@ -700,7 +703,7 @@ public class ChromeLauncherActivity extends Activity
             if (exception.getCause() instanceof TransactionTooLargeException) {
                 Log.e(TAG, "Failed to launch DocumentActivity because Intent was too large");
                 AsyncTabParamsManager.remove(tabId);
-                if (isWebContentsPending) asyncParams.getWebContents().destroy();
+                asyncParams.destroy();
                 return false;
             }
             throw exception;

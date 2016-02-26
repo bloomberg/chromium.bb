@@ -12,11 +12,14 @@ import android.text.TextUtils;
 
 import org.chromium.base.ApplicationStatus;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.document.DocumentActivity;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationDelegateImpl;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tabmodel.AsyncTabParamsManager;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModel.Entry;
+import org.chromium.chrome.browser.util.IntentUtils;
 
 import java.lang.ref.WeakReference;
 import java.util.List;
@@ -122,6 +125,12 @@ public abstract class ActivityDelegate {
      */
     public static int getTabIdFromIntent(Intent intent) {
         if (intent == null || intent.getData() == null) return Tab.INVALID_TAB_ID;
+
+        // Avoid AsyncTabCreationParams related flows early returning here.
+        if (AsyncTabParamsManager.hasParamsWithTabToReparent()) {
+            return IntentUtils.safeGetIntExtra(
+                    intent, IntentHandler.EXTRA_TAB_ID, Tab.INVALID_TAB_ID);
+        }
 
         Uri data = intent.getData();
         if (!TextUtils.equals(data.getScheme(), UrlConstants.DOCUMENT_SCHEME)) {

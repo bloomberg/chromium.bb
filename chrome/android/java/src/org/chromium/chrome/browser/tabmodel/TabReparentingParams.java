@@ -16,13 +16,16 @@ import org.chromium.content_public.browser.WebContents;
 public class TabReparentingParams implements AsyncTabParams {
     private final Tab mTabToReparent;
     private final Intent mOriginalIntent;
+    private final Runnable mFinalizeCallback;
 
     /**
      * Basic constructor for {@link TabReparentingParams}.
      */
-    public TabReparentingParams(Tab tabToReparent, Intent originalIntent) {
+    public TabReparentingParams(
+            Tab tabToReparent, Intent originalIntent, Runnable finalizeCallback) {
         mTabToReparent = tabToReparent;
         mOriginalIntent = originalIntent;
+        mFinalizeCallback = finalizeCallback;
     }
 
     @Override
@@ -50,4 +53,15 @@ public class TabReparentingParams implements AsyncTabParams {
         return mTabToReparent;
     }
 
+    /**
+     * Carry out any remaining finalization to be done after the tab is reparented.
+     */
+    public void finalizeTabReparenting() {
+        mFinalizeCallback.run();
+    }
+
+    @Override
+    public void destroy() {
+        if (mTabToReparent != null) mTabToReparent.destroy();
+    }
 }

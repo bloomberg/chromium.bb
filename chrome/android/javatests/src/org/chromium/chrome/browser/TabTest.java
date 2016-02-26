@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser;
 
+import android.app.Activity;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ThreadUtils;
@@ -49,6 +50,16 @@ public class TabTest extends ChromeActivityTestCaseBase<ChromeActivity> {
         mTab = getActivity().getActivityTab();
         mTab.addObserver(mTabObserver);
         mOnTitleUpdatedHelper = new CallbackHelper();
+    }
+
+    @SmallTest
+    @Feature({"Tab"})
+    public void testTabContext() throws Throwable {
+        assertFalse("The tab context cannot be an activity",
+                mTab.getContentViewCore().getContext() instanceof Activity);
+        assertNotSame("The tab context's theme should have been updated",
+                mTab.getContentViewCore().getContext().getTheme(),
+                getActivity().getApplication().getTheme());
     }
 
     @SmallTest

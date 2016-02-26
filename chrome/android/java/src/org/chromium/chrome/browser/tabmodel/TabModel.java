@@ -47,7 +47,12 @@ public interface TabModel extends TabList {
          * Opened from the long press context menu.  Will not be brought to the foreground.
          * Like FROM_CHROME_UI, but also sets up a parent/child relationship like FROM_LINK.
          */
-        FROM_LONGPRESS_BACKGROUND
+        FROM_LONGPRESS_BACKGROUND,
+
+        /**
+         * Changed windows by moving from one activity to another. Will be opened in the foreground.
+         */
+        FROM_REPARENTING
     }
 
     /**
@@ -179,6 +184,13 @@ public interface TabModel extends TabList {
      * @param type  How the tab was opened.
      */
     void addTab(Tab tab, int index, TabLaunchType type);
+
+    /**
+     * Removes the given tab from the model without destroying it. The tab should be inserted into
+     * another model to avoid leaking as after this the link to the old Activity will be broken.
+     * @param tab The tab to remove.
+     */
+    void removeTab(Tab tab);
 
     /**
      * Subscribes a {@link TabModelObserver} to be notified about changes to this model.

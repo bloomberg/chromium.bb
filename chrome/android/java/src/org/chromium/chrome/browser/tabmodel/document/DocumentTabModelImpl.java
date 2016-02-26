@@ -890,6 +890,11 @@ public class DocumentTabModelImpl extends TabModelJniBridge implements DocumentT
     }
 
     @Override
+    public void removeTab(Tab tab) {
+        assert false;
+    }
+
+    @Override
     public boolean supportsPendingClosures() {
         return false;
     }

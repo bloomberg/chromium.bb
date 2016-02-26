@@ -104,6 +104,7 @@ import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarManageable;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.sync.SyncController;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tabmodel.AsyncTabParamsManager;
 import org.chromium.chrome.browser.tabmodel.ChromeTabCreator;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModel;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
@@ -698,6 +699,9 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
 
     @Override
     public void onStart() {
+        if (AsyncTabParamsManager.hasParamsWithTabToReparent()) {
+            mCompositorViewHolder.prepareForTabReparenting();
+        }
         super.onStart();
         if (mContextReporter != null) mContextReporter.enable();
 

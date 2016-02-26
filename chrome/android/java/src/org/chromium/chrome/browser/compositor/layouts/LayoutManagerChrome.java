@@ -91,6 +91,7 @@ public class LayoutManagerChrome
         public void willAddTab(Tab tab, TabLaunchType type) {
             // Open the new tab
             if (type == TabLaunchType.FROM_RESTORE) return;
+            if (type == TabLaunchType.FROM_REPARENTING) return;
 
             tabCreating(getTabModelSelector().getCurrentTabId(), tab.getUrl(), tab.isIncognito());
         }

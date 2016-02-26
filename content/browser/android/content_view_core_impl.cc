@@ -273,6 +273,24 @@ ContentViewCoreImpl::~ContentViewCoreImpl() {
   }
 }
 
+void ContentViewCoreImpl::UpdateWindowAndroid(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    jlong window_android) {
+  if (window_android) {
+    DCHECK(!window_android_);
+    window_android_ = reinterpret_cast<ui::WindowAndroid*>(window_android);
+    FOR_EACH_OBSERVER(ContentViewCoreImplObserver,
+                      observer_list_,
+                      OnAttachedToWindow());
+  } else {
+    FOR_EACH_OBSERVER(ContentViewCoreImplObserver,
+                      observer_list_,
+                      OnDetachedFromWindow());
+    window_android_ = NULL;
+  }
+}
+
 base::android::ScopedJavaLocalRef<jobject>
 ContentViewCoreImpl::GetWebContentsAndroid(JNIEnv* env,
                                            const JavaParamRef<jobject>& obj) {

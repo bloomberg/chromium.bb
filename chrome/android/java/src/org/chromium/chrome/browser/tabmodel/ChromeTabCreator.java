@@ -12,7 +12,6 @@ import org.chromium.base.TraceEvent;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.TabState;
-import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
@@ -110,14 +109,22 @@ public class ChromeTabCreator extends TabCreatorManager.TabCreator {
                     intent, IntentHandler.EXTRA_TAB_ID, Tab.INVALID_TAB_ID);
             AsyncTabParams asyncParams =
                     AsyncTabParamsManager.remove(assignedTabId);
-            WebContents webContents = asyncParams == null ? null : asyncParams.getWebContents();
 
-            boolean openInForeground = mOrderController.willOpenInForeground(type, mIncognito)
-                    || webContents != null;
+            boolean openInForeground = mOrderController.willOpenInForeground(type, mIncognito);
             TabDelegateFactory delegateFactory = parent == null ? new TabDelegateFactory()
                     : parent.getDelegateFactory();
             Tab tab;
-            if (webContents != null) {
+            if (asyncParams != null && asyncParams.getTabToReparent() != null) {
+                type = TabLaunchType.FROM_REPARENTING;
+                openInForeground = true;
+
+                TabReparentingParams params = (TabReparentingParams) asyncParams;
+                tab = params.getTabToReparent();
+                tab.reparentToActivity(mActivity, new TabDelegateFactory());
+                params.finalizeTabReparenting();
+            } else if (asyncParams != null && asyncParams.getWebContents() != null) {
+                openInForeground = true;
+                WebContents webContents = asyncParams.getWebContents();
                 // A WebContents was passed through the Intent.  Create a new Tab to hold it.
                 Intent parentIntent = IntentUtils.safeGetParcelableExtra(
                         intent, IntentHandler.EXTRA_PARENT_INTENT);
@@ -144,14 +151,9 @@ public class ChromeTabCreator extends TabCreatorManager.TabCreator {
                 tab.initialize(null, mTabContentManager, delegateFactory, !openInForeground, false);
                 mTabSaver.addTabToSaveQueue(tab);
             } else {
-                webContents =
-                        WarmupManager.getInstance().hasPrerenderedUrl(loadUrlParams.getUrl())
-                        ? WarmupManager.getInstance().takePrerenderedWebContents() : null;
-
                 tab = Tab.createLiveTab(Tab.INVALID_TAB_ID, mActivity, mIncognito,
                         mNativeWindow, type, parentId, !openInForeground);
-                tab.initialize(
-                        webContents, mTabContentManager, delegateFactory, !openInForeground, false);
+                tab.initialize(null, mTabContentManager, delegateFactory, !openInForeground, false);
                 tab.loadUrl(loadUrlParams);
             }
             tab.getTabRedirectHandler().updateIntent(intent);

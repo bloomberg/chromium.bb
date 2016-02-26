@@ -166,6 +166,11 @@ class TabAndroid : public CoreTabHelperDelegate,
       const base::android::JavaParamRef<jobject>& jcontent_view_core,
       const base::android::JavaParamRef<jobject>& jweb_contents_delegate,
       const base::android::JavaParamRef<jobject>& jcontext_menu_populator);
+  void UpdateDelegates(
+        JNIEnv* env,
+        const base::android::JavaParamRef<jobject>& obj,
+        const base::android::JavaParamRef<jobject>& jweb_contents_delegate,
+        const base::android::JavaParamRef<jobject>& jcontext_menu_populator);
   void DestroyWebContents(JNIEnv* env,
                           const base::android::JavaParamRef<jobject>& obj,
                           jboolean delete_native);

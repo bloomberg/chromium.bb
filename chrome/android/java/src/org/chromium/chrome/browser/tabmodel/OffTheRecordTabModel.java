@@ -224,4 +224,9 @@ public class OffTheRecordTabModel implements TabModel {
         mDelegateModel.removeObserver(observer);
     }
 
+    @Override
+    public void removeTab(Tab tab) {
+        mDelegateModel.removeTab(tab);
+    }
+
 }

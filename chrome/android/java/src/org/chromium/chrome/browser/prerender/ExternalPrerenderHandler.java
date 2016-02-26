@@ -79,6 +79,7 @@ public class ExternalPrerenderHandler {
      * @param webContents The {@link WebContents} for which to compare the session info.
      * @return Whether the given url was prerendered.
      */
+    @VisibleForTesting
     public static boolean hasPrerenderedUrl(Profile profile, String url, WebContents webContents)  {
         return nativeHasPrerenderedUrl(profile, url, webContents);
     }

@@ -88,6 +88,9 @@ class ContentViewCoreImpl : public ContentViewCore,
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
 
+  void UpdateWindowAndroid(JNIEnv* env,
+                           const base::android::JavaParamRef<jobject>& obj,
+                           jlong window_android);
   void OnJavaContentViewCoreDestroyed(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);

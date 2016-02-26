@@ -13,6 +13,7 @@ import android.os.IBinder;
 import android.os.StrictMode;
 import android.support.customtabs.CustomTabsCallback;
 import android.support.customtabs.CustomTabsIntent;
+import android.support.v4.app.ActivityOptionsCompat;
 import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.MenuItem;
@@ -40,14 +41,17 @@ import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChange
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerDocument;
 import org.chromium.chrome.browser.datausage.DataUseTabUIManager;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
+import org.chromium.chrome.browser.externalnav.ExternalNavigationDelegateImpl;
 import org.chromium.chrome.browser.rappor.RapporServiceBridge;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabIdManager;
+import org.chromium.chrome.browser.tabmodel.AsyncTabParamsManager;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorImpl;
+import org.chromium.chrome.browser.tabmodel.TabReparentingParams;
 import org.chromium.chrome.browser.toolbar.ToolbarControlContainer;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.IntentUtils;
@@ -647,11 +651,43 @@ public class CustomTabActivity extends ChromeActivity {
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.putExtra(ChromeLauncherActivity.EXTRA_IS_ALLOWED_TO_RETURN_TO_PARENT, false);
 
-        // Temporarily allowing disk access while fixing. TODO: http://crbug.com/581860
+        boolean chromeIsDefault;
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
         StrictMode.allowThreadDiskWrites();
         try {
-            startActivity(intent);
+            chromeIsDefault = ExternalNavigationDelegateImpl
+                    .willChromeHandleIntent(this, intent, true);
+        } finally {
+            StrictMode.setThreadPolicy(oldPolicy);
+        }
+
+        if (chromeIsDefault) {
+            // Take the activity tab and set it aside for reparenting.
+            final Tab tab = getActivityTab();
+            // TODO(yusufo): The removal should happen as a part of the callback or as a part of
+            // onDestroy when finish() gets called. Find a way to do this properly without confusing
+            // the TabModel and without hiding the tab. crbug.com/590278
+            getCurrentTabModel().removeTab(getActivityTab());
+            tab.getContentViewCore().updateWindowAndroid(null);
+
+            Runnable finalizeCallback = new Runnable() {
+                @Override
+                public void run() {
+                    finish();
+                }
+            };
+            AsyncTabParamsManager.add(
+                    tab.getId(), new TabReparentingParams(tab, intent, finalizeCallback));
+            intent.putExtra(IntentHandler.EXTRA_TAB_ID, tab.getId());
+            intent.setPackage(getPackageName());
+        }
+
+        // Temporarily allowing disk access while fixing. TODO: http://crbug.com/581860
+        StrictMode.allowThreadDiskReads();
+        StrictMode.allowThreadDiskWrites();
+        try {
+            startActivity(intent, ActivityOptionsCompat.makeCustomAnimation(
+                    this, R.anim.abc_fade_in, R.anim.abc_fade_out).toBundle());
         } finally {
             StrictMode.setThreadPolicy(oldPolicy);
         }

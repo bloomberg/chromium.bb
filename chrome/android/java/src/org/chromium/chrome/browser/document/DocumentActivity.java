@@ -568,15 +568,22 @@ public class DocumentActivity extends ChromeActivity {
         mDefaultThemeColor = isIncognito()
                 ? ApiCompatibilityUtils.getColor(getResources(), R.color.incognito_primary_color)
                 : ApiCompatibilityUtils.getColor(getResources(), R.color.default_primary_color);
+
         AsyncTabParams params = AsyncTabParamsManager.remove(
                 ActivityDelegate.getTabIdFromIntent(getIntent()));
+
         AsyncTabCreationParams asyncParams = params instanceof AsyncTabCreationParams
                 ? (AsyncTabCreationParams) params : null;
         boolean isAffiliated = asyncParams != null ? asyncParams.isAffiliated() : false;
         boolean isCreatedWithWebContents = asyncParams != null
                 && asyncParams.getWebContents() != null;
 
-        mTab = createActivityTab(asyncParams);
+        if (params.getTabToReparent() != null) {
+            mTab = params.getTabToReparent();
+            mTab.reparentToActivity(this, new DocumentTabDelegateFactory());
+        } else {
+            mTab = createActivityTab(asyncParams);
+        }
 
         if (asyncParams != null && asyncParams.getWebContents() != null) {
             Intent parentIntent = IntentUtils.safeGetParcelableExtra(getIntent(),

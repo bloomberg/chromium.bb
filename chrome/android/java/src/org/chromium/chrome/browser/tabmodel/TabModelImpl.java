@@ -84,6 +84,11 @@ public class TabModelImpl extends TabModelJniBridge {
     }
 
     @Override
+    public void removeTab(Tab tab) {
+        mTabs.remove(tab);
+    }
+
+    @Override
     public void destroy() {
         for (Tab tab : mTabs) {
             if (tab.isInitialized()) tab.destroy();

@@ -786,6 +786,16 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
         mWebContentsObserver = new ContentViewWebContentsObserver(this);
     }
 
+    /**
+     * Updates the native {@link ContentViewCore} with a new window. This moves the NativeView and
+     * attached it to the new NativeWindow linked with the given {@link WindowAndroid}.
+     * @param windowAndroid The new {@link WindowAndroid} for this {@link ContentViewCore}.
+     */
+    public void updateWindowAndroid(WindowAndroid windowAndroid) {
+        long windowNativePointer = windowAndroid == null ? 0 : windowAndroid.getNativePointer();
+        nativeUpdateWindowAndroid(mNativeContentViewCore, windowNativePointer);
+    }
+
     @VisibleForTesting
     public void createContentViewAndroidDelegate() {
         mViewAndroidDelegate = new ContentViewAndroidDelegate(mContainerView, mRenderCoordinates);
@@ -3210,6 +3220,8 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
             long windowAndroidPtr, HashSet<Object> retainedObjectSet);
     private static native ContentViewCore nativeFromWebContentsAndroid(WebContents webContents);
 
+    private native void nativeUpdateWindowAndroid(
+            long nativeContentViewCoreImpl, long windowAndroidPtr);
     private native WebContents nativeGetWebContentsAndroid(long nativeContentViewCoreImpl);
     private native WindowAndroid nativeGetJavaWindowAndroid(long nativeContentViewCoreImpl);
 

@@ -39,4 +39,9 @@ public interface AsyncTabParams {
      * @return The tab that would be reparenting through this {@link AsyncTabParams}. Can be null.
      */
     Tab getTabToReparent();
+
+    /**
+     * Destroy any internal fields if it is necessary.
+     */
+    void destroy();
 }

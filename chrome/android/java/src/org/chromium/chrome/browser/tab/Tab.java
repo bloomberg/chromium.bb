@@ -156,7 +156,7 @@ public final class Tab implements ViewGroup.OnHierarchyChangeListener,
     private final Context mThemedApplicationContext;
 
     /** Gives {@link Tab} a way to interact with the Android window. */
-    private final WindowAndroid mWindowAndroid;
+    private WindowAndroid mWindowAndroid;
 
     /** Whether or not this {@link Tab} is initialized and should be interacted with. */
     private boolean mIsInitialized;
@@ -1355,6 +1355,36 @@ public final class Tab implements ViewGroup.OnHierarchyChangeListener,
 
             TraceEvent.end("Tab.initialize");
         }
+    }
+
+    /**
+     * Detaches tab and related objects from an existing activity and attaches to a new one. This
+     * updates many delegates inside the tab and {@link ContentViewCore} both on java and native
+     * sides.
+     * @param activity The new activity this tab should be associated with.
+     * @param tabDelegateFactory The new delegate factory this tab should be using.
+     */
+    public void reparentToActivity(ChromeActivity activity, TabDelegateFactory tabDelegateFactory) {
+        // TODO(yusufo): Share these calls with the construction related calls.
+        // crbug.com/590281
+
+        // Update and propagate for the new WindowAndroid.
+        mWindowAndroid = activity.getWindowAndroid();
+        mContentViewCore.updateWindowAndroid(mWindowAndroid);
+
+        // Update for the controllers that need the Compositor from the new Activity.
+        nativeAttachToTabContentManager(mNativeTabAndroid, activity.getTabContentManager());
+        mFullscreenManager = activity.getFullscreenManager();
+        activity.getCompositorViewHolder().prepareForTabReparenting();
+
+        // Update the delegate factory, then recreate and propagate all delegates.
+        mDelegateFactory = tabDelegateFactory;
+        mWebContentsDelegate = mDelegateFactory.createWebContentsDelegate(this);
+        nativeUpdateDelegates(mNativeTabAndroid,
+                mWebContentsDelegate, mDelegateFactory.createContextMenuPopulator(this));
+        mTopControlsVisibilityDelegate = mDelegateFactory.createTopControlsVisibilityDelegate(this);
+        setInterceptNavigationDelegate(mDelegateFactory.createInterceptNavigationDelegate(this));
+        mAppBannerManager = mDelegateFactory.createAppBannerManager(this);
     }
 
     /**
@@ -2949,6 +2979,8 @@ public final class Tab implements ViewGroup.OnHierarchyChangeListener,
     private native void nativeInitWebContents(long nativeTabAndroid, boolean incognito,
             ContentViewCore contentViewCore, TabWebContentsDelegateAndroid delegate,
             ContextMenuPopulator contextMenuPopulator);
+    private native void nativeUpdateDelegates(long nativeTabAndroid,
+            TabWebContentsDelegateAndroid delegate, ContextMenuPopulator contextMenuPopulator);
     private native void nativeDestroyWebContents(long nativeTabAndroid, boolean deleteNative);
     private native Profile nativeGetProfileAndroid(long nativeTabAndroid);
     private native int nativeLoadUrl(long nativeTabAndroid, String url, String extraHeaders,

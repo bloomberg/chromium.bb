@@ -125,4 +125,9 @@ public class AsyncTabCreationParams implements AsyncTabParams {
     public Tab getTabToReparent() {
         return null;
     }
+
+    @Override
+    public void destroy() {
+        if (mWebContents != null) mWebContents.destroy();
+    }
 }
