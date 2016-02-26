@@ -26,7 +26,7 @@
 #ifndef FrontendChannel_h
 #define FrontendChannel_h
 
-#include "platform/JSONValues.h"
+#include "platform/inspector_protocol/Values.h"
 #include "wtf/Forward.h"
 
 namespace blink {
@@ -35,8 +35,8 @@ namespace protocol {
 class FrontendChannel {
 public:
     virtual ~FrontendChannel() { }
-    virtual void sendProtocolResponse(int sessionId, int callId, PassRefPtr<JSONObject> message) = 0;
-    virtual void sendProtocolNotification(PassRefPtr<JSONObject> message) = 0;
+    virtual void sendProtocolResponse(int sessionId, int callId, PassRefPtr<protocol::DictionaryValue> message) = 0;
+    virtual void sendProtocolNotification(PassRefPtr<protocol::DictionaryValue> message) = 0;
     virtual void flush() = 0;
 };
 

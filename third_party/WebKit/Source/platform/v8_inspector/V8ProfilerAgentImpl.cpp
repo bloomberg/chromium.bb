@@ -213,7 +213,7 @@ void V8ProfilerAgentImpl::clearFrontend()
 void V8ProfilerAgentImpl::restore()
 {
     m_enabled = true;
-    long interval = 0;
+    int interval = 0;
     m_state->getNumber(ProfilerAgentState::samplingInterval, &interval);
     if (interval)
         m_isolate->GetCpuProfiler()->SetSamplingInterval(interval);

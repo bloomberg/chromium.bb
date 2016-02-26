@@ -37,7 +37,6 @@
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerThread.h"
-#include "platform/JSONValues.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "wtf/MainThread.h"
 

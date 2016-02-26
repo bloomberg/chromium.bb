@@ -30,7 +30,7 @@
 
 #include "platform/v8_inspector/V8DebuggerImpl.h"
 
-#include "platform/JSONValues.h"
+#include "platform/inspector_protocol/Values.h"
 #include "platform/v8_inspector/DebuggerScript.h"
 #include "platform/v8_inspector/JavaScriptCallFrame.h"
 #include "platform/v8_inspector/ScriptBreakpoint.h"

@@ -45,7 +45,7 @@
 #include "modules/webdatabase/SQLTransactionCallback.h"
 #include "modules/webdatabase/SQLTransactionErrorCallback.h"
 #include "modules/webdatabase/sqlite/SQLValue.h"
-#include "platform/JSONValues.h"
+#include "platform/inspector_protocol/Values.h"
 #include "wtf/Vector.h"
 
 typedef blink::protocol::Dispatcher::DatabaseCommandHandler::ExecuteSQLCallback ExecuteSQLCallback;
@@ -63,7 +63,7 @@ void reportTransactionFailed(ExecuteSQLCallback* requestCallback, SQLError* erro
     OwnPtr<protocol::Database::Error> errorObject = protocol::Database::Error::create()
         .setMessage(error->message())
         .setCode(error->code()).build();
-    requestCallback->sendSuccess(Maybe<protocol::Array<String>>(), Maybe<protocol::Array<RefPtr<JSONValue>>>(), errorObject.release());
+    requestCallback->sendSuccess(Maybe<protocol::Array<String>>(), Maybe<protocol::Array<RefPtr<protocol::Value>>>(), errorObject.release());
 }
 
 class StatementCallback final : public SQLStatementCallback {
@@ -89,14 +89,14 @@ public:
         for (size_t i = 0; i < columns.size(); ++i)
             columnNames->addItem(columns[i]);
 
-        OwnPtr<protocol::Array<RefPtr<JSONValue>>> values = protocol::Array<RefPtr<JSONValue>>::create();
+        OwnPtr<protocol::Array<RefPtr<protocol::Value>>> values = protocol::Array<RefPtr<protocol::Value>>::create();
         const Vector<SQLValue>& data = rowList->values();
         for (size_t i = 0; i < data.size(); ++i) {
             const SQLValue& value = rowList->values()[i];
             switch (value.type()) {
-            case SQLValue::StringValue: values->addItem(JSONString::create(value.string())); break;
-            case SQLValue::NumberValue: values->addItem(JSONBasicValue::create(value.number())); break;
-            case SQLValue::NullValue: values->addItem(JSONValue::null()); break;
+            case SQLValue::StringValue: values->addItem(protocol::StringValue::create(value.string())); break;
+            case SQLValue::NumberValue: values->addItem(protocol::FundamentalValue::create(value.number())); break;
+            case SQLValue::NullValue: values->addItem(protocol::Value::null()); break;
             }
         }
         m_requestCallback->sendSuccess(columnNames.release(), values.release(), Maybe<protocol::Database::Error>());

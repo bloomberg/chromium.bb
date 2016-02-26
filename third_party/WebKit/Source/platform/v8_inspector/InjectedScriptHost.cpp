@@ -30,7 +30,7 @@
 
 #include "platform/v8_inspector/InjectedScriptHost.h"
 
-#include "platform/JSONValues.h"
+#include "platform/inspector_protocol/Values.h"
 #include "platform/v8_inspector/V8DebuggerAgentImpl.h"
 #include "platform/v8_inspector/public/V8Debugger.h"
 
@@ -75,12 +75,12 @@ void InjectedScriptHost::disconnect()
     m_inspectedObjects.clear();
 }
 
-void InjectedScriptHost::inspectImpl(PassRefPtr<JSONValue> object, PassRefPtr<JSONValue> hints)
+void InjectedScriptHost::inspectImpl(PassRefPtr<protocol::Value> object, PassRefPtr<protocol::Value> hints)
 {
     if (m_inspectCallback) {
         protocol::ErrorSupport errors;
         OwnPtr<protocol::Runtime::RemoteObject> remoteObject = protocol::Runtime::RemoteObject::parse(object, &errors);
-        (*m_inspectCallback)(remoteObject.release(), JSONObject::cast(hints));
+        (*m_inspectCallback)(remoteObject.release(), protocol::DictionaryValue::cast(hints));
     }
 }
 

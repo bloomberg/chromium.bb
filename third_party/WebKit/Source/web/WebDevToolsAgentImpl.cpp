@@ -71,13 +71,13 @@
 #include "modules/indexeddb/InspectorIndexedDBAgent.h"
 #include "modules/storage/InspectorDOMStorageAgent.h"
 #include "modules/webdatabase/InspectorDatabaseAgent.h"
-#include "platform/JSONValues.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/TraceEvent.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/PaintController.h"
 #include "platform/inspector_protocol/Dispatcher.h"
 #include "platform/inspector_protocol/Frontend.h"
+#include "platform/inspector_protocol/Values.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebLayerTreeView.h"
 #include "public/platform/WebRect.h"
@@ -485,7 +485,7 @@ void WebDevToolsAgentImpl::initializeDeferredAgents()
     m_pageConsoleAgent->setDebuggerAgent(debuggerAgent->v8Agent());
 
     m_pageRuntimeAgent->v8Agent()->setClearConsoleCallback(bind<>(&InspectorConsoleAgent::clearAllMessages, m_pageConsoleAgent.get()));
-    m_pageRuntimeAgent->v8Agent()->setInspectObjectCallback(bind<PassOwnPtr<protocol::Runtime::RemoteObject>, PassRefPtr<JSONObject>>(&InspectorInspectorAgent::inspect, m_inspectorAgent.get()));
+    m_pageRuntimeAgent->v8Agent()->setInspectObjectCallback(bind<PassOwnPtr<protocol::Runtime::RemoteObject>, PassRefPtr<protocol::DictionaryValue>>(&InspectorInspectorAgent::inspect, m_inspectorAgent.get()));
 
     if (m_overlay)
         m_overlay->init(cssAgent, debuggerAgent, m_domAgent.get());
@@ -642,7 +642,7 @@ void WebDevToolsAgentImpl::failedToRequestDevTools()
     ClientMessageLoopAdapter::resumeForCreateWindow();
 }
 
-void WebDevToolsAgentImpl::sendProtocolResponse(int sessionId, int callId, PassRefPtr<JSONObject> message)
+void WebDevToolsAgentImpl::sendProtocolResponse(int sessionId, int callId, PassRefPtr<protocol::DictionaryValue> message)
 {
     if (!m_attached)
         return;
@@ -659,7 +659,7 @@ void WebDevToolsAgentImpl::sendProtocolResponse(int sessionId, int callId, PassR
     m_client->sendProtocolMessage(sessionId, callId, message->toJSONString(), stateToSend);
 }
 
-void WebDevToolsAgentImpl::sendProtocolNotification(PassRefPtr<JSONObject> message)
+void WebDevToolsAgentImpl::sendProtocolNotification(PassRefPtr<protocol::DictionaryValue> message)
 {
     if (!m_attached)
         return;

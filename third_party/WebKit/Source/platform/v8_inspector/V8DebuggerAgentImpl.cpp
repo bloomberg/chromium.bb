@@ -4,7 +4,7 @@
 
 #include "platform/v8_inspector/V8DebuggerAgentImpl.h"
 
-#include "platform/JSONValues.h"
+#include "platform/inspector_protocol/Values.h"
 #include "platform/v8_inspector/AsyncCallChain.h"
 #include "platform/v8_inspector/IgnoreExceptionsScope.h"
 #include "platform/v8_inspector/InjectedScript.h"
@@ -196,7 +196,7 @@ void V8DebuggerAgentImpl::disable(ErrorString*)
     if (!enabled())
         return;
 
-    m_state->setObject(DebuggerAgentState::javaScriptBreakpoints, JSONObject::create());
+    m_state->setObject(DebuggerAgentState::javaScriptBreakpoints, protocol::DictionaryValue::create());
     m_state->setNumber(DebuggerAgentState::pauseOnExceptionsState, V8DebuggerImpl::DontPauseOnExceptions);
     m_state->setNumber(DebuggerAgentState::asyncCallStackDepth, 0);
     m_state->setBoolean(DebuggerAgentState::promiseTrackerEnabled, false);
@@ -236,7 +236,7 @@ void V8DebuggerAgentImpl::internalSetAsyncCallStackDepth(int depth)
     m_v8AsyncCallTracker->asyncCallTrackingStateChanged(m_maxAsyncCallStackDepth);
 }
 
-void V8DebuggerAgentImpl::setInspectorState(PassRefPtr<JSONObject> state)
+void V8DebuggerAgentImpl::setInspectorState(PassRefPtr<protocol::DictionaryValue> state)
 {
     m_state = state;
 }
@@ -256,7 +256,7 @@ void V8DebuggerAgentImpl::restore()
     enable();
     String error;
 
-    long pauseState = V8DebuggerImpl::DontPauseOnExceptions;
+    int pauseState = V8DebuggerImpl::DontPauseOnExceptions;
     m_state->getNumber(DebuggerAgentState::pauseOnExceptionsState, &pauseState);
     setPauseOnExceptionsImpl(&error, pauseState);
 
@@ -287,9 +287,9 @@ bool V8DebuggerAgentImpl::isPaused()
     return debugger().isPaused();
 }
 
-static PassRefPtr<JSONObject> buildObjectForBreakpointCookie(const String& url, int lineNumber, int columnNumber, const String& condition, bool isRegex)
+static PassRefPtr<protocol::DictionaryValue> buildObjectForBreakpointCookie(const String& url, int lineNumber, int columnNumber, const String& condition, bool isRegex)
 {
-    RefPtr<JSONObject> breakpointObject = JSONObject::create();
+    RefPtr<protocol::DictionaryValue> breakpointObject = protocol::DictionaryValue::create();
     breakpointObject->setString(DebuggerAgentState::url, url);
     breakpointObject->setNumber(DebuggerAgentState::lineNumber, lineNumber);
     breakpointObject->setNumber(DebuggerAgentState::columnNumber, columnNumber);
@@ -335,9 +335,9 @@ void V8DebuggerAgentImpl::setBreakpointByUrl(ErrorString* errorString,
     bool isRegex = optionalURLRegex.isJust();
 
     String breakpointId = (isRegex ? "/" + url + "/" : url) + ':' + String::number(lineNumber) + ':' + String::number(columnNumber);
-    RefPtr<JSONObject> breakpointsCookie = m_state->getObject(DebuggerAgentState::javaScriptBreakpoints);
+    RefPtr<protocol::DictionaryValue> breakpointsCookie = m_state->getObject(DebuggerAgentState::javaScriptBreakpoints);
     if (!breakpointsCookie) {
-        breakpointsCookie = JSONObject::create();
+        breakpointsCookie = protocol::DictionaryValue::create();
         m_state->setObject(DebuggerAgentState::javaScriptBreakpoints, breakpointsCookie);
     }
     if (breakpointsCookie->find(breakpointId) != breakpointsCookie->end()) {
@@ -400,7 +400,7 @@ void V8DebuggerAgentImpl::removeBreakpoint(ErrorString* errorString, const Strin
 {
     if (!checkEnabled(errorString))
         return;
-    RefPtr<JSONObject> breakpointsCookie = m_state->getObject(DebuggerAgentState::javaScriptBreakpoints);
+    RefPtr<protocol::DictionaryValue> breakpointsCookie = m_state->getObject(DebuggerAgentState::javaScriptBreakpoints);
     if (breakpointsCookie)
         breakpointsCookie->remove(breakpointId);
     removeBreakpoint(breakpointId);
@@ -727,7 +727,7 @@ void V8DebuggerAgentImpl::getCollectionEntries(ErrorString* errorString, const S
     injectedScript->getCollectionEntries(errorString, objectId, entries);
 }
 
-void V8DebuggerAgentImpl::schedulePauseOnNextStatement(const String& breakReason, PassRefPtr<JSONObject> data)
+void V8DebuggerAgentImpl::schedulePauseOnNextStatement(const String& breakReason, PassRefPtr<protocol::DictionaryValue> data)
 {
     ASSERT(enabled());
     if (m_scheduledDebuggerStep == StepInto || m_javaScriptPauseScheduled || isPaused())
@@ -1445,12 +1445,12 @@ void V8DebuggerAgentImpl::didParseSource(const V8DebuggerParsedScript& parsedScr
     if (scriptURL.isEmpty() || !parsedScript.success)
         return;
 
-    RefPtr<JSONObject> breakpointsCookie = m_state->getObject(DebuggerAgentState::javaScriptBreakpoints);
+    RefPtr<protocol::DictionaryValue> breakpointsCookie = m_state->getObject(DebuggerAgentState::javaScriptBreakpoints);
     if (!breakpointsCookie)
         return;
 
     for (auto& cookie : *breakpointsCookie) {
-        RefPtr<JSONObject> breakpointObject = JSONObject::cast(cookie.value);
+        RefPtr<protocol::DictionaryValue> breakpointObject = protocol::DictionaryValue::cast(cookie.value);
         bool isRegex;
         breakpointObject->getBoolean(DebuggerAgentState::isRegex, &isRegex);
         String url;
@@ -1507,7 +1507,7 @@ V8DebuggerAgentImpl::SkipPauseRequest V8DebuggerAgentImpl::didPause(v8::Local<v8
         }
     } else if (m_pausingOnAsyncOperation) {
         m_breakReason = protocol::Debugger::Paused::ReasonEnum::AsyncOperation;
-        m_breakAuxData = JSONObject::create();
+        m_breakAuxData = protocol::DictionaryValue::create();
         m_breakAuxData->setNumber("operationId", m_currentAsyncOperationId);
     }
 
@@ -1557,7 +1557,7 @@ bool V8DebuggerAgentImpl::canBreakProgram()
     return debugger().canBreakProgram();
 }
 
-void V8DebuggerAgentImpl::breakProgram(const String& breakReason, PassRefPtr<JSONObject> data)
+void V8DebuggerAgentImpl::breakProgram(const String& breakReason, PassRefPtr<protocol::DictionaryValue> data)
 {
     ASSERT(enabled());
     if (m_skipAllPauses || !m_pausedContext.IsEmpty() || isCallStackEmptyOrBlackboxed())
@@ -1571,7 +1571,7 @@ void V8DebuggerAgentImpl::breakProgram(const String& breakReason, PassRefPtr<JSO
     debugger().breakProgram();
 }
 
-void V8DebuggerAgentImpl::breakProgramOnException(const String& breakReason, PassRefPtr<JSONObject> data)
+void V8DebuggerAgentImpl::breakProgramOnException(const String& breakReason, PassRefPtr<protocol::DictionaryValue> data)
 {
     if (m_debugger->pauseOnExceptionsState() == V8DebuggerImpl::DontPauseOnExceptions)
         return;

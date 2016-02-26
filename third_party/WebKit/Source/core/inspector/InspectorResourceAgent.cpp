@@ -58,9 +58,9 @@
 #include "core/loader/ThreadableLoaderClient.h"
 #include "core/page/Page.h"
 #include "core/xmlhttprequest/XMLHttpRequest.h"
-#include "platform/JSONValues.h"
 #include "platform/blob/BlobData.h"
 #include "platform/inspector_protocol/Frontend.h"
+#include "platform/inspector_protocol/Values.h"
 #include "platform/network/HTTPHeaderMap.h"
 #include "platform/network/ResourceError.h"
 #include "platform/network/ResourceLoadPriority.h"
@@ -111,7 +111,7 @@ bool matches(const String& url, const String& pattern)
 
 static PassOwnPtr<protocol::Network::Headers> buildObjectForHeaders(const HTTPHeaderMap& headers)
 {
-    RefPtr<JSONObject> headersObject = JSONObject::create();
+    RefPtr<protocol::DictionaryValue> headersObject = protocol::DictionaryValue::create();
     for (const auto& header : headers)
         headersObject->setString(header.key.string(), header.value);
     protocol::ErrorSupport errors;
@@ -300,7 +300,7 @@ static PassOwnPtr<protocol::Network::Response> buildObjectForResourceResponse(co
         status = response.httpStatusCode();
         statusText = response.httpStatusText();
     }
-    RefPtr<JSONObject> headers;
+    RefPtr<protocol::DictionaryValue> headers;
     HTTPHeaderMap headersMap;
     if (response.resourceLoadInfo() && response.resourceLoadInfo()->responseHeaders.size())
         headersMap = response.resourceLoadInfo()->responseHeaders;
@@ -439,7 +439,7 @@ DEFINE_TRACE(InspectorResourceAgent)
 
 bool InspectorResourceAgent::shouldBlockRequest(const ResourceRequest& request)
 {
-    RefPtr<JSONObject> blockedURLs = m_state->getObject(ResourceAgentState::blockedURLs);
+    RefPtr<protocol::DictionaryValue> blockedURLs = m_state->getObject(ResourceAgentState::blockedURLs);
     if (!blockedURLs)
         return false;
     String url = request.url().string();
@@ -502,7 +502,7 @@ void InspectorResourceAgent::willSendRequest(LocalFrame* frame, unsigned long id
     if (initiatorInfo.name == FetchInitiatorTypeNames::document && loader->substituteData().isValid())
         return;
 
-    RefPtr<JSONObject> headers = m_state->getObject(ResourceAgentState::extraRequestHeaders);
+    RefPtr<protocol::DictionaryValue> headers = m_state->getObject(ResourceAgentState::extraRequestHeaders);
     if (headers) {
         for (const auto& header : *headers) {
             String value;
@@ -967,9 +967,9 @@ void InspectorResourceAgent::getResponseBody(ErrorString* errorString, const Str
 
 void InspectorResourceAgent::addBlockedURL(ErrorString*, const String& url)
 {
-    RefPtr<JSONObject> blockedURLs = m_state->getObject(ResourceAgentState::blockedURLs);
+    RefPtr<protocol::DictionaryValue> blockedURLs = m_state->getObject(ResourceAgentState::blockedURLs);
     if (!blockedURLs) {
-        blockedURLs = JSONObject::create();
+        blockedURLs = protocol::DictionaryValue::create();
         m_state->setObject(ResourceAgentState::blockedURLs, blockedURLs);
     }
     blockedURLs->setBoolean(url, true);
@@ -977,7 +977,7 @@ void InspectorResourceAgent::addBlockedURL(ErrorString*, const String& url)
 
 void InspectorResourceAgent::removeBlockedURL(ErrorString*, const String& url)
 {
-    RefPtr<JSONObject> blockedURLs = m_state->getObject(ResourceAgentState::blockedURLs);
+    RefPtr<protocol::DictionaryValue> blockedURLs = m_state->getObject(ResourceAgentState::blockedURLs);
     if (blockedURLs)
         blockedURLs->remove(url);
 }

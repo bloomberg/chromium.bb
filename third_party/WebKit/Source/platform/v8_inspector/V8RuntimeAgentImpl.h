@@ -39,8 +39,11 @@
 namespace blink {
 
 class InjectedScriptManager;
-class JSONArray;
 class V8DebuggerImpl;
+
+namespace protocol {
+class DictionaryValue;
+}
 
 typedef String ErrorString;
 
@@ -53,7 +56,7 @@ public:
     ~V8RuntimeAgentImpl() override;
 
     // State management methods.
-    void setInspectorState(PassRefPtr<JSONObject>) override;
+    void setInspectorState(PassRefPtr<protocol::DictionaryValue>) override;
     void setFrontend(protocol::Frontend::Runtime*) override;
     void clearFrontend() override;
     void restore() override;
@@ -128,7 +131,7 @@ private:
     void reportExecutionContextDestroyed(v8::Local<v8::Context>) override;
     PassOwnPtr<protocol::Runtime::ExceptionDetails> createExceptionDetails(v8::Isolate*, v8::Local<v8::Message>);
 
-    RefPtr<JSONObject> m_state;
+    RefPtr<protocol::DictionaryValue> m_state;
     protocol::Frontend::Runtime* m_frontend;
     OwnPtr<InjectedScriptManager> m_injectedScriptManager;
     V8DebuggerImpl* m_debugger;

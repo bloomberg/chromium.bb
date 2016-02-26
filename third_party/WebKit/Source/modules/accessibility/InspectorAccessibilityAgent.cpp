@@ -14,7 +14,7 @@
 #include "modules/accessibility/AXObject.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
 #include "modules/accessibility/InspectorTypeBuilderHelper.h"
-#include "platform/JSONValues.h"
+#include "platform/inspector_protocol/Values.h"
 
 namespace blink {
 
@@ -256,7 +256,7 @@ PassOwnPtr<AXProperty> createRelatedNodeListProperty(const String& key, AXObject
 {
     OwnPtr<AXValue> nodeListValue = createRelatedNodeListValue(nodes);
     const AtomicString& attrValue = axObject->getAttribute(attr);
-    nodeListValue->setValue(JSONString::create(attrValue).get());
+    nodeListValue->setValue(protocol::StringValue::create(attrValue).get());
     return createProperty(key, nodeListValue.release());
 }
 

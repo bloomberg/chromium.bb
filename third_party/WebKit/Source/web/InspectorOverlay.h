@@ -53,12 +53,15 @@ class GraphicsContext;
 class GraphicsLayer;
 class InspectorCSSAgent;
 class InspectorDebuggerAgent;
-class JSONValue;
 class LayoutEditor;
 class Node;
 class Page;
 class PageOverlay;
 class WebViewImpl;
+
+namespace protocol {
+class Value;
+}
 
 class InspectorOverlay final
     : public NoBaseWillBeGarbageCollectedFinalized<InspectorOverlay>
@@ -127,7 +130,7 @@ private:
     LocalFrame* overlayMainFrame();
     void reset(const IntSize& viewportSize, const IntPoint& documentScrollOffset);
     void evaluateInOverlay(const String& method, const String& argument);
-    void evaluateInOverlay(const String& method, PassRefPtr<JSONValue> argument);
+    void evaluateInOverlay(const String& method, PassRefPtr<protocol::Value> argument);
     void onTimer(Timer<InspectorOverlay>*);
     void rebuildOverlayPage();
     void invalidate();

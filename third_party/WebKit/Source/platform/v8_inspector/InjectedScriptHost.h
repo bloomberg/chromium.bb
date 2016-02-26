@@ -40,9 +40,12 @@
 namespace blink {
 
 class V8EventListenerInfo;
-class JSONValue;
 class V8DebuggerImpl;
 class V8DebuggerAgentImpl;
+
+namespace protocol {
+class DictionaryValue;
+}
 
 // SECURITY NOTE: Although the InjectedScriptHost is intended for use solely by the inspector,
 // a reference to the InjectedScriptHost may be leaked to the page being inspected. Thus, the
@@ -64,7 +67,7 @@ public:
     void clearInspectedObjects();
     V8RuntimeAgent::Inspectable* inspectedObject(unsigned num);
 
-    void inspectImpl(PassRefPtr<JSONValue> objectToInspect, PassRefPtr<JSONValue> hints);
+    void inspectImpl(PassRefPtr<protocol::Value> objectToInspect, PassRefPtr<protocol::Value> hints);
 
     void clearConsoleMessages();
     void debugFunction(const String& scriptId, int lineNumber, int columnNumber);

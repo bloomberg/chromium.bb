@@ -10,7 +10,9 @@
 
 namespace blink {
 
-class JSONObject;
+namespace protocol {
+class DictionaryValue;
+}
 
 class RemoteObjectIdBase {
     USING_FAST_MALLOC(RemoteObjectIdBase);
@@ -21,7 +23,7 @@ protected:
     RemoteObjectIdBase();
     ~RemoteObjectIdBase() { }
 
-    PassRefPtr<JSONObject> parseInjectedScriptId(const String&);
+    PassRefPtr<protocol::DictionaryValue> parseInjectedScriptId(const String&);
 
     int m_injectedScriptId;
 };
@@ -43,14 +45,14 @@ public:
     static PassOwnPtr<RemoteCallFrameId> parse(const String&);
     ~RemoteCallFrameId() { }
 
-    unsigned frameOrdinal() const { return m_frameOrdinal; }
-    unsigned asyncStackOrdinal() const { return m_asyncStackOrdinal; }
+    int frameOrdinal() const { return m_frameOrdinal; }
+    int asyncStackOrdinal() const { return m_asyncStackOrdinal; }
 
 private:
     RemoteCallFrameId();
 
-    unsigned m_frameOrdinal;
-    unsigned m_asyncStackOrdinal;
+    int m_frameOrdinal;
+    int m_asyncStackOrdinal;
 };
 
 } // namespace blink

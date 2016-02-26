@@ -47,11 +47,11 @@
 #include "core/loader/FrameLoadRequest.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
-#include "platform/JSONValues.h"
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/CullRect.h"
 #include "platform/graphics/paint/DisplayItemCacheSkipper.h"
+#include "platform/inspector_protocol/Values.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebData.h"
 #include "web/PageOverlay.h"
@@ -400,9 +400,9 @@ void InspectorOverlay::rebuildOverlayPage()
         m_layoutEditor->rebuild();
 }
 
-static PassRefPtr<JSONObject> buildObjectForSize(const IntSize& size)
+static PassRefPtr<protocol::DictionaryValue> buildObjectForSize(const IntSize& size)
 {
-    RefPtr<JSONObject> result = JSONObject::create();
+    RefPtr<protocol::DictionaryValue> result = protocol::DictionaryValue::create();
     result->setNumber("width", size.width());
     result->setNumber("height", size.height());
     return result.release();
@@ -425,7 +425,7 @@ void InspectorOverlay::drawNodeHighlight()
         for (unsigned i = 0; i < elements->length(); ++i) {
             Element* element = elements->item(i);
             InspectorHighlight highlight(element, m_nodeHighlightConfig, false);
-            RefPtr<JSONObject> highlightJSON = highlight.asJSONObject();
+            RefPtr<protocol::DictionaryValue> highlightJSON = highlight.asProtocolValue();
             evaluateInOverlay("drawHighlight", highlightJSON.release());
         }
     }
@@ -435,7 +435,7 @@ void InspectorOverlay::drawNodeHighlight()
     if (m_eventTargetNode)
         highlight.appendEventTargetQuads(m_eventTargetNode.get(), m_nodeHighlightConfig);
 
-    RefPtr<JSONObject> highlightJSON = highlight.asJSONObject();
+    RefPtr<protocol::DictionaryValue> highlightJSON = highlight.asProtocolValue();
     evaluateInOverlay("drawHighlight", highlightJSON.release());
 }
 
@@ -446,7 +446,7 @@ void InspectorOverlay::drawQuadHighlight()
 
     InspectorHighlight highlight;
     highlight.appendQuad(*m_highlightQuad, m_quadHighlightConfig.content, m_quadHighlightConfig.contentOutline);
-    evaluateInOverlay("drawHighlight", highlight.asJSONObject());
+    evaluateInOverlay("drawHighlight", highlight.asProtocolValue());
 }
 
 void InspectorOverlay::drawPausedInDebuggerMessage()
@@ -532,7 +532,7 @@ LocalFrame* InspectorOverlay::overlayMainFrame()
 
 void InspectorOverlay::reset(const IntSize& viewportSize, const IntPoint& documentScrollOffset)
 {
-    RefPtr<JSONObject> resetData = JSONObject::create();
+    RefPtr<protocol::DictionaryValue> resetData = protocol::DictionaryValue::create();
     resetData->setNumber("deviceScaleFactor", m_webViewImpl->page()->deviceScaleFactor());
     resetData->setNumber("pageScaleFactor", m_webViewImpl->page()->pageScaleFactor());
     resetData->setObject("viewportSize", buildObjectForSize(viewportSize));
@@ -545,17 +545,17 @@ void InspectorOverlay::reset(const IntSize& viewportSize, const IntPoint& docume
 void InspectorOverlay::evaluateInOverlay(const String& method, const String& argument)
 {
     ScriptForbiddenScope::AllowUserAgentScript allowScript;
-    RefPtr<JSONArray> command = JSONArray::create();
-    command->pushString(method);
-    command->pushString(argument);
+    RefPtr<protocol::ListValue> command = protocol::ListValue::create();
+    command->pushValue(protocol::StringValue::create(method));
+    command->pushValue(protocol::StringValue::create(argument));
     toLocalFrame(overlayPage()->mainFrame())->script().executeScriptInMainWorld("dispatch(" + command->toJSONString() + ")", ScriptController::ExecuteScriptWhenScriptsDisabled);
 }
 
-void InspectorOverlay::evaluateInOverlay(const String& method, PassRefPtr<JSONValue> argument)
+void InspectorOverlay::evaluateInOverlay(const String& method, PassRefPtr<protocol::Value> argument)
 {
     ScriptForbiddenScope::AllowUserAgentScript allowScript;
-    RefPtr<JSONArray> command = JSONArray::create();
-    command->pushString(method);
+    RefPtr<protocol::ListValue> command = protocol::ListValue::create();
+    command->pushValue(protocol::StringValue::create(method));
     command->pushValue(argument);
     toLocalFrame(overlayPage()->mainFrame())->script().executeScriptInMainWorld("dispatch(" + command->toJSONString() + ")", ScriptController::ExecuteScriptWhenScriptsDisabled);
 }

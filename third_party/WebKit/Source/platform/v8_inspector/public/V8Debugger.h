@@ -14,9 +14,12 @@
 
 namespace blink {
 
-class JSONObject;
 class V8DebuggerClient;
 class V8StackTrace;
+
+namespace protocol {
+class DictionaryValue;
+}
 
 class PLATFORM_EXPORT V8Debugger {
     USING_FAST_MALLOC(V8Debugger);
@@ -24,7 +27,7 @@ public:
     template <typename T>
     class Agent {
     public:
-        virtual void setInspectorState(PassRefPtr<JSONObject>) = 0;
+        virtual void setInspectorState(PassRefPtr<protocol::DictionaryValue>) = 0;
         virtual void setFrontend(T*) = 0;
         virtual void clearFrontend() = 0;
         virtual void restore() = 0;

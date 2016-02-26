@@ -15,7 +15,10 @@
 namespace blink {
 
 class Color;
-class JSONValue;
+
+namespace protocol {
+class Value;
+}
 
 struct CORE_EXPORT InspectorHighlightConfig {
     USING_FAST_MALLOC(InspectorHighlightConfig);
@@ -50,17 +53,17 @@ public:
     static InspectorHighlightConfig defaultConfig();
     static bool buildNodeQuads(Node*, FloatQuad* content, FloatQuad* padding, FloatQuad* border, FloatQuad* margin);
 
-    void appendPath(PassRefPtr<JSONArray> path, const Color& fillColor, const Color& outlineColor, const String& name = String());
+    void appendPath(PassRefPtr<protocol::ListValue> path, const Color& fillColor, const Color& outlineColor, const String& name = String());
     void appendQuad(const FloatQuad&, const Color& fillColor, const Color& outlineColor = Color::transparent, const String& name = String());
     void appendEventTargetQuads(Node* eventTargetNode, const InspectorHighlightConfig&);
-    PassRefPtr<JSONObject> asJSONObject() const;
+    PassRefPtr<protocol::DictionaryValue> asProtocolValue() const;
 
 private:
     void appendNodeHighlight(Node*, const InspectorHighlightConfig&);
     void appendPathsForShapeOutside(Node*, const InspectorHighlightConfig&);
 
-    RefPtr<JSONObject> m_elementInfo;
-    RefPtr<JSONArray> m_highlightPaths;
+    RefPtr<protocol::DictionaryValue> m_elementInfo;
+    RefPtr<protocol::ListValue> m_highlightPaths;
     bool m_showRulers;
     bool m_showExtensionLines;
     bool m_displayAsMaterial;

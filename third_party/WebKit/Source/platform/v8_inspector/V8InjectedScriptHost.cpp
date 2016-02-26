@@ -4,8 +4,7 @@
 
 #include "platform/v8_inspector/V8InjectedScriptHost.h"
 
-#include "platform/JSONValues.h"
-#include "platform/JSONValuesForV8.h"
+#include "platform/inspector_protocol/Values.h"
 #include "platform/v8_inspector/InjectedScript.h"
 #include "platform/v8_inspector/InjectedScriptHost.h"
 #include "platform/v8_inspector/InspectorWrapper.h"
@@ -14,6 +13,7 @@
 #include "platform/v8_inspector/V8StringUtil.h"
 #include "platform/v8_inspector/public/V8DebuggerClient.h"
 #include "platform/v8_inspector/public/V8EventListenerInfo.h"
+#include "platform/v8_inspector/public/V8ToProtocolValue.h"
 #include "wtf/HashSet.h"
 #include "wtf/NonCopyingSort.h"
 #include "wtf/RefPtr.h"
@@ -272,7 +272,7 @@ void V8InjectedScriptHost::inspectCallback(const v8::FunctionCallbackInfo<v8::Va
 
     v8::Local<v8::Context> context = info.GetIsolate()->GetCurrentContext();
     InjectedScriptHost* host = V8InjectedScriptHost::unwrap(context, info.Holder());
-    host->inspectImpl(toJSONValue(context, info[0]), toJSONValue(context, info[1]));
+    host->inspectImpl(toProtocolValue(context, info[0]), toProtocolValue(context, info[1]));
 }
 
 void V8InjectedScriptHost::evalCallback(const v8::FunctionCallbackInfo<v8::Value>& info)

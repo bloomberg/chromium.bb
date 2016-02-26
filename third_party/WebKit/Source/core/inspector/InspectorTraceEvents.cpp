@@ -23,7 +23,6 @@
 #include "core/paint/PaintLayer.h"
 #include "core/workers/WorkerThread.h"
 #include "core/xmlhttprequest/XMLHttpRequest.h"
-#include "platform/JSONValues.h"
 #include "platform/TracedValue.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/network/ResourceRequest.h"

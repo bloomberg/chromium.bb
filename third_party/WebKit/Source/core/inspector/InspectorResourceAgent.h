@@ -53,7 +53,6 @@ class LocalFrame;
 class HTTPHeaderMap;
 class InspectedFrames;
 class InspectorFrontend;
-class JSONObject;
 class KURL;
 class NetworkResourcesData;
 class ResourceError;
@@ -65,6 +64,10 @@ class XMLHttpRequest;
 
 class WebSocketHandshakeRequest;
 class WebSocketHandshakeResponse;
+
+namespace protocol {
+class DictionaryValue;
+}
 
 typedef String ErrorString;
 

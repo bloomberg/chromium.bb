@@ -40,10 +40,13 @@ namespace blink {
 
 class InjectedScript;
 class InjectedScriptManager;
-class JSONArray;
 class ScriptState;
 class V8Debugger;
 class V8RuntimeAgent;
+
+namespace protocol {
+class ListValue;
+}
 
 typedef String ErrorString;
 
@@ -65,7 +68,7 @@ public:
     ~InspectorRuntimeAgent() override;
 
     // InspectorBaseAgent overrides.
-    void setState(PassRefPtr<JSONObject>) override;
+    void setState(PassRefPtr<protocol::DictionaryValue>) override;
     void setFrontend(protocol::Frontend*) override;
     void clearFrontend() override;
     void restore() override;

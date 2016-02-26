@@ -52,6 +52,7 @@
 #include "platform/graphics/PictureSnapshot.h"
 #include "platform/graphics/paint/SkPictureBuilder.h"
 #include "platform/image-encoders/skia/PNGImageEncoder.h"
+#include "platform/inspector_protocol/Parser.h"
 #include "platform/transforms/TransformationMatrix.h"
 #include "public/platform/WebFloatPoint.h"
 #include "public/platform/WebLayer.h"
@@ -434,13 +435,14 @@ void InspectorLayerTreeAgent::profileSnapshot(ErrorString* errorString, const St
     }
 }
 
-void InspectorLayerTreeAgent::snapshotCommandLog(ErrorString* errorString, const String& snapshotId, OwnPtr<Array<RefPtr<JSONObject>>>* commandLog)
+void InspectorLayerTreeAgent::snapshotCommandLog(ErrorString* errorString, const String& snapshotId, OwnPtr<Array<RefPtr<protocol::DictionaryValue>>>* commandLog)
 {
     const PictureSnapshot* snapshot = snapshotById(errorString, snapshotId);
     if (!snapshot)
         return;
     protocol::ErrorSupport errors(errorString);
-    *commandLog = Array<RefPtr<JSONObject>>::parse(snapshot->snapshotCommandLog(), &errors);
+    RefPtr<protocol::Value> logValue = protocol::parseJSON(snapshot->snapshotCommandLog()->toJSONString());
+    *commandLog = Array<RefPtr<protocol::DictionaryValue>>::parse(logValue, &errors);
 }
 
 void InspectorLayerTreeAgent::willAddPageOverlay(const GraphicsLayer* layer)

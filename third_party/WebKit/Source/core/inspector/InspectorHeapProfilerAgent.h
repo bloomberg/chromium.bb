@@ -57,7 +57,7 @@ public:
     ~InspectorHeapProfilerAgent() override;
 
     // InspectorBaseAgent overrides.
-    void setState(PassRefPtr<JSONObject>) override;
+    void setState(PassRefPtr<protocol::DictionaryValue>) override;
     void setFrontend(protocol::Frontend*) override;
     void clearFrontend() override;
     void restore() override;

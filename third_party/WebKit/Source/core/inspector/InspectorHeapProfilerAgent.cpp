@@ -89,7 +89,7 @@ InspectorHeapProfilerAgent::~InspectorHeapProfilerAgent()
 }
 
 // InspectorBaseAgent overrides.
-void InspectorHeapProfilerAgent::setState(PassRefPtr<JSONObject> state)
+void InspectorHeapProfilerAgent::setState(PassRefPtr<protocol::DictionaryValue> state)
 {
     InspectorBaseAgent::setState(state);
     m_v8HeapProfilerAgent->setInspectorState(m_state);

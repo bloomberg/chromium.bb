@@ -58,7 +58,6 @@
 #include "core/loader/FrameLoaderClient.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/xml/XPathNSResolver.h"
-#include "platform/JSONValues.h"
 #include "platform/TracedValue.h"
 #include "wtf/MainThread.h"
 #include "wtf/MathExtras.h"

@@ -36,7 +36,6 @@
 #include "core/inspector/InspectedFrames.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
-#include "platform/JSONValues.h"
 #include "platform/PlatformEvent.h"
 #include "platform/PlatformTouchEvent.h"
 #include "platform/PlatformTouchPoint.h"
@@ -44,6 +43,7 @@
 #include "platform/geometry/IntPoint.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/IntSize.h"
+#include "platform/inspector_protocol/Values.h"
 #include "wtf/CurrentTime.h"
 
 namespace {

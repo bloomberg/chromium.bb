@@ -4,8 +4,8 @@
 
 #include "platform/v8_inspector/RemoteObjectId.h"
 
-#include "platform/JSONParser.h"
-#include "platform/JSONValues.h"
+#include "platform/inspector_protocol/Parser.h"
+#include "platform/inspector_protocol/Values.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefPtr.h"
 #include "wtf/text/WTFString.h"
@@ -14,13 +14,13 @@ namespace blink {
 
 RemoteObjectIdBase::RemoteObjectIdBase() : m_injectedScriptId(0) { }
 
-PassRefPtr<JSONObject> RemoteObjectIdBase::parseInjectedScriptId(const String& objectId)
+PassRefPtr<protocol::DictionaryValue> RemoteObjectIdBase::parseInjectedScriptId(const String& objectId)
 {
-    RefPtr<JSONValue> parsedValue = parseJSON(objectId);
-    if (!parsedValue || parsedValue->type() != JSONValue::TypeObject)
+    RefPtr<protocol::Value> parsedValue = protocol::parseJSON(objectId);
+    if (!parsedValue || parsedValue->type() != protocol::Value::TypeObject)
         return nullptr;
 
-    RefPtr<JSONObject> parsedObjectId = JSONObject::cast(parsedValue.release());
+    RefPtr<protocol::DictionaryValue> parsedObjectId = protocol::DictionaryValue::cast(parsedValue.release());
     bool success = parsedObjectId->getNumber("injectedScriptId", &m_injectedScriptId);
     if (success)
         return parsedObjectId.release();
@@ -32,7 +32,7 @@ RemoteObjectId::RemoteObjectId() : RemoteObjectIdBase(), m_id(0) { }
 PassOwnPtr<RemoteObjectId> RemoteObjectId::parse(const String& objectId)
 {
     OwnPtr<RemoteObjectId> result = adoptPtr(new RemoteObjectId());
-    RefPtr<JSONObject> parsedObjectId = result->parseInjectedScriptId(objectId);
+    RefPtr<protocol::DictionaryValue> parsedObjectId = result->parseInjectedScriptId(objectId);
     if (!parsedObjectId)
         return nullptr;
 
@@ -47,7 +47,7 @@ RemoteCallFrameId::RemoteCallFrameId() : RemoteObjectIdBase(), m_frameOrdinal(0)
 PassOwnPtr<RemoteCallFrameId> RemoteCallFrameId::parse(const String& objectId)
 {
     OwnPtr<RemoteCallFrameId> result = adoptPtr(new RemoteCallFrameId());
-    RefPtr<JSONObject> parsedObjectId = result->parseInjectedScriptId(objectId);
+    RefPtr<protocol::DictionaryValue> parsedObjectId = result->parseInjectedScriptId(objectId);
     if (!parsedObjectId)
         return nullptr;
 
@@ -55,7 +55,7 @@ PassOwnPtr<RemoteCallFrameId> RemoteCallFrameId::parse(const String& objectId)
     if (!success)
         return nullptr;
 
-    RefPtr<JSONValue> value = parsedObjectId->get("asyncOrdinal");
+    RefPtr<protocol::Value> value = parsedObjectId->get("asyncOrdinal");
     if (value &&!value->asNumber(&result->m_asyncStackOrdinal))
         return nullptr;
     return result.release();

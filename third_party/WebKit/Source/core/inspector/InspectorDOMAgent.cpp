@@ -2042,13 +2042,13 @@ void InspectorDOMAgent::getRelayoutBoundary(ErrorString* errorString, int nodeId
     *relayoutBoundaryNodeId = pushNodePathToFrontend(resultNode);
 }
 
-void InspectorDOMAgent::getHighlightObjectForTest(ErrorString* errorString, int nodeId, RefPtr<JSONObject>* result)
+void InspectorDOMAgent::getHighlightObjectForTest(ErrorString* errorString, int nodeId, RefPtr<protocol::DictionaryValue>* result)
 {
     Node* node = assertNode(errorString, nodeId);
     if (!node)
         return;
     InspectorHighlight highlight(node, InspectorHighlight::defaultConfig(), true);
-    *result = highlight.asJSONObject();
+    *result = highlight.asProtocolValue();
 }
 
 PassOwnPtr<protocol::Runtime::RemoteObject> InspectorDOMAgent::resolveNode(Node* node, const String& objectGroup)

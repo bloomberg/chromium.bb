@@ -62,9 +62,9 @@ String ErrorSupport::errors()
     return builder.toString();
 }
 
-PassOwnPtr<Object> Object::parse(PassRefPtr<JSONValue> value, ErrorSupport* errors)
+PassOwnPtr<Object> Object::parse(PassRefPtr<protocol::Value> value, ErrorSupport* errors)
 {
-    RefPtr<JSONObject> object = JSONObject::cast(value);
+    RefPtr<protocol::DictionaryValue> object = DictionaryValue::cast(value);
     if (!object) {
         errors->addError("object expected");
         return nullptr;
@@ -72,7 +72,7 @@ PassOwnPtr<Object> Object::parse(PassRefPtr<JSONValue> value, ErrorSupport* erro
     return adoptPtr(new Object(object.release()));
 }
 
-PassRefPtr<JSONObject> Object::serialize() const
+PassRefPtr<protocol::DictionaryValue> Object::serialize() const
 {
     return m_object;
 }
@@ -82,13 +82,13 @@ PassOwnPtr<Object> Object::clone() const
     return adoptPtr(new Object(m_object));
 }
 
-Object::Object(PassRefPtr<JSONObject> object) : m_object(object) { }
+Object::Object(PassRefPtr<protocol::DictionaryValue> object) : m_object(object) { }
 Object::~Object() { }
 
-PassRefPtr<JSONValue> toValue(int value) { return JSONBasicValue::create(value); }
-PassRefPtr<JSONValue> toValue(double value) { return JSONBasicValue::create(value); }
-PassRefPtr<JSONValue> toValue(bool value) { return JSONBasicValue::create(value); }
-PassRefPtr<JSONValue> toValue(const String& param) { return JSONString::create(param); }
+PassRefPtr<protocol::Value> toValue(int value) { return FundamentalValue::create(value); }
+PassRefPtr<protocol::Value> toValue(double value) { return FundamentalValue::create(value); }
+PassRefPtr<protocol::Value> toValue(bool value) { return FundamentalValue::create(value); }
+PassRefPtr<protocol::Value> toValue(const String& param) { return StringValue::create(param); }
 
 // ------------- Enum values from types.
 {% for domain in api.domains %}
@@ -113,18 +113,18 @@ const char* {{type.id}}::{{property.name | to_title_case}}Enum::{{ literal | das
     {% endfor %}
     {% if not (type.type == "object") or not ("properties" in type) %}{% continue %}{% endif %}
 
-PassOwnPtr<{{type.id}}> {{type.id}}::parse(PassRefPtr<JSONValue> value, ErrorSupport* errors)
+PassOwnPtr<{{type.id}}> {{type.id}}::parse(PassRefPtr<protocol::Value> value, ErrorSupport* errors)
 {
-    if (!value || value->type() != JSONValue::TypeObject) {
+    if (!value || value->type() != protocol::Value::TypeObject) {
         errors->addError("object expected");
         return nullptr;
     }
 
     OwnPtr<{{type.id}}> result = adoptPtr(new {{type.id}}());
-    RefPtr<JSONObject> object = JSONObject::cast(value);
+    RefPtr<protocol::DictionaryValue> object = DictionaryValue::cast(value);
     errors->push();
     {% for property in type.properties %}
-    RefPtr<JSONValue> {{property.name}}Value = object->get("{{property.name}}");
+    RefPtr<protocol::Value> {{property.name}}Value = object->get("{{property.name}}");
       {% if property.optional %}
     if ({{property.name}}Value) {
         errors->setName("{{property.name}}");
@@ -141,9 +141,9 @@ PassOwnPtr<{{type.id}}> {{type.id}}::parse(PassRefPtr<JSONValue> value, ErrorSup
     return result.release();
 }
 
-PassRefPtr<JSONObject> {{type.id}}::serialize() const
+PassRefPtr<protocol::DictionaryValue> {{type.id}}::serialize() const
 {
-    RefPtr<JSONObject> result = JSONObject::create();
+    RefPtr<protocol::DictionaryValue> result = DictionaryValue::create();
     {% for property in type.properties %}
       {% if property.optional %}
     if (m_{{property.name}}.isJust())

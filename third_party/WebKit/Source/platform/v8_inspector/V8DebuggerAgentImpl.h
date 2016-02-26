@@ -26,12 +26,15 @@ class DevToolsFunctionInfo;
 class InjectedScript;
 class InjectedScriptManager;
 class JavaScriptCallFrame;
-class JSONObject;
 class PromiseTracker;
 class RemoteCallFrameId;
 class ScriptRegexp;
 class V8AsyncCallTracker;
 class V8StackTraceImpl;
+
+namespace protocol {
+class DictionaryValue;
+}
 
 typedef String ErrorString;
 
@@ -58,7 +61,7 @@ public:
     V8DebuggerAgentImpl(InjectedScriptManager*, V8DebuggerImpl*, int contextGroupId);
     ~V8DebuggerAgentImpl() override;
 
-    void setInspectorState(PassRefPtr<JSONObject>) override;
+    void setInspectorState(PassRefPtr<protocol::DictionaryValue>) override;
     void setFrontend(protocol::Frontend::Debugger* frontend) override { m_frontend = frontend; }
     void clearFrontend() override;
     void restore() override;
@@ -162,11 +165,11 @@ public:
         const String& scriptId,
         PassOwnPtr<protocol::Array<protocol::Debugger::ScriptPosition>> positions) override;
 
-    void schedulePauseOnNextStatement(const String& breakReason, PassRefPtr<JSONObject> data) override;
+    void schedulePauseOnNextStatement(const String& breakReason, PassRefPtr<protocol::DictionaryValue> data) override;
     void cancelPauseOnNextStatement() override;
     bool canBreakProgram() override;
-    void breakProgram(const String& breakReason, PassRefPtr<JSONObject> data) override;
-    void breakProgramOnException(const String& breakReason, PassRefPtr<JSONObject> data) override;
+    void breakProgram(const String& breakReason, PassRefPtr<protocol::DictionaryValue> data) override;
+    void breakProgramOnException(const String& breakReason, PassRefPtr<protocol::DictionaryValue> data) override;
     void willExecuteScript(int scriptId) override;
     void didExecuteScript() override;
 
@@ -248,7 +251,7 @@ private:
     V8DebuggerImpl* m_debugger;
     int m_contextGroupId;
     bool m_enabled;
-    RefPtr<JSONObject> m_state;
+    RefPtr<protocol::DictionaryValue> m_state;
     protocol::Frontend::Debugger* m_frontend;
     v8::Isolate* m_isolate;
     v8::Global<v8::Context> m_pausedContext;
@@ -259,7 +262,7 @@ private:
     MuteBreakpoins m_muteBreakpoints;
     String m_continueToLocationBreakpointId;
     String m_breakReason;
-    RefPtr<JSONObject> m_breakAuxData;
+    RefPtr<protocol::DictionaryValue> m_breakAuxData;
     DebuggerStep m_scheduledDebuggerStep;
     bool m_skipNextDebuggerStepOut;
     bool m_javaScriptPauseScheduled;

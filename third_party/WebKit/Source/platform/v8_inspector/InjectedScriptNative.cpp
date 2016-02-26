@@ -4,7 +4,7 @@
 
 #include "platform/v8_inspector/InjectedScriptNative.h"
 
-#include "platform/JSONValues.h"
+#include "platform/inspector_protocol/Values.h"
 #include "wtf/Vector.h"
 
 namespace blink {

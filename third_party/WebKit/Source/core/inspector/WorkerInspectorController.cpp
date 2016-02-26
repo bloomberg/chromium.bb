@@ -93,12 +93,12 @@ private:
     {
     }
 
-    void sendProtocolResponse(int sessionId, int callId, PassRefPtr<JSONObject> message) override
+    void sendProtocolResponse(int sessionId, int callId, PassRefPtr<protocol::DictionaryValue> message) override
     {
         // Worker messages are wrapped, no need to handle callId.
         m_workerGlobalScope->thread()->workerReportingProxy().postMessageToPageInspector(message->toJSONString());
     }
-    void sendProtocolNotification(PassRefPtr<JSONObject> message) override
+    void sendProtocolNotification(PassRefPtr<protocol::DictionaryValue> message) override
     {
         m_workerGlobalScope->thread()->workerReportingProxy().postMessageToPageInspector(message->toJSONString());
     }

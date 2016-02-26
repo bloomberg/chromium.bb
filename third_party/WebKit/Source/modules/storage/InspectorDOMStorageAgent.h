@@ -39,9 +39,12 @@
 namespace blink {
 
 class LocalFrame;
-class JSONObject;
 class Page;
 class StorageArea;
+
+namespace protocol {
+class DictionaryValue;
+}
 
 typedef String ErrorString;
 

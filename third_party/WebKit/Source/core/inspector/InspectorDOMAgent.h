@@ -35,8 +35,8 @@
 #include "core/inspector/InspectorBaseAgent.h"
 #include "core/inspector/InspectorHighlight.h"
 #include "core/style/ComputedStyleConstants.h"
-#include "platform/JSONValues.h"
 #include "platform/geometry/FloatQuad.h"
+#include "platform/inspector_protocol/Values.h"
 #include "platform/v8_inspector/public/V8RuntimeAgent.h"
 
 #include "wtf/HashMap.h"
@@ -153,7 +153,7 @@ public:
     void getBoxModel(ErrorString*, int nodeId, OwnPtr<protocol::DOM::BoxModel>*) override;
     void getNodeForLocation(ErrorString*, int x, int y, int* outNodeId) override;
     void getRelayoutBoundary(ErrorString*, int nodeId, int* outNodeId) override;
-    void getHighlightObjectForTest(ErrorString*, int nodeId, RefPtr<JSONObject>* highlight) override;
+    void getHighlightObjectForTest(ErrorString*, int nodeId, RefPtr<protocol::DictionaryValue>* highlight) override;
 
     bool enabled() const;
     void releaseDanglingNodes();

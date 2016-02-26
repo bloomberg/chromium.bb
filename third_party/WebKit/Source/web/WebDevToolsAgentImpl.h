@@ -67,6 +67,10 @@ class WebLocalFrameImpl;
 class WebString;
 class WebViewImpl;
 
+namespace protocol {
+class Value;
+}
+
 class WebDevToolsAgentImpl final
     : public NoBaseWillBeGarbageCollectedFinalized<WebDevToolsAgentImpl>
     , public WebDevToolsAgent
@@ -128,8 +132,8 @@ private:
     void waitForCreateWindow(LocalFrame*) override;
 
     // protocol::FrontendChannel implementation.
-    void sendProtocolResponse(int sessionId, int callId, PassRefPtr<JSONObject> message) override;
-    void sendProtocolNotification(PassRefPtr<JSONObject> message) override;
+    void sendProtocolResponse(int sessionId, int callId, PassRefPtr<protocol::DictionaryValue> message) override;
+    void sendProtocolNotification(PassRefPtr<protocol::DictionaryValue> message) override;
     void flush() override;
 
     // WebThread::TaskObserver implementation.
@@ -164,7 +168,7 @@ private:
     InspectorAgentRegistry m_agents;
     bool m_deferredAgentsInitialized;
 
-    typedef Vector<std::pair<int, RefPtr<JSONObject>>> NotificationQueue;
+    typedef Vector<std::pair<int, RefPtr<protocol::Value>>> NotificationQueue;
     NotificationQueue m_notificationQueue;
     int m_sessionId;
     String m_stateCookie;

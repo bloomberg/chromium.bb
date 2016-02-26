@@ -33,11 +33,11 @@
 
 #include "core/CoreExport.h"
 #include "core/inspector/InstrumentingAgents.h"
-#include "platform/JSONValues.h"
 #include "platform/heap/Handle.h"
 #include "platform/inspector_protocol/Dispatcher.h"
 #include "platform/inspector_protocol/Frontend.h"
 #include "platform/inspector_protocol/TypeBuilder.h"
+#include "platform/inspector_protocol/Values.h"
 #include "wtf/Forward.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
@@ -66,14 +66,14 @@ public:
     virtual void discardAgent() { }
     virtual void didCommitLoadForLocalFrame(LocalFrame*) { }
     virtual void flushPendingProtocolNotifications() { }
-    virtual void setState(PassRefPtr<JSONObject>);
+    virtual void setState(PassRefPtr<protocol::DictionaryValue>);
 
     String name() const { return m_name; }
     void appended(InstrumentingAgents*);
 
 protected:
     RawPtrWillBeMember<InstrumentingAgents> m_instrumentingAgents;
-    RefPtr<JSONObject> m_state;
+    RefPtr<protocol::DictionaryValue> m_state;
 
 private:
     String m_name;
@@ -99,7 +99,7 @@ public:
 
 private:
     RawPtrWillBeMember<InstrumentingAgents> m_instrumentingAgents;
-    RefPtr<JSONObject> m_state;
+    RefPtr<protocol::DictionaryValue> m_state;
     WillBeHeapVector<OwnPtrWillBeMember<InspectorAgent>> m_agents;
 };
 

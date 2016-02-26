@@ -38,7 +38,10 @@
 namespace blink {
 
 class LocalFrame;
-class JSONObject;
+
+namespace protocol {
+class DictionaryValue;
+}
 
 typedef String ErrorString;
 
@@ -62,7 +65,7 @@ public:
     // Generic code called from custom implementations.
     void evaluateForTestInFrontend(long testCallId, const String& script);
 
-    void inspect(PassOwnPtr<protocol::Runtime::RemoteObject> objectToInspect, PassRefPtr<JSONObject> hints);
+    void inspect(PassOwnPtr<protocol::Runtime::RemoteObject> objectToInspect, PassRefPtr<protocol::DictionaryValue> hints);
 
 private:
     InspectorInspectorAgent();

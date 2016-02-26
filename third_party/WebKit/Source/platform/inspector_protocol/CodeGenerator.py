@@ -115,27 +115,27 @@ def create_user_type_definition(domain_name, type):
 
 def create_object_type_definition():
     return {
-        "return_type": "PassRefPtr<JSONObject>",
-        "pass_type": "PassRefPtr<JSONObject>",
+        "return_type": "PassRefPtr<protocol::DictionaryValue>",
+        "pass_type": "PassRefPtr<protocol::DictionaryValue>",
         "to_raw_type": "%s",
         "to_pass_type": "%s.release()",
-        "type": "RefPtr<JSONObject>",
-        "raw_type": "RefPtr<JSONObject>",
-        "raw_pass_type": "PassRefPtr<JSONObject>",
-        "raw_return_type": "RefPtr<JSONObject>",
+        "type": "RefPtr<protocol::DictionaryValue>",
+        "raw_type": "RefPtr<protocol::DictionaryValue>",
+        "raw_pass_type": "PassRefPtr<protocol::DictionaryValue>",
+        "raw_return_type": "RefPtr<protocol::DictionaryValue>",
     }
 
 
 def create_any_type_definition():
     return {
-        "return_type": "PassRefPtr<JSONValue>",
-        "pass_type": "PassRefPtr<JSONValue>",
+        "return_type": "PassRefPtr<protocol::Value>",
+        "pass_type": "PassRefPtr<protocol::Value>",
         "to_pass_type": "%s.release()",
         "to_raw_type": "%s",
-        "type": "RefPtr<JSONValue>",
-        "raw_type": "RefPtr<JSONValue>",
-        "raw_pass_type": "PassRefPtr<JSONValue>",
-        "raw_return_type": "RefPtr<JSONValue>",
+        "type": "RefPtr<protocol::Value>",
+        "raw_type": "RefPtr<protocol::Value>",
+        "raw_pass_type": "PassRefPtr<protocol::Value>",
+        "raw_return_type": "RefPtr<protocol::Value>",
     }
 
 

@@ -46,10 +46,13 @@ class Element;
 class Event;
 class EventTarget;
 class InspectorDOMAgent;
-class JSONObject;
 class Node;
 class V8DebuggerAgent;
 class V8RuntimeAgent;
+
+namespace protocol {
+class DictionaryValue;
+}
 
 typedef String ErrorString;
 
@@ -107,13 +110,13 @@ public:
 private:
     InspectorDOMDebuggerAgent(v8::Isolate*, InspectorDOMAgent*, V8RuntimeAgent*, V8DebuggerAgent*);
 
-    void pauseOnNativeEventIfNeeded(PassRefPtr<JSONObject> eventData, bool synchronous);
-    PassRefPtr<JSONObject> preparePauseOnNativeEventData(const String& eventName, const String* targetName);
+    void pauseOnNativeEventIfNeeded(PassRefPtr<protocol::DictionaryValue> eventData, bool synchronous);
+    PassRefPtr<protocol::DictionaryValue> preparePauseOnNativeEventData(const String& eventName, const String* targetName);
 
-    PassRefPtr<JSONObject> eventListenerBreakpoints();
-    PassRefPtr<JSONObject> xhrBreakpoints();
+    PassRefPtr<protocol::DictionaryValue> eventListenerBreakpoints();
+    PassRefPtr<protocol::DictionaryValue> xhrBreakpoints();
 
-    void descriptionForDOMEvent(Node* target, int breakpointType, bool insertion, JSONObject* description);
+    void descriptionForDOMEvent(Node* target, int breakpointType, bool insertion, protocol::DictionaryValue* description);
     void updateSubtreeBreakpoints(Node*, uint32_t rootMask, bool set);
     bool hasBreakpoint(Node*, int type);
     void setBreakpoint(ErrorString*, const String& eventName, const String& targetName);

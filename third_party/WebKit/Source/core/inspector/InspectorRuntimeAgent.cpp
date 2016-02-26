@@ -33,7 +33,7 @@
 #include "bindings/core/v8/ScriptState.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/inspector/MuteConsoleScope.h"
-#include "platform/JSONValues.h"
+#include "platform/inspector_protocol/Values.h"
 #include "platform/v8_inspector/public/V8Debugger.h"
 #include "platform/v8_inspector/public/V8RuntimeAgent.h"
 
@@ -56,7 +56,7 @@ InspectorRuntimeAgent::~InspectorRuntimeAgent()
 }
 
 // InspectorBaseAgent overrides.
-void InspectorRuntimeAgent::setState(PassRefPtr<JSONObject> state)
+void InspectorRuntimeAgent::setState(PassRefPtr<protocol::DictionaryValue> state)
 {
     InspectorBaseAgent::setState(state);
     m_v8RuntimeAgent->setInspectorState(m_state);

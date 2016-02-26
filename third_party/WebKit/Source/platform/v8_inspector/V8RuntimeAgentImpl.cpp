@@ -30,7 +30,7 @@
 
 #include "platform/v8_inspector/V8RuntimeAgentImpl.h"
 
-#include "platform/JSONValues.h"
+#include "platform/inspector_protocol/Values.h"
 #include "platform/v8_inspector/IgnoreExceptionsScope.h"
 #include "platform/v8_inspector/InjectedScript.h"
 #include "platform/v8_inspector/InjectedScriptHost.h"
@@ -301,7 +301,7 @@ void V8RuntimeAgentImpl::runScript(ErrorString* errorString,
     *result = injectedScript->wrapObject(value, objectGroup.fromMaybe(""));
 }
 
-void V8RuntimeAgentImpl::setInspectorState(PassRefPtr<JSONObject> state)
+void V8RuntimeAgentImpl::setInspectorState(PassRefPtr<protocol::DictionaryValue> state)
 {
     m_state = state;
 }
