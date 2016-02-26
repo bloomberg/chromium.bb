@@ -86,6 +86,7 @@ class FakePacketSocketFactory : public rtc::PacketSocketFactory,
         const rtc::SocketAddress& to,
         const scoped_refptr<net::IOBuffer>& data,
         int data_size);
+    PendingPacket(const PendingPacket& other);
     ~PendingPacket();
 
     rtc::SocketAddress from;

@@ -166,6 +166,9 @@ FakePacketSocketFactory::PendingPacket::PendingPacket(
     : from(from), to(to), data(data), data_size(data_size) {
 }
 
+FakePacketSocketFactory::PendingPacket::PendingPacket(
+    const PendingPacket& other) = default;
+
 FakePacketSocketFactory::PendingPacket::~PendingPacket() {
 }
 

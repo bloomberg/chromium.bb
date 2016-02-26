@@ -44,6 +44,8 @@ PairingRegistry::Pairing::Pairing(const base::Time& created_time,
       shared_secret_(shared_secret) {
 }
 
+PairingRegistry::Pairing::Pairing(const Pairing& other) = default;
+
 PairingRegistry::Pairing::~Pairing() {
 }
 

@@ -21,6 +21,7 @@ enum HostStatus {
 
 struct HostInfo {
   HostInfo();
+  HostInfo(const HostInfo& other);
   ~HostInfo();
 
   // Returns true if |host_info| is valid and initializes HostInfo.

@@ -47,6 +47,7 @@ class PairingRegistry : public base::RefCountedThreadSafe<PairingRegistry> {
             const std::string& client_name,
             const std::string& client_id,
             const std::string& shared_secret);
+    Pairing(const Pairing& other);
     ~Pairing();
 
     static Pairing Create(const std::string& client_name);

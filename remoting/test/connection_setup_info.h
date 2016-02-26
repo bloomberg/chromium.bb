@@ -16,6 +16,7 @@ namespace test {
 // Holds the information needed to establish a connection with a remote host.
 struct ConnectionSetupInfo {
   ConnectionSetupInfo();
+  ConnectionSetupInfo(const ConnectionSetupInfo& other);
   ~ConnectionSetupInfo();
 
   // User provided information.

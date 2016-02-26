@@ -28,6 +28,7 @@ class ServerLogEntry {
   };
 
   ServerLogEntry();
+  ServerLogEntry(const ServerLogEntry& other);
   ~ServerLogEntry();
 
   // Sets an arbitrary key/value entry.

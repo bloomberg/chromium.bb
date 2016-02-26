@@ -25,6 +25,7 @@ class XmppSignalStrategy : public SignalStrategy {
   // XMPP Server configuration for XmppSignalStrategy.
   struct XmppServerConfig {
     XmppServerConfig();
+    XmppServerConfig(const XmppServerConfig& other);
     ~XmppServerConfig();
 
     std::string host;

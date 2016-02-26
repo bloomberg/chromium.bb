@@ -10,6 +10,9 @@ namespace test {
 ConnectionSetupInfo::ConnectionSetupInfo() {
 }
 
+ConnectionSetupInfo::ConnectionSetupInfo(const ConnectionSetupInfo& other) =
+    default;
+
 ConnectionSetupInfo::~ConnectionSetupInfo() {
 }
 

@@ -94,6 +94,8 @@ GaiaOAuthClient::Request::Request(
   this->on_done = on_done;
 }
 
+GaiaOAuthClient::Request::Request(const Request& other) = default;
+
 GaiaOAuthClient::Request::~Request() {
 }
 

@@ -86,6 +86,7 @@ class CompoundBuffer {
 
   struct DataChunk {
     DataChunk(net::IOBuffer* buffer, const char* start, int size);
+    DataChunk(const DataChunk& other);
     ~DataChunk();
 
     scoped_refptr<net::IOBuffer> buffer;

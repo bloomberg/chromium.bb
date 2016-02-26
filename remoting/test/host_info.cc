@@ -13,6 +13,8 @@ namespace test {
 HostInfo::HostInfo() {
 }
 
+HostInfo::HostInfo(const HostInfo& other) = default;
+
 HostInfo::~HostInfo() {
 }
 

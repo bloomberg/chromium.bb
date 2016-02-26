@@ -35,6 +35,8 @@ const char kKeyCpu[] = "cpu";
 ServerLogEntry::ServerLogEntry() {
 }
 
+ServerLogEntry::ServerLogEntry(const ServerLogEntry& other) = default;
+
 ServerLogEntry::~ServerLogEntry() {
 }
 

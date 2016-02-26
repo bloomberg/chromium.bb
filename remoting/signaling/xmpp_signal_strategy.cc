@@ -46,6 +46,9 @@ XmppSignalStrategy::XmppServerConfig::XmppServerConfig()
     : port(kDefaultXmppPort), use_tls(true) {
 }
 
+XmppSignalStrategy::XmppServerConfig::XmppServerConfig(
+    const XmppServerConfig& other) = default;
+
 XmppSignalStrategy::XmppServerConfig::~XmppServerConfig() {
 }
 

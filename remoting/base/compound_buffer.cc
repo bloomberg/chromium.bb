@@ -19,6 +19,8 @@ CompoundBuffer::DataChunk::DataChunk(
       size(size_value) {
 }
 
+CompoundBuffer::DataChunk::DataChunk(const DataChunk& other) = default;
+
 CompoundBuffer::DataChunk::~DataChunk() {}
 
 CompoundBuffer::CompoundBuffer()
