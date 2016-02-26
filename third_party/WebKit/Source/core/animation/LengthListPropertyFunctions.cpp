@@ -81,6 +81,8 @@ ValueRange LengthListPropertyFunctions::valueRange(CSSPropertyID property)
     switch (property) {
     case CSSPropertyBackgroundPositionX:
     case CSSPropertyBackgroundPositionY:
+    case CSSPropertyObjectPosition:
+    case CSSPropertyPerspectiveOrigin:
     case CSSPropertyWebkitMaskPositionX:
     case CSSPropertyWebkitMaskPositionY:
         return ValueRangeAll;
@@ -103,10 +105,21 @@ Vector<Length> LengthListPropertyFunctions::getLengthList(CSSPropertyID property
 {
     Vector<Length> result;
 
-    if (property == CSSPropertyStrokeDasharray) {
+    switch (property) {
+    case CSSPropertyStrokeDasharray:
         if (style.strokeDashArray())
             result.appendVector(style.strokeDashArray()->vector());
         return result;
+    case CSSPropertyObjectPosition:
+        result.append(style.objectPosition().x());
+        result.append(style.objectPosition().y());
+        return result;
+    case CSSPropertyPerspectiveOrigin:
+        result.append(style.perspectiveOrigin().x());
+        result.append(style.perspectiveOrigin().y());
+        return result;
+    default:
+        break;
     }
 
     const FillLayer* fillLayer = getFillLayer(property, style);
@@ -120,9 +133,18 @@ Vector<Length> LengthListPropertyFunctions::getLengthList(CSSPropertyID property
 
 void LengthListPropertyFunctions::setLengthList(CSSPropertyID property, ComputedStyle& style, Vector<Length>&& lengthList)
 {
-    if (property == CSSPropertyStrokeDasharray) {
+    switch (property) {
+    case CSSPropertyStrokeDasharray:
         style.setStrokeDashArray(lengthList.isEmpty() ? nullptr : RefVector<Length>::create(std::move(lengthList)));
         return;
+    case CSSPropertyObjectPosition:
+        style.setObjectPosition(LengthPoint(lengthList[0], lengthList[1]));
+        return;
+    case CSSPropertyPerspectiveOrigin:
+        style.setPerspectiveOrigin(LengthPoint(lengthList[0], lengthList[1]));
+        return;
+    default:
+        break;
     }
 
     FillLayer* fillLayer = accessFillLayer(property, style);

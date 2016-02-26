@@ -133,16 +133,16 @@ assertInterpolation({
 assertInterpolation({
   property: 'object-position',
   from: 'center',
-  to: 'right bottom 100%',
+  to: 'right bottom 50%',
 }, [
-  {at: -0.5, is: '25% 75%'},
+  {at: -0.5, is: '25% 50%'},
   {at: 0, is: 'center'},
-  {at: 0.3, is: '65% 35%'},
-  {at: 0.5, is: '75% 25%'},
-  {at: 0.9, is: '95% 5%'},
-  {at: 1, is: 'right bottom 100%'},
-  {at: 1.5, is: '125% -25%'},
-  {at: 2, is: '150% -50%'},
+  {at: 0.3, is: '65% 50%'},
+  {at: 0.5, is: '75% 50%'},
+  {at: 0.9, is: '95% 50%'},
+  {at: 1, is: '100% 50%'},
+  {at: 1.5, is: '125% 50%'},
+  {at: 2, is: '150% 50%'},
 ]);
 </script>
 </body>
