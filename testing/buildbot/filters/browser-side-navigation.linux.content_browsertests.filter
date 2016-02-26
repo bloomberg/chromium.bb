@@ -12,7 +12,6 @@
 -RenderViewImplTest.TestBackForward
 -SessionHistoryTest.FrameBackForward
 -SessionHistoryTest.FrameFormBackForward
--SitePerProcessBrowserTest.NavigateRemoteAfterError
 -SitePerProcessBrowserTest.NewRenderFrameProxyPreservesOpener
 -SitePerProcessBrowserTest.OpenerSetLocation
 -SitePerProcessBrowserTest.OpenPopupWithRemoteParent
