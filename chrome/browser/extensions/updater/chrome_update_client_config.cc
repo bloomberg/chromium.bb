@@ -88,7 +88,7 @@ bool ChromeUpdateClientConfig::UseBackgroundDownloader() const {
 }
 
 bool ChromeUpdateClientConfig::UseCupSigning() const {
-  return false;
+  return impl_.UseCupSigning();
 }
 
 ChromeUpdateClientConfig::~ChromeUpdateClientConfig() {}
