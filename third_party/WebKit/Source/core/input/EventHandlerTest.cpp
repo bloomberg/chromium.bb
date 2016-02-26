@@ -181,7 +181,7 @@ TEST_F(EventHandlerTest, draggedInlinePositionTest)
         "<div style='width: 300px; height: 100px;'>"
         "<span class='line' draggable='true'>abcd</span>"
         "</div>");
-    PlatformMouseEvent mouseDownEvent1(
+    PlatformMouseEvent mouseDownEvent(
         IntPoint(262, 29),
         IntPoint(329, 67),
         LeftButton,
@@ -189,7 +189,7 @@ TEST_F(EventHandlerTest, draggedInlinePositionTest)
         1,
         PlatformEvent::Modifiers::LeftButtonDown,
         WTF::monotonicallyIncreasingTime());
-    document().frame()->eventHandler().handleMousePressEvent(mouseDownEvent1);
+    document().frame()->eventHandler().handleMousePressEvent(mouseDownEvent);
 
     PlatformMouseEvent mouseMoveEvent(
         IntPoint(618, 298),
@@ -217,7 +217,7 @@ TEST_F(EventHandlerTest, draggedSVGImagePositionTest)
         "<rect x='100' y='100' width='100px' height='100px' fill='blue' draggable='true'/>"
         "</svg>"
         "</div>");
-    PlatformMouseEvent mouseDownEvent1(
+    PlatformMouseEvent mouseDownEvent(
         IntPoint(145, 144),
         IntPoint(212, 282),
         LeftButton,
@@ -225,7 +225,7 @@ TEST_F(EventHandlerTest, draggedSVGImagePositionTest)
         1,
         PlatformEvent::Modifiers::LeftButtonDown,
         WTF::monotonicallyIncreasingTime());
-    document().frame()->eventHandler().handleMousePressEvent(mouseDownEvent1);
+    document().frame()->eventHandler().handleMousePressEvent(mouseDownEvent);
 
     PlatformMouseEvent mouseMoveEvent(
         IntPoint(618, 298),
