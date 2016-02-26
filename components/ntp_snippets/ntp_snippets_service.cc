@@ -6,7 +6,7 @@
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/json/json_string_value_serializer.h"
+#include "base/json/json_reader.h"
 #include "base/location.h"
 #include "base/path_service.h"
 #include "base/task_runner_util.h"
@@ -92,38 +92,42 @@ void NTPSnippetsService::OnFileReadDone(const std::string* json, bool success) {
 }
 
 bool NTPSnippetsService::LoadFromJSONString(const std::string& str) {
-  snippets_.clear();
-
-  JSONStringValueDeserializer deserializer(str);
-  int error_code;
-  std::string error_message;
-
-  scoped_ptr<base::Value> deserialized =
-      deserializer.Deserialize(&error_code, &error_message);
+  scoped_ptr<base::Value> deserialized = base::JSONReader::Read(str);
   if (!deserialized)
     return false;
 
-  const base::DictionaryValue* top_dict = NULL;
+  const base::DictionaryValue* top_dict = nullptr;
   if (!deserialized->GetAsDictionary(&top_dict))
     return false;
 
-  const base::ListValue* list = NULL;
+  const base::ListValue* list = nullptr;
   if (!top_dict->GetList("recos", &list))
     return false;
 
-  for (base::Value* const value : *list) {
-    const base::DictionaryValue* dict = NULL;
+  for (const base::Value* const value : *list) {
+    const base::DictionaryValue* dict = nullptr;
     if (!value->GetAsDictionary(&dict))
       return false;
 
-    const base::DictionaryValue* content = NULL;
+    const base::DictionaryValue* content = nullptr;
     if (!dict->GetDictionary("contentInfo", &content))
       return false;
     scoped_ptr<NTPSnippet> snippet =
         NTPSnippet::NTPSnippetFromDictionary(*content);
     if (!snippet)
       return false;
-    snippets_.push_back(std::move(snippet));
+
+    // Check if we already have a snippet with the same URL. If so, replace it
+    // rather than adding a duplicate.
+    const GURL& url = snippet->url();
+    auto it = std::find_if(snippets_.begin(), snippets_.end(),
+                           [&url](const scoped_ptr<NTPSnippet>& old_snippet) {
+      return old_snippet->url() == url;
+    });
+    if (it != snippets_.end())
+      *it = std::move(snippet);
+    else
+      snippets_.push_back(std::move(snippet));
   }
   loaded_ = true;
 
