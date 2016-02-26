@@ -175,7 +175,7 @@ bool SupervisedUserAsyncURLChecker::CheckURL(const GURL& url,
   }
 
   DVLOG(1) << "Checking URL " << url;
-  std::string api_key = google_apis::GetSafeSitesAPIKey();
+  std::string api_key = google_apis::GetAPIKey();
   scoped_ptr<URLFetcher> fetcher(CreateFetcher(this, context_, api_key, url));
   fetcher->Start();
   checks_in_progress_.push_back(new Check(url, std::move(fetcher), callback));
