@@ -29,10 +29,11 @@ bool PageLoadNotificationObserver::IsTargetLoaded() {
   GURL current_url = controller->GetWebContents()->GetURL();
   bool result = false;
   if (ignore_url_parameters_) {
-    GURL::Replacements strip_query;
-    strip_query.ClearQuery();
-    result = current_url.ReplaceComponents(strip_query) ==
-        target_.ReplaceComponents(strip_query);
+    GURL::Replacements strip_parameters;
+    strip_parameters.ClearQuery();
+    strip_parameters.ClearRef();
+    result = current_url.ReplaceComponents(strip_parameters) ==
+        target_.ReplaceComponents(strip_parameters);
   } else {
     result = current_url == target_;
   }
