@@ -4,10 +4,12 @@
 
 #include <stddef.h>
 
+#include "base/numerics/safe_conversions.h"
 #include "media/base/container_names.h"
 
 // Entry point for LibFuzzer.
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-  media::container_names::DetermineContainer(data, size);
+  media::container_names::DetermineContainer(data,
+                                             base::checked_cast<int>(size));
   return 0;
 }

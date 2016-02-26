@@ -556,6 +556,7 @@ fuzzer_test("media_container_names_fuzzer") {
     "container_names_fuzzertest.cc",
   ]
   deps = [
+    "//base",
     "//media",
   ]
 }
