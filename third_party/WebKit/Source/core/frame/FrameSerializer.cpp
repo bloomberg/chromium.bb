@@ -403,10 +403,7 @@ void FrameSerializer::addToResources(Resource* resource, PassRefPtr<SharedBuffer
 
 void FrameSerializer::addImageToResources(ImageResource* image, const KURL& url)
 {
-    if (!shouldAddURL(url))
-        return;
-
-    if (!image || !image->hasImage() || image->errorOccurred())
+    if (!image || !image->hasImage() || image->errorOccurred() || !shouldAddURL(url))
         return;
 
     RefPtr<SharedBuffer> data = image->image()->data();
@@ -415,7 +412,7 @@ void FrameSerializer::addImageToResources(ImageResource* image, const KURL& url)
 
 void FrameSerializer::addFontToResources(FontResource* font)
 {
-    if (!font || !shouldAddURL(font->url()) || !font->isLoaded() || !font->resourceBuffer())
+    if (!font || !font->isLoaded() || !font->resourceBuffer() || !shouldAddURL(font->url()))
         return;
 
     RefPtr<SharedBuffer> data(font->resourceBuffer());
