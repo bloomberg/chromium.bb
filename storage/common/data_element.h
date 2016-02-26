@@ -38,6 +38,7 @@ class STORAGE_COMMON_EXPORT DataElement {
   };
 
   DataElement();
+  DataElement(const DataElement& other);
   ~DataElement();
 
   Type type() const { return type_; }

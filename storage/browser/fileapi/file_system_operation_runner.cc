@@ -33,6 +33,8 @@ class FileSystemOperationRunner::BeginOperationScoper
 };
 
 FileSystemOperationRunner::OperationHandle::OperationHandle() {}
+FileSystemOperationRunner::OperationHandle::OperationHandle(
+    const OperationHandle& other) = default;
 FileSystemOperationRunner::OperationHandle::~OperationHandle() {}
 
 FileSystemOperationRunner::~FileSystemOperationRunner() {

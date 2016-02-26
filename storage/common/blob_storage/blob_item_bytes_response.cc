@@ -19,6 +19,9 @@ BlobItemBytesResponse::BlobItemBytesResponse()
 BlobItemBytesResponse::BlobItemBytesResponse(size_t request_number)
     : request_number(request_number) {}
 
+BlobItemBytesResponse::BlobItemBytesResponse(
+    const BlobItemBytesResponse& other) = default;
+
 BlobItemBytesResponse::~BlobItemBytesResponse() {}
 
 void PrintTo(const BlobItemBytesResponse& response, ::std::ostream* os) {

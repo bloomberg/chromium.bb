@@ -14,6 +14,8 @@ namespace storage {
 
 DatabaseDetails::DatabaseDetails() : estimated_size(0) { }
 
+DatabaseDetails::DatabaseDetails(const DatabaseDetails& other) = default;
+
 DatabaseDetails::~DatabaseDetails() {}
 
 bool DatabasesTable::Init() {

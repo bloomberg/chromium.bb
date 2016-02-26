@@ -252,6 +252,7 @@ class STORAGE_EXPORT FileSystemOperationRunner
     base::WeakPtr<BeginOperationScoper> scope;
 
     OperationHandle();
+    OperationHandle(const OperationHandle& other);
     ~OperationHandle();
   };
 

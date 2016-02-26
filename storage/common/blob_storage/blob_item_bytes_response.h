@@ -23,6 +23,7 @@ struct STORAGE_COMMON_EXPORT BlobItemBytesResponse {
 
   BlobItemBytesResponse();
   explicit BlobItemBytesResponse(size_t request_number);
+  BlobItemBytesResponse(const BlobItemBytesResponse& other);
   ~BlobItemBytesResponse();
 
   char* allocate_mutable_data(size_t size) {

@@ -78,6 +78,7 @@ namespace storage {
 class STORAGE_EXPORT FileSystemURL {
  public:
   FileSystemURL();
+  FileSystemURL(const FileSystemURL& other);
   ~FileSystemURL();
 
   // Methods for creating FileSystemURL without attempting to crack them.

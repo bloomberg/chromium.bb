@@ -19,6 +19,8 @@ DataElement::DataElement()
       offset_(0),
       length_(std::numeric_limits<uint64_t>::max()) {}
 
+DataElement::DataElement(const DataElement& other) = default;
+
 DataElement::~DataElement() {}
 
 void DataElement::SetToFilePathRange(

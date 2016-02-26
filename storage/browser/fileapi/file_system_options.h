@@ -35,6 +35,7 @@ class STORAGE_EXPORT FileSystemOptions {
       ProfileMode profile_mode,
       const std::vector<std::string>& additional_allowed_schemes,
       leveldb::Env* env_override);
+  FileSystemOptions(const FileSystemOptions& other);
 
   ~FileSystemOptions();
 

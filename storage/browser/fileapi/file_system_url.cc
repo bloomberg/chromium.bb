@@ -24,6 +24,8 @@ FileSystemURL::FileSystemURL()
       mount_option_(FlushPolicy::NO_FLUSH_ON_COMPLETION) {
 }
 
+FileSystemURL::FileSystemURL(const FileSystemURL& other) = default;
+
 // static
 FileSystemURL FileSystemURL::CreateForTest(const GURL& url) {
   return FileSystemURL(url);

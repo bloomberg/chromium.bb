@@ -20,6 +20,7 @@ namespace storage {
 
 struct STORAGE_EXPORT DatabaseDetails {
   DatabaseDetails();
+  DatabaseDetails(const DatabaseDetails& other);
   ~DatabaseDetails();
 
   std::string origin_identifier;

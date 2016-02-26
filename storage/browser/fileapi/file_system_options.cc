@@ -15,6 +15,8 @@ FileSystemOptions::FileSystemOptions(
         env_override_(env_override) {
 }
 
+FileSystemOptions::FileSystemOptions(const FileSystemOptions& other) = default;
+
 FileSystemOptions::~FileSystemOptions() {
 }
 
