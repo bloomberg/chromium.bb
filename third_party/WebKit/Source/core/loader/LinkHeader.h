@@ -21,6 +21,7 @@ public:
     const String& url() const { return m_url; }
     const String& rel() const { return m_rel; }
     const String& as() const { return m_as; }
+    const String& mimeType() const { return m_mimeType; }
     CrossOriginAttributeValue crossOrigin() const { return m_crossOrigin; }
     bool valid() const { return m_isValid; }
 
@@ -44,6 +45,7 @@ private:
     String m_url;
     String m_rel;
     String m_as;
+    String m_mimeType;
     CrossOriginAttributeValue m_crossOrigin;
     bool m_isValid;
 };
