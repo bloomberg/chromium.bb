@@ -483,6 +483,8 @@ enum QuicRstStreamErrorCode {
   QUIC_DUPLICATE_PROMISE_URL,
   // Vary check failed.
   QUIC_PROMISE_VARY_MISMATCH,
+  // Only GET and HEAD methods allowed.
+  QUIC_INVALID_PROMISE_METHOD,
   // No error. Used as bound while iterating.
   QUIC_STREAM_LAST_ERROR,
 };

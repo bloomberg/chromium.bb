@@ -37,6 +37,16 @@ void QuicClientPromisedInfo::Init() {
 }
 
 void QuicClientPromisedInfo::OnPromiseHeaders(const SpdyHeaderBlock& headers) {
+  // RFC7540, Section 8.2, requests MUST be safe [RFC7231], Section
+  // 4.2.1.  GET and HEAD are the methods that are safe and required.
+  SpdyHeaderBlock::const_iterator it = headers.find(":method");
+  DCHECK(it != headers.end());
+  if (!(it->second == "GET" || it->second == "HEAD")) {
+    DVLOG(1) << "Promise for stream " << id_ << " has invalid method "
+             << it->second;
+    Reset(QUIC_INVALID_PROMISE_METHOD);
+    return;
+  }
   if (!SpdyUtils::UrlIsValid(headers)) {
     DVLOG(1) << "Promise for stream " << id_ << " has invalid URL " << url_;
     Reset(QUIC_INVALID_PROMISE_URL);
