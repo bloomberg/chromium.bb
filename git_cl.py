@@ -25,8 +25,10 @@ import tempfile
 import textwrap
 import time
 import traceback
+import urllib
 import urllib2
 import urlparse
+import uuid
 import webbrowser
 import zlib
 
@@ -239,6 +241,40 @@ def _prefix_master(master):
   return '%s%s' % (prefix, master)
 
 
+def _buildbucket_retry(operation_name, http, *args, **kwargs):
+  """Retries requests to buildbucket service and returns parsed json content."""
+  try_count = 0
+  while True:
+    response, content = http.request(*args, **kwargs)
+    try:
+      content_json = json.loads(content)
+    except ValueError:
+      content_json = None
+
+    # Buildbucket could return an error even if status==200.
+    if content_json and content_json.get('error'):
+      msg = 'Error in response. Reason: %s. Message: %s.' % (
+          content_json['error'].get('reason', ''),
+          content_json['error'].get('message', ''))
+      raise BuildbucketResponseException(msg)
+
+    if response.status == 200:
+      if not content_json:
+        raise BuildbucketResponseException(
+            'Buildbucket returns invalid json content: %s.\n'
+            'Please file bugs at http://crbug.com, label "Infra-BuildBucket".' %
+            content)
+      return content_json
+    if response.status < 500 or try_count >= 2:
+      raise httplib2.HttpLib2Error(content)
+
+    # status >= 500 means transient failures.
+    logging.debug('Transient errors when %s. Will retry.', operation_name)
+    time.sleep(0.5 + 1.5*try_count)
+    try_count += 1
+  assert False, 'unreachable'
+
+
 def trigger_luci_job(changelist, masters, options):
   """Send a job to run on LUCI."""
   issue_props = changelist.GetIssueProperties()
@@ -306,6 +342,7 @@ def trigger_try_jobs(auth_config, changelist, options, masters, category):
           {
               'bucket': bucket,
               'parameters_json': json.dumps(parameters),
+              'client_operation_id': str(uuid.uuid4()),
               'tags': ['builder:%s' % builder,
                        'buildset:%s' % buildset,
                        'master:%s' % master,
@@ -313,42 +350,153 @@ def trigger_try_jobs(auth_config, changelist, options, masters, category):
           }
       )
 
-  for try_count in xrange(3):
-    response, content = http.request(
-        buildbucket_put_url,
-        'PUT',
-        body=json.dumps(batch_req_body),
-        headers={'Content-Type': 'application/json'},
-    )
-    content_json = None
-    try:
-      content_json = json.loads(content)
-    except ValueError:
-      pass
-
-    # Buildbucket could return an error even if status==200.
-    if content_json and content_json.get('error'):
-      msg = 'Error in response. Code: %d. Reason: %s. Message: %s.' % (
-          content_json['error'].get('code', ''),
-          content_json['error'].get('reason', ''),
-          content_json['error'].get('message', ''))
-      raise BuildbucketResponseException(msg)
-
-    if response.status == 200:
-      if not content_json:
-        raise BuildbucketResponseException(
-            'Buildbucket returns invalid json content: %s.\n'
-            'Please file bugs at crbug.com, label "Infra-BuildBucket".' %
-            content)
-      break
-    if response.status < 500 or try_count >= 2:
-      raise httplib2.HttpLib2Error(content)
-
-    # status >= 500 means transient failures.
-    logging.debug('Transient errors when triggering tryjobs. Will retry.')
-    time.sleep(0.5 + 1.5*try_count)
-
+  _buildbucket_retry(
+      'triggering tryjobs',
+      http,
+      buildbucket_put_url,
+      'PUT',
+      body=json.dumps(batch_req_body),
+      headers={'Content-Type': 'application/json'}
+  )
   print '\n'.join(print_text)
+
+
+def fetch_try_jobs(auth_config, changelist, options):
+  """Fetches tryjobs from buildbucket.
+
+  Returns a map from build id to build info as json dictionary.
+  """
+  rietveld_url = settings.GetDefaultServerUrl()
+  rietveld_host = urlparse.urlparse(rietveld_url).hostname
+  authenticator = auth.get_authenticator_for_host(rietveld_host, auth_config)
+  if authenticator.has_cached_credentials():
+    http = authenticator.authorize(httplib2.Http())
+  else:
+    print ('Warning: Some results might be missing because %s' %
+           # Get the message on how to login.
+           auth.LoginRequiredError(rietveld_host).message)
+    http = httplib2.Http()
+
+  http.force_exception_to_status_code = True
+
+  buildset = 'patch/rietveld/{hostname}/{issue}/{patch}'.format(
+      hostname=rietveld_host,
+      issue=changelist.GetIssue(),
+      patch=options.patchset)
+  params = {'tag': 'buildset:%s' % buildset}
+
+  builds = {}
+  while True:
+    url = 'https://{hostname}/_ah/api/buildbucket/v1/search?{params}'.format(
+        hostname=options.buildbucket_host,
+        params=urllib.urlencode(params))
+    content = _buildbucket_retry('fetching tryjobs', http, url, 'GET')
+    for build in content.get('builds', []):
+      builds[build['id']] = build
+    if 'next_cursor' in content:
+      params['start_cursor'] = content['next_cursor']
+    else:
+      break
+  return builds
+
+
+def print_tryjobs(options, builds):
+  """Prints nicely result of fetch_try_jobs."""
+  if not builds:
+    print 'No tryjobs scheduled'
+    return
+
+  # Make a copy, because we'll be modifying builds dictionary.
+  builds = builds.copy()
+  builder_names_cache = {}
+
+  def get_builder(b):
+    try:
+      return builder_names_cache[b['id']]
+    except KeyError:
+      try:
+        parameters = json.loads(b['parameters_json'])
+        name = parameters['builder_name']
+      except (ValueError, KeyError) as error:
+        print 'WARNING: failed to get builder name for build %s: %s' % (
+              b['id'], error)
+        name = None
+      builder_names_cache[b['id']] = name
+      return name
+
+  def get_bucket(b):
+    bucket = b['bucket']
+    if bucket.startswith('master.'):
+      return bucket[len('master.'):]
+    return bucket
+
+  if options.print_master:
+    name_fmt = '%%-%ds %%-%ds' % (
+        max(len(str(get_bucket(b))) for b in builds.itervalues()),
+        max(len(str(get_builder(b))) for b in builds.itervalues()))
+    def get_name(b):
+      return name_fmt % (get_bucket(b), get_builder(b))
+  else:
+    name_fmt = '%%-%ds' % (
+        max(len(str(get_builder(b))) for b in builds.itervalues()))
+    def get_name(b):
+      return name_fmt % get_builder(b)
+
+  def sort_key(b):
+    return b['status'], b.get('result'), get_name(b), b.get('url')
+
+  def pop(title, f, color=None, **kwargs):
+    """Pop matching builds from `builds` dict and print them."""
+
+    if not sys.stdout.isatty() or color is None:
+      colorize = str
+    else:
+      colorize = lambda x: '%s%s%s' % (color, x, Fore.RESET)
+
+    result = []
+    for b in builds.values():
+      if all(b.get(k) == v for k, v in kwargs.iteritems()):
+        builds.pop(b['id'])
+        result.append(b)
+    if result:
+      print colorize(title)
+      for b in sorted(result, key=sort_key):
+        print ' ', colorize('\t'.join(map(str, f(b))))
+
+  total = len(builds)
+  pop(status='COMPLETED', result='SUCCESS',
+      title='Successes:', color=Fore.GREEN,
+      f=lambda b: (get_name(b), b.get('url')))
+  pop(status='COMPLETED', result='FAILURE', failure_reason='INFRA_FAILURE',
+      title='Infra Failures:', color=Fore.MAGENTA,
+      f=lambda b: (get_name(b), b.get('url')))
+  pop(status='COMPLETED', result='FAILURE', failure_reason='BUILD_FAILURE',
+      title='Failures:', color=Fore.RED,
+      f=lambda b: (get_name(b), b.get('url')))
+  pop(status='COMPLETED', result='CANCELED',
+      title='Canceled:', color=Fore.MAGENTA,
+      f=lambda b: (get_name(b),))
+  pop(status='COMPLETED', result='FAILURE',
+      failure_reason='INVALID_BUILD_DEFINITION',
+      title='Wrong master/builder name:', color=Fore.MAGENTA,
+      f=lambda b: (get_name(b),))
+  pop(status='COMPLETED', result='FAILURE',
+      title='Other failures:',
+      f=lambda b: (get_name(b), b.get('failure_reason'), b.get('url')))
+  pop(status='COMPLETED',
+      title='Other finished:',
+      f=lambda b: (get_name(b), b.get('result'), b.get('url')))
+  pop(status='STARTED',
+      title='Started:', color=Fore.YELLOW,
+      f=lambda b: (get_name(b), b.get('url')))
+  pop(status='SCHEDULED',
+      title='Scheduled:',
+      f=lambda b: (get_name(b), 'id=%s' % b['id']))
+  # The last section is just in case buildbucket API changes OR there is a bug.
+  pop(title='Other:',
+      f=lambda b: (get_name(b), 'id=%s' % b['id']))
+  assert len(builds) == 0
+  print 'Total: %d tryjobs' % total
 
 
 def MatchSvnGlob(url, base_url, glob_spec, allow_wildcards):
@@ -3362,6 +3510,47 @@ def CMDtry(parser, args):
       length = max(len(builder) for builder in builders)
       for builder in sorted(builders):
         print '  %*s: %s' % (length, builder, ','.join(builders[builder]))
+  return 0
+
+
+def CMDtry_results(parser, args):
+  group = optparse.OptionGroup(parser, "Try job results options")
+  group.add_option(
+      "-p", "--patchset", type=int, help="patchset number if not current.")
+  group.add_option(
+      "--print-master", action='store_true', help="print master name as well")
+  group.add_option(
+      "--buildbucket-host", default='cr-buildbucket.appspot.com',
+      help="Host of buildbucket. The default host is %default.")
+  parser.add_option_group(group)
+  auth.add_auth_options(parser)
+  options, args = parser.parse_args(args)
+  if args:
+    parser.error('Unrecognized args: %s' % ' '.join(args))
+
+  auth_config = auth.extract_auth_config_from_options(options)
+  cl = Changelist(auth_config=auth_config)
+  if not cl.GetIssue():
+    parser.error('Need to upload first')
+
+  if not options.patchset:
+    options.patchset = cl.GetMostRecentPatchset()
+    if options.patchset and options.patchset != cl.GetPatchset():
+      print(
+          '\nWARNING Mismatch between local config and server. Did a previous '
+          'upload fail?\ngit-cl try always uses latest patchset from rietveld. '
+          'Continuing using\npatchset %s.\n' % options.patchset)
+  try:
+    jobs = fetch_try_jobs(auth_config, cl, options)
+  except BuildbucketResponseException as ex:
+    print 'Buildbucket error: %s' % ex
+    return 1
+  except Exception as e:
+    stacktrace = (''.join(traceback.format_stack()) + traceback.format_exc())
+    print 'ERROR: Exception when trying to fetch tryjobs: %s\n%s' % (
+        e, stacktrace)
+    return 1
+  print_tryjobs(options, jobs)
   return 0
 
 
