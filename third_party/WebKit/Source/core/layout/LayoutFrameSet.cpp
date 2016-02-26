@@ -105,13 +105,15 @@ void LayoutFrameSet::layOutAxis(GridAxis& axis, const Vector<HTMLDimension>& gri
     int countFixed = 0;
     int countPercent = 0;
 
+    float effectiveZoom = style()->effectiveZoom();
+
     // First we need to investigate how many columns of each type we have and
     // how much space these columns are going to require.
     for (int i = 0; i < gridLen; ++i) {
         // Count the total length of all of the fixed columns/rows -> totalFixed
         // Count the number of columns/rows which are fixed -> countFixed
         if (grid[i].isAbsolute()) {
-            gridLayout[i] = max<int>(grid[i].value(), 0);
+            gridLayout[i] = max<int>(grid[i].value() * effectiveZoom, 0);
             totalFixed += gridLayout[i];
             countFixed++;
         }
