@@ -129,13 +129,27 @@ public class WebViewLayoutTest
         HashMap<String, HashSet<String>> blinkInterfacesMap = buildHashMap(blinkExpected);
         StringBuilder unexpected = new StringBuilder();
 
-        // Check that each excluded interface is present in blinkInterfacesMap but not
-        // in webviewInterfacesMap.
-        for (String interfaceS : webviewExcludedInterfacesMap.keySet()) {
-            assertNotNull("Interface " + interfaceS + " not exposed in blink",
-                    blinkInterfacesMap.get(interfaceS));
-            if (webviewInterfacesMap.get(interfaceS) != null) {
+        // Check that each excluded interface and its properties are present in blinkInterfaceMap
+        // but not in webviewInterfacesMap.
+        for (HashMap.Entry<String, HashSet<String>> entry :
+                webviewExcludedInterfacesMap.entrySet()) {
+            String interfaceS = entry.getKey();
+            HashSet<String> subsetBlink = blinkInterfacesMap.get(interfaceS);
+            assertNotNull("Interface " + interfaceS + " not exposed in blink", subsetBlink);
+
+            HashSet<String> subsetWebView = webviewInterfacesMap.get(interfaceS);
+            HashSet<String> subsetExcluded = entry.getValue();
+            if (subsetExcluded.isEmpty() && subsetWebView != null) {
                 unexpected.append(interfaceS + "\n");
+                continue;
+            }
+
+            for (String property : subsetExcluded) {
+                assertTrue("Interface " + interfaceS + "." + property + " not exposed in blink",
+                        subsetBlink.contains(property));
+                if (subsetWebView != null && subsetWebView.contains(property)) {
+                    unexpected.append(interfaceS + "." + property + "\n");
+                }
             }
         }
         assertEquals("Unexpected webview interfaces found", "", unexpected.toString());
@@ -160,15 +174,27 @@ public class WebViewLayoutTest
                 buildHashMap(blinkStableExpected);
         StringBuilder missing = new StringBuilder();
 
-        // Check that each stable blink interface is present in webview except the excluded
-        // interfaces.
-        for (String interfaceS : blinkStableInterfacesMap.keySet()) {
-            // TODO(timvolodine): consider implementing matching of subsets as well.
+        // Check that each stable blink interface and its properties are present in webview
+        // except the excluded interfaces/properties.
+        for (HashMap.Entry<String, HashSet<String>> entry : blinkStableInterfacesMap.entrySet()) {
+            String interfaceS = entry.getKey();
             HashSet<String> subsetExcluded = webviewExcludedInterfacesMap.get(interfaceS);
             if (subsetExcluded != null && subsetExcluded.isEmpty()) continue;
 
-            if (webviewInterfacesMap.get(interfaceS) == null) {
+            HashSet<String> subsetBlink = entry.getValue();
+            HashSet<String> subsetWebView = webviewInterfacesMap.get(interfaceS);
+
+            if (subsetWebView == null) {
+                // interface is missing completely
                 missing.append(interfaceS + "\n");
+                continue;
+            }
+
+            for (String propertyBlink : subsetBlink) {
+                if (subsetExcluded != null && subsetExcluded.contains(propertyBlink)) continue;
+                if (!subsetWebView.contains(propertyBlink)) {
+                    missing.append(interfaceS + "." + propertyBlink + "\n");
+                }
             }
         }
         assertEquals("Missing webview interfaces found", "", missing.toString());
@@ -315,10 +341,13 @@ public class WebViewLayoutTest
         HashMap<String, HashSet<String>> interfaces = new HashMap<String, HashSet<String>>();
         for (String line : lineByLine) {
             String s = trimAndRemoveComments(line);
-            if (s.startsWith("interface")) {
-                subset = new HashSet();
-                interfaces.put(s, subset);
-            } else if (interfaceProperty(s) && subset != null) {
+            if (isInterfaceOrGlobalObject(s)) {
+                subset = interfaces.get(s);
+                if (subset == null) {
+                    subset = new HashSet();
+                    interfaces.put(s, subset);
+                }
+            } else if (isInterfaceProperty(s) && subset != null) {
                 subset.add(s);
             }
         }
@@ -331,7 +360,11 @@ public class WebViewLayoutTest
         return (commentIndex >= 0) ? s.substring(0, commentIndex).trim() : s;
     }
 
-    private boolean interfaceProperty(String s) {
+    private boolean isInterfaceOrGlobalObject(String s) {
+        return s.startsWith("interface") || s.startsWith("[GLOBAL OBJECT]");
+    }
+
+    private boolean isInterfaceProperty(String s) {
         return s.startsWith("getter") || s.startsWith("setter")
                 || s.startsWith("method") || s.startsWith("attribute");
     }
