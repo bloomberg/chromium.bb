@@ -330,7 +330,9 @@ void MessageService::OpenChannelToExtension(
     // Only the tab id is useful to platform apps for internal use. The
     // unnecessary bits will be stripped out in
     // MessagingBindings::DispatchOnConnect().
-    source_tab.reset(ExtensionTabUtil::CreateTabValue(source_contents));
+    source_tab.reset(ExtensionTabUtil::CreateTabObject(source_contents)
+                         ->ToValue()
+                         .release());
 
     content::RenderFrameHost* rfh =
         content::RenderFrameHost::FromID(source_process_id, source_routing_id);

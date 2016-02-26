@@ -234,6 +234,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabsNoPermissions) {
   ASSERT_TRUE(RunExtensionTest("tabs/no_permissions")) << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, HostPermission) {
+  host_resolver()->AddRule("a.com", "127.0.0.1");
+  ASSERT_TRUE(StartEmbeddedTestServer());
+
+  ASSERT_TRUE(RunExtensionTest("tabs/host_permission")) << message_;
+}
+
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, UpdateWindowResize) {
   ASSERT_TRUE(RunExtensionTest("window_update/resize")) << message_;
 }

@@ -679,7 +679,8 @@ void MenuManager::ExecuteCommand(content::BrowserContext* context,
   if (!extension || !extension->is_platform_app()) {
     // Note: web_contents are NULL in unit tests :(
     if (web_contents) {
-      args->Append(ExtensionTabUtil::CreateTabValue(web_contents));
+      args->Append(
+          ExtensionTabUtil::CreateTabObject(web_contents)->ToValue().release());
     } else {
       args->Append(new base::DictionaryValue());
     }

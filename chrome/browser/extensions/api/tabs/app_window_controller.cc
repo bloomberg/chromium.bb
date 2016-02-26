@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/tabs/app_base_window.h"
 #include "chrome/browser/extensions/api/tabs/tabs_constants.h"
@@ -61,6 +62,12 @@ base::DictionaryValue* AppWindowController::CreateWindowValueWithTabs(
 base::DictionaryValue* AppWindowController::CreateTabValue(
     const Extension* extension,
     int tab_index) const {
+  return CreateTabObject(extension, tab_index)->ToValue().release();
+}
+
+scoped_ptr<api::tabs::Tab> AppWindowController::CreateTabObject(
+    const extensions::Extension* extension,
+    int tab_index) const {
   if (tab_index > 0)
     return nullptr;
 
@@ -68,38 +75,33 @@ base::DictionaryValue* AppWindowController::CreateTabValue(
   if (!web_contents)
     return nullptr;
 
-  base::DictionaryValue* tab_value = new base::DictionaryValue();
-  tab_value->SetInteger(tabs_constants::kIdKey,
-                        SessionTabHelper::IdForTab(web_contents));
-  tab_value->SetInteger(tabs_constants::kIndexKey, 0);
-  tab_value->SetInteger(
-      tabs_constants::kWindowIdKey,
-      SessionTabHelper::IdForWindowContainingTab(web_contents));
-  tab_value->SetString(tabs_constants::kUrlKey, web_contents->GetURL().spec());
-  tab_value->SetString(
-      tabs_constants::kStatusKey,
-      ExtensionTabUtil::GetTabStatusText(web_contents->IsLoading()));
-  tab_value->SetBoolean(tabs_constants::kActiveKey,
-                        app_window_->GetBaseWindow()->IsActive());
-  tab_value->SetBoolean(tabs_constants::kSelectedKey, true);
-  tab_value->SetBoolean(tabs_constants::kHighlightedKey, true);
-  tab_value->SetBoolean(tabs_constants::kPinnedKey, false);
-  tab_value->SetString(tabs_constants::kTitleKey, web_contents->GetTitle());
-  tab_value->SetBoolean(tabs_constants::kIncognitoKey,
-                        app_window_->GetBaseWindow()->IsActive());
-
+  scoped_ptr<api::tabs::Tab> tab_object(new api::tabs::Tab);
+  tab_object->id.reset(new int(SessionTabHelper::IdForTab(web_contents)));
+  tab_object->index = 0;
+  tab_object->window_id =
+      SessionTabHelper::IdForWindowContainingTab(web_contents);
+  tab_object->url.reset(new std::string(web_contents->GetURL().spec()));
+  tab_object->status.reset(new std::string(
+      ExtensionTabUtil::GetTabStatusText(web_contents->IsLoading())));
+  tab_object->active = app_window_->GetBaseWindow()->IsActive();
+  tab_object->selected = true;
+  tab_object->highlighted = true;
+  tab_object->pinned = false;
+  tab_object->title.reset(
+      new std::string(base::UTF16ToUTF8(web_contents->GetTitle())));
+  tab_object->incognito = app_window_->GetBaseWindow()->IsActive();
   gfx::Rect bounds = app_window_->GetBaseWindow()->GetBounds();
-  tab_value->SetInteger(tabs_constants::kWidthKey, bounds.width());
-  tab_value->SetInteger(tabs_constants::kHeightKey, bounds.height());
+  tab_object->width.reset(new int(bounds.width()));
+  tab_object->height.reset(new int(bounds.height()));
 
   const Extension* ext = app_window_->GetExtension();
   if (ext) {
     std::string icon_str(chrome::kChromeUIFaviconURL);
     icon_str.append(app_window_->GetExtension()->url().spec());
-    tab_value->SetString(tabs_constants::kFaviconUrlKey, icon_str);
+    tab_object->fav_icon_url.reset(new std::string(icon_str));
   }
 
-  return tab_value;
+  return tab_object;
 }
 
 bool AppWindowController::CanClose(Reason* reason) const {

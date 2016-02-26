@@ -339,9 +339,8 @@ void ExtensionActionAPI::ExtensionActionExecuted(
 
   if (event_name) {
     scoped_ptr<base::ListValue> args(new base::ListValue());
-    base::DictionaryValue* tab_value =
-        ExtensionTabUtil::CreateTabValue(web_contents);
-    args->Append(tab_value);
+    args->Append(
+        ExtensionTabUtil::CreateTabObject(web_contents)->ToValue().release());
 
     DispatchEventToExtension(web_contents->GetBrowserContext(),
                              extension_action.extension_id(), histogram_value,

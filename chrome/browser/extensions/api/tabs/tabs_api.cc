@@ -844,7 +844,7 @@ bool TabsGetSelectedFunction::RunSync() {
     error_ = keys::kNoSelectedTabError;
     return false;
   }
-  SetResult(ExtensionTabUtil::CreateTabValue(
+  results_ = tabs::Get::Results::Create(*ExtensionTabUtil::CreateTabObject(
       contents, tab_strip, tab_strip->active_index(), extension()));
   return true;
 }
@@ -1009,8 +1009,10 @@ bool TabsQueryFunction::RunSync() {
       if (loading_status_set && loading != web_contents->IsLoading())
         continue;
 
-      result->Append(ExtensionTabUtil::CreateTabValue(
-          web_contents, tab_strip, i, extension()));
+      result->Append(ExtensionTabUtil::CreateTabObject(web_contents, tab_strip,
+                                                       i, extension())
+                         ->ToValue()
+                         .release());
     }
   }
 
@@ -1084,7 +1086,7 @@ bool TabsDuplicateFunction::RunSync() {
   }
 
   // Return data about the newly created tab.
-  SetResult(ExtensionTabUtil::CreateTabValue(
+  results_ = tabs::Get::Results::Create(*ExtensionTabUtil::CreateTabObject(
       new_contents, new_tab_strip, new_tab_index, extension()));
 
   return true;
@@ -1108,7 +1110,7 @@ bool TabsGetFunction::RunSync() {
                   &error_))
     return false;
 
-  SetResult(ExtensionTabUtil::CreateTabValue(
+  results_ = tabs::Get::Results::Create(*ExtensionTabUtil::CreateTabObject(
       contents, tab_strip, tab_index, extension()));
   return true;
 }
@@ -1120,7 +1122,8 @@ bool TabsGetCurrentFunction::RunSync() {
   // empty tab (hence returning true).
   WebContents* caller_contents = GetSenderWebContents();
   if (caller_contents && ExtensionTabUtil::GetTabId(caller_contents) >= 0)
-    SetResult(ExtensionTabUtil::CreateTabValue(caller_contents, extension()));
+    results_ = tabs::Get::Results::Create(
+        *ExtensionTabUtil::CreateTabObject(caller_contents, extension()));
 
   return true;
 }
@@ -1379,7 +1382,8 @@ void TabsUpdateFunction::PopulateResult() {
   if (!has_callback())
     return;
 
-  SetResult(ExtensionTabUtil::CreateTabValue(web_contents_, extension()));
+  results_ = tabs::Get::Results::Create(
+      *ExtensionTabUtil::CreateTabObject(web_contents_, extension()));
 }
 
 void TabsUpdateFunction::OnExecuteCodeFinished(
@@ -1511,8 +1515,11 @@ bool TabsMoveFunction::MoveTab(int tab_id,
           *new_index, web_contents, TabStripModel::ADD_NONE);
 
       if (has_callback()) {
-        tab_values->Append(ExtensionTabUtil::CreateTabValue(
-            web_contents, target_tab_strip, *new_index, extension()));
+        tab_values->Append(
+            ExtensionTabUtil::CreateTabObject(web_contents, target_tab_strip,
+                                              *new_index, extension())
+                ->ToValue()
+                .release());
       }
 
       return true;
@@ -1530,8 +1537,10 @@ bool TabsMoveFunction::MoveTab(int tab_id,
     source_tab_strip->MoveWebContentsAt(tab_index, *new_index, false);
 
   if (has_callback()) {
-    tab_values->Append(ExtensionTabUtil::CreateTabValue(
-        contents, source_tab_strip, *new_index, extension()));
+    tab_values->Append(ExtensionTabUtil::CreateTabObject(
+                           contents, source_tab_strip, *new_index, extension())
+                           ->ToValue()
+                           .release());
   }
 
   return true;

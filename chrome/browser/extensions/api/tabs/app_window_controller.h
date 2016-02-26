@@ -33,6 +33,10 @@ class AppWindowController : public WindowController {
       const Extension* extension) const override;
   base::DictionaryValue* CreateTabValue(const Extension* extension,
                                         int tab_index) const override;
+  scoped_ptr<api::tabs::Tab> CreateTabObject(
+      const extensions::Extension* extension,
+      int tab_index) const override;
+
   bool CanClose(Reason* reason) const override;
   void SetFullscreenMode(bool is_fullscreen,
                          const GURL& extension_url) const override;

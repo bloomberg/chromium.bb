@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "chrome/common/extensions/api/tabs.h"
 #include "ui/base/window_open_disposition.h"
 
 class Browser;
@@ -36,12 +37,6 @@ namespace extensions {
 
 class Extension;
 class WindowController;
-
-namespace api {
-namespace tabs {
-struct Tab;
-}
-}
 
 // Provides various utility functions that help manipulate tabs.
 class ExtensionTabUtil {
@@ -92,12 +87,12 @@ class ExtensionTabUtil {
   // information about the state of a browser tab.  Depending on the
   // permissions of the extension, the object may or may not include sensitive
   // data such as the tab's URL.
-  static base::DictionaryValue* CreateTabValue(
+  static scoped_ptr<api::tabs::Tab> CreateTabObject(
       content::WebContents* web_contents,
       const Extension* extension) {
-    return CreateTabValue(web_contents, NULL, -1, extension);
+    return CreateTabObject(web_contents, nullptr, -1, extension);
   }
-  static base::DictionaryValue* CreateTabValue(
+  static scoped_ptr<api::tabs::Tab> CreateTabObject(
       content::WebContents* web_contents,
       TabStripModel* tab_strip,
       int tab_index,
@@ -105,30 +100,25 @@ class ExtensionTabUtil {
 
   // Creates a Tab object but performs no extension permissions checks; the
   // returned object will contain privacy-sensitive data.
-  static base::DictionaryValue* CreateTabValue(
+  static scoped_ptr<api::tabs::Tab> CreateTabObject(
       content::WebContents* web_contents) {
-    return CreateTabValue(web_contents, NULL, -1);
+    return CreateTabObject(web_contents, nullptr, -1);
   }
-  static base::DictionaryValue* CreateTabValue(
+  static scoped_ptr<api::tabs::Tab> CreateTabObject(
       content::WebContents* web_contents,
       TabStripModel* tab_strip,
       int tab_index);
 
   // Creates a tab MutedInfo object (see chrome/common/extensions/api/tabs.json)
   // with information about the mute state of a browser tab.
-  static scoped_ptr<base::DictionaryValue> CreateMutedInfo(
+  static scoped_ptr<api::tabs::MutedInfo> CreateMutedInfo(
       content::WebContents* contents);
 
   // Removes any privacy-sensitive fields from a Tab object if appropriate,
   // given the permissions of the extension and the tab in question.  The
-  // tab_info object is modified in place.
-  static void ScrubTabValueForExtension(content::WebContents* contents,
-                                        const Extension* extension,
-                                        base::DictionaryValue* tab_info);
-
-  // Removes any privacy-sensitive fields from a Tab object if appropriate,
-  // given the permissions of the extension in question.
+  // tab object is modified in place.
   static void ScrubTabForExtension(const Extension* extension,
+                                   content::WebContents* contents,
                                    api::tabs::Tab* tab);
 
   // Gets the |tab_strip_model| and |tab_index| for the given |web_contents|.

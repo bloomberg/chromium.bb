@@ -41,8 +41,10 @@ bool WillDispatchTabUpdatedEvent(
     const Extension* extension,
     Event* event,
     const base::DictionaryValue* listener_filter) {
-  base::DictionaryValue* tab_value =
-      ExtensionTabUtil::CreateTabValue(contents, extension);
+  scoped_ptr<api::tabs::Tab> tab_object =
+      ExtensionTabUtil::CreateTabObject(contents, extension);
+
+  base::DictionaryValue* tab_value = tab_object->ToValue().release();
 
   scoped_ptr<base::DictionaryValue> changed_properties(
       new base::DictionaryValue);
@@ -182,8 +184,10 @@ static bool WillDispatchTabCreatedEvent(
     const Extension* extension,
     Event* event,
     const base::DictionaryValue* listener_filter) {
-  base::DictionaryValue* tab_value = ExtensionTabUtil::CreateTabValue(
-      contents, extension);
+  base::DictionaryValue* tab_value =
+      ExtensionTabUtil::CreateTabObject(contents, extension)
+          ->ToValue()
+          .release();
   event->event_args->Clear();
   event->event_args->Append(tab_value);
   tab_value->SetBoolean(tabs_constants::kSelectedKey, active);

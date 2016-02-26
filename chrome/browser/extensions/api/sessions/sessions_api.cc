@@ -107,7 +107,7 @@ scoped_ptr<tabs::Tab> CreateTabModelHelper(
   // has highlighted, since you can select tabs without bringing them into the
   // foreground).
   tab_struct->active = index == selected_index;
-  ExtensionTabUtil::ScrubTabForExtension(extension, tab_struct.get());
+  ExtensionTabUtil::ScrubTabForExtension(extension, nullptr, tab_struct.get());
   return tab_struct;
 }
 
@@ -419,9 +419,8 @@ void SessionsRestoreFunction::SetInvalidIdError(const std::string& invalid_id) {
 
 void SessionsRestoreFunction::SetResultRestoredTab(
     content::WebContents* contents) {
-  scoped_ptr<base::DictionaryValue> tab_value(
-      ExtensionTabUtil::CreateTabValue(contents, extension()));
-  scoped_ptr<tabs::Tab> tab(tabs::Tab::FromValue(*tab_value));
+  scoped_ptr<tabs::Tab> tab(
+      ExtensionTabUtil::CreateTabObject(contents, extension()));
   scoped_ptr<api::sessions::Session> restored_session(
       CreateSessionModelHelper(base::Time::Now().ToTimeT(), std::move(tab),
                                scoped_ptr<windows::Window>()));
