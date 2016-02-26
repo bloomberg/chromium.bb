@@ -225,7 +225,7 @@ void WebGLFramebuffer::setAttachmentForBoundFramebuffer(GLenum target, GLenum at
     if (!m_object)
         return;
     if (texture && texture->object()) {
-        m_attachments.add(attachment, WebGLTextureAttachment::create(texture, texTarget, level, 0));
+        m_attachments.add(attachment, WebGLTextureAttachment::create(texture, texTarget, level, layer));
         drawBuffersIfNecessary(false);
         texture->onAttached();
     }
