@@ -109,6 +109,9 @@ class MockFile(object):
   def LocalPath(self):
     return self._local_path
 
+  def AbsoluteLocalPath(self):
+    return self._local_path
+
   def rfind(self, p):
     """os.path.basename is called on MockFile so we need an rfind method."""
     return self._local_path.rfind(p)
