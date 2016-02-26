@@ -48,6 +48,13 @@ class ExternalPrerenderHandlerAndroid {
                                 GURL url,
                                 content::WebContents* web_contents);
 
+  // Whether the PrerenderManager associated with the given profile has any
+  // prerenders for the url, and the prerender has finished loading.
+  static bool HasPrerenderedAndFinishedLoadingUrl(
+      Profile* profile,
+      GURL url,
+      content::WebContents* web_contents);
+
   static bool RegisterExternalPrerenderHandlerAndroid(JNIEnv* env);
 
  private:

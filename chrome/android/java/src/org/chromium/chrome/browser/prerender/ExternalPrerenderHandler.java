@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.prerender;
 
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -82,11 +83,27 @@ public class ExternalPrerenderHandler {
         return nativeHasPrerenderedUrl(profile, url, webContents);
     }
 
+    /**
+     * Check whether a given url has been prerendering for the given profile and session id for the
+     * given web contents, and has finished loading.
+     * @param profile The profile to check for prerendering.
+     * @param url The url to check for prerender.
+     * @param webContents The {@link WebContents} for which to compare the session info.
+     * @return Whether the given url was prerendered and has finished loading.
+     */
+    @VisibleForTesting
+    public static boolean hasPrerenderedAndFinishedLoadingUrl(
+            Profile profile, String url, WebContents webContents) {
+        return nativeHasPrerenderedAndFinishedLoadingUrl(profile, url, webContents);
+    }
+
     private static native long nativeInit();
     private static native boolean nativeAddPrerender(
             long nativeExternalPrerenderHandlerAndroid, Profile profile,
             WebContents webContents, String url, String referrer, int width, int height);
     private static native boolean nativeHasPrerenderedUrl(
+            Profile profile, String url, WebContents webContents);
+    private static native boolean nativeHasPrerenderedAndFinishedLoadingUrl(
             Profile profile, String url, WebContents webContents);
     private static native void nativeCancelCurrentPrerender(
             long nativeExternalPrerenderHandlerAndroid);

@@ -662,13 +662,25 @@ bool PrerenderManager::HasPrerenderedUrl(
   content::SessionStorageNamespace* session_storage_namespace = web_contents->
       GetController().GetDefaultSessionStorageNamespace();
 
-  for (ScopedVector<PrerenderData>::const_iterator it =
-           active_prerenders_.begin();
-       it != active_prerenders_.end(); ++it) {
-    PrerenderContents* prerender_contents = (*it)->contents();
-    if (prerender_contents->Matches(url, session_storage_namespace)) {
+  for (const auto& prerender_data : active_prerenders_) {
+    PrerenderContents* prerender_contents = prerender_data->contents();
+    if (prerender_contents->Matches(url, session_storage_namespace))
       return true;
-    }
+  }
+  return false;
+}
+
+bool PrerenderManager::HasPrerenderedAndFinishedLoadingUrl(
+    GURL url,
+    content::WebContents* web_contents) const {
+  content::SessionStorageNamespace* session_storage_namespace =
+      web_contents->GetController().GetDefaultSessionStorageNamespace();
+
+  for (const auto& prerender_data : active_prerenders_) {
+    PrerenderContents* prerender_contents = prerender_data->contents();
+    if (prerender_contents->Matches(url, session_storage_namespace) &&
+        prerender_contents->has_finished_loading())
+      return true;
   }
   return false;
 }

@@ -45,6 +45,8 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
+import org.chromium.chrome.browser.prerender.ExternalPrerenderHandler;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
@@ -767,7 +769,8 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
     }
 
     /**
-     * Test whether the url shown on prerender gets updated from about:blank.
+     * Test whether the url shown on prerender gets updated from about:blank when the prerender
+     * completes in the background.
      * Non-regression test for crbug.com/554236.
      */
     @SmallTest
@@ -778,6 +781,17 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
         ICustomTabsCallback cb = new CustomTabsTestUtils.DummyCallback();
         connection.newSession(cb);
         assertTrue(connection.mayLaunchUrl(cb, Uri.parse(mTestPage), null, null));
+
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria("No prerender") {
+            @Override
+            public boolean isSatisfied() {
+                return connection.mPrerender.mWebContents != null
+                        && ExternalPrerenderHandler.hasPrerenderedAndFinishedLoadingUrl(
+                                Profile.getLastUsedProfile(), mTestPage,
+                                connection.mPrerender.mWebContents);
+            }
+        });
+
         try {
             startCustomTabActivityWithIntent(CustomTabsTestUtils.createMinimalCustomTabIntent(
                     context, mTestPage, cb.asBinder()));

@@ -77,7 +77,8 @@ public class CustomTabsConnection extends ICustomTabsService.Stub {
     private static AtomicReference<CustomTabsConnection> sInstance =
             new AtomicReference<CustomTabsConnection>();
 
-    private static final class PrerenderedUrlParams {
+    @VisibleForTesting
+    static final class PrerenderedUrlParams {
         public final IBinder mSession;
         public final WebContents mWebContents;
         public final String mUrl;
@@ -94,12 +95,13 @@ public class CustomTabsConnection extends ICustomTabsService.Stub {
         }
     }
 
+    @VisibleForTesting
+    PrerenderedUrlParams mPrerender;
     protected final Application mApplication;
     private final boolean mLogRequests;
     private final AtomicBoolean mWarmupHasBeenCalled = new AtomicBoolean();
     private final ClientManager mClientManager;
     private ExternalPrerenderHandler mExternalPrerenderHandler;
-    private PrerenderedUrlParams mPrerender;
     private WebContents mSpareWebContents;
 
     /**
