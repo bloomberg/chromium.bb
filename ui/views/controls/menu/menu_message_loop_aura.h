@@ -11,10 +11,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "ui/views/controls/menu/menu_message_loop.h"
 
-namespace base {
-class MessagePumpDispatcher;
-}
-
 namespace ui {
 class ScopedEventDispatcher;
 }

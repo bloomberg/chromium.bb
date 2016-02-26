@@ -38,11 +38,9 @@ static const int kMsgHaveWork = WM_USER + 1;
 //-----------------------------------------------------------------------------
 // MessagePumpWin public:
 
-void MessagePumpWin::RunWithDispatcher(
-    Delegate* delegate, MessagePumpDispatcher* dispatcher) {
+void MessagePumpWin::Run(Delegate* delegate) {
   RunState s;
   s.delegate = delegate;
-  s.dispatcher = dispatcher;
   s.should_quit = false;
   s.run_depth = state_ ? state_->run_depth + 1 : 1;
 
@@ -52,10 +50,6 @@ void MessagePumpWin::RunWithDispatcher(
   DoRunLoop();
 
   state_ = previous_state;
-}
-
-void MessagePumpWin::Run(Delegate* delegate) {
-  RunWithDispatcher(delegate, NULL);
 }
 
 void MessagePumpWin::Quit() {
@@ -369,15 +363,8 @@ bool MessagePumpForUI::ProcessMessageHelper(const MSG& msg) {
   if (CallMsgFilter(const_cast<MSG*>(&msg), kMessageFilterCode))
     return true;
 
-  uint32_t action = MessagePumpDispatcher::POST_DISPATCH_PERFORM_DEFAULT;
-  if (state_->dispatcher)
-    action = state_->dispatcher->Dispatch(msg);
-  if (action & MessagePumpDispatcher::POST_DISPATCH_QUIT_LOOP)
-    state_->should_quit = true;
-  if (action & MessagePumpDispatcher::POST_DISPATCH_PERFORM_DEFAULT) {
-    TranslateMessage(&msg);
-    DispatchMessage(&msg);
-  }
+  TranslateMessage(&msg);
+  DispatchMessage(&msg);
 
   return true;
 }

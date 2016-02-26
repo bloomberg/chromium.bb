@@ -17,10 +17,6 @@ namespace base {
 class MessagePumpForUI;
 #endif
 
-#if defined(OS_WIN)
-class MessagePumpDispatcher;
-#endif
-
 #if defined(OS_IOS)
 class MessagePumpUIApplication;
 #endif
@@ -33,9 +29,6 @@ class MessagePumpUIApplication;
 class BASE_EXPORT RunLoop {
  public:
   RunLoop();
-#if defined(OS_WIN)
-  explicit RunLoop(MessagePumpDispatcher* dispatcher);
-#endif
   ~RunLoop();
 
   // Run the current MessageLoop. This blocks until Quit is called. Before
@@ -94,10 +87,6 @@ class BASE_EXPORT RunLoop {
 
   // Parent RunLoop or NULL if this is the top-most RunLoop.
   RunLoop* previous_run_loop_;
-
-#if defined(OS_WIN)
-  MessagePumpDispatcher* dispatcher_;
-#endif
 
   // Used to count how many nested Run() invocations are on the stack.
   int run_depth_;

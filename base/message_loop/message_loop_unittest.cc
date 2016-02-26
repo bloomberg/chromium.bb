@@ -27,7 +27,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_WIN)
-#include "base/message_loop/message_pump_dispatcher.h"
 #include "base/message_loop/message_pump_win.h"
 #include "base/process/memory.h"
 #include "base/strings/string16.h"
@@ -426,70 +425,6 @@ void PostNTasksThenQuit(int posts_remaining) {
 
 #if defined(OS_WIN)
 
-class DispatcherImpl : public MessagePumpDispatcher {
- public:
-  DispatcherImpl() : dispatch_count_(0) {}
-
-  uint32_t Dispatch(const NativeEvent& msg) override {
-    ::TranslateMessage(&msg);
-    ::DispatchMessage(&msg);
-    // Do not count WM_TIMER since it is not what we post and it will cause
-    // flakiness.
-    if (msg.message != WM_TIMER)
-      ++dispatch_count_;
-    // We treat WM_LBUTTONUP as the last message.
-    return msg.message == WM_LBUTTONUP ? POST_DISPATCH_QUIT_LOOP
-                                       : POST_DISPATCH_NONE;
-  }
-
-  int dispatch_count_;
-};
-
-void MouseDownUp() {
-  PostMessage(NULL, WM_LBUTTONDOWN, 0, 0);
-  PostMessage(NULL, WM_LBUTTONUP, 'A', 0);
-}
-
-void RunTest_Dispatcher(MessageLoop::Type message_loop_type) {
-  MessageLoop loop(message_loop_type);
-
-  MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      Bind(&MouseDownUp),
-      TimeDelta::FromMilliseconds(100));
-  DispatcherImpl dispatcher;
-  RunLoop run_loop(&dispatcher);
-  run_loop.Run();
-  ASSERT_EQ(2, dispatcher.dispatch_count_);
-}
-
-LRESULT CALLBACK MsgFilterProc(int code, WPARAM wparam, LPARAM lparam) {
-  if (code == MessagePumpForUI::kMessageFilterCode) {
-    MSG* msg = reinterpret_cast<MSG*>(lparam);
-    if (msg->message == WM_LBUTTONDOWN)
-      return TRUE;
-  }
-  return FALSE;
-}
-
-void RunTest_DispatcherWithMessageHook(MessageLoop::Type message_loop_type) {
-  MessageLoop loop(message_loop_type);
-
-  MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      Bind(&MouseDownUp),
-      TimeDelta::FromMilliseconds(100));
-  HHOOK msg_hook = SetWindowsHookEx(WH_MSGFILTER,
-                                    MsgFilterProc,
-                                    NULL,
-                                    GetCurrentThreadId());
-  DispatcherImpl dispatcher;
-  RunLoop run_loop(&dispatcher);
-  run_loop.Run();
-  ASSERT_EQ(1, dispatcher.dispatch_count_);
-  UnhookWindowsHookEx(msg_hook);
-}
-
 class TestIOHandler : public MessageLoopForIO::IOHandler {
  public:
   TestIOHandler(const wchar_t* name, HANDLE signal, bool wait);
@@ -711,16 +646,6 @@ TEST(MessageLoopTest, TaskObserver) {
 }
 
 #if defined(OS_WIN)
-TEST(MessageLoopTest, Dispatcher) {
-  // This test requires a UI loop
-  RunTest_Dispatcher(MessageLoop::TYPE_UI);
-}
-
-TEST(MessageLoopTest, DispatcherWithMessageHook) {
-  // This test requires a UI loop
-  RunTest_DispatcherWithMessageHook(MessageLoop::TYPE_UI);
-}
-
 TEST(MessageLoopTest, IOHandler) {
   RunTest_IOHandler();
 }

@@ -11,7 +11,6 @@
 
 #include "base/base_export.h"
 #include "base/message_loop/message_pump.h"
-#include "base/message_loop/message_pump_dispatcher.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "base/win/scoped_handle.h"
@@ -25,9 +24,6 @@ class BASE_EXPORT MessagePumpWin : public MessagePump {
  public:
   MessagePumpWin() : have_work_(0), state_(NULL) {}
 
-  // Like MessagePump::Run, but MSG objects are routed through dispatcher.
-  void RunWithDispatcher(Delegate* delegate, MessagePumpDispatcher* dispatcher);
-
   // MessagePump methods:
   void Run(Delegate* delegate) override;
   void Quit() override;
@@ -35,7 +31,6 @@ class BASE_EXPORT MessagePumpWin : public MessagePump {
  protected:
   struct RunState {
     Delegate* delegate;
-    MessagePumpDispatcher* dispatcher;
 
     // Used to flag that the current Run() invocation should return ASAP.
     bool should_quit;

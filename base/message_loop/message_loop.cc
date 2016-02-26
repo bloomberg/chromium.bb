@@ -436,17 +436,7 @@ void MessageLoop::SetThreadTaskRunnerHandle() {
 
 void MessageLoop::RunHandler() {
   DCHECK_EQ(this, current());
-
   StartHistogrammer();
-
-#if defined(OS_WIN)
-  if (run_loop_->dispatcher_ && type() == TYPE_UI) {
-    static_cast<MessagePumpForUI*>(pump_.get())->
-        RunWithDispatcher(this, run_loop_->dispatcher_);
-    return;
-  }
-#endif
-
   pump_->Run(this);
 }
 

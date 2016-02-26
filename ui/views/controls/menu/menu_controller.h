@@ -26,9 +26,6 @@
 #include "ui/views/controls/menu/menu_delegate.h"
 #include "ui/views/widget/widget_observer.h"
 
-namespace base {
-class MessagePumpDispatcher;
-}
 namespace gfx {
 class Screen;
 }
