@@ -29,7 +29,7 @@ class ArcBridgeServiceImpl : public ArcBridgeService,
   explicit ArcBridgeServiceImpl(scoped_ptr<ArcBridgeBootstrap> bootstrap);
   ~ArcBridgeServiceImpl() override;
 
-  void DetectAvailability() override;
+  void SetDetectedAvailability(bool available) override;
 
   void HandleStartup() override;
 
@@ -50,9 +50,6 @@ class ArcBridgeServiceImpl : public ArcBridgeService,
   // ArcBridgeBootstrap::Delegate:
   void OnConnectionEstablished(ArcBridgeInstancePtr instance) override;
   void OnStopped() override;
-
-  // DBus callbacks.
-  void OnArcAvailable(bool available);
 
   // Called when the bridge channel is closed. This typically only happens when
   // the ARC instance crashes. This is not called during shutdown.

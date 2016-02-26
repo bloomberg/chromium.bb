@@ -34,13 +34,6 @@ ArcBridgeServiceImpl::ArcBridgeServiceImpl(
 ArcBridgeServiceImpl::~ArcBridgeServiceImpl() {
 }
 
-void ArcBridgeServiceImpl::DetectAvailability() {
-  chromeos::SessionManagerClient* session_manager_client =
-      chromeos::DBusThreadManager::Get()->GetSessionManagerClient();
-  session_manager_client->CheckArcAvailability(base::Bind(
-      &ArcBridgeServiceImpl::OnArcAvailable, weak_factory_.GetWeakPtr()));
-}
-
 void ArcBridgeServiceImpl::HandleStartup() {
   DCHECK(CalledOnValidThread());
   session_started_ = true;
@@ -81,7 +74,7 @@ void ArcBridgeServiceImpl::StopInstance() {
   bootstrap_->Stop();
 }
 
-void ArcBridgeServiceImpl::OnArcAvailable(bool arc_available) {
+void ArcBridgeServiceImpl::SetDetectedAvailability(bool arc_available) {
   DCHECK(CalledOnValidThread());
   if (available() == arc_available)
     return;

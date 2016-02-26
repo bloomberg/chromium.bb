@@ -131,10 +131,10 @@ class ArcBridgeService : public ArcBridgeHost {
   // switch.
   static bool GetEnabled(const base::CommandLine* command_line);
 
-  // DetectAvailability() should be called once D-Bus is available. It will
-  // call CheckArcAvailability() on the session_manager. This can only be
-  // called on the thread that this class was created on.
-  virtual void DetectAvailability() = 0;
+  // SetDetectedAvailability() should be called once CheckArcAvailability() on
+  // the session_manager is called. This can only be called on the thread that
+  // this class was created on.
+  virtual void SetDetectedAvailability(bool availability) = 0;
 
   // HandleStartup() should be called upon profile startup.  This will only
   // launch an instance if the instance service is available and it is enabled.

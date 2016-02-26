@@ -32,8 +32,7 @@
 #include "chrome/browser/chromeos/app_mode/kiosk_app_launch_error.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_mode_idle_app_name_notification.h"
-#include "chrome/browser/chromeos/arc/arc_auth_service.h"
-#include "chrome/browser/chromeos/arc/arc_intent_helper_bridge.h"
+#include "chrome/browser/chromeos/arc/arc_service_launcher.h"
 #include "chrome/browser/chromeos/boot_times_recorder.h"
 #include "chrome/browser/chromeos/dbus/chrome_console_service_provider_delegate.h"
 #include "chrome/browser/chromeos/dbus/chrome_display_power_service_provider_delegate.h"
@@ -114,8 +113,6 @@
 #include "chromeos/network/portal_detector/network_portal_detector_stub.h"
 #include "chromeos/system/statistics_provider.h"
 #include "chromeos/tpm/tpm_token_loader.h"
-#include "components/arc/arc_bridge_service.h"
-#include "components/arc/arc_service_manager.h"
 #include "components/browser_sync/common/browser_sync_switches.h"
 #include "components/device_event_log/device_event_log.h"
 #include "components/metrics/metrics_service.h"
@@ -415,13 +412,8 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
 
   wake_on_wifi_manager_.reset(new WakeOnWifiManager());
 
-  arc_service_manager_.reset(new arc::ArcServiceManager());
-  arc_service_manager_->AddService(make_scoped_ptr(
-      new arc::ArcAuthService(arc_service_manager_->arc_bridge_service())));
-  arc_service_manager_->AddService(
-      make_scoped_ptr(new arc::ArcIntentHelperBridge(
-          arc_service_manager_->arc_bridge_service())));
-  arc_service_manager_->arc_bridge_service()->DetectAvailability();
+  arc_service_launcher_.reset(new arc::ArcServiceLauncher());
+  arc_service_launcher_->Initialize();
 
   chromeos::ResourceReporter::GetInstance()->StartMonitoring();
 
@@ -750,7 +742,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
 
   BootTimesRecorder::Get()->AddLogoutTimeMarker("UIMessageLoopEnded", true);
 
-  arc_service_manager_->arc_bridge_service()->Shutdown();
+  arc_service_launcher_->Shutdown();
 
   // Destroy the application name notifier for Kiosk mode.
   KioskModeIdleAppNameNotification::Shutdown();

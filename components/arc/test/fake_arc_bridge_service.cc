@@ -13,7 +13,8 @@ FakeArcBridgeService::~FakeArcBridgeService() {
   SetStopped();
 }
 
-void FakeArcBridgeService::DetectAvailability() {
+void FakeArcBridgeService::SetDetectedAvailability(bool availability) {
+  SetAvailable(availability);
 }
 
 void FakeArcBridgeService::HandleStartup() {
