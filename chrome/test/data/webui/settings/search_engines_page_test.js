@@ -105,12 +105,18 @@ cr.define('settings_search_engines_page', function() {
     },
   };
 
-  /** @return {!SearchEngine} */
-  var createSampleSearchEngine = function() {
+  /**
+   * @param {boolean} canBeDefault
+   * @param {boolean} canBeEdited
+   * @param {boolean} canBeRemoved
+   * @return {!SearchEngine}
+   */
+  var createSampleSearchEngine = function(
+      canBeDefault, canBeEdited, canBeRemoved) {
     return {
-      canBeDefault: false,
-      canBeEdited: true,
-      canBeRemoved: false,
+      canBeDefault: canBeDefault,
+      canBeEdited: canBeEdited,
+      canBeRemoved: canBeRemoved,
       default: false,
       displayName: "Google",
       iconURL: "http://www.google.com/favicon.ico",
@@ -246,15 +252,16 @@ cr.define('settings_search_engines_page', function() {
         settings.SearchEnginesBrowserProxyImpl.instance_ = browserProxy;
         PolymerTest.clearBody();
         entry = document.createElement('settings-search-engine-entry');
-        entry.set('engine', createSampleSearchEngine());
+        entry.set('engine', createSampleSearchEngine(true, true, true));
         document.body.appendChild(entry);
       });
 
       teardown(function() { entry.remove(); });
 
-      test('RemoveSearchEngine', function() {
+      test('Remove_Enabled', function() {
         var deleteButton = entry.$.delete;
         assertTrue(!!deleteButton);
+        assertFalse(deleteButton.hidden);
         MockInteractions.tap(deleteButton);
         return browserProxy.whenCalled('removeSearchEngine').then(
             function(modelIndex) {
@@ -262,7 +269,7 @@ cr.define('settings_search_engines_page', function() {
             });
       });
 
-      test('MakeDefault', function() {
+      test('MakeDefault_Enabled', function() {
         var makeDefaultButton = entry.$.makeDefault;
         assertTrue(!!makeDefaultButton);
         MockInteractions.tap(makeDefaultButton);
@@ -272,29 +279,12 @@ cr.define('settings_search_engines_page', function() {
             });
       });
 
-      // Test that the "make default" and "remove" buttons are hidden for
-      // the default search engine.
-      test('DefaultSearchEngineHiddenButtons', function() {
-        assertFalse(entry.$.makeDefault.hidden);
-        assertFalse(entry.$.edit.hidden);
-        assertFalse(entry.$.delete.hidden);
-
-        // Mark the engine as the "default" one.
-        var engine = createSampleSearchEngine();
-        engine.default = true;
-        entry.set('engine', engine);
-        Polymer.dom.flush();
-
-        assertTrue(entry.$.makeDefault.hidden);
-        assertFalse(entry.$.edit.hidden);
-        assertTrue(entry.$.delete.hidden);
-      });
-
       // Test that clicking the "edit" button brings up a dialog.
-      test('Edit', function() {
+      test('Edit_Enabled', function() {
         var engine = entry.engine;
         var editButton = entry.$.edit;
         assertTrue(!!editButton);
+        assertFalse(editButton.hidden);
         MockInteractions.tap(editButton);
         return browserProxy.whenCalled('searchEngineEditStarted').then(
             function(modelIndex) {
@@ -309,6 +299,33 @@ cr.define('settings_search_engines_page', function() {
 
               assertFalse(dialog.$.actionButton.disabled);
             });
+      });
+
+      /**
+       * Checks that the given button is disabled (by being hidden), for the
+       * given search engine.
+       * @param {!SearchEngine} searchEngine
+       * @param {string} buttonId
+       */
+      function testButtonDisabled(searchEngine, buttonId) {
+        entry.engine = searchEngine;
+        var button = entry.$[buttonId];
+        assertTrue(!!button);
+        assertTrue(button.hidden);
+      }
+
+      test('Remove_Disabled', function() {
+        testButtonDisabled(
+            createSampleSearchEngine(true, true, false), 'delete');
+      });
+
+      test('MakeDefault_Disabled', function() {
+        testButtonDisabled(
+            createSampleSearchEngine(false, true, true), 'makeDefault');
+      });
+
+      test('Edit_Disabled', function() {
+        testButtonDisabled(createSampleSearchEngine(true, false, true), 'edit');
       });
     });
   }

@@ -30,7 +30,8 @@
             </paper-input>
             <paper-input always-float-label id="queryUrl"
                 i18n-values="label:searchEnginesQueryURLExplanation;error-message:searchEnginesNotValid"
-                value="{{queryUrl_}}" on-focus="validate_" on-input="validate_">
+                value="{{queryUrl_}}" on-focus="validate_" on-input="validate_"
+                disabled$="[[model.urlLocked]]">
             </paper-input>
           </div>
           <div class="button-container">
