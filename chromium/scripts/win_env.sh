@@ -22,7 +22,7 @@ if [ ! -d $1 ]; then
   exit 1
 fi
 
-VSPATH=$1/win_toolchain/vs2013_files
+VSPATH=$1/win_toolchain/vs2013_files/4087e065abebdca6dbd0caca2910c6718d2ec67f
 
 if [ ! -d $VSPATH ]; then
   echo "Visual Studio 2013 toolchain not found: $VSPATH"
@@ -76,7 +76,7 @@ case "$2" in
     add_path $VSPATH/VC/bin/amd64
 
     add_lib_path $VSPATH/VC/lib
-    add_lib_path $VSPATH/win_sdk/Lib/10.0.10240.0/um/x86
+    add_lib_path $VSPATH/win_sdk/Lib/10.0.10586.0/um/x86
     add_lib_path $VSPATH/VC/atlmfc/lib
     ;;
 
@@ -85,7 +85,7 @@ case "$2" in
     add_path $VSPATH/VC/bin/amd64
 
     add_lib_path $VSPATH/VC/lib/amd64
-    add_lib_path $VSPATH/win_sdk/Lib/10.0.10240.0/um/x64
+    add_lib_path $VSPATH/win_sdk/Lib/10.0.10586.0/um/x64
     add_lib_path $VSPATH/VC/atlmfc/lib/amd64
     ;;
 
@@ -97,8 +97,8 @@ esac
 
 # Common for x86 and x64.
 add_path $(dirname $(readlink -f "$0")) # For cygwin-wrapper.
-add_include_path $VSPATH/win_sdk/Include/10.0.10240.0/um
-add_include_path $VSPATH/win_sdk/Include/10.0.10240.0/shared
+add_include_path $VSPATH/win_sdk/Include/10.0.10586.0/um
+add_include_path $VSPATH/win_sdk/Include/10.0.10586.0/shared
 add_include_path $VSPATH/VC/include
 add_include_path $VSPATH/VC/atlmfc/include
 
