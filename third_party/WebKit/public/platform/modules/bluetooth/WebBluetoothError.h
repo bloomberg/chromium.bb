@@ -56,6 +56,8 @@ enum class WebBluetoothError {
     // SecurityError:
     GATTNotAuthorized,
     BlacklistedCharacteristicUUID,
+    BlacklistedRead,
+    BlacklistedWrite,
     NotAllowedToAccessService,
     RequestDeviceWithBlacklistedUUID,
     RequestDeviceWithUniqueOrigin,

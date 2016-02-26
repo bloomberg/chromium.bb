@@ -1,5 +1,12 @@
 'use strict';
 
+// Bluetooth UUID constants:
+// Services:
+var blacklist_test_service_uuid = "611c954a-263b-4f4a-aab6-01ddb953f985";
+// Characteristics:
+var blacklist_exclude_reads_characteristic_uuid =
+  "bad1c9a2-9a5b-4015-8b60-1579bbbf2135";
+
 // Sometimes we need to test that using either the name, alias, or UUID
 // produces the same result. The following objects help us do that.
 var generic_access = {

@@ -866,6 +866,14 @@ void BluetoothDispatcherHost::OnReadValue(
     return;
   }
 
+  if (BluetoothBlacklist::Get().IsExcludedFromReads(
+          query_result.characteristic->GetUUID())) {
+    RecordCharacteristicReadValueOutcome(UMAGATTOperationOutcome::BLACKLISTED);
+    Send(new BluetoothMsg_ReadCharacteristicValueError(
+        thread_id, request_id, WebBluetoothError::BlacklistedRead));
+    return;
+  }
+
   query_result.characteristic->ReadRemoteCharacteristic(
       base::Bind(&BluetoothDispatcherHost::OnCharacteristicValueRead,
                  weak_ptr_on_ui_thread_, thread_id, request_id),
@@ -905,6 +913,14 @@ void BluetoothDispatcherHost::OnWriteValue(
     RecordCharacteristicWriteValueOutcome(query_result.outcome);
     Send(new BluetoothMsg_WriteCharacteristicValueError(
         thread_id, request_id, query_result.GetWebError()));
+    return;
+  }
+
+  if (BluetoothBlacklist::Get().IsExcludedFromWrites(
+          query_result.characteristic->GetUUID())) {
+    RecordCharacteristicWriteValueOutcome(UMAGATTOperationOutcome::BLACKLISTED);
+    Send(new BluetoothMsg_WriteCharacteristicValueError(
+        thread_id, request_id, WebBluetoothError::BlacklistedWrite));
     return;
   }
 

@@ -95,17 +95,38 @@ void BluetoothBlacklist::PopulateWithDefaultValues() {
   // Blacklist UUIDs updated 2016-02-12 from:
   // https://github.com/WebBluetoothCG/registries/blob/master/gatt_blacklist.txt
   // Short UUIDs are used for readability of this list.
+  //
+  // Testing from Layout Tests Note:
+  //
+  // Random UUIDs for object & exclude permutations that do not exist in the
+  // standard blacklist are included to facilitate integration testing from
+  // Layout Tests.  Unit tests can dynamically modify the blacklist, but don't
+  // offer the full integration test to the Web Bluetooth Javascript bindings.
+  //
+  // This is done for simplicity as opposed to exposing a testing API that can
+  // add to the blacklist over time, which would be over engineered.
+  //
+  // Remove testing UUIDs if the specified blacklist is updated to include UUIDs
+  // that match the specific permutations.
   DCHECK(BluetoothUUID("00001800-0000-1000-8000-00805f9b34fb") ==
          BluetoothUUID("1800"));
-  // ## Services
+  // Services:
   AddOrDie(BluetoothUUID("1812"), Value::EXCLUDE);
-  // ## Characteristics
+  // Characteristics:
   AddOrDie(BluetoothUUID("2a02"), Value::EXCLUDE_WRITES);
   AddOrDie(BluetoothUUID("2a03"), Value::EXCLUDE);
   AddOrDie(BluetoothUUID("2a25"), Value::EXCLUDE);
-  // ## Descriptors
+  // Characteristics for Layout Tests:
+  AddOrDie(BluetoothUUID("bad1c9a2-9a5b-4015-8b60-1579bbbf2135"),
+           Value::EXCLUDE_READS);
+  // Descriptors:
   AddOrDie(BluetoothUUID("2902"), Value::EXCLUDE_WRITES);
   AddOrDie(BluetoothUUID("2903"), Value::EXCLUDE_WRITES);
+  // Descriptors for Layout Tests:
+  AddOrDie(BluetoothUUID("bad2ddcf-60db-45cd-bef9-fd72b153cf7c"),
+           Value::EXCLUDE);
+  AddOrDie(BluetoothUUID("bad3ec61-3cc3-4954-9702-7977df514114"),
+           Value::EXCLUDE_READS);
 }
 
 }  // namespace content

@@ -243,7 +243,7 @@ TEST_F(BluetoothBlacklistTest, VerifyDefaultBlacklistSize) {
   BluetoothBlacklist& blacklist = BluetoothBlacklist::Get();
   // When adding items to the blacklist the new values should be added in the
   // tests below for each exclusion type.
-  EXPECT_EQ(6u, blacklist.size());
+  EXPECT_EQ(9u, blacklist.size());
 }
 
 TEST_F(BluetoothBlacklistTest, VerifyDefaultExcludeList) {
@@ -253,6 +253,8 @@ TEST_F(BluetoothBlacklistTest, VerifyDefaultExcludeList) {
   EXPECT_TRUE(blacklist.IsExcluded(BluetoothUUID("1812")));
   EXPECT_TRUE(blacklist.IsExcluded(BluetoothUUID("2a03")));
   EXPECT_TRUE(blacklist.IsExcluded(BluetoothUUID("2a25")));
+  EXPECT_TRUE(blacklist.IsExcluded(
+      BluetoothUUID("bad2ddcf-60db-45cd-bef9-fd72b153cf7c")));
 }
 
 TEST_F(BluetoothBlacklistTest, VerifyDefaultExcludeReadList) {
@@ -262,6 +264,12 @@ TEST_F(BluetoothBlacklistTest, VerifyDefaultExcludeReadList) {
   EXPECT_TRUE(blacklist.IsExcludedFromReads(BluetoothUUID("1812")));
   EXPECT_TRUE(blacklist.IsExcludedFromReads(BluetoothUUID("2a03")));
   EXPECT_TRUE(blacklist.IsExcludedFromReads(BluetoothUUID("2a25")));
+  EXPECT_TRUE(blacklist.IsExcludedFromReads(
+      BluetoothUUID("bad1c9a2-9a5b-4015-8b60-1579bbbf2135")));
+  EXPECT_TRUE(blacklist.IsExcludedFromReads(
+      BluetoothUUID("bad2ddcf-60db-45cd-bef9-fd72b153cf7c")));
+  EXPECT_TRUE(blacklist.IsExcludedFromReads(
+      BluetoothUUID("bad3ec61-3cc3-4954-9702-7977df514114")));
 }
 
 TEST_F(BluetoothBlacklistTest, VerifyDefaultExcludeWriteList) {
@@ -274,6 +282,8 @@ TEST_F(BluetoothBlacklistTest, VerifyDefaultExcludeWriteList) {
   EXPECT_TRUE(blacklist.IsExcludedFromWrites(BluetoothUUID("2a25")));
   EXPECT_TRUE(blacklist.IsExcludedFromWrites(BluetoothUUID("2902")));
   EXPECT_TRUE(blacklist.IsExcludedFromWrites(BluetoothUUID("2903")));
+  EXPECT_TRUE(blacklist.IsExcludedFromWrites(
+      BluetoothUUID("bad2ddcf-60db-45cd-bef9-fd72b153cf7c")));
 }
 
 }  // namespace content

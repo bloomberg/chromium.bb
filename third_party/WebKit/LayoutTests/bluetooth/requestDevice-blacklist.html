@@ -10,7 +10,7 @@ test(t => { assert_true(window.testRunner instanceof Object); t.done(); },
      'window.testRunner is required for the following tests.');
 
 promise_test(() => {
-  testRunner.setBluetoothMockDataSet('HeartRateAdapter');
+  testRunner.setBluetoothMockDataSet('BlacklistTestAdapter');
   return assert_promise_rejects_with_message(
     requestDeviceWithKeyDown(
       {filters: [{services: ['human_interface_device']}]}),
@@ -22,10 +22,10 @@ promise_test(() => {
 }, 'Reject with SecurityError if requesting a blacklisted service.');
 
 promise_test(() => {
-  testRunner.setBluetoothMockDataSet('HeartRateAndHIDAdapter');
+  testRunner.setBluetoothMockDataSet('BlacklistTestAdapter');
   return requestDeviceWithKeyDown(
     {
-      filters: [{services: ['heart_rate']}],
+      filters: [{services: [blacklist_test_service_uuid]}],
       optionalServices: ['human_interface_device']
     })
     .then(device => device.gatt.connect())

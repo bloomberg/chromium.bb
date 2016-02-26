@@ -82899,6 +82899,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="10" label="Not Authorized"/>
   <int value="11" label="Not Paired"/>
   <int value="12" label="Not Supported"/>
+  <int value="13" label="Blacklisted"/>
 </enum>
 
 <enum name="WebBluetoothGetCharacteristicOutcome" type="int">

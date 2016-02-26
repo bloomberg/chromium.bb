@@ -62,6 +62,8 @@ DOMException* BluetoothError::take(ScriptPromiseResolver*, const WebBluetoothErr
         // SecurityErrors:
         MAP_ERROR(GATTNotAuthorized, SecurityError, "GATT operation not authorized.");
         MAP_ERROR(BlacklistedCharacteristicUUID, SecurityError, "getCharacteristic(s) called with blacklisted UUID. https://goo.gl/4NeimX");
+        MAP_ERROR(BlacklistedRead, SecurityError, "readValue() called on blacklisted object marked exclude-reads. https://goo.gl/4NeimX");
+        MAP_ERROR(BlacklistedWrite, SecurityError, "writeValue() called on blacklisted object marked exclude-writes. https://goo.gl/4NeimX");
         MAP_ERROR(NotAllowedToAccessService, SecurityError, "Origin is not allowed to access the service. Remember to add the service to a filter or to optionalServices in requestDevice().");
         MAP_ERROR(RequestDeviceWithBlacklistedUUID, SecurityError, "requestDevice() called with a filter containing a blacklisted UUID. https://goo.gl/4NeimX");
         MAP_ERROR(RequestDeviceWithUniqueOrigin, SecurityError, "requestDevice() called from sandboxed or otherwise unique origin.");

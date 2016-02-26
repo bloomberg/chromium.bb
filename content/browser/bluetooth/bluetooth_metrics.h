@@ -184,6 +184,7 @@ enum UMAGATTOperationOutcome {
   NOT_AUTHORIZED = 10,
   NOT_PAIRED = 11,
   NOT_SUPPORTED = 12,
+  BLACKLISTED = 13,
   // Note: Add new GATT Outcomes immediately above this line.
   // Make sure to update the enum list in
   // tools/metrics/histograms/histograms.xml accordingly.
