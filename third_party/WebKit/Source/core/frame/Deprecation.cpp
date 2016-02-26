@@ -105,13 +105,16 @@ void Deprecation::countDeprecationIfNotPrivateScript(v8::Isolate* isolate, Execu
 
 static const char* milestoneString(int milestone)
 {
+    // These are the Estimated Stable Dates:
+    // https://www.chromium.org/developers/calendar
+
     switch (milestone) {
     case 50:
         return "M50, around April 2016";
     case 51:
-        return "M51, around June 2016";
+        return "M51, around May 2016";
     case 52:
-        return "M52, around August 2016";
+        return "M52, around July 2016";
     case 53:
         return "M53, around September 2016";
     }
@@ -324,7 +327,7 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature)
         return willBeRemoved("'SVGZoomEvent'", 52, "5760883808534528");
 
     case UseCounter::BorderImageWithBorderStyleNone:
-        return "Elements using the 'border-image' CSS property with no 'border-style' set should have no border, but currently do. Setting 'border-style' will be required in M51, around June 2016. See https://www.chromestatus.com/features/5542503914668032 for more details.";
+        return "Elements using the 'border-image' CSS property with no 'border-style' set should have no border, but currently do. Setting 'border-style' will be required in M51, around May 2016. See https://www.chromestatus.com/features/5542503914668032 for more details.";
 
     case UseCounter::WebAnimationHyphenatedProperty:
         return replacedWillBeRemoved("Hyphenated naming in Web Animations keyframes", "camelCase", 51, "5650817352728576");
