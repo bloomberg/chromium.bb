@@ -2,6 +2,8 @@
 
 [TOC]
 
+## Introduction
+
 The main interest in extended attributes are their _semantics_: Blink implements many more extended attributes than the Web IDL standard, to specify various behavior.
 
 The authoritative list of allowed extended attributes and values is [bindings/IDLExtendedAttributes.txt](https://code.google.com/p/chromium/codesearch#chromium/src/third_party/WebKit/Source/bindings/IDLExtendedAttributes.txt). This is complete but not necessarily precise (there may be unused extended attributes or values), since validation is run on build, but coverage isn't checked.
@@ -18,7 +20,7 @@ Blink IDL also does not support certain recent features of the Web IDL grammar:
 Semantically, only certain extended attributes allow lists. Similarly, only certain extended attributes allow string literals.
 
 Extended attributes either take no value, take a required value, or take an optional value.
-In the following explanations, (i), (m), (s), (a), (p), (c), and (d) means that a given extended attribute can be specified on interfaces, methods, special operations, attributes, parameters, constants, and dictionaries, respectively. For example, (a,p) means that the IDL attribute can be specified on attributes and parameters.
+In the following explanations, _(i)_, _(m)_, _(s)_, _(a)_, _(p)_, _(c)_, and _(d)_ mean that a given extended attribute can be specified on interfaces, methods, special operations, attributes, parameters, constants, and dictionaries, respectively. For example, _(a,p)_ means that the IDL attribute can be specified on attributes and parameters.
 
 *** note
 These restrictions are not enforced by the parser: extended attributes used in unsupported contexts will simply be ignored.
@@ -30,6 +32,7 @@ As a rule, we do _not_ add extended attributes to the IDL that are not supported
 // FIXME: should be [MeasureAs=Foo] but [MeasureAs] not supported on constants: http://crbug.com/358506
 const unsigned short bar;
 ```
+
 ## Naming
 
 Extended attributes are named in UpperCamelCase, and are conventionally written as the name of the attribute within brackets, as `[ExampleExtendedAttribute]`, per [Web IDL typographic conventions](https://heycam.github.io/webidl/#conventions).
@@ -70,10 +73,13 @@ Anonymous special operations default to being implemented by a function named `a
 `[ImplementedAs]` can be used if there is an existing Blink function to use to implement the operation, but you do _not_ wish to expose a named operation. Otherwise you can simply put the special keyword in the line of the exposed normal operation.
 
 For example:
+
 ```webidl
 [ImplementedAs=item] getter DOMString (unsigned long index);  // Does not add item() to the interface: only an indexed property getter
 ```
+
 or:
+
 ```webidl
 getter DOMString item(unsigned long index);  // Use existing method item() to implement indexed property getter
 ```
@@ -128,9 +134,9 @@ These are defined in the [ECMAScript-specific extended attributes](http://heycam
 Unsupported: `[ArrayClass]`, `[ImplicitThis]`, `[LenientThis]`, `[NamedPropertiesObject]`, `[TreatNonCallableAsNull]`
 ***
 
-### [Clamp] (a, p)
+### [Clamp] _(a, p)_
 
-Standard: [[Clamp]](https://heycam.github.io/webidl/#Clamp)
+Standard: [Clamp](https://heycam.github.io/webidl/#Clamp)
 
 Summary: `[Clamp]` indicates that when an ECMAScript Number is converted to the IDL type, out of range values will be clamped to the range of valid values, rather than using the operators that use a modulo operation (ToInt32, ToUint32, etc.).
 
@@ -157,9 +163,9 @@ Calling the non-`[Clamp]` version of `setColor()` uses **ToUint8()** to coerce t
 
 Calling the `[Clamp]` version of `setColor()` uses **clampTo()** to coerce the Numbers to octets. Hence calling `context.setColor(-1, 255, 257)` is equivalent to calling `setColorClamped(0, 255, 255)`.
 
-### [Constructor] (i)
+### [Constructor] _(i)_
 
-Standard: [[Constructor]](https://heycam.github.io/webidl/#Constructor)
+Standard: [Constructor](https://heycam.github.io/webidl/#Constructor)
 
 Summary: `[Constructor]` indicates that the interface should have a constructor, i.e. "new XXX()".
 
@@ -192,6 +198,7 @@ PassRefPtr<XXX> XXX::create(float x, float y, String str)
     ...;
 }
 ```
+
 As shorthand, a constructor with no arguments can be written as `[Constructor]` instead of `[Constructor()]`.
 
 Whether you should allow an interface to have constructor depends on the spec of the interface.
@@ -200,9 +207,9 @@ Whether you should allow an interface to have constructor depends on the spec of
 Currently `[Constructor(...)]` does not yet support optional arguments w/o defaults. It just supports optional `[Default=Undefined]`.
 ***
 
-### [EnforceRange] (a, p)
+### [EnforceRange] _(a, p)_
 
-Standard: [[EnforceRange]](https://heycam.github.io/webidl/#EnforceRange)
+Standard: [EnforceRange](https://heycam.github.io/webidl/#EnforceRange)
 
 Summary: `[EnforceRange]` indicates that when an ECMAScript Number is converted to the IDL type, out of range values will result in a TypeError exception being thrown.
 
@@ -230,9 +237,9 @@ Calling the non-`[EnforceRange]` version of `setColor()` uses **ToUint8()** to c
 Calling the `[EnforceRange]` version of `setColorEnforced()` with an out of range value, such as -1, 256, or Infinity will result in a `TypeError` exception.
 
 
-### [NamedConstructor] (i)
+### [NamedConstructor] _(i)_
 
-Standard: [[NamedConstructor]](https://heycam.github.io/webidl/#NamedConstructor)
+Standard: [NamedConstructor](https://heycam.github.io/webidl/#NamedConstructor)
 
 Summary: If you want to allow JavaScript to create a DOM object of XXX using a different name constructor (i.e. allow JavaScript to create an XXX object using "new YYY()", where YYY != XXX), you can use `[NamedConstructor]`.
 
@@ -250,17 +257,17 @@ The semantics are the same as `[Constructor]`, except that the name changes: Jav
 
 Whether you should allow an interface to have a named constructor or not depends on the spec of each interface.
 
-### [NewObject] (m)
+### [NewObject] _(m)_
 
-Standard: [[NewObject]](https://heycam.github.io/webidl/#NewObject)
+Standard: [NewObject](https://heycam.github.io/webidl/#NewObject)
 
 Summary: Signals that a method that returns an object type always returns a new object.
 
 This attribute has no effect on code generation and should simply be used in Blink IDL files if the specification uses it.
 
-### [NoInterfaceObject] (i)
+### [NoInterfaceObject] _(i)_
 
-Standard: [[NoInterfaceObject]](https://heycam.github.io/webidl/#NoInterfaceObject)
+Standard: [NoInterfaceObject](https://heycam.github.io/webidl/#NoInterfaceObject)
 
 Summary: If the `[NoInterfaceObject]` extended attribute appears on an interface, it indicates that an interface object will not exist for the interface in the ECMAScript binding. See also the standard `[Exposed=xxx]` extended attribute; these two do _not_ change the generated code for the interface itself.
 
@@ -289,9 +296,9 @@ Note that `[NoInterfaceObject]` **MUST** be specified on testing interfaces, as 
 };
 ```
 
-### [Global] and [PrimaryGlobal] (i)
+### [Global] and [PrimaryGlobal] _(i)_
 
-Standard: [[Global]](http://heycam.github.io/webidl/#Global)
+Standard: [Global](http://heycam.github.io/webidl/#Global)
 
 Summary: The `[Global]` and `[PrimaryGlobal]` extended attributes can be used to give a name to one or more global interfaces, which can then be referenced by the `[Exposed]` extended attribute.
 
@@ -299,9 +306,9 @@ These extended attributes must either take no arguments or take an identifier li
 
 If the `[Global]` or `[PrimaryGlobal]` extended attribute is declared with an identifier list argument, then those identifiers are the interface’s global names; otherwise, the interface has a single global name, which is the interface's identifier.
 
-### [Exposed] (i, m, a, c)
+### [Exposed] _(i, m, a, c)_
 
-Standard: [[Exposed]](http://heycam.github.io/webidl/#Exposed)
+Standard: [Exposed](http://heycam.github.io/webidl/#Exposed)
 
 Summary: Indicates on which global object or objects (e.g., Window, WorkerGlobalScope) the interface property is generated, i.e., in which global scope or scopes an interface exists. This is primarily of interest for the constructor, i.e., the [interface object Call method](https://heycam.github.io/webidl/#es-interface-call). Global context defaults to Window (the primary global scope) if not present, overridden by standard extended attribute `[NoInterfaceObject]` (the value of the property on the global object corresponding to the interface is called the **interface object**), which results in no interface property being generated.
 
@@ -339,15 +346,15 @@ Exposed can also be specified with a method, attribute and constant.
 
 As a Blink-specific extension, we allow `Exposed(Arguments)` form, such as `[Exposed(Window Feature1, DedicatedWorker Feature2)]`. You can use this form to vary the exposing global scope based on runtime enabled features. For example, `[Exposed(Window Feature1, Worker Feature2)]` exposes the qualified element to Window if "Feature1" is enabled and to Worker if "Feature2" is enabled.
 
-### [OverrideBuiltins] (i)
+### [OverrideBuiltins] _(i)_
 
-Standard: [[OverrideBuiltins]](http://heycam.github.io/webidl/#OverrideBuiltins)
+Standard: [OverrideBuiltins](http://heycam.github.io/webidl/#OverrideBuiltins)
 
 Summary: Affects named property operations, making named properties shadow built-in properties of the object.
 
-### [PutForwards] (a)
+### [PutForwards] _(a)_
 
-Standard: [[PutForwards]](http://heycam.github.io/webidl/#PutForwards)
+Standard: [PutForwards](http://heycam.github.io/webidl/#PutForwards)
 
 Summary: Indicates that assigning to the attribute will have specific behavior. Namely, the assignment is “forwarded” to the attribute (specified by the extended attribute argument) on the object that is currently referenced by the attribute being assigned to.
 
@@ -356,11 +363,12 @@ Usage: Can be specified on `readonly` attributes:
 ```webidl
 [PutForwards=href] readonly attribute Location location;
 ```
+
 On setting the location attribute, the assignment will be forwarded to the Location.href attribute.
 
-### [Replaceable] (a)
+### [Replaceable] _(a)_
 
-Standard: [[Replaceable]](http://heycam.github.io/webidl/#Replaceable)
+Standard: [Replaceable](http://heycam.github.io/webidl/#Replaceable)
 
 Summary: `[Replaceable]` controls if a given read only regular attribute is "replaceable" or not.
 
@@ -371,6 +379,7 @@ interface DOMWindow {
     [Replaceable] readonly attribute long screenX;
 };
 ```
+
 `[Replaceable]` is _incompatible_ with `[Custom]` and `[Custom=Setter]` (because replaceable attributes have a single interface-level setter callback, rather than individual attribute-level callbacks); if you need custom binding for a replaceable attribute, remove `[Replaceable]` and `readonly`.
 
 Intuitively, "replaceable" means that you can set a new value to the attribute without overwriting the original value. If you delete the new value, then the original value still remains.
@@ -397,17 +406,17 @@ window.screenX; // Evaluates to 0. 0 remains.
 
 Whether `[Replaceable]` should be specified or not depends on the spec of each attribute.
 
-### [SameObject] (m)
+### [SameObject] _(m)_
 
-Standard: [[SameObject]](http://heycam.github.io/webidl/#SameObject)
+Standard: [SameObject](http://heycam.github.io/webidl/#SameObject)
 
 Summary: Signals that a `readonly` attribute that returns an object type always returns the same object.
 
 This attribute has no effect on code generation and should simply be used in Blink IDL files if the specification uses it.
 
-### [TreatNullAs] (a,p), [TreatUndefinedAs] (a,p)
+### [TreatNullAs] _(a,p), [TreatUndefinedAs] &nbsp; (a,p)_
 
-Standard: [[TreatNullAs]](http://heycam.github.io/webidl/#TreatNullAs)
+Standard: [TreatNullAs](http://heycam.github.io/webidl/#TreatNullAs)
 
 `[TreatUndefinedAs]` has been been removed from the spec.
 
@@ -431,9 +440,9 @@ void func([TreatNullAs=NullString, TreatUndefinedAs=NullString] DOMString str);
 
 `[TreatUndefinedAs=NullString]` in Blink corresponds to `[TreatUndefinedAs=EmptyString]` in the Web IDL spec. Unless the spec specifies `[TreatUndefinedAs=EmptyString]`, you should not specify `[TreatUndefinedAs=NullString]` in Blink.
 
-### [Unforgeable] (m,a)
+### [Unforgeable] _(m,a)_
 
-Standard: [[Unforgeable]](http://heycam.github.io/webidl/#Unforgeable)
+Standard: [Unforgeable](http://heycam.github.io/webidl/#Unforgeable)
 
 Summary: Makes interface members unconfigurable and also controls where the member is defined.
 
@@ -451,9 +460,9 @@ By default, interface members are configurable (i.e. you can modify a property d
 
 Implementation: **Non-standard**: `[Unforgeable]` for attributes has an unspeced side-effect that it makes the property data-type property (`{writable: ..., value: ...}`) although it must be accessor-type property (`{get: ..., set: ...}`). ([Bug 497616](https://crbug.co/497616))
 
-### [Unscopeable] (o, a)
+### [Unscopeable] _(o, a)_
 
-Standard: [[Unscopeable]](http://heycam.github.io/webidl/#Unscopeable)
+Standard: [Unscopeable](http://heycam.github.io/webidl/#Unscopeable)
 
 Summary: The interface member will not appear as a named property within with statements.
 
@@ -463,7 +472,7 @@ Usage: Can be specified on attributes or interfaces.
 
 These extended attributes are widely used.
 
-### [ActiveDOMObject] (i)
+### [ActiveDOMObject] _(i)_
 
 Summary: `[ActiveDOMObject]` indicates that a given DOM object should be kept alive as long as the DOM object has pending activities.
 
@@ -476,6 +485,7 @@ Usage: `[ActiveDOMObject]` can be specified on interfaces, and **is inherited**:
     ...
 };
 ```
+
 If an interface X has `[ActiveDOMObject]` and an interface Y inherits the interface X, then the interface Y will also have `[ActiveDOMObject]`. For example
 
 ```webidl
@@ -498,7 +508,7 @@ class XMLHttpRequest : public ActiveDOMObject
 
 Then you need to implement the virtual methods of the ActiveDOMObject class, e.g. contextDestroyed(), canSuspend(), suspend(), resume() and stop().
 
-### [PerWorldBindings] (m, a)
+### [PerWorldBindings] _(m, a)_
 
 Summary: Generates faster bindings code by avoiding check for isMainWorld().
 
@@ -508,7 +518,7 @@ This optimization only makes sense for wrapper-types (i.e. types that have a cor
 This optimization works by generating 2 separate code paths for the main world and for isolated worlds. As a consequence, using this extended attribute will increase binary size and we should refrain from overusing it.
 ***
 
-### [LogActivity] (m, a)
+### [LogActivity] _(m, a)_
 
 Summary: logs activity, using V8PerContextData::activityLogger. Widely used. Interacts with `[PerWorldBindings]`, `[LogAllWorlds]`.
 
@@ -519,7 +529,7 @@ Usage:
 
 For methods all calls are logged, and by default for attributes all access (calls to getter or setter) are logged, but this can be restricted to just read (getter) or just write (setter).
 
-### [CallWith] (m, a), [SetterCallWith] (a), [ConstructorCallWith] (i)
+### [CallWith] _(m, a), [SetterCallWith] &nbsp; (a), [ConstructorCallWith] &nbsp; (i)_
 
 Summary: `[CallWith]` indicates that the bindings code calls the Blink implementation with additional information.
 
@@ -534,7 +544,7 @@ There are also three rarely used values: `ActiveWindow`, `FirstWindow`, `ThisVal
 Syntax:
 `CallWith=ScriptState|ScriptExecutionContext|ScriptArguments|ActiveWindow|FirstWindow|ThisValue`
 
-#### [CallWith=ScriptState] (m) (a*)
+#### [CallWith=ScriptState] _(m, a*)_
 `[CallWith=ScriptState]` is used in a number of places for methods.
 
 `[CallWith=ScriptState]` _can_ be used for attributes, but is not used in real IDL files.
@@ -555,7 +565,7 @@ String Example::str(ScriptState* state);
 String Example::func(ScriptState* state, bool a, bool b);
 ```
 
-#### [CallWith=ExecutionContext] (m,a)
+#### [CallWith=ExecutionContext] _(m,a)_
 
 IDL example:
 
@@ -565,14 +575,17 @@ interface Example {
     [CallWith=ExecutionContext] DOMString func(boolean a, boolean b);
 };
 ```
+
 C++ Blink function signatures:
+
 ```c++
 String Example::str(ExecutionContext* context);
 String Example::func(ExecutionContext* context, bool a, bool b);
 ```
-You can retrieve the document and frame from a ExecutionContext*.
 
-#### [CallWith=ScriptArguments] (m)
+You can retrieve the document and frame from a `ExecutionContext*`.
+
+#### [CallWith=ScriptArguments] _(m)_
 
 IDL example:
 
@@ -581,27 +594,33 @@ interface Example {
     [CallWith=ScriptState] DOMString func(boolean a, boolean b);
 };
 ```
+
 C++ Blink function signature:
+
 ```c++
 String Example::func(ScriptArguments* arguments, bool a, bool b);
 ```
+
 _(rare CallWith values)_
 
-#### [CallWith=ActiveWindow&FirstWindow] (m) (a*)
+#### [CallWith=ActiveWindow&FirstWindow] _(m, a)_
 
 `FirstWindow` is the `Window` object that corresponds to the responsible document of the entry settings object.
 
-#### [CallWith=ThisValue] (m)
+#### [CallWith=ThisValue] _(m)_
 
 `[CallWith=ThisValue]` only applies to methods in callback interfaces, and is used in only one place (CSSVariablesMapForEachCallback.idl).
 
 IDL example:
+
 ```webidl
 callback interface Example {
     [CallWith=ThisValue] boolean func(boolean a, boolean b);
 };
 ```
+
 C++ Blink function signature:
+
 ```c++
 bool Example::func(ScriptValue thisValue, bool a, bool b);
 ```
@@ -610,7 +629,7 @@ bool Example::func(ScriptValue thisValue, bool a, bool b);
 `[CallWith=...]` arguments are added at the _head_ of `XXX::create(...)'s` arguments, and ` [RaisesException]`'s `ExceptionState` argument is added at the _tail_ of `XXX::create(...)`'s arguments.
 ***
 
-#### [ConstructorCallWith] (i)
+#### [ConstructorCallWith] _(i)_
 
 Analogous to `[CallWith]`, but applied to interfaces with constructors, and takes different values.
 
@@ -638,9 +657,10 @@ PassRefPtr<XXX> XXX::create(ScriptExecutionContext* context, ScriptState* state,
     ...;
 }
 ```
+
 You can retrieve document or frame from ScriptExecutionContext.
 
-### [Custom] (i, m, s, a)
+### [Custom] _(i, m, s, a)_
 
 Summary: They allow you to write bindings code manually as you like: full bindings for methods and attributes, certain functions for interfaces.
 
@@ -678,6 +698,7 @@ interface XXX {
 ```
 
 You can write custom bindings in Source/bindings/v8/custom/V8XXXCustom.cpp:
+
 ```c++
 void V8XXX::funcMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
@@ -742,7 +763,7 @@ interface YYY {  // special operations with identifiers
 }
 ```
 
-#### [Custom=PropertyQuery|PropertyEnumerator] (s)
+#### [Custom=PropertyQuery|PropertyEnumerator] _(s)_
 
 Summary: `[Custom=PropertyEnumerator]` allows you to write custom bindings for the case where properties of a given interface are enumerated; a custom named enumerator. There is currently only one use, and in that case it is used with `[Custom=PropertyQuery]`, since the query is also custom.
 
@@ -776,7 +797,7 @@ v8::Handle<v8::Array> V8XXX::namedPropertyEnumerator(const v8::AccessorInfo& inf
 }
 ```
 
-#### [Custom=LegacyCallAsFunction] (i) _deprecated_
+#### [Custom=LegacyCallAsFunction] _(i) _deprecated__
 
 Summary: `[Custom=LegacyCallAsFunction]` allows you to write custom bindings for call(...) of a given interface.
 
@@ -801,13 +822,13 @@ v8::Handle<v8::Value> V8XXX::callAsFunctionCallback(const v8::Arguments& args)
 }
 ```
 
-#### [Custom=ToV8] (i)
+#### [Custom=ToV8] _(i)_
 
 *** note
 **FIXME:** Lets you specify a Custom ::toV8 function.
 ***
 
-#### [Custom=VisitDOMWrapper] (i)
+#### [Custom=VisitDOMWrapper] _(i)_
 
 
 Summary: Allows you to write custom code for visitDOMWrapper: like `[SetWrapperReferenceFrom]`, but does not generate the function. One use (Nodelist.idl).
@@ -831,13 +852,13 @@ void V8XXX::visitDOMWrapper(DOMDataStore* store, void* object, v8::Persistent<v8
 }
 ```
 
-#### [Custom=Wrap] (i)
+#### [Custom=Wrap] _(i)_
 
 *** note
 **FIXME:** Lets you specify a Custom ::wrap function.
 ***
 
-### [CustomElementCallbacks] (m, a)
+### [CustomElementCallbacks] _(m, a)_
 
 Summary: Wraps the method/accessor with a Custom Elements "callback delivery scope" which will dispatch Custom Element callbacks (createdCallback, attributeChangedCallback, etc.) before returning to script.
 
@@ -849,7 +870,7 @@ If the method/accessor creates elements or modifies DOM nodes in any way, it sho
 
 Usage: `[CustomElementCallbacks]` takes no arguments.
 
-### [Default] (p)
+### [Default] _(p)_
 
 Summary: `[Default]` allows one to specify the default values for optional arguments. This removes the need to have C++ overloads in the Blink implementation.
 
@@ -872,7 +893,7 @@ In case of func1(...), if JavaScript calls func1(100, 200), then HTMLFoo::func1(
 
 In case of func2(...) which adds `[Default=Undefined]`, if JavaScript calls func2(100, 200), then it behaves as if JavaScript called func2(100, 200, undefined). Consequently, HTMLFoo::func2(int a, int b, int c) is called in Blink. 100 is passed to a, 200 is passed to b, and 0 is passed to c. (A JavaScript `undefined` is converted to 0, following the value conversion rule in the Web IDL spec; if it were a DOMString parameter, it would end up as the string `"undefined"`.) In this way, Blink needs to just implement func2(int a, int b, int c) and needs not to implement both func2(int a, int b) and func2(int a, int b, int c).
 
-### [DependentLifetime] (i)
+### [DependentLifetime] _(i)_
 
 Summary: `[DependentLifetime]` means objects of this class are treated as dependent DOM objects.
 
@@ -886,7 +907,7 @@ Usage: `[DependentLifetime]` can be specified on interfaces, and **is inherited*
 interface Bar : Foo { ... };  // inherits [DependentLifetime]
 ```
 
-### [DeprecateAs] (m, a, c)
+### [DeprecateAs] _(m, a, c)_
 
 Summary: Measures usage of a deprecated feature via UseCounter, and notifies developers about deprecation via a console warning.
 
@@ -902,7 +923,7 @@ Usage: `[DeprecateAs]` can be specified on methods, attributes, and constants.
 
 The deprecation message show on the console can be specified via the [UseCounter::deprecationMessage](https://code.google.com/p/chromium/codesearch#chromium/src/third_party/WebKit/Source/core/frame/UseCounter.cpp&q=UseCounter::deprecationMessage&l=615) method.
 
-### [GarbageCollected] (i)
+### [GarbageCollected] _(i)_
 
 Summary: The `[GarbageCollected]` attribute signals that the object is kept on the Oilpan heap and handled by its garbage collector.
 
@@ -917,7 +938,7 @@ Usage: `[GarbageCollected]` can be specified on interfaces, and is inherited:
 In order to generate correct binding layer code for an interface, `[GarbageCollected]` must be supplied if the object is an Oilpan-based object. Using both `[GarbageCollected]` and `[WillBeGarbageCollected]` is not allowed, but an interface object deriving from an interface annotated with `[WillBeGarbageCollected]` may override it with `[GarbageCollected]`.
 
 
-### [Iterable] (i)
+### [Iterable] _(i)_
 
 Summary: Installs a @@iterator method.
 
@@ -932,6 +953,7 @@ When the attribute is set on an interface, the code generator installs iterator 
 ```
 
 C++ implementation:
+
 ```c++
 class IterableInterface : public ScriptWrappable {
 ...
@@ -943,6 +965,7 @@ public:
 ```
 
 JavaScript usage:
+
 ```js
 var obj = ...; // obj is an IterableInterface object.
 var iter = obj[Symbol.iterator](); // IterableInterface::iterator is called.
@@ -958,7 +981,7 @@ for (var value of iter) {
 Currently the code generator doesn't take care of the name conflict. Namely, it is not allowed to have "iterator" method in an iterable interface.
 ***
 
-### [Measure] (m, a, c)
+### [Measure] _(m, a, c)_
 
 Summary: Measures usage of a specific feature via UseCounter.
 
@@ -972,7 +995,7 @@ Usage: `[Measure]` can be specified on methods, attributes, and constants. The g
 [Measure] const INTERESTING_CONSTANT = 1;
 ```
 
-### [MeasureAs] (m, a, c)
+### [MeasureAs] _(m, a, c)_
 
 Summary: Like `[Measure]`, but the feature name is provided as the extended attribute value.
 This is similar to the standard `[DeprecateAs]` extended attribute, but does not display a deprecation warning.
@@ -985,7 +1008,7 @@ Usage: `[MeasureAs]` can be specified on methods, attributes, and constants. The
 [MeasureAs=EvenSomeConstantsAreInteresting] const INTERESTING_CONSTANT = 1;
 ```
 
-### [NotEnumerable] (m, a, s)
+### [NotEnumerable] _(m, a, s)_
 
 *** note
 **FIXME:** docs out of date!
@@ -1004,7 +1027,7 @@ Usage: `[NotEnumerable]` can be specified on methods and attributes
 
 `[NotEnumerable]` indicates that the method or attribute is not enumerable.
 
-### [PostMessage] (m)
+### [PostMessage] _(m)_
 
 Summary: Tells the code generator to generate postMessage method used in Workers, Service Workers etc.
 
@@ -1014,7 +1037,7 @@ Usage: `[PostMessage]` can be specified on methods
 [PostMessage] void postMessage(any message, optional sequence<Transferable> transfer);
 ```
 
-### [RaisesException] (i, m, a)
+### [RaisesException] _(i, m, a)_
 
 Summary: Tells the code generator to append an `ExceptionState&` argument when calling the Blink implementation.
 
@@ -1032,6 +1055,7 @@ interface XXX {
 ```
 
 And the Blink implementations would look like:
+
 ```c++
 long XXX::count(ExceptionState& exceptionState) {
     if (...) {
@@ -1084,7 +1108,7 @@ PassRefPtr<XXX> XXX::create(float x, ExceptionState& exceptionState)
 }
 ```
 
-### [Reflect] (a)
+### [Reflect] _(a)_
 
 Specification: [The spec of Reflect](http://www.whatwg.org/specs/web-apps/current-work/multipage/common-dom-interfaces.html#reflect) - _defined in spec prose, not as an IDL extended attribute._
 
@@ -1109,7 +1133,7 @@ If the name of the corresponding content attribute is different from the attribu
 
 Whether `[Reflect]` should be specified or not depends on the spec of each attribute.
 
-### [ReflectEmpty="value"] (a)
+### [ReflectEmpty="value"] _(a)_
 
 Specification: [Enumerated attributes](http://www.whatwg.org/specs/web-apps/current-work/#enumerated-attribute) - _defined in spec prose, not as an IDL extended attribute._
 
@@ -1127,7 +1151,7 @@ The `[ReflectEmpty]` extended attribute specifies the value that an IDL getter f
 
 `[ReflectEmpty]` should be used if the specification for the content attribute has an empty attribute value mapped to some attribute state. For HTML, this applies to [enumerated attributes](http://www.whatwg.org/specs/web-apps/current-work/#enumerated-attribute) only.
 
-### [ReflectInvalid="value"] (a)
+### [ReflectInvalid="value"] _(a)_
 
 Specification: [Limited value attributes](http://www.whatwg.org/specs/web-apps/current-work/#limited-to-only-known-values) - _defined in spec prose, not as an IDL extended attribute._
 
@@ -1145,7 +1169,7 @@ The `[ReflectInvalid]` extended attribute specifies the value that an IDL getter
 
 `[ReflectInvalid]` should be used if the specification for the content attribute has an _invalid value state_ defined. For HTML, this applies to [enumerated attributes](http://www.whatwg.org/specs/web-apps/current-work/#enumerated-attribute) only.
 
-### [ReflectMissing="value"] (a)
+### [ReflectMissing="value"] _(a)_
 
 Specification: [Limited value attributes](http://www.whatwg.org/specs/web-apps/current-work/#limited-to-only-known-values) - _defined in spec prose, not as an IDL extended attribute._
 
@@ -1163,7 +1187,7 @@ The `[ReflectMissing]` extended attribute specifies the value that an IDL getter
 
 `[ReflectMissing]` should be used if the specification for the content attribute has a _missing value state_ defined. For HTML, this applies to [enumerated attributes](http://www.whatwg.org/specs/web-apps/current-work/#enumerated-attribute) only.
 
-### [ReflectOnly=&lt;list&gt;] (a)
+### [ReflectOnly=&lt;list&gt;] _(a)_
 
 Specification: [Limited value attributes](http://www.whatwg.org/specs/web-apps/current-work/#limited-to-only-known-values) - _defined in spec prose, not as an IDL extended attribute._
 
@@ -1184,7 +1208,7 @@ If there is no match, the empty string will be returned. As required by the spec
 
 `[ReflectOnly=<list>]` should be used if the specification for a reflected IDL attribute says it is _"limited to only known values"_.
 
-### [RuntimeEnabled] (i, m, a, c)
+### [RuntimeEnabled] _(i, m, a, c)_
 
 Summary: `[RuntimeEnabled]` wraps the generated code with `if (RuntimeEnabledFeatures::FeatureNameEnabled) { ...code... }`.
 
@@ -1214,9 +1238,9 @@ foo(long x);
 
 For more information, see [RuntimeEnabledFeatures](https://code.google.com/p/chromium/codesearch#chromium/src/third_party/WebKit/Source/platform/RuntimeEnabledFeatures.in).
 
-### [SetWrapperReferenceFrom=xxx] (i)
+### [SetWrapperReferenceFrom=xxx] _(i)_
 
-### [SetWrapperReferenceTo=xxx] (i)
+### [SetWrapperReferenceTo=xxx] _(i)_
 
 Summary: This generates code that allows you to set up implicit references between wrappers which can be used to keep wrappers alive during GC.
 
@@ -1242,7 +1266,7 @@ The code generates a function called `YYY::visitDOMWrapper` which is called by `
 
 The `[SetWrapperReferenceTo]` extended attribute takes a value, which is the method name to call to get the target object. For example, with the above declaration a call will be made to `YYY::targetMethod()` to get the target of the reference.
 
-### [WillBeGarbageCollected] (i)
+### [WillBeGarbageCollected] _(i)_
 
 Summary: The `[WillBeGarbageCollected]` attributes indicates that if Oilpan is enabled, the object resides on its heap and is controlled by the Oilpan garbage collector.
 
@@ -1263,7 +1287,7 @@ When the Oilpan transition period is over, support for `[WillBeGarbageCollected]
 
 These extended attributes are rarely used, generally only in one or two places. These are often replacements for `[Custom]` bindings, and may be candidates for deprecation and removal.
 
-### [CachedAttribute] (a)
+### [CachedAttribute] _(a)_
 
 Summary: For performance optimization, `[CachedAttribute]` indicates that a wrapped object should be cached on a DOM object. Rarely used (only by IndexDB).
 
@@ -1334,9 +1358,9 @@ ScriptValue Object::attribute(ScriptExecutionContext* context)
 }
 ```
 
-### [CheckSecurity] (i, m, a)
+### [CheckSecurity] _(i, m, a)_
 
-### [DoNotCheckSecurity] (m, a)
+### [DoNotCheckSecurity] _(m, a)_
 
 Summary: Check whether a given access is allowed or not, in terms of the same-origin security policy. Used in Location.idl, Window.idl, and a few HTML*Element.idl.
 
@@ -1375,7 +1399,7 @@ Consider the case where you access `window.parent` from inside an iframe that co
 
 In terms of the same-origin security policy, node.contentDocument should return undefined if the parent frame and the child frame are from different origins.
 
-### [CustomConstructor] (i)
+### [CustomConstructor] _(i)_
 
 Summary: They allow you to write custom bindings for constructors.
 
@@ -1418,7 +1442,7 @@ The FlexibleArrayBufferView itself can then either refer to an actual ArrayBuffe
 
 Usage: Applies to arguments of methods. See modules/webgl/WebGLRenderingContextBase.idl for an example.
 
-### [KeepAttributeAliveForGC] (a)
+### [KeepAttributeAliveForGC] _(a)_
 
 Summary: `[KeepAttributeAliveForGC]` forces the attribute wrapper to be kept alive. Used in only one place, may be removed when we implement `[ReachableFrom]` and `[ReachableTo]`.
 
@@ -1427,7 +1451,7 @@ For performance reasons we keep the attribute wrapper alive while the owner wrap
 
 Usage: Applies to attributes, takes no arguments.
 
-### [PermissiveDictionaryConversion] (p, d)
+### [PermissiveDictionaryConversion] _(p, d)_
 
 Summary: `[PermissiveDictionaryConversion]` relaxes the rules about what types of values may be passed for an argument of dictionary type.
 
@@ -1435,7 +1459,7 @@ Ordinarily when passing in a value for a dictionary argument, the value must be 
 
 Usage: applies to dictionaries and arguments of methods. Takes no arguments itself.
 
-### [URL] (a)
+### [URL] _(a)_
 
 Summary: `[URL]` indicates that a given DOMString represents a URL.
 
@@ -1449,7 +1473,7 @@ You need to specify `[URL]` if a given DOMString represents a URL, since getters
 
 Only used in some HTML*ELement.idl files and one other place.
 
-### [NoImplHeader] (i)
+### [NoImplHeader] _(i)_
 
 Summary: `[NoImplHeader]` indicates that a given interface does not have a corresponding header file in the impl side.
 
@@ -1469,7 +1493,7 @@ Without `[NoImplHeader]`, the IDL compiler assumes that there is XXX.h in the im
 
 These extended attributes are _temporary_ and are only in use while some change is in progress. Unless you are involved with the change, you can generally ignore them, and should not use them.
 
-### [LegacyTreatAsPartialInterface] (i)
+### [LegacyTreatAsPartialInterface] _(i)_
 
 Summary: `[LegacyTreatAsPartialInterface]` on an interface that is the target of an `implements` statement means that the interface is treated as a partial interface, meaning members are accessed via static member functions in a separate class, rather than as instance methods on the instance object `*impl` or class methods on the C++ class implementing the (main) interface. This is legacy from original implementation of `implements`, and is being removed ([Bug 360435](https://crbug.com/360435), nbarth@).
 
@@ -1477,7 +1501,7 @@ Summary: `[LegacyTreatAsPartialInterface]` on an interface that is the target of
 
 These extended attributes are _discouraged_ - they are not deprecated, but they should be avoided and removed if possible.
 
-### [DoNotCheckConstants] (i)
+### [DoNotCheckConstants] _(i)_
 
 Summary: `[DoNotCheckConstants]` indicates that constant values in an IDL file can be different from constant values in Blink implementation.
 
@@ -1498,7 +1522,7 @@ By default (i.e. without `[DoNotCheckConstants]`), compile-time assertions are i
 Basically all constant values are defined in the spec, and thus the values in Blink implementation should be equal to the values defined in the spec. If you really want to introduce non-speced constant values and allow different values between IDL files and Blink implementation, you can specify `[DoNotCheckConstants]` to skip the compile-time assertions.
 ***
 
-### [ImplementedAs] (i, m, s, a)
+### [ImplementedAs] _(i, m, s, a)_
 
 Summary: `[ImplementedAs]` specifies a method name in Blink, if the method name in an IDL file and the method name in Blink are different.
 
@@ -1522,7 +1546,7 @@ Method names in Blink default to being the same as the name in an IDL file. In s
 
 These extended attributes are _deprecated_, or are under discussion for deprecation. They should be avoided.
 
-### [DoNotCheckSignature] (m)
+### [DoNotCheckSignature] _(m)_
 
 Might be deprecated. Discussion is on-going. Used only 1 place: Window.
 
@@ -1531,7 +1555,7 @@ Might be deprecated. Discussion is on-going. Used only 1 place: Window.
 
 These extended attributes are added internally by the compiler, and not intended to be literally included in `.idl` files; they are documented here for clarity and completeness.
 
-### [PartialInterfaceImplementedAs] (m, a, c)
+### [PartialInterfaceImplementedAs] _(m, a, c)_
 
 Added to members of a partial interface definition (and implemented interfaces with `[LegacyTreatAsPartialInterface]`, due to [Bug 360435](https://crbug.com/360435)) when merging `.idl` files for two reasons. Firstly, these members are implemented in a separate class from the class for the (main) interface definition, so this name data is needed. This is most clearly _written_ as an extended attribute on the partial interface definition, but this is discarded during merging (only the members are merged, into flat lists of methods, attributes, and constants), and thus this extended attribute is put on the members. Secondly, members of partial interface definitions are called differently (via static member functions of the separate class, not instance methods or class methods of the main class), and thus there needs to be a flag indicating that the member comes from a partial interface definition.
 
