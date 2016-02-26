@@ -612,9 +612,11 @@ void PaintLayerScrollableArea::scrollToPosition(const DoublePoint& scrollPositio
         ScrollableArea::setScrollPosition(newScrollPosition, scrollType, scrollBehavior);
 }
 
-void PaintLayerScrollableArea::updateAfterLayout()
+bool PaintLayerScrollableArea::updateAfterLayout(SubtreeLayoutScope* delayedLayoutScope)
 {
     ASSERT(box().hasOverflowClip());
+
+    bool didMarkForDelayedLayout = false;
 
     if (needsScrollbarReconstruction()) {
         m_scrollbarManager.setCanDetachScrollbars(false);
@@ -683,14 +685,19 @@ void PaintLayerScrollableArea::updateAfterLayout()
         if ((horizontalScrollBarChanged && box().style()->overflowX() != OOVERLAY) || (verticalScrollBarChanged && box().style()->overflowY() != OOVERLAY)) {
             if (!m_inOverflowRelayout) {
                 m_inOverflowRelayout = true;
-                SubtreeLayoutScope layoutScope(box());
-                layoutScope.setNeedsLayout(&box(), LayoutInvalidationReason::ScrollbarChanged);
-                if (box().isLayoutBlock()) {
-                    LayoutBlock& block = toLayoutBlock(box());
-                    block.scrollbarsChanged(horizontalScrollBarChanged, verticalScrollBarChanged);
-                    block.layoutBlock(true);
+                if (delayedLayoutScope) {
+                    delayedLayoutScope->setNeedsLayout(&box(), LayoutInvalidationReason::ScrollbarChanged);
+                    didMarkForDelayedLayout = true;
                 } else {
-                    box().layout();
+                    SubtreeLayoutScope layoutScope(box());
+                    layoutScope.setNeedsLayout(&box(), LayoutInvalidationReason::ScrollbarChanged);
+                    if (box().isLayoutBlock()) {
+                        LayoutBlock& block = toLayoutBlock(box());
+                        block.scrollbarsChanged(horizontalScrollBarChanged, verticalScrollBarChanged);
+                        block.layoutBlock(true);
+                    } else {
+                        box().layout();
+                    }
                 }
                 LayoutObject* parent = box().parent();
                 if (parent && parent->isFlexibleBox())
@@ -727,6 +734,8 @@ void PaintLayerScrollableArea::updateAfterLayout()
 
     DisableCompositingQueryAsserts disabler;
     positionOverflowControls();
+
+    return didMarkForDelayedLayout;
 }
 
 ScrollBehavior PaintLayerScrollableArea::scrollBehaviorStyle() const

@@ -288,7 +288,8 @@ void LayoutFlexibleBox::layoutBlock(bool relayoutChildren)
 
         layoutFlexItems(relayoutChildren, layoutScope);
 
-        LayoutBlock::finishDelayUpdateScrollInfo();
+        if (LayoutBlock::finishDelayUpdateScrollInfo(&layoutScope))
+            layoutFlexItems(false, layoutScope);
 
         if (logicalHeight() != previousHeight)
             relayoutChildren = true;
