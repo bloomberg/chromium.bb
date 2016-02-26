@@ -31,6 +31,7 @@
 #include "core/dom/Microtask.h"
 
 #include "bindings/core/v8/V8PerIsolateData.h"
+#include "bindings/core/v8/V8RecursionScope.h"
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/Task.h"
 #include "public/platform/WebTaskRunner.h"
@@ -45,8 +46,17 @@ void Microtask::performCheckpoint(v8::Isolate* isolate)
     if (isolateData->recursionLevel() || isolateData->performingMicrotaskCheckpoint() || isolateData->destructionPending() || ScriptForbiddenScope::isScriptForbidden())
         return;
     isolateData->setPerformingMicrotaskCheckpoint(true);
-    isolate->RunMicrotasks();
+    {
+        // Ensure that end-of-task-or-microtask actions are performed.
+        V8RecursionScope recursionScope(isolate);
+        isolate->RunMicrotasks();
+    }
     isolateData->setPerformingMicrotaskCheckpoint(false);
+}
+
+bool Microtask::performingCheckpoint(v8::Isolate* isolate)
+{
+    return V8PerIsolateData::from(isolate)->performingMicrotaskCheckpoint();
 }
 
 static void microtaskFunctionCallback(void* data)

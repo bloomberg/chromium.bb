@@ -48,11 +48,6 @@ static void beforeCallEnteredCallback(v8::Isolate* isolate)
     RELEASE_ASSERT(!ScriptForbiddenScope::isScriptForbidden());
 }
 
-static void microtasksCompletedCallback(v8::Isolate* isolate)
-{
-    V8PerIsolateData::from(isolate)->runEndOfScopeTasks();
-}
-
 #if ENABLE(ASSERT)
 static void assertV8RecursionScope(v8::Isolate* isolate)
 {
@@ -163,7 +158,6 @@ V8PerIsolateData::V8PerIsolateData()
         isolate()->AddCallCompletedCallback(&assertV8RecursionScope);
 #endif
     isolate()->AddBeforeCallEnteredCallback(&beforeCallEnteredCallback);
-    isolate()->AddMicrotasksCompletedCallback(&microtasksCompletedCallback);
     if (isMainThread())
         mainThreadPerIsolateData = this;
     isolate()->SetUseCounterCallback(&useCounterCallback);
@@ -224,7 +218,6 @@ void V8PerIsolateData::destroy(v8::Isolate* isolate)
         isolate->RemoveCallCompletedCallback(&assertV8RecursionScope);
 #endif
     isolate->RemoveBeforeCallEnteredCallback(&beforeCallEnteredCallback);
-    isolate->RemoveMicrotasksCompletedCallback(&microtasksCompletedCallback);
     V8PerIsolateData* data = from(isolate);
 
     // Clear everything before exiting the Isolate.

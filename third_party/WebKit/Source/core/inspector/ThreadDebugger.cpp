@@ -80,7 +80,10 @@ bool ThreadDebugger::formatAccessorsAsProperties(v8::Local<v8::Value> value)
 
 bool ThreadDebugger::hasRecursionLevel()
 {
-    return !!V8RecursionScope::recursionLevel(m_isolate);
+    int recursionLevel = V8RecursionScope::recursionLevel(m_isolate);
+    if (!recursionLevel)
+        return false;
+    return recursionLevel > 1 || !Microtask::performingCheckpoint(m_isolate);
 }
 
 } // namespace blink
