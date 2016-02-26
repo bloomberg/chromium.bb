@@ -696,6 +696,8 @@ void SVGUseElement::expandSymbolElementsInShadowTree(SVGElement* element)
         // Expand the siblings because the *element* is replaced and we will
         // lose the sibling chain when we are back from recursion.
         element = replacingElement.get();
+        for (RefPtrWillBeRawPtr<SVGElement> sibling = Traversal<SVGElement>::nextSibling(*element); sibling; sibling = Traversal<SVGElement>::nextSibling(*sibling))
+            expandSymbolElementsInShadowTree(sibling.get());
     }
 
     for (RefPtrWillBeRawPtr<SVGElement> child = Traversal<SVGElement>::firstChild(*element); child; child = Traversal<SVGElement>::nextSibling(*child))
