@@ -242,6 +242,17 @@ public final class OfflinePageBridge {
     }
 
     /**
+     * Gets an offline page associated with a provided offline URL.
+     *
+     * @param string URL pointing to the offline copy of the web page.
+     * @return An {@link OfflinePageItem} matching the offline URL or <code>null</code> if not
+     * found.
+     */
+    public OfflinePageItem getPageByOfflineUrl(String offlineUrl) {
+        return nativeGetPageByOfflineUrl(mNativeOfflinePageBridge, offlineUrl);
+    }
+
+    /**
      * Saves the web page loaded into web contents offline.
      *
      * @param webContents Contents of the page to save.
@@ -466,6 +477,8 @@ public final class OfflinePageBridge {
             long nativeOfflinePageBridge, long bookmarkId);
     private native OfflinePageItem nativeGetPageByOnlineURL(
             long nativeOfflinePageBridge, String onlineURL);
+    private native OfflinePageItem nativeGetPageByOfflineUrl(
+            long nativeOfflinePageBridge, String offlineUrl);
     private native void nativeSavePage(long nativeOfflinePageBridge, SavePageCallback callback,
             WebContents webContents, long bookmarkId);
     private native void nativeMarkPageAccessed(long nativeOfflinePageBridge, long bookmarkId);

@@ -129,8 +129,7 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
                 if (currentTab == null || currentTab.getWebContents() == null) return;
                 Activity activity = currentTab.getWindowAndroid().getActivity().get();
                 if (activity == null) return;
-                WebsiteSettingsPopup.show(activity, currentTab.getProfile(),
-                        currentTab.getWebContents());
+                WebsiteSettingsPopup.show(activity, currentTab);
             }
         });
     }

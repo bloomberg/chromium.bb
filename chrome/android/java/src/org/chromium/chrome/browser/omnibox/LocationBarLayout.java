@@ -54,6 +54,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.CollectionUtil;
@@ -147,6 +148,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
 
     protected ImageView mNavigationButton;
     protected ImageButton mSecurityButton;
+    protected TextView mVerboseStatusTextView;
     protected TintedImageButton mDeleteButton;
     protected TintedImageButton mMicButton;
     protected UrlBar mUrlBar;
@@ -680,6 +682,8 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
         mSecurityButton = (ImageButton) findViewById(R.id.security_button);
         mSecurityIconType = ConnectionSecurityLevel.NONE;
 
+        mVerboseStatusTextView = (TextView) findViewById(R.id.location_bar_verbose_status);
+
         mDeleteButton = (TintedImageButton) findViewById(R.id.delete_button);
 
         mUrlBar = (UrlBar) findViewById(R.id.url_bar);
@@ -823,6 +827,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
 
         mSecurityButton.setOnClickListener(this);
         mNavigationButton.setOnClickListener(this);
+        mVerboseStatusTextView.setOnClickListener(this);
         updateMicButtonState();
         mDeleteButton.setOnClickListener(this);
         mMicButton.setOnClickListener(this);
@@ -1310,7 +1315,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
         boolean verboseStatusVisible =
                 mNavigationButtonType == NavigationButtonType.OFFLINE && !mUrlHasFocus;
         int verboseStatusVisibility = verboseStatusVisible ? VISIBLE : GONE;
-        findViewById(R.id.location_bar_verbose_status).setVisibility(verboseStatusVisibility);
+        mVerboseStatusTextView.setVisibility(verboseStatusVisibility);
         findViewById(R.id.location_bar_verbose_status_separator)
                 .setVisibility(verboseStatusVisibility);
         findViewById(R.id.location_bar_verbose_status_extra_space)
@@ -1748,11 +1753,11 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
     }
 
     /**
-     * Whether {@code v} is a location icon which can be clicked to show the
-     * origin info dialog.
+     * Whether {@code v} is a view (location icon, verbose status, ...) which can be clicked to
+     * show the origin info dialog.
      */
-    private boolean isLocationIcon(View v) {
-        return v == mSecurityButton || v == mNavigationButton;
+    private boolean shouldShowPageInfoForView(View v) {
+        return v == mSecurityButton || v == mNavigationButton || v == mVerboseStatusTextView;
     }
 
     @Override
@@ -1765,13 +1770,12 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
 
             startZeroSuggest();
             return;
-        } else if (!mUrlHasFocus && isLocationIcon(v)) {
+        } else if (!mUrlHasFocus && shouldShowPageInfoForView(v)) {
             Tab currentTab = getCurrentTab();
             if (currentTab != null && currentTab.getWebContents() != null) {
                 Activity activity = currentTab.getWindowAndroid().getActivity().get();
                 if (activity != null) {
-                    WebsiteSettingsPopup.show(activity, currentTab.getProfile(),
-                            currentTab.getWebContents());
+                    WebsiteSettingsPopup.show(activity, currentTab);
                 }
             }
         } else if (v == mMicButton) {
