@@ -8,22 +8,24 @@ namespace blink {
 
 CanvasDrawListener::~CanvasDrawListener() {}
 
-bool CanvasDrawListener::needsNewFrame() const
-{
-    return m_handler->needsNewFrame();
-}
-
 void CanvasDrawListener::sendNewFrame(const WTF::PassRefPtr<SkImage>& image)
 {
     m_handler->sendNewFrame(image.get());
 }
 
+bool CanvasDrawListener::needsNewFrame() const
+{
+    return m_frameCaptureRequested && m_handler->needsNewFrame();
+}
+
 void CanvasDrawListener::requestFrame()
 {
+    m_frameCaptureRequested = true;
 }
 
 CanvasDrawListener::CanvasDrawListener(const PassOwnPtr<WebCanvasCaptureHandler> handler)
-    : m_handler(handler)
+    : m_frameCaptureRequested(true)
+    , m_handler(handler)
 {
 }
 

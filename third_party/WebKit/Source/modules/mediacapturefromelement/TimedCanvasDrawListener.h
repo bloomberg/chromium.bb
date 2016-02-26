@@ -16,16 +16,14 @@ class TimedCanvasDrawListener final : public GarbageCollectedFinalized<TimedCanv
 public:
     ~TimedCanvasDrawListener();
     static TimedCanvasDrawListener* create(const PassOwnPtr<WebCanvasCaptureHandler>&, double frameRate);
-    bool needsNewFrame() const override;
     void sendNewFrame(const WTF::PassRefPtr<SkImage>&) override;
-    void requestNewFrame();
 
     DEFINE_INLINE_TRACE() {}
 private:
     TimedCanvasDrawListener(const PassOwnPtr<WebCanvasCaptureHandler>&, double frameRate);
+    void postRequestFrameCaptureTask();
 
     double m_frameInterval;
-    bool m_requestFrame;
 };
 
 } // namespace blink

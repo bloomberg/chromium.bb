@@ -14,7 +14,6 @@ namespace blink {
 OnRequestCanvasDrawListener::OnRequestCanvasDrawListener(const PassOwnPtr<WebCanvasCaptureHandler>& handler)
     :CanvasDrawListener(handler)
 {
-    m_requestFrame = false;
 }
 
 OnRequestCanvasDrawListener::~OnRequestCanvasDrawListener() {}
@@ -25,20 +24,10 @@ OnRequestCanvasDrawListener* OnRequestCanvasDrawListener::create(const PassOwnPt
     return new OnRequestCanvasDrawListener(handler);
 }
 
-bool OnRequestCanvasDrawListener::needsNewFrame() const
-{
-    return m_requestFrame && CanvasDrawListener::needsNewFrame();
-}
-
 void OnRequestCanvasDrawListener::sendNewFrame(const WTF::PassRefPtr<SkImage>& image)
 {
-    m_requestFrame = false;
+    m_frameCaptureRequested = false;
     CanvasDrawListener::sendNewFrame(image);
-}
-
-void OnRequestCanvasDrawListener::requestFrame()
-{
-    m_requestFrame = true;
 }
 
 } // namespace blink

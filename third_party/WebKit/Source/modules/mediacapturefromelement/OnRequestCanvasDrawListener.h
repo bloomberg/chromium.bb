@@ -16,15 +16,11 @@ class OnRequestCanvasDrawListener final : public GarbageCollectedFinalized<OnReq
 public:
     ~OnRequestCanvasDrawListener();
     static OnRequestCanvasDrawListener* create(const PassOwnPtr<WebCanvasCaptureHandler>&);
-    bool needsNewFrame() const override;
     void sendNewFrame(const WTF::PassRefPtr<SkImage>&) override;
-    void requestFrame() override;
 
     DEFINE_INLINE_TRACE() {}
 private:
     OnRequestCanvasDrawListener(const PassOwnPtr<WebCanvasCaptureHandler>&);
-
-    bool m_requestFrame;
 };
 
 } // namespace blink
