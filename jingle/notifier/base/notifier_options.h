@@ -16,6 +16,7 @@ namespace notifier {
 
 struct NotifierOptions {
   NotifierOptions();
+  NotifierOptions(const NotifierOptions& other);
   ~NotifierOptions();
 
   // Indicates that the SSLTCP port (443) is to be tried before the the XMPP

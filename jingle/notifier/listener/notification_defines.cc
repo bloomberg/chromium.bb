@@ -55,6 +55,7 @@ bool RecipientListsEqual(const RecipientList& recipients1,
 }
 
 Notification::Notification() {}
+Notification::Notification(const Notification& other) = default;
 Notification::~Notification() {}
 
 bool Notification::Equals(const Notification& other) const {

@@ -23,6 +23,8 @@ class LoginSettings {
                 bool try_ssltcp_first,
                 const std::string& auth_mechanism);
 
+  LoginSettings(const LoginSettings& other);
+
   ~LoginSettings();
 
   // Copy constructor and assignment operator welcome.

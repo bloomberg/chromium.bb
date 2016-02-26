@@ -28,6 +28,8 @@ LoginSettings::LoginSettings(const buzz::XmppClientSettings& user_settings,
   DCHECK_GT(default_servers_.size(), 0u);
 }
 
+LoginSettings::LoginSettings(const LoginSettings& other) = default;
+
 LoginSettings::~LoginSettings() {}
 
 void LoginSettings::set_user_settings(

@@ -15,6 +15,8 @@ NotifierOptions::NotifierOptions()
       notification_method(kDefaultNotificationMethod),
       auth_mechanism(kDefaultGaiaAuthMechanism) {}
 
+NotifierOptions::NotifierOptions(const NotifierOptions& other) = default;
+
 NotifierOptions::~NotifierOptions() { }
 
 }  // namespace notifier

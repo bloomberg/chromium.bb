@@ -47,6 +47,7 @@ bool RecipientListsEqual(const RecipientList& recipients1,
 
 struct Notification {
   Notification();
+  Notification(const Notification& other);
   ~Notification();
 
   // The channel the notification is coming in on.
