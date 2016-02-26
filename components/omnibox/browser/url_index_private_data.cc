@@ -177,7 +177,8 @@ ScoredHistoryMatches URLIndexPrivateData::HistoryItemsForTerms(
   base::string16 lower_raw_string(base::i18n::ToLower(search_string));
   base::string16 lower_unescaped_string =
       net::UnescapeURLComponent(lower_raw_string,
-          net::UnescapeRule::SPACES | net::UnescapeRule::URL_SPECIAL_CHARS);
+          net::UnescapeRule::SPACES | net::UnescapeRule::PATH_SEPARATORS |
+          net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS);
   // Extract individual 'words' (as opposed to 'terms'; see below) from the
   // search string. When the user types "colspec=ID%20Mstone Release" we get
   // four 'words': "colspec", "id", "mstone" and "release".
