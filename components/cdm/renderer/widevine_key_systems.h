@@ -12,15 +12,7 @@
 
 namespace cdm {
 
-enum WidevineCdmType {
-  WIDEVINE,
-#if defined(OS_ANDROID)
-  WIDEVINE_HR_NON_COMPOSITING,
-#endif  // defined(OS_ANDROID)
-};
-
 void AddWidevineWithCodecs(
-    WidevineCdmType widevine_cdm_type,
     media::SupportedCodecs supported_codecs,
 #if defined(OS_ANDROID)
     media::SupportedCodecs supported_secure_codecs,

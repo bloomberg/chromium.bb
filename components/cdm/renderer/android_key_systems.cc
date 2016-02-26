@@ -51,7 +51,6 @@ void AddAndroidWidevine(std::vector<KeySystemInfo>* concrete_key_systems) {
 
   if (response.compositing_codecs != media::EME_CODEC_NONE) {
     AddWidevineWithCodecs(
-        WIDEVINE,
         response.compositing_codecs,           // Regular codecs.
         response.non_compositing_codecs,       // Hardware-secure codecs.
         EmeRobustness::HW_SECURE_CRYPTO,       // Max audio robustness.
@@ -64,28 +63,6 @@ void AddAndroidWidevine(std::vector<KeySystemInfo>* concrete_key_systems) {
   } else {
     // It doesn't make sense to support secure codecs but not regular codecs.
     DCHECK(response.non_compositing_codecs == media::EME_CODEC_NONE);
-  }
-
-  // For compatibility with the prefixed API, register a separate L1 key system.
-  // This key systems acts as though only hardware-secure codecs are available.
-  // We only register support for codecs with both regular and hardware-secure
-  // variants so that we can be sure they will work regardless of the renderer
-  // preference.
-  SupportedCodecs secure_codecs =
-      response.compositing_codecs & response.non_compositing_codecs;
-  if (secure_codecs != media::EME_CODEC_NONE) {
-    // Note: The prefixed API only consults the regular codecs field.
-    AddWidevineWithCodecs(
-        WIDEVINE_HR_NON_COMPOSITING,
-        secure_codecs,                         // Regular codecs.
-        media::EME_CODEC_NONE,                 // Hardware-secure codecs.
-        EmeRobustness::HW_SECURE_CRYPTO,       // Max audio robustness.
-        EmeRobustness::HW_SECURE_ALL,          // Max video robustness.
-        EmeSessionTypeSupport::NOT_SUPPORTED,  // persistent-license.
-        EmeSessionTypeSupport::NOT_SUPPORTED,  // persistent-release-message.
-        EmeFeatureSupport::ALWAYS_ENABLED,     // Persistent state.
-        EmeFeatureSupport::ALWAYS_ENABLED,     // Distinctive identifier.
-        concrete_key_systems);
   }
 }
 
