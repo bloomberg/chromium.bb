@@ -18,24 +18,15 @@ DeviceInfoModelTypeController::DeviceInfoModelTypeController(
     const base::Closure& error_callback,
     SyncClient* sync_client,
     LocalDeviceInfoProvider* local_device_info_provider)
-    : NonBlockingDataTypeController(ui_thread,
-                                    error_callback,
-                                    syncer::DEVICE_INFO,
-                                    sync_client),
-      local_device_info_provider_(local_device_info_provider) {}
+    : UIModelTypeController(ui_thread,
+                            error_callback,
+                            syncer::DEVICE_INFO,
+                            sync_client),
+      local_device_info_provider_(local_device_info_provider) {
+  // TODO(gangwu): find a better place to initial processor.
+  InitializeProcessor();
+}
 
 DeviceInfoModelTypeController::~DeviceInfoModelTypeController() {}
-
-// TODO(gangwu):(crbug.com/558000) move this function to superclass.
-bool DeviceInfoModelTypeController::RunOnModelThread(
-    const tracked_objects::Location& from_here,
-    const base::Closure& task) {
-  if (BelongsToUIThread()) {
-    task.Run();
-  } else {
-    RunOnUIThread(from_here, task);
-  }
-  return true;
-}
 
 }  // namespace sync_driver_v2

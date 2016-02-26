@@ -7,7 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "components/sync_driver/local_device_info_provider.h"
-#include "components/sync_driver/non_blocking_data_type_controller.h"
+#include "components/sync_driver/ui_model_type_controller.h"
 
 namespace sync_driver {
 class LocalDeviceInfoProvider;
@@ -17,17 +17,13 @@ class SyncClient;
 namespace sync_driver_v2 {
 
 // DataTypeController for DEVICE_INFO model type.
-class DeviceInfoModelTypeController : public NonBlockingDataTypeController {
+class DeviceInfoModelTypeController : public UIModelTypeController {
  public:
   DeviceInfoModelTypeController(
       const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
       const base::Closure& error_callback,
       sync_driver::SyncClient* sync_client,
       sync_driver::LocalDeviceInfoProvider* local_device_info_provider);
-
-  // NonBlockingDataTypeController implementations.
-  bool RunOnModelThread(const tracked_objects::Location& from_here,
-                        const base::Closure& task) override;
 
  private:
   ~DeviceInfoModelTypeController() override;

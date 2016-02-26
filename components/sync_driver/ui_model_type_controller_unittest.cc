@@ -1,10 +1,8 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/sync_driver/non_blocking_data_type_controller.h"
-
-#include <utility>
+#include "components/sync_driver/ui_model_type_controller.h"
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -28,52 +26,23 @@ namespace sync_driver_v2 {
 
 namespace {
 
-// Test controller derived from NonBlockingDataTypeController.
-class TestController : public NonBlockingDataTypeController {
+// Test controller derived from UIModelTypeController.
+class TestUIModelTypeController : public UIModelTypeController {
  public:
-  TestController(const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
-                 const base::Closure& error_callback,
-                 syncer::ModelType model_type,
-                 sync_driver::SyncClient* sync_client)
-      : NonBlockingDataTypeController(ui_thread,
-                                      error_callback,
-                                      model_type,
-                                      sync_client),
-        model_type_(model_type) {}
+  TestUIModelTypeController(
+      const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
+      const base::Closure& error_callback,
+      syncer::ModelType model_type,
+      sync_driver::SyncClient* sync_client)
+      : UIModelTypeController(ui_thread,
+                              error_callback,
+                              model_type,
+                              sync_client) {}
 
-  // TODO(stanisc): This will likely have to change. It should be controller's
-  // job to locate the service via SyncClient, create an instance of
-  // SharedModelTypeProcessor, pass it to the service to own, and to store the
-  // weak pointer to the type processor. For now this continues using the
-  // earlier design where the controller and it's task runner are initialized
-  // from outside.
-  // Note that for the test purposes a nullptr |model_task_runner| indicates a
-  // special case of running on UI thread (see RunOnModelThread below).
-  void Initialize(const scoped_refptr<base::TaskRunner>& model_task_runner,
-                  const base::WeakPtr<syncer_v2::SharedModelTypeProcessor>&
-                      type_processor) {
-    model_task_runner_ = model_task_runner;
-    type_processor_ = type_processor;
-  }
-
-  syncer::ModelType type() const override { return model_type_; }
-
-  bool RunOnModelThread(const tracked_objects::Location& from_here,
-                        const base::Closure& task) override {
-    if (model_task_runner_) {
-      return model_task_runner_->PostTask(from_here, task);
-    } else {
-      // Special case for model running on the UI thread.
-      task.Run();
-      return true;
-    }
-  }
+  void InitializeProcessorInTest() { InitializeProcessor(); }
 
  private:
-  ~TestController() override {}
-
-  syncer::ModelType model_type_;
-  scoped_refptr<base::TaskRunner> model_task_runner_;
+  ~TestUIModelTypeController() override {}
 };
 
 // A no-op instance of CommitQueue.
@@ -161,26 +130,28 @@ class MockBackendDataTypeConfigurer
 
 }  // namespace
 
-class NonBlockingDataTypeControllerTest : public testing::Test,
-                                          public sync_driver::FakeSyncClient {
+class UIModelTypeControllerTest : public testing::Test,
+                                  public sync_driver::FakeSyncClient {
  public:
-  NonBlockingDataTypeControllerTest()
+  UIModelTypeControllerTest()
       : auto_run_tasks_(true),
         load_models_callback_called_(false),
         association_callback_called_(false),
-        model_thread_("modelthread"),
         sync_thread_runner_(new base::TestSimpleTaskRunner()),
         configurer_(&backend_, sync_thread_runner_) {}
 
-  ~NonBlockingDataTypeControllerTest() override {}
+  ~UIModelTypeControllerTest() override {}
 
   void SetUp() override {
-    controller_ = new TestController(ui_loop_.task_runner(), base::Closure(),
-                                     syncer::DICTIONARY, this);
+    controller_ = new TestUIModelTypeController(
+        ui_loop_.task_runner(), base::Closure(), syncer::DEVICE_INFO, this);
+    controller_->InitializeProcessorInTest();
+    type_processor_ =
+        ((syncer_v2::SharedModelTypeProcessor*)service_.change_processor())
+            ->AsWeakPtrForUI();
   }
 
   void TearDown() override {
-    ClearTypeProcessor();
     controller_ = NULL;
     RunQueuedUIThreadTasks();
   }
@@ -191,82 +162,22 @@ class NonBlockingDataTypeControllerTest : public testing::Test,
   }
 
  protected:
-  void CreateTypeProcessor() {
-    // TODO(stanisc): Controller should discover the service via SyncClient.
-    type_processor_.reset(
-        new syncer_v2::SharedModelTypeProcessor(syncer::DICTIONARY, &service_));
-    type_processor_for_ui_ = type_processor_->AsWeakPtrForUI();
-  }
-
-  void InitTypeProcessorOnUIThread() {
-    CreateTypeProcessor();
-    model_thread_runner_ = ui_loop_.task_runner();
-    // Don't pass task runner to the controller in this case. It will be making
-    // prompt calls instead of posting tasks.
-    controller_->Initialize(nullptr, type_processor_for_ui_);
-  }
-
-  void InitTypeProcessorOnBackendThread() {
-    model_thread_.Start();
-    model_thread_runner_ = model_thread_.task_runner();
-
-    // TODO(stanisc): It should be controller's job to
-    // create TypeProcessor on the model thread.
-    model_thread_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&NonBlockingDataTypeControllerTest::CreateTypeProcessor,
-                   base::Unretained(this)));
-    RunQueuedModelThreadTasks();
-
-    controller_->Initialize(model_thread_runner_, type_processor_for_ui_);
-  }
-
-  void ClearTypeProcessor() {
-    if (!model_thread_runner_ ||
-        model_thread_runner_->BelongsToCurrentThread()) {
-      type_processor_.reset();
-    } else {
-      model_thread_runner_->PostTask(
-          FROM_HERE,
-          base::Bind(&NonBlockingDataTypeControllerTest::ClearTypeProcessor,
-                     base::Unretained(this)));
-      RunQueuedModelThreadTasks();
-    }
-  }
-
   void TestTypeProcessor(bool isAllowingChanges, bool isConnected) {
-    if (model_thread_runner_->BelongsToCurrentThread()) {
-      EXPECT_EQ(isAllowingChanges, type_processor_->IsAllowingChanges());
-      EXPECT_EQ(isConnected, type_processor_->IsConnected());
-    } else {
-      model_thread_runner_->PostTask(
-          FROM_HERE,
-          base::Bind(&NonBlockingDataTypeControllerTest::TestTypeProcessor,
-                     base::Unretained(this), isAllowingChanges, isConnected));
-      RunQueuedModelThreadTasks();
-    }
+    EXPECT_EQ(isAllowingChanges, type_processor_->IsAllowingChanges());
+    EXPECT_EQ(isConnected, type_processor_->IsConnected());
   }
 
   void OnMetadataLoaded() {
-    if (model_thread_runner_->BelongsToCurrentThread()) {
-      type_processor_->OnMetadataLoaded(
-          make_scoped_ptr(new syncer_v2::MetadataBatch()));
-    } else {
-      model_thread_runner_->PostTask(
-          FROM_HERE,
-          base::Bind(&NonBlockingDataTypeControllerTest::OnMetadataLoaded,
-                     base::Unretained(this)));
-      RunQueuedModelThreadTasks();
-    }
+    type_processor_->OnMetadataLoaded(
+        make_scoped_ptr(new syncer_v2::MetadataBatch()));
   }
 
   void LoadModels() {
     if (!type_processor_->IsAllowingChanges()) {
       OnMetadataLoaded();
     }
-    controller_->LoadModels(
-        base::Bind(&NonBlockingDataTypeControllerTest::LoadModelsDone,
-                   base::Unretained(this)));
+    controller_->LoadModels(base::Bind(
+        &UIModelTypeControllerTest::LoadModelsDone, base::Unretained(this)));
 
     if (auto_run_tasks_) {
       RunAllTasks();
@@ -274,9 +185,8 @@ class NonBlockingDataTypeControllerTest : public testing::Test,
   }
 
   void StartAssociating() {
-    controller_->StartAssociating(
-        base::Bind(&NonBlockingDataTypeControllerTest::AssociationDone,
-                   base::Unretained(this)));
+    controller_->StartAssociating(base::Bind(
+        &UIModelTypeControllerTest::AssociationDone, base::Unretained(this)));
     // The callback is expected to be promptly called.
     EXPECT_TRUE(association_callback_called_);
   }
@@ -297,25 +207,15 @@ class NonBlockingDataTypeControllerTest : public testing::Test,
     }
   }
 
-  // These threads can ping-pong for a bit so we run the model thread twice.
+  // These threads can ping-pong for a bit so we run the UI thread twice.
   void RunAllTasks() {
-    RunQueuedModelThreadTasks();
     RunQueuedUIThreadTasks();
     RunQueuedSyncThreadTasks();
-    RunQueuedModelThreadTasks();
+    RunQueuedUIThreadTasks();
   }
 
   // Runs any tasks posted on UI thread.
   void RunQueuedUIThreadTasks() { ui_loop_.RunUntilIdle(); }
-
-  // Runs any tasks posted on model thread.
-  void RunQueuedModelThreadTasks() {
-    base::RunLoop run_loop;
-    model_thread_runner_->PostTaskAndReply(
-        FROM_HERE, base::Bind(&base::DoNothing),
-        base::Bind(&base::RunLoop::Quit, base::Unretained(&run_loop)));
-    run_loop.Run();
-  }
 
   // Processes any pending connect or disconnect requests and sends
   // responses synchronously.
@@ -337,30 +237,26 @@ class NonBlockingDataTypeControllerTest : public testing::Test,
     association_callback_called_ = true;
   }
 
-  scoped_ptr<syncer_v2::SharedModelTypeProcessor> type_processor_;
-  base::WeakPtr<syncer_v2::SharedModelTypeProcessor> type_processor_for_ui_;
-  scoped_refptr<TestController> controller_;
+  base::WeakPtr<syncer_v2::SharedModelTypeProcessor> type_processor_;
+  scoped_refptr<TestUIModelTypeController> controller_;
 
   bool auto_run_tasks_;
   bool load_models_callback_called_;
   syncer::SyncError load_models_error_;
   bool association_callback_called_;
   base::MessageLoopForUI ui_loop_;
-  base::Thread model_thread_;
-  scoped_refptr<base::SingleThreadTaskRunner> model_thread_runner_;
   scoped_refptr<base::TestSimpleTaskRunner> sync_thread_runner_;
   MockSyncBackend backend_;
   MockBackendDataTypeConfigurer configurer_;
   syncer_v2::FakeModelTypeService service_;
 };
 
-TEST_F(NonBlockingDataTypeControllerTest, InitialState) {
-  EXPECT_EQ(syncer::DICTIONARY, controller_->type());
+TEST_F(UIModelTypeControllerTest, InitialState) {
+  EXPECT_EQ(syncer::DEVICE_INFO, controller_->type());
   EXPECT_EQ(sync_driver::DataTypeController::NOT_RUNNING, controller_->state());
 }
 
-TEST_F(NonBlockingDataTypeControllerTest, LoadModelsOnUIThread) {
-  InitTypeProcessorOnUIThread();
+TEST_F(UIModelTypeControllerTest, LoadModelsOnUIThread) {
   TestTypeProcessor(false, false);  // not enabled, not connected.
   LoadModels();
   EXPECT_EQ(sync_driver::DataTypeController::MODEL_LOADED,
@@ -370,23 +266,7 @@ TEST_F(NonBlockingDataTypeControllerTest, LoadModelsOnUIThread) {
   TestTypeProcessor(true, false);  // enabled, not connected.
 }
 
-TEST_F(NonBlockingDataTypeControllerTest, LoadModelsOnBackendThread) {
-  InitTypeProcessorOnBackendThread();
-  TestTypeProcessor(false, false);  // not enabled, not connected.
-  SetAutoRunTasks(false);
-  LoadModels();
-  EXPECT_EQ(sync_driver::DataTypeController::MODEL_STARTING,
-            controller_->state());
-  RunAllTasks();
-  EXPECT_EQ(sync_driver::DataTypeController::MODEL_LOADED,
-            controller_->state());
-  EXPECT_TRUE(load_models_callback_called_);
-  EXPECT_FALSE(load_models_error_.IsSet());
-  TestTypeProcessor(true, false);  // enabled, not connected.
-}
-
-TEST_F(NonBlockingDataTypeControllerTest, LoadModelsTwice) {
-  InitTypeProcessorOnUIThread();
+TEST_F(UIModelTypeControllerTest, LoadModelsTwice) {
   LoadModels();
   SetAutoRunTasks(false);
   LoadModels();
@@ -396,8 +276,7 @@ TEST_F(NonBlockingDataTypeControllerTest, LoadModelsTwice) {
   EXPECT_TRUE(load_models_error_.IsSet());
 }
 
-TEST_F(NonBlockingDataTypeControllerTest, ActivateDataTypeOnUIThread) {
-  InitTypeProcessorOnUIThread();
+TEST_F(UIModelTypeControllerTest, ActivateDataTypeOnUIThread) {
   LoadModels();
   EXPECT_EQ(sync_driver::DataTypeController::MODEL_LOADED,
             controller_->state());
@@ -409,21 +288,7 @@ TEST_F(NonBlockingDataTypeControllerTest, ActivateDataTypeOnUIThread) {
   TestTypeProcessor(true, true);  // enabled, connected.
 }
 
-TEST_F(NonBlockingDataTypeControllerTest, ActivateDataTypeOnBackendThread) {
-  InitTypeProcessorOnBackendThread();
-  LoadModels();
-  EXPECT_EQ(sync_driver::DataTypeController::MODEL_LOADED,
-            controller_->state());
-
-  StartAssociating();
-  EXPECT_EQ(sync_driver::DataTypeController::RUNNING, controller_->state());
-
-  ActivateDataType();
-  TestTypeProcessor(true, true);  // enabled, connected.
-}
-
-TEST_F(NonBlockingDataTypeControllerTest, Stop) {
-  InitTypeProcessorOnBackendThread();
+TEST_F(UIModelTypeControllerTest, Stop) {
   LoadModels();
   StartAssociating();
   ActivateDataType();

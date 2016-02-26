@@ -754,8 +754,8 @@
       'sync_driver/glue/ui_model_worker_unittest.cc',
       'sync_driver/local_device_info_provider_unittest.cc',
       'sync_driver/model_association_manager_unittest.cc',
-      'sync_driver/non_blocking_data_type_controller_unittest.cc',
       'sync_driver/non_ui_data_type_controller_unittest.cc',
+      'sync_driver/non_ui_model_type_controller_unittest.cc',
       'sync_driver/profile_sync_auth_provider_unittest.cc',
       'sync_driver/shared_change_processor_unittest.cc',
       'sync_driver/startup_controller_unittest.cc',
@@ -764,6 +764,7 @@
       'sync_driver/sync_util_unittest.cc',
       'sync_driver/system_encryptor_unittest.cc',
       'sync_driver/ui_data_type_controller_unittest.cc',
+      'sync_driver/ui_model_type_controller_unittest.cc',
     ],
     'sync_sessions_unittest_sources': [
       'sync_sessions/favicon_cache_unittest.cc',

@@ -95,6 +95,8 @@
         'sync_driver/non_blocking_data_type_controller.h',
         'sync_driver/non_ui_data_type_controller.cc',
         'sync_driver/non_ui_data_type_controller.h',
+        'sync_driver/non_ui_model_type_controller.cc',
+        'sync_driver/non_ui_model_type_controller.h',
         'sync_driver/pref_names.cc',
         'sync_driver/pref_names.h',
         'sync_driver/profile_sync_auth_provider.cc',
@@ -137,6 +139,8 @@
         'sync_driver/system_encryptor.h',
         'sync_driver/ui_data_type_controller.cc',
         'sync_driver/ui_data_type_controller.h',
+        'sync_driver/ui_model_type_controller.cc',
+        'sync_driver/ui_model_type_controller.h',
         'sync_driver/user_selectable_sync_type.h',
       ],
       'conditions': [
