@@ -31,12 +31,10 @@
 #include "core/svg/SVGAnimatedAngle.h"
 
 #include "core/SVGNames.h"
-#include "core/svg/SVGAngleTearOff.h"
-#include "core/svg/SVGMarkerElement.h"
 
 namespace blink {
 
-SVGAnimatedAngle::SVGAnimatedAngle(SVGMarkerElement* contextElement)
+SVGAnimatedAngle::SVGAnimatedAngle(SVGElement* contextElement)
     : SVGAnimatedProperty<SVGAngle>(contextElement, SVGNames::orientAttr, SVGAngle::create())
     , m_orientType(SVGAnimatedEnumeration<SVGMarkerOrientType>::create(contextElement, SVGNames::orientAttr, baseValue()->orientType()))
 {
@@ -52,16 +50,21 @@ DEFINE_TRACE(SVGAnimatedAngle)
     SVGAnimatedProperty<SVGAngle>::trace(visitor);
 }
 
+bool SVGAnimatedAngle::needsSynchronizeAttribute()
+{
+    return m_orientType->needsSynchronizeAttribute()
+        || SVGAnimatedProperty<SVGAngle>::needsSynchronizeAttribute();
+}
+
 void SVGAnimatedAngle::synchronizeAttribute()
 {
-    DEFINE_STATIC_LOCAL(const AtomicString, autoValue, ("auto", AtomicString::ConstructFromLiteral));
-    AtomicString value;
-    if (m_orientType->currentValue()->enumValue() == SVGMarkerOrientAuto)
-        value = autoValue;
-    else
-        value = AtomicString(currentValue()->valueAsString());
-
-    contextElement()->setSynchronizedLazyAttribute(attributeName(), value);
+    // If the current value is not an <angle> we synchronize the value of the
+    // wrapped enumeration.
+    if (m_orientType->currentValue()->enumValue() != SVGMarkerOrientAngle) {
+        m_orientType->synchronizeAttribute();
+        return;
+    }
+    SVGAnimatedProperty<SVGAngle>::synchronizeAttribute();
 }
 
 void SVGAnimatedAngle::setAnimatedValue(PassRefPtrWillBeRawPtr<SVGPropertyBase> value)
