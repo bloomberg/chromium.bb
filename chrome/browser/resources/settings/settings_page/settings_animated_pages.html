@@ -9,17 +9,13 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animated-pages.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animation-runner-behavior.html">
-<link rel="import" href="chrome://md-settings/settings_shared_css.html">
 
 <dom-module id="settings-animated-pages">
   <link rel="import" type="css" href="settings_animated_pages.css">
   <template>
-    <style include="settings-shared"></style>
-    <div class="settings-card">
-      <neon-animated-pages id="animatedPages" attr-for-selected="id">
-        <content select="*"></content>
-      </neon-animated-pages>
-    </div>
+    <neon-animated-pages id="animatedPages" attr-for-selected="id">
+      <content select="*"></content>
+    </neon-animated-pages>
   </template>
   <script src="settings_animated_pages.js"></script>
 </dom-module>

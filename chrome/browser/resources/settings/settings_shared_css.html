@@ -162,8 +162,11 @@
         padding: 0;
       }
 
-      .settings-card {
-        padding: 8px 0;
+      /* This button has no ink ripple. */
+      .list-item.list-button {
+        @apply(--layout-center);
+        color: rgb(66, 133, 244);
+        font-weight: 500;
       }
 
       .settings-box {

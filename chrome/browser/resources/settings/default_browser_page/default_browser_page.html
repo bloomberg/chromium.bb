@@ -8,22 +8,20 @@
   <link rel="import" type="css" href="default_browser_page.css">
   <template>
     <style include="settings-shared"></style>
-    <div class="settings-card">
-      <div class="settings-box first">
-        <template is="dom-if" if="[[showButton_]]">
-          <div on-tap="onSetDefaultBrowserTap_">
-            <div>[[i18n('defaultBrowser')]]</div>
-            <div class="secondary">[[i18n('defaultBrowserMakeDefault')]]</div>
-          </div>
-          <template is="dom-if" if="[[showError_]]">
-            <iron-icon icon="error" class="error-icon"
-                title="[[i18n('unableToSetDefaultBrowser')]]"></iron-icon>
-          </template>
+    <div class="settings-box first">
+      <template is="dom-if" if="[[showButton_]]">
+        <div on-tap="onSetDefaultBrowserTap_">
+          <div>[[i18n('defaultBrowser')]]</div>
+          <div class="secondary">[[i18n('defaultBrowserMakeDefault')]]</div>
+        </div>
+        <template is="dom-if" if="[[showError_]]">
+          <iron-icon icon="error" class="error-icon"
+              title="[[i18n('unableToSetDefaultBrowser')]]"></iron-icon>
         </template>
-        <template is="dom-if" if="[[!showButton_]]">
-          <div class="secondary">[[message_]]</div>
-        </template>
-      </div>
+      </template>
+      <template is="dom-if" if="[[!showButton_]]">
+        <div class="secondary">[[message_]]</div>
+      </template>
     </div>
   </template>
   <script src="default_browser_page.js"></script>
