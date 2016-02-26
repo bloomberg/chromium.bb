@@ -346,9 +346,15 @@ bool MixedContentChecker::shouldBlockFetch(LocalFrame* frame, WebURLRequest::Req
         break;
 
     case ContextTypeBlockable: {
-        // Strictly block subresources in subframes, unless all insecure
-        // content is allowed.
-        if (!settings->allowRunningOfInsecureContent() && requestIsSubframeSubresource(effectiveFrame, frameType)) {
+        // Strictly block subresources that are mixed with respect to
+        // their subframes, unless all insecure content is allowed. This
+        // is to avoid the following situation: https://a.com embeds
+        // https://b.com, which loads a script over insecure HTTP. The
+        // user opts to allow the insecure content, thinking that they are
+        // allowing an insecure script to run on https://a.com and not
+        // realizing that they are in fact allowing an insecure script on
+        // https://b.com.
+        if (!settings->allowRunningOfInsecureContent() && requestIsSubframeSubresource(effectiveFrame, frameType) && isMixedContent(frame->securityContext()->securityOrigin(), url)) {
             UseCounter::count(mixedFrame, UseCounter::BlockableMixedContentInSubframeBlocked);
             allowed = false;
             break;
