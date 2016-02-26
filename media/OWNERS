@@ -8,10 +8,13 @@
 # and to load balance. Only use OWNERS in this file for these subdirectories
 # when doing refactorings and general cleanups.
 
+chcunningham@chromium.org
 dalecurtis@chromium.org
 ddorwin@chromium.org
+hubbe@chromium.org
 jrummell@chromium.org
 sandersd@chromium.org
+watk@chromium.org
 wolenetz@chromium.org
 xhwang@chromium.org
 
