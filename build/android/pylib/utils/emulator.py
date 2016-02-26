@@ -27,8 +27,8 @@ DEFAULT_SDCARD_SIZE = '512M'
 # Default internal storage (MB) of emulator image
 DEFAULT_STORAGE_SIZE = '1024M'
 
-# Each emulator has 30 secs of wait time for launching
-BOOT_WAIT_INTERVALS = 3
+# Each emulator has 60 secs of wait time for launching
+BOOT_WAIT_INTERVALS = 6
 BOOT_WAIT_INTERVAL_TIME = 10
 
 # Path for avd files and avd dir
@@ -106,8 +106,8 @@ def WaitForEmulatorLaunch(num):
       logging.info('All %d emulators launched', num)
       return
     logging.info(
-        'Waiting for %d emulators, %d of them already launched', num,
-        len(emulators))
+        'Waiting for %d emulators, %d of them launched: [%s], ',
+        num, len(emulators), ' '.join([str(x) for x in emulators]))
     time.sleep(BOOT_WAIT_INTERVAL_TIME)
   raise Exception("Expected %d emulators, %d launched within time limit" %
                   (num, len(emulators)))
