@@ -1387,7 +1387,7 @@ crbug.com/587593 [ Android ] fast/js/pic/cached-single-entry-transition.html [ P
 
 crbug.com/587779 [ Retina Mac10.10 ] fast/dynamic/window-resize-scrollbars-test.html [ Timeout Failure Pass ]
 
-crbug.com/587950 [ Mac Win ] virtual/threaded/animations/background-shorthand-crash.html [ Failure ]
+crbug.com/587950 [ Mac Win ] virtual/threaded/animations/background-shorthand-crash.html [ Failure Crash ]
 
 crbug.com/588061 [ Debug ] inspector/sources/debugger-breakpoints/debugger-reload-breakpoints-with-source-maps.html [ Pass Failure ]
 
