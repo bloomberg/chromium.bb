@@ -34,7 +34,8 @@ final class ChromeBluetoothAdapter extends BroadcastReceiver {
     private static final String TAG = "Bluetooth";
 
     private long mNativeBluetoothAdapterAndroid;
-    private Wrappers.BluetoothAdapterWrapper mAdapter;
+    // mAdapter is final to ensure registerReceiver is followed by unregisterReceiver.
+    private final Wrappers.BluetoothAdapterWrapper mAdapter;
     private int mNumDiscoverySessions;
     private ScanCallback mScanCallback;
 

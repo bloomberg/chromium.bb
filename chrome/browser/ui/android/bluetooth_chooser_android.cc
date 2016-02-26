@@ -62,12 +62,12 @@ bool BluetoothChooserAndroid::CanAskForScanningPermission() {
 }
 
 void BluetoothChooserAndroid::SetAdapterPresence(AdapterPresence presence) {
+  JNIEnv* env = AttachCurrentThread();
   if (presence != AdapterPresence::POWERED_ON) {
-    Java_BluetoothChooserDialog_notifyAdapterTurnedOff(AttachCurrentThread(),
-                                                       java_dialog_.obj());
+    Java_BluetoothChooserDialog_notifyAdapterTurnedOff(env, java_dialog_.obj());
   } else {
-    Java_BluetoothChooserDialog_notifyAdapterTurnedOn(AttachCurrentThread(),
-                                                      java_dialog_.obj());
+    Java_BluetoothChooserDialog_notifyAdapterTurnedOn(env, java_dialog_.obj());
+    RestartSearch();
   }
 }
 
@@ -130,9 +130,13 @@ void BluetoothChooserAndroid::OnDialogFinished(
   NOTREACHED();
 }
 
-void BluetoothChooserAndroid::RestartSearch(JNIEnv* env,
-                                            const JavaParamRef<jobject>& obj) {
+void BluetoothChooserAndroid::RestartSearch() {
   event_handler_.Run(Event::RESCAN, "");
+}
+
+void BluetoothChooserAndroid::RestartSearch(JNIEnv*,
+                                            const JavaParamRef<jobject>&) {
+  RestartSearch();
 }
 
 void BluetoothChooserAndroid::ShowBluetoothOverviewLink(

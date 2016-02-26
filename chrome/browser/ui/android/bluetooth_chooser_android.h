@@ -37,8 +37,9 @@ class BluetoothChooserAndroid : public content::BluetoothChooser {
                         const base::android::JavaParamRef<jstring>& device_id);
 
   // Notify bluetooth stack that the search needs to be re-issued.
-  void RestartSearch(JNIEnv* env,
-                     const base::android::JavaParamRef<jobject>& obj);
+  void RestartSearch();
+  // Calls RestartSearch(). Unused JNI parameters enable calls from Java.
+  void RestartSearch(JNIEnv*, const base::android::JavaParamRef<jobject>&);
 
   void ShowBluetoothOverviewLink(
       JNIEnv* env,
