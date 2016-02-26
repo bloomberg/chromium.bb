@@ -939,9 +939,8 @@ void SigninScreenHandler::ShowWhitelistCheckFailedError() {
   gaia_screen_handler_->ShowWhitelistCheckFailedError();
 }
 
-void SigninScreenHandler::ShowUnrecoverableCrypthomeErrorDialog(
-    const std::string& email) {
-  CallJS("login.UnrecoverableCryptohomeErrorScreen.show", email);
+void SigninScreenHandler::ShowUnrecoverableCrypthomeErrorDialog() {
+  CallJS("login.UnrecoverableCryptohomeErrorScreen.show");
 }
 
 void SigninScreenHandler::Observe(int type,

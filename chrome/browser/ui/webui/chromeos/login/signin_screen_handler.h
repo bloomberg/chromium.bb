@@ -95,8 +95,7 @@ class LoginDisplayWebUIHandler {
   virtual void ShowSigninScreenForCreds(const std::string& username,
                                         const std::string& password) = 0;
   virtual void ShowWhitelistCheckFailedError() = 0;
-  virtual void ShowUnrecoverableCrypthomeErrorDialog(
-      const std::string& email) = 0;
+  virtual void ShowUnrecoverableCrypthomeErrorDialog() = 0;
   virtual void LoadUsers(const base::ListValue& users_list,
                          bool show_guest) = 0;
  protected:
@@ -304,7 +303,7 @@ class SigninScreenHandler
   void ShowSigninScreenForCreds(const std::string& username,
                                 const std::string& password) override;
   void ShowWhitelistCheckFailedError() override;
-  void ShowUnrecoverableCrypthomeErrorDialog(const std::string& email) override;
+  void ShowUnrecoverableCrypthomeErrorDialog() override;
   void LoadUsers(const base::ListValue& users_list, bool show_guest) override;
 
   // content::NotificationObserver implementation:

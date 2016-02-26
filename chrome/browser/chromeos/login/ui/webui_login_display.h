@@ -48,7 +48,7 @@ class WebUILoginDisplay : public LoginDisplay,
                                  const std::string& email) override;
   void ShowSigninUI(const std::string& email) override;
   void ShowWhitelistCheckFailedError() override;
-  void ShowUnrecoverableCrypthomeErrorDialog(const std::string& email) override;
+  void ShowUnrecoverableCrypthomeErrorDialog() override;
 
   // NativeWindowDelegate implementation:
   gfx::NativeWindow GetNativeWindow() const override;

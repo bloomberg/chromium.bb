@@ -187,10 +187,9 @@ void WebUILoginDisplay::ShowWhitelistCheckFailedError() {
     webui_handler_->ShowWhitelistCheckFailedError();
 }
 
-void WebUILoginDisplay::ShowUnrecoverableCrypthomeErrorDialog(
-    const std::string& email) {
+void WebUILoginDisplay::ShowUnrecoverableCrypthomeErrorDialog() {
   if (webui_handler_)
-    webui_handler_->ShowUnrecoverableCrypthomeErrorDialog(email);
+    webui_handler_->ShowUnrecoverableCrypthomeErrorDialog();
 }
 
 // WebUILoginDisplay, NativeWindowDelegate implementation: ---------------------

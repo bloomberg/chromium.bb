@@ -142,8 +142,7 @@ class LoginDisplay {
   virtual void ShowWhitelistCheckFailedError() = 0;
 
   // Show unrecoverable cryptohome error dialog.
-  virtual void ShowUnrecoverableCrypthomeErrorDialog(
-      const std::string& email) = 0;
+  virtual void ShowUnrecoverableCrypthomeErrorDialog() = 0;
 
   gfx::Rect background_bounds() const { return background_bounds_; }
   void set_background_bounds(const gfx::Rect& background_bounds) {

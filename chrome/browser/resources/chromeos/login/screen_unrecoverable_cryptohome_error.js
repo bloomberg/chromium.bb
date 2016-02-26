@@ -14,14 +14,13 @@ login.createScreen('UnrecoverableCryptohomeErrorScreen',
       this.card_ = $('unrecoverable-cryptohome-error-card');
       this.throbber_ = $('unrecoverable-cryptohome-error-busy');
 
-      this.card_.addEventListener('recreate', function() {
+      this.card_.addEventListener('done', function(e) {
         this.setLoading_(true);
-        chrome.send('resyncUserData');
-      }.bind(this));
-
-      this.card_.addEventListener('sendFeedbackAndRecreate', function() {
-        this.setLoading_(true);
-        chrome.send('sendFeedbackAndResyncUserData');
+        if (e.detail.shouldSendFeedback) {
+          chrome.send('sendFeedbackAndResyncUserData');
+        } else {
+          chrome.send('resyncUserData');
+        }
       }.bind(this));
     },
 
@@ -36,10 +35,8 @@ login.createScreen('UnrecoverableCryptohomeErrorScreen',
 
     /**
      * Show password changed screen.
-     * @param {string} email User email to display in header.
      */
-    show: function(email) {
-      this.card_.email = email;
+    show: function() {
       this.setLoading_(false);
 
       Oobe.getInstance().headerHidden = true;

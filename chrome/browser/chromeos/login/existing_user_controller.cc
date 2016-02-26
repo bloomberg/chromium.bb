@@ -1244,7 +1244,7 @@ void ExistingUserController::OnTokenHandleChecked(
   // Otherwise, show the unrecoverable cryptohome error UI and ask user's
   // permission to collect a feedback.
   VLOG(1) << "Show unrecoverable cryptohome error dialog.";
-  login_display_->ShowUnrecoverableCrypthomeErrorDialog(display_email_);
+  login_display_->ShowUnrecoverableCrypthomeErrorDialog();
 }
 
 }  // namespace chromeos

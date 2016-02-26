@@ -1580,17 +1580,13 @@ Press any key to continue exploring.
     Previous password
   </message>
   <message name="IDS_LOGIN_UNRECOVERABLE_CRYPTOHOME_ERROR_MESSAGE" desc="Message text for the fatal cryptohome error dialog box">
-    A serious error has occurred and we're unable to access your data. We'd like to collect system information so we can figure out what went wrong and prevent such problems in the future.<ph name="BR">&lt;br&gt;</ph>
-    <ph name="BR">&lt;br&gt;</ph>
-    Any data stored in Drive or otherwise online should be safe, but, unfortunately, any local data, including data in your Downloads folder has been lost.<ph name="BR">&lt;br&gt;</ph>
-    <ph name="BR">&lt;br&gt;</ph>
-    We'll need to recreate your profile to continue.
+    We're very sorry, but a serious error has occurred and your profile will need to be recreated to continue. Don't worry, your account is safe, but unfortunately, your local data and files on this device may have been lost.
   </message>
   <message name="IDS_LOGIN_UNRECOVERABLE_CRYPTOHOME_ERROR_CONTINUE" desc="Label of the button to continue with re-creating cryptohome for the fatal cryptohome error dialog box">
     Continue
   </message>
-  <message name="IDS_LOGIN_UNRECOVERABLE_CRYPTOHOME_ERROR_SEND_FEEDBACK" desc="Label of the button to send feedback then continue with re-creating cryptohome for the fatal cryptohome error dialog box">
-    Send feedback &amp; continue
+  <message name="IDS_LOGIN_UNRECOVERABLE_CRYPTOHOME_ERROR_SEND_FEEDBACK" desc="Label of the checkbox to send feedback for the fatal cryptohome error dialog box">
+    Send anonymized system information to help us fix this issue
   </message>
   <message name="IDS_LOGIN_SAML_NOTICE" desc="Text message displayed above SAML portal to early indicate that the user is being redirected to another sign-in provider. This is the version of the string used in the GAIA flow.">
     This sign-in service is hosted by <ph name="SAML_DOMAIN">$1<ex>saml.com</ex></ph>

@@ -28,7 +28,7 @@ class MockLoginDisplay : public LoginDisplay {
   MOCK_METHOD2(ShowPasswordChangedDialog, void(bool, const std::string&));
   MOCK_METHOD1(ShowSigninUI, void(const std::string&));
   MOCK_METHOD0(ShowWhitelistCheckFailedError, void(void));
-  MOCK_METHOD1(ShowUnrecoverableCrypthomeErrorDialog, void(const std::string&));
+  MOCK_METHOD0(ShowUnrecoverableCrypthomeErrorDialog, void());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockLoginDisplay);
