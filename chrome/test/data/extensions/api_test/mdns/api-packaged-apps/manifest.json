@@ -7,8 +7,7 @@
   "permissions": ["mdns"],
   "app": {
     "background": {
-      "scripts": ["register_too_many_listeners.js"],
-      "persistent": true
+      "scripts": ["register_too_many_listeners.js"]
     }
   }
 }

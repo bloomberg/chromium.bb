@@ -257,6 +257,8 @@ const char kAppsNotEnabled[] =
 const char kBackgroundPermissionNeeded[] =
     "Hosted apps that use 'background_page' must have the 'background' "
     "permission.";
+const char kBackgroundPersistentInvalidForPlatformApps[] =
+    "The key 'background.persistent' is not supported for packaged apps.";
 const char kBackgroundRequiredForPlatformApps[] =
     "Packaged apps must have a background page or background scripts.";
 const char kCannotAccessAboutUrl[] =
@@ -313,6 +315,9 @@ const char kInvalidBackgroundInHostedApp[] =
     "absolute HTTPS URL for the background page.";
 const char kInvalidBackgroundPersistent[] =
     "Invalid value for 'background.persistent'.";
+const char kInvalidBackgroundPersistentInPlatformApp[] =
+    "Invalid value for 'app.background.persistent'. Packaged apps do not "
+    "support persistent background pages and must use event pages.";
 const char kInvalidBackgroundPersistentNoPage[] =
     "Must specify one of background.page or background.scripts to use"
     " background.persistent.";

@@ -297,12 +297,32 @@ bool BackgroundManifestHandler::Validate(
     const base::FilePath path = extension->GetResource(page_path).GetFilePath();
     if (path.empty() || !base::PathExists(path)) {
       *error =
-          l10n_util::GetStringFUTF8(
-              IDS_EXTENSION_LOAD_BACKGROUND_PAGE_FAILED,
-              page_path.LossyDisplayName());
+          l10n_util::GetStringFUTF8(IDS_EXTENSION_LOAD_BACKGROUND_PAGE_FAILED,
+                                    page_path.LossyDisplayName());
       return false;
     }
   }
+
+  if (extension->is_platform_app()) {
+    const std::string manifest_key =
+        std::string(keys::kPlatformAppBackground) + ".persistent";
+    bool is_persistent = false;
+    // Validate that packaged apps do not use a persistent background page.
+    if (extension->manifest()->GetBoolean(manifest_key, &is_persistent) &&
+        is_persistent) {
+      warnings->push_back(
+          InstallWarning(errors::kInvalidBackgroundPersistentInPlatformApp));
+    }
+    // Validate that packaged apps do not use the key 'background.persistent'.
+    // Use the dictionary directly to prevent an access check as
+    // 'background.persistent' is not available for packaged apps.
+    if (extension->manifest()->value()->Get(keys::kBackgroundPersistent,
+                                            NULL)) {
+      warnings->push_back(
+          InstallWarning(errors::kBackgroundPersistentInvalidForPlatformApps));
+    }
+  }
+
   return true;
 }
 

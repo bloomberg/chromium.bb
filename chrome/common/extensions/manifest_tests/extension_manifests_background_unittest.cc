@@ -109,4 +109,37 @@ TEST_F(ExtensionManifestBackgroundTest, BackgroundPageWebRequest) {
                      errors::kWebRequestConflictsWithLazyBackground);
 }
 
+TEST_F(ExtensionManifestBackgroundTest, BackgroundPagePersistentPlatformApp) {
+  scoped_refptr<Extension> extension =
+      LoadAndExpectSuccess("background_page_persistent_app.json");
+  ASSERT_TRUE(extension->is_platform_app());
+  ASSERT_TRUE(BackgroundInfo::HasBackgroundPage(extension.get()));
+  EXPECT_FALSE(BackgroundInfo::HasPersistentBackgroundPage(extension.get()));
+
+  std::string error;
+  std::vector<InstallWarning> warnings;
+  ManifestHandler::ValidateExtension(extension.get(), &error, &warnings);
+  // Persistent background pages are not supported for packaged apps.
+  // The persistent flag is ignored and a warining is printed.
+  EXPECT_EQ(1U, warnings.size());
+  EXPECT_EQ(errors::kInvalidBackgroundPersistentInPlatformApp,
+            warnings[0].message);
+}
+
+TEST_F(ExtensionManifestBackgroundTest, BackgroundPagePersistentInvalidKey) {
+  scoped_refptr<Extension> extension =
+      LoadAndExpectSuccess("background_page_invalid_persistent_key_app.json");
+  ASSERT_TRUE(extension->is_platform_app());
+  ASSERT_TRUE(BackgroundInfo::HasBackgroundPage(extension.get()));
+  EXPECT_FALSE(BackgroundInfo::HasPersistentBackgroundPage(extension.get()));
+
+  std::string error;
+  std::vector<InstallWarning> warnings;
+  ManifestHandler::ValidateExtension(extension.get(), &error, &warnings);
+  // The key 'background.persistent' is not supported for packaged apps.
+  EXPECT_EQ(1U, warnings.size());
+  EXPECT_EQ(errors::kBackgroundPersistentInvalidForPlatformApps,
+            warnings[0].message);
+}
+
 }  // namespace extensions
