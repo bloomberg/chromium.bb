@@ -220,6 +220,7 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void SetMockDeviceMotion(gin::Arguments* args);
   void SetMockDeviceOrientation(gin::Arguments* args);
   void SetMockScreenOrientation(const std::string& orientation);
+  void DisableMockScreenOrientation();
   void DidAcquirePointerLock();
   void DidNotAcquirePointerLock();
   void DidLosePointerLock();
@@ -455,6 +456,8 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
                  &TestRunnerBindings::SetMockDeviceOrientation)
       .SetMethod("setMockScreenOrientation",
                  &TestRunnerBindings::SetMockScreenOrientation)
+      .SetMethod("disableMockScreenOrientation",
+                 &TestRunnerBindings::DisableMockScreenOrientation)
       .SetMethod("didAcquirePointerLock",
                  &TestRunnerBindings::DidAcquirePointerLock)
       .SetMethod("didNotAcquirePointerLock",
@@ -1009,6 +1012,11 @@ void TestRunnerBindings::SetMockScreenOrientation(
     return;
 
   runner_->SetMockScreenOrientation(orientation);
+}
+
+void TestRunnerBindings::DisableMockScreenOrientation() {
+  if (runner_)
+    runner_->DisableMockScreenOrientation();
 }
 
 void TestRunnerBindings::DidAcquirePointerLock() {
@@ -2516,6 +2524,10 @@ void TestRunner::SetMockScreenOrientation(const std::string& orientation_str) {
   }
 
   delegate_->SetScreenOrientation(orientation);
+}
+
+void TestRunner::DisableMockScreenOrientation() {
+  delegate_->DisableMockScreenOrientation();
 }
 
 void TestRunner::DidAcquirePointerLock() {

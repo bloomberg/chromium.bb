@@ -307,6 +307,7 @@ class TestRunner : public WebTestRunner,
                                 bool has_absolute, bool absolute);
 
   void SetMockScreenOrientation(const std::string& orientation);
+  void DisableMockScreenOrientation();
 
   void DidAcquirePointerLock();
   void DidNotAcquirePointerLock();

@@ -296,6 +296,12 @@ void BlinkTestRunner::SetScreenOrientation(
       render_view()->GetWebView()->mainFrame()->toWebLocalFrame(), orientation);
 }
 
+void BlinkTestRunner::DisableMockScreenOrientation() {
+  test_runner::MockScreenOrientationClient* mock_client =
+      proxy()->GetScreenOrientationClientMock();
+  mock_client->SetDisabled(true);
+}
+
 void BlinkTestRunner::ResetScreenOrientation() {
   test_runner::MockScreenOrientationClient* mock_client =
       proxy()->GetScreenOrientationClientMock();

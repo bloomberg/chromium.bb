@@ -3,6 +3,9 @@
 <script src="../http/tests/inspector/inspector-test.js"></script>
 <script>
 
+if (window.testRunner)
+    window.testRunner.disableMockScreenOrientation();
+
 var windowOrientationChangeEvent = false;
 var screenOrientationChangeEvent = false;
 

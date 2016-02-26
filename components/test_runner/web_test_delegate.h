@@ -81,6 +81,9 @@ class WebTestDelegate {
   // Reset the screen orientation data used for testing.
   virtual void ResetScreenOrientation() = 0;
 
+  // Disables screen orientation test-specific mock.
+  virtual void DisableMockScreenOrientation() = 0;
+
   // Add a message to the text dump for the layout test.
   virtual void PrintMessage(const std::string& message) = 0;
 

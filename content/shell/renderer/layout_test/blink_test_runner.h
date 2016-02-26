@@ -69,6 +69,7 @@ class BlinkTestRunner : public RenderViewObserver,
       const blink::WebDeviceOrientationData& data) override;
   void SetScreenOrientation(
       const blink::WebScreenOrientationType& orientation) override;
+  void DisableMockScreenOrientation() override;
   void ResetScreenOrientation() override;
   void PrintMessage(const std::string& message) override;
   void PostTask(test_runner::WebTask* task) override;
