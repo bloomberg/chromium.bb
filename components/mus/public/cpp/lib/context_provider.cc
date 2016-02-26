@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "mojo/gles2/gles2_context.h"
 #include "mojo/gpu/mojo_gles2_impl_autogen.h"
+#include "mojo/public/cpp/environment/environment.h"
 
 namespace mus {
 
@@ -24,7 +25,8 @@ ContextProvider::ContextProvider(
 bool ContextProvider::BindToCurrentThread() {
   DCHECK(command_buffer_handle_.is_valid());
   context_ = MojoGLES2CreateContext(command_buffer_handle_.release().value(),
-                                    nullptr, &ContextLostThunk, this);
+                                    nullptr, &ContextLostThunk, this,
+                                    mojo::Environment::GetDefaultAsyncWaiter());
   context_gl_.reset(new mojo::MojoGLES2Impl(context_));
   return !!context_;
 }

@@ -54,8 +54,9 @@ void BitmapUploader::Init(mojo::Shell* shell) {
   mus::mojom::CommandBufferPtr gles2_client;
   gpu_service_->CreateOffscreenGLES2Context(GetProxy(&gles2_client));
   gles2_context_ = MojoGLES2CreateContext(
-      gles2_client.PassInterface().PassHandle().release().value(), nullptr,
-      &LostContext, nullptr);
+      gles2_client.PassInterface().PassHandle().release().value(),
+      nullptr,
+      &LostContext, nullptr, mojo::Environment::GetDefaultAsyncWaiter());
   MojoGLES2MakeCurrent(gles2_context_);
 }
 

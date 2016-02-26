@@ -17,10 +17,11 @@ static MojoGLES2ControlThunks g_control_thunks = {0};
 MojoGLES2Context MojoGLES2CreateContext(MojoHandle handle,
                                         const int32_t* attrib_list,
                                         MojoGLES2ContextLost lost_callback,
-                                        void* closure) {
+                                        void* closure,
+                                        const MojoAsyncWaiter* async_waiter) {
   assert(g_control_thunks.GLES2CreateContext);
-  return g_control_thunks.GLES2CreateContext(handle, attrib_list, lost_callback,
-                                             closure);
+  return g_control_thunks.GLES2CreateContext(
+      handle, attrib_list, lost_callback, closure, async_waiter);
 }
 
 void MojoGLES2DestroyContext(MojoGLES2Context context) {
