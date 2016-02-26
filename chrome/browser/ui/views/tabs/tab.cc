@@ -1412,7 +1412,7 @@ void Tab::PaintTabBackgroundUsingFillId(gfx::Canvas* canvas,
       canvas->sk_canvas()->clipRect(
           SkRect::MakeWH(width() * scale, height() * scale - 1));
     }
-    paint.setARGB(0x40, 0x00, 0x00, 0x00);
+    paint.setColor(tp->GetColor(ThemeProperties::COLOR_TOOLBAR_TOP_SEPARATOR));
     canvas->DrawPath(stroke, paint);
   } else {
     if (draw_hover) {

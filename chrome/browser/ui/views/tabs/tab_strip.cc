@@ -138,7 +138,7 @@ int GetNewTabButtonWidth() {
       GetLayoutConstant(TABSTRIP_NEW_TAB_BUTTON_OVERLAP);
 }
 
-skia::RefPtr<SkDrawLooper> CreateShadowDrawLooper(SkAlpha alpha) {
+skia::RefPtr<SkDrawLooper> CreateShadowDrawLooper(SkColor color) {
   SkLayerDrawLooper::Builder looper_builder;
   looper_builder.addLayer();
 
@@ -150,9 +150,8 @@ skia::RefPtr<SkDrawLooper> CreateShadowDrawLooper(SkAlpha alpha) {
   skia::RefPtr<SkMaskFilter> blur_mask =
       skia::AdoptRef(SkBlurMaskFilter::Create(
           kNormal_SkBlurStyle, 0.5, SkBlurMaskFilter::kHighQuality_BlurFlag));
-  skia::RefPtr<SkColorFilter> color_filter =
-      skia::AdoptRef(SkColorFilter::CreateModeFilter(
-          SkColorSetA(SK_ColorBLACK, alpha), SkXfermode::kSrcIn_Mode));
+  skia::RefPtr<SkColorFilter> color_filter = skia::AdoptRef(
+      SkColorFilter::CreateModeFilter(color, SkXfermode::kSrcIn_Mode));
   SkPaint* layer_paint = looper_builder.addLayer(layer_info);
   layer_paint->setMaskFilter(blur_mask.get());
   layer_paint->setColorFilter(color_filter.get());
@@ -381,6 +380,7 @@ void NewTabButton::OnPaint(gfx::Canvas* canvas) {
   const float scale = canvas->image_scale();
 
   SkPath fill;
+  const ui::ThemeProvider* tp = GetThemeProvider();
   if (ui::MaterialDesignController::IsModeMaterial()) {
     // Fill.
     const float fill_bottom = (visible_height - 2) * scale;
@@ -416,13 +416,15 @@ void NewTabButton::OnPaint(gfx::Canvas* canvas) {
     // the shadow will be affected by the clip we set above.
     SkPaint paint;
     paint.setAntiAlias(true);
-    skia::RefPtr<SkDrawLooper> stroke_looper = CreateShadowDrawLooper(0x8C);
+    const SkColor stroke_color =
+        tp->GetColor(ThemeProperties::COLOR_TOOLBAR_TOP_SEPARATOR);
+    skia::RefPtr<SkDrawLooper> stroke_looper =
+        CreateShadowDrawLooper(SkColorSetA(stroke_color, 0x8C));
     paint.setLooper(stroke_looper.get());
-    paint.setColor(SkColorSetA(SK_ColorBLACK, pressed ? 0x38 : 0x27));
+    paint.setColor(SkColorSetA(stroke_color, pressed ? 0x38 : 0x27));
     canvas->DrawPath(stroke, paint);
   } else {
     // Fill.
-    const ui::ThemeProvider* tp = GetThemeProvider();
     gfx::ImageSkia* mask = tp->GetImageSkiaNamed(IDR_NEWTAB_BUTTON_MASK);
     // The canvas and mask have to use the same scale factor.
     const float fill_canvas_scale = mask->HasRepresentation(scale) ?
@@ -563,7 +565,10 @@ void NewTabButton::PaintFill(bool pressed,
       } else {
         paint.setColor(tp->GetColor(ThemeProperties::COLOR_BACKGROUND_TAB));
       }
-      skia::RefPtr<SkDrawLooper> looper = CreateShadowDrawLooper(0x26);
+      const SkColor stroke_color = GetThemeProvider()->GetColor(
+          ThemeProperties::COLOR_TOOLBAR_TOP_SEPARATOR);
+      skia::RefPtr<SkDrawLooper> looper =
+          CreateShadowDrawLooper(SkColorSetA(stroke_color, 0x26));
       paint.setLooper(looper.get());
       canvas->DrawPath(fill, paint);
     }
