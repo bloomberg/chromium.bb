@@ -126,7 +126,7 @@ class MixerTest : public testing::Test,
   // testing::Test overrides:
   void SetUp() override {
     // If the parameter is true, enable the field trial.
-    const char* field_trial_name = GetParam() ? "Blended" : "default";
+    const char* field_trial_name = GetParam() ? "Blended" : "Control";
     base::FieldTrialList::CreateFieldTrial("AppListMixer", field_trial_name);
 
     results_.reset(new AppListModel::SearchResults);

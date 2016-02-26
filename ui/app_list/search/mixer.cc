@@ -33,6 +33,7 @@ const size_t kMinBlendedResults = 6;
 
 const char kAppListMixerFieldTrialName[] = "AppListMixer";
 const char kAppListMixerFieldTrialEnabled[] = "Blended";
+const char kAppListMixerFieldTrialDisabled[] = "Control";
 
 void UpdateResult(const SearchResult& source, SearchResult* target) {
   target->set_display_type(source.display_type());
@@ -51,6 +52,7 @@ bool IsBlendedMixerTrialEnabled() {
   const std::string group_name =
       base::FieldTrialList::FindFullName(kAppListMixerFieldTrialName);
 
+  // Respect command-line flags first.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableNewAppListMixer)) {
     return false;
@@ -61,7 +63,15 @@ bool IsBlendedMixerTrialEnabled() {
     return true;
   }
 
-  return group_name == kAppListMixerFieldTrialEnabled;
+  // Next, respect field-trial groups.
+  if (group_name == kAppListMixerFieldTrialEnabled)
+    return true;
+
+  if (group_name == kAppListMixerFieldTrialDisabled)
+    return false;
+
+  // By default, enable the new logic if the experimental app list is enabled.
+  return app_list::switches::IsExperimentalAppListEnabled();
 }
 
 }  // namespace
