@@ -314,16 +314,24 @@ void RemoteDesktopBrowserTest::Approve() {
 
     // There is nothing for the V2 app to approve because the chromoting test
     // account has already been granted permissions.
+    //
     // TODO(weitaosu): Revoke the permission at the beginning of the test so
     // that we can test first-time experience here.
+    //
+    // TODO(jamiewalch): Remove the elapsed time logging once this has run a few
+    // times on the bots.
+    base::Time start = base::Time::Now();
     ConditionalTimeoutWaiter waiter(
-        base::TimeDelta::FromSeconds(7),
+        base::TimeDelta::FromSeconds(10),
         base::TimeDelta::FromSeconds(1),
         base::Bind(
             &RemoteDesktopBrowserTest::IsAuthenticatedInWindow,
             active_web_contents()));
-
-    ASSERT_TRUE(waiter.Wait());
+    bool result = waiter.Wait();
+    base::TimeDelta elapsed = base::Time::Now() - start;
+    LOG(INFO) << "*** IsAuthenticatedInWindow took "
+              << elapsed.InSeconds() << "s";
+    ASSERT_TRUE(result);
   } else {
     ASSERT_EQ("accounts.google.com", GetCurrentURL().host());
 
