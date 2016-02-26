@@ -57,6 +57,10 @@ std::string GetDirectoryListingEntry(const base::string16& name,
   }
 
   // Negative size means unknown or not applicable (e.g. directory).
+  std::stringstream raw_size_string_stream;
+  raw_size_string_stream << size << ",";
+  result.append(raw_size_string_stream.str());
+
   base::string16 size_string;
   if (size >= 0)
     size_string = base::FormatBytesUnlocalized(size);
@@ -64,12 +68,23 @@ std::string GetDirectoryListingEntry(const base::string16& name,
 
   result.append(",");
 
-  base::string16 modified_str;
   // |modified| can be NULL in FTP listings.
-  if (!modified.is_null())
-    modified_str = base::TimeFormatShortDateAndTime(modified);
-  base::EscapeJSONString(modified_str, true, &result);
+  base::string16 modified_str;
+  if (modified.is_null()) {
+    result.append("0,");
+  } else {
+    std::stringstream raw_time_string_stream;
+    // Certain access paths can only get up to seconds resolution, so here we
+    // output the raw time value in seconds for consistency.
+    raw_time_string_stream << modified.ToJavaTime() /
+                                  base::Time::kMillisecondsPerSecond
+                           << ",";
+    result.append(raw_time_string_stream.str());
 
+    modified_str = base::TimeFormatShortDateAndTime(modified);
+  }
+
+  base::EscapeJSONString(modified_str, true, &result);
   result.append(");</script>\n");
 
   return result;

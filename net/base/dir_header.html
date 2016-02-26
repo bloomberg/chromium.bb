@@ -7,7 +7,8 @@
 <meta name="google" value="notranslate">
 
 <script>
-function addRow(name, url, isdir, size, date_modified) {
+function addRow(name, url, isdir,
+    size, size_string, date_modified, date_modified_string) {
   if (name == ".")
     return;
 
@@ -15,7 +16,7 @@ function addRow(name, url, isdir, size, date_modified) {
   if (root.substr(-1) !== "/")
     root += "/";
 
-  var table = document.getElementById("table");
+  var tbody = document.getElementById("tbody");
   var row = document.createElement("tr");
   var file_cell = document.createElement("td");
   var link = document.createElement("a");
@@ -26,13 +27,16 @@ function addRow(name, url, isdir, size, date_modified) {
     link.href = root + "..";
     link.innerText = document.getElementById("parentDirText").innerText;
     link.className = "icon up";
-    size = "";
-    date_modified = "";
+    size = 0;
+    size_string = "";
+    date_modified = 0;
+    date_modified_string = "";
   } else {
     if (isdir) {
       name = name + "/";
       url = url + "/";
-      size = "";
+      size = 0;
+      size_string = "";
     } else {
       link.draggable = "true";
       link.addEventListener("dragstart", onDragStart, false);
@@ -40,13 +44,14 @@ function addRow(name, url, isdir, size, date_modified) {
     link.innerText = name;
     link.href = root + url;
   }
+  file_cell.dataset.value = name;
   file_cell.appendChild(link);
 
   row.appendChild(file_cell);
-  row.appendChild(createCell(size));
-  row.appendChild(createCell(date_modified));
+  row.appendChild(createCell(size, size_string));
+  row.appendChild(createCell(date_modified, date_modified_string));
 
-  table.appendChild(row);
+  tbody.appendChild(row);
 }
 
 function onDragStart(e) {
@@ -57,9 +62,10 @@ function onDragStart(e) {
   e.dataTransfer.effectAllowed = "copy";
 }
 
-function createCell(text) {
+function createCell(value, text) {
   var cell = document.createElement("td");
   cell.setAttribute("class", "detailsColumn");
+  cell.dataset.value = value;
   cell.innerText = text;
   return cell;
 }
@@ -77,6 +83,46 @@ function onListingParsingError() {
       + "?raw");
   box.style.display = "block";
 }
+
+function sortTable(column) {
+  var theader = document.getElementById("theader");
+  var oldOrder = theader.cells[column].dataset.order || '1';
+  oldOrder = parseInt(oldOrder, 10)
+  var newOrder = 0 - oldOrder;
+  theader.cells[column].dataset.order = newOrder;
+
+  var tbody = document.getElementById("tbody");
+  var rows = tbody.rows;
+  var list = [], i;
+  for (i = 0; i < rows.length; i++) {
+    list.push(rows[i]);
+  }
+
+  list.sort(function(row1, row2) {
+    var a = row1.cells[column].dataset.value;
+    var b = row2.cells[column].dataset.value;
+    if (column) {
+      a = parseInt(a, 10);
+      b = parseInt(b, 10);
+      return a > b ? newOrder : a < b ? oldOrder : 0;
+    }
+
+    // Column 0 is text.
+    // Also the parent directory should always be sorted at one of the ends.
+    if (b == ".." | a > b) {
+      return newOrder;
+    } else if (a == ".." | a < b) {
+      return oldOrder;
+    } else {
+      return 0;
+    }
+  });
+
+  // Appending an existing child again just moves it.
+  for (i = 0; i < list.length; i++) {
+    tbody.appendChild(list[i]);
+  }
+}
 </script>
 
 <style>
@@ -92,8 +138,8 @@ function onListingParsingError() {
     border-collapse: collapse;
   }
 
-  tr.header {
-    font-weight: bold;
+  th {
+    cursor: pointer;
   }
 
   td.detailsColumn {
@@ -147,12 +193,16 @@ function onListingParsingError() {
 
 <h1 id="header" i18n-content="header"></h1>
 
-<table id="table">
-  <tr class="header">
-    <td i18n-content="headerName"></td>
-    <td class="detailsColumn" i18n-content="headerSize"></td>
-    <td class="detailsColumn" i18n-content="headerDateModified"></td>
-  </tr>
+<table>
+  <thead>
+    <tr class="header" id="theader">
+      <th i18n-content="headerName" onclick="javascript:sortTable(0);"></th>
+      <th class="detailsColumn" i18n-content="headerSize" onclick="javascript:sortTable(1);"></th>
+      <th class="detailsColumn" i18n-content="headerDateModified" onclick="javascript:sortTable(2);"></th>
+    </tr>
+  </thead>
+  <tbody id="tbody">
+  </tbody>
 </table>
 
 </body>
