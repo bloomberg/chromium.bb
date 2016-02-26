@@ -11,12 +11,15 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "tools/gn/builder.h"
+#include "tools/gn/commands.h"
 #include "tools/gn/config.h"
 #include "tools/gn/config_values_extractors.h"
 #include "tools/gn/filesystem_utils.h"
+#include "tools/gn/label_pattern.h"
 #include "tools/gn/parse_tree.h"
 #include "tools/gn/path_output.h"
 #include "tools/gn/source_file_type.h"
@@ -214,8 +217,30 @@ VisualStudioWriter::~VisualStudioWriter() {
 bool VisualStudioWriter::RunAndWriteFiles(const BuildSettings* build_settings,
                                           Builder* builder,
                                           Version version,
+                                          const std::string& sln_name,
+                                          const std::string& dir_filters,
                                           Err* err) {
-  std::vector<const Target*> targets = builder->GetAllResolvedTargets();
+  std::vector<const Target*> targets;
+  if (dir_filters.empty()) {
+    targets = builder->GetAllResolvedTargets();
+  } else {
+    std::vector<std::string> tokens = base::SplitString(
+        dir_filters, ";", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+    SourceDir root_dir =
+        SourceDirForCurrentDirectory(build_settings->root_path());
+
+    std::vector<LabelPattern> filters;
+    for (const std::string& token : tokens) {
+      LabelPattern pattern =
+          LabelPattern::GetPattern(root_dir, Value(nullptr, token), err);
+      if (err->has_error())
+        return false;
+      filters.push_back(pattern);
+    }
+
+    commands::FilterTargetsByPatterns(builder->GetAllResolvedTargets(), filters,
+                                      &targets);
+  }
 
   const char* config_platform = "Win32";
 
@@ -259,7 +284,7 @@ bool VisualStudioWriter::RunAndWriteFiles(const BuildSettings* build_settings,
             });
 
   writer.ResolveSolutionFolders();
-  return writer.WriteSolutionFile(err);
+  return writer.WriteSolutionFile(sln_name, err);
 }
 
 bool VisualStudioWriter::WriteProjectFiles(const Target* target, Err* err) {
@@ -590,9 +615,11 @@ void VisualStudioWriter::WriteFiltersFileContents(std::ostream& out,
   project.Text(files_out.str());
 }
 
-bool VisualStudioWriter::WriteSolutionFile(Err* err) {
+bool VisualStudioWriter::WriteSolutionFile(const std::string& sln_name,
+                                           Err* err) {
+  std::string name = sln_name.empty() ? "all" : sln_name;
   SourceFile sln_file = build_settings_->build_dir().ResolveRelativeFile(
-      Value(nullptr, "all.sln"), err);
+      Value(nullptr, name + ".sln"), err);
   if (sln_file.is_null())
     return false;
 
@@ -704,7 +731,8 @@ void VisualStudioWriter::ResolveSolutionFolders() {
           else if (root_folder_path_[i] != folder_path[i])
             break;
         }
-        if (i == max_common_length)
+        if (i == max_common_length &&
+            (i == folder_path.size() || IsSlash(folder_path[i])))
           common_prefix_len = max_common_length;
         if (common_prefix_len < root_folder_path_.size()) {
           if (IsSlash(root_folder_path_[common_prefix_len - 1]))

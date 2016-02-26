@@ -26,11 +26,13 @@ namespace commands {
 namespace {
 
 const char kSwitchCheck[] = "check";
+const char kSwitchFilters[] = "filters";
 const char kSwitchIde[] = "ide";
 const char kSwitchIdeValueEclipse[] = "eclipse";
 const char kSwitchIdeValueVs[] = "vs";
 const char kSwitchIdeValueVs2013[] = "vs2013";
 const char kSwitchIdeValueVs2015[] = "vs2015";
+const char kSwitchSln[] = "sln";
 
 // Called on worker thread to write the ninja file.
 void BackgroundDoWrite(const Target* target) {
@@ -155,11 +157,13 @@ bool RunIdeWriter(const std::string& ide,
                   const BuildSettings* build_settings,
                   Builder* builder,
                   Err* err) {
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
   base::ElapsedTimer timer;
+
   if (ide == kSwitchIdeValueEclipse) {
     bool res = EclipseWriter::RunAndWriteFile(build_settings, builder, err);
-    if (res &&
-        !base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kQuiet)) {
+    if (res && !command_line->HasSwitch(switches::kQuiet)) {
       OutputString("Generating Eclipse settings took " +
                    base::Int64ToString(timer.Elapsed().InMilliseconds()) +
                    "ms\n");
@@ -170,10 +174,15 @@ bool RunIdeWriter(const std::string& ide,
     VisualStudioWriter::Version version =
         ide == kSwitchIdeValueVs2013 ? VisualStudioWriter::Version::Vs2013
                                      : VisualStudioWriter::Version::Vs2015;
-    bool res = VisualStudioWriter::RunAndWriteFiles(build_settings, builder,
-                                                    version, err);
-    if (res &&
-        !base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kQuiet)) {
+    std::string sln_name;
+    if (command_line->HasSwitch(kSwitchSln))
+      sln_name = command_line->GetSwitchValueASCII(kSwitchSln);
+    std::string filters;
+    if (command_line->HasSwitch(kSwitchFilters))
+      filters = command_line->GetSwitchValueASCII(kSwitchFilters);
+    bool res = VisualStudioWriter::RunAndWriteFiles(
+        build_settings, builder, version, sln_name, filters, err);
+    if (res && !command_line->HasSwitch(switches::kQuiet)) {
       OutputString("Generating Visual Studio projects took " +
                    base::Int64ToString(timer.Elapsed().InMilliseconds()) +
                    "ms\n");
@@ -193,7 +202,7 @@ const char kGen_HelpShort[] =
 const char kGen_Help[] =
     "gn gen: Generate ninja files.\n"
     "\n"
-    "  gn gen [--ide=<ide_name>] <out_dir>\n"
+    "  gn gen [<ide options>] <out_dir>\n"
     "\n"
     "  Generates ninja files from the current tree and puts them in the given\n"
     "  output directory.\n"
@@ -203,15 +212,29 @@ const char kGen_Help[] =
     "  Or it can be a directory relative to the current directory such as:\n"
     "      out/foo\n"
     "\n"
+    "  See \"gn help switches\" for the common command-line switches.\n"
+    "\n"
+    "IDE options\n"
+    "\n"
+    "  GN optionally generates files for IDE. Possibilities for <ide options>\n"
+    "\n"
     "  --ide=<ide_name>\n"
-    "    Also generate files for an IDE. Currently supported values:\n"
+    "      Generate files for an IDE. Currently supported values:\n"
     "      \"eclipse\" - Eclipse CDT settings file.\n"
     "      \"vs\" - Visual Studio project/solution files.\n"
     "             (default Visual Studio version: 2015)\n"
     "      \"vs2013\" - Visual Studio 2013 project/solution files.\n"
     "      \"vs2015\" - Visual Studio 2015 project/solution files.\n"
     "\n"
-    "  See \"gn help switches\" for the common command-line switches.\n"
+    "  --sln=<file_name>\n"
+    "      Override default sln file name (\"all\"). Solution file is written\n"
+    "      to the root build directory. Only for Visual Studio.\n"
+    "\n"
+    "  --filters=<path_prefixes>\n"
+    "      Semicolon-separated list of label patterns used to limit the set\n"
+    "      of generated projects (see \"gn help label_pattern\"). Only\n"
+    "      matching targets will be included to the solution. Only for Visual\n"
+    "      Studio.\n"
     "\n"
     "Eclipse IDE Support\n"
     "\n"

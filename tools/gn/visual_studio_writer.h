@@ -29,10 +29,16 @@ class VisualStudioWriter {
     Vs2015       // Visual Studio 2015
   };
 
-  // On failure will populate |err| and will return false.
+  // Writes Visual Studio project and solution files. |sln_name| is the optional
+  // solution file name ("all" is used if not specified). |dir_filters| is
+  // optional semicolon-separated list of label patterns used to limit the set
+  // of generated projects. Only matching targets will be included to the
+  // solution. On failure will populate |err| and will return false.
   static bool RunAndWriteFiles(const BuildSettings* build_settings,
                                Builder* builder,
                                Version version,
+                               const std::string& sln_name,
+                               const std::string& dir_filters,
                                Err* err);
 
  private:
@@ -74,9 +80,9 @@ class VisualStudioWriter {
   using SolutionProjects = std::vector<SolutionProject*>;
   using SolutionFolders = std::vector<SolutionEntry*>;
 
-  explicit VisualStudioWriter(const BuildSettings* build_settings,
-                              const char* config_platform,
-                              Version version);
+  VisualStudioWriter(const BuildSettings* build_settings,
+                     const char* config_platform,
+                     Version version);
   ~VisualStudioWriter();
 
   bool WriteProjectFiles(const Target* target, Err* err);
@@ -85,7 +91,7 @@ class VisualStudioWriter {
                                 const Target* target,
                                 Err* err);
   void WriteFiltersFileContents(std::ostream& out, const Target* target);
-  bool WriteSolutionFile(Err* err);
+  bool WriteSolutionFile(const std::string& sln_name, Err* err);
   void WriteSolutionFileContents(std::ostream& out,
                                  const base::FilePath& solution_dir_path);
 
