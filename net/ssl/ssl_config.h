@@ -47,6 +47,7 @@ NET_EXPORT extern const uint16_t kDefaultSSLVersionFallbackMin;
 struct NET_EXPORT SSLConfig {
   // Default to revocation checking.
   SSLConfig();
+  SSLConfig(const SSLConfig& other);
   ~SSLConfig();
 
   // Returns true if |cert| is one of the certs in |allowed_bad_certs|.

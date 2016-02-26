@@ -14,6 +14,9 @@ namespace net {
 OutputOrdering::PriorityMapPointer::PriorityMapPointer()
     : ring(NULL), alarm_enabled(false) {}
 
+OutputOrdering::PriorityMapPointer::PriorityMapPointer(
+    const PriorityMapPointer& other) = default;
+
 OutputOrdering::PriorityMapPointer::~PriorityMapPointer() {}
 
 // static

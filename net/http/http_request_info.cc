@@ -13,6 +13,8 @@ HttpRequestInfo::HttpRequestInfo()
       privacy_mode(PRIVACY_MODE_DISABLED) {
 }
 
+HttpRequestInfo::HttpRequestInfo(const HttpRequestInfo& other) = default;
+
 HttpRequestInfo::~HttpRequestInfo() {}
 
 }  // namespace net

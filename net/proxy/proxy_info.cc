@@ -15,6 +15,8 @@ ProxyInfo::ProxyInfo()
       did_use_pac_script_(false) {
 }
 
+ProxyInfo::ProxyInfo(const ProxyInfo& other) = default;
+
 ProxyInfo::~ProxyInfo() {
 }
 

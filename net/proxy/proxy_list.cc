@@ -19,6 +19,8 @@ namespace net {
 ProxyList::ProxyList() {
 }
 
+ProxyList::ProxyList(const ProxyList& other) = default;
+
 ProxyList::~ProxyList() {
 }
 

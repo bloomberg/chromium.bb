@@ -20,6 +20,7 @@ class X509Certificate;
 class NET_EXPORT CertVerifyResult {
  public:
   CertVerifyResult();
+  CertVerifyResult(const CertVerifyResult& other);
   ~CertVerifyResult();
 
   void Reset();

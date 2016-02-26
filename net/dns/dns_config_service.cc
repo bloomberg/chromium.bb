@@ -107,6 +107,8 @@ DnsConfig::DnsConfig()
       edns0(false),
       use_local_ipv6(false) {}
 
+DnsConfig::DnsConfig(const DnsConfig& other) = default;
+
 DnsConfig::~DnsConfig() {}
 
 bool DnsConfig::Equals(const DnsConfig& d) const {

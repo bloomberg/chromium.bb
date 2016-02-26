@@ -28,6 +28,7 @@ struct NET_EXPORT HttpRequestInfo {
   };
 
   HttpRequestInfo();
+  HttpRequestInfo(const HttpRequestInfo& other);
   ~HttpRequestInfo();
 
   // The requested URL.

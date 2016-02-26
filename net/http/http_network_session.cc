@@ -136,6 +136,8 @@ HttpNetworkSession::Params::Params()
   quic_supported_versions.push_back(QUIC_VERSION_27);
 }
 
+HttpNetworkSession::Params::Params(const Params& other) = default;
+
 HttpNetworkSession::Params::~Params() {}
 
 // TODO(mbelshe): Move the socket factories into HttpStreamFactory.

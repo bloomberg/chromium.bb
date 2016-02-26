@@ -64,6 +64,7 @@ class NET_EXPORT HttpNetworkSession
  public:
   struct NET_EXPORT Params {
     Params();
+    Params(const Params& other);
     ~Params();
 
     ClientSocketFactory* client_socket_factory;

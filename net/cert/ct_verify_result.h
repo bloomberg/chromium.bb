@@ -24,6 +24,7 @@ typedef std::vector<scoped_refptr<SignedCertificateTimestamp> > SCTList;
 // connection.
 struct NET_EXPORT CTVerifyResult {
   CTVerifyResult();
+  CTVerifyResult(const CTVerifyResult& other);
   ~CTVerifyResult();
 
   // SCTs from known logs where the signature verified correctly.

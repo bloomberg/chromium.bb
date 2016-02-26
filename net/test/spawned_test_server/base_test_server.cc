@@ -159,6 +159,8 @@ BaseTestServer::SSLOptions::SSLOptions(
       disable_channel_id(false),
       disable_extended_master_secret(false) {}
 
+BaseTestServer::SSLOptions::SSLOptions(const SSLOptions& other) = default;
+
 BaseTestServer::SSLOptions::~SSLOptions() {}
 
 base::FilePath BaseTestServer::SSLOptions::GetCertificateFile() const {

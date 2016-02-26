@@ -15,6 +15,9 @@ HttpServerResponseInfo::HttpServerResponseInfo() : status_code_(HTTP_OK) {}
 HttpServerResponseInfo::HttpServerResponseInfo(HttpStatusCode status_code)
     : status_code_(status_code) {}
 
+HttpServerResponseInfo::HttpServerResponseInfo(
+    const HttpServerResponseInfo& other) = default;
+
 HttpServerResponseInfo::~HttpServerResponseInfo() {}
 
 // static

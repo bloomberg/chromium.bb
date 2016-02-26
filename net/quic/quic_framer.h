@@ -376,6 +376,7 @@ class NET_EXPORT_PRIVATE QuicFramer {
 
   struct AckFrameInfo {
     AckFrameInfo();
+    AckFrameInfo(const AckFrameInfo& other);
     ~AckFrameInfo();
 
     // The maximum delta between ranges.

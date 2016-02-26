@@ -325,6 +325,9 @@ QuicTimeWaitListManager::ConnectionIdData::ConnectionIdData(
       time_added(time_added_),
       connection_rejected_statelessly(connection_rejected_statelessly) {}
 
+QuicTimeWaitListManager::ConnectionIdData::ConnectionIdData(
+    const ConnectionIdData& other) = default;
+
 QuicTimeWaitListManager::ConnectionIdData::~ConnectionIdData() {}
 
 }  // namespace net

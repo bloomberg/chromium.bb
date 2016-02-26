@@ -75,6 +75,7 @@ class NET_EXPORT_PRIVATE SpdyWriteQueue {
     PendingWrite(SpdyFrameType frame_type,
                  SpdyBufferProducer* frame_producer,
                  const base::WeakPtr<SpdyStream>& stream);
+    PendingWrite(const PendingWrite& other);
     ~PendingWrite();
   };
 

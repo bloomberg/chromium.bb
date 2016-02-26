@@ -48,6 +48,7 @@ struct HttpRequest {
       std::map<std::string, std::string, CaseInsensitiveStringComparator>;
 
   HttpRequest();
+  HttpRequest(const HttpRequest& other);
   ~HttpRequest();
 
   // Returns a GURL as a convenience to extract the path and query strings.

@@ -8,6 +8,8 @@ namespace net {
 
 RedirectInfo::RedirectInfo() : status_code(-1) {}
 
+RedirectInfo::RedirectInfo(const RedirectInfo& other) = default;
+
 RedirectInfo::~RedirectInfo() {}
 
 }  // namespace net

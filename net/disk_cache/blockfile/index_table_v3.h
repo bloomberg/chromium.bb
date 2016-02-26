@@ -110,6 +110,7 @@ class NET_EXPORT_PRIVATE EntryCell {
 // Keeps a collection of EntryCells in order to be processed.
 struct NET_EXPORT_PRIVATE EntrySet {
   EntrySet();
+  EntrySet(const EntrySet& other);
   ~EntrySet();
 
   int evicted_count;  // The numebr of evicted entries in this set.

@@ -22,6 +22,8 @@ class NET_EXPORT_PRIVATE SpdySessionKey {
   SpdySessionKey(const HostPortProxyPair& host_port_proxy_pair,
                  PrivacyMode privacy_mode);
 
+  SpdySessionKey(const SpdySessionKey& other);
+
   ~SpdySessionKey();
 
   // Comparator function so this can be placed in a std::map.

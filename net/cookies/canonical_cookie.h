@@ -46,6 +46,8 @@ class NET_EXPORT CanonicalCookie {
   // in which pre-validation of the ParsedCookie has not been done.
   CanonicalCookie(const GURL& url, const ParsedCookie& pc);
 
+  CanonicalCookie(const CanonicalCookie& other);
+
   ~CanonicalCookie();
 
   // Supports the default copy constructor.

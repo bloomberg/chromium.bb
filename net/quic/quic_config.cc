@@ -264,6 +264,9 @@ QuicFixedTagVector::QuicFixedTagVector(QuicTag name,
       has_send_values_(false),
       has_receive_values_(false) {}
 
+QuicFixedTagVector::QuicFixedTagVector(const QuicFixedTagVector& other) =
+    default;
+
 QuicFixedTagVector::~QuicFixedTagVector() {}
 
 bool QuicFixedTagVector::HasSendValues() const {
@@ -348,6 +351,8 @@ QuicConfig::QuicConfig()
       multipath_enabled_(kMPTH, PRESENCE_OPTIONAL) {
   SetDefaults();
 }
+
+QuicConfig::QuicConfig(const QuicConfig& other) = default;
 
 QuicConfig::~QuicConfig() {}
 

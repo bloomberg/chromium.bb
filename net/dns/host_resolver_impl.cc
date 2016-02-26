@@ -1854,6 +1854,9 @@ HostResolverImpl::ProcTaskParams::ProcTaskParams(
     max_retry_attempts = kDefaultMaxRetryAttempts;
 }
 
+HostResolverImpl::ProcTaskParams::ProcTaskParams(const ProcTaskParams& other) =
+    default;
+
 HostResolverImpl::ProcTaskParams::~ProcTaskParams() {}
 
 HostResolverImpl::HostResolverImpl(const Options& options, NetLog* net_log)

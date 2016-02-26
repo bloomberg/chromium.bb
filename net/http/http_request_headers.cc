@@ -70,6 +70,8 @@ bool HttpRequestHeaders::Iterator::GetNext() {
 }
 
 HttpRequestHeaders::HttpRequestHeaders() {}
+HttpRequestHeaders::HttpRequestHeaders(const HttpRequestHeaders& other) =
+    default;
 HttpRequestHeaders::~HttpRequestHeaders() {}
 
 bool HttpRequestHeaders::GetHeader(const base::StringPiece& key,

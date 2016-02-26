@@ -183,6 +183,7 @@ class NET_EXPORT_PRIVATE QuicFixedUint32 : public QuicConfigValue {
 class NET_EXPORT_PRIVATE QuicFixedTagVector : public QuicConfigValue {
  public:
   QuicFixedTagVector(QuicTag name, QuicConfigPresence presence);
+  QuicFixedTagVector(const QuicFixedTagVector& other);
   ~QuicFixedTagVector() override;
 
   bool HasSendValues() const;
@@ -219,6 +220,7 @@ class NET_EXPORT_PRIVATE QuicFixedTagVector : public QuicConfigValue {
 class NET_EXPORT_PRIVATE QuicConfig {
  public:
   QuicConfig();
+  QuicConfig(const QuicConfig& other);
   ~QuicConfig();
 
   void SetConnectionOptionsToSend(const QuicTagVector& connection_options);

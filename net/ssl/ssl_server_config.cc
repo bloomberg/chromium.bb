@@ -16,6 +16,8 @@ SSLServerConfig::SSLServerConfig()
       client_cert_type(NO_CLIENT_CERT),
       client_cert_verifier(nullptr) {}
 
+SSLServerConfig::SSLServerConfig(const SSLServerConfig& other) = default;
+
 SSLServerConfig::~SSLServerConfig() {}
 
 }  // namespace net

@@ -34,6 +34,8 @@ HttpRequest::HttpRequest() : method(METHOD_UNKNOWN),
                              has_content(false) {
 }
 
+HttpRequest::HttpRequest(const HttpRequest& other) = default;
+
 HttpRequest::~HttpRequest() {
 }
 

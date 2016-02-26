@@ -29,6 +29,8 @@ class NET_EXPORT IPAddress {
   // Creates an IP address from a deprecated IPAddressNumber.
   explicit IPAddress(const IPAddressNumber& address);
 
+  IPAddress(const IPAddress& other);
+
   // Copies the input address to |ip_address_|. The input is expected to be in
   // network byte order.
   template <size_t N>

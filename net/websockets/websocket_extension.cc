@@ -32,6 +32,9 @@ WebSocketExtension::WebSocketExtension() {}
 WebSocketExtension::WebSocketExtension(const std::string& name)
     : name_(name) {}
 
+WebSocketExtension::WebSocketExtension(const WebSocketExtension& other) =
+    default;
+
 WebSocketExtension::~WebSocketExtension() {}
 
 bool WebSocketExtension::Equals(const WebSocketExtension& other) const {

@@ -220,6 +220,9 @@ ClientSocketPoolBaseHelper::CallbackResultPair::CallbackResultPair(
       result(result_in) {
 }
 
+ClientSocketPoolBaseHelper::CallbackResultPair::CallbackResultPair(
+    const CallbackResultPair& other) = default;
+
 ClientSocketPoolBaseHelper::CallbackResultPair::~CallbackResultPair() {}
 
 bool ClientSocketPoolBaseHelper::IsStalled() const {

@@ -16,6 +16,8 @@ LoadTimingInfo::LoadTimingInfo() : socket_reused(false),
                                    socket_log_id(NetLog::Source::kInvalidId) {
 }
 
+LoadTimingInfo::LoadTimingInfo(const LoadTimingInfo& other) = default;
+
 LoadTimingInfo::~LoadTimingInfo() {}
 
 }  // namespace net

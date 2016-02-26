@@ -49,6 +49,7 @@ class NET_EXPORT ProxyConfig {
     // Note that the default of TYPE_NO_RULES results in direct connections
     // being made when using this ProxyConfig.
     ProxyRules();
+    ProxyRules(const ProxyRules& other);
     ~ProxyRules();
 
     bool empty() const {

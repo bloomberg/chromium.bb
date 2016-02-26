@@ -96,6 +96,8 @@ QuicPacketHeader::QuicPacketHeader(const QuicPacketPublicHeader& header)
       is_in_fec_group(NOT_IN_FEC_GROUP),
       fec_group(0) {}
 
+QuicPacketHeader::QuicPacketHeader(const QuicPacketHeader& other) = default;
+
 QuicPublicResetPacket::QuicPublicResetPacket()
     : nonce_proof(0), rejected_packet_number(0) {}
 
@@ -300,6 +302,8 @@ QuicAckFrame::QuicAckFrame()
       largest_observed(0),
       ack_delay_time(QuicTime::Delta::Infinite()),
       latest_revived_packet(0) {}
+
+QuicAckFrame::QuicAckFrame(const QuicAckFrame& other) = default;
 
 QuicAckFrame::~QuicAckFrame() {}
 
@@ -729,6 +733,9 @@ AckListenerWrapper::AckListenerWrapper(QuicAckListenerInterface* listener,
   DCHECK(listener != nullptr);
 }
 
+AckListenerWrapper::AckListenerWrapper(const AckListenerWrapper& other) =
+    default;
+
 AckListenerWrapper::~AckListenerWrapper() {}
 
 SerializedPacket::SerializedPacket(QuicPathId path_id,
@@ -753,6 +760,8 @@ SerializedPacket::SerializedPacket(QuicPathId path_id,
       has_stop_waiting(has_stop_waiting),
       original_packet_number(0),
       transmission_type(NOT_RETRANSMISSION) {}
+
+SerializedPacket::SerializedPacket(const SerializedPacket& other) = default;
 
 SerializedPacket::~SerializedPacket() {}
 
@@ -801,6 +810,8 @@ TransmissionInfo::TransmissionInfo(EncryptionLevel level,
       has_crypto_handshake(has_crypto_handshake),
       needs_padding(needs_padding),
       retransmission(0) {}
+
+TransmissionInfo::TransmissionInfo(const TransmissionInfo& other) = default;
 
 TransmissionInfo::~TransmissionInfo() {}
 

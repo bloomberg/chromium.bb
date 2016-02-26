@@ -149,6 +149,8 @@ class QuicTimeWaitListManager : public QuicBlockedWriterInterface {
                      QuicTime time_added_,
                      bool connection_rejected_statelessly);
 
+    ConnectionIdData(const ConnectionIdData& other);
+
     ~ConnectionIdData();
 
     int num_packets;

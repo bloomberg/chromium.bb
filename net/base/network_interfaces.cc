@@ -37,6 +37,8 @@ NetworkInterface::NetworkInterface(const std::string& name,
       ip_address_attributes(ip_address_attributes) {
 }
 
+NetworkInterface::NetworkInterface(const NetworkInterface& other) = default;
+
 NetworkInterface::~NetworkInterface() {
 }
 

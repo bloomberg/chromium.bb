@@ -26,6 +26,7 @@ struct NET_EXPORT SSLServerConfig {
 
   // Defaults
   SSLServerConfig();
+  SSLServerConfig(const SSLServerConfig& other);
   ~SSLServerConfig();
 
   // The minimum and maximum protocol versions that are enabled.

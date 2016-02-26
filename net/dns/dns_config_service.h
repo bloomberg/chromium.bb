@@ -66,6 +66,7 @@ class NET_EXPORT_PRIVATE NameServerClassifier {
 // DnsConfig stores configuration of the system resolver.
 struct NET_EXPORT_PRIVATE DnsConfig {
   DnsConfig();
+  DnsConfig(const DnsConfig& other);
   virtual ~DnsConfig();
 
   bool Equals(const DnsConfig& d) const;

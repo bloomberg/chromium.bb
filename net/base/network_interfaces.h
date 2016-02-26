@@ -47,6 +47,7 @@ struct NET_EXPORT NetworkInterface {
                    const IPAddressNumber& address,
                    uint32_t prefix_length,
                    int ip_address_attributes);
+  NetworkInterface(const NetworkInterface& other);
   ~NetworkInterface();
 
   std::string name;

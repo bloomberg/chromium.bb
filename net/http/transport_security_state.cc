@@ -1256,6 +1256,8 @@ TransportSecurityState::STSStateIterator::~STSStateIterator() {
 TransportSecurityState::PKPState::PKPState() : include_subdomains(false) {
 }
 
+TransportSecurityState::PKPState::PKPState(const PKPState& other) = default;
+
 TransportSecurityState::PKPState::~PKPState() {
 }
 

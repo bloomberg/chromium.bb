@@ -38,6 +38,7 @@ class NET_EXPORT_PRIVATE WebSocketExtension {
 
   WebSocketExtension();
   explicit WebSocketExtension(const std::string& name);
+  WebSocketExtension(const WebSocketExtension& other);
   ~WebSocketExtension();
 
   void Add(const Parameter& parameter) { parameters_.push_back(parameter); }

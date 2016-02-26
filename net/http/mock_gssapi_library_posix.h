@@ -52,6 +52,7 @@ class MockGSSAPILibrary : public GSSAPILibrary {
                          const test::GssContextMockImpl& context_info,
                          const char* expected_input_token,
                          const char* output_token);
+    SecurityContextQuery(const SecurityContextQuery& other);
     ~SecurityContextQuery();
 
     std::string expected_package;

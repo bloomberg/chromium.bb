@@ -19,6 +19,7 @@ struct NET_EXPORT_PRIVATE FtpCtrlResponse {
   static const int kInvalidStatusCode;
 
   FtpCtrlResponse();
+  FtpCtrlResponse(const FtpCtrlResponse& other);
   ~FtpCtrlResponse();
 
   int status_code;                 // Three-digit status code.
@@ -44,6 +45,7 @@ class NET_EXPORT_PRIVATE FtpCtrlResponseBuffer {
  private:
   struct ParsedLine {
     ParsedLine();
+    ParsedLine(const ParsedLine& other);
 
     // Indicates that this line begins with a valid 3-digit status code.
     bool has_status_code;

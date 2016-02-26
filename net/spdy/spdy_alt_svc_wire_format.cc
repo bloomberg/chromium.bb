@@ -55,6 +55,9 @@ SpdyAltSvcWireFormat::AlternativeService::AlternativeService(
 
 SpdyAltSvcWireFormat::AlternativeService::~AlternativeService() {}
 
+SpdyAltSvcWireFormat::AlternativeService::AlternativeService(
+    const AlternativeService& other) = default;
+
 // static
 bool SpdyAltSvcWireFormat::ParseHeaderFieldValue(
     StringPiece value,

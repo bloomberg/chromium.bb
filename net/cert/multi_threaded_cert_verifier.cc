@@ -497,6 +497,9 @@ MultiThreadedCertVerifier::RequestParams::RequestParams(
     hash_values.push_back(additional_trust_anchors[i]->fingerprint());
 }
 
+MultiThreadedCertVerifier::RequestParams::RequestParams(
+    const RequestParams& other) = default;
+
 MultiThreadedCertVerifier::RequestParams::~RequestParams() {}
 
 bool MultiThreadedCertVerifier::RequestParams::operator<(

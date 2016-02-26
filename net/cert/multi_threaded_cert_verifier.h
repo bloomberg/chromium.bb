@@ -92,6 +92,7 @@ class NET_EXPORT_PRIVATE MultiThreadedCertVerifier
                   const std::string& ocsp_response_arg,
                   int flags_arg,
                   const CertificateList& additional_trust_anchors);
+    RequestParams(const RequestParams& other);
     ~RequestParams();
 
     bool operator<(const RequestParams& other) const;

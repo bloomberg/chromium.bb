@@ -11,6 +11,9 @@ namespace net {
 
 HttpServerRequestInfo::HttpServerRequestInfo() {}
 
+HttpServerRequestInfo::HttpServerRequestInfo(
+    const HttpServerRequestInfo& other) = default;
+
 HttpServerRequestInfo::~HttpServerRequestInfo() {}
 
 std::string HttpServerRequestInfo::GetHeaderValue(

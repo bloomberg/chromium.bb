@@ -13,6 +13,9 @@ SignedCertificateTimestampAndStatus::SignedCertificateTimestampAndStatus(
     const ct::SCTVerifyStatus status)
     : sct(sct), status(status) {}
 
+SignedCertificateTimestampAndStatus::SignedCertificateTimestampAndStatus(
+    const SignedCertificateTimestampAndStatus& other) = default;
+
 SignedCertificateTimestampAndStatus::~SignedCertificateTimestampAndStatus() {}
 
 }  // namespace net

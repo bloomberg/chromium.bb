@@ -22,6 +22,7 @@ namespace net {
 class NET_EXPORT ProxyInfo {
  public:
   ProxyInfo();
+  ProxyInfo(const ProxyInfo& other);
   ~ProxyInfo();
   // Default copy-constructor and assignment operator are OK!
 

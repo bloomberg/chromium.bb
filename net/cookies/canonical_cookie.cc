@@ -176,6 +176,8 @@ CanonicalCookie::CanonicalCookie(const GURL& url, const ParsedCookie& pc)
   domain_ = cookie_domain;
 }
 
+CanonicalCookie::CanonicalCookie(const CanonicalCookie& other) = default;
+
 CanonicalCookie::~CanonicalCookie() {
 }
 

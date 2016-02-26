@@ -81,6 +81,7 @@ class NET_EXPORT HttpRequestHeaders {
   static const char kUserAgent[];
 
   HttpRequestHeaders();
+  HttpRequestHeaders(const HttpRequestHeaders& other);
   ~HttpRequestHeaders();
 
   bool IsEmpty() const { return headers_.empty(); }

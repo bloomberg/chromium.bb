@@ -17,6 +17,8 @@ IPAddress::IPAddress() {}
 
 IPAddress::IPAddress(const IPAddressNumber& address) : ip_address_(address) {}
 
+IPAddress::IPAddress(const IPAddress& other) = default;
+
 IPAddress::IPAddress(const uint8_t* address, size_t address_len)
     : ip_address_(address, address + address_len) {}
 

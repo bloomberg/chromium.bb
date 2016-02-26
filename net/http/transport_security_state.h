@@ -110,6 +110,7 @@ class NET_EXPORT TransportSecurityState
   class NET_EXPORT PKPState {
    public:
     PKPState();
+    PKPState(const PKPState& other);
     ~PKPState();
 
     // The absolute time (UTC) when the |spki_hashes| (and other state) were

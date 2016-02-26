@@ -707,6 +707,7 @@ const QuicPacketNumber kInvalidPacketNumber = 0;
 struct NET_EXPORT_PRIVATE QuicPacketHeader {
   QuicPacketHeader();
   explicit QuicPacketHeader(const QuicPacketPublicHeader& header);
+  QuicPacketHeader(const QuicPacketHeader& other);
 
   NET_EXPORT_PRIVATE friend std::ostream& operator<<(std::ostream& os,
                                                      const QuicPacketHeader& s);
@@ -956,6 +957,7 @@ class NET_EXPORT_PRIVATE PacketNumberQueue {
 
 struct NET_EXPORT_PRIVATE QuicAckFrame {
   QuicAckFrame();
+  QuicAckFrame(const QuicAckFrame& other);
   ~QuicAckFrame();
 
   NET_EXPORT_PRIVATE friend std::ostream& operator<<(std::ostream& os,
@@ -1288,6 +1290,7 @@ class NET_EXPORT_PRIVATE QuicAckListenerInterface
 struct NET_EXPORT_PRIVATE AckListenerWrapper {
   AckListenerWrapper(QuicAckListenerInterface* listener,
                      QuicPacketLength data_length);
+  AckListenerWrapper(const AckListenerWrapper& other);
   ~AckListenerWrapper();
 
   scoped_refptr<QuicAckListenerInterface> ack_listener;
@@ -1303,6 +1306,7 @@ struct NET_EXPORT_PRIVATE SerializedPacket {
                    QuicPacketEntropyHash entropy_hash,
                    bool has_ack,
                    bool has_stop_waiting);
+  SerializedPacket(const SerializedPacket& other);
   ~SerializedPacket();
 
   // Not owned.
@@ -1340,6 +1344,8 @@ struct NET_EXPORT_PRIVATE TransmissionInfo {
                    bool is_fec_packet,
                    bool has_crypto_handshake,
                    bool needs_padding);
+
+  TransmissionInfo(const TransmissionInfo& other);
 
   ~TransmissionInfo();
 

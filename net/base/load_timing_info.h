@@ -93,6 +93,7 @@ struct NET_EXPORT LoadTimingInfo {
   };
 
   LoadTimingInfo();
+  LoadTimingInfo(const LoadTimingInfo& other);
   ~LoadTimingInfo();
 
   // True if the socket was reused.  When true, DNS, connect, and SSL times

@@ -291,6 +291,7 @@ class NET_EXPORT HttpUtil {
     ValuesIterator(std::string::const_iterator values_begin,
                    std::string::const_iterator values_end,
                    char delimiter);
+    ValuesIterator(const ValuesIterator& other);
     ~ValuesIterator();
 
     // Advances the iterator to the next value, if any.  Returns true if there
@@ -337,6 +338,8 @@ class NET_EXPORT HttpUtil {
     NameValuePairsIterator(std::string::const_iterator begin,
                            std::string::const_iterator end,
                            char delimiter);
+
+    NameValuePairsIterator(const NameValuePairsIterator& other);
 
     ~NameValuePairsIterator();
 

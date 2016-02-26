@@ -634,6 +634,9 @@ WebSocketTransportClientSocketPool::StalledRequest::StalledRequest(
       callback(callback),
       net_log(net_log) {}
 
+WebSocketTransportClientSocketPool::StalledRequest::StalledRequest(
+    const StalledRequest& other) = default;
+
 WebSocketTransportClientSocketPool::StalledRequest::~StalledRequest() {}
 
 }  // namespace net

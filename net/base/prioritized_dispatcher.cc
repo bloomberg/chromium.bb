@@ -12,6 +12,8 @@ PrioritizedDispatcher::Limits::Limits(Priority num_priorities,
                                       size_t total_jobs)
     : total_jobs(total_jobs), reserved_slots(num_priorities) {}
 
+PrioritizedDispatcher::Limits::Limits(const Limits& other) = default;
+
 PrioritizedDispatcher::Limits::~Limits() {}
 
 PrioritizedDispatcher::PrioritizedDispatcher(const Limits& limits)

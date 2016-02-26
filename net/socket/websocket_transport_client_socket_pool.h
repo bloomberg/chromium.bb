@@ -185,6 +185,7 @@ class NET_EXPORT_PRIVATE WebSocketTransportClientSocketPool
                    ClientSocketHandle* handle,
                    const CompletionCallback& callback,
                    const BoundNetLog& net_log);
+    StalledRequest(const StalledRequest& other);
     ~StalledRequest();
     const scoped_refptr<TransportSocketParams> params;
     const RequestPriority priority;

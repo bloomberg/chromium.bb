@@ -149,6 +149,7 @@ class NET_EXPORT WebSocketChannel {
                          const scoped_refptr<IOBuffer>& data,
                          uint64_t offset,
                          uint64_t size);
+    PendingReceivedFrame(const PendingReceivedFrame& other);
     ~PendingReceivedFrame();
 
     bool final() const { return final_; }

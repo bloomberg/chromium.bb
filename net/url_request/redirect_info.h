@@ -17,6 +17,7 @@ namespace net {
 // content/common/resource_messages.h.
 struct NET_EXPORT RedirectInfo {
   RedirectInfo();
+  RedirectInfo(const RedirectInfo& other);
   ~RedirectInfo();
 
   // The status code for the redirect response. This is almost redundant with

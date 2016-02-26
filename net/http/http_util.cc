@@ -867,6 +867,8 @@ HttpUtil::ValuesIterator::ValuesIterator(
   values_.set_quote_chars("\'\"");
 }
 
+HttpUtil::ValuesIterator::ValuesIterator(const ValuesIterator& other) = default;
+
 HttpUtil::ValuesIterator::~ValuesIterator() {
 }
 
@@ -902,6 +904,9 @@ HttpUtil::NameValuePairsIterator::NameValuePairsIterator(
     std::string::const_iterator end,
     char delimiter)
     : NameValuePairsIterator(begin, end, delimiter, VALUES_NOT_OPTIONAL) {}
+
+HttpUtil::NameValuePairsIterator::NameValuePairsIterator(
+    const NameValuePairsIterator& other) = default;
 
 HttpUtil::NameValuePairsIterator::~NameValuePairsIterator() {}
 

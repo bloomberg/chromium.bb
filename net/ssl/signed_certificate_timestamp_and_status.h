@@ -19,6 +19,9 @@ struct NET_EXPORT SignedCertificateTimestampAndStatus {
       const scoped_refptr<ct::SignedCertificateTimestamp>& sct,
       ct::SCTVerifyStatus status);
 
+  SignedCertificateTimestampAndStatus(
+      const SignedCertificateTimestampAndStatus& other);
+
   ~SignedCertificateTimestampAndStatus();
 
   scoped_refptr<ct::SignedCertificateTimestamp> sct;

@@ -65,6 +65,7 @@ class NET_EXPORT NSSCertDatabase {
   struct NET_EXPORT ImportCertFailure {
    public:
     ImportCertFailure(const scoped_refptr<X509Certificate>& cert, int err);
+    ImportCertFailure(const ImportCertFailure& other);
     ~ImportCertFailure();
 
     scoped_refptr<X509Certificate> certificate;

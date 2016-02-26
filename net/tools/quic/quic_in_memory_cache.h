@@ -48,6 +48,7 @@ class QuicInMemoryCache {
                    const net::SpdyHeaderBlock& headers,
                    net::SpdyPriority priority,
                    string body);
+    ServerPushInfo(const ServerPushInfo& other);
     GURL request_url;
     net::SpdyHeaderBlock headers;
     net::SpdyPriority priority;

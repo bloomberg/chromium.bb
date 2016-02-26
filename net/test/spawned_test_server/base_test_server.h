@@ -140,6 +140,7 @@ class BaseTestServer {
 
     // Initialize a new SSLOptions that will use the specified certificate.
     explicit SSLOptions(ServerCertificate cert);
+    SSLOptions(const SSLOptions& other);
     ~SSLOptions();
 
     // Returns the relative filename of the file that contains the

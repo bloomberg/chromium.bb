@@ -40,6 +40,7 @@ class NET_EXPORT_PRIVATE PrioritizedDispatcher {
   // for priority 3 or above.
   struct NET_EXPORT_PRIVATE Limits {
     Limits(Priority num_priorities, size_t total_jobs);
+    Limits(const Limits& other);
     ~Limits();
 
     // Total allowed running jobs.

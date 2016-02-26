@@ -180,6 +180,8 @@ HttpAuthCache::Entry* HttpAuthCache::Add(const GURL& origin,
   return entry;
 }
 
+HttpAuthCache::Entry::Entry(const Entry& other) = default;
+
 HttpAuthCache::Entry::~Entry() {
 }
 

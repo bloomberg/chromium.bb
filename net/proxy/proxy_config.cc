@@ -42,6 +42,8 @@ ProxyConfig::ProxyRules::ProxyRules()
       type(TYPE_NO_RULES) {
 }
 
+ProxyConfig::ProxyRules::ProxyRules(const ProxyRules& other) = default;
+
 ProxyConfig::ProxyRules::~ProxyRules() {
 }
 

@@ -89,6 +89,7 @@ class NET_EXPORT SpdyHeaderBlock {
   class NET_EXPORT StringPieceProxy {
    public:
     ~StringPieceProxy();
+    StringPieceProxy(const StringPieceProxy& other);
 
     // Assignment modifies the underlying SpdyHeaderBlock.
     StringPieceProxy& operator=(const base::StringPiece other);

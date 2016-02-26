@@ -286,6 +286,9 @@ WebSocketChannel::PendingReceivedFrame::PendingReceivedFrame(
       offset_(offset),
       size_(size) {}
 
+WebSocketChannel::PendingReceivedFrame::PendingReceivedFrame(
+    const PendingReceivedFrame& other) = default;
+
 WebSocketChannel::PendingReceivedFrame::~PendingReceivedFrame() {}
 
 void WebSocketChannel::PendingReceivedFrame::ResetOpcode() {

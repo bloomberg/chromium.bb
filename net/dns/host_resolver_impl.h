@@ -82,6 +82,8 @@ class NET_EXPORT HostResolverImpl
     // Sets up defaults.
     ProcTaskParams(HostResolverProc* resolver_proc, size_t max_retry_attempts);
 
+    ProcTaskParams(const ProcTaskParams& other);
+
     ~ProcTaskParams();
 
     // The procedure to use for resolving host names. This will be NULL, except

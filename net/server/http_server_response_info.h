@@ -20,6 +20,7 @@ class HttpServerResponseInfo {
   // Creates a 200 OK HttpServerResponseInfo.
   HttpServerResponseInfo();
   explicit HttpServerResponseInfo(HttpStatusCode status_code);
+  HttpServerResponseInfo(const HttpServerResponseInfo& other);
   ~HttpServerResponseInfo();
 
   static HttpServerResponseInfo CreateFor404();

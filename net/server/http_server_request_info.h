@@ -19,6 +19,7 @@ namespace net {
 class HttpServerRequestInfo {
  public:
   HttpServerRequestInfo();
+  HttpServerRequestInfo(const HttpServerRequestInfo& other);
   ~HttpServerRequestInfo();
 
   // Returns header value for given header name. |header_name| should be

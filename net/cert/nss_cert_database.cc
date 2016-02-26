@@ -78,6 +78,9 @@ NSSCertDatabase::ImportCertFailure::ImportCertFailure(
     int err)
     : certificate(cert), net_error(err) {}
 
+NSSCertDatabase::ImportCertFailure::ImportCertFailure(
+    const ImportCertFailure& other) = default;
+
 NSSCertDatabase::ImportCertFailure::~ImportCertFailure() {}
 
 NSSCertDatabase::NSSCertDatabase(crypto::ScopedPK11Slot public_slot,

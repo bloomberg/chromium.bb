@@ -32,6 +32,9 @@ QuicInMemoryCache::ServerPushInfo::ServerPushInfo(
       priority(priority),
       body(body) {}
 
+QuicInMemoryCache::ServerPushInfo::ServerPushInfo(const ServerPushInfo& other) =
+    default;
+
 QuicInMemoryCache::Response::Response() : response_type_(REGULAR_RESPONSE) {}
 
 QuicInMemoryCache::Response::~Response() {}

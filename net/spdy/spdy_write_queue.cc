@@ -26,6 +26,8 @@ SpdyWriteQueue::PendingWrite::PendingWrite(
       stream(stream),
       has_stream(stream.get() != NULL) {}
 
+SpdyWriteQueue::PendingWrite::PendingWrite(const PendingWrite& other) = default;
+
 SpdyWriteQueue::PendingWrite::~PendingWrite() {}
 
 SpdyWriteQueue::SpdyWriteQueue() : removing_writes_(false) {}

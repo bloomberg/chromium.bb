@@ -16,6 +16,8 @@ CTVerifyResult::CTVerifyResult()
           ct::CertPolicyCompliance::CERT_POLICY_COMPLIES_VIA_SCTS),
       ev_policy_compliance(ct::EVPolicyCompliance::EV_POLICY_DOES_NOT_APPLY) {}
 
+CTVerifyResult::CTVerifyResult(const CTVerifyResult& other) = default;
+
 CTVerifyResult::~CTVerifyResult() {}
 
 }  // namespace ct

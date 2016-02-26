@@ -27,6 +27,7 @@ class OutputOrdering {
 
   struct PriorityMapPointer {
     PriorityMapPointer();
+    PriorityMapPointer(const PriorityMapPointer& other);
     ~PriorityMapPointer();
     PriorityRing* ring;
     PriorityRing::iterator it;

@@ -36,6 +36,8 @@ SSLConfig::SSLConfig()
       cert_io_enabled(true),
       renego_allowed_default(false) {}
 
+SSLConfig::SSLConfig(const SSLConfig& other) = default;
+
 SSLConfig::~SSLConfig() {}
 
 bool SSLConfig::IsAllowedBadCert(X509Certificate* cert,

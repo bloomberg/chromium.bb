@@ -514,6 +514,7 @@ class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
   struct CallbackResultPair {
     CallbackResultPair();
     CallbackResultPair(const CompletionCallback& callback_in, int result_in);
+    CallbackResultPair(const CallbackResultPair& other);
     ~CallbackResultPair();
 
     CompletionCallback callback;

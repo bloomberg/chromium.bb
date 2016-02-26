@@ -20,6 +20,8 @@ const int FtpCtrlResponse::kInvalidStatusCode = -1;
 
 FtpCtrlResponse::FtpCtrlResponse() : status_code(kInvalidStatusCode) {}
 
+FtpCtrlResponse::FtpCtrlResponse(const FtpCtrlResponse& other) = default;
+
 FtpCtrlResponse::~FtpCtrlResponse() {}
 
 FtpCtrlResponseBuffer::FtpCtrlResponseBuffer(const BoundNetLog& net_log)
@@ -111,6 +113,9 @@ FtpCtrlResponseBuffer::ParsedLine::ParsedLine()
       is_complete(false),
       status_code(FtpCtrlResponse::kInvalidStatusCode) {
 }
+
+FtpCtrlResponseBuffer::ParsedLine::ParsedLine(const ParsedLine& other) =
+    default;
 
 // static
 FtpCtrlResponseBuffer::ParsedLine FtpCtrlResponseBuffer::ParseLine(

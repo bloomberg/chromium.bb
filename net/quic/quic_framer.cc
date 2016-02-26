@@ -313,6 +313,8 @@ size_t QuicFramer::GetSerializedFrameLength(
 
 QuicFramer::AckFrameInfo::AckFrameInfo() : max_delta(0) {}
 
+QuicFramer::AckFrameInfo::AckFrameInfo(const AckFrameInfo& other) = default;
+
 QuicFramer::AckFrameInfo::~AckFrameInfo() {}
 
 // static

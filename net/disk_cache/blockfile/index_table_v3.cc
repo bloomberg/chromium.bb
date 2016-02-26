@@ -403,6 +403,8 @@ void EntryCell::Serialize(IndexCell* destination) const {
 EntrySet::EntrySet() : evicted_count(0), current(0) {
 }
 
+EntrySet::EntrySet(const EntrySet& other) = default;
+
 EntrySet::~EntrySet() {
 }
 
