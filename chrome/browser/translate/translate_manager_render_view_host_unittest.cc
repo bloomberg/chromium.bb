@@ -192,6 +192,31 @@ class TranslateManagerRenderViewHostTest
       infobar->Translate();
     }
   }
+
+  translate::TranslateStep CurrentStep() {
+    if (bubble_factory_.get()) {
+      TranslateBubbleModel::ViewState view_state =
+          bubble_factory_->model()->GetViewState();
+      switch (view_state) {
+        case TranslateBubbleModel::VIEW_STATE_BEFORE_TRANSLATE:
+          return translate::TRANSLATE_STEP_BEFORE_TRANSLATE;
+        case TranslateBubbleModel::VIEW_STATE_TRANSLATING:
+          return translate::TRANSLATE_STEP_TRANSLATING;
+        case TranslateBubbleModel::VIEW_STATE_AFTER_TRANSLATE:
+          return translate::TRANSLATE_STEP_AFTER_TRANSLATE;
+        case TranslateBubbleModel::VIEW_STATE_ERROR:
+          return translate::TRANSLATE_STEP_TRANSLATE_ERROR;
+        case TranslateBubbleModel::VIEW_STATE_ADVANCED:
+          NOTREACHED();
+          break;
+      }
+      NOTREACHED();
+      return translate::TRANSLATE_STEP_TRANSLATE_ERROR;
+    } else {
+      translate::TranslateInfoBarDelegate* infobar = GetTranslateInfoBar();
+      return infobar->translate_step();
+    }
+  }
 #endif  // defined(USE_AURA)
 
   // Simulates navigating to a page and getting the page contents and language
@@ -765,8 +790,7 @@ TEST_F(TranslateManagerRenderViewHostTest, TranslateUnknownLanguage) {
 
 // Tests that we show/don't show an info-bar for the languages.
 TEST_F(TranslateManagerRenderViewHostTest, TestLanguages) {
-  // TODO(port): Test corresponding bubble translate UX: http://crbug.com/383235
-  // This actually doesn't make sense to port, because the check for supported
+  // This only makes sense for infobars, because the check for supported
   // languages moved out of the Infobar into the TranslateManager.
   if (TranslateService::IsTranslateBubbleEnabled())
     return;
@@ -860,22 +884,20 @@ TEST_F(TranslateManagerRenderViewHostTest, MultipleOnPageContents) {
 // Test that reloading the page brings back the infobar if the
 // reload succeeded and does not bring it back the reload fails.
 TEST_F(TranslateManagerRenderViewHostTest, Reload) {
-  // TODO(port): Test corresponding bubble translate UX: http://crbug.com/383235
-  if (TranslateService::IsTranslateBubbleEnabled())
-    return;
+  EnableBubbleTest();
 
   SimulateNavigation(GURL("http://www.google.fr"), "fr", true);
 
-  EXPECT_TRUE(CloseTranslateInfoBar());
+  EXPECT_TRUE(CloseTranslateUi());
 
   // Reload should bring back the infobar if the reload succeeds.
   ReloadAndWait(true);
-  EXPECT_TRUE(GetTranslateInfoBar() != NULL);
-  EXPECT_TRUE(CloseTranslateInfoBar());
+  EXPECT_TRUE(TranslateUiVisible());
+  EXPECT_TRUE(CloseTranslateUi());
 
   // ...But not show it if the reload fails.
   ReloadAndWait(false);
-  EXPECT_TRUE(GetTranslateInfoBar() == NULL);
+  EXPECT_FALSE(TranslateUiVisible());
 
   // If we set reload attempts to a high value, we will not see the infobar
   // immediately.
@@ -883,20 +905,18 @@ TEST_F(TranslateManagerRenderViewHostTest, Reload) {
       ->translate_driver()
       .set_translate_max_reload_attempts(100);
   ReloadAndWait(true);
-  EXPECT_TRUE(GetTranslateInfoBar() == NULL);
+  EXPECT_FALSE(TranslateUiVisible());
 }
 
 // Test that reloading the page by way of typing again the URL in the
 // location bar brings back the infobar.
 TEST_F(TranslateManagerRenderViewHostTest, ReloadFromLocationBar) {
-  // TODO(port): Test corresponding bubble translate UX: http://crbug.com/383235
-  if (TranslateService::IsTranslateBubbleEnabled())
-    return;
+  EnableBubbleTest();
 
   GURL url("http://www.google.fr");
   SimulateNavigation(url, "fr", true);
 
-  EXPECT_TRUE(CloseTranslateInfoBar());
+  EXPECT_TRUE(CloseTranslateUi());
 
   // Create a pending navigation and simulate a page load.  That should be the
   // equivalent of typing the URL again in the location bar.
@@ -919,39 +939,39 @@ TEST_F(TranslateManagerRenderViewHostTest, ReloadFromLocationBar) {
   // The TranslateManager class processes the navigation entry committed
   // notification in a posted task; process that task.
   base::MessageLoop::current()->RunUntilIdle();
-  EXPECT_TRUE(GetTranslateInfoBar() != NULL);
+  EXPECT_TRUE(CloseTranslateUi());
 }
 
 // Tests that a closed translate infobar does not reappear when navigating
 // in-page.
 TEST_F(TranslateManagerRenderViewHostTest, CloseInfoBarInPageNavigation) {
-  // TODO(port): Test corresponding bubble translate UX: http://crbug.com/383235
-  if (TranslateService::IsTranslateBubbleEnabled())
-    return;
+  EnableBubbleTest();
 
   SimulateNavigation(GURL("http://www.google.fr"), "fr", true);
 
-  EXPECT_TRUE(CloseTranslateInfoBar());
+  EXPECT_TRUE(CloseTranslateUi());
 
   // Navigate in page, no infobar should be shown.
   SimulateNavigation(GURL("http://www.google.fr/#ref1"), "fr", true);
-  EXPECT_TRUE(GetTranslateInfoBar() == NULL);
+  EXPECT_FALSE(TranslateUiVisible());
 
-  // Navigate out of page, a new infobar should show.
-  SimulateNavigation(GURL("http://www.google.fr/foot"), "fr", true);
-  EXPECT_TRUE(GetTranslateInfoBar() != NULL);
+  // This is deliberately different behavior for bubbles - same language
+  // navigation does not show a bubble, ever. Blame ChromeTranslateClient.
+  if (!TranslateService::IsTranslateBubbleEnabled()) {
+    // Navigate out of page, a new infobar should show.
+    SimulateNavigation(GURL("http://www.google.fr/foot"), "fr", true);
+    EXPECT_TRUE(TranslateUiVisible());
+  }
 }
 
 // Tests that a closed translate infobar does not reappear when navigating
 // in a subframe. (http://crbug.com/48215)
 TEST_F(TranslateManagerRenderViewHostTest, CloseInfoBarInSubframeNavigation) {
-  // TODO(port): Test corresponding bubble translate UX: http://crbug.com/383235
-  if (TranslateService::IsTranslateBubbleEnabled())
-    return;
+  EnableBubbleTest();
 
   SimulateNavigation(GURL("http://www.google.fr"), "fr", true);
 
-  EXPECT_TRUE(CloseTranslateInfoBar());
+  EXPECT_TRUE(CloseTranslateUi());
 
   content::RenderFrameHostTester* subframe_tester =
       content::RenderFrameHostTester::For(
@@ -961,23 +981,25 @@ TEST_F(TranslateManagerRenderViewHostTest, CloseInfoBarInSubframeNavigation) {
   // Simulate a sub-frame auto-navigating.
   subframe_tester->SendNavigateWithTransition(
       0, 0, false, GURL("http://pub.com"), ui::PAGE_TRANSITION_AUTO_SUBFRAME);
-  EXPECT_TRUE(GetTranslateInfoBar() == NULL);
+  EXPECT_FALSE(TranslateUiVisible());
 
   // Simulate the user navigating in a sub-frame.
   subframe_tester->SendNavigateWithTransition(
       1, 0, true, GURL("http://pub.com"), ui::PAGE_TRANSITION_MANUAL_SUBFRAME);
-  EXPECT_TRUE(GetTranslateInfoBar() == NULL);
+  EXPECT_FALSE(TranslateUiVisible());
 
-  // Navigate out of page, a new infobar should show.
-  SimulateNavigation(GURL("http://www.google.fr/foot"), "fr", true);
-  EXPECT_TRUE(GetTranslateInfoBar() != NULL);
+  // This is deliberately different behavior for bubbles - same language
+  // navigation does not show a bubble, ever. Blame ChromeTranslateClient.
+  if (!TranslateService::IsTranslateBubbleEnabled()) {
+    // Navigate out of page, a new infobar should show.
+    SimulateNavigation(GURL("http://www.google.fr/foot"), "fr", true);
+    EXPECT_TRUE(TranslateUiVisible());
+  }
 }
 
 // Tests that denying translation is sticky when navigating in page.
 TEST_F(TranslateManagerRenderViewHostTest, DenyTranslateInPageNavigation) {
-  // TODO(port): Test corresponding bubble translate UX: http://crbug.com/383235
-  if (TranslateService::IsTranslateBubbleEnabled())
-    return;
+  EnableBubbleTest();
 
   SimulateNavigation(GURL("http://www.google.fr"), "fr", true);
 
@@ -986,101 +1008,94 @@ TEST_F(TranslateManagerRenderViewHostTest, DenyTranslateInPageNavigation) {
 
   // Navigate in page, no infobar should be shown.
   SimulateNavigation(GURL("http://www.google.fr/#ref1"), "fr", true);
-  EXPECT_TRUE(GetTranslateInfoBar() == NULL);
+  EXPECT_FALSE(TranslateUiVisible());
 
-  // Navigate out of page, a new infobar should show.
+  // Navigate out of page, a new infobar should show. (Infobar only).
   SimulateNavigation(GURL("http://www.google.fr/foot"), "fr", true);
-  EXPECT_TRUE(GetTranslateInfoBar() != NULL);
+  EXPECT_NE(TranslateService::IsTranslateBubbleEnabled(), TranslateUiVisible());
 }
 
 // Tests that after translating and closing the infobar, the infobar does not
 // return when navigating in page.
 TEST_F(TranslateManagerRenderViewHostTest,
        TranslateCloseInfoBarInPageNavigation) {
-  // TODO(port): Test corresponding bubble translate UX: http://crbug.com/383235
-  if (TranslateService::IsTranslateBubbleEnabled())
-    return;
+  EnableBubbleTest();
 
   SimulateNavigation(GURL("http://www.google.fr"), "fr", true);
 
   // Simulate the user translating.
-  translate::TranslateInfoBarDelegate* infobar = GetTranslateInfoBar();
-  ASSERT_TRUE(infobar != NULL);
-  infobar->Translate();
+  SimulateTranslatePress();
+
   // Simulate the translate script being retrieved.
   SimulateTranslateScriptURLFetch(true);
   SimulateOnPageTranslated("fr", "en");
 
-  EXPECT_TRUE(CloseTranslateInfoBar());
+  EXPECT_TRUE(CloseTranslateUi());
 
   // Navigate in page, no infobar should be shown.
   SimulateNavigation(GURL("http://www.google.fr/#ref1"), "fr", true);
-  EXPECT_TRUE(GetTranslateInfoBar() == NULL);
+  EXPECT_FALSE(TranslateUiVisible());
 
   // Navigate out of page, a new infobar should show.
   // Note that we navigate to a page in a different language so we don't trigger
   // the auto-translate feature (it would translate the page automatically and
   // the before translate infobar would not be shown).
   SimulateNavigation(GURL("http://www.google.de"), "de", true);
-  EXPECT_TRUE(GetTranslateInfoBar() != NULL);
+  EXPECT_TRUE(TranslateUiVisible());
 }
 
 // Tests that the after translate the infobar still shows when navigating
 // in-page.
 TEST_F(TranslateManagerRenderViewHostTest, TranslateInPageNavigation) {
-  // TODO(port): Test corresponding bubble translate UX: http://crbug.com/383235
-  if (TranslateService::IsTranslateBubbleEnabled())
-    return;
+  EnableBubbleTest();
 
   SimulateNavigation(GURL("http://www.google.fr"), "fr", true);
 
   // Simulate the user translating.
-  translate::TranslateInfoBarDelegate* infobar = GetTranslateInfoBar();
-  ASSERT_TRUE(infobar != NULL);
-  infobar->Translate();
+  SimulateTranslatePress();
   SimulateTranslateScriptURLFetch(true);
   SimulateOnPageTranslated("fr", "en");
-  // The after translate infobar is showing.
-  infobar = GetTranslateInfoBar();
-  ASSERT_TRUE(infobar != NULL);
+  // The after translate UI is showing.
+  EXPECT_TRUE(TranslateUiVisible());
+
+  // Remember infobar, so removal can be verified.
+  translate::TranslateInfoBarDelegate* infobar = nullptr;
+  if (!TranslateService::IsTranslateBubbleEnabled())
+    infobar = GetTranslateInfoBar();
 
   // Navigate out of page, a new infobar should show.
   // See note in TranslateCloseInfoBarInPageNavigation test on why it is
   // important to navigate to a page in a different language for this test.
   SimulateNavigation(GURL("http://www.google.de"), "de", true);
-  // The old infobar is gone.
-  EXPECT_TRUE(CheckInfoBarRemovedAndReset(infobar));
+  // The old infobar is gone. Can't verify this for bubbles.
+  // Also, does not apply - existing bubbles are reused.
+  if (!TranslateService::IsTranslateBubbleEnabled())
+    EXPECT_TRUE(CheckInfoBarRemovedAndReset(infobar));
   // And there is a new one.
-  EXPECT_TRUE(GetTranslateInfoBar() != NULL);
+  EXPECT_TRUE(TranslateUiVisible());
 }
 
 // Tests that no translate infobar is shown when navigating to a page in an
 // unsupported language.
 TEST_F(TranslateManagerRenderViewHostTest, CLDReportsUnsupportedPageLanguage) {
-  // TODO(port): Test corresponding bubble translate UX: http://crbug.com/383235
-  if (TranslateService::IsTranslateBubbleEnabled())
-    return;
+  EnableBubbleTest();
 
   // Simulate navigating to a page and getting an unsupported language.
   SimulateNavigation(GURL("http://www.google.com"), "qbz", true);
 
   // No info-bar should be shown.
-  EXPECT_TRUE(GetTranslateInfoBar() == NULL);
+  EXPECT_FALSE(TranslateUiVisible());
 }
 
 // Tests that we deal correctly with unsupported languages returned by the
 // server.
 // The translation server might return a language we don't support.
 TEST_F(TranslateManagerRenderViewHostTest, ServerReportsUnsupportedLanguage) {
-  // TODO(port): Test corresponding bubble translate UX: http://crbug.com/383235
-  if (TranslateService::IsTranslateBubbleEnabled())
-    return;
+  EnableBubbleTest();
 
   SimulateNavigation(GURL("http://mail.google.fr"), "fr", true);
-  translate::TranslateInfoBarDelegate* infobar = GetTranslateInfoBar();
-  ASSERT_TRUE(infobar != NULL);
   process()->sink().ClearMessages();
-  infobar->Translate();
+  SimulateTranslatePress();
   SimulateTranslateScriptURLFetch(true);
   // Simulate the render notifying the translation has been done, but it
   // reports a language we don't support.
@@ -1088,22 +1103,26 @@ TEST_F(TranslateManagerRenderViewHostTest, ServerReportsUnsupportedLanguage) {
 
   // An error infobar should be showing to report that we don't support this
   // language.
-  infobar = GetTranslateInfoBar();
-  ASSERT_TRUE(infobar != NULL);
-  EXPECT_EQ(translate::TRANSLATE_STEP_TRANSLATE_ERROR,
-            infobar->translate_step());
+  EXPECT_EQ(translate::TRANSLATE_STEP_TRANSLATE_ERROR, CurrentStep());
 
   // This infobar should have a button (so the string should not be empty).
-  ASSERT_FALSE(infobar->GetMessageInfoBarButtonText().empty());
+  // The error string on bubbles is currently not retrievable.
+  // TODO(http://crbug.com/589301): OSX does not have an error view (yet).
+  if (!TranslateService::IsTranslateBubbleEnabled()) {
+    translate::TranslateInfoBarDelegate* infobar = GetTranslateInfoBar();
+    ASSERT_TRUE(infobar);
+    ASSERT_FALSE(infobar->GetMessageInfoBarButtonText().empty());
 
-  // Pressing the button on that infobar should revert to the original language.
-  process()->sink().ClearMessages();
-  infobar->MessageInfoBarButtonPressed();
-  const IPC::Message* message = process()->sink().GetFirstMessageMatching(
-      ChromeFrameMsg_RevertTranslation::ID);
-  EXPECT_TRUE(message != NULL);
-  // And it should have removed the infobar.
-  EXPECT_TRUE(GetTranslateInfoBar() == NULL);
+    // Pressing the button on that infobar should revert to the original
+    // language.
+    process()->sink().ClearMessages();
+    infobar->MessageInfoBarButtonPressed();
+    const IPC::Message* message = process()->sink().GetFirstMessageMatching(
+        ChromeFrameMsg_RevertTranslation::ID);
+    EXPECT_TRUE(message != NULL);
+    // And it should have removed the infobar.
+    EXPECT_TRUE(GetTranslateInfoBar() == NULL);
+  }
 }
 
 // Tests that no translate infobar is shown and context menu is disabled, when
