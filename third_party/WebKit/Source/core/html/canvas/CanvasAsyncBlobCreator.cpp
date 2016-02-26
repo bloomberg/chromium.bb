@@ -5,7 +5,6 @@
 #include "CanvasAsyncBlobCreator.h"
 
 #include "core/fileapi/Blob.h"
-#include "platform/Task.h"
 #include "platform/ThreadSafeFunctional.h"
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/heap/Handle.h"

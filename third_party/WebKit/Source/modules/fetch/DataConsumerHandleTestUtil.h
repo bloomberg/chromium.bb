@@ -11,7 +11,6 @@
 #include "modules/fetch/DataConsumerHandleUtil.h"
 #include "modules/fetch/FetchDataConsumerHandle.h"
 #include "modules/fetch/FetchDataLoader.h"
-#include "platform/Task.h"
 #include "platform/ThreadSafeFunctional.h"
 #include "platform/WaitableEvent.h"
 #include "platform/WebThreadSupportingGC.h"
@@ -116,13 +115,13 @@ public:
                 ASSERT(m_holder);
                 m_holder = nullptr;
             }
-            void postTaskToReadingThread(const WebTraceLocation& location, Task* task)
+            void postTaskToReadingThread(const WebTraceLocation& location, PassOwnPtr<Closure> task)
             {
                 MutexLocker locker(m_holderMutex);
                 ASSERT(m_holder);
                 m_holder->readingThread()->postTask(location, task);
             }
-            void postTaskToUpdatingThread(const WebTraceLocation& location, Task* task)
+            void postTaskToUpdatingThread(const WebTraceLocation& location, PassOwnPtr<Closure> task)
             {
                 MutexLocker locker(m_holderMutex);
                 ASSERT(m_holder);
@@ -219,20 +218,20 @@ public:
         void resetReader() { m_reader = nullptr; }
         void signalDone() { m_waitableEvent->signal(); }
         const String& result() { return m_context->result(); }
-        void postTaskToReadingThread(const WebTraceLocation& location, Task* task)
+        void postTaskToReadingThread(const WebTraceLocation& location, PassOwnPtr<Closure> task)
         {
             m_context->postTaskToReadingThread(location,  task);
         }
-        void postTaskToUpdatingThread(const WebTraceLocation& location, Task* task)
+        void postTaskToUpdatingThread(const WebTraceLocation& location, PassOwnPtr<Closure> task)
         {
             m_context->postTaskToUpdatingThread(location,  task);
         }
-        void postTaskToReadingThreadAndWait(const WebTraceLocation& location, Task* task)
+        void postTaskToReadingThreadAndWait(const WebTraceLocation& location, PassOwnPtr<Closure> task)
         {
             postTaskToReadingThread(location,  task);
             m_waitableEvent->wait();
         }
-        void postTaskToUpdatingThreadAndWait(const WebTraceLocation& location, Task* task)
+        void postTaskToUpdatingThreadAndWait(const WebTraceLocation& location, PassOwnPtr<Closure> task)
         {
             postTaskToUpdatingThread(location,  task);
             m_waitableEvent->wait();
@@ -258,7 +257,7 @@ public:
             m_waitableEvent = adoptPtr(new WaitableEvent());
             m_handle = handle;
 
-            postTaskToReadingThreadAndWait(BLINK_FROM_HERE, new Task(threadSafeBind(&Self::obtainReader, this)));
+            postTaskToReadingThreadAndWait(BLINK_FROM_HERE, threadSafeBind(&Self::obtainReader, this));
         }
 
     private:
@@ -269,8 +268,8 @@ public:
         }
         void didGetReadable() override
         {
-            postTaskToReadingThread(BLINK_FROM_HERE, new Task(threadSafeBind(&Self::resetReader, this)));
-            postTaskToReadingThread(BLINK_FROM_HERE, new Task(threadSafeBind(&Self::signalDone, this)));
+            postTaskToReadingThread(BLINK_FROM_HERE, threadSafeBind(&Self::resetReader, this));
+            postTaskToReadingThread(BLINK_FROM_HERE, threadSafeBind(&Self::signalDone, this));
         }
 
         OwnPtr<WebDataConsumerHandle> m_handle;
@@ -287,7 +286,7 @@ public:
             m_waitableEvent = adoptPtr(new WaitableEvent());
             m_handle = handle;
 
-            postTaskToReadingThreadAndWait(BLINK_FROM_HERE, new Task(threadSafeBind(&Self::obtainReader, this)));
+            postTaskToReadingThreadAndWait(BLINK_FROM_HERE, threadSafeBind(&Self::obtainReader, this));
         }
 
     private:
@@ -296,7 +295,7 @@ public:
         {
             m_reader = m_handle->obtainReader(this);
             m_reader = nullptr;
-            postTaskToReadingThread(BLINK_FROM_HERE, new Task(threadSafeBind(&Self::signalDone, this)));
+            postTaskToReadingThread(BLINK_FROM_HERE, threadSafeBind(&Self::signalDone, this));
         }
         void didGetReadable() override
         {
@@ -501,7 +500,7 @@ public:
             , m_event(adoptPtr(new WaitableEvent()))
             , m_isDone(false)
         {
-            m_thread->thread()->postTask(BLINK_FROM_HERE, new Task(threadSafeBind(&HandleReaderRunner::start, AllowCrossThreadAccess(this), handle)));
+            m_thread->thread()->postTask(BLINK_FROM_HERE, threadSafeBind(&HandleReaderRunner::start, AllowCrossThreadAccess(this), handle));
         }
         ~HandleReaderRunner()
         {

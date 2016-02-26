@@ -7,9 +7,10 @@
 
 #include "core/CoreExport.h"
 #include "platform/TaskSynchronizer.h"
-#include "public/platform/WebTaskRunner.h"
 #include "public/platform/WebThread.h"
+#include "wtf/Functional.h"
 #include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
 
 #include <v8.h>
 
@@ -26,7 +27,7 @@ public:
     static void shutdown();
     static ScriptStreamerThread* shared();
 
-    void postTask(WebTaskRunner::Task*);
+    void postTask(WTF::PassOwnPtr<WTF::Closure>);
 
     bool isRunningTask() const
     {

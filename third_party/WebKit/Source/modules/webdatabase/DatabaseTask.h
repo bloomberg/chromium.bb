@@ -33,7 +33,6 @@
 #include "modules/webdatabase/DatabaseBasicTypes.h"
 #include "modules/webdatabase/DatabaseError.h"
 #include "modules/webdatabase/SQLTransactionBackend.h"
-#include "platform/Task.h"
 #include "platform/TaskSynchronizer.h"
 #include "platform/heap/Handle.h"
 #include "wtf/OwnPtr.h"

@@ -29,7 +29,6 @@
 #include "core/html/parser/HTMLDocumentParser.h"
 #include "core/html/parser/TextResourceDecoder.h"
 #include "core/html/parser/XSSAuditor.h"
-#include "platform/Task.h"
 #include "platform/ThreadSafeFunctional.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebTaskRunner.h"
@@ -296,7 +295,7 @@ void BackgroundHTMLParser::sendTokensToMainThread()
     if (isEmpty) {
         m_loadingTaskRunner->postTask(
             BLINK_FROM_HERE,
-            new Task(threadSafeBind(&HTMLDocumentParser::notifyPendingParsedChunks, AllowCrossThreadAccess(m_parser))));
+            threadSafeBind(&HTMLDocumentParser::notifyPendingParsedChunks, AllowCrossThreadAccess(m_parser)));
     }
 
     m_pendingTokens = adoptPtr(new CompactHTMLTokenStream);

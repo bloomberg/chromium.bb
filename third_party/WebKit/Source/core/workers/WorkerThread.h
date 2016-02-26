@@ -35,6 +35,7 @@
 #include "platform/WebThreadSupportingGC.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/Forward.h"
+#include "wtf/Functional.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -95,7 +96,7 @@ public:
     WorkerReportingProxy& workerReportingProxy() const { return m_workerReportingProxy; }
 
     void postTask(const WebTraceLocation&, PassOwnPtr<ExecutionContextTask>);
-    void appendDebuggerTask(PassOwnPtr<WebTaskRunner::Task>);
+    void appendDebuggerTask(PassOwnPtr<Closure>);
 
     enum WaitMode { WaitForTask, DontWaitForTask };
     enum TaskQueueResult {
@@ -145,7 +146,7 @@ private:
     class DebuggerTaskQueue;
     friend class WorkerMicrotaskRunner;
 
-    WebTaskRunner::Task* createWorkerThreadTask(PassOwnPtr<ExecutionContextTask>, bool isInstrumented);
+    PassOwnPtr<Closure> createWorkerThreadTask(PassOwnPtr<ExecutionContextTask>, bool isInstrumented);
 
     // Called on the main thread.
     void terminateInternal();

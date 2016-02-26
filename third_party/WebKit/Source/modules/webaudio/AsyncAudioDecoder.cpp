@@ -27,7 +27,6 @@
 #include "modules/webaudio/AbstractAudioContext.h"
 #include "modules/webaudio/AudioBuffer.h"
 #include "modules/webaudio/AudioBufferCallback.h"
-#include "platform/Task.h"
 #include "platform/ThreadSafeFunctional.h"
 #include "platform/audio/AudioBus.h"
 #include "platform/audio/AudioFileReader.h"
@@ -58,7 +57,7 @@ void AsyncAudioDecoder::decodeAsync(DOMArrayBuffer* audioData, float sampleRate,
     RefPtr<DOMArrayBuffer> audioDataRef(audioData);
 
     // The leak references to successCallback and errorCallback are picked up on notifyComplete.
-    m_thread->taskRunner()->postTask(BLINK_FROM_HERE, new Task(threadSafeBind(&AsyncAudioDecoder::decode, AllowCrossThreadAccess(audioDataRef.release().leakRef()), sampleRate, successCallback, errorCallback, resolver, context)));
+    m_thread->taskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&AsyncAudioDecoder::decode, AllowCrossThreadAccess(audioDataRef.release().leakRef()), sampleRate, successCallback, errorCallback, resolver, context));
 }
 
 void AsyncAudioDecoder::decode(DOMArrayBuffer* audioData, float sampleRate, AudioBufferCallback* successCallback, AudioBufferCallback* errorCallback, ScriptPromiseResolver* resolver, AbstractAudioContext* context)
@@ -85,4 +84,3 @@ void AsyncAudioDecoder::notifyComplete(DOMArrayBuffer* audioData, AudioBufferCal
 }
 
 } // namespace blink
-

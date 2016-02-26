@@ -4,7 +4,6 @@
 
 #include "modules/mediacapturefromelement/TimedCanvasDrawListener.h"
 
-#include "platform/Task.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebTaskRunner.h"
 #include "public/platform/WebTraceLocation.h"
@@ -36,7 +35,7 @@ void TimedCanvasDrawListener::sendNewFrame(const WTF::PassRefPtr<SkImage>& image
 void TimedCanvasDrawListener::postRequestFrameCaptureTask()
 {
     m_frameCaptureRequested = true;
-    Platform::current()->currentThread()->taskRunner()->postDelayedTask(BLINK_FROM_HERE, new Task(bind(&TimedCanvasDrawListener::postRequestFrameCaptureTask, this)), m_frameInterval);
+    Platform::current()->currentThread()->taskRunner()->postDelayedTask(BLINK_FROM_HERE, bind(&TimedCanvasDrawListener::postRequestFrameCaptureTask, this), m_frameInterval);
 }
 
 } // namespace blink

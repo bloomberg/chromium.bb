@@ -191,7 +191,7 @@ public:
     void waitForInit()
     {
         OwnPtr<WaitableEvent> completionEvent = adoptPtr(new WaitableEvent());
-        m_workerThread->backingThread().postTask(BLINK_FROM_HERE, new Task(threadSafeBind(&WaitableEvent::signal, AllowCrossThreadAccess(completionEvent.get()))));
+        m_workerThread->backingThread().postTask(BLINK_FROM_HERE, threadSafeBind(&WaitableEvent::signal, AllowCrossThreadAccess(completionEvent.get())));
         completionEvent->wait();
     }
 

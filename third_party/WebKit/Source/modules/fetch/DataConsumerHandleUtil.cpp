@@ -4,9 +4,9 @@
 
 #include "modules/fetch/DataConsumerHandleUtil.h"
 
-#include "platform/Task.h"
 #include "platform/blob/BlobData.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebTaskRunner.h"
 #include "public/platform/WebThread.h"
 #include "public/platform/WebTraceLocation.h"
 #include "wtf/Functional.h"
@@ -129,7 +129,7 @@ NotifyOnReaderCreationHelper::NotifyOnReaderCreationHelper(WebDataConsumerHandle
         return;
     // Note we don't need thread safety here because this object is
     // bound to the current thread.
-    Platform::current()->currentThread()->taskRunner()->postTask(BLINK_FROM_HERE, new Task(bind(&NotifyOnReaderCreationHelper::notify, m_factory.createWeakPtr(), client)));
+    Platform::current()->currentThread()->taskRunner()->postTask(BLINK_FROM_HERE, bind(&NotifyOnReaderCreationHelper::notify, m_factory.createWeakPtr(), client));
 }
 
 void NotifyOnReaderCreationHelper::notify(WebDataConsumerHandle::Client* client)

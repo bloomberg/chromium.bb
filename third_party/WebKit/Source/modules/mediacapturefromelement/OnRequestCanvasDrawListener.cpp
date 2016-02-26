@@ -4,11 +4,6 @@
 
 #include "modules/mediacapturefromelement/OnRequestCanvasDrawListener.h"
 
-#include "platform/Task.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebTaskRunner.h"
-#include "public/platform/WebTraceLocation.h"
-
 namespace blink {
 
 OnRequestCanvasDrawListener::OnRequestCanvasDrawListener(const PassOwnPtr<WebCanvasCaptureHandler>& handler)

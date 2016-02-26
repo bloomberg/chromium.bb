@@ -30,7 +30,6 @@
 
 #include "core/html/parser/HTMLParserThread.h"
 
-#include "platform/Task.h"
 #include "platform/ThreadSafeFunctional.h"
 #include "platform/WaitableEvent.h"
 #include "platform/heap/SafePoint.h"
@@ -103,7 +102,7 @@ bool HTMLParserThread::isRunning()
 
 void HTMLParserThread::postTask(PassOwnPtr<Closure> closure)
 {
-    platformThread().taskRunner()->postTask(BLINK_FROM_HERE, new Task(closure));
+    platformThread().taskRunner()->postTask(BLINK_FROM_HERE, closure);
 }
 
 } // namespace blink

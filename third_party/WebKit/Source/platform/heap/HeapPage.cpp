@@ -31,7 +31,6 @@
 #include "platform/heap/HeapPage.h"
 
 #include "platform/ScriptForbiddenScope.h"
-#include "platform/Task.h"
 #include "platform/TraceEvent.h"
 #include "platform/heap/BlinkGCMemoryDumpProvider.h"
 #include "platform/heap/CallbackStack.h"

@@ -15,7 +15,6 @@
 #include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/ScriptArguments.h"
 #include "platform/RuntimeEnabledFeatures.h"
-#include "platform/Task.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebScheduler.h"
 #include "public/platform/WebTaskRunner.h"
@@ -221,7 +220,7 @@ void RejectedPromises::handlerAdded(v8::PromiseRejectMessage data)
         auto& message = m_reportedAsErrors.at(i);
         if (!message->isCollected() && message->hasPromise(data.GetPromise())) {
             message->makePromiseStrong();
-            Platform::current()->currentThread()->scheduler()->timerTaskRunner()->postTask(BLINK_FROM_HERE, new Task(bind(&RejectedPromises::revokeNow, PassRefPtrWillBeRawPtr<RejectedPromises>(this), message.release())));
+            Platform::current()->currentThread()->scheduler()->timerTaskRunner()->postTask(BLINK_FROM_HERE, bind(&RejectedPromises::revokeNow, PassRefPtrWillBeRawPtr<RejectedPromises>(this), message.release()));
             m_reportedAsErrors.remove(i);
             return;
         }
@@ -250,7 +249,7 @@ void RejectedPromises::processQueue()
 
     OwnPtr<MessageQueue> queue = createMessageQueue();
     queue->swap(m_queue);
-    Platform::current()->currentThread()->scheduler()->timerTaskRunner()->postTask(BLINK_FROM_HERE, new Task(bind(&RejectedPromises::processQueueNow, PassRefPtr<RejectedPromises>(this), queue.release())));
+    Platform::current()->currentThread()->scheduler()->timerTaskRunner()->postTask(BLINK_FROM_HERE, bind(&RejectedPromises::processQueueNow, PassRefPtr<RejectedPromises>(this), queue.release()));
 }
 
 void RejectedPromises::processQueueNow(PassOwnPtr<MessageQueue> queue)

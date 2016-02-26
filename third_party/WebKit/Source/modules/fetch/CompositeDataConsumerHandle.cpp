@@ -4,9 +4,9 @@
 
 #include "modules/fetch/CompositeDataConsumerHandle.h"
 
-#include "platform/Task.h"
 #include "platform/ThreadSafeFunctional.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebTaskRunner.h"
 #include "public/platform/WebThread.h"
 #include "public/platform/WebTraceLocation.h"
 #include "wtf/Locker.h"
@@ -140,7 +140,7 @@ private:
             return;
         }
         ++m_token;
-        m_readerThread->taskRunner()->postTask(BLINK_FROM_HERE, new Task(threadSafeBind(&Context::updateReader, this, m_token)));
+        m_readerThread->taskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&Context::updateReader, this, m_token));
     }
 
     OwnPtr<Reader> m_reader;

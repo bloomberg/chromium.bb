@@ -7,7 +7,6 @@
 
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
-#include "public/platform/WebTaskRunner.h"
 #include "wtf/Forward.h"
 
 namespace blink {
@@ -52,7 +51,7 @@ public:
 private:
     WorkerInspectorProxy();
 
-    void addDebuggerTaskForWorker(const WebTraceLocation&, PassOwnPtr<WebTaskRunner::Task>);
+    void addDebuggerTaskForWorker(const WebTraceLocation&, PassOwnPtr<Closure>);
 
     WorkerThread* m_workerThread;
     RawPtrWillBeMember<ExecutionContext> m_executionContext;

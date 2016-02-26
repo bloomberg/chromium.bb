@@ -9,9 +9,9 @@
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/inspector/WorkerInspectorController.h"
 #include "core/workers/WorkerThread.h"
-#include "platform/Task.h"
 #include "platform/TraceEvent.h"
 #include "platform/weborigin/KURL.h"
+#include "public/platform/WebTaskRunner.h"
 #include "public/platform/WebTraceLocation.h"
 
 namespace blink {
@@ -59,7 +59,7 @@ void WorkerInspectorProxy::connectToInspector(WorkerInspectorProxy::PageInspecto
         return;
     ASSERT(!m_pageInspector);
     m_pageInspector = pageInspector;
-    addDebuggerTaskForWorker(BLINK_FROM_HERE, adoptPtr(new Task(threadSafeBind(connectToWorkerGlobalScopeInspectorTask, AllowCrossThreadAccess(m_workerThread)))));
+    addDebuggerTaskForWorker(BLINK_FROM_HERE, threadSafeBind(connectToWorkerGlobalScopeInspectorTask, AllowCrossThreadAccess(m_workerThread)));
 }
 
 static void disconnectFromWorkerGlobalScopeInspectorTask(WorkerThread* workerThread)
@@ -72,7 +72,7 @@ void WorkerInspectorProxy::disconnectFromInspector()
     m_pageInspector = nullptr;
     if (!m_workerThread)
         return;
-    addDebuggerTaskForWorker(BLINK_FROM_HERE, adoptPtr(new Task(threadSafeBind(disconnectFromWorkerGlobalScopeInspectorTask, AllowCrossThreadAccess(m_workerThread)))));
+    addDebuggerTaskForWorker(BLINK_FROM_HERE, threadSafeBind(disconnectFromWorkerGlobalScopeInspectorTask, AllowCrossThreadAccess(m_workerThread)));
 }
 
 static void dispatchOnInspectorBackendTask(const String& message, WorkerThread* workerThread)
@@ -84,7 +84,7 @@ void WorkerInspectorProxy::sendMessageToInspector(const String& message)
 {
     if (!m_workerThread)
         return;
-    addDebuggerTaskForWorker(BLINK_FROM_HERE, adoptPtr(new Task(threadSafeBind(dispatchOnInspectorBackendTask, message, AllowCrossThreadAccess(m_workerThread)))));
+    addDebuggerTaskForWorker(BLINK_FROM_HERE, threadSafeBind(dispatchOnInspectorBackendTask, message, AllowCrossThreadAccess(m_workerThread)));
     m_workerThread->interruptAndDispatchInspectorCommands();
 }
 
@@ -100,10 +100,10 @@ static void runDebuggerTaskForWorker(WorkerThread* workerThread)
     workerThread->runDebuggerTask(WorkerThread::DontWaitForTask);
 }
 
-void WorkerInspectorProxy::addDebuggerTaskForWorker(const WebTraceLocation& location, PassOwnPtr<WebTaskRunner::Task> task)
+void WorkerInspectorProxy::addDebuggerTaskForWorker(const WebTraceLocation& location, PassOwnPtr<Closure> task)
 {
     m_workerThread->appendDebuggerTask(task);
-    m_workerThread->backingThread().postTask(location, new Task(threadSafeBind(&runDebuggerTaskForWorker, AllowCrossThreadAccess(m_workerThread))));
+    m_workerThread->backingThread().postTask(location, threadSafeBind(&runDebuggerTaskForWorker, AllowCrossThreadAccess(m_workerThread)));
 }
 
 DEFINE_TRACE(WorkerInspectorProxy)

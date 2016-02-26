@@ -37,7 +37,6 @@
 #include "core/workers/WorkerClients.h"
 #include "core/workers/WorkerReportingProxy.h"
 #include "core/workers/WorkerThreadStartupData.h"
-#include "platform/Task.h"
 #include "platform/ThreadSafeFunctional.h"
 #include "platform/WaitableEvent.h"
 #include "platform/heap/SafePoint.h"
@@ -46,6 +45,7 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebScheduler.h"
 #include "public/platform/WebThread.h"
+#include "wtf/Functional.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/WeakPtr.h"
 #include "wtf/text/WTFString.h"
@@ -122,7 +122,7 @@ void WorkerThread::performTask(PassOwnPtr<ExecutionContextTask> task, bool isIns
         InspectorInstrumentation::didPerformExecutionContextTask(globalScope);
 }
 
-WebTaskRunner::Task* WorkerThread::createWorkerThreadTask(PassOwnPtr<ExecutionContextTask> task, bool isInstrumented)
+PassOwnPtr<Closure> WorkerThread::createWorkerThreadTask(PassOwnPtr<ExecutionContextTask> task, bool isInstrumented)
 {
     if (isInstrumented)
         isInstrumented = !task->taskNameForInstrumentation().isEmpty();
@@ -131,13 +131,13 @@ WebTaskRunner::Task* WorkerThread::createWorkerThreadTask(PassOwnPtr<ExecutionCo
         // https://crbug.com/588497
         InspectorInstrumentation::didPostExecutionContextTask(workerGlobalScope(), task.get());
     }
-    return new Task(threadSafeBind(&WorkerThread::performTask, AllowCrossThreadAccess(this), task, isInstrumented));
+    return threadSafeBind(&WorkerThread::performTask, AllowCrossThreadAccess(this), task, isInstrumented);
 }
 
 class WorkerThread::DebuggerTaskQueue {
     WTF_MAKE_NONCOPYABLE(DebuggerTaskQueue);
 public:
-    using Task = WebTaskRunner::Task;
+    using Task = WTF::Closure;
     using Result = WorkerThread::TaskQueueResult;
 
     DebuggerTaskQueue() { }
@@ -229,7 +229,7 @@ void WorkerThread::start(PassOwnPtr<WorkerThreadStartupData> startupData)
         return;
 
     m_started = true;
-    backingThread().postTask(BLINK_FROM_HERE, new Task(threadSafeBind(&WorkerThread::initialize, AllowCrossThreadAccess(this), startupData)));
+    backingThread().postTask(BLINK_FROM_HERE, threadSafeBind(&WorkerThread::initialize, AllowCrossThreadAccess(this), startupData));
 }
 
 void WorkerThread::interruptAndDispatchInspectorCommands()
@@ -406,7 +406,7 @@ void WorkerThread::terminateInternal()
 
     InspectorInstrumentation::didKillAllExecutionContextTasks(m_workerGlobalScope.get());
     m_debuggerTaskQueue->kill();
-    backingThread().postTask(BLINK_FROM_HERE, new Task(threadSafeBind(&WorkerThread::shutdown, AllowCrossThreadAccess(this))));
+    backingThread().postTask(BLINK_FROM_HERE, threadSafeBind(&WorkerThread::shutdown, AllowCrossThreadAccess(this)));
 }
 
 void WorkerThread::didStartWorkerThread()
@@ -494,7 +494,7 @@ void WorkerThread::terminateV8Execution()
     m_isolate->TerminateExecution();
 }
 
-void WorkerThread::appendDebuggerTask(PassOwnPtr<WebTaskRunner::Task> task)
+void WorkerThread::appendDebuggerTask(PassOwnPtr<Closure> task)
 {
     {
         MutexLocker lock(m_threadStateMutex);
@@ -509,7 +509,7 @@ WorkerThread::TaskQueueResult WorkerThread::runDebuggerTask(WaitMode waitMode)
     ASSERT(isCurrentThread());
     TaskQueueResult result;
     double absoluteTime = DebuggerTaskQueue::infiniteTime();
-    OwnPtr<WebTaskRunner::Task> task;
+    OwnPtr<Closure> task;
     {
         if (waitMode == DontWaitForTask)
             absoluteTime = 0.0;
@@ -519,7 +519,7 @@ WorkerThread::TaskQueueResult WorkerThread::runDebuggerTask(WaitMode waitMode)
 
     if (result == TaskReceived) {
         InspectorInstrumentation::willProcessTask(workerGlobalScope());
-        task->run();
+        (*task)();
         InspectorInstrumentation::didProcessTask(workerGlobalScope());
     }
 

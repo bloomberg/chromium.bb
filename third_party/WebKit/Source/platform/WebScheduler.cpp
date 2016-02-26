@@ -4,7 +4,6 @@
 
 #include "public/platform/WebScheduler.h"
 
-#include "platform/Task.h"
 #include "public/platform/WebFrameScheduler.h"
 #include "public/platform/WebTraceLocation.h"
 #include "wtf/Assertions.h"

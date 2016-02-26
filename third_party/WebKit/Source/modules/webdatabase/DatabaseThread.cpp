@@ -66,7 +66,7 @@ void DatabaseThread::start()
     if (m_thread)
         return;
     m_thread = WebThreadSupportingGC::create("WebCore: Database");
-    m_thread->postTask(BLINK_FROM_HERE, new Task(threadSafeBind(&DatabaseThread::setupDatabaseThread, this)));
+    m_thread->postTask(BLINK_FROM_HERE, threadSafeBind(&DatabaseThread::setupDatabaseThread, this));
 }
 
 void DatabaseThread::setupDatabaseThread()
@@ -84,7 +84,7 @@ void DatabaseThread::terminate()
         m_terminationRequested = true;
         m_cleanupSync = &sync;
         WTF_LOG(StorageAPI, "DatabaseThread %p was asked to terminate\n", this);
-        m_thread->postTask(BLINK_FROM_HERE, new Task(threadSafeBind(&DatabaseThread::cleanupDatabaseThread, this)));
+        m_thread->postTask(BLINK_FROM_HERE, threadSafeBind(&DatabaseThread::cleanupDatabaseThread, this));
     }
     sync.waitForTaskCompletion();
     // The WebThread destructor blocks until all the tasks of the database
@@ -112,7 +112,7 @@ void DatabaseThread::cleanupDatabaseThread()
     }
     m_openDatabaseSet.clear();
 
-    m_thread->postTask(BLINK_FROM_HERE, new Task(WTF::bind(&DatabaseThread::cleanupDatabaseThreadCompleted, this)));
+    m_thread->postTask(BLINK_FROM_HERE, WTF::bind(&DatabaseThread::cleanupDatabaseThreadCompleted, this));
 }
 
 void DatabaseThread::cleanupDatabaseThreadCompleted()
@@ -170,7 +170,7 @@ void DatabaseThread::scheduleTask(PassOwnPtr<DatabaseTask> task)
     }
 #endif
     // WebThread takes ownership of the task.
-    m_thread->postTask(BLINK_FROM_HERE, new Task(threadSafeBind(&DatabaseTask::run, task)));
+    m_thread->postTask(BLINK_FROM_HERE, threadSafeBind(&DatabaseTask::run, task));
 }
 
 } // namespace blink

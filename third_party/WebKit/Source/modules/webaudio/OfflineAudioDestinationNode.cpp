@@ -28,7 +28,6 @@
 #include "modules/webaudio/AudioNodeInput.h"
 #include "modules/webaudio/AudioNodeOutput.h"
 #include "modules/webaudio/OfflineAudioContext.h"
-#include "platform/Task.h"
 #include "platform/audio/AudioBus.h"
 #include "platform/audio/DenormalDisabler.h"
 #include "platform/audio/HRTFDatabaseLoader.h"
@@ -105,7 +104,7 @@ void OfflineAudioDestinationHandler::startRendering()
     if (!m_isRenderingStarted) {
         m_isRenderingStarted = true;
         m_renderThread->taskRunner()->postTask(BLINK_FROM_HERE,
-            new Task(threadSafeBind(&OfflineAudioDestinationHandler::startOfflineRendering, this)));
+            threadSafeBind(&OfflineAudioDestinationHandler::startOfflineRendering, this));
         return;
     }
 
@@ -313,4 +312,3 @@ OfflineAudioDestinationNode* OfflineAudioDestinationNode::create(AbstractAudioCo
 }
 
 } // namespace blink
-

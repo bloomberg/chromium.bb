@@ -33,12 +33,12 @@ public:
     static PassOwnPtr<WebThreadSupportingGC> createForThread(WebThread*);
     ~WebThreadSupportingGC();
 
-    void postTask(const WebTraceLocation& location, WebTaskRunner::Task* task)
+    void postTask(const WebTraceLocation& location, PassOwnPtr<Closure> task)
     {
         m_thread->taskRunner()->postTask(location, task);
     }
 
-    void postDelayedTask(const WebTraceLocation& location, WebTaskRunner::Task* task, long long delayMs)
+    void postDelayedTask(const WebTraceLocation& location, PassOwnPtr<Closure> task, long long delayMs)
     {
         m_thread->taskRunner()->postDelayedTask(location, task, delayMs);
     }

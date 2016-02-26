@@ -43,7 +43,6 @@
 #include "core/imagebitmap/ImageBitmapOptions.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "platform/SharedBuffer.h"
-#include "platform/Task.h"
 #include "platform/ThreadSafeFunctional.h"
 #include "platform/graphics/ImageSource.h"
 #include "platform/threading/BackgroundTaskRunner.h"

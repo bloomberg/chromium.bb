@@ -5,12 +5,11 @@
 #include "bindings/core/v8/ScriptStreamerThread.h"
 
 #include "bindings/core/v8/ScriptStreamer.h"
-#include "platform/Task.h"
 #include "platform/TraceEvent.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebTaskRunner.h"
 #include "public/platform/WebTraceLocation.h"
 #include "wtf/MainThread.h"
-#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 
@@ -54,7 +53,7 @@ ScriptStreamerThread* ScriptStreamerThread::shared()
     return s_sharedThread;
 }
 
-void ScriptStreamerThread::postTask(WebTaskRunner::Task* task)
+void ScriptStreamerThread::postTask(PassOwnPtr<Closure> task)
 {
     ASSERT(isMainThread());
     MutexLocker locker(m_mutex);

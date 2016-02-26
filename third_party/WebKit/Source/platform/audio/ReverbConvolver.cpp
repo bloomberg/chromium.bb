@@ -27,11 +27,11 @@
  */
 
 #include "platform/audio/ReverbConvolver.h"
-#include "platform/Task.h"
 #include "platform/ThreadSafeFunctional.h"
 #include "platform/audio/AudioBus.h"
 #include "platform/audio/VectorMath.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebTaskRunner.h"
 #include "public/platform/WebThread.h"
 #include "public/platform/WebTraceLocation.h"
 
@@ -169,7 +169,7 @@ void ReverbConvolver::process(const AudioChannel* sourceChannel, AudioChannel* d
 
     // Now that we've buffered more input, post another task to the background thread.
     if (m_backgroundThread)
-        m_backgroundThread->taskRunner()->postTask(BLINK_FROM_HERE, new Task(threadSafeBind(&ReverbConvolver::processInBackground, AllowCrossThreadAccess(this))));
+        m_backgroundThread->taskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&ReverbConvolver::processInBackground, AllowCrossThreadAccess(this)));
 }
 
 void ReverbConvolver::reset()
@@ -190,4 +190,3 @@ size_t ReverbConvolver::latencyFrames() const
 }
 
 } // namespace blink
-
