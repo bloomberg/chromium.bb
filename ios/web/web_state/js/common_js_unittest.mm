@@ -27,7 +27,7 @@ struct TextFieldTestElement {
 namespace web {
 
 // Test fixture to test common.js.
-typedef web::WebTestWithWKWebViewWebController CommonJsTest;
+typedef web::WebTestWithWebController CommonJsTest;
 
 // Tests __gCrWeb.common.isTextField JavaScript API.
 TEST_F(CommonJsTest, IsTestField) {

@@ -156,10 +156,10 @@
 namespace web {
 
 // Test fixture to test web controller injection.
-class JsInjectionManagerTest : public web::WebTestWithWKWebViewWebController {
+class JsInjectionManagerTest : public web::WebTestWithWebController {
  protected:
   void SetUp() override {
-    web::WebTestWithWKWebViewWebController::SetUp();
+    web::WebTestWithWebController::SetUp();
     // Loads a dummy page to prepare JavaScript evaluation.
     NSString* const kPageContent = @"<html><body><div></div></body></html>";
     LoadHtml(kPageContent);

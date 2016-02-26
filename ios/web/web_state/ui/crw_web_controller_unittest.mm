@@ -236,10 +236,10 @@ void WaitForZoomRendering(CRWWebController* webController,
 
 // Test fixture for testing CRWWebController. Stubs out web view and
 // child CRWWebController.
-class CRWWebControllerTest : public web::WebTestWithWKWebViewWebController {
+class CRWWebControllerTest : public web::WebTestWithWebController {
  protected:
   void SetUp() override {
-    web::WebTestWithWKWebViewWebController::SetUp();
+    web::WebTestWithWebController::SetUp();
     mockWebView_.reset(CreateMockWebView());
     mockScrollView_.reset([[UIScrollView alloc] init]);
     [[[mockWebView_ stub] andReturn:mockScrollView_.get()] scrollView];
@@ -276,7 +276,7 @@ class CRWWebControllerTest : public web::WebTestWithWKWebViewWebController {
     EXPECT_OCMOCK_VERIFY(mockWebView_);
     [webController_ resetInjectedWebViewContentView];
     [webController_ setDelegate:nil];
-    web::WebTestWithWKWebViewWebController::TearDown();
+    web::WebTestWithWebController::TearDown();
   }
 
   // The value for web view OCMock objects to expect for |-setFrame:|.
@@ -425,8 +425,7 @@ TEST_F(CRWWebControllerTest, SslCertError) {
 }
 
 // None of the |CRWWKWebViewWebControllerTest| setup is needed;
-typedef web::WebTestWithWKWebViewWebController
-    CRWWebControllerPageDialogsOpenPolicyTest;
+typedef web::WebTestWithWebController CRWWebControllerPageDialogsOpenPolicyTest;
 
 TEST_F(CRWWebControllerPageDialogsOpenPolicyTest, SuppressPolicy) {
   LoadHtml(@"<html><body></body></html>");
@@ -445,7 +444,7 @@ TEST_F(CRWWebControllerPageDialogsOpenPolicyTest, SuppressPolicy) {
 // A separate test class, as none of the |CRWWebControllerTest| setup is
 // needed.
 class CRWWebControllerPageScrollStateTest
-    : public web::WebTestWithWKWebViewWebController {
+    : public web::WebTestWithWebController {
  protected:
   // Returns a web::PageDisplayState that will scroll a WKWebView to
   // |scrollOffset| and zoom the content by |relativeZoomScale|.
@@ -554,7 +553,7 @@ TEST_F(CRWWebControllerPageScrollStateTest, FLAKY_AtTop) {
 };
 
 // Real WKWebView is required for JSEvaluationTest.
-typedef web::WebTestWithWKWebViewWebController CRWWebControllerJSEvaluationTest;
+typedef web::WebTestWithWebController CRWWebControllerJSEvaluationTest;
 
 // Tests that a script correctly evaluates to string.
 TEST_F(CRWWebControllerJSEvaluationTest, Evaluation) {
@@ -602,7 +601,7 @@ TEST_F(CRWWebControllerTest, WebUrlWithTrustLevel) {
 
 // A separate test class, as none of the |CRWUIWebViewWebControllerTest| setup
 // is needed;
-typedef web::WebTestWithWKWebViewWebController CRWWebControllerObserversTest;
+typedef web::WebTestWithWebController CRWWebControllerObserversTest;
 
 // Tests that CRWWebControllerObservers are called.
 TEST_F(CRWWebControllerObserversTest, Observers) {
@@ -635,11 +634,10 @@ TEST_F(CRWWebControllerObserversTest, Observers) {
 };
 
 // Test fixture for window.open tests.
-class CRWWebControllerWindowOpenTest
-    : public web::WebTestWithWKWebViewWebController {
+class CRWWebControllerWindowOpenTest : public web::WebTestWithWebController {
  protected:
   void SetUp() override {
-    web::WebTestWithWKWebViewWebController::SetUp();
+    web::WebTestWithWebController::SetUp();
 
     // Configure web delegate.
     delegate_.reset([[MockInteractionLoader alloc]
@@ -668,7 +666,7 @@ class CRWWebControllerWindowOpenTest
     [webController_ setDelegate:nil];
     [child_ close];
 
-    web::WebTestWithWKWebViewWebController::TearDown();
+    web::WebTestWithWebController::TearDown();
   }
   // Executes JavaScript that opens a new window and returns evaluation result
   // as a string.
@@ -765,11 +763,10 @@ TEST_F(CRWWebControllerWindowOpenTest, BlockPopup) {
 };
 
 // Fixture class to test WKWebView crashes.
-class CRWWebControllerWebProcessTest
-    : public web::WebTestWithWKWebViewWebController {
+class CRWWebControllerWebProcessTest : public web::WebTestWithWebController {
  protected:
   void SetUp() override {
-    web::WebTestWithWKWebViewWebController::SetUp();
+    web::WebTestWithWebController::SetUp();
     webView_.reset(web::CreateTerminatedWKWebView());
     base::scoped_nsobject<TestWebViewContentView> webViewContentView(
         [[TestWebViewContentView alloc]

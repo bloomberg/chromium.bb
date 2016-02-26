@@ -18,11 +18,10 @@
 namespace web {
 
 // Test fixture to test web controller observing.
-class CRWWebControllerObserverTest
-    : public web::WebTestWithWKWebViewWebController {
+class CRWWebControllerObserverTest : public web::WebTestWithWebController {
  protected:
   void SetUp() override {
-    web::WebTestWithWKWebViewWebController::SetUp();
+    web::WebTestWithWebController::SetUp();
     fake_web_controller_observer_.reset(
         [[CRWFakeWebControllerObserver alloc] initWithCommandPrefix:@"test"]);
     [webController_ addObserver:fake_web_controller_observer_];
@@ -31,7 +30,7 @@ class CRWWebControllerObserverTest
   void TearDown() override {
     [webController_ removeObserver:fake_web_controller_observer_];
     fake_web_controller_observer_.reset();
-    web::WebTestWithWKWebViewWebController::TearDown();
+    web::WebTestWithWebController::TearDown();
   }
 
   base::scoped_nsobject<CRWFakeWebControllerObserver>

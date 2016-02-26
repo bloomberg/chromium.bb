@@ -25,7 +25,7 @@ struct TestScriptAndExpectedValue {
 namespace web {
 
 // Test fixture to test core.js.
-class CoreJsTest : public web::WebTestWithWKWebViewWebController {
+class CoreJsTest : public web::WebTestWithWebController {
  protected:
   void ImageTesterHelper(
       NSString* htmlForImage,
