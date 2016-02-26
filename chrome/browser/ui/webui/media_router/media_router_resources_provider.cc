@@ -23,6 +23,9 @@ void AddMainWebResources(content::WebUIDataSource* html_source) {
 
 void AddPolymerElements(content::WebUIDataSource* html_source) {
   html_source->AddResourcePath(
+      "icons/media_router_icons.html",
+      IDR_MEDIA_ROUTER_ICONS_HTML);
+  html_source->AddResourcePath(
       "elements/issue_banner/issue_banner.css",
       IDR_ISSUE_BANNER_CSS);
   html_source->AddResourcePath(

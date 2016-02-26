@@ -9,6 +9,12 @@
   <include name="IDR_MEDIA_ROUTER_UI_INTERFACE_JS" file="resources\media_router\media_router_ui_interface.js" type="BINDATA" />
 
   <!-- Polymer -->
+  <if expr="_google_chrome">
+    <include name="IDR_MEDIA_ROUTER_ICONS_HTML" file="resources\media_router_internal\icons\media_router_icons.html" type="BINDATA" />
+  </if>
+  <if expr="not _google_chrome">
+    <include name="IDR_MEDIA_ROUTER_ICONS_HTML" file="resources\media_router\icons\media_router_icons.html" type="BINDATA" />
+  </if>
   <include name="IDR_ISSUE_BANNER_HTML" file="resources\media_router\elements\issue_banner\issue_banner.html" type="BINDATA" />
   <include name="IDR_ISSUE_BANNER_JS" file="resources\media_router\elements\issue_banner\issue_banner.js" type="BINDATA" />
   <include name="IDR_ISSUE_BANNER_CSS" file="resources\media_router\elements\issue_banner\issue_banner.css" type="BINDATA" />

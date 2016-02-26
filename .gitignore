@@ -98,6 +98,7 @@ vs-chromium-project.txt
 /chrome/browser/protector/internal
 /chrome/browser/resources/chromeos/quickoffice
 /chrome/browser/resources/pdf/html_office
+/chrome/browser/resources/media_router_internal/
 /chrome/browser/resources/settings_internal/
 /chrome/browser/resources/software_rendering_list
 /chrome/browser/spellchecker/internal

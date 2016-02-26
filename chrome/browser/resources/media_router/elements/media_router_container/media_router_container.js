@@ -877,7 +877,7 @@ Polymer({
   computeSinkIcon_: function(sink) {
     switch (sink.iconType) {
       case media_router.SinkIconType.CAST:
-        return 'hardware:tv';
+        return 'media-router:chromecast';
       case media_router.SinkIconType.CAST_AUDIO:
         return 'hardware:speaker';
       case media_router.SinkIconType.CAST_AUDIO_GROUP:
@@ -885,7 +885,7 @@ Polymer({
       case media_router.SinkIconType.GENERIC:
         return 'hardware:tv';
       case media_router.SinkIconType.HANGOUT:
-        return 'communication:message';
+        return 'media-router:hangout';
       default:
         return 'hardware:tv';
     }
