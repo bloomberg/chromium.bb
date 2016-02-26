@@ -558,7 +558,8 @@ public class ThreadedInputConnection implements ChromiumBaseInputConnection {
     @Override
     public boolean commitCorrection(CorrectionInfo correctionInfo) {
         if (DEBUG_LOGS) {
-            Log.w(TAG, "commitCorrection [%s]", ImeUtils.getCorrectInfoDebugString(correctionInfo));
+            Log.w(TAG, "commitCorrection [%s]",
+                    ImeUtils.getCorrectionInfoDebugString(correctionInfo));
         }
         assertOnImeThread();
         return false;

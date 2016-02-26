@@ -57,15 +57,12 @@ public class ImeUtils {
             }
             outAttrs.imeOptions |= EditorInfo.IME_ACTION_NONE;
         } else if (inputType == TextInputType.PASSWORD) {
-            // Password
             outAttrs.inputType =
                     InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_WEB_PASSWORD;
             outAttrs.imeOptions |= EditorInfo.IME_ACTION_GO;
         } else if (inputType == TextInputType.SEARCH) {
-            // Search
             outAttrs.imeOptions |= EditorInfo.IME_ACTION_SEARCH;
         } else if (inputType == TextInputType.URL) {
-            // Url
             outAttrs.inputType = InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI;
             outAttrs.imeOptions |= EditorInfo.IME_ACTION_GO;
         } else if (inputType == TextInputType.EMAIL) {
@@ -106,14 +103,22 @@ public class ImeUtils {
         outAttrs.initialSelEnd = initialSelEnd;
     }
 
-    public static String getEditorInfoDebugString(EditorInfo editorInfo) {
+    /**
+     * @param editorInfo The EditorInfo
+     * @return Debug string for the given {@EditorInfo}.
+     */
+    static String getEditorInfoDebugString(EditorInfo editorInfo) {
         StringBuilder builder = new StringBuilder();
         StringBuilderPrinter printer = new StringBuilderPrinter(builder);
         editorInfo.dump(printer, "");
         return builder.toString();
     }
 
-    public static String getEditableDebugString(Editable editable) {
+    /**
+     * @param editable The editable.
+     * @return Debug string for the given {@Editable}.
+     */
+    static String getEditableDebugString(Editable editable) {
         return String.format(Locale.US, "Editable {[%s] SEL[%d %d] COM[%d %d]}",
                 editable.toString(), Selection.getSelectionStart(editable),
                 Selection.getSelectionEnd(editable),
@@ -122,28 +127,34 @@ public class ImeUtils {
     }
 
     /**
-     * Dump the given {@CorrectionInfo} into class.
-     * @param correctionInfo
-     * @return User-readable {@CorrectionInfo}.
+     * @param correctionInfo The correction info.
+     * @return Debug string for the given {@CorrectionInfo}.
      */
-    static String getCorrectInfoDebugString(CorrectionInfo correctionInfo) {
+    static String getCorrectionInfoDebugString(CorrectionInfo correctionInfo) {
         // TODO(changwan): implement it properly if needed.
         return correctionInfo.toString();
     }
 
-    // TODO(changwan): remove these once implementation becomes stable.
-    static void checkCondition(boolean value) {
-        if (!value) {
-            throw new AssertionError();
-        }
+    /**
+     * Check the given condition and raise an error if it is false.
+     * @param condition The condition to check.
+     */
+    static void checkCondition(boolean condition) {
+        if (!condition) throw new AssertionError();
     }
 
-    static void checkCondition(String msg, boolean value) {
-        if (!value) {
-            throw new AssertionError(msg);
-        }
+    /**
+     * Check the given condition and raise an error if it is false.
+     * @param msg A message to show when raising an error.
+     * @param condition The condition to check.
+     */
+    static void checkCondition(String msg, boolean condition) {
+        if (!condition) throw new AssertionError(msg);
     }
 
+    /**
+     * Check that the current thread is UI thread, and raise an error if it is not.
+     */
     static void checkOnUiThread() {
         checkCondition("Should be on UI thread.", ThreadUtils.runningOnUiThread());
     }
