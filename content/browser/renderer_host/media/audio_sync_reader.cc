@@ -82,6 +82,9 @@ AudioSyncReader::~AudioSyncReader() {
   renderer_missed_callback_count_ -= trailing_renderer_missed_callback_count_;
   renderer_callback_count_ -= trailing_renderer_missed_callback_count_;
 
+  if (!renderer_callback_count_)
+    return;
+
   // Recording the percentage of deadline misses gives us a rough overview of
   // how many users might be running into audio glitches.
   int percentage_missed =
