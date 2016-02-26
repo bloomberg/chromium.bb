@@ -162,6 +162,7 @@ private:
     bool m_renderingTaskCompletedForCurrentFrame;
     bool m_softwareRenderingWhileHidden;
     bool m_surfaceCreationFailedAtLeastOnce = false;
+    bool m_hibernationScheduled = false;
 
     friend class Canvas2DLayerBridgeTest;
 

@@ -207,6 +207,9 @@ static void hibernateWrapper(WeakPtr<Canvas2DLayerBridge> bridge, double /*idleD
 void Canvas2DLayerBridge::hibernate()
 {
     ASSERT(!isHibernating());
+    ASSERT(m_hibernationScheduled);
+
+    m_hibernationScheduled = false;
 
     if (m_destructionInProgress) {
         m_logger->reportHibernationEvent(HibernationAbortedDueToPendingDestruction);
@@ -421,10 +424,11 @@ void Canvas2DLayerBridge::setIsHidden(bool hidden)
         return;
 
     m_isHidden = newHiddenValue;
-    if (m_surface && isHidden() && !m_destructionInProgress) {
+    if (m_surface && isHidden() && !m_destructionInProgress && !m_hibernationScheduled) {
         if (m_layer)
             m_layer->clearTexture();
         m_logger->reportHibernationEvent(HibernationScheduled);
+        m_hibernationScheduled = true;
         Platform::current()->currentThread()->scheduler()->postIdleTask(BLINK_FROM_HERE, WTF::bind<double>(&hibernateWrapper, m_weakPtrFactory.createWeakPtr()));
     }
     if (!isHidden() && m_softwareRenderingWhileHidden) {
