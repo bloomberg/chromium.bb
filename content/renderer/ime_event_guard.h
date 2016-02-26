@@ -13,7 +13,6 @@ class RenderWidget;
 class ImeEventGuard {
  public:
   explicit ImeEventGuard(RenderWidget* widget);
-  ImeEventGuard(RenderWidget* widget, bool show_ime, bool from_ime);
   ~ImeEventGuard();
 
   bool show_ime() const { return show_ime_; }

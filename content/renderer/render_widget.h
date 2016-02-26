@@ -319,6 +319,9 @@ class CONTENT_EXPORT RenderWidget
   // |policy| see the comment on MessageDeliveryPolicy.
   void QueueMessage(IPC::Message* msg, MessageDeliveryPolicy policy);
 
+  // Check whether IME thread is being used or not.
+  bool IsUsingImeThread();
+
   // Handle start and finish of IME event guard.
   void OnImeEventGuardStart(ImeEventGuard* guard);
   void OnImeEventGuardFinish(ImeEventGuard* guard);
@@ -461,6 +464,9 @@ class CONTENT_EXPORT RenderWidget
 
   // Called by the browser process for every required IME acknowledgement.
   void OnImeEventAck();
+
+  // Called by the browser process to update text input state.
+  void OnRequestTextInputStateUpdate();
 #endif
 
   // Notify the compositor about a change in viewport size. This should be

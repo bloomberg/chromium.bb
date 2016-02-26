@@ -75,6 +75,8 @@ class ImeAdapterAndroid {
                              int before,
                              int after);
   void ResetImeAdapter(JNIEnv*, const base::android::JavaParamRef<jobject>&);
+  bool RequestTextInputStateUpdate(JNIEnv*,
+                                   const base::android::JavaParamRef<jobject>&);
 
   // Called from native -> java
   void CancelComposition();

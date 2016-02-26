@@ -8,14 +8,13 @@
 
 namespace content {
 
+// When ThreadedInputConnection is used, we want to make sure that FROM_IME
+// is set only for OnRequestTextInputStateUpdate() so that we can distinguish
+// it from other updates so that we can wait for it safely. So it is false by
+// default.
 ImeEventGuard::ImeEventGuard(RenderWidget* widget)
-  : ImeEventGuard(widget, false, true) {
-}
-
-ImeEventGuard::ImeEventGuard(RenderWidget* widget, bool show_ime, bool from_ime)
-  : widget_(widget),
-    show_ime_(show_ime),
-    from_ime_(from_ime) {
+    : widget_(widget), show_ime_(false),
+      from_ime_(!widget->IsUsingImeThread()) {
   widget_->OnImeEventGuardStart(this);
 }
 

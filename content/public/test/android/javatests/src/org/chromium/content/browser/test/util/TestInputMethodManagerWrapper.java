@@ -6,6 +6,7 @@ package org.chromium.content.browser.test.util;
 
 import android.os.IBinder;
 import android.os.ResultReceiver;
+import android.util.Pair;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
@@ -13,6 +14,10 @@ import android.view.inputmethod.InputConnection;
 import org.chromium.base.Log;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.input.InputMethodManagerWrapper;
+import org.chromium.content.browser.input.Range;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Overrides InputMethodManagerWrapper for testing purposes.
@@ -20,74 +25,29 @@ import org.chromium.content.browser.input.InputMethodManagerWrapper;
 public class TestInputMethodManagerWrapper extends InputMethodManagerWrapper {
     private static final String TAG = "cr_Ime";
 
-    /**
-     * A simple class to set start and end in int type.
-     */
-    public static class Range {
-        private int mStart;
-        private int mEnd;
-
-        public Range(int start, int end) {
-            mStart = start;
-            mEnd = end;
-        }
-
-        public void set(int start, int end) {
-            mStart = start;
-            mEnd = end;
-        }
-
-        public int start() {
-            return mStart;
-        }
-
-        public int end() {
-            return mEnd;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (!(o instanceof Range)) return false;
-            if (o == this) return true;
-            Range r = (Range) o;
-            return mStart == r.mStart && mEnd == r.mEnd;
-        }
-
-        @Override
-        public int hashCode() {
-            final int prime = 31;
-            return prime * mStart + mEnd;
-        }
-
-        @Override
-        public String toString() {
-            return "[ " + mStart + ", " + mEnd + " ]";
-        }
-    }
-
     private final ContentViewCore mContentViewCore;
     private InputConnection mInputConnection;
     private int mRestartInputCounter;
     private int mShowSoftInputCounter;
     private int mHideSoftInputCounter;
-    private int mUpdateSelectionCounter;
-    private EditorInfo mEditorInfo;
-    private final Range mSelection = new Range(0, 0);
+    private final Range mSelection = new Range(-1, -1);
     private final Range mComposition = new Range(-1, -1);
     private boolean mIsShowWithoutHideOutstanding;
+    private final List<Pair<Range, Range>> mUpdateSelectionList;
 
     public TestInputMethodManagerWrapper(ContentViewCore contentViewCore) {
         super(null);
         Log.d(TAG, "TestInputMethodManagerWrapper constructor");
         mContentViewCore = contentViewCore;
+        mUpdateSelectionList = new ArrayList<>();
     }
 
     @Override
     public void restartInput(View view) {
         mRestartInputCounter++;
         Log.d(TAG, "restartInput: count [%d]", mRestartInputCounter);
-        mEditorInfo = new EditorInfo();
-        mInputConnection = mContentViewCore.onCreateInputConnection(mEditorInfo);
+        EditorInfo editorInfo = new EditorInfo();
+        mInputConnection = mContentViewCore.onCreateInputConnection(editorInfo);
     }
 
     @Override
@@ -96,8 +56,8 @@ public class TestInputMethodManagerWrapper extends InputMethodManagerWrapper {
         mShowSoftInputCounter++;
         Log.d(TAG, "showSoftInput: count [%d]", mShowSoftInputCounter);
         if (mInputConnection != null) return;
-        mEditorInfo = new EditorInfo();
-        mInputConnection = mContentViewCore.onCreateInputConnection(mEditorInfo);
+        EditorInfo editorInfo = new EditorInfo();
+        mInputConnection = mContentViewCore.onCreateInputConnection(editorInfo);
     }
 
     @Override
@@ -121,10 +81,26 @@ public class TestInputMethodManagerWrapper extends InputMethodManagerWrapper {
     @Override
     public void updateSelection(View view, int selStart, int selEnd,
             int candidatesStart, int candidatesEnd) {
-        Log.d(TAG, "updateSelection");
-        mUpdateSelectionCounter++;
+        Log.d(TAG, "updateSelection: [%d %d] [%d %d]", selStart, selEnd, candidatesStart,
+                candidatesEnd);
+        Pair<Range, Range> newUpdateSelection =
+                new Pair<>(new Range(selStart, selEnd), new Range(candidatesStart, candidatesEnd));
+        if (!mUpdateSelectionList.isEmpty()) {
+            Pair<Range, Range> lastUpdateSelection =
+                    mUpdateSelectionList.get(mUpdateSelectionList.size() - 1);
+            if (lastUpdateSelection.equals(newUpdateSelection)) return;
+        }
+        mUpdateSelectionList.add(new Pair<Range, Range>(
+                new Range(selStart, selEnd), new Range(candidatesStart, candidatesEnd)));
         mSelection.set(selStart, selEnd);
         mComposition.set(candidatesStart, candidatesEnd);
+    }
+
+    @Override
+    public void notifyUserAction() {}
+
+    public final List<Pair<Range, Range>> getUpdateSelectionList() {
+        return mUpdateSelectionList;
     }
 
     public int getRestartInputCounter() {
@@ -140,20 +116,12 @@ public class TestInputMethodManagerWrapper extends InputMethodManagerWrapper {
         return mHideSoftInputCounter;
     }
 
-    public int getUpdateSelectionCounter() {
-        return mUpdateSelectionCounter;
-    }
-
-    public void resetCounters() {
-        Log.d(TAG, "resetCounters");
+    public void reset() {
+        Log.d(TAG, "reset");
         mRestartInputCounter = 0;
         mShowSoftInputCounter = 0;
         mHideSoftInputCounter = 0;
-        mUpdateSelectionCounter = 0;
-    }
-
-    public EditorInfo getEditorInfo() {
-        return mEditorInfo;
+        mUpdateSelectionList.clear();
     }
 
     public InputConnection getInputConnection() {

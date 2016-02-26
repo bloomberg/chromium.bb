@@ -247,6 +247,8 @@ IPC_MESSAGE_ROUTED3(InputMsg_ActivateNearestFindResult,
 // otherwise a race condition can happen.
 IPC_MESSAGE_ROUTED0(InputMsg_ImeEventAck)
 
+// Request from browser to update text input state.
+IPC_MESSAGE_ROUTED0(InputMsg_RequestTextInputStateUpdate)
 #endif
 
 IPC_MESSAGE_ROUTED0(InputMsg_SyntheticGestureCompleted)

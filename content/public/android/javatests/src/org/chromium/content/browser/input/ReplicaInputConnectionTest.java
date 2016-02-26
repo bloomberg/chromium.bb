@@ -5,25 +5,28 @@
 package org.chromium.content.browser.input;
 
 import android.content.Context;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import android.os.ResultReceiver;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.test.suitebuilder.annotation.SmallTest;
+import android.text.Editable;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 
 import org.chromium.base.test.util.Feature;
-import org.chromium.content.browser.input.AdapterInputConnection.ImeState;
+import org.chromium.content.browser.input.ReplicaInputConnection.ImeState;
 import org.chromium.content_shell_apk.ContentShellTestBase;
+import org.chromium.ui.base.ime.TextInputType;
 
 import java.util.ArrayList;
 
 /**
  * Tests AdapterInputConnection class and its callbacks to ImeAdapter.
  */
-public class AdapterInputConnectionTest extends ContentShellTestBase {
-
-    private AdapterInputConnection mConnection;
+public class ReplicaInputConnectionTest extends ContentShellTestBase {
+    private ReplicaInputConnection mConnection;
     private TestInputMethodManagerWrapper mWrapper;
     private TestImeAdapter mImeAdapter;
 
@@ -36,8 +39,11 @@ public class AdapterInputConnectionTest extends ContentShellTestBase {
         TestImeAdapterDelegate imeAdapterDelegate =
                 new TestImeAdapterDelegate(getContentViewCore().getContainerView());
         mImeAdapter = new TestImeAdapter(mWrapper, imeAdapterDelegate);
-        mConnection = new AdapterInputConnection(
-                getContentViewCore().getContainerView(), mImeAdapter, 0, 0, new EditorInfo());
+        Editable editable = Editable.Factory.getInstance().newEditable("");
+        Handler handler = new Handler(Looper.getMainLooper());
+
+        mConnection = new ReplicaInputConnection(getContentViewCore().getContainerView(),
+                mImeAdapter, handler, editable, TextInputType.TEXT, 0, new EditorInfo());
     }
 
     @SmallTest
@@ -47,35 +53,43 @@ public class AdapterInputConnectionTest extends ContentShellTestBase {
         final String smiley = "\uD83D\uDE0A"; // multi character codepoint
 
         // No need to adjust length.
-        assertFalse(AdapterInputConnection.isIndexBetweenUtf16SurrogatePair("a", 0));
-        assertFalse(AdapterInputConnection.isIndexBetweenUtf16SurrogatePair(ga, 0));
-        assertFalse(AdapterInputConnection.isIndexBetweenUtf16SurrogatePair("aa", 1));
-        assertFalse(AdapterInputConnection.isIndexBetweenUtf16SurrogatePair("a" + smiley + "a", 1));
+        assertFalse(ReplicaInputConnection.isIndexBetweenUtf16SurrogatePair("a", 0));
+        assertFalse(ReplicaInputConnection.isIndexBetweenUtf16SurrogatePair(ga, 0));
+        assertFalse(ReplicaInputConnection.isIndexBetweenUtf16SurrogatePair("aa", 1));
+        assertFalse(ReplicaInputConnection.isIndexBetweenUtf16SurrogatePair("a" + smiley + "a", 1));
 
         // Needs to adjust length.
-        assertTrue(AdapterInputConnection.isIndexBetweenUtf16SurrogatePair(smiley, 1));
-        assertTrue(AdapterInputConnection.isIndexBetweenUtf16SurrogatePair(smiley + "a", 1));
+        assertTrue(ReplicaInputConnection.isIndexBetweenUtf16SurrogatePair(smiley, 1));
+        assertTrue(ReplicaInputConnection.isIndexBetweenUtf16SurrogatePair(smiley + "a", 1));
     }
 
     @MediumTest
     @Feature({"TextInput", "Main"})
-    @RerunWithUpdatedContainerView
     public void testSetComposingText() throws Throwable {
+        assertEquals(0, mWrapper.getUpdateSelectionCallCount());
+
         mConnection.setComposingText("t", 1);
         assertCorrectState("t", 1, 1, 0, 1, mConnection.getImeStateForTesting());
         mWrapper.verifyUpdateSelectionCall(0, 1, 1, 0, 1);
+        // BaseInputConnection calls updateSelection() one more time because getEditable() does
+        // not return a correct value here.
+        mWrapper.verifyUpdateSelectionCall(1, 1, 1, 0, 1);
+        assertEquals(2, mWrapper.getUpdateSelectionCallCount());
 
         mConnection.setComposingText("te", 1);
         assertCorrectState("te", 2, 2, 0, 2, mConnection.getImeStateForTesting());
-        mWrapper.verifyUpdateSelectionCall(1, 2, 2, 0, 2);
+        mWrapper.verifyUpdateSelectionCall(2, 2, 2, 0, 2);
+        mWrapper.verifyUpdateSelectionCall(3, 2, 2, 0, 2);
 
         mConnection.setComposingText("tes", 1);
         assertCorrectState("tes", 3, 3, 0, 3, mConnection.getImeStateForTesting());
-        mWrapper.verifyUpdateSelectionCall(2, 3, 3, 0, 3);
+        mWrapper.verifyUpdateSelectionCall(4, 3, 3, 0, 3);
+        mWrapper.verifyUpdateSelectionCall(5, 3, 3, 0, 3);
 
         mConnection.setComposingText("test", 1);
         assertCorrectState("test", 4, 4, 0, 4, mConnection.getImeStateForTesting());
-        mWrapper.verifyUpdateSelectionCall(3, 4, 4, 0, 4);
+        mWrapper.verifyUpdateSelectionCall(6, 4, 4, 0, 4);
+        mWrapper.verifyUpdateSelectionCall(7, 4, 4, 0, 4);
     }
 
     @MediumTest
@@ -129,14 +143,14 @@ public class AdapterInputConnectionTest extends ContentShellTestBase {
         }
 
         @Override
-        public boolean hideSoftInputFromWindow(IBinder windowToken, int flags,
-                ResultReceiver resultReceiver) {
+        public boolean hideSoftInputFromWindow(
+                IBinder windowToken, int flags, ResultReceiver resultReceiver) {
             return true;
         }
 
         @Override
-        public void updateSelection(View view, int selStart, int selEnd,
-                int candidatesStart, int candidatesEnd) {
+        public void updateSelection(
+                View view, int selStart, int selEnd, int candidatesStart, int candidatesEnd) {
             mUpdates.add(new ImeState("", selStart, selEnd, candidatesStart, candidatesEnd));
         }
 
@@ -149,8 +163,8 @@ public class AdapterInputConnectionTest extends ContentShellTestBase {
             ImeState state = mUpdates.get(index);
             assertEquals("Selection start did not match", selectionStart, state.selectionStart);
             assertEquals("Selection end did not match", selectionEnd, state.selectionEnd);
-            assertEquals("Composition start did not match", compositionStart,
-                    state.compositionStart);
+            assertEquals(
+                    "Composition start did not match", compositionStart, state.compositionStart);
             assertEquals("Composition end did not match", compositionEnd, state.compositionEnd);
         }
     }

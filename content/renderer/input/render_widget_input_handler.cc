@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/auto_reset.h"
+#include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event_synthetic_delay.h"
 #include "build/build_config.h"
@@ -17,6 +18,7 @@
 #include "content/common/input/input_event_ack.h"
 #include "content/common/input/input_event_ack_state.h"
 #include "content/common/input/web_input_event_traits.h"
+#include "content/public/common/content_switches.h"
 #include "content/renderer/gpu/render_widget_compositor.h"
 #include "content/renderer/ime_event_guard.h"
 #include "content/renderer/input/render_widget_input_handler_delegate.h"
@@ -209,27 +211,30 @@ void RenderWidgetInputHandler::HandleInputEvent(
   bool from_ime = false;
 
   // For most keyboard events, we want the change source to be FROM_IME because
-  // we don't need to update IME states in AdapterInputConnection.
-  if (WebInputEvent::isKeyboardEventType(input_event.type)) {
+  // we don't need to update IME states in ReplicaInputConnection.
+  if (!widget_->IsUsingImeThread() &&
+      WebInputEvent::isKeyboardEventType(input_event.type)) {
     const WebKeyboardEvent& key_event =
         *static_cast<const WebKeyboardEvent*>(&input_event);
     // TODO(changwan): this if-condition is a stop-gap solution to update IME
-    // states in AdapterInputConnection when using DPAD navigation. This is not
+    // states in ReplicaInputConnection when using DPAD navigation. This is not
     // a correct solution because InputConnection#getTextBeforeCursor()
     // immediately after InputConnection#sendKeyEvent() will not return the
     // correct value. The correct solution is either redesign the architecture
-    // or emulate the DPAD behavior in AdapterInputConnection, either is
+    // or emulate the DPAD behavior in ReplicaInputConnection, either is
     // non-trivial.
     if (key_event.nativeKeyCode != AKEYCODE_TAB &&
         key_event.nativeKeyCode != AKEYCODE_DPAD_CENTER &&
         key_event.nativeKeyCode != AKEYCODE_DPAD_LEFT &&
         key_event.nativeKeyCode != AKEYCODE_DPAD_RIGHT &&
         key_event.nativeKeyCode != AKEYCODE_DPAD_UP &&
-        key_event.nativeKeyCode != AKEYCODE_DPAD_DOWN)
+        key_event.nativeKeyCode != AKEYCODE_DPAD_DOWN) {
       from_ime = true;
+    }
   }
 
-  ImeEventGuard guard(widget_, false, from_ime);
+  ImeEventGuard guard(widget_);
+  guard.set_from_ime(from_ime);
 #endif
 
   base::TimeTicks start_time;

@@ -663,7 +663,7 @@ void RenderWidgetHostViewAndroid::TextInputStateChanged(
     host_->Send(new InputMsg_ImeEventAck(host_->GetRoutingID()));
   }
 
-  if (!IsShowing())
+  if (!content_view_core_)
     return;
 
   content_view_core_->UpdateImeAdapter(

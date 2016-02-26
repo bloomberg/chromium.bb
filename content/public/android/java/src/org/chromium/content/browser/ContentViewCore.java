@@ -334,6 +334,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
             contentViewCore.mIsMobileOptimizedHint = false;
             contentViewCore.hidePopupsAndClearSelection();
             contentViewCore.resetScrollInProgress();
+            contentViewCore.mImeAdapter.reset();
         }
 
         private void determinedProcessVisibility() {
@@ -934,6 +935,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
         mWebContentsObserver = null;
         setSmartClipDataListener(null);
         setZoomControlsDelegate(null);
+        mImeAdapter.reset();
         // TODO(igsolla): address TODO in ContentViewClient because ContentViewClient is not
         // currently a real Null Object.
         //

@@ -290,6 +290,16 @@ void ImeAdapterAndroid::DeleteSurroundingText(JNIEnv*,
     rfh->ExtendSelectionAndDelete(before, after);
 }
 
+bool ImeAdapterAndroid::RequestTextInputStateUpdate(
+    JNIEnv* env,
+    const JavaParamRef<jobject>&) {
+  RenderWidgetHostImpl* rwhi = GetRenderWidgetHostImpl();
+  if (!rwhi)
+    return false;
+  rwhi->Send(new InputMsg_RequestTextInputStateUpdate(rwhi->GetRoutingID()));
+  return true;
+}
+
 void ImeAdapterAndroid::ResetImeAdapter(JNIEnv* env,
                                         const JavaParamRef<jobject>&) {
   java_ime_adapter_.reset();

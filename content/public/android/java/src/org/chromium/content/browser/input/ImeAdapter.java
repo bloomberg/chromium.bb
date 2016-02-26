@@ -7,8 +7,6 @@ package org.chromium.content.browser.input;
 import android.content.res.Configuration;
 import android.os.ResultReceiver;
 import android.os.SystemClock;
-import android.text.Editable;
-import android.text.Selection;
 import android.text.SpannableString;
 import android.text.TextUtils;
 import android.text.style.BackgroundColorSpan;
@@ -20,12 +18,14 @@ import android.view.View;
 import android.view.inputmethod.BaseInputConnection;
 import android.view.inputmethod.EditorInfo;
 
+import org.chromium.base.CommandLine;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.blink_public.web.WebInputEventModifier;
 import org.chromium.blink_public.web.WebInputEventType;
+import org.chromium.content.common.ContentSwitches;
 import org.chromium.ui.base.ime.TextInputType;
 import org.chromium.ui.picker.InputDialogContainer;
 
@@ -92,21 +92,19 @@ public class ImeAdapter {
 
     private long mNativeImeAdapterAndroid;
     private InputMethodManagerWrapper mInputMethodManagerWrapper;
-    private AdapterInputConnection mInputConnection;
-    private AdapterInputConnectionFactory mInputConnectionFactory;
-    private final ImeAdapterDelegate mViewEmbedder;
+    private ChromiumBaseInputConnection mInputConnection;
+    private ChromiumBaseInputConnection.Factory mInputConnectionFactory;
 
-    // This holds the state of editable text (e.g. contents of <input>, contenteditable) of
-    // a focused element.
-    // Every time the user, IME, javascript (Blink), autofill etc. modifies the content, the new
-    // state must be reflected to this to keep consistency.
-    private final Editable mEditable;
+    private final ImeAdapterDelegate mViewEmbedder;
 
     private int mTextInputType = TextInputType.NONE;
     private int mTextInputFlags;
 
     // Keep the current configuration to detect the change when onConfigurationChanged() is called.
     private Configuration mCurrentConfig;
+
+    private int mLastSelectionStart;
+    private int mLastSelectionEnd;
 
     /**
      * @param wrapper InputMethodManagerWrapper that should receive all the call directed to
@@ -116,53 +114,54 @@ public class ImeAdapter {
     public ImeAdapter(InputMethodManagerWrapper wrapper, ImeAdapterDelegate embedder) {
         mInputMethodManagerWrapper = wrapper;
         mViewEmbedder = embedder;
-        mInputConnectionFactory = new AdapterInputConnectionFactory();
-        mEditable = Editable.Factory.getInstance().newEditable("");
-        Selection.setSelection(mEditable, 0);
+        resetInputConnectionFactory();
         // Deep copy newConfig so that we can notice the difference.
         mCurrentConfig = new Configuration(
                 mViewEmbedder.getAttachedView().getResources().getConfiguration());
     }
 
-    /**
-     * Default factory for AdapterInputConnection classes.
-     */
-    static class AdapterInputConnectionFactory {
-        AdapterInputConnection get(View view, ImeAdapter imeAdapter, int initialSelStart,
-                int initialSelEnd, EditorInfo outAttrs) {
-            return new AdapterInputConnection(
-                    view, imeAdapter, initialSelStart, initialSelEnd, outAttrs);
+    void resetInputConnectionFactory() {
+        if (shouldUseImeThread()) {
+            mInputConnectionFactory =
+                    new ThreadedInputConnectionFactory(mInputMethodManagerWrapper);
+        } else {
+            mInputConnectionFactory = new ReplicaInputConnection.Factory();
         }
+    }
+
+    private boolean shouldUseImeThread() {
+        if (CommandLine.getInstance().hasSwitch(ContentSwitches.DISABLE_IME_THREAD)) {
+            return false;
+        }
+        if (CommandLine.getInstance().hasSwitch(ContentSwitches.ENABLE_IME_THREAD)) {
+            return true;
+        }
+        return false;
     }
 
     /**
      * @see View#onCreateInputConnection(EditorInfo)
      */
-    public AdapterInputConnection onCreateInputConnection(EditorInfo outAttrs) {
+    public ChromiumBaseInputConnection onCreateInputConnection(EditorInfo outAttrs) {
+        // InputMethodService evaluates fullscreen mode even when the new input connection is
+        // null. This makes sure IME doesn't enter fullscreen mode or open custom UI.
+        outAttrs.imeOptions = EditorInfo.IME_FLAG_NO_FULLSCREEN | EditorInfo.IME_FLAG_NO_EXTRACT_UI;
         // Without this line, some third-party IMEs will try to compose text even when
-        // not on an editable node. Even when we return null here, key events can still go through
-        // ImeAdapter#dispatchKeyEvent().
+        // not on an editable node. Even when we return null here, key events can still go
+        // through ImeAdapter#dispatchKeyEvent().
         if (mTextInputType == TextInputType.NONE) {
+            // Unblock if view loses focus, no input form or content editable is focused, or render
+            // crashes, or navigates to another page, etc.
+            // Even when InputConnection methods are blocked IMM can still call this.
+            if (mInputConnection != null) mInputConnection.unblockOnUiThread();
             mInputConnection = null;
             if (DEBUG_LOGS) Log.w(TAG, "onCreateInputConnection returns null.");
-            // InputMethodService evaluates fullscreen mode even when the new input connection is
-            // null. This makes sure IME doesn't enter fullscreen mode or open custom UI.
-            outAttrs.imeOptions =
-                    EditorInfo.IME_FLAG_NO_FULLSCREEN | EditorInfo.IME_FLAG_NO_EXTRACT_UI;
             return null;
         }
-
-        if (!isTextInputType(mTextInputType)) {
-            // Although onCheckIsTextEditor will return false in this case, the EditorInfo
-            // is still used by the InputMethodService. Need to make sure the IME doesn't
-            // enter fullscreen mode.
-            outAttrs.imeOptions = EditorInfo.IME_FLAG_NO_FULLSCREEN;
-        }
-        int initialSelStart = Selection.getSelectionStart(mEditable);
-        int initialSelEnd = outAttrs.initialSelEnd = Selection.getSelectionEnd(mEditable);
-        mInputConnection = mInputConnectionFactory.get(
-                mViewEmbedder.getAttachedView(), this, initialSelStart, initialSelEnd, outAttrs);
-        if (DEBUG_LOGS) Log.w(TAG, "onCreateInputConnection");
+        mInputConnection = mInputConnectionFactory.initializeAndGet(
+                mViewEmbedder.getAttachedView(), this, mTextInputType, mTextInputFlags,
+                mLastSelectionStart, mLastSelectionEnd, outAttrs);
+        if (DEBUG_LOGS) Log.w(TAG, "onCreateInputConnection: " + mInputConnection);
         return mInputConnection;
     }
 
@@ -177,47 +176,21 @@ public class ImeAdapter {
     }
 
     @VisibleForTesting
-    void setInputConnectionFactory(AdapterInputConnectionFactory factory) {
+    void setInputConnectionFactory(ChromiumBaseInputConnection.Factory factory) {
         mInputConnectionFactory = factory;
     }
 
-    /**
-     * Set the current active InputConnection when a new InputConnection is constructed.
-     * @param inputConnection The input connection that is currently used with IME.
-     */
-    void setInputConnection(AdapterInputConnection inputConnection) {
-        mInputConnection = inputConnection;
+    @VisibleForTesting
+    ChromiumBaseInputConnection.Factory getInputConnectionFactoryForTest() {
+        return mInputConnectionFactory;
     }
 
     /**
      * Get the current input connection for testing purposes.
      */
     @VisibleForTesting
-    public AdapterInputConnection getInputConnectionForTest() {
+    public ChromiumBaseInputConnection getInputConnectionForTest() {
         return mInputConnection;
-    }
-
-    /**
-     * @return The Editable instance that will be shared across AdapterInputConnection instances.
-     */
-    Editable getEditable() {
-        return mEditable;
-    }
-
-    /**
-     * Should be used only by AdapterInputConnection.
-     * @return The input type of currently focused element.
-     */
-    int getTextInputType() {
-        return mTextInputType;
-    }
-
-    /**
-     * Should be used only by AdapterInputConnection.
-     * @return The input flags of the currently focused element.
-     */
-    int getTextInputFlags() {
-        return mTextInputFlags;
     }
 
     private static int getModifiers(int metaState) {
@@ -285,9 +258,13 @@ public class ImeAdapter {
      */
     public void updateState(String text, int selectionStart, int selectionEnd, int compositionStart,
             int compositionEnd, boolean isNonImeChange) {
+        mLastSelectionStart = selectionStart;
+        mLastSelectionEnd = selectionEnd;
         if (mInputConnection == null) return;
-        mInputConnection.updateState(text, selectionStart, selectionEnd, compositionStart,
-                compositionEnd, isNonImeChange);
+        boolean singleLine = mTextInputType != TextInputType.TEXT_AREA
+                && mTextInputType != TextInputType.CONTENT_EDITABLE;
+        mInputConnection.updateStateOnUiThread(text, selectionStart, selectionEnd, compositionStart,
+                compositionEnd, singleLine, isNonImeChange);
     }
 
     /**
@@ -367,7 +344,7 @@ public class ImeAdapter {
      */
     public void onViewFocusChanged(boolean gainFocus) {
         if (DEBUG_LOGS) Log.w(TAG, "onViewFocusChanged: gainFocus [%b]", gainFocus);
-        if (!gainFocus) hideKeyboard();
+        if (!gainFocus) reset();
     }
 
     /**
@@ -376,8 +353,7 @@ public class ImeAdapter {
     public void moveCursorToSelectionEnd() {
         if (DEBUG_LOGS) Log.w(TAG, "movecursorToEnd");
         if (mInputConnection != null) {
-            int selectionEnd = Selection.getSelectionEnd(mEditable);
-            mInputConnection.setSelection(selectionEnd, selectionEnd);
+            mInputConnection.moveCursorToSelectionEndOnUiThread();
         }
     }
 
@@ -394,13 +370,25 @@ public class ImeAdapter {
         return isTextInputType(mTextInputType);
     }
 
+    /**
+     * See {@link View#dispatchKeyEvent(KeyEvent)}
+     */
     public boolean dispatchKeyEvent(KeyEvent event) {
         if (DEBUG_LOGS) Log.w(TAG, "dispatchKeyEvent: action [%d], keycode [%d]", event.getAction(),
                 event.getKeyCode());
-        if (mInputConnection != null) {
-            return mInputConnection.sendKeyEvent(event);
-        }
+        if (mInputConnection != null) return mInputConnection.sendKeyEventOnUiThread(event);
         return sendKeyEvent(event);
+    }
+
+    /**
+     * Resets IME adapter and hides keyboard. Note that this will also unblock input connection.
+     */
+    public void reset() {
+        if (DEBUG_LOGS) Log.w(TAG, "reset");
+        mTextInputType = TextInputType.NONE;
+        mTextInputFlags = 0;
+        // This will trigger unblocking if necessary.
+        hideKeyboard();
     }
 
     /**
@@ -413,16 +401,17 @@ public class ImeAdapter {
      */
     void updateSelection(
             int selectionStart, int selectionEnd, int compositionStart, int compositionEnd) {
-        mInputMethodManagerWrapper.updateSelection(mViewEmbedder.getAttachedView(), selectionStart,
-                selectionEnd, compositionStart, compositionEnd);
+        mInputMethodManagerWrapper.updateSelection(mViewEmbedder.getAttachedView(),
+                selectionStart, selectionEnd, compositionStart, compositionEnd);
     }
 
     /**
      * Restart input (finish composition and change EditorInfo, such as input type).
      */
     void restartInput() {
+        // This will eventually cause input method manager to call View#onCreateInputConnection().
         mInputMethodManagerWrapper.restartInput(mViewEmbedder.getAttachedView());
-        if (mInputConnection != null) mInputConnection.onRestartInput();
+        if (mInputConnection != null) mInputConnection.onRestartInputOnUiThread();
     }
 
     /**
@@ -445,6 +434,10 @@ public class ImeAdapter {
                     | KeyEvent.FLAG_EDITOR_ACTION);
         }
         return true;
+    }
+
+    void notifyUserAction() {
+        mInputMethodManagerWrapper.notifyUserAction();
     }
 
     @VisibleForTesting
@@ -488,9 +481,10 @@ public class ImeAdapter {
     }
 
     @VisibleForTesting
-    void finishComposingText() {
-        if (mNativeImeAdapterAndroid == 0) return;
+    boolean finishComposingText() {
+        if (mNativeImeAdapterAndroid == 0) return false;
         nativeFinishComposingText(mNativeImeAdapterAndroid);
+        return true;
     }
 
     boolean sendKeyEvent(KeyEvent event) {
@@ -553,7 +547,7 @@ public class ImeAdapter {
      * @param end The end of the composition.
      * @return Whether the native counterpart of ImeAdapter received the call.
      */
-    boolean setComposingRegion(CharSequence text, int start, int end) {
+    boolean setComposingRegion(int start, int end) {
         if (mNativeImeAdapterAndroid == 0) return false;
         nativeSetComposingRegion(mNativeImeAdapterAndroid, start, end);
         return true;
@@ -565,6 +559,16 @@ public class ImeAdapter {
         if (mTextInputType != TextInputType.NONE && mInputConnection != null && isEditable) {
             restartInput();
         }
+    }
+
+    /**
+     * Send a request to the native counterpart to give the latest text input state update.
+     */
+    boolean requestTextInputStateUpdate() {
+        if (mNativeImeAdapterAndroid == 0) return false;
+        // You won't get state update anyways.
+        if (mInputConnection == null) return false;
+        return nativeRequestTextInputStateUpdate(mNativeImeAdapterAndroid);
     }
 
     @CalledByNative
@@ -603,32 +607,22 @@ public class ImeAdapter {
 
     private native boolean nativeSendSyntheticKeyEvent(long nativeImeAdapterAndroid,
             int eventType, long timestampMs, int keyCode, int modifiers, int unicodeChar);
-
     private native boolean nativeSendKeyEvent(long nativeImeAdapterAndroid, KeyEvent event,
             int action, int modifiers, long timestampMs, int keyCode, int scanCode,
             boolean isSystemKey, int unicodeChar);
-
     private static native void nativeAppendUnderlineSpan(long underlinePtr, int start, int end);
-
     private static native void nativeAppendBackgroundColorSpan(long underlinePtr, int start,
             int end, int backgroundColor);
-
     private native void nativeSetComposingText(long nativeImeAdapterAndroid, CharSequence text,
             String textStr, int newCursorPosition);
-
     private native void nativeCommitText(long nativeImeAdapterAndroid, String textStr);
-
     private native void nativeFinishComposingText(long nativeImeAdapterAndroid);
-
     private native void nativeAttachImeAdapter(long nativeImeAdapterAndroid);
-
     private native void nativeSetEditableSelectionOffsets(long nativeImeAdapterAndroid,
             int start, int end);
-
     private native void nativeSetComposingRegion(long nativeImeAdapterAndroid, int start, int end);
-
     private native void nativeDeleteSurroundingText(long nativeImeAdapterAndroid,
             int before, int after);
-
     private native void nativeResetImeAdapter(long nativeImeAdapterAndroid);
+    private native boolean nativeRequestTextInputStateUpdate(long nativeImeAdapterAndroid);
 }

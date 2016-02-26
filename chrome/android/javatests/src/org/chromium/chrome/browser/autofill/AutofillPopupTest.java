@@ -9,7 +9,6 @@ import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.R;
@@ -17,6 +16,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.content.browser.ContentViewCore;
+import org.chromium.content.browser.input.ChromiumBaseInputConnection;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
@@ -173,11 +173,12 @@ public class AutofillPopupTest extends ChromeActivityTestCaseBase<ChromeActivity
 
         waitForKeyboardShowRequest(immw, 1);
 
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+        final ChromiumBaseInputConnection inputConnection =
+                viewCore.getImeAdapterForTest().getInputConnectionForTest();
+        inputConnection.getHandler().post(new Runnable() {
             @Override
             public void run() {
-                viewCore.getImeAdapterForTest().getInputConnectionForTest().setComposingText(
-                        inputText, 1);
+                inputConnection.setComposingText(inputText, 1);
             }
         });
 

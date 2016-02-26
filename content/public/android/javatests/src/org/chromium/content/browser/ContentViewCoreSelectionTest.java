@@ -14,10 +14,14 @@ import android.text.TextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
+import org.chromium.content.browser.input.ChromiumBaseInputConnection;
+import org.chromium.content.browser.input.ImeTestUtils;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content_shell_apk.ContentShellTestBase;
+
+import java.util.concurrent.Callable;
 
 /**
  * Integration tests for text selection-related behavior.
@@ -410,6 +414,18 @@ public class ContentViewCoreSelectionTest extends ContentShellTestBase {
         assertEquals(mContentViewCore.getSelectedText(), "SampleTextArea");
     }
 
+    private CharSequence getTextBeforeCursor(final int length, final int flags) {
+        final ChromiumBaseInputConnection connection =
+                mContentViewCore.getImeAdapterForTest().getInputConnectionForTest();
+        return ImeTestUtils.runBlockingOnHandlerNoException(
+                connection.getHandler(), new Callable<CharSequence>() {
+                    @Override
+                    public CharSequence call() throws Exception {
+                        return connection.getTextBeforeCursor(length, flags);
+                    }
+                });
+    }
+
     @SmallTest
     @Feature({"TextSelection", "TextInput"})
     public void testCursorPositionAfterHidingActionMode() throws Exception {
@@ -423,12 +439,10 @@ public class ContentViewCoreSelectionTest extends ContentShellTestBase {
         assertEquals(mContentViewCore.getSelectedText(), "SampleTextArea");
         hideSelectActionMode();
         waitForSelectActionBarVisible(false);
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return "SampleTextArea".equals(mContentViewCore.getImeAdapterForTest()
-                        .getInputConnectionForTest()
-                        .getTextBeforeCursor(50, 0));
+                return "SampleTextArea".equals(getTextBeforeCursor(50, 0));
             }
         });
     }

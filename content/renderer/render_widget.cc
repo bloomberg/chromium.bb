@@ -477,6 +477,8 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
                         OnWaitNextFrameForTests)
 #if defined(OS_ANDROID)
     IPC_MESSAGE_HANDLER(InputMsg_ImeEventAck, OnImeEventAck)
+    IPC_MESSAGE_HANDLER(InputMsg_RequestTextInputStateUpdate,
+                        OnRequestTextInputStateUpdate)
     IPC_MESSAGE_HANDLER(ViewMsg_ShowImeIfNeeded, OnShowImeIfNeeded)
 #endif
     IPC_MESSAGE_HANDLER(ViewMsg_HandleCompositorProto, OnHandleCompositorProto)
@@ -998,6 +1000,7 @@ void RenderWidget::UpdateTextInputState(ShowIme show_ime,
   // Only sends text input params if they are changed or if the ime should be
   // shown.
   if (show_ime == ShowIme::IF_NEEDED ||
+      (IsUsingImeThread() && change_source == ChangeSource::FROM_IME) ||
       (text_input_type_ != new_type || text_input_mode_ != new_mode ||
        text_input_info_ != new_info ||
        can_compose_inline_ != new_can_compose_inline)
@@ -1608,12 +1611,20 @@ void RenderWidget::OnImeEventAck() {
   DCHECK_GE(text_input_info_history_.size(), 1u);
   text_input_info_history_.pop_front();
 }
+
+void RenderWidget::OnRequestTextInputStateUpdate() {
+  DCHECK(!ime_event_guard_);
+  UpdateSelectionBounds();
+  UpdateTextInputState(ShowIme::HIDE_IME, ChangeSource::FROM_IME);
+}
 #endif
 
 bool RenderWidget::ShouldHandleImeEvent() {
 #if defined(OS_ANDROID)
   if (!webwidget_)
     return false;
+  if (IsUsingImeThread())
+    return true;
 
   // We cannot handle IME events if there is any chance that the event we are
   // receiving here from the browser is based on the state that is different
@@ -1706,6 +1717,17 @@ void RenderWidget::set_next_paint_is_repaint_ack() {
   next_paint_flags_ |= ViewHostMsg_UpdateRect_Flags::IS_REPAINT_ACK;
 }
 
+bool RenderWidget::IsUsingImeThread() {
+#if defined(OS_ANDROID)
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableImeThread) &&
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableImeThread);
+#else
+  return false;
+#endif
+}
+
 void RenderWidget::OnImeEventGuardStart(ImeEventGuard* guard) {
   if (!ime_event_guard_)
     ime_event_guard_ = guard;
@@ -1716,7 +1738,7 @@ void RenderWidget::OnImeEventGuardFinish(ImeEventGuard* guard) {
 #if defined(OS_ANDROID)
     // In case a from-IME event (e.g. touch) ends up in not-from-IME event
     // (e.g. long press gesture), we want to treat it as not-from-IME event
-    // so that AdapterInputConnection can make changes to its Editable model.
+    // so that ReplicaInputConnection can make changes to its Editable model.
     // Therefore, we want to mark this text state update as 'from IME' only
     // when all the nested events are all originating from IME.
     ime_event_guard_->set_from_ime(
@@ -2001,7 +2023,8 @@ void RenderWidget::setTouchAction(
 
 void RenderWidget::didUpdateTextOfFocusedElementByNonUserInput() {
 #if defined(OS_ANDROID)
-  text_field_is_dirty_ = true;
+  if (!IsUsingImeThread())
+    text_field_is_dirty_ = true;
 #endif
 }
 

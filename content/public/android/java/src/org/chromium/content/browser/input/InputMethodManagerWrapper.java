@@ -15,6 +15,9 @@ import android.view.inputmethod.InputMethodManager;
 
 import org.chromium.base.Log;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+
 /**
  * Wrapper around Android's InputMethodManager
  */
@@ -86,6 +89,25 @@ public class InputMethodManagerWrapper {
         Log.d(TAG, "updateCursorAnchorInfo");
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             getInputMethodManager().updateCursorAnchorInfo(view, cursorAnchorInfo);
+        }
+    }
+
+    /**
+     * Notify that a user took some action with the current input method. Without this call
+     * an input method app may wait longer when the user switches methods within the app.
+     */
+    public void notifyUserAction() {
+        // On N and above, this is not needed.
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.M) return;
+        Log.d(TAG, "notifyUserAction");
+        InputMethodManager manager = getInputMethodManager();
+        try {
+            Method method = InputMethodManager.class.getMethod("notifyUserAction");
+            method.invoke(manager);
+        } catch (NoSuchMethodException | IllegalAccessException | IllegalArgumentException
+                | InvocationTargetException e) {
+            Log.d(TAG, "notifyUserAction failed");
+            return;
         }
     }
 }
