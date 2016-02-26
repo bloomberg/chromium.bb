@@ -1992,18 +1992,6 @@ void BrowserView::Layout() {
   toolbar_->location_bar()->omnibox_view()->SetFocusable(IsToolbarVisible());
 }
 
-void BrowserView::PaintChildren(const ui::PaintContext& context) {
-  // Paint the |infobar_container_| last so that it may paint its
-  // overlapping tabs.
-  for (int i = 0; i < child_count(); ++i) {
-    View* child = child_at(i);
-    if (child != infobar_container_ && !child->layer())
-      child->Paint(context);
-  }
-
-  infobar_container_->Paint(context);
-}
-
 void BrowserView::ViewHierarchyChanged(
     const ViewHierarchyChangedDetails& details) {
   if (!initialized_ && details.is_add && details.child == this && GetWidget()) {
@@ -2113,9 +2101,6 @@ void BrowserView::InitViews() {
 
   LoadAccelerators();
 
-  infobar_container_ = new InfoBarContainerView(this);
-  AddChildView(infobar_container_);
-
   contents_web_view_ = new ContentsWebView(browser_->profile());
   contents_web_view_->set_id(VIEW_ID_TAB_CONTAINER);
   contents_web_view_->SetEmbedFullscreenWidgetMode(true);
@@ -2153,6 +2138,11 @@ void BrowserView::InitViews() {
   toolbar_ = new ToolbarView(browser_.get());
   top_container_->AddChildView(toolbar_);
   toolbar_->Init();
+
+  // The infobar container must come after the toolbar so its arrow paints on
+  // top.
+  infobar_container_ = new InfoBarContainerView(this);
+  AddChildView(infobar_container_);
 
   InitStatusBubble();
 
