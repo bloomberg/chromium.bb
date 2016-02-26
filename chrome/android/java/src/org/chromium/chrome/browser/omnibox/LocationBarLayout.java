@@ -464,6 +464,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
         PAGE,
         MAGNIFIER,
         EMPTY,
+        OFFLINE,
     }
 
     /**
@@ -951,6 +952,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
         mUrlHasFocus = hasFocus;
         mUrlContainer.onUrlFocusChanged(hasFocus);
         updateDeleteButtonVisibility();
+        updateNavigationButton();
         Tab currentTab = getCurrentTab();
         if (hasFocus) {
             if (mNativeInitialized) RecordUserAction.record("FocusLocation");
@@ -1140,6 +1142,8 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
                     mSuggestionItems.get(0).getSuggestion());
         } else if (mQueryInTheOmnibox) {
             type = NavigationButtonType.MAGNIFIER;
+        } else if (!mUrlHasFocus && getCurrentTab() != null && getCurrentTab().isOfflinePage()) {
+            type = NavigationButtonType.OFFLINE;
         } else if (isTablet) {
             type = NavigationButtonType.PAGE;
         }
@@ -1280,15 +1284,37 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
             case EMPTY:
                 mNavigationButton.setImageDrawable(null);
                 break;
+            case OFFLINE:
+                mNavigationButton.setImageResource(R.drawable.offline_bolt);
+                break;
             default:
                 assert false;
         }
+
+        mNavigationButton.setAlpha(buttonType == NavigationButtonType.OFFLINE ? 0.54f : 1.0f);
 
         if (mNavigationButton.getVisibility() != VISIBLE) {
             mNavigationButton.setVisibility(VISIBLE);
         }
         mNavigationButtonType = buttonType;
+
+        updateVerboseStatusVisibility();
         updateLocationBarIconContainerVisibility();
+    }
+
+    /**
+     * Update visibility of the verbose status based on the button type and focus state of the
+     * omnibox.
+     */
+    private void updateVerboseStatusVisibility() {
+        boolean verboseStatusVisible =
+                mNavigationButtonType == NavigationButtonType.OFFLINE && !mUrlHasFocus;
+        int verboseStatusVisibility = verboseStatusVisible ? VISIBLE : GONE;
+        findViewById(R.id.location_bar_verbose_status).setVisibility(verboseStatusVisibility);
+        findViewById(R.id.location_bar_verbose_status_separator)
+                .setVisibility(verboseStatusVisibility);
+        findViewById(R.id.location_bar_verbose_status_extra_space)
+                .setVisibility(verboseStatusVisibility);
     }
 
     /**

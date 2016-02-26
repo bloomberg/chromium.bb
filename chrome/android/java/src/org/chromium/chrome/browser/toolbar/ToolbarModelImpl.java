@@ -78,10 +78,10 @@ class ToolbarModelImpl extends ToolbarModel implements ToolbarDataProvider, Tool
     public String getText() {
         String displayText = super.getText();
 
-        if (mTab == null) return displayText;
+        if (mTab == null || mTab.isFrozen()) return displayText;
 
         String url = mTab.getUrl().trim();
-        if (!mTab.isFrozen() && DomDistillerUrlUtils.isDistilledPage(url)) {
+        if (DomDistillerUrlUtils.isDistilledPage(url)) {
             if (isStoredArticle(url)) {
                 DomDistillerService domDistillerService =
                         DomDistillerServiceFactory.getForProfile(mTab.getProfile());
@@ -94,6 +94,9 @@ class ToolbarModelImpl extends ToolbarModel implements ToolbarDataProvider, Tool
                 displayText =
                         DomDistillerTabUtils.getFormattedUrlFromOriginalDistillerUrl(originalUrl);
             }
+        } else if (mTab.isOfflinePage()) {
+            String originalUrl = mTab.getOfflinePageOriginalUrl();
+            displayText = DomDistillerTabUtils.getFormattedUrlFromOriginalDistillerUrl(originalUrl);
         }
 
         return displayText;

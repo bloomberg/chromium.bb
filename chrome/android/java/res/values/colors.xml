@@ -118,6 +118,7 @@
     <!-- LocationBar colors -->
     <color name="locationbar_light_hint_text">#80ffffff</color>
     <color name="locationbar_light_selection_color">#cc5595fe</color>
+    <color name="locationbar_verbose_status_color">#8a000000</color>
 
     <!-- Find in Page colors -->
     <color name="find_result_bar_background_color">#bfffffff</color>
