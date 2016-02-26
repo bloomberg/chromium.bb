@@ -812,27 +812,35 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
   // The appropriate RenderFrameHost to commit the navigation.
   RenderFrameHostImpl* navigation_rfh = nullptr;
 
-  // Renderer-initiated main frame navigations that may require a SiteInstance
-  // swap are sent to the browser via the OpenURL IPC and are afterwards treated
-  // as browser-initiated navigations. NavigationRequests marked as
-  // renderer-initiated are created by receiving a BeginNavigation IPC, and will
-  // then proceed in the same renderer that sent the IPC due to the condition
-  // below.
-  // Subframe navigations will use the current renderer, unless
-  // --site-per-process is enabled.
-  // TODO(carlosk): Have renderer-initated main frame navigations swap processes
-  // if needed when it no longer breaks OAuth popups (see
-  // https://crbug.com/440266).
-  bool is_main_frame = frame_tree_node_->IsMainFrame();
   bool notify_webui_of_rv_creation = false;
-  if (current_site_instance == dest_site_instance.get() ||
-      (!request.browser_initiated() && is_main_frame) ||
-      (!is_main_frame && !dest_site_instance->RequiresDedicatedProcess() &&
-       !current_site_instance->RequiresDedicatedProcess())) {
-    // Reuse the current RenderFrameHost if its SiteInstance matches the
-    // navigation's or if this is a subframe navigation. We only swap
-    // RenderFrameHosts for subframes when --site-per-process is enabled.
 
+  // Reuse the current RenderFrameHost if its SiteInstance matches the
+  // navigation's.
+  bool no_renderer_swap = current_site_instance == dest_site_instance.get();
+  if (SiteIsolationPolicy::AreCrossProcessFramesPossible()) {
+    // Check if the current renderer should be changed for the navigation.
+    no_renderer_swap |=
+        render_frame_host_->IsRenderFrameLive() &&
+        ShouldMakeNetworkRequestForURL(request.common_params().url) &&
+        !IsRendererTransferNeededForNavigation(render_frame_host_.get(),
+                                               request.common_params().url);
+  } else {
+    // Subframe navigations will use the current renderer.
+    no_renderer_swap |= !frame_tree_node_->IsMainFrame();
+
+    // Renderer-initiated main frame navigations that may require a
+    // SiteInstance swap are sent to the browser via the OpenURL IPC and are
+    // afterwards treated as browser-initiated navigations. NavigationRequests
+    // marked as renderer-initiated are created by receiving a BeginNavigation
+    // IPC, and will then proceed in the same renderer that sent the IPC due to
+    // the condition below.
+    // TODO(carlosk): Have renderer-initated main frame navigations swap
+    // processes if needed when it no longer breaks OAuth popups (see
+    // https://crbug.com/440266).
+    no_renderer_swap |= !request.browser_initiated();
+  }
+
+  if (no_renderer_swap) {
     // GetFrameHostForNavigation will be called more than once during a
     // navigation (currently twice, on request and when it's about to commit in
     // the renderer). In the follow up calls an existing pending WebUI should

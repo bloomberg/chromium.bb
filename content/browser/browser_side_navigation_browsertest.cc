@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/strings/stringprintf.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/common/site_isolation_policy.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
@@ -156,9 +157,21 @@ IN_PROC_BROWSER_TEST_F(BrowserSideNavigationBrowserTest,
     EXPECT_TRUE(observer.last_navigation_succeeded());
   }
 
-  // The RenderFrameHost should not have changed.
-  EXPECT_EQ(initial_rfh, static_cast<WebContentsImpl*>(shell()->web_contents())
-                             ->GetFrameTree()->root()->current_frame_host());
+  // The RenderFrameHost should not have changed unless site-per-process is
+  // enabled.
+  if (SiteIsolationPolicy::AreCrossProcessFramesPossible()) {
+    EXPECT_NE(initial_rfh,
+              static_cast<WebContentsImpl*>(shell()->web_contents())
+                  ->GetFrameTree()
+                  ->root()
+                  ->current_frame_host());
+  } else {
+    EXPECT_EQ(initial_rfh,
+              static_cast<WebContentsImpl*>(shell()->web_contents())
+                  ->GetFrameTree()
+                  ->root()
+                  ->current_frame_host());
+  }
 }
 
 // Ensure that browser side navigation handles navigation failures.
