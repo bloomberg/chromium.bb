@@ -4243,9 +4243,9 @@ void WebContentsImpl::UpdateTitle(RenderFrameHost* render_frame_host,
   NavigationEntryImpl* entry = controller_.GetEntryWithPageID(
       render_frame_host->GetSiteInstance(), page_id);
 
-  NavigationEntryImpl* new_entry = controller_.GetEntryWithUniqueID(
-      static_cast<RenderFrameHostImpl*>(render_frame_host)->nav_entry_id());
-  DCHECK_EQ(entry, new_entry);
+  // TODO(creis): Find a way to use nav entry IDs to locate the entry to update,
+  // and intentionally skip updates when the most recent commit was ignored.
+  // See https://crbug.com/577449.
 
   // We can handle title updates when we don't have an entry in
   // UpdateTitleForEntry, but only if the update is from the current RVH.
