@@ -52633,6 +52633,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Translate.BubbleUiEvent" enum="TranslateBubbleUiEvent">
+  <owner>groby@google.com</owner>
+  <summary>Tracks UI events related to the translate bubble.</summary>
+</histogram>
+
 <histogram name="Translate.CaptureText" units="ms">
   <owner>kenjibaheux@google.com</owner>
   <summary>
@@ -82022,6 +82027,11 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="22" label="kSwReporterPromptSeed"/>
   <int value="23" label="kGoogleServicesAccountId"/>
   <int value="24" label="kGoogleServicesLastAccountId"/>
+</enum>
+
+<enum name="TranslateBubbleUiEvent" type="int">
+  <int value="1" label="Switch to Options page"/>
+  <int value="2" label="Leave Options page"/>
 </enum>
 
 <enum name="TranslateError" type="int">
