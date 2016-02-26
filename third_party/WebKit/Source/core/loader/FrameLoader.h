@@ -278,6 +278,7 @@ private:
     SandboxFlags m_forcedSandboxFlags;
 
     bool m_dispatchingDidClearWindowObjectInMainWorld;
+    bool m_protectProvisionalLoader;
 };
 
 } // namespace blink
