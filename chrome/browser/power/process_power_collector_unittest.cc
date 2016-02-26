@@ -5,7 +5,6 @@
 #include "chrome/browser/power/process_power_collector.h"
 
 #include "build/build_config.h"
-#include "chrome/browser/apps/scoped_keep_alive.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/apps/chrome_app_delegate.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -267,8 +266,7 @@ TEST_F(BrowserProcessPowerTest, AppsRecordPowerUsage) {
       profile_manager_->CreateTestingProfile("Test user");
   GURL url("chrome-extension://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
   extensions::AppWindow* window = new extensions::AppWindow(
-      current_profile, new ChromeAppDelegate(scoped_ptr<ScopedKeepAlive>()),
-      extension.get());
+      current_profile, new ChromeAppDelegate(false), extension.get());
   content::WebContents* web_contents(
       content::WebContents::Create(content::WebContents::CreateParams(
           current_profile,

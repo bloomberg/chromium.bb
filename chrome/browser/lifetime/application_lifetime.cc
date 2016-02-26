@@ -308,6 +308,10 @@ void DecrementKeepAliveCount() {
   }
 }
 
+int GetKeepAliveCountForTesting() {
+  return g_keep_alive_count;
+}
+
 bool WillKeepAlive() {
   return g_keep_alive_count > 0;
 }

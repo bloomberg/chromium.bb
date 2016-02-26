@@ -2164,8 +2164,6 @@
       'browser/ui/views/apps/glass_app_window_frame_view_win.h',
       'browser/ui/views/apps/shaped_app_window_targeter.cc',
       'browser/ui/views/apps/shaped_app_window_targeter.h',
-      'browser/ui/views/auto_keep_alive.cc',
-      'browser/ui/views/auto_keep_alive.h',
       'browser/ui/views/autofill/autofill_dialog_views.cc',
       'browser/ui/views/autofill/autofill_dialog_views.h',
       'browser/ui/views/autofill/autofill_popup_base_view.cc',

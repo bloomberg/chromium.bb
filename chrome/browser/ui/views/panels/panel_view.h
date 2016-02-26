@@ -17,7 +17,7 @@
 #include "ui/base/win/hwnd_subclass.h"
 #endif
 
-class AutoKeepAlive;
+class ScopedKeepAlive;
 class Panel;
 class PanelBoundsAnimation;
 class PanelFrameView;
@@ -240,7 +240,7 @@ class PanelView : public NativePanel,
   // be restored properly when a drag ends.
   views::View* old_focused_view_;
 
-  scoped_ptr<AutoKeepAlive> keep_alive_;
+  scoped_ptr<ScopedKeepAlive> keep_alive_;
 
 #if defined(OS_WIN)
   // Used to provide custom taskbar thumbnail for Windows 7 and later.

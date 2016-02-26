@@ -6,7 +6,6 @@
 
 #include "base/memory/singleton.h"
 #include "build/build_config.h"
-#include "chrome/browser/apps/scoped_keep_alive.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/common/extensions/features/feature_channel.h"
 #include "components/version_info/version_info.h"
@@ -39,10 +38,8 @@ extensions::AppWindow* ChromeAppWindowClient::CreateAppWindow(
 #if defined(OS_ANDROID)
   return NULL;
 #else
-  return new extensions::AppWindow(
-      context,
-      new ChromeAppDelegate(make_scoped_ptr(new ScopedKeepAlive)),
-      extension);
+  return new extensions::AppWindow(context, new ChromeAppDelegate(true),
+                                   extension);
 #endif
 }
 

@@ -29,6 +29,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/lifetime/keep_alive_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -278,10 +279,8 @@ BackgroundModeManager::BackgroundModeManager(
       status_icon_(NULL),
       context_menu_(NULL),
       in_background_mode_(false),
-      keep_alive_for_startup_(false),
       keep_alive_for_test_(false),
       background_mode_suspended_(false),
-      keeping_alive_(false),
       weak_factory_(this) {
   // We should never start up if there is no browser process or if we are
   // currently quitting.
@@ -311,8 +310,8 @@ BackgroundModeManager::BackgroundModeManager(
   // extensions, at which point we should either run in background mode (if
   // there are background apps) or exit if there are none.
   if (command_line.HasSwitch(switches::kNoStartupWindow)) {
-    keep_alive_for_startup_ = true;
-    chrome::IncrementKeepAliveCount();
+    keep_alive_for_startup_.reset(
+        new ScopedKeepAlive(KeepAliveOrigin::BACKGROUND_MODE_MANAGER));
   } else {
     // Otherwise, start with background mode suspended in case we're launching
     // in a mode that doesn't open a browser window. It will be resumed when the
@@ -328,8 +327,7 @@ BackgroundModeManager::BackgroundModeManager(
   if (ShouldBeInBackgroundMode())
     StartBackgroundMode();
 
-  // Listen for the application shutting down so we can decrement our KeepAlive
-  // count.
+  // Listen for the application shutting down so we can release our KeepAlive.
   registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
                  content::NotificationService::AllSources());
   BrowserList::AddObserver(this);
@@ -468,7 +466,7 @@ void BackgroundModeManager::Observe(
     case chrome::NOTIFICATION_APP_TERMINATING:
       // Make sure we aren't still keeping the app alive (only happens if we
       // don't receive an EXTENSIONS_READY notification for some reason).
-      DecrementKeepAliveCountForStartup();
+      ReleaseStartupKeepAlive();
       // Performing an explicit shutdown, so exit background mode (does nothing
       // if we aren't in background mode currently).
       EndBackgroundMode();
@@ -493,7 +491,7 @@ void BackgroundModeManager::OnExtensionsReady(Profile* profile) {
   }
   // Extensions are loaded, so we don't need to manually keep the browser
   // process alive any more when running in no-startup-window mode.
-  DecrementKeepAliveCountForStartup();
+  ReleaseStartupKeepAlive();
 }
 
 void BackgroundModeManager::OnBackgroundModeEnabledPrefChanged() {
@@ -675,14 +673,20 @@ void BackgroundModeManager::ExecuteCommand(int command_id, int event_flags) {
 
 ///////////////////////////////////////////////////////////////////////////////
 //  BackgroundModeManager, private
-void BackgroundModeManager::DecrementKeepAliveCountForStartup() {
+void BackgroundModeManager::ReleaseStartupKeepAliveCallback() {
+  keep_alive_for_startup_.reset();
+}
+
+void BackgroundModeManager::ReleaseStartupKeepAlive() {
   if (keep_alive_for_startup_) {
-    keep_alive_for_startup_ = false;
     // We call this via the message queue to make sure we don't try to end
     // keep-alive (which can shutdown Chrome) before the message loop has
-    // started.
+    // started. This object reference is safe because it's going to be kept
+    // alive by the browser process until after the callback is called.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&chrome::DecrementKeepAliveCount));
+        FROM_HERE,
+        base::Bind(&BackgroundModeManager::ReleaseStartupKeepAliveCallback,
+                   base::Unretained(this)));
   }
 }
 
@@ -761,19 +765,16 @@ void BackgroundModeManager::ResumeBackgroundMode() {
 
 void BackgroundModeManager::UpdateKeepAliveAndTrayIcon() {
   if (in_background_mode_ && !background_mode_suspended_) {
-    if (!keeping_alive_) {
-      keeping_alive_ = true;
-      chrome::IncrementKeepAliveCount();
+    if (!keep_alive_) {
+      keep_alive_.reset(
+          new ScopedKeepAlive(KeepAliveOrigin::BACKGROUND_MODE_MANAGER));
     }
     CreateStatusTrayIcon();
     return;
   }
 
   RemoveStatusTrayIcon();
-  if (keeping_alive_) {
-    keeping_alive_ = false;
-    chrome::DecrementKeepAliveCount();
-  }
+  keep_alive_.reset();
 }
 
 void BackgroundModeManager::OnBrowserAdded(Browser* browser) {

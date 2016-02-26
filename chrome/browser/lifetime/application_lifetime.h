@@ -70,6 +70,9 @@ void IncrementKeepAliveCount();
 // Should match a previous call to IncrementKeepAliveCount().
 void DecrementKeepAliveCount();
 
+// Returns the current keep alive count.
+int GetKeepAliveCountForTesting();
+
 // Returns true if application will continue running after the last Browser
 // closes.
 bool WillKeepAlive();

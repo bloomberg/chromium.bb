@@ -9,7 +9,8 @@
 #include "base/profiler/scoped_tracker.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
-#include "chrome/browser/apps/scoped_keep_alive.h"
+#include "chrome/browser/lifetime/keep_alive_types.h"
+#include "chrome/browser/lifetime/scoped_keep_alive.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_shower_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_view_delegate.h"
@@ -29,7 +30,7 @@ AppListShower::~AppListShower() {
 
 void AppListShower::ShowForCurrentProfile() {
   DCHECK(HasView());
-  keep_alive_.reset(new ScopedKeepAlive);
+  keep_alive_.reset(new ScopedKeepAlive(KeepAliveOrigin::APP_LIST_SHOWER));
 
   // If the app list is already displaying |profile| just activate it (in case
   // we have lost focus).

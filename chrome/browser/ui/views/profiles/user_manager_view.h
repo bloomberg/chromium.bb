@@ -14,7 +14,7 @@
 #include "chrome/browser/profiles/profile_window.h"
 #include "ui/views/window/dialog_delegate.h"
 
-class AutoKeepAlive;
+class ScopedKeepAlive;
 
 namespace views {
 class WebView;
@@ -64,7 +64,7 @@ class UserManagerView : public views::DialogDelegateView {
 
   views::WebView* web_view_;
 
-  scoped_ptr<AutoKeepAlive> keep_alive_;
+  scoped_ptr<ScopedKeepAlive> keep_alive_;
   base::Time user_manager_started_showing_;
 
   DISALLOW_COPY_AND_ASSIGN(UserManagerView);

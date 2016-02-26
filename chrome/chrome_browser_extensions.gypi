@@ -98,8 +98,6 @@
       'browser/apps/app_window_registry_util.h',
       'browser/apps/install_chrome_app.cc',
       'browser/apps/install_chrome_app.h',
-      'browser/apps/scoped_keep_alive.cc',
-      'browser/apps/scoped_keep_alive.h',
       'browser/apps/shortcut_manager.cc',
       'browser/apps/shortcut_manager.h',
       'browser/apps/shortcut_manager_factory.cc',

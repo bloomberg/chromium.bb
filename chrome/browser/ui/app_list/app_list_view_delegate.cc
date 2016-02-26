@@ -16,9 +16,9 @@
 #include "base/profiler/scoped_tracker.h"
 #include "base/stl_util.h"
 #include "build/build_config.h"
-#include "chrome/browser/apps/scoped_keep_alive.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/lifetime/scoped_keep_alive.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -350,8 +350,7 @@ void AppListViewDelegate::SetUpCustomLauncherPages() {
     std::string extension_id = it->host();
     apps::CustomLauncherPageContents* page_contents =
         new apps::CustomLauncherPageContents(
-            scoped_ptr<extensions::AppDelegate>(
-                new ChromeAppDelegate(scoped_ptr<ScopedKeepAlive>())),
+            scoped_ptr<extensions::AppDelegate>(new ChromeAppDelegate(false)),
             extension_id);
     page_contents->Initialize(profile_, *it);
     custom_page_contents_.push_back(page_contents);

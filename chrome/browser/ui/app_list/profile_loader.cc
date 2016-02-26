@@ -6,7 +6,8 @@
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
-#include "chrome/browser/apps/scoped_keep_alive.h"
+#include "chrome/browser/lifetime/keep_alive_types.h"
+#include "chrome/browser/lifetime/scoped_keep_alive.h"
 #include "chrome/browser/ui/app_list/profile_store.h"
 #include "chrome/browser/ui/user_manager.h"
 
@@ -66,7 +67,7 @@ void ProfileLoader::OnProfileLoaded(int profile_load_sequence_id,
 void ProfileLoader::IncrementPendingProfileLoads() {
   pending_profile_loads_++;
   if (pending_profile_loads_ == 1)
-    keep_alive_.reset(new ScopedKeepAlive);
+    keep_alive_.reset(new ScopedKeepAlive(KeepAliveOrigin::PROFILE_LOADER));
 }
 
 void ProfileLoader::DecrementPendingProfileLoads() {
