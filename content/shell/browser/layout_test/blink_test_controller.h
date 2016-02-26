@@ -163,6 +163,8 @@ class BlinkTestController : public base::NonThreadSafe,
   void WebContentsDestroyed() override;
 
   // RenderProcessHostObserver implementation.
+  void RenderProcessHostDestroyed(
+      RenderProcessHost* render_process_host) override;
   void RenderProcessExited(RenderProcessHost* render_process_host,
                            base::TerminationStatus status,
                            int exit_code) override;

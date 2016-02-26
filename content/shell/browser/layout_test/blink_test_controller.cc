@@ -516,6 +516,11 @@ void BlinkTestController::WebContentsDestroyed() {
   DiscardMainWindow();
 }
 
+void BlinkTestController::RenderProcessHostDestroyed(
+    RenderProcessHost* render_process_host) {
+  render_process_host_observer_.Remove(render_process_host);
+}
+
 void BlinkTestController::RenderProcessExited(
     RenderProcessHost* render_process_host,
     base::TerminationStatus status,
