@@ -83,8 +83,11 @@ class ChromeMetricsServiceClient
   // Completes the two-phase initialization of ChromeMetricsServiceClient.
   void Initialize();
 
-  // Callback that continues the init task by loading plugin information.
+  // Callback that continues the init task by getting a Bluetooth Adapter.
   void OnInitTaskGotHardwareClass();
+
+  // Callback that continues the init task by loading plugin information.
+  void OnInitTaskGotBluetoothAdapter();
 
   // Called after the Plugin init task has been completed that continues the
   // init task by launching a task to gather Google Update statistics.

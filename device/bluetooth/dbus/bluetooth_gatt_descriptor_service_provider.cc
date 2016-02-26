@@ -450,7 +450,7 @@ BluetoothGattDescriptorServiceProvider::Create(
     const std::string& uuid,
     const std::vector<std::string>& permissions,
     const dbus::ObjectPath& characteristic_path) {
-  if (!bluez::BluezDBusManager::Get()->IsUsingStub()) {
+  if (!bluez::BluezDBusManager::Get()->IsUsingFakes()) {
     return new BluetoothGattDescriptorServiceProviderImpl(
         bus, object_path, delegate, uuid, permissions, characteristic_path);
   }

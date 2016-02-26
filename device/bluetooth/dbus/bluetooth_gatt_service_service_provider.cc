@@ -264,7 +264,7 @@ BluetoothGattServiceServiceProvider::Create(
     const dbus::ObjectPath& object_path,
     const std::string& uuid,
     const std::vector<dbus::ObjectPath>& includes) {
-  if (!bluez::BluezDBusManager::Get()->IsUsingStub()) {
+  if (!bluez::BluezDBusManager::Get()->IsUsingFakes()) {
     return new BluetoothGattServiceServiceProviderImpl(bus, object_path, uuid,
                                                        includes);
   }

@@ -92,7 +92,7 @@ namespace device {
 // static
 base::WeakPtr<BluetoothAdapter> BluetoothAdapter::CreateAdapter(
     const InitCallback& init_callback) {
-  return bluez::BluetoothAdapterBlueZ::CreateAdapter();
+  return bluez::BluetoothAdapterBlueZ::CreateAdapter(init_callback);
 }
 
 }  // namespace device
@@ -100,8 +100,9 @@ base::WeakPtr<BluetoothAdapter> BluetoothAdapter::CreateAdapter(
 namespace bluez {
 
 // static
-base::WeakPtr<BluetoothAdapter> BluetoothAdapterBlueZ::CreateAdapter() {
-  BluetoothAdapterBlueZ* adapter = new BluetoothAdapterBlueZ();
+base::WeakPtr<BluetoothAdapter> BluetoothAdapterBlueZ::CreateAdapter(
+    const InitCallback& init_callback) {
+  BluetoothAdapterBlueZ* adapter = new BluetoothAdapterBlueZ(init_callback);
   return adapter->weak_ptr_factory_.GetWeakPtr();
 }
 
@@ -111,6 +112,13 @@ void BluetoothAdapterBlueZ::Shutdown() {
   DCHECK(bluez::BluezDBusManager::IsInitialized())
       << "Call BluetoothAdapterFactory::Shutdown() before "
          "BluezDBusManager::Shutdown().";
+
+  // Since we don't initialize anything if Object Manager is not supported,
+  // no need to do any clean up.
+  if (!bluez::BluezDBusManager::Get()->IsObjectManagerSupported()) {
+    dbus_is_shutdown_ = true;
+    return;
+  }
 
   if (IsPresent())
     RemoveAdapter();  // Also deletes devices_.
@@ -141,13 +149,35 @@ void BluetoothAdapterBlueZ::Shutdown() {
   dbus_is_shutdown_ = true;
 }
 
-BluetoothAdapterBlueZ::BluetoothAdapterBlueZ()
-    : dbus_is_shutdown_(false),
+BluetoothAdapterBlueZ::BluetoothAdapterBlueZ(const InitCallback& init_callback)
+    : init_callback_(init_callback),
+      initialized_(false),
+      dbus_is_shutdown_(false),
       num_discovery_sessions_(0),
       discovery_request_pending_(false),
       weak_ptr_factory_(this) {
   ui_task_runner_ = base::ThreadTaskRunnerHandle::Get();
   socket_thread_ = device::BluetoothSocketThread::Get();
+
+  // Can't initialize the adapter until DBus clients are ready.
+  if (bluez::BluezDBusManager::Get()->IsObjectManagerSupportKnown()) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&BluetoothAdapterBlueZ::Init,
+                              weak_ptr_factory_.GetWeakPtr()));
+    return;
+  }
+  bluez::BluezDBusManager::Get()->CallWhenObjectManagerSupportIsKnown(
+      base::Bind(&BluetoothAdapterBlueZ::Init, weak_ptr_factory_.GetWeakPtr()));
+}
+
+void BluetoothAdapterBlueZ::Init() {
+  // If the platform doesn't support Object Manager then Bluez 5 is probably
+  // not present. In this case we just return without initializing anything.
+  if (!bluez::BluezDBusManager::Get()->IsObjectManagerSupported()) {
+    initialized_ = true;
+    init_callback_.Run();
+    return;
+  }
 
   bluez::BluezDBusManager::Get()->GetBluetoothAdapterClient()->AddObserver(
       this);
@@ -168,6 +198,8 @@ BluetoothAdapterBlueZ::BluetoothAdapterBlueZ()
     VLOG(1) << object_paths.size() << " Bluetooth adapter(s) available.";
     SetAdapter(object_paths[0]);
   }
+  initialized_ = true;
+  init_callback_.Run();
 }
 
 BluetoothAdapterBlueZ::~BluetoothAdapterBlueZ() {
@@ -218,7 +250,7 @@ void BluetoothAdapterBlueZ::SetName(const std::string& name,
 }
 
 bool BluetoothAdapterBlueZ::IsInitialized() const {
-  return true;
+  return initialized_;
 }
 
 bool BluetoothAdapterBlueZ::IsPresent() const {

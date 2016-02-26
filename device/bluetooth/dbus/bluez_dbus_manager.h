@@ -11,12 +11,15 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "device/bluetooth/bluetooth_export.h"
 #include "device/bluetooth/dbus/bluetooth_dbus_client_bundle.h"
 
 namespace dbus {
 class Bus;
 class ObjectPath;
+class Response;
+class ErrorResponse;
 }  // namespace dbus
 
 namespace bluez {
@@ -56,9 +59,10 @@ class DEVICE_BLUETOOTH_EXPORT BluezDBusManager {
   // Sets the global instance. Must be called before any calls to Get().
   // We explicitly initialize and shut down the global object, rather than
   // making it a Singleton, to ensure clean startup and shutdown.
-  // This will initialize real or stub DBusClients depending on command-line
-  // arguments and whether this process runs in a real or test environment.
-  static void Initialize(dbus::Bus* bus, bool use_dbus_stub);
+  // This will initialize real, stub, or fake DBusClients depending on
+  // command-line arguments, whether Object Manager is supported and
+  // whether this process runs in a real or test environment.
+  static void Initialize(dbus::Bus* bus, bool use_dbus_fakes);
 
   // Returns a BluezDBusManagerSetter instance that allows tests to
   // replace individual D-Bus clients with their own implementations.
@@ -75,11 +79,22 @@ class DEVICE_BLUETOOTH_EXPORT BluezDBusManager {
   // Gets the global instance. Initialize() must be called first.
   static BluezDBusManager* Get();
 
-  // Returns true if |client| is stubbed.
-  bool IsUsingStub() { return client_bundle_->IsUsingStub(); }
-
   // Returns various D-Bus bus instances, owned by BluezDBusManager.
   dbus::Bus* GetSystemBus();
+
+  // Returns true once we know whether Object Manager is supported or not.
+  // Until this method returns true, no classes should try to use the
+  // DBus Clients.
+  bool IsObjectManagerSupportKnown() { return object_manager_support_known_; }
+
+  // Calls |callback| once we know whether Object Manager is supported or not.
+  void CallWhenObjectManagerSupportIsKnown(base::Closure callback);
+
+  // Returns true if Object Manager is supported.
+  bool IsObjectManagerSupported() { return object_manager_supported_; }
+
+  // Returns true if |client| is fake.
+  bool IsUsingFakes() { return client_bundle_->IsUsingFakes(); }
 
   // All returned objects are owned by BluezDBusManager.  Do not use these
   // pointers after BluezDBusManager has been shut down.
@@ -101,14 +116,15 @@ class DEVICE_BLUETOOTH_EXPORT BluezDBusManager {
 
   // Creates a new BluezDBusManager using the DBusClients set in
   // |client_bundle|.
-  explicit BluezDBusManager(
-      dbus::Bus* bus,
-      scoped_ptr<BluetoothDBusClientBundle> client_bundle);
+  explicit BluezDBusManager(dbus::Bus* bus, bool use_stubs);
   ~BluezDBusManager();
 
   // Creates a global instance of BluezDBusManager. Cannot be called more than
   // once.
   static void CreateGlobalInstance(dbus::Bus* bus, bool use_stubs);
+
+  void OnObjectManagerSupported(dbus::Response* response);
+  void OnObjectManagerNotSupported(dbus::ErrorResponse* response);
 
   // Initializes all currently stored DBusClients with the system bus and
   // performs additional setup.
@@ -116,6 +132,15 @@ class DEVICE_BLUETOOTH_EXPORT BluezDBusManager {
 
   dbus::Bus* bus_;
   scoped_ptr<BluetoothDBusClientBundle> client_bundle_;
+
+  base::Closure object_manager_support_known_callback_;
+
+  bool object_manager_support_known_;
+  bool object_manager_supported_;
+
+  // Note: This should remain the last member so it'll be destroyed and
+  // invalidate its weak pointers before any other members are destroyed.
+  base::WeakPtrFactory<BluezDBusManager> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BluezDBusManager);
 };

@@ -438,6 +438,18 @@ void ChromeMetricsServiceClient::Initialize() {
 }
 
 void ChromeMetricsServiceClient::OnInitTaskGotHardwareClass() {
+  const base::Closure got_bluetooth_adapter_callback =
+      base::Bind(&ChromeMetricsServiceClient::OnInitTaskGotBluetoothAdapter,
+                 weak_ptr_factory_.GetWeakPtr());
+#if defined(OS_CHROMEOS)
+  chromeos_metrics_provider_->InitTaskGetBluetoothAdapter(
+      got_bluetooth_adapter_callback);
+#else
+  got_bluetooth_adapter_callback.Run();
+#endif  // defined(OS_CHROMEOS)
+}
+
+void ChromeMetricsServiceClient::OnInitTaskGotBluetoothAdapter() {
   const base::Closure got_plugin_info_callback =
       base::Bind(&ChromeMetricsServiceClient::OnInitTaskGotPluginInfo,
                  weak_ptr_factory_.GetWeakPtr());

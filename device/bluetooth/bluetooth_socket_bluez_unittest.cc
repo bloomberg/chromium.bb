@@ -78,6 +78,9 @@ class BluetoothSocketBlueZTest : public testing::Test {
     // Grab a pointer to the adapter.
     device::BluetoothAdapterFactory::GetAdapter(base::Bind(
         &BluetoothSocketBlueZTest::AdapterCallback, base::Unretained(this)));
+
+    base::MessageLoop::current()->Run();
+
     ASSERT_TRUE(adapter_.get() != nullptr);
     ASSERT_TRUE(adapter_->IsInitialized());
     ASSERT_TRUE(adapter_->IsPresent());
@@ -96,6 +99,10 @@ class BluetoothSocketBlueZTest : public testing::Test {
 
   void AdapterCallback(scoped_refptr<BluetoothAdapter> adapter) {
     adapter_ = adapter;
+    if (base::MessageLoop::current() &&
+        base::MessageLoop::current()->is_running()) {
+      base::MessageLoop::current()->QuitWhenIdle();
+    }
   }
 
   void SuccessCallback() {

@@ -413,15 +413,14 @@ BluetoothLEAdvertisementServiceProvider::Create(
     scoped_ptr<ManufacturerData> manufacturer_data,
     scoped_ptr<UUIDList> solicit_uuids,
     scoped_ptr<ServiceData> service_data) {
-  if (!bluez::BluezDBusManager::Get()->IsUsingStub()) {
+  if (!bluez::BluezDBusManager::Get()->IsUsingFakes()) {
     return make_scoped_ptr(new BluetoothAdvertisementServiceProviderImpl(
         bus, object_path, delegate, type, std::move(service_uuids),
         std::move(manufacturer_data), std::move(solicit_uuids),
         std::move(service_data)));
-  } else {
-    return make_scoped_ptr(
-        new FakeBluetoothLEAdvertisementServiceProvider(object_path, delegate));
   }
+  return make_scoped_ptr(
+      new FakeBluetoothLEAdvertisementServiceProvider(object_path, delegate));
 }
 
 }  // namespace bluez

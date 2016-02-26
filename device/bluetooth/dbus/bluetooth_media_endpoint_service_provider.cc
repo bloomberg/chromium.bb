@@ -306,7 +306,7 @@ BluetoothMediaEndpointServiceProvider::Create(
     const dbus::ObjectPath& object_path,
     Delegate* delegate) {
   // Returns a real implementation.
-  if (!bluez::BluezDBusManager::Get()->IsUsingStub()) {
+  if (!bluez::BluezDBusManager::Get()->IsUsingFakes()) {
     return new BluetoothMediaEndpointServiceProviderImpl(bus, object_path,
                                                          delegate);
   }

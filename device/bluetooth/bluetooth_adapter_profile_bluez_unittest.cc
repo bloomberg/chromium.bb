@@ -55,6 +55,7 @@ class BluetoothAdapterProfileBlueZTest : public testing::Test {
     device::BluetoothAdapterFactory::GetAdapter(
         base::Bind(&BluetoothAdapterProfileBlueZTest::AdapterCallback,
                    base::Unretained(this)));
+    base::MessageLoop::current()->Run();
     ASSERT_TRUE(adapter_.get() != nullptr);
     ASSERT_TRUE(adapter_->IsInitialized());
     ASSERT_TRUE(adapter_->IsPresent());
@@ -73,6 +74,10 @@ class BluetoothAdapterProfileBlueZTest : public testing::Test {
 
   void AdapterCallback(scoped_refptr<BluetoothAdapter> adapter) {
     adapter_ = adapter;
+    if (base::MessageLoop::current() &&
+        base::MessageLoop::current()->is_running()) {
+      base::MessageLoop::current()->QuitWhenIdle();
+    }
   }
 
   class FakeDelegate : public bluez::BluetoothProfileServiceProvider::Delegate {

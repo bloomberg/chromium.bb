@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/message_loop/message_loop.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/metrics/chromeos_metrics_provider.h"
@@ -119,6 +120,22 @@ class ChromeOSMetricsProviderTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(ChromeOSMetricsProviderTest);
 };
 
+// Wrapper around ChromeOSMetricsProvider that initializes
+// BluetoothAdapter in the constructor.
+class TestChromeOSMetricsProvider : public ChromeOSMetricsProvider {
+ public:
+  TestChromeOSMetricsProvider() {
+    InitTaskGetBluetoothAdapter(
+        base::Bind(&TestChromeOSMetricsProvider::GetBluetoothAdapterCallback,
+                   base::Unretained(this)));
+    base::MessageLoop::current()->Run();
+  }
+  void GetBluetoothAdapterCallback() {
+    ASSERT_TRUE(base::MessageLoop::current()->is_running());
+    base::MessageLoop::current()->QuitWhenIdle();
+  }
+};
+
 TEST_F(ChromeOSMetricsProviderTest, MultiProfileUserCount) {
   const AccountId account_id1(AccountId::FromUserEmail("user1@example.com"));
   const AccountId account_id2(AccountId::FromUserEmail("user2@example.com"));
@@ -135,7 +152,7 @@ TEST_F(ChromeOSMetricsProviderTest, MultiProfileUserCount) {
   user_manager->LoginUser(account_id1);
   user_manager->LoginUser(account_id3);
 
-  ChromeOSMetricsProvider provider;
+  TestChromeOSMetricsProvider provider;
   provider.OnDidCreateMetricsLog();
   metrics::SystemProfileProto system_profile;
   provider.ProvideSystemProfileMetrics(&system_profile);
@@ -157,7 +174,7 @@ TEST_F(ChromeOSMetricsProviderTest, MultiProfileCountInvalidated) {
 
   user_manager->LoginUser(account_id1);
 
-  ChromeOSMetricsProvider provider;
+  TestChromeOSMetricsProvider provider;
   provider.OnDidCreateMetricsLog();
 
   metrics::SystemProfileProto system_profile;
@@ -170,7 +187,7 @@ TEST_F(ChromeOSMetricsProviderTest, MultiProfileCountInvalidated) {
 }
 
 TEST_F(ChromeOSMetricsProviderTest, BluetoothHardwareDisabled) {
-  ChromeOSMetricsProvider provider;
+  TestChromeOSMetricsProvider provider;
   provider.OnDidCreateMetricsLog();
   metrics::SystemProfileProto system_profile;
   provider.ProvideSystemProfileMetrics(&system_profile);
@@ -188,7 +205,7 @@ TEST_F(ChromeOSMetricsProviderTest, BluetoothHardwareEnabled) {
           dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath));
   properties->powered.ReplaceValue(true);
 
-  ChromeOSMetricsProvider provider;
+  TestChromeOSMetricsProvider provider;
   metrics::SystemProfileProto system_profile;
   provider.ProvideSystemProfileMetrics(&system_profile);
 
@@ -217,7 +234,7 @@ TEST_F(ChromeOSMetricsProviderTest, BluetoothPairedDevices) {
           dbus::ObjectPath(FakeBluetoothDeviceClient::kConfirmPasskeyPath));
   properties->paired.ReplaceValue(true);
 
-  ChromeOSMetricsProvider provider;
+  TestChromeOSMetricsProvider provider;
   provider.OnDidCreateMetricsLog();
   metrics::SystemProfileProto system_profile;
   provider.ProvideSystemProfileMetrics(&system_profile);

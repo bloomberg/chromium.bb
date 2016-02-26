@@ -6,6 +6,7 @@
 #include <stdint.h>
 #include <utility>
 
+#include "base/bind_helpers.h"
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -231,6 +232,8 @@ class BluetoothBlueZTest : public testing::Test {
     return base::Bind(&BluetoothBlueZTest::Callback, base::Unretained(this));
   }
 
+  void AdapterCallback() { QuitMessageLoop(); }
+
   void DiscoverySessionCallback(
       scoped_ptr<BluetoothDiscoverySession> discovery_session) {
     ++callback_count_;
@@ -293,7 +296,9 @@ class BluetoothBlueZTest : public testing::Test {
 
   // Call to fill the adapter_ member with a BluetoothAdapter instance.
   void GetAdapter() {
-    adapter_ = new BluetoothAdapterBlueZ();
+    adapter_ = new BluetoothAdapterBlueZ(base::Bind(
+        &BluetoothBlueZTest::AdapterCallback, base::Unretained(this)));
+    base::MessageLoop::current()->Run();
     ASSERT_TRUE(adapter_.get() != nullptr);
     ASSERT_TRUE(adapter_->IsInitialized());
   }

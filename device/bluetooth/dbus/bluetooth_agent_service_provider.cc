@@ -437,11 +437,10 @@ BluetoothAgentServiceProvider* BluetoothAgentServiceProvider::Create(
     dbus::Bus* bus,
     const dbus::ObjectPath& object_path,
     Delegate* delegate) {
-  if (!bluez::BluezDBusManager::Get()->IsUsingStub()) {
+  if (!bluez::BluezDBusManager::Get()->IsUsingFakes()) {
     return new BluetoothAgentServiceProviderImpl(bus, object_path, delegate);
-  } else {
-    return new FakeBluetoothAgentServiceProvider(object_path, delegate);
   }
+  return new FakeBluetoothAgentServiceProvider(object_path, delegate);
 }
 
 }  // namespace bluez

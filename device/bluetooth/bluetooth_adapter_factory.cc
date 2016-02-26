@@ -28,7 +28,7 @@ namespace {
 base::LazyInstance<base::WeakPtr<BluetoothAdapter> >::Leaky default_adapter =
     LAZY_INSTANCE_INITIALIZER;
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)
 typedef std::vector<BluetoothAdapterFactory::AdapterCallback>
     AdapterCallbackList;
 
@@ -49,7 +49,7 @@ void RunAdapterCallbacks() {
   }
   adapter_callbacks.Get().clear();
 }
-#endif  // defined(OS_WIN)
+#endif  // defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)
 
 }  // namespace
 
@@ -73,7 +73,7 @@ bool BluetoothAdapterFactory::IsBluetoothAdapterAvailable() {
 void BluetoothAdapterFactory::GetAdapter(const AdapterCallback& callback) {
   DCHECK(IsBluetoothAdapterAvailable());
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)
   if (!default_adapter.Get()) {
     default_adapter.Get() =
         BluetoothAdapter::CreateAdapter(base::Bind(&RunAdapterCallbacks));
@@ -82,18 +82,17 @@ void BluetoothAdapterFactory::GetAdapter(const AdapterCallback& callback) {
 
   if (!default_adapter.Get()->IsInitialized())
     adapter_callbacks.Get().push_back(callback);
-#else  // !defined(OS_WIN)
+#else   // !defined(OS_WIN) && !defined(OS_LINUX) && !defined(OS_CHROMEOS)
   if (!default_adapter.Get()) {
     default_adapter.Get() =
         BluetoothAdapter::CreateAdapter(BluetoothAdapter::InitCallback());
   }
 
   DCHECK(default_adapter.Get()->IsInitialized());
-#endif  // defined(OS_WIN)
+#endif  // defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)
 
   if (default_adapter.Get()->IsInitialized())
     callback.Run(scoped_refptr<BluetoothAdapter>(default_adapter.Get().get()));
-
 }
 
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)

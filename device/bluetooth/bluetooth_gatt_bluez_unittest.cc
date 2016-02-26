@@ -121,6 +121,7 @@ class BluetoothGattBlueZTest : public testing::Test {
   void GetAdapter() {
     device::BluetoothAdapterFactory::GetAdapter(base::Bind(
         &BluetoothGattBlueZTest::AdapterCallback, base::Unretained(this)));
+    base::MessageLoop::current()->Run();
     ASSERT_TRUE(adapter_.get() != NULL);
     ASSERT_TRUE(adapter_->IsInitialized());
     ASSERT_TRUE(adapter_->IsPresent());
@@ -128,6 +129,10 @@ class BluetoothGattBlueZTest : public testing::Test {
 
   void AdapterCallback(scoped_refptr<BluetoothAdapter> adapter) {
     adapter_ = adapter;
+    if (base::MessageLoop::current() &&
+        base::MessageLoop::current()->is_running()) {
+      base::MessageLoop::current()->QuitWhenIdle();
+    }
   }
 
   void SuccessCallback() { ++success_callback_count_; }

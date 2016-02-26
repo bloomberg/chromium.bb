@@ -31,11 +31,11 @@ class BluetoothProfileManagerClient;
 // system bus. See also the comment in the destructor of DBusThreadManager.
 class DEVICE_BLUETOOTH_EXPORT BluetoothDBusClientBundle {
  public:
-  explicit BluetoothDBusClientBundle(bool use_stubs);
+  explicit BluetoothDBusClientBundle(bool use_fakes);
   ~BluetoothDBusClientBundle();
 
   // Returns true if |client| is stubbed.
-  bool IsUsingStub() { return use_stubs_; }
+  bool IsUsingFakes() { return use_fakes_; }
 
   BluetoothAdapterClient* bluetooth_adapter_client() {
     return bluetooth_adapter_client_.get();
@@ -89,7 +89,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDBusClientBundle {
  private:
   friend class BluezDBusManagerSetter;
 
-  bool use_stubs_;
+  bool use_fakes_;
 
   scoped_ptr<BluetoothAdapterClient> bluetooth_adapter_client_;
   scoped_ptr<BluetoothLEAdvertisingManagerClient>

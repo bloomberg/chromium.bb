@@ -457,7 +457,7 @@ BluetoothGattCharacteristicServiceProvider::Create(
     const std::vector<std::string>& flags,
     const std::vector<std::string>& permissions,
     const dbus::ObjectPath& service_path) {
-  if (!bluez::BluezDBusManager::Get()->IsUsingStub()) {
+  if (!bluez::BluezDBusManager::Get()->IsUsingFakes()) {
     return new BluetoothGattCharacteristicServiceProviderImpl(
         bus, object_path, delegate, uuid, flags, permissions, service_path);
   }

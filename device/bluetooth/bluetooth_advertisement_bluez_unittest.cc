@@ -80,6 +80,7 @@ class BluetoothAdvertisementBlueZTest : public testing::Test {
     BluetoothAdapterFactory::GetAdapter(
         base::Bind(&BluetoothAdvertisementBlueZTest::GetAdapterCallback,
                    base::Unretained(this)));
+    base::MessageLoop::current()->Run();
   }
 
   // Called whenever BluetoothAdapter is retrieved successfully.
@@ -87,6 +88,10 @@ class BluetoothAdvertisementBlueZTest : public testing::Test {
     adapter_ = adapter;
     ASSERT_NE(adapter_.get(), nullptr);
     ASSERT_TRUE(adapter_->IsInitialized());
+    if (base::MessageLoop::current() &&
+        base::MessageLoop::current()->is_running()) {
+      base::MessageLoop::current()->QuitWhenIdle();
+    }
   }
 
   scoped_ptr<BluetoothAdvertisement::Data> CreateAdvertisementData() {

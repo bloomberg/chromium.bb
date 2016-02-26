@@ -241,11 +241,10 @@ BluetoothProfileServiceProvider* BluetoothProfileServiceProvider::Create(
     dbus::Bus* bus,
     const dbus::ObjectPath& object_path,
     Delegate* delegate) {
-  if (!bluez::BluezDBusManager::Get()->IsUsingStub()) {
+  if (!bluez::BluezDBusManager::Get()->IsUsingFakes()) {
     return new BluetoothProfileServiceProviderImpl(bus, object_path, delegate);
-  } else {
-    return new FakeBluetoothProfileServiceProvider(object_path, delegate);
   }
+  return new FakeBluetoothProfileServiceProvider(object_path, delegate);
 }
 
 }  // namespace bluez

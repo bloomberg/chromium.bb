@@ -170,6 +170,13 @@ void ChromeOSMetricsProvider::InitTaskGetHardwareClassOnFileThread() {
       "hardware_class", &hardware_class_);
 }
 
+void ChromeOSMetricsProvider::InitTaskGetBluetoothAdapter(
+    const base::Closure& callback) {
+  device::BluetoothAdapterFactory::GetAdapter(
+      base::Bind(&ChromeOSMetricsProvider::SetBluetoothAdapter,
+                 weak_ptr_factory_.GetWeakPtr(), callback));
+}
+
 void ChromeOSMetricsProvider::ProvideSystemProfileMetrics(
     metrics::SystemProfileProto* system_profile_proto) {
   WriteBluetoothProto(system_profile_proto);
@@ -227,12 +234,6 @@ void ChromeOSMetricsProvider::WriteBluetoothProto(
     metrics::SystemProfileProto* system_profile_proto) {
   metrics::SystemProfileProto::Hardware* hardware =
       system_profile_proto->mutable_hardware();
-
-  // BluetoothAdapterFactory::GetAdapter is synchronous on Chrome OS; if that
-  // changes this will fail at the DCHECK().
-  device::BluetoothAdapterFactory::GetAdapter(base::Bind(
-      &ChromeOSMetricsProvider::SetBluetoothAdapter, base::Unretained(this)));
-  DCHECK(adapter_.get());
 
   SystemProfileProto::Hardware::Bluetooth* bluetooth =
       hardware->mutable_bluetooth();
@@ -302,8 +303,10 @@ void ChromeOSMetricsProvider::UpdateMultiProfileUserCount(
 }
 
 void ChromeOSMetricsProvider::SetBluetoothAdapter(
+    base::Closure callback,
     scoped_refptr<device::BluetoothAdapter> adapter) {
   adapter_ = adapter;
+  callback.Run();
 }
 
 void ChromeOSMetricsProvider::RecordEnrollmentStatus() {

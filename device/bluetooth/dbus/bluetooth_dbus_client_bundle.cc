@@ -36,9 +36,9 @@
 
 namespace bluez {
 
-BluetoothDBusClientBundle::BluetoothDBusClientBundle(bool use_stubs)
-    : use_stubs_(use_stubs) {
-  if (!use_stubs) {
+BluetoothDBusClientBundle::BluetoothDBusClientBundle(bool use_fakes)
+    : use_fakes_(use_fakes) {
+  if (!use_fakes_) {
     bluetooth_adapter_client_.reset(BluetoothAdapterClient::Create());
     bluetooth_le_advertising_manager_client_.reset(
         BluetoothLEAdvertisingManagerClient::Create());
