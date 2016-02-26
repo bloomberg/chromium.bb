@@ -20,6 +20,7 @@
 #include "core/animation/CSSPositionAxisListInterpolationType.h"
 #include "core/animation/CSSPositionInterpolationType.h"
 #include "core/animation/CSSShadowListInterpolationType.h"
+#include "core/animation/CSSTranslateInterpolationType.h"
 #include "core/animation/CSSValueInterpolationType.h"
 #include "core/animation/CSSVisibilityInterpolationType.h"
 #include "core/animation/InterpolationType.h"
@@ -192,6 +193,9 @@ const InterpolationTypes* PropertyInterpolationTypesMapping::get(const PropertyH
         case CSSPropertyBorderTopLeftRadius:
         case CSSPropertyBorderTopRightRadius:
             applicableTypes->append(adoptPtr(new CSSLengthPairInterpolationType(cssProperty)));
+            break;
+        case CSSPropertyTranslate:
+            applicableTypes->append(adoptPtr(new CSSTranslateInterpolationType(cssProperty)));
             break;
         default:
             // TODO(alancutter): Support all interpolable CSS properties here so we can stop falling back to the old StyleInterpolation implementation.

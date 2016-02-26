@@ -246,8 +246,9 @@ static double clampToRange(double x, ValueRange range)
 
 static Length createLength(double pixels, double percentage, bool hasPercentage, ValueRange range)
 {
-    ASSERT(hasPercentage || percentage == 0);
-    if (pixels && hasPercentage)
+    if (percentage != 0)
+        hasPercentage = true;
+    if (pixels != 0 && hasPercentage)
         return Length(CalculationValue::create(PixelsAndPercent(pixels, percentage), range));
     if (hasPercentage)
         return Length(clampToRange(percentage, range), Percent);

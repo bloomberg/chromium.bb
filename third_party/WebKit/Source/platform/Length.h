@@ -160,11 +160,18 @@ public:
         return getIntValue();
     }
 
+    float pixels() const
+    {
+        ASSERT(type() == Fixed);
+        return getFloatValue();
+    }
+
     float percent() const
     {
         ASSERT(type() == Percent);
         return getFloatValue();
     }
+
     PixelsAndPercent pixelsAndPercent() const;
 
     CalculationValue& calculationValue() const;
