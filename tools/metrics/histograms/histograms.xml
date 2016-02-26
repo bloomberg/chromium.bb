@@ -6646,9 +6646,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     data saver proxy.
 
     An HTTP request may not go through data saver proxy if the config was
-    unavailable, local bypass rules or server side bypasses. If data saver is
-    turned on, this metric is recorded every time proxy is resolved for an HTTP
-    request.
+    unavailable, due to local bypass rules, or due to server side bypasses. If
+    data saver is turned on, this metric is recorded every time proxy is
+    resolved for an HTTP request.
   </summary>
 </histogram>
 
@@ -61632,8 +61632,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </enum>
 
 <enum name="DataReductionProxyConfigServiceHTTPRequests" type="int">
-  <int value="0" label="Request went through data saver proxy"/>
-  <int value="1" label="Request did not go through data saver proxy"/>
+  <int value="0" label="Request did not go through data saver proxy"/>
+  <int value="1" label="Request went through data saver proxy"/>
 </enum>
 
 <enum name="DataReductionProxyEnabledState" type="int">

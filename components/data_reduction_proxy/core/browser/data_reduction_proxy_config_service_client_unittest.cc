@@ -29,6 +29,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/data_reduction_proxy/proto/client_config.pb.h"
+#include "net/base/network_change_notifier.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/proxy/proxy_server.h"
@@ -593,6 +594,8 @@ TEST_F(DataReductionProxyConfigServiceClientTest, OnIPAddressChangeDisabled) {
 // headers matches the currrent session key.
 TEST_F(DataReductionProxyConfigServiceClientTest, AuthFailure) {
   Init(true);
+  net::NetworkChangeNotifier::NotifyObserversOfConnectionTypeChangeForTests(
+      net::NetworkChangeNotifier::CONNECTION_WIFI);
   net::HttpRequestHeaders request_headers;
   request_headers.SetHeader(
       "chrome-proxy", "something=something_else, s=" +
@@ -625,6 +628,7 @@ TEST_F(DataReductionProxyConfigServiceClientTest, AuthFailure) {
   net::LoadTimingInfo load_timing_info;
   load_timing_info.request_start =
       base::TimeTicks::Now() - base::TimeDelta::FromSeconds(1);
+  load_timing_info.send_start = load_timing_info.request_start;
   EXPECT_TRUE(config_client()->ShouldRetryDueToAuthFailure(
       request_headers, parsed.get(), origin.host_port_pair(),
       load_timing_info));
@@ -708,6 +712,7 @@ TEST_F(DataReductionProxyConfigServiceClientTest,
   net::LoadTimingInfo load_timing_info;
   load_timing_info.request_start =
       base::TimeTicks::Now() - base::TimeDelta::FromSeconds(1);
+  load_timing_info.send_start = load_timing_info.request_start;
 
   EXPECT_TRUE(config_client()->ShouldRetryDueToAuthFailure(
       request_headers, parsed.get(), origin.host_port_pair(),

@@ -302,7 +302,13 @@ bool DataReductionProxyConfigServiceClient::ShouldRetryDueToAuthFailure(
       InvalidateConfig();
       RetrieveConfig();
 
-      if (!load_timing_info.request_start.is_null()) {
+      if (!load_timing_info.send_start.is_null() &&
+          !load_timing_info.request_start.is_null() &&
+          net::NetworkChangeNotifier::GetConnectionType() !=
+              net::NetworkChangeNotifier::CONNECTION_NONE &&
+          last_ip_address_change_ < load_timing_info.request_start) {
+        // Record only if there was no change in the IP address since the
+        // request started.
         UMA_HISTOGRAM_TIMES(
             "DataReductionProxy.ConfigService.AuthFailure.LatencyPenalty",
             base::TimeTicks::Now() - load_timing_info.request_start);
@@ -339,6 +345,7 @@ base::Time DataReductionProxyConfigServiceClient::Now() {
 void DataReductionProxyConfigServiceClient::OnIPAddressChanged() {
   DCHECK(thread_checker_.CalledOnValidThread());
   GetBackoffEntry()->Reset();
+  last_ip_address_change_ = base::TimeTicks::Now();
   failed_attempts_before_success_ = 0;
   RetrieveConfig();
 }

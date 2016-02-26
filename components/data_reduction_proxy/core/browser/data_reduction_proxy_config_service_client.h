@@ -267,6 +267,9 @@ class DataReductionProxyConfigServiceClient
   // config is fetched successfully.
   int32_t failed_attempts_before_success_;
 
+  // Time when the IP address last changed.
+  base::TimeTicks last_ip_address_change_;
+
   // Enforce usage on the IO thread.
   base::ThreadChecker thread_checker_;
 
