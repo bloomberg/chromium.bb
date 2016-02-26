@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/bluetooth/bluetooth_chooser_bubble_delegate.h"
+#include "chrome/browser/ui/bluetooth/bluetooth_chooser_bubble_controller.h"
 
 #include "base/stl_util.h"
 #include "chrome/browser/ui/bluetooth/bluetooth_chooser_desktop.h"
@@ -10,26 +10,26 @@
 #include "components/bubble/bubble_controller.h"
 #include "url/gurl.h"
 
-BluetoothChooserBubbleDelegate::BluetoothChooserBubbleDelegate(
+BluetoothChooserBubbleController::BluetoothChooserBubbleController(
     content::RenderFrameHost* owner)
-    : ChooserBubbleDelegate(owner), bluetooth_chooser_(nullptr) {}
+    : ChooserBubbleController(owner), bluetooth_chooser_(nullptr) {}
 
-BluetoothChooserBubbleDelegate::~BluetoothChooserBubbleDelegate() {
+BluetoothChooserBubbleController::~BluetoothChooserBubbleController() {
   if (bluetooth_chooser_)
-    bluetooth_chooser_->set_bluetooth_chooser_bubble_delegate(nullptr);
+    bluetooth_chooser_->set_bluetooth_chooser_bubble_controller(nullptr);
 }
 
-size_t BluetoothChooserBubbleDelegate::NumOptions() const {
+size_t BluetoothChooserBubbleController::NumOptions() const {
   return device_names_and_ids_.size();
 }
 
-const base::string16& BluetoothChooserBubbleDelegate::GetOption(
+const base::string16& BluetoothChooserBubbleController::GetOption(
     size_t index) const {
   DCHECK_LT(index, device_names_and_ids_.size());
   return device_names_and_ids_[index].first;
 }
 
-void BluetoothChooserBubbleDelegate::Select(size_t index) {
+void BluetoothChooserBubbleController::Select(size_t index) {
   DCHECK_LT(index, device_names_and_ids_.size());
   if (bluetooth_chooser_) {
     bluetooth_chooser_->CallEventHandler(
@@ -37,32 +37,32 @@ void BluetoothChooserBubbleDelegate::Select(size_t index) {
         device_names_and_ids_[index].second);
   }
 
-  if (bubble_controller_)
-    bubble_controller_->CloseBubble(BUBBLE_CLOSE_ACCEPTED);
+  if (bubble_reference_)
+    bubble_reference_->CloseBubble(BUBBLE_CLOSE_ACCEPTED);
 }
 
-void BluetoothChooserBubbleDelegate::Cancel() {
+void BluetoothChooserBubbleController::Cancel() {
   if (bluetooth_chooser_) {
     bluetooth_chooser_->CallEventHandler(
         content::BluetoothChooser::Event::CANCELLED, std::string());
   }
 
-  if (bubble_controller_)
-    bubble_controller_->CloseBubble(BUBBLE_CLOSE_CANCELED);
+  if (bubble_reference_)
+    bubble_reference_->CloseBubble(BUBBLE_CLOSE_CANCELED);
 }
 
-void BluetoothChooserBubbleDelegate::Close() {
+void BluetoothChooserBubbleController::Close() {
   if (bluetooth_chooser_) {
     bluetooth_chooser_->CallEventHandler(
         content::BluetoothChooser::Event::CANCELLED, std::string());
   }
 }
 
-GURL BluetoothChooserBubbleDelegate::GetHelpCenterUrl() const {
+GURL BluetoothChooserBubbleController::GetHelpCenterUrl() const {
   return GURL(chrome::kChooserBluetoothOverviewURL);
 }
 
-void BluetoothChooserBubbleDelegate::AddDevice(
+void BluetoothChooserBubbleController::AddDevice(
     const std::string& device_id,
     const base::string16& device_name) {
   device_names_and_ids_.push_back(std::make_pair(device_name, device_id));
@@ -70,7 +70,7 @@ void BluetoothChooserBubbleDelegate::AddDevice(
     observer()->OnOptionAdded(device_names_and_ids_.size() - 1);
 }
 
-void BluetoothChooserBubbleDelegate::RemoveDevice(
+void BluetoothChooserBubbleController::RemoveDevice(
     const std::string& device_id) {
   for (auto it = device_names_and_ids_.begin();
        it != device_names_and_ids_.end(); ++it) {

@@ -13,7 +13,7 @@ class View;
 }
 
 class Browser;
-class ChooserBubbleDelegate;
+class ChooserBubbleController;
 class ChooserBubbleUiViewDelegate;
 
 // ChooserBubbleUiView implements a chooser-based permission model,
@@ -21,8 +21,7 @@ class ChooserBubbleUiViewDelegate;
 // for user to grant permission. It can be used by WebUsb, WebBluetooth.
 class ChooserBubbleUiView : public BubbleUi {
  public:
-  ChooserBubbleUiView(Browser* browser,
-                      ChooserBubbleDelegate* chooser_bubble_delegate);
+  ChooserBubbleUiView(Browser* browser, ChooserBubbleController* controller);
   ~ChooserBubbleUiView() override;
 
   // BubbleUi:
@@ -36,7 +35,7 @@ class ChooserBubbleUiView : public BubbleUi {
   views::BubbleBorder::Arrow GetAnchorArrow();
 
   Browser* browser_;
-  ChooserBubbleDelegate* chooser_bubble_delegate_;
+  ChooserBubbleController* controller_;
   ChooserBubbleUiViewDelegate* chooser_bubble_ui_view_delegate_;
 };
 

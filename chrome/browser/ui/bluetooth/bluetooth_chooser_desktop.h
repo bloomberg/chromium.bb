@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "content/public/browser/bluetooth_chooser.h"
 
-class BluetoothChooserBubbleDelegate;
+class BluetoothChooserBubbleController;
 
 // Represents a Bluetooth chooser to ask the user to select a Bluetooth
 // device from a list of options. This implementation is for desktop.
@@ -26,9 +26,9 @@ class BluetoothChooserDesktop : public content::BluetoothChooser {
                  const base::string16& device_name) override;
   void RemoveDevice(const std::string& device_id) override;
 
-  void set_bluetooth_chooser_bubble_delegate(
-      BluetoothChooserBubbleDelegate* bluetooth_chooser_bubble_delegate) {
-    bluetooth_chooser_bubble_delegate_ = bluetooth_chooser_bubble_delegate;
+  void set_bluetooth_chooser_bubble_controller(
+      BluetoothChooserBubbleController* bluetooth_chooser_bubble_controller) {
+    bluetooth_chooser_bubble_controller_ = bluetooth_chooser_bubble_controller;
   }
 
   // Use this function to call event_handler_.
@@ -37,7 +37,7 @@ class BluetoothChooserDesktop : public content::BluetoothChooser {
 
  private:
   content::BluetoothChooser::EventHandler event_handler_;
-  BluetoothChooserBubbleDelegate* bluetooth_chooser_bubble_delegate_;
+  BluetoothChooserBubbleController* bluetooth_chooser_bubble_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothChooserDesktop);
 };

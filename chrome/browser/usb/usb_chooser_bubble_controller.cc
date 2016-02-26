@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/usb/usb_chooser_bubble_delegate.h"
+#include "chrome/browser/usb/usb_chooser_bubble_controller.h"
 
 #include <stddef.h>
 #include <utility>
@@ -73,12 +73,12 @@ bool FindInAllowedOrigins(const device::WebUsbAllowedOrigins* allowed_origins,
 
 }  // namespace
 
-UsbChooserBubbleDelegate::UsbChooserBubbleDelegate(
+UsbChooserBubbleController::UsbChooserBubbleController(
     content::RenderFrameHost* owner,
     mojo::Array<device::usb::DeviceFilterPtr> device_filters,
     content::RenderFrameHost* render_frame_host,
     const webusb::WebUsbPermissionBubble::GetPermissionCallback& callback)
-    : ChooserBubbleDelegate(owner),
+    : ChooserBubbleController(owner),
       render_frame_host_(render_frame_host),
       callback_(callback),
       usb_service_observer_(this),
@@ -94,25 +94,27 @@ UsbChooserBubbleDelegate::UsbChooserBubbleDelegate(
   if (!device_filters.is_null())
     filters_ = device_filters.To<std::vector<device::UsbDeviceFilter>>();
 
-  usb_service->GetDevices(base::Bind(
-      &UsbChooserBubbleDelegate::GotUsbDeviceList, weak_factory_.GetWeakPtr()));
+  usb_service->GetDevices(
+      base::Bind(&UsbChooserBubbleController::GotUsbDeviceList,
+                 weak_factory_.GetWeakPtr()));
 }
 
-UsbChooserBubbleDelegate::~UsbChooserBubbleDelegate() {
+UsbChooserBubbleController::~UsbChooserBubbleController() {
   if (!callback_.is_null())
     callback_.Run(nullptr);
 }
 
-size_t UsbChooserBubbleDelegate::NumOptions() const {
+size_t UsbChooserBubbleController::NumOptions() const {
   return devices_.size();
 }
 
-const base::string16& UsbChooserBubbleDelegate::GetOption(size_t index) const {
+const base::string16& UsbChooserBubbleController::GetOption(
+    size_t index) const {
   DCHECK_LT(index, devices_.size());
   return devices_[index].second;
 }
 
-void UsbChooserBubbleDelegate::Select(size_t index) {
+void UsbChooserBubbleController::Select(size_t index) {
   DCHECK_LT(index, devices_.size());
   content::WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(render_frame_host_);
@@ -135,22 +137,22 @@ void UsbChooserBubbleDelegate::Select(size_t index) {
                            ? WEBUSB_CHOOSER_CLOSED_EPHEMERAL_PERMISSION_GRANTED
                            : WEBUSB_CHOOSER_CLOSED_PERMISSION_GRANTED);
 
-  if (bubble_controller_)
-    bubble_controller_->CloseBubble(BUBBLE_CLOSE_ACCEPTED);
+  if (bubble_reference_)
+    bubble_reference_->CloseBubble(BUBBLE_CLOSE_ACCEPTED);
 }
 
-void UsbChooserBubbleDelegate::Cancel() {
+void UsbChooserBubbleController::Cancel() {
   RecordChooserClosure(devices_.size() == 0
                            ? WEBUSB_CHOOSER_CLOSED_CANCELLED_NO_DEVICES
                            : WEBUSB_CHOOSER_CLOSED_CANCELLED);
 
-  if (bubble_controller_)
-    bubble_controller_->CloseBubble(BUBBLE_CLOSE_CANCELED);
+  if (bubble_reference_)
+    bubble_reference_->CloseBubble(BUBBLE_CLOSE_CANCELED);
 }
 
-void UsbChooserBubbleDelegate::Close() {}
+void UsbChooserBubbleController::Close() {}
 
-void UsbChooserBubbleDelegate::OnDeviceAdded(
+void UsbChooserBubbleController::OnDeviceAdded(
     scoped_refptr<device::UsbDevice> device) {
   if (device::UsbDeviceFilter::MatchesAny(device, filters_) &&
       FindInAllowedOrigins(
@@ -162,11 +164,11 @@ void UsbChooserBubbleDelegate::OnDeviceAdded(
   }
 }
 
-GURL UsbChooserBubbleDelegate::GetHelpCenterUrl() const {
+GURL UsbChooserBubbleController::GetHelpCenterUrl() const {
   return GURL(chrome::kChooserUsbOverviewURL);
 }
 
-void UsbChooserBubbleDelegate::OnDeviceRemoved(
+void UsbChooserBubbleController::OnDeviceRemoved(
     scoped_refptr<device::UsbDevice> device) {
   for (auto it = devices_.begin(); it != devices_.end(); ++it) {
     if (it->first == device) {
@@ -181,7 +183,7 @@ void UsbChooserBubbleDelegate::OnDeviceRemoved(
 
 // Get a list of devices that can be shown in the chooser bubble UI for
 // user to grant permsssion.
-void UsbChooserBubbleDelegate::GotUsbDeviceList(
+void UsbChooserBubbleController::GotUsbDeviceList(
     const std::vector<scoped_refptr<device::UsbDevice>>& devices) {
   for (const auto& device : devices) {
     if (device::UsbDeviceFilter::MatchesAny(device, filters_) &&
@@ -195,7 +197,7 @@ void UsbChooserBubbleDelegate::GotUsbDeviceList(
     observer()->OnOptionsInitialized();
 }
 
-void UsbChooserBubbleDelegate::set_bubble_controller(
-    BubbleReference bubble_controller) {
-  bubble_controller_ = bubble_controller;
+void UsbChooserBubbleController::set_bubble_reference(
+    BubbleReference bubble_reference) {
+  bubble_reference_ = bubble_reference;
 }

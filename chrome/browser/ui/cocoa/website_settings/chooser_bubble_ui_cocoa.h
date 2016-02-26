@@ -8,21 +8,20 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/macros.h"
-#include "chrome/browser/ui/website_settings/chooser_bubble_delegate.h"
+#include "chrome/browser/ui/website_settings/chooser_bubble_controller.h"
 #include "components/bubble/bubble_ui.h"
 
 class Browser;
-class ChooserBubbleDelegate;
 @class ChooserBubbleUiController;
 
 // ChooserBubbleUiCocoa implements a chooser-based permission model.
 // It uses |NSTableView| to show a list of options for user to grant
 // permission. It can be used by the WebUSB or WebBluetooth APIs.
 class ChooserBubbleUiCocoa : public BubbleUi,
-                             public ChooserBubbleDelegate::Observer {
+                             public ChooserBubbleController::Observer {
  public:
   ChooserBubbleUiCocoa(Browser* browser,
-                       ChooserBubbleDelegate* chooser_bubble_delegate);
+                       ChooserBubbleController* chooser_bubble_controller);
   ~ChooserBubbleUiCocoa() override;
 
   // BubbleUi:
@@ -30,7 +29,7 @@ class ChooserBubbleUiCocoa : public BubbleUi,
   void Close() override;
   void UpdateAnchorPosition() override;
 
-  // ChooserBubbleDelegate::Observer:
+  // ChooserBubbleController::Observer:
   void OnOptionsInitialized() override;
   void OnOptionAdded(size_t index) override;
   void OnOptionRemoved(size_t index) override;
@@ -39,8 +38,8 @@ class ChooserBubbleUiCocoa : public BubbleUi,
   void OnBubbleClosing();
 
  private:
-  Browser* browser_;                                // Weak.
-  ChooserBubbleDelegate* chooser_bubble_delegate_;  // Weak.
+  Browser* browser_;                                    // Weak.
+  ChooserBubbleController* chooser_bubble_controller_;  // Weak.
   // Cocoa-side chooser bubble UI controller. Weak, as it will close itself.
   ChooserBubbleUiController* chooser_bubble_ui_controller_;
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEBSITE_SETTINGS_CHOOSER_BUBBLE_DELEGATE_H_
-#define CHROME_BROWSER_UI_WEBSITE_SETTINGS_CHOOSER_BUBBLE_DELEGATE_H_
+#ifndef CHROME_BROWSER_UI_WEBSITE_SETTINGS_CHOOSER_BUBBLE_CONTROLLER_H_
+#define CHROME_BROWSER_UI_WEBSITE_SETTINGS_CHOOSER_BUBBLE_CONTROLLER_H_
 
 #include <vector>
 
@@ -14,7 +14,7 @@
 class Browser;
 class GURL;
 
-// Subclass ChooserBubbleDelegate to implement a chooser bubble, which has
+// Subclass ChooserBubbleController to implement a chooser bubble, which has
 // some introductory text and a list of options that users can pick one of.
 // Create an instance of your subclass and pass it to
 // BubbleManager::ShowBubble() to show the bubble. Your subclass must define
@@ -24,14 +24,10 @@ class GURL;
 // collecting metrics.
 // After Select/Cancel/Close is called, this object is destroyed and call back
 // into it is not allowed.
-// TODO(juncai): Change class name ChooserBubbleDelegate to
-// ChooserBubbleController since it better reflects its responsibilities and
-// clarifies the roles of this class.
-// https://crbug.com/588933
-class ChooserBubbleDelegate : public BubbleDelegate {
+class ChooserBubbleController : public BubbleDelegate {
  public:
-  explicit ChooserBubbleDelegate(content::RenderFrameHost* owner);
-  ~ChooserBubbleDelegate() override;
+  explicit ChooserBubbleController(content::RenderFrameHost* owner);
+  ~ChooserBubbleController() override;
 
   // Since the set of options can change while the UI is visible an
   // implementation should register an observer.
@@ -97,7 +93,7 @@ class ChooserBubbleDelegate : public BubbleDelegate {
   const content::RenderFrameHost* const owning_frame_;
   Observer* observer_ = nullptr;
 
-  DISALLOW_COPY_AND_ASSIGN(ChooserBubbleDelegate);
+  DISALLOW_COPY_AND_ASSIGN(ChooserBubbleController);
 };
 
-#endif  // CHROME_BROWSER_UI_WEBSITE_SETTINGS_CHOOSER_BUBBLE_DELEGATE_H_
+#endif  // CHROME_BROWSER_UI_WEBSITE_SETTINGS_CHOOSER_BUBBLE_CONTROLLER_H_

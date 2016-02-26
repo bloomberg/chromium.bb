@@ -24,7 +24,6 @@
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
-#include "chrome/browser/ui/website_settings/chooser_bubble_delegate.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "skia/ext/skia_utils_mac.h"
@@ -53,7 +52,7 @@ const CGFloat kVerticalPadding = 10.0f;
 
 }  // namespace
 
-scoped_ptr<BubbleUi> ChooserBubbleDelegate::BuildBubbleUi() {
+scoped_ptr<BubbleUi> ChooserBubbleController::BuildBubbleUi() {
   return make_scoped_ptr(new ChooserBubbleUiCocoa(browser_, this));
 }
 
@@ -72,14 +71,15 @@ scoped_ptr<BubbleUi> ChooserBubbleDelegate::BuildBubbleUi() {
   base::scoped_nsobject<HyperlinkTextView> message_;
   bool buttonPressed_;
 
-  Browser* browser_;                                // Weak.
-  ChooserBubbleDelegate* chooserBubbleDelegate_;    // Weak.
+  Browser* browser_;                                  // Weak.
+  ChooserBubbleController* chooserBubbleController_;  // Weak.
 }
 
 // Designated initializer.  |browser| and |bridge| must both be non-nil.
 - (id)initWithBrowser:(Browser*)browser
-    initWithChooserBubbleDelegate:(ChooserBubbleDelegate*)chooserBubbleDelegate
-                           bridge:(ChooserBubbleUiCocoa*)bridge;
+    initWithChooserBubbleController:
+        (ChooserBubbleController*)chooserBubbleController
+                             bridge:(ChooserBubbleUiCocoa*)bridge;
 
 // Makes the bubble visible.
 - (void)show;
@@ -140,14 +140,15 @@ scoped_ptr<BubbleUi> ChooserBubbleDelegate::BuildBubbleUi() {
 @implementation ChooserBubbleUiController
 
 - (id)initWithBrowser:(Browser*)browser
-    initWithChooserBubbleDelegate:(ChooserBubbleDelegate*)chooserBubbleDelegate
-                           bridge:(ChooserBubbleUiCocoa*)bridge {
+    initWithChooserBubbleController:
+        (ChooserBubbleController*)chooserBubbleController
+                             bridge:(ChooserBubbleUiCocoa*)bridge {
   DCHECK(browser);
-  DCHECK(chooserBubbleDelegate);
+  DCHECK(chooserBubbleController);
   DCHECK(bridge);
 
   browser_ = browser;
-  chooserBubbleDelegate_ = chooserBubbleDelegate;
+  chooserBubbleController_ = chooserBubbleController;
 
   base::scoped_nsobject<InfoBubbleWindow> window([[InfoBubbleWindow alloc]
       initWithContentRect:ui::kWindowSizeDeterminedLater
@@ -178,7 +179,7 @@ scoped_ptr<BubbleUi> ChooserBubbleDelegate::BuildBubbleUi() {
                 name:NSWindowDidMoveNotification
               object:nil];
   if (!buttonPressed_)
-    chooserBubbleDelegate_->Close();
+    chooserBubbleController_->Close();
   bridge_->OnBubbleClosing();
   [super windowWillClose:notification];
 }
@@ -335,15 +336,16 @@ scoped_ptr<BubbleUi> ChooserBubbleDelegate::BuildBubbleUi() {
 - (NSInteger)numberOfRowsInTableView:(NSTableView*)tableView {
   // When there are no devices, the table contains a message saying there are
   // no devices, so the number of rows is always at least 1.
-  return std::max(static_cast<NSInteger>(chooserBubbleDelegate_->NumOptions()),
-                  static_cast<NSInteger>(1));
+  return std::max(
+      static_cast<NSInteger>(chooserBubbleController_->NumOptions()),
+      static_cast<NSInteger>(1));
 }
 
 - (id)tableView:(NSTableView*)tableView
     objectValueForTableColumn:(NSTableColumn*)tableColumn
                           row:(NSInteger)rowIndex {
   NSInteger num_options =
-      static_cast<NSInteger>(chooserBubbleDelegate_->NumOptions());
+      static_cast<NSInteger>(chooserBubbleController_->NumOptions());
   if (num_options == 0) {
     DCHECK_EQ(0, rowIndex);
     return l10n_util::GetNSString(IDS_CHOOSER_BUBBLE_NO_DEVICES_FOUND_PROMPT);
@@ -352,7 +354,7 @@ scoped_ptr<BubbleUi> ChooserBubbleDelegate::BuildBubbleUi() {
   DCHECK_GE(rowIndex, 0);
   DCHECK_LT(rowIndex, num_options);
   return base::SysUTF16ToNSString(
-      chooserBubbleDelegate_->GetOption(static_cast<size_t>(rowIndex)));
+      chooserBubbleController_->GetOption(static_cast<size_t>(rowIndex)));
 }
 
 - (BOOL)tableView:(NSTableView*)aTableView
@@ -380,7 +382,7 @@ scoped_ptr<BubbleUi> ChooserBubbleDelegate::BuildBubbleUi() {
 }
 
 - (void)updateTableView {
-  [tableView_ setEnabled:chooserBubbleDelegate_->NumOptions() > 0];
+  [tableView_ setEnabled:chooserBubbleController_->NumOptions() > 0];
   [tableView_ reloadData];
 }
 
@@ -473,11 +475,12 @@ scoped_ptr<BubbleUi> ChooserBubbleDelegate::BuildBubbleUi() {
 
   NSColor* linkColor =
       skia::SkColorToCalibratedNSColor(chrome_style::GetLinkColor());
-  [textView addLinkRange:NSMakeRange([text length] - linkString.size(),
-                                     linkString.size())
-                 withURL:base::SysUTF8ToNSString(
-                             chooserBubbleDelegate_->GetHelpCenterUrl().spec())
-               linkColor:linkColor];
+  [textView
+      addLinkRange:NSMakeRange([text length] - linkString.size(),
+                               linkString.size())
+           withURL:base::SysUTF8ToNSString(
+                       chooserBubbleController_->GetHelpCenterUrl().spec())
+         linkColor:linkColor];
 
   // Removes the underlining from the link.
   NSTextStorage* textStorage = [textView textStorage];
@@ -513,13 +516,13 @@ scoped_ptr<BubbleUi> ChooserBubbleDelegate::BuildBubbleUi() {
 - (void)onConnect:(id)sender {
   buttonPressed_ = true;
   NSInteger row = [tableView_ selectedRow];
-  chooserBubbleDelegate_->Select(row);
+  chooserBubbleController_->Select(row);
   [self close];
 }
 
 - (void)onCancel:(id)sender {
   buttonPressed_ = true;
-  chooserBubbleDelegate_->Cancel();
+  chooserBubbleController_->Cancel();
   [self close];
 }
 
@@ -527,17 +530,17 @@ scoped_ptr<BubbleUi> ChooserBubbleDelegate::BuildBubbleUi() {
 
 ChooserBubbleUiCocoa::ChooserBubbleUiCocoa(
     Browser* browser,
-    ChooserBubbleDelegate* chooser_bubble_delegate)
+    ChooserBubbleController* chooser_bubble_controller)
     : browser_(browser),
-      chooser_bubble_delegate_(chooser_bubble_delegate),
+      chooser_bubble_controller_(chooser_bubble_controller),
       chooser_bubble_ui_controller_(nil) {
   DCHECK(browser);
-  DCHECK(chooser_bubble_delegate);
-  chooser_bubble_delegate_->set_observer(this);
+  DCHECK(chooser_bubble_controller);
+  chooser_bubble_controller_->set_observer(this);
 }
 
 ChooserBubbleUiCocoa::~ChooserBubbleUiCocoa() {
-  chooser_bubble_delegate_->set_observer(nullptr);
+  chooser_bubble_controller_->set_observer(nullptr);
   [chooser_bubble_ui_controller_ close];
   chooser_bubble_ui_controller_ = nil;
 }
@@ -545,9 +548,9 @@ ChooserBubbleUiCocoa::~ChooserBubbleUiCocoa() {
 void ChooserBubbleUiCocoa::Show(BubbleReference bubble_reference) {
   if (!chooser_bubble_ui_controller_) {
     chooser_bubble_ui_controller_ = [[ChooserBubbleUiController alloc]
-                      initWithBrowser:browser_
-        initWithChooserBubbleDelegate:chooser_bubble_delegate_
-                               bridge:this];
+                        initWithBrowser:browser_
+        initWithChooserBubbleController:chooser_bubble_controller_
+                                 bridge:this];
   }
 
   [chooser_bubble_ui_controller_ show];
