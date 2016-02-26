@@ -4033,7 +4033,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   TestNavigationObserver navigation_observer(shell()->web_contents());
   shell()->LoadURL(a_url);
   RenderViewHostImpl* pending_rvh =
-      root->render_manager()->pending_render_view_host();
+      IsBrowserSideNavigationEnabled()
+          ? root->render_manager()->speculative_frame_host()->render_view_host()
+          : root->render_manager()->pending_render_view_host();
   EXPECT_EQ(rvh->GetSiteInstance(), pending_rvh->GetSiteInstance());
   EXPECT_NE(rvh, pending_rvh);
 
@@ -4862,11 +4864,15 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // observer to ensure there is no crash when a new RenderFrame creation is
   // attempted.
   RenderProcessHost* process =
-      node->render_manager()->pending_frame_host()->GetProcess();
+      IsBrowserSideNavigationEnabled()
+          ? node->render_manager()->speculative_frame_host()->GetProcess()
+          : node->render_manager()->pending_frame_host()->GetProcess();
   RenderProcessHostWatcher watcher(
       process, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
   int frame_routing_id =
-      node->render_manager()->pending_frame_host()->GetRoutingID();
+      IsBrowserSideNavigationEnabled()
+          ? node->render_manager()->speculative_frame_host()->GetRoutingID()
+          : node->render_manager()->pending_frame_host()->GetRoutingID();
   int proxy_routing_id =
       node->render_manager()->GetProxyToParent()->GetRoutingID();
 
