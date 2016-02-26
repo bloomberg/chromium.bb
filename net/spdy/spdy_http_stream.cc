@@ -580,7 +580,8 @@ void SpdyHttpStream::Drain(HttpNetworkSession* session) {
   delete this;
 }
 
-void SpdyHttpStream::PopulateNetErrorDetails(NetErrorDetails* /*details*/) {
+void SpdyHttpStream::PopulateNetErrorDetails(NetErrorDetails* details) {
+  details->connection_info = HttpResponseInfo::CONNECTION_INFO_HTTP2;
   return;
 }
 

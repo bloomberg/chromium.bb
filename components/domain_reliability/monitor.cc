@@ -319,9 +319,18 @@ void DomainReliabilityMonitor::OnRequestLegComplete(
       request.remote_endpoint, URLRequestStatusToNetError(request.status));
 
   DomainReliabilityBeacon beacon_template;
-  beacon_template.protocol =
-      GetDomainReliabilityProtocol(request.response_info.connection_info,
-                                   request.response_info.ssl_info.is_valid());
+  if (request.response_info.connection_info !=
+      net::HttpResponseInfo::CONNECTION_INFO_UNKNOWN) {
+    beacon_template.protocol =
+        GetDomainReliabilityProtocol(request.response_info.connection_info,
+                                     request.response_info.ssl_info.is_valid());
+  } else {
+    // Use the connection info from the network error details if the response
+    // is unavailable.
+    beacon_template.protocol =
+        GetDomainReliabilityProtocol(request.details.connection_info,
+                                     request.response_info.ssl_info.is_valid());
+  }
   GetDomainReliabilityBeaconQuicError(request.details.quic_connection_error,
                                       &beacon_template.quic_error);
   beacon_template.http_response_code = response_code;

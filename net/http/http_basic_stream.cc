@@ -122,7 +122,8 @@ void HttpBasicStream::Drain(HttpNetworkSession* session) {
   // |drainer| will delete itself.
 }
 
-void HttpBasicStream::PopulateNetErrorDetails(NetErrorDetails* /*details*/) {
+void HttpBasicStream::PopulateNetErrorDetails(NetErrorDetails* details) {
+  details->connection_info = HttpResponseInfo::CONNECTION_INFO_HTTP1;
   return;
 }
 

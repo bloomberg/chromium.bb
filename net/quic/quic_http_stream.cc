@@ -293,6 +293,7 @@ void QuicHttpStream::Drain(HttpNetworkSession* session) {
 }
 
 void QuicHttpStream::PopulateNetErrorDetails(NetErrorDetails* details) {
+  details->connection_info = HttpResponseInfo::CONNECTION_INFO_QUIC1_SPDY3;
   if (was_handshake_confirmed_)
     details->quic_connection_error = quic_connection_error_;
 }
