@@ -118,9 +118,9 @@ class CONTENT_EXPORT FrameTreeNode {
     return children_[index].get();
   }
 
-  // Returns the URL of the last committed page in this frame.
+  // Returns the URL of the last committed page in the current frame.
   const GURL& current_url() const {
-    return current_url_;
+    return current_frame_host()->last_committed_url();
   }
 
   // Sets the last committed URL for this frame and updates
@@ -310,11 +310,6 @@ class CONTENT_EXPORT FrameTreeNode {
 
   // The immediate children of this specific frame.
   std::vector<scoped_ptr<FrameTreeNode>> children_;
-
-  // Track the current frame's last committed URL.
-  // TODO(creis): Consider storing a reference to the last committed
-  // FrameNavigationEntry here once those are created in all modes.
-  GURL current_url_;
 
   // Whether this frame has committed any real load, replacing its initial
   // about:blank page.

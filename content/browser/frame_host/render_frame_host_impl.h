@@ -145,7 +145,7 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost,
   int GetFrameTreeNodeId() override;
   const std::string& GetFrameName() override;
   bool IsCrossProcessSubframe() override;
-  GURL GetLastCommittedURL() override;
+  const GURL& GetLastCommittedURL() override;
   url::Origin GetLastCommittedOrigin() override;
   gfx::NativeView GetNativeView() override;
   void AddMessageToConsole(ConsoleMessageLevel level,
@@ -237,6 +237,15 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost,
   RenderViewHostImpl* render_view_host() { return render_view_host_; }
   RenderFrameHostDelegate* delegate() { return delegate_; }
   FrameTreeNode* frame_tree_node() { return frame_tree_node_; }
+
+  const GURL& last_committed_url() const { return last_committed_url_; }
+
+  // Allows FrameTreeNode::SetCurrentURL to update this frame's last committed
+  // URL.  Do not call this directly, since we rely on SetCurrentURL to track
+  // whether a real load has committed or not.
+  void set_last_committed_url(const GURL& url) {
+    last_committed_url_ = url;
+  }
 
   // The most recent non-net-error URL to commit in this frame.  In almost all
   // cases, use GetLastCommittedURL instead.
@@ -767,6 +776,9 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost,
 
   // The FrameTreeNode which this RenderFrameHostImpl is hosted in.
   FrameTreeNode* frame_tree_node_;
+
+  // Track this frame's last committed URL.
+  GURL last_committed_url_;
 
   // The most recent non-error URL to commit in this frame.  Remove this in
   // favor of GetLastCommittedURL() once PlzNavigate is enabled or cross-process

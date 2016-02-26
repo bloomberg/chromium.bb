@@ -341,8 +341,8 @@ bool RenderFrameHostImpl::IsCrossProcessSubframe() {
       parent_node->current_frame_host()->GetSiteInstance();
 }
 
-GURL RenderFrameHostImpl::GetLastCommittedURL() {
-  return frame_tree_node_->current_url();
+const GURL& RenderFrameHostImpl::GetLastCommittedURL() {
+  return last_committed_url();
 }
 
 url::Origin RenderFrameHostImpl::GetLastCommittedOrigin() {
@@ -1712,7 +1712,7 @@ void RenderFrameHostImpl::OnAccessibilitySnapshotResponse(
 
 void RenderFrameHostImpl::OnToggleFullscreen(bool enter_fullscreen) {
   if (enter_fullscreen)
-    delegate_->EnterFullscreenMode(GetLastCommittedURL().GetOrigin());
+    delegate_->EnterFullscreenMode(last_committed_url().GetOrigin());
   else
     delegate_->ExitFullscreenMode(/* will_cause_resize */ true);
 
@@ -2482,9 +2482,9 @@ void RenderFrameHostImpl::DidUseGeolocationPermission() {
 
   permission_manager->RegisterPermissionUsage(
       PermissionType::GEOLOCATION,
-      GetLastCommittedURL().GetOrigin(),
+      last_committed_url().GetOrigin(),
       frame_tree_node()->frame_tree()->GetMainFrame()
-          ->GetLastCommittedURL().GetOrigin());
+          ->last_committed_url().GetOrigin());
 }
 
 void RenderFrameHostImpl::UpdatePermissionsForNavigation(

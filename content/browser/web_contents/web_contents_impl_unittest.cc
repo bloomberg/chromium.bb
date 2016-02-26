@@ -546,6 +546,7 @@ TEST_F(WebContentsImplTest, CrossSiteBoundaries) {
   EXPECT_EQ(url, contents()->GetLastCommittedURL());
   EXPECT_EQ(url2, contents()->GetVisibleURL());
   TestRenderFrameHost* pending_rfh = contents()->GetPendingMainFrame();
+  EXPECT_TRUE(pending_rfh->GetLastCommittedURL().is_empty());
   int pending_rvh_delete_count = 0;
   pending_rfh->GetRenderViewHost()->set_delete_counter(
       &pending_rvh_delete_count);

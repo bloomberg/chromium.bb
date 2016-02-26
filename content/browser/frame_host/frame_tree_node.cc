@@ -171,7 +171,7 @@ void FrameTreeNode::RemoveChild(FrameTreeNode* child) {
 }
 
 void FrameTreeNode::ResetForNewProcess() {
-  current_url_ = GURL();
+  current_frame_host()->set_last_committed_url(GURL());
 
   // Remove child nodes from the tree, then delete them. This destruction
   // operation will notify observers.
@@ -196,7 +196,7 @@ void FrameTreeNode::SetOpener(FrameTreeNode* opener) {
 void FrameTreeNode::SetCurrentURL(const GURL& url) {
   if (!has_committed_real_load_ && url != GURL(url::kAboutBlankURL))
     has_committed_real_load_ = true;
-  current_url_ = url;
+  current_frame_host()->set_last_committed_url(url);
 }
 
 void FrameTreeNode::SetCurrentOrigin(const url::Origin& origin) {
