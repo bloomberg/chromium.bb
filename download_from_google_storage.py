@@ -374,7 +374,8 @@ def main(args):
   parser.add_option('-e', '--boto',
                     help='Specify a custom boto file.')
   parser.add_option('-c', '--no_resume', action='store_true',
-                    help='Resume download if file is partially downloaded.')
+                    help='DEPRECATED: Resume download if file is '
+                         'partially downloaded.')
   parser.add_option('-f', '--force', action='store_true',
                     help='Force download even if local file exists.')
   parser.add_option('-i', '--ignore_errors', action='store_true',
@@ -499,12 +500,6 @@ def main(args):
       options.output = input_filename[:-5]
     else:
       parser.error('Unreachable state.')
-
-  # Check if output file already exists.
-  if not options.directory and not options.force and not options.no_resume:
-    if os.path.exists(options.output):
-      parser.error('Output file %s exists and --no_resume is specified.'
-                   % options.output)
 
   base_url = 'gs://%s' % options.bucket
 
