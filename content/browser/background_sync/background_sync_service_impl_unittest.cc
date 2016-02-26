@@ -62,13 +62,6 @@ void ErrorAndRegistrationCallback(bool* called,
   *out_registration = registration.Clone();
 }
 
-void ErrorCallback(bool* called,
-                   BackgroundSyncError* out_error,
-                   BackgroundSyncError error) {
-  *called = true;
-  *out_error = error;
-}
-
 void ErrorAndRegistrationListCallback(
     bool* called,
     BackgroundSyncError* out_error,
@@ -189,13 +182,6 @@ class BackgroundSyncServiceImplTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  void Unregister(int32_t handle_id,
-                  const BackgroundSyncService::UnregisterCallback& callback) {
-    service_impl_->Unregister(
-        handle_id, sw_registration_id_, callback);
-    base::RunLoop().RunUntilIdle();
-  }
-
   void GetRegistrations(
       const BackgroundSyncService::GetRegistrationsCallback& callback) {
     service_impl_->GetRegistrations(sw_registration_id_, callback);
@@ -226,33 +212,6 @@ TEST_F(BackgroundSyncServiceImplTest, Register) {
   EXPECT_TRUE(called);
   EXPECT_EQ(BackgroundSyncError::NONE, error);
   EXPECT_EQ("", reg->tag);
-}
-
-TEST_F(BackgroundSyncServiceImplTest, Unregister) {
-  bool unregister_called = false;
-  BackgroundSyncError unregister_error;
-  SyncRegistrationPtr reg;
-  Unregister(default_sync_registration_->handle_id,
-             base::Bind(&ErrorCallback, &unregister_called, &unregister_error));
-  EXPECT_TRUE(unregister_called);
-  EXPECT_EQ(BackgroundSyncError::NOT_ALLOWED, unregister_error);
-}
-
-TEST_F(BackgroundSyncServiceImplTest, UnregisterWithRegisteredSync) {
-  bool register_called = false;
-  bool unregister_called = false;
-  BackgroundSyncError register_error;
-  BackgroundSyncError unregister_error;
-  SyncRegistrationPtr reg;
-  Register(default_sync_registration_.Clone(),
-           base::Bind(&ErrorAndRegistrationCallback, &register_called,
-                      &register_error, &reg));
-  EXPECT_TRUE(register_called);
-  EXPECT_EQ(BackgroundSyncError::NONE, register_error);
-  Unregister(reg->handle_id,
-             base::Bind(&ErrorCallback, &unregister_called, &unregister_error));
-  EXPECT_TRUE(unregister_called);
-  EXPECT_EQ(BackgroundSyncError::NONE, unregister_error);
 }
 
 TEST_F(BackgroundSyncServiceImplTest, GetRegistrations) {

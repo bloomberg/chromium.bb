@@ -17,7 +17,6 @@ namespace blink {
 
 class WebServiceWorkerRegistration;
 using WebSyncRegistrationCallbacks = WebCallbacks<WebPassOwnPtr<WebSyncRegistration>, const WebSyncError&>;
-using WebSyncUnregistrationCallbacks = WebCallbacks<bool, const WebSyncError&>;
 using WebSyncGetRegistrationsCallbacks = WebCallbacks<const WebVector<WebSyncRegistration*>&, const WebSyncError&>;
 
 class WebSyncProvider {
@@ -27,10 +26,6 @@ public:
     // Takes ownership of the WebSyncRegistrationCallbacks.
     // Does not take ownership of the WebServiceWorkerRegistration.
     virtual void registerBackgroundSync(const WebSyncRegistration*, WebServiceWorkerRegistration*, bool, WebSyncRegistrationCallbacks*) = 0;
-
-    // Takes ownership of the WebSyncUnregistrationCallbacks.
-    // Does not take ownership of the WebServiceWorkerRegistration.
-    virtual void unregisterBackgroundSync(int64_t handleId, WebServiceWorkerRegistration*, WebSyncUnregistrationCallbacks*) = 0;
 
     // Takes ownership of the WebSyncGetRegistrationsCallbacks.
     // Does not take ownership of the WebServiceWorkerRegistration.

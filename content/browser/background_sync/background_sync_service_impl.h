@@ -36,9 +36,6 @@ class CONTENT_EXPORT BackgroundSyncServiceImpl
                 int64_t sw_registration_id,
                 bool requested_from_service_worker,
                 const RegisterCallback& callback) override;
-  void Unregister(BackgroundSyncRegistrationHandle::HandleId handle_id,
-                  int64_t sw_registration_id,
-                  const UnregisterCallback& callback) override;
   void GetRegistrations(int64_t sw_registration_id,
                         const GetRegistrationsCallback& callback) override;
   void DuplicateRegistrationHandle(
@@ -50,8 +47,6 @@ class CONTENT_EXPORT BackgroundSyncServiceImpl
   void OnRegisterResult(const RegisterCallback& callback,
                         BackgroundSyncStatus status,
                         scoped_ptr<BackgroundSyncRegistrationHandle> result);
-  void OnUnregisterResult(const UnregisterCallback& callback,
-                          BackgroundSyncStatus status);
   void OnGetRegistrationsResult(
       const GetRegistrationsCallback& callback,
       BackgroundSyncStatus status,

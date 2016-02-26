@@ -44,10 +44,6 @@ class CONTENT_EXPORT BackgroundSyncRegistrationHandle {
     return registration_->sync_state();
   }
 
-  // Unregisters the background sync registration.  Calls |callback|
-  // with BACKGROUND_SYNC_STATUS_OK if it succeeds.
-  void Unregister(int64_t service_worker_id, const StatusCallback& callback);
-
   // Returns true if the handle is backed by a BackgroundSyncRegistration in the
   // BackgroundSyncManager.
   bool IsValid() const;

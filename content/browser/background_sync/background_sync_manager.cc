@@ -817,93 +817,6 @@ void BackgroundSyncManager::ReleaseRegistrationHandle(
   registration_handle_ids_.Remove(handle_id);
 }
 
-void BackgroundSyncManager::Unregister(
-    int64_t sw_registration_id,
-    BackgroundSyncRegistrationHandle::HandleId handle_id,
-    const StatusCallback& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  BackgroundSyncRegistration* registration =
-      GetRegistrationForHandle(handle_id);
-  DCHECK(registration);
-
-  if (disabled_) {
-    BackgroundSyncMetrics::CountUnregister(
-        BACKGROUND_SYNC_STATUS_STORAGE_ERROR);
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, BACKGROUND_SYNC_STATUS_STORAGE_ERROR));
-    return;
-  }
-
-  op_scheduler_.ScheduleOperation(base::Bind(
-      &BackgroundSyncManager::UnregisterImpl, weak_ptr_factory_.GetWeakPtr(),
-      sw_registration_id, RegistrationKey(*registration), registration->id(),
-      MakeStatusCompletion(callback)));
-}
-
-void BackgroundSyncManager::UnregisterImpl(
-    int64_t sw_registration_id,
-    const RegistrationKey& registration_key,
-    BackgroundSyncRegistration::RegistrationId sync_registration_id,
-    const StatusCallback& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  if (disabled_) {
-    BackgroundSyncMetrics::CountUnregister(
-        BACKGROUND_SYNC_STATUS_STORAGE_ERROR);
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, BACKGROUND_SYNC_STATUS_STORAGE_ERROR));
-    return;
-  }
-
-  RefCountedRegistration* existing_registration =
-      LookupActiveRegistration(sw_registration_id, registration_key);
-
-  if (!existing_registration ||
-      existing_registration->value()->id() != sync_registration_id) {
-    BackgroundSyncMetrics::CountUnregister(BACKGROUND_SYNC_STATUS_NOT_FOUND);
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, BACKGROUND_SYNC_STATUS_NOT_FOUND));
-    return;
-  }
-
-  RemoveActiveRegistration(sw_registration_id, registration_key);
-
-  StoreRegistrations(
-      sw_registration_id,
-      base::Bind(&BackgroundSyncManager::UnregisterDidStore,
-                 weak_ptr_factory_.GetWeakPtr(), sw_registration_id, callback));
-}
-
-void BackgroundSyncManager::UnregisterDidStore(int64_t sw_registration_id,
-                                               const StatusCallback& callback,
-                                               ServiceWorkerStatusCode status) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  if (status == SERVICE_WORKER_ERROR_NOT_FOUND) {
-    // ServiceWorker was unregistered.
-    BackgroundSyncMetrics::CountUnregister(
-        BACKGROUND_SYNC_STATUS_STORAGE_ERROR);
-    active_registrations_.erase(sw_registration_id);
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, BACKGROUND_SYNC_STATUS_STORAGE_ERROR));
-    return;
-  }
-
-  if (status != SERVICE_WORKER_OK) {
-    LOG(ERROR) << "BackgroundSync failed to unregister due to backend failure.";
-    BackgroundSyncMetrics::CountUnregister(
-        BACKGROUND_SYNC_STATUS_STORAGE_ERROR);
-    DisableAndClearManager(
-        base::Bind(callback, BACKGROUND_SYNC_STATUS_STORAGE_ERROR));
-    return;
-  }
-
-  BackgroundSyncMetrics::CountUnregister(BACKGROUND_SYNC_STATUS_OK);
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, BACKGROUND_SYNC_STATUS_OK));
-}
-
 void BackgroundSyncManager::GetRegistrationsImpl(
     int64_t sw_registration_id,
     const StatusAndRegistrationsCallback& callback) {
@@ -1205,10 +1118,6 @@ void BackgroundSyncManager::EventCompleteImpl(
     registration->set_sync_state(BackgroundSyncState::PENDING);
     registration->set_num_attempts(0);
     registration_completed = false;
-  } else if (registration->sync_state() ==
-             BackgroundSyncState::UNREGISTERED_WHILE_FIRING) {
-    // TODO(jkarlin): Remove this condition when the unregister method is
-    // removed. See https://crbug.com/583327.
   } else if (status_code != SERVICE_WORKER_OK &&
              can_retry) {  // Sync failed but can retry
     registration->set_sync_state(BackgroundSyncState::PENDING);

@@ -19,7 +19,6 @@ enum BackgroundSyncError {
 enum BackgroundSyncState {
   PENDING,
   FIRING,
-  UNREGISTERED_WHILE_FIRING,
   REREGISTERED_WHILE_FIRING,
 };
 
@@ -34,8 +33,6 @@ interface BackgroundSyncService {
       => (BackgroundSyncError err, SyncRegistration options);
   GetRegistrations(int64 service_worker_registration_id)
       => (BackgroundSyncError err, array<SyncRegistration> registrations);
-  Unregister(int64 handle_id, int64 service_worker_registration_id)
-      => (BackgroundSyncError err);
   DuplicateRegistrationHandle(int64 handle_id)
       => (BackgroundSyncError err, SyncRegistration? registration);
   ReleaseRegistration(int64 handle_id);

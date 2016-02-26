@@ -34,7 +34,6 @@ bool BackgroundSyncRegistration::IsFiring() const {
   switch (sync_state_) {
     case BackgroundSyncState::FIRING:
     case BackgroundSyncState::REREGISTERED_WHILE_FIRING:
-    case BackgroundSyncState::UNREGISTERED_WHILE_FIRING:
       return true;
     case BackgroundSyncState::PENDING:
       return false;

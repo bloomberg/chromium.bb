@@ -15,17 +15,6 @@ BackgroundSyncRegistrationHandle::~BackgroundSyncRegistrationHandle() {
     background_sync_manager_->ReleaseRegistrationHandle(handle_id_);
 }
 
-void BackgroundSyncRegistrationHandle::Unregister(
-    int64_t sw_registration_id,
-    const StatusCallback& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(IsValid());
-  DCHECK(background_sync_manager_);
-
-  background_sync_manager_->Unregister(sw_registration_id, handle_id_,
-                                       callback);
-}
-
 bool BackgroundSyncRegistrationHandle::IsValid() const {
   return registration_ != nullptr;
 }

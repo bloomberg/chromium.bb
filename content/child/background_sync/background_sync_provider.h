@@ -50,10 +50,6 @@ class BackgroundSyncProvider : public blink::WebSyncProvider,
       blink::WebServiceWorkerRegistration* service_worker_registration,
       bool requested_from_service_worker,
       blink::WebSyncRegistrationCallbacks* callbacks) override;
-  void unregisterBackgroundSync(
-      int64_t handle_id,
-      blink::WebServiceWorkerRegistration* service_worker_registration,
-      blink::WebSyncUnregistrationCallbacks* callbacks) override;
   void getRegistrations(
       blink::WebServiceWorkerRegistration* service_worker_registration,
       blink::WebSyncGetRegistrationsCallbacks* callbacks) override;
@@ -74,9 +70,6 @@ class BackgroundSyncProvider : public blink::WebSyncProvider,
       scoped_ptr<blink::WebSyncRegistrationCallbacks> callbacks,
       BackgroundSyncError error,
       const SyncRegistrationPtr& options);
-  void UnregisterCallback(
-      scoped_ptr<blink::WebSyncUnregistrationCallbacks> callbacks,
-      BackgroundSyncError error);
   void GetRegistrationsCallback(
       scoped_ptr<blink::WebSyncGetRegistrationsCallbacks> callbacks,
       BackgroundSyncError error,

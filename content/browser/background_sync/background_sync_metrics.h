@@ -49,9 +49,6 @@ class BackgroundSyncMetrics {
   // Records the status of a failed sync registration.
   static void CountRegisterFailure(BackgroundSyncStatus status);
 
-  // Records the result of trying to unregister a sync.
-  static void CountUnregister(BackgroundSyncStatus result);
-
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(BackgroundSyncMetrics);
 };

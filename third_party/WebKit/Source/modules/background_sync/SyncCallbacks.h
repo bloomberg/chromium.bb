@@ -42,28 +42,6 @@ private:
     Persistent<ServiceWorkerRegistration> m_serviceWorkerRegistration;
 };
 
-// SyncUnregistrationCallbacks is an implementation of
-// WebSyncUnregistrationCallbacks that will resolve the underlying promise
-// depending on the result passed to the callback. It takes a
-// ServiceWorkerRegistration in its constructor and will pass it to the
-// SyncProvider.
-class SyncUnregistrationCallbacks final : public WebSyncUnregistrationCallbacks {
-    WTF_MAKE_NONCOPYABLE(SyncUnregistrationCallbacks);
-    // FIXME(tasak): when making public/platform classes to use PartitionAlloc,
-    // the following macro should be moved to WebCallbacks defined in public/platformWebCallbacks.h.
-    USING_FAST_MALLOC(SyncUnregistrationCallbacks);
-public:
-    SyncUnregistrationCallbacks(ScriptPromiseResolver*, ServiceWorkerRegistration*);
-    ~SyncUnregistrationCallbacks() override;
-
-    void onSuccess(bool) override;
-    void onError(const WebSyncError&) override;
-
-private:
-    Persistent<ScriptPromiseResolver> m_resolver;
-    Persistent<ServiceWorkerRegistration> m_serviceWorkerRegistration;
-};
-
 // SyncGetRegistrationsCallbacks is an implementation of WebSyncGetRegistrationsCallbacks
 // that will resolve the underlying promise depending on the result passed to
 // the callback. It takes a ServiceWorkerRegistration in its constructor and

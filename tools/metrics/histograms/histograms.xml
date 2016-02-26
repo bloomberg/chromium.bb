@@ -3060,6 +3060,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="BackgroundSync.Unregistration.OneShot"
     enum="BackgroundSyncStatus">
   <owner>iclelland@chromium.org</owner>
+  <obsolete>
+    Stopped recording as of 2/2016.
+  </obsolete>
   <summary>
     Records the result of attempting to unregister a one-shot sync.
   </summary>

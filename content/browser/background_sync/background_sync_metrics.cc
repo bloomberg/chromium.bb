@@ -81,11 +81,4 @@ void BackgroundSyncMetrics::CountRegisterFailure(BackgroundSyncStatus result) {
   return;
 }
 
-// static
-void BackgroundSyncMetrics::CountUnregister(BackgroundSyncStatus result) {
-  UMA_HISTOGRAM_ENUMERATION("BackgroundSync.Unregistration.OneShot", result,
-                            BACKGROUND_SYNC_STATUS_MAX + 1);
-  return;
-}
-
 }  // namespace content

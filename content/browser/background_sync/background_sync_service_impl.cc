@@ -110,25 +110,6 @@ void BackgroundSyncServiceImpl::Register(content::SyncRegistrationPtr options,
                  weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
-void BackgroundSyncServiceImpl::Unregister(
-    BackgroundSyncRegistrationHandle::HandleId handle_id,
-    int64_t sw_registration_id,
-    const UnregisterCallback& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  BackgroundSyncRegistrationHandle* registration =
-      active_handles_.Lookup(handle_id);
-  if (!registration) {
-    callback.Run(BackgroundSyncError::NOT_ALLOWED);
-    return;
-  }
-
-  registration->Unregister(
-      sw_registration_id,
-      base::Bind(&BackgroundSyncServiceImpl::OnUnregisterResult,
-                 weak_ptr_factory_.GetWeakPtr(), callback));
-}
-
 void BackgroundSyncServiceImpl::GetRegistrations(
     int64_t sw_registration_id,
     const GetRegistrationsCallback& callback) {
@@ -196,13 +177,6 @@ void BackgroundSyncServiceImpl::OnRegisterResult(
   SyncRegistrationPtr mojoResult = ToMojoRegistration(*result_ptr);
   callback.Run(static_cast<content::BackgroundSyncError>(status),
                std::move(mojoResult));
-}
-
-void BackgroundSyncServiceImpl::OnUnregisterResult(
-    const UnregisterCallback& callback,
-    BackgroundSyncStatus status) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  callback.Run(static_cast<content::BackgroundSyncError>(status));
 }
 
 void BackgroundSyncServiceImpl::OnGetRegistrationsResult(

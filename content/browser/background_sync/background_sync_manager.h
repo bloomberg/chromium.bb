@@ -250,21 +250,6 @@ class CONTENT_EXPORT BackgroundSyncManager
       const StatusAndRegistrationCallback& callback,
       ServiceWorkerStatusCode status);
 
-  // Removes the background sync with id |sync_registration_id|. Calls
-  // |callback| with BACKGROUND_SYNC_STATUS_NOT_FOUND if no match is found.
-  // Calls |callback| with BACKGROUND_SYNC_STATUS_OK on success.
-  void Unregister(int64_t sw_registration_id,
-                  BackgroundSyncRegistrationHandle::HandleId handle_id,
-                  const StatusCallback& callback);
-  void UnregisterImpl(
-      int64_t sw_registration_id,
-      const RegistrationKey& key,
-      BackgroundSyncRegistration::RegistrationId sync_registration_id,
-      const StatusCallback& callback);
-  void UnregisterDidStore(int64_t sw_registration_id,
-                          const StatusCallback& callback,
-                          ServiceWorkerStatusCode status);
-
   // GetRegistrations callbacks
   void GetRegistrationsImpl(int64_t sw_registration_id,
                             const StatusAndRegistrationsCallback& callback);

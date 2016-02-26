@@ -106,25 +106,6 @@ void BackgroundSyncProvider::registerBackgroundSync(
                  base::Passed(std::move(callbacksPtr))));
 }
 
-void BackgroundSyncProvider::unregisterBackgroundSync(
-    int64_t handle_id,
-    blink::WebServiceWorkerRegistration* service_worker_registration,
-    blink::WebSyncUnregistrationCallbacks* callbacks) {
-  DCHECK(service_worker_registration);
-  DCHECK(callbacks);
-  int64_t service_worker_registration_id =
-      GetServiceWorkerRegistrationId(service_worker_registration);
-  scoped_ptr<blink::WebSyncUnregistrationCallbacks> callbacksPtr(callbacks);
-
-  // base::Unretained is safe here, as the mojo channel will be deleted (and
-  // will wipe its callbacks) before 'this' is deleted.
-  GetBackgroundSyncServicePtr()->Unregister(
-      handle_id, service_worker_registration_id,
-      base::Bind(&BackgroundSyncProvider::UnregisterCallback,
-                 base::Unretained(this),
-                 base::Passed(std::move(callbacksPtr))));
-}
-
 void BackgroundSyncProvider::getRegistrations(
     blink::WebServiceWorkerRegistration* service_worker_registration,
     blink::WebSyncGetRegistrationsCallbacks* callbacks) {
@@ -185,35 +166,6 @@ void BackgroundSyncProvider::RegisterCallback(
           blink::WebSyncError(blink::WebSyncError::ErrorTypeNoPermission,
                               "Attempted to register a sync event without a "
                               "window or registration tag too long."));
-      break;
-    case BackgroundSyncError::NO_SERVICE_WORKER:
-      callbacks->onError(
-          blink::WebSyncError(blink::WebSyncError::ErrorTypeUnknown,
-                              "No service worker is active."));
-      break;
-  }
-}
-
-void BackgroundSyncProvider::UnregisterCallback(
-    scoped_ptr<blink::WebSyncUnregistrationCallbacks> callbacks,
-    BackgroundSyncError error) {
-  // TODO(iclelland): Determine the correct error message to return in each case
-  switch (error) {
-    case BackgroundSyncError::NONE:
-      callbacks->onSuccess(true);
-      break;
-    case BackgroundSyncError::NOT_FOUND:
-      callbacks->onSuccess(false);
-      break;
-    case BackgroundSyncError::STORAGE:
-      callbacks->onError(
-          blink::WebSyncError(blink::WebSyncError::ErrorTypeUnknown,
-                              "Background Sync is disabled."));
-      break;
-    case BackgroundSyncError::NOT_ALLOWED:
-      // This error should never be returned from
-      // BackgroundSyncManager::Unregister
-      NOTREACHED();
       break;
     case BackgroundSyncError::NO_SERVICE_WORKER:
       callbacks->onError(

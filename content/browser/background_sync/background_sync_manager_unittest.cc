@@ -425,24 +425,6 @@ class BackgroundSyncManagerTest : public testing::Test {
     return callback_status_ == BACKGROUND_SYNC_STATUS_OK;
   }
 
-  bool Unregister(BackgroundSyncRegistrationHandle* registration_handle) {
-    return UnregisterWithServiceWorkerId(sw_registration_id_1_,
-                                         registration_handle);
-  }
-
-  bool UnregisterWithServiceWorkerId(
-      int64_t sw_registration_id,
-      BackgroundSyncRegistrationHandle* registration_handle) {
-    bool was_called = false;
-    registration_handle->Unregister(
-        sw_registration_id,
-        base::Bind(&BackgroundSyncManagerTest::StatusCallback,
-                   base::Unretained(this), &was_called));
-    base::RunLoop().RunUntilIdle();
-    EXPECT_TRUE(was_called);
-    return callback_status_ == BACKGROUND_SYNC_STATUS_OK;
-  }
-
   bool GetRegistration(
       const BackgroundSyncRegistrationOptions& registration_options) {
     return GetRegistrationWithServiceWorkerId(sw_registration_id_1_,
@@ -697,45 +679,25 @@ TEST_F(BackgroundSyncManagerTest, GetRegistrationsBadBackend) {
   EXPECT_FALSE(GetRegistrations());
 }
 
-TEST_F(BackgroundSyncManagerTest, Unregister) {
-  EXPECT_TRUE(Register(sync_options_1_));
-  EXPECT_TRUE(Unregister(callback_registration_handle_.get()));
-  EXPECT_FALSE(GetRegistration(sync_options_1_));
-}
 
 TEST_F(BackgroundSyncManagerTest, Reregister) {
   EXPECT_TRUE(Register(sync_options_1_));
-  EXPECT_TRUE(Unregister(callback_registration_handle_.get()));
   EXPECT_TRUE(Register(sync_options_1_));
-}
-
-TEST_F(BackgroundSyncManagerTest, UnregisterSecond) {
-  EXPECT_TRUE(Register(sync_options_1_));
-  EXPECT_TRUE(Register(sync_options_2_));
-  EXPECT_TRUE(Unregister(callback_registration_handle_.get()));
   EXPECT_TRUE(GetRegistration(sync_options_1_));
-  EXPECT_TRUE(Register(sync_options_2_));
 }
 
-TEST_F(BackgroundSyncManagerTest, UnregisterBadBackend) {
+TEST_F(BackgroundSyncManagerTest, ReregisterSecond) {
   EXPECT_TRUE(Register(sync_options_1_));
   EXPECT_TRUE(Register(sync_options_2_));
-  test_background_sync_manager_->set_corrupt_backend(true);
-  EXPECT_FALSE(Unregister(callback_registration_handle_.get()));
-  // Unregister should have discovered the bad backend and disabled the
-  // BackgroundSyncManager.
-  test_background_sync_manager_->set_corrupt_backend(false);
-  EXPECT_FALSE(GetRegistration(sync_options_1_));
-  EXPECT_FALSE(GetRegistration(sync_options_2_));
+  EXPECT_TRUE(Register(sync_options_2_));
 }
 
 TEST_F(BackgroundSyncManagerTest, RegisterMaxTagLength) {
   sync_options_1_.tag = std::string(MaxTagLength(), 'a');
   EXPECT_TRUE(Register(sync_options_1_));
-  EXPECT_TRUE(Unregister(callback_registration_handle_.get()));
 
-  sync_options_1_.tag = std::string(MaxTagLength() + 1, 'a');
-  EXPECT_FALSE(Register(sync_options_1_));
+  sync_options_2_.tag = std::string(MaxTagLength() + 1, 'b');
+  EXPECT_FALSE(Register(sync_options_2_));
   EXPECT_EQ(BACKGROUND_SYNC_STATUS_NOT_ALLOWED, callback_status_);
 }
 
@@ -748,11 +710,6 @@ TEST_F(BackgroundSyncManagerTest, RegistrationIncreasesId) {
 
   EXPECT_TRUE(GetRegistration(sync_options_1_));
   EXPECT_TRUE(Register(sync_options_2_));
-  EXPECT_LT(cur_id, callback_registration_handle_->handle_id());
-  cur_id = callback_registration_handle_->handle_id();
-
-  EXPECT_TRUE(Unregister(registered_handle.get()));
-  EXPECT_TRUE(Register(sync_options_1_));
   EXPECT_LT(cur_id, callback_registration_handle_->handle_id());
 }
 
@@ -954,13 +911,11 @@ TEST_F(BackgroundSyncManagerTest, StoreAndRetrievePreservesValues) {
 }
 
 TEST_F(BackgroundSyncManagerTest, EmptyTagSupported) {
-  sync_options_1_.tag = "a";
+  sync_options_1_.tag = "";
   EXPECT_TRUE(Register(sync_options_1_));
   EXPECT_TRUE(GetRegistration(sync_options_1_));
   EXPECT_TRUE(
       sync_options_1_.Equals(*callback_registration_handle_->options()));
-  EXPECT_TRUE(Unregister(callback_registration_handle_.get()));
-  EXPECT_FALSE(GetRegistration(sync_options_1_));
 }
 
 TEST_F(BackgroundSyncManagerTest, FiresOnRegistration) {
@@ -1002,40 +957,6 @@ TEST_F(BackgroundSyncManagerTest, ReregisterMidSyncFirstAttemptSucceeds) {
   // It should fire again since it was reregistered mid-sync.
   EXPECT_TRUE(GetRegistration(sync_options_1_));
   sync_fired_callback_.Run(SERVICE_WORKER_OK);
-  EXPECT_FALSE(GetRegistration(sync_options_1_));
-}
-
-TEST_F(BackgroundSyncManagerTest,
-       NotifyUnregisteredMidSyncNoRetryAttemptsLeft) {
-  InitDelayedSyncEventTest();
-
-  RegisterAndVerifySyncEventDelayed(sync_options_1_);
-
-  // Unregister the event mid-sync.
-  EXPECT_TRUE(Unregister(callback_registration_handle_.get()));
-
-  // Finish firing the event.
-  sync_fired_callback_.Run(SERVICE_WORKER_ERROR_FAILED);
-  base::RunLoop().RunUntilIdle();
-
-  // Since there were no retry attempts left, the sync ultimately failed.
-  EXPECT_FALSE(GetRegistration(sync_options_1_));
-}
-
-TEST_F(BackgroundSyncManagerTest,
-       NotifyUnregisteredMidSyncWithRetryAttemptsLeft) {
-  SetMaxSyncAttemptsAndRestartManager(2);
-  InitDelayedSyncEventTest();
-
-  RegisterAndVerifySyncEventDelayed(sync_options_1_);
-
-  // Unregister the event mid-sync.
-  EXPECT_TRUE(Unregister(callback_registration_handle_.get()));
-
-  // Finish firing the event.
-  sync_fired_callback_.Run(SERVICE_WORKER_ERROR_FAILED);
-  base::RunLoop().RunUntilIdle();
-  // Even though there was 1 retry attempt left, the sync should be gone.
   EXPECT_FALSE(GetRegistration(sync_options_1_));
 }
 
@@ -1182,18 +1103,6 @@ TEST_F(BackgroundSyncManagerTest, DelayMidSync) {
   EXPECT_FALSE(GetRegistration(sync_options_1_));
 }
 
-TEST_F(BackgroundSyncManagerTest, UnregisterMidSync) {
-  InitDelayedSyncEventTest();
-
-  RegisterAndVerifySyncEventDelayed(sync_options_1_);
-
-  EXPECT_TRUE(Unregister(callback_registration_handle_.get()));
-  EXPECT_FALSE(GetRegistration(sync_options_1_));
-
-  sync_fired_callback_.Run(SERVICE_WORKER_OK);
-  EXPECT_FALSE(GetRegistration(sync_options_1_));
-}
-
 TEST_F(BackgroundSyncManagerTest, BadBackendMidSync) {
   InitDelayedSyncEventTest();
 
@@ -1255,13 +1164,6 @@ TEST_F(BackgroundSyncManagerTest,
   EXPECT_TRUE(Register(sync_options_1_));
   test_background_sync_manager_->set_has_main_frame_provider_host(false);
   EXPECT_FALSE(Register(sync_options_1_));
-}
-
-TEST_F(BackgroundSyncManagerTest, UnregisterSucceedsWithoutMainFrame) {
-  EXPECT_TRUE(Register(sync_options_1_));
-  test_background_sync_manager_->set_has_main_frame_provider_host(false);
-  EXPECT_TRUE(Unregister(callback_registration_handle_.get()));
-  EXPECT_FALSE(GetRegistration(sync_options_1_));
 }
 
 TEST_F(BackgroundSyncManagerTest, DefaultParameters) {
