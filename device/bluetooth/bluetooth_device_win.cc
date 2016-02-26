@@ -357,7 +357,7 @@ void BluetoothDeviceWin::UpdateGattServices(
       }
     }
     for (const auto& service : to_be_removed_services) {
-      gatt_services_.erase(service);
+      gatt_services_.take_and_erase(service);
     }
     // Update previously discovered services.
     for (auto gatt_service : gatt_services_) {

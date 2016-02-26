@@ -19,7 +19,6 @@
 #include "device/bluetooth/bluetooth_classic_win.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_init_win.h"
-#include "device/bluetooth/bluetooth_low_energy_win.h"
 #include "device/bluetooth/bluetooth_service_record_win.h"
 #include "net/base/winsock_init.h"
 
@@ -53,27 +52,42 @@ std::string BluetoothAddressToCanonicalString(const BLUETOOTH_ADDRESS& btha) {
   return result;
 }
 
-device::BluetoothUUID BluetoothLowEnergyUuidToBluetoothUuid(
-    const BTH_LE_UUID& bth_le_uuid) {
-  if (bth_le_uuid.IsShortUuid) {
-    std::string uuid_hex =
-        base::StringPrintf("%04x", bth_le_uuid.Value.ShortUuid);
-    return device::BluetoothUUID(uuid_hex);
+bool BluetoothUUIDToWinBLEUUID(const device::BluetoothUUID& uuid,
+                               BTH_LE_UUID* out_win_uuid) {
+  if (!uuid.IsValid())
+    return false;
+
+  if (uuid.format() == device::BluetoothUUID::kFormat16Bit) {
+    out_win_uuid->IsShortUuid = true;
+    unsigned int data = 0;
+    int result = sscanf_s(uuid.value().c_str(), "%04x", &data);
+    if (result != 1)
+      return false;
+    out_win_uuid->Value.ShortUuid = data;
   } else {
-    return device::BluetoothUUID(
-        base::StringPrintf("%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x",
-                           bth_le_uuid.Value.LongUuid.Data1,
-                           bth_le_uuid.Value.LongUuid.Data2,
-                           bth_le_uuid.Value.LongUuid.Data3,
-                           bth_le_uuid.Value.LongUuid.Data4[0],
-                           bth_le_uuid.Value.LongUuid.Data4[1],
-                           bth_le_uuid.Value.LongUuid.Data4[2],
-                           bth_le_uuid.Value.LongUuid.Data4[3],
-                           bth_le_uuid.Value.LongUuid.Data4[4],
-                           bth_le_uuid.Value.LongUuid.Data4[5],
-                           bth_le_uuid.Value.LongUuid.Data4[6],
-                           bth_le_uuid.Value.LongUuid.Data4[7]));
+    out_win_uuid->IsShortUuid = false;
+    unsigned int data[11];
+    int result =
+        sscanf_s(uuid.value().c_str(),
+                 "%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x", &data[0],
+                 &data[1], &data[2], &data[3], &data[4], &data[5], &data[6],
+                 &data[7], &data[8], &data[9], &data[10]);
+    if (result != 11)
+      return false;
+    out_win_uuid->Value.LongUuid.Data1 = data[0];
+    out_win_uuid->Value.LongUuid.Data2 = data[1];
+    out_win_uuid->Value.LongUuid.Data3 = data[2];
+    out_win_uuid->Value.LongUuid.Data4[0] = data[3];
+    out_win_uuid->Value.LongUuid.Data4[1] = data[4];
+    out_win_uuid->Value.LongUuid.Data4[2] = data[5];
+    out_win_uuid->Value.LongUuid.Data4[3] = data[6];
+    out_win_uuid->Value.LongUuid.Data4[4] = data[7];
+    out_win_uuid->Value.LongUuid.Data4[5] = data[8];
+    out_win_uuid->Value.LongUuid.Data4[6] = data[9];
+    out_win_uuid->Value.LongUuid.Data4[7] = data[10];
   }
+
+  return true;
 }
 
 // Populates bluetooth adapter state using adapter_handle.
@@ -147,6 +161,27 @@ BluetoothTaskManagerWin::BluetoothTaskManagerWin(
 BluetoothTaskManagerWin::~BluetoothTaskManagerWin() {
   win::BluetoothLowEnergyWrapper::DeleteInstance();
   win::BluetoothClassicWrapper::DeleteInstance();
+}
+
+BluetoothUUID BluetoothTaskManagerWin::BluetoothLowEnergyUuidToBluetoothUuid(
+    const BTH_LE_UUID& bth_le_uuid) {
+  if (bth_le_uuid.IsShortUuid) {
+    std::string uuid_hex =
+        base::StringPrintf("%04x", bth_le_uuid.Value.ShortUuid);
+    return BluetoothUUID(uuid_hex);
+  } else {
+    return BluetoothUUID(base::StringPrintf(
+        "%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x",
+        bth_le_uuid.Value.LongUuid.Data1, bth_le_uuid.Value.LongUuid.Data2,
+        bth_le_uuid.Value.LongUuid.Data3, bth_le_uuid.Value.LongUuid.Data4[0],
+        bth_le_uuid.Value.LongUuid.Data4[1],
+        bth_le_uuid.Value.LongUuid.Data4[2],
+        bth_le_uuid.Value.LongUuid.Data4[3],
+        bth_le_uuid.Value.LongUuid.Data4[4],
+        bth_le_uuid.Value.LongUuid.Data4[5],
+        bth_le_uuid.Value.LongUuid.Data4[6],
+        bth_le_uuid.Value.LongUuid.Data4[7]));
+  }
 }
 
 void BluetoothTaskManagerWin::AddObserver(Observer* observer) {
@@ -481,8 +516,10 @@ bool BluetoothTaskManagerWin::SearchClassicDevices(
 
 bool BluetoothTaskManagerWin::SearchLowEnergyDevices(
     ScopedVector<DeviceState>* device_list) {
-  if (!win::IsBluetoothLowEnergySupported())
+  if (!win::BluetoothLowEnergyWrapper::GetInstance()
+           ->IsBluetoothLowEnergySupported()) {
     return true;  // Bluetooth LE not supported is not an error.
+  }
 
   ScopedVector<win::BluetoothLowEnergyDeviceInfo> btle_devices;
   std::string error;
@@ -643,8 +680,10 @@ int BluetoothTaskManagerWin::DiscoverClassicDeviceServicesWorker(
 bool BluetoothTaskManagerWin::DiscoverLowEnergyDeviceServices(
     const base::FilePath& device_path,
     ScopedVector<ServiceRecordState>* service_record_states) {
-  if (!win::IsBluetoothLowEnergySupported())
+  if (!win::BluetoothLowEnergyWrapper::GetInstance()
+           ->IsBluetoothLowEnergySupported()) {
     return true;  // Bluetooth LE not supported is not an error.
+  }
 
   std::string error;
   ScopedVector<win::BluetoothLowEnergyServiceInfo> services;
@@ -725,6 +764,43 @@ bool BluetoothTaskManagerWin::SearchForGattServiceDevicePaths(
   }
 
   return true;
+}
+
+void BluetoothTaskManagerWin::GetGattIncludedCharacteristics(
+    base::FilePath service_path,
+    BluetoothUUID uuid,
+    uint16_t attribute_handle,
+    const GetGattIncludedCharacteristicsCallback& callback) {
+  HRESULT hr = S_OK;
+  scoped_ptr<BTH_LE_GATT_CHARACTERISTIC> win_characteristics_info;
+  uint16_t number_of_charateristics = 0;
+
+  BTH_LE_GATT_SERVICE win_service;
+  if (BluetoothUUIDToWinBLEUUID(uuid, &(win_service.ServiceUuid))) {
+    win_service.AttributeHandle = attribute_handle;
+    hr = win::BluetoothLowEnergyWrapper::GetInstance()
+             ->ReadCharacteristicsOfAService(service_path, &win_service,
+                                             &win_characteristics_info,
+                                             &number_of_charateristics);
+  } else {
+    hr = HRESULT_FROM_WIN32(ERROR_INVALID_PARAMETER);
+  }
+
+  ui_task_runner_->PostTask(
+      FROM_HERE, base::Bind(callback, base::Passed(&win_characteristics_info),
+                            number_of_charateristics, hr));
+}
+
+void BluetoothTaskManagerWin::PostGetGattIncludedCharacteristics(
+    const base::FilePath& service_path,
+    const BluetoothUUID& uuid,
+    uint16_t attribute_handle,
+    const GetGattIncludedCharacteristicsCallback& callback) {
+  DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
+  bluetooth_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&BluetoothTaskManagerWin::GetGattIncludedCharacteristics, this,
+                 service_path, uuid, attribute_handle, callback));
 }
 
 }  // namespace device

@@ -6,21 +6,24 @@
 
 #include "build/build_config.h"
 #include "device/bluetooth/bluetooth_gatt_characteristic.h"
+#include "device/bluetooth/test/test_bluetooth_adapter_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_ANDROID)
 #include "device/bluetooth/test/bluetooth_test_android.h"
 #elif defined(OS_MACOSX)
 #include "device/bluetooth/test/bluetooth_test_mac.h"
+#elif defined(OS_WIN)
+#include "device/bluetooth/test/bluetooth_test_win.h"
 #endif
 
 namespace device {
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
 class BluetoothGattServiceTest : public BluetoothTest {};
 #endif
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_WIN)
 TEST_F(BluetoothGattServiceTest, GetIdentifier) {
   InitWithFakeAdapter();
   StartLowEnergyDiscoverySession();
@@ -56,9 +59,9 @@ TEST_F(BluetoothGattServiceTest, GetIdentifier) {
 
   EXPECT_NE(service3->GetIdentifier(), service4->GetIdentifier());
 }
-#endif  // defined(OS_ANDROID)
+#endif  // defined(OS_ANDROID) || defined(OS_WIN)
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_WIN)
 TEST_F(BluetoothGattServiceTest, GetUUID) {
   InitWithFakeAdapter();
   StartLowEnergyDiscoverySession();
@@ -78,9 +81,9 @@ TEST_F(BluetoothGattServiceTest, GetUUID) {
   EXPECT_EQ(uuid, device->GetGattServices()[0]->GetUUID());
   EXPECT_EQ(uuid, device->GetGattServices()[1]->GetUUID());
 }
-#endif  // defined(OS_ANDROID)
+#endif  // defined(OS_ANDROID) || defined(OS_WIN)
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_WIN)
 TEST_F(BluetoothGattServiceTest, GetCharacteristics_FindNone) {
   InitWithFakeAdapter();
   StartLowEnergyDiscoverySession();
@@ -97,9 +100,9 @@ TEST_F(BluetoothGattServiceTest, GetCharacteristics_FindNone) {
 
   EXPECT_EQ(0u, service->GetCharacteristics().size());
 }
-#endif  // defined(OS_ANDROID)
+#endif  // defined(OS_ANDROID) || defined(OS_WIN)
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_WIN)
 TEST_F(BluetoothGattServiceTest, GetCharacteristics_and_GetCharacteristic) {
   InitWithFakeAdapter();
   StartLowEnergyDiscoverySession();
@@ -145,6 +148,92 @@ TEST_F(BluetoothGattServiceTest, GetCharacteristics_and_GetCharacteristic) {
   EXPECT_EQ(service->GetCharacteristic(char_id1),
             service->GetCharacteristic(char_id1));
 }
-#endif  // defined(OS_ANDROID)
+#endif  // defined(OS_ANDROID) || defined(OS_WIN)
+
+#if defined(OS_WIN)
+TEST_F(BluetoothGattServiceTest, GetCharacteristic_CharacteristicRemoved) {
+  InitWithFakeAdapter();
+  StartLowEnergyDiscoverySession();
+  BluetoothDevice* device = DiscoverLowEnergyDevice(3);
+  device->CreateGattConnection(GetGattConnectionCallback(Call::EXPECTED),
+                               GetConnectErrorCallback(Call::NOT_EXPECTED));
+  SimulateGattConnection(device);
+
+  TestBluetoothAdapterObserver observer(adapter_);
+
+  // Simulate a service, with several Characteristics:
+  std::vector<std::string> services;
+  services.push_back("00000000-0000-1000-8000-00805f9b34fb");
+  SimulateGattServicesDiscovered(device, services);
+  BluetoothGattService* service = device->GetGattServices()[0];
+  std::string characteristic_uuid1 = "11111111-0000-1000-8000-00805f9b34fb";
+  std::string characteristic_uuid2 = "22222222-0000-1000-8000-00805f9b34fb";
+  std::string characteristic_uuid3 = characteristic_uuid2;  // Duplicate UUID.
+  std::string characteristic_uuid4 = "33333333-0000-1000-8000-00805f9b34fb";
+  SimulateGattCharacteristic(service, characteristic_uuid1, /* properties */ 0);
+  SimulateGattCharacteristic(service, characteristic_uuid2, /* properties */ 0);
+  SimulateGattCharacteristic(service, characteristic_uuid3, /* properties */ 0);
+  SimulateGattCharacteristic(service, characteristic_uuid4, /* properties */ 0);
+
+  // Simulate remove of characteristics one by one.
+  EXPECT_EQ(4u, service->GetCharacteristics().size());
+  std::string removed_char = service->GetCharacteristics()[0]->GetIdentifier();
+  SimulateGattCharacteristicRemoved(service,
+                                    service->GetCharacteristic(removed_char));
+  EXPECT_EQ(1, observer.gatt_characteristic_removed_count());
+  EXPECT_FALSE(service->GetCharacteristic(removed_char));
+  EXPECT_EQ(3u, service->GetCharacteristics().size());
+  removed_char = service->GetCharacteristics()[0]->GetIdentifier();
+  SimulateGattCharacteristicRemoved(service,
+                                    service->GetCharacteristic(removed_char));
+  EXPECT_EQ(2, observer.gatt_characteristic_removed_count());
+  EXPECT_FALSE(service->GetCharacteristic(removed_char));
+  EXPECT_EQ(2u, service->GetCharacteristics().size());
+  removed_char = service->GetCharacteristics()[0]->GetIdentifier();
+  SimulateGattCharacteristicRemoved(service,
+                                    service->GetCharacteristic(removed_char));
+  EXPECT_EQ(3, observer.gatt_characteristic_removed_count());
+  EXPECT_FALSE(service->GetCharacteristic(removed_char));
+  EXPECT_EQ(1u, service->GetCharacteristics().size());
+  removed_char = service->GetCharacteristics()[0]->GetIdentifier();
+  SimulateGattCharacteristicRemoved(service,
+                                    service->GetCharacteristic(removed_char));
+  EXPECT_EQ(4, observer.gatt_characteristic_removed_count());
+  EXPECT_FALSE(service->GetCharacteristic(removed_char));
+  EXPECT_EQ(0u, service->GetCharacteristics().size());
+
+  EXPECT_EQ(4, observer.gatt_service_changed_count());
+}
+#endif  // defined(OS_WIN)
+
+#if defined(OS_WIN)
+TEST_F(BluetoothGattServiceTest, SimulateGattServiceRemove) {
+  InitWithFakeAdapter();
+  StartLowEnergyDiscoverySession();
+  BluetoothDevice* device = DiscoverLowEnergyDevice(3);
+  device->CreateGattConnection(GetGattConnectionCallback(Call::EXPECTED),
+                               GetConnectErrorCallback(Call::NOT_EXPECTED));
+  SimulateGattConnection(device);
+
+  TestBluetoothAdapterObserver observer(adapter_);
+
+  // Simulate two primary GATT services.
+  std::vector<std::string> services;
+  services.push_back("00000000-0000-1000-8000-00805f9b34fb");
+  services.push_back("01010101-0101-1000-8000-00805f9b34fb");
+  SimulateGattServicesDiscovered(device, services);
+  EXPECT_EQ(2u, device->GetGattServices().size());
+
+  // Simulate remove of a primary service.
+  BluetoothGattService* service1 = device->GetGattServices()[0];
+  BluetoothGattService* service2 = device->GetGattServices()[1];
+  std::string removed_service = service1->GetIdentifier();
+  SimulateGattServiceRemoved(device->GetGattService(removed_service));
+  EXPECT_EQ(1, observer.gatt_service_removed_count());
+  EXPECT_EQ(1u, device->GetGattServices().size());
+  EXPECT_FALSE(device->GetGattService(removed_service));
+  EXPECT_EQ(device->GetGattServices()[0], service2);
+}
+#endif  // defined(OS_WIN)
 
 }  // namespace device

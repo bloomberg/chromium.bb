@@ -74,9 +74,6 @@ class DEVICE_BLUETOOTH_EXPORT DevicePropertyValue {
   DISALLOW_COPY_AND_ASSIGN(DevicePropertyValue);
 };
 
-// Returns true only on Windows platforms supporting Bluetooth Low Energy.
-bool DEVICE_BLUETOOTH_EXPORT IsBluetoothLowEnergySupported();
-
 struct DEVICE_BLUETOOTH_EXPORT BluetoothLowEnergyServiceInfo {
   BluetoothLowEnergyServiceInfo();
   ~BluetoothLowEnergyServiceInfo();
@@ -113,6 +110,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothLowEnergyWrapper {
   static void DeleteInstance();
   static void SetInstanceForTest(BluetoothLowEnergyWrapper* instance);
 
+  // Returns true only on Windows platforms supporting Bluetooth Low Energy.
+  virtual bool IsBluetoothLowEnergySupported();
+
   // Enumerates the list of known (i.e. already paired) Bluetooth LE devices on
   // this machine. In case of error, returns false and sets |error| with an
   // error message describing the problem.
@@ -143,6 +143,15 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothLowEnergyWrapper {
       const base::FilePath& device_path,
       ScopedVector<BluetoothLowEnergyServiceInfo>* services,
       std::string* error);
+
+  // Reads characteristics of |service| with service device path |service_path|.
+  // The result will be stored in |*out_included_characteristics| and
+  // |*out_counts|.
+  virtual HRESULT ReadCharacteristicsOfAService(
+      base::FilePath& service_path,
+      const PBTH_LE_GATT_SERVICE service,
+      scoped_ptr<BTH_LE_GATT_CHARACTERISTIC>* out_included_characteristics,
+      USHORT* out_counts);
 
  protected:
   BluetoothLowEnergyWrapper();

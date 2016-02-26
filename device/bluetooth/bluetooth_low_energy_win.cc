@@ -650,10 +650,6 @@ BluetoothLowEnergyDeviceInfo::BluetoothLowEnergyDeviceInfo()
 BluetoothLowEnergyDeviceInfo::~BluetoothLowEnergyDeviceInfo() {
 }
 
-bool IsBluetoothLowEnergySupported() {
-  return base::win::GetVersion() >= base::win::VERSION_WIN8;
-}
-
 bool ExtractBluetoothAddressFromDeviceInstanceIdForTesting(
     const std::string& instance_id,
     BLUETOOTH_ADDRESS* btha,
@@ -681,6 +677,10 @@ void BluetoothLowEnergyWrapper::SetInstanceForTest(
 
 BluetoothLowEnergyWrapper::BluetoothLowEnergyWrapper() {}
 BluetoothLowEnergyWrapper::~BluetoothLowEnergyWrapper() {}
+
+bool BluetoothLowEnergyWrapper::IsBluetoothLowEnergySupported() {
+  return base::win::GetVersion() >= base::win::VERSION_WIN8;
+}
 
 bool BluetoothLowEnergyWrapper::EnumerateKnownBluetoothLowEnergyDevices(
     ScopedVector<BluetoothLowEnergyDeviceInfo>* devices,
@@ -717,6 +717,44 @@ bool BluetoothLowEnergyWrapper::EnumerateKnownBluetoothLowEnergyServices(
   }
 
   return CollectBluetoothLowEnergyDeviceServices(device_path, services, error);
+}
+
+HRESULT BluetoothLowEnergyWrapper::ReadCharacteristicsOfAService(
+    base::FilePath& service_path,
+    const PBTH_LE_GATT_SERVICE service,
+    scoped_ptr<BTH_LE_GATT_CHARACTERISTIC>* out_included_characteristics,
+    USHORT* out_counts) {
+  base::File file(service_path, base::File::FLAG_OPEN | base::File::FLAG_READ);
+  if (!file.IsValid())
+    return HRESULT_FROM_WIN32(ERROR_OPEN_FAILED);
+
+  USHORT required_length = 0;
+  HRESULT hr = BluetoothGATTGetCharacteristics(file.GetPlatformFile(), service,
+                                               0, NULL, &required_length,
+                                               BLUETOOTH_GATT_FLAG_NONE);
+  if (hr != HRESULT_FROM_WIN32(ERROR_MORE_DATA))
+    return hr;
+
+  out_included_characteristics->reset(
+      new BTH_LE_GATT_CHARACTERISTIC[required_length]);
+  USHORT actual_length = required_length;
+  hr = BluetoothGATTGetCharacteristics(
+      file.GetPlatformFile(), service, actual_length,
+      out_included_characteristics->get(), &required_length,
+      BLUETOOTH_GATT_FLAG_NONE);
+  if (SUCCEEDED(hr) && required_length != actual_length) {
+    LOG(ERROR) << "Retrieved charactersitics is not equal to expected"
+               << " actual_length " << actual_length << " required_length "
+               << required_length;
+    hr = HRESULT_FROM_WIN32(ERROR_INVALID_USER_BUFFER);
+  }
+  *out_counts = actual_length;
+
+  if (FAILED(hr)) {
+    out_included_characteristics->reset(nullptr);
+    *out_counts = 0;
+  }
+  return hr;
 }
 
 }  // namespace win

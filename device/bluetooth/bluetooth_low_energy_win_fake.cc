@@ -5,6 +5,7 @@
 #include "device/bluetooth/bluetooth_low_energy_win_fake.h"
 
 #include "base/strings/stringprintf.h"
+#include "device/bluetooth/bluetooth_low_energy_defs_win.h"
 
 namespace {
 const char kPlatformNotSupported[] =
@@ -28,6 +29,10 @@ BLEGattDescriptor::~BLEGattDescriptor() {}
 
 BluetoothLowEnergyWrapperFake::BluetoothLowEnergyWrapperFake() {}
 BluetoothLowEnergyWrapperFake::~BluetoothLowEnergyWrapperFake() {}
+
+bool BluetoothLowEnergyWrapperFake::IsBluetoothLowEnergySupported() {
+  return true;
+}
 
 bool BluetoothLowEnergyWrapperFake::EnumerateKnownBluetoothLowEnergyDevices(
     ScopedVector<BluetoothLowEnergyDeviceInfo>* devices,
@@ -81,16 +86,16 @@ bool BluetoothLowEnergyWrapperFake::EnumerateKnownBluetoothLowEnergyServices(
 
   base::string16 device_address =
       ExtractDeviceAddressFromDevicePath(device_path.value());
-  base::string16 service_attribute_handle =
-      ExtractServiceAttributeHandleFromDevicePath(device_path.value());
+  std::vector<std::string> service_attribute_handles =
+      ExtractServiceAttributeHandlesFromDevicePath(device_path.value());
 
   BLEDevicesMap::iterator it_d = simulated_devices_.find(
       std::string(device_address.begin(), device_address.end()));
   CHECK(it_d != simulated_devices_.end());
 
-  // |service_attribute_handle| is empty means |device_path| is a BLE device
+  // |service_attribute_handles| is empty means |device_path| is a BLE device
   // path, otherwise it is a BLE GATT service device path.
-  if (service_attribute_handle.empty()) {
+  if (service_attribute_handles.empty()) {
     // Return all primary services for BLE device.
     for (auto& primary_service : it_d->second->primary_services) {
       BluetoothLowEnergyServiceInfo* service_info =
@@ -102,19 +107,50 @@ bool BluetoothLowEnergyWrapperFake::EnumerateKnownBluetoothLowEnergyServices(
     }
   } else {
     // Return corresponding GATT service for BLE GATT service device.
-    BLEGattServicesMap::iterator it_s =
-        it_d->second->primary_services.find(std::string(
-            service_attribute_handle.begin(), service_attribute_handle.end()));
-    CHECK(it_s != it_d->second->primary_services.end());
+    BLEGattService* target_service =
+        GetSimulatedGattService(it_d->second.get(), service_attribute_handles);
     BluetoothLowEnergyServiceInfo* service_info =
         new BluetoothLowEnergyServiceInfo();
-    service_info->uuid = it_s->second->service_info->ServiceUuid;
+    service_info->uuid = target_service->service_info->ServiceUuid;
     service_info->attribute_handle =
-        it_s->second->service_info->AttributeHandle;
+        target_service->service_info->AttributeHandle;
     services->push_back(service_info);
   }
 
   return true;
+}
+
+HRESULT BluetoothLowEnergyWrapperFake::ReadCharacteristicsOfAService(
+    base::FilePath& service_path,
+    const PBTH_LE_GATT_SERVICE service,
+    scoped_ptr<BTH_LE_GATT_CHARACTERISTIC>* out_included_characteristics,
+    USHORT* out_counts) {
+  base::string16 device_address =
+      ExtractDeviceAddressFromDevicePath(service_path.value());
+  const std::vector<std::string> service_att_handles =
+      ExtractServiceAttributeHandlesFromDevicePath(service_path.value());
+  BLEGattService* target_service = GetSimulatedGattService(
+      GetSimulatedBLEDevice(
+          std::string(device_address.begin(), device_address.end())),
+      service_att_handles);
+  if (target_service == nullptr)
+    return HRESULT_FROM_WIN32(ERROR_NOT_FOUND);
+
+  std::size_t number_of_included_characteristic =
+      target_service->included_characteristics.size();
+  if (number_of_included_characteristic) {
+    *out_counts = (USHORT)number_of_included_characteristic;
+    out_included_characteristics->reset(
+        new BTH_LE_GATT_CHARACTERISTIC[number_of_included_characteristic]);
+    std::size_t i = 0;
+    for (const auto& cha : target_service->included_characteristics) {
+      out_included_characteristics->get()[i] =
+          *(cha.second->characteristic_info);
+      i++;
+    }
+    return S_OK;
+  }
+  return HRESULT_FROM_WIN32(ERROR_NO_MORE_ITEMS);
 }
 
 BLEDevice* BluetoothLowEnergyWrapperFake::SimulateBLEDevice(
@@ -134,9 +170,18 @@ BLEDevice* BluetoothLowEnergyWrapperFake::SimulateBLEDevice(
   return device;
 }
 
+BLEDevice* BluetoothLowEnergyWrapperFake::GetSimulatedBLEDevice(
+    std::string device_address) {
+  BLEDevicesMap::iterator it_d = simulated_devices_.find(device_address);
+  if (it_d == simulated_devices_.end())
+    return nullptr;
+  return it_d->second.get();
+}
+
 BLEGattService* BluetoothLowEnergyWrapperFake::SimulateBLEGattService(
     BLEDevice* device,
-    std::string uuid) {
+    BLEGattService* parent_service,
+    const BTH_LE_UUID& uuid) {
   CHECK(device);
 
   BLEGattService* service = new BLEGattService();
@@ -145,19 +190,79 @@ BLEGattService* BluetoothLowEnergyWrapperFake::SimulateBLEGattService(
       BluetoothAddressToCanonicalString(device->device_info->address);
   service_info->AttributeHandle =
       GenerateAUniqueAttributeHandle(string_device_address);
-  service_info->ServiceUuid = CanonicalStringToBTH_LE_UUID(uuid);
+  service_info->ServiceUuid = uuid;
   service->service_info.reset(service_info);
-  device->primary_services[std::to_string(service_info->AttributeHandle)] =
-      make_scoped_ptr(service);
+
+  if (parent_service) {
+    parent_service
+        ->included_services[std::to_string(service_info->AttributeHandle)] =
+        make_scoped_ptr(service);
+  } else {
+    device->primary_services[std::to_string(service_info->AttributeHandle)] =
+        make_scoped_ptr(service);
+  }
   return service;
 }
 
-BLEDevice* BluetoothLowEnergyWrapperFake::GetSimulatedBLEDevice(
-    std::string device_address) {
-  BLEDevicesMap::iterator it_d = simulated_devices_.find(device_address);
-  if (it_d == simulated_devices_.end())
+void BluetoothLowEnergyWrapperFake::SimulateBLEGattServiceRemoved(
+    BLEDevice* device,
+    BLEGattService* parent_service,
+    std::string attribute_handle) {
+  if (parent_service) {
+    parent_service->included_services.erase(attribute_handle);
+  } else {
+    device->primary_services.erase(attribute_handle);
+  }
+}
+
+BLEGattService* BluetoothLowEnergyWrapperFake::GetSimulatedGattService(
+    BLEDevice* device,
+    const std::vector<std::string>& chain_of_att_handle) {
+  // First, find the root primary service.
+  BLEGattServicesMap::iterator it_s =
+      device->primary_services.find(chain_of_att_handle[0]);
+  if (it_s == device->primary_services.end())
     return nullptr;
-  return it_d->second.get();
+
+  // Iteratively follow the chain of included service attribute handles to find
+  // the target service.
+  for (std::size_t i = 1; i < chain_of_att_handle.size(); i++) {
+    std::string included_att_handle = std::string(
+        chain_of_att_handle[i].begin(), chain_of_att_handle[i].end());
+    BLEGattServicesMap::iterator it_i =
+        it_s->second->included_services.find(included_att_handle);
+    if (it_i == it_s->second->included_services.end())
+      return nullptr;
+    it_s = it_i;
+  }
+  return it_s->second.get();
+}
+
+BLEGattCharacteristic*
+BluetoothLowEnergyWrapperFake::SimulateBLEGattCharacterisc(
+    std::string device_address,
+    BLEGattService* parent_service,
+    const BTH_LE_GATT_CHARACTERISTIC& characteristic) {
+  CHECK(parent_service);
+
+  BLEGattCharacteristic* win_characteristic = new BLEGattCharacteristic();
+  PBTH_LE_GATT_CHARACTERISTIC win_characteristic_info =
+      new BTH_LE_GATT_CHARACTERISTIC[1];
+  *win_characteristic_info = characteristic;
+  (win_characteristic->characteristic_info).reset(win_characteristic_info);
+  win_characteristic->characteristic_info->AttributeHandle =
+      GenerateAUniqueAttributeHandle(device_address);
+  parent_service->included_characteristics[std::to_string(
+      win_characteristic->characteristic_info->AttributeHandle)] =
+      make_scoped_ptr(win_characteristic);
+  return win_characteristic;
+}
+
+void BluetoothLowEnergyWrapperFake::SimulateBLEGattCharacteriscRemove(
+    BLEGattService* parent_service,
+    std::string attribute_handle) {
+  CHECK(parent_service);
+  parent_service->included_characteristics.erase(attribute_handle);
 }
 
 USHORT BluetoothLowEnergyWrapperFake::GenerateAUniqueAttributeHandle(
@@ -206,33 +311,34 @@ base::string16 BluetoothLowEnergyWrapperFake::GenerateBLEGattServiceDevicePath(
 base::string16
 BluetoothLowEnergyWrapperFake::ExtractDeviceAddressFromDevicePath(
     base::string16 path) {
-  std::size_t found = path.find('/');
+  std::size_t found = path.find_first_of('/');
   if (found != base::string16::npos) {
     return path.substr(0, found);
   }
   return path;
 }
 
-base::string16
-BluetoothLowEnergyWrapperFake::ExtractServiceAttributeHandleFromDevicePath(
+std::vector<std::string>
+BluetoothLowEnergyWrapperFake::ExtractServiceAttributeHandlesFromDevicePath(
     base::string16 path) {
   std::size_t found = path.find('/');
   if (found == base::string16::npos)
-    return base::string16();
-  return path.substr(found + 1);
-}
+    return std::vector<std::string>();
 
-BTH_LE_UUID BluetoothLowEnergyWrapperFake::CanonicalStringToBTH_LE_UUID(
-    std::string uuid) {
-  BTH_LE_UUID win_uuid;
-  // Only short UUIDs (4 hex digits) have beened used in BluetoothTest right
-  // now. Need fix after using long UUIDs.
-  win_uuid.IsShortUuid = true;
-  unsigned int data[1];
-  int result = sscanf_s(uuid.c_str(), "%04x", &data[0]);
-  CHECK(result == 1);
-  win_uuid.Value.ShortUuid = data[0];
-  return win_uuid;
+  std::vector<std::string> chain_of_att_handle;
+  while (true) {
+    std::size_t next_found = path.find(path, found + 1);
+    if (next_found == base::string16::npos)
+      break;
+    base::string16 att_handle = path.substr(found + 1, next_found);
+    chain_of_att_handle.push_back(
+        std::string(att_handle.begin(), att_handle.end()));
+    found = next_found;
+  }
+  base::string16 att_handle = path.substr(found + 1);
+  chain_of_att_handle.push_back(
+      std::string(att_handle.begin(), att_handle.end()));
+  return chain_of_att_handle;
 }
 
 std::string BluetoothLowEnergyWrapperFake::BluetoothAddressToCanonicalString(

@@ -43,8 +43,8 @@ BluetoothAdapterWin::BluetoothAdapterWin(const InitCallback& init_callback)
       powered_(false),
       discovery_status_(NOT_DISCOVERING),
       num_discovery_listeners_(0),
-      weak_ptr_factory_(this) {
-}
+      force_update_device_for_test_(false),
+      weak_ptr_factory_(this) {}
 
 BluetoothAdapterWin::~BluetoothAdapterWin() {
   if (task_manager_.get()) {
@@ -284,10 +284,15 @@ void BluetoothAdapterWin::DevicesPolled(
           static_cast<BluetoothDeviceWin*>(iter->second);
       if (!device_win->IsEqual(*device_state)) {
         device_win->Update(*device_state);
-        FOR_EACH_OBSERVER(BluetoothAdapter::Observer,
-                          observers_,
+        FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
                           DeviceChanged(this, device_win));
       }
+      // Above IsEqual returns true if device name, address, status and services
+      // (primary services of BLE device) are the same. However, in BLE tests,
+      // we may simulate characteristic, descriptor and secondary GATT service
+      // after device has been initialized.
+      if (force_update_device_for_test_)
+        device_win->Update(*device_state);
     }
   }
 }

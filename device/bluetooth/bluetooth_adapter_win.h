@@ -93,6 +93,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterWin
     return socket_thread_;
   }
 
+  scoped_refptr<BluetoothTaskManagerWin> GetWinBluetoothTaskManager() {
+    return task_manager_;
+  }
+
  protected:
   // BluetoothAdapter:
   void RemovePairingDelegateInternal(
@@ -152,6 +156,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterWin
   scoped_refptr<BluetoothTaskManagerWin> task_manager_;
 
   base::ThreadChecker thread_checker_;
+
+  // Flag indicating a device update must be forced in DevicesPolled.
+  bool force_update_device_for_test_;
 
   // NOTE: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
