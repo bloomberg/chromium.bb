@@ -1732,8 +1732,8 @@ namespace {
 
 ScrollResult scrollAreaWithWheelEvent(const PlatformWheelEvent& event, ScrollableArea& scrollableArea)
 {
-    float deltaX = event.railsMode() != PlatformEvent::RailsModeVertical ? event.deltaX() : 0;
-    float deltaY = event.railsMode() != PlatformEvent::RailsModeHorizontal ? event.deltaY() : 0;
+    float deltaX = event.getRailsMode() != PlatformEvent::RailsModeVertical ? event.deltaX() : 0;
+    float deltaY = event.getRailsMode() != PlatformEvent::RailsModeHorizontal ? event.deltaY() : 0;
 
     ScrollGranularity granularity =
         event.granularity() == ScrollByPixelWheelEvent ? ScrollByPixel : ScrollByPage;
@@ -1851,11 +1851,11 @@ void EventHandler::defaultWheelEventHandler(Node* startNode, WheelEvent* wheelEv
     // a MacBook pro is an example of a 2-dimensional mouse wheel event (where both deltaX and deltaY can be set).
 
     // FIXME: enable scroll customization in this case. See crbug.com/410974.
-    if (wheelEvent->railsMode() != Event::RailsModeVertical
+    if (wheelEvent->getRailsMode() != Event::RailsModeVertical
         && scroll(ScrollRightIgnoringWritingMode, granularity, startNode, &stopNode, wheelEvent->deltaX()).didScroll)
         wheelEvent->setDefaultHandled();
 
-    if (wheelEvent->railsMode() != Event::RailsModeHorizontal
+    if (wheelEvent->getRailsMode() != Event::RailsModeHorizontal
         && scroll(ScrollDownIgnoringWritingMode, granularity, startNode, &stopNode, wheelEvent->deltaY()).didScroll)
         wheelEvent->setDefaultHandled();
 

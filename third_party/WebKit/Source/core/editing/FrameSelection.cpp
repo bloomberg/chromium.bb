@@ -718,7 +718,7 @@ void FrameSelection::invalidateCaretRect()
     if (!m_caretBlinkTimer.isActive()
         && newNode == m_previousCaretNode
         && newRect == m_previousCaretRect
-        && caretVisibility() == m_previousCaretVisibility)
+        && getCaretVisibility() == m_previousCaretVisibility)
         return;
 
     LayoutView* view = m_frame->document()->layoutView();
@@ -728,7 +728,7 @@ void FrameSelection::invalidateCaretRect()
         invalidateLocalCaretRect(newNode, newRect);
     m_previousCaretNode = newNode;
     m_previousCaretRect = newRect;
-    m_previousCaretVisibility = caretVisibility();
+    m_previousCaretVisibility = getCaretVisibility();
 }
 
 void FrameSelection::paintCaret(GraphicsContext& context, const LayoutPoint& paintOffset)
@@ -1025,7 +1025,7 @@ void FrameSelection::updateAppearance()
 
 void FrameSelection::setCaretVisibility(CaretVisibility visibility)
 {
-    if (caretVisibility() == visibility)
+    if (getCaretVisibility() == visibility)
         return;
 
     CaretBase::setCaretVisibility(visibility);
@@ -1220,7 +1220,7 @@ void FrameSelection::revealSelection(const ScrollAlignment& alignment, RevealExt
 {
     LayoutRect rect;
 
-    switch (selectionType()) {
+    switch (getSelectionType()) {
     case NoSelection:
         return;
     case CaretSelection:

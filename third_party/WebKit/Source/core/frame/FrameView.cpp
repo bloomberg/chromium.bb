@@ -1672,7 +1672,7 @@ bool FrameView::computeCompositedSelection(LocalFrame& frame, CompositedSelectio
     if (!selection.end.layer)
         return false;
 
-    selection.type = visibleSelection.selectionType();
+    selection.type = visibleSelection.getSelectionType();
     selection.isEditable = visibleSelection.isContentEditable();
     if (selection.isEditable) {
         if (HTMLTextFormControlElement* enclosingTextFormControlElement = enclosingTextFormControl(visibleSelection.rootEditableElement()))

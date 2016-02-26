@@ -628,7 +628,7 @@ void Request::populateWebServiceWorkerRequest(WebServiceWorkerRequest& webReques
         webRequest.appendHeader(header.first, header.second);
     }
 
-    webRequest.setReferrer(m_request->referrerString(), static_cast<WebReferrerPolicy>(m_request->referrerPolicy()));
+    webRequest.setReferrer(m_request->referrerString(), static_cast<WebReferrerPolicy>(m_request->getReferrerPolicy()));
     // FIXME: How can we set isReload properly? What is the correct place to load it in to the Request object? We should investigate the right way
     // to plumb this information in to here.
 }

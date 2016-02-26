@@ -353,7 +353,7 @@ void XSSAuditor::init(Document* document, XSSAuditorDelegate* auditorDelegate)
         if (xssProtectionHeader == ReflectedXSSInvalid)
             document->addConsoleMessage(ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, "Error parsing header X-XSS-Protection: " + headerValue + ": "  + errorDetails + " at character position " + String::format("%u", errorPosition) + ". The default protections will be applied."));
 
-        ReflectedXSSDisposition cspHeader = document->contentSecurityPolicy()->reflectedXSSDisposition();
+        ReflectedXSSDisposition cspHeader = document->contentSecurityPolicy()->getReflectedXSSDisposition();
         m_didSendValidCSPHeader = cspHeader != ReflectedXSSUnset && cspHeader != ReflectedXSSInvalid;
 
         m_xssProtection = combineXSSProtectionHeaderAndCSP(xssProtectionHeader, cspHeader);

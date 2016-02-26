@@ -38,7 +38,7 @@
     const unsigned short INIT = 0;
     const unsigned short WRITING = 1;
     const unsigned short DONE = 2;
-    readonly attribute unsigned short readyState;
+    [ImplementedAs=getReadyState] readonly attribute unsigned short readyState;
 
     // async write/modify methods
     [RaisesException] void write(Blob data);

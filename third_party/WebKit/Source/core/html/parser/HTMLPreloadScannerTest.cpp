@@ -65,7 +65,7 @@ public:
     void preloadRequestVerification(Resource::Type type, const char* url, const char* baseURL, int width, ReferrerPolicy referrerPolicy)
     {
         preloadRequestVerification(type, url, baseURL, width, ClientHintsPreferences());
-        EXPECT_EQ(referrerPolicy, m_preloadRequest->referrerPolicy());
+        EXPECT_EQ(referrerPolicy, m_preloadRequest->getReferrerPolicy());
     }
 
     void preconnectRequestVerification(const String& host, CrossOriginAttributeValue crossOrigin)

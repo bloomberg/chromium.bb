@@ -584,7 +584,7 @@ void InspectorResourceAgent::didReceiveData(LocalFrame*, unsigned long identifie
 
     if (data) {
         NetworkResourcesData::ResourceData const* resourceData = m_resourcesData->data(requestId);
-        if (resourceData && (!resourceData->cachedResource() || resourceData->cachedResource()->dataBufferingPolicy() == DoNotBufferData || isErrorStatusCode(resourceData->httpStatusCode())))
+        if (resourceData && (!resourceData->cachedResource() || resourceData->cachedResource()->getDataBufferingPolicy() == DoNotBufferData || isErrorStatusCode(resourceData->httpStatusCode())))
             m_resourcesData->maybeAddResourceData(requestId, data, dataLength);
     }
 

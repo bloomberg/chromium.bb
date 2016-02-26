@@ -246,7 +246,7 @@ static void configureRequest(FetchRequest& request, ImageLoader::BypassMainWorld
         request.setCrossOriginAccessControl(element.document().securityOrigin(), crossOrigin);
 
     if (clientHintsPreferences.shouldSendResourceWidth() && isHTMLImageElement(element))
-        request.setResourceWidth(toHTMLImageElement(element).resourceWidth());
+        request.setResourceWidth(toHTMLImageElement(element).getResourceWidth());
 }
 
 inline void ImageLoader::dispatchErrorEvent()

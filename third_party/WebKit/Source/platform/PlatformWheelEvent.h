@@ -91,7 +91,7 @@ public:
     bool canScroll() const { return m_canScroll; }
     void setCanScroll(bool b) { m_canScroll = b; }
     int resendingPluginId() const { return m_resendingPluginId; }
-    RailsMode railsMode() const { return m_railsMode; }
+    RailsMode getRailsMode() const { return m_railsMode; }
 
 #if OS(MACOSX)
     PlatformWheelEventPhase phase() const { return m_phase; }

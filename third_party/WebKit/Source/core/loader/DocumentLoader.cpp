@@ -433,7 +433,7 @@ void DocumentLoader::responseReceived(Resource* resource, const ResourceResponse
 
     m_response = response;
 
-    if (isArchiveMIMEType(m_response.mimeType()) && m_mainResource->dataBufferingPolicy() != BufferData)
+    if (isArchiveMIMEType(m_response.mimeType()) && m_mainResource->getDataBufferingPolicy() != BufferData)
         m_mainResource->setDataBufferingPolicy(BufferData);
 
     if (!shouldContinueForResponse()) {

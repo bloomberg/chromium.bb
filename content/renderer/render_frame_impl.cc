@@ -2962,7 +2962,7 @@ void RenderFrameImpl::didCreateDataSource(blink::WebLocalFrame* frame,
 
   if (content_initiated) {
     const WebURLRequest& request = datasource->request();
-    switch (request.cachePolicy()) {
+    switch (request.getCachePolicy()) {
       case WebURLRequest::UseProtocolCachePolicy:  // normal load.
         document_state->set_load_type(DocumentState::LINK_LOAD_NORMAL);
         break;

@@ -79,7 +79,7 @@ public:
     DeferOption defer() const { return m_defer; }
     void setDefer(DeferOption defer) { m_defer = defer; }
 
-    ResourceWidth resourceWidth() const { return m_resourceWidth; }
+    ResourceWidth getResourceWidth() const { return m_resourceWidth; }
     void setResourceWidth(ResourceWidth);
 
     ClientHintsPreferences& clientHintsPreferences() { return m_clientHintPreferences; }
@@ -92,7 +92,7 @@ public:
 
     void setContentSecurityCheck(ContentSecurityPolicyDisposition contentSecurityPolicyOption) { m_options.contentSecurityPolicyOption = contentSecurityPolicyOption; }
     void setCrossOriginAccessControl(SecurityOrigin*, CrossOriginAttributeValue);
-    OriginRestriction originRestriction() const { return m_originRestriction; }
+    OriginRestriction getOriginRestriction() const { return m_originRestriction; }
     void setOriginRestriction(OriginRestriction restriction) { m_originRestriction = restriction; }
     const IntegrityMetadataSet& integrityMetadata() const { return m_integrityMetadata; }
     void setIntegrityMetadata(const IntegrityMetadataSet& metadata) { m_integrityMetadata = metadata; }

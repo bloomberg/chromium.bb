@@ -73,7 +73,7 @@ public:
 
     void doAbort();
 
-    ReadyState readyState() const { return m_state; }
+    ReadyState getReadyState() const { return m_state; }
     FileError* error() { return m_error; }
     void result(StringOrArrayBuffer& resultAttribute) const;
 

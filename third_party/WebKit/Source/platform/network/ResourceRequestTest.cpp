@@ -50,7 +50,7 @@ TEST(ResourceRequestTest, CrossThreadResourceRequestData)
     original.setHTTPReferrer(Referrer("http://www.example.com/referrer.htm", ReferrerPolicyDefault));
 
     EXPECT_STREQ("http://www.example.com/test.htm", original.url().string().utf8().data());
-    EXPECT_EQ(UseProtocolCachePolicy, original.cachePolicy());
+    EXPECT_EQ(UseProtocolCachePolicy, original.getCachePolicy());
     EXPECT_EQ(10, original.timeoutInterval());
     EXPECT_STREQ("http://www.example.com/first_party.htm", original.firstPartyForCookies().string().utf8().data());
     EXPECT_STREQ("www.example.com", original.requestorOrigin()->host().utf8().data());
@@ -78,7 +78,7 @@ TEST(ResourceRequestTest, CrossThreadResourceRequestData)
     ResourceRequest copy1(data1.get());
 
     EXPECT_STREQ("http://www.example.com/test.htm", copy1.url().string().utf8().data());
-    EXPECT_EQ(UseProtocolCachePolicy, copy1.cachePolicy());
+    EXPECT_EQ(UseProtocolCachePolicy, copy1.getCachePolicy());
     EXPECT_EQ(10, copy1.timeoutInterval());
     EXPECT_STREQ("http://www.example.com/first_party.htm", copy1.firstPartyForCookies().string().utf8().data());
     EXPECT_STREQ("www.example.com", copy1.requestorOrigin()->host().utf8().data());

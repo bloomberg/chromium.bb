@@ -197,7 +197,7 @@ std::string GetWebURLRequestHeaders(const blink::WebURLRequest& request) {
 int GetLoadFlagsForWebURLRequest(const blink::WebURLRequest& request) {
   int load_flags = net::LOAD_NORMAL;
   GURL url = request.url();
-  switch (request.cachePolicy()) {
+  switch (request.getCachePolicy()) {
     case WebURLRequest::ReloadIgnoringCacheData:
       // Required by LayoutTests/http/tests/misc/refresh-headers.php
       load_flags |= net::LOAD_VALIDATE_CACHE;

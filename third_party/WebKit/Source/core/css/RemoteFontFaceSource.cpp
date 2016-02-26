@@ -96,7 +96,7 @@ void RemoteFontFaceSource::fontLoaded(FontResource*)
     m_histograms.fontLoaded(m_isInterventionTriggered);
 
     m_font->ensureCustomFontData();
-    if (m_font->status() == Resource::DecodeError)
+    if (m_font->getStatus() == Resource::DecodeError)
         m_fontLoader->didFailToDecode(m_font.get());
 
     pruneTable();

@@ -63,7 +63,7 @@ protected:
 
     void setCaretVisibility(CaretVisibility visibility) { m_caretVisibility = visibility; }
     bool caretIsVisible() const { return m_caretVisibility == Visible; }
-    CaretVisibility caretVisibility() const { return m_caretVisibility; }
+    CaretVisibility getCaretVisibility() const { return m_caretVisibility; }
 
     static LayoutBlock* caretLayoutObject(Node*);
     static void invalidateLocalCaretRect(Node*, const LayoutRect&);

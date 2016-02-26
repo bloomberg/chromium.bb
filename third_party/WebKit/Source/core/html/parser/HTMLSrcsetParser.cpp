@@ -370,8 +370,8 @@ static ImageCandidate pickBestImageCandidate(float deviceScaleFactor, float sour
 
     // http://picture.responsiveimages.org/#normalize-source-densities
     for (ImageCandidate& image : imageCandidates) {
-        if (image.resourceWidth() > 0) {
-            image.setDensity((float)image.resourceWidth() / sourceSize);
+        if (image.getResourceWidth() > 0) {
+            image.setDensity((float)image.getResourceWidth() / sourceSize);
             ignoreSrc = true;
         } else if (image.density() < 0) {
             image.setDensity(defaultDensityValue);

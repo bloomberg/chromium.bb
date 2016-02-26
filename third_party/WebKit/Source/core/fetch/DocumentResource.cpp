@@ -80,7 +80,7 @@ void DocumentResource::checkNotify()
 
 bool DocumentResource::mimeTypeAllowed() const
 {
-    ASSERT(type() == SVGDocument);
+    ASSERT(getType() == SVGDocument);
     AtomicString mimeType = response().mimeType();
     if (response().isHTTP())
         mimeType = httpContentType();
@@ -92,7 +92,7 @@ bool DocumentResource::mimeTypeAllowed() const
 
 PassRefPtrWillBeRawPtr<Document> DocumentResource::createDocument(const KURL& url)
 {
-    switch (type()) {
+    switch (getType()) {
     case SVGDocument:
         return XMLDocument::createSVG(DocumentInit(url));
     default:

@@ -194,7 +194,7 @@ void LinkLoader::createLinkPreloadResourceClient(Resource* resource)
 {
     if (!resource)
         return;
-    switch (resource->type()) {
+    switch (resource->getType()) {
     case Resource::Image:
         m_linkPreloadResourceClient = LinkPreloadImageResourceClient::create(this, toImageResource(resource));
         break;

@@ -57,7 +57,7 @@ public:
     bool hasHeight() const { return m_resourceHeight >= 0; }
 
     float density() const { ASSERT(hasDensity()); return m_density; }
-    unsigned resourceWidth() const { ASSERT(hasWidth()); return m_resourceWidth; }
+    unsigned getResourceWidth() const { ASSERT(hasWidth()); return m_resourceWidth; }
     unsigned resourceHeight() const { ASSERT(hasHeight()); return m_resourceHeight; }
 
     void setResourceWidth(int width) { ASSERT(width >= 0); m_resourceWidth = (unsigned)width; }
@@ -88,7 +88,7 @@ public:
     ImageCandidate(const String& source, unsigned start, unsigned length, const DescriptorParsingResult& result, OriginAttribute originAttribute)
         : m_string(source.createView(start, length))
         , m_density(result.hasDensity()?result.density():UninitializedDescriptor)
-        , m_resourceWidth(result.hasWidth()?result.resourceWidth():UninitializedDescriptor)
+        , m_resourceWidth(result.hasWidth()?result.getResourceWidth():UninitializedDescriptor)
         , m_originAttribute(originAttribute)
     {
     }
@@ -113,7 +113,7 @@ public:
         return m_density;
     }
 
-    int resourceWidth() const
+    int getResourceWidth() const
     {
         return m_resourceWidth;
     }

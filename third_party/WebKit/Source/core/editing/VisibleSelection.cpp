@@ -547,7 +547,7 @@ void VisibleSelectionTemplate<Strategy>::validate(TextGranularity granularity)
     adjustSelectionToAvoidCrossingEditingBoundaries();
     updateSelectionType();
 
-    if (selectionType() == RangeSelection) {
+    if (getSelectionType() == RangeSelection) {
         // "Constrain" the selection to be the smallest equivalent range of
         // nodes. This is a somewhat arbitrary choice, but experience shows that
         // it is useful to make to make the selection "canonical" (if only for

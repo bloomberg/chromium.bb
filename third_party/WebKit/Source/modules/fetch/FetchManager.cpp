@@ -545,7 +545,7 @@ void FetchManager::Loader::performHTTPFetch(bool corsFlag, bool corsPreflightFla
     //
     // The following code also invokes "determine request's referrer" which is
     // written in "Main fetch" operation.
-    ASSERT(m_request->referrerPolicy() == ReferrerPolicyDefault);
+    ASSERT(m_request->getReferrerPolicy() == ReferrerPolicyDefault);
     // Request's referrer policy is always default, so use the client's one.
     // TODO(yhirano): Fix here when we introduce requet's referrer policy.
     ReferrerPolicy policy = executionContext()->getReferrerPolicy();

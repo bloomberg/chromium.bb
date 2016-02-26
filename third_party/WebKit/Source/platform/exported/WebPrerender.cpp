@@ -98,7 +98,7 @@ WebString WebPrerender::referrer() const
 
 WebReferrerPolicy WebPrerender::referrerPolicy() const
 {
-    return static_cast<WebReferrerPolicy>(m_private->referrerPolicy());
+    return static_cast<WebReferrerPolicy>(m_private->getReferrerPolicy());
 }
 
 void WebPrerender::setExtraData(WebPrerender::ExtraData* extraData)

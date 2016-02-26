@@ -94,7 +94,7 @@ TEST(ImageResourceTest, MultipartImage)
     Platform::current()->unitTestSupport()->unregisterMockedURL(testURL);
 
     MockImageResourceClient client(cachedImage);
-    EXPECT_EQ(Resource::Pending, cachedImage->status());
+    EXPECT_EQ(Resource::Pending, cachedImage->getStatus());
 
     // Send the multipart response. No image or data buffer is created.
     // Note that the response must be routed through ResourceLoader to
@@ -151,16 +151,16 @@ TEST(ImageResourceTest, CancelOnDetach)
     memoryCache()->add(cachedImage.get());
 
     MockImageResourceClient client(cachedImage);
-    EXPECT_EQ(Resource::Pending, cachedImage->status());
+    EXPECT_EQ(Resource::Pending, cachedImage->getStatus());
 
     // The load should still be alive, but a timer should be started to cancel the load inside removeClient().
     client.removeAsClient();
-    EXPECT_EQ(Resource::Pending, cachedImage->status());
+    EXPECT_EQ(Resource::Pending, cachedImage->getStatus());
     EXPECT_NE(reinterpret_cast<Resource*>(0), memoryCache()->resourceForURL(testURL));
 
     // Trigger the cancel timer, ensure the load was cancelled and the resource was evicted from the cache.
     blink::testing::runPendingTasks();
-    EXPECT_EQ(Resource::LoadError, cachedImage->status());
+    EXPECT_EQ(Resource::LoadError, cachedImage->getStatus());
     EXPECT_EQ(reinterpret_cast<Resource*>(0), memoryCache()->resourceForURL(testURL));
 
     Platform::current()->unitTestSupport()->unregisterMockedURL(testURL);

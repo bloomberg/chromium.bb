@@ -610,9 +610,9 @@ bool SelectionController::mouseDownWasSingleClickInSelection() const
 
 void SelectionController::notifySelectionChanged()
 {
-    if (selection().selectionType() == SelectionType::RangeSelection)
+    if (selection().getSelectionType() == SelectionType::RangeSelection)
         m_selectionState = SelectionState::ExtendedSelection;
-    else if (selection().selectionType() == SelectionType::CaretSelection)
+    else if (selection().getSelectionType() == SelectionType::CaretSelection)
         m_selectionState = SelectionState::PlacedCaret;
     else
         m_selectionState = SelectionState::HaveNotStartedSelection;

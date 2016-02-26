@@ -757,9 +757,9 @@ FrameLoadType FrameLoader::determineFrameLoadType(const FrameLoadRequest& reques
         return FrameLoadTypeStandard;
     if (m_provisionalDocumentLoader && request.substituteData().failingURL() == m_provisionalDocumentLoader->url() && m_loadType == FrameLoadTypeBackForward)
         return FrameLoadTypeBackForward;
-    if (request.resourceRequest().cachePolicy() == ReloadIgnoringCacheData)
+    if (request.resourceRequest().getCachePolicy() == ReloadIgnoringCacheData)
         return FrameLoadTypeReload;
-    if (request.resourceRequest().cachePolicy() == ReloadBypassingCache)
+    if (request.resourceRequest().getCachePolicy() == ReloadBypassingCache)
         return FrameLoadTypeReloadFromOrigin;
     // From the HTML5 spec for location.assign():
     //  "If the browsing context's session history contains only one Document,

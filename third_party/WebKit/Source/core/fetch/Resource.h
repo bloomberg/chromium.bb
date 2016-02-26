@@ -127,7 +127,7 @@ public:
     void setRevalidatingRequest(const ResourceRequest& request) { m_revalidatingRequest = request; }
 
     const KURL& url() const { return m_resourceRequest.url();}
-    Type type() const { return static_cast<Type>(m_type); }
+    Type getType() const { return static_cast<Type>(m_type); }
     const ResourceLoaderOptions& options() const { return m_options; }
     void setOptions(const ResourceLoaderOptions& options) { m_options = options; }
 
@@ -144,7 +144,7 @@ public:
         PreloadReferencedWhileLoading,
         PreloadReferencedWhileComplete
     };
-    PreloadResult preloadResult() const { return static_cast<PreloadResult>(m_preloadResult); }
+    PreloadResult getPreloadResult() const { return static_cast<PreloadResult>(m_preloadResult); }
 
     virtual void didAddClient(ResourceClient*);
     virtual void didRemoveClient(ResourceClient*) { }
@@ -152,7 +152,7 @@ public:
 
     unsigned count() const { return m_clients.size(); }
 
-    Status status() const { return static_cast<Status>(m_status); }
+    Status getStatus() const { return static_cast<Status>(m_status); }
     void setStatus(Status status) { m_status = status; }
 
     size_t size() const { return encodedSize() + decodedSize() + overheadSize(); }
@@ -216,10 +216,10 @@ public:
     bool errorOccurred() const { return m_status == LoadError || m_status == DecodeError; }
     bool loadFailedOrCanceled() { return !m_error.isNull(); }
 
-    DataBufferingPolicy dataBufferingPolicy() const { return m_options.dataBufferingPolicy; }
+    DataBufferingPolicy getDataBufferingPolicy() const { return m_options.dataBufferingPolicy; }
     void setDataBufferingPolicy(DataBufferingPolicy);
 
-    bool isUnusedPreload() const { return isPreloaded() && preloadResult() == PreloadNotReferenced; }
+    bool isUnusedPreload() const { return isPreloaded() && getPreloadResult() == PreloadNotReferenced; }
     bool isPreloaded() const { return m_preloadCount; }
     void increasePreloadCount() { ++m_preloadCount; }
     void decreasePreloadCount() { ASSERT(m_preloadCount); --m_preloadCount; }
@@ -400,7 +400,7 @@ protected:
 };
 
 #define DEFINE_RESOURCE_TYPE_CASTS(typeName) \
-    DEFINE_TYPE_CASTS(typeName##Resource, Resource, resource, resource->type() == Resource::typeName, resource.type() == Resource::typeName); \
+    DEFINE_TYPE_CASTS(typeName##Resource, Resource, resource, resource->getType() == Resource::typeName, resource.getType() == Resource::typeName); \
     inline typeName##Resource* to##typeName##Resource(const RefPtrWillBeRawPtr<Resource>& ptr) { return to##typeName##Resource(ptr.get()); }
 
 } // namespace blink

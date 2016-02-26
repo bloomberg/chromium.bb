@@ -147,10 +147,10 @@ void WebURLRequest::setAllowStoredCredentials(bool allowStoredCredentials)
     m_private->m_resourceRequest->setAllowStoredCredentials(allowStoredCredentials);
 }
 
-WebURLRequest::CachePolicy WebURLRequest::cachePolicy() const
+WebURLRequest::CachePolicy WebURLRequest::getCachePolicy() const
 {
     return static_cast<WebURLRequest::CachePolicy>(
-        m_private->m_resourceRequest->cachePolicy());
+        m_private->m_resourceRequest->getCachePolicy());
 }
 
 void WebURLRequest::setCachePolicy(CachePolicy cachePolicy)

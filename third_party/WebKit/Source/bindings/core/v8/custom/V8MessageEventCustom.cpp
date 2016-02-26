@@ -54,7 +54,7 @@ void V8MessageEvent::dataAttributeGetterCustom(const v8::FunctionCallbackInfo<v8
     MessageEvent* event = V8MessageEvent::toImpl(info.Holder());
 
     v8::Local<v8::Value> result;
-    switch (event->dataType()) {
+    switch (event->getDataType()) {
     case MessageEvent::DataTypeScriptValue:
         result = event->dataAsScriptValue().v8ValueFor(scriptState);
         if (result.IsEmpty())

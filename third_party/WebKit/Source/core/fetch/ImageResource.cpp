@@ -47,7 +47,7 @@ PassRefPtrWillBeRawPtr<ImageResource> ImageResource::fetch(FetchRequest& request
         request.mutableResourceRequest().setRequestContext(WebURLRequest::RequestContextImage);
     if (fetcher->context().pageDismissalEventBeingDispatched()) {
         KURL requestURL = request.resourceRequest().url();
-        if (requestURL.isValid() && fetcher->context().canRequest(Resource::Image, request.resourceRequest(), requestURL, request.options(), request.forPreload(), request.originRestriction()))
+        if (requestURL.isValid() && fetcher->context().canRequest(Resource::Image, request.resourceRequest(), requestURL, request.options(), request.forPreload(), request.getOriginRestriction()))
             fetcher->context().sendImagePing(requestURL);
         return nullptr;
     }
@@ -321,7 +321,7 @@ void ImageResource::updateImage(bool allDataReceived)
     // to decode.
     if (sizeAvailable || allDataReceived) {
         if (!m_image || m_image->isNull()) {
-            error(errorOccurred() ? status() : DecodeError);
+            error(errorOccurred() ? getStatus() : DecodeError);
             if (memoryCache()->contains(this))
                 memoryCache()->remove(this);
             return;

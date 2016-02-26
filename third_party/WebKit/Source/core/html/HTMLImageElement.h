@@ -110,7 +110,7 @@ public:
     void setUseFallbackContent();
     void setIsFallbackImage() { m_isFallbackImage = true; }
 
-    FetchRequest::ResourceWidth resourceWidth();
+    FetchRequest::ResourceWidth getResourceWidth();
     float sourceSize(Element&);
 
     void forceReload() const;

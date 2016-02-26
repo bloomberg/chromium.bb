@@ -72,7 +72,7 @@ public:
     void seek(long long position, ExceptionState&);
     void truncate(long long length, ExceptionState&);
     void abort(ExceptionState&);
-    ReadyState readyState() const { return m_readyState; }
+    ReadyState getReadyState() const { return m_readyState; }
     FileError* error() const { return m_error.get(); }
 
     // WebFileWriterClient

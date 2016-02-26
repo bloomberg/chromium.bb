@@ -79,7 +79,7 @@ public:
 
     static VisibleSelectionTemplate selectionFromContentsOfNode(Node*);
 
-    SelectionType selectionType() const { return m_selectionType; }
+    SelectionType getSelectionType() const { return m_selectionType; }
 
     void setAffinity(TextAffinity affinity) { m_affinity = affinity; }
     TextAffinity affinity() const { return m_affinity; }
@@ -102,10 +102,10 @@ public:
     bool operator==(const VisibleSelectionTemplate&) const;
     bool operator!=(const VisibleSelectionTemplate& other) const { return !operator==(other); }
 
-    bool isNone() const { return selectionType() == NoSelection; }
-    bool isCaret() const { return selectionType() == CaretSelection; }
-    bool isRange() const { return selectionType() == RangeSelection; }
-    bool isCaretOrRange() const { return selectionType() != NoSelection; }
+    bool isNone() const { return getSelectionType() == NoSelection; }
+    bool isCaret() const { return getSelectionType() == CaretSelection; }
+    bool isRange() const { return getSelectionType() == RangeSelection; }
+    bool isCaretOrRange() const { return getSelectionType() != NoSelection; }
     bool isNonOrphanedRange() const { return isRange() && !start().isOrphan() && !end().isOrphan(); }
     bool isNonOrphanedCaretOrRange() const { return isCaretOrRange() && !start().isOrphan() && !end().isOrphan(); }
 

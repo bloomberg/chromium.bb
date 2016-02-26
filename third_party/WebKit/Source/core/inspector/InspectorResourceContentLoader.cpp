@@ -31,7 +31,7 @@ public:
 
     void waitForResource(Resource* resource)
     {
-        if (resource->type() == Resource::Raw)
+        if (resource->getType() == Resource::Raw)
             resource->addClient(static_cast<RawResourceClient*>(this));
         else
             resource->addClient(static_cast<StyleSheetResourceClient*>(this));
@@ -58,7 +58,7 @@ void InspectorResourceContentLoader::ResourceClient::resourceFinished(Resource* 
     if (m_loader)
         m_loader->resourceFinished(this);
 
-    if (resource->type() == Resource::Raw)
+    if (resource->getType() == Resource::Raw)
         resource->removeClient(static_cast<RawResourceClient*>(this));
     else
         resource->removeClient(static_cast<StyleSheetResourceClient*>(this));
@@ -75,7 +75,7 @@ void InspectorResourceContentLoader::ResourceClient::setCSSStyleSheet(const Stri
 
 void InspectorResourceContentLoader::ResourceClient::notifyFinished(Resource* resource)
 {
-    if (resource->type() == Resource::CSSStyleSheet)
+    if (resource->getType() == Resource::CSSStyleSheet)
         return;
     resourceFinished(resource);
 }

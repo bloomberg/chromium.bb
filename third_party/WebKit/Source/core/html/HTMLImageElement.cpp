@@ -252,7 +252,7 @@ void HTMLImageElement::setBestFitURLAndDPRFromImageCandidate(const ImageCandidat
         m_imageDevicePixelRatio = 1.0 / candidateDensity;
 
     bool intrinsicSizingViewportDependant = false;
-    if (candidate.resourceWidth() > 0) {
+    if (candidate.getResourceWidth() > 0) {
         intrinsicSizingViewportDependant = true;
         UseCounter::count(document(), UseCounter::SrcsetWDescriptor);
     } else if (!candidate.srcOrigin()) {
@@ -671,7 +671,7 @@ static bool sourceSizeValue(Element& element, Document& currentDocument, float& 
     return exists;
 }
 
-FetchRequest::ResourceWidth HTMLImageElement::resourceWidth()
+FetchRequest::ResourceWidth HTMLImageElement::getResourceWidth()
 {
     FetchRequest::ResourceWidth resourceWidth;
     Element* element = m_source.get();

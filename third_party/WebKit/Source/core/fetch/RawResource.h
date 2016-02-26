@@ -91,7 +91,7 @@ private:
 #if ENABLE(SECURITY_ASSERT)
 inline bool isRawResource(const Resource& resource)
 {
-    Resource::Type type = resource.type();
+    Resource::Type type = resource.getType();
     return type == Resource::MainResource || type == Resource::Raw || type == Resource::TextTrack || type == Resource::Media || type == Resource::Manifest || type == Resource::ImportResource;
 }
 #endif
@@ -104,8 +104,8 @@ inline PassRefPtrWillBeRawPtr<RawResource> toRawResource(const PassRefPtrWillBeR
 class CORE_EXPORT RawResourceClient : public ResourceClient {
 public:
     ~RawResourceClient() override {}
-    static bool isExpectedType(ResourceClient* client) { return client->resourceClientType() == RawResourceType; }
-    ResourceClientType resourceClientType() const final { return RawResourceType; }
+    static bool isExpectedType(ResourceClient* client) { return client->getResourceClientType() == RawResourceType; }
+    ResourceClientType getResourceClientType() const final { return RawResourceType; }
 
     virtual void dataSent(Resource*, unsigned long long /* bytesSent */, unsigned long long /* totalBytesToBeSent */) { }
     virtual void responseReceived(Resource*, const ResourceResponse&, PassOwnPtr<WebDataConsumerHandle>) { }

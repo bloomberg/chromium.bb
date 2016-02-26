@@ -52,7 +52,7 @@ public:
     void setReferrer(const Referrer& r) { m_referrer = r; }
     const AtomicString& referrerString() const { return m_referrer.referrer; }
     void setReferrerString(const AtomicString& s) { m_referrer.referrer = s; }
-    ReferrerPolicy referrerPolicy() const { return m_referrer.referrerPolicy; }
+    ReferrerPolicy getReferrerPolicy() const { return m_referrer.referrerPolicy; }
     void setReferrerPolicy(ReferrerPolicy p) { m_referrer.referrerPolicy = p; }
     void setMode(WebURLRequest::FetchRequestMode mode) { m_mode = mode; }
     WebURLRequest::FetchRequestMode mode() const { return m_mode; }

@@ -81,7 +81,7 @@ public:
     bool canScroll() const { return m_canScroll; }
     int resendingPluginId() const { return m_resendingPluginId; }
     bool hasPreciseScrollingDeltas() const { return m_hasPreciseScrollingDeltas; }
-    RailsMode railsMode() const { return m_railsMode; }
+    RailsMode getRailsMode() const { return m_railsMode; }
 
     const AtomicString& interfaceName() const override;
     bool isMouseEvent() const override;

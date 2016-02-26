@@ -43,7 +43,7 @@ Vector<String> FileList::pathsForUserVisibleFiles() const
 {
     Vector<String> paths;
     for (unsigned i = 0; i < m_files.size(); ++i) {
-        if (m_files[i]->userVisibility() == File::IsUserVisible) {
+        if (m_files[i]->getUserVisibility() == File::IsUserVisible) {
             if (m_files[i]->hasBackingFile())
                 paths.append(m_files[i]->path());
             else

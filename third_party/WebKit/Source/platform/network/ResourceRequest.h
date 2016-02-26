@@ -102,7 +102,7 @@ public:
 
     void removeCredentials();
 
-    ResourceRequestCachePolicy cachePolicy() const;
+    ResourceRequestCachePolicy getCachePolicy() const;
     void setCachePolicy(ResourceRequestCachePolicy cachePolicy);
 
     double timeoutInterval() const; // May return 0 when using platform default.

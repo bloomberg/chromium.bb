@@ -51,7 +51,7 @@ public:
     const KURL& baseURL() const { return m_baseURL; }
     bool isPreconnect() const { return m_requestType == RequestTypePreconnect; }
     const ClientHintsPreferences& preferences() const { return m_clientHintsPreferences; }
-    ReferrerPolicy referrerPolicy() const { return m_referrerPolicy; }
+    ReferrerPolicy getReferrerPolicy() const { return m_referrerPolicy; }
     void setIntegrityMetadata(const IntegrityMetadataSet& metadataSet)
     {
         m_integrityMetadata = metadataSet;

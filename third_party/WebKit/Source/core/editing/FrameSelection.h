@@ -127,7 +127,7 @@ public:
 
     bool contains(const LayoutPoint&);
 
-    SelectionType selectionType() const { return selection().selectionType(); }
+    SelectionType getSelectionType() const { return selection().getSelectionType(); }
 
     TextAffinity affinity() const { return selection().affinity(); }
 

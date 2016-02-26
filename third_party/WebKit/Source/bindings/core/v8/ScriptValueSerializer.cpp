@@ -448,7 +448,7 @@ void SerializedScriptValueWriter::doWriteFile(const File& file)
         doWriteUint32(static_cast<uint8_t>(0));
     }
 
-    doWriteUint32(static_cast<uint8_t>((file.userVisibility() == File::IsUserVisible) ? 1 : 0));
+    doWriteUint32(static_cast<uint8_t>((file.getUserVisibility() == File::IsUserVisible) ? 1 : 0));
 }
 
 void SerializedScriptValueWriter::doWriteArrayBuffer(const DOMArrayBuffer& arrayBuffer)

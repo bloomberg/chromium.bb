@@ -35,7 +35,7 @@ TEST_F(SerializedScriptValueTest, UserSelectedFile)
     filePath.append("/Source/bindings/core/v8/SerializedScriptValueTest.cpp");
     File* originalFile = File::create(filePath);
     ASSERT_TRUE(originalFile->hasBackingFile());
-    ASSERT_EQ(File::IsUserVisible, originalFile->userVisibility());
+    ASSERT_EQ(File::IsUserVisible, originalFile->getUserVisibility());
     ASSERT_EQ(filePath, originalFile->path());
 
     v8::Local<v8::Value> v8OriginalFile = toV8(originalFile, creationContext(), isolate());
@@ -46,7 +46,7 @@ TEST_F(SerializedScriptValueTest, UserSelectedFile)
     ASSERT_TRUE(V8File::hasInstance(v8File, isolate()));
     File* file = V8File::toImpl(v8::Local<v8::Object>::Cast(v8File));
     EXPECT_TRUE(file->hasBackingFile());
-    EXPECT_EQ(File::IsUserVisible, file->userVisibility());
+    EXPECT_EQ(File::IsUserVisible, file->getUserVisibility());
     EXPECT_EQ(filePath, file->path());
 }
 
@@ -55,7 +55,7 @@ TEST_F(SerializedScriptValueTest, FileConstructorFile)
     RefPtr<BlobDataHandle> blobDataHandle = BlobDataHandle::create();
     File* originalFile = File::create("hello.txt", 12345678.0, blobDataHandle);
     ASSERT_FALSE(originalFile->hasBackingFile());
-    ASSERT_EQ(File::IsNotUserVisible, originalFile->userVisibility());
+    ASSERT_EQ(File::IsNotUserVisible, originalFile->getUserVisibility());
     ASSERT_EQ("hello.txt", originalFile->name());
 
     v8::Local<v8::Value> v8OriginalFile = toV8(originalFile, creationContext(), isolate());
@@ -66,7 +66,7 @@ TEST_F(SerializedScriptValueTest, FileConstructorFile)
     ASSERT_TRUE(V8File::hasInstance(v8File, isolate()));
     File* file = V8File::toImpl(v8::Local<v8::Object>::Cast(v8File));
     EXPECT_FALSE(file->hasBackingFile());
-    EXPECT_EQ(File::IsNotUserVisible, file->userVisibility());
+    EXPECT_EQ(File::IsNotUserVisible, file->getUserVisibility());
     EXPECT_EQ("hello.txt", file->name());
 }
 

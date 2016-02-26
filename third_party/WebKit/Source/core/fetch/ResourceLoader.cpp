@@ -366,7 +366,7 @@ void ResourceLoader::didReceiveResponse(WebURLLoader*, const WebURLResponse& res
     if (response.toResourceResponse().isMultipart()) {
         // We only support multipart for images, though the image may be loaded
         // as a main resource that we end up displaying through an ImageDocument.
-        if (!m_resource->isImage() && m_resource->type() != Resource::MainResource) {
+        if (!m_resource->isImage() && m_resource->getType() != Resource::MainResource) {
             cancel();
             return;
         }

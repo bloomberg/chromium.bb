@@ -621,7 +621,7 @@ void Resource::addClient(ResourceClient* client)
     }
 
     // If we have existing data to send to the new client and the resource type supprts it, send it asynchronously.
-    if (!m_response.isNull() && !shouldSendCachedDataSynchronouslyForType(type()) && !m_needsSynchronousCacheHit) {
+    if (!m_response.isNull() && !shouldSendCachedDataSynchronouslyForType(getType()) && !m_needsSynchronousCacheHit) {
         m_clientsAwaitingCallback.add(client);
         ResourceCallback::callbackHandler()->schedule(this);
         return;
@@ -814,7 +814,7 @@ void Resource::onMemoryDump(WebMemoryDumpLevelOfDetail levelOfDetail, WebProcess
 
 String Resource::getMemoryDumpName() const
 {
-    return String::format("web_cache/%s_resources/%ld", resourceTypeToString(type(), options().initiatorInfo), m_identifier);
+    return String::format("web_cache/%s_resources/%ld", resourceTypeToString(getType(), options().initiatorInfo), m_identifier);
 }
 
 void Resource::revalidationSucceeded(const ResourceResponse& validatingResponse)

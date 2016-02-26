@@ -220,7 +220,7 @@ v8::Local<v8::Object> MessageEvent::associateWithWrapper(v8::Isolate* isolate, c
     // Ensures a wrapper is created for the data to return now so that V8 knows how
     // much memory is used via the wrapper. To keep the wrapper alive, it's set to
     // the wrapper of the MessageEvent as a hidden value.
-    switch (dataType()) {
+    switch (getDataType()) {
     case MessageEvent::DataTypeScriptValue:
     case MessageEvent::DataTypeSerializedScriptValue:
         break;

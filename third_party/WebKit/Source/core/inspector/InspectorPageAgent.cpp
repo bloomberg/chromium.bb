@@ -129,7 +129,7 @@ static bool prepareResourceBuffer(Resource* cachedResource, bool* hasZeroSize)
     if (!cachedResource)
         return false;
 
-    if (cachedResource->dataBufferingPolicy() == DoNotBufferData)
+    if (cachedResource->getDataBufferingPolicy() == DoNotBufferData)
         return false;
 
     // Zero-sized resources don't have data at all -- so fake the empty buffer, instead of indicating error by returning 0.
@@ -154,7 +154,7 @@ static bool prepareResourceBuffer(Resource* cachedResource, bool* hasZeroSize)
 
 static bool hasTextContent(Resource* cachedResource)
 {
-    Resource::Type type = cachedResource->type();
+    Resource::Type type = cachedResource->getType();
     return type == Resource::CSSStyleSheet || type == Resource::XSLStyleSheet || type == Resource::Script || type == Resource::Raw || type == Resource::ImportResource || type == Resource::MainResource;
 }
 
@@ -211,7 +211,7 @@ bool InspectorPageAgent::cachedResourceContent(Resource* cachedResource, String*
     }
 
     if (cachedResource) {
-        switch (cachedResource->type()) {
+        switch (cachedResource->getType()) {
         case Resource::CSSStyleSheet:
             *result = toCSSStyleSheetResource(cachedResource)->sheetText();
             return true;
@@ -313,7 +313,7 @@ String InspectorPageAgent::resourceTypeJson(InspectorPageAgent::ResourceType res
 
 InspectorPageAgent::ResourceType InspectorPageAgent::cachedResourceType(const Resource& cachedResource)
 {
-    switch (cachedResource.type()) {
+    switch (cachedResource.getType()) {
     case Resource::Image:
         return InspectorPageAgent::ImageResource;
     case Resource::Font:
@@ -438,7 +438,7 @@ static void cachedResourcesForDocument(Document* document, WillBeHeapVector<RawP
         if (!cachedResource)
             continue;
 
-        switch (cachedResource->type()) {
+        switch (cachedResource->getType()) {
         case Resource::Image:
             // Skip images that were not auto loaded (images disabled in the user agent).
             if (toImageResource(cachedResource)->stillNeedsLoad())
@@ -737,7 +737,7 @@ PassOwnPtr<protocol::Page::FrameResourceTree> InspectorPageAgent::buildObjectFor
             .setMimeType(cachedResource->response().mimeType()).build();
         if (cachedResource->wasCanceled())
             resourceObject->setCanceled(true);
-        else if (cachedResource->status() == Resource::LoadError)
+        else if (cachedResource->getStatus() == Resource::LoadError)
             resourceObject->setFailed(true);
         subresources->addItem(resourceObject.release());
     }

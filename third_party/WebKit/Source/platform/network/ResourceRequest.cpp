@@ -77,7 +77,7 @@ PassOwnPtr<CrossThreadResourceRequestData> ResourceRequest::copyData() const
 {
     OwnPtr<CrossThreadResourceRequestData> data = adoptPtr(new CrossThreadResourceRequestData());
     data->m_url = url().copy();
-    data->m_cachePolicy = cachePolicy();
+    data->m_cachePolicy = getCachePolicy();
     data->m_timeoutInterval = timeoutInterval();
     data->m_firstPartyForCookies = firstPartyForCookies().copy();
     data->m_requestorOrigin = requestorOrigin() ? requestorOrigin()->isolatedCopy() : nullptr;
@@ -143,7 +143,7 @@ void ResourceRequest::removeCredentials()
     m_url.setPass(String());
 }
 
-ResourceRequestCachePolicy ResourceRequest::cachePolicy() const
+ResourceRequestCachePolicy ResourceRequest::getCachePolicy() const
 {
     return m_cachePolicy;
 }
@@ -325,7 +325,7 @@ bool equalIgnoringHeaderFields(const ResourceRequest& a, const ResourceRequest& 
     if (a.url() != b.url())
         return false;
 
-    if (a.cachePolicy() != b.cachePolicy())
+    if (a.getCachePolicy() != b.getCachePolicy())
         return false;
 
     if (a.timeoutInterval() != b.timeoutInterval())

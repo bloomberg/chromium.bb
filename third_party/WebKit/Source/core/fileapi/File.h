@@ -132,7 +132,7 @@ public:
     // http://www.w3.org/TR/FileAPI/#dfn-lastModifiedDate
     double lastModifiedDate() const;
 
-    UserVisibility userVisibility() const { return m_userVisibility; }
+    UserVisibility getUserVisibility() const { return m_userVisibility; }
 
     // Returns the relative path of this file in the context of a directory selection.
     const String& webkitRelativePath() const { return m_relativePath; }

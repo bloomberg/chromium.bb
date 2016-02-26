@@ -556,7 +556,7 @@ bool Editor::shouldDeleteRange(const EphemeralRange& range) const
 
 void Editor::notifyComponentsOnChangedSelection(const VisibleSelection& oldSelection, FrameSelection::SetSelectionOptions options)
 {
-    client().respondToChangedSelection(m_frame, frame().selection().selectionType());
+    client().respondToChangedSelection(m_frame, frame().selection().getSelectionType());
     setStartNewKillRingSequence(true);
 }
 
@@ -599,7 +599,7 @@ Element* Editor::findEventTargetFromSelection() const
 
 void Editor::applyStyle(StylePropertySet* style, EditAction editingAction)
 {
-    switch (frame().selection().selectionType()) {
+    switch (frame().selection().getSelectionType()) {
     case NoSelection:
         // do nothing
         break;
@@ -1119,7 +1119,7 @@ void Editor::changeSelectionAfterCommand(const VisibleSelection& newSelection,  
     // does not call EditorClient::respondToChangedSelection(), which, on the Mac, sends selection change notifications and
     // starts a new kill ring sequence, but we want to do these things (matches AppKit).
     if (selectionDidNotChangeDOMPosition)
-        client().respondToChangedSelection(m_frame, frame().selection().selectionType());
+        client().respondToChangedSelection(m_frame, frame().selection().getSelectionType());
 }
 
 IntRect Editor::firstRectForRange(const EphemeralRange& range) const

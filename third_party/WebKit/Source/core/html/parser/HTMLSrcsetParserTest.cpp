@@ -23,7 +23,7 @@ TEST(ImageCandidateTest, Basic)
 {
     ImageCandidate candidate;
     ASSERT_EQ(candidate.density(), 1);
-    ASSERT_EQ(candidate.resourceWidth(), -1);
+    ASSERT_EQ(candidate.getResourceWidth(), -1);
     ASSERT_EQ(candidate.srcOrigin(), false);
 
 }
@@ -120,7 +120,7 @@ TEST(HTMLSrcsetParserTest, Basic)
         TestCase test = testCases[i];
         ImageCandidate candidate = bestFitSourceForImageAttributes(test.deviceScaleFactor, test.effectiveSize, test.srcInput, test.srcsetInput);
         ASSERT_EQ(test.outputDensity, candidate.density());
-        ASSERT_EQ(test.outputResourceWidth, candidate.resourceWidth());
+        ASSERT_EQ(test.outputResourceWidth, candidate.getResourceWidth());
         ASSERT_STREQ(test.outputURL, candidate.toString().ascii().data());
     }
 }

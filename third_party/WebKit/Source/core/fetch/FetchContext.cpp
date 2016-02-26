@@ -51,7 +51,7 @@ void FetchContext::setFirstPartyForCookies(ResourceRequest&)
 {
 }
 
-CachePolicy FetchContext::cachePolicy() const
+CachePolicy FetchContext::getCachePolicy() const
 {
     return CachePolicyVerify;
 }

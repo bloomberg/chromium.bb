@@ -445,7 +445,7 @@ void TypingCommand::deleteKeyPressed(TextGranularity granularity, bool killRing,
     VisibleSelection selectionToDelete;
     VisibleSelection selectionAfterUndo;
 
-    switch (endingSelection().selectionType()) {
+    switch (endingSelection().getSelectionType()) {
     case RangeSelection:
         selectionToDelete = endingSelection();
         selectionAfterUndo = selectionToDelete;
@@ -560,7 +560,7 @@ void TypingCommand::forwardDeleteKeyPressed(TextGranularity granularity, bool ki
     VisibleSelection selectionToDelete;
     VisibleSelection selectionAfterUndo;
 
-    switch (endingSelection().selectionType()) {
+    switch (endingSelection().getSelectionType()) {
     case RangeSelection:
         selectionToDelete = endingSelection();
         selectionAfterUndo = selectionToDelete;

@@ -155,7 +155,7 @@ void PendingScript::notifyFinished(Resource* resource)
     //
     // See https://crbug.com/500701 for more information.
     if (m_element) {
-        ASSERT(resource->type() == Resource::Script);
+        ASSERT(resource->getType() == Resource::Script);
         ScriptResource* scriptResource = toScriptResource(resource);
         String integrityAttr = m_element->fastGetAttribute(HTMLNames::integrityAttr);
 

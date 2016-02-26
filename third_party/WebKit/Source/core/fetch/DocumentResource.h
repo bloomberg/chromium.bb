@@ -67,14 +67,14 @@ private:
     OwnPtr<TextResourceDecoder> m_decoder;
 };
 
-DEFINE_TYPE_CASTS(DocumentResource, Resource, resource, resource->type() == Resource::SVGDocument, resource.type() == Resource::SVGDocument); \
+DEFINE_TYPE_CASTS(DocumentResource, Resource, resource, resource->getType() == Resource::SVGDocument, resource.getType() == Resource::SVGDocument); \
 inline DocumentResource* toDocumentResource(const RefPtrWillBeRawPtr<Resource>& ptr) { return toDocumentResource(ptr.get()); }
 
 class DocumentResourceClient : public ResourceClient {
 public:
     ~DocumentResourceClient() override {}
-    static bool isExpectedType(ResourceClient* client) { return client->resourceClientType() == DocumentType; }
-    ResourceClientType resourceClientType() const final { return DocumentType; }
+    static bool isExpectedType(ResourceClient* client) { return client->getResourceClientType() == DocumentType; }
+    ResourceClientType getResourceClientType() const final { return DocumentType; }
 };
 
 } // namespace blink

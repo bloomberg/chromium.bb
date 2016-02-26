@@ -943,7 +943,7 @@ TEST(WebInputEventConversionTest, PlatformWheelEventBuilder)
         EXPECT_EQ(PlatformEvent::CtrlKey, platformWheelBuilder.modifiers());
         EXPECT_TRUE(platformWheelBuilder.hasPreciseScrollingDeltas());
         EXPECT_TRUE(platformWheelBuilder.canScroll());
-        EXPECT_EQ(platformWheelBuilder.railsMode(), PlatformEvent::RailsModeHorizontal);
+        EXPECT_EQ(platformWheelBuilder.getRailsMode(), PlatformEvent::RailsModeHorizontal);
     }
 
     {
@@ -966,7 +966,7 @@ TEST(WebInputEventConversionTest, PlatformWheelEventBuilder)
         EXPECT_EQ(PlatformEvent::ShiftKey, platformWheelBuilder.modifiers());
         EXPECT_FALSE(platformWheelBuilder.hasPreciseScrollingDeltas());
         EXPECT_FALSE(platformWheelBuilder.canScroll());
-        EXPECT_EQ(platformWheelBuilder.railsMode(), PlatformEvent::RailsModeFree);
+        EXPECT_EQ(platformWheelBuilder.getRailsMode(), PlatformEvent::RailsModeFree);
     }
 
     {
@@ -989,7 +989,7 @@ TEST(WebInputEventConversionTest, PlatformWheelEventBuilder)
         EXPECT_EQ(PlatformEvent::AltKey, platformWheelBuilder.modifiers());
         EXPECT_TRUE(platformWheelBuilder.hasPreciseScrollingDeltas());
         EXPECT_FALSE(platformWheelBuilder.canScroll());
-        EXPECT_EQ(platformWheelBuilder.railsMode(), PlatformEvent::RailsModeVertical);
+        EXPECT_EQ(platformWheelBuilder.getRailsMode(), PlatformEvent::RailsModeVertical);
     }
 }
 

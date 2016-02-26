@@ -1086,7 +1086,7 @@ String LayoutThemeMac::fileListNameForWidth(Locale& locale, const FileList* file
         strToTruncate = locale.queryString(WebLocalizedString::FileButtonNoFileSelectedLabel);
     } else if (fileList->length() == 1) {
         File* file = fileList->item(0);
-        if (file->userVisibility() == File::IsUserVisible)
+        if (file->getUserVisibility() == File::IsUserVisible)
             strToTruncate = [[NSFileManager defaultManager] displayNameAtPath:(fileList->item(0)->path())];
         else
             strToTruncate = file->name();

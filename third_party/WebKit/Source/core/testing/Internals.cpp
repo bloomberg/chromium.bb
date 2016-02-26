@@ -401,7 +401,7 @@ bool Internals::isLoadingFromMemoryCache(const String& url)
         return false;
     const String cacheIdentifier = contextDocument()->fetcher()->getCacheIdentifier();
     Resource* resource = memoryCache()->resourceForURL(contextDocument()->completeURL(url), cacheIdentifier);
-    return resource && resource->status() == Resource::Cached;
+    return resource && resource->getStatus() == Resource::Cached;
 }
 
 bool Internals::isSharingStyle(Element* element1, Element* element2) const

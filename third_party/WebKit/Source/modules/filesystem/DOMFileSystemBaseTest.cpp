@@ -34,7 +34,7 @@ TEST_F(DOMFileSystemBaseTest, externalFilesystemFilesAreUserVisible)
     File* file = DOMFileSystemBase::createFile(m_fileMetadata, rootUrl, FileSystemTypeExternal, "DOMFileSystemBaseTest.cpp");
     EXPECT_TRUE(file);
     EXPECT_TRUE(file->hasBackingFile());
-    EXPECT_EQ(File::IsUserVisible, file->userVisibility());
+    EXPECT_EQ(File::IsUserVisible, file->getUserVisibility());
     EXPECT_EQ("DOMFileSystemBaseTest.cpp", file->name());
     EXPECT_EQ(m_filePath, file->path());
 }
@@ -46,7 +46,7 @@ TEST_F(DOMFileSystemBaseTest, temporaryFilesystemFilesAreNotUserVisible)
     File* file = DOMFileSystemBase::createFile(m_fileMetadata, rootUrl, FileSystemTypeTemporary, "UserVisibleName.txt");
     EXPECT_TRUE(file);
     EXPECT_TRUE(file->hasBackingFile());
-    EXPECT_EQ(File::IsNotUserVisible, file->userVisibility());
+    EXPECT_EQ(File::IsNotUserVisible, file->getUserVisibility());
     EXPECT_EQ("UserVisibleName.txt", file->name());
     EXPECT_EQ(m_filePath, file->path());
 }
@@ -58,7 +58,7 @@ TEST_F(DOMFileSystemBaseTest, persistentFilesystemFilesAreNotUserVisible)
     File* file = DOMFileSystemBase::createFile(m_fileMetadata, rootUrl, FileSystemTypePersistent, "UserVisibleName.txt");
     EXPECT_TRUE(file);
     EXPECT_TRUE(file->hasBackingFile());
-    EXPECT_EQ(File::IsNotUserVisible, file->userVisibility());
+    EXPECT_EQ(File::IsNotUserVisible, file->getUserVisibility());
     EXPECT_EQ("UserVisibleName.txt", file->name());
     EXPECT_EQ(m_filePath, file->path());
 }

@@ -203,7 +203,7 @@ public:
     void usesScriptHashAlgorithms(uint8_t ContentSecurityPolicyHashAlgorithm);
     void usesStyleHashAlgorithms(uint8_t ContentSecurityPolicyHashAlgorithm);
 
-    ReflectedXSSDisposition reflectedXSSDisposition() const;
+    ReflectedXSSDisposition getReflectedXSSDisposition() const;
 
     bool didSetReferrerPolicy() const;
 

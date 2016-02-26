@@ -110,7 +110,7 @@ public:
     bool shouldIgnoreHTTPStatusCodeErrors() const override { return true; }
 
     bool isImage() const override { return true; }
-    bool stillNeedsLoad() const override { return !errorOccurred() && status() == Unknown && !isLoading(); }
+    bool stillNeedsLoad() const override { return !errorOccurred() && getStatus() == Unknown && !isLoading(); }
 
     // ImageObserver
     void decodedSizeChanged(const blink::Image*, int delta) override;

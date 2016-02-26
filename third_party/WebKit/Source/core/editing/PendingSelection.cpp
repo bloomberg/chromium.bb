@@ -59,7 +59,7 @@ VisibleSelectionInFlatTree PendingSelection::calcVisibleSelection(const VisibleS
 {
     const PositionInFlatTree& start = originalSelection.start();
     const PositionInFlatTree& end = originalSelection.end();
-    SelectionType selectionType = originalSelection.selectionType();
+    SelectionType selectionType = originalSelection.getSelectionType();
     const TextAffinity affinity = originalSelection.affinity();
 
     bool paintBlockCursor = m_frameSelection->shouldShowBlockCursor() && selectionType == SelectionType::CaretSelection && !isLogicalEndOfLine(createVisiblePosition(end, affinity));

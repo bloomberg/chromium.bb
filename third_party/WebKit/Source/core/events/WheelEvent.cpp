@@ -41,7 +41,7 @@ PassRefPtrWillBeRawPtr<WheelEvent> WheelEvent::create(const PlatformWheelEvent& 
         event.modifiers(),
         MouseEvent::platformModifiersToButtons(event.modifiers()), event.timestamp(),
         event.canScroll(), event.resendingPluginId(), event.hasPreciseScrollingDeltas(),
-        static_cast<Event::RailsMode>(event.railsMode())));
+        static_cast<Event::RailsMode>(event.getRailsMode())));
 }
 
 WheelEvent::WheelEvent()

@@ -279,7 +279,7 @@ void ContentSecurityPolicy::addPolicyFromHeaderValue(const String& header, Conte
         // When a referrer policy has already been set, the most recent
         // one takes precedence.
         if (type != ContentSecurityPolicyHeaderTypeReport && policy->didSetReferrerPolicy())
-            m_referrerPolicy = policy->referrerPolicy();
+            m_referrerPolicy = policy->getReferrerPolicy();
 
         if (!policy->allowEval(0, SuppressReport) && m_disableEvalErrorMessage.isNull())
             m_disableEvalErrorMessage = policy->evalDisabledErrorMessage();
@@ -631,12 +631,12 @@ bool ContentSecurityPolicy::isActive() const
     return !m_policies.isEmpty();
 }
 
-ReflectedXSSDisposition ContentSecurityPolicy::reflectedXSSDisposition() const
+ReflectedXSSDisposition ContentSecurityPolicy::getReflectedXSSDisposition() const
 {
     ReflectedXSSDisposition disposition = ReflectedXSSUnset;
     for (const auto& policy : m_policies) {
-        if (policy->reflectedXSSDisposition() > disposition)
-            disposition = std::max(disposition, policy->reflectedXSSDisposition());
+        if (policy->getReflectedXSSDisposition() > disposition)
+            disposition = std::max(disposition, policy->getReflectedXSSDisposition());
     }
     return disposition;
 }

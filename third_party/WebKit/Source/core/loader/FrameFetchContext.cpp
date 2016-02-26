@@ -131,7 +131,7 @@ void FrameFetchContext::setFirstPartyForCookies(ResourceRequest& request)
         request.setFirstPartyForCookies(toLocalFrame(frame()->tree().top())->document()->firstPartyForCookies());
 }
 
-CachePolicy FrameFetchContext::cachePolicy() const
+CachePolicy FrameFetchContext::getCachePolicy() const
 {
     if (m_document && m_document->loadEventFinished())
         return CachePolicyVerify;
@@ -142,7 +142,7 @@ CachePolicy FrameFetchContext::cachePolicy() const
 
     Frame* parentFrame = frame()->tree().parent();
     if (parentFrame && parentFrame->isLocalFrame()) {
-        CachePolicy parentCachePolicy = toLocalFrame(parentFrame)->document()->fetcher()->context().cachePolicy();
+        CachePolicy parentCachePolicy = toLocalFrame(parentFrame)->document()->fetcher()->context().getCachePolicy();
         if (parentCachePolicy != CachePolicyVerify)
             return parentCachePolicy;
     }
@@ -150,7 +150,7 @@ CachePolicy FrameFetchContext::cachePolicy() const
     if (loadType == FrameLoadTypeReload)
         return CachePolicyRevalidate;
 
-    if (m_documentLoader && m_documentLoader->request().cachePolicy() == ReturnCacheDataElseLoad)
+    if (m_documentLoader && m_documentLoader->request().getCachePolicy() == ReturnCacheDataElseLoad)
         return CachePolicyHistoryBuffer;
     return CachePolicyVerify;
 
@@ -216,13 +216,13 @@ ResourceRequestCachePolicy FrameFetchContext::resourceRequestCachePolicy(const R
     if (m_documentLoader && m_document && !m_document->loadEventFinished()) {
         // For POST requests, we mutate the main resource's cache policy to avoid form resubmission.
         // This policy should not be inherited by subresources.
-        ResourceRequestCachePolicy mainResourceCachePolicy = m_documentLoader->request().cachePolicy();
+        ResourceRequestCachePolicy mainResourceCachePolicy = m_documentLoader->request().getCachePolicy();
         if (m_documentLoader->request().httpMethod() == "POST") {
             if (mainResourceCachePolicy == ReturnCacheDataDontLoad)
                 return ReturnCacheDataElseLoad;
             return UseProtocolCachePolicy;
         }
-        return memoryCachePolicyToResourceRequestCachePolicy(cachePolicy());
+        return memoryCachePolicyToResourceRequestCachePolicy(getCachePolicy());
     }
     return UseProtocolCachePolicy;
 }
@@ -690,7 +690,7 @@ void FrameFetchContext::addClientHintsIfNecessary(FetchRequest& fetchRequest)
         fetchRequest.mutableResourceRequest().addHTTPHeaderField("DPR", AtomicString(String::number(m_document->devicePixelRatio())));
 
     if (shouldSendResourceWidth) {
-        FetchRequest::ResourceWidth resourceWidth = fetchRequest.resourceWidth();
+        FetchRequest::ResourceWidth resourceWidth = fetchRequest.getResourceWidth();
         if (resourceWidth.isSet) {
             float physicalWidth = resourceWidth.width * m_document->devicePixelRatio();
             fetchRequest.mutableResourceRequest().addHTTPHeaderField("Width", AtomicString(String::number(ceil(physicalWidth))));

@@ -61,7 +61,7 @@ public:
     bool shouldLoadNewResource(Resource::Type) const override { return true; }
 
     void setCachePolicy(CachePolicy policy) { m_policy = policy; }
-    CachePolicy cachePolicy() const override { return m_policy; }
+    CachePolicy getCachePolicy() const override { return m_policy; }
 
 private:
     ResourceFetcherTestMockFetchContext()

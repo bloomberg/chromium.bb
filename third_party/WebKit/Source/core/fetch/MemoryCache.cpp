@@ -589,7 +589,7 @@ MemoryCache::Statistics MemoryCache::getStatistics()
     for (const auto& resourceMapIter : m_resourceMaps) {
         for (const auto& resourceIter : *resourceMapIter.value) {
             Resource* resource = resourceIter.value->m_resource.get();
-            switch (resource->type()) {
+            switch (resource->getType()) {
             case Resource::Image:
                 stats.images.addResource(resource);
                 break;
@@ -671,7 +671,7 @@ void MemoryCache::prune(Resource* justReleasedResource)
         // while a prune is pending.
         // Main Resources in the cache are only substitue data that was
         // precached and should not be evicted.
-        if (justReleasedResource->type() != Resource::MainResource) {
+        if (justReleasedResource->getType() != Resource::MainResource) {
             if (MemoryCacheEntry* entry = getEntryForResource(justReleasedResource))
                 evict(entry);
         }
