@@ -267,6 +267,7 @@ enum SBClientDownloadExtensions {
   EXTENSION_EML,
   EXTENSION_RTF,
   EXTENSION_VHDX,
+  EXTENSION_SEARCH_MS,
 
   // New values go above this one.
   EXTENSION_MAX
@@ -467,6 +468,7 @@ const SafeBrowsingFiletype kSafeBrowsingFileTypes[] = {
     {FILE_PATH_LITERAL(".scf"), EXTENSION_SCF, true, false},
     {FILE_PATH_LITERAL(".scr"), EXTENSION_SCR, true, false},
     {FILE_PATH_LITERAL(".sct"), EXTENSION_SCT, true, false},
+    {FILE_PATH_LITERAL(".search-ms"), EXTENSION_SEARCH_MS, true, false},
     {FILE_PATH_LITERAL(".sh"), EXTENSION_SH, true, false},
     {FILE_PATH_LITERAL(".shar"), EXTENSION_SHAR, true, false},
     {FILE_PATH_LITERAL(".shb"), EXTENSION_SHB, true, false},

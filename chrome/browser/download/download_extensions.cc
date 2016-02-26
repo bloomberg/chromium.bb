@@ -456,6 +456,10 @@ const struct FileType {
 
     // Microsoft Exchange Public Folder Shortcut.
     {"xnk", ALLOW_ON_USER_GESTURE, ALLOW_AUTO_OPEN},
+
+    // Windows Vista Index Search Data, for local file system.
+    // Used to find files landed surreptitiously w/o UI.
+    {"search-ms", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},
 #endif  // OS_WIN
 
   // Java.
