@@ -83,7 +83,9 @@ void SMAcceptorThread::InitWorker() {
 void SMAcceptorThread::HandleConnection(int server_fd,
                                         struct sockaddr_in* remote_addr) {
   if (acceptor_->disable_nagle_) {
-    if (!SetDisableNagle(server_fd)) {
+    if (!SetTCPNoDelay(server_fd)) {
+      close(server_fd);
+      LOG(FATAL) << "SetTCPNoDelay() failed on fd: " << server_fd;
       return;
     }
   }

@@ -61,16 +61,10 @@ bool CloseSocket(int* fd, int tries) {
 
 }  // namespace
 
-bool SetDisableNagle(int fd) {
+bool SetTCPNoDelay(int fd) {
   int on = 1;
-  int rc = setsockopt(fd, IPPROTO_TCP, TCP_NODELAY,
-                      reinterpret_cast<char*>(&on), sizeof(on));
-  if (rc < 0) {
-    close(fd);
-    LOG(FATAL) << "setsockopt() TCP_NODELAY: failed on fd " << fd;
-    return false;
-  }
-  return true;
+  return setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, reinterpret_cast<char*>(&on),
+                    sizeof(on)) == 0;
 }
 
 int CreateTCPServerSocket(const std::string& host,
@@ -181,7 +175,9 @@ int CreateTCPServerSocket(const std::string& host,
   }
 
   if (disable_nagle) {
-    if (!SetDisableNagle(sock)) {
+    if (!SetTCPNoDelay(sock)) {
+      close(sock);
+      LOG(FATAL) << "SetTCPNoDelay() failed on fd: " << sock;
       return -1;
     }
   }
@@ -257,7 +253,9 @@ int CreateTCPClientSocket(const std::string& host,
   }
 
   if (disable_nagle) {
-    if (!SetDisableNagle(sock)) {
+    if (!SetTCPNoDelay(sock)) {
+      close(sock);
+      LOG(FATAL) << "SetTCPNoDelay() failed on fd: " << sock;
       return -1;
     }
   }

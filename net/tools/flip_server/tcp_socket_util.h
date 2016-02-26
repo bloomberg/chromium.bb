@@ -15,7 +15,7 @@ namespace net {
 // `man 7 tcp`.
 // This function returns true if it succeeds to set the TCP_NODELAY option,
 // otherwise returns false.
-bool SetDisableNagle(int fd);
+bool SetTCPNoDelay(int fd);
 
 // Summary:
 //   creates a socket for listening, and bind()s and listen()s it.
