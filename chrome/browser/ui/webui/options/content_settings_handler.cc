@@ -570,9 +570,11 @@ void ContentSettingsHandler::GetLocalizedValues(
     // Fullscreen filter.
     {"fullscreenTabLabel", IDS_FULLSCREEN_TAB_LABEL},
     {"fullscreenHeader", IDS_FULLSCREEN_HEADER},
+    {"fullscreenDeprecated", IDS_EXCLUSIVE_ACCESS_DEPRECATED},
     // Mouse Lock filter.
     {"mouselockTabLabel", IDS_MOUSE_LOCK_TAB_LABEL},
     {"mouselockHeader", IDS_MOUSE_LOCK_HEADER},
+    {"mouselockDeprecated", IDS_EXCLUSIVE_ACCESS_DEPRECATED},
     {"mouselockAllow", IDS_MOUSE_LOCK_ALLOW_RADIO},
     {"mouselockAsk", IDS_MOUSE_LOCK_ASK_RADIO},
     {"mouselockBlock", IDS_MOUSE_LOCK_BLOCK_RADIO},
@@ -777,10 +779,11 @@ void ContentSettingsHandler::InitializePage() {
   // In simplified fullscreen mode, fullscreen and mouselock settings are
   // ignored. Still, always show these settings (to give users the ability to
   // view and delete exceptions), but hide the global settings.
-  web_ui()->CallJavascriptFunction(
-      "ContentSettings.setExclusiveAccessVisible",
-      base::FundamentalValue(
-          !ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled()));
+  bool hide_settings =
+      ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled();
+  web_ui()->CallJavascriptFunction("ContentSettings.setExclusiveAccessVisible",
+                                   base::FundamentalValue(hide_settings),
+                                   base::FundamentalValue(!hide_settings));
 }
 
 void ContentSettingsHandler::OnContentSettingChanged(

@@ -8013,8 +8013,11 @@ I don't think this site should be blocked!
       <message name="IDS_EXCEPTIONS_GEOLOCATION_EMBEDDED_ON_HOST" desc="Template text for a child row in the Geolocation Exceptions page view. Controls the permission setting for the parent page when embedded on the specified site.">
         embedded on <ph name="URL">$1<ex>www.google.com</ex></ph>
       </message>
+      <message name="IDS_EXCLUSIVE_ACCESS_DEPRECATED" desc="Label for Fullscreen / Mouse Lock exception management page on Content Settings dialog, explaining that the settings are no longer used.">
+        Note: These settings are no longer used on this system, but you can still view and edit them.
+      </message>
       <message name="IDS_MOUSE_LOCK_TAB_LABEL" desc="Label for Mouse Lock tab on Content Settings dialog">
-        Mouse cursor
+        Mouse cursor lock
       </message>
       <message name="IDS_MOUSE_LOCK_HEADER" desc="Label for Mouse Lock exception management page on Content Settings dialog">
         Mouse cursor exceptions

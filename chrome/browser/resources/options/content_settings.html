@@ -338,56 +338,6 @@
         </div>
       </div>
     </section>
-    <!-- Fullscreen filter -->
-    <section id="fullscreen-section">
-      <h3 i18n-content="fullscreenTabLabel"></h3>
-      <div class="settings-row">
-        <button class="exceptions-list-button" contentType="fullscreen"
-            i18n-content="manageExceptions"></button>
-      </div>
-    </section>
-    <!-- Mouse Lock filter -->
-    <section id="mouselock-section">
-      <h3 i18n-content="mouselockTabLabel"></h3>
-      <div id="mouselock-global-settings">
-        <div class="radio">
-          <label>
-            <input type="radio" name="mouselock" value="allow">
-            <span>
-              <span i18n-content="mouselockAllow"></span>
-              <span class="controlled-setting-indicator"
-                  content-setting="mouselock" value="allow"></span>
-            </span>
-          </label>
-        </div>
-        <div class="radio">
-          <label>
-            <input type="radio" name="mouselock" value="ask">
-            <span>
-              <span i18n-content="mouselockAsk"></span>
-              <span class="controlled-setting-indicator"
-                  content-setting="mouselock" value="ask"></span>
-            </span>
-          </label>
-        </div>
-        <div class="radio">
-          <label>
-            <input type="radio" name="mouselock" value="block">
-            <span>
-              <span i18n-content="mouselockBlock"></span>
-              <span class="controlled-setting-indicator"
-                  content-setting="mouselock" value="block"></span>
-            </span>
-          </label>
-        </div>
-      </div>
-      <div>
-        <div class="settings-row">
-          <button class="exceptions-list-button" contentType="mouselock"
-              i18n-content="manageExceptions"></button>
-        </div>
-      </div>
-    </section>
 <if expr="chromeos or is_win">
     <!-- Protected Content filter -->
     <section guest-visibility="disabled">
@@ -653,6 +603,58 @@
         <div class="settings-row">
           <button class="exceptions-list-button" contentType="zoomlevels"
               i18n-content="zoomLevelsManage"></button>
+        </div>
+      </div>
+    </section>
+    <!-- Fullscreen filter -->
+    <section id="fullscreen-section">
+      <h3 i18n-content="fullscreenTabLabel"></h3>
+      <p id="fullscreen-deprecated" i18n-content="fullscreenDeprecated"></p>
+      <div class="settings-row">
+        <button class="exceptions-list-button" contentType="fullscreen"
+            i18n-content="manageExceptions"></button>
+      </div>
+    </section>
+    <!-- Mouse Lock filter -->
+    <section id="mouselock-section">
+      <h3 i18n-content="mouselockTabLabel"></h3>
+      <p id="mouselock-deprecated" i18n-content="mouselockDeprecated"></p>
+      <div id="mouselock-global-settings">
+        <div class="radio">
+          <label>
+            <input type="radio" name="mouselock" value="allow">
+            <span>
+              <span i18n-content="mouselockAllow"></span>
+              <span class="controlled-setting-indicator"
+                  content-setting="mouselock" value="allow"></span>
+            </span>
+          </label>
+        </div>
+        <div class="radio">
+          <label>
+            <input type="radio" name="mouselock" value="ask">
+            <span>
+              <span i18n-content="mouselockAsk"></span>
+              <span class="controlled-setting-indicator"
+                  content-setting="mouselock" value="ask"></span>
+            </span>
+          </label>
+        </div>
+        <div class="radio">
+          <label>
+            <input type="radio" name="mouselock" value="block">
+            <span>
+              <span i18n-content="mouselockBlock"></span>
+              <span class="controlled-setting-indicator"
+                  content-setting="mouselock" value="block"></span>
+            </span>
+          </label>
+        </div>
+      </div>
+      <div>
+        <div class="settings-row">
+          <button class="exceptions-list-button" contentType="mouselock"
+              i18n-content="manageExceptions"></button>
         </div>
       </div>
     </section>

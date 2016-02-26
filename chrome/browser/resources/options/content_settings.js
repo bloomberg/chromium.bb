@@ -228,9 +228,14 @@ cr.define('options', function() {
 
   /**
    * Shows/hides parts of the fullscreen and mouselock sections.
+   * @param {boolean} deprecationVisible Whether to show (or hide) the
+   *    deprecation warning labels.
    * @param {boolean} globalsVisible Whether to show (or hide) global settings.
    */
-  ContentSettings.setExclusiveAccessVisible = function(globalsVisible) {
+  ContentSettings.setExclusiveAccessVisible = function(
+      deprecationVisible, globalsVisible) {
+    $('fullscreen-deprecated').hidden = !deprecationVisible;
+    $('mouselock-deprecated').hidden = !deprecationVisible;
     $('mouselock-global-settings').hidden = !globalsVisible;
   };
 
