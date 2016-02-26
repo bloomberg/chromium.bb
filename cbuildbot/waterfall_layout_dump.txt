@@ -156,7 +156,6 @@ samus-release
   leon-release
   peppy-release
   wolf-release
-smaug-cheets-android-pfq
 smaug-cheets-release
 smaug-paladin
 smaug-release

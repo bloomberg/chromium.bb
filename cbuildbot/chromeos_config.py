@@ -229,6 +229,46 @@ class HWTestList(object):
     return suite_list
 
   @classmethod
+  def DefaultListAndroidPFQ(cls, **kwargs):
+    """Return a default list of HWTestConfig's for a PFQ build.
+
+    Optional arguments may be overridden in `kwargs`, except that
+    the `blocking` setting cannot be provided.
+    """
+    default_dict = dict(pool=constants.HWTEST_PFQ_POOL, file_bugs=True,
+                        priority=constants.HWTEST_PFQ_PRIORITY,
+                        retry=False, max_retries=None, minimum_duts=4)
+    # Allows kwargs overrides to default_dict for pfq.
+    default_dict.update(kwargs)
+    suite_list = HWTestList.DefaultListNonCanary(**default_dict)
+    suite_list.extend(
+        [config_lib.HWTestConfig(constants.HWTEST_ARC_COMMIT_SUITE,
+                                 blocking=True, num=1, timeout=120*60)])
+    return suite_list
+
+  @classmethod
+  def SharedPoolAndroidPFQ(cls, **kwargs):
+    """Return a list of HWTestConfigs for PFQ which uses a shared pool.
+
+    The returned suites will run in pool:critical by default, which is
+    shared with other types of builders (canaries, cq). The first suite in the
+    list is a blocking sanity suite that verifies the build will not break dut.
+    """
+    sanity_dict = dict(pool=constants.HWTEST_MACH_POOL,
+                       file_bugs=True, priority=constants.HWTEST_PFQ_PRIORITY,
+                       retry=False, max_retries=None)
+    sanity_dict.update(kwargs)
+    sanity_dict.update(dict(num=1, minimum_duts=1, suite_min_duts=1,
+                            blocking=True))
+    default_dict = dict(pool=constants.HWTEST_MACH_POOL,
+                        suite_min_duts=3)
+    default_dict.update(kwargs)
+    suite_list = [config_lib.HWTestConfig(constants.HWTEST_SANITY_SUITE,
+                                          **sanity_dict)]
+    suite_list.extend(HWTestList.DefaultListAndroidPFQ(**default_dict))
+    return suite_list
+
+  @classmethod
   def SharedPoolCQ(cls, **kwargs):
     """Return a list of HWTestConfigs for CQ which uses a shared pool.
 
@@ -1275,7 +1315,15 @@ def GetConfig():
       hw_tests=HWTestList.SharedPoolPFQ(),
   )
 
-  _android_pfq_boards = _cheets_boards
+  _android_pfq_hwtest_boards = frozenset([
+      'cyan-cheets',
+      'veyron_minnie-cheets',
+  ])
+
+  _android_pfq_no_hwtest_boards = frozenset([
+      'glados-cheets',
+      'samus-cheets',
+  ])
 
   _telemetry_boards = frozenset([
       'amd64-generic',
@@ -2335,7 +2383,10 @@ def GetConfig():
     _CreateConfigsForBoards(
         chrome_pfq, _all_release_boards, 'chrome-pfq', important=False)
     _CreateConfigsForBoards(
-        android_pfq, _android_pfq_boards, 'android-pfq')
+        android_pfq, _android_pfq_hwtest_boards, 'android-pfq',
+        hw_tests=HWTestList.SharedPoolAndroidPFQ())
+    _CreateConfigsForBoards(
+        android_pfq, _android_pfq_no_hwtest_boards, 'android-pfq')
     _CreateConfigsForBoards(
         _release, _critical_for_chrome_boards, config_lib.CONFIG_TYPE_RELEASE,
         critical_for_chrome=True)
