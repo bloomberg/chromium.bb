@@ -149,6 +149,7 @@ void CanvasAsyncBlobCreator::encodeImageOnEncoderThread(double quality)
         JPEGImageEncoder::encodeWithPreInitializedState(m_jpegEncoderState.get(), m_data->data());
     } else if (!ImageDataBuffer(m_size, m_data->data()).encodeImage(m_mimeType, quality, m_encodedImage.get())) {
         scheduleCreateNullptrAndCallOnMainThread();
+        return;
     }
 
     scheduleCreateBlobAndCallOnMainThread();
