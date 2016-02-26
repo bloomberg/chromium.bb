@@ -83,6 +83,12 @@ class ApplicationManager : public ShellClient,
   // instance of the target application is running, one will be loaded.
   void Connect(scoped_ptr<ConnectParams> params);
 
+  // Creates a new ApplicationInstance identified as |url|. This is intended for
+  // use by the ApplicationManager's embedder to register itself with the shell.
+  // The URL is never resolved and there must not be an existing instance
+  // associated with it. This must only be called once.
+  mojom::ShellClientRequest InitInstanceForEmbedder(const GURL& url);
+
   // Sets the default Loader to be used if not overridden by SetLoaderForURL().
   void set_default_loader(scoped_ptr<ApplicationLoader> loader) {
     default_loader_ = std::move(loader);
@@ -185,6 +191,9 @@ class ApplicationManager : public ShellClient,
   IdentityToShellClientFactoryMap shell_client_factories_;
   // Counter used to assign ids to content handlers.
   uint32_t shell_client_factory_id_counter_;
+
+  // The ApplicationInstance created by the shell embedder, if any.
+  ApplicationInstance* embedder_instance_ = nullptr;
 
   InterfacePtrSet<mojom::ApplicationManagerListener> listeners_;
 

@@ -705,7 +705,8 @@ scoped_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface(bool fallback) {
     use_software = true;
 
 #if defined(MOJO_SHELL_CLIENT)
-  if (MojoShellConnection::Get() && !use_software) {
+  if (MojoShellConnection::Get() && !use_software &&
+      command_line.HasSwitch(switches::kUseMusInRenderer)) {
     RenderWidgetMusConnection* connection =
         RenderWidgetMusConnection::GetOrCreate(routing_id());
     return connection->CreateOutputSurface();

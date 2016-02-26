@@ -99,6 +99,21 @@ void ApplicationManager::Connect(scoped_ptr<ConnectParams> params) {
                   weak_ptr_factory_.GetWeakPtr(), base::Passed(&params)));
 }
 
+mojom::ShellClientRequest ApplicationManager::InitInstanceForEmbedder(
+    const GURL& url) {
+  DCHECK(!embedder_instance_);
+
+  mojo::shell::Identity target(url, std::string(), mojom::Connector::kUserRoot);
+  target.SetFilter(GetPermissiveCapabilityFilter());
+  DCHECK(!GetApplicationInstance(target));
+
+  mojom::ShellClientRequest request;
+  embedder_instance_ = CreateInstance(target, &request);
+  DCHECK(embedder_instance_);
+
+  return request;
+}
+
 void ApplicationManager::SetLoaderForURL(scoped_ptr<ApplicationLoader> loader,
                                          const GURL& url) {
   URLToLoaderMap::iterator it = url_to_loader_.find(url);

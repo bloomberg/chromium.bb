@@ -80,6 +80,7 @@
 #include "content/browser/message_port_message_filter.h"
 #include "content/browser/mime_registry_message_filter.h"
 #include "content/browser/mojo/mojo_application_host.h"
+#include "content/browser/mojo/mojo_shell_client_host.h"
 #include "content/browser/navigator_connect/service_port_service_impl.h"
 #include "content/browser/notifications/notification_message_filter.h"
 #include "content/browser/permissions/permission_service_context.h"
@@ -124,6 +125,7 @@
 #include "content/common/in_process_child_thread_params.h"
 #include "content/common/mojo/channel_init.h"
 #include "content/common/mojo/mojo_messages.h"
+#include "content/common/mojo/mojo_shell_connection_impl.h"
 #include "content/common/render_process_messages.h"
 #include "content/common/resource_messages.h"
 #include "content/common/site_isolation_policy.h"
@@ -228,11 +230,6 @@
 #include "content/browser/renderer_host/p2p/socket_dispatcher_host.h"
 #include "content/common/media/aec_dump_messages.h"
 #include "content/common/media/media_stream_messages.h"
-#endif
-
-#if defined(MOJO_SHELL_CLIENT)
-#include "content/browser/mojo/mojo_shell_client_host.h"
-#include "content/common/mojo/mojo_shell_connection_impl.h"
 #endif
 
 #if defined(OS_WIN)
@@ -626,10 +623,6 @@ RenderProcessHostImpl::RenderProcessHostImpl(
   IPC::AttachmentBrokerPrivileged::CreateBrokerIfNeeded();
 #endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 #endif  // USE_ATTACHMENT_BROKER
-
-#if defined(MOJO_SHELL_CLIENT)
-  RegisterChildWithExternalShell(id_, this);
-#endif
 }
 
 // static
@@ -707,6 +700,8 @@ bool RenderProcessHostImpl::Init() {
   // for the view host which may not be sure in some cases
   if (channel_)
     return true;
+
+  RegisterChildWithExternalShell(id_, instance_id_++, this);
 
   base::CommandLine::StringType renderer_prefix;
   // A command prefix is something prepended to the command line of the spawned
@@ -1631,11 +1626,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
       renderer_cmd->AppendSwitch(switches::kWaitForDebugger);
     }
   }
-
-#if defined(MOJO_SHELL_CLIENT)
-  if (IsRunningInMojoShell())
-    renderer_cmd->AppendSwitch(switches::kEnableMojoShellConnection);
-#endif
 }
 
 base::ProcessHandle RenderProcessHostImpl::GetHandle() const {
@@ -2588,10 +2578,8 @@ void RenderProcessHostImpl::OnProcessLaunched() {
                                      process_handle, true)));
   }
 
-#if defined(MOJO_SHELL_CLIENT)
   // Send the mojo shell handle to the renderer.
   SendExternalMojoShellHandleToChild(GetHandle(), this);
-#endif
 
   // Allow Mojo to be setup before the renderer sees any Chrome IPC messages.
   // This way, Mojo can be safely used from the renderer in response to any

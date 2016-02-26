@@ -111,6 +111,7 @@ class PIDSender : public RenderProcessHostObserver {
 }  // namespace
 
 void RegisterChildWithExternalShell(int child_process_id,
+                                    int instance_id,
                                     RenderProcessHost* render_process_host) {
   // Some process types get created before the main message loop.
   if (!MojoShellConnection::Get())
@@ -143,8 +144,8 @@ void RegisterChildWithExternalShell(int child_process_id,
   //             specification is best determined (not here, this is a common
   //             chokepoint for all process types) and how to wire it through.
   //             http://crbug.com/555393
-  std::string url =
-      base::StringPrintf("exe:chrome_renderer%d", child_process_id);
+  std::string url = base::StringPrintf(
+      "exe:chrome_renderer%d_%d", child_process_id, instance_id);
 
   mojo::shell::mojom::PIDReceiverPtr pid_receiver;
   mojo::InterfaceRequest<mojo::shell::mojom::PIDReceiver> request =

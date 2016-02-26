@@ -41,12 +41,6 @@
 #include "content/browser/mach_broker_mac.h"
 #endif
 
-
-#if defined(MOJO_SHELL_CLIENT)
-#include "content/browser/mojo/mojo_shell_client_host.h"
-#include "content/common/mojo/mojo_shell_connection_impl.h"
-#endif
-
 namespace content {
 namespace {
 

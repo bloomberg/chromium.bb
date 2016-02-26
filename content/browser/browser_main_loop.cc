@@ -63,6 +63,7 @@
 #include "content/common/content_switches_internal.h"
 #include "content/common/host_discardable_shared_memory_manager.h"
 #include "content/common/host_shared_bitmap_manager.h"
+#include "content/common/mojo/mojo_shell_connection_impl.h"
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_process_host.h"
@@ -76,6 +77,7 @@
 #include "media/base/media.h"
 #include "media/base/user_input_monitor.h"
 #include "media/midi/midi_manager.h"
+#include "mojo/shell/public/cpp/shell.h"
 #include "net/base/network_change_notifier.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/ssl/ssl_config_service.h"
@@ -177,9 +179,6 @@
 #endif
 
 #if defined(MOJO_SHELL_CLIENT)
-#include "content/common/mojo/mojo_shell_connection_impl.h"
-#include "mojo/converters/network/network_type_converters.h"
-#include "mojo/shell/public/cpp/shell.h"
 #include "ui/views/mus/window_manager_connection.h"
 #endif
 
@@ -915,16 +914,14 @@ int BrowserMainLoop::CreateThreads() {
 }
 
 int BrowserMainLoop::PreMainMessageLoopRun() {
-#if defined(MOJO_SHELL_CLIENT)
   if (IsRunningInMojoShell()) {
     MojoShellConnectionImpl::Create();
     MojoShellConnectionImpl::Get()->BindToCommandLinePlatformChannel();
-#if defined(USE_AURA)
+#if defined(MOJO_SHELL_CLIENT) && defined(USE_AURA)
     views::WindowManagerConnection::Create(
         MojoShellConnection::Get()->GetShell());
 #endif
   }
-#endif
 
   if (parts_) {
     TRACE_EVENT0("startup",
@@ -972,9 +969,8 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
       base::Bind(base::IgnoreResult(&base::ThreadRestrictions::SetIOAllowed),
                  true));
 
-#if defined(MOJO_SHELL_CLIENT)
-  MojoShellConnection::Destroy();
-#endif
+  if (IsRunningInMojoShell())
+    MojoShellConnection::Destroy();
 
 #if !defined(OS_IOS)
   if (RenderProcessHost::run_renderer_in_process())

@@ -21,11 +21,20 @@ class RunnerConnection {
   // Establish a connection to the runner, blocking the calling thread until
   // it is established. The Application request from the runner is returned via
   // |request|.
+  //
   // If a connection to the runner cannot be established, |request| will not be
   // modified and this function will return null.
+  //
+  // If |exit_on_error| is true, the calling process will be terminated in the
+  // event of an error on |handle|.
+  //
+  // TODO(rockot): Remove |exit_on_error| when it's safe for all clients to be
+  // terminated on such errors. For now we don't want this killing content's
+  // child processes.
   static RunnerConnection* ConnectToRunner(
       InterfaceRequest<mojom::ShellClient>* request,
-      ScopedMessagePipeHandle handle);
+      ScopedMessagePipeHandle handle,
+      bool exit_on_error = true);
 
  protected:
   RunnerConnection();

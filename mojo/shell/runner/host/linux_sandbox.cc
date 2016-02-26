@@ -94,8 +94,10 @@ class SandboxPolicy : public sandbox::BaselinePolicy {
       case __NR_ugetrlimit:
 #endif
       case __NR_uname:
+#if defined(__arm__) || defined(__x86_64__) || defined(__mips__)
       case __NR_getsockopt:
       case __NR_setsockopt:
+#endif
         return sandbox::bpf_dsl::Allow();
     }
 

@@ -11,10 +11,13 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "mojo/platform_handle/platform_handle_private_thunks.h"
+#include "mojo/public/platform/native/system_thunks.h"
+
+#if defined(NATIVE_APPLICATION_USE_GLES2_IMPL)
 #include "mojo/public/platform/native/gles2_impl_chromium_extension_thunks.h"
 #include "mojo/public/platform/native/gles2_impl_thunks.h"
 #include "mojo/public/platform/native/gles2_thunks.h"
-#include "mojo/public/platform/native/system_thunks.h"
+#endif
 
 namespace mojo {
 namespace shell {
@@ -67,6 +70,7 @@ bool RunNativeApplication(
     return false;
   }
 
+#if defined(NATIVE_APPLICATION_USE_GLES2_IMPL)
   if (SetThunks(&MojoMakeGLES2ControlThunks, "MojoSetGLES2ControlThunks",
                 app_library)) {
     // If we have the control thunks, we should also have the GLES2
@@ -84,6 +88,8 @@ bool RunNativeApplication(
     SetThunks(MojoMakeGLES2ImplChromiumExtensionThunks,
               "MojoSetGLES2ImplChromiumExtensionThunks", app_library);
   }
+#endif
+
 // Unlike system thunks, we don't warn on a lack of GLES2 thunks because
 // not everything is a visual app.
 

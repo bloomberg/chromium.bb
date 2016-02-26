@@ -43,6 +43,7 @@ source_set("browser") {
     "//mojo/shell",
     "//mojo/shell/public/cpp:cpp_for_chromium",
     "//mojo/shell/public/interfaces",
+    "//mojo/shell/runner/host:lib",
     "//net",
     "//net:extras",
     "//skia",
@@ -106,12 +107,6 @@ source_set("browser") {
               "$root_gen_dir/ui/resources/grit/webui_resources_map.cc",
             ],
             ".")
-
-    sources += [
-      "mojo/mojo_shell_client_host.cc",
-      "mojo/mojo_shell_client_host.h",
-      "mojo/renderer_capability_filter.cc",
-    ]
 
     # Non-iOS deps.
     deps += [

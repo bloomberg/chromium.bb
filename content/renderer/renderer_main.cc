@@ -25,6 +25,7 @@
 #include "components/scheduler/renderer/renderer_scheduler.h"
 #include "content/child/child_process.h"
 #include "content/common/content_constants_internal.h"
+#include "content/common/mojo/mojo_shell_connection_impl.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
 #include "content/public/renderer/content_renderer_client.h"
@@ -60,10 +61,6 @@
 #include "ui/ozone/public/client_native_pixmap_factory.h"
 #endif
 
-#if defined(MOJO_SHELL_CLIENT)
-#include "content/common/mojo/mojo_shell_connection_impl.h"
-#endif
-
 namespace content {
 namespace {
 // This function provides some ways to test crash and assertion handling
@@ -96,10 +93,7 @@ int RendererMain(const MainFunctionParams& parameters) {
 
   const base::CommandLine& parsed_command_line = parameters.command_line;
 
-#if defined(MOJO_SHELL_CLIENT)
-  if (parsed_command_line.HasSwitch(switches::kEnableMojoShellConnection))
-    MojoShellConnectionImpl::Create();
-#endif
+  MojoShellConnectionImpl::Create();
 
 #if defined(OS_MACOSX)
   base::mac::ScopedNSAutoreleasePool* pool = parameters.autorelease_pool;

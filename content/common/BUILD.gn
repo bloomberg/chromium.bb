@@ -134,13 +134,6 @@ source_set("common") {
                         ".",
                         "//content")
 
-  # These files are only built in a GN build because they bring in
-  # dependencies that don't build with GYP.
-  sources += [
-    "mojo/mojo_shell_connection_impl.cc",
-    "mojo/mojo_shell_connection_impl.h",
-  ]
-
   configs += [
     "//content:content_implementation",
     "//build/config:precompiled_headers",

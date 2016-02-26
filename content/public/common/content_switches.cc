@@ -392,9 +392,6 @@ const char kEnableLogging[]                 = "enable-logging";
 // Enables the memory benchmarking extension
 const char kEnableMemoryBenchmarking[]      = "enable-memory-benchmarking";
 
-// Enable the Mojo shell connection in renderers.
-const char kEnableMojoShellConnection[] = "enable-mojo-shell-connection";
-
 // Enables the network information API.
 const char kEnableNetworkInformation[]      = "enable-network-information";
 

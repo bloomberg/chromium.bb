@@ -96,7 +96,8 @@ class RunnerConnectionImpl : public RunnerConnection {
   // Returns true if a connection to the runner has been established and
   // |request| has been modified, false if no connection was established.
   bool WaitForApplicationRequest(InterfaceRequest<mojom::ShellClient>* request,
-                                 ScopedMessagePipeHandle handle);
+                                 ScopedMessagePipeHandle handle,
+                                 bool exit_on_error);
 
   ChildControllerImpl* controller() const { return controller_.get(); }
 
@@ -141,12 +142,14 @@ class ChildControllerImpl : public mojom::ChildController {
   static void Create(RunnerConnectionImpl* connection,
                      const GotApplicationRequestCallback& callback,
                      ScopedMessagePipeHandle runner_handle,
-                     const Blocker::Unblocker& unblocker) {
+                     const Blocker::Unblocker& unblocker,
+                     bool exit_on_error) {
     DCHECK(connection);
     DCHECK(!connection->controller());
 
     scoped_ptr<ChildControllerImpl> impl(
-        new ChildControllerImpl(connection, callback, unblocker));
+        new ChildControllerImpl(connection, callback, unblocker,
+                                exit_on_error));
 
     impl->Bind(std::move(runner_handle));
 
@@ -162,7 +165,16 @@ class ChildControllerImpl : public mojom::ChildController {
     // A connection error means the connection to the shell is lost. This is not
     // recoverable.
     DLOG(ERROR) << "Connection error to the shell.";
-    _exit(1);
+    if (exit_on_error_) {
+      _exit(1);
+    } else if (on_app_complete_.is_null()) {
+      // If we failed before we could even get a ShellClient request from the
+      // shell, signal failure to the RunnerConnection, as it's still blocking
+      // on a response.
+      unblocker_.Unblock(
+          base::Bind(&ChildControllerImpl::ReturnApplicationRequestOnMainThread,
+                     callback_, nullptr));
+    }
   }
 
   // |mojom::ChildController| methods:
@@ -184,11 +196,13 @@ class ChildControllerImpl : public mojom::ChildController {
  private:
   ChildControllerImpl(RunnerConnectionImpl* connection,
                       const GotApplicationRequestCallback& callback,
-                      const Blocker::Unblocker& unblocker)
+                      const Blocker::Unblocker& unblocker,
+                      bool exit_on_error)
       : connection_(connection),
         callback_(callback),
         unblocker_(unblocker),
-        binding_(this) {}
+        binding_(this),
+        exit_on_error_(exit_on_error) {}
 
   static void ReturnApplicationRequestOnMainThread(
       const GotApplicationRequestCallback& callback,
@@ -204,12 +218,15 @@ class ChildControllerImpl : public mojom::ChildController {
 
   Binding<ChildController> binding_;
 
+  bool exit_on_error_;
+
   DISALLOW_COPY_AND_ASSIGN(ChildControllerImpl);
 };
 
 bool RunnerConnectionImpl::WaitForApplicationRequest(
     InterfaceRequest<mojom::ShellClient>* request,
-    ScopedMessagePipeHandle handle) {
+    ScopedMessagePipeHandle handle,
+    bool exit_on_error) {
   // If a valid message pipe to the runner was not provided, look for one on the
   // command line.
   if (!handle.is_valid()) {
@@ -232,11 +249,11 @@ bool RunnerConnectionImpl::WaitForApplicationRequest(
       FROM_HERE,
       base::Bind(
           &ChildControllerImpl::Create, base::Unretained(this),
-          base::Bind(&OnGotApplicationRequest, base::Unretained(request)),
-          base::Passed(&handle), blocker.GetUnblocker()));
+          base::Bind(&OnGotApplicationRequest, request), base::Passed(&handle),
+          blocker.GetUnblocker(), exit_on_error));
   blocker.Block();
 
-  return true;
+  return request->is_pending();
 }
 
 }  // namespace
@@ -246,9 +263,11 @@ RunnerConnection::~RunnerConnection() {}
 // static
 RunnerConnection* RunnerConnection::ConnectToRunner(
     InterfaceRequest<mojom::ShellClient>* request,
-    ScopedMessagePipeHandle handle) {
+    ScopedMessagePipeHandle handle,
+    bool exit_on_error) {
   RunnerConnectionImpl* connection = new RunnerConnectionImpl;
-  if (!connection->WaitForApplicationRequest(request, std::move(handle))) {
+  if (!connection->WaitForApplicationRequest(
+      request, std::move(handle), exit_on_error)) {
     delete connection;
     return nullptr;
   }

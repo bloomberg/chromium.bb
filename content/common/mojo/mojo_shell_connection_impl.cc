@@ -17,6 +17,7 @@
 
 namespace content {
 namespace {
+
 using MojoShellConnectionPtr =
     base::ThreadLocalPointer<MojoShellConnectionImpl>;
 
@@ -34,8 +35,22 @@ bool IsRunningInMojoShell() {
 // static
 void MojoShellConnectionImpl::Create() {
   DCHECK(!lazy_tls_ptr.Pointer()->Get());
-  MojoShellConnectionImpl* connection = new MojoShellConnectionImpl;
+  MojoShellConnectionImpl* connection =
+      new MojoShellConnectionImpl(true /* external */);
   lazy_tls_ptr.Pointer()->Set(connection);
+}
+
+// static
+void MojoShellConnectionImpl::Create(
+    mojo::shell::mojom::ShellClientRequest request) {
+  DCHECK(!lazy_tls_ptr.Pointer()->Get());
+  MojoShellConnectionImpl* connection =
+      new MojoShellConnectionImpl(false /* external */);
+  lazy_tls_ptr.Pointer()->Set(connection);
+
+  connection->shell_connection_.reset(
+      new mojo::ShellConnection(connection, std::move(request)));
+  connection->shell_connection_->WaitForInitialize();
 }
 
 // static
@@ -57,7 +72,9 @@ void MojoShellConnectionImpl::BindToMessagePipe(
   WaitForShell(std::move(handle));
 }
 
-MojoShellConnectionImpl::MojoShellConnectionImpl() : initialized_(false) {}
+MojoShellConnectionImpl::MojoShellConnectionImpl(bool external) :
+    external_(external), initialized_(false) {}
+
 MojoShellConnectionImpl::~MojoShellConnectionImpl() {
   STLDeleteElements(&listeners_);
 }
@@ -66,7 +83,12 @@ void MojoShellConnectionImpl::WaitForShell(
     mojo::ScopedMessagePipeHandle handle) {
   mojo::shell::mojom::ShellClientRequest request;
   runner_connection_.reset(mojo::shell::RunnerConnection::ConnectToRunner(
-      &request, std::move(handle)));
+      &request, std::move(handle), false /* exit_on_error */));
+  if (!runner_connection_) {
+    delete this;
+    lazy_tls_ptr.Pointer()->Set(nullptr);
+    return;
+  }
   shell_connection_.reset(new mojo::ShellConnection(this, std::move(request)));
   shell_connection_->WaitForInitialize();
 }
@@ -91,7 +113,7 @@ mojo::Shell* MojoShellConnectionImpl::GetShell() {
 }
 
 bool MojoShellConnectionImpl::UsingExternalShell() const {
-  return true;
+  return external_;
 }
 
 void MojoShellConnectionImpl::AddListener(Listener* listener) {

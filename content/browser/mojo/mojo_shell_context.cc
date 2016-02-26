@@ -13,6 +13,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/common/gpu/gpu_process_launch_causes.h"
+#include "content/common/mojo/mojo_shell_connection_impl.h"
 #include "content/common/mojo/static_application_loader.h"
 #include "content/common/process_control.mojom.h"
 #include "content/public/browser/browser_thread.h"
@@ -27,11 +28,16 @@
 #include "mojo/shell/application_loader.h"
 #include "mojo/shell/connect_params.h"
 #include "mojo/shell/identity.h"
+#include "mojo/shell/native_runner.h"
 #include "mojo/shell/public/cpp/shell_client.h"
+#include "mojo/shell/public/interfaces/shell.mojom.h"
+#include "mojo/shell/runner/host/in_process_native_runner.h"
 
 namespace content {
 
 namespace {
+
+const char kBrowserAppUrl[] = "exe:chrome";
 
 // An extra set of apps to register on initialization, if set by a test.
 const MojoShellContext::StaticApplicationMap* g_applications_for_test;
@@ -201,8 +207,12 @@ MojoShellContext::MojoShellContext() {
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE);
   bool register_mojo_url_schemes = false;
 
+  scoped_ptr<mojo::shell::NativeRunnerFactory> native_runner_factory(
+      new mojo::shell::InProcessNativeRunnerFactory(
+          BrowserThread::GetBlockingPool()));
   application_manager_.reset(new mojo::shell::ApplicationManager(
-      nullptr, file_task_runner.get(), register_mojo_url_schemes, nullptr));
+      std::move(native_runner_factory), file_task_runner.get(),
+      register_mojo_url_schemes, nullptr));
 
   application_manager_->set_default_loader(
       scoped_ptr<mojo::shell::ApplicationLoader>(new DefaultApplicationLoader));
@@ -249,9 +259,16 @@ MojoShellContext::MojoShellContext() {
       scoped_ptr<mojo::shell::ApplicationLoader>(new GpuProcessLoader()),
       GURL("mojo:media"));
 #endif
+
+  if (!IsRunningInMojoShell()) {
+    MojoShellConnectionImpl::Create(
+        application_manager_->InitInstanceForEmbedder(GURL(kBrowserAppUrl)));
+  }
 }
 
 MojoShellContext::~MojoShellContext() {
+  if (!IsRunningInMojoShell())
+    MojoShellConnectionImpl::Destroy();
 }
 
 // static

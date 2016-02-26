@@ -53,6 +53,7 @@
 #include "content/common/child_process_messages.h"
 #include "content/common/in_process_child_thread_params.h"
 #include "content/common/mojo/mojo_messages.h"
+#include "content/common/mojo/mojo_shell_connection_impl.h"
 #include "content/public/common/content_switches.h"
 #include "ipc/attachment_broker.h"
 #include "ipc/attachment_broker_unprivileged.h"
@@ -66,10 +67,6 @@
 
 #if defined(USE_OZONE)
 #include "ui/ozone/public/client_native_pixmap_factory.h"
-#endif
-
-#if defined(MOJO_SHELL_CLIENT)
-#include "content/common/mojo/mojo_shell_connection_impl.h"
 #endif
 
 using tracked_objects::ThreadData;
@@ -682,7 +679,8 @@ void ChildThreadImpl::OnProfilingPhaseCompleted(int profiling_phase) {
 
 void ChildThreadImpl::OnBindExternalMojoShellHandle(
     const IPC::PlatformFileForTransit& file) {
-#if defined(MOJO_SHELL_CLIENT)
+  if (!MojoShellConnectionImpl::Get())
+    return;
 #if defined(OS_POSIX)
   base::PlatformFile handle = file.fd;
 #elif defined(OS_WIN)
@@ -691,7 +689,6 @@ void ChildThreadImpl::OnBindExternalMojoShellHandle(
   mojo::ScopedMessagePipeHandle pipe =
       mojo_shell_channel_init_.Init(handle, GetIOTaskRunner());
   MojoShellConnectionImpl::Get()->BindToMessagePipe(std::move(pipe));
-#endif  // defined(MOJO_SHELL_CLIENT)
 }
 
 void ChildThreadImpl::OnSetMojoParentPipeHandle(

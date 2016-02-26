@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/public/common/mojo_shell_connection.h"
 #include "mojo/public/cpp/system/message_pipe.h"
+#include "mojo/shell/public/cpp/shell.h"
 #include "mojo/shell/public/cpp/shell_client.h"
 #include "mojo/shell/public/cpp/shell_connection.h"
 
@@ -32,6 +33,10 @@ class MojoShellConnectionImpl : public MojoShellConnection,
   // thread. Retrieve it using MojoShellConnection::Get().
   static void Create();
 
+  // Like above but for initializing a connection to an embedded in-process
+  // shell implementation. Binds to |request|.
+  static void Create(mojo::shell::mojom::ShellClientRequest request);
+
   // Will return null if no connection has been established (either because it
   // hasn't happened yet or the application was not spawned from the external
   // Mojo shell).
@@ -47,7 +52,7 @@ class MojoShellConnectionImpl : public MojoShellConnection,
   void BindToMessagePipe(mojo::ScopedMessagePipeHandle handle);
 
  private:
-  MojoShellConnectionImpl();
+  explicit MojoShellConnectionImpl(bool external);
   ~MojoShellConnectionImpl() override;
 
   // mojo::ShellClient:
@@ -66,6 +71,7 @@ class MojoShellConnectionImpl : public MojoShellConnection,
   // method on that application is called.
   void WaitForShell(mojo::ScopedMessagePipeHandle handle);
 
+  bool external_;
   bool initialized_;
   scoped_ptr<mojo::shell::RunnerConnection> runner_connection_;
   scoped_ptr<mojo::ShellConnection> shell_connection_;
