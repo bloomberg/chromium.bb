@@ -53,6 +53,7 @@ TEST_F(FromGWSPageLoadMetricsObserverTest, NoReferral) {
   page_load_metrics::PageLoadTiming timing;
   timing.navigation_start = base::Time::FromDoubleT(1);
   timing.first_text_paint = base::TimeDelta::FromMilliseconds(1);
+  PopulateRequiredTimingFields(&timing);
   NavigateAndCommit(GURL("http://www.example.com"));
 
   SimulateTimingUpdate(timing);
@@ -66,6 +67,7 @@ TEST_F(FromGWSPageLoadMetricsObserverTest, ReferralsFromGWSHTTPToHTTPS) {
   page_load_metrics::PageLoadTiming timing;
   timing.navigation_start = base::Time::FromDoubleT(1);
   timing.first_text_paint = base::TimeDelta::FromMilliseconds(1);
+  PopulateRequiredTimingFields(&timing);
   // HTTPS google.com referral  to HTTP example.com.
   set_referrer(content::Referrer(GURL("https://www.google.com"),
                                  blink::WebReferrerPolicyOrigin));
@@ -85,6 +87,7 @@ TEST_F(FromGWSPageLoadMetricsObserverTest, ReferralFromGWS) {
   page_load_metrics::PageLoadTiming timing;
   timing.navigation_start = base::Time::FromDoubleT(1);
   timing.first_text_paint = base::TimeDelta::FromMilliseconds(1);
+  PopulateRequiredTimingFields(&timing);
 
   set_referrer(content::Referrer(GURL("https://www.google.com/url"),
                                  blink::WebReferrerPolicyDefault));
@@ -104,6 +107,7 @@ TEST_F(FromGWSPageLoadMetricsObserverTest, ReferralFromGWSBackgroundLater) {
   page_load_metrics::PageLoadTiming timing;
   timing.navigation_start = base::Time::FromDoubleT(1);
   timing.first_text_paint = base::TimeDelta::FromMicroseconds(1);
+  PopulateRequiredTimingFields(&timing);
 
   set_referrer(content::Referrer(GURL("https://www.google.com/url"),
                                  blink::WebReferrerPolicyDefault));
@@ -124,6 +128,7 @@ TEST_F(FromGWSPageLoadMetricsObserverTest, ReferralsFromCaseInsensitive) {
   page_load_metrics::PageLoadTiming timing;
   timing.navigation_start = base::Time::FromDoubleT(1);
   timing.first_text_paint = base::TimeDelta::FromMilliseconds(1);
+  PopulateRequiredTimingFields(&timing);
   // HTTPS google.com referral  to HTTP example.com.
   set_referrer(content::Referrer(GURL("https://wWw.GoOGlE.cOm/webhp"),
                                  blink::WebReferrerPolicyOrigin));
@@ -142,6 +147,7 @@ TEST_F(FromGWSPageLoadMetricsObserverTest, ReferralsFromGWSOrigin) {
   page_load_metrics::PageLoadTiming timing;
   timing.navigation_start = base::Time::FromDoubleT(1);
   timing.first_text_paint = base::TimeDelta::FromMilliseconds(1);
+  PopulateRequiredTimingFields(&timing);
   // HTTPS google.com referral  to HTTP example.com.
   set_referrer(content::Referrer(GURL("https://www.google.com"),
                                  blink::WebReferrerPolicyOrigin));
@@ -152,6 +158,7 @@ TEST_F(FromGWSPageLoadMetricsObserverTest, ReferralsFromGWSOrigin) {
   page_load_metrics::PageLoadTiming timing2;
   timing2.navigation_start = base::Time::FromDoubleT(10);
   timing2.first_text_paint = base::TimeDelta::FromMilliseconds(100);
+  PopulateRequiredTimingFields(&timing2);
   // HTTPS google.com referral  to HTTP example.com.
   set_referrer(content::Referrer(GURL("https://www.google.co.in"),
                                  blink::WebReferrerPolicyOrigin));
@@ -173,6 +180,7 @@ TEST_F(FromGWSPageLoadMetricsObserverTest, ReferralNotFromGWS) {
   page_load_metrics::PageLoadTiming timing;
   timing.navigation_start = base::Time::FromDoubleT(1);
   timing.first_text_paint = base::TimeDelta::FromMilliseconds(1);
+  PopulateRequiredTimingFields(&timing);
   set_referrer(content::Referrer(GURL("https://www.anothersite.com"),
                                  blink::WebReferrerPolicyDefault));
   NavigateAndCommit(GURL("https://www.example.com"));
