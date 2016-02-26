@@ -116,10 +116,10 @@ bool CSSPropertyParser::parseValueStart(CSSPropertyID unresolvedProperty, bool i
             return true;
     } else {
         if (RefPtrWillBeRawPtr<CSSValue> parsedValue = parseSingleValue(unresolvedProperty)) {
-            if (!m_range.atEnd())
-                return false;
-            addProperty(propertyId, parsedValue.release(), important);
-            return true;
+            if (m_range.atEnd()) {
+                addProperty(propertyId, parsedValue.release(), important);
+                return true;
+            }
         }
     }
 
