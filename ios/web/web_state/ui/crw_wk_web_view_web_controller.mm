@@ -2004,6 +2004,10 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
   return [child webView];
 }
 
+- (void)webViewDidClose:(WKWebView*)webView {
+  [self orderClose];
+}
+
 - (void)webView:(WKWebView*)webView
     runJavaScriptAlertPanelWithMessage:(NSString*)message
                       initiatedByFrame:(WKFrameInfo*)frame

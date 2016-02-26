@@ -460,11 +460,6 @@ goog.require('__crWeb.message');
     originalWindowScrollTo(x, y);
   };
 
-  // Intercept window.close calls.
-  window.close = function() {
-    invokeOnHost_({'command': 'window.close.self'});
-  };
-
   window.addEventListener('hashchange', function(evt) {
     invokeOnHost_({'command': 'window.hashchange'});
   });

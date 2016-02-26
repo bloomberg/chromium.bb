@@ -463,9 +463,6 @@ void CancelTouches(UIGestureRecognizer* gesture_recognizer) {
 // Handles 'resetExternalRequest' message.
 - (BOOL)handleResetExternalRequestMessage:(base::DictionaryValue*)message
                                   context:(NSDictionary*)context;
-// Handles 'window.close.self' message.
-- (BOOL)handleWindowCloseSelfMessage:(base::DictionaryValue*)message
-                             context:(NSDictionary*)context;
 // Handles 'window.error' message.
 - (BOOL)handleWindowErrorMessage:(base::DictionaryValue*)message
                          context:(NSDictionary*)context;
@@ -2079,8 +2076,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
         @selector(handleSignInFailedMessage:context:);
     (*handlers)["resetExternalRequest"] =
         @selector(handleResetExternalRequestMessage:context:);
-    (*handlers)["window.close.self"] =
-        @selector(handleWindowCloseSelfMessage:context:);
     (*handlers)["window.error"] = @selector(handleWindowErrorMessage:context:);
     (*handlers)["window.hashchange"] =
         @selector(handleWindowHashChangeMessage:context:);
@@ -2402,12 +2397,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 - (BOOL)handleResetExternalRequestMessage:(base::DictionaryValue*)message
                                   context:(NSDictionary*)context {
   _externalRequest.reset();
-  return YES;
-}
-
-- (BOOL)handleWindowCloseSelfMessage:(base::DictionaryValue*)message
-                             context:(NSDictionary*)context {
-  [self orderClose];
   return YES;
 }
 
