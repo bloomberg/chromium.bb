@@ -2835,29 +2835,18 @@ int WebContentsImpl::DownloadImage(
     // Android), the downloader service will be invalid. Pre-Mojo, this would
     // hang the callback indefinetly since the IPC would be dropped. Now,
     // respond with a 400 HTTP error code to indicate that something went wrong.
-    content::mojom::DownloadResultPtr result =
-        content::mojom::DownloadResult::New();
-    result->http_status_code = 400;
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::Bind(&WebContentsImpl::OnDidDownloadImage,
-                   weak_factory_.GetWeakPtr(), callback, download_id, url,
-                   base::Passed(&result)));
+                   weak_factory_.GetWeakPtr(), callback, download_id, url, 400,
+                   nullptr, nullptr));
     return download_id;
   }
 
-  content::mojom::DownloadRequestPtr req =
-      content::mojom::DownloadRequest::New();
-
-  req->url = mojo::String::From(url);
-  req->is_favicon = is_favicon;
-  req->max_bitmap_size = max_bitmap_size;
-  req->bypass_cache = bypass_cache;
-
   mojo_image_downloader->DownloadImage(
-      std::move(req), base::Bind(&WebContentsImpl::OnDidDownloadImage,
-                                 weak_factory_.GetWeakPtr(), callback,
-                                 download_id, url));
+      mojo::String::From(url), is_favicon, max_bitmap_size, bypass_cache,
+      base::Bind(&WebContentsImpl::OnDidDownloadImage,
+                 weak_factory_.GetWeakPtr(), callback, download_id, url));
   return download_id;
 }
 
@@ -4651,14 +4640,14 @@ void WebContentsImpl::OnDidDownloadImage(
     const ImageDownloadCallback& callback,
     int id,
     const GURL& image_url,
-    content::mojom::DownloadResultPtr result) {
-  const std::vector<SkBitmap> images =
-      result->images.To<std::vector<SkBitmap>>();
-  const std::vector<gfx::Size> original_image_sizes =
-      result->original_image_sizes.To<std::vector<gfx::Size>>();
+    int32_t http_status_code,
+    mojo::Array<skia::BitmapPtr> images,
+    mojo::Array<mojo::SizePtr> original_image_sizes) {
+  const std::vector<SkBitmap> bitmaps = images.To<std::vector<SkBitmap>>();
+  const std::vector<gfx::Size> sizes =
+      original_image_sizes.To<std::vector<gfx::Size>>();
 
-  callback.Run(id, result->http_status_code, image_url, images,
-               original_image_sizes);
+  callback.Run(id, http_status_code, image_url, bitmaps, sizes);
 }
 
 void WebContentsImpl::OnDialogClosed(int render_process_id,

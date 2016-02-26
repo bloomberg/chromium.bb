@@ -822,7 +822,9 @@ class CONTENT_EXPORT WebContentsImpl
   void OnDidDownloadImage(const ImageDownloadCallback& callback,
                           int id,
                           const GURL& image_url,
-                          content::mojom::DownloadResultPtr result);
+                          int32_t http_status_code,
+                          mojo::Array<skia::BitmapPtr> images,
+                          mojo::Array<mojo::SizePtr> original_image_sizes);
 
   // Callback function when showing JavaScript dialogs.  Takes in a routing ID
   // pair to identify the RenderFrameHost that opened the dialog, because it's
