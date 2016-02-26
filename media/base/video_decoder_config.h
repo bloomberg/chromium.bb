@@ -40,6 +40,8 @@ class MEDIA_EXPORT VideoDecoderConfig {
                      const std::vector<uint8_t>& extra_data,
                      bool is_encrypted);
 
+  VideoDecoderConfig(const VideoDecoderConfig& other);
+
   ~VideoDecoderConfig();
 
   // Resets the internal state of this object.

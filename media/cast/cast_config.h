@@ -59,6 +59,7 @@ enum SuggestedDefaults {
 // http://crbug.com/530839
 struct AudioSenderConfig {
   AudioSenderConfig();
+  AudioSenderConfig(const AudioSenderConfig& other);
   ~AudioSenderConfig();
 
   // Identifier referring to the sender, used by the receiver.
@@ -97,6 +98,7 @@ struct AudioSenderConfig {
 
 struct VideoSenderConfig {
   VideoSenderConfig();
+  VideoSenderConfig(const VideoSenderConfig& other);
   ~VideoSenderConfig();
 
   // Identifier referring to the sender, used by the receiver.
@@ -163,6 +165,7 @@ struct VideoSenderConfig {
 // TODO(miu): Naming and minor type changes are badly needed in a later CL.
 struct FrameReceiverConfig {
   FrameReceiverConfig();
+  FrameReceiverConfig(const FrameReceiverConfig& other);
   ~FrameReceiverConfig();
 
   // The receiver's SSRC identifier.

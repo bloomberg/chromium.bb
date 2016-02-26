@@ -68,6 +68,8 @@ class MEDIA_EXPORT AudioDecoderConfig {
                      const std::vector<uint8_t>& extra_data,
                      bool is_encrypted);
 
+  AudioDecoderConfig(const AudioDecoderConfig& other);
+
   ~AudioDecoderConfig();
 
   // Resets the internal state of this object. |codec_delay| is in frames.

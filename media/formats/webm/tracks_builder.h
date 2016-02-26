@@ -83,6 +83,7 @@ class TracksBuilder {
           int audio_channels,
           double audio_sampling_frequency,
           bool allow_invalid_values);
+    Track(const Track& other);
 
     int GetSize() const;
     void Write(uint8_t** buf, int* buf_size) const;

@@ -22,6 +22,9 @@ VideoRendererAlgorithm::ReadyFrame::ReadyFrame(
       drop_count(0) {
 }
 
+VideoRendererAlgorithm::ReadyFrame::ReadyFrame(const ReadyFrame& other) =
+    default;
+
 VideoRendererAlgorithm::ReadyFrame::~ReadyFrame() {
 }
 

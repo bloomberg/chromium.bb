@@ -15,6 +15,9 @@ VideoCaptureDeviceInfo::VideoCaptureDeviceInfo(
     : name(name), supported_formats(supported_formats) {
 }
 
+VideoCaptureDeviceInfo::VideoCaptureDeviceInfo(
+    const VideoCaptureDeviceInfo& other) = default;
+
 VideoCaptureDeviceInfo::~VideoCaptureDeviceInfo() {
 }
 

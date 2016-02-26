@@ -21,6 +21,8 @@ RtcpReceiverEventLogMessage::~RtcpReceiverEventLogMessage() {}
 
 RtcpReceiverFrameLogMessage::RtcpReceiverFrameLogMessage(RtpTimeTicks timestamp)
     : rtp_timestamp_(timestamp) {}
+RtcpReceiverFrameLogMessage::RtcpReceiverFrameLogMessage(
+    const RtcpReceiverFrameLogMessage& other) = default;
 RtcpReceiverFrameLogMessage::~RtcpReceiverFrameLogMessage() {}
 
 RtcpReceiverReferenceTimeReport::RtcpReceiverReferenceTimeReport()

@@ -40,6 +40,7 @@ static void RunOnTaskRunner(
 }
 
 SerialRunner::Queue::Queue() {}
+SerialRunner::Queue::Queue(const Queue& other) = default;
 SerialRunner::Queue::~Queue() {}
 
 void SerialRunner::Queue::Push(const base::Closure& closure) {

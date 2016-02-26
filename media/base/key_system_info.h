@@ -28,6 +28,7 @@ namespace media {
 // the corresponding CDM.
 struct MEDIA_EXPORT KeySystemInfo {
   KeySystemInfo();
+  KeySystemInfo(const KeySystemInfo& other);
   ~KeySystemInfo();
 
   std::string key_system;

@@ -51,6 +51,9 @@ VideoDecodeAccelerator::SupportedProfile::~SupportedProfile() {}
 
 VideoDecodeAccelerator::Capabilities::Capabilities() : flags(NO_FLAGS) {}
 
+VideoDecodeAccelerator::Capabilities::Capabilities(const Capabilities& other) =
+    default;
+
 VideoDecodeAccelerator::Capabilities::~Capabilities() {}
 
 std::string VideoDecodeAccelerator::Capabilities::AsHumanReadableString()

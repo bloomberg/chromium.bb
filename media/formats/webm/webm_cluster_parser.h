@@ -55,6 +55,7 @@ class MEDIA_EXPORT WebMClusterParser : public WebMParserClient {
           bool is_video,
           base::TimeDelta default_duration,
           const scoped_refptr<MediaLog>& media_log);
+    Track(const Track& other);
     ~Track();
 
     int track_num() const { return track_num_; }

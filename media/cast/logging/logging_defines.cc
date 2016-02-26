@@ -43,6 +43,7 @@ FrameEvent::FrameEvent()
       target_bitrate(0),
       encoder_cpu_utilization(-1.0),
       idealized_bitrate_utilization(-1.0) {}
+FrameEvent::FrameEvent(const FrameEvent& other) = default;
 FrameEvent::~FrameEvent() {}
 
 PacketEvent::PacketEvent()

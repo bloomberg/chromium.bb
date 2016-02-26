@@ -20,6 +20,8 @@ TextTrackConfig::TextTrackConfig(TextKind kind,
       id_(id) {
 }
 
+TextTrackConfig::TextTrackConfig(const TextTrackConfig& other) = default;
+
 bool TextTrackConfig::Matches(const TextTrackConfig& config) const {
   return config.kind() == kind_ &&
          config.label() == label_ &&

@@ -9,6 +9,8 @@ namespace media {
 KeySystemInfo::KeySystemInfo() {
 }
 
+KeySystemInfo::KeySystemInfo(const KeySystemInfo& other) = default;
+
 KeySystemInfo::~KeySystemInfo() {
 }
 

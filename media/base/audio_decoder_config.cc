@@ -70,6 +70,9 @@ AudioDecoderConfig::AudioDecoderConfig(AudioCodec codec,
              extra_data, is_encrypted, base::TimeDelta(), 0);
 }
 
+AudioDecoderConfig::AudioDecoderConfig(const AudioDecoderConfig& other) =
+    default;
+
 void AudioDecoderConfig::Initialize(AudioCodec codec,
                                     SampleFormat sample_format,
                                     ChannelLayout channel_layout,

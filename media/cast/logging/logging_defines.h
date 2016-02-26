@@ -54,6 +54,7 @@ enum EventMediaType {
 
 struct FrameEvent {
   FrameEvent();
+  FrameEvent(const FrameEvent& other);
   ~FrameEvent();
 
   RtpTimeTicks rtp_timestamp;

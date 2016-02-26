@@ -40,6 +40,7 @@ struct MEDIA_EXPORT CdmKeyInformation {
                     size_t key_id_length,
                     KeyStatus status,
                     uint32_t system_code);
+  CdmKeyInformation(const CdmKeyInformation& other);
   ~CdmKeyInformation();
 
   std::vector<uint8_t> key_id;

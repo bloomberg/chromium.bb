@@ -23,6 +23,8 @@ BitstreamBuffer::BitstreamBuffer(int32_t id,
       size_(size),
       presentation_timestamp_(presentation_timestamp) {}
 
+BitstreamBuffer::BitstreamBuffer(const BitstreamBuffer& other) = default;
+
 BitstreamBuffer::~BitstreamBuffer() {}
 
 void BitstreamBuffer::SetDecryptConfig(const DecryptConfig& decrypt_config) {

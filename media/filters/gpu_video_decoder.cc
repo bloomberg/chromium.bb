@@ -53,6 +53,9 @@ GpuVideoDecoder::PendingDecoderBuffer::PendingDecoderBuffer(
     : shm_buffer(s), buffer(b), done_cb(done_cb) {
 }
 
+GpuVideoDecoder::PendingDecoderBuffer::PendingDecoderBuffer(
+    const PendingDecoderBuffer& other) = default;
+
 GpuVideoDecoder::PendingDecoderBuffer::~PendingDecoderBuffer() {}
 
 GpuVideoDecoder::BufferData::BufferData(int32_t bbid,

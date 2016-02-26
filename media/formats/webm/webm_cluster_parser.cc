@@ -598,6 +598,8 @@ WebMClusterParser::Track::Track(int track_num,
          default_duration_ > base::TimeDelta());
 }
 
+WebMClusterParser::Track::Track(const Track& other) = default;
+
 WebMClusterParser::Track::~Track() {}
 
 DecodeTimestamp WebMClusterParser::Track::GetReadyUpperBound() {

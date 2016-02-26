@@ -38,6 +38,7 @@ class MEDIA_EXPORT VideoDecodeAccelerator {
 
   struct MEDIA_EXPORT Capabilities {
     Capabilities();
+    Capabilities(const Capabilities& other);
     ~Capabilities();
 
     std::string AsHumanReadableString() const;

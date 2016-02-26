@@ -294,6 +294,8 @@ TracksBuilder::Track::Track(int track_num,
   }
 }
 
+TracksBuilder::Track::Track(const Track& other) = default;
+
 int TracksBuilder::Track::GetSize() const {
   return MasterElementSize(kWebMIdTrackEntry, GetPayloadSize());
 }

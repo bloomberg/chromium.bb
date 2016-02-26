@@ -34,6 +34,7 @@ class MEDIA_EXPORT SerialRunner {
   class MEDIA_EXPORT Queue {
    public:
     Queue();
+    Queue(const Queue& other);
     ~Queue();
 
     void Push(const base::Closure& closure);

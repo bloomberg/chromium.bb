@@ -28,6 +28,8 @@ class MEDIA_EXPORT BitstreamBuffer {
                   size_t size,
                   base::TimeDelta presentation_timestamp);
 
+  BitstreamBuffer(const BitstreamBuffer& other);
+
   ~BitstreamBuffer();
 
   void SetDecryptConfig(const DecryptConfig& decrypt_config);

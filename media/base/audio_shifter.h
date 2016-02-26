@@ -89,6 +89,7 @@ private:
   struct AudioQueueEntry {
     AudioQueueEntry(base::TimeTicks target_playout_time_,
                     scoped_ptr<AudioBus> audio_);
+    AudioQueueEntry(const AudioQueueEntry& other);
     ~AudioQueueEntry();
     base::TimeTicks target_playout_time;
     linked_ptr<AudioBus> audio;

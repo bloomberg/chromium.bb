@@ -58,6 +58,8 @@ VideoSenderConfig::VideoSenderConfig()
       codec(CODEC_VIDEO_VP8),
       number_of_encode_threads(1) {}
 
+VideoSenderConfig::VideoSenderConfig(const VideoSenderConfig& other) = default;
+
 VideoSenderConfig::~VideoSenderConfig() {}
 
 AudioSenderConfig::AudioSenderConfig()
@@ -72,6 +74,8 @@ AudioSenderConfig::AudioSenderConfig()
       bitrate(kDefaultAudioEncoderBitrate),
       codec(CODEC_AUDIO_OPUS) {}
 
+AudioSenderConfig::AudioSenderConfig(const AudioSenderConfig& other) = default;
+
 AudioSenderConfig::~AudioSenderConfig() {}
 
 FrameReceiverConfig::FrameReceiverConfig()
@@ -83,6 +87,9 @@ FrameReceiverConfig::FrameReceiverConfig()
       channels(0),
       target_frame_rate(0),
       codec(CODEC_UNKNOWN) {}
+
+FrameReceiverConfig::FrameReceiverConfig(const FrameReceiverConfig& other) =
+    default;
 
 FrameReceiverConfig::~FrameReceiverConfig() {}
 

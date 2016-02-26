@@ -55,6 +55,9 @@ VideoDecoderConfig::VideoDecoderConfig(VideoCodec codec,
              natural_size, extra_data, is_encrypted);
 }
 
+VideoDecoderConfig::VideoDecoderConfig(const VideoDecoderConfig& other) =
+    default;
+
 VideoDecoderConfig::~VideoDecoderConfig() {}
 
 void VideoDecoderConfig::Initialize(VideoCodec codec,

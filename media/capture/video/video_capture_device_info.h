@@ -15,6 +15,7 @@ struct MEDIA_EXPORT VideoCaptureDeviceInfo {
   VideoCaptureDeviceInfo();
   VideoCaptureDeviceInfo(const VideoCaptureDevice::Name& name,
                          const VideoCaptureFormats& supported_formats);
+  VideoCaptureDeviceInfo(const VideoCaptureDeviceInfo& other);
   ~VideoCaptureDeviceInfo();
 
   VideoCaptureDevice::Name name;

@@ -102,6 +102,7 @@ class MEDIA_EXPORT GpuVideoDecoder
     PendingDecoderBuffer(SHMBuffer* s,
                         const scoped_refptr<DecoderBuffer>& b,
                         const DecodeCB& done_cb);
+    PendingDecoderBuffer(const PendingDecoderBuffer& other);
     ~PendingDecoderBuffer();
     SHMBuffer* shm_buffer;
     scoped_refptr<DecoderBuffer> buffer;

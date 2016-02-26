@@ -82,6 +82,9 @@ AudioShifter::AudioQueueEntry::AudioQueueEntry(
     audio(audio_.release()) {
 }
 
+AudioShifter::AudioQueueEntry::AudioQueueEntry(const AudioQueueEntry& other) =
+    default;
+
 AudioShifter::AudioQueueEntry::~AudioQueueEntry() {}
 
 AudioShifter::AudioShifter(base::TimeDelta max_buffer_size,

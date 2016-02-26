@@ -54,6 +54,9 @@ const int kAttachedImageSizeLimit = 4 * 1024 * 1024;
 
 AudioVideoMetadataExtractor::StreamInfo::StreamInfo() {}
 
+AudioVideoMetadataExtractor::StreamInfo::StreamInfo(const StreamInfo& other) =
+    default;
+
 AudioVideoMetadataExtractor::StreamInfo::~StreamInfo() {}
 
 AudioVideoMetadataExtractor::AudioVideoMetadataExtractor()

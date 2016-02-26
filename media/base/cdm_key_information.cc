@@ -32,6 +32,8 @@ CdmKeyInformation::CdmKeyInformation(const uint8_t* key_id_data,
       status(status),
       system_code(system_code) {}
 
+CdmKeyInformation::CdmKeyInformation(const CdmKeyInformation& other) = default;
+
 CdmKeyInformation::~CdmKeyInformation() {
 }
 

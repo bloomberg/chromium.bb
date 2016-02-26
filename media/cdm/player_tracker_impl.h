@@ -35,6 +35,7 @@ class MEDIA_EXPORT PlayerTrackerImpl : public PlayerTracker {
   struct PlayerCallbacks {
     PlayerCallbacks(const base::Closure& new_key_cb,
                     const base::Closure& cdm_unset_cb);
+    PlayerCallbacks(const PlayerCallbacks& other);
     ~PlayerCallbacks();
 
     base::Closure new_key_cb;

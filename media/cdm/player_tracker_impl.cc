@@ -15,6 +15,9 @@ PlayerTrackerImpl::PlayerCallbacks::PlayerCallbacks(
     const base::Closure& cdm_unset_cb)
     : new_key_cb(new_key_cb), cdm_unset_cb(cdm_unset_cb) {}
 
+PlayerTrackerImpl::PlayerCallbacks::PlayerCallbacks(
+    const PlayerCallbacks& other) = default;
+
 PlayerTrackerImpl::PlayerCallbacks::~PlayerCallbacks() {
 }
 

@@ -69,6 +69,7 @@ typedef std::list<RtcpReceiverEventLogMessage> RtcpReceiverEventLogMessages;
 
 struct RtcpReceiverFrameLogMessage {
   explicit RtcpReceiverFrameLogMessage(RtpTimeTicks rtp_timestamp);
+  RtcpReceiverFrameLogMessage(const RtcpReceiverFrameLogMessage& other);
   ~RtcpReceiverFrameLogMessage();
 
   const RtpTimeTicks rtp_timestamp_;
