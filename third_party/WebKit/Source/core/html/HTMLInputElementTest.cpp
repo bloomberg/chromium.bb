@@ -70,4 +70,17 @@ TEST(HTMLInputElementTest, DefaultToolTip)
     EXPECT_EQ(String(), inputWithForm->defaultToolTip());
 }
 
+// crbug.com/589838
+TEST(HTMLInputElementTest, ImageTypeCrash)
+{
+    RefPtrWillBeRawPtr<Document> document = Document::create();
+    RefPtrWillBeRawPtr<HTMLInputElement> input = HTMLInputElement::create(*document, nullptr, false);
+    input->setAttribute(HTMLNames::typeAttr, "image");
+    input->ensureFallbackContent();
+    // Make sure ensurePrimaryContent() recreates UA shadow tree, and updating
+    // |value| doesn't crash.
+    input->ensurePrimaryContent();
+    input->setAttribute(HTMLNames::valueAttr, "aaa");
+}
+
 } // namespace blink
