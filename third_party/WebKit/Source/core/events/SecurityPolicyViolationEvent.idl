@@ -36,8 +36,7 @@
     readonly attribute DOMString effectiveDirective;
     readonly attribute DOMString originalPolicy;
     readonly attribute DOMString sourceFile;
-    // FIXME: The spec says "statusCode" is a DOMString.
-    [Measure] readonly attribute long      statusCode;
+    [Measure] readonly attribute unsigned short statusCode;
     readonly attribute long      lineNumber;
     readonly attribute long      columnNumber;
 };

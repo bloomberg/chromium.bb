@@ -14,8 +14,7 @@ dictionary SecurityPolicyViolationEventInit : EventInit {
     DOMString effectiveDirective;
     DOMString originalPolicy;
     DOMString sourceFile;
-    // FIXME: The spec says "statusCode" is a DOMString.
-    long      statusCode;
+    unsigned short statusCode;
     long      lineNumber;
     long      columnNumber;
 };

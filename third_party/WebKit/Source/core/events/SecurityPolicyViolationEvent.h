@@ -52,7 +52,7 @@ public:
     const String& sourceFile() const { return m_sourceFile; }
     int lineNumber() const { return m_lineNumber; }
     int columnNumber() const { return m_columnNumber; }
-    int statusCode() const { return m_statusCode; }
+    uint16_t statusCode() const { return m_statusCode; }
 
     const AtomicString& interfaceName() const override { return EventNames::SecurityPolicyViolationEvent; }
 
