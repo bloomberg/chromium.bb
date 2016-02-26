@@ -666,7 +666,6 @@ PassOwnPtr<DragImage> LocalFrame::nodeImage(Node& node)
     // TODO(pdr): This will also paint the background if the object contains transparency. We can
     // directly call layoutObject->paint(...) (see: ObjectPainter::paintAsPseudoStackingContext) but
     // painters are inconsistent about which transform space they expect (see: svg, inlines, etc.)
-    // TODO(pdr): SVG and inlines are painted offset (crbug.com/579153, crbug.com/579158).
     return paintIntoDragImage(GlobalPaintFlattenCompositingLayers, layoutObject->absoluteBoundingBoxRectIncludingDescendants(), &node);
 }
 

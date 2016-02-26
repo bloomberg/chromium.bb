@@ -171,4 +171,73 @@ TEST_F(EventHandlerTest, multiClickSelectionFromTapDisabledIfNotEditable)
     EXPECT_EQ(Position(line, 0), selection.start());
 }
 
+TEST_F(EventHandlerTest, draggedInlinePositionTest)
+{
+    setHtmlInnerHTML(
+        "<style>"
+        "body { margin: 0px; }"
+        ".line { font-family: sans-serif; background: blue; width: 300px; height: 30px; font-size: 40px; margin-left: 250px; }"
+        "</style>"
+        "<div style='width: 300px; height: 100px;'>"
+        "<span class='line' draggable='true'>abcd</span>"
+        "</div>");
+    PlatformMouseEvent mouseDownEvent1(
+        IntPoint(262, 29),
+        IntPoint(329, 67),
+        LeftButton,
+        PlatformEvent::MousePressed,
+        1,
+        PlatformEvent::Modifiers::LeftButtonDown,
+        WTF::monotonicallyIncreasingTime());
+    document().frame()->eventHandler().handleMousePressEvent(mouseDownEvent1);
+
+    PlatformMouseEvent mouseMoveEvent(
+        IntPoint(618, 298),
+        IntPoint(685, 436),
+        LeftButton,
+        PlatformEvent::MouseMoved,
+        1,
+        PlatformEvent::Modifiers::LeftButtonDown,
+        WTF::monotonicallyIncreasingTime());
+    document().frame()->eventHandler().handleMouseMoveEvent(mouseMoveEvent);
+
+    EXPECT_EQ(IntPoint(12, 29), document().frame()->eventHandler().dragDataTransferLocationForTesting());
+}
+
+TEST_F(EventHandlerTest, draggedSVGImagePositionTest)
+{
+    setHtmlInnerHTML(
+        "<style>"
+        "body { margin: 0px; }"
+        "[draggable] {"
+        "-webkit-user-select: none; user-select: none; -webkit-user-drag: element; }"
+        "</style>"
+        "<div style='width: 300px; height: 100px;'>"
+        "<svg width='500' height='500'>"
+        "<rect x='100' y='100' width='100px' height='100px' fill='blue' draggable='true'/>"
+        "</svg>"
+        "</div>");
+    PlatformMouseEvent mouseDownEvent1(
+        IntPoint(145, 144),
+        IntPoint(212, 282),
+        LeftButton,
+        PlatformEvent::MousePressed,
+        1,
+        PlatformEvent::Modifiers::LeftButtonDown,
+        WTF::monotonicallyIncreasingTime());
+    document().frame()->eventHandler().handleMousePressEvent(mouseDownEvent1);
+
+    PlatformMouseEvent mouseMoveEvent(
+        IntPoint(618, 298),
+        IntPoint(685, 436),
+        LeftButton,
+        PlatformEvent::MouseMoved,
+        1,
+        PlatformEvent::Modifiers::LeftButtonDown,
+        WTF::monotonicallyIncreasingTime());
+    document().frame()->eventHandler().handleMouseMoveEvent(mouseMoveEvent);
+
+    EXPECT_EQ(IntPoint(45, 44), document().frame()->eventHandler().dragDataTransferLocationForTesting());
+}
+
 } // namespace blink

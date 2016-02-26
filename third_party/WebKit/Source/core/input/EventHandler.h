@@ -133,6 +133,8 @@ public:
 
     IntPoint lastKnownMousePosition() const;
 
+    IntPoint dragDataTransferLocationForTesting();
+
     // Attempts to scroll the DOM tree. If that fails, scrolls the view.
     // If the view can't be scrolled either, recursively bubble to the parent frame.
     bool bubblingScroll(ScrollDirection, ScrollGranularity, Node* startingNode = nullptr);

@@ -688,6 +688,14 @@ IntPoint EventHandler::lastKnownMousePosition() const
     return m_lastKnownMousePosition;
 }
 
+IntPoint EventHandler::dragDataTransferLocationForTesting()
+{
+    if (dragState().m_dragDataTransfer)
+        return dragState().m_dragDataTransfer->dragLocation();
+
+    return IntPoint();
+}
+
 static LocalFrame* subframeForTargetNode(Node* node)
 {
     if (!node)
@@ -3327,8 +3335,8 @@ bool EventHandler::tryStartDrag(const MouseEventWithHitTestResults& event)
     // image and offset
     if (dragState().m_dragType == DragSourceActionDHTML) {
         if (LayoutObject* layoutObject = dragState().m_dragSrc->layoutObject()) {
-            FloatPoint absPos = layoutObject->localToAbsolute(FloatPoint(), UseTransforms);
-            IntSize delta = m_mouseDownPos - roundedIntPoint(absPos);
+            IntRect boundingIncludingDescendants = layoutObject->absoluteBoundingBoxRectIncludingDescendants();
+            IntSize delta = m_mouseDownPos - boundingIncludingDescendants.location();
             dragState().m_dragDataTransfer->setDragImageElement(dragState().m_dragSrc.get(), IntPoint(delta));
         } else {
             // The layoutObject has disappeared, this can happen if the onStartDrag handler has hidden
