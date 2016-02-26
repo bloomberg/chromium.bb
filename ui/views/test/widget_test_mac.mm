@@ -10,6 +10,7 @@
 #import "base/mac/scoped_objc_class_swizzler.h"
 #include "base/macros.h"
 #import "ui/views/cocoa/bridged_native_widget.h"
+#include "ui/views/widget/native_widget_mac.h"
 #include "ui/views/widget/root_view.h"
 
 @interface IsKeyWindowDonor : NSObject

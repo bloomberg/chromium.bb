@@ -502,6 +502,8 @@
       'test/focus_manager_test.h',
       'test/menu_runner_test_api.cc',
       'test/menu_runner_test_api.h',
+      'test/native_widget_factory.cc',
+      'test/native_widget_factory.h',
       'test/scoped_views_test_helper.cc',
       'test/scoped_views_test_helper.h',
       'test/slider_test_api.cc',
@@ -817,10 +819,10 @@
       ],
       'sources': [
         '<@(views_test_support_sources)',
-        # These two sources are not listed in views_test_support_sources as
-        # they are not used by the gn target that pulls in
-        # views_test_support_sources.
+        # These are not listed in views_test_support_sources as they are not
+        # used by the gn target that pulls in views_test_support_sources.
         'test/default_platform_test_helper.cc',
+        'test/native_widget_factory_desktop.cc',
         'test/platform_test_helper.h',
       ],
       'conditions': [

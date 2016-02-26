@@ -26,6 +26,7 @@
 #include "ui/views/mus/window_manager_constants_converters.h"
 #include "ui/views/mus/window_manager_frame_values.h"
 #include "ui/views/mus/window_tree_host_mus.h"
+#include "ui/views/widget/native_widget_aura.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/window/custom_frame_view.h"
 #include "ui/wm/core/base_focus_rules.h"
@@ -307,6 +308,8 @@ NonClientFrameView* NativeWidgetMus::CreateNonClientFrameView() {
 }
 
 void NativeWidgetMus::InitNativeWidget(const Widget::InitParams& params) {
+  NativeWidgetAura::RegisterNativeWidgetForWindow(this, content_);
+
   ownership_ = params.ownership;
   window_->SetCanFocus(params.activatable ==
                        Widget::InitParams::ACTIVATABLE_YES);

@@ -18,6 +18,7 @@
 #include "ui/events/event_utils.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/screen.h"
+#include "ui/views/test/native_widget_factory.h"
 #include "ui/views/test/test_views.h"
 #include "ui/views/test/test_views_delegate.h"
 #include "ui/views/test/views_test_base.h"
@@ -486,7 +487,8 @@ void RunCloseWidgetDuringDispatchTest(WidgetTest* test,
   Widget* widget = new Widget;
   Widget::InitParams params =
       test->CreateParams(Widget::InitParams::TYPE_POPUP);
-  params.native_widget = new PlatformDesktopNativeWidget(widget);
+  params.native_widget =
+      CreatePlatformDesktopNativeWidgetImpl(params, widget, nullptr);
   params.bounds = gfx::Rect(0, 0, 50, 100);
   widget->Init(params);
   widget->SetContentsView(new CloseWidgetView(last_event_type));
@@ -528,8 +530,8 @@ TEST_F(WidgetTest, WindowMouseModalityTest) {
   gfx::Rect initial_bounds(0, 0, 500, 500);
   init_params.bounds = initial_bounds;
   init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  init_params.native_widget =
-      new PlatformDesktopNativeWidget(&top_level_widget);
+  init_params.native_widget = CreatePlatformDesktopNativeWidgetImpl(
+      init_params, &top_level_widget, nullptr);
   top_level_widget.Init(init_params);
   top_level_widget.Show();
   EXPECT_TRUE(top_level_widget.IsVisible());
