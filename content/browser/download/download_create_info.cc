@@ -30,17 +30,6 @@ DownloadCreateInfo::DownloadCreateInfo()
 
 DownloadCreateInfo::~DownloadCreateInfo() {}
 
-std::string DownloadCreateInfo::DebugString() const {
-  return base::StringPrintf(
-      "{"
-      " download_id = %u"
-      " url = \"%s\""
-      " request_handle = %s"
-      " total_bytes = %" PRId64 " }",
-      download_id, url().spec().c_str(), request_handle->DebugString().c_str(),
-      total_bytes);
-}
-
 const GURL& DownloadCreateInfo::url() const {
   return url_chain.empty() ? GURL::EmptyGURL() : url_chain.back();
 }

@@ -95,12 +95,11 @@ DownloadResourceHandler::DownloadResourceHandler(net::URLRequest* request)
   const ResourceRequestInfoImpl* request_info = GetRequestInfo();
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&InitializeDownloadTabInfoOnUIThread,
-                 DownloadRequestHandle(AsWeakPtr(), request_info->GetChildID(),
-                                       request_info->GetRouteID(),
-                                       request_info->GetRequestID(),
-                                       request_info->frame_tree_node_id()),
-                 tab_info_.get()));
+      base::Bind(
+          &InitializeDownloadTabInfoOnUIThread,
+          DownloadRequestHandle(AsWeakPtr(),
+                                request_info->GetWebContentsGetterForRequest()),
+          tab_info_.get()));
 }
 
 DownloadResourceHandler::~DownloadResourceHandler() {
@@ -188,8 +187,7 @@ void DownloadResourceHandler::OnStart(
   create_info->transition_type = request_info->GetPageTransition();
 
   create_info->request_handle.reset(new DownloadRequestHandle(
-      AsWeakPtr(), request_info->GetChildID(), request_info->GetRouteID(),
-      request_info->GetRequestID(), request_info->frame_tree_node_id()));
+      AsWeakPtr(), request_info->GetWebContentsGetterForRequest()));
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,

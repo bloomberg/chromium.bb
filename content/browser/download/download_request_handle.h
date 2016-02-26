@@ -5,12 +5,11 @@
 #ifndef CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_REQUEST_HANDLE_H_
 #define CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_REQUEST_HANDLE_H_
 
-#include <string>
-
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/download/download_resource_handler.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/resource_request_info.h"
 
 namespace content {
 class DownloadManager;
@@ -36,9 +35,6 @@ class CONTENT_EXPORT DownloadRequestHandleInterface {
 
   // Cancels the request.
   virtual void CancelRequest() const = 0;
-
-  // Describes the object.
-  virtual std::string DebugString() const = 0;
 };
 
 
@@ -57,12 +53,9 @@ class CONTENT_EXPORT DownloadRequestHandle
   // allowing mocking of ResourceDispatcherHost in unit tests.
   DownloadRequestHandle();
 
-  // Note that |rdh| is required to be non-null.
   DownloadRequestHandle(const base::WeakPtr<DownloadResourceHandler>& handler,
-                        int child_id,
-                        int render_view_id,
-                        int request_id,
-                        int frame_tree_node_id);
+                        const content::ResourceRequestInfo::WebContentsGetter&
+                            web_contents_getter);
 
   // Implement DownloadRequestHandleInterface interface.
   WebContents* GetWebContents() const override;
@@ -70,23 +63,10 @@ class CONTENT_EXPORT DownloadRequestHandle
   void PauseRequest() const override;
   void ResumeRequest() const override;
   void CancelRequest() const override;
-  std::string DebugString() const override;
 
  private:
   base::WeakPtr<DownloadResourceHandler> handler_;
-
-  // The ID of the child process that started the download.
-  int child_id_;
-
-  // The ID of the render view that started the download.
-  int render_view_id_;
-
-  // The ID associated with the request used for the download.
-  int request_id_;
-
-  // PlzNavigate
-  // The ID of the FrameTreeNode that started the download.
-  int frame_tree_node_id_;
+  content::ResourceRequestInfo::WebContentsGetter web_contents_getter_;
 };
 
 }  // namespace content

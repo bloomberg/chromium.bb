@@ -131,9 +131,6 @@ class SavePackageRequestHandle : public DownloadRequestHandleInterface {
   void PauseRequest() const override {}
   void ResumeRequest() const override {}
   void CancelRequest() const override {}
-  std::string DebugString() const override {
-    return "SavePackage DownloadRequestHandle";
-  }
 
  private:
   base::WeakPtr<SavePackage> save_package_;

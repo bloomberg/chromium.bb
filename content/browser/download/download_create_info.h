@@ -33,8 +33,6 @@ struct CONTENT_EXPORT DownloadCreateInfo {
   DownloadCreateInfo();
   ~DownloadCreateInfo();
 
-  std::string DebugString() const;
-
   // The URL from which we are downloading. This is the final URL after any
   // redirection by the server for |url_chain|.
   const GURL& url() const;

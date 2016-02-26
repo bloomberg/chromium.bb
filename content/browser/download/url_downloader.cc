@@ -60,7 +60,6 @@ class UrlDownloader::RequestHandle : public DownloadRequestHandleInterface {
     downloader_task_runner_->PostTask(
         FROM_HERE, base::Bind(&UrlDownloader::CancelRequest, downloader_));
   }
-  std::string DebugString() const override { return std::string(); }
 
  private:
   base::WeakPtr<UrlDownloader> downloader_;
