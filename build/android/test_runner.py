@@ -684,6 +684,7 @@ def AddPerfTestOptions(parser):
   group.add_argument('--min-battery-level', type=int,
                      help='Only starts tests when the battery is charged above '
                           'given level.')
+  group.add_argument('--known-devices-file', help='Path to known device list.')
   AddCommonOptions(parser)
   AddDeviceOptions(parser)
 
@@ -707,7 +708,8 @@ def ProcessPerfTestOptions(args):
       args.print_step, args.no_timeout, args.test_filter,
       args.dry_run, args.single_step, args.collect_chartjson_data,
       args.output_chartjson_data, args.get_output_dir_archive,
-      args.max_battery_temp, args.min_battery_level)
+      args.max_battery_temp, args.min_battery_level,
+      args.known_devices_file)
 
 
 def AddPythonTestOptions(parser):

@@ -20,4 +20,5 @@ PerfOptions = collections.namedtuple('PerfOptions', [
     'get_output_dir_archive',
     'max_battery_temp',
     'min_battery_level',
+    'known_devices_file',
 ])
