@@ -351,7 +351,7 @@ void AndroidVideoDecodeAccelerator::SetCdm(int cdm_id) {
     return;
   }
 
-  cdm_ = media::MojoCdmService::GetCdm(cdm_id);
+  cdm_ = media::MojoCdmService::LegacyGetCdm(cdm_id);
   DCHECK(cdm_);
 
   // On Android platform the MediaKeys will be its subclass MediaDrmBridge.

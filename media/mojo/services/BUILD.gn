@@ -151,6 +151,7 @@ source_set("renderer_service") {
   ]
 
   deps = [
+    ":cdm_service",
     ":converters",
     "//base",
     "//media",

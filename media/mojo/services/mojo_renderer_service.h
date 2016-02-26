@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
@@ -16,25 +17,23 @@
 #include "media/mojo/interfaces/renderer.mojom.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
-namespace mojo {
-class Connection;
-}
-
 namespace media {
 
 class DemuxerStreamProviderShim;
-class CdmContextProvider;
+class MediaKeys;
+class MojoCdmServiceContext;
 class Renderer;
 
-// A interfaces::Renderer implementation that uses media::AudioRenderer to
-// decode and render audio to a sink obtained from the Connection.
+// An interfaces::Renderer implementation that use a media::Renderer to render
+// media streams.
 class MojoRendererService : interfaces::Renderer {
  public:
-  // |cdm_context_provider| can be used to find the CdmContext to support
+  // |mojo_cdm_service_context| can be used to find the CDM to support
   // encrypted media. If null, encrypted media is not supported.
-  MojoRendererService(base::WeakPtr<CdmContextProvider> cdm_context_provider,
-                      scoped_ptr<media::Renderer> renderer,
-                      mojo::InterfaceRequest<interfaces::Renderer> request);
+  MojoRendererService(
+      base::WeakPtr<MojoCdmServiceContext> mojo_cdm_service_context,
+      scoped_ptr<media::Renderer> renderer,
+      mojo::InterfaceRequest<interfaces::Renderer> request);
   ~MojoRendererService() final;
 
   // interfaces::Renderer implementation.
@@ -89,24 +88,31 @@ class MojoRendererService : interfaces::Renderer {
   void OnFlushCompleted(const mojo::Closure& callback);
 
   // Callback executed once SetCdm() completes.
-  void OnCdmAttached(const mojo::Callback<void(bool)>& callback, bool success);
+  void OnCdmAttached(scoped_refptr<MediaKeys> cdm,
+                     const mojo::Callback<void(bool)>& callback,
+                     bool success);
 
   mojo::StrongBinding<interfaces::Renderer> binding_;
 
-  base::WeakPtr<CdmContextProvider> cdm_context_provider_;
+  base::WeakPtr<MojoCdmServiceContext> mojo_cdm_service_context_;
 
   State state_;
 
-  // Note: |stream_provider_| must be destructed after |renderer_| to avoid
-  // access violation.
   scoped_ptr<DemuxerStreamProviderShim> stream_provider_;
-
-  scoped_ptr<media::Renderer> renderer_;
 
   base::RepeatingTimer time_update_timer_;
   uint64_t last_media_time_usec_;
 
   interfaces::RendererClientPtr client_;
+
+  // Hold a reference to the CDM set on the |renderer_| so that the CDM won't be
+  // destructed while the |renderer_| is still using it.
+  scoped_refptr<MediaKeys> cdm_;
+
+  // Note: Destroy |renderer_| first to avoid access violation into other
+  // members, e.g. |stream_provider_| and |cdm_|.
+  // Must use "media::" because "Renderer" is ambiguous.
+  scoped_ptr<media::Renderer> renderer_;
 
   base::WeakPtr<MojoRendererService> weak_this_;
   base::WeakPtrFactory<MojoRendererService> weak_factory_;

@@ -7,8 +7,10 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "media/base/media_keys.h"
 #include "media/base/renderer.h"
 #include "media/mojo/services/demuxer_stream_provider_shim.h"
+#include "media/mojo/services/mojo_cdm_service_context.h"
 
 namespace media {
 
@@ -16,14 +18,14 @@ namespace media {
 const int kTimeUpdateIntervalMs = 50;
 
 MojoRendererService::MojoRendererService(
-    base::WeakPtr<CdmContextProvider> cdm_context_provider,
+    base::WeakPtr<MojoCdmServiceContext> mojo_cdm_service_context,
     scoped_ptr<media::Renderer> renderer,
     mojo::InterfaceRequest<interfaces::Renderer> request)
     : binding_(this, std::move(request)),
-      cdm_context_provider_(cdm_context_provider),
+      mojo_cdm_service_context_(mojo_cdm_service_context),
       state_(STATE_UNINITIALIZED),
-      renderer_(std::move(renderer)),
       last_media_time_usec_(0),
+      renderer_(std::move(renderer)),
       weak_factory_(this) {
   DVLOG(1) << __FUNCTION__;
   DCHECK(renderer_);
@@ -77,21 +79,28 @@ void MojoRendererService::SetVolume(float volume) {
 
 void MojoRendererService::SetCdm(int32_t cdm_id,
                                  const mojo::Callback<void(bool)>& callback) {
-  if (!cdm_context_provider_) {
-    LOG(ERROR) << "CDM context provider not available.";
+  if (!mojo_cdm_service_context_) {
+    DVLOG(1) << "CDM service context not available.";
     callback.Run(false);
     return;
   }
 
-  CdmContext* cdm_context = cdm_context_provider_->GetCdmContext(cdm_id);
+  scoped_refptr<MediaKeys> cdm = mojo_cdm_service_context_->GetCdm(cdm_id);
+  if (!cdm) {
+    DVLOG(1) << "CDM not found: " << cdm_id;
+    callback.Run(false);
+    return;
+  }
+
+  CdmContext* cdm_context = cdm->GetCdmContext();
   if (!cdm_context) {
-    LOG(ERROR) << "CDM context not found: " << cdm_id;
+    DVLOG(1) << "CDM context not available: " << cdm_id;
     callback.Run(false);
     return;
   }
 
   renderer_->SetCdm(cdm_context, base::Bind(&MojoRendererService::OnCdmAttached,
-                                            weak_this_, callback));
+                                            weak_this_, cdm, callback));
 }
 
 void MojoRendererService::OnStreamReady(
@@ -179,9 +188,14 @@ void MojoRendererService::OnFlushCompleted(const mojo::Closure& callback) {
 }
 
 void MojoRendererService::OnCdmAttached(
+    scoped_refptr<MediaKeys> cdm,
     const mojo::Callback<void(bool)>& callback,
     bool success) {
   DVLOG(1) << __FUNCTION__ << "(" << success << ")";
+
+  if (success)
+    cdm_ = cdm;
+
   callback.Run(success);
 }
 

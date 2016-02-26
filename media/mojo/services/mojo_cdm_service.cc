@@ -72,7 +72,7 @@ using NewSessionMojoCdmPromise = MojoCdmPromise<std::string>;
 int MojoCdmService::next_cdm_id_ = CdmContext::kInvalidCdmId + 1;
 
 // static
-scoped_refptr<MediaKeys> MojoCdmService::GetCdm(int cdm_id) {
+scoped_refptr<MediaKeys> MojoCdmService::LegacyGetCdm(int cdm_id) {
   DVLOG(1) << __FUNCTION__ << ": " << cdm_id;
   return g_cdm_manager.Get().GetCdm(cdm_id);
 }
@@ -182,8 +182,8 @@ void MojoCdmService::RemoveSession(
                       make_scoped_ptr(new SimpleMojoCdmPromise(callback)));
 }
 
-CdmContext* MojoCdmService::GetCdmContext() {
-  return cdm_->GetCdmContext();
+scoped_refptr<MediaKeys> MojoCdmService::GetCdm() {
+  return cdm_;
 }
 
 void MojoCdmService::OnCdmCreated(const InitializeCallback& callback,
@@ -213,7 +213,7 @@ void MojoCdmService::OnCdmCreated(const InitializeCallback& callback,
   // If |cdm| has a decryptor, create the MojoDecryptorService
   // and pass the connection back to the client.
   interfaces::DecryptorPtr decryptor_service;
-  CdmContext* const cdm_context = GetCdmContext();
+  CdmContext* const cdm_context = cdm_->GetCdmContext();
   if (cdm_context && cdm_context->GetDecryptor()) {
     // MojoDecryptorService takes a reference to the CDM, but it is still owned
     // by |this|.

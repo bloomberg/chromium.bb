@@ -150,6 +150,8 @@ class MEDIA_EXPORT MediaKeys
   // Returns null if no Decryptor nor CDM ID is supported. Instead the media
   // player may use the CDM via some platform specific method.
   // By default this method returns null.
+  // TODO(xhwang): Convert all SetCdm() implementations to use CdmContext so
+  // that this function should never return nullptr.
   virtual CdmContext* GetCdmContext();
 
   // Deletes |this| on the correct thread. By default |this| is deleted

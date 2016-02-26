@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "media/base/media_keys.h"
 #include "media/mojo/services/mojo_cdm_service.h"
 
 namespace media {
@@ -31,14 +32,14 @@ void MojoCdmServiceContext::UnregisterCdm(int cdm_id) {
   cdm_services_.erase(cdm_id);
 }
 
-CdmContext* MojoCdmServiceContext::GetCdmContext(int32_t cdm_id) {
+scoped_refptr<MediaKeys> MojoCdmServiceContext::GetCdm(int cdm_id) {
   auto cdm_service = cdm_services_.find(cdm_id);
   if (cdm_service == cdm_services_.end()) {
-    LOG(ERROR) << "CDM context not found: " << cdm_id;
+    LOG(ERROR) << "CDM service not found: " << cdm_id;
     return nullptr;
   }
 
-  return cdm_service->second->GetCdmContext();
+  return cdm_service->second->GetCdm();
 }
 
 }  // namespace media
