@@ -748,10 +748,6 @@ void CompositorTimingHistory::DidDraw(bool used_new_active_tree,
     base::TimeDelta main_and_impl_delta =
         impl_frame_time - active_tree_main_frame_time_;
     DCHECK_GE(main_and_impl_delta, base::TimeDelta());
-    if (!using_synchronous_renderer_compositor_) {
-      DCHECK_EQ(main_thread_missed_last_deadline,
-                !main_and_impl_delta.is_zero());
-    }
     uma_reporter_->AddMainAndImplFrameTimeDelta(main_and_impl_delta);
     active_tree_main_frame_time_ = base::TimeTicks();
 
