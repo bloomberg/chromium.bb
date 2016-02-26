@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.firstrun;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.text.TextPaint;
 import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
 import android.view.LayoutInflater;
@@ -64,7 +65,8 @@ public class ToSAndUMAFirstRunFragment extends FirstRunPage {
 
         mTosAndPrivacy.setMovementMethod(LinkMovementMethod.getInstance());
 
-        ClickableSpan clickableTermsSpan = new ClickableSpan() {
+        int linkColor = getResources().getColor(R.color.ui_link_text_color);
+        ClickableSpan clickableTermsSpan = new FreClickableSpan(linkColor) {
             @Override
             public void onClick(View widget) {
                 if (!isAdded()) return;
@@ -73,7 +75,7 @@ public class ToSAndUMAFirstRunFragment extends FirstRunPage {
             }
         };
 
-        ClickableSpan clickablePrivacySpan = new ClickableSpan() {
+        ClickableSpan clickablePrivacySpan = new FreClickableSpan(linkColor) {
             @Override
             public void onClick(View widget) {
                 if (!isAdded()) return;
@@ -84,6 +86,24 @@ public class ToSAndUMAFirstRunFragment extends FirstRunPage {
         mTosAndPrivacy.setText(SpanApplier.applySpans(getString(R.string.fre_tos_and_privacy),
                 new SpanInfo("<LINK1>", "</LINK1>", clickableTermsSpan),
                 new SpanInfo("<LINK2>", "</LINK2>", clickablePrivacySpan)));
+    }
+
+    // TODO(peconn): Move this out into a more general class.
+    private abstract static class FreClickableSpan extends ClickableSpan {
+        private final int mColor;
+
+        /**
+         * Creates a clickable span that styles without an underline and uses the given color.
+         */
+        public FreClickableSpan(int color) {
+            mColor = color;
+        }
+
+        @Override
+        public void updateDrawState(TextPaint textPaint) {
+            textPaint.setColor(mColor);
+            textPaint.setUnderlineText(false);
+        }
     }
 
     @Override
