@@ -2,15 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/public/common/user_agent.h"
 #include "headless/public/headless_browser.h"
+#include "net/url_request/url_request_context_getter.h"
 
 using Options = headless::HeadlessBrowser::Options;
 using Builder = headless::HeadlessBrowser::Options::Builder;
 
 namespace headless {
 
+// Product name for building the default user agent string.
+namespace {
+const char kProductName[] = "HeadlessChrome";
+}
+
 Options::Options(int argc, const char** argv)
-    : argc(argc), argv(argv), devtools_http_port(kInvalidPort) {}
+    : argc(argc),
+      argv(argv),
+      user_agent(content::BuildUserAgentFromProduct(kProductName)),
+      message_pump(nullptr) {}
 
 Options::~Options() {}
 
@@ -23,14 +33,13 @@ Builder& Builder::SetUserAgent(const std::string& user_agent) {
   return *this;
 }
 
-Builder& Builder::EnableDevToolsServer(int port) {
-  options_.devtools_http_port = port;
+Builder& Builder::EnableDevToolsServer(const net::IPEndPoint& endpoint) {
+  options_.devtools_endpoint = endpoint;
   return *this;
 }
 
-Builder& Builder::SetURLRequestContextGetter(
-    scoped_refptr<net::URLRequestContextGetter> url_request_context_getter) {
-  options_.url_request_context_getter = url_request_context_getter;
+Builder& Builder::SetMessagePump(base::MessagePump* message_pump) {
+  options_.message_pump = message_pump;
   return *this;
 }
 

@@ -728,6 +728,13 @@ group("gn_only") {
     ]
   }
 
+  if (is_linux && use_ozone) {
+    deps += [
+      "//headless",
+      "//headless:headless_tests",
+    ]
+  }
+
   if (!is_chromecast && (is_android || is_linux || is_chromeos)) {
     deps += [
       "//blimp",

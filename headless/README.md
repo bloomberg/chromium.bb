@@ -1,0 +1,59 @@
+# Headless Chromium
+
+Headless Chromium is a library for running Chromium in a headless/server
+environment. Expected use cases include loading web pages, extracting metadata
+(e.g., the DOM) and generating bitmaps from page contents -- using all the
+modern web platform features provided by Chromium and Blink.
+
+## Headless shell
+
+The headless shell is a sample application which demonstrates the use of the
+headless API. To run it, first open the build configuration editor:
+
+```
+$ gn args out/Release
+```
+
+and enable headless mode with `is_headless = true`.
+
+Then build the shell:
+
+```
+$ ninja -C out/Release headless_shell
+```
+
+After the build completes, the headless shell can be run with the following
+command:
+
+```
+$ out/Release/headless_shell https://www.google.com
+```
+
+To attach a [DevTools](https://developer.chrome.com/devtools) debugger to the
+shell, start it with an argument specifying the debugging port:
+
+```
+$ out/Release/headless_shell --remote-debugging-port=9222 https://youtube.com
+```
+
+Then navigate to `http://127.0.0.1:9222` with your browser.
+
+## Embedder API
+
+The embedder API allows developers to integrate the headless library into their
+application. The API provides default implementations for low level adaptation
+points such as networking and the run loop.
+
+The main embedder API classes are:
+
+- `HeadlessBrowser::Options::Builder` - Defines the embedding options, e.g.:
+  - `SetMessagePump` - Replaces the default base message pump. See
+    `base::MessagePump`.
+
+## Headless API
+
+The headless API is used to drive the browser and interact with the loaded web
+pages. Its main classes are:
+
+- `HeadlessBrowser` - Represents the global headless browser instance.
+- `HeadlessWebContents` - Represents a single "tab" within the browser.
