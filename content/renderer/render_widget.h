@@ -58,6 +58,7 @@ class SyncMessageFilter;
 
 namespace blink {
 struct WebDeviceEmulationParams;
+class WebFrameWidget;
 class WebGestureEvent;
 class WebLocalFrame;
 class WebMouseEvent;
@@ -377,8 +378,9 @@ class CONTENT_EXPORT RenderWidget
 
   ~RenderWidget() override;
 
-  static blink::WebWidget* CreateWebFrameWidget(RenderWidget* render_widget,
-                                                blink::WebLocalFrame* frame);
+  static blink::WebFrameWidget* CreateWebFrameWidget(
+      RenderWidget* render_widget,
+      blink::WebLocalFrame* frame);
 
   // Creates a WebWidget based on the popup type.
   static blink::WebWidget* CreateWebWidget(RenderWidget* render_widget);

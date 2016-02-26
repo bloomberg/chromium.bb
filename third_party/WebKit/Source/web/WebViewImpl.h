@@ -168,9 +168,6 @@ public:
     WebSettings* settings() override;
     WebString pageEncoding() const override;
     void setPageEncoding(const WebString&) override;
-    bool isTransparent() const override;
-    void setIsTransparent(bool value) override;
-    void setBaseBackgroundColor(WebColor) override;
     bool tabsToLinks() const override;
     void setTabsToLinks(bool value) override;
     bool tabKeyCyclesThroughElements() const override;
@@ -294,6 +291,7 @@ public:
     void invalidateRect(const IntRect&);
 
     void setIgnoreInputEvents(bool newValue);
+    void setBaseBackgroundColor(WebColor);
     void setBackgroundColorOverride(WebColor);
     void setZoomFactorOverride(float);
     void updateShowFPSCounter();
@@ -536,6 +534,9 @@ public:
 
     // Use in Slimming Paint v2 to update the layer tree for the content.
     PaintArtifactCompositor& paintArtifactCompositor() { return m_paintArtifactCompositor; }
+
+    bool isTransparent() const;
+    void setIsTransparent(bool value);
 
 private:
     InspectorOverlay* inspectorOverlay();

@@ -265,6 +265,21 @@ void WebViewFrameWidget::setVisibilityState(WebPageVisibilityState visibilitySta
     return m_webView->setVisibilityState(visibilityState, isInitialState);
 }
 
+void WebViewFrameWidget::setIsTransparent(bool isTransparent)
+{
+    m_webView->setIsTransparent(isTransparent);
+}
+
+bool WebViewFrameWidget::isTransparent() const
+{
+    return m_webView->isTransparent();
+}
+
+void WebViewFrameWidget::setBaseBackgroundColor(WebColor color)
+{
+    m_webView->setBaseBackgroundColor(color);
+}
+
 void WebViewFrameWidget::scheduleAnimation()
 {
     m_webView->scheduleAnimation();

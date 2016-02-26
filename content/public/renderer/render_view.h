@@ -21,6 +21,7 @@
 namespace blink {
 class WebElement;
 class WebFrame;
+class WebFrameWidget;
 class WebLocalFrame;
 class WebNode;
 class WebString;
@@ -87,6 +88,9 @@ class CONTENT_EXPORT RenderView : public IPC::Sender {
 
   // Returns the associated WebView. May return NULL when the view is closing.
   virtual blink::WebView* GetWebView() = 0;
+
+  // Returns the associated WebFrameWidget.
+  virtual blink::WebFrameWidget* GetWebFrameWidget() = 0;
 
   // Returns true if we should display scrollbars for the given view size and
   // false if the scrollbars should be hidden.

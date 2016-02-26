@@ -317,7 +317,7 @@ RenderWidget* RenderWidget::CreateForFrame(
 }
 
 // static
-blink::WebWidget* RenderWidget::CreateWebFrameWidget(
+blink::WebFrameWidget* RenderWidget::CreateWebFrameWidget(
     RenderWidget* render_widget,
     blink::WebLocalFrame* frame) {
   if (!frame->parent()) {

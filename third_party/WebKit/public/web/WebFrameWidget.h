@@ -55,6 +55,21 @@ public:
     // it needs to draw or not.
     virtual void setVisibilityState(WebPageVisibilityState visibilityState, bool isInitialState) { }
 
+    // Makes the WebFrameWidget transparent.  This is useful if you want to have
+    // some custom background rendered behind it.
+    virtual bool isTransparent() const = 0;
+    virtual void setIsTransparent(bool) = 0;
+
+    // Sets the base color used for this WebFrameWidget's background. This is in
+    // effect the default background color used for pages with no
+    // background-color style in effect, or used as the alpha-blended basis for
+    // any pages with translucent background-color style. (For pages with opaque
+    // background-color style, this property is effectively ignored).
+    // Setting this takes effect for the currently loaded page, if any, and
+    // persists across subsequent navigations. Defaults to white prior to the
+    // first call to this method.
+    virtual void setBaseBackgroundColor(WebColor) = 0;
+
     // TODO(dcheng): Temporary: there should only be one WebFrameWidget
     // implementation but the Blink API is currently in a transition state.
     // See https://goo.gl/7yVrnb. These methods should only be used inside

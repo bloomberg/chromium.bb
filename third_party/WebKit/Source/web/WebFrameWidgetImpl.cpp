@@ -98,6 +98,7 @@ WebFrameWidgetImpl::WebFrameWidgetImpl(WebWidgetClient* client, WebLocalFrame* l
     , m_layerTreeViewClosed(false)
     , m_suppressNextKeypressEvent(false)
     , m_ignoreInputEvents(false)
+    , m_isTransparent(false)
 #if ENABLE(OILPAN)
     , m_selfKeepAlive(this)
 #endif
@@ -106,6 +107,9 @@ WebFrameWidgetImpl::WebFrameWidgetImpl(WebWidgetClient* client, WebLocalFrame* l
     initializeLayerTreeView();
     m_localRoot->setFrameWidget(this);
     allInstances().add(this);
+
+    if (localRoot->parent())
+        setIsTransparent(true);
 }
 
 WebFrameWidgetImpl::~WebFrameWidgetImpl()
@@ -278,7 +282,7 @@ void WebFrameWidgetImpl::updateLayerTreeBackgroundColor()
     if (!m_layerTreeView)
         return;
 
-    m_layerTreeView->setBackgroundColor(alphaChannel(view()->backgroundColorOverride()) ? view()->backgroundColorOverride() : view()->backgroundColor());
+    m_layerTreeView->setBackgroundColor(backgroundColor());
 }
 
 void WebFrameWidgetImpl::updateLayerTreeDeviceScaleFactor()
@@ -290,10 +294,17 @@ void WebFrameWidgetImpl::updateLayerTreeDeviceScaleFactor()
     m_layerTreeView->setDeviceScaleFactor(deviceScaleFactor);
 }
 
+void WebFrameWidgetImpl::setIsTransparent(bool isTransparent)
+{
+    m_isTransparent = isTransparent;
+
+    if (m_layerTreeView)
+        m_layerTreeView->setHasTransparentBackground(isTransparent);
+}
+
 bool WebFrameWidgetImpl::isTransparent() const
 {
-    // FIXME: This might need to proxy to the WebView's isTransparent().
-    return false;
+    return m_isTransparent;
 }
 
 void WebFrameWidgetImpl::layoutAndPaintAsync(WebLayoutAndPaintAsyncCallback* callback)
@@ -379,6 +390,18 @@ bool WebFrameWidgetImpl::hasTouchEventHandlersAt(const WebPoint& point)
 {
     // FIXME: Implement this. Note that the point must be divided by pageScaleFactor.
     return true;
+}
+
+void WebFrameWidgetImpl::setBaseBackgroundColor(WebColor color)
+{
+    if (m_baseBackgroundColor == color)
+        return;
+
+    m_baseBackgroundColor = color;
+
+    m_localRoot->frameView()->setBaseBackgroundColor(color);
+
+    updateAllLifecyclePhases();
 }
 
 void WebFrameWidgetImpl::scheduleAnimation()
@@ -483,7 +506,7 @@ WebColor WebFrameWidgetImpl::backgroundColor() const
     if (isTransparent())
         return Color::transparent;
     if (!m_localRoot->frameView())
-        return view()->backgroundColor();
+        return m_baseBackgroundColor;
     FrameView* view = m_localRoot->frameView();
     return view->documentBackgroundColor().rgb();
 }

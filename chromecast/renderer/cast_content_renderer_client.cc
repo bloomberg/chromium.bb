@@ -27,6 +27,7 @@
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "third_party/WebKit/public/platform/WebColor.h"
+#include "third_party/WebKit/public/web/WebFrameWidget.h"
 #include "third_party/WebKit/public/web/WebSettings.h"
 #include "third_party/WebKit/public/web/WebView.h"
 
@@ -148,7 +149,8 @@ void CastContentRendererClient::RenderViewCreated(
     content::RenderView* render_view) {
   blink::WebView* webview = render_view->GetWebView();
   if (webview) {
-    webview->setBaseBackgroundColor(kColorBlack);
+    blink::WebFrameWidget* web_frame_widget = render_view->GetWebFrameWidget();
+    web_frame_widget->setBaseBackgroundColor(kColorBlack);
 
     // The following settings express consistent behaviors across Cast
     // embedders, though Android has enabled by default for mobile browsers.

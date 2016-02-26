@@ -241,7 +241,7 @@ class CONTENT_EXPORT RenderViewImpl
   // FocusController.
   void SetFocus(bool enable);
 
-  void AttachWebFrameWidget(blink::WebWidget* frame_widget);
+  void AttachWebFrameWidget(blink::WebFrameWidget* frame_widget);
 
   // Plugin-related functions --------------------------------------------------
 
@@ -436,6 +436,7 @@ class CONTENT_EXPORT RenderViewImpl
   WebPreferences& GetWebkitPreferences() override;
   void SetWebkitPreferences(const WebPreferences& preferences) override;
   blink::WebView* GetWebView() override;
+  blink::WebFrameWidget* GetWebFrameWidget() override;
   bool ShouldDisplayScrollbars(int width, int height) const override;
   int GetEnabledBindings() const override;
   bool GetContentStateImmediately() const override;
@@ -905,7 +906,7 @@ class CONTENT_EXPORT RenderViewImpl
 
   // Note: RenderViewImpl is pulling double duty: it's the RenderWidget for the
   // "view", but it's also the RenderWidget for the main frame.
-  blink::WebWidget* frame_widget_;
+  blink::WebFrameWidget* frame_widget_;
 
   // The next group of objects all implement RenderViewObserver, so are deleted
   // along with the RenderView automatically.  This is why we just store

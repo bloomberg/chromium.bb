@@ -13,6 +13,7 @@
 
 namespace blink {
 enum WebMeaningfulLayout;
+class WebFrameWidget;
 class WebView;
 }
 
@@ -50,6 +51,7 @@ class AwRenderFrameExt : public content::RenderFrameObserver {
   void OnSmoothScroll(int target_x, int target_y, int duration_ms);
 
   blink::WebView* GetWebView();
+  blink::WebFrameWidget* GetWebFrameWidget();
 
   DISALLOW_COPY_AND_ASSIGN(AwRenderFrameExt);
 };

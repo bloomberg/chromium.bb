@@ -115,6 +115,13 @@ public:
     void willCloseLayerTreeView() override;
     void didChangeWindowResizerRect() override;
 
+    // WebFrameWidget implementation.
+    void setVisibilityState(WebPageVisibilityState, bool) override;
+    bool isTransparent() const override;
+    void setIsTransparent(bool) override;
+    void setBaseBackgroundColor(WebColor) override;
+    void scheduleAnimation() override;
+
     WebWidgetClient* client() const { return m_client; }
 
     Frame* focusedCoreFrame() const;
@@ -122,14 +129,10 @@ public:
     // Returns the currently focused Element or null if no element has focus.
     Element* focusedElement() const;
 
-    void scheduleAnimation() override;
-
     PaintLayerCompositor* compositor() const;
     void setRootGraphicsLayer(GraphicsLayer*);
     void attachCompositorAnimationTimeline(CompositorAnimationTimeline*);
     void detachCompositorAnimationTimeline(CompositorAnimationTimeline*);
-
-    void setVisibilityState(WebPageVisibilityState, bool) override;
 
     // Exposed for the purpose of overriding device metrics.
     void sendResizeEventAndRepaint();
@@ -152,6 +155,8 @@ public:
         int keyCode,
         ScrollDirection*,
         ScrollGranularity*);
+
+    Color baseBackgroundColor() const { return m_baseBackgroundColor; }
 
     DECLARE_TRACE();
 
@@ -181,8 +186,6 @@ private:
     void updateLayerTreeViewport();
     void updateLayerTreeBackgroundColor();
     void updateLayerTreeDeviceScaleFactor();
-
-    bool isTransparent() const;
 
     // PageWidgetEventHandler functions
     void handleMouseLeave(LocalFrame&, const WebMouseEvent&) override;
@@ -217,7 +220,12 @@ private:
 
     bool m_ignoreInputEvents;
 
+    // Whether the WebFrameWidget is rendering transparently.
+    bool m_isTransparent;
+
     static const WebInputEvent* m_currentInputEvent;
+
+    WebColor m_baseBackgroundColor;
 
 #if ENABLE(OILPAN)
     SelfKeepAlive<WebFrameWidgetImpl> m_selfKeepAlive;

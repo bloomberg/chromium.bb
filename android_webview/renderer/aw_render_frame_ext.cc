@@ -15,6 +15,7 @@
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebElementCollection.h"
+#include "third_party/WebKit/public/web/WebFrameWidget.h"
 #include "third_party/WebKit/public/web/WebHitTestResult.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebMeaningfulLayout.h"
@@ -253,11 +254,11 @@ void AwRenderFrameExt::OnSetInitialPageScale(double page_scale_factor) {
 }
 
 void AwRenderFrameExt::OnSetBackgroundColor(SkColor c) {
-  blink::WebView* webview = GetWebView();
-  if (!webview)
+  blink::WebFrameWidget* web_frame_widget = GetWebFrameWidget();
+  if (!web_frame_widget)
     return;
 
-  webview->setBaseBackgroundColor(c);
+  web_frame_widget->setBaseBackgroundColor(c);
 }
 
 void AwRenderFrameExt::OnSmoothScroll(int target_x,
@@ -276,6 +277,13 @@ blink::WebView* AwRenderFrameExt::GetWebView() {
     return nullptr;
 
   return render_frame()->GetRenderView()->GetWebView();
+}
+
+blink::WebFrameWidget* AwRenderFrameExt::GetWebFrameWidget() {
+  if (!render_frame() || !render_frame()->GetRenderView())
+    return nullptr;
+
+  return render_frame()->GetRenderView()->GetWebFrameWidget();
 }
 
 }  // namespace android_webview

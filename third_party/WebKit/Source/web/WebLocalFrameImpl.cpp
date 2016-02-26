@@ -1647,8 +1647,9 @@ void WebLocalFrameImpl::createFrameView()
 
     bool isMainFrame = !parent();
     IntSize initialSize = (isMainFrame || !frameWidget()) ? webView->mainFrameSize() : (IntSize)frameWidget()->size();
+    bool isTransparent = !isMainFrame && parent()->isWebRemoteFrame() ? true : webView->isTransparent();
 
-    frame()->createView(initialSize, webView->baseBackgroundColor(), webView->isTransparent());
+    frame()->createView(initialSize, webView->baseBackgroundColor(), isTransparent);
     if (webView->shouldAutoResize() && frame()->isLocalRoot())
         frame()->view()->enableAutoSizeMode(webView->minAutoSize(), webView->maxAutoSize());
 

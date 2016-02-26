@@ -144,6 +144,7 @@
 #include "third_party/WebKit/public/web/WebFormElement.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebFrameContentDumper.h"
+#include "third_party/WebKit/public/web/WebFrameWidget.h"
 #include "third_party/WebKit/public/web/WebHistoryItem.h"
 #include "third_party/WebKit/public/web/WebHitTestResult.h"
 #include "third_party/WebKit/public/web/WebInputElement.h"
@@ -1761,7 +1762,7 @@ void RenderViewImpl::FrameDidStopLoading(WebFrame* frame) {
   }
 }
 
-void RenderViewImpl::AttachWebFrameWidget(blink::WebWidget* frame_widget) {
+void RenderViewImpl::AttachWebFrameWidget(blink::WebFrameWidget* frame_widget) {
   // The previous WebFrameWidget must already be detached by CloseForFrame().
   DCHECK(!frame_widget_);
   frame_widget_ = frame_widget;
@@ -2287,6 +2288,10 @@ blink::WebView* RenderViewImpl::GetWebView() {
   return webview();
 }
 
+blink::WebFrameWidget* RenderViewImpl::GetWebFrameWidget() {
+  return frame_widget_;
+}
+
 bool RenderViewImpl::ShouldDisplayScrollbars(int width, int height) const {
   return (!send_preferred_size_changes_ ||
           (disable_scrollbars_size_limit_.width() <= width ||
@@ -2779,8 +2784,8 @@ void RenderViewImpl::OnClearFocusedElement() {
 }
 
 void RenderViewImpl::OnSetBackgroundOpaque(bool opaque) {
-  if (webview())
-    webview()->setIsTransparent(!opaque);
+  if (frame_widget_)
+    frame_widget_->setIsTransparent(!opaque);
   if (compositor_)
     compositor_->setHasTransparentBackground(!opaque);
 }
