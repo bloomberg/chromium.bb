@@ -66,7 +66,10 @@ class NET_EXPORT NetworkChangeNotifier {
   // A Java counterpart will be generated for this enum.
   // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.net
   enum ConnectionSubtype {
-    SUBTYPE_GSM = 0,
+    SUBTYPE_UNKNOWN = 0,
+    SUBTYPE_NONE,
+    SUBTYPE_OTHER,
+    SUBTYPE_GSM,
     SUBTYPE_IDEN,
     SUBTYPE_CDMA,
     SUBTYPE_1XRTT,
@@ -96,10 +99,7 @@ class NET_EXPORT NetworkChangeNotifier {
     SUBTYPE_WIFI_N,
     SUBTYPE_WIFI_AC,
     SUBTYPE_WIFI_AD,
-    SUBTYPE_UNKNOWN,
-    SUBTYPE_NONE,
-    SUBTYPE_OTHER,
-    SUBTYPE_LAST = SUBTYPE_OTHER
+    SUBTYPE_LAST = SUBTYPE_WIFI_AD
   };
 
   class NET_EXPORT IPAddressObserver {
