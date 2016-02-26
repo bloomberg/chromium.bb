@@ -11,7 +11,7 @@
 
 namespace blimp {
 
-const size_t kMaxPacketPayloadSizeBytes = 1 << 16;  // 64KB
+const size_t kMaxPacketPayloadSizeBytes = 1024 * 1024;  // 1MB
 const size_t kPacketHeaderSizeBytes = 4;
 
 std::ostream& operator<<(std::ostream& out, const BlimpMessage& message) {

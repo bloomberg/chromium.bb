@@ -53,10 +53,9 @@ public class BlimpView extends SurfaceView implements SurfaceHolder.Callback {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
             windowManager.getDefaultDisplay().getRealSize(physicalSize);
         }
-        // TODO(dtrainor): Change 1.f to dpToPx once native fully supports dp.
-        float compositorDensity = 1.f;
+        float deviceScaleFactor = getContext().getResources().getDisplayMetrics().density;
         mNativeBlimpViewPtr = nativeInit(blimpClientSession, physicalSize.x, physicalSize.y,
-                displaySize.x, displaySize.y, compositorDensity);
+                displaySize.x, displaySize.y, deviceScaleFactor);
         getHolder().addCallback(this);
         setVisibility(VISIBLE);
     }
