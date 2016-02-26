@@ -19,6 +19,8 @@ namespace chrome {
 // handled by Chrome or passsed to the Android Download Manager.
 class InterceptDownloadResourceThrottle : public content::ResourceThrottle {
  public:
+  static bool IsDownloadInterceptionEnabled();
+
   InterceptDownloadResourceThrottle(net::URLRequest* request,
                                     int render_process_id,
                                     int render_view_id,

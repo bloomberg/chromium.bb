@@ -43,6 +43,10 @@ const base::Feature kPhysicalWebFeature {
   "PhysicalWeb", base::FEATURE_DISABLED_BY_DEFAULT
 };
 
+const base::Feature kSystemDownloadManager {
+  "SystemDownloadManager", base::FEATURE_ENABLED_BY_DEFAULT
+};
+
 static jboolean IsEnabled(JNIEnv* env,
                           const JavaParamRef<jclass>& clazz,
                           const JavaParamRef<jstring>& jfeature_name) {
