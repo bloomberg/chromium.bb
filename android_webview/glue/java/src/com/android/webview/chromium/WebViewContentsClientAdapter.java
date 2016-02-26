@@ -878,14 +878,15 @@ public class WebViewContentsClientAdapter extends AwContentsClient {
      */
     private boolean showDefaultJsDialog(JsPromptResult res, int jsDialogType, String defaultValue,
             String message, String url) {
-        if (AwContents.activityFromContext(mContext) == null) {
+        // Note we must unwrap the Context here due to JsDialogHelper only using instanceof to
+        // check if a Context is an Activity.
+        Context activityContext = AwContents.activityFromContext(mContext);
+        if (activityContext == null) {
+            Log.w(TAG, "Unable to create JsDialog without an Activity");
             return false;
         }
-        // TODO(igsolla): the activity context should be retrieved inside JsDialogHelper.showDialog
-        // but for that we need it to return a boolean. Also, doing it here means that we can fix
-        // problem 2 in crbug/447607 before M is released.
         new JsDialogHelper(res, jsDialogType, defaultValue, message, url)
-            .showDialog(mContext);
+            .showDialog(activityContext);
         return true;
     }
 
