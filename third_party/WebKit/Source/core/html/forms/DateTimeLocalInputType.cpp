@@ -107,6 +107,12 @@ String DateTimeLocalInputType::localizeValue(const String& proposedValue) const
     return localized.isEmpty() ? proposedValue : localized;
 }
 
+void DateTimeLocalInputType::warnIfValueIsInvalid(const String& value) const
+{
+    if (value != element().sanitizeValue(value))
+        addWarningToConsole("The specified value %s does not conform to the required format.  The format is \"yyyy-MM-ddThh:mm\" followed by optional \":ss\" or \":ss.SSS\".", value);
+}
+
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 // FIXME: It is better to share code for DateTimeInputType::formatDateTimeFieldsState()
 // and DateTimeInputLocalType::formatDateTimeFieldsState().

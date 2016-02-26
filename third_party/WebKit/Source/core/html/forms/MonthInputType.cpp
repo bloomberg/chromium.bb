@@ -127,6 +127,12 @@ bool MonthInputType::canSetSuggestedValue()
     return true;
 }
 
+void MonthInputType::warnIfValueIsInvalid(const String& value) const
+{
+    if (value != element().sanitizeValue(value))
+        addWarningToConsole("The specified value %s does not conform to the required format.  The format is \"yyyy-MM\" where yyyy is year in four or more digits, and MM is 01-12.", value);
+}
+
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 String MonthInputType::formatDateTimeFieldsState(const DateTimeFieldsState& dateTimeFieldsState) const
 {

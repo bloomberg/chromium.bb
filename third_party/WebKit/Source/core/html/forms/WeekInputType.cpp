@@ -82,6 +82,11 @@ bool WeekInputType::setMillisecondToDateComponents(double value, DateComponents*
     return date->setMillisecondsSinceEpochForWeek(value);
 }
 
+void WeekInputType::warnIfValueIsInvalid(const String& value) const
+{
+    if (value != element().sanitizeValue(value))
+        addWarningToConsole("The specified value %s does not conform to the required format.  The format is \"yyyy-Www\" where yyyy is year in four or more digits, and ww is 01-53.", value);
+}
 
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 String WeekInputType::formatDateTimeFieldsState(const DateTimeFieldsState& dateTimeFieldsState) const
