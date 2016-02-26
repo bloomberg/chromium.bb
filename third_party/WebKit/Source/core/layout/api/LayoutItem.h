@@ -11,6 +11,8 @@
 
 namespace blink {
 
+class FrameView;
+
 class LayoutItem {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
@@ -67,6 +69,11 @@ public:
         return m_layoutObject->isTextControl();
     }
 
+    bool isLayoutPart() const
+    {
+        return m_layoutObject->isLayoutPart();
+    }
+
     bool needsLayout()
     {
         return m_layoutObject->needsLayout();
@@ -90,6 +97,11 @@ public:
     LayoutSize offsetFromContainer(const LayoutItem& item, const LayoutPoint& point, bool* offsetDependsOnPoint = nullptr) const
     {
         return m_layoutObject->offsetFromContainer(item.layoutObject(), point, offsetDependsOnPoint);
+    }
+
+    FrameView* frameView() const
+    {
+        return m_layoutObject->document().view();
     }
 
     void setMayNeedPaintInvalidation()

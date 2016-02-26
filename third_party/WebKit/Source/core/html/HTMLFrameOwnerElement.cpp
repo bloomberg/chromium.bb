@@ -29,6 +29,7 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/layout/LayoutPart.h"
+#include "core/layout/api/LayoutPartItem.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
@@ -240,15 +241,16 @@ void HTMLFrameOwnerElement::setWidget(PassRefPtrWillBeRawPtr<Widget> widget)
     m_widget = widget;
 
     LayoutPart* layoutPart = toLayoutPart(layoutObject());
-    if (!layoutPart)
+    LayoutPartItem layoutPartItem = LayoutPartItem(layoutPart);
+    if (layoutPartItem.isNull())
         return;
 
     if (m_widget) {
-        layoutPart->updateOnWidgetChange();
+        layoutPartItem.updateOnWidgetChange();
 
-        ASSERT(document().view() == layoutPart->frameView());
-        ASSERT(layoutPart->frameView());
-        moveWidgetToParentSoon(m_widget.get(), layoutPart->frameView());
+        ASSERT(document().view() == layoutPartItem.frameView());
+        ASSERT(layoutPartItem.frameView());
+        moveWidgetToParentSoon(m_widget.get(), layoutPartItem.frameView());
     }
 
     if (AXObjectCache* cache = document().existingAXObjectCache())
