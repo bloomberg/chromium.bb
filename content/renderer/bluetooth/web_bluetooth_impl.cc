@@ -47,10 +47,18 @@ void WebBluetoothImpl::getPrimaryService(
 
 void WebBluetoothImpl::getCharacteristic(
     const blink::WebString& service_instance_id,
-    const blink::WebString& characteristic_uuid,
+    const blink::WebString& characteristics_uuid,
     blink::WebBluetoothGetCharacteristicCallbacks* callbacks) {
   GetDispatcher()->getCharacteristic(frame_routing_id_, service_instance_id,
-                                     characteristic_uuid, callbacks);
+                                     characteristics_uuid, callbacks);
+}
+
+void WebBluetoothImpl::getCharacteristics(
+    const blink::WebString& service_instance_id,
+    const blink::WebString& characteristic_uuid,
+    blink::WebBluetoothGetCharacteristicsCallbacks* callbacks) {
+  GetDispatcher()->getCharacteristics(frame_routing_id_, service_instance_id,
+                                      characteristic_uuid, callbacks);
 }
 
 void WebBluetoothImpl::readValue(

@@ -164,6 +164,23 @@ IPC_MESSAGE_CONTROL3(BluetoothMsg_GetCharacteristicError,
                      int /* request_id */,
                      blink::WebBluetoothError /* result */)
 
+// Informs the renderer that the multiple-characteristic request |request_id|
+// succeeded.
+IPC_MESSAGE_CONTROL5(
+    BluetoothMsg_GetCharacteristicsSuccess,
+    int /* thread_id */,
+    int /* request_id */,
+    std::vector<std::string> /* characteristics_instance_ids */,
+    std::vector<std::string> /* characteristics_uuids */,
+    std::vector<uint32_t> /* characteristics_properties */)
+
+// Informs the renderer that the multiple-characteristic request |request_id|
+// failed.
+IPC_MESSAGE_CONTROL3(BluetoothMsg_GetCharacteristicsError,
+                     int /* thread_id */,
+                     int /* request_id */,
+                     blink::WebBluetoothError /* result */)
+
 // Informs the renderer that the value has been read.
 IPC_MESSAGE_CONTROL3(BluetoothMsg_ReadCharacteristicValueSuccess,
                      int /* thread_id */,
@@ -252,6 +269,14 @@ IPC_MESSAGE_CONTROL5(BluetoothHostMsg_GetCharacteristic,
                      int /* frame_routing_id */,
                      std::string /* service_instance_id */,
                      std::string /* characteristic_uuid */)
+
+// Gets GATT Characteristics within a GATT Service.
+IPC_MESSAGE_CONTROL5(BluetoothHostMsg_GetCharacteristics,
+                     int /* thread_id */,
+                     int /* request_id */,
+                     int /* frame_routing_id */,
+                     std::string /* service_instance_id */,
+                     std::string /* characteristics_uuid */)
 
 // Reads the characteristics value from a bluetooth device.
 IPC_MESSAGE_CONTROL4(BluetoothHostMsg_ReadValue,

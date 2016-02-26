@@ -51,7 +51,8 @@ DOMException* BluetoothError::take(ScriptPromiseResolver*, const WebBluetoothErr
         MAP_ERROR(ChooserDisabled, NotFoundError, "User or their enterprise policy has disabled Web Bluetooth globally.");
         MAP_ERROR(ChooserDeniedPermission, NotFoundError, "User denied the browser permission to scan for Bluetooth devices.");
         MAP_ERROR(ServiceNotFound, NotFoundError, "Service not found in device.");
-        MAP_ERROR(CharacteristicNotFound, NotFoundError, "Characteristic not found in device.");
+        MAP_ERROR(CharacteristicNotFound, NotFoundError, "No Characteristics with specified UUID found in Service.");
+        MAP_ERROR(NoCharacteristicsFound, NotFoundError, "No Characteristics found in service.");
 
         // NotSupportedErrors:
         MAP_ERROR(GATTUnknownError, NotSupportedError, "GATT Error Unknown.");

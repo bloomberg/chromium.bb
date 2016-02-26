@@ -150,7 +150,8 @@ void RecordGetCharacteristicOutcome(CacheQueryOutcome outcome) {
   switch (outcome) {
     case CacheQueryOutcome::SUCCESS:
     case CacheQueryOutcome::BAD_RENDERER:
-      NOTREACHED() << "No need to record a success or renderer crash";
+      // No need to record a success or renderer crash.
+      NOTREACHED();
       return;
     case CacheQueryOutcome::NO_DEVICE:
       RecordGetCharacteristicOutcome(UMAGetCharacteristicOutcome::NO_DEVICE);
@@ -166,6 +167,38 @@ void RecordGetCharacteristicOutcome(CacheQueryOutcome outcome) {
 
 void RecordGetCharacteristicCharacteristic(const std::string& characteristic) {
   UMA_HISTOGRAM_SPARSE_SLOWLY("Bluetooth.Web.GetCharacteristic.Characteristic",
+                              HashUUID(characteristic));
+}
+
+// getCharacteristics
+
+void RecordGetCharacteristicsOutcome(UMAGetCharacteristicOutcome outcome) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "Bluetooth.Web.GetCharacteristics.Outcome", static_cast<int>(outcome),
+      static_cast<int>(UMAGetCharacteristicOutcome::COUNT));
+}
+
+void RecordGetCharacteristicsOutcome(CacheQueryOutcome outcome) {
+  switch (outcome) {
+    case CacheQueryOutcome::SUCCESS:
+    case CacheQueryOutcome::BAD_RENDERER:
+      // No need to record a success or renderer crash.
+      NOTREACHED();
+      return;
+    case CacheQueryOutcome::NO_DEVICE:
+      RecordGetCharacteristicsOutcome(UMAGetCharacteristicOutcome::NO_DEVICE);
+      return;
+    case CacheQueryOutcome::NO_SERVICE:
+      RecordGetCharacteristicsOutcome(UMAGetCharacteristicOutcome::NO_SERVICE);
+      return;
+    case CacheQueryOutcome::NO_CHARACTERISTIC:
+      NOTREACHED();
+      return;
+  }
+}
+
+void RecordGetCharacteristicsCharacteristic(const std::string& characteristic) {
+  UMA_HISTOGRAM_SPARSE_SLOWLY("Bluetooth.Web.GetCharacteristics.Characteristic",
                               HashUUID(characteristic));
 }
 
@@ -195,7 +228,8 @@ static UMAGATTOperationOutcome TranslateCacheQueryOutcomeToGATTOperationOutcome(
   switch (outcome) {
     case CacheQueryOutcome::SUCCESS:
     case CacheQueryOutcome::BAD_RENDERER:
-      NOTREACHED() << "No need to record success or renderer crash";
+      // No need to record a success or renderer crash.
+      NOTREACHED();
       return UMAGATTOperationOutcome::NOT_SUPPORTED;
     case CacheQueryOutcome::NO_DEVICE:
       return UMAGATTOperationOutcome::NO_DEVICE;

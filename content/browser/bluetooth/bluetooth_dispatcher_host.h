@@ -120,6 +120,11 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
                            int frame_routing_id,
                            const std::string& service_instance_id,
                            const std::string& characteristic_uuid);
+  void OnGetCharacteristics(int thread_id,
+                            int request_id,
+                            int frame_routing_id,
+                            const std::string& service_instance_id,
+                            const std::string& characteristics_uuid);
   void OnReadValue(int thread_id,
                    int request_id,
                    int frame_routing_id,

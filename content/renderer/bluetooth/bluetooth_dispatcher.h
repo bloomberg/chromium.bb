@@ -32,6 +32,7 @@ class Message;
 }
 
 struct BluetoothCharacteristicRequest;
+struct BluetoothCharacteristicsRequest;
 struct BluetoothPrimaryServiceRequest;
 struct BluetoothWriteValueRequest;
 struct BluetoothNotificationsRequest;
@@ -74,12 +75,16 @@ class BluetoothDispatcher : public WorkerThread::Observer {
       const blink::WebString& device_id,
       const blink::WebString& service_uuid,
       blink::WebBluetoothGetPrimaryServiceCallbacks* callbacks);
-
   void getCharacteristic(
       int frame_routing_id,
       const blink::WebString& service_instance_id,
       const blink::WebString& characteristic_uuid,
       blink::WebBluetoothGetCharacteristicCallbacks* callbacks);
+  void getCharacteristics(
+      int frame_routing_id,
+      const blink::WebString& service_instance_id,
+      const blink::WebString& characteristics_uuid,
+      blink::WebBluetoothGetCharacteristicsCallbacks* callbacks);
   void readValue(int frame_routing_id,
                  const blink::WebString& characteristic_instance_id,
                  blink::WebBluetoothReadValueCallbacks* callbacks);
@@ -196,6 +201,15 @@ class BluetoothDispatcher : public WorkerThread::Observer {
   void OnGetCharacteristicError(int thread_id,
                                 int request_id,
                                 blink::WebBluetoothError error);
+  void OnGetCharacteristicsSuccess(
+      int thread_id,
+      int request_id,
+      const std::vector<std::string>& characteristics_instance_ids,
+      const std::vector<std::string>& characteristics_uuids,
+      const std::vector<uint32_t>& characteristic_properties);
+  void OnGetCharacteristicsError(int thread_id,
+                                 int request_id,
+                                 blink::WebBluetoothError error);
   void OnReadValueSuccess(int thread_id,
                           int request_id,
                           const std::vector<uint8_t>& value);
@@ -237,6 +251,9 @@ class BluetoothDispatcher : public WorkerThread::Observer {
   // Tracks requests to get a characteristic from a service.
   IDMap<BluetoothCharacteristicRequest, IDMapOwnPointer>
       pending_characteristic_requests_;
+  // Tracks requests to get characteristics from a service.
+  IDMap<BluetoothCharacteristicsRequest, IDMapOwnPointer>
+      pending_characteristics_requests_;
   // Tracks requests to read from a characteristics.
   IDMap<blink::WebBluetoothReadValueCallbacks, IDMapOwnPointer>
       pending_read_value_requests_;

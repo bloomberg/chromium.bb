@@ -29,6 +29,11 @@ var heart_rate = {
   name: 'heart_rate',
   uuid: '0000180d-0000-1000-8000-00805f9b34fb'
 };
+var body_sensor_location = {
+  alias: 0x2a38,
+  name: 'body_sensor_location',
+  uuid: '00002a38-0000-1000-8000-00805f9b34fb'
+};
 var glucose = {
   alias: 0x1808,
   name: 'glucose',

@@ -308,6 +308,7 @@ bool BluetoothDispatcherHost::OnMessageReceived(const IPC::Message& message) {
                       OnGATTServerDisconnect)
   IPC_MESSAGE_HANDLER(BluetoothHostMsg_GetPrimaryService, OnGetPrimaryService)
   IPC_MESSAGE_HANDLER(BluetoothHostMsg_GetCharacteristic, OnGetCharacteristic)
+  IPC_MESSAGE_HANDLER(BluetoothHostMsg_GetCharacteristics, OnGetCharacteristics)
   IPC_MESSAGE_HANDLER(BluetoothHostMsg_ReadValue, OnReadValue)
   IPC_MESSAGE_HANDLER(BluetoothHostMsg_WriteValue, OnWriteValue)
   IPC_MESSAGE_HANDLER(BluetoothHostMsg_StartNotifications, OnStartNotifications)
@@ -854,6 +855,86 @@ void BluetoothDispatcherHost::OnGetCharacteristic(
   RecordGetCharacteristicOutcome(UMAGetCharacteristicOutcome::NOT_FOUND);
   Send(new BluetoothMsg_GetCharacteristicError(
       thread_id, request_id, WebBluetoothError::CharacteristicNotFound));
+}
+
+void BluetoothDispatcherHost::OnGetCharacteristics(
+    int thread_id,
+    int request_id,
+    int frame_routing_id,
+    const std::string& service_instance_id,
+    const std::string& characteristics_uuid) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  RecordWebBluetoothFunctionCall(
+      UMAWebBluetoothFunction::SERVICE_GET_CHARACTERISTICS);
+  RecordGetCharacteristicsCharacteristic(characteristics_uuid);
+
+  // Check Blacklist for characteristics_uuid.
+  if (!characteristics_uuid.empty() &&
+      BluetoothBlacklist::Get().IsExcluded(
+          BluetoothUUID(characteristics_uuid))) {
+    RecordGetCharacteristicsOutcome(UMAGetCharacteristicOutcome::BLACKLISTED);
+    Send(new BluetoothMsg_GetCharacteristicsError(
+        thread_id, request_id,
+        WebBluetoothError::BlacklistedCharacteristicUUID));
+    return;
+  }
+
+  const CacheQueryResult query_result =
+      QueryCacheForService(GetOrigin(frame_routing_id), service_instance_id);
+
+  if (query_result.outcome == CacheQueryOutcome::BAD_RENDERER) {
+    return;
+  }
+
+  if (query_result.outcome != CacheQueryOutcome::SUCCESS) {
+    RecordGetCharacteristicsOutcome(query_result.outcome);
+    Send(new BluetoothMsg_GetCharacteristicsError(thread_id, request_id,
+                                                  query_result.GetWebError()));
+    return;
+  }
+
+  std::vector<std::string> characteristics_instance_ids;
+  std::vector<std::string> characteristics_uuids;
+  std::vector<uint32_t> characteristics_properties;
+
+  for (BluetoothGattCharacteristic* characteristic :
+       query_result.service->GetCharacteristics()) {
+    if (!BluetoothBlacklist::Get().IsExcluded(characteristic->GetUUID()) &&
+        (characteristics_uuid.empty() ||
+         characteristics_uuid == characteristic->GetUUID().canonical_value())) {
+      const std::string& characteristic_instance_id =
+          characteristic->GetIdentifier();
+
+      characteristics_instance_ids.push_back(characteristic_instance_id);
+      characteristics_uuids.push_back(
+          characteristic->GetUUID().canonical_value());
+      characteristics_properties.push_back(
+          static_cast<uint32_t>(characteristic->GetProperties()));
+
+      auto insert_result = characteristic_to_service_.insert(
+          make_pair(characteristic_instance_id, service_instance_id));
+
+      // If  value is already in map, DCHECK it's valid.
+      if (!insert_result.second)
+        DCHECK(insert_result.first->second == service_instance_id);
+    }
+  }
+
+  if (!characteristics_instance_ids.empty()) {
+    RecordGetCharacteristicsOutcome(UMAGetCharacteristicOutcome::SUCCESS);
+    Send(new BluetoothMsg_GetCharacteristicsSuccess(
+        thread_id, request_id, characteristics_instance_ids,
+        characteristics_uuids, characteristics_properties));
+    return;
+  }
+  RecordGetCharacteristicsOutcome(
+      characteristics_uuid.empty()
+          ? UMAGetCharacteristicOutcome::NO_CHARACTERISTICS
+          : UMAGetCharacteristicOutcome::NOT_FOUND);
+  Send(new BluetoothMsg_GetCharacteristicsError(
+      thread_id, request_id, characteristics_uuid.empty()
+                                 ? WebBluetoothError::NoCharacteristicsFound
+                                 : WebBluetoothError::CharacteristicNotFound));
 }
 
 void BluetoothDispatcherHost::OnReadValue(

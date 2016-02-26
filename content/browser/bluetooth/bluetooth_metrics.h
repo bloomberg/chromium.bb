@@ -32,6 +32,7 @@ enum class UMAWebBluetoothFunction {
   CHARACTERISTIC_START_NOTIFICATIONS = 6,
   CHARACTERISTIC_STOP_NOTIFICATIONS = 7,
   REMOTE_GATT_SERVER_DISCONNECT = 8,
+  SERVICE_GET_CHARACTERISTICS = 9,
   // NOTE: Add new actions immediately above this line. Make sure to update
   // the enum list in tools/metrics/histograms/histograms.xml accordingly.
   COUNT
@@ -152,6 +153,7 @@ enum class UMAGetCharacteristicOutcome {
   NO_SERVICE = 2,
   NOT_FOUND = 3,
   BLACKLISTED = 4,
+  NO_CHARACTERISTICS = 5,
   // Note: Add new outcomes immediately above this line.
   // Make sure to update the enum list in
   // tools/metrisc/histogram/histograms.xml accordingly.
@@ -166,6 +168,17 @@ void RecordGetCharacteristicOutcome(UMAGetCharacteristicOutcome outcome);
 void RecordGetCharacteristicOutcome(CacheQueryOutcome outcome);
 // Records the UUID of the characteristic used when calling getCharacteristic.
 void RecordGetCharacteristicCharacteristic(const std::string& characteristic);
+
+// getCharacteristics() Metrics
+// There should be a call to this function for every call to
+// Send(BluetoothMsg_GetCharacteristicsSuccess) and
+// Send(BluetoothMsg_GetCharacteristicsError).
+void RecordGetCharacteristicsOutcome(UMAGetCharacteristicOutcome outcome);
+// Records the outcome of the cache query for getCharacteristics. Should only be
+// called if QueryCacheForService fails.
+void RecordGetCharacteristicsOutcome(CacheQueryOutcome outcome);
+// Records the UUID of the characteristic used when calling getCharacteristic.
+void RecordGetCharacteristicsCharacteristic(const std::string& characteristic);
 
 // GATT Operations Metrics
 

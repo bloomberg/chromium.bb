@@ -45,8 +45,12 @@ public:
     String uuid() { return m_webService->uuid; }
     bool isPrimary() { return m_webService->isPrimary; }
     ScriptPromise getCharacteristic(ScriptState*, const StringOrUnsignedLong& characteristic, ExceptionState&);
+    ScriptPromise getCharacteristics(ScriptState*, ExceptionState&);
+    ScriptPromise getCharacteristics(ScriptState*, const StringOrUnsignedLong& characteristic, ExceptionState&);
 
 private:
+    ScriptPromise getCharacteristicsImpl(ScriptState*, String characteristicUUID);
+
     OwnPtr<WebBluetoothRemoteGATTService> m_webService;
 };
 

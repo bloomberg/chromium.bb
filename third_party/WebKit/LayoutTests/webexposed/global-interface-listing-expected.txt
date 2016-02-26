@@ -344,6 +344,7 @@ interface BluetoothRemoteGATTService
     getter uuid
     method constructor
     method getCharacteristic
+    method getCharacteristics
 interface BluetoothUUID
     static method canonicalUUID
     static method getCharacteristic

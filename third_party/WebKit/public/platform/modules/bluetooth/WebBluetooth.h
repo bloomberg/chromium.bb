@@ -32,6 +32,10 @@ using WebBluetoothGetPrimaryServiceCallbacks = WebCallbacks<WebPassOwnPtr<WebBlu
 // Success and failure callbacks for getCharacteristic.
 using WebBluetoothGetCharacteristicCallbacks = WebCallbacks<WebPassOwnPtr<WebBluetoothRemoteGATTCharacteristicInit>, const WebBluetoothError&>;
 
+// Success and failure callbacks for getCharacteristics.
+using WebBluetoothGetCharacteristicsCallbacks =
+    WebCallbacks<WebPassOwnPtr<WebVector<WebBluetoothRemoteGATTCharacteristicInit*>>, const WebBluetoothError&>;
+
 // Success and failure callbacks for readValue.
 using WebBluetoothReadValueCallbacks = WebCallbacks<const WebVector<uint8_t>&, const WebBluetoothError&>;
 
@@ -68,6 +72,9 @@ public:
     virtual void getCharacteristic(const WebString& serviceInstanceID,
         const WebString& characteristicUUID,
         WebBluetoothGetCharacteristicCallbacks*) { }
+    virtual void getCharacteristics(const WebString& serviceInstanceID,
+        const WebString& characteristicsUUID,
+        WebBluetoothGetCharacteristicsCallbacks*) = 0;
 
     // BluetoothRemoteGATTCharacteristic methods:
     // See https://webbluetoothchrome.github.io/web-bluetooth/#bluetoothgattcharacteristic

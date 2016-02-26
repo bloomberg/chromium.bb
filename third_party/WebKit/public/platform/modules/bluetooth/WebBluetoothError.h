@@ -48,6 +48,7 @@ enum class WebBluetoothError {
     ChooserDeniedPermission,
     ServiceNotFound,
     CharacteristicNotFound,
+    NoCharacteristicsFound,
     // NotSupportedError:
     GATTUnknownError,
     GATTUnknownFailure,

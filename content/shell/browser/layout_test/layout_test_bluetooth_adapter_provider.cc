@@ -724,7 +724,7 @@ LayoutTestBluetoothAdapterProvider::GetBlacklistTestService(
 
   scoped_ptr<NiceMockBluetoothGattCharacteristic>
       blacklist_exclude_reads_characteristic(GetBaseGATTCharacteristic(
-          blacklist_test_service.get(),
+          "Excluded Reads Characteristic", blacklist_test_service.get(),
           kBlacklistExcludeReadsCharacteristicUUID,
           BluetoothGattCharacteristic::PROPERTY_READ |
               BluetoothGattCharacteristic::PROPERTY_WRITE));
@@ -759,9 +759,9 @@ LayoutTestBluetoothAdapterProvider::GetDeviceInformationService(
       GetBaseGATTService(device, kDeviceInformationServiceUUID));
 
   scoped_ptr<NiceMockBluetoothGattCharacteristic> serial_number_string(
-      GetBaseGATTCharacteristic(device_information.get(),
-                                kSerialNumberStringUUID,
-                                BluetoothGattCharacteristic::PROPERTY_READ));
+      GetBaseGATTCharacteristic(
+          "Serial Number String", device_information.get(),
+          kSerialNumberStringUUID, BluetoothGattCharacteristic::PROPERTY_READ));
 
   // Crash if ReadRemoteCharacteristic called. Not using GoogleMock's Expect
   // because this is used in layout tests that may not report a mock expectation
@@ -788,7 +788,7 @@ LayoutTestBluetoothAdapterProvider::GetGenericAccessService(
   {  // Device Name:
     scoped_ptr<NiceMockBluetoothGattCharacteristic> device_name(
         GetBaseGATTCharacteristic(
-            generic_access.get(), kDeviceNameUUID,
+            "Device Name", generic_access.get(), kDeviceNameUUID,
             BluetoothGattCharacteristic::PROPERTY_READ |
                 BluetoothGattCharacteristic::PROPERTY_WRITE));
 
@@ -810,7 +810,8 @@ LayoutTestBluetoothAdapterProvider::GetGenericAccessService(
   {  // Peripheral Privacy Flag:
     scoped_ptr<NiceMockBluetoothGattCharacteristic> peripheral_privacy_flag(
         GetBaseGATTCharacteristic(
-            generic_access.get(), kPeripheralPrivacyFlagUUID,
+            "Peripheral Privacy Flag", generic_access.get(),
+            kPeripheralPrivacyFlagUUID,
             BluetoothGattCharacteristic::PROPERTY_READ |
                 BluetoothGattCharacteristic::PROPERTY_WRITE));
 
@@ -847,7 +848,8 @@ LayoutTestBluetoothAdapterProvider::GetHeartRateService(
 
   // Heart Rate Measurement
   scoped_ptr<NiceMockBluetoothGattCharacteristic> heart_rate_measurement(
-      GetBaseGATTCharacteristic(heart_rate.get(), kHeartRateMeasurementUUID,
+      GetBaseGATTCharacteristic("Heart Rate Measurement", heart_rate.get(),
+                                kHeartRateMeasurementUUID,
                                 BluetoothGattCharacteristic::PROPERTY_NOTIFY));
   NiceMockBluetoothGattCharacteristic* measurement_ptr =
       heart_rate_measurement.get();
@@ -867,15 +869,17 @@ LayoutTestBluetoothAdapterProvider::GetHeartRateService(
             return notify_session;
           }));
 
-  // Body Sensor Location Characteristic
-  scoped_ptr<NiceMockBluetoothGattCharacteristic> body_sensor_location(
-      GetBaseGATTCharacteristic(heart_rate.get(), kBodySensorLocation,
+  // Body Sensor Location Characteristic (Chest)
+  scoped_ptr<NiceMockBluetoothGattCharacteristic> body_sensor_location_chest(
+      GetBaseGATTCharacteristic("Body Sensor Location Chest", heart_rate.get(),
+                                kBodySensorLocation,
                                 BluetoothGattCharacteristic::PROPERTY_READ));
-  BluetoothGattCharacteristic* location_ptr = body_sensor_location.get();
+  BluetoothGattCharacteristic* location_chest_ptr =
+      body_sensor_location_chest.get();
 
-  ON_CALL(*body_sensor_location, ReadRemoteCharacteristic(_, _))
+  ON_CALL(*body_sensor_location_chest, ReadRemoteCharacteristic(_, _))
       .WillByDefault(RunCallbackWithResult<0 /* success_callback */>(
-          [adapter, location_ptr]() {
+          [adapter, location_chest_ptr]() {
             std::vector<uint8_t> location(1 /* size */);
             location[0] = 1;  // Chest
             // Read a characteristic has a side effect of
@@ -883,12 +887,35 @@ LayoutTestBluetoothAdapterProvider::GetHeartRateService(
             FOR_EACH_OBSERVER(BluetoothAdapter::Observer,
                               adapter->GetObservers(),
                               GattCharacteristicValueChanged(
-                                  adapter, location_ptr, location));
+                                  adapter, location_chest_ptr, location));
+            return location;
+          }));
+
+  // Body Sensor Location Characteristic (Wrist)
+  scoped_ptr<NiceMockBluetoothGattCharacteristic> body_sensor_location_wrist(
+      GetBaseGATTCharacteristic("Body Sensor Location Wrist", heart_rate.get(),
+                                kBodySensorLocation,
+                                BluetoothGattCharacteristic::PROPERTY_READ));
+  BluetoothGattCharacteristic* location_wrist_ptr =
+      body_sensor_location_wrist.get();
+
+  ON_CALL(*body_sensor_location_wrist, ReadRemoteCharacteristic(_, _))
+      .WillByDefault(RunCallbackWithResult<0 /* success_callback */>(
+          [adapter, location_wrist_ptr]() {
+            std::vector<uint8_t> location(1 /* size */);
+            location[0] = 2;  // Wrist
+            // Read a characteristic has a side effect of
+            // GattCharacteristicValueChanged being called.
+            FOR_EACH_OBSERVER(BluetoothAdapter::Observer,
+                              adapter->GetObservers(),
+                              GattCharacteristicValueChanged(
+                                  adapter, location_wrist_ptr, location));
             return location;
           }));
 
   heart_rate->AddMockCharacteristic(std::move(heart_rate_measurement));
-  heart_rate->AddMockCharacteristic(std::move(body_sensor_location));
+  heart_rate->AddMockCharacteristic(std::move(body_sensor_location_chest));
+  heart_rate->AddMockCharacteristic(std::move(body_sensor_location_wrist));
 
   return heart_rate;
 }
@@ -898,11 +925,12 @@ LayoutTestBluetoothAdapterProvider::GetHeartRateService(
 // static
 scoped_ptr<NiceMockBluetoothGattCharacteristic>
 LayoutTestBluetoothAdapterProvider::GetBaseGATTCharacteristic(
+    const std::string& identifier,
     MockBluetoothGattService* service,
     const std::string& uuid,
     BluetoothGattCharacteristic::Properties properties) {
   return make_scoped_ptr(new NiceMockBluetoothGattCharacteristic(
-      service, uuid + " Identifier", BluetoothUUID(uuid), false /* is_local */,
+      service, identifier, BluetoothUUID(uuid), false /* is_local */,
       properties, NULL /* permissions */));
 }
 
@@ -914,12 +942,12 @@ LayoutTestBluetoothAdapterProvider::GetErrorCharacteristic(
   uint32_t error_alias = error_code + 0xA1;  // Error UUIDs start at 0xA1.
   scoped_ptr<NiceMockBluetoothGattCharacteristic> characteristic(
       GetBaseGATTCharacteristic(
-          service,
+          // Use the UUID to generate unique identifiers.
+          "Error Characteristic " + errorUUID(error_alias), service,
           errorUUID(error_alias),
           BluetoothGattCharacteristic::PROPERTY_READ |
-          BluetoothGattCharacteristic::PROPERTY_WRITE |
-          BluetoothGattCharacteristic::PROPERTY_INDICATE));
-
+              BluetoothGattCharacteristic::PROPERTY_WRITE |
+              BluetoothGattCharacteristic::PROPERTY_INDICATE));
 
   // Read response.
   ON_CALL(*characteristic, ReadRemoteCharacteristic(_, _))

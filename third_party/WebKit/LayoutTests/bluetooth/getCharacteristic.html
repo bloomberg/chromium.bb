@@ -40,10 +40,9 @@ promise_test(() => {
     });
 }, 'Service is removed. Reject with InvalidStateError.');
 
-
 promise_test(() => {
   testRunner.setBluetoothMockDataSet('HeartRateAdapter');
-  let expected = new DOMException('Characteristic not found in device.',
+  let expected = new DOMException('No Characteristics with specified UUID found in Service.',
                                   'NotFoundError');
   return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}],
                                    optionalServices: ['generic_access']})

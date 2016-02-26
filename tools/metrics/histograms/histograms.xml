@@ -3554,7 +3554,31 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>scheib@chromium.org</owner>
   <summary>
     Records the outcome of a call to getCharacteristic(). Used to understand
-    what errors developers are getting so we can target efforst toward the most
+    what errors developers are getting so we can target efforts toward the most
+    common ones.
+  </summary>
+</histogram>
+
+<histogram name="Bluetooth.Web.GetCharacteristics.Characteristic"
+    enum="GATTCharacteristicHash">
+  <owner>jyasskin@chromium.org</owner>
+  <owner>ortuno@chromium.org</owner>
+  <owner>scheib@chromium.org</owner>
+  <summary>
+    Records the UUIDs used when getting characteristics. The recorded value is a
+    31-bit hash of the UUID. Used to know what types of characteristics to
+    target when building libraries that use the Web Bluetooth API.
+  </summary>
+</histogram>
+
+<histogram name="Bluetooth.Web.GetCharacteristics.Outcome"
+    enum="WebBluetoothGetCharacteristicOutcome">
+  <owner>jyasskin@chromium.org</owner>
+  <owner>ortuno@chromium.org</owner>
+  <owner>scheib@chromium.org</owner>
+  <summary>
+    Records the outcome of a call to getCharacteristics(). Used to understand
+    what errors developers are getting so we can target efforts toward the most
     common ones.
   </summary>
 </histogram>
@@ -82945,12 +82969,13 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="0" label="requestDevice()"/>
   <int value="1" label="connectGATT()"/>
   <int value="2" label="RemoteGATTServer.getPrimaryService()"/>
-  <int value="3" label="getCharacteristic()"/>
+  <int value="3" label="Service.getCharacteristic()"/>
   <int value="4" label="Characteristic.readValue()"/>
   <int value="5" label="Characteristic.writeValue()"/>
   <int value="6" label="Characteristic.startNotifications()"/>
   <int value="7" label="Characteristic.stopNotifications()"/>
   <int value="8" label="RemoteGATTServer.disconnect()"/>
+  <int value="9" label="Service.getCharacteristics()"/>
 </enum>
 
 <enum name="WebBluetoothGATTOperationOutcome" type="int">
@@ -82976,6 +83001,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="2" label="No service"/>
   <int value="3" label="Not found"/>
   <int value="4" label="Blacklisted"/>
+  <int value="5" label="No characteristics"/>
 </enum>
 
 <enum name="WebBluetoothGetPrimaryServiceOutcome" type="int">

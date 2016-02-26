@@ -528,13 +528,19 @@ class LayoutTestBluetoothAdapterProvider {
   //               callback with [1] which corresponds to chest.
   //           - GetProperties: Returns
   //               BluetoothGattCharacteristic::PROPERTY_READ
+  //     - Body Sensor Location (0x2a38)
+  //        - Mock Functions:
+  //           - Read: Calls GattCharacteristicValueChanged and success
+  //               callback with [2] which corresponds to wrist.
+  //           - GetProperties: Returns
+  //               BluetoothGattCharacteristic::PROPERTY_READ
   static scoped_ptr<testing::NiceMock<device::MockBluetoothGattService>>
   GetHeartRateService(device::MockBluetoothAdapter* adapter,
                       device::MockBluetoothDevice* device);
 
   // Characteristics
 
-  // |BaseCharacteristic|(service, uuid)
+  // |BaseCharacteristic|(identifier, service, uuid)
   // Descriptors added:
   // None.
   // Mock Functions:
@@ -544,7 +550,7 @@ class LayoutTestBluetoothAdapterProvider {
   //       Returns the descriptor matching the identifier provided if the
   //       descriptor was added to the characteristic.
   //   - GetIdentifier:
-  //       Returns: uuid + “ Identifier”
+  //       Returns: identifier
   //   - GetUUID:
   //       Returns: uuid
   //   - IsLocal:
@@ -557,6 +563,7 @@ class LayoutTestBluetoothAdapterProvider {
   //       Returns: NULL
   static scoped_ptr<testing::NiceMock<device::MockBluetoothGattCharacteristic>>
   GetBaseGATTCharacteristic(
+      const std::string& identifier,
       device::MockBluetoothGattService* service,
       const std::string& uuid,
       device::BluetoothGattCharacteristic::Properties properties);

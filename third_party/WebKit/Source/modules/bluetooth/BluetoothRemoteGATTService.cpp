@@ -46,4 +46,46 @@ ScriptPromise BluetoothRemoteGATTService::getCharacteristic(ScriptState* scriptS
     return promise;
 }
 
+ScriptPromise BluetoothRemoteGATTService::getCharacteristics(ScriptState* scriptState, ExceptionState&)
+{
+    return getCharacteristicsImpl(scriptState, String());
+}
+
+ScriptPromise BluetoothRemoteGATTService::getCharacteristics(ScriptState* scriptState, const StringOrUnsignedLong& characteristic, ExceptionState& exceptionState)
+{
+    String characteristicUUID = BluetoothUUID::getCharacteristic(characteristic, exceptionState);
+    if (exceptionState.hadException())
+        return exceptionState.reject(scriptState);
+
+    return getCharacteristicsImpl(scriptState, characteristicUUID);
+}
+
+// Class that allows us to use CallbackPromiseAdapter to resolve a promise with a
+// vector owning BluetoothRemoteGATTCharacteristics.
+class RemoteCharacteristicArray {
+    STATIC_ONLY(RemoteCharacteristicArray);
+public:
+    using WebType = OwnPtr<WebVector<WebBluetoothRemoteGATTCharacteristicInit*>>;
+    static HeapVector<Member<BluetoothRemoteGATTCharacteristic>> take(ScriptPromiseResolver* resolver, PassOwnPtr<WebVector<WebBluetoothRemoteGATTCharacteristicInit*>> webCharacteristics)
+    {
+        HeapVector<Member<BluetoothRemoteGATTCharacteristic>> characteristics;
+        characteristics.reserveInitialCapacity(webCharacteristics->size());
+        for (WebBluetoothRemoteGATTCharacteristicInit* webCharacteristic : *webCharacteristics) {
+            characteristics.append(BluetoothRemoteGATTCharacteristic::take(resolver, adoptPtr(webCharacteristic)));
+        }
+        return characteristics;
+    }
+};
+
+ScriptPromise BluetoothRemoteGATTService::getCharacteristicsImpl(ScriptState* scriptState, String characteristicsUUID)
+{
+    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromise promise = resolver->promise();
+
+    WebBluetooth* webbluetooth = BluetoothSupplement::fromScriptState(scriptState);
+    webbluetooth->getCharacteristics(m_webService->serviceInstanceID, characteristicsUUID, new CallbackPromiseAdapter<RemoteCharacteristicArray, BluetoothError>(resolver));
+
+    return promise;
+}
+
 } // namespace blink
