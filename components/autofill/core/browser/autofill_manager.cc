@@ -24,6 +24,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -109,6 +110,29 @@ base::string16 SanitizeCreditCardFieldValue(const base::string16& value) {
   base::ReplaceChars(sanitized, base::ASCIIToUTF16("-_"),
                      base::ASCIIToUTF16(""), &sanitized);
   return sanitized;
+}
+
+// If |name| consists of three whitespace-separated parts and the second of the
+// three parts is a single character or a single character followed by a period,
+// returns the result of joining the first and third parts with a space.
+// Otherwise, returns |name|.
+//
+// Note that a better way to do this would be to use SplitName from
+// src/components/autofill/core/browser/contact_info.cc. However, for now we
+// want the logic of which variations of names are considered to be the same to
+// exactly match the logic applied on the Payments server.
+base::string16 RemoveMiddleInitial(const base::string16& name) {
+  std::vector<base::string16> parts =
+      base::SplitString(name, base::kWhitespaceUTF16, base::KEEP_WHITESPACE,
+                        base::SPLIT_WANT_NONEMPTY);
+  if (parts.size() == 3 && (parts[1].length() == 1 ||
+                            (parts[1].length() == 2 &&
+                             base::EndsWith(parts[1], base::ASCIIToUTF16("."),
+                                            base::CompareCase::SENSITIVE)))) {
+    parts.erase(parts.begin() + 1);
+    return base::JoinString(parts, base::ASCIIToUTF16(" "));
+  }
+  return name;
 }
 
 }  // namespace
@@ -1052,20 +1076,40 @@ bool AutofillManager::GetProfilesForCreditCardUpload(
     return false;
   }
 
-  // If neither the card nor any of the addresses have a name associated with
-  // them, the candidate set is invalid.
-  bool name_available = false;
-  if (!card.GetInfo(AutofillType(CREDIT_CARD_NAME), app_locale_).empty()) {
-    name_available = true;
-  } else {
-    for (const AutofillProfile& profile : candidate_profiles) {
-      if (!profile.GetInfo(AutofillType(NAME_FULL), app_locale_).empty()) {
-        name_available = true;
-        break;
+  // If any of the names on the card or the addresses don't match (where
+  // matching is case insensitive and ignores middle initials if present), the
+  // candidate set is invalid. This matches the rules for name matching applied
+  // server-side by Google Payments and ensures that we don't send upload
+  // requests that are guaranteed to fail.
+  base::string16 verified_name;
+  base::string16 card_name =
+      card.GetInfo(AutofillType(CREDIT_CARD_NAME), app_locale_);
+  if (!card_name.empty()) {
+    verified_name = RemoveMiddleInitial(card_name);
+  }
+  for (const AutofillProfile& profile : candidate_profiles) {
+    base::string16 address_name =
+        profile.GetInfo(AutofillType(NAME_FULL), app_locale_);
+    if (!address_name.empty()) {
+      if (verified_name.empty()) {
+        verified_name = RemoveMiddleInitial(address_name);
+      } else {
+        // TODO(crbug.com/590307): We only use ASCII case insensitivity here
+        // because the feature is launching US-only and middle initials only
+        // make sense for Western-style names anyway. As we launch in more
+        // countries, we'll need to make the name comparison more sophisticated.
+        if (!base::EqualsCaseInsensitiveASCII(
+                verified_name, RemoveMiddleInitial(address_name))) {
+          AutofillMetrics::LogCardUploadDecisionMetric(
+              AutofillMetrics::UPLOAD_NOT_OFFERED_CONFLICTING_NAMES);
+          return false;
+        }
       }
     }
   }
-  if (!name_available) {
+  // If neither the card nor any of the addresses have a name associated with
+  // them, the candidate set is invalid.
+  if (verified_name.empty()) {
     AutofillMetrics::LogCardUploadDecisionMetric(
         AutofillMetrics::UPLOAD_NOT_OFFERED_NO_NAME);
     return false;

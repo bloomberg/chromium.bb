@@ -64,6 +64,11 @@ class AutofillMetrics {
     // A CVC, one or more valid addresses, and a name were available but the
     // request to Payments for upload details failed.
     UPLOAD_NOT_OFFERED_GET_UPLOAD_DETAILS_FAILED,
+    // A CVC and one or more addresses were available but the names on the card
+    // and/or the addresses didn't match. We don't know whether the address(es)
+    // were otherwise valid nor whether we would have been able to get upload
+    // details.
+    UPLOAD_NOT_OFFERED_CONFLICTING_NAMES,
     NUM_CARD_UPLOAD_DECISION_METRICS,
   };
 

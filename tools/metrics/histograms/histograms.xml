@@ -58787,6 +58787,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
       label="Upload not offered, addresses had conflicting zip codes"/>
   <int value="5" label="Upload not offered, no zip code available"/>
   <int value="6" label="Upload not offered, get upload details RPC failed"/>
+  <int value="7"
+      label="Upload not offered, card and/or addresses had conflicting names"/>
 </enum>
 
 <enum name="AutofillCreditCardInfoBar" type="int">
