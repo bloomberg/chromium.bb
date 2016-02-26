@@ -1229,7 +1229,7 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     a = self._driver.FindElement('id', 'btn')
     a.Click()
     self.WaitForCondition(lambda: self._driver.IsAlertOpen())
-    self._driver.HandleAlert(False)
+    self._driver.HandleAlert(True)
 
 
 class ChromeDriverAndroidTest(ChromeDriverBaseTest):
