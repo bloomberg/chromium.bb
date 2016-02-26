@@ -37,8 +37,6 @@ public:
 
     void adjustInnerSpinButtonStyle(ComputedStyle&) const override;
 
-    bool delegatesMenuListRendering() const override { return true; }
-
     String extraMediaControlsStyleSheet() override;
 
     Color platformTapHighlightColor() const override

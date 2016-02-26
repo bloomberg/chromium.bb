@@ -12,6 +12,7 @@ namespace blink {
 class LayoutThemeAndroid final : public LayoutThemeMobile {
 public:
     static PassRefPtr<LayoutTheme> create();
+    bool delegatesMenuListRendering() const override { return true; }
 
 private:
     ~LayoutThemeAndroid() override;
