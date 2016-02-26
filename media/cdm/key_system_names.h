@@ -22,9 +22,9 @@ MEDIA_EXPORT extern const char kExternalClearKey[];
 // Returns true if |key_system| is Clear Key, false otherwise.
 MEDIA_EXPORT bool IsClearKey(const std::string& key_system);
 
-// Returns true if |key_system| is (reverse) sub-domain of |parent_key_system|.
-MEDIA_EXPORT bool IsParentKeySystemOf(const std::string& parent_key_system,
-                                      const std::string& key_system);
+// Returns true if |key_system| is (reverse) sub-domain of |base|.
+MEDIA_EXPORT bool IsChildKeySystemOf(const std::string& key_system,
+                                     const std::string& base);
 
 // Returns true if |key_system| is External Clear Key, false otherwise.
 MEDIA_EXPORT bool IsExternalClearKey(const std::string& key_system);

@@ -22,13 +22,6 @@ using media::SupportedCodecs;
 
 namespace cdm {
 
-// Return |name|'s parent key system.
-static std::string GetDirectParentName(const std::string& name) {
-  size_t last_period = name.find_last_of('.');
-  DCHECK_GT(last_period, 0u);
-  return name.substr(0u, last_period);
-}
-
 void AddWidevineWithCodecs(
     WidevineCdmType widevine_cdm_type,
     SupportedCodecs supported_codecs,
@@ -47,8 +40,6 @@ void AddWidevineWithCodecs(
 
   switch (widevine_cdm_type) {
     case WIDEVINE:
-      // For standard Widevine, add parent name.
-      info.parent_key_system = GetDirectParentName(kWidevineKeySystem);
       break;
 #if defined(OS_ANDROID)
     case WIDEVINE_HR_NON_COMPOSITING:

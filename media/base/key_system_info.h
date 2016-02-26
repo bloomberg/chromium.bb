@@ -21,12 +21,6 @@
 // * Abstract key system
 //    A key system string that cannot be instantiated like a concrete key system
 //    but is otherwise useful, such as in discovery using isTypeSupported().
-// TODO(ddorwin): Remove the concept of a parent key system now that prefixed
-// has been removed. https://crbug.com/249976
-// * Parent key system
-//    A key system string that is one level up from the child key system. It may
-//    be an abstract key system.
-//    As an example, "com.example" is the parent of "com.example.foo".
 
 namespace media {
 
@@ -51,11 +45,6 @@ struct MEDIA_EXPORT KeySystemInfo {
       EmeSessionTypeSupport::INVALID;
   EmeFeatureSupport persistent_state_support = EmeFeatureSupport::INVALID;
   EmeFeatureSupport distinctive_identifier_support = EmeFeatureSupport::INVALID;
-
-  // A hierarchical parent for |key_system|. This value can be used to check
-  // supported types but cannot be used to instantiate a MediaKeys object.
-  // Only one parent key system is currently supported per concrete key system.
-  std::string parent_key_system;
 
   // The following indicate how the corresponding CDM should be instantiated.
   bool use_aes_decryptor = false;

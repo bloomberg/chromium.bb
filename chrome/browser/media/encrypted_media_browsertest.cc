@@ -105,20 +105,16 @@ static bool IsMSESupported() {
   return true;
 }
 
-static bool IsParentKeySystemOf(const std::string& parent_key_system,
-                                const std::string& key_system) {
-  std::string prefix = parent_key_system + '.';
-  return key_system.substr(0, prefix.size()) == prefix;
-}
-
 // Base class for encrypted media tests.
 class EncryptedMediaTestBase : public MediaBrowserTest {
  public:
   EncryptedMediaTestBase() : is_pepper_cdm_registered_(false) {}
 
   bool IsExternalClearKey(const std::string& key_system) {
-    return key_system == kExternalClearKeyKeySystem ||
-           IsParentKeySystemOf(kExternalClearKeyKeySystem, key_system);
+    if (key_system == kExternalClearKeyKeySystem)
+      return true;
+    std::string prefix = std::string(kExternalClearKeyKeySystem) + '.';
+    return key_system.substr(0, prefix.size()) == prefix;
   }
 
 #if defined(WIDEVINE_CDM_AVAILABLE)

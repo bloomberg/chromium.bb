@@ -25,10 +25,8 @@ namespace media {
 // kUsesAes uses the AesDecryptor like Clear Key.
 // kExternal uses an external CDM, such as Pepper-based or Android platform CDM.
 const char kUsesAes[] = "x-org.example.clear";
-const char kUsesAesParent[] = "x-org.example";  // Not registered.
 const char kUseAesNameForUMA[] = "UseAes";
 const char kExternal[] = "x-com.example.test";
-const char kExternalParent[] = "x-com.example";
 const char kExternalNameForUMA[] = "External";
 
 const char kClearKey[] = "org.w3.clearkey";
@@ -208,7 +206,6 @@ void TestMediaClient::AddExternalKeySystem(
   ext.persistent_release_message_support = EmeSessionTypeSupport::NOT_SUPPORTED;
   ext.persistent_state_support = EmeFeatureSupport::ALWAYS_ENABLED;
   ext.distinctive_identifier_support = EmeFeatureSupport::ALWAYS_ENABLED;
-  ext.parent_key_system = kExternalParent;
 #if defined(ENABLE_PEPPER_CDMS)
   ext.pepper_type = "application/x-ppapi-external-cdm";
 #endif  // defined(ENABLE_PEPPER_CDMS)
@@ -464,22 +461,6 @@ TEST_F(KeySystemsTest,
       kAudioWebM, fooaudio_codec(), kUsesAes));
 }
 
-// No parent is registered for UsesAes.
-TEST_F(KeySystemsTest, Parent_NoParentRegistered) {
-  EXPECT_FALSE(IsSupportedKeySystem(kUsesAesParent));
-
-  // The parent is not supported for most things.
-  EXPECT_EQ("Unknown", GetKeySystemNameForUMA(kUsesAesParent));
-  EXPECT_FALSE(CanUseAesDecryptor(kUsesAesParent));
-
-#if defined(ENABLE_PEPPER_CDMS)
-  std::string type;
-  EXPECT_DEBUG_DEATH(type = GetPepperType(kUsesAesParent),
-                     "x-org.example is not a known concrete system");
-  EXPECT_TRUE(type.empty());
-#endif
-}
-
 TEST_F(KeySystemsTest, IsSupportedKeySystem_InvalidVariants) {
   // Case sensitive.
   EXPECT_FALSE(IsSupportedKeySystem("x-org.example.ClEaR"));
@@ -490,7 +471,10 @@ TEST_F(KeySystemsTest, IsSupportedKeySystem_InvalidVariants) {
 
   // Extra period.
   EXPECT_FALSE(IsSupportedKeySystem("x-org.example.clear."));
+
+  // Prefix.
   EXPECT_FALSE(IsSupportedKeySystem("x-org.example."));
+  EXPECT_FALSE(IsSupportedKeySystem("x-org.example"));
 
   // Incomplete.
   EXPECT_FALSE(IsSupportedKeySystem("x-org.example.clea"));
@@ -505,8 +489,6 @@ TEST_F(KeySystemsTest, IsSupportedKeySystem_InvalidVariants) {
 TEST_F(KeySystemsTest, IsSupportedKeySystemWithMediaMimeType_NoType) {
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
       std::string(), no_codecs(), kUsesAes));
-  EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
-      std::string(), no_codecs(), kUsesAesParent));
 
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(std::string(), no_codecs(),
                                                      "x-org.example.foo"));
@@ -577,22 +559,6 @@ TEST_F(KeySystemsTest, Basic_ExternalDecryptor) {
 #if defined(ENABLE_PEPPER_CDMS)
   EXPECT_EQ("application/x-ppapi-external-cdm", GetPepperType(kExternal));
 #endif  // defined(ENABLE_PEPPER_CDMS)
-}
-
-TEST_F(KeySystemsTest, Parent_ParentRegistered) {
-  // Unprefixed has no parent key system support.
-  EXPECT_FALSE(IsSupportedKeySystem(kExternalParent));
-
-  // The parent is not supported for most things.
-  EXPECT_EQ("Unknown", GetKeySystemNameForUMA(kExternalParent));
-  EXPECT_FALSE(CanUseAesDecryptor(kExternalParent));
-
-#if defined(ENABLE_PEPPER_CDMS)
-  std::string type;
-  EXPECT_DEBUG_DEATH(type = GetPepperType(kExternalParent),
-                     "x-com.example is not a known concrete system");
-  EXPECT_TRUE(type.empty());
-#endif
 }
 
 TEST_F(

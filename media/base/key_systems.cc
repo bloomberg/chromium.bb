@@ -153,7 +153,7 @@ static bool IsPotentiallySupportedKeySystem(const std::string& key_system) {
 
   // Chromecast defines behaviors for Cast clients within its reverse domain.
   const char kChromecastRoot[] = "com.chromecast";
-  if (IsParentKeySystemOf(kChromecastRoot, key_system))
+  if (IsChildKeySystemOf(key_system, kChromecastRoot))
     return true;
 
   // Implementations that do not have a specification or appropriate glue code
@@ -235,7 +235,6 @@ class KeySystemsImpl : public KeySystems {
   friend struct base::DefaultLazyInstanceTraits<KeySystemsImpl>;
 
   typedef base::hash_map<std::string, KeySystemInfo> KeySystemInfoMap;
-  typedef base::hash_map<std::string, std::string> ParentKeySystemMap;
   typedef base::hash_map<std::string, SupportedCodecs> MimeTypeCodecsMap;
   typedef base::hash_map<std::string, EmeCodec> CodecsMap;
   typedef base::hash_map<std::string, EmeInitDataType> InitDataTypesMap;
@@ -250,10 +249,6 @@ class KeySystemsImpl : public KeySystems {
 
   // Map from key system string to capabilities.
   KeySystemInfoMap concrete_key_system_map_;
-
-  // Map from parent key system to the concrete key system that should be used
-  // to represent its capabilities.
-  ParentKeySystemMap parent_key_system_map_;
 
   // This member should only be modified by RegisterMimeType().
   MimeTypeCodecsMap mime_type_to_codec_mask_map_;
@@ -346,7 +341,6 @@ void KeySystemsImpl::UpdateIfNeeded() {
 void KeySystemsImpl::UpdateSupportedKeySystems() {
   DCHECK(thread_checker_.CalledOnValidThread());
   concrete_key_system_map_.clear();
-  parent_key_system_map_.clear();
 
   // Build KeySystemInfo.
   std::vector<KeySystemInfo> key_systems_info;
@@ -365,7 +359,6 @@ void KeySystemsImpl::AddConcreteSupportedKeySystems(
     const std::vector<KeySystemInfo>& concrete_key_systems) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(concrete_key_system_map_.empty());
-  DCHECK(parent_key_system_map_.empty());
 
   for (const KeySystemInfo& info : concrete_key_systems) {
     DCHECK(!info.key_system.empty());
@@ -420,17 +413,7 @@ void KeySystemsImpl::AddConcreteSupportedKeySystems(
 
     DCHECK(!IsConcreteSupportedKeySystem(info.key_system))
         << "Key system '" << info.key_system << "' already registered";
-    DCHECK(!parent_key_system_map_.count(info.key_system))
-        <<  "'" << info.key_system << "' is already registered as a parent";
     concrete_key_system_map_[info.key_system] = info;
-    if (!info.parent_key_system.empty()) {
-      DCHECK(!IsConcreteSupportedKeySystem(info.parent_key_system))
-          << "Parent '" << info.parent_key_system << "' "
-          << "already registered concrete";
-      DCHECK(!parent_key_system_map_.count(info.parent_key_system))
-          << "Parent '" << info.parent_key_system << "' already registered";
-      parent_key_system_map_[info.parent_key_system] = info.key_system;
-    }
   }
 }
 
