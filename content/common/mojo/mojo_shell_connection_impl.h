@@ -56,12 +56,12 @@ class MojoShellConnectionImpl : public MojoShellConnection,
   ~MojoShellConnectionImpl() override;
 
   // mojo::ShellClient:
-  void Initialize(mojo::Shell* shell, const std::string& url,
+  void Initialize(mojo::Connector* connector, const std::string& url,
                   uint32_t id, uint32_t user_id) override;
   bool AcceptConnection(mojo::Connection* connection) override;
 
   // MojoShellConnection:
-  mojo::Shell* GetShell() override;
+  mojo::Connector* GetConnector() override;
   bool UsingExternalShell() const override;
   void AddListener(Listener* listener) override;
   void RemoveListener(Listener* listener) override;

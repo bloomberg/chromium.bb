@@ -8,7 +8,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "mojo/shell/public/cpp/connection.h"
-#include "mojo/shell/public/cpp/shell.h"
+#include "mojo/shell/public/cpp/connector.h"
 
 #if defined(OS_WIN)
 #include "base/base_paths_win.h"
@@ -33,15 +33,14 @@ const char kUserDataDir[] = "user-data-dir";
 
 }  // namespace filesystem
 
-FileSystemApp::FileSystemApp()
-    : shell_(nullptr), lock_table_(new LockTable) {}
+FileSystemApp::FileSystemApp() : lock_table_(new LockTable) {}
 
 FileSystemApp::~FileSystemApp() {}
 
-void FileSystemApp::Initialize(mojo::Shell* shell, const std::string& url,
+void FileSystemApp::Initialize(mojo::Connector* connector,
+                               const std::string& url,
                                uint32_t id, uint32_t user_id) {
-  shell_ = shell;
-  tracing_.Initialize(shell, url);
+  tracing_.Initialize(connector, url);
 }
 
 bool FileSystemApp::AcceptConnection(mojo::Connection* connection) {

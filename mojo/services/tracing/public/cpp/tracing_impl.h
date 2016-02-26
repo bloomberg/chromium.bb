@@ -13,7 +13,7 @@
 namespace mojo {
 
 class Connection;
-class Shell;
+class Connector;
 
 // Connects to mojo:tracing during your Application's Initialize() call once
 // per process.
@@ -32,7 +32,7 @@ class TracingImpl : public InterfaceFactory<tracing::TraceProvider> {
 
   // This connects to the tracing service and registers ourselves to provide
   // tracing data on demand.
-  void Initialize(Shell* shell, const std::string& url);
+  void Initialize(Connector* connector, const std::string& url);
 
  private:
   // InterfaceFactory<tracing::TraceProvider> implementation.

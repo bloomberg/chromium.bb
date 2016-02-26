@@ -87,7 +87,7 @@ WindowTreeHostImpl::QueuedEvent::~QueuedEvent() {}
 
 WindowTreeHostImpl::WindowTreeHostImpl(
     ConnectionManager* connection_manager,
-    mojo::Shell* shell,
+    mojo::Connector* connector,
     const scoped_refptr<GpuState>& gpu_state,
     const scoped_refptr<SurfacesState>& surfaces_state)
     : id_(next_id++),
@@ -95,7 +95,7 @@ WindowTreeHostImpl::WindowTreeHostImpl(
       connection_manager_(connection_manager),
       event_dispatcher_(this),
       display_manager_(
-          DisplayManager::Create(shell, gpu_state, surfaces_state)),
+          DisplayManager::Create(connector, gpu_state, surfaces_state)),
       tree_awaiting_input_ack_(nullptr),
       last_cursor_(0) {
   frame_decoration_values_ = mojom::FrameDecorationValues::New();

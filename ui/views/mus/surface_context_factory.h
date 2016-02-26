@@ -16,7 +16,7 @@
 #include "ui/views/mus/surface_binding.h"
 
 namespace mojo {
-class Shell;
+class Connector;
 }
 
 namespace mus {
@@ -27,7 +27,7 @@ namespace views {
 
 class VIEWS_MUS_EXPORT SurfaceContextFactory : public ui::ContextFactory {
  public:
-  SurfaceContextFactory(mojo::Shell* shell,
+  SurfaceContextFactory(mojo::Connector* connector,
                         mus::Window* window,
                         mus::mojom::SurfaceType surface_type);
   ~SurfaceContextFactory() override;

@@ -72,7 +72,7 @@ class AcceleratorRegistrarTest : public mojo::test::ApplicationTestBase {
 
  protected:
   void ConnectToRegistrar(AcceleratorRegistrarPtr* registrar) {
-    shell()->ConnectToInterface("mojo:desktop_wm", registrar);
+    connector()->ConnectToInterface("mojo:desktop_wm", registrar);
   }
 
  private:

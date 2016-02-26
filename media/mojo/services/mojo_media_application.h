@@ -8,7 +8,8 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "media/mojo/interfaces/service_factory.mojom.h"
-#include "mojo/shell/public/cpp/interface_factory_impl.h"
+#include "mojo/shell/public/cpp/interface_factory.h"
+#include "mojo/shell/public/cpp/message_loop_ref.h"
 #include "mojo/shell/public/cpp/shell_client.h"
 #include "url/gurl.h"
 
@@ -26,7 +27,7 @@ class MojoMediaApplication
 
  private:
   // mojo::ShellClient implementation.
-  void Initialize(mojo::Shell* shell,
+  void Initialize(mojo::Connector* connector,
                   const std::string& url,
                   uint32_t id,
                   uint32_t user_id) final;
@@ -41,8 +42,9 @@ class MojoMediaApplication
   // a scoped_ptr here.
   scoped_ptr<MojoMediaClient> mojo_media_client_;
 
-  mojo::Shell* shell_;
+  mojo::Connector* connector_;
   scoped_refptr<MediaLog> media_log_;
+  mojo::MessageLoopRefFactory ref_factory_;
 };
 
 }  // namespace media

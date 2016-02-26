@@ -22,7 +22,7 @@ static uint32_t accelerated_widget_count = 1;
 }  // namespace
 
 PlatformWindowMus::PlatformWindowMus(ui::PlatformWindowDelegate* delegate,
-                                     mojo::Shell* shell,
+                                     mojo::Connector* connector,
                                      mus::Window* mus_window)
     : delegate_(delegate),
       mus_window_(mus_window),
@@ -48,7 +48,7 @@ PlatformWindowMus::PlatformWindowMus(ui::PlatformWindowDelegate* delegate,
       accelerated_widget, mus_window_->viewport_metrics().device_pixel_ratio);
 
   bitmap_uploader_.reset(new bitmap_uploader::BitmapUploader(mus_window_));
-  bitmap_uploader_->Init(shell);
+  bitmap_uploader_->Init(connector);
   prop_.reset(new ui::ViewProp(
       accelerated_widget, bitmap_uploader::kBitmapUploaderForAcceleratedWidget,
       bitmap_uploader_.get()));

@@ -324,7 +324,7 @@ class UDPSocketAppTest : public test::ApplicationTestBase {
 
   void SetUp() override {
     ApplicationTestBase::SetUp();
-    shell()->ConnectToInterface("mojo:network_service", &network_service_);
+    connector()->ConnectToInterface("mojo:network_service", &network_service_);
     network_service_->CreateUDPSocket(GetProxy(&socket_));
   }
 

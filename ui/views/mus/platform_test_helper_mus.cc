@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "mojo/shell/background/background_shell.h"
 #include "mojo/shell/background/tests/test_application_catalog_store.h"
+#include "mojo/shell/public/cpp/connector.h"
 #include "mojo/shell/public/cpp/shell_client.h"
 #include "mojo/shell/public/cpp/shell_connection.h"
 #include "ui/views/mus/window_manager_connection.h"
@@ -52,9 +53,9 @@ class PlatformTestHelperMus : public PlatformTestHelper {
     shell_connection_->WaitForInitialize();
     // ui/views/mus requires a WindowManager running, for now use the desktop
     // one.
-    mojo::Shell* shell = shell_connection_.get();
-    shell->Connect("mojo:desktop_wm");
-    WindowManagerConnection::Create(shell_connection_.get());
+    mojo::Connector* connector = shell_connection_->connector();
+    connector->Connect("mojo:desktop_wm");
+    WindowManagerConnection::Create(connector);
   }
 
   ~PlatformTestHelperMus() override {

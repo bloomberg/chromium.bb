@@ -16,7 +16,7 @@
 #include "mojo/public/cpp/bindings/interface_request.h"
 
 namespace mojo {
-class Shell;
+class Connector;
 }
 
 namespace mus {
@@ -43,7 +43,7 @@ class WindowTreeConnection {
   // Creates a WindowTreeConnection with no roots. Use this to establish a
   // connection directly to mus and create top level windows.
   static WindowTreeConnection* Create(WindowTreeDelegate* delegate,
-                                      mojo::Shell* shell);
+                                      mojo::Connector* connector);
 
   // Creates a WindowTreeConnection to service the specified request for
   // a WindowTreeClient. Use this to be embedded in another app.

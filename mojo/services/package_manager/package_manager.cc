@@ -107,9 +107,6 @@ PackageManager::PackageManager(base::TaskRunner* blocking_pool,
 }
 PackageManager::~PackageManager() {}
 
-void PackageManager::Initialize(mojo::Shell* shell, const std::string& url,
-                                uint32_t id, uint32_t user_id) {}
-
 bool PackageManager::AcceptConnection(mojo::Connection* connection) {
   connection->AddInterface<mojom::Catalog>(this);
   connection->AddInterface<mojom::Resolver>(this);

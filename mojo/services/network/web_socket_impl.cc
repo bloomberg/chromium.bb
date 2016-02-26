@@ -182,7 +182,7 @@ void WebSocketEventHandler::DidWriteToReceiveStream(
 }  // namespace mojo
 
 WebSocketImpl::WebSocketImpl(NetworkContext* context,
-                             scoped_ptr<mojo::AppRefCount> app_refcount,
+                             scoped_ptr<mojo::MessageLoopRef> app_refcount,
                              InterfaceRequest<WebSocket> request)
     : context_(context),
       app_refcount_(std::move(app_refcount)),

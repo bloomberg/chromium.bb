@@ -31,12 +31,11 @@ const char kUserDataDir[] = "user-data-dir";
 
 namespace mojo {
 
-NetworkServiceDelegate::NetworkServiceDelegate()
-    : shell_(nullptr) {
+NetworkServiceDelegate::NetworkServiceDelegate() {
+  ref_factory_.set_quit_closure(
+      base::Bind(&NetworkServiceDelegate::Quit, base::Unretained(this)));
 }
-
-NetworkServiceDelegate::~NetworkServiceDelegate() {
-}
+NetworkServiceDelegate::~NetworkServiceDelegate() {}
 
 void NetworkServiceDelegate::AddObserver(
     NetworkServiceDelegateObserver* observer) {
@@ -48,10 +47,9 @@ void NetworkServiceDelegate::RemoveObserver(
   observers_.RemoveObserver(observer);
 }
 
-void NetworkServiceDelegate::Initialize(Shell* shell, const std::string& url,
+void NetworkServiceDelegate::Initialize(Connector* connector,
+                                        const std::string& url,
                                         uint32_t id, uint32_t user_id) {
-  shell_ = shell;
-
   // TODO(erg): Find everything else that writes to the filesystem and
   // transition it to proxying mojo:filesystem. We shouldn't have any path
   // calculation code here, but sadly need it until the transition is done. In
@@ -68,7 +66,7 @@ void NetworkServiceDelegate::Initialize(Shell* shell, const std::string& url,
   }
 
   context_.reset(new NetworkContext(base_path, this));
-  tracing_.Initialize(shell_, url);
+  tracing_.Initialize(connector, url);
 }
 
 bool NetworkServiceDelegate::AcceptConnection(Connection* connection) {
@@ -84,37 +82,37 @@ bool NetworkServiceDelegate::ShellConnectionLost() {
   return true;
 }
 
-void NetworkServiceDelegate::Quit() {
-  // Destroy the NetworkContext now as it requires MessageLoop::current() upon
-  // destruction and it is the last moment we know for sure that it is
-  // running.
-  context_.reset();
-}
-
 void NetworkServiceDelegate::Create(Connection* connection,
                                     InterfaceRequest<NetworkService> request) {
-  new NetworkServiceImpl(shell_->CreateAppRefCount(), std::move(request));
+  new NetworkServiceImpl(ref_factory_.CreateRef(), std::move(request));
 }
 
 void NetworkServiceDelegate::Create(Connection* connection,
                                     InterfaceRequest<CookieStore> request) {
   new CookieStoreImpl(
       context_.get(), GURL(connection->GetRemoteApplicationURL()).GetOrigin(),
-      shell_->CreateAppRefCount(), std::move(request));
+      ref_factory_.CreateRef(), std::move(request));
 }
 
 void NetworkServiceDelegate::Create(
     Connection* connection,
     InterfaceRequest<WebSocketFactory> request) {
-  new WebSocketFactoryImpl(context_.get(), shell_->CreateAppRefCount(),
+  new WebSocketFactoryImpl(context_.get(), ref_factory_.CreateRef(),
                            std::move(request));
 }
 
 void NetworkServiceDelegate::Create(
     Connection* connection,
     InterfaceRequest<URLLoaderFactory> request) {
-  new URLLoaderFactoryImpl(context_.get(), shell_->CreateAppRefCount(),
+  new URLLoaderFactoryImpl(context_.get(), ref_factory_.CreateRef(),
                            std::move(request));
+}
+
+void NetworkServiceDelegate::Quit() {
+  // Destroy the NetworkContext now as it requires MessageLoop::current() upon
+  // destruction and it is the last moment we know for sure that it is
+  // running.
+  context_.reset();
 }
 
 }  // namespace mojo

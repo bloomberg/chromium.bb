@@ -16,6 +16,7 @@
 #include "mojo/services/package_manager/package_manager.h"
 #include "mojo/shell/application_loader.h"
 #include "mojo/shell/connect_util.h"
+#include "mojo/shell/public/cpp/connector.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
 #include "mojo/shell/public/cpp/shell_client.h"
 #include "mojo/shell/public/cpp/shell_connection.h"
@@ -245,12 +246,12 @@ class TesterContext {
 // Used to test that the requestor url will be correctly passed.
 class TestAImpl : public TestA {
  public:
-  TestAImpl(Shell* shell,
+  TestAImpl(Connector* connector,
             TesterContext* test_context,
             InterfaceRequest<TestA> request,
             InterfaceFactory<TestC>* factory)
       : test_context_(test_context), binding_(this, std::move(request)) {
-    connection_ = shell->Connect(kTestBURLString);
+    connection_ = connector->Connect(kTestBURLString);
     connection_->AddInterface<TestC>(factory);
     connection_->GetInterface(&b_);
   }
@@ -368,7 +369,7 @@ class Tester : public ShellClient,
   void Create(Connection* connection,
               InterfaceRequest<TestA> request) override {
     a_bindings_.push_back(
-        new TestAImpl(app_.get(), context_, std::move(request), this));
+        new TestAImpl(app_->connector(), context_, std::move(request), this));
   }
 
   void Create(Connection* connection,

@@ -15,7 +15,7 @@
 #include "mojo/shell/public/cpp/shell_client.h"
 
 namespace mojo {
-class Shell;
+class Connector;
 }
 
 namespace filesystem {
@@ -31,7 +31,7 @@ class FileSystemApp : public mojo::ShellClient,
   static base::FilePath GetUserDataDir();
 
   // |mojo::ShellClient| override:
-  void Initialize(mojo::Shell* shell, const std::string& url,
+  void Initialize(mojo::Connector* connector, const std::string& url,
                   uint32_t id, uint32_t user_id) override;
   bool AcceptConnection(mojo::Connection* connection) override;
 
@@ -39,7 +39,6 @@ class FileSystemApp : public mojo::ShellClient,
   void Create(mojo::Connection* connection,
               mojo::InterfaceRequest<FileSystem> request) override;
 
-  mojo::Shell* shell_;
   mojo::TracingImpl tracing_;
 
   scoped_ptr<LockTable> lock_table_;

@@ -9,13 +9,13 @@
 #include "base/bind.h"
 #include "base/trace_event/trace_event.h"
 #include "components/font_service/public/cpp/font_service_thread.h"
-#include "mojo/shell/public/cpp/shell.h"
+#include "mojo/shell/public/cpp/connector.h"
 
 namespace font_service {
 
-FontLoader::FontLoader(mojo::Shell* shell) {
+FontLoader::FontLoader(mojo::Connector* connector) {
   FontServicePtr font_service;
-  shell->ConnectToInterface("mojo:font_service", &font_service);
+  connector->ConnectToInterface("mojo:font_service", &font_service);
   thread_ = new internal::FontServiceThread(std::move(font_service));
 }
 

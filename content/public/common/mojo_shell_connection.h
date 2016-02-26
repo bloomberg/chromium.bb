@@ -9,7 +9,7 @@
 
 namespace mojo {
 class Connection;
-class Shell;
+class Connector;
 }
 
 namespace content {
@@ -41,8 +41,7 @@ class CONTENT_EXPORT MojoShellConnection {
   // created on.
   static void Destroy();
 
-  // Returns an Initialized() Shell.
-  virtual mojo::Shell* GetShell() = 0;
+  virtual mojo::Connector* GetConnector() = 0;
 
   // Indicates whether the shell connection is to an external shell (true) or
   // a shell embedded in the browser process (false).

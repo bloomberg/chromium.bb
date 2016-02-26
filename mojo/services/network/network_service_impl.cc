@@ -16,7 +16,7 @@
 namespace mojo {
 
 NetworkServiceImpl::NetworkServiceImpl(
-    scoped_ptr<mojo::AppRefCount> app_refcount,
+    scoped_ptr<mojo::MessageLoopRef> app_refcount,
     InterfaceRequest<NetworkService> request)
     : app_refcount_(std::move(app_refcount)),
       binding_(this, std::move(request)) {}

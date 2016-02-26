@@ -19,7 +19,7 @@ TCPConnectedSocketImpl::TCPConnectedSocketImpl(
     ScopedDataPipeConsumerHandle send_stream,
     ScopedDataPipeProducerHandle receive_stream,
     InterfaceRequest<TCPConnectedSocket> request,
-    scoped_ptr<mojo::AppRefCount> app_refcount)
+    scoped_ptr<mojo::MessageLoopRef> app_refcount)
     : socket_(std::move(socket)),
       send_stream_(std::move(send_stream)),
       receive_stream_(std::move(receive_stream)),

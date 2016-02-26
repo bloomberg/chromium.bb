@@ -9,6 +9,7 @@
 #include "mojo/public/cpp/bindings/array.h"
 #include "mojo/public/cpp/bindings/string.h"
 #include "mojo/public/cpp/system/macros.h"
+#include "mojo/shell/public/cpp/connector.h"
 #include "mojo/shell/public/cpp/shell_client.h"
 #include "mojo/shell/public/cpp/shell_connection.h"
 #include "mojo/shell/public/interfaces/shell_client.mojom.h"
@@ -32,8 +33,8 @@ class TestHelper {
   explicit TestHelper(ShellClient* client);
   ~TestHelper();
 
-  Shell* shell() { return shell_connection_.get(); }
-  std::string shell_url() { return url_; }
+  Connector* connector() { return shell_connection_->connector(); }
+  std::string test_url() { return url_; }
 
  private:
   // The application delegate used if GetShellClient is not overridden.
@@ -54,11 +55,11 @@ class ApplicationTestBase : public testing::Test {
   ~ApplicationTestBase() override;
 
  protected:
-  Shell* shell() {
-    return test_helper_ ? test_helper_->shell() : nullptr;
+  Connector* connector() {
+    return test_helper_ ? test_helper_->connector() : nullptr;
   }
-  std::string shell_url() const {
-    return test_helper_ ? test_helper_->shell_url() : std::string();
+  std::string test_url() const {
+    return test_helper_ ? test_helper_->test_url() : std::string();
   }
 
   // Get the ShellClient for the application to be tested.

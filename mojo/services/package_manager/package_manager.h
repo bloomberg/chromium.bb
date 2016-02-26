@@ -14,7 +14,6 @@
 #include "mojo/services/package_manager/public/interfaces/resolver.mojom.h"
 #include "mojo/services/package_manager/public/interfaces/shell_resolver.mojom.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
-#include "mojo/shell/public/cpp/shell.h"
 #include "mojo/shell/public/cpp/shell_client.h"
 #include "url/gurl.h"
 
@@ -80,8 +79,6 @@ class PackageManager : public mojo::ShellClient,
   using MojoURLAliasMap = std::map<GURL, std::pair<GURL, std::string>>;
 
   // mojo::ShellClient:
-  void Initialize(mojo::Shell* shell, const std::string& url,
-                  uint32_t id, uint32_t user_id) override;
   bool AcceptConnection(mojo::Connection* connection) override;
 
   // mojo::InterfaceFactory<mojom::Resolver>:

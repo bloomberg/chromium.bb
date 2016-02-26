@@ -14,6 +14,7 @@
 #include "mojo/services/network/network_context.h"
 #include "mojo/services/network/url_loader_impl.h"
 #include "mojo/shell/public/cpp/application_test_base.h"
+#include "mojo/shell/public/cpp/message_loop_ref.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_request_job.h"
 #include "net/url_request/url_request_job_factory_impl.h"
@@ -129,7 +130,7 @@ class UrlLoaderImplTest : public test::ApplicationTestBase {
     MessagePipe pipe;
     new URLLoaderImpl(network_context_.get(),
                       GetProxy(&url_loader_proxy_),
-                      make_scoped_ptr<mojo::AppRefCount>(nullptr));
+                      make_scoped_ptr<mojo::MessageLoopRef>(nullptr));
     EXPECT_TRUE(IsUrlLoaderValid());
   }
 

@@ -12,7 +12,7 @@
 #include "mojo/message_pump/handle_watcher.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/services/network/public/interfaces/url_loader.mojom.h"
-#include "mojo/shell/public/cpp/shell.h"
+#include "mojo/shell/public/cpp/message_loop_ref.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_request.h"
 
@@ -26,7 +26,7 @@ class URLLoaderImpl : public URLLoader,
  public:
   URLLoaderImpl(NetworkContext* context,
                 InterfaceRequest<URLLoader> request,
-                scoped_ptr<mojo::AppRefCount> app_refcount);
+                scoped_ptr<mojo::MessageLoopRef> app_refcount);
   ~URLLoaderImpl() override;
 
   // Called when the associated NetworkContext is going away.
@@ -70,7 +70,7 @@ class URLLoaderImpl : public URLLoader,
   bool auto_follow_redirects_;
   bool connected_;
   Binding<URLLoader> binding_;
-  scoped_ptr<mojo::AppRefCount> app_refcount_;
+  scoped_ptr<mojo::MessageLoopRef> app_refcount_;
 
   base::WeakPtrFactory<URLLoaderImpl> weak_ptr_factory_;
 };

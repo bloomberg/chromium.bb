@@ -14,6 +14,7 @@
 #include "mojo/services/package_manager/package_manager.h"
 #include "mojo/shell/application_loader.h"
 #include "mojo/shell/public/cpp/connection.h"
+#include "mojo/shell/public/cpp/connector.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
 #include "mojo/shell/public/cpp/shell_connection.h"
 
@@ -111,17 +112,16 @@ class ServiceApplication : public ShellClient,
                            public Safe,
                            public Unsafe {
  public:
-  ServiceApplication() : shell_(nullptr) {}
+  ServiceApplication() {}
   ~ServiceApplication() override {}
 
  private:
   // Overridden from ShellClient:
-  void Initialize(Shell* shell, const std::string& url, uint32_t id,
+  void Initialize(Connector* connector, const std::string& url, uint32_t id,
                   uint32_t user_id) override {
-    shell_ = shell;
     // ServiceApplications have no capability filter and can thus connect
     // directly to the validator application.
-    shell_->ConnectToInterface("test:validator", &validator_);
+    connector->ConnectToInterface("test:validator", &validator_);
   }
   bool AcceptConnection(Connection* connection) override {
     AddInterface<Safe>(connection);
@@ -149,7 +149,6 @@ class ServiceApplication : public ShellClient,
                                    !connection->AddInterface<Interface>(this));
   }
 
-  Shell* shell_;
   ValidatorPtr validator_;
   BindingSet<Safe> safe_bindings_;
   BindingSet<Unsafe> unsafe_bindings_;
@@ -160,24 +159,24 @@ class ServiceApplication : public ShellClient,
 ////////////////////////////////////////////////////////////////////////////////
 // TestApplication:
 
-TestApplication::TestApplication() : shell_(nullptr) {}
+TestApplication::TestApplication() : connector_(nullptr) {}
 TestApplication::~TestApplication() {}
 
-void TestApplication::Initialize(Shell* shell, const std::string& url,
+void TestApplication::Initialize(Connector* connector, const std::string& url,
                                  uint32_t id, uint32_t user_id) {
-  shell_ = shell;
+  connector_ = connector;
   url_ = url;
 }
 bool TestApplication::AcceptConnection(Connection* connection) {
   // TestApplications receive their Validator via the inbound connection.
   connection->GetInterface(&validator_);
 
-  connection1_ = shell_->Connect("test:service");
+  connection1_ = connector_->Connect("test:service");
   connection1_->SetRemoteInterfaceProviderConnectionErrorHandler(
       base::Bind(&TestApplication::ConnectionClosed,
                   base::Unretained(this), "test:service"));
 
-  connection2_ = shell_->Connect("test:service2");
+  connection2_ = connector_->Connect("test:service2");
   connection2_->SetRemoteInterfaceProviderConnectionErrorHandler(
       base::Bind(&TestApplication::ConnectionClosed,
                   base::Unretained(this), "test:service2"));

@@ -10,7 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/services/network/public/interfaces/web_socket.mojom.h"
-#include "mojo/shell/public/cpp/shell.h"
+#include "mojo/shell/public/cpp/message_loop_ref.h"
 
 namespace net {
 class WebSocketChannel;
@@ -25,7 +25,7 @@ class WebSocketReadQueue;
 class WebSocketImpl : public WebSocket {
  public:
   WebSocketImpl(NetworkContext* context,
-                scoped_ptr<mojo::AppRefCount> app_refcount,
+                scoped_ptr<mojo::MessageLoopRef> app_refcount,
                 InterfaceRequest<WebSocket> request);
   ~WebSocketImpl() override;
 
@@ -51,7 +51,7 @@ class WebSocketImpl : public WebSocket {
   ScopedDataPipeConsumerHandle send_stream_;
   scoped_ptr<WebSocketReadQueue> read_queue_;
   NetworkContext* context_;
-  scoped_ptr<mojo::AppRefCount> app_refcount_;
+  scoped_ptr<mojo::MessageLoopRef> app_refcount_;
   StrongBinding<WebSocket> binding_;
 };
 

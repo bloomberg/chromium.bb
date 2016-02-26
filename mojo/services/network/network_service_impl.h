@@ -8,14 +8,14 @@
 #include "base/compiler_specific.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/services/network/public/interfaces/network_service.mojom.h"
-#include "mojo/shell/public/cpp/shell.h"
+#include "mojo/shell/public/cpp/message_loop_ref.h"
 #include "url/gurl.h"
 
 namespace mojo {
 
 class NetworkServiceImpl : public NetworkService {
  public:
-  NetworkServiceImpl(scoped_ptr<mojo::AppRefCount> app_refcount,
+  NetworkServiceImpl(scoped_ptr<mojo::MessageLoopRef> app_refcount,
                      InterfaceRequest<NetworkService> request);
   ~NetworkServiceImpl() override;
 
@@ -39,7 +39,7 @@ class NetworkServiceImpl : public NetworkService {
       const GetMimeTypeFromFileCallback& callback) override;
 
  private:
-  scoped_ptr<mojo::AppRefCount> app_refcount_;
+  scoped_ptr<mojo::MessageLoopRef> app_refcount_;
   StrongBinding<NetworkService> binding_;
 };
 

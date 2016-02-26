@@ -9,7 +9,7 @@ namespace mojo {
 ShellClient::ShellClient() {}
 ShellClient::~ShellClient() {}
 
-void ShellClient::Initialize(Shell* app, const std::string& url,
+void ShellClient::Initialize(Connector* connector, const std::string& url,
                              uint32_t id, uint32_t user_id) {
 }
 
@@ -20,7 +20,5 @@ bool ShellClient::AcceptConnection(Connection* connection) {
 bool ShellClient::ShellConnectionLost() {
   return true;
 }
-
-void ShellClient::Quit() {}
 
 }  // namespace mojo

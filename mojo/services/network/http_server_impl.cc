@@ -27,7 +27,7 @@ const int kBackLog = 10;
 void HttpServerImpl::Create(
     NetAddressPtr local_address,
     HttpServerDelegatePtr delegate,
-    scoped_ptr<mojo::AppRefCount> app_refcount,
+    scoped_ptr<mojo::MessageLoopRef> app_refcount,
     const Callback<void(NetworkErrorPtr, NetAddressPtr)>& callback) {
   HttpServerImpl* http_server =
       new HttpServerImpl(std::move(delegate), std::move(app_refcount));
@@ -42,7 +42,7 @@ void HttpServerImpl::Create(
 }
 
 HttpServerImpl::HttpServerImpl(HttpServerDelegatePtr delegate,
-                               scoped_ptr<mojo::AppRefCount> app_refcount)
+                               scoped_ptr<mojo::MessageLoopRef> app_refcount)
     : delegate_(std::move(delegate)), app_refcount_(std::move(app_refcount)) {
   DCHECK(delegate_);
   delegate_.set_connection_error_handler([this]() { delete this; });

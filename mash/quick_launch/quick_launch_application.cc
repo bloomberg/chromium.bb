@@ -10,7 +10,7 @@
 #include "mojo/public/c/system/main.h"
 #include "mojo/services/tracing/public/cpp/tracing_impl.h"
 #include "mojo/shell/public/cpp/application_runner.h"
-#include "mojo/shell/public/cpp/shell.h"
+#include "mojo/shell/public/cpp/connector.h"
 #include "mojo/shell/public/cpp/shell_client.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -30,8 +30,8 @@ namespace quick_launch {
 class QuickLaunchUI : public views::WidgetDelegateView,
                       public views::TextfieldController {
  public:
-  QuickLaunchUI(mojo::Shell* shell)
-      : shell_(shell), prompt_(new views::Textfield) {
+  QuickLaunchUI(mojo::Connector* connector)
+      : connector_(connector), prompt_(new views::Textfield) {
     set_background(views::Background::CreateStandardPanelBackground());
     prompt_->set_controller(this);
     AddChildView(prompt_);
@@ -63,7 +63,7 @@ class QuickLaunchUI : public views::WidgetDelegateView,
                       const ui::KeyEvent& key_event) override {
     if (key_event.key_code() == ui::VKEY_RETURN) {
       std::string url = Canonicalize(prompt_->text());
-      connections_.push_back(shell_->Connect(url));
+      connections_.push_back(connector_->Connect(url));
       prompt_->SetText(base::string16());
     }
     return false;
@@ -78,7 +78,7 @@ class QuickLaunchUI : public views::WidgetDelegateView,
     return base::UTF16ToUTF8(working);
   }
 
-  mojo::Shell* shell_;
+  mojo::Connector* connector_;
   views::Textfield* prompt_;
   std::vector<scoped_ptr<mojo::Connection>> connections_;
 
@@ -88,17 +88,17 @@ class QuickLaunchUI : public views::WidgetDelegateView,
 QuickLaunchApplication::QuickLaunchApplication() {}
 QuickLaunchApplication::~QuickLaunchApplication() {}
 
-void QuickLaunchApplication::Initialize(mojo::Shell* shell,
+void QuickLaunchApplication::Initialize(mojo::Connector* connector,
                                         const std::string& url,
                                         uint32_t id,
                                         uint32_t user_id) {
-  tracing_.Initialize(shell, url);
+  tracing_.Initialize(connector, url);
 
-  aura_init_.reset(new views::AuraInit(shell, "views_mus_resources.pak"));
-  views::WindowManagerConnection::Create(shell);
+  aura_init_.reset(new views::AuraInit(connector, "views_mus_resources.pak"));
+  views::WindowManagerConnection::Create(connector);
 
   views::Widget* window = views::Widget::CreateWindowWithBounds(
-      new QuickLaunchUI(shell), gfx::Rect(10, 640, 0, 0));
+      new QuickLaunchUI(connector), gfx::Rect(10, 640, 0, 0));
   window->Show();
 }
 

@@ -13,7 +13,7 @@
 
 namespace mojo {
 
-class Shell;
+class Connector;
 
 // An interface representing an instance "known to the Mojo Shell". The
 // implementation receives lifecycle messages for the instance and gets the
@@ -31,7 +31,7 @@ class ShellClient {
   // instance of the application.
   // |user_id| identifies the user this instance is run as.
   // Called exactly once before any other method.
-  virtual void Initialize(Shell* shell,
+  virtual void Initialize(Connector* connector,
                           const std::string& url,
                           uint32_t id,
                           uint32_t user_id = 0);
@@ -44,19 +44,9 @@ class ShellClient {
 
   // Called when ShellConnection's pipe to the Mojo Shell is closed.
   //
-  // Returning true from this method will cause the ShellConnection instance to
-  // call this instance back via Quit(), and then run the termination closure
-  // passed to it (which may do cleanup like, for example, quitting a run loop).
-  // Returning false from this method will not do any of this. The client is
-  // then responsible for calling Shell::QuitNow() when it is ready to close.
-  // The client may do this if it wishes to continue servicing connections other
-  // than the Shell.
+  // Returning true from this method will cause ...
   // The default implementation returns true.
   virtual bool ShellConnectionLost();
-
-  // Called before ShellConnection::QuitNow(). After returning from this call
-  // the delegate can no longer rely on the main run loop still running.
-  virtual void Quit();
 
  private:
   MOJO_DISALLOW_COPY_AND_ASSIGN(ShellClient);

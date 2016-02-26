@@ -15,7 +15,7 @@ namespace mojo {
 
 TCPServerSocketImpl::TCPServerSocketImpl(
     scoped_ptr<net::TCPSocket> socket,
-    scoped_ptr<mojo::AppRefCount> app_refcount,
+    scoped_ptr<mojo::MessageLoopRef> app_refcount,
     InterfaceRequest<TCPServerSocket> request)
     : socket_(std::move(socket)),
       app_refcount_(std::move(app_refcount)),

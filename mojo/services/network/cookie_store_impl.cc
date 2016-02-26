@@ -28,7 +28,7 @@ void AdaptSetCookieCallback(const Callback<void(bool)>& callback,
 
 CookieStoreImpl::CookieStoreImpl(NetworkContext* context,
                                  const GURL& origin,
-                                 scoped_ptr<mojo::AppRefCount> app_refcount,
+                                 scoped_ptr<mojo::MessageLoopRef> app_refcount,
                                  InterfaceRequest<CookieStore> request)
     : context_(context),
       origin_(origin),

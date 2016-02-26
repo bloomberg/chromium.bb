@@ -11,7 +11,7 @@
 #include "ui/keyboard/keyboard.mojom.h"
 
 namespace mojo {
-class Shell;
+class Connector;
 }
 
 namespace ash {
@@ -19,10 +19,10 @@ namespace ash {
 class KeyboardUIMus : public KeyboardUI,
                       public keyboard::mojom::KeyboardObserver {
  public:
-  explicit KeyboardUIMus(mojo::Shell* mojo_shell);
+  explicit KeyboardUIMus(mojo::Connector* connector);
   ~KeyboardUIMus() override;
 
-  static scoped_ptr<KeyboardUI> Create(mojo::Shell* mojo_shell);
+  static scoped_ptr<KeyboardUI> Create(mojo::Connector* connector);
 
   // KeyboardUI:
   void Hide() override;

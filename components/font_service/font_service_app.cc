@@ -58,9 +58,10 @@ FontServiceApp::FontServiceApp() {}
 
 FontServiceApp::~FontServiceApp() {}
 
-void FontServiceApp::Initialize(mojo::Shell* shell, const std::string& url,
+void FontServiceApp::Initialize(mojo::Connector* connector,
+                                const std::string& url,
                                 uint32_t id, uint32_t user_id) {
-  tracing_.Initialize(shell, url);
+  tracing_.Initialize(connector, url);
 }
 
 bool FontServiceApp::AcceptConnection(mojo::Connection* connection) {

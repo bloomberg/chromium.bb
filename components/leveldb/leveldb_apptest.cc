@@ -28,8 +28,8 @@ class LevelDBApptest : public mojo::test::ApplicationTestBase {
   // Overridden from mojo::test::ApplicationTestBase:
   void SetUp() override {
     ApplicationTestBase::SetUp();
-    shell()->ConnectToInterface("mojo:filesystem", &files_);
-    shell()->ConnectToInterface("mojo:leveldb", &leveldb_);
+    connector()->ConnectToInterface("mojo:filesystem", &files_);
+    connector()->ConnectToInterface("mojo:leveldb", &leveldb_);
   }
 
   // Note: This has an out parameter rather than returning the |DirectoryPtr|,

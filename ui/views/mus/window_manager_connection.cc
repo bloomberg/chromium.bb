@@ -13,7 +13,7 @@
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/converters/network/network_type_converters.h"
 #include "mojo/shell/public/cpp/connection.h"
-#include "mojo/shell/public/cpp/shell.h"
+#include "mojo/shell/public/cpp/connector.h"
 #include "ui/views/mus/native_widget_mus.h"
 #include "ui/views/mus/screen_mus.h"
 #include "ui/views/views_delegate.h"
@@ -31,9 +31,9 @@ base::LazyInstance<WindowManagerConnectionPtr>::Leaky lazy_tls_ptr =
 }  // namespace
 
 // static
-void WindowManagerConnection::Create(mojo::Shell* shell) {
+void WindowManagerConnection::Create(mojo::Connector* connector) {
   DCHECK(!lazy_tls_ptr.Pointer()->Get());
-  lazy_tls_ptr.Pointer()->Set(new WindowManagerConnection(shell));
+  lazy_tls_ptr.Pointer()->Set(new WindowManagerConnection(connector));
 }
 
 // static
@@ -60,17 +60,17 @@ NativeWidget* WindowManagerConnection::CreateNativeWidgetMus(
     internal::NativeWidgetDelegate* delegate) {
   std::map<std::string, std::vector<uint8_t>> properties = props;
   NativeWidgetMus::ConfigurePropertiesForNewWindow(init_params, &properties);
-  return new NativeWidgetMus(delegate, shell_, NewWindow(properties),
+  return new NativeWidgetMus(delegate, connector_, NewWindow(properties),
                              mus::mojom::SurfaceType::DEFAULT);
 }
 
-WindowManagerConnection::WindowManagerConnection(mojo::Shell* shell)
-    : shell_(shell), window_tree_connection_(nullptr) {
+WindowManagerConnection::WindowManagerConnection(mojo::Connector* connector)
+    : connector_(connector), window_tree_connection_(nullptr) {
   window_tree_connection_.reset(
-      mus::WindowTreeConnection::Create(this, shell_));
+      mus::WindowTreeConnection::Create(this, connector_));
 
   screen_.reset(new ScreenMus(this));
-  screen_->Init(shell);
+  screen_->Init(connector);
 
   ViewsDelegate::GetInstance()->set_native_widget_factory(base::Bind(
       &WindowManagerConnection::CreateNativeWidgetMus,

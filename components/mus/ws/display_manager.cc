@@ -29,7 +29,7 @@
 #include "mojo/converters/surfaces/surfaces_utils.h"
 #include "mojo/converters/transform/transform_type_converters.h"
 #include "mojo/shell/public/cpp/connection.h"
-#include "mojo/shell/public/cpp/shell.h"
+#include "mojo/shell/public/cpp/connector.h"
 #include "third_party/skia/include/core/SkXfermode.h"
 #include "ui/base/cursor/cursor_loader.h"
 #include "ui/events/event.h"
@@ -155,19 +155,19 @@ DisplayManagerFactory* DisplayManager::factory_ = nullptr;
 
 // static
 DisplayManager* DisplayManager::Create(
-    mojo::Shell* shell,
+    mojo::Connector* connector,
     const scoped_refptr<GpuState>& gpu_state,
     const scoped_refptr<SurfacesState>& surfaces_state) {
   if (factory_)
-    return factory_->CreateDisplayManager(shell, gpu_state, surfaces_state);
-  return new DefaultDisplayManager(shell, gpu_state, surfaces_state);
+    return factory_->CreateDisplayManager(connector, gpu_state, surfaces_state);
+  return new DefaultDisplayManager(connector, gpu_state, surfaces_state);
 }
 
 DefaultDisplayManager::DefaultDisplayManager(
-    mojo::Shell* shell,
+    mojo::Connector* connector,
     const scoped_refptr<GpuState>& gpu_state,
     const scoped_refptr<SurfacesState>& surfaces_state)
-    : shell_(shell),
+    : connector_(connector),
       gpu_state_(gpu_state),
       surfaces_state_(surfaces_state),
       delegate_(nullptr),

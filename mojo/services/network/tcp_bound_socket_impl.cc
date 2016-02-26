@@ -15,7 +15,7 @@
 namespace mojo {
 
 TCPBoundSocketImpl::TCPBoundSocketImpl(
-    scoped_ptr<mojo::AppRefCount> app_refcount,
+    scoped_ptr<mojo::MessageLoopRef> app_refcount,
     InterfaceRequest<TCPBoundSocket> request)
     : app_refcount_(std::move(app_refcount)),
       binding_(this, std::move(request)) {}

@@ -6,7 +6,7 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "mojo/shell/public/cpp/connection.h"
-#include "mojo/shell/public/cpp/shell.h"
+#include "mojo/shell/public/cpp/connector.h"
 #include "mojo/shell/public/cpp/shell_client.h"
 #include "mojo/shell/runner/child/test_native_main.h"
 #include "mojo/shell/runner/init.h"
@@ -23,10 +23,10 @@ class TargetApplicationDelegate : public mojo::ShellClient {
 
  private:
   // mojo::ShellClient:
-  void Initialize(mojo::Shell* shell, const std::string& url,
+  void Initialize(mojo::Connector* connector, const std::string& url,
                   uint32_t id, uint32_t user_id) override {
     CreateInstanceForHandleTestPtr service;
-    shell->ConnectToInterface("mojo:mojo_shell_apptests", &service);
+    connector->ConnectToInterface("mojo:mojo_shell_apptests", &service);
     service->SetTargetID(id);
   }
 

@@ -179,6 +179,7 @@
 #endif
 
 #if defined(MOJO_SHELL_CLIENT)
+#include "mojo/shell/public/cpp/connector.h"
 #include "ui/views/mus/window_manager_connection.h"
 #endif
 
@@ -919,7 +920,7 @@ int BrowserMainLoop::PreMainMessageLoopRun() {
     MojoShellConnectionImpl::Get()->BindToCommandLinePlatformChannel();
 #if defined(MOJO_SHELL_CLIENT) && defined(USE_AURA)
     views::WindowManagerConnection::Create(
-        MojoShellConnection::Get()->GetShell());
+        MojoShellConnection::Get()->GetConnector());
 #endif
   }
 

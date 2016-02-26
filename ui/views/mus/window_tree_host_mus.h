@@ -12,7 +12,7 @@
 class SkBitmap;
 
 namespace mojo {
-class Shell;
+class Connector;
 }
 
 namespace mus {
@@ -27,7 +27,7 @@ class PlatformWindowMus;
 
 class VIEWS_MUS_EXPORT WindowTreeHostMus : public aura::WindowTreeHostPlatform {
  public:
-  WindowTreeHostMus(mojo::Shell* shell,
+  WindowTreeHostMus(mojo::Connector* connector,
                     NativeWidgetMus* native_widget_,
                     mus::Window* window);
   ~WindowTreeHostMus() override;

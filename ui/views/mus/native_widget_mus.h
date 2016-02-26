@@ -30,7 +30,7 @@ class Window;
 }
 
 namespace mojo {
-class Shell;
+class Connector;
 }
 
 namespace mus {
@@ -59,7 +59,7 @@ class VIEWS_MUS_EXPORT NativeWidgetMus : public internal::NativeWidgetPrivate,
                                          public aura::WindowTreeHostObserver {
  public:
   NativeWidgetMus(internal::NativeWidgetDelegate* delegate,
-                  mojo::Shell* shell,
+                  mojo::Connector* connector,
                   mus::Window* window,
                   mus::mojom::SurfaceType surface_type);
   ~NativeWidgetMus() override;

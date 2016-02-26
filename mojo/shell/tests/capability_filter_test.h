@@ -29,13 +29,13 @@ class TestApplication : public ShellClient {
 
  private:
   // Overridden from ShellClient:
-  void Initialize(Shell* shell, const std::string& url, uint32_t id,
+  void Initialize(Connector* connector, const std::string& url, uint32_t id,
                   uint32_t user_id) override;
   bool AcceptConnection(Connection* connection) override;
 
   void ConnectionClosed(const std::string& service_url);
 
-  Shell* shell_;
+  Connector* connector_;
   std::string url_;
   ValidatorPtr validator_;
   scoped_ptr<Connection> connection1_;

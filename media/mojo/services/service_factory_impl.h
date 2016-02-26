@@ -10,10 +10,11 @@
 #include "media/mojo/interfaces/service_factory.mojom.h"
 #include "media/mojo/services/mojo_cdm_service_context.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "mojo/shell/public/cpp/shell.h"
+#include "mojo/shell/public/cpp/connector.h"
+#include "mojo/shell/public/cpp/message_loop_ref.h"
 
 namespace mojo {
-class AppRefCount;
+class MessageLoopRef;
 namespace shell {
 namespace mojom {
 class InterfaceProvider;
@@ -33,7 +34,7 @@ class ServiceFactoryImpl : public interfaces::ServiceFactory {
   ServiceFactoryImpl(mojo::InterfaceRequest<interfaces::ServiceFactory> request,
                      mojo::shell::mojom::InterfaceProvider* interfaces,
                      scoped_refptr<MediaLog> media_log,
-                     scoped_ptr<mojo::AppRefCount> parent_app_refcount,
+                     scoped_ptr<mojo::MessageLoopRef> parent_app_refcount,
                      MojoMediaClient* mojo_media_client);
   ~ServiceFactoryImpl() final;
 
@@ -52,7 +53,7 @@ class ServiceFactoryImpl : public interfaces::ServiceFactory {
   mojo::StrongBinding<interfaces::ServiceFactory> binding_;
   mojo::shell::mojom::InterfaceProvider* interfaces_;
   scoped_refptr<MediaLog> media_log_;
-  scoped_ptr<mojo::AppRefCount> parent_app_refcount_;
+  scoped_ptr<mojo::MessageLoopRef> parent_app_refcount_;
   MojoMediaClient* mojo_media_client_;
 
   scoped_ptr<RendererFactory> renderer_factory_;

@@ -7,6 +7,7 @@
 #include "base/run_loop.h"
 #include "mojo/shell/background/tests/test.mojom.h"
 #include "mojo/shell/background/tests/test_application_catalog_store.h"
+#include "mojo/shell/public/cpp/connector.h"
 #include "mojo/shell/public/cpp/shell_client.h"
 #include "mojo/shell/public/cpp/shell_connection.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -55,8 +56,8 @@ TEST(BackgroundShellTest, DISABLED_Basic) {
       &shell_client, background_shell.CreateShellClientRequest(GURL(kTestUrl)));
   shell_connection.WaitForInitialize();
   mojom::TestServicePtr test_service;
-  static_cast<Shell*>(&shell_connection)
-      ->ConnectToInterface("mojo:background_shell_test_app", &test_service);
+  shell_connection.connector()->ConnectToInterface(
+      "mojo:background_shell_test_app", &test_service);
   base::RunLoop run_loop;
   bool got_result = false;
   test_service->Test([&run_loop, &got_result]() {

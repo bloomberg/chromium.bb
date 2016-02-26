@@ -9,7 +9,7 @@
 #include "components/prefs/pref_service.h"
 
 namespace mojo {
-class Shell;
+class Connector;
 }
 
 class PrefRegistry;
@@ -19,7 +19,7 @@ namespace filesystem {
 // This factory method creates a PrefService for the local process based on the
 // preference registry passed in. This PrefService will synchronize with a JSON
 // file in the mojo:filesystem.
-scoped_ptr<PrefService> CreatePrefService(mojo::Shell* shell,
+scoped_ptr<PrefService> CreatePrefService(mojo::Connector* connector,
                                           PrefRegistry* registry);
 
 }  // namespace filesystem

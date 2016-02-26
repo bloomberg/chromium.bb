@@ -10,7 +10,7 @@
 #include "mash/shell/public/interfaces/shell.mojom.h"
 #include "mash/wm/public/interfaces/container.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/shell/public/cpp/shell.h"
+#include "mojo/shell/public/cpp/connector.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/mus/aura_init.h"
@@ -25,8 +25,8 @@ namespace {
 class ScreenlockView : public views::WidgetDelegateView,
                        public views::ButtonListener {
  public:
-  explicit ScreenlockView(mojo::Shell* shell)
-      : shell_(shell),
+  explicit ScreenlockView(mojo::Connector* connector)
+      : connector_(connector),
         unlock_button_(
             new views::LabelButton(this, base::ASCIIToUTF16("Unlock"))) {
     set_background(views::Background::CreateSolidBackground(SK_ColorYELLOW));
@@ -60,11 +60,11 @@ class ScreenlockView : public views::WidgetDelegateView,
   void ButtonPressed(views::Button* sender, const ui::Event& event) override {
     DCHECK_EQ(sender, unlock_button_);
     mash::shell::mojom::ShellPtr shell;
-    shell_->ConnectToInterface("mojo:mash_shell", &shell);
+    connector_->ConnectToInterface("mojo:mash_shell", &shell);
     shell->UnlockScreen();
   }
 
-  mojo::Shell* shell_;
+  mojo::Connector* connector_;
   views::LabelButton* unlock_button_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenlockView);
@@ -72,26 +72,25 @@ class ScreenlockView : public views::WidgetDelegateView,
 
 }  // namespace
 
-Screenlock::Screenlock() : shell_(nullptr) {}
+Screenlock::Screenlock() {}
 Screenlock::~Screenlock() {}
 
-void Screenlock::Initialize(mojo::Shell* shell, const std::string& url,
+void Screenlock::Initialize(mojo::Connector* connector, const std::string& url,
                             uint32_t id, uint32_t user_id) {
-  shell_ = shell;
-  tracing_.Initialize(shell, url);
+  tracing_.Initialize(connector, url);
 
   mash::shell::mojom::ShellPtr mash_shell;
-  shell_->ConnectToInterface("mojo:mash_shell", &mash_shell);
+  connector->ConnectToInterface("mojo:mash_shell", &mash_shell);
   mash_shell->AddScreenlockStateListener(
       bindings_.CreateInterfacePtrAndBind(this));
 
-  aura_init_.reset(new views::AuraInit(shell, "views_mus_resources.pak"));
-  views::WindowManagerConnection::Create(shell);
+  aura_init_.reset(new views::AuraInit(connector, "views_mus_resources.pak"));
+  views::WindowManagerConnection::Create(connector);
 
   views::Widget* widget = new views::Widget;
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-  params.delegate = new ScreenlockView(shell);
+  params.delegate = new ScreenlockView(connector);
 
   std::map<std::string, std::vector<uint8_t>> properties;
   properties[mash::wm::mojom::kWindowContainer_Property] =
@@ -100,14 +99,14 @@ void Screenlock::Initialize(mojo::Shell* shell, const std::string& url,
   mus::Window* window =
       views::WindowManagerConnection::Get()->NewWindow(properties);
   params.native_widget = new views::NativeWidgetMus(
-      widget, shell, window, mus::mojom::SurfaceType::DEFAULT);
+      widget, connector, window, mus::mojom::SurfaceType::DEFAULT);
   widget->Init(params);
   widget->Show();
 }
 
 void Screenlock::ScreenlockStateChanged(bool screen_locked) {
   if (!screen_locked)
-    shell_->Quit();
+    base::MessageLoop::current()->QuitWhenIdle();
 }
 
 }  // namespace screenlock

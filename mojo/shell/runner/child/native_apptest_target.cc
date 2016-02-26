@@ -10,7 +10,6 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/shell/public/cpp/connection.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
-#include "mojo/shell/public/cpp/shell.h"
 #include "mojo/shell/public/cpp/shell_client.h"
 #include "mojo/shell/runner/child/test_native_main.h"
 #include "mojo/shell/runner/child/test_native_service.mojom.h"
@@ -28,8 +27,6 @@ class TargetApplicationDelegate
 
  private:
   // mojo::ShellClient:
-  void Initialize(mojo::Shell* shell, const std::string& url,
-                  uint32_t id, uint32_t user_id) override {}
   bool AcceptConnection(mojo::Connection* connection) override {
     connection->AddInterface<mojo::shell::test::TestNativeService>(this);
     return true;

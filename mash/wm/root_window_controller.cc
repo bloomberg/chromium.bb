@@ -21,7 +21,7 @@
 #include "mash/wm/window_layout.h"
 #include "mash/wm/window_manager.h"
 #include "mash/wm/window_manager_application.h"
-#include "mojo/shell/public/cpp/shell.h"
+#include "mojo/shell/public/cpp/connector.h"
 
 namespace mash {
 namespace wm {
@@ -39,7 +39,7 @@ void AssertTrue(bool success) {
 RootWindowController* RootWindowController::CreateUsingWindowTreeHost(
     WindowManagerApplication* app) {
   RootWindowController* controller = new RootWindowController(app);
-  mus::CreateWindowTreeHost(app->shell(), controller,
+  mus::CreateWindowTreeHost(app->connector(), controller,
                             &controller->window_tree_host_,
                             controller->window_manager_.get());
   return controller;
@@ -69,8 +69,8 @@ void RootWindowController::Destroy() {
   }
 }
 
-mojo::Shell* RootWindowController::GetShell() {
-  return app_->shell();
+mojo::Connector* RootWindowController::GetConnector() {
+  return app_->connector();
 }
 
 mus::Window* RootWindowController::GetWindowForContainer(
@@ -145,7 +145,7 @@ void RootWindowController::OnEmbed(mus::Window* root) {
   AddAccelerators();
 
   mash::shell::mojom::ShellPtr shell;
-  app_->shell()->ConnectToInterface("mojo:mash_shell", &shell);
+  app_->connector()->ConnectToInterface("mojo:mash_shell", &shell);
   window_manager_->Initialize(this, std::move(shell));
 
   shadow_controller_.reset(new ShadowController(root->connection()));

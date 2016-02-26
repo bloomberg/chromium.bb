@@ -174,9 +174,9 @@ class AshInit {
 
   aura::Window* root() { return ash::Shell::GetPrimaryRootWindow(); }
 
-  void Initialize(mojo::Shell* shell) {
-    aura_init_.reset(new views::AuraInit(shell, "views_mus_resources.pak"));
-    views::WindowManagerConnection::Create(shell);
+  void Initialize(mojo::Connector* connector) {
+    aura_init_.reset(new views::AuraInit(connector, "views_mus_resources.pak"));
+    views::WindowManagerConnection::Create(connector);
 
     gfx::Screen* screen = gfx::Screen::GetScreen();
     DCHECK(screen);
@@ -201,7 +201,8 @@ class AshInit {
     init_params.context_factory = new StubContextFactory;
     init_params.blocking_pool = worker_pool_.get();
     init_params.in_mus = true;
-    init_params.keyboard_factory = base::Bind(&KeyboardUIMus::Create, shell);
+    init_params.keyboard_factory =
+        base::Bind(&KeyboardUIMus::Create, connector);
     ash::Shell::CreateInstance(init_params);
     ash::Shell::GetInstance()->CreateShelf();
     ash::Shell::GetInstance()->UpdateAfterLoginStatusChange(
@@ -276,12 +277,12 @@ SysUIApplication::SysUIApplication() {}
 
 SysUIApplication::~SysUIApplication() {}
 
-void SysUIApplication::Initialize(mojo::Shell* shell,
+void SysUIApplication::Initialize(mojo::Connector* connector,
                                   const std::string& url,
                                   uint32_t id,
                                   uint32_t user_id) {
   ash_init_.reset(new AshInit());
-  ash_init_->Initialize(shell);
+  ash_init_->Initialize(connector);
 }
 
 bool SysUIApplication::AcceptConnection(mojo::Connection* connection) {

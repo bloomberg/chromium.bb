@@ -8,14 +8,14 @@
 #include "base/memory/scoped_ptr.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/services/network/public/interfaces/tcp_bound_socket.mojom.h"
-#include "mojo/shell/public/cpp/shell.h"
+#include "mojo/shell/public/cpp/message_loop_ref.h"
 #include "net/socket/tcp_socket.h"
 
 namespace mojo {
 
 class TCPBoundSocketImpl : public TCPBoundSocket {
  public:
-  TCPBoundSocketImpl(scoped_ptr<mojo::AppRefCount> app_refcount,
+  TCPBoundSocketImpl(scoped_ptr<mojo::MessageLoopRef> app_refcount,
                      InterfaceRequest<TCPBoundSocket> request);
   ~TCPBoundSocketImpl() override;
 
@@ -47,7 +47,7 @@ class TCPBoundSocketImpl : public TCPBoundSocket {
   ScopedDataPipeProducerHandle pending_connect_receive_stream_;
   InterfaceRequest<TCPConnectedSocket> pending_connect_socket_;
   Callback<void(NetworkErrorPtr)> pending_connect_callback_;
-  scoped_ptr<mojo::AppRefCount> app_refcount_;
+  scoped_ptr<mojo::MessageLoopRef> app_refcount_;
   StrongBinding<TCPBoundSocket> binding_;
 };
 

@@ -38,7 +38,7 @@ TEST_F(PackageApptest, Basic) {
     // register aliases.
     test::mojom::PackageTestServicePtr root_service;
     scoped_ptr<Connection> connection =
-        shell()->Connect("mojo:package_test_package");
+        connector()->Connect("mojo:package_test_package");
     connection->GetInterface(&root_service);
     base::RunLoop run_loop;
     std::string root_name;
@@ -53,7 +53,8 @@ TEST_F(PackageApptest, Basic) {
     // Now subsequent connects to applications provided by the root app will be
     // resolved correctly.
     test::mojom::PackageTestServicePtr service_a;
-    scoped_ptr<Connection> connection = shell()->Connect("mojo:package_test_a");
+    scoped_ptr<Connection> connection =
+        connector()->Connect("mojo:package_test_a");
     connection->GetInterface(&service_a);
     base::RunLoop run_loop;
     std::string a_name;
@@ -67,7 +68,8 @@ TEST_F(PackageApptest, Basic) {
 
   {
     test::mojom::PackageTestServicePtr service_b;
-    scoped_ptr<Connection> connection = shell()->Connect("mojo:package_test_b");
+    scoped_ptr<Connection> connection =
+        connector()->Connect("mojo:package_test_b");
     connection->GetInterface(&service_b);
     base::RunLoop run_loop;
     std::string b_name;

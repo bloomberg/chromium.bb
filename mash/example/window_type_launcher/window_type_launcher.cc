@@ -9,7 +9,7 @@
 #include "mash/shell/public/interfaces/shell.mojom.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/shell/public/cpp/connection.h"
-#include "mojo/shell/public/cpp/shell.h"
+#include "mojo/shell/public/cpp/connector.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/compositor/layer.h"
@@ -164,8 +164,8 @@ class WindowTypeLauncherView : public views::WidgetDelegateView,
                                public views::MenuDelegate,
                                public views::ContextMenuController {
  public:
-  explicit WindowTypeLauncherView(mojo::Shell* shell)
-      : shell_(shell),
+  explicit WindowTypeLauncherView(mojo::Connector* connector)
+      : connector_(connector),
         create_button_(new views::LabelButton(
             this, base::ASCIIToUTF16("Create Window"))),
         panel_button_(new views::LabelButton(
@@ -274,7 +274,7 @@ class WindowTypeLauncherView : public views::WidgetDelegateView,
     }
     else if (sender == lock_button_) {
       mash::shell::mojom::ShellPtr shell;
-      shell_->ConnectToInterface("mojo:mash_shell", &shell);
+      connector_->ConnectToInterface("mojo:mash_shell", &shell);
       shell->LockScreen();
     }
     else if (sender == widgets_button_) {
@@ -331,7 +331,7 @@ class WindowTypeLauncherView : public views::WidgetDelegateView,
     }
   }
 
-  mojo::Shell* shell_;
+  mojo::Connector* connector_;
   views::LabelButton* create_button_;
   views::LabelButton* panel_button_;
   views::LabelButton* create_nonresizable_button_;
@@ -355,15 +355,16 @@ class WindowTypeLauncherView : public views::WidgetDelegateView,
 WindowTypeLauncher::WindowTypeLauncher() {}
 WindowTypeLauncher::~WindowTypeLauncher() {}
 
-void WindowTypeLauncher::Initialize(mojo::Shell* shell, const std::string& url,
+void WindowTypeLauncher::Initialize(mojo::Connector* connector,
+                                    const std::string& url,
                                     uint32_t id, uint32_t user_id) {
-  aura_init_.reset(new views::AuraInit(shell, "views_mus_resources.pak"));
+  aura_init_.reset(new views::AuraInit(connector, "views_mus_resources.pak"));
 
-  views::WindowManagerConnection::Create(shell);
+  views::WindowManagerConnection::Create(connector);
 
   views::Widget* widget = new views::Widget;
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
-  params.delegate = new WindowTypeLauncherView(shell);
+  params.delegate = new WindowTypeLauncherView(connector);
   widget->Init(params);
   widget->Show();
 }

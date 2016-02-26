@@ -352,7 +352,7 @@ class TestDisplayManagerFactory : public DisplayManagerFactory {
       : cursor_id_storage_(cursor_id_storage) {}
   ~TestDisplayManagerFactory() {}
   DisplayManager* CreateDisplayManager(
-      mojo::Shell* shell,
+      mojo::Connector* connector,
       const scoped_refptr<GpuState>& gpu_state,
       const scoped_refptr<mus::SurfacesState>& surfaces_state) override {
     return new TestDisplayManager(cursor_id_storage_);

@@ -16,7 +16,7 @@
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_property.h"
 #include "mojo/common/common_type_converters.h"
-#include "mojo/shell/public/cpp/shell.h"
+#include "mojo/shell/public/cpp/connector.h"
 #include "ui/aura/mus/mus_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/resources/grit/ui_resources.h"
@@ -90,8 +90,9 @@ class ShelfItemDelegateMus : public ShelfItemDelegate {
 
 ShelfDelegateMus::ShelfDelegateMus(ShelfModel* model)
     : model_(model), binding_(this) {
-  mojo::Shell* shell = views::WindowManagerConnection::Get()->shell();
-  shell->ConnectToInterface("mojo:desktop_wm", &user_window_controller_);
+  mojo::Connector* connector =
+      views::WindowManagerConnection::Get()->connector();
+  connector->ConnectToInterface("mojo:desktop_wm", &user_window_controller_);
   user_window_controller_->AddUserWindowObserver(
       binding_.CreateInterfacePtrAndBind());
 }

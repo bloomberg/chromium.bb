@@ -21,7 +21,7 @@ class LevelDBApp : public mojo::ShellClient,
 
  private:
   // |ShellClient| override:
-  void Initialize(mojo::Shell* shell,
+  void Initialize(mojo::Connector* connector,
                   const std::string& url,
                   uint32_t id,
                   uint32_t user_id) override;

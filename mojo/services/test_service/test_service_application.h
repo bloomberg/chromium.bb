@@ -23,7 +23,7 @@ class TestServiceApplication : public ShellClient,
   ~TestServiceApplication() override;
 
   // mojo::ShellClient implementation.
-  void Initialize(Shell* shell, const std::string& url,
+  void Initialize(Connector* connector, const std::string& url,
                   uint32_t id, uint32_t user_id) override;
   bool AcceptConnection(Connection* connection) override;
 
@@ -40,7 +40,7 @@ class TestServiceApplication : public ShellClient,
 
  private:
   int ref_count_;
-  Shell* shell_;
+  Connector* connector_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(TestServiceApplication);
 };

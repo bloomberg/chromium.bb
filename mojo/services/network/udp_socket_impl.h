@@ -14,7 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/services/network/public/interfaces/udp_socket.mojom.h"
-#include "mojo/shell/public/cpp/shell.h"
+#include "mojo/shell/public/cpp/message_loop_ref.h"
 #include "net/base/ip_endpoint.h"
 #include "net/udp/udp_socket.h"
 
@@ -30,7 +30,7 @@ class UDPSocketImpl : public UDPSocket {
   // The lifetime of a new UDPSocketImpl is bound to the connection associated
   // with |request|.
   UDPSocketImpl(InterfaceRequest<UDPSocket> request,
-                scoped_ptr<mojo::AppRefCount> app_refcount);
+                scoped_ptr<mojo::MessageLoopRef> app_refcount);
   ~UDPSocketImpl() override;
 
   // UDPSocket implementation.
@@ -123,7 +123,7 @@ class UDPSocketImpl : public UDPSocket {
   // The maximum size of the |pending_send_requests_| queue.
   size_t max_pending_send_requests_;
 
-  scoped_ptr<mojo::AppRefCount> app_refcount_;
+  scoped_ptr<mojo::MessageLoopRef> app_refcount_;
 
   DISALLOW_COPY_AND_ASSIGN(UDPSocketImpl);
 };

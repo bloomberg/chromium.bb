@@ -141,7 +141,7 @@ class UploadDataPipeElementReader : public net::UploadElementReader {
 
 URLLoaderImpl::URLLoaderImpl(NetworkContext* context,
                              InterfaceRequest<URLLoader> request,
-                             scoped_ptr<mojo::AppRefCount> app_refcount)
+                             scoped_ptr<mojo::MessageLoopRef> app_refcount)
     : context_(context),
       response_body_buffer_size_(0),
       response_body_bytes_read_(0),

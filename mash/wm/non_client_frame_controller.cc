@@ -90,9 +90,9 @@ class ContentWindowLayoutManager : public aura::LayoutManager {
 class WmNativeWidgetMus : public views::NativeWidgetMus {
  public:
   WmNativeWidgetMus(views::internal::NativeWidgetDelegate* delegate,
-                    mojo::Shell* shell,
+                    mojo::Connector* connector,
                     mus::Window* window)
-      : NativeWidgetMus(delegate, shell, window,
+      : NativeWidgetMus(delegate, connector, window,
                         mus::mojom::SurfaceType::UNDERLAY) {}
   ~WmNativeWidgetMus() override {
   }
@@ -166,7 +166,7 @@ class ClientViewMus : public views::ClientView {
 }  // namespace
 
 NonClientFrameController::NonClientFrameController(
-    mojo::Shell* shell,
+    mojo::Connector* connector,
     mus::Window* window,
     mus::WindowManagerClient* window_manager_client)
     : widget_(new views::Widget), window_(window) {
@@ -176,7 +176,7 @@ NonClientFrameController::NonClientFrameController(
   // We initiate focus at the mus level, not at the views level.
   params.activatable = views::Widget::InitParams::ACTIVATABLE_NO;
   params.delegate = this;
-  params.native_widget = new WmNativeWidgetMus(widget_, shell, window);
+  params.native_widget = new WmNativeWidgetMus(widget_, connector, window);
   widget_->Init(params);
   widget_->ShowInactive();
 

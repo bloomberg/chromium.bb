@@ -55,7 +55,7 @@ class ResourceProviderApplicationTest : public mojo::test::ApplicationTestBase {
   // resources are returned. The return map maps from the path to the contents
   // of the file at the specified path.
   ResourceContentsMap GetResources(const std::set<std::string>& paths) {
-    ResourceLoader loader(shell(), paths);
+    ResourceLoader loader(connector(), paths);
     loader.BlockUntilLoaded();
 
     // Load the contents of each of the handles.

@@ -19,7 +19,7 @@ ServiceFactoryImpl::ServiceFactoryImpl(
     mojo::InterfaceRequest<interfaces::ServiceFactory> request,
     mojo::shell::mojom::InterfaceProvider* interfaces,
     scoped_refptr<MediaLog> media_log,
-    scoped_ptr<mojo::AppRefCount> parent_app_refcount,
+    scoped_ptr<mojo::MessageLoopRef> parent_app_refcount,
     MojoMediaClient* mojo_media_client)
     : binding_(this, std::move(request)),
       interfaces_(interfaces),

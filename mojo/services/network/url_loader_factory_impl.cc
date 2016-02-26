@@ -12,7 +12,7 @@ namespace mojo {
 
 URLLoaderFactoryImpl::URLLoaderFactoryImpl(
     NetworkContext* context,
-    scoped_ptr<mojo::AppRefCount> app_refcount,
+    scoped_ptr<mojo::MessageLoopRef> app_refcount,
     InterfaceRequest<URLLoaderFactory> request)
     : context_(context),
       app_refcount_(std::move(app_refcount)),

@@ -93,7 +93,7 @@ void MojoShellConnectionImpl::WaitForShell(
   shell_connection_->WaitForInitialize();
 }
 
-void MojoShellConnectionImpl::Initialize(mojo::Shell* shell,
+void MojoShellConnectionImpl::Initialize(mojo::Connector* connector,
                                          const std::string& url,
                                          uint32_t id,
                                          uint32_t user_id) {
@@ -107,9 +107,9 @@ bool MojoShellConnectionImpl::AcceptConnection(mojo::Connection* connection) {
   return found;
 }
 
-mojo::Shell* MojoShellConnectionImpl::GetShell() {
+mojo::Connector* MojoShellConnectionImpl::GetConnector() {
   DCHECK(initialized_);
-  return shell_connection_.get();
+  return shell_connection_->connector();
 }
 
 bool MojoShellConnectionImpl::UsingExternalShell() const {

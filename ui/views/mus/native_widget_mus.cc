@@ -176,7 +176,7 @@ int ResizeBehaviorFromDelegate(WidgetDelegate* delegate) {
 // NativeWidgetMus, public:
 
 NativeWidgetMus::NativeWidgetMus(internal::NativeWidgetDelegate* delegate,
-                                 mojo::Shell* shell,
+                                 mojo::Connector* connector,
                                  mus::Window* window,
                                  mus::mojom::SurfaceType surface_type)
     : window_(window),
@@ -200,10 +200,10 @@ NativeWidgetMus::NativeWidgetMus(internal::NativeWidgetDelegate* delegate,
   // SoftwareOutputDeviceMus.
   if (!default_context_factory) {
     context_factory_.reset(
-        new SurfaceContextFactory(shell, window_, surface_type_));
+        new SurfaceContextFactory(connector, window_, surface_type_));
     aura::Env::GetInstance()->set_context_factory(context_factory_.get());
   }
-  window_tree_host_.reset(new WindowTreeHostMus(shell, this, window_));
+  window_tree_host_.reset(new WindowTreeHostMus(connector, this, window_));
   aura::Env::GetInstance()->set_context_factory(default_context_factory);
 }
 

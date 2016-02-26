@@ -27,8 +27,6 @@ class TestMojoApp : public mojo::ShellClient,
 
  private:
   // mojo::ShellClient:
-  void Initialize(mojo::Shell* shell, const std::string& url,
-                  uint32_t id, uint32_t user_id) override;
   bool AcceptConnection(mojo::Connection* connection) override;
 
   // mojo::InterfaceFactory<TestMojoService>:
@@ -40,9 +38,6 @@ class TestMojoApp : public mojo::ShellClient,
   void GetRequestorURL(const GetRequestorURLCallback& callback) override;
 
   mojo::Binding<TestMojoService> service_binding_;
-
-  // Not owned.
-  mojo::Shell* shell_;
 
   // The URL of the app connecting to us.
   GURL requestor_url_;

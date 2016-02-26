@@ -16,13 +16,13 @@ namespace views {
 ////////////////////////////////////////////////////////////////////////////////
 // WindowTreeHostMus, public:
 
-WindowTreeHostMus::WindowTreeHostMus(mojo::Shell* shell,
+WindowTreeHostMus::WindowTreeHostMus(mojo::Connector* connector,
                                      NativeWidgetMus* native_widget,
                                      mus::Window* window)
     : native_widget_(native_widget),
       show_state_(ui::PLATFORM_WINDOW_STATE_UNKNOWN) {
   SetPlatformWindow(
-      make_scoped_ptr(new PlatformWindowMus(this, shell, window)));
+      make_scoped_ptr(new PlatformWindowMus(this, connector, window)));
   // The location of events is already transformed, and there is no way to
   // correctly determine the reverse transform. So, don't attempt to transform
   // event locations, else the root location is wrong.

@@ -9,13 +9,13 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/threading/simple_thread.h"
 #include "mojo/public/c/system/main.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/shell/public/cpp/application_runner.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
-#include "mojo/shell/public/cpp/shell.h"
 #include "mojo/shell/public/cpp/shell_client.h"
 #include "mojo/shell/public/interfaces/shell_client_factory.mojom.h"
 #include "mojo/shell/tests/package_test.mojom.h"
@@ -39,8 +39,7 @@ class ProvidedShellClient
                       mojom::ShellClientRequest request)
       : base::SimpleThread(name),
         name_(name),
-        request_(std::move(request)),
-        shell_(nullptr) {
+        request_(std::move(request)) {
     Start();
   }
   ~ProvidedShellClient() override {
@@ -49,9 +48,8 @@ class ProvidedShellClient
 
  private:
   // mojo::ShellClient:
-  void Initialize(Shell* shell, const std::string& url,
+  void Initialize(Connector* connector, const std::string& url,
                   uint32_t id, uint32_t user_id) override {
-    shell_ = shell;
     bindings_.set_connection_error_handler(
         base::Bind(&ProvidedShellClient::OnConnectionError,
                    base::Unretained(this)));
@@ -82,12 +80,11 @@ class ProvidedShellClient
 
   void OnConnectionError() {
     if (bindings_.empty())
-      shell_->Quit();
+      base::MessageLoop::current()->QuitWhenIdle();
   }
 
   const std::string name_;
   mojom::ShellClientRequest request_;
-  Shell* shell_;
   BindingSet<test::mojom::PackageTestService> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(ProvidedShellClient);
@@ -100,14 +97,13 @@ class PackageTestShellClient
       public mojom::ShellClientFactory,
       public test::mojom::PackageTestService {
  public:
-  PackageTestShellClient() : shell_(nullptr) {}
+  PackageTestShellClient() {}
   ~PackageTestShellClient() override {}
 
  private:
   // mojo::ShellClient:
-  void Initialize(Shell* shell, const std::string& url,
+  void Initialize(Connector* connector, const std::string& url,
                   uint32_t id, uint32_t user_id) override {
-    shell_ = shell;
     bindings_.set_connection_error_handler(
         base::Bind(&PackageTestShellClient::OnConnectionError,
                    base::Unretained(this)));
@@ -115,6 +111,13 @@ class PackageTestShellClient
   bool AcceptConnection(Connection* connection) override {
     connection->AddInterface<ShellClientFactory>(this);
     connection->AddInterface<test::mojom::PackageTestService>(this);
+    return true;
+  }
+  bool ShellConnectionLost() override {
+    if (base::MessageLoop::current() &&
+        base::MessageLoop::current()->is_running()) {
+      base::MessageLoop::current()->QuitWhenIdle();
+    }
     return true;
   }
 
@@ -146,10 +149,9 @@ class PackageTestShellClient
 
   void OnConnectionError() {
     if (bindings_.empty())
-      shell_->Quit();
+      base::MessageLoop::current()->QuitWhenIdle();
   }
 
-  Shell* shell_;
   std::vector<scoped_ptr<ShellClient>> delegates_;
   BindingSet<mojom::ShellClientFactory> shell_client_factory_bindings_;
   BindingSet<test::mojom::PackageTestService> bindings_;

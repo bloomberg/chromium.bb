@@ -7,22 +7,18 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/message_loop/message_loop.h"
 #include "mojo/shell/public/cpp/connection.h"
-#include "mojo/shell/public/cpp/shell.h"
+#include "mojo/shell/public/cpp/connector.h"
 
 namespace content {
 
 const char kTestMojoAppUrl[] = "system:content_mojo_test";
 
-TestMojoApp::TestMojoApp() : service_binding_(this), shell_(nullptr) {
+TestMojoApp::TestMojoApp() : service_binding_(this) {
 }
 
 TestMojoApp::~TestMojoApp() {
-}
-
-void TestMojoApp::Initialize(mojo::Shell* shell, const std::string& url,
-                             uint32_t id, uint32_t user_id) {
-  shell_ = shell;
 }
 
 bool TestMojoApp::AcceptConnection(mojo::Connection* connection) {
@@ -39,8 +35,7 @@ void TestMojoApp::Create(mojo::Connection* connection,
 
 void TestMojoApp::DoSomething(const DoSomethingCallback& callback) {
   callback.Run();
-  DCHECK(shell_);
-  shell_->Quit();
+  base::MessageLoop::current()->QuitWhenIdle();
 }
 
 void TestMojoApp::GetRequestorURL(const GetRequestorURLCallback& callback) {

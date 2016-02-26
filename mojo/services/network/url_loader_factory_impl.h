@@ -9,7 +9,7 @@
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/services/network/public/interfaces/url_loader_factory.mojom.h"
-#include "mojo/shell/public/cpp/shell.h"
+#include "mojo/shell/public/cpp/message_loop_ref.h"
 
 namespace mojo {
 class NetworkContext;
@@ -17,7 +17,7 @@ class NetworkContext;
 class URLLoaderFactoryImpl : public URLLoaderFactory {
  public:
   URLLoaderFactoryImpl(NetworkContext* context,
-                       scoped_ptr<mojo::AppRefCount> app_refcount,
+                       scoped_ptr<mojo::MessageLoopRef> app_refcount,
                        InterfaceRequest<URLLoaderFactory> request);
   ~URLLoaderFactoryImpl() override;
 
@@ -26,7 +26,7 @@ class URLLoaderFactoryImpl : public URLLoaderFactory {
 
  private:
   NetworkContext* context_;
-  scoped_ptr<mojo::AppRefCount> app_refcount_;
+  scoped_ptr<mojo::MessageLoopRef> app_refcount_;
   StrongBinding<URLLoaderFactory> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(URLLoaderFactoryImpl);

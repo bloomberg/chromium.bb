@@ -10,7 +10,7 @@
 #include "mojo/message_pump/handle_watcher.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/services/network/public/interfaces/tcp_connected_socket.mojom.h"
-#include "mojo/shell/public/cpp/shell.h"
+#include "mojo/shell/public/cpp/message_loop_ref.h"
 #include "net/socket/tcp_socket.h"
 
 namespace mojo {
@@ -24,7 +24,7 @@ class TCPConnectedSocketImpl : public TCPConnectedSocket {
                          ScopedDataPipeConsumerHandle send_stream,
                          ScopedDataPipeProducerHandle receive_stream,
                          InterfaceRequest<TCPConnectedSocket> request,
-                         scoped_ptr<mojo::AppRefCount> app_refcount);
+                         scoped_ptr<mojo::MessageLoopRef> app_refcount);
   ~TCPConnectedSocketImpl() override;
 
  private:
@@ -69,7 +69,7 @@ class TCPConnectedSocketImpl : public TCPConnectedSocket {
   // To bind to the message pipe.
   Binding<TCPConnectedSocket> binding_;
 
-  scoped_ptr<mojo::AppRefCount> app_refcount_;
+  scoped_ptr<mojo::MessageLoopRef> app_refcount_;
 
   base::WeakPtrFactory<TCPConnectedSocketImpl> weak_ptr_factory_;
 };

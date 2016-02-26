@@ -50,7 +50,7 @@ class WindowManagerApplication
   WindowManagerApplication();
   ~WindowManagerApplication() override;
 
-  mojo::Shell* shell() { return shell_; }
+  mojo::Connector* connector() { return connector_; }
 
   // Returns the RootWindowControllers that have valid roots.
   //
@@ -78,7 +78,7 @@ class WindowManagerApplication
   void OnAcceleratorRegistrarDestroyed(AcceleratorRegistrarImpl* registrar);
 
   // mojo::ShellClient:
-  void Initialize(mojo::Shell* shell, const std::string& url,
+  void Initialize(mojo::Connector* connector, const std::string& url,
                   uint32_t id, uint32_t user_id) override;
   bool AcceptConnection(mojo::Connection* connection) override;
 
@@ -97,7 +97,7 @@ class WindowManagerApplication
                            mojo::InterfaceRequest<mus::mojom::WindowTreeClient>
                                client_request) override;
 
-  mojo::Shell* shell_;
+  mojo::Connector* connector_;
 
   mojo::TracingImpl tracing_;
 

@@ -16,7 +16,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/services/package_manager/public/interfaces/catalog.mojom.h"
 #include "mojo/shell/public/cpp/connection.h"
-#include "mojo/shell/public/cpp/shell.h"
+#include "mojo/shell/public/cpp/connector.h"
 #include "mojo/shell/public/interfaces/application_manager.mojom.h"
 #include "ui/base/models/table_model.h"
 #include "ui/views/background.h"
@@ -42,11 +42,9 @@ class TaskViewerContents
       public mojo::shell::mojom::ApplicationManagerListener {
  public:
   TaskViewerContents(ListenerRequest request,
-                     package_manager::mojom::CatalogPtr catalog,
-                     scoped_ptr<mojo::AppRefCount> app)
+                     package_manager::mojom::CatalogPtr catalog)
       : binding_(this, std::move(request)),
         catalog_(std::move(catalog)),
-        app_(std::move(app)),
         table_view_(nullptr),
         table_view_parent_(nullptr),
         kill_button_(
@@ -69,6 +67,7 @@ class TaskViewerContents
   }
   ~TaskViewerContents() override {
     table_view_->SetModel(nullptr);
+    base::MessageLoop::current()->QuitWhenIdle();
   }
 
  private:
@@ -246,7 +245,6 @@ class TaskViewerContents
 
   mojo::Binding<mojo::shell::mojom::ApplicationManagerListener> binding_;
   package_manager::mojom::CatalogPtr catalog_;
-  scoped_ptr<mojo::AppRefCount> app_;
 
   views::TableView* table_view_;
   views::View* table_view_parent_;
@@ -265,25 +263,26 @@ class TaskViewerContents
 TaskViewer::TaskViewer() {}
 TaskViewer::~TaskViewer() {}
 
-void TaskViewer::Initialize(mojo::Shell* shell, const std::string& url,
+void TaskViewer::Initialize(mojo::Connector* connector,
+                            const std::string& url,
                             uint32_t id, uint32_t user_id) {
-  tracing_.Initialize(shell, url);
+  tracing_.Initialize(connector, url);
 
-  aura_init_.reset(new views::AuraInit(shell, "views_mus_resources.pak"));
-  views::WindowManagerConnection::Create(shell);
+  aura_init_.reset(new views::AuraInit(connector, "views_mus_resources.pak"));
+  views::WindowManagerConnection::Create(connector);
 
   mojo::shell::mojom::ApplicationManagerPtr application_manager;
-  shell->ConnectToInterface("mojo:shell", &application_manager);
+  connector->ConnectToInterface("mojo:shell", &application_manager);
 
   mojo::shell::mojom::ApplicationManagerListenerPtr listener;
   ListenerRequest request = GetProxy(&listener);
   application_manager->AddListener(std::move(listener));
 
   package_manager::mojom::CatalogPtr catalog;
-  shell->ConnectToInterface("mojo:package_manager", &catalog);
+  connector->ConnectToInterface("mojo:package_manager", &catalog);
 
   TaskViewerContents* task_viewer = new TaskViewerContents(
-      std::move(request), std::move(catalog), shell->CreateAppRefCount());
+      std::move(request), std::move(catalog));
   views::Widget* window = views::Widget::CreateWindowWithBounds(
       task_viewer, gfx::Rect(10, 10, 500, 500));
   window->Show();

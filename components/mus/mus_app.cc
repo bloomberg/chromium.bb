@@ -21,7 +21,7 @@
 #include "mojo/public/c/system/main.h"
 #include "mojo/services/tracing/public/cpp/tracing_impl.h"
 #include "mojo/shell/public/cpp/connection.h"
-#include "mojo/shell/public/cpp/shell.h"
+#include "mojo/shell/public/cpp/connector.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/events/event_switches.h"
@@ -58,7 +58,7 @@ struct MandolineUIServicesApp::PendingRequest {
 };
 
 MandolineUIServicesApp::MandolineUIServicesApp()
-    : shell_(nullptr) {}
+    : connector_(nullptr) {}
 
 MandolineUIServicesApp::~MandolineUIServicesApp() {
   if (gpu_state_)
@@ -67,7 +67,7 @@ MandolineUIServicesApp::~MandolineUIServicesApp() {
   connection_manager_.reset();
 }
 
-void MandolineUIServicesApp::InitializeResources(mojo::Shell* shell) {
+void MandolineUIServicesApp::InitializeResources(mojo::Connector* connector) {
   if (ui::ResourceBundle::HasSharedInstance())
     return;
 
@@ -76,7 +76,7 @@ void MandolineUIServicesApp::InitializeResources(mojo::Shell* shell) {
   resource_paths.insert(kResourceFile100);
   resource_paths.insert(kResourceFile200);
 
-  resource_provider::ResourceLoader resource_loader(shell, resource_paths);
+  resource_provider::ResourceLoader resource_loader(connector, resource_paths);
   if (!resource_loader.BlockUntilLoaded())
     return;
   CHECK(resource_loader.loaded());
@@ -92,11 +92,11 @@ void MandolineUIServicesApp::InitializeResources(mojo::Shell* shell) {
       resource_loader.ReleaseFile(kResourceFile200), ui::SCALE_FACTOR_200P);
 }
 
-void MandolineUIServicesApp::Initialize(mojo::Shell* shell,
+void MandolineUIServicesApp::Initialize(mojo::Connector* connector,
                                         const std::string& url,
                                         uint32_t id,
                                         uint32_t user_id) {
-  shell_ = shell;
+  connector_ = connector;
   surfaces_state_ = new SurfacesState;
 
   base::PlatformThread::SetName("mus");
@@ -109,7 +109,7 @@ void MandolineUIServicesApp::Initialize(mojo::Shell* shell,
   }
 #endif
 
-  InitializeResources(shell);
+  InitializeResources(connector);
 
 #if defined(USE_OZONE)
   // The ozone platform can provide its own event source. So initialize the
@@ -132,7 +132,7 @@ void MandolineUIServicesApp::Initialize(mojo::Shell* shell,
   gpu_state_ = new GpuState();
   connection_manager_.reset(new ws::ConnectionManager(this, surfaces_state_));
 
-  tracing_.Initialize(shell, url);
+  tracing_.Initialize(connector, url);
 }
 
 bool MandolineUIServicesApp::AcceptConnection(Connection* connection) {
@@ -156,7 +156,7 @@ void MandolineUIServicesApp::OnFirstRootConnectionCreated() {
 }
 
 void MandolineUIServicesApp::OnNoMoreRootConnections() {
-  shell_->Quit();
+  base::MessageLoop::current()->QuitWhenIdle();
 }
 
 ws::ClientConnection*
@@ -230,7 +230,7 @@ void MandolineUIServicesApp::CreateWindowTreeHost(
   // TODO(fsamuel): We need to make sure that only the window manager can create
   // new roots.
   ws::WindowTreeHostImpl* host_impl = new ws::WindowTreeHostImpl(
-      connection_manager_.get(), shell_, gpu_state_, surfaces_state_);
+      connection_manager_.get(), connector_, gpu_state_, surfaces_state_);
 
   // WindowTreeHostConnection manages its own lifetime.
   host_impl->Init(new ws::WindowTreeHostConnectionImpl(

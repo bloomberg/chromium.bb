@@ -26,7 +26,7 @@ class TestRequestTrackerApplication
   ~TestRequestTrackerApplication() override;
 
   // mojo::ShellClient methods:
-  void Initialize(Shell* shell, const std::string& url,
+  void Initialize(Connector* connector, const std::string& url,
                   uint32_t id, uint32_t user_id) override;
   bool AcceptConnection(Connection* connection) override;
 
@@ -43,7 +43,7 @@ class TestRequestTrackerApplication
               InterfaceRequest<TestTrackedRequestService> request) override;
 
  private:
-  Shell* shell_;
+  Connector* connector_;
   TrackingContext context_;
   MOJO_DISALLOW_COPY_AND_ASSIGN(TestRequestTrackerApplication);
 };

@@ -24,7 +24,7 @@
 #include "mojo/shell/public/cpp/shell_client.h"
 
 namespace mojo {
-class Shell;
+class Connector;
 }
 
 namespace ui {
@@ -60,10 +60,10 @@ class MandolineUIServicesApp
   // has been established.
   struct PendingRequest;
 
-  void InitializeResources(mojo::Shell* shell);
+  void InitializeResources(mojo::Connector* connector);
 
   // mojo::ShellClient:
-  void Initialize(mojo::Shell* shell, const std::string& url,
+  void Initialize(mojo::Connector* connector, const std::string& url,
                   uint32_t id, uint32_t user_id) override;
   bool AcceptConnection(mojo::Connection* connection) override;
 
@@ -105,7 +105,7 @@ class MandolineUIServicesApp
                             mojom::WindowTreeClientPtr tree_client) override;
 
   mojo::BindingSet<mojom::WindowTreeHostFactory> factory_bindings_;
-  mojo::Shell* shell_;
+  mojo::Connector* connector_;
   scoped_ptr<ws::ConnectionManager> connection_manager_;
   scoped_refptr<GpuState> gpu_state_;
   scoped_ptr<ui::PlatformEventSource> event_source_;

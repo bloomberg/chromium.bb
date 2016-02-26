@@ -6,7 +6,7 @@
 
 #include "components/mus/public/cpp/window_tree_connection.h"
 #include "components/mus/public/cpp/window_tree_delegate.h"
-#include "mojo/shell/public/cpp/shell.h"
+#include "mojo/shell/public/cpp/connector.h"
 
 namespace mus {
 
@@ -22,12 +22,12 @@ void CreateWindowTreeHost(mojom::WindowTreeHostFactory* factory,
   factory->CreateWindowTreeHost(GetProxy(host), std::move(tree_client));
 }
 
-void CreateWindowTreeHost(mojo::Shell* shell,
+void CreateWindowTreeHost(mojo::Connector* connector,
                           WindowTreeDelegate* delegate,
                           mojom::WindowTreeHostPtr* host,
                           WindowManagerDelegate* window_manager_delegate) {
   mojom::WindowTreeHostFactoryPtr factory;
-  shell->ConnectToInterface("mojo:mus", &factory);
+  connector->ConnectToInterface("mojo:mus", &factory);
   CreateWindowTreeHost(factory.get(), delegate, host, window_manager_delegate);
 }
 

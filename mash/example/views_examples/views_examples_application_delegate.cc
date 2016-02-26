@@ -5,7 +5,7 @@
 #include "mash/example/views_examples/views_examples_application_delegate.h"
 
 #include "mojo/shell/public/cpp/connection.h"
-#include "mojo/shell/public/cpp/shell.h"
+#include "mojo/shell/public/cpp/connector.h"
 #include "ui/views/examples/example_base.h"
 #include "ui/views/examples/examples_window.h"
 #include "ui/views/mus/aura_init.h"
@@ -16,14 +16,14 @@ ViewsExamplesApplicationDelegate::ViewsExamplesApplicationDelegate() {}
 ViewsExamplesApplicationDelegate::~ViewsExamplesApplicationDelegate() {
 }
 
-void ViewsExamplesApplicationDelegate::Initialize(mojo::Shell* shell,
+void ViewsExamplesApplicationDelegate::Initialize(mojo::Connector* connector,
                                                   const std::string& url,
                                                   uint32_t id,
                                                   uint32_t user_id) {
-  tracing_.Initialize(shell, url);
-  aura_init_.reset(new views::AuraInit(shell, "views_mus_resources.pak"));
+  tracing_.Initialize(connector, url);
+  aura_init_.reset(new views::AuraInit(connector, "views_mus_resources.pak"));
 
-  views::WindowManagerConnection::Create(shell);
+  views::WindowManagerConnection::Create(connector);
 
   views::examples::ShowExamplesWindow(views::examples::DO_NOTHING_ON_CLOSE,
                                       nullptr, nullptr);

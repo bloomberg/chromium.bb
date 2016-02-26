@@ -12,7 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "mojo/services/network/public/interfaces/http_server.mojom.h"
 #include "mojo/services/network/public/interfaces/net_address.mojom.h"
-#include "mojo/shell/public/cpp/shell.h"
+#include "mojo/shell/public/cpp/message_loop_ref.h"
 #include "net/server/http_server.h"
 
 namespace net {
@@ -28,7 +28,7 @@ class HttpServerImpl : public net::HttpServer::Delegate {
   static void Create(
       NetAddressPtr local_address,
       HttpServerDelegatePtr delegate,
-      scoped_ptr<mojo::AppRefCount> app_refcount,
+      scoped_ptr<mojo::MessageLoopRef> app_refcount,
       const Callback<void(NetworkErrorPtr, NetAddressPtr)>& callback);
 
   net::HttpServer* server() { return server_.get(); }
@@ -39,7 +39,7 @@ class HttpServerImpl : public net::HttpServer::Delegate {
   // notified that |delegate|'s pipe is closed. Deleting the object directly
   // before that is okay, too.
   HttpServerImpl(HttpServerDelegatePtr delegate,
-                 scoped_ptr<mojo::AppRefCount> app_refcount);
+                 scoped_ptr<mojo::MessageLoopRef> app_refcount);
   ~HttpServerImpl() override;
 
   int Start(NetAddressPtr local_address);
@@ -55,7 +55,7 @@ class HttpServerImpl : public net::HttpServer::Delegate {
   void OnClose(int connection_id) override;
 
   HttpServerDelegatePtr delegate_;
-  scoped_ptr<mojo::AppRefCount> app_refcount_;
+  scoped_ptr<mojo::MessageLoopRef> app_refcount_;
   scoped_ptr<net::HttpServer> server_;
 
   std::map<int, linked_ptr<HttpConnectionImpl>> connections_;

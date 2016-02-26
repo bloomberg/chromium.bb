@@ -11,7 +11,7 @@
 #include "base/path_service.h"
 #include "build/build_config.h"
 #include "components/resource_provider/public/cpp/resource_loader.h"
-#include "mojo/shell/public/cpp/shell.h"
+#include "mojo/shell/public/cpp/connector.h"
 #include "ui/aura/env.h"
 #include "ui/base/ime/input_method_initializer.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -50,12 +50,12 @@ class MusViewsDelegate : public ViewsDelegate {
 
 }  // namespace
 
-AuraInit::AuraInit(mojo::Shell* shell, const std::string& resource_file)
+AuraInit::AuraInit(mojo::Connector* connector, const std::string& resource_file)
     : resource_file_(resource_file),
       views_delegate_(new MusViewsDelegate) {
   aura::Env::CreateInstance(false);
 
-  InitializeResources(shell);
+  InitializeResources(connector);
 
   ui::InitializeInputMethodForTesting();
 }
@@ -72,11 +72,11 @@ AuraInit::~AuraInit() {
 #endif
 }
 
-void AuraInit::InitializeResources(mojo::Shell* shell) {
+void AuraInit::InitializeResources(mojo::Connector* connector) {
   if (ui::ResourceBundle::HasSharedInstance())
     return;
   resource_provider::ResourceLoader resource_loader(
-      shell, GetResourcePaths(resource_file_));
+      connector, GetResourcePaths(resource_file_));
   CHECK(resource_loader.BlockUntilLoaded());
   CHECK(resource_loader.loaded());
   ui::RegisterPathProvider();
@@ -89,7 +89,7 @@ void AuraInit::InitializeResources(mojo::Shell* shell) {
 
 // Initialize the skia font code to go ask fontconfig underneath.
 #if defined(OS_LINUX) && !defined(OS_ANDROID)
-  font_loader_ = skia::AdoptRef(new font_service::FontLoader(shell));
+  font_loader_ = skia::AdoptRef(new font_service::FontLoader(connector));
   SkFontConfigInterface::SetGlobal(font_loader_.get());
 #endif
 

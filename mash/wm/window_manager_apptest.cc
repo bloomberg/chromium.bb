@@ -39,12 +39,12 @@ TEST_F(WindowManagerAppTest, OpenWindow) {
   WindowTreeDelegateImpl window_tree_delegate;
 
   // Bring up the the desktop_wm.
-  shell()->Connect("mojo:desktop_wm");
+  connector()->Connect("mojo:desktop_wm");
 
   // Connect to mus and create a new top level window. The request goes to
   // the |desktop_wm|, but is async.
   scoped_ptr<mus::WindowTreeConnection> connection(
-      mus::WindowTreeConnection::Create(&window_tree_delegate, shell()));
+      mus::WindowTreeConnection::Create(&window_tree_delegate, connector()));
   mus::Window* top_level_window = connection->NewTopLevelWindow(nullptr);
   ASSERT_TRUE(top_level_window);
   mus::Window* child_window = connection->NewWindow();

@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/services/network/public/interfaces/cookie_store.mojom.h"
-#include "mojo/shell/public/cpp/shell.h"
+#include "mojo/shell/public/cpp/message_loop_ref.h"
 #include "url/gurl.h"
 
 namespace mojo {
@@ -18,7 +18,7 @@ class CookieStoreImpl : public CookieStore {
  public:
   CookieStoreImpl(NetworkContext* context,
                   const GURL& origin,
-                  scoped_ptr<mojo::AppRefCount> app_refcount,
+                  scoped_ptr<mojo::MessageLoopRef> app_refcount,
                   InterfaceRequest<CookieStore> request);
   ~CookieStoreImpl() override;
 
@@ -31,7 +31,7 @@ class CookieStoreImpl : public CookieStore {
 
   NetworkContext* context_;
   GURL origin_;
-  scoped_ptr<mojo::AppRefCount> app_refcount_;
+  scoped_ptr<mojo::MessageLoopRef> app_refcount_;
   StrongBinding<CookieStore> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(CookieStoreImpl);

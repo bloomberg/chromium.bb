@@ -5,6 +5,7 @@
 #ifndef MOJO_SERVICES_NETWORK_NETWORK_SERVICE_DELEGATE_H_
 #define MOJO_SERVICES_NETWORK_NETWORK_SERVICE_DELEGATE_H_
 
+#include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/threading/thread.h"
 #include "mojo/services/network/network_context.h"
@@ -14,7 +15,7 @@
 #include "mojo/services/network/public/interfaces/web_socket_factory.mojom.h"
 #include "mojo/services/tracing/public/cpp/tracing_impl.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
-#include "mojo/shell/public/cpp/shell.h"
+#include "mojo/shell/public/cpp/message_loop_ref.h"
 #include "mojo/shell/public/cpp/shell_client.h"
 
 namespace mojo {
@@ -34,11 +35,10 @@ class NetworkServiceDelegate : public ShellClient,
 
  private:
   // mojo::ShellClient implementation.
-  void Initialize(Shell* shell, const std::string& url,
+  void Initialize(Connector* connector, const std::string& url,
                   uint32_t id, uint32_t user_id) override;
   bool AcceptConnection(Connection* connection) override;
   bool ShellConnectionLost() override;
-  void Quit() override;
 
   // InterfaceFactory<NetworkService> implementation.
   void Create(Connection* connection,
@@ -57,13 +57,18 @@ class NetworkServiceDelegate : public ShellClient,
               InterfaceRequest<URLLoaderFactory> request) override;
 
  private:
-  Shell* shell_;
+  void Quit();
+
   mojo::TracingImpl tracing_;
 
   // Observers that want notifications that our worker thread is going away.
   base::ObserverList<NetworkServiceDelegateObserver> observers_;
 
   scoped_ptr<NetworkContext> context_;
+
+  mojo::MessageLoopRefFactory ref_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(NetworkServiceDelegate);
 };
 
 }  // namespace mojo

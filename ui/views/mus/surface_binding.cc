@@ -26,7 +26,7 @@
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/converters/surfaces/surfaces_type_converters.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/shell/public/cpp/shell.h"
+#include "mojo/shell/public/cpp/connector.h"
 #include "ui/views/mus/window_tree_host_mus.h"
 
 namespace views {
@@ -41,7 +41,7 @@ namespace views {
 class SurfaceBinding::PerConnectionState
     : public base::RefCounted<PerConnectionState> {
  public:
-  static PerConnectionState* Get(mojo::Shell* shell,
+  static PerConnectionState* Get(mojo::Connector* connector,
                                  mus::WindowTreeConnection* connection);
 
   scoped_ptr<cc::OutputSurface> CreateOutputSurface(
@@ -54,7 +54,8 @@ class SurfaceBinding::PerConnectionState
 
   friend class base::RefCounted<PerConnectionState>;
 
-  PerConnectionState(mojo::Shell* shell, mus::WindowTreeConnection* connection);
+  PerConnectionState(mojo::Connector* connector,
+                     mus::WindowTreeConnection* connection);
   ~PerConnectionState();
 
   void Init();
@@ -62,7 +63,7 @@ class SurfaceBinding::PerConnectionState
   static base::LazyInstance<
       base::ThreadLocalPointer<ConnectionToStateMap>>::Leaky window_states;
 
-  mojo::Shell* shell_;
+  mojo::Connector* connector_;
   mus::WindowTreeConnection* connection_;
 
   // Set of state needed to create an OutputSurface.
@@ -78,7 +79,7 @@ base::LazyInstance<base::ThreadLocalPointer<
 
 // static
 SurfaceBinding::PerConnectionState* SurfaceBinding::PerConnectionState::Get(
-    mojo::Shell* shell,
+    mojo::Connector* connector,
     mus::WindowTreeConnection* connection) {
   ConnectionToStateMap* window_map = window_states.Pointer()->Get();
   if (!window_map) {
@@ -86,7 +87,7 @@ SurfaceBinding::PerConnectionState* SurfaceBinding::PerConnectionState::Get(
     window_states.Pointer()->Set(window_map);
   }
   if (!(*window_map)[connection]) {
-    (*window_map)[connection] = new PerConnectionState(shell, connection);
+    (*window_map)[connection] = new PerConnectionState(connector, connection);
     (*window_map)[connection]->Init();
   }
   return (*window_map)[connection];
@@ -108,9 +109,9 @@ SurfaceBinding::PerConnectionState::CreateOutputSurface(
 }
 
 SurfaceBinding::PerConnectionState::PerConnectionState(
-    mojo::Shell* shell,
+    mojo::Connector* connector,
     mus::WindowTreeConnection* connection)
-    : shell_(shell), connection_(connection) {}
+    : connector_(connector), connection_(connection) {}
 
 SurfaceBinding::PerConnectionState::~PerConnectionState() {
   ConnectionToStateMap* window_map = window_states.Pointer()->Get();
@@ -124,17 +125,17 @@ SurfaceBinding::PerConnectionState::~PerConnectionState() {
 }
 
 void SurfaceBinding::PerConnectionState::Init() {
-  shell_->ConnectToInterface("mojo:mus", &gpu_);
+  connector_->ConnectToInterface("mojo:mus", &gpu_);
 }
 
 // SurfaceBinding --------------------------------------------------------------
 
-SurfaceBinding::SurfaceBinding(mojo::Shell* shell,
+SurfaceBinding::SurfaceBinding(mojo::Connector* connector,
                                mus::Window* window,
                                mus::mojom::SurfaceType surface_type)
     : window_(window),
       surface_type_(surface_type),
-      state_(PerConnectionState::Get(shell, window->connection())) {}
+      state_(PerConnectionState::Get(connector, window->connection())) {}
 
 SurfaceBinding::~SurfaceBinding() {}
 

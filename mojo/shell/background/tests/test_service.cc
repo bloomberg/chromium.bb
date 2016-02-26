@@ -21,10 +21,6 @@ class TestClient : public ShellClient,
 
  private:
   // ShellClient:
-  void Initialize(Shell* shell,
-                  const std::string& url,
-                  uint32_t id,
-                  uint32_t user_id) override {}
   bool AcceptConnection(Connection* connection) override {
     connection->AddInterface(this);
     return true;

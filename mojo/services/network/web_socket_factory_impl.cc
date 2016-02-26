@@ -12,7 +12,7 @@ namespace mojo {
 
 WebSocketFactoryImpl::WebSocketFactoryImpl(
     NetworkContext* context,
-    scoped_ptr<AppRefCount> app_refcount,
+    scoped_ptr<MessageLoopRef> app_refcount,
     InterfaceRequest<WebSocketFactory> request)
     : context_(context),
       app_refcount_(std::move(app_refcount)),

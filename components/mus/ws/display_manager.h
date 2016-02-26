@@ -35,7 +35,7 @@ class GpuState;
 }  // namespace gles2
 
 namespace mojo {
-class Shell;
+class Connector;
 }  // namespace mojo
 
 namespace ui {
@@ -63,7 +63,7 @@ class DisplayManager {
   virtual ~DisplayManager() {}
 
   static DisplayManager* Create(
-      mojo::Shell* shell,
+      mojo::Connector* connector,
       const scoped_refptr<GpuState>& gpu_state,
       const scoped_refptr<SurfacesState>& surfaces_state);
 
@@ -112,7 +112,7 @@ class DisplayManager {
 class DefaultDisplayManager : public DisplayManager,
                               public ui::PlatformWindowDelegate {
  public:
-  DefaultDisplayManager(mojo::Shell* shell,
+  DefaultDisplayManager(mojo::Connector* connector,
                         const scoped_refptr<GpuState>& gpu_state,
                         const scoped_refptr<SurfacesState>& surfaces_state);
   ~DefaultDisplayManager() override;
@@ -162,7 +162,7 @@ class DefaultDisplayManager : public DisplayManager,
   void OnAcceleratedWidgetDestroyed() override;
   void OnActivationChanged(bool active) override;
 
-  mojo::Shell* shell_;
+  mojo::Connector* connector_;
   scoped_refptr<GpuState> gpu_state_;
   scoped_refptr<SurfacesState> surfaces_state_;
   DisplayManagerDelegate* delegate_;

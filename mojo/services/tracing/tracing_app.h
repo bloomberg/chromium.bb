@@ -34,6 +34,7 @@ class TracingApp
  private:
   // mojo::ShellClient implementation.
   bool AcceptConnection(mojo::Connection* connection) override;
+  bool ShellConnectionLost() override;
 
   // mojo::InterfaceFactory<TraceCollector> implementation.
   void Create(mojo::Connection* connection,

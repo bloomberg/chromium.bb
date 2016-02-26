@@ -275,7 +275,7 @@ class WindowServerTest : public WindowServerTestBase {
   // WindowTreeClient.
   mus::mojom::WindowTreeClientPtr ConnectAndGetWindowServerClient() {
     mus::mojom::WindowTreeClientPtr client;
-    shell()->ConnectToInterface(shell_url(), &client);
+    connector()->ConnectToInterface(test_url(), &client);
     return client;
   }
 
@@ -1159,7 +1159,7 @@ TEST_F(WindowServerTest, EstablishConnectionViaFactory) {
   EstablishConnectionViaFactoryDelegate delegate(window_manager());
   set_window_manager_delegate(&delegate);
   scoped_ptr<WindowTreeConnection> second_connection(
-      WindowTreeConnection::Create(this, shell()));
+      WindowTreeConnection::Create(this, connector()));
   Window* window_in_second_connection =
       second_connection->NewTopLevelWindow(nullptr);
   ASSERT_TRUE(window_in_second_connection);

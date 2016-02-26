@@ -37,7 +37,7 @@ UDPSocketImpl::PendingSendRequest::PendingSendRequest() {}
 UDPSocketImpl::PendingSendRequest::~PendingSendRequest() {}
 
 UDPSocketImpl::UDPSocketImpl(InterfaceRequest<UDPSocket> request,
-                             scoped_ptr<mojo::AppRefCount> app_refcount)
+                             scoped_ptr<mojo::MessageLoopRef> app_refcount)
     : binding_(this, std::move(request)),
       socket_(net::DatagramSocket::DEFAULT_BIND,
               net::RandIntCallback(),

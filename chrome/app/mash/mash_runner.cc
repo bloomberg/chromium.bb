@@ -24,6 +24,7 @@
 #include "mojo/shell/background/background_shell.h"
 #include "mojo/shell/identity.h"
 #include "mojo/shell/native_runner_delegate.h"
+#include "mojo/shell/public/cpp/connector.h"
 #include "mojo/shell/public/cpp/shell_client.h"
 #include "mojo/shell/public/cpp/shell_connection.h"
 #include "mojo/shell/public/interfaces/shell_client_factory.mojom.h"
@@ -190,8 +191,7 @@ void MashRunner::RunMain() {
       shell_client_.get(),
       background_shell.CreateShellClientRequest(GURL("exe:chrome_mash"))));
   shell_connection_->WaitForInitialize();
-  static_cast<mojo::Shell*>(shell_connection_.get())
-      ->Connect("mojo:mash_shell");
+  shell_connection_->connector()->Connect("mojo:mash_shell");
   base::MessageLoop::current()->Run();
 }
 

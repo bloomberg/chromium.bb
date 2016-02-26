@@ -14,14 +14,12 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/callback.h"
 #include "mojo/public/cpp/system/core.h"
-#include "mojo/shell/public/cpp/shell.h"
 #include "mojo/shell/public/cpp/shell_client.h"
 #include "mojo/shell/public/interfaces/shell.mojom.h"
 #include "mojo/shell/public/interfaces/shell_client.mojom.h"
 
 namespace mojo {
 
-class AppRefCountImpl;
 class Connector;
 
 // Encapsulates a connection to the Mojo Shell in two parts:
@@ -44,10 +42,7 @@ class Connector;
 // Client Lib's mojo::ShellClient interface. See documentation in shell_client.h
 // for details.
 //
-// Though this class provides the canonical implementation of the Shell Client
-// lib's mojo::Shell interface, this interface should not be reached through
-// pointers to this type.
-class ShellConnection : public Shell, public shell::mojom::ShellClient {
+class ShellConnection : public shell::mojom::ShellClient {
  public:
   // Does not take ownership of |delegate|, which must remain valid for the
   // lifetime of ShellConnection.
@@ -59,16 +54,9 @@ class ShellConnection : public Shell, public shell::mojom::ShellClient {
   // shell.
   void WaitForInitialize();
 
+  Connector* connector() { return connector_.get(); }
+
  private:
-  friend AppRefCountImpl;
-
-  // Shell:
-  scoped_ptr<Connection> Connect(const std::string& url) override;
-  scoped_ptr<Connection> Connect(Connector::ConnectParams* params) override;
-  scoped_ptr<Connector> CloneConnector() const override;
-  scoped_ptr<AppRefCount> CreateAppRefCount() override;
-  void Quit() override;
-
   // shell::mojom::ShellClient:
   void Initialize(shell::mojom::ConnectorPtr connector,
                   const mojo::String& url,
@@ -85,17 +73,12 @@ class ShellConnection : public Shell, public shell::mojom::ShellClient {
 
   void OnConnectionError();
 
-  // Called from AppRefCountImpl.
-  void AddRef();
-  void Release();
-
   // We track the lifetime of incoming connection registries as it more
   // convenient for the client.
   ScopedVector<Connection> incoming_connections_;
   mojo::ShellClient* client_;
   Binding<shell::mojom::ShellClient> binding_;
   scoped_ptr<Connector> connector_;
-  int ref_count_;
   base::WeakPtrFactory<ShellConnection> weak_factory_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(ShellConnection);

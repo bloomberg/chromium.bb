@@ -42,6 +42,11 @@ bool TracingApp::AcceptConnection(mojo::Connection* connection) {
   return true;
 }
 
+bool TracingApp::ShellConnectionLost() {
+  base::MessageLoop::current()->QuitWhenIdle();
+  return true;
+}
+
 void TracingApp::Create(mojo::Connection* connection,
                         mojo::InterfaceRequest<TraceCollector> request) {
   collector_binding_.Bind(std::move(request));
