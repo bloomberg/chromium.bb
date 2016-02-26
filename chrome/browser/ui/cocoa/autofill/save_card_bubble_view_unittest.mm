@@ -9,6 +9,9 @@
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#import "ui/events/test/cocoa_test_event_utils.h"
+
+#include <Carbon/Carbon.h>  // For the kVK_* constants.
 
 namespace autofill {
 
@@ -16,9 +19,13 @@ namespace {
 
 class TestSaveCardBubbleController : public SaveCardBubbleController {
  public:
-  static scoped_ptr<TestSaveCardBubbleController> CreateForTesting() {
-    return scoped_ptr<TestSaveCardBubbleController>(
-        new TestSaveCardBubbleController());
+  TestSaveCardBubbleController() {
+    lines_.reset(new LegalMessageLines());
+
+    on_save_button_was_called_ = false;
+    on_cancel_button_was_called_ = false;
+    on_learn_more_was_called_ = false;
+    on_bubble_closed_was_called_ = false;
   }
 
   // SaveCardBubbleController:
@@ -32,20 +39,29 @@ class TestSaveCardBubbleController : public SaveCardBubbleController {
     return CreditCard();
   }
 
-  void OnSaveButton() override {}
-  void OnCancelButton() override {}
-  void OnLearnMoreClicked() override {}
+  void OnSaveButton() override { on_save_button_was_called_ = true; }
+  void OnCancelButton() override { on_cancel_button_was_called_ = true; }
+  void OnLearnMoreClicked() override { on_learn_more_was_called_ = true; }
   void OnLegalMessageLinkClicked(const GURL& url) override {}
-  void OnBubbleClosed() override {}
+  void OnBubbleClosed() override { on_bubble_closed_was_called_ = true; }
 
   const LegalMessageLines& GetLegalMessageLines() const override {
     return *lines_;
   }
 
- private:
-  TestSaveCardBubbleController() { lines_.reset(new LegalMessageLines()); }
+  // Testing state.
+  bool on_save_button_was_called() { return on_save_button_was_called_; }
+  bool on_cancel_button_was_called() { return on_cancel_button_was_called_; }
+  bool on_learn_more_was_called() { return on_learn_more_was_called_; }
+  bool on_bubble_closed_was_called() { return on_bubble_closed_was_called_; }
 
+ private:
   scoped_ptr<LegalMessageLines> lines_;
+
+  bool on_save_button_was_called_;
+  bool on_cancel_button_was_called_;
+  bool on_learn_more_was_called_;
+  bool on_bubble_closed_was_called_;
 };
 
 class SaveCardBubbleViewTest : public CocoaProfileTest {
@@ -57,6 +73,12 @@ class SaveCardBubbleViewTest : public CocoaProfileTest {
     browser_window_controller_ =
         [[BrowserWindowController alloc] initWithBrowser:browser()
                                            takeOwnership:NO];
+
+    bubble_controller_.reset(new TestSaveCardBubbleController());
+
+    // This will show the SaveCardBubbleViewCocoa.
+    bridge_ = new SaveCardBubbleViewBridge(bubble_controller_.get(),
+                                           browser_window_controller_);
   }
 
   void TearDown() override {
@@ -66,23 +88,59 @@ class SaveCardBubbleViewTest : public CocoaProfileTest {
 
  protected:
   BrowserWindowController* browser_window_controller_;
+  scoped_ptr<TestSaveCardBubbleController> bubble_controller_;
+  SaveCardBubbleViewBridge* bridge_;
 };
 
 }  // namespace
 
-// Test that SaveCardBubbleViewBridge and SaveCardBubbleViewCocoa can be
-// created, shown, and hidden without crashing.
-TEST_F(SaveCardBubbleViewTest, ShowHide) {
-  scoped_ptr<TestSaveCardBubbleController> bubble_controller =
-      TestSaveCardBubbleController::CreateForTesting();
+TEST_F(SaveCardBubbleViewTest, SaveShouldClose) {
+  [bridge_->view_controller_ onSaveButton:nil];
 
-  // This will show the SaveCardBubbleViewCocoa.
-  SaveCardBubbleViewBridge* bridge = new SaveCardBubbleViewBridge(
-      bubble_controller.get(), browser_window_controller_);
+  EXPECT_TRUE(bubble_controller_->on_save_button_was_called());
+  EXPECT_FALSE(bubble_controller_->on_cancel_button_was_called());
+  EXPECT_FALSE(bubble_controller_->on_learn_more_was_called());
 
-  // This sends -close to the SaveCardBubbleViewCocoa, and causes bridge to
-  // delete itself.
-  bridge->Hide();
+  EXPECT_TRUE(bubble_controller_->on_bubble_closed_was_called());
+}
+
+TEST_F(SaveCardBubbleViewTest, CancelShouldClose) {
+  [bridge_->view_controller_ onCancelButton:nil];
+
+  EXPECT_FALSE(bubble_controller_->on_save_button_was_called());
+  EXPECT_TRUE(bubble_controller_->on_cancel_button_was_called());
+  EXPECT_FALSE(bubble_controller_->on_learn_more_was_called());
+
+  EXPECT_TRUE(bubble_controller_->on_bubble_closed_was_called());
+}
+
+TEST_F(SaveCardBubbleViewTest, LearnMoreShouldNotClose) {
+  NSTextView* textView = nil;
+  NSObject* link = nil;
+  [bridge_->view_controller_ textView:textView clickedOnLink:link atIndex:0];
+
+  EXPECT_FALSE(bubble_controller_->on_save_button_was_called());
+  EXPECT_FALSE(bubble_controller_->on_cancel_button_was_called());
+  EXPECT_TRUE(bubble_controller_->on_learn_more_was_called());
+
+  EXPECT_FALSE(bubble_controller_->on_bubble_closed_was_called());
+}
+
+TEST_F(SaveCardBubbleViewTest, ReturnInvokesDefaultAction) {
+  [[bridge_->view_controller_ window]
+      performKeyEquivalent:cocoa_test_event_utils::KeyEventWithKeyCode(
+                               kVK_Return, '\r', NSKeyDown, 0)];
+
+  EXPECT_TRUE(bubble_controller_->on_save_button_was_called());
+  EXPECT_TRUE(bubble_controller_->on_bubble_closed_was_called());
+}
+
+TEST_F(SaveCardBubbleViewTest, EscapeCloses) {
+  [[bridge_->view_controller_ window]
+      performKeyEquivalent:cocoa_test_event_utils::KeyEventWithKeyCode(
+                               kVK_Escape, '\e', NSKeyDown, 0)];
+
+  EXPECT_TRUE(bubble_controller_->on_bubble_closed_was_called());
 }
 
 }  // namespace autofill

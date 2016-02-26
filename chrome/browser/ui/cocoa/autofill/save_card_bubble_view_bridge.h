@@ -5,10 +5,13 @@
 #ifndef CHROME_BROWSER_UI_COCOA_AUTOFILL_SAVE_CARD_BUBBLE_VIEW_BRIDGE_H_
 #define CHROME_BROWSER_UI_COCOA_AUTOFILL_SAVE_CARD_BUBBLE_VIEW_BRIDGE_H_
 
+#include "base/gtest_prod_util.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
+#include "base/strings/string16.h"
 #include "chrome/browser/ui/autofill/save_card_bubble_view.h"
 #include "chrome/browser/ui/cocoa/base_bubble_controller.h"
+#include "components/autofill/core/browser/credit_card.h"
 
 @class BrowserWindowController;
 @class SaveCardBubbleViewCocoa;
@@ -22,13 +25,28 @@ class SaveCardBubbleViewBridge : public SaveCardBubbleView {
   SaveCardBubbleViewBridge(SaveCardBubbleController* controller,
                            BrowserWindowController* browser_window_controller);
 
-  // Called by view_controller_ when it is closed.
-  void OnViewClosed();
+  // Returns the title that should be displayed in the bubble.
+  base::string16 GetWindowTitle() const;
+
+  // Returns the card that will be uploaded if the user accepts.
+  CreditCard GetCard() const;
+
+  // Interaction.
+  void OnSaveButton();
+  void OnCancelButton();
+  void OnLearnMoreClicked();
+  void OnBubbleClosed();
 
   // SaveCardBubbleView implementation:
   void Hide() override;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(SaveCardBubbleViewTest, SaveShouldClose);
+  FRIEND_TEST_ALL_PREFIXES(SaveCardBubbleViewTest, CancelShouldClose);
+  FRIEND_TEST_ALL_PREFIXES(SaveCardBubbleViewTest, LearnMoreShouldNotClose);
+  FRIEND_TEST_ALL_PREFIXES(SaveCardBubbleViewTest, ReturnInvokesDefaultAction);
+  FRIEND_TEST_ALL_PREFIXES(SaveCardBubbleViewTest, EscapeCloses);
+
   virtual ~SaveCardBubbleViewBridge();
 
   // Weak.
@@ -42,13 +60,16 @@ class SaveCardBubbleViewBridge : public SaveCardBubbleView {
 
 }  // namespace autofill
 
-@interface SaveCardBubbleViewCocoa : BaseBubbleController
+@interface SaveCardBubbleViewCocoa : BaseBubbleController<NSTextViewDelegate>
 
 // Designated initializer. |bridge| must not be NULL.
 - (id)initWithBrowserWindowController:
           (BrowserWindowController*)browserWindowController
                                bridge:
                                    (autofill::SaveCardBubbleViewBridge*)bridge;
+
+- (void)onSaveButton:(id)sender;
+- (void)onCancelButton:(id)sender;
 
 @end
 
