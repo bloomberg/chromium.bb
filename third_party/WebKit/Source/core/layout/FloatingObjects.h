@@ -201,10 +201,10 @@ private:
 #ifndef NDEBUG
 // These structures are used by PODIntervalTree for debugging purposes.
 template <> struct ValueToString<LayoutUnit> {
-    static String string(const LayoutUnit value);
+    static String toString(const LayoutUnit value);
 };
 template<> struct ValueToString<FloatingObject*> {
-    static String string(const FloatingObject*);
+    static String toString(const FloatingObject*);
 };
 #endif
 

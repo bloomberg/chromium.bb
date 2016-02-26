@@ -143,13 +143,13 @@ public:
     {
         StringBuilder builder;
         builder.appendLiteral("[PODInterval (");
-        builder.append(ValueToString<T>::string(low()));
+        builder.append(ValueToString<T>::toString(low()));
         builder.appendLiteral(", ");
-        builder.append(ValueToString<T>::string(high()));
+        builder.append(ValueToString<T>::toString(high()));
         builder.appendLiteral("), data=");
-        builder.append(ValueToString<UserData>::string(data()));
+        builder.append(ValueToString<UserData>::toString(data()));
         builder.appendLiteral(", maxHigh=");
-        builder.append(ValueToString<T>::string(maxHigh()));
+        builder.append(ValueToString<T>::toString(maxHigh()));
         builder.append(']');
         return builder.toString();
     }

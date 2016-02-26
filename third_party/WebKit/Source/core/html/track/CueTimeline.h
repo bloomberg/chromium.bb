@@ -88,7 +88,7 @@ private:
 // Template specializations required by PodIntervalTree in debug mode.
 template <>
 struct ValueToString<double> {
-    static String string(const double value)
+    static String toString(const double value)
     {
         return String::number(value);
     }
@@ -96,7 +96,7 @@ struct ValueToString<double> {
 
 template <>
 struct ValueToString<TextTrackCue*> {
-    static String string(TextTrackCue* const& cue)
+    static String toString(TextTrackCue* const& cue)
     {
         return cue->toString();
     }

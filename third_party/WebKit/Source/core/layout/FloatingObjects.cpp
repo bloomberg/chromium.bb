@@ -616,12 +616,12 @@ inline bool ComputeFloatOffsetForLineLayoutAdapter<FloatingObject::FloatRight>::
 
 #ifndef NDEBUG
 // These helpers are only used by the PODIntervalTree for debugging purposes.
-String ValueToString<LayoutUnit>::string(const LayoutUnit value)
+String ValueToString<LayoutUnit>::toString(const LayoutUnit value)
 {
     return String::number(value.toFloat());
 }
 
-String ValueToString<FloatingObject*>::string(const FloatingObject* floatingObject)
+String ValueToString<FloatingObject*>::toString(const FloatingObject* floatingObject)
 {
     return String::format("%p (%gx%g %gx%g)", floatingObject, floatingObject->frameRect().x().toFloat(), floatingObject->frameRect().y().toFloat(), floatingObject->frameRect().maxX().toFloat(), floatingObject->frameRect().maxY().toFloat());
 }

@@ -156,7 +156,7 @@ DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutFlowThread, isLayoutFlowThread());
 // These structures are used by PODIntervalTree for debugging.
 #ifndef NDEBUG
 template <> struct ValueToString<LayoutMultiColumnSet*> {
-    static String string(const LayoutMultiColumnSet* value) { return String::format("%p", value); }
+    static String toString(const LayoutMultiColumnSet* value) { return String::format("%p", value); }
 };
 #endif
 

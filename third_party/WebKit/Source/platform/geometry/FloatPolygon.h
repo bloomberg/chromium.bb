@@ -144,12 +144,12 @@ private:
 #ifndef NDEBUG
 template <> struct ValueToString<float> {
     STATIC_ONLY(ValueToString);
-    static String string(const float value) { return String::number(value); }
+    static String toString(const float value) { return String::number(value); }
 };
 
 template<> struct ValueToString<FloatPolygonEdge*> {
     STATIC_ONLY(ValueToString);
-    static String string(const FloatPolygonEdge* edge) { return String::format("%p (%f,%f %f,%f)", edge, edge->vertex1().x(), edge->vertex1().y(), edge->vertex2().x(), edge->vertex2().y()); }
+    static String toString(const FloatPolygonEdge* edge) { return String::format("%p (%f,%f %f,%f)", edge, edge->vertex1().x(), edge->vertex1().y(), edge->vertex2().x(), edge->vertex2().y()); }
 };
 #endif
 
