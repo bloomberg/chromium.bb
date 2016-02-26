@@ -58,6 +58,7 @@ class BrowsingHistoryHandler : public content::WebUIMessageHandler,
                  bool is_search_result, const base::string16& snippet,
                  bool blocked_visit, const std::string& accept_languages);
     HistoryEntry();
+    HistoryEntry(const HistoryEntry& other);
     virtual ~HistoryEntry();
 
     // Formats this entry's URL and title and adds them to |result|.

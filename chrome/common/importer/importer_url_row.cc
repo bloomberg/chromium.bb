@@ -16,3 +16,6 @@ ImporterURLRow::ImporterURLRow(const GURL& url)
       typed_count(0),
       hidden(false) {
 }
+
+ImporterURLRow::ImporterURLRow(const ImporterURLRow& other) = default;
+

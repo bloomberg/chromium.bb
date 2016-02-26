@@ -43,6 +43,7 @@ class AppListPrefs : public KeyedService {
       ITEM_TYPE_END = FOLDER_ITEM,
     };
     AppListInfo();
+    AppListInfo(const AppListInfo& other);
     ~AppListInfo();
     scoped_ptr<base::DictionaryValue> CreateDictFromAppListInfo() const;
 

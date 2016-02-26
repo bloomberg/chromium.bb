@@ -17,6 +17,7 @@
 // isolation scenario.
 struct ScenarioBrowsingInstanceInfo {
   ScenarioBrowsingInstanceInfo();
+  ScenarioBrowsingInstanceInfo(const ScenarioBrowsingInstanceInfo& other);
   ~ScenarioBrowsingInstanceInfo();
 
   std::set<GURL> sites;
@@ -27,6 +28,7 @@ using ScenarioBrowsingInstanceMap =
 // Collects metrics about an actual browsing instance in the current session.
 struct BrowsingInstanceInfo {
   BrowsingInstanceInfo();
+  BrowsingInstanceInfo(const BrowsingInstanceInfo& other);
   ~BrowsingInstanceInfo();
 
   std::set<content::SiteInstance*> site_instances;
@@ -49,6 +51,7 @@ enum IsolationScenarioType {
 // process model. We have one of these per IsolationScenarioType.
 struct IsolationScenario {
   IsolationScenario();
+  IsolationScenario(const IsolationScenario& other);
   ~IsolationScenario();
 
   IsolationScenarioType policy = ISOLATE_NOTHING;
@@ -60,6 +63,7 @@ struct IsolationScenario {
 // use in estimating the number of processes needed for various process models.
 struct SiteData {
   SiteData();
+  SiteData(const SiteData& other);
   ~SiteData();
 
   // One IsolationScenario object per IsolationScenarioType.

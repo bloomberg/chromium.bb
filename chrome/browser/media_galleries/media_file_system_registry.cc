@@ -275,6 +275,8 @@ MediaFileSystemInfo::MediaFileSystemInfo(const base::string16& fs_name,
 }
 
 MediaFileSystemInfo::MediaFileSystemInfo() {}
+MediaFileSystemInfo::MediaFileSystemInfo(const MediaFileSystemInfo& other) =
+    default;
 MediaFileSystemInfo::~MediaFileSystemInfo() {}
 
 // The main owner of this class is

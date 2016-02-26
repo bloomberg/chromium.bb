@@ -25,6 +25,8 @@ base::Time TimeProviderImpl::GetNow() {
 
 JobDetails::JobDetails() {}
 
+JobDetails::JobDetails(const JobDetails& other) = default;
+
 JobDetails::~JobDetails() {}
 
 void JobDetails::Clear() {

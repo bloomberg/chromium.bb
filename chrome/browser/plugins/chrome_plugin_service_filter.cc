@@ -462,6 +462,9 @@ ChromePluginServiceFilter::OverriddenPlugin::~OverriddenPlugin() {
 ChromePluginServiceFilter::ProcessDetails::ProcessDetails() {
 }
 
+ChromePluginServiceFilter::ProcessDetails::ProcessDetails(
+    const ProcessDetails& other) = default;
+
 ChromePluginServiceFilter::ProcessDetails::~ProcessDetails() {
 }
 

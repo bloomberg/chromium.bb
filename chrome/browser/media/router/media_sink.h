@@ -26,6 +26,8 @@ class MediaSink {
             const std::string& name,
             const IconType icon_type);
 
+  MediaSink(const MediaSink& other);
+
   ~MediaSink();
 
   const MediaSink::Id& id() const { return sink_id_; }

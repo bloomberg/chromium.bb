@@ -22,6 +22,7 @@ namespace memory {
 
 struct TabStats {
   TabStats();
+  TabStats(const TabStats& other);
   ~TabStats();
   bool is_app;            // Browser window is an app.
   bool is_internal_page;  // Internal page, such as NTP or Settings.

@@ -73,6 +73,9 @@ SafeBrowsingUIManager::UnsafeResource::UnsafeResource()
       render_frame_id(MSG_ROUTING_NONE),
       threat_source(safe_browsing::ThreatSource::UNKNOWN) {}
 
+SafeBrowsingUIManager::UnsafeResource::UnsafeResource(
+    const UnsafeResource& other) = default;
+
 SafeBrowsingUIManager::UnsafeResource::~UnsafeResource() { }
 
 bool SafeBrowsingUIManager::UnsafeResource::IsMainPageLoadBlocked() const {

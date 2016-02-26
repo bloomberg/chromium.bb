@@ -90,6 +90,7 @@ class PrinterJobHandler : public base::RefCountedThreadSafe<PrinterJobHandler>,
     int pending_xmpp_timeout;
 
     PrinterInfoFromCloud();
+    PrinterInfoFromCloud(const PrinterInfoFromCloud& other);
   };
 
   // Begin public interface

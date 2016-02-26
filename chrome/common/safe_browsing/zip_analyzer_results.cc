@@ -13,6 +13,8 @@ namespace zip_analyzer {
 Results::Results() : success(false), has_executable(false), has_archive(false) {
 }
 
+Results::Results(const Results& other) = default;
+
 Results::~Results() {
 }
 

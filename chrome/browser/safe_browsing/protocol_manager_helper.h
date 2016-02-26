@@ -18,6 +18,7 @@ namespace safe_browsing {
 
 struct SafeBrowsingProtocolConfig {
   SafeBrowsingProtocolConfig();
+  SafeBrowsingProtocolConfig(const SafeBrowsingProtocolConfig& other);
   ~SafeBrowsingProtocolConfig();
   std::string client_name;
   std::string url_prefix;

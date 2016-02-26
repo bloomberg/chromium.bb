@@ -22,6 +22,7 @@ class Extension;
 
 struct ActionInfo {
   ActionInfo();
+  ActionInfo(const ActionInfo& other);
   ~ActionInfo();
 
   // The types of extension actions.

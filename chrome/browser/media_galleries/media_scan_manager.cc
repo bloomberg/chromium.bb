@@ -463,6 +463,8 @@ MediaScanManager::FindContainerScanResults(
 }
 
 MediaScanManager::ScanObservers::ScanObservers() : observer(NULL) {}
+MediaScanManager::ScanObservers::ScanObservers(const ScanObservers& other) =
+    default;
 MediaScanManager::ScanObservers::~ScanObservers() {}
 
 void MediaScanManager::OnExtensionUnloaded(

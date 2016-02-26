@@ -71,6 +71,9 @@ SupervisedUserSiteList::HostnameHash::HostnameHash(
   std::copy(bytes.begin(), bytes.end(), bytes_.begin());
 }
 
+SupervisedUserSiteList::HostnameHash::HostnameHash(const HostnameHash& other) =
+    default;
+
 bool SupervisedUserSiteList::HostnameHash::operator==(
     const HostnameHash& rhs) const {
   return bytes_ == rhs.bytes_;

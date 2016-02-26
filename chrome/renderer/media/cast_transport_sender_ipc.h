@@ -76,6 +76,7 @@ class CastTransportSenderIPC
  private:
   struct ClientCallbacks {
     ClientCallbacks();
+    ClientCallbacks(const ClientCallbacks& other);
     ~ClientCallbacks();
 
     media::cast::RtcpCastMessageCallback cast_message_cb;

@@ -41,6 +41,7 @@ struct ProcessMemoryInformation {
       RendererProcessType rtype);
 
   ProcessMemoryInformation();
+  ProcessMemoryInformation(const ProcessMemoryInformation& other);
   ~ProcessMemoryInformation();
 
   // Default ordering is by private memory consumption.

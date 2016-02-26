@@ -13,6 +13,8 @@ namespace drive_backend {
 
 TrackerIDSet::TrackerIDSet() : active_tracker_(0) {}
 
+TrackerIDSet::TrackerIDSet(const TrackerIDSet& other) = default;
+
 TrackerIDSet::~TrackerIDSet() {}
 
 void TrackerIDSet::Insert(const FileTracker& tracker) {

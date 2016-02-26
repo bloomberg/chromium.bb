@@ -752,6 +752,9 @@ LocalSafeBrowsingDatabaseManager::QueuedCheck::QueuedCheck(
       start(start) {
 }
 
+LocalSafeBrowsingDatabaseManager::QueuedCheck::QueuedCheck(
+    const QueuedCheck& other) = default;
+
 LocalSafeBrowsingDatabaseManager::QueuedCheck::~QueuedCheck() {
 }
 

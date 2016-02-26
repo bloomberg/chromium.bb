@@ -48,6 +48,8 @@ static const ActionInfo* GetActionInfo(const Extension* extension,
 ActionInfo::ActionInfo() {
 }
 
+ActionInfo::ActionInfo(const ActionInfo& other) = default;
+
 ActionInfo::~ActionInfo() {
 }
 

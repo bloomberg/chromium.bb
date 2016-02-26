@@ -16,6 +16,9 @@ PresentationRequest::PresentationRequest(
       presentation_url_(presentation_url),
       frame_url_(frame_url) {}
 
+PresentationRequest::PresentationRequest(const PresentationRequest& other) =
+    default;
+
 PresentationRequest::~PresentationRequest() = default;
 
 bool PresentationRequest::Equals(const PresentationRequest& other) const {

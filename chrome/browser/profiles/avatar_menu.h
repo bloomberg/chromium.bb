@@ -48,6 +48,7 @@ class AvatarMenu :
   // Represents an item in the menu.
   struct Item {
     Item(size_t menu_index, size_t profile_index, const gfx::Image& icon);
+    Item(const Item& other);
     ~Item();
 
     // The icon to be displayed next to the item.

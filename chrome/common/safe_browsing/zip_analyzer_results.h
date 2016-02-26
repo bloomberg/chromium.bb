@@ -24,6 +24,7 @@ struct Results {
       archived_binary;
   std::vector<base::FilePath> archived_archive_filenames;
   Results();
+  Results(const Results& other);
   ~Results();
 };
 

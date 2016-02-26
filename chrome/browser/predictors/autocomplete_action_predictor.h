@@ -124,6 +124,7 @@ class AutocompleteActionPredictor
 
   struct TransitionalMatch {
     TransitionalMatch();
+    TransitionalMatch(const TransitionalMatch& other);
     ~TransitionalMatch();
 
     base::string16 user_text;

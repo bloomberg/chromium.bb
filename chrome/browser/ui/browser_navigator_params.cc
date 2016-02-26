@@ -130,6 +130,8 @@ NavigateParams::NavigateParams(Profile* a_profile,
       created_with_opener(false) {
 }
 
+NavigateParams::NavigateParams(const NavigateParams& other) = default;
+
 NavigateParams::~NavigateParams() {}
 
 void FillNavigateParamsFromOpenURLParams(NavigateParams* nav_params,

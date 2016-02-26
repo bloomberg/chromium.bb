@@ -14,6 +14,7 @@ struct ExtensionTokenKey {
   ExtensionTokenKey(const std::string& extension_id,
                     const std::string& account_id,
                     const std::set<std::string>& scopes);
+  ExtensionTokenKey(const ExtensionTokenKey& other);
   ~ExtensionTokenKey();
   bool operator<(const ExtensionTokenKey& rhs) const;
   std::string extension_id;

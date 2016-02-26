@@ -60,6 +60,7 @@ class IdentityTokenCacheValue {
   explicit IdentityTokenCacheValue(const IssueAdviceInfo& issue_advice);
   IdentityTokenCacheValue(const std::string& token,
                           base::TimeDelta time_to_live);
+  IdentityTokenCacheValue(const IdentityTokenCacheValue& other);
   ~IdentityTokenCacheValue();
 
   // Order of these entries is used to determine whether or not new

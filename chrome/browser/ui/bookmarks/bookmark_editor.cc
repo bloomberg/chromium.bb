@@ -124,6 +124,8 @@ BookmarkEditor::EditDetails BookmarkEditor::EditDetails::AddFolder(
   return details;
 }
 
+BookmarkEditor::EditDetails::EditDetails(const EditDetails& other) = default;
+
 BookmarkEditor::EditDetails::~EditDetails() {}
 
 // static

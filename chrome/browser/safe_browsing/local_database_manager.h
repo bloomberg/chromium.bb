@@ -170,6 +170,7 @@ class LocalSafeBrowsingDatabaseManager
                 const GURL& url,
                 const std::vector<SBThreatType>& expected_threats,
                 const base::TimeTicks& start);
+    QueuedCheck(const QueuedCheck& other);
     ~QueuedCheck();
     ListType check_type;
     Client* client;

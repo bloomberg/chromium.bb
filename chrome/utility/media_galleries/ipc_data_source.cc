@@ -66,6 +66,8 @@ IPCDataSource::Request::Request()
     : destination(NULL) {
 }
 
+IPCDataSource::Request::Request(const Request& other) = default;
+
 IPCDataSource::Request::~Request() {
 }
 

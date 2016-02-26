@@ -51,6 +51,7 @@ class MTPDeviceDelegateImplLinux : public MTPDeviceAsyncDelegate {
                     content::BrowserThread::ID thread_id,
                     const tracked_objects::Location& location,
                     const base::Closure& task);
+    PendingTaskInfo(const PendingTaskInfo& other);
     ~PendingTaskInfo();
 
     base::FilePath path;

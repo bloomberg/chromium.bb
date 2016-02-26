@@ -23,6 +23,9 @@ ImageFetcherImpl::ImageRequest::ImageRequest() : fetcher(NULL) {}
 ImageFetcherImpl::ImageRequest::ImageRequest(chrome::BitmapFetcher* f)
     : fetcher(f) {}
 
+ImageFetcherImpl::ImageRequest::ImageRequest(const ImageRequest& other) =
+    default;
+
 ImageFetcherImpl::ImageRequest::~ImageRequest() { delete fetcher; }
 
 void ImageFetcherImpl::SetImageFetcherDelegate(ImageFetcherDelegate* delegate) {

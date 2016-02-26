@@ -25,6 +25,7 @@ class BlockedWindowParams {
                       bool opener_suppressed,
                       int render_process_id,
                       int opener_render_frame_id);
+  BlockedWindowParams(const BlockedWindowParams& other);
 
   chrome::NavigateParams CreateNavigateParams(
       content::WebContents* web_contents) const;

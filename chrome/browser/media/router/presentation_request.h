@@ -20,6 +20,7 @@ class PresentationRequest {
   PresentationRequest(const RenderFrameHostId& render_frame_host_id,
                       const std::string& presentation_url,
                       const GURL& frame_url);
+  PresentationRequest(const PresentationRequest& other);
   ~PresentationRequest();
 
   bool Equals(const PresentationRequest& other) const;

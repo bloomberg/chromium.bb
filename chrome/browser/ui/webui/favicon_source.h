@@ -88,6 +88,7 @@ class FaviconSource : public content::URLDataSource {
                 const GURL& path,
                 int size,
                 float scale);
+    IconRequest(const IconRequest& other);
     ~IconRequest();
 
     content::URLDataSource::GotDataCallback callback;

@@ -91,6 +91,7 @@ class ActiveScriptController : public content::WebContentsObserver,
   struct PendingScript {
     PendingScript(UserScript::RunLocation run_location,
                   const base::Closure& permit_script);
+    PendingScript(const PendingScript& other);
     ~PendingScript();
 
     // The run location that the script wants to inject at.

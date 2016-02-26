@@ -38,6 +38,7 @@ class AndroidDeviceManager : public base::NonThreadSafe {
 
   struct BrowserInfo {
     BrowserInfo();
+    BrowserInfo(const BrowserInfo& other);
 
     enum Type {
       kTypeChrome,
@@ -53,6 +54,7 @@ class AndroidDeviceManager : public base::NonThreadSafe {
 
   struct DeviceInfo {
     DeviceInfo();
+    DeviceInfo(const DeviceInfo& other);
     ~DeviceInfo();
 
     std::string model;
@@ -207,6 +209,7 @@ class AndroidDeviceManager : public base::NonThreadSafe {
 
   struct DeviceDescriptor {
     DeviceDescriptor();
+    DeviceDescriptor(const DeviceDescriptor& other);
     ~DeviceDescriptor();
 
     scoped_refptr<DeviceProvider> provider;

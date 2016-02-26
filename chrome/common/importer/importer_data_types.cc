@@ -12,6 +12,8 @@ SourceProfile::SourceProfile()
       services_supported(0) {
 }
 
+SourceProfile::SourceProfile(const SourceProfile& other) = default;
+
 SourceProfile::~SourceProfile() {
 }
 

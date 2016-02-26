@@ -92,6 +92,10 @@ CannedBrowsingDataServiceWorkerHelper::PendingServiceWorkerUsageInfo::
 }
 
 CannedBrowsingDataServiceWorkerHelper::PendingServiceWorkerUsageInfo::
+    PendingServiceWorkerUsageInfo(const PendingServiceWorkerUsageInfo& other) =
+        default;
+
+CannedBrowsingDataServiceWorkerHelper::PendingServiceWorkerUsageInfo::
     ~PendingServiceWorkerUsageInfo() {
 }
 

@@ -75,6 +75,9 @@ void AddRtpDumpData(std::string* post_data,
 
 WebRtcLogUploadDoneData::WebRtcLogUploadDoneData() {}
 
+WebRtcLogUploadDoneData::WebRtcLogUploadDoneData(
+    const WebRtcLogUploadDoneData& other) = default;
+
 WebRtcLogUploadDoneData::~WebRtcLogUploadDoneData() {}
 
 WebRtcLogUploader::WebRtcLogUploader()

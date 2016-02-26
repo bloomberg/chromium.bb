@@ -8,6 +8,9 @@ ImportedBookmarkEntry::ImportedBookmarkEntry()
     : in_toolbar(false),
       is_folder(false) {}
 
+ImportedBookmarkEntry::ImportedBookmarkEntry(
+    const ImportedBookmarkEntry& other) = default;
+
 ImportedBookmarkEntry::~ImportedBookmarkEntry() {}
 
 bool ImportedBookmarkEntry::operator==(

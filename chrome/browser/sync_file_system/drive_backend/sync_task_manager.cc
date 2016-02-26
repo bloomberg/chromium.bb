@@ -45,6 +45,8 @@ SyncTaskManager::PendingTask::PendingTask(
     const base::Closure& task, Priority pri, int seq)
     : task(task), priority(pri), seq(seq) {}
 
+SyncTaskManager::PendingTask::PendingTask(const PendingTask& other) = default;
+
 SyncTaskManager::PendingTask::~PendingTask() {}
 
 bool SyncTaskManager::PendingTaskComparator::operator()(

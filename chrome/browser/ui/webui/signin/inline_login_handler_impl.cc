@@ -742,6 +742,9 @@ InlineLoginHandlerImpl::FinishCompleteLoginParams::FinishCompleteLoginParams(
       auth_code(auth_code),
       choose_what_to_sync(choose_what_to_sync) {}
 
+InlineLoginHandlerImpl::FinishCompleteLoginParams::FinishCompleteLoginParams(
+    const FinishCompleteLoginParams& other) = default;
+
 InlineLoginHandlerImpl::
     FinishCompleteLoginParams::~FinishCompleteLoginParams() {}
 

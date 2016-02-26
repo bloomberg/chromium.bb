@@ -23,6 +23,7 @@ struct CHROME_VIEWS_EXPORT TabRendererData {
   };
 
   TabRendererData();
+  TabRendererData(const TabRendererData& other);
   ~TabRendererData();
 
   // This interprets the crashed status to decide whether or not this

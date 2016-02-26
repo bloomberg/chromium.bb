@@ -152,4 +152,7 @@ SessionStartupPref::Type SessionStartupPref::PrefValueToType(int pref_value) {
 
 SessionStartupPref::SessionStartupPref(Type type) : type(type) {}
 
+SessionStartupPref::SessionStartupPref(const SessionStartupPref& other) =
+    default;
+
 SessionStartupPref::~SessionStartupPref() {}

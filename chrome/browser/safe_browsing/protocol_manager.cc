@@ -800,6 +800,9 @@ SafeBrowsingProtocolManager::FullHashDetails::FullHashDetails(
     bool is_download)
     : callback(callback), is_download(is_download) {}
 
+SafeBrowsingProtocolManager::FullHashDetails::FullHashDetails(
+    const FullHashDetails& other) = default;
+
 SafeBrowsingProtocolManager::FullHashDetails::~FullHashDetails() {}
 
 SafeBrowsingProtocolManagerDelegate::~SafeBrowsingProtocolManagerDelegate() {}

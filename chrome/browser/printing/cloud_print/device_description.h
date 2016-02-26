@@ -20,6 +20,7 @@ struct DeviceDescription {
   DeviceDescription();
   explicit DeviceDescription(
       const local_discovery::ServiceDescription& service_description);
+  DeviceDescription(const DeviceDescription& other);
   ~DeviceDescription();
 
   bool IsValid() const;

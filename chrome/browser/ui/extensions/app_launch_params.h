@@ -46,6 +46,8 @@ struct AppLaunchParams {
                   chrome::HostDesktopType desktop_type,
                   extensions::AppLaunchSource source);
 
+  AppLaunchParams(const AppLaunchParams& other);
+
   ~AppLaunchParams();
 
   // The profile to load the application from.

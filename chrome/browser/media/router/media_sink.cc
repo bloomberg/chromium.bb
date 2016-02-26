@@ -11,6 +11,8 @@ MediaSink::MediaSink(const MediaSink::Id& sink_id,
                      const MediaSink::IconType icon_type)
     : sink_id_(sink_id), name_(name), icon_type_(icon_type) {}
 
+MediaSink::MediaSink(const MediaSink& other) = default;
+
 MediaSink::~MediaSink() {
 }
 

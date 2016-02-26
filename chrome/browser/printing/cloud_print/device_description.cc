@@ -52,6 +52,8 @@ DeviceDescription::DeviceDescription(
   }
 }
 
+DeviceDescription::DeviceDescription(const DeviceDescription& other) = default;
+
 DeviceDescription::~DeviceDescription() {
 }
 

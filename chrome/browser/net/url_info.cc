@@ -80,6 +80,8 @@ UrlInfo::UrlInfo()
       was_linked_(false) {
 }
 
+UrlInfo::UrlInfo(const UrlInfo& other) = default;
+
 UrlInfo::~UrlInfo() {}
 
 bool UrlInfo::NeedsDnsUpdate() {

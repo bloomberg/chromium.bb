@@ -50,6 +50,7 @@ class ImageFetcherImpl : public ImageFetcher,
     ImageRequest();
     // Struct takes ownership of |f|.
     explicit ImageRequest(chrome::BitmapFetcher* f);
+    ImageRequest(const ImageRequest& other);
     ~ImageRequest();
 
     void swap(ImageRequest* other) {

@@ -79,6 +79,9 @@ PerOriginStorageInfo::PerOriginStorageInfo(const GURL& origin,
       used_count_(-1) {
 }
 
+PerOriginStorageInfo::PerOriginStorageInfo(const PerOriginStorageInfo& other) =
+    default;
+
 PerOriginStorageInfo::~PerOriginStorageInfo() {}
 
 base::Value* PerOriginStorageInfo::NewValue() const {

@@ -54,6 +54,7 @@ class ChromePermissionMessageFormatter {
 // provider class and remove ownership from ChromePermissionMessageRule.
 class ChromePermissionMessageRule {
  public:
+  ChromePermissionMessageRule(const ChromePermissionMessageRule& other);
   virtual ~ChromePermissionMessageRule();
 
   // Returns all the rules used to generate permission messages for Chrome apps

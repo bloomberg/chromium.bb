@@ -1909,6 +1909,9 @@ AutofillDialogViews::DetailsGroup::DetailsGroup(DialogSection section)
       suggested_info(NULL),
       suggested_button(NULL) {}
 
+AutofillDialogViews::DetailsGroup::DetailsGroup(const DetailsGroup& other) =
+    default;
+
 AutofillDialogViews::DetailsGroup::~DetailsGroup() {}
 
 }  // namespace autofill

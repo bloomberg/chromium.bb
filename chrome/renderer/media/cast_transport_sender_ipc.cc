@@ -14,6 +14,8 @@
 #include "media/cast/cast_sender.h"
 
 CastTransportSenderIPC::ClientCallbacks::ClientCallbacks() {}
+CastTransportSenderIPC::ClientCallbacks::ClientCallbacks(
+    const ClientCallbacks& other) = default;
 CastTransportSenderIPC::ClientCallbacks::~ClientCallbacks() {}
 
 CastTransportSenderIPC::CastTransportSenderIPC(

@@ -336,6 +336,7 @@ class AutofillDialogViews : public AutofillDialogView,
   // section. None of the member pointers are owned.
   struct DetailsGroup {
     explicit DetailsGroup(DialogSection section);
+    DetailsGroup(const DetailsGroup& other);
     ~DetailsGroup();
 
     // The section this group is associated with.

@@ -203,6 +203,9 @@ ResourcePrefetchPredictorConfig::ResourcePrefetchPredictorConfig()
       max_prefetches_inflight_per_host_per_navigation(3) {
 }
 
+ResourcePrefetchPredictorConfig::ResourcePrefetchPredictorConfig(
+    const ResourcePrefetchPredictorConfig& other) = default;
+
 ResourcePrefetchPredictorConfig::~ResourcePrefetchPredictorConfig() {
 }
 

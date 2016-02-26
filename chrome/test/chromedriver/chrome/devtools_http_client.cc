@@ -27,6 +27,8 @@ WebViewInfo::WebViewInfo(const std::string& id,
                          Type type)
     : id(id), debugger_url(debugger_url), url(url), type(type) {}
 
+WebViewInfo::WebViewInfo(const WebViewInfo& other) = default;
+
 WebViewInfo::~WebViewInfo() {}
 
 bool WebViewInfo::IsFrontend() const {

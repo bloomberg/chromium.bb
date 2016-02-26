@@ -11,6 +11,7 @@
 // by the notification center within a notification.
 struct NotificationBitmapSizes {
   NotificationBitmapSizes();
+  NotificationBitmapSizes(const NotificationBitmapSizes& other);
   ~NotificationBitmapSizes();
 
   gfx::Size image_size;

@@ -62,6 +62,7 @@ struct UtteranceContinuousParameters {
 // Information about one voice.
 struct VoiceData {
   VoiceData();
+  VoiceData(const VoiceData& other);
   ~VoiceData();
 
   std::string name;

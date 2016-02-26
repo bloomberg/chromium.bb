@@ -58,6 +58,7 @@ class ExtensionServiceTestBase : public testing::Test {
     // Though you could use this constructor, you probably want to use
     // CreateDefaultInitParams(), and then make a change or two.
     ExtensionServiceInitParams();
+    ExtensionServiceInitParams(const ExtensionServiceInitParams& other);
   };
 
   // Public because parameterized test cases need it to be, or else the compiler

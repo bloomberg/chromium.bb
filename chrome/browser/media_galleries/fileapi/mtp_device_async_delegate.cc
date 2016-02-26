@@ -20,4 +20,7 @@ MTPDeviceAsyncDelegate::ReadBytesRequest::ReadBytesRequest(
       success_callback(success_callback),
       error_callback(error_callback) {}
 
+MTPDeviceAsyncDelegate::ReadBytesRequest::ReadBytesRequest(
+    const ReadBytesRequest& other) = default;
+
 MTPDeviceAsyncDelegate::ReadBytesRequest::~ReadBytesRequest() {}

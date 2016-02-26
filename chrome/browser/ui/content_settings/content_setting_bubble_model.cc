@@ -1289,9 +1289,15 @@ ContentSettingBubbleModel::RadioGroup::~RadioGroup() {}
 
 ContentSettingBubbleModel::DomainList::DomainList() {}
 
+ContentSettingBubbleModel::DomainList::DomainList(const DomainList& other) =
+    default;
+
 ContentSettingBubbleModel::DomainList::~DomainList() {}
 
 ContentSettingBubbleModel::MediaMenu::MediaMenu() : disabled(false) {}
+
+ContentSettingBubbleModel::MediaMenu::MediaMenu(const MediaMenu& other) =
+    default;
 
 ContentSettingBubbleModel::MediaMenu::~MediaMenu() {}
 

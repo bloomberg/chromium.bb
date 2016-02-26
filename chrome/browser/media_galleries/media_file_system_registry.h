@@ -53,6 +53,7 @@ struct MediaFileSystemInfo {
                       bool removable,
                       bool media_device);
   MediaFileSystemInfo();
+  MediaFileSystemInfo(const MediaFileSystemInfo& other);
   ~MediaFileSystemInfo();
 
   base::string16 name;

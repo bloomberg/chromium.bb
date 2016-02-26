@@ -96,6 +96,9 @@ ProcessMemoryInformation::ProcessMemoryInformation()
       renderer_type(RENDERER_UNKNOWN) {
 }
 
+ProcessMemoryInformation::ProcessMemoryInformation(
+    const ProcessMemoryInformation& other) = default;
+
 ProcessMemoryInformation::~ProcessMemoryInformation() {}
 
 bool ProcessMemoryInformation::operator<(

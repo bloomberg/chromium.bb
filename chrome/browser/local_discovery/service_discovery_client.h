@@ -24,6 +24,7 @@ namespace local_discovery {
 struct ServiceDescription {
  public:
   ServiceDescription();
+  ServiceDescription(const ServiceDescription& other);
   ~ServiceDescription();
 
   // Convenience function to get useful parts of the service name. A service

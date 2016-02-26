@@ -50,6 +50,7 @@ class IPCDataSource: public media::DataSource,
  private:
   struct Request {
     Request();
+    Request(const Request& other);
     ~Request();
     uint8_t* destination;
     ReadCB callback;

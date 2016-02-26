@@ -43,6 +43,7 @@ struct WebViewInfo {
               const std::string& debugger_url,
               const std::string& url,
               Type type);
+  WebViewInfo(const WebViewInfo& other);
   ~WebViewInfo();
 
   bool IsFrontend() const;

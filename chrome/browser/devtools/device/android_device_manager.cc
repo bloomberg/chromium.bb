@@ -331,15 +331,23 @@ AndroidDeviceManager::BrowserInfo::BrowserInfo()
     : type(kTypeOther) {
 }
 
+AndroidDeviceManager::BrowserInfo::BrowserInfo(const BrowserInfo& other) =
+    default;
+
 AndroidDeviceManager::DeviceInfo::DeviceInfo()
     : model(kModelOffline), connected(false) {
 }
+
+AndroidDeviceManager::DeviceInfo::DeviceInfo(const DeviceInfo& other) = default;
 
 AndroidDeviceManager::DeviceInfo::~DeviceInfo() {
 }
 
 AndroidDeviceManager::DeviceDescriptor::DeviceDescriptor() {
 }
+
+AndroidDeviceManager::DeviceDescriptor::DeviceDescriptor(
+    const DeviceDescriptor& other) = default;
 
 AndroidDeviceManager::DeviceDescriptor::~DeviceDescriptor() {
 }

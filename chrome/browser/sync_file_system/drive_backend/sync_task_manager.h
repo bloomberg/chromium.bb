@@ -136,6 +136,7 @@ class SyncTaskManager {
 
     PendingTask();
     PendingTask(const base::Closure& task, Priority pri, int seq);
+    PendingTask(const PendingTask& other);
     ~PendingTask();
   };
 

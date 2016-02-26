@@ -28,6 +28,7 @@ class Command {
           const base::string16& description,
           const std::string& accelerator,
           bool global);
+  Command(const Command& other);
   ~Command();
 
   // The platform value for the Command.

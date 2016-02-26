@@ -467,6 +467,8 @@ Status ParseChromeOptions(
 
 Switches::Switches() {}
 
+Switches::Switches(const Switches& other) = default;
+
 Switches::~Switches() {}
 
 void Switches::SetSwitch(const std::string& name) {

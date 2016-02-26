@@ -72,6 +72,9 @@ FamilyInfoFetcher::FamilyMember::FamilyMember(
       profile_image_url(profile_image_url) {
 }
 
+FamilyInfoFetcher::FamilyMember::FamilyMember(const FamilyMember& other) =
+    default;
+
 FamilyInfoFetcher::FamilyMember::~FamilyMember() {
 }
 

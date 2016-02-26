@@ -21,6 +21,9 @@ namespace safe_browsing {
 SafeBrowsingProtocolConfig::SafeBrowsingProtocolConfig()
     : disable_auto_update(false) {}
 
+SafeBrowsingProtocolConfig::SafeBrowsingProtocolConfig(
+    const SafeBrowsingProtocolConfig& other) = default;
+
 SafeBrowsingProtocolConfig::~SafeBrowsingProtocolConfig() {}
 
 // static

@@ -212,6 +212,9 @@ TaskManagerModel::PerResourceValues::PerResourceValues()
       v8_memory_allocated(0),
       v8_memory_used(0) {}
 
+TaskManagerModel::PerResourceValues::PerResourceValues(
+    const PerResourceValues& other) = default;
+
 TaskManagerModel::PerResourceValues::~PerResourceValues() {}
 
 TaskManagerModel::PerProcessValues::PerProcessValues()
@@ -235,6 +238,9 @@ TaskManagerModel::PerProcessValues::PerProcessValues()
       user_handles_peak(0),
       is_nacl_debug_stub_port_valid(false),
       nacl_debug_stub_port(0) {}
+
+TaskManagerModel::PerProcessValues::PerProcessValues(
+    const PerProcessValues& other) = default;
 
 TaskManagerModel::PerProcessValues::~PerProcessValues() {}
 

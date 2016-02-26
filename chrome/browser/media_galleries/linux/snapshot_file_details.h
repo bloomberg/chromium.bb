@@ -23,6 +23,7 @@ struct SnapshotRequestInfo {
       const MTPDeviceAsyncDelegate::CreateSnapshotFileSuccessCallback&
           success_callback,
       const MTPDeviceAsyncDelegate::ErrorCallback& error_callback);
+  SnapshotRequestInfo(const SnapshotRequestInfo& other);
   ~SnapshotRequestInfo();
 
   // MTP device file id.

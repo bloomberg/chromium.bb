@@ -50,6 +50,7 @@ class SafeBrowsingUIManager
   // interacting with the blocking page.
   struct UnsafeResource {
     UnsafeResource();
+    UnsafeResource(const UnsafeResource& other);
     ~UnsafeResource();
 
     // Returns true if this UnsafeResource is a main frame load that was blocked

@@ -16,5 +16,8 @@ WebApplicationInfo::WebApplicationInfo()
       open_as_window(false) {
 }
 
+WebApplicationInfo::WebApplicationInfo(const WebApplicationInfo& other) =
+    default;
+
 WebApplicationInfo::~WebApplicationInfo() {
 }

@@ -51,6 +51,7 @@ class MediaFolderFinder {
   class Worker;
   struct WorkerReply {
     WorkerReply();
+    WorkerReply(const WorkerReply& other);
     ~WorkerReply();
 
     MediaGalleryScanResult scan_result;

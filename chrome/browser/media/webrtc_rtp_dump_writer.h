@@ -80,6 +80,7 @@ class WebRtcRtpDumpWriter {
   // Used by EndDump to cache the input and intermediate results.
   struct EndDumpContext {
     EndDumpContext(RtpDumpType type, const EndDumpCallback& callback);
+    EndDumpContext(const EndDumpContext& other);
     ~EndDumpContext();
 
     RtpDumpType type;

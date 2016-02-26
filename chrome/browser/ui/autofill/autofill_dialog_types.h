@@ -39,6 +39,7 @@ class DialogNotification {
 
   DialogNotification();
   DialogNotification(Type type, const base::string16& display_text);
+  DialogNotification(const DialogNotification& other);
   ~DialogNotification();
 
   // Returns the appropriate background, border, or text color for the view's
@@ -99,6 +100,7 @@ struct SuggestionState {
                   const gfx::Image& icon,
                   const base::string16& extra_text,
                   const gfx::Image& extra_icon);
+  SuggestionState(const SuggestionState& other);
   ~SuggestionState();
 
   // Whether a suggestion should be shown.
@@ -167,6 +169,7 @@ struct ValidityMessage {
 class ValidityMessages {
  public:
   ValidityMessages();
+  ValidityMessages(const ValidityMessages& other);
   ~ValidityMessages();
 
   // Sets the message for |field|, but will not overwrite a previous, invalid

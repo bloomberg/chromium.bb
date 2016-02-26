@@ -42,6 +42,9 @@ DialogNotification::DialogNotification(Type type,
   }
 }
 
+DialogNotification::DialogNotification(const DialogNotification& other) =
+    default;
+
 DialogNotification::~DialogNotification() {}
 
 SkColor DialogNotification::GetBackgroundColor() const {
@@ -123,6 +126,7 @@ SuggestionState::SuggestionState(
       icon(icon),
       extra_text(extra_text),
       extra_icon(extra_icon) {}
+SuggestionState::SuggestionState(const SuggestionState& other) = default;
 SuggestionState::~SuggestionState() {}
 
 DialogOverlayString::DialogOverlayString() {}
@@ -137,6 +141,7 @@ ValidityMessage::~ValidityMessage() {}
 
 ValidityMessages::ValidityMessages()
     : default_message_(ValidityMessage(base::string16(), false)) {}
+ValidityMessages::ValidityMessages(const ValidityMessages& other) = default;
 ValidityMessages::~ValidityMessages() {}
 
 void ValidityMessages::Set(

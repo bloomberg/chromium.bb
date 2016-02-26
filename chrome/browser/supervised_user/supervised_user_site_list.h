@@ -46,6 +46,7 @@ class SupervisedUserSiteList
     explicit HostnameHash(const std::string& hostname);
     // |bytes| must have a size of at least |base::kSHA1Length|.
     explicit HostnameHash(const std::vector<uint8_t>& bytes);
+    HostnameHash(const HostnameHash& other);
 
     bool operator==(const HostnameHash& rhs) const;
 

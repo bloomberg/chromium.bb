@@ -38,6 +38,8 @@ Issue::Issue(const std::string& title,
     DCHECK_NE(default_action_.type(), secondary_actions_[0].type());
 }
 
+Issue::Issue(const Issue& other) = default;
+
 Issue::~Issue() {
 }
 

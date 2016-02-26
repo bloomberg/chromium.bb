@@ -367,6 +367,9 @@ MTPDeviceDelegateImplLinux::PendingTaskInfo::PendingTaskInfo(
       task(task) {
 }
 
+MTPDeviceDelegateImplLinux::PendingTaskInfo::PendingTaskInfo(
+    const PendingTaskInfo& other) = default;
+
 MTPDeviceDelegateImplLinux::PendingTaskInfo::~PendingTaskInfo() {
 }
 

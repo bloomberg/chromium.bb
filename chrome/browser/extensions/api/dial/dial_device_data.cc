@@ -17,6 +17,8 @@ DialDeviceData::DialDeviceData(const std::string& device_id,
       response_time_(response_time), max_age_(-1), config_id_(-1) {
 }
 
+DialDeviceData::DialDeviceData(const DialDeviceData& other) = default;
+
 DialDeviceData::~DialDeviceData() { }
 
 const GURL& DialDeviceData::device_description_url() const {

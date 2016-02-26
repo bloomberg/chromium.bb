@@ -38,6 +38,7 @@ struct ProcessMetricsMetadata {
 class ProcessMetricsHistory {
  public:
   ProcessMetricsHistory();
+  ProcessMetricsHistory(const ProcessMetricsHistory& other);
   ~ProcessMetricsHistory();
 
   // Configure this to monitor a specific process.

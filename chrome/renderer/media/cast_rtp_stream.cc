@@ -512,9 +512,14 @@ CastRtpPayloadParams::CastRtpPayloadParams()
       max_frame_rate(0.0) {
 }
 
+CastRtpPayloadParams::CastRtpPayloadParams(const CastRtpPayloadParams& other) =
+    default;
+
 CastRtpPayloadParams::~CastRtpPayloadParams() {}
 
 CastRtpParams::CastRtpParams() {}
+
+CastRtpParams::CastRtpParams(const CastRtpParams& other) = default;
 
 CastRtpParams::~CastRtpParams() {}
 

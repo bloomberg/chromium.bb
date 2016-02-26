@@ -61,6 +61,7 @@ class BundleInstaller : public WebstoreInstallHelper::Delegate,
     };
 
     Item();
+    Item(const Item& other);
     ~Item();
 
     // Gets the localized name, formatted for display in the bubble.

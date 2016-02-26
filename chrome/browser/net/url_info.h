@@ -75,6 +75,8 @@ class UrlInfo {
   // initializing of the Predictor's map (of info for Hostnames).
   UrlInfo();
 
+  UrlInfo(const UrlInfo& other);
+
   ~UrlInfo();
 
   // NeedDnsUpdate decides, based on our internal info,

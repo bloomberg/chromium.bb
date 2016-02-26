@@ -79,6 +79,7 @@ class InlineLoginHandlerImpl : public InlineLoginHandler,
                               const std::string& session_index,
                               const std::string& auth_code,
                               bool choose_what_to_sync);
+    FinishCompleteLoginParams(const FinishCompleteLoginParams& other);
     ~FinishCompleteLoginParams();
 
     // Pointer to WebUI handler.  May be nullptr.

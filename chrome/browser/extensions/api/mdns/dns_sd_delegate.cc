@@ -7,6 +7,7 @@
 namespace extensions {
 
 DnsSdService::DnsSdService() {}
+DnsSdService::DnsSdService(const DnsSdService& other) = default;
 DnsSdService::~DnsSdService() {}
 
 }  // namespace extensions

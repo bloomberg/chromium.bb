@@ -294,6 +294,8 @@ Command::Command(const std::string& command_name,
                            IsNamedCommand(command_name), &error);
 }
 
+Command::Command(const Command& other) = default;
+
 Command::~Command() {}
 
 // static

@@ -71,6 +71,8 @@ IPUrlInfo::IPUrlInfo(const std::string& url,
         resource_type(resource_type) {
 }
 
+IPUrlInfo::IPUrlInfo(const IPUrlInfo& other) = default;
+
 IPUrlInfo::~IPUrlInfo() {}
 
 BrowseInfo::BrowseInfo() : http_status_code(0) {}

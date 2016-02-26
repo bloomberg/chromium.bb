@@ -33,6 +33,7 @@ struct WebApplicationInfo {
   };
 
   WebApplicationInfo();
+  WebApplicationInfo(const WebApplicationInfo& other);
   ~WebApplicationInfo();
 
   // Title of the application.

@@ -309,6 +309,8 @@ Browser::CreateParams::CreateParams(Type type, Profile* profile)
       is_session_restore(false),
       window(NULL) {}
 
+Browser::CreateParams::CreateParams(const CreateParams& other) = default;
+
 // static
 Browser::CreateParams Browser::CreateParams::CreateForApp(
     const std::string& app_name,

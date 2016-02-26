@@ -11,6 +11,9 @@ namespace local_discovery {
 ServiceDescription::ServiceDescription() {
 }
 
+ServiceDescription::ServiceDescription(const ServiceDescription& other) =
+    default;
+
 ServiceDescription::~ServiceDescription() {
 }
 

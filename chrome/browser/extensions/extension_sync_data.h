@@ -64,6 +64,7 @@ class ExtensionSyncData {
                     const syncer::StringOrdinal& app_launch_ordinal,
                     const syncer::StringOrdinal& page_ordinal,
                     extensions::LaunchType launch_type);
+  ExtensionSyncData(const ExtensionSyncData& other);
   ~ExtensionSyncData();
 
   // For constructing an ExtensionSyncData from received sync data.

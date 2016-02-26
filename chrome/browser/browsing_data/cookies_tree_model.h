@@ -111,6 +111,7 @@ class CookieTreeNode : public ui::TreeNode<CookieTreeNode> {
     };
 
     DetailedInfo();
+    DetailedInfo(const DetailedInfo& other);
     ~DetailedInfo();
 
     DetailedInfo& Init(NodeType type);

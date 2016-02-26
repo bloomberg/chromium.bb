@@ -39,6 +39,7 @@ struct Misspelling {
               size_t length,
               const std::vector<base::string16>& suggestions,
               uint32_t hash);
+  Misspelling(const Misspelling& other);
   ~Misspelling();
 
   // A several-word text snippet that immediately surrounds the misspelling.

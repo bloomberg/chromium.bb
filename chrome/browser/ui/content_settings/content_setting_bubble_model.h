@@ -83,6 +83,7 @@ class ContentSettingBubbleModel : public content::NotificationObserver {
 
   struct DomainList {
     DomainList();
+    DomainList(const DomainList& other);
     ~DomainList();
 
     std::string title;
@@ -91,6 +92,7 @@ class ContentSettingBubbleModel : public content::NotificationObserver {
 
   struct MediaMenu {
     MediaMenu();
+    MediaMenu(const MediaMenu& other);
     ~MediaMenu();
 
     std::string label;

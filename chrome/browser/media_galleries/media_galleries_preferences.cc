@@ -379,6 +379,9 @@ MediaGalleryPrefInfo::MediaGalleryPrefInfo()
       prefs_version(0) {
 }
 
+MediaGalleryPrefInfo::MediaGalleryPrefInfo(const MediaGalleryPrefInfo& other) =
+    default;
+
 MediaGalleryPrefInfo::~MediaGalleryPrefInfo() {}
 
 base::FilePath MediaGalleryPrefInfo::AbsolutePath() const {

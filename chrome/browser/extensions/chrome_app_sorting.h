@@ -85,6 +85,7 @@ class ChromeAppSorting : public AppSorting {
   // Maps an app id to its ordinals.
   struct AppOrdinals {
     AppOrdinals();
+    AppOrdinals(const AppOrdinals& other);
     ~AppOrdinals();
 
     syncer::StringOrdinal page_ordinal;

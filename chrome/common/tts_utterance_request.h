@@ -24,6 +24,7 @@ struct TtsUtteranceRequest {
 
 struct TtsVoice {
   TtsVoice();
+  TtsVoice(const TtsVoice& other);
   ~TtsVoice();
 
   std::string voice_uri;

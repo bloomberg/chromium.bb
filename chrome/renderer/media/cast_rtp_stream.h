@@ -86,6 +86,7 @@ struct CastRtpPayloadParams {
   std::vector<CastCodecSpecificParams> codec_specific_params;
 
   CastRtpPayloadParams();
+  CastRtpPayloadParams(const CastRtpPayloadParams& other);
   ~CastRtpPayloadParams();
 };
 
@@ -100,6 +101,7 @@ struct CastRtpParams {
   std::vector<std::string> rtcp_features;
 
   CastRtpParams();
+  CastRtpParams(const CastRtpParams& other);
   ~CastRtpParams();
 };
 

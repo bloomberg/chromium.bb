@@ -175,6 +175,8 @@ LocalDataContainer* GetLocalDataContainerForNode(CookieTreeNode* node) {
 
 CookieTreeNode::DetailedInfo::DetailedInfo() : node_type(TYPE_NONE) {}
 
+CookieTreeNode::DetailedInfo::DetailedInfo(const DetailedInfo& other) = default;
+
 CookieTreeNode::DetailedInfo::~DetailedInfo() {}
 
 CookieTreeNode::DetailedInfo& CookieTreeNode::DetailedInfo::Init(

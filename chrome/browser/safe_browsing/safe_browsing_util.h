@@ -77,6 +77,7 @@ struct SBListChunkRanges {
 // Container for deleting chunks from the database.
 struct SBChunkDelete {
   SBChunkDelete();
+  SBChunkDelete(const SBChunkDelete& other);
   ~SBChunkDelete();
 
   std::string list_name;

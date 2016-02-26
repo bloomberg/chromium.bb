@@ -19,6 +19,8 @@ TabRendererData::TabRendererData()
       media_state(TAB_MEDIA_STATE_NONE) {
 }
 
+TabRendererData::TabRendererData(const TabRendererData& other) = default;
+
 TabRendererData::~TabRendererData() {}
 
 bool TabRendererData::IsCrashed() const {

@@ -60,6 +60,8 @@ class Issue {
         bool is_blocking,
         const std::string& helpUrl);
 
+  Issue(const Issue& other);
+
   ~Issue();
 
   // See constructor comments for more information about these fields.

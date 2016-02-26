@@ -44,6 +44,7 @@ class MediaRoute {
              bool is_local,
              const std::string& custom_controller_path,
              bool for_display);
+  MediaRoute(const MediaRoute& other);
   ~MediaRoute();
 
   // The media route identifier.

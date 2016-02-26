@@ -33,6 +33,7 @@ typedef struct z_stream_s z_stream;
 // also used pre-upload.
 struct WebRtcLogUploadDoneData : public WebRtcLogPaths {
   WebRtcLogUploadDoneData();
+  WebRtcLogUploadDoneData(const WebRtcLogUploadDoneData& other);
   ~WebRtcLogUploadDoneData();
 
   WebRtcLoggingHandlerHost::UploadDoneCallback callback;

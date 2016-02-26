@@ -97,6 +97,7 @@ class GalleryWatchManager
 
   struct NotificationInfo {
     NotificationInfo();
+    NotificationInfo(const NotificationInfo& other);
     ~NotificationInfo();
 
     std::set<WatchOwner> owners;

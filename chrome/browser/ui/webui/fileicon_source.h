@@ -48,6 +48,7 @@ class FileIconSource : public content::URLDataSource {
   // Contains the necessary information for completing an icon fetch request.
   struct IconRequestDetails {
     IconRequestDetails();
+    IconRequestDetails(const IconRequestDetails& other);
     ~IconRequestDetails();
 
     // The callback to run with the response.

@@ -70,6 +70,7 @@ class PerHostStorageInfo {
 class PerOriginStorageInfo {
  public:
   PerOriginStorageInfo(const GURL& origin, storage::StorageType type);
+  PerOriginStorageInfo(const PerOriginStorageInfo& other);
   ~PerOriginStorageInfo();
 
   void set_in_use(bool in_use) {

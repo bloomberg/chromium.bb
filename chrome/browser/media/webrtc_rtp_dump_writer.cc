@@ -348,6 +348,9 @@ WebRtcRtpDumpWriter::EndDumpContext::EndDumpContext(
       callback(callback) {
 }
 
+WebRtcRtpDumpWriter::EndDumpContext::EndDumpContext(
+    const EndDumpContext& other) = default;
+
 WebRtcRtpDumpWriter::EndDumpContext::~EndDumpContext() {
 }
 

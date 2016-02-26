@@ -167,6 +167,9 @@ GalleryWatchManager::NotificationInfo::NotificationInfo()
     : delayed_notification_pending(false) {
 }
 
+GalleryWatchManager::NotificationInfo::NotificationInfo(
+    const NotificationInfo& other) = default;
+
 GalleryWatchManager::NotificationInfo::~NotificationInfo() {
 }
 

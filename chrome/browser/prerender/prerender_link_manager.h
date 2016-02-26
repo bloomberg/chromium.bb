@@ -85,6 +85,7 @@ class PrerenderLinkManager : public KeyedService,
                   int render_view_route_id,
                   base::TimeTicks creation_time,
                   PrerenderContents* deferred_launcher);
+    LinkPrerender(const LinkPrerender& other);
     ~LinkPrerender();
 
     // Parameters from PrerenderLinkManager::OnAddPrerender():

@@ -30,6 +30,7 @@ struct InitSessionParams {
                     DeviceManager* device_manager,
                     PortServer* port_server,
                     PortManager* port_manager);
+  InitSessionParams(const InitSessionParams& other);
   ~InitSessionParams();
 
   scoped_refptr<URLRequestContextGetter> context_getter;

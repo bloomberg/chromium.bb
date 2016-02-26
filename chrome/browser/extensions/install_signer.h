@@ -47,6 +47,7 @@ struct InstallSignature {
   ExtensionIdSet invalid_ids;
 
   InstallSignature();
+  InstallSignature(const InstallSignature& other);
   ~InstallSignature();
 
   // Helper methods for serialization to/from a base::DictionaryValue.

@@ -25,6 +25,8 @@ MediaRoute::MediaRoute(const MediaRoute::Id& media_route_id,
       for_display_(for_display),
       off_the_record_(false) {}
 
+MediaRoute::MediaRoute(const MediaRoute& other) = default;
+
 MediaRoute::~MediaRoute() {
 }
 

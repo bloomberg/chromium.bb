@@ -17,6 +17,7 @@ struct DnsSdService {
   std::vector<std::string> service_data;
 
   DnsSdService();
+  DnsSdService(const DnsSdService& other);
   virtual ~DnsSdService();
 
   bool operator==(const DnsSdService& other) const {

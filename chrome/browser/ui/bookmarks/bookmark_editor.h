@@ -72,6 +72,7 @@ class BookmarkEditor {
       NEW_FOLDER
     };
 
+    EditDetails(const EditDetails& other);
     ~EditDetails();
 
     // See description of enum value for details.

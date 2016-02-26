@@ -41,6 +41,9 @@ PendingExtensionInfo::PendingExtensionInfo()
       remote_install_(false) {
 }
 
+PendingExtensionInfo::PendingExtensionInfo(const PendingExtensionInfo& other) =
+    default;
+
 PendingExtensionInfo::~PendingExtensionInfo() {}
 
 bool PendingExtensionInfo::operator==(const PendingExtensionInfo& rhs) const {

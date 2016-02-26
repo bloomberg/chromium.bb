@@ -65,6 +65,8 @@ struct SessionStartupPref {
 
   explicit SessionStartupPref(Type type);
 
+  SessionStartupPref(const SessionStartupPref& other);
+
   ~SessionStartupPref();
 
   // What to do on startup.

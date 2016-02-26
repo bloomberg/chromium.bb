@@ -13,6 +13,7 @@
 
 struct ImportedBookmarkEntry {
   ImportedBookmarkEntry();
+  ImportedBookmarkEntry(const ImportedBookmarkEntry& other);
   ~ImportedBookmarkEntry();
 
   bool operator==(const ImportedBookmarkEntry& other) const;

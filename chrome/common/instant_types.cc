@@ -90,6 +90,9 @@ const char kAssistedQueryStatsKey[] = "aqs";
 
 InstantMostVisitedItem::InstantMostVisitedItem() {}
 
+InstantMostVisitedItem::InstantMostVisitedItem(
+    const InstantMostVisitedItem& other) = default;
+
 InstantMostVisitedItem::~InstantMostVisitedItem() {}
 
 EmbeddedSearchRequestParams::EmbeddedSearchRequestParams() {

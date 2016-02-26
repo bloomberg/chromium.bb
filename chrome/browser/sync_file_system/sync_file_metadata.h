@@ -30,6 +30,7 @@ class SyncFileMetadata {
 
 struct LocalFileSyncInfo {
   LocalFileSyncInfo();
+  LocalFileSyncInfo(const LocalFileSyncInfo& other);
   ~LocalFileSyncInfo();
 
   storage::FileSystemURL url;

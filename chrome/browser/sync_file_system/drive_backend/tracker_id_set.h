@@ -23,6 +23,7 @@ class TrackerIDSet {
   typedef RawTrackerIDSet::const_iterator const_iterator;
 
   TrackerIDSet();
+  TrackerIDSet(const TrackerIDSet& other);
   ~TrackerIDSet();
 
   bool has_active() const { return !!active_tracker_; }

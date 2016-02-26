@@ -37,6 +37,7 @@ class BrowsingDataDatabaseHelper
                  const std::string& description,
                  int64_t size,
                  base::Time last_modified);
+    DatabaseInfo(const DatabaseInfo& other);
     ~DatabaseInfo();
 
     storage::DatabaseIdentifier identifier;

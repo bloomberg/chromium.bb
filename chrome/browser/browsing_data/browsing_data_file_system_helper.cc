@@ -144,6 +144,9 @@ void BrowsingDataFileSystemHelperImpl::DeleteFileSystemOriginInFileThread(
 BrowsingDataFileSystemHelper::FileSystemInfo::FileSystemInfo(
     const GURL& origin) : origin(origin) {}
 
+BrowsingDataFileSystemHelper::FileSystemInfo::FileSystemInfo(
+    const FileSystemInfo& other) = default;
+
 BrowsingDataFileSystemHelper::FileSystemInfo::~FileSystemInfo() {}
 
 // static

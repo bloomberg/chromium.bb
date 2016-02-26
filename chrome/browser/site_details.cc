@@ -84,13 +84,21 @@ content::SiteInstance* DeterminePrimarySiteInstance(
 
 ScenarioBrowsingInstanceInfo::ScenarioBrowsingInstanceInfo() {}
 
+ScenarioBrowsingInstanceInfo::ScenarioBrowsingInstanceInfo(
+    const ScenarioBrowsingInstanceInfo& other) = default;
+
 ScenarioBrowsingInstanceInfo::~ScenarioBrowsingInstanceInfo() {}
 
 BrowsingInstanceInfo::BrowsingInstanceInfo() {}
 
+BrowsingInstanceInfo::BrowsingInstanceInfo(const BrowsingInstanceInfo& other) =
+    default;
+
 BrowsingInstanceInfo::~BrowsingInstanceInfo() {}
 
 IsolationScenario::IsolationScenario() {}
+
+IsolationScenario::IsolationScenario(const IsolationScenario& other) = default;
 
 IsolationScenario::~IsolationScenario() {}
 
@@ -98,6 +106,8 @@ SiteData::SiteData() {
   for (int i = 0; i <= ISOLATION_SCENARIO_LAST; i++)
     scenarios[i].policy = static_cast<IsolationScenarioType>(i);
 }
+
+SiteData::SiteData(const SiteData& other) = default;
 
 SiteData::~SiteData() {}
 

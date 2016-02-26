@@ -67,6 +67,8 @@ InitSessionParams::InitSessionParams(
       port_server(port_server),
       port_manager(port_manager) {}
 
+InitSessionParams::InitSessionParams(const InitSessionParams& other) = default;
+
 InitSessionParams::~InitSessionParams() {}
 
 namespace {

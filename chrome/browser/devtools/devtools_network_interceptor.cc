@@ -32,6 +32,9 @@ base::TimeDelta CalculateTickLength(double throughput) {
 DevToolsNetworkInterceptor::ThrottleRecord::ThrottleRecord() {
 }
 
+DevToolsNetworkInterceptor::ThrottleRecord::ThrottleRecord(
+    const ThrottleRecord& other) = default;
+
 DevToolsNetworkInterceptor::ThrottleRecord::~ThrottleRecord() {
 }
 

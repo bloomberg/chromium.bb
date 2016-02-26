@@ -50,6 +50,7 @@ struct CommandMapping {
   CommandMapping(HttpMethod method,
                  const std::string& path_pattern,
                  const Command& command);
+  CommandMapping(const CommandMapping& other);
   ~CommandMapping();
 
   HttpMethod method;

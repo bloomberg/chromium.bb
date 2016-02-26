@@ -71,6 +71,7 @@ class IncognitoConnectability : public BrowserContextKeyedAPI {
  private:
   struct TabContext {
     TabContext();
+    TabContext(const TabContext& other);
     ~TabContext();
 
     // The infobar being shown in a given tab. The InfoBarManager maintains

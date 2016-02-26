@@ -20,6 +20,7 @@ namespace sync_file_system {
 class SubtreeSet {
  public:
   SubtreeSet();
+  SubtreeSet(const SubtreeSet& other);
   ~SubtreeSet();
 
   // Returns true if the subtree induced by |subtree_root| is disjoint with

@@ -121,6 +121,9 @@ IdentityTokenCacheValue::IdentityTokenCacheValue(const std::string& token,
   expiration_time_ = base::Time::Now() + time_to_live;
 }
 
+IdentityTokenCacheValue::IdentityTokenCacheValue(
+    const IdentityTokenCacheValue& other) = default;
+
 IdentityTokenCacheValue::~IdentityTokenCacheValue() {}
 
 IdentityTokenCacheValue::CacheValueStatus IdentityTokenCacheValue::status()

@@ -87,6 +87,8 @@ AvatarMenu::Item::Item(size_t menu_index,
       profile_index(profile_index) {
 }
 
+AvatarMenu::Item::Item(const Item& other) = default;
+
 AvatarMenu::Item::~Item() {
 }
 

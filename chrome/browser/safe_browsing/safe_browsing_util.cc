@@ -131,6 +131,8 @@ SBListChunkRanges::SBListChunkRanges(const std::string& n)
 
 SBChunkDelete::SBChunkDelete() : is_sub_del(false) {}
 
+SBChunkDelete::SBChunkDelete(const SBChunkDelete& other) = default;
+
 SBChunkDelete::~SBChunkDelete() {}
 
 }  // namespace safe_browsing

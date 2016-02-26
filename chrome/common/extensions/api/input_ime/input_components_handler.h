@@ -27,6 +27,7 @@ enum InputComponentType {
 struct InputComponentInfo {
   // Define out of line constructor/destructor to please Clang.
   InputComponentInfo();
+  InputComponentInfo(const InputComponentInfo& other);
   ~InputComponentInfo();
 
   std::string name;

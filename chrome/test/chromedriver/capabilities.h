@@ -32,6 +32,7 @@ class Switches {
  public:
   typedef base::FilePath::StringType NativeString;
   Switches();
+  Switches(const Switches& other);
   ~Switches();
 
   void SetSwitch(const std::string& name);

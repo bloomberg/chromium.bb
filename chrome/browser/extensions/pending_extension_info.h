@@ -41,6 +41,8 @@ class PendingExtensionInfo {
   // Required for STL container membership.  Should not be used directly.
   PendingExtensionInfo();
 
+  PendingExtensionInfo(const PendingExtensionInfo& other);
+
   ~PendingExtensionInfo();
 
   // Consider two PendingExtensionInfos equal if their ids are equal.

@@ -77,5 +77,7 @@ AppLaunchParams::AppLaunchParams(Profile* profile,
   }
 }
 
+AppLaunchParams::AppLaunchParams(const AppLaunchParams& other) = default;
+
 AppLaunchParams::~AppLaunchParams() {
 }

@@ -57,6 +57,8 @@ VoiceData::VoiceData()
       remote(false),
       native(false) {}
 
+VoiceData::VoiceData(const VoiceData& other) = default;
+
 VoiceData::~VoiceData() {}
 
 

@@ -31,6 +31,9 @@ BlockedWindowParams::BlockedWindowParams(
       opener_render_frame_id_(opener_render_frame_id) {
 }
 
+BlockedWindowParams::BlockedWindowParams(const BlockedWindowParams& other) =
+    default;
+
 chrome::NavigateParams BlockedWindowParams::CreateNavigateParams(
     content::WebContents* web_contents) const {
   GURL popup_url(target_url_);

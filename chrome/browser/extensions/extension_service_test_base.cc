@@ -78,6 +78,10 @@ ExtensionServiceTestBase::ExtensionServiceInitParams::
       profile_is_supervised(false) {
 }
 
+ExtensionServiceTestBase::ExtensionServiceInitParams::
+    ExtensionServiceInitParams(const ExtensionServiceInitParams& other) =
+        default;
+
 ExtensionServiceTestBase::ExtensionServiceTestBase()
     : thread_bundle_(new content::TestBrowserThreadBundle(kThreadOptions)),
       service_(NULL),

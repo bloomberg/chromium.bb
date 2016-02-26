@@ -52,6 +52,7 @@ class DevToolsNetworkInterceptor {
   struct ThrottleRecord {
    public:
     ThrottleRecord();
+    ThrottleRecord(const ThrottleRecord& other);
     ~ThrottleRecord();
     int result;
     int64_t bytes;

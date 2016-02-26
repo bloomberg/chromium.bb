@@ -26,6 +26,7 @@ namespace cloud_print {
 
 struct JobDetails {
   JobDetails();
+  JobDetails(const JobDetails& other);
   ~JobDetails();
   void Clear();
   static bool ordering(const JobDetails& first, const JobDetails& second);

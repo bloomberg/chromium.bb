@@ -37,6 +37,7 @@ enum ImportItem {
 // Information about a profile needed by an importer to do import work.
 struct SourceProfile {
   SourceProfile();
+  SourceProfile(const SourceProfile& other);
   ~SourceProfile();
 
   base::string16 importer_name;

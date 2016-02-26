@@ -40,6 +40,9 @@ ActiveScriptController::PendingScript::PendingScript(
     const base::Closure& permit_script)
     : run_location(run_location), permit_script(permit_script) {}
 
+ActiveScriptController::PendingScript::PendingScript(
+    const PendingScript& other) = default;
+
 ActiveScriptController::PendingScript::~PendingScript() {}
 
 ActiveScriptController::ActiveScriptController(

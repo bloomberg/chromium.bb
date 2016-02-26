@@ -160,6 +160,7 @@ namespace extensions {
 
 InstallSignature::InstallSignature() {
 }
+InstallSignature::InstallSignature(const InstallSignature& other) = default;
 InstallSignature::~InstallSignature() {
 }
 

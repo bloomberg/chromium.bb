@@ -27,6 +27,8 @@ const char kModelItemName[] = "name";
 AppListPrefs::AppListInfo::AppListInfo() : item_type(ITEM_TYPE_INVALID) {
 }
 
+AppListPrefs::AppListInfo::AppListInfo(const AppListInfo& other) = default;
+
 AppListPrefs::AppListInfo::~AppListInfo() {
 }
 

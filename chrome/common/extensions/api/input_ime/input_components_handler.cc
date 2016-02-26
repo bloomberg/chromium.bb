@@ -29,6 +29,9 @@ InputComponentInfo::InputComponentInfo()
       shortcut_shift(false) {
 }
 
+InputComponentInfo::InputComponentInfo(const InputComponentInfo& other) =
+    default;
+
 InputComponentInfo::~InputComponentInfo() {}
 
 InputComponents::InputComponents() {}

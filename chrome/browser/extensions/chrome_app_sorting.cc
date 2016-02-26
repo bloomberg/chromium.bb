@@ -47,6 +47,8 @@ const char kPrefPageOrdinal[] = "page_ordinal";
 
 ChromeAppSorting::AppOrdinals::AppOrdinals() {}
 
+ChromeAppSorting::AppOrdinals::AppOrdinals(const AppOrdinals& other) = default;
+
 ChromeAppSorting::AppOrdinals::~AppOrdinals() {}
 
 ////////////////////////////////////////////////////////////////////////////////

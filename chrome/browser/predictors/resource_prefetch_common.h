@@ -63,6 +63,7 @@ struct NavigationID {
 struct ResourcePrefetchPredictorConfig {
   // Initializes the config with default values.
   ResourcePrefetchPredictorConfig();
+  ResourcePrefetchPredictorConfig(const ResourcePrefetchPredictorConfig& other);
   ~ResourcePrefetchPredictorConfig();
 
   // The mode the prefetcher is running in. Forms a bit map.

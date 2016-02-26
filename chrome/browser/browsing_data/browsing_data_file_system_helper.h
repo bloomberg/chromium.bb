@@ -44,6 +44,7 @@ class BrowsingDataFileSystemHelper
   // the amount of data (in bytes) for each sandboxed filesystem type.
   struct FileSystemInfo {
     explicit FileSystemInfo(const GURL& origin);
+    FileSystemInfo(const FileSystemInfo& other);
     ~FileSystemInfo();
 
     // The origin for which the information is relevant.

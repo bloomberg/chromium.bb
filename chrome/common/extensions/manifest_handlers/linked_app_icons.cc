@@ -37,6 +37,8 @@ LinkedAppIcons::IconInfo::~IconInfo() {
 LinkedAppIcons::LinkedAppIcons() {
 }
 
+LinkedAppIcons::LinkedAppIcons(const LinkedAppIcons& other) = default;
+
 LinkedAppIcons::~LinkedAppIcons() {
 }
 

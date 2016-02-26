@@ -25,6 +25,8 @@ TabStats::TabStats()
       tab_contents_id(0) {
 }
 
+TabStats::TabStats(const TabStats& other) = default;
+
 TabStats::~TabStats() {
 }
 

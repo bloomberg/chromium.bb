@@ -71,6 +71,7 @@ class CannedBrowsingDataServiceWorkerHelper
   struct PendingServiceWorkerUsageInfo {
     PendingServiceWorkerUsageInfo(const GURL& origin,
                                   const std::vector<GURL>& scopes);
+    PendingServiceWorkerUsageInfo(const PendingServiceWorkerUsageInfo& other);
     ~PendingServiceWorkerUsageInfo();
 
     bool operator<(const PendingServiceWorkerUsageInfo& other) const;

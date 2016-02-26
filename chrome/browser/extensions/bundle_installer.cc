@@ -92,6 +92,8 @@ void BundleInstaller::SetAutoApproveForTesting(bool auto_approve) {
 
 BundleInstaller::Item::Item() : state(STATE_PENDING) {}
 
+BundleInstaller::Item::Item(const Item& other) = default;
+
 BundleInstaller::Item::~Item() {}
 
 base::string16 BundleInstaller::Item::GetNameForDisplay() const {

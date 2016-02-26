@@ -125,6 +125,7 @@ struct ThemeBackgroundInfo {
 
 struct InstantMostVisitedItem {
   InstantMostVisitedItem();
+  InstantMostVisitedItem(const InstantMostVisitedItem& other);
   ~InstantMostVisitedItem();
 
   // The URL of the Most Visited item.

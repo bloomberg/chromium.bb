@@ -53,6 +53,7 @@ struct IPUrlInfo {
             const std::string& method,
             const std::string& referrer,
             const content::ResourceType& resource_type);
+  IPUrlInfo(const IPUrlInfo& other);
   ~IPUrlInfo();
 };
 

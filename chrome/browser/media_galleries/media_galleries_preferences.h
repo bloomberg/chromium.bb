@@ -66,6 +66,7 @@ struct MediaGalleryPrefInfo {
   };
 
   MediaGalleryPrefInfo();
+  MediaGalleryPrefInfo(const MediaGalleryPrefInfo& other);
   ~MediaGalleryPrefInfo();
 
   // The absolute path of the gallery.

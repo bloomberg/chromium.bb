@@ -62,6 +62,7 @@ class MTPDeviceAsyncDelegate {
                      int buf_len,
                      const ReadBytesSuccessCallback& success_callback,
                      const ErrorCallback& error_callback);
+    ReadBytesRequest(const ReadBytesRequest& other);
     ~ReadBytesRequest();
 
     uint32_t file_id;

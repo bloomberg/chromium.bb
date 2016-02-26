@@ -61,6 +61,9 @@ PrinterJobHandler::PrinterInfoFromCloud::PrinterInfoFromCloud()
     : current_xmpp_timeout(0), pending_xmpp_timeout(0) {
 }
 
+PrinterJobHandler::PrinterInfoFromCloud::PrinterInfoFromCloud(
+    const PrinterInfoFromCloud& other) = default;
+
 PrinterJobHandler::PrinterJobHandler(
     const printing::PrinterBasicInfo& printer_info,
     const PrinterInfoFromCloud& printer_info_cloud,

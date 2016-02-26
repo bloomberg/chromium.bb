@@ -83,6 +83,9 @@ void ParseQueryParams(const std::string& query,
 FileIconSource::IconRequestDetails::IconRequestDetails() : scale_factor(1.0f) {
 }
 
+FileIconSource::IconRequestDetails::IconRequestDetails(
+    const IconRequestDetails& other) = default;
+
 FileIconSource::IconRequestDetails::~IconRequestDetails() {
 }
 

@@ -16,6 +16,7 @@ struct ImporterURLRow {
  public:
   ImporterURLRow();
   explicit ImporterURLRow(const GURL& url);
+  ImporterURLRow(const ImporterURLRow& other);
 
   GURL url;
   base::string16 title;

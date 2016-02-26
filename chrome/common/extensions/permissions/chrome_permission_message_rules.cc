@@ -294,6 +294,9 @@ ChromePermissionMessageRule::ChromePermissionMessageRule(
   DCHECK(!required_permissions_.empty());
 }
 
+ChromePermissionMessageRule::ChromePermissionMessageRule(
+    const ChromePermissionMessageRule& other) = default;
+
 ChromePermissionMessageRule::~ChromePermissionMessageRule() {
 }
 

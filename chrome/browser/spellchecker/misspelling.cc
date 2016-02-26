@@ -46,6 +46,8 @@ Misspelling::Misspelling(const base::string16& context,
       hash(hash),
       timestamp(base::Time::Now()) {}
 
+Misspelling::Misspelling(const Misspelling& other) = default;
+
 Misspelling::~Misspelling() {}
 
 scoped_ptr<base::DictionaryValue> SerializeMisspelling(

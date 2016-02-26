@@ -69,6 +69,7 @@ class MediaScanManager : public extensions::ExtensionRegistryObserver {
  private:
   struct ScanObservers {
     ScanObservers();
+    ScanObservers(const ScanObservers& other);
     ~ScanObservers();
     MediaScanManagerObserver* observer;
     std::set<std::string /*extension id*/> scanning_extensions;

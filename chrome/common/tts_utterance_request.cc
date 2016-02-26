@@ -19,5 +19,7 @@ TtsVoice::TtsVoice()
       is_default(false) {
 }
 
+TtsVoice::TtsVoice(const TtsVoice& other) = default;
+
 TtsVoice::~TtsVoice() {
 }

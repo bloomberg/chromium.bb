@@ -137,6 +137,7 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
                    bool file_ownership_passed,
                    const std::set<int>& request_ids,
                    const InstallCallback& callback);
+    FetchedCRXFile(const FetchedCRXFile& other);
     ~FetchedCRXFile();
 
     CRXFileInfo info;
@@ -148,6 +149,7 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
 
   struct InProgressCheck {
     InProgressCheck();
+    InProgressCheck(const InProgressCheck& other);
     ~InProgressCheck();
 
     bool install_immediately;

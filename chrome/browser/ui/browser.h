@@ -164,6 +164,7 @@ class Browser : public TabStripModelObserver,
   struct CreateParams {
     explicit CreateParams(Profile* profile);
     CreateParams(Type type, Profile* profile);
+    CreateParams(const CreateParams& other);
 
     static CreateParams CreateForApp(const std::string& app_name,
                                      bool trusted_source,

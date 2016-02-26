@@ -283,6 +283,7 @@ class SafeBrowsingProtocolManager : public net::URLFetcherDelegate,
   struct FullHashDetails {
     FullHashDetails();
     FullHashDetails(FullHashCallback callback, bool is_download);
+    FullHashDetails(const FullHashDetails& other);
     ~FullHashDetails();
 
     FullHashCallback callback;

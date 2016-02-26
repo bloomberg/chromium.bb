@@ -52,6 +52,7 @@ class FileChangeList {
   typedef std::deque<FileChange> List;
 
   FileChangeList();
+  FileChangeList(const FileChangeList& other);
   ~FileChangeList();
 
   // Updates the list with the |new_change|.

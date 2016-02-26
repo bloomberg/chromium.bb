@@ -27,6 +27,7 @@ bool SyncFileMetadata::operator==(const SyncFileMetadata& that) const {
 }
 
 LocalFileSyncInfo::LocalFileSyncInfo() {}
+LocalFileSyncInfo::LocalFileSyncInfo(const LocalFileSyncInfo& other) = default;
 LocalFileSyncInfo::~LocalFileSyncInfo() {}
 
 }  // namespace sync_file_system

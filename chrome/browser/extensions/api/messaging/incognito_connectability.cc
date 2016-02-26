@@ -218,6 +218,9 @@ void IncognitoConnectability::Query(
 IncognitoConnectability::TabContext::TabContext() : infobar(nullptr) {
 }
 
+IncognitoConnectability::TabContext::TabContext(const TabContext& other) =
+    default;
+
 IncognitoConnectability::TabContext::~TabContext() {
 }
 

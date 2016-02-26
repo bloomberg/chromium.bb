@@ -59,6 +59,7 @@ class AutomationEventRouter : public content::NotificationObserver {
  private:
   struct AutomationListener {
     AutomationListener();
+    AutomationListener(const AutomationListener& other);
     ~AutomationListener();
 
     ExtensionId extension_id;

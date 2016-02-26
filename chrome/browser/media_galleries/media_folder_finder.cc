@@ -171,6 +171,8 @@ void GetDefaultScanRoots(const DefaultScanRootsCallback& callback,
 
 MediaFolderFinder::WorkerReply::WorkerReply() {}
 
+MediaFolderFinder::WorkerReply::WorkerReply(const WorkerReply& other) = default;
+
 MediaFolderFinder::WorkerReply::~WorkerReply() {}
 
 // The Worker is created on the UI thread, but does all its work on a blocking

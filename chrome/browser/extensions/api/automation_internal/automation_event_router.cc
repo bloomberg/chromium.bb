@@ -103,6 +103,9 @@ void AutomationEventRouter::DispatchTreeDestroyedEvent(
 AutomationEventRouter::AutomationListener::AutomationListener() {
 }
 
+AutomationEventRouter::AutomationListener::AutomationListener(
+    const AutomationListener& other) = default;
+
 AutomationEventRouter::AutomationListener::~AutomationListener() {
 }
 

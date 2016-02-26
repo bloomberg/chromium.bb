@@ -116,10 +116,16 @@ ExtensionUpdater::FetchedCRXFile::FetchedCRXFile()
     : file_ownership_passed(true) {
 }
 
+ExtensionUpdater::FetchedCRXFile::FetchedCRXFile(const FetchedCRXFile& other) =
+    default;
+
 ExtensionUpdater::FetchedCRXFile::~FetchedCRXFile() {}
 
 ExtensionUpdater::InProgressCheck::InProgressCheck()
     : install_immediately(false) {}
+
+ExtensionUpdater::InProgressCheck::InProgressCheck(
+    const InProgressCheck& other) = default;
 
 ExtensionUpdater::InProgressCheck::~InProgressCheck() {}
 

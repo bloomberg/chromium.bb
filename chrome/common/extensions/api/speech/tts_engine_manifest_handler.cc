@@ -33,6 +33,8 @@ struct TtsVoices : public Extension::ManifestData {
 
 TtsVoice::TtsVoice() : remote(false) {}
 
+TtsVoice::TtsVoice(const TtsVoice& other) = default;
+
 TtsVoice::~TtsVoice() {}
 
 // static

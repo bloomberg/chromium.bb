@@ -112,6 +112,7 @@ class ChromePluginServiceFilter : public content::PluginServiceFilter,
 
   struct ProcessDetails {
     ProcessDetails();
+    ProcessDetails(const ProcessDetails& other);
     ~ProcessDetails();
 
     std::vector<OverriddenPlugin> overridden_plugins;

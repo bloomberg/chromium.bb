@@ -23,6 +23,9 @@ SnapshotRequestInfo::SnapshotRequestInfo(
       success_callback(success_callback),
       error_callback(error_callback) {}
 
+SnapshotRequestInfo::SnapshotRequestInfo(const SnapshotRequestInfo& other) =
+    default;
+
 SnapshotRequestInfo::~SnapshotRequestInfo() {
 }
 

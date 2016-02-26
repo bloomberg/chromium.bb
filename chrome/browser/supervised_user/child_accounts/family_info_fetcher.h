@@ -55,6 +55,7 @@ class FamilyInfoFetcher : public OAuth2TokenService::Observer,
                  const std::string& email,
                  const std::string& profile_url,
                  const std::string& profile_image_url);
+    FamilyMember(const FamilyMember& other);
     ~FamilyMember();
     std::string obfuscated_gaia_id;
     FamilyMemberRole role;

@@ -23,6 +23,7 @@ struct WebPluginInfo;
 // The default constructor has Plugin Power Saver disabled.
 struct PowerSaverInfo {
   PowerSaverInfo();
+  PowerSaverInfo(const PowerSaverInfo& other);
 
   // Determines the PowerSaverInfo using the peripheral content heuristic.
   static PowerSaverInfo Get(content::RenderFrame* render_frame,

@@ -61,6 +61,8 @@ CommandMapping::CommandMapping(HttpMethod method,
                                const Command& command)
     : method(method), path_pattern(path_pattern), command(command) {}
 
+CommandMapping::CommandMapping(const CommandMapping& other) = default;
+
 CommandMapping::~CommandMapping() {}
 
 HttpHandler::HttpHandler(const std::string& url_base)

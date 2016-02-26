@@ -134,6 +134,8 @@ ExtensionSyncData::ExtensionSyncData(const Extension& extension,
   }
 }
 
+ExtensionSyncData::ExtensionSyncData(const ExtensionSyncData& other) = default;
+
 ExtensionSyncData::~ExtensionSyncData() {}
 
 // static

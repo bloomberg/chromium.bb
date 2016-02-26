@@ -275,6 +275,9 @@ PrerenderLinkManager::LinkPrerender::LinkPrerender(
       is_match_complete_replacement(false),
       has_been_abandoned(false) {}
 
+PrerenderLinkManager::LinkPrerender::LinkPrerender(const LinkPrerender& other) =
+    default;
+
 PrerenderLinkManager::LinkPrerender::~LinkPrerender() {
   DCHECK_EQ(static_cast<PrerenderHandle*>(NULL), handle)
       << "The PrerenderHandle should be destroyed before its Prerender.";

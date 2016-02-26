@@ -18,6 +18,7 @@ namespace media_router {
 // MediaSource.
 struct MediaSinkWithCastModes {
   explicit MediaSinkWithCastModes(const MediaSink& sink);
+  MediaSinkWithCastModes(const MediaSinkWithCastModes& other);
   ~MediaSinkWithCastModes();
 
   MediaSink sink;

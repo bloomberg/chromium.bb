@@ -8,6 +8,8 @@
 
 NotificationBitmapSizes::NotificationBitmapSizes() {
 }
+NotificationBitmapSizes::NotificationBitmapSizes(
+    const NotificationBitmapSizes& other) = default;
 NotificationBitmapSizes::~NotificationBitmapSizes() {
 }
 

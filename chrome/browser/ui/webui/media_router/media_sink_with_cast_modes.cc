@@ -10,6 +10,9 @@ MediaSinkWithCastModes::MediaSinkWithCastModes(const MediaSink& sink)
     : sink(sink) {
 }
 
+MediaSinkWithCastModes::MediaSinkWithCastModes(
+    const MediaSinkWithCastModes& other) = default;
+
 MediaSinkWithCastModes::~MediaSinkWithCastModes() {
 }
 

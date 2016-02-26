@@ -37,6 +37,9 @@ BrowsingDataDatabaseHelper::DatabaseInfo::DatabaseInfo(
       size(size),
       last_modified(last_modified) {}
 
+BrowsingDataDatabaseHelper::DatabaseInfo::DatabaseInfo(
+    const DatabaseInfo& other) = default;
+
 BrowsingDataDatabaseHelper::DatabaseInfo::~DatabaseInfo() {}
 
 BrowsingDataDatabaseHelper::BrowsingDataDatabaseHelper(Profile* profile)
