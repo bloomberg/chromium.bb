@@ -5,7 +5,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <list>
+#include <algorithm>
+#include <deque>
 
 #include "base/big_endian.h"
 #include "base/macros.h"
@@ -20,28 +21,46 @@ namespace media {
 namespace cast {
 namespace {
 
-static const uint8_t kValue = 123;
-static const size_t kSize1 = 101;
-static const size_t kSize2 = 102;
-static const size_t kSize3 = 103;
-static const size_t kSize4 = 104;
-static const size_t kNackSize = 105;
-static const int64_t kStartMillisecond = INT64_C(12345678900000);
-static const uint32_t kVideoSsrc = 0x1234;
-static const uint32_t kAudioSsrc = 0x5678;
-static const uint32_t kVideoFrameRtpTimestamp = 12345;
-static const uint32_t kAudioFrameRtpTimestamp = 23456;
+const uint8_t kValue = 123;
+const size_t kSize1 = 101;
+const size_t kSize2 = 102;
+const size_t kSize3 = 103;
+const size_t kSize4 = 104;
+const size_t kNackSize = 105;
+const int64_t kStartMillisecond = INT64_C(12345678900000);
+const uint32_t kVideoSsrc = 0x1234;
+const uint32_t kAudioSsrc = 0x5678;
+const uint32_t kVideoFrameRtpTimestamp = 12345;
+const uint32_t kAudioFrameRtpTimestamp = 23456;
+
+// RTCP packets don't really have a packet ID.  However, the bytes where
+// TestPacketSender checks for the ID should be set to 31611, so we'll just
+// check that.
+const uint16_t kRtcpPacketIdMagic = UINT16_C(31611);
 
 class TestPacketSender : public PacketSender {
  public:
   TestPacketSender() : bytes_sent_(0) {}
 
   bool SendPacket(PacketRef packet, const base::Closure& cb) final {
-    EXPECT_FALSE(expected_packet_size_.empty());
-    size_t expected_packet_size = expected_packet_size_.front();
-    expected_packet_size_.pop_front();
+    EXPECT_FALSE(expected_packet_sizes_.empty());
+    size_t expected_packet_size = expected_packet_sizes_.front();
+    expected_packet_sizes_.pop_front();
     EXPECT_EQ(expected_packet_size, packet->data.size());
     bytes_sent_ += packet->data.size();
+
+    // Parse for the packet ID and confirm it is the next one we expect.
+    EXPECT_LE(kSize1, packet->data.size());
+    base::BigEndianReader reader(reinterpret_cast<char*>(&packet->data[0]),
+                                 packet->data.size());
+    bool success = reader.Skip(14);
+    uint16_t packet_id = 0xffff;
+    success &= reader.ReadU16(&packet_id);
+    EXPECT_TRUE(success);
+    const uint16_t expected_packet_id = expected_packet_ids_.front();
+    expected_packet_ids_.pop_front();
+    EXPECT_EQ(expected_packet_id, packet_id);
+
     return true;
   }
 
@@ -52,14 +71,20 @@ class TestPacketSender : public PacketSender {
 
   void StopReceiving() final {}
 
-  void AddExpectedSize(int expected_packet_size, int repeat_count) {
-    for (int i = 0; i < repeat_count; ++i) {
-      expected_packet_size_.push_back(expected_packet_size);
+  void AddExpectedSizesAndPacketIds(int packet_size,
+                                    uint16_t first_packet_id,
+                                    int sequence_length) {
+    for (int i = 0; i < sequence_length; ++i) {
+      expected_packet_sizes_.push_back(packet_size);
+      expected_packet_ids_.push_back(first_packet_id++);
     }
   }
 
- public:
-  std::list<int> expected_packet_size_;
+  bool expecting_nothing_else() const { return expected_packet_sizes_.empty(); }
+
+ private:
+  std::deque<int> expected_packet_sizes_;
+  std::deque<uint16_t> expected_packet_ids_;
   int64_t bytes_sent_;
 
   DISALLOW_COPY_AND_ASSIGN(TestPacketSender);
@@ -116,17 +141,29 @@ class PacedSenderTest : public ::testing::Test {
     return packets;
   }
 
+  void SendWithoutBursting(const SendPacketVector& packets) {
+    const size_t kBatchSize = 10;
+    for (size_t i = 0; i < packets.size(); i += kBatchSize) {
+      const SendPacketVector next_batch(
+          packets.begin() + i,
+          packets.begin() + i + std::min(packets.size() - i, kBatchSize));
+      ASSERT_TRUE(paced_sender_->SendPackets(next_batch));
+      testing_clock_.Advance(base::TimeDelta::FromMilliseconds(10));
+      task_runner_->RunTasks();
+    }
+  }
+
   // Use this function to drain the packet list in PacedSender without having
   // to test the pacing implementation details.
   bool RunUntilEmpty(int max_tries) {
     for (int i = 0; i < max_tries; i++) {
       testing_clock_.Advance(base::TimeDelta::FromMilliseconds(10));
       task_runner_->RunTasks();
-      if (mock_transport_.expected_packet_size_.empty())
+      if (mock_transport_.expecting_nothing_else())
         return true;
     }
 
-    return mock_transport_.expected_packet_size_.empty();
+    return mock_transport_.expecting_nothing_else();
   }
 
   std::vector<PacketEvent> packet_events_;
@@ -141,13 +178,14 @@ class PacedSenderTest : public ::testing::Test {
 }  // namespace
 
 TEST_F(PacedSenderTest, PassThroughRtcp) {
-  mock_transport_.AddExpectedSize(kSize1, 2);
   SendPacketVector packets = CreateSendPacketVector(kSize1, 1, true);
 
+  mock_transport_.AddExpectedSizesAndPacketIds(kSize1, UINT16_C(0), 1);
+  mock_transport_.AddExpectedSizesAndPacketIds(kSize1, UINT16_C(0), 1);
   EXPECT_TRUE(paced_sender_->SendPackets(packets));
   EXPECT_TRUE(paced_sender_->ResendPackets(packets, DedupInfo()));
 
-  mock_transport_.AddExpectedSize(kSize2, 1);
+  mock_transport_.AddExpectedSizesAndPacketIds(kSize2, kRtcpPacketIdMagic, 1);
   Packet tmp(kSize2, kValue);
   EXPECT_TRUE(paced_sender_->SendRtcpPacket(
       1,
@@ -161,11 +199,11 @@ TEST_F(PacedSenderTest, BasicPace) {
                                                     false);
   const base::TimeTicks earliest_event_timestamp = testing_clock_.NowTicks();
 
-  mock_transport_.AddExpectedSize(kSize1, 10);
+  mock_transport_.AddExpectedSizesAndPacketIds(kSize1, UINT16_C(0), 10);
   EXPECT_TRUE(paced_sender_->SendPackets(packets));
 
   // Check that we get the next burst.
-  mock_transport_.AddExpectedSize(kSize1, 10);
+  mock_transport_.AddExpectedSizesAndPacketIds(kSize1, UINT16_C(10), 10);
 
   base::TimeDelta timeout = base::TimeDelta::FromMilliseconds(10);
   testing_clock_.Advance(timeout);
@@ -177,7 +215,7 @@ TEST_F(PacedSenderTest, BasicPace) {
   task_runner_->RunTasks();
 
   // Check that we get the next burst.
-  mock_transport_.AddExpectedSize(kSize1, 7);
+  mock_transport_.AddExpectedSizesAndPacketIds(kSize1, UINT16_C(20), 7);
   testing_clock_.Advance(timeout);
   task_runner_->RunTasks();
 
@@ -216,14 +254,14 @@ TEST_F(PacedSenderTest, PaceWithNack) {
       CreateSendPacketVector(kSize2, num_of_packets_in_frame, true);
 
   // Check that the first burst of the frame go out on the wire.
-  mock_transport_.AddExpectedSize(kSize1, 10);
+  mock_transport_.AddExpectedSizesAndPacketIds(kSize1, UINT16_C(0), 10);
   EXPECT_TRUE(paced_sender_->SendPackets(first_frame_packets));
 
   // Add first NACK request.
   EXPECT_TRUE(paced_sender_->ResendPackets(nack_packets, DedupInfo()));
 
   // Check that we get the first NACK burst.
-  mock_transport_.AddExpectedSize(kNackSize, 10);
+  mock_transport_.AddExpectedSizesAndPacketIds(kNackSize, UINT16_C(0), 10);
   base::TimeDelta timeout = base::TimeDelta::FromMilliseconds(10);
   testing_clock_.Advance(timeout);
   task_runner_->RunTasks();
@@ -232,24 +270,25 @@ TEST_F(PacedSenderTest, PaceWithNack) {
   EXPECT_TRUE(paced_sender_->ResendPackets(nack_packets, DedupInfo()));
 
   // Check that we get the next NACK burst.
-  mock_transport_.AddExpectedSize(kNackSize, 10);
+  mock_transport_.AddExpectedSizesAndPacketIds(kNackSize, UINT16_C(10), 2);
+  mock_transport_.AddExpectedSizesAndPacketIds(kNackSize, UINT16_C(0), 8);
   testing_clock_.Advance(timeout);
   task_runner_->RunTasks();
 
   // End of NACK plus two packets from the oldest frame.
   // Note that two of the NACKs have been de-duped.
-  mock_transport_.AddExpectedSize(kNackSize, 2);
-  mock_transport_.AddExpectedSize(kSize1, 2);
+  mock_transport_.AddExpectedSizesAndPacketIds(kNackSize, UINT16_C(8), 2);
+  mock_transport_.AddExpectedSizesAndPacketIds(kSize1, UINT16_C(10), 2);
   testing_clock_.Advance(timeout);
   task_runner_->RunTasks();
 
   // Add second frame.
   // Make sure we don't delay the second frame due to the previous packets.
-  mock_transport_.AddExpectedSize(kSize2, 10);
+  mock_transport_.AddExpectedSizesAndPacketIds(kSize2, UINT16_C(0), 10);
   EXPECT_TRUE(paced_sender_->SendPackets(second_frame_packets));
 
   // Last packets of frame 2.
-  mock_transport_.AddExpectedSize(kSize2, 2);
+  mock_transport_.AddExpectedSizesAndPacketIds(kSize2, UINT16_C(10), 2);
   testing_clock_.Advance(timeout);
   task_runner_->RunTasks();
 
@@ -306,47 +345,47 @@ TEST_F(PacedSenderTest, PaceWith60fps) {
   base::TimeDelta timeout_10ms = base::TimeDelta::FromMilliseconds(10);
 
   // Check that the first burst of the frame go out on the wire.
-  mock_transport_.AddExpectedSize(kSize1, 10);
+  mock_transport_.AddExpectedSizesAndPacketIds(kSize1, UINT16_C(0), 10);
   EXPECT_TRUE(paced_sender_->SendPackets(first_frame_packets));
 
-  mock_transport_.AddExpectedSize(kSize1, 7);
+  mock_transport_.AddExpectedSizesAndPacketIds(kSize1, UINT16_C(10), 7);
   testing_clock_.Advance(timeout_10ms);
   task_runner_->RunTasks();
 
   testing_clock_.Advance(base::TimeDelta::FromMilliseconds(6));
 
   // Add second frame, after 16 ms.
-  mock_transport_.AddExpectedSize(kSize2, 3);
+  mock_transport_.AddExpectedSizesAndPacketIds(kSize2, UINT16_C(0), 3);
   EXPECT_TRUE(paced_sender_->SendPackets(second_frame_packets));
   testing_clock_.Advance(base::TimeDelta::FromMilliseconds(4));
 
-  mock_transport_.AddExpectedSize(kSize2, 10);
+  mock_transport_.AddExpectedSizesAndPacketIds(kSize2, UINT16_C(3), 10);
   testing_clock_.Advance(timeout_10ms);
   task_runner_->RunTasks();
 
-  mock_transport_.AddExpectedSize(kSize2, 4);
+  mock_transport_.AddExpectedSizesAndPacketIds(kSize2, UINT16_C(13), 4);
   testing_clock_.Advance(timeout_10ms);
   task_runner_->RunTasks();
 
   testing_clock_.Advance(base::TimeDelta::FromMilliseconds(3));
 
   // Add third frame, after 33 ms.
-  mock_transport_.AddExpectedSize(kSize3, 6);
+  mock_transport_.AddExpectedSizesAndPacketIds(kSize3, UINT16_C(0), 6);
   EXPECT_TRUE(paced_sender_->SendPackets(third_frame_packets));
 
-  mock_transport_.AddExpectedSize(kSize3, 10);
+  mock_transport_.AddExpectedSizesAndPacketIds(kSize3, UINT16_C(6), 10);
   testing_clock_.Advance(base::TimeDelta::FromMilliseconds(7));
   task_runner_->RunTasks();
 
   // Add fourth frame, after 50 ms.
   EXPECT_TRUE(paced_sender_->SendPackets(fourth_frame_packets));
 
-  mock_transport_.AddExpectedSize(kSize3, 1);
-  mock_transport_.AddExpectedSize(kSize4, 9);
+  mock_transport_.AddExpectedSizesAndPacketIds(kSize3, UINT16_C(16), 1);
+  mock_transport_.AddExpectedSizesAndPacketIds(kSize4, UINT16_C(0), 9);
   testing_clock_.Advance(timeout_10ms);
   task_runner_->RunTasks();
 
-  mock_transport_.AddExpectedSize(kSize4, 8);
+  mock_transport_.AddExpectedSizesAndPacketIds(kSize4, UINT16_C(9), 8);
   testing_clock_.Advance(timeout_10ms);
   task_runner_->RunTasks();
 
@@ -367,11 +406,11 @@ TEST_F(PacedSenderTest, SendPriority) {
   // 3. Audio packet x 1.
   // 4. Video retransmission packet x 10.
   // 5. Video packet x 10.
-  mock_transport_.AddExpectedSize(kSize2, 10);  // Normal video packets.
-  mock_transport_.AddExpectedSize(kSize3, 1);  // RTCP packet.
-  mock_transport_.AddExpectedSize(kSize1, 1);  // Audio packet.
-  mock_transport_.AddExpectedSize(kSize4, 10);  // Resend video packets.
-  mock_transport_.AddExpectedSize(kSize2, 10);  // Normal video packets.
+  mock_transport_.AddExpectedSizesAndPacketIds(kSize2, UINT16_C(0), 10);
+  mock_transport_.AddExpectedSizesAndPacketIds(kSize3, kRtcpPacketIdMagic, 1);
+  mock_transport_.AddExpectedSizesAndPacketIds(kSize1, UINT16_C(0), 1);
+  mock_transport_.AddExpectedSizesAndPacketIds(kSize4, UINT16_C(0), 10);
+  mock_transport_.AddExpectedSizesAndPacketIds(kSize2, UINT16_C(10), 10);
 
   paced_sender_->RegisterPrioritySsrc(kAudioSsrc);
 
@@ -411,11 +450,10 @@ TEST_F(PacedSenderTest, SendPriority) {
 }
 
 TEST_F(PacedSenderTest, GetLastByteSent) {
-  mock_transport_.AddExpectedSize(kSize1, 4);
-
   SendPacketVector packets1 = CreateSendPacketVector(kSize1, 1, true);
   SendPacketVector packets2 = CreateSendPacketVector(kSize1, 1, false);
 
+  mock_transport_.AddExpectedSizesAndPacketIds(kSize1, UINT16_C(0), 1);
   EXPECT_TRUE(paced_sender_->SendPackets(packets1));
   EXPECT_EQ(static_cast<int64_t>(kSize1),
             paced_sender_->GetLastByteSentForPacket(packets1[0].first));
@@ -423,6 +461,7 @@ TEST_F(PacedSenderTest, GetLastByteSent) {
             paced_sender_->GetLastByteSentForSsrc(kAudioSsrc));
   EXPECT_EQ(0, paced_sender_->GetLastByteSentForSsrc(kVideoSsrc));
 
+  mock_transport_.AddExpectedSizesAndPacketIds(kSize1, UINT16_C(0), 1);
   EXPECT_TRUE(paced_sender_->SendPackets(packets2));
   EXPECT_EQ(static_cast<int64_t>(2 * kSize1),
             paced_sender_->GetLastByteSentForPacket(packets2[0].first));
@@ -431,6 +470,7 @@ TEST_F(PacedSenderTest, GetLastByteSent) {
   EXPECT_EQ(static_cast<int64_t>(2 * kSize1),
             paced_sender_->GetLastByteSentForSsrc(kVideoSsrc));
 
+  mock_transport_.AddExpectedSizesAndPacketIds(kSize1, UINT16_C(0), 1);
   EXPECT_TRUE(paced_sender_->ResendPackets(packets1, DedupInfo()));
   EXPECT_EQ(static_cast<int64_t>(3 * kSize1),
             paced_sender_->GetLastByteSentForPacket(packets1[0].first));
@@ -439,6 +479,7 @@ TEST_F(PacedSenderTest, GetLastByteSent) {
   EXPECT_EQ(static_cast<int64_t>(2 * kSize1),
             paced_sender_->GetLastByteSentForSsrc(kVideoSsrc));
 
+  mock_transport_.AddExpectedSizesAndPacketIds(kSize1, UINT16_C(0), 1);
   EXPECT_TRUE(paced_sender_->ResendPackets(packets2, DedupInfo()));
   EXPECT_EQ(static_cast<int64_t>(4 * kSize1),
             paced_sender_->GetLastByteSentForPacket(packets2[0].first));
@@ -449,9 +490,8 @@ TEST_F(PacedSenderTest, GetLastByteSent) {
 }
 
 TEST_F(PacedSenderTest, DedupWithResendInterval) {
-  mock_transport_.AddExpectedSize(kSize1, 2);
-
   SendPacketVector packets = CreateSendPacketVector(kSize1, 1, true);
+  mock_transport_.AddExpectedSizesAndPacketIds(kSize1, UINT16_C(0), 1);
   EXPECT_TRUE(paced_sender_->SendPackets(packets));
   testing_clock_.Advance(base::TimeDelta::FromMilliseconds(10));
 
@@ -463,8 +503,41 @@ TEST_F(PacedSenderTest, DedupWithResendInterval) {
   EXPECT_EQ(static_cast<int64_t>(kSize1), mock_transport_.GetBytesSent());
 
   dedup_info.resend_interval = base::TimeDelta::FromMilliseconds(5);
+  mock_transport_.AddExpectedSizesAndPacketIds(kSize1, UINT16_C(0), 1);
   EXPECT_TRUE(paced_sender_->ResendPackets(packets, dedup_info));
   EXPECT_EQ(static_cast<int64_t>(2 * kSize1), mock_transport_.GetBytesSent());
+}
+
+TEST_F(PacedSenderTest, AllPacketsInSameFrameAreResentFairly) {
+  const int kNumPackets = 400;
+  SendPacketVector packets = CreateSendPacketVector(kSize1, kNumPackets, false);
+
+  // Send a large frame (400 packets, yeah!).  Confirm that the paced sender
+  // sends each packet in the frame exactly once.
+  mock_transport_.AddExpectedSizesAndPacketIds(kSize1, UINT16_C(0),
+                                               kNumPackets);
+  SendWithoutBursting(packets);
+  ASSERT_TRUE(mock_transport_.expecting_nothing_else());
+
+  // Resend packets 2 and 3.  Confirm that the paced sender sends them.  Then,
+  // resend all of the first 10 packets.  The paced sender should send packets
+  // 0, 1, and 4 through 9 first, and then 2 and 3.
+  SendPacketVector couple_of_packets;
+  couple_of_packets.push_back(packets[2]);
+  couple_of_packets.push_back(packets[3]);
+
+  mock_transport_.AddExpectedSizesAndPacketIds(kSize1, UINT16_C(2), 2);
+  SendWithoutBursting(couple_of_packets);
+  ASSERT_TRUE(mock_transport_.expecting_nothing_else());
+
+  SendPacketVector first_ten_packets;
+  for (size_t i = 0; i < 10; ++i)
+    first_ten_packets.push_back(packets[i]);
+  mock_transport_.AddExpectedSizesAndPacketIds(kSize1, UINT16_C(0), 2);
+  mock_transport_.AddExpectedSizesAndPacketIds(kSize1, UINT16_C(4), 6);
+  mock_transport_.AddExpectedSizesAndPacketIds(kSize1, UINT16_C(2), 2);
+  SendWithoutBursting(first_ten_packets);
+  ASSERT_TRUE(mock_transport_.expecting_nothing_else());
 }
 
 }  // namespace cast

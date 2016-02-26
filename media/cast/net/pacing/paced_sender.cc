@@ -41,7 +41,7 @@ PacketKey PacedPacketSender::MakePacketKey(base::TimeTicks capture_time,
 }
 
 PacedSender::PacketSendRecord::PacketSendRecord()
-    : last_byte_sent(0), last_byte_sent_for_audio(0) {}
+    : last_byte_sent(0), last_byte_sent_for_audio(0), cancel_count(0) {}
 
 PacedSender::PacedSender(
     size_t target_burst_size,
@@ -100,6 +100,19 @@ bool PacedSender::SendPackets(const SendPacketVector& packets) {
   }
   const bool high_priority = IsHighPriority(packets.begin()->first);
   for (size_t i = 0; i < packets.size(); i++) {
+    if (VLOG_IS_ON(2)) {
+      PacketSendHistory::const_iterator history_it =
+          send_history_.find(packets[i].first);
+      if (history_it != send_history_.end() &&
+          history_it->second.cancel_count > 0) {
+        VLOG(2) << "PacedSender::SendPackets() called for packet CANCELED "
+                << history_it->second.cancel_count << " times: "
+                << "ssrc=" << packets[i].first.ssrc
+                << ", frame_id=" << packets[i].first.frame_id
+                << ", packet_id=" << packets[i].first.packet_id;
+      }
+    }
+
     DCHECK(IsHighPriority(packets[i].first) == high_priority);
     if (high_priority) {
       priority_packet_list_[packets[i].first] =
@@ -128,6 +141,9 @@ bool PacedSender::ShouldResend(const PacketKey& packet_key,
   // packet Y sent just before X. Reject retransmission of X if ACK for
   // Y has not been received.
   // Only do this for video packets.
+  //
+  // TODO(miu): This sounds wrong.  Audio packets are always transmitted first
+  // (because they are put in |priority_packet_list_|, see PopNextPacket()).
   if (packet_key.ssrc == video_ssrc_) {
     if (dedup_info.last_byte_acked_for_audio &&
         it->second.last_byte_sent_for_audio &&
@@ -150,6 +166,19 @@ bool PacedSender::ResendPackets(const SendPacketVector& packets,
   const bool high_priority = IsHighPriority(packets.begin()->first);
   const base::TimeTicks now = clock_->NowTicks();
   for (size_t i = 0; i < packets.size(); i++) {
+    if (VLOG_IS_ON(2)) {
+      PacketSendHistory::const_iterator history_it =
+          send_history_.find(packets[i].first);
+      if (history_it != send_history_.end() &&
+          history_it->second.cancel_count > 0) {
+        VLOG(2) << "PacedSender::ReendPackets() called for packet CANCELED "
+                << history_it->second.cancel_count << " times: "
+                << "ssrc=" << packets[i].first.ssrc
+                << ", frame_id=" << packets[i].first.frame_id
+                << ", packet_id=" << packets[i].first.packet_id;
+      }
+    }
+
     if (!ShouldResend(packets[i].first, dedup_info, now)) {
       LogPacketEvent(packets[i].second->data, PACKET_RTX_REJECTED);
       continue;
@@ -190,18 +219,67 @@ bool PacedSender::SendRtcpPacket(uint32_t ssrc, PacketRef packet) {
 void PacedSender::CancelSendingPacket(const PacketKey& packet_key) {
   packet_list_.erase(packet_key);
   priority_packet_list_.erase(packet_key);
+
+  if (VLOG_IS_ON(2)) {
+    PacketSendHistory::iterator history_it = send_history_.find(packet_key);
+    if (history_it != send_history_.end())
+      ++history_it->second.cancel_count;
+  }
 }
 
 PacketRef PacedSender::PopNextPacket(PacketType* packet_type,
                                      PacketKey* packet_key) {
+  // Always pop from the priority list first.
   PacketList* list = !priority_packet_list_.empty() ?
       &priority_packet_list_ : &packet_list_;
   DCHECK(!list->empty());
-  PacketList::iterator i = list->begin();
-  *packet_type = i->second.first;
-  *packet_key = i->first;
-  PacketRef ret = i->second.second;
-  list->erase(i);
+
+  // Determine which packet in the frame should be popped by examining the
+  // |send_history_| for prior transmission attempts.  Packets that have never
+  // been transmitted will be popped first.  If all packets have transmitted
+  // before, pop the one that has not been re-attempted for the longest time.
+  PacketList::iterator it = list->begin();
+  PacketKey last_key = it->first;
+  last_key.packet_id = UINT16_C(0xffff);
+  PacketSendHistory::const_iterator history_it =
+      send_history_.lower_bound(it->first);
+  base::TimeTicks earliest_send_time =
+      base::TimeTicks() + base::TimeDelta::Max();
+  PacketList::iterator found_it = it;
+  while (true) {
+    if (history_it == send_history_.end() || it->first < history_it->first) {
+      // There is no send history for this packet, which means it has not been
+      // transmitted yet.
+      found_it = it;
+      break;
+    }
+
+    DCHECK(it->first == history_it->first);
+    if (history_it->second.time < earliest_send_time) {
+      earliest_send_time = history_it->second.time;
+      found_it = it;
+    }
+
+    // Advance to next packet for the current frame, or break if there are no
+    // more.
+    ++it;
+    if (it == list->end() || last_key < it->first)
+      break;
+
+    // Advance to next history entry.  Since there may be "holes" in the packet
+    // list (e.g., due to packets canceled for retransmission), it's possible
+    // |history_it| will have to be advanced more than once even though |it| was
+    // only advanced once.
+    do {
+      ++history_it;
+    } while (history_it != send_history_.end() &&
+             history_it->first < it->first);
+  }
+
+  *packet_type = found_it->second.first;
+  *packet_key = found_it->first;
+  PacketRef ret = found_it->second.second;
+  list->erase(found_it);
   return ret;
 }
 
@@ -280,8 +358,16 @@ void PacedSender::SendStoredPackets() {
     PacketType packet_type;
     PacketKey packet_key;
     PacketRef packet = PopNextPacket(&packet_type, &packet_key);
-    PacketSendRecord send_record;
-    send_record.time = now;
+    PacketSendRecord* const send_record = &(send_history_[packet_key]);
+    send_record->time = now;
+
+    if (send_record->cancel_count > 0 && packet_type != PacketType_RTCP) {
+      VLOG(2) << "PacedSender is sending a packet known to have been CANCELED "
+              << send_record->cancel_count << " times: "
+              << "ssrc=" << packet_key.ssrc
+              << ", frame_id=" << packet_key.frame_id
+              << ", packet_id=" << packet_key.packet_id;
+    }
 
     switch (packet_type) {
       case PacketType_Resend:
@@ -297,11 +383,10 @@ void PacedSender::SendStoredPackets() {
     const bool socket_blocked = !transport_->SendPacket(packet, cb);
 
     // Save the send record.
-    send_record.last_byte_sent = transport_->GetBytesSent();
-    send_record.last_byte_sent_for_audio = GetLastByteSentForSsrc(audio_ssrc_);
-    send_history_[packet_key] = send_record;
-    send_history_buffer_[packet_key] = send_record;
-    last_byte_sent_[packet_key.ssrc] = send_record.last_byte_sent;
+    send_record->last_byte_sent = transport_->GetBytesSent();
+    send_record->last_byte_sent_for_audio = GetLastByteSentForSsrc(audio_ssrc_);
+    send_history_buffer_[packet_key] = *send_record;
+    last_byte_sent_[packet_key.ssrc] = send_record->last_byte_sent;
 
     if (socket_blocked) {
       state_ = State_TransportBlocked;
@@ -311,6 +396,9 @@ void PacedSender::SendStoredPackets() {
   }
 
   // Keep ~0.5 seconds of data (1000 packets).
+  //
+  // TODO(miu): This has no relation to the actual size of the frames, and so
+  // there's no way to reason whether 1000 is enough or too much, or whatever.
   if (send_history_buffer_.size() >=
       max_burst_size_ * kMaxDedupeWindowMs / kPacingIntervalMs) {
     send_history_.swap(send_history_buffer_);
