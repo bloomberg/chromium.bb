@@ -54,6 +54,8 @@ MCSMessage::MCSMessage(uint8_t tag,
   DCHECK_EQ(tag, GetMCSProtoTag(core_->Get()));
 }
 
+MCSMessage::MCSMessage(const MCSMessage& other) = default;
+
 MCSMessage::~MCSMessage() {
 }
 

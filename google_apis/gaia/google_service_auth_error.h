@@ -102,6 +102,7 @@ class GoogleServiceAuthError {
             const GURL& unlock,
             int width,
             int height);
+    Captcha(const Captcha& other);
     ~Captcha();
     // For test only.
     bool operator==(const Captcha &b) const;
@@ -121,6 +122,7 @@ class GoogleServiceAuthError {
                  const std::string& prompt,
                  const std::string& alternate,
                  int length);
+    SecondFactor(const SecondFactor& other);
     ~SecondFactor();
     // For test only.
     bool operator==(const SecondFactor &b) const;
@@ -143,6 +145,8 @@ class GoogleServiceAuthError {
 
   // Construct a GoogleServiceAuthError from a State with no additional data.
   explicit GoogleServiceAuthError(State s);
+
+  GoogleServiceAuthError(const GoogleServiceAuthError& other);
 
   // Construct a GoogleServiceAuthError from a network error.
   // It will be created with CONNECTION_FAILED set.

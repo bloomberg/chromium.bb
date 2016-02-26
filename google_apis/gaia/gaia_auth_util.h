@@ -23,6 +23,7 @@ struct ListedAccount {
   bool valid;
 
   ListedAccount();
+  ListedAccount(const ListedAccount& other);
   ~ListedAccount();
   bool operator==(const ListedAccount& other) const;
 };

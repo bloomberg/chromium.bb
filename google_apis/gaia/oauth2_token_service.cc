@@ -35,6 +35,9 @@ OAuth2TokenService::RequestParameters::RequestParameters(
       scopes(scopes) {
 }
 
+OAuth2TokenService::RequestParameters::RequestParameters(
+    const RequestParameters& other) = default;
+
 OAuth2TokenService::RequestParameters::~RequestParameters() {
 }
 

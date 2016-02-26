@@ -50,6 +50,7 @@ class FakeOAuth2TokenService : public OAuth2TokenService {
  private:
   struct PendingRequest {
     PendingRequest();
+    PendingRequest(const PendingRequest& other);
     ~PendingRequest();
 
     std::string account_id;

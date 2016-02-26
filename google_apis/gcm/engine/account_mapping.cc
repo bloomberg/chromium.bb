@@ -64,6 +64,8 @@ bool StringToStatus(const std::string& status_str,
 AccountMapping::AccountMapping() : status(NEW) {
 }
 
+AccountMapping::AccountMapping(const AccountMapping& other) = default;
+
 AccountMapping::~AccountMapping() {
 }
 

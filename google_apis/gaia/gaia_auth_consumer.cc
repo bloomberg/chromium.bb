@@ -19,6 +19,9 @@ GaiaAuthConsumer::ClientLoginResult::ClientLoginResult(
       data(new_data),
       two_factor(false) {}
 
+GaiaAuthConsumer::ClientLoginResult::ClientLoginResult(
+    const ClientLoginResult& other) = default;
+
 GaiaAuthConsumer::ClientLoginResult::~ClientLoginResult() {}
 
 bool GaiaAuthConsumer::ClientLoginResult::operator==(

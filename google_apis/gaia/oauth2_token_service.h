@@ -298,6 +298,7 @@ class OAuth2TokenService : public base::NonThreadSafe {
     RequestParameters(const std::string& client_id,
                       const std::string& account_id,
                       const ScopeSet& scopes);
+    RequestParameters(const RequestParameters& other);
     ~RequestParameters();
     bool operator<(const RequestParameters& params) const;
 

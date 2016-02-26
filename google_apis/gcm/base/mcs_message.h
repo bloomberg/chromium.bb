@@ -38,6 +38,7 @@ class GCM_EXPORT MCSMessage {
   // |tag| must match |protobuf|'s message type. Takes ownership of |protobuf|.
   MCSMessage(uint8_t tag,
              scoped_ptr<const google::protobuf::MessageLite> protobuf);
+  MCSMessage(const MCSMessage& other);
   ~MCSMessage();
 
   // Returns whether this message is valid or not (whether a protobuf was

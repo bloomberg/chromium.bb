@@ -430,6 +430,8 @@ bool ParentReference::Parse(const base::Value& value) {
 
 FileResource::FileResource() : shared_(false), file_size_(kUnsetFileSize) {}
 
+FileResource::FileResource(const FileResource& other) = default;
+
 FileResource::~FileResource() {}
 
 // static

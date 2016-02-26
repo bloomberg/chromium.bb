@@ -96,6 +96,8 @@ static GoogleServiceAuthError CreateAuthError(const net::URLFetcher* source) {
 }  // namespace
 
 IssueAdviceInfoEntry::IssueAdviceInfoEntry() {}
+IssueAdviceInfoEntry::IssueAdviceInfoEntry(const IssueAdviceInfoEntry& other) =
+    default;
 IssueAdviceInfoEntry::~IssueAdviceInfoEntry() {}
 
 bool IssueAdviceInfoEntry::operator ==(const IssueAdviceInfoEntry& rhs) const {
@@ -116,6 +118,8 @@ OAuth2MintTokenFlow::Parameters::Parameters(
       device_id(device_id),
       mode(mode_arg) {
 }
+
+OAuth2MintTokenFlow::Parameters::Parameters(const Parameters& other) = default;
 
 OAuth2MintTokenFlow::Parameters::~Parameters() {}
 

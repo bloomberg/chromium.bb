@@ -27,6 +27,7 @@ class GaiaAuthConsumer {
                       const std::string& new_lsid,
                       const std::string& new_token,
                       const std::string& new_data);
+    ClientLoginResult(const ClientLoginResult& other);
     ~ClientLoginResult();
 
     bool operator==(const ClientLoginResult &b) const;

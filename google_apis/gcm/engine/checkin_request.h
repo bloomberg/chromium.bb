@@ -46,6 +46,7 @@ class GCM_EXPORT CheckinRequest : public net::URLFetcherDelegate {
                 const std::map<std::string, std::string>& account_tokens,
                 const std::string& settings_digest,
                 const checkin_proto::ChromeBuildProto& chrome_build_proto);
+    RequestInfo(const RequestInfo& other);
     ~RequestInfo();
 
     // Android ID of the device.

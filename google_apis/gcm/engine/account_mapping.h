@@ -27,6 +27,7 @@ struct GCM_EXPORT AccountMapping {
   };
 
   AccountMapping();
+  AccountMapping(const AccountMapping& other);
   ~AccountMapping();
 
   // Serializes account mapping to string without |account_id|, |status| or

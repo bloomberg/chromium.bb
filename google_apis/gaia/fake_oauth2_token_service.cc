@@ -7,6 +7,9 @@
 FakeOAuth2TokenService::PendingRequest::PendingRequest() {
 }
 
+FakeOAuth2TokenService::PendingRequest::PendingRequest(
+    const PendingRequest& other) = default;
+
 FakeOAuth2TokenService::PendingRequest::~PendingRequest() {
 }
 

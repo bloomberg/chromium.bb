@@ -433,6 +433,7 @@ class FileResource {
   };
 
   FileResource();
+  FileResource(const FileResource& other);
   ~FileResource();
 
   // Registers the mapping between JSON field names and the members in this

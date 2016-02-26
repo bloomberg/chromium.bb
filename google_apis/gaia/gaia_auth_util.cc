@@ -47,6 +47,8 @@ std::string CanonicalizeEmailImpl(const std::string& email_address,
 
 ListedAccount::ListedAccount() {}
 
+ListedAccount::ListedAccount(const ListedAccount& other) = default;
+
 ListedAccount::~ListedAccount() {}
 
 bool ListedAccount::operator==(const ListedAccount& other) const {

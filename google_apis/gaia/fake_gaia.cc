@@ -127,6 +127,9 @@ void SetCookies(BasicHttpResponse* http_response,
 FakeGaia::AccessTokenInfo::AccessTokenInfo()
   : expires_in(3600) {}
 
+FakeGaia::AccessTokenInfo::AccessTokenInfo(const AccessTokenInfo& other) =
+    default;
+
 FakeGaia::AccessTokenInfo::~AccessTokenInfo() {}
 
 FakeGaia::MergeSessionParams::MergeSessionParams() {

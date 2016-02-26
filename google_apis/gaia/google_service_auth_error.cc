@@ -23,6 +23,8 @@ GoogleServiceAuthError::Captcha::Captcha(
       image_width(width), image_height(height) {
 }
 
+GoogleServiceAuthError::Captcha::Captcha(const Captcha& other) = default;
+
 GoogleServiceAuthError::Captcha::~Captcha() {
 }
 
@@ -44,6 +46,9 @@ GoogleServiceAuthError::SecondFactor::SecondFactor(
     : token(token), prompt_text(prompt), alternate_text(alternate),
       field_length(length) {
 }
+
+GoogleServiceAuthError::SecondFactor::SecondFactor(const SecondFactor& other) =
+    default;
 
 GoogleServiceAuthError::SecondFactor::~SecondFactor() {
 }
@@ -85,6 +90,9 @@ GoogleServiceAuthError::GoogleServiceAuthError(
       network_error_(0),
       error_message_(error_message) {
 }
+
+GoogleServiceAuthError::GoogleServiceAuthError(
+    const GoogleServiceAuthError& other) = default;
 
 // static
 GoogleServiceAuthError

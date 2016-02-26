@@ -91,6 +91,8 @@ CheckinRequest::RequestInfo::RequestInfo(
       settings_digest(settings_digest),
       chrome_build_proto(chrome_build_proto) {}
 
+CheckinRequest::RequestInfo::RequestInfo(const RequestInfo& other) = default;
+
 CheckinRequest::RequestInfo::~RequestInfo() {}
 
 CheckinRequest::CheckinRequest(
