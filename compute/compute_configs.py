@@ -18,6 +18,7 @@ DEFAULT_IMAGE_NAME = 'chromeos-bot-v5'
 DEFAULT_ZONE = 'us-east1-a'
 DEFAULT_MACHINE_TYPE_16 = 'n1-highmem-16'
 DEFAULT_MACHINE_TYPE_32 = 'n1-highmem-32'
+DEFAULT_MACHINE_TYPE_64 = 'n1-standard-64'
 DEFAULT_SCOPES = ('https://www.googleapis.com/auth/devstorage.full_control',
                   'https://www.googleapis.com/auth/gerritcodereview')
 
@@ -97,4 +98,12 @@ configs['cros-bot-staging'] = dict(
     image=DEFAULT_IMAGE_NAME,
     scopes=DEFAULT_SCOPES,
     network='staging-network',
+)
+
+# Same as cros-bot, but launch in the staging network.
+configs['cros-bot-release'] = dict(
+    machine_type=DEFAULT_MACHINE_TYPE_64,
+    zone='us-east1-c',
+    image=DEFAULT_IMAGE_NAME,
+    scopes=DEFAULT_SCOPES,
 )
