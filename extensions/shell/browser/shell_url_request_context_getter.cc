@@ -25,8 +25,8 @@ ShellURLRequestContextGetter::ShellURLRequestContextGetter(
     InfoMap* extension_info_map)
     : content::ShellURLRequestContextGetter(ignore_certificate_errors,
                                             base_path,
-                                            io_task_runner,
-                                            file_task_runner,
+                                            std::move(io_task_runner),
+                                            std::move(file_task_runner),
                                             protocol_handlers,
                                             std::move(request_interceptors),
                                             net_log),
