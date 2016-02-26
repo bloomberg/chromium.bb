@@ -339,7 +339,8 @@ TEST_F(DisplayTest, DisplayDamaged) {
     EXPECT_TRUE(copy_called);
   }
 
-  // Pass has latency info so should be swapped.
+  // Pass has no damage, so shouldn't be swapped, but latency info should be
+  // saved for next swap.
   {
     pass = RenderPass::Create();
     pass->output_rect = gfx::Rect(0, 0, 100, 100);
@@ -364,7 +365,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
     scheduler.swapped = false;
     display.DrawAndSwap();
     EXPECT_TRUE(scheduler.swapped);
-    EXPECT_EQ(5u, output_surface_ptr_->num_sent_frames());
+    EXPECT_EQ(4u, output_surface_ptr_->num_sent_frames());
   }
 
   // Resize should cause a swap if no frame was swapped at the previous size.
@@ -372,7 +373,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
     scheduler.swapped = false;
     display.Resize(gfx::Size(200, 200));
     EXPECT_FALSE(scheduler.swapped);
-    EXPECT_EQ(5u, output_surface_ptr_->num_sent_frames());
+    EXPECT_EQ(4u, output_surface_ptr_->num_sent_frames());
 
     pass = RenderPass::Create();
     pass->output_rect = gfx::Rect(0, 0, 200, 200);
@@ -396,7 +397,12 @@ TEST_F(DisplayTest, DisplayDamaged) {
     scheduler.swapped = false;
     display.Resize(gfx::Size(100, 100));
     EXPECT_TRUE(scheduler.swapped);
-    EXPECT_EQ(6u, output_surface_ptr_->num_sent_frames());
+    EXPECT_EQ(5u, output_surface_ptr_->num_sent_frames());
+
+    // Latency info from previous frame should be sent now.
+    EXPECT_EQ(
+        1u,
+        output_surface_ptr_->last_sent_frame().metadata.latency_info.size());
   }
 
   {
@@ -416,11 +422,14 @@ TEST_F(DisplayTest, DisplayDamaged) {
     scheduler.swapped = false;
     display.DrawAndSwap();
     EXPECT_TRUE(scheduler.swapped);
-    EXPECT_EQ(7u, output_surface_ptr_->num_sent_frames());
+    EXPECT_EQ(6u, output_surface_ptr_->num_sent_frames());
     EXPECT_EQ(gfx::Size(100, 100),
               software_output_device_->viewport_pixel_size());
     EXPECT_EQ(gfx::Rect(0, 0, 100, 100),
               software_output_device_->damage_rect());
+    EXPECT_EQ(
+        0u,
+        output_surface_ptr_->last_sent_frame().metadata.latency_info.size());
   }
 
   factory_.Destroy(surface_id);

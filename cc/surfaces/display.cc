@@ -238,8 +238,7 @@ bool Display::DrawAndSwap() {
   if (!size_matches)
     TRACE_EVENT_INSTANT0("cc", "Size mismatch.", TRACE_EVENT_SCOPE_THREAD);
 
-  bool should_draw = !frame->metadata.latency_info.empty() ||
-                     have_copy_requests || (have_damage && size_matches);
+  bool should_draw = have_copy_requests || (have_damage && size_matches);
 
   // If the surface is suspended then the resources to be used by the draw are
   // likely destroyed.
