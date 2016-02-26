@@ -41,7 +41,7 @@ class ForegroundPage(page_module.Page):
   def _TakeMemoryMeasurement(self, action_runner, phase):
     action_runner.Wait(1)  # See crbug.com/540022#c17.
     with action_runner.CreateInteraction(phase):
-      action_runner.Wait(DUMP_WAIT_TIME * 8)
+      action_runner.Wait(DUMP_WAIT_TIME)
       action_runner.ForceGarbageCollection()
       action_runner.tab.browser.platform.FlushEntireSystemCache()
       action_runner.Wait(DUMP_WAIT_TIME)
