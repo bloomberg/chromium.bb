@@ -202,11 +202,20 @@ struct PP_NaClFileInfo {
  * @}
  */
 
-/**
- * @addtogroup Interfaces
- * @{
- */
-struct PPB_NaCl_Private {
+namespace nacl {
+
+// This is a set of interfaces used by the code in
+// components/nacl/renderer/plugin/, implemented by
+// components/nacl/renderer/.
+//
+// There is not really a good name for this set of interfaces because the
+// grouping exists only for historical reasons.  It used to be a PPAPI
+// PPB_* interface (PPB_NaCl_Private) because the code in plugin/ used to
+// live outside the Chromium repo and used to be built as a separate
+// DSO/DLL.  Since that's no longer the case, there is now no strong
+// distinction between renderer/ and renderer/plugin/.
+class PPBNaClPrivate {
+ public:
   /* Launches NaCl's sel_ldr process.  Returns PP_EXTERNAL_PLUGIN_OK on success.
    * Returns PP_EXTERNAL_PLUGIN_FAILED on failure.
    * The |nexe_file_info| is currently used only in non-SFI mode. It is the
@@ -217,27 +226,27 @@ struct PPB_NaCl_Private {
    * |translator_channel| and |process_id| are filled out when launching PNaCl
    * translator processes.
    */
-  void (*LaunchSelLdr)(PP_Instance instance,
-                       PP_Bool main_service_runtime,
-                       const char* alleged_url,
-                       const struct PP_NaClFileInfo* nexe_file_info,
-                       PP_Bool uses_nonsfi_mode,
-                       PP_NaClAppProcessType process_type,
-                       scoped_ptr<IPC::SyncChannel>* translator_channel,
-                       base::ProcessId* process_id,
-                       struct PP_CompletionCallback callback);
+  static void LaunchSelLdr(PP_Instance instance,
+                           PP_Bool main_service_runtime,
+                           const char* alleged_url,
+                           const struct PP_NaClFileInfo* nexe_file_info,
+                           PP_Bool uses_nonsfi_mode,
+                           PP_NaClAppProcessType process_type,
+                           scoped_ptr<IPC::SyncChannel>* translator_channel,
+                           base::ProcessId* process_id,
+                           struct PP_CompletionCallback callback);
   /* Returns a read-only (but executable) file descriptor / file info for
    * a url for pnacl translator tools. Returns an invalid handle on failure.
    */
-  void (*GetReadExecPnaclFd)(const char* url,
-                             struct PP_NaClFileInfo* out_file_info);
+  static void GetReadExecPnaclFd(const char* url,
+                                 struct PP_NaClFileInfo* out_file_info);
   /* This creates a temporary file that will be deleted by the time
    * the last handle is closed (or earlier on POSIX systems), and
    * returns a posix handle to that temporary file.
    */
-  PP_FileHandle (*CreateTemporaryFile)(PP_Instance instance);
+  static PP_FileHandle CreateTemporaryFile(PP_Instance instance);
   /* Return the number of processors in the system as reported by the OS */
-  int32_t (*GetNumberOfProcessors)(void);
+  static int32_t GetNumberOfProcessors();
   /* Report to the browser that translation of the pexe for |instance|
    * has finished, or aborted with an error. If |success| is true, the
    * browser may then store the translation in the cache. The renderer
@@ -247,83 +256,84 @@ struct PPB_NaCl_Private {
    * the browser is in incognito mode, no notification will be delivered to
    * the plugin.)
    */
-  void (*ReportTranslationFinished)(PP_Instance instance,
-                                    PP_Bool success,
-                                    int32_t opt_level,
-                                    PP_Bool use_subzero,
-                                    int64_t nexe_size,
-                                    int64_t pexe_size,
-                                    int64_t compile_time_us);
+  static void ReportTranslationFinished(PP_Instance instance,
+                                        PP_Bool success,
+                                        int32_t opt_level,
+                                        PP_Bool use_subzero,
+                                        int64_t nexe_size,
+                                        int64_t pexe_size,
+                                        int64_t compile_time_us);
   /* Dispatch a progress event on the DOM element where the given instance is
    * embedded.
    */
-  void (*DispatchEvent)(PP_Instance instance,
-                        PP_NaClEventType event_type,
-                        const char* resource_url,
-                        PP_Bool length_is_computable,
-                        uint64_t loaded_bytes,
-                        uint64_t total_bytes);
+  static void DispatchEvent(PP_Instance instance,
+                            PP_NaClEventType event_type,
+                            const char* resource_url,
+                            PP_Bool length_is_computable,
+                            uint64_t loaded_bytes,
+                            uint64_t total_bytes);
   /* Report an error that occured while attempting to load a nexe. */
-  void (*ReportLoadError)(PP_Instance instance,
-                          PP_NaClError error,
-                          const char* error_message);
+  static void ReportLoadError(PP_Instance instance,
+                              PP_NaClError error,
+                              const char* error_message);
   /* Performs internal setup when an instance is created. */
-  void (*InstanceCreated)(PP_Instance instance);
+  static void InstanceCreated(PP_Instance instance);
   /* Performs internal cleanup when an instance is destroyed. */
-  void (*InstanceDestroyed)(PP_Instance instance);
+  static void InstanceDestroyed(PP_Instance instance);
   /* Returns the kind of SFI sandbox implemented by NaCl on this
    * platform.
    */
-  const char* (*GetSandboxArch)(void);
+  static const char* GetSandboxArch(void);
   /* Initializes internal state for a NaCl plugin. */
-  void (*InitializePlugin)(PP_Instance instance,
-                           uint32_t argc,
-                           const char* argn[],
-                           const char* argv[]);
+  static void InitializePlugin(PP_Instance instance,
+                               uint32_t argc,
+                               const char* argn[],
+                               const char* argv[]);
   /* Requests the NaCl manifest specified in the plugin arguments. */
-  void (*RequestNaClManifest)(PP_Instance instance,
-                              struct PP_CompletionCallback callback);
-  struct PP_Var (*GetManifestBaseURL)(PP_Instance instance);
+  static void RequestNaClManifest(PP_Instance instance,
+                                  struct PP_CompletionCallback callback);
+  static struct PP_Var GetManifestBaseURL(PP_Instance instance);
   /* Processes the NaCl manifest once it's been retrieved.
    * TODO(teravest): Move the rest of the supporting logic out of the trusted
    * plugin.
    */
-  void (*ProcessNaClManifest)(PP_Instance instance, const char* program_url);
-  PP_Bool (*GetManifestProgramURL)(PP_Instance instance,
-                                   struct PP_Var* full_url,
-                                   struct PP_PNaClOptions* pnacl_options,
-                                   PP_Bool* uses_nonsfi_mode);
+  static void ProcessNaClManifest(PP_Instance instance,
+                                  const char* program_url);
+  static PP_Bool GetManifestProgramURL(PP_Instance instance,
+                                       struct PP_Var* full_url,
+                                       struct PP_PNaClOptions* pnacl_options,
+                                       PP_Bool* uses_nonsfi_mode);
   /* Returns the filenames for the llc and ld tools. */
-  PP_Bool (*GetPnaclResourceInfo)(PP_Instance instance,
-                                  struct PP_Var* llc_tool_name,
-                                  struct PP_Var* ld_tool_name,
-                                  struct PP_Var* subzero_tool_name);
+  static PP_Bool GetPnaclResourceInfo(PP_Instance instance,
+                                      struct PP_Var* llc_tool_name,
+                                      struct PP_Var* ld_tool_name,
+                                      struct PP_Var* subzero_tool_name);
   /* PP_Var string of attributes describing the CPU features supported
    * by the current architecture. The string is a comma-delimited list
    * of attributes supported by LLVM in its -mattr= option:
    *   http://llvm.org/docs/CommandGuide/llc.html#cmdoption-mattr */
-  struct PP_Var (*GetCpuFeatureAttrs)(void);
+  static struct PP_Var GetCpuFeatureAttrs(void);
   /* Downloads the .nexe file at the given URL to a file, and sets |file_info|
    * to information for a handle to a file containing its contents.
    * If metadata for identity-based validation caching is available
    * then it sets token information in |file_info| (otherwise left untouched).
    */
-  void (*DownloadNexe)(PP_Instance instance,
-                       const char* url,
-                       struct PP_NaClFileInfo* file_info,
-                       struct PP_CompletionCallback callback);
+  static void DownloadNexe(PP_Instance instance,
+                           const char* url,
+                           struct PP_NaClFileInfo* file_info,
+                           struct PP_CompletionCallback callback);
   /* Logs time taken by an operation to UMA histograms.
    * This function is safe to call on any thread.
    */
-  void (*LogTranslateTime)(const char* histogram_name, int64_t time_us);
+  static void LogTranslateTime(const char* histogram_name, int64_t time_us);
   /* Logs amount of pexe bytes compiled when download is complete. */
-  void (*LogBytesCompiledVsDownloaded)(PP_Bool use_subzero,
-                                       int64_t pexe_bytes_compiled,
-                                       int64_t pexe_bytes_downloaded);
+  static void LogBytesCompiledVsDownloaded(PP_Bool use_subzero,
+                                           int64_t pexe_bytes_compiled,
+                                           int64_t pexe_bytes_downloaded);
   /* Sets the start time for PNaCl downloading and translation to the current
    * time.
    */
-  void (*SetPNaClStartTime)(PP_Instance instance);
+  static void SetPNaClStartTime(PP_Instance instance);
   /* Downloads and streams a pexe file for PNaCl translation.
    * Fetches the content at |pexe_url| for the given instance and opt_level.
    * If a translated cached nexe is already available,
@@ -332,15 +342,14 @@ struct PPB_NaCl_Private {
    * as they are received. |DidFinishStream| is called after all
    * data has been received and dispatched to |DidStreamData|.
    */
-  void (*StreamPexe)(PP_Instance instance,
-                     const char* pexe_url,
-                     int32_t opt_level,
-                     PP_Bool use_subzero,
-                     const struct PPP_PexeStreamHandler_1_0* stream_handler,
-                     void* stream_handler_user_data);
+  static void StreamPexe(PP_Instance instance,
+                         const char* pexe_url,
+                         int32_t opt_level,
+                         PP_Bool use_subzero,
+                         const struct PPP_PexeStreamHandler_1_0* stream_handler,
+                         void* stream_handler_user_data);
 };
-/**
- * @}
- */
+
+}  // namespace nacl
 
 #endif  /* COMPONENTS_NACL_RENDERER_PPB_NACL_PRIVATE_H_ */

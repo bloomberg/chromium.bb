@@ -13,7 +13,6 @@
 #include "base/time/time.h"
 #include "components/nacl/renderer/plugin/plugin.h"
 #include "components/nacl/renderer/plugin/plugin_error.h"
-#include "components/nacl/renderer/plugin/utility.h"
 #include "content/public/common/sandbox_init.h"
 #include "ppapi/c/ppb_file_io.h"
 #include "ppapi/cpp/var.h"
@@ -291,9 +290,9 @@ void PnaclTranslateThread::DoCompile() {
   }
   compile_time_ =
     (base::TimeTicks::Now() - do_compile_start_time).InMicroseconds();
-  GetNaClInterface()->LogTranslateTime("NaCl.Perf.PNaClLoadTime.CompileTime",
-                                       compile_time_);
-  GetNaClInterface()->LogTranslateTime(
+  nacl::PPBNaClPrivate::LogTranslateTime("NaCl.Perf.PNaClLoadTime.CompileTime",
+                                         compile_time_);
+  nacl::PPBNaClPrivate::LogTranslateTime(
       pnacl_options_->use_subzero
           ? "NaCl.Perf.PNaClLoadTime.CompileTime.Subzero"
           : "NaCl.Perf.PNaClLoadTime.CompileTime.LLC",
@@ -358,7 +357,7 @@ void PnaclTranslateThread::DoLink() {
     return;
   }
 
-  GetNaClInterface()->LogTranslateTime(
+  nacl::PPBNaClPrivate::LogTranslateTime(
       "NaCl.Perf.PNaClLoadTime.LinkTime",
       (base::TimeTicks::Now() - link_start_time).InMicroseconds());
 

@@ -27,7 +27,6 @@ source_set("renderer") {
     "pnacl_translation_resource_host.cc",
     "pnacl_translation_resource_host.h",
     "ppb_nacl_private_impl.cc",
-    "ppb_nacl_private_impl.h",
     "progress_event.cc",
     "progress_event.h",
     "trusted_plugin_channel.cc",
