@@ -88,7 +88,7 @@ class ParserTest : public testing::Test {
                             int track_number, bool is_key, int frame_count) {
     ASSERT_TRUE(block != NULL);
     EXPECT_EQ(track_number, block->GetTrackNumber());
-    EXPECT_EQ(timestamp, block->GetTime(cluster));
+    EXPECT_EQ(static_cast<long long>(timestamp), block->GetTime(cluster));
     EXPECT_EQ(is_key, block->IsKey());
     EXPECT_EQ(frame_count, block->GetFrameCount());
     const Block::Frame& frame = block->GetFrame(0);
@@ -103,11 +103,11 @@ class ParserTest : public testing::Test {
                                std::uint64_t timestamp, int track_number,
                                std::uint64_t pos) {
     ASSERT_TRUE(cue_point != NULL);
-    EXPECT_EQ(timestamp, cue_point->GetTime(segment_));
+    EXPECT_EQ(static_cast<long long>(timestamp), cue_point->GetTime(segment_));
     const CuePoint::TrackPosition* const track_position =
         cue_point->Find(track);
     EXPECT_EQ(track_number, track_position->m_track);
-    EXPECT_EQ(pos, track_position->m_pos);
+    EXPECT_EQ(static_cast<long long>(pos), track_position->m_pos);
   }
 
   bool ValidateCues() {
@@ -197,7 +197,8 @@ TEST_F(ParserTest, SegmentInfo) {
 TEST_F(ParserTest, TrackEntries) {
   ASSERT_TRUE(CreateAndLoadSegment("tracks.webm"));
   const Tracks* const tracks = segment_->GetTracks();
-  EXPECT_EQ(2, tracks->GetTracksCount());
+  const unsigned int kTracksCount = 2;
+  EXPECT_EQ(kTracksCount, tracks->GetTracksCount());
   for (int i = 0; i < 2; ++i) {
     const Track* const track = tracks->GetTrackByIndex(i);
     ASSERT_TRUE(track != NULL);
@@ -205,11 +206,12 @@ TEST_F(ParserTest, TrackEntries) {
     if (track->GetType() == Track::kVideo) {
       const VideoTrack* const video_track =
           dynamic_cast<const VideoTrack*>(track);
-      EXPECT_EQ(kWidth, video_track->GetWidth());
-      EXPECT_EQ(kHeight, video_track->GetHeight());
+      EXPECT_EQ(kWidth, static_cast<int>(video_track->GetWidth()));
+      EXPECT_EQ(kHeight, static_cast<int>(video_track->GetHeight()));
       EXPECT_STREQ(kVP8CodecId, video_track->GetCodecId());
       EXPECT_DOUBLE_EQ(kVideoFrameRate, video_track->GetFrameRate());
-      EXPECT_EQ(1, video_track->GetUid());
+      const unsigned int kTrackUid = 1;
+      EXPECT_EQ(kTrackUid, video_track->GetUid());
     } else if (track->GetType() == Track::kAudio) {
       const AudioTrack* const audio_track =
           dynamic_cast<const AudioTrack*>(track);
@@ -217,14 +219,16 @@ TEST_F(ParserTest, TrackEntries) {
       EXPECT_EQ(kChannels, audio_track->GetChannels());
       EXPECT_EQ(kBitDepth, audio_track->GetBitDepth());
       EXPECT_STREQ(kVorbisCodecId, audio_track->GetCodecId());
-      EXPECT_EQ(2, audio_track->GetUid());
+      const unsigned int kTrackUid = 2;
+      EXPECT_EQ(kTrackUid, audio_track->GetUid());
     }
   }
 }
 
 TEST_F(ParserTest, SimpleBlock) {
   ASSERT_TRUE(CreateAndLoadSegment("simple_block.webm"));
-  EXPECT_EQ(1, segment_->GetTracks()->GetTracksCount());
+  const unsigned int kTracksCount = 1;
+  EXPECT_EQ(kTracksCount, segment_->GetTracks()->GetTracksCount());
 
   // Get the cluster
   const Cluster* cluster = segment_->GetFirst();
@@ -255,7 +259,8 @@ TEST_F(ParserTest, SimpleBlock) {
 
 TEST_F(ParserTest, MultipleClusters) {
   ASSERT_TRUE(CreateAndLoadSegment("force_new_cluster.webm"));
-  EXPECT_EQ(1, segment_->GetTracks()->GetTracksCount());
+  const unsigned int kTracksCount = 1;
+  EXPECT_EQ(kTracksCount, segment_->GetTracks()->GetTracksCount());
 
   // Get the first cluster
   const Cluster* cluster = segment_->GetFirst();
@@ -314,7 +319,8 @@ TEST_F(ParserTest, MultipleClusters) {
 
 TEST_F(ParserTest, BlockGroup) {
   ASSERT_TRUE(CreateAndLoadSegment("metadata_block.webm"));
-  EXPECT_EQ(1, segment_->GetTracks()->GetTracksCount());
+  const unsigned int kTracksCount = 1;
+  EXPECT_EQ(kTracksCount, segment_->GetTracks()->GetTracksCount());
 
   // Get the cluster
   const Cluster* cluster = segment_->GetFirst();
@@ -351,7 +357,8 @@ TEST_F(ParserTest, BlockGroup) {
 
 TEST_F(ParserTest, Cues) {
   ASSERT_TRUE(CreateAndLoadSegment("output_cues.webm"));
-  EXPECT_EQ(1, segment_->GetTracks()->GetTracksCount());
+  const unsigned int kTracksCount = 1;
+  EXPECT_EQ(kTracksCount, segment_->GetTracks()->GetTracksCount());
 
   const Track* const track = segment_->GetTracks()->GetTrackByIndex(0);
   const Cues* const cues = segment_->GetCues();
@@ -380,7 +387,8 @@ TEST_F(ParserTest, Cues) {
 
 TEST_F(ParserTest, CuesBeforeClusters) {
   ASSERT_TRUE(CreateAndLoadSegment("cues_before_clusters.webm"));
-  EXPECT_EQ(1, segment_->GetTracks()->GetTracksCount());
+  const unsigned int kTracksCount = 1;
+  EXPECT_EQ(kTracksCount, segment_->GetTracks()->GetTracksCount());
 
   const Track* const track = segment_->GetTracks()->GetTrackByIndex(0);
   const Cues* const cues = segment_->GetCues();
@@ -405,7 +413,8 @@ TEST_F(ParserTest, CuesBeforeClusters) {
 
 TEST_F(ParserTest, CuesTrackNumber) {
   ASSERT_TRUE(CreateAndLoadSegment("set_cues_track_number.webm"));
-  EXPECT_EQ(1, segment_->GetTracks()->GetTracksCount());
+  const unsigned int kTracksCount = 1;
+  EXPECT_EQ(kTracksCount, segment_->GetTracks()->GetTracksCount());
 
   const Track* const track = segment_->GetTracks()->GetTrackByIndex(0);
   const Cues* const cues = segment_->GetCues();
@@ -430,12 +439,13 @@ TEST_F(ParserTest, CuesTrackNumber) {
 
 TEST_F(ParserTest, Opus) {
   ASSERT_TRUE(CreateAndLoadSegment("bbb_480p_vp9_opus_1second.webm", 4));
-  EXPECT_EQ(2, segment_->GetTracks()->GetTracksCount());
+  const unsigned int kTracksCount = 2;
+  EXPECT_EQ(kTracksCount, segment_->GetTracks()->GetTracksCount());
 
   // --------------------------------------------------------------------------
   // Track Header validation.
   const Tracks* const tracks = segment_->GetTracks();
-  EXPECT_EQ(2, tracks->GetTracksCount());
+  EXPECT_EQ(kTracksCount, tracks->GetTracksCount());
   for (int i = 0; i < 2; ++i) {
     const Track* const track = tracks->GetTrackByIndex(i);
     ASSERT_TRUE(track != NULL);
@@ -448,18 +458,23 @@ TEST_F(ParserTest, Opus) {
     if (track->GetType() == Track::kVideo) {
       const VideoTrack* const video_track =
           dynamic_cast<const VideoTrack*>(track);
-      EXPECT_EQ(854, video_track->GetWidth());
-      EXPECT_EQ(480, video_track->GetHeight());
+      EXPECT_EQ(854, static_cast<int>(video_track->GetWidth()));
+      EXPECT_EQ(480, static_cast<int>(video_track->GetHeight()));
       EXPECT_STREQ(kVP9CodecId, video_track->GetCodecId());
       EXPECT_DOUBLE_EQ(0., video_track->GetFrameRate());
-      EXPECT_EQ(41666666, video_track->GetDefaultDuration());  // 24.000
-      EXPECT_EQ(kVideoTrackNumber, video_track->GetUid());
-      EXPECT_EQ(0, video_track->GetCodecDelay());
-      EXPECT_EQ(0, video_track->GetSeekPreRoll());
+      EXPECT_EQ(41666666,
+                static_cast<int>(video_track->GetDefaultDuration()));  // 24.000
+      const unsigned int kVideoUid = kVideoTrackNumber;
+      EXPECT_EQ(kVideoUid, video_track->GetUid());
+      const unsigned int kCodecDelay = 0;
+      EXPECT_EQ(kCodecDelay, video_track->GetCodecDelay());
+      const unsigned int kSeekPreRoll = 0;
+      EXPECT_EQ(kSeekPreRoll, video_track->GetSeekPreRoll());
 
       size_t video_codec_private_size;
       EXPECT_EQ(NULL, video_track->GetCodecPrivate(video_codec_private_size));
-      EXPECT_EQ(0, video_codec_private_size);
+      const unsigned int kPrivateSize = 0;
+      EXPECT_EQ(kPrivateSize, video_codec_private_size);
     } else if (track->GetType() == Track::kAudio) {
       const AudioTrack* const audio_track =
           dynamic_cast<const AudioTrack*>(track);
@@ -467,8 +482,9 @@ TEST_F(ParserTest, Opus) {
       EXPECT_EQ(6, audio_track->GetChannels());
       EXPECT_EQ(32, audio_track->GetBitDepth());
       EXPECT_STREQ(kOpusCodecId, audio_track->GetCodecId());
-      EXPECT_EQ(kAudioTrackNumber, audio_track->GetUid());
-      EXPECT_EQ(0, audio_track->GetDefaultDuration());
+      EXPECT_EQ(kAudioTrackNumber, static_cast<int>(audio_track->GetUid()));
+      const unsigned int kDefaultDuration = 0;
+      EXPECT_EQ(kDefaultDuration, audio_track->GetDefaultDuration());
       EXPECT_EQ(kOpusCodecDelay, audio_track->GetCodecDelay());
       EXPECT_EQ(kOpusSeekPreroll, audio_track->GetSeekPreRoll());
 
@@ -504,7 +520,9 @@ TEST_F(ParserTest, Opus) {
       const Track* const track = tracks->GetTrackByNumber(track_number);
       ASSERT_TRUE(track != NULL);
       EXPECT_EQ(track->GetNumber(), block->GetTrackNumber());
-      EXPECT_EQ(0, track->GetContentEncodingCount());  // no encryption
+      const unsigned int kContentEncodingCount = 0;
+      EXPECT_EQ(kContentEncodingCount,
+                track->GetContentEncodingCount());  // no encryption
 
       const std::int64_t track_type = track->GetType();
       EXPECT_TRUE(track_type == Track::kVideo || track_type == Track::kAudio);
@@ -542,12 +560,13 @@ TEST_F(ParserTest, DiscardPadding) {
   // Test an artificial file with some extreme DiscardPadding values.
   const std::string file = "discard_padding.webm";
   ASSERT_TRUE(CreateAndLoadSegment(file, 4));
-  EXPECT_EQ(1, segment_->GetTracks()->GetTracksCount());
+  const unsigned int kTracksCount = 1;
+  EXPECT_EQ(kTracksCount, segment_->GetTracks()->GetTracksCount());
 
   // --------------------------------------------------------------------------
   // Track Header validation.
   const Tracks* const tracks = segment_->GetTracks();
-  EXPECT_EQ(1, tracks->GetTracksCount());
+  EXPECT_EQ(kTracksCount, tracks->GetTracksCount());
   const Track* const track = tracks->GetTrackByIndex(0);
   ASSERT_TRUE(track != NULL);
 
@@ -562,21 +581,26 @@ TEST_F(ParserTest, DiscardPadding) {
   EXPECT_EQ(2, audio_track->GetChannels());
   EXPECT_EQ(2, audio_track->GetBitDepth());
   EXPECT_STREQ(kOpusCodecId, audio_track->GetCodecId());
-  EXPECT_EQ(kAudioTrackNumber, audio_track->GetUid());
-  EXPECT_EQ(0, audio_track->GetDefaultDuration());
-  EXPECT_EQ(0, audio_track->GetCodecDelay());
-  EXPECT_EQ(0, audio_track->GetSeekPreRoll());
+  EXPECT_EQ(kAudioTrackNumber, static_cast<int>(audio_track->GetUid()));
+  const unsigned int kDefaultDuration = 0;
+  EXPECT_EQ(kDefaultDuration, audio_track->GetDefaultDuration());
+  const unsigned int kCodecDelay = 0;
+  EXPECT_EQ(kCodecDelay, audio_track->GetCodecDelay());
+  const unsigned int kSeekPreRoll = 0;
+  EXPECT_EQ(kSeekPreRoll, audio_track->GetSeekPreRoll());
 
   size_t audio_codec_private_size;
   EXPECT_EQ(NULL, audio_track->GetCodecPrivate(audio_codec_private_size));
-  EXPECT_EQ(0, audio_codec_private_size);
+  const unsigned int kPrivateSize = 0;
+  EXPECT_EQ(kPrivateSize, audio_codec_private_size);
 
   // --------------------------------------------------------------------------
   // Parse the file to do block-level validation.
   const Cluster* cluster = segment_->GetFirst();
   ASSERT_TRUE(cluster != NULL);
   EXPECT_FALSE(cluster->EOS());
-  EXPECT_EQ(1, segment_->GetCount());
+  const unsigned int kSegmentCount = 1;
+  EXPECT_EQ(kSegmentCount, segment_->GetCount());
 
   // Get the first block
   const BlockEntry* block_entry;
@@ -597,7 +621,9 @@ TEST_F(ParserTest, DiscardPadding) {
     const Track* const track = tracks->GetTrackByNumber(track_number);
     ASSERT_TRUE(track != NULL);
     EXPECT_EQ(track->GetNumber(), block->GetTrackNumber());
-    EXPECT_EQ(0, track->GetContentEncodingCount());  // no encryption
+    const unsigned int kContentEncodingCount = 0;
+    EXPECT_EQ(kContentEncodingCount,
+              track->GetContentEncodingCount());  // no encryption
 
     const std::int64_t track_type = track->GetType();
     EXPECT_EQ(Track::kAudio, track_type);
@@ -605,7 +631,7 @@ TEST_F(ParserTest, DiscardPadding) {
 
     // All blocks have DiscardPadding.
     EXPECT_EQ(BlockEntry::kBlockGroup, block_entry->GetKind());
-    ASSERT_LT(index, discard_padding.size());
+    ASSERT_LT(index, static_cast<int>(discard_padding.size()));
     EXPECT_EQ(discard_padding[index], block->GetDiscardPadding());
     ++index;
 
@@ -624,7 +650,8 @@ TEST_F(ParserTest, DiscardPadding) {
 
 TEST_F(ParserTest, StereoModeParsedCorrectly) {
   ASSERT_TRUE(CreateAndLoadSegment("test_stereo_left_right.webm"));
-  EXPECT_EQ(1, segment_->GetTracks()->GetTracksCount());
+  const unsigned int kTracksCount = 1;
+  EXPECT_EQ(kTracksCount, segment_->GetTracks()->GetTracksCount());
 
   const VideoTrack* const video_track = dynamic_cast<const VideoTrack*>(
       segment_->GetTracks()->GetTrackByIndex(0));
