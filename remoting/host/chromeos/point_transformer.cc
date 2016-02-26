@@ -13,6 +13,8 @@ namespace remoting {
 PointTransformer::PointTransformer() {
   root_window_ = ash::Shell::GetPrimaryRootWindow();
   root_window_->AddObserver(this);
+  // Set the initial display rotation.
+  OnWindowTransformed(root_window_);
 }
 
 PointTransformer::~PointTransformer() {
@@ -25,15 +27,16 @@ void PointTransformer::OnWindowTransformed(aura::Window* window) {
   ui::Layer* layer = root_window_->layer();
   float scale = ui::GetDeviceScaleFactor(layer);
 
-  // |layer->transform()| returns a transform comprising a rotation and a
-  // translation, but in DIPs, so we need to switch device pixels to
-  // DIPs, apply it, then switch from DIPs back to device pixels.
-  gfx::Transform rotation = layer->transform();
+  // Use GetTargetTransform() instead of transform() as the layer may be
+  // animating. GetTargetTransform() returns a transform comprising a rotation
+  // and a translation, but in DIPs, so we need to switch device pixels to DIPs,
+  // apply it, then switch from DIPs back to device pixels.
+  gfx::Transform rotation = layer->GetTargetTransform();
   gfx::Transform inverse_rotation;
   gfx::Transform to_device_pixels;
   gfx::Transform to_dip;
 
-  CHECK(!rotation.GetInverse(&inverse_rotation))
+  CHECK(rotation.GetInverse(&inverse_rotation))
       << "Cannot inverse the root transform." << rotation.ToString();
 
   to_device_pixels.Scale(scale, scale);
