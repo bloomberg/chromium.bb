@@ -358,6 +358,8 @@ def trigger_try_jobs(auth_config, changelist, options, masters, category):
       body=json.dumps(batch_req_body),
       headers={'Content-Type': 'application/json'}
   )
+  print_text.append('To see results here, run:        git cl try-results')
+  print_text.append('To see results in browser, run:  git cl web')
   print '\n'.join(print_text)
 
 
