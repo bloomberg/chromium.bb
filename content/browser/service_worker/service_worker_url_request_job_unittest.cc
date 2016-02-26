@@ -434,7 +434,7 @@ class ProviderDeleteHelper : public EmbeddedWorkerTestHelper {
         ServiceWorkerResponse(
             GURL(), 200, "OK", blink::WebServiceWorkerResponseTypeDefault,
             ServiceWorkerHeaderMap(), std::string(), 0, GURL(),
-            blink::WebServiceWorkerResponseErrorUnknown)));
+            blink::WebServiceWorkerResponseErrorUnknown, base::Time())));
   }
 
  private:
@@ -506,7 +506,7 @@ class BlobResponder : public EmbeddedWorkerTestHelper {
         ServiceWorkerResponse(
             GURL(), 200, "OK", blink::WebServiceWorkerResponseTypeDefault,
             ServiceWorkerHeaderMap(), blob_uuid_, blob_size_, GURL(),
-            blink::WebServiceWorkerResponseErrorUnknown)));
+            blink::WebServiceWorkerResponseErrorUnknown, base::Time())));
   }
 
   std::string blob_uuid_;
@@ -575,10 +575,10 @@ class StreamResponder : public EmbeddedWorkerTestHelper {
     SimulateSend(new ServiceWorkerHostMsg_FetchEventFinished(
         embedded_worker_id, request_id,
         SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE,
-        ServiceWorkerResponse(GURL(), 200, "OK",
-                              blink::WebServiceWorkerResponseTypeDefault,
-                              ServiceWorkerHeaderMap(), "", 0, stream_url_,
-                              blink::WebServiceWorkerResponseErrorUnknown)));
+        ServiceWorkerResponse(
+            GURL(), 200, "OK", blink::WebServiceWorkerResponseTypeDefault,
+            ServiceWorkerHeaderMap(), "", 0, stream_url_,
+            blink::WebServiceWorkerResponseErrorUnknown, base::Time())));
   }
 
   const GURL stream_url_;

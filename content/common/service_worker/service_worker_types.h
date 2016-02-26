@@ -11,6 +11,7 @@
 #include <string>
 
 #include "base/strings/string_util.h"
+#include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/request_context_frame_type.h"
@@ -160,7 +161,8 @@ struct CONTENT_EXPORT ServiceWorkerResponse {
                         const std::string& blob_uuid,
                         uint64_t blob_size,
                         const GURL& stream_url,
-                        blink::WebServiceWorkerResponseError error);
+                        blink::WebServiceWorkerResponseError error,
+                        base::Time response_time);
   ServiceWorkerResponse(const ServiceWorkerResponse& other);
   ~ServiceWorkerResponse();
 
@@ -173,6 +175,7 @@ struct CONTENT_EXPORT ServiceWorkerResponse {
   uint64_t blob_size;
   GURL stream_url;
   blink::WebServiceWorkerResponseError error;
+  base::Time response_time;
 };
 
 // Represents initialization info for a WebServiceWorker object.
