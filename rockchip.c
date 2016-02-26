@@ -14,8 +14,9 @@
 #include "gbm_priv.h"
 #include "helpers.h"
 
-int gbm_rockchip_bo_create(struct gbm_bo *bo, uint32_t width, uint32_t height,
-			   uint32_t format, uint32_t flags)
+static int gbm_rockchip_bo_create(struct gbm_bo *bo,
+				  uint32_t width, uint32_t height,
+				  uint32_t format, uint32_t flags)
 {
 	size_t size;
 	struct drm_rockchip_gem_create gem_create;
@@ -41,7 +42,7 @@ int gbm_rockchip_bo_create(struct gbm_bo *bo, uint32_t width, uint32_t height,
 	return 0;
 }
 
-struct gbm_driver gbm_driver_rockchip =
+const struct gbm_driver gbm_driver_rockchip =
 {
 	.name = "rockchip",
 	.bo_create = gbm_rockchip_bo_create,

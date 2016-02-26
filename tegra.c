@@ -148,7 +148,7 @@ static int gbm_tegra_bo_create(struct gbm_bo *bo, uint32_t width,
 	return 0;
 }
 
-struct gbm_driver gbm_driver_tegra =
+const struct gbm_driver gbm_driver_tegra =
 {
 	.name = "tegra",
 	.bo_create = gbm_tegra_bo_create,

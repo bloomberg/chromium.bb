@@ -7,7 +7,7 @@
 #include "gbm_priv.h"
 #include "helpers.h"
 
-struct gbm_driver gbm_driver_gma500 =
+const struct gbm_driver gbm_driver_gma500 =
 {
 	.name = "gma500",
 	.bo_create = gbm_dumb_bo_create,

@@ -9,7 +9,7 @@
 #include "gbm_priv.h"
 #include "helpers.h"
 
-struct gbm_driver gbm_driver_marvell =
+const struct gbm_driver gbm_driver_marvell =
 {
 	.name = "marvell",
 	.bo_create = gbm_dumb_bo_create,

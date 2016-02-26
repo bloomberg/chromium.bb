@@ -7,7 +7,7 @@
 #include "gbm_priv.h"
 #include "helpers.h"
 
-struct gbm_driver gbm_driver_cirrus =
+const struct gbm_driver gbm_driver_cirrus =
 {
 	.name = "cirrus",
 	.bo_create = gbm_dumb_bo_create,

@@ -35,7 +35,7 @@ static int get_gen(int device_id)
 	return 4;
 }
 
-int gbm_i915_init(struct gbm_device *gbm)
+static int gbm_i915_init(struct gbm_device *gbm)
 {
 	struct gbm_i915_device *i915_gbm;
 	drm_i915_getparam_t get_param;
@@ -63,7 +63,7 @@ int gbm_i915_init(struct gbm_device *gbm)
 	return 0;
 }
 
-void gbm_i915_close(struct gbm_device *gbm)
+static void gbm_i915_close(struct gbm_device *gbm)
 {
 	free(gbm->priv);
 	gbm->priv = NULL;
@@ -119,8 +119,9 @@ static int i915_verify_dimensions(struct gbm_device *gbm, uint32_t stride,
 	return 1;
 }
 
-int gbm_i915_bo_create(struct gbm_bo *bo, uint32_t width, uint32_t height,
-		       uint32_t format, uint32_t flags)
+static int gbm_i915_bo_create(struct gbm_bo *bo,
+			      uint32_t width, uint32_t height,
+			      uint32_t format, uint32_t flags)
 {
 	struct gbm_device *gbm = bo->gbm;
 	int bpp = gbm_stride_from_format(format, 1);

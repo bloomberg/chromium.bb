@@ -17,8 +17,9 @@
 #include "helpers.h"
 #include "util.h"
 
-int gbm_exynos_bo_create(struct gbm_bo *bo, uint32_t width, uint32_t height,
-			 uint32_t format, uint32_t flags)
+static int gbm_exynos_bo_create(struct gbm_bo *bo,
+				uint32_t width, uint32_t height,
+				uint32_t format, uint32_t flags)
 {
 	size_t plane;
 
