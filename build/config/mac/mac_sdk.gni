@@ -11,7 +11,7 @@ import("//build_overrides/build.gni")
 
 declare_args() {
   # Minimum supported version of the Mac SDK.
-  mac_sdk_min = "10.10"
+  mac_sdk_min = mac_sdk_min_build_override
 
   # Minimum supported version of OSX.
   mac_deployment_target = mac_deployment_target_build_override
