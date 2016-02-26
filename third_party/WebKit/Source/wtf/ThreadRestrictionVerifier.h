@@ -51,6 +51,41 @@ public:
     {
     }
 
+    void checkSafeToUse() const
+    {
+        // If this assert fires, it either indicates a thread safety issue or
+        // that the verification needs to change.
+        ASSERT_WITH_SECURITY_IMPLICATION(isSafeToUse());
+    }
+
+    // Call onRef() before refCount is incremented in ref().
+    void onRef(int refCount)
+    {
+        // Start thread verification as soon as the ref count gets to 2. This
+        // heuristic reflects the fact that items are often created on one
+        // thread and then given to another thread to be used.
+        // FIXME: Make this restriction tigher. Especially as we move to more
+        // common methods for sharing items across threads like
+        // CrossThreadCopier.h
+        // We should be able to add a "detachFromThread" method to make this
+        // explicit.
+        if (refCount == 1)
+            setShared(true);
+        checkSafeToUse();
+    }
+
+    // Call onDeref() before refCount is decremented in deref().
+    void onDeref(int refCount)
+    {
+        checkSafeToUse();
+
+        // Stop thread verification when the ref goes to 1 because it
+        // is safe to be passed to another thread at this point.
+        if (refCount == 2)
+            setShared(false);
+    }
+
+private:
     // Indicates that the object may (or may not) be owned by more than one place.
     void setShared(bool shared)
     {
@@ -74,10 +109,8 @@ public:
         return m_owningThread == currentThread();
     }
 
-private:
     bool m_shared;
 
-    // Used by SingleThreadVerificationMode
     ThreadIdentifier m_owningThread;
 };
 

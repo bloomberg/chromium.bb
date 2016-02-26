@@ -44,18 +44,7 @@ public:
     void ref()
     {
 #if CHECK_REF_COUNTED_LIFECYCLE
-        // Start thread verification as soon as the ref count gets to 2. This
-        // heuristic reflects the fact that items are often created on one thread
-        // and then given to another thread to be used.
-        // FIXME: Make this restriction tigher. Especially as we move to more
-        // common methods for sharing items across threads like CrossThreadCopier.h
-        // We should be able to add a "detachFromThread" method to make this explicit.
-        if (m_refCount == 1)
-            m_verifier.setShared(true);
-        // If this assert fires, it either indicates a thread safety issue or
-        // that the verification needs to change. See ThreadRestrictionVerifier for
-        // the different modes.
-        ASSERT(m_verifier.isSafeToUse());
+        m_verifier.onRef(m_refCount);
         ASSERT(!m_adoptionIsRequired);
 #endif
         ASSERT_WITH_SECURITY_IMPLICATION(!m_deletionHasBegun);
@@ -66,7 +55,7 @@ public:
     {
         ASSERT_WITH_SECURITY_IMPLICATION(!m_deletionHasBegun);
 #if CHECK_REF_COUNTED_LIFECYCLE
-        ASSERT(m_verifier.isSafeToUse());
+        m_verifier.checkSafeToUse();
 #endif
         return m_refCount == 1;
     }
@@ -74,7 +63,7 @@ public:
     int refCount() const
     {
 #if CHECK_REF_COUNTED_LIFECYCLE
-        ASSERT(m_verifier.isSafeToUse());
+        m_verifier.checkSafeToUse();
 #endif
         return m_refCount;
     }
@@ -104,7 +93,7 @@ protected:
     {
         ASSERT_WITH_SECURITY_IMPLICATION(!m_deletionHasBegun);
 #if CHECK_REF_COUNTED_LIFECYCLE
-        ASSERT(m_verifier.isSafeToUse());
+        m_verifier.onDeref(m_refCount);
         ASSERT(!m_adoptionIsRequired);
 #endif
 
@@ -117,12 +106,6 @@ protected:
             return true;
         }
 
-#if CHECK_REF_COUNTED_LIFECYCLE
-        // Stop thread verification when the ref goes to 1 because it
-        // is safe to be passed to another thread at this point.
-        if (m_refCount == 1)
-            m_verifier.setShared(false);
-#endif
         return false;
     }
 
