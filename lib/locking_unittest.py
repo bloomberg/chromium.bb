@@ -14,7 +14,10 @@ import time
 
 from chromite.lib import cros_test_lib
 from chromite.lib import locking
+from chromite.lib import parallel
 from chromite.lib import osutils
+from chromite.lib import process_util
+from chromite.lib import timeout_util
 
 
 LOCK_ACQUIRED = 5
@@ -260,3 +263,70 @@ class PortableLinkLockTest(cros_test_lib.TempDirTestCase):
       pass
     with locking.PortableLinkLock(lock_path, max_retry=0):
       pass
+
+
+class PipeLockTest(cros_test_lib.TestCase):
+  """Test locking.PipeLock class."""
+
+  def testFdLeakage(self):
+    """Make sure we don't leak any fds."""
+    fds_before = os.listdir('/proc/self/fd/')
+    lock = locking.PipeLock()
+    fds_after = os.listdir('/proc/self/fd/')
+    self.assertEqual(len(fds_before), len(fds_after) - 2)
+    del lock
+    fds_finished = os.listdir('/proc/self/fd/')
+    self.assertEqual(fds_before, fds_finished)
+
+  def testSimple(self):
+    """Test we can Wait/Post."""
+    # If this fails, we'd just hang :).
+    with timeout_util.Timeout(30):
+      lock = locking.PipeLock()
+      lock.Post()
+      lock.Post()
+      lock.Wait()
+      lock.Wait()
+      del lock
+
+  def testParallel(self):
+    """Test interprocesses actually sync."""
+    write_lock = locking.PipeLock()
+    read_lock = locking.PipeLock()
+
+    with osutils.TempDir() as tempdir:
+      # Let the child create a file, but make sure the parent holds us off.
+      # Then make the parent wait for the child to tell us it's done.
+      flag_file = os.path.join(tempdir, 'foo')
+
+      pid = os.fork()
+      if pid == 0:
+        # Child.
+        # pylint: disable=protected-access
+        try:
+          write_lock.Wait()
+          del write_lock
+          osutils.Touch(flag_file)
+          read_lock.Post()
+          del read_lock
+        except Exception:
+          os._exit(1)
+        finally:
+          # No matter what happens, we must exit w/out running handlers.
+          os._exit(0)
+      else:
+        # Parent.
+        time.sleep(0.5)
+        self.assertNotExists(flag_file)
+        write_lock.Post()
+        del write_lock
+        read_lock.Wait()
+        del read_lock
+        self.assertExists(flag_file)
+
+        status = os.waitpid(pid, 0)[1]
+        self.assertEqual(process_util.GetExitStatus(status), 0)
+
+  def testParallelMany(self):
+    """Same as testParallel, but with many more processes for stressing."""
+    parallel.RunParallelSteps([self.testParallel] * 40)

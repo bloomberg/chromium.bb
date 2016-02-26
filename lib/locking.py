@@ -321,3 +321,49 @@ class PortableLinkLock(object):
         osutils.SafeUnlink(self._target_path)
     finally:
       osutils.SafeUnlink(self._path)
+
+
+class PipeLock(object):
+  """A simple one-way lock based on pipe().
+
+  This is used when code is calling os.fork() directly and needs to synchronize
+  behavior between the two.  The same process should not try to use Wait/Post
+  as it will just see its own results.  If you need bidirection locks, you'll
+  need to create two yourself.
+
+  Be sure to delete the lock when you're done to prevent fd leakage.
+  """
+
+  def __init__(self):
+    pipe2 = getattr(os, 'pipe2', None)
+    if pipe2:
+      cloexec = getattr(os, 'O_CLOEXEC', 0)
+      pipes = pipe2(cloexec)
+    else:
+      pipes = os.pipe()
+    self.read_fd, self.write_fd = pipes
+
+  def Wait(self, size=1):
+    """Read |size| bytes from the pipe.
+
+    Args:
+      size: How many bytes to read.  It must match the length of |data| passed
+        by the other end during its call to Post.
+
+    Retruns:
+      The data read back.
+    """
+    return os.read(self.read_fd, size)
+
+  def Post(self, data='!'):
+    """Write |data| to the pipe.
+
+    Args:
+      data: The data to send to the other side calling Wait.  It must be of the
+        exact length that is passed to Wait.
+    """
+    os.write(self.write_fd, data)
+
+  def __del__(self):
+    os.close(self.read_fd)
+    os.close(self.write_fd)

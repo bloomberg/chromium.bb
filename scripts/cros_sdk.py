@@ -341,29 +341,25 @@ def _ProxySimSetup(options):
   veth_host = '%s-host' % PROXY_VETH_PREFIX
   veth_guest = '%s-guest' % PROXY_VETH_PREFIX
 
-  # Set up pipes from parent to child and vice versa.
-  # The child writes a byte to the parent after calling unshare, so that the
-  # parent can then assign the guest end of the veth interface to the child's
-  # new network namespace.  The parent then writes a byte to the child after
-  # assigning the guest interface, so that the child can then configure that
-  # interface.  In both cases, if we get back an EOF when reading from the
-  # pipe, we assume the other end exited with an error message, so just exit.
-  parent_readfd, child_writefd = os.pipe()
-  child_readfd, parent_writefd = os.pipe()
-  SUCCESS_FLAG = '+'
+  # Set up locks to sync the net namespace setup.  We need the child to create
+  # the net ns first, and then have the parent assign the guest end of the veth
+  # interface to the child's new network namespace & bring up the proxy.  Only
+  # then can the child move forward and rely on the network being up.
+  ns_create_lock = locking.PipeLock()
+  ns_setup_lock = locking.PipeLock()
 
   pid = os.fork()
   if not pid:
-    os.close(parent_readfd)
-    os.close(parent_writefd)
-
+    # Create our new isolated net namespace.
     namespaces.Unshare(namespaces.CLONE_NEWNET)
-    os.write(child_writefd, SUCCESS_FLAG)
-    os.close(child_writefd)
-    if os.read(child_readfd, 1) != SUCCESS_FLAG:
-      # Parent failed; it will have already have outputted an error message.
-      sys.exit(1)
-    os.close(child_readfd)
+
+    # Signal the parent the ns is ready to be configured.
+    ns_create_lock.Post()
+    del ns_create_lock
+
+    # Wait for the parent to finish setting up the ns/proxy.
+    ns_setup_lock.Wait()
+    del ns_setup_lock
 
     # Set up child side of the network.
     commands = (
@@ -386,14 +382,6 @@ def _ProxySimSetup(options):
       os.environ.pop(v, None)
     return
 
-  os.close(child_readfd)
-  os.close(child_writefd)
-
-  if os.read(parent_readfd, 1) != SUCCESS_FLAG:
-    # Child failed; it will have already have outputted an error message.
-    sys.exit(1)
-  os.close(parent_readfd)
-
   # Set up parent side of the network.
   uid = int(os.environ.get('SUDO_UID', '0'))
   gid = int(os.environ.get('SUDO_GID', '0'))
@@ -411,6 +399,10 @@ def _ProxySimSetup(options):
   chroot_parent, chroot_base = os.path.split(options.chroot)
   pid_file = os.path.join(chroot_parent, '.%s-apache-proxy.pid' % chroot_base)
   log_file = os.path.join(chroot_parent, '.%s-apache-proxy.log' % chroot_base)
+
+  # Wait for the child to create the net ns.
+  ns_create_lock.Wait()
+  del ns_create_lock
 
   apache_directives = [
       'User #%u' % uid,
@@ -448,8 +440,10 @@ def _ProxySimSetup(options):
     except cros_build_lib.RunCommandError:
       logging.error('running %r failed', cmd_cleanup)
     raise SystemExit('Running %r failed!' % (cmd,))
-  os.write(parent_writefd, SUCCESS_FLAG)
-  os.close(parent_writefd)
+
+  # Signal the child that the net ns/proxy is fully configured now.
+  ns_setup_lock.Post()
+  del ns_setup_lock
 
   process_util.ExitAsStatus(os.waitpid(pid, 0)[1])
 
