@@ -47,6 +47,7 @@
 #include "platform/LayoutTestSupport.h"
 #include "platform/Logging.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "platform/ThreadSafeFunctional.h"
 #include "platform/fonts/FontCacheMemoryDumpProvider.h"
 #include "platform/graphics/ImageDecodingStore.h"
 #include "platform/heap/GCTaskRunner.h"
@@ -80,22 +81,6 @@ public:
         V8GCController::reportDOMMemoryUsageToV8(mainThreadIsolate());
         V8Initializer::reportRejectedPromisesOnMainThread();
     }
-};
-
-class MainThreadTaskRunner: public WebTaskRunner::Task {
-    WTF_MAKE_NONCOPYABLE(MainThreadTaskRunner);
-public:
-    MainThreadTaskRunner(WTF::MainThreadFunction* function, void* context)
-        : m_function(function)
-        , m_context(context) { }
-
-    void run() override
-    {
-        m_function(m_context);
-    }
-private:
-    WTF::MainThreadFunction* m_function;
-    void* m_context;
 };
 
 } // namespace
@@ -148,7 +133,7 @@ static void maxObservedSizeFunction(size_t sizeInMB)
 
 static void callOnMainThreadFunction(WTF::MainThreadFunction function, void* context)
 {
-    Platform::current()->mainThread()->taskRunner()->postTask(BLINK_FROM_HERE, new MainThreadTaskRunner(function, context));
+    Platform::current()->mainThread()->taskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(function, AllowCrossThreadAccess(context)));
 }
 
 static void adjustAmountOfExternalAllocatedMemory(int size)
