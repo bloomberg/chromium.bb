@@ -157,7 +157,7 @@ SkTraceMemoryDump* WebProcessMemoryDumpImpl::createDumpAdapterForSkia(
 }
 
 blink::WebMemoryAllocatorDump*
-WebProcessMemoryDumpImpl::CreateDiscardableMemoryAllocatorDump(
+WebProcessMemoryDumpImpl::createDiscardableMemoryAllocatorDump(
     const std::string& name,
     base::DiscardableMemory* discardable) {
   base::trace_event::MemoryAllocatorDump* dump =

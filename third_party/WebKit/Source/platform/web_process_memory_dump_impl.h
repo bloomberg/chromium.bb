@@ -72,9 +72,9 @@ class PLATFORM_EXPORT WebProcessMemoryDumpImpl final
     return process_memory_dump_;
   }
 
-  blink::WebMemoryAllocatorDump* CreateDiscardableMemoryAllocatorDump(
+  blink::WebMemoryAllocatorDump* createDiscardableMemoryAllocatorDump(
       const std::string& name,
-      base::DiscardableMemory* discardable);
+      base::DiscardableMemory* discardable) override;
 
   void dumpHeapUsage(
       const base::hash_map<base::trace_event::AllocationContext, size_t>&
