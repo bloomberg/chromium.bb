@@ -22,6 +22,10 @@ enum LayoutConstant {
   // The thickness of the location bar's border.
   LOCATION_BAR_BORDER_THICKNESS,
 
+  // The vertical padding between the edge of a location bar bubble and its
+  // contained text.
+  LOCATION_BAR_BUBBLE_FONT_VERTICAL_PADDING,
+
   // The horizontal space between the edge and a bubble.
   LOCATION_BAR_BUBBLE_HORIZONTAL_PADDING,
 

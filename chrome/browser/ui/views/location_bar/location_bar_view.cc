@@ -194,7 +194,7 @@ void LocationBarView::Init() {
     const gfx::Insets omnibox_border_insets(14, 9, 14, 9);
     border_painter_.reset(views::Painter::CreateImagePainter(
         *rb.GetImageSkiaNamed(IDR_OMNIBOX_BORDER), omnibox_border_insets));
-}
+  }
 
   // Determine the main font.
   gfx::FontList font_list = ResourceBundle::GetSharedInstance().GetFontList(
@@ -213,11 +213,9 @@ void LocationBarView::Init() {
   font_list = font_list.DeriveWithHeightUpperBound(location_height);
 
   // Determine the font for use inside the bubbles.
-  const int kBubbleFontVerticalPadding =
-      ui::MaterialDesignController::IsModeMaterial() ? 2 : 1;
   const int bubble_padding =
       GetLayoutConstant(LOCATION_BAR_BUBBLE_VERTICAL_PADDING) +
-      kBubbleFontVerticalPadding;
+      GetLayoutConstant(LOCATION_BAR_BUBBLE_FONT_VERTICAL_PADDING);
   const int bubble_height = location_height - (bubble_padding * 2);
   gfx::FontList bubble_font_list =
       font_list.DeriveWithHeightUpperBound(bubble_height);

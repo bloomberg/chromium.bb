@@ -13,6 +13,7 @@ int GetLayoutConstant(LayoutConstant constant) {
   const int kIconLabelViewInternalPadding[] = {3, 2, 2};
   const int kIconLabelViewTrailingPadding[] = {2, 8, 8};
   const int kLocationBarBorderThickness[] = {2, 1, 1};
+  const int kLocationBarBubbleFontVerticalPadding[] = {1, 2, 4};
   const int kLocationBarBubbleHorizontalPadding[] = {1, 4, 4};
   const int kLocationBarBubbleVerticalPadding[] = {1, 3, 3};
   const int kLocationBarHeight[] = {27, 28, 32};
@@ -50,6 +51,8 @@ int GetLayoutConstant(LayoutConstant constant) {
       return kIconLabelViewTrailingPadding[mode];
     case LOCATION_BAR_BORDER_THICKNESS:
       return kLocationBarBorderThickness[mode];
+    case LOCATION_BAR_BUBBLE_FONT_VERTICAL_PADDING:
+      return kLocationBarBubbleFontVerticalPadding[mode];
     case LOCATION_BAR_BUBBLE_HORIZONTAL_PADDING:
       return kLocationBarBubbleHorizontalPadding[mode];
     case LOCATION_BAR_BUBBLE_VERTICAL_PADDING:
