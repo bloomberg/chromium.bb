@@ -51,7 +51,7 @@ class AvatarMenuButton : public views::MenuButton,
   // |taskbar_badge_avatar| is empty then |avatar| should be used for the
   // taskbar as well. Returns false if the cache doesn't have an entry for a
   // Profile::REGULAR_PROFILE type Profile, otherwise return true.
-  static bool GetAvatarImages(BrowserView* browser_view,
+  static bool GetAvatarImages(const BrowserView* browser_view,
                               bool should_show_avatar_menu,
                               gfx::Image* avatar,
                               gfx::Image* taskbar_badge_avatar,

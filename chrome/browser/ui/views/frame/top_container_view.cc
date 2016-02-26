@@ -22,14 +22,13 @@ const char* TopContainerView::GetClassName() const {
 
 void TopContainerView::PaintChildren(const ui::PaintContext& context) {
   if (browser_view_->immersive_mode_controller()->IsRevealed()) {
-    // Top-views depend on parts of the frame (themes, window title,
-    // window controls) being painted underneath them. Clip rect has already
-    // been set to the bounds of this view, so just paint the frame.
-    views::View* frame = browser_view_->frame()->GetFrameView();
-    // Use a clone without invalidation info, as we're painting something
-    // outside of the normal parent-child relationship, so invalidations are
-    // no longer in the correct space to compare.
-    frame->Paint(ui::PaintContext(
+    // Top-views depend on parts of the frame (themes, window title, window
+    // controls) being painted underneath them. Clip rect has already been set
+    // to the bounds of this view, so just paint the frame.  Use a clone without
+    // invalidation info, as we're painting something outside of the normal
+    // parent-child relationship, so invalidations are no longer in the correct
+    // space to compare.
+    browser_view_->frame()->GetFrameView()->Paint(ui::PaintContext(
         context, ui::PaintContext::CLONE_WITHOUT_INVALIDATION));
   }
   View::PaintChildren(context);

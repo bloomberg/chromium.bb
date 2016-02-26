@@ -97,7 +97,7 @@ void AvatarMenuButton::SetAvatarIcon(const gfx::Image& icon,
 }
 
 // static
-bool AvatarMenuButton::GetAvatarImages(BrowserView* browser_view,
+bool AvatarMenuButton::GetAvatarImages(const BrowserView* browser_view,
                                        bool should_show_avatar_menu,
                                        gfx::Image* avatar,
                                        gfx::Image* taskbar_badge_avatar,

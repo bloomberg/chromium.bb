@@ -64,7 +64,7 @@ class ImeWindowView : public ImeNativeWindow,
   void UpdateWindowIcon() override;
   bool IsVisible() const override;
 
-  // views::WidgetDelegate:
+  // views::WidgetDelegateView:
   views::View* GetContentsView() override;
   views::NonClientFrameView* CreateNonClientFrameView(
       views::Widget* widget) override;
@@ -77,7 +77,6 @@ class ImeWindowView : public ImeNativeWindow,
   gfx::ImageSkia GetWindowIcon() override;
   void DeleteDelegate() override;
 
-  // views::View:
   ImeWindowFrameView* GetFrameView() const;
   views::Widget* window() const { return window_; }
   views::WebView* web_view() const { return web_view_; }
