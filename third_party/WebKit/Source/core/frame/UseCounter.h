@@ -1117,6 +1117,10 @@ public:
     // Return whether the Feature was previously counted for this document.
     // NOTE: only for use in testing.
     static bool isCounted(Document&, Feature);
+    // Return whether the CSSPropertyID was previously counted for this document.
+    // NOTE: only for use in testing.
+    static bool isCounted(Document&, const String&);
+    bool isCounted(CSSPropertyID);
 
     void didCommitLoad();
 

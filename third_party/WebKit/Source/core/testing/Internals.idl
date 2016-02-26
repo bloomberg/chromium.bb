@@ -335,6 +335,7 @@
     bool magnifyScaleAroundAnchor(float offset, float x, float y);
 
     boolean isUseCounted(Document document, long useCounterId);
+    boolean isCSSPropertyUseCounted(Document document, DOMString propertyName);
 
     iterable<long>;
 

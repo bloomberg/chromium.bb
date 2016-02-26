@@ -374,6 +374,7 @@ public:
     // Return true if the given use counter exists for the given document.
     // |useCounterId| must be one of the values from the UseCounter::Feature enum.
     bool isUseCounted(Document*, int useCounterId);
+    bool isCSSPropertyUseCounted(Document*, const String&);
 
     String unscopeableAttribute();
     String unscopeableMethod();

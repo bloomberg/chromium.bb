@@ -2490,6 +2490,11 @@ bool Internals::isUseCounted(Document* document, int useCounterId)
     return UseCounter::isCounted(*document, static_cast<UseCounter::Feature>(useCounterId));
 }
 
+bool Internals::isCSSPropertyUseCounted(Document* document, const String& propertyName)
+{
+    return UseCounter::isCounted(*document, propertyName);
+}
+
 String Internals::unscopeableAttribute()
 {
     return "unscopeableAttribute";

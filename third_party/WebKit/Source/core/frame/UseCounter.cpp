@@ -680,6 +680,27 @@ bool UseCounter::isCounted(Document& document, Feature feature)
     return host->useCounter().hasRecordedMeasurement(feature);
 }
 
+bool UseCounter::isCounted(CSSPropertyID unresolvedProperty)
+{
+    return m_CSSFeatureBits.quickGet(unresolvedProperty);
+}
+
+
+bool UseCounter::isCounted(Document& document, const String& string)
+{
+    Frame* frame = document.frame();
+    if (!frame)
+        return false;
+    FrameHost* host = frame->host();
+    if (!host)
+        return false;
+
+    CSSPropertyID propertyID = cssPropertyID(string);
+    if (propertyID == CSSPropertyInvalid)
+        return false;
+    return host->useCounter().isCounted(propertyID);
+}
+
 void UseCounter::count(const ExecutionContext* context, Feature feature)
 {
     if (!context)
