@@ -258,7 +258,7 @@ PasswordStoreFactory::BuildServiceInstanceFor(
   RecordBackendStatistics(desktop_env, store_type, used_backend);
 #elif defined(USE_OZONE)
   ps = new password_manager::PasswordStoreDefault(
-      main_thread_runner, db_thread_runner, login_db.Pass());
+      main_thread_runner, db_thread_runner, std::move(login_db));
 #else
   NOTIMPLEMENTED();
 #endif
