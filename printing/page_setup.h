@@ -36,6 +36,7 @@ class PRINTING_EXPORT PageMargins {
 class PRINTING_EXPORT PageSetup {
  public:
   PageSetup();
+  PageSetup(const PageSetup& other);
   ~PageSetup();
 
   void Clear();

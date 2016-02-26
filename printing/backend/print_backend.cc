@@ -10,6 +10,8 @@ PrinterBasicInfo::PrinterBasicInfo()
     : printer_status(0),
       is_default(false) {}
 
+PrinterBasicInfo::PrinterBasicInfo(const PrinterBasicInfo& other) = default;
+
 PrinterBasicInfo::~PrinterBasicInfo() {}
 
 PrinterSemanticCapsAndDefaults::PrinterSemanticCapsAndDefaults()
@@ -27,6 +29,9 @@ PrinterSemanticCapsAndDefaults::PrinterSemanticCapsAndDefaults()
 PrinterSemanticCapsAndDefaults::~PrinterSemanticCapsAndDefaults() {}
 
 PrinterCapsAndDefaults::PrinterCapsAndDefaults() {}
+
+PrinterCapsAndDefaults::PrinterCapsAndDefaults(
+    const PrinterCapsAndDefaults& other) = default;
 
 PrinterCapsAndDefaults::~PrinterCapsAndDefaults() {}
 

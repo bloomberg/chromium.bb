@@ -41,6 +41,8 @@ PageSetup::PageSetup() {
   Clear();
 }
 
+PageSetup::PageSetup(const PageSetup& other) = default;
+
 PageSetup::~PageSetup() {}
 
 void PageSetup::Clear() {

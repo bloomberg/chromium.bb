@@ -125,6 +125,8 @@ PrintSettings::PrintSettings() {
   Clear();
 }
 
+PrintSettings::PrintSettings(const PrintSettings& other) = default;
+
 PrintSettings::~PrintSettings() {
 }
 

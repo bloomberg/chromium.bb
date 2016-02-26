@@ -48,6 +48,7 @@ class PRINTING_EXPORT PrintSettings {
   };
 
   PrintSettings();
+  PrintSettings(const PrintSettings& other);
   ~PrintSettings();
 
   // Reinitialize the settings to the default values.

@@ -23,6 +23,7 @@ namespace printing {
 
 struct PRINTING_EXPORT PrinterBasicInfo {
   PrinterBasicInfo();
+  PrinterBasicInfo(const PrinterBasicInfo& other);
   ~PrinterBasicInfo();
 
   std::string printer_name;
@@ -65,6 +66,7 @@ struct PRINTING_EXPORT PrinterSemanticCapsAndDefaults {
 
 struct PRINTING_EXPORT PrinterCapsAndDefaults {
   PrinterCapsAndDefaults();
+  PrinterCapsAndDefaults(const PrinterCapsAndDefaults& other);
   ~PrinterCapsAndDefaults();
 
   std::string printer_capabilities;
