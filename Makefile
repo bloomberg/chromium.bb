@@ -4,6 +4,7 @@ include config.mak
 vpath %.c    $(SRC_PATH)
 vpath %.cpp  $(SRC_PATH)
 vpath %.h    $(SRC_PATH)
+vpath %.inc  $(SRC_PATH)
 vpath %.m    $(SRC_PATH)
 vpath %.S    $(SRC_PATH)
 vpath %.asm  $(SRC_PATH)
@@ -176,11 +177,14 @@ clean::
 	$(RM) $(CLEANSUFFIXES)
 	$(RM) $(CLEANSUFFIXES:%=tools/%)
 	$(RM) -r coverage-html
-	$(RM) -rf coverage.info lcov
+	$(RM) -rf coverage.info coverage.info.in lcov
 
 distclean::
 	$(RM) $(DISTCLEANSUFFIXES)
 	$(RM) config.* .config libavutil/avconfig.h .version avversion.h version.h libavutil/ffversion.h libavcodec/codec_names.h
+ifeq ($(SRC_LINK),src)
+	$(RM) src
+endif
 	$(RM) -rf doc/examples/pc-uninstalled
 
 config:

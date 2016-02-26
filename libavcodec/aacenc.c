@@ -29,6 +29,7 @@
  * add sane pulse detection
  ***********************************/
 
+#include "libavutil/libm.h"
 #include "libavutil/thread.h"
 #include "libavutil/float_dsp.h"
 #include "libavutil/opt.h"
@@ -154,7 +155,7 @@ static void apply_window_and_mdct(AACEncContext *s, SingleChannelElement *sce,
                                   float *audio)
 {
     int i;
-    float *output = sce->ret_buf;
+    const float *output = sce->ret_buf;
 
     apply_window[sce->ics.window_sequence[0]](s->fdsp, sce, audio);
 
@@ -300,8 +301,8 @@ static void apply_mid_side_stereo(ChannelElement *cpe)
                  * ms_mask is set.
                  */
                 if (!cpe->ms_mask[w*16 + g] || cpe->is_mask[w*16 + g]
-                    || cpe->ch[0].band_type[w*16 + g] == NOISE_BT
-                    || cpe->ch[1].band_type[w*16 + g] == NOISE_BT) {
+                    || cpe->ch[0].band_type[w*16 + g] >= NOISE_BT
+                    || cpe->ch[1].band_type[w*16 + g] >= NOISE_BT) {
                     start += ics->swb_sizes[g];
                     continue;
                 }
@@ -543,6 +544,7 @@ static int aac_encode_frame(AVCodecContext *avctx, AVPacket *avpkt,
         chans    = tag == TYPE_CPE ? 2 : 1;
         cpe      = &s->cpe[i];
         for (ch = 0; ch < chans; ch++) {
+            int k;
             float clip_avoidance_factor;
             sce = &cpe->ch[ch];
             ics = &sce->ics;
@@ -606,9 +608,11 @@ static int aac_encode_frame(AVCodecContext *avctx, AVPacket *avpkt,
                 s->mdct1024.mdct_calc(&s->mdct1024, sce->lcoeffs, sce->ret_buf);
             }
 
-            if (isnan(cpe->ch->coeffs[0])) {
-                av_log(avctx, AV_LOG_ERROR, "Input contains NaN\n");
-                return AVERROR(EINVAL);
+            for (k = 0; k < 1024; k++) {
+                if (!isfinite(cpe->ch[ch].coeffs[k])) {
+                    av_log(avctx, AV_LOG_ERROR, "Input contains NaN/+-Inf\n");
+                    return AVERROR(EINVAL);
+                }
             }
             avoid_clipping(s, sce);
         }
@@ -974,11 +978,12 @@ static av_cold int aac_encode_init(AVCodecContext *avctx)
     if (s->options.coder != AAC_CODER_TWOLOOP) {
         ERROR_IF(avctx->strict_std_compliance > FF_COMPLIANCE_EXPERIMENTAL,
                  "Coders other than twoloop require -strict -2 and some may be removed in the future\n");
-        WARN_IF(s->options.coder == AAC_CODER_FAAC,
-                "The FAAC-like coder will be removed in the near future, please use twoloop!\n");
         s->options.intensity_stereo = 0;
         s->options.pns = 0;
     }
+
+    ERROR_IF(s->options.ltp && avctx->strict_std_compliance > FF_COMPLIANCE_EXPERIMENTAL,
+             "The LPT profile requires experimental compliance, add -strict -2 to enable!\n");
 
     if ((ret = dsp_init(avctx, s)) < 0)
         goto fail;
@@ -1017,8 +1022,7 @@ fail:
 
 #define AACENC_FLAGS AV_OPT_FLAG_ENCODING_PARAM | AV_OPT_FLAG_AUDIO_PARAM
 static const AVOption aacenc_options[] = {
-    {"aac_coder", "Coding algorithm", offsetof(AACEncContext, options.coder), AV_OPT_TYPE_INT, {.i64 = AAC_CODER_TWOLOOP}, -1, AAC_CODER_NB-1, AACENC_FLAGS, "coder"},
-        {"faac",     "FAAC-inspired method",      0, AV_OPT_TYPE_CONST, {.i64 = AAC_CODER_FAAC},    INT_MIN, INT_MAX, AACENC_FLAGS, "coder"},
+    {"aac_coder", "Coding algorithm", offsetof(AACEncContext, options.coder), AV_OPT_TYPE_INT, {.i64 = AAC_CODER_TWOLOOP}, 0, AAC_CODER_NB-1, AACENC_FLAGS, "coder"},
         {"anmr",     "ANMR method",               0, AV_OPT_TYPE_CONST, {.i64 = AAC_CODER_ANMR},    INT_MIN, INT_MAX, AACENC_FLAGS, "coder"},
         {"twoloop",  "Two loop searching method", 0, AV_OPT_TYPE_CONST, {.i64 = AAC_CODER_TWOLOOP}, INT_MIN, INT_MAX, AACENC_FLAGS, "coder"},
         {"fast",     "Constant quantizer",        0, AV_OPT_TYPE_CONST, {.i64 = AAC_CODER_FAST},    INT_MIN, INT_MAX, AACENC_FLAGS, "coder"},

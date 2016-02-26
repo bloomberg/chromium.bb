@@ -33,6 +33,7 @@ static av_cold int encode_init(AVCodecContext *avctx)
     WMACodecContext *s = avctx->priv_data;
     int i, flags1, flags2, block_align;
     uint8_t *extradata;
+    int ret;
 
     s->avctx = avctx;
 
@@ -83,7 +84,8 @@ static av_cold int encode_init(AVCodecContext *avctx)
     if (avctx->channels == 2)
         s->ms_stereo = 1;
 
-    ff_wma_init(avctx, flags2);
+    if ((ret = ff_wma_init(avctx, flags2)) < 0)
+        return ret;
 
     /* init MDCT */
     for (i = 0; i < s->nb_block_sizes; i++)
@@ -98,7 +100,7 @@ static av_cold int encode_init(AVCodecContext *avctx)
     return 0;
 }
 
-static void apply_window_and_mdct(AVCodecContext *avctx, const AVFrame *frame)
+static int apply_window_and_mdct(AVCodecContext *avctx, const AVFrame *frame)
 {
     WMACodecContext *s = avctx->priv_data;
     float **audio      = (float **) frame->extended_data;
@@ -117,7 +119,13 @@ static void apply_window_and_mdct(AVCodecContext *avctx, const AVFrame *frame)
                                     win, len);
         s->fdsp->vector_fmul(s->frame_out[ch], s->frame_out[ch], win, len);
         mdct->mdct_calc(mdct, s->coefs[ch], s->output);
+        if (!isfinite(s->coefs[ch][0])) {
+            av_log(avctx, AV_LOG_ERROR, "Input contains NaN/+-Inf\n");
+            return AVERROR(EINVAL);
+        }
     }
+
+    return 0;
 }
 
 // FIXME use for decoding too
@@ -364,7 +372,10 @@ static int encode_superframe(AVCodecContext *avctx, AVPacket *avpkt,
     s->block_len_bits = s->frame_len_bits; // required by non variable block len
     s->block_len      = 1 << s->block_len_bits;
 
-    apply_window_and_mdct(avctx, frame);
+    ret = apply_window_and_mdct(avctx, frame);
+
+    if (ret < 0)
+        return ret;
 
     if (s->ms_stereo) {
         float a, b;

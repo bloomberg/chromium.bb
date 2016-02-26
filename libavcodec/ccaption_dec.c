@@ -30,6 +30,8 @@
 #define UNSET_FLAG(var, val) ( (var) &=  ~( 1 << (val)) )
 #define CHECK_FLAG(var, val) ( (var) &    ( 1 << (val)) )
 
+static const AVRational ass_tb = {1, 100};
+
 /*
  * TODO list
  * 1) handle font and color completely
@@ -37,9 +39,7 @@
 enum cc_mode {
     CCMODE_POPON,
     CCMODE_PAINTON,
-    CCMODE_ROLLUP_2,
-    CCMODE_ROLLUP_3,
-    CCMODE_ROLLUP_4,
+    CCMODE_ROLLUP,
     CCMODE_TEXT,
 };
 
@@ -116,6 +116,7 @@ struct Screen {
 
 typedef struct CCaptionSubContext {
     AVClass *class;
+    int real_time;
     struct Screen screen[2];
     int active_screen;
     uint8_t cursor_row;
@@ -123,13 +124,15 @@ typedef struct CCaptionSubContext {
     uint8_t cursor_color;
     uint8_t cursor_font;
     AVBPrint buffer;
-    int screen_changed;
+    int buffer_changed;
     int rollup;
     enum cc_mode mode;
     int64_t start_time;
     /* visible screen time */
     int64_t startv_time;
     int64_t end_time;
+    int screen_touched;
+    int64_t last_real_time;
     char prev_cmd[2];
     /* buffer to store pkt data */
     AVBufferRef *pktbuf;
@@ -143,9 +146,17 @@ static av_cold int init_decoder(AVCodecContext *avctx)
 
     av_bprint_init(&ctx->buffer, 0, AV_BPRINT_SIZE_UNLIMITED);
     /* taking by default roll up to 2 */
-    ctx->mode = CCMODE_ROLLUP_2;
+    ctx->mode = CCMODE_ROLLUP;
     ctx->rollup = 2;
-    ret = ff_ass_subtitle_header_default(avctx);
+    ret = ff_ass_subtitle_header(avctx, "Monospace",
+                                 ASS_DEFAULT_FONT_SIZE,
+                                 ASS_DEFAULT_COLOR,
+                                 ASS_DEFAULT_BACK_COLOR,
+                                 ASS_DEFAULT_BOLD,
+                                 ASS_DEFAULT_ITALIC,
+                                 ASS_DEFAULT_UNDERLINE,
+                                 3,
+                                 ASS_DEFAULT_ALIGNMENT);
     if (ret < 0) {
         return ret;
     }
@@ -165,13 +176,39 @@ static av_cold int close_decoder(AVCodecContext *avctx)
     return 0;
 }
 
+static void flush_decoder(AVCodecContext *avctx)
+{
+    CCaptionSubContext *ctx = avctx->priv_data;
+    ctx->screen[0].row_used = 0;
+    ctx->screen[1].row_used = 0;
+    ctx->prev_cmd[0] = 0;
+    ctx->prev_cmd[1] = 0;
+    ctx->mode = CCMODE_ROLLUP;
+    ctx->rollup = 2;
+    ctx->cursor_row = 0;
+    ctx->cursor_column = 0;
+    ctx->cursor_font = 0;
+    ctx->cursor_color = 0;
+    ctx->active_screen = 0;
+    ctx->last_real_time = 0;
+    ctx->screen_touched = 0;
+    ctx->buffer_changed = 0;
+    av_bprint_clear(&ctx->buffer);
+}
+
 /**
  * @param ctx closed caption context just to print log
  */
-static int write_char(CCaptionSubContext *ctx, char *row, uint8_t col, char ch)
+static int write_char(CCaptionSubContext *ctx, struct Screen *screen, char ch)
 {
+    uint8_t col = ctx->cursor_column;
+    char *row = screen->characters[ctx->cursor_row];
+    char *font = screen->fonts[ctx->cursor_row];
+
     if (col < SCREEN_COLUMNS) {
         row[col] = ch;
+        font[col] = ctx->cursor_font;
+        if (ch) ctx->cursor_column++;
         return 0;
     }
     /* We have extra space at end only for null character */
@@ -233,9 +270,7 @@ static struct Screen *get_writing_screen(CCaptionSubContext *ctx)
         // use Inactive screen
         return ctx->screen + !ctx->active_screen;
     case CCMODE_PAINTON:
-    case CCMODE_ROLLUP_2:
-    case CCMODE_ROLLUP_3:
-    case CCMODE_ROLLUP_4:
+    case CCMODE_ROLLUP:
     case CCMODE_TEXT:
         // use active screen
         return ctx->screen + ctx->active_screen;
@@ -259,9 +294,11 @@ static void roll_up(CCaptionSubContext *ctx)
      */
     keep_lines = FFMIN(ctx->cursor_row + 1, ctx->rollup);
 
-    for (i = 0; i < ctx->cursor_row - keep_lines; i++)
+    for (i = 0; i < SCREEN_ROWS; i++) {
+        if (i > ctx->cursor_row - keep_lines && i <= ctx->cursor_row)
+            continue;
         UNSET_FLAG(screen->row_used, i);
-
+    }
 
     for (i = 0; i < keep_lines && screen->row_used; i++) {
         const int i_row = ctx->cursor_row - keep_lines + i + 1;
@@ -271,53 +308,87 @@ static void roll_up(CCaptionSubContext *ctx)
         memcpy(screen->fonts[i_row], screen->fonts[i_row+1], SCREEN_COLUMNS);
         if (CHECK_FLAG(screen->row_used, i_row + 1))
             SET_FLAG(screen->row_used, i_row);
-
     }
+
     UNSET_FLAG(screen->row_used, ctx->cursor_row);
 }
 
-static int reap_screen(CCaptionSubContext *ctx, int64_t pts)
+static int capture_screen(CCaptionSubContext *ctx)
 {
     int i;
-    int ret = 0;
     struct Screen *screen = ctx->screen + ctx->active_screen;
-    ctx->start_time = ctx->startv_time;
+    enum cc_font prev_font = CCFONT_REGULAR;
     av_bprint_clear(&ctx->buffer);
 
     for (i = 0; screen->row_used && i < SCREEN_ROWS; i++)
     {
         if (CHECK_FLAG(screen->row_used, i)) {
-            char *str = screen->characters[i];
-            /* skip space */
-            while (*str == ' ')
-                str++;
+            const char *row = screen->characters[i];
+            const char *font = screen->fonts[i];
+            int j = 0;
 
-            av_bprintf(&ctx->buffer, "%s\\N", str);
-            ret = av_bprint_is_complete(&ctx->buffer);
-            if (ret == 0) {
-                ret = AVERROR(ENOMEM);
-                break;
+            /* skip leading space */
+            while (row[j] == ' ')
+                j++;
+
+            for (; j < SCREEN_COLUMNS; j++) {
+                const char *e_tag = "", *s_tag = "";
+
+                if (row[j] == 0)
+                    break;
+
+                if (prev_font != font[j]) {
+                    switch (prev_font) {
+                    case CCFONT_ITALICS:
+                        e_tag = "{\\i0}";
+                        break;
+                    case CCFONT_UNDERLINED:
+                        e_tag = "{\\u0}";
+                        break;
+                    case CCFONT_UNDERLINED_ITALICS:
+                        e_tag = "{\\u0}{\\i0}";
+                        break;
+                    }
+                    switch (font[j]) {
+                    case CCFONT_ITALICS:
+                        s_tag = "{\\i1}";
+                        break;
+                    case CCFONT_UNDERLINED:
+                        s_tag = "{\\u1}";
+                        break;
+                    case CCFONT_UNDERLINED_ITALICS:
+                        s_tag = "{\\u1}{\\i1}";
+                        break;
+                    }
+                }
+                prev_font = font[j];
+                av_bprintf(&ctx->buffer, "%s%s%c", e_tag, s_tag, row[j]);
             }
+            av_bprintf(&ctx->buffer, "\\N");
         }
     }
-
+    if (!av_bprint_is_complete(&ctx->buffer))
+        return AVERROR(ENOMEM);
     if (screen->row_used && ctx->buffer.len >= 2) {
         ctx->buffer.len -= 2;
         ctx->buffer.str[ctx->buffer.len] = 0;
-        ctx->screen_changed = 1;
     }
+    ctx->buffer_changed = 1;
+    return 0;
+}
 
+static int reap_screen(CCaptionSubContext *ctx, int64_t pts)
+{
+    ctx->start_time = ctx->startv_time;
     ctx->startv_time = pts;
     ctx->end_time = pts;
-    return ret;
+    return capture_screen(ctx);
 }
 
 static void handle_textattr(CCaptionSubContext *ctx, uint8_t hi, uint8_t lo)
 {
     int i = lo - 0x20;
-    int ret;
     struct Screen *screen = get_writing_screen(ctx);
-    char *row = screen->characters[ctx->cursor_row];
 
     if (i >= 32)
         return;
@@ -326,9 +397,7 @@ static void handle_textattr(CCaptionSubContext *ctx, uint8_t hi, uint8_t lo)
     ctx->cursor_font = pac2_attribs[i][1];
 
     SET_FLAG(screen->row_used, ctx->cursor_row);
-    ret = write_char(ctx, row, ctx->cursor_column, ' ');
-    if (ret == 0)
-        ctx->cursor_column++;
+    write_char(ctx, screen, ' ');
 }
 
 static void handle_pac(CCaptionSubContext *ctx, uint8_t hi, uint8_t lo)
@@ -338,8 +407,7 @@ static void handle_pac(CCaptionSubContext *ctx, uint8_t hi, uint8_t lo)
     };
     const int index = ( (hi<<1) & 0x0e) | ( (lo>>5) & 0x01 );
     struct Screen *screen = get_writing_screen(ctx);
-    char *row;
-    int indent, i, ret;
+    int indent, i;
 
     if (row_map[index] <= 0) {
         av_log(ctx, AV_LOG_DEBUG, "Invalid pac index encountered\n");
@@ -353,52 +421,68 @@ static void handle_pac(CCaptionSubContext *ctx, uint8_t hi, uint8_t lo)
     ctx->cursor_font = pac2_attribs[lo][1];
     ctx->cursor_column = 0;
     indent = pac2_attribs[lo][2];
-    row = screen->characters[ctx->cursor_row];
     for (i = 0; i < indent; i++) {
-        ret = write_char(ctx, row, ctx->cursor_column, ' ');
-        if (ret == 0)
-            ctx->cursor_column++;
+        write_char(ctx, screen, ' ');
     }
 }
 
-static void handle_erase(CCaptionSubContext *ctx, int n_screen)
+/**
+ * @param pts it is required to set end time
+ */
+static void handle_edm(CCaptionSubContext *ctx, int64_t pts)
 {
-    struct Screen *screen = ctx->screen + n_screen;
+    struct Screen *screen = ctx->screen + ctx->active_screen;
+
+    // In buffered mode, keep writing to screen until it is wiped.
+    // Before wiping the display, capture contents to emit subtitle.
+    if (!ctx->real_time)
+        reap_screen(ctx, pts);
+
     screen->row_used = 0;
+
+    // In realtime mode, emit an empty caption so the last one doesn't
+    // stay on the screen.
+    if (ctx->real_time)
+        reap_screen(ctx, pts);
 }
 
 static void handle_eoc(CCaptionSubContext *ctx, int64_t pts)
 {
-    reap_screen(ctx, pts);
+    // In buffered mode, we wait til the *next* EOC and
+    // reap what was already on the screen since the last EOC.
+    if (!ctx->real_time)
+        handle_edm(ctx,pts);
+
     ctx->active_screen = !ctx->active_screen;
     ctx->cursor_column = 0;
+
+    // In realtime mode, we display the buffered contents (after
+    // flipping the buffer to active above) as soon as EOC arrives.
+    if (ctx->real_time)
+        reap_screen(ctx, pts);
 }
 
 static void handle_delete_end_of_row(CCaptionSubContext *ctx, char hi, char lo)
 {
     struct Screen *screen = get_writing_screen(ctx);
-    char *row = screen->characters[ctx->cursor_row];
-    write_char(ctx, row, ctx->cursor_column, 0);
+    write_char(ctx, screen, 0);
 }
 
 static void handle_char(CCaptionSubContext *ctx, char hi, char lo, int64_t pts)
 {
     struct Screen *screen = get_writing_screen(ctx);
-    char *row = screen->characters[ctx->cursor_row];
-    int ret;
 
-    SET_FLAG(screen->row_used,ctx->cursor_row);
+    SET_FLAG(screen->row_used, ctx->cursor_row);
 
-    ret = write_char(ctx, row, ctx->cursor_column, hi);
-    if (ret == 0)
-        ctx->cursor_column++;
+    write_char(ctx, screen, hi);
 
     if (lo) {
-        ret = write_char(ctx, row, ctx->cursor_column, lo);
-        if (ret == 0)
-            ctx->cursor_column++;
+        write_char(ctx, screen, lo);
     }
-    write_char(ctx, row, ctx->cursor_column, 0);
+    write_char(ctx, screen, 0);
+
+    if (ctx->mode != CCMODE_POPON)
+        ctx->screen_touched = 1;
 
     /* reset prev command since character can repeat */
     ctx->prev_cmd[0] = 0;
@@ -429,16 +513,10 @@ static void process_cc608(CCaptionSubContext *ctx, int64_t pts, uint8_t hi, uint
             handle_delete_end_of_row(ctx, hi, lo);
             break;
         case 0x25:
-            ctx->rollup = 2;
-            ctx->mode = CCMODE_ROLLUP_2;
-            break;
         case 0x26:
-            ctx->rollup = 3;
-            ctx->mode = CCMODE_ROLLUP_3;
-            break;
         case 0x27:
-            ctx->rollup = 4;
-            ctx->mode = CCMODE_ROLLUP_4;
+            ctx->rollup = lo - 0x23;
+            ctx->mode = CCMODE_ROLLUP;
             break;
         case 0x29:
             /* resume direct captioning */
@@ -450,18 +528,24 @@ static void process_cc608(CCaptionSubContext *ctx, int64_t pts, uint8_t hi, uint
             break;
         case 0x2c:
             /* erase display memory */
-            handle_erase(ctx, ctx->active_screen);
+            handle_edm(ctx, pts);
             break;
         case 0x2d:
             /* carriage return */
             ff_dlog(ctx, "carriage return\n");
-            reap_screen(ctx, pts);
+            if (!ctx->real_time)
+                reap_screen(ctx, pts);
             roll_up(ctx);
             ctx->cursor_column = 0;
             break;
         case 0x2e:
-            /* erase non displayed memory */
-            handle_erase(ctx, !ctx->active_screen);
+            /* erase buffered (non displayed) memory */
+            // Only in realtime mode. In buffered mode, we re-use the inactive screen
+            // for our own buffering.
+            if (ctx->real_time) {
+                struct Screen *screen = ctx->screen + !ctx->active_screen;
+                screen->row_used = 0;
+            }
             break;
         case 0x2f:
             /* end of caption */
@@ -514,24 +598,55 @@ static int decode(AVCodecContext *avctx, void *data, int *got_sub, AVPacket *avp
             continue;
         else
             process_cc608(ctx, avpkt->pts, *(bptr + i + 1) & 0x7f, *(bptr + i + 2) & 0x7f);
-        if (ctx->screen_changed)
+
+        if (!ctx->buffer_changed)
+            continue;
+        ctx->buffer_changed = 0;
+
+        if (*ctx->buffer.str || ctx->real_time)
         {
-            int start_time = av_rescale_q(ctx->start_time, avctx->time_base, (AVRational){ 1, 100 });
-            int end_time = av_rescale_q(ctx->end_time, avctx->time_base, (AVRational){ 1, 100 });
+            int64_t sub_pts = ctx->real_time ? avpkt->pts : ctx->start_time;
+            int start_time = av_rescale_q(sub_pts, avctx->time_base, ass_tb);
+            int duration = -1;
+            if (!ctx->real_time) {
+                int end_time = av_rescale_q(ctx->end_time, avctx->time_base, ass_tb);
+                duration = end_time - start_time;
+            }
             ff_dlog(ctx, "cdp writing data (%s)\n",ctx->buffer.str);
-            ret = ff_ass_add_rect_bprint(sub, &ctx->buffer, start_time, end_time - start_time);
+            ret = ff_ass_add_rect_bprint(sub, &ctx->buffer, start_time, duration);
             if (ret < 0)
                 return ret;
-            sub->pts = av_rescale_q(ctx->start_time, avctx->time_base, AV_TIME_BASE_Q);
-            ctx->screen_changed = 0;
+            sub->pts = av_rescale_q(sub_pts, avctx->time_base, AV_TIME_BASE_Q);
+            ctx->buffer_changed = 0;
+            ctx->last_real_time = avpkt->pts;
+            ctx->screen_touched = 0;
         }
+    }
+
+    if (ctx->real_time && ctx->screen_touched &&
+        avpkt->pts > ctx->last_real_time + av_rescale_q(20, ass_tb, avctx->time_base)) {
+        int start_time;
+        ctx->last_real_time = avpkt->pts;
+        ctx->screen_touched = 0;
+
+        capture_screen(ctx);
+        ctx->buffer_changed = 0;
+
+        start_time = av_rescale_q(avpkt->pts, avctx->time_base, ass_tb);
+        ret = ff_ass_add_rect_bprint(sub, &ctx->buffer, start_time, -1);
+        if (ret < 0)
+            return ret;
+        sub->pts = av_rescale_q(avpkt->pts, avctx->time_base, AV_TIME_BASE_Q);
     }
 
     *got_sub = sub->num_rects > 0;
     return ret;
 }
 
+#define OFFSET(x) offsetof(CCaptionSubContext, x)
+#define SD AV_OPT_FLAG_SUBTITLE_PARAM | AV_OPT_FLAG_DECODING_PARAM
 static const AVOption options[] = {
+    { "real_time", "emit subtitle events as they are decoded for real-time display", OFFSET(real_time), AV_OPT_TYPE_BOOL, { .i64 = 0 }, 0, 1, SD },
     {NULL}
 };
 
@@ -550,6 +665,7 @@ AVCodec ff_ccaption_decoder = {
     .priv_data_size = sizeof(CCaptionSubContext),
     .init           = init_decoder,
     .close          = close_decoder,
+    .flush          = flush_decoder,
     .decode         = decode,
     .priv_class     = &ccaption_dec_class,
 };

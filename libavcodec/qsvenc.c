@@ -514,8 +514,14 @@ static int init_video_param(AVCodecContext *avctx, QSVEncContext *q)
 #endif
 
 #if QSV_HAVE_BREF_TYPE
+#if FF_API_PRIVATE_OPT
+FF_DISABLE_DEPRECATION_WARNINGS
             if (avctx->b_frame_strategy >= 0)
-                q->extco2.BRefType = avctx->b_frame_strategy ? MFX_B_REF_PYRAMID : MFX_B_REF_OFF;
+                q->b_strategy = avctx->b_frame_strategy;
+FF_ENABLE_DEPRECATION_WARNINGS
+#endif
+            if (q->b_strategy >= 0)
+                q->extco2.BRefType = q->b_strategy ? MFX_B_REF_PYRAMID : MFX_B_REF_OFF;
             if (q->adaptive_i >= 0)
                 q->extco2.AdaptiveI = q->adaptive_i ? MFX_CODINGOPTION_ON : MFX_CODINGOPTION_OFF;
             if (q->adaptive_b >= 0)
@@ -907,8 +913,8 @@ static void print_interlace_msg(AVCodecContext *avctx, QSVEncContext *q)
     }
 }
 
-int ff_qsv_encode(AVCodecContext *avctx, QSVEncContext *q,
-                  AVPacket *pkt, const AVFrame *frame, int *got_packet)
+static int encode_frame(AVCodecContext *avctx, QSVEncContext *q,
+                        const AVFrame *frame)
 {
     AVPacket new_pkt = { 0 };
     mfxBitstream *bs;
@@ -983,13 +989,31 @@ int ff_qsv_encode(AVCodecContext *avctx, QSVEncContext *q,
         av_freep(&bs);
     }
 
+    return 0;
+}
+
+int ff_qsv_encode(AVCodecContext *avctx, QSVEncContext *q,
+                  AVPacket *pkt, const AVFrame *frame, int *got_packet)
+{
+    int ret;
+
+    ret = encode_frame(avctx, q, frame);
+    if (ret < 0)
+        return ret;
+
     if (!av_fifo_space(q->async_fifo) ||
         (!frame && av_fifo_size(q->async_fifo))) {
+        AVPacket new_pkt;
+        mfxBitstream *bs;
+        mfxSyncPoint sync;
+
         av_fifo_generic_read(q->async_fifo, &new_pkt, sizeof(new_pkt), NULL);
         av_fifo_generic_read(q->async_fifo, &sync,    sizeof(sync),    NULL);
         av_fifo_generic_read(q->async_fifo, &bs,      sizeof(bs),      NULL);
 
-        MFXVideoCORE_SyncOperation(q->session, sync, 60000);
+        do {
+            ret = MFXVideoCORE_SyncOperation(q->session, sync, 1000);
+        } while (ret == MFX_WRN_IN_EXECUTION);
 
         new_pkt.dts  = av_rescale_q(bs->DecodeTimeStamp, (AVRational){1, 90000}, avctx->time_base);
         new_pkt.pts  = av_rescale_q(bs->TimeStamp,       (AVRational){1, 90000}, avctx->time_base);

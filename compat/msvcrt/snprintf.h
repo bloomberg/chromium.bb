@@ -19,8 +19,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef COMPAT_SNPRINTF_H
-#define COMPAT_SNPRINTF_H
+#ifndef COMPAT_MSVCRT_SNPRINTF_H
+#define COMPAT_MSVCRT_SNPRINTF_H
 
 #include <stdarg.h>
 #include <stdio.h>
@@ -28,4 +28,4 @@
 extern int avpriv_snprintf(char *s, size_t n, const char *fmt, ...);
 extern int avpriv_vsnprintf(char *s, size_t n, const char *fmt, va_list ap);
 
-#endif /* COMPAT_SNPRINTF_H */
+#endif /* COMPAT_MSVCRT_SNPRINTF_H */
