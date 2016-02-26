@@ -133,8 +133,8 @@ StackSamplingConfiguration::GenerateConfiguration() {
 
     // Generate a configuration according to the associated weights.
     const Variation variations[] = {
-      { PROFILE_10HZ, 50},
-      { PROFILE_CONTROL, 50},
+      { PROFILE_10HZ, 100},
+      { PROFILE_CONTROL, 0},
       { PROFILE_DISABLED, 0}
     };
 
