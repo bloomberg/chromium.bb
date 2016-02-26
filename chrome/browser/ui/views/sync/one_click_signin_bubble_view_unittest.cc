@@ -17,16 +17,10 @@
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
 
-class OneClickSigninBubbleViewTest : public views::ViewsTestBase {
+class OneClickSigninBubbleViewTest : public views::ViewsTestBase,
+                                     public views::WidgetObserver {
  public:
-  OneClickSigninBubbleViewTest()
-      : on_start_sync_called_(false),
-        mode_(OneClickSigninSyncStarter::CONFIGURE_SYNC_FIRST),
-        bubble_learn_more_click_count_(0),
-        dialog_learn_more_click_count_(0),
-        advanced_click_count_(0),
-        anchor_widget_(NULL) {
-  }
+  OneClickSigninBubbleViewTest() {}
 
   void SetUp() override {
     views::ViewsTestBase::SetUp();
@@ -70,11 +64,34 @@ class OneClickSigninBubbleViewTest : public views::ViewsTestBase {
     mode_ = mode;
   }
 
-  bool on_start_sync_called_;
-  OneClickSigninSyncStarter::StartSyncMode mode_;
-  int bubble_learn_more_click_count_;
-  int dialog_learn_more_click_count_;
-  int advanced_click_count_;
+  // Waits for the OneClickSigninBubbleView to close, by observing its Widget,
+  // then running a RunLoop, which OnWidgetDestroyed will quit. It's not
+  // sufficient to wait for the message loop to go idle, as the bubble has a
+  // closing animation which may still be running at that point. Instead, wait
+  // for its widget to be destroyed.
+  void WaitForClose() {
+    views::Widget* widget =
+        OneClickSigninBubbleView::view_for_testing()->GetWidget();
+    widget->AddObserver(this);
+    base::RunLoop run_loop;
+    run_loop_ = &run_loop;
+    // Block until OnWidgetDestroyed() is fired.
+    run_loop.Run();
+    // The Widget has been destroyed, so there's no need to remove this as an
+    // observer.
+  }
+
+  // views::WidgetObserver method:
+  void OnWidgetDestroyed(views::Widget* widget) override {
+    run_loop_->Quit();
+  }
+
+  bool on_start_sync_called_ = false;
+  OneClickSigninSyncStarter::StartSyncMode mode_ =
+      OneClickSigninSyncStarter::CONFIGURE_SYNC_FIRST;
+  int bubble_learn_more_click_count_ = 0;
+  int dialog_learn_more_click_count_ = 0;
+  int advanced_click_count_ = 0;
 
  private:
   friend class OneClickSigninBubbleTestDelegate;
@@ -102,7 +119,8 @@ class OneClickSigninBubbleViewTest : public views::ViewsTestBase {
   };
 
   // Widget to host the anchor view of the bubble. Destroys itself when closed.
-  views::Widget* anchor_widget_;
+  views::Widget* anchor_widget_ = nullptr;
+  base::RunLoop* run_loop_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(OneClickSigninBubbleViewTest);
 };
@@ -124,7 +142,7 @@ TEST_F(OneClickSigninBubbleViewTest, HideBubble) {
   ShowOneClickSigninBubble(BrowserWindow::ONE_CLICK_SIGNIN_BUBBLE_TYPE_BUBBLE);
 
   OneClickSigninBubbleView::Hide();
-  content::RunAllPendingInMessageLoop();
+  WaitForClose();
   EXPECT_FALSE(OneClickSigninBubbleView::IsShowing());
 }
 
@@ -133,7 +151,7 @@ TEST_F(OneClickSigninBubbleViewTest, HideDialog) {
     BrowserWindow::ONE_CLICK_SIGNIN_BUBBLE_TYPE_MODAL_DIALOG);
 
   OneClickSigninBubbleView::Hide();
-  content::RunAllPendingInMessageLoop();
+  WaitForClose();
   EXPECT_FALSE(OneClickSigninBubbleView::IsShowing());
   EXPECT_TRUE(on_start_sync_called_);
   EXPECT_EQ(OneClickSigninSyncStarter::UNDO_SYNC, mode_);
@@ -151,9 +169,7 @@ TEST_F(OneClickSigninBubbleViewTest, BubbleOkButton) {
                              ui::EventTimeForNow(), 0, 0);
   listener->ButtonPressed(view->ok_button_, event);
 
-  // View should no longer be showing.  The message loop will exit once the
-  // fade animation of the bubble is done.
-  content::RunAllPendingInMessageLoop();
+  WaitForClose();
   EXPECT_FALSE(OneClickSigninBubbleView::IsShowing());
 }
 
@@ -168,9 +184,7 @@ TEST_F(OneClickSigninBubbleViewTest, DialogOkButton) {
                              ui::EventTimeForNow(), 0, 0);
   listener->ButtonPressed(view->ok_button_, event);
 
-  // View should no longer be showing and sync should start
-  // The message loop will exit once the fade animation of the dialog is done.
-  content::RunAllPendingInMessageLoop();
+  WaitForClose();
   EXPECT_FALSE(OneClickSigninBubbleView::IsShowing());
   EXPECT_TRUE(on_start_sync_called_);
   EXPECT_EQ(OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS, mode_);
@@ -187,9 +201,7 @@ TEST_F(OneClickSigninBubbleViewTest, DialogUndoButton) {
                              ui::EventTimeForNow(), 0, 0);
   listener->ButtonPressed(view->undo_button_, event);
 
-  // View should no longer be showing.  The message loop will exit once the
-  // fade animation of the bubble is done.
-  content::RunAllPendingInMessageLoop();
+  WaitForClose();
   EXPECT_FALSE(OneClickSigninBubbleView::IsShowing());
   EXPECT_TRUE(on_start_sync_called_);
   EXPECT_EQ(OneClickSigninSyncStarter::UNDO_SYNC, mode_);
@@ -203,9 +215,7 @@ TEST_F(OneClickSigninBubbleViewTest, BubbleAdvancedLink) {
   views::LinkListener* listener = view;
   listener->LinkClicked(view->advanced_link_, 0);
 
-  // View should no longer be showing and the OnAdvancedLinkClicked method
-  // of the delegate should have been called.
-  content::RunAllPendingInMessageLoop();
+  WaitForClose();
   EXPECT_FALSE(OneClickSigninBubbleView::IsShowing());
   EXPECT_EQ(1, advanced_click_count_);
 }
@@ -218,9 +228,7 @@ TEST_F(OneClickSigninBubbleViewTest, DialogAdvancedLink) {
   views::LinkListener* listener = view;
   listener->LinkClicked(view->advanced_link_, 0);
 
-  // View should no longer be showing. No delegate method should have been
-  // called: the callback is responsible to open the settings page.
-  content::RunAllPendingInMessageLoop();
+  WaitForClose();
   EXPECT_TRUE(on_start_sync_called_);
   EXPECT_EQ(OneClickSigninSyncStarter::CONFIGURE_SYNC_FIRST, mode_);
   EXPECT_FALSE(OneClickSigninBubbleView::IsShowing());
@@ -234,9 +242,7 @@ TEST_F(OneClickSigninBubbleViewTest, BubbleLearnMoreLink) {
   views::LinkListener* listener = view;
   listener->LinkClicked(view->learn_more_link_, 0);
 
-  // View should no longer be showing and the OnLearnMoreLinkClicked method
-  // of the delegate should have been called with |is_dialog| == false.
-  content::RunAllPendingInMessageLoop();
+  WaitForClose();
   EXPECT_FALSE(OneClickSigninBubbleView::IsShowing());
   EXPECT_EQ(1, bubble_learn_more_click_count_);
   EXPECT_EQ(0, dialog_learn_more_click_count_);
@@ -266,9 +272,7 @@ TEST_F(OneClickSigninBubbleViewTest, BubblePressEnterKey) {
   const ui::Accelerator accelerator(ui::VKEY_RETURN, 0);
   view->AcceleratorPressed(accelerator);
 
-  // View should no longer be showing.  The message loop will exit once the
-  // fade animation of the bubble is done.
-  content::RunAllPendingInMessageLoop();
+  WaitForClose();
   EXPECT_FALSE(OneClickSigninBubbleView::IsShowing());
 }
 
@@ -281,9 +285,7 @@ TEST_F(OneClickSigninBubbleViewTest, DialogPressEnterKey) {
   const ui::Accelerator accelerator(ui::VKEY_RETURN, 0);
   view->AcceleratorPressed(accelerator);
 
-  // View should no longer be showing.  The message loop will exit once the
-  // fade animation of the bubble is done.
-  content::RunAllPendingInMessageLoop();
+  WaitForClose();
   EXPECT_FALSE(OneClickSigninBubbleView::IsShowing());
   EXPECT_TRUE(on_start_sync_called_);
   EXPECT_EQ(OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS, mode_);
@@ -298,9 +300,7 @@ TEST_F(OneClickSigninBubbleViewTest, BubblePressEscapeKey) {
   const ui::Accelerator accelerator(ui::VKEY_ESCAPE, 0);
   view->AcceleratorPressed(accelerator);
 
-  // View should no longer be showing.  The message loop will exit once the
-  // fade animation of the bubble is done.
-  content::RunAllPendingInMessageLoop();
+  WaitForClose();
   EXPECT_FALSE(OneClickSigninBubbleView::IsShowing());
 }
 
@@ -313,9 +313,7 @@ TEST_F(OneClickSigninBubbleViewTest, DialogPressEscapeKey) {
   const ui::Accelerator accelerator(ui::VKEY_ESCAPE, 0);
   view->AcceleratorPressed(accelerator);
 
-  // View should no longer be showing.  The message loop will exit once the
-  // fade animation of the bubble is done.
-  content::RunAllPendingInMessageLoop();
+  WaitForClose();
   EXPECT_FALSE(OneClickSigninBubbleView::IsShowing());
   EXPECT_TRUE(on_start_sync_called_);
   EXPECT_EQ(OneClickSigninSyncStarter::UNDO_SYNC, mode_);
