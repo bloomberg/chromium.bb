@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.firstrun;
+package org.chromium.chrome.browser.signin;
 
+import android.app.FragmentManager;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
@@ -24,10 +25,16 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.firstrun.ImageCarousel;
 import org.chromium.chrome.browser.firstrun.ImageCarousel.ImageCarouselPositionChangeListener;
+import org.chromium.chrome.browser.firstrun.ProfileDataCache;
+import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.profiles.ProfileDownloader;
-import org.chromium.chrome.browser.signin.SigninManager;
+import org.chromium.chrome.browser.sync.ui.ConfirmImportSyncDataDialog;
+import org.chromium.chrome.browser.sync.ui.ConfirmImportSyncDataDialog.ImportSyncType;
+import org.chromium.signin.InvestigatedScenario;
 import org.chromium.sync.signin.AccountManagerHelper;
 import org.chromium.ui.text.SpanApplier;
 import org.chromium.ui.text.SpanApplier.SpanInfo;
@@ -37,10 +44,10 @@ import java.util.List;
 /**
  * This view allows the user to select an account to log in to, add an account,
  * cancel account selection, etc. Users of this class should
- * {@link AccountFirstRunView#setListener(Listener)} after the view has been
- * inflated.
+ * {@link AccountSigninView#setListener(Listener)} and
+ * {@link AccountSigninView#setDelegate(Delegate) after the view has been inflated.
  */
-public class AccountFirstRunView extends FrameLayout
+public class AccountSigninView extends FrameLayout
         implements ImageCarouselPositionChangeListener, ProfileDownloader.Observer {
 
     /**
@@ -59,7 +66,7 @@ public class AccountFirstRunView extends FrameLayout
 
         /**
          * The user selected an account.
-         * This call will be followed by either {@link #onSettingsClicked} or
+         * This call will be followed immediately by either {@link #onSettingsClicked} or
          * {@link #onDoneClicked}.
          * @param accountName The name of the account
          */
@@ -84,6 +91,18 @@ public class AccountFirstRunView extends FrameLayout
         public void onFailedToSetForcedAccount(String forcedAccountName);
     }
 
+    // TODO(peconn): Investigate expanding the Delegate to simplify the Listener implementations.
+
+    /**
+     * Provides UI objects for new UI component creation.
+     */
+    public interface Delegate {
+        /**
+         * Provides a FragmentManager for the view to create dialogs.
+         */
+        public FragmentManager getFragmentManager();
+    }
+
     private class SpinnerOnItemSelectedListener implements AdapterView.OnItemSelectedListener {
         @Override
         public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
@@ -95,6 +114,7 @@ public class AccountFirstRunView extends FrameLayout
                 mSpinner.setSelection(oldPosition, false);
 
                 mListener.onNewAccount();
+                RecordUserAction.record("Signin_AddAccountToDevice");
             } else {
                 mAccountName = accountName;
                 if (!mPositionSetProgrammatically) mImageCarousel.scrollTo(pos, false, false);
@@ -107,7 +127,7 @@ public class AccountFirstRunView extends FrameLayout
         }
     }
 
-    private static final String TAG = "AccountFirstRunView";
+    private static final String TAG = "AccountSigninView";
 
     private static final int EXPERIMENT_TITLE_VARIANT_MASK = 1;
     private static final int EXPERIMENT_SUMMARY_VARIANT_MASK = 2;
@@ -126,6 +146,7 @@ public class AccountFirstRunView extends FrameLayout
     private TextView mTitle;
     private TextView mDescriptionText;
     private Listener mListener;
+    private Delegate mDelegate;
     private Spinner mSpinner;
     private Drawable mSpinnerBackground;
     private String mForcedAccountName;
@@ -140,7 +161,7 @@ public class AccountFirstRunView extends FrameLayout
     private boolean mHorizontalModeEnabled = true;
     private boolean mShowSettingsSpan = true;
 
-    public AccountFirstRunView(Context context, AttributeSet attrs) {
+    public AccountSigninView(Context context, AttributeSet attrs) {
         super(context, attrs);
         mAccountManagerHelper = AccountManagerHelper.get(getContext().getApplicationContext());
     }
@@ -182,16 +203,16 @@ public class AccountFirstRunView extends FrameLayout
         mDescriptionText = (TextView) findViewById(R.id.description);
         // For the spans to be clickable.
         mDescriptionText.setMovementMethod(LinkMovementMethod.getInstance());
-        mDescriptionTextId = R.string.fre_account_choice_description;
+        mDescriptionTextId = R.string.signin_account_choice_description;
 
         // TODO(peconn): Ensure this is changed to R.string.cancel when used in Settings > Sign In.
-        mCancelButtonTextId = R.string.fre_skip_text;
+        mCancelButtonTextId = R.string.no_thanks;
 
         // Set the invisible TextView to contain the longest text the visible TextView can hold.
         // It assumes that the signed in description for child accounts is the longest text.
         ((TextView) findViewById(R.id.longest_description)).setText(getSignedInDescription(true));
 
-        mAddAnotherAccount = getResources().getString(R.string.fre_add_account);
+        mAddAnotherAccount = getResources().getString(R.string.signin_add_account);
 
         mSpinner = (Spinner) findViewById(R.id.google_accounts_spinner);
         mSpinnerBackground = mSpinner.getBackground();
@@ -213,13 +234,13 @@ public class AccountFirstRunView extends FrameLayout
             public boolean performAccessibilityAction(View host, int action, Bundle args) {
                 if (mSpinner.getContentDescription() == null) {
                     mSpinner.setContentDescription(getResources().getString(
-                            R.string.accessibility_fre_account_spinner));
+                            R.string.accessibility_signin_account_spinner));
                 }
                 return super.performAccessibilityAction(host, action, args);
             }
         });
 
-        showSignInPage();
+        showSigninPage();
     }
 
     @Override
@@ -236,7 +257,7 @@ public class AccountFirstRunView extends FrameLayout
                 // A new account has been added and the visibility has returned to us.
                 // The updateAccounts function will have selected the new account.
                 // Shortcut to confirm sign in page.
-                showConfirmSignInPage();
+                checkForPreviousAccountThenShowConfirmSigninPage();
             }
         }
     }
@@ -247,10 +268,10 @@ public class AccountFirstRunView extends FrameLayout
         assert MeasureSpec.getMode(widthMeasureSpec) == MeasureSpec.EXACTLY;
         int width = MeasureSpec.getSize(widthMeasureSpec);
         int height = MeasureSpec.getSize(heightMeasureSpec);
-        LinearLayout content = (LinearLayout) findViewById(R.id.fre_content);
+        LinearLayout content = (LinearLayout) findViewById(R.id.content);
         int paddingStart = 0;
         if (mHorizontalModeEnabled
-                && width >= 2 * getResources().getDimension(R.dimen.fre_image_carousel_width)
+                && width >= 2 * getResources().getDimension(R.dimen.signin_image_carousel_width)
                 && width > height) {
             content.setOrientation(LinearLayout.HORIZONTAL);
             paddingStart = getResources().getDimensionPixelSize(R.dimen.fre_margin);
@@ -297,7 +318,8 @@ public class AccountFirstRunView extends FrameLayout
         }
 
         mDescriptionTextId = (experimentGroup & EXPERIMENT_SUMMARY_VARIANT_MASK) != 0
-                ? R.string.sign_in_to_chrome_summary_variant : R.string.sign_in_to_chrome_summary;
+                ? R.string.signin_sign_in_to_chrome_summary_variant
+                : R.string.sign_in_to_chrome_summary;
 
         if ((experimentGroup & EXPERIMENT_LAYOUT_VARIANT_MASK) != 0) {
             mImageCarousel.setVisibility(GONE);
@@ -307,7 +329,7 @@ public class AccountFirstRunView extends FrameLayout
             illustrationView.setBackgroundColor(ApiCompatibilityUtils.getColor(getResources(),
                     R.color.illustration_background_color));
 
-            LinearLayout linearLayout = (LinearLayout) findViewById(R.id.fre_account_linear_layout);
+            LinearLayout linearLayout = (LinearLayout) findViewById(R.id.account_linear_layout);
             linearLayout.addView(illustrationView, 0);
         }
     }
@@ -329,6 +351,14 @@ public class AccountFirstRunView extends FrameLayout
      */
     public void setListener(Listener listener) {
         mListener = listener;
+    }
+
+    /**
+     * Set the UI object creation delegate. See {@link Delegate}
+     * @param delegate The delegate.
+     */
+    public void setDelegate(Delegate delegate) {
+        mDelegate = delegate;
     }
 
     /**
@@ -359,14 +389,14 @@ public class AccountFirstRunView extends FrameLayout
             mArrayAdapter.addAll(mAccountNames);
             mArrayAdapter.add(mAddAnotherAccount);
 
-            setUpSignInButton(true);
+            setUpSigninButton(true);
             mDescriptionText.setText(mDescriptionTextId);
 
         } else {
             mSpinner.setVisibility(View.GONE);
             mArrayAdapter.add(mAddAnotherAccount);
-            setUpSignInButton(false);
-            mDescriptionText.setText(R.string.fre_no_account_choice_description);
+            setUpSigninButton(false);
+            mDescriptionText.setText(R.string.signin_no_account_choice_description);
         }
 
         if (mProfileData != null) mProfileData.update();
@@ -438,18 +468,21 @@ public class AccountFirstRunView extends FrameLayout
             if (name == null) name = mProfileData.getFullName(mAccountName);
         }
         if (name == null) name = mAccountName;
-        String text = String.format(getResources().getString(R.string.fre_hi_name), name);
+        String text = String.format(getResources().getString(R.string.signin_hi_name), name);
         mTitle.setText(text);
     }
 
     /**
      * Updates the view to show that sign in has completed.
+     * This should only be used if the user is not currently signed in (eg on the First
+     * Run Experience).
      */
     public void switchToSignedMode() {
-        showConfirmSignInPage();
+        // TODO(peconn): Add a warning here
+        showConfirmSigninPage();
     }
 
-    private void showSignInPage() {
+    private void showSigninPage() {
         mSignedIn = false;
         mTitle.setText(R.string.sign_in_to_chrome);
 
@@ -463,7 +496,7 @@ public class AccountFirstRunView extends FrameLayout
         mImageCarousel.setSignedInMode(false);
     }
 
-    private void showConfirmSignInPage() {
+    private void showConfirmSigninPage() {
         mSignedIn = true;
         updateProfileName();
 
@@ -499,6 +532,26 @@ public class AccountFirstRunView extends FrameLayout
         mImageCarousel.setSignedInMode(true);
     }
 
+    private void checkForPreviousAccountThenShowConfirmSigninPage() {
+        if (SigninInvestigator.investigate(mAccountName)
+                == InvestigatedScenario.DIFFERENT_ACCOUNT) {
+
+            ConfirmImportSyncDataDialog.showNewInstance(
+                    PrefServiceBridge.getInstance().getSyncLastAccountName(),
+                    mAccountName,
+                    ImportSyncType.PREVIOUS_DATA_FOUND,
+                    mDelegate.getFragmentManager(),
+                    new ConfirmImportSyncDataDialog.Listener() {
+                        @Override
+                        public void onConfirm() {
+                            showConfirmSigninPage();
+                        }
+                    });
+        } else {
+            showConfirmSigninPage();
+        }
+    }
+
     private void setUpCancelButton() {
         setNegativeButtonVisible(true);
 
@@ -512,20 +565,21 @@ public class AccountFirstRunView extends FrameLayout
         });
     }
 
-    private void setUpSignInButton(boolean hasAccounts) {
+    private void setUpSigninButton(boolean hasAccounts) {
         if (hasAccounts) {
             mPositiveButton.setText(R.string.choose_account_sign_in);
             mPositiveButton.setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    showConfirmSignInPage();
+                    checkForPreviousAccountThenShowConfirmSigninPage();
                 }
             });
         } else {
-            mPositiveButton.setText(R.string.fre_no_accounts);
+            mPositiveButton.setText(R.string.signin_no_accounts);
             mPositiveButton.setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    RecordUserAction.record("Signin_AddAccountToDevice");
                     mListener.onNewAccount();
                 }
             });
@@ -540,13 +594,14 @@ public class AccountFirstRunView extends FrameLayout
         mNegativeButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                showSignInPage();
+                RecordUserAction.record("Signin_Undo_Signin");
+                showSigninPage();
             }
         });
     }
 
     private void setUpConfirmButton() {
-        mPositiveButton.setText(getResources().getText(R.string.fre_accept));
+        mPositiveButton.setText(getResources().getText(R.string.signin_accept));
         mPositiveButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -568,10 +623,10 @@ public class AccountFirstRunView extends FrameLayout
 
     private String getSignedInDescription(boolean childAccount) {
         if (childAccount) {
-            return getResources().getString(R.string.fre_signed_in_description) + '\n'
-                    + getResources().getString(R.string.fre_signed_in_description_uca_addendum);
+            return getResources().getString(R.string.signin_signed_in_description) + '\n'
+                    + getResources().getString(R.string.signin_signed_in_description_uca_addendum);
         } else {
-            return getResources().getString(R.string.fre_signed_in_description);
+            return getResources().getString(R.string.signin_signed_in_description);
         }
     }
 
