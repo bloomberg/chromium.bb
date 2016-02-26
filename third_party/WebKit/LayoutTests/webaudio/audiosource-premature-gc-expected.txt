@@ -1,0 +1,11 @@
+Test premature GC upon OscillatorNode and AudioBufferSourceNode
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS OscillatorNode 1 survived GC and onended event fired.
+PASS BufferSourceNode 1 survived GC and onended event fired.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+
