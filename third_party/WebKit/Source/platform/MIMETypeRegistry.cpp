@@ -125,18 +125,4 @@ bool MIMETypeRegistry::isSupportedStyleSheetMIMEType(const String& mimeType)
     return equalIgnoringCase(mimeType, "text/css");
 }
 
-bool MIMETypeRegistry::isSupportedFontMIMEType(const String& mimeType)
-{
-    static const unsigned fontLen = 5;
-    if (!mimeType.startsWith("font/", TextCaseInsensitive))
-        return false;
-    String subType = mimeType.substring(fontLen).lower();
-    return subType == "woff" || subType == "woff2" || subType == "otf" || subType == "ttf" || subType == "sfnt";
-}
-
-bool MIMETypeRegistry::isSupportedTextTrackMIMEType(const String& mimeType)
-{
-    return equalIgnoringCase(mimeType, "text/vtt");
-}
-
 } // namespace blink

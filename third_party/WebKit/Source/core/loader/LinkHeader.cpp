@@ -256,8 +256,6 @@ void LinkHeader::setValue(LinkParameterName name, String value)
         m_crossOrigin = crossOriginAttributeValue(value);
     else if (name == LinkParameterAs)
         m_as = value.lower();
-    else if (name == LinkParameterType)
-        m_mimeType = value.lower();
 }
 
 template <typename CharType>
