@@ -21,6 +21,8 @@ source_set("lib") {
     "accelerator_registrar_impl.h",
     "background_layout.cc",
     "background_layout.h",
+    "fill_layout.cc",
+    "fill_layout.h",
     "frame/caption_buttons/caption_button_types.h",
     "frame/caption_buttons/frame_caption_button.cc",
     "frame/caption_buttons/frame_caption_button.h",

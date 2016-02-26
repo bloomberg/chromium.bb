@@ -23,11 +23,8 @@ class WindowManagerClient;
 namespace mash {
 namespace wm {
 
-class BackgroundLayout;
-class ScreenlockLayout;
+class LayoutManager;
 class ShadowController;
-class ShelfLayout;
-class WindowLayout;
 class WindowManager;
 class WindowManagerApplication;
 
@@ -89,10 +86,7 @@ class RootWindowController : public mus::WindowObserver,
 
   scoped_ptr<WindowManager> window_manager_;
 
-  scoped_ptr<BackgroundLayout> background_layout_;
-  scoped_ptr<ScreenlockLayout> screenlock_layout_;
-  scoped_ptr<ShelfLayout> shelf_layout_;
-  scoped_ptr<WindowLayout> window_layout_;
+  std::map<mus::Window*, scoped_ptr<LayoutManager>> layout_manager_;
 
   scoped_ptr<ShadowController> shadow_controller_;
 

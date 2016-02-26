@@ -14,6 +14,7 @@
 #include "components/mus/public/cpp/window_tree_host_factory.h"
 #include "mash/shell/public/interfaces/shell.mojom.h"
 #include "mash/wm/background_layout.h"
+#include "mash/wm/fill_layout.h"
 #include "mash/wm/screenlock_layout.h"
 #include "mash/wm/shadow_controller.h"
 #include "mash/wm/shelf_layout.h"
@@ -121,20 +122,23 @@ void RootWindowController::AddAccelerators() {
 void RootWindowController::OnEmbed(mus::Window* root) {
   root_ = root;
   root_->AddObserver(this);
+  layout_manager_[root_].reset(new FillLayout(root_));
 
   app_->OnRootWindowControllerGotRoot(this);
 
   CreateContainers();
-  background_layout_.reset(new BackgroundLayout(
-      GetWindowForContainer(mojom::Container::USER_BACKGROUND)));
-  screenlock_layout_.reset(
-      new ScreenlockLayout(GetWindowForContainer(mojom::Container::LOGIN_APP)));
-  shelf_layout_.reset(
-      new ShelfLayout(GetWindowForContainer(mojom::Container::USER_SHELF)));
+
+  // Override the default layout managers for certain containers.
+  mus::Window* user_background =
+      GetWindowForContainer(mojom::Container::USER_BACKGROUND);
+  layout_manager_[user_background].reset(new BackgroundLayout(user_background));
+  mus::Window* login_app = GetWindowForContainer(mojom::Container::LOGIN_APP);
+  layout_manager_[login_app].reset(new ScreenlockLayout(login_app));
+  mus::Window* user_shelf = GetWindowForContainer(mojom::Container::USER_SHELF);
+  layout_manager_[user_shelf].reset(new ShelfLayout(user_shelf));
 
   mus::Window* window = GetWindowForContainer(mojom::Container::USER_WINDOWS);
-  window_layout_.reset(
-      new WindowLayout(GetWindowForContainer(mojom::Container::USER_WINDOWS)));
+  layout_manager_[window].reset(new WindowLayout(window));
   window_manager_client()->AddActivationParent(window);
   window_tree_host_->SetTitle("Mash");
 
@@ -171,7 +175,8 @@ void RootWindowController::CreateContainer(
   mus::Window* window = root_->connection()->NewWindow();
   DCHECK_EQ(mus::LoWord(window->id()), static_cast<uint16_t>(container))
       << "Containers must be created before other windows!";
-  window->SetBounds(root_->bounds());
+  // Install a FillLayout by default for containers.
+  layout_manager_[window].reset(new FillLayout(window));
   // User private windows are hidden by default until the window manager learns
   // the lock state, so their contents are never accidentally revealed.
   window->SetVisible(container != mojom::Container::USER_PRIVATE);
