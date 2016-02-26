@@ -44,6 +44,7 @@ using namespace HTMLNames;
 
 inline HTMLSlotElement::HTMLSlotElement(Document& document)
     : HTMLElement(slotTag, document)
+    , m_distributionState(DistributionUnchanged)
 {
     setHasCustomStyleCallbacks();
 }
@@ -107,6 +108,7 @@ void HTMLSlotElement::clearDistribution()
     m_oldDistributedNodes.swap(m_distributedNodes);
     m_distributedNodes.clear();
     m_distributedIndices.clear();
+    m_distributionState = DistributionReset;
 }
 
 bool HTMLSlotElement::hasSlotChangeEventListener()
@@ -241,13 +243,25 @@ void HTMLSlotElement::updateDistributedNodesWithFallback()
     }
 }
 
+bool HTMLSlotElement::distributionChanged()
+{
+    if (m_distributionState == DistributionReset)
+        m_distributionState = m_oldDistributedNodes == m_distributedNodes ? DistributionUnchanged : DistributionChanged;
+    return m_distributionState == DistributionChanged;
+}
+
 void HTMLSlotElement::didUpdateDistribution()
 {
-    if (hasSlotChangeEventListener() && m_distributedNodes != m_oldDistributedNodes) {
+    if (isChildOfV1ShadowHost()) {
+        ElementShadow* shadow = parentElementShadow();
+        ASSERT(shadow);
+        if (!shadow->needsDistributionRecalc() && distributionChanged())
+            shadow->setNeedsDistributionRecalc();
+    }
+    if (hasSlotChangeEventListener() && distributionChanged()) {
         // TODO(hayato): Do not enqueue a slotchange event for the same slot twice in the microtask queue
         Microtask::enqueueMicrotask(WTF::bind(&HTMLSlotElement::dispatchSlotChangeEvent, PassRefPtrWillBeRawPtr<HTMLSlotElement>(this)));
     }
-    // TODO(hayato): Call setNeedsDistributionRecalc if the distribution changes due to the fallback elements
 }
 
 DEFINE_TRACE(HTMLSlotElement)

@@ -73,18 +73,26 @@ public:
 private:
     HTMLSlotElement(Document&);
 
+    enum DistributionState {
+        DistributionReset,
+        DistributionChanged,
+        DistributionUnchanged
+    };
+
     void childrenChanged(const ChildrenChange&) final;
     InsertionNotificationRequest insertedInto(ContainerNode*) final;
     void removedFrom(ContainerNode*) final;
     void willRecalcStyle(StyleRecalcChange) final;
 
     void dispatchSlotChangeEvent();
+    bool distributionChanged();
 
     WillBeHeapVector<RefPtrWillBeMember<Node>> m_assignedNodes;
     WillBeHeapVector<RefPtrWillBeMember<Node>> m_distributedNodes;
     WillBeHeapHashMap<RawPtrWillBeMember<const Node>, size_t> m_distributedIndices;
     // TODO(hayato): Remove m_oldDistibutedNodes and make SlotAssignment check the diffirence between old and new distributed nodes for each slot to save the memories.
     WillBeHeapVector<RefPtrWillBeMember<Node>> m_oldDistributedNodes;
+    DistributionState m_distributionState;
 };
 
 } // namespace blink
