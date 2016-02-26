@@ -14,12 +14,11 @@ import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
 import android.util.AttributeSet;
-import android.view.Gravity;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
@@ -28,7 +27,6 @@ import android.widget.TextView;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.firstrun.FirstRunView;
 import org.chromium.chrome.browser.firstrun.ImageCarousel;
 import org.chromium.chrome.browser.firstrun.ImageCarousel.ImageCarouselPositionChangeListener;
 import org.chromium.chrome.browser.firstrun.ProfileDataCache;
@@ -49,8 +47,7 @@ import java.util.List;
  * {@link AccountSigninView#setListener(Listener)} and
  * {@link AccountSigninView#setDelegate(Delegate) after the view has been inflated.
  */
-
-public class AccountSigninView extends FirstRunView
+public class AccountSigninView extends FrameLayout
         implements ImageCarouselPositionChangeListener, ProfileDownloader.Observer {
 
     /**
@@ -130,29 +127,7 @@ public class AccountSigninView extends FirstRunView
         }
     }
 
-    /**
-     * A class that overrides the spinner styling when it is disabled (an account is selected).
-     */
-    private class AccountSpinnerArrayAdapter extends ArrayAdapter<CharSequence> {
-        /**
-         * Creates an AccountSpinnerArrayAdapter for the given context from the given resource.
-         */
-        public AccountSpinnerArrayAdapter(Context context, int resource) {
-            super(context, resource);
-        }
-
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-            View view = super.getView(position, convertView, parent);
-            if (!mSpinner.isEnabled()) {
-                view.setPadding(0, view.getPaddingTop(), 0, view.getPaddingBottom());
-                parent.setPadding(0, parent.getPaddingTop(), 0, parent.getPaddingTop());
-            }
-            return view;
-        }
-    }
-
-    private static final String TAG = "AccountFirstRunView";
+    private static final String TAG = "AccountSigninView";
 
     private static final int EXPERIMENT_TITLE_VARIANT_MASK = 1;
     private static final int EXPERIMENT_SUMMARY_VARIANT_MASK = 2;
@@ -184,7 +159,6 @@ public class AccountSigninView extends FirstRunView
     private int mCancelButtonTextId;
     private boolean mIsChildAccount;
     private boolean mHorizontalModeEnabled = true;
-    private boolean mDynamicPaddingEnabled = true;
     private boolean mShowSettingsSpan = true;
 
     public AccountSigninView(Context context, AttributeSet attrs) {
@@ -214,7 +188,7 @@ public class AccountSigninView extends FirstRunView
     protected void onFinishInflate() {
         super.onFinishInflate();
 
-        mImageCarousel = (ImageCarousel) findViewById(R.id.image);
+        mImageCarousel = (ImageCarousel) findViewById(R.id.image_slider);
         mImageCarousel.setListener(this);
 
         mPositiveButton = (Button) findViewById(R.id.positive_button);
@@ -234,12 +208,16 @@ public class AccountSigninView extends FirstRunView
         // TODO(peconn): Ensure this is changed to R.string.cancel when used in Settings > Sign In.
         mCancelButtonTextId = R.string.no_thanks;
 
+        // Set the invisible TextView to contain the longest text the visible TextView can hold.
+        // It assumes that the signed in description for child accounts is the longest text.
+        ((TextView) findViewById(R.id.longest_description)).setText(getSignedInDescription(true));
+
         mAddAnotherAccount = getResources().getString(R.string.signin_add_account);
 
         mSpinner = (Spinner) findViewById(R.id.google_accounts_spinner);
         mSpinnerBackground = mSpinner.getBackground();
-        mArrayAdapter = new AccountSpinnerArrayAdapter(getContext().getApplicationContext(),
-                R.layout.fre_spinner_text);
+        mArrayAdapter = new ArrayAdapter<CharSequence>(
+                getContext().getApplicationContext(), R.layout.fre_spinner_text);
 
         mArrayAdapter.setDropDownViewResource(R.layout.fre_spinner_dropdown);
         mSpinner.setAdapter(mArrayAdapter);
@@ -285,13 +263,27 @@ public class AccountSigninView extends FirstRunView
     }
 
     @Override
-    protected boolean isHorizontalModeEnabled() {
-        return mHorizontalModeEnabled;
-    }
-
-    @Override
-    protected boolean isDynamicPaddingEnabled() {
-        return mDynamicPaddingEnabled;
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        // This assumes that view's layout_width is set to match_parent.
+        assert MeasureSpec.getMode(widthMeasureSpec) == MeasureSpec.EXACTLY;
+        int width = MeasureSpec.getSize(widthMeasureSpec);
+        int height = MeasureSpec.getSize(heightMeasureSpec);
+        LinearLayout content = (LinearLayout) findViewById(R.id.content);
+        int paddingStart = 0;
+        if (mHorizontalModeEnabled
+                && width >= 2 * getResources().getDimension(R.dimen.signin_image_carousel_width)
+                && width > height) {
+            content.setOrientation(LinearLayout.HORIZONTAL);
+            paddingStart = getResources().getDimensionPixelSize(R.dimen.fre_margin);
+        } else {
+            content.setOrientation(LinearLayout.VERTICAL);
+        }
+        ApiCompatibilityUtils.setPaddingRelative(content,
+                paddingStart,
+                content.getPaddingTop(),
+                ApiCompatibilityUtils.getPaddingEnd(content),
+                content.getPaddingBottom());
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
     }
 
     /**
@@ -301,7 +293,6 @@ public class AccountSigninView extends FirstRunView
      */
     public void configureForRecentTabsOrBookmarksPage() {
         mHorizontalModeEnabled = false;
-        mDynamicPaddingEnabled = false;
         mShowSettingsSpan = false;
 
         setBackgroundResource(R.color.ntp_bg);
@@ -338,7 +329,7 @@ public class AccountSigninView extends FirstRunView
             illustrationView.setBackgroundColor(ApiCompatibilityUtils.getColor(getResources(),
                     R.color.illustration_background_color));
 
-            LinearLayout linearLayout = (LinearLayout) findViewById(R.id.fre_main_layout);
+            LinearLayout linearLayout = (LinearLayout) findViewById(R.id.account_linear_layout);
             linearLayout.addView(illustrationView, 0);
         }
     }
@@ -491,28 +482,12 @@ public class AccountSigninView extends FirstRunView
         showConfirmSigninPage();
     }
 
-    private void configureSpinner(boolean signinPage) {
-        mSpinner.setEnabled(signinPage);
-        MarginLayoutParams params = (MarginLayoutParams) mSpinner.getLayoutParams();
-        if (signinPage) {
-            mSpinner.setBackground(mSpinnerBackground);
-            params.bottomMargin = getResources().getDimensionPixelSize(
-                    R.dimen.fre_vertical_spacing);
-        } else {
-            mSpinner.setBackground(null);
-            params.bottomMargin = getResources().getDimensionPixelSize(
-                    R.dimen.signin_spinner_selected_bottom_padding);
-            mSpinner.setGravity(Gravity.CENTER_VERTICAL);
-        }
-
-        mSpinner.setLayoutParams(params);
-    }
-
     private void showSigninPage() {
         mSignedIn = false;
         mTitle.setText(R.string.sign_in_to_chrome);
 
-        configureSpinner(true);
+        mSpinner.setEnabled(true);
+        mSpinner.setBackground(mSpinnerBackground);
         mImageCarousel.setVisibility(VISIBLE);
 
         setUpCancelButton();
@@ -525,7 +500,8 @@ public class AccountSigninView extends FirstRunView
         mSignedIn = true;
         updateProfileName();
 
-        configureSpinner(false);
+        mSpinner.setEnabled(false);
+        mSpinner.setBackground(null);
         setUpConfirmButton();
         setUpUndoButton();
 
@@ -539,7 +515,7 @@ public class AccountSigninView extends FirstRunView
 
                 @Override
                 public void updateDrawState(TextPaint textPaint) {
-                    textPaint.setColor(getResources().getColor(R.color.ui_link_text_color));
+                    textPaint.setColor(textPaint.linkColor);
                     textPaint.setUnderlineText(false);
                 }
             };
@@ -590,8 +566,8 @@ public class AccountSigninView extends FirstRunView
     }
 
     private void setUpSigninButton(boolean hasAccounts) {
-        mPositiveButton.setText(R.string.choose_account_sign_in);
         if (hasAccounts) {
+            mPositiveButton.setText(R.string.choose_account_sign_in);
             mPositiveButton.setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -599,6 +575,7 @@ public class AccountSigninView extends FirstRunView
                 }
             });
         } else {
+            mPositiveButton.setText(R.string.signin_no_accounts);
             mPositiveButton.setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View v) {

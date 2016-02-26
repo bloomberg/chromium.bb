@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.widget.LinearLayout;
 
 import org.chromium.base.metrics.RecordUserAction;
@@ -74,15 +75,15 @@ public class SigninPromoScreen extends AlwaysDismissedDialog
         setOwnerActivity(activity);
 
         LayoutInflater inflater = LayoutInflater.from(activity);
-        mAccountFirstRunView = (AccountSigninView)
-                inflater.inflate(R.layout.account_signin_view, null);
+        View view = inflater.inflate(R.layout.account_signin_view, null);
         mProfileDataCache = new ProfileDataCache(activity, Profile.getLastUsedProfile());
+        mAccountFirstRunView = (AccountSigninView) view.findViewById(R.id.account_layout);
         mAccountFirstRunView.init(mProfileDataCache);
         mAccountFirstRunView.configureForAddAccountPromo();
         mAccountFirstRunView.setListener(this);
         mAccountFirstRunView.setDelegate(this);
 
-        setContentView(mAccountFirstRunView, new LinearLayout.LayoutParams(
+        setContentView(view, new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT));
     }
 

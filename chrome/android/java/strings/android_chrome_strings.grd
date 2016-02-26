@@ -1073,7 +1073,7 @@ To obtain new licenses, connect to the internet and play your downloaded content
         You’re switching sync accounts from <ph name="FROM_ACCOUNT">%2$s<ex>johndoe@old.com</ex></ph> to <ph name="TO_ACCOUNT">%1$s<ex>johndoe@new.com</ex></ph>. What do you want to do with your existing bookmarks, history, passwords and other settings?
       </message>
       <message name="IDS_SYNC_IMPORT_DATA_PROMPT_EXISTING_DATA" desc="Prompt for the user to choose how they want to handle their existing sync data">
-        You’re signing in to <ph name="TO_ACCOUNT">%1$s<ex>johndoe@new.com</ex></ph>. Some of your existing bookmarks, history, passwords, and other settings were previously synced to <ph name="FROM_ACCOUNT">%2$s<ex>johndoe@old.com</ex></ph>. What do you want to do with your existing data?
+        You are signing in to <ph name="TO_ACCOUNT">%1$s<ex>johndoe@new.com</ex></ph>. Some of your existing bookmarks, history, passwords, and other settings were previously synced to <ph name="FROM_ACCOUNT">%2$s<ex>johndoe@old.com</ex></ph>. What do you want to do with your existing data?
       </message>
       <message name="IDS_SYNC_IMPORT_EXISTING_DATA" desc="Option to import existing data to the newly selected sync account">
         Import existing data
@@ -1675,6 +1675,9 @@ You are signing in with a managed account and giving its administrator control o
       </message>
       <message name="IDS_SIGNIN_SIGN_IN_TO_CHROME_SUMMARY_VARIANT" desc="A variant of summary for the signin promo; lists reasons to sign in to Chrome.">
         Sign in to access all your web stuff from any device
+      </message>
+      <message name="IDS_SIGNIN_NO_ACCOUNTS" desc="Text for spinner when there is no google accounts [CHAR-LIMIT=40]">
+        Add an account
       </message>
       <message name="IDS_SIGNIN_HI_NAME" desc="Title welcoming the user by their name after they have signed in.">
         Hi, <ph name="FULL_NAME">%1$s<ex>John Smith</ex></ph>

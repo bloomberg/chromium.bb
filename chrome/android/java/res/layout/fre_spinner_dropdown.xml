@@ -9,7 +9,7 @@
     style="?android:attr/spinnerDropDownItemStyle"
     android:singleLine="true"
     android:ellipsize="end"
-    android:maxWidth="300dp"
+    android:maxWidth="216dp"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:textColor="@color/fre_text_color"

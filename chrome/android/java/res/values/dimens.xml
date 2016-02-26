@@ -162,23 +162,19 @@
     <dimen name="badge_border_size">1.3dp</dimen>
 
     <!-- First Run Experience dimensions -->
-    <dimen name="fre_content_margin">24dp</dimen>
-    <dimen name="fre_vertical_spacing">32dp</dimen>
-    <dimen name="fre_button_bar_height">56dp</dimen>
     <dimen name="fre_button_padding">12dp</dimen>
     <dimen name="fre_margin">24dp</dimen>
     <dimen name="fre_title_text_size">24sp</dimen>
     <dimen name="fre_button_text_size">14sp</dimen>
     <dimen name="fre_normal_text_size">14sp</dimen>
-    <dimen name="fre_image_height">120dp</dimen>
+    <dimen name="fre_image_height">130dp</dimen>
     <dimen name="fre_tos_checkbox_padding">12dp</dimen>
 
     <!-- Account Signin dimensions -->
     <!-- The Account Signin page appears in the First Run Experience (amongst other places), so uses
     a lot of the fre_* dimensions for consistency. -->
-    <dimen name="signin_image_carousel_width">240dp</dimen>
+    <dimen name="signin_image_carousel_width">260dp</dimen>
     <dimen name="signin_checkmark_size">38dp</dimen>
-    <dimen name="signin_spinner_selected_bottom_padding">16dp</dimen>
 
     <!-- Sign-in promo dimensions -->
     <dimen name="sign_in_promo_padding_bottom">16dp</dimen>
