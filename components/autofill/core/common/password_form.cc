@@ -79,7 +79,7 @@ PasswordForm::PasswordForm()
       type(TYPE_MANUAL),
       times_used(0),
       generation_upload_status(NO_SIGNAL_SENT),
-      skip_zero_click(false),
+      skip_zero_click(true),
       layout(Layout::LAYOUT_OTHER),
       was_parsed_using_autofill_predictions(false),
       is_public_suffix_match(false),

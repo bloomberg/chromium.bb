@@ -493,7 +493,7 @@ class NativeBackendGnomeTest : public testing::Test {
     CheckStringAttribute(item, "avatar_url", form.icon_url.spec());
     CheckStringAttribute(item, "federation_url",
                          form.federation_origin.Serialize());
-    CheckUint32Attribute(item, "skip_zero_click", form.skip_zero_click);
+    CheckUint32Attribute(item, "should_skip_zero_click", form.skip_zero_click);
     CheckUint32Attribute(item, "generation_upload_status",
                          form.generation_upload_status);
     CheckStringAttribute(item, "application", app_string);

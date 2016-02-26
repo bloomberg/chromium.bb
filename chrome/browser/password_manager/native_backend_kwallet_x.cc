@@ -37,7 +37,7 @@ namespace {
 
 // In case the fields in the pickle ever change, version them so we can try to
 // read old pickles. (Note: do not eat old pickles past the expiration date.)
-const int kPickleVersion = 7;
+const int kPickleVersion = 8;
 
 // We could localize this string, but then changing your locale would cause
 // you to lose access to all your stored passwords. Maybe best not to do that.
@@ -221,6 +221,8 @@ bool DeserializeValueSize(const std::string& signon_realm,
         LogDeserializationWarning(version, signon_realm, false);
         return false;
       }
+      if (version <= 7)
+        form->skip_zero_click = true;
     }
 
     if (version > 4) {

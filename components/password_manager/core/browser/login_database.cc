@@ -39,7 +39,7 @@ using autofill::PasswordForm;
 namespace password_manager {
 
 // The current version number of the login database schema.
-const int kCurrentVersionNumber = 16;
+const int kCurrentVersionNumber = 17;
 // The oldest version of the schema such that a legacy Chrome client using that
 // version can still read/write the current database.
 const int kCompatibleVersionNumber = 14;
@@ -619,6 +619,13 @@ bool LoginDatabase::MigrateOldVersionsAsNeeded() {
       // Recreate the statistics.
       if (!stats_table_.MigrateToVersion(16))
         return false;
+    case 16: {
+      // No change in scheme: just disable auto sign-in by default in
+      // preparation to launch the credential management API.
+      if (!db_.Execute("UPDATE logins SET skip_zero_click = 1"))
+        return false;
+      // Fall through.
+    }
 
     // -------------------------------------------------------------------------
     // DO NOT FORGET to update |kCompatibleVersionNumber| if you add a migration

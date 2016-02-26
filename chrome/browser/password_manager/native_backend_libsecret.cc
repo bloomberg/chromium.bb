@@ -122,7 +122,7 @@ const SecretSchema kLibsecretSchema = {
      {"display_name", SECRET_SCHEMA_ATTRIBUTE_STRING},
      {"avatar_url", SECRET_SCHEMA_ATTRIBUTE_STRING},
      {"federation_url", SECRET_SCHEMA_ATTRIBUTE_STRING},
-     {"skip_zero_click", SECRET_SCHEMA_ATTRIBUTE_INTEGER},
+     {"should_skip_zero_click", SECRET_SCHEMA_ATTRIBUTE_INTEGER},
      {"generation_upload_status", SECRET_SCHEMA_ATTRIBUTE_INTEGER},
      {"form_data", SECRET_SCHEMA_ATTRIBUTE_STRING},
      // This field is always "chrome-profile_id" so that we can search for it.
@@ -195,7 +195,10 @@ scoped_ptr<PasswordForm> FormOutOfAttributes(GHashTable* attrs) {
   form->icon_url = GURL(GetStringFromAttributes(attrs, "avatar_url"));
   form->federation_origin =
       url::Origin(GURL(GetStringFromAttributes(attrs, "federation_url")));
-  form->skip_zero_click = GetUintFromAttributes(attrs, "skip_zero_click");
+  form->skip_zero_click =
+      g_hash_table_lookup(attrs, "should_skip_zero_click")
+          ? GetUintFromAttributes(attrs, "should_skip_zero_click")
+          : true;
   form->generation_upload_status =
       static_cast<PasswordForm::GenerationUploadStatus>(
           GetUintFromAttributes(attrs, "generation_upload_status"));
@@ -476,7 +479,7 @@ bool NativeBackendLibsecret::RawAddLogin(const PasswordForm& form) {
       "display_name", UTF16ToUTF8(form.display_name).c_str(),
       "avatar_url", form.icon_url.spec().c_str(),
       "federation_url", form.federation_origin.Serialize().c_str(),
-      "skip_zero_click", form.skip_zero_click,
+      "should_skip_zero_click", form.skip_zero_click,
       "generation_upload_status", form.generation_upload_status,
       "form_data", form_data.c_str(),
       "application", app_string_.c_str(),

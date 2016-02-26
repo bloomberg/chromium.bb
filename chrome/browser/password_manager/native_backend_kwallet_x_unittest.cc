@@ -1107,6 +1107,7 @@ class NativeBackendKWalletPickleTest : public NativeBackendKWalletTestBase {
   void CreateVersion0Pickle(bool size_32,
                             const PasswordForm& form,
                             base::Pickle* pickle);
+  void CheckVersion7Pickle();
   // As explained in http://crbug.com/494229#c11, version 6 added a new optional
   // field to version 5. This field became required in version 7. Depending on
   // |with_optional_field|, this method checks deserialization with or without
@@ -1188,6 +1189,31 @@ void NativeBackendKWalletPickleTest::CreatePickle(bool size_32,
     pickle->WriteInt64(form.date_created.ToTimeT());
 }
 
+void NativeBackendKWalletPickleTest::CheckVersion7Pickle() {
+  base::Pickle pickle;
+  PasswordForm default_values;
+  PasswordForm form = form_google_;
+
+  // Version 7 pickles always deserialize with 'skip_zero_click' of 'true'.
+  form.skip_zero_click = false;
+  CreateVersion1PlusPickle(form, &pickle, 7, 7);
+  ScopedVector<PasswordForm> form_list =
+      NativeBackendKWalletStub::DeserializeValue(form.signon_realm, pickle);
+  EXPECT_EQ(1u, form_list.size());
+  form.skip_zero_click = true;
+  if (form_list.size() > 0)
+    CheckPasswordForm(form, *form_list[0], true);
+
+  // Version 8 pickles deserialize with their own 'skip_zero_click' value.
+  form.skip_zero_click = false;
+  CreateVersion1PlusPickle(form, &pickle, 8, 8);
+  form_list =
+      NativeBackendKWalletStub::DeserializeValue(form.signon_realm, pickle);
+  EXPECT_EQ(1u, form_list.size());
+  if (form_list.size() > 0)
+    CheckPasswordForm(form, *form_list[0], true);
+}
+
 void NativeBackendKWalletPickleTest::CheckVersion6Pickle(
     bool with_optional_field) {
   base::Pickle pickle;
@@ -1212,7 +1238,7 @@ void NativeBackendKWalletPickleTest::CheckVersion5Pickle() {
   PasswordForm form = form_google_;
   // Remove the field which was not present in version #5.
   form.generation_upload_status = default_values.generation_upload_status;
-  CreateVersion1PlusPickle(form, &pickle, 5, 5);
+  CreateVersion1PlusPickle(form, &pickle, 6, 6);
 
   ScopedVector<PasswordForm> form_list =
       NativeBackendKWalletStub::DeserializeValue(form.signon_realm, pickle);

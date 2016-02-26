@@ -159,7 +159,9 @@ scoped_ptr<PasswordForm> FormFromAttributes(GnomeKeyringAttributeList* attrs) {
   form->icon_url = GURL(string_attr_map["avatar_url"]);
   form->federation_origin =
       url::Origin(GURL(string_attr_map["federation_url"]));
-  form->skip_zero_click = uint_attr_map["skip_zero_click"];
+  form->skip_zero_click = uint_attr_map.count("should_skip_zero_click")
+                              ? uint_attr_map["should_skip_zero_click"]
+                              : true;
   form->generation_upload_status =
       static_cast<PasswordForm::GenerationUploadStatus>(
           uint_attr_map["generation_upload_status"]);
@@ -227,33 +229,31 @@ ScopedVector<PasswordForm> ConvertFormList(GList* found,
 
 // Schema is analagous to the fields in PasswordForm.
 const GnomeKeyringPasswordSchema kGnomeSchema = {
-  GNOME_KEYRING_ITEM_GENERIC_SECRET, {
-    { "origin_url", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING },
-    { "action_url", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING },
-    { "username_element", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING },
-    { "username_value", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING },
-    { "password_element", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING },
-    { "submit_element", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING },
-    { "signon_realm", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING },
-    { "ssl_valid", GNOME_KEYRING_ATTRIBUTE_TYPE_UINT32 },
-    { "preferred", GNOME_KEYRING_ATTRIBUTE_TYPE_UINT32 },
-    { "date_created", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING },
-    { "blacklisted_by_user", GNOME_KEYRING_ATTRIBUTE_TYPE_UINT32 },
-    { "scheme", GNOME_KEYRING_ATTRIBUTE_TYPE_UINT32 },
-    { "type", GNOME_KEYRING_ATTRIBUTE_TYPE_UINT32 },
-    { "times_used", GNOME_KEYRING_ATTRIBUTE_TYPE_UINT32 },
-    { "date_synced", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING },
-    { "display_name", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING },
-    { "avatar_url", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING },
-    { "federation_url", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING },
-    { "skip_zero_click", GNOME_KEYRING_ATTRIBUTE_TYPE_UINT32 },
-    { "generation_upload_status", GNOME_KEYRING_ATTRIBUTE_TYPE_UINT32 },
-    { "form_data", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING },
-    // This field is always "chrome" so that we can search for it.
-    { "application", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING },
-    { nullptr }
-  }
-};
+    GNOME_KEYRING_ITEM_GENERIC_SECRET,
+    {{"origin_url", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING},
+     {"action_url", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING},
+     {"username_element", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING},
+     {"username_value", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING},
+     {"password_element", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING},
+     {"submit_element", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING},
+     {"signon_realm", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING},
+     {"ssl_valid", GNOME_KEYRING_ATTRIBUTE_TYPE_UINT32},
+     {"preferred", GNOME_KEYRING_ATTRIBUTE_TYPE_UINT32},
+     {"date_created", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING},
+     {"blacklisted_by_user", GNOME_KEYRING_ATTRIBUTE_TYPE_UINT32},
+     {"scheme", GNOME_KEYRING_ATTRIBUTE_TYPE_UINT32},
+     {"type", GNOME_KEYRING_ATTRIBUTE_TYPE_UINT32},
+     {"times_used", GNOME_KEYRING_ATTRIBUTE_TYPE_UINT32},
+     {"date_synced", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING},
+     {"display_name", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING},
+     {"avatar_url", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING},
+     {"federation_url", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING},
+     {"should_skip_zero_click", GNOME_KEYRING_ATTRIBUTE_TYPE_UINT32},
+     {"generation_upload_status", GNOME_KEYRING_ATTRIBUTE_TYPE_UINT32},
+     {"form_data", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING},
+     // This field is always "chrome" so that we can search for it.
+     {"application", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING},
+     {nullptr}}};
 
 // Sadly, PasswordStore goes to great lengths to switch from the originally
 // calling thread to the DB thread, and to provide an asynchronous API to
@@ -371,7 +371,7 @@ void GKRMethod::AddLogin(const PasswordForm& form, const char* app_string) {
       "display_name", UTF16ToUTF8(form.display_name).c_str(),
       "avatar_url", form.icon_url.spec().c_str(),
       "federation_url", form.federation_origin.Serialize().c_str(),
-      "skip_zero_click", form.skip_zero_click,
+      "should_skip_zero_click", form.skip_zero_click,
       "generation_upload_status", form.generation_upload_status,
       "form_data", form_data.c_str(),
       "application", app_string,
