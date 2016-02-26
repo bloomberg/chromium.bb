@@ -7,6 +7,7 @@
 
 #include "base/strings/string16.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace web {
 
@@ -39,7 +40,7 @@ struct Credential {
   base::string16 password;
 
   // The federation URL for a federated credential.
-  GURL federation_url;
+  url::Origin federation_origin;
 };
 
 // Determines whether two credentials are equal.

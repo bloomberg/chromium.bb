@@ -7,7 +7,7 @@
 #include "platform/credentialmanager/PlatformFederatedCredential.h"
 
 namespace blink {
-WebFederatedCredential::WebFederatedCredential(const WebString& id, const WebURL& provider, const WebString& name, const WebURL& iconURL)
+WebFederatedCredential::WebFederatedCredential(const WebString& id, const WebSecurityOrigin& provider, const WebString& name, const WebURL& iconURL)
     : WebCredential(PlatformFederatedCredential::create(id, provider, name, iconURL))
 {
 }
@@ -17,7 +17,7 @@ void WebFederatedCredential::assign(const WebFederatedCredential& other)
     m_platformCredential = other.m_platformCredential;
 }
 
-WebURL WebFederatedCredential::provider() const
+WebSecurityOrigin WebFederatedCredential::provider() const
 {
     return static_cast<PlatformFederatedCredential*>(m_platformCredential.get())->provider();
 }

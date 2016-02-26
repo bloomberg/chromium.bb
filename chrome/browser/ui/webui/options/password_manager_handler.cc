@@ -239,12 +239,12 @@ void PasswordManagerHandler::SetPasswordList(
           kPasswordField,
           base::string16(saved_password->password_value.length(), ' '));
     }
-    const GURL& federation_url = saved_password->federation_url;
-    if (!federation_url.is_empty()) {
+    if (!saved_password->federation_origin.unique()) {
       entry->SetString(
           kFederationField,
-          l10n_util::GetStringFUTF16(IDS_PASSWORDS_VIA_FEDERATION,
-                                     base::UTF8ToUTF16(federation_url.host())));
+          l10n_util::GetStringFUTF16(
+              IDS_PASSWORDS_VIA_FEDERATION,
+              base::UTF8ToUTF16(saved_password->federation_origin.host())));
     }
 
     entries.Append(entry.release());

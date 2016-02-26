@@ -64,7 +64,7 @@ void TrimUsernameOnlyCredentials(
   ScopedVector<autofill::PasswordForm> result;
   for (auto& form : *android_credentials) {
     if (form->scheme == autofill::PasswordForm::SCHEME_USERNAME_ONLY) {
-      if (form->federation_url.is_empty())
+      if (form->federation_origin.unique())
         continue;
       else
         form->skip_zero_click = true;

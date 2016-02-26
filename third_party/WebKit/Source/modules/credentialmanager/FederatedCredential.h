@@ -23,10 +23,10 @@ public:
     static FederatedCredential* create(WebFederatedCredential*);
 
     // FederatedCredential.idl
-    const KURL& provider() const;
+    const String provider() const;
 
     // TODO(mkwst): This is a stub, as we don't yet have any support on the Chromium-side.
-    const String protocol() const { return String(); }
+    const String& protocol() const { return emptyString(); }
 
 private:
     FederatedCredential(WebFederatedCredential*);

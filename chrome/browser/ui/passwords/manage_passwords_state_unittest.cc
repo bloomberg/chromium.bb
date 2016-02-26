@@ -571,7 +571,7 @@ TEST_F(ManagePasswordsStateTest, ChooseCredentialLocalWithNonEmptyFederation) {
                                         ScopedVector<autofill::PasswordForm>(),
                                         test_local_form().origin);
   autofill::PasswordForm form(test_federated_form());
-  form.federation_url = GURL("https://federation.test/");
+  form.federation_origin = url::Origin(GURL("https://federation.test/"));
   passwords_data().set_credentials_callback(base::Bind(
       &ManagePasswordsStateTest::CredentialCallback, base::Unretained(this)));
   password_manager::CredentialInfo credential_info(

@@ -13,6 +13,7 @@
 #include "base/time/time.h"
 #include "components/autofill/core/common/form_data.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace autofill {
 
@@ -245,8 +246,8 @@ struct PasswordForm {
   // (i.e in PasswordSpecificsData). Rename these occurrences.
   GURL icon_url;
 
-  // The URL of identity provider used for federated login.
-  GURL federation_url;
+  // The origin of identity provider used for federated login.
+  url::Origin federation_origin;
 
   // If true, Chrome will not return this credential to a site in response to
   // 'navigator.credentials.request()' without user interaction.

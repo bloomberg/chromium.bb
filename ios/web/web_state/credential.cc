@@ -18,7 +18,8 @@ bool CredentialsEqual(const web::Credential& credential1,
          credential1.name == credential2.name &&
          credential1.avatar_url == credential2.avatar_url &&
          credential1.password == credential2.password &&
-         credential1.federation_url == credential2.federation_url;
+         credential1.federation_origin.Serialize() ==
+             credential2.federation_origin.Serialize();
 }
 
 }  // namespace web

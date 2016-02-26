@@ -229,14 +229,14 @@ void ManagePasswordsState::ChooseCredential(
   // cross-origin.
   //
   // If |credential_type| is local, the credential MIGHT be a PasswordCredential
-  // or it MIGHT be a FederatedCredential. We inspect the |federation_url|
+  // or it MIGHT be a FederatedCredential. We inspect the |federation_origin|
   // field to determine which we should return.
   //
   // TODO(mkwst): Clean this up. It is confusing.
   password_manager::CredentialType type_to_return;
   if (credential_type ==
           password_manager::CredentialType::CREDENTIAL_TYPE_PASSWORD &&
-      form.federation_url.is_empty()) {
+      form.federation_origin.unique()) {
     type_to_return = password_manager::CredentialType::CREDENTIAL_TYPE_PASSWORD;
   } else if (credential_type ==
              password_manager::CredentialType::CREDENTIAL_TYPE_EMPTY) {

@@ -56,8 +56,7 @@ void PasswordFormToJSON(const PasswordForm& form,
   target->SetInteger("generation_upload_status", form.generation_upload_status);
   target->SetString("display_name", form.display_name);
   target->SetString("icon_url", form.icon_url.possibly_invalid_spec());
-  target->SetString("federation_url",
-                    form.federation_url.possibly_invalid_spec());
+  target->SetString("federation_origin", form.federation_origin.Serialize());
   target->SetBoolean("skip_next_zero_click", form.skip_zero_click);
   std::ostringstream layout_string_stream;
   layout_string_stream << form.layout;
@@ -120,7 +119,9 @@ bool PasswordForm::operator==(const PasswordForm& form) const {
          form_data.SameFormAs(form.form_data) &&
          generation_upload_status == form.generation_upload_status &&
          display_name == form.display_name && icon_url == form.icon_url &&
-         federation_url == form.federation_url &&
+         // We compare the serialization of the origins here, as we want unique
+         // origins to compare as '=='.
+         federation_origin.Serialize() == form.federation_origin.Serialize() &&
          skip_zero_click == form.skip_zero_click && layout == form.layout &&
          was_parsed_using_autofill_predictions ==
              form.was_parsed_using_autofill_predictions &&

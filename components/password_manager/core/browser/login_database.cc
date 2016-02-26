@@ -31,6 +31,7 @@
 #include "sql/connection.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
+#include "url/origin.h"
 #include "url/url_constants.h"
 
 using autofill::PasswordForm;
@@ -140,7 +141,7 @@ void BindAddStatement(const PasswordForm& form,
   s->BindInt64(COLUMN_DATE_SYNCED, form.date_synced.ToInternalValue());
   s->BindString16(COLUMN_DISPLAY_NAME, form.display_name);
   s->BindString(COLUMN_ICON_URL, form.icon_url.spec());
-  s->BindString(COLUMN_FEDERATION_URL, form.federation_url.spec());
+  s->BindString(COLUMN_FEDERATION_URL, form.federation_origin.Serialize());
   s->BindInt(COLUMN_SKIP_ZERO_CLICK, form.skip_zero_click);
   s->BindInt(COLUMN_GENERATION_UPLOAD_STATUS, form.generation_upload_status);
 }
@@ -933,7 +934,7 @@ PasswordStoreChangeList LoginDatabase::UpdateLogin(const PasswordForm& form) {
   s.BindInt(11, form.type);
   s.BindString16(12, form.display_name);
   s.BindString(13, form.icon_url.spec());
-  s.BindString(14, form.federation_url.spec());
+  s.BindString(14, form.federation_origin.Serialize());
   s.BindInt(15, form.skip_zero_click);
   s.BindInt(16, form.generation_upload_status);
 
@@ -1074,7 +1075,8 @@ LoginDatabase::EncryptionResult LoginDatabase::InitPasswordFormFromStatement(
       base::Time::FromInternalValue(s.ColumnInt64(COLUMN_DATE_SYNCED));
   form->display_name = s.ColumnString16(COLUMN_DISPLAY_NAME);
   form->icon_url = GURL(s.ColumnString(COLUMN_ICON_URL));
-  form->federation_url = GURL(s.ColumnString(COLUMN_FEDERATION_URL));
+  form->federation_origin =
+      url::Origin(GURL(s.ColumnString(COLUMN_FEDERATION_URL)));
   form->skip_zero_click = (s.ColumnInt(COLUMN_SKIP_ZERO_CLICK) > 0);
   int generation_upload_status_int =
       s.ColumnInt(COLUMN_GENERATION_UPLOAD_STATUS);

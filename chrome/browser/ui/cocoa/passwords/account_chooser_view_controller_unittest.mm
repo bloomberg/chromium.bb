@@ -21,7 +21,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 #include "url/gurl.h"
-
+#include "url/origin.h"
 
 @interface AccountAvatarFetcherTestManager : AccountAvatarFetcherManager {
   std::vector<GURL> fetchedAvatars_;
@@ -159,7 +159,7 @@ TEST_F(AccountChooserViewControllerTest, ConfiguresFederatedCredential) {
   const char name[] = "Peter the Great";
   PasswordDialogController::FormsVector local_forms;
   local_forms.push_back(Credential("pizza"));
-  local_forms.back()->federation_url = GURL(federation);
+  local_forms.back()->federation_origin = url::Origin(GURL(federation));
   local_forms.back()->display_name = base::ASCIIToUTF16(name);
   SetUpAccountChooser(&local_forms);
 

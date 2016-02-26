@@ -23,6 +23,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/image/image.h"
 #include "ui/resources/grit/ui_resources.h"
+#include "url/origin.h"
 
 namespace {
 
@@ -136,12 +137,12 @@ NSTextField* FederationLabel(const base::string16& text) {
     usernameField_.reset([UsernameLabel(GetDisplayUsername(form)) retain]);
     [self addSubview:usernameField_];
 
-    if (form.federation_url.is_empty()) {
+    if (form.federation_origin.unique()) {
       passwordField_.reset([PasswordLabel(form.password_value) retain]);
     } else {
       base::string16 text = l10n_util::GetStringFUTF16(
           IDS_PASSWORDS_VIA_FEDERATION,
-          base::UTF8ToUTF16(form.federation_url.host()));
+          base::UTF8ToUTF16(form.federation_origin.host()));
       passwordField_.reset([FederationLabel(text) retain]);
     }
     [self addSubview:passwordField_];
@@ -207,12 +208,12 @@ NSTextField* FederationLabel(const base::string16& text) {
     usernameField_.reset([UsernameLabel(GetDisplayUsername(form)) retain]);
     [self addSubview:usernameField_];
 
-    if (form.federation_url.is_empty()) {
+    if (form.federation_origin.unique()) {
       passwordField_.reset([PasswordLabel(form.password_value) retain]);
     } else {
       base::string16 text = l10n_util::GetStringFUTF16(
           IDS_PASSWORDS_VIA_FEDERATION,
-          base::UTF8ToUTF16(form.federation_url.host()));
+          base::UTF8ToUTF16(form.federation_origin.host()));
       passwordField_.reset([FederationLabel(text) retain]);
     }
     [self addSubview:passwordField_];

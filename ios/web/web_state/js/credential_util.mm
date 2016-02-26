@@ -10,6 +10,7 @@
 #include "base/values.h"
 #include "ios/web/public/web_state/credential.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace {
 
@@ -74,7 +75,7 @@ bool DictionaryValueToCredential(const base::DictionaryValue& value,
   credential->name = name;
   credential->avatar_url = avatar_url;
   credential->password = password;
-  credential->federation_url = federation_url;
+  credential->federation_origin = url::Origin(federation_url);
   return true;
 }
 
@@ -93,7 +94,7 @@ void CredentialToDictionaryValue(const Credential& credential,
       break;
     case CredentialType::CREDENTIAL_TYPE_FEDERATED:
       value->SetString("type", kFederatedCredentialType);
-      value->SetString("federation", credential.federation_url.spec());
+      value->SetString("federation", credential.federation_origin.Serialize());
       break;
     default:
       NOTREACHED();

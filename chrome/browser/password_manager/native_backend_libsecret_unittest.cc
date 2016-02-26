@@ -292,7 +292,8 @@ class NativeBackendLibsecretTest : public testing::Test {
     form_google_.date_synced = base::Time::Now();
     form_google_.display_name = UTF8ToUTF16("Joe Schmoe");
     form_google_.icon_url = GURL("http://www.google.com/icon");
-    form_google_.federation_url = GURL("http://www.google.com/federation_url");
+    form_google_.federation_origin =
+        url::Origin(GURL("http://www.google.com/"));
     form_google_.skip_zero_click = true;
     form_google_.generation_upload_status = PasswordForm::POSITIVE_SIGNAL_SENT;
     form_google_.form_data.name = UTF8ToUTF16("form_name");
@@ -309,7 +310,8 @@ class NativeBackendLibsecretTest : public testing::Test {
     form_facebook_.date_synced = base::Time::Now();
     form_facebook_.display_name = UTF8ToUTF16("Joe Schmoe");
     form_facebook_.icon_url = GURL("http://www.facebook.com/icon");
-    form_facebook_.federation_url = GURL("http://www.facebook.com/federation");
+    form_facebook_.federation_origin =
+        url::Origin(GURL("http://www.facebook.com/"));
     form_facebook_.skip_zero_click = true;
     form_facebook_.generation_upload_status = PasswordForm::NO_SIGNAL_SENT;
 
@@ -396,7 +398,8 @@ class NativeBackendLibsecretTest : public testing::Test {
         base::Int64ToString(form.date_synced.ToInternalValue()));
     CheckStringAttribute(item, "display_name", UTF16ToUTF8(form.display_name));
     CheckStringAttribute(item, "avatar_url", form.icon_url.spec());
-    CheckStringAttribute(item, "federation_url", form.federation_url.spec());
+    CheckStringAttribute(item, "federation_url",
+                         form.federation_origin.Serialize());
     CheckUint32Attribute(item, "skip_zero_click", form.skip_zero_click);
     CheckUint32Attribute(item, "generation_upload_status",
                          form.generation_upload_status);

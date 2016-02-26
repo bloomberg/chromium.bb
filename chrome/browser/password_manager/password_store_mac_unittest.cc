@@ -29,6 +29,7 @@
 #include "crypto/mock_apple_keychain.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/origin.h"
 
 using autofill::PasswordForm;
 using base::ASCIIToUTF16;
@@ -143,12 +144,13 @@ void CheckFormsAgainstExpectations(
           wcscmp(expectation->password_value,
                  password_manager::kTestingFederatedLoginMarker) == 0) {
         EXPECT_TRUE(form->password_value.empty());
-        EXPECT_EQ(GURL(password_manager::kTestingFederationUrlSpec),
-                  form->federation_url);
+        EXPECT_EQ(
+            url::Origin(GURL(password_manager::kTestingFederationUrlSpec)),
+            form->federation_origin);
       } else {
         EXPECT_EQ(WideToUTF16(expectation->password_value),
                   form->password_value);
-        EXPECT_TRUE(form->federation_url.is_empty());
+        EXPECT_TRUE(form->federation_origin.unique());
       }
     } else {
       EXPECT_TRUE(form->blacklisted_by_user);
@@ -876,7 +878,8 @@ TEST_F(PasswordStoreMacInternalsTest, TestFormMatch) {
   // Federated login forms should never match for merging either.
   {
     PasswordForm form_b(base_form);
-    form_b.federation_url = GURL(password_manager::kTestingFederationUrlSpec);
+    form_b.federation_origin =
+        url::Origin(GURL(password_manager::kTestingFederationUrlSpec));
     EXPECT_FALSE(FormsMatchForMerge(base_form, form_b, STRICT_FORM_MATCH));
     EXPECT_FALSE(FormsMatchForMerge(form_b, base_form, STRICT_FORM_MATCH));
     EXPECT_FALSE(FormsMatchForMerge(form_b, form_b, STRICT_FORM_MATCH));
@@ -1805,7 +1808,8 @@ TEST_F(PasswordStoreMacTest, StoringAndRetrievingAndroidCredentials) {
 TEST_F(PasswordStoreMacTest, StoringAndRetrievingFederatedCredentials) {
   PasswordForm form;
   form.signon_realm = "android://7x7IDboo8u9YKraUsbmVkuf1@net.rateflix.app/";
-  form.federation_url = GURL(password_manager::kTestingFederationUrlSpec);
+  form.federation_origin =
+      url::Origin(GURL(password_manager::kTestingFederationUrlSpec));
   form.username_value = base::UTF8ToUTF16("randomusername");
   form.password_value = base::UTF8ToUTF16("");  // No password.
 
@@ -1875,7 +1879,7 @@ TEST_F(PasswordStoreMacTest, ImportFederatedFromLockedKeychain) {
   form1.origin = GURL("http://example.com/Login");
   form1.signon_realm = "http://example.com/";
   form1.username_value = ASCIIToUTF16("my_username");
-  form1.federation_url = GURL("https://accounts.google.com/");
+  form1.federation_origin = url::Origin(GURL("https://accounts.google.com/"));
 
   store()->AddLogin(form1);
   FinishAsyncProcessing();

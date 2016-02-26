@@ -345,10 +345,10 @@ void ManagePasswordsBubbleModel::UpdatePendingStateTitle() {
   title_brand_link_range_ = gfx::Range();
   PasswordTittleType type =
       state_ == password_manager::ui::PENDING_PASSWORD_UPDATE_STATE
-      ? PasswordTittleType::UPDATE_PASSWORD
-      : (pending_password_.federation_url.is_empty()
-             ? PasswordTittleType::SAVE_PASSWORD
-             : PasswordTittleType::SAVE_ACCOUNT);
+          ? PasswordTittleType::UPDATE_PASSWORD
+          : (pending_password_.federation_origin.unique()
+                 ? PasswordTittleType::SAVE_PASSWORD
+                 : PasswordTittleType::SAVE_ACCOUNT);
   GetSavePasswordDialogTitleTextAndLinkRange(
       web_contents()->GetVisibleURL(), origin(),
       GetSmartLockBrandingState(GetProfile()) !=

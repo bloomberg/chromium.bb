@@ -13,6 +13,7 @@
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace web {
 namespace {
@@ -56,7 +57,8 @@ Credential GetTestFederatedCredential() {
   credential.id = base::ASCIIToUTF16(kTestCredentialID);
   credential.name = base::ASCIIToUTF16(kTestCredentialName);
   credential.avatar_url = GURL(kTestCredentialAvatarURL);
-  credential.federation_url = GURL(kTestCredentialFederationURL);
+  credential.federation_origin =
+      url::Origin(GURL(kTestCredentialFederationURL));
   return credential;
 }
 
@@ -80,7 +82,8 @@ scoped_ptr<base::DictionaryValue> GetTestFederatedCredentialDictionaryValue() {
   value->SetString("id", kTestCredentialID);
   value->SetString("name", kTestCredentialName);
   value->SetString("avatarURL", kTestCredentialAvatarURL);
-  value->SetString("federation", kTestCredentialFederationURL);
+  value->SetString("federation",
+                   url::Origin(GURL(kTestCredentialFederationURL)).Serialize());
   return value;
 }
 

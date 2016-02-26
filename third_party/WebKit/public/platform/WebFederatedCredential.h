@@ -7,20 +7,17 @@
 
 #include "public/platform/WebCommon.h"
 #include "public/platform/WebCredential.h"
+#include "public/platform/WebSecurityOrigin.h"
 #include "public/platform/WebString.h"
-#include "public/platform/WebURL.h"
 
 namespace blink {
 
 class WebFederatedCredential : public WebCredential {
 public:
-    BLINK_PLATFORM_EXPORT WebFederatedCredential(const WebString& id, const WebURL& federation, const WebString& name, const WebURL& iconURL);
+    BLINK_PLATFORM_EXPORT WebFederatedCredential(const WebString& id, const WebSecurityOrigin& federation, const WebString& name, const WebURL& iconURL);
 
     BLINK_PLATFORM_EXPORT void assign(const WebFederatedCredential&);
-    BLINK_PLATFORM_EXPORT WebURL provider() const;
-
-    // FIXME: Throw this away once it's unused on the Chromium side: https://crbug.com/494880
-    BLINK_PLATFORM_EXPORT WebURL federation() const { return provider(); }
+    BLINK_PLATFORM_EXPORT WebSecurityOrigin provider() const;
 
 #if INSIDE_BLINK
     BLINK_PLATFORM_EXPORT WebFederatedCredential(PlatformCredential*);

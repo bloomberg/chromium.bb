@@ -21,6 +21,7 @@
 #include "components/password_manager/core/browser/password_store.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
+#include "url/origin.h"
 
 using namespace testing;
 
@@ -72,7 +73,8 @@ class PasswordsListViewControllerTest : public ManagePasswordsControllerTest {
   autofill::PasswordForm federated_credential() {
     autofill::PasswordForm form;
     form.username_value = base::SysNSStringToUTF16(kItemTestUsername);
-    form.federation_url = GURL(base::SysNSStringToUTF16(kFederation));
+    form.federation_origin =
+        url::Origin(GURL(base::SysNSStringToUTF16(kFederation)));
     return form;
   }
 
@@ -164,7 +166,7 @@ TEST_F(PasswordsListViewControllerTest,
       [GetControllerAt(1) contentView]);
   EXPECT_NSEQ(kItemTestUsername, manageView.usernameField.stringValue);
   EXPECT_THAT(base::SysNSStringToUTF8(manageView.passwordField.stringValue),
-              HasSubstr(federated_credential().federation_url.host()));
+              HasSubstr(federated_credential().federation_origin.host()));
 }
 
 TEST_F(PasswordsListViewControllerTest, PendingStateShouldHavePendingView) {
@@ -200,5 +202,5 @@ TEST_F(PasswordsListViewControllerTest,
   // Ensure the fields are populated properly and the password is obscured.
   EXPECT_NSEQ(kItemTestUsername, pendingView.usernameField.stringValue);
   EXPECT_THAT(base::SysNSStringToUTF8(pendingView.passwordField.stringValue),
-              HasSubstr(federated_credential().federation_url.host()));
+              HasSubstr(federated_credential().federation_origin.host()));
 }

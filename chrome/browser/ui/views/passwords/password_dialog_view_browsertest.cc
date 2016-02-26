@@ -180,7 +180,7 @@ IN_PROC_BROWSER_TEST_F(PasswordDialogViewTest,
   GURL icon_url("https://google.com/icon.png");
   form.icon_url = icon_url;
   form.display_name = base::ASCIIToUTF16("Peter Pen");
-  form.federation_url = GURL("https://google.com/federation");
+  form.federation_origin = url::Origin(GURL("https://google.com/federation"));
   local_credentials.push_back(new autofill::PasswordForm(form));
 
   // Prepare to capture the network request.
@@ -220,7 +220,7 @@ IN_PROC_BROWSER_TEST_F(
   GURL icon_url("https://google.com/icon.png");
   form.icon_url = icon_url;
   form.display_name = base::ASCIIToUTF16("Peter Pen");
-  form.federation_url = GURL("https://google.com/federation");
+  form.federation_origin = url::Origin(GURL("https://google.com/federation"));
   local_credentials.push_back(new autofill::PasswordForm(form));
 
   SetupChooseCredentials(std::move(local_credentials),

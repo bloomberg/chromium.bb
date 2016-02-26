@@ -434,7 +434,7 @@ void PasswordStore::GetLoginsWithAffiliationsImpl(
       form->is_affiliation_based_match = true;
     ScopedVector<PasswordForm>::iterator it_first_federated = std::partition(
         more_results.begin(), more_results.end(),
-        [](PasswordForm* form) { return form->federation_url.is_empty(); });
+        [](PasswordForm* form) { return form->federation_origin.unique(); });
     more_results.erase(it_first_federated, more_results.end());
     password_manager_util::TrimUsernameOnlyCredentials(&more_results);
     results.insert(results.end(), more_results.begin(), more_results.end());

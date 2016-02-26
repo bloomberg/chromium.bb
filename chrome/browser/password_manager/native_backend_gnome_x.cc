@@ -157,7 +157,8 @@ scoped_ptr<PasswordForm> FormFromAttributes(GnomeKeyringAttributeList* attrs) {
   form->date_synced = base::Time::FromInternalValue(date_synced);
   form->display_name = UTF8ToUTF16(string_attr_map["display_name"]);
   form->icon_url = GURL(string_attr_map["avatar_url"]);
-  form->federation_url = GURL(string_attr_map["federation_url"]);
+  form->federation_origin =
+      url::Origin(GURL(string_attr_map["federation_url"]));
   form->skip_zero_click = uint_attr_map["skip_zero_click"];
   form->generation_upload_status =
       static_cast<PasswordForm::GenerationUploadStatus>(
@@ -344,13 +345,13 @@ void GKRMethod::AddLogin(const PasswordForm& form, const char* app_string) {
   int64_t date_synced = form.date_synced.ToInternalValue();
   std::string form_data;
   SerializeFormDataToBase64String(form.form_data, &form_data);
+  // clang-format off
   gnome_keyring_store_password(
       &kGnomeSchema,
-      nullptr,  // Default keyring.
+      nullptr,                     // Default keyring.
       form.origin.spec().c_str(),  // Display name.
-      UTF16ToUTF8(form.password_value).c_str(),
-      OnOperationDone,
-      this,  // data
+      UTF16ToUTF8(form.password_value).c_str(), OnOperationDone,
+      this,     // data
       nullptr,  // destroy_data
       "origin_url", form.origin.spec().c_str(),
       "action_url", form.action.spec().c_str(),
@@ -369,12 +370,13 @@ void GKRMethod::AddLogin(const PasswordForm& form, const char* app_string) {
       "date_synced", base::Int64ToString(date_synced).c_str(),
       "display_name", UTF16ToUTF8(form.display_name).c_str(),
       "avatar_url", form.icon_url.spec().c_str(),
-      "federation_url", form.federation_url.spec().c_str(),
+      "federation_url", form.federation_origin.Serialize().c_str(),
       "skip_zero_click", form.skip_zero_click,
       "generation_upload_status", form.generation_upload_status,
       "form_data", form_data.c_str(),
       "application", app_string,
       nullptr);
+  // clang-format on
 }
 
 void GKRMethod::LoginSearch(const PasswordForm& form,

@@ -171,11 +171,10 @@ void PasswordsPrivateDelegateImpl::SetPasswordList(
     entry->login_pair.username = base::UTF16ToUTF8(form->username_value);
     entry->num_characters_in_password = form->password_value.length();
 
-    const GURL& federation_url = form->federation_url;
-    if (!federation_url.is_empty()) {
+    if (!form->federation_origin.unique()) {
       entry->federation_text.reset(new std::string(l10n_util::GetStringFUTF8(
           IDS_PASSWORDS_VIA_FEDERATION,
-          base::UTF8ToUTF16(federation_url.host_piece()))));
+          base::UTF8ToUTF16(form->federation_origin.host()))));
     }
 
     current_entries_.push_back(entry);

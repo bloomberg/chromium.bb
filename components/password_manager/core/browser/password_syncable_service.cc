@@ -61,7 +61,7 @@ bool AreLocalAndSyncPasswordsEqual(
           base::UTF16ToUTF8(password_form.display_name) ==
               password_specifics.display_name() &&
           password_form.icon_url.spec() == password_specifics.avatar_url() &&
-          password_form.federation_url.spec() ==
+          password_form.federation_origin.Serialize() ==
               password_specifics.federation_url());
 }
 
@@ -463,7 +463,8 @@ syncer::SyncData SyncDataFromPassword(
   CopyField(times_used);
   CopyStringField(display_name);
   password_specifics->set_avatar_url(password_form.icon_url.spec());
-  password_specifics->set_federation_url(password_form.federation_url.spec());
+  password_specifics->set_federation_url(
+      password_form.federation_origin.Serialize());
 #undef CopyStringField
 #undef CopyField
 
@@ -495,7 +496,7 @@ autofill::PasswordForm PasswordFromSpecifics(
   new_password.times_used = password.times_used();
   new_password.display_name = base::UTF8ToUTF16(password.display_name());
   new_password.icon_url = GURL(password.avatar_url());
-  new_password.federation_url = GURL(password.federation_url());
+  new_password.federation_origin = url::Origin(GURL(password.federation_url()));
   return new_password;
 }
 

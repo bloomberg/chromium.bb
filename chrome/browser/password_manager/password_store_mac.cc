@@ -243,7 +243,7 @@ inline void MoveAllFormsOut(ScopedVector<autofill::PasswordForm>* forms,
 
 // True if the form has no password to be stored in Keychain.
 bool IsLoginDatabaseOnlyForm(const autofill::PasswordForm& form) {
-  return form.blacklisted_by_user || !form.federation_url.is_empty() ||
+  return form.blacklisted_by_user || !form.federation_origin.unique() ||
          form.scheme == autofill::PasswordForm::SCHEME_USERNAME_ONLY;
 }
 

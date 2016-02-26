@@ -25,6 +25,7 @@
 #include "crypto/mock_apple_keychain.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/origin.h"
 
 namespace {
 
@@ -224,7 +225,8 @@ void PasswordStoreProxyMacTest::CheckRemoveLoginsBetween(bool check_created) {
   old_form.origin = GURL("http://accounts.google.com/LoginAuth");
   old_form.signon_realm = "http://accounts.google.com/";
   old_form.username_value = base::ASCIIToUTF16("my_username");
-  old_form.federation_url = GURL("http://accounts.google.com/federation");
+  old_form.federation_origin =
+      url::Origin(GURL("http://accounts.google.com/federation"));
 
   PasswordForm new_form = old_form;
   new_form.origin = GURL("http://accounts.google2.com/LoginAuth");

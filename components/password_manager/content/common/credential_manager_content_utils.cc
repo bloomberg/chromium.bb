@@ -28,7 +28,7 @@ CredentialInfo WebCredentialToCredentialInfo(
     DCHECK(credential.isFederatedCredential());
     credential_info.federation =
         static_cast<const blink::WebFederatedCredential&>(credential)
-            .federation();
+            .provider();
   }
   return credential_info;
 }

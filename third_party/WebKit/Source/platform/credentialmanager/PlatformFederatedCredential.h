@@ -7,6 +7,7 @@
 
 #include "platform/credentialmanager/PlatformCredential.h"
 #include "platform/heap/Handle.h"
+#include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -14,17 +15,17 @@ namespace blink {
 class PLATFORM_EXPORT PlatformFederatedCredential final : public PlatformCredential {
     WTF_MAKE_NONCOPYABLE(PlatformFederatedCredential);
 public:
-    static PlatformFederatedCredential* create(const String& id, const KURL& federation, const String& name, const KURL& iconURL);
+    static PlatformFederatedCredential* create(const String& id, PassRefPtr<SecurityOrigin> provider, const String& name, const KURL& iconURL);
     ~PlatformFederatedCredential() override;
 
-    const KURL& provider() const { return m_provider; }
+    PassRefPtr<SecurityOrigin> provider() const { return m_provider; }
 
     bool isFederated() override { return true; }
 
 private:
-    PlatformFederatedCredential(const String& id, const KURL& federation, const String& name, const KURL& iconURL);
+    PlatformFederatedCredential(const String& id, PassRefPtr<SecurityOrigin> provider, const String& name, const KURL& iconURL);
 
-    KURL m_provider;
+    RefPtr<SecurityOrigin> m_provider;
 };
 
 } // namespace blink

@@ -9,6 +9,7 @@
 #include "components/autofill/core/common/password_form.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace password_manager {
 
@@ -17,12 +18,12 @@ class CredentialManagerTypesTest : public testing::Test {
   CredentialManagerTypesTest()
       : origin_(GURL("https://example.test/")),
         icon_(GURL("https://fast-cdn.test/icon.png")),
-        federation_(GURL("https://federation.test/")) {}
+        federation_(url::Origin(GURL("https://federation.test/"))) {}
 
  protected:
   GURL origin_;
   GURL icon_;
-  GURL federation_;
+  url::Origin federation_;
 };
 
 TEST_F(CredentialManagerTypesTest, CreatePasswordFormEmpty) {
@@ -53,9 +54,9 @@ TEST_F(CredentialManagerTypesTest, CreatePasswordFormFederation) {
   EXPECT_EQ(origin_, form->origin);
   EXPECT_EQ(autofill::PasswordForm::SCHEME_HTML, form->scheme);
 
-  // Federated credentials have empty passwords, non-empty federation_urls, and
-  // funky signon realms.
-  EXPECT_EQ(info.federation, form->federation_url);
+  // Federated credentials have empty passwords, non-empty federation_origins,
+  // and funky signon realms.
+  EXPECT_EQ(info.federation, form->federation_origin);
   EXPECT_EQ(base::string16(), form->password_value);
   EXPECT_EQ("federation://example.test/federation.test", form->signon_realm);
 }
@@ -78,9 +79,9 @@ TEST_F(CredentialManagerTypesTest, CreatePasswordFormLocal) {
   EXPECT_EQ(origin_, form->origin);
   EXPECT_EQ(autofill::PasswordForm::SCHEME_HTML, form->scheme);
 
-  // Local credentials have empty federation_urls, non-empty passwords, and
+  // Local credentials have empty federation_origins, non-empty passwords, and
   // a signon realm that matches the origin.
-  EXPECT_EQ(GURL(), form->federation_url);
+  EXPECT_TRUE(form->federation_origin.unique());
   EXPECT_EQ(info.password, form->password_value);
   EXPECT_EQ(origin_.spec(), form->signon_realm);
 }

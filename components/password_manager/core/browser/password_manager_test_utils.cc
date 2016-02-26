@@ -48,7 +48,7 @@ scoped_ptr<PasswordForm> CreatePasswordFormFromDataForTesting(
     form->skip_zero_click = true;
     if (form_data.password_value) {
       if (wcscmp(form_data.password_value, kTestingFederatedLoginMarker) == 0)
-        form->federation_url = GURL(kTestingFederationUrlSpec);
+        form->federation_origin = url::Origin(GURL(kTestingFederationUrlSpec));
       else
         form->password_value = base::WideToUTF16(form_data.password_value);
     }

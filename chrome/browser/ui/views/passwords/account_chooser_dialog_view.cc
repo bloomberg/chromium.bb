@@ -159,13 +159,13 @@ void AccountChooserDialogView::InitWindow() {
     const base::string16& upper_string =
         form->display_name.empty() ? form->username_value : form->display_name;
     base::string16 lower_string;
-    if (form->federation_url.is_empty()) {
+    if (form->federation_origin.unique()) {
       if (!form->display_name.empty())
         lower_string = form->username_value;
     } else {
       lower_string = l10n_util::GetStringFUTF16(
           IDS_PASSWORDS_VIA_FEDERATION,
-          base::UTF8ToUTF16(form->federation_url.host()));
+          base::UTF8ToUTF16(form->federation_origin.host()));
     }
     layout->StartRow(0, SINGLE_VIEW_COLUMN_SET_NO_PADDING);
     CredentialsItemView* view = new CredentialsItemView(

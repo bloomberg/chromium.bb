@@ -13,6 +13,7 @@
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/common/credential_manager_types.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace password_manager {
 
@@ -32,7 +33,7 @@ CredentialManagerPendingRequestTask::CredentialManagerPendingRequestTask(
       affiliated_realms_(affiliated_realms.begin(), affiliated_realms.end()) {
   CHECK(!delegate_->client()->DidLastPageLoadEncounterSSLErrors());
   for (const GURL& federation : request_federations)
-    federations_.insert(federation.GetOrigin().spec());
+    federations_.insert(url::Origin(federation.GetOrigin()).Serialize());
 }
 
 CredentialManagerPendingRequestTask::~CredentialManagerPendingRequestTask() =
@@ -51,9 +52,9 @@ void CredentialManagerPendingRequestTask::OnGetPasswordStoreResults(
   for (auto& form : results) {
     // Ensure that the form we're looking at matches the password and
     // federation filters provided.
-    if (!((form->federation_url.is_empty() && include_passwords_) ||
-          (!form->federation_url.is_empty() &&
-           federations_.count(form->federation_url.spec())))) {
+    if (!((form->federation_origin.unique() && include_passwords_) ||
+          (!form->federation_origin.unique() &&
+           federations_.count(form->federation_origin.Serialize())))) {
       continue;
     }
 
@@ -104,7 +105,7 @@ void CredentialManagerPendingRequestTask::OnGetPasswordStoreResults(
       !password_bubble_experiment::ShouldShowAutoSignInPromptFirstRunExperience(
           delegate_->client()->GetPrefs())) {
     CredentialInfo info(*local_results[0],
-                        local_results[0]->federation_url.is_empty()
+                        local_results[0]->federation_origin.unique()
                             ? CredentialType::CREDENTIAL_TYPE_PASSWORD
                             : CredentialType::CREDENTIAL_TYPE_FEDERATED);
     delegate_->client()->NotifyUserAutoSignin(std::move(local_results));

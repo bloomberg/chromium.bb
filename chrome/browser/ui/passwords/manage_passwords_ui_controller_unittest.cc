@@ -206,7 +206,8 @@ void ManagePasswordsUIControllerTest::SetUp() {
 
   test_federated_form_.origin = GURL("http://example.com/login");
   test_federated_form_.username_value = base::ASCIIToUTF16("username");
-  test_federated_form_.federation_url = GURL("https://federation.test/");
+  test_federated_form_.federation_origin =
+      url::Origin(GURL("https://federation.test/"));
 
   // We need to be on a "webby" URL for most tests.
   content::WebContentsTester::For(web_contents())
@@ -495,7 +496,7 @@ TEST_F(ManagePasswordsUIControllerTest, ChooseCredentialLocal) {
   ASSERT_TRUE(credential_info());
   EXPECT_EQ(test_local_form().username_value, credential_info()->id);
   EXPECT_EQ(test_local_form().password_value, credential_info()->password);
-  EXPECT_TRUE(credential_info()->federation.is_empty());
+  EXPECT_TRUE(credential_info()->federation.unique());
   EXPECT_EQ(password_manager::CredentialType::CREDENTIAL_TYPE_PASSWORD,
             credential_info()->type);
 }
@@ -531,7 +532,7 @@ TEST_F(ManagePasswordsUIControllerTest, ChooseCredentialLocalButFederated) {
   EXPECT_EQ(password_manager::ui::MANAGE_STATE, controller()->GetState());
   ASSERT_TRUE(credential_info());
   EXPECT_EQ(test_federated_form().username_value, credential_info()->id);
-  EXPECT_EQ(test_federated_form().federation_url,
+  EXPECT_EQ(test_federated_form().federation_origin,
             credential_info()->federation);
   EXPECT_TRUE(credential_info()->password.empty());
   EXPECT_EQ(password_manager::CredentialType::CREDENTIAL_TYPE_FEDERATED,
@@ -595,7 +596,7 @@ TEST_F(ManagePasswordsUIControllerTest, ChooseCredentialCancel) {
   dialog_controller->OnCloseDialog();
   EXPECT_EQ(password_manager::ui::MANAGE_STATE, controller()->GetState());
   ASSERT_TRUE(credential_info());
-  EXPECT_TRUE(credential_info()->federation.is_empty());
+  EXPECT_TRUE(credential_info()->federation.unique());
   EXPECT_TRUE(credential_info()->password.empty());
   EXPECT_EQ(password_manager::CredentialType::CREDENTIAL_TYPE_EMPTY,
             credential_info()->type);

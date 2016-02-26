@@ -21,6 +21,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
+#include "url/origin.h"
 
 using autofill::PasswordForm;
 using base::UTF8ToUTF16;
@@ -192,7 +193,8 @@ scoped_ptr<PasswordForm> FormOutOfAttributes(GHashTable* attrs) {
   form->display_name =
       UTF8ToUTF16(GetStringFromAttributes(attrs, "display_name"));
   form->icon_url = GURL(GetStringFromAttributes(attrs, "avatar_url"));
-  form->federation_url = GURL(GetStringFromAttributes(attrs, "federation_url"));
+  form->federation_origin =
+      url::Origin(GURL(GetStringFromAttributes(attrs, "federation_url")));
   form->skip_zero_click = GetUintFromAttributes(attrs, "skip_zero_click");
   form->generation_upload_status =
       static_cast<PasswordForm::GenerationUploadStatus>(
@@ -448,6 +450,7 @@ bool NativeBackendLibsecret::RawAddLogin(const PasswordForm& form) {
   std::string form_data;
   SerializeFormDataToBase64String(form.form_data, &form_data);
   GError* error = nullptr;
+  // clang-format off
   secret_password_store_sync(
       &kLibsecretSchema,
       nullptr,                     // Default collection.
@@ -472,11 +475,13 @@ bool NativeBackendLibsecret::RawAddLogin(const PasswordForm& form) {
       "date_synced", base::Int64ToString(date_synced).c_str(),
       "display_name", UTF16ToUTF8(form.display_name).c_str(),
       "avatar_url", form.icon_url.spec().c_str(),
-      "federation_url", form.federation_url.spec().c_str(),
+      "federation_url", form.federation_origin.Serialize().c_str(),
       "skip_zero_click", form.skip_zero_click,
       "generation_upload_status", form.generation_upload_status,
       "form_data", form_data.c_str(),
-      "application", app_string_.c_str(), nullptr);
+      "application", app_string_.c_str(),
+      nullptr);
+  // clang-format on
 
   if (error) {
     LOG(ERROR) << "Libsecret add raw login failed: " << error->message;

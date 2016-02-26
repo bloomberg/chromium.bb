@@ -20,6 +20,7 @@
 #include "content/public/browser/web_contents.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "url/origin.h"
 
 // static
 void SavePasswordInfoBarDelegate::Create(
@@ -95,9 +96,9 @@ SavePasswordInfoBarDelegate::SavePasswordInfoBarDelegate(
   base::string16 message;
   gfx::Range message_link_range = gfx::Range();
   PasswordTittleType type =
-      form_to_save_->pending_credentials().federation_url.is_empty()
-      ? PasswordTittleType::SAVE_PASSWORD
-      : PasswordTittleType::SAVE_ACCOUNT;
+      form_to_save_->pending_credentials().federation_origin.unique()
+          ? PasswordTittleType::SAVE_PASSWORD
+          : PasswordTittleType::UPDATE_PASSWORD;
   GetSavePasswordDialogTitleTextAndLinkRange(
       web_contents->GetVisibleURL(), form_to_save_->observed_form().origin,
       is_smartlock_branding_enabled, type,

@@ -647,7 +647,7 @@ TEST_F(CredentialManagerDispatcherTest,
 
 TEST_F(CredentialManagerDispatcherTest,
        CredentialManagerOnRequestCredentialFederatedMatch) {
-  form_.federation_url = GURL("https://example.com/");
+  form_.federation_origin = url::Origin(GURL("https://example.com/"));
   store_->AddLogin(form_);
   client_->set_first_run_seen(true);
 
@@ -662,7 +662,7 @@ TEST_F(CredentialManagerDispatcherTest,
 
 TEST_F(CredentialManagerDispatcherTest,
        CredentialManagerOnRequestCredentialFederatedNoMatch) {
-  form_.federation_url = GURL("https://example.com/");
+  form_.federation_origin = url::Origin(GURL("https://example.com/"));
   store_->AddLogin(form_);
   client_->set_first_run_seen(true);
 
@@ -719,7 +719,8 @@ TEST_F(CredentialManagerDispatcherTest,
 
 TEST_F(CredentialManagerDispatcherTest,
        CredentialManagerOnRequestCredentialAffiliatedFederatedMatch) {
-  affiliated_form1_.federation_url = GURL("https://example.com/");
+  affiliated_form1_.federation_origin =
+      url::Origin(GURL("https://example.com/"));
   store_->AddLogin(affiliated_form1_);
   client_->set_first_run_seen(true);
   auto mock_helper = make_scoped_ptr(new MockAffiliatedMatchHelper);
@@ -741,7 +742,8 @@ TEST_F(CredentialManagerDispatcherTest,
 
 TEST_F(CredentialManagerDispatcherTest,
        CredentialManagerOnRequestCredentialAffiliatedFederatedNoMatch) {
-  affiliated_form1_.federation_url = GURL("https://example.com/");
+  affiliated_form1_.federation_origin =
+      url::Origin(GURL("https://example.com/"));
   store_->AddLogin(affiliated_form1_);
   client_->set_first_run_seen(true);
   auto mock_helper = make_scoped_ptr(new MockAffiliatedMatchHelper);

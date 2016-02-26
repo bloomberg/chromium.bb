@@ -28,6 +28,7 @@
 #include "dbus/object_path.h"
 #include "dbus/object_proxy.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "url/origin.h"
 
 using autofill::PasswordForm;
 using content::BrowserThread;
@@ -81,6 +82,22 @@ bool ReadGURL(base::PickleIterator* iter, bool warn_only, GURL* url) {
     return false;
   }
   *url = GURL(url_string);
+  return true;
+}
+
+// Convenience function to read a url::Origin from a Pickle. Assumes the origin
+// has been written as a UTF-8 string. Returns true on success.
+bool ReadOrigin(base::PickleIterator* iter,
+                bool warn_only,
+                url::Origin* origin) {
+  std::string origin_string;
+  if (!iter->ReadString(&origin_string)) {
+    if (!warn_only)
+      LOG(ERROR) << "Failed to deserialize Origin.";
+    *origin = url::Origin();
+    return false;
+  }
+  *origin = url::Origin(GURL(origin_string));
   return true;
 }
 
@@ -199,7 +216,7 @@ bool DeserializeValueSize(const std::string& signon_realm,
     if (version > 3) {
       if (!iter.ReadString16(&form->display_name) ||
           !ReadGURL(&iter, warn_only, &form->icon_url) ||
-          !ReadGURL(&iter, warn_only, &form->federation_url) ||
+          !ReadOrigin(&iter, warn_only, &form->federation_origin) ||
           !iter.ReadBool(&form->skip_zero_click)) {
         LogDeserializationWarning(version, signon_realm, false);
         return false;
@@ -258,7 +275,7 @@ void SerializeValue(const std::vector<autofill::PasswordForm*>& forms,
     pickle->WriteInt64(form->date_synced.ToInternalValue());
     pickle->WriteString16(form->display_name);
     pickle->WriteString(form->icon_url.spec());
-    pickle->WriteString(form->federation_url.spec());
+    pickle->WriteString(form->federation_origin.Serialize());
     pickle->WriteBool(form->skip_zero_click);
     pickle->WriteInt(form->generation_upload_status);
   }

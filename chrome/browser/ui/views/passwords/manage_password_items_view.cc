@@ -77,16 +77,17 @@ scoped_ptr<views::Label> GenerateUsernameLabel(
 
 scoped_ptr<views::Label> GeneratePasswordLabel(
     const autofill::PasswordForm& form) {
-  base::string16 text = form.federation_url.is_empty()
-      ? form.password_value
-      : l10n_util::GetStringFUTF16(
-            IDS_PASSWORDS_VIA_FEDERATION,
-            base::UTF8ToUTF16(form.federation_url.host()));
+  base::string16 text =
+      form.federation_origin.unique()
+          ? form.password_value
+          : l10n_util::GetStringFUTF16(
+                IDS_PASSWORDS_VIA_FEDERATION,
+                base::UTF8ToUTF16(form.federation_origin.host()));
   scoped_ptr<views::Label> label(new views::Label(text));
   label->SetFontList(ui::ResourceBundle::GetSharedInstance().GetFontList(
       ui::ResourceBundle::SmallFont));
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  if (form.federation_url.is_empty())
+  if (form.federation_origin.unique())
     label->SetObscured(true);
   return label;
 }

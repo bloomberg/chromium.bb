@@ -54,7 +54,7 @@ const autofill::PasswordForm::Type kArbitraryType =
     autofill::PasswordForm::TYPE_GENERATED;
 const char kIconUrl[] = "https://fb.com/Icon";
 const char kDisplayName[] = "Agent Smith";
-const char kFederationUrl[] = "https://fb.com/federation_url";
+const char kFederationUrl[] = "https://fb.com/";
 const char kPassword[] = "abcdef";
 const char kSignonRealm[] = "abc";
 const char kSignonRealm2[] = "def";
@@ -135,7 +135,7 @@ SyncData CreateSyncData(const std::string& signon_realm) {
   password_specifics->set_times_used(3);
   password_specifics->set_display_name("Mr. X");
   password_specifics->set_avatar_url("https://accounts.google.com/Icon");
-  password_specifics->set_federation_url("https://google.com/federation");
+  password_specifics->set_federation_url("https://google.com");
   password_specifics->set_username_value("kingkong");
   password_specifics->set_password_value("sicrit");
 
@@ -282,7 +282,7 @@ TEST_F(PasswordSyncableServiceTest, AdditionOnlyInPasswordStore) {
   form.type = kArbitraryType;
   form.display_name = base::ASCIIToUTF16(kDisplayName);
   form.icon_url = GURL(kIconUrl);
-  form.federation_url = GURL(kFederationUrl);
+  form.federation_origin = url::Origin(GURL(kFederationUrl));
   form.username_value = base::ASCIIToUTF16(kUsername);
   form.password_value = base::ASCIIToUTF16(kPassword);
   EXPECT_CALL(*password_store(), FillAutofillableLogins(_))
@@ -416,7 +416,7 @@ TEST_F(PasswordSyncableServiceTest, GetAllSyncData) {
   form1.type = kArbitraryType;
   form1.display_name = base::ASCIIToUTF16(kDisplayName);
   form1.icon_url = GURL(kIconUrl);
-  form1.federation_url = GURL(kFederationUrl);
+  form1.federation_origin = url::Origin(GURL(kFederationUrl));
   form1.username_value = base::ASCIIToUTF16(kUsername);
   form1.password_value = base::ASCIIToUTF16(kPassword);
   autofill::PasswordForm form2;

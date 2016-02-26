@@ -20,6 +20,7 @@
 #include "ios/web/public/web_state/credential.h"
 #include "ios/web/public/web_state/url_verification_constants.h"
 #include "ios/web/public/web_state/web_state.h"
+#include "url/origin.h"
 
 namespace {
 
@@ -42,7 +43,7 @@ web::Credential WebCredentialFromCredentialInfo(
   credential.name = credential_info.name;
   credential.avatar_url = credential_info.icon;
   credential.password = credential_info.password;
-  credential.federation_url = credential_info.federation;
+  credential.federation_origin = credential_info.federation;
   return credential;
 }
 
@@ -68,7 +69,7 @@ password_manager::CredentialInfo CredentialInfoFromWebCredential(
   credential_info.name = credential.name;
   credential_info.icon = credential.avatar_url;
   credential_info.password = credential.password;
-  credential_info.federation = credential.federation_url;
+  credential_info.federation = credential.federation_origin;
   return credential_info;
 }
 

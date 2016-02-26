@@ -25,6 +25,7 @@
 #include "sql/test/test_helpers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/origin.h"
 
 #if defined(OS_MACOSX)
 #include "components/os_crypt/os_crypt.h"
@@ -63,7 +64,7 @@ void GenerateExamplePasswordForm(PasswordForm* form) {
   form->date_synced = base::Time::Now();
   form->display_name = ASCIIToUTF16("Mr. Smith");
   form->icon_url = GURL("https://accounts.google.com/Icon");
-  form->federation_url = GURL("https://accounts.google.com/federation");
+  form->federation_origin = url::Origin(GURL("https://accounts.google.com/"));
   form->skip_zero_click = true;
 }
 
@@ -633,7 +634,7 @@ static bool AddTimestampedLogin(LoginDatabase* db,
   form.signon_realm = url;
   form.display_name = ASCIIToUTF16(unique_string);
   form.icon_url = GURL("https://accounts.google.com/Icon");
-  form.federation_url = GURL("https://accounts.google.com/federation");
+  form.federation_origin = url::Origin(GURL("https://accounts.google.com/"));
   form.skip_zero_click = true;
 
   if (date_is_creation)
@@ -757,7 +758,7 @@ TEST_F(LoginDatabaseTest, BlacklistedLogins) {
   form.date_synced = base::Time::Now();
   form.display_name = ASCIIToUTF16("Mr. Smith");
   form.icon_url = GURL("https://accounts.google.com/Icon");
-  form.federation_url = GURL("https://accounts.google.com/federation");
+  form.federation_origin = url::Origin(GURL("https://accounts.google.com/"));
   form.skip_zero_click = true;
   EXPECT_EQ(AddChangeForForm(form), db().AddLogin(form));
 
@@ -981,7 +982,7 @@ TEST_F(LoginDatabaseTest, UpdateLogin) {
   form.type = PasswordForm::TYPE_GENERATED;
   form.display_name = ASCIIToUTF16("Mr. Smith");
   form.icon_url = GURL("https://accounts.google.com/Icon");
-  form.federation_url = GURL("https://accounts.google.com/federation");
+  form.federation_origin = url::Origin(GURL("https://accounts.google.com/"));
   form.skip_zero_click = true;
   EXPECT_EQ(UpdateChangeForForm(form), db().UpdateLogin(form));
 
