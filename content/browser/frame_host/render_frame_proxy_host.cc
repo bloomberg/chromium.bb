@@ -11,6 +11,7 @@
 #include "content/browser/frame_host/cross_process_frame_connector.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/frame_tree_node.h"
+#include "content/browser/frame_host/navigator.h"
 #include "content/browser/frame_host/render_frame_host_delegate.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/frame_host/render_widget_host_view_child_frame.h"
@@ -247,9 +248,22 @@ void RenderFrameProxyHost::OnDetach() {
 
 void RenderFrameProxyHost::OnOpenURL(
     const FrameHostMsg_OpenURL_Params& params) {
-  // TODO(creis): Verify that we are in the same BrowsingInstance as the current
-  // RenderFrameHost.  See NavigatorImpl::RequestOpenURL.
-  frame_tree_node_->current_frame_host()->OpenURL(params, site_instance_.get());
+  // Verify that we are in the same BrowsingInstance as the current
+  // RenderFrameHost.
+  RenderFrameHostImpl* current_rfh = frame_tree_node_->current_frame_host();
+  if (!site_instance_->IsRelatedSiteInstance(current_rfh->GetSiteInstance()))
+    return;
+
+  // Since this navigation targeted a specific RenderFrameProxy, it should stay
+  // in the current tab.
+  DCHECK_EQ(CURRENT_TAB, params.disposition);
+
+  // TODO(alexmos, creis): Figure out whether |params.user_gesture| needs to be
+  // passed in as well.
+  frame_tree_node_->navigator()->RequestTransferURL(
+      current_rfh, params.url, site_instance_.get(), std::vector<GURL>(),
+      params.referrer, ui::PAGE_TRANSITION_LINK, GlobalRequestID(),
+      params.should_replace_current_entry);
 }
 
 void RenderFrameProxyHost::OnRouteMessageEvent(

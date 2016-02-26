@@ -124,6 +124,7 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
   virtual void RequestTransferURL(
       RenderFrameHostImpl* render_frame_host,
       const GURL& url,
+      SiteInstance* source_site_instance,
       const std::vector<GURL>& redirect_chain,
       const Referrer& referrer,
       ui::PageTransition page_transition,

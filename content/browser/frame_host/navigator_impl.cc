@@ -627,7 +627,6 @@ void NavigatorImpl::RequestOpenURL(RenderFrameHostImpl* render_frame_host,
 
   // If this came from a swapped out RenderFrameHost, we only allow the request
   // if we are still in the same BrowsingInstance.
-  // TODO(creis): Move this to RenderFrameProxyHost::OpenURL.
   SiteInstance* current_site_instance = render_frame_host->frame_tree_node()
                                             ->current_frame_host()
                                             ->GetSiteInstance();
@@ -693,6 +692,7 @@ void NavigatorImpl::RequestOpenURL(RenderFrameHostImpl* render_frame_host,
 void NavigatorImpl::RequestTransferURL(
     RenderFrameHostImpl* render_frame_host,
     const GURL& url,
+    SiteInstance* source_site_instance,
     const std::vector<GURL>& redirect_chain,
     const Referrer& referrer,
     ui::PageTransition page_transition,
@@ -737,9 +737,8 @@ void NavigatorImpl::RequestTransferURL(
   }
 
   NavigationController::LoadURLParams load_url_params(dest_url);
-  // The source_site_instance only matters for navigations via RenderFrameProxy,
-  // which go through RequestOpenURL.
-  load_url_params.source_site_instance = nullptr;
+  // The source_site_instance may matter for navigations via RenderFrameProxy.
+  load_url_params.source_site_instance = source_site_instance;
   load_url_params.transition_type = page_transition;
   load_url_params.frame_tree_node_id = node->frame_tree_node_id();
   load_url_params.referrer = referrer_to_use;
