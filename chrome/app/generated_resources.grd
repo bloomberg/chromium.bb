@@ -10430,6 +10430,12 @@ I don't think this site should be blocked!
                  desc="Text for the button that opens the app in a tab. (In sentence case.)">
           Open in a tab
         </message>
+        <if expr="chromeos">
+          <message name="IDS_APP_CONTEXT_MENU_ACTIVATE_ARC"
+                   desc="Text for the button that activates Android App. (In sentence case.)">
+            Activate
+          </message>
+        </if>
       </if>
 
       <if expr="use_titlecase">
@@ -10481,6 +10487,12 @@ I don't think this site should be blocked!
                  desc="Text for the button that opens the app in a tab. (In title case.)">
           Open in a Tab
         </message>
+        <if expr="chromeos">
+          <message name="IDS_APP_CONTEXT_MENU_ACTIVATE_ARC"
+                   desc="Text for the button that activates Android App. (In title case.)">
+            Activate
+          </message>
+        </if>
       </if>
 
       <!-- Multi-profile -->

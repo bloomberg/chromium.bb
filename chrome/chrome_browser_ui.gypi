@@ -708,6 +708,8 @@
     ],
     # ARC-only sources.
     'chrome_browser_ui_chromeos_arc_sources': [
+      'browser/ui/app_list/arc/arc_app_context_menu.cc',
+      'browser/ui/app_list/arc/arc_app_context_menu.h',
       'browser/ui/app_list/arc/arc_app_icon.cc',
       'browser/ui/app_list/arc/arc_app_icon.h',
       'browser/ui/app_list/arc/arc_app_icon_loader.cc',

@@ -6,6 +6,7 @@
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_context_menu.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "components/arc/arc_bridge_service.h"
 #include "content/public/browser/browser_thread.h"
@@ -79,6 +80,10 @@ void ArcAppItem::Activate(int event_flags) {
   GetController()->DismissView();
 }
 
+void ArcAppItem::ExecuteLaunchCommand(int event_flags) {
+  Activate(event_flags);
+}
+
 void ArcAppItem::SetReady(bool ready) {
   if (ready_ == ready)
     return;
@@ -116,4 +121,14 @@ void ArcAppItem::UpdatePositionFromOrdering() {
 
 void ArcAppItem::OnIconUpdated(ArcAppIcon* icon) {
   UpdateIcon();
+}
+
+ui::MenuModel* ArcAppItem::GetContextMenuModel() {
+  if (!context_menu_) {
+    context_menu_.reset(new ArcAppContextMenu(this,
+                                              profile(),
+                                              id(),
+                                              GetController()));
+  }
+  return context_menu_->GetMenuModel();
 }
