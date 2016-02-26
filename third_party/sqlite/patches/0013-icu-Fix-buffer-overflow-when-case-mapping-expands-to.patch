@@ -1,0 +1,101 @@
+From e2beb15e5092bd882ba261e403daf76ef1b26456 Mon Sep 17 00:00:00 2001
+From: Scott Hess <shess@chromium.org>
+Date: Fri, 26 Feb 2016 10:49:33 -0800
+Subject: [PATCH 13/13] [icu] Fix buffer overflow when case mapping expands too
+ far.
+
+Previously the buffer was doubled in size to accomodate cases where the
+case-mapped version was larger, but some cases expand by more than
+double.  Detect U_BUFFER_OVERFLOW_ERROR and expand to the provided size.
+
+Original Chromium checkin:
+https://codereview.chromium.org/1704103002
+---
+ third_party/sqlite/src/ext/icu/icu.c | 31 +++++++++++++++++++++++++------
+ third_party/sqlite/src/test/icu.test |  7 +++++++
+ 2 files changed, 32 insertions(+), 6 deletions(-)
+
+diff --git a/third_party/sqlite/src/ext/icu/icu.c b/third_party/sqlite/src/ext/icu/icu.c
+index 7e2b800..d384f71 100644
+--- a/third_party/sqlite/src/ext/icu/icu.c
++++ b/third_party/sqlite/src/ext/icu/icu.c
+@@ -341,26 +341,45 @@ static void icuCaseFunc16(sqlite3_context *p, int nArg, sqlite3_value **apArg){
+   if( !zInput ){
+     return;
+   }
+-  nInput = sqlite3_value_bytes16(apArg[0]);
++  nOutput = nInput = sqlite3_value_bytes16(apArg[0]);
+ 
+-  nOutput = nInput * 2 + 2;
+   zOutput = sqlite3_malloc(nOutput);
+   if( !zOutput ){
+     return;
+   }
+ 
+   if( sqlite3_user_data(p) ){
+-    u_strToUpper(zOutput, nOutput/2, zInput, nInput/2, zLocale, &status);
++    nOutput = u_strToUpper(
++        zOutput, nOutput/2, zInput, nInput/2, zLocale, &status) * 2;
+   }else{
+-    u_strToLower(zOutput, nOutput/2, zInput, nInput/2, zLocale, &status);
++    nOutput = u_strToLower(
++        zOutput, nOutput/2, zInput, nInput/2, zLocale, &status) * 2;
+   }
+ 
+-  if( !U_SUCCESS(status) ){
++  if ( status == U_BUFFER_OVERFLOW_ERROR ) {
++    UChar* newOutput = sqlite3_realloc(zOutput, nOutput);
++    if( !newOutput ){
++      sqlite3_free(zOutput);
++      return;
++    }
++    zOutput = newOutput;
++    status = U_ZERO_ERROR;
++    if( sqlite3_user_data(p) ){
++      nOutput = u_strToUpper(
++          zOutput, nOutput/2, zInput, nInput/2, zLocale, &status) * 2;
++    }else{
++      nOutput = u_strToLower(
++          zOutput, nOutput/2, zInput, nInput/2, zLocale, &status) * 2;
++    }
++  }
++
++  if( U_FAILURE(status) ){
+     icuFunctionError(p, "u_strToLower()/u_strToUpper", status);
++    sqlite3_free(zOutput);
+     return;
+   }
+ 
+-  sqlite3_result_text16(p, zOutput, -1, xFree);
++  sqlite3_result_text16(p, zOutput, nOutput, xFree);
+ }
+ 
+ /*
+diff --git a/third_party/sqlite/src/test/icu.test b/third_party/sqlite/src/test/icu.test
+index 73cb9b9..22948aa 100644
+--- a/third_party/sqlite/src/test/icu.test
++++ b/third_party/sqlite/src/test/icu.test
+@@ -56,6 +56,10 @@ set ::ograve "\xF2"
+ #
+ set ::szlig "\xDF" 
+ 
++# U+FB03 (ffi ligature) and U+FB04 (ffl ligature). They're uppercased
++# to 'FFI' and 'FFL'.
++set ::ffi_ffl "\ufb03\ufb04"
++
+ # Tests of the upper()/lower() functions.
+ #
+ test_expr icu-2.1 {i1='HellO WorlD'} {upper(i1)} {HELLO WORLD}
+@@ -72,6 +76,9 @@ test_expr icu-2.6 {i1=$::OGRAVE} {upper(i1)}     $::OGRAVE
+ test_expr icu-2.7 {i1=$::szlig} {upper(i1)}      "SS"
+ test_expr icu-2.8 {i1='SS'} {lower(i1)}          "ss"
+ 
++test_expr icu-2.9 {i1=$::ffi_ffl} {upper(i1)}      "FFIFFL"
++test_expr icu-2.10 {i1=$::ffi_ffl} {lower(i1)}      $::ffi_ffl
++
+ # In turkish (locale="tr_TR"), the lower case version of I
+ # is "small dotless i" (code point 0x131 (decimal 305)).
+ #
+-- 
+2.7.0
+
