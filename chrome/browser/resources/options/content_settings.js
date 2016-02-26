@@ -227,12 +227,11 @@ cr.define('options', function() {
   };
 
   /**
-   * Shows/hides the fullscreen and mouselock sections.
-   * @param {boolean} visible Whether to show (or hide) the sections.
+   * Shows/hides parts of the fullscreen and mouselock sections.
+   * @param {boolean} globalsVisible Whether to show (or hide) global settings.
    */
-  ContentSettings.setExclusiveAccessVisible = function(visible) {
-    $('fullscreen-section').hidden = !visible;
-    $('mouselock-section').hidden = !visible;
+  ContentSettings.setExclusiveAccessVisible = function(globalsVisible) {
+    $('mouselock-global-settings').hidden = !globalsVisible;
   };
 
   /**

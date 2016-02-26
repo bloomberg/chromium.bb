@@ -774,8 +774,9 @@ void ContentSettingsHandler::InitializePage() {
   UpdateAllChooserExceptionsViewsFromModel();
   UpdateProtectedContentExceptionsButton();
 
-  // Fullscreen and mouselock settings are not shown in simplified fullscreen
-  // mode (always allow).
+  // In simplified fullscreen mode, fullscreen and mouselock settings are
+  // ignored. Still, always show these settings (to give users the ability to
+  // view and delete exceptions), but hide the global settings.
   web_ui()->CallJavascriptFunction(
       "ContentSettings.setExclusiveAccessVisible",
       base::FundamentalValue(
