@@ -786,17 +786,6 @@
    fun:CERT_VerifyCert
 }
 {
-   bug_42842
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN19TestWebViewDelegate12createWorkerEPN5blink8WebFrameEPNS0_15WebWorkerClientE
-   fun:_ZN5blink19WebWorkerClientImpl24createWorkerContextProxyEPN7blink6WorkerE
-   fun:_ZN5blink18WorkerContextProxy6createEPNS_6WorkerE
-   fun:_ZN5blink6WorkerC1EPNS_22ScriptExecutionContextE
-   fun:_ZN5blink6Worker6createERKN3WTF6StringEPNS_22ScriptExecutionContextERi
-   fun:_ZN5blink8V8Worker19constructorCallbackERKN2v89ArgumentsE
-}
-{
    bug_64887_a
    Memcheck:Uninitialized
    ...
