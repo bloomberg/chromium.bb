@@ -250,11 +250,12 @@ TEST_P(QuicChromiumClientStreamTest, OnDataAvailable) {
 
 TEST_P(QuicChromiumClientStreamTest, ProcessHeadersWithError) {
   std::string bad_headers = "...";
+  EXPECT_CALL(session_,
+              SendRstStream(kTestStreamId, QUIC_BAD_APPLICATION_PAYLOAD, 0));
+
   stream_->OnStreamHeaders(StringPiece(bad_headers));
   stream_->OnStreamHeadersComplete(false, bad_headers.length());
 
-  EXPECT_CALL(session_,
-              SendRstStream(kTestStreamId, QUIC_BAD_APPLICATION_PAYLOAD, 0));
   base::MessageLoop::current()->RunUntilIdle();
 
   EXPECT_CALL(delegate_, OnClose(QUIC_NO_ERROR));
@@ -327,6 +328,29 @@ TEST_P(QuicChromiumClientStreamTest, WriteStreamDataAsync) {
   stream_->OnCanWrite();
   ASSERT_TRUE(callback.have_result());
   EXPECT_EQ(OK, callback.WaitForResult());
+}
+
+TEST_P(QuicChromiumClientStreamTest, HeadersBeforeDelegate) {
+  // We don't use stream_ because we want an incoming server push
+  // stream.
+  QuicChromiumClientStream* stream = new QuicChromiumClientStream(
+      kServerDataStreamId1, &session_, BoundNetLog());
+  session_.ActivateStream(stream);
+
+  InitializeHeaders();
+  std::string uncompressed_headers =
+      SpdyUtils::SerializeUncompressedHeaders(headers_);
+  stream->OnStreamHeaders(uncompressed_headers);
+  stream->OnStreamHeadersComplete(false, uncompressed_headers.length());
+  EXPECT_TRUE(stream->decompressed_headers().empty());
+
+  EXPECT_CALL(delegate_,
+              OnHeadersAvailable(headers_, uncompressed_headers.length()));
+  stream->SetDelegate(&delegate_);
+  base::MessageLoop::current()->RunUntilIdle();
+
+  // Times(2) because OnClose will be called for stream and stream_.
+  EXPECT_CALL(delegate_, OnClose(QUIC_NO_ERROR)).Times(2);
 }
 
 }  // namespace

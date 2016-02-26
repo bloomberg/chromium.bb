@@ -9,6 +9,7 @@
 
 #include <stddef.h>
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/upload_data_stream.h"
@@ -96,10 +97,13 @@ class NET_EXPORT_PRIVATE QuicChromiumClientStream : public QuicSpdyStream {
   using QuicSpdyStream::HasBufferedData;
 
  private:
-  void NotifyDelegateOfHeadersCompleteLater(size_t frame_len);
-  void NotifyDelegateOfHeadersComplete(size_t frame_len);
+  void NotifyDelegateOfHeadersCompleteLater(const SpdyHeaderBlock& headers,
+                                            size_t frame_len);
+  void NotifyDelegateOfHeadersComplete(SpdyHeaderBlock headers,
+                                       size_t frame_len);
   void NotifyDelegateOfDataAvailableLater();
   void NotifyDelegateOfDataAvailable();
+  void RunOrBuffer(base::Closure closure);
 
   BoundNetLog net_log_;
   Delegate* delegate_;
@@ -109,6 +113,9 @@ class NET_EXPORT_PRIVATE QuicChromiumClientStream : public QuicSpdyStream {
   CompletionCallback callback_;
 
   QuicClientSessionBase* session_;
+
+  // Holds notifications generated before delegate_ is set.
+  std::deque<base::Closure> delegate_tasks_;
 
   base::WeakPtrFactory<QuicChromiumClientStream> weak_factory_;
 

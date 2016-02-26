@@ -35,8 +35,19 @@ QuicChromiumClientStream::~QuicChromiumClientStream() {
 void QuicChromiumClientStream::OnStreamHeadersComplete(bool fin,
                                                        size_t frame_len) {
   QuicSpdyStream::OnStreamHeadersComplete(fin, frame_len);
+  size_t headers_len = decompressed_headers().length();
+  SpdyHeaderBlock headers;
+  SpdyFramer framer(HTTP2);
+  if (!framer.ParseHeaderBlockInBuffer(decompressed_headers().data(),
+                                       headers_len, &headers)) {
+    DLOG(WARNING) << "Invalid headers";
+    Reset(QUIC_BAD_APPLICATION_PAYLOAD);
+    return;
+  }
+  MarkHeadersConsumed(headers_len);
+  session_->OnInitialHeadersComplete(id(), headers);
   // The delegate will read the headers via a posted task.
-  NotifyDelegateOfHeadersCompleteLater(frame_len);
+  NotifyDelegateOfHeadersCompleteLater(headers, frame_len);
 }
 
 void QuicChromiumClientStream::OnPromiseHeadersComplete(
@@ -57,13 +68,6 @@ void QuicChromiumClientStream::OnPromiseHeadersComplete(
 }
 
 void QuicChromiumClientStream::OnDataAvailable() {
-  // TODO(rch): buffer data if we don't have a delegate.
-  if (!delegate_) {
-    DLOG(ERROR) << "Missing delegate";
-    Reset(QUIC_STREAM_CANCELLED);
-    return;
-  }
-
   if (!FinishedReadingHeaders() || !headers_delivered_) {
     // Buffer the data in the sequencer until the headers have been read.
     return;
@@ -78,6 +82,7 @@ void QuicChromiumClientStream::OnClose() {
   if (delegate_) {
     delegate_->OnClose(connection_error());
     delegate_ = nullptr;
+    delegate_tasks_.clear();
   }
   ReliableQuicStream::OnClose();
 }
@@ -117,6 +122,11 @@ void QuicChromiumClientStream::SetDelegate(
     QuicChromiumClientStream::Delegate* delegate) {
   DCHECK(!(delegate_ && delegate));
   delegate_ = delegate;
+  while (!delegate_tasks_.empty()) {
+    base::Closure closure = delegate_tasks_.front();
+    delegate_tasks_.pop_front();
+    closure.Run();
+  }
   if (delegate == nullptr && sequencer()->IsClosed()) {
     OnFinRead();
   }
@@ -126,6 +136,7 @@ void QuicChromiumClientStream::OnError(int error) {
   if (delegate_) {
     QuicChromiumClientStream::Delegate* delegate = delegate_;
     delegate_ = nullptr;
+    delegate_tasks_.clear();
     delegate->OnError(error);
   }
 }
@@ -154,40 +165,25 @@ bool QuicChromiumClientStream::CanWrite(const CompletionCallback& callback) {
 }
 
 void QuicChromiumClientStream::NotifyDelegateOfHeadersCompleteLater(
+    const SpdyHeaderBlock& headers,
     size_t frame_len) {
-  DCHECK(delegate_);
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
+  RunOrBuffer(
       base::Bind(&QuicChromiumClientStream::NotifyDelegateOfHeadersComplete,
-                 weak_factory_.GetWeakPtr(), frame_len));
+                 weak_factory_.GetWeakPtr(), headers, frame_len));
 }
 
 void QuicChromiumClientStream::NotifyDelegateOfHeadersComplete(
+    SpdyHeaderBlock headers,
     size_t frame_len) {
   if (!delegate_)
     return;
 
-  size_t headers_len = decompressed_headers().length();
-  SpdyHeaderBlock headers;
-  SpdyFramer framer(HTTP2);
-  if (!framer.ParseHeaderBlockInBuffer(decompressed_headers().data(),
-                                       headers_len, &headers)) {
-    DLOG(WARNING) << "Invalid headers";
-    Reset(QUIC_BAD_APPLICATION_PAYLOAD);
-    return;
-  }
-  MarkHeadersConsumed(headers_len);
   headers_delivered_ = true;
-
-  session_->OnInitialHeadersComplete(id(), headers);
-
   delegate_->OnHeadersAvailable(headers, frame_len);
 }
 
 void QuicChromiumClientStream::NotifyDelegateOfDataAvailableLater() {
-  DCHECK(delegate_);
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
+  RunOrBuffer(
       base::Bind(&QuicChromiumClientStream::NotifyDelegateOfDataAvailable,
                  weak_factory_.GetWeakPtr()));
 }
@@ -195,6 +191,14 @@ void QuicChromiumClientStream::NotifyDelegateOfDataAvailableLater() {
 void QuicChromiumClientStream::NotifyDelegateOfDataAvailable() {
   if (delegate_)
     delegate_->OnDataAvailable();
+}
+
+void QuicChromiumClientStream::RunOrBuffer(base::Closure closure) {
+  if (delegate_) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, closure);
+  } else {
+    delegate_tasks_.push_back(closure);
+  }
 }
 
 }  // namespace net
