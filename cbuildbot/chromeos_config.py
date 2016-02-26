@@ -598,7 +598,6 @@ _waterfall_config_map = {
         # Experimental Paladins.
         'lakitu_next-paladin',
         'veyron_rialto-paladin',
-        'whirlwind-paladin',
 
         # Experimental Canaries (Group)
         'glados-release-group',
@@ -1654,6 +1653,7 @@ def GetConfig():
       'veyron_mighty',
       'veyron_pinky',
       'veyron_speedy',
+      'whirlwind',
       'wolf',
       'x86-alex',
       'x86-generic',
