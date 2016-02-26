@@ -56,7 +56,7 @@ const int kNumberOfMismatchesThreshold = 3;
 // which prepend prefixes such as "ctl01$ctl00$MainContentRegion$" on all
 // fields.
 const int kCommonNamePrefixRemovalFieldThreshold = 3;
-const int kMinCommonNamePrefixLength = 10;
+const int kMinCommonNamePrefixLength = 15;
 
 // Maximum number of characters in the field label to be encoded in a proto.
 const int kMaxFieldLabelNumChars = 200;
@@ -1276,35 +1276,50 @@ void FormStructure::ProcessExtractedFields() {
   for (const AutofillField* field : *this)
     names.push_back(field->name);
 
-  base::StringPiece16 longest_prefix = FindLongestCommonPrefix(names);
+  const base::string16 longest_prefix = FindLongestCommonPrefix(names);
   if (longest_prefix.size() < kMinCommonNamePrefixLength)
     return;
 
   // The name without the prefix will be used for heuristics parsing.
   for (AutofillField* field : *this) {
-    field->set_parseable_name(
-        field->name.substr(longest_prefix.size(), field->name.size()));
+    if (field->name.size() > longest_prefix.size()) {
+      field->set_parseable_name(
+          field->name.substr(longest_prefix.size(), field->name.size()));
+    }
   }
 }
 
 // static
-base::StringPiece16 FormStructure::FindLongestCommonPrefix(
+base::string16 FormStructure::FindLongestCommonPrefix(
     const std::vector<base::string16>& strings) {
   if (strings.empty())
-    return base::StringPiece16();
+    return base::string16();
+
+  std::vector<base::string16> filtered_strings;
+
+  // Any strings less than kMinCommonNamePrefixLength are neither modified
+  // nor considered when processing for a common prefix.
+  std::copy_if(
+      strings.begin(), strings.end(), std::back_inserter(filtered_strings),
+      [](base::string16 s) { return s.size() >= kMinCommonNamePrefixLength; });
+
+  if (filtered_strings.empty())
+    return base::string16();
 
   // Go through each character of the first string until there is a mismatch at
   // the same position in any other string. Adapted from http://goo.gl/YGukMM.
-  for (size_t prefix_len = 0; prefix_len < strings[0].size(); prefix_len++) {
-    for (size_t i = 1; i < strings.size(); i++) {
-      if (prefix_len >= strings[i].size() ||
-          strings[i].at(prefix_len) != strings[0].at(prefix_len)) {
+  for (size_t prefix_len = 0; prefix_len < filtered_strings[0].size();
+       prefix_len++) {
+    for (size_t i = 1; i < filtered_strings.size(); i++) {
+      if (prefix_len >= filtered_strings[i].size() ||
+          filtered_strings[i].at(prefix_len) !=
+              filtered_strings[0].at(prefix_len)) {
         // Mismatch found.
-        return base::StringPiece16(strings[i].data(), prefix_len);
+        return filtered_strings[i].substr(0, prefix_len);
       }
     }
   }
-  return strings[0];
+  return filtered_strings[0];
 }
 
 }  // namespace autofill

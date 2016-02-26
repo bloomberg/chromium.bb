@@ -250,10 +250,12 @@ class FormStructure {
   // Further processes the extracted |fields_|.
   void ProcessExtractedFields();
 
-  // Returns the longest common prefix found within |strings|. IMPORTANT: the
-  // returned StringPiece16 is a view into |strings| and the latter must remain
-  // valid while the StringPiece16 is used.
-  static base::StringPiece16 FindLongestCommonPrefix(
+  // Returns the longest common prefix found within |strings|. Strings below a
+  // threshold length are excluded when performing this check; this is needed
+  // because an exceptional field may be missing a prefix which is otherwise
+  // consistently applied--for instance, a framework may only apply a prefix
+  // to those fields which are bound when POSTing.
+  static base::string16 FindLongestCommonPrefix(
       const std::vector<base::string16>& strings);
 
   // The name of the form.

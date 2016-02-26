@@ -3488,41 +3488,43 @@ TEST_F(FormStructureTest, ParseQueryResponseAuthorDefinedTypes) {
 }
 
 TEST_F(FormStructureTest, FindLongestCommonPrefix) {
-  // Normal case.
+  // Normal case: All strings are longer than threshold; some are common.
   std::vector<base::string16> strings;
-  strings.push_back(ASCIIToUTF16("123456789"));
-  strings.push_back(ASCIIToUTF16("12345678"));
-  strings.push_back(ASCIIToUTF16("123456"));
-  strings.push_back(ASCIIToUTF16("1234567"));
-  base::StringPiece16 prefix = FormStructure::FindLongestCommonPrefix(strings);
-  EXPECT_EQ(ASCIIToUTF16("123456"), prefix.as_string());
+  strings.push_back(ASCIIToUTF16("1234567890123456789"));
+  strings.push_back(ASCIIToUTF16("123456789012345678_foo"));
+  strings.push_back(ASCIIToUTF16("123456789012345"));
+  strings.push_back(ASCIIToUTF16("12345678901234567890"));
+  base::string16 prefix = FormStructure::FindLongestCommonPrefix(strings);
+  EXPECT_EQ(ASCIIToUTF16("123456789012345"), prefix);
 
   // Handles no common prefix.
   strings.clear();
-  strings.push_back(ASCIIToUTF16("123"));
-  strings.push_back(ASCIIToUTF16("456"));
-  strings.push_back(ASCIIToUTF16("789"));
+  strings.push_back(ASCIIToUTF16("1234567890123456"));
+  strings.push_back(ASCIIToUTF16("4567890123456789"));
+  strings.push_back(ASCIIToUTF16("7890123456789012"));
   prefix = FormStructure::FindLongestCommonPrefix(strings);
-  EXPECT_EQ(ASCIIToUTF16(""), prefix.as_string());
+  EXPECT_EQ(ASCIIToUTF16(""), prefix);
 
-  // Empty strings in the mix.
+  // Some strings less than threshold length.
   strings.clear();
-  strings.push_back(ASCIIToUTF16("123456789"));
+  strings.push_back(ASCIIToUTF16("12345678901234567890"));
+  strings.push_back(ASCIIToUTF16("1234567890123456"));
   strings.push_back(ASCIIToUTF16(""));
+  strings.push_back(ASCIIToUTF16("12345"));
   strings.push_back(ASCIIToUTF16("12345678"));
   prefix = FormStructure::FindLongestCommonPrefix(strings);
-  EXPECT_EQ(ASCIIToUTF16(""), prefix.as_string());
+  EXPECT_EQ(ASCIIToUTF16("1234567890123456"), prefix);
 
   // Only one string.
   strings.clear();
-  strings.push_back(ASCIIToUTF16("123456789"));
+  strings.push_back(ASCIIToUTF16("123456789012345"));
   prefix = FormStructure::FindLongestCommonPrefix(strings);
-  EXPECT_EQ(ASCIIToUTF16("123456789"), prefix.as_string());
+  EXPECT_EQ(ASCIIToUTF16("123456789012345"), prefix);
 
   // Empty vector.
   strings.clear();
   prefix = FormStructure::FindLongestCommonPrefix(strings);
-  EXPECT_EQ(ASCIIToUTF16(""), prefix.as_string());
+  EXPECT_EQ(ASCIIToUTF16(""), prefix);
 }
 
 }  // namespace autofill
