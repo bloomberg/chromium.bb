@@ -1626,6 +1626,16 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
       renderer_cmd->AppendSwitch(switches::kWaitForDebugger);
     }
   }
+
+#if defined(OS_WIN) && !defined(OFFICIAL_BUILD)
+  // Needed because we can't show the dialog from the sandbox. Don't pass
+  // --no-sandbox in official builds because that would bypass the bad_flgs
+  // prompt.
+  if (renderer_cmd->HasSwitch(switches::kRendererStartupDialog) &&
+      !renderer_cmd->HasSwitch(switches::kNoSandbox)) {
+    renderer_cmd->AppendSwitch(switches::kNoSandbox);
+  }
+#endif
 }
 
 base::ProcessHandle RenderProcessHostImpl::GetHandle() const {

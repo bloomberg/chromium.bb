@@ -741,7 +741,9 @@ const char kRendererProcess[]               = "renderer";
 // or instability.
 const char kRendererProcessLimit[]          = "renderer-process-limit";
 
-// Causes the renderer process to display a dialog on launch.
+// Causes the renderer process to display a dialog on launch. Passing this flag
+// also adds kNoSandbox on Windows non-official builds, since that's needed to
+// show a dialog.
 const char kRendererStartupDialog[]         = "renderer-startup-dialog";
 
 // Reduce the default `referer` header's granularity.
