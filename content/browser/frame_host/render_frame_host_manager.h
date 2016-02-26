@@ -9,9 +9,9 @@
 
 #include <list>
 #include <map>
+#include <unordered_map>
 
 #include "base/containers/hash_tables.h"
-#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -487,9 +487,12 @@ class CONTENT_EXPORT RenderFrameHostManager
   // Returns the number of RenderFrameProxyHosts for this frame.
   int GetProxyCount();
 
-  // Returns a copy of the map of proxy hosts. The keys are SiteInstance IDs,
-  // the values are RenderFrameProxyHosts.
-  std::map<int, RenderFrameProxyHost*> GetAllProxyHostsForTesting();
+  // Returns a const reference to the map of proxy hosts. The keys are
+  // SiteInstance IDs, the values are RenderFrameProxyHosts.
+  const std::unordered_map<int32_t, scoped_ptr<RenderFrameProxyHost>>&
+  GetAllProxyHostsForTesting() const {
+    return proxy_hosts_;
+  }
 
   // SiteInstanceImpl::Observer
   void ActiveFrameCountIsZero(SiteInstanceImpl* site_instance) override;
@@ -753,8 +756,7 @@ class CONTENT_EXPORT RenderFrameHostManager
   scoped_ptr<NavigationHandleImpl> transfer_navigation_handle_;
 
   // Proxy hosts, indexed by site instance ID.
-  base::ScopedPtrHashMap<int32_t, scoped_ptr<RenderFrameProxyHost>>
-      proxy_hosts_;
+  std::unordered_map<int32_t, scoped_ptr<RenderFrameProxyHost>> proxy_hosts_;
 
   // A list of RenderFrameHosts waiting to shut down after swapping out.
   using RFHPendingDeleteList = std::list<scoped_ptr<RenderFrameHostImpl>>;

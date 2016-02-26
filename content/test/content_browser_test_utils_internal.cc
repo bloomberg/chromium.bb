@@ -86,13 +86,19 @@ std::string FrameTreeVisualizer::DepictFrameTree(FrameTreeNode* root) {
       to_explore.push(node->child_at(i));
     }
 
-    // Sort the proxies by SiteInstance ID to avoid hash_map ordering.
-    std::map<int, RenderFrameProxyHost*> sorted_proxy_hosts =
-        node->render_manager()->GetAllProxyHostsForTesting();
-    for (auto& proxy_pair : sorted_proxy_hosts) {
-      RenderFrameProxyHost* proxy = proxy_pair.second;
-      legend[GetName(proxy->GetSiteInstance())] = proxy->GetSiteInstance();
+    // Sort the proxies by SiteInstance ID to avoid unordered_map ordering.
+    std::vector<SiteInstance*> site_instances;
+    for (const auto& proxy_pair :
+         node->render_manager()->GetAllProxyHostsForTesting()) {
+      site_instances.push_back(proxy_pair.second->GetSiteInstance());
     }
+    std::sort(site_instances.begin(), site_instances.end(),
+              [](SiteInstance* lhs, SiteInstance* rhs) {
+                return lhs->GetId() < rhs->GetId();
+              });
+
+    for (SiteInstance* site_instance : site_instances)
+      legend[GetName(site_instance)] = site_instance;
   }
 
   // Traversal 4: Now that all names are assigned, make a big loop to pretty-
@@ -155,9 +161,9 @@ std::string FrameTreeVisualizer::DepictFrameTree(FrameTreeNode* root) {
     }
 
     // Show the SiteInstances of the RenderFrameProxyHosts of this node.
-    std::map<int, RenderFrameProxyHost*> sorted_proxy_host_map =
+    const auto& proxy_host_map =
         node->render_manager()->GetAllProxyHostsForTesting();
-    if (!sorted_proxy_host_map.empty()) {
+    if (!proxy_host_map.empty()) {
       // Show a dashed line of variable length before the proxy list. Always at
       // least two dashes.
       line.append(" --");
@@ -176,7 +182,7 @@ std::string FrameTreeVisualizer::DepictFrameTree(FrameTreeNode* root) {
 
       // Sort these alphabetically, to avoid hash_map ordering dependency.
       std::vector<std::string> sorted_proxy_hosts;
-      for (auto& proxy_pair : sorted_proxy_host_map) {
+      for (const auto& proxy_pair : proxy_host_map) {
         sorted_proxy_hosts.push_back(
             GetName(proxy_pair.second->GetSiteInstance()));
       }

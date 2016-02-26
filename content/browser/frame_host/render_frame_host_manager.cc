@@ -762,7 +762,7 @@ bool RenderFrameHostManager::DeleteFromPendingList(
 }
 
 void RenderFrameHostManager::ResetProxyHosts() {
-  for (auto& pair : proxy_hosts_) {
+  for (const auto& pair : proxy_hosts_) {
     static_cast<SiteInstanceImpl*>(pair.second->GetSiteInstance())
         ->RemoveObserver(this);
   }
@@ -1038,12 +1038,14 @@ void RenderFrameHostManager::ActiveFrameCountIsZero(
 RenderFrameProxyHost* RenderFrameHostManager::CreateRenderFrameProxyHost(
     SiteInstance* site_instance,
     RenderViewHostImpl* rvh) {
-  auto result = proxy_hosts_.add(site_instance->GetId(),
-                                 make_scoped_ptr(new RenderFrameProxyHost(
-                                     site_instance, rvh, frame_tree_node_)));
-  CHECK(result.second) << "A proxy already existed for this SiteInstance.";
+  int site_instance_id = site_instance->GetId();
+  CHECK(proxy_hosts_.find(site_instance_id) == proxy_hosts_.end())
+      << "A proxy already existed for this SiteInstance.";
+  RenderFrameProxyHost* proxy_host =
+      new RenderFrameProxyHost(site_instance, rvh, frame_tree_node_);
+  proxy_hosts_[site_instance_id] = make_scoped_ptr(proxy_host);
   static_cast<SiteInstanceImpl*>(site_instance)->AddObserver(this);
-  return result.first->second;
+  return proxy_host;
 }
 
 void RenderFrameHostManager::DeleteRenderFrameProxyHost(
@@ -1772,7 +1774,7 @@ void RenderFrameHostManager::CreateProxiesForChildFrame(FrameTreeNode* child) {
   for (const auto& pair : proxy_hosts_) {
     // Do not create proxies for subframes in the outer delegate's process,
     // since the outer delegate does not need to interact with them.
-    if (pair.second == outer_delegate_proxy)
+    if (pair.second.get() == outer_delegate_proxy)
       continue;
 
     child->render_manager()->CreateRenderFrameProxy(
@@ -2354,20 +2356,12 @@ RenderFrameProxyHost* RenderFrameHostManager::GetRenderFrameProxyHost(
     SiteInstance* instance) const {
   auto it = proxy_hosts_.find(instance->GetId());
   if (it != proxy_hosts_.end())
-    return it->second;
+    return it->second.get();
   return nullptr;
 }
 
 int RenderFrameHostManager::GetProxyCount() {
   return proxy_hosts_.size();
-}
-
-std::map<int, RenderFrameProxyHost*>
-RenderFrameHostManager::GetAllProxyHostsForTesting() {
-  std::map<int, RenderFrameProxyHost*> result;
-  for (const auto& pair : proxy_hosts_)
-    result[pair.first] = pair.second;
-  return result;
 }
 
 void RenderFrameHostManager::CollectOpenerFrameTrees(
