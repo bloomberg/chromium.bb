@@ -275,7 +275,7 @@ deps = {
 
   'src/third_party/catapult':
     Var('chromium_git') + '/external/github.com/catapult-project/catapult.git' + '@' +
-    '531bc98d8a0f3fc55ffe6a96b22eedb2e39f8a5c',
+    '2fa6a22a7d1b06c36c97ae1513fc006b8ac42f62',
 
   'src/third_party/openh264/src':
     Var('chromium_git') + '/external/github.com/cisco/openh264' + '@' + 'b37cda248234162033e3e11b0335f3131cdfe488',
