@@ -22,15 +22,12 @@ DisplaySourceSession::DisplaySourceSession()
 
 DisplaySourceSession::~DisplaySourceSession() = default;
 
-void DisplaySourceSession::SetCallbacks(
-    const SinkIdCallback& started_callback,
-    const SinkIdCallback& terminated_callback,
+void DisplaySourceSession::SetNotificationCallbacks(
+    const base::Closure& terminated_callback,
     const ErrorCallback& error_callback) {
-  DCHECK(started_callback_.is_null());
   DCHECK(terminated_callback_.is_null());
   DCHECK(error_callback_.is_null());
 
-  started_callback_ = started_callback;
   terminated_callback_ = terminated_callback;
   error_callback_ = error_callback;
 }

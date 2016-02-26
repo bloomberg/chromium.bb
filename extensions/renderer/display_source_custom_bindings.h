@@ -30,18 +30,20 @@ class DisplaySourceCustomBindings : public ObjectBackedNativeHandler {
   void TerminateSession(
       const v8::FunctionCallbackInfo<v8::Value>& args);
   // Call completion callbacks.
-  enum CallbackType { kStarted, kTerminated };
-  void CallCompletionCallback(int sink_id,
-                              CallbackType type,
-                              const std::string& error_message = "");
+  void OnCallCompleted(int call_id,
+                       bool success,
+                       const std::string& error_message);
+  void OnSessionStarted(int sink_id,
+                        int call_id,
+                        bool success,
+                        const std::string& error_message);
   // Dispatch events
   void DispatchSessionTerminated(int sink_id) const;
   void DispatchSessionError(int sink_id,
                             DisplaySourceErrorType type,
                             const std::string& message) const;
 
-  // DisplaySession callbacks.
-  void OnSessionStarted(int sink_id);
+  // DisplaySession notification callbacks.
   void OnSessionTerminated(int sink_id);
   void OnSessionError(int sink_id,
                       DisplaySourceErrorType type,
@@ -50,16 +52,6 @@ class DisplaySourceCustomBindings : public ObjectBackedNativeHandler {
   DisplaySourceSession* GetDisplaySession(int sink_id) const;
 
   std::map<int, scoped_ptr<DisplaySourceSession>> session_map_;
-  // Data of a call completion callback.
-  struct CallbackInfo {
-    CallbackType type;
-    int sink_id;
-    int call_id;  // Each call has a unique Id.
-  };
-
-  CallbackInfo GetCallbackInfo(CallbackType type, int sink_id) const;
-
-  std::vector<CallbackInfo> callbacks_;
   base::WeakPtrFactory<DisplaySourceCustomBindings> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DisplaySourceCustomBindings);

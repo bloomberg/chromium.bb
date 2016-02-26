@@ -23,10 +23,16 @@ interface WiFiDisplaySessionService {
 
 interface WiFiDisplaySessionServiceClient {
   // Notification of a successfull connection to a sink.
-  OnEstablished(string ip_address);
+  OnConnected(string ip_address);
+
+  // Notification of a handled connection request.
+  OnConnectRequestHandled(bool success, string error_message);
 
   // Notification of a session termination.
   OnTerminated();
+
+  // Notification of a handled termination request.
+  OnDisconnectRequestHandled(bool success, string error_message);
 
   // Notification of an error occurred during the session.
   // Note: 'type' values must correspond to 'enum ErrorType'

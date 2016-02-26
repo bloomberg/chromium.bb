@@ -23,10 +23,10 @@ using DisplaySourceErrorType = api::display_source::ErrorType;
 // This class represents a generic display source session interface.
 class DisplaySourceSession {
  public:
-  using SinkIdCallback = base::Callback<void(int sink_id)>;
+  using CompletionCallback =
+      base::Callback<void(bool success, const std::string& error_description)>;
   using ErrorCallback =
-      base::Callback<void(int sink_id,
-                          DisplaySourceErrorType error_type,
+      base::Callback<void(DisplaySourceErrorType error_type,
                           const std::string& error_description)>;
 
   // State flow is ether:
@@ -47,36 +47,43 @@ class DisplaySourceSession {
   // Starts the session.
   // The session state should be set to 'Establishing' immediately after this
   // method is called.
-  virtual void Start() = 0;
+  // |callback| : Called with 'success' flag set to 'true' if the session is
+  //              successfully started (state should be set to 'Established')
+  //
+  //              Called with 'success' flag set to 'false' if the session
+  //              has failed to start (state should be set back to 'Idle').
+  //              The 'error_description' argument contains description of
+  //              an error that had caused the call falure.
+  virtual void Start(const CompletionCallback& callback) = 0;
 
   // Terminates the session.
   // The session state should be set to 'Terminating' immediately after this
   // method is called.
-  virtual void Terminate() = 0;
+  // |callback| : Called with 'success' flag set to 'true' if the session is
+  //              successfully terminated (state should be set to 'Idle')
+  //
+  //              Called with 'success' flag set to 'false' if the session
+  //              could not terminate (state should not be modified).
+  //              The 'error_description' argument contains description of
+  //              an error that had caused the call falure.
+  virtual void Terminate(const CompletionCallback& callback) = 0;
 
   State state() const { return state_; }
 
   // Sets the callbacks invoked to inform about the session's state changes.
   // It is required to set the callbacks before the session is started.
-  // |started_callback| : Called when the session was actually started (state
-  //                      should be set to 'Established')
-  // |terminated_callback| : Called when the session was actually started (state
+  // |terminated_callback| : Called when session was terminated (state
   //                         should be set to 'Idle')
   // |error_callback| : Called if a fatal error has occured and the session
-  //                    either cannot be started (if was invoked in
-  //                    'Establishing' state) or will be terminated soon for
-  //                    emergency reasons (if was invoked in 'Established'
-  //                    state).
-  void SetCallbacks(const SinkIdCallback& started_callback,
-                    const SinkIdCallback& terminated_callback,
-                    const ErrorCallback& error_callback);
+  //                    will be terminated soon for emergency reasons.
+  void SetNotificationCallbacks(const base::Closure& terminated_callback,
+                                const ErrorCallback& error_callback);
 
  protected:
   DisplaySourceSession();
 
   State state_;
-  SinkIdCallback started_callback_;
-  SinkIdCallback terminated_callback_;
+  base::Closure terminated_callback_;
   ErrorCallback error_callback_;
 
  private:

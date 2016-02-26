@@ -62,8 +62,7 @@ void WiFiDisplaySessionServiceImpl::Connect(int32_t sink_id,
   DCHECK(client_);
   // We support only one Wi-Fi Display session at a time.
   if (delegate_->connection()) {
-    client_->OnError(ERROR_TYPE_SESSION_LIMIT_ERROR,
-                     kErrorCannotHaveMultipleSessions);
+    client_->OnConnectRequestHandled(false, kErrorCannotHaveMultipleSessions);
     return;
   }
 
@@ -72,7 +71,7 @@ void WiFiDisplaySessionServiceImpl::Connect(int32_t sink_id,
       sinks.begin(), sinks.end(),
       [sink_id](DisplaySourceSinkInfoPtr ptr) { return ptr->id == sink_id; });
   if (found == sinks.end() || (*found)->state != SINK_STATE_DISCONNECTED) {
-    client_->OnError(ERROR_TYPE_CONNECTION_ERROR, kErrorSinkNotAvailable);
+    client_->OnConnectRequestHandled(false, kErrorSinkNotAvailable);
     return;
   }
   AuthenticationInfo auth_info;
@@ -87,6 +86,7 @@ void WiFiDisplaySessionServiceImpl::Connect(int32_t sink_id,
   sink_id_ = sink_id;
   sink_state_ = (*found)->state;
   DCHECK(sink_state_ == SINK_STATE_CONNECTING);
+  client_->OnConnectRequestHandled(true, "");
 }
 
 void WiFiDisplaySessionServiceImpl::Disconnect() {
@@ -154,10 +154,11 @@ void WiFiDisplaySessionServiceImpl::OnSinksUpdated(
     auto on_message = base::Bind(&WiFiDisplaySessionServiceImpl::OnSinkMessage,
                                  weak_factory_.GetWeakPtr());
     connection->SetMessageReceivedCallback(on_message);
-    client_->OnEstablished(connection->GetLocalAddress());
+    client_->OnConnected(connection->GetLocalAddress());
   }
 
   if (actual_state == SINK_STATE_DISCONNECTED) {
+    client_->OnDisconnectRequestHandled(true, "");
     client_->OnTerminated();
     sink_id_ = DisplaySourceConnectionDelegate::kInvalidSinkId;
   }
@@ -190,7 +191,7 @@ void WiFiDisplaySessionServiceImpl::OnDisconnectFailed(
   if (sink_id != sink_id_)
     return;
   DCHECK(client_);
-  client_->OnError(ERROR_TYPE_CONNECTION_ERROR, message);
+  client_->OnDisconnectRequestHandled(false, message);
 }
 
 void WiFiDisplaySessionServiceImpl::OnClientConnectionError() {

@@ -21,24 +21,34 @@ class WiFiDisplaySession: public DisplaySourceSession,
   ~WiFiDisplaySession() override;
 
  private:
+  using DisplaySourceSession::CompletionCallback;
   // DisplaySourceSession overrides.
-  void Start() override;
-  void Terminate() override;
+  void Start(const CompletionCallback& callback) override;
+  void Terminate(const CompletionCallback& callback) override;
 
   // WiFiDisplaySessionServiceClient overrides.
-  void OnEstablished(const mojo::String& ip_address) override;
+  void OnConnected(const mojo::String& ip_address) override;
+  void OnConnectRequestHandled(bool success,
+                               const mojo::String& error) override;
   void OnTerminated() override;
+  void OnDisconnectRequestHandled(bool success,
+                                  const mojo::String& error) override;
   void OnError(int32_t type, const mojo::String& description) override;
   void OnMessage(const mojo::String& data) override;
 
   // A connection error handler for the mojo objects used in this class.
   void OnConnectionError();
 
+  void RunStartCallback(bool success, const std::string& error = "");
+  void RunTerminateCallback(bool success, const std::string& error = "");
+
  private:
   WiFiDisplaySessionServicePtr service_;
   mojo::Binding<WiFiDisplaySessionServiceClient> binding_;
   std::string ip_address_;
   DisplaySourceSessionParams params_;
+  CompletionCallback start_completion_callback_;
+  CompletionCallback teminate_completion_callback_;
   base::WeakPtrFactory<WiFiDisplaySession> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WiFiDisplaySession);

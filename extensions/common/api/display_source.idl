@@ -6,10 +6,6 @@
 // session using WebMediaStreamTrack as sources.
 namespace displaySource {
   enum ErrorType {
-    // A new Display session cannot be started before the existing one is
-    // terminated.
-    session_limit_error,
-
     // The connection with sink cannot be established or has dropped
     // unexpectedly.
     connection_error,

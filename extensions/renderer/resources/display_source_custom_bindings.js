@@ -18,7 +18,7 @@ function callbackWrapper(callback, method, message) {
 
   try {
     if (message !== null)
-      lastError.set('displaySource.startSession', message, null, chrome);
+      lastError.set(method, message, null, chrome);
     callback();
   } finally {
     lastError.clear(chrome);
@@ -40,7 +40,7 @@ binding.registerCustomHook(function(bindingsAPI, extensionId) {
   apiFunctions.setHandleRequest(
       'startSession', function(sessionInfo, callback) {
         try {
-          var callId = natives.StartSession(sessionInfo, callbackWrapper);
+          var callId = natives.StartSession(sessionInfo);
           callbacksInfo[callId] = {
             callback: callback,
             method: 'displaySource.startSession'
@@ -52,7 +52,7 @@ binding.registerCustomHook(function(bindingsAPI, extensionId) {
   apiFunctions.setHandleRequest(
       'terminateSession', function(sink_id, callback) {
         try {
-          var callId = natives.TerminateSession(sink_id, callbackWrapper);
+          var callId = natives.TerminateSession(sink_id);
           callbacksInfo[callId] = {
             callback: callback,
             method: 'displaySource.terminateSession'
