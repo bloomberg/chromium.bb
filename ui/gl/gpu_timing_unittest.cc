@@ -93,6 +93,7 @@ TEST_F(GPUTimingTest, FakeTimerTest) {
 
 TEST_F(GPUTimingTest, ForceTimeElapsedQuery) {
   // Test that forcing time elapsed query affects all clients.
+  SetupGLContext("3.2", "GL_ARB_timer_query");
   scoped_refptr<GPUTimingClient> client1 = CreateGPUTimingClient();
   EXPECT_FALSE(client1->IsForceTimeElapsedQuery());
 

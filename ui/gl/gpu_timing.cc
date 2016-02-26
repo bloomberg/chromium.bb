@@ -319,18 +319,17 @@ GPUTimingImpl::GPUTimingImpl(GLContextReal* context) {
   DCHECK(version_info);
   if (context->HasExtension("GL_EXT_disjoint_timer_query")) {
     timer_type_ = GPUTiming::kTimerTypeDisjoint;
-    if (!version_info->is_es3) {
-      // Due to a bug in the specification, glGetInteger64v is only supported
-      // under ES3. Since it is only used for timestamps, we workaround this by
-      // emulating timestamps on ES2 so WebGL 1.0 will still have access to the
-      // extension
-      force_time_elapsed_query_ = true;
-      timestamp_bit_count_gl_ = 0;
-    }
   } else if (context->HasExtension("GL_ARB_timer_query")) {
     timer_type_ = GPUTiming::kTimerTypeARB;
   } else if (context->HasExtension("GL_EXT_timer_query")) {
     timer_type_ = GPUTiming::kTimerTypeEXT;
+    force_time_elapsed_query_ = true;
+    timestamp_bit_count_gl_ = 0;
+  }
+  // The command glGetInteger64v is only supported under ES3 and GL3.2. Since it
+  // is only used for timestamps, we workaround this by emulating timestamps
+  // so WebGL 1.0 will still have access to the extension.
+  if (!version_info->IsAtLeastGLES(3, 0) && !version_info->IsAtLeastGL(3, 2)) {
     force_time_elapsed_query_ = true;
     timestamp_bit_count_gl_ = 0;
   }

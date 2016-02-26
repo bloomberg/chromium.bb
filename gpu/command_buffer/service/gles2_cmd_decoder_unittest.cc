@@ -1011,7 +1011,7 @@ TEST_P(GLES2DecoderManualInitTest, BeginInvalidTargetQueryFails) {
 TEST_P(GLES2DecoderManualInitTest, QueryCounterEXTTimeStamp) {
   InitState init;
   init.extensions = "GL_ARB_timer_query";
-  init.gl_version = "opengl 2.0";
+  init.gl_version = "opengl es 3.0";
   init.has_alpha = true;
   init.request_alpha = true;
   init.bind_generates_resource = true;
