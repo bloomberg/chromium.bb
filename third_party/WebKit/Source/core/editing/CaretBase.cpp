@@ -31,6 +31,8 @@
 #include "core/frame/Settings.h"
 #include "core/layout/LayoutBlock.h"
 #include "core/layout/LayoutView.h"
+#include "core/layout/api/LayoutBlockItem.h"
+#include "core/layout/api/LayoutItem.h"
 #include "core/paint/PaintInfo.h"
 #include "platform/graphics/GraphicsContext.h"
 
@@ -65,23 +67,23 @@ LayoutBlock* CaretBase::caretLayoutObject(Node* node)
     return paintedByBlock ? toLayoutBlock(layoutObject) : layoutObject->containingBlock();
 }
 
-static void mapCaretRectToCaretPainter(LayoutObject* caretLayoutObject, LayoutBlock* caretPainter, LayoutRect& caretRect)
+static void mapCaretRectToCaretPainter(LayoutItem caretLayoutItem, LayoutBlockItem caretPainterItem, LayoutRect& caretRect)
 {
     // FIXME: This shouldn't be called on un-rooted subtrees.
     // FIXME: This should probably just use mapLocalToAncestor.
-    // Compute an offset between the caretLayoutObject and the caretPainter.
+    // Compute an offset between the caretLayoutItem and the caretPainterItem.
 
-    ASSERT(caretLayoutObject->isDescendantOf(caretPainter));
+    ASSERT(caretLayoutItem.isDescendantOf(caretPainterItem));
 
     bool unrooted = false;
-    while (caretLayoutObject != caretPainter) {
-        LayoutObject* containerObject = caretLayoutObject->container();
-        if (!containerObject) {
+    while (caretLayoutItem != caretPainterItem) {
+        LayoutItem containerItem = caretLayoutItem.container();
+        if (containerItem.isNull()) {
             unrooted = true;
             break;
         }
-        caretRect.move(caretLayoutObject->offsetFromContainer(containerObject, caretRect.location()));
-        caretLayoutObject = containerObject;
+        caretRect.move(caretLayoutItem.offsetFromContainer(containerItem, caretRect.location()));
+        caretLayoutItem = containerItem;
     }
 
     if (unrooted)
@@ -103,9 +105,9 @@ bool CaretBase::updateCaretRect(const PositionWithAffinity& caretPosition)
 
     // Get the layoutObject that will be responsible for painting the caret
     // (which is either the layoutObject we just found, or one of its containers).
-    LayoutBlock* caretPainter = caretLayoutObject(caretPosition.position().anchorNode());
+    LayoutBlockItem caretPainterItem = LayoutBlockItem(caretLayoutObject(caretPosition.position().anchorNode()));
 
-    mapCaretRectToCaretPainter(layoutObject, caretPainter, m_caretLocalRect);
+    mapCaretRectToCaretPainter(LayoutItem(layoutObject), caretPainterItem, m_caretLocalRect);
 
     return true;
 }
@@ -128,7 +130,7 @@ IntRect CaretBase::absoluteBoundsForLocalRect(Node* node, const LayoutRect& rect
 
 void CaretBase::invalidateLocalCaretRect(Node* node, const LayoutRect& rect)
 {
-    LayoutBlock* caretPainter = caretLayoutObject(node);
+    LayoutBlockItem caretPainter = LayoutBlockItem(caretLayoutObject(node));
     if (!caretPainter)
         return;
 
@@ -138,11 +140,11 @@ void CaretBase::invalidateLocalCaretRect(Node* node, const LayoutRect& rect)
     inflatedRect.inflate(LayoutUnit(1));
 
     // FIXME: We should use mapLocalToAncestor() since we know we're not un-rooted.
-    mapCaretRectToCaretPainter(node->layoutObject(), caretPainter, inflatedRect);
+    mapCaretRectToCaretPainter(LayoutItem(node->layoutObject()), caretPainter, inflatedRect);
 
     // FIXME: We should not allow paint invalidation out of paint invalidation state. crbug.com/457415
     DisablePaintInvalidationStateAsserts disabler;
-    caretPainter->invalidatePaintRectangle(inflatedRect);
+    caretPainter.invalidatePaintRectangle(inflatedRect);
 }
 
 bool CaretBase::shouldRepaintCaret(Node& node) const

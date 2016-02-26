@@ -31,6 +31,17 @@ public:
     // https://crbug.com/499321
     operator LayoutObject*() const { return m_layoutObject; }
 
+    // TODO(pilgrim): Remove this when we replace the operator above with UnspecifiedBoolType.
+    bool isNull() const
+    {
+        return !m_layoutObject;
+    }
+
+    bool isDescendantOf(LayoutItem item) const
+    {
+        return m_layoutObject->isDescendantOf(item.layoutObject());
+    }
+
     bool isBoxModelObject() const
     {
         return m_layoutObject->isBoxModelObject();
@@ -39,6 +50,11 @@ public:
     bool isBox() const
     {
         return m_layoutObject->isBox();
+    }
+
+    bool isLayoutBlock() const
+    {
+        return m_layoutObject->isLayoutBlock();
     }
 
     bool isText() const
@@ -69,6 +85,11 @@ public:
     const ComputedStyle& styleRef() const
     {
         return m_layoutObject->styleRef();
+    }
+
+    LayoutSize offsetFromContainer(const LayoutItem& item, const LayoutPoint& point, bool* offsetDependsOnPoint = nullptr) const
+    {
+        return m_layoutObject->offsetFromContainer(item.layoutObject(), point, offsetDependsOnPoint);
     }
 
     void setMayNeedPaintInvalidation()
