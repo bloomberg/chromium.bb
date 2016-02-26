@@ -25,6 +25,8 @@ public:
     CSSVariableData* getVariable(const AtomicString& name) const { return m_data.get(name); }
     void removeVariable(const AtomicString& name) { return m_data.remove(name); }
 
+    // This map will contain null pointers if variables are invalid due to
+    // cycles or referencing invalid variables without using a fallback.
     const HashMap<AtomicString, RefPtr<CSSVariableData>>* getVariables() const { return &m_data; }
 private:
     StyleVariableData() = default;

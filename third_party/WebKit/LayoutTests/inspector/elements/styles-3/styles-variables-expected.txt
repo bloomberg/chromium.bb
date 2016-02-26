@@ -50,5 +50,20 @@ element.style { ()
 div { (user agent stylesheet)
     display: block;
 
-value of --a:  green
+value of --b:  44px
+==== Computed style for ID4 ====
+display: block;
+    block - div user agent stylesheet
+[expanded] 
+element.style { ()
+
+[expanded] 
+#id4 { (styles-variables.html:20 -> styles-variables.html:20:1)
+    --a: var(--z);
+
+[expanded] 
+div { (user agent stylesheet)
+    display: block;
+
+value of --a: undefined
 

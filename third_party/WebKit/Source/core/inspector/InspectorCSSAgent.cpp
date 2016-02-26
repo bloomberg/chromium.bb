@@ -1035,6 +1035,8 @@ void InspectorCSSAgent::getComputedStyleForNode(ErrorString* errorString, int no
 
     if (variables && !variables->isEmpty()) {
         for (const auto& it : *variables) {
+            if (!it.value)
+                continue;
             (*style)->addItem(protocol::CSS::CSSComputedStyleProperty::create()
                 .setName(it.key)
                 .setValue(it.value->tokenRange().serialize()).build());
