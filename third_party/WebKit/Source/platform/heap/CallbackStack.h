@@ -37,7 +37,7 @@ public:
         VisitorCallback m_callback;
     };
 
-    CallbackStack();
+    explicit CallbackStack(size_t blockSize = defaultBlockSize);
     ~CallbackStack();
 
     void clear();
@@ -55,12 +55,12 @@ public:
 #endif
 
 private:
-    static const size_t blockSize = (1 << 13);
+    static const size_t defaultBlockSize = (1 << 13);
 
     class Block {
         USING_FAST_MALLOC(Block);
     public:
-        explicit Block(Block* next);
+        Block(Block* next, size_t blockSize);
         ~Block();
 
 #if ENABLE(ASSERT)
@@ -75,6 +75,8 @@ private:
         {
             return m_current == &(m_buffer[0]);
         }
+
+        size_t blockSize() const { return m_blockSize; }
 
         Item* allocateEntry()
         {
@@ -91,11 +93,14 @@ private:
         }
 
         void invokeEphemeronCallbacks(Visitor*);
+
 #if ENABLE(ASSERT)
         bool hasCallbackForObject(const void*);
 #endif
 
     private:
+        size_t m_blockSize;
+
         Item* m_buffer;
         Item* m_limit;
         Item* m_current;

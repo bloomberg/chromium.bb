@@ -7,24 +7,26 @@
 
 namespace blink {
 
-CallbackStack::Block::Block(Block* next)
+CallbackStack::Block::Block(Block* next, size_t blockSize)
+    : m_blockSize(blockSize)
 {
-    static_assert((blockSize * sizeof(Item)) % WTF::kPageAllocationGranularity == 0, "CallbackStack::blockSize * sizeof(Item) must be a multiple of WTF::kPageAllocationGranularity");
-    m_buffer = static_cast<Item*>(WTF::allocPages(nullptr, blockSize * sizeof(Item), WTF::kPageAllocationGranularity, WTF::PageAccessible));
+    // Allocated block size must be a multiple of WTF::kPageAllocationGranularity.
+    ASSERT((m_blockSize * sizeof(Item)) % WTF::kPageAllocationGranularity == 0);
+    m_buffer = static_cast<Item*>(WTF::allocPages(nullptr, m_blockSize * sizeof(Item), WTF::kPageAllocationGranularity, WTF::PageAccessible));
     RELEASE_ASSERT(m_buffer);
 
 #if ENABLE(ASSERT)
     clear();
 #endif
 
-    m_limit = &(m_buffer[blockSize]);
+    m_limit = &(m_buffer[m_blockSize]);
     m_current = &(m_buffer[0]);
     m_next = next;
 }
 
 CallbackStack::Block::~Block()
 {
-    WTF::freePages(m_buffer, blockSize * sizeof(Item));
+    WTF::freePages(m_buffer, m_blockSize * sizeof(Item));
     m_buffer = nullptr;
     m_limit = nullptr;
     m_current = nullptr;
@@ -34,7 +36,7 @@ CallbackStack::Block::~Block()
 #if ENABLE(ASSERT)
 void CallbackStack::Block::clear()
 {
-    for (size_t i = 0; i < blockSize; i++)
+    for (size_t i = 0; i < m_blockSize; i++)
         m_buffer[i] = Item(0, 0);
 }
 #endif
@@ -44,7 +46,7 @@ void CallbackStack::Block::decommit()
 #if ENABLE(ASSERT)
     clear();
 #endif
-    WTF::discardSystemPages(m_buffer, blockSize * sizeof(Item));
+    WTF::discardSystemPages(m_buffer, m_blockSize * sizeof(Item));
 
     m_current = &m_buffer[0];
     m_next = nullptr;
@@ -72,8 +74,8 @@ bool CallbackStack::Block::hasCallbackForObject(const void* object)
 }
 #endif
 
-CallbackStack::CallbackStack()
-    : m_first(new Block(0))
+CallbackStack::CallbackStack(size_t blockSize)
+    : m_first(new Block(nullptr, blockSize))
     , m_last(m_first)
 {
 }
@@ -105,7 +107,7 @@ bool CallbackStack::isEmpty() const
 CallbackStack::Item* CallbackStack::allocateEntrySlow()
 {
     ASSERT(!m_first->allocateEntry());
-    m_first = new Block(m_first);
+    m_first = new Block(m_first, m_first->blockSize());
     return m_first->allocateEntry();
 }
 
@@ -151,7 +153,7 @@ void CallbackStack::invokeOldestCallbacks(Block* from, Block* upto, Visitor* vis
     if (from == upto)
         return;
     ASSERT(from);
-    // Recurse first (blockSize at a time) so we get to the newly added entries last.
+    // Recurse first so we get to the newly added entries last.
     invokeOldestCallbacks(from->next(), upto, visitor);
     from->invokeEphemeronCallbacks(visitor);
 }
