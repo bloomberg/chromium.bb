@@ -1,3 +1,4 @@
+CONSOLE WARNING: The <keygen> element is deprecated and will be removed in M54, around October 2016. See https://www.chromestatus.com/features/5716060992962560 for more details.
 CONSOLE WARNING: Calling Element.createShadowRoot() for an element which already hosts a user-agent shadow root is deprecated. See https://www.chromestatus.com/features/4668884095336448 for more details.
 Tests to ensure that shadow element cannot be created in elements having dynamically created shadow root.
 

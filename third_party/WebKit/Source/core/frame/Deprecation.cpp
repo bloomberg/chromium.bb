@@ -117,6 +117,8 @@ static const char* milestoneString(int milestone)
         return "M52, around July 2016";
     case 53:
         return "M53, around September 2016";
+    case 54:
+        return "M54, around October 2016";
     }
 
     ASSERT_NOT_REACHED();
@@ -334,6 +336,9 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature)
 
     case UseCounter::PresentationConnectionStateChangeEventListener:
         return replacedWillBeRemoved("'PresentationConnection.onstateachange'", "'PresentationConnection.on{connect,close,terminate}'", 51, "5662456714100736");
+
+    case UseCounter::HTMLKeygenElement:
+        return willBeRemoved("The <keygen> element", 54, "5716060992962560");
 
     // Features that aren't deprecated don't have a deprecation message.
     default:
