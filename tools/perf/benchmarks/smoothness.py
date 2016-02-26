@@ -175,7 +175,8 @@ class SmoothnessGpuRasterizationTop25(_Smoothness):
     return 'smoothness.gpu_rasterization.top_25_smooth'
 
 
-@benchmark.Enabled('android')
+# crbug.com/589580 (This test should only be enabled on Android after fix.)
+@benchmark.Disabled('all')
 class SmoothnessGpuRasterizationKeyMobileSites(_Smoothness):
   """Measures rendering statistics for the key mobile sites with GPU
   rasterization.
