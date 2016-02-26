@@ -38,8 +38,6 @@ namespace mojo {
 class ShellConnection;
 namespace shell {
 
-class ApplicationInstance;
-
 class ApplicationManager : public ShellClient,
                            public InterfaceFactory<mojom::ApplicationManager>,
                            public mojom::ApplicationManager {
@@ -50,7 +48,7 @@ class ApplicationManager : public ShellClient,
     explicit TestAPI(ApplicationManager* manager);
     ~TestAPI();
 
-    // Returns true if there is a ApplicationInstance for this URL.
+    // Returns true if there is a Instance for this URL.
     bool HasRunningInstanceForURL(const GURL& url) const;
    private:
     ApplicationManager* manager_;
@@ -83,10 +81,10 @@ class ApplicationManager : public ShellClient,
   // instance of the target application is running, one will be loaded.
   void Connect(scoped_ptr<ConnectParams> params);
 
-  // Creates a new ApplicationInstance identified as |url|. This is intended for
-  // use by the ApplicationManager's embedder to register itself with the shell.
-  // The URL is never resolved and there must not be an existing instance
-  // associated with it. This must only be called once.
+  // Creates a new Instance identified as |url|. This is intended for use by the
+  // ApplicationManager's embedder to register itself with the shell. The URL is
+  // never resolved and there must not be an existing instance associated with
+  // it. This must only be called once.
   mojom::ShellClientRequest InitInstanceForEmbedder(const GURL& url);
 
   // Sets the default Loader to be used if not overridden by SetLoaderForURL().
@@ -97,20 +95,10 @@ class ApplicationManager : public ShellClient,
   // Sets a Loader to be used for a specific url.
   void SetLoaderForURL(scoped_ptr<ApplicationLoader> loader, const GURL& url);
 
-  // Destroys all Shell-ends of connections established with Applications.
-  // Applications connected by this ApplicationManager will observe pipe errors
-  // and have a chance to shutdown.
-  void TerminateShellConnections();
-
-  // Removes a ApplicationInstance when it encounters an error.
-  void OnApplicationInstanceError(ApplicationInstance* instance);
-
-  ApplicationInstance* GetApplicationInstance(const Identity& identity) const;
-
-  void ApplicationPIDAvailable(uint32_t id, base::ProcessId pid);
-
  private:
-  using IdentityToInstanceMap = std::map<Identity, ApplicationInstance*>;
+  class Instance;
+
+  using IdentityToInstanceMap = std::map<Identity, Instance*>;
   using URLToLoaderMap = std::map<GURL, ApplicationLoader*>;
   using IdentityToShellClientFactoryMap =
       std::map<Identity, mojom::ShellClientFactoryPtr>;
@@ -133,13 +121,25 @@ class ApplicationManager : public ShellClient,
       bool register_mojo_url_schemes,
       scoped_ptr<package_manager::ApplicationCatalogStore> app_catalog);
 
+  // Destroys all Shell-ends of connections established with Applications.
+  // Applications connected by this ApplicationManager will observe pipe errors
+  // and have a chance to shutdown.
+  void TerminateShellConnections();
+
+  // Removes a Instance when it encounters an error.
+  void OnInstanceError(Instance* instance);
+
+  Instance* GetExistingInstance(const Identity& identity) const;
+
+  void ApplicationPIDAvailable(uint32_t id, base::ProcessId pid);
+
   // Attempt to complete the connection requested by |params| by connecting to
   // an existing instance. If there is an existing instance, |params| is taken,
   // and this function returns true.
   bool ConnectToExistingInstance(scoped_ptr<ConnectParams>* params);
 
-  ApplicationInstance* CreateInstance(const Identity& target_id,
-                                      mojom::ShellClientRequest* request);
+  Instance* CreateInstance(const Identity& target_id,
+                           mojom::ShellClientRequest* request);
 
   void CreateShellClient(const Identity& source,
                          const Identity& shell_client_factory,
@@ -177,7 +177,7 @@ class ApplicationManager : public ShellClient,
   void CleanupRunner(NativeRunner* runner);
 
   mojom::ApplicationInfoPtr CreateApplicationInfoForInstance(
-      ApplicationInstance* instance) const;
+      Instance* instance) const;
 
   package_manager::mojom::ShellResolverPtr shell_resolver_;
 
@@ -192,8 +192,8 @@ class ApplicationManager : public ShellClient,
   // Counter used to assign ids to content handlers.
   uint32_t shell_client_factory_id_counter_;
 
-  // The ApplicationInstance created by the shell embedder, if any.
-  ApplicationInstance* embedder_instance_ = nullptr;
+  // The Instance created by the shell embedder, if any.
+  Instance* embedder_instance_ = nullptr;
 
   InterfacePtrSet<mojom::ApplicationManagerListener> listeners_;
 

@@ -4,10 +4,6 @@
 
 #include "mojo/shell/connect_params.h"
 
-#include <utility>
-
-#include "mojo/shell/application_instance.h"
-
 namespace mojo {
 namespace shell {
 

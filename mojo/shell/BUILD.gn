@@ -19,8 +19,6 @@ group("all") {
 source_set("shell") {
   output_name = "mojo_shell"
   sources = [
-    "application_instance.cc",
-    "application_instance.h",
     "application_loader.h",
     "application_manager.cc",
     "application_manager.h",

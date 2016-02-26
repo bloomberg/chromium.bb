@@ -19,8 +19,6 @@
 namespace mojo {
 namespace shell {
 
-class ApplicationInstance;
-
 // This class represents a request for the application manager to connect to an
 // application.
 class ConnectParams {
