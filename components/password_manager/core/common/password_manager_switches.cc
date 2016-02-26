@@ -20,9 +20,6 @@ const char kDisableAffiliationBasedMatching[] =
 // Disable dropping the credential used to sync passwords.
 const char kDisableDropSyncCredential[] = "disable-drop-sync-credential";
 
-// Disable both saving and filling for the sync signin form.
-const char kDisableManagerForSyncSignin[] = "disable-manager-for-sync-signin";
-
 // Disallow autofilling of the sync credential.
 const char kDisallowAutofillSyncCredential[] =
     "disallow-autofill-sync-credential";
@@ -40,10 +37,6 @@ const char kEnableAffiliationBasedMatching[] =
 
 // Enable dropping the credential used to sync passwords.
 const char kEnableDropSyncCredential[] = "enable-drop-sync-credential";
-
-// Enable saving and filling for the sync signin form. Currently the default
-// behavior.
-const char kEnableManagerForSyncSignin[] = "enable-manager-for-sync-signin";
 
 }  // namespace switches
 

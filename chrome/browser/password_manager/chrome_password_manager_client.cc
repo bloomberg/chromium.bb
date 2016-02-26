@@ -181,8 +181,6 @@ bool ChromePasswordManagerClient::IsPasswordManagementEnabledForCurrentPage()
   if (!entry) {
     // TODO(gcasto): Determine if fix for crbug.com/388246 is relevant here.
     is_enabled = true;
-  } else if (EnabledForSyncSignin()) {
-    is_enabled = true;
   } else {
     // Do not fill nor save password when a user is signing in for sync. This
     // is because users need to remember their password if they are syncing as
@@ -597,22 +595,6 @@ bool ChromePasswordManagerClient::IsUpdatePasswordUIEnabled() const {
 #else
   return IsTheHotNewBubbleUIEnabled();
 #endif
-}
-
-bool ChromePasswordManagerClient::EnabledForSyncSignin() {
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(
-          password_manager::switches::kDisableManagerForSyncSignin))
-    return false;
-
-  if (command_line->HasSwitch(
-          password_manager::switches::kEnableManagerForSyncSignin))
-    return true;
-
-  // Default is enabled.
-  std::string group_name =
-      base::FieldTrialList::FindFullName("PasswordManagerStateForSyncSignin");
-  return group_name != "Disabled";
 }
 
 const GURL& ChromePasswordManagerClient::GetMainFrameURL() const {

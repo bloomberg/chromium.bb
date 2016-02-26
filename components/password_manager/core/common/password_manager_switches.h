@@ -15,12 +15,10 @@ namespace switches {
 extern const char kAllowAutofillSyncCredential[];
 extern const char kDisableAffiliationBasedMatching[];
 extern const char kDisableDropSyncCredential[];
-extern const char kDisableManagerForSyncSignin[];
 extern const char kDisallowAutofillSyncCredential[];
 extern const char kDisallowAutofillSyncCredentialForReauth[];
 extern const char kEnableAffiliationBasedMatching[];
 extern const char kEnableDropSyncCredential[];
-extern const char kEnableManagerForSyncSignin[];
 
 }  // namespace switches
 

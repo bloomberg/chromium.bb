@@ -99,9 +99,6 @@ class ChromePasswordManagerClient
   // the sad old Infobar UI.
   static bool IsTheHotNewBubbleUIEnabled();
 
-  // Returns true if the password manager should be enabled during sync signin.
-  static bool EnabledForSyncSignin();
-
  protected:
   // Callable for tests.
   ChromePasswordManagerClient(content::WebContents* web_contents,
