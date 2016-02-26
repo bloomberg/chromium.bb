@@ -142,7 +142,7 @@ static void installV8TestIntegerIndexedGlobalTemplate(v8::Local<v8::FunctionTemp
     functionTemplate->ReadOnlyPrototype();
 
     v8::Local<v8::Signature> defaultSignature;
-    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(isolate, functionTemplate, "TestIntegerIndexedGlobal", V8TestIntegerIndexedGlobal::domTemplateForNamedPropertiesObject(isolate), V8TestIntegerIndexedGlobal::internalFieldCount,
+    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(isolate, functionTemplate, V8TestIntegerIndexedGlobal::wrapperTypeInfo.interfaceName, V8TestIntegerIndexedGlobal::domTemplateForNamedPropertiesObject(isolate), V8TestIntegerIndexedGlobal::internalFieldCount,
         0, 0,
         V8TestIntegerIndexedGlobalAccessors, WTF_ARRAY_LENGTH(V8TestIntegerIndexedGlobalAccessors),
         V8TestIntegerIndexedGlobalMethods, WTF_ARRAY_LENGTH(V8TestIntegerIndexedGlobalMethods));
@@ -150,6 +150,7 @@ static void installV8TestIntegerIndexedGlobalTemplate(v8::Local<v8::FunctionTemp
     ALLOW_UNUSED_LOCAL(instanceTemplate);
     v8::Local<v8::ObjectTemplate> prototypeTemplate = functionTemplate->PrototypeTemplate();
     ALLOW_UNUSED_LOCAL(prototypeTemplate);
+    V8DOMConfiguration::setClassString(isolate, prototypeTemplate, V8TestIntegerIndexedGlobal::wrapperTypeInfo.interfaceName);
     if (RuntimeEnabledFeatures::iterableCollectionsEnabled()) {
         instanceTemplate->SetIntrinsicDataProperty(v8::Symbol::GetIterator(isolate), v8::kArrayProto_values, v8::DontEnum);
     }
@@ -173,6 +174,7 @@ v8::Local<v8::FunctionTemplate> V8TestIntegerIndexedGlobal::domTemplateForNamedP
 
     v8::Local<v8::ObjectTemplate> namedPropertiesObjectTemplate = namedPropertiesObjectFunctionTemplate->PrototypeTemplate();
     namedPropertiesObjectTemplate->SetInternalFieldCount(V8TestIntegerIndexedGlobal::internalFieldCount);
+    V8DOMConfiguration::setClassString(isolate, namedPropertiesObjectTemplate, "TestIntegerIndexedGlobalProperties");
     v8::NamedPropertyHandlerConfiguration namedPropertyHandlerConfig(TestIntegerIndexedGlobalV8Internal::namedPropertyGetterCallback, TestIntegerIndexedGlobalV8Internal::namedPropertySetterCallback, TestIntegerIndexedGlobalV8Internal::namedPropertyQueryCallback, TestIntegerIndexedGlobalV8Internal::namedPropertyDeleterCallback, TestIntegerIndexedGlobalV8Internal::namedPropertyEnumeratorCallback, v8::Local<v8::Value>(), static_cast<v8::PropertyHandlerFlags>(int(v8::PropertyHandlerFlags::kOnlyInterceptStrings) | int(v8::PropertyHandlerFlags::kNonMasking)));
     namedPropertiesObjectTemplate->SetHandler(namedPropertyHandlerConfig);
 

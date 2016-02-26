@@ -358,7 +358,7 @@ static void installV8TestInterfaceGarbageCollectedTemplate(v8::Local<v8::Functio
     functionTemplate->ReadOnlyPrototype();
 
     v8::Local<v8::Signature> defaultSignature;
-    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(isolate, functionTemplate, "TestInterfaceGarbageCollected", V8EventTarget::domTemplate(isolate), V8TestInterfaceGarbageCollected::internalFieldCount,
+    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(isolate, functionTemplate, V8TestInterfaceGarbageCollected::wrapperTypeInfo.interfaceName, V8EventTarget::domTemplate(isolate), V8TestInterfaceGarbageCollected::internalFieldCount,
         0, 0,
         V8TestInterfaceGarbageCollectedAccessors, WTF_ARRAY_LENGTH(V8TestInterfaceGarbageCollectedAccessors),
         V8TestInterfaceGarbageCollectedMethods, WTF_ARRAY_LENGTH(V8TestInterfaceGarbageCollectedMethods));
@@ -368,6 +368,7 @@ static void installV8TestInterfaceGarbageCollectedTemplate(v8::Local<v8::Functio
     ALLOW_UNUSED_LOCAL(instanceTemplate);
     v8::Local<v8::ObjectTemplate> prototypeTemplate = functionTemplate->PrototypeTemplate();
     ALLOW_UNUSED_LOCAL(prototypeTemplate);
+    V8DOMConfiguration::setClassString(isolate, prototypeTemplate, V8TestInterfaceGarbageCollected::wrapperTypeInfo.interfaceName);
     const V8DOMConfiguration::SymbolKeyedMethodConfiguration symbolKeyedIteratorConfiguration = { v8::Symbol::GetIterator, TestInterfaceGarbageCollectedV8Internal::iteratorMethodCallback, 0, v8::DontDelete, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype };
     V8DOMConfiguration::installMethod(isolate, prototypeTemplate, defaultSignature, symbolKeyedIteratorConfiguration);
 }

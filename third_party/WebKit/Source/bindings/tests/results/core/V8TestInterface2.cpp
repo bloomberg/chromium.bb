@@ -600,7 +600,7 @@ static void installV8TestInterface2Template(v8::Local<v8::FunctionTemplate> func
     functionTemplate->ReadOnlyPrototype();
 
     v8::Local<v8::Signature> defaultSignature;
-    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(isolate, functionTemplate, "TestInterface2", v8::Local<v8::FunctionTemplate>(), V8TestInterface2::internalFieldCount,
+    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(isolate, functionTemplate, V8TestInterface2::wrapperTypeInfo.interfaceName, v8::Local<v8::FunctionTemplate>(), V8TestInterface2::internalFieldCount,
         0, 0,
         0, 0,
         V8TestInterface2Methods, WTF_ARRAY_LENGTH(V8TestInterface2Methods));
@@ -610,6 +610,7 @@ static void installV8TestInterface2Template(v8::Local<v8::FunctionTemplate> func
     ALLOW_UNUSED_LOCAL(instanceTemplate);
     v8::Local<v8::ObjectTemplate> prototypeTemplate = functionTemplate->PrototypeTemplate();
     ALLOW_UNUSED_LOCAL(prototypeTemplate);
+    V8DOMConfiguration::setClassString(isolate, prototypeTemplate, V8TestInterface2::wrapperTypeInfo.interfaceName);
     if (RuntimeEnabledFeatures::featureNameEnabled()) {
         const V8DOMConfiguration::ConstantConfiguration constantConstValue1Configuration = {"CONST_VALUE_1", 1, 0, V8DOMConfiguration::ConstantTypeUnsignedShort};
         V8DOMConfiguration::installConstant(isolate, functionTemplate, prototypeTemplate, constantConstValue1Configuration);

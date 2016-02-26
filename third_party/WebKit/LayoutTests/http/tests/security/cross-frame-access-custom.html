@@ -38,7 +38,7 @@ window.onload = function()
     shouldBeFalse("canSet('targetWindow.objectPrototypeCustomProperty')");
 
     // window object itself
-    shouldBeTrue("canGet('targetWindow.toString')");
+    shouldBeFalse("canGet('targetWindow.toString')");
     shouldBeFalse("canSet('targetWindow.toString')");
     shouldBe("toString('targetWindow')", "'[exception]'");
 }

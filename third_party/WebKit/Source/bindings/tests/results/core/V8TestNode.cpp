@@ -187,7 +187,7 @@ static void installV8TestNodeTemplate(v8::Local<v8::FunctionTemplate> functionTe
     functionTemplate->ReadOnlyPrototype();
 
     v8::Local<v8::Signature> defaultSignature;
-    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(isolate, functionTemplate, "TestNode", V8Node::domTemplate(isolate), V8TestNode::internalFieldCount,
+    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(isolate, functionTemplate, V8TestNode::wrapperTypeInfo.interfaceName, V8Node::domTemplate(isolate), V8TestNode::internalFieldCount,
         0, 0,
         V8TestNodeAccessors, WTF_ARRAY_LENGTH(V8TestNodeAccessors),
         0, 0);
@@ -197,6 +197,7 @@ static void installV8TestNodeTemplate(v8::Local<v8::FunctionTemplate> functionTe
     ALLOW_UNUSED_LOCAL(instanceTemplate);
     v8::Local<v8::ObjectTemplate> prototypeTemplate = functionTemplate->PrototypeTemplate();
     ALLOW_UNUSED_LOCAL(prototypeTemplate);
+    V8DOMConfiguration::setClassString(isolate, prototypeTemplate, V8TestNode::wrapperTypeInfo.interfaceName);
 }
 
 v8::Local<v8::FunctionTemplate> V8TestNode::domTemplate(v8::Isolate* isolate)

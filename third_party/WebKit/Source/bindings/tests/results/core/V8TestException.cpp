@@ -120,7 +120,7 @@ static void installV8TestExceptionTemplate(v8::Local<v8::FunctionTemplate> funct
     functionTemplate->ReadOnlyPrototype();
 
     v8::Local<v8::Signature> defaultSignature;
-    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(isolate, functionTemplate, "TestException", v8::Local<v8::FunctionTemplate>(), V8TestException::internalFieldCount,
+    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(isolate, functionTemplate, V8TestException::wrapperTypeInfo.interfaceName, v8::Local<v8::FunctionTemplate>(), V8TestException::internalFieldCount,
         0, 0,
         V8TestExceptionAccessors, WTF_ARRAY_LENGTH(V8TestExceptionAccessors),
         V8TestExceptionMethods, WTF_ARRAY_LENGTH(V8TestExceptionMethods));
@@ -130,6 +130,7 @@ static void installV8TestExceptionTemplate(v8::Local<v8::FunctionTemplate> funct
     ALLOW_UNUSED_LOCAL(instanceTemplate);
     v8::Local<v8::ObjectTemplate> prototypeTemplate = functionTemplate->PrototypeTemplate();
     ALLOW_UNUSED_LOCAL(prototypeTemplate);
+    V8DOMConfiguration::setClassString(isolate, prototypeTemplate, V8TestException::wrapperTypeInfo.interfaceName);
     const V8DOMConfiguration::ConstantConfiguration V8TestExceptionConstants[] = {
         {"UNSIGNED_SHORT_CONSTANT", 1, 0, V8DOMConfiguration::ConstantTypeUnsignedShort},
     };

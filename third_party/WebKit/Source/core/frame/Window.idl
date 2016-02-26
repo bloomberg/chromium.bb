@@ -183,9 +183,6 @@
 
     // https://w3c.github.io/webappsec/specs/powerfulfeatures/#monkey-patching-global-object
     readonly attribute boolean isSecureContext;
-
-    // window.toString() requires special handling in V8
-    [DoNotCheckSignature, DoNotCheckSecurity, Custom, NotEnumerable] stringifier;
 };
 
 // http://www.whatwg.org/specs/web-apps/current-work/#transferable-objects

@@ -155,7 +155,7 @@ static void installV8TestSpecialOperationsTemplate(v8::Local<v8::FunctionTemplat
     functionTemplate->ReadOnlyPrototype();
 
     v8::Local<v8::Signature> defaultSignature;
-    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(isolate, functionTemplate, "TestSpecialOperations", v8::Local<v8::FunctionTemplate>(), V8TestSpecialOperations::internalFieldCount,
+    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(isolate, functionTemplate, V8TestSpecialOperations::wrapperTypeInfo.interfaceName, v8::Local<v8::FunctionTemplate>(), V8TestSpecialOperations::internalFieldCount,
         0, 0,
         0, 0,
         V8TestSpecialOperationsMethods, WTF_ARRAY_LENGTH(V8TestSpecialOperationsMethods));
@@ -163,6 +163,7 @@ static void installV8TestSpecialOperationsTemplate(v8::Local<v8::FunctionTemplat
     ALLOW_UNUSED_LOCAL(instanceTemplate);
     v8::Local<v8::ObjectTemplate> prototypeTemplate = functionTemplate->PrototypeTemplate();
     ALLOW_UNUSED_LOCAL(prototypeTemplate);
+    V8DOMConfiguration::setClassString(isolate, prototypeTemplate, V8TestSpecialOperations::wrapperTypeInfo.interfaceName);
     v8::NamedPropertyHandlerConfiguration namedPropertyHandlerConfig(TestSpecialOperationsV8Internal::namedPropertyGetterCallback, TestSpecialOperationsV8Internal::namedPropertySetterCallback, TestSpecialOperationsV8Internal::namedPropertyQueryCallback, 0, TestSpecialOperationsV8Internal::namedPropertyEnumeratorCallback, v8::Local<v8::Value>(), static_cast<v8::PropertyHandlerFlags>(int(v8::PropertyHandlerFlags::kOnlyInterceptStrings)));
     instanceTemplate->SetHandler(namedPropertyHandlerConfig);
 }

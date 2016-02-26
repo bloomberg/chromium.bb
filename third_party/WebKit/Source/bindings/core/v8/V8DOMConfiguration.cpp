@@ -345,4 +345,9 @@ v8::Local<v8::FunctionTemplate> V8DOMConfiguration::domClassTemplate(v8::Isolate
     return result;
 }
 
+void V8DOMConfiguration::setClassString(v8::Isolate* isolate, v8::Local<v8::ObjectTemplate> objectTemplate, const char* classString)
+{
+    objectTemplate->Set(v8::Symbol::GetToStringTag(isolate), v8AtomicString(isolate, classString), static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontEnum));
+}
+
 } // namespace blink

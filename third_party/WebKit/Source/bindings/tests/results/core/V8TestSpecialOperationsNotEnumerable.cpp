@@ -70,7 +70,7 @@ static void installV8TestSpecialOperationsNotEnumerableTemplate(v8::Local<v8::Fu
     functionTemplate->ReadOnlyPrototype();
 
     v8::Local<v8::Signature> defaultSignature;
-    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(isolate, functionTemplate, "TestSpecialOperationsNotEnumerable", v8::Local<v8::FunctionTemplate>(), V8TestSpecialOperationsNotEnumerable::internalFieldCount,
+    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(isolate, functionTemplate, V8TestSpecialOperationsNotEnumerable::wrapperTypeInfo.interfaceName, v8::Local<v8::FunctionTemplate>(), V8TestSpecialOperationsNotEnumerable::internalFieldCount,
         0, 0,
         0, 0,
         0, 0);
@@ -78,6 +78,7 @@ static void installV8TestSpecialOperationsNotEnumerableTemplate(v8::Local<v8::Fu
     ALLOW_UNUSED_LOCAL(instanceTemplate);
     v8::Local<v8::ObjectTemplate> prototypeTemplate = functionTemplate->PrototypeTemplate();
     ALLOW_UNUSED_LOCAL(prototypeTemplate);
+    V8DOMConfiguration::setClassString(isolate, prototypeTemplate, V8TestSpecialOperationsNotEnumerable::wrapperTypeInfo.interfaceName);
     v8::IndexedPropertyHandlerConfiguration indexedPropertyHandlerConfig(TestSpecialOperationsNotEnumerableV8Internal::indexedPropertyGetterCallback, 0, 0, 0, 0, v8::Local<v8::Value>(), v8::PropertyHandlerFlags::kNone);
     instanceTemplate->SetHandler(indexedPropertyHandlerConfig);
     v8::NamedPropertyHandlerConfiguration namedPropertyHandlerConfig(TestSpecialOperationsNotEnumerableV8Internal::namedPropertyGetterCallback, 0, 0, 0, 0, v8::Local<v8::Value>(), static_cast<v8::PropertyHandlerFlags>(int(v8::PropertyHandlerFlags::kOnlyInterceptStrings) | int(v8::PropertyHandlerFlags::kNonMasking)));

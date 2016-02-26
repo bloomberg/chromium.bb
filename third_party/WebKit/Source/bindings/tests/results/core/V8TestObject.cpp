@@ -12013,7 +12013,7 @@ static void installV8TestObjectTemplate(v8::Local<v8::FunctionTemplate> function
     functionTemplate->ReadOnlyPrototype();
 
     v8::Local<v8::Signature> defaultSignature;
-    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(isolate, functionTemplate, "TestObject", v8::Local<v8::FunctionTemplate>(), V8TestObject::internalFieldCount,
+    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(isolate, functionTemplate, V8TestObject::wrapperTypeInfo.interfaceName, v8::Local<v8::FunctionTemplate>(), V8TestObject::internalFieldCount,
         V8TestObjectAttributes, WTF_ARRAY_LENGTH(V8TestObjectAttributes),
         V8TestObjectAccessors, WTF_ARRAY_LENGTH(V8TestObjectAccessors),
         V8TestObjectMethods, WTF_ARRAY_LENGTH(V8TestObjectMethods));
@@ -12021,6 +12021,7 @@ static void installV8TestObjectTemplate(v8::Local<v8::FunctionTemplate> function
     ALLOW_UNUSED_LOCAL(instanceTemplate);
     v8::Local<v8::ObjectTemplate> prototypeTemplate = functionTemplate->PrototypeTemplate();
     ALLOW_UNUSED_LOCAL(prototypeTemplate);
+    V8DOMConfiguration::setClassString(isolate, prototypeTemplate, V8TestObject::wrapperTypeInfo.interfaceName);
     ExecutionContext* context = currentExecutionContext(isolate);
     ALLOW_UNUSED_LOCAL(context);
     if (RuntimeEnabledFeatures::featureNameEnabled()) {

@@ -846,9 +846,9 @@ static void installV8TestInterface5Template(v8::Local<v8::FunctionTemplate> func
 
     v8::Local<v8::Signature> defaultSignature;
     if (!RuntimeEnabledFeatures::featureNameEnabled())
-        defaultSignature = V8DOMConfiguration::installDOMClassTemplate(isolate, functionTemplate, "TestInterface5", V8TestInterfaceEmpty::domTemplate(isolate), V8TestInterface5::internalFieldCount, 0, 0, 0, 0, 0, 0);
+        defaultSignature = V8DOMConfiguration::installDOMClassTemplate(isolate, functionTemplate, V8TestInterface5::wrapperTypeInfo.interfaceName, V8TestInterfaceEmpty::domTemplate(isolate), V8TestInterface5::internalFieldCount, 0, 0, 0, 0, 0, 0);
     else
-        defaultSignature = V8DOMConfiguration::installDOMClassTemplate(isolate, functionTemplate, "TestInterface5", V8TestInterfaceEmpty::domTemplate(isolate), V8TestInterface5::internalFieldCount,
+        defaultSignature = V8DOMConfiguration::installDOMClassTemplate(isolate, functionTemplate, V8TestInterface5::wrapperTypeInfo.interfaceName, V8TestInterfaceEmpty::domTemplate(isolate), V8TestInterface5::internalFieldCount,
             V8TestInterface5Attributes, WTF_ARRAY_LENGTH(V8TestInterface5Attributes),
             V8TestInterface5Accessors, WTF_ARRAY_LENGTH(V8TestInterface5Accessors),
             V8TestInterface5Methods, WTF_ARRAY_LENGTH(V8TestInterface5Methods));
@@ -856,6 +856,7 @@ static void installV8TestInterface5Template(v8::Local<v8::FunctionTemplate> func
     ALLOW_UNUSED_LOCAL(instanceTemplate);
     v8::Local<v8::ObjectTemplate> prototypeTemplate = functionTemplate->PrototypeTemplate();
     ALLOW_UNUSED_LOCAL(prototypeTemplate);
+    V8DOMConfiguration::setClassString(isolate, prototypeTemplate, V8TestInterface5::wrapperTypeInfo.interfaceName);
     const V8DOMConfiguration::ConstantConfiguration V8TestInterface5Constants[] = {
         {"UNSIGNED_LONG", 0, 0, V8DOMConfiguration::ConstantTypeUnsignedLong},
         {"CONST_JAVASCRIPT", 1, 0, V8DOMConfiguration::ConstantTypeShort},

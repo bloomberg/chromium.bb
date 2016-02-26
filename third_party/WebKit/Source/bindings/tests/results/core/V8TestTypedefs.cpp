@@ -359,7 +359,7 @@ static void installV8TestTypedefsTemplate(v8::Local<v8::FunctionTemplate> functi
     functionTemplate->ReadOnlyPrototype();
 
     v8::Local<v8::Signature> defaultSignature;
-    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(isolate, functionTemplate, "TestTypedefs", v8::Local<v8::FunctionTemplate>(), V8TestTypedefs::internalFieldCount,
+    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(isolate, functionTemplate, V8TestTypedefs::wrapperTypeInfo.interfaceName, v8::Local<v8::FunctionTemplate>(), V8TestTypedefs::internalFieldCount,
         V8TestTypedefsAttributes, WTF_ARRAY_LENGTH(V8TestTypedefsAttributes),
         V8TestTypedefsAccessors, WTF_ARRAY_LENGTH(V8TestTypedefsAccessors),
         V8TestTypedefsMethods, WTF_ARRAY_LENGTH(V8TestTypedefsMethods));
@@ -369,6 +369,7 @@ static void installV8TestTypedefsTemplate(v8::Local<v8::FunctionTemplate> functi
     ALLOW_UNUSED_LOCAL(instanceTemplate);
     v8::Local<v8::ObjectTemplate> prototypeTemplate = functionTemplate->PrototypeTemplate();
     ALLOW_UNUSED_LOCAL(prototypeTemplate);
+    V8DOMConfiguration::setClassString(isolate, prototypeTemplate, V8TestTypedefs::wrapperTypeInfo.interfaceName);
 }
 
 v8::Local<v8::FunctionTemplate> V8TestTypedefs::domTemplate(v8::Isolate* isolate)

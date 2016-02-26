@@ -713,6 +713,7 @@ v8::Local<v8::FunctionTemplate> {{v8_class}}::domTemplateForNamedPropertiesObjec
 
     v8::Local<v8::ObjectTemplate> namedPropertiesObjectTemplate = namedPropertiesObjectFunctionTemplate->PrototypeTemplate();
     namedPropertiesObjectTemplate->SetInternalFieldCount({{v8_class}}::internalFieldCount);
+    V8DOMConfiguration::setClassString(isolate, namedPropertiesObjectTemplate, "{{interface_name}}Properties");
     {{install_named_property_handler('namedPropertiesObjectTemplate') | indent}}
 
     return namedPropertiesObjectFunctionTemplate;

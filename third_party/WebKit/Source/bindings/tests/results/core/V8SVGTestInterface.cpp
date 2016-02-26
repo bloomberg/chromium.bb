@@ -76,7 +76,7 @@ static void installV8SVGTestInterfaceTemplate(v8::Local<v8::FunctionTemplate> fu
     functionTemplate->ReadOnlyPrototype();
 
     v8::Local<v8::Signature> defaultSignature;
-    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(isolate, functionTemplate, "SVGTestInterface", v8::Local<v8::FunctionTemplate>(), V8SVGTestInterface::internalFieldCount,
+    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(isolate, functionTemplate, V8SVGTestInterface::wrapperTypeInfo.interfaceName, v8::Local<v8::FunctionTemplate>(), V8SVGTestInterface::internalFieldCount,
         0, 0,
         V8SVGTestInterfaceAccessors, WTF_ARRAY_LENGTH(V8SVGTestInterfaceAccessors),
         0, 0);
@@ -84,6 +84,7 @@ static void installV8SVGTestInterfaceTemplate(v8::Local<v8::FunctionTemplate> fu
     ALLOW_UNUSED_LOCAL(instanceTemplate);
     v8::Local<v8::ObjectTemplate> prototypeTemplate = functionTemplate->PrototypeTemplate();
     ALLOW_UNUSED_LOCAL(prototypeTemplate);
+    V8DOMConfiguration::setClassString(isolate, prototypeTemplate, V8SVGTestInterface::wrapperTypeInfo.interfaceName);
 }
 
 v8::Local<v8::FunctionTemplate> V8SVGTestInterface::domTemplate(v8::Isolate* isolate)

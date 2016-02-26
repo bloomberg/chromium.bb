@@ -6,68 +6,68 @@ NOTE: This test will start failing if you change the layout of a related prototy
 
 [object Object]
 
-[object Object]
+[object EventTarget]
 
-[object Object]
+[object Node]
 
-[object Object]
+[object Document]
 
-[object Object]
+[object HTMLDocument]
 
 ----- [object HTMLDivElement] (6 prototypes) -----
 
 [object Object]
 
-[object Object]
+[object EventTarget]
 
-[object Object]
+[object Node]
 
-[object Object]
+[object Element]
 
-[object Object]
+[object HTMLElement]
 
-[object Object]
+[object HTMLDivElement]
 
 ----- [object HTMLFormElement] (6 prototypes) -----
 
 [object Object]
 
-[object Object]
+[object EventTarget]
 
-[object Object]
+[object Node]
 
-[object Object]
+[object Element]
 
-[object Object]
+[object HTMLElement]
 
-[object Object]
+[object HTMLFormElement]
 
 ----- [object UIEvent] (3 prototypes) -----
 
 [object Object]
 
-[object Object]
+[object Event]
 
-[object Object]
+[object UIEvent]
 
 ----- [object MouseEvent] (4 prototypes) -----
 
 [object Object]
 
-[object Object]
+[object Event]
 
-[object Object]
+[object UIEvent]
 
-[object Object]
+[object MouseEvent]
 
 ----- [object KeyboardEvent] (4 prototypes) -----
 
 [object Object]
 
-[object Object]
+[object Event]
 
-[object Object]
+[object UIEvent]
 
-[object Object]
+[object KeyboardEvent]
 
 

@@ -193,7 +193,7 @@ static void installV8TestInterfaceWillBeGarbageCollectedTemplate(v8::Local<v8::F
     functionTemplate->ReadOnlyPrototype();
 
     v8::Local<v8::Signature> defaultSignature;
-    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(isolate, functionTemplate, "TestInterfaceWillBeGarbageCollected", V8EventTarget::domTemplate(isolate), V8TestInterfaceWillBeGarbageCollected::internalFieldCount,
+    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(isolate, functionTemplate, V8TestInterfaceWillBeGarbageCollected::wrapperTypeInfo.interfaceName, V8EventTarget::domTemplate(isolate), V8TestInterfaceWillBeGarbageCollected::internalFieldCount,
         0, 0,
         V8TestInterfaceWillBeGarbageCollectedAccessors, WTF_ARRAY_LENGTH(V8TestInterfaceWillBeGarbageCollectedAccessors),
         V8TestInterfaceWillBeGarbageCollectedMethods, WTF_ARRAY_LENGTH(V8TestInterfaceWillBeGarbageCollectedMethods));
@@ -203,6 +203,7 @@ static void installV8TestInterfaceWillBeGarbageCollectedTemplate(v8::Local<v8::F
     ALLOW_UNUSED_LOCAL(instanceTemplate);
     v8::Local<v8::ObjectTemplate> prototypeTemplate = functionTemplate->PrototypeTemplate();
     ALLOW_UNUSED_LOCAL(prototypeTemplate);
+    V8DOMConfiguration::setClassString(isolate, prototypeTemplate, V8TestInterfaceWillBeGarbageCollected::wrapperTypeInfo.interfaceName);
 }
 
 v8::Local<v8::FunctionTemplate> V8TestInterfaceWillBeGarbageCollected::domTemplate(v8::Isolate* isolate)

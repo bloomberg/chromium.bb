@@ -6314,7 +6314,6 @@ interface Window : EventTarget
     attribute PERSISTENT
     attribute TEMPORARY
     method constructor
-    method toString
 interface Worker : EventTarget
     getter onerror
     getter onmessage

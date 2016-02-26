@@ -484,7 +484,7 @@ static void installV8TestInterfaceCheckSecurityTemplate(v8::Local<v8::FunctionTe
     functionTemplate->ReadOnlyPrototype();
 
     v8::Local<v8::Signature> defaultSignature;
-    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(isolate, functionTemplate, "TestInterfaceCheckSecurity", v8::Local<v8::FunctionTemplate>(), V8TestInterfaceCheckSecurity::internalFieldCount,
+    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(isolate, functionTemplate, V8TestInterfaceCheckSecurity::wrapperTypeInfo.interfaceName, v8::Local<v8::FunctionTemplate>(), V8TestInterfaceCheckSecurity::internalFieldCount,
         0, 0,
         V8TestInterfaceCheckSecurityAccessors, WTF_ARRAY_LENGTH(V8TestInterfaceCheckSecurityAccessors),
         V8TestInterfaceCheckSecurityMethods, WTF_ARRAY_LENGTH(V8TestInterfaceCheckSecurityMethods));
@@ -492,6 +492,7 @@ static void installV8TestInterfaceCheckSecurityTemplate(v8::Local<v8::FunctionTe
     ALLOW_UNUSED_LOCAL(instanceTemplate);
     v8::Local<v8::ObjectTemplate> prototypeTemplate = functionTemplate->PrototypeTemplate();
     ALLOW_UNUSED_LOCAL(prototypeTemplate);
+    V8DOMConfiguration::setClassString(isolate, prototypeTemplate, V8TestInterfaceCheckSecurity::wrapperTypeInfo.interfaceName);
     ExecutionContext* context = currentExecutionContext(isolate);
     ALLOW_UNUSED_LOCAL(context);
     instanceTemplate->SetAccessCheckCallback(TestInterfaceCheckSecurityV8Internal::securityCheck, v8::External::New(isolate, const_cast<WrapperTypeInfo*>(&V8TestInterfaceCheckSecurity::wrapperTypeInfo)));

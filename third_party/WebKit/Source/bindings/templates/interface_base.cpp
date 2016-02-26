@@ -287,12 +287,12 @@ static void install{{v8_class}}Template(v8::Local<v8::FunctionTemplate> function
            if parent_interface else 'v8::Local<v8::FunctionTemplate>()' %}
     {% if runtime_enabled_function %}
     if (!{{runtime_enabled_function}}())
-        defaultSignature = V8DOMConfiguration::installDOMClassTemplate(isolate, functionTemplate, "{{interface_name}}", {{parent_template}}, {{v8_class}}::internalFieldCount, 0, 0, 0, 0, 0, 0);
+        defaultSignature = V8DOMConfiguration::installDOMClassTemplate(isolate, functionTemplate, {{v8_class}}::wrapperTypeInfo.interfaceName, {{parent_template}}, {{v8_class}}::internalFieldCount, 0, 0, 0, 0, 0, 0);
     else
     {% endif %}
     {% set runtime_enabled_indent = 4 if runtime_enabled_function else 0 %}
     {% filter indent(runtime_enabled_indent, true) %}
-    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(isolate, functionTemplate, "{{interface_name}}", {{parent_template}}, {{v8_class}}::internalFieldCount,
+    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(isolate, functionTemplate, {{v8_class}}::wrapperTypeInfo.interfaceName, {{parent_template}}, {{v8_class}}::internalFieldCount,
         {# Test needed as size 0 arrays definitions are not allowed per standard
            (so objects have distinct addresses), which is enforced by MSVC.
            8.5.1 Aggregates [dcl.init.aggr]
@@ -324,6 +324,14 @@ static void install{{v8_class}}Template(v8::Local<v8::FunctionTemplate> function
     ALLOW_UNUSED_LOCAL(instanceTemplate);
     v8::Local<v8::ObjectTemplate> prototypeTemplate = functionTemplate->PrototypeTemplate();
     ALLOW_UNUSED_LOCAL(prototypeTemplate);
+    {% if not is_partial %}
+    {# TODO(yukishiino): We should set the class string to the platform object
+       (|instanceTemplate|), too.  The reason that we don\'t set it is that
+       it prevents minor GC to collect unreachable DOM objects (a layout test
+       fast/dom/minor-dom-gc.html fails if we set the class string).
+       See also http://heycam.github.io/webidl/#es-platform-objects #}
+    V8DOMConfiguration::setClassString(isolate, prototypeTemplate, {{v8_class}}::wrapperTypeInfo.interfaceName);
+    {% endif %}
     {% if custom_registration_methods %}
     ExecutionContext* context = currentExecutionContext(isolate);
     ALLOW_UNUSED_LOCAL(context);

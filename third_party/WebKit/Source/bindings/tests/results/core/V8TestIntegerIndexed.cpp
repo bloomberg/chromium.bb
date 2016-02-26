@@ -142,7 +142,7 @@ static void installV8TestIntegerIndexedTemplate(v8::Local<v8::FunctionTemplate> 
     functionTemplate->ReadOnlyPrototype();
 
     v8::Local<v8::Signature> defaultSignature;
-    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(isolate, functionTemplate, "TestIntegerIndexed", v8::Local<v8::FunctionTemplate>(), V8TestIntegerIndexed::internalFieldCount,
+    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(isolate, functionTemplate, V8TestIntegerIndexed::wrapperTypeInfo.interfaceName, v8::Local<v8::FunctionTemplate>(), V8TestIntegerIndexed::internalFieldCount,
         0, 0,
         V8TestIntegerIndexedAccessors, WTF_ARRAY_LENGTH(V8TestIntegerIndexedAccessors),
         V8TestIntegerIndexedMethods, WTF_ARRAY_LENGTH(V8TestIntegerIndexedMethods));
@@ -150,6 +150,7 @@ static void installV8TestIntegerIndexedTemplate(v8::Local<v8::FunctionTemplate> 
     ALLOW_UNUSED_LOCAL(instanceTemplate);
     v8::Local<v8::ObjectTemplate> prototypeTemplate = functionTemplate->PrototypeTemplate();
     ALLOW_UNUSED_LOCAL(prototypeTemplate);
+    V8DOMConfiguration::setClassString(isolate, prototypeTemplate, V8TestIntegerIndexed::wrapperTypeInfo.interfaceName);
     if (RuntimeEnabledFeatures::iterableCollectionsEnabled()) {
         prototypeTemplate->SetIntrinsicDataProperty(v8::Symbol::GetIterator(isolate), v8::kArrayProto_values, v8::DontEnum);
     }

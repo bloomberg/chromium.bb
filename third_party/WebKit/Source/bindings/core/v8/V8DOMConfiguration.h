@@ -197,6 +197,10 @@ public:
         const MethodConfiguration*, size_t methodCount);
 
     static v8::Local<v8::FunctionTemplate> domClassTemplate(v8::Isolate*, WrapperTypeInfo*, void (*)(v8::Local<v8::FunctionTemplate>, v8::Isolate*));
+
+    // Sets the class string of platform objects, interface prototype objects, etc.
+    // See also http://heycam.github.io/webidl/#dfn-class-string
+    static void setClassString(v8::Isolate*, v8::Local<v8::ObjectTemplate>, const char* classString);
 };
 
 } // namespace blink

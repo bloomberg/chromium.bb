@@ -81,7 +81,7 @@ static void installV8TestInterfaceDocumentTemplate(v8::Local<v8::FunctionTemplat
     functionTemplate->ReadOnlyPrototype();
 
     v8::Local<v8::Signature> defaultSignature;
-    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(isolate, functionTemplate, "TestInterfaceDocument", V8Document::domTemplate(isolate), V8TestInterfaceDocument::internalFieldCount,
+    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(isolate, functionTemplate, V8TestInterfaceDocument::wrapperTypeInfo.interfaceName, V8Document::domTemplate(isolate), V8TestInterfaceDocument::internalFieldCount,
         0, 0,
         V8TestInterfaceDocumentAccessors, WTF_ARRAY_LENGTH(V8TestInterfaceDocumentAccessors),
         0, 0);
@@ -89,6 +89,7 @@ static void installV8TestInterfaceDocumentTemplate(v8::Local<v8::FunctionTemplat
     ALLOW_UNUSED_LOCAL(instanceTemplate);
     v8::Local<v8::ObjectTemplate> prototypeTemplate = functionTemplate->PrototypeTemplate();
     ALLOW_UNUSED_LOCAL(prototypeTemplate);
+    V8DOMConfiguration::setClassString(isolate, prototypeTemplate, V8TestInterfaceDocument::wrapperTypeInfo.interfaceName);
 }
 
 v8::Local<v8::FunctionTemplate> V8TestInterfaceDocument::domTemplate(v8::Isolate* isolate)

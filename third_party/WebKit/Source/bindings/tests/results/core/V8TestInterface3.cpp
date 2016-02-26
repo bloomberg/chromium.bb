@@ -218,7 +218,7 @@ static void installV8TestInterface3Template(v8::Local<v8::FunctionTemplate> func
     functionTemplate->ReadOnlyPrototype();
 
     v8::Local<v8::Signature> defaultSignature;
-    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(isolate, functionTemplate, "TestInterface3", v8::Local<v8::FunctionTemplate>(), V8TestInterface3::internalFieldCount,
+    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(isolate, functionTemplate, V8TestInterface3::wrapperTypeInfo.interfaceName, v8::Local<v8::FunctionTemplate>(), V8TestInterface3::internalFieldCount,
         0, 0,
         0, 0,
         V8TestInterface3Methods, WTF_ARRAY_LENGTH(V8TestInterface3Methods));
@@ -226,6 +226,7 @@ static void installV8TestInterface3Template(v8::Local<v8::FunctionTemplate> func
     ALLOW_UNUSED_LOCAL(instanceTemplate);
     v8::Local<v8::ObjectTemplate> prototypeTemplate = functionTemplate->PrototypeTemplate();
     ALLOW_UNUSED_LOCAL(prototypeTemplate);
+    V8DOMConfiguration::setClassString(isolate, prototypeTemplate, V8TestInterface3::wrapperTypeInfo.interfaceName);
     ExecutionContext* context = currentExecutionContext(isolate);
     ALLOW_UNUSED_LOCAL(context);
     v8::IndexedPropertyHandlerConfiguration indexedPropertyHandlerConfig(TestInterface3V8Internal::indexedPropertyGetterCallback, TestInterface3V8Internal::indexedPropertySetterCallback, 0, TestInterface3V8Internal::indexedPropertyDeleterCallback, indexedPropertyEnumerator<TestInterface3>, v8::Local<v8::Value>(), v8::PropertyHandlerFlags::kNone);

@@ -224,7 +224,7 @@ static void installV8TestInterfaceConstructor2Template(v8::Local<v8::FunctionTem
     functionTemplate->ReadOnlyPrototype();
 
     v8::Local<v8::Signature> defaultSignature;
-    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(isolate, functionTemplate, "TestInterfaceConstructor2", v8::Local<v8::FunctionTemplate>(), V8TestInterfaceConstructor2::internalFieldCount,
+    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(isolate, functionTemplate, V8TestInterfaceConstructor2::wrapperTypeInfo.interfaceName, v8::Local<v8::FunctionTemplate>(), V8TestInterfaceConstructor2::internalFieldCount,
         0, 0,
         0, 0,
         0, 0);
@@ -234,6 +234,7 @@ static void installV8TestInterfaceConstructor2Template(v8::Local<v8::FunctionTem
     ALLOW_UNUSED_LOCAL(instanceTemplate);
     v8::Local<v8::ObjectTemplate> prototypeTemplate = functionTemplate->PrototypeTemplate();
     ALLOW_UNUSED_LOCAL(prototypeTemplate);
+    V8DOMConfiguration::setClassString(isolate, prototypeTemplate, V8TestInterfaceConstructor2::wrapperTypeInfo.interfaceName);
 }
 
 v8::Local<v8::FunctionTemplate> V8TestInterfaceConstructor2::domTemplate(v8::Isolate* isolate)

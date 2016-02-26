@@ -100,8 +100,8 @@ window : [object Window]
 [window] : [object Window]
 String(window) : [object Window]
 String([window]) : [object Window]
-window.toString : function () { [native code] }
-window.toString() (cached in variable) : [object Window]
+window.toString : function toString() { [native code] }
+window.toString() (cached in variable) : [object Undefined]
 window.toString() : [object Window]
 [window].toString() : [object Window]
 window.valueOf() : [object Window]
