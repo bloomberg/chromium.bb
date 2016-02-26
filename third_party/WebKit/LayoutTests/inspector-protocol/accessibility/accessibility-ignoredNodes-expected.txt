@@ -17,7 +17,6 @@ Content within label refers to label container
         "type": "internalRole",
         "value": "Div"
       },
-      "properties": [],
       "name": {
         "type": "computedString",
         "value": "",
@@ -35,7 +34,8 @@ Content within label refers to label container
             "attribute": "title"
           }
         ]
-      }
+      },
+      "properties": []
     }
   }
 }
@@ -48,6 +48,24 @@ Content within label refers to label container
       "role": {
         "type": "role",
         "value": "treeitem"
+      },
+      "name": {
+        "type": "computedString",
+        "value": "",
+        "sources": [
+          {
+            "type": "relatedElement",
+            "attribute": "aria-labelledby"
+          },
+          {
+            "type": "attribute",
+            "attribute": "aria-label"
+          },
+          {
+            "type": "attribute",
+            "attribute": "title"
+          }
+        ]
       },
       "properties": [
         {
@@ -71,25 +89,7 @@ Content within label refers to label container
             "value": false
           }
         }
-      ],
-      "name": {
-        "type": "computedString",
-        "value": "",
-        "sources": [
-          {
-            "type": "relatedElement",
-            "attribute": "aria-labelledby"
-          },
-          {
-            "type": "attribute",
-            "attribute": "aria-label"
-          },
-          {
-            "type": "attribute",
-            "attribute": "title"
-          }
-        ]
-      }
+      ]
     }
   }
 }
@@ -99,10 +99,6 @@ Content within label refers to label container
     "accessibilityNode": {
       "nodeId": "<string>",
       "ignored": true,
-      "role": {
-        "type": "internalRole",
-        "value": "Div"
-      },
       "ignoredReasons": [
         {
           "name": "ancestorDisallowsChild",
@@ -115,7 +111,11 @@ Content within label refers to label container
             ]
           }
         }
-      ]
+      ],
+      "role": {
+        "type": "internalRole",
+        "value": "Div"
+      }
     }
   }
 }
@@ -125,10 +125,6 @@ Content within label refers to label container
     "accessibilityNode": {
       "nodeId": "<string>",
       "ignored": true,
-      "role": {
-        "type": "internalRole",
-        "value": "SVGRoot"
-      },
       "ignoredReasons": [
         {
           "name": "ancestorDisallowsChild",
@@ -141,7 +137,11 @@ Content within label refers to label container
             ]
           }
         }
-      ]
+      ],
+      "role": {
+        "type": "internalRole",
+        "value": "SVGRoot"
+      }
     }
   }
 }
@@ -151,10 +151,6 @@ Content within label refers to label container
     "accessibilityNode": {
       "nodeId": "<string>",
       "ignored": true,
-      "role": {
-        "type": "internalRole",
-        "value": "Unknown"
-      },
       "ignoredReasons": [
         {
           "name": "ancestorIsLeafNode",
@@ -167,7 +163,11 @@ Content within label refers to label container
             ]
           }
         }
-      ]
+      ],
+      "role": {
+        "type": "internalRole",
+        "value": "Unknown"
+      }
     }
   }
 }
@@ -177,10 +177,6 @@ Content within label refers to label container
     "accessibilityNode": {
       "nodeId": "<string>",
       "ignored": true,
-      "role": {
-        "type": "internalRole",
-        "value": "Div"
-      },
       "ignoredReasons": [
         {
           "name": "ariaHidden",
@@ -189,7 +185,11 @@ Content within label refers to label container
             "value": true
           }
         }
-      ]
+      ],
+      "role": {
+        "type": "internalRole",
+        "value": "Div"
+      }
     }
   }
 }
@@ -199,10 +199,6 @@ Content within label refers to label container
     "accessibilityNode": {
       "nodeId": "<string>",
       "ignored": true,
-      "role": {
-        "type": "internalRole",
-        "value": "Div"
-      },
       "ignoredReasons": [
         {
           "name": "ariaHiddenRoot",
@@ -216,7 +212,11 @@ Content within label refers to label container
             ]
           }
         }
-      ]
+      ],
+      "role": {
+        "type": "internalRole",
+        "value": "Div"
+      }
     }
   }
 }
@@ -226,10 +226,6 @@ Content within label refers to label container
     "accessibilityNode": {
       "nodeId": "<string>",
       "ignored": true,
-      "role": {
-        "type": "role",
-        "value": "img"
-      },
       "ignoredReasons": [
         {
           "name": "emptyAlt",
@@ -238,7 +234,11 @@ Content within label refers to label container
             "value": true
           }
         }
-      ]
+      ],
+      "role": {
+        "type": "role",
+        "value": "img"
+      }
     }
   }
 }
@@ -248,10 +248,6 @@ Content within label refers to label container
     "accessibilityNode": {
       "nodeId": "<string>",
       "ignored": true,
-      "role": {
-        "type": "role",
-        "value": "none"
-      },
       "ignoredReasons": [
         {
           "name": "presentationalRole",
@@ -260,7 +256,11 @@ Content within label refers to label container
             "value": true
           }
         }
-      ]
+      ],
+      "role": {
+        "type": "role",
+        "value": "none"
+      }
     }
   }
 }
@@ -270,10 +270,6 @@ Content within label refers to label container
     "accessibilityNode": {
       "nodeId": "<string>",
       "ignored": true,
-      "role": {
-        "type": "role",
-        "value": "listitem"
-      },
       "ignoredReasons": [
         {
           "name": "inheritsPresentation",
@@ -287,7 +283,11 @@ Content within label refers to label container
             ]
           }
         }
-      ]
+      ],
+      "role": {
+        "type": "role",
+        "value": "listitem"
+      }
     }
   }
 }
@@ -301,7 +301,6 @@ Content within label refers to label container
         "type": "internalRole",
         "value": "Div"
       },
-      "properties": [],
       "name": {
         "type": "computedString",
         "value": "",
@@ -319,7 +318,8 @@ Content within label refers to label container
             "attribute": "title"
           }
         ]
-      }
+      },
+      "properties": []
     }
   }
 }
@@ -329,10 +329,6 @@ Content within label refers to label container
     "accessibilityNode": {
       "nodeId": "<string>",
       "ignored": true,
-      "role": {
-        "type": "internalRole",
-        "value": "Label"
-      },
       "ignoredReasons": [
         {
           "name": "labelFor",
@@ -346,7 +342,11 @@ Content within label refers to label container
             ]
           }
         }
-      ]
+      ],
+      "role": {
+        "type": "internalRole",
+        "value": "Label"
+      }
     }
   }
 }
@@ -356,10 +356,6 @@ Content within label refers to label container
     "accessibilityNode": {
       "nodeId": "<string>",
       "ignored": true,
-      "role": {
-        "type": "internalRole",
-        "value": "Unknown"
-      },
       "ignoredReasons": [
         {
           "name": "labelContainer",
@@ -385,7 +381,11 @@ Content within label refers to label container
             ]
           }
         }
-      ]
+      ],
+      "role": {
+        "type": "internalRole",
+        "value": "Unknown"
+      }
     }
   }
 }
@@ -395,10 +395,6 @@ Content within label refers to label container
     "accessibilityNode": {
       "nodeId": "<string>",
       "ignored": true,
-      "role": {
-        "type": "internalRole",
-        "value": "Div"
-      },
       "ignoredReasons": [
         {
           "name": "notRendered",
@@ -407,7 +403,11 @@ Content within label refers to label container
             "value": true
           }
         }
-      ]
+      ],
+      "role": {
+        "type": "internalRole",
+        "value": "Div"
+      }
     }
   }
 }
@@ -417,10 +417,6 @@ Content within label refers to label container
     "accessibilityNode": {
       "nodeId": "<string>",
       "ignored": true,
-      "role": {
-        "type": "internalRole",
-        "value": "Canvas"
-      },
       "ignoredReasons": [
         {
           "name": "probablyPresentational",
@@ -429,7 +425,11 @@ Content within label refers to label container
             "value": true
           }
         }
-      ]
+      ],
+      "role": {
+        "type": "internalRole",
+        "value": "Canvas"
+      }
     }
   }
 }

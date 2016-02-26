@@ -355,11 +355,11 @@ private:
     RefPtr<RequestDatabaseCallback> m_requestCallback;
 };
 
-static IDBKey* idbKeyFromInspectorObject(PassOwnPtr<protocol::IndexedDB::Key> key)
+static IDBKey* idbKeyFromInspectorObject(protocol::IndexedDB::Key* key)
 {
     IDBKey* idbKey;
 
-    if (!key || !key->hasType())
+    if (!key)
         return nullptr;
     String type = key->getType();
 
@@ -403,14 +403,8 @@ static IDBKeyRange* idbKeyRangeFromKeyRange(protocol::IndexedDB::KeyRange* keyRa
     if (keyRange->hasUpper() && !idbUpper)
         return nullptr;
 
-    if (!keyRange->hasLowerOpen())
-        return nullptr;
     IDBKeyRange::LowerBoundType lowerBoundType = keyRange->getLowerOpen() ? IDBKeyRange::LowerBoundOpen : IDBKeyRange::LowerBoundClosed;
-
-    if (!keyRange->hasUpperOpen())
-        return nullptr;
     IDBKeyRange::UpperBoundType upperBoundType = keyRange->getUpperOpen() ? IDBKeyRange::UpperBoundOpen : IDBKeyRange::UpperBoundClosed;
-
     return IDBKeyRange::create(idbLower, idbUpper, lowerBoundType, upperBoundType);
 }
 

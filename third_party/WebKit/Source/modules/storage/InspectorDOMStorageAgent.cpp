@@ -193,12 +193,6 @@ void InspectorDOMStorageAgent::didDispatchDOMStorageEvent(const String& key, con
 
 StorageArea* InspectorDOMStorageAgent::findStorageArea(ErrorString* errorString, PassOwnPtr<protocol::DOMStorage::StorageId> storageId, LocalFrame*& targetFrame)
 {
-    if (!storageId->hasSecurityOrigin() || !storageId->hasIsLocalStorage()) {
-        if (errorString)
-            *errorString = "Invalid storageId format";
-        return nullptr;
-    }
-
     String securityOrigin = storageId->getSecurityOrigin();
     bool isLocalStorage = storageId->getIsLocalStorage();
 

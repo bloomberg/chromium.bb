@@ -97,13 +97,9 @@ namespace {
 const size_t maxTextSize = 10000;
 const UChar ellipsisUChar[] = { 0x2026, 0 };
 
-Color parseColor(const Maybe<protocol::DOM::RGBA>& maybeRgba)
+Color parseColor(protocol::DOM::RGBA* rgba)
 {
-    if (!maybeRgba.isJust())
-        return Color::transparent;
-
-    protocol::DOM::RGBA* rgba = maybeRgba.fromJust();
-    if (!rgba->hasR() && !rgba->hasG() && !rgba->hasB())
+    if (!rgba)
         return Color::transparent;
 
     int r = rgba->getR();
@@ -1169,8 +1165,8 @@ void InspectorDOMAgent::highlightQuad(ErrorString* errorString, PassOwnPtr<proto
 void InspectorDOMAgent::innerHighlightQuad(PassOwnPtr<FloatQuad> quad, const Maybe<protocol::DOM::RGBA>& color, const Maybe<protocol::DOM::RGBA>& outlineColor)
 {
     OwnPtr<InspectorHighlightConfig> highlightConfig = adoptPtr(new InspectorHighlightConfig());
-    highlightConfig->content = parseColor(color);
-    highlightConfig->contentOutline = parseColor(outlineColor);
+    highlightConfig->content = parseColor(color.fromMaybe(nullptr));
+    highlightConfig->contentOutline = parseColor(outlineColor.fromMaybe(nullptr));
     if (m_client)
         m_client->highlightQuad(quad, *highlightConfig);
 }
@@ -1227,8 +1223,8 @@ void InspectorDOMAgent::highlightFrame(
     if (frame && frame->deprecatedLocalOwner()) {
         OwnPtr<InspectorHighlightConfig> highlightConfig = adoptPtr(new InspectorHighlightConfig());
         highlightConfig->showInfo = true; // Always show tooltips for frames.
-        highlightConfig->content = parseColor(color);
-        highlightConfig->contentOutline = parseColor(outlineColor);
+        highlightConfig->content = parseColor(color.fromMaybe(nullptr));
+        highlightConfig->contentOutline = parseColor(outlineColor.fromMaybe(nullptr));
         if (m_client)
             m_client->highlightNode(frame->deprecatedLocalOwner(), *highlightConfig, false);
     }

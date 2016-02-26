@@ -358,11 +358,12 @@ bool InspectorHighlight::getBoxModel(Node* node, OwnPtr<protocol::DOM::BoxModel>
 
     Shape::DisplayPaths paths;
     FloatQuad boundsQuad;
+    protocol::ErrorSupport errors;
     if (const ShapeOutsideInfo* shapeOutsideInfo = shapeOutsideInfoForNode(node, &paths, &boundsQuad)) {
         (*model)->setShapeOutside(protocol::DOM::ShapeOutsideInfo::create()
             .setBounds(buildArrayForQuad(boundsQuad))
-            .setShape(protocol::Array<RefPtr<JSONValue>>::runtimeCast(ShapePathBuilder::buildPath(*view, *layoutObject, *shapeOutsideInfo, paths.shape)))
-            .setMarginShape(protocol::Array<RefPtr<JSONValue>>::runtimeCast(ShapePathBuilder::buildPath(*view, *layoutObject, *shapeOutsideInfo, paths.marginShape)))
+            .setShape(protocol::Array<RefPtr<JSONValue>>::parse(ShapePathBuilder::buildPath(*view, *layoutObject, *shapeOutsideInfo, paths.shape), &errors))
+            .setMarginShape(protocol::Array<RefPtr<JSONValue>>::parse(ShapePathBuilder::buildPath(*view, *layoutObject, *shapeOutsideInfo, paths.marginShape), &errors))
             .build());
     }
 

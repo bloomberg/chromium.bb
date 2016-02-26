@@ -104,12 +104,12 @@ def create_user_type_definition(domain_name, type):
     return {
         "return_type": "PassOwnPtr<protocol::%s::%s>" % (domain_name, type["id"]),
         "pass_type": "PassOwnPtr<protocol::%s::%s>" % (domain_name, type["id"]),
+        "to_raw_type": "%s.get()",
         "to_pass_type": "%s.release()",
         "type": "OwnPtr<protocol::%s::%s>" % (domain_name, type["id"]),
         "raw_type": "protocol::%s::%s" % (domain_name, type["id"]),
-        "create_type": "adoptPtr(new protocol::%s::%s())" % (domain_name, type["id"]),
-        "json_getter": "FromValue<protocol::%s::%s>::convert(getObject(%%s))" % (domain_name, type["id"]),
-        "json_type": "TypeObject",
+        "raw_pass_type": "protocol::%s::%s*" % (domain_name, type["id"]),
+        "raw_return_type": "protocol::%s::%s*" % (domain_name, type["id"]),
     }
 
 
@@ -117,11 +117,12 @@ def create_object_type_definition():
     return {
         "return_type": "PassRefPtr<JSONObject>",
         "pass_type": "PassRefPtr<JSONObject>",
+        "to_raw_type": "%s",
         "to_pass_type": "%s.release()",
         "type": "RefPtr<JSONObject>",
         "raw_type": "RefPtr<JSONObject>",
-        "json_getter": "getObject(%s)",
-        "json_type": "TypeObject",
+        "raw_pass_type": "PassRefPtr<JSONObject>",
+        "raw_return_type": "RefPtr<JSONObject>",
     }
 
 
@@ -130,9 +131,11 @@ def create_any_type_definition():
         "return_type": "PassRefPtr<JSONValue>",
         "pass_type": "PassRefPtr<JSONValue>",
         "to_pass_type": "%s.release()",
+        "to_raw_type": "%s",
         "type": "RefPtr<JSONValue>",
         "raw_type": "RefPtr<JSONValue>",
-        "json_getter": "getValue(%s)",
+        "raw_pass_type": "PassRefPtr<JSONValue>",
+        "raw_return_type": "RefPtr<JSONValue>",
     }
 
 
@@ -142,10 +145,11 @@ def create_primitive_type_definition(type):
             "return_type": "String",
             "pass_type": "const String&",
             "to_pass_type": "%s",
+            "to_raw_type": "%s",
             "type": "String",
             "raw_type": "String",
-            "json_getter": "getString(%s)",
-            "json_type": "TypeString",
+            "raw_pass_type": "const String&",
+            "raw_return_type": "String",
         }
 
     typedefs = {
@@ -162,10 +166,11 @@ def create_primitive_type_definition(type):
         "return_type": typedefs[type],
         "pass_type": typedefs[type],
         "to_pass_type": "%s",
+        "to_raw_type": "%s",
         "type": typedefs[type],
         "raw_type": typedefs[type],
-        "json_getter": "get" + to_title_case(type) + "(%s)",
-        "json_type": jsontypes[type],
+        "raw_pass_type": typedefs[type],
+        "raw_return_type": typedefs[type],
     }
 
 type_definitions = {}
@@ -181,13 +186,14 @@ def wrap_array_definition(type):
     return {
         "return_type": "PassOwnPtr<protocol::Array<%s>>" % type["raw_type"],
         "pass_type": "PassOwnPtr<protocol::Array<%s>>" % type["raw_type"],
+        "to_raw_type": "%s.get()",
         "to_pass_type": "%s.release()",
         "type": "OwnPtr<protocol::Array<%s>>" % type["raw_type"],
         "raw_type": "protocol::Array<%s>" % type["raw_type"],
+        "raw_pass_type": "protocol::Array<%s>*" % type["raw_type"],
+        "raw_return_type": "protocol::Array<%s>*" % type["raw_type"],
         "create_type": "adoptPtr(new protocol::Array<%s>())" % type["raw_type"],
         "out_type": "protocol::Array<%s>&" % type["raw_type"],
-        "json_getter": "protocol::Array<%s>::runtimeCast(getArray(%%s))" % type["raw_type"],
-        "json_type": "TypeArray",
     }
 
 

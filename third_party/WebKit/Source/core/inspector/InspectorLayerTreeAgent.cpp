@@ -350,15 +350,7 @@ void InspectorLayerTreeAgent::loadSnapshot(ErrorString* errorString, PassOwnPtr<
     Vector<RefPtr<PictureSnapshot::TilePictureStream>> decodedTiles;
     decodedTiles.grow(tiles->length());
     for (size_t i = 0; i < tiles->length(); ++i) {
-        OwnPtr<protocol::LayerTree::PictureTile> tile = tiles->get(i);
-        if (!tile) {
-            *errorString = "Invalid argument, array item is not an object";
-            return;
-        }
-        if (!tile->hasX() || !tile->hasY() || !tile->hasPicture()) {
-            *errorString = "Invalid argument, missing required field";
-            return;
-        }
+        protocol::LayerTree::PictureTile* tile = tiles->get(i);
         decodedTiles[i] = adoptRef(new PictureSnapshot::TilePictureStream());
         decodedTiles[i]->layerOffset.set(tile->getX(), tile->getY());
         if (!base64Decode(tile->getPicture(), decodedTiles[i]->data)) {
@@ -418,12 +410,9 @@ void InspectorLayerTreeAgent::replaySnapshot(ErrorString* errorString, const Str
     *dataURL = url.toString();
 }
 
-static bool parseRect(protocol::DOM::Rect* object, FloatRect* rect)
+static void parseRect(protocol::DOM::Rect* object, FloatRect* rect)
 {
-    if (!object->hasX() || !object->hasY() || !object->hasWidth() || !object->hasHeight())
-        return false;
     *rect = FloatRect(object->getX(), object->getY(), object->getWidth(), object->getHeight());
-    return true;
 }
 
 void InspectorLayerTreeAgent::profileSnapshot(ErrorString* errorString, const String& snapshotId, const protocol::Maybe<int>& minRepeatCount, const protocol::Maybe<double>& minDuration, const Maybe<protocol::DOM::Rect>& clipRect, OwnPtr<protocol::Array<protocol::Array<double>>>* outTimings)
@@ -432,10 +421,8 @@ void InspectorLayerTreeAgent::profileSnapshot(ErrorString* errorString, const St
     if (!snapshot)
         return;
     FloatRect rect;
-    if (clipRect.isJust() && !parseRect(clipRect.fromJust(), &rect)) {
-        *errorString = "Invalid argument, missing required field";
-        return;
-    }
+    if (clipRect.isJust())
+        parseRect(clipRect.fromJust(), &rect);
     OwnPtr<PictureSnapshot::Timings> timings = snapshot->profile(minRepeatCount.fromMaybe(1), minDuration.fromMaybe(0), clipRect.isJust() ? &rect : 0);
     *outTimings = Array<Array<double>>::create();
     for (size_t i = 0; i < timings->size(); ++i) {
@@ -452,7 +439,8 @@ void InspectorLayerTreeAgent::snapshotCommandLog(ErrorString* errorString, const
     const PictureSnapshot* snapshot = snapshotById(errorString, snapshotId);
     if (!snapshot)
         return;
-    *commandLog = Array<RefPtr<JSONObject>>::runtimeCast(snapshot->snapshotCommandLog());
+    protocol::ErrorSupport errors(errorString);
+    *commandLog = Array<RefPtr<JSONObject>>::parse(snapshot->snapshotCommandLog(), &errors);
 }
 
 void InspectorLayerTreeAgent::willAddPageOverlay(const GraphicsLayer* layer)

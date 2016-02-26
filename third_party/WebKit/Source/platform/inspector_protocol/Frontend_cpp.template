@@ -38,7 +38,7 @@ void Frontend::{{domain.domain}}::{{event.name}}(
     {% for parameter in event.parameters %}
       {% if "optional" in parameter %}
     if ({{parameter.name}}.isJust())
-        paramsObject->setValue("{{parameter.name}}", toValue({{parameter.name}}));
+        paramsObject->setValue("{{parameter.name}}", toValue({{parameter.name}}.fromJust()));
       {% else %}
     paramsObject->setValue("{{parameter.name}}", toValue({{parameter.name}}));
       {% endif %}

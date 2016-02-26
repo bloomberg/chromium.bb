@@ -33,7 +33,7 @@ function modifyStyleSheet(command, presetStyleSheetId, styleSheetId, expectError
             InspectorTest.completeTest();
             return;
         }
-        InspectorTest.log("Expected protocol error: " + message.error.message);
+        InspectorTest.log("Expected protocol error: " + message.error.message + (message.error.data ? " (" + message.error.data + ")" : ""));
         callback();
     }
 }

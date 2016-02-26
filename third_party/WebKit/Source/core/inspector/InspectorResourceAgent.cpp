@@ -114,7 +114,8 @@ static PassOwnPtr<protocol::Network::Headers> buildObjectForHeaders(const HTTPHe
     RefPtr<JSONObject> headersObject = JSONObject::create();
     for (const auto& header : headers)
         headersObject->setString(header.key.string(), header.value);
-    return protocol::FromValue<protocol::Network::Headers>::convert(headersObject);
+    protocol::ErrorSupport errors;
+    return protocol::Network::Headers::parse(headersObject, &errors);
 }
 
 class InspectorFileReaderLoaderClient final : public FileReaderLoaderClient {
@@ -897,7 +898,7 @@ void InspectorResourceAgent::setUserAgentOverride(ErrorString*, const String& us
 
 void InspectorResourceAgent::setExtraHTTPHeaders(ErrorString*, const PassOwnPtr<protocol::Network::Headers> headers)
 {
-    m_state->setObject(ResourceAgentState::extraRequestHeaders, headers->asValue());
+    m_state->setObject(ResourceAgentState::extraRequestHeaders, headers->serialize());
 }
 
 bool InspectorResourceAgent::getResponseBodyBlob(const String& requestId, PassRefPtr<GetResponseBodyCallback> callback)

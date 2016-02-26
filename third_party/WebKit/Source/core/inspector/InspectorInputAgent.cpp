@@ -138,19 +138,7 @@ void InspectorInputAgent::dispatchTouchEvent(ErrorString* error, const String& t
 
     int autoId = 0;
     for (size_t i = 0; i < touchPoints->length(); ++i) {
-        OwnPtr<protocol::Input::TouchPoint> point = touchPoints->get(i);
-        if (!point->hasState()) {
-            *error = "TouchPoint missing 'state'";
-            return;
-        }
-        if (!point->hasX()) {
-            *error = "TouchPoint missing 'x' coordinate";
-            return;
-        }
-        if (!point->hasY()) {
-            *error = "TouchPoint missing 'y' coordinate";
-            return;
-        }
+        protocol::Input::TouchPoint* point = touchPoints->get(i);
         int radiusX = point->getRadiusX(1);
         int radiusY = point->getRadiusY(1);
         double rotationAngle = point->getRotationAngle(0.0);

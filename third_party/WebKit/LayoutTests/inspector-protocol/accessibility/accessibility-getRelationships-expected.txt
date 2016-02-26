@@ -22,6 +22,41 @@ Ginger Ale
         "type": "role",
         "value": "radiogroup"
       },
+      "name": {
+        "type": "computedString",
+        "value": "Lunch Options",
+        "sources": [
+          {
+            "type": "relatedElement",
+            "value": {
+              "type": "computedString",
+              "value": "Lunch Options"
+            },
+            "attribute": "aria-labelledby",
+            "attributeValue": {
+              "type": "idrefList",
+              "value": "rg1_label",
+              "relatedNodes": [
+                {
+                  "idref": "rg1_label",
+                  "text": "Lunch Options",
+                  "nodeResult": "h3#rg1_label"
+                }
+              ]
+            }
+          },
+          {
+            "type": "attribute",
+            "attribute": "aria-label",
+            "superseded": true
+          },
+          {
+            "type": "attribute",
+            "attribute": "title",
+            "superseded": true
+          }
+        ]
+      },
       "properties": [
         {
           "name": "required",
@@ -55,42 +90,7 @@ Ginger Ale
             ]
           }
         }
-      ],
-      "name": {
-        "type": "computedString",
-        "value": "Lunch Options",
-        "sources": [
-          {
-            "type": "relatedElement",
-            "attributeValue": {
-              "type": "idrefList",
-              "relatedNodes": [
-                {
-                  "idref": "rg1_label",
-                  "text": "Lunch Options",
-                  "nodeResult": "h3#rg1_label"
-                }
-              ],
-              "value": "rg1_label"
-            },
-            "value": {
-              "type": "computedString",
-              "value": "Lunch Options"
-            },
-            "attribute": "aria-labelledby"
-          },
-          {
-            "type": "attribute",
-            "attribute": "aria-label",
-            "superseded": true
-          },
-          {
-            "type": "attribute",
-            "attribute": "title",
-            "superseded": true
-          }
-        ]
-      }
+      ]
     }
   }
 }
@@ -103,6 +103,41 @@ Ginger Ale
       "role": {
         "type": "role",
         "value": "radiogroup"
+      },
+      "name": {
+        "type": "computedString",
+        "value": "Drink Options",
+        "sources": [
+          {
+            "type": "relatedElement",
+            "value": {
+              "type": "computedString",
+              "value": "Drink Options"
+            },
+            "attribute": "aria-labelledby",
+            "attributeValue": {
+              "type": "idrefList",
+              "value": "rg2_label",
+              "relatedNodes": [
+                {
+                  "idref": "rg2_label",
+                  "text": "Drink Options",
+                  "nodeResult": "h3#rg2_label"
+                }
+              ]
+            }
+          },
+          {
+            "type": "attribute",
+            "attribute": "aria-label",
+            "superseded": true
+          },
+          {
+            "type": "attribute",
+            "attribute": "title",
+            "superseded": true
+          }
+        ]
       },
       "properties": [
         {
@@ -125,42 +160,7 @@ Ginger Ale
             ]
           }
         }
-      ],
-      "name": {
-        "type": "computedString",
-        "value": "Drink Options",
-        "sources": [
-          {
-            "type": "relatedElement",
-            "attributeValue": {
-              "type": "idrefList",
-              "relatedNodes": [
-                {
-                  "idref": "rg2_label",
-                  "text": "Drink Options",
-                  "nodeResult": "h3#rg2_label"
-                }
-              ],
-              "value": "rg2_label"
-            },
-            "value": {
-              "type": "computedString",
-              "value": "Drink Options"
-            },
-            "attribute": "aria-labelledby"
-          },
-          {
-            "type": "attribute",
-            "attribute": "aria-label",
-            "superseded": true
-          },
-          {
-            "type": "attribute",
-            "attribute": "title",
-            "superseded": true
-          }
-        ]
-      }
+      ]
     }
   }
 }

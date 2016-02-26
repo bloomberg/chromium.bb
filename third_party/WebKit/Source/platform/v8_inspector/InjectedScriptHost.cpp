@@ -78,7 +78,8 @@ void InjectedScriptHost::disconnect()
 void InjectedScriptHost::inspectImpl(PassRefPtr<JSONValue> object, PassRefPtr<JSONValue> hints)
 {
     if (m_inspectCallback) {
-        OwnPtr<protocol::Runtime::RemoteObject> remoteObject = protocol::Runtime::RemoteObject::runtimeCast(object);
+        protocol::ErrorSupport errors;
+        OwnPtr<protocol::Runtime::RemoteObject> remoteObject = protocol::Runtime::RemoteObject::parse(object, &errors);
         (*m_inspectCallback)(remoteObject.release(), JSONObject::cast(hints));
     }
 }

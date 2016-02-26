@@ -25,13 +25,13 @@ The test verifies functionality of protocol method CSS.setStyleTexts.
 
 
 Running test: testMalformedArguments1
-Expected protocol error: Could not parse styleSheetId for edit #2 of 2
+Expected protocol error: Some arguments of method 'CSS.setStyleTexts' can't be processed (edits.[1].styleSheetId: string value expected)
 
 Running test: testMalformedArguments2
-Expected protocol error: Could not parse range object for edit #1 of 3
+Expected protocol error: Some arguments of method 'CSS.setStyleTexts' can't be processed (edits.[0].range: object expected; edits.[0].text: string value expected; edits.[2].styleSheetId: string value expected)
 
 Running test: testMalformedArguments3
-Expected protocol error: range.startLine must be a non-negative integer
+Expected protocol error: Some arguments of method 'CSS.setStyleTexts' can't be processed (edits.[0].range.startLine: integer value expected)
 
 Running test: testFirstEditDoesNotApply
 Expected protocol error: Failed applying edit #0: SyntaxError Style text is not valid.

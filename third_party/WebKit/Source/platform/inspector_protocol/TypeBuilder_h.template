@@ -12,6 +12,7 @@
 #include "wtf/Assertions.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
+#include "wtf/text/StringBuilder.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -24,7 +25,7 @@ public:
     Maybe(PassOwnPtr<T> value) : m_value(value) { }
     void operator=(PassOwnPtr<T> value) { m_value = value; }
     T* fromJust() const { ASSERT(m_value); return m_value.get(); }
-    T* fromMaybe(PassOwnPtr<T> defaultValue) const { return m_value ? m_value.get() : defaultValue; }
+    T* fromMaybe(T* defaultValue) const { return m_value ? m_value.get() : defaultValue; }
     bool isJust() const { return !!m_value; }
     PassOwnPtr<T> takeJust() { ASSERT(m_value); return m_value.release(); }
 private:
@@ -60,7 +61,7 @@ public:
     Maybe() { }
     Maybe(int value) : MaybeBase(value) { }
     using MaybeBase::operator=;
-};
+};  
 
 template<> class Maybe<double> : public MaybeBase<double>
 {
@@ -103,27 +104,48 @@ PLATFORM_EXPORT PassRefPtr<JSONValue> toValue(double value);
 PLATFORM_EXPORT PassRefPtr<JSONValue> toValue(bool value);
 PLATFORM_EXPORT PassRefPtr<JSONValue> toValue(const String& param);
 template<typename T> PassRefPtr<JSONValue> toValue(PassRefPtr<T> param) { return param; }
-template<typename T> PassRefPtr<JSONValue> toValue(T* param) { return param->asValue(); }
-template<typename T> PassRefPtr<JSONValue> toValue(PassOwnPtr<T> param) { return param->asValue(); }
-template<typename T> PassRefPtr<JSONValue> toValue(const Maybe<T>& param) { return toValue(param.fromJust()); }
+template<typename T> PassRefPtr<JSONValue> toValue(const RefPtr<T>& param) { return param; }
+template<typename T> PassRefPtr<JSONValue> toValue(T* param) { return param->serialize(); }
+template<typename T> PassRefPtr<JSONValue> toValue(PassOwnPtr<T> param) { return param->serialize(); }
+template<typename T> PassRefPtr<JSONValue> toValue(const OwnPtr<T>& param) { return param->serialize(); }
+
+class PLATFORM_EXPORT ErrorSupport {
+public:
+    ErrorSupport();
+    ErrorSupport(String* errorString);
+    ~ErrorSupport();
+
+    void push();
+    void setName(const String& name);
+    void pop();
+    void addError(const String& error);
+    bool hasErrors();
+    String errors();
+
+private:
+    Vector<String> m_path;
+    Vector<String> m_errors;
+    String* m_errorString;
+};
 
 template<typename T>
 struct FromValue
 {
-    static PassOwnPtr<T> convert(RefPtr<JSONValue> value)
+    static PassOwnPtr<T> parse(PassRefPtr<JSONValue> value, ErrorSupport* errors)
     {
-        return T::runtimeCast(JSONObject::cast(value.release()));
+        return T::parse(value, errors);
     }
 };
 
 template<>
 struct FromValue<bool>
 {
-    static bool convert(RefPtr<JSONValue> value)
+    static bool parse(PassRefPtr<JSONValue> value, ErrorSupport* errors)
     {
-        bool result;
-        bool success = value->asBoolean(&result);
-        ASSERT_UNUSED(success, success);
+        bool result = false;
+        bool success = value ? value->asBoolean(&result) : false;
+        if (!success)
+            errors->addError("boolean value expected");
         return result;
     }
 };
@@ -131,11 +153,12 @@ struct FromValue<bool>
 template<>
 struct FromValue<int>
 {
-    static int convert(RefPtr<JSONValue> value)
+    static int parse(PassRefPtr<JSONValue> value, ErrorSupport* errors)
     {
-        int result;
-        bool success = value->asNumber(&result);
-        ASSERT_UNUSED(success, success);
+        int result = 0;
+        bool success = value ? value->asNumber(&result) : false;
+        if (!success)
+            errors->addError("integer value expected");
         return result;
     }
 };
@@ -143,11 +166,12 @@ struct FromValue<int>
 template<>
 struct FromValue<double>
 {
-    static double convert(RefPtr<JSONValue> value)
+    static double parse(PassRefPtr<JSONValue> value, ErrorSupport* errors)
     {
-        double result;
-        bool success = value->asNumber(&result);
-        ASSERT_UNUSED(success, success);
+        double result = 0;
+        bool success = value ? value->asNumber(&result) : false;
+        if (!success)
+            errors->addError("double value expected");
         return result;
     }
 };
@@ -155,11 +179,12 @@ struct FromValue<double>
 template<>
 struct FromValue<String>
 {
-    static String convert(RefPtr<JSONValue> value)
+    static String parse(PassRefPtr<JSONValue> value, ErrorSupport* errors)
     {
         String result;
-        bool success = value->asString(&result);
-        ASSERT_UNUSED(success, success);
+        bool success = value ? value->asString(&result) : false;
+        if (!success)
+            errors->addError("string value expected");
         return result;
     }
 };
@@ -167,18 +192,32 @@ struct FromValue<String>
 template<typename T>
 struct FromValue<RefPtr<T>>
 {
-    static PassRefPtr<T> convert(RefPtr<T> value)
+    static PassRefPtr<T> parse(PassRefPtr<JSONValue> value, ErrorSupport* errors)
     {
-        return value.release();
+        if (!value)
+            errors->addError("value expected");
+        return value;
+    }
+};
+
+template<>
+struct FromValue<RefPtr<JSONObject>>
+{
+    static PassRefPtr<JSONObject> parse(PassRefPtr<JSONValue> value, ErrorSupport* errors)
+    {
+        if (value && value->type() == JSONValue::TypeObject)
+            return JSONObject::cast(value);
+        errors->addError("object expected");
+        return nullptr;
     }
 };
 
 template<typename T>
 struct FromValue<protocol::Array<T>>
 {
-    static PassOwnPtr<protocol::Array<T>> convert(RefPtr<JSONValue> value)
+    static PassOwnPtr<protocol::Array<T>> parse(PassRefPtr<JSONValue> value, ErrorSupport* errors)
     {
-        return protocol::Array<T>::runtimeCast(JSONArray::cast(value));
+        return protocol::Array<T>::parse(value, errors);
     }
 };
 
@@ -187,32 +226,54 @@ class ArrayBase {
 public:
     static PassOwnPtr<Array<T>> create()
     {
-        OwnPtr<Array<T>> result = adoptPtr(new Array<T>());
-        result->m_array = JSONArray::create();
-        return result.release();
+        return adoptPtr(new Array<T>());
     }
 
-    static PassOwnPtr<Array<T>> runtimeCast(PassRefPtr<JSONValue> array)
+    static PassOwnPtr<Array<T>> parse(PassRefPtr<JSONValue> value, ErrorSupport* errors)
     {
-        if (!array || array->type() != JSONValue::TypeArray)
+        RefPtr<JSONArray> array = JSONArray::cast(value);
+        if (!array) {
+            errors->addError("array expected");
             return nullptr;
+        }
+        errors->push();
         OwnPtr<Array<T>> result = adoptPtr(new Array<T>());
-        result->m_array = JSONArray::cast(array);
+        for (size_t i = 0; i < array->length(); ++i) {
+            errors->setName("[" + String::number(i) + "]");
+            T item = FromValue<T>::parse(array->get(i), errors);
+            result->m_vector.append(item);
+        }
+        errors->pop();
+        if (errors->hasErrors())
+            return nullptr;
         return result.release();
     }
 
     void addItem(const T& value)
     {
-        m_array->pushValue(toValue(value));
+        m_vector.append(value);
     }
 
-    size_t length() { return m_array->length(); }
+    size_t length()
+    {
+        return m_vector.size();
+    }
 
-    T get(size_t index) { return FromValue<T>::convert(m_array->get(index)); }
-    PassRefPtr<JSONArray> asValue() { return m_array; }
+    T get(size_t index)
+    {
+        return m_vector[index];
+    }
+
+    PassRefPtr<JSONArray> serialize()
+    {
+        RefPtr<JSONArray> result = JSONArray::create();
+        for (auto& item : m_vector)
+            result->pushValue(toValue(item));
+        return result.release();
+    }
 
 private:
-    RefPtr<JSONArray> m_array;
+    Vector<T> m_vector;
 };
 
 template<> class Array<String> : public ArrayBase<String> {};
@@ -226,32 +287,64 @@ class Array {
 public:
     static PassOwnPtr<Array<T>> create()
     {
-        OwnPtr<Array<T>> result = adoptPtr(new Array<T>());
-        result->m_array = JSONArray::create();
-        return result.release();
+        return adoptPtr(new Array<T>());
     }
 
-    static PassOwnPtr<Array<T>> runtimeCast(PassRefPtr<JSONValue> array)
+    static PassOwnPtr<Array<T>> parse(PassRefPtr<JSONValue> value, ErrorSupport* errors)
     {
-        if (!array || array->type() != JSONValue::TypeArray)
+        RefPtr<JSONArray> array = JSONArray::cast(value);
+        if (!array) {
+            errors->addError("array expected");
             return nullptr;
+        }
         OwnPtr<Array<T>> result = adoptPtr(new Array<T>());
-        result->m_array = JSONArray::cast(array);
+        errors->push();
+        for (size_t i = 0; i < array->length(); ++i) {
+            errors->setName("[" + String::number(i) + "]");
+            OwnPtr<T> item = FromValue<T>::parse(array->get(i), errors);
+            result->m_vector.append(item.release());
+        }
+        errors->pop();
         return result.release();
     }
 
     void addItem(PassOwnPtr<T> value)
     {
-        m_array->pushValue(toValue(value));
+        m_vector.append(value);
     }
 
-    size_t length() { return m_array->length(); }
+    size_t length()
+    {
+        return m_vector.size();
+    }
 
-    PassOwnPtr<T> get(size_t index) { return FromValue<T>::convert(m_array->get(index)); }
-    PassRefPtr<JSONArray> asValue() { return m_array; }
+    T* get(size_t index)
+    {
+        return m_vector[index].get();
+    }
+
+    PassRefPtr<JSONArray> serialize()
+    {
+        RefPtr<JSONArray> result = JSONArray::create();
+        for (auto& item : m_vector)
+            result->pushValue(toValue(item));
+        return result.release();
+    }
 
 private:
-    RefPtr<JSONArray> m_array;
+    Vector<OwnPtr<T>> m_vector;
+};
+
+class PLATFORM_EXPORT Object {
+public:
+    static PassOwnPtr<Object> parse(PassRefPtr<JSONValue> value, ErrorSupport* errors);
+    ~Object();
+
+    PassRefPtr<JSONObject> serialize() const;
+    PassOwnPtr<Object> clone() const;
+private:
+    Object(PassRefPtr<JSONObject> object);
+    RefPtr<JSONObject> m_object;
 };
 
 {% for domain in api.domains %}
@@ -261,8 +354,13 @@ private:
 namespace {{domain.domain}} {
   {% for type in domain.types %}
     {% if type.type == "object" %}
+      {% if "properties" in type %}
 // {{type.description}}
 class {{type.id}};
+      {% else %}
+// {{type.description}}
+using {{type.id}} = Object;
+      {% endif %}
     {% elif type.type != "array" %}
 // {{type.description}}
 using {{type.id}} = {{resolve_type(type).type}};
@@ -312,107 +410,71 @@ PLATFORM_EXPORT extern const char* {{ literal | dash_to_camelcase}};
 
 namespace {{domain.domain}} {
   {% for type in domain.types %}
-    {% if type.type == "object" %}
-      {% set type_def = type_definition(domain.domain + "." + type.id)%}
+    {% if not (type.type == "object") or not ("properties" in type) %}{% continue %}{% endif %}
+    {% set type_def = type_definition(domain.domain + "." + type.id)%}
 
 // {{type.description}}
 class PLATFORM_EXPORT {{type.id}} {
 public:
-    static PassOwnPtr<{{type.id}}> runtimeCast(PassRefPtr<JSONValue> value)
-    {
-        if (!value || value->type() != JSONValue::TypeObject)
-            return nullptr;
-        return adoptPtr(new {{type.id}}(JSONObject::cast(value)));
-    }
-
-    {{type.id}}() : m_object(JSONObject::create()) { }
+    static PassOwnPtr<{{type.id}}> parse(PassRefPtr<JSONValue> value, ErrorSupport* errors);
 
     ~{{type.id}}() { }
-      {% for property in type.properties %}
+    {% for property in type.properties %}
+      {% if "enum" in property %}
 
-        {% if "enum" in property %}
     struct PLATFORM_EXPORT {{property.name | to_title_case}}Enum {
-          {% for literal in property.enum %}
+        {% for literal in property.enum %}
         static const char* {{ literal | dash_to_camelcase}};
-          {% endfor %}
+        {% endfor %}
     }; // {{property.name | to_title_case}}Enum
-        {% endif %}
+      {% endif %}
 
-    bool has{{property.name | to_title_case}}()
-    {
-        RefPtr<JSONValue> value = m_object->get("{{property.name}}");
-        {% if resolve_type(property).json_type %}
-        return value && value->type() == JSONValue::{{resolve_type(property).json_type}};
-        {% else %}
-        return !!value;
-        {% endif %}
-    }
+      {% if property.optional %}
+    bool has{{property.name | to_title_case}}() { return m_{{property.name}}.isJust(); }
+    {{resolve_type(property).raw_return_type}} get{{property.name | to_title_case}}({{resolve_type(property).raw_pass_type}} defaultValue) { return m_{{property.name}}.isJust() ? m_{{property.name}}.fromJust() : defaultValue; }
+      {% else %}
+    {{resolve_type(property).raw_return_type}} get{{property.name | to_title_case}}() { return {{resolve_type(property).to_raw_type % ("m_" + property.name)}}; }
+      {% endif %}
+    void set{{property.name | to_title_case}}({{resolve_type(property).pass_type}} value) { m_{{property.name}} = value; }
+    {% endfor %}
 
-        {% if property.optional %}
-    {{resolve_type(property).return_type}} get{{property.name | to_title_case}}({{resolve_type(property).return_type}} defaultValue)
-    {
-        RefPtr<JSONValue> value = m_object->get("{{property.name}}");
-        return value ? FromValue<{{resolve_type(property).raw_type}}>::convert(value) : defaultValue;
-    }
-
-    void set{{property.name | to_title_case}}(const Maybe<{{resolve_type(property).raw_type}}>& value)
-    {
-        if (value.isJust())
-            m_object->setValue("{{property.name}}", toValue(value.fromJust()));
-    }
-        {% else %}
-    {{resolve_type(property).return_type}} get{{property.name | to_title_case}}()
-    {
-        ASSERT(has{{property.name | to_title_case}}());
-        RefPtr<JSONValue> value = m_object->get("{{property.name}}");
-        return FromValue<{{resolve_type(property).raw_type}}>::convert(value);
-    }
-
-    void set{{property.name | to_title_case}}({{resolve_type(property).pass_type}} value)
-    {
-        m_object->setValue("{{property.name}}", toValue(value));
-    }
-        {% endif %}
-      {% endfor %}
-
-    PassRefPtr<JSONObject> asValue() { return m_object; }
-
-    PassOwnPtr<{{type.id}}> clone() { return adoptPtr(new {{type.id}}(m_object)); }
+    PassRefPtr<JSONObject> serialize() const;
+    PassOwnPtr<{{type.id}}> clone() const;
 
     template<int STATE>
     class {{type.id}}Builder {
     public:
         enum {
             NoFieldsSet = 0,
-      {% set count = 0 %}
-      {% for property in type.properties %}
-        {% if not(property.optional) %}
-          {% set count = count + 1 %}
-            {{property.name | to_title_case}}Set = 1 << {{count}},
-        {% endif %}
-      {% endfor %}
+    {% set count = 0 %}
+    {% for property in type.properties %}
+      {% if not(property.optional) %}
+        {% set count = count + 1 %}
+          {{property.name | to_title_case}}Set = 1 << {{count}},
+      {% endif %}
+    {% endfor %}
             AllFieldsSet = (
-      {%- for property in type.properties %}
-        {% if not(property.optional) %}{{property.name | to_title_case}}Set | {%endif %}
-      {% endfor %}0)};
+    {%- for property in type.properties %}
+      {% if not(property.optional) %}{{property.name | to_title_case}}Set | {%endif %}
+    {% endfor %}0)};
 
-      {% for property in type.properties %}
+    {% for property in type.properties %}
 
-        {% if property.optional %}
-        {{type.id}}Builder<STATE>& set{{property.name | to_title_case}}(const Maybe<{{resolve_type(property).raw_type}}>& value)
+      {% if property.optional %}
+        {{type.id}}Builder<STATE>& set{{property.name | to_title_case}}({{resolve_type(property).pass_type}} value)
         {
             m_result->set{{property.name | to_title_case}}(value);
             return *this;
         }
-        {% else %}
+      {% else %}
         {{type.id}}Builder<STATE | {{property.name | to_title_case}}Set>& set{{property.name | to_title_case}}({{resolve_type(property).pass_type}} value)
         {
             static_assert(!(STATE & {{property.name | to_title_case}}Set), "property {{property.name}} should not be set yet");
             m_result->set{{property.name | to_title_case}}(value);
             return castState<{{property.name | to_title_case}}Set>();
         }
-        {% endif %}
-      {% endfor %}
+      {% endif %}
+    {% endfor %}
 
         PassOwnPtr<{{type.id}}> build()
         {
@@ -422,7 +484,7 @@ public:
 
     private:
         friend class {{type.id}};
-        {{type.id}}Builder() : m_result({{type_def.create_type}}) { }
+        {{type.id}}Builder() : m_result(adoptPtr(new {{type.id}}())) { }
 
         template<int STEP> {{type.id}}Builder<STATE | STEP>& castState()
         {
@@ -438,11 +500,17 @@ public:
     }
 
 private:
-    explicit {{type.id}}(PassRefPtr<JSONObject> object) : m_object(object) { }
-    RefPtr<JSONObject> m_object;
+    {{type.id}}() { }
+
+    {% for property in type.properties %}
+      {% if property.optional %}
+    Maybe<{{resolve_type(property).raw_type}}> m_{{property.name}};
+      {% else %}
+    {{resolve_type(property).type}} m_{{property.name}};
+      {% endif %}
+    {% endfor %}
 };
 
-    {% endif %}
   {% endfor %}
 
 } // {{domain.domain}}

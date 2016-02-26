@@ -13,7 +13,6 @@
 namespace blink {
 
 class PLATFORM_EXPORT V8DebuggerClient {
-    USING_FAST_MALLOC(V8DebuggerClient);
 public:
     virtual ~V8DebuggerClient() { }
     virtual void runMessageLoopOnPause(int contextGroupId) = 0;

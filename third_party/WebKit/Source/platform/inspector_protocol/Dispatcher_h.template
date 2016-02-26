@@ -29,7 +29,7 @@ public:
         bool isActive();
 
     protected:
-        void sendIfActive(PassRefPtr<JSONObject> partialMessage, const ErrorString& invocationError, PassRefPtr<JSONValue> errorData);
+        void sendIfActive(PassRefPtr<JSONObject> partialMessage, const ErrorString& invocationError);
 
     private:
         void disable() { m_alreadySent = true; }
@@ -108,7 +108,7 @@ public:
     };
 
     void reportProtocolError(int sessionId, int callId, CommonErrorCode, const String& errorMessage) const;
-    virtual void reportProtocolError(int sessionId, int callId, CommonErrorCode, const String& errorMessage, PassRefPtr<JSONValue> data) const = 0;
+    virtual void reportProtocolError(int sessionId, int callId, CommonErrorCode, const String& errorMessage, ErrorSupport*) const = 0;
     virtual void dispatch(int sessionId, const String& message) = 0;
     static bool getCommandName(const String& message, String* result);
 };

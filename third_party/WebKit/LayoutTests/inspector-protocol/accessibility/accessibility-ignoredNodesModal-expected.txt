@@ -7,10 +7,6 @@ Non-hidden element inside dialog
     "accessibilityNode": {
       "nodeId": "<string>",
       "ignored": true,
-      "role": {
-        "type": "internalRole",
-        "value": "Div"
-      },
       "ignoredReasons": [
         {
           "name": "activeModalDialog",
@@ -24,7 +20,11 @@ Non-hidden element inside dialog
             ]
           }
         }
-      ]
+      ],
+      "role": {
+        "type": "internalRole",
+        "value": "Div"
+      }
     }
   }
 }
@@ -38,7 +38,6 @@ Non-hidden element inside dialog
         "type": "role",
         "value": "dialog"
       },
-      "properties": [],
       "name": {
         "type": "computedString",
         "value": "",
@@ -56,7 +55,8 @@ Non-hidden element inside dialog
             "attribute": "title"
           }
         ]
-      }
+      },
+      "properties": []
     }
   }
 }
@@ -70,7 +70,6 @@ Non-hidden element inside dialog
         "type": "internalRole",
         "value": "Div"
       },
-      "properties": [],
       "name": {
         "type": "computedString",
         "value": "",
@@ -88,7 +87,8 @@ Non-hidden element inside dialog
             "attribute": "title"
           }
         ]
-      }
+      },
+      "properties": []
     }
   }
 }

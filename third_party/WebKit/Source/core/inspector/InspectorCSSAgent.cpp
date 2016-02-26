@@ -1123,12 +1123,12 @@ static bool verifyRangeComponent(ErrorString* errorString, bool valid, const Str
     return valid;
 }
 
-static bool jsonRangeToSourceRange(ErrorString* errorString, InspectorStyleSheetBase* inspectorStyleSheet, PassOwnPtr<protocol::CSS::SourceRange> range, SourceRange* sourceRange)
+static bool jsonRangeToSourceRange(ErrorString* errorString, InspectorStyleSheetBase* inspectorStyleSheet, protocol::CSS::SourceRange* range, SourceRange* sourceRange)
 {
-    if (!verifyRangeComponent(errorString, range->hasStartLine() && range->getStartLine() >= 0, "startLine")
-        || !verifyRangeComponent(errorString, range->hasStartColumn() && range->getStartColumn() >= 0, "startColumn")
-        || !verifyRangeComponent(errorString, range->hasEndLine() && range->getEndLine() >= 0, "endLine")
-        || !verifyRangeComponent(errorString, range->hasEndColumn() && range->getEndColumn() >= 0, "endColumn"))
+    if (!verifyRangeComponent(errorString, range->getStartLine() >= 0, "startLine")
+        || !verifyRangeComponent(errorString, range->getStartColumn() >= 0, "startColumn")
+        || !verifyRangeComponent(errorString, range->getEndLine() >= 0, "endLine")
+        || !verifyRangeComponent(errorString, range->getEndColumn() >= 0, "endColumn"))
         return false;
 
     unsigned startOffset = 0;
@@ -1158,7 +1158,7 @@ void InspectorCSSAgent::setRuleSelector(ErrorString* errorString, const String& 
         return;
     }
     SourceRange selectorRange;
-    if (!jsonRangeToSourceRange(errorString, inspectorStyleSheet, range, &selectorRange))
+    if (!jsonRangeToSourceRange(errorString, inspectorStyleSheet, range.get(), &selectorRange))
         return;
 
     TrackExceptionState exceptionState;
@@ -1185,7 +1185,7 @@ void InspectorCSSAgent::setKeyframeKey(ErrorString* errorString, const String& s
         return;
     }
     SourceRange keyRange;
-    if (!jsonRangeToSourceRange(errorString, inspectorStyleSheet, range, &keyRange))
+    if (!jsonRangeToSourceRange(errorString, inspectorStyleSheet, range.get(), &keyRange))
         return;
 
     TrackExceptionState exceptionState;
@@ -1218,11 +1218,7 @@ bool InspectorCSSAgent::multipleStyleTextsActions(ErrorString* errorString, Pass
     }
 
     for (int i = 0; i < n; ++i) {
-        OwnPtr<protocol::CSS::StyleDeclarationEdit> edit = edits->get(i);
-        if (!edit->hasStyleSheetId()) {
-            *errorString = String::format("Could not parse styleSheetId for edit #%d of %d", i + 1, n);
-            return false;
-        }
+        protocol::CSS::StyleDeclarationEdit* edit = edits->get(i);
         InspectorStyleSheetBase* inspectorStyleSheet = assertStyleSheetForId(errorString, edit->getStyleSheetId());
         if (!inspectorStyleSheet) {
             *errorString = String::format("StyleSheet not found for edit #%d of %d", i + 1 , n);
@@ -1230,11 +1226,6 @@ bool InspectorCSSAgent::multipleStyleTextsActions(ErrorString* errorString, Pass
         }
 
         SourceRange range;
-        if (!edit->hasRange()) {
-            *errorString = String::format("Could not parse range object for edit #%d of %d", i + 1, n);
-            return false;
-        }
-
         if (!jsonRangeToSourceRange(errorString, inspectorStyleSheet, edit->getRange(), &range))
             return false;
 
@@ -1316,7 +1307,7 @@ void InspectorCSSAgent::setMediaText(ErrorString* errorString, const String& sty
         return;
     }
     SourceRange textRange;
-    if (!jsonRangeToSourceRange(errorString, inspectorStyleSheet, range, &textRange))
+    if (!jsonRangeToSourceRange(errorString, inspectorStyleSheet, range.get(), &textRange))
         return;
 
     TrackExceptionState exceptionState;
@@ -1364,7 +1355,7 @@ void InspectorCSSAgent::addRule(ErrorString* errorString, const String& styleShe
     if (!inspectorStyleSheet)
         return;
     SourceRange ruleLocation;
-    if (!jsonRangeToSourceRange(errorString, inspectorStyleSheet, location, &ruleLocation))
+    if (!jsonRangeToSourceRange(errorString, inspectorStyleSheet, location.get(), &ruleLocation))
         return;
 
     TrackExceptionState exceptionState;

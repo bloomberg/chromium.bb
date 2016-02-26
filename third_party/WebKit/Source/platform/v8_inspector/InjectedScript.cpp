@@ -204,7 +204,8 @@ void InjectedScript::getStepInPositions(ErrorString* errorString, v8::Local<v8::
             return;
         }
         if (resultValue->type() == JSONValue::TypeArray) {
-            *positions = Array<protocol::Debugger::Location>::runtimeCast(resultValue.release());
+            protocol::ErrorSupport errors(errorString);
+            *positions = Array<protocol::Debugger::Location>::parse(resultValue.release(), &errors);
             return;
         }
     }
@@ -255,12 +256,8 @@ void InjectedScript::getFunctionDetails(ErrorString* errorString, const String& 
     function.appendArgument(functionId);
     RefPtr<JSONValue> resultValue;
     makeCall(function, &resultValue);
-    if (!resultValue || resultValue->type() != JSONValue::TypeObject) {
-        if (!resultValue->asString(errorString))
-            *errorString = "Internal error";
-        return;
-    }
-    *result = FunctionDetails::runtimeCast(resultValue);
+    protocol::ErrorSupport errors(errorString);
+    *result = FunctionDetails::parse(resultValue, &errors);
 }
 
 void InjectedScript::getGeneratorObjectDetails(ErrorString* errorString, const String& objectId, OwnPtr<GeneratorObjectDetails>* result)
@@ -270,12 +267,8 @@ void InjectedScript::getGeneratorObjectDetails(ErrorString* errorString, const S
     function.appendArgument(objectId);
     RefPtr<JSONValue> resultValue;
     makeCall(function, &resultValue);
-    if (!resultValue || resultValue->type() != JSONValue::TypeObject) {
-        if (!resultValue->asString(errorString))
-            *errorString = "Internal error";
-        return;
-    }
-    *result = GeneratorObjectDetails::runtimeCast(resultValue);
+    protocol::ErrorSupport errors(errorString);
+    *result = GeneratorObjectDetails::parse(resultValue, &errors);
 }
 
 void InjectedScript::getCollectionEntries(ErrorString* errorString, const String& objectId, OwnPtr<Array<CollectionEntry>>* result)
@@ -285,12 +278,8 @@ void InjectedScript::getCollectionEntries(ErrorString* errorString, const String
     function.appendArgument(objectId);
     RefPtr<JSONValue> resultValue;
     makeCall(function, &resultValue);
-    if (!resultValue || resultValue->type() != JSONValue::TypeArray) {
-        if (!resultValue->asString(errorString))
-            *errorString = "Internal error";
-        return;
-    }
-    *result = Array<CollectionEntry>::runtimeCast(resultValue.release());
+    protocol::ErrorSupport errors(errorString);
+    *result = Array<CollectionEntry>::parse(resultValue, &errors);
 }
 
 void InjectedScript::getProperties(ErrorString* errorString, const String& objectId, bool ownProperties, bool accessorPropertiesOnly, bool generatePreview, OwnPtr<Array<PropertyDescriptor>>* properties, Maybe<protocol::Runtime::ExceptionDetails>* exceptionDetails)
@@ -309,11 +298,8 @@ void InjectedScript::getProperties(ErrorString* errorString, const String& objec
         *properties = Array<PropertyDescriptor>::create();
         return;
     }
-    if (!result || result->type() != JSONValue::TypeArray) {
-        *errorString = "Internal error";
-        return;
-    }
-    *properties = Array<PropertyDescriptor>::runtimeCast(result.release());
+    protocol::ErrorSupport errors(errorString);
+    *properties = Array<PropertyDescriptor>::parse(result.release(), &errors);
 }
 
 void InjectedScript::getInternalProperties(ErrorString* errorString, const String& objectId, Maybe<Array<InternalPropertyDescriptor>>* properties, Maybe<protocol::Runtime::ExceptionDetails>* exceptionDetails)
@@ -326,12 +312,9 @@ void InjectedScript::getInternalProperties(ErrorString* errorString, const Strin
     makeCallWithExceptionDetails(function, &result, exceptionDetails);
     if (exceptionDetails->isJust())
         return;
-    if (!result || result->type() != JSONValue::TypeArray) {
-        *errorString = "Internal error";
-        return;
-    }
-    OwnPtr<Array<InternalPropertyDescriptor>> array = Array<InternalPropertyDescriptor>::runtimeCast(result.release());
-    if (array->length() > 0)
+    protocol::ErrorSupport errors(errorString);
+    OwnPtr<Array<InternalPropertyDescriptor>> array = Array<InternalPropertyDescriptor>::parse(result.release(), &errors);
+    if (!errors.hasErrors() && array->length() > 0)
         *properties = array.release();
 }
 
@@ -378,8 +361,9 @@ PassOwnPtr<Array<CallFrame>> InjectedScript::wrapCallFrames(v8::Local<v8::Object
     v8::Local<v8::Value> callFramesValue = callFunctionWithEvalEnabled(function, hadException);
     ASSERT(!hadException);
     RefPtr<JSONValue> result = toJSONValue(context(), callFramesValue);
+    protocol::ErrorSupport errors;
     if (result && result->type() == JSONValue::TypeArray)
-        return Array<CallFrame>::runtimeCast(result.release());
+        return Array<CallFrame>::parse(result.release(), &errors);
     return Array<CallFrame>::create();
 }
 
@@ -395,7 +379,8 @@ PassOwnPtr<protocol::Runtime::RemoteObject> InjectedScript::wrapObject(v8::Local
     v8::Local<v8::Value> r = callFunctionWithEvalEnabled(function, hadException);
     if (hadException)
         return nullptr;
-    return protocol::Runtime::RemoteObject::runtimeCast(toJSONValue(context(), r));
+    protocol::ErrorSupport errors;
+    return protocol::Runtime::RemoteObject::parse(toJSONValue(context(), r), &errors);
 }
 
 PassOwnPtr<protocol::Runtime::RemoteObject> InjectedScript::wrapTable(v8::Local<v8::Value> table, v8::Local<v8::Value> columns) const
@@ -412,7 +397,8 @@ PassOwnPtr<protocol::Runtime::RemoteObject> InjectedScript::wrapTable(v8::Local<
     v8::Local<v8::Value>  r = callFunctionWithEvalEnabled(function, hadException);
     if (hadException)
         return nullptr;
-    return protocol::Runtime::RemoteObject::runtimeCast(toJSONValue(context(), r));
+    protocol::ErrorSupport errors;
+    return protocol::Runtime::RemoteObject::parse(toJSONValue(context(), r), &errors);
 }
 
 v8::Local<v8::Value> InjectedScript::findObject(const RemoteObjectId& objectId) const
@@ -527,7 +513,8 @@ void InjectedScript::makeEvalCall(ErrorString* errorString, V8FunctionCall& func
         if (objectExceptionDetails)
             *exceptionDetails = toExceptionDetails(objectExceptionDetails.release());
     }
-    *objectResult = protocol::Runtime::RemoteObject::runtimeCast(resultObj);
+    protocol::ErrorSupport errors(errorString);
+    *objectResult = protocol::Runtime::RemoteObject::parse(resultObj, &errors);
     *wasThrown = wasThrownVal;
 }
 

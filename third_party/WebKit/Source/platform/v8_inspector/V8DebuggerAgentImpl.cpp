@@ -362,11 +362,6 @@ void V8DebuggerAgentImpl::setBreakpointByUrl(ErrorString* errorString,
 
 static bool parseLocation(ErrorString* errorString, PassOwnPtr<protocol::Debugger::Location> location, String* scriptId, int* lineNumber, int* columnNumber)
 {
-    if (!location->hasScriptId() || !location->hasLineNumber()) {
-        // FIXME: replace with input validation.
-        *errorString = "scriptId and lineNumber are required.";
-        return false;
-    }
     *scriptId = location->getScriptId();
     *lineNumber = location->getLineNumber();
     *columnNumber = location->getColumnNumber(0);
@@ -1267,12 +1262,12 @@ void V8DebuggerAgentImpl::setBlackboxedRanges(ErrorString* error, const String& 
 
     Vector<std::pair<int, int>> positions(inPositions->length());
     for (size_t i = 0; i < positions.size(); ++i) {
-        OwnPtr<protocol::Debugger::ScriptPosition> position = inPositions->get(i);
-        if (!position->hasLine() || position->getLine() < 0) {
+        protocol::Debugger::ScriptPosition* position = inPositions->get(i);
+        if (position->getLine() < 0) {
             *error = "Position missing 'line' or 'line' < 0.";
             return;
         }
-        if (!position->hasColumn() || position->getColumn() < 0) {
+        if (position->getColumn() < 0) {
             *error = "Position missing 'column' or 'column' < 0.";
             return;
         }
@@ -1507,7 +1502,7 @@ V8DebuggerAgentImpl::SkipPauseRequest V8DebuggerAgentImpl::didPause(v8::Local<v8
         if (injectedScript) {
             m_breakReason = isPromiseRejection ? protocol::Debugger::Paused::ReasonEnum::PromiseRejection : protocol::Debugger::Paused::ReasonEnum::Exception;
             auto obj = injectedScript->wrapObject(exception, V8DebuggerAgentImpl::backtraceObjectGroup);
-            m_breakAuxData = obj ? obj->asValue() : nullptr;
+            m_breakAuxData = obj ? obj->serialize() : nullptr;
             // m_breakAuxData might be null after this.
         }
     } else if (m_pausingOnAsyncOperation) {

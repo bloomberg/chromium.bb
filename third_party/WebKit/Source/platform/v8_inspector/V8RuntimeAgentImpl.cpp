@@ -152,7 +152,7 @@ void V8RuntimeAgentImpl::getProperties(
 
     injectedScript->getProperties(errorString, objectId, ownProperties.fromMaybe(false), accessorPropertiesOnly.fromMaybe(false), generatePreview.fromMaybe(false), result, exceptionDetails);
 
-    if (!exceptionDetails->isJust() && !accessorPropertiesOnly.fromMaybe(false))
+    if (errorString->isEmpty() && !exceptionDetails->isJust() && !accessorPropertiesOnly.fromMaybe(false))
         injectedScript->getInternalProperties(errorString, objectId, internalProperties, exceptionDetails);
 }
 

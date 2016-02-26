@@ -2,8 +2,6 @@ setBreakpointByUrl error: undefined
 setBreakpoint error: {
   "code": -32602,
   "message": "Some arguments of method 'Debugger.setBreakpoint' can't be processed",
-  "data": [
-    "Parameter 'location' with type 'Object' was not found."
-  ]
+  "data": "location: object expected"
 }
 
