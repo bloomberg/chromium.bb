@@ -1802,11 +1802,17 @@ void RenderFrameHostImpl::RegisterMojoServices() {
     // TODO(creis): Bind process ID here so that GeolocationServiceImpl
     // can perform permissions checks once site isolation is complete.
     // crbug.com/426384
+    // NOTE: At shutdown, there is no guaranteed ordering between destruction of
+    // this object and destruction of any GeolocationServicesImpls created via
+    // the below service registry, the reason being that the destruction of the
+    // latter is triggered by receiving a message that the pipe was closed from
+    // the renderer side. Hence, supply the reference to this object as a weak
+    // pointer.
     GetServiceRegistry()->AddService<GeolocationService>(
         base::Bind(&GeolocationServiceContext::CreateService,
                    base::Unretained(geolocation_service_context),
                    base::Bind(&RenderFrameHostImpl::DidUseGeolocationPermission,
-                              base::Unretained(this))));
+                              weak_ptr_factory_.GetWeakPtr())));
   }
 
   WakeLockServiceContext* wake_lock_service_context =
