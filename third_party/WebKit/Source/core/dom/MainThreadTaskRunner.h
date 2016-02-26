@@ -65,7 +65,7 @@ private:
 
     void pendingTasksTimerFired(Timer<MainThreadTaskRunner>*);
 
-    void postTaskInternal(const WebTraceLocation&, PassOwnPtr<ExecutionContextTask>, bool isInspectorTask);
+    WeakPtrWillBeRawPtr<MainThreadTaskRunner> createWeakPointerToSelf();
 
     RawPtrWillBeMember<ExecutionContext> m_context;
 #if !ENABLE(OILPAN)

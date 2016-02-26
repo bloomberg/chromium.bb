@@ -59,6 +59,28 @@ ScriptRunner::~ScriptRunner()
 #endif
 }
 
+class ScriptRunner::Task : public WebTaskRunner::Task {
+    WTF_MAKE_NONCOPYABLE(Task);
+
+public:
+    explicit Task(WeakPtrWillBeRawPtr<ScriptRunner> scriptRunner)
+        : m_scriptRunner(scriptRunner)
+    {
+    }
+
+    virtual ~Task() { };
+
+    void run() override
+    {
+        if (!m_scriptRunner)
+            return;
+        m_scriptRunner->executeTask();
+    }
+
+private:
+    WeakPtrWillBeWeakPersistent<ScriptRunner> m_scriptRunner;
+};
+
 #if !ENABLE(OILPAN)
 void ScriptRunner::dispose()
 {
@@ -99,11 +121,14 @@ void ScriptRunner::queueScriptForExecution(ScriptLoader* scriptLoader, Execution
 
 void ScriptRunner::postTask(const WebTraceLocation& webTraceLocation)
 {
+    // TODO(altimin): Replace all this with `new Task(this)` when Oilpan is here.
+    WeakPtrWillBeRawPtr<ScriptRunner> scriptRunnerForTask;
 #if !ENABLE(OILPAN)
-    m_taskRunner->postTask(webTraceLocation, bind(&ScriptRunner::executeTask, m_weakPointerFactoryForTasks.createWeakPtr()));
+    scriptRunnerForTask = m_weakPointerFactoryForTasks.createWeakPtr();
 #else
-    m_taskRunner->postTask(webTraceLocation, bind(&ScriptRunner::executeTask, WeakPersistentThisPointer<ScriptRunner>(this)));
+    scriptRunnerForTask = this;
 #endif
+    m_taskRunner->postTask(webTraceLocation, new Task(scriptRunnerForTask));
 }
 
 void ScriptRunner::suspend()

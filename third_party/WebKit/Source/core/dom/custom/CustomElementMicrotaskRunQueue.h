@@ -28,6 +28,8 @@ public:
     DECLARE_TRACE();
 
 private:
+    static void dispatchIfAlive(WeakPtrWillBeWeakPersistent<CustomElementMicrotaskRunQueue>);
+
     CustomElementMicrotaskRunQueue();
 
     void dispatch();
