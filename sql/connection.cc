@@ -595,7 +595,12 @@ void Connection::Preload() {
 // work.  There could be two prepared statements, one for cache_size=1 one for
 // cache_size=goal.
 void Connection::ReleaseCacheMemoryIfNeeded(bool implicit_change_performed) {
-  DCHECK(is_open());
+  // The database could have been closed during a transaction as part of error
+  // recovery.
+  if (!db_) {
+    DLOG_IF(FATAL, !poisoned_) << "Illegal use of connection without a db";
+    return;
+  }
 
   // If memory-mapping is not enabled, the page cache helps performance.
   if (!mmap_enabled_)

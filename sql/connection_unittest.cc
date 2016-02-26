@@ -247,7 +247,9 @@ class SQLConnectionTest : public sql::SQLTestBase {
 
   // Handle errors by blowing away the database.
   void RazeErrorCallback(int expected_error, int error, sql::Statement* stmt) {
-    EXPECT_EQ(expected_error, error);
+    // Nothing here needs extended errors at this time.
+    EXPECT_EQ(expected_error, expected_error&0xff);
+    EXPECT_EQ(expected_error, error&0xff);
     db().RazeAndClose();
   }
 };
@@ -928,6 +930,19 @@ TEST_F(SQLConnectionTest, Poison) {
   // The existing statement has become invalid.
   ASSERT_FALSE(valid_statement.is_valid());
   ASSERT_FALSE(valid_statement.Step());
+
+  // Test that poisoning the database during a transaction works (with errors).
+  // RazeErrorCallback() poisons the database, the extra COMMIT causes
+  // CommitTransaction() to throw an error while commiting.
+  db().set_error_callback(base::Bind(&SQLConnectionTest::RazeErrorCallback,
+                                     base::Unretained(this),
+                                     SQLITE_ERROR));
+  db().Close();
+  ASSERT_TRUE(db().Open(db_path()));
+  EXPECT_TRUE(db().BeginTransaction());
+  EXPECT_TRUE(db().Execute("INSERT INTO x VALUES ('x')"));
+  EXPECT_TRUE(db().Execute("COMMIT"));
+  EXPECT_FALSE(db().CommitTransaction());
 }
 
 // Test attaching and detaching databases from the connection.
