@@ -35,100 +35,134 @@
 #include "wtf/ThreadSafeRefCounted.h"
 #include "wtf/WeakPtr.h"
 #include <tuple>
+#include <utility>
 
 namespace WTF {
 
 // Functional.h provides a very simple way to bind a function pointer and arguments together into a function object
 // that can be stored, copied and invoked, similar to how boost::bind and std::bind in C++11.
-
+//
 // Use threadSafeBind() or createCrossThreadTask() if the function/task is
 // called on a (potentially) different thread from the current thread.
 
+// Bind and rvalue references:
+//
+// For unbound parameters (arguments supplied later on the bound functor), we don't support moving-in and moving-out
+// at this moment, but we are willing to support that soon.
+//
+// For bound parameters (arguments supplied on the creation of a functor), you can move your argument into the internal
+// storage of the functor by supplying an rvalue to that argument (this is done in wrap() of ParamStorageTraits).
+// However, to make the functor be able to get called multiple times, the stored object does not get moved out
+// automatically when the underlying function is actually invoked. If you want to move the argument throughout the
+// process, you can do so by receiving the argument as a non-const lvalue reference and applying std::move() to it:
+//
+//     void yourFunction(Argument& argument)
+//     {
+//         std::move(argument); // Move out the argument from the internal storage.
+//         ...
+//     }
+//
+//     ...
+//     OwnPtr<Function<void()>> functor = bind(yourFunction, Argument()); // Pass the argument by rvalue.
+//     ...
+//     (*functor)();
+
 // A FunctionWrapper is a class template that can wrap a function pointer or a member function pointer and
 // provide a unified interface for calling that function.
-template<typename>
+template <typename>
 class FunctionWrapper;
 
 // Bound static functions:
-template<typename R, typename... Params>
-class FunctionWrapper<R(*)(Params...)> {
+template <typename R, typename... Parameters>
+class FunctionWrapper<R(*)(Parameters...)> {
     DISALLOW_NEW();
 public:
     typedef R ResultType;
 
-    explicit FunctionWrapper(R(*function)(Params...))
+    explicit FunctionWrapper(R(*function)(Parameters...))
         : m_function(function)
     {
     }
 
-    R operator()(Params... params)
+    template <typename... IncomingParameters>
+    R operator()(IncomingParameters&&... parameters)
     {
-        return m_function(params...);
+        return m_function(std::forward<IncomingParameters>(parameters)...);
     }
 
 private:
-    R(*m_function)(Params...);
+    R(*m_function)(Parameters...);
 };
 
 // Bound member functions:
 
-template<typename R, typename C, typename... Params>
-class FunctionWrapper<R(C::*)(Params...)> {
+template <typename R, typename C, typename... Parameters>
+class FunctionWrapper<R(C::*)(Parameters...)> {
     DISALLOW_NEW();
 public:
     typedef R ResultType;
 
-    explicit FunctionWrapper(R(C::*function)(Params...))
+    explicit FunctionWrapper(R(C::*function)(Parameters...))
         : m_function(function)
     {
     }
 
-    R operator()(C* c, Params... params)
+    template <typename... IncomingParameters>
+    R operator()(C* c, IncomingParameters&&... parameters)
     {
-        return (c->*m_function)(params...);
+        return (c->*m_function)(std::forward<IncomingParameters>(parameters)...);
     }
 
-    R operator()(PassOwnPtr<C> c, Params... params)
+    template <typename... IncomingParameters>
+    R operator()(PassOwnPtr<C> c, IncomingParameters&&... parameters)
     {
-        return (c.get()->*m_function)(params...);
+        return (c.get()->*m_function)(std::forward<IncomingParameters>(parameters)...);
     }
 
-    R operator()(const WeakPtr<C>& c, Params... params)
+    template <typename... IncomingParameters>
+    R operator()(const WeakPtr<C>& c, IncomingParameters&&... parameters)
     {
         C* obj = c.get();
         if (!obj)
             return R();
-        return (obj->*m_function)(params...);
+        return (obj->*m_function)(std::forward<IncomingParameters>(parameters)...);
     }
 
 private:
-    R(C::*m_function)(Params...);
+    R(C::*m_function)(Parameters...);
 };
 
-template<typename T> struct ParamStorageTraits {
+template <typename T>
+struct ParamStorageTraits {
     typedef T StorageType;
 
-    static StorageType wrap(const T& value) { return value; }
-    static const T& unwrap(const StorageType& value) { return value; }
+    static StorageType wrap(const T& value) { return value; } // Copy.
+    static StorageType wrap(T&& value) { return std::move(value); }
+
+    // Don't move out, because the functor may be called multiple times.
+    static T& unwrap(StorageType& value) { return value; }
 };
 
-template<typename T> struct ParamStorageTraits<PassRefPtr<T>> {
+template <typename T>
+struct ParamStorageTraits<PassRefPtr<T>> {
     typedef RefPtr<T> StorageType;
 
     static StorageType wrap(PassRefPtr<T> value) { return value; }
     static T* unwrap(const StorageType& value) { return value.get(); }
 };
 
-template<typename T> struct ParamStorageTraits<RefPtr<T>> {
+template <typename T>
+struct ParamStorageTraits<RefPtr<T>> {
     typedef RefPtr<T> StorageType;
 
     static StorageType wrap(RefPtr<T> value) { return value.release(); }
     static T* unwrap(const StorageType& value) { return value.get(); }
 };
 
-template<typename> class RetainPtr;
+template <typename> class RetainPtr;
 
-template<typename T> struct ParamStorageTraits<RetainPtr<T>> {
+template <typename T>
+struct ParamStorageTraits<RetainPtr<T>> {
     typedef RetainPtr<T> StorageType;
 
     static StorageType wrap(const RetainPtr<T>& value) { return value; }
@@ -155,9 +189,17 @@ class PartBoundFunctionImpl;
 template <typename... BoundParameters, typename FunctionWrapper, typename... UnboundParameters>
 class PartBoundFunctionImpl<std::tuple<BoundParameters...>, FunctionWrapper, UnboundParameters...> final : public Function<typename FunctionWrapper::ResultType(UnboundParameters...)> {
 public:
-    explicit PartBoundFunctionImpl(FunctionWrapper functionWrapper, const BoundParameters&... bound)
+    // We would like to use StorageTraits<UnboundParameters>... with StorageTraits defined as below in order to obtain
+    // storage traits of UnboundParameters, but unfortunately MSVC can't handle template using declarations correctly.
+    // So, sadly, we have write down the full type signature in all places where storage traits are needed.
+    //
+    // template <typename T>
+    // using StorageTraits = ParamStorageTraits<typename std::decay<T>::type>;
+
+    // Note that BoundParameters can be const T&, T&& or a mix of these.
+    explicit PartBoundFunctionImpl(FunctionWrapper functionWrapper, BoundParameters... bound)
         : m_functionWrapper(functionWrapper)
-        , m_bound(ParamStorageTraits<BoundParameters>::wrap(bound)...)
+        , m_bound(ParamStorageTraits<typename std::decay<BoundParameters>::type>::wrap(std::forward<BoundParameters>(bound))...)
     {
     }
 
@@ -173,23 +215,22 @@ private:
     typename FunctionWrapper::ResultType callInternal(UnboundParameters... unbound, const base::IndexSequence<boundIndices...>&)
     {
         // Get each element in m_bound, unwrap them, and call the function with the desired arguments.
-        return m_functionWrapper(ParamStorageTraits<BoundParameters>::unwrap(std::get<boundIndices>(m_bound))..., unbound...);
+        return m_functionWrapper(ParamStorageTraits<typename std::decay<BoundParameters>::type>::unwrap(std::get<boundIndices>(m_bound))..., unbound...);
     }
 
     FunctionWrapper m_functionWrapper;
-    std::tuple<typename ParamStorageTraits<BoundParameters>::StorageType...> m_bound;
+    std::tuple<typename ParamStorageTraits<typename std::decay<BoundParameters>::type>::StorageType...> m_bound;
 };
 
-
-template<typename... UnboundParameters, typename FunctionType, typename... BoundParameters>
-PassOwnPtr<Function<typename FunctionWrapper<FunctionType>::ResultType(UnboundParameters...)>> bind(FunctionType function, const BoundParameters&... boundParameters)
+template <typename... UnboundParameters, typename FunctionType, typename... BoundParameters>
+PassOwnPtr<Function<typename FunctionWrapper<FunctionType>::ResultType(UnboundParameters...)>> bind(FunctionType function, BoundParameters&&... boundParameters)
 {
     // Bound parameters' types are wrapped with std::tuple so we can pass two template parameter packs (bound
     // parameters and unbound) to PartBoundFunctionImpl. Note that a tuple of this type isn't actually created;
     // std::tuple<> is just for carrying the bound parameters' types. Any other class template taking a type parameter
     // pack can be used instead of std::tuple. std::tuple is used just because it's most convenient for this purpose.
-    using BoundFunctionType = PartBoundFunctionImpl<std::tuple<BoundParameters...>, FunctionWrapper<FunctionType>, UnboundParameters...>;
-    return adoptPtr(new BoundFunctionType(FunctionWrapper<FunctionType>(function), boundParameters...));
+    using BoundFunctionType = PartBoundFunctionImpl<std::tuple<BoundParameters&&...>, FunctionWrapper<FunctionType>, UnboundParameters...>;
+    return adoptPtr(new BoundFunctionType(FunctionWrapper<FunctionType>(function), std::forward<BoundParameters>(boundParameters)...));
 }
 
 typedef Function<void()> Closure;

@@ -28,6 +28,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/RefCounted.h"
+#include <utility>
 
 namespace WTF {
 
@@ -326,6 +327,99 @@ TEST(FunctionalTest, LotsOfBoundVariables)
 
     OwnPtr<Function<bool()>> allBound = bind(lotsOfArguments, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
     EXPECT_TRUE((*allBound)());
+}
+
+class MoveOnly {
+public:
+    explicit MoveOnly(int value) : m_value(value) { }
+    MoveOnly(MoveOnly&& other)
+        : m_value(other.m_value)
+    {
+        // Reset the value on move.
+        other.m_value = 0;
+    }
+
+    int value() const { return m_value; }
+
+private:
+    MoveOnly(const MoveOnly&) = delete;
+    MoveOnly& operator=(const MoveOnly&) = delete;
+
+    // Disable move-assignment, since it isn't used within bind().
+    MoveOnly& operator=(MoveOnly&&) = delete;
+
+    int m_value;
+};
+
+int singleMoveOnly(MoveOnly& moveOnly)
+{
+    int value = moveOnly.value();
+    // If you ever want to move out a bound parameter, that's possible by moving the non-const lvalue reference.
+    MoveOnly(std::move(moveOnly));
+    return value;
+}
+
+int tripleMoveOnlys(MoveOnly& first, MoveOnly& second, MoveOnly& third)
+{
+    int value = first.value() + second.value() + third.value();
+    MoveOnly(std::move(first));
+    MoveOnly(std::move(second));
+    MoveOnly(std::move(third));
+    return value;
+}
+
+TEST(FunctionalTest, BindMoveOnlyObjects)
+{
+    MoveOnly one(1);
+    OwnPtr<Function<int()>> bound = bind(singleMoveOnly, std::move(one));
+    EXPECT_EQ(0, one.value()); // Should be moved away.
+    EXPECT_EQ(1, (*bound)());
+    EXPECT_EQ(0, (*bound)()); // The stored value must be cleared in the first function call.
+
+    bound = bind(tripleMoveOnlys, MoveOnly(1), MoveOnly(2), MoveOnly(3));
+    EXPECT_EQ(6, (*bound)());
+    EXPECT_EQ(0, (*bound)());
+}
+
+class CountCopy {
+public:
+    CountCopy() : m_copies(0) { }
+    CountCopy(const CountCopy& other) : m_copies(other.m_copies + 1) { }
+
+    int copies() const { return m_copies; }
+
+private:
+    // Copy/move-assignment is not needed in the test.
+    CountCopy& operator=(const CountCopy&) = delete;
+    CountCopy& operator=(CountCopy&&) = delete;
+
+    int m_copies;
+};
+
+int takeCountCopyAsConstReference(const CountCopy& counter)
+{
+    return counter.copies();
+}
+
+int takeCountCopyAsValue(CountCopy counter)
+{
+    return counter.copies();
+}
+
+TEST(FunctionalTest, CountCopiesOfBoundArguments)
+{
+    CountCopy lvalue;
+    OwnPtr<Function<int()>> bound = bind(takeCountCopyAsConstReference, lvalue);
+    EXPECT_EQ(2, (*bound)()); // wrapping and unwrapping.
+
+    bound = bind(takeCountCopyAsConstReference, CountCopy()); // Rvalue.
+    EXPECT_EQ(2, (*bound)());
+
+    bound = bind(takeCountCopyAsValue, lvalue);
+    EXPECT_EQ(3, (*bound)()); // wrapping, unwrapping and copying in the final function argument.
+
+    bound = bind(takeCountCopyAsValue, CountCopy());
+    EXPECT_EQ(3, (*bound)());
 }
 
 } // anonymous namespace

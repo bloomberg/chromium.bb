@@ -106,7 +106,7 @@ public:
 
 bool BeaconLoader::sendBeacon(LocalFrame* frame, int allowance, const KURL& beaconURL, const String& data, int& payloadLength)
 {
-    BeaconData<decltype(data)> beacon(data);
+    BeaconData<String> beacon(data);
     return Sender::send(frame, allowance, beaconURL, beacon, payloadLength);
 }
 
