@@ -17,7 +17,6 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/login/users/avatar/user_image_loader.h"
 #include "chrome/browser/chromeos/login/users/avatar/user_image_manager.h"
 #include "chrome/browser/profiles/profile_downloader_delegate.h"
 #include "components/user_manager/user.h"
@@ -155,9 +154,6 @@ class UserImageManagerImpl
 
   // The user manager.
   user_manager::UserManager* user_manager_;
-
-  // Loader for user images.
-  scoped_refptr<UserImageLoader> image_loader_;
 
   // Whether the |profile_downloader_| is downloading the profile image for the
   // currently logged-in user (and not just the full name). Only valid when a

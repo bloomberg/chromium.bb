@@ -24,9 +24,6 @@ class UserImage;
 
 namespace chromeos {
 
-// TODO(michaelpg): Generalize UserImageLoader for classes like ImageSource.
-class UserImageLoader;
-
 // Data source that reads and decodes an image from the RO file system.
 class ImageSource : public content::URLDataSource {
  public:
@@ -56,8 +53,6 @@ class ImageSource : public content::URLDataSource {
 
   // The background task runner on which file I/O and image decoding are done.
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
-
-  scoped_refptr<UserImageLoader> image_loader_;
 
   base::WeakPtrFactory<ImageSource> weak_factory_;
 

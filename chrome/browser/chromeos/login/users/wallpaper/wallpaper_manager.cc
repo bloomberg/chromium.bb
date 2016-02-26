@@ -448,8 +448,8 @@ void WallpaperManager::OnPolicyFetched(const std::string& policy,
   if (!data)
     return;
 
-  wallpaper_loader_->StartWithData(
-      std::move(data), ImageDecoder::ROBUST_JPEG_CODEC,
+  user_image_loader::StartWithData(
+      task_runner_, std::move(data), ImageDecoder::ROBUST_JPEG_CODEC,
       0,  // Do not crop.
       base::Bind(&WallpaperManager::SetPolicyControlledWallpaper,
                  weak_factory_.GetWeakPtr(), account_id));
@@ -760,7 +760,6 @@ WallpaperManager::WallpaperManager()
       BrowserThread::GetBlockingPool()
           ->GetSequencedTaskRunnerWithShutdownBehavior(
               sequence_token_, base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
-  wallpaper_loader_ = new UserImageLoader(task_runner_);
 
   user_manager::UserManager::Get()->AddSessionStateObserver(this);
 }
@@ -953,8 +952,8 @@ void WallpaperManager::StartLoad(const AccountId& account_id,
     wallpaper_cache_[account_id] =
         CustomWallpaperElement(wallpaper_path, gfx::ImageSkia());
   }
-  wallpaper_loader_->StartWithFilePath(
-      wallpaper_path, ImageDecoder::ROBUST_JPEG_CODEC,
+  user_image_loader::StartWithFilePath(
+      task_runner_, wallpaper_path, ImageDecoder::ROBUST_JPEG_CODEC,
       0,  // Do not crop.
       base::Bind(&WallpaperManager::OnWallpaperDecoded,
                  weak_factory_.GetWeakPtr(), account_id, info.layout,
@@ -974,8 +973,8 @@ void WallpaperManager::SetCustomizedDefaultWallpaperAfterCheck(
 
     // Either resized images do not exist or cached version is incorrect.
     // Need to start resize again.
-    wallpaper_loader_->StartWithFilePath(
-        downloaded_file, ImageDecoder::ROBUST_JPEG_CODEC,
+    user_image_loader::StartWithFilePath(
+        task_runner_, downloaded_file, ImageDecoder::ROBUST_JPEG_CODEC,
         0,  // Do not crop.
         base::Bind(&WallpaperManager::OnCustomizedDefaultWallpaperDecoded,
                    weak_factory_.GetWeakPtr(), wallpaper_url,
@@ -1050,8 +1049,8 @@ void WallpaperManager::StartLoadAndSetDefaultWallpaper(
     const wallpaper::WallpaperLayout layout,
     MovableOnDestroyCallbackHolder on_finish,
     scoped_ptr<user_manager::UserImage>* result_out) {
-  wallpaper_loader_->StartWithFilePath(
-      path, ImageDecoder::ROBUST_JPEG_CODEC,
+  user_image_loader::StartWithFilePath(
+      task_runner_, path, ImageDecoder::ROBUST_JPEG_CODEC,
       0,  // Do not crop.
       base::Bind(&WallpaperManager::OnDefaultWallpaperDecoded,
                  weak_factory_.GetWeakPtr(), path, layout,

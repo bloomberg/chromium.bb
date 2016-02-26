@@ -202,9 +202,6 @@ class WallpaperManager
       const base::FilePath& customized_default_wallpaper_file_large,
       scoped_ptr<gfx::ImageSkia> large_wallpaper_image) override;
 
-  // Loads user wallpaper from its file.
-  scoped_refptr<UserImageLoader> wallpaper_loader_;
-
   scoped_ptr<CrosSettings::ObserverSubscription>
       show_user_name_on_signin_subscription_;
 

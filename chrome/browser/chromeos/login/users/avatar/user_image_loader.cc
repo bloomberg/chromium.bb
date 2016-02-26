@@ -23,7 +23,7 @@
 #include "ui/gfx/skbitmap_operations.h"
 
 namespace chromeos {
-
+namespace user_image_loader {
 namespace {
 
 // Contains attributes we need to know about each image we decode.
@@ -31,7 +31,7 @@ struct ImageInfo {
   ImageInfo(const base::FilePath& file_path,
             int pixels_per_side,
             ImageDecoder::ImageCodec image_codec,
-            const UserImageLoader::LoadedCallback& loaded_cb)
+            const LoadedCallback& loaded_cb)
       : file_path(file_path),
         pixels_per_side(pixels_per_side),
         image_codec(image_codec),
@@ -41,7 +41,7 @@ struct ImageInfo {
   const base::FilePath file_path;
   const int pixels_per_side;
   const ImageDecoder::ImageCodec image_codec;
-  const UserImageLoader::LoadedCallback loaded_cb;
+  const LoadedCallback loaded_cb;
 };
 
 // Handles the decoded image returned from ImageDecoder through the
@@ -59,7 +59,7 @@ class UserImageRequest : public ImageDecoder::ImageRequest {
   ~UserImageRequest() override {}
 
   // ImageDecoder::ImageRequest implementation. These callbacks will only be
-  // invoked via user_image_loader_'s background_task_runner_.
+  // invoked via background_task_runner passed to the constructor.
   void OnImageDecoded(const SkBitmap& decoded_image) override;
   void OnDecodeImageFailed() override;
 
@@ -143,32 +143,31 @@ void DecodeImage(
 
 }  // namespace
 
-UserImageLoader::UserImageLoader(
-    scoped_refptr<base::SequencedTaskRunner> background_task_runner)
-    : background_task_runner_(background_task_runner) {}
-
-UserImageLoader::~UserImageLoader() {}
-
-void UserImageLoader::StartWithFilePath(const base::FilePath& file_path,
-                                        ImageDecoder::ImageCodec image_codec,
-                                        int pixels_per_side,
-                                        const LoadedCallback& loaded_cb) {
+void StartWithFilePath(
+    scoped_refptr<base::SequencedTaskRunner> background_task_runner,
+    const base::FilePath& file_path,
+    ImageDecoder::ImageCodec image_codec,
+    int pixels_per_side,
+    const LoadedCallback& loaded_cb) {
   std::string* data = new std::string;
   base::PostTaskAndReplyWithResult(
-      background_task_runner_.get(), FROM_HERE,
+      background_task_runner.get(), FROM_HERE,
       base::Bind(&base::ReadFileToString, file_path, data),
       base::Bind(&DecodeImage,
                  ImageInfo(file_path, pixels_per_side, image_codec, loaded_cb),
-                 background_task_runner_, base::Owned(data)));
+                 background_task_runner, base::Owned(data)));
 }
 
-void UserImageLoader::StartWithData(scoped_ptr<std::string> data,
-                                    ImageDecoder::ImageCodec image_codec,
-                                    int pixels_per_side,
-                                    const LoadedCallback& loaded_cb) {
+void StartWithData(
+    scoped_refptr<base::SequencedTaskRunner> background_task_runner,
+    scoped_ptr<std::string> data,
+    ImageDecoder::ImageCodec image_codec,
+    int pixels_per_side,
+    const LoadedCallback& loaded_cb) {
   DecodeImage(
       ImageInfo(base::FilePath(), pixels_per_side, image_codec, loaded_cb),
-      background_task_runner_, data.get(), true /* data_is_ready */);
+      background_task_runner, data.get(), true /* data_is_ready */);
 }
 
+}  // namespace user_image_loader
 }  // namespace chromeos

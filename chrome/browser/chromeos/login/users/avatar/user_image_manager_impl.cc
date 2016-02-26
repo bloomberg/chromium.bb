@@ -26,6 +26,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/helper.h"
+#include "chrome/browser/chromeos/login/users/avatar/user_image_loader.h"
 #include "chrome/browser/chromeos/login/users/avatar/user_image_sync_observer.h"
 #include "chrome/browser/chromeos/login/users/default_user_image/default_user_images.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -319,8 +320,9 @@ void UserImageManagerImpl::Job::LoadImage(base::FilePath image_path,
     // LoadImage() is called only for users whose user image has previously
     // been set by one of the Set*() methods, which transcode to JPEG format.
     DCHECK(!image_path_.empty());
-    parent_->image_loader_->StartWithFilePath(
-        image_path_, ImageDecoder::ROBUST_JPEG_CODEC,
+    user_image_loader::StartWithFilePath(
+        parent_->background_task_runner_, image_path_,
+        ImageDecoder::ROBUST_JPEG_CODEC,
         0,  // Do not crop.
         base::Bind(&Job::OnLoadImageDone, weak_factory_.GetWeakPtr(), false));
   } else {
@@ -377,9 +379,9 @@ void UserImageManagerImpl::Job::SetToImageData(scoped_ptr<std::string> data) {
   // * This is safe because ROBUST_JPEG_CODEC employs a hardened JPEG decoder
   //   that protects against malicious invalid image data being used to attack
   //   the login screen or another user session currently in progress.
-  parent_->image_loader_->StartWithData(
-      std::move(data), ImageDecoder::ROBUST_JPEG_CODEC,
-      login::kMaxUserImageSize,
+  user_image_loader::StartWithData(
+      parent_->background_task_runner_, std::move(data),
+      ImageDecoder::ROBUST_JPEG_CODEC, login::kMaxUserImageSize,
       base::Bind(&Job::OnLoadImageDone, weak_factory_.GetWeakPtr(), true));
 }
 
@@ -394,8 +396,9 @@ void UserImageManagerImpl::Job::SetToPath(const base::FilePath& path,
   image_url_ = image_url;
 
   DCHECK(!path.empty());
-  parent_->image_loader_->StartWithFilePath(
-      path, ImageDecoder::DEFAULT_CODEC, resize ? login::kMaxUserImageSize : 0,
+  user_image_loader::StartWithFilePath(
+      parent_->background_task_runner_, path, ImageDecoder::DEFAULT_CODEC,
+      resize ? login::kMaxUserImageSize : 0,
       base::Bind(&Job::OnLoadImageDone, weak_factory_.GetWeakPtr(), true));
 }
 
@@ -487,7 +490,6 @@ UserImageManagerImpl::UserImageManagerImpl(
       blocking_pool->GetSequencedTaskRunnerWithShutdownBehavior(
           blocking_pool->GetSequenceToken(),
           base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
-  image_loader_ = new UserImageLoader(background_task_runner_);
 }
 
 UserImageManagerImpl::~UserImageManagerImpl() {}

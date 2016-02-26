@@ -71,10 +71,6 @@ void ImageSource::StartDataRequest(
     return;
   }
 
-  if (!image_loader_) {
-    image_loader_ = new UserImageLoader(task_runner_);
-  }
-
   const base::FilePath asset_dir(FILE_PATH_LITERAL(chrome::kChromeOSAssetPath));
   const base::FilePath image_path = asset_dir.AppendASCII(path);
   base::PostTaskAndReplyWithResult(
@@ -90,7 +86,8 @@ void ImageSource::StartDataRequestAfterPathExists(
     const content::URLDataSource::GotDataCallback& got_data_callback,
     bool path_exists) {
   if (path_exists) {
-    image_loader_->StartWithFilePath(
+    user_image_loader::StartWithFilePath(
+        task_runner_,
         image_path,
         ImageDecoder::DEFAULT_CODEC,
         0,  // Do not crop.
