@@ -9,6 +9,11 @@
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/ui_base_switches.h"
 
+#if defined(OS_CHROMEOS)
+#include "base/strings/string_util.h"
+#include "base/sys_info.h"
+#endif  // defined(OS_CHROMEOS)
+
 namespace ui {
 
 bool MaterialDesignController::is_mode_initialized_ = false;
@@ -30,6 +35,14 @@ bool MaterialDesignController::IsModeMaterial() {
 
 MaterialDesignController::Mode MaterialDesignController::DefaultMode() {
 #if defined(OS_CHROMEOS)
+  // TODO(tdanderson): Enable hybrid by default for touchscreen devices.
+  //                   See crbug.com/588880.
+  const std::string board = base::SysInfo::GetLsbReleaseBoard();
+  if (base::StartsWith(board, "link", base::CompareCase::SENSITIVE) ||
+      base::StartsWith(board, "veyron_minnie", base::CompareCase::SENSITIVE) ||
+      base::StartsWith(board, "samus", base::CompareCase::SENSITIVE)) {
+    return Mode::MATERIAL_HYBRID;
+  }
   return Mode::MATERIAL_NORMAL;
 #else
   return Mode::NON_MATERIAL;
