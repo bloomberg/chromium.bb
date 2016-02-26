@@ -9423,10 +9423,6 @@ error::Error GLES2DecoderImpl::HandleReadPixels(uint32_t immediate_data_size,
     return error::kNoError;
   }
 
-  if (!CheckBoundReadFramebufferValid("glReadPixels")) {
-    return error::kNoError;
-  }
-
   LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER("glReadPixels");
 
   ScopedResolvedFrameBufferBinder binder(this, false, true);
@@ -11432,6 +11428,10 @@ void GLES2DecoderImpl::DoCopyTexImage2D(
     return;
   }
 
+  if (!CheckBoundReadFramebufferValid("glCopyTexImage2D")) {
+    return;
+  }
+
   GLenum read_format = GetBoundReadFrameBufferInternalFormat();
   if (read_format == 0) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glCopyTexImage2D",
@@ -11485,10 +11485,6 @@ void GLES2DecoderImpl::DoCopyTexImage2D(
 
   if (!EnsureGPUMemoryAvailable(pixels_size)) {
     LOCAL_SET_GL_ERROR(GL_OUT_OF_MEMORY, "glCopyTexImage2D", "out of memory");
-    return;
-  }
-
-  if (!CheckBoundReadFramebufferValid("glCopyTexImage2D")) {
     return;
   }
 
@@ -11578,6 +11574,10 @@ void GLES2DecoderImpl::DoCopyTexSubImage2D(
     return;
   }
 
+  if (!CheckBoundReadFramebufferValid("glCopyTexImage2D")) {
+    return;
+  }
+
   GLenum read_format = GetBoundReadFrameBufferInternalFormat();
   if (read_format == 0) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glCopyTexImage2D",
@@ -11599,10 +11599,6 @@ void GLES2DecoderImpl::DoCopyTexSubImage2D(
     LOCAL_SET_GL_ERROR(
         GL_INVALID_OPERATION,
         "glCopySubImage2D", "can not be used with depth or stencil textures");
-    return;
-  }
-
-  if (!CheckBoundReadFramebufferValid("glCopyTexImage2D")) {
     return;
   }
 

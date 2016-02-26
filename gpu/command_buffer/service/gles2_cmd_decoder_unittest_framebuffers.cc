@@ -2458,8 +2458,8 @@ TEST_P(GLES3DecoderTest, CopyTexImage2DInvalidInternalFormat_Float) {
   GLenum target = GL_TEXTURE_2D;
   GLint level = 0;
   GLenum internal_format = GL_RG16F;
-  GLenum format = GL_RG;
-  GLenum type = GL_HALF_FLOAT;
+  GLenum format = GL_RGBA;
+  GLenum type = GL_UNSIGNED_BYTE;
   GLsizei width = 16;
   GLsizei height = 8;
   GLint border = 0;
@@ -2472,7 +2472,7 @@ TEST_P(GLES3DecoderTest, CopyTexImage2DInvalidInternalFormat_Float) {
   DoBindTexture(GL_TEXTURE_2D, kFBOClientTextureId, kFBOServiceTextureId);
   DoTexImage2D(GL_TEXTURE_2D,
                level,
-               internal_format,
+               GL_RGBA8,
                width,
                height,
                0,
@@ -2493,6 +2493,9 @@ TEST_P(GLES3DecoderTest, CopyTexImage2DInvalidInternalFormat_Float) {
               CopyTexImage2D(
                   target, level, internal_format, 0, 0, width, height, border))
       .Times(0);
+  EXPECT_CALL(*gl_, CheckFramebufferStatusEXT(GL_READ_FRAMEBUFFER))
+      .WillOnce(Return(GL_FRAMEBUFFER_COMPLETE))
+      .RetiresOnSaturation();
   DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
   CopyTexImage2D cmd;
   cmd.Init(target, level, internal_format, 0, 0, width, height);
@@ -2542,6 +2545,9 @@ TEST_P(GLES3DecoderTest, CopyTexImage2DInvalidInternalFormat_Integer) {
               CopyTexImage2D(
                   target, level, internal_format, 0, 0, width, height, border))
       .Times(0);
+  EXPECT_CALL(*gl_, CheckFramebufferStatusEXT(GL_READ_FRAMEBUFFER))
+      .WillOnce(Return(GL_FRAMEBUFFER_COMPLETE))
+      .RetiresOnSaturation();
   DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
   CopyTexImage2D cmd;
   cmd.Init(target, level, internal_format, 0, 0, width, height);
@@ -2591,6 +2597,9 @@ TEST_P(GLES3DecoderTest, CopyTexImage2DInvalidInternalFormat_sRGB) {
               CopyTexImage2D(
                   target, level, internal_format, 0, 0, width, height, border))
       .Times(0);
+  EXPECT_CALL(*gl_, CheckFramebufferStatusEXT(GL_READ_FRAMEBUFFER))
+      .WillOnce(Return(GL_FRAMEBUFFER_COMPLETE))
+      .RetiresOnSaturation();
   DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
   CopyTexImage2D cmd;
   cmd.Init(target, level, internal_format, 0, 0, width, height);
