@@ -3199,11 +3199,6 @@ String Document::outgoingReferrer() const
     return referrerDocument->m_url.strippedForUseAsReferrer();
 }
 
-String Document::outgoingOrigin() const
-{
-    return securityOrigin()->toString();
-}
-
 MouseEventWithHitTestResults Document::prepareMouseEvent(const HitTestRequest& request, const LayoutPoint& documentPoint, const PlatformMouseEvent& event)
 {
     ASSERT(!layoutView() || layoutView()->isLayoutView());

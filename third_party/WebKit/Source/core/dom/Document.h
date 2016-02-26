@@ -264,10 +264,7 @@ public:
     const ViewportDescription& viewportDescription() const { return m_viewportDescription; }
     Length viewportDefaultMinWidth() const { return m_viewportDefaultMinWidth; }
 
-    bool hasLegacyViewportTag() const { return m_legacyViewportDescription.isLegacyViewportType(); }
-
     String outgoingReferrer() const;
-    String outgoingOrigin() const;
 
     void setDoctype(PassRefPtrWillBeRawPtr<DocumentType>);
     DocumentType* doctype() const { return m_docType.get(); }
