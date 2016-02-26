@@ -243,9 +243,7 @@ bool HTMLTextAreaElement::shouldShowFocusRingOnMouseFocus() const
 void HTMLTextAreaElement::updateFocusAppearance(SelectionBehaviorOnFocus selectionBehavior)
 {
     switch (selectionBehavior) {
-    case SelectionBehaviorOnFocus::Reset:
-        setSelectionRange(0, 0, SelectionHasNoDirection, NotDispatchSelectEvent);
-        break;
+    case SelectionBehaviorOnFocus::Reset: // Fallthrough.
     case SelectionBehaviorOnFocus::Restore:
         restoreCachedSelection();
         break;
