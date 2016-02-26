@@ -94,6 +94,19 @@ a {
   margin-top: 15px;
 }
 
+#suggestions-list p {
+  -webkit-margin-after: 0;
+}
+
+#suggestions-list ul {
+  margin-top: 0;
+}
+
+.single-suggestion {
+  list-style-type: none;
+  padding-left: 0;
+}
+
 #short-suggestion {
   margin-top: 5px;
 }

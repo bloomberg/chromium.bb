@@ -80,11 +80,12 @@ button:hover {
   float: none;
   margin: 0;
   padding: 10px 0;
-  text-decoration: underline;
+  text-transform: uppercase;
 }
 
 #details-button:hover {
   box-shadow: inherit;
+  text-decoration: underline;
 }
 
 .error-code {

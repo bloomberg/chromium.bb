@@ -650,15 +650,13 @@ bool DnsProbeBrowserTest::PageContains(const std::string& expected) {
 
 void DnsProbeBrowserTest::ExpectDisplayingLocalErrorPage(
     const std::string& status_text) {
-  EXPECT_FALSE(PageContains("http://correction1/"));
-  EXPECT_FALSE(PageContains("http://correction2/"));
+  EXPECT_FALSE(PageContains("http://mock.http/title2.html"));
   EXPECT_TRUE(PageContains(status_text));
 }
 
 void DnsProbeBrowserTest::ExpectDisplayingCorrections(
     const std::string& status_text) {
-  EXPECT_TRUE(PageContains("http://correction1/"));
-  EXPECT_TRUE(PageContains("http://correction2/"));
+  EXPECT_TRUE(PageContains("http://mock.http/title2.html"));
   EXPECT_TRUE(PageContains(status_text));
 }
 

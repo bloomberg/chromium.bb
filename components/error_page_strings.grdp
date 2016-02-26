@@ -61,14 +61,8 @@
   <message name="IDS_ERRORPAGES_SUGGESTION_ALTERNATE_URL" desc="When a page fails to load, sometimes we suggest different URL (maybe a different page on the same site, or a site with similar content, for example).">
     Go to <ph name="LINK">&lt;a jsvalues="href:urlCorrection;.jstdata:$this" onmousedown="linkClicked(this.jstdata)" jscontent="urlCorrectionForDisplay"&gt;&lt;/a&gt;<ex>www.somewhere.com</ex></ph>
   </message>
-  <message name="IDS_ERRORPAGES_SUGGESTION_RELOAD_REPOST_HEADER" desc="When a page fails to load, sometimes we suggest reloading a page.  In the case that reloading the page requires resubmitting data to a website, we use this as a header above a short set of instructions.">
-    Reload this webpage
-  </message>
-  <message name="IDS_ERRORPAGES_SUGGESTION_RELOAD_REPOST_BODY" desc="When a page fails to load, sometimes we suggest reloading a page.  In the case that reloading the page requires resubmitting data to a website, this is displayed below a short header.">
+  <message name="IDS_ERRORPAGES_SUGGESTION_RELOAD_REPOST_SUMMARY" desc="When a page fails to load, sometimes we suggest reloading a page.  In the case that reloading the page requires resubmitting data to a website, this is displayed in a list.">
     Press the reload button to resubmit the data needed to load the page.
-  </message>
-  <message name="IDS_ERRORPAGES_SUGGESTION_DISABLE_EXTENSION_HEADER" desc="When a page fails to load, we provide a suggestion that the user try disabling an extension that's blocking it.">
-    Disable your extensions and then reload this webpage
   </message>
   <message name="IDS_ERRORPAGES_SUGGESTION_CHECK_CONNECTION_HEADER" desc="When a page fails to load, sometimes we suggest checking the network connections.  This is a header above some details.">
     Check your Internet connection
@@ -113,20 +107,17 @@
       You can disable any proxies configured for a connection from the settings page.
     </message>
   </if>
-  <message name="IDS_ERRORPAGES_SUGGESTION_LEARNMORE_BODY" desc="When a webpage fails to load, we provide a link to the help center to learn more about the failure.">
-    <ph name="BEGIN_LINK">&lt;a jsvalues="href:learnMoreUrl"&gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph> about this problem.
-  </message>
   <message name="IDS_ERRORPAGES_SUGGESTION_VIEW_POLICIES_HEADER" desc="When a webpage fails to load, sometimes we suggest to the user to view the current policies.  This is a header above some instructions.">
     Check your administrator's policies
   </message>
   <message name="IDS_ERRORPAGES_SUGGESTION_VIEW_POLICIES_BODY" desc="When a webpage fails to load, sometimes we suggest to the user to view the current policies.  These are instructions below a header.">
     Visit &lt;strong&gt;chrome://policy&lt;/strong&gt; to see the list of blacklisted URLs and other policies enforced by your system administrator.
   </message>
-  <message name="IDS_ERRORPAGES_SUGGESTION_CONTACT_ADMINISTRATOR_BODY" desc="When a webpage fails to load, sometimes we suggest to the user to contact his system administrator.">
-    Contact your system administrator for more information.
+  <message name="IDS_ERRORPAGES_SUGGESTION_UNSUPPORTED_CIPHER_HEADER" desc="This is the header displayed above the explanation for SSL cipher and version errors.">
+    Unsupported protocol
   </message>
-  <message name="IDS_ERRORPAGES_SUGGESTION_GOOGLE_SEARCH" desc="When a page fails to load, sometimes we suggest a specific Google search.  This appears just above a text input control.">
-    Search on Google
+  <message name="IDS_ERRORPAGES_SUGGESTION_UNSUPPORTED_CIPHER_BODY" desc="The detailed explanation body text displayed for SSL cipher and version errors.">
+    The client and server don't support a common SSL protocol version or cipher suite. This is likely to be caused when the server needs RC4, which is no longer considered secure.
   </message>
   <message name="IDS_ERRORPAGES_TITLE_NOT_AVAILABLE" desc="Title of the error page when we can't connect to a site.">
     <ph name="SITE">$1<ex>google.com</ex></ph> is not available
@@ -202,7 +193,7 @@
     <ph name="HOST_NAME">&lt;strong jscontent="hostName"&gt;&lt;/strong&gt;<ex>www.whatever.com</ex></ph> refused to connect.
   </message>
   <message name="IDS_ERRORPAGES_SUMMARY_NAME_NOT_RESOLVED" desc="Summary in the error page when a dns look up fails. The 'abbr' tag is HTML mark up used to indicate that 'DNS address' is an abbreviation.">
-    <ph name="HOST_NAME">&lt;strong jscontent="hostName"&gt;&lt;/strong&gt;<ex>www.whatever.com</ex></ph>’s server <ph name="BEGIN_ABBR">&lt;abbr jsvalues="title:dnsDefinition"&gt;DNS address&lt;/abbr&gt;</ph> could not be found.
+    <ph name="HOST_NAME">&lt;strong jscontent="hostName"&gt;&lt;/strong&gt;<ex>www.whatever.com</ex></ph>’s server <ph name="BEGIN_ABBR">&lt;abbr jsvalues="title:dnsDefinition"&gt;</ph>DNS address<ph name="END_ABBR">&lt;/abbr&gt;</ph> could not be found.
   </message>
   <message name="IDS_ERRORPAGES_SUMMARY_DNS_DEFINITION" desc="Definition of DNS that appears when hovering over the abbreviation">
     DNS is the network service that translates a website’s name to its Internet address.
@@ -448,9 +439,6 @@
   <message name="IDS_ERRORPAGES_DETAILS_SSL_VERSION_OR_CIPHER_MISMATCH" desc="The error message displayed for SSL cipher and version errors.">
     The client and server don't support a common SSL protocol version or cipher suite.
   </message>
-  <message name="IDS_ERRORPAGES_SUGGESTION_UNSUPPORTED_CIPHER" desc="The suggestion displayed for SSL cipher and version errors.">
-    The client and server don't support a common SSL protocol version or cipher suite. This is likely to be caused when the server needs RC4, which is no longer considered secure.
-  </message>
 
   <message name="IDS_ERRORPAGES_SUMMARY_PINNING_FAILURE_DETAILS" desc="Summary of the error page for a certificate which doesn't match the built-in pins for that name">
     The server certificate at <ph name="HOST_NAME">&lt;strong jscontent="hostName"&gt;&lt;/strong&gt;<ex>www.whatever.com</ex></ph> appears to be a forgery.
@@ -498,6 +486,73 @@
 
   <message name="IDS_ERRORPAGES_HTTP_POST_WARNING" desc="The error message displayed when the user navigates back or forward to a page which would resubmit post data. They can hit reload to send POST data again and load the page.">
     This webpage requires data that you entered earlier in order to be properly displayed. You can send this data again, but by doing so you will repeat any action this page previously performed.
+  </message>
+
+  <!-- Suggestions summary list messages. -->
+  <message name="IDS_ERRORPAGES_SUGGESTION_LIST_HEADER" desc="Message that prefixes a list of suggestions to try when encountering a network error.">
+    Try:
+  </message>
+  <message name="IDS_ERRORPAGES_SUGGESTION_CHECK_CONNECTION_SUMMARY" desc="The message displayed in a list of suggestions following a network error, suggesting the user should try checking their connnection. The suggestions list is prefixed with 'Try:'.">
+    Checking the connection
+  </message>
+  <message name="IDS_ERRORPAGES_SUGGESTION_CHECK_PROXY_FIREWALL_DNS_SUMMARY" desc="The message displayed in a list of suggestions following a network error suggesting the user should try checking their proxy, firewall and DNS configuration. The suggestions list is prefixed with 'Try:'.">
+    <ph name="BEGIN_LINK">&lt;a href="#buttons" onclick="javascript:toggleHelpBox()"&gt;</ph>Checking the proxy, firewall, and DNS configuration<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
+  </message>
+  <message name="IDS_ERRORPAGES_SUGGESTION_CHECK_FIREWALL_ANTIVIRUS_SUMMARY" desc="The message displayed in a list of suggestions following a network error suggesting the user should try checking their firewall and anti-virus configuration. The suggestions list is prefixed with 'Try:'.">
+    <ph name="BEGIN_LINK">&lt;a href="#buttons" onclick="javascript:toggleHelpBox()"&gt;</ph>Checking firewall and antivirus configurations<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
+  </message>
+  <message name="IDS_ERRORPAGES_SUGGESTION_CHECK_PROXY_FIREWALL_SUMMARY" desc="The message displayed in a list of suggestions following a network error suggesting the user should try checking their proxy and firewall configuration. The suggestions list is prefixed with 'Try:'.">
+    <ph name="BEGIN_LINK">&lt;a href="javascript:toggleHelpBox()"&gt;</ph>Checking the proxy and the firewall<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
+  </message>
+  <message name="IDS_ERRORPAGES_SUGGESTION_CHECK_PROXY_ADDRESS_SUMMARY" desc="The message displayed in a list of suggestions following a network error suggesting to check the proxy address. The suggestions list is prefixed with 'Try:'.">
+    <ph name="BEGIN_LINK">&lt;a href="#buttons" onclick="javascript:toggleHelpBox()"&gt;</ph>Checking the proxy address<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
+  </message>
+  <message name="IDS_ERRORPAGES_SUGGESTION_CONTACT_ADMIN_SUMMARY" desc="The message displayed in a list of suggestions following a network error suggesting to the user to contact his system administrator. The suggestions list is prefixed with 'Try:'.">
+    Contacting the system admin
+  </message>
+  <message name="IDS_ERRORPAGES_SUGGESTION_CONTACT_ADMIN_SUMMARY_WITH_PREFIX" desc="Stand alone suggestion following a network error suggesting to the user to contact his system administrator.">
+    Try contacting the system admin.
+  </message>
+  <message name="IDS_ERRORPAGES_SUGGESTION_LEARNMORE_SUMMARY" desc="When a webpage fails to load, we provide a link to the help center to learn more about the failure.">
+    <ph name="BEGIN_LINK">&lt;a jsvalues="href:learnMoreUrl"&gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph> about this problem.
+  </message>
+  <message name="IDS_ERRORPAGES_SUGGESTION_CLEAR_COOKIES_SUMMARY" desc="The message displayed in a list of suggestions following a network error suggesting the user could try clearing their cookies. We also provide a link to the help center to learn more about the failure. The suggestions list is prefixed with 'Try:'.">
+    <ph name="BEGIN_LINK">&lt;a jsvalues="href:learnMoreUrl"&gt;</ph>Clearing your cookies<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
+  </message>
+  <if expr="is_ios or is_android">
+    <message name="IDS_ERRORPAGES_SUGGESTION_TURN_OFF_AIRPLANE_SUMMARY" desc="When a page fails to load and the device is offline, we provide a suggestion that the user try turning off airplane mode. The suggestions list is prefixed with 'Try:'.">
+      Turning off airplane mode
+    </message>
+    <message name="IDS_ERRORPAGES_SUGGESTION_TURN_ON_DATA_SUMMARY" desc="When a page fails to load and the device is offline, we provide a suggestion that the user try turning on their mobile data or Wi-Fi. The suggestions list is prefixed with 'Try:'.">
+      Turning on mobile data or Wi-Fi
+    </message>
+    <message name="IDS_ERRORPAGES_SUGGESTION_CHECKING_SIGNAL_SUMMARY" desc="When a page fails to load and the device is offline, we provide a suggestion that the user check their mobile signal. The suggestions list is prefixed with 'Try:'.">
+      Checking the signal in your area
+    </message>
+  </if>
+  <message name="IDS_ERRORPAGES_SUGGESTION_CHECK_CABLES_SUMMARY" desc="The message displayed in a list of suggestions following a network error suggesting to check the network cables or router. The suggestions list is prefixed with 'Try:'.">
+    Checking the network cable or router
+  </message>
+  <message name="IDS_ERRORPAGES_SUGGESTION_RESET_HARDWARE_SUMMARY" desc="The message displayed in a list of suggestions following a network error suggesting to the reset the modem or router. The suggestions list is prefixed with 'Try:'.">
+    Resetting the modem or router
+  </message>
+  <message name="IDS_ERRORPAGES_SUGGESTION_CHECK_WIFI_SUMMARY" desc="The message displayed in a list of suggestions following a network error suggesting to the user to reconnect to Wi-Fi. The suggestions list is prefixed with 'Try:'.">
+    Reconnecting to Wi-Fi
+  </message>
+  <message name="IDS_ERRORPAGES_SUGGESTION_DIAGNOSE_CONNECTION_SUMMARY" desc="The message displayed asking the user to check their network connection using the diagnostics tool.">
+    Fix your connection using the <ph name="BEGIN_LINK">&lt;a  href="#buttons" onclick="javascript:diagnoseErrors()"&gt;</ph>diagnostics app<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
+  </message>
+  <message name="IDS_ERRORPAGES_SUGGESTION_COMPLETE_SETUP_SUMMARY" desc="The message displayed asking the user to sign out and complete their device setup.">
+    Sign out and complete setup
+  </message>
+  <message name="IDS_ERRORPAGES_SUGGESTION_DISABLE_EXTENSION_SUMMARY" desc="When a page fails to load, we provide a suggestion that the user try disabling the extension that's blocking it. The suggestions list is prefixed with 'Try:'.">
+    Disabling your extensions
+  </message>
+  <message name="IDS_ERRORPAGES_SUGGESTION_RELOAD_SUMMARY" desc="The message displayed in a list of suggestions following a network error, suggesting the user should try reload the page. The suggestions list is prefixed with 'Try:'.">
+    Reloading the page
+  </message>
+  <message name="IDS_ERRORPAGES_SUGGESTION_GOOGLE_SEARCH_SUMMARY" desc="When a page fails to load, sometimes we suggest a specific Google search.">
+    Search Google for <ph name="LINK">&lt;a jsvalues="href:searchUrl;.jstdata:$this" onclick="linkClicked(this.jstdata)" jscontent="searchTerms" id="search-link"&gt;<ex>Example search terms</ex>&lt;/a&gt;</ph>
   </message>
 
   <!-- iOS specific error page messages -->

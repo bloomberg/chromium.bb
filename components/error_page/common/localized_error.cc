@@ -45,23 +45,34 @@ namespace {
 const unsigned int kErrorPagesNoDetails = 0;
 
 static const char kRedirectLoopLearnMoreUrl[] =
-    "https://support.google.com/chrome/answer/95626";
+    "https://support.google.com/chrome?p=rl_error";
 static const char kWeakDHKeyLearnMoreUrl[] =
     "https://support.google.com/chrome?p=dh_error";
 static const int kGoogleCachedCopySuggestionType = 0;
 
 enum NAV_SUGGESTIONS {
-  SUGGEST_NONE                  = 0,
-  SUGGEST_RELOAD                = 1 << 0,
-  SUGGEST_CHECK_CONNECTION      = 1 << 1,
-  SUGGEST_DNS_CONFIG            = 1 << 2,
-  SUGGEST_FIREWALL_CONFIG       = 1 << 3,
-  SUGGEST_PROXY_CONFIG          = 1 << 4,
-  SUGGEST_DISABLE_EXTENSION     = 1 << 5,
-  SUGGEST_LEARNMORE             = 1 << 6,
-  SUGGEST_VIEW_POLICIES         = 1 << 7,
-  SUGGEST_CONTACT_ADMINISTRATOR = 1 << 8,
-  SUGGEST_UNSUPPORTED_CIPHER    = 1 << 9,
+  SUGGEST_NONE                              = 0,
+  SUGGEST_RELOAD                            = 1 << 0,
+  SUGGEST_CHECK_CONNECTION                  = 1 << 1,
+  SUGGEST_DNS_CONFIG                        = 1 << 2,
+  SUGGEST_FIREWALL_CONFIG                   = 1 << 3,
+  SUGGEST_PROXY_CONFIG                      = 1 << 4,
+  SUGGEST_DISABLE_EXTENSION                 = 1 << 5,
+  SUGGEST_LEARNMORE                         = 1 << 6,
+  // Unprefixed suggestion which occurs in a list.
+  SUGGEST_CONTACT_ADMINISTRATOR             = 1 << 7,
+  // Standalone suggestion which cannot be mixed with others.
+  // Includes 'Try' prefix to the bulleted suggestion.
+  SUGGEST_CONTACT_ADMINISTRATOR_STANDALONE  = 1 << 8,
+  SUGGEST_UNSUPPORTED_CIPHER                = 1 << 9,
+  SUGGEST_ANTIVIRUS_CONFIG                  = 1 << 10,
+  SUGGEST_OFFLINE_CHECKS                    = 1 << 11,
+  // Standalone suggestion to complete the device setup.
+  // Should not be mixed with others and is not prefixed with 'Try'.
+  SUGGEST_COMPLETE_SETUP_STANDALONE         = 1 << 12,
+  // Standalone reload page suggestion for pages created by a post.
+  // Should not be mixed with others and is not prefixed with 'Try'.
+  SUGGEST_RELOAD_STANDALONE                 = 1 << 13,
 };
 
 struct LocalizedErrorMap {
@@ -74,7 +85,6 @@ struct LocalizedErrorMap {
   // a frame.
   unsigned int details_resource_id;
   int suggestions;  // Bitmap of SUGGEST_* values.
-  unsigned int error_explanation_id;
 };
 
 const LocalizedErrorMap net_error_options[] = {
@@ -99,7 +109,8 @@ const LocalizedErrorMap net_error_options[] = {
    IDS_ERRORPAGES_HEADING_NOT_AVAILABLE,
    IDS_ERRORPAGES_SUMMARY_CONNECTION_CLOSED,
    IDS_ERRORPAGES_DETAILS_CONNECTION_CLOSED,
-   SUGGEST_RELOAD,
+   SUGGEST_RELOAD | SUGGEST_CHECK_CONNECTION | SUGGEST_FIREWALL_CONFIG |
+       SUGGEST_PROXY_CONFIG,
   },
   {net::ERR_CONNECTION_RESET,
    IDS_ERRORPAGES_TITLE_NOT_AVAILABLE,
@@ -144,28 +155,29 @@ const LocalizedErrorMap net_error_options[] = {
    IDS_ERRORPAGES_HEADING_NOT_AVAILABLE,
    IDS_ERRORPAGES_SUMMARY_ADDRESS_UNREACHABLE,
    IDS_ERRORPAGES_DETAILS_ADDRESS_UNREACHABLE,
-   SUGGEST_RELOAD | SUGGEST_FIREWALL_CONFIG | SUGGEST_PROXY_CONFIG,
+   SUGGEST_RELOAD,
   },
   {net::ERR_NETWORK_ACCESS_DENIED,
    IDS_ERRORPAGES_TITLE_NOT_AVAILABLE,
    IDS_ERRORPAGES_HEADING_NETWORK_ACCESS_DENIED,
    IDS_ERRORPAGES_SUMMARY_NETWORK_ACCESS_DENIED,
    IDS_ERRORPAGES_DETAILS_NETWORK_ACCESS_DENIED,
-   SUGGEST_FIREWALL_CONFIG,
+   SUGGEST_CHECK_CONNECTION | SUGGEST_FIREWALL_CONFIG |
+      SUGGEST_ANTIVIRUS_CONFIG,
   },
   {net::ERR_PROXY_CONNECTION_FAILED,
    IDS_ERRORPAGES_TITLE_NOT_AVAILABLE,
    IDS_ERRORPAGES_HEADING_INTERNET_DISCONNECTED,
    IDS_ERRORPAGES_SUMMARY_PROXY_CONNECTION_FAILED,
    IDS_ERRORPAGES_DETAILS_PROXY_CONNECTION_FAILED,
-   SUGGEST_PROXY_CONFIG,
+   SUGGEST_PROXY_CONFIG | SUGGEST_CONTACT_ADMINISTRATOR,
   },
   {net::ERR_INTERNET_DISCONNECTED,
    IDS_ERRORPAGES_TITLE_NOT_AVAILABLE,
    IDS_ERRORPAGES_HEADING_INTERNET_DISCONNECTED,
    IDS_ERRORPAGES_SUMMARY_INTERNET_DISCONNECTED,
    IDS_ERRORPAGES_DETAILS_INTERNET_DISCONNECTED,
-   SUGGEST_CHECK_CONNECTION | SUGGEST_FIREWALL_CONFIG,
+   SUGGEST_OFFLINE_CHECKS,
   },
   {net::ERR_FILE_NOT_FOUND,
    IDS_ERRORPAGES_TITLE_LOAD_FAILED,
@@ -249,14 +261,14 @@ const LocalizedErrorMap net_error_options[] = {
    IDS_ERRORPAGES_HEADING_INSECURE_CONNECTION,
    IDS_ERRORPAGES_SUMMARY_INVALID_RESPONSE,
    IDS_ERRORPAGES_DETAILS_SSL_PROTOCOL_ERROR,
-   SUGGEST_NONE,
+   SUGGEST_RELOAD,
   },
   {net::ERR_BAD_SSL_CLIENT_AUTH_CERT,
    IDS_ERRORPAGES_TITLE_LOAD_FAILED,
    IDS_ERRORPAGES_HEADING_INSECURE_CONNECTION,
    IDS_ERRORPAGES_SUMMARY_BAD_SSL_CLIENT_AUTH_CERT,
    IDS_ERRORPAGES_DETAILS_BAD_SSL_CLIENT_AUTH_CERT,
-   SUGGEST_NONE,
+   SUGGEST_CONTACT_ADMINISTRATOR_STANDALONE,
   },
   {net::ERR_SSL_WEAK_SERVER_EPHEMERAL_DH_KEY,
    IDS_ERRORPAGES_TITLE_LOAD_FAILED,
@@ -277,7 +289,7 @@ const LocalizedErrorMap net_error_options[] = {
    IDS_ERRORPAGES_HEADING_NOT_AVAILABLE,
    IDS_ERRORPAGES_SUMMARY_NOT_AVAILABLE,
    IDS_ERRORPAGES_DETAILS_TEMPORARILY_THROTTLED,
-   SUGGEST_NONE,
+   SUGGEST_DISABLE_EXTENSION,
   },
   {net::ERR_BLOCKED_BY_CLIENT,
    IDS_ERRORPAGES_TITLE_BLOCKED,
@@ -291,26 +303,26 @@ const LocalizedErrorMap net_error_options[] = {
    IDS_ERRORPAGES_HEADING_CONNECTION_INTERRUPTED,
    IDS_ERRORPAGES_SUMMARY_NETWORK_CHANGED,
    IDS_ERRORPAGES_DETAILS_NETWORK_CHANGED,
-   SUGGEST_RELOAD | SUGGEST_CHECK_CONNECTION,
+   SUGGEST_RELOAD,
   },
   {net::ERR_BLOCKED_BY_ADMINISTRATOR,
    IDS_ERRORPAGES_TITLE_BLOCKED,
    IDS_ERRORPAGES_HEADING_BLOCKED,
    IDS_ERRORPAGES_SUMMARY_BLOCKED_BY_ADMINISTRATOR,
    IDS_ERRORPAGES_DETAILS_BLOCKED_BY_ADMINISTRATOR,
-   SUGGEST_VIEW_POLICIES | SUGGEST_CONTACT_ADMINISTRATOR,
+   SUGGEST_CONTACT_ADMINISTRATOR_STANDALONE,
   },
   {net::ERR_BLOCKED_ENROLLMENT_CHECK_PENDING,
    IDS_ERRORPAGES_TITLE_BLOCKED,
    IDS_ERRORPAGES_HEADING_INTERNET_DISCONNECTED,
    IDS_ERRORPAGES_SUMMARY_BLOCKED_ENROLLMENT_CHECK_PENDING,
    IDS_ERRORPAGES_DETAILS_BLOCKED_ENROLLMENT_CHECK_PENDING,
-   SUGGEST_CHECK_CONNECTION,
+   SUGGEST_COMPLETE_SETUP_STANDALONE,
   },
   {net::ERR_SSL_FALLBACK_BEYOND_MINIMUM_VERSION,
    IDS_ERRORPAGES_TITLE_LOAD_FAILED,
    IDS_ERRORPAGES_HEADING_INSECURE_CONNECTION,
-   IDS_ERRORPAGES_SUMMARY_SSL_SECURITY_ERROR,
+   IDS_ERRORPAGES_SUMMARY_INVALID_RESPONSE,
    IDS_ERRORPAGES_DETAILS_SSL_FALLBACK_BEYOND_MINIMUM_VERSION,
    SUGGEST_NONE,
   },
@@ -346,7 +358,7 @@ const LocalizedErrorMap repost_error = {
   IDS_HTTP_POST_WARNING_TITLE,
   IDS_ERRORPAGES_HTTP_POST_WARNING,
   IDS_ERRORPAGES_DETAILS_CACHE_READ_FAILURE,
-  SUGGEST_RELOAD,
+  SUGGEST_RELOAD_STANDALONE,
 };
 
 const LocalizedErrorMap http_error_options[] = {
@@ -355,7 +367,7 @@ const LocalizedErrorMap http_error_options[] = {
    IDS_ERRORPAGES_HEADING_ACCESS_DENIED,
    IDS_ERRORPAGES_SUMMARY_FORBIDDEN,
    IDS_ERRORPAGES_DETAILS_FORBIDDEN,
-   SUGGEST_NONE,
+   SUGGEST_RELOAD,
   },
   {410,
    IDS_ERRORPAGES_TITLE_NOT_FOUND,
@@ -431,14 +443,15 @@ const LocalizedErrorMap dns_probe_error_options[] = {
    IDS_ERRORPAGES_HEADING_INTERNET_DISCONNECTED,
    IDS_ERRORPAGES_SUMMARY_INTERNET_DISCONNECTED,
    IDS_ERRORPAGES_DETAILS_INTERNET_DISCONNECTED,
-   SUGGEST_CHECK_CONNECTION | SUGGEST_FIREWALL_CONFIG,
+   SUGGEST_OFFLINE_CHECKS,
   },
   {error_page::DNS_PROBE_FINISHED_BAD_CONFIG,
    IDS_ERRORPAGES_TITLE_NOT_AVAILABLE,
    IDS_ERRORPAGES_HEADING_NOT_AVAILABLE,
    IDS_ERRORPAGES_SUMMARY_NAME_NOT_RESOLVED,
    IDS_ERRORPAGES_DETAILS_NAME_NOT_RESOLVED,
-   SUGGEST_RELOAD | SUGGEST_DNS_CONFIG | SUGGEST_FIREWALL_CONFIG,
+   SUGGEST_RELOAD | SUGGEST_DNS_CONFIG | SUGGEST_FIREWALL_CONFIG |
+      SUGGEST_PROXY_CONFIG,
   },
   {error_page::DNS_PROBE_FINISHED_NXDOMAIN,
    IDS_ERRORPAGES_TITLE_NOT_AVAILABLE,
@@ -456,7 +469,7 @@ const LocalizedErrorMap* FindErrorMapInArray(const LocalizedErrorMap* maps,
     if (maps[i].error_code == error_code)
       return &maps[i];
   }
-  return NULL;
+  return nullptr;
 }
 
 const LocalizedErrorMap* LookupErrorMap(const std::string& error_domain,
@@ -482,7 +495,7 @@ const LocalizedErrorMap* LookupErrorMap(const std::string& error_domain,
     return map;
   } else {
     NOTREACHED();
-    return NULL;
+    return nullptr;
   }
 }
 
@@ -511,11 +524,11 @@ const char* GetIconClassForError(const std::string& error_domain,
 
 // If the first suggestion is for a Google cache copy link. Promote the
 // suggestion to a separate set of strings for displaying as a button.
-void AddGoogleCachedCopyButton(base::ListValue* suggestions,
+void AddGoogleCachedCopyButton(base::ListValue* suggestions_summary_list,
                                base::DictionaryValue* error_strings) {
-  if (!suggestions->empty()) {
+  if (!suggestions_summary_list->empty()) {
     base::DictionaryValue* suggestion;
-    suggestions->GetDictionary(0, &suggestion);
+    suggestions_summary_list->GetDictionary(0, &suggestion);
     int type = -1;
     suggestion->GetInteger("type", &type);
 
@@ -534,9 +547,255 @@ void AddGoogleCachedCopyButton(base::ListValue* suggestions,
 
       // Remove the item from suggestions dictionary so that it does not get
       // displayed by the template in the details section.
-      suggestions->Remove(0, nullptr);
+      suggestions_summary_list->Remove(0, nullptr);
     }
   }
+}
+
+// Helper function that creates a single entry dictionary and adds it
+// to a ListValue,
+void AddSingleEntryDictionaryToList(base::ListValue* list,
+                                    const char* path,
+                                    int message_id,
+                                    bool insert_as_first_item) {
+  base::DictionaryValue* suggestion_list_item = new base::DictionaryValue;
+  suggestion_list_item->SetString(path, l10n_util::GetStringUTF16(message_id));
+
+  if (insert_as_first_item) {
+    list->Insert(0, suggestion_list_item);
+  } else {
+    list->Append(suggestion_list_item);
+  }
+}
+
+// Creates a list of suggestions that a user may try to resolve a particular
+// network error. Appears above the fold underneath heading and intro paragraph.
+void GetSuggestionsSummaryList(int error_code,
+                               base::DictionaryValue* error_strings,
+                               int suggestions,
+                               const std::string& locale,
+                               base::ListValue* suggestions_summary_list) {
+  if (suggestions & SUGGEST_CONTACT_ADMINISTRATOR_STANDALONE) {
+    DCHECK(suggestions_summary_list->empty());
+    DCHECK(!(suggestions & ~SUGGEST_CONTACT_ADMINISTRATOR_STANDALONE));
+    AddSingleEntryDictionaryToList(suggestions_summary_list, "summary",
+        IDS_ERRORPAGES_SUGGESTION_CONTACT_ADMIN_SUMMARY_WITH_PREFIX, false);
+    return;
+  }
+
+  if (suggestions & SUGGEST_COMPLETE_SETUP_STANDALONE) {
+    DCHECK(suggestions_summary_list->empty());
+    DCHECK(!(suggestions & ~SUGGEST_COMPLETE_SETUP_STANDALONE));
+    AddSingleEntryDictionaryToList(suggestions_summary_list, "summary",
+        IDS_ERRORPAGES_SUGGESTION_DIAGNOSE_CONNECTION_SUMMARY, false);
+    AddSingleEntryDictionaryToList(suggestions_summary_list, "summary",
+        IDS_ERRORPAGES_SUGGESTION_COMPLETE_SETUP_SUMMARY, false);
+    return;
+  }
+
+  if (suggestions & SUGGEST_RELOAD_STANDALONE) {
+    DCHECK(suggestions_summary_list->empty());
+    DCHECK(!(suggestions & ~SUGGEST_RELOAD_STANDALONE));
+    // If the page was created by a post, it can't be reloaded in the same
+    // way, so just add a suggestion instead.
+    // TODO(mmenke):  Make the reload button bring up the repost confirmation
+    //                dialog for pages resulting from posts.
+    AddSingleEntryDictionaryToList(suggestions_summary_list, "summary",
+        IDS_ERRORPAGES_SUGGESTION_RELOAD_REPOST_SUMMARY, false);
+    return;
+  }
+
+  if (suggestions & SUGGEST_CHECK_CONNECTION) {
+    AddSingleEntryDictionaryToList(suggestions_summary_list, "summary",
+        IDS_ERRORPAGES_SUGGESTION_CHECK_CONNECTION_SUMMARY, false);
+  }
+
+  if ((suggestions & SUGGEST_DNS_CONFIG) &&
+      (suggestions & SUGGEST_FIREWALL_CONFIG) &&
+      (suggestions & SUGGEST_PROXY_CONFIG)) {
+    AddSingleEntryDictionaryToList(suggestions_summary_list, "summary",
+        IDS_ERRORPAGES_SUGGESTION_CHECK_PROXY_FIREWALL_DNS_SUMMARY, false);
+  } else if ((suggestions & SUGGEST_FIREWALL_CONFIG) &&
+             (suggestions & SUGGEST_ANTIVIRUS_CONFIG)) {
+    AddSingleEntryDictionaryToList(suggestions_summary_list, "summary",
+        IDS_ERRORPAGES_SUGGESTION_CHECK_FIREWALL_ANTIVIRUS_SUMMARY, false);
+  } else if ((suggestions & SUGGEST_PROXY_CONFIG) &&
+             (suggestions & SUGGEST_FIREWALL_CONFIG)) {
+    AddSingleEntryDictionaryToList(suggestions_summary_list, "summary",
+        IDS_ERRORPAGES_SUGGESTION_CHECK_PROXY_FIREWALL_SUMMARY, false);
+  } else if (suggestions & SUGGEST_PROXY_CONFIG) {
+    AddSingleEntryDictionaryToList(suggestions_summary_list, "summary",
+        IDS_ERRORPAGES_SUGGESTION_CHECK_PROXY_ADDRESS_SUMMARY, false);
+  } else {
+    DCHECK(!(suggestions & SUGGEST_PROXY_CONFIG));
+    DCHECK(!(suggestions & SUGGEST_FIREWALL_CONFIG));
+    DCHECK(!(suggestions & SUGGEST_DNS_CONFIG));
+  }
+
+  if (suggestions & SUGGEST_CONTACT_ADMINISTRATOR) {
+    AddSingleEntryDictionaryToList(suggestions_summary_list, "summary",
+        IDS_ERRORPAGES_SUGGESTION_CONTACT_ADMIN_SUMMARY, false);
+  }
+
+  if (suggestions & SUGGEST_OFFLINE_CHECKS) {
+#if defined(OS_ANDROID) || defined(OS_IOS)
+    AddSingleEntryDictionaryToList(suggestions_summary_list, "summary",
+        IDS_ERRORPAGES_SUGGESTION_TURN_OFF_AIRPLANE_SUMMARY, false);
+    AddSingleEntryDictionaryToList(suggestions_summary_list, "summary",
+        IDS_ERRORPAGES_SUGGESTION_TURN_ON_DATA_SUMMARY, false);
+    AddSingleEntryDictionaryToList(suggestions_summary_list, "summary",
+        IDS_ERRORPAGES_SUGGESTION_CHECKING_SIGNAL_SUMMARY, false);
+#else
+    AddSingleEntryDictionaryToList(suggestions_summary_list, "summary",
+        IDS_ERRORPAGES_SUGGESTION_CHECK_CABLES_SUMMARY, false);
+    AddSingleEntryDictionaryToList(suggestions_summary_list, "summary",
+        IDS_ERRORPAGES_SUGGESTION_RESET_HARDWARE_SUMMARY, false);
+    AddSingleEntryDictionaryToList(suggestions_summary_list, "summary",
+        IDS_ERRORPAGES_SUGGESTION_CHECK_WIFI_SUMMARY, false);
+#endif
+  }
+
+  if (suggestions & SUGGEST_DISABLE_EXTENSION) {
+    AddSingleEntryDictionaryToList(suggestions_summary_list, "summary",
+        IDS_ERRORPAGES_SUGGESTION_DISABLE_EXTENSION_SUMMARY, false);
+  }
+
+  if (suggestions & SUGGEST_LEARNMORE) {
+    GURL learn_more_url;
+    base::string16 suggestion_string;
+    switch (error_code) {
+      case net::ERR_SSL_WEAK_SERVER_EPHEMERAL_DH_KEY:
+        learn_more_url = GURL(kWeakDHKeyLearnMoreUrl);
+        suggestion_string = l10n_util::GetStringUTF16(
+            IDS_ERRORPAGES_SUGGESTION_LEARNMORE_SUMMARY);
+        break;
+      case net::ERR_TOO_MANY_REDIRECTS:
+        learn_more_url = GURL(kRedirectLoopLearnMoreUrl);
+        suggestion_string = l10n_util::GetStringUTF16(
+              IDS_ERRORPAGES_SUGGESTION_CLEAR_COOKIES_SUMMARY);
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
+
+    DCHECK(learn_more_url.is_valid());
+    // Add the language parameter to the URL.
+    std::string query = learn_more_url.query() + "&hl=" + locale;
+    GURL::Replacements repl;
+    repl.SetQueryStr(query);
+    learn_more_url = learn_more_url.ReplaceComponents(repl);
+
+    base::DictionaryValue* suggestion_list_item = new base::DictionaryValue;
+    suggestion_list_item->SetString("summary", suggestion_string);
+    suggestion_list_item->SetString("learnMoreUrl", learn_more_url.spec());
+    suggestions_summary_list->Append(suggestion_list_item);
+  }
+
+  // Only add a explicit reload suggestion if there are other suggestions.
+  // Otherwise rely on the reload button being used.
+  if (!suggestions_summary_list->empty() && (suggestions & SUGGEST_RELOAD)) {
+    AddSingleEntryDictionaryToList(suggestions_summary_list, "summary",
+        IDS_ERRORPAGES_SUGGESTION_RELOAD_SUMMARY, true);
+  }
+
+  // Add list prefix header.
+  error_strings->SetString("suggestionsSummaryListHeader",
+      l10n_util::GetStringUTF16(IDS_ERRORPAGES_SUGGESTION_LIST_HEADER));
+}
+
+// Creates a dictionary with "header" and "body" entries and adds it
+// to a ListValue, Returns the dictionary to allow further items to be added.
+base::DictionaryValue* AddSuggestionDetailDictionaryToList(
+    base::ListValue* list,
+    int header_message_id,
+    int body_message_id,
+    bool append_standard_menu_items) {
+  base::DictionaryValue* suggestion_list_item;
+  if (append_standard_menu_items) {
+    suggestion_list_item = GetStandardMenuItemsText();
+  } else {
+    suggestion_list_item = new base::DictionaryValue;
+  }
+
+  if (header_message_id) {
+    suggestion_list_item->SetString("header",
+        l10n_util::GetStringUTF16(header_message_id));
+  }
+  if (body_message_id) {
+    suggestion_list_item->SetString("body",
+        l10n_util::GetStringUTF16(body_message_id));
+  }
+  list->Append(suggestion_list_item);
+  return suggestion_list_item;
+}
+
+// Certain suggestions have supporting details which get displayed under
+// the "Details" button.
+void AddSuggestionsDetails(int error_code,
+                           base::DictionaryValue* error_strings,
+                           int suggestions,
+                           base::ListValue* suggestions_details) {
+  if (suggestions & SUGGEST_CHECK_CONNECTION) {
+    AddSuggestionDetailDictionaryToList(suggestions_details,
+          IDS_ERRORPAGES_SUGGESTION_CHECK_CONNECTION_HEADER,
+          IDS_ERRORPAGES_SUGGESTION_CHECK_CONNECTION_BODY, false);
+  }
+
+  if (suggestions & SUGGEST_DNS_CONFIG) {
+    AddSuggestionDetailDictionaryToList(suggestions_details,
+          IDS_ERRORPAGES_SUGGESTION_DNS_CONFIG_HEADER,
+          IDS_ERRORPAGES_SUGGESTION_DNS_CONFIG_BODY, false);
+
+    base::DictionaryValue* suggest_network_prediction =
+        AddSuggestionDetailDictionaryToList(suggestions_details,
+            IDS_ERRORPAGES_SUGGESTION_NETWORK_PREDICTION_HEADER,
+            IDS_ERRORPAGES_SUGGESTION_NETWORK_PREDICTION_BODY, true);
+
+    suggest_network_prediction->SetString(
+        "noNetworkPredictionTitle",
+        l10n_util::GetStringUTF16(
+            IDS_NETWORK_PREDICTION_ENABLED_DESCRIPTION));
+  }
+
+  if (suggestions & SUGGEST_FIREWALL_CONFIG) {
+    AddSuggestionDetailDictionaryToList(suggestions_details,
+        IDS_ERRORPAGES_SUGGESTION_FIREWALL_CONFIG_HEADER,
+        IDS_ERRORPAGES_SUGGESTION_FIREWALL_CONFIG_BODY, false);
+  }
+
+  if (suggestions & SUGGEST_PROXY_CONFIG) {
+    base::DictionaryValue* suggest_proxy_config =
+        AddSuggestionDetailDictionaryToList(suggestions_details,
+            IDS_ERRORPAGES_SUGGESTION_PROXY_CONFIG_HEADER,
+            0, true);
+
+    // Custom body string.
+    suggest_proxy_config->SetString("body",
+        l10n_util::GetStringFUTF16(IDS_ERRORPAGES_SUGGESTION_PROXY_CONFIG_BODY,
+            l10n_util::GetStringUTF16(
+                IDS_ERRORPAGES_SUGGESTION_PROXY_DISABLE_PLATFORM)));
+
+    suggest_proxy_config->SetString("proxyTitle",
+        l10n_util::GetStringUTF16(IDS_OPTIONS_PROXIES_CONFIGURE_BUTTON));
+  }
+
+  if (suggestions & SUGGEST_CONTACT_ADMINISTRATOR_STANDALONE &&
+      error_code == net::ERR_BLOCKED_BY_ADMINISTRATOR) {
+    AddSuggestionDetailDictionaryToList(suggestions_details,
+        IDS_ERRORPAGES_SUGGESTION_VIEW_POLICIES_HEADER,
+        IDS_ERRORPAGES_SUGGESTION_VIEW_POLICIES_BODY, false);
+  }
+
+  if (suggestions & SUGGEST_UNSUPPORTED_CIPHER) {
+    AddSuggestionDetailDictionaryToList(suggestions_details,
+        IDS_ERRORPAGES_SUGGESTION_UNSUPPORTED_CIPHER_HEADER,
+        IDS_ERRORPAGES_SUGGESTION_UNSUPPORTED_CIPHER_BODY, false);
+  }
+}
+
+std::string HttpErrorCodeToString(int error) {
+  return std::string("HTTP ERROR ") + base::IntToString(error);
 }
 
 }  // namespace
@@ -651,7 +910,7 @@ void LocalizedError::GetStrings(int error_code,
     error_string = base::ASCIIToUTF16(ascii_error_string);
   } else {
     DCHECK_EQ(LocalizedError::kHttpErrorDomain, error_domain);
-    error_string = base::IntToString16(error_code);
+    error_string = base::ASCIIToUTF16(HttpErrorCodeToString(error_code));
   }
   error_strings->SetString("errorCode", error_string);
 
@@ -689,56 +948,56 @@ void LocalizedError::GetStrings(int error_code,
     params->suggest_reload = !!(options.suggestions & SUGGEST_RELOAD);
   }
 
-  base::ListValue* suggestions = NULL;
+  base::ListValue* suggestions_details = nullptr;
+  base::ListValue* suggestions_summary_list = nullptr;
+
   bool use_default_suggestions = true;
   if (!params->override_suggestions) {
-    suggestions = new base::ListValue();
+    suggestions_details = new base::ListValue();
+    suggestions_summary_list = new base::ListValue();
+    // Detailed suggestion information.
+    error_strings->Set("suggestionsDetails", suggestions_details);
   } else {
-    suggestions = params->override_suggestions.release();
+    suggestions_summary_list = params->override_suggestions.release();
     use_default_suggestions = false;
-    AddGoogleCachedCopyButton(suggestions, error_strings);
+    AddGoogleCachedCopyButton(suggestions_summary_list, error_strings);
   }
-  error_strings->Set("suggestions", suggestions);
+  error_strings->Set("suggestionsSummaryList", suggestions_summary_list);
 
   if (params->search_url.is_valid()) {
-    error_strings->SetString("searchHeader",
-        l10n_util::GetStringUTF16(IDS_ERRORPAGES_SUGGESTION_GOOGLE_SEARCH));
-    error_strings->SetString("searchUrl", params->search_url.spec());
-    error_strings->SetString("searchTerms", params->search_terms);
-    error_strings->SetInteger("searchTrackingId", params->search_tracking_id);
+    base::DictionaryValue* search_suggestion = new base::DictionaryValue;
+    search_suggestion->SetString("summary",l10n_util::GetStringUTF16(
+        IDS_ERRORPAGES_SUGGESTION_GOOGLE_SEARCH_SUMMARY));
+    search_suggestion->SetString("searchUrl", params->search_url.spec() +
+                                 params->search_terms);
+    search_suggestion->SetString("searchTerms", params->search_terms);
+    search_suggestion->SetInteger("trackingId",
+                                  params->search_tracking_id);
+    suggestions_summary_list->Append(search_suggestion);
   }
 
-  // Add the reload suggestion, if needed.
-  if (params->suggest_reload) {
-    if (!is_post) {
-      base::DictionaryValue* reload_button = new base::DictionaryValue;
-      reload_button->SetString(
-          "msg", l10n_util::GetStringUTF16(IDS_ERRORPAGES_BUTTON_RELOAD));
-      reload_button->SetString("reloadUrl", failed_url.spec());
-      error_strings->Set("reloadButton", reload_button);
-      reload_button->SetInteger("reloadTrackingId", params->reload_tracking_id);
-    } else {
-      // If the page was created by a post, it can't be reloaded in the same
-      // way, so just add a suggestion instead.
-      // TODO(mmenke):  Make the reload button bring up the repost confirmation
-      //                dialog for pages resulting from posts.
-      base::DictionaryValue* suggest_reload_repost = new base::DictionaryValue;
-      suggest_reload_repost->SetString("header",
-          l10n_util::GetStringUTF16(
-              IDS_ERRORPAGES_SUGGESTION_RELOAD_REPOST_HEADER));
-      suggest_reload_repost->SetString("body",
-          l10n_util::GetStringUTF16(
-              IDS_ERRORPAGES_SUGGESTION_RELOAD_REPOST_BODY));
-      // Add at the front, so it appears before other suggestions, in the case
-      // suggestions are being overridden by |params|.
-      suggestions->Insert(0, suggest_reload_repost);
-    }
+  // Add the reload suggestion, if needed for pages that didn't come
+  // from a post.
+  if (params->suggest_reload && !is_post) {
+    base::DictionaryValue* reload_button = new base::DictionaryValue;
+    reload_button->SetString(
+        "msg", l10n_util::GetStringUTF16(IDS_ERRORPAGES_BUTTON_RELOAD));
+    reload_button->SetString("reloadUrl", failed_url.spec());
+    error_strings->Set("reloadButton", reload_button);
+    reload_button->SetInteger("reloadTrackingId", params->reload_tracking_id);
   }
 
   // If not using the default suggestions, nothing else to do.
   if (!use_default_suggestions)
     return;
 
+  // Add default suggestions and any relevant supporting details.
+  GetSuggestionsSummaryList(error_code, error_strings, options.suggestions,
+                            locale, suggestions_summary_list);
+  AddSuggestionsDetails(error_code, error_strings, options.suggestions,
+                        suggestions_details);
+
+  // Add action buttons.
   const std::string& show_saved_copy_value =
       command_line->GetSwitchValueASCII(error_page::switches::kShowSavedCopy);
   bool show_saved_copy_primary =
@@ -800,143 +1059,6 @@ void LocalizedError::GetStrings(int error_code,
     error_strings->SetString(
         "diagnose", l10n_util::GetStringUTF16(IDS_ERRORPAGES_BUTTON_DIAGNOSE));
   }
-
-  if (options.suggestions & SUGGEST_CHECK_CONNECTION) {
-    base::DictionaryValue* suggest_check_connection = new base::DictionaryValue;
-    suggest_check_connection->SetString("header",
-        l10n_util::GetStringUTF16(
-            IDS_ERRORPAGES_SUGGESTION_CHECK_CONNECTION_HEADER));
-    suggest_check_connection->SetString("body",
-        l10n_util::GetStringUTF16(
-            IDS_ERRORPAGES_SUGGESTION_CHECK_CONNECTION_BODY));
-    suggestions->Append(suggest_check_connection);
-  }
-
-  if (options.suggestions & SUGGEST_DNS_CONFIG) {
-    base::DictionaryValue* suggest_dns_config = new base::DictionaryValue;
-    suggest_dns_config->SetString("header",
-        l10n_util::GetStringUTF16(
-            IDS_ERRORPAGES_SUGGESTION_DNS_CONFIG_HEADER));
-    suggest_dns_config->SetString("body",
-        l10n_util::GetStringUTF16(
-            IDS_ERRORPAGES_SUGGESTION_DNS_CONFIG_BODY));
-    suggestions->Append(suggest_dns_config);
-
-    base::DictionaryValue* suggest_network_prediction =
-        GetStandardMenuItemsText();
-    suggest_network_prediction->SetString("header",
-        l10n_util::GetStringUTF16(
-            IDS_ERRORPAGES_SUGGESTION_NETWORK_PREDICTION_HEADER));
-    suggest_network_prediction->SetString("body",
-        l10n_util::GetStringUTF16(
-            IDS_ERRORPAGES_SUGGESTION_NETWORK_PREDICTION_BODY));
-    suggest_network_prediction->SetString(
-        "noNetworkPredictionTitle",
-        l10n_util::GetStringUTF16(
-            IDS_NETWORK_PREDICTION_ENABLED_DESCRIPTION));
-    suggestions->Append(suggest_network_prediction);
-  }
-
-  // TODO(crbug.com/584615): Does it make sense to show all of these
-  // suggestions on mobile? Several of them seem irrelevant in the mobile
-  // context.
-  if (options.suggestions & SUGGEST_FIREWALL_CONFIG) {
-    base::DictionaryValue* suggest_firewall_config = new base::DictionaryValue;
-    suggest_firewall_config->SetString("header",
-        l10n_util::GetStringUTF16(
-            IDS_ERRORPAGES_SUGGESTION_FIREWALL_CONFIG_HEADER));
-    suggest_firewall_config->SetString("body",
-        l10n_util::GetStringUTF16(
-            IDS_ERRORPAGES_SUGGESTION_FIREWALL_CONFIG_BODY));
-    suggestions->Append(suggest_firewall_config);
-  }
-
-  if (options.suggestions & SUGGEST_PROXY_CONFIG) {
-    base::DictionaryValue* suggest_proxy_config = GetStandardMenuItemsText();
-    suggest_proxy_config->SetString("header",
-        l10n_util::GetStringUTF16(
-            IDS_ERRORPAGES_SUGGESTION_PROXY_CONFIG_HEADER));
-    suggest_proxy_config->SetString("body",
-        l10n_util::GetStringFUTF16(IDS_ERRORPAGES_SUGGESTION_PROXY_CONFIG_BODY,
-            l10n_util::GetStringUTF16(
-                IDS_ERRORPAGES_SUGGESTION_PROXY_DISABLE_PLATFORM)));
-    suggest_proxy_config->SetString("proxyTitle",
-        l10n_util::GetStringUTF16(IDS_OPTIONS_PROXIES_CONFIGURE_BUTTON));
-
-    suggestions->Append(suggest_proxy_config);
-  }
-
-  if (options.suggestions & SUGGEST_DISABLE_EXTENSION) {
-    base::DictionaryValue* suggest_disable_extension =
-        new base::DictionaryValue;
-    // There's only a header for this suggestion.
-    suggest_disable_extension->SetString("header",
-        l10n_util::GetStringUTF16(
-            IDS_ERRORPAGES_SUGGESTION_DISABLE_EXTENSION_HEADER));
-    suggestions->Append(suggest_disable_extension);
-  }
-
-  if (options.suggestions & SUGGEST_VIEW_POLICIES) {
-    base::DictionaryValue* suggest_view_policies = new base::DictionaryValue;
-    suggest_view_policies->SetString(
-        "header",
-        l10n_util::GetStringUTF16(
-            IDS_ERRORPAGES_SUGGESTION_VIEW_POLICIES_HEADER));
-    suggest_view_policies->SetString(
-        "body",
-        l10n_util::GetStringUTF16(
-            IDS_ERRORPAGES_SUGGESTION_VIEW_POLICIES_BODY));
-    suggestions->Append(suggest_view_policies);
-  }
-
-  if (options.suggestions & SUGGEST_CONTACT_ADMINISTRATOR) {
-    base::DictionaryValue* suggest_contant_administrator =
-        new base::DictionaryValue;
-    suggest_contant_administrator->SetString(
-        "body",
-        l10n_util::GetStringUTF16(
-            IDS_ERRORPAGES_SUGGESTION_CONTACT_ADMINISTRATOR_BODY));
-    suggestions->Append(suggest_contant_administrator);
-  }
-
-  if (options.suggestions & SUGGEST_LEARNMORE) {
-    GURL learn_more_url;
-    switch (options.error_code) {
-      case net::ERR_TOO_MANY_REDIRECTS:
-        learn_more_url = GURL(kRedirectLoopLearnMoreUrl);
-        break;
-      case net::ERR_SSL_WEAK_SERVER_EPHEMERAL_DH_KEY:
-        learn_more_url = GURL(kWeakDHKeyLearnMoreUrl);
-        break;
-      default:
-        break;
-    }
-
-    if (learn_more_url.is_valid()) {
-      // Add the language parameter to the URL.
-      std::string query = learn_more_url.query() + "&hl=" + locale;
-      GURL::Replacements repl;
-      repl.SetQueryStr(query);
-      learn_more_url = learn_more_url.ReplaceComponents(repl);
-
-      base::DictionaryValue* suggest_learn_more = new base::DictionaryValue;
-      // There's only a body for this suggestion.
-      suggest_learn_more->SetString("body",
-          l10n_util::GetStringUTF16(IDS_ERRORPAGES_SUGGESTION_LEARNMORE_BODY));
-      suggest_learn_more->SetString("learnMoreUrl", learn_more_url.spec());
-      suggestions->Append(suggest_learn_more);
-    }
-  }
-
-  if (options.suggestions & SUGGEST_UNSUPPORTED_CIPHER) {
-    base::DictionaryValue* suggest_unsupported_cipher =
-        new base::DictionaryValue;
-    suggest_unsupported_cipher->SetString(
-        "body",
-        l10n_util::GetStringUTF16(
-            IDS_ERRORPAGES_SUGGESTION_UNSUPPORTED_CIPHER));
-    suggestions->Append(suggest_unsupported_cipher);
-  }
 }
 
 base::string16 LocalizedError::GetErrorDetails(const std::string& error_domain,
@@ -955,7 +1077,7 @@ bool LocalizedError::HasStrings(const std::string& error_domain,
   // Whether or not the there are strings for an error does not depend on
   // whether or not the page was be generated by a POST, so just claim it was
   // not.
-  return LookupErrorMap(error_domain, error_code, /*is_post=*/false) != NULL;
+  return LookupErrorMap(error_domain, error_code, /*is_post=*/false) != nullptr;
 }
 
 }  // namespace error_page

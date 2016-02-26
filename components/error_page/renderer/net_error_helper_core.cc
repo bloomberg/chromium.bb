@@ -46,6 +46,9 @@ namespace {
 // Other correction types uses the |kCorrectionResourceTable| array order.
 const int kWebSearchQueryUMAId = 100;
 
+// Number of URL correction suggestions to display.
+const int kMaxUrlCorrectionsToDisplay = 1;
+
 struct CorrectionTypeToResourceTable {
   int resource_id;
   const char* correction_type;
@@ -330,8 +333,12 @@ scoped_ptr<ErrorPageParams> CreateErrorPageParams(
 
     // Allow reload page and web search query to be empty strings, but not
     // links.
-    if ((*it)->url_correction.empty())
+    if ((*it)->url_correction.empty() ||
+        (params->override_suggestions->GetSize() >=
+            kMaxUrlCorrectionsToDisplay)) {
       continue;
+    }
+
     size_t correction_index;
     for (correction_index = 0;
          correction_index < arraysize(kCorrectionResourceTable);
@@ -341,7 +348,7 @@ scoped_ptr<ErrorPageParams> CreateErrorPageParams(
         continue;
       }
       base::DictionaryValue* suggest = new base::DictionaryValue();
-      suggest->SetString("header",
+      suggest->SetString("summary",
           l10n_util::GetStringUTF16(
               kCorrectionResourceTable[correction_index].resource_id));
       suggest->SetString("urlCorrection", (*it)->url_correction);
