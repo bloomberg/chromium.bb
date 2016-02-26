@@ -15,6 +15,8 @@
 #include "components/password_manager/core/common/credential_manager_types.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
+#include "url/origin.h"
 
 using ::testing::_;
 using ::testing::Contains;
@@ -39,6 +41,13 @@ class ManagePasswordsStateTest : public testing::Test {
     test_submitted_form_.username_value = base::ASCIIToUTF16("new one");
     test_submitted_form_.password_value = base::ASCIIToUTF16("asdfjkl;");
 
+    test_local_federated_form_ = test_local_form_;
+    test_local_federated_form_.federation_origin =
+        url::Origin(GURL("https://idp.com"));
+    test_local_federated_form_.password_value.clear();
+    test_local_federated_form_.signon_realm =
+        "federation://example.com/accounts.com";
+
     test_federated_form_.origin = GURL("https://idp.com");
     test_federated_form_.username_value = base::ASCIIToUTF16("username");
 
@@ -47,11 +56,19 @@ class ManagePasswordsStateTest : public testing::Test {
 
   autofill::PasswordForm& test_local_form() { return test_local_form_; }
   autofill::PasswordForm& test_submitted_form() { return test_submitted_form_; }
+  autofill::PasswordForm& test_local_federated_form() {
+    return test_local_federated_form_;
+  }
   autofill::PasswordForm& test_federated_form() { return test_federated_form_; }
   ManagePasswordsState& passwords_data() { return passwords_data_; }
 
   // Returns a PasswordFormManager containing test_local_form() as a best match.
   scoped_ptr<password_manager::PasswordFormManager> CreateFormManager();
+
+  // Returns a PasswordFormManager containing test_local_form() as a best match
+  // and test_federated_form() as a stored federated credential.
+  scoped_ptr<password_manager::PasswordFormManager>
+  CreateFormManagerWithFederation();
 
   // Pushes irrelevant updates to |passwords_data_| and checks that they don't
   // affect the state.
@@ -67,6 +84,10 @@ class ManagePasswordsStateTest : public testing::Test {
                void(const password_manager::CredentialInfo&));
 
  private:
+  // Implements both CreateFormManager and CreateFormManagerWithFederation.
+  scoped_ptr<password_manager::PasswordFormManager> CreateFormManagerInternal(
+      bool include_federated);
+
   password_manager::StubPasswordManagerClient stub_client_;
   password_manager::StubPasswordManagerDriver driver_;
   password_manager::PasswordManager password_manager_;
@@ -74,11 +95,22 @@ class ManagePasswordsStateTest : public testing::Test {
   ManagePasswordsState passwords_data_;
   autofill::PasswordForm test_local_form_;
   autofill::PasswordForm test_submitted_form_;
+  autofill::PasswordForm test_local_federated_form_;
   autofill::PasswordForm test_federated_form_;
 };
 
 scoped_ptr<password_manager::PasswordFormManager>
 ManagePasswordsStateTest::CreateFormManager() {
+  return CreateFormManagerInternal(false);
+}
+
+scoped_ptr<password_manager::PasswordFormManager>
+ManagePasswordsStateTest::CreateFormManagerWithFederation() {
+  return CreateFormManagerInternal(true);
+}
+
+scoped_ptr<password_manager::PasswordFormManager>
+ManagePasswordsStateTest::CreateFormManagerInternal(bool include_federated) {
   scoped_ptr<password_manager::PasswordFormManager> test_form_manager(
       new password_manager::PasswordFormManager(
           &password_manager_, &stub_client_, driver_.AsWeakPtr(),
@@ -86,10 +118,20 @@ ManagePasswordsStateTest::CreateFormManager() {
   test_form_manager->SimulateFetchMatchingLoginsFromPasswordStore();
   ScopedVector<autofill::PasswordForm> stored_forms;
   stored_forms.push_back(new autofill::PasswordForm(test_local_form()));
+  if (include_federated) {
+    stored_forms.push_back(
+        new autofill::PasswordForm(test_local_federated_form()));
+  }
   test_form_manager->OnGetPasswordStoreResults(std::move(stored_forms));
   EXPECT_EQ(1u, test_form_manager->best_matches().size());
   EXPECT_EQ(test_local_form(),
             *test_form_manager->best_matches().begin()->second);
+  EXPECT_EQ(include_federated ? 1u : 0u,
+            test_form_manager->federated_matches().size());
+  if (include_federated) {
+    EXPECT_EQ(test_local_federated_form(),
+              *test_form_manager->federated_matches().front());
+  }
   return test_form_manager;
 }
 
@@ -262,6 +304,20 @@ TEST_F(ManagePasswordsStateTest, PasswordSaved) {
   TestAllUpdates();
 }
 
+TEST_F(ManagePasswordsStateTest, PasswordSubmittedFederationsPresent) {
+  scoped_ptr<password_manager::PasswordFormManager> test_form_manager(
+      CreateFormManagerWithFederation());
+  test_form_manager->ProvisionallySave(
+      test_submitted_form(),
+      password_manager::PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+  passwords_data().OnPendingPassword(std::move(test_form_manager));
+
+  EXPECT_THAT(passwords_data().GetCurrentForms(),
+              UnorderedElementsAre(Pointee(test_local_form()),
+                                   Pointee(test_local_federated_form())));
+  EXPECT_THAT(passwords_data().federated_credentials_forms(), IsEmpty());
+}
+
 TEST_F(ManagePasswordsStateTest, OnRequestCredentials) {
   ScopedVector<autofill::PasswordForm> local_credentials;
   local_credentials.push_back(new autofill::PasswordForm(test_local_form()));
@@ -344,13 +400,28 @@ TEST_F(ManagePasswordsStateTest, AutomaticPasswordSave) {
   TestAllUpdates();
 }
 
+TEST_F(ManagePasswordsStateTest, AutomaticPasswordSaveWithFederations) {
+  scoped_ptr<password_manager::PasswordFormManager> test_form_manager(
+      CreateFormManagerWithFederation());
+  test_form_manager->ProvisionallySave(
+      test_submitted_form(),
+      password_manager::PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+
+  passwords_data().OnAutomaticPasswordSave(std::move(test_form_manager));
+  EXPECT_THAT(passwords_data().GetCurrentForms(),
+              UnorderedElementsAre(Pointee(test_local_form()),
+                                   Pointee(test_submitted_form()),
+                                   Pointee(test_local_federated_form())));
+  EXPECT_THAT(passwords_data().federated_credentials_forms(), IsEmpty());
+}
+
 TEST_F(ManagePasswordsStateTest, PasswordAutofilled) {
   autofill::PasswordFormMap password_form_map;
   password_form_map.insert(std::make_pair(
       test_local_form().username_value,
       make_scoped_ptr(new autofill::PasswordForm(test_local_form()))));
   GURL origin("https://example.com");
-  passwords_data().OnPasswordAutofilled(password_form_map, origin);
+  passwords_data().OnPasswordAutofilled(password_form_map, origin, nullptr);
 
   EXPECT_THAT(passwords_data().GetCurrentForms(),
               ElementsAre(Pointee(test_local_form())));
@@ -364,6 +435,27 @@ TEST_F(ManagePasswordsStateTest, PasswordAutofilled) {
   TestAllUpdates();
 }
 
+TEST_F(ManagePasswordsStateTest, PasswordAutofillWithSavedFederations) {
+  autofill::PasswordFormMap password_form_map;
+  password_form_map.insert(std::make_pair(
+      test_local_form().username_value,
+      make_scoped_ptr(new autofill::PasswordForm(test_local_form()))));
+  GURL origin("https://example.com");
+  std::vector<scoped_ptr<autofill::PasswordForm>> federated;
+  federated.push_back(
+      make_scoped_ptr(new autofill::PasswordForm(test_local_federated_form())));
+  passwords_data().OnPasswordAutofilled(password_form_map, origin, &federated);
+
+  // |federated| represents the locally saved federations. These are bundled in
+  // the "current forms".
+  EXPECT_THAT(passwords_data().GetCurrentForms(),
+              UnorderedElementsAre(Pointee(test_local_form()),
+                                   Pointee(test_local_federated_form())));
+  // |federated_credentials_forms()| do not refer to the saved federations.
+  EXPECT_THAT(passwords_data().federated_credentials_forms(), IsEmpty());
+  EXPECT_EQ(password_manager::ui::MANAGE_STATE, passwords_data().state());
+}
+
 TEST_F(ManagePasswordsStateTest, ActiveOnMixedPSLAndNonPSLMatched) {
   autofill::PasswordFormMap password_form_map;
   password_form_map.insert(std::make_pair(
@@ -375,7 +467,7 @@ TEST_F(ManagePasswordsStateTest, ActiveOnMixedPSLAndNonPSLMatched) {
       psl_matched_test_form.username_value,
       make_scoped_ptr(new autofill::PasswordForm(psl_matched_test_form))));
   GURL origin("https://example.com");
-  passwords_data().OnPasswordAutofilled(password_form_map, origin);
+  passwords_data().OnPasswordAutofilled(password_form_map, origin, nullptr);
 
   EXPECT_THAT(passwords_data().GetCurrentForms(),
               ElementsAre(Pointee(test_local_form())));
@@ -396,8 +488,8 @@ TEST_F(ManagePasswordsStateTest, InactiveOnPSLMatched) {
   password_form_map.insert(std::make_pair(
       psl_matched_test_form.username_value,
       make_scoped_ptr(new autofill::PasswordForm(psl_matched_test_form))));
-  passwords_data().OnPasswordAutofilled(password_form_map,
-                                        GURL("https://m.example.com/"));
+  passwords_data().OnPasswordAutofilled(
+      password_form_map, GURL("https://m.example.com/"), nullptr);
 
   EXPECT_THAT(passwords_data().GetCurrentForms(), IsEmpty());
   EXPECT_THAT(passwords_data().federated_credentials_forms(), IsEmpty());
@@ -481,7 +573,7 @@ TEST_F(ManagePasswordsStateTest, BackgroundAutofilledAddBlacklisted) {
       test_local_form().username_value,
       make_scoped_ptr(new autofill::PasswordForm(test_local_form()))));
   passwords_data().OnPasswordAutofilled(
-      password_form_map, password_form_map.begin()->second->origin);
+      password_form_map, password_form_map.begin()->second->origin, nullptr);
   EXPECT_EQ(password_manager::ui::MANAGE_STATE, passwords_data().state());
 
   TestBlacklistedUpdates();
@@ -518,6 +610,20 @@ TEST_F(ManagePasswordsStateTest, PasswordUpdateSubmitted) {
   EXPECT_EQ(test_submitted_form(),
             passwords_data().form_manager()->pending_credentials());
   TestAllUpdates();
+}
+
+TEST_F(ManagePasswordsStateTest, PasswordUpdateSubmittedWithFederations) {
+  scoped_ptr<password_manager::PasswordFormManager> test_form_manager(
+      CreateFormManagerWithFederation());
+  test_form_manager->ProvisionallySave(
+      test_submitted_form(),
+      password_manager::PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+  passwords_data().OnUpdatePassword(std::move(test_form_manager));
+
+  EXPECT_THAT(passwords_data().GetCurrentForms(),
+              UnorderedElementsAre(Pointee(test_local_form()),
+                                   Pointee(test_local_federated_form())));
+  EXPECT_THAT(passwords_data().federated_credentials_forms(), IsEmpty());
 }
 
 TEST_F(ManagePasswordsStateTest, ChooseCredentialLocal) {

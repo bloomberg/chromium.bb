@@ -231,6 +231,10 @@ class PasswordFormManager : public PasswordStoreConsumer {
     return is_possible_change_password_form_without_username_;
   }
 
+  const std::vector<scoped_ptr<autofill::PasswordForm>>& federated_matches() {
+    return federated_matches_;
+  }
+
   // Use this to wipe copies of |pending_credentials_| from the password store
   // (and |best_matches_| as well. It will only wipe if:
   // 1. The stored password differs from the one in |pending_credentials_|.
@@ -452,6 +456,12 @@ class PasswordFormManager : public PasswordStoreConsumer {
   // Set of forms from PasswordStore that correspond to the current site and
   // that are not in |best_matches_|.
   ScopedVector<autofill::PasswordForm> not_best_matches_;
+
+  // Federated credentials relevant to the observed form. They are neither
+  // filled not saved by this PasswordFormManager, so they are kept separately
+  // from |best_matches_|. The PasswordFormManager passes them further to
+  // PasswordManager to show them in the UI.
+  std::vector<scoped_ptr<autofill::PasswordForm>> federated_matches_;
 
   // Set of blacklisted forms from the PasswordStore that best match the current
   // form.

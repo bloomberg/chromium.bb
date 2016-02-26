@@ -262,7 +262,7 @@ TEST_F(ManagePasswordsUIControllerTest, PasswordAutofilled) {
   base::string16 kTestUsername = test_form->username_value;
   autofill::PasswordFormMap map;
   map.insert(std::make_pair(kTestUsername, std::move(test_form)));
-  controller()->OnPasswordAutofilled(map, map.begin()->second->origin);
+  controller()->OnPasswordAutofilled(map, map.begin()->second->origin, nullptr);
 
   EXPECT_EQ(password_manager::ui::MANAGE_STATE, controller()->GetState());
   EXPECT_EQ(test_form_ptr->origin, controller()->GetOrigin());
@@ -440,7 +440,7 @@ TEST_F(ManagePasswordsUIControllerTest, BlacklistedElsewhere) {
   map.insert(std::make_pair(
       kTestUsername,
       make_scoped_ptr(new autofill::PasswordForm(test_local_form()))));
-  controller()->OnPasswordAutofilled(map, map.begin()->second->origin);
+  controller()->OnPasswordAutofilled(map, map.begin()->second->origin, nullptr);
 
   test_local_form().blacklisted_by_user = true;
   password_manager::PasswordStoreChange change(
@@ -633,7 +633,7 @@ TEST_F(ManagePasswordsUIControllerTest, AutoSigninFirstRunAfterAutofill) {
   const base::string16 kTestUsername = test_form->username_value;
   autofill::PasswordFormMap map;
   map.insert(std::make_pair(kTestUsername, std::move(test_form)));
-  controller()->OnPasswordAutofilled(map, test_form_ptr->origin);
+  controller()->OnPasswordAutofilled(map, test_form_ptr->origin, nullptr);
   EXPECT_EQ(password_manager::ui::MANAGE_STATE, controller()->GetState());
 
   // Pop up the autosignin promo. The state should stay intact.
@@ -675,7 +675,7 @@ TEST_F(ManagePasswordsUIControllerTest, AutofillDuringAutoSignin) {
   autofill::PasswordFormMap map;
   base::string16 kTestUsername = test_form->username_value;
   map.insert(std::make_pair(kTestUsername, std::move(test_form)));
-  controller()->OnPasswordAutofilled(map, map.begin()->second->origin);
+  controller()->OnPasswordAutofilled(map, map.begin()->second->origin, nullptr);
 
   ExpectIconAndControllerStateIs(password_manager::ui::AUTO_SIGNIN_STATE);
 }
@@ -687,7 +687,7 @@ TEST_F(ManagePasswordsUIControllerTest, InactiveOnPSLMatched) {
       new autofill::PasswordForm(test_local_form()));
   psl_matched_test_form->is_public_suffix_match = true;
   map.insert(std::make_pair(kTestUsername, std::move(psl_matched_test_form)));
-  controller()->OnPasswordAutofilled(map, map.begin()->second->origin);
+  controller()->OnPasswordAutofilled(map, map.begin()->second->origin, nullptr);
 
   EXPECT_EQ(password_manager::ui::INACTIVE_STATE, controller()->GetState());
 }

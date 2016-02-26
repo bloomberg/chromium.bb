@@ -40,6 +40,15 @@ ScopedPtrMapToVector(const Map& map) {
   return ret;
 }
 
+void AddRawPtrFromOwningVector(
+    const std::vector<scoped_ptr<autofill::PasswordForm>>& owning_vector,
+    std::vector<const autofill::PasswordForm*>* destination) {
+  destination->reserve(destination->size() + owning_vector.size());
+  for (const auto& owning_ptr : owning_vector) {
+    destination->push_back(owning_ptr.get());
+  }
+}
+
 ScopedVector<const autofill::PasswordForm> DeepCopyMapToVector(
     const PasswordFormMap& password_form_map) {
   ScopedVector<const autofill::PasswordForm> ret;
@@ -101,6 +110,8 @@ void ManagePasswordsState::OnPendingPassword(
   ClearData();
   form_manager_ = std::move(form_manager);
   current_forms_weak_ = ScopedPtrMapToVector(form_manager_->best_matches());
+  AddRawPtrFromOwningVector(form_manager_->federated_matches(),
+                            &current_forms_weak_);
   origin_ = form_manager_->pending_credentials().origin;
   SetState(password_manager::ui::PENDING_PASSWORD_STATE);
 }
@@ -110,6 +121,8 @@ void ManagePasswordsState::OnUpdatePassword(
   ClearData();
   form_manager_ = std::move(form_manager);
   current_forms_weak_ = ScopedPtrMapToVector(form_manager_->best_matches());
+  AddRawPtrFromOwningVector(form_manager_->federated_matches(),
+                            &current_forms_weak_);
   origin_ = form_manager_->pending_credentials().origin;
   SetState(password_manager::ui::PENDING_PASSWORD_UPDATE_STATE);
 }
@@ -145,13 +158,16 @@ void ManagePasswordsState::OnAutomaticPasswordSave(
   current_forms[form_manager_->pending_credentials().username_value] =
       &form_manager_->pending_credentials();
   current_forms_weak_ = MapToVector(current_forms);
+  AddRawPtrFromOwningVector(form_manager_->federated_matches(),
+                            &current_forms_weak_);
   origin_ = form_manager_->pending_credentials().origin;
   SetState(password_manager::ui::CONFIRMATION_STATE);
 }
 
 void ManagePasswordsState::OnPasswordAutofilled(
     const PasswordFormMap& password_form_map,
-    const GURL& origin) {
+    const GURL& origin,
+    const std::vector<scoped_ptr<autofill::PasswordForm>>* federated_matches) {
   DCHECK(!password_form_map.empty());
   ClearData();
   bool only_PSL_matches =
@@ -167,6 +183,14 @@ void ManagePasswordsState::OnPasswordAutofilled(
     SetState(password_manager::ui::INACTIVE_STATE);
   } else {
     local_credentials_forms_ = DeepCopyMapToVector(password_form_map);
+    if (federated_matches) {
+      local_credentials_forms_.reserve(local_credentials_forms_.size() +
+                                       federated_matches->size());
+      for (const auto& owned_form : *federated_matches) {
+        local_credentials_forms_.push_back(
+            new autofill::PasswordForm(*owned_form));
+      }
+    }
     origin_ = origin;
     SetState(password_manager::ui::MANAGE_STATE);
   }

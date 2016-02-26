@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_MANAGER_CLIENT_H_
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_MANAGER_CLIENT_H_
 
+#include <vector>
+
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"
@@ -128,11 +130,15 @@ class PasswordManagerClient {
   // Called when a password is autofilled. |best_matches| contains the
   // PasswordForm into which a password was filled: the client may choose to
   // save this to the PasswordStore, for example. |origin| is the origin of the
-  // form into which a password was filled. Default implementation is a
-  // noop.
+  // form into which a password was filled. |federated_matches| are the stored
+  // federated matches relevant to the filled form, this argument may be null.
+  // They are never filled, but might be needed in the UI, for example. Default
+  // implementation is a noop.
   virtual void PasswordWasAutofilled(
       const autofill::PasswordFormMap& best_matches,
-      const GURL& origin) const;
+      const GURL& origin,
+      const std::vector<scoped_ptr<autofill::PasswordForm>>* federated_matches)
+      const;
 
   // Gets prefs associated with this embedder.
   virtual PrefService* GetPrefs() = 0;

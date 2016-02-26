@@ -742,11 +742,13 @@ bool PasswordManager::OtherPossibleUsernamesEnabled() const {
   return false;
 }
 
-void PasswordManager::Autofill(password_manager::PasswordManagerDriver* driver,
-                               const PasswordForm& form_for_autofill,
-                               const PasswordFormMap& best_matches,
-                               const PasswordForm& preferred_match,
-                               bool wait_for_username) const {
+void PasswordManager::Autofill(
+    password_manager::PasswordManagerDriver* driver,
+    const PasswordForm& form_for_autofill,
+    const PasswordFormMap& best_matches,
+    const std::vector<scoped_ptr<PasswordForm>>& federated_matches,
+    const PasswordForm& preferred_match,
+    bool wait_for_username) const {
   DCHECK_EQ(PasswordForm::SCHEME_HTML, preferred_match.scheme);
 
   scoped_ptr<BrowserSavePasswordProgressLogger> logger;
@@ -769,7 +771,8 @@ void PasswordManager::Autofill(password_manager::PasswordManagerDriver* driver,
       PreferredRealmIsFromAndroid(fill_data));
   driver->FillPasswordForm(fill_data);
 
-  client_->PasswordWasAutofilled(best_matches, form_for_autofill.origin);
+  client_->PasswordWasAutofilled(best_matches, form_for_autofill.origin,
+                                 &federated_matches);
 }
 
 void PasswordManager::AutofillHttpAuth(
@@ -790,7 +793,7 @@ void PasswordManager::AutofillHttpAuth(
                     OnAutofillDataAvailable(preferred_match));
   DCHECK(!best_matches.empty());
   client_->PasswordWasAutofilled(best_matches,
-                                 best_matches.begin()->second->origin);
+                                 best_matches.begin()->second->origin, nullptr);
 }
 
 void PasswordManager::ProcessAutofillPredictions(

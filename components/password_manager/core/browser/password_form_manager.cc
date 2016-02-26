@@ -91,6 +91,27 @@ bool IsProbablyNotUsername(const base::string16& s) {
   return !s.empty() && DoesStringContainOnlyDigits(s) && s.size() < 3;
 }
 
+// Splits federated matches from |store_results| into a separate vector and
+// returns that.
+std::vector<scoped_ptr<autofill::PasswordForm>> SplitFederatedMatches(
+    ScopedVector<PasswordForm>* store_results) {
+  auto first_federated =
+      std::partition(store_results->begin(), store_results->end(),
+                     [](const PasswordForm* form) {
+                       return form->federation_origin.unique();
+                     });
+
+  std::vector<scoped_ptr<autofill::PasswordForm>> federated_matches;
+  federated_matches.reserve(store_results->end() - first_federated);
+  for (auto federated = first_federated; federated != store_results->end();
+       ++federated) {
+    federated_matches.push_back(make_scoped_ptr(*federated));
+    *federated = nullptr;
+  }
+  store_results->weak_erase(first_federated, store_results->end());
+  return federated_matches;
+}
+
 }  // namespace
 
 PasswordFormManager::PasswordFormManager(
@@ -512,7 +533,8 @@ void PasswordFormManager::ProcessFrameInternal(
   else
     manager_action_ = kManagerActionAutofilled;
   password_manager_->Autofill(driver.get(), observed_form_, best_matches_,
-                              *preferred_match_, wait_for_username);
+                              federated_matches_, *preferred_match_,
+                              wait_for_username);
 }
 
 void PasswordFormManager::ProcessLoginPrompt() {
@@ -544,6 +566,7 @@ void PasswordFormManager::OnGetPasswordStoreResults(
     logger->LogNumber(Logger::STRING_NUMBER_RESULTS, results.size());
   }
 
+  federated_matches_ = SplitFederatedMatches(&results);
   if (!results.empty())
     OnRequestDone(std::move(results));
   state_ = POST_MATCHING_PHASE;

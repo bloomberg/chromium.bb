@@ -36,6 +36,8 @@
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
+#include "url/origin.h"
 
 using autofill::PasswordForm;
 using base::ASCIIToUTF16;
@@ -2936,6 +2938,27 @@ TEST_F(PasswordFormManagerTest, TestSavingAPIFormsWithSamePassword) {
   EXPECT_EQ(saved_match()->password_value, new_credentials.password_value);
   EXPECT_EQ(base::string16(), new_credentials.username_element);
   EXPECT_EQ(autofill::PasswordForm::TYPE_API, new_credentials.type);
+}
+
+TEST_F(PasswordFormManagerTest, FederatedCredentialsFiltered) {
+  PasswordForm federated(*saved_match());
+  federated.password_value.clear();
+  federated.federation_origin =
+      url::Origin(GURL("https://accounts.google.com"));
+
+  EXPECT_CALL(*mock_store(),
+              GetLogins(form_manager()->observed_form(), form_manager()));
+  form_manager()->FetchDataFromPasswordStore();
+
+  ScopedVector<PasswordForm> results;
+  results.push_back(new PasswordForm(federated));
+  results.push_back(new PasswordForm(*saved_match()));
+  form_manager()->OnGetPasswordStoreResults(std::move(results));
+
+  EXPECT_EQ(1u, form_manager()->federated_matches().size());
+  EXPECT_EQ(*form_manager()->federated_matches()[0], federated);
+  EXPECT_EQ(1u, form_manager()->best_matches().size());
+  EXPECT_EQ(*(form_manager()->best_matches().begin()->second), *saved_match());
 }
 
 }  // namespace password_manager

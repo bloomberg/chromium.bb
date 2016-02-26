@@ -66,9 +66,12 @@ class ManagePasswordsState {
   // Move to MANAGE_STATE or INACTIVE_STATE for PSL matched passwords.
   // |password_form_map| contains best matches from the password store for the
   // form which was autofilled, |origin| is an origin of the form which was
-  // autofilled.
-  void OnPasswordAutofilled(const autofill::PasswordFormMap& password_form_map,
-                            const GURL& origin);
+  // autofilled. In addition, |federated_matches|, if not null, contains stored
+  // federated credentials to show to the user as well.
+  void OnPasswordAutofilled(
+      const autofill::PasswordFormMap& password_form_map,
+      const GURL& origin,
+      const std::vector<scoped_ptr<autofill::PasswordForm>>* federated_matches);
 
   // Move to INACTIVE_STATE.
   void OnInactive();

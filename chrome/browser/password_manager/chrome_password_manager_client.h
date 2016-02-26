@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_PASSWORD_MANAGER_CHROME_PASSWORD_MANAGER_CLIENT_H_
 #define CHROME_BROWSER_PASSWORD_MANAGER_CHROME_PASSWORD_MANAGER_CLIENT_H_
 
+#include <vector>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -68,8 +70,11 @@ class ChromePasswordManagerClient
       const autofill::PasswordForm& form) override;
   void AutomaticPasswordSave(scoped_ptr<password_manager::PasswordFormManager>
                                  saved_form_manager) override;
-  void PasswordWasAutofilled(const autofill::PasswordFormMap& best_matches,
-                             const GURL& origin) const override;
+  void PasswordWasAutofilled(
+      const autofill::PasswordFormMap& best_matches,
+      const GURL& origin,
+      const std::vector<scoped_ptr<autofill::PasswordForm>>* federated_matches)
+      const override;
   PrefService* GetPrefs() override;
   password_manager::PasswordStore* GetPasswordStore() const override;
   password_manager::PasswordSyncState GetPasswordSyncState() const override;

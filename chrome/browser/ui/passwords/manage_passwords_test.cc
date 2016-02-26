@@ -50,7 +50,8 @@ void ManagePasswordsTest::SetupManagingPasswords() {
   map.insert(std::make_pair(
       kTestUsername,
       make_scoped_ptr(new autofill::PasswordForm(*test_form()))));
-  GetController()->OnPasswordAutofilled(map, map.begin()->second->origin);
+  GetController()->OnPasswordAutofilled(map, map.begin()->second->origin,
+                                        nullptr);
 }
 
 void ManagePasswordsTest::SetupPendingPassword() {

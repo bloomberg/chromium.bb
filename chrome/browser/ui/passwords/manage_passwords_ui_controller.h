@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_PASSWORDS_MANAGE_PASSWORDS_UI_CONTROLLER_H_
 #define CHROME_BROWSER_UI_PASSWORDS_MANAGE_PASSWORDS_UI_CONTROLLER_H_
 
+#include <vector>
+
 #include "base/macros.h"
 #include "chrome/browser/ui/passwords/manage_passwords_state.h"
 #include "chrome/browser/ui/passwords/passwords_client_ui_delegate.h"
@@ -56,8 +58,11 @@ class ManagePasswordsUIController
   void OnPromptEnableAutoSignin() override;
   void OnAutomaticPasswordSave(
       scoped_ptr<password_manager::PasswordFormManager> form_manager) override;
-  void OnPasswordAutofilled(const autofill::PasswordFormMap& password_form_map,
-                            const GURL& origin) override;
+  void OnPasswordAutofilled(
+      const autofill::PasswordFormMap& password_form_map,
+      const GURL& origin,
+      const std::vector<scoped_ptr<autofill::PasswordForm>>* federated_matches)
+      override;
 
   // PasswordStore::Observer:
   void OnLoginsChanged(
