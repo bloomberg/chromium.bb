@@ -58,9 +58,19 @@ bool CompareFiles(const std::string& file1, const std::string& file2) {
 }
 
 std::string GetTempFileName() {
-  // TODO(tomfinegan): This is only test code, but it would be nice to avoid
-  // using std::tmpnam().
+#ifndef _MSC_VER
+  char temp_file_name_template[] = "libwebm_temp.XXXXXX";
+  int fd = mkstemp(temp_file_name_template);
+  if (fd != -1) {
+    close(fd);
+    return std::string(temp_file_name_template);
+  }
+  return std::string();
+#else
+  // TODO(tomfinegan): Add the MSVC version of mkstemp() to quiet the MSVC
+  // version of the security warning.
   return std::tmpnam(nullptr);
+#endif
 }
 
 std::uint64_t GetFileSize(const std::string& file_name) {
