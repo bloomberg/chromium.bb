@@ -11,12 +11,11 @@ namespace blink {
 
 namespace {
 
-bool infoIsCompatible(const SkImageInfo& info, SkAlphaType alphaType)
+bool infoIsCompatible(const SkImageInfo& info, SkAlphaType alphaType, SkColorType colorType)
 {
     ASSERT(alphaType != kUnknown_SkAlphaType);
 
-    // We only use/support kN32_SkColorType at this time.
-    if (info.colorType() != kN32_SkColorType)
+    if (info.colorType() != colorType)
         return false;
 
     // kOpaque_SkAlphaType works regardless of the requested alphaType.
@@ -25,7 +24,8 @@ bool infoIsCompatible(const SkImageInfo& info, SkAlphaType alphaType)
 
 } // anonymous namespace
 
-ImagePixelLocker::ImagePixelLocker(PassRefPtr<const SkImage> image, SkAlphaType alphaType)
+ImagePixelLocker::ImagePixelLocker(PassRefPtr<const SkImage> image, SkAlphaType alphaType,
+    SkColorType colorType)
     : m_image(image)
 {
     SkImageInfo info;
@@ -35,11 +35,14 @@ ImagePixelLocker::ImagePixelLocker(PassRefPtr<const SkImage> image, SkAlphaType 
     // TODO(fmalita): All current clients expect packed pixel rows.  Maybe we could update them
     // to support arbitrary rowBytes, and relax the check below.
     m_pixels = m_image->peekPixels(&info, &imageRowBytes);
-    if (m_pixels && infoIsCompatible(info, alphaType) && imageRowBytes == info.minRowBytes())
+    if (m_pixels
+        && infoIsCompatible(info, alphaType, colorType)
+        && imageRowBytes == info.minRowBytes()) {
         return;
+    }
 
     // No luck, we need to read the pixels into our local buffer.
-    info = SkImageInfo::MakeN32(m_image->width(), m_image->height(), alphaType);
+    info = SkImageInfo::Make(m_image->width(), m_image->height(), colorType, alphaType);
     if (!m_pixelStorage.tryAlloc(info) || !m_image->readPixels(m_pixelStorage, 0, 0)) {
         m_pixels = nullptr;
         return;

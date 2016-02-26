@@ -244,7 +244,7 @@ PassRefPtr<JSONObject> objectForBitmapData(const SkBitmap& bitmap)
     Vector<unsigned char> output;
 
     if (RefPtr<SkImage> image = adoptRef(SkImage::NewFromBitmap(bitmap))) {
-        ImagePixelLocker pixelLocker(image, kUnpremul_SkAlphaType);
+        ImagePixelLocker pixelLocker(image, kUnpremul_SkAlphaType, kRGBA_8888_SkColorType);
         ImageDataBuffer imageData(IntSize(image->width(), image->height()),
             static_cast<const unsigned char*>(pixelLocker.pixels()));
 

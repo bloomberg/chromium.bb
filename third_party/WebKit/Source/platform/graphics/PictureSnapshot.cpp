@@ -129,7 +129,7 @@ PassOwnPtr<Vector<char>> PictureSnapshot::replay(unsigned fromStep, unsigned toS
     if (!image)
         return nullptr;
 
-    ImagePixelLocker pixelLocker(image, kUnpremul_SkAlphaType);
+    ImagePixelLocker pixelLocker(image, kUnpremul_SkAlphaType, kRGBA_8888_SkColorType);
     ImageDataBuffer imageData(IntSize(image->width(), image->height()),
         static_cast<const unsigned char*>(pixelLocker.pixels()));
     if (!PNGImageEncoder::encode(imageData, reinterpret_cast<Vector<unsigned char>*>(&encodedImage)))

@@ -2188,7 +2188,7 @@ void WebGLImageConversion::ImageExtractor::extractImage(bool premultiplyAlpha, b
     if (m_imageWidth != (unsigned)m_image->width() || m_imageHeight != (unsigned)m_image->height())
         return;
 
-    m_imagePixelLocker.emplace(skiaImage, info.alphaType());
+    m_imagePixelLocker.emplace(skiaImage, info.alphaType(), kN32_SkColorType);
 }
 
 unsigned WebGLImageConversion::getChannelBitsByFormat(GLenum format)
