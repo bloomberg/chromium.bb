@@ -9,6 +9,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/mime_util/mime_util.h"
+#include "media/base/mime_util.h"
 #include "net/base/mime_util.h"
 #include "third_party/WebKit/public/platform/FilePathConversion.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -72,7 +73,8 @@ bool SimpleWebMimeRegistryImpl::supportsMediaSourceMIMEType(
     const WebString& mime_type,
     const WebString& codecs) {
   // Media features are only supported at the content/renderer layer.
-  return false;
+  const std::string mime_type_ascii = ToASCIIOrEmpty(mime_type);
+  return media::IsSupportedMediaMimeType(mime_type_ascii);
 }
 
 WebMimeRegistry::SupportsType
