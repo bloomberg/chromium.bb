@@ -75,8 +75,7 @@ static EmeRobustness ConvertRobustness(const std::string& robustness) {
   return EmeRobustness::INVALID;
 }
 
-// TODO(ddorwin): Remove reference to "concrete" key systems. crbug.com/249976.
-static void AddClearKey(std::vector<KeySystemInfo>* concrete_key_systems) {
+static void AddClearKey(std::vector<KeySystemInfo>* key_systems) {
   KeySystemInfo info;
   info.key_system = kClearKeyKeySystem;
 
@@ -113,7 +112,7 @@ static void AddClearKey(std::vector<KeySystemInfo>* concrete_key_systems) {
 
   info.use_aes_decryptor = true;
 
-  concrete_key_systems->push_back(info);
+  key_systems->push_back(info);
 }
 
 // Returns whether the |key_system| is known to Chromium and is thus likely to
@@ -172,14 +171,12 @@ class KeySystemsImpl : public KeySystems {
 
   void UpdateIfNeeded();
 
-  bool IsConcreteSupportedKeySystem(const std::string& key_system) const;
-
   std::string GetKeySystemNameForUMA(const std::string& key_system) const;
 
-  bool UseAesDecryptor(const std::string& concrete_key_system) const;
+  bool UseAesDecryptor(const std::string& key_system) const;
 
 #if defined(ENABLE_PEPPER_CDMS)
-  std::string GetPepperType(const std::string& concrete_key_system) const;
+  std::string GetPepperType(const std::string& key_system) const;
 #endif
 
   // These two functions are for testing purpose only.
@@ -225,8 +222,7 @@ class KeySystemsImpl : public KeySystems {
 
   void UpdateSupportedKeySystems();
 
-  void AddConcreteSupportedKeySystems(
-      const std::vector<KeySystemInfo>& concrete_key_systems);
+  void AddSupportedKeySystems(const std::vector<KeySystemInfo>& key_systems);
 
   void RegisterMimeType(const std::string& mime_type, EmeCodec codecs_mask);
   bool IsValidMimeTypeCodecsCombination(const std::string& mime_type,
@@ -248,7 +244,7 @@ class KeySystemsImpl : public KeySystems {
   EmeCodec GetCodecForString(const std::string& codec) const;
 
   // Map from key system string to capabilities.
-  KeySystemInfoMap concrete_key_system_map_;
+  KeySystemInfoMap key_system_map_;
 
   // This member should only be modified by RegisterMimeType().
   MimeTypeCodecsMap mime_type_to_codec_mask_map_;
@@ -340,7 +336,7 @@ void KeySystemsImpl::UpdateIfNeeded() {
 
 void KeySystemsImpl::UpdateSupportedKeySystems() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  concrete_key_system_map_.clear();
+  key_system_map_.clear();
 
   // Build KeySystemInfo.
   std::vector<KeySystemInfo> key_systems_info;
@@ -352,15 +348,15 @@ void KeySystemsImpl::UpdateSupportedKeySystems() {
   // Clear Key is always supported.
   AddClearKey(&key_systems_info);
 
-  AddConcreteSupportedKeySystems(key_systems_info);
+  AddSupportedKeySystems(key_systems_info);
 }
 
-void KeySystemsImpl::AddConcreteSupportedKeySystems(
-    const std::vector<KeySystemInfo>& concrete_key_systems) {
+void KeySystemsImpl::AddSupportedKeySystems(
+    const std::vector<KeySystemInfo>& key_systems) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(concrete_key_system_map_.empty());
+  DCHECK(key_system_map_.empty());
 
-  for (const KeySystemInfo& info : concrete_key_systems) {
+  for (const KeySystemInfo& info : key_systems) {
     DCHECK(!info.key_system.empty());
     DCHECK(info.max_audio_robustness != EmeRobustness::INVALID);
     DCHECK(info.max_video_robustness != EmeRobustness::INVALID);
@@ -411,9 +407,9 @@ void KeySystemsImpl::AddConcreteSupportedKeySystems(
              EmeFeatureSupport::ALWAYS_ENABLED);
     }
 
-    DCHECK(!IsConcreteSupportedKeySystem(info.key_system))
+    DCHECK_EQ(key_system_map_.count(info.key_system), 0u)
         << "Key system '" << info.key_system << "' already registered";
-    concrete_key_system_map_[info.key_system] = info;
+    key_system_map_[info.key_system] = info;
   }
 }
 
@@ -445,21 +441,14 @@ bool KeySystemsImpl::IsValidMimeTypeCodecsCombination(
   return false;
 }
 
-bool KeySystemsImpl::IsConcreteSupportedKeySystem(
-    const std::string& key_system) const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return concrete_key_system_map_.count(key_system) != 0;
-}
-
 bool KeySystemsImpl::IsSupportedInitDataType(
     const std::string& key_system,
     EmeInitDataType init_data_type) const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  // Locate |key_system|. Only concrete key systems are supported.
   KeySystemInfoMap::const_iterator key_system_iter =
-      concrete_key_system_map_.find(key_system);
-  if (key_system_iter == concrete_key_system_map_.end()) {
+      key_system_map_.find(key_system);
+  if (key_system_iter == key_system_map_.end()) {
     NOTREACHED();
     return false;
   }
@@ -493,14 +482,13 @@ std::string KeySystemsImpl::GetKeySystemNameForUMA(
   return iter->second;
 }
 
-bool KeySystemsImpl::UseAesDecryptor(
-    const std::string& concrete_key_system) const {
+bool KeySystemsImpl::UseAesDecryptor(const std::string& key_system) const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   KeySystemInfoMap::const_iterator key_system_iter =
-      concrete_key_system_map_.find(concrete_key_system);
-  if (key_system_iter == concrete_key_system_map_.end()) {
-    DLOG(ERROR) << concrete_key_system << " is not a known concrete system";
+      key_system_map_.find(key_system);
+  if (key_system_iter == key_system_map_.end()) {
+    DLOG(ERROR) << key_system << " is not a known system";
     return false;
   }
 
@@ -508,19 +496,18 @@ bool KeySystemsImpl::UseAesDecryptor(
 }
 
 #if defined(ENABLE_PEPPER_CDMS)
-std::string KeySystemsImpl::GetPepperType(
-    const std::string& concrete_key_system) const {
+std::string KeySystemsImpl::GetPepperType(const std::string& key_system) const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   KeySystemInfoMap::const_iterator key_system_iter =
-      concrete_key_system_map_.find(concrete_key_system);
-  if (key_system_iter == concrete_key_system_map_.end()) {
-      DLOG(FATAL) << concrete_key_system << " is not a known concrete system";
-      return std::string();
+      key_system_map_.find(key_system);
+  if (key_system_iter == key_system_map_.end()) {
+    DLOG(FATAL) << key_system << " is not a known system";
+    return std::string();
   }
 
   const std::string& type = key_system_iter->second.pepper_type;
-  DLOG_IF(FATAL, type.empty()) << concrete_key_system << " is not Pepper-based";
+  DLOG_IF(FATAL, type.empty()) << key_system << " is not Pepper-based";
   return type;
 }
 #endif
@@ -546,7 +533,7 @@ void KeySystemsImpl::AddMimeTypeCodecMask(const std::string& mime_type,
 bool KeySystemsImpl::IsSupportedKeySystem(const std::string& key_system) const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (!IsConcreteSupportedKeySystem(key_system))
+  if (!key_system_map_.count(key_system))
     return false;
 
   // TODO(ddorwin): Move this to where we add key systems when prefixed EME is
@@ -584,8 +571,8 @@ EmeConfigRule KeySystemsImpl::GetContentTypeConfigRule(
 
   // Look up the key system's supported codecs.
   KeySystemInfoMap::const_iterator key_system_iter =
-      concrete_key_system_map_.find(key_system);
-  if (key_system_iter == concrete_key_system_map_.end()) {
+      key_system_map_.find(key_system);
+  if (key_system_iter == key_system_map_.end()) {
     NOTREACHED();
     return EmeConfigRule::NOT_SUPPORTED;
   }
@@ -638,8 +625,8 @@ EmeConfigRule KeySystemsImpl::GetRobustnessConfigRule(
     return EmeConfigRule::NOT_SUPPORTED;
 
   KeySystemInfoMap::const_iterator key_system_iter =
-      concrete_key_system_map_.find(key_system);
-  if (key_system_iter == concrete_key_system_map_.end()) {
+      key_system_map_.find(key_system);
+  if (key_system_iter == key_system_map_.end()) {
     NOTREACHED();
     return EmeConfigRule::NOT_SUPPORTED;
   }
@@ -703,8 +690,8 @@ EmeSessionTypeSupport KeySystemsImpl::GetPersistentLicenseSessionSupport(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   KeySystemInfoMap::const_iterator key_system_iter =
-      concrete_key_system_map_.find(key_system);
-  if (key_system_iter == concrete_key_system_map_.end()) {
+      key_system_map_.find(key_system);
+  if (key_system_iter == key_system_map_.end()) {
     NOTREACHED();
     return EmeSessionTypeSupport::INVALID;
   }
@@ -716,8 +703,8 @@ EmeSessionTypeSupport KeySystemsImpl::GetPersistentReleaseMessageSessionSupport(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   KeySystemInfoMap::const_iterator key_system_iter =
-      concrete_key_system_map_.find(key_system);
-  if (key_system_iter == concrete_key_system_map_.end()) {
+      key_system_map_.find(key_system);
+  if (key_system_iter == key_system_map_.end()) {
     NOTREACHED();
     return EmeSessionTypeSupport::INVALID;
   }
@@ -729,8 +716,8 @@ EmeFeatureSupport KeySystemsImpl::GetPersistentStateSupport(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   KeySystemInfoMap::const_iterator key_system_iter =
-      concrete_key_system_map_.find(key_system);
-  if (key_system_iter == concrete_key_system_map_.end()) {
+      key_system_map_.find(key_system);
+  if (key_system_iter == key_system_map_.end()) {
     NOTREACHED();
     return EmeFeatureSupport::INVALID;
   }
@@ -742,8 +729,8 @@ EmeFeatureSupport KeySystemsImpl::GetDistinctiveIdentifierSupport(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   KeySystemInfoMap::const_iterator key_system_iter =
-      concrete_key_system_map_.find(key_system);
-  if (key_system_iter == concrete_key_system_map_.end()) {
+      key_system_map_.find(key_system);
+  if (key_system_iter == key_system_map_.end()) {
     NOTREACHED();
     return EmeFeatureSupport::INVALID;
   }
@@ -766,13 +753,13 @@ std::string GetKeySystemNameForUMA(const std::string& key_system) {
   return KeySystemsImpl::GetInstance()->GetKeySystemNameForUMA(key_system);
 }
 
-bool CanUseAesDecryptor(const std::string& concrete_key_system) {
-  return KeySystemsImpl::GetInstance()->UseAesDecryptor(concrete_key_system);
+bool CanUseAesDecryptor(const std::string& key_system) {
+  return KeySystemsImpl::GetInstance()->UseAesDecryptor(key_system);
 }
 
 #if defined(ENABLE_PEPPER_CDMS)
-std::string GetPepperType(const std::string& concrete_key_system) {
-  return KeySystemsImpl::GetInstance()->GetPepperType(concrete_key_system);
+std::string GetPepperType(const std::string& key_system) {
+  return KeySystemsImpl::GetInstance()->GetPepperType(key_system);
 }
 #endif
 

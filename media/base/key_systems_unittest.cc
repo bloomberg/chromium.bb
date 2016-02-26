@@ -388,9 +388,8 @@ TEST_F(KeySystemsTest, Basic_UnrecognizedKeySystem) {
 
 #if defined(ENABLE_PEPPER_CDMS)
   std::string type;
-  EXPECT_DEBUG_DEATH(
-      type = GetPepperType(kUnrecognized),
-      "x-org.example.unrecognized is not a known concrete system");
+  EXPECT_DEBUG_DEATH(type = GetPepperType(kUnrecognized),
+                     "x-org.example.unrecognized is not a known system");
   EXPECT_TRUE(type.empty());
 #endif
 }
