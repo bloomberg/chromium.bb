@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "mojo/public/c/environment/async_waiter.h"
 #include "mojo/public/cpp/bindings/callback.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "mojo/public/cpp/bindings/interface_ptr_info.h"
@@ -48,6 +49,16 @@ class AssociatedGroup;
 //     }
 //   };
 //
+// The caller may specify a |MojoAsyncWaiter| to be used by the connection when
+// waiting for calls to arrive. Normally it is fine to use the default waiter.
+// However, the caller may provide their own implementation if needed. The
+// |Binding| will not take ownership of the waiter, and the waiter must outlive
+// the |Binding|. The provided waiter must be able to signal the implementation
+// which generally means it needs to be able to schedule work on the thread the
+// implementation runs on. If writing library code that has to work on different
+// types of threads callers may need to provide different waiter
+// implementations.
+//
 // This class is thread hostile while bound to a message pipe. All calls to this
 // class must be from the thread that bound it. The interface implementation's
 // methods will be called from the thread that bound this. If a Binding is not
@@ -64,25 +75,36 @@ class Binding {
 
   // Constructs a completed binding of message pipe |handle| to implementation
   // |impl|. Does not take ownership of |impl|, which must outlive the binding.
-  Binding(Interface* impl, ScopedMessagePipeHandle handle) : Binding(impl) {
-    Bind(std::move(handle));
+  // See class comment for definition of |waiter|.
+  Binding(Interface* impl,
+          ScopedMessagePipeHandle handle,
+          const MojoAsyncWaiter* waiter = Environment::GetDefaultAsyncWaiter())
+      : Binding(impl) {
+    Bind(std::move(handle), waiter);
   }
 
   // Constructs a completed binding of |impl| to a new message pipe, passing the
   // client end to |ptr|, which takes ownership of it. The caller is expected to
   // pass |ptr| on to the client of the service. Does not take ownership of any
   // of the parameters. |impl| must outlive the binding. |ptr| only needs to
-  // last until the constructor returns.
-  Binding(Interface* impl, InterfacePtr<Interface>* ptr) : Binding(impl) {
-    Bind(ptr);
+  // last until the constructor returns. See class comment for definition of
+  // |waiter|.
+  Binding(Interface* impl,
+          InterfacePtr<Interface>* ptr,
+          const MojoAsyncWaiter* waiter = Environment::GetDefaultAsyncWaiter())
+      : Binding(impl) {
+    Bind(ptr, waiter);
   }
 
   // Constructs a completed binding of |impl| to the message pipe endpoint in
   // |request|, taking ownership of the endpoint. Does not take ownership of
-  // |impl|, which must outlive the binding.
-  Binding(Interface* impl, InterfaceRequest<GenericInterface> request)
+  // |impl|, which must outlive the binding. See class comment for definition of
+  // |waiter|.
+  Binding(Interface* impl,
+          InterfaceRequest<GenericInterface> request,
+          const MojoAsyncWaiter* waiter = Environment::GetDefaultAsyncWaiter())
       : Binding(impl) {
-    Bind(request.PassMessagePipe());
+    Bind(request.PassMessagePipe(), waiter);
   }
 
   // Tears down the binding, closing the message pipe and leaving the interface
@@ -99,28 +121,37 @@ class Binding {
 
   // Completes a binding that was constructed with only an interface
   // implementation. Takes ownership of |handle| and binds it to the previously
-  // specified implementation.
-  void Bind(ScopedMessagePipeHandle handle) {
-    internal_state_.Bind(std::move(handle));
+  // specified implementation. See class comment for definition of |waiter|.
+  void Bind(
+      ScopedMessagePipeHandle handle,
+      const MojoAsyncWaiter* waiter = Environment::GetDefaultAsyncWaiter()) {
+    internal_state_.Bind(std::move(handle), waiter);
   }
 
   // Completes a binding that was constructed with only an interface
   // implementation by creating a new message pipe, binding one end of it to the
   // previously specified implementation, and passing the other to |ptr|, which
   // takes ownership of it. The caller is expected to pass |ptr| on to the
-  // eventual client of the service. Does not take ownership of |ptr|.
-  void Bind(InterfacePtr<Interface>* ptr) {
+  // eventual client of the service. Does not take ownership of |ptr|. See
+  // class comment for definition of |waiter|.
+  void Bind(
+      InterfacePtr<Interface>* ptr,
+      const MojoAsyncWaiter* waiter = Environment::GetDefaultAsyncWaiter()) {
     MessagePipe pipe;
     ptr->Bind(InterfacePtrInfo<Interface>(std::move(pipe.handle0),
-                                          Interface::Version_));
-    Bind(std::move(pipe.handle1));
+                                          Interface::Version_),
+              waiter);
+    Bind(std::move(pipe.handle1), waiter);
   }
 
   // Completes a binding that was constructed with only an interface
   // implementation by removing the message pipe endpoint from |request| and
-  // binding it to the previously specified implementation.
-  void Bind(InterfaceRequest<GenericInterface> request) {
-    Bind(request.PassMessagePipe());
+  // binding it to the previously specified implementation. See class comment
+  // for definition of |waiter|.
+  void Bind(
+      InterfaceRequest<GenericInterface> request,
+      const MojoAsyncWaiter* waiter = Environment::GetDefaultAsyncWaiter()) {
+    Bind(request.PassMessagePipe(), waiter);
   }
 
   // Whether there are any associated interfaces running on the pipe currently.
