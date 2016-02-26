@@ -5,7 +5,31 @@
 // This file provides a thin binary wrapper around the BattOr Agent
 // library. This binary wrapper provides a means for non-C++ tracing
 // controllers, such as Telemetry and Android Systrace, to issue high-level
-// tracing commands to the BattOr..
+// tracing commands to the BattOr through an interactive shell.
+//
+// Example usage of how an external trace controller might use this binary:
+//
+// 1) Telemetry's PowerTracingAgent is told to start recording power samples
+// 2) PowerTracingAgent opens up a BattOr agent binary subprocess
+// 3) PowerTracingAgent sends the subprocess the StartTracing message via
+//    STDIN
+// 4) PowerTracingAgent waits for the subprocess to write a line to STDOUT
+//    ('Done.' if successful, some error message otherwise)
+// 5) If the last command was successful, PowerTracingAgent waits for the
+//    duration of the trace
+// 6) When the tracing should end, PowerTracingAgent records the clock sync
+//    start timestamp and sends the subprocess the RecordClockSyncMark <marker>'
+//    message via STDIN.
+// 7) PowerTracingAgent waits for the subprocess to write a line to STDOUT
+//    ('Done.' if successful, some error message otherwise)
+// 8) If the last command was successful, PowerTracingAgent records the clock
+//    sync end timestamp and sends the subprocess the StopTracing message via
+//    STDIN
+// 9) PowerTracingAgent continues to read trace output lines from STDOUT until
+//    the binary exits with an exit code of 1 (indicating failure) or the
+//    'Done.' line is printed to STDOUT, signaling the last line of the trace
+// 10) PowerTracingAgent returns the battery trace to the Telemetry trace
+//     controller
 
 #include <stdint.h>
 
@@ -23,7 +47,6 @@
 #include "tools/battor_agent/battor_error.h"
 #include "tools/battor_agent/battor_finder.h"
 
-using std::cout;
 using std::endl;
 
 namespace {
@@ -33,39 +56,26 @@ const char kFileThreadName[] = "BattOr File Thread";
 const char kUiThreadName[] = "BattOr UI Thread";
 const int32_t kBattOrCommandTimeoutSeconds = 10;
 
-void PrintUsage() {
-  cout << "Usage: battor_agent <command> <arguments> <switches>" << endl
-       << endl
-       << "Commands:" << endl
-       << endl
-       << "  StartTracing" << endl
-       << "  StopTracing" << endl
-       << "  SupportsExplicitClockSync" << endl
-       << "  RecordClockSyncMarker <marker>" << endl
-       << "  IssueClockSyncMarker" << endl
-       << "  Help" << endl
-       << endl
-       << "Switches:" << endl
-       << endl
-       << "  --battor-path=<path> Uses the specified BattOr path." << endl;
-}
+const char kUsage[] =
+    "Start the battor_agent shell with:\n"
+    "\n"
+    "  battor_agent <switches>\n"
+    "\n"
+    "Switches: \n"
+    "  --battor-path=<path> Uses the specified BattOr path.\n"
+    "\n"
+    "Once in the shell, you can issue the following commands:\n"
+    "\n"
+    "  StartTracing\n"
+    "  StopTracing\n"
+    "  SupportsExplicitClockSync\n"
+    "  RecordClockSyncMarker <marker>\n"
+    "  Exit\n"
+    "  Help\n"
+    "\n";
 
 void PrintSupportsExplicitClockSync() {
-  cout << battor::BattOrAgent::SupportsExplicitClockSync() << endl;
-}
-
-// Retrieves argument argnum from the argument list, or an empty string if the
-// argument doesn't exist.
-std::string GetArg(size_t argnum, base::CommandLine::StringVector args) {
-  if (argnum >= args.size()) {
-    return std::string();
-  }
-
-#if defined(OS_WIN)
-  return base::WideToUTF8(args[argnum]);
-#else
-  return args[argnum];
-#endif
+  std::cout << battor::BattOrAgent::SupportsExplicitClockSync() << endl;
 }
 
 // Checks if an error occurred and, if it did, prints the error and exits
@@ -96,43 +106,36 @@ class BattOrAgentBin : public BattOrAgent::Listener {
 
   ~BattOrAgentBin() { DCHECK(!agent_); }
 
-  // Runs the BattOr binary and returns the exit code.
+  // Starts the interactive BattOr agent shell and eventually returns an exit
+  // code.
   int Run(int argc, char* argv[]) {
-    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-    std::string cmd = GetArg(0, command_line->GetArgs());
-    if (cmd.empty()) {
-      PrintUsage();
-      exit(1);
-    }
-
-    // SupportsExplicitClockSync doesn't need to use the serial connection, so
-    // handle it separately.
-    if (cmd == "SupportsExplicitClockSync") {
-      PrintSupportsExplicitClockSync();
-      return 0;
-    }
-
     // If we don't have any BattOr to use, exit.
     std::string path = BattOrFinder::FindBattOr();
     if (path.empty()) {
-      cout << "Unable to find a BattOr." << endl;
+      std::cout << "Unable to find a BattOr." << endl;
       exit(1);
     }
 
     SetUp(path);
 
-    if (cmd == "StartTracing") {
-      StartTracing();
-    } else if (cmd == "StopTracing") {
-      StopTracing();
-    } else if (cmd == "RecordClockSyncMarker") {
-      // TODO(charliea): Write RecordClockSyncMarker.
-    } else if (cmd == "IssueClockSyncMarker") {
-      // TODO(charliea): Write IssueClockSyncMarker.
-    } else {
-      TearDown();
-      PrintUsage();
-      return 1;
+    std::string cmd;
+    for (;;) {
+      std::getline(std::cin, cmd);
+
+      if (cmd == "StartTracing") {
+        StartTracing();
+      } else if (cmd == "StopTracing") {
+        StopTracing();
+        break;
+      } else if (cmd == "SupportsExplicitClockSync") {
+        PrintSupportsExplicitClockSync();
+      } else if (cmd == "RecordClockSyncMarker") {
+        // TODO(charliea): Write RecordClockSyncMarker.
+      } else if (cmd == "Exit") {
+        break;
+      } else {
+        std::cout << kUsage << endl;
+      }
     }
 
     TearDown();
@@ -172,6 +175,7 @@ class BattOrAgentBin : public BattOrAgent::Listener {
 
   void OnStartTracingComplete(BattOrError error) override {
     error_ = error;
+    std::cout << "Done." << endl;
     done_.Signal();
   }
 
@@ -187,7 +191,9 @@ class BattOrAgentBin : public BattOrAgent::Listener {
     error_ = error;
 
     if (error == BATTOR_ERROR_NONE)
-      cout << trace << endl;
+      std::cout << trace;
+
+    std::cout << "Done." << endl;
 
     done_.Signal();
   }
