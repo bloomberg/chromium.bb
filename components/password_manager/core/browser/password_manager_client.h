@@ -148,11 +148,6 @@ class PasswordManagerClient {
   // Returns true if last navigation page had HTTP error i.e 5XX or 4XX
   virtual bool WasLastNavigationHTTPError() const;
 
-  // Returns the authorization prompt policy to be used with the given form.
-  // Only relevant on OSX.
-  virtual PasswordStore::AuthorizationPromptPolicy GetAuthorizationPromptPolicy(
-      const autofill::PasswordForm& form);
-
   // Returns whether any SSL certificate errors were encountered as a result of
   // the last page load.
   virtual bool DidLastPageLoadEncounterSSLErrors() const;

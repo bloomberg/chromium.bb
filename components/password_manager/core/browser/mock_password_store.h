@@ -21,10 +21,8 @@ class MockPasswordStore : public PasswordStore {
   MockPasswordStore();
 
   MOCK_METHOD1(RemoveLogin, void(const autofill::PasswordForm&));
-  MOCK_METHOD3(GetLogins,
-               void(const autofill::PasswordForm&,
-                    PasswordStore::AuthorizationPromptPolicy prompt_policy,
-                    PasswordStoreConsumer*));
+  MOCK_METHOD2(GetLogins,
+               void(const autofill::PasswordForm&, PasswordStoreConsumer*));
   MOCK_METHOD1(AddLogin, void(const autofill::PasswordForm&));
   MOCK_METHOD1(UpdateLogin, void(const autofill::PasswordForm&));
   MOCK_METHOD2(UpdateLoginWithPrimaryKey,
@@ -49,8 +47,7 @@ class MockPasswordStore : public PasswordStore {
   MOCK_METHOD2(RemoveStatisticsCreatedBetweenImpl,
                bool(base::Time, base::Time));
   ScopedVector<autofill::PasswordForm> FillMatchingLogins(
-      const autofill::PasswordForm& form,
-      PasswordStore::AuthorizationPromptPolicy prompt_policy) override {
+      const autofill::PasswordForm& form) override {
     return ScopedVector<autofill::PasswordForm>();
   }
   MOCK_METHOD1(FillAutofillableLogins,

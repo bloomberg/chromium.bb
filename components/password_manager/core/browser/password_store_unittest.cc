@@ -215,9 +215,9 @@ TEST_F(PasswordStoreTest, IgnoreOldWwwGoogleLogins) {
                   UnorderedPasswordFormElementsAre(bar_example_expected)))
       .RetiresOnSaturation();
 
-  store->GetLogins(www_google, PasswordStore::ALLOW_PROMPT, &consumer);
-  store->GetLogins(accounts_google, PasswordStore::ALLOW_PROMPT, &consumer);
-  store->GetLogins(bar_example, PasswordStore::ALLOW_PROMPT, &consumer);
+  store->GetLogins(www_google, &consumer);
+  store->GetLogins(accounts_google, &consumer);
+  store->GetLogins(bar_example, &consumer);
 
   base::MessageLoop::current()->RunUntilIdle();
 
@@ -457,7 +457,7 @@ TEST_F(PasswordStoreTest, GetLoginsWithoutAffiliations) {
   EXPECT_CALL(mock_consumer,
               OnGetPasswordStoreResultsConstRef(
                   UnorderedPasswordFormElementsAre(expected_results.get())));
-  store->GetLogins(observed_form, PasswordStore::ALLOW_PROMPT, &mock_consumer);
+  store->GetLogins(observed_form, &mock_consumer);
   store->ShutdownOnUIThread();
   base::MessageLoop::current()->RunUntilIdle();
 }
@@ -575,7 +575,7 @@ TEST_F(PasswordStoreTest, GetLoginsWithAffiliations) {
               OnGetPasswordStoreResultsConstRef(
                   UnorderedPasswordFormElementsAre(expected_results.get())));
 
-  store->GetLogins(observed_form, PasswordStore::ALLOW_PROMPT, &mock_consumer);
+  store->GetLogins(observed_form, &mock_consumer);
   store->ShutdownOnUIThread();
   base::MessageLoop::current()->RunUntilIdle();
 }

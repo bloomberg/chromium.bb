@@ -94,7 +94,7 @@ ScopedVector<PasswordForm> GetLogins(PasswordStore* store) {
   PasswordForm matcher_form;
   matcher_form.signon_realm = kFakeSignonRealm;
   PasswordStoreConsumerHelper consumer;
-  store->GetLogins(matcher_form, PasswordStore::DISALLOW_PROMPT, &consumer);
+  store->GetLogins(matcher_form, &consumer);
   content::RunMessageLoop();
   return consumer.result();
 }

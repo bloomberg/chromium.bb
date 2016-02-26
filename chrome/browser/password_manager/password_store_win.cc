@@ -197,7 +197,6 @@ void PasswordStoreWin::ShutdownOnUIThread() {
 }
 
 void PasswordStoreWin::GetLoginsImpl(const PasswordForm& form,
-                                     AuthorizationPromptPolicy prompt_policy,
                                      scoped_ptr<GetLoginsRequest> request) {
   // When importing from IE7, the credentials are first stored into a temporary
   // Web SQL database. Then, after each GetLogins() request that does not yield
@@ -208,8 +207,7 @@ void PasswordStoreWin::GetLoginsImpl(const PasswordForm& form,
   // can be overridden instead. See: https://crbug.com/78830.
   // TODO(engedy): Credentials should be imported into the LoginDatabase in the
   // first place. See: https://crbug.com/456119.
-  ScopedVector<autofill::PasswordForm> matched_forms(
-      FillMatchingLogins(form, prompt_policy));
+  ScopedVector<autofill::PasswordForm> matched_forms(FillMatchingLogins(form));
   if (matched_forms.empty() && db_handler_) {
     db_handler_->GetIE7Login(
         form, base::Bind(&GetLoginsRequest::NotifyConsumerWithResults,

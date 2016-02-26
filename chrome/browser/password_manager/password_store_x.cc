@@ -178,8 +178,7 @@ void SortLoginsByOrigin(std::vector<autofill::PasswordForm*>* list) {
 }  // anonymous namespace
 
 ScopedVector<autofill::PasswordForm> PasswordStoreX::FillMatchingLogins(
-    const autofill::PasswordForm& form,
-    AuthorizationPromptPolicy prompt_policy) {
+    const autofill::PasswordForm& form) {
   CheckMigration();
   ScopedVector<autofill::PasswordForm> matched_forms;
   if (use_native_backend() && backend_->GetLogins(form, &matched_forms)) {
@@ -192,7 +191,7 @@ ScopedVector<autofill::PasswordForm> PasswordStoreX::FillMatchingLogins(
     return matched_forms;
   }
   if (allow_default_store())
-    return PasswordStoreDefault::FillMatchingLogins(form, prompt_policy);
+    return PasswordStoreDefault::FillMatchingLogins(form);
   return ScopedVector<autofill::PasswordForm>();
 }
 

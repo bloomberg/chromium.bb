@@ -1345,8 +1345,7 @@ class PasswordStoreMacTest : public testing::Test {
       EXPECT_CALL(mock_consumer, OnGetPasswordStoreResultsConstRef(SizeIs(1u)))
           .WillOnce(
               DoAll(SaveACopyOfFirstForm(&returned_form), QuitUIMessageLoop()));
-      store()->GetLogins(query_form, PasswordStore::ALLOW_PROMPT,
-                         &mock_consumer);
+      store()->GetLogins(query_form, &mock_consumer);
       base::MessageLoop::current()->Run();
       ::testing::Mock::VerifyAndClearExpectations(&mock_consumer);
       EXPECT_EQ(form, returned_form);
@@ -1515,7 +1514,7 @@ TEST_F(PasswordStoreMacTest, TestDBKeychainAssociation) {
   m_form.origin = GURL("http://m.facebook.com/index.html");
 
   MockPasswordStoreConsumer consumer;
-  store_->GetLogins(m_form, PasswordStore::ALLOW_PROMPT, &consumer);
+  store_->GetLogins(m_form, &consumer);
   PasswordForm returned_form;
   EXPECT_CALL(consumer, OnGetPasswordStoreResultsConstRef(SizeIs(1u)))
       .WillOnce(
@@ -1773,7 +1772,7 @@ TEST_F(PasswordStoreMacTest, SilentlyRemoveOrphanedForm) {
   // The PSL-matched form isn't returned because there is no actual password in
   // the keychain.
   EXPECT_CALL(consumer, OnGetPasswordStoreResultsConstRef(IsEmpty()));
-  store_->GetLogins(m_form, PasswordStore::ALLOW_PROMPT, &consumer);
+  store_->GetLogins(m_form, &consumer);
   base::MessageLoop::current()->Run();
   ScopedVector<autofill::PasswordForm> all_forms;
   EXPECT_TRUE(login_db()->GetAutofillableLogins(&all_forms));
@@ -1787,7 +1786,7 @@ TEST_F(PasswordStoreMacTest, SilentlyRemoveOrphanedForm) {
       password_manager::PasswordStoreChange::REMOVE, *www_form));
   EXPECT_CALL(mock_observer, OnLoginsChanged(list));
   EXPECT_CALL(consumer, OnGetPasswordStoreResultsConstRef(IsEmpty()));
-  store_->GetLogins(*www_form, PasswordStore::ALLOW_PROMPT, &consumer);
+  store_->GetLogins(*www_form, &consumer);
   base::MessageLoop::current()->Run();
   EXPECT_TRUE(login_db()->GetAutofillableLogins(&all_forms));
   EXPECT_EQ(0u, all_forms.size());

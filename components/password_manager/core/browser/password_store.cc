@@ -154,7 +154,6 @@ void PasswordStore::TrimAffiliationCache() {
 }
 
 void PasswordStore::GetLogins(const PasswordForm& form,
-                              AuthorizationPromptPolicy prompt_policy,
                               PasswordStoreConsumer* consumer) {
   // Per http://crbug.com/121738, we deliberately ignore saved logins for
   // http*://www.google.com/ that were stored prior to 2012. (Google now uses
@@ -179,10 +178,10 @@ void PasswordStore::GetLogins(const PasswordForm& form,
   if (affiliated_match_helper_) {
     affiliated_match_helper_->GetAffiliatedAndroidRealms(
         form, base::Bind(&PasswordStore::ScheduleGetLoginsWithAffiliations,
-                         this, form, prompt_policy, base::Passed(&request)));
+                         this, form, base::Passed(&request)));
   } else {
     ScheduleTask(base::Bind(&PasswordStore::GetLoginsImpl, this, form,
-                            prompt_policy, base::Passed(&request)));
+                            base::Passed(&request)));
   }
 }
 
@@ -263,9 +262,8 @@ PasswordStore::GetBackgroundTaskRunner() {
 }
 
 void PasswordStore::GetLoginsImpl(const autofill::PasswordForm& form,
-                                  AuthorizationPromptPolicy prompt_policy,
                                   scoped_ptr<GetLoginsRequest> request) {
-  request->NotifyConsumerWithResults(FillMatchingLogins(form, prompt_policy));
+  request->NotifyConsumerWithResults(FillMatchingLogins(form));
 }
 
 
@@ -419,17 +417,15 @@ void PasswordStore::NotifySiteStats(const GURL& origin_domain,
 
 void PasswordStore::GetLoginsWithAffiliationsImpl(
     const PasswordForm& form,
-    AuthorizationPromptPolicy prompt_policy,
     scoped_ptr<GetLoginsRequest> request,
     const std::vector<std::string>& additional_android_realms) {
   DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());
-  ScopedVector<PasswordForm> results(FillMatchingLogins(form, prompt_policy));
+  ScopedVector<PasswordForm> results(FillMatchingLogins(form));
   for (const std::string& realm : additional_android_realms) {
     PasswordForm android_form;
     android_form.scheme = PasswordForm::SCHEME_HTML;
     android_form.signon_realm = realm;
-    ScopedVector<PasswordForm> more_results(
-        FillMatchingLogins(android_form, DISALLOW_PROMPT));
+    ScopedVector<PasswordForm> more_results(FillMatchingLogins(android_form));
     for (PasswordForm* form : more_results)
       form->is_affiliation_based_match = true;
     ScopedVector<PasswordForm>::iterator it_first_federated = std::partition(
@@ -445,19 +441,17 @@ void PasswordStore::GetLoginsWithAffiliationsImpl(
 
 void PasswordStore::ScheduleGetLoginsWithAffiliations(
     const PasswordForm& form,
-    AuthorizationPromptPolicy prompt_policy,
     scoped_ptr<GetLoginsRequest> request,
     const std::vector<std::string>& additional_android_realms) {
   ScheduleTask(base::Bind(&PasswordStore::GetLoginsWithAffiliationsImpl, this,
-                          form, prompt_policy, base::Passed(&request),
+                          form, base::Passed(&request),
                           additional_android_realms));
 }
 
 scoped_ptr<PasswordForm> PasswordStore::GetLoginImpl(
     const PasswordForm& primary_key) {
   DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());
-  ScopedVector<PasswordForm> candidates(
-      FillMatchingLogins(primary_key, DISALLOW_PROMPT));
+  ScopedVector<PasswordForm> candidates(FillMatchingLogins(primary_key));
   for (PasswordForm*& candidate : candidates) {
     if (ArePasswordFormUniqueKeyEqual(*candidate, primary_key) &&
         !candidate->is_public_suffix_match) {
@@ -498,7 +492,7 @@ void PasswordStore::UpdateAffiliatedWebLoginsImpl(
     web_form_template.scheme = PasswordForm::SCHEME_HTML;
     web_form_template.signon_realm = affiliated_web_realm;
     ScopedVector<PasswordForm> web_logins(
-        FillMatchingLogins(web_form_template, DISALLOW_PROMPT));
+        FillMatchingLogins(web_form_template));
     for (PasswordForm* web_login : web_logins) {
       // Do not update HTTP logins, logins saved under insecure conditions, and
       // non-HTML login forms; PSL matches; logins with a different username;

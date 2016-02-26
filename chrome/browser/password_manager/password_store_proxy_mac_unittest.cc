@@ -176,8 +176,7 @@ void PasswordStoreProxyMacTest::FinishAsyncProcessing() {
   // Do a store-level query to wait for all the previously enqueued operations
   // to finish.
   MockPasswordStoreConsumer consumer;
-  store_->GetLogins(PasswordForm(),
-                    password_manager::PasswordStore::ALLOW_PROMPT, &consumer);
+  store_->GetLogins(PasswordForm(), &consumer);
   EXPECT_CALL(consumer, OnGetPasswordStoreResultsConstRef(_))
       .WillOnce(QuitUIMessageLoop());
   base::MessageLoop::current()->Run();
@@ -313,8 +312,7 @@ TEST_P(PasswordStoreProxyMacTest, FillLogins) {
   AddForm(blacklisted_form);
 
   MockPasswordStoreConsumer mock_consumer;
-  store()->GetLogins(password_form, PasswordStoreProxyMac::ALLOW_PROMPT,
-                     &mock_consumer);
+  store()->GetLogins(password_form, &mock_consumer);
   EXPECT_CALL(mock_consumer, OnGetPasswordStoreResultsConstRef(
                                  ElementsAre(Pointee(password_form))))
       .WillOnce(QuitUIMessageLoop());
@@ -365,8 +363,7 @@ TEST_P(PasswordStoreProxyMacTest, OperationsOnABadDatabaseSilentlyFail) {
 
   // Get all logins; autofillable logins; blacklisted logins.
   MockPasswordStoreConsumer mock_consumer;
-  store()->GetLogins(*form, password_manager::PasswordStore::DISALLOW_PROMPT,
-                     &mock_consumer);
+  store()->GetLogins(*form, &mock_consumer);
   ON_CALL(mock_consumer, OnGetPasswordStoreResultsConstRef(_))
       .WillByDefault(QuitUIMessageLoop());
   EXPECT_CALL(mock_consumer, OnGetPasswordStoreResultsConstRef(IsEmpty()));
@@ -459,7 +456,7 @@ void PasswordStoreProxyMacMigrationTest::TestMigration(bool lock_keychain) {
         store_->password_store_mac()->keychain())->set_locked(false);
   }
   MockPasswordStoreConsumer mock_consumer;
-  store()->GetLogins(form, PasswordStoreProxyMac::ALLOW_PROMPT, &mock_consumer);
+  store()->GetLogins(form, &mock_consumer);
   EXPECT_CALL(mock_consumer,
               OnGetPasswordStoreResultsConstRef(ElementsAre(Pointee(form))))
       .WillOnce(QuitUIMessageLoop());

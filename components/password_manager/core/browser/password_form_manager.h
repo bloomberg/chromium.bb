@@ -77,11 +77,7 @@ class PasswordFormManager : public PasswordStoreConsumer {
 
   // Retrieves potential matching logins from the database. In addition the
   // statistics is retrived on platforms with the password bubble.
-  // |prompt_policy| indicates whether it's permissible to prompt the user to
-  // authorize access to locked passwords. This argument is only used on
-  // platforms that support prompting the user for access (such as Mac OS).
-  void FetchDataFromPasswordStore(
-      PasswordStore::AuthorizationPromptPolicy prompt_policy);
+  void FetchDataFromPasswordStore();
 
   // Simple state-check to verify whether this object as received a callback
   // from the PasswordStore and completed its matching phase. Note that the
@@ -569,10 +565,9 @@ class PasswordFormManager : public PasswordStoreConsumer {
   // user has entered.
   FormType form_type_;
 
-  // Null unless FetchMatchingLoginsFromPasswordStore has been called again
-  // without the password store returning results in the meantime. In that case
-  // this stores the prompt policy for the refresh call.
-  scoped_ptr<PasswordStore::AuthorizationPromptPolicy> next_prompt_policy_;
+  // False unless FetchMatchingLoginsFromPasswordStore has been called again
+  // without the password store returning results in the meantime.
+  bool need_to_refetch_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordFormManager);
 };

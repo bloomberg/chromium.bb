@@ -123,7 +123,8 @@ PasswordFormManager::PasswordFormManager(
       manager_action_(kManagerActionNone),
       user_action_(kUserActionNone),
       submit_result_(kSubmitResultNotSubmitted),
-      form_type_(kFormTypeUnspecified) {
+      form_type_(kFormTypeUnspecified),
+      need_to_refetch_(false) {
   DCHECK_EQ(observed_form.scheme == PasswordForm::SCHEME_HTML,
             driver != nullptr);
   if (driver)
@@ -309,14 +310,11 @@ void PasswordFormManager::Update(
   UpdateLogin();
 }
 
-void PasswordFormManager::FetchDataFromPasswordStore(
-    PasswordStore::AuthorizationPromptPolicy prompt_policy) {
+void PasswordFormManager::FetchDataFromPasswordStore() {
   if (state_ == MATCHING_PHASE) {
-    // There is currently a password store query in progress. Remember the
-    // prompt policy for when the store results are back and another store query
-    // might be issued.
-    next_prompt_policy_.reset(
-        new PasswordStore::AuthorizationPromptPolicy(prompt_policy));
+    // There is currently a password store query in progress, need to re-fetch
+    // store results later.
+    need_to_refetch_ = true;
     return;
   }
 
@@ -338,7 +336,7 @@ void PasswordFormManager::FetchDataFromPasswordStore(
     NOTREACHED();
     return;
   }
-  password_store->GetLogins(observed_form_, prompt_policy, this);
+  password_store->GetLogins(observed_form_, this);
 
 // The statistics isn't needed on mobile, only on desktop. Let's save some
 // processor cycles.
@@ -530,11 +528,11 @@ void PasswordFormManager::OnGetPasswordStoreResults(
     ScopedVector<PasswordForm> results) {
   DCHECK_EQ(state_, MATCHING_PHASE);
 
-  if (next_prompt_policy_) {
+  if (need_to_refetch_) {
     // The received results are no longer up-to-date, need to re-request.
     state_ = PRE_MATCHING_PHASE;
-    FetchDataFromPasswordStore(*next_prompt_policy_);
-    next_prompt_policy_.reset();
+    FetchDataFromPasswordStore();
+    need_to_refetch_ = false;
     return;
   }
 
@@ -667,8 +665,9 @@ void PasswordFormManager::UpdateLogin() {
   // Update() method.
   if (has_generated_password_) {
     UploadGeneratedVote();
-  } else if (!observed_form_.IsPossibleChangePasswordForm())
+  } else if (!observed_form_.IsPossibleChangePasswordForm()) {
     SendAutofillVotes(observed_form_, &pending_credentials_);
+  }
 
   UpdatePreferredLoginState(password_store);
 
@@ -1079,9 +1078,9 @@ void PasswordFormManager::CreatePendingCredentials() {
         provisionally_saved_form_->new_password_element.empty();
 
     is_new_login_ = false;
-    if (best_update_match)
+    if (best_update_match) {
       pending_credentials_ = *best_update_match;
-    else if (has_generated_password_) {
+    } else if (has_generated_password_) {
       // If a password was generated and we didn't find match we have to save it
       // in separate entry since we have to store it but we don't know where.
       CreatePendingCredentialsForNewCredentials();

@@ -1207,10 +1207,9 @@ bool PasswordStoreMac::RemoveStatisticsCreatedBetweenImpl(
 }
 
 ScopedVector<autofill::PasswordForm> PasswordStoreMac::FillMatchingLogins(
-    const autofill::PasswordForm& form,
-    AuthorizationPromptPolicy prompt_policy) {
+    const autofill::PasswordForm& form) {
   chrome::ScopedSecKeychainSetUserInteractionAllowed user_interaction_allowed(
-      prompt_policy == ALLOW_PROMPT);
+      false);
 
   ScopedVector<PasswordForm> database_forms;
   if (!login_metadata_db_ ||

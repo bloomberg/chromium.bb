@@ -82,8 +82,7 @@ PasswordStoreChangeList TestPasswordStore::RemoveLoginImpl(
 }
 
 ScopedVector<autofill::PasswordForm> TestPasswordStore::FillMatchingLogins(
-    const autofill::PasswordForm& form,
-    PasswordStore::AuthorizationPromptPolicy prompt_policy) {
+    const autofill::PasswordForm& form) {
   ScopedVector<autofill::PasswordForm> matched_forms;
   std::vector<autofill::PasswordForm> forms =
       stored_passwords_[form.signon_realm];

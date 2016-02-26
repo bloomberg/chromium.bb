@@ -26,7 +26,7 @@ CredentialManagerPasswordFormManager::CredentialManagerPasswordFormManager(
                           observed_form,
                           true),
       delegate_(delegate) {
-  FetchDataFromPasswordStore(PasswordStore::DISALLOW_PROMPT);
+  FetchDataFromPasswordStore();
 }
 
 CredentialManagerPasswordFormManager::~CredentialManagerPasswordFormManager() {
