@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -234,6 +235,71 @@ public class CronetUrlRequestTest extends CronetTestBase {
         // Make sure there are no other pending messages, which would trigger
         // asserts in TestUrlRequestCallback.
         testSimpleGet();
+    }
+
+    /**
+     * Tests onRedirectReceived after cancel doesn't cause a crash.
+     */
+    @SmallTest
+    @Feature({"Cronet"})
+    public void testOnRedirectReceivedAfterCancel() throws Exception {
+        final AtomicBoolean failedExpectation = new AtomicBoolean();
+        TestUrlRequestCallback callback = new TestUrlRequestCallback() {
+            @Override
+            public void onRedirectReceived(
+                    UrlRequest request, UrlResponseInfo info, String newLocationUrl) {
+                assertEquals(0, mRedirectCount);
+                failedExpectation.compareAndSet(false, 0 != mRedirectCount);
+                super.onRedirectReceived(request, info, newLocationUrl);
+                // Cancel the request, so the second redirect will not be received.
+                request.cancel();
+            }
+
+            @Override
+            public void onResponseStarted(UrlRequest request, UrlResponseInfo info) {
+                failedExpectation.set(true);
+                fail();
+            }
+
+            @Override
+            public void onReadCompleted(
+                    UrlRequest request, UrlResponseInfo info, ByteBuffer byteBuffer) {
+                failedExpectation.set(true);
+                fail();
+            }
+
+            @Override
+            public void onSucceeded(UrlRequest request, UrlResponseInfo info) {
+                failedExpectation.set(true);
+                fail();
+            }
+
+            @Override
+            public void onFailed(
+                    UrlRequest request, UrlResponseInfo info, UrlRequestException error) {
+                failedExpectation.set(true);
+                fail();
+            }
+
+            @Override
+            public void onCanceled(UrlRequest request, UrlResponseInfo info) {
+                assertEquals(1, mRedirectCount);
+                failedExpectation.compareAndSet(false, 1 != mRedirectCount);
+                super.onCanceled(request, info);
+            }
+        };
+
+        UrlRequest.Builder builder = new UrlRequest.Builder(NativeTestServer.getMultiRedirectURL(),
+                callback, callback.getExecutor(), mTestFramework.mCronetEngine);
+
+        final UrlRequest urlRequest = builder.build();
+        urlRequest.start();
+        callback.blockForDone();
+        assertFalse(failedExpectation.get());
+        // Check that only one redirect is received.
+        assertEquals(1, callback.mRedirectCount);
+        // Check that onCanceled is called.
+        assertTrue(callback.mOnCanceledCalled);
     }
 
     @SmallTest

@@ -54,6 +54,9 @@ final class CronetUrlRequest implements UrlRequest {
     private boolean mWaitingOnRedirect = false;
     @GuardedBy("mUrlRequestAdapterLock")
     private boolean mWaitingOnRead = false;
+    @GuardedBy("mUrlRequestAdapterLock")
+    @Nullable
+    private final UrlRequestMetricsAccumulator mRequestMetricsAccumulator;
 
     /*
      * Synchronize access to mUrlRequestAdapter, mStarted, mWaitingOnRedirect,
@@ -77,7 +80,6 @@ final class CronetUrlRequest implements UrlRequest {
     private String mInitialMethod;
     private final HeadersList mRequestHeaders = new HeadersList();
     private final Collection<Object> mRequestAnnotations;
-    @Nullable private final UrlRequestMetricsAccumulator mRequestMetricsAccumulator;
 
     private CronetUploadDataStream mUploadDataStream;
 
@@ -371,22 +373,13 @@ final class CronetUrlRequest implements UrlRequest {
     private UrlResponseInfo prepareResponseInfoOnNetworkThread(int httpStatusCode,
             String httpStatusText, String[] headers, boolean wasCached, String negotiatedProtocol,
             String proxyServer) {
-        synchronized (mUrlRequestAdapterLock) {
-            if (mUrlRequestAdapter == 0) {
-                return null;
-            }
-        }
-
         HeadersList headersList = new HeadersList();
         for (int i = 0; i < headers.length; i += 2) {
             headersList.add(new AbstractMap.SimpleImmutableEntry<String, String>(
                     headers[i], headers[i + 1]));
         }
-
-        UrlResponseInfo responseInfo =
-                new UrlResponseInfo(new ArrayList<String>(mUrlChain), httpStatusCode,
-                        httpStatusText, headersList, wasCached, negotiatedProtocol, proxyServer);
-        return responseInfo;
+        return new UrlResponseInfo(new ArrayList<String>(mUrlChain), httpStatusCode, httpStatusText,
+                headersList, wasCached, negotiatedProtocol, proxyServer);
     }
 
     private void checkNotStarted() {
@@ -532,9 +525,6 @@ final class CronetUrlRequest implements UrlRequest {
     @CalledByNative
     private void onResponseStarted(int httpStatusCode, String httpStatusText, String[] headers,
             boolean wasCached, String negotiatedProtocol, String proxyServer) {
-        if (mRequestMetricsAccumulator != null) {
-            mRequestMetricsAccumulator.onResponseStarted();
-        }
         mResponseInfo = prepareResponseInfoOnNetworkThread(httpStatusCode, httpStatusText, headers,
                 wasCached, negotiatedProtocol, proxyServer);
         Runnable task = new Runnable() {
@@ -543,6 +533,9 @@ final class CronetUrlRequest implements UrlRequest {
                 synchronized (mUrlRequestAdapterLock) {
                     if (isDoneLocked()) {
                         return;
+                    }
+                    if (mRequestMetricsAccumulator != null) {
+                        mRequestMetricsAccumulator.onResponseStarted();
                     }
                     mWaitingOnRead = true;
                 }

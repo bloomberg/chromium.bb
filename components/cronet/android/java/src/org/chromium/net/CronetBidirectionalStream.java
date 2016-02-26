@@ -13,6 +13,7 @@ import org.chromium.base.annotations.NativeClassQualifiedName;
 import java.nio.ByteBuffer;
 import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executor;
@@ -552,18 +553,9 @@ class CronetBidirectionalStream extends BidirectionalStream {
 
     private UrlResponseInfo prepareResponseInfoOnNetworkThread(int httpStatusCode,
             String negotiatedProtocol, String[] headers, long receivedBytesCount) {
-        synchronized (mNativeStreamLock) {
-            if (mNativeStream == 0) {
-                return null;
-            }
-        }
-
-        ArrayList<String> urlChain = new ArrayList<>();
-        urlChain.add(mInitialUrl);
-
-        UrlResponseInfo responseInfo = new UrlResponseInfo(urlChain, httpStatusCode, "",
-                headersListFromStrings(headers), false, negotiatedProtocol, null);
-
+        UrlResponseInfo responseInfo =
+                new UrlResponseInfo(Arrays.asList(mInitialUrl), httpStatusCode, "",
+                        headersListFromStrings(headers), false, negotiatedProtocol, null);
         responseInfo.setReceivedBytesCount(receivedBytesCount);
         return responseInfo;
     }
