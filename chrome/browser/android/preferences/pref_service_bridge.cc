@@ -590,8 +590,11 @@ static void ClearBrowsingData(JNIEnv* env,
     }
   }
 
-  browsing_data_remover->Remove(BrowsingDataRemover::Unbounded(), remove_mask,
-                                BrowsingDataHelper::UNPROTECTED_WEB);
+  int period_selected = GetPrefService()->GetInteger(prefs::kDeleteTimePeriod);
+  browsing_data_remover->Remove(
+      BrowsingDataRemover::Period(
+          static_cast<BrowsingDataRemover::TimePeriod>(period_selected)),
+      remove_mask, BrowsingDataHelper::UNPROTECTED_WEB);
 }
 
 static jboolean CanDeleteBrowsingHistory(JNIEnv* env,
