@@ -100,36 +100,10 @@ bool throwExceptionIfSignalingStateClosed(RTCPeerConnection::SignalingState stat
     return false;
 }
 
-// Helper class for running error callbacks asynchronously
-class ErrorCallbackTask : public WebTaskRunner::Task {
-public:
-    static PassOwnPtr<ErrorCallbackTask> create(RTCPeerConnectionErrorCallback* errorCallback, DOMException* exception)
-    {
-        return adoptPtr(new ErrorCallbackTask(errorCallback, exception));
-    }
-
-    ~ErrorCallbackTask() override = default;
-
-    void run() override
-    {
-        m_errorCallback->handleEvent(m_exception);
-    }
-
-private:
-    ErrorCallbackTask(RTCPeerConnectionErrorCallback* errorCallback, DOMException* exception)
-        : m_errorCallback(errorCallback)
-        , m_exception(exception)
-    {
-        ASSERT(errorCallback);
-    }
-
-    Persistent<RTCPeerConnectionErrorCallback> m_errorCallback;
-    Persistent<DOMException> m_exception;
-};
-
 void asyncCallErrorCallback(RTCPeerConnectionErrorCallback* errorCallback, DOMException* exception)
 {
-    Microtask::enqueueMicrotask(ErrorCallbackTask::create(errorCallback, exception));
+    ASSERT(errorCallback);
+    Microtask::enqueueMicrotask(bind(&RTCPeerConnectionErrorCallback::handleEvent, errorCallback, exception));
 }
 
 bool callErrorCallbackIfSignalingStateClosed(RTCPeerConnection::SignalingState state, RTCPeerConnectionErrorCallback* errorCallback)
