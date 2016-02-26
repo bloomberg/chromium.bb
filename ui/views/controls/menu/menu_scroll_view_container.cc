@@ -76,7 +76,6 @@ class MenuScrollButton : public View {
     // The background.
     gfx::Rect item_bounds(0, 0, width(), height());
     NativeTheme::ExtraParams extra;
-    extra.menu_item.is_selected = false;
     GetNativeTheme()->Paint(canvas->sk_canvas(),
                             NativeTheme::kMenuItemBackground,
                             NativeTheme::kNormal, item_bounds, extra);

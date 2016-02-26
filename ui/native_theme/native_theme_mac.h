@@ -28,7 +28,7 @@ class NATIVE_THEME_EXPORT NativeThemeMac : public NativeThemeBase {
       SkCanvas* canvas,
       State state,
       const gfx::Rect& rect,
-      const MenuListExtraParams& menu_list) const override;
+      const MenuItemExtraParams& menu_item) const override;
 
  private:
   NativeThemeMac();

@@ -132,6 +132,7 @@ class NATIVE_THEME_EXPORT NativeTheme {
 
   struct MenuItemExtraParams {
     bool is_selected;
+    int corner_radius;
   };
 
   struct MenuListExtraParams {
@@ -196,7 +197,9 @@ class NATIVE_THEME_EXPORT NativeTheme {
     int classic_state;  // Used on Windows when uxtheme is not available.
   };
 
-  union ExtraParams {
+  union NATIVE_THEME_EXPORT ExtraParams {
+    ExtraParams();
+
     ButtonExtraParams button;
     InnerSpinButtonExtraParams inner_spin;
     MenuArrowExtraParams menu_arrow;

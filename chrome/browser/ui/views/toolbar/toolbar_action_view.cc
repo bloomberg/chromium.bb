@@ -126,6 +126,11 @@ SkColor ToolbarActionView::GetInkDropBaseColor() const {
       ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
 }
 
+bool ToolbarActionView::ShouldShowInkDropHover() const {
+  return !delegate_->ShownInsideMenu() &&
+         views::MenuButton::ShouldShowInkDropHover();
+}
+
 content::WebContents* ToolbarActionView::GetCurrentWebContents() const {
   return delegate_->GetCurrentWebContents();
 }

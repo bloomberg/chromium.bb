@@ -108,7 +108,7 @@ class NATIVE_THEME_EXPORT NativeThemeBase : public NativeTheme {
       SkCanvas* canvas,
       State state,
       const gfx::Rect& rect,
-      const MenuListExtraParams& menu_list) const;
+      const MenuItemExtraParams& menu_item) const;
 
   virtual void PaintSliderTrack(
       SkCanvas* canvas,

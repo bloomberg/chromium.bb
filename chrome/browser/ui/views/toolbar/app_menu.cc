@@ -46,6 +46,7 @@
 #include "third_party/skia/include/core/SkPaint.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font_list.h"
@@ -131,10 +132,20 @@ class FullscreenButton : public ImageButton {
 class InMenuButtonBackground : public views::Background {
  public:
   enum ButtonType {
+    // A rectangular button with no neighbor on the left.
     LEFT_BUTTON,
+
+    // A rectangular button with neighbors on both sides.
     CENTER_BUTTON,
+
+    // A rectangular button with no neighbor on the right.
     RIGHT_BUTTON,
+
+    // A rectangular button that is not a member in a group.
     SINGLE_BUTTON,
+
+    // A button with no group neighbors and a rounded background.
+    ROUNDED_BUTTON,
   };
 
   explicit InMenuButtonBackground(ButtonType type)
@@ -161,14 +172,15 @@ class InMenuButtonBackground : public views::Background {
     int h = view->height();
 
     // Normal buttons get a border drawn on the right side and the rest gets
-    // filled in. The left button however does not get a line to combine
-    // buttons.
-    if (type_ != RIGHT_BUTTON) {
+    // filled in. The left or rounded buttons however do not get a line to
+    // combine buttons.
+    gfx::Rect bounds(view->GetLocalBounds());
+    if (type_ != RIGHT_BUTTON && type_ != ROUNDED_BUTTON) {
       canvas->FillRect(gfx::Rect(0, 0, 1, h),
                        BorderColor(view, views::Button::STATE_NORMAL));
+      bounds.Inset(gfx::Insets(0, 1, 0, 0));
     }
 
-    gfx::Rect bounds(view->GetLocalBounds());
     bounds.set_x(view->GetMirroredXForRect(bounds));
     DrawBackground(canvas, view, bounds, state);
   }
@@ -213,11 +225,15 @@ class InMenuButtonBackground : public views::Background {
                       views::Button::ButtonState state) const {
     if (state == views::Button::STATE_HOVERED ||
         state == views::Button::STATE_PRESSED) {
+      ui::NativeTheme::ExtraParams params;
+      if (type_ == ROUNDED_BUTTON) {
+        // Consistent with a hover corner radius (kInkDropSmallCornerRadius).
+        const int kBackgroundCornerRadius = 2;
+        params.menu_item.corner_radius = kBackgroundCornerRadius;
+      }
       view->GetNativeTheme()->Paint(canvas->sk_canvas(),
                                     ui::NativeTheme::kMenuItemBackground,
-                                    ui::NativeTheme::kHovered,
-                                    bounds,
-                                    ui::NativeTheme::ExtraParams());
+                                    ui::NativeTheme::kHovered, bounds, params);
     }
   }
 
@@ -1137,11 +1153,21 @@ void AppMenu::PopulateMenu(MenuItemView* parent, MenuModel* model) {
       case IDC_EXTENSIONS_OVERFLOW_MENU: {
         scoped_ptr<ExtensionToolbarMenuView> extension_toolbar(
             new ExtensionToolbarMenuView(browser_, this));
-        extension_toolbar_ = extension_toolbar.get();
-        if (extension_toolbar->ShouldShow())
-          item->AddChildView(extension_toolbar.release());
-        else
+        if (!extension_toolbar->ShouldShow()) {
           item->SetVisible(false);
+          extension_toolbar_ = nullptr;
+          break;
+        }
+        if (ui::MaterialDesignController::IsModeMaterial()) {
+          for (int i = 0; i < extension_toolbar->contents()->child_count();
+               ++i) {
+            View* action_view = extension_toolbar->contents()->child_at(i);
+            action_view->set_background(new InMenuButtonBackground(
+                InMenuButtonBackground::ROUNDED_BUTTON));
+          }
+        }
+        extension_toolbar_ = extension_toolbar.get();
+        item->AddChildView(extension_toolbar.release());
         break;
       }
 

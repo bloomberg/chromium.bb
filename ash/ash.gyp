@@ -982,6 +982,7 @@
         '../ui/gfx/gfx.gyp:gfx_vector_icons',
         '../ui/keyboard/keyboard.gyp:keyboard',
         '../ui/message_center/message_center.gyp:message_center',
+        '../ui/native_theme/native_theme.gyp:native_theme',
         '../ui/platform_window/stub/stub_window.gyp:stub_window',
         '../ui/resources/ui_resources.gyp:ui_resources',
         '../ui/strings/ui_strings.gyp:ui_strings',

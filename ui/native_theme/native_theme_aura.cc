@@ -130,8 +130,8 @@ void NativeThemeAura::PaintMenuItemBackground(
     SkCanvas* canvas,
     State state,
     const gfx::Rect& rect,
-    const MenuListExtraParams& menu_list) const {
-  CommonThemePaintMenuItemBackground(canvas, state, rect);
+    const MenuItemExtraParams& menu_item) const {
+  CommonThemePaintMenuItemBackground(canvas, state, rect, menu_item);
 }
 
 void NativeThemeAura::PaintArrowButton(SkCanvas* canvas,

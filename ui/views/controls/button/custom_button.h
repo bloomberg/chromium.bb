@@ -122,6 +122,9 @@ class VIEWS_EXPORT CustomButton : public Button, public gfx::AnimationDelegate {
   // we simply return IsTriggerableEvent(event).
   virtual bool ShouldEnterPushedState(const ui::Event& event);
 
+  // Returns true if hover effect should be visible.
+  virtual bool ShouldShowInkDropHover() const;
+
   void set_has_ink_drop_action_on_click(bool has_ink_drop_action_on_click) {
     has_ink_drop_action_on_click_ = has_ink_drop_action_on_click;
   }
@@ -151,8 +154,6 @@ class VIEWS_EXPORT CustomButton : public Button, public gfx::AnimationDelegate {
   }
 
  private:
-  bool ShouldShowInkDropHover() const;
-
   ButtonState state_;
 
   gfx::ThrobAnimation hover_animation_;

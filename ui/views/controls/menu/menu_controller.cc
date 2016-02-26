@@ -53,16 +53,6 @@ using base::Time;
 using base::TimeDelta;
 using ui::OSExchangeData;
 
-// Period of the scroll timer (in milliseconds).
-static const int kScrollTimerMS = 30;
-
-// Amount of time from when the drop exits the menu and the menu is hidden.
-static const int kCloseOnExitTime = 1200;
-
-// If a context menu is invoked by touch, we shift the menu by this offset so
-// that the finger does not obscure the menu.
-static const int kCenteredContextMenuYOffset = -15;
-
 namespace views {
 
 namespace {
@@ -70,7 +60,17 @@ namespace {
 // When showing context menu on mouse down, the user might accidentally select
 // the menu item on the subsequent mouse up. To prevent this, we add the
 // following delay before the user is able to select an item.
-static int menu_selection_hold_time_ms = kMinimumMsPressedToActivate;
+int menu_selection_hold_time_ms = kMinimumMsPressedToActivate;
+
+// Period of the scroll timer (in milliseconds).
+const int kScrollTimerMS = 30;
+
+// Amount of time from when the drop exits the menu and the menu is hidden.
+const int kCloseOnExitTime = 1200;
+
+// If a context menu is invoked by touch, we shift the menu by this offset so
+// that the finger does not obscure the menu.
+const int kCenteredContextMenuYOffset = -15;
 
 // The spacing offset for the bubble tip.
 const int kBubbleTipSizeLeftRight = 12;
@@ -97,7 +97,7 @@ bool TitleMatchesMnemonic(MenuItemView* menu, base::char16 key) {
 }
 
 // Returns the first descendant of |view| that is hot tracked.
-static CustomButton* GetFirstHotTrackedView(View* view) {
+CustomButton* GetFirstHotTrackedView(View* view) {
   if (!view)
     return NULL;
   CustomButton* button = CustomButton::AsCustomButton(view);
@@ -119,7 +119,7 @@ static CustomButton* GetFirstHotTrackedView(View* view) {
 // the first view (if |forward| is false, iterating starts at the last view). If
 // |forward| is true the children are considered first to last, otherwise last
 // to first.
-static View* GetFirstFocusableView(View* view, int start, bool forward) {
+View* GetFirstFocusableView(View* view, int start, bool forward) {
   if (forward) {
     for (int i = start == -1 ? 0 : start; i < view->child_count(); ++i) {
       View* deepest = GetFirstFocusableView(view->child_at(i), -1, forward);
@@ -137,15 +137,13 @@ static View* GetFirstFocusableView(View* view, int start, bool forward) {
 }
 
 // Returns the first child of |start| that is focusable.
-static View* GetInitialFocusableView(View* start, bool forward) {
+View* GetInitialFocusableView(View* start, bool forward) {
   return GetFirstFocusableView(start, -1, forward);
 }
 
 // Returns the next view after |start_at| that is focusable. Returns NULL if
 // there are no focusable children of |ancestor| after |start_at|.
-static View* GetNextFocusableView(View* ancestor,
-                                  View* start_at,
-                                  bool forward) {
+View* GetNextFocusableView(View* ancestor, View* start_at, bool forward) {
   DCHECK(ancestor->Contains(start_at));
   View* parent = start_at;
   do {
@@ -719,6 +717,9 @@ void MenuController::OnMouseMoved(SubmenuView* source,
   MenuHostRootView* root_view = GetRootView(source, event.location());
   if (root_view)
     root_view->ProcessMouseMoved(event);
+  // TODO(varkha): It is possible that another child CustomButton has become
+  // hot-tracked as a result of this event. We need to track it for accurate
+  // hot-tracking when both mouse and keyboard are used to navigate the menu.
   HandleMouseLocation(source, event.location());
 }
 
@@ -2086,8 +2087,7 @@ void MenuController::IncrementSelection(
     // select the first menu item that is visible and enabled.
     if (item->GetSubmenu()->GetMenuItemCount()) {
       MenuItemView* to_select = FindInitialSelectableMenuItem(item, direction);
-      if (to_select)
-        SetSelection(to_select, SELECTION_DEFAULT);
+      SetInitialHotTrackedView(to_select, direction);
       return;
     }
   }
@@ -2122,14 +2122,7 @@ void MenuController::IncrementSelection(
         if (parent->GetSubmenu()->GetMenuItemAt(i) == item) {
           MenuItemView* to_select =
               FindNextSelectableMenuItem(parent, i, direction);
-          if (!to_select)
-            break;
-          SetSelection(to_select, SELECTION_DEFAULT);
-          View* to_make_hot = GetInitialFocusableView(
-              to_select, direction == INCREMENT_SELECTION_DOWN);
-          CustomButton* button_hot = CustomButton::AsCustomButton(to_make_hot);
-          if (button_hot)
-            button_hot->SetHotTracked(true);
+          SetInitialHotTrackedView(to_select, direction);
           break;
         }
       }
@@ -2609,6 +2602,19 @@ void MenuController::HandleMouseLocation(SubmenuView* source,
     SetSelection(pending_state_.item->GetParentMenuItem(),
                  SELECTION_OPEN_SUBMENU);
   }
+}
+
+void MenuController::SetInitialHotTrackedView(
+    MenuItemView* item,
+    SelectionIncrementDirectionType direction) {
+  if (!item)
+    return;
+  SetSelection(item, SELECTION_DEFAULT);
+  View* hot_view =
+      GetInitialFocusableView(item, direction == INCREMENT_SELECTION_DOWN);
+  CustomButton* hot_button = CustomButton::AsCustomButton(hot_view);
+  if (hot_button)
+    hot_button->SetHotTracked(true);
 }
 
 }  // namespace views

@@ -245,7 +245,7 @@ void NativeThemeMac::PaintMenuItemBackground(
     SkCanvas* canvas,
     State state,
     const gfx::Rect& rect,
-    const MenuListExtraParams& menu_list) const {
+    const MenuItemExtraParams& menu_item) const {
   SkPaint paint;
   switch (state) {
     case NativeTheme::kNormal:

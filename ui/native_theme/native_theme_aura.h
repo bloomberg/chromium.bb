@@ -29,7 +29,7 @@ class NATIVE_THEME_EXPORT NativeThemeAura : public NativeThemeBase {
       SkCanvas* canvas,
       State state,
       const gfx::Rect& rect,
-      const MenuListExtraParams& menu_list) const override;
+      const MenuItemExtraParams& menu_item) const override;
   void PaintArrowButton(SkCanvas* gc,
                         const gfx::Rect& rect,
                         Part direction,

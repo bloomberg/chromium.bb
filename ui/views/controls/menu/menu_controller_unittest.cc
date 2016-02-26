@@ -876,7 +876,7 @@ TEST_F(MenuControllerTest, AsynchronousRepostEvent) {
                       false, false, &mouse_event_flags);
   EXPECT_EQ(run_result, nullptr);
 
-  // Show a sub menu to targert with a pointer selection. However have the event
+  // Show a sub menu to target with a pointer selection. However have the event
   // occur outside of the bounds of the entire menu.
   SubmenuView* sub_menu = item->GetSubmenu();
   sub_menu->ShowAt(owner(), item->bounds(), false);
@@ -975,7 +975,7 @@ TEST_F(MenuControllerTest, AsynchronousRepostEventDeletesController) {
                       false, false, &mouse_event_flags);
   EXPECT_EQ(run_result, nullptr);
 
-  // Show a sub menu to targert with a pointer selection. However have the event
+  // Show a sub menu to target with a pointer selection. However have the event
   // occur outside of the bounds of the entire menu.
   SubmenuView* sub_menu = item->GetSubmenu();
   sub_menu->ShowAt(owner(), item->bounds(), true);

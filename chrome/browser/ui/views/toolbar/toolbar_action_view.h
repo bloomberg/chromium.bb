@@ -79,6 +79,7 @@ class ToolbarActionView : public views::MenuButton,
   void AddInkDropLayer(ui::Layer* ink_drop_layer) override;
   void RemoveInkDropLayer(ui::Layer* ink_drop_layer) override;
   SkColor GetInkDropBaseColor() const override;
+  bool ShouldShowInkDropHover() const override;
 
   // ToolbarActionViewDelegateViews:
   content::WebContents* GetCurrentWebContents() const override;

@@ -213,7 +213,7 @@ void NativeThemeBase::Paint(SkCanvas* canvas,
       PaintMenuPopupBackground(canvas, rect.size(), extra.menu_background);
       break;
     case kMenuItemBackground:
-      PaintMenuItemBackground(canvas, state, rect, extra.menu_list);
+      PaintMenuItemBackground(canvas, state, rect, extra.menu_item);
       break;
     case kProgressBar:
       PaintProgressBar(canvas, state, rect, extra.progress_bar);
@@ -792,7 +792,7 @@ void NativeThemeBase::PaintMenuItemBackground(
     SkCanvas* canvas,
     State state,
     const gfx::Rect& rect,
-    const MenuListExtraParams& menu_list) const {
+    const MenuItemExtraParams& menu_item) const {
   // By default don't draw anything over the normal background.
 }
 

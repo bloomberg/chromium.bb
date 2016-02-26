@@ -72,12 +72,8 @@ void ActivateOverflowedActionWithKeyboard(Browser* browser,
   gfx::NativeWindow native_window =
       views::MenuController::GetActiveInstance()->owner()->GetNativeWindow();
 
-  // Send two key down events followed by the return key.
-  // The two key down events target the toolbar action in the app menu.
-  // TODO(devlin): Shouldn't this be one key down event?
-  ui_controls::SendKeyPress(native_window,
-                            ui::VKEY_DOWN,
-                            false, false, false, false);
+  // Send a key down event followed by the return key.
+  // The key down event targets the toolbar action in the app menu.
   ui_controls::SendKeyPress(native_window,
                             ui::VKEY_DOWN,
                             false, false, false, false);

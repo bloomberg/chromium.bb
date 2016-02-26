@@ -4,9 +4,15 @@
 
 #include "ui/native_theme/native_theme.h"
 
+#include <cstring>
+
 #include "ui/native_theme/native_theme_observer.h"
 
 namespace ui {
+
+NativeTheme::ExtraParams::ExtraParams() {
+  memset(this, 0, sizeof(*this));
+}
 
 void NativeTheme::SetScrollbarColors(unsigned inactive_color,
                                      unsigned active_color,

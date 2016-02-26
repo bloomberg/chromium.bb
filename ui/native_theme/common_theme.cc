@@ -460,9 +460,11 @@ void CommonThemePaintMenuBackground(SkCanvas* canvas, const gfx::Rect& rect) {
   canvas->drawRect(gfx::RectToSkRect(rect), paint);
 }
 
-void CommonThemePaintMenuItemBackground(SkCanvas* canvas,
-                                        NativeTheme::State state,
-                                        const gfx::Rect& rect) {
+void CommonThemePaintMenuItemBackground(
+    SkCanvas* canvas,
+    NativeTheme::State state,
+    const gfx::Rect& rect,
+    const NativeTheme::MenuItemExtraParams& menu_item) {
   SkPaint paint;
   switch (state) {
     case NativeTheme::kNormal:
@@ -477,6 +479,11 @@ void CommonThemePaintMenuItemBackground(SkCanvas* canvas,
     default:
       NOTREACHED() << "Invalid state " << state;
       break;
+  }
+  if (menu_item.corner_radius > 0) {
+    const SkScalar radius = SkIntToScalar(menu_item.corner_radius);
+    canvas->drawRoundRect(gfx::RectToSkRect(rect), radius, radius, paint);
+    return;
   }
   canvas->drawRect(gfx::RectToSkRect(rect), paint);
 }

@@ -257,7 +257,7 @@ void NativeThemeWin::Paint(SkCanvas* canvas,
       CommonThemePaintMenuBackground(canvas, rect);
       return;
     case kMenuItemBackground:
-      CommonThemePaintMenuItemBackground(canvas, state, rect);
+      CommonThemePaintMenuItemBackground(canvas, state, rect, extra.menu_item);
       return;
     default:
       break;

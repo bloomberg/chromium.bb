@@ -30,7 +30,7 @@ class NativeThemeGtk2 : public ui::NativeThemeBase {
       SkCanvas* canvas,
       State state,
       const gfx::Rect& rect,
-      const MenuListExtraParams& menu_list) const override;
+      const MenuItemExtraParams& menu_item) const override;
 
   // Gets a ChromeGtkFrame theme color; returns true on success. Always returns
   // false in GTK3.

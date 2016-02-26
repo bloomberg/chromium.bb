@@ -399,6 +399,10 @@ bool CustomButton::ShouldEnterHoveredState() {
   return check_mouse_position && IsMouseHovered();
 }
 
+bool CustomButton::ShouldShowInkDropHover() const {
+  return enabled() && IsMouseHovered() && !InDrag();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // CustomButton, View overrides (protected):
 
@@ -423,10 +427,6 @@ void CustomButton::OnClickCanceled(const ui::Event& event) {
   if (ink_drop_delegate())
     ink_drop_delegate()->OnAction(views::InkDropState::HIDDEN);
   Button::OnClickCanceled(event);
-}
-
-bool CustomButton::ShouldShowInkDropHover() const {
-  return enabled() && IsMouseHovered() && !InDrag();
 }
 
 }  // namespace views
