@@ -603,6 +603,14 @@ source_set("browser") {
     ]
   }
 
+  if (is_chromeos) {
+    sources += [
+      "metrics/leak_detector_controller.cc",
+      "metrics/leak_detector_controller.h",
+    ]
+    deps += [ "//components/metrics:leak_detector" ]
+  }
+
   if (use_cups) {
     configs += [ "//printing:cups" ]
   }

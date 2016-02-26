@@ -371,6 +371,7 @@
       'metrics/leak_detector/call_stack_manager_unittest.cc',
       'metrics/leak_detector/call_stack_table_unittest.cc',
       'metrics/leak_detector/leak_analyzer_unittest.cc',
+      'metrics/leak_detector/leak_detector_unittest.cc',
       'metrics/leak_detector/leak_detector_impl_unittest.cc',
       'metrics/leak_detector/ranked_list_unittest.cc',
     ],

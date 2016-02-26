@@ -23,6 +23,10 @@ extern const base::Feature kAutomaticTabDiscarding;
 extern const base::Feature kLinuxObsoleteSystemIsEndOfTheLine;
 #endif
 
+#if defined(OS_CHROMEOS)
+extern const base::Feature kRuntimeMemoryLeakDetector;
+#endif  // defined(OS_CHROMEOS)
+
 // DON'T ADD RANDOM STUFF HERE. Put it in the main section above in
 // alphabetical order, or in one of the ifdefs (also in order in each section).
 

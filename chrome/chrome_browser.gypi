@@ -3654,6 +3654,15 @@
             '../ui/chromeos/ui_chromeos.gyp:ui_chromeos_resources',
           ],
         }],
+        ['chromeos==1', {
+          'sources': [
+            'browser/metrics/leak_detector_controller.cc',
+            'browser/metrics/leak_detector_controller.h',
+          ],
+          'dependencies': [
+            '../components/components.gyp:metrics_leak_detector',
+          ],
+        }],
         ['use_cups==1', {
           'dependencies': [
             '../printing/printing.gyp:cups',

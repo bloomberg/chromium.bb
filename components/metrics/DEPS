@@ -7,6 +7,8 @@ include_rules = [
   "+components/prefs",
   "+components/variations",
   "+components/version_info",
+  "+content/public/browser",
+  "+content/public/test",
   "+third_party/zlib/google",
   "-net",
 ]

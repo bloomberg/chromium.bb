@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/metrics/leak_detector_controller.h"
 #include "chrome/browser/metrics/perf/perf_provider_chromeos.h"
 #include "components/metrics/metrics_provider.h"
 
@@ -86,7 +87,11 @@ class ChromeOSMetricsProvider : public metrics::MetricsProvider {
   // Record the device enrollment status.
   void RecordEnrollmentStatus();
 
+  // For collecting systemwide perf data.
   metrics::PerfProvider perf_provider_;
+
+  // Enables runtime memory leak detection and gets notified of leak reports.
+  scoped_ptr<metrics::LeakDetectorController> leak_detector_controller_;
 
   // Bluetooth Adapter instance for collecting information about paired devices.
   scoped_refptr<device::BluetoothAdapter> adapter_;

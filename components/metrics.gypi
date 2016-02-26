@@ -261,6 +261,8 @@
             'metrics/leak_detector/custom_allocator.h',
             'metrics/leak_detector/leak_analyzer.cc',
             'metrics/leak_detector/leak_analyzer.h',
+            'metrics/leak_detector/leak_detector.cc',
+            'metrics/leak_detector/leak_detector.h',
             'metrics/leak_detector/leak_detector_impl.cc',
             'metrics/leak_detector/leak_detector_impl.h',
             'metrics/leak_detector/leak_detector_value_type.cc',

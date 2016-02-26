@@ -1115,6 +1115,7 @@
       'browser/extensions/api/log_private/syslog_parser_unittest.cc',
       'browser/extensions/updater/local_extension_cache_unittest.cc',
       'browser/metrics/chromeos_metrics_provider_unittest.cc',
+      'browser/metrics/leak_detector_controller_unittest.cc',
       'browser/metrics/perf/cpu_identity_unittest.cc',
       'browser/metrics/perf/random_selector_unittest.cc',
       'browser/notifications/login_state_notification_blocker_chromeos_unittest.cc',

@@ -6,13 +6,16 @@
 
 #include <stddef.h>
 
+#include "base/feature_list.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/system/statistics_provider.h"
+#include "components/metrics/leak_detector/leak_detector.h"
 #include "components/metrics/metrics_service.h"
 #include "components/metrics/proto/chrome_user_metrics_extension.pb.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -141,6 +144,10 @@ ChromeOSMetricsProvider::GetEnrollmentStatus() {
 
 void ChromeOSMetricsProvider::Init() {
   perf_provider_.Init();
+
+  if (base::FeatureList::IsEnabled(features::kRuntimeMemoryLeakDetector)) {
+    leak_detector_controller_.reset(new metrics::LeakDetectorController);
+  }
 }
 
 void ChromeOSMetricsProvider::OnDidCreateMetricsLog() {
