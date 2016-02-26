@@ -57,16 +57,19 @@ SKIP = {
   'Android Tests',
   'Android Tests (dbg)',
 
-  # http://crbug.com/472205
-  'Chromium Mac 10.10',
-  'Chromium Mac 10.11',
-
   # http://crbug.com/441429
   'Linux Trusty (32)', 'Linux Trusty (dbg)(32)',
 
-  # http://crbug.com/480053
-  'Linux GN',
-  'Linux GN (dbg)',
+  # swarming may not work on Mac10.10 and 10.11, need to
+  # re-investigate and confirm
+  'WebKit Mac10.10',
+  'WebKit Mac10.11',
+  'WebKit Mac10.11 (dbg)',
+  'WebKit Mac10.11 (retina)',
+  'Chromium Mac10.10 Tests',
+  'Chromium Mac10.11 Tests',
+  'Mac GN',
+  'Mac GN (dbg)',
 
   # The memory.fyi waterfall is in the process of being converted to recipes,
   # and swarming doesn't work yet.
