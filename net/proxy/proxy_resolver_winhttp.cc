@@ -62,11 +62,8 @@ class ProxyResolverWinHttp : public ProxyResolver {
   int GetProxyForURL(const GURL& url,
                      ProxyInfo* results,
                      const CompletionCallback& /*callback*/,
-                     RequestHandle* /*request*/,
+                     scoped_ptr<Request>* /*request*/,
                      const BoundNetLog& /*net_log*/) override;
-  void CancelRequest(RequestHandle request) override;
-
-  LoadState GetLoadState(RequestHandle request) const override;
 
  private:
   bool OpenWinHttpSession();
@@ -95,7 +92,7 @@ ProxyResolverWinHttp::~ProxyResolverWinHttp() {
 int ProxyResolverWinHttp::GetProxyForURL(const GURL& query_url,
                                          ProxyInfo* results,
                                          const CompletionCallback& /*callback*/,
-                                         RequestHandle* /*request*/,
+                                         scoped_ptr<Request>* /*request*/,
                                          const BoundNetLog& /*net_log*/) {
   // If we don't have a WinHTTP session, then create a new one.
   if (!session_handle_ && !OpenWinHttpSession())
@@ -173,16 +170,6 @@ int ProxyResolverWinHttp::GetProxyForURL(const GURL& query_url,
 
   FreeInfo(&info);
   return rv;
-}
-
-void ProxyResolverWinHttp::CancelRequest(RequestHandle request) {
-  // This is a synchronous ProxyResolver; no possibility for async requests.
-  NOTREACHED();
-}
-
-LoadState ProxyResolverWinHttp::GetLoadState(RequestHandle request) const {
-  NOTREACHED();
-  return LOAD_STATE_IDLE;
 }
 
 bool ProxyResolverWinHttp::OpenWinHttpSession() {

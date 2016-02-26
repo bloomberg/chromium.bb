@@ -128,9 +128,10 @@ TEST_F(ProxyResolverV8TracingWrapperTest, Simple) {
   TestCompletionCallback callback;
   ProxyInfo proxy_info;
 
+  scoped_ptr<ProxyResolver::Request> req;
   int rv =
       resolver->GetProxyForURL(GURL("http://foo/"), &proxy_info,
-                               callback.callback(), NULL, request_log.bound());
+                               callback.callback(), &req, request_log.bound());
 
   EXPECT_EQ(ERR_IO_PENDING, rv);
   EXPECT_EQ(OK, callback.WaitForResult());
@@ -159,9 +160,10 @@ TEST_F(ProxyResolverV8TracingWrapperTest, JavascriptError) {
   TestCompletionCallback callback;
   ProxyInfo proxy_info;
 
+  scoped_ptr<ProxyResolver::Request> req;
   int rv =
       resolver->GetProxyForURL(GURL("http://throw-an-error/"), &proxy_info,
-                               callback.callback(), NULL, request_log.bound());
+                               callback.callback(), &req, request_log.bound());
 
   EXPECT_EQ(ERR_IO_PENDING, rv);
   EXPECT_EQ(ERR_PAC_SCRIPT_FAILED, callback.WaitForResult());
@@ -208,9 +210,10 @@ TEST_F(ProxyResolverV8TracingWrapperTest, TooManyAlerts) {
   TestCompletionCallback callback;
   ProxyInfo proxy_info;
 
+  scoped_ptr<ProxyResolver::Request> req;
   int rv =
       resolver->GetProxyForURL(GURL("http://foo/"), &proxy_info,
-                               callback.callback(), NULL, request_log.bound());
+                               callback.callback(), &req, request_log.bound());
 
   EXPECT_EQ(ERR_IO_PENDING, rv);
   EXPECT_EQ(OK, callback.WaitForResult());
@@ -256,9 +259,10 @@ TEST_F(ProxyResolverV8TracingWrapperTest, TooManyEmptyAlerts) {
   TestCompletionCallback callback;
   ProxyInfo proxy_info;
 
+  scoped_ptr<ProxyResolver::Request> req;
   int rv =
       resolver->GetProxyForURL(GURL("http://foo/"), &proxy_info,
-                               callback.callback(), NULL, request_log.bound());
+                               callback.callback(), &req, request_log.bound());
 
   EXPECT_EQ(ERR_IO_PENDING, rv);
   EXPECT_EQ(OK, callback.WaitForResult());
@@ -313,9 +317,10 @@ TEST_F(ProxyResolverV8TracingWrapperTest, Dns) {
   TestCompletionCallback callback;
   ProxyInfo proxy_info;
 
+  scoped_ptr<ProxyResolver::Request> req;
   int rv =
       resolver->GetProxyForURL(GURL("http://foo/"), &proxy_info,
-                               callback.callback(), NULL, request_log.bound());
+                               callback.callback(), &req, request_log.bound());
 
   EXPECT_EQ(ERR_IO_PENDING, rv);
   EXPECT_EQ(OK, callback.WaitForResult());
@@ -378,9 +383,10 @@ TEST_F(ProxyResolverV8TracingWrapperTest, DnsChecksCache) {
   TestCompletionCallback callback2;
   ProxyInfo proxy_info;
 
+  scoped_ptr<ProxyResolver::Request> req;
   int rv =
       resolver->GetProxyForURL(GURL("http://foopy/req1"), &proxy_info,
-                               callback1.callback(), NULL, request_log.bound());
+                               callback1.callback(), &req, request_log.bound());
 
   EXPECT_EQ(ERR_IO_PENDING, rv);
   EXPECT_EQ(OK, callback1.WaitForResult());
@@ -391,9 +397,10 @@ TEST_F(ProxyResolverV8TracingWrapperTest, DnsChecksCache) {
   // The first request took 2 restarts, hence on g_iteration=3.
   EXPECT_EQ("166.155.144.11:3", proxy_info.proxy_server().ToURI());
 
-  rv =
-      resolver->GetProxyForURL(GURL("http://foopy/req2"), &proxy_info,
-                               callback2.callback(), NULL, request_log.bound());
+  scoped_ptr<ProxyResolver::Request> req2;
+  rv = resolver->GetProxyForURL(GURL("http://foopy/req2"), &proxy_info,
+                                callback2.callback(), &req2,
+                                request_log.bound());
 
   EXPECT_EQ(ERR_IO_PENDING, rv);
   EXPECT_EQ(OK, callback2.WaitForResult());
@@ -430,9 +437,10 @@ TEST_F(ProxyResolverV8TracingWrapperTest, FallBackToSynchronous1) {
   TestCompletionCallback callback;
   ProxyInfo proxy_info;
 
+  scoped_ptr<ProxyResolver::Request> req;
   int rv =
       resolver->GetProxyForURL(GURL("http://foo/"), &proxy_info,
-                               callback.callback(), NULL, request_log.bound());
+                               callback.callback(), &req, request_log.bound());
   EXPECT_EQ(ERR_IO_PENDING, rv);
   EXPECT_EQ(OK, callback.WaitForResult());
 
@@ -484,9 +492,10 @@ TEST_F(ProxyResolverV8TracingWrapperTest, FallBackToSynchronous2) {
   TestCompletionCallback callback;
   ProxyInfo proxy_info;
 
+  scoped_ptr<ProxyResolver::Request> req;
   int rv =
       resolver->GetProxyForURL(GURL("http://foo/"), &proxy_info,
-                               callback.callback(), NULL, request_log.bound());
+                               callback.callback(), &req, request_log.bound());
   EXPECT_EQ(ERR_IO_PENDING, rv);
   EXPECT_EQ(OK, callback.WaitForResult());
 
@@ -522,9 +531,10 @@ TEST_F(ProxyResolverV8TracingWrapperTest, InfiniteDNSSequence) {
   TestCompletionCallback callback;
   ProxyInfo proxy_info;
 
+  scoped_ptr<ProxyResolver::Request> req;
   int rv =
       resolver->GetProxyForURL(GURL("http://foo/"), &proxy_info,
-                               callback.callback(), NULL, request_log.bound());
+                               callback.callback(), &req, request_log.bound());
   EXPECT_EQ(ERR_IO_PENDING, rv);
   EXPECT_EQ(OK, callback.WaitForResult());
 
@@ -567,9 +577,10 @@ TEST_F(ProxyResolverV8TracingWrapperTest, InfiniteDNSSequence2) {
   TestCompletionCallback callback;
   ProxyInfo proxy_info;
 
+  scoped_ptr<ProxyResolver::Request> req;
   int rv =
       resolver->GetProxyForURL(GURL("http://foo/"), &proxy_info,
-                               callback.callback(), NULL, request_log.bound());
+                               callback.callback(), &req, request_log.bound());
   EXPECT_EQ(ERR_IO_PENDING, rv);
   EXPECT_EQ(OK, callback.WaitForResult());
 
@@ -611,9 +622,10 @@ void DnsDuringInitHelper(bool synchronous_host_resolver) {
   TestCompletionCallback callback;
   ProxyInfo proxy_info;
 
+  scoped_ptr<ProxyResolver::Request> req;
   int rv =
       resolver->GetProxyForURL(GURL("http://foo/"), &proxy_info,
-                               callback.callback(), NULL, request_log.bound());
+                               callback.callback(), &req, request_log.bound());
   EXPECT_EQ(ERR_IO_PENDING, rv);
   EXPECT_EQ(OK, callback.WaitForResult());
 
@@ -667,7 +679,7 @@ TEST_F(ProxyResolverV8TracingWrapperTest, CancelAll) {
 
   const size_t kNumRequests = 5;
   ProxyInfo proxy_info[kNumRequests];
-  ProxyResolver::RequestHandle request[kNumRequests];
+  scoped_ptr<ProxyResolver::Request> request[kNumRequests];
 
   for (size_t i = 0; i < kNumRequests; ++i) {
     int rv = resolver->GetProxyForURL(GURL("http://foo/"), &proxy_info[i],
@@ -677,7 +689,7 @@ TEST_F(ProxyResolverV8TracingWrapperTest, CancelAll) {
   }
 
   for (size_t i = 0; i < kNumRequests; ++i) {
-    resolver->CancelRequest(request[i]);
+    request[i].reset();
   }
 }
 
@@ -695,8 +707,8 @@ TEST_F(ProxyResolverV8TracingWrapperTest, CancelSome) {
 
   ProxyInfo proxy_info1;
   ProxyInfo proxy_info2;
-  ProxyResolver::RequestHandle request1;
-  ProxyResolver::RequestHandle request2;
+  scoped_ptr<ProxyResolver::Request> request1;
+  scoped_ptr<ProxyResolver::Request> request2;
   TestCompletionCallback callback;
 
   int rv = resolver->GetProxyForURL(GURL("http://foo/"), &proxy_info1,
@@ -708,7 +720,7 @@ TEST_F(ProxyResolverV8TracingWrapperTest, CancelSome) {
                                 callback.callback(), &request2, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
-  resolver->CancelRequest(request1);
+  request1.reset();
 
   EXPECT_EQ(OK, callback.WaitForResult());
 }
@@ -726,8 +738,8 @@ TEST_F(ProxyResolverV8TracingWrapperTest, CancelWhilePendingCompletionTask) {
 
   ProxyInfo proxy_info1;
   ProxyInfo proxy_info2;
-  ProxyResolver::RequestHandle request1;
-  ProxyResolver::RequestHandle request2;
+  scoped_ptr<ProxyResolver::Request> request1;
+  scoped_ptr<ProxyResolver::Request> request2;
   TestCompletionCallback callback;
 
   int rv = resolver->GetProxyForURL(GURL("http://throw-an-error/"),
@@ -737,10 +749,10 @@ TEST_F(ProxyResolverV8TracingWrapperTest, CancelWhilePendingCompletionTask) {
 
   // Wait until the first request has finished running on the worker thread.
   // Cancel the first request, while it has a pending completion task on
-  // the origin thread.
-  error_observer->RunOnError(base::Bind(&ProxyResolver::CancelRequest,
-                                        base::Unretained(resolver.get()),
-                                        request1));
+  // the origin thread. Reset deletes Request object which cancels the request.
+  error_observer->RunOnError(
+      base::Bind(&scoped_ptr<ProxyResolver::Request>::reset,
+                 base::Unretained(&request1), nullptr));
 
   // Start another request, to make sure it is able to complete.
   rv = resolver->GetProxyForURL(GURL("http://i-have-no-idea-what-im-doing/"),
@@ -828,8 +840,8 @@ TEST_F(ProxyResolverV8TracingWrapperTest,
 
   ProxyInfo proxy_info1;
   ProxyInfo proxy_info2;
-  ProxyResolver::RequestHandle request1;
-  ProxyResolver::RequestHandle request2;
+  scoped_ptr<ProxyResolver::Request> request1;
+  scoped_ptr<ProxyResolver::Request> request2;
 
   int rv = resolver->GetProxyForURL(GURL("http://foo/req1"), &proxy_info1,
                                     base::Bind(&CrashCallback), &request1,
@@ -847,8 +859,8 @@ TEST_F(ProxyResolverV8TracingWrapperTest,
 
   host_resolver.WaitUntilRequestIsReceived();
 
-  resolver->CancelRequest(request1);
-  resolver->CancelRequest(request2);
+  request1.reset();
+  request2.reset();
 
   EXPECT_EQ(2, host_resolver.num_cancelled_requests());
 
@@ -857,9 +869,8 @@ TEST_F(ProxyResolverV8TracingWrapperTest,
   // should have been cancelled.
 }
 
-void CancelRequestAndPause(ProxyResolver* resolver,
-                           ProxyResolver::RequestHandle request) {
-  resolver->CancelRequest(request);
+void CancelRequestAndPause(scoped_ptr<ProxyResolver::Request>* request) {
+  request->reset();
 
   // Sleep for a little bit. This makes it more likely for the worker
   // thread to have returned from its call, and serves as a regression
@@ -878,7 +889,7 @@ TEST_F(ProxyResolverV8TracingWrapperTest, CancelWhileBlockedInNonBlockingDns) {
       nullptr, &host_resolver, make_scoped_ptr(error_observer), "dns.js");
 
   ProxyInfo proxy_info;
-  ProxyResolver::RequestHandle request;
+  scoped_ptr<ProxyResolver::Request> request;
 
   int rv = resolver->GetProxyForURL(GURL("http://foo/"), &proxy_info,
                                     base::Bind(&CrashCallback), &request,
@@ -886,8 +897,7 @@ TEST_F(ProxyResolverV8TracingWrapperTest, CancelWhileBlockedInNonBlockingDns) {
 
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
-  host_resolver.SetAction(
-      base::Bind(CancelRequestAndPause, resolver.get(), request));
+  host_resolver.SetAction(base::Bind(CancelRequestAndPause, &request));
 
   host_resolver.WaitUntilRequestIsReceived();
 }
@@ -902,7 +912,7 @@ TEST_F(ProxyResolverV8TracingWrapperTest, CancelWhileBlockedInNonBlockingDns2) {
       nullptr, &host_resolver, make_scoped_ptr(error_observer), "dns.js");
 
   ProxyInfo proxy_info;
-  ProxyResolver::RequestHandle request;
+  scoped_ptr<ProxyResolver::Request> request;
 
   int rv = resolver->GetProxyForURL(GURL("http://foo/"), &proxy_info,
                                     base::Bind(&CrashCallback), &request,
@@ -914,7 +924,7 @@ TEST_F(ProxyResolverV8TracingWrapperTest, CancelWhileBlockedInNonBlockingDns2) {
   // work whatever the delay is here, but it is most useful if the delay
   // is large enough to allow a task to be posted back.
   base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(10));
-  resolver->CancelRequest(request);
+  request.reset();
 
   EXPECT_EQ(0u, host_resolver.num_resolve());
 }
@@ -1001,9 +1011,10 @@ TEST_F(ProxyResolverV8TracingWrapperTest, Terminate) {
   TestCompletionCallback callback;
   ProxyInfo proxy_info;
 
+  scoped_ptr<ProxyResolver::Request> req;
   int rv =
       resolver->GetProxyForURL(GURL("http://foopy/req1"), &proxy_info,
-                               callback.callback(), NULL, request_log.bound());
+                               callback.callback(), &req, request_log.bound());
 
   EXPECT_EQ(ERR_IO_PENDING, rv);
   EXPECT_EQ(OK, callback.WaitForResult());
@@ -1081,12 +1092,13 @@ TEST_F(ProxyResolverV8TracingWrapperTest, MultipleResolvers) {
   const size_t kNumResults = kNumResolvers * kNumIterations;
   TestCompletionCallback callback[kNumResults];
   ProxyInfo proxy_info[kNumResults];
+  scoped_ptr<ProxyResolver::Request> request[kNumResults];
 
   for (size_t i = 0; i < kNumResults; ++i) {
     size_t resolver_i = i % kNumResolvers;
     int rv = resolver[resolver_i]->GetProxyForURL(
-        GURL("http://foo/"), &proxy_info[i], callback[i].callback(), NULL,
-        BoundNetLog());
+        GURL("http://foo/"), &proxy_info[i], callback[i].callback(),
+        &request[i], BoundNetLog());
     EXPECT_EQ(ERR_IO_PENDING, rv);
   }
 

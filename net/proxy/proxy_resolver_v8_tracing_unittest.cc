@@ -159,9 +159,10 @@ TEST_F(ProxyResolverV8TracingTest, Simple) {
 
   TestCompletionCallback callback;
   ProxyInfo proxy_info;
+  scoped_ptr<ProxyResolver::Request> req;
 
   resolver->GetProxyForURL(GURL("http://foo/"), &proxy_info,
-                           callback.callback(), NULL,
+                           callback.callback(), &req,
                            mock_bindings.CreateBindings());
 
   EXPECT_EQ(OK, callback.WaitForResult());
@@ -185,8 +186,9 @@ TEST_F(ProxyResolverV8TracingTest, JavascriptError) {
   TestCompletionCallback callback;
   ProxyInfo proxy_info;
 
+  scoped_ptr<ProxyResolver::Request> req;
   resolver->GetProxyForURL(GURL("http://throw-an-error/"), &proxy_info,
-                           callback.callback(), NULL,
+                           callback.callback(), &req,
                            mock_bindings.CreateBindings());
 
   EXPECT_EQ(ERR_PAC_SCRIPT_FAILED, callback.WaitForResult());
@@ -212,8 +214,9 @@ TEST_F(ProxyResolverV8TracingTest, TooManyAlerts) {
   TestCompletionCallback callback;
   ProxyInfo proxy_info;
 
+  scoped_ptr<ProxyResolver::Request> req;
   resolver->GetProxyForURL(GURL("http://foo/"), &proxy_info,
-                           callback.callback(), NULL,
+                           callback.callback(), &req,
                            mock_bindings.CreateBindings());
 
   EXPECT_EQ(OK, callback.WaitForResult());
@@ -248,8 +251,9 @@ TEST_F(ProxyResolverV8TracingTest, TooManyEmptyAlerts) {
   TestCompletionCallback callback;
   ProxyInfo proxy_info;
 
+  scoped_ptr<ProxyResolver::Request> req;
   resolver->GetProxyForURL(GURL("http://foo/"), &proxy_info,
-                           callback.callback(), NULL,
+                           callback.callback(), &req,
                            mock_bindings.CreateBindings());
 
   EXPECT_EQ(OK, callback.WaitForResult());
@@ -294,8 +298,9 @@ TEST_F(ProxyResolverV8TracingTest, Dns) {
   TestCompletionCallback callback;
   ProxyInfo proxy_info;
 
+  scoped_ptr<ProxyResolver::Request> req;
   resolver->GetProxyForURL(GURL("http://foo/"), &proxy_info,
-                           callback.callback(), NULL,
+                           callback.callback(), &req,
                            mock_bindings.CreateBindings());
 
   EXPECT_EQ(OK, callback.WaitForResult());
@@ -346,8 +351,9 @@ TEST_F(ProxyResolverV8TracingTest, DnsChecksCache) {
   TestCompletionCallback callback2;
   ProxyInfo proxy_info;
 
+  scoped_ptr<ProxyResolver::Request> req;
   resolver->GetProxyForURL(GURL("http://foopy/req1"), &proxy_info,
-                           callback1.callback(), NULL,
+                           callback1.callback(), &req,
                            mock_bindings.CreateBindings());
 
   EXPECT_EQ(OK, callback1.WaitForResult());
@@ -358,8 +364,9 @@ TEST_F(ProxyResolverV8TracingTest, DnsChecksCache) {
   // The first request took 2 restarts, hence on g_iteration=3.
   EXPECT_EQ("166.155.144.11:3", proxy_info.proxy_server().ToURI());
 
+  scoped_ptr<ProxyResolver::Request> req2;
   resolver->GetProxyForURL(GURL("http://foopy/req2"), &proxy_info,
-                           callback2.callback(), NULL,
+                           callback2.callback(), &req2,
                            mock_bindings.CreateBindings());
 
   EXPECT_EQ(OK, callback2.WaitForResult());
@@ -391,8 +398,9 @@ TEST_F(ProxyResolverV8TracingTest, FallBackToSynchronous1) {
   TestCompletionCallback callback;
   ProxyInfo proxy_info;
 
+  scoped_ptr<ProxyResolver::Request> req;
   resolver->GetProxyForURL(GURL("http://foo/"), &proxy_info,
-                           callback.callback(), NULL,
+                           callback.callback(), &req,
                            mock_bindings.CreateBindings());
   EXPECT_EQ(OK, callback.WaitForResult());
 
@@ -430,8 +438,9 @@ TEST_F(ProxyResolverV8TracingTest, FallBackToSynchronous2) {
   TestCompletionCallback callback;
   ProxyInfo proxy_info;
 
+  scoped_ptr<ProxyResolver::Request> req;
   resolver->GetProxyForURL(GURL("http://foo/"), &proxy_info,
-                           callback.callback(), NULL,
+                           callback.callback(), &req,
                            mock_bindings.CreateBindings());
   EXPECT_EQ(OK, callback.WaitForResult());
 
@@ -461,8 +470,9 @@ TEST_F(ProxyResolverV8TracingTest, InfiniteDNSSequence) {
   TestCompletionCallback callback;
   ProxyInfo proxy_info;
 
+  scoped_ptr<ProxyResolver::Request> req;
   resolver->GetProxyForURL(GURL("http://foo/"), &proxy_info,
-                           callback.callback(), NULL,
+                           callback.callback(), &req,
                            mock_bindings.CreateBindings());
   EXPECT_EQ(OK, callback.WaitForResult());
 
@@ -501,8 +511,9 @@ TEST_F(ProxyResolverV8TracingTest, InfiniteDNSSequence2) {
   TestCompletionCallback callback;
   ProxyInfo proxy_info;
 
+  scoped_ptr<ProxyResolver::Request> req;
   resolver->GetProxyForURL(GURL("http://foo/"), &proxy_info,
-                           callback.callback(), NULL,
+                           callback.callback(), &req,
                            mock_bindings.CreateBindings());
   EXPECT_EQ(OK, callback.WaitForResult());
 
@@ -541,8 +552,9 @@ void DnsDuringInitHelper(bool synchronous_host_resolver) {
   TestCompletionCallback callback;
   ProxyInfo proxy_info;
 
+  scoped_ptr<ProxyResolver::Request> req;
   resolver->GetProxyForURL(GURL("http://foo/"), &proxy_info,
-                           callback.callback(), NULL,
+                           callback.callback(), &req,
                            mock_bindings.CreateBindings());
   EXPECT_EQ(OK, callback.WaitForResult());
 
@@ -587,7 +599,7 @@ TEST_F(ProxyResolverV8TracingTest, CancelAll) {
 
   const size_t kNumRequests = 5;
   ProxyInfo proxy_info[kNumRequests];
-  ProxyResolver::RequestHandle request[kNumRequests];
+  scoped_ptr<ProxyResolver::Request> request[kNumRequests];
 
   for (size_t i = 0; i < kNumRequests; ++i) {
     resolver->GetProxyForURL(GURL("http://foo/"), &proxy_info[i],
@@ -596,7 +608,7 @@ TEST_F(ProxyResolverV8TracingTest, CancelAll) {
   }
 
   for (size_t i = 0; i < kNumRequests; ++i) {
-    resolver->CancelRequest(request[i]);
+    request[i].reset();
   }
 }
 
@@ -614,8 +626,8 @@ TEST_F(ProxyResolverV8TracingTest, CancelSome) {
 
   ProxyInfo proxy_info1;
   ProxyInfo proxy_info2;
-  ProxyResolver::RequestHandle request1;
-  ProxyResolver::RequestHandle request2;
+  scoped_ptr<ProxyResolver::Request> request1;
+  scoped_ptr<ProxyResolver::Request> request2;
   TestCompletionCallback callback;
 
   resolver->GetProxyForURL(GURL("http://foo/"), &proxy_info1,
@@ -625,7 +637,7 @@ TEST_F(ProxyResolverV8TracingTest, CancelSome) {
                            callback.callback(), &request2,
                            mock_bindings.CreateBindings());
 
-  resolver->CancelRequest(request1);
+  request1.reset();
 
   EXPECT_EQ(OK, callback.WaitForResult());
 }
@@ -643,8 +655,8 @@ TEST_F(ProxyResolverV8TracingTest, CancelWhilePendingCompletionTask) {
 
   ProxyInfo proxy_info1;
   ProxyInfo proxy_info2;
-  ProxyResolver::RequestHandle request1;
-  ProxyResolver::RequestHandle request2;
+  scoped_ptr<ProxyResolver::Request> request1;
+  scoped_ptr<ProxyResolver::Request> request2;
   TestCompletionCallback callback;
 
   resolver->GetProxyForURL(GURL("http://throw-an-error/"), &proxy_info1,
@@ -653,10 +665,10 @@ TEST_F(ProxyResolverV8TracingTest, CancelWhilePendingCompletionTask) {
 
   // Wait until the first request has finished running on the worker thread.
   // Cancel the first request, while it is running its completion task on
-  // the origin thread.
-  mock_bindings.RunOnError(base::Bind(&ProxyResolverV8Tracing::CancelRequest,
-                                      base::Unretained(resolver.get()),
-                                      request1));
+  // the origin thread. Reset deletes Request opject which cancels the request.
+  mock_bindings.RunOnError(
+      base::Bind(&scoped_ptr<ProxyResolver::Request>::reset,
+                 base::Unretained(&request1), nullptr));
 
   // Start another request, to make sure it is able to complete.
   resolver->GetProxyForURL(GURL("http://i-have-no-idea-what-im-doing/"),
@@ -746,8 +758,8 @@ TEST_F(ProxyResolverV8TracingTest, CancelWhileOutstandingNonBlockingDns) {
 
   ProxyInfo proxy_info1;
   ProxyInfo proxy_info2;
-  ProxyResolver::RequestHandle request1;
-  ProxyResolver::RequestHandle request2;
+  scoped_ptr<ProxyResolver::Request> request1;
+  scoped_ptr<ProxyResolver::Request> request2;
 
   resolver->GetProxyForURL(GURL("http://foo/req1"), &proxy_info1,
                            base::Bind(&CrashCallback), &request1,
@@ -761,8 +773,8 @@ TEST_F(ProxyResolverV8TracingTest, CancelWhileOutstandingNonBlockingDns) {
 
   host_resolver.WaitUntilRequestIsReceived();
 
-  resolver->CancelRequest(request1);
-  resolver->CancelRequest(request2);
+  request1.reset();
+  request2.reset();
 
   EXPECT_EQ(2, host_resolver.num_cancelled_requests());
 
@@ -771,9 +783,8 @@ TEST_F(ProxyResolverV8TracingTest, CancelWhileOutstandingNonBlockingDns) {
   // should have been cancelled.
 }
 
-void CancelRequestAndPause(ProxyResolverV8Tracing* resolver,
-                           ProxyResolver::RequestHandle request) {
-  resolver->CancelRequest(request);
+void CancelRequestAndPause(scoped_ptr<ProxyResolver::Request>* request) {
+  request->reset();
 
   // Sleep for a little bit. This makes it more likely for the worker
   // thread to have returned from its call, and serves as a regression
@@ -792,14 +803,13 @@ TEST_F(ProxyResolverV8TracingTest, CancelWhileBlockedInNonBlockingDns) {
       CreateResolver(mock_bindings.CreateBindings(), "dns.js");
 
   ProxyInfo proxy_info;
-  ProxyResolver::RequestHandle request;
+  scoped_ptr<ProxyResolver::Request> request;
 
   resolver->GetProxyForURL(GURL("http://foo/"), &proxy_info,
                            base::Bind(&CrashCallback), &request,
                            mock_bindings.CreateBindings());
 
-  host_resolver.SetAction(
-      base::Bind(CancelRequestAndPause, resolver.get(), request));
+  host_resolver.SetAction(base::Bind(CancelRequestAndPause, &request));
 
   host_resolver.WaitUntilRequestIsReceived();
 }
@@ -814,7 +824,7 @@ TEST_F(ProxyResolverV8TracingTest, CancelWhileBlockedInNonBlockingDns2) {
       CreateResolver(mock_bindings.CreateBindings(), "dns.js");
 
   ProxyInfo proxy_info;
-  ProxyResolver::RequestHandle request;
+  scoped_ptr<ProxyResolver::Request> request;
 
   resolver->GetProxyForURL(GURL("http://foo/"), &proxy_info,
                            base::Bind(&CrashCallback), &request,
@@ -824,7 +834,7 @@ TEST_F(ProxyResolverV8TracingTest, CancelWhileBlockedInNonBlockingDns2) {
   // work whatever the delay is here, but it is most useful if the delay
   // is large enough to allow a task to be posted back.
   base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(10));
-  resolver->CancelRequest(request);
+  request.reset();
 
   EXPECT_EQ(0u, host_resolver.num_resolve());
 }
@@ -898,8 +908,9 @@ TEST_F(ProxyResolverV8TracingTest, Terminate) {
   TestCompletionCallback callback;
   ProxyInfo proxy_info;
 
+  scoped_ptr<ProxyResolver::Request> req;
   resolver->GetProxyForURL(GURL("http://foopy/req1"), &proxy_info,
-                           callback.callback(), NULL,
+                           callback.callback(), &req,
                            mock_bindings.CreateBindings());
   EXPECT_EQ(OK, callback.WaitForResult());
 
@@ -971,13 +982,14 @@ TEST_F(ProxyResolverV8TracingTest, MultipleResolvers) {
   const size_t kNumResults = kNumResolvers * kNumIterations;
   TestCompletionCallback callback[kNumResults];
   ProxyInfo proxy_info[kNumResults];
+  scoped_ptr<ProxyResolver::Request> request[kNumResults];
 
   for (size_t i = 0; i < kNumResults; ++i) {
     size_t resolver_i = i % kNumResolvers;
     resolver[resolver_i]->GetProxyForURL(
-        GURL("http://foo/"), &proxy_info[i], callback[i].callback(), NULL,
-        resolver_i == 3 ? mock_bindings3.CreateBindings()
-                        : mock_bindings0.CreateBindings());
+        GURL("http://foo/"), &proxy_info[i], callback[i].callback(),
+        &request[i], resolver_i == 3 ? mock_bindings3.CreateBindings()
+                                     : mock_bindings0.CreateBindings());
   }
 
   // ------------------------

@@ -118,13 +118,14 @@ class ProxyResolverMojo : public ProxyResolver {
   int GetProxyForURL(const GURL& url,
                      ProxyInfo* results,
                      const net::CompletionCallback& callback,
-                     RequestHandle* request,
+                     scoped_ptr<Request>* request,
                      const BoundNetLog& net_log) override;
-  void CancelRequest(RequestHandle request) override;
-  LoadState GetLoadState(RequestHandle request) const override;
 
  private:
   class Job;
+  class RequestImpl;
+
+  base::ThreadChecker thread_checker_;
 
   // Mojo error handler.
   void OnConnectionError();
@@ -142,11 +143,22 @@ class ProxyResolverMojo : public ProxyResolver {
 
   std::set<Job*> pending_jobs_;
 
-  base::ThreadChecker thread_checker_;
 
   scoped_ptr<base::ScopedClosureRunner> on_delete_callback_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(ProxyResolverMojo);
+};
+
+class ProxyResolverMojo::RequestImpl : public ProxyResolver::Request {
+ public:
+  explicit RequestImpl(scoped_ptr<Job> job);
+
+  ~RequestImpl() override;
+
+  LoadState GetLoadState() override;
+
+ private:
+  scoped_ptr<Job> job_;
 };
 
 class ProxyResolverMojo::Job
@@ -159,13 +171,15 @@ class ProxyResolverMojo::Job
       const BoundNetLog& net_log);
   ~Job() override;
 
-  // Cancels the job and prevents the callback from being run.
-  void Cancel();
-
   // Returns the LoadState of this job.
   LoadState GetLoadState();
 
+  ProxyResolverMojo* resolver();
+
+  void CompleteRequest(int result);
+
  private:
+  friend class base::RefCounted<Job>;
   // Mojo error handler.
   void OnConnectionError();
 
@@ -182,6 +196,18 @@ class ProxyResolverMojo::Job
   base::ThreadChecker thread_checker_;
   mojo::Binding<interfaces::ProxyResolverRequestClient> binding_;
 };
+
+ProxyResolverMojo::RequestImpl::RequestImpl(scoped_ptr<Job> job)
+    : job_(std::move(job)) {}
+
+ProxyResolverMojo::RequestImpl::~RequestImpl() {
+  job_->CompleteRequest(ERR_PAC_SCRIPT_TERMINATED);
+}
+
+LoadState ProxyResolverMojo::RequestImpl::GetLoadState() {
+  CHECK_EQ(1u, job_->resolver()->pending_jobs_.count(job_.get()));
+  return job_->GetLoadState();
+}
 
 ProxyResolverMojo::Job::Job(ProxyResolverMojo* resolver,
                             const GURL& url,
@@ -204,27 +230,31 @@ ProxyResolverMojo::Job::Job(ProxyResolverMojo* resolver,
       &ProxyResolverMojo::Job::OnConnectionError, base::Unretained(this)));
 }
 
-ProxyResolverMojo::Job::~Job() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  if (!callback_.is_null())
-    callback_.Run(ERR_PAC_SCRIPT_TERMINATED);
-}
-
-void ProxyResolverMojo::Job::Cancel() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!callback_.is_null());
-  callback_.Reset();
-}
+ProxyResolverMojo::Job::~Job() {}
 
 LoadState ProxyResolverMojo::Job::GetLoadState() {
   return dns_request_in_progress() ? LOAD_STATE_RESOLVING_HOST_IN_PROXY_SCRIPT
                                    : LOAD_STATE_RESOLVING_PROXY_FOR_URL;
 }
 
+ProxyResolverMojo* ProxyResolverMojo::Job::resolver() {
+  return resolver_;
+};
+
 void ProxyResolverMojo::Job::OnConnectionError() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DVLOG(1) << "ProxyResolverMojo::Job::OnConnectionError";
-  resolver_->RemoveJob(this);
+  CompleteRequest(ERR_PAC_SCRIPT_TERMINATED);
+}
+
+void ProxyResolverMojo::Job::CompleteRequest(int result) {
+  CompletionCallback callback = callback_;
+  callback_.Reset();
+  if (resolver_)
+    resolver_->RemoveJob(this);
+  resolver_ = nullptr;
+  if (!callback.is_null())
+    callback.Run(result);
 }
 
 void ProxyResolverMojo::Job::ReportResult(
@@ -238,10 +268,7 @@ void ProxyResolverMojo::Job::ReportResult(
     DVLOG(1) << "Servers: " << results_->ToPacString();
   }
 
-  CompletionCallback callback = callback_;
-  callback_.Reset();
-  resolver_->RemoveJob(this);
-  callback.Run(error);
+  CompleteRequest(error);
 }
 
 ProxyResolverMojo::ProxyResolverMojo(
@@ -275,42 +302,28 @@ void ProxyResolverMojo::OnConnectionError() {
 
 void ProxyResolverMojo::RemoveJob(Job* job) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  size_t num_erased = pending_jobs_.erase(job);
-  DCHECK(num_erased);
-  delete job;
+  pending_jobs_.erase(job);
 }
 
 int ProxyResolverMojo::GetProxyForURL(const GURL& url,
                                       ProxyInfo* results,
                                       const CompletionCallback& callback,
-                                      RequestHandle* request,
+                                      scoped_ptr<Request>* request,
                                       const BoundNetLog& net_log) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (!mojo_proxy_resolver_ptr_)
     return ERR_PAC_SCRIPT_TERMINATED;
 
-  Job* job = new Job(this, url, results, callback, net_log);
-  bool inserted = pending_jobs_.insert(job).second;
+  scoped_ptr<Job> job(new Job(this, url, results, callback, net_log));
+  bool inserted = pending_jobs_.insert(job.get()).second;
   DCHECK(inserted);
-  *request = job;
+  request->reset(new RequestImpl(std::move(job)));
 
   return ERR_IO_PENDING;
 }
 
-void ProxyResolverMojo::CancelRequest(RequestHandle request) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  Job* job = static_cast<Job*>(request);
-  DCHECK(job);
-  job->Cancel();
-  RemoveJob(job);
-}
 
-LoadState ProxyResolverMojo::GetLoadState(RequestHandle request) const {
-  Job* job = static_cast<Job*>(request);
-  CHECK_EQ(1u, pending_jobs_.count(job));
-  return job->GetLoadState();
-}
 
 }  // namespace
 

@@ -46,7 +46,7 @@ class MockProxyResolver : public ProxyResolver {
   int GetProxyForURL(const GURL& query_url,
                      ProxyInfo* results,
                      const CompletionCallback& callback,
-                     RequestHandle* request,
+                     scoped_ptr<Request>* request,
                      const BoundNetLog& net_log) override {
     if (resolve_latency_ != base::TimeDelta())
       base::PlatformThread::Sleep(resolve_latency_);
@@ -63,13 +63,6 @@ class MockProxyResolver : public ProxyResolver {
 
     // Return a success code which represents the request's order.
     return request_count_++;
-  }
-
-  void CancelRequest(RequestHandle request) override { NOTREACHED(); }
-
-  LoadState GetLoadState(RequestHandle request) const override {
-    NOTREACHED();
-    return LOAD_STATE_IDLE;
   }
 
   int request_count() const { return request_count_; }
@@ -120,7 +113,7 @@ class BlockableProxyResolver : public MockProxyResolver {
   int GetProxyForURL(const GURL& query_url,
                      ProxyInfo* results,
                      const CompletionCallback& callback,
-                     RequestHandle* request,
+                     scoped_ptr<Request>* request,
                      const BoundNetLog& net_log) override {
     if (should_block_) {
       blocked_.Signal();
@@ -308,7 +301,7 @@ TEST_F(MultiThreadedProxyResolverTest,
   factory().resolvers()[0]->Block();
 
   // Start request 0.
-  ProxyResolver::RequestHandle request0;
+  scoped_ptr<ProxyResolver::Request> request0;
   TestCompletionCallback callback0;
   ProxyInfo results0;
   BoundTestNetLog log0;
@@ -325,7 +318,7 @@ TEST_F(MultiThreadedProxyResolverTest,
                                  callback1.callback(), NULL, log1.bound());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
-  ProxyResolver::RequestHandle request2;
+  scoped_ptr<ProxyResolver::Request> request2;
   TestCompletionCallback callback2;
   ProxyInfo results2;
   BoundTestNetLog log2;
@@ -393,7 +386,7 @@ TEST_F(MultiThreadedProxyResolverTest, SingleThread_CancelRequest) {
   factory().resolvers()[0]->Block();
 
   // Start request 0.
-  ProxyResolver::RequestHandle request0;
+  scoped_ptr<ProxyResolver::Request> request0;
   TestCompletionCallback callback0;
   ProxyInfo results0;
   rv =
@@ -412,7 +405,7 @@ TEST_F(MultiThreadedProxyResolverTest, SingleThread_CancelRequest) {
                                  callback1.callback(), NULL, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
-  ProxyResolver::RequestHandle request2;
+  scoped_ptr<ProxyResolver::Request> request2;
   TestCompletionCallback callback2;
   ProxyInfo results2;
   rv =
@@ -427,8 +420,8 @@ TEST_F(MultiThreadedProxyResolverTest, SingleThread_CancelRequest) {
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   // Cancel request0 (inprogress) and request2 (pending).
-  resolver().CancelRequest(request0);
-  resolver().CancelRequest(request2);
+  request0.reset();
+  request2.reset();
 
   // Unblock the worker thread so the requests can continue running.
   factory().resolvers()[0]->Unblock();
@@ -522,7 +515,7 @@ TEST_F(MultiThreadedProxyResolverTest, ThreeThreads_Basic) {
   int rv;
   TestCompletionCallback callback[kNumRequests];
   ProxyInfo results[kNumRequests];
-  ProxyResolver::RequestHandle request[kNumRequests];
+  scoped_ptr<ProxyResolver::Request> request[kNumRequests];
 
   // Start request 0 -- this should run on thread 0 as there is nothing else
   // going on right now.
@@ -597,8 +590,8 @@ TEST_F(MultiThreadedProxyResolverTest, ThreeThreads_Basic) {
                                  callback[7].callback(), &request[7],
                                  BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
-  resolver().CancelRequest(request[5]);
-  resolver().CancelRequest(request[6]);
+  request[5].reset();
+  request[6].reset();
 
   EXPECT_EQ(2, callback[7].WaitForResult());
 
@@ -634,7 +627,7 @@ TEST_F(MultiThreadedProxyResolverTest, OneThreadBlocked) {
   const int kNumRequests = 4;
   TestCompletionCallback callback[kNumRequests];
   ProxyInfo results[kNumRequests];
-  ProxyResolver::RequestHandle request[kNumRequests];
+  scoped_ptr<ProxyResolver::Request> request[kNumRequests];
 
   // Start a request that will block the first thread.
 

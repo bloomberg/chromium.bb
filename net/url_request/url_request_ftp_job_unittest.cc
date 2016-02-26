@@ -332,13 +332,13 @@ TEST_F(URLRequestFtpJobTest, FtpProxyRequestOrphanJob) {
   // Verify PAC request is in progress.
   EXPECT_EQ(net::LoadState::LOAD_STATE_RESOLVING_PROXY_FOR_URL,
             url_request->GetLoadState().state);
-  EXPECT_EQ(1u, resolver_factory->resolver()->pending_requests().size());
-  EXPECT_EQ(0u, resolver_factory->resolver()->cancelled_requests().size());
+  EXPECT_EQ(1u, resolver_factory->resolver()->pending_jobs().size());
+  EXPECT_EQ(0u, resolver_factory->resolver()->cancelled_jobs().size());
 
   // Destroying the request should cancel the PAC request.
   url_request.reset();
-  EXPECT_EQ(0u, resolver_factory->resolver()->pending_requests().size());
-  EXPECT_EQ(1u, resolver_factory->resolver()->cancelled_requests().size());
+  EXPECT_EQ(0u, resolver_factory->resolver()->pending_jobs().size());
+  EXPECT_EQ(1u, resolver_factory->resolver()->cancelled_jobs().size());
 }
 
 // Make sure PAC requests are cancelled on request cancellation.  Requests can
@@ -363,14 +363,14 @@ TEST_F(URLRequestFtpJobTest, FtpProxyRequestCancelRequest) {
   url_request->Start();
   EXPECT_EQ(net::LoadState::LOAD_STATE_RESOLVING_PROXY_FOR_URL,
             url_request->GetLoadState().state);
-  EXPECT_EQ(1u, resolver_factory->resolver()->pending_requests().size());
-  EXPECT_EQ(0u, resolver_factory->resolver()->cancelled_requests().size());
+  EXPECT_EQ(1u, resolver_factory->resolver()->pending_jobs().size());
+  EXPECT_EQ(0u, resolver_factory->resolver()->cancelled_jobs().size());
 
   // Cancelling the request should cancel the PAC request.
   url_request->Cancel();
   EXPECT_EQ(net::LoadState::LOAD_STATE_IDLE, url_request->GetLoadState().state);
-  EXPECT_EQ(0u, resolver_factory->resolver()->pending_requests().size());
-  EXPECT_EQ(1u, resolver_factory->resolver()->cancelled_requests().size());
+  EXPECT_EQ(0u, resolver_factory->resolver()->pending_jobs().size());
+  EXPECT_EQ(1u, resolver_factory->resolver()->cancelled_jobs().size());
 }
 
 TEST_F(URLRequestFtpJobTest, FtpProxyRequestNeedProxyAuthNoCredentials) {

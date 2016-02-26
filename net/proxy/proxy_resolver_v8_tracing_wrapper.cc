@@ -88,12 +88,8 @@ class ProxyResolverV8TracingWrapper : public ProxyResolver {
   int GetProxyForURL(const GURL& url,
                      ProxyInfo* results,
                      const CompletionCallback& callback,
-                     RequestHandle* request,
+                     scoped_ptr<Request>* request,
                      const BoundNetLog& net_log) override;
-
-  void CancelRequest(RequestHandle request) override;
-
-  LoadState GetLoadState(RequestHandle request) const override;
 
  private:
   scoped_ptr<ProxyResolverV8Tracing> resolver_impl_;
@@ -118,22 +114,13 @@ int ProxyResolverV8TracingWrapper::GetProxyForURL(
     const GURL& url,
     ProxyInfo* results,
     const CompletionCallback& callback,
-    RequestHandle* request,
+    scoped_ptr<Request>* request,
     const BoundNetLog& net_log) {
   resolver_impl_->GetProxyForURL(
       url, results, callback, request,
       make_scoped_ptr(new BindingsImpl(error_observer_.get(), host_resolver_,
                                        net_log_, net_log)));
   return ERR_IO_PENDING;
-}
-
-void ProxyResolverV8TracingWrapper::CancelRequest(RequestHandle request) {
-  resolver_impl_->CancelRequest(request);
-}
-
-LoadState ProxyResolverV8TracingWrapper::GetLoadState(
-    RequestHandle request) const {
-  return resolver_impl_->GetLoadState(request);
 }
 
 }  // namespace

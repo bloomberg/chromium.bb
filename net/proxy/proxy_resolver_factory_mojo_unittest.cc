@@ -294,14 +294,14 @@ class Request {
   int WaitForResult();
 
   const ProxyInfo& results() const { return results_; }
-  LoadState load_state() { return resolver_->GetLoadState(handle_); }
+  LoadState load_state() { return request_->GetLoadState(); }
   BoundTestNetLog& net_log() { return net_log_; }
 
  private:
   ProxyResolver* resolver_;
   const GURL url_;
   ProxyInfo results_;
-  ProxyResolver::RequestHandle handle_;
+  scoped_ptr<ProxyResolver::Request> request_;
   int error_;
   TestCompletionCallback callback_;
   BoundTestNetLog net_log_;
@@ -313,12 +313,12 @@ Request::Request(ProxyResolver* resolver, const GURL& url)
 
 int Request::Resolve() {
   error_ = resolver_->GetProxyForURL(url_, &results_, callback_.callback(),
-                                     &handle_, net_log_.bound());
+                                     &request_, net_log_.bound());
   return error_;
 }
 
 void Request::Cancel() {
-  resolver_->CancelRequest(handle_);
+  request_.reset();
 }
 
 int Request::WaitForResult() {
@@ -841,7 +841,7 @@ TEST_F(ProxyResolverFactoryMojoTest, GetProxyForURL_DeleteInCallback) {
 
   ProxyInfo results;
   TestCompletionCallback callback;
-  ProxyResolver::RequestHandle handle;
+  scoped_ptr<ProxyResolver::Request> request;
   BoundNetLog net_log;
   EXPECT_EQ(
       OK,
@@ -849,7 +849,7 @@ TEST_F(ProxyResolverFactoryMojoTest, GetProxyForURL_DeleteInCallback) {
           GURL(kExampleUrl), &results,
           base::Bind(&ProxyResolverFactoryMojoTest::DeleteProxyResolverCallback,
                      base::Unretained(this), callback.callback()),
-          &handle, net_log)));
+          &request, net_log)));
   on_delete_callback_.WaitForResult();
 }
 
@@ -861,7 +861,7 @@ TEST_F(ProxyResolverFactoryMojoTest,
 
   ProxyInfo results;
   TestCompletionCallback callback;
-  ProxyResolver::RequestHandle handle;
+  scoped_ptr<ProxyResolver::Request> request;
   BoundNetLog net_log;
   EXPECT_EQ(
       ERR_PAC_SCRIPT_TERMINATED,
@@ -869,7 +869,7 @@ TEST_F(ProxyResolverFactoryMojoTest,
           GURL(kExampleUrl), &results,
           base::Bind(&ProxyResolverFactoryMojoTest::DeleteProxyResolverCallback,
                      base::Unretained(this), callback.callback()),
-          &handle, net_log)));
+          &request, net_log)));
   on_delete_callback_.WaitForResult();
 }
 
