@@ -128,6 +128,7 @@ class SmoothnessKeyMobileSites(_Smoothness):
     return 'smoothness.key_mobile_sites_smooth'
 
 
+@benchmark.Disabled('android')  # crbug.com/589580
 @benchmark.Disabled('android-reference')  # crbug.com/588786
 @benchmark.Disabled('mac')  # crbug.com/563615
 class SmoothnessToughAnimationCases(_Smoothness):
