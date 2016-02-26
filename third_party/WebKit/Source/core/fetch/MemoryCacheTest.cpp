@@ -197,6 +197,36 @@ TEST_F(MemoryCacheTest, DeadResourceEviction_MultipleResourceMaps)
     TestDeadResourceEviction(resource1.get(), resource2.get());
 }
 
+static void runTask1(Resource* live, Resource* dead)
+{
+    // The resource size has to be nonzero for this test to be meaningful, but
+    // we do not rely on it having any particular value.
+    ASSERT_GT(live->size(), 0u);
+    ASSERT_GT(dead->size(), 0u);
+
+    ASSERT_EQ(0u, memoryCache()->deadSize());
+    ASSERT_EQ(0u, memoryCache()->liveSize());
+
+    memoryCache()->add(dead);
+    memoryCache()->add(live);
+    memoryCache()->updateDecodedResource(live, UpdateForPropertyChange);
+    ASSERT_EQ(dead->size(), memoryCache()->deadSize());
+    ASSERT_EQ(live->size(), memoryCache()->liveSize());
+    ASSERT_GT(live->decodedSize(), 0u);
+
+    memoryCache()->prune(); // Dead resources are pruned immediately
+    ASSERT_EQ(dead->size(), memoryCache()->deadSize());
+    ASSERT_EQ(live->size(), memoryCache()->liveSize());
+    ASSERT_GT(live->decodedSize(), 0u);
+}
+
+static void runTask2(unsigned liveSizeWithoutDecode)
+{
+    // Next task: now, the live resource was evicted.
+    ASSERT_EQ(0u, memoryCache()->deadSize());
+    ASSERT_EQ(liveSizeWithoutDecode, memoryCache()->liveSize());
+}
+
 static void TestLiveResourceEvictionAtEndOfTask(Resource* cachedDeadResource, Resource* cachedLiveResource)
 {
     memoryCache()->setDelayBeforeLiveDecodedPrune(0);
@@ -209,60 +239,8 @@ static void TestLiveResourceEvictionAtEndOfTask(Resource* cachedDeadResource, Re
     MockImageResourceClient client(cachedLiveResource);
     cachedLiveResource->appendData(data, 4u);
 
-    class Task1 : public WebTaskRunner::Task {
-    public:
-        Task1(Resource* live, Resource* dead)
-            : m_live(live)
-            , m_dead(dead)
-        { }
-
-        void run() override
-        {
-            // The resource size has to be nonzero for this test to be meaningful, but
-            // we do not rely on it having any particular value.
-            ASSERT_GT(m_live->size(), 0u);
-            ASSERT_GT(m_dead->size(), 0u);
-
-            ASSERT_EQ(0u, memoryCache()->deadSize());
-            ASSERT_EQ(0u, memoryCache()->liveSize());
-
-            memoryCache()->add(m_dead.get());
-            memoryCache()->add(m_live.get());
-            memoryCache()->updateDecodedResource(m_live.get(), UpdateForPropertyChange);
-            ASSERT_EQ(m_dead->size(), memoryCache()->deadSize());
-            ASSERT_EQ(m_live->size(), memoryCache()->liveSize());
-            ASSERT_GT(m_live->decodedSize(), 0u);
-
-            memoryCache()->prune(); // Dead resources are pruned immediately
-            ASSERT_EQ(m_dead->size(), memoryCache()->deadSize());
-            ASSERT_EQ(m_live->size(), memoryCache()->liveSize());
-            ASSERT_GT(m_live->decodedSize(), 0u);
-        }
-
-    private:
-        RefPtrWillBePersistent<Resource> m_live;
-        RefPtrWillBePersistent<Resource> m_dead;
-    };
-
-    class Task2 : public WebTaskRunner::Task {
-    public:
-        Task2(unsigned liveSizeWithoutDecode)
-            : m_liveSizeWithoutDecode(liveSizeWithoutDecode) { }
-
-        void run() override
-        {
-            // Next task: now, the live resource was evicted.
-            ASSERT_EQ(0u, memoryCache()->deadSize());
-            ASSERT_EQ(m_liveSizeWithoutDecode, memoryCache()->liveSize());
-        }
-
-    private:
-        unsigned m_liveSizeWithoutDecode;
-    };
-
-
-    Platform::current()->currentThread()->taskRunner()->postTask(BLINK_FROM_HERE, new Task1(cachedLiveResource, cachedDeadResource));
-    Platform::current()->currentThread()->taskRunner()->postTask(BLINK_FROM_HERE, new Task2(cachedLiveResource->encodedSize() + cachedLiveResource->overheadSize()));
+    Platform::current()->currentThread()->taskRunner()->postTask(BLINK_FROM_HERE, bind(&runTask1, PassRefPtrWillBeRawPtr<Resource>(cachedLiveResource), PassRefPtrWillBeRawPtr<Resource>(cachedDeadResource)));
+    Platform::current()->currentThread()->taskRunner()->postTask(BLINK_FROM_HERE, bind(&runTask2, cachedLiveResource->encodedSize() + cachedLiveResource->overheadSize()));
     testing::runPendingTasks();
 }
 
