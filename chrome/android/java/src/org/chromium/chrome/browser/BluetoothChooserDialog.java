@@ -321,6 +321,14 @@ public class BluetoothChooserDialog
     }
 
     @CalledByNative
+    private void notifyAdapterTurnedOn() {
+        mItemChooserDialog.clear();
+        if (mNativeBluetoothChooserDialogPtr != 0) {
+            nativeRestartSearch(mNativeBluetoothChooserDialogPtr);
+        }
+    }
+
+    @CalledByNative
     private void notifyDiscoveryState(int discoveryState) {
         switch (discoveryState) {
             case DISCOVERY_FAILED_TO_START: {

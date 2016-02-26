@@ -356,4 +356,11 @@ void BluetoothTestAndroid::OnFakeBluetoothGattWriteDescriptor(
   base::android::JavaByteArrayToByteVector(env, value, &last_write_value_);
 }
 
+void BluetoothTestAndroid::OnFakeAdapterStateChanged(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& caller,
+    const bool powered) {
+  adapter_->NotifyAdapterStateChanged(powered);
+}
+
 }  // namespace device

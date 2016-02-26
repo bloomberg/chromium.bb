@@ -398,8 +398,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
       const CreateAdvertisementCallback& callback,
       const CreateAdvertisementErrorCallback& error_callback) = 0;
 
-  // The following methods are used to send various GATT observer events to
-  // observers.
+  // The following methods are used to send various events to observers.
+  void NotifyAdapterStateChanged(bool powered);
   void NotifyGattServiceAdded(BluetoothGattService* service);
   void NotifyGattServiceRemoved(BluetoothGattService* service);
   void NotifyGattServiceChanged(BluetoothGattService* service);

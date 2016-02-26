@@ -518,8 +518,20 @@ void BluetoothDispatcherHost::AdapterPoweredChanged(
            &request_device_sessions_);
        !iter.IsAtEnd(); iter.Advance()) {
     RequestDeviceSession* session = iter.GetCurrentValue();
+
+    // Stop ongoing discovery session if power is off.
+    if (!powered && session->discovery_session) {
+      StopDiscoverySession(std::move(session->discovery_session));
+    }
+
     if (session->chooser)
       session->chooser->SetAdapterPresence(presence);
+  }
+
+  // Stop the timer so that we don't change the state of the chooser
+  // when timer expires.
+  if (!powered) {
+    discovery_session_timer_.Stop();
   }
 }
 

@@ -9,7 +9,11 @@ import android.annotation.TargetApi;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.le.ScanFilter;
 import android.bluetooth.le.ScanSettings;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+
 import android.os.Build;
 import android.os.ParcelUuid;
 
@@ -133,12 +137,14 @@ class Fakes {
         @Override
         public boolean disable() {
             mPowered = false;
+            nativeOnFakeAdapterStateChanged(mNativeBluetoothTestAndroid, false);
             return true;
         }
 
         @Override
         public boolean enable() {
             mPowered = true;
+            nativeOnFakeAdapterStateChanged(mNativeBluetoothTestAndroid, true);
             return true;
         }
 
@@ -191,6 +197,14 @@ class Fakes {
         public boolean checkPermission(String permission) {
             return mPermissions.contains(permission);
         }
+
+        @Override
+        public Intent registerReceiver(BroadcastReceiver receiver, IntentFilter filter) {
+            return null;
+        }
+
+        @Override
+        public void unregisterReceiver(BroadcastReceiver receiver) {}
     }
 
     /**
@@ -714,6 +728,10 @@ class Fakes {
 
     // ---------------------------------------------------------------------------------------------
     // BluetoothTestAndroid C++ methods declared for access from java:
+
+    // Binds to BluetoothTestAndroid::OnFakeAdapterStateChanged.
+    private static native void nativeOnFakeAdapterStateChanged(
+            long nativeBluetoothTestAndroid, boolean powered);
 
     // Binds to BluetoothTestAndroid::OnFakeBluetoothDeviceConnectGattCalled.
     private static native void nativeOnFakeBluetoothDeviceConnectGattCalled(

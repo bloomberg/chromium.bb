@@ -65,6 +65,9 @@ void BluetoothChooserAndroid::SetAdapterPresence(AdapterPresence presence) {
   if (presence != AdapterPresence::POWERED_ON) {
     Java_BluetoothChooserDialog_notifyAdapterTurnedOff(AttachCurrentThread(),
                                                        java_dialog_.obj());
+  } else {
+    Java_BluetoothChooserDialog_notifyAdapterTurnedOn(AttachCurrentThread(),
+                                                      java_dialog_.obj());
   }
 }
 

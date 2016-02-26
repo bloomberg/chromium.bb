@@ -83,6 +83,11 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterAndroid final
       const CreateAdvertisementCallback& callback,
       const CreateAdvertisementErrorCallback& error_callback) override;
 
+  // Called when adapter state changes.
+  void OnAdapterStateChanged(JNIEnv* env,
+                             const base::android::JavaParamRef<jobject>& caller,
+                             const bool powered);
+
   // Handles a scan error event by invalidating all discovery sessions.
   void OnScanFailed(JNIEnv* env,
                     const base::android::JavaParamRef<jobject>& caller);

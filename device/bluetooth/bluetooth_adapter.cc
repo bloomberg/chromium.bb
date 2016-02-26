@@ -158,6 +158,11 @@ BluetoothDevice::PairingDelegate* BluetoothAdapter::DefaultPairingDelegate() {
   return pairing_delegates_.front().first;
 }
 
+void BluetoothAdapter::NotifyAdapterStateChanged(bool powered) {
+  FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
+                    AdapterPoweredChanged(this, powered));
+}
+
 void BluetoothAdapter::NotifyGattServiceAdded(BluetoothGattService* service) {
   DCHECK_EQ(service->GetDevice()->GetAdapter(), this);
 

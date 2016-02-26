@@ -660,31 +660,40 @@ TEST_F(BluetoothTest, DiscoverMultipleLowEnergyDevices) {
 #if defined(OS_ANDROID)
 TEST_F(BluetoothTest, TogglePowerFakeAdapter) {
   InitWithFakeAdapter();
+  TestBluetoothAdapterObserver observer(adapter_);
+
   ASSERT_TRUE(adapter_->IsPresent());
   ASSERT_TRUE(adapter_->IsPowered());
+  EXPECT_EQ(0, observer.powered_changed_count());
 
   // Check if power can be turned off.
   adapter_->SetPowered(false, GetCallback(Call::EXPECTED),
                        GetErrorCallback(Call::NOT_EXPECTED));
   EXPECT_FALSE(adapter_->IsPowered());
+  EXPECT_EQ(1, observer.powered_changed_count());
 
   // Check if power can be turned on again.
   adapter_->SetPowered(true, GetCallback(Call::EXPECTED),
                        GetErrorCallback(Call::NOT_EXPECTED));
   EXPECT_TRUE(adapter_->IsPowered());
+  EXPECT_EQ(2, observer.powered_changed_count());
 }
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_ANDROID)
 TEST_F(BluetoothTest, TogglePowerBeforeScan) {
   InitWithFakeAdapter();
+  TestBluetoothAdapterObserver observer(adapter_);
+
   ASSERT_TRUE(adapter_->IsPresent());
   ASSERT_TRUE(adapter_->IsPowered());
+  EXPECT_EQ(0, observer.powered_changed_count());
 
   // Turn off adapter.
   adapter_->SetPowered(false, GetCallback(Call::EXPECTED),
                        GetErrorCallback(Call::NOT_EXPECTED));
   ASSERT_FALSE(adapter_->IsPowered());
+  EXPECT_EQ(1, observer.powered_changed_count());
 
   // Try to perform a scan.
   StartLowEnergyDiscoverySessionExpectedToFail();
@@ -693,6 +702,7 @@ TEST_F(BluetoothTest, TogglePowerBeforeScan) {
   adapter_->SetPowered(true, GetCallback(Call::EXPECTED),
                        GetErrorCallback(Call::NOT_EXPECTED));
   ASSERT_TRUE(adapter_->IsPowered());
+  EXPECT_EQ(2, observer.powered_changed_count());
 
   // Try to perform a scan again.
   ResetEventCounts();
