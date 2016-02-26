@@ -72,6 +72,7 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
       ->set_fling_touchscreen_tap_suppression_enabled(false);
 
   base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
+  cl->AppendSwitch(switches::kIPCSyncCompositing);
   cl->AppendSwitch(cc::switches::kEnableBeginFrameScheduling);
 
   // WebView uses the Android system's scrollbars and overscroll glow.
@@ -138,9 +139,6 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
     cl->AppendSwitchASCII(switches::kRendererProcessLimit, "1");
     cl->AppendSwitch(switches::kDisableRendererBackgrounding);
   }
-
-  // Enabled temporarily to gather performance metrics.
-  cl->AppendSwitch(switches::kIPCSyncCompositing);
 
   return false;
 }
