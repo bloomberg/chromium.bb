@@ -187,6 +187,10 @@ Background.prototype = {
             true, cvox.ChromeVox.isStickyPrefOn);
     }
 
+    // note that |this.currentRange_| can *change* because the request is
+    // async. Save it to ensure we're looking at the currentRange at this moment
+    // in time.
+    var cur = this.currentRange_;
     chrome.tabs.query({active: true}, function(tabs) {
       if (mode === ChromeVoxMode.CLASSIC) {
         // Generally, we don't want to inject classic content scripts as it is
@@ -197,7 +201,7 @@ Background.prototype = {
       } else {
         // When in compat mode, if the focus is within the desktop tree proper,
         // then do not disable content scripts.
-        if (this.currentRange_ && !this.currentRange_.isWebRange())
+        if (cur && !cur.isWebRange())
           return;
 
         this.disableClassicChromeVox_();
