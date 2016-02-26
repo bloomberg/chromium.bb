@@ -261,7 +261,7 @@ source_set("browser") {
   if (use_udev) {
     deps += [
       "//device/udev_linux",
-      "//media/",
+      "//media/capture",
     ]
   } else {
     if (is_linux) {

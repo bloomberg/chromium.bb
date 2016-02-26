@@ -12,7 +12,10 @@ import("//testing/libfuzzer/fuzzer_test.gni")
 
 source_set("base") {
   # This is part of the media component.
-  visibility = [ "//media" ]
+  visibility = [
+    "//media",
+    "//media/capture",
+  ]
   sources = [
     "audio_block_fifo.cc",
     "audio_block_fifo.h",
