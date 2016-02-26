@@ -1,0 +1,45 @@
+{
+  "Chromium Mojo Android": {
+    "additional_compile_targets": [
+      "mash:all"
+    ],
+    "scripts": [
+      {
+        "name": "mojo_apptests",
+        "script": "mojo_apptests.py"
+      }
+    ]
+  },
+  "Chromium Mojo Linux": {
+    "additional_compile_targets": [
+      "mash:all"
+    ],
+    "gtest_tests": [
+      {
+        "test": "views_mus_unittests"
+      }
+    ],
+    "scripts": [
+      {
+        "name": "mojo_apptests",
+        "script": "mojo_apptests.py"
+      }
+    ]
+  },
+  "Chromium Mojo Windows": {
+    "additional_compile_targets": [
+      "mash:all"
+    ],
+    "gtest_tests": [
+      {
+        "test": "views_mus_unittests"
+      }
+    ],
+    "scripts": [
+      {
+        "name": "mojo_apptests",
+        "script": "mojo_apptests.py"
+      }
+    ]
+  }
+}

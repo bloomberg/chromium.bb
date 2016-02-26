@@ -530,9 +530,9 @@
     "label": "//url:url_unittests",
     "type": "console_test_launcher",
   },
-  "window_manager_unittests": {
-    "label": "//components/mus/ws:window_manager_unittests",
-    "type": "unknown",
+  "views_mus_unittests": {
+    "label": "//ui/views/mus:views_mus_unittests",
+    "type": "windowed_test_launcher",
   },
   "views_unittests": {
     "label": "//ui/views:views_unittests",
@@ -541,6 +541,10 @@
   "webkit_unit_tests": {
     "label": "//third_party/WebKit/Source/web:webkit_unit_tests",
     "type": "console_test_launcher",
+  },
+  "window_manager_unittests": {
+    "label": "//components/mus/ws:window_manager_unittests",
+    "type": "unknown",
   },
   "wm_unittests": {
     "label": "//ui/wm:wm_unittests",
