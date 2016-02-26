@@ -23,7 +23,7 @@ struct PageLoadTiming;
 // backgrounded, some events (e.g. paint) are delayed. Since these data points
 // can skew the mean, they should not be mixed with timing events that occurred
 // in the foreground.
-bool EventOccurredInForeground(const base::TimeDelta& event,
+bool EventOccurredInForeground(base::TimeDelta event,
                                const PageLoadExtraInfo& info);
 
 }  // namespace page_load_metrics

@@ -7,13 +7,13 @@
 namespace page_load_metrics {
 
 PageLoadExtraInfo::PageLoadExtraInfo(
-    const base::TimeDelta& first_background_time,
-    const base::TimeDelta& first_foreground_time,
+    base::TimeDelta first_background_time,
+    base::TimeDelta first_foreground_time,
     bool started_in_foreground,
     const GURL& committed_url,
-    const base::TimeDelta& time_to_commit,
+    base::TimeDelta time_to_commit,
     UserAbortType abort_type,
-    const base::TimeDelta& time_to_abort)
+    base::TimeDelta time_to_abort)
     : first_background_time(first_background_time),
       first_foreground_time(first_foreground_time),
       started_in_foreground(started_in_foreground),

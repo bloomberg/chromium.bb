@@ -11,7 +11,7 @@ using page_load_metrics::UserAbortType;
 namespace {
 
 void RecordAbortBeforeCommit(UserAbortType abort_type,
-                             const base::TimeDelta& time_to_abort) {
+                             base::TimeDelta time_to_abort) {
   switch (abort_type) {
     case UserAbortType::ABORT_RELOAD:
       PAGE_LOAD_HISTOGRAM(internal::kHistogramAbortReloadBeforeCommit,
@@ -51,7 +51,7 @@ void RecordAbortBeforeCommit(UserAbortType abort_type,
 }
 
 void RecordAbortAfterCommitBeforePaint(UserAbortType abort_type,
-                                       const base::TimeDelta& time_to_abort) {
+                                       base::TimeDelta time_to_abort) {
   switch (abort_type) {
     case UserAbortType::ABORT_RELOAD:
       PAGE_LOAD_HISTOGRAM(internal::kHistogramAbortReloadBeforePaint,
@@ -128,7 +128,7 @@ void AbortsPageLoadMetricsObserver::OnComplete(
   if (abort_type == UserAbortType::ABORT_NONE)
     return;
 
-  const base::TimeDelta& time_to_abort = extra_info.time_to_abort;
+  base::TimeDelta time_to_abort = extra_info.time_to_abort;
   DCHECK(!time_to_abort.is_zero());
 
   // Don't log abort times if the page was backgrounded before the abort event.

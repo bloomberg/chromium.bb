@@ -51,13 +51,13 @@ enum UserAbortType {
 };
 
 struct PageLoadExtraInfo {
-  PageLoadExtraInfo(const base::TimeDelta& first_background_time,
-                    const base::TimeDelta& first_foreground_time,
+  PageLoadExtraInfo(base::TimeDelta first_background_time,
+                    base::TimeDelta first_foreground_time,
                     bool started_in_foreground,
                     const GURL& committed_url,
-                    const base::TimeDelta& time_to_commit,
+                    base::TimeDelta time_to_commit,
                     UserAbortType abort_type,
-                    const base::TimeDelta& time_to_abort);
+                    base::TimeDelta time_to_abort);
 
   // Returns the time to first background if the page load started in the
   // foreground. If the page has not been backgrounded, or the page started in

@@ -11,7 +11,7 @@
 
 namespace page_load_metrics {
 
-bool EventOccurredInForeground(const base::TimeDelta& event,
+bool EventOccurredInForeground(base::TimeDelta event,
                                const PageLoadExtraInfo& info) {
   return info.started_in_foreground && !event.is_zero() &&
          (info.first_background_time.is_zero() ||

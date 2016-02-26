@@ -23,7 +23,7 @@ namespace {
 // to load.
 const size_t kNumRapporHistogramBuckets = 6;
 
-uint64_t RapporHistogramBucketIndex(const base::TimeDelta& time) {
+uint64_t RapporHistogramBucketIndex(base::TimeDelta time) {
   int64_t seconds = time.InSeconds();
   if (seconds < 2)
     return 0;
