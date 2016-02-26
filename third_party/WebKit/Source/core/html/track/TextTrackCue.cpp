@@ -136,11 +136,11 @@ unsigned TextTrackCue::cueIndex()
     return m_cueIndex;
 }
 
-bool TextTrackCue::dispatchEventInternal(PassRefPtrWillBeRawPtr<Event> event)
+DispatchEventResult TextTrackCue::dispatchEventInternal(PassRefPtrWillBeRawPtr<Event> event)
 {
     // When a TextTrack's mode is disabled: no cues are active, no events fired.
     if (!track() || track()->mode() == TextTrack::disabledKeyword())
-        return false;
+        return DispatchEventResult::CanceledBeforeDispatch;
 
     return EventTarget::dispatchEventInternal(event);
 }

@@ -55,10 +55,10 @@ namespace blink {
 
 namespace {
 
-void processExceptionOnWorkerGlobalScope(int exceptionId, bool isHandled, ExecutionContext* scriptContext)
+void processExceptionOnWorkerGlobalScope(int exceptionId, bool handled, ExecutionContext* scriptContext)
 {
     WorkerGlobalScope* globalScope = toWorkerGlobalScope(scriptContext);
-    globalScope->exceptionHandled(exceptionId, isHandled);
+    globalScope->exceptionHandled(exceptionId, handled);
 }
 
 void processMessageOnWorkerGlobalScope(PassRefPtr<SerializedScriptValue> message, PassOwnPtr<MessagePortChannelArray> channels, WorkerObjectProxy* workerObjectProxy, ExecutionContext* scriptContext)
@@ -171,8 +171,8 @@ void WorkerMessagingProxy::reportException(const String& errorMessage, int lineN
     // This is intentionally different than the behavior in MessageWorkerTask, because terminated workers no longer deliver messages (section 4.6 of the WebWorker spec), but they do report exceptions.
 
     RefPtrWillBeRawPtr<ErrorEvent> event = ErrorEvent::create(errorMessage, sourceURL, lineNumber, columnNumber, nullptr);
-    bool errorHandled = !m_workerObject->dispatchEvent(event);
-    postTaskToWorkerGlobalScope(createCrossThreadTask(&processExceptionOnWorkerGlobalScope, exceptionId, errorHandled));
+    DispatchEventResult dispatchResult = m_workerObject->dispatchEvent(event);
+    postTaskToWorkerGlobalScope(createCrossThreadTask(&processExceptionOnWorkerGlobalScope, exceptionId, dispatchResult != DispatchEventResult::NotCanceled));
 }
 
 void WorkerMessagingProxy::reportConsoleMessage(MessageSource source, MessageLevel level, const String& message, int lineNumber, const String& sourceURL)

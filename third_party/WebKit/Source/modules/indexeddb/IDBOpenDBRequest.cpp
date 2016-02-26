@@ -162,7 +162,7 @@ bool IDBOpenDBRequest::shouldEnqueueEvent() const
     return true;
 }
 
-bool IDBOpenDBRequest::dispatchEventInternal(PassRefPtrWillBeRawPtr<Event> event)
+DispatchEventResult IDBOpenDBRequest::dispatchEventInternal(PassRefPtrWillBeRawPtr<Event> event)
 {
     // If the connection closed between onUpgradeNeeded and the delivery of the "success" event,
     // an "error" event should be fired instead.
@@ -170,7 +170,7 @@ bool IDBOpenDBRequest::dispatchEventInternal(PassRefPtrWillBeRawPtr<Event> event
         dequeueEvent(event.get());
         setResult(nullptr);
         onError(DOMException::create(AbortError, "The connection was closed."));
-        return false;
+        return DispatchEventResult::CanceledBeforeDispatch;
     }
 
     return IDBRequest::dispatchEventInternal(event);

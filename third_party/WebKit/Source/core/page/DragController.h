@@ -27,6 +27,7 @@
 #define DragController_h
 
 #include "core/CoreExport.h"
+#include "core/events/EventTarget.h"
 #include "core/page/DragActions.h"
 #include "platform/geometry/IntPoint.h"
 #include "platform/heap/Handle.h"
@@ -80,7 +81,7 @@ public:
 private:
     DragController(Page*, DragClient*);
 
-    bool dispatchTextInputEventFor(LocalFrame*, DragData*);
+    DispatchEventResult dispatchTextInputEventFor(LocalFrame*, DragData*);
     bool canProcessDrag(DragData*);
     bool concludeEditDrag(DragData*);
     DragSession dragEnteredOrUpdated(DragData*);

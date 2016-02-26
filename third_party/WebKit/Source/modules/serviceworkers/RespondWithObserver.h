@@ -6,6 +6,7 @@
 #define RespondWithObserver_h
 
 #include "core/dom/ContextLifecycleObserver.h"
+#include "core/events/EventTarget.h"
 #include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebURLRequest.h"
@@ -28,7 +29,7 @@ public:
 
     void contextDestroyed() override;
 
-    void didDispatchEvent(bool defaultPrevented);
+    void didDispatchEvent(DispatchEventResult dispatchResult);
 
     // Observes the promise and delays calling didHandleFetchEvent() until the
     // given promise is resolved or rejected.

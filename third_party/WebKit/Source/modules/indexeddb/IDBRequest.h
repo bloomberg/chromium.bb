@@ -134,7 +134,7 @@ protected:
     void setResult(IDBAny*);
 
     // EventTarget
-    bool dispatchEventInternal(PassRefPtrWillBeRawPtr<Event>) override;
+    DispatchEventResult dispatchEventInternal(PassRefPtrWillBeRawPtr<Event>) override;
 
     bool m_contextStopped = false;
     Member<IDBTransaction> m_transaction;

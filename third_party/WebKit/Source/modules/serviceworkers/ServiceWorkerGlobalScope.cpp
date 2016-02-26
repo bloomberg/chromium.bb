@@ -167,14 +167,14 @@ const AtomicString& ServiceWorkerGlobalScope::interfaceName() const
     return EventTargetNames::ServiceWorkerGlobalScope;
 }
 
-bool ServiceWorkerGlobalScope::dispatchEventInternal(PassRefPtrWillBeRawPtr<Event> event)
+DispatchEventResult ServiceWorkerGlobalScope::dispatchEventInternal(PassRefPtrWillBeRawPtr<Event> event)
 {
     m_eventNestingLevel++;
-    bool result = WorkerGlobalScope::dispatchEventInternal(event.get());
+    DispatchEventResult dispatchResult = WorkerGlobalScope::dispatchEventInternal(event.get());
     if (event->interfaceName() == EventNames::ErrorEvent && m_eventNestingLevel == 2)
         m_hadErrorInTopLevelEventHandler = true;
     m_eventNestingLevel--;
-    return result;
+    return dispatchResult;
 }
 
 void ServiceWorkerGlobalScope::dispatchExtendableEvent(PassRefPtrWillBeRawPtr<Event> event, WaitUntilObserver* observer)

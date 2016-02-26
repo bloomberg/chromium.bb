@@ -367,20 +367,22 @@ WebInputEventResult EventHandler::mergeEventResult(
     return static_cast<WebInputEventResult>(max(static_cast<int>(resultA), static_cast<int>(resultB)));
 }
 
-WebInputEventResult EventHandler::eventToEventResult(
-    PassRefPtrWillBeRawPtr<Event> event, bool result)
+WebInputEventResult EventHandler::toWebInputEventResult(
+    DispatchEventResult result)
 {
-    if (event->defaultPrevented())
+    switch (result) {
+    case DispatchEventResult::NotCanceled:
+        return WebInputEventResult::NotHandled;
+    case DispatchEventResult::CanceledByEventHandler:
         return WebInputEventResult::HandledApplication;
-    if (event->defaultHandled())
+    case DispatchEventResult::CanceledByDefaultEventHandler:
         return WebInputEventResult::HandledSystem;
-
-    // TODO(dtapuska): There are cases in the code where dispatchEvent
-    // returns false (indicated handled) but event is not marked
-    // as default handled or default prevented. crbug.com/560355
-    if (!result)
+    case DispatchEventResult::CanceledBeforeDispatch:
         return WebInputEventResult::HandledSuppressed;
-    return WebInputEventResult::NotHandled;
+    default:
+        ASSERT_NOT_REACHED();
+        return WebInputEventResult::HandledSystem;
+    }
 }
 
 void EventHandler::nodeWillBeRemoved(Node& nodeToBeRemoved)
@@ -1356,10 +1358,8 @@ WebInputEventResult EventHandler::handleMouseReleaseEvent(const PlatformMouseEve
             // because the mouseup dispatch above has already updated it
             // correctly. Moreover, clickTargetNode is different from
             // mev.innerNode at drag-release.
-            if (clickTargetNode->dispatchMouseEvent(mouseEvent,
-                EventTypeNames::click, m_clickCount)) {
-                clickEventResult = WebInputEventResult::HandledApplication;
-            }
+            clickEventResult = toWebInputEventResult(clickTargetNode->dispatchMouseEvent(mouseEvent,
+                EventTypeNames::click, m_clickCount));
         }
     }
 
@@ -1391,8 +1391,7 @@ WebInputEventResult EventHandler::dispatchDragEvent(const AtomicString& eventTyp
         event.modifiers(),
         0, MouseEvent::platformModifiersToButtons(event.modifiers()), nullptr, event.timestamp(), dataTransfer, event.syntheticEventType());
 
-    bool dispatchResult = dragTarget->dispatchEvent(me.get());
-    return eventToEventResult(me, dispatchResult);
+    return toWebInputEventResult(dragTarget->dispatchEvent(me.get()));
 }
 
 static bool targetIsFrame(Node* target, LocalFrame*& frame)
@@ -1629,8 +1628,7 @@ WebInputEventResult EventHandler::dispatchMouseEvent(const AtomicString& eventTy
         return WebInputEventResult::NotHandled;
 
     RefPtrWillBeRawPtr<MouseEvent> event = MouseEvent::create(eventType, m_nodeUnderMouse->document().domWindow(), mouseEvent, clickCount, nullptr);
-    bool dispatchResult = m_nodeUnderMouse->dispatchEvent(event);
-    return eventToEventResult(event, dispatchResult);
+    return toWebInputEventResult(m_nodeUnderMouse->dispatchEvent(event));
 }
 
 // TODO(mustaq): Make PE drive ME dispatch & bookkeeping in EventHandler.
@@ -1644,11 +1642,9 @@ WebInputEventResult EventHandler::updatePointerTargetAndDispatchEvents(const Ato
     if (!m_nodeUnderMouse)
         return WebInputEventResult::NotHandled;
 
-    WebInputEventResult result = m_pointerEventManager.sendMousePointerEvent(
+    return m_pointerEventManager.sendMousePointerEvent(
         m_nodeUnderMouse, mouseEventType, clickCount, mouseEvent, nullptr,
         m_frame->document()->domWindow());
-
-    return result;
 }
 
 WebInputEventResult EventHandler::handleMouseFocus(const MouseEventWithHitTestResults& targetedEvent, InputDeviceCapabilities* sourceCapabilities)
@@ -1816,9 +1812,10 @@ WebInputEventResult EventHandler::handleWheelEvent(const PlatformWheelEvent& eve
         }
 
         RefPtrWillBeRawPtr<Event> domEvent = WheelEvent::create(event, node->document().domWindow());
-        if (!node->dispatchEvent(domEvent)) {
+        DispatchEventResult domEventResult = node->dispatchEvent(domEvent);
+        if (domEventResult != DispatchEventResult::NotCanceled) {
             setFrameWasScrolledByUser();
-            return eventToEventResult(domEvent, false);
+            return toWebInputEventResult(domEventResult);
         }
     }
 
@@ -1948,10 +1945,13 @@ WebInputEventResult EventHandler::handleGestureEventInFrame(const GestureEventWi
 
     if (eventTarget) {
         RefPtrWillBeRawPtr<GestureEvent> gestureDomEvent = GestureEvent::create(eventTarget->document().domWindow(), gestureEvent);
-        // TODO(dtapuska): dispatchEvent is inverted for Gesture Events
-        // crbug.com/560357
-        if (gestureDomEvent.get() && eventTarget->dispatchEvent(gestureDomEvent))
-            return eventToEventResult(gestureDomEvent, false);
+        if (gestureDomEvent.get()) {
+            DispatchEventResult gestureDomEventResult = eventTarget->dispatchEvent(gestureDomEvent);
+            if (gestureDomEventResult != DispatchEventResult::NotCanceled) {
+                ASSERT(gestureDomEventResult != DispatchEventResult::CanceledByEventHandler);
+                return toWebInputEventResult(gestureDomEventResult);
+            }
+        }
     }
 
     switch (gestureEvent.type()) {
@@ -2027,10 +2027,13 @@ WebInputEventResult EventHandler::handleGestureScrollEvent(const PlatformGesture
             return WebInputEventResult::HandledSuppressed;
 
         RefPtrWillBeRawPtr<GestureEvent> gestureDomEvent = GestureEvent::create(eventTarget->document().domWindow(), gestureEvent);
-        // TODO(dtapuska): dispatchEvent is inverted for Gesture Events
-        // crbug.com/560357
-        if (gestureDomEvent.get() && eventTarget->dispatchEvent(gestureDomEvent))
-            return eventToEventResult(gestureDomEvent, false);
+        if (gestureDomEvent.get()) {
+            DispatchEventResult gestureDomEventResult = eventTarget->dispatchEvent(gestureDomEvent);
+            if (gestureDomEventResult != DispatchEventResult::NotCanceled) {
+                ASSERT(gestureDomEventResult != DispatchEventResult::CanceledByEventHandler);
+                return toWebInputEventResult(gestureDomEventResult);
+            }
+        }
     }
 
     switch (gestureEvent.type()) {
@@ -3106,8 +3109,7 @@ WebInputEventResult EventHandler::keyEvent(const PlatformKeyboardEvent& initialK
     if (initialKeyEvent.type() == PlatformEvent::KeyUp || initialKeyEvent.type() == PlatformEvent::Char) {
         RefPtrWillBeRawPtr<KeyboardEvent> domEvent = KeyboardEvent::create(initialKeyEvent, m_frame->document()->domWindow());
 
-        bool dispatchResult = node->dispatchEvent(domEvent);
-        return eventToEventResult(domEvent, dispatchResult);
+        return toWebInputEventResult(node->dispatchEvent(domEvent));
     }
 
     PlatformKeyboardEvent keyDownEvent = initialKeyEvent;
@@ -3118,22 +3120,16 @@ WebInputEventResult EventHandler::keyEvent(const PlatformKeyboardEvent& initialK
         keydown->setDefaultPrevented(true);
     keydown->setTarget(node);
 
-    if (initialKeyEvent.type() == PlatformEvent::RawKeyDown) {
-        if (!node->dispatchEvent(keydown))
-            return eventToEventResult(keydown, false);
-        // If frame changed as a result of keydown dispatch, then return true to avoid sending a subsequent keypress message to the new frame.
-        bool changedFocusedFrame = m_frame->page() && m_frame != m_frame->page()->focusController().focusedOrMainFrame();
-        if (changedFocusedFrame)
-            return WebInputEventResult::HandledSystem;
-        return WebInputEventResult::NotHandled;
-    }
-
-    if (!node->dispatchEvent(keydown))
-        return eventToEventResult(keydown, false);
+    DispatchEventResult dispatchResult = node->dispatchEvent(keydown);
+    if (dispatchResult != DispatchEventResult::NotCanceled)
+        return toWebInputEventResult(dispatchResult);
     // If frame changed as a result of keydown dispatch, then return early to avoid sending a subsequent keypress message to the new frame.
     bool changedFocusedFrame = m_frame->page() && m_frame != m_frame->page()->focusController().focusedOrMainFrame();
     if (changedFocusedFrame)
         return WebInputEventResult::HandledSystem;
+
+    if (initialKeyEvent.type() == PlatformEvent::RawKeyDown)
+        return WebInputEventResult::NotHandled;
 
     // Focus may have changed during keydown handling, so refetch node.
     // But if we are dispatching a fake backward compatibility keypress, then we pretend that the keypress happened on the original node.
@@ -3147,8 +3143,7 @@ WebInputEventResult EventHandler::keyEvent(const PlatformKeyboardEvent& initialK
         return WebInputEventResult::NotHandled;
     RefPtrWillBeRawPtr<KeyboardEvent> keypress = KeyboardEvent::create(keyPressEvent, m_frame->document()->domWindow());
     keypress->setTarget(node);
-    bool dispatchResult = node->dispatchEvent(keypress);
-    return eventToEventResult(keypress, dispatchResult);
+    return toWebInputEventResult(node->dispatchEvent(keypress));
 }
 
 static WebFocusType focusDirectionForKey(const AtomicString& keyIdentifier)
@@ -3722,8 +3717,7 @@ WebInputEventResult EventHandler::dispatchTouchEvents(const PlatformTouchEvent& 
                 eventName, touchEventTarget->toNode()->document().domWindow(),
                 event.modifiers(), event.cancelable(), event.causesScrollingIfUncanceled(), event.timestamp());
 
-            bool dispatchResult = touchEventTarget->dispatchEvent(touchEvent.get());
-            eventResult = mergeEventResult(eventResult, eventToEventResult(touchEvent, dispatchResult));
+            eventResult = mergeEventResult(eventResult, toWebInputEventResult(touchEventTarget->dispatchEvent(touchEvent.get())));
         }
     }
 

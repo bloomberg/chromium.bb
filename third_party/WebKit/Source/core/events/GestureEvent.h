@@ -58,8 +58,6 @@ public:
     GestureSource source() const { return m_source; }
     int resendingPluginId() const { return m_resendingPluginId; }
 
-    PassRefPtrWillBeRawPtr<EventDispatchMediator> createMediator() override;
-
     DECLARE_VIRTUAL_TRACE();
 
 private:
@@ -74,21 +72,6 @@ private:
 
     GestureSource m_source;
     int m_resendingPluginId;
-};
-
-class GestureEventDispatchMediator final : public EventDispatchMediator {
-public:
-    static PassRefPtrWillBeRawPtr<GestureEventDispatchMediator> create(PassRefPtrWillBeRawPtr<GestureEvent> gestureEvent)
-    {
-        return adoptRefWillBeNoop(new GestureEventDispatchMediator(gestureEvent));
-    }
-
-private:
-    explicit GestureEventDispatchMediator(PassRefPtrWillBeRawPtr<GestureEvent>);
-
-    GestureEvent& event() const;
-
-    bool dispatchEvent(EventDispatcher&) const override;
 };
 
 DEFINE_EVENT_TYPE_CASTS(GestureEvent);

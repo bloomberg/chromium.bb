@@ -70,8 +70,8 @@ public:
             init.setReason(ScriptValue(m_scriptState, reason));
             init.setCancelable(true);
             RefPtrWillBeRawPtr<PromiseRejectionEvent> event = PromiseRejectionEvent::create(m_scriptState, EventTypeNames::unhandledrejection, init);
-            // Log to console if event was not preventDefault()'ed.
-            m_shouldLogToConsole = target->dispatchEvent(event);
+            // Log to console if event was not canceled.
+            m_shouldLogToConsole = target->dispatchEvent(event) == DispatchEventResult::NotCanceled;
         }
 
         if (m_shouldLogToConsole) {

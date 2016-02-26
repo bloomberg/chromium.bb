@@ -266,7 +266,7 @@ MouseEvent& MouseEventDispatchMediator::event() const
     return toMouseEvent(EventDispatchMediator::event());
 }
 
-bool MouseEventDispatchMediator::dispatchEvent(EventDispatcher& dispatcher) const
+DispatchEventResult MouseEventDispatchMediator::dispatchEvent(EventDispatcher& dispatcher) const
 {
     MouseEvent& mouseEvent = event();
     if (!mouseEvent.isTrusted()) {
@@ -275,21 +275,20 @@ bool MouseEventDispatchMediator::dispatchEvent(EventDispatcher& dispatcher) cons
     }
 
     if (isDisabledFormControl(&dispatcher.node()))
-        return false;
+        return DispatchEventResult::CanceledBeforeDispatch;
 
     if (mouseEvent.type().isEmpty())
-        return true; // Shouldn't happen.
+        return DispatchEventResult::NotCanceled; // Shouldn't happen.
 
     ASSERT(!mouseEvent.target() || mouseEvent.target() != mouseEvent.relatedTarget());
 
     EventTarget* relatedTarget = mouseEvent.relatedTarget();
     mouseEvent.eventPath().adjustForRelatedTarget(dispatcher.node(), relatedTarget);
 
-    dispatcher.dispatch();
-    bool swallowEvent = mouseEvent.defaultHandled() || mouseEvent.defaultPrevented();
+    DispatchEventResult dispatchResult = dispatcher.dispatch();
 
     if (mouseEvent.type() != EventTypeNames::click || mouseEvent.detail() != 2)
-        return !swallowEvent;
+        return dispatchResult;
 
     // Special case: If it's a double click event, we also send the dblclick event. This is not part
     // of the DOM specs, but is used for compatibility with the ondblclick="" attribute. This is treated
@@ -303,10 +302,10 @@ bool MouseEventDispatchMediator::dispatchEvent(EventDispatcher& dispatcher) cons
     doubleClickEvent->setTrusted(mouseEvent.isTrusted());
     if (mouseEvent.defaultHandled())
         doubleClickEvent->setDefaultHandled();
-    EventDispatcher::dispatchEvent(dispatcher.node(), MouseEventDispatchMediator::create(doubleClickEvent));
-    if (doubleClickEvent->defaultHandled() || doubleClickEvent->defaultPrevented())
-        return false;
-    return !swallowEvent;
+    DispatchEventResult doubleClickDispatchResult = EventDispatcher::dispatchEvent(dispatcher.node(), MouseEventDispatchMediator::create(doubleClickEvent));
+    if (doubleClickDispatchResult != DispatchEventResult::NotCanceled)
+        return doubleClickDispatchResult;
+    return dispatchResult;
 }
 
 } // namespace blink

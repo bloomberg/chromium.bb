@@ -135,7 +135,7 @@ private:
     explicit MouseEventDispatchMediator(PassRefPtrWillBeRawPtr<MouseEvent>);
     MouseEvent& event() const;
 
-    bool dispatchEvent(EventDispatcher&) const override;
+    DispatchEventResult dispatchEvent(EventDispatcher&) const override;
 };
 
 DEFINE_EVENT_TYPE_CASTS(MouseEvent);

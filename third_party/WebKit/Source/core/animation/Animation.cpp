@@ -656,7 +656,7 @@ void Animation::stop()
     m_pendingFinishedEvent = nullptr;
 }
 
-bool Animation::dispatchEventInternal(PassRefPtrWillBeRawPtr<Event> event)
+DispatchEventResult Animation::dispatchEventInternal(PassRefPtrWillBeRawPtr<Event> event)
 {
     if (m_pendingFinishedEvent == event)
         m_pendingFinishedEvent = nullptr;

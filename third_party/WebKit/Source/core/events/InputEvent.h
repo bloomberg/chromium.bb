@@ -26,23 +26,11 @@ public:
 
     bool isInputEvent() const override;
 
-    PassRefPtrWillBeRawPtr<EventDispatchMediator> createMediator() override;
-
     DECLARE_VIRTUAL_TRACE();
 
 private:
     InputEvent();
     InputEvent(const AtomicString&, const InputEventInit&);
-};
-
-class InputEventDispatchMediator final : public EventDispatchMediator {
-public:
-    static PassRefPtrWillBeRawPtr<InputEventDispatchMediator> create(PassRefPtrWillBeRawPtr<InputEvent>);
-
-private:
-    explicit InputEventDispatchMediator(PassRefPtrWillBeRawPtr<InputEvent>);
-    InputEvent& event() const;
-    bool dispatchEvent(EventDispatcher&) const override;
 };
 
 DEFINE_EVENT_TYPE_CASTS(InputEvent);

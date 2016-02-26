@@ -181,7 +181,7 @@ public:
     void setMouseDownMayStartAutoscroll() { m_mouseDownMayStartAutoscroll = true; }
 
     static WebInputEventResult mergeEventResult(WebInputEventResult resultA, WebInputEventResult resultB);
-    static WebInputEventResult eventToEventResult(PassRefPtrWillBeRawPtr<Event>, bool);
+    static WebInputEventResult toWebInputEventResult(DispatchEventResult);
 
     static PlatformEvent::Modifiers accessKeyModifiers();
     bool handleAccessKey(const PlatformKeyboardEvent&);

@@ -145,13 +145,13 @@ void RespondWithObserver::contextDestroyed()
     m_state = Done;
 }
 
-void RespondWithObserver::didDispatchEvent(bool defaultPrevented)
+void RespondWithObserver::didDispatchEvent(DispatchEventResult dispatchResult)
 {
     ASSERT(executionContext());
     if (m_state != Initial)
         return;
 
-    if (defaultPrevented) {
+    if (dispatchResult != DispatchEventResult::NotCanceled) {
         responseWasRejected(WebServiceWorkerResponseErrorDefaultPrevented);
         return;
     }

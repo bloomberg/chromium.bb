@@ -50,7 +50,7 @@ DEFINE_TRACE(EventDispatchMediator)
     visitor->trace(m_event);
 }
 
-bool EventDispatchMediator::dispatchEvent(EventDispatcher& dispatcher) const
+DispatchEventResult EventDispatchMediator::dispatchEvent(EventDispatcher& dispatcher) const
 {
     ASSERT(m_event.get() == &dispatcher.event());
     return dispatcher.dispatch();

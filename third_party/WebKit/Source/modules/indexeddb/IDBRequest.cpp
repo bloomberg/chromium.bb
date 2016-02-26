@@ -410,11 +410,11 @@ ExecutionContext* IDBRequest::executionContext() const
     return ActiveDOMObject::executionContext();
 }
 
-bool IDBRequest::dispatchEventInternal(PassRefPtrWillBeRawPtr<Event> event)
+DispatchEventResult IDBRequest::dispatchEventInternal(PassRefPtrWillBeRawPtr<Event> event)
 {
     IDB_TRACE("IDBRequest::dispatchEvent");
     if (m_contextStopped || !executionContext())
-        return false;
+        return DispatchEventResult::CanceledBeforeDispatch;
     ASSERT(m_readyState == PENDING);
     ASSERT(m_hasPendingActivity);
     ASSERT(m_enqueuedEvents.size());
@@ -457,7 +457,7 @@ bool IDBRequest::dispatchEventInternal(PassRefPtrWillBeRawPtr<Event> event)
     if (setTransactionActive)
         m_transaction->setActive(true);
 
-    bool dontPreventDefault = IDBEventDispatcher::dispatch(event.get(), targets);
+    DispatchEventResult dispatchResult = IDBEventDispatcher::dispatch(event.get(), targets);
 
     if (m_transaction) {
         if (m_readyState == DONE)
@@ -465,7 +465,7 @@ bool IDBRequest::dispatchEventInternal(PassRefPtrWillBeRawPtr<Event> event)
 
         // Possibly abort the transaction. This must occur after unregistering (so this request
         // doesn't receive a second error) and before deactivating (which might trigger commit).
-        if (event->type() == EventTypeNames::error && dontPreventDefault && !m_requestAborted) {
+        if (event->type() == EventTypeNames::error && dispatchResult == DispatchEventResult::NotCanceled && !m_requestAborted) {
             m_transaction->setError(m_error);
             m_transaction->abort(IGNORE_EXCEPTION);
         }
@@ -483,7 +483,7 @@ bool IDBRequest::dispatchEventInternal(PassRefPtrWillBeRawPtr<Event> event)
     if (m_readyState == DONE && event->type() != EventTypeNames::upgradeneeded)
         m_hasPendingActivity = false;
 
-    return dontPreventDefault;
+    return dispatchResult;
 }
 
 void IDBRequest::uncaughtExceptionInEventHandler()

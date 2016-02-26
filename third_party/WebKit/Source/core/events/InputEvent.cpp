@@ -17,11 +17,6 @@ InputEvent::InputEvent(const AtomicString& type, const InputEventInit& initializ
 {
 }
 
-PassRefPtrWillBeRawPtr<EventDispatchMediator> InputEvent::createMediator()
-{
-    return InputEventDispatchMediator::create(this);
-}
-
 bool InputEvent::isInputEvent() const
 {
     return true;
@@ -30,26 +25,6 @@ bool InputEvent::isInputEvent() const
 DEFINE_TRACE(InputEvent)
 {
     UIEvent::trace(visitor);
-}
-
-PassRefPtrWillBeRawPtr<InputEventDispatchMediator> InputEventDispatchMediator::create(PassRefPtrWillBeRawPtr<InputEvent> inputEvent)
-{
-    return adoptRefWillBeNoop(new InputEventDispatchMediator(inputEvent));
-}
-
-InputEventDispatchMediator::InputEventDispatchMediator(PassRefPtrWillBeRawPtr<InputEvent> inputEvent)
-    : EventDispatchMediator(inputEvent)
-{
-}
-
-InputEvent& InputEventDispatchMediator::event() const
-{
-    return toInputEvent(EventDispatchMediator::event());
-}
-
-bool InputEventDispatchMediator::dispatchEvent(EventDispatcher& dispatcher) const
-{
-    return EventDispatchMediator::dispatchEvent(dispatcher) && !event().defaultHandled();
 }
 
 } // namespace blink

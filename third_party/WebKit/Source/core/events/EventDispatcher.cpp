@@ -41,7 +41,7 @@
 
 namespace blink {
 
-bool EventDispatcher::dispatchEvent(Node& node, PassRefPtrWillBeRawPtr<EventDispatchMediator> mediator)
+DispatchEventResult EventDispatcher::dispatchEvent(Node& node, PassRefPtrWillBeRawPtr<EventDispatchMediator> mediator)
 {
     TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("blink.debug"), "EventDispatcher::dispatchEvent");
     ASSERT(!EventDispatchForbiddenScope::isEventDispatchForbidden());
@@ -101,7 +101,7 @@ void EventDispatcher::dispatchSimulatedClick(Node& node, Event* underlyingEvent,
     nodesDispatchingSimulatedClicks->remove(&node);
 }
 
-bool EventDispatcher::dispatch()
+DispatchEventResult EventDispatcher::dispatch()
 {
     TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("blink.debug"), "EventDispatcher::dispatch");
 
@@ -111,7 +111,7 @@ bool EventDispatcher::dispatch()
 #endif
     if (event().eventPath().isEmpty()) {
         // eventPath() can be empty if event path is shrinked by relataedTarget retargeting.
-        return true;
+        return DispatchEventResult::NotCanceled;
     }
     m_event->eventPath().ensureWindowEventContext();
 
@@ -134,7 +134,7 @@ bool EventDispatcher::dispatch()
     m_event->setCurrentTarget(nullptr);
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "UpdateCounters", TRACE_EVENT_SCOPE_THREAD, "data", InspectorUpdateCountersEvent::data());
 
-    return !m_event->defaultPrevented();
+    return EventTarget::dispatchEventResult(*m_event);
 }
 
 inline EventDispatchContinuation EventDispatcher::dispatchEventPreProcess(void*& preDispatchEventHandlerResult)

@@ -297,7 +297,6 @@ ServiceWorkerGlobalScope* ServiceWorkerGlobalScopeProxy::workerGlobalScope() con
 void ServiceWorkerGlobalScopeProxy::dispatchFetchEventImpl(int eventID, const WebServiceWorkerRequest& webRequest, const AtomicString& eventTypeName)
 {
     RespondWithObserver* observer = RespondWithObserver::create(workerGlobalScope(), eventID, webRequest.url(), webRequest.mode(), webRequest.frameType(), webRequest.requestContext());
-    bool defaultPrevented = false;
     Request* request = Request::create(workerGlobalScope(), webRequest);
     request->headers()->setGuard(Headers::ImmutableGuard);
     FetchEventInit eventInit;
@@ -306,8 +305,8 @@ void ServiceWorkerGlobalScopeProxy::dispatchFetchEventImpl(int eventID, const We
     eventInit.setClientId(webRequest.isMainResourceLoad() ? WebString() : webRequest.clientId());
     eventInit.setIsReload(webRequest.isReload());
     RefPtrWillBeRawPtr<FetchEvent> fetchEvent(FetchEvent::create(eventTypeName, eventInit, observer));
-    defaultPrevented = !workerGlobalScope()->dispatchEvent(fetchEvent.release());
-    observer->didDispatchEvent(defaultPrevented);
+    DispatchEventResult dispatchResult = workerGlobalScope()->dispatchEvent(fetchEvent.release());
+    observer->didDispatchEvent(dispatchResult);
 }
 
 } // namespace blink

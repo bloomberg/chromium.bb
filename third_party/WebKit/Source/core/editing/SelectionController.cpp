@@ -73,10 +73,10 @@ void setSelectionIfNeeded(FrameSelection& selection, const VisibleSelectionInFla
     selection.setSelection(newSelection);
 }
 
-bool dispatchSelectStart(Node* node)
+DispatchEventResult dispatchSelectStart(Node* node)
 {
     if (!node || !node->layoutObject())
-        return true;
+        return DispatchEventResult::NotCanceled;
 
     return node->dispatchEvent(Event::createCancelableBubble(EventTypeNames::selectstart));
 }
@@ -217,7 +217,7 @@ void SelectionController::updateSelectionForMouseDrag(const HitTestResult& hitTe
         }
     }
 
-    if (m_selectionState == SelectionState::HaveNotStartedSelection && !dispatchSelectStart(target))
+    if (m_selectionState == SelectionState::HaveNotStartedSelection && dispatchSelectStart(target) != DispatchEventResult::NotCanceled)
         return;
 
     // TODO(yosin) We should check |mousePressNode|, |targetPosition|, and
@@ -269,7 +269,7 @@ bool SelectionController::updateSelectionForMouseDownDispatchingSelectStart(Node
     if (targetNode && targetNode->layoutObject() && !targetNode->layoutObject()->isSelectable())
         return false;
 
-    if (!dispatchSelectStart(targetNode))
+    if (dispatchSelectStart(targetNode) != DispatchEventResult::NotCanceled)
         return false;
 
     if (!selection.isValidFor(*m_frame->document()))

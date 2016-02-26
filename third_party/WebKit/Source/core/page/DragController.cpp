@@ -432,7 +432,7 @@ static bool setSelectionToDragCaret(LocalFrame* frame, VisibleSelection& dragCar
     return !frame->selection().isNone() && frame->selection().isContentEditable();
 }
 
-bool DragController::dispatchTextInputEventFor(LocalFrame* innerFrame, DragData* dragData)
+DispatchEventResult DragController::dispatchTextInputEventFor(LocalFrame* innerFrame, DragData* dragData)
 {
     ASSERT(m_page->dragCaretController().hasCaret());
     String text = m_page->dragCaretController().isContentRichlyEditable() ? "" : dragData->asPlainText();
@@ -460,7 +460,7 @@ bool DragController::concludeEditDrag(DragData* dragData)
     RefPtrWillBeRawPtr<LocalFrame> innerFrame = element->ownerDocument()->frame();
     ASSERT(innerFrame);
 
-    if (m_page->dragCaretController().hasCaret() && !dispatchTextInputEventFor(innerFrame.get(), dragData))
+    if (m_page->dragCaretController().hasCaret() && dispatchTextInputEventFor(innerFrame.get(), dragData) != DispatchEventResult::NotCanceled)
         return true;
 
     if (dragData->containsFiles() && fileInput) {

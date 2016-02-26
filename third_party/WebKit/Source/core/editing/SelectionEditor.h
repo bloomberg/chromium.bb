@@ -27,6 +27,7 @@
 #define SelectionEditor_h
 
 #include "core/editing/FrameSelection.h"
+#include "core/events/EventDispatchResult.h"
 
 namespace blink {
 
@@ -111,7 +112,7 @@ private:
     void stopObservingVisibleSelectionChangeIfNecessary();
 
     LayoutUnit lineDirectionPointForBlockDirectionNavigation(EPositionType);
-    bool dispatchSelectStart();
+    DispatchEventResult dispatchSelectStart();
 
     RawPtrWillBeMember<FrameSelection> m_frameSelection;
 

@@ -118,7 +118,7 @@ public:
 
 protected:
     // EventTarget interface.
-    bool dispatchEventInternal(PassRefPtrWillBeRawPtr<Event>) final;
+    DispatchEventResult dispatchEventInternal(PassRefPtrWillBeRawPtr<Event>) final;
 
 private:
     Notification(ExecutionContext*, const WebNotificationData&);

@@ -25,7 +25,6 @@
 #define KeyboardEvent_h
 
 #include "core/CoreExport.h"
-#include "core/events/EventDispatchMediator.h"
 #include "core/events/KeyboardEventInit.h"
 #include "core/events/UIEventWithKeyState.h"
 
@@ -86,8 +85,6 @@ public:
     bool isKeyboardEvent() const override;
     int which() const override;
 
-    PassRefPtrWillBeRawPtr<EventDispatchMediator> createMediator() override;
-
     DECLARE_VIRTUAL_TRACE();
 
 private:
@@ -105,14 +102,6 @@ private:
     String m_code;
     String m_key;
     unsigned m_location;
-};
-
-class KeyboardEventDispatchMediator : public EventDispatchMediator {
-public:
-    static PassRefPtrWillBeRawPtr<KeyboardEventDispatchMediator> create(PassRefPtrWillBeRawPtr<KeyboardEvent>);
-private:
-    explicit KeyboardEventDispatchMediator(PassRefPtrWillBeRawPtr<KeyboardEvent>);
-    bool dispatchEvent(EventDispatcher&) const override;
 };
 
 DEFINE_EVENT_TYPE_CASTS(KeyboardEvent);

@@ -26,7 +26,6 @@
 #define WheelEvent_h
 
 #include "core/CoreExport.h"
-#include "core/events/EventDispatchMediator.h"
 #include "core/events/MouseEvent.h"
 #include "core/events/WheelEventInit.h"
 #include "platform/geometry/FloatPoint.h"
@@ -111,16 +110,6 @@ private:
 };
 
 DEFINE_EVENT_TYPE_CASTS(WheelEvent);
-
-class WheelEventDispatchMediator final : public EventDispatchMediator {
-public:
-    static PassRefPtrWillBeRawPtr<WheelEventDispatchMediator> create(PassRefPtrWillBeRawPtr<WheelEvent>);
-
-private:
-    explicit WheelEventDispatchMediator(PassRefPtrWillBeRawPtr<WheelEvent>);
-    WheelEvent& event() const;
-    bool dispatchEvent(EventDispatcher&) const override;
-};
 
 } // namespace blink
 

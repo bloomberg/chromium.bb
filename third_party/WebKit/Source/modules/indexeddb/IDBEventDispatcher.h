@@ -29,6 +29,7 @@
 #ifndef IDBEventDispatcher_h
 #define IDBEventDispatcher_h
 
+#include "core/events/EventTarget.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Allocator.h"
 #include "wtf/RefPtr.h"
@@ -37,12 +38,11 @@
 namespace blink {
 
 class Event;
-class EventTarget;
 
 class IDBEventDispatcher {
     STATIC_ONLY(IDBEventDispatcher);
 public:
-    static bool dispatch(Event*, WillBeHeapVector<RefPtrWillBeMember<EventTarget>>&); // The target first and then its ancestors in order of how the event bubbles.
+    static DispatchEventResult dispatch(Event*, WillBeHeapVector<RefPtrWillBeMember<EventTarget>>&); // The target first and then its ancestors in order of how the event bubbles.
 };
 
 } // namespace blink

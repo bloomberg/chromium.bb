@@ -46,8 +46,8 @@ WebInputEventResult dispatchPointerEvent(
     if (!RuntimeEnabledFeatures::pointerEventEnabled())
         return WebInputEventResult::NotHandled;
     if (!checkForListener || target->hasEventListeners(pointerEvent->type())) {
-        bool dispatchResult = target->dispatchEvent(pointerEvent);
-        return EventHandler::eventToEventResult(pointerEvent, dispatchResult);
+        DispatchEventResult dispatchResult = target->dispatchEvent(pointerEvent);
+        return EventHandler::toWebInputEventResult(dispatchResult);
     }
     return WebInputEventResult::NotHandled;
 }
@@ -68,8 +68,8 @@ WebInputEventResult dispatchMouseEvent(
         RefPtrWillBeRawPtr<MouseEvent> event = MouseEvent::create(mouseEventType,
             targetNode->document().domWindow(), mouseEvent, detail,
             relatedTarget ? relatedTarget->toNode() : nullptr);
-        bool res = target->dispatchEvent(event);
-        return EventHandler::eventToEventResult(event, res);
+        DispatchEventResult dispatchResult = target->dispatchEvent(event);
+        return EventHandler::toWebInputEventResult(dispatchResult);
     }
     return WebInputEventResult::NotHandled;
 }

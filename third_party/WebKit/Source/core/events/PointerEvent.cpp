@@ -83,21 +83,20 @@ PointerEvent& PointerEventDispatchMediator::event() const
     return toPointerEvent(EventDispatchMediator::event());
 }
 
-bool PointerEventDispatchMediator::dispatchEvent(EventDispatcher& dispatcher) const
+DispatchEventResult PointerEventDispatchMediator::dispatchEvent(EventDispatcher& dispatcher) const
 {
     if (isDisabledFormControl(&dispatcher.node()))
-        return false;
+        return DispatchEventResult::CanceledBeforeDispatch;
 
     if (event().type().isEmpty())
-        return true; // Shouldn't happen.
+        return DispatchEventResult::NotCanceled; // Shouldn't happen.
 
     ASSERT(!event().target() || event().target() != event().relatedTarget());
 
     EventTarget* relatedTarget = event().relatedTarget();
     event().eventPath().adjustForRelatedTarget(dispatcher.node(), relatedTarget);
 
-    dispatcher.dispatch();
-    return !event().defaultHandled() && !event().defaultPrevented();
+    return dispatcher.dispatch();
 }
 
 } // namespace blink

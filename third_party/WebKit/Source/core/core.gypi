@@ -2654,6 +2654,7 @@
             'events/EventDispatchMediator.h',
             'events/EventDispatcher.cpp',
             'events/EventDispatcher.h',
+            'events/EventDispatchResult.h',
             'events/EventListenerMap.cpp',
             'events/EventPath.cpp',
             'events/EventPath.h',

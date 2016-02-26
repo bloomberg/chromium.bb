@@ -76,7 +76,7 @@ public:
 private:
     explicit FocusEventDispatchMediator(PassRefPtrWillBeRawPtr<FocusEvent>);
     FocusEvent& event() const { return static_cast<FocusEvent&>(EventDispatchMediator::event()); }
-    bool dispatchEvent(EventDispatcher&) const override;
+    DispatchEventResult dispatchEvent(EventDispatcher&) const override;
 };
 
 } // namespace blink

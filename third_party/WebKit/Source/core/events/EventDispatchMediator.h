@@ -31,6 +31,7 @@
 #ifndef EventDispatchMediator_h
 #define EventDispatchMediator_h
 
+#include "core/events/EventDispatchResult.h"
 #include "platform/heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -46,7 +47,7 @@ public:
     static PassRefPtrWillBeRawPtr<EventDispatchMediator> create(PassRefPtrWillBeRawPtr<Event>);
     virtual ~EventDispatchMediator() { }
     DECLARE_VIRTUAL_TRACE();
-    virtual bool dispatchEvent(EventDispatcher&) const;
+    virtual DispatchEventResult dispatchEvent(EventDispatcher&) const;
     Event& event() const { return *m_event; }
 
 protected:

@@ -98,7 +98,7 @@ void ContextMenuController::populateCustomContextMenu(const Event& event)
     if (!menuElement || !equalIgnoringCase(menuElement->fastGetAttribute(typeAttr), "context"))
         return;
     RefPtrWillBeRawPtr<RelatedEvent> relatedEvent = RelatedEvent::create(EventTypeNames::show, true, true, node);
-    if (!menuElement->dispatchEvent(relatedEvent.release()))
+    if (menuElement->dispatchEvent(relatedEvent.release()) != DispatchEventResult::NotCanceled)
         return;
     if (menuElement != element.assignedContextMenu())
         return;

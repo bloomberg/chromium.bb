@@ -539,8 +539,8 @@ bool HTMLFormControlElement::checkValidity(WillBeHeapVector<RefPtrWillBeMember<H
     // An event handler can deref this object.
     RefPtrWillBeRawPtr<HTMLFormControlElement> protector(this);
     RefPtrWillBeRawPtr<Document> originalDocument(document());
-    bool needsDefaultAction = dispatchEvent(Event::createCancelable(EventTypeNames::invalid));
-    if (needsDefaultAction && unhandledInvalidControls && inDocument() && originalDocument == document())
+    DispatchEventResult dispatchResult = dispatchEvent(Event::createCancelable(EventTypeNames::invalid));
+    if (dispatchResult == DispatchEventResult::NotCanceled && unhandledInvalidControls && inDocument() && originalDocument == document())
         unhandledInvalidControls->append(this);
     return false;
 }

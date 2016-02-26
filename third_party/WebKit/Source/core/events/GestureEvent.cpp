@@ -126,31 +126,9 @@ GestureEvent::GestureEvent(const AtomicString& type, PassRefPtrWillBeRawPtr<Abst
 {
 }
 
-PassRefPtrWillBeRawPtr<EventDispatchMediator> GestureEvent::createMediator()
-{
-    return GestureEventDispatchMediator::create(this);
-}
-
 DEFINE_TRACE(GestureEvent)
 {
     MouseRelatedEvent::trace(visitor);
-}
-
-GestureEventDispatchMediator::GestureEventDispatchMediator(PassRefPtrWillBeRawPtr<GestureEvent> gestureEvent)
-    : EventDispatchMediator(gestureEvent)
-{
-}
-
-GestureEvent& GestureEventDispatchMediator::event() const
-{
-    return toGestureEvent(EventDispatchMediator::event());
-}
-
-bool GestureEventDispatchMediator::dispatchEvent(EventDispatcher& dispatcher) const
-{
-    dispatcher.dispatch();
-    ASSERT(!event().defaultPrevented());
-    return event().defaultHandled() || event().defaultPrevented();
 }
 
 } // namespace blink

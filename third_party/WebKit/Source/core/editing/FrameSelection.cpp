@@ -858,7 +858,7 @@ void FrameSelection::selectAll()
     if (!root || editingIgnoresContent(root.get()))
         return;
 
-    if (selectStartTarget && !selectStartTarget->dispatchEvent(Event::createCancelableBubble(EventTypeNames::selectstart)))
+    if (selectStartTarget && selectStartTarget->dispatchEvent(Event::createCancelableBubble(EventTypeNames::selectstart)) != DispatchEventResult::NotCanceled)
         return;
 
     VisibleSelection newSelection(VisibleSelection::selectionFromContentsOfNode(root.get()));

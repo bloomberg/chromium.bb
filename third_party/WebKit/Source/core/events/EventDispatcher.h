@@ -27,6 +27,7 @@
 #define EventDispatcher_h
 
 #include "core/dom/SimulatedClickOptions.h"
+#include "core/events/EventDispatchResult.h"
 #include "platform/heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
@@ -48,12 +49,12 @@ enum EventDispatchContinuation {
 class EventDispatcher {
     STACK_ALLOCATED();
 public:
-    static bool dispatchEvent(Node&, PassRefPtrWillBeRawPtr<EventDispatchMediator>);
+    static DispatchEventResult dispatchEvent(Node&, PassRefPtrWillBeRawPtr<EventDispatchMediator>);
     static void dispatchScopedEvent(Node&, PassRefPtrWillBeRawPtr<EventDispatchMediator>);
 
     static void dispatchSimulatedClick(Node&, Event* underlyingEvent, SimulatedClickMouseEventOptions, SimulatedClickCreationScope);
 
-    bool dispatch();
+    DispatchEventResult dispatch();
     Node& node() const { return *m_node; }
     Event& event() const { return *m_event; }
 

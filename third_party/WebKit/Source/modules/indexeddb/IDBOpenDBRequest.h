@@ -58,7 +58,7 @@ protected:
     bool shouldEnqueueEvent() const override;
 
     // EventTarget
-    bool dispatchEventInternal(PassRefPtrWillBeRawPtr<Event>) override;
+    DispatchEventResult dispatchEventInternal(PassRefPtrWillBeRawPtr<Event>) override;
 
 private:
     IDBOpenDBRequest(ScriptState*, IDBDatabaseCallbacks*, int64_t transactionId, int64_t version);

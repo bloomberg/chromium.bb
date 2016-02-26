@@ -2044,7 +2044,7 @@ void Node::dispatchScopedEvent(PassRefPtrWillBeRawPtr<Event> event)
     EventDispatcher::dispatchScopedEvent(*this, event->createMediator());
 }
 
-bool Node::dispatchEventInternal(PassRefPtrWillBeRawPtr<Event> event)
+DispatchEventResult Node::dispatchEventInternal(PassRefPtrWillBeRawPtr<Event> event)
 {
     return EventDispatcher::dispatchEvent(*this, event->createMediator());
 }
@@ -2062,16 +2062,19 @@ void Node::dispatchSubtreeModifiedEvent()
     dispatchScopedEvent(MutationEvent::create(EventTypeNames::DOMSubtreeModified, true));
 }
 
-bool Node::dispatchDOMActivateEvent(int detail, PassRefPtrWillBeRawPtr<Event> underlyingEvent)
+DispatchEventResult Node::dispatchDOMActivateEvent(int detail, PassRefPtrWillBeRawPtr<Event> underlyingEvent)
 {
     ASSERT(!EventDispatchForbiddenScope::isEventDispatchForbidden());
     RefPtrWillBeRawPtr<UIEvent> event = UIEvent::create(EventTypeNames::DOMActivate, true, true, document().domWindow(), detail);
     event->setUnderlyingEvent(underlyingEvent);
     dispatchScopedEvent(event);
-    return event->defaultHandled();
+
+    // TODO(dtapuska): Dispatching scoped events shouldn't check the return
+    // type because the scoped event could get put off in the delayed queue.
+    return EventTarget::dispatchEventResult(*event);
 }
 
-bool Node::dispatchMouseEvent(const PlatformMouseEvent& nativeEvent, const AtomicString& eventType,
+DispatchEventResult Node::dispatchMouseEvent(const PlatformMouseEvent& nativeEvent, const AtomicString& eventType,
     int detail, Node* relatedTarget)
 {
     RefPtrWillBeRawPtr<MouseEvent> event = MouseEvent::create(eventType, document().domWindow(), nativeEvent, detail, relatedTarget);
@@ -2106,7 +2109,7 @@ void Node::defaultEventHandler(Event* event)
         }
     } else if (eventType == EventTypeNames::click) {
         int detail = event->isUIEvent() ? static_cast<UIEvent*>(event)->detail() : 0;
-        if (dispatchDOMActivateEvent(detail, event))
+        if (dispatchDOMActivateEvent(detail, event) != DispatchEventResult::NotCanceled)
             event->setDefaultHandled();
     } else if (eventType == EventTypeNames::contextmenu) {
         if (Page* page = document().page())

@@ -27,8 +27,9 @@ void AppBannerController::willShowInstallBannerPrompt(int requestId, WebAppBanne
 
     // dispatchEvent() returns whether the default behavior can happen. In other
     // words, it returns false if preventDefault() was called.
-    *reply = frame->domWindow()->dispatchEvent(BeforeInstallPromptEvent::create(EventTypeNames::beforeinstallprompt, frame->document(), wtfPlatforms, requestId, client))
-        ? WebAppBannerPromptReply::None : WebAppBannerPromptReply::Cancel;
+    *reply = frame->domWindow()->dispatchEvent(BeforeInstallPromptEvent::create(EventTypeNames::beforeinstallprompt, frame->document(), wtfPlatforms, requestId, client)) == DispatchEventResult::NotCanceled
+        ? WebAppBannerPromptReply::None
+        : WebAppBannerPromptReply::Cancel;
 }
 
 } // namespace blink

@@ -387,21 +387,21 @@ void IDBDatabase::enqueueEvent(PassRefPtrWillBeRawPtr<Event> event)
     m_enqueuedEvents.append(event);
 }
 
-bool IDBDatabase::dispatchEventInternal(PassRefPtrWillBeRawPtr<Event> event)
+DispatchEventResult IDBDatabase::dispatchEventInternal(PassRefPtrWillBeRawPtr<Event> event)
 {
     IDB_TRACE("IDBDatabase::dispatchEvent");
     if (m_contextStopped || !executionContext())
-        return false;
+        return DispatchEventResult::CanceledBeforeDispatch;
     ASSERT(event->type() == EventTypeNames::versionchange || event->type() == EventTypeNames::close);
     for (size_t i = 0; i < m_enqueuedEvents.size(); ++i) {
         if (m_enqueuedEvents[i].get() == event.get())
             m_enqueuedEvents.remove(i);
     }
 
-    bool result = EventTarget::dispatchEventInternal(event.get());
+    DispatchEventResult dispatchResult = EventTarget::dispatchEventInternal(event.get());
     if (event->type() == EventTypeNames::versionchange && !m_closePending && m_backend)
         m_backend->versionChangeIgnored();
-    return result;
+    return dispatchResult;
 }
 
 int64_t IDBDatabase::findObjectStoreId(const String& name) const

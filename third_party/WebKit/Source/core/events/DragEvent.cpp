@@ -94,7 +94,7 @@ DragEvent& DragEventDispatchMediator::event() const
     return toDragEvent(EventDispatchMediator::event());
 }
 
-bool DragEventDispatchMediator::dispatchEvent(EventDispatcher& dispatcher) const
+DispatchEventResult DragEventDispatchMediator::dispatchEvent(EventDispatcher& dispatcher) const
 {
     event().eventPath().adjustForRelatedTarget(dispatcher.node(), event().relatedTarget());
     return EventDispatchMediator::dispatchEvent(dispatcher);

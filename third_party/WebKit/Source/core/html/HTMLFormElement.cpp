@@ -326,7 +326,7 @@ void HTMLFormElement::prepareForSubmission(Event* event)
 
     frame->loader().client()->dispatchWillSendSubmitEvent(this);
 
-    if (dispatchEvent(Event::createCancelableBubble(EventTypeNames::submit)))
+    if (dispatchEvent(Event::createCancelableBubble(EventTypeNames::submit)) == DispatchEventResult::NotCanceled)
         m_shouldSubmit = true;
 
     m_isSubmittingOrInUserJSSubmitEvent = false;
@@ -447,7 +447,7 @@ void HTMLFormElement::reset()
 
     m_isInResetFunction = true;
 
-    if (!dispatchEvent(Event::createCancelableBubble(EventTypeNames::reset))) {
+    if (dispatchEvent(Event::createCancelableBubble(EventTypeNames::reset)) != DispatchEventResult::NotCanceled) {
         m_isInResetFunction = false;
         return;
     }

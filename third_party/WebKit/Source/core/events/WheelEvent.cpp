@@ -106,32 +106,12 @@ bool WheelEvent::isWheelEvent() const
 
 PassRefPtrWillBeRawPtr<EventDispatchMediator> WheelEvent::createMediator()
 {
-    return WheelEventDispatchMediator::create(this);
+    return EventDispatchMediator::create(this);
 }
 
 DEFINE_TRACE(WheelEvent)
 {
     MouseEvent::trace(visitor);
-}
-
-PassRefPtrWillBeRawPtr<WheelEventDispatchMediator> WheelEventDispatchMediator::create(PassRefPtrWillBeRawPtr<WheelEvent> event)
-{
-    return adoptRefWillBeNoop(new WheelEventDispatchMediator(event));
-}
-
-WheelEventDispatchMediator::WheelEventDispatchMediator(PassRefPtrWillBeRawPtr<WheelEvent> event)
-    : EventDispatchMediator(event)
-{
-}
-
-WheelEvent& WheelEventDispatchMediator::event() const
-{
-    return toWheelEvent(EventDispatchMediator::event());
-}
-
-bool WheelEventDispatchMediator::dispatchEvent(EventDispatcher& dispatcher) const
-{
-    return EventDispatchMediator::dispatchEvent(dispatcher) && !event().defaultHandled();
 }
 
 } // namespace blink

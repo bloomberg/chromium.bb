@@ -264,23 +264,27 @@ bool EventTarget::dispatchEventForBindings(PassRefPtrWillBeRawPtr<Event> event, 
         return false;
 
     event->setTrusted(false);
-    return dispatchEventInternal(event);
+
+    // Return whether the event was cancelled or not to JS not that it
+    // might have actually been default handled; so check only against
+    // CanceledByEventHandler.
+    return dispatchEventInternal(event) != DispatchEventResult::CanceledByEventHandler;
 }
 
-bool EventTarget::dispatchEvent(PassRefPtrWillBeRawPtr<Event> event)
+DispatchEventResult EventTarget::dispatchEvent(PassRefPtrWillBeRawPtr<Event> event)
 {
     event->setTrusted(true);
     return dispatchEventInternal(event);
 }
 
-bool EventTarget::dispatchEventInternal(PassRefPtrWillBeRawPtr<Event> event)
+DispatchEventResult EventTarget::dispatchEventInternal(PassRefPtrWillBeRawPtr<Event> event)
 {
     event->setTarget(this);
     event->setCurrentTarget(this);
     event->setEventPhase(Event::AT_TARGET);
-    bool defaultWasNotPrevented = fireEventListeners(event.get());
+    DispatchEventResult dispatchResult = fireEventListeners(event.get());
     event->setEventPhase(0);
-    return defaultWasNotPrevented;
+    return dispatchResult;
 }
 
 void EventTarget::uncaughtExceptionInEventHandler()
@@ -348,14 +352,14 @@ void EventTarget::countLegacyEvents(const AtomicString& legacyTypeName, EventLis
     }
 }
 
-bool EventTarget::fireEventListeners(Event* event)
+DispatchEventResult EventTarget::fireEventListeners(Event* event)
 {
     ASSERT(!EventDispatchForbiddenScope::isEventDispatchForbidden());
     ASSERT(event && !event->type().isEmpty());
 
     EventTargetData* d = eventTargetData();
     if (!d)
-        return true;
+        return DispatchEventResult::NotCanceled;
 
     EventListenerVector* legacyListenersVector = nullptr;
     AtomicString legacyTypeName = legacyType(event);
@@ -375,7 +379,7 @@ bool EventTarget::fireEventListeners(Event* event)
 
     Editor::countEvent(executionContext(), event);
     countLegacyEvents(legacyTypeName, listenersVector, legacyListenersVector);
-    return !event->defaultPrevented();
+    return dispatchEventResult(*event);
 }
 
 void EventTarget::fireEventListeners(Event* event, EventTargetData* d, EventListenerVector& entry)
@@ -449,6 +453,15 @@ void EventTarget::fireEventListeners(Event* event, EventTargetData* d, EventList
         InspectorInstrumentation::didHandleEvent(cookie);
     }
     d->firingEventIterators->removeLast();
+}
+
+DispatchEventResult EventTarget::dispatchEventResult(const Event& event)
+{
+    if (event.defaultPrevented())
+        return DispatchEventResult::CanceledByEventHandler;
+    if (event.defaultHandled())
+        return DispatchEventResult::CanceledByDefaultEventHandler;
+    return DispatchEventResult::NotCanceled;
 }
 
 EventListenerVector* EventTarget::getEventListeners(const AtomicString& eventType)

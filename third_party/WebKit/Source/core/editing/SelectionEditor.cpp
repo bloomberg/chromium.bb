@@ -586,7 +586,7 @@ bool SelectionEditor::modify(EAlteration alter, SelectionDirection direction, Te
         trialFrameSelection->setSelection(m_selection);
         trialFrameSelection->modify(alter, direction, granularity, NotUserTriggered);
 
-        if (trialFrameSelection->selection().isRange() && m_selection.isCaret() && !dispatchSelectStart())
+        if (trialFrameSelection->selection().isRange() && m_selection.isCaret() && dispatchSelectStart() != DispatchEventResult::NotCanceled)
             return false;
     }
 
@@ -857,11 +857,11 @@ PassRefPtrWillBeRawPtr<Range> SelectionEditor::firstRange() const
     return firstRangeOf(m_selection);
 }
 
-bool SelectionEditor::dispatchSelectStart()
+DispatchEventResult SelectionEditor::dispatchSelectStart()
 {
     Node* selectStartTarget = m_selection.extent().computeContainerNode();
     if (!selectStartTarget)
-        return true;
+        return DispatchEventResult::NotCanceled;
 
     return selectStartTarget->dispatchEvent(Event::createCancelableBubble(EventTypeNames::selectstart));
 }
