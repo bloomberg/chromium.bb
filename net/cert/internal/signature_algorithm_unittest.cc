@@ -72,7 +72,10 @@ TEST(SignatureAlgorithmTest, ParseDerSha1WithRSAEncryptionNoParams) {
   };
   // clang-format on
   scoped_ptr<SignatureAlgorithm> algorithm;
-  ASSERT_FALSE(ParseDer(kData, &algorithm));
+  ASSERT_TRUE(ParseDer(kData, &algorithm));
+
+  EXPECT_EQ(SignatureAlgorithmId::RsaPkcs1, algorithm->algorithm());
+  EXPECT_EQ(DigestAlgorithm::Sha1, algorithm->digest());
 }
 
 // Parses a sha1WithRSAEncryption which contains an unexpected parameters
@@ -128,7 +131,10 @@ TEST(SignatureAlgorithmTest, ParseDerSha1WithRSASignatureNoParams) {
   };
   // clang-format on
   scoped_ptr<SignatureAlgorithm> algorithm;
-  ASSERT_FALSE(ParseDer(kData, &algorithm));
+  ASSERT_TRUE(ParseDer(kData, &algorithm));
+
+  EXPECT_EQ(SignatureAlgorithmId::RsaPkcs1, algorithm->algorithm());
+  EXPECT_EQ(DigestAlgorithm::Sha1, algorithm->digest());
 }
 
 // Parses a sha1WithRSAEncryption which contains values after the sequence.
@@ -240,7 +246,10 @@ TEST(SignatureAlgorithmTest, ParseDerSha256WithRSAEncryptionNoParams) {
   };
   // clang-format on
   scoped_ptr<SignatureAlgorithm> algorithm;
-  ASSERT_FALSE(ParseDer(kData, &algorithm));
+  ASSERT_TRUE(ParseDer(kData, &algorithm));
+
+  EXPECT_EQ(SignatureAlgorithmId::RsaPkcs1, algorithm->algorithm());
+  EXPECT_EQ(DigestAlgorithm::Sha256, algorithm->digest());
 }
 
 // Parses a sha384WithRSAEncryption which contains a NULL parameters field.
@@ -277,7 +286,10 @@ TEST(SignatureAlgorithmTest, ParseDerSha384WithRSAEncryptionNoParams) {
   };
   // clang-format on
   scoped_ptr<SignatureAlgorithm> algorithm;
-  ASSERT_FALSE(ParseDer(kData, &algorithm));
+  ASSERT_TRUE(ParseDer(kData, &algorithm));
+
+  EXPECT_EQ(SignatureAlgorithmId::RsaPkcs1, algorithm->algorithm());
+  EXPECT_EQ(DigestAlgorithm::Sha384, algorithm->digest());
 }
 
 // Parses a sha512WithRSAEncryption which contains a NULL parameters field.
@@ -314,7 +326,10 @@ TEST(SignatureAlgorithmTest, ParseDerSha512WithRSAEncryptionNoParams) {
   };
   // clang-format on
   scoped_ptr<SignatureAlgorithm> algorithm;
-  ASSERT_FALSE(ParseDer(kData, &algorithm));
+  ASSERT_TRUE(ParseDer(kData, &algorithm));
+
+  EXPECT_EQ(SignatureAlgorithmId::RsaPkcs1, algorithm->algorithm());
+  EXPECT_EQ(DigestAlgorithm::Sha512, algorithm->digest());
 }
 
 // Parses a sha224WithRSAEncryption which contains a NULL parameters field.

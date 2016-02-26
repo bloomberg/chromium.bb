@@ -19,6 +19,33 @@ namespace net {
 struct ParsedCertificate;
 struct ParsedTbsCertificate;
 
+// Returns true if the given serial number (CertificateSerialNumber in RFC 5280)
+// is valid:
+//
+//    CertificateSerialNumber  ::=  INTEGER
+//
+// The input to this function is the (unverified) value octets of the INTEGER.
+// This function will verify that:
+//
+//   * The octets are a valid DER-encoding of an INTEGER (for instance, minimal
+//     encoding length).
+//
+//   * No more than 20 octets are used.
+//
+// Note that it DOES NOT reject non-positive values (zero or negative).
+//
+// For reference, here is what RFC 5280 section 4.1.2.2 says:
+//
+//     Given the uniqueness requirements above, serial numbers can be
+//     expected to contain long integers.  Certificate users MUST be able to
+//     handle serialNumber values up to 20 octets.  Conforming CAs MUST NOT
+//     use serialNumber values longer than 20 octets.
+//
+//     Note: Non-conforming CAs may issue certificates with serial numbers
+//     that are negative or zero.  Certificate users SHOULD be prepared to
+//     gracefully handle such certificates.
+bool VerifySerialNumber(const der::Input& value) WARN_UNUSED_RESULT;
+
 // Parses a DER-encoded "Certificate" as specified by RFC 5280. Returns true on
 // success and sets the results in |out|.
 //

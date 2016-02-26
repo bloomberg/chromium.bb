@@ -226,7 +226,8 @@ WARN_UNUSED_RESULT bool IsNull(const der::Input& input) {
 // Returns a nullptr on failure.
 //
 // RFC 5912 requires that the parameters for RSA PKCS#1 v1.5 algorithms be NULL
-// ("PARAMS TYPE NULL ARE required"):
+// ("PARAMS TYPE NULL ARE required"), however an empty parameter is also
+// allowed for compatibility with non-compliant OCSP responders:
 //
 //     sa-rsaWithSHA1 SIGNATURE-ALGORITHM ::= {
 //      IDENTIFIER sha1WithRSAEncryption
@@ -261,7 +262,8 @@ WARN_UNUSED_RESULT bool IsNull(const der::Input& input) {
 //     }
 scoped_ptr<SignatureAlgorithm> ParseRsaPkcs1(DigestAlgorithm digest,
                                              const der::Input& params) {
-  if (!IsNull(params))
+  // TODO(svaldez): Add warning about non-strict parsing.
+  if (!IsNull(params) && !IsEmpty(params))
     return nullptr;
 
   return SignatureAlgorithm::CreateRsaPkcs1(digest);

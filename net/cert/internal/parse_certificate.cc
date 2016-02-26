@@ -68,43 +68,6 @@ WARN_UNUSED_RESULT bool ParseVersion(const der::Input& in,
   return !parser.HasMore();
 }
 
-// Returns true if the given serial number (CertificateSerialNumber in RFC 5280)
-// is valid:
-//
-//    CertificateSerialNumber  ::=  INTEGER
-//
-// The input to this function is the (unverified) value octets of the INTEGER.
-// This function will verify that:
-//
-//   * The octets are a valid DER-encoding of an INTEGER (for instance, minimal
-//     encoding length).
-//
-//   * No more than 20 octets are used.
-//
-// Note that it DOES NOT reject non-positive values (zero or negative).
-//
-// For reference, here is what RFC 5280 section 4.1.2.2 says:
-//
-//     Given the uniqueness requirements above, serial numbers can be
-//     expected to contain long integers.  Certificate users MUST be able to
-//     handle serialNumber values up to 20 octets.  Conforming CAs MUST NOT
-//     use serialNumber values longer than 20 octets.
-//
-//     Note: Non-conforming CAs may issue certificates with serial numbers
-//     that are negative or zero.  Certificate users SHOULD be prepared to
-//     gracefully handle such certificates.
-WARN_UNUSED_RESULT bool VerifySerialNumber(const der::Input& value) {
-  bool unused_negative;
-  if (!der::IsValidInteger(value, &unused_negative))
-    return false;
-
-  // Check if the serial number is too long per RFC 5280.
-  if (value.Length() > 20)
-    return false;
-
-  return true;
-}
-
 // Consumes a "Time" value (as defined by RFC 5280) from |parser|. On success
 // writes the result to |*out| and returns true. On failure no guarantees are
 // made about the state of |parser|.
@@ -190,6 +153,18 @@ WARN_UNUSED_RESULT bool BitStringIsAllZeros(const der::BitString& bits) {
 ParsedTbsCertificate::ParsedTbsCertificate() {}
 
 ParsedTbsCertificate::~ParsedTbsCertificate() {}
+
+bool VerifySerialNumber(const der::Input& value) {
+  bool unused_negative;
+  if (!der::IsValidInteger(value, &unused_negative))
+    return false;
+
+  // Check if the serial number is too long per RFC 5280.
+  if (value.Length() > 20)
+    return false;
+
+  return true;
+}
 
 bool ParseCertificate(const der::Input& certificate_tlv,
                       ParsedCertificate* out) {
