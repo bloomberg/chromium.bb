@@ -17,51 +17,54 @@ TimeDomain::TimeDomain(Observer* observer) : observer_(observer) {}
 
 TimeDomain::~TimeDomain() {
   DCHECK(main_thread_checker_.CalledOnValidThread());
+#if DCHECK_IS_ON()
   DCHECK(registered_task_queues_.empty());
+#endif
 }
 
 void TimeDomain::RegisterQueue(internal::TaskQueueImpl* queue) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   DCHECK_EQ(queue->GetTimeDomain(), this);
+#if DCHECK_IS_ON()
   registered_task_queues_.insert(queue);
+#endif
 }
 
 void TimeDomain::UnregisterQueue(internal::TaskQueueImpl* queue) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   DCHECK_EQ(queue->GetTimeDomain(), this);
+  UnregisterAsUpdatableTaskQueue(queue);
+#if DCHECK_IS_ON()
   registered_task_queues_.erase(queue);
+#endif
 
   // We need to remove |task_queue| from delayed_wakeup_multimap_ which is a
   // little awkward since it's keyed by time. O(n) running time.
   for (DelayedWakeupMultimap::iterator iter = delayed_wakeup_multimap_.begin();
        iter != delayed_wakeup_multimap_.end();) {
     if (iter->second == queue) {
-      DelayedWakeupMultimap::iterator temp = iter;
-      iter++;
       // O(1) amortized.
-      delayed_wakeup_multimap_.erase(temp);
+      iter = delayed_wakeup_multimap_.erase(iter);
     } else {
       iter++;
     }
   }
-
-  // |newly_updatable_| might contain |queue|, we use
-  // MoveNewlyUpdatableQueuesIntoUpdatableQueueSet to flush it out.
-  MoveNewlyUpdatableQueuesIntoUpdatableQueueSet();
-  updatable_queue_set_.erase(queue);
 }
 
 void TimeDomain::MigrateQueue(internal::TaskQueueImpl* queue,
                               TimeDomain* destination_time_domain) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
-  DCHECK(registered_task_queues_.find(queue) != registered_task_queues_.end());
   DCHECK_EQ(queue->GetTimeDomain(), this);
   DCHECK(destination_time_domain);
+  UnregisterAsUpdatableTaskQueue(queue);
+#if DCHECK_IS_ON()
+  DCHECK(registered_task_queues_.find(queue) != registered_task_queues_.end());
   registered_task_queues_.erase(queue);
 
   // NOTE it's the responsibility of the caller to make sure
   // |queue->GetTimeDomain()| is updated.
   destination_time_domain->registered_task_queues_.insert(queue);
+#endif
 
   base::TimeTicks destination_now = destination_time_domain->Now();
   // We need to remove |task_queue| from delayed_wakeup_multimap_ which is a
@@ -71,27 +74,21 @@ void TimeDomain::MigrateQueue(internal::TaskQueueImpl* queue,
     if (iter->second == queue) {
       destination_time_domain->ScheduleDelayedWork(queue, iter->first,
                                                    destination_now);
-      DelayedWakeupMultimap::iterator temp = iter;
-      iter++;
       // O(1) amortized.
-      delayed_wakeup_multimap_.erase(temp);
+      iter = delayed_wakeup_multimap_.erase(iter);
     } else {
       iter++;
     }
   }
-
-  // |newly_updatable_| might contain |queue|, we use
-  // MoveNewlyUpdatableQueuesIntoUpdatableQueueSet to flush it out.
-  MoveNewlyUpdatableQueuesIntoUpdatableQueueSet();
-  updatable_queue_set_.erase(queue);
 }
 
 void TimeDomain::ScheduleDelayedWork(internal::TaskQueueImpl* queue,
                                      base::TimeTicks delayed_run_time,
                                      base::TimeTicks now) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
+#if DCHECK_IS_ON()
   DCHECK(registered_task_queues_.find(queue) != registered_task_queues_.end());
-
+#endif
   if (delayed_wakeup_multimap_.empty() ||
       delayed_run_time < delayed_wakeup_multimap_.begin()->first) {
     base::TimeDelta delay = std::max(base::TimeDelta(), delayed_run_time - now);
@@ -104,7 +101,9 @@ void TimeDomain::ScheduleDelayedWork(internal::TaskQueueImpl* queue,
 }
 
 void TimeDomain::RegisterAsUpdatableTaskQueue(internal::TaskQueueImpl* queue) {
+#if DCHECK_IS_ON()
   DCHECK(registered_task_queues_.find(queue) != registered_task_queues_.end());
+#endif
   {
     base::AutoLock lock(newly_updatable_lock_);
     newly_updatable_.push_back(queue);
@@ -115,18 +114,24 @@ void TimeDomain::RegisterAsUpdatableTaskQueue(internal::TaskQueueImpl* queue) {
 
 void TimeDomain::UnregisterAsUpdatableTaskQueue(
     internal::TaskQueueImpl* queue) {
+#if DCHECK_IS_ON()
   DCHECK(registered_task_queues_.find(queue) != registered_task_queues_.end());
-  DCHECK(main_thread_checker_.CalledOnValidThread());
-  MoveNewlyUpdatableQueuesIntoUpdatableQueueSet();
-#ifndef NDEBUG
-  {
-    base::AutoLock lock(newly_updatable_lock_);
-    DCHECK(!(updatable_queue_set_.find(queue) == updatable_queue_set_.end() &&
-             std::find(newly_updatable_.begin(), newly_updatable_.end(),
-                       queue) != newly_updatable_.end()));
-  }
 #endif
+  DCHECK(main_thread_checker_.CalledOnValidThread());
+
   updatable_queue_set_.erase(queue);
+
+  base::AutoLock lock(newly_updatable_lock_);
+  // Remove all copies of |queue| from |newly_updatable_|.
+  for (size_t i = 0; i < newly_updatable_.size();) {
+    if (newly_updatable_[i] == queue) {
+      // Move last element into slot #i and then compact.
+      newly_updatable_[i] = newly_updatable_.back();
+      newly_updatable_.pop_back();
+    } else {
+      i++;
+    }
+  }
 }
 
 void TimeDomain::UpdateWorkQueues(

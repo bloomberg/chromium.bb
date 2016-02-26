@@ -74,7 +74,8 @@ class TimeDomainTest : public testing::Test {
   }
 
   void TearDown() final {
-    task_queue_->UnregisterTaskQueue();
+    if (task_queue_)
+      task_queue_->UnregisterTaskQueue();
   }
 
   virtual MockTimeDomain* CreateMockTimeDomain() {
@@ -143,6 +144,7 @@ TEST_F(TimeDomainTest, UnregisterQueue) {
   EXPECT_EQ(task_queue_.get(), next_task_queue);
 
   time_domain_->UnregisterQueue(task_queue_.get());
+  task_queue_ = scoped_refptr<internal::TaskQueueImpl>();
   EXPECT_TRUE(time_domain_->NextScheduledTaskQueue(&next_task_queue));
   EXPECT_EQ(task_queue2_.get(), next_task_queue);
 
