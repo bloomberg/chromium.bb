@@ -393,6 +393,8 @@ void TextureDefinition::UpdateTextureInternal(Texture* texture) const {
                           level_info_.height, level_info_.depth,
                           level_info_.border, level_info_.format,
                           level_info_.type, level_info_.cleared_rect);
+    texture->face_infos_[0].level_infos.resize(
+        texture->face_infos_[0].num_mip_levels);
   }
 
   if (image_buffer_.get()) {
