@@ -26,21 +26,24 @@
 
 namespace {
 
-// Threshold (in hours) used to control whether the X-CHROME-CONNECTED cookie
+// Threshold (in hours) used to control whether the CHROME_CONNECTED cookie
 // should be added again on a domain it was previously set.
 const int kHoursThresholdToReAddCookie = 24;
 
-// JavaScript template used to set (or delete) the X-CHROME-CONNECTED cookie.
-// It takes 3 arguments: the value of the cookie, its domain and its expiration
-// date.
-NSString* const kXChromeConnectedCookieTemplate =
-    @"<html><script>document.cookie=\"X-CHROME-CONNECTED=%@; path=/; domain=%@;"
-     " expires=\" + new Date(%f).toGMTString();</script></html>";
+// JavaScript template used to set (or delete) the CHROME_CONNECTED cookie.
+// It takes 3 arguments: the domain of the cookie, its value and its expiration
+// date. It also clears the legacy X-CHROME-CONNECTED cookie.
+NSString* const kChromeConnectedCookieTemplate =
+    @"<html><script>domain=\"%@\";"
+     "document.cookie=\"X-CHROME-CONNECTED=; path=/; domain=\" + domain + \";"
+     " expires=Thu, 01-Jan-1970 00:00:01 GMT\";"
+     "document.cookie=\"CHROME_CONNECTED=%@; path=/; domain=\" + domain + \";"
+     " expires=\" + new Date(%f).toGMTString() + \"; secure;\"</script></html>";
 
 // WebStatePolicyDecider that monitors the HTTP headers on Gaia responses,
 // reacting on the X-Chrome-Manage-Accounts header and notifying its delegate.
 // It also notifies the AccountConsistencyService of domains it should add the
-// X-CHROME-CONNECTED cookie to.
+// CHROME_CONNECTED cookie to.
 class AccountConsistencyHandler : public web::WebStatePolicyDecider {
  public:
   AccountConsistencyHandler(web::WebState* web_state,
@@ -80,12 +83,12 @@ bool AccountConsistencyHandler::ShouldAllowResponse(NSURLResponse* response) {
           url, google_util::ALLOW_SUBDOMAIN,
           google_util::DISALLOW_NON_STANDARD_PORTS)) {
     // User is showing intent to navigate to a Google domain. Add the
-    // X-CHROME-CONNECTED cookie to the domain if necessary.
+    // CHROME_CONNECTED cookie to the domain if necessary.
     std::string domain = net::registry_controlled_domains::GetDomainAndRegistry(
         url, net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
-    account_consistency_service_->AddXChromeConnectedCookieToDomain(
+    account_consistency_service_->AddChromeConnectedCookieToDomain(
         domain, true /* force_update_if_too_old */);
-    account_consistency_service_->AddXChromeConnectedCookieToDomain(
+    account_consistency_service_->AddChromeConnectedCookieToDomain(
         "google.com", true /* force_update_if_too_old */);
   }
 
@@ -183,7 +186,7 @@ AccountConsistencyService::CookieRequest
 AccountConsistencyService::CookieRequest::CreateAddCookieRequest(
     const std::string& domain) {
   AccountConsistencyService::CookieRequest cookie_request;
-  cookie_request.request_type = ADD_X_CHROME_CONNECTED_COOKIE;
+  cookie_request.request_type = ADD_CHROME_CONNECTED_COOKIE;
   cookie_request.domain = domain;
   return cookie_request;
 }
@@ -192,7 +195,7 @@ AccountConsistencyService::CookieRequest
 AccountConsistencyService::CookieRequest::CreateRemoveCookieRequest(
     const std::string& domain) {
   AccountConsistencyService::CookieRequest cookie_request;
-  cookie_request.request_type = REMOVE_X_CHROME_CONNECTED_COOKIE;
+  cookie_request.request_type = REMOVE_CHROME_CONNECTED_COOKIE;
   cookie_request.domain = domain;
   return cookie_request;
 }
@@ -216,9 +219,9 @@ AccountConsistencyService::AccountConsistencyService(
   web::BrowserState::GetActiveStateManager(browser_state_)->AddObserver(this);
   LoadFromPrefs();
   if (signin_manager_->IsAuthenticated()) {
-    AddXChromeConnectedCookies();
+    AddChromeConnectedCookies();
   } else {
-    RemoveXChromeConnectedCookies();
+    RemoveChromeConnectedCookies();
   }
 }
 
@@ -248,7 +251,7 @@ void AccountConsistencyService::RemoveWebStateHandler(
   web_state_handlers_.erase(web_state);
 }
 
-bool AccountConsistencyService::ShouldAddXChromeConnectedCookieToDomain(
+bool AccountConsistencyService::ShouldAddChromeConnectedCookieToDomain(
     const std::string& domain,
     bool force_update_if_too_old) {
   auto it = last_cookie_update_map_.find(domain);
@@ -265,11 +268,11 @@ bool AccountConsistencyService::ShouldAddXChromeConnectedCookieToDomain(
          base::TimeDelta::FromHours(kHoursThresholdToReAddCookie);
 }
 
-void AccountConsistencyService::AddXChromeConnectedCookieToDomain(
+void AccountConsistencyService::AddChromeConnectedCookieToDomain(
     const std::string& domain,
     bool force_update_if_too_old) {
-  if (!ShouldAddXChromeConnectedCookieToDomain(domain,
-                                               force_update_if_too_old)) {
+  if (!ShouldAddChromeConnectedCookieToDomain(domain,
+                                              force_update_if_too_old)) {
     return;
   }
   last_cookie_update_map_[domain] = base::Time::Now();
@@ -277,7 +280,7 @@ void AccountConsistencyService::AddXChromeConnectedCookieToDomain(
   ApplyCookieRequests();
 }
 
-void AccountConsistencyService::RemoveXChromeConnectedCookieFromDomain(
+void AccountConsistencyService::RemoveChromeConnectedCookieFromDomain(
     const std::string& domain) {
   if (last_cookie_update_map_.count(domain) == 0) {
     // Cookie is not on the domain. Nothing to do.
@@ -327,7 +330,7 @@ void AccountConsistencyService::ApplyCookieRequests() {
   // number of milliseconds since the epoch.
   double expiration_date = 0;
   switch (cookie_requests_.front().request_type) {
-    case ADD_X_CHROME_CONNECTED_COOKIE:
+    case ADD_CHROME_CONNECTED_COOKIE:
       cookie_value = signin::BuildMirrorRequestCookieIfPossible(
           url, signin_manager_->GetAuthenticatedAccountInfo().gaia,
           cookie_settings_.get(), signin::PROFILE_MODE_DEFAULT);
@@ -341,15 +344,15 @@ void AccountConsistencyService::ApplyCookieRequests() {
       expiration_date =
           (base::Time::Now() + base::TimeDelta::FromDays(730)).ToJsTime();
       break;
-    case REMOVE_X_CHROME_CONNECTED_COOKIE:
+    case REMOVE_CHROME_CONNECTED_COOKIE:
       // Nothing to do. Default values correspond to removing the cookie (no
       // value, expiration date in the past).
       break;
   }
   NSString* html = [NSString
-      stringWithFormat:kXChromeConnectedCookieTemplate,
-                       base::SysUTF8ToNSString(cookie_value),
-                       base::SysUTF8ToNSString(url.host()), expiration_date];
+      stringWithFormat:kChromeConnectedCookieTemplate,
+                       base::SysUTF8ToNSString(url.host()),
+                       base::SysUTF8ToNSString(cookie_value), expiration_date];
   // Load an HTML string with embedded JavaScript that will set or remove the
   // cookie. By setting the base URL to |url|, this effectively allows to modify
   // cookies on the correct domain without having to do a network request.
@@ -364,12 +367,12 @@ void AccountConsistencyService::FinishedApplyingCookieRequest(bool success) {
         signin_client_->GetPrefs(),
         AccountConsistencyService::kDomainsWithCookiePref);
     switch (request.request_type) {
-      case ADD_X_CHROME_CONNECTED_COOKIE:
+      case ADD_CHROME_CONNECTED_COOKIE:
         // Add request.domain to prefs, use |true| as a dummy value (that is
         // never used), as the dictionary is used as a set.
         update->SetBooleanWithoutPathExpansion(request.domain, true);
         break;
-      case REMOVE_X_CHROME_CONNECTED_COOKIE:
+      case REMOVE_CHROME_CONNECTED_COOKIE:
         // Remove request.domain from prefs.
         update->RemoveWithoutPathExpansion(request.domain, nullptr);
         break;
@@ -409,27 +412,27 @@ void AccountConsistencyService::ResetWKWebView() {
   applying_cookie_requests_ = false;
 }
 
-void AccountConsistencyService::AddXChromeConnectedCookies() {
+void AccountConsistencyService::AddChromeConnectedCookies() {
   DCHECK(!browser_state_->IsOffTheRecord());
   // These cookie request are preventive and not a strong signal (unlike
   // navigation to a domain). Don't force update the old cookies in this case.
-  AddXChromeConnectedCookieToDomain("google.com",
-                                    false /* force_update_if_too_old */);
-  AddXChromeConnectedCookieToDomain("youtube.com",
-                                    false /* force_update_if_too_old */);
+  AddChromeConnectedCookieToDomain("google.com",
+                                   false /* force_update_if_too_old */);
+  AddChromeConnectedCookieToDomain("youtube.com",
+                                   false /* force_update_if_too_old */);
 }
 
-void AccountConsistencyService::RemoveXChromeConnectedCookies() {
+void AccountConsistencyService::RemoveChromeConnectedCookies() {
   DCHECK(!browser_state_->IsOffTheRecord());
   std::map<std::string, base::Time> last_cookie_update_map =
       last_cookie_update_map_;
   for (const auto& domain : last_cookie_update_map) {
-    RemoveXChromeConnectedCookieFromDomain(domain.first);
+    RemoveChromeConnectedCookieFromDomain(domain.first);
   }
 }
 
 void AccountConsistencyService::OnBrowsingDataRemoved() {
-  // X-CHROME-CONNECTED cookies have been removed, update internal state
+  // CHROME_CONNECTED cookies have been removed, update internal state
   // accordingly.
   ResetWKWebView();
   cookie_requests_.clear();
@@ -444,25 +447,25 @@ void AccountConsistencyService::OnBrowsingDataRemoved() {
 void AccountConsistencyService::OnAddAccountToCookieCompleted(
     const std::string& account_id,
     const GoogleServiceAuthError& error) {
-  AddXChromeConnectedCookies();
+  AddChromeConnectedCookies();
 }
 
 void AccountConsistencyService::OnGaiaAccountsInCookieUpdated(
     const std::vector<gaia::ListedAccount>& accounts,
     const GoogleServiceAuthError& error) {
-  AddXChromeConnectedCookies();
+  AddChromeConnectedCookies();
 }
 
 void AccountConsistencyService::GoogleSigninSucceeded(
     const std::string& account_id,
     const std::string& username,
     const std::string& password) {
-  AddXChromeConnectedCookies();
+  AddChromeConnectedCookies();
 }
 
 void AccountConsistencyService::GoogleSignedOut(const std::string& account_id,
                                                 const std::string& username) {
-  RemoveXChromeConnectedCookies();
+  RemoveChromeConnectedCookies();
 }
 
 void AccountConsistencyService::OnActive() {

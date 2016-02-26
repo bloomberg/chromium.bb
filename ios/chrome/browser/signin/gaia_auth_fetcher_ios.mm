@@ -323,7 +323,7 @@ GaiaAuthFetcherIOS::GaiaAuthFetcherIOS(GaiaAuthConsumer* consumer,
   // Account Consistency needs to be disabled for the Logout call. There is a
   // race with the cookie clearing request (handled by
   // AccountConsistencyService), so we invalidate the cookie for the call.
-  SetLogoutHeaders("Cookie: X-CHROME-CONNECTED=EXPIRED;");
+  SetLogoutHeaders("Cookie: CHROME_CONNECTED=EXPIRED;");
 }
 
 GaiaAuthFetcherIOS::~GaiaAuthFetcherIOS() {

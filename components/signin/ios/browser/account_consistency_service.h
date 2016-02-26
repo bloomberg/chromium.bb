@@ -45,7 +45,7 @@ class AccountConsistencyService : public KeyedService,
                                   public web::ActiveStateManager::Observer {
  public:
   // Name of the preference property that persists the domains that have a
-  // X-CHROME-CONNECTED cookie set by this service.
+  // CHROME_CONNECTED cookie set by this service.
   static const char kDomainsWithCookiePref[];
 
   AccountConsistencyService(
@@ -67,16 +67,16 @@ class AccountConsistencyService : public KeyedService,
   // Removes the handler associated with |web_state|.
   void RemoveWebStateHandler(web::WebState* web_state);
 
-  // Enqueues a request to add the X-CHROME-CONNECTED cookie to |domain|. If the
+  // Enqueues a request to add the CHROME_CONNECTED cookie to |domain|. If the
   // cookie is already on |domain|, this function will do nothing unless
   // |force_update_if_too_old| is true. In this case, the cookie will be
   // refreshed if it is considered too old.
-  void AddXChromeConnectedCookieToDomain(const std::string& domain,
-                                         bool force_update_if_too_old);
+  void AddChromeConnectedCookieToDomain(const std::string& domain,
+                                        bool force_update_if_too_old);
 
-  // Enqueues a request to remove the X-CHROME-CONNECTED cookie to |domain|.
+  // Enqueues a request to remove the CHROME_CONNECTED cookie to |domain|.
   // Does nothing if the cookie is not set on |domain|.
-  void RemoveXChromeConnectedCookieFromDomain(const std::string& domain);
+  void RemoveChromeConnectedCookieFromDomain(const std::string& domain);
 
   // Notifies the AccountConsistencyService that browsing data has been removed.
   void OnBrowsingDataRemoved();
@@ -86,11 +86,11 @@ class AccountConsistencyService : public KeyedService,
 
   // The type of a cookie request.
   enum CookieRequestType {
-    ADD_X_CHROME_CONNECTED_COOKIE,
-    REMOVE_X_CHROME_CONNECTED_COOKIE
+    ADD_CHROME_CONNECTED_COOKIE,
+    REMOVE_CHROME_CONNECTED_COOKIE
   };
 
-  // A X-CHROME-CONNECTED cookie request to be applied by the
+  // A CHROME_CONNECTED cookie request to be applied by the
   // AccountConsistencyService.
   struct CookieRequest {
     static CookieRequest CreateAddCookieRequest(const std::string& domain);
@@ -99,16 +99,16 @@ class AccountConsistencyService : public KeyedService,
     std::string domain;
   };
 
-  // Loads the domains with a X-CHROME-CONNECTED cookie from the prefs.
+  // Loads the domains with a CHROME_CONNECTED cookie from the prefs.
   void LoadFromPrefs();
 
   // KeyedService implementation.
   void Shutdown() override;
 
-  // Applies the pending X-CHROME-CONNECTED cookie requests one by one.
+  // Applies the pending CHROME_CONNECTED cookie requests one by one.
   void ApplyCookieRequests();
 
-  // Called when the current X-CHROME-CONNECTED cookie request is done.
+  // Called when the current CHROME_CONNECTED cookie request is done.
   void FinishedApplyingCookieRequest(bool success);
 
   // Returns the cached WKWebView if it exists, or creates one if necessary.
@@ -119,18 +119,18 @@ class AccountConsistencyService : public KeyedService,
   // Stops any page loading in the WKWebView currently in use and releases it.
   void ResetWKWebView();
 
-  // Returns whether the X-CHROME-CONNECTED cookie should be added to |domain|.
+  // Returns whether the CHROME_CONNECTED cookie should be added to |domain|.
   // If the cookie is already on |domain|, this function will return false
   // unless |force_update_if_too_old| is true. In this case, it will return true
   // if the cookie is considered to be too old.
-  bool ShouldAddXChromeConnectedCookieToDomain(const std::string& domain,
-                                               bool force_update_if_too_old);
+  bool ShouldAddChromeConnectedCookieToDomain(const std::string& domain,
+                                              bool force_update_if_too_old);
 
-  // Adds X-CHROME-CONNECTED cookies on all the main Google domains.
-  void AddXChromeConnectedCookies();
-  // Removes X-CHROME-CONNECTED cookies on all the Google domains where it was
+  // Adds CHROME_CONNECTED cookies on all the main Google domains.
+  void AddChromeConnectedCookies();
+  // Removes CHROME_CONNECTED cookies on all the Google domains where it was
   // set.
-  void RemoveXChromeConnectedCookies();
+  void RemoveChromeConnectedCookies();
 
   // GaiaCookieManagerService::Observer implementation.
   void OnAddAccountToCookieCompleted(
@@ -157,7 +157,7 @@ class AccountConsistencyService : public KeyedService,
   // the X-Chrome-Manage-Accounts header
   AccountReconcilor* account_reconcilor_;
   // Cookie settings currently in use for |browser_state_|, used to check if
-  // setting X-CHROME-CONNECTED cookies is valid.
+  // setting CHROME_CONNECTED cookies is valid.
   scoped_refptr<content_settings::CookieSettings> cookie_settings_;
   // Service managing the Gaia cookies, observed to be notified of the state of
   // reconciliation.
@@ -167,15 +167,15 @@ class AccountConsistencyService : public KeyedService,
   // Signin manager, observed to be notified of signin and signout events.
   SigninManager* signin_manager_;
 
-  // Whether a X-CHROME-CONNECTED cookie request is currently being applied.
+  // Whether a CHROME_CONNECTED cookie request is currently being applied.
   bool applying_cookie_requests_;
-  // The queue of X-CHROME-CONNECTED cookie requests to be applied.
+  // The queue of CHROME_CONNECTED cookie requests to be applied.
   std::deque<CookieRequest> cookie_requests_;
-  // The map between domains where a X-CHROME-CONNECTED cookie is present and
+  // The map between domains where a CHROME_CONNECTED cookie is present and
   // the time when the cookie was last updated.
   std::map<std::string, base::Time> last_cookie_update_map_;
 
-  // Web view used to apply the X-CHROME-CONNECTED cookie requests.
+  // Web view used to apply the CHROME_CONNECTED cookie requests.
   base::scoped_nsobject<WKWebView> web_view_;
   // Navigation delegate of |web_view_| that informs the service when a cookie
   // request has been applied.

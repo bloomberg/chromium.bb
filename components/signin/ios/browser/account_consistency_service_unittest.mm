@@ -27,11 +27,11 @@
 #include "third_party/ocmock/gtest_support.h"
 
 namespace {
-// URL of the Google domain where the X-CHROME-CONNECTED cookie is set/removed.
+// URL of the Google domain where the CHROME_CONNECTED cookie is set/removed.
 NSURL* const kGoogleUrl = [NSURL URLWithString:@"https://google.com/"];
-// URL of the Youtube domain where the X-CHROME-CONNECTED cookie is set/removed.
+// URL of the Youtube domain where the CHROME_CONNECTED cookie is set/removed.
 NSURL* const kYoutubeUrl = [NSURL URLWithString:@"https://youtube.com/"];
-// URL of a country Google domain where the X-CHROME-CONNECTED cookie is
+// URL of a country Google domain where the CHROME_CONNECTED cookie is
 // set/removed.
 NSURL* const kCountryGoogleUrl = [NSURL URLWithString:@"https://google.de/"];
 
@@ -185,9 +185,8 @@ class AccountConsistencyServiceTest : public PlatformTest {
 
   bool ShouldAddCookieToDomain(const std::string& domain,
                                bool should_check_last_update_time) {
-    return account_consistency_service_
-        ->ShouldAddXChromeConnectedCookieToDomain(
-            domain, should_check_last_update_time);
+    return account_consistency_service_->ShouldAddChromeConnectedCookieToDomain(
+        domain, should_check_last_update_time);
   }
 
   void CheckDomainHasCookie(const std::string& domain) {
