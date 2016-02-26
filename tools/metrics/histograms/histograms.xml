@@ -33298,6 +33298,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PageLoad.Timing2.ForegroundToFirstPaint" units="ms">
+  <owner>pkotwicz@chromium.org</owner>
+  <summary>
+    Measures the time from a background tab being switched to the foreground to
+    the time the first paint is performed, for main frame documents.
+  </summary>
+</histogram>
+
 <histogram name="PageLoad.Timing2.NavigationToCommit" units="ms">
   <owner>bmcquade@chromium.org</owner>
   <owner>csharrison@chromium.org</owner>

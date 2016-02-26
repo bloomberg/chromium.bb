@@ -132,7 +132,7 @@ void AbortsPageLoadMetricsObserver::OnComplete(
   DCHECK(!time_to_abort.is_zero());
 
   // Don't log abort times if the page was backgrounded before the abort event.
-  if (!EventOccurredInForeground(time_to_abort, extra_info))
+  if (!WasStartedInForegroundEventInForeground(time_to_abort, extra_info))
     return;
 
   if (extra_info.time_to_commit.is_zero()) {

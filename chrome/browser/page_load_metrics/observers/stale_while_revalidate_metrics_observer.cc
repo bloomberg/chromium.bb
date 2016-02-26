@@ -23,24 +23,27 @@ void StaleWhileRevalidateMetricsObserver::OnCommit(
 void StaleWhileRevalidateMetricsObserver::OnComplete(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& extra_info) {
-  using page_load_metrics::EventOccurredInForeground;
+  using page_load_metrics::WasStartedInForegroundEventInForeground;
 
   if (!is_interesting_domain_)
     return;
 
-  if (EventOccurredInForeground(timing.load_event_start, extra_info)) {
+  if (WasStartedInForegroundEventInForeground(timing.load_event_start,
+                                              extra_info)) {
     PAGE_LOAD_HISTOGRAM(
         "PageLoad.Clients.StaleWhileRevalidateExperiment.Timing2."
         "NavigationToLoadEventFired",
         timing.load_event_start);
   }
-  if (EventOccurredInForeground(timing.first_layout, extra_info)) {
+  if (WasStartedInForegroundEventInForeground(timing.first_layout,
+                                              extra_info)) {
     PAGE_LOAD_HISTOGRAM(
         "PageLoad.Clients.StaleWhileRevalidateExperiment.Timing2."
         "NavigationToFirstLayout",
         timing.first_layout);
   }
-  if (EventOccurredInForeground(timing.first_text_paint, extra_info)) {
+  if (WasStartedInForegroundEventInForeground(timing.first_text_paint,
+                                              extra_info)) {
     PAGE_LOAD_HISTOGRAM(
         "PageLoad.Clients.StaleWhileRevalidateExperiment.Timing2."
         "NavigationToFirstTextPaint",

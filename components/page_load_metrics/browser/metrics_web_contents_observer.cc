@@ -159,14 +159,13 @@ void PageLoadTracker::LogAbortChainHistograms(
 
 void PageLoadTracker::WebContentsHidden() {
   // Only log the first time we background in a given page load.
-  if (started_in_foreground_ && background_time_.is_null())
+  if (background_time_.is_null())
     background_time_ = base::TimeTicks::Now();
 }
 
 void PageLoadTracker::WebContentsShown() {
   // Only log the first time we foreground in a given page load.
-  // Don't log foreground time if we started foregrounded.
-  if (!started_in_foreground_ && foreground_time_.is_null())
+  if (foreground_time_.is_null())
     foreground_time_ = base::TimeTicks::Now();
 }
 
@@ -227,9 +226,9 @@ PageLoadExtraInfo PageLoadTracker::GetPageLoadMetricsInfo() {
   base::TimeDelta first_foreground_time;
   base::TimeDelta time_to_abort;
   base::TimeDelta time_to_commit;
-  if (!background_time_.is_null() && started_in_foreground_)
+  if (!background_time_.is_null())
     first_background_time = background_time_ - navigation_start_;
-  if (!foreground_time_.is_null() && !started_in_foreground_)
+  if (!foreground_time_.is_null())
     first_foreground_time = foreground_time_ - navigation_start_;
   if (abort_type_ != ABORT_NONE) {
     DCHECK_GT(abort_time_, navigation_start_);

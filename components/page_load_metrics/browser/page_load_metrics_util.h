@@ -18,13 +18,15 @@ namespace page_load_metrics {
 struct PageLoadExtraInfo;
 struct PageLoadTiming;
 
-// Returns false for events for which we have no timing information, and events
-// that happened on a page that had been in the background. When a page is
-// backgrounded, some events (e.g. paint) are delayed. Since these data points
-// can skew the mean, they should not be mixed with timing events that occurred
-// in the foreground.
-bool EventOccurredInForeground(base::TimeDelta event,
-                               const PageLoadExtraInfo& info);
+// Returns true if:
+// - We have timing information for the event.
+// - The page load started while the page was in the foreground.
+// - The event occurred prior to the page being moved to the background.
+// When a page is backgrounded, some events (e.g. paint) are delayed. Since
+// these data points can skew the mean, they should not be mixed with timing
+// events that occurred in the foreground.
+bool WasStartedInForegroundEventInForeground(base::TimeDelta event,
+                                             const PageLoadExtraInfo& info);
 
 }  // namespace page_load_metrics
 

@@ -59,14 +59,12 @@ struct PageLoadExtraInfo {
                     UserAbortType abort_type,
                     base::TimeDelta time_to_abort);
 
-  // Returns the time to first background if the page load started in the
-  // foreground. If the page has not been backgrounded, or the page started in
-  // the background, this will be base::TimeDelta().
+  // The first time that the page was backgrounded since the navigation started.
+  // If the page has not been backgrounded this will be base::TimeDelta().
   const base::TimeDelta first_background_time;
 
-  // Returns the time to first foreground if the page load started in the
-  // background. If the page has not been foregrounded, or the page started in
-  // the foreground, this will be base::TimeDelta().
+  // The first time that the page was foregrounded since the navigation started.
+  // If the page has not been foregrounded this will be base::TimeDelta().
   const base::TimeDelta first_foreground_time;
 
   // True if the page load started in the foreground.

@@ -88,6 +88,9 @@ const char kHistogramBackgroundBeforeCommit[] =
 const char kHistogramFailedProvisionalLoad[] =
     "PageLoad.Timing2.NavigationToFailedProvisionalLoad";
 
+const char kHistogramForegroundToFirstPaint[] =
+    "PageLoad.Timing2.ForegroundToFirstPaint";
+
 const char kRapporMetricsNameCoarseTiming[] =
     "PageLoad.CoarseTiming.NavigationToFirstContentfulPaint";
 
@@ -125,8 +128,11 @@ void CorePageLoadMetricsObserver::OnFailedProvisionalLoad(
 void CorePageLoadMetricsObserver::RecordTimingHistograms(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
-  if (!info.first_background_time.is_zero() &&
-      !EventOccurredInForeground(timing.first_paint, info)) {
+  // Record metrics for pages which starts in the foreground and is backgrounded
+  // prior to the first paint.
+  if (info.started_in_foreground && !info.first_background_time.is_zero() &&
+      (timing.first_paint.is_zero() ||
+       timing.first_paint > info.first_background_time)) {
     if (!info.time_to_commit.is_zero()) {
       PAGE_LOAD_HISTOGRAM(internal::kHistogramBackgroundBeforePaint,
                           info.first_background_time);
@@ -138,8 +144,8 @@ void CorePageLoadMetricsObserver::RecordTimingHistograms(
 
   if (failed_provisional_load_info_.error != net::OK) {
     // Ignores a background failed provisional load.
-    if (EventOccurredInForeground(failed_provisional_load_info_.interval,
-                                  info)) {
+    if (WasStartedInForegroundEventInForeground(
+            failed_provisional_load_info_.interval, info)) {
       PAGE_LOAD_HISTOGRAM(internal::kHistogramFailedProvisionalLoad,
                           failed_provisional_load_info_.interval);
     }
@@ -150,15 +156,15 @@ void CorePageLoadMetricsObserver::RecordTimingHistograms(
   if (info.time_to_commit.is_zero() || timing.IsEmpty())
     return;
 
-  if (EventOccurredInForeground(info.time_to_commit, info)) {
+  if (WasStartedInForegroundEventInForeground(info.time_to_commit, info)) {
     PAGE_LOAD_HISTOGRAM(internal::kHistogramCommit, info.time_to_commit);
   } else {
     PAGE_LOAD_HISTOGRAM(internal::kBackgroundHistogramCommit,
                         info.time_to_commit);
   }
   if (!timing.dom_content_loaded_event_start.is_zero()) {
-    if (EventOccurredInForeground(timing.dom_content_loaded_event_start,
-                                  info)) {
+    if (WasStartedInForegroundEventInForeground(
+            timing.dom_content_loaded_event_start, info)) {
       PAGE_LOAD_HISTOGRAM(internal::kHistogramDomContentLoaded,
                           timing.dom_content_loaded_event_start);
     } else {
@@ -167,7 +173,8 @@ void CorePageLoadMetricsObserver::RecordTimingHistograms(
     }
   }
   if (!timing.load_event_start.is_zero()) {
-    if (EventOccurredInForeground(timing.load_event_start, info)) {
+    if (WasStartedInForegroundEventInForeground(timing.load_event_start,
+                                                info)) {
       PAGE_LOAD_HISTOGRAM(internal::kHistogramLoad, timing.load_event_start);
     } else {
       PAGE_LOAD_HISTOGRAM(internal::kBackgroundHistogramLoad,
@@ -175,7 +182,7 @@ void CorePageLoadMetricsObserver::RecordTimingHistograms(
     }
   }
   if (!timing.first_layout.is_zero()) {
-    if (EventOccurredInForeground(timing.first_layout, info)) {
+    if (WasStartedInForegroundEventInForeground(timing.first_layout, info)) {
       PAGE_LOAD_HISTOGRAM(internal::kHistogramFirstLayout, timing.first_layout);
     } else {
       PAGE_LOAD_HISTOGRAM(internal::kBackgroundHistogramFirstLayout,
@@ -183,15 +190,29 @@ void CorePageLoadMetricsObserver::RecordTimingHistograms(
     }
   }
   if (!timing.first_paint.is_zero()) {
-    if (EventOccurredInForeground(timing.first_paint, info)) {
+    if (WasStartedInForegroundEventInForeground(timing.first_paint, info)) {
       PAGE_LOAD_HISTOGRAM(internal::kHistogramFirstPaint, timing.first_paint);
     } else {
       PAGE_LOAD_HISTOGRAM(internal::kBackgroundHistogramFirstPaint,
                           timing.first_paint);
     }
+
+    // Record the time to first paint for pages which were:
+    // - Opened in the background.
+    // - Moved to the foreground prior to the first paint.
+    // - Not moved back to the background prior to the first paint.
+    if (!info.started_in_foreground && !info.first_foreground_time.is_zero() &&
+        timing.first_paint > info.first_foreground_time &&
+        (info.first_background_time.is_zero() ||
+         timing.first_paint < info.first_background_time)) {
+      PAGE_LOAD_HISTOGRAM(
+          internal::kHistogramForegroundToFirstPaint,
+          timing.first_paint - info.first_foreground_time);
+    }
   }
   if (!timing.first_text_paint.is_zero()) {
-    if (EventOccurredInForeground(timing.first_text_paint, info)) {
+    if (WasStartedInForegroundEventInForeground(timing.first_text_paint,
+                                                info)) {
       PAGE_LOAD_HISTOGRAM(internal::kHistogramFirstTextPaint,
                           timing.first_text_paint);
     } else {
@@ -200,7 +221,8 @@ void CorePageLoadMetricsObserver::RecordTimingHistograms(
     }
   }
   if (!timing.first_image_paint.is_zero()) {
-    if (EventOccurredInForeground(timing.first_image_paint, info)) {
+    if (WasStartedInForegroundEventInForeground(timing.first_image_paint,
+                                                info)) {
       PAGE_LOAD_HISTOGRAM(internal::kHistogramFirstImagePaint,
                           timing.first_image_paint);
     } else {
@@ -209,7 +231,8 @@ void CorePageLoadMetricsObserver::RecordTimingHistograms(
     }
   }
   if (!timing.first_contentful_paint.is_zero()) {
-    if (EventOccurredInForeground(timing.first_contentful_paint, info)) {
+    if (WasStartedInForegroundEventInForeground(timing.first_contentful_paint,
+                                                info)) {
       PAGE_LOAD_HISTOGRAM(internal::kHistogramFirstContentfulPaint,
                           timing.first_contentful_paint);
       // Bucket these histograms into high/low resolution clock systems. This
@@ -229,12 +252,15 @@ void CorePageLoadMetricsObserver::RecordTimingHistograms(
 
   // Log time to first foreground / time to first background. Log counts that we
   // started a relevant page load in the foreground / background.
-  if (!info.first_background_time.is_zero())
-    PAGE_LOAD_HISTOGRAM(internal::kHistogramFirstBackground,
-                        info.first_background_time);
-  else if (!info.first_foreground_time.is_zero())
-    PAGE_LOAD_HISTOGRAM(internal::kHistogramFirstForeground,
-                        info.first_foreground_time);
+  if (info.started_in_foreground) {
+    if (!info.first_background_time.is_zero())
+      PAGE_LOAD_HISTOGRAM(internal::kHistogramFirstBackground,
+                          info.first_background_time);
+  } else {
+    if (!info.first_foreground_time.is_zero())
+      PAGE_LOAD_HISTOGRAM(internal::kHistogramFirstForeground,
+                          info.first_foreground_time);
+  }
 }
 
 void CorePageLoadMetricsObserver::RecordRappor(
@@ -253,7 +279,8 @@ void CorePageLoadMetricsObserver::RecordRappor(
     return;
   DCHECK(!info.committed_url.is_empty());
   // Log the eTLD+1 of sites that show poor loading performance.
-  if (!EventOccurredInForeground(timing.first_contentful_paint, info)) {
+  if (!WasStartedInForegroundEventInForeground(timing.first_contentful_paint,
+                                               info)) {
     return;
   }
   scoped_ptr<rappor::Sample> sample =
