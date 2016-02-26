@@ -842,4 +842,10 @@ void StyleBuilderFunctions::applyValueCSSPropertyBaselineShift(StyleResolverStat
     }
 }
 
+void StyleBuilderFunctions::applyInheritCSSPropertyPosition(StyleResolverState& state)
+{
+    if (!state.parentNode()->isDocumentNode())
+        state.style()->setPosition(state.parentStyle()->position());
+}
+
 } // namespace blink

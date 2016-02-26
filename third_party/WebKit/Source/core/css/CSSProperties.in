@@ -253,7 +253,7 @@ paint-order inherited, svg, converter=convertPaintOrder
 perspective interpolable, converter=convertPerspective
 perspective-origin interpolable, converter=convertPosition
 pointer-events inherited
-position
+position custom_inherit
 quotes inherited, converter=convertQuotes
 resize custom_value
 right interpolable, initial=initialOffset, converter=convertLengthOrAuto
