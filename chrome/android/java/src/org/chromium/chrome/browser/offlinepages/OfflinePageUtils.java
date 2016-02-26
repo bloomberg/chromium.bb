@@ -11,12 +11,9 @@ import org.chromium.base.Log;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.bookmarks.BookmarkUtils;
 import org.chromium.chrome.browser.snackbar.Snackbar;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.components.bookmarks.BookmarkId;
-import org.chromium.components.bookmarks.BookmarkType;
 import org.chromium.components.offlinepages.FeatureMode;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.net.NetworkChangeNotifier;
@@ -29,7 +26,6 @@ public class OfflinePageUtils {
     private static final String TAG = "OfflinePageUtils";
     /** Snackbar button types */
     public static final int RELOAD_BUTTON = 0;
-    public static final int EDIT_BUTTON = 1;
 
     private static final int SNACKBAR_DURATION = 6 * 1000; // 6 second
 
@@ -192,38 +188,17 @@ public class OfflinePageUtils {
 
     /**
      * Shows the "reload" snackbar for the given tab.
+     * @param activity The activity owning the tab.
+     * @param snackbarController Class to show the snackbar.
      */
     public static void showReloadSnackbar(final ChromeActivity activity,
             final SnackbarController snackbarController) {
         Log.d(TAG, "showReloadSnackbar called with controller " + snackbarController);
-        int buttonType = RELOAD_BUTTON;
-        int actionTextId = R.string.reload;
-        showOfflineSnackbar(activity, snackbarController, buttonType, actionTextId);
-    }
-
-    public static void showEditSnackbar(final ChromeActivity activity,
-            final SnackbarController snackbarController) {
-        int buttonType = EDIT_BUTTON;
-        int actionTextId = R.string.bookmark_item_edit;
-        showOfflineSnackbar(activity, snackbarController, buttonType, actionTextId);
-    }
-
-    /**
-     * Shows the snackbar for the current tab to provide offline specific information.
-     * @param activity The activity owning the tab.
-     * @param snackbarController Class to show the snackbar.
-     * @param buttonType Which snackbar button to show.
-     * @param actionTextId Resource ID of the text to put on the snackbar button.
-     */
-    public static void showOfflineSnackbar(final ChromeActivity activity,
-            final SnackbarController snackbarController, int buttonType, final int actionTextId) {
         Context context = activity.getBaseContext();
-
         final int snackbarTextId = getStringId(R.string.offline_pages_viewing_offline_page);
-
-        Snackbar snackbar = Snackbar
-                .make(context.getString(snackbarTextId), snackbarController, Snackbar.TYPE_ACTION)
-                .setAction(context.getString(actionTextId), buttonType);
+        Snackbar snackbar = Snackbar.make(context.getString(snackbarTextId), snackbarController,
+                                            Snackbar.TYPE_ACTION)
+                                    .setAction(context.getString(R.string.reload), RELOAD_BUTTON);
         Log.d(TAG, "made snackbar with controller " + snackbarController);
         snackbar.setDuration(SNACKBAR_DURATION);
         activity.getSnackbarManager().showSnackbar(snackbar);
@@ -234,48 +209,23 @@ public class OfflinePageUtils {
      */
     private static SnackbarController getSnackbarController(
             final ChromeActivity activity, final Tab tab) {
-        final long bookmarkId = tab.getUserBookmarkId();
         final int tabId = tab.getId();
         Log.d(TAG, "building snackbar controller");
 
         return new SnackbarController() {
             @Override
             public void onAction(Object actionData) {
+                assert RELOAD_BUTTON == (int) actionData;
+                RecordUserAction.record("OfflinePages.ReloadButtonClicked");
                 Tab foundTab = activity.getTabModelSelector().getTabById(tabId);
                 if (foundTab == null) return;
-                int buttonType = (int) actionData;
-                switch (buttonType) {
-                    case RELOAD_BUTTON:
-                        RecordUserAction.record("OfflinePages.ReloadButtonClicked");
-                        foundTab.loadUrl(new LoadUrlParams(
-                                foundTab.getOfflinePageOriginalUrl(), PageTransition.RELOAD));
-                        break;
-                    case EDIT_BUTTON:
-                        RecordUserAction.record("OfflinePages.ViewingOffline.EditButtonClicked");
-                        BookmarkUtils.startEditActivity(
-                                activity, new BookmarkId(bookmarkId, BookmarkType.NORMAL), null);
-                        break;
-                    default:
-                        assert false;
-                        break;
-                }
+                foundTab.loadUrl(new LoadUrlParams(
+                        foundTab.getOfflinePageOriginalUrl(), PageTransition.RELOAD));
             }
 
             @Override
             public void onDismissNoAction(Object actionData) {
-                if (actionData == null) return;
-                int buttonType = (int) actionData;
-                switch (buttonType) {
-                    case RELOAD_BUTTON:
-                        RecordUserAction.record("OfflinePages.ReloadButtonNotClicked");
-                        break;
-                    case EDIT_BUTTON:
-                        RecordUserAction.record("OfflinePages.ViewingOffline.EditButtonNotClicked");
-                        break;
-                    default:
-                        assert false;
-                        break;
-                }
+                RecordUserAction.record("OfflinePages.ReloadButtonNotClicked");
             }
         };
     }

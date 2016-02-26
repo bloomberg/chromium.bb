@@ -102,8 +102,6 @@ public class OfflinePageTabObserver extends EmptyTabObserver {
         if (mWasHidden) {
             if (mConnected) {
                 OfflinePageUtils.showReloadSnackbar(mActivity, mSnackbarController);
-            } else {
-                OfflinePageUtils.showEditSnackbar(mActivity, mSnackbarController);
             }
 
             mWasHidden = false;
