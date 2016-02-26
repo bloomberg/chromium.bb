@@ -1528,3 +1528,64 @@ CommandHandler.COMMANDS_['refresh'] = /** @type {Command} */ ({
         fileManager.directoryModel.getFileListSelection().getCheckSelectMode());
   }
 });
+
+/**
+ * Refreshes the currently selected directory.
+ */
+CommandHandler.COMMANDS_['set-wallpaper'] = /** @type {Command} */ ({
+  /**
+   * @param {!Event} event Command event.
+   * @param {!FileManager} fileManager FileManager to use.
+   */
+  execute: function(event, fileManager) {
+    var entry = fileManager.getSelection().entries[0];
+    new Promise(function(resolve, reject) {
+      entry.file(resolve, reject);
+    }).then(function(blob) {
+      var fileReader = new FileReader();
+      return new Promise(function(resolve, reject) {
+        fileReader.onload = function() {
+          resolve(fileReader.result);
+        };
+        fileReader.onerror = function() {
+          reject(fileReader.error);
+        };
+        fileReader.readAsArrayBuffer(blob);
+      })
+    }).then(function(/** @type {!ArrayBuffer} */ arrayBuffer) {
+      return new Promise(function(resolve, reject) {
+        chrome.wallpaper.setWallpaper({
+            data: arrayBuffer,
+            layout: chrome.wallpaper.WallpaperLayout.CENTER_CROPPED,
+            filename: 'wallpaper'
+          }, function() {
+            if (chrome.runtime.lastError) {
+              reject(chrome.runtime.lastError);
+            }else{
+              resolve(null);
+            }
+          });
+      });
+    }).catch(function() {
+      fileManager.ui.alertDialog.showHtml(
+          '', str('ERROR_INVALID_WALLPAPER'), null, null, null);
+    });
+  },
+  canExecute: function(event, fileManager) {
+    var entries = CommandUtil.getCommandEntries(event.target);
+    if (entries.length === 0) {
+      event.canExecute = false;
+      event.command.setHidden(true);
+      return;
+    }
+    var type = FileType.getType(entries[0]);
+    if (entries.length !== 1 || type.type !== 'image') {
+      event.canExecute = false;
+      event.command.setHidden(true);
+      return;
+    }
+
+    event.canExecute = type.subtype === 'JPEG' || type.subtype === 'PNG';
+    event.command.setHidden(false);
+  }
+});
