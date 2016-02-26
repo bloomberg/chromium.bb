@@ -44,6 +44,8 @@ using URLSchemesMap = HashMap<String, T, CaseFoldingHash>;
 class PLATFORM_EXPORT SchemeRegistry {
     STATIC_ONLY(SchemeRegistry);
 public:
+    static void initialize();
+
     static void registerURLSchemeAsLocal(const String&);
     static bool shouldTreatURLSchemeAsLocal(const String&);
 

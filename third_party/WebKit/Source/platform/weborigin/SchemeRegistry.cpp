@@ -206,6 +206,12 @@ static URLSchemesSet& allowedInReferrerSchemes()
     return allowedInReferrerSchemes;
 }
 
+void SchemeRegistry::initialize()
+{
+    // Instantiate the mutex object.
+    mutex();
+}
+
 bool SchemeRegistry::shouldTreatURLSchemeAsLocal(const String& scheme)
 {
     if (scheme.isEmpty())
