@@ -140,6 +140,9 @@ _ANDROID_NEGATIVE_FILTER['chrome'] = (
         'ChromeDriverTest.testChromeDriverSendLargeData',
         # Chrome 44+ for Android doesn't dispatch the dblclick event
         'ChromeDriverTest.testMouseDoubleClick',
+        # Page cannot be loaded from file:// URI in Android unless it
+        # is stored in device.
+        'ChromeDriverTest.testCanClickAlertInIframes',
     ]
 )
 _ANDROID_NEGATIVE_FILTER['chrome_stable'] = (
