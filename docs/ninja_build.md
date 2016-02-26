@@ -8,8 +8,7 @@ Ninja behaves very similar to Make -- the major feature is that it starts
 building files nearly instantly. (It has a number of minor user interface
 improvements to make as well.)
 
-Read more about Ninja at
-[the Ninja home page](http://martine.github.com/ninja/).
+Read more about Ninja at [the Ninja home page](https://ninja-build.org/).
 
 ## Using it
 
