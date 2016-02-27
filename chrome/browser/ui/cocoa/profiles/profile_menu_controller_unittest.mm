@@ -10,6 +10,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/profiles/profile_attributes_entry.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
@@ -254,11 +256,12 @@ TEST_F(ProfileMenuControllerTest, SupervisedProfile) {
       TestingProfile::TestingFactories());
   // The supervised profile is initially marked as omitted from the avatar menu
   // (in non-test code, until we have confirmation that it has actually been
-  // created on the server). For the test, just tell the cache to un-hide it.
-  ProfileInfoCache* cache = manager->profile_info_cache();
-  size_t index =
-      cache->GetIndexOfProfileWithPath(supervised_profile->GetPath());
-  cache->SetIsOmittedProfileAtIndex(index, false);
+  // created on the server). For the test, just tell the profile attribute
+  // storage to un-hide it.
+  ProfileAttributesEntry* entry;
+  ASSERT_TRUE(manager->profile_attributes_storage()->
+      GetProfileAttributesWithPath(supervised_profile->GetPath(), &entry));
+  entry->SetIsOmitted(false);
 
   BrowserList::SetLastActive(browser());
 

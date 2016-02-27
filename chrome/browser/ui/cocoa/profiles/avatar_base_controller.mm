@@ -8,8 +8,8 @@
 #include "base/macros.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
-#include "chrome/browser/profiles/profile_info_cache_observer.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/profiles/profile_window.h"
@@ -48,15 +48,16 @@ const CGFloat kMenuXOffsetAdjust = 2.0;
 - (void)updateErrorStatus:(BOOL)hasError;
 @end
 
-class ProfileInfoUpdateObserver : public ProfileInfoCacheObserver,
-                                  public SigninErrorController::Observer {
+class ProfileAttributesUpdateObserver
+    : public ProfileAttributesStorage::Observer,
+      public SigninErrorController::Observer {
  public:
-  ProfileInfoUpdateObserver(Profile* profile,
-                            AvatarBaseController* avatarController)
+  ProfileAttributesUpdateObserver(Profile* profile,
+                                  AvatarBaseController* avatarController)
       : profile_(profile),
         avatarController_(avatarController) {
     g_browser_process->profile_manager()->
-        GetProfileInfoCache().AddObserver(this);
+        GetProfileAttributesStorage().AddObserver(this);
 
     // Subscribe to authentication error changes so that the avatar button
     // can update itself.
@@ -66,16 +67,16 @@ class ProfileInfoUpdateObserver : public ProfileInfoCacheObserver,
       errorController->AddObserver(this);
   }
 
-  ~ProfileInfoUpdateObserver() override {
+  ~ProfileAttributesUpdateObserver() override {
     g_browser_process->profile_manager()->
-        GetProfileInfoCache().RemoveObserver(this);
+        GetProfileAttributesStorage().RemoveObserver(this);
     SigninErrorController* errorController =
         profiles::GetSigninErrorController(profile_);
     if (errorController)
       errorController->RemoveObserver(this);
   }
 
-  // ProfileInfoCacheObserver:
+  // ProfileAttributesStorage::Observer:
   void OnProfileAdded(const base::FilePath& profile_path) override {
     [avatarController_ updateAvatarButtonAndLayoutParent:YES];
   }
@@ -112,7 +113,7 @@ class ProfileInfoUpdateObserver : public ProfileInfoCacheObserver,
   Profile* profile_;
   AvatarBaseController* avatarController_;  // Weak; owns this.
 
-  DISALLOW_COPY_AND_ASSIGN(ProfileInfoUpdateObserver);
+  DISALLOW_COPY_AND_ASSIGN(ProfileAttributesUpdateObserver);
 };
 
 @implementation AvatarBaseController
@@ -120,8 +121,8 @@ class ProfileInfoUpdateObserver : public ProfileInfoCacheObserver,
 - (id)initWithBrowser:(Browser*)browser {
   if ((self = [super init])) {
     browser_ = browser;
-    profileInfoObserver_.reset(
-        new ProfileInfoUpdateObserver(browser_->profile(), self));
+    profileAttributesObserver_.reset(
+        new ProfileAttributesUpdateObserver(browser_->profile(), self));
   }
   return self;
 }

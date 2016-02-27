@@ -9,7 +9,6 @@
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/avatar_menu.h"
-#include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/ui/browser.h"
@@ -75,7 +74,7 @@ const CGFloat kSupervisedUserSpacing = 26.0;
   // key status, it's impossible for the user to edit the information in a
   // meaningful way such that it would need to be redrawn.
   AvatarMenu* menu = new AvatarMenu(
-      &g_browser_process->profile_manager()->GetProfileInfoCache(),
+      &g_browser_process->profile_manager()->GetProfileAttributesStorage(),
       NULL, parentBrowser);
   menu->RebuildMenu();
 

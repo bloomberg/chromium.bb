@@ -14,8 +14,6 @@
 #include "chrome/browser/profiles/avatar_menu_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
-#include "chrome/browser/profiles/profile_info_cache.h"
-#include "chrome/browser/profiles/profile_info_interface.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/profiles/profile_window.h"
@@ -233,7 +231,7 @@ class Observer : public chrome::BrowserListObserver,
 - (void)initializeMenu {
   observer_.reset(new ProfileMenuControllerInternal::Observer(self));
   avatarMenu_.reset(new AvatarMenu(
-      &g_browser_process->profile_manager()->GetProfileInfoCache(),
+      &g_browser_process->profile_manager()->GetProfileAttributesStorage(),
       observer_.get(),
       NULL));
   avatarMenu_->RebuildMenu();

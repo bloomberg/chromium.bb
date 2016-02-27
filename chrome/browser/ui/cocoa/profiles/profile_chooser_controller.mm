@@ -22,7 +22,6 @@
 #include "chrome/browser/profiles/avatar_menu.h"
 #include "chrome/browser/profiles/avatar_menu_observer.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
-#include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/profiles/profile_window.h"
@@ -1227,7 +1226,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
     accessPoint_ = accessPoint;
 
     avatarMenu_.reset(new AvatarMenu(
-        &g_browser_process->profile_manager()->GetProfileInfoCache(),
+        &g_browser_process->profile_manager()->GetProfileAttributesStorage(),
         observer_.get(),
         browser_));
     avatarMenu_->RebuildMenu();

@@ -6,6 +6,8 @@
 
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "chrome/browser/profiles/profile_attributes_entry.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/ui/user_manager.h"
 #include "chrome/common/pref_names.h"
@@ -24,7 +26,7 @@ class UserManagerMacTest : public BrowserWithTestWindowTest {
     BrowserWithTestWindowTest::SetUp();
     ASSERT_TRUE(testing_profile_manager_.SetUp());
     // Create a user to make sure the System Profile isn't the only one since it
-    // shouldn't be added to the ProfileInfoCache.
+    // shouldn't be added to the ProfileAttributesStorage.
     testing_profile_manager_.CreateTestingProfile("Default");
     // Pre-load the system profile so we don't have to wait for the User Manager
     // to asynchronously create it.
@@ -45,12 +47,13 @@ class UserManagerMacTest : public BrowserWithTestWindowTest {
 };
 
 TEST_F(UserManagerMacTest, ShowUserManager) {
-  // Set the ProfileLastUsed pref so that SetActiveProfileToGuestIfLocked()
-  // uses a last active profile that's in the ProfileInfoCache, not default.
+  // Set the ProfileLastUsed pref so that SetActiveProfileToGuestIfLocked() uses
+  // a last active profile that's in the ProfileAttributesStorage, not default.
   g_browser_process->local_state()->SetString(
       prefs::kProfileLastUsed,
-      g_browser_process->profile_manager()->GetProfileInfoCache().
-          GetPathOfProfileAtIndex(0).BaseName().MaybeAsASCII());
+      g_browser_process->profile_manager()->GetProfileAttributesStorage().
+          GetAllProfilesAttributes().front()->
+          GetPath().BaseName().MaybeAsASCII());
 
   EXPECT_FALSE(UserManager::IsShowing());
   UserManager::Show(base::FilePath(),

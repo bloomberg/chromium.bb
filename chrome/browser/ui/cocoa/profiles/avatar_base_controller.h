@@ -15,7 +15,7 @@
 
 @class BaseBubbleController;
 class Browser;
-class ProfileInfoUpdateObserver;
+class ProfileAttributesUpdateObserver;
 
 // This view controller manages the button that sits in the top of the
 // window frame when using multi-profiles, and shows information about the
@@ -31,8 +31,8 @@ class ProfileInfoUpdateObserver;
   // The menu controller, if the menu is open.
   BaseBubbleController* menuController_;
 
-  // Observer that listens for updates to the ProfileInfoCache.
-  scoped_ptr<ProfileInfoUpdateObserver> profileInfoObserver_;
+  // Observer that listens for updates to the ProfileAttributesStorage.
+  scoped_ptr<ProfileAttributesUpdateObserver> profileAttributesObserver_;
 }
 
 // The avatar button view.

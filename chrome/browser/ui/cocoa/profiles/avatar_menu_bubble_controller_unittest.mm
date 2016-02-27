@@ -11,7 +11,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/avatar_menu.h"
 #include "chrome/browser/profiles/avatar_menu_observer.h"
-#include "chrome/browser/profiles/profile_info_cache.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
@@ -41,7 +40,7 @@ class AvatarMenuBubbleControllerTest : public CocoaTest {
         base::ASCIIToUTF16("Test 2"), 0, std::string(),
         TestingProfile::TestingFactories());
 
-    menu_ = new AvatarMenu(manager_.profile_info_cache(), NULL, NULL);
+    menu_ = new AvatarMenu(manager_.profile_attributes_storage(), NULL, NULL);
     menu_->RebuildMenu();
 
     NSRect frame = [test_window() frame];

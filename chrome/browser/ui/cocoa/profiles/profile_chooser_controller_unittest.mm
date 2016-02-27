@@ -12,7 +12,8 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/avatar_menu.h"
-#include "chrome/browser/profiles/profile_info_cache.h"
+#include "chrome/browser/profiles/profile_attributes_entry.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/services/gcm/fake_gcm_profile_service.h"
 #include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/signin/account_fetcher_service_factory.h"
@@ -69,8 +70,8 @@ class ProfileChooserControllerTest : public CocoaProfileTest {
         base::ASCIIToUTF16("Test 2"), 1, std::string(),
         TestingProfile::TestingFactories());
 
-    menu_ = new AvatarMenu(testing_profile_manager()->profile_info_cache(),
-                           NULL, NULL);
+    menu_ = new AvatarMenu(
+        testing_profile_manager()->profile_attributes_storage(), NULL, NULL);
     menu_->RebuildMenu();
 
     // There should be the default profile + two profiles we created.
@@ -141,6 +142,14 @@ class ProfileChooserControllerTest : public CocoaProfileTest {
             accessPoint:signin_metrics::AccessPoint::
                             ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN]);
     [controller_ showWindow:nil];
+  }
+
+  void SignInFirstProfile() {
+    std::vector<ProfileAttributesEntry*> entries = testing_profile_manager()->
+        profile_attributes_storage()->GetAllProfilesAttributes();
+    ASSERT_LE(1U, entries.size());
+    ProfileAttributesEntry* entry = entries.front();
+    entry->SetAuthInfo(kGaiaId, base::ASCIIToUTF16(kEmail));
   }
 
   ProfileChooserController* controller() { return controller_; }
@@ -341,9 +350,8 @@ TEST_F(ProfileChooserControllerTest,
        SignedInProfileActiveCardLinksWithAccountConsistency) {
   switches::EnableAccountConsistencyForTesting(
       base::CommandLine::ForCurrentProcess());
-  // Sign in the first profile.
-  ProfileInfoCache* cache = testing_profile_manager()->profile_info_cache();
-  cache->SetAuthInfoOfProfileAtIndex(0, kGaiaId, base::ASCIIToUTF16(kEmail));
+
+  SignInFirstProfile();
 
   StartProfileChooserController();
   NSArray* subviews = [[[controller() window] contentView] subviews];
@@ -362,9 +370,7 @@ TEST_F(ProfileChooserControllerTest,
 
 TEST_F(ProfileChooserControllerTest,
     SignedInProfileActiveCardLinksWithNewMenu) {
-  // Sign in the first profile.
-  ProfileInfoCache* cache = testing_profile_manager()->profile_info_cache();
-  cache->SetAuthInfoOfProfileAtIndex(0, kGaiaId, base::ASCIIToUTF16(kEmail));
+  SignInFirstProfile();
 
   StartProfileChooserController();
   NSArray* subviews = [[[controller() window] contentView] subviews];
@@ -385,14 +391,15 @@ TEST_F(ProfileChooserControllerTest,
 TEST_F(ProfileChooserControllerTest, AccountManagementLayout) {
   switches::EnableAccountConsistencyForTesting(
       base::CommandLine::ForCurrentProcess());
-  // Sign in the first profile.
-  ProfileInfoCache* cache = testing_profile_manager()->profile_info_cache();
-  cache->SetAuthInfoOfProfileAtIndex(0, kGaiaId, base::ASCIIToUTF16(kEmail));
+
+  SignInFirstProfile();
 
   // Mark that we are using the profile name on purpose, so that we don't
   // fallback to testing the algorithm that chooses which default name
   // should be used.
-  cache->SetProfileIsUsingDefaultNameAtIndex(0, false);
+  ProfileAttributesEntry* entry = testing_profile_manager()->
+      profile_attributes_storage()->GetAllProfilesAttributes().front();
+  entry->SetIsUsingDefaultName(false);
 
   // Set up the AccountTrackerService, signin manager and the OAuth2Tokens.
   Profile* profile = browser()->profile();
@@ -507,9 +514,9 @@ TEST_F(ProfileChooserControllerTest, AccountManagementLayout) {
 TEST_F(ProfileChooserControllerTest, SignedInProfileLockDisabled) {
   switches::EnableNewProfileManagementForTesting(
       base::CommandLine::ForCurrentProcess());
-  // Sign in the first profile.
-  ProfileInfoCache* cache = testing_profile_manager()->profile_info_cache();
-  cache->SetAuthInfoOfProfileAtIndex(0, kGaiaId, base::ASCIIToUTF16(kEmail));
+
+  SignInFirstProfile();
+
   // The preference, not the email, determines whether the profile can lock.
   browser()->profile()->GetPrefs()->SetString(
       prefs::kGoogleServicesHostedDomain, "chromium.org");
@@ -533,14 +540,16 @@ TEST_F(ProfileChooserControllerTest, SignedInProfileLockDisabled) {
 TEST_F(ProfileChooserControllerTest, SignedInProfileLockEnabled) {
   switches::EnableNewProfileManagementForTesting(
       base::CommandLine::ForCurrentProcess());
-  // Sign in the first profile.
-  ProfileInfoCache* cache = testing_profile_manager()->profile_info_cache();
-  cache->SetAuthInfoOfProfileAtIndex(0, kGaiaId, base::ASCIIToUTF16(kEmail));
+
+  SignInFirstProfile();
+
   // The preference, not the email, determines whether the profile can lock.
   browser()->profile()->GetPrefs()->SetString(
       prefs::kGoogleServicesHostedDomain, "google.com");
   // Lock is only available where a supervised user is present.
-  cache->SetSupervisedUserIdOfProfileAtIndex(1, kEmail);
+  ProfileAttributesEntry* entry = testing_profile_manager()->
+      profile_attributes_storage()->GetAllProfilesAttributes().front();
+  entry->SetSupervisedUserId(kEmail);
 
   StartProfileChooserController();
   NSArray* subviews = [[[controller() window] contentView] subviews];
