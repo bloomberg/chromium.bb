@@ -540,10 +540,11 @@ TEST_F(CountingPolicyTest, Construct) {
   policy->Init();
   scoped_refptr<const Extension> extension =
       ExtensionBuilder()
-          .SetManifest(std::move(DictionaryBuilder()
-                                     .Set("name", "Test extension")
-                                     .Set("version", "1.0.0")
-                                     .Set("manifest_version", 2)))
+          .SetManifest(DictionaryBuilder()
+                           .Set("name", "Test extension")
+                           .Set("version", "1.0.0")
+                           .Set("manifest_version", 2)
+                           .Build())
           .Build();
   extension_service_->AddExtension(extension.get());
   scoped_ptr<base::ListValue> args(new base::ListValue());
@@ -561,10 +562,11 @@ TEST_F(CountingPolicyTest, LogWithStrippedArguments) {
   policy->Init();
   scoped_refptr<const Extension> extension =
       ExtensionBuilder()
-          .SetManifest(std::move(DictionaryBuilder()
-                                     .Set("name", "Test extension")
-                                     .Set("version", "1.0.0")
-                                     .Set("manifest_version", 2)))
+          .SetManifest(DictionaryBuilder()
+                           .Set("name", "Test extension")
+                           .Set("version", "1.0.0")
+                           .Set("manifest_version", 2)
+                           .Build())
           .Build();
   extension_service_->AddExtension(extension.get());
 
@@ -707,10 +709,11 @@ TEST_F(CountingPolicyTest, LogAndFetchFilteredActions) {
   policy->Init();
   scoped_refptr<const Extension> extension =
       ExtensionBuilder()
-          .SetManifest(std::move(DictionaryBuilder()
-                                     .Set("name", "Test extension")
-                                     .Set("version", "1.0.0")
-                                     .Set("manifest_version", 2)))
+          .SetManifest(DictionaryBuilder()
+                           .Set("name", "Test extension")
+                           .Set("version", "1.0.0")
+                           .Set("manifest_version", 2)
+                           .Build())
           .Build();
   extension_service_->AddExtension(extension.get());
   GURL gurl("http://www.google.com");

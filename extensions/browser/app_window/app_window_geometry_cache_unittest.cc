@@ -36,8 +36,8 @@ const char kWindowId2[] = "windowid2";
 // Create a very simple extension with id.
 scoped_refptr<Extension> CreateExtension(const std::string& id) {
   return ExtensionBuilder()
-      .SetManifest(std::move(
-          DictionaryBuilder().Set("name", "test").Set("version", "0.1")))
+      .SetManifest(
+          DictionaryBuilder().Set("name", "test").Set("version", "0.1").Build())
       .SetID(id)
       .Build();
 }
@@ -163,8 +163,10 @@ std::string AppWindowGeometryCacheTest::AddExtensionWithPrefs(
       browser_context()->GetPath().AppendASCII("Extensions").AppendASCII(name);
   scoped_refptr<Extension> extension =
       ExtensionBuilder()
-          .SetManifest(std::move(
-              DictionaryBuilder().Set("name", "test").Set("version", "0.1")))
+          .SetManifest(DictionaryBuilder()
+                           .Set("name", "test")
+                           .Set("version", "0.1")
+                           .Build())
           .SetPath(path)
           .Build();
 

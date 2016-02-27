@@ -205,23 +205,29 @@ TEST(ExtensionAPITest, APIFeatures) {
 TEST(ExtensionAPITest, IsAnyFeatureAvailableToContext) {
   scoped_refptr<const Extension> app =
       ExtensionBuilder()
-          .SetManifest(std::move(
+          .SetManifest(
               DictionaryBuilder()
                   .Set("name", "app")
-                  .Set("app", std::move(DictionaryBuilder().Set(
-                                  "background",
-                                  std::move(DictionaryBuilder().Set(
-                                      "scripts", std::move(ListBuilder().Append(
-                                                     "background.js")))))))
+                  .Set("app",
+                       DictionaryBuilder()
+                           .Set("background",
+                                DictionaryBuilder()
+                                    .Set("scripts", ListBuilder()
+                                                        .Append("background.js")
+                                                        .Build())
+                                    .Build())
+                           .Build())
                   .Set("version", "1")
-                  .Set("manifest_version", 2)))
+                  .Set("manifest_version", 2)
+                  .Build())
           .Build();
   scoped_refptr<const Extension> extension =
       ExtensionBuilder()
-          .SetManifest(std::move(DictionaryBuilder()
-                                     .Set("name", "extension")
-                                     .Set("version", "1")
-                                     .Set("manifest_version", 2)))
+          .SetManifest(DictionaryBuilder()
+                           .Set("name", "extension")
+                           .Set("version", "1")
+                           .Set("manifest_version", 2)
+                           .Build())
           .Build();
 
   struct {
@@ -832,8 +838,9 @@ TEST(ExtensionAPITest, ManifestKeys) {
 
   scoped_refptr<Extension> extension =
       BuildExtension(ExtensionBuilder())
-          .MergeManifest(
-              DictionaryBuilder().Set("browser_action", DictionaryBuilder()))
+          .MergeManifest(DictionaryBuilder()
+                             .Set("browser_action", DictionaryBuilder().Build())
+                             .Build())
           .Build();
 
   EXPECT_TRUE(extension_api->IsAvailable("browserAction",

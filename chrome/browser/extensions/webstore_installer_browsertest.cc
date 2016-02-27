@@ -123,7 +123,7 @@ IN_PROC_BROWSER_TEST_F(WebstoreInstallerBrowserTest, WebstoreInstall) {
           .Set("description", "Foo")
           .Set("manifest_version", 2)
           .Set("version", "1.0")
-          .Set("permissions", std::move(ListBuilder().Append("tabs")))
+          .Set("permissions", ListBuilder().Append("tabs").Build())
           .Build());
 
   content::WebContents* active_web_contents =
@@ -156,7 +156,7 @@ IN_PROC_BROWSER_TEST_F(WebstoreInstallerBrowserTest, SimultaneousInstall) {
           .Set("description", "Foo")
           .Set("manifest_version", 2)
           .Set("version", "1.0")
-          .Set("permissions", std::move(ListBuilder().Append("tabs")))
+          .Set("permissions", ListBuilder().Append("tabs").Build())
           .Build());
 
   content::WebContents* active_web_contents =

@@ -1308,7 +1308,7 @@ testing::AssertionResult ShowsAllHostsWarning(const std::string& pattern) {
               DictionaryBuilder()
                   .Set("name", "TLDWildCardTest")
                   .Set("version", "0.1.0")
-                  .Set("permissions", std::move(ListBuilder().Append(pattern)))
+                  .Set("permissions", ListBuilder().Append(pattern).Build())
                   .Build())
           .Build();
 

@@ -179,19 +179,20 @@ TEST_F(ChromeChannelFeatureFilterTest, SimpleFeatureAvailability) {
   scoped_ptr<base::DictionaryValue> rule(
       DictionaryBuilder()
           .Set("feature1",
-               std::move(ListBuilder()
-                             .Append(std::move(
-                                 DictionaryBuilder()
-                                     .Set("channel", "beta")
-                                     .Set("extension_types",
-                                          std::move(ListBuilder().Append(
-                                              "extension")))))
-                             .Append(std::move(
-                                 DictionaryBuilder()
-                                     .Set("channel", "beta")
-                                     .Set("extension_types",
-                                          std::move(ListBuilder().Append(
-                                              "legacy_packaged_app")))))))
+               ListBuilder()
+                   .Append(DictionaryBuilder()
+                               .Set("channel", "beta")
+                               .Set("extension_types",
+                                    ListBuilder().Append("extension").Build())
+                               .Build())
+                   .Append(DictionaryBuilder()
+                               .Set("channel", "beta")
+                               .Set("extension_types",
+                                    ListBuilder()
+                                        .Append("legacy_packaged_app")
+                                        .Build())
+                               .Build())
+                   .Build())
           .Build());
 
   scoped_ptr<BaseFeatureProvider> provider(
@@ -243,7 +244,7 @@ TEST_F(ChromeChannelFeatureFilterTest, ComplexFeatureAvailability) {
   scoped_ptr<base::DictionaryValue> rule(
       DictionaryBuilder()
           .Set("channel", "trunk")
-          .Set("extension_types", std::move(ListBuilder().Append("extension")))
+          .Set("extension_types", ListBuilder().Append("extension").Build())
           .Build());
   simple_feature->Parse(rule.get());
   features->push_back(std::move(simple_feature));
@@ -253,7 +254,7 @@ TEST_F(ChromeChannelFeatureFilterTest, ComplexFeatureAvailability) {
   rule = DictionaryBuilder()
              .Set("channel", "stable")
              .Set("extension_types",
-                  std::move(ListBuilder().Append("legacy_packaged_app")))
+                  ListBuilder().Append("legacy_packaged_app").Build())
              .Build();
   simple_feature->Parse(rule.get());
   features->push_back(std::move(simple_feature));

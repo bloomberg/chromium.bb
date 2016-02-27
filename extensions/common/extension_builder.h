@@ -40,13 +40,10 @@ class ExtensionBuilder {
   ExtensionBuilder& SetLocation(Manifest::Location location);
 
   ExtensionBuilder& SetManifest(scoped_ptr<base::DictionaryValue> manifest);
-  ExtensionBuilder& SetManifest(DictionaryBuilder manifest_builder) {
-    return SetManifest(manifest_builder.Build());
-  }
 
-  // Adds the keys from the DictionaryBuilder to the manifest, with new keys
-  // taking precedence.
-  ExtensionBuilder& MergeManifest(DictionaryBuilder& builder);
+  // Merge another manifest into the current manifest, with new keys taking
+  // precedence.
+  ExtensionBuilder& MergeManifest(scoped_ptr<base::DictionaryValue> manifest);
 
   ExtensionBuilder& AddFlags(int init_from_value_flags);
 

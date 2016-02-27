@@ -150,11 +150,11 @@ class ExtensionMessageBubbleTest : public BrowserWithTestWindowTest {
                                                 const std::string& id,
                                                 Manifest::Location location) {
     ExtensionBuilder builder;
-    builder.SetManifest(
-        std::move(DictionaryBuilder()
-                      .Set("name", std::string("Extension " + index))
-                      .Set("version", "1.0")
-                      .Set("manifest_version", 2)));
+    builder.SetManifest(DictionaryBuilder()
+                            .Set("name", std::string("Extension " + index))
+                            .Set("version", "1.0")
+                            .Set("manifest_version", 2)
+                            .Build());
     builder.SetLocation(location);
     builder.SetID(id);
     service_->AddExtension(builder.Build().get());
@@ -169,13 +169,15 @@ class ExtensionMessageBubbleTest : public BrowserWithTestWindowTest {
       const std::string& id,
       Manifest::Location location) {
     ExtensionBuilder builder;
-    builder.SetManifest(std::move(
+    builder.SetManifest(
         DictionaryBuilder()
             .Set("name", std::string("Extension " + index))
             .Set("version", "1.0")
             .Set("manifest_version", 2)
-            .Set("browser_action", std::move(DictionaryBuilder().Set(
-                                       "default_title", "Default title")))));
+            .Set("browser_action", DictionaryBuilder()
+                                       .Set("default_title", "Default title")
+                                       .Build())
+            .Build());
     builder.SetLocation(location);
     builder.SetID(id);
     service_->AddExtension(builder.Build().get());
@@ -190,14 +192,15 @@ class ExtensionMessageBubbleTest : public BrowserWithTestWindowTest {
       const std::string& id,
       Manifest::Location location) {
     ExtensionBuilder builder;
-    builder.SetManifest(
-        std::move(DictionaryBuilder()
-                      .Set("name", std::string("Extension " + index))
-                      .Set("version", "1.0")
-                      .Set("manifest_version", 2)
-                      .Set("chrome_settings_overrides",
-                           std::move(DictionaryBuilder().Set(
-                               "homepage", "http://www.google.com")))));
+    builder.SetManifest(DictionaryBuilder()
+                            .Set("name", std::string("Extension " + index))
+                            .Set("version", "1.0")
+                            .Set("manifest_version", 2)
+                            .Set("chrome_settings_overrides",
+                                 DictionaryBuilder()
+                                     .Set("homepage", "http://www.google.com")
+                                     .Build())
+                            .Build());
     builder.SetLocation(location);
     builder.SetID(id);
     service_->AddExtension(builder.Build().get());
@@ -212,15 +215,17 @@ class ExtensionMessageBubbleTest : public BrowserWithTestWindowTest {
       const std::string& id,
       Manifest::Location location) {
     ExtensionBuilder builder;
-    builder.SetManifest(std::move(
+    builder.SetManifest(
         DictionaryBuilder()
             .Set("name", std::string("Extension " + index))
             .Set("version", "1.0")
             .Set("manifest_version", 2)
             .Set("chrome_settings_overrides",
-                 std::move(DictionaryBuilder().Set(
-                     "startup_pages", std::move(ListBuilder().Append(
-                                          "http://www.google.com")))))));
+                 DictionaryBuilder()
+                     .Set("startup_pages",
+                          ListBuilder().Append("http://www.google.com").Build())
+                     .Build())
+            .Build());
     builder.SetLocation(location);
     builder.SetID(id);
     service_->AddExtension(builder.Build().get());
@@ -235,13 +240,14 @@ class ExtensionMessageBubbleTest : public BrowserWithTestWindowTest {
       const std::string& id,
       Manifest::Location location) {
     ExtensionBuilder builder;
-    builder.SetManifest(std::move(
+    builder.SetManifest(
         DictionaryBuilder()
             .Set("name", std::string("Extension " + index))
             .Set("version", "1.0")
             .Set("manifest_version", 2)
-            .Set("chrome_url_overrides", std::move(DictionaryBuilder().Set(
-                                             "newtab", "Default.html")))));
+            .Set("chrome_url_overrides",
+                 DictionaryBuilder().Set("newtab", "Default.html").Build())
+            .Build());
 
     builder.SetLocation(location);
     builder.SetID(id);
@@ -257,12 +263,13 @@ class ExtensionMessageBubbleTest : public BrowserWithTestWindowTest {
       const std::string& id,
       Manifest::Location location) {
     ExtensionBuilder builder;
-    builder.SetManifest(std::move(
+    builder.SetManifest(
         DictionaryBuilder()
             .Set("name", std::string("Extension " + index))
             .Set("version", "1.0")
             .Set("manifest_version", 2)
-            .Set("permissions", std::move(ListBuilder().Append("proxy")))));
+            .Set("permissions", ListBuilder().Append("proxy").Build())
+            .Build());
 
     builder.SetLocation(location);
     builder.SetID(id);

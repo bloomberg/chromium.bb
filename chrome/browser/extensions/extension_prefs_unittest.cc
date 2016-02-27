@@ -922,9 +922,10 @@ class ExtensionPrefsComponentExtension : public ExtensionPrefsTest {
     // Adding a component extension.
     component_extension_ =
         ExtensionBuilder()
-            .SetManifest(std::move(DictionaryBuilder()
-                                       .Set(manifest_keys::kName, "a")
-                                       .Set(manifest_keys::kVersion, "0.1")))
+            .SetManifest(DictionaryBuilder()
+                             .Set(manifest_keys::kName, "a")
+                             .Set(manifest_keys::kVersion, "0.1")
+                             .Build())
             .SetLocation(Manifest::COMPONENT)
             .SetPath(prefs_.extensions_dir().AppendASCII("a"))
             .Build();
@@ -933,9 +934,10 @@ class ExtensionPrefsComponentExtension : public ExtensionPrefsTest {
     // Adding a non component extension.
     no_component_extension_ =
         ExtensionBuilder()
-            .SetManifest(std::move(DictionaryBuilder()
-                                       .Set(manifest_keys::kName, "b")
-                                       .Set(manifest_keys::kVersion, "0.1")))
+            .SetManifest(DictionaryBuilder()
+                             .Set(manifest_keys::kName, "b")
+                             .Set(manifest_keys::kVersion, "0.1")
+                             .Build())
             .SetLocation(Manifest::INTERNAL)
             .SetPath(prefs_.extensions_dir().AppendASCII("b"))
             .Build();

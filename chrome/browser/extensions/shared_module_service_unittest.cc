@@ -38,8 +38,10 @@ scoped_refptr<Extension> CreateExtensionImportingModule(
          .Set("version", version)
          .Set("manifest_version", 2);
   if (!import_id.empty()) {
-    builder.Set("import", std::move(ListBuilder().Append(std::move(
-                              DictionaryBuilder().Set("id", import_id)))));
+    builder.Set("import",
+                ListBuilder()
+                    .Append(DictionaryBuilder().Set("id", import_id).Build())
+                    .Build());
   }
   scoped_ptr<base::DictionaryValue> manifest = builder.Build();
 
@@ -131,8 +133,9 @@ TEST_F(SharedModuleServiceUnitTest, PruneSharedModulesOnUninstall) {
           .Set("version", "1.0")
           .Set("manifest_version", 2)
           .Set("export",
-               std::move(DictionaryBuilder().Set(
-                   "resources", std::move(ListBuilder().Append("foo.js")))))
+               DictionaryBuilder()
+                   .Set("resources", ListBuilder().Append("foo.js").Build())
+                   .Build())
           .Build();
   scoped_refptr<Extension> shared_module =
       ExtensionBuilder()
@@ -172,8 +175,9 @@ TEST_F(SharedModuleServiceUnitTest, PruneSharedModulesOnUpdate) {
           .Set("version", "1.0")
           .Set("manifest_version", 2)
           .Set("export",
-               std::move(DictionaryBuilder().Set(
-                   "resources", std::move(ListBuilder().Append("foo.js")))))
+               DictionaryBuilder()
+                   .Set("resources", ListBuilder().Append("foo.js").Build())
+                   .Build())
           .Build();
   scoped_refptr<Extension> shared_module_1 =
       ExtensionBuilder()
@@ -189,8 +193,9 @@ TEST_F(SharedModuleServiceUnitTest, PruneSharedModulesOnUpdate) {
           .Set("version", "1.0")
           .Set("manifest_version", 2)
           .Set("export",
-               std::move(DictionaryBuilder().Set(
-                   "resources", std::move(ListBuilder().Append("foo.js")))))
+               DictionaryBuilder()
+                   .Set("resources", ListBuilder().Append("foo.js").Build())
+                   .Build())
           .Build();
   scoped_refptr<Extension> shared_module_2 =
       ExtensionBuilder()
@@ -250,11 +255,11 @@ TEST_F(SharedModuleServiceUnitTest, WhitelistedImports) {
           .Set("version", "1.0")
           .Set("manifest_version", 2)
           .Set("export",
-               std::move(
-                   DictionaryBuilder()
-                       .Set("whitelist",
-                            std::move(ListBuilder().Append(whitelisted_id)))
-                       .Set("resources", std::move(ListBuilder().Append("*")))))
+               DictionaryBuilder()
+                   .Set("whitelist",
+                        ListBuilder().Append(whitelisted_id).Build())
+                   .Set("resources", ListBuilder().Append("*").Build())
+                   .Build())
           .Build();
   scoped_refptr<Extension> shared_module =
       ExtensionBuilder()

@@ -499,21 +499,23 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest, ManagedStorage) {
           .Set("int-policy", -123)
           .Set("double-policy", 456e7)
           .SetBoolean("boolean-policy", true)
-          .Set("list-policy",
-               std::move(
-                   extensions::ListBuilder().Append("one").Append("two").Append(
-                       "three")))
-          .Set(
-              "dict-policy",
-              std::move(extensions::DictionaryBuilder().Set(
-                  "list",
-                  std::move(
-                      extensions::ListBuilder()
-                          .Append(std::move(
-                              extensions::DictionaryBuilder().Set("one", 1).Set(
-                                  "two", 2)))
-                          .Append(std::move(extensions::DictionaryBuilder().Set(
-                              "three", 3)))))))
+          .Set("list-policy", extensions::ListBuilder()
+                                  .Append("one")
+                                  .Append("two")
+                                  .Append("three")
+                                  .Build())
+          .Set("dict-policy",
+               extensions::DictionaryBuilder()
+                   .Set("list", extensions::ListBuilder()
+                                    .Append(extensions::DictionaryBuilder()
+                                                .Set("one", 1)
+                                                .Set("two", 2)
+                                                .Build())
+                                    .Append(extensions::DictionaryBuilder()
+                                                .Set("three", 3)
+                                                .Build())
+                                    .Build())
+                   .Build())
           .Build();
   SetPolicies(*policy);
   // Now run the extension.

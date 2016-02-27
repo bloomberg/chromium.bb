@@ -136,11 +136,12 @@ TEST_F(ExtensionReenablerUnitTest, TestReenablingDisabledExtension) {
   // Create a simple extension and add it to the service.
   scoped_refptr<const Extension> extension =
       ExtensionBuilder()
-          .SetManifest(std::move(DictionaryBuilder()
-                                     .Set("name", "test ext")
-                                     .Set("version", "1.0")
-                                     .Set("manifest_version", 2)
-                                     .Set("description", "a test ext")))
+          .SetManifest(DictionaryBuilder()
+                           .Set("name", "test ext")
+                           .Set("version", "1.0")
+                           .Set("manifest_version", 2)
+                           .Set("description", "a test ext")
+                           .Build())
           .SetID(crx_file::id_util::GenerateId("test ext"))
           .Build();
   service()->AddExtension(extension.get());

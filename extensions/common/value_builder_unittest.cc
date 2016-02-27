@@ -20,9 +20,8 @@ TEST(ValueBuilderTest, Basic) {
   scoped_ptr<base::DictionaryValue> settings(new base::DictionaryValue);
 
   ASSERT_FALSE(settings->GetList("permissions", nullptr));
-  settings = DictionaryBuilder()
-                 .Set("permissions", std::move(permission_list))
-                 .Build();
+  settings =
+      DictionaryBuilder().Set("permissions", permission_list.Build()).Build();
   base::ListValue* list_value;
   ASSERT_TRUE(settings->GetList("permissions", &list_value));
 

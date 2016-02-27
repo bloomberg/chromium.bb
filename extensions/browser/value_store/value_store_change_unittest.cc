@@ -61,7 +61,7 @@ TEST(ValueStoreChangeTest, ToJson) {
       DictionaryBuilder()
           .Set("key", "value")
           .Set("key.with.dots", "value.with.dots")
-          .Set("tricked", std::move(DictionaryBuilder().Set("you", "nodots")))
+          .Set("tricked", DictionaryBuilder().Set("you", "nodots").Build())
           .Set("tricked.you", "with.dots")
           .Build();
 
@@ -81,12 +81,14 @@ TEST(ValueStoreChangeTest, ToJson) {
   DictionaryBuilder v4(*value);
   scoped_ptr<base::DictionaryValue> expected_from_json =
       DictionaryBuilder()
-          .Set("key", std::move(DictionaryBuilder()
-                                    .Set("oldValue", std::move(v1))
-                                    .Set("newValue", std::move(v2))))
-          .Set("key.with.dots", std::move(DictionaryBuilder()
-                                              .Set("oldValue", std::move(v3))
-                                              .Set("newValue", std::move(v4))))
+          .Set("key", DictionaryBuilder()
+                          .Set("oldValue", v1.Build())
+                          .Set("newValue", v2.Build())
+                          .Build())
+          .Set("key.with.dots", DictionaryBuilder()
+                                    .Set("oldValue", v3.Build())
+                                    .Set("newValue", v4.Build())
+                                    .Build())
           .Build();
 
   EXPECT_TRUE(from_json->Equals(expected_from_json.get()));

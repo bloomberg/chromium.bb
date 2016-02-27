@@ -84,17 +84,17 @@ class ExtensionInfoGeneratorUnitTest : public ExtensionServiceTestBase {
 
   const scoped_refptr<const Extension> CreateExtension(
       const std::string& name,
-      ListBuilder permissions) {
+      scoped_ptr<base::ListValue> permissions) {
     const std::string kId = crx_file::id_util::GenerateId(name);
     scoped_refptr<const Extension> extension =
         ExtensionBuilder()
-            .SetManifest(
-                std::move(DictionaryBuilder()
-                              .Set("name", name)
-                              .Set("description", "an extension")
-                              .Set("manifest_version", 2)
-                              .Set("version", "1.0.0")
-                              .Set("permissions", std::move(permissions))))
+            .SetManifest(DictionaryBuilder()
+                             .Set("name", name)
+                             .Set("description", "an extension")
+                             .Set("manifest_version", 2)
+                             .Set("version", "1.0.0")
+                             .Set("permissions", std::move(permissions))
+                             .Build())
             .SetLocation(Manifest::INTERNAL)
             .SetID(kId)
             .Build();
@@ -187,7 +187,7 @@ TEST_F(ExtensionInfoGeneratorUnitTest, BasicInfoTest) {
           .Set("version", kVersion)
           .Set("manifest_version", 2)
           .Set("description", "an extension")
-          .Set("permissions", std::move(ListBuilder().Append("file://*/*")))
+          .Set("permissions", ListBuilder().Append("file://*/*").Build())
           .Build();
   scoped_ptr<base::DictionaryValue> manifest_copy(manifest->DeepCopy());
   scoped_refptr<const Extension> extension =
@@ -353,9 +353,9 @@ TEST_F(ExtensionInfoGeneratorUnitTest, ExtensionInfoRunOnAllUrls) {
           FeatureSwitch::scripts_require_action(), true));
   // Two extensions - one with all urls, one without.
   scoped_refptr<const Extension> all_urls_extension = CreateExtension(
-      "all_urls", std::move(ListBuilder().Append(kAllHostsPermission)));
+      "all_urls", ListBuilder().Append(kAllHostsPermission).Build());
   scoped_refptr<const Extension> no_urls_extension =
-      CreateExtension("no urls", ListBuilder());
+      CreateExtension("no urls", ListBuilder().Build());
 
   scoped_ptr<developer::ExtensionInfo> info =
       GenerateExtensionInfo(all_urls_extension->id());
@@ -400,7 +400,7 @@ TEST_F(ExtensionInfoGeneratorUnitTest, ExtensionInfoRunOnAllUrls) {
 
   // Load another extension with all urls (so permissions get re-init'd).
   all_urls_extension = CreateExtension(
-      "all_urls_II", std::move(ListBuilder().Append(kAllHostsPermission)));
+      "all_urls_II", ListBuilder().Append(kAllHostsPermission).Build());
 
   // Even though the extension has all_urls permission, the checkbox shouldn't
   // show up without the switch.

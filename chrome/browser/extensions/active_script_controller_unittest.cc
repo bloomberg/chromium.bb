@@ -107,14 +107,15 @@ const Extension* ActiveScriptControllerUnitTest::AddExtension() {
   const std::string kId = crx_file::id_util::GenerateId("all_hosts_extension");
   extension_ =
       ExtensionBuilder()
-          .SetManifest(std::move(
+          .SetManifest(
               DictionaryBuilder()
                   .Set("name", "all_hosts_extension")
                   .Set("description", "an extension")
                   .Set("manifest_version", 2)
                   .Set("version", "1.0.0")
                   .Set("permissions",
-                       std::move(ListBuilder().Append(kAllHostsPermission)))))
+                       ListBuilder().Append(kAllHostsPermission).Build())
+                  .Build())
           .SetLocation(Manifest::INTERNAL)
           .SetID(kId)
           .Build();

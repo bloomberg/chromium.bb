@@ -79,16 +79,19 @@ class ExtensionInstalledBubbleControllerTest : public CocoaProfileTest {
     manifest.Set("manifest_version", 2);
     switch (type) {
       case PAGE_ACTION:
-        manifest.Set("page_action", DictionaryBuilder());
+        manifest.Set("page_action", DictionaryBuilder().Build());
         break;
       case BROWSER_ACTION:
-        manifest.Set("browser_action", DictionaryBuilder());
+        manifest.Set("browser_action", DictionaryBuilder().Build());
         break;
       case APP:
-        manifest.Set("app",
-                     std::move(DictionaryBuilder().Set(
-                         "launch", std::move(DictionaryBuilder().Set(
-                                       "web_url", "http://www.example.com")))));
+        manifest.Set(
+            "app",
+            DictionaryBuilder()
+                .Set("launch", DictionaryBuilder()
+                                   .Set("web_url", "http://www.example.com")
+                                   .Build())
+                .Build());
         break;
     }
 
@@ -96,16 +99,17 @@ class ExtensionInstalledBubbleControllerTest : public CocoaProfileTest {
       DictionaryBuilder command;
       command.Set(type == PAGE_ACTION ? "_execute_page_action"
                                       : "_execute_browser_action",
-                  std::move(DictionaryBuilder().Set(
-                      "suggested_key",
-                      std::move(DictionaryBuilder()
-                                    .Set("mac", "MacCtrl+Shift+E")
-                                    .Set("default", "Ctrl+Shift+E")))));
-      manifest.Set("commands", std::move(command));
+                  DictionaryBuilder()
+                      .Set("suggested_key", DictionaryBuilder()
+                                                .Set("mac", "MacCtrl+Shift+E")
+                                                .Set("default", "Ctrl+Shift+E")
+                                                .Build())
+                      .Build());
+      manifest.Set("commands", command.Build());
     }
 
     extension_ = extensions::ExtensionBuilder()
-                     .SetManifest(std::move(manifest))
+                     .SetManifest(manifest.Build())
                      .SetID(crx_file::id_util::GenerateId("foo"))
                      .SetLocation(location)
                      .Build();

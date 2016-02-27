@@ -44,10 +44,11 @@ TEST_F(ShellNativeAppWindowAuraTest, Bounds) {
       new content::TestBrowserContext);
   scoped_refptr<Extension> extension =
       ExtensionBuilder()
-          .SetManifest(std::move(DictionaryBuilder()
-                                     .Set("name", "test extension")
-                                     .Set("version", "1")
-                                     .Set("manifest_version", 2)))
+          .SetManifest(DictionaryBuilder()
+                           .Set("name", "test extension")
+                           .Set("version", "1")
+                           .Set("manifest_version", 2)
+                           .Build())
           .Build();
 
   AppWindow* app_window = new AppWindow(

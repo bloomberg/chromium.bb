@@ -370,7 +370,8 @@ TEST_F(FileSystemApiConsentProviderTest, ForKioskApps) {
         test_util::BuildApp(ExtensionBuilder())
             .MergeManifest(DictionaryBuilder()
                                .SetBoolean("kiosk_enabled", true)
-                               .SetBoolean("kiosk_only", true))
+                               .SetBoolean("kiosk_only", true)
+                               .Build())
             .Build());
     user_manager_->AddKioskAppUser(
         AccountId::FromUserEmail(auto_launch_kiosk_app->id()));
@@ -399,7 +400,8 @@ TEST_F(FileSystemApiConsentProviderTest, ForKioskApps) {
       test_util::BuildApp(ExtensionBuilder())
           .MergeManifest(DictionaryBuilder()
                              .SetBoolean("kiosk_enabled", true)
-                             .SetBoolean("kiosk_only", true))
+                             .SetBoolean("kiosk_only", true)
+                             .Build())
           .Build());
   user_manager_->KioskAppLoggedIn(
       AccountId::FromUserEmail(manual_launch_kiosk_app->id()));

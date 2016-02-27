@@ -49,9 +49,8 @@ TEST_F(ActivityLogPolicyUtilTest, StripPrivacySensitiveWebRequest) {
           .Set(activity_log_web_request_constants::kNewUrlKey,
                "http://www.youtube.com/")
           .Set(activity_log_web_request_constants::kAddedRequestHeadersKey,
-               std::move(ListBuilder().Append("arg")))
-          .Build()
-          .release());
+               ListBuilder().Append("arg").Build())
+          .Build());
 
   ActivityLogPolicy::Util::StripPrivacySensitiveFields(action);
 

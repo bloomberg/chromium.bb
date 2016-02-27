@@ -241,8 +241,9 @@ TEST_F(MediaRouterUITest, GetExtensionNameExtensionPresent) {
       make_scoped_ptr(new extensions::ExtensionRegistry(nullptr));
   scoped_refptr<extensions::Extension> app =
       extensions::test_util::BuildApp(extensions::ExtensionBuilder())
-          .MergeManifest(
-              extensions::DictionaryBuilder().Set("name", "test app name"))
+          .MergeManifest(extensions::DictionaryBuilder()
+                             .Set("name", "test app name")
+                             .Build())
           .SetID(id)
           .Build();
 

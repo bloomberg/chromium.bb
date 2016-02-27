@@ -24,8 +24,8 @@ TEST(ComplexFeatureTest, MultipleRulesWhitelist) {
   scoped_ptr<SimpleFeature> simple_feature(new SimpleFeature);
   scoped_ptr<base::DictionaryValue> rule(
       DictionaryBuilder()
-          .Set("whitelist", std::move(ListBuilder().Append(kIdFoo)))
-          .Set("extension_types", std::move(ListBuilder().Append("extension")))
+          .Set("whitelist", ListBuilder().Append(kIdFoo).Build())
+          .Set("extension_types", ListBuilder().Append("extension").Build())
           .Build());
   simple_feature->Parse(rule.get());
   features->push_back(std::move(simple_feature));
@@ -33,9 +33,9 @@ TEST(ComplexFeatureTest, MultipleRulesWhitelist) {
   // Rule: "legacy_packaged_app", whitelist "bar".
   simple_feature.reset(new SimpleFeature);
   rule = DictionaryBuilder()
-             .Set("whitelist", std::move(ListBuilder().Append(kIdBar)))
+             .Set("whitelist", ListBuilder().Append(kIdBar).Build())
              .Set("extension_types",
-                  std::move(ListBuilder().Append("legacy_packaged_app")))
+                  ListBuilder().Append("legacy_packaged_app").Build())
              .Build();
   simple_feature->Parse(rule.get());
   features->push_back(std::move(simple_feature));
@@ -86,8 +86,8 @@ TEST(ComplexFeatureTest, Dependencies) {
   scoped_ptr<SimpleFeature> simple_feature(new SimpleFeature);
   scoped_ptr<base::DictionaryValue> rule =
       DictionaryBuilder()
-          .Set("dependencies", std::move(ListBuilder().Append(
-                                   "manifest:content_security_policy")))
+          .Set("dependencies",
+               ListBuilder().Append("manifest:content_security_policy").Build())
           .Build();
   simple_feature->Parse(rule.get());
   features->push_back(std::move(simple_feature));
@@ -96,7 +96,7 @@ TEST(ComplexFeatureTest, Dependencies) {
   simple_feature.reset(new SimpleFeature);
   rule = DictionaryBuilder()
              .Set("dependencies",
-                  std::move(ListBuilder().Append("permission:serial")))
+                  ListBuilder().Append("permission:serial").Build())
              .Build();
   simple_feature->Parse(rule.get());
   features->push_back(std::move(simple_feature));

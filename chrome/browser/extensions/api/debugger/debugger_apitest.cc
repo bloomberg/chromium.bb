@@ -67,15 +67,16 @@ void DebuggerApiTest::SetUpCommandLine(base::CommandLine* command_line) {
 
 void DebuggerApiTest::SetUpOnMainThread() {
   ExtensionApiTest::SetUpOnMainThread();
-  extension_ = ExtensionBuilder()
-                   .SetManifest(std::move(
-                       DictionaryBuilder()
-                           .Set("name", "debugger")
-                           .Set("version", "0.1")
-                           .Set("manifest_version", 2)
-                           .Set("permissions",
-                                std::move(ListBuilder().Append("debugger")))))
-                   .Build();
+  extension_ =
+      ExtensionBuilder()
+          .SetManifest(
+              DictionaryBuilder()
+                  .Set("name", "debugger")
+                  .Set("version", "0.1")
+                  .Set("manifest_version", 2)
+                  .Set("permissions", ListBuilder().Append("debugger").Build())
+                  .Build())
+          .Build();
 }
 
 testing::AssertionResult DebuggerApiTest::RunAttachFunction(

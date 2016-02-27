@@ -146,18 +146,19 @@ IN_PROC_BROWSER_TEST_F(LocationBarBrowserTest,
 
   // Create and install an extension that overrides the bookmark star.
   extensions::DictionaryBuilder chrome_ui_overrides;
-  chrome_ui_overrides.Set("bookmarks_ui",
-                          std::move(extensions::DictionaryBuilder().SetBoolean(
-                              "remove_button", true)));
+  chrome_ui_overrides.Set("bookmarks_ui", extensions::DictionaryBuilder()
+                                              .SetBoolean("remove_button", true)
+                                              .Build());
   scoped_refptr<const extensions::Extension> extension =
       extensions::ExtensionBuilder()
-          .SetManifest(std::move(
+          .SetManifest(
               extensions::DictionaryBuilder()
                   .Set("name", "overrides star")
                   .Set("manifest_version", 2)
                   .Set("version", "0.1")
                   .Set("description", "override the star")
-                  .Set("chrome_ui_overrides", std::move(chrome_ui_overrides))))
+                  .Set("chrome_ui_overrides", chrome_ui_overrides.Build())
+                  .Build())
           .Build();
   extension_service()->AddExtension(extension.get());
 

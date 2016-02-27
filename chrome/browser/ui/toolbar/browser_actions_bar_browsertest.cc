@@ -45,9 +45,9 @@ scoped_refptr<const extensions::Extension> CreateExtension(
            Set("manifest_version", 2).
            Set("version", "1.0");
   if (has_browser_action)
-    manifest.Set("browser_action", extensions::DictionaryBuilder());
+    manifest.Set("browser_action", extensions::DictionaryBuilder().Build());
   return extensions::ExtensionBuilder()
-      .SetManifest(std::move(manifest))
+      .SetManifest(manifest.Build())
       .SetID(crx_file::id_util::GenerateId(name))
       .Build();
 }

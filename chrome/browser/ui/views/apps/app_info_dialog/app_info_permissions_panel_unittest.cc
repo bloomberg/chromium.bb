@@ -44,12 +44,14 @@ class AppInfoPermissionsPanelTest : public testing::Test {
         .Set("name", "Test App Name")
         .Set("version", "2.0")
         .Set("manifest_version", 2)
-        .Set("app",
-             std::move(extensions::DictionaryBuilder().Set(
-                 "background",
-                 std::move(extensions::DictionaryBuilder().Set(
-                     "scripts", std::move(extensions::ListBuilder().Append(
-                                    "background.js")))))))
+        .Set("app", extensions::DictionaryBuilder()
+                        .Set("background",
+                             extensions::DictionaryBuilder()
+                                 .Set("scripts", extensions::ListBuilder()
+                                                     .Append("background.js")
+                                                     .Build())
+                                 .Build())
+                        .Build())
         .Build();
   }
 
@@ -77,17 +79,19 @@ TEST_F(AppInfoPermissionsPanelTest, RequiredPermissionsObtainedCorrectly) {
   scoped_refptr<const extensions::Extension> app =
       extensions::ExtensionBuilder()
           .SetManifest(ValidAppManifest())
-          .MergeManifest(extensions::DictionaryBuilder().Set(
-              "permissions",
-              std::move(
-                  extensions::ListBuilder()
-                      .Append("desktopCapture")  // A valid permission with a
-                                                 // message
-                      .Append("bad_perm")        // An invalid permission
-                      .Append("cookies")         // An valid permission with
-                                                 // no message
-                      .Append("serial"))))       // A valid permission with a
-                                                 // message
+          .MergeManifest(
+              extensions::DictionaryBuilder()
+                  .Set("permissions", extensions::ListBuilder()
+                                          // A valid permission with a message
+                                          .Append("desktopCapture")
+                                          // An invalid permission
+                                          .Append("bad_perm")
+                                          // An valid permission with no message
+                                          .Append("cookies")
+                                          // A valid permission with a message
+                                          .Append("serial")
+                                          .Build())
+                  .Build())
           .SetID(kTestExtensionId)
           .Build();
   AppInfoPermissionsPanel panel(&profile_, app.get());
@@ -105,17 +109,19 @@ TEST_F(AppInfoPermissionsPanelTest, OptionalPermissionsObtainedCorrectly) {
   scoped_refptr<const extensions::Extension> app =
       extensions::ExtensionBuilder()
           .SetManifest(ValidAppManifest())
-          .MergeManifest(extensions::DictionaryBuilder().Set(
-              "optional_permissions",
-              std::move(
-                  extensions::ListBuilder()
-                      .Append("clipboardRead")  // A valid permission with a
-                                                // message
-                      .Append("bad_perm")       // An invalid permission
-                      .Append("idle")           // A valid permission with
-                                                // no message
-                      .Append("serial"))))      // Another valid permission with
-                                                // a message
+          .MergeManifest(extensions::DictionaryBuilder()
+                             .Set("optional_permissions",
+                                  extensions::ListBuilder()
+                                      // A valid permission with a message
+                                      .Append("clipboardRead")
+                                      // An invalid permission
+                                      .Append("bad_perm")
+                                      // A valid permission with no message
+                                      .Append("idle")
+                                      // Another valid permission with a message
+                                      .Append("serial")
+                                      .Build())
+                             .Build())
           .SetID(kTestExtensionId)
           .Build();
   AppInfoPermissionsPanel panel(&profile_, app.get());
@@ -133,12 +139,18 @@ TEST_F(AppInfoPermissionsPanelTest, RetainedFilePermissionsObtainedCorrectly) {
   scoped_refptr<const extensions::Extension> app =
       extensions::ExtensionBuilder()
           .SetManifest(ValidAppManifest())
-          .MergeManifest(extensions::DictionaryBuilder().Set(
-              "permissions",
-              std::move(extensions::ListBuilder().Append(
-                  std::move(extensions::DictionaryBuilder().Set(
-                      "fileSystem", std::move(extensions::ListBuilder().Append(
-                                        "retainEntries"))))))))
+          .MergeManifest(
+              extensions::DictionaryBuilder()
+                  .Set("permissions",
+                       extensions::ListBuilder()
+                           .Append(extensions::DictionaryBuilder()
+                                       .Set("fileSystem",
+                                            extensions::ListBuilder()
+                                                .Append("retainEntries")
+                                                .Build())
+                                       .Build())
+                           .Build())
+                  .Build())
           .SetID(kTestExtensionId)
           .Build();
   AppInfoPermissionsPanel panel(&profile_, app.get());

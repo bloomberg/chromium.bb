@@ -20,14 +20,6 @@ DictionaryBuilder::DictionaryBuilder(const base::DictionaryValue& init)
 
 DictionaryBuilder::~DictionaryBuilder() {}
 
-DictionaryBuilder::DictionaryBuilder(DictionaryBuilder&& other)
-    : dict_(other.Build()) {}
-
-DictionaryBuilder& DictionaryBuilder::operator=(DictionaryBuilder&& other) {
-  dict_ = other.Build();
-  return *this;
-}
-
 std::string DictionaryBuilder::ToJSON() const {
   std::string json;
   base::JSONWriter::WriteWithOptions(
@@ -60,18 +52,6 @@ DictionaryBuilder& DictionaryBuilder::Set(const std::string& path,
 }
 
 DictionaryBuilder& DictionaryBuilder::Set(const std::string& path,
-                                          DictionaryBuilder in_value) {
-  dict_->SetWithoutPathExpansion(path, in_value.Build());
-  return *this;
-}
-
-DictionaryBuilder& DictionaryBuilder::Set(const std::string& path,
-                                          ListBuilder in_value) {
-  dict_->SetWithoutPathExpansion(path, in_value.Build());
-  return *this;
-}
-
-DictionaryBuilder& DictionaryBuilder::Set(const std::string& path,
                                           scoped_ptr<base::Value> in_value) {
   dict_->SetWithoutPathExpansion(path, std::move(in_value));
   return *this;
@@ -89,14 +69,6 @@ ListBuilder::ListBuilder() : list_(new base::ListValue) {}
 ListBuilder::ListBuilder(const base::ListValue& init) : list_(init.DeepCopy()) {
 }
 ListBuilder::~ListBuilder() {}
-
-ListBuilder::ListBuilder(ListBuilder&& other)
-    : list_(other.Build()) {}
-
-ListBuilder& ListBuilder::operator=(ListBuilder&& other) {
-  list_ = other.Build();
-  return *this;
-}
 
 ListBuilder& ListBuilder::Append(int in_value) {
   list_->Append(new base::FundamentalValue(in_value));
@@ -118,13 +90,8 @@ ListBuilder& ListBuilder::Append(const base::string16& in_value) {
   return *this;
 }
 
-ListBuilder& ListBuilder::Append(DictionaryBuilder in_value) {
-  list_->Append(in_value.Build());
-  return *this;
-}
-
-ListBuilder& ListBuilder::Append(ListBuilder in_value) {
-  list_->Append(in_value.Build());
+ListBuilder& ListBuilder::Append(scoped_ptr<base::Value> in_value) {
+  list_->Append(std::move(in_value));
   return *this;
 }
 

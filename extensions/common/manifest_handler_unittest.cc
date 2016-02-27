@@ -186,17 +186,19 @@ TEST_F(ManifestHandlerTest, DependentHandlers) {
 
   scoped_refptr<Extension> extension =
       ExtensionBuilder()
-          .SetManifest(std::move(
-              DictionaryBuilder()
-                  .Set("name", "no name")
-                  .Set("version", "0")
-                  .Set("manifest_version", 2)
-                  .Set("a", 1)
-                  .Set("b", 2)
-                  .Set("c", std::move(
-                                DictionaryBuilder().Set("d", 3).Set("e", 4).Set(
-                                    "f", 5)))
-                  .Set("g", 6)))
+          .SetManifest(DictionaryBuilder()
+                           .Set("name", "no name")
+                           .Set("version", "0")
+                           .Set("manifest_version", 2)
+                           .Set("a", 1)
+                           .Set("b", 2)
+                           .Set("c", DictionaryBuilder()
+                                         .Set("d", 3)
+                                         .Set("e", 4)
+                                         .Set("f", 5)
+                                         .Build())
+                           .Set("g", 6)
+                           .Build())
           .Build();
 
   // A, B, C.EZ, C.D, K
@@ -248,12 +250,13 @@ TEST_F(ManifestHandlerTest, Validate) {
   ScopedTestingManifestHandlerRegistry registry;
   scoped_refptr<Extension> extension =
       ExtensionBuilder()
-          .SetManifest(std::move(DictionaryBuilder()
-                                     .Set("name", "no name")
-                                     .Set("version", "0")
-                                     .Set("manifest_version", 2)
-                                     .Set("a", 1)
-                                     .Set("b", 2)))
+          .SetManifest(DictionaryBuilder()
+                           .Set("name", "no name")
+                           .Set("version", "0")
+                           .Set("manifest_version", 2)
+                           .Set("a", 1)
+                           .Set("b", 2)
+                           .Build())
           .Build();
   EXPECT_TRUE(extension.get());
 

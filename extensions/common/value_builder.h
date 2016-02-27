@@ -6,18 +6,12 @@
 // aren't specific to extensions and could move up to base/ if there's interest
 // from other sub-projects.
 //
-// The general pattern is to write:
+// The pattern is to write:
 //
 //  scoped_ptr<BuiltType> result(FooBuilder()
 //                               .Set(args)
 //                               .Set(args)
 //                               .Build());
-//
-// For methods that take other built types, you can pass the builder directly
-// to the setter without calling Build():
-//
-// DictionaryBuilder().Set("key", std::move(ListBuilder()
-//                         .Append("foo").Append("bar")) /* No .Build() */);
 //
 // The Build() method invalidates its builder, and returns ownership of the
 // built value.
@@ -52,10 +46,6 @@ class DictionaryBuilder {
   explicit DictionaryBuilder(const base::DictionaryValue& init);
   ~DictionaryBuilder();
 
-  // Move constructor and operator=.
-  DictionaryBuilder(DictionaryBuilder&& other);
-  DictionaryBuilder& operator=(DictionaryBuilder&& other);
-
   // Can only be called once, after which it's invalid to use the builder.
   scoped_ptr<base::DictionaryValue> Build() { return std::move(dict_); }
 
@@ -68,8 +58,6 @@ class DictionaryBuilder {
   DictionaryBuilder& Set(const std::string& path, const std::string& in_value);
   DictionaryBuilder& Set(const std::string& path,
                          const base::string16& in_value);
-  DictionaryBuilder& Set(const std::string& path, DictionaryBuilder in_value);
-  DictionaryBuilder& Set(const std::string& path, ListBuilder in_value);
   DictionaryBuilder& Set(const std::string& path,
                          scoped_ptr<base::Value> in_value);
 
@@ -87,10 +75,6 @@ class ListBuilder {
   explicit ListBuilder(const base::ListValue& init);
   ~ListBuilder();
 
-  // Move constructor and operator=.
-  ListBuilder(ListBuilder&& other);
-  ListBuilder& operator=(ListBuilder&& other);
-
   // Can only be called once, after which it's invalid to use the builder.
   scoped_ptr<base::ListValue> Build() { return std::move(list_); }
 
@@ -98,8 +82,7 @@ class ListBuilder {
   ListBuilder& Append(double in_value);
   ListBuilder& Append(const std::string& in_value);
   ListBuilder& Append(const base::string16& in_value);
-  ListBuilder& Append(DictionaryBuilder in_value);
-  ListBuilder& Append(ListBuilder in_value);
+  ListBuilder& Append(scoped_ptr<base::Value> in_value);
 
   // Named differently because overload resolution is too eager to
   // convert implicitly to bool.

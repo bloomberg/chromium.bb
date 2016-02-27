@@ -68,7 +68,7 @@ scoped_refptr<const Extension> GetExtensionWithHostPermission(
                        .Set("description", "an extension")
                        .Set("manifest_version", 2)
                        .Set("version", "1.0.0")
-                       .Set("permissions", std::move(permissions))
+                       .Set("permissions", permissions.Build())
                        .Build())
       .SetLocation(location)
       .SetID(id)

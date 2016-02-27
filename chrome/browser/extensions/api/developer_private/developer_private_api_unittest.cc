@@ -152,7 +152,7 @@ const Extension* DeveloperPrivateApiUnitTest::LoadSimpleExtension() {
           .Set("description", "an extension");
   scoped_refptr<const Extension> extension =
       ExtensionBuilder()
-          .SetManifest(std::move(manifest))
+          .SetManifest(manifest.Build())
           .SetLocation(Manifest::INTERNAL)
           .SetID(id)
           .Build();
@@ -516,9 +516,10 @@ TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivateDeleteExtensionErrors) {
       api::developer_private::ERROR_TYPE_MANIFEST);
   scoped_ptr<base::ListValue> args =
       ListBuilder()
-          .Append(std::move(DictionaryBuilder()
-                                .Set("extensionId", extension->id())
-                                .Set("type", type_string)))
+          .Append(DictionaryBuilder()
+                      .Set("extensionId", extension->id())
+                      .Set("type", type_string)
+                      .Build())
           .Build();
   scoped_refptr<UIThreadExtensionFunction> function =
       new api::DeveloperPrivateDeleteExtensionErrorsFunction();
@@ -532,10 +533,10 @@ TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivateDeleteExtensionErrors) {
   int error_id = error_list[0]->id();
   args =
       ListBuilder()
-          .Append(std::move(
-              DictionaryBuilder()
-                  .Set("extensionId", extension->id())
-                  .Set("errorIds", std::move(ListBuilder().Append(error_id)))))
+          .Append(DictionaryBuilder()
+                      .Set("extensionId", extension->id())
+                      .Set("errorIds", ListBuilder().Append(error_id).Build())
+                      .Build())
           .Build();
   function = new api::DeveloperPrivateDeleteExtensionErrorsFunction();
   EXPECT_TRUE(RunFunction(function, *args)) << function->GetError();
@@ -543,10 +544,11 @@ TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivateDeleteExtensionErrors) {
   EXPECT_EQ(1u, error_console->GetErrorsForExtension(extension->id()).size());
 
   // Finally remove all errors for the extension.
-  args = ListBuilder()
-             .Append(std::move(
-                 DictionaryBuilder().Set("extensionId", extension->id())))
-             .Build();
+  args =
+      ListBuilder()
+          .Append(
+              DictionaryBuilder().Set("extensionId", extension->id()).Build())
+          .Build();
   function = new api::DeveloperPrivateDeleteExtensionErrorsFunction();
   EXPECT_TRUE(RunFunction(function, *args)) << function->GetError();
   // No more errors!

@@ -82,10 +82,11 @@ class LazyBackgroundTaskQueueTest : public ExtensionsTest {
   scoped_refptr<Extension> CreateSimpleExtension() {
     scoped_refptr<Extension> extension =
         ExtensionBuilder()
-            .SetManifest(std::move(DictionaryBuilder()
-                                       .Set("name", "No background")
-                                       .Set("version", "1")
-                                       .Set("manifest_version", 2)))
+            .SetManifest(DictionaryBuilder()
+                             .Set("name", "No background")
+                             .Set("version", "1")
+                             .Set("manifest_version", 2)
+                             .Build())
             .SetID("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
             .Build();
     ExtensionRegistry::Get(browser_context())->AddEnabled(extension);
@@ -96,15 +97,16 @@ class LazyBackgroundTaskQueueTest : public ExtensionsTest {
   scoped_refptr<Extension> CreateLazyBackgroundExtension() {
     scoped_refptr<Extension> extension =
         ExtensionBuilder()
-            .SetManifest(std::move(
+            .SetManifest(
                 DictionaryBuilder()
                     .Set("name", "Lazy background")
                     .Set("version", "1")
                     .Set("manifest_version", 2)
-                    .Set("background",
-                         std::move(DictionaryBuilder()
-                                       .Set("page", "background.html")
-                                       .SetBoolean("persistent", false)))))
+                    .Set("background", DictionaryBuilder()
+                                           .Set("page", "background.html")
+                                           .SetBoolean("persistent", false)
+                                           .Build())
+                    .Build())
             .SetID("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb")
             .Build();
     ExtensionRegistry::Get(browser_context())->AddEnabled(extension);

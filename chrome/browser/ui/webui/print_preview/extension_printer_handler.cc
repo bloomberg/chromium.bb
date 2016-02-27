@@ -352,7 +352,7 @@ void ExtensionPrinterHandler::OnUsbDevicesEnumerated(
           continue;
         }
 
-        printer_list.Append(std::move(
+        printer_list.Append(
             DictionaryBuilder()
                 .Set("id", GenerateProvisionalUsbPrinterId(extension.get(),
                                                            device.get()))
@@ -363,7 +363,8 @@ void ExtensionPrinterHandler::OnUsbDevicesEnumerated(
                          device->product_string(), base::string16(), false))
                 .Set("extensionId", extension->id())
                 .Set("extensionName", extension->name())
-                .Set("provisional", true)));
+                .Set("provisional", true)
+                .Build());
       }
     }
   }

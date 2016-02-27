@@ -1277,10 +1277,10 @@ TEST_F(ToolbarActionsModelUnitTest, ComponentExtensionsAddedToEnd) {
       .Set("description", "An extension")
       .Set("manifest_version", 2)
       .Set("version", "1.0.0")
-      .Set("browser_action", extensions::DictionaryBuilder());
+      .Set("browser_action", extensions::DictionaryBuilder().Build());
   scoped_refptr<const extensions::Extension> component_extension =
       extensions::ExtensionBuilder()
-          .SetManifest(std::move(manifest))
+          .SetManifest(manifest.Build())
           .SetID(crx_file::id_util::GenerateId(kName))
           .SetLocation(extensions::Manifest::COMPONENT)
           .Build();

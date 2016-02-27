@@ -80,45 +80,45 @@ TEST_F(ManagedBookmarksPolicyHandlerTest, ApplyPolicySettings) {
 
   scoped_ptr<base::Value> expected(
       extensions::ListBuilder()
-          .Append(std::move(extensions::DictionaryBuilder()
-                                .Set("name", "Google")
-                                .Set("url", "http://google.com/")))
-          .Append(std::move(extensions::DictionaryBuilder()
-                                .Set("name", "Empty Folder")
-                                .Set("children", extensions::ListBuilder())))
-          .Append(std::move(
+          .Append(extensions::DictionaryBuilder()
+                      .Set("name", "Google")
+                      .Set("url", "http://google.com/")
+                      .Build())
+          .Append(extensions::DictionaryBuilder()
+                      .Set("name", "Empty Folder")
+                      .Set("children", extensions::ListBuilder().Build())
+                      .Build())
+          .Append(
               extensions::DictionaryBuilder()
                   .Set("name", "Big Folder")
-                  .Set(
-                      "children",
-                      std::move(
-                          extensions::ListBuilder()
-                              .Append(std::move(
-                                  extensions::DictionaryBuilder()
-                                      .Set("name", "Youtube")
-                                      .Set("url", "http://youtube.com/")))
-                              .Append(std::move(
-                                  extensions::DictionaryBuilder()
-                                      .Set("name", "Chromium")
-                                      .Set("url", "http://chromium.org/")))
-                              .Append(std::move(
-                                  extensions::DictionaryBuilder()
-                                      .Set("name", "More Stuff")
-                                      .Set(
-                                          "children",
-                                          std::move(
-                                              extensions::ListBuilder().Append(
-                                                  std::move(
-                                                      extensions::
-                                                          DictionaryBuilder()
-                                                              .Set("name",
-                                                                   "Bugs")
-                                                              .Set(
-                                                                  "url",
-                                                                  "http://"
-                                                                  "crbug."
-                                                                  "com"
-                                                                  "/")))))))))))
+                  .Set("children",
+                       extensions::ListBuilder()
+                           .Append(extensions::DictionaryBuilder()
+                                       .Set("name", "Youtube")
+                                       .Set("url", "http://youtube.com/")
+                                       .Build())
+                           .Append(extensions::DictionaryBuilder()
+                                       .Set("name", "Chromium")
+                                       .Set("url", "http://chromium.org/")
+                                       .Build())
+                           .Append(
+                               extensions::DictionaryBuilder()
+                                   .Set("name", "More Stuff")
+                                   .Set("children",
+                                        extensions::ListBuilder()
+                                            .Append(
+                                                extensions::DictionaryBuilder()
+                                                    .Set("name", "Bugs")
+                                                    .Set("url",
+                                                         "http://"
+                                                         "crbug."
+                                                         "com"
+                                                         "/")
+                                                    .Build())
+                                            .Build())
+                                   .Build())
+                           .Build())
+                  .Build())
           .Build());
   EXPECT_TRUE(pref_value->Equals(expected.get()));
 }
@@ -168,9 +168,10 @@ TEST_F(ManagedBookmarksPolicyHandlerTest, UnknownKeys) {
 
   scoped_ptr<base::Value> expected(
       extensions::ListBuilder()
-          .Append(std::move(extensions::DictionaryBuilder()
-                                .Set("name", "Google")
-                                .Set("url", "http://google.com/")))
+          .Append(extensions::DictionaryBuilder()
+                      .Set("name", "Google")
+                      .Set("url", "http://google.com/")
+                      .Build())
           .Build());
   EXPECT_TRUE(pref_value->Equals(expected.get()));
 }
@@ -211,9 +212,10 @@ TEST_F(ManagedBookmarksPolicyHandlerTest, BadBookmark) {
 
   scoped_ptr<base::Value> expected(
       extensions::ListBuilder()
-          .Append(std::move(extensions::DictionaryBuilder()
-                                .Set("name", "Google")
-                                .Set("url", "http://google.com/")))
+          .Append(extensions::DictionaryBuilder()
+                      .Set("name", "Google")
+                      .Set("url", "http://google.com/")
+                      .Build())
           .Build());
   EXPECT_TRUE(pref_value->Equals(expected.get()));
 }

@@ -14,39 +14,43 @@ namespace extensions {
 namespace test_util {
 
 ExtensionBuilder BuildExtension(ExtensionBuilder builder) {
-  builder.SetManifest(std::move(DictionaryBuilder()
-                                    .Set("name", "Test extension")
-                                    .Set("version", "1.0")
-                                    .Set("manifest_version", 2)));
+  builder.SetManifest(DictionaryBuilder()
+                          .Set("name", "Test extension")
+                          .Set("version", "1.0")
+                          .Set("manifest_version", 2)
+                          .Build());
   return builder;
 }
 
 ExtensionBuilder BuildApp(ExtensionBuilder builder) {
-  builder.SetManifest(std::move(
+  builder.SetManifest(
       DictionaryBuilder()
           .Set("name", "Test extension")
           .Set("version", "1.0")
           .Set("manifest_version", 2)
-          .Set("app",
-               std::move(extensions::DictionaryBuilder().Set(
-                   "background",
-                   std::move(extensions::DictionaryBuilder().Set(
-                       "scripts", std::move(extensions::ListBuilder().Append(
-                                      "background.js")))))))));
+          .Set("app", extensions::DictionaryBuilder()
+                          .Set("background",
+                               extensions::DictionaryBuilder()
+                                   .Set("scripts", extensions::ListBuilder()
+                                                       .Append("background.js")
+                                                       .Build())
+                                   .Build())
+                          .Build())
+          .Build());
   return builder;
 }
 
 scoped_refptr<Extension> CreateEmptyExtension() {
   return ExtensionBuilder()
-      .SetManifest(std::move(
-          DictionaryBuilder().Set("name", "Test").Set("version", "1.0")))
+      .SetManifest(
+          DictionaryBuilder().Set("name", "Test").Set("version", "1.0").Build())
       .Build();
 }
 
 scoped_refptr<Extension> CreateEmptyExtension(const std::string& id) {
   return ExtensionBuilder()
-      .SetManifest(std::move(
-          DictionaryBuilder().Set("name", "test").Set("version", "0.1")))
+      .SetManifest(
+          DictionaryBuilder().Set("name", "test").Set("version", "0.1").Build())
       .SetID(id)
       .Build();
 }

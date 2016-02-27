@@ -50,29 +50,31 @@ class TestExtensionsMetricsProvider : public ExtensionsMetricsProvider {
         new extensions::ExtensionSet());
     scoped_refptr<const extensions::Extension> extension;
     extension = extensions::ExtensionBuilder()
-                    .SetManifest(std::move(extensions::DictionaryBuilder()
-                                               .Set("name", "Test extension")
-                                               .Set("version", "1.0.0")
-                                               .Set("manifest_version", 2)))
+                    .SetManifest(extensions::DictionaryBuilder()
+                                     .Set("name", "Test extension")
+                                     .Set("version", "1.0.0")
+                                     .Set("manifest_version", 2)
+                                     .Build())
                     .SetID("ahfgeienlihckogmohjhadlkjgocpleb")
                     .Build();
     extensions->Insert(extension);
     extension = extensions::ExtensionBuilder()
-                    .SetManifest(std::move(extensions::DictionaryBuilder()
-                                               .Set("name", "Test extension 2")
-                                               .Set("version", "1.0.0")
-                                               .Set("manifest_version", 2)))
+                    .SetManifest(extensions::DictionaryBuilder()
+                                     .Set("name", "Test extension 2")
+                                     .Set("version", "1.0.0")
+                                     .Set("manifest_version", 2)
+                                     .Build())
                     .SetID("pknkgggnfecklokoggaggchhaebkajji")
                     .Build();
     extensions->Insert(extension);
-    extension =
-        extensions::ExtensionBuilder()
-            .SetManifest(std::move(extensions::DictionaryBuilder()
-                                       .Set("name", "Colliding Extension")
-                                       .Set("version", "1.0.0")
-                                       .Set("manifest_version", 2)))
-            .SetID("mdhofdjgenpkhlmddfaegdjddcecipmo")
-            .Build();
+    extension = extensions::ExtensionBuilder()
+                    .SetManifest(extensions::DictionaryBuilder()
+                                     .Set("name", "Colliding Extension")
+                                     .Set("version", "1.0.0")
+                                     .Set("manifest_version", 2)
+                                     .Build())
+                    .SetID("mdhofdjgenpkhlmddfaegdjddcecipmo")
+                    .Build();
     extensions->Insert(extension);
     return extensions;
   }

@@ -46,10 +46,11 @@ TEST(BaseFeatureProviderTest, ManifestFeatureAvailability) {
 
   scoped_refptr<const Extension> extension =
       ExtensionBuilder()
-          .SetManifest(std::move(DictionaryBuilder()
-                                     .Set("name", "test extension")
-                                     .Set("version", "1")
-                                     .Set("description", "hello there")))
+          .SetManifest(DictionaryBuilder()
+                           .Set("name", "test extension")
+                           .Set("version", "1")
+                           .Set("description", "hello there")
+                           .Build())
           .Build();
   ASSERT_TRUE(extension.get());
 
@@ -100,17 +101,21 @@ TEST(BaseFeatureProviderTest, PermissionFeatureAvailability) {
 
   scoped_refptr<const Extension> app =
       ExtensionBuilder()
-          .SetManifest(std::move(
+          .SetManifest(
               DictionaryBuilder()
                   .Set("name", "test app")
                   .Set("version", "1")
-                  .Set("app", std::move(DictionaryBuilder().Set(
-                                  "background",
-                                  std::move(DictionaryBuilder().Set(
-                                      "scripts", std::move(ListBuilder().Append(
-                                                     "background.js")))))))
-                  .Set("permissions",
-                       std::move(ListBuilder().Append("power")))))
+                  .Set("app",
+                       DictionaryBuilder()
+                           .Set("background",
+                                DictionaryBuilder()
+                                    .Set("scripts", ListBuilder()
+                                                        .Append("background.js")
+                                                        .Build())
+                                    .Build())
+                           .Build())
+                  .Set("permissions", ListBuilder().Append("power").Build())
+                  .Build())
           .Build();
   ASSERT_TRUE(app.get());
   ASSERT_TRUE(app->is_platform_app());

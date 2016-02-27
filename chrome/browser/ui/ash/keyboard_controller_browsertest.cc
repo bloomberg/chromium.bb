@@ -158,10 +158,11 @@ IN_PROC_BROWSER_TEST_F(VirtualKeyboardAppWindowTest,
                        DisableOverscrollForImeWindow) {
   scoped_refptr<extensions::Extension> extension =
       extensions::ExtensionBuilder()
-          .SetManifest(std::move(extensions::DictionaryBuilder()
-                                     .Set("name", "test extension")
-                                     .Set("version", "1")
-                                     .Set("manifest_version", 2)))
+          .SetManifest(extensions::DictionaryBuilder()
+                           .Set("name", "test extension")
+                           .Set("version", "1")
+                           .Set("manifest_version", 2)
+                           .Build())
           .Build();
 
   extensions::AppWindow::CreateParams non_ime_params;

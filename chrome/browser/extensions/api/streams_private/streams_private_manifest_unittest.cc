@@ -31,13 +31,13 @@ TEST_F(StreamsPrivateManifestTest, ValidMimeTypesHandlerMIMETypes) {
   scoped_refptr<const Extension> extension =
       ExtensionBuilder()
           .SetID(extension_misc::kQuickOfficeExtensionId)
-          .SetManifest(std::move(
+          .SetManifest(
               DictionaryBuilder()
                   .Set("name", "MIME type handler test")
                   .Set("version", "1.0.0")
                   .Set("manifest_version", 2)
-                  .Set("mime_types",
-                       std::move(ListBuilder().Append("text/plain")))))
+                  .Set("mime_types", ListBuilder().Append("text/plain").Build())
+                  .Build())
           .Build();
 
   ASSERT_TRUE(extension.get());
@@ -52,13 +52,13 @@ TEST_F(StreamsPrivateManifestTest,
        MimeTypesHandlerMIMETypesNotWhitelisted) {
   scoped_refptr<const Extension> extension =
       ExtensionBuilder()
-          .SetManifest(std::move(
+          .SetManifest(
               DictionaryBuilder()
                   .Set("name", "MIME types test")
                   .Set("version", "1.0.0")
                   .Set("manifest_version", 2)
-                  .Set("mime_types",
-                       std::move(ListBuilder().Append("text/plain")))))
+                  .Set("mime_types", ListBuilder().Append("text/plain").Build())
+                  .Build())
           .Build();
 
   ASSERT_TRUE(extension.get());

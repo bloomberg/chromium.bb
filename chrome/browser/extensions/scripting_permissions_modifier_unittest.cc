@@ -42,20 +42,20 @@ scoped_refptr<const Extension> CreateExtensionWithPermissions(
   }
 
   DictionaryBuilder script;
-  script.Set("matches", std::move(scriptable_host_list))
-      .Set("js", std::move(ListBuilder().Append("foo.js")));
+  script.Set("matches", scriptable_host_list.Build())
+      .Set("js", ListBuilder().Append("foo.js").Build());
 
   return ExtensionBuilder()
       .SetLocation(location)
-      .SetManifest(
-          std::move(DictionaryBuilder()
-                        .Set("name", name)
-                        .Set("description", "foo")
-                        .Set("manifest_version", 2)
-                        .Set("version", "0.1.2.3")
-                        .Set("content_scripts",
-                             std::move(ListBuilder().Append(std::move(script))))
-                        .Set("permissions", std::move(explicit_host_list))))
+      .SetManifest(DictionaryBuilder()
+                       .Set("name", name)
+                       .Set("description", "foo")
+                       .Set("manifest_version", 2)
+                       .Set("version", "0.1.2.3")
+                       .Set("content_scripts",
+                            ListBuilder().Append(script.Build()).Build())
+                       .Set("permissions", explicit_host_list.Build())
+                       .Build())
       .SetID(crx_file::id_util::GenerateId(name))
       .Build();
 }

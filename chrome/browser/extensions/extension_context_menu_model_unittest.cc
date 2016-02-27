@@ -160,13 +160,12 @@ const Extension* ExtensionContextMenuModelTest::AddExtensionWithHostPermission(
   manifest.Set("name", name)
       .Set("version", "1")
       .Set("manifest_version", 2)
-      .Set(action_key, DictionaryBuilder());
+      .Set(action_key, DictionaryBuilder().Build());
   if (!host_permission.empty())
-    manifest.Set("permissions",
-                 std::move(ListBuilder().Append(host_permission)));
+    manifest.Set("permissions", ListBuilder().Append(host_permission).Build());
   scoped_refptr<const Extension> extension =
       ExtensionBuilder()
-          .SetManifest(std::move(manifest))
+          .SetManifest(manifest.Build())
           .SetID(crx_file::id_util::GenerateId(name))
           .SetLocation(location)
           .Build();
@@ -234,7 +233,7 @@ TEST_F(ExtensionContextMenuModelTest, ComponentExtensionContextMenu) {
           .Set("name", name)
           .Set("version", "1")
           .Set("manifest_version", 2)
-          .Set("browser_action", DictionaryBuilder())
+          .Set("browser_action", DictionaryBuilder().Build())
           .Build();
 
   {

@@ -24,8 +24,8 @@ const char kNewId[] = "nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn";
 
 scoped_refptr<Extension> CreateExtension(const std::string& id) {
   return ExtensionBuilder()
-      .SetManifest(std::move(
-          DictionaryBuilder().Set("name", "test").Set("version", "0.1")))
+      .SetManifest(
+          DictionaryBuilder().Set("name", "test").Set("version", "0.1").Build())
       .SetID(id)
       .Build();
 }

@@ -169,7 +169,7 @@ TEST(DeclarativeContentActionTest, SetIcon) {
   scoped_ptr<base::DictionaryValue> dict =
       DictionaryBuilder()
           .Set("instanceType", "declarativeContent.SetIcon")
-          .Set("imageData", std::move(DictionaryBuilder().Set("19", data64)))
+          .Set("imageData", DictionaryBuilder().Set("19", data64).Build())
           .Build();
 
   const Extension* extension = env.MakeExtension(

@@ -61,8 +61,9 @@ ExtensionBuilder& ExtensionBuilder::SetManifest(
   return *this;
 }
 
-ExtensionBuilder& ExtensionBuilder::MergeManifest(DictionaryBuilder& builder) {
-  manifest_->MergeDictionary(builder.Build().get());
+ExtensionBuilder& ExtensionBuilder::MergeManifest(
+    scoped_ptr<base::DictionaryValue> manifest) {
+  manifest_->MergeDictionary(manifest.get());
   return *this;
 }
 

@@ -141,19 +141,21 @@ IN_PROC_BROWSER_TEST_F(WebstoreStartupInstallerTest, InstallFromHostedApp) {
   // app to run on a declared URL, but we don't know the port ahead of time.
   scoped_refptr<const Extension> hosted_app =
       ExtensionBuilder()
-          .SetManifest(std::move(
+          .SetManifest(
               DictionaryBuilder()
                   .Set("name", "hosted app")
                   .Set("version", "1")
-                  .Set("app",
-                       std::move(
-                           DictionaryBuilder()
-                               .Set("urls", std::move(ListBuilder().Append(
-                                                kInstallUrl.spec())))
-                               .Set("launch",
-                                    std::move(DictionaryBuilder().Set(
-                                        "web_url", kInstallUrl.spec())))))
-                  .Set("manifest_version", 2)))
+                  .Set(
+                      "app",
+                      DictionaryBuilder()
+                          .Set("urls",
+                               ListBuilder().Append(kInstallUrl.spec()).Build())
+                          .Set("launch", DictionaryBuilder()
+                                             .Set("web_url", kInstallUrl.spec())
+                                             .Build())
+                          .Build())
+                  .Set("manifest_version", 2)
+                  .Build())
           .Build();
   ASSERT_TRUE(hosted_app.get());
 

@@ -150,10 +150,10 @@ scoped_refptr<const Extension> CreateActionExtension(
   }
 
   if (action_key)
-    manifest.Set(action_key, DictionaryBuilder());
+    manifest.Set(action_key, DictionaryBuilder().Build());
 
   return ExtensionBuilder()
-      .SetManifest(std::move(manifest))
+      .SetManifest(manifest.Build())
       .SetID(crx_file::id_util::GenerateId(name))
       .SetLocation(location)
       .Build();

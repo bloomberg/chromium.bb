@@ -107,12 +107,13 @@ TEST_F(TabsApiUnitTest, QueryWithoutTabsPermission) {
   // An extension with "tabs" permission however will see the third tab.
   scoped_refptr<const Extension> extension_with_permission =
       ExtensionBuilder()
-          .SetManifest(std::move(
+          .SetManifest(
               DictionaryBuilder()
                   .Set("name", "Extension with tabs permission")
                   .Set("version", "1.0")
                   .Set("manifest_version", 2)
-                  .Set("permissions", std::move(ListBuilder().Append("tabs")))))
+                  .Set("permissions", ListBuilder().Append("tabs").Build())
+                  .Build())
           .Build();
   scoped_ptr<base::ListValue> tabs_list_with_permission(RunTabsQueryFunction(
       browser(), extension_with_permission.get(), kTitleAndURLQueryInfo));
@@ -155,12 +156,13 @@ TEST_F(TabsApiUnitTest, QueryWithHostPermission) {
   scoped_refptr<const Extension> extension_with_permission =
       ExtensionBuilder()
           .SetManifest(
-              std::move(DictionaryBuilder()
-                            .Set("name", "Extension with tabs permission")
-                            .Set("version", "1.0")
-                            .Set("manifest_version", 2)
-                            .Set("permissions", std::move(ListBuilder().Append(
-                                                    "*://www.google.com/*")))))
+              DictionaryBuilder()
+                  .Set("name", "Extension with tabs permission")
+                  .Set("version", "1.0")
+                  .Set("manifest_version", 2)
+                  .Set("permissions",
+                       ListBuilder().Append("*://www.google.com/*").Build())
+                  .Build())
           .Build();
 
   {

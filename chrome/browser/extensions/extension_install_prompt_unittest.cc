@@ -103,11 +103,12 @@ TEST_F(ExtensionInstallPromptUnitTest, PromptShowsPermissionWarnings) {
                         URLPatternSet(), URLPatternSet()));
   scoped_refptr<const Extension> extension =
       ExtensionBuilder()
-          .SetManifest(std::move(DictionaryBuilder()
-                                     .Set("name", "foo")
-                                     .Set("version", "1.0")
-                                     .Set("manifest_version", 2)
-                                     .Set("description", "Random Ext")))
+          .SetManifest(DictionaryBuilder()
+                           .Set("name", "foo")
+                           .Set("version", "1.0")
+                           .Set("manifest_version", 2)
+                           .Set("description", "Random Ext")
+                           .Build())
           .Build();
 
   content::TestWebContentsFactory factory;
@@ -132,16 +133,17 @@ TEST_F(ExtensionInstallPromptUnitTest, PromptShowsWithheldPermissions) {
   scoped_refptr<const Extension> extension =
       ExtensionBuilder()
           .SetManifest(
-              std::move(DictionaryBuilder()
-                            .Set("name", "foo")
-                            .Set("version", "1.0")
-                            .Set("manifest_version", 2)
-                            .Set("description", "Random Ext")
-                            .Set("permissions",
-                                 std::move(ListBuilder()
-                                               .Append("http://*/*")
-                                               .Append("http://www.google.com/")
-                                               .Append("tabs")))))
+              DictionaryBuilder()
+                  .Set("name", "foo")
+                  .Set("version", "1.0")
+                  .Set("manifest_version", 2)
+                  .Set("description", "Random Ext")
+                  .Set("permissions", ListBuilder()
+                                          .Append("http://*/*")
+                                          .Append("http://www.google.com/")
+                                          .Append("tabs")
+                                          .Build())
+                  .Build())
           .Build();
 
   content::TestWebContentsFactory factory;
@@ -162,16 +164,16 @@ TEST_F(ExtensionInstallPromptUnitTest,
        DelegatedPromptShowsOptionalPermissions) {
   scoped_refptr<const Extension> extension =
       ExtensionBuilder()
-          .SetManifest(std::move(
-              DictionaryBuilder()
-                  .Set("name", "foo")
-                  .Set("version", "1.0")
-                  .Set("manifest_version", 2)
-                  .Set("description", "Random Ext")
-                  .Set("permissions",
-                       std::move(ListBuilder().Append("clipboardRead")))
-                  .Set("optional_permissions",
-                       std::move(ListBuilder().Append("tabs")))))
+          .SetManifest(DictionaryBuilder()
+                           .Set("name", "foo")
+                           .Set("version", "1.0")
+                           .Set("manifest_version", 2)
+                           .Set("description", "Random Ext")
+                           .Set("permissions",
+                                ListBuilder().Append("clipboardRead").Build())
+                           .Set("optional_permissions",
+                                ListBuilder().Append("tabs").Build())
+                           .Build())
           .Build();
 
   content::TestWebContentsFactory factory;

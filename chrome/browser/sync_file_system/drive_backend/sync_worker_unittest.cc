@@ -205,10 +205,11 @@ TEST_F(SyncWorkerTest, UpdateRegisteredApps) {
   for (int i = 0; i < 3; i++) {
     scoped_refptr<const extensions::Extension> extension =
         extensions::ExtensionBuilder()
-            .SetManifest(std::move(extensions::DictionaryBuilder()
-                                       .Set("name", "foo")
-                                       .Set("version", "1.0")
-                                       .Set("manifest_version", 2)))
+            .SetManifest(extensions::DictionaryBuilder()
+                             .Set("name", "foo")
+                             .Set("version", "1.0")
+                             .Set("manifest_version", 2)
+                             .Build())
             .SetID(base::StringPrintf("app_%d", i))
             .Build();
     extension_service()->AddExtension(extension.get());

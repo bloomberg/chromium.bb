@@ -457,10 +457,11 @@ TEST_F(FullStreamUIPolicyTest, Construct) {
   policy->Init();
   scoped_refptr<const Extension> extension =
       ExtensionBuilder()
-          .SetManifest(std::move(DictionaryBuilder()
-                                     .Set("name", "Test extension")
-                                     .Set("version", "1.0.0")
-                                     .Set("manifest_version", 2)))
+          .SetManifest(DictionaryBuilder()
+                           .Set("name", "Test extension")
+                           .Set("version", "1.0.0")
+                           .Set("manifest_version", 2)
+                           .Build())
           .Build();
   extension_service_->AddExtension(extension.get());
   scoped_ptr<base::ListValue> args(new base::ListValue());
@@ -478,10 +479,11 @@ TEST_F(FullStreamUIPolicyTest, LogAndFetchActions) {
   policy->Init();
   scoped_refptr<const Extension> extension =
       ExtensionBuilder()
-          .SetManifest(std::move(DictionaryBuilder()
-                                     .Set("name", "Test extension")
-                                     .Set("version", "1.0.0")
-                                     .Set("manifest_version", 2)))
+          .SetManifest(DictionaryBuilder()
+                           .Set("name", "Test extension")
+                           .Set("version", "1.0.0")
+                           .Set("manifest_version", 2)
+                           .Build())
           .Build();
   extension_service_->AddExtension(extension.get());
   GURL gurl("http://www.google.com");
@@ -516,10 +518,11 @@ TEST_F(FullStreamUIPolicyTest, LogAndFetchFilteredActions) {
   policy->Init();
   scoped_refptr<const Extension> extension =
       ExtensionBuilder()
-          .SetManifest(std::move(DictionaryBuilder()
-                                     .Set("name", "Test extension")
-                                     .Set("version", "1.0.0")
-                                     .Set("manifest_version", 2)))
+          .SetManifest(DictionaryBuilder()
+                           .Set("name", "Test extension")
+                           .Set("version", "1.0.0")
+                           .Set("manifest_version", 2)
+                           .Build())
           .Build();
   extension_service_->AddExtension(extension.get());
   GURL gurl("http://www.google.com");
@@ -614,10 +617,11 @@ TEST_F(FullStreamUIPolicyTest, LogWithArguments) {
   policy->Init();
   scoped_refptr<const Extension> extension =
       ExtensionBuilder()
-          .SetManifest(std::move(DictionaryBuilder()
-                                     .Set("name", "Test extension")
-                                     .Set("version", "1.0.0")
-                                     .Set("manifest_version", 2)))
+          .SetManifest(DictionaryBuilder()
+                           .Set("name", "Test extension")
+                           .Set("version", "1.0.0")
+                           .Set("manifest_version", 2)
+                           .Build())
           .Build();
   extension_service_->AddExtension(extension.get());
 
@@ -955,10 +959,11 @@ TEST_F(FullStreamUIPolicyTest, DeleteDatabase) {
   policy->Init();
   scoped_refptr<const Extension> extension =
       ExtensionBuilder()
-          .SetManifest(std::move(DictionaryBuilder()
-                                     .Set("name", "Test extension")
-                                     .Set("version", "1.0.0")
-                                     .Set("manifest_version", 2)))
+          .SetManifest(DictionaryBuilder()
+                           .Set("name", "Test extension")
+                           .Set("version", "1.0.0")
+                           .Set("manifest_version", 2)
+                           .Build())
           .Build();
   extension_service_->AddExtension(extension.get());
   GURL gurl("http://www.google.com");

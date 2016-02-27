@@ -53,29 +53,16 @@ class PermissionMessagesUnittest : public testing::Test {
   ~PermissionMessagesUnittest() override {}
 
  protected:
-  void CreateAndInstallAppWithPermissions(ListBuilder required_permissions,
-                                          ListBuilder optional_permissions) {
-    app_ = test_util::BuildApp(ExtensionBuilder())
-               .MergeManifest(
-                   DictionaryBuilder()
-                       .Set("permissions", std::move(required_permissions))
-                       .Set("optional_permissions",
-                            std::move(optional_permissions)))
-               .SetID(crx_file::id_util::GenerateId("app"))
-               .SetLocation(Manifest::INTERNAL)
-               .Build();
-    env_.GetExtensionService()->AddExtension(app_.get());
-  }
-
   void CreateAndInstallExtensionWithPermissions(
-      ListBuilder required_permissions,
-      ListBuilder optional_permissions) {
+      scoped_ptr<base::ListValue> required_permissions,
+      scoped_ptr<base::ListValue> optional_permissions) {
     app_ = test_util::BuildExtension(ExtensionBuilder())
                .MergeManifest(
                    DictionaryBuilder()
                        .Set("permissions", std::move(required_permissions))
                        .Set("optional_permissions",
-                            std::move(optional_permissions)))
+                            std::move(optional_permissions))
+                       .Build())
                .SetID(crx_file::id_util::GenerateId("extension"))
                .SetLocation(Manifest::INTERNAL)
                .Build();
@@ -136,7 +123,8 @@ class PermissionMessagesUnittest : public testing::Test {
 // other (the 'history' permission has superset permissions).
 TEST_F(PermissionMessagesUnittest, HistoryHidesTabsMessage) {
   CreateAndInstallExtensionWithPermissions(
-      std::move(ListBuilder().Append("tabs").Append("history")), ListBuilder());
+      ListBuilder().Append("tabs").Append("history").Build(),
+      ListBuilder().Build());
 
   ASSERT_EQ(1U, required_permissions().size());
   EXPECT_EQ(
@@ -150,8 +138,8 @@ TEST_F(PermissionMessagesUnittest, HistoryHidesTabsMessage) {
 // permission, only the new coalesced message is displayed.
 TEST_F(PermissionMessagesUnittest, MixedPermissionMessagesCoalesceOnceGranted) {
   CreateAndInstallExtensionWithPermissions(
-      std::move(ListBuilder().Append("tabs")),
-      std::move(ListBuilder().Append("history")));
+      ListBuilder().Append("tabs").Build(),
+      ListBuilder().Append("history").Build());
 
   ASSERT_EQ(1U, required_permissions().size());
   EXPECT_EQ(
@@ -189,8 +177,8 @@ TEST_F(PermissionMessagesUnittest, MixedPermissionMessagesCoalesceOnceGranted) {
 TEST_F(PermissionMessagesUnittest,
        AntiTest_PromptCanRequestSubsetOfAlreadyGrantedPermissions) {
   CreateAndInstallExtensionWithPermissions(
-      std::move(ListBuilder().Append("history")),
-      std::move(ListBuilder().Append("tabs")));
+      ListBuilder().Append("history").Build(),
+      ListBuilder().Append("tabs").Build());
 
   ASSERT_EQ(1U, required_permissions().size());
   EXPECT_EQ(
@@ -230,8 +218,8 @@ TEST_F(PermissionMessagesUnittest,
 TEST_F(PermissionMessagesUnittest,
        AntiTest_PromptCanBeEmptyButCausesChangeInPermissions) {
   CreateAndInstallExtensionWithPermissions(
-      std::move(ListBuilder().Append("tabs")),
-      std::move(ListBuilder().Append("sessions")));
+      ListBuilder().Append("tabs").Build(),
+      ListBuilder().Append("sessions").Build());
 
   ASSERT_EQ(1U, required_permissions().size());
   EXPECT_EQ(

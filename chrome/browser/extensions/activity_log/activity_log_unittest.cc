@@ -236,10 +236,11 @@ TEST_F(ActivityLogTest, LogAndFetchActions) {
 TEST_F(ActivityLogTest, LogPrerender) {
   scoped_refptr<const Extension> extension =
       ExtensionBuilder()
-          .SetManifest(std::move(DictionaryBuilder()
-                                     .Set("name", "Test extension")
-                                     .Set("version", "1.0.0")
-                                     .Set("manifest_version", 2)))
+          .SetManifest(DictionaryBuilder()
+                           .Set("name", "Test extension")
+                           .Set("version", "1.0.0")
+                           .Set("manifest_version", 2)
+                           .Build())
           .Build();
   extension_service_->AddExtension(extension.get());
   ActivityLog* activity_log = ActivityLog::GetInstance(profile());
@@ -330,10 +331,11 @@ TEST_F(ActivityLogTest, ArgUrlExtraction) {
                       now - base::TimeDelta::FromSeconds(3),
                       Action::ACTION_API_CALL,
                       "windows.create");
-  action->set_args(ListBuilder()
-                       .Append(std::move(DictionaryBuilder().Set(
-                           "url", "http://www.google.co.uk")))
-                       .Build());
+  action->set_args(
+      ListBuilder()
+          .Append(
+              DictionaryBuilder().Set("url", "http://www.google.co.uk").Build())
+          .Build());
   activity_log->LogAction(action);
 
   activity_log->GetFilteredActions(
@@ -349,10 +351,11 @@ TEST_F(ActivityLogTest, ArgUrlExtraction) {
 TEST_F(ActivityLogTest, UninstalledExtension) {
   scoped_refptr<const Extension> extension =
       ExtensionBuilder()
-          .SetManifest(std::move(DictionaryBuilder()
-                                     .Set("name", "Test extension")
-                                     .Set("version", "1.0.0")
-                                     .Set("manifest_version", 2)))
+          .SetManifest(DictionaryBuilder()
+                           .Set("name", "Test extension")
+                           .Set("version", "1.0.0")
+                           .Set("manifest_version", 2)
+                           .Build())
           .Build();
 
   ActivityLog* activity_log = ActivityLog::GetInstance(profile());
