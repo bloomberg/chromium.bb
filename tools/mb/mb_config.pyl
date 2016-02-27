@@ -51,6 +51,7 @@
     'gn_linux_upload': ['gn_linux_upload', 'official', 'goma'],
     'gn_official': ['gn', 'official'],
     'gn_official_goma': ['gn', 'official', 'goma'],
+    'gn_official_goma_lto': ['gn', 'official', 'goma', 'lto'],
     'gn_official_goma_minimal_symbols_android': ['gn', 'official', 'goma', 'minimal_symbols', 'android'],
     'gn_official_goma_minimal_symbols_android_arm64': ['gn', 'official', 'goma', 'minimal_symbols', 'android', 'arm64'],
     'gn_release_bot': ['gn', 'release_bot'],
@@ -333,6 +334,11 @@
     'lsan': {
       'gn_args': 'is_lsan=true',
       'gyp_defines': 'lsan=1',
+    },
+
+    'lto': {
+      'gn_args': 'is_lto=true',
+      'gyp_defines': 'use_lto=1',
     },
 
     'mac_strip': {
@@ -635,6 +641,7 @@
       'CFI Linux': 'gn_cfi_release_bot',
       'CFI Linux ToT': 'gn_cfi_release_bot',
       'CFI Linux CF': 'gn_cfi_diag_release_bot',
+      'LTO Linux Perf': 'gn_official_goma_lto',
       'CrWinClang64(dbg)': 'win_clang_debug_bot',
       'Win LKGR (DrM)': 'gn_release_drmemory_drfuzz_x86',
       'Win LKGR (DrM 64)': 'gn_release_drmemory_drfuzz',
