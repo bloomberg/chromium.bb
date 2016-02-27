@@ -188,7 +188,6 @@ void RealtimeAnalyser::doFFTAnalysis()
 void RealtimeAnalyser::convertFloatToDb(DOMFloat32Array* destinationArray)
 {
     // Convert from linear magnitude to floating-point decibels.
-    const double minDecibels = m_minDecibels;
     unsigned sourceLength = magnitudeBuffer().size();
     size_t len = std::min(sourceLength, destinationArray->length());
     if (len > 0) {
@@ -197,7 +196,7 @@ void RealtimeAnalyser::convertFloatToDb(DOMFloat32Array* destinationArray)
 
         for (unsigned i = 0; i < len; ++i) {
             float linearValue = source[i];
-            double dbMag = !linearValue ? minDecibels : AudioUtilities::linearToDecibels(linearValue);
+            double dbMag = AudioUtilities::linearToDecibels(linearValue);
             destination[i] = float(dbMag);
         }
     }
@@ -234,7 +233,7 @@ void RealtimeAnalyser::convertToByteData(DOMUint8Array* destinationArray)
 
         for (unsigned i = 0; i < len; ++i) {
             float linearValue = source[i];
-            double dbMag = !linearValue ? minDecibels : AudioUtilities::linearToDecibels(linearValue);
+            double dbMag = AudioUtilities::linearToDecibels(linearValue);
 
             // The range m_minDecibels to m_maxDecibels will be scaled to byte values from 0 to UCHAR_MAX.
             double scaledValue = UCHAR_MAX * (dbMag - minDecibels) * rangeScaleFactor;
