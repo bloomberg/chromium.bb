@@ -85,7 +85,7 @@ void BufferQueue::UpdateBufferDamage(const gfx::Rect& damage) {
 
 void BufferQueue::SwapBuffers(const gfx::Rect& damage) {
   if (current_surface_) {
-    if (!damage.IsEmpty() && damage != gfx::Rect(size_)) {
+    if (damage != gfx::Rect(size_)) {
       // Copy damage from the most recently swapped buffer. In the event that
       // the buffer was destroyed and failed to recreate, pick from the most
       // recently available buffer.
