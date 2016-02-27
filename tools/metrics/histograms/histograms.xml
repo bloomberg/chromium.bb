@@ -32224,6 +32224,24 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Size of the saved copy of an offline page.</summary>
 </histogram>
 
+<histogram name="OfflinePages.RedirectToOfflineCount" units="count">
+  <owner>jianli@chromium.org</owner>
+  <summary>
+    Number of times an offline copy was loaded instead when the user is trying
+    to load the online version of a saved page and there is no network
+    connection.
+  </summary>
+</histogram>
+
+<histogram name="OfflinePages.RedirectToOnlineCount" units="count">
+  <owner>jianli@chromium.org</owner>
+  <summary>
+    Number of times an online version was loaded instead when the user is trying
+    to load the offline copy of a saved page and there is network connection.
+    connection.
+  </summary>
+</histogram>
+
 <histogram name="OfflinePages.SavedPageCount" units="pages">
   <owner>jianli@chromium.org</owner>
   <summary>
