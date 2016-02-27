@@ -11,7 +11,6 @@ glue_library_deps = [
   "//content/public/android:content_java",
   "//content/public/android:content_java_resources",
   "//components/web_contents_delegate_android:web_contents_delegate_android_java_resources",
-  "//net/android:net_java",
   "//ui/android:ui_java",
   "//ui/android:ui_java_resources",
 ]

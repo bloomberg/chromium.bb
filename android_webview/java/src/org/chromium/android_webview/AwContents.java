@@ -69,7 +69,6 @@ import org.chromium.content_public.browser.navigation_controller.LoadURLType;
 import org.chromium.content_public.browser.navigation_controller.UserAgentOverrideOption;
 import org.chromium.content_public.common.Referrer;
 import org.chromium.net.NetError;
-import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.ui.base.ActivityWindowAndroid;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.base.WindowAndroid;
@@ -2537,13 +2536,7 @@ public class AwContents implements SmartClipProvider,
 
     public void setNetworkAvailable(boolean networkUp) {
         if (TRACE) Log.d(TAG, "setNetworkAvailable=%s", networkUp);
-        if (!isDestroyed(WARN)) {
-            // For backward compatibility when an app uses this API disable the
-            // Network Information API to prevent inconsistencies,
-            // see crbug.com/520088.
-            NetworkChangeNotifier.setAutoDetectConnectivityState(false);
-            nativeSetJsOnlineProperty(mNativeAwContents, networkUp);
-        }
+        if (!isDestroyed(WARN)) nativeSetJsOnlineProperty(mNativeAwContents, networkUp);
     }
 
     /**
