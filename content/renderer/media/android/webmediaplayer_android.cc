@@ -49,6 +49,7 @@
 #include "media/blink/webmediaplayer_delegate.h"
 #include "media/blink/webmediaplayer_util.h"
 #include "net/base/mime_util.h"
+#include "skia/ext/texture_handle.h"
 #include "third_party/WebKit/public/platform/Platform.h"
 #include "third_party/WebKit/public/platform/URLConversion.h"
 #include "third_party/WebKit/public/platform/WebContentDecryptionModuleResult.h"
@@ -663,8 +664,9 @@ void WebMediaPlayerAndroid::paint(blink::WebCanvas* canvas,
     }
   }
 
-  unsigned textureId = static_cast<unsigned>(
-    (bitmap_.getTexture())->getTextureHandle());
+  unsigned textureId = skia::GrBackendObjectToGrGLTextureInfo(
+                           (bitmap_.getTexture())->getTextureHandle())
+                           ->fID;
   if (!copyVideoTextureToPlatformTexture(context3D, textureId,
       GL_RGBA, GL_UNSIGNED_BYTE, true, false)) {
     return;

@@ -39,10 +39,12 @@
 #include "public/platform/WebGraphicsContext3DProvider.h"
 #include "public/platform/WebScheduler.h"
 #include "public/platform/WebTraceLocation.h"
+#include "skia/ext/texture_handle.h"
 #include "third_party/skia/include/core/SkData.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/gpu/GrContext.h"
+#include "third_party/skia/include/gpu/gl/GrGLTypes.h"
 #include "wtf/RefCountedLeakCounter.h"
 
 namespace {
@@ -640,16 +642,15 @@ bool Canvas2DLayerBridge::prepareMailbox(WebExternalTextureMailbox* outMailbox, 
     if (RuntimeEnabledFeatures::forceDisable2dCanvasCopyOnWriteEnabled())
         m_surface->notifyContentWillChange(SkSurface::kRetain_ContentChangeMode);
 
-    // Need to flush skia's internal queue because texture is about to be accessed directly
-    grContext->flush();
-
     // Because of texture sharing with the compositor, we must invalidate
     // the state cached in skia so that the deferred copy on write
     // in SkSurface_Gpu does not make any false assumptions.
     mailboxInfo.m_image->getTexture()->textureParamsModified();
     mailboxInfo.m_mailbox.textureTarget = GL_TEXTURE_2D;
 
-    webContext->bindTexture(GL_TEXTURE_2D, mailboxInfo.m_image->getTexture()->getTextureHandle());
+    // Passing true because we need to flush skia's internal queue since texture is about to be accessed directly
+    GLuint textureID = skia::GrBackendObjectToGrGLTextureInfo(mailboxInfo.m_image->getTextureHandle(true))->fID;
+    webContext->bindTexture(GL_TEXTURE_2D, textureID);
     webContext->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter);
     webContext->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter);
     webContext->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);

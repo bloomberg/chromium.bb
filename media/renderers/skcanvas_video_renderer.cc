@@ -13,6 +13,7 @@
 #include "media/base/video_frame.h"
 #include "media/base/yuv_convert.h"
 #include "skia/ext/refptr.h"
+#include "skia/ext/texture_handle.h"
 #include "third_party/libyuv/include/libyuv.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkImage.h"
@@ -22,6 +23,7 @@
 #include "third_party/skia/include/gpu/GrTexture.h"
 #include "third_party/skia/include/gpu/GrTextureProvider.h"
 #include "third_party/skia/include/gpu/SkGr.h"
+#include "third_party/skia/include/gpu/gl/GrGLTypes.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/skia_util.h"
 
@@ -95,7 +97,7 @@ skia::RefPtr<SkImage> NewSkImageFromVideoFrameYUVTextures(
   gfx::Size uv_tex_size((ya_tex_size.width() + 1) / 2,
                         (ya_tex_size.height() + 1) / 2);
 
-  unsigned source_textures[3] = {0};
+  GrGLTextureInfo source_textures[] = {{0, 0}, {0, 0}, {0, 0}};
   for (size_t i = 0; i < media::VideoFrame::NumPlanes(video_frame->format());
        ++i) {
     // Get the texture from the mailbox and wrap it in a GrTexture.
@@ -104,8 +106,9 @@ skia::RefPtr<SkImage> NewSkImageFromVideoFrameYUVTextures(
            mailbox_holder.texture_target == GL_TEXTURE_EXTERNAL_OES ||
            mailbox_holder.texture_target == GL_TEXTURE_RECTANGLE_ARB);
     gl->WaitSyncTokenCHROMIUM(mailbox_holder.sync_token.GetConstData());
-    source_textures[i] = gl->CreateAndConsumeTextureCHROMIUM(
+    source_textures[i].fID = gl->CreateAndConsumeTextureCHROMIUM(
         mailbox_holder.texture_target, mailbox_holder.mailbox.name);
+    source_textures[i].fTarget = mailbox_holder.texture_target;
 
     // TODO(dcastagna): avoid this copy once Skia supports native textures
     // with a texture target different than TEXTURE_2D.
@@ -115,22 +118,18 @@ skia::RefPtr<SkImage> NewSkImageFromVideoFrameYUVTextures(
       gl->GenTextures(1, &texture_copy);
       DCHECK(texture_copy);
       gl->BindTexture(GL_TEXTURE_2D, texture_copy);
-      gl->CopyTextureCHROMIUM(source_textures[i], texture_copy, GL_RGB,
+      gl->CopyTextureCHROMIUM(source_textures[i].fID, texture_copy, GL_RGB,
                               GL_UNSIGNED_BYTE, false, true, false);
 
-      gl->DeleteTextures(1, &source_textures[i]);
-      source_textures[i] = texture_copy;
+      gl->DeleteTextures(1, &source_textures[i].fID);
+      source_textures[i].fID = texture_copy;
+      source_textures[i].fTarget = GL_TEXTURE_2D;
     }
   }
-  DCHECK_LE(source_textures[0],
-            static_cast<unsigned>(std::numeric_limits<int>::max()));
-  DCHECK_LE(source_textures[1],
-            static_cast<unsigned>(std::numeric_limits<int>::max()));
-  DCHECK_LE(source_textures[2],
-            static_cast<unsigned>(std::numeric_limits<int>::max()));
-  GrBackendObject handles[3] = {static_cast<int>(source_textures[0]),
-                                static_cast<int>(source_textures[1]),
-                                static_cast<int>(source_textures[2])};
+  GrBackendObject handles[3] = {
+      skia::GrGLTextureInfoToGrBackendObject(source_textures[0]),
+      skia::GrGLTextureInfoToGrBackendObject(source_textures[1]),
+      skia::GrGLTextureInfoToGrBackendObject(source_textures[2])};
 
   SkISize yuvSizes[] = {
       {ya_tex_size.width(), ya_tex_size.height()},
@@ -147,7 +146,10 @@ skia::RefPtr<SkImage> NewSkImageFromVideoFrameYUVTextures(
   SkImage* img = SkImage::NewFromYUVTexturesCopy(context_3d.gr_context,
                                                  color_space, handles, yuvSizes,
                                                  kTopLeft_GrSurfaceOrigin);
-  gl->DeleteTextures(3, source_textures);
+  for (size_t i = 0; i < media::VideoFrame::NumPlanes(video_frame->format());
+       ++i) {
+    gl->DeleteTextures(1, &source_textures[i].fID);
+  }
   return skia::AdoptRef(img);
 }
 
@@ -190,9 +192,11 @@ skia::RefPtr<SkImage> NewSkImageFromVideoFrameNative(
   desc.fWidth = video_frame->coded_size().width();
   desc.fHeight = video_frame->coded_size().height();
   desc.fConfig = kRGBA_8888_GrPixelConfig;
-  DCHECK_LE(source_texture,
-            static_cast<unsigned>(std::numeric_limits<int>::max()));
-  desc.fTextureHandle = static_cast<int>(source_texture);
+  GrGLTextureInfo source_texture_info;
+  source_texture_info.fID = source_texture;
+  source_texture_info.fTarget = GL_TEXTURE_2D;
+  desc.fTextureHandle =
+      skia::GrGLTextureInfoToGrBackendObject(source_texture_info);
   return skia::AdoptRef(
       SkImage::NewFromAdoptedTexture(context_3d.gr_context, desc));
 }

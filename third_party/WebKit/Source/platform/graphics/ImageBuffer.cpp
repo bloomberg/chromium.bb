@@ -50,7 +50,9 @@
 #include "public/platform/WebExternalTextureMailbox.h"
 #include "public/platform/WebGraphicsContext3D.h"
 #include "public/platform/WebGraphicsContext3DProvider.h"
+#include "skia/ext/texture_handle.h"
 #include "third_party/skia/include/core/SkPicture.h"
+#include "third_party/skia/include/gpu/gl/GrGLTypes.h"
 #include "wtf/ArrayBufferContents.h"
 #include "wtf/MathExtras.h"
 #include "wtf/Vector.h"
@@ -193,7 +195,7 @@ bool ImageBuffer::copyToPlatformTexture(WebGraphicsContext3D* context, Platform3
 
     ASSERT(textureImage->isTextureBacked()); // isAccelerated() check above should guarantee this
     // Get the texture ID, flushing pending operations if needed.
-    Platform3DObject textureId = textureImage->getTextureHandle(true);
+    Platform3DObject textureId = skia::GrBackendObjectToGrGLTextureInfo(textureImage->getTextureHandle(true))->fID;
     if (!textureId)
         return false;
 

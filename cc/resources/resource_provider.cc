@@ -31,11 +31,13 @@
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
+#include "skia/ext/texture_handle.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "third_party/skia/include/gpu/GrTextureProvider.h"
+#include "third_party/skia/include/gpu/gl/GrGLTypes.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gl/trace_util.h"
@@ -1109,13 +1111,16 @@ void ResourceProvider::ScopedWriteLockGr::InitSkSurface(
     int msaa_sample_count) {
   DCHECK(resource_->locked_for_write);
 
+  GrGLTextureInfo texture_info;
+  texture_info.fID = resource_->gl_id;
+  texture_info.fTarget = resource_->target;
   GrBackendTextureDesc desc;
   desc.fFlags = kRenderTarget_GrBackendTextureFlag;
   desc.fWidth = resource_->size.width();
   desc.fHeight = resource_->size.height();
   desc.fConfig = ToGrPixelConfig(resource_->format);
   desc.fOrigin = kTopLeft_GrSurfaceOrigin;
-  desc.fTextureHandle = resource_->gl_id;
+  desc.fTextureHandle = skia::GrGLTextureInfoToGrBackendObject(texture_info);
   desc.fSampleCnt = msaa_sample_count;
 
   bool use_worker_context = true;

@@ -45,6 +45,7 @@
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/gpu_memory_allocation.h"
+#include "skia/ext/texture_handle.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
@@ -54,6 +55,7 @@
 #include "third_party/skia/include/gpu/GrTexture.h"
 #include "third_party/skia/include/gpu/GrTextureProvider.h"
 #include "third_party/skia/include/gpu/gl/GrGLInterface.h"
+#include "third_party/skia/include/gpu/gl/GrGLTypes.h"
 #include "ui/gfx/geometry/quad_f.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/skia_util.h"
@@ -618,11 +620,15 @@ static skia::RefPtr<SkImage> ApplyImageFilter(
 
   // Wrap the source texture in a Ganesh platform texture.
   GrBackendTextureDesc backend_texture_description;
+  GrGLTextureInfo texture_info;
+  texture_info.fTarget = lock.target();
+  texture_info.fID = lock.texture_id();
   backend_texture_description.fWidth = source_texture_resource->size().width();
   backend_texture_description.fHeight =
       source_texture_resource->size().height();
   backend_texture_description.fConfig = kSkia8888_GrPixelConfig;
-  backend_texture_description.fTextureHandle = lock.texture_id();
+  backend_texture_description.fTextureHandle =
+      skia::GrGLTextureInfoToGrBackendObject(texture_info);
   backend_texture_description.fOrigin = kBottomLeft_GrSurfaceOrigin;
 
   skia::RefPtr<SkImage> srcImage = skia::AdoptRef(SkImage::NewFromTexture(
@@ -955,7 +961,9 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
         background_image = ApplyBackgroundFilters(
             frame, quad, background_texture.get(), gfx::RectF(background_rect));
         if (background_image)
-          background_image_id = background_image->getTextureHandle(true);
+          background_image_id = skia::GrBackendObjectToGrGLTextureInfo(
+                                    background_image->getTextureHandle(true))
+                                    ->fID;
         DCHECK(background_image_id);
       }
     }
@@ -1034,7 +1042,9 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
                                         resource_provider_, rect, dst_rect,
                                         scale, filter.get(), contents_texture);
         if (filter_image) {
-          filter_image_id = filter_image->getTextureHandle(true);
+          filter_image_id = skia::GrBackendObjectToGrGLTextureInfo(
+                                filter_image->getTextureHandle(true))
+                                ->fID;
           DCHECK(filter_image_id);
           rect = dst_rect;
         }

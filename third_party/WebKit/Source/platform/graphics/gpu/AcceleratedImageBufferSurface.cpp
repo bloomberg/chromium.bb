@@ -32,6 +32,7 @@
 
 #include "public/platform/Platform.h"
 #include "public/platform/WebGraphicsContext3DProvider.h"
+#include "skia/ext/texture_handle.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefPtr.h"
@@ -67,7 +68,7 @@ Platform3DObject AcceleratedImageBufferSurface::getBackingTextureHandleForOverwr
 {
     if (!m_surface)
         return 0;
-    return m_surface->getTextureHandle(SkSurface::kDiscardWrite_TextureHandleAccess);
+    return skia::GrBackendObjectToGrGLTextureInfo(m_surface->getTextureHandle(SkSurface::kDiscardWrite_TextureHandleAccess))->fID;
 }
 
 } // namespace blink

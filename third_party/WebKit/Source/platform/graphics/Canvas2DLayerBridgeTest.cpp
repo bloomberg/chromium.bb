@@ -39,10 +39,12 @@
 #include "public/platform/WebTaskRunner.h"
 #include "public/platform/WebThread.h"
 #include "public/platform/WebTraceLocation.h"
+#include "skia/ext/texture_handle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/gpu/GrContext.h"
+#include "third_party/skia/include/gpu/gl/GrGLTypes.h"
 #include "third_party/skia/include/gpu/gl/SkNullGLContext.h"
 #include "wtf/RefPtr.h"
 
@@ -160,8 +162,8 @@ protected:
 
             ::testing::Mock::VerifyAndClearExpectations(&mainMock);
 
-            unsigned textureId = bridge->newImageSnapshot(PreferAcceleration, SnapshotReasonUnknown)->getTextureHandle(true);
-            EXPECT_EQ(textureId, 0u);
+            const GrGLTextureInfo* textureInfo = skia::GrBackendObjectToGrGLTextureInfo(bridge->newImageSnapshot(PreferAcceleration, SnapshotReasonUnknown)->getTextureHandle(true));
+            EXPECT_EQ(textureInfo, nullptr);
 
             ::testing::Mock::VerifyAndClearExpectations(&mainMock);
         } // bridge goes out of scope here
