@@ -75,7 +75,7 @@ ComputedAccessibilityInfo status=experimental
 EventListenerOptions status=stable
 ExperimentalCanvasFeatures status=test
 ExperimentalContentSecurityPolicyFeatures status=experimental
-ExperimentalFramework status=test
+ExperimentalFramework status=stable
 // Define a sample API for testing integration with the Experimental Framework.
 // The sample API is used in both unit and layout tests for the Experimental
 // Framework. Do not change this flag to stable, as it exists solely to generate

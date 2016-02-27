@@ -10,7 +10,28 @@ CONSOLE WARNING: 'webkitIDBFactory' is deprecated. Please use 'IDBFactory' inste
 CONSOLE WARNING: 'webkitIDBDatabase' is deprecated. Please use 'IDBDatabase' instead.
 CONSOLE WARNING: 'webkitIDBCursor' is deprecated. Please use 'IDBCursor' instead.
 CONSOLE WARNING: 'webkitIndexedDB' is deprecated. Please use 'indexedDB' instead.
+CONSOLE ERROR: The 'WebBluetooth' feature is currently enabled in limited trials. Please see [Phosphor console URL] for information on enabling a trial for your site.
+CONSOLE ERROR: The 'WebBluetooth' feature is currently enabled in limited trials. Please see [Phosphor console URL] for information on enabling a trial for your site.
+CONSOLE ERROR: The 'WebBluetooth' feature is currently enabled in limited trials. Please see [Phosphor console URL] for information on enabling a trial for your site.
+CONSOLE ERROR: The 'WebBluetooth' feature is currently enabled in limited trials. Please see [Phosphor console URL] for information on enabling a trial for your site.
+CONSOLE ERROR: The 'WebBluetooth' feature is currently enabled in limited trials. Please see [Phosphor console URL] for information on enabling a trial for your site.
+CONSOLE ERROR: The 'WebBluetooth' feature is currently enabled in limited trials. Please see [Phosphor console URL] for information on enabling a trial for your site.
+CONSOLE ERROR: The 'WebBluetooth' feature is currently enabled in limited trials. Please see [Phosphor console URL] for information on enabling a trial for your site.
 CONSOLE WARNING: 'webkitURL' is deprecated. Please use 'URL' instead.
+CONSOLE ERROR: The 'WebBluetooth' feature is currently enabled in limited trials. Please see [Phosphor console URL] for information on enabling a trial for your site.
+CONSOLE ERROR: The 'WebBluetooth' feature is currently enabled in limited trials. Please see [Phosphor console URL] for information on enabling a trial for your site.
+CONSOLE ERROR: The 'WebBluetooth' feature is currently enabled in limited trials. Please see [Phosphor console URL] for information on enabling a trial for your site.
+CONSOLE ERROR: The 'WebBluetooth' feature is currently enabled in limited trials. Please see [Phosphor console URL] for information on enabling a trial for your site.
+CONSOLE ERROR: The 'WebBluetooth' feature is currently enabled in limited trials. Please see [Phosphor console URL] for information on enabling a trial for your site.
+CONSOLE ERROR: The 'WebBluetooth' feature is currently enabled in limited trials. Please see [Phosphor console URL] for information on enabling a trial for your site.
+CONSOLE ERROR: The 'WebBluetooth' feature is currently enabled in limited trials. Please see [Phosphor console URL] for information on enabling a trial for your site.
+CONSOLE ERROR: The 'WebBluetooth' feature is currently enabled in limited trials. Please see [Phosphor console URL] for information on enabling a trial for your site.
+CONSOLE ERROR: The 'WebBluetooth' feature is currently enabled in limited trials. Please see [Phosphor console URL] for information on enabling a trial for your site.
+CONSOLE ERROR: The 'WebBluetooth' feature is currently enabled in limited trials. Please see [Phosphor console URL] for information on enabling a trial for your site.
+CONSOLE ERROR: The 'WebBluetooth' feature is currently enabled in limited trials. Please see [Phosphor console URL] for information on enabling a trial for your site.
+CONSOLE ERROR: The 'WebBluetooth' feature is currently enabled in limited trials. Please see [Phosphor console URL] for information on enabling a trial for your site.
+CONSOLE ERROR: The 'WebBluetooth' feature is currently enabled in limited trials. Please see [Phosphor console URL] for information on enabling a trial for your site.
+CONSOLE ERROR: The 'WebBluetooth' feature is currently enabled in limited trials. Please see [Phosphor console URL] for information on enabling a trial for your site.
 This test documents all interface attributes and methods on the global window object and element instances.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

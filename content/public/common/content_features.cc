@@ -26,7 +26,7 @@ const base::Feature kDownloadResumption{"DownloadResumption",
 
 // The Experimental Framework for controlling access to API experiments.
 const base::Feature kExperimentalFramework{"ExperimentalFramework",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
+                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Non-validating reload on reload-to-refresh-content (e.g. pull-to-refresh).
 // See https://crbug.com/558829

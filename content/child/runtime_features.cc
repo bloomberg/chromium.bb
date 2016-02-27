@@ -70,8 +70,8 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (command_line.HasSwitch(switches::kEnableExperimentalWebPlatformFeatures))
     WebRuntimeFeatures::enableExperimentalFeatures(true);
 
-  if (base::FeatureList::IsEnabled(features::kExperimentalFramework))
-    WebRuntimeFeatures::enableExperimentalFramework(true);
+  WebRuntimeFeatures::enableExperimentalFramework(
+      base::FeatureList::IsEnabled(features::kExperimentalFramework));
 
   if (command_line.HasSwitch(switches::kEnableWebBluetooth))
     WebRuntimeFeatures::enableWebBluetooth(true);
