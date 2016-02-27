@@ -65,8 +65,8 @@ void PaintController::processNewItem(DisplayItem& displayItem)
     // Verify noop begin/end pairs have been removed.
     if (m_newDisplayItemList.size() >= 2 && displayItem.isEnd()) {
         const auto& beginDisplayItem = m_newDisplayItemList[m_newDisplayItemList.size() - 2];
-        if (beginDisplayItem.isBegin() && beginDisplayItem.type() != DisplayItem::Subsequence && !beginDisplayItem.drawsContent())
-            ASSERT(!displayItem.isEndAndPairedWith(beginDisplayItem.type()));
+        if (beginDisplayItem.isBegin() && beginDisplayItem.getType() != DisplayItem::Subsequence && !beginDisplayItem.drawsContent())
+            ASSERT(!displayItem.isEndAndPairedWith(beginDisplayItem.getType()));
     }
 #endif
 
@@ -242,7 +242,7 @@ DisplayItemList::iterator PaintController::findOutOfOrderCachedItemForward(const
 
 void PaintController::copyCachedSubsequence(const DisplayItemList& currentList, DisplayItemList::iterator& currentIt, DisplayItemList& updatedList)
 {
-    ASSERT(currentIt->type() == DisplayItem::Subsequence);
+    ASSERT(currentIt->getType() == DisplayItem::Subsequence);
     ASSERT(!currentIt->scope());
     DisplayItem::Id endSubsequenceId(currentIt->client(), DisplayItem::EndSubsequence, 0);
     do {
@@ -335,7 +335,7 @@ void PaintController::commitNewDisplayItemsInternal(const LayoutSize& offsetFrom
     for (DisplayItemList::iterator newIt = m_newDisplayItemList.begin(); newIt != m_newDisplayItemList.end(); ++newIt) {
         const DisplayItem& newDisplayItem = *newIt;
         const DisplayItem::Id newDisplayItemId = newDisplayItem.nonCachedId();
-        bool newDisplayItemHasCachedType = newDisplayItem.type() != newDisplayItemId.type;
+        bool newDisplayItemHasCachedType = newDisplayItem.getType() != newDisplayItemId.type;
 
         bool isSynchronized = currentIt != currentEnd && newDisplayItemId.matches(*currentIt);
 
@@ -367,9 +367,9 @@ void PaintController::commitNewDisplayItemsInternal(const LayoutSize& offsetFrom
                 updatedList.appendByMoving(*currentIt, m_currentPaintArtifact.displayItemList().visualRect(currentIt - m_currentPaintArtifact.displayItemList().begin()));
                 ++currentIt;
             } else {
-                ASSERT(newDisplayItem.type() == DisplayItem::CachedSubsequence);
+                ASSERT(newDisplayItem.getType() == DisplayItem::CachedSubsequence);
                 copyCachedSubsequence(m_currentPaintArtifact.displayItemList(), currentIt, updatedList);
-                ASSERT(updatedList.last().type() == DisplayItem::EndSubsequence);
+                ASSERT(updatedList.last().getType() == DisplayItem::EndSubsequence);
             }
         } else {
             ASSERT(!newDisplayItem.isDrawing()
@@ -452,16 +452,16 @@ void PaintController::checkUnderInvalidation(DisplayItemList::iterator& newIt, D
     ASSERT(newIt->isCached());
 
     // When under-invalidation-checking is enabled, the forced painting is following the cached display item.
-    DisplayItem::Type nextItemType = DisplayItem::nonCachedType(newIt->type());
+    DisplayItem::Type nextItemType = DisplayItem::nonCachedType(newIt->getType());
     ++newIt;
-    ASSERT(newIt->type() == nextItemType);
+    ASSERT(newIt->getType() == nextItemType);
 
     if (newIt->isDrawing()) {
         checkCachedDisplayItemIsUnchanged("", *newIt, *currentIt);
         return;
     }
 
-    ASSERT(newIt->type() == DisplayItem::Subsequence);
+    ASSERT(newIt->getType() == DisplayItem::Subsequence);
 
 #ifndef NDEBUG
     CString messagePrefix = String::format("(In CachedSubsequence of %s)", newIt->clientDebugString().utf8().data()).utf8();

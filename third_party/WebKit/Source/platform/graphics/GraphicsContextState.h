@@ -103,7 +103,7 @@ public:
     void setColorFilter(PassRefPtr<SkColorFilter>);
 
     // Image interpolation control.
-    InterpolationQuality interpolationQuality() const { return m_interpolationQuality; }
+    InterpolationQuality getInterpolationQuality() const { return m_interpolationQuality; }
     void setInterpolationQuality(InterpolationQuality);
 
     bool shouldAntialias() const { return m_shouldAntialias; }

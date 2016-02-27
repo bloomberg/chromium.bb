@@ -86,7 +86,7 @@ protected:
     bool displayItemListContains(const DisplayItemList& displayItemList, DisplayItemClient& client, DisplayItem::Type type)
     {
         for (auto& item : displayItemList) {
-            if (item.client() == client && item.type() == type)
+            if (item.client() == client && item.getType() == type)
                 return true;
         }
         return false;
@@ -140,7 +140,7 @@ public:
         for (size_t index = 0; index < std::min<size_t>(actual.size(), expectedSize); index++) { \
             TRACE_DISPLAY_ITEMS(index, expected[index], actual[index]); \
             EXPECT_EQ(expected[index].client(), actual[index].client()); \
-            EXPECT_EQ(expected[index].type(), actual[index].type()); \
+            EXPECT_EQ(expected[index].getType(), actual[index].getType()); \
         } \
     } while (false);
 

@@ -85,7 +85,7 @@ public:
     GraphicsLayerDebugInfo& debugInfo();
 
     void setCompositingReasons(CompositingReasons);
-    CompositingReasons compositingReasons() const { return m_debugInfo.compositingReasons(); }
+    CompositingReasons getCompositingReasons() const { return m_debugInfo.getCompositingReasons(); }
     void setSquashingDisallowedReasons(SquashingDisallowedReasons);
     void setOwnerNodeId(int);
 

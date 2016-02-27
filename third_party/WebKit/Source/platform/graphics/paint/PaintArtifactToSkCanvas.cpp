@@ -23,7 +23,7 @@ namespace {
 
 void paintDisplayItemToSkCanvas(const DisplayItem& displayItem, SkCanvas* canvas)
 {
-    DisplayItem::Type type = displayItem.type();
+    DisplayItem::Type type = displayItem.getType();
 
     if (DisplayItem::isDrawingType(type)) {
         canvas->drawPicture(static_cast<const DrawingDisplayItem&>(displayItem).picture());

@@ -27,7 +27,7 @@ public:
 #if ENABLE(ASSERT)
     bool isEndAndPairedWith(DisplayItem::Type otherType) const final
     {
-        return type() == EndSubsequence && otherType == Subsequence;
+        return getType() == EndSubsequence && otherType == Subsequence;
     }
 #endif
 };

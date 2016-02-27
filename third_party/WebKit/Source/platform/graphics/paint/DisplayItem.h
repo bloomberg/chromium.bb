@@ -248,7 +248,7 @@ public:
     virtual void replay(GraphicsContext&) const { }
 
     const DisplayItemClient& client() const { ASSERT(m_client); return *m_client; }
-    Type type() const { return m_type; }
+    Type getType() const { return m_type; }
 
     void setScope(unsigned scope) { m_scope = scope; }
     unsigned scope() { return m_scope; }
@@ -268,7 +268,7 @@ public:
     // See comments of enum Type for usage of the following macros.
 #define DEFINE_CATEGORY_METHODS(Category) \
     static bool is##Category##Type(Type type) { return type >= Category##First && type <= Category##Last; } \
-    bool is##Category() const { return is##Category##Type(type()); }
+    bool is##Category() const { return is##Category##Type(getType()); }
 
 #define DEFINE_CONVERSION_METHODS(Category1, category1, Category2, category2) \
     static Type category1##TypeTo##Category2##Type(Type type) \

@@ -234,7 +234,7 @@ void DisplayItem::dumpPropertiesAsDebugString(WTF::StringBuilder& stringBuilder)
         stringBuilder.append(clientDebugString());
     }
     stringBuilder.append("\", type: \"");
-    stringBuilder.append(typeAsDebugString(type()));
+    stringBuilder.append(typeAsDebugString(getType()));
     stringBuilder.append('"');
     if (m_skippedCache)
         stringBuilder.append(", skippedCache: true");

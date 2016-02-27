@@ -92,7 +92,7 @@ public:
     float strokeThickness() const { return immutableState()->strokeData().thickness(); }
     void setStrokeThickness(float thickness) { mutableState()->setStrokeThickness(thickness); }
 
-    StrokeStyle strokeStyle() const { return immutableState()->strokeData().style(); }
+    StrokeStyle getStrokeStyle() const { return immutableState()->strokeData().style(); }
     void setStrokeStyle(StrokeStyle style) { mutableState()->setStrokeStyle(style); }
 
     Color strokeColor() const { return immutableState()->strokeColor(); }
@@ -118,7 +118,7 @@ public:
     TextDrawingModeFlags textDrawingMode() const { return immutableState()->textDrawingMode(); }
 
     void setImageInterpolationQuality(InterpolationQuality quality) { mutableState()->setInterpolationQuality(quality); }
-    InterpolationQuality imageInterpolationQuality() const { return immutableState()->interpolationQuality(); }
+    InterpolationQuality imageInterpolationQuality() const { return immutableState()->getInterpolationQuality(); }
 
     // Specify the device scale factor which may change the way document markers
     // and fonts are rendered.

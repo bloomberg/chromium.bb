@@ -79,7 +79,7 @@ namespace {
 
 static void appendDisplayItemToCcDisplayItemList(const DisplayItem& displayItem, cc::DisplayItemList* list)
 {
-    if (DisplayItem::isDrawingType(displayItem.type())) {
+    if (DisplayItem::isDrawingType(displayItem.getType())) {
         const SkPicture* picture = static_cast<const DrawingDisplayItem&>(displayItem).picture();
         if (!picture)
             return;

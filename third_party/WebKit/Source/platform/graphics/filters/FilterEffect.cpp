@@ -164,7 +164,7 @@ FloatRect FilterEffect::determineFilterPrimitiveSubregion(DetermineSubregionFlag
     }
 
     // After calling determineFilterPrimitiveSubregion on the target effect, reset the subregion again for <feTile>.
-    if (filterEffectType() == FilterEffectTypeTile)
+    if (getFilterEffectType() == FilterEffectTypeTile)
         subregion = filter->filterRegion();
 
     if (flags & MapRectForward) {
@@ -208,7 +208,7 @@ PassRefPtr<SkImageFilter> FilterEffect::createTransparentBlack(SkiaImageFilterBu
 bool FilterEffect::hasConnectedInput() const
 {
     for (unsigned i = 0; i < m_inputEffects.size(); i++) {
-        if (m_inputEffects[i] && m_inputEffects[i]->filterEffectType() != FilterEffectTypeSourceInput) {
+        if (m_inputEffects[i] && m_inputEffects[i]->getFilterEffectType() != FilterEffectTypeSourceInput) {
             return true;
         }
     }

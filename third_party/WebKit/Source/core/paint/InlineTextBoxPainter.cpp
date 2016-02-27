@@ -629,7 +629,7 @@ static void adjustStepToDecorationLength(float& step, float& controlPointDistanc
  */
 static void strokeWavyTextDecoration(GraphicsContext& context, FloatPoint p1, FloatPoint p2, float strokeThickness)
 {
-    context.adjustLineToPixelBoundaries(p1, p2, strokeThickness, context.strokeStyle());
+    context.adjustLineToPixelBoundaries(p1, p2, strokeThickness, context.getStrokeStyle());
 
     Path path;
     path.moveTo(p1);

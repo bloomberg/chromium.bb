@@ -40,7 +40,7 @@ public:
 
     FloatRect determineAbsolutePaintRect(const FloatRect& requestedRect) override;
 
-    FilterEffectType filterEffectType() const override { return FilterEffectTypeImage; }
+    FilterEffectType getFilterEffectType() const override { return FilterEffectTypeImage; }
 
     // feImage does not perform color interpolation of any kind, so doesn't
     // depend on the value of color-interpolation-filters.

@@ -57,7 +57,7 @@ public:
 
     scoped_refptr<base::trace_event::TracedValue> asTracedValue() const;
 
-    CompositingReasons compositingReasons() const { return m_compositingReasons; }
+    CompositingReasons getCompositingReasons() const { return m_compositingReasons; }
     void setCompositingReasons(CompositingReasons reasons) { m_compositingReasons = reasons; }
 
     SquashingDisallowedReasons squashingDisallowedReasons() const { return m_squashingDisallowedReasons; }

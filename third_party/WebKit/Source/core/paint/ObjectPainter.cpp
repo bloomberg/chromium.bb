@@ -342,7 +342,7 @@ void ObjectPainter::drawDashedOrDottedBoxSide(GraphicsContext& graphicsContext, 
     ASSERT(thickness > 0);
 
     bool wasAntialiased = graphicsContext.shouldAntialias();
-    StrokeStyle oldStrokeStyle = graphicsContext.strokeStyle();
+    StrokeStyle oldStrokeStyle = graphicsContext.getStrokeStyle();
     graphicsContext.setShouldAntialias(antialias);
     graphicsContext.setStrokeColor(color);
     graphicsContext.setStrokeThickness(thickness);
@@ -373,7 +373,7 @@ void ObjectPainter::drawDoubleBoxSide(GraphicsContext& graphicsContext, int x1, 
     ASSERT(thirdOfThickness > 0);
 
     if (!adjacentWidth1 && !adjacentWidth2) {
-        StrokeStyle oldStrokeStyle = graphicsContext.strokeStyle();
+        StrokeStyle oldStrokeStyle = graphicsContext.getStrokeStyle();
         graphicsContext.setStrokeStyle(NoStroke);
         graphicsContext.setFillColor(color);
 

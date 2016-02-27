@@ -137,7 +137,6 @@ public:
         DataFormat imageSourceFormat() { return m_imageSourceFormat; }
         AlphaOp imageAlphaOp() { return m_alphaOp; }
         unsigned imageSourceUnpackAlignment() { return m_imageSourceUnpackAlignment; }
-        ImageHtmlDomSource imageHtmlDomSource() { return m_imageHtmlDomSource; }
     private:
         // Extract the image and keeps track of its status, such as width, height, Source Alignment,
         // format and AlphaOp etc. This needs to lock the resources or relevant data if needed.

@@ -483,7 +483,7 @@ void GraphicsContext::drawLine(const IntPoint& point1, const IntPoint& point2)
         return;
     ASSERT(m_canvas);
 
-    StrokeStyle penStyle = strokeStyle();
+    StrokeStyle penStyle = getStrokeStyle();
     if (penStyle == NoStroke)
         return;
 
@@ -499,7 +499,7 @@ void GraphicsContext::drawLine(const IntPoint& point1, const IntPoint& point2)
     int length = SkScalarRoundToInt(disp.width() + disp.height());
     SkPaint paint(immutableState()->strokePaint(length));
 
-    if (strokeStyle() == DottedStroke || strokeStyle() == DashedStroke) {
+    if (getStrokeStyle() == DottedStroke || getStrokeStyle() == DashedStroke) {
         // Do a rect fill of our endpoints.  This ensures we always have the
         // appearance of being a border.  We then draw the actual dotted/dashed line.
         SkRect r1, r2;
@@ -662,7 +662,7 @@ void GraphicsContext::drawLineForText(const FloatPoint& pt, float width, bool pr
         return;
 
     SkPaint paint;
-    switch (strokeStyle()) {
+    switch (getStrokeStyle()) {
     case NoStroke:
     case SolidStroke:
     case DoubleStroke:
@@ -738,7 +738,7 @@ void GraphicsContext::drawTextPasses(const DrawTextFunc& drawText)
         drawText(immutableState()->fillPaint());
     }
 
-    if ((modeFlags & TextModeStroke) && strokeStyle() != NoStroke && strokeThickness() > 0) {
+    if ((modeFlags & TextModeStroke) && getStrokeStyle() != NoStroke && strokeThickness() > 0) {
         SkPaint paintForStroking(immutableState()->strokePaint());
         if (modeFlags & TextModeFill) {
             paintForStroking.setLooper(0); // shadow was already applied during fill pass

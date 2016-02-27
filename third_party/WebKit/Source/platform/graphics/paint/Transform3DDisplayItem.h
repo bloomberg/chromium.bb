@@ -65,7 +65,7 @@ private:
 #if ENABLE(ASSERT)
     bool isEndAndPairedWith(DisplayItem::Type otherType) const final
     {
-        return DisplayItem::transform3DTypeToEndTransform3DType(otherType) == type();
+        return DisplayItem::transform3DTypeToEndTransform3DType(otherType) == getType();
     }
 #endif
 };

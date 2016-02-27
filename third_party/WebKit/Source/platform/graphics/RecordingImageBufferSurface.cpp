@@ -78,7 +78,7 @@ void RecordingImageBufferSurface::fallBackToRasterCanvas(FallbackReason reason)
     DEFINE_THREAD_SAFE_STATIC_LOCAL(EnumerationHistogram, canvasFallbackHistogram, new EnumerationHistogram("Canvas.DisplayListFallbackReason", FallbackReasonCount));
     canvasFallbackHistogram.count(reason);
 
-    m_fallbackSurface = m_fallbackFactory->createSurface(size(), opacityMode());
+    m_fallbackSurface = m_fallbackFactory->createSurface(size(), getOpacityMode());
     m_fallbackSurface->setImageBuffer(m_imageBuffer);
 
     if (m_previousFrame) {

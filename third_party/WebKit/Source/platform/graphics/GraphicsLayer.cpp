@@ -365,7 +365,7 @@ void GraphicsLayer::notifyFirstPaintToClient()
     if (!m_painted) {
         DisplayItemList& itemList = m_paintController->newDisplayItemList();
         for (DisplayItem& item : itemList) {
-            DisplayItem::Type type = item.type();
+            DisplayItem::Type type = item.getType();
             if (DisplayItem::isDrawingType(type) && type != DisplayItem::DocumentBackground && type != DisplayItem::DebugRedFill && static_cast<const DrawingDisplayItem&>(item).picture()) {
                 m_painted = true;
                 m_client->notifyFirstPaint();
@@ -779,7 +779,7 @@ PassRefPtr<JSONObject> GraphicsLayer::layerTreeAsJSON(LayerTreeFlags flags, Rend
         bool debug = flags & LayerTreeIncludesDebugInfo;
         RefPtr<JSONArray> compositingReasonsJSON = JSONArray::create();
         for (size_t i = 0; i < kNumberOfCompositingReasons; ++i) {
-            if (m_debugInfo.compositingReasons() & kCompositingReasonStringMap[i].reason)
+            if (m_debugInfo.getCompositingReasons() & kCompositingReasonStringMap[i].reason)
                 compositingReasonsJSON->pushString(debug ? kCompositingReasonStringMap[i].description : kCompositingReasonStringMap[i].shortName);
         }
         json->setArray("compositingReasons", compositingReasonsJSON);

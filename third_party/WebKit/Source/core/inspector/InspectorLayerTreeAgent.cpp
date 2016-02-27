@@ -308,7 +308,7 @@ void InspectorLayerTreeAgent::compositingReasons(ErrorString* errorString, const
     const GraphicsLayer* graphicsLayer = layerById(errorString, layerId);
     if (!graphicsLayer)
         return;
-    CompositingReasons reasonsBitmask = graphicsLayer->compositingReasons();
+    CompositingReasons reasonsBitmask = graphicsLayer->getCompositingReasons();
     *reasonStrings = Array<String>::create();
     for (size_t i = 0; i < kNumberOfCompositingReasons; ++i) {
         if (!(reasonsBitmask & kCompositingReasonStringMap[i].reason))

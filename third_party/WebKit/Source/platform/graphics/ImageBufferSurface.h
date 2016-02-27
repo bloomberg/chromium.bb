@@ -84,7 +84,7 @@ public:
     // May return nullptr if the surface is GPU-backed and the GPU context was lost.
     virtual PassRefPtr<SkImage> newImageSnapshot(AccelerationHint, SnapshotReason) = 0;
 
-    OpacityMode opacityMode() const { return m_opacityMode; }
+    OpacityMode getOpacityMode() const { return m_opacityMode; }
     const IntSize& size() const { return m_size; }
     void notifyIsValidChanged(bool isValid) const;
 

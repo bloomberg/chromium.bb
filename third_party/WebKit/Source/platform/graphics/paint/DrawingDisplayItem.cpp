@@ -75,7 +75,7 @@ bool DrawingDisplayItem::equals(const DisplayItem& other) const
     if (!picture || !otherPicture)
         return false;
 
-    switch (underInvalidationCheckingMode()) {
+    switch (getUnderInvalidationCheckingMode()) {
     case DrawingDisplayItem::CheckPicture: {
         if (picture->approximateOpCount() != otherPicture->approximateOpCount())
             return false;

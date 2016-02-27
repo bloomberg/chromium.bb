@@ -50,7 +50,7 @@ public:
     bool knownToBeOpaque() const { ASSERT(RuntimeEnabledFeatures::slimmingPaintV2Enabled()); return m_knownToBeOpaque; }
 
 #if ENABLE(ASSERT)
-    UnderInvalidationCheckingMode underInvalidationCheckingMode() const { return m_underInvalidationCheckingMode; }
+    UnderInvalidationCheckingMode getUnderInvalidationCheckingMode() const { return m_underInvalidationCheckingMode; }
     bool equals(const DisplayItem& other) const final;
 #endif
 

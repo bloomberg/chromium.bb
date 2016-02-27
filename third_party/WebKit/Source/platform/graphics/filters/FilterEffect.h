@@ -103,7 +103,7 @@ public:
     }
     FloatRect mapRectRecursive(const FloatRect&);
 
-    virtual FilterEffectType filterEffectType() const { return FilterEffectTypeUnknown; }
+    virtual FilterEffectType getFilterEffectType() const { return FilterEffectTypeUnknown; }
 
     virtual TextStream& externalRepresentation(TextStream&, int indention = 0) const;
 

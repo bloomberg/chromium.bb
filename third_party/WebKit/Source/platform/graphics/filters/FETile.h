@@ -33,7 +33,7 @@ public:
 
     FloatRect mapPaintRect(const FloatRect&, bool forward = true) final;
 
-    FilterEffectType filterEffectType() const override { return FilterEffectTypeTile; }
+    FilterEffectType getFilterEffectType() const override { return FilterEffectTypeTile; }
 
     TextStream& externalRepresentation(TextStream&, int indention) const override;
 
