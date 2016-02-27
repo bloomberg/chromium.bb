@@ -1090,6 +1090,7 @@
       'socket/tcp_client_socket.h',
       'socket/tcp_server_socket.cc',
       'socket/tcp_server_socket.h',
+      'socket/tcp_socket.cc',
       'socket/tcp_socket.h',
       'socket/tcp_socket_posix.cc',
       'socket/tcp_socket_posix.h',
