@@ -76,6 +76,8 @@ private:
     ImageBitmap(PassRefPtr<StaticBitmapImage>);
     ImageBitmap(PassRefPtr<StaticBitmapImage>, const IntRect&, const ImageBitmapOptions&);
 
+    void parseOptions(const ImageBitmapOptions&, bool&);
+
     RefPtr<StaticBitmapImage> m_image;
     bool m_isNeutered = false;
     bool m_isPremultiplied = true;
