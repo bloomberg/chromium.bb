@@ -210,12 +210,14 @@ bool LayoutTextControl::hasValidAvgCharWidth(const AtomicString& family)
 
 float LayoutTextControl::getAvgCharWidth(const AtomicString& family) const
 {
-    if (hasValidAvgCharWidth(family))
-        return roundf(style()->font().primaryFont()->avgCharWidth());
+    const Font& font = style()->font();
+    if (hasValidAvgCharWidth(family)) {
+        ASSERT(font.primaryFont());
+        return roundf(font.primaryFont()->avgCharWidth());
+    }
 
     const UChar ch = '0';
     const String str = String(&ch, 1);
-    const Font& font = style()->font();
     TextRun textRun = constructTextRun(font, str, styleRef(), TextRun::AllowTrailingExpansion);
     return font.width(textRun);
 }
