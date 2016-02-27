@@ -8,6 +8,9 @@
 #include "testing/test_util.h"
 
 #include <sys/stat.h>
+#ifndef _MSC_VER
+#include <unistd.h>  // close()
+#endif
 
 #include <cstdint>
 #include <cstdio>
