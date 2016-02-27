@@ -20,6 +20,7 @@
 #include "core/animation/CSSPositionAxisListInterpolationType.h"
 #include "core/animation/CSSPositionInterpolationType.h"
 #include "core/animation/CSSShadowListInterpolationType.h"
+#include "core/animation/CSSSizeListInterpolationType.h"
 #include "core/animation/CSSTransformOriginInterpolationType.h"
 #include "core/animation/CSSTranslateInterpolationType.h"
 #include "core/animation/CSSValueInterpolationType.h"
@@ -200,6 +201,10 @@ const InterpolationTypes* PropertyInterpolationTypesMapping::get(const PropertyH
             break;
         case CSSPropertyTransformOrigin:
             applicableTypes->append(adoptPtr(new CSSTransformOriginInterpolationType(cssProperty)));
+            break;
+        case CSSPropertyBackgroundSize:
+        case CSSPropertyWebkitMaskSize:
+            applicableTypes->append(adoptPtr(new CSSSizeListInterpolationType(cssProperty)));
             break;
         default:
             // TODO(alancutter): Support all interpolable CSS properties here so we can stop falling back to the old StyleInterpolation implementation.

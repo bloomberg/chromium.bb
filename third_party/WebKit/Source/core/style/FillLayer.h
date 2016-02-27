@@ -124,7 +124,7 @@ public:
     void setBlendMode(WebBlendMode b) { m_blendMode = b; m_blendModeSet = true; }
     void setSizeType(EFillSizeType b) { m_sizeType = b; }
     void setSizeLength(const LengthSize& length) { m_sizeLength = length; }
-    void setSize(FillSize f) { m_sizeType = f.type; m_sizeLength = f.size; }
+    void setSize(const FillSize& f) { m_sizeType = f.type; m_sizeLength = f.size; }
     void setMaskSourceType(EMaskSourceType m) { m_maskSourceType = m; m_maskSourceTypeSet = true; }
 
     void clearImage() { m_image.clear(); m_imageSet = false; }

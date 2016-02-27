@@ -45,7 +45,10 @@ static InterpolationValue maybeConvertLengthList(const Vector<Length>& lengthLis
 
 InterpolationValue CSSLengthListInterpolationType::maybeConvertInitial() const
 {
-    return maybeConvertLengthList(LengthListPropertyFunctions::getInitialLengthList(cssProperty()), 1);
+    Vector<Length> initialLengthList;
+    if (!LengthListPropertyFunctions::getInitialLengthList(cssProperty(), initialLengthList))
+        return nullptr;
+    return maybeConvertLengthList(initialLengthList, 1);
 }
 
 class ParentLengthListChecker : public InterpolationType::ConversionChecker {
@@ -65,7 +68,9 @@ private:
 
     bool isValid(const InterpolationEnvironment& environment, const InterpolationValue& underlying) const final
     {
-        return m_inheritedLengthList == LengthListPropertyFunctions::getLengthList(m_property, *environment.state().parentStyle());
+        Vector<Length> inheritedLengthList;
+        LengthListPropertyFunctions::getLengthList(m_property, *environment.state().parentStyle(), inheritedLengthList);
+        return m_inheritedLengthList == inheritedLengthList;
     }
 
     CSSPropertyID m_property;
@@ -74,11 +79,11 @@ private:
 
 InterpolationValue CSSLengthListInterpolationType::maybeConvertInherit(const StyleResolverState& state, ConversionCheckers& conversionCheckers) const
 {
-    if (!state.parentStyle())
-        return nullptr;
-
-    Vector<Length> inheritedLengthList = LengthListPropertyFunctions::getLengthList(cssProperty(), *state.parentStyle());
+    Vector<Length> inheritedLengthList;
+    bool success = LengthListPropertyFunctions::getLengthList(cssProperty(), *state.parentStyle(), inheritedLengthList);
     conversionCheckers.append(ParentLengthListChecker::create(cssProperty(), inheritedLengthList));
+    if (!success)
+        return nullptr;
     return maybeConvertLengthList(inheritedLengthList, state.parentStyle()->effectiveZoom());
 }
 
@@ -100,7 +105,9 @@ PairwiseInterpolationValue CSSLengthListInterpolationType::mergeSingleConversion
 
 InterpolationValue CSSLengthListInterpolationType::maybeConvertUnderlyingValue(const InterpolationEnvironment& environment) const
 {
-    Vector<Length> underlyingLengthList = LengthListPropertyFunctions::getLengthList(cssProperty(), *environment.state().style());
+    Vector<Length> underlyingLengthList;
+    if (!LengthListPropertyFunctions::getLengthList(cssProperty(), *environment.state().style(), underlyingLengthList))
+        return nullptr;
     return maybeConvertLengthList(underlyingLengthList, environment.state().style()->effectiveZoom());
 }
 

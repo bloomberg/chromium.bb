@@ -886,6 +886,7 @@
             'animation/CSSPositionInterpolationType.h',
             'animation/CSSShadowListInterpolationType.cpp',
             'animation/CSSShadowListInterpolationType.h',
+            'animation/CSSSizeListInterpolationType.h',
             'animation/CSSTransformOriginInterpolationType.h',
             'animation/CSSTranslateInterpolationType.cpp',
             'animation/CSSTranslateInterpolationType.h',

@@ -15,9 +15,11 @@ const FillLayer* getFillLayer(CSSPropertyID property, const ComputedStyle& style
     switch (property) {
     case CSSPropertyBackgroundPositionX:
     case CSSPropertyBackgroundPositionY:
+    case CSSPropertyBackgroundSize:
         return &style.backgroundLayers();
     case CSSPropertyWebkitMaskPositionX:
     case CSSPropertyWebkitMaskPositionY:
+    case CSSPropertyWebkitMaskSize:
         return &style.maskLayers();
     default:
         ASSERT_NOT_REACHED();
@@ -30,9 +32,11 @@ FillLayer* accessFillLayer(CSSPropertyID property, ComputedStyle& style)
     switch (property) {
     case CSSPropertyBackgroundPositionX:
     case CSSPropertyBackgroundPositionY:
+    case CSSPropertyBackgroundSize:
         return &style.accessBackgroundLayers();
     case CSSPropertyWebkitMaskPositionX:
     case CSSPropertyWebkitMaskPositionY:
+    case CSSPropertyWebkitMaskSize:
         return &style.accessMaskLayers();
     default:
         ASSERT_NOT_REACHED();
@@ -43,34 +47,45 @@ FillLayer* accessFillLayer(CSSPropertyID property, ComputedStyle& style)
 struct FillLayerMethods {
     FillLayerMethods(CSSPropertyID property)
     {
+        isSet = nullptr;
+        getLength = nullptr;
+        setLength = nullptr;
+        getFillSize = nullptr;
+        setFillSize = nullptr;
+        clear = nullptr;
         switch (property) {
         case CSSPropertyBackgroundPositionX:
         case CSSPropertyWebkitMaskPositionX:
             isSet = &FillLayer::isXPositionSet;
-            get = &FillLayer::xPosition;
-            set = &FillLayer::setXPosition;
+            getLength = &FillLayer::xPosition;
+            setLength = &FillLayer::setXPosition;
             clear = &FillLayer::clearXPosition;
             break;
         case CSSPropertyBackgroundPositionY:
         case CSSPropertyWebkitMaskPositionY:
             isSet = &FillLayer::isYPositionSet;
-            get = &FillLayer::yPosition;
-            set = &FillLayer::setYPosition;
+            getLength = &FillLayer::yPosition;
+            setLength = &FillLayer::setYPosition;
             clear = &FillLayer::clearYPosition;
+            break;
+        case CSSPropertyBackgroundSize:
+        case CSSPropertyWebkitMaskSize:
+            isSet = &FillLayer::isSizeSet;
+            getFillSize = &FillLayer::size;
+            setFillSize = &FillLayer::setSize;
+            clear = &FillLayer::clearSize;
             break;
         default:
             ASSERT_NOT_REACHED();
-            isSet = nullptr;
-            get = nullptr;
-            set = nullptr;
-            clear = nullptr;
             break;
         }
     }
 
     bool (FillLayer::*isSet)() const;
-    const Length& (FillLayer::*get)() const;
-    void (FillLayer::*set)(const Length&);
+    const Length& (FillLayer::*getLength)() const;
+    void (FillLayer::*setLength)(const Length&);
+    FillSize (FillLayer::*getFillSize)() const;
+    void (FillLayer::*setFillSize)(const FillSize&);
     void (FillLayer::*clear)();
 };
 
@@ -88,11 +103,13 @@ ValueRange LengthListPropertyFunctions::valueRange(CSSPropertyID property)
     case CSSPropertyWebkitMaskPositionY:
         return ValueRangeAll;
 
+    case CSSPropertyBackgroundSize:
     case CSSPropertyBorderBottomLeftRadius:
     case CSSPropertyBorderBottomRightRadius:
     case CSSPropertyBorderTopLeftRadius:
     case CSSPropertyBorderTopRightRadius:
     case CSSPropertyStrokeDasharray:
+    case CSSPropertyWebkitMaskSize:
         return ValueRangeNonNegative;
 
     default:
@@ -101,70 +118,92 @@ ValueRange LengthListPropertyFunctions::valueRange(CSSPropertyID property)
     }
 }
 
-Vector<Length> LengthListPropertyFunctions::getInitialLengthList(CSSPropertyID property)
+bool LengthListPropertyFunctions::getInitialLengthList(CSSPropertyID property, Vector<Length>& result)
 {
-    return getLengthList(property, *ComputedStyle::initialStyle());
+    return getLengthList(property, *ComputedStyle::initialStyle(), result);
 }
 
-static Vector<Length> toVector(const LengthPoint& point)
+static bool appendToVector(const LengthPoint& point, Vector<Length>& result)
 {
-    Vector<Length> result(2);
-    result[0] = point.x();
-    result[1] = point.y();
-    return result;
+    result.append(point.x());
+    result.append(point.y());
+    return true;
 }
 
-static Vector<Length> toVector(const LengthSize& size)
+static bool appendToVector(const LengthSize& size, Vector<Length>& result)
 {
-    Vector<Length> result(2);
-    result[0] = size.width();
-    result[1] = size.height();
-    return result;
+    result.append(size.width());
+    result.append(size.height());
+    return true;
 }
 
-static Vector<Length> toVector(const TransformOrigin& transformOrigin)
+static bool appendToVector(const TransformOrigin& transformOrigin, Vector<Length>& result)
 {
-    Vector<Length> result(3);
-    result[0] = transformOrigin.x();
-    result[1] = transformOrigin.y();
-    result[2] = Length(transformOrigin.z(), Fixed);
-    return result;
+    result.append(transformOrigin.x());
+    result.append(transformOrigin.y());
+    result.append(Length(transformOrigin.z(), Fixed));
+    return true;
 }
 
-Vector<Length> LengthListPropertyFunctions::getLengthList(CSSPropertyID property, const ComputedStyle& style)
+bool LengthListPropertyFunctions::getLengthList(CSSPropertyID property, const ComputedStyle& style, Vector<Length>& result)
 {
+    ASSERT(result.isEmpty());
+
     switch (property) {
     case CSSPropertyStrokeDasharray: {
         if (style.strokeDashArray())
-            return style.strokeDashArray()->vector();
-        return Vector<Length>();
-    }
-    case CSSPropertyObjectPosition:
-        return toVector(style.objectPosition());
-    case CSSPropertyPerspectiveOrigin:
-        return toVector(style.perspectiveOrigin());
-    case CSSPropertyBorderBottomLeftRadius:
-        return toVector(style.borderBottomLeftRadius());
-    case CSSPropertyBorderBottomRightRadius:
-        return toVector(style.borderBottomRightRadius());
-    case CSSPropertyBorderTopLeftRadius:
-        return toVector(style.borderTopLeftRadius());
-    case CSSPropertyBorderTopRightRadius:
-        return toVector(style.borderTopRightRadius());
-    case CSSPropertyTransformOrigin:
-        return toVector(style.transformOrigin());
-    default:
-        break;
+            result.appendVector(style.strokeDashArray()->vector());
+        return true;
     }
 
-    Vector<Length> result;
-    const FillLayer* fillLayer = getFillLayer(property, style);
-    FillLayerMethods fillLayerMethods(property);
-    while (fillLayer && (fillLayer->*fillLayerMethods.isSet)()) {
-        result.append((fillLayer->*fillLayerMethods.get)());
-        fillLayer = fillLayer->next();
+    case CSSPropertyObjectPosition:
+        return appendToVector(style.objectPosition(), result);
+    case CSSPropertyPerspectiveOrigin:
+        return appendToVector(style.perspectiveOrigin(), result);
+    case CSSPropertyBorderBottomLeftRadius:
+        return appendToVector(style.borderBottomLeftRadius(), result);
+    case CSSPropertyBorderBottomRightRadius:
+        return appendToVector(style.borderBottomRightRadius(), result);
+    case CSSPropertyBorderTopLeftRadius:
+        return appendToVector(style.borderTopLeftRadius(), result);
+    case CSSPropertyBorderTopRightRadius:
+        return appendToVector(style.borderTopRightRadius(), result);
+    case CSSPropertyTransformOrigin:
+        return appendToVector(style.transformOrigin(), result);
+
+    case CSSPropertyBackgroundPositionX:
+    case CSSPropertyBackgroundPositionY:
+    case CSSPropertyWebkitMaskPositionX:
+    case CSSPropertyWebkitMaskPositionY: {
+        const FillLayer* fillLayer = getFillLayer(property, style);
+        FillLayerMethods fillLayerMethods(property);
+        while (fillLayer && (fillLayer->*fillLayerMethods.isSet)()) {
+            result.append((fillLayer->*fillLayerMethods.getLength)());
+            fillLayer = fillLayer->next();
+        }
+        return true;
     }
-    return result;
+    case CSSPropertyBackgroundSize:
+    case CSSPropertyWebkitMaskSize: {
+        const FillLayer* fillLayer = getFillLayer(property, style);
+        FillLayerMethods fillLayerMethods(property);
+        while (fillLayer && (fillLayer->*fillLayerMethods.isSet)()) {
+            FillSize fillSize = (fillLayer->*fillLayerMethods.getFillSize)();
+            if (fillSize.type != SizeLength) {
+                result.clear();
+                return false;
+            }
+            result.append(fillSize.size.width());
+            result.append(fillSize.size.height());
+            fillLayer = fillLayer->next();
+        }
+        return true;
+    }
+
+    default:
+        ASSERT_NOT_REACHED();
+        return false;
+    }
 }
 
 static LengthPoint pointFromVector(const Vector<Length>& list)
@@ -191,12 +230,14 @@ void LengthListPropertyFunctions::setLengthList(CSSPropertyID property, Computed
     case CSSPropertyStrokeDasharray:
         style.setStrokeDashArray(lengthList.isEmpty() ? nullptr : RefVector<Length>::create(std::move(lengthList)));
         return;
+
     case CSSPropertyObjectPosition:
         style.setObjectPosition(pointFromVector(lengthList));
         return;
     case CSSPropertyPerspectiveOrigin:
         style.setPerspectiveOrigin(pointFromVector(lengthList));
         return;
+
     case CSSPropertyBorderBottomLeftRadius:
         style.setBorderBottomLeftRadius(sizeFromVector(lengthList));
         return;
@@ -209,26 +250,56 @@ void LengthListPropertyFunctions::setLengthList(CSSPropertyID property, Computed
     case CSSPropertyBorderTopRightRadius:
         style.setBorderTopRightRadius(sizeFromVector(lengthList));
         return;
+
     case CSSPropertyTransformOrigin:
         style.setTransformOrigin(transformOriginFromVector(lengthList));
         return;
-    default:
-        break;
+
+    case CSSPropertyBackgroundPositionX:
+    case CSSPropertyBackgroundPositionY:
+    case CSSPropertyWebkitMaskPositionX:
+    case CSSPropertyWebkitMaskPositionY: {
+        FillLayer* fillLayer = accessFillLayer(property, style);
+        FillLayer* prev = nullptr;
+        FillLayerMethods fillLayerMethods(property);
+        for (size_t i = 0; i < lengthList.size(); i++) {
+            if (!fillLayer)
+                fillLayer = prev->ensureNext();
+            (fillLayer->*fillLayerMethods.setLength)(lengthList[i]);
+            prev = fillLayer;
+            fillLayer = fillLayer->next();
+        }
+        while (fillLayer) {
+            (fillLayer->*fillLayerMethods.clear)();
+            fillLayer = fillLayer->next();
+        }
+        return;
     }
 
-    FillLayer* fillLayer = accessFillLayer(property, style);
-    FillLayer* prev = nullptr;
-    FillLayerMethods fillLayerMethods(property);
-    for (size_t i = 0; i < lengthList.size(); i++) {
-        if (!fillLayer)
-            fillLayer = prev->ensureNext();
-        (fillLayer->*fillLayerMethods.set)(lengthList[i]);
-        prev = fillLayer;
-        fillLayer = fillLayer->next();
+    case CSSPropertyBackgroundSize:
+    case CSSPropertyWebkitMaskSize: {
+        ASSERT(lengthList.size() % 2 == 0);
+        FillLayer* fillLayer = accessFillLayer(property, style);
+        FillLayer* prev = nullptr;
+        FillLayerMethods fillLayerMethods(property);
+        for (size_t i = 0; i < lengthList.size() / 2; i++) {
+            if (!fillLayer)
+                fillLayer = prev->ensureNext();
+            FillSize fillSize(SizeLength, LengthSize(lengthList[2 * i], lengthList[2 * i + 1]));
+            (fillLayer->*fillLayerMethods.setFillSize)(fillSize);
+            prev = fillLayer;
+            fillLayer = fillLayer->next();
+        }
+        while (fillLayer) {
+            (fillLayer->*fillLayerMethods.clear)();
+            fillLayer = fillLayer->next();
+        }
+        return;
     }
-    while (fillLayer) {
-        (fillLayer->*fillLayerMethods.clear)();
-        fillLayer = fillLayer->next();
+
+    default:
+        ASSERT_NOT_REACHED();
+        break;
     }
 }
 
