@@ -96,10 +96,10 @@ bool IsTabSwitcherEnabled() {
     return false;
   }
 
-  // Check if the finch experiment is turned off.
+  // Check if the finch experiment is turned on.
   std::string group_name = base::FieldTrialList::FindFullName("IOSTabSwitcher");
-  return !base::StartsWith(group_name, "Disabled",
-                           base::CompareCase::INSENSITIVE_ASCII);
+  return base::StartsWith(group_name, "Enabled",
+                          base::CompareCase::INSENSITIVE_ASCII);
 }
 
 bool IsReadingListEnabled() {
