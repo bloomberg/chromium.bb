@@ -458,7 +458,6 @@ source_set("test_support") {
 
   public_deps = [
     ":platform",
-    "//cc",
     "//testing/gmock",
   ]
 
