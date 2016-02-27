@@ -1478,7 +1478,8 @@ MAYBE_TEST_P(ElementBoundsInViewportSpaceAccountsForViewport)
 
 // Test that the various window.scroll and document.body.scroll properties and
 // methods work unchanged from the pre-virtual viewport mode.
-TEST_P(ParameterizedVisualViewportTest, bodyAndWindowScrollPropertiesAccountForViewport)
+// TODO(crbug.com/590435)
+MAYBE_TEST_P(bodyAndWindowScrollPropertiesAccountForViewport)
 {
     initializeWithAndroidSettings();
 
