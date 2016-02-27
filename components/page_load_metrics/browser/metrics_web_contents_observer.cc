@@ -46,78 +46,31 @@ bool IsRelevantNavigation(content::NavigationHandle* navigation_handle,
          (mime_type == "text/html" || mime_type == "application/xhtml+xml");
 }
 
-// If second is non-zero, first must also be non-zero and less than or equal to
-// second.
-bool EventsInOrder(base::TimeDelta first, base::TimeDelta second) {
-  if (second.is_zero()) {
-    return true;
-  }
-  return !first.is_zero() && first <= second;
-}
-
 bool IsValidPageLoadTiming(const PageLoadTiming& timing) {
   if (timing.IsEmpty())
     return false;
 
   // If we have a non-empty timing, it should always have a navigation start.
   if (timing.navigation_start.is_null()) {
-    DLOG(FATAL) << "Received null navigation_start.";
+    NOTREACHED();
     return false;
   }
 
-  // Verify proper ordering between the various timings.
-
-  if (!EventsInOrder(timing.response_start,
-                     timing.dom_content_loaded_event_start)) {
-    // We sometimes get a zero response_start with a non-zero DCL. See
-    // crbug.com/590212.
-    DLOG(ERROR) << "Invalid response_start " << timing.response_start
-                << " for dom_content_loaded_event_start "
-                << timing.dom_content_loaded_event_start;
+  // If we have a DOM content loaded event, we should have a response start.
+  if (!timing.dom_content_loaded_event_start.is_zero() &&
+      timing.response_start > timing.dom_content_loaded_event_start) {
+    NOTREACHED();
     return false;
   }
 
-  if (!EventsInOrder(timing.dom_content_loaded_event_start,
-                     timing.load_event_start)) {
-    // TODO(csharrison) crbug.com/536203 shows that sometimes we can get a load
-    // event without a DCL. Figure out if we can change this condition to use a
-    // DLOG(FATAL) in the condition.
-    DLOG(ERROR) << "Invalid dom_content_loaded_event_start "
-                << timing.dom_content_loaded_event_start
-                << " for load_event_start " << timing.load_event_start;
-    return false;
-  }
-
-  if (!EventsInOrder(timing.response_start, timing.first_layout)) {
-    // We sometimes get a zero response_start with a non-zero first layout. See
-    // crbug.com/590212.
-    DLOG(ERROR) << "Invalid response_start " << timing.response_start
-                << " for first_layout " << timing.first_layout;
-    return false;
-  }
-
-  if (!EventsInOrder(timing.first_layout, timing.first_paint)) {
-    DLOG(FATAL) << "Invalid first_layout " << timing.first_layout
-                << " for first_paint " << timing.first_paint;
-    return false;
-  }
-
-  if (!EventsInOrder(timing.first_paint, timing.first_text_paint)) {
-    DLOG(FATAL) << "Invalid first_paint " << timing.first_paint
-                << " for first_text_paint " << timing.first_text_paint;
-    return false;
-  }
-
-  if (!EventsInOrder(timing.first_paint, timing.first_image_paint)) {
-    DLOG(FATAL) << "Invalid first_paint " << timing.first_paint
-                << " for first_image_paint " << timing.first_image_paint;
-    return false;
-  }
-
-  if (!EventsInOrder(timing.first_paint, timing.first_contentful_paint)) {
-    DLOG(FATAL) << "Invalid first_paint " << timing.first_paint
-                << " for first_contentful_paint "
-                << timing.first_contentful_paint;
+  // If we have a load event, we should have both a response start and a DCL.
+  // TODO(csharrison) crbug.com/536203 shows that sometimes we can get a load
+  // event without a DCL. Figure out if we can change this condition to use a
+  // NOTREACHED in the condition.
+  if (!timing.load_event_start.is_zero() &&
+      (timing.dom_content_loaded_event_start.is_zero() ||
+       timing.response_start > timing.load_event_start ||
+       timing.dom_content_loaded_event_start > timing.load_event_start)) {
     return false;
   }
 
@@ -135,9 +88,7 @@ UserAbortType AbortTypeForPageTransition(ui::PageTransition transition) {
     return ABORT_FORWARD_BACK;
   if (ui::PageTransitionIsNewNavigation(transition))
     return ABORT_NEW_NAVIGATION;
-  DLOG(FATAL)
-      << "AbortTypeForPageTransition received unexpected ui::PageTransition: "
-      << transition;
+  NOTREACHED();
   return ABORT_OTHER;
 }
 
@@ -201,9 +152,7 @@ void PageLoadTracker::LogAbortChainHistograms(
                            aborted_chain_size_);
       return;
     default:
-      DLOG(FATAL)
-          << "LogAbortChainHistograms received unexpected ui::PageTransition: "
-          << committed_transition;
+      NOTREACHED();
       return;
   }
 }

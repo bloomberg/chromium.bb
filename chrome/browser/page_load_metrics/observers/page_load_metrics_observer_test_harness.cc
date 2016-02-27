@@ -42,40 +42,6 @@ PageLoadMetricsObserverTestHarness::PageLoadMetricsObserverTestHarness()
 
 PageLoadMetricsObserverTestHarness::~PageLoadMetricsObserverTestHarness() {}
 
-// static
-void PageLoadMetricsObserverTestHarness::PopulateRequiredTimingFields(
-    PageLoadTiming* inout_timing) {
-  if (!inout_timing->first_contentful_paint.is_zero() &&
-      inout_timing->first_paint.is_zero()) {
-    inout_timing->first_paint = inout_timing->first_contentful_paint;
-  }
-  if (!inout_timing->first_text_paint.is_zero() &&
-      inout_timing->first_paint.is_zero()) {
-    inout_timing->first_paint = inout_timing->first_text_paint;
-  }
-  if (!inout_timing->first_image_paint.is_zero() &&
-      inout_timing->first_paint.is_zero()) {
-    inout_timing->first_paint = inout_timing->first_image_paint;
-  }
-  if (!inout_timing->first_paint.is_zero() &&
-      inout_timing->first_layout.is_zero()) {
-    inout_timing->first_layout = inout_timing->first_paint;
-  }
-  if (!inout_timing->load_event_start.is_zero() &&
-      inout_timing->dom_content_loaded_event_start.is_zero()) {
-    inout_timing->dom_content_loaded_event_start =
-        inout_timing->load_event_start;
-  }
-  if (!inout_timing->first_layout.is_zero() &&
-      inout_timing->response_start.is_zero()) {
-    inout_timing->response_start = inout_timing->first_layout;
-  }
-  if (!inout_timing->dom_content_loaded_event_start.is_zero() &&
-      inout_timing->response_start.is_zero()) {
-    inout_timing->response_start = inout_timing->dom_content_loaded_event_start;
-  }
-}
-
 void PageLoadMetricsObserverTestHarness::SetUp() {
   ChromeRenderViewHostTestHarness::SetUp();
   SetContents(CreateTestWebContents());
