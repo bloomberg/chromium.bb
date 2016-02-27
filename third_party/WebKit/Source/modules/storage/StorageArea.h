@@ -68,10 +68,9 @@ public:
     size_t memoryBytesUsedByCache();
 
     static void dispatchLocalStorageEvent(const String& key, const String& oldValue, const String& newValue,
-        SecurityOrigin*, const KURL& pageURL, WebStorageArea* sourceAreaInstance, bool originatedInProcess);
+        SecurityOrigin*, const KURL& pageURL, WebStorageArea* sourceAreaInstance);
     static void dispatchSessionStorageEvent(const String& key, const String& oldValue, const String& newValue,
-        SecurityOrigin*, const KURL& pageURL, const WebStorageNamespace&,
-        WebStorageArea* sourceAreaInstance, bool originatedInProcess);
+        SecurityOrigin*, const KURL& pageURL, const WebStorageNamespace&, WebStorageArea* sourceAreaInstance);
 
     DECLARE_TRACE();
 

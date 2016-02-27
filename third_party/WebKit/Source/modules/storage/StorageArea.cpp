@@ -159,7 +159,7 @@ size_t StorageArea::memoryBytesUsedByCache()
     return m_storageArea->memoryBytesUsedByCache();
 }
 
-void StorageArea::dispatchLocalStorageEvent(const String& key, const String& oldValue, const String& newValue, SecurityOrigin* securityOrigin, const KURL& pageURL, WebStorageArea* sourceAreaInstance, bool originatedInProcess)
+void StorageArea::dispatchLocalStorageEvent(const String& key, const String& oldValue, const String& newValue, SecurityOrigin* securityOrigin, const KURL& pageURL, WebStorageArea* sourceAreaInstance)
 {
     // Iterate over all pages that have a StorageNamespaceController supplement.
     for (Page* page : Page::ordinaryPages()) {
@@ -190,7 +190,7 @@ static Page* findPageWithSessionStorageNamespace(const WebStorageNamespace& sess
     return nullptr;
 }
 
-void StorageArea::dispatchSessionStorageEvent(const String& key, const String& oldValue, const String& newValue, SecurityOrigin* securityOrigin, const KURL& pageURL, const WebStorageNamespace& sessionNamespace, WebStorageArea* sourceAreaInstance, bool originatedInProcess)
+void StorageArea::dispatchSessionStorageEvent(const String& key, const String& oldValue, const String& newValue, SecurityOrigin* securityOrigin, const KURL& pageURL, const WebStorageNamespace& sessionNamespace, WebStorageArea* sourceAreaInstance)
 {
     Page* page = findPageWithSessionStorageNamespace(sessionNamespace);
     if (!page)

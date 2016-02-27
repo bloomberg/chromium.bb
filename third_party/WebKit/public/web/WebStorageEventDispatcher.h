@@ -45,15 +45,14 @@ public:
     BLINK_EXPORT static void dispatchLocalStorageEvent(
             const WebString& key, const WebString& oldValue,
             const WebString& newValue, const WebURL& origin,
-            const WebURL& pageUrl, WebStorageArea* sourceAreaInstance,
-            bool originatedInProcess);
+            const WebURL& pageUrl, WebStorageArea* sourceAreaInstance);
 
     // Dispatch a session storage event to appropiate documents.
     BLINK_EXPORT static void dispatchSessionStorageEvent(
             const WebString& key, const WebString& oldValue,
             const WebString& newValue, const WebURL& origin,
             const WebURL& pageUrl, const WebStorageNamespace&,
-            WebStorageArea* sourceAreaInstance, bool originatedInProcess);
+            WebStorageArea* sourceAreaInstance);
 
 private:
     WebStorageEventDispatcher() { }

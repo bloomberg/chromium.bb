@@ -42,25 +42,24 @@ namespace blink {
 void WebStorageEventDispatcher::dispatchLocalStorageEvent(
         const WebString& key, const WebString& oldValue,
         const WebString& newValue, const WebURL& origin,
-        const WebURL& pageURL, WebStorageArea* sourceAreaInstance,
-        bool originatedInProcess)
+        const WebURL& pageURL, WebStorageArea* sourceAreaInstance)
 {
     RefPtr<SecurityOrigin> securityOrigin = SecurityOrigin::create(origin);
     StorageArea::dispatchLocalStorageEvent(
             key, oldValue, newValue, securityOrigin.get(), pageURL,
-            sourceAreaInstance, originatedInProcess);
+            sourceAreaInstance);
 }
 
 void WebStorageEventDispatcher::dispatchSessionStorageEvent(
         const WebString& key, const WebString& oldValue,
         const WebString& newValue, const WebURL& origin,
         const WebURL& pageURL, const WebStorageNamespace& sessionNamespace,
-        WebStorageArea* sourceAreaInstance, bool originatedInProcess)
+        WebStorageArea* sourceAreaInstance)
 {
     RefPtr<SecurityOrigin> securityOrigin = SecurityOrigin::create(origin);
     StorageArea::dispatchSessionStorageEvent(
             key, oldValue, newValue, securityOrigin.get(), pageURL,
-            sessionNamespace, sourceAreaInstance, originatedInProcess);
+            sessionNamespace, sourceAreaInstance);
 }
 
 } // namespace blink
