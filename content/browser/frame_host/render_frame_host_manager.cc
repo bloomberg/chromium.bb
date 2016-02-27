@@ -419,7 +419,7 @@ void RenderFrameHostManager::OnBeforeUnloadACK(
 }
 
 void RenderFrameHostManager::OnCrossSiteResponse(
-    RenderFrameHostImpl* pending_render_frame_host,
+    RenderFrameHostImpl* transferring_render_frame_host,
     const GlobalRequestID& global_request_id,
     scoped_ptr<CrossSiteTransferringRequest> cross_site_transferring_request,
     const std::vector<GURL>& transfer_url_chain,
@@ -431,12 +431,23 @@ void RenderFrameHostManager::OnCrossSiteResponse(
   // swapping out) when the new navigation commits.
   CHECK(cross_site_transferring_request);
 
-  // A transfer should only have come from our pending or current RFH.
+  // A transfer should only have come from our pending or current RFH.  If it
+  // started as a cross-process navigation via OpenURL, this is the pending
+  // one.  If it wasn't cross-process until the transfer, this is the current
+  // one.
+  //
+  // Note that having a pending RFH does not imply that it was the one that
+  // made the request.  Suppose that during a pending cross-site navigation,
+  // the frame performs a different same-site navigation which redirects
+  // cross-site.  In this case, there will be a pending RFH, but this request
+  // is made by the current RFH. Later, this will create a new pending RFH and
+  // clean up the old one.
+  //
   // TODO(creis): We need to handle the case that the pending RFH has changed
   // in the mean time, while this was being posted from the IO thread.  We
   // should probably cancel the request in that case.
-  DCHECK(pending_render_frame_host == pending_render_frame_host_.get() ||
-         pending_render_frame_host == render_frame_host_.get());
+  DCHECK(transferring_render_frame_host == pending_render_frame_host_.get() ||
+         transferring_render_frame_host == render_frame_host_.get());
 
   // Check if the FrameTreeNode is loading. This will be used later to notify
   // the FrameTreeNode that the load stop if the transfer fails.
@@ -449,27 +460,13 @@ void RenderFrameHostManager::OnCrossSiteResponse(
   // Store the NavigationHandle to give it to the appropriate RenderFrameHost
   // after it started navigating.
   transfer_navigation_handle_ =
-      pending_render_frame_host->PassNavigationHandleOwnership();
+      transferring_render_frame_host->PassNavigationHandleOwnership();
   DCHECK(transfer_navigation_handle_);
 
   // Set the transferring RenderFrameHost as not loading, so that it does not
   // emit a DidStopLoading notification if it is destroyed when creating the
   // new navigating RenderFrameHost.
-  pending_render_frame_host->set_is_loading(false);
-
-  // Sanity check that the params are for the correct frame and process.
-  // These should match the RenderFrameHost that made the request.
-  // If it started as a cross-process navigation via OpenURL, this is the
-  // pending one.  If it wasn't cross-process until the transfer, this is
-  // the current one.
-  int render_frame_id = pending_render_frame_host_
-                            ? pending_render_frame_host_->GetRoutingID()
-                            : render_frame_host_->GetRoutingID();
-  DCHECK_EQ(render_frame_id, pending_render_frame_host->GetRoutingID());
-  int process_id = pending_render_frame_host_ ?
-      pending_render_frame_host_->GetProcess()->GetID() :
-      render_frame_host_->GetProcess()->GetID();
-  DCHECK_EQ(process_id, global_request_id.child_id);
+  transferring_render_frame_host->set_is_loading(false);
 
   // Treat the last URL in the chain as the destination and the remainder as
   // the redirect chain.
@@ -478,9 +475,11 @@ void RenderFrameHostManager::OnCrossSiteResponse(
   std::vector<GURL> rest_of_chain = transfer_url_chain;
   rest_of_chain.pop_back();
 
-  pending_render_frame_host->frame_tree_node()->navigator()->RequestTransferURL(
-      pending_render_frame_host, transfer_url, nullptr, rest_of_chain, referrer,
-      page_transition, global_request_id, should_replace_current_entry);
+  transferring_render_frame_host->frame_tree_node()
+      ->navigator()
+      ->RequestTransferURL(transferring_render_frame_host, transfer_url,
+                           nullptr, rest_of_chain, referrer, page_transition,
+                           global_request_id, should_replace_current_entry);
 
   // The transferring request was only needed during the RequestTransferURL
   // call, so it is safe to clear at this point.
