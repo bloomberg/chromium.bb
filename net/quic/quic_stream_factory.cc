@@ -46,6 +46,7 @@
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_server_id.h"
 #include "net/socket/client_socket_factory.h"
+#include "net/ssl/token_binding.h"
 #include "net/udp/udp_client_socket.h"
 
 #if defined(OS_WIN)
@@ -588,7 +589,8 @@ QuicStreamFactory::QuicStreamFactory(
     int idle_connection_timeout_seconds,
     bool migrate_sessions_on_network_change,
     bool migrate_sessions_early,
-    const QuicTagVector& connection_options)
+    const QuicTagVector& connection_options,
+    bool enable_token_binding)
     : require_confirmation_(true),
       host_resolver_(host_resolver),
       client_socket_factory_(client_socket_factory),
@@ -658,6 +660,8 @@ QuicStreamFactory::QuicStreamFactory(
     crypto_config_.SetChannelIDSource(
         new ChannelIDSourceChromium(channel_id_service));
   }
+  if (enable_token_binding && channel_id_service && IsTokenBindingSupported())
+    crypto_config_.tb_key_params.push_back(kP256);
 #if defined(USE_OPENSSL)
   crypto::EnsureOpenSSLInit();
   bool has_aes_hardware_support = !!EVP_has_aes_hardware();

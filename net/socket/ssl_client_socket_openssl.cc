@@ -51,6 +51,7 @@
 #include "net/ssl/ssl_failure_state.h"
 #include "net/ssl/ssl_info.h"
 #include "net/ssl/ssl_private_key.h"
+#include "net/ssl/token_binding.h"
 
 #if !defined(OS_NACL)
 #include "net/ssl/ssl_key_logger.h"
@@ -570,19 +571,11 @@ Error SSLClientSocketOpenSSL::GetSignedEKMForTokenBinding(
     return ERR_FAILED;
   }
 
-  size_t sig_len;
-  crypto::ScopedEVP_PKEY_CTX pctx(EVP_PKEY_CTX_new(key->key(), nullptr));
-  if (!EVP_PKEY_sign_init(pctx.get()) ||
-      !EVP_PKEY_sign(pctx.get(), nullptr, &sig_len, tb_ekm_buf,
-                     sizeof(tb_ekm_buf))) {
+  if (!SignTokenBindingEkm(
+          base::StringPiece(reinterpret_cast<char*>(tb_ekm_buf),
+                            sizeof(tb_ekm_buf)),
+          key, out))
     return ERR_FAILED;
-  }
-  out->resize(sig_len);
-  if (!EVP_PKEY_sign(pctx.get(), out->data(), &sig_len, tb_ekm_buf,
-                     sizeof(tb_ekm_buf))) {
-    return ERR_FAILED;
-  }
-  out->resize(sig_len);
 
   tb_signed_ekm_map_.Put(raw_public_key, *out);
   return OK;

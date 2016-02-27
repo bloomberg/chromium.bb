@@ -30,6 +30,7 @@
 #include "net/ssl/channel_id_service.h"
 #include "net/ssl/ssl_connection_status_flags.h"
 #include "net/ssl/ssl_info.h"
+#include "net/ssl/token_binding.h"
 #include "net/udp/datagram_client_socket.h"
 
 namespace net {
@@ -47,6 +48,12 @@ const size_t kAdditionalOverheadForIPv6 = 20;
 // connection migration. A new Reader is created every time this endpoint's
 // IP address changes.
 const size_t kMaxReadersPerQuicSession = 5;
+
+// Size of the MRU cache of Token Binding signatures. Since the material being
+// signed is constant and there aren't many keys being used to sign, a fairly
+// small number was chosen, somewhat arbitrarily, and to match
+// SSLClientSocketOpenssl.
+const size_t kTokenBindingSignatureMapSize = 10;
 
 // Histograms for tracking down the crashes from http://crbug.com/354669
 // Note: these values must be kept in sync with the corresponding values in:
@@ -199,6 +206,7 @@ QuicChromiumClientSession::QuicChromiumClientSession(
                                        net_log_)),
       going_away_(false),
       disabled_reason_(QUIC_DISABLED_NOT),
+      token_binding_signatures_(kTokenBindingSignatureMapSize),
       weak_factory_(this) {
   sockets_.push_back(std::move(socket));
   packet_readers_.push_back(make_scoped_ptr(new QuicChromiumPacketReader(
@@ -520,7 +528,37 @@ bool QuicChromiumClientSession::GetSSLInfo(SSLInfo* ssl_info) const {
 
   ssl_info->UpdateCertificateTransparencyInfo(*ct_verify_result_);
 
+  if (crypto_stream_->crypto_negotiated_params().token_binding_key_param ==
+      kP256) {
+    ssl_info->token_binding_negotiated = true;
+    ssl_info->token_binding_key_param = TB_PARAM_ECDSAP256;
+  }
+
   return true;
+}
+
+Error QuicChromiumClientSession::GetTokenBindingSignature(
+    crypto::ECPrivateKey* key,
+    std::vector<uint8_t>* out) {
+  // The same key will be used across multiple requests to sign the same value,
+  // so the signature is cached.
+  std::string raw_public_key;
+  if (!key->ExportRawPublicKey(&raw_public_key))
+    return ERR_FAILED;
+  TokenBindingSignatureMap::iterator it =
+      token_binding_signatures_.Get(raw_public_key);
+  if (it != token_binding_signatures_.end()) {
+    *out = it->second;
+    return OK;
+  }
+
+  std::string key_material;
+  if (!crypto_stream_->ExportTokenBindingKeyingMaterial(&key_material))
+    return ERR_FAILED;
+  if (!SignTokenBindingEkm(key_material, key, out))
+    return ERR_FAILED;
+  token_binding_signatures_.Put(raw_public_key, *out);
+  return OK;
 }
 
 int QuicChromiumClientSession::CryptoConnect(

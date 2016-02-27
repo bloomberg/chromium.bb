@@ -244,7 +244,8 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<TestParams> {
         close_sessions_on_ip_change_,
         disable_quic_on_timeout_with_open_streams_,
         idle_connection_timeout_seconds_, migrate_sessions_on_network_change_,
-        migrate_sessions_early_, QuicTagVector()));
+        migrate_sessions_early_, QuicTagVector(),
+        /*enable_token_binding*/ false));
     factory_->set_require_confirmation(false);
     EXPECT_FALSE(factory_->has_quic_server_info_factory());
     factory_->set_quic_server_info_factory(new MockQuicServerInfoFactory());

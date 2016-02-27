@@ -60,6 +60,27 @@ Error BuildTokenBinding(TokenBindingType type,
 
 }  // namespace
 
+bool IsTokenBindingSupported() {
+  return true;
+}
+
+bool SignTokenBindingEkm(base::StringPiece ekm,
+                         crypto::ECPrivateKey* key,
+                         std::vector<uint8_t>* out) {
+  size_t sig_len;
+  const uint8_t* ekm_data = reinterpret_cast<const uint8_t*>(ekm.data());
+  crypto::ScopedEVP_PKEY_CTX pctx(EVP_PKEY_CTX_new(key->key(), nullptr));
+  if (!EVP_PKEY_sign_init(pctx.get()) ||
+      !EVP_PKEY_sign(pctx.get(), nullptr, &sig_len, ekm_data, ekm.size())) {
+    return false;
+  }
+  out->resize(sig_len);
+  if (!EVP_PKEY_sign(pctx.get(), out->data(), &sig_len, ekm_data, ekm.size()))
+    return false;
+  out->resize(sig_len);
+  return true;
+}
+
 Error BuildTokenBindingMessageFromTokenBindings(
     const std::vector<base::StringPiece>& token_bindings,
     std::string* out) {

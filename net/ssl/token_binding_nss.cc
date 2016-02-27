@@ -8,6 +8,16 @@
 
 namespace net {
 
+bool IsTokenBindingSupported() {
+  return false;
+}
+
+bool SignTokenBindingEkm(base::StringPiece ekm,
+                         crypto::ECPrivateKey* key,
+                         std::vector<uint8_t>* out) {
+  return false;
+}
+
 Error BuildTokenBindingMessageFromTokenBindings(
     const std::vector<base::StringPiece>& token_bindings,
     std::string* out) {

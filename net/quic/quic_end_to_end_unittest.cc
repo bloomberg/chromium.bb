@@ -29,6 +29,7 @@
 #include "net/proxy/proxy_service.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
 #include "net/quic/test_tools/quic_test_utils.h"
+#include "net/ssl/default_channel_id_store.h"
 #include "net/ssl/ssl_config_service_defaults.h"
 #include "net/test/cert_test_util.h"
 #include "net/tools/quic/quic_in_memory_cache.h"
@@ -120,6 +121,10 @@ class QuicEndToEndTest : public ::testing::TestWithParam<TestParams> {
     params_.ssl_config_service = ssl_config_service_.get();
     params_.http_auth_handler_factory = auth_handler_factory_.get();
     params_.http_server_properties = http_server_properties.GetWeakPtr();
+    channel_id_service_.reset(
+        new ChannelIDService(new DefaultChannelIDStore(nullptr),
+                             base::ThreadTaskRunnerHandle::Get()));
+    params_.channel_id_service = channel_id_service_.get();
 
     CertVerifyResult verify_result;
     verify_result.verified_cert = ImportCertFromFile(
@@ -172,9 +177,10 @@ class QuicEndToEndTest : public ::testing::TestWithParam<TestParams> {
         kInitialStreamFlowControlWindowForTest);
     server_config_.SetInitialSessionFlowControlWindowToSend(
         kInitialSessionFlowControlWindowForTest);
+    server_config_options_.token_binding_enabled = true;
     QuicServer* server =
         new QuicServer(CryptoTestUtils::ProofSourceForTesting(), server_config_,
-                       QuicSupportedVersions());
+                       server_config_options_, QuicSupportedVersions());
     server_thread_.reset(new ServerThread(server, server_address_,
                                           strike_register_no_startup_period_));
     server_thread_->Initialize();
@@ -241,6 +247,7 @@ class QuicEndToEndTest : public ::testing::TestWithParam<TestParams> {
   scoped_ptr<MockHostResolver> host_resolver_impl_;
   MappedHostResolver host_resolver_;
   MockCertVerifier cert_verifier_;
+  scoped_ptr<ChannelIDService> channel_id_service_;
   TransportSecurityState transport_security_state_;
   scoped_ptr<CTVerifier> cert_transparency_verifier_;
   scoped_refptr<SSLConfigServiceDefaults> ssl_config_service_;
@@ -256,6 +263,7 @@ class QuicEndToEndTest : public ::testing::TestWithParam<TestParams> {
   IPEndPoint server_address_;
   std::string server_hostname_;
   QuicConfig server_config_;
+  QuicCryptoServerConfig::ConfigOptions server_config_options_;
   bool server_started_;
   bool strike_register_no_startup_period_;
 };
@@ -277,6 +285,26 @@ TEST_P(QuicEndToEndTest, LargeGetWithNoPacketLoss) {
   base::MessageLoop::current()->Run();
 
   CheckResponse(consumer, "HTTP/1.1 200", response);
+}
+
+TEST_P(QuicEndToEndTest, TokenBinding) {
+  // Enable token binding and re-initialize the TestTransactionFactory.
+  params_.enable_token_binding = true;
+  transaction_factory_.reset(new TestTransactionFactory(params_));
+
+  AddToCache(request_.url.PathForRequest(), 200, "OK", kResponseBody);
+
+  TestTransactionConsumer consumer(DEFAULT_PRIORITY,
+                                   transaction_factory_.get());
+  consumer.Start(&request_, BoundNetLog());
+
+  // Will terminate when the last consumer completes.
+  base::MessageLoop::current()->Run();
+
+  CheckResponse(consumer, "HTTP/1.1 200", kResponseBody);
+  HttpRequestHeaders headers;
+  ASSERT_TRUE(consumer.transaction()->GetFullRequestHeaders(&headers));
+  EXPECT_TRUE(headers.HasHeader(HttpRequestHeaders::kTokenBinding));
 }
 
 // crbug.com/559173

@@ -47,11 +47,16 @@ const char kSourceAddressTokenSecret[] = "secret";
 }  // namespace
 
 QuicServer::QuicServer(ProofSource* proof_source)
-    : QuicServer(proof_source, QuicConfig(), QuicSupportedVersions()) {}
+    : QuicServer(proof_source,
+                 QuicConfig(),
+                 QuicCryptoServerConfig::ConfigOptions(),
+                 QuicSupportedVersions()) {}
 
-QuicServer::QuicServer(ProofSource* proof_source,
-                       const QuicConfig& config,
-                       const QuicVersionVector& supported_versions)
+QuicServer::QuicServer(
+    ProofSource* proof_source,
+    const QuicConfig& config,
+    const QuicCryptoServerConfig::ConfigOptions& crypto_config_options,
+    const QuicVersionVector& supported_versions)
     : port_(0),
       fd_(-1),
       packets_dropped_(0),
@@ -61,6 +66,7 @@ QuicServer::QuicServer(ProofSource* proof_source,
       crypto_config_(kSourceAddressTokenSecret,
                      QuicRandom::GetInstance(),
                      proof_source),
+      crypto_config_options_(crypto_config_options),
       supported_versions_(supported_versions),
       packet_reader_(new QuicPacketReader()) {
   Initialize();
@@ -95,9 +101,8 @@ void QuicServer::Initialize() {
 
   QuicEpollClock clock(&epoll_server_);
 
-  scoped_ptr<CryptoHandshakeMessage> scfg(
-      crypto_config_.AddDefaultConfig(QuicRandom::GetInstance(), &clock,
-                                      QuicCryptoServerConfig::ConfigOptions()));
+  scoped_ptr<CryptoHandshakeMessage> scfg(crypto_config_.AddDefaultConfig(
+      QuicRandom::GetInstance(), &clock, crypto_config_options_));
 }
 
 QuicServer::~QuicServer() {}

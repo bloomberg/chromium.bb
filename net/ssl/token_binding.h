@@ -15,6 +15,17 @@
 
 namespace net {
 
+// Returns whether Token Binding is supported on this platform. If this function
+// returns false, Token Binding must not be negotiated.
+bool IsTokenBindingSupported();
+
+// Takes an exported keying material value |ekm| from the TLS layer and a token
+// binding key |key| and signs the EKM, putting the signature in |*out|. Returns
+// true on success or false if there's an error in the signing operations.
+bool SignTokenBindingEkm(base::StringPiece ekm,
+                         crypto::ECPrivateKey* key,
+                         std::vector<uint8_t>* out);
+
 // Given a vector of serialized TokenBinding structs (as defined in
 // draft-ietf-tokbind-protocol-04), this function combines them to form the
 // serialized TokenBindingMessage struct in |*out|. This function returns a net

@@ -132,7 +132,10 @@ QuicTestServer::QuicTestServer(ProofSource* proof_source)
 QuicTestServer::QuicTestServer(ProofSource* proof_source,
                                const QuicConfig& config,
                                const QuicVersionVector& supported_versions)
-    : QuicServer(proof_source, config, supported_versions) {}
+    : QuicServer(proof_source,
+                 config,
+                 QuicCryptoServerConfig::ConfigOptions(),
+                 supported_versions) {}
 
 QuicDispatcher* QuicTestServer::CreateQuicDispatcher() {
   return new QuicTestDispatcher(config(), &crypto_config(),

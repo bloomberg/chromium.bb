@@ -15,6 +15,7 @@
 #include <string>
 
 #include "base/containers/hash_tables.h"
+#include "base/containers/mru_cache.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
@@ -41,6 +42,9 @@ class QuicServerInfo;
 class QuicStreamFactory;
 class SSLInfo;
 class TransportSecurityState;
+
+using TokenBindingSignatureMap =
+    base::MRUCache<std::string, std::vector<uint8_t>>;
 
 namespace test {
 class QuicChromiumClientSessionPeer;
@@ -189,6 +193,11 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   // Gets the SSL connection information.
   bool GetSSLInfo(SSLInfo* ssl_info) const;
 
+  // Signs the exported keying material used for Token Binding using key |*key|
+  // and puts the signature in |*out|. Returns a net error code.
+  Error GetTokenBindingSignature(crypto::ECPrivateKey* key,
+                                 std::vector<uint8_t>* out);
+
   // Performs a crypto handshake with the server.
   int CryptoConnect(bool require_confirmation,
                     const CompletionCallback& callback);
@@ -315,6 +324,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   // on this session. Existing stream will continue to be processed.
   bool going_away_;
   QuicDisabledReason disabled_reason_;
+  TokenBindingSignatureMap token_binding_signatures_;
   base::WeakPtrFactory<QuicChromiumClientSession> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicChromiumClientSession);

@@ -37,6 +37,7 @@ class QuicServer : public EpollCallbackInterface {
   explicit QuicServer(ProofSource* proof_source);
   QuicServer(ProofSource* proof_source,
              const QuicConfig& config,
+             const QuicCryptoServerConfig::ConfigOptions& server_config_options,
              const QuicVersionVector& supported_versions);
 
   ~QuicServer() override;
@@ -120,6 +121,8 @@ class QuicServer : public EpollCallbackInterface {
   QuicConfig config_;
   // crypto_config_ contains crypto parameters for the handshake.
   QuicCryptoServerConfig crypto_config_;
+  // crypto_config_options_ contains crypto parameters for the handshake.
+  QuicCryptoServerConfig::ConfigOptions crypto_config_options_;
 
   // This vector contains QUIC versions which we currently support.
   // This should be ordered such that the highest supported version is the first

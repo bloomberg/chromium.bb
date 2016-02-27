@@ -133,6 +133,7 @@ class TestTransactionConsumer {
   const HttpResponseInfo* response_info() const {
     return trans_->GetResponseInfo();
   }
+  const HttpTransaction* transaction() const { return trans_.get(); }
   const std::string& content() const { return content_; }
 
  private:

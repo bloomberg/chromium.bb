@@ -154,7 +154,8 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       int idle_connection_timeout_seconds,
       bool migrate_sessions_on_network_change,
       bool migrate_sessions_early,
-      const QuicTagVector& connection_options);
+      const QuicTagVector& connection_options,
+      bool enable_token_binding);
   ~QuicStreamFactory() override;
 
   // Returns true if there is an existing session to |server_id| which can be
