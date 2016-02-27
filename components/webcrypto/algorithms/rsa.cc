@@ -19,7 +19,6 @@
 #include "crypto/scoped_openssl_types.h"
 #include "third_party/WebKit/public/platform/WebCryptoAlgorithmParams.h"
 #include "third_party/WebKit/public/platform/WebCryptoKeyAlgorithm.h"
-#include "third_party/WebKit/public/platform/WebCryptoUtil.h"
 
 namespace webcrypto {
 
@@ -279,7 +278,7 @@ Status RsaHashedAlgorithm::GenerateKey(
   }
 
   unsigned int public_exponent = 0;
-  if (!blink::bigIntegerToUint(params->publicExponent(), public_exponent))
+  if (!params->convertPublicExponentToUnsigned(public_exponent))
     return Status::ErrorGenerateKeyPublicExponent();
 
   // OpenSSL hangs when given bad public exponents. Use a whitelist.

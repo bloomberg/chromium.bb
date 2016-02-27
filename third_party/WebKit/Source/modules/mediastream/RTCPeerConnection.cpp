@@ -69,7 +69,6 @@
 #include "platform/mediastream/RTCOfferOptions.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCryptoAlgorithmParams.h"
-#include "public/platform/WebCryptoUtil.h"
 #include "public/platform/WebMediaStream.h"
 #include "public/platform/WebRTCCertificate.h"
 #include "public/platform/WebRTCCertificateGenerator.h"
@@ -638,10 +637,10 @@ ScriptPromise RTCPeerConnection::generateCertificate(ScriptState* scriptState, c
         // name: "RSASSA-PKCS1-v1_5"
         unsigned publicExponent;
         // "publicExponent" must fit in an unsigned int. The only recognized "hash" is "SHA-256".
-        if (bigIntegerToUint(cryptoAlgorithm.rsaHashedKeyGenParams()->publicExponent(), publicExponent)
+        if (cryptoAlgorithm.rsaHashedKeyGenParams()->convertPublicExponentToUnsigned(publicExponent)
             && cryptoAlgorithm.rsaHashedKeyGenParams()->hash().id() == WebCryptoAlgorithmIdSha256) {
             unsigned modulusLength = cryptoAlgorithm.rsaHashedKeyGenParams()->modulusLengthBits();
-            keyParams.set(blink::WebRTCKeyParams::createRSA(modulusLength, publicExponent));
+            keyParams.set(WebRTCKeyParams::createRSA(modulusLength, publicExponent));
         } else {
             return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(NotSupportedError, unsupportedParamsString));
         }
@@ -650,7 +649,7 @@ ScriptPromise RTCPeerConnection::generateCertificate(ScriptState* scriptState, c
         // name: "ECDSA"
         // The only recognized "namedCurve" is "P-256".
         if (cryptoAlgorithm.ecKeyGenParams()->namedCurve() == WebCryptoNamedCurveP256) {
-            keyParams.set(blink::WebRTCKeyParams::createECDSA(blink::WebRTCECCurveNistP256));
+            keyParams.set(WebRTCKeyParams::createECDSA(WebRTCECCurveNistP256));
         } else {
             return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(NotSupportedError, unsupportedParamsString));
         }

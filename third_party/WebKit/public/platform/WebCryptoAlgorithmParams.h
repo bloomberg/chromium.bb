@@ -227,6 +227,22 @@ public:
     const WebVector<unsigned char>& publicExponent() const { return m_publicExponent; }
     const WebCryptoAlgorithm& hash() const { return m_hash; }
 
+    // Converts the public exponent (big-endian WebCrypto BigInteger),
+    // with or without leading zeros, to unsigned int. Returns true on success.
+    bool convertPublicExponentToUnsigned(unsigned& result) const
+    {
+        result = 0;
+        for (size_t i = 0; i < m_publicExponent.size(); ++i) {
+            size_t iReversed = m_publicExponent.size() - i - 1;
+
+            if (iReversed >= sizeof(result) && m_publicExponent[i])
+                return false; // Too large for unsigned int.
+
+            result |= m_publicExponent[i] << 8 * iReversed;
+        }
+        return true;
+    }
+
 private:
     const unsigned m_modulusLengthBits;
     const WebVector<unsigned char> m_publicExponent;
