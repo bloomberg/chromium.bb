@@ -16,10 +16,8 @@ namespace libwebm {
 // Maximum size is 64 bits. Users may call the Check() method to perform minimal
 // validation (size > 0 and <= 64).
 struct TsHeaderField {
-  TsHeaderField(std::uint64_t value,
-                std::uint32_t size_in_bits,
-                std::uint8_t byte_index,
-                std::uint8_t bits_to_shift)
+  TsHeaderField(std::uint64_t value, std::uint32_t size_in_bits,
+                std::uint8_t byte_index, std::uint8_t bits_to_shift)
       : bits(value),
         num_bits(size_in_bits),
         index(byte_index),
@@ -36,13 +34,13 @@ struct TsHeaderField {
   std::uint64_t bits;
 
   // Number of bits in the value.
-  const std::uint32_t num_bits;
+  const int num_bits;
 
   // Index into the header for the byte in which |bits| will be written.
   const std::uint8_t index;
 
   // Number of bits to left shift value before or'ing. Ignored for whole bytes.
-  const std::uint8_t shift;
+  const int shift;
 };
 
 // Data storage for MPEG2 Transport Stream headers.
@@ -164,7 +162,7 @@ bool VpxPes2Ts::ReceivePacket(const PacketDataBuffer& packet_data) {
         bytes_to_packetize == static_cast<int>(packet_data.size()),
         payload_size != kTsPayloadSize, continuity_counter);
     header.Write(&ts_buffer_);
-    std::size_t write_pos = kTsHeaderSize;
+    int write_pos = kTsHeaderSize;
 
     // (pre)Pad payload with an empty adaptation field. All packets must be
     // |kTsPacketSize| (188).
@@ -204,8 +202,8 @@ bool VpxPes2Ts::ReceivePacket(const PacketDataBuffer& packet_data) {
     // Write contents of |ts_buffer_| to |output_file_|.
     // TODO(tomfinegan): Writing 188 bytes at a time isn't exactly efficient...
     // Fix me.
-    if (std::fwrite(&ts_buffer_[0], 1, kTsPacketSize, output_file_.get()) !=
-        kTsPacketSize) {
+    if (static_cast<int>(std::fwrite(&ts_buffer_[0], 1, kTsPacketSize,
+                                     output_file_.get())) != kTsPacketSize) {
       std::fprintf(stderr, "VpxPes2Ts: TS packet write failed.\n");
       return false;
     }
