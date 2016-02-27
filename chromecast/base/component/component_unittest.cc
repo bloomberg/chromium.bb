@@ -153,6 +153,7 @@ class ComponentC : public Component<ComponentC> {
   ComponentB::Dependency b_;
 };
 
+#if (!defined(NDEBUG) || defined(DCHECK_ALWAYS_ON)) && GTEST_HAS_DEATH_TEST
 TEST_F(ComponentDeathTest, SelfDependency) {
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
   ComponentA a;
@@ -174,6 +175,8 @@ TEST_F(ComponentDeathTest, TransitiveCircularDependency) {
   EXPECT_DEATH(a.MakeTransitiveCircularDependency(c.GetRef()),
                "Circular dependency");
 }
+#endif  // (!defined(NDEBUG) || defined(DCHECK_ALWAYS_ON)) &&
+        //     GTEST_HAS_DEATH_TEST
 
 TEST_F(ComponentTest, SimpleEnable) {
   scoped_ptr<ComponentA> a(new ComponentA());
