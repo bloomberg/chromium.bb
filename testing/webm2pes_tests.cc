@@ -84,12 +84,12 @@ class Webm2PesTests : public ::testing::Test {
   // Constants for validating known values from input data.
   const std::uint8_t kMinVideoStreamId = 0xE0;
   const std::uint8_t kMaxVideoStreamId = 0xEF;
-  const std::size_t kPesHeaderSize = 6;
-  const std::size_t kPesOptionalHeaderStartOffset = kPesHeaderSize;
-  const std::size_t kPesOptionalHeaderSize = 9;
+  const int kPesHeaderSize = 6;
+  const int kPesOptionalHeaderStartOffset = kPesHeaderSize;
+  const int kPesOptionalHeaderSize = 9;
   const int kPesOptionalHeaderMarkerValue = 0x2;
-  const std::size_t kWebm2PesOptHeaderRemainingSize = 6;
-  const std::size_t kBcmvHeaderSize = 10;
+  const int kWebm2PesOptHeaderRemainingSize = 6;
+  const int kBcmvHeaderSize = 10;
 
   Webm2PesTests() : read_pos_(0), parse_state_(kParsePesHeader) {}
 
@@ -107,7 +107,7 @@ class Webm2PesTests : public ::testing::Test {
       pes_file_data_.push_back(static_cast<std::uint8_t>(byte));
 
     ASSERT_TRUE(feof(file.get()) && !ferror(file.get()));
-    ASSERT_EQ(pes_file_size_, pes_file_data_.size());
+    ASSERT_EQ(pes_file_size_, static_cast<std::int64_t>(pes_file_data_.size()));
     read_pos_ = 0;
     parse_state_ = kParsePesHeader;
   }
@@ -152,7 +152,7 @@ class Webm2PesTests : public ::testing::Test {
   void ParsePesOptionalHeader(PesOptionalHeader* header) {
     ASSERT_TRUE(header != nullptr);
     EXPECT_EQ(kParsePesOptionalHeader, parse_state_);
-    std::size_t offset = read_pos_;
+    int offset = read_pos_;
     EXPECT_LT(offset, pes_file_size_);
 
     header->marker = (pes_file_data_[offset] & 0x80) >> 6;
@@ -248,7 +248,7 @@ class Webm2PesTests : public ::testing::Test {
   const libwebm::test::TempFileDeleter temp_file_name_;
   const std::string input_file_name_ =
       libwebm::test::GetTestFilePath("bbb_480p_vp9_opus_1second.webm");
-  std::uint64_t pes_file_size_ = 0;
+  std::int64_t pes_file_size_ = 0;
   PesFileData pes_file_data_;
   std::size_t read_pos_;
   ParseState parse_state_;
