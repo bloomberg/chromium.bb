@@ -154,47 +154,61 @@ void WebMediaPlayerMS::load(LoadType load_type,
 void WebMediaPlayerMS::play() {
   DVLOG(1) << __FUNCTION__;
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (paused_) {
-    if (video_frame_provider_.get())
-      video_frame_provider_->Play();
-
-    compositor_->StartRendering();
-
-    if (audio_renderer_.get())
-      audio_renderer_->Play();
-
-    if (delegate_) {
-      delegate_->DidPlay(delegate_id_, hasVideo(), hasAudio(), false,
-                         media::kInfiniteDuration());
-    }
-  }
-
-  paused_ = false;
 
   media_log_->AddEvent(media_log_->CreateEvent(media::MediaLogEvent::PLAY));
+  if (!paused_)
+    return;
+
+#if defined(OS_ANDROID)
+  // Don't allow rendering to start while hidden; for either video or audio
+  // since this may steal focus from a foreground player.
+  if (delegate_ && delegate_->IsHidden()) {
+    paused_on_hidden_ = true;
+    return;
+  }
+#endif
+
+  if (video_frame_provider_)
+    video_frame_provider_->Play();
+
+  compositor_->StartRendering();
+
+  if (audio_renderer_)
+    audio_renderer_->Play();
+
+  if (delegate_) {
+    delegate_->DidPlay(delegate_id_, hasVideo(), hasAudio(), false,
+                       media::kInfiniteDuration());
+  }
+
+  paused_on_hidden_ = false;
+  paused_ = false;
 }
 
 void WebMediaPlayerMS::pause() {
   DVLOG(1) << __FUNCTION__;
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (video_frame_provider_.get())
+  // Always clear |paused_on_hidden_| since manual pause() should clear it and
+  // an OnHidden() pause will set it appropriately after this call.
+  paused_on_hidden_ = false;
+  media_log_->AddEvent(media_log_->CreateEvent(media::MediaLogEvent::PAUSE));
+  if (paused_)
+    return;
+
+  if (video_frame_provider_)
     video_frame_provider_->Pause();
 
   compositor_->StopRendering();
   compositor_->ReplaceCurrentFrameWithACopy();
 
-  if (!paused_) {
-    if (audio_renderer_.get())
-      audio_renderer_->Pause();
+  if (audio_renderer_)
+    audio_renderer_->Pause();
 
-    if (delegate_)
-      delegate_->DidPause(delegate_id_, false);
-  }
+  if (delegate_)
+    delegate_->DidPause(delegate_id_, false);
 
   paused_ = true;
-
-  media_log_->AddEvent(media_log_->CreateEvent(media::MediaLogEvent::PAUSE));
 }
 
 bool WebMediaPlayerMS::supportsSave() const {
@@ -368,15 +382,15 @@ unsigned WebMediaPlayerMS::videoDecodedByteCount() const {
 void WebMediaPlayerMS::OnHidden(bool must_suspend) {
 #if defined(OS_ANDROID)
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!render_frame_suspended_);
 
   // Method called when the RenderFrame is sent to background and suspended
   // (android). Substitute the displayed VideoFrame with a copy to avoid
   // holding on to it unnecessarily.
-  render_frame_suspended_ = true;
-  if (!paused_)
-    compositor_->ReplaceCurrentFrameWithACopy();
+  //
+  // During undoable tab closures OnHidden() may be called back to back, so we
+  // can't rely on |render_frame_suspended_| being false here.
 
+  render_frame_suspended_ = true;
   if (must_suspend) {
     if (!paused_) {
       pause();
@@ -385,6 +399,9 @@ void WebMediaPlayerMS::OnHidden(bool must_suspend) {
 
     if (delegate_)
       delegate_->PlayerGone(delegate_id_);
+  } else if (!paused_) {
+    // pause() will make its own copy in the block above otherwise.
+    compositor_->ReplaceCurrentFrameWithACopy();
   }
 #endif  // defined(OS_ANDROID)
 }
@@ -395,9 +412,9 @@ void WebMediaPlayerMS::OnShown() {
 
   render_frame_suspended_ = false;
 
+  // Resume playback on visibility. play() clears |paused_on_hidden_|.
   if (paused_on_hidden_)
     play();
-  paused_on_hidden_ = false;
 #endif  // defined(OS_ANDROID)
 }
 
@@ -407,8 +424,15 @@ void WebMediaPlayerMS::OnPlay() {
 }
 
 void WebMediaPlayerMS::OnPause() {
+  const bool was_playing = !paused_ || paused_on_hidden_;
   pause();
   client_->playbackStateChanged();
+
+  // MediaSession may suspend the background player if a foreground player
+  // starts playing audio, in this case we want to track this so that when
+  // OnShown() is called, we resume into the right state.
+  if (was_playing && delegate_ && delegate_->IsHidden())
+    paused_on_hidden_ = true;
 }
 
 void WebMediaPlayerMS::OnVolumeMultiplierUpdate(double multiplier) {

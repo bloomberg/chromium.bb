@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/hash.h"
 #include "base/single_thread_task_runner.h"
+#include "base/values.h"
 #include "cc/blink/context_provider_web_context.h"
 #include "content/renderer/media/webmediaplayer_ms.h"
 #include "content/renderer/render_thread_impl.h"
@@ -89,6 +90,11 @@ scoped_refptr<media::VideoFrame> CopyFrameToI420(
                      new_frame->stride(media::VideoFrame::kVPlane),
                      size.width(), size.height());
   }
+
+  // Transfer metadata keys.
+  base::DictionaryValue original_metadata;
+  frame->metadata()->MergeInternalValuesInto(&original_metadata);
+  new_frame->metadata()->MergeInternalValuesFrom(original_metadata);
   return new_frame;
 }
 
