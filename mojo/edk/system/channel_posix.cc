@@ -134,16 +134,18 @@ class ChannelPosix : public Channel,
 
   ScopedPlatformHandleVectorPtr GetReadPlatformHandles(
       size_t num_handles,
-      void** payload,
-      size_t* payload_size) override {
+      const void* extra_header,
+      size_t extra_header_size) override {
     if (incoming_platform_handles_.size() < num_handles)
       return nullptr;
+
     ScopedPlatformHandleVectorPtr handles(
         new PlatformHandleVector(num_handles));
     for (size_t i = 0; i < num_handles; ++i) {
       (*handles)[i] = incoming_platform_handles_.front();
       incoming_platform_handles_.pop_front();
     }
+
     return handles;
   }
 

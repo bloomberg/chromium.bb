@@ -26,16 +26,27 @@ static_assert(sizeof(Channel::Message::Header) % kChannelMessageAlignment == 0,
 const size_t kReadBufferSize = 4096;
 const size_t kMaxUnusedReadBufferCapacity = 256 * 1024;
 const size_t kMaxChannelMessageSize = 256 * 1024 * 1024;
+const size_t kMaxAttachedHandles = 128;
 
 Channel::Message::Message(size_t payload_size,
-                          size_t num_handles,
-                          Header::MessageType message_type) {
-  size_ = payload_size + sizeof(Header);
-#if defined(OS_WIN)
-  // On Windows we serialize platform handles directly into the message buffer.
-  size_ += num_handles * sizeof(PlatformHandle);
-#endif
+                          size_t max_handles,
+                          Header::MessageType message_type)
+    : max_handles_(max_handles) {
+  DCHECK_LE(max_handles_, kMaxAttachedHandles);
 
+  size_t extra_header_size = 0;
+#if defined(OS_WIN)
+  // On Windows we serialize platform handles into the extra header space.
+  extra_header_size = max_handles_ * sizeof(PlatformHandle);
+#endif
+  // Pad extra header data to be aliged to |kChannelMessageAlignment| bytes.
+  if (extra_header_size % kChannelMessageAlignment) {
+    extra_header_size += kChannelMessageAlignment -
+                         (extra_header_size % kChannelMessageAlignment);
+  }
+  DCHECK_EQ(0u, extra_header_size % kChannelMessageAlignment);
+
+  size_ = sizeof(Header) + extra_header_size + payload_size;
   data_ = static_cast<char*>(base::AlignedAlloc(size_,
                                                 kChannelMessageAlignment));
   memset(data_, 0, size_);
@@ -44,17 +55,18 @@ Channel::Message::Message(size_t payload_size,
   DCHECK_LE(size_, std::numeric_limits<uint32_t>::max());
   header_->num_bytes = static_cast<uint32_t>(size_);
 
-  DCHECK_LE(num_handles, std::numeric_limits<uint16_t>::max());
-  header_->num_handles = static_cast<uint16_t>(num_handles);
+  DCHECK_LE(sizeof(Header) + extra_header_size,
+            std::numeric_limits<uint16_t>::max());
+  header_->num_header_bytes =
+      static_cast<uint16_t>(sizeof(Header) + extra_header_size);
 
   header_->message_type = message_type;
 
 #if defined(OS_WIN)
-  if (num_handles > 0) {
-    handles_ = reinterpret_cast<PlatformHandle*>(
-        data_ + sizeof(Header) + payload_size);
+  if (max_handles_ > 0) {
+    handles_ = reinterpret_cast<PlatformHandle*>(mutable_extra_header());
     // Initialize all handles to invalid values.
-    for (size_t i = 0; i < header_->num_handles; ++i)
+    for (size_t i = 0; i < max_handles_; ++i)
       handles()[i] = PlatformHandle();
   }
 #endif
@@ -87,59 +99,79 @@ Channel::MessagePtr Channel::Message::Deserialize(const void* data,
     return nullptr;
   }
 
-  uint32_t handles_size = header->num_handles * sizeof(PlatformHandle);
-  if (data_num_bytes < sizeof(Header) + handles_size) {
-    DLOG(ERROR) << "Decoding invalid message:" << data_num_bytes
-                << " < " << (sizeof(Header) + handles_size);
+  if (header->num_bytes < header->num_header_bytes) {
+    DLOG(ERROR) << "Decoding invalid message: " << header->num_bytes << " < "
+                << header->num_header_bytes;
     return nullptr;
   }
 
-  DCHECK_LE(handles_size, data_num_bytes - sizeof(Header));
+  uint32_t extra_header_size = header->num_header_bytes - sizeof(Header);
+  uint32_t max_handles = extra_header_size / sizeof(PlatformHandle);
+  if (header->num_handles > max_handles) {
+    DLOG(ERROR) << "Decoding invalid message:" << header->num_handles << " > "
+                << max_handles;
+    return nullptr;
+  }
 
-  MessagePtr message(new Message(data_num_bytes - sizeof(Header) - handles_size,
-                                 header->num_handles));
+  MessagePtr message(
+      new Message(data_num_bytes - header->num_header_bytes, max_handles));
 
   DCHECK_EQ(message->data_num_bytes(), data_num_bytes);
+  DCHECK_EQ(message->extra_header_size(), extra_header_size);
+  DCHECK_EQ(message->header_->num_header_bytes, header->num_header_bytes);
 
-  // Copy all bytes, including the serialized handles.
+  // Copy all payload bytes.
   memcpy(message->mutable_payload(),
+         static_cast<const char*>(data) + header->num_header_bytes,
+         data_num_bytes - header->num_header_bytes);
+  // Copy extra header bytes.
+  memcpy(message->mutable_extra_header(),
          static_cast<const char*>(data) + sizeof(Header),
-         data_num_bytes - sizeof(Header));
+         message->extra_header_size());
+  message->header_->num_handles = header->num_handles;
 
   return message;
 }
 
 size_t Channel::Message::payload_size() const {
-#if defined(OS_WIN)
-  return size_ - sizeof(Header) -
-      sizeof(PlatformHandle) * header_->num_handles;
-#else
-  return header_->num_bytes - sizeof(Header);
-#endif
+  return size_ - header_->num_header_bytes;
 }
 
 PlatformHandle* Channel::Message::handles() {
-  if (header_->num_handles == 0)
+  if (max_handles_ == 0)
     return nullptr;
 #if defined(OS_WIN)
-  return reinterpret_cast<PlatformHandle*>(static_cast<char*>(data_) +
-                                           sizeof(Header) + payload_size());
+  return handles_;
 #else
   CHECK(handle_vector_);
   return handle_vector_->data();
 #endif
 }
 
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+bool Channel::Message::has_mach_ports() const {
+  if (!has_handles())
+    return false;
+
+  for (const auto& handle : (*handle_vector_)) {
+    if (handle.type == PlatformHandle::Type::MACH)
+      return true;
+  }
+  return false;
+}
+#endif
+
 void Channel::Message::SetHandles(ScopedPlatformHandleVectorPtr new_handles) {
-  if (header_->num_handles == 0) {
+  if (max_handles_ == 0) {
     CHECK(!new_handles || new_handles->size() == 0);
     return;
   }
 
-  CHECK(new_handles && new_handles->size() == header_->num_handles);
+  CHECK(new_handles && new_handles->size() <= max_handles_);
+  header_->num_handles = static_cast<uint16_t>(new_handles->size());
 #if defined(OS_WIN)
   memcpy(handles(), new_handles->data(),
-         sizeof(PlatformHandle) * header_->num_handles);
+         sizeof(PlatformHandle) * new_handles->size());
   new_handles->clear();
 #else
   std::swap(handle_vector_, new_handles);
@@ -329,14 +361,20 @@ bool Channel::OnReadComplete(size_t bytes_read, size_t *next_read_size_hint) {
       return true;
     }
 
-    size_t payload_size = header->num_bytes - sizeof(Message::Header);
-    void* payload = payload_size ? const_cast<Message::Header*>(&header[1])
-                                 : nullptr;
+    size_t extra_header_size =
+        header->num_header_bytes - sizeof(Message::Header);
+    const void* extra_header = header + 1;
+    size_t payload_size = header->num_bytes - header->num_header_bytes;
+    void* payload =
+        payload_size ? reinterpret_cast<Message::Header*>(
+                           const_cast<char*>(read_buffer_->occupied_bytes()) +
+                           header->num_header_bytes)
+                     : nullptr;
 
     ScopedPlatformHandleVectorPtr handles;
     if (header->num_handles > 0) {
-      handles = GetReadPlatformHandles(header->num_handles,
-                                       &payload, &payload_size);
+      handles = GetReadPlatformHandles(header->num_handles, extra_header,
+                                       extra_header_size);
       if (!handles) {
         // Not enough handles available for this message.
         break;
