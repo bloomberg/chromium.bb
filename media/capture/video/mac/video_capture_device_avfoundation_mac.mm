@@ -12,6 +12,8 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
+#include "base/mac/mac_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "media/base/timestamp_constants.h"
 #include "media/base/video_capture_types.h"
 #include "media/capture/video/mac/video_capture_device_mac.h"
@@ -20,6 +22,64 @@
 // Prefer MJPEG if frame width or height is larger than this.
 static const int kMjpegWidthThreshold = 640;
 static const int kMjpegHeightThreshold = 480;
+
+namespace {
+
+enum MacBookVersions {
+  OTHER = 0,
+  MACBOOK_5,  // MacBook5.X
+  MACBOOK_6,
+  MACBOOK_7,
+  MACBOOK_8,
+  MACBOOK_PRO_11,  // MacBookPro11.X
+  MACBOOK_PRO_12,
+  MACBOOK_PRO_13,
+  MACBOOK_AIR_5,  // MacBookAir5.X
+  MACBOOK_AIR_6,
+  MACBOOK_AIR_7,
+  MACBOOK_AIR_8,
+  MAX_MACBOOK_VERSION = MACBOOK_AIR_8
+};
+
+MacBookVersions GetMacBookModel(const std::string& model) {
+  struct {
+    const char* name;
+    MacBookVersions version;
+  } static const kModelToVersion[] = {
+      {"MacBook5,", MACBOOK_5},          {"MacBook6,", MACBOOK_6},
+      {"MacBook7,", MACBOOK_7},          {"MacBook8,", MACBOOK_8},
+      {"MacBookPro11,", MACBOOK_PRO_11}, {"MacBookPro12,", MACBOOK_PRO_12},
+      {"MacBookPro13,", MACBOOK_PRO_13}, {"MacBookAir5,", MACBOOK_AIR_5},
+      {"MacBookAir6,", MACBOOK_AIR_6},   {"MacBookAir7,", MACBOOK_AIR_7},
+      {"MacBookAir8,", MACBOOK_AIR_8},
+  };
+
+  for (const auto& entry : kModelToVersion) {
+    if (base::StartsWith(model, entry.name,
+                         base::CompareCase::INSENSITIVE_ASCII)) {
+      return entry.version;
+    }
+  }
+  return OTHER;
+}
+
+// Add Uma stats for number of detected devices on MacBooks. These are used for
+// investigating crbug/582931.
+void MaybeWriteUma(int number_of_devices, int number_of_suspended_devices) {
+  std::string model = base::mac::GetModelIdentifier();
+  if (base::StartsWith(model, "MacBook",
+                       base::CompareCase::INSENSITIVE_ASCII)) {
+    UMA_HISTOGRAM_COUNTS("Media.VideoCapture.MacBook.NumberOfDevices",
+                         number_of_devices + number_of_suspended_devices);
+    if (number_of_devices + number_of_suspended_devices == 0) {
+      UMA_HISTOGRAM_ENUMERATION(
+          "Media.VideoCapture.MacBook.HardwareVersionWhenNoCamera",
+          GetMacBookModel(model), MAX_MACBOOK_VERSION + 1);
+    }
+  }
+}
+
+}  // anonymous namespace
 
 // This function translates Mac Core Video pixel formats to Chromium pixel
 // formats.
@@ -44,10 +104,14 @@ media::VideoPixelFormat FourCCToChromiumPixelFormat(FourCharCode code) {
   // At this stage we already know that AVFoundation is supported and the whole
   // library is loaded and initialised, by the device monitoring.
   NSArray* devices = [AVCaptureDeviceGlue devices];
+  int number_of_suspended_devices = 0;
   for (CrAVCaptureDevice* device in devices) {
-    if (([device hasMediaType:AVFoundationGlue::AVMediaTypeVideo()] ||
-         [device hasMediaType:AVFoundationGlue::AVMediaTypeMuxed()]) &&
-        ![device isSuspended]) {
+    if ([device hasMediaType:AVFoundationGlue::AVMediaTypeVideo()] ||
+        [device hasMediaType:AVFoundationGlue::AVMediaTypeMuxed()]) {
+      if ([device isSuspended]) {
+        ++number_of_suspended_devices;
+        continue;
+      }
       DeviceNameAndTransportType* nameAndTransportType =
           [[[DeviceNameAndTransportType alloc]
                initWithName:[device localizedName]
@@ -55,6 +119,7 @@ media::VideoPixelFormat FourCCToChromiumPixelFormat(FourCharCode code) {
       [deviceNames setObject:nameAndTransportType forKey:[device uniqueID]];
     }
   }
+  MaybeWriteUma([deviceNames count], number_of_suspended_devices);
 }
 
 + (NSDictionary*)deviceNames {

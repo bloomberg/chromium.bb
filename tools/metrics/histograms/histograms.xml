@@ -20332,6 +20332,24 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Media.VideoCapture.MacBook.HardwareVersionWhenNoCamera"
+    enum="MacBookVersions">
+  <owner>perkj@chromium.org</owner>
+  <summary>
+    MacBook hardware version used when Chrome cannot enumerate a video device.
+    This is used for tracking http://crbug.com/582931.
+  </summary>
+</histogram>
+
+<histogram name="Media.VideoCapture.MacBook.NumberOfDevices" units="devices">
+  <owner>perkj@chromium.org</owner>
+  <summary>
+    Number of video capture devices detected by Chrome during device
+    enumeration. Zero devices indicate a problem since all MacBooks should have
+    a built-in camera. This is used for tracking http://crbug.com/582931.
+  </summary>
+</histogram>
+
 <histogram name="Media.VideoCapture.PixelFormat" enum="CapturePixelFormat">
   <obsolete>
     Deprecated 10/2014 in Issue 660493002.
@@ -72412,6 +72430,21 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="3" label="INCOGNITO_DEVELOPER">Incognito Dev</int>
   <int value="4" label="OWNER_DEVELOPER">Owner Dev</int>
   <int value="5" label="OTHER_DEVELOPER">Other Dev</int>
+</enum>
+
+<enum name="MacBookVersions" type="int">
+  <int value="0" label="Other"/>
+  <int value="1" label="MacBook5,X"/>
+  <int value="2" label="MacBook6,X"/>
+  <int value="3" label="MacBook7,X"/>
+  <int value="4" label="MacBook8,X"/>
+  <int value="5" label="MacBookPro11,X"/>
+  <int value="6" label="MacBookPro12,X"/>
+  <int value="7" label="MacBookPro13,X"/>
+  <int value="8" label="MacBookAir5,X"/>
+  <int value="9" label="MacBookAir6,X"/>
+  <int value="10" label="MacBookAir7,X"/>
+  <int value="11" label="MacBookAir8,X"/>
 </enum>
 
 <enum name="MainFrameStorable" type="int">
