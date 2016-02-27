@@ -61,33 +61,15 @@ class BackgroundPainter : public Background {
 
 Background::Background()
     : color_(SK_ColorWHITE)
-#if defined(OS_WIN)
-    , native_control_brush_(NULL)
-#endif
 {
 }
 
 Background::~Background() {
-#if defined(OS_WIN)
-  DeleteObject(native_control_brush_);
-#endif
 }
 
 void Background::SetNativeControlColor(SkColor color) {
   color_ = color;
-#if defined(OS_WIN)
-  DeleteObject(native_control_brush_);
-  native_control_brush_ = NULL;
-#endif
 }
-
-#if defined(OS_WIN)
-HBRUSH Background::GetNativeControlBrush() const {
-  if (!native_control_brush_)
-    native_control_brush_ = CreateSolidBrush(skia::SkColorToCOLORREF(color_));
-  return native_control_brush_;
-}
-#endif
 
 // static
 Background* Background::CreateSolidBackground(SkColor color) {

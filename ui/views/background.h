@@ -90,19 +90,8 @@ class VIEWS_EXPORT Background {
   // backgrounds, this is not useful (returns a default color).
   SkColor get_color() const { return color_; }
 
-#if defined(OS_WIN)
-  // TODO(port): Make GetNativeControlBrush portable (currently uses HBRUSH).
-
-  // Get the brush that was specified by SetNativeControlColor
-  HBRUSH GetNativeControlBrush() const;
-#endif  // defined(OS_WIN)
-
  private:
   SkColor color_;
-#if defined(OS_WIN)
-  // TODO(port): Create portable replacement for HBRUSH.
-  mutable HBRUSH native_control_brush_;
-#endif  // defined(OS_WIN)
 
   DISALLOW_COPY_AND_ASSIGN(Background);
 };
