@@ -554,7 +554,7 @@
     ['OS=="android"', {
       'includes': ['../build/android/v8_external_startup_data_arch_suffix.gypi',],
       'variables': {
-         'cast_shell_assets_path': '<(PRODUCT_DIR)/assets/cast_shell_apk',
+         'cast_shell_assets_path': '<(PRODUCT_DIR)/assets',
       },
       'targets': [
         {
@@ -568,7 +568,6 @@
             'dest_path': '<(cast_shell_assets_path)',
             'src_files': [
               '<(PRODUCT_DIR)/icudtl.dat',
-              '<(PRODUCT_DIR)/assets/cast_shell.pak',
             ],
             'renaming_sources': [
               '<(PRODUCT_DIR)/natives_blob.bin',
