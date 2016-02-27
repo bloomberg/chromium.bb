@@ -806,18 +806,11 @@ void WebMediaPlayerImpl::setContentDecryptionModule(
     return;
   }
 
-  // Although unlikely, it is possible that multiple calls happen
-  // simultaneously, so fail this call if there is already one pending.
-  if (set_cdm_result_) {
-    result.completeWithError(
-        blink::WebContentDecryptionModuleExceptionInvalidStateError, 0,
-        "Unable to set MediaKeys object at this time.");
-    return;
-  }
-
   // Create a local copy of |result| to avoid problems with the callback
   // getting passed to the media thread and causing |result| to be destructed
-  // on the wrong thread in some failure conditions.
+  // on the wrong thread in some failure conditions. Blink should prevent
+  // multiple simultaneous calls.
+  DCHECK(!set_cdm_result_);
   set_cdm_result_.reset(new blink::WebContentDecryptionModuleResult(result));
 
   SetCdm(BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnCdmAttached),

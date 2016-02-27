@@ -56,7 +56,13 @@ private:
 
     RawPtrWillBeMember<HTMLMediaElement> m_mediaElement;
 
+    // Internal values specified by the EME spec:
+    // http://w3c.github.io/encrypted-media/#idl-def-HTMLMediaElement
+    // The following internal values are added to the HTMLMediaElement:
+    // - waiting for key, which shall have a boolean value
+    // - attaching media keys, which shall have a boolean value
     bool m_isWaitingForKey;
+    bool m_isAttachingMediaKeys;
 
     PersistentWillBeMember<MediaKeys> m_mediaKeys;
 };
