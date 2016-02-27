@@ -447,7 +447,7 @@ MockVideoFrameProvider* WebMediaPlayerMSTest::LoadAndGetFrameProvider(
 }
 
 void WebMediaPlayerMSTest::networkStateChanged() {
-  blink::WebMediaPlayer::NetworkState state = player_.networkState();
+  blink::WebMediaPlayer::NetworkState state = player_.getNetworkState();
   DoNetworkStateChanged(state);
   if (state == blink::WebMediaPlayer::NetworkState::NetworkStateFormatError ||
       state == blink::WebMediaPlayer::NetworkState::NetworkStateDecodeError ||
@@ -458,7 +458,7 @@ void WebMediaPlayerMSTest::networkStateChanged() {
 }
 
 void WebMediaPlayerMSTest::readyStateChanged() {
-  blink::WebMediaPlayer::ReadyState state = player_.readyState();
+  blink::WebMediaPlayer::ReadyState state = player_.getReadyState();
   DoReadyStateChanged(state);
   if (state == blink::WebMediaPlayer::ReadyState::ReadyStateHaveEnoughData)
     player_.play();

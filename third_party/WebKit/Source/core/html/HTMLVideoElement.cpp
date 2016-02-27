@@ -118,7 +118,7 @@ void HTMLVideoElement::parseAttribute(const QualifiedName& name, const AtomicStr
     if (name == posterAttr) {
         // In case the poster attribute is set after playback, don't update the
         // display state, post playback the correct state will be picked up.
-        if (displayMode() < Video || !hasAvailableVideoFrame()) {
+        if (getDisplayMode() < Video || !hasAvailableVideoFrame()) {
             // Force a poster recalc by setting m_displayMode to Unknown directly before calling updateDisplayState.
             HTMLMediaElement::setDisplayMode(Unknown);
             updateDisplayState();
@@ -168,7 +168,7 @@ const AtomicString HTMLVideoElement::imageSourceURL() const
 
 void HTMLVideoElement::setDisplayMode(DisplayMode mode)
 {
-    DisplayMode oldMode = displayMode();
+    DisplayMode oldMode = getDisplayMode();
     KURL poster = posterImageURL();
 
     if (!poster.isEmpty()) {
@@ -182,7 +182,7 @@ void HTMLVideoElement::setDisplayMode(DisplayMode mode)
 
     HTMLMediaElement::setDisplayMode(mode);
 
-    if (layoutObject() && displayMode() != oldMode)
+    if (layoutObject() && getDisplayMode() != oldMode)
         layoutObject()->updateFromElement();
 }
 
@@ -190,7 +190,7 @@ void HTMLVideoElement::updateDisplayState()
 {
     if (posterImageURL().isEmpty())
         setDisplayMode(Video);
-    else if (displayMode() < Poster)
+    else if (getDisplayMode() < Poster)
         setDisplayMode(Poster);
 }
 
@@ -221,7 +221,7 @@ bool HTMLVideoElement::hasAvailableVideoFrame() const
     if (!webMediaPlayer())
         return false;
 
-    return webMediaPlayer()->hasVideo() && webMediaPlayer()->readyState() >= WebMediaPlayer::ReadyStateHaveCurrentData;
+    return webMediaPlayer()->hasVideo() && webMediaPlayer()->getReadyState() >= WebMediaPlayer::ReadyStateHaveCurrentData;
 }
 
 void HTMLVideoElement::webkitEnterFullscreen()
@@ -333,7 +333,7 @@ ScriptPromise HTMLVideoElement::createImageBitmap(ScriptState* scriptState, Even
         exceptionState.throwDOMException(InvalidStateError, "The provided element has not retrieved data.");
         return ScriptPromise();
     }
-    if (readyState() <= HTMLMediaElement::HAVE_METADATA) {
+    if (getReadyState() <= HTMLMediaElement::HAVE_METADATA) {
         exceptionState.throwDOMException(InvalidStateError, "The provided element's player has no current data.");
         return ScriptPromise();
     }

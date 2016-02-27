@@ -67,7 +67,7 @@ bool VTTScanner::scan(const LChar* characters, size_t charactersCount)
 
 bool VTTScanner::scanRun(const Run& run, const String& toMatch)
 {
-    ASSERT(run.start() == position());
+    ASSERT(run.start() == getPosition());
     ASSERT(run.start() <= end());
     ASSERT(run.end() >= run.start());
     ASSERT(run.end() <= end());
@@ -94,7 +94,7 @@ void VTTScanner::skipRun(const Run& run)
 
 String VTTScanner::extractString(const Run& run)
 {
-    ASSERT(run.start() == position());
+    ASSERT(run.start() == getPosition());
     ASSERT(run.start() <= end());
     ASSERT(run.end() >= run.start());
     ASSERT(run.end() <= end());
@@ -109,7 +109,7 @@ String VTTScanner::extractString(const Run& run)
 
 String VTTScanner::restOfInputAsString()
 {
-    Run rest(position(), end(), m_is8Bit);
+    Run rest(getPosition(), end(), m_is8Bit);
     return extractString(rest);
 }
 
@@ -142,7 +142,7 @@ bool VTTScanner::scanFloat(float& number)
 {
     Run integerRun = collectWhile<isASCIIDigit>();
     seekTo(integerRun.end());
-    Run decimalRun(position(), position(), m_is8Bit);
+    Run decimalRun(getPosition(), getPosition(), m_is8Bit);
     if (scan('.')) {
         decimalRun = collectWhile<isASCIIDigit>();
         seekTo(decimalRun.end());
@@ -155,7 +155,7 @@ bool VTTScanner::scanFloat(float& number)
         return false;
     }
 
-    size_t lengthOfFloat = Run(integerRun.start(), position(), m_is8Bit).length();
+    size_t lengthOfFloat = Run(integerRun.start(), getPosition(), m_is8Bit).length();
     bool validNumber;
     if (m_is8Bit)
         number = charactersToFloat(integerRun.start(), lengthOfFloat, &validNumber);
@@ -169,7 +169,7 @@ bool VTTScanner::scanFloat(float& number)
 
 bool VTTScanner::scanPercentage(float& percentage)
 {
-    Position savedPosition = position();
+    Position savedPosition = getPosition();
     if (!scanFloat(percentage))
         return false;
     if (scan('%'))

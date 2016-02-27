@@ -171,7 +171,7 @@ void TextTrack::setMode(const AtomicString& mode)
 
     m_mode = mode;
 
-    if (mode != disabledKeyword() && readinessState() == Loaded) {
+    if (mode != disabledKeyword() && getReadinessState() == Loaded) {
         if (m_cues && cueTimeline())
             cueTimeline()->addCues(this, m_cues.get());
     }

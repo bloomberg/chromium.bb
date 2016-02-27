@@ -139,7 +139,7 @@ public:
         Right,
         NumberOfAlignments
     };
-    CueAlignment cueAlignment() const { return m_cueAlignment; }
+    CueAlignment getCueAlignment() const { return m_cueAlignment; }
 
     ExecutionContext* executionContext() const override;
 

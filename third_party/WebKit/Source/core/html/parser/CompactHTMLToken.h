@@ -65,7 +65,7 @@ public:
 
     bool isSafeToSendToAnotherThread() const;
 
-    HTMLToken::Type type() const { return static_cast<HTMLToken::Type>(m_type); }
+    HTMLToken::TokenType type() const { return static_cast<HTMLToken::TokenType>(m_type); }
     const String& data() const { return m_data; }
     bool selfClosing() const { return m_selfClosing; }
     bool isAll8BitData() const { return m_isAll8BitData; }

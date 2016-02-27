@@ -2835,19 +2835,19 @@ LayoutBlockFlow::LayoutBlockFlowRareData& LayoutBlockFlow::ensureRareData()
 void LayoutBlockFlow::positionDialog()
 {
     HTMLDialogElement* dialog = toHTMLDialogElement(node());
-    if (dialog->centeringMode() == HTMLDialogElement::NotCentered)
+    if (dialog->getCenteringMode() == HTMLDialogElement::NotCentered)
         return;
 
     bool canCenterDialog = (style()->position() == AbsolutePosition || style()->position() == FixedPosition)
         && style()->hasAutoTopAndBottom();
 
-    if (dialog->centeringMode() == HTMLDialogElement::Centered) {
+    if (dialog->getCenteringMode() == HTMLDialogElement::Centered) {
         if (canCenterDialog)
             setY(dialog->centeredPosition());
         return;
     }
 
-    ASSERT(dialog->centeringMode() == HTMLDialogElement::NeedsCentering);
+    ASSERT(dialog->getCenteringMode() == HTMLDialogElement::NeedsCentering);
     if (!canCenterDialog) {
         dialog->setNotCentered();
         return;

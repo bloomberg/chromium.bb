@@ -123,7 +123,7 @@ public:
 
     // ready state
     enum ReadyState { HAVE_NOTHING, HAVE_METADATA, HAVE_CURRENT_DATA, HAVE_FUTURE_DATA, HAVE_ENOUGH_DATA };
-    ReadyState readyState() const;
+    ReadyState getReadyState() const;
     bool seeking() const;
 
     // playback state
@@ -275,7 +275,7 @@ protected:
     virtual KURL posterImageURL() const { return KURL(); }
 
     enum DisplayMode { Unknown, Poster, Video };
-    DisplayMode displayMode() const { return m_displayMode; }
+    DisplayMode getDisplayMode() const { return m_displayMode; }
     virtual void setDisplayMode(DisplayMode mode) { m_displayMode = mode; }
 
 private:

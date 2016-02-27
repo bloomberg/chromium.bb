@@ -143,8 +143,8 @@ public:
     virtual double currentTime() const = 0;
 
     // Internal states of loading and network.
-    virtual NetworkState networkState() const = 0;
-    virtual ReadyState readyState() const = 0;
+    virtual NetworkState getNetworkState() const = 0;
+    virtual ReadyState getReadyState() const = 0;
 
     virtual bool didLoadingProgress() = 0;
 

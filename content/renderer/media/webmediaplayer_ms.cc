@@ -292,13 +292,13 @@ double WebMediaPlayerMS::currentTime() const {
   return 0.0;
 }
 
-blink::WebMediaPlayer::NetworkState WebMediaPlayerMS::networkState() const {
+blink::WebMediaPlayer::NetworkState WebMediaPlayerMS::getNetworkState() const {
   DVLOG(1) << __FUNCTION__ << ", state:" << network_state_;
   DCHECK(thread_checker_.CalledOnValidThread());
   return network_state_;
 }
 
-blink::WebMediaPlayer::ReadyState WebMediaPlayerMS::readyState() const {
+blink::WebMediaPlayer::ReadyState WebMediaPlayerMS::getReadyState() const {
   DVLOG(1) << __FUNCTION__ << ", state:" << ready_state_;
   DCHECK(thread_checker_.CalledOnValidThread());
   return ready_state_;

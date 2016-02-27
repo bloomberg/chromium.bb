@@ -548,7 +548,7 @@ bool LayoutTheme::isSpinUpButtonPartPressed(const LayoutObject& o)
         || !toElement(node)->isSpinButtonElement())
         return false;
     SpinButtonElement* element = toSpinButtonElement(node);
-    return element->upDownState() == SpinButtonElement::Up;
+    return element->getUpDownState() == SpinButtonElement::Up;
 }
 
 bool LayoutTheme::isReadOnlyControl(const LayoutObject& o)
@@ -568,7 +568,7 @@ bool LayoutTheme::isHovered(const LayoutObject& o)
     if (!node->isElementNode() || !toElement(node)->isSpinButtonElement())
         return node->hovered();
     SpinButtonElement* element = toSpinButtonElement(node);
-    return element->hovered() && element->upDownState() != SpinButtonElement::Indeterminate;
+    return element->hovered() && element->getUpDownState() != SpinButtonElement::Indeterminate;
 }
 
 bool LayoutTheme::isSpinUpButtonPartHovered(const LayoutObject& o)
@@ -577,7 +577,7 @@ bool LayoutTheme::isSpinUpButtonPartHovered(const LayoutObject& o)
     if (!node || !node->isElementNode() || !toElement(node)->isSpinButtonElement())
         return false;
     SpinButtonElement* element = toSpinButtonElement(node);
-    return element->upDownState() == SpinButtonElement::Up;
+    return element->getUpDownState() == SpinButtonElement::Up;
 }
 
 void LayoutTheme::adjustCheckboxStyle(ComputedStyle& style) const

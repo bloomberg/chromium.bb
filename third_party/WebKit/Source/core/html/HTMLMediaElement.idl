@@ -55,7 +55,7 @@ enum CanPlayTypeResult { "" /* empty string */, "maybe", "probably" };
     const unsigned short HAVE_CURRENT_DATA = 2;
     const unsigned short HAVE_FUTURE_DATA = 3;
     const unsigned short HAVE_ENOUGH_DATA = 4;
-    readonly attribute unsigned short readyState;
+    [ImplementedAs=getReadyState] readonly attribute unsigned short readyState;
     readonly attribute boolean seeking;
 
     // playback state

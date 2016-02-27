@@ -179,7 +179,7 @@ private:
 
     void parseError(AtomicHTMLToken*);
 
-    InsertionMode insertionMode() const { return m_insertionMode; }
+    InsertionMode getInsertionMode() const { return m_insertionMode; }
     void setInsertionMode(InsertionMode mode) { m_insertionMode = mode; }
 
     void resetInsertionModeAppropriately();

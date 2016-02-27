@@ -47,7 +47,7 @@ public:
         return m_doctypeData->m_forceQuirks;
     }
 
-    HTMLToken::Type type() const { return m_type; }
+    HTMLToken::TokenType type() const { return m_type; }
 
     const AtomicString& name() const
     {
@@ -182,13 +182,13 @@ public:
         }
     }
 
-    explicit AtomicHTMLToken(HTMLToken::Type type)
+    explicit AtomicHTMLToken(HTMLToken::TokenType type)
         : m_type(type)
         , m_selfClosing(false)
     {
     }
 
-    AtomicHTMLToken(HTMLToken::Type type, const AtomicString& name, const Vector<Attribute>& attributes = Vector<Attribute>())
+    AtomicHTMLToken(HTMLToken::TokenType type, const AtomicString& name, const Vector<Attribute>& attributes = Vector<Attribute>())
         : m_type(type)
         , m_name(name)
         , m_selfClosing(false)
@@ -198,7 +198,7 @@ public:
     }
 
 private:
-    HTMLToken::Type m_type;
+    HTMLToken::TokenType m_type;
 
     void initializeAttributes(const HTMLToken::AttributeList& attributes);
     QualifiedName nameForAttribute(const HTMLToken::Attribute&) const;

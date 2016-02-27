@@ -76,7 +76,7 @@ public:
     virtual void setMode(const AtomicString&);
 
     enum ReadinessState { NotLoaded = 0, Loading = 1, Loaded = 2, FailedToLoad = 3 };
-    ReadinessState readinessState() const { return m_readinessState; }
+    ReadinessState getReadinessState() const { return m_readinessState; }
     void setReadinessState(ReadinessState state) { m_readinessState = state; }
 
     TextTrackCueList* cues();

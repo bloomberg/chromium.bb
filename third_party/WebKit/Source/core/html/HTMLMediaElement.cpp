@@ -1151,8 +1151,8 @@ bool HTMLMediaElement::textTracksAreReady() const
     // in the disabled state when the element's resource selection algorithm last started now
     // have a text track readiness state of loaded or failed to load.
     for (unsigned i = 0; i < m_textTracksWhenResourceSelectionBegan.size(); ++i) {
-        if (m_textTracksWhenResourceSelectionBegan[i]->readinessState() == TextTrack::Loading
-            || m_textTracksWhenResourceSelectionBegan[i]->readinessState() == TextTrack::NotLoaded)
+        if (m_textTracksWhenResourceSelectionBegan[i]->getReadinessState() == TextTrack::Loading
+            || m_textTracksWhenResourceSelectionBegan[i]->getReadinessState() == TextTrack::NotLoaded)
             return false;
     }
 
@@ -1162,13 +1162,13 @@ bool HTMLMediaElement::textTracksAreReady() const
 void HTMLMediaElement::textTrackReadyStateChanged(TextTrack* track)
 {
     if (webMediaPlayer()&& m_textTracksWhenResourceSelectionBegan.contains(track)) {
-        if (track->readinessState() != TextTrack::Loading)
-            setReadyState(static_cast<ReadyState>(webMediaPlayer()->readyState()));
+        if (track->getReadinessState() != TextTrack::Loading)
+            setReadyState(static_cast<ReadyState>(webMediaPlayer()->getReadyState()));
     } else {
         // The track readiness state might have changed as a result of the user
         // clicking the captions button. In this case, a check whether all the
         // resources have failed loading should be done in order to hide the CC button.
-        if (mediaControls() && track->readinessState() == TextTrack::FailedToLoad)
+        if (mediaControls() && track->getReadinessState() == TextTrack::FailedToLoad)
             mediaControls()->refreshClosedCaptionsButtonVisibility();
     }
 }
@@ -1328,7 +1328,7 @@ void HTMLMediaElement::cancelPendingEventsAndCallbacks()
 
 void HTMLMediaElement::networkStateChanged()
 {
-    setNetworkState(webMediaPlayer()->networkState());
+    setNetworkState(webMediaPlayer()->getNetworkState());
 }
 
 void HTMLMediaElement::mediaLoadingFailed(WebMediaPlayer::NetworkState error)
@@ -1428,7 +1428,7 @@ void HTMLMediaElement::changeNetworkStateFromLoadingToIdle()
 
 void HTMLMediaElement::readyStateChanged()
 {
-    setReadyState(static_cast<ReadyState>(webMediaPlayer()->readyState()));
+    setReadyState(static_cast<ReadyState>(webMediaPlayer()->getReadyState()));
 }
 
 void HTMLMediaElement::setReadyState(ReadyState state)
@@ -1713,7 +1713,7 @@ void HTMLMediaElement::finishSeek()
     Platform::current()->recordAction(UserMetricsAction("Media_Seeked"));
 }
 
-HTMLMediaElement::ReadyState HTMLMediaElement::readyState() const
+HTMLMediaElement::ReadyState HTMLMediaElement::getReadyState() const
 {
     return m_readyState;
 }
@@ -3213,7 +3213,7 @@ bool HTMLMediaElement::hasClosedCaptions() const
     if (m_textTracks) {
         for (unsigned i = 0; i < m_textTracks->length(); ++i) {
             TextTrack* track = m_textTracks->anonymousIndexedGetter(i);
-            if (track->readinessState() == TextTrack::FailedToLoad)
+            if (track->getReadinessState() == TextTrack::FailedToLoad)
                 continue;
 
             if (track->kind() == TextTrack::captionsKeyword()

@@ -133,8 +133,8 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // Internal states of loading and network.
   // TODO(hclam): Ask the pipeline about the state rather than having reading
   // them from members which would cause race conditions.
-  blink::WebMediaPlayer::NetworkState networkState() const override;
-  blink::WebMediaPlayer::ReadyState readyState() const override;
+  blink::WebMediaPlayer::NetworkState getNetworkState() const override;
+  blink::WebMediaPlayer::ReadyState getReadyState() const override;
 
   bool didLoadingProgress() override;
 

@@ -161,7 +161,7 @@ public:
     bool shouldAllowCDATA() const { return m_shouldAllowCDATA; }
     void setShouldAllowCDATA(bool value) { m_shouldAllowCDATA = value; }
 
-    State state() const { return m_state; }
+    State getState() const { return m_state; }
     void setState(State state) { m_state = state; }
 
     inline bool shouldSkipNullCharacters() const

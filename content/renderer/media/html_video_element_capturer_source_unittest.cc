@@ -54,10 +54,10 @@ class MockWebMediaPlayer : public blink::WebMediaPlayer,
   bool seeking() const override { return false; }
   double duration() const override { return 0.0; }
   double currentTime() const override { return 0.0; }
-  NetworkState networkState() const override {
+  NetworkState getNetworkState() const override {
     return NetworkStateEmpty;
   }
-  ReadyState readyState() const override {
+  ReadyState getReadyState() const override {
     return ReadyStateHaveNothing;
   }
   bool didLoadingProgress() override { return true; }

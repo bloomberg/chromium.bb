@@ -4837,21 +4837,21 @@ Vector<IconURL> Document::iconURLs(int iconTypesMask)
 
     // Start from the last child node so that icons seen later take precedence as required by the spec.
     for (HTMLLinkElement* linkElement = head() ? Traversal<HTMLLinkElement>::firstChild(*head()) : 0; linkElement; linkElement = Traversal<HTMLLinkElement>::nextSibling(*linkElement)) {
-        if (!(linkElement->iconType() & iconTypesMask))
+        if (!(linkElement->getIconType() & iconTypesMask))
             continue;
         if (linkElement->href().isEmpty())
             continue;
 
-        IconURL newURL(linkElement->href(), linkElement->iconSizes(), linkElement->type(), linkElement->iconType());
-        if (linkElement->iconType() == Favicon) {
+        IconURL newURL(linkElement->href(), linkElement->iconSizes(), linkElement->type(), linkElement->getIconType());
+        if (linkElement->getIconType() == Favicon) {
             if (firstFavicon.m_iconType != InvalidIcon)
                 secondaryIcons.append(firstFavicon);
             firstFavicon = newURL;
-        } else if (linkElement->iconType() == TouchIcon) {
+        } else if (linkElement->getIconType() == TouchIcon) {
             if (firstTouchIcon.m_iconType != InvalidIcon)
                 secondaryIcons.append(firstTouchIcon);
             firstTouchIcon = newURL;
-        } else if (linkElement->iconType() == TouchPrecomposedIcon) {
+        } else if (linkElement->getIconType() == TouchPrecomposedIcon) {
             if (firstTouchPrecomposedIcon.m_iconType != InvalidIcon)
                 secondaryIcons.append(firstTouchPrecomposedIcon);
             firstTouchPrecomposedIcon = newURL;

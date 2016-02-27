@@ -65,7 +65,7 @@ class HTMLToken {
     WTF_MAKE_NONCOPYABLE(HTMLToken);
     USING_FAST_MALLOC(HTMLToken);
 public:
-    enum Type {
+    enum TokenType {
         Uninitialized,
         DOCTYPE,
         StartTag,
@@ -135,7 +135,7 @@ public:
     }
 
     bool isUninitialized() { return m_type == Uninitialized; }
-    Type type() const { return m_type; }
+    TokenType type() const { return m_type; }
 
     void makeEndOfFile()
     {
@@ -459,7 +459,7 @@ public:
     }
 
 private:
-    Type m_type;
+    TokenType m_type;
     Attribute::Range m_range; // Always starts at zero.
     int m_baseOffset;
     DataVector m_data;

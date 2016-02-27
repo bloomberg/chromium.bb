@@ -283,7 +283,7 @@ void BackgroundHTMLParser::sendTokensToMainThread()
     OwnPtr<HTMLDocumentParser::ParsedChunk> chunk = adoptPtr(new HTMLDocumentParser::ParsedChunk);
     chunk->preloads.swap(m_pendingPreloads);
     chunk->xssInfos.swap(m_pendingXSSInfos);
-    chunk->tokenizerState = m_tokenizer->state();
+    chunk->tokenizerState = m_tokenizer->getState();
     chunk->treeBuilderState = m_treeBuilderSimulator.state();
     chunk->inputCheckpoint = m_input.createCheckpoint(m_pendingTokens->size());
     chunk->preloadScannerCheckpoint = m_preloadScanner->createCheckpoint();

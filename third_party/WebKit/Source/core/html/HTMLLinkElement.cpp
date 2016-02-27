@@ -444,9 +444,9 @@ bool HTMLLinkElement::async() const
     return fastHasAttribute(HTMLNames::asyncAttr);
 }
 
-IconType HTMLLinkElement::iconType() const
+IconType HTMLLinkElement::getIconType() const
 {
-    return m_relAttribute.iconType();
+    return m_relAttribute.getIconType();
 }
 
 const Vector<IntSize>& HTMLLinkElement::iconSizes() const
@@ -707,7 +707,7 @@ void LinkStyle::process()
     String as = m_owner->asValue().lower();
     LinkRequestBuilder builder(m_owner);
 
-    if (m_owner->relAttribute().iconType() != InvalidIcon && builder.url().isValid() && !builder.url().isEmpty()) {
+    if (m_owner->relAttribute().getIconType() != InvalidIcon && builder.url().isValid() && !builder.url().isEmpty()) {
         if (!m_owner->shouldLoadLink())
             return;
         if (!document().securityOrigin()->canDisplay(builder.url()))
@@ -715,7 +715,7 @@ void LinkStyle::process()
         if (!document().contentSecurityPolicy()->allowImageFromSource(builder.url()))
             return;
         if (document().frame() && document().frame()->loader().client())
-            document().frame()->loader().client()->dispatchDidChangeIcons(m_owner->relAttribute().iconType());
+            document().frame()->loader().client()->dispatchDidChangeIcons(m_owner->relAttribute().getIconType());
     }
 
     if (!m_owner->loadLink(type, as, builder.url()))

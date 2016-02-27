@@ -276,7 +276,7 @@ private:
             setUrlToLoad(attributeValue, DisallowURLReplacement);
         } else if (match(attributeName, relAttr)) {
             LinkRelAttribute rel(attributeValue);
-            m_linkIsStyleSheet = rel.isStyleSheet() && !rel.isAlternate() && rel.iconType() == InvalidIcon && !rel.isDNSPrefetch();
+            m_linkIsStyleSheet = rel.isStyleSheet() && !rel.isAlternate() && rel.getIconType() == InvalidIcon && !rel.isDNSPrefetch();
             m_linkIsPreconnect = rel.isPreconnect();
             m_linkIsPreload = rel.isLinkPreload();
             m_linkIsImport = rel.isImport();

@@ -119,8 +119,8 @@ class CONTENT_EXPORT WebMediaPlayerMS
   double currentTime() const override;
 
   // Internal states of loading and network.
-  blink::WebMediaPlayer::NetworkState networkState() const override;
-  blink::WebMediaPlayer::ReadyState readyState() const override;
+  blink::WebMediaPlayer::NetworkState getNetworkState() const override;
+  blink::WebMediaPlayer::ReadyState getReadyState() const override;
 
   bool didLoadingProgress() override;
 

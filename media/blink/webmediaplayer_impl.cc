@@ -642,12 +642,12 @@ double WebMediaPlayerImpl::currentTime() const {
   return pipeline_.GetMediaTime().InSecondsF();
 }
 
-WebMediaPlayer::NetworkState WebMediaPlayerImpl::networkState() const {
+WebMediaPlayer::NetworkState WebMediaPlayerImpl::getNetworkState() const {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   return network_state_;
 }
 
-WebMediaPlayer::ReadyState WebMediaPlayerImpl::readyState() const {
+WebMediaPlayer::ReadyState WebMediaPlayerImpl::getReadyState() const {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   return ready_state_;
 }

@@ -307,9 +307,9 @@ void HTMLTrackElement::setReadyState(ReadyState state)
         return parent->textTrackReadyStateChanged(m_track.get());
 }
 
-HTMLTrackElement::ReadyState HTMLTrackElement::readyState()
+HTMLTrackElement::ReadyState HTMLTrackElement::getReadyState()
 {
-    return static_cast<ReadyState>(ensureTrack()->readinessState());
+    return static_cast<ReadyState>(ensureTrack()->getReadinessState());
 }
 
 const AtomicString& HTMLTrackElement::mediaElementCrossOriginAttribute() const

@@ -50,7 +50,7 @@ public:
         LOADED = 2,
         TRACK_ERROR = 3
     };
-    ReadyState readyState();
+    ReadyState getReadyState();
     void scheduleLoad();
 
     TextTrack* track();

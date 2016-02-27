@@ -57,7 +57,7 @@ public:
 
     // LinkResource
     void process() override;
-    Type type() const override { return Import; }
+    LinkResourceType type() const override { return Import; }
     bool hasLoaded() const override;
     DECLARE_VIRTUAL_TRACE();
     void ownerInserted() override;

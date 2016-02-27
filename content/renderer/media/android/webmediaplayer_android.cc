@@ -605,11 +605,11 @@ WebSize WebMediaPlayerAndroid::naturalSize() const {
   return natural_size_;
 }
 
-WebMediaPlayer::NetworkState WebMediaPlayerAndroid::networkState() const {
+WebMediaPlayer::NetworkState WebMediaPlayerAndroid::getNetworkState() const {
   return network_state_;
 }
 
-WebMediaPlayer::ReadyState WebMediaPlayerAndroid::readyState() const {
+WebMediaPlayer::ReadyState WebMediaPlayerAndroid::getReadyState() const {
   return ready_state_;
 }
 

@@ -38,8 +38,8 @@ public:
     bool seeking() const override { return false; };
     double duration() const override { return 0.0; };
     double currentTime() const override { return 0.0; };
-    NetworkState networkState() const override { return NetworkStateEmpty; };
-    ReadyState readyState() const override { return ReadyStateHaveNothing; };
+    NetworkState getNetworkState() const override { return NetworkStateEmpty; };
+    ReadyState getReadyState() const override { return ReadyStateHaveNothing; };
     bool didLoadingProgress() override { return false; };
     bool hasSingleSecurityOrigin() const override { return true; };
     bool didPassCORSAccessCheck() const override { return true; };

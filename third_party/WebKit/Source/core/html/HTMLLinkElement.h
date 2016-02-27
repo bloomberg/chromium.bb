@@ -65,7 +65,7 @@ public:
     explicit LinkStyle(HTMLLinkElement* owner);
     ~LinkStyle() override;
 
-    Type type() const override { return Style; }
+    LinkResourceType type() const override { return Style; }
     void process() override;
     void ownerRemoved() override;
     bool hasLoaded() const override { return m_loadedSheet; }
@@ -146,7 +146,7 @@ public:
 
     const AtomicString& type() const;
 
-    IconType iconType() const;
+    IconType getIconType() const;
 
     // the icon sizes as parsed from the HTML attribute
     const Vector<IntSize>& iconSizes() const;

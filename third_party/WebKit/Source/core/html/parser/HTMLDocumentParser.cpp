@@ -430,7 +430,7 @@ void HTMLDocumentParser::validateSpeculations(PassOwnPtr<ParsedChunk> chunk)
     // speculation buffer in other states, but we'd likely need to do something more
     // sophisticated with the HTMLToken.
     if (chunk->tokenizerState == HTMLTokenizer::DataState
-        && tokenizer->state() == HTMLTokenizer::DataState
+        && tokenizer->getState() == HTMLTokenizer::DataState
         && m_input.current().isEmpty()
         && chunk->treeBuilderState == HTMLTreeBuilderSimulator::stateFor(m_treeBuilder.get())) {
         ASSERT(token->isUninitialized());
@@ -680,7 +680,7 @@ void HTMLDocumentParser::pumpTokenizer()
     RELEASE_ASSERT(!isStopped());
 
     if (isWaitingForScripts()) {
-        ASSERT(m_tokenizer->state() == HTMLTokenizer::DataState);
+        ASSERT(m_tokenizer->getState() == HTMLTokenizer::DataState);
 
         ASSERT(m_preloader);
         // TODO(kouhei): m_preloader should be always available for synchronous parsing case,

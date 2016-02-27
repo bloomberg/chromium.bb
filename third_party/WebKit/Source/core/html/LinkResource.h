@@ -44,7 +44,7 @@ class LocalFrame;
 class LinkResource : public NoBaseWillBeGarbageCollectedFinalized<LinkResource>  {
     WTF_MAKE_NONCOPYABLE(LinkResource); USING_FAST_MALLOC_WILL_BE_REMOVED(LinkResource);
 public:
-    enum Type {
+    enum LinkResourceType {
         Style,
         Import,
         Manifest
@@ -56,7 +56,7 @@ public:
     bool shouldLoadResource() const;
     LocalFrame* loadingFrame() const;
 
-    virtual Type type() const = 0;
+    virtual LinkResourceType type() const = 0;
     virtual void process() = 0;
     virtual void ownerRemoved() { }
     virtual void ownerInserted() { }

@@ -653,7 +653,7 @@ VTTDisplayParameters VTTCue::calculateDisplayParameters() const
 
     // Note: The 'text-align' property is also determined here so that
     // VTTCueBox::applyCSSProperties need not have access to a VTTCue.
-    displayParameters.textAlign = displayAlignmentMap[cueAlignment()];
+    displayParameters.textAlign = displayAlignmentMap[getCueAlignment()];
 
     // 3. If the cue writing direction is horizontal, then let block-flow be
     // 'tb'. Otherwise, if the cue writing direction is vertical growing left,

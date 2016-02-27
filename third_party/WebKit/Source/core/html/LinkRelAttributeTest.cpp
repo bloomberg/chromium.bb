@@ -40,7 +40,7 @@ static inline void testLinkRelAttribute(String value, bool isStyleSheet, IconTyp
 {
     LinkRelAttribute linkRelAttribute(value);
     ASSERT_EQ(isStyleSheet, linkRelAttribute.isStyleSheet()) << value.utf8().data();
-    ASSERT_EQ(iconType, linkRelAttribute.iconType()) << value.utf8().data();
+    ASSERT_EQ(iconType, linkRelAttribute.getIconType()) << value.utf8().data();
     ASSERT_EQ(isAlternate, linkRelAttribute.isAlternate()) << value.utf8().data();
     ASSERT_EQ(isDNSPrefetch, linkRelAttribute.isDNSPrefetch()) << value.utf8().data();
     ASSERT_EQ(isLinkPrerender, linkRelAttribute.isLinkPrerender()) << value.utf8().data();

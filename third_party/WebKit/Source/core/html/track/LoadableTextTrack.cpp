@@ -65,7 +65,7 @@ void LoadableTextTrack::setMode(const AtomicString& mode)
         return;
 #endif
 
-    if (m_trackElement->readyState() == HTMLTrackElement::NONE)
+    if (m_trackElement->getReadyState() == HTMLTrackElement::NONE)
         m_trackElement->scheduleLoad();
 }
 
