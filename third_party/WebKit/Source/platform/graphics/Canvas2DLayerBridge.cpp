@@ -77,7 +77,7 @@ static PassRefPtr<SkSurface> createSkSurface(GrContext* gr, const IntSize& size,
 
     if (gr) {
         *surfaceIsAccelerated = true;
-        surface = adoptRef(SkSurface::NewRenderTarget(gr, SkSurface::kNo_Budgeted, info, msaaSampleCount, Opaque == opacityMode ? 0 : &disableLCDProps));
+        surface = adoptRef(SkSurface::NewRenderTarget(gr, SkBudgeted::kNo, info, msaaSampleCount, Opaque == opacityMode ? 0 : &disableLCDProps));
     }
 
     if (!surface) {

@@ -644,7 +644,7 @@ static skia::RefPtr<SkImage> ApplyImageFilter(
   SkImageInfo dst_info =
       SkImageInfo::MakeN32Premul(dst_rect.width(), dst_rect.height());
   skia::RefPtr<SkSurface> surface = skia::AdoptRef(SkSurface::NewRenderTarget(
-      use_gr_context->context(), SkSurface::kYes_Budgeted, dst_info, 0));
+      use_gr_context->context(), SkBudgeted::kYes, dst_info, 0));
   if (!surface) {
     TRACE_EVENT_INSTANT0("cc", "ApplyImageFilter surface allocation failed",
                          TRACE_EVENT_SCOPE_THREAD);

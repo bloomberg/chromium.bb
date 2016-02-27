@@ -230,7 +230,7 @@ IN_PROC_BROWSER_TEST_F(BrowserGpuChannelHostFactoryTest,
 
   SkImageInfo info = SkImageInfo::MakeN32Premul(100, 100);
   skia::RefPtr<SkSurface> surface = skia::AdoptRef(SkSurface::NewRenderTarget(
-      gr_context.get(), SkSurface::kNo_Budgeted, info));
+      gr_context.get(), SkBudgeted::kNo, info));
   gr_context = nullptr;
 
   // use the canvas after the provider and grcontext have been locally
