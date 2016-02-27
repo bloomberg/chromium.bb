@@ -7,6 +7,8 @@
 
 namespace blink {
 
+size_t const CallbackStack::kMinimalBlockSize = WTF::kPageAllocationGranularity / sizeof(CallbackStack::Item);
+
 CallbackStack::Block::Block(Block* next, size_t blockSize)
     : m_blockSize(blockSize)
 {

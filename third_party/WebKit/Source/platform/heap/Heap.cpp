@@ -110,7 +110,8 @@ void Heap::init()
     s_markingStack = new CallbackStack();
     s_postMarkingCallbackStack = new CallbackStack();
     s_globalWeakCallbackStack = new CallbackStack();
-    s_ephemeronStack = new CallbackStack();
+    // Use smallest supported block size for ephemerons.
+    s_ephemeronStack = new CallbackStack(CallbackStack::kMinimalBlockSize);
     s_heapDoesNotContainCache = new HeapDoesNotContainCache();
     s_freePagePool = new FreePagePool();
     s_orphanedPagePool = new OrphanedPagePool();

@@ -5,7 +5,7 @@
 #ifndef CallbackStack_h
 #define CallbackStack_h
 
-#include "platform/heap/ThreadState.h"
+#include "platform/heap/BlinkGC.h"
 #include "wtf/Allocator.h"
 #include "wtf/Assertions.h"
 
@@ -53,6 +53,8 @@ public:
 #if ENABLE(ASSERT)
     bool hasCallbackForObject(const void*);
 #endif
+
+    static const size_t kMinimalBlockSize;
 
 private:
     static const size_t defaultBlockSize = (1 << 13);
