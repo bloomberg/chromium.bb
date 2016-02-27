@@ -66,6 +66,18 @@ if (enable_nacl) {
       outputs += [ output_prefix + output_cpu + "_" + output_elem ]
     }
 
+    shim_lib_path =
+        rebase_path(get_label_info(shim_target_tc_label, "target_out_dir") +
+                        "/$src_shim_name",
+                    root_build_dir)
+
+    # This describes the irt shim library for the main architecture.
+    # On Windows x86, another switch will be added to this below.
+    lib_overrides = [
+      "--lib_override",
+      "$shim_cpu,$shim_lib_path,$desired_shim_name",
+    ]
+
     if (is_win && target_cpu == "x86") {
       # On Windows, for offline testing (i.e., without component updater
       # selecting the platform-specific files with multi-CRXes), we need
@@ -73,19 +85,25 @@ if (enable_nacl) {
       # windows will need 64-bit nexes).
 
       shim_target_tc_label = "$shim_target_label(${shim_toolchain_base}x64)"
-      deps += [ shim_target_tc_label ]
-
       shim_cpu = "x64"
+
+      shim_lib_path =
+          rebase_path(get_label_info(shim_target_tc_label, "target_out_dir") +
+                          "/$src_shim_name",
+                      root_build_dir)
+
+      # Pass a second --lib_override for the second architecture.
+      lib_overrides += [
+        "--lib_override",
+        "$shim_cpu,$shim_lib_path,$desired_shim_name",
+      ]
+
+      deps += [ shim_target_tc_label ]
 
       foreach(output_elem, outputs_from_toolchain) {
         outputs += [ output_prefix + "x86_64_" + output_elem ]
       }
     }
-
-    shim_lib_path =
-        rebase_path(get_label_info(shim_target_tc_label, "target_out_dir") +
-                        "/$src_shim_name",
-                    root_build_dir)
 
     if (current_os == "chromeos") {
       toolchain_os = "linux"
@@ -93,12 +111,10 @@ if (enable_nacl) {
       toolchain_os = current_os
     }
 
-    args = [
+    args = lib_overrides
+    args += [
       "--dest",
       rebase_path("$root_out_dir/pnacl", root_build_dir),
-
-      "--lib_override",
-      "$shim_cpu,$shim_lib_path,$desired_shim_name",
 
       "--target_arch",
       target_cpu,
