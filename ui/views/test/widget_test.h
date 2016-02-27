@@ -11,6 +11,15 @@
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget_delegate.h"
 
+#if defined(USE_AURA)
+#include "ui/views/widget/native_widget_aura.h"
+#if !defined(OS_CHROMEOS)
+#include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
+#endif
+#elif defined(OS_MACOSX)
+#include "ui/views/widget/native_widget_mac.h"
+#endif
+
 namespace ui {
 namespace internal {
 class InputMethodDelegate;
@@ -23,6 +32,16 @@ namespace views {
 class NativeWidget;
 class Widget;
 
+#if defined(USE_AURA)
+typedef NativeWidgetAura PlatformNativeWidget;
+#if !defined(OS_CHROMEOS)
+typedef DesktopNativeWidgetAura PlatformDesktopNativeWidget;
+#endif
+#elif defined(OS_MACOSX)
+typedef NativeWidgetMac PlatformNativeWidget;
+typedef NativeWidgetMac PlatformDesktopNativeWidget;
+#endif
+
 namespace internal {
 
 class RootView;
@@ -30,6 +49,23 @@ class RootView;
 }  // namespace internal
 
 namespace test {
+
+// A widget that assumes mouse capture always works. It won't on Aura in
+// testing, so we mock it.
+class NativeWidgetCapture : public PlatformNativeWidget {
+ public:
+  explicit NativeWidgetCapture(internal::NativeWidgetDelegate* delegate);
+  ~NativeWidgetCapture() override;
+
+  void SetCapture() override;
+  void ReleaseCapture() override;
+  bool HasCapture() const override;
+
+ private:
+  bool mouse_capture_;
+
+  DISALLOW_COPY_AND_ASSIGN(NativeWidgetCapture);
+};
 
 class WidgetTest : public ViewsTestBase {
  public:
@@ -52,7 +88,7 @@ class WidgetTest : public ViewsTestBase {
   ~WidgetTest() override;
 
   // Create Widgets with |native_widget| in InitParams set to an instance of
-  // platform specific widget type that has stubbled capture calls.
+  // test::NativeWidgetCapture.
   Widget* CreateTopLevelPlatformWidget();
   Widget* CreateTopLevelFramelessPlatformWidget();
   Widget* CreateChildPlatformWidget(gfx::NativeView parent_native_view);

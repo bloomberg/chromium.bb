@@ -15,11 +15,6 @@
 #include "ui/gfx/x/x11_types.h"
 #endif
 
-#if defined(USE_AURA)
-#include "ui/aura/window.h"
-#include "ui/aura/window_delegate.h"
-#endif
-
 namespace views {
 namespace test {
 

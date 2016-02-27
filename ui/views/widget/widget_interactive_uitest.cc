@@ -26,7 +26,6 @@
 #include "ui/views/controls/textfield/textfield_test_api.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/test/focus_manager_test.h"
-#include "ui/views/test/native_widget_factory.h"
 #include "ui/views/test/widget_test.h"
 #include "ui/views/touchui/touch_selection_controller_impl.h"
 #include "ui/views/widget/widget.h"
@@ -839,8 +838,8 @@ TEST_F(WidgetTestInteractive, WindowModalWindowDestroyedActivationTest) {
   gfx::Rect initial_bounds(0, 0, 500, 500);
   init_params.bounds = initial_bounds;
   init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  init_params.native_widget = CreatePlatformDesktopNativeWidgetImpl(
-      init_params, &top_level_widget, nullptr);
+  init_params.native_widget =
+      new PlatformDesktopNativeWidget(&top_level_widget);
   top_level_widget.Init(init_params);
   ShowSync(&top_level_widget);
 
@@ -908,8 +907,8 @@ TEST_F(WidgetTestInteractive, MAYBE_SystemModalWindowReleasesCapture) {
   gfx::Rect initial_bounds(0, 0, 500, 500);
   init_params.bounds = initial_bounds;
   init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  init_params.native_widget = CreatePlatformDesktopNativeWidgetImpl(
-      init_params, &top_level_widget, nullptr);
+  init_params.native_widget =
+      new PlatformDesktopNativeWidget(&top_level_widget);
   top_level_widget.Init(init_params);
   ShowSync(&top_level_widget);
 
@@ -946,8 +945,9 @@ TEST_F(WidgetTestInteractive, CanActivateFlagIsHonored) {
   init_params.bounds = gfx::Rect(0, 0, 200, 200);
   init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   init_params.activatable = Widget::InitParams::ACTIVATABLE_NO;
-  init_params.native_widget =
-      CreatePlatformDesktopNativeWidgetImpl(init_params, &widget, nullptr);
+#if !defined(OS_CHROMEOS)
+  init_params.native_widget = new PlatformDesktopNativeWidget(&widget);
+#endif  // !defined(OS_CHROMEOS)
   widget.Init(init_params);
 
   widget.Show();
@@ -1112,8 +1112,7 @@ TEST_F(WidgetTestInteractive, InactiveWidgetDoesNotGrabActivation) {
 
   Widget widget2;
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
-  params.native_widget =
-      CreatePlatformDesktopNativeWidgetImpl(params, &widget2, nullptr);
+  params.native_widget = new PlatformDesktopNativeWidget(&widget2);
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   widget2.Init(params);
   widget2.Show();
@@ -1273,8 +1272,8 @@ class WidgetCaptureTest : public ViewsTestBase {
     CaptureLostTrackingWidget widget1;
     Widget::InitParams params1 =
         CreateParams(views::Widget::InitParams::TYPE_WINDOW);
-    params1.native_widget =
-        CreateNativeWidget(params1, use_desktop_native_widget, &widget1);
+    params1.native_widget = CreateNativeWidget(use_desktop_native_widget,
+                                               &widget1);
     params1.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     widget1.Init(params1);
     widget1.Show();
@@ -1283,8 +1282,8 @@ class WidgetCaptureTest : public ViewsTestBase {
     Widget::InitParams params2 =
         CreateParams(views::Widget::InitParams::TYPE_WINDOW);
     params2.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-    params2.native_widget =
-        CreateNativeWidget(params2, use_desktop_native_widget, &widget2);
+    params2.native_widget = CreateNativeWidget(use_desktop_native_widget,
+                                               &widget2);
     widget2.Init(params2);
     widget2.Show();
 
@@ -1310,12 +1309,13 @@ class WidgetCaptureTest : public ViewsTestBase {
     EXPECT_FALSE(widget2.GetAndClearGotCaptureLost());
   }
 
-  NativeWidget* CreateNativeWidget(const Widget::InitParams& params,
-                                   bool create_desktop_native_widget,
+  NativeWidget* CreateNativeWidget(bool create_desktop_native_widget,
                                    Widget* widget) {
+#if !defined(OS_CHROMEOS)
     if (create_desktop_native_widget)
-      return CreatePlatformDesktopNativeWidgetImpl(params, widget, nullptr);
-    return CreatePlatformNativeWidgetImpl(params, widget, kDefault, nullptr);
+      return new PlatformDesktopNativeWidget(widget);
+#endif
+    return NULL;
   }
 
  private:
@@ -1381,7 +1381,7 @@ TEST_F(WidgetCaptureTest, MAYBE_MouseExitOnCaptureGrab) {
   Widget widget1;
   Widget::InitParams params1 =
       CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-  params1.native_widget = CreateNativeWidget(params1, true, &widget1);
+  params1.native_widget = CreateNativeWidget(true, &widget1);
   params1.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   widget1.Init(params1);
   MouseView* mouse_view1 = new MouseView;
@@ -1392,7 +1392,7 @@ TEST_F(WidgetCaptureTest, MAYBE_MouseExitOnCaptureGrab) {
   Widget widget2;
   Widget::InitParams params2 =
       CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-  params2.native_widget = CreateNativeWidget(params2, true, &widget2);
+  params2.native_widget = CreateNativeWidget(true, &widget2);
   params2.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   widget2.Init(params2);
   widget2.Show();
@@ -1444,8 +1444,7 @@ TEST_F(WidgetCaptureTest, SetCaptureToNonToplevel) {
   Widget toplevel;
   Widget::InitParams toplevel_params =
       CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-  toplevel_params.native_widget = CreateNativeWidget(toplevel_params, true,
-                                                     &toplevel);
+  toplevel_params.native_widget = CreateNativeWidget(true, &toplevel);
   toplevel_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   toplevel.Init(toplevel_params);
   toplevel.Show();

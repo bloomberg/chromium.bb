@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_VIEWS_TEST_CAPTURE_TRACKING_VIEW_H_
-#define UI_VIEWS_TEST_CAPTURE_TRACKING_VIEW_H_
+#ifndef UI_VIEWS_TEST_CAPTURE_TRACKING_VIEW_
+#define UI_VIEWS_TEST_CAPTURE_TRACKING_VIEW_
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -41,4 +41,4 @@ class CaptureTrackingView : public views::View {
 }  // namespace test
 }  // namespace views
 
-#endif  // UI_VIEWS_TEST_CAPTURE_TRACKING_VIEW_H_
+#endif  // UI_VIEWS_TEST_CAPTURE_TRACKING_VIEW_

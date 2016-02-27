@@ -145,9 +145,7 @@ test("views_mus_unittests") {
   sources = [
     "../run_all_unittests.cc",
     "../run_all_unittests.h",
-    "../test/native_widget_factory_mus.cc",
     "../view_targeter_unittest.cc",
-    "../widget/native_widget_unittest.cc",
     "platform_test_helper_mus.cc",
     "run_all_unittests_mus.cc",
   ]

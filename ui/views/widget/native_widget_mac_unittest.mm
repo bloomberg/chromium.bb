@@ -28,7 +28,6 @@
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/native_cursor.h"
-#include "ui/views/test/native_widget_factory.h"
 #include "ui/views/test/test_widget_observer.h"
 #include "ui/views/test/widget_test.h"
 #include "ui/views/widget/native_widget_private.h"
@@ -946,9 +945,7 @@ class ParentCloseMonitor : public WidgetObserver {
     Widget::InitParams init_params(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
     init_params.parent = parent->GetNativeView();
     init_params.bounds = gfx::Rect(100, 100, 100, 100);
-    init_params.native_widget =
-        CreatePlatformNativeWidgetImpl(init_params, child, kStubCapture,
-                                       nullptr);
+    init_params.native_widget = new NativeWidgetCapture(child);
     child->Init(init_params);
     child->Show();
 
@@ -1112,8 +1109,7 @@ TEST_F(NativeWidgetMacTest, DoesHideTitle) {
   // Same as CreateTopLevelPlatformWidget but with a custom delegate.
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
   Widget* widget = new Widget;
-  params.native_widget =
-        CreatePlatformNativeWidgetImpl(params, widget, kStubCapture, nullptr);
+  params.native_widget = new NativeWidgetCapture(widget);
   CustomTitleWidgetDelegate delegate(widget);
   params.delegate = &delegate;
   params.bounds = gfx::Rect(0, 0, 800, 600);
