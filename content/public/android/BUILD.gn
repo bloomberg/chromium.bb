@@ -195,7 +195,10 @@ android_library("content_javatests") {
 
 # GYP: //content/content_tests.gypi:content_junit_tests
 junit_binary("content_junit_tests") {
-  java_files = [ "junit/src/org/chromium/content/browser/input/GamepadMappingsTest.java" ]
+  java_files = [
+    "junit/src/org/chromium/content/browser/input/GamepadMappingsTest.java",
+    "junit/src/org/chromium/content/browser/BindingManagerImplTest.java",
+  ]
   deps = [
     ":content_java",
     "//base:base_java",

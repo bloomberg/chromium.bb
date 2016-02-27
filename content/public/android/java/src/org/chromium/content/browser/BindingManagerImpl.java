@@ -33,11 +33,9 @@ class BindingManagerImpl implements BindingManager {
 
     // Delays used when clearing moderate binding pool when onSentToBackground happens.
     private static final long MODERATE_BINDING_POOL_CLEARER_DELAY_MILLIS = 10 * 1000;
-    private static final long MODERATE_BINDING_POOL_CLEARER_DELAY_MILLIS_ON_TESTING = 100;
 
     // These fields allow to override the parameters for testing - see
     // createBindingManagerForTesting().
-    private final long mRemoveStrongBindingDelay;
     private final boolean mIsLowMemoryDevice;
 
     private static class ModerateBindingPool
@@ -147,9 +145,7 @@ class BindingManagerImpl implements BindingManager {
                         evictAll();
                     }
                 };
-                mHandler.postDelayed(mDelayedClearer, onTesting
-                                ? MODERATE_BINDING_POOL_CLEARER_DELAY_MILLIS_ON_TESTING
-                                : MODERATE_BINDING_POOL_CLEARER_DELAY_MILLIS);
+                mHandler.postDelayed(mDelayedClearer, MODERATE_BINDING_POOL_CLEARER_DELAY_MILLIS);
             }
         }
 
@@ -234,7 +230,7 @@ class BindingManagerImpl implements BindingManager {
             if (mIsLowMemoryDevice) {
                 doUnbind.run();
             } else {
-                ThreadUtils.postOnUiThreadDelayed(doUnbind, mRemoveStrongBindingDelay);
+                ThreadUtils.postOnUiThreadDelayed(doUnbind, DETACH_AS_ACTIVE_HIGH_END_DELAY_MILLIS);
             }
         }
 
@@ -351,16 +347,13 @@ class BindingManagerImpl implements BindingManager {
      * The constructor is private to hide parameters exposed for testing from the regular consumer.
      * Use factory methods to create an instance.
      */
-    private BindingManagerImpl(
-            boolean isLowMemoryDevice, long removeStrongBindingDelay, boolean onTesting) {
+    private BindingManagerImpl(boolean isLowMemoryDevice, boolean onTesting) {
         mIsLowMemoryDevice = isLowMemoryDevice;
-        mRemoveStrongBindingDelay = removeStrongBindingDelay;
         mOnTesting = onTesting;
     }
 
     public static BindingManagerImpl createBindingManager() {
-        return new BindingManagerImpl(
-                SysUtils.isLowEndDevice(), DETACH_AS_ACTIVE_HIGH_END_DELAY_MILLIS, false);
+        return new BindingManagerImpl(SysUtils.isLowEndDevice(), false);
     }
 
     /**
@@ -369,7 +362,7 @@ class BindingManagerImpl implements BindingManager {
      * @param isLowEndDevice true iff the created instance should apply low-end binding policies
      */
     public static BindingManagerImpl createBindingManagerForTesting(boolean isLowEndDevice) {
-        return new BindingManagerImpl(isLowEndDevice, 0, true);
+        return new BindingManagerImpl(isLowEndDevice, true);
     }
 
     @Override

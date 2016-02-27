@@ -8,16 +8,21 @@ import static android.content.ComponentCallbacks2.TRIM_MEMORY_RUNNING_CRITICAL;
 import static android.content.ComponentCallbacks2.TRIM_MEMORY_RUNNING_LOW;
 import static android.content.ComponentCallbacks2.TRIM_MEMORY_RUNNING_MODERATE;
 
+import android.app.Activity;
 import android.app.Application;
 import android.os.Bundle;
-import android.os.SystemClock;
-import android.test.InstrumentationTestCase;
-import android.test.suitebuilder.annotation.SmallTest;
 import android.util.Pair;
 
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.common.IChildProcessCallback;
 import org.chromium.content.common.IChildProcessService;
+import org.chromium.testing.local.LocalRobolectricTestRunner;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
+import org.robolectric.annotation.Config;
 
 import java.util.ArrayList;
 
@@ -26,10 +31,11 @@ import java.util.ArrayList;
  * implementation, thus testing only the BindingManagerImpl itself.
  *
  * Default property of being low-end device is overriden, so that both low-end and high-end policies
- * are tested. Unbinding delays are set to 0, so that we don't need to deal with waiting, but we
- * still can test if the unbinding tasks are posted or executed synchronously.
+ * are tested.
  */
-public class BindingManagerImplTest extends InstrumentationTestCase {
+@RunWith(LocalRobolectricTestRunner.class)
+@Config(manifest = Config.NONE)
+public class BindingManagerImplTest {
     private static class MockChildProcessConnection implements ChildProcessConnection {
         boolean mInitialBindingBound;
         boolean mModerateBindingBound;
@@ -156,19 +162,22 @@ public class BindingManagerImplTest extends InstrumentationTestCase {
         }
     }
 
+    Activity mActivity;
+
     // The managers are created in setUp() for convenience.
     BindingManagerImpl mLowEndManager;
     BindingManagerImpl mHighEndManager;
     BindingManagerImpl mModerateBindingManager;
     ManagerEntry[] mAllManagers;
 
-    @Override
-    protected void setUp() {
+    @Before
+    public void setUp() {
+        mActivity = Robolectric.buildActivity(Activity.class).setup().get();
+
         mLowEndManager = BindingManagerImpl.createBindingManagerForTesting(true);
         mHighEndManager = BindingManagerImpl.createBindingManagerForTesting(false);
         mModerateBindingManager = BindingManagerImpl.createBindingManagerForTesting(false);
-        mModerateBindingManager.startModerateBindingManagement(
-                getInstrumentation().getTargetContext(), 4, 0.25f, 0.5f);
+        mModerateBindingManager.startModerateBindingManagement(mActivity, 4, 0.25f, 0.5f);
         mAllManagers = new ManagerEntry[] {
                 new ManagerEntry(mLowEndManager, "low-end"),
                 new ManagerEntry(mHighEndManager, "high-end"),
@@ -179,7 +188,7 @@ public class BindingManagerImplTest extends InstrumentationTestCase {
      * Verifies that when running on low-end, the binding manager drops the oom bindings for the
      * previously bound connection when a new connection is used in foreground.
      */
-    @SmallTest
+    @Test
     @Feature({"ProcessManagement"})
     public void testNewConnectionDropsPreviousOnLowEnd() {
         // This test applies only to the low-end manager.
@@ -191,19 +200,19 @@ public class BindingManagerImplTest extends InstrumentationTestCase {
 
         // Bind a strong binding on the connection.
         manager.setInForeground(firstConnection.getPid(), true);
-        assertTrue(firstConnection.isStrongBindingBound());
+        Assert.assertTrue(firstConnection.isStrongBindingBound());
 
         // Add a new connection.
         MockChildProcessConnection secondConnection = new MockChildProcessConnection(2);
         manager.addNewConnection(secondConnection.getPid(), secondConnection);
 
         // Verify that the strong binding for the first connection wasn't dropped.
-        assertTrue(firstConnection.isStrongBindingBound());
+        Assert.assertTrue(firstConnection.isStrongBindingBound());
 
         // Verify that the strong binding for the first connection was dropped when a new connection
         // got used in foreground.
         manager.setInForeground(secondConnection.getPid(), true);
-        assertFalse(firstConnection.isStrongBindingBound());
+        Assert.assertFalse(firstConnection.isStrongBindingBound());
     }
 
     /**
@@ -211,7 +220,7 @@ public class BindingManagerImplTest extends InstrumentationTestCase {
      * - the initial binding should not be affected
      * - removal of a strong binding should be executed synchronously
      */
-    @SmallTest
+    @Test
     @Feature({"ProcessManagement"})
     public void testStrongBindingRemovalOnLowEnd() throws Throwable {
         // This test applies only to the low-end manager.
@@ -220,33 +229,26 @@ public class BindingManagerImplTest extends InstrumentationTestCase {
         // Add a connection to the manager.
         final MockChildProcessConnection connection = new MockChildProcessConnection(1);
         manager.addNewConnection(connection.getPid(), connection);
-        assertTrue(connection.isInitialBindingBound());
-        assertFalse(connection.isStrongBindingBound());
+        Assert.assertTrue(connection.isInitialBindingBound());
+        Assert.assertFalse(connection.isStrongBindingBound());
 
-        // This has to happen on the UI thread, so that we can check the binding status right after
-        // the call to remove it, before the any other task is executed on the main thread.
-        runTestOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                // Add a strong binding, verify that the initial binding is not removed.
-                manager.setInForeground(connection.getPid(), true);
-                assertTrue(connection.isStrongBindingBound());
-                assertTrue(connection.isInitialBindingBound());
+        // Add a strong binding, verify that the initial binding is not removed.
+        manager.setInForeground(connection.getPid(), true);
+        Assert.assertTrue(connection.isStrongBindingBound());
+        Assert.assertTrue(connection.isInitialBindingBound());
 
-                // Remove the strong binding, verify that the strong binding is removed immediately
-                // and that the initial binding is not affected.
-                manager.setInForeground(connection.getPid(), false);
-                assertFalse(connection.isStrongBindingBound());
-                assertTrue(connection.isInitialBindingBound());
-            }
-        });
+        // Remove the strong binding, verify that the strong binding is removed immediately
+        // and that the initial binding is not affected.
+        manager.setInForeground(connection.getPid(), false);
+        Assert.assertFalse(connection.isStrongBindingBound());
+        Assert.assertTrue(connection.isInitialBindingBound());
     }
 
     /**
      * Verifies the strong binding removal policies for high end devices, where the removal should
      * be delayed.
      */
-    @SmallTest
+    @Test
     @Feature({"ProcessManagement"})
     public void testStrongBindingRemovalOnHighEnd() throws Throwable {
         // This test applies only to the high-end manager.
@@ -255,39 +257,32 @@ public class BindingManagerImplTest extends InstrumentationTestCase {
         // Add a connection to the manager.
         final MockChildProcessConnection connection = new MockChildProcessConnection(1);
         manager.addNewConnection(connection.getPid(), connection);
-        assertTrue(connection.isInitialBindingBound());
-        assertFalse(connection.isStrongBindingBound());
-        // This has to happen on the UI thread, so that we can check the binding status right after
-        // the call to remove it, before the any other task is executed on the main thread.
-        runTestOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                // Add a strong binding, verify that the initial binding is not removed.
-                manager.setInForeground(connection.getPid(), true);
-                assertTrue(connection.isStrongBindingBound());
-                assertTrue(connection.isInitialBindingBound());
+        Assert.assertTrue(connection.isInitialBindingBound());
+        Assert.assertFalse(connection.isStrongBindingBound());
 
-                // Remove the strong binding, verify that the strong binding is not removed
-                // immediately.
-                manager.setInForeground(connection.getPid(), false);
-                assertTrue(connection.isStrongBindingBound());
-                assertTrue(connection.isInitialBindingBound());
-            }
-        });
+        // Add a strong binding, verify that the initial binding is not removed.
+        manager.setInForeground(connection.getPid(), true);
+        Assert.assertTrue(connection.isStrongBindingBound());
+        Assert.assertTrue(connection.isInitialBindingBound());
+
+        // Remove the strong binding, verify that the strong binding is not removed
+        // immediately.
+        manager.setInForeground(connection.getPid(), false);
+        Assert.assertTrue(connection.isStrongBindingBound());
+        Assert.assertTrue(connection.isInitialBindingBound());
 
         // Wait until the posted unbinding tasks get executed and verify that the strong binding was
-        // removed while the initial binding is not affected. Note that this works only because the
-        // test binding manager has the unbinding delay set to 0.
-        getInstrumentation().waitForIdleSync();
-        assertFalse(connection.isStrongBindingBound());
-        assertTrue(connection.isInitialBindingBound());
+        // removed while the initial binding is not affected.
+        Robolectric.runUiThreadTasksIncludingDelayedTasks();
+        Assert.assertFalse(connection.isStrongBindingBound());
+        Assert.assertTrue(connection.isInitialBindingBound());
     }
 
     /**
      * Verifies the strong binding removal policies with moderate binding management, where the
      * moderate binding should be bound.
      */
-    @SmallTest
+    @Test
     @Feature({"ProcessManagement"})
     public void testStrongBindingRemovalWithModerateBinding() throws Throwable {
         // This test applies only to the moderate-binding manager.
@@ -296,41 +291,35 @@ public class BindingManagerImplTest extends InstrumentationTestCase {
         // Add a connection to the manager.
         final MockChildProcessConnection connection = new MockChildProcessConnection(1);
         manager.addNewConnection(connection.getPid(), connection);
-        assertTrue(connection.isInitialBindingBound());
-        assertFalse(connection.isStrongBindingBound());
-        assertFalse(connection.isModerateBindingBound());
-        // This has to happen on the UI thread, so that we can check the binding status right after
-        // the call to remove it, before the any other task is executed on the main thread.
-        runTestOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                // Add a strong binding, verify that the initial binding is not removed.
-                manager.setInForeground(connection.getPid(), true);
-                assertTrue(connection.isStrongBindingBound());
-                assertTrue(connection.isInitialBindingBound());
-                assertFalse(connection.isModerateBindingBound());
+        Assert.assertTrue(connection.isInitialBindingBound());
+        Assert.assertFalse(connection.isStrongBindingBound());
+        Assert.assertFalse(connection.isModerateBindingBound());
 
-                // Remove the strong binding, verify that the strong binding is not removed
-                // immediately.
-                manager.setInForeground(connection.getPid(), false);
-                assertTrue(connection.isStrongBindingBound());
-                assertTrue(connection.isInitialBindingBound());
-                assertFalse(connection.isModerateBindingBound());
-            }
-        });
+        // Add a strong binding, verify that the initial binding is not removed.
+        manager.setInForeground(connection.getPid(), true);
+        Assert.assertTrue(connection.isStrongBindingBound());
+        Assert.assertTrue(connection.isInitialBindingBound());
+        Assert.assertFalse(connection.isModerateBindingBound());
+
+        // Remove the strong binding, verify that the strong binding is not removed
+        // immediately.
+        manager.setInForeground(connection.getPid(), false);
+        Assert.assertTrue(connection.isStrongBindingBound());
+        Assert.assertTrue(connection.isInitialBindingBound());
+        Assert.assertFalse(connection.isModerateBindingBound());
 
         // Wait until the posted unbinding tasks get executed and verify that the strong binding was
         // removed while the initial binding is not affected, and the moderate binding is bound.
-        getInstrumentation().waitForIdleSync();
-        assertFalse(connection.isStrongBindingBound());
-        assertTrue(connection.isInitialBindingBound());
-        assertTrue(connection.isModerateBindingBound());
+        Robolectric.runUiThreadTasksIncludingDelayedTasks();
+        Assert.assertFalse(connection.isStrongBindingBound());
+        Assert.assertTrue(connection.isInitialBindingBound());
+        Assert.assertTrue(connection.isModerateBindingBound());
     }
 
     /**
      * Verifies that the initial binding is removed after determinedVisibility() is called.
      */
-    @SmallTest
+    @Test
     @Feature({"ProcessManagement"})
     public void testInitialBindingRemoval() {
         // This test applies to low-end, high-end and moderate-binding policies.
@@ -343,11 +332,11 @@ public class BindingManagerImplTest extends InstrumentationTestCase {
             manager.addNewConnection(connection.getPid(), connection);
 
             // Verify that the initial binding is held.
-            assertTrue(connection.isInitialBindingBound());
+            Assert.assertTrue(connection.isInitialBindingBound());
 
             // Call determinedVisibility() and verify that the initial binding was released.
             manager.determinedVisibility(connection.getPid());
-            assertFalse(connection.isInitialBindingBound());
+            Assert.assertFalse(connection.isInitialBindingBound());
         }
     }
 
@@ -360,7 +349,7 @@ public class BindingManagerImplTest extends InstrumentationTestCase {
      * This test corresponds to a process crash scenario: after a process dies and its connection is
      * cleared, isOomProtected() may be called to decide if it was a crash or out-of-memory kill.
      */
-    @SmallTest
+    @Test
     @Feature({"ProcessManagement"})
     public void testIsOomProtected() {
         // This test applies to low-end, high-end and moderate-binding policies.
@@ -373,36 +362,36 @@ public class BindingManagerImplTest extends InstrumentationTestCase {
             manager.addNewConnection(connection.getPid(), connection);
 
             // Initial binding is an oom binding.
-            assertTrue(message, manager.isOomProtected(connection.getPid()));
+            Assert.assertTrue(message, manager.isOomProtected(connection.getPid()));
 
             // After initial binding is removed, the connection is no longer oom protected.
             manager.setInForeground(connection.getPid(), false);
             manager.determinedVisibility(connection.getPid());
-            getInstrumentation().waitForIdleSync();
-            assertFalse(message, manager.isOomProtected(connection.getPid()));
+            Robolectric.runUiThreadTasksIncludingDelayedTasks();
+            Assert.assertFalse(message, manager.isOomProtected(connection.getPid()));
 
             // Add a strong binding, restoring the oom protection.
             manager.setInForeground(connection.getPid(), true);
-            assertTrue(message, manager.isOomProtected(connection.getPid()));
+            Assert.assertTrue(message, manager.isOomProtected(connection.getPid()));
 
             // Simulate a process crash - clear a connection in binding manager and remove the
             // bindings.
-            assertFalse(manager.isConnectionCleared(connection.getPid()));
+            Assert.assertFalse(manager.isConnectionCleared(connection.getPid()));
             manager.clearConnection(connection.getPid());
-            assertTrue(manager.isConnectionCleared(connection.getPid()));
+            Assert.assertTrue(manager.isConnectionCleared(connection.getPid()));
             connection.stop();
 
             // Verify that the connection doesn't keep any oom bindings, but the manager reports the
             // oom status as protected.
-            assertFalse(message, connection.isInitialBindingBound());
-            assertFalse(message, connection.isStrongBindingBound());
-            assertTrue(message, manager.isOomProtected(connection.getPid()));
+            Assert.assertFalse(message, connection.isInitialBindingBound());
+            Assert.assertFalse(message, connection.isStrongBindingBound());
+            Assert.assertTrue(message, manager.isOomProtected(connection.getPid()));
         }
     }
 
     /**
      * Verifies that onSentToBackground() / onBroughtToForeground() correctly attach and remove
-     * additional strong binding keept on the most recently bound renderer for the background
+     * additional strong binding kept on the most recently bound renderer for the background
      * period.
      *
      * The renderer that will be bound for the background period should be the one that was most
@@ -410,7 +399,7 @@ public class BindingManagerImplTest extends InstrumentationTestCase {
      * .addNewConnection() after that. Otherwise we would bound a background renderer when user
      * loads a new tab in background and leaves the browser.
      */
-    @SmallTest
+    @Test
     @Feature({"ProcessManagement"})
     public void testBackgroundPeriodBinding() {
         // This test applies to low-end, high-end and moderate-binding policies.
@@ -435,26 +424,26 @@ public class BindingManagerImplTest extends InstrumentationTestCase {
             manager.setInForeground(thirdConnection.getPid(), false);
 
             // Sanity check: verify that no connection has a strong binding.
-            getInstrumentation().waitForIdleSync();
-            assertFalse(message, firstConnection.isStrongBindingBound());
-            assertFalse(message, secondConnection.isStrongBindingBound());
-            assertFalse(message, thirdConnection.isStrongBindingBound());
+            Robolectric.runUiThreadTasksIncludingDelayedTasks();
+            Assert.assertFalse(message, firstConnection.isStrongBindingBound());
+            Assert.assertFalse(message, secondConnection.isStrongBindingBound());
+            Assert.assertFalse(message, thirdConnection.isStrongBindingBound());
 
             // Call onSentToBackground() and verify that a strong binding was added for the second
             // connection:
             // - not the first one, because it was bound earlier than the second
             // - not the thirs one, because it was never bound at all
             manager.onSentToBackground();
-            assertFalse(message, firstConnection.isStrongBindingBound());
-            assertTrue(message, secondConnection.isStrongBindingBound());
-            assertFalse(message, thirdConnection.isStrongBindingBound());
+            Assert.assertFalse(message, firstConnection.isStrongBindingBound());
+            Assert.assertTrue(message, secondConnection.isStrongBindingBound());
+            Assert.assertFalse(message, thirdConnection.isStrongBindingBound());
 
             // Call onBroughtToForeground() and verify that the strong binding was removed.
             manager.onBroughtToForeground();
-            getInstrumentation().waitForIdleSync();
-            assertFalse(message, firstConnection.isStrongBindingBound());
-            assertFalse(message, secondConnection.isStrongBindingBound());
-            assertFalse(message, thirdConnection.isStrongBindingBound());
+            Robolectric.runUiThreadTasksIncludingDelayedTasks();
+            Assert.assertFalse(message, firstConnection.isStrongBindingBound());
+            Assert.assertFalse(message, secondConnection.isStrongBindingBound());
+            Assert.assertFalse(message, thirdConnection.isStrongBindingBound());
         }
     }
 
@@ -462,7 +451,7 @@ public class BindingManagerImplTest extends InstrumentationTestCase {
      * Verifies that onSentToBackground() drops all the moderate bindings after some delay, and
      * onBroughtToForeground() doesn't recover them.
      */
-    @SmallTest
+    @Test
     @Feature({"ProcessManagement"})
     public void testModerateBindingDropOnBackground() {
         // This test applies only to the moderate-binding manager.
@@ -479,8 +468,8 @@ public class BindingManagerImplTest extends InstrumentationTestCase {
         for (MockChildProcessConnection connection : connections) {
             manager.setInForeground(connection.getPid(), true);
             manager.setInForeground(connection.getPid(), false);
-            getInstrumentation().waitForIdleSync();
-            assertTrue(connection.isModerateBindingBound());
+            Robolectric.runUiThreadTasksIncludingDelayedTasks();
+            Assert.assertTrue(connection.isModerateBindingBound());
         }
 
         // Exclude lastInForeground because it will be kept in foreground when onSentToBackground()
@@ -489,51 +478,49 @@ public class BindingManagerImplTest extends InstrumentationTestCase {
         manager.addNewConnection(lastInForeground.getPid(), lastInForeground);
         manager.setInForeground(lastInForeground.getPid(), true);
         manager.setInForeground(lastInForeground.getPid(), false);
-        getInstrumentation().waitForIdleSync();
+        Robolectric.runUiThreadTasksIncludingDelayedTasks();
 
         // Verify that leaving the application for a short time doesn't clear the moderate bindings.
         manager.onSentToBackground();
         for (MockChildProcessConnection connection : connections) {
-            assertTrue(connection.isModerateBindingBound());
+            Assert.assertTrue(connection.isModerateBindingBound());
         }
-        assertTrue(lastInForeground.isStrongBindingBound());
-        assertFalse(lastInForeground.isModerateBindingBound());
+        Assert.assertTrue(lastInForeground.isStrongBindingBound());
+        Assert.assertFalse(lastInForeground.isModerateBindingBound());
         manager.onBroughtToForeground();
-        SystemClock.sleep(500);
+        Robolectric.runUiThreadTasksIncludingDelayedTasks();
         for (MockChildProcessConnection connection : connections) {
-            assertTrue(connection.isModerateBindingBound());
+            Assert.assertTrue(connection.isModerateBindingBound());
         }
 
         // Call onSentToBackground() and verify that all the moderate bindings drop after some
         // delay.
         manager.onSentToBackground();
         for (MockChildProcessConnection connection : connections) {
-            assertTrue(connection.isModerateBindingBound());
+            Assert.assertTrue(connection.isModerateBindingBound());
         }
-        assertTrue(lastInForeground.isStrongBindingBound());
-        assertFalse(lastInForeground.isModerateBindingBound());
-        SystemClock.sleep(500);
+        Assert.assertTrue(lastInForeground.isStrongBindingBound());
+        Assert.assertFalse(lastInForeground.isModerateBindingBound());
+        Robolectric.runUiThreadTasksIncludingDelayedTasks();
         for (MockChildProcessConnection connection : connections) {
-            assertFalse(connection.isModerateBindingBound());
+            Assert.assertFalse(connection.isModerateBindingBound());
         }
 
         // Call onBroughtToForeground() and verify that the previous moderate bindings aren't
         // recovered.
         manager.onBroughtToForeground();
         for (MockChildProcessConnection connection : connections) {
-            assertFalse(connection.isModerateBindingBound());
+            Assert.assertFalse(connection.isModerateBindingBound());
         }
     }
 
     /**
      * Verifies that onLowMemory() drops all the moderate bindings.
      */
-    @SmallTest
+    @Test
     @Feature({"ProcessManagement"})
     public void testModerateBindingDropOnLowMemory() {
-        final Application app =
-                (Application) getInstrumentation().getTargetContext().getApplicationContext();
-        // This test applies only to the moderate-binding manager.
+        final Application app = mActivity.getApplication();
         final BindingManagerImpl manager = mModerateBindingManager;
 
         MockChildProcessConnection[] connections = new MockChildProcessConnection[4];
@@ -547,25 +534,24 @@ public class BindingManagerImplTest extends InstrumentationTestCase {
         for (MockChildProcessConnection connection : connections) {
             manager.setInForeground(connection.getPid(), true);
             manager.setInForeground(connection.getPid(), false);
-            getInstrumentation().waitForIdleSync();
-            assertTrue(connection.isModerateBindingBound());
+            Robolectric.runUiThreadTasksIncludingDelayedTasks();
+            Assert.assertTrue(connection.isModerateBindingBound());
         }
 
         // Call onLowMemory() and verify that all the moderate bindings drop.
         app.onLowMemory();
         for (MockChildProcessConnection connection : connections) {
-            assertFalse(connection.isModerateBindingBound());
+            Assert.assertFalse(connection.isModerateBindingBound());
         }
     }
 
     /**
      * Verifies that onTrimMemory() drops moderate bindings properly.
      */
-    @SmallTest
+    @Test
     @Feature({"ProcessManagement"})
     public void testModerateBindingDropOnTrimMemory() {
-        final Application app =
-                (Application) getInstrumentation().getTargetContext().getApplicationContext();
+        final Application app = mActivity.getApplication();
         // This test applies only to the moderate-binding manager.
         final BindingManagerImpl manager = mModerateBindingManager;
 
@@ -590,14 +576,15 @@ public class BindingManagerImplTest extends InstrumentationTestCase {
             for (MockChildProcessConnection connection : connections) {
                 manager.setInForeground(connection.getPid(), true);
                 manager.setInForeground(connection.getPid(), false);
-                getInstrumentation().waitForIdleSync();
-                assertTrue(message, connection.isModerateBindingBound());
+                Robolectric.runUiThreadTasksIncludingDelayedTasks();
+                Assert.assertTrue(message, connection.isModerateBindingBound());
             }
 
             app.onTrimMemory(pair.first);
             // Verify that some of moderate bindings drop.
             for (int i = 0; i < connections.length; i++) {
-                assertEquals(message, i >= pair.second, connections[i].isModerateBindingBound());
+                Assert.assertEquals(
+                        message, i >= pair.second, connections[i].isModerateBindingBound());
             }
         }
     }
@@ -605,7 +592,7 @@ public class BindingManagerImplTest extends InstrumentationTestCase {
     /**
      * Verifies that BindingManager.releaseAllModerateBindings() drops all the moderate bindings.
      */
-    @SmallTest
+    @Test
     @Feature({"ProcessManagement"})
     public void testModerateBindingDropOnReleaseAllModerateBindings() {
         // This test applies only to the moderate-binding manager.
@@ -622,15 +609,15 @@ public class BindingManagerImplTest extends InstrumentationTestCase {
         for (MockChildProcessConnection connection : connections) {
             manager.setInForeground(connection.getPid(), true);
             manager.setInForeground(connection.getPid(), false);
-            getInstrumentation().waitForIdleSync();
-            assertTrue(connection.isModerateBindingBound());
+            Robolectric.runUiThreadTasksIncludingDelayedTasks();
+            Assert.assertTrue(connection.isModerateBindingBound());
         }
 
         // Call BindingManager.releaseAllModerateBindings() and verify that all the moderate
         // bindings drop.
         manager.releaseAllModerateBindings();
         for (MockChildProcessConnection connection : connections) {
-            assertFalse(connection.isModerateBindingBound());
+            Assert.assertFalse(connection.isModerateBindingBound());
         }
     }
 }
