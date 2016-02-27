@@ -56,6 +56,7 @@ class TCPSocketEventDispatcher
   // as a workaround that limitation for invoking StartReceive.
   struct ReadParams {
     ReadParams();
+    ReadParams(const ReadParams& other);
     ~ReadParams();
 
     content::BrowserThread::ID thread_id;

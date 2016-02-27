@@ -403,6 +403,9 @@ WebViewPermissionHelper::PermissionResponseInfo::PermissionResponseInfo(
       allowed_by_default(allowed_by_default) {
 }
 
+WebViewPermissionHelper::PermissionResponseInfo::PermissionResponseInfo(
+    const PermissionResponseInfo& other) = default;
+
 WebViewPermissionHelper::PermissionResponseInfo::~PermissionResponseInfo() {
 }
 

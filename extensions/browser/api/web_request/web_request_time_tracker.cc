@@ -89,6 +89,9 @@ ExtensionWebRequestTimeTracker::RequestTimeLog::RequestTimeLog()
     : profile(NULL), completed(false) {
 }
 
+ExtensionWebRequestTimeTracker::RequestTimeLog::RequestTimeLog(
+    const RequestTimeLog& other) = default;
+
 ExtensionWebRequestTimeTracker::RequestTimeLog::~RequestTimeLog() {
 }
 

@@ -22,6 +22,7 @@ namespace extensions {
 // or bytes.
 struct PrinterProviderPrintJob {
   PrinterProviderPrintJob();
+  PrinterProviderPrintJob(const PrinterProviderPrintJob& other);
   ~PrinterProviderPrintJob();
 
   // The id of the printer that should handle the print job. The id is

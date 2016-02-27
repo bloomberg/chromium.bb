@@ -33,6 +33,7 @@ class ErrorMap {
            int restrict_to_type,
            const std::set<int>& restrict_to_ids,
            bool restrict_to_incognito);
+    Filter(const Filter& other);
     ~Filter();
 
     // Convenience methods to get a specific type of filter. Prefer these over

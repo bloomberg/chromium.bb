@@ -19,6 +19,7 @@ class DocumentScanInterface {
  public:
   struct ScannerDescription {
     ScannerDescription();
+    ScannerDescription(const ScannerDescription& other);
     ~ScannerDescription();
     std::string name;
     std::string manufacturer;

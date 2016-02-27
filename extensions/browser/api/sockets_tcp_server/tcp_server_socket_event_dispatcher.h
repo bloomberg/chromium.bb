@@ -58,6 +58,7 @@ class TCPServerSocketEventDispatcher
   // as a workaround that limitation for invoking StartAccept.
   struct AcceptParams {
     AcceptParams();
+    AcceptParams(const AcceptParams& other);
     ~AcceptParams();
 
     content::BrowserThread::ID thread_id;

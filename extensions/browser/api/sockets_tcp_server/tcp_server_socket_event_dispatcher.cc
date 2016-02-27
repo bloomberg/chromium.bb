@@ -62,6 +62,9 @@ TCPServerSocketEventDispatcher::~TCPServerSocketEventDispatcher() {}
 
 TCPServerSocketEventDispatcher::AcceptParams::AcceptParams() {}
 
+TCPServerSocketEventDispatcher::AcceptParams::AcceptParams(
+    const AcceptParams& other) = default;
+
 TCPServerSocketEventDispatcher::AcceptParams::~AcceptParams() {}
 
 void TCPServerSocketEventDispatcher::OnServerSocketListen(

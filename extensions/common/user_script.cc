@@ -82,6 +82,8 @@ UserScript::File::File(const base::FilePath& extension_root,
 
 UserScript::File::File() {}
 
+UserScript::File::File(const File& other) = default;
+
 UserScript::File::~File() {}
 
 UserScript::UserScript()
@@ -92,6 +94,8 @@ UserScript::UserScript()
       match_all_frames_(false),
       match_about_blank_(false),
       incognito_enabled_(false) {}
+
+UserScript::UserScript(const UserScript& other) = default;
 
 UserScript::~UserScript() {
 }

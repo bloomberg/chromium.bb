@@ -31,6 +31,8 @@ ValueStoreChange::ValueStoreChange(
     const std::string& key, base::Value* old_value, base::Value* new_value)
     : inner_(new Inner(key, old_value, new_value)) {}
 
+ValueStoreChange::ValueStoreChange(const ValueStoreChange& other) = default;
+
 ValueStoreChange::~ValueStoreChange() {}
 
 const std::string& ValueStoreChange::key() const {

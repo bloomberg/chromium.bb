@@ -38,6 +38,7 @@ struct Alarm {
         const api::alarms::AlarmCreateInfo& create_info,
         base::TimeDelta min_granularity,
         base::Time now);
+  Alarm(const Alarm& other);
   ~Alarm();
 
   linked_ptr<api::alarms::Alarm> js_alarm;

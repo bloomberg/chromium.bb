@@ -197,6 +197,9 @@ CastTransportImpl::WriteRequest::WriteRequest(
                                          payload.size());
 }
 
+CastTransportImpl::WriteRequest::WriteRequest(const WriteRequest& other) =
+    default;
+
 CastTransportImpl::WriteRequest::~WriteRequest() {
 }
 

@@ -18,6 +18,9 @@ EventFilteringInfo::EventFilteringInfo()
       has_window_type_(false),
       has_window_exposed_by_default_(false) {}
 
+EventFilteringInfo::EventFilteringInfo(const EventFilteringInfo& other) =
+    default;
+
 EventFilteringInfo::~EventFilteringInfo() {
 }
 

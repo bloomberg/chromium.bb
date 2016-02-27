@@ -117,6 +117,7 @@ class PermissionIDSet {
   using const_iterator = std::set<PermissionID>::const_iterator;
 
   PermissionIDSet();
+  PermissionIDSet(const PermissionIDSet& other);
   virtual ~PermissionIDSet();
 
   // Adds the given permission, and an optional parameter, to the set.

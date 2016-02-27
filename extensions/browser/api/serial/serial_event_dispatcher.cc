@@ -59,6 +59,9 @@ SerialEventDispatcher::~SerialEventDispatcher() {
 SerialEventDispatcher::ReceiveParams::ReceiveParams() {
 }
 
+SerialEventDispatcher::ReceiveParams::ReceiveParams(
+    const ReceiveParams& other) = default;
+
 SerialEventDispatcher::ReceiveParams::~ReceiveParams() {
 }
 

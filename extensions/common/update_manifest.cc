@@ -23,6 +23,8 @@ UpdateManifest::Result::Result()
     : size(0),
       diff_size(0) {}
 
+UpdateManifest::Result::Result(const Result& other) = default;
+
 UpdateManifest::Result::~Result() {}
 
 UpdateManifest::Results::Results() : daystart_elapsed_seconds(kNoDaystart) {}

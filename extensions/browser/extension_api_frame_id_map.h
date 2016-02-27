@@ -137,6 +137,7 @@ class ExtensionApiFrameIdMap {
 
   struct FrameDataCallbacks {
     FrameDataCallbacks();
+    FrameDataCallbacks(const FrameDataCallbacks& other);
     ~FrameDataCallbacks();
 
     // This is a std::list so that iterators are not invalidated when the list

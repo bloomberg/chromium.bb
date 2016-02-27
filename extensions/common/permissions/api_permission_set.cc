@@ -197,6 +197,8 @@ PermissionID::~PermissionID() {
 PermissionIDSet::PermissionIDSet() {
 }
 
+PermissionIDSet::PermissionIDSet(const PermissionIDSet& other) = default;
+
 PermissionIDSet::~PermissionIDSet() {
 }
 

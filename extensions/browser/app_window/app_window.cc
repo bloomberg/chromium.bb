@@ -174,6 +174,8 @@ AppWindow::CreateParams::CreateParams()
       visible_on_all_workspaces(false) {
 }
 
+AppWindow::CreateParams::CreateParams(const CreateParams& other) = default;
+
 AppWindow::CreateParams::~CreateParams() {}
 
 gfx::Rect AppWindow::CreateParams::GetInitialWindowBounds(

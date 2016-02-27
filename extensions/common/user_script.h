@@ -80,6 +80,7 @@ class UserScript {
          const base::FilePath& relative_path,
          const GURL& url);
     File();
+    File(const File& other);
     ~File();
 
     const base::FilePath& extension_root() const { return extension_root_; }
@@ -133,6 +134,7 @@ class UserScript {
   // Constructor. Default the run location to document end, which is like
   // Greasemonkey and probably more useful for typical scripts.
   UserScript();
+  UserScript(const UserScript& other);
   ~UserScript();
 
   const std::string& name_space() const { return name_space_; }

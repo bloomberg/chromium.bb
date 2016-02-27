@@ -26,6 +26,8 @@ class ValueStoreChange {
   ValueStoreChange(
       const std::string& key, base::Value* old_value, base::Value* new_value);
 
+  ValueStoreChange(const ValueStoreChange& other);
+
   ~ValueStoreChange();
 
   // Gets the key of the setting which changed.

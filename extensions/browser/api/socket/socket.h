@@ -137,6 +137,7 @@ class Socket : public ApiResource {
     WriteRequest(scoped_refptr<net::IOBuffer> io_buffer,
                  int byte_count,
                  const CompletionCallback& callback);
+    WriteRequest(const WriteRequest& other);
     ~WriteRequest();
     scoped_refptr<net::IOBuffer> io_buffer;
     int byte_count;

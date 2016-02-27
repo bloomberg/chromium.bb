@@ -145,6 +145,7 @@ class AppWindow : public content::WebContentsDelegate,
 
   struct CreateParams {
     CreateParams();
+    CreateParams(const CreateParams& other);
     ~CreateParams();
 
     WindowType window_type;

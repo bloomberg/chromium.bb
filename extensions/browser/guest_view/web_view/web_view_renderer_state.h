@@ -36,6 +36,7 @@ class WebViewRendererState {
     std::set<int> content_script_ids;
 
     WebViewInfo();
+    WebViewInfo(const WebViewInfo& other);
     ~WebViewInfo();
   };
 

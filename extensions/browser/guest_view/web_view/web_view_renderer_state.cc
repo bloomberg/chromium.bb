@@ -12,6 +12,9 @@ namespace extensions {
 WebViewRendererState::WebViewInfo::WebViewInfo() {
 }
 
+WebViewRendererState::WebViewInfo::WebViewInfo(const WebViewInfo& other) =
+    default;
+
 WebViewRendererState::WebViewInfo::~WebViewInfo() {
 }
 

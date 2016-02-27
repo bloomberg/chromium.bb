@@ -249,6 +249,8 @@ struct ExtensionMsg_PermissionSetStruct {
   ExtensionMsg_PermissionSetStruct();
   explicit ExtensionMsg_PermissionSetStruct(
       const extensions::PermissionSet& permissions);
+  ExtensionMsg_PermissionSetStruct(
+      const ExtensionMsg_PermissionSetStruct& other);
   ~ExtensionMsg_PermissionSetStruct();
 
   scoped_ptr<const extensions::PermissionSet> ToPermissionSet() const;
@@ -264,6 +266,7 @@ struct ExtensionMsg_Loaded_Params {
   ~ExtensionMsg_Loaded_Params();
   ExtensionMsg_Loaded_Params(const extensions::Extension* extension,
                              bool include_tab_permissions);
+  ExtensionMsg_Loaded_Params(const ExtensionMsg_Loaded_Params& other);
 
   // Creates a new extension from the data in this object.
   scoped_refptr<extensions::Extension> ConvertToExtension(

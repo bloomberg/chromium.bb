@@ -58,6 +58,7 @@ class UDPSocketEventDispatcher
   // as a workaround that limitation for invoking StartReceive.
   struct ReceiveParams {
     ReceiveParams();
+    ReceiveParams(const ReceiveParams& other);
     ~ReceiveParams();
 
     content::BrowserThread::ID thread_id;

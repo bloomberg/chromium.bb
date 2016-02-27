@@ -64,6 +64,9 @@ ExtensionApiFrameIdMap::RenderFrameIdKey::RenderFrameIdKey(
 ExtensionApiFrameIdMap::FrameDataCallbacks::FrameDataCallbacks()
     : is_iterating(false) {}
 
+ExtensionApiFrameIdMap::FrameDataCallbacks::FrameDataCallbacks(
+    const FrameDataCallbacks& other) = default;
+
 ExtensionApiFrameIdMap::FrameDataCallbacks::~FrameDataCallbacks() {}
 
 bool ExtensionApiFrameIdMap::RenderFrameIdKey::operator<(

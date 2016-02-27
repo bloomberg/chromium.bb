@@ -43,6 +43,7 @@ class WebViewPermissionHelper
     PermissionResponseInfo(const PermissionResponseCallback& callback,
                            WebViewPermissionType permission_type,
                            bool allowed_by_default);
+    PermissionResponseInfo(const PermissionResponseInfo& other);
     ~PermissionResponseInfo();
   };
 

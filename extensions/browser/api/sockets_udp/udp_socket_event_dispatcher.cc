@@ -52,6 +52,9 @@ UDPSocketEventDispatcher::~UDPSocketEventDispatcher() {}
 
 UDPSocketEventDispatcher::ReceiveParams::ReceiveParams() {}
 
+UDPSocketEventDispatcher::ReceiveParams::ReceiveParams(
+    const ReceiveParams& other) = default;
+
 UDPSocketEventDispatcher::ReceiveParams::~ReceiveParams() {}
 
 void UDPSocketEventDispatcher::OnSocketBind(const std::string& extension_id,

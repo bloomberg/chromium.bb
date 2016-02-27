@@ -35,6 +35,9 @@ ExtensionMsg_PermissionSetStruct::ExtensionMsg_PermissionSetStruct(
       scriptable_hosts(permissions.scriptable_hosts()) {
 }
 
+ExtensionMsg_PermissionSetStruct::ExtensionMsg_PermissionSetStruct(
+    const ExtensionMsg_PermissionSetStruct& other) = default;
+
 ExtensionMsg_PermissionSetStruct::~ExtensionMsg_PermissionSetStruct() {
 }
 
@@ -69,6 +72,9 @@ ExtensionMsg_Loaded_Params::ExtensionMsg_Loaded_Params(
     }
   }
 }
+
+ExtensionMsg_Loaded_Params::ExtensionMsg_Loaded_Params(
+    const ExtensionMsg_Loaded_Params& other) = default;
 
 scoped_refptr<Extension> ExtensionMsg_Loaded_Params::ConvertToExtension(
     std::string* error) const {

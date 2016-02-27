@@ -17,6 +17,7 @@ namespace extensions {
 
 struct FileHandlerInfo {
   FileHandlerInfo();
+  FileHandlerInfo(const FileHandlerInfo& other);
   ~FileHandlerInfo();
 
   // The id of this handler.

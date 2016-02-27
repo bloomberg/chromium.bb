@@ -16,6 +16,8 @@ PermissionMessage::PermissionMessage(
     const std::vector<base::string16>& submessages)
     : message_(message), permissions_(permissions), submessages_(submessages) {}
 
+PermissionMessage::PermissionMessage(const PermissionMessage& other) = default;
+
 PermissionMessage::~PermissionMessage() {}
 
 }  // namespace extensions

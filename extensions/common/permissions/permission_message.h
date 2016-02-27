@@ -44,6 +44,7 @@ class PermissionMessage {
   PermissionMessage(const base::string16& message,
                     const PermissionIDSet& permissions,
                     const std::vector<base::string16>& submessages);
+  PermissionMessage(const PermissionMessage& other);
   virtual ~PermissionMessage();
 
   const base::string16& message() const { return message_; }

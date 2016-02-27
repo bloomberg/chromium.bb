@@ -28,6 +28,7 @@ class ExtensionIconSet {
   typedef std::map<int, std::string> IconMap;
 
   ExtensionIconSet();
+  ExtensionIconSet(const ExtensionIconSet& other);
   ~ExtensionIconSet();
 
   const IconMap& map() const { return map_; }

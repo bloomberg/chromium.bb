@@ -115,6 +115,7 @@ class ExtensionWebRequestEventRouter
   // filter what network events an extension cares about.
   struct RequestFilter {
     RequestFilter();
+    RequestFilter(const RequestFilter& other);
     ~RequestFilter();
 
     // Returns false if there was an error initializing. If it is a user error,

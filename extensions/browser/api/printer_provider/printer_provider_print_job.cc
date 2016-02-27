@@ -9,6 +9,9 @@ namespace extensions {
 PrinterProviderPrintJob::PrinterProviderPrintJob() {
 }
 
+PrinterProviderPrintJob::PrinterProviderPrintJob(
+    const PrinterProviderPrintJob& other) = default;
+
 PrinterProviderPrintJob::~PrinterProviderPrintJob() {
 }
 

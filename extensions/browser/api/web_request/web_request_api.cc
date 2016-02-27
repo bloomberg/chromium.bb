@@ -561,6 +561,9 @@ ExtensionWebRequestEventRouter::RequestFilter::RequestFilter()
     : tab_id(-1), window_id(-1) {
 }
 
+ExtensionWebRequestEventRouter::RequestFilter::RequestFilter(
+    const RequestFilter& other) = default;
+
 ExtensionWebRequestEventRouter::RequestFilter::~RequestFilter() {
 }
 

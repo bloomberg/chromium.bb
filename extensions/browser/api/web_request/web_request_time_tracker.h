@@ -91,6 +91,7 @@ class ExtensionWebRequestTimeTracker {
     base::TimeDelta block_duration;
     std::map<std::string, base::TimeDelta> extension_block_durations;
     RequestTimeLog();
+    RequestTimeLog(const RequestTimeLog& other);
     ~RequestTimeLog();
   };
 

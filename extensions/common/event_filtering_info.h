@@ -25,6 +25,7 @@ namespace extensions {
 class EventFilteringInfo {
  public:
   EventFilteringInfo();
+  EventFilteringInfo(const EventFilteringInfo& other);
   ~EventFilteringInfo();
   void SetWindowExposedByDefault(bool exposed);
   void SetWindowType(const std::string& window_type);

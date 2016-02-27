@@ -465,6 +465,8 @@ Alarm::Alarm(const std::string& name,
   }
 }
 
+Alarm::Alarm(const Alarm& other) = default;
+
 Alarm::~Alarm() {
 }
 

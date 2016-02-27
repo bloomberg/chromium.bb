@@ -26,6 +26,7 @@ const char kNotRecognized[] = "'%s' is not a recognized file handler property.";
 }
 
 FileHandlerInfo::FileHandlerInfo() : include_directories(false) {}
+FileHandlerInfo::FileHandlerInfo(const FileHandlerInfo& other) = default;
 FileHandlerInfo::~FileHandlerInfo() {}
 
 FileHandlers::FileHandlers() {}

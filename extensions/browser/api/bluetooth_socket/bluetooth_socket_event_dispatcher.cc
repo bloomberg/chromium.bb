@@ -97,6 +97,9 @@ BluetoothSocketEventDispatcher::~BluetoothSocketEventDispatcher() {}
 
 BluetoothSocketEventDispatcher::SocketParams::SocketParams() {}
 
+BluetoothSocketEventDispatcher::SocketParams::SocketParams(
+    const SocketParams& other) = default;
+
 BluetoothSocketEventDispatcher::SocketParams::~SocketParams() {}
 
 void BluetoothSocketEventDispatcher::OnSocketConnect(

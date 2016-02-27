@@ -17,6 +17,9 @@ DocumentScanInterface::~DocumentScanInterface() {
 DocumentScanInterface::ScannerDescription::ScannerDescription() {
 }
 
+DocumentScanInterface::ScannerDescription::ScannerDescription(
+    const ScannerDescription& other) = default;
+
 DocumentScanInterface::ScannerDescription::~ScannerDescription() {
 }
 

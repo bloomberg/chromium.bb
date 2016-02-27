@@ -151,6 +151,8 @@ URLPattern::URLPattern(int valid_schemes, const std::string& pattern)
     NOTREACHED() << "URLPattern invalid: " << pattern << " result " << result;
 }
 
+URLPattern::URLPattern(const URLPattern& other) = default;
+
 URLPattern::~URLPattern() {
 }
 

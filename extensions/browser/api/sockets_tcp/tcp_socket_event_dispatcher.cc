@@ -57,6 +57,9 @@ TCPSocketEventDispatcher::~TCPSocketEventDispatcher() {}
 
 TCPSocketEventDispatcher::ReadParams::ReadParams() {}
 
+TCPSocketEventDispatcher::ReadParams::ReadParams(const ReadParams& other) =
+    default;
+
 TCPSocketEventDispatcher::ReadParams::~ReadParams() {}
 
 void TCPSocketEventDispatcher::OnSocketConnect(const std::string& extension_id,

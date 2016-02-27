@@ -37,6 +37,8 @@ ErrorMap::Filter::Filter(const std::string& restrict_to_extension_id,
       restrict_to_incognito(restrict_to_incognito) {
 }
 
+ErrorMap::Filter::Filter(const Filter& other) = default;
+
 ErrorMap::Filter::~Filter() {
 }
 

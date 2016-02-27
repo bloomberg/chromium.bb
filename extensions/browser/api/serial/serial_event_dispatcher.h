@@ -48,6 +48,7 @@ class SerialEventDispatcher : public BrowserContextKeyedAPI {
 
   struct ReceiveParams {
     ReceiveParams();
+    ReceiveParams(const ReceiveParams& other);
     ~ReceiveParams();
 
     content::BrowserThread::ID thread_id;

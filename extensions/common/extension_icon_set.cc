@@ -10,6 +10,8 @@
 
 ExtensionIconSet::ExtensionIconSet() {}
 
+ExtensionIconSet::ExtensionIconSet(const ExtensionIconSet& other) = default;
+
 ExtensionIconSet::~ExtensionIconSet() {}
 
 void ExtensionIconSet::Clear() {

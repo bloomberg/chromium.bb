@@ -64,6 +64,7 @@ class BluetoothSocketEventDispatcher
   // StartAccept().
   struct SocketParams {
     SocketParams();
+    SocketParams(const SocketParams& other);
     ~SocketParams();
 
     content::BrowserThread::ID thread_id;
