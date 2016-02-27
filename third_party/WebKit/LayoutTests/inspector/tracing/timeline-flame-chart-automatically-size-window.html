@@ -8,8 +8,6 @@
 
 function test()
 {
-    var timelineData = InspectorTest.timelineData();
-
     var timeline = WebInspector.panels.timeline;
     timeline._onModeChanged();
     timeline._currentViews[0]._automaticallySizeWindow = true;
@@ -21,16 +19,8 @@ function test()
     }
 
     timeline.requestWindowTimes = requestWindowTimesHook;
-    var model = timeline._model;
+    InspectorTest.loadTimeline(InspectorTest.timelineData());
 
-    function createFileReader(file, delegate)
-    {
-        return new InspectorTest.FakeFileReader(timelineData, delegate, timeline._saveToFile.bind(timeline));
-    }
-
-    InspectorTest.override(model, "_createFileReader", createFileReader);
-
-    model.loadFromFile({}, new WebInspector.Progress());
     InspectorTest.completeTest();
 }
 
