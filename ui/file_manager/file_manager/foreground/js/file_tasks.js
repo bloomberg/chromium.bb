@@ -827,7 +827,7 @@ FileTasks.prototype.createCombobuttonItem_ = function(task, opt_title,
 FileTasks.prototype.showTaskPicker = function(taskDialog, title, message,
                                               onSuccess,
                                               opt_hideGenericFileHandler) {
-  var items = !!opt_hideGenericFileHandler ? this.createItems_() :
+  var items = !opt_hideGenericFileHandler ? this.createItems_() :
       this.createItems_().filter(function(item) {
         return !item.isGenericFileHandler;
       });
