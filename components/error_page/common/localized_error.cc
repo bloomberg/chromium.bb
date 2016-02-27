@@ -48,6 +48,8 @@ static const char kRedirectLoopLearnMoreUrl[] =
     "https://support.google.com/chrome?p=rl_error";
 static const char kWeakDHKeyLearnMoreUrl[] =
     "https://support.google.com/chrome?p=dh_error";
+static const char kSslInvalidResponseLearnMoreUrl[] =
+    "https://support.google.com/chrome?p=ir_ssl_error";
 static const int kGoogleCachedCopySuggestionType = 0;
 
 enum NAV_SUGGESTIONS {
@@ -73,6 +75,9 @@ enum NAV_SUGGESTIONS {
   // Standalone reload page suggestion for pages created by a post.
   // Should not be mixed with others and is not prefixed with 'Try'.
   SUGGEST_RELOAD_STANDALONE                 = 1 << 13,
+  // Standalone learn more suggestion for linking to Help Center.
+  // Should not be mixed with others and is not prefixed with 'Try'.
+  SUGGEST_LEARNMORE_STANDALONE              = 1 << 14,
 };
 
 struct LocalizedErrorMap {
@@ -261,7 +266,7 @@ const LocalizedErrorMap net_error_options[] = {
    IDS_ERRORPAGES_HEADING_INSECURE_CONNECTION,
    IDS_ERRORPAGES_SUMMARY_INVALID_RESPONSE,
    IDS_ERRORPAGES_DETAILS_SSL_PROTOCOL_ERROR,
-   SUGGEST_RELOAD,
+   SUGGEST_RELOAD | SUGGEST_LEARNMORE,
   },
   {net::ERR_BAD_SSL_CLIENT_AUTH_CERT,
    IDS_ERRORPAGES_TITLE_LOAD_FAILED,
@@ -275,7 +280,7 @@ const LocalizedErrorMap net_error_options[] = {
    IDS_ERRORPAGES_HEADING_INSECURE_CONNECTION,
    IDS_ERRORPAGES_SUMMARY_SSL_SECURITY_ERROR,
    IDS_ERRORPAGES_DETAILS_SSL_PROTOCOL_ERROR,
-   SUGGEST_LEARNMORE,
+   SUGGEST_LEARNMORE_STANDALONE,
   },
   {net::ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN,
    IDS_ERRORPAGES_TITLE_LOAD_FAILED,
@@ -324,7 +329,7 @@ const LocalizedErrorMap net_error_options[] = {
    IDS_ERRORPAGES_HEADING_INSECURE_CONNECTION,
    IDS_ERRORPAGES_SUMMARY_INVALID_RESPONSE,
    IDS_ERRORPAGES_DETAILS_SSL_FALLBACK_BEYOND_MINIMUM_VERSION,
-   SUGGEST_NONE,
+   SUGGEST_LEARNMORE_STANDALONE,
   },
   {net::ERR_SSL_VERSION_OR_CIPHER_MISMATCH,
    IDS_ERRORPAGES_TITLE_LOAD_FAILED,
@@ -568,6 +573,53 @@ void AddSingleEntryDictionaryToList(base::ListValue* list,
   }
 }
 
+// Adds a linked suggestion dictionary entry to the suggestions list.
+void AddLinkedSuggestionToList(const int error_code,
+                               const std::string& locale,
+                               base::ListValue* suggestions_summary_list) {
+  GURL learn_more_url;
+  base::string16 suggestion_string;
+
+  switch (error_code) {
+    case net::ERR_SSL_WEAK_SERVER_EPHEMERAL_DH_KEY:
+      learn_more_url = GURL(kWeakDHKeyLearnMoreUrl);
+      suggestion_string = l10n_util::GetStringUTF16(
+          IDS_ERRORPAGES_SUGGESTION_LEARNMORE_SUMMARY);
+      break;
+    case net::ERR_SSL_FALLBACK_BEYOND_MINIMUM_VERSION:
+      learn_more_url =  GURL(kSslInvalidResponseLearnMoreUrl);
+      suggestion_string = l10n_util::GetStringUTF16(
+          IDS_ERRORPAGES_SUGGESTION_LEARNMORE_SUMMARY);
+      break;
+    case net::ERR_TOO_MANY_REDIRECTS:
+      learn_more_url = GURL(kRedirectLoopLearnMoreUrl);
+      suggestion_string = l10n_util::GetStringUTF16(
+          IDS_ERRORPAGES_SUGGESTION_CLEAR_COOKIES_SUMMARY);
+      break;
+    case net::ERR_SSL_PROTOCOL_ERROR:
+      learn_more_url = GURL(kSslInvalidResponseLearnMoreUrl);
+      suggestion_string = l10n_util::GetStringUTF16(
+          IDS_ERRORPAGES_SUGGESTION_LEARNMORE_SUMMARY);
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
+
+  DCHECK(learn_more_url.is_valid());
+  // Add the language parameter to the URL.
+  std::string query = learn_more_url.query() + "&hl=" + locale;
+  GURL::Replacements repl;
+  repl.SetQueryStr(query);
+  GURL learn_more_url_with_locale = learn_more_url.ReplaceComponents(repl);
+
+  base::DictionaryValue* suggestion_list_item = new base::DictionaryValue;
+  suggestion_list_item->SetString("summary", suggestion_string);
+  suggestion_list_item->SetString("learnMoreUrl",
+      learn_more_url_with_locale.spec());
+  suggestions_summary_list->Append(suggestion_list_item);
+}
+
 // Creates a list of suggestions that a user may try to resolve a particular
 // network error. Appears above the fold underneath heading and intro paragraph.
 void GetSuggestionsSummaryList(int error_code,
@@ -602,6 +654,13 @@ void GetSuggestionsSummaryList(int error_code,
     //                dialog for pages resulting from posts.
     AddSingleEntryDictionaryToList(suggestions_summary_list, "summary",
         IDS_ERRORPAGES_SUGGESTION_RELOAD_REPOST_SUMMARY, false);
+    return;
+  }
+
+  if (suggestions & SUGGEST_LEARNMORE_STANDALONE) {
+    DCHECK(suggestions_summary_list->empty());
+    DCHECK(!(suggestions & ~SUGGEST_LEARNMORE_STANDALONE));
+    AddLinkedSuggestionToList(error_code, locale, suggestions_summary_list);
     return;
   }
 
@@ -661,35 +720,7 @@ void GetSuggestionsSummaryList(int error_code,
   }
 
   if (suggestions & SUGGEST_LEARNMORE) {
-    GURL learn_more_url;
-    base::string16 suggestion_string;
-    switch (error_code) {
-      case net::ERR_SSL_WEAK_SERVER_EPHEMERAL_DH_KEY:
-        learn_more_url = GURL(kWeakDHKeyLearnMoreUrl);
-        suggestion_string = l10n_util::GetStringUTF16(
-            IDS_ERRORPAGES_SUGGESTION_LEARNMORE_SUMMARY);
-        break;
-      case net::ERR_TOO_MANY_REDIRECTS:
-        learn_more_url = GURL(kRedirectLoopLearnMoreUrl);
-        suggestion_string = l10n_util::GetStringUTF16(
-              IDS_ERRORPAGES_SUGGESTION_CLEAR_COOKIES_SUMMARY);
-        break;
-      default:
-        NOTREACHED();
-        break;
-    }
-
-    DCHECK(learn_more_url.is_valid());
-    // Add the language parameter to the URL.
-    std::string query = learn_more_url.query() + "&hl=" + locale;
-    GURL::Replacements repl;
-    repl.SetQueryStr(query);
-    learn_more_url = learn_more_url.ReplaceComponents(repl);
-
-    base::DictionaryValue* suggestion_list_item = new base::DictionaryValue;
-    suggestion_list_item->SetString("summary", suggestion_string);
-    suggestion_list_item->SetString("learnMoreUrl", learn_more_url.spec());
-    suggestions_summary_list->Append(suggestion_list_item);
+    AddLinkedSuggestionToList(error_code, locale, suggestions_summary_list);
   }
 
   // Only add a explicit reload suggestion if there are other suggestions.
