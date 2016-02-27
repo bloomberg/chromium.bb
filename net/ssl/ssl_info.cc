@@ -41,6 +41,7 @@ SSLInfo& SSLInfo::operator=(const SSLInfo& info) {
   signed_certificate_timestamps = info.signed_certificate_timestamps;
   ct_compliance_details_available = info.ct_compliance_details_available;
   ct_ev_policy_compliance = info.ct_ev_policy_compliance;
+  ct_cert_policy_compliance = info.ct_cert_policy_compliance;
 
   return *this;
 }
@@ -63,6 +64,8 @@ void SSLInfo::Reset() {
   signed_certificate_timestamps.clear();
   ct_compliance_details_available = false;
   ct_ev_policy_compliance = ct::EVPolicyCompliance::EV_POLICY_DOES_NOT_APPLY;
+  ct_cert_policy_compliance =
+      ct::CertPolicyCompliance::CERT_POLICY_COMPLIES_VIA_SCTS;
 }
 
 void SSLInfo::SetCertError(int error) {
