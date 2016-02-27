@@ -70,6 +70,7 @@
           'inputs': [
             '<(bake_in_configs_script)',
             '<@(baked_in_configs)',
+            'domain_reliability/baked_in_configs.gypi',
           ],
           'outputs': [
             '<(baked_in_configs_cc)'

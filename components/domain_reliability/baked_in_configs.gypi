@@ -20,7 +20,6 @@
       'domain_reliability/baked_in_configs/googlevideo_com.json',
       'domain_reliability/baked_in_configs/gvt1_com.json',
       'domain_reliability/baked_in_configs/gvt2_com.json',
-      'domain_reliability/baked_in_configs/mail_google_com.json',
       'domain_reliability/baked_in_configs/ssl_gstatic_com.json',
       'domain_reliability/baked_in_configs/www_google_com.json',
     ],

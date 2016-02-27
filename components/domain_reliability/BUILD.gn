@@ -23,7 +23,7 @@ action("bake_in_configs") {
   visibility = [ ":*" ]
   script = "bake_in_configs.py"
 
-  inputs = baked_in_configs
+  inputs = baked_in_configs + [ "baked_in_configs.gypi" ]
   output_file = "$target_gen_dir/baked_in_configs.cc"
   outputs = [
     output_file,
@@ -31,7 +31,7 @@ action("bake_in_configs") {
 
   # The JSON file list is too long for the command line on Windows, so put
   # them in a response file.
-  response_file_contents = rebase_path(inputs, root_build_dir)
+  response_file_contents = rebase_path(baked_in_configs, root_build_dir)
   args = [
     "--file-list",
     "{{response_file_name}}",
