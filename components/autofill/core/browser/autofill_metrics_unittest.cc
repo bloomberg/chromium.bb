@@ -515,6 +515,46 @@ TEST_F(AutofillMetricsTest, QualityMetrics) {
       GetFieldTypeGroupMetric(NAME_FULL, AutofillMetrics::TYPE_MISMATCH), 1);
 }
 
+// Ensures that metrics that measure timing some important Autofill functions
+// actually are recorded and retrieved.
+TEST_F(AutofillMetricsTest, TimingMetrics) {
+  base::HistogramTester histogram_tester;
+
+  FormData form;
+  form.name = ASCIIToUTF16("TestForm");
+  form.origin = GURL("http://example.com/form.html");
+  form.action = GURL("http://example.com/submit.html");
+
+  FormFieldData field;
+  test::CreateTestFormField(
+      "Autofilled", "autofilled", "Elvis Aaron Presley", "text", &field);
+  field.is_autofilled = true;
+  form.fields.push_back(field);
+
+  test::CreateTestFormField(
+      "Autofill Failed", "autofillfailed", "buddy@gmail.com", "text", &field);
+  field.is_autofilled = false;
+  form.fields.push_back(field);
+
+  test::CreateTestFormField("Phone", "phone", "2345678901", "tel", &field);
+  field.is_autofilled = false;
+  form.fields.push_back(field);
+
+  // Simulate a OnFormsSeen() call that should trigger the recording.
+  std::vector<FormData> forms;
+  forms.push_back(form);
+  autofill_manager_->OnFormsSeen(forms, base::TimeTicks::Now());
+
+  // Because these metrics are related to timing, it is not possible to know in
+  // advance which bucket the sample will fall into, so we just need to make
+  // sure we have valid samples.
+  EXPECT_FALSE(
+      histogram_tester.GetAllSamples("Autofill.Timing.DetermineHeuristicTypes")
+          .empty());
+  EXPECT_FALSE(
+      histogram_tester.GetAllSamples("Autofill.Timing.ParseForm").empty());
+}
+
 // Test that we log quality metrics appropriately when an upload is triggered
 // but no submission event is sent.
 TEST_F(AutofillMetricsTest, QualityMetrics_NoSubmission) {

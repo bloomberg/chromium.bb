@@ -2773,6 +2773,22 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Autofill.Timing.DetermineHeuristicTypes" units="ms">
+  <owner>kenjitoyama@chromium.org</owner>
+  <summary>
+    Number of milliseconds passed between the start and end of
+    FormStructure::DetermineHeuristicTypes().
+  </summary>
+</histogram>
+
+<histogram name="Autofill.Timing.ParseForm" units="ms">
+  <owner>kenjitoyama@chromium.org</owner>
+  <summary>
+    Number of milliseconds passed between the start and end of parsing a single
+    form.
+  </summary>
+</histogram>
+
 <histogram name="Autofill.UnmaskPrompt.Duration" units="ms">
   <owner>waltercacau@chromium.org</owner>
   <summary>

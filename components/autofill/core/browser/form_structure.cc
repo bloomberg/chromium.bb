@@ -341,6 +341,8 @@ FormStructure::FormStructure(const FormData& form)
 FormStructure::~FormStructure() {}
 
 void FormStructure::DetermineHeuristicTypes() {
+  const auto determine_heuristic_types_start_time = base::TimeTicks::Now();
+
   // First, try to detect field types based on each field's |autocomplete|
   // attribute value.
   if (!was_parsed_for_autocomplete_attributes_)
@@ -371,6 +373,9 @@ void FormStructure::DetermineHeuristicTypes() {
           AutofillMetrics::FILLABLE_FORM_CONTAINS_TYPE_HINTS);
     }
   }
+
+  AutofillMetrics::LogDetermineHeuristicTypesTiming(
+      base::TimeTicks::Now() - determine_heuristic_types_start_time);
 }
 
 bool FormStructure::EncodeUploadRequest(

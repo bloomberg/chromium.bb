@@ -1658,6 +1658,8 @@ void AutofillManager::ParseForms(const std::vector<FormData>& forms) {
   std::vector<FormStructure*> non_queryable_forms;
   std::vector<FormStructure*> queryable_forms;
   for (const FormData& form : forms) {
+    const auto parse_form_start_time = base::TimeTicks::Now();
+
     scoped_ptr<FormStructure> form_structure(new FormStructure(form));
     form_structure->ParseFieldTypesFromAutocompleteAttributes();
     if (!form_structure->ShouldBeParsed())
@@ -1674,6 +1676,9 @@ void AutofillManager::ParseForms(const std::vector<FormData>& forms) {
       queryable_forms.push_back(form_structures_.back());
     else
       non_queryable_forms.push_back(form_structures_.back());
+
+    AutofillMetrics::LogParseFormTiming(base::TimeTicks::Now() -
+                                        parse_form_start_time);
   }
 
   if (!queryable_forms.empty() && download_manager_) {

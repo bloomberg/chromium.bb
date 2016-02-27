@@ -667,6 +667,13 @@ class AutofillMetrics {
   // state of the form.
   static void LogAutofillFormSubmittedState(AutofillFormSubmittedState state);
 
+  // This should be called when determining the heuristic types for a form's
+  // fields.
+  static void LogDetermineHeuristicTypesTiming(const base::TimeDelta& duration);
+
+  // This should be called when parsing each form.
+  static void LogParseFormTiming(const base::TimeDelta& duration);
+
   // Utility to autofill form events in the relevant histograms depending on
   // the presence of server and/or local data.
   class FormEventLogger {

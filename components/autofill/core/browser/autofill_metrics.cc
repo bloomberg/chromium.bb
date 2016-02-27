@@ -683,6 +683,17 @@ void AutofillMetrics::LogAutofillFormSubmittedState(
                             AUTOFILL_FORM_SUBMITTED_STATE_ENUM_SIZE);
 }
 
+// static
+void AutofillMetrics::LogDetermineHeuristicTypesTiming(
+    const base::TimeDelta& duration) {
+  UMA_HISTOGRAM_TIMES("Autofill.Timing.DetermineHeuristicTypes", duration);
+}
+
+// static
+void AutofillMetrics::LogParseFormTiming(const base::TimeDelta& duration) {
+  UMA_HISTOGRAM_TIMES("Autofill.Timing.ParseForm", duration);
+}
+
 AutofillMetrics::FormEventLogger::FormEventLogger(bool is_for_credit_card)
     : is_for_credit_card_(is_for_credit_card),
       is_server_data_available_(false),
