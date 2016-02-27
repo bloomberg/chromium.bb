@@ -45,6 +45,7 @@ ModelTypeEntity::ModelTypeEntity(const std::string& client_tag,
     : client_tag_(client_tag),
       commit_requested_sequence_number_(metadata->acked_sequence_number()) {
   DCHECK(metadata->has_client_tag_hash());
+  DCHECK(metadata->has_creation_time());
   metadata_.Swap(metadata);
 }
 
@@ -87,7 +88,6 @@ void ModelTypeEntity::ApplyUpdateFromServer(
     const UpdateResponseData& response_data) {
   DCHECK(metadata_.has_client_tag_hash());
   DCHECK(!metadata_.client_tag_hash().empty());
-  DCHECK(metadata_.has_creation_time());
   DCHECK(metadata_.has_sequence_number());
 
   // TODO(stanisc): crbug/561829: Filter out update if specifics hash hasn't
@@ -109,24 +109,20 @@ void ModelTypeEntity::ApplyUpdateFromServer(
   encryption_key_name_ = response_data.encryption_key_name;
 }
 
-void ModelTypeEntity::MakeLocalChange(scoped_ptr<EntityData> entity_data,
-                                      base::Time modification_time) {
-  DCHECK(metadata_.has_client_tag_hash());
+void ModelTypeEntity::MakeLocalChange(scoped_ptr<EntityData> data) {
   DCHECK(!metadata_.client_tag_hash().empty());
-  DCHECK(metadata_.has_creation_time());
+  DCHECK_EQ(metadata_.client_tag_hash(), data->client_tag_hash);
+  DCHECK(!data->modification_time.is_null());
 
-  metadata_.set_modification_time(syncer::TimeToProtoTime(modification_time));
+  metadata_.set_modification_time(
+      syncer::TimeToProtoTime(data->modification_time));
   metadata_.set_is_deleted(false);
   IncrementSequenceNumber();
-  UpdateSpecificsHash(entity_data->specifics);
+  UpdateSpecificsHash(data->specifics);
 
-  entity_data->client_tag_hash = metadata_.client_tag_hash();
-  entity_data->id = metadata_.server_id();
-  entity_data->creation_time =
-      syncer::ProtoTimeToTime(metadata_.creation_time());
-  entity_data->modification_time = modification_time;
-
-  CacheCommitData(entity_data.get());
+  data->id = metadata_.server_id();
+  data->creation_time = syncer::ProtoTimeToTime(metadata_.creation_time());
+  CacheCommitData(data.get());
 }
 
 void ModelTypeEntity::UpdateDesiredEncryptionKey(const std::string& name) {

@@ -60,9 +60,11 @@ class ModelTypeEntityTest : public ::testing::Test {
   void MakeLocalChange(ModelTypeEntity* entity,
                        const sync_pb::EntitySpecifics& specifics) {
     scoped_ptr<EntityData> entity_data = make_scoped_ptr(new EntityData());
+    entity_data->client_tag_hash = entity->metadata().client_tag_hash();
     entity_data->specifics = specifics;
     entity_data->non_unique_name = "foo";
-    entity->MakeLocalChange(std::move(entity_data), kMtime);
+    entity_data->modification_time = kMtime;
+    entity->MakeLocalChange(std::move(entity_data));
   }
 
   scoped_ptr<ModelTypeEntity> NewServerItem() {

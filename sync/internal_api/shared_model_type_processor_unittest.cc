@@ -803,8 +803,6 @@ TEST_F(SharedModelTypeProcessorTest, CreateLocalItem) {
 
 // The purpose of this test case is to test setting |client_tag_hash| and |id|
 // on the EntityData object as we pass it into the Put method of the processor.
-// TODO(skym): Update this test to verify that specifying a |client_tag_hash|
-// on update has no effect once crbug/561818 is completed.
 TEST_F(SharedModelTypeProcessorTest, CreateAndModifyWithOverrides) {
   InitializeToReadyState();
   EXPECT_EQ(0U, GetNumCommitRequestLists());
@@ -818,48 +816,44 @@ TEST_F(SharedModelTypeProcessorTest, CreateAndModifyWithOverrides) {
   entity_data->id = "cid1";
   WriteItem("tag1", std::move(entity_data));
 
-  // Don't access through tag because we forced a specific hash.
   EXPECT_EQ(1U, GetNumCommitRequestLists());
-  ASSERT_TRUE(mock_queue()->HasCommitRequestForTagHash("hash"));
-  const EntityData& out_entity1 =
-      mock_queue()->GetLatestCommitRequestForTagHash("hash").entity.value();
-
-  EXPECT_EQ("hash", out_entity1.client_tag_hash);
-  EXPECT_EQ("cid1", out_entity1.id);
-  EXPECT_EQ("value1", out_entity1.specifics.preference().value());
-
+  ASSERT_FALSE(mock_queue()->HasCommitRequestForTagHash("hash"));
+  ASSERT_TRUE(HasCommitRequestForTag("tag1"));
   EXPECT_EQ(1U, db().MetadataCount());
+  const EntityData& out_entity1 =
+      GetLatestCommitRequestForTag("tag1").entity.value();
   const sync_pb::EntityMetadata metadata_v1 = db().GetMetadata("tag1");
+
+  EXPECT_EQ("cid1", out_entity1.id);
+  EXPECT_NE("hash", out_entity1.client_tag_hash);
+  EXPECT_EQ("value1", out_entity1.specifics.preference().value());
   EXPECT_EQ("cid1", metadata_v1.server_id());
-  EXPECT_EQ("hash", metadata_v1.client_tag_hash());
+  EXPECT_EQ(metadata_v1.client_tag_hash(), out_entity1.client_tag_hash);
 
   entity_data.reset(new EntityData());
   entity_data->specifics.mutable_preference()->set_name("name2");
   entity_data->specifics.mutable_preference()->set_value("value2");
   entity_data->non_unique_name = "name2";
   entity_data->client_tag_hash = "hash";
-  // TODO(skym): Consider removing this. The ID should never be changed by the
-  // client once established.
+  // Make sure ID isn't overwritten either.
   entity_data->id = "cid2";
-
   WriteItem("tag1", std::move(entity_data));
 
   EXPECT_EQ(2U, GetNumCommitRequestLists());
-  ASSERT_TRUE(mock_queue()->HasCommitRequestForTagHash("hash"));
-  const EntityData& out_entity2 =
-      mock_queue()->GetLatestCommitRequestForTagHash("hash").entity.value();
-
-  // Should still see old cid1 value, override is not respected on update.
-  EXPECT_EQ("hash", out_entity2.client_tag_hash);
-  EXPECT_EQ("cid1", out_entity2.id);
-  EXPECT_EQ("value2", out_entity2.specifics.preference().value());
-
+  ASSERT_FALSE(mock_queue()->HasCommitRequestForTagHash("hash"));
+  ASSERT_TRUE(HasCommitRequestForTag("tag1"));
   EXPECT_EQ(1U, db().MetadataCount());
+  const EntityData& out_entity2 =
+      GetLatestCommitRequestForTag("tag1").entity.value();
   const sync_pb::EntityMetadata metadata_v2 = db().GetMetadata("tag1");
-  // TODO(skym): Is this correct?
-  EXPECT_EQ("cid1", metadata_v2.server_id());
-  EXPECT_EQ("hash", metadata_v2.client_tag_hash());
 
+  EXPECT_EQ("value2", out_entity2.specifics.preference().value());
+  // Should still see old cid1 value, override is not respected on update.
+  EXPECT_EQ("cid1", out_entity2.id);
+  EXPECT_EQ("cid1", metadata_v2.server_id());
+  EXPECT_EQ(metadata_v2.client_tag_hash(), out_entity2.client_tag_hash);
+
+  // Specifics have changed so the hashes should not match.
   EXPECT_NE(metadata_v1.specifics_hash(), metadata_v2.specifics_hash());
 }
 

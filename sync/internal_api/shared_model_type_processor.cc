@@ -213,55 +213,46 @@ void SharedModelTypeProcessor::ConnectSync(scoped_ptr<CommitQueue> worker) {
   FlushPendingCommitRequests();
 }
 
-void SharedModelTypeProcessor::Put(const std::string& client_tag,
-                                   scoped_ptr<EntityData> entity_data,
+void SharedModelTypeProcessor::Put(const std::string& tag,
+                                   scoped_ptr<EntityData> data,
                                    MetadataChangeList* metadata_change_list) {
   DCHECK(IsAllowingChanges());
-  DCHECK(entity_data.get());
-  DCHECK(!entity_data->is_deleted());
-  DCHECK(!entity_data->non_unique_name.empty());
-  DCHECK_EQ(type_, syncer::GetModelTypeFromSpecifics(entity_data->specifics));
+  DCHECK(data.get());
+  DCHECK(!data->is_deleted());
+  DCHECK(!data->non_unique_name.empty());
+  DCHECK_EQ(type_, syncer::GetModelTypeFromSpecifics(data->specifics));
 
   if (!data_type_state_.initial_sync_done()) {
     // Ignore changes before the initial sync is done.
     return;
   }
 
-  // If the service specified an overriding hash, use that, otherwise generate
-  // one from the tag.
-  // TODO(skym): This behavior should be delayed, once crbug.com/561818 is fixed
-  // we will only perform this logic in the create case.
-  const std::string client_tag_hash(
-      entity_data->client_tag_hash.empty()
-          ? syncer::syncable::GenerateSyncableHash(type_, client_tag)
-          : entity_data->client_tag_hash);
+  // Fill in some data.
+  data->client_tag_hash = GetHashForTag(tag);
+  if (data->modification_time.is_null()) {
+    data->modification_time = base::Time::Now();
+  }
 
-  base::Time now = base::Time::Now();
+  ModelTypeEntity* entity = GetEntityForTagHash(data->client_tag_hash);
 
-  // TODO(stanisc): crbug.com/561818: Search by client_tag rather than
-  // client_tag_hash.
-  ModelTypeEntity* entity = GetEntityForTagHash(client_tag_hash);
   if (entity == nullptr) {
     // The service is creating a new entity.
-    scoped_ptr<ModelTypeEntity> scoped_entity = ModelTypeEntity::CreateNew(
-        client_tag, client_tag_hash, entity_data->id, now);
-    entity = scoped_entity.get();
-    entities_[client_tag_hash] = std::move(scoped_entity);
-  } else {
-    // The service is updating an existing entity.
-    DCHECK_EQ(client_tag, entity->client_tag());
+    if (data->creation_time.is_null()) {
+      data->creation_time = data->modification_time;
+    }
+    entity = CreateEntity(tag, *data);
   }
 
   // TODO(stanisc): crbug.com/561829: Avoid committing a change if there is no
   // actual change.
-  entity->MakeLocalChange(std::move(entity_data), now);
-  metadata_change_list->UpdateMetadata(client_tag, entity->metadata());
+  entity->MakeLocalChange(std::move(data));
+  metadata_change_list->UpdateMetadata(tag, entity->metadata());
 
   FlushPendingCommitRequests();
 }
 
 void SharedModelTypeProcessor::Delete(
-    const std::string& client_tag,
+    const std::string& tag,
     MetadataChangeList* metadata_change_list) {
   DCHECK(IsAllowingChanges());
 
@@ -270,24 +261,17 @@ void SharedModelTypeProcessor::Delete(
     return;
   }
 
-  const std::string client_tag_hash(
-      syncer::syncable::GenerateSyncableHash(type_, client_tag));
-
-  // TODO(skym): crbug.com/561818: Search by client_tag rather than
-  // client_tag_hash.
-  ModelTypeEntity* entity = GetEntityForTagHash(client_tag_hash);
+  ModelTypeEntity* entity = GetEntityForTag(tag);
   if (entity == nullptr) {
     // That's unusual, but not necessarily a bad thing.
     // Missing is as good as deleted as far as the model is concerned.
     DLOG(WARNING) << "Attempted to delete missing item."
-                  << " client tag: " << client_tag;
+                  << " client tag: " << tag;
     return;
   }
 
   entity->Delete();
-
-  metadata_change_list->UpdateMetadata(client_tag, entity->metadata());
-
+  metadata_change_list->UpdateMetadata(tag, entity->metadata());
   FlushPendingCommitRequests();
 }
 
@@ -382,17 +366,9 @@ void SharedModelTypeProcessor::OnUpdateReceived(
         continue;
       }
 
-      // Let the service define |client_tag| based on the entity data.
-      const std::string client_tag = service_->GetClientTag(data);
-
-      scoped_ptr<ModelTypeEntity> scoped_entity = ModelTypeEntity::CreateNew(
-          client_tag, client_tag_hash, data.id, data.creation_time);
-      entity = scoped_entity.get();
-      entities_[client_tag_hash] = std::move(scoped_entity);
-
+      entity = CreateEntity(data);
       entity_changes.push_back(
-          EntityChange::CreateAdd(client_tag, update.entity));
-
+          EntityChange::CreateAdd(entity->client_tag(), update.entity));
     } else {
       if (data.is_deleted()) {
         entity_changes.push_back(
@@ -458,12 +434,8 @@ void SharedModelTypeProcessor::OnInitialUpdateReceived(
   metadata_changes->UpdateDataTypeState(data_type_state_);
 
   for (const UpdateResponseData& update : updates) {
-    const EntityData& data = update.entity.value();
-
-    // Let the service define a client |tag| based on the entity data.
-    std::string tag = service_->GetClientTag(data);
-
-    ModelTypeEntity* entity = CreateEntity(tag, data);
+    ModelTypeEntity* entity = CreateEntity(update.entity.value());
+    const std::string& tag = entity->client_tag();
     entity->ApplyUpdateFromServer(update);
     metadata_changes->UpdateMetadata(tag, entity->metadata());
     data_map[tag] = update.entity;
@@ -501,6 +473,15 @@ ModelTypeEntity* SharedModelTypeProcessor::CreateEntity(
   ModelTypeEntity* entity_ptr = entity.get();
   entities_[data.client_tag_hash] = std::move(entity);
   return entity_ptr;
+}
+
+ModelTypeEntity* SharedModelTypeProcessor::CreateEntity(
+    const EntityData& data) {
+  // Let the service define |client_tag| based on the entity data.
+  const std::string tag = service_->GetClientTag(data);
+  // This constraint may be relaxed in the future.
+  DCHECK_EQ(data.client_tag_hash, GetHashForTag(tag));
+  return CreateEntity(tag, data);
 }
 
 }  // namespace syncer_v2

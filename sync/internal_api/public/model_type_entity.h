@@ -77,8 +77,7 @@ class SYNC_EXPORT ModelTypeEntity {
   void ApplyUpdateFromServer(const UpdateResponseData& response_data);
 
   // Applies a local change to this item.
-  void MakeLocalChange(scoped_ptr<EntityData> entity_data,
-                       base::Time modification_time);
+  void MakeLocalChange(scoped_ptr<EntityData> data);
 
   // Schedule a commit if the |name| does not match this item's last known
   // encryption key.  The worker that performs the commit is expected to

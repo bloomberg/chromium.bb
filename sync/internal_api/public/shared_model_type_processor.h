@@ -117,6 +117,9 @@ class SYNC_EXPORT SharedModelTypeProcessor : public ModelTypeProcessor,
   // Requires that no entity for |tag| already exists in the map.
   ModelTypeEntity* CreateEntity(const std::string& tag, const EntityData& data);
 
+  // Version of the above that generates a tag for |data|.
+  ModelTypeEntity* CreateEntity(const EntityData& data);
+
   syncer::ModelType type_;
   sync_pb::DataTypeState data_type_state_;
 
