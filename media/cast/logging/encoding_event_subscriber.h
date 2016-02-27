@@ -22,11 +22,15 @@ namespace cast {
 // Number of packets per frame recorded by the subscriber.
 // Once the max number of packets has been reached, a new aggregated proto
 // will be created.
-static const int kMaxPacketsPerFrame = 64;
-// Number of events per proto recorded by the subscriber.
+static const int kMaxPacketsPerFrame = 256;
+// Number of events per frame/packet proto recorded by the subscriber.
 // Once the max number of events has been reached, a new aggregated proto
 // will be created.
 static const int kMaxEventsPerProto = 16;
+// Max number of AggregatedFrameEvent / AggregatedPacketEvent protos stored for
+// a frame. Once the max number of protos has been reached for that frame,
+// further events for that frame will be dropped.
+static const int kMaxProtosPerFrame = 10;
 
 typedef std::vector<linked_ptr<media::cast::proto::AggregatedFrameEvent> >
     FrameEventList;
@@ -89,6 +93,11 @@ class EncodingEventSubscriber : public RawEventSubscriber {
       const linked_ptr<media::cast::proto::AggregatedPacketEvent>&
           packet_event_proto);
 
+  bool ShouldCreateNewProto(
+      uint32_t relative_rtp_timestamp_lower_32_bits) const;
+  void IncrementStoredProtoCount(uint32_t relative_rtp_timestamp_lower_32_bits);
+  void DecrementStoredProtoCount(uint32_t relative_rtp_timestamp_lower_32_bits);
+
   // Returns the difference between |rtp_timestamp| and |first_rtp_timestamp_|.
   // Sets |first_rtp_timestamp_| if it is not already set.
   RtpTimeDelta GetRelativeRtpTimestamp(RtpTimeTicks rtp_timestamp);
@@ -106,6 +115,11 @@ class EncodingEventSubscriber : public RawEventSubscriber {
   PacketEventMap packet_event_map_;
   PacketEventList packet_event_storage_;
   int packet_event_storage_index_;
+
+  // Maps from the lower 32 bits of a RTP timestamp to the number of
+  // AggregatedFrameEvent / AggregatedPacketEvent protos that have been stored
+  // for that frame.
+  std::map<uint32_t, int> stored_proto_counts_;
 
   // All functions must be called on the main thread.
   base::ThreadChecker thread_checker_;
