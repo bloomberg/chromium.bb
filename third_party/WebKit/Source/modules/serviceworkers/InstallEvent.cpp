@@ -30,23 +30,18 @@ InstallEvent::~InstallEvent()
 {
 }
 
-void InstallEvent::registerForeignFetchScopes(ExecutionContext* executionContext, const Vector<String>& subScopes, const USVStringOrUSVStringSequence& origins, ExceptionState& exceptionState)
+void InstallEvent::registerForeignFetch(ExecutionContext* executionContext, const ForeignFetchOptions& options, ExceptionState& exceptionState)
 {
     if (!isBeingDispatched()) {
         exceptionState.throwDOMException(InvalidStateError, "The event handler is already finished.");
         return;
     }
 
-    Vector<String> originList;
-    if (origins.isUSVString()) {
-        originList.append(origins.getAsUSVString());
-    } else if (origins.isUSVStringSequence()) {
-        originList = origins.getAsUSVStringSequence();
-    }
-    if (originList.isEmpty()) {
+    if (!options.hasOrigins() || options.origins().isEmpty()) {
         exceptionState.throwTypeError("At least one origin is required");
         return;
     }
+    const Vector<String>& originList = options.origins();
 
     // The origins parameter is either just a "*" to indicate all origins, or an
     // explicit list of origins as absolute URLs. Internally an empty list of
@@ -70,6 +65,11 @@ void InstallEvent::registerForeignFetchScopes(ExecutionContext* executionContext
     String scopePath = static_cast<KURL>(client->scope()).path();
     RefPtr<SecurityOrigin> origin = executionContext->securityOrigin();
 
+    if (!options.hasScopes() || options.scopes().isEmpty()) {
+        exceptionState.throwTypeError("At least one scope is required");
+        return;
+    }
+    const Vector<String>& subScopes = options.scopes();
     Vector<KURL> subScopeURLs(subScopes.size());
     for (size_t i = 0; i < subScopes.size(); ++i) {
         subScopeURLs[i] = executionContext->completeURL(subScopes[i]);

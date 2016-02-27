@@ -412,7 +412,7 @@ interface ImageData
     method constructor
 interface InstallEvent : ExtendableEvent
     method constructor
-    method registerForeignFetchScopes
+    method registerForeignFetch
 interface MessageChannel
     getter port1
     getter port2

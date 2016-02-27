@@ -8,6 +8,7 @@
 #include "modules/EventModules.h"
 #include "modules/ModulesExport.h"
 #include "modules/serviceworkers/ExtendableEvent.h"
+#include "modules/serviceworkers/ForeignFetchOptions.h"
 
 namespace blink {
 
@@ -23,7 +24,7 @@ public:
 
     ~InstallEvent() override;
 
-    void registerForeignFetchScopes(ExecutionContext*, const Vector<String>& subScopes, const USVStringOrUSVStringSequence& origins, ExceptionState&);
+    void registerForeignFetch(ExecutionContext*, const ForeignFetchOptions&, ExceptionState&);
 
     const AtomicString& interfaceName() const override;
 
