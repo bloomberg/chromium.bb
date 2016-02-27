@@ -41,7 +41,7 @@ void SendMockNavigationStateChangedMessage(BlimpMessageProcessor* processor,
       CreateBlimpMessage(&navigation_message, tab_id);
   navigation_message->set_type(NavigationMessage::NAVIGATION_STATE_CHANGED);
   NavigationStateChangeMessage* state =
-      navigation_message->mutable_navigation_state_change();
+      navigation_message->mutable_navigation_state_changed();
   if (url)
     state->set_url(url->spec());
 

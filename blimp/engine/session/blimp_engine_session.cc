@@ -459,7 +459,7 @@ void BlimpEngineSession::NavigationStateChanged(
       CreateBlimpMessage(&navigation_message, kDummyTabId);
   navigation_message->set_type(NavigationMessage::NAVIGATION_STATE_CHANGED);
   NavigationStateChangeMessage* details =
-      navigation_message->mutable_navigation_state_change();
+      navigation_message->mutable_navigation_state_changed();
 
   if (changed_flags & content::InvalidateTypes::INVALIDATE_TYPE_URL)
     details->set_url(source->GetURL().spec());

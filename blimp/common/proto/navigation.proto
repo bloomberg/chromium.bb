@@ -54,6 +54,6 @@ message NavigationMessage {
 
   optional Type type = 1;
 
-  optional NavigationStateChangeMessage navigation_state_change = 1000;
+  optional NavigationStateChangeMessage navigation_state_changed = 1000;
   optional LoadUrlMessage load_url = 1001;
 }

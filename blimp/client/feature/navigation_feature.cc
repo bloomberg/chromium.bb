@@ -93,7 +93,7 @@ void NavigationFeature::ProcessMessage(
   switch (navigation_message.type()) {
     case NavigationMessage::NAVIGATION_STATE_CHANGED: {
       const NavigationStateChangeMessage& details =
-          navigation_message.navigation_state_change();
+          navigation_message.navigation_state_changed();
       if (details.has_url())
         delegate->OnUrlChanged(tab_id, GURL(details.url()));
 
