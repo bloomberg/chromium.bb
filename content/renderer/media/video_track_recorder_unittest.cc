@@ -38,17 +38,9 @@ ACTION_P(RunClosure, closure) {
   closure.Run();
 }
 
-struct TrackRecorderTestParams {
-  const bool use_vp9;
-  const size_t first_encoded_frame_size;
-  const size_t second_encoded_frame_size;
-  const size_t third_encoded_frame_size;
-};
+const bool kTrackRecorderTestUseVp9OrNot[] = {false, true};
 
-const TrackRecorderTestParams kTrackRecorderTestParams[] = {{false, 52, 32, 57},
-                                                            {true, 33, 18, 33}};
-
-class VideoTrackRecorderTest : public TestWithParam<TrackRecorderTestParams> {
+class VideoTrackRecorderTest : public TestWithParam<bool> {
  public:
   VideoTrackRecorderTest()
       : mock_source_(new MockMediaStreamVideoSource(false)) {
@@ -67,7 +59,7 @@ class VideoTrackRecorderTest : public TestWithParam<TrackRecorderTestParams> {
     blink_track_.setExtraData(track_);
 
     video_track_recorder_.reset(new VideoTrackRecorder(
-        GetParam().use_vp9 /* use_vp9 */, blink_track_,
+        GetParam() /* use_vp9 */, blink_track_,
         base::Bind(&VideoTrackRecorderTest::OnEncodedVideo,
                    base::Unretained(this)),
         0 /* bits_per_second */));
@@ -168,18 +160,16 @@ TEST_P(VideoTrackRecorderTest, VideoEncoding) {
 
   run_loop.Run();
 
-  EXPECT_EQ(GetParam().first_encoded_frame_size,
-            first_frame_encoded_data.size());
-  EXPECT_EQ(GetParam().second_encoded_frame_size,
-            second_frame_encoded_data.size());
-  EXPECT_EQ(GetParam().third_encoded_frame_size,
-            third_frame_encoded_data.size());
+  const size_t kEncodedSizeThreshold = 18;
+  EXPECT_GE(first_frame_encoded_data.size(), kEncodedSizeThreshold);
+  EXPECT_GE(second_frame_encoded_data.size(), kEncodedSizeThreshold);
+  EXPECT_GE(third_frame_encoded_data.size(), kEncodedSizeThreshold);
 
   Mock::VerifyAndClearExpectations(this);
 }
 
 INSTANTIATE_TEST_CASE_P(,
                         VideoTrackRecorderTest,
-                        ValuesIn(kTrackRecorderTestParams));
+                        ValuesIn(kTrackRecorderTestUseVp9OrNot));
 
 }  // namespace content
