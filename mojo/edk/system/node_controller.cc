@@ -577,7 +577,12 @@ void NodeController::OnAcceptParent(const ports::NodeName& from_node,
 
 void NodeController::OnAddBrokerClient(const ports::NodeName& from_node,
                                        const ports::NodeName& client_name,
-                                       ScopedPlatformHandle process_handle) {
+                                       base::ProcessHandle process_handle) {
+#if defined(OS_WIN)
+  // Scoped handle to avoid leaks on error.
+  ScopedPlatformHandle scoped_process_handle =
+      ScopedPlatformHandle(PlatformHandle(process_handle));
+#endif
   scoped_refptr<NodeChannel> sender = GetPeerChannel(from_node);
   if (!sender) {
     DLOG(ERROR) << "Ignoring AddBrokerClient from unknown sender.";
@@ -597,11 +602,13 @@ void NodeController::OnAddBrokerClient(const ports::NodeName& from_node,
 #if defined(OS_WIN)
   // The broker must have a working handle to the client process in order to
   // properly copy other handles to and from the client.
-  if(!process_handle.is_valid()) {
+  if (!scoped_process_handle.is_valid()) {
     DLOG(ERROR) << "Broker rejecting client with invalid process handle.";
     return;
   }
-  client->SetRemoteProcessHandle(process_handle.release().handle);
+  client->SetRemoteProcessHandle(scoped_process_handle.release().handle);
+#else
+  client->SetRemoteProcessHandle(process_handle);
 #endif
 
   AddPeer(client_name, client, true /* start_channel */);

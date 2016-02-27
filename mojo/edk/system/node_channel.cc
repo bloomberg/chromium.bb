@@ -58,7 +58,18 @@ struct AcceptParentData {
 // This message may include a process handle on plaforms that require it.
 struct AddBrokerClientData {
   ports::NodeName client_name;
+#if !defined(OS_WIN)
+  uint32_t process_handle;
+  uint32_t padding;
+#endif
 };
+
+#if !defined(OS_WIN)
+static_assert(sizeof(base::ProcessHandle) == sizeof(uint32_t),
+              "Unexpected pid size");
+static_assert(sizeof(AddBrokerClientData) % kChannelMessageAlignment == 0,
+              "Invalid AddBrokerClientData size.");
+#endif
 
 // This data is followed by a platform channel handle to the broker.
 struct BrokerClientAddedData {
@@ -155,25 +166,19 @@ void NodeChannel::ShutDown() {
 }
 
 void NodeChannel::SetRemoteProcessHandle(base::ProcessHandle process_handle) {
-#if defined(OS_WIN)
   DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
   base::AutoLock lock(remote_process_handle_lock_);
   remote_process_handle_ = process_handle;
-#endif
 }
 
 bool NodeChannel::HasRemoteProcessHandle() {
-#if defined(OS_WIN)
   base::AutoLock lock(remote_process_handle_lock_);
   return remote_process_handle_ != base::kNullProcessHandle;
-#else
-  return false;
-#endif
 }
 
-ScopedPlatformHandle NodeChannel::CopyRemoteProcessHandle() {
-#if defined(OS_WIN)
+base::ProcessHandle NodeChannel::CopyRemoteProcessHandle() {
   base::AutoLock lock(remote_process_handle_lock_);
+#if defined(OS_WIN)
   if (remote_process_handle_ != base::kNullProcessHandle) {
     // Privileged nodes use this to pass their childrens' process handles to the
     // broker on launch.
@@ -183,10 +188,12 @@ ScopedPlatformHandle NodeChannel::CopyRemoteProcessHandle() {
         base::GetCurrentProcessHandle(), &handle, 0, FALSE,
         DUPLICATE_SAME_ACCESS);
     DCHECK(result);
-    return ScopedPlatformHandle(PlatformHandle(handle));
+    return handle;
   }
+  return base::kNullProcessHandle;
+#else
+  return remote_process_handle_;
 #endif
-  return ScopedPlatformHandle();
 }
 
 void NodeChannel::SetRemoteNodeName(const ports::NodeName& name) {
@@ -215,17 +222,20 @@ void NodeChannel::AcceptParent(const ports::NodeName& token,
 }
 
 void NodeChannel::AddBrokerClient(const ports::NodeName& client_name,
-                                  ScopedPlatformHandle process_handle) {
+                                  base::ProcessHandle process_handle) {
   AddBrokerClientData* data;
   ScopedPlatformHandleVectorPtr handles(new PlatformHandleVector());
 #if defined(OS_WIN)
-  handles->push_back(process_handle.release());
+  handles->push_back(PlatformHandle(process_handle));
 #endif
   Channel::MessagePtr message = CreateMessage(
       MessageType::ADD_BROKER_CLIENT, sizeof(AddBrokerClientData),
       handles->size(), &data);
   message->SetHandles(std::move(handles));
   data->client_name = client_name;
+#if !defined(OS_WIN)
+  data->process_handle = process_handle;
+#endif
   WriteChannelMessage(std::move(message));
 }
 
@@ -382,14 +392,16 @@ void NodeChannel::OnChannelMessage(const void* payload,
       }
       process_handle = ScopedPlatformHandle(handles->at(0));
       handles->clear();
+      delegate_->OnAddBrokerClient(remote_node_name_, data->client_name,
+                                   process_handle.release().handle);
 #else
       if (handles && handles->size() != 0) {
         DLOG(ERROR) << "Dropping invalid AddBrokerClient message.";
         break;
       }
-#endif
       delegate_->OnAddBrokerClient(remote_node_name_, data->client_name,
-                                   std::move(process_handle));
+                                   data->process_handle);
+#endif
       break;
     }
 

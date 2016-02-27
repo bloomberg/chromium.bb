@@ -36,7 +36,7 @@ class NodeChannel : public base::RefCountedThreadSafe<NodeChannel>,
                                 const ports::NodeName& child_name) = 0;
     virtual void OnAddBrokerClient(const ports::NodeName& from_node,
                                    const ports::NodeName& client_name,
-                                   ScopedPlatformHandle process_handle) = 0;
+                                   base::ProcessHandle process_handle) = 0;
     virtual void OnBrokerClientAdded(const ports::NodeName& from_node,
                                      const ports::NodeName& client_name,
                                      ScopedPlatformHandle broker_channel) = 0;
@@ -82,7 +82,9 @@ class NodeChannel : public base::RefCountedThreadSafe<NodeChannel>,
 
   void SetRemoteProcessHandle(base::ProcessHandle process_handle);
   bool HasRemoteProcessHandle();
-  ScopedPlatformHandle CopyRemoteProcessHandle();
+  // Note: The returned |ProcessHandle| is owned by the caller and should be
+  // freed if necessary.
+  base::ProcessHandle CopyRemoteProcessHandle();
 
   // Used for context in Delegate calls (via |from_node| arguments.)
   void SetRemoteNodeName(const ports::NodeName& name);
@@ -92,7 +94,7 @@ class NodeChannel : public base::RefCountedThreadSafe<NodeChannel>,
   void AcceptParent(const ports::NodeName& token,
                     const ports::NodeName& child_name);
   void AddBrokerClient(const ports::NodeName& client_name,
-                       ScopedPlatformHandle process_handle);
+                       base::ProcessHandle process_handle);
   void BrokerClientAdded(const ports::NodeName& client_name,
                          ScopedPlatformHandle broker_channel);
   void AcceptBrokerClient(const ports::NodeName& broker_name,
@@ -138,10 +140,8 @@ class NodeChannel : public base::RefCountedThreadSafe<NodeChannel>,
   // Must only be accessed from |io_task_runner_|'s thread.
   ports::NodeName remote_node_name_;
 
-#if defined(OS_WIN)
   base::Lock remote_process_handle_lock_;
   base::ProcessHandle remote_process_handle_ = base::kNullProcessHandle;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(NodeChannel);
 };

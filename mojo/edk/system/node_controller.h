@@ -143,7 +143,7 @@ class NodeController : public ports::NodeDelegate,
                       const ports::NodeName& child_name) override;
   void OnAddBrokerClient(const ports::NodeName& from_node,
                          const ports::NodeName& client_name,
-                         ScopedPlatformHandle process_handle) override;
+                         base::ProcessHandle process_handle) override;
   void OnBrokerClientAdded(const ports::NodeName& from_node,
                            const ports::NodeName& client_name,
                            ScopedPlatformHandle broker_channel) override;
