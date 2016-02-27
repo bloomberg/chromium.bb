@@ -115,7 +115,6 @@ public:
     static void setUseDirectWrite(bool useDirectWrite) { s_useDirectWrite = useDirectWrite; }
     static void setFontManager(const RefPtr<SkFontMgr>&);
     static void setDeviceScaleFactor(float deviceScaleFactor) { s_deviceScaleFactor = deviceScaleFactor; }
-    static void setUseSubpixelPositioning(bool useSubpixelPositioning) { s_useSubpixelPositioning = useSubpixelPositioning; }
     static void addSideloadedFontForTesting(SkTypeface*);
     // Functions to cache and retrieve the system font metrics.
     static void setMenuFontMetrics(const wchar_t* familyName, int32_t fontHeight);

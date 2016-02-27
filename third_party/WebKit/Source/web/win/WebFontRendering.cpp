@@ -28,12 +28,6 @@ void WebFontRendering::setDeviceScaleFactor(float deviceScaleFactor)
 }
 
 // static
-void WebFontRendering::setUseSubpixelPositioning(bool useSubpixelPositioning)
-{
-    FontCache::setUseSubpixelPositioning(useSubpixelPositioning);
-}
-
-// static
 void WebFontRendering::addSideloadedFontForTesting(SkTypeface* typeface)
 {
     FontCache::addSideloadedFontForTesting(typeface);
