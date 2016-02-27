@@ -145,17 +145,12 @@ class PlatformInfo(object):
         raise AssertionError('unrecognized platform string "%s"' % sys_platform)
 
     def _determine_mac_version(self, mac_version_string):
-        release_version = int(mac_version_string.split('.')[1])
-        version_strings = {
-            6: 'snowleopard',
-            7: 'lion',
-            8: 'mountainlion',
-            9: 'mavericks',
-            10: 'mac10.10',
-            11: 'mac10.11',
-        }
-        assert release_version >= min(version_strings.keys())
-        return version_strings.get(release_version, 'future')
+        minor_release = int(mac_version_string.split('.')[1])
+        # FIXME: This should really be >= 9, and we should get rid of 'future'.
+        assert minor_release >= 6, 'Unsupported mac os version: %s' % mac_version_string
+        if minor_release in (9, 10, 11):
+            return 'mac10.%d' % minor_release
+        return 'future'
 
     def _determine_linux_version(self, platform_module):
         # Default to trusty if version is not recognized, this supports third party integrations.

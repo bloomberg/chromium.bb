@@ -38,7 +38,7 @@ _log = logging.getLogger(__name__)
 
 
 class MacPort(base.Port):
-    SUPPORTED_VERSIONS = ('retina', 'mavericks', 'mac10.10', 'mac10.11')
+    SUPPORTED_VERSIONS = ('mac10.9', 'mac10.10', 'mac10.11', 'retina')
     port_name = 'mac'
 
     # FIXME: We treat Retina (High-DPI) devices as if they are running
@@ -50,9 +50,9 @@ class MacPort(base.Port):
 
     FALLBACK_PATHS = {}
     FALLBACK_PATHS['mac10.11'] = ['mac']
-    FALLBACK_PATHS['retina'] = ['mac-retina'] + FALLBACK_PATHS['mac10.11']
     FALLBACK_PATHS['mac10.10'] = ['mac-mac10.10'] + FALLBACK_PATHS['mac10.11']
-    FALLBACK_PATHS['mavericks'] = ['mac-mavericks'] + FALLBACK_PATHS['mac10.10']
+    FALLBACK_PATHS['mac10.9'] = ['mac-mac10.9'] + FALLBACK_PATHS['mac10.10']
+    FALLBACK_PATHS['retina'] = ['mac-retina', 'mac']
 
     DEFAULT_BUILD_DIRECTORIES = ('xcodebuild', 'out')
 

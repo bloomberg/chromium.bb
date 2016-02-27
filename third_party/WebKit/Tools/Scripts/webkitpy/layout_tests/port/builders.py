@@ -45,7 +45,7 @@ _exact_matches = {
     "WebKit Linux": {"port_name": "linux-precise", "specifiers": ['Precise', 'Release']},
     "WebKit Linux Trusty": {"port_name": "linux-trusty", "specifiers": ['Trusty', 'Release']},
     "WebKit Linux (dbg)": {"port_name": "linux-precise", "specifiers": ['Precise', 'Debug']},
-    "WebKit Mac10.9": {"port_name": "mac-mavericks", "specifiers": ['Mavericks', 'Release']},
+    "WebKit Mac10.9": {"port_name": "mac-mac10.9", "specifiers": ['Mac10.9', 'Release']},
     "WebKit Mac10.10": {"port_name": "mac-mac10.10", "specifiers": ['Mac10.10', 'Release']},
     "WebKit Mac10.11": {"port_name": "mac-mac10.11", "specifiers": ['10.11', 'Release']},
     "WebKit Mac10.11 (dbg)": {"port_name": "mac-mac10.11", "specifiers": ['10.11', 'Debug']},

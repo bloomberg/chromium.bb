@@ -59,17 +59,6 @@ MISSING_KEYWORD = 'Missing'
 NEEDS_REBASELINE_KEYWORD = 'NeedsRebaseline'
 NEEDS_MANUAL_REBASELINE_KEYWORD = 'NeedsManualRebaseline'
 
-# TODO(ojan): Don't add new platforms here. New mac platforms
-# should use the version number directly instead of the english
-# language names throughout the code.
-MAC_VERSION_MAPPING = {
-    'mac10.9': 'mavericks',
-    'mac10.10': 'mac10.10',
-    'mac10.11': 'mac10.11',
-}
-
-INVERTED_MAC_VERSION_MAPPING = {value: name for name, value in MAC_VERSION_MAPPING.items()}
-
 
 class ParseError(Exception):
     def __init__(self, warnings):
@@ -162,8 +151,7 @@ class TestExpectationParser(object):
         self._parse_expectations(expectation_line)
 
     def _parse_specifier(self, specifier):
-        specifier = specifier.lower()
-        return MAC_VERSION_MAPPING.get(specifier, specifier)
+        return specifier.lower()
 
     def _parse_specifiers(self, expectation_line):
         if self._is_lint_mode:
@@ -522,7 +510,6 @@ class TestExpectationLine(object):
         result = []
         result.extend(sorted(self.parsed_specifiers))
         result.extend(test_configuration_converter.specifier_sorter().sort_specifiers(specifiers))
-        result = [INVERTED_MAC_VERSION_MAPPING.get(specifier, specifier) for specifier in result]
         return ' '.join(result)
 
     @staticmethod
