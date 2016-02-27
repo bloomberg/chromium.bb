@@ -160,4 +160,35 @@ TEST(FormFieldTest, ParseFormFields) {
                 ->second.BestHeuristicType());
 }
 
+// All parsers see the same form and should not modify it.
+// Furthermore, all parsers are allowed to cast their votes on what the
+// ServerFieldType for a given type should be, so for an ambiguous input more
+// than one candidate is expected.
+TEST(FormFieldTest, ParseFormFieldsImmutableForm) {
+  const base::string16 unique_name = ASCIIToUTF16("blah");
+  FormFieldData field_data;
+  field_data.form_control_type = "text";
+  field_data.name = ASCIIToUTF16("business_email_address");
+
+  ScopedVector<AutofillField> fields;
+  fields.push_back(new AutofillField(field_data, unique_name));
+
+  const FieldCandidatesMap field_candidates_map =
+      FormField::ParseFormFields(fields.get(), true);
+
+  // The input form should not be modified.
+  EXPECT_EQ(1U, fields.size());
+
+  // The output should contain detected information for the sole field in the
+  // input.
+  EXPECT_EQ(1U, field_candidates_map.size());
+  EXPECT_TRUE(field_candidates_map.find(unique_name) !=
+              field_candidates_map.end());
+
+  // Because we use a handcrafted field name, we can expect it to match more
+  // than just one parser (at least email, but probably some more from the other
+  // parsers).
+  EXPECT_LT(1U, field_candidates_map.at(unique_name).field_candidates().size());
+}
+
 }  // namespace autofill

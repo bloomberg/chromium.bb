@@ -1751,15 +1751,15 @@ TEST_F(FormStructureTest, CVCCodeClash) {
   EXPECT_TRUE(form_structure->IsAutofillable());
 
   // Expect the correct number of fields.
-  ASSERT_EQ(6U, form_structure->field_count());
-  ASSERT_EQ(5U, form_structure->autofill_count());
+  EXPECT_EQ(6U, form_structure->field_count());
+  EXPECT_EQ(6U, form_structure->autofill_count());
 
   // Card Number.
   EXPECT_EQ(CREDIT_CARD_NUMBER, form_structure->field(0)->heuristic_type());
   // First name, taken as name on card.
   EXPECT_EQ(CREDIT_CARD_NAME, form_structure->field(1)->heuristic_type());
-  // Last name is not merged.
-  EXPECT_EQ(UNKNOWN_TYPE, form_structure->field(2)->heuristic_type());
+  // Last name is picked up by the name parser.
+  EXPECT_EQ(NAME_LAST, form_structure->field(2)->heuristic_type());
   // Expiration Date.
   EXPECT_EQ(CREDIT_CARD_EXP_MONTH, form_structure->field(3)->heuristic_type());
   // Expiration Year.

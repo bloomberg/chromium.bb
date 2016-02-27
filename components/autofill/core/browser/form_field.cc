@@ -54,29 +54,28 @@ FieldCandidatesMap FormField::ParseFormFields(
     const std::vector<AutofillField*>& fields,
     bool is_form_tag) {
   // Set up a working copy of the fields to be processed.
-  std::vector<AutofillField*> remaining_fields;
+  std::vector<AutofillField*> processed_fields;
   std::copy_if(fields.begin(), fields.end(),
-               std::back_inserter(remaining_fields), ShouldBeProcessed);
+               std::back_inserter(processed_fields), ShouldBeProcessed);
 
   FieldCandidatesMap field_candidates;
 
   // Email pass.
-  ParseFormFieldsPass(EmailField::Parse, &remaining_fields, &field_candidates);
+  ParseFormFieldsPass(EmailField::Parse, processed_fields, &field_candidates);
   const size_t email_count = field_candidates.size();
 
   // Phone pass.
-  ParseFormFieldsPass(PhoneField::Parse, &remaining_fields, &field_candidates);
+  ParseFormFieldsPass(PhoneField::Parse, processed_fields, &field_candidates);
 
   // Address pass.
-  ParseFormFieldsPass(AddressField::Parse, &remaining_fields,
-                      &field_candidates);
+  ParseFormFieldsPass(AddressField::Parse, processed_fields, &field_candidates);
 
   // Credit card pass.
-  ParseFormFieldsPass(CreditCardField::Parse, &remaining_fields,
+  ParseFormFieldsPass(CreditCardField::Parse, processed_fields,
                       &field_candidates);
 
   // Name pass.
-  ParseFormFieldsPass(NameField::Parse, &remaining_fields, &field_candidates);
+  ParseFormFieldsPass(NameField::Parse, processed_fields, &field_candidates);
 
   // Do not autofill a form if there are less than 3 recognized fields.
   // Otherwise it is very easy to have false positives. http://crbug.com/447332
@@ -171,16 +170,12 @@ bool FormField::Match(const AutofillField* field,
 
 // static
 void FormField::ParseFormFieldsPass(ParseFunction parse,
-                                    std::vector<AutofillField*>* fields,
+                                    const std::vector<AutofillField*>& fields,
                                     FieldCandidatesMap* field_candidates) {
-  // Store unmatched fields for further processing by the caller.
-  std::vector<AutofillField*> remaining_fields;
-
-  AutofillScanner scanner(*fields);
+  AutofillScanner scanner(fields);
   while (!scanner.IsEnd()) {
     scoped_ptr<FormField> form_field(parse(&scanner));
     if (form_field == nullptr) {
-      remaining_fields.push_back(scanner.Cursor());
       scanner.Advance();
     } else {
       // Add entries into |field_candidates| for each field type found in
@@ -188,8 +183,6 @@ void FormField::ParseFormFieldsPass(ParseFunction parse,
       form_field->AddClassifications(field_candidates);
     }
   }
-
-  std::swap(*fields, remaining_fields);
 }
 
 bool FormField::MatchesFormControlType(const std::string& type,

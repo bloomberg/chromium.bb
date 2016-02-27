@@ -11,13 +11,12 @@
 
 namespace autofill {
 
+FieldCandidate::FieldCandidate(ServerFieldType field_type, float field_score)
+    : type(field_type), score(field_score) {}
+
 FieldCandidates::FieldCandidates() {}
 
 FieldCandidates::~FieldCandidates() {}
-
-FieldCandidates::FieldCandidate::FieldCandidate(ServerFieldType field_type,
-                                                float field_score)
-    : type(field_type), score(field_score) {}
 
 void FieldCandidates::AddFieldCandidate(ServerFieldType type, float score) {
   field_candidates_.emplace_back(type, score);
@@ -42,6 +41,10 @@ ServerFieldType FieldCandidates::BestHeuristicType() const {
   const size_t index = std::distance(type_scores.begin(), best_type_iter);
 
   return static_cast<ServerFieldType>(index);
+}
+
+const std::vector<FieldCandidate>& FieldCandidates::field_candidates() const {
+  return field_candidates_;
 }
 
 }  // namespace autofill

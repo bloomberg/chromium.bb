@@ -5,12 +5,24 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_FIELD_CANDIDATES_H_
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_FIELD_CANDIDATES_H_
 
-#include <map>
+#include <unordered_map>
 #include <vector>
 
 #include "components/autofill/core/browser/field_types.h"
 
 namespace autofill {
+
+// Represents a possible type for a given field.
+struct FieldCandidate {
+  FieldCandidate(ServerFieldType field_type, float field_score);
+
+  // The associated type for this candidate.
+  ServerFieldType type = UNKNOWN_TYPE;
+
+  // A non-negative number indicating how sure the type is for this specific
+  // candidate. The higher the more confidence.
+  float score = 0.0f;
+};
 
 // Each field can be of different types. This class collects all these possible
 // types and determines which type is the most likely.
@@ -31,25 +43,18 @@ class FieldCandidates {
   // Determines the best type based on the current possible types.
   ServerFieldType BestHeuristicType() const;
 
+  // Returns the underlying candidates.
+  //
+  // This reference is only valid while the FieldCandidates object is valid.
+  const std::vector<FieldCandidate>& field_candidates() const;
+
  private:
-  // Represents a possible type for a given field.
-  struct FieldCandidate {
-    FieldCandidate(ServerFieldType field_type, float field_score);
-
-    // The associated type for this candidate.
-    ServerFieldType type = UNKNOWN_TYPE;
-
-    // A non-negative number indicating how sure the type is for this specific
-    // candidate. The higher the more confidence.
-    float score = 0.0f;
-  };
-
   // Internal storage for all the possible types for a given field.
   std::vector<FieldCandidate> field_candidates_;
 };
 
 // A map from the field's unique name to its possible candidates.
-using FieldCandidatesMap = std::map<base::string16, FieldCandidates>;
+using FieldCandidatesMap = std::unordered_map<base::string16, FieldCandidates>;
 
 }  // namespace autofill
 

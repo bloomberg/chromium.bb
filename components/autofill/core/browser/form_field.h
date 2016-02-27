@@ -133,7 +133,7 @@ class FormField {
   // Classification results of the processed fields are stored in
   // |field_candidates|.
   static void ParseFormFieldsPass(ParseFunction parse,
-                                  std::vector<AutofillField*>* fields,
+                                  const std::vector<AutofillField*>& fields,
                                   FieldCandidatesMap* field_candidates);
 
   DISALLOW_COPY_AND_ASSIGN(FormField);

@@ -245,6 +245,13 @@ void PhoneField::AddClassifications(
                       PHONE_HOME_WHOLE_NUMBER, kBasePhoneParserScore,
                       field_candidates);
   }
+
+  if (parsed_phone_fields_[FIELD_EXTENSION]) {
+    // TODO(crbug.com/589211): Change from UNKNOWN_TYPE to the proper
+    // ServerFieldType once the new phone suffix is checked in.
+    AddClassification(parsed_phone_fields_[FIELD_EXTENSION], UNKNOWN_TYPE,
+                      kBasePhoneParserScore, field_candidates);
+  }
 }
 
 PhoneField::PhoneField() {
