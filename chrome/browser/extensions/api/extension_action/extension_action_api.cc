@@ -232,6 +232,11 @@ bool ExtensionActionAPI::ShowExtensionActionPopup(
     return browser->window()->GetLocationBar()->ShowPageActionPopup(
         extension, grant_active_tab_permissions);
   }
+
+  // Don't support showing action popups in a popup window.
+  if (!browser->SupportsWindowFeature(Browser::FEATURE_TOOLBAR))
+    return false;
+
   ToolbarActionsBar* toolbar_actions_bar =
       browser->window()->GetToolbarActionsBar();
   // ToolbarActionsBar could be null if, e.g., this is a popup window with no
