@@ -69,7 +69,7 @@ InkDropAnimationControllerImpl::~InkDropAnimationControllerImpl() {
 InkDropState InkDropAnimationControllerImpl::GetTargetInkDropState() const {
   if (!ink_drop_animation_)
     return InkDropState::HIDDEN;
-  return ink_drop_animation_->GetTargetInkDropState();
+  return ink_drop_animation_->target_ink_drop_state();
 }
 
 bool InkDropAnimationControllerImpl::IsVisible() const {
@@ -88,8 +88,8 @@ void InkDropAnimationControllerImpl::AnimateToState(
 
   // Make sure the ink drop starts from the HIDDEN state it was going to auto
   // transition to it.
-  if (ink_drop_animation_->GetTargetInkDropState() == InkDropState::HIDDEN ||
-      ShouldAnimateToHidden(ink_drop_animation_->GetTargetInkDropState())) {
+  if (ink_drop_animation_->target_ink_drop_state() == InkDropState::HIDDEN ||
+      ShouldAnimateToHidden(ink_drop_animation_->target_ink_drop_state())) {
     ink_drop_animation_->HideImmediately();
   }
   ink_drop_animation_->AnimateToState(ink_drop_state);

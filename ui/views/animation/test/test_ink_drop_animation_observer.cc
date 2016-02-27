@@ -58,7 +58,7 @@ void TestInkDropAnimationObserver::InkDropAnimationStarted(
   last_animation_state_started_ = ink_drop_state;
   if (ink_drop_animation_) {
     target_state_at_last_animation_started_ =
-        ink_drop_animation_->GetTargetInkDropState();
+        ink_drop_animation_->target_ink_drop_state();
   }
 }
 
@@ -70,7 +70,7 @@ void TestInkDropAnimationObserver::InkDropAnimationEnded(
   last_animation_ended_reason_ = reason;
   if (ink_drop_animation_) {
     target_state_at_last_animation_ended_ =
-        ink_drop_animation_->GetTargetInkDropState();
+        ink_drop_animation_->target_ink_drop_state();
   }
 }
 

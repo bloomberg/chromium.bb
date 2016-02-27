@@ -375,6 +375,10 @@ bool CustomButton::ShouldEnterPushedState(const ui::Event& event) {
   return IsTriggerableEvent(event);
 }
 
+bool CustomButton::ShouldShowInkDropHover() const {
+  return enabled() && IsMouseHovered() && !InDrag();
+}
+
 bool CustomButton::ShouldEnterHoveredState() {
   if (!visible())
     return false;
@@ -397,10 +401,6 @@ bool CustomButton::ShouldEnterHoveredState() {
 #endif
 
   return check_mouse_position && IsMouseHovered();
-}
-
-bool CustomButton::ShouldShowInkDropHover() const {
-  return enabled() && IsMouseHovered() && !InDrag();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

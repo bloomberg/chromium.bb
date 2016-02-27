@@ -18,6 +18,8 @@
 
 namespace views {
 
+class InkDropAnimation;
+class InkDropHover;
 class LabelButtonBorder;
 class Painter;
 
@@ -99,6 +101,10 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
   void Layout() override;
   const char* GetClassName() const override;
   void EnableCanvasFlippingForRTLUI(bool flip) override;
+  void AddInkDropLayer(ui::Layer* ink_drop_layer) override;
+  void RemoveInkDropLayer(ui::Layer* ink_drop_layer) override;
+  scoped_ptr<InkDropAnimation> CreateInkDropAnimation() const override;
+  scoped_ptr<InkDropHover> CreateInkDropHover() const override;
 
  protected:
   ImageView* image() const { return image_; }
@@ -161,6 +167,11 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
   // The image and label shown in the button.
   ImageView* image_;
   Label* label_;
+
+  // A separate view is necessary to hold the ink drop layer so that it can
+  // be stacked below |image_| and on top of |label_|, without resorting to
+  // drawing |label_| on a layer (which can mess with subpixel anti-aliasing).
+  View* ink_drop_container_;
 
   // The cached font lists in the normal and bold style.
   gfx::FontList cached_normal_font_list_;

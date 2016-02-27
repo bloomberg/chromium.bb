@@ -12,7 +12,9 @@
 #include "ui/views/views_export.h"
 
 namespace ui {
+class CallbackLayerAnimationObserver;
 class Layer;
+class LayerAnimationObserver;
 }  // namespace ui
 
 namespace views {
@@ -24,6 +26,17 @@ namespace views {
 // the doc here.
 class VIEWS_EXPORT InkDropAnimation {
  public:
+  // TODO(bruthig): Remove UseFastAnimations() and kSlowAnimationDurationFactor.
+  // See http://crbug.com/584681
+
+  // Checks CommandLine switches to determine if the visual feedback should have
+  // a fast animations speed.
+  static bool UseFastAnimations();
+
+  // The factor at which to increase the animation durations if
+  // UseFastAnimations() returns true.
+  static const double kSlowAnimationDurationFactor;
+
   // The opacity of the ink drop when it is not visible.
   static const float kHiddenOpacity;
 
@@ -37,15 +50,19 @@ class VIEWS_EXPORT InkDropAnimation {
     observer_ = observer;
   }
 
-  // Gets the target InkDropState, i.e. the last |ink_drop_state| passed to
-  // AnimateToState() or set by HideImmediately().
-  virtual InkDropState GetTargetInkDropState() const = 0;
-
   // Animates from the current InkDropState to the new |ink_drop_state|.
   //
   // NOTE: GetTargetInkDropState() should return the new |ink_drop_state| value
   // to any observers being notified as a result of the call.
-  virtual void AnimateToState(InkDropState ink_drop_state) = 0;
+  void AnimateToState(InkDropState ink_drop_state);
+
+  InkDropState target_ink_drop_state() const { return target_ink_drop_state_; }
+
+  // Immediately aborts all in-progress animations and hides the ink drop.
+  //
+  // NOTE: This will NOT raise InkDropAnimation(Started|Ended) events for the
+  // state transition to HIDDEN!
+  void HideImmediately();
 
   // The root Layer that can be added in to a Layer tree.
   virtual ui::Layer* GetRootLayer() = 0;
@@ -55,22 +72,37 @@ class VIEWS_EXPORT InkDropAnimation {
   // animates to the target HIDDEN state.
   virtual bool IsVisible() const = 0;
 
-  // Immediately aborts all in-progress animations and hides the ink drop.
-  //
-  // NOTE: This will NOT raise InkDropAnimation(Started|Ended) events for the
-  // state transition to HIDDEN!
-  virtual void HideImmediately() = 0;
-
  protected:
-  // Notify the |observers_| that an animation has started.
-  void NotifyAnimationStarted(InkDropState ink_drop_state);
+  // Animates the ripple from the |old_ink_drop_state| to the
+  // |new_ink_drop_state|. |observer| is added to all LayerAnimationSequence's
+  // used if not null.
+  virtual void AnimateStateChange(InkDropState old_ink_drop_state,
+                                  InkDropState new_ink_drop_state,
+                                  ui::LayerAnimationObserver* observer) = 0;
 
-  // Notify the |observers_| that an animation has ended.
-  void NotifyAnimationEnded(
-      InkDropState ink_drop_state,
-      InkDropAnimationObserver::InkDropAnimationEndedReason reason);
+  // Updates the transforms, opacity, and visibility to a HIDDEN state.
+  virtual void SetStateToHidden() = 0;
+
+  virtual void AbortAllAnimations() = 0;
 
  private:
+  // The Callback invoked when all of the animation sequences for the specific
+  // |ink_drop_state| animation have started. |observer| is the
+  // ui::CallbackLayerAnimationObserver which is notifying the callback.
+  void AnimationStartedCallback(
+      InkDropState ink_drop_state,
+      const ui::CallbackLayerAnimationObserver& observer);
+
+  // The Callback invoked when all of the animation sequences for the specific
+  // |ink_drop_state| animation have finished. |observer| is the
+  // ui::CallbackLayerAnimationObserver which is notifying the callback.
+  bool AnimationEndedCallback(
+      InkDropState ink_drop_state,
+      const ui::CallbackLayerAnimationObserver& observer);
+
+  // The target InkDropState.
+  InkDropState target_ink_drop_state_;
+
   InkDropAnimationObserver* observer_;
 
   DISALLOW_COPY_AND_ASSIGN(InkDropAnimation);

@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ui/views/animation/ink_drop_animation_controller_impl.h"
+
 #include "base/macros.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
-#include "ui/views/animation/ink_drop_animation_controller_impl.h"
 #include "ui/views/animation/test/test_ink_drop_host.h"
 
 namespace views {

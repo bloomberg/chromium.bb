@@ -21,7 +21,7 @@ class InkDropAnimationController;
 class InkDropHost;
 class View;
 
-// An InkDropDelegate that handles animations for toolbar buttons.
+// An InkDropDelegate that handles animations for things that act like buttons.
 class VIEWS_EXPORT ButtonInkDropDelegate : public InkDropDelegate,
                                            public ui::EventHandler {
  public:

@@ -37,6 +37,8 @@
       'animation/ink_drop_state.h',
       'animation/scroll_animator.cc',
       'animation/scroll_animator.h',
+      'animation/flood_fill_ink_drop_animation.cc',
+      'animation/flood_fill_ink_drop_animation.h',
       'animation/square_ink_drop_animation.cc',
       'animation/square_ink_drop_animation.h',
       'background.cc',
@@ -480,6 +482,8 @@
       'widget/desktop_aura/desktop_window_tree_host_ozone.cc',
     ],
     'views_test_support_sources': [
+      'animation/test/flood_fill_ink_drop_animation_test_api.cc',
+      'animation/test/flood_fill_ink_drop_animation_test_api.h',
       'animation/test/ink_drop_animation_test_api.cc',
       'animation/test/ink_drop_animation_test_api.h',
       'animation/test/square_ink_drop_animation_test_api.cc',

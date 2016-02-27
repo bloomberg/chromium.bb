@@ -9,10 +9,12 @@
 #include "base/memory/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/views/animation/flood_fill_ink_drop_animation.h"
 #include "ui/views/animation/ink_drop_animation.h"
 #include "ui/views/animation/ink_drop_animation_observer.h"
 #include "ui/views/animation/ink_drop_state.h"
 #include "ui/views/animation/square_ink_drop_animation.h"
+#include "ui/views/animation/test/flood_fill_ink_drop_animation_test_api.h"
 #include "ui/views/animation/test/ink_drop_animation_test_api.h"
 #include "ui/views/animation/test/square_ink_drop_animation_test_api.h"
 #include "ui/views/animation/test/test_ink_drop_animation_observer.h"
@@ -22,7 +24,10 @@ namespace test {
 
 // Represents all the derivatives of the InkDropAnimation class. To be used with
 // the InkDropAnimationTest fixture to test all derviatives.
-enum InkDropAnimationTestTypes { SQUARE_INK_DROP_ANIMATION };
+enum InkDropAnimationTestTypes {
+  SQUARE_INK_DROP_ANIMATION,
+  FLOOD_FILL_INK_DROP_ANIMATION
+};
 
 // Test fixture for all InkDropAnimation class derivatives.
 //
@@ -52,12 +57,21 @@ class InkDropAnimationTest
 InkDropAnimationTest::InkDropAnimationTest() {
   switch (GetParam()) {
     case SQUARE_INK_DROP_ANIMATION: {
-      SquareInkDropAnimation* typed_ink_drop_animation =
+      SquareInkDropAnimation* square_ink_drop_animation =
           new SquareInkDropAnimation(gfx::Size(10, 10), 2, gfx::Size(8, 8), 1,
                                      gfx::Point(), SK_ColorBLACK);
-      ink_drop_animation_.reset(typed_ink_drop_animation);
+      ink_drop_animation_.reset(square_ink_drop_animation);
       test_api_.reset(
-          new SquareInkDropAnimationTestApi(typed_ink_drop_animation));
+          new SquareInkDropAnimationTestApi(square_ink_drop_animation));
+      break;
+    }
+    case FLOOD_FILL_INK_DROP_ANIMATION: {
+      FloodFillInkDropAnimation* flood_fill_ink_drop_animation =
+          new FloodFillInkDropAnimation(gfx::Size(10, 10), gfx::Point(),
+                                        SK_ColorBLACK);
+      ink_drop_animation_.reset(flood_fill_ink_drop_animation);
+      test_api_.reset(
+          new FloodFillInkDropAnimationTestApi(flood_fill_ink_drop_animation));
       break;
     }
   }
@@ -72,16 +86,17 @@ InkDropAnimationTest::~InkDropAnimationTest() {}
 // (it's a prefix for the generated test cases)
 INSTANTIATE_TEST_CASE_P(,
                         InkDropAnimationTest,
-                        testing::Values(SQUARE_INK_DROP_ANIMATION));
+                        testing::Values(SQUARE_INK_DROP_ANIMATION,
+                                        FLOOD_FILL_INK_DROP_ANIMATION));
 
 TEST_P(InkDropAnimationTest, InitialStateAfterConstruction) {
   EXPECT_EQ(views::InkDropState::HIDDEN,
-            ink_drop_animation_->GetTargetInkDropState());
+            ink_drop_animation_->target_ink_drop_state());
 }
 
 // Verify no animations are used when animating from HIDDEN to HIDDEN.
 TEST_P(InkDropAnimationTest, AnimateToHiddenFromInvisibleState) {
-  EXPECT_EQ(InkDropState::HIDDEN, ink_drop_animation_->GetTargetInkDropState());
+  EXPECT_EQ(InkDropState::HIDDEN, ink_drop_animation_->target_ink_drop_state());
 
   ink_drop_animation_->AnimateToState(InkDropState::HIDDEN);
   EXPECT_EQ(1, observer_.last_animation_started_ordinal());
@@ -96,7 +111,7 @@ TEST_P(InkDropAnimationTest, AnimateToHiddenFromVisibleState) {
   EXPECT_EQ(1, observer_.last_animation_started_ordinal());
   EXPECT_EQ(2, observer_.last_animation_ended_ordinal());
 
-  EXPECT_NE(InkDropState::HIDDEN, ink_drop_animation_->GetTargetInkDropState());
+  EXPECT_NE(InkDropState::HIDDEN, ink_drop_animation_->target_ink_drop_state());
 
   ink_drop_animation_->AnimateToState(InkDropState::HIDDEN);
   test_api_->CompleteAnimations();
@@ -206,7 +221,7 @@ TEST_P(InkDropAnimationTest, InkDropStatesPersistWhenCallingAnimateToState) {
   ink_drop_animation_->AnimateToState(views::InkDropState::ACTION_PENDING);
   ink_drop_animation_->AnimateToState(views::InkDropState::ACTIVATED);
   EXPECT_EQ(views::InkDropState::ACTIVATED,
-            ink_drop_animation_->GetTargetInkDropState());
+            ink_drop_animation_->target_ink_drop_state());
 }
 
 TEST_P(InkDropAnimationTest, HideImmediatelyWithoutActiveAnimations) {
@@ -216,13 +231,13 @@ TEST_P(InkDropAnimationTest, HideImmediatelyWithoutActiveAnimations) {
   EXPECT_EQ(2, observer_.last_animation_ended_ordinal());
 
   EXPECT_FALSE(test_api_->HasActiveAnimations());
-  EXPECT_NE(InkDropState::HIDDEN, ink_drop_animation_->GetTargetInkDropState());
+  EXPECT_NE(InkDropState::HIDDEN, ink_drop_animation_->target_ink_drop_state());
 
   ink_drop_animation_->HideImmediately();
 
   EXPECT_FALSE(test_api_->HasActiveAnimations());
   EXPECT_EQ(views::InkDropState::HIDDEN,
-            ink_drop_animation_->GetTargetInkDropState());
+            ink_drop_animation_->target_ink_drop_state());
   EXPECT_EQ(1, observer_.last_animation_started_ordinal());
   EXPECT_EQ(2, observer_.last_animation_ended_ordinal());
 
@@ -235,14 +250,14 @@ TEST_P(InkDropAnimationTest, HideImmediatelyWithoutActiveAnimations) {
 TEST_P(InkDropAnimationTest, HideImmediatelyWithActiveAnimations) {
   ink_drop_animation_->AnimateToState(views::InkDropState::ACTION_PENDING);
   EXPECT_TRUE(test_api_->HasActiveAnimations());
-  EXPECT_NE(InkDropState::HIDDEN, ink_drop_animation_->GetTargetInkDropState());
+  EXPECT_NE(InkDropState::HIDDEN, ink_drop_animation_->target_ink_drop_state());
   EXPECT_EQ(1, observer_.last_animation_started_ordinal());
 
   ink_drop_animation_->HideImmediately();
 
   EXPECT_FALSE(test_api_->HasActiveAnimations());
   EXPECT_EQ(views::InkDropState::HIDDEN,
-            ink_drop_animation_->GetTargetInkDropState());
+            ink_drop_animation_->target_ink_drop_state());
   EXPECT_EQ(1, observer_.last_animation_started_ordinal());
   EXPECT_EQ(2, observer_.last_animation_ended_ordinal());
   EXPECT_EQ(InkDropState::ACTION_PENDING,
@@ -255,12 +270,12 @@ TEST_P(InkDropAnimationTest, HideImmediatelyWithActiveAnimations) {
 }
 
 TEST_P(InkDropAnimationTest, AnimateToVisibleFromHidden) {
-  EXPECT_EQ(InkDropState::HIDDEN, ink_drop_animation_->GetTargetInkDropState());
+  EXPECT_EQ(InkDropState::HIDDEN, ink_drop_animation_->target_ink_drop_state());
   ink_drop_animation_->AnimateToState(views::InkDropState::ACTION_PENDING);
   EXPECT_TRUE(ink_drop_animation_->IsVisible());
 }
 
-// Verifies that the value of InkDropAnimation::GetTargetInkDropState() returns
+// Verifies that the value of InkDropAnimation::target_ink_drop_state() returns
 // the most recent value passed to AnimateToState() when notifying observers
 // that an animation has started within the AnimateToState() function call.
 TEST_P(InkDropAnimationTest, TargetInkDropStateOnAnimationStarted) {
@@ -272,7 +287,7 @@ TEST_P(InkDropAnimationTest, TargetInkDropStateOnAnimationStarted) {
             observer_.target_state_at_last_animation_started());
 }
 
-// Verifies that the value of InkDropAnimation::GetTargetInkDropState() returns
+// Verifies that the value of InkDropAnimation::target_ink_drop_state() returns
 // the most recent value passed to AnimateToState() when notifying observers
 // that an animation has ended within the AnimateToState() function call.
 TEST_P(InkDropAnimationTest, TargetInkDropStateOnAnimationEnded) {

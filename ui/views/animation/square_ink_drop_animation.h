@@ -10,23 +10,19 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/gfx/animation/tween.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/transform.h"
 #include "ui/views/animation/ink_drop_animation.h"
 #include "ui/views/animation/ink_drop_state.h"
 #include "ui/views/views_export.h"
 
-namespace gfx {
-class Point;
-}  // namespace gfx
-
 namespace ui {
-class CallbackLayerAnimationObserver;
 class Layer;
-class LayerAnimationObserver;
 }  // namespace ui
 
 namespace views {
@@ -64,10 +60,7 @@ class VIEWS_EXPORT SquareInkDropAnimation : public InkDropAnimation {
 
   // InkDropAnimation:
   ui::Layer* GetRootLayer() override;
-  InkDropState GetTargetInkDropState() const override;
   bool IsVisible() const override;
-  void AnimateToState(InkDropState ink_drop_state) override;
-  void HideImmediately() override;
 
  private:
   friend class test::SquareInkDropAnimationTestApi;
@@ -93,12 +86,12 @@ class VIEWS_EXPORT SquareInkDropAnimation : public InkDropAnimation {
 
   float GetCurrentOpacity() const;
 
-  // Animates the ripple from the |old_ink_drop_state| to the
-  // |new_ink_drop_state|. |observer| is added to all LayerAnimationSequence's
-  // used if not null.
+  // InkDropAnimation:
   void AnimateStateChange(InkDropState old_ink_drop_state,
                           InkDropState new_ink_drop_state,
-                          ui::LayerAnimationObserver* observer);
+                          ui::LayerAnimationObserver* observer) override;
+  void SetStateToHidden() override;
+  void AbortAllAnimations() override;
 
   // Animates all of the painted shape layers to the specified |transforms|. The
   // animation will be configured with the given |duration|, |tween|, and
@@ -110,9 +103,6 @@ class VIEWS_EXPORT SquareInkDropAnimation : public InkDropAnimation {
       ui::LayerAnimator::PreemptionStrategy preemption_strategy,
       gfx::Tween::Type tween,
       ui::LayerAnimationObserver* observer);
-
-  // Updates the transforms, opacity, and visibility to a HIDDEN state.
-  void SetStateToHidden();
 
   // Sets the |transforms| on all of the shape layers. Note that this does not
   // perform any animation.
@@ -151,22 +141,6 @@ class VIEWS_EXPORT SquareInkDropAnimation : public InkDropAnimation {
   // Adds and configures a new |painted_shape| layer to |painted_layers_|.
   void AddPaintLayer(PaintedShape painted_shape);
 
-  void AbortAllAnimations();
-
-  // The Callback invoked when all of the animation sequences for the specific
-  // |ink_drop_state| animation have started. |observer| is the
-  // ui::CallbackLayerAnimationObserver which is notifying the callback.
-  void AnimationStartedCallback(
-      InkDropState ink_drop_state,
-      const ui::CallbackLayerAnimationObserver& observer);
-
-  // The Callback invoked when all of the animation sequences for the specific
-  // |ink_drop_state| animation have finished. |observer| is the
-  // ui::CallbackLayerAnimationObserver which is notifying the callback.
-  bool AnimationEndedCallback(
-      InkDropState ink_drop_state,
-      const ui::CallbackLayerAnimationObserver& observer);
-
   // Maximum size that an ink drop will be drawn to for any InkDropState whose
   // final frame should be large.
   gfx::Size large_size_;
@@ -196,9 +170,6 @@ class VIEWS_EXPORT SquareInkDropAnimation : public InkDropAnimation {
 
   // ui::Layers for all of the painted shape layers that compose the ink drop.
   scoped_ptr<ui::Layer> painted_layers_[PAINTED_SHAPE_COUNT];
-
-  // The current ink drop state.
-  InkDropState ink_drop_state_;
 
   DISALLOW_COPY_AND_ASSIGN(SquareInkDropAnimation);
 };

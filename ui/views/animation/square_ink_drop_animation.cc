@@ -6,11 +6,7 @@
 
 #include <algorithm>
 
-#include "base/command_line.h"
 #include "base/logging.h"
-#include "third_party/skia/include/core/SkColor.h"
-#include "ui/base/ui_base_switches.h"
-#include "ui/compositor/callback_layer_animation_observer.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
@@ -106,19 +102,6 @@ enum InkDropSubAnimations {
 // The scale factor used to burst the QUICK_ACTION bubble as it fades out.
 const float kQuickActionBurstScale = 1.3f;
 
-// A multiplicative factor used to slow down InkDropState animations.
-const int kSlowAnimationDurationFactor = 3;
-
-// Checks CommandLine switches to determine if the visual feedback should have
-// a fast animations speed.
-bool UseFastAnimations() {
-  static bool fast =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          (::switches::kMaterialDesignInkDropAnimationSpeed)) !=
-      ::switches::kMaterialDesignInkDropAnimationSpeedSlow;
-  return fast;
-}
-
 // Duration constants for InkDropStateSubAnimations. See the
 // InkDropStateSubAnimations enum documentation for more info.
 int kAnimationDurationInMs[] = {
@@ -140,7 +123,9 @@ int kAnimationDurationInMs[] = {
 // Returns the InkDropState sub animation duration for the given |state|.
 base::TimeDelta GetAnimationDuration(InkDropSubAnimations state) {
   return base::TimeDelta::FromMilliseconds(
-      (UseFastAnimations() ? 1 : kSlowAnimationDurationFactor) *
+      (views::InkDropAnimation::UseFastAnimations()
+           ? 1
+           : views::InkDropAnimation::kSlowAnimationDurationFactor) *
       kAnimationDurationInMs[state]);
 }
 
@@ -188,8 +173,7 @@ SquareInkDropAnimation::SquareInkDropAnimation(const gfx::Size& large_size,
           color,
           std::min(large_size_.width(), large_size_.height()) / 2)),
       rect_layer_delegate_(new RectangleLayerDelegate(color, large_size_)),
-      root_layer_(ui::LAYER_NOT_DRAWN),
-      ink_drop_state_(InkDropState::HIDDEN) {
+      root_layer_(ui::LAYER_NOT_DRAWN) {
   root_layer_.set_name("SquareInkDropAnimation:ROOT_LAYER");
 
   for (int i = 0; i < PAINTED_SHAPE_COUNT; ++i)
@@ -215,58 +199,12 @@ ui::Layer* SquareInkDropAnimation::GetRootLayer() {
   return &root_layer_;
 }
 
-InkDropState SquareInkDropAnimation::GetTargetInkDropState() const {
-  return ink_drop_state_;
-}
-
 bool SquareInkDropAnimation::IsVisible() const {
   return root_layer_.visible();
 }
 
 float SquareInkDropAnimation::GetCurrentOpacity() const {
   return root_layer_.opacity();
-}
-
-void SquareInkDropAnimation::AnimateToState(InkDropState ink_drop_state) {
-  // Does not return early if |ink_drop_state_| == |ink_drop_state| for two
-  // reasons.
-  // 1. The attached observers must be notified of all animations started and
-  // ended.
-  // 2. Not all state transitions is are valid, especially no-op transitions,
-  // and these should be detected by DCHECKs in AnimateStateChange().
-
-  // |animation_observer| will be deleted when AnimationEndedCallback() returns
-  // true.
-  // TODO(bruthig): Implement a safer ownership model for the
-  // |animation_observer|.
-  ui::CallbackLayerAnimationObserver* animation_observer =
-      new ui::CallbackLayerAnimationObserver(
-          base::Bind(&SquareInkDropAnimation::AnimationStartedCallback,
-                     base::Unretained(this), ink_drop_state),
-          base::Bind(&SquareInkDropAnimation::AnimationEndedCallback,
-                     base::Unretained(this), ink_drop_state));
-
-  InkDropState old_ink_drop_state = ink_drop_state_;
-  // Assign to |ink_drop_state_| before calling AnimateStateChange() so that any
-  // observers notified as a side effect of the AnimateStateChange() will get
-  // the target InkDropState when calling GetInkDropState().
-  ink_drop_state_ = ink_drop_state;
-
-  if (old_ink_drop_state == InkDropState::HIDDEN &&
-      ink_drop_state_ != InkDropState::HIDDEN) {
-    root_layer_.SetVisible(true);
-  }
-
-  AnimateStateChange(old_ink_drop_state, ink_drop_state_, animation_observer);
-  animation_observer->SetActive();
-  // |this| may be deleted! |animation_observer| might synchronously call
-  // AnimationEndedCallback which can delete |this|.
-}
-
-void SquareInkDropAnimation::HideImmediately() {
-  AbortAllAnimations();
-  SetStateToHidden();
-  ink_drop_state_ = InkDropState::HIDDEN;
 }
 
 std::string SquareInkDropAnimation::ToLayerName(PaintedShape painted_shape) {
@@ -424,6 +362,21 @@ void SquareInkDropAnimation::AnimateStateChange(
   }
 }
 
+void SquareInkDropAnimation::SetStateToHidden() {
+  InkDropTransforms transforms;
+  // Use non-zero size to avoid visual anomalies.
+  CalculateCircleTransforms(gfx::Size(1, 1), &transforms);
+  SetTransforms(transforms);
+  root_layer_.SetOpacity(InkDropAnimation::kHiddenOpacity);
+  root_layer_.SetVisible(false);
+}
+
+void SquareInkDropAnimation::AbortAllAnimations() {
+  root_layer_.GetAnimator()->AbortAllAnimations();
+  for (int i = 0; i < PAINTED_SHAPE_COUNT; ++i)
+    painted_layers_[i]->GetAnimator()->AbortAllAnimations();
+}
+
 void SquareInkDropAnimation::AnimateToTransforms(
     const InkDropTransforms transforms,
     base::TimeDelta duration,
@@ -446,15 +399,6 @@ void SquareInkDropAnimation::AnimateToTransforms(
 
     animator->StartAnimation(sequence);
   }
-}
-
-void SquareInkDropAnimation::SetStateToHidden() {
-  InkDropTransforms transforms;
-  // Use non-zero size to avoid visual anomalies.
-  CalculateCircleTransforms(gfx::Size(1, 1), &transforms);
-  SetTransforms(transforms);
-  root_layer_.SetOpacity(InkDropAnimation::kHiddenOpacity);
-  root_layer_.SetVisible(false);
 }
 
 void SquareInkDropAnimation::SetTransforms(const InkDropTransforms transforms) {
@@ -584,30 +528,6 @@ void SquareInkDropAnimation::AddPaintLayer(PaintedShape painted_shape) {
   layer->set_name("PAINTED_SHAPE_COUNT:" + ToLayerName(painted_shape));
 
   painted_layers_[painted_shape].reset(layer);
-}
-
-void SquareInkDropAnimation::AbortAllAnimations() {
-  root_layer_.GetAnimator()->AbortAllAnimations();
-  for (int i = 0; i < PAINTED_SHAPE_COUNT; ++i)
-    painted_layers_[i]->GetAnimator()->AbortAllAnimations();
-}
-
-void SquareInkDropAnimation::AnimationStartedCallback(
-    InkDropState ink_drop_state,
-    const ui::CallbackLayerAnimationObserver& observer) {
-  NotifyAnimationStarted(ink_drop_state);
-}
-
-bool SquareInkDropAnimation::AnimationEndedCallback(
-    InkDropState ink_drop_state,
-    const ui::CallbackLayerAnimationObserver& observer) {
-  if (ink_drop_state == InkDropState::HIDDEN)
-    SetStateToHidden();
-  NotifyAnimationEnded(ink_drop_state,
-                       observer.aborted_count()
-                           ? InkDropAnimationObserver::PRE_EMPTED
-                           : InkDropAnimationObserver::SUCCESS);
-  return true;
 }
 
 }  // namespace views
