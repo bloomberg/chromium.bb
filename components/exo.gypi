@@ -24,6 +24,9 @@
         '../ui/gl/gl.gyp:gl',
         '../ui/views/views.gyp:views',
       ],
+      'export_dependent_settings': [
+        '../ui/views/views.gyp:views',
+      ],
       'sources': [
         # Note: sources list duplicated in GN build.
         'exo/buffer.cc',
