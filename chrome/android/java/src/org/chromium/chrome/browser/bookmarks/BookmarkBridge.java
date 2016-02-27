@@ -159,6 +159,76 @@ public class BookmarkBridge {
     }
 
     /**
+     * Contains data about a bookmark or bookmark folder.
+     */
+    public static class BookmarkItem {
+
+        private final String mTitle;
+        private final String mUrl;
+        private final BookmarkId mId;
+        private final boolean mIsFolder;
+        private final BookmarkId mParentId;
+        private final boolean mIsEditable;
+        private final boolean mIsManaged;
+
+        private BookmarkItem(BookmarkId id, String title, String url, boolean isFolder,
+                BookmarkId parentId, boolean isEditable, boolean isManaged) {
+            mId = id;
+            mTitle = title;
+            mUrl = url;
+            mIsFolder = isFolder;
+            mParentId = parentId;
+            mIsEditable = isEditable;
+            mIsManaged = isManaged;
+        }
+
+        /** @return Title of the bookmark item. */
+        public String getTitle() {
+            return mTitle;
+        }
+
+        /** @return Url of the bookmark item. */
+        public String getUrl() {
+            return mUrl;
+        }
+
+        /** @return Id of the bookmark item. */
+        public BookmarkId getId() {
+            return mId;
+        }
+
+        /** @return Whether item is a folder or a bookmark. */
+        public boolean isFolder() {
+            return mIsFolder;
+        }
+
+        /** @return Parent id of the bookmark item. */
+        public BookmarkId getParentId() {
+            return mParentId;
+        }
+
+        /** @return Whether this bookmark can be edited. */
+        public boolean isEditable() {
+            return mIsEditable;
+        }
+
+        /**@return Whether this bookmark's URL can be edited */
+        public boolean isUrlEditable() {
+            return isEditable() && mId.getType() == BookmarkType.NORMAL;
+        }
+
+        /**@return Whether this bookmark can be moved */
+        public boolean isMovable() {
+            return isEditable() && mId.getType() == BookmarkType.NORMAL;
+        }
+
+        /** @return Whether this is a managed bookmark. */
+        public boolean isManaged() {
+            return mIsManaged;
+        }
+    }
+
+    /**
      * Handler to fetch the bookmarks, titles, urls and folder hierarchy.
      * @param profile Profile instance corresponding to the active profile.
      */
@@ -755,6 +825,44 @@ public class BookmarkBridge {
         return pairList;
     }
 
+    /**
+     * Details about callbacks that need to be called once the bookmark model has loaded.
+     */
+    private static class DelayedBookmarkCallback {
+
+        private static final int GET_BOOKMARKS_FOR_FOLDER = 0;
+        private static final int GET_CURRENT_FOLDER_HIERARCHY = 1;
+
+        private final BookmarksCallback mCallback;
+        private final BookmarkId mFolderId;
+        private final int mCallbackMethod;
+        private final BookmarkBridge mHandler;
+
+        private DelayedBookmarkCallback(BookmarkId folderId, BookmarksCallback callback,
+                int method, BookmarkBridge handler) {
+            mFolderId = folderId;
+            mCallback = callback;
+            mCallbackMethod = method;
+            mHandler = handler;
+        }
+
+        /**
+         * Invoke the callback method.
+         */
+        private void callCallbackMethod() {
+            switch (mCallbackMethod) {
+                case GET_BOOKMARKS_FOR_FOLDER:
+                    mHandler.getBookmarksForFolder(mFolderId, mCallback);
+                    break;
+                case GET_CURRENT_FOLDER_HIERARCHY:
+                    mHandler.getCurrentFolderHierarchy(mFolderId, mCallback);
+                    break;
+                default:
+                    assert false;
+                    break;
+            }
+        }
+    }
 
     private native BookmarkItem nativeGetBookmarkByID(long nativeBookmarkBridge, long id,
             int type);
@@ -806,113 +914,4 @@ public class BookmarkBridge {
     private native boolean nativeIsDoingExtensiveChanges(long nativeBookmarkBridge);
     private native void nativeDestroy(long nativeBookmarkBridge);
     private static native boolean nativeIsEditBookmarksEnabled(long nativeBookmarkBridge);
-
-    /**
-     * Simple object representing the bookmark item.
-     */
-    public static class BookmarkItem {
-
-        private final String mTitle;
-        private final String mUrl;
-        private final BookmarkId mId;
-        private final boolean mIsFolder;
-        private final BookmarkId mParentId;
-        private final boolean mIsEditable;
-        private final boolean mIsManaged;
-
-        private BookmarkItem(BookmarkId id, String title, String url, boolean isFolder,
-                BookmarkId parentId, boolean isEditable, boolean isManaged) {
-            mId = id;
-            mTitle = title;
-            mUrl = url;
-            mIsFolder = isFolder;
-            mParentId = parentId;
-            mIsEditable = isEditable;
-            mIsManaged = isManaged;
-        }
-
-        /** @return Title of the bookmark item. */
-        public String getTitle() {
-            return mTitle;
-        }
-
-        /** @return Url of the bookmark item. */
-        public String getUrl() {
-            return mUrl;
-        }
-
-        /** @return Id of the bookmark item. */
-        public BookmarkId getId() {
-            return mId;
-        }
-
-        /** @return Whether item is a folder or a bookmark. */
-        public boolean isFolder() {
-            return mIsFolder;
-        }
-
-        /** @return Parent id of the bookmark item. */
-        public BookmarkId getParentId() {
-            return mParentId;
-        }
-
-        /** @return Whether this bookmark can be edited. */
-        public boolean isEditable() {
-            return mIsEditable;
-        }
-
-        /**@return Whether this bookmark's URL can be edited */
-        public boolean isUrlEditable() {
-            return isEditable() && mId.getType() == BookmarkType.NORMAL;
-        }
-
-        /**@return Whether this bookmark can be moved */
-        public boolean isMovable() {
-            return isEditable() && mId.getType() == BookmarkType.NORMAL;
-        }
-
-        /** @return Whether this is a managed bookmark. */
-        public boolean isManaged() {
-            return mIsManaged;
-        }
-    }
-
-    /**
-     * Details about callbacks that need to be called once the bookmark model has loaded.
-     */
-    private static class DelayedBookmarkCallback {
-
-        private static final int GET_BOOKMARKS_FOR_FOLDER = 0;
-        private static final int GET_CURRENT_FOLDER_HIERARCHY = 1;
-
-        private final BookmarksCallback mCallback;
-        private final BookmarkId mFolderId;
-        private final int mCallbackMethod;
-        private final BookmarkBridge mHandler;
-
-        private DelayedBookmarkCallback(BookmarkId folderId, BookmarksCallback callback,
-                int method, BookmarkBridge handler) {
-            mFolderId = folderId;
-            mCallback = callback;
-            mCallbackMethod = method;
-            mHandler = handler;
-        }
-
-        /**
-         * Invoke the callback method.
-         */
-        private void callCallbackMethod() {
-            switch (mCallbackMethod) {
-                case GET_BOOKMARKS_FOR_FOLDER:
-                    mHandler.getBookmarksForFolder(mFolderId, mCallback);
-                    break;
-                case GET_CURRENT_FOLDER_HIERARCHY:
-                    mHandler.getCurrentFolderHierarchy(mFolderId, mCallback);
-                    break;
-                default:
-                    assert false;
-                    break;
-            }
-        }
-    }
 }
