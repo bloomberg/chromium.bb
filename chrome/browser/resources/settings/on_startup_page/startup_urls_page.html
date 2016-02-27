@@ -1,12 +1,13 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-dialog/paper-dialog.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
+<link rel="import" href="chrome://md-settings/settings_dialog_css.html">
 <link rel="import" href="chrome://md-settings/settings_shared_css.html">
 
 <dom-module id="settings-startup-urls-page">
-  <link rel="import" type="css" href="chrome://md-settings/settings_dialog.css">
   <link rel="import" type="css" href="on_startup_shared.css">
   <template>
+    <style include="settings-dialog"></style>
     <style include="settings-shared"></style>
     <div class="list-frame vertical-list">
       <template is="dom-repeat" items="[[startupPages_]]">

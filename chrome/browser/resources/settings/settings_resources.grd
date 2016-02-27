@@ -130,8 +130,8 @@
       <structure name="IDR_SETTINGS_CR_SETTINGS_SUBHEADER_JS"
                  file="settings_page/settings_subheader.js"
                  type="chrome_html" />
-      <structure name="IDR_SETTINGS_CR_SETTINGS_DIALOG_CSS"
-                 file="settings_dialog.css"
+      <structure name="IDR_SETTINGS_CR_SETTINGS_DIALOG_CSS_HTML"
+                 file="settings_dialog_css.html"
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_CR_SETTINGS_PAGE_CSS"
                  file="settings_page.css"
