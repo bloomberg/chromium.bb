@@ -23,24 +23,29 @@ void PaintChunker::updateCurrentPaintChunkProperties(const PaintChunkProperties&
     m_currentProperties = properties;
 }
 
-void PaintChunker::incrementDisplayItemIndex()
+void PaintChunker::incrementDisplayItemIndex(ItemBehavior behavior)
 {
     ASSERT(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
 
     if (m_chunks.isEmpty()) {
         PaintChunk newChunk(0, 1, m_currentProperties);
         m_chunks.append(newChunk);
+        m_chunkBehavior.append(behavior);
         return;
     }
 
     auto& lastChunk = m_chunks.last();
-    if (m_currentProperties == lastChunk.properties) {
+    bool canContinueChunk = m_currentProperties == lastChunk.properties
+        && behavior != RequiresSeparateChunk
+        && m_chunkBehavior.last() != RequiresSeparateChunk;
+    if (canContinueChunk) {
         lastChunk.endIndex++;
         return;
     }
 
     PaintChunk newChunk(lastChunk.endIndex, lastChunk.endIndex + 1, m_currentProperties);
     m_chunks.append(newChunk);
+    m_chunkBehavior.append(behavior);
 }
 
 void PaintChunker::decrementDisplayItemIndex()
@@ -49,15 +54,18 @@ void PaintChunker::decrementDisplayItemIndex()
     ASSERT(!m_chunks.isEmpty());
 
     auto& lastChunk = m_chunks.last();
-    if ((lastChunk.endIndex - lastChunk.beginIndex) > 1)
+    if ((lastChunk.endIndex - lastChunk.beginIndex) > 1) {
         lastChunk.endIndex--;
-    else
+    } else {
         m_chunks.removeLast();
+        m_chunkBehavior.removeLast();
+    }
 }
 
 void PaintChunker::clear()
 {
     m_chunks.clear();
+    m_chunkBehavior.clear();
     m_currentProperties = PaintChunkProperties();
 }
 
@@ -65,6 +73,7 @@ Vector<PaintChunk> PaintChunker::releasePaintChunks()
 {
     Vector<PaintChunk> chunks;
     chunks.swap(m_chunks);
+    m_chunkBehavior.clear();
     m_currentProperties = PaintChunkProperties();
     return chunks;
 }

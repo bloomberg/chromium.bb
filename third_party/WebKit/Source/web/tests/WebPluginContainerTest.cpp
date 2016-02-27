@@ -32,12 +32,19 @@
 
 #include "core/dom/Element.h"
 #include "core/events/KeyboardEvent.h"
+#include "core/layout/LayoutObject.h"
 #include "platform/PlatformEvent.h"
 #include "platform/PlatformKeyboardEvent.h"
+#include "platform/graphics/GraphicsContext.h"
+#include "platform/graphics/paint/CullRect.h"
+#include "platform/graphics/paint/ForeignLayerDisplayItem.h"
+#include "platform/graphics/paint/PaintController.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebClipboard.h"
+#include "public/platform/WebCompositorSupport.h"
+#include "public/platform/WebLayer.h"
 #include "public/platform/WebThread.h"
 #include "public/platform/WebUnitTestSupport.h"
 #include "public/web/WebDocument.h"
@@ -79,6 +86,17 @@ public:
 
 protected:
     std::string m_baseURL;
+};
+
+namespace {
+
+template <typename T>
+class CustomPluginWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
+public:
+    WebPlugin* createPlugin(WebLocalFrame* frame, const WebPluginParams& params) override
+    {
+        return new T(frame, params);
+    }
 };
 
 class TestPluginWebFrameClient;
@@ -130,6 +148,8 @@ WebPluginContainer* getWebPluginContainer(WebView* webView, const WebString& id)
     WebElement element = webView->mainFrame()->document().getElementById(id);
     return element.pluginContainer();
 }
+
+} // namespace
 
 TEST_F(WebPluginContainerTest, WindowToLocalPointTest)
 {
@@ -348,21 +368,12 @@ private:
     WebInputEvent::Type m_lastEventType;
 };
 
-class EventTestPluginWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
-    WebPlugin* createPlugin(WebLocalFrame* frame, const WebPluginParams& params) override
-    {
-        if (params.mimeType == WebString::fromUTF8("application/x-webkit-test-webplugin"))
-            return new EventTestPlugin(frame, params);
-        return WebFrameClient::createPlugin(frame, params);
-    }
-};
-
 TEST_F(WebPluginContainerTest, GestureLongPressReachesPlugin)
 {
     URLTestHelpers::registerMockedURLFromBaseURL(
         WebString::fromUTF8(m_baseURL.c_str()),
         WebString::fromUTF8("plugin_container.html"));
-    EventTestPluginWebFrameClient pluginWebFrameClient; // Must outlive webViewHelper.
+    CustomPluginWebFrameClient<EventTestPlugin> pluginWebFrameClient; // Must outlive webViewHelper.
     FrameTestHelpers::WebViewHelper webViewHelper;
     WebView* webView = webViewHelper.initializeAndLoad(m_baseURL + "plugin_container.html", true, &pluginWebFrameClient);
     ASSERT(webView);
@@ -521,15 +532,8 @@ TEST_F(WebPluginContainerTest, TopmostAfterDetachTest)
         }
     };
 
-    class TopmostPluginWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
-        WebPlugin* createPlugin(WebLocalFrame* frame, const WebPluginParams& params) override
-        {
-            return new TopmostPlugin(frame, params);
-        }
-    };
-
     URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("plugin_container.html"));
-    TopmostPluginWebFrameClient pluginWebFrameClient; // Must outlive webViewHelper.
+    CustomPluginWebFrameClient<TopmostPlugin> pluginWebFrameClient; // Must outlive webViewHelper.
     FrameTestHelpers::WebViewHelper webViewHelper;
     WebView* webView = webViewHelper.initializeAndLoad(m_baseURL + "plugin_container.html", true, &pluginWebFrameClient);
     ASSERT(webView);
@@ -551,6 +555,79 @@ TEST_F(WebPluginContainerTest, TopmostAfterDetachTest)
     webViewHelper.reset();
 
     EXPECT_FALSE(pluginContainerImpl->isRectTopmost(topmostRect));
+}
+
+namespace {
+
+class CompositedPlugin : public FakeWebPlugin {
+public:
+    CompositedPlugin(WebLocalFrame* frame, const WebPluginParams& params)
+        : FakeWebPlugin(frame, params)
+        , m_layer(adoptPtr(Platform::current()->compositorSupport()->createLayer()))
+    {
+    }
+
+    WebLayer* webLayer() const { return m_layer.get(); }
+
+    // WebPlugin
+
+    bool initialize(WebPluginContainer* container) override
+    {
+        if (!FakeWebPlugin::initialize(container))
+            return false;
+        container->setWebLayer(m_layer.get());
+        return true;
+    }
+
+    void destroy() override
+    {
+        container()->setWebLayer(nullptr);
+        FakeWebPlugin::destroy();
+    }
+
+private:
+    OwnPtr<WebLayer> m_layer;
+};
+
+class ScopedSPv2 {
+public:
+    ScopedSPv2() { RuntimeEnabledFeatures::setSlimmingPaintV2Enabled(true); }
+    ~ScopedSPv2() { m_featuresBackup.restore(); }
+private:
+    RuntimeEnabledFeatures::Backup m_featuresBackup;
+};
+
+} // namespace
+
+TEST_F(WebPluginContainerTest, CompositedPluginSPv2)
+{
+    ScopedSPv2 enableSPv2;
+    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("plugin.html"));
+    CustomPluginWebFrameClient<CompositedPlugin> webFrameClient;
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    WebView* webView = webViewHelper.initializeAndLoad(m_baseURL + "plugin.html", true, &webFrameClient);
+    ASSERT_TRUE(webView);
+    webView->settings()->setPluginsEnabled(true);
+    webView->resize(WebSize(800, 600));
+    webView->updateAllLifecyclePhases();
+    runPendingTasks();
+
+    WebPluginContainerImpl* container = static_cast<WebPluginContainerImpl*>(getWebPluginContainer(webView, WebString::fromUTF8("plugin")));
+    ASSERT_TRUE(container);
+    RefPtrWillBeRawPtr<Element> element = static_cast<PassRefPtrWillBeRawPtr<Element>>(container->element());
+    const auto* plugin = static_cast<const CompositedPlugin*>(container->plugin());
+
+    OwnPtr<PaintController> paintController = PaintController::create();
+    GraphicsContext graphicsContext(*paintController);
+    container->paint(graphicsContext, CullRect(IntRect(10, 10, 400, 300)));
+    paintController->commitNewDisplayItems();
+
+    const auto& displayItems = paintController->paintArtifact().displayItemList();
+    ASSERT_EQ(1u, displayItems.size());
+    EXPECT_EQ(element->layoutObject(), &displayItems[0].client());
+    ASSERT_EQ(DisplayItem::ForeignLayerPlugin, displayItems[0].type());
+    const auto& foreignLayerDisplayItem = static_cast<const ForeignLayerDisplayItem&>(displayItems[0]);
+    EXPECT_EQ(plugin->webLayer()->ccLayer(), foreignLayerDisplayItem.layer());
 }
 
 } // namespace blink

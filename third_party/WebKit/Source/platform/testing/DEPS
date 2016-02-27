@@ -5,6 +5,8 @@ include_rules = [
     "+base/path_service.h",
     "+base/message_loop",
     "+base/test/test_io_thread.h",
+    "+cc",
+    "-cc/blink",
     "+mojo/edk/embedder",
     "+mojo/edk/test",
 ]

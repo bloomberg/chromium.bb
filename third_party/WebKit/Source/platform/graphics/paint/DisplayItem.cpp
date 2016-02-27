@@ -122,6 +122,14 @@ static WTF::String drawingTypeAsDebugString(DisplayItem::Type type)
     return "Drawing" + specialDrawingTypeAsDebugString(type);
 }
 
+static String foreignLayerTypeAsDebugString(DisplayItem::Type type)
+{
+    switch (type) {
+        DEBUG_STRING_CASE(ForeignLayerPlugin);
+        DEFAULT_CASE;
+    }
+}
+
 static WTF::String clipTypeAsDebugString(DisplayItem::Type type)
 {
     PAINT_PHASE_BASED_DEBUG_STRINGS(ClipBox);
@@ -171,6 +179,10 @@ WTF::String DisplayItem::typeAsDebugString(Type type)
         return drawingTypeAsDebugString(type);
     if (isCachedDrawingType(type))
         return "Cached" + drawingTypeAsDebugString(cachedDrawingTypeToDrawingType(type));
+
+    if (isForeignLayerType(type))
+        return foreignLayerTypeAsDebugString(type);
+
     if (isClipType(type))
         return clipTypeAsDebugString(type);
     if (isEndClipType(type))
