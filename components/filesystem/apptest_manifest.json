@@ -1,5 +1,5 @@
 {
-  "url": "mojo://filesystem_apptests/",
-  "name": "File System Service Apptests",
+  "name": "mojo:filesystem_apptests",
+  "display_name": "File System Service Apptests",
   "capabilities": { "*": [ "*" ] }
 }

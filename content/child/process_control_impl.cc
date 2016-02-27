@@ -9,7 +9,6 @@
 #include "base/stl_util.h"
 #include "content/common/mojo/static_application_loader.h"
 #include "content/public/common/content_client.h"
-#include "url/gurl.h"
 
 namespace content {
 
@@ -17,30 +16,29 @@ ProcessControlImpl::ProcessControlImpl() {
 }
 
 ProcessControlImpl::~ProcessControlImpl() {
-  STLDeleteValues(&url_to_loader_map_);
+  STLDeleteValues(&name_to_loader_map_);
 }
 
 void ProcessControlImpl::LoadApplication(
-    const mojo::String& url,
+    const mojo::String& name,
     mojo::InterfaceRequest<mojo::shell::mojom::ShellClient> request,
     const LoadApplicationCallback& callback) {
   // Only register loaders when we need it.
   if (!has_registered_loaders_) {
-    DCHECK(url_to_loader_map_.empty());
-    RegisterApplicationLoaders(&url_to_loader_map_);
+    DCHECK(name_to_loader_map_.empty());
+    RegisterApplicationLoaders(&name_to_loader_map_);
     has_registered_loaders_ = true;
   }
 
-  GURL application_url = GURL(url.To<std::string>());
-  auto it = url_to_loader_map_.find(application_url);
-  if (it == url_to_loader_map_.end()) {
+  auto it = name_to_loader_map_.find(name);
+  if (it == name_to_loader_map_.end()) {
     callback.Run(false);
     OnLoadFailed();
     return;
   }
 
   callback.Run(true);
-  it->second->Load(application_url, std::move(request));
+  it->second->Load(name, std::move(request));
 }
 
 }  // namespace content

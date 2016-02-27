@@ -25,7 +25,7 @@ ShellContentUtilityClient::~ShellContentUtilityClient() {
 void ShellContentUtilityClient::RegisterMojoApplications(
     StaticMojoApplicationMap* apps) {
   apps->insert(
-      std::make_pair(GURL(kTestMojoAppUrl), base::Bind(&CreateTestApp)));
+      std::make_pair(kTestMojoAppUrl, base::Bind(&CreateTestApp)));
 }
 
 }  // namespace content

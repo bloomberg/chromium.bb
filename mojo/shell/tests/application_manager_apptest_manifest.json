@@ -1,5 +1,5 @@
 {
-  "url": "mojo://mojo_shell_apptests/",
-  "name": "Application Manager Apptests",
+  "name": "mojo:mojo_shell_apptests",
+  "display_name": "Application Manager Apptests",
   "capabilities": { "*": [ "*" ] }
 }

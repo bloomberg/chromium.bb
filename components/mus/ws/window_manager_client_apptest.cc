@@ -275,7 +275,7 @@ class WindowServerTest : public WindowServerTestBase {
   // WindowTreeClient.
   mus::mojom::WindowTreeClientPtr ConnectAndGetWindowServerClient() {
     mus::mojom::WindowTreeClientPtr client;
-    connector()->ConnectToInterface(test_url(), &client);
+    connector()->ConnectToInterface(test_name(), &client);
     return client;
   }
 

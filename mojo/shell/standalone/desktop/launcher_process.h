@@ -7,8 +7,6 @@
 
 #include "base/callback_forward.h"
 
-class GURL;
-
 namespace mojo {
 namespace shell {
 

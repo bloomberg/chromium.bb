@@ -13,12 +13,12 @@ class FilePath;
 
 namespace resource_provider {
 
-// Returns the path to the resources for |application_url|, or an empty
-// path if |application_url| is not valid.
-base::FilePath GetPathForApplicationUrl(const std::string& application_url);
+// Returns the path to the resources for |application_name|, or an empty
+// path if |application_name| is not valid.
+base::FilePath GetPathForApplicationName(const std::string& application_name);
 
 // Returns the path to the specified resource. |app_path| was previously
-// obtained by way of GetPathForApplicationUrl().
+// obtained by way of GetPathForApplicationName().
 base::FilePath GetPathForResourceNamed(const base::FilePath& app_path,
                                        const std::string& resource_path);
 

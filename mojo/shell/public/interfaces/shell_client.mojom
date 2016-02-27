@@ -20,8 +20,8 @@ interface ShellClient {
   //    An interface back to the shell by which new connections may be
   //    established.
   //
-  //  url
-  //    The resolved URL used in the connection request that resulted in this
+  //  name
+  //    The resolved name used in the connection request that resulted in this
   //    application being initialized.
   //
   //  id
@@ -33,7 +33,7 @@ interface ShellClient {
   //    instantiated is run as. This will always be a valid user id, never
   //    Shell::kUserInherit.
   //
-  Initialize(Connector connector, string url, uint32 id, uint32 user_id);
+  Initialize(Connector connector, string name, uint32 id, uint32 user_id);
 
   // Called when another application attempts to open a connection to this
   // application. An application implements this method to complete the exchange
@@ -44,8 +44,8 @@ interface ShellClient {
   //
   // Parameters:
   //
-  //  requestor_url
-  //    The URL of the source application.
+  //  requestor_name
+  //    The name of the source application.
   //
   //  requestor_id
   //    A unique identifier used by the shell to identify the source
@@ -71,14 +71,14 @@ interface ShellClient {
   //    manifests. Attempts to bind interfaces not in this whitelist must not be
   //    fulfilled.
   //
-  //  resolved_url
-  //    The resolved URL used to complete this connection.
+  //  resolved_name
+  //    The resolved name used to complete this connection.
   //
-  AcceptConnection(string requestor_url,
+  AcceptConnection(string requestor_name,
                    uint32 requestor_id,
                    uint32 requestor_user_id,
                    InterfaceProvider&? local_interfaces,
                    InterfaceProvider? remote_interfaces,
                    array<string> allowed_interfaces,
-                   string resolved_url);
+                   string resolved_name);
 };

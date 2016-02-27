@@ -23,7 +23,7 @@ class TargetApplicationDelegate : public mojo::ShellClient {
 
  private:
   // mojo::ShellClient:
-  void Initialize(mojo::Connector* connector, const std::string& url,
+  void Initialize(mojo::Connector* connector, const std::string& name,
                   uint32_t id, uint32_t user_id) override {
     CreateInstanceForHandleTestPtr service;
     connector->ConnectToInterface("mojo:mojo_shell_apptests", &service);

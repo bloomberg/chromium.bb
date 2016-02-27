@@ -36,7 +36,6 @@ source_set("lib") {
 
   deps = [
     "//base",
-    "//mojo/common:mojo_scheme_register",
     "//mojo/common:url_type_converters",
     "//mojo/services/package_manager/public/interfaces",
     "//mojo/shell/public/cpp",

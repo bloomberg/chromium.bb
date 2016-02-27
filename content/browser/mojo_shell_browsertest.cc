@@ -15,12 +15,12 @@
 
 namespace content {
 
-const char kInProcessTestMojoAppUrl[] = "system:content_in_process_test_app";
+const char kInProcessTestMojoAppName[] = "system:content_in_process_test_app";
 
 class MojoShellTest : public ContentBrowserTest {
  public:
   MojoShellTest() {
-    test_apps_[GURL(kInProcessTestMojoAppUrl)] = base::Bind(&CreateTestApp);
+    test_apps_[kInProcessTestMojoAppName] = base::Bind(&CreateTestApp);
     MojoShellContext::SetApplicationsForTest(&test_apps_);
   }
 
@@ -35,8 +35,8 @@ class MojoShellTest : public ContentBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(MojoShellTest, TestBrowserConnection) {
-  auto test_app = MojoAppConnection::Create(GURL(kInProcessTestMojoAppUrl),
-                                            GURL(kBrowserMojoAppUrl));
+  auto test_app = MojoAppConnection::Create(kInProcessTestMojoAppName,
+                                            kBrowserMojoAppUrl);
   TestMojoServicePtr test_service;
   test_app->GetInterface(&test_service);
 
@@ -49,8 +49,8 @@ IN_PROC_BROWSER_TEST_F(MojoShellTest, TestUtilityConnection) {
   // With no loader registered at this URL, the shell should spawn a utility
   // process and connect us to it. content_shell's utility process always hosts
   // a TestMojoApp at |kTestMojoAppUrl|.
-  auto test_app = MojoAppConnection::Create(GURL(kTestMojoAppUrl),
-                                            GURL(kBrowserMojoAppUrl));
+  auto test_app = MojoAppConnection::Create(kTestMojoAppUrl,
+                                            kBrowserMojoAppUrl);
   TestMojoServicePtr test_service;
   test_app->GetInterface(&test_service);
 

@@ -1,5 +1,5 @@
 {
-  "url": "mojo://resource_provider_apptests/",
-  "name": "Resource Provider Apptests",
+  "name": "mojo:resource_provider_apptests",
+  "display_name": "Resource Provider Apptests",
   "capabilities": { "*": [ "*" ] }
 }

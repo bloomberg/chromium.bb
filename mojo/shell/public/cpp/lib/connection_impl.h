@@ -27,8 +27,8 @@ class ConnectionImpl : public Connection {
   // |allowed_interfaces| are the set of interfaces that the shell has allowed
   // an application to expose to another application. If this set contains only
   // the string value "*" all interfaces may be exposed.
-  ConnectionImpl(const std::string& connection_url,
-                 const std::string& remote_url,
+  ConnectionImpl(const std::string& connection_name,
+                 const std::string& remote_name,
                  uint32_t remote_id,
                  uint32_t remote_user_id,
                  shell::mojom::InterfaceProviderPtr remote_interfaces,
@@ -40,8 +40,8 @@ class ConnectionImpl : public Connection {
 
  private:
   // Connection:
-  const std::string& GetConnectionURL() override;
-  const std::string& GetRemoteApplicationURL() override;
+  const std::string& GetConnectionName() override;
+  const std::string& GetRemoteApplicationName() override;
   uint32_t GetRemoteUserID() const override;
   void SetRemoteInterfaceProviderConnectionErrorHandler(
       const Closure& handler) override;
@@ -54,8 +54,8 @@ class ConnectionImpl : public Connection {
 
   void OnGotInstanceID(uint32_t target_application_id);
 
-  const std::string connection_url_;
-  const std::string remote_url_;
+  const std::string connection_name_;
+  const std::string remote_name_;
 
   uint32_t remote_id_;
   bool remote_ids_valid_;

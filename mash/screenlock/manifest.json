@@ -1,5 +1,5 @@
 {
-  "url": "mojo://screenlock/",
-  "name": "Screen Lock",
+  "name": "mojo:screenlock",
+  "display_name": "Screen Lock",
   "capabilities": { "*": [ "*" ] }
 }

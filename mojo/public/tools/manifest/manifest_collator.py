@@ -31,11 +31,15 @@ def main():
   if parent == None:
     return 1
 
-  parsed = urlparse.urlparse(parent['url'])
-  if args.application_name != parsed.hostname:
+  app_path = parent['name'].split(':')[1]
+  if app_path.startswith('//'):
+    raise ValueError("Application name path component '%s' must not start " \
+                     "with //" % app_path)
+
+  if args.application_name != app_path:
     raise ValueError("Application name '%s' specified in build file does not " \
                      "match application name '%s' specified in manifest." %
-                     (args.application_name, parsed.hostname))
+                     (args.application_name, app_path))
 
   applications = []
   for child in children:

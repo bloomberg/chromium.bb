@@ -668,14 +668,14 @@ class CONTENT_EXPORT ContentBrowserClient {
       RenderFrameHost* render_frame_host) {}
 
   using StaticMojoApplicationMap =
-      std::map<GURL, base::Callback<scoped_ptr<mojo::ShellClient>()>>;
+      std::map<std::string, base::Callback<scoped_ptr<mojo::ShellClient>()>>;
 
   // Registers Mojo applications to be loaded in the browser process by the
   // browser's global Mojo shell.
   virtual void RegisterInProcessMojoApplications(
       StaticMojoApplicationMap* apps) {}
 
-  using OutOfProcessMojoApplicationMap = std::map<GURL, base::string16>;
+  using OutOfProcessMojoApplicationMap = std::map<std::string, base::string16>;
 
   // Registers Mojo applications to be loaded out of the browser process, in a
   // sandboxed utility process. The value of each map entry should be the

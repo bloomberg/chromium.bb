@@ -16,8 +16,6 @@
 #include "mojo/shell/application_manager.h"
 #include "mojo/shell/public/interfaces/shell.mojom.h"
 
-class GURL;
-
 namespace mojo {
 class ShellClient;
 }
@@ -29,18 +27,18 @@ namespace content {
 class CONTENT_EXPORT MojoShellContext {
  public:
   using StaticApplicationMap =
-      std::map<GURL, base::Callback<scoped_ptr<mojo::ShellClient>()>>;
+      std::map<std::string, base::Callback<scoped_ptr<mojo::ShellClient>()>>;
 
   MojoShellContext();
   ~MojoShellContext();
 
-  // Connects an application at |url| and gets a handle to its exposed services.
-  // This is only intended for use in browser code that's not part of some Mojo
-  // application. May be called from any thread. |requestor_url| is given to
-  // the target application as the requestor's URL upon connection.
+  // Connects an application at |name| and gets a handle to its exposed
+  // services. This is only intended for use in browser code that's not part of
+  // some Mojo application. May be called from any thread. |requestor_name| is
+  // given to the target application as the requestor's name upon connection.
   static void ConnectToApplication(
-      const GURL& url,
-      const GURL& requestor_url,
+      const std::string& name,
+      const std::string& requestor_name,
       mojo::shell::mojom::InterfaceProviderRequest request,
       mojo::shell::mojom::InterfaceProviderPtr exposed_services,
       const mojo::shell::mojom::Connector::ConnectCallback& callback);
@@ -52,8 +50,8 @@ class CONTENT_EXPORT MojoShellContext {
   friend class Proxy;
 
   void ConnectToApplicationOnOwnThread(
-      const GURL& url,
-      const GURL& requestor_url,
+      const std::string& name,
+      const std::string& requestor_name,
       mojo::shell::mojom::InterfaceProviderRequest request,
       mojo::shell::mojom::InterfaceProviderPtr exposed_services,
       const mojo::shell::mojom::Connector::ConnectCallback& callback);

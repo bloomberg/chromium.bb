@@ -11,14 +11,13 @@
 #include "mojo/shell/public/cpp/shell_client.h"
 #include "mojo/shell/public/cpp/shell_connection.h"
 #include "ui/views/mus/window_manager_connection.h"
-#include "url/gurl.h"
 
 using mojo::shell::BackgroundShell;
 
 namespace views {
 namespace {
 
-const char kTestUrl[] = "mojo://test-app";
+const char kTestName[] = "mojo:test-app";
 
 class DefaultShellClient : public mojo::ShellClient {
  public:
@@ -33,7 +32,7 @@ scoped_ptr<mojo::shell::TestApplicationCatalogStore>
 BuildTestApplicationCatalogStore() {
   scoped_ptr<base::ListValue> apps(new base::ListValue);
   apps->Append(
-      mojo::shell::BuildPermissiveSerializedAppInfo(GURL(kTestUrl), "test"));
+      mojo::shell::BuildPermissiveSerializedAppInfo(kTestName, "test"));
   return make_scoped_ptr(
       new mojo::shell::TestApplicationCatalogStore(std::move(apps)));
 }
@@ -49,7 +48,7 @@ class PlatformTestHelperMus : public PlatformTestHelper {
     shell_client_.reset(new DefaultShellClient);
     shell_connection_.reset(new mojo::ShellConnection(
         shell_client_.get(),
-        background_shell_->CreateShellClientRequest(GURL(kTestUrl))));
+        background_shell_->CreateShellClientRequest(kTestName)));
     shell_connection_->WaitForInitialize();
     // ui/views/mus requires a WindowManager running, for now use the desktop
     // one.

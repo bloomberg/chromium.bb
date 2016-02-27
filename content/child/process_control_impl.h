@@ -12,8 +12,6 @@
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/shell/public/interfaces/shell_client.mojom.h"
 
-class GURL;
-
 namespace mojo {
 namespace shell {
 class ApplicationLoader;
@@ -28,15 +26,16 @@ class ProcessControlImpl : public ProcessControl {
   ProcessControlImpl();
   ~ProcessControlImpl() override;
 
-  using URLToLoaderMap = std::map<GURL, mojo::shell::ApplicationLoader*>;
+  using NameToLoaderMap =
+      std::map<std::string, mojo::shell::ApplicationLoader*>;
 
-  // Registers Mojo applications loaders for URLs.
+  // Registers Mojo applications loaders for names.
   virtual void RegisterApplicationLoaders(
-      URLToLoaderMap* url_to_loader_map) = 0;
+      NameToLoaderMap* name_to_loader_map) = 0;
 
   // ProcessControl:
   void LoadApplication(
-      const mojo::String& url,
+      const mojo::String& name,
       mojo::InterfaceRequest<mojo::shell::mojom::ShellClient> request,
       const LoadApplicationCallback& callback) override;
 
@@ -45,7 +44,7 @@ class ProcessControlImpl : public ProcessControl {
   virtual void OnLoadFailed() {}
 
   bool has_registered_loaders_ = false;
-  URLToLoaderMap url_to_loader_map_;
+  NameToLoaderMap name_to_loader_map_;
 
   DISALLOW_COPY_AND_ASSIGN(ProcessControlImpl);
 };

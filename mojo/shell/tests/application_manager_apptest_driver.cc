@@ -46,7 +46,7 @@ class TargetApplicationDelegate : public mojo::ShellClient,
 
  private:
   // mojo::ShellClient:
-  void Initialize(mojo::Connector* connector, const std::string& url,
+  void Initialize(mojo::Connector* connector, const std::string& name,
                   uint32_t id, uint32_t user_id) override {
     base::FilePath target_path;
     CHECK(base::PathService::Get(base::DIR_EXE, &target_path));

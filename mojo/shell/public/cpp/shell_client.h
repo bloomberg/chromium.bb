@@ -26,13 +26,13 @@ class ShellClient {
   virtual ~ShellClient();
 
   // Called once a bidirectional connection with the shell has been established.
-  // |url| is the URL used to start the application.
+  // |name| is the name used to start the application.
   // |id| is a unique identifier the shell uses to identify this specific
   // instance of the application.
   // |user_id| identifies the user this instance is run as.
   // Called exactly once before any other method.
   virtual void Initialize(Connector* connector,
-                          const std::string& url,
+                          const std::string& name,
                           uint32_t id,
                           uint32_t user_id = 0);
 

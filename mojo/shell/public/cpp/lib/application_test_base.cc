@@ -18,8 +18,8 @@ namespace mojo {
 namespace test {
 
 namespace {
-// Share the application URL with multiple application tests.
-String g_url;
+// Share the application name with multiple application tests.
+String g_name;
 uint32_t g_id = shell::mojom::Connector::kInvalidApplicationID;
 uint32_t g_user_id = shell::mojom::Connector::kUserRoot;
 
@@ -45,10 +45,10 @@ class ShellGrabber : public shell::mojom::ShellClient {
  private:
   // shell::mojom::ShellClient implementation.
   void Initialize(shell::mojom::ConnectorPtr connector,
-                  const mojo::String& url,
+                  const mojo::String& name,
                   uint32_t id,
                   uint32_t user_id) override {
-    g_url = url;
+    g_name = name;
     g_id = id;
     g_user_id = user_id;
     g_shell_client_request = binding_.Unbind();
@@ -56,13 +56,13 @@ class ShellGrabber : public shell::mojom::ShellClient {
   }
 
   void AcceptConnection(
-      const String& requestor_url,
+      const String& requestor_name,
       uint32_t requestor_user_id,
       uint32_t requestor_id,
       shell::mojom::InterfaceProviderRequest local_interfaces,
       shell::mojom::InterfaceProviderPtr remote_interfaces,
       Array<String> allowed_interfaces,
-      const String& url) override {
+      const String& name) override {
     CHECK(false);
   }
 
@@ -118,10 +118,10 @@ TestHelper::TestHelper(ShellClient* client)
     : shell_connection_(new ShellConnection(
           client == nullptr ? &default_shell_client_ : client,
           std::move(g_shell_client_request))),
-      url_(g_url) {
+      name_(g_name) {
   // Fake ShellClient initialization.
   shell::mojom::ShellClient* shell_client = shell_connection_.get();
-  shell_client->Initialize(std::move(g_connector), g_url, g_id, g_user_id);
+  shell_client->Initialize(std::move(g_connector), g_name, g_id, g_user_id);
 }
 
 TestHelper::~TestHelper() {

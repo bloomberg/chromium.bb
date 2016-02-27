@@ -6,16 +6,15 @@
 #define MOJO_SHELL_IDENTITY_H_
 
 #include "mojo/shell/capability_filter.h"
-#include "url/gurl.h"
 
 namespace mojo {
 namespace shell {
 
 // Represents the identity of an application.
-// |url| is the URL of the application.
+// |name| is the structured name of the application.
 // |qualifier| is a string that allows to tie a specific instance of an
 // application to another. A typical use case of qualifier is to control process
-// grouping for a given application URL. For example, the core services are
+// grouping for a given application name. For example, the core services are
 // grouped into "Core"/"Files"/"Network"/etc. using qualifier; content handler's
 // qualifier is derived from the origin of the content.
 class Identity {
@@ -23,25 +22,25 @@ class Identity {
   Identity();
   // Assumes user = mojom::Connector::kUserRoot.
   // Used in tests or for shell-initiated connections.
-  explicit Identity(const GURL& in_url);
-  Identity(const GURL& in_url,
+  explicit Identity(const std::string& in_name);
+  Identity(const std::string& in_name,
            const std::string& in_qualifier,
            uint32_t user_id);
   ~Identity();
 
   bool operator<(const Identity& other) const;
-  bool is_null() const { return url_.is_empty(); }
+  bool is_null() const { return name_.empty(); }
   bool operator==(const Identity& other) const;
 
-  const GURL& url() const { return url_; }
+  const std::string& name() const { return name_; }
   uint32_t user_id() const { return user_id_; }
   void set_user_id(uint32_t user_id) { user_id_ = user_id; }
   const std::string& qualifier() const { return qualifier_; }
-  void SetFilter(const CapabilityFilter& filter);
+  void set_filter(const CapabilityFilter& filter) { filter_ = filter; }
   const CapabilityFilter& filter() const { return filter_; }
 
  private:
-  GURL url_;
+  std::string name_;
   std::string qualifier_;
 
   uint32_t user_id_;

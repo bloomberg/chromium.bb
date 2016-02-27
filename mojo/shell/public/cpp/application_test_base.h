@@ -34,7 +34,7 @@ class TestHelper {
   ~TestHelper();
 
   Connector* connector() { return shell_connection_->connector(); }
-  std::string test_url() { return url_; }
+  std::string test_name() { return name_; }
 
  private:
   // The application delegate used if GetShellClient is not overridden.
@@ -43,7 +43,7 @@ class TestHelper {
   // The application implementation instance, reconstructed for each test.
   scoped_ptr<ShellConnection> shell_connection_;
 
-  std::string url_;
+  std::string name_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(TestHelper);
 };
@@ -58,8 +58,8 @@ class ApplicationTestBase : public testing::Test {
   Connector* connector() {
     return test_helper_ ? test_helper_->connector() : nullptr;
   }
-  std::string test_url() const {
-    return test_helper_ ? test_helper_->test_url() : std::string();
+  std::string test_name() const {
+    return test_helper_ ? test_helper_->test_name() : std::string();
   }
 
   // Get the ShellClient for the application to be tested.

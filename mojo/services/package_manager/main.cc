@@ -29,8 +29,7 @@ MojoResult Run(MojoHandle shell_handle) {
         new base::SequencedWorkerPool(kMaxBlockingPoolThreads,
                                       "blocking_pool"));
     scoped_ptr<mojo::ShellClient> shell_client(
-        new package_manager::PackageManager(blocking_pool.get(), true,
-                                            nullptr));
+        new package_manager::PackageManager(blocking_pool.get(), nullptr));
     mojo::ShellConnection connection(
         shell_client.get(), MakeRequest<mojo::shell::mojom::ShellClient>(
             MakeScopedHandle(MessagePipeHandle(shell_handle))));

@@ -547,7 +547,7 @@ class WindowTreeAppTest : public mojo::test::ApplicationTestBase,
                                                Id root_id,
                                                uint32_t policy_bitmask,
                                                int* connection_id) {
-    if (!EmbedUrl(connector(), owner, test_url(), root_id)) {
+    if (!EmbedUrl(connector(), owner, test_name(), root_id)) {
       ADD_FAILURE() << "Embed() failed";
       return nullptr;
     }
@@ -1724,7 +1724,7 @@ TEST_F(WindowTreeAppTest, EmbedFailsFromOtherConnection) {
   // 2 should not be able to embed in window_3_3 as window_3_3 was not created
   // by
   // 2.
-  EXPECT_FALSE(EmbedUrl(connector(), ws2(), test_url(), window_3_3));
+  EXPECT_FALSE(EmbedUrl(connector(), ws2(), test_name(), window_3_3));
 }
 
 // Verifies Embed() from window manager on another connections window works.
@@ -1747,7 +1747,7 @@ TEST_F(WindowTreeAppTest, EmbedFromOtherConnection) {
 
 TEST_F(WindowTreeAppTest, CantEmbedFromConnectionRoot) {
   // Shouldn't be able to embed into the root.
-  ASSERT_FALSE(EmbedUrl(connector(), ws1(), test_url(), root_window_id()));
+  ASSERT_FALSE(EmbedUrl(connector(), ws1(), test_name(), root_window_id()));
 
   // Even though the call above failed a WindowTreeClient was obtained. We need
   // to
@@ -1756,7 +1756,7 @@ TEST_F(WindowTreeAppTest, CantEmbedFromConnectionRoot) {
 
   // Don't allow a connection to embed into its own root.
   ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(true));
-  EXPECT_FALSE(EmbedUrl(connector(), ws2(), test_url(),
+  EXPECT_FALSE(EmbedUrl(connector(), ws2(), test_name(),
                         BuildWindowId(connection_id_1(), 1)));
 
   // Need to wait for a WindowTreeClient for same reason as above.
@@ -1773,7 +1773,7 @@ TEST_F(WindowTreeAppTest, CantEmbedFromConnectionRoot) {
 
   // window_1_2 is ws3's root, so even though v3 is an embed root it should not
   // be able to Embed into itself.
-  ASSERT_FALSE(EmbedUrl(connector(), ws3(), test_url(), window_1_2));
+  ASSERT_FALSE(EmbedUrl(connector(), ws3(), test_name(), window_1_2));
 }
 
 // Verifies that a transient window tracks its parent's lifetime.

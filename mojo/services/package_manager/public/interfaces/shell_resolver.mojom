@@ -6,33 +6,33 @@ module package_manager.mojom;
 
 import "mojo/shell/public/interfaces/shell.mojom";
 
-// Implemented exclusively for the Mojo Shell's use in resolving mojo:// URLs
+// Implemented exclusively for the Mojo Shell's use in resolving mojo: names
 // and reading static manifest information.
 interface ShellResolver {
-  // Resolves |mojo_url| to the following metadata:
+  // Resolves |mojo_name| to the following metadata:
   //
-  // resolved_mojo_url
-  //  another mojo: url of an application implementing mojo::ShellClientFactory
-  //  that can handle connections to |mojo_url|.
+  // resolved_mojo_name
+  //  another mojo: name of an application implementing mojo::ShellClientFactory
+  //  that can handle connections to |mojo_name|.
   //
   // qualifier
   //  an additional piece of metadata that identifies what instance
-  //  |resolved_mojo_url| should be run in. It's possible that
-  //  |resolved_mojo_url| may provide several services that should be run as
+  //  |resolved_mojo_name| should be run in. It's possible that
+  //  |resolved_mojo_name| may provide several services that should be run as
   //  different instances.
   //
   // mojo_file_url
-  //  a file URL to the application specified in |resolved_mojo_url|
-  //  TODO(beng): what if |resolved_mojo_url| needs to be re-resolved??
+  //  a file URL to the application specified in |resolved_mojo_name|
+  //  TODO(beng): what if |resolved_mojo_name| needs to be re-resolved??
   // 
   // filter
-  //  the base CapabilityFilter within which an instance of |resolved_mojo_url|
-  //  must be run for |mojo_url|.
+  //  the base CapabilityFilter within which an instance of |resolved_mojo_name|
+  //  must be run for |mojo_name|.
   //
-  // If |mojo_url| can't be resolved (i.e. not a mojo: or exe: scheme), then
+  // If |mojo_name| can't be resolved (i.e. not a mojo: or exe: scheme), then
   // the callback will be run with null |mojo_file_url|, and |filter|.
-  ResolveMojoURL(string mojo_url) =>
-      (string resolved_mojo_url,
+  ResolveMojoName(string mojo_name) =>
+      (string resolved_mojo_name,
        string qualifier,
        mojo.shell.mojom.CapabilityFilter? filter,
        string? mojo_file_url);

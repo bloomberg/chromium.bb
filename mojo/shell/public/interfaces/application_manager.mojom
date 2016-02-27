@@ -8,7 +8,7 @@ import "mojo/shell/public/interfaces/shell.mojom";
 
 struct ApplicationInfo {
   uint32 id;
-  string url;
+  string name;
   string qualifier;
   uint32 pid;
 };
@@ -52,7 +52,7 @@ interface ApplicationManager {
   // channel to an implementation of ChildController and bind an Application
   // request there.
   CreateInstanceForHandle(handle channel,
-                          string url,
+                          string name,
                           CapabilityFilter filter,
                           PIDReceiver& pid_receiver);
 

@@ -48,7 +48,7 @@ class ProvidedShellClient
 
  private:
   // mojo::ShellClient:
-  void Initialize(Connector* connector, const std::string& url,
+  void Initialize(Connector* connector, const std::string& name,
                   uint32_t id, uint32_t user_id) override {
     bindings_.set_connection_error_handler(
         base::Bind(&ProvidedShellClient::OnConnectionError,
@@ -102,7 +102,7 @@ class PackageTestShellClient
 
  private:
   // mojo::ShellClient:
-  void Initialize(Connector* connector, const std::string& url,
+  void Initialize(Connector* connector, const std::string& name,
                   uint32_t id, uint32_t user_id) override {
     bindings_.set_connection_error_handler(
         base::Bind(&PackageTestShellClient::OnConnectionError,
@@ -135,10 +135,10 @@ class PackageTestShellClient
 
   // mojom::ShellClientFactory:
   void CreateShellClient(mojom::ShellClientRequest request,
-                         const String& url) override {
-    if (url == "mojo://package_test_a/")
+                         const String& name) override {
+    if (name == "mojo:package_test_a")
       new ProvidedShellClient("A", std::move(request));
-    else if (url == "mojo://package_test_b/")
+    else if (name == "mojo:package_test_b")
       new ProvidedShellClient("B", std::move(request));
   }
 

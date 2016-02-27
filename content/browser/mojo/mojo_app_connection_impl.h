@@ -9,14 +9,13 @@
 #include "content/public/browser/mojo_app_connection.h"
 #include "mojo/shell/public/interfaces/interface_provider.mojom.h"
 
-class GURL;
-
 namespace content {
 
 // Implementation of the app connection mechanism provided to browser code.
 class MojoAppConnectionImpl : public MojoAppConnection {
  public:
-  MojoAppConnectionImpl(const GURL& url, const GURL& requestor_url);
+  MojoAppConnectionImpl(const std::string& name,
+                        const std::string& requestor_name);
   ~MojoAppConnectionImpl() override;
 
  private:

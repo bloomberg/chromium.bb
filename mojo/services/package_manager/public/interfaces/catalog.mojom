@@ -5,7 +5,7 @@
 module package_manager.mojom;
 
 struct CatalogEntry {
-  string name;
+  string display_name;
 };
 
 interface Catalog {

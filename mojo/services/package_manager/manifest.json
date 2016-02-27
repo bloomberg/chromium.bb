@@ -1,5 +1,5 @@
 {
-  "url": "mojo://package_manager/",
-  "name": "Package Manager",
+  "name": "mojo:package_manager",
+  "display_name": "Package Manager",
   "capabilities": {}
 }

@@ -25,7 +25,7 @@ class ServiceRegistry;
 class CONTENT_EXPORT ContentUtilityClient {
  public:
   using StaticMojoApplicationMap =
-      std::map<GURL, base::Callback<scoped_ptr<mojo::ShellClient>()>>;
+      std::map<std::string, base::Callback<scoped_ptr<mojo::ShellClient>()>>;
 
   virtual ~ContentUtilityClient() {}
 

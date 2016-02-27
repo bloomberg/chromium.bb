@@ -1,5 +1,5 @@
 {
-  "url": "exe://chrome/",
-  "name": "Chrome",
+  "name": "exe:chrome",
+  "display_name": "Chrome",
   "capabilities": { "*": [ "*" ] }
 }

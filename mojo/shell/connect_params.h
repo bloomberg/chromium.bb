@@ -14,7 +14,6 @@
 #include "mojo/shell/identity.h"
 #include "mojo/shell/public/interfaces/interface_provider.mojom.h"
 #include "mojo/shell/public/interfaces/shell.mojom.h"
-#include "url/gurl.h"
 
 namespace mojo {
 namespace shell {

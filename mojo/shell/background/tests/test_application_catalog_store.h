@@ -11,8 +11,6 @@
 #include "base/values.h"
 #include "mojo/services/package_manager/package_manager.h"
 
-class GURL;
-
 namespace mojo {
 namespace shell {
 
@@ -37,11 +35,11 @@ class TestApplicationCatalogStore
   DISALLOW_COPY_AND_ASSIGN(TestApplicationCatalogStore);
 };
 
-// Returns a dictionary for an app with the specified url, name and a
+// Returns a dictionary for an app with the specified name, display name and a
 // permissive filter.
 scoped_ptr<base::DictionaryValue> BuildPermissiveSerializedAppInfo(
-    const GURL& url,
-    const std::string& name);
+    const std::string& name,
+    const std::string& display_name);
 
 }  // namespace shell
 }  // namespace mojo

@@ -21,7 +21,6 @@ source_set("mash") {
     "//mash/quick_launch:lib",
     "//mash/shell:lib",
     "//mash/wm:lib",
-    "//mojo/common:mojo_scheme_register",
     "//mojo/shell",
     "//mojo/shell/background:lib",
     "//mojo/shell/public/cpp",

@@ -20,15 +20,15 @@ namespace internal {
 // ConnectionImpl, public:
 
 ConnectionImpl::ConnectionImpl(
-    const std::string& connection_url,
-    const std::string& remote_url,
+    const std::string& connection_name,
+    const std::string& remote_name,
     uint32_t remote_id,
     uint32_t remote_user_id,
     shell::mojom::InterfaceProviderPtr remote_interfaces,
     shell::mojom::InterfaceProviderRequest local_interfaces,
     const std::set<std::string>& allowed_interfaces)
-    : connection_url_(connection_url),
-      remote_url_(remote_url),
+    : connection_name_(connection_name),
+      remote_name_(remote_name),
       remote_id_(remote_id),
       remote_ids_valid_(false),
       remote_user_id_(remote_user_id),
@@ -56,12 +56,12 @@ shell::mojom::Connector::ConnectCallback ConnectionImpl::GetConnectCallback() {
 ////////////////////////////////////////////////////////////////////////////////
 // ConnectionImpl, Connection implementation:
 
-const std::string& ConnectionImpl::GetConnectionURL() {
-  return connection_url_;
+const std::string& ConnectionImpl::GetConnectionName() {
+  return connection_name_;
 }
 
-const std::string& ConnectionImpl::GetRemoteApplicationURL() {
-  return remote_url_;
+const std::string& ConnectionImpl::GetRemoteApplicationName() {
+  return remote_name_;
 }
 
 uint32_t ConnectionImpl::GetRemoteUserID() const {

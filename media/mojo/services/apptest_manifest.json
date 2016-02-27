@@ -1,5 +1,5 @@
 {
-  "url": "mojo://media_apptests/",
-  "name": "Media Apptests",
+  "name": "mojo:media_apptests",
+  "display_name": "Media Apptests",
   "capabilities": { "*": ["*"] }
 }

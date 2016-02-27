@@ -27,7 +27,6 @@
 #include "mojo/shell/public/interfaces/shell.mojom.h"
 #include "mojo/shell/public/interfaces/shell_client.mojom.h"
 #include "mojo/shell/public/interfaces/shell_client_factory.mojom.h"
-#include "url/gurl.h"
 
 namespace base {
 class FilePath;
@@ -48,8 +47,8 @@ class ApplicationManager : public ShellClient,
     explicit TestAPI(ApplicationManager* manager);
     ~TestAPI();
 
-    // Returns true if there is a Instance for this URL.
-    bool HasRunningInstanceForURL(const GURL& url) const;
+    // Returns true if there is a Instance for this name.
+    bool HasRunningInstanceForName(const std::string& name) const;
    private:
     ApplicationManager* manager_;
 
@@ -62,12 +61,9 @@ class ApplicationManager : public ShellClient,
   // |file_task_runner| provides access to a thread to perform file copy
   // operations on. This may be null only in testing environments where
   // applications are loaded via ApplicationLoader implementations.
-  // When |register_mojo_url_schemes| is true, mojo: and exe: URL schems are
-  // registered as "standard" which faciliates resolving.
   ApplicationManager(
       scoped_ptr<NativeRunnerFactory> native_runner_factory,
       base::TaskRunner* file_task_runner,
-      bool register_mojo_url_schemes,
       scoped_ptr<package_manager::ApplicationCatalogStore> app_catalog);
   ~ApplicationManager() override;
 
@@ -81,25 +77,26 @@ class ApplicationManager : public ShellClient,
   // instance of the target application is running, one will be loaded.
   void Connect(scoped_ptr<ConnectParams> params);
 
-  // Creates a new Instance identified as |url|. This is intended for use by the
-  // ApplicationManager's embedder to register itself with the shell. The URL is
-  // never resolved and there must not be an existing instance associated with
-  // it. This must only be called once.
-  mojom::ShellClientRequest InitInstanceForEmbedder(const GURL& url);
+  // Creates a new Instance identified as |name|. This is intended for use by
+  // the ApplicationManager's embedder to register itself with the shell. The
+  // name is never resolved and there must not be an existing instance
+  // associated with it. This must only be called once.
+  mojom::ShellClientRequest InitInstanceForEmbedder(const std::string& name);
 
-  // Sets the default Loader to be used if not overridden by SetLoaderForURL().
+  // Sets the default Loader to be used if not overridden by SetLoaderForName().
   void set_default_loader(scoped_ptr<ApplicationLoader> loader) {
     default_loader_ = std::move(loader);
   }
 
-  // Sets a Loader to be used for a specific url.
-  void SetLoaderForURL(scoped_ptr<ApplicationLoader> loader, const GURL& url);
+  // Sets a Loader to be used for a specific name.
+  void SetLoaderForName(scoped_ptr<ApplicationLoader> loader,
+                        const std::string& name);
 
  private:
   class Instance;
 
   using IdentityToInstanceMap = std::map<Identity, Instance*>;
-  using URLToLoaderMap = std::map<GURL, ApplicationLoader*>;
+  using NameToLoaderMap = std::map<std::string, ApplicationLoader*>;
   using IdentityToShellClientFactoryMap =
       std::map<Identity, mojom::ShellClientFactoryPtr>;
 
@@ -112,13 +109,12 @@ class ApplicationManager : public ShellClient,
 
   // mojom::ApplicationManager:
   void CreateInstanceForHandle(ScopedHandle channel,
-                               const String& url,
+                               const String& name,
                                mojom::CapabilityFilterPtr filter,
                                mojom::PIDReceiverRequest pid_receiver) override;
   void AddListener(mojom::ApplicationManagerListenerPtr listener) override;
 
   void InitPackageManager(
-      bool register_mojo_url_schemes,
       scoped_ptr<package_manager::ApplicationCatalogStore> app_catalog);
 
   // Destroys all Shell-ends of connections established with Applications.
@@ -143,7 +139,7 @@ class ApplicationManager : public ShellClient,
 
   void CreateShellClient(const Identity& source,
                          const Identity& shell_client_factory,
-                         const GURL& url,
+                         const std::string& name,
                          mojom::ShellClientRequest request);
   // Returns a running ShellClientFactory for |shell_client_factory_identity|,
   // if there is not one running one is started for |source_identity|.
@@ -154,25 +150,25 @@ class ApplicationManager : public ShellClient,
 
   // Callback when remote PackageManager resolves mojo:foo to mojo:bar.
   // |params| are the params passed to Connect().
-  // |resolved_url| is the mojo: url identifying the physical package
+  // |resolved_name| is the mojo: name identifying the physical package
   // application.
   // |file_url| is the resolved file:// URL of the physical package.
   // |base_filter| is the CapabilityFilter the requested application should be
   // run with, from its manifest.
-  void OnGotResolvedURL(scoped_ptr<ConnectParams> params,
-                        const String& resolved_url,
-                        const String& resolved_qualifier,
-                        mojom::CapabilityFilterPtr base_filter,
-                        const String& file_url);
+  void OnGotResolvedName(scoped_ptr<ConnectParams> params,
+                         const String& resolved_name,
+                         const String& resolved_qualifier,
+                         mojom::CapabilityFilterPtr base_filter,
+                         const String& file_url);
 
   // Tries to load |target| with an ApplicationLoader. Returns true if one was
   // registered and it was loaded, in which case |request| is taken.
   bool LoadWithLoader(const Identity& target,
                       mojom::ShellClientRequest* request);
 
-  // Returns the appropriate loader for |url|, or the default loader if there is
-  // no loader configured for the URL.
-  ApplicationLoader* GetLoaderForURL(const GURL& url);
+  // Returns the appropriate loader for |name|, or the default loader if there
+  // is no loader configured for the name.
+  ApplicationLoader* GetLoaderForName(const std::string& name);
 
   void CleanupRunner(NativeRunner* runner);
 
@@ -183,7 +179,7 @@ class ApplicationManager : public ShellClient,
 
   // Loader management.
   // Loaders are chosen in the order they are listed here.
-  URLToLoaderMap url_to_loader_;
+  NameToLoaderMap name_to_loader_;
   scoped_ptr<ApplicationLoader> default_loader_;
 
   IdentityToInstanceMap identity_to_instance_;

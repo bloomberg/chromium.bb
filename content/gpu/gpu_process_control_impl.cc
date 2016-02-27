@@ -18,9 +18,9 @@ GpuProcessControlImpl::GpuProcessControlImpl() {}
 GpuProcessControlImpl::~GpuProcessControlImpl() {}
 
 void GpuProcessControlImpl::RegisterApplicationLoaders(
-    URLToLoaderMap* url_to_loader_map) {
+    NameToLoaderMap* name_to_loader_map) {
 #if defined(ENABLE_MOJO_MEDIA_IN_GPU_PROCESS)
-  (*url_to_loader_map)[GURL("mojo:media")] =
+  (*name_to_loader_map)["mojo:media"] =
     new StaticApplicationLoader(
     base::Bind(&media::CreateMojoMediaApplication),
           base::Bind(&base::DoNothing));

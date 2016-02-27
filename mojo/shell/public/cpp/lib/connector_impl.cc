@@ -8,8 +8,8 @@
 
 namespace mojo {
 
-Connector::ConnectParams::ConnectParams(const std::string& url)
-    : url_(url),
+Connector::ConnectParams::ConnectParams(const std::string& name)
+    : name_(name),
       user_id_(shell::mojom::Connector::kUserInherit) {
 }
 Connector::ConnectParams::~ConnectParams() {}
@@ -24,8 +24,8 @@ ConnectorImpl::ConnectorImpl(shell::mojom::ConnectorPtr connector,
 }
 ConnectorImpl::~ConnectorImpl() {}
 
-scoped_ptr<Connection> ConnectorImpl::Connect(const std::string& url) {
-  ConnectParams params(url);
+scoped_ptr<Connection> ConnectorImpl::Connect(const std::string& name) {
+  ConnectParams params(name);
   return Connect(&params);
 }
 
@@ -41,7 +41,7 @@ scoped_ptr<Connection> ConnectorImpl::Connect(ConnectParams* params) {
   DCHECK(thread_checker_->CalledOnValidThread());
 
   DCHECK(params);
-  std::string application_url = params->url().spec();
+  std::string application_name = params->name();
   // We allow all interfaces on outgoing connections since we are presumably in
   // a position to know who we're talking to.
   // TODO(beng): is this a valid assumption or do we need to figure some way to
@@ -55,10 +55,10 @@ scoped_ptr<Connection> ConnectorImpl::Connect(ConnectParams* params) {
   shell::mojom::InterfaceProviderRequest remote_request =
       GetProxy(&remote_interfaces);
   scoped_ptr<internal::ConnectionImpl> registry(new internal::ConnectionImpl(
-      application_url, application_url,
+      application_name, application_name,
       shell::mojom::Connector::kInvalidApplicationID, params->user_id(),
       std::move(remote_interfaces), std::move(local_request), allowed));
-  connector_->Connect(application_url,
+  connector_->Connect(application_name,
                       params->user_id(),
                       std::move(remote_request),
                       std::move(local_interfaces),

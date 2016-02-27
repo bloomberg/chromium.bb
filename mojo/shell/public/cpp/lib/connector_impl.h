@@ -21,7 +21,7 @@ class ConnectorImpl : public Connector {
 
  private:
   // Connector:
-  scoped_ptr<Connection> Connect(const std::string& url) override;
+  scoped_ptr<Connection> Connect(const std::string& name) override;
   scoped_ptr<Connection> Connect(ConnectParams* params) override;
   scoped_ptr<Connector> Clone() override;
 

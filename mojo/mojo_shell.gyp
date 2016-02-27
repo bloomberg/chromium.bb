@@ -7,8 +7,6 @@
     'target_name': 'mojo_shell_lib',
     'type': 'static_library',
     'sources': [
-      'common/mojo_scheme_register.cc',
-      'common/mojo_scheme_register.h',
       'services/package_manager/loader.cc',
       'services/package_manager/loader.h',
       'services/package_manager/package_manager.cc',

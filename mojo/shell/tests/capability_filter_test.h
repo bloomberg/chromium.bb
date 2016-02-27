@@ -29,14 +29,14 @@ class TestApplication : public ShellClient {
 
  private:
   // Overridden from ShellClient:
-  void Initialize(Connector* connector, const std::string& url, uint32_t id,
+  void Initialize(Connector* connector, const std::string& name, uint32_t id,
                   uint32_t user_id) override;
   bool AcceptConnection(Connection* connection) override;
 
-  void ConnectionClosed(const std::string& service_url);
+  void ConnectionClosed(const std::string& service_name);
 
   Connector* connector_;
-  std::string url_;
+  std::string name_;
   ValidatorPtr validator_;
   scoped_ptr<Connection> connection1_;
   scoped_ptr<Connection> connection2_;
@@ -51,7 +51,7 @@ class TestLoader : public ApplicationLoader {
 
  private:
   // Overridden from ApplicationLoader:
-  void Load(const GURL& url,
+  void Load(const std::string& name,
             InterfaceRequest<mojom::ShellClient> request) override;
 
   scoped_ptr<ShellClient> delegate_;
@@ -67,9 +67,9 @@ class CapabilityFilterTest : public testing::Test {
 
  protected:
   template <class T>
-  void CreateLoader(const std::string& url) {
-    application_manager_->SetLoaderForURL(
-        make_scoped_ptr(new TestLoader(new T)), GURL(url));
+  void CreateLoader(const std::string& name) {
+    application_manager_->SetLoaderForName(
+        make_scoped_ptr(new TestLoader(new T)), name);
   }
 
   void RunBlockingTest();
@@ -86,7 +86,7 @@ class CapabilityFilterTest : public testing::Test {
   ConnectionValidator* validator() { return validator_; }
 
  private:
-  void RunApplication(const std::string& url, const CapabilityFilter& filter);
+  void RunApplication(const std::string& name, const CapabilityFilter& filter);
   void InitValidator(const std::set<std::string>& expectations);
   void RunTest();
 

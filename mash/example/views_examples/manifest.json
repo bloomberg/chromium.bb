@@ -1,5 +1,5 @@
 {
-  "url": "mojo://views_examples/",
-  "name": "Views Examples",
+  "name": "mojo:views_examples",
+  "display_name": "Views Examples",
   "capabilities": { "*": ["*"] }
 }

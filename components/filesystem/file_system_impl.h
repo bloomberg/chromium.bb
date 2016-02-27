@@ -44,7 +44,7 @@ class FileSystemImpl : public FileSystem {
       const OpenPersistentFileSystemCallback& callback) override;
 
  private:
-  const std::string remote_application_url_;
+  const std::string remote_application_name_;
   mojo::StrongBinding<FileSystem> binding_;
   LockTable* lock_table_;
 

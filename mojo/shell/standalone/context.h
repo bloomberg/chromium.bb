@@ -14,7 +14,6 @@
 #include "mojo/edk/embedder/process_delegate.h"
 #include "mojo/shell/application_manager.h"
 #include "mojo/shell/standalone/tracer.h"
-#include "url/gurl.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -62,8 +61,8 @@ class Context : public edk::ProcessDelegate {
   // edk::ProcessDelegate:
   void OnShutdownComplete() override;
 
-  // Runs the app specified by |url|.
-  void Run(const GURL& url);
+  // Runs the app specified by |name|.
+  void Run(const std::string& name);
 
   scoped_refptr<base::SingleThreadTaskRunner> shell_runner_;
   scoped_ptr<base::Thread> io_thread_;

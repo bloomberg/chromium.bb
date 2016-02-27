@@ -9,26 +9,17 @@
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/shell/public/interfaces/shell.mojom.h"
 #include "mojo/shell/public/interfaces/shell_client.mojom.h"
-#include "url/gurl.h"
 
 namespace mojo {
-
-class Application;
-
 namespace shell {
 
-class ApplicationManager;
-
-// Interface to implement special application loading behavior for a particular
-// URL or scheme.
+// Interface to implement special loading behavior for a particular name.
 class ApplicationLoader {
  public:
   virtual ~ApplicationLoader() {}
 
-  virtual void Load(const GURL& url, mojom::ShellClientRequest request) = 0;
-
- protected:
-  ApplicationLoader() {}
+  virtual void Load(const std::string& name,
+                    mojom::ShellClientRequest request) = 0;
 };
 
 }  // namespace shell

@@ -1,5 +1,5 @@
 {
-  "url": "mojo://tracing/",
-  "name": "Tracing Collector",
+  "name": "mojo:tracing",
+  "display_name": "Tracing Collector",
   "capabilities": {}
 }

@@ -172,7 +172,7 @@ class TestMojoServiceImpl : public TestMojoService {
     callback.Run();
   }
 
-  void GetRequestorURL(const GetRequestorURLCallback& callback) override {
+  void GetRequestorName(const GetRequestorNameCallback& callback) override {
     callback.Run(mojo::String(""));
   }
 

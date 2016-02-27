@@ -11,28 +11,27 @@
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "url/gurl.h"
 
 namespace resource_provider {
 
 // Assertions for invalid app paths.
 TEST(FileUtilsTest, InvalidAppPath) {
   struct TestCase {
-    std::string url;
+    std::string name;
   };
   struct TestCase invalid_cases[]{
       {"http://foo"},     // Must start with 'mojo:'.
-      {"mojo://."},       // Don't allow '.'.
-      {"mojo://.."},      // Don't allow '..'.
-      {"mojo://foo/."},   // Don't allow '.'.
-      {"mojo://bar/.."},  // Don't allow '..'.
+      {"mojo:."},       // Don't allow '.'.
+      {"mojo:.."},      // Don't allow '..'.
+      {"mojo:foo/."},   // Don't allow '.'.
+      {"mojo:bar/.."},  // Don't allow '..'.
   };
 
   for (size_t i = 0; i < arraysize(invalid_cases); ++i) {
-    base::FilePath resulting_path(GetPathForApplicationUrl(
-        invalid_cases[i].url));
+    base::FilePath resulting_path(GetPathForApplicationName(
+        invalid_cases[i].name));
     EXPECT_TRUE(resulting_path.empty()) << "i=" << i
-                                        << " input=" << invalid_cases[i].url
+                                        << " input=" << invalid_cases[i].name
                                         << " result=" << resulting_path.value();
   }
 }
@@ -53,7 +52,7 @@ TEST(FileUtilsTest, InvalidResourcePath) {
       {"bar//baz/"},
   };
 
-  const base::FilePath app_path(GetPathForApplicationUrl("mojo:test"));
+  const base::FilePath app_path(GetPathForApplicationName("mojo:test"));
   ASSERT_FALSE(app_path.empty());
 
   for (size_t i = 0; i < arraysize(invalid_cases); ++i) {
@@ -66,7 +65,7 @@ TEST(FileUtilsTest, InvalidResourcePath) {
 }
 
 TEST(FileUtilsTest, ValidPaths) {
-  const base::FilePath app_path(GetPathForApplicationUrl("mojo:test"));
+  const base::FilePath app_path(GetPathForApplicationName("mojo:test"));
   ASSERT_FALSE(app_path.empty());
 
   // Trivial single path element.

@@ -1,5 +1,5 @@
 {
-  "url": "mojo://mus/",
-  "name": "Mandoline UI Services",
+  "name": "mojo:mus",
+  "display_name": "Mandoline UI Services",
   "capabilities": { "*": [ "*" ] }
 }

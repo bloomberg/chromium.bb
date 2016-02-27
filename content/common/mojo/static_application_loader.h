@@ -42,7 +42,7 @@ class StaticApplicationLoader : public mojo::shell::ApplicationLoader {
   ~StaticApplicationLoader() override;
 
   // mojo::shell::ApplicationLoader:
-  void Load(const GURL& url,
+  void Load(const std::string& name,
             mojo::shell::mojom::ShellClientRequest request) override;
 
  private:

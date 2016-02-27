@@ -1,5 +1,5 @@
 {
-  "url": "mojo://mus_apptests/",
-  "name": "Mus Apptests",
+  "name": "mojo:mus_apptests",
+  "display_name": "Mus Apptests",
   "capabilities": { "*": [ "*" ] }
 }

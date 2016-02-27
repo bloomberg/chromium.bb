@@ -37,9 +37,9 @@ define('main', [
         TEST_APP_URL, 1,
         function (services) {
           var test = connectToService(services, testMojom.TestMojoService);
-          test.getRequestorURL().then(function(response) {
+          test.getRequestorName().then(function(response) {
             domAutomationController.send(
-                response.url == 'chrome://mojo-web-ui/');
+                response.name == 'chrome://mojo-web-ui/');
           });
         },
         function (exposedServices) {});

@@ -4,8 +4,6 @@
 
 #include "mojo/shell/background/tests/test_application_catalog_store.h"
 
-#include "url/gurl.h"
-
 using package_manager::ApplicationCatalogStore;
 
 namespace mojo {
@@ -26,11 +24,11 @@ void TestApplicationCatalogStore::UpdateStore(
     scoped_ptr<base::ListValue> store) {}
 
 scoped_ptr<base::DictionaryValue> BuildPermissiveSerializedAppInfo(
-    const GURL& url,
-    const std::string& name) {
+    const std::string& name,
+    const std::string& display_name) {
   scoped_ptr<base::DictionaryValue> app(new base::DictionaryValue);
-  app->SetString(ApplicationCatalogStore::kUrlKey, url.spec());
   app->SetString(ApplicationCatalogStore::kNameKey, name);
+  app->SetString(ApplicationCatalogStore::kDisplayNameKey, display_name);
 
   scoped_ptr<base::DictionaryValue> capabilities(new base::DictionaryValue);
   scoped_ptr<base::ListValue> interfaces(new base::ListValue);

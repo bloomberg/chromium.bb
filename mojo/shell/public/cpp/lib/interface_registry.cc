@@ -51,9 +51,9 @@ bool InterfaceRegistry::SetInterfaceBinderForName(
     return true;
   }
   LOG(WARNING) << "Connection CapabilityFilter prevented binding to interface: "
-               << interface_name << " connection_url:"
-               << connection_->GetConnectionURL() << " remote_url:"
-               << connection_->GetRemoteApplicationURL();
+               << interface_name << " connection_name:"
+               << connection_->GetConnectionName() << " remote_name:"
+               << connection_->GetRemoteApplicationName();
   return false;
 }
 

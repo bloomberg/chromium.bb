@@ -67,20 +67,15 @@ class Connection {
     mojo::GetInterface(GetRemoteInterfaces(), ptr);
   }
 
-  // Returns the URL that was used by the source application to establish a
+  // Returns the name that was used by the source application to establish a
   // connection to the destination application.
   //
-  // When Connection is representing an incoming connection this can be
-  // different than the URL the application was initially loaded from, if the
-  // application handles multiple URLs. Note that this is the URL after all
-  // URL rewriting and HTTP redirects have been performed.
-  //
   // When Connection is representing and outgoing connection, this will be the
-  // same as the value returned by GetRemoveApplicationURL().
-  virtual const std::string& GetConnectionURL() = 0;
+  // same as the value returned by GetRemoveApplicationName().
+  virtual const std::string& GetConnectionName() = 0;
 
-  // Returns the URL identifying the remote application on this connection.
-  virtual const std::string& GetRemoteApplicationURL() = 0;
+  // Returns the name identifying the remote application on this connection.
+  virtual const std::string& GetRemoteApplicationName() = 0;
 
   // Returns the User ID for the remote application.
   virtual uint32_t GetRemoteUserID() const = 0;

@@ -13,8 +13,6 @@
 #include "mojo/services/package_manager/package_manager.h"
 #include "mojo/shell/public/interfaces/shell_client.mojom.h"
 
-class GURL;
-
 namespace package_manager {
 class ApplicationCatalogStore;
 }
@@ -45,9 +43,9 @@ class BackgroundShell {
   // switches applied to any processes spawned by this call.
   void Init(scoped_ptr<InitParams> init_params);
 
-  // Obtains an InterfaceRequest for the specified url.
-  InterfaceRequest<mojom::ShellClient> CreateShellClientRequest(
-      const GURL& url);
+  // Obtains an InterfaceRequest for the specified name.
+  mojom::ShellClientRequest CreateShellClientRequest(
+      const std::string& name);
 
  private:
   class MojoThread;

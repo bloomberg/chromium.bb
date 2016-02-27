@@ -13,8 +13,6 @@
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 
-class GURL;
-
 namespace content {
 
 // A virtual app URL identifying the browser itself. This should be used for
@@ -29,11 +27,12 @@ class CONTENT_EXPORT MojoAppConnection {
  public:
   virtual ~MojoAppConnection() {}
 
-  // Creates a new connection to the application at |url| using |requestor_url|
-  // to identify the requestor upon connection. This may be called from any
-  // thread.
-  static scoped_ptr<MojoAppConnection> Create(const GURL& url,
-                                              const GURL& requestor_url);
+  // Creates a new connection to the application at |name| using
+  // |requestor_name| to identify the requestor upon connection. This may be
+  // called from any thread.
+  static scoped_ptr<MojoAppConnection> Create(
+      const std::string& name,
+      const std::string& requestor_name);
 
   // Connects to a service within the application.
   template <typename Interface>

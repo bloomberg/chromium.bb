@@ -17,7 +17,7 @@ class GpuProcessControlImpl : public ProcessControlImpl {
   ~GpuProcessControlImpl() override;
 
   // ProcessControlImpl:
-  void RegisterApplicationLoaders(URLToLoaderMap* url_to_loader_map) override;
+  void RegisterApplicationLoaders(NameToLoaderMap* name_to_loader_map) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GpuProcessControlImpl);

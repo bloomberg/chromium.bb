@@ -1,5 +1,5 @@
 {
-  "url": "mojo://task_viewer/",
-  "name": "Task Viewer",
+  "name": "mojo:task_viewer",
+  "display_name": "Task Viewer",
   "capabilities": { "*": [ "*" ] }
 }

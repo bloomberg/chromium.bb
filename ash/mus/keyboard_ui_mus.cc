@@ -13,8 +13,8 @@ namespace ash {
 
 KeyboardUIMus::KeyboardUIMus(mojo::Connector* connector)
     : is_enabled_(false), observer_binding_(this) {
-  // TODO(sky): should be something like mojo://keyboard, but need mapping.
-  connector->ConnectToInterface("exe://chrome", &keyboard_);
+  // TODO(sky): should be something like mojo:keyboard, but need mapping.
+  connector->ConnectToInterface("exe:chrome", &keyboard_);
   keyboard_->AddObserver(observer_binding_.CreateInterfacePtrAndBind());
 }
 

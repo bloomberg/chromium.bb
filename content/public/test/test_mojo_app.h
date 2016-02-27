@@ -10,7 +10,6 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
 #include "mojo/shell/public/cpp/shell_client.h"
-#include "url/gurl.h"
 
 namespace content {
 
@@ -35,12 +34,12 @@ class TestMojoApp : public mojo::ShellClient,
 
   // TestMojoService:
   void DoSomething(const DoSomethingCallback& callback) override;
-  void GetRequestorURL(const GetRequestorURLCallback& callback) override;
+  void GetRequestorName(const GetRequestorNameCallback& callback) override;
 
   mojo::Binding<TestMojoService> service_binding_;
 
-  // The URL of the app connecting to us.
-  GURL requestor_url_;
+  // The name of the app connecting to us.
+  std::string requestor_name_;
 
   DISALLOW_COPY_AND_ASSIGN(TestMojoApp);
 };

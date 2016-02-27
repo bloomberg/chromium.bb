@@ -1,5 +1,5 @@
 {
-  "url": "mojo://leveldb_apptests/",
-  "name": "LevelDB Service Apptests",
+  "name": "mojo:leveldb_apptests",
+  "display_name": "LevelDB Service Apptests",
   "capabilities": { "*": ["*"] }
 }

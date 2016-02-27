@@ -29,7 +29,7 @@ class FrameMojoShell : public mojo::shell::mojom::Connector {
  private:
   // mojo::Connector:
   void Connect(
-      const mojo::String& application_url,
+      const mojo::String& application_name,
       uint32_t user_id,
       mojo::shell::mojom::InterfaceProviderRequest services,
       mojo::shell::mojom::InterfaceProviderPtr exposed_services,

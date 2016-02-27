@@ -7,7 +7,6 @@
 
 #include "mojo/shell/public/cpp/connection.h"
 #include "mojo/shell/public/interfaces/shell.mojom.h"
-#include "url/gurl.h"
 
 namespace mojo {
 
@@ -31,15 +30,15 @@ class Connector {
 
   class ConnectParams {
    public:
-    explicit ConnectParams(const std::string& url);
+    explicit ConnectParams(const std::string& name);
     ~ConnectParams();
 
-    const GURL& url() { return url_; }
+    const std::string& name() { return name_; }
     void set_user_id(uint32_t user_id) { user_id_ = user_id; }
     uint32_t user_id() const { return user_id_; }
 
    private:
-    GURL url_;
+    std::string name_;
     uint32_t user_id_;
 
     DISALLOW_COPY_AND_ASSIGN(ConnectParams);
@@ -51,10 +50,10 @@ class Connector {
   // Once this method is called, this object is bound to the thread on which the
   // call took place. To pass to another thread, call Clone() and pass the
   // result.
-  virtual scoped_ptr<Connection> Connect(const std::string& url) = 0;
+  virtual scoped_ptr<Connection> Connect(const std::string& name) = 0;
   virtual scoped_ptr<Connection> Connect(ConnectParams* params) = 0;
 
-  // Connect to application identified by |request->url| and connect to the
+  // Connect to application identified by |request->name| and connect to the
   // service implementation of the interface identified by |Interface|.
   template <typename Interface>
   void ConnectToInterface(ConnectParams* params, InterfacePtr<Interface>* ptr) {
@@ -63,9 +62,9 @@ class Connector {
       connection->GetInterface(ptr);
   }
   template <typename Interface>
-  void ConnectToInterface(const std::string& url,
+  void ConnectToInterface(const std::string& name,
                           InterfacePtr<Interface>* ptr) {
-    ConnectParams params(url);
+    ConnectParams params(name);
     return ConnectToInterface(&params, ptr);
   }
 

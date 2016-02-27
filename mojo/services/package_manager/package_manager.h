@@ -29,8 +29,8 @@ struct ApplicationInfo {
   ApplicationInfo();
   ~ApplicationInfo();
 
-  GURL url;
   std::string name;
+  std::string display_name;
   CapabilityFilter base_filter;
 };
 
@@ -40,9 +40,9 @@ struct ApplicationInfo {
 class ApplicationCatalogStore {
  public:
   // Value is a string.
-  static const char kUrlKey[];
-  // Value is a string.
   static const char kNameKey[];
+  // Value is a string.
+  static const char kDisplayNameKey[];
   // Value is a dictionary that maps from the filter to a list of string
   // interfaces.
   static const char kCapabilitiesKey[];
@@ -51,8 +51,8 @@ class ApplicationCatalogStore {
 
   // Called during initialization to construct the PackageManagerImpl's catalog.
   // Returns a serialized list of the apps. Each entry in the returned list
-  // corresponds to an app (as a dictionary). Each dictionary has a url, name
-  // and capabilities. The return value is owned by the caller.
+  // corresponds to an app (as a dictionary). Each dictionary has a name,
+  // display name and capabilities. The return value is owned by the caller.
   virtual const base::ListValue* GetStore() = 0;
 
   // Write the catalog to the store. Called when the PackageManagerImpl learns
@@ -71,12 +71,12 @@ class PackageManager : public mojo::ShellClient,
   // If |register_schemes| is true, mojo: and exe: schemes are registered as
   // "standard".
   PackageManager(base::TaskRunner* blocking_pool,
-                 bool register_schemes,
                  scoped_ptr<ApplicationCatalogStore> catalog);
   ~PackageManager() override;
 
  private:
-  using MojoURLAliasMap = std::map<GURL, std::pair<GURL, std::string>>;
+  using MojoNameAliasMap =
+      std::map<std::string, std::pair<std::string, std::string>>;
 
   // mojo::ShellClient:
   bool AcceptConnection(mojo::Connection* connection) override;
@@ -106,26 +106,26 @@ class PackageManager : public mojo::ShellClient,
       const ResolveProtocolSchemeCallback& callback) override;
 
   // mojom::ShellResolver:
-  void ResolveMojoURL(const mojo::String& mojo_url,
-                      const ResolveMojoURLCallback& callback) override;
+  void ResolveMojoName(const mojo::String& mojo_name,
+                       const ResolveMojoNameCallback& callback) override;
 
   // mojom::Catalog:
-  void GetEntries(mojo::Array<mojo::String> urls,
+  void GetEntries(mojo::Array<mojo::String> names,
                   const GetEntriesCallback& callback) override;
 
-  // Completes resolving a Mojo URL from the Shell after the resolved URL has
+  // Completes resolving a Mojo name from the Shell after the resolved name has
   // been added to the catalog and the manifest read.
-  void CompleteResolveMojoURL(const GURL& resolved_url,
-                              const std::string& qualifier,
-                              const ResolveMojoURLCallback& callback);
+  void CompleteResolveMojoName(const std::string& resolved_name,
+                               const std::string& qualifier,
+                               const ResolveMojoNameCallback& callback);
 
-  bool IsURLInCatalog(const GURL& url) const;
+  bool IsNameInCatalog(const std::string& name) const;
 
-  // Called from ResolveMojoURL().
-  // If |url| is not in the catalog, attempts to load a manifest for it.
-  void EnsureURLInCatalog(const GURL& url,
-                          const std::string& qualifier,
-                          const ResolveMojoURLCallback& callback);
+  // Called from ResolveMojoName().
+  // If |name| is not in the catalog, attempts to load a manifest for it.
+  void EnsureNameInCatalog(const std::string& name,
+                           const std::string& qualifier,
+                           const ResolveMojoNameCallback& callback);
 
   // Populate/serialize the catalog from/to the supplied store.
   void DeserializeCatalog();
@@ -135,20 +135,20 @@ class PackageManager : public mojo::ShellClient,
   const ApplicationInfo& DeserializeApplication(
       const base::DictionaryValue* dictionary);
 
-  GURL GetManifestURL(const GURL& url);
+  GURL GetManifestURL(const std::string& name);
 
   // Called once the manifest has been read. |pm| may be null at this point,
   // but |callback| must be run.
   static void OnReadManifest(base::WeakPtr<PackageManager> pm,
-                             const GURL& url,
+                             const std::string& name,
                              const std::string& qualifier,
-                             const ResolveMojoURLCallback& callback,
+                             const ResolveMojoNameCallback& callback,
                              scoped_ptr<base::Value> manifest);
 
   // Called once the manifest is read and |this| hasn't been deleted.
-  void OnReadManifestImpl(const GURL& url,
+  void OnReadManifestImpl(const std::string& name,
                           const std::string& qualifier,
-                          const ResolveMojoURLCallback& callback,
+                          const ResolveMojoNameCallback& callback,
                           scoped_ptr<base::Value> manifest);
 
   base::TaskRunner* blocking_pool_;
@@ -159,12 +159,12 @@ class PackageManager : public mojo::ShellClient,
   mojo::BindingSet<mojom::Catalog> catalog_bindings_;
 
   scoped_ptr<ApplicationCatalogStore> catalog_store_;
-  std::map<GURL, ApplicationInfo> catalog_;
+  std::map<std::string, ApplicationInfo> catalog_;
 
-  // Used when an app handles multiple urls. Maps from app (as url) to url of
-  // app that is responsible for handling it. The value is a pair of the
-  // url of the handler along with a qualifier.
-  MojoURLAliasMap mojo_url_aliases_;
+  // Used when an app handles multiple names. Maps from app (as name) to name of
+  // app that is responsible for handling it. The value is a pair of the name of
+  // the handler along with a qualifier.
+  MojoNameAliasMap mojo_name_aliases_;
 
   base::WeakPtrFactory<PackageManager> weak_factory_;
 

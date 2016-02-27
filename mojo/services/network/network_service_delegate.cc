@@ -48,7 +48,7 @@ void NetworkServiceDelegate::RemoveObserver(
 }
 
 void NetworkServiceDelegate::Initialize(Connector* connector,
-                                        const std::string& url,
+                                        const std::string& name,
                                         uint32_t id, uint32_t user_id) {
   // TODO(erg): Find everything else that writes to the filesystem and
   // transition it to proxying mojo:filesystem. We shouldn't have any path
@@ -66,7 +66,7 @@ void NetworkServiceDelegate::Initialize(Connector* connector,
   }
 
   context_.reset(new NetworkContext(base_path, this));
-  tracing_.Initialize(connector, url);
+  tracing_.Initialize(connector, name);
 }
 
 bool NetworkServiceDelegate::AcceptConnection(Connection* connection) {
@@ -89,8 +89,9 @@ void NetworkServiceDelegate::Create(Connection* connection,
 
 void NetworkServiceDelegate::Create(Connection* connection,
                                     InterfaceRequest<CookieStore> request) {
+  // TODO(beng): need to find a way to get content origin.
   new CookieStoreImpl(
-      context_.get(), GURL(connection->GetRemoteApplicationURL()).GetOrigin(),
+      context_.get(), GURL(),
       ref_factory_.CreateRef(), std::move(request));
 }
 

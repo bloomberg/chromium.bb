@@ -19,7 +19,6 @@
 #include "mash/quick_launch/quick_launch_application.h"
 #include "mash/shell/shell_application_delegate.h"
 #include "mash/wm/window_manager_application.h"
-#include "mojo/common/mojo_scheme_register.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/shell/background/background_shell.h"
 #include "mojo/shell/identity.h"
@@ -30,8 +29,6 @@
 #include "mojo/shell/public/interfaces/shell_client_factory.mojom.h"
 #include "mojo/shell/runner/common/switches.h"
 #include "mojo/shell/runner/host/child_process_base.h"
-#include "url/gurl.h"
-#include "url/url_util.h"
 
 #if defined(OS_LINUX)
 #include "components/font_service/font_service_app.h"
@@ -66,41 +63,40 @@ class DefaultShellClient : public mojo::ShellClient,
 
   // ShellClientFactory:
   void CreateShellClient(mojo::shell::mojom::ShellClientRequest request,
-                         const mojo::String& mojo_url) override {
-    const GURL url = GURL(std::string(mojo_url));
+                         const mojo::String& mojo_name) override {
     if (shell_client_) {
-      LOG(ERROR) << "request to create additional app " << url;
+      LOG(ERROR) << "request to create additional app " << mojo_name;
       return;
     }
-    shell_client_ = CreateShellClient(url);
+    shell_client_ = CreateShellClient(mojo_name);
     if (shell_client_) {
       shell_connection_.reset(
           new mojo::ShellConnection(shell_client_.get(), std::move(request)));
       return;
     }
-    LOG(ERROR) << "unknown url " << url;
+    LOG(ERROR) << "unknown name " << mojo_name;
     NOTREACHED();
   }
 
  private:
   // TODO(sky): move this into mash.
-  scoped_ptr<mojo::ShellClient> CreateShellClient(const GURL& url) {
-    if (url == GURL("mojo:ash_sysui"))
+  scoped_ptr<mojo::ShellClient> CreateShellClient(const std::string& name) {
+    if (name == "mojo:ash_sysui")
       return make_scoped_ptr(new ash::sysui::SysUIApplication);
-    if (url == GURL("mojo:desktop_wm"))
+    if (name == "mojo:desktop_wm")
       return make_scoped_ptr(new mash::wm::WindowManagerApplication);
-    if (url == GURL("mojo:mash_shell"))
+    if (name == "mojo:mash_shell")
       return make_scoped_ptr(new mash::shell::ShellApplicationDelegate);
-    if (url == GURL("mojo:mus"))
+    if (name == "mojo:mus")
       return make_scoped_ptr(new mus::MandolineUIServicesApp);
-    if (url == GURL("mojo:quick_launch"))
+    if (name == "mojo:quick_launch")
       return make_scoped_ptr(new mash::quick_launch::QuickLaunchApplication);
-    if (url == GURL("mojo:resource_provider")) {
+    if (name == "mojo:resource_provider") {
       return make_scoped_ptr(
           new resource_provider::ResourceProviderApp("mojo:resource_provider"));
     }
 #if defined(OS_LINUX)
-    if (url == GURL("mojo:font_service"))
+    if (name == "mojo:font_service")
       return make_scoped_ptr(new font_service::FontServiceApp);
 #endif
     return nullptr;
@@ -142,8 +138,8 @@ class NativeRunnerDelegateImpl : public mojo::shell::NativeRunnerDelegate {
   void AdjustCommandLineArgumentsForTarget(
       const mojo::shell::Identity& target,
       base::CommandLine* command_line) override {
-    if (target.url() != GURL("exe:chrome")) {
-      if (target.url() == GURL("exe:chrome_mash"))
+    if (target.name() != "exe:chrome") {
+      if (target.name() == "exe:chrome_mash")
         ChangeChromeMashToChrome(command_line);
       command_line->AppendSwitchASCII(switches::kProcessType, kMashChild);
 #if defined(OS_WIN)
@@ -189,7 +185,7 @@ void MashRunner::RunMain() {
   shell_client_.reset(new DefaultShellClient);
   shell_connection_.reset(new mojo::ShellConnection(
       shell_client_.get(),
-      background_shell.CreateShellClientRequest(GURL("exe:chrome_mash"))));
+      background_shell.CreateShellClientRequest("exe:chrome_mash")));
   shell_connection_->WaitForInitialize();
   shell_connection_->connector()->Connect("mojo:mash_shell");
   base::MessageLoop::current()->Run();
@@ -225,7 +221,6 @@ int MashMain() {
                        false,   // Timestamp
                        false);  // Tick count
 
-  mojo::RegisterMojoSchemes();
   // TODO(sky): use MessagePumpMojo.
   scoped_ptr<base::MessageLoop> message_loop;
 #if defined(OS_LINUX)

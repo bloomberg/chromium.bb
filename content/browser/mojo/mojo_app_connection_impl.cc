@@ -21,16 +21,17 @@ void OnGotInstanceID(uint32_t remote_id) {}
 
 // static
 scoped_ptr<MojoAppConnection> MojoAppConnection::Create(
-    const GURL& url,
-    const GURL& requestor_url) {
+    const std::string& name,
+    const std::string& requestor_name) {
   return scoped_ptr<MojoAppConnection>(
-      new MojoAppConnectionImpl(url, requestor_url));
+      new MojoAppConnectionImpl(name, requestor_name));
 }
 
-MojoAppConnectionImpl::MojoAppConnectionImpl(const GURL& url,
-                                             const GURL& requestor_url) {
+MojoAppConnectionImpl::MojoAppConnectionImpl(
+    const std::string& name,
+    const std::string& requestor_name) {
   MojoShellContext::ConnectToApplication(
-      url, requestor_url, mojo::GetProxy(&interfaces_),
+      name, requestor_name, mojo::GetProxy(&interfaces_),
       mojo::shell::mojom::InterfaceProviderPtr(),
       base::Bind(&OnGotInstanceID));
 }

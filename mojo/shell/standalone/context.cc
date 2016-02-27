@@ -22,6 +22,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -35,12 +36,12 @@
 #include "mojo/services/tracing/public/interfaces/tracing.mojom.h"
 #include "mojo/shell/application_loader.h"
 #include "mojo/shell/connect_params.h"
+#include "mojo/shell/public/cpp/names.h"
 #include "mojo/shell/runner/host/in_process_native_runner.h"
 #include "mojo/shell/runner/host/out_of_process_native_runner.h"
 #include "mojo/shell/standalone/tracer.h"
 #include "mojo/shell/switches.h"
 #include "mojo/util/filename_util.h"
-#include "url/gurl.h"
 
 namespace mojo {
 namespace shell {
@@ -90,8 +91,8 @@ scoped_ptr<base::Thread> CreateIOThread(const char* name) {
   return thread;
 }
 
-void OnInstanceQuit(const GURL& url, const Identity& identity) {
-  if (url == identity.url())
+void OnInstanceQuit(const std::string& name, const Identity& identity) {
+  if (name == identity.name())
     base::MessageLoop::current()->QuitWhenIdle();
 }
 
@@ -156,7 +157,7 @@ void Context::Init(scoped_ptr<InitParams> init_params) {
   if (init_params)
     app_catalog = std::move(init_params->app_catalog);
   application_manager_.reset(new ApplicationManager(std::move(runner_factory),
-                                                    blocking_pool_.get(), true,
+                                                    blocking_pool_.get(),
                                                     std::move(app_catalog)));
 
   shell::mojom::InterfaceProviderPtr tracing_remote_interfaces;
@@ -165,7 +166,7 @@ void Context::Init(scoped_ptr<InitParams> init_params) {
 
   scoped_ptr<ConnectParams> params(new ConnectParams);
   params->set_source(CreateShellIdentity());
-  params->set_target(Identity(GURL("mojo:tracing"), std::string(),
+  params->set_target(Identity("mojo:tracing", std::string(),
                               mojom::Connector::kUserInherit));
   params->set_remote_interfaces(GetProxy(&tracing_remote_interfaces));
   params->set_local_interfaces(std::move(tracing_local_interfaces));
@@ -219,24 +220,29 @@ void Context::RunCommandLineApplication() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   base::CommandLine::StringVector args = command_line->GetArgs();
   for (size_t i = 0; i < args.size(); ++i) {
-    GURL possible_app(args[i]);
-    if (possible_app.SchemeIs("mojo")) {
+#if defined(OS_WIN)
+    std::string possible_app = base::WideToUTF8(args[i]);
+#else
+    std::string possible_app = args[i];
+#endif
+    if (GetNameType(possible_app) == "mojo") {
       Run(possible_app);
       break;
     }
   }
 }
 
-void Context::Run(const GURL& url) {
+void Context::Run(const std::string& name) {
   application_manager_->SetInstanceQuitCallback(
-      base::Bind(&OnInstanceQuit, url));
+      base::Bind(&OnInstanceQuit, name));
 
   shell::mojom::InterfaceProviderPtr remote_interfaces;
   shell::mojom::InterfaceProviderPtr local_interfaces;
 
   scoped_ptr<ConnectParams> params(new ConnectParams);
   params->set_source(CreateShellIdentity());
-  params->set_target(Identity(url, std::string(), mojom::Connector::kUserRoot));
+  params->set_target(Identity(name, std::string(),
+                              mojom::Connector::kUserRoot));
   params->set_remote_interfaces(GetProxy(&remote_interfaces));
   params->set_local_interfaces(std::move(local_interfaces));
   application_manager_->Connect(std::move(params));

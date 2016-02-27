@@ -11,13 +11,12 @@
 #include "mojo/shell/public/cpp/shell_client.h"
 #include "mojo/shell/public/cpp/shell_connection.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "url/gurl.h"
 
 namespace mojo {
 namespace shell {
 namespace {
 
-const char kTestUrl[] = "mojo:test-app";
+const char kTestName[] = "mojo:test-app";
 
 class ShellClientImpl : public ShellClient {
  public:
@@ -30,7 +29,7 @@ class ShellClientImpl : public ShellClient {
 
 scoped_ptr<TestApplicationCatalogStore> BuildTestApplicationCatalogStore() {
   scoped_ptr<base::ListValue> apps(new base::ListValue);
-  apps->Append(BuildPermissiveSerializedAppInfo(GURL(kTestUrl), "test"));
+  apps->Append(BuildPermissiveSerializedAppInfo(kTestName, "test"));
   return make_scoped_ptr(new TestApplicationCatalogStore(std::move(apps)));
 }
 
@@ -53,7 +52,7 @@ TEST(BackgroundShellTest, DISABLED_Basic) {
   background_shell.Init(std::move(init_params));
   ShellClientImpl shell_client;
   ShellConnection shell_connection(
-      &shell_client, background_shell.CreateShellClientRequest(GURL(kTestUrl)));
+      &shell_client, background_shell.CreateShellClientRequest(kTestName));
   shell_connection.WaitForInitialize();
   mojom::TestServicePtr test_service;
   shell_connection.connector()->ConnectToInterface(

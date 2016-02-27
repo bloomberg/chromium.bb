@@ -113,14 +113,3 @@ test("mojo_common_perftests") {
     configs += [ "//build/config/gcc:rpath_for_built_shared_libraries" ]
   }
 }
-
-source_set("mojo_scheme_register") {
-  sources = [
-    "mojo_scheme_register.cc",
-    "mojo_scheme_register.h",
-  ]
-
-  deps = [
-    "//url",
-  ]
-}

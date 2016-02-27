@@ -36,10 +36,6 @@ void RegisterContentSchemes(bool lock_schemes) {
   url::AddStandardScheme(kGuestScheme, url::SCHEME_WITHOUT_PORT);
   url::AddStandardScheme(kMetadataScheme, url::SCHEME_WITHOUT_AUTHORITY);
 
-  // TODO(rockot): Remove these. http://crbug.com/590012.
-  url::AddStandardScheme(kExeScheme, url::SCHEME_WITHOUT_AUTHORITY);
-  url::AddStandardScheme(kMojoScheme, url::SCHEME_WITHOUT_AUTHORITY);
-
   for (const url::SchemeWithType& scheme : additional_standard_schemes)
     url::AddStandardScheme(scheme.scheme, scheme.type);
 

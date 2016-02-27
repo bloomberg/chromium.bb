@@ -11,10 +11,6 @@
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/shell/public/interfaces/shell_client.mojom.h"
 
-#if defined(OS_WIN)
-#undef DELETE
-#endif
-
 namespace base {
 class FilePath;
 }

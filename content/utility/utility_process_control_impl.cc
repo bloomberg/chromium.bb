@@ -31,8 +31,8 @@ UtilityProcessControlImpl::UtilityProcessControlImpl() {}
 UtilityProcessControlImpl::~UtilityProcessControlImpl() {}
 
 void UtilityProcessControlImpl::RegisterApplicationLoaders(
-    URLToLoaderMap* url_to_loader_map) {
-  URLToLoaderMap& map_ref = *url_to_loader_map;
+    NameToLoaderMap* name_to_loader_map) {
+  NameToLoaderMap& map_ref = *name_to_loader_map;
 
   ContentUtilityClient::StaticMojoApplicationMap apps;
   GetContentClient()->utility()->RegisterMojoApplications(&apps);
@@ -43,7 +43,7 @@ void UtilityProcessControlImpl::RegisterApplicationLoaders(
   }
 
 #if defined(ENABLE_MOJO_MEDIA_IN_UTILITY_PROCESS)
-  map_ref[GURL("mojo:media")] = new StaticApplicationLoader(
+  map_ref["mojo:media"] = new StaticApplicationLoader(
       base::Bind(&media::CreateMojoMediaApplication), base::Bind(&QuitProcess));
 #endif
 }

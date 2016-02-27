@@ -144,23 +144,23 @@ class TaskViewerContents
       mojo::Array<ApplicationInfoPtr> applications) override {
     // This callback should only be called with an empty model.
     DCHECK(instances_.empty());
-    mojo::Array<mojo::String> urls;
+    mojo::Array<mojo::String> names;
     for (size_t i = 0; i < applications.size(); ++i) {
-      InsertInstance(applications[i]->id, applications[i]->url,
+      InsertInstance(applications[i]->id, applications[i]->name,
                      applications[i]->pid);
-      urls.push_back(applications[i]->url);
+      names.push_back(applications[i]->name);
     }
-    catalog_->GetEntries(std::move(urls),
+    catalog_->GetEntries(std::move(names),
                          base::Bind(&TaskViewerContents::OnGotCatalogEntries,
                                     weak_ptr_factory_.GetWeakPtr()));
   }
   void ApplicationInstanceCreated(ApplicationInfoPtr application) override {
     DCHECK(!ContainsId(application->id));
-    InsertInstance(application->id, application->url, application->pid);
+    InsertInstance(application->id, application->name, application->pid);
     observer_->OnItemsAdded(static_cast<int>(instances_.size()), 1);
-    mojo::Array<mojo::String> urls;
-    urls.push_back(application->url);
-    catalog_->GetEntries(std::move(urls),
+    mojo::Array<mojo::String> names;
+    names.push_back(application->name);
+    catalog_->GetEntries(std::move(names),
                          base::Bind(&TaskViewerContents::OnGotCatalogEntries,
                                     weak_ptr_factory_.GetWeakPtr()));
   }
@@ -204,7 +204,7 @@ class TaskViewerContents
     for (auto it = instances_.begin(); it != instances_.end(); ++it) {
       auto entry_it = entries.find((*it)->url);
       if (entry_it != entries.end()) {
-        (*it)->name = entry_it->second->name;
+        (*it)->name = entry_it->second->display_name;
         observer_->OnItemsChanged(
             static_cast<int>(it - instances_.begin()), 1);
       }

@@ -50,7 +50,7 @@ class ConnectionValidator : public ApplicationLoader,
 
  private:
   // Overridden from ApplicationLoader:
-  void Load(const GURL& url,
+  void Load(const std::string& name,
             InterfaceRequest<mojom::ShellClient> request) override {
     app_.reset(new ShellConnection(this, std::move(request)));
   }
@@ -68,16 +68,18 @@ class ConnectionValidator : public ApplicationLoader,
   }
 
   // Overridden from Validator:
-  void AddInterfaceCalled(const String& app_url,
-                          const String& service_url,
+  void AddInterfaceCalled(const String& app_name,
+                          const String& service_name,
                           const String& name,
                           bool blocked) override {
     Validate(base::StringPrintf("%s %s %s %s",
-        blocked ? "B" : "E", app_url.data(), service_url.data(), name.data()));
+        blocked ? "B" : "E", app_name.data(), service_name.data(),
+        name.data()));
   }
-  void ConnectionClosed(const String& app_url,
-                        const String& service_url) override {
-    Validate(base::StringPrintf("C %s %s", app_url.data(), service_url.data()));
+  void ConnectionClosed(const String& app_name,
+                        const String& service_name) override {
+    Validate(base::StringPrintf("C %s %s", app_name.data(),
+             service_name.data()));
   }
 
   void Validate(const std::string& result) {
@@ -117,7 +119,7 @@ class ServiceApplication : public ShellClient,
 
  private:
   // Overridden from ShellClient:
-  void Initialize(Connector* connector, const std::string& url, uint32_t id,
+  void Initialize(Connector* connector, const std::string& name, uint32_t id,
                   uint32_t user_id) override {
     // ServiceApplications have no capability filter and can thus connect
     // directly to the validator application.
@@ -143,8 +145,8 @@ class ServiceApplication : public ShellClient,
 
   template <typename Interface>
   void AddInterface(Connection* connection) {
-    validator_->AddInterfaceCalled(connection->GetRemoteApplicationURL(),
-                                   connection->GetConnectionURL(),
+    validator_->AddInterfaceCalled(connection->GetRemoteApplicationName(),
+                                   connection->GetConnectionName(),
                                    Interface::Name_,
                                    !connection->AddInterface<Interface>(this));
   }
@@ -162,10 +164,10 @@ class ServiceApplication : public ShellClient,
 TestApplication::TestApplication() : connector_(nullptr) {}
 TestApplication::~TestApplication() {}
 
-void TestApplication::Initialize(Connector* connector, const std::string& url,
+void TestApplication::Initialize(Connector* connector, const std::string& name,
                                  uint32_t id, uint32_t user_id) {
   connector_ = connector;
-  url_ = url;
+  name_ = name;
 }
 bool TestApplication::AcceptConnection(Connection* connection) {
   // TestApplications receive their Validator via the inbound connection.
@@ -183,8 +185,8 @@ bool TestApplication::AcceptConnection(Connection* connection) {
   return true;
 }
 
-void TestApplication::ConnectionClosed(const std::string& service_url) {
-  validator_->ConnectionClosed(url_, service_url);
+void TestApplication::ConnectionClosed(const std::string& service_name) {
+  validator_->ConnectionClosed(name_, service_name);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -193,7 +195,7 @@ void TestApplication::ConnectionClosed(const std::string& service_url) {
 TestLoader::TestLoader(ShellClient* delegate) : delegate_(delegate) {}
 TestLoader::~TestLoader() {}
 
-void TestLoader::Load(const GURL& url,
+void TestLoader::Load(const std::string& name,
                       InterfaceRequest<mojom::ShellClient> request) {
   app_.reset(new ShellConnection(delegate_.get(), std::move(request)));
 }
@@ -281,8 +283,7 @@ void CapabilityFilterTest::RunWildcardTest() {
 
 
 void CapabilityFilterTest::SetUp() {
-  application_manager_.reset(
-      new ApplicationManager(nullptr, nullptr, true, nullptr));
+  application_manager_.reset(new ApplicationManager(nullptr, nullptr, nullptr));
   application_manager_->SetInstanceQuitCallback(
       base::Bind(&CapabilityFilterTest::OnInstanceQuit,
                  base::Unretained(this)));
@@ -319,7 +320,7 @@ class InterfaceProviderImpl : public shell::mojom::InterfaceProvider {
   DISALLOW_COPY_AND_ASSIGN(InterfaceProviderImpl);
 };
 
-void CapabilityFilterTest::RunApplication(const std::string& url,
+void CapabilityFilterTest::RunApplication(const std::string& name,
                                           const CapabilityFilter& filter) {
   shell::mojom::InterfaceProviderPtr remote_interfaces;
 
@@ -330,7 +331,7 @@ void CapabilityFilterTest::RunApplication(const std::string& url,
   new InterfaceProviderImpl(GetProxy(&local_interfaces), validator_);
   scoped_ptr<ConnectParams> params(new ConnectParams);
   params->set_source(CreateShellIdentity());
-  params->set_target(Identity(GURL(url), std::string(),
+  params->set_target(Identity(name, std::string(),
                               mojom::Connector::kUserInherit));
   params->set_remote_interfaces(GetProxy(&remote_interfaces));
   params->set_local_interfaces(std::move(local_interfaces));
@@ -341,8 +342,8 @@ void CapabilityFilterTest::RunApplication(const std::string& url,
 void CapabilityFilterTest::InitValidator(
     const std::set<std::string>& expectations) {
   validator_ = new ConnectionValidator(expectations, &loop_);
-  application_manager()->SetLoaderForURL(make_scoped_ptr(validator_),
-                                          GURL("test:validator"));
+  application_manager()->SetLoaderForName(make_scoped_ptr(validator_),
+                                          "test:validator");
 }
 
 void CapabilityFilterTest::RunTest() {

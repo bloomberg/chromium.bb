@@ -5,9 +5,6 @@
 #ifndef MOJO_SHELL_STANDALONE_DESKTOP_MAIN_HELPER_H
 #define MOJO_SHELL_STANDALONE_DESKTOP_MAIN_HELPER_H
 
-#include "base/callback.h"
-#include "url/gurl.h"
-
 namespace mojo {
 namespace shell {
 

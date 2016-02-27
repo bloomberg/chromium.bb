@@ -23,12 +23,12 @@ namespace {
 
 class RunnerThread : public base::SimpleThread {
  public:
-  RunnerThread(const GURL& url,
+  RunnerThread(const std::string& name,
                mojo::shell::mojom::ShellClientRequest request,
                scoped_refptr<base::TaskRunner> exit_task_runner,
                const base::Closure& exit_callback,
                const StaticApplicationLoader::ApplicationFactory& factory)
-      : base::SimpleThread("Mojo Application: " + url.spec()),
+      : base::SimpleThread("Mojo Application: " + name),
         request_(std::move(request)),
         exit_task_runner_(exit_task_runner),
         exit_callback_(exit_callback),
@@ -70,7 +70,7 @@ StaticApplicationLoader::~StaticApplicationLoader() {
 }
 
 void StaticApplicationLoader::Load(
-    const GURL& url,
+    const std::string& name,
     mojo::shell::mojom::ShellClientRequest request) {
   if (thread_)
     return;
@@ -80,7 +80,7 @@ void StaticApplicationLoader::Load(
   // with a new app instance.
   auto exit_callback = base::Bind(&StaticApplicationLoader::StopAppThread,
                                   weak_factory_.GetWeakPtr());
-  thread_.reset(new RunnerThread(url, std::move(request),
+  thread_.reset(new RunnerThread(name, std::move(request),
                                  base::ThreadTaskRunnerHandle::Get(),
                                  exit_callback, factory_));
   thread_->Start();
