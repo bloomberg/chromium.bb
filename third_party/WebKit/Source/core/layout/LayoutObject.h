@@ -948,19 +948,33 @@ public:
     // Convert the given local point to absolute coordinates
     // FIXME: Temporary. If UseTransforms is true, take transforms into account. Eventually localToAbsolute() will always be transform-aware.
     FloatPoint localToAbsolute(const FloatPoint& localPoint = FloatPoint(), MapCoordinatesFlags = 0) const;
-    // If TraverseDocumentBoundaries is not specified, the input quad is assumed to be in the space of the containing frame.
-    // Otherwise it is assumed to be in the space of the local root frame.
-    FloatPoint absoluteToLocal(const FloatPoint&, MapCoordinatesFlags = 0) const;
+
+    // If the LayoutBoxModelObject ancestor is non-null, the input point is in the space of the ancestor.
+    // Otherwise:
+    //   If TraverseDocumentBoundaries is specified, the input point is in the space of the local root frame.
+    //   Otherwise, the input point is in the space of the containing frame.
+    FloatPoint ancestorToLocal(LayoutBoxModelObject*, const FloatPoint&, MapCoordinatesFlags = 0) const;
+    FloatPoint absoluteToLocal(const FloatPoint& point, MapCoordinatesFlags mode = 0) const
+    {
+        return ancestorToLocal(nullptr, point, mode);
+    }
 
     // Convert a local quad to absolute coordinates, taking transforms into account.
     FloatQuad localToAbsoluteQuad(const FloatQuad& quad, MapCoordinatesFlags mode = 0, bool* wasFixed = nullptr) const
     {
         return localToAncestorQuad(quad, nullptr, mode, wasFixed);
     }
-    // Convert an absolute quad to local coordinates.
-    // If TraverseDocumentBoundaries is not specified, the input quad is assumed to be in the space of the containing frame.
-    // Otherwise it is assumed to be in the space of the local root frame.
-    FloatQuad absoluteToLocalQuad(const FloatQuad&, MapCoordinatesFlags mode = 0) const;
+
+    // Convert a quad in ancestor coordinates to local coordinates.
+    // If the LayoutBoxModelObject ancestor is non-null, the input quad is in the space of the ancestor.
+    // Otherwise:
+    //   If TraverseDocumentBoundaries is specified, the input quad is in the space of the local root frame.
+    //   Otherwise, the input quad is in the space of the containing frame.
+    FloatQuad ancestorToLocalQuad(LayoutBoxModelObject*, const FloatQuad&, MapCoordinatesFlags mode = 0) const;
+    FloatQuad absoluteToLocalQuad(const FloatQuad& quad, MapCoordinatesFlags mode = 0) const
+    {
+        return ancestorToLocalQuad(nullptr, quad, mode);
+    }
 
     // Convert a local quad into the coordinate system of container, taking transforms into account.
     FloatQuad localToAncestorQuad(const FloatQuad&, const LayoutBoxModelObject* ancestor, MapCoordinatesFlags = 0, bool* wasFixed = nullptr) const;
@@ -1212,9 +1226,15 @@ public:
     // Map points and quads through elements, potentially via 3d transforms. You should never need to call these directly; use
     // localToAbsolute/absoluteToLocal methods instead.
     virtual void mapLocalToAncestor(const LayoutBoxModelObject* ancestor, TransformState&, MapCoordinatesFlags = ApplyContainerFlip, bool* wasFixed = nullptr, const PaintInvalidationState* = nullptr) const;
-    // If TraverseDocumentBoundaries is not specified, the input quad is assumed to be in the space of the containing frame.
-    // Otherwise it is assumed to be in the space of the local root frame.
-    virtual void mapAbsoluteToLocalPoint(MapCoordinatesFlags, TransformState&) const;
+    // If the LayoutBoxModelObject ancestor is non-null, the input quad is in the space of the ancestor.
+    // Otherwise:
+    //   If TraverseDocumentBoundaries is specified, the input quad is in the space of the local root frame.
+    //   Otherwise, the input quad is in the space of the containing frame.
+    virtual void mapAncestorToLocal(const LayoutBoxModelObject*, TransformState&, MapCoordinatesFlags = ApplyContainerFlip) const;
+    void mapAbsoluteToLocalPoint(MapCoordinatesFlags flags, TransformState& transformState) const
+    {
+        return mapAncestorToLocal(nullptr, transformState, flags);
+    }
 
     // Pushes state onto LayoutGeometryMap about how to map coordinates from this layoutObject to its container, or ancestorToStopAt (whichever is encountered first).
     // Returns the layoutObject which was mapped to (container or ancestorToStopAt).

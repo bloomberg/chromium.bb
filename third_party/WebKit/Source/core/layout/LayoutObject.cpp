@@ -2197,19 +2197,19 @@ FloatPoint LayoutObject::localToAbsolute(const FloatPoint& localPoint, MapCoordi
     return transformState.lastPlanarPoint();
 }
 
-FloatPoint LayoutObject::absoluteToLocal(const FloatPoint& containerPoint, MapCoordinatesFlags mode) const
+FloatPoint LayoutObject::ancestorToLocal(LayoutBoxModelObject* ancestor, const FloatPoint& containerPoint, MapCoordinatesFlags mode) const
 {
     TransformState transformState(TransformState::UnapplyInverseTransformDirection, containerPoint);
-    mapAbsoluteToLocalPoint(mode, transformState);
+    mapAncestorToLocal(ancestor, transformState, mode);
     transformState.flatten();
 
     return transformState.lastPlanarPoint();
 }
 
-FloatQuad LayoutObject::absoluteToLocalQuad(const FloatQuad& quad, MapCoordinatesFlags mode) const
+FloatQuad LayoutObject::ancestorToLocalQuad(LayoutBoxModelObject* ancestor, const FloatQuad& quad, MapCoordinatesFlags mode) const
 {
     TransformState transformState(TransformState::UnapplyInverseTransformDirection, quad.boundingBox().center(), quad);
-    mapAbsoluteToLocalPoint(mode, transformState);
+    mapAncestorToLocal(ancestor, transformState, mode);
     transformState.flatten();
     return transformState.lastPlanarQuad();
 }
@@ -2278,13 +2278,59 @@ const LayoutObject* LayoutObject::pushMappingToContainer(const LayoutBoxModelObj
     return nullptr;
 }
 
-void LayoutObject::mapAbsoluteToLocalPoint(MapCoordinatesFlags mode, TransformState& transformState) const
+void LayoutObject::mapAncestorToLocal(const LayoutBoxModelObject* ancestor, TransformState& transformState, MapCoordinatesFlags mode) const
 {
-    LayoutObject* o = parent();
-    if (o) {
-        o->mapAbsoluteToLocalPoint(mode, transformState);
-        if (o->hasOverflowClip())
-            transformState.move(toLayoutBox(o)->scrolledContentOffset());
+    if (this == ancestor)
+        return;
+
+    bool containerSkipped;
+    LayoutObject* o = container(ancestor, &containerSkipped);
+    if (!o)
+        return;
+
+    bool applyContainerFlip = false;
+    if (mode & ApplyContainerFlip) {
+        if (isBox()) {
+            mode &= ~ApplyContainerFlip;
+        } else if (o->isBox()) {
+            applyContainerFlip = o->style()->isFlippedBlocksWritingMode();
+            mode &= ~ApplyContainerFlip;
+        }
+    }
+
+    if (!containerSkipped)
+        o->mapAncestorToLocal(ancestor, transformState, mode);
+
+    LayoutSize containerOffset = offsetFromContainer(o, LayoutPoint());
+    if (o->isLayoutFlowThread()) {
+        // Descending into a flow thread. Convert to the local coordinate space, i.e. flow thread coordinates.
+        const LayoutFlowThread* flowThread = toLayoutFlowThread(o);
+        LayoutPoint visualPoint = LayoutPoint(transformState.mappedPoint());
+        transformState.move(visualPoint - flowThread->visualPointToFlowThreadPoint(visualPoint));
+        // |containerOffset| is also in visual coordinates. Convert to flow thread coordinates.
+        // TODO(mstensho): Wouldn't it be better add a parameter to instruct offsetFromContainer()
+        // to return flowthread coordinates in the first place? We're effectively performing two
+        // conversions here, when in fact none is needed.
+        containerOffset = toLayoutSize(flowThread->visualPointToFlowThreadPoint(toLayoutPoint(containerOffset)));
+    }
+
+    bool preserve3D = mode & UseTransforms && (o->style()->preserves3D() || style()->preserves3D());
+    if (mode & UseTransforms && shouldUseTransformFromContainer(o)) {
+        TransformationMatrix t;
+        getTransformFromContainer(o, containerOffset, t);
+        transformState.applyTransform(t, preserve3D ? TransformState::AccumulateTransform : TransformState::FlattenTransform);
+    } else {
+        transformState.move(containerOffset.width(), containerOffset.height(), preserve3D ? TransformState::AccumulateTransform : TransformState::FlattenTransform);
+    }
+
+    if (applyContainerFlip) {
+        IntPoint centerPoint = roundedIntPoint(transformState.mappedPoint());
+        transformState.move(centerPoint - toLayoutBox(o)->flipForWritingMode(LayoutPoint(centerPoint)));
+    }
+
+    if (containerSkipped) {
+        containerOffset = ancestor->offsetFromAncestorContainer(o);
+        transformState.move(-containerOffset.width(), -containerOffset.height());
     }
 }
 

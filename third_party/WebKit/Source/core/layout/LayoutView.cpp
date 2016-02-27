@@ -389,8 +389,11 @@ const LayoutObject* LayoutView::pushMappingToContainer(const LayoutBoxModelObjec
     return container;
 }
 
-void LayoutView::mapAbsoluteToLocalPoint(MapCoordinatesFlags mode, TransformState& transformState) const
+void LayoutView::mapAncestorToLocal(const LayoutBoxModelObject* ancestor, TransformState& transformState, MapCoordinatesFlags mode) const
 {
+    if (this == ancestor)
+        return;
+
     if (mode & IsFixed && m_frameView)
         transformState.move(toIntSize(m_frameView->scrollPosition()));
 
@@ -402,10 +405,12 @@ void LayoutView::mapAbsoluteToLocalPoint(MapCoordinatesFlags mode, TransformStat
 
     if (mode & TraverseDocumentBoundaries) {
         if (LayoutPart* parentDocLayoutObject = frame()->ownerLayoutObject()) {
-            parentDocLayoutObject->mapAbsoluteToLocalPoint(mode, transformState);
+            parentDocLayoutObject->mapAncestorToLocal(ancestor, transformState, mode);
             transformState.move(parentDocLayoutObject->contentBoxOffset());
             transformState.move(-frame()->view()->scrollOffset());
         }
+    } else {
+        ASSERT(!ancestor);
     }
 }
 

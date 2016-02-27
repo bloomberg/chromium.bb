@@ -1708,8 +1708,11 @@ void LayoutBox::mapLocalToAncestor(const LayoutBoxModelObject* ancestor, Transfo
     LayoutBoxModelObject::mapLocalToAncestor(ancestor, transformState, mode, wasFixed, paintInvalidationState);
 }
 
-void LayoutBox::mapAbsoluteToLocalPoint(MapCoordinatesFlags mode, TransformState& transformState) const
+void LayoutBox::mapAncestorToLocal(const LayoutBoxModelObject* ancestor, TransformState& transformState, MapCoordinatesFlags mode) const
 {
+    if (this == ancestor)
+        return;
+
     bool isFixedPos = style()->position() == FixedPosition;
     bool hasTransform = hasLayer() && layer()->transform();
     if (hasTransform && !isFixedPos) {
@@ -1720,7 +1723,7 @@ void LayoutBox::mapAbsoluteToLocalPoint(MapCoordinatesFlags mode, TransformState
         mode |= IsFixed;
     }
 
-    LayoutBoxModelObject::mapAbsoluteToLocalPoint(mode, transformState);
+    LayoutBoxModelObject::mapAncestorToLocal(ancestor, transformState, mode);
 }
 
 LayoutSize LayoutBox::offsetFromContainer(const LayoutObject* o, const LayoutPoint& point, bool* offsetDependsOnPoint) const
