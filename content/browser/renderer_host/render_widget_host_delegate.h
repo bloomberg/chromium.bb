@@ -79,20 +79,17 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   virtual bool HandleWheelEvent(const blink::WebMouseWheelEvent& event);
 
   // Notification the user has performed a direct interaction (mouse down, mouse
-  // wheel, raw key down, or gesture tap) while focus was on the page. Informs
-  // the delegate that a user is interacting with a site. Only the first mouse
-  // wheel event during a scroll will trigger this method.
-  virtual void OnUserInteraction(const blink::WebInputEvent::Type type) {}
+  // wheel, raw key down, gesture tap, or browser-initiated navigation) while
+  // focus was on the page. Informs the delegate that a user is interacting with
+  // a site. Only the first mouse wheel event during a scroll will trigger this
+  // method.
+  virtual void OnUserInteraction(RenderWidgetHostImpl* render_widget_host,
+                                 const blink::WebInputEvent::Type type) {}
 
   // Callback to give the browser a chance to handle the specified gesture
   // event before sending it to the renderer.
   // Returns true if the |event| was handled.
   virtual bool PreHandleGestureEvent(const blink::WebGestureEvent& event);
-
-  // Notification the user has made a gesture while focus was on the
-  // page. This is used to avoid uninitiated user downloads (aka carpet
-  // bombing), see DownloadRequestLimiter for details.
-  virtual void OnUserGesture(RenderWidgetHostImpl* render_widget_host) {}
 
   // Notifies that screen rects were sent to renderer process.
   virtual void DidSendScreenRects(RenderWidgetHostImpl* rwh) {}

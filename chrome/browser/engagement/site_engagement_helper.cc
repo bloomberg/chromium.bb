@@ -105,6 +105,9 @@ void SiteEngagementHelper::InputTracker::DidGetUserInteraction(
     case blink::WebInputEvent::MouseWheel:
       helper()->RecordUserInput(SiteEngagementMetrics::ENGAGEMENT_WHEEL);
       break;
+    case blink::WebInputEvent::Undefined:
+      // Explicitly ignore browser-initiated navigation input.
+      break;
     default:
       NOTREACHED();
   }

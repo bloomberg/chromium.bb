@@ -2727,7 +2727,8 @@ void WebContentsImpl::SystemDragEnded() {
 }
 
 void WebContentsImpl::UserGestureDone() {
-  OnUserGesture(GetRenderViewHost()->GetWidget());
+  OnUserInteraction(GetRenderViewHost()->GetWidget(),
+                    blink::WebInputEvent::Undefined);
 }
 
 void WebContentsImpl::SetClosedByUserGesture(bool value) {
@@ -4340,21 +4341,22 @@ int WebContentsImpl::CreateSwappedOutRenderView(
   return render_view_routing_id;
 }
 
-void WebContentsImpl::OnUserGesture(RenderWidgetHostImpl* render_widget_host) {
+void WebContentsImpl::OnUserInteraction(
+    RenderWidgetHostImpl* render_widget_host,
+    const blink::WebInputEvent::Type type) {
+  // Ignore when the renderer is swapped out.
+  // TODO(dominickn,creis): support widgets for out-of-process iframes.
   if (render_widget_host != GetRenderViewHost()->GetWidget())
     return;
 
-  // Notify observers.
-  FOR_EACH_OBSERVER(WebContentsObserver, observers_, DidGetUserGesture());
-
-  ResourceDispatcherHostImpl* rdh = ResourceDispatcherHostImpl::Get();
-  if (rdh)  // NULL in unittests.
-    rdh->OnUserGesture(this);
-}
-
-void WebContentsImpl::OnUserInteraction(const blink::WebInputEvent::Type type) {
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,
                     DidGetUserInteraction(type));
+
+  ResourceDispatcherHostImpl* rdh = ResourceDispatcherHostImpl::Get();
+  // Exclude scroll events as user gestures for resource load dispatches.
+  // rdh is NULL in unittests.
+  if (rdh && type != blink::WebInputEvent::MouseWheel)
+    rdh->OnUserGesture(this);
 }
 
 void WebContentsImpl::OnIgnoredUIEvent() {

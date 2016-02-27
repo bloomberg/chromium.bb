@@ -1133,13 +1133,6 @@ void RenderWidgetHostImpl::ForwardKeyboardEvent(
     return;
   }
 
-  if (key_event.type == WebKeyboardEvent::Char &&
-      (key_event.windowsKeyCode == ui::VKEY_RETURN ||
-       key_event.windowsKeyCode == ui::VKEY_SPACE)) {
-    if (delegate_)
-      delegate_->OnUserGesture(this);
-  }
-
   // Double check the type to make sure caller hasn't sent us nonsense that
   // will mess up our key queue.
   if (!WebInputEvent::isKeyboardEventType(key_event.type))
@@ -1907,21 +1900,17 @@ InputEventAckState RenderWidgetHostImpl::FilterInputEvent(
   if (!process_->HasConnection())
     return INPUT_EVENT_ACK_STATE_UNKNOWN;
 
-  if (event.type == WebInputEvent::MouseDown ||
-      event.type == WebInputEvent::GestureTapDown) {
-    if (delegate_)
-      delegate_->OnUserGesture(this);
-  }
-
   if (delegate_) {
     if (event.type == WebInputEvent::MouseDown ||
         event.type == WebInputEvent::GestureTapDown ||
         event.type == WebInputEvent::RawKeyDown) {
-      delegate_->OnUserInteraction(event.type);
+      delegate_->OnUserInteraction(this, event.type);
     } else if (event.type == WebInputEvent::MouseWheel) {
       if (mouse_wheel_coalesce_timer_->Elapsed().InSecondsF() >
           kMouseWheelCoalesceIntervalInSeconds) {
-        delegate_->OnUserInteraction(event.type);
+        // TODO(dominickn): once GestureScrollBegin has landed on all platforms,
+        // replace this branch and remove.
+        delegate_->OnUserInteraction(this, event.type);
       }
 
       mouse_wheel_coalesce_timer_.reset(new base::ElapsedTimer());

@@ -2099,7 +2099,12 @@ class MockWebContentsObserver : public WebContentsObserver {
         got_user_gesture_(false) {
   }
 
-  void DidGetUserGesture() override { got_user_gesture_ = true; }
+  void DidGetUserInteraction(const blink::WebInputEvent::Type type) override {
+    // We expect the only interaction here to be a browser-initiated navigation,
+    // which is sent with the Undefined event type.
+    EXPECT_EQ(blink::WebInputEvent::Undefined, type);
+    got_user_gesture_ = true;
+  }
 
   bool got_user_gesture() const {
     return got_user_gesture_;

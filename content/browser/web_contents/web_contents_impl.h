@@ -482,7 +482,8 @@ class CONTENT_EXPORT WebContentsImpl
                            const base::string16& source_id) override;
   RendererPreferences GetRendererPrefs(
       BrowserContext* browser_context) const override;
-  void OnUserInteraction(const blink::WebInputEvent::Type type) override;
+  void OnUserInteraction(RenderWidgetHostImpl* render_widget_host,
+                         const blink::WebInputEvent::Type type) override;
   void OnIgnoredUIEvent() override;
   void LoadStateChanged(const GURL& url,
                         const net::LoadStateWithParam& load_state,
@@ -582,7 +583,6 @@ class CONTENT_EXPORT WebContentsImpl
                               bool* is_keyboard_shortcut) override;
   void HandleKeyboardEvent(const NativeWebKeyboardEvent& event) override;
   bool HandleWheelEvent(const blink::WebMouseWheelEvent& event) override;
-  void OnUserGesture(RenderWidgetHostImpl* render_widget_host) override;
   bool PreHandleGestureEvent(const blink::WebGestureEvent& event) override;
   void DidSendScreenRects(RenderWidgetHostImpl* rwh) override;
   BrowserAccessibilityManager* GetRootBrowserAccessibilityManager() override;
