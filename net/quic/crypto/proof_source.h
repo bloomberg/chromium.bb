@@ -21,7 +21,7 @@ class NET_EXPORT_PRIVATE ProofSource {
  public:
   // Chain is a reference-counted wrapper for a std::vector of std::stringified
   // certificates.
-  struct Chain : public base::RefCounted<Chain> {
+  struct NET_EXPORT_PRIVATE Chain : public base::RefCounted<Chain> {
     explicit Chain(const std::vector<std::string>& certs);
 
     const std::vector<std::string> certs;
