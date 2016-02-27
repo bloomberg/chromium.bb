@@ -1456,6 +1456,9 @@ You are signing in with a managed account and giving its administrator control o
       <message name="IDS_PAGE_INFO_CONNECTION_OFFLINE" desc="Message to display int the page info bubble when viewing and offline page.">
         You are viewing an offline copy of this page from <ph name="CREATION_TIME">%1$s<ex>Feb 9, 2016</ex></ph>
       </message>
+      <message name="IDS_PAGE_INFO_OFFLINE_ICON" desc="Content description for the offline page icon on page info dialog.">
+        Offline content
+      </message>
 
       <!-- Sad tab page -->
       <message name="IDS_SAD_TAB_SUGGESTIONS" desc="The help message displayed on the sad tab page after a tab crashes.">

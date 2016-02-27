@@ -400,12 +400,16 @@ public class WebsiteSettingsPopup implements OnClickListener {
             }
         });
 
-        // Work out the URL and connection message.
+        // Work out the URL and connection message and status visibility.
+        int statusIconVisibility = View.GONE;
         if (isShowingOfflinePage()) {
             mFullUrl = mOfflinePageOriginalUrl;
+            statusIconVisibility = View.VISIBLE;
         } else {
             mFullUrl = mWebContents.getVisibleUrl();
         }
+
+        mContainer.findViewById(R.id.offline_icon).setVisibility(statusIconVisibility);
 
         try {
             mParsedUrl = new URI(mFullUrl);
