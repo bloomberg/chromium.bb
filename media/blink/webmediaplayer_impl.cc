@@ -347,8 +347,15 @@ void WebMediaPlayerImpl::play() {
 
   media_log_->AddEvent(media_log_->CreateEvent(MediaLogEvent::PLAY));
 
-  if (playback_rate_ > 0)
+  if (playback_rate_ > 0) {
+    // Resume the player if playback was initiated in the foreground.
+    if (suspended_ && !resuming_ && delegate_ && !delegate_->IsHidden()) {
+      Resume();
+      return;
+    }
+
     NotifyPlaybackStarted();
+  }
 }
 
 void WebMediaPlayerImpl::pause() {
@@ -437,6 +444,11 @@ void WebMediaPlayerImpl::seek(double seconds) {
     if (is_suspended) {
       seeking_ = true;
       seek_time_ = new_seek_time;
+
+      // Resume the pipeline if the seek is initiated in the foreground so that
+      // the correct frame is displayed.
+      if (delegate_ && !delegate_->IsHidden())
+        Resume();
     }
 
     return;
@@ -880,13 +892,14 @@ void WebMediaPlayerImpl::OnPipelineSeeked(bool time_changed,
     return;
   }
 
-  // If we we're resuming into the playing state, notify the delegate.
-  if (resuming_ && playback_rate_ > 0 && !paused_)
-    NotifyPlaybackStarted();
-
   // Whether or not the seek was caused by a resume, we're not suspended now.
+  const bool was_resuming = resuming_;
   resuming_ = false;
   suspended_ = false;
+
+  // If we we're resuming into the playing state, notify the delegate.
+  if (was_resuming && playback_rate_ > 0 && !paused_)
+    NotifyPlaybackStarted();
 
   // If there is a pending suspend, the seek does not complete until after the
   // next resume.
@@ -1144,7 +1157,8 @@ void WebMediaPlayerImpl::OnShown() {
     return;
 #endif
 
-  ScheduleResume();
+  if (!ended_ && !paused_)
+    ScheduleResume();
 }
 
 void WebMediaPlayerImpl::ScheduleResume() {
@@ -1515,11 +1529,18 @@ void WebMediaPlayerImpl::UpdatePausedTime() {
 
 void WebMediaPlayerImpl::NotifyPlaybackStarted() {
 #if defined(OS_ANDROID)  // WMPI_CAST
-  // We do not tell our delegates about remote playback, becuase that would
+  // We do not tell our delegates about remote playback, because that would
   // keep the device awake, which is not what we want.
   if (isRemote())
     return;
 #endif
+
+  // Don't send delegate notifications when suspended; upon suspend we send
+  // PlayerGone() to the delegate -- no more notifications should be sent until
+  // after resume.
+  if (suspended_)
+    return;
+
   if (delegate_) {
     delegate_->DidPlay(delegate_id_, hasVideo(), hasAudio(), false,
                        pipeline_.GetMediaDuration());
@@ -1536,7 +1557,10 @@ void WebMediaPlayerImpl::NotifyPlaybackPaused() {
   if (isRemote())
     return;
 #endif
-  if (delegate_)
+  // Don't send delegate notifications when suspended; upon suspend we send
+  // PlayerGone() to the delegate -- no more notifications should be sent until
+  // after resume.
+  if (!suspended_ && delegate_)
     delegate_->DidPause(delegate_id_, ended_);
   memory_usage_reporting_timer_.Stop();
   ReportMemoryUsage();

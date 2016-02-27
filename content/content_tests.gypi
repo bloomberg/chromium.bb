@@ -274,6 +274,7 @@
       'renderer/devtools/v8_sampling_profiler_browsertest.cc',
       'renderer/gin_browsertest.cc',
       'renderer/history_controller_browsertest.cc',
+      'renderer/media/renderer_webmediaplayer_delegate_browsertest.cc',
       'renderer/mouse_lock_dispatcher_browsertest.cc',
       'renderer/render_frame_impl_browsertest.cc',
       'renderer/render_thread_impl_browsertest.cc',
