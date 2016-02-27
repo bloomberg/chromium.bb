@@ -12,9 +12,18 @@
 #include <vector>
 
 #include "base/strings/stringprintf.h"
+#include "base/test/test_timeouts.h"
+#include "base/thread_task_runner_handle.h"
+#include "cc/surfaces/surface.h"
+#include "cc/surfaces/surface_manager.h"
+#include "content/browser/compositor/delegated_frame_host.h"
+#include "content/browser/compositor/surface_utils.h"
+#include "content/browser/frame_host/cross_process_frame_connector.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/navigator.h"
 #include "content/browser/frame_host/render_frame_proxy_host.h"
+#include "content/browser/frame_host/render_widget_host_view_child_frame.h"
+#include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/resource_throttle.h"
 #include "content/public/test/browser_test_utils.h"
@@ -261,6 +270,45 @@ class HttpRequestStallThrottle : public ResourceThrottle {
 };
 
 }  // namespace
+
+SurfaceHitTestReadyNotifier::SurfaceHitTestReadyNotifier(
+    RenderWidgetHostViewChildFrame* target_view)
+    : target_view_(target_view) {
+  surface_manager_ = GetSurfaceManager();
+}
+
+void SurfaceHitTestReadyNotifier::WaitForSurfaceReady() {
+  root_surface_id_ = target_view_->FrameConnectorForTesting()
+                         ->GetRootRenderWidgetHostViewForTesting()
+                         ->SurfaceIdForTesting();
+  if (ContainsSurfaceId())
+    return;
+
+  while (true) {
+    // TODO(kenrb): Need a better way to do this. If
+    // RenderWidgetHostViewBase lifetime observer lands (see
+    // https://codereview.chromium.org/1711103002/), we can add a callback
+    // from OnSwapCompositorFrame and avoid this busy waiting, which is very
+    // frequent in tests in this file.
+    base::RunLoop run_loop;
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
+    run_loop.Run();
+    if (ContainsSurfaceId())
+      break;
+  }
+}
+
+bool SurfaceHitTestReadyNotifier::ContainsSurfaceId() {
+  if (root_surface_id_.is_null())
+    return false;
+  for (cc::SurfaceId id : surface_manager_->GetSurfaceForId(root_surface_id_)
+                              ->referenced_surfaces()) {
+    if (id == target_view_->SurfaceIdForTesting())
+      return true;
+  }
+  return false;
+}
 
 NavigationStallDelegate::NavigationStallDelegate(const GURL& url) : url_(url) {}
 

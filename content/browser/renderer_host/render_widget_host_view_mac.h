@@ -21,6 +21,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
+#include "cc/surfaces/surface_id.h"
 #include "content/browser/compositor/browser_compositor_view_mac.h"
 #include "content/browser/compositor/delegated_frame_host.h"
 #include "content/browser/renderer_host/input/mouse_wheel_rails_filter_mac.h"
@@ -528,6 +529,9 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // Transition from being in the Suspended state to being in the Destroyed
   // state, if appropriate (see BrowserCompositorViewState for details).
   void DestroySuspendedBrowserCompositorViewIfNeeded();
+
+  // Exposed for testing.
+  cc::SurfaceId SurfaceIdForTesting() const override;
 
  private:
   friend class RenderWidgetHostViewMacTest;

@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_COMPOSITOR_SURFACE_UTILS_H_
 
 #include "base/memory/scoped_ptr.h"
+#include "content/common/content_export.h"
 #include "content/public/browser/readback_types.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "ui/gfx/geometry/size.h"
@@ -20,6 +21,7 @@ namespace content {
 
 scoped_ptr<cc::SurfaceIdAllocator> CreateSurfaceIdAllocator();
 
+CONTENT_EXPORT
 cc::SurfaceManager* GetSurfaceManager();
 
 void CopyFromCompositingSurfaceHasResult(

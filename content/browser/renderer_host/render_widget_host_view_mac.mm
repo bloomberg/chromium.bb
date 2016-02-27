@@ -594,6 +594,10 @@ void RenderWidgetHostViewMac::SetAllowPauseForResizeOrRepaint(bool allow) {
   allow_pause_for_resize_or_repaint_ = allow;
 }
 
+cc::SurfaceId RenderWidgetHostViewMac::SurfaceIdForTesting() const {
+  return delegated_frame_host_->SurfaceIdForTesting();
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostViewMac, RenderWidgetHostView implementation:
 

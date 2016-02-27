@@ -701,4 +701,8 @@ void RenderWidgetHostViewBase::TransformPointToLocalCoordSpace(
   *transformed_point = point;
 }
 
+cc::SurfaceId RenderWidgetHostViewBase::SurfaceIdForTesting() const {
+  return cc::SurfaceId();
+}
+
 }  // namespace content

@@ -178,6 +178,12 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   // to Bind() to it.
   void SurfaceDrawn(uint32_t output_surface_id, cc::SurfaceDrawStatus drawn);
 
+  // Exposed for tests.
+  cc::SurfaceId SurfaceIdForTesting() const override;
+  CrossProcessFrameConnector* FrameConnectorForTesting() const {
+    return frame_connector_;
+  }
+
  protected:
   friend class RenderWidgetHostView;
   friend class RenderWidgetHostViewChildFrameTest;

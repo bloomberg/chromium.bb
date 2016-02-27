@@ -3083,6 +3083,10 @@ uint32_t RenderWidgetHostViewAura::GetSurfaceIdNamespace() {
   return delegated_frame_host_->GetSurfaceIdNamespace();
 }
 
+cc::SurfaceId RenderWidgetHostViewAura::SurfaceIdForTesting() const {
+  return delegated_frame_host_->SurfaceIdForTesting();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostViewBase, public:
 

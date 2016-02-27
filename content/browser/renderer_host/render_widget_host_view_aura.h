@@ -344,6 +344,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   void SetSelectionControllerClientForTest(
       scoped_ptr<TouchSelectionControllerClientAura> client);
 
+  // Exposed for tests.
+  cc::SurfaceId SurfaceIdForTesting() const override;
+
  protected:
   ~RenderWidgetHostViewAura() override;
 

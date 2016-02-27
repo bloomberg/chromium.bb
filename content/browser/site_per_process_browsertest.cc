@@ -196,19 +196,9 @@ void SurfaceHitTestTestHelper(
   RenderWidgetHostViewBase* rwhv_child = static_cast<RenderWidgetHostViewBase*>(
       child_node->current_frame_host()->GetRenderWidgetHost()->GetView());
 
-  // We need to wait for a compositor frame from the child frame, at which
-  // point its surface will be created.
-  while (rwhv_child->RendererFrameNumber() <= 0) {
-    // TODO(lazyboy): Find a better way to avoid sleeping like this. See
-    // http://crbug.com/405282 for details.
-    base::RunLoop run_loop;
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, run_loop.QuitClosure(),
-        base::TimeDelta::FromMilliseconds(10));
-    run_loop.Run();
-  }
-
-  uint32_t cur_render_frame_number = root_view->RendererFrameNumber();
+  SurfaceHitTestReadyNotifier notifier(
+      static_cast<RenderWidgetHostViewChildFrame*>(rwhv_child));
+  notifier.WaitForSurfaceReady();
 
   // Target input event to child frame.
   blink::WebMouseEvent child_event;
@@ -220,32 +210,6 @@ void SurfaceHitTestTestHelper(
   main_frame_monitor.ResetEventReceived();
   child_frame_monitor.ResetEventReceived();
   router->RouteMouseEvent(root_view, &child_event);
-
-  while (!child_frame_monitor.EventWasReceived()) {
-    // This is working around a big synchronization problem. It is very
-    // difficult to know if we have received a compositor frame from the
-    // main frame renderer *after* it received the child frame's surface
-    // ID. Hit testing won't work until this happens. So if the hit test
-    // fails then we wait for another frame to arrive and try again.
-    // TODO(kenrb): We need a better way to do all of this, possibly coming
-    // from http://crbug.com/405282.
-    while (root_view->RendererFrameNumber() <= cur_render_frame_number) {
-      base::RunLoop run_loop;
-      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-          FROM_HERE, run_loop.QuitClosure(),
-          base::TimeDelta::FromMilliseconds(10));
-      run_loop.Run();
-    }
-    cur_render_frame_number = root_view->RendererFrameNumber();
-    child_event.type = blink::WebInputEvent::MouseDown;
-    child_event.button = blink::WebPointerProperties::ButtonLeft;
-    child_event.x = 75;
-    child_event.y = 75;
-    child_event.clickCount = 1;
-    main_frame_monitor.ResetEventReceived();
-    child_frame_monitor.ResetEventReceived();
-    router->RouteMouseEvent(root_view, &child_event);
-  }
 
   EXPECT_TRUE(child_frame_monitor.EventWasReceived());
   EXPECT_EQ(23, child_frame_monitor.event().x);
@@ -823,17 +787,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   RenderWidgetHostViewBase* rwhv_child = static_cast<RenderWidgetHostViewBase*>(
       child_node->current_frame_host()->GetRenderWidgetHost()->GetView());
 
-  // We need to wait for a compositor frame from the child frame, at which
-  // point its surface will be created.
-  while (rwhv_child->RendererFrameNumber() <= 0) {
-    // TODO(lazyboy): Find a better way to avoid sleeping like this. See
-    // http://crbug.com/405282 for details.
-    base::RunLoop run_loop;
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, run_loop.QuitClosure(),
-        base::TimeDelta::FromMilliseconds(10));
-    run_loop.Run();
-  }
+  SurfaceHitTestReadyNotifier notifier(
+      static_cast<RenderWidgetHostViewChildFrame*>(rwhv_child));
+  notifier.WaitForSurfaceReady();
 
   // Target input event to child frame.
   blink::WebMouseEvent child_event;

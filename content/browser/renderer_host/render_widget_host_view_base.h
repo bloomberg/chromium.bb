@@ -18,6 +18,7 @@
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "cc/output/compositor_frame.h"
+#include "cc/surfaces/surface_id.h"
 #include "content/browser/renderer_host/event_with_latency_info.h"
 #include "content/common/content_export.h"
 #include "content/common/input/input_event_ack_state.h"
@@ -387,6 +388,9 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   // this directly if you want to do custom filtering on plugin windows first.
   static void DetachPluginWindowsCallback(HWND window);
 #endif
+
+  // Exposed for testing.
+  virtual cc::SurfaceId SurfaceIdForTesting() const;
 
  protected:
   // Interface class only, do not construct.

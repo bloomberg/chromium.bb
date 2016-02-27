@@ -100,6 +100,11 @@ class CONTENT_EXPORT CrossProcessFrameConnector {
   // page) has focus.
   bool HasFocus();
 
+  // Exposed for tests.
+  RenderWidgetHostViewBase* GetRootRenderWidgetHostViewForTesting() {
+    return GetRootRenderWidgetHostView();
+  }
+
  private:
   // Handlers for messages received from the parent frame.
   void OnForwardInputEvent(const blink::WebInputEvent* event);

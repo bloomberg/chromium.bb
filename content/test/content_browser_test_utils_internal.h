@@ -14,12 +14,18 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "cc/surfaces/surface_id.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "url/gurl.h"
+
+namespace cc {
+class SurfaceManager;
+}
 
 namespace content {
 
 class FrameTreeNode;
+class RenderWidgetHostViewChildFrame;
 class Shell;
 class SiteInstance;
 class ToRenderFrameHost;
@@ -95,6 +101,27 @@ class NavigationStallDelegate : public ResourceDispatcherHostDelegate {
       ScopedVector<content::ResourceThrottle>* throttles) override;
 
   GURL url_;
+};
+
+// Helper class to assist with hit testing surfaces in multiple processes.
+// WaitForSurfaceReady() will only return after a Surface from |target_view|
+// has been composited in the top-level frame's Surface. At that point,
+// browser process hit testing to target_view's Surface can succeed.
+class SurfaceHitTestReadyNotifier {
+ public:
+  SurfaceHitTestReadyNotifier(RenderWidgetHostViewChildFrame* target_view);
+  ~SurfaceHitTestReadyNotifier() {}
+
+  void WaitForSurfaceReady();
+
+ private:
+  bool ContainsSurfaceId();
+
+  cc::SurfaceManager* surface_manager_;
+  cc::SurfaceId root_surface_id_;
+  RenderWidgetHostViewChildFrame* target_view_;
+
+  DISALLOW_COPY_AND_ASSIGN(SurfaceHitTestReadyNotifier);
 };
 
 }  // namespace content
