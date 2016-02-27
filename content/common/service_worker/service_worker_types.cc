@@ -71,8 +71,7 @@ ServiceWorkerResponse::ServiceWorkerResponse(
     const std::string& blob_uuid,
     uint64_t blob_size,
     const GURL& stream_url,
-    blink::WebServiceWorkerResponseError error,
-    base::Time response_time)
+    blink::WebServiceWorkerResponseError error)
     : url(url),
       status_code(status_code),
       status_text(status_text),
@@ -81,8 +80,7 @@ ServiceWorkerResponse::ServiceWorkerResponse(
       blob_uuid(blob_uuid),
       blob_size(blob_size),
       stream_url(stream_url),
-      error(error),
-      response_time(response_time) {}
+      error(error) {}
 
 ServiceWorkerResponse::ServiceWorkerResponse(
     const ServiceWorkerResponse& other) = default;

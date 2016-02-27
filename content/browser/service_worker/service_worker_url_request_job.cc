@@ -310,8 +310,7 @@ void ServiceWorkerURLRequestJob::OnBeforeNetworkStart(net::URLRequest* request,
 void ServiceWorkerURLRequestJob::OnResponseStarted(net::URLRequest* request) {
   // TODO(falken): Add Content-Length, Content-Type if they were not provided in
   // the ServiceWorkerResponse.
-  if (response_time_.is_null())
-    response_time_ = base::Time::Now();
+  response_time_ = base::Time::Now();
   CommitResponseHeader();
 }
 
@@ -664,7 +663,6 @@ void ServiceWorkerURLRequestJob::DidDispatchFetchEvent(
     streaming_version_->AddStreamingURLRequestJob(this);
     response_url_ = response.url;
     service_worker_response_type_ = response.response_type;
-    response_time_ = response.response_time;
     CreateResponseHeader(
         response.status_code, response.status_text, response.headers);
     load_timing_info_.receive_headers_end = base::TimeTicks::Now();

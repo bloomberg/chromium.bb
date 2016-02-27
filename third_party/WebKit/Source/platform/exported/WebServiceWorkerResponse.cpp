@@ -17,7 +17,6 @@ public:
         : status(0)
         , responseType(WebServiceWorkerResponseTypeDefault)
         , error(WebServiceWorkerResponseErrorUnknown)
-        , responseTime(0)
     {
     }
     WebURL url;
@@ -28,7 +27,6 @@ public:
     RefPtr<BlobDataHandle> blobDataHandle;
     WebURL streamURL;
     WebServiceWorkerResponseError error;
-    int64_t responseTime;
 };
 
 WebServiceWorkerResponse::WebServiceWorkerResponse()
@@ -170,16 +168,6 @@ void WebServiceWorkerResponse::setError(WebServiceWorkerResponseError error)
 WebServiceWorkerResponseError WebServiceWorkerResponse::error() const
 {
     return m_private->error;
-}
-
-void WebServiceWorkerResponse::setResponseTime(int64_t time)
-{
-    m_private->responseTime = time;
-}
-
-int64_t WebServiceWorkerResponse::responseTime() const
-{
-    return m_private->responseTime;
 }
 
 } // namespace blink

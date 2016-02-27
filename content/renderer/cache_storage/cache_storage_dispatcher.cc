@@ -89,8 +89,7 @@ ServiceWorkerResponse ResponseFromWebResponse(
       web_response.responseType(), headers,
       base::UTF16ToASCII(base::StringPiece16(web_response.blobUUID())),
       web_response.blobSize(), web_response.streamURL(),
-      blink::WebServiceWorkerResponseErrorUnknown,
-      base::Time::FromInternalValue(web_response.responseTime()));
+      blink::WebServiceWorkerResponseErrorUnknown);
 }
 
 CacheStorageCacheQueryParams QueryParamsFromWebQueryParams(
@@ -647,7 +646,6 @@ void CacheStorageDispatcher::PopulateWebResponseFromResponse(
   web_response->setStatus(response.status_code);
   web_response->setStatusText(base::ASCIIToUTF16(response.status_text));
   web_response->setResponseType(response.response_type);
-  web_response->setResponseTime(response.response_time.ToInternalValue());
 
   for (const auto& i : response.headers) {
     web_response->setHeader(base::ASCIIToUTF16(i.first),

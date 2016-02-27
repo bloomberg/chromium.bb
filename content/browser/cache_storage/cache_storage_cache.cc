@@ -773,7 +773,7 @@ void CacheStorageCache::Put(const CacheStorageBatchOperation& operation,
       operation.response.status_text, operation.response.response_type,
       operation.response.headers, operation.response.blob_uuid,
       operation.response.blob_size, operation.response.stream_url,
-      operation.response.error, operation.response.response_time));
+      operation.response.error));
 
   scoped_ptr<storage::BlobDataHandle> blob_data_handle;
 
@@ -898,8 +898,6 @@ void CacheStorageCache::PutDidCreateEntry(
   response_metadata->set_response_type(
       WebResponseTypeToProtoResponseType(put_context->response->response_type));
   response_metadata->set_url(put_context->response->url.spec());
-  response_metadata->set_response_time(
-      put_context->response->response_time.ToInternalValue());
   for (ServiceWorkerHeaderMap::const_iterator it =
            put_context->response->headers.begin();
        it != put_context->response->headers.end(); ++it) {
@@ -1373,8 +1371,7 @@ void CacheStorageCache::PopulateResponseMetadata(
       metadata.response().status_text(),
       ProtoResponseTypeToWebResponseType(metadata.response().response_type()),
       ServiceWorkerHeaderMap(), "", 0, GURL(),
-      blink::WebServiceWorkerResponseErrorUnknown,
-      base::Time::FromInternalValue(metadata.response().response_time()));
+      blink::WebServiceWorkerResponseErrorUnknown);
 
   for (int i = 0; i < metadata.response().headers_size(); ++i) {
     const CacheHeaderMap header = metadata.response().headers(i);

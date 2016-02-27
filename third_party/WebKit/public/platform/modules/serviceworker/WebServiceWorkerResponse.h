@@ -76,9 +76,6 @@ public:
     void setError(WebServiceWorkerResponseError);
     WebServiceWorkerResponseError error() const;
 
-    void setResponseTime(int64_t);
-    int64_t responseTime() const;
-
 #if INSIDE_BLINK
     const HTTPHeaderMap& headers() const;
 

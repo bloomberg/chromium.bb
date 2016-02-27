@@ -328,18 +328,18 @@ class CacheStorageCacheTest : public testing::Test {
         GURL("http://example.com/body.html"), 200, "OK",
         blink::WebServiceWorkerResponseTypeDefault, headers,
         blob_handle_->uuid(), expected_blob_data_.size(), GURL(),
-        blink::WebServiceWorkerResponseErrorUnknown, base::Time());
+        blink::WebServiceWorkerResponseErrorUnknown);
 
     body_response_with_query_ = ServiceWorkerResponse(
         GURL("http://example.com/body.html?query=test"), 200, "OK",
         blink::WebServiceWorkerResponseTypeDefault, headers,
         blob_handle_->uuid(), expected_blob_data_.size(), GURL(),
-        blink::WebServiceWorkerResponseErrorUnknown, base::Time());
+        blink::WebServiceWorkerResponseErrorUnknown);
 
     no_body_response_ = ServiceWorkerResponse(
         GURL("http://example.com/no_body.html"), 200, "OK",
         blink::WebServiceWorkerResponseTypeDefault, headers, "", 0, GURL(),
-        blink::WebServiceWorkerResponseErrorUnknown, base::Time());
+        blink::WebServiceWorkerResponseErrorUnknown);
   }
 
   scoped_ptr<ServiceWorkerFetchRequest> CopyFetchRequest(
@@ -1029,10 +1029,10 @@ TEST_P(CacheStorageCacheTestP, PutResponseType) {
 TEST_F(CacheStorageCacheTest, CaselessServiceWorkerResponseHeaders) {
   // CacheStorageCache depends on ServiceWorkerResponse having caseless
   // headers so that it can quickly lookup vary headers.
-  ServiceWorkerResponse response(
-      GURL("http://www.example.com"), 200, "OK",
-      blink::WebServiceWorkerResponseTypeDefault, ServiceWorkerHeaderMap(), "",
-      0, GURL(), blink::WebServiceWorkerResponseErrorUnknown, base::Time());
+  ServiceWorkerResponse response(GURL("http://www.example.com"), 200, "OK",
+                                 blink::WebServiceWorkerResponseTypeDefault,
+                                 ServiceWorkerHeaderMap(), "", 0, GURL(),
+                                 blink::WebServiceWorkerResponseErrorUnknown);
   response.headers["content-type"] = "foo";
   response.headers["Content-Type"] = "bar";
   EXPECT_EQ("bar", response.headers["content-type"]);

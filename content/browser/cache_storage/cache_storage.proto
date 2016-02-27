@@ -42,7 +42,6 @@ message CacheResponse {
   required ResponseType response_type = 3;
   repeated CacheHeaderMap headers = 4;
   optional string url = 5;
-  optional int64 response_time = 6;
 }
 
 message CacheMetadata {
