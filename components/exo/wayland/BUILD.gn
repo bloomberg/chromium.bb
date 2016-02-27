@@ -25,6 +25,7 @@ source_set("wayland") {
     "//ash",
     "//base",
     "//components/exo",
+    "//ipc:ipc",
     "//skia",
     "//third_party/wayland:wayland_server",
     "//third_party/wayland-protocols:scaler_protocol",

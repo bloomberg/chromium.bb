@@ -4,6 +4,7 @@
 
 #include "components/exo/wayland/server.h"
 
+#include <grp.h>
 #include <linux/input.h>
 #include <scaler-server-protocol.h>
 #include <stddef.h>
@@ -13,6 +14,7 @@
 #include <xdg-shell-unstable-v5-server-protocol.h>
 
 #include <algorithm>
+#include <string>
 #include <utility>
 
 #include "ash/display/display_info.h"
@@ -20,7 +22,9 @@
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/cancelable_callback.h"
+#include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/exo/buffer.h"
 #include "components/exo/display.h"
@@ -34,6 +38,7 @@
 #include "components/exo/surface.h"
 #include "components/exo/touch.h"
 #include "components/exo/touch_delegate.h"
+#include "ipc/unix_domain_socket_util.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/aura/window_property.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
@@ -52,6 +57,12 @@ DECLARE_WINDOW_PROPERTY_TYPE(wl_resource*);
 namespace exo {
 namespace wayland {
 namespace {
+
+// Default wayland socket name.
+const base::FilePath::CharType kSocketName[] = FILE_PATH_LITERAL("wayland-0");
+
+// Group used for wayland socket.
+const char kWaylandSocketGroup[] = "wayland";
 
 template <class T>
 T* GetUserDataAs(wl_resource* resource) {
@@ -1605,8 +1616,44 @@ Server::~Server() {}
 // static
 scoped_ptr<Server> Server::Create(Display* display) {
   scoped_ptr<Server> server(new Server(display));
-  int rv = wl_display_add_socket(server->wl_display_.get(), nullptr);
-  DCHECK_EQ(rv, 0) << "wl_display_add_socket failed: " << rv;
+
+  char* runtime_dir = getenv("XDG_RUNTIME_DIR");
+  if (!runtime_dir) {
+    LOG(ERROR) << "XDG_RUNTIME_DIR not set in the environment";
+    return nullptr;
+  }
+
+  if (!server->AddSocket(kSocketName)) {
+    LOG(ERROR) << "Failed to add socket: " << kSocketName;
+    return nullptr;
+  }
+
+  base::FilePath socket_path = base::FilePath(runtime_dir).Append(kSocketName);
+
+  // Change permissions on the socket.
+  struct group wayland_group;
+  struct group* wayland_group_res = nullptr;
+  char buf[10000];
+  if (HANDLE_EINTR(getgrnam_r(kWaylandSocketGroup, &wayland_group, buf,
+                              sizeof(buf), &wayland_group_res)) < 0) {
+    PLOG(ERROR) << "getgrnam_r";
+    return nullptr;
+  }
+  if (wayland_group_res) {
+    if (HANDLE_EINTR(chown(socket_path.MaybeAsASCII().c_str(), -1,
+                           wayland_group.gr_gid)) < 0) {
+      PLOG(ERROR) << "chown";
+      return nullptr;
+    }
+  } else {
+    LOG(WARNING) << "Group '" << kWaylandSocketGroup << "' not found";
+  }
+
+  if (!base::SetPosixFilePermissions(socket_path, 0660)) {
+    PLOG(ERROR) << "Could not set permissions: " << socket_path.value();
+    return nullptr;
+  }
+
   return server;
 }
 
