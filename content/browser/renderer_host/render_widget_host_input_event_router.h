@@ -10,9 +10,9 @@
 
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "cc/surfaces/surface_hittest_delegate.h"
 #include "cc/surfaces/surface_id.h"
+#include "content/browser/renderer_host/render_widget_host_view_base_observer.h"
 #include "content/common/content_export.h"
 
 struct FrameHostMsg_HittestData_Params;
@@ -41,10 +41,14 @@ class RenderWidgetHostViewBase;
 // own. When an input event requires routing based on window coordinates,
 // this class requests a Surface hit test from the provided |root_view| and
 // forwards the event to the owning RWHV of the returned Surface ID.
-class CONTENT_EXPORT RenderWidgetHostInputEventRouter {
+class CONTENT_EXPORT RenderWidgetHostInputEventRouter
+    : public RenderWidgetHostViewBaseObserver {
  public:
   RenderWidgetHostInputEventRouter();
-  ~RenderWidgetHostInputEventRouter();
+  ~RenderWidgetHostInputEventRouter() final;
+
+  void OnRenderWidgetHostViewBaseDestroyed(
+      RenderWidgetHostViewBase* view) override;
 
   void RouteMouseEvent(RenderWidgetHostViewBase* root_view,
                        blink::WebMouseEvent* event);
@@ -82,16 +86,17 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter {
         hittest_data_;
   };
 
-  using WeakTarget = base::WeakPtr<RenderWidgetHostViewBase>;
   using SurfaceIdNamespaceOwnerMap =
-      base::hash_map<uint32_t, base::WeakPtr<RenderWidgetHostViewBase>>;
+      base::hash_map<uint32_t, RenderWidgetHostViewBase*>;
+
+  void ClearAllObserverRegistrations();
 
   RenderWidgetHostViewBase* FindEventTarget(RenderWidgetHostViewBase* root_view,
                                             const gfx::Point& point,
                                             gfx::Point* transformed_point);
 
   SurfaceIdNamespaceOwnerMap owner_map_;
-  WeakTarget current_touch_target_;
+  RenderWidgetHostViewBase* current_touch_target_;
   int active_touches_;
   std::unordered_map<cc::SurfaceId, HittestData, cc::SurfaceIdHash>
       hittest_data_;

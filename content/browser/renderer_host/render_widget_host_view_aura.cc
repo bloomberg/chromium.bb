@@ -669,6 +669,7 @@ void RenderWidgetHostViewAura::Show() {
 void RenderWidgetHostViewAura::Hide() {
   window_->Hide();
 
+  // TODO(wjmaclean): can host_ ever be null?
   if (host_ && !host_->is_hidden()) {
     host_->WasHidden();
     delegated_frame_host_->WasHidden();
@@ -775,6 +776,7 @@ void RenderWidgetHostViewAura::SetKeyboardFocus() {
     }
   }
 #endif
+  // TODO(wjmaclean): can host_ ever be null?
   if (host_ && set_focus_on_mouse_down_or_key_event_) {
     set_focus_on_mouse_down_or_key_event_ = false;
     host_->Focus();
@@ -1597,6 +1599,7 @@ void RenderWidgetHostViewAura::UnlockMouse() {
 // RenderWidgetHostViewAura, ui::TextInputClient implementation:
 void RenderWidgetHostViewAura::SetCompositionText(
     const ui::CompositionText& composition) {
+  // TODO(wjmaclean): can host_ ever be null?
   if (!host_)
     return;
 
@@ -1626,6 +1629,7 @@ void RenderWidgetHostViewAura::SetCompositionText(
 }
 
 void RenderWidgetHostViewAura::ConfirmCompositionText() {
+  // TODO(wjmaclean): can host_ ever be null?
   if (host_ && has_composition_text_) {
     host_->ImeConfirmComposition(base::string16(), gfx::Range::InvalidRange(),
                                  false);
@@ -1634,6 +1638,7 @@ void RenderWidgetHostViewAura::ConfirmCompositionText() {
 }
 
 void RenderWidgetHostViewAura::ClearCompositionText() {
+  // TODO(wjmaclean): can host_ ever be null?
   if (host_ && has_composition_text_)
     host_->ImeCancelComposition();
   has_composition_text_ = false;
@@ -1641,6 +1646,7 @@ void RenderWidgetHostViewAura::ClearCompositionText() {
 
 void RenderWidgetHostViewAura::InsertText(const base::string16& text) {
   DCHECK(text_input_type_ != ui::TEXT_INPUT_TYPE_NONE);
+  // TODO(wjmaclean): can host_ ever be null?
   if (host_)
     host_->ImeConfirmComposition(text, gfx::Range::InvalidRange(), false);
   has_composition_text_ = false;
@@ -1653,6 +1659,7 @@ void RenderWidgetHostViewAura::InsertChar(const ui::KeyEvent& event) {
   }
 
   // Ignore character messages for VKEY_RETURN sent on CTRL+M. crbug.com/315547
+  // TODO(wjmaclean): can host_ ever be null?
   if (host_ &&
       (accept_return_character_ || event.GetCharacter() != ui::VKEY_RETURN)) {
     // Send a blink::WebInputEvent::Char event to |host_|.
@@ -1788,6 +1795,7 @@ bool RenderWidgetHostViewAura::GetTextFromRange(
 }
 
 void RenderWidgetHostViewAura::OnInputMethodChanged() {
+  // TODO(wjmaclean): can host_ ever be null?
   if (!host_)
     return;
 
@@ -1797,6 +1805,7 @@ void RenderWidgetHostViewAura::OnInputMethodChanged() {
 
 bool RenderWidgetHostViewAura::ChangeTextDirectionAndLayoutAlignment(
       base::i18n::TextDirection direction) {
+  // TODO(wjmaclean): can host_ ever be null?
   if (!host_)
     return false;
   host_->UpdateTextDirection(
@@ -1910,6 +1919,7 @@ void RenderWidgetHostViewAura::OnPaint(const ui::PaintContext& context) {
 
 void RenderWidgetHostViewAura::OnDeviceScaleFactorChanged(
     float device_scale_factor) {
+  // TODO(wjmaclean): can host_ ever be null?
   if (!host_ || !window_->GetRootWindow())
     return;
 
@@ -2486,10 +2496,6 @@ RenderWidgetHostViewAura::~RenderWidgetHostViewAura() {
   selection_controller_.reset();
   selection_controller_client_.reset();
 
-  if (host_->delegate() && host_->delegate()->GetInputEventRouter()) {
-    host_->delegate()->GetInputEventRouter()->RemoveSurfaceIdNamespaceOwner(
-        GetSurfaceIdNamespace());
-  }
   delegated_frame_host_.reset();
   window_observer_.reset();
   if (window_) {
@@ -2627,6 +2633,7 @@ bool RenderWidgetHostViewAura::NeedsMouseCapture() {
 void RenderWidgetHostViewAura::FinishImeCompositionSession() {
   if (!has_composition_text_)
     return;
+  // TODO(wjmaclean): can host_ ever be null?
   if (host_) {
     host_->ImeConfirmComposition(base::string16(), gfx::Range::InvalidRange(),
                                  false);

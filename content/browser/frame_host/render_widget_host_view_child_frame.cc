@@ -203,15 +203,18 @@ void RenderWidgetHostViewChildFrame::RenderProcessGone(
 }
 
 void RenderWidgetHostViewChildFrame::Destroy() {
+  // SurfaceIdNamespaces registered with RenderWidgetHostInputEventRouter
+  // have already been cleared when RenderWidgetHostViewBase notified its
+  // observers of our impending destruction.
   if (frame_connector_) {
     frame_connector_->set_view(NULL);
     frame_connector_ = NULL;
   }
 
-  if (host_->delegate() && host_->delegate()->GetInputEventRouter()) {
-    host_->delegate()->GetInputEventRouter()->RemoveSurfaceIdNamespaceOwner(
-        GetSurfaceIdNamespace());
-  }
+  // We notify our observers about shutdown here since we are about to release
+  // host_ and do not want any event calls coming from
+  // RenderWidgetHostInputEventRouter afterwards.
+  NotifyObserversAboutShutdown();
 
   host_->SetView(NULL);
   host_ = NULL;
@@ -363,25 +366,16 @@ uint32_t RenderWidgetHostViewChildFrame::GetSurfaceIdNamespace() {
 
 void RenderWidgetHostViewChildFrame::ProcessKeyboardEvent(
     const NativeWebKeyboardEvent& event) {
-  if (!host_)
-    return;
-
   host_->ForwardKeyboardEvent(event);
 }
 
 void RenderWidgetHostViewChildFrame::ProcessMouseEvent(
     const blink::WebMouseEvent& event) {
-  if (!host_)
-    return;
-
   host_->ForwardMouseEvent(event);
 }
 
 void RenderWidgetHostViewChildFrame::ProcessMouseWheelEvent(
     const blink::WebMouseWheelEvent& event) {
-  if (!host_)
-    return;
-
   if (event.deltaX != 0 || event.deltaY != 0)
     host_->ForwardWheelEvent(event);
 }

@@ -356,6 +356,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   DelegatedFrameHost* GetDelegatedFrameHost() const {
     return delegated_frame_host_.get();
   }
+
   const ui::MotionEventAura& pointer_state() const { return pointer_state_; }
 
  private:

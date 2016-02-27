@@ -13,6 +13,31 @@
 
 namespace content {
 
+void RenderWidgetHostInputEventRouter::OnRenderWidgetHostViewBaseDestroyed(
+    RenderWidgetHostViewBase* view) {
+  view->RemoveObserver(this);
+
+  // Remove this view from the owner_map.
+  for (auto entry : owner_map_) {
+    if (entry.second == view) {
+      owner_map_.erase(entry.first);
+      // There will only be one instance of a particular view in the map.
+      break;
+    }
+  }
+
+  if (view == current_touch_target_) {
+    current_touch_target_ = nullptr;
+    active_touches_ = 0;
+  }
+}
+
+void RenderWidgetHostInputEventRouter::ClearAllObserverRegistrations() {
+  for (auto entry : owner_map_)
+    entry.second->RemoveObserver(this);
+  owner_map_.clear();
+}
+
 RenderWidgetHostInputEventRouter::HittestDelegate::HittestDelegate(
     const std::unordered_map<cc::SurfaceId, HittestData, cc::SurfaceIdHash>&
         hittest_data)
@@ -37,10 +62,12 @@ bool RenderWidgetHostInputEventRouter::HittestDelegate::AcceptHitTarget(
 }
 
 RenderWidgetHostInputEventRouter::RenderWidgetHostInputEventRouter()
-    : active_touches_(0) {}
+    : current_touch_target_(nullptr), active_touches_(0) {}
 
 RenderWidgetHostInputEventRouter::~RenderWidgetHostInputEventRouter() {
-  owner_map_.clear();
+  // We may be destroyed before some of the owners in the map, so we must
+  // remove ourself from their observer lists.
+  ClearAllObserverRegistrations();
 }
 
 RenderWidgetHostViewBase* RenderWidgetHostInputEventRouter::FindEventTarget(
@@ -71,12 +98,8 @@ RenderWidgetHostViewBase* RenderWidgetHostInputEventRouter::FindEventTarget(
   // parent frame has not sent a new compositor frame since that happened.
   if (iter == owner_map_.end())
     return root_view;
-  RenderWidgetHostViewBase* target = iter->second.get();
-  // If we find the weak pointer is now null, it means the map entry is stale
-  // and should be removed to free space.
-  if (!target)
-    owner_map_.erase(iter);
-  return target;
+
+  return iter->second;
 }
 
 void RenderWidgetHostInputEventRouter::RouteMouseEvent(
@@ -122,14 +145,10 @@ void RenderWidgetHostInputEventRouter::RouteTouchEvent(
         gfx::Point transformed_point;
         gfx::Point original_point(event->touches[0].position.x,
                                   event->touches[0].position.y);
-        RenderWidgetHostViewBase* target =
+        current_touch_target_ =
             FindEventTarget(root_view, original_point, &transformed_point);
-        if (!target)
+        if (!current_touch_target_)
           return;
-
-        // Store the weak-ptr to the target, since it could disappear in the
-        // middle of a touch sequence.
-        current_touch_target_ = target->GetWeakPtr();
       }
       ++active_touches_;
       if (current_touch_target_)
@@ -142,12 +161,14 @@ void RenderWidgetHostInputEventRouter::RouteTouchEvent(
       break;
     case blink::WebInputEvent::TouchEnd:
     case blink::WebInputEvent::TouchCancel:
+      if (!current_touch_target_)
+        break;
+
       DCHECK(active_touches_);
-      if (current_touch_target_)
-        current_touch_target_->ProcessTouchEvent(*event, latency);
+      current_touch_target_->ProcessTouchEvent(*event, latency);
       --active_touches_;
       if (!active_touches_)
-        current_touch_target_ = WeakTarget();
+        current_touch_target_ = nullptr;
       break;
     default:
       NOTREACHED();
@@ -158,12 +179,19 @@ void RenderWidgetHostInputEventRouter::AddSurfaceIdNamespaceOwner(
     uint32_t id,
     RenderWidgetHostViewBase* owner) {
   DCHECK(owner_map_.find(id) == owner_map_.end());
-  owner_map_.insert(std::make_pair(id, owner->GetWeakPtr()));
+  // We want to be notified if the owner is destroyed so we can remove it from
+  // our map.
+  owner->AddObserver(this);
+  owner_map_.insert(std::make_pair(id, owner));
 }
 
 void RenderWidgetHostInputEventRouter::RemoveSurfaceIdNamespaceOwner(
     uint32_t id) {
-  owner_map_.erase(id);
+  auto it_to_remove = owner_map_.find(id);
+  if (it_to_remove != owner_map_.end()) {
+    it_to_remove->second->RemoveObserver(this);
+    owner_map_.erase(it_to_remove);
+  }
 
   for (auto it = hittest_data_.begin(); it != hittest_data_.end();) {
     if (cc::SurfaceIdAllocator::NamespaceForId(it->first) == id)

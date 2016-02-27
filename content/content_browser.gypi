@@ -1338,6 +1338,8 @@
       'browser/renderer_host/render_widget_host_view_aura.h',
       'browser/renderer_host/render_widget_host_view_base.cc',
       'browser/renderer_host/render_widget_host_view_base.h',
+      'browser/renderer_host/render_widget_host_view_base_observer.cc',
+      'browser/renderer_host/render_widget_host_view_base_observer.h',
       'browser/renderer_host/render_widget_host_view_mac.h',
       'browser/renderer_host/render_widget_host_view_mac.mm',
       'browser/renderer_host/render_widget_host_view_mac_dictionary_helper.h',

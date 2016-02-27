@@ -563,13 +563,6 @@ RenderWidgetHostViewMac::~RenderWidgetHostViewMac() {
 
   UnlockMouse();
 
-  if (render_widget_host_ && render_widget_host_->delegate() &&
-      render_widget_host_->delegate()->GetInputEventRouter()) {
-    render_widget_host_->delegate()
-        ->GetInputEventRouter()
-        ->RemoveSurfaceIdNamespaceOwner(GetSurfaceIdNamespace());
-  }
-
   // Ensure that the browser compositor is destroyed in a safe order.
   ShutdownBrowserCompositor();
 
@@ -1060,6 +1053,9 @@ void RenderWidgetHostViewMac::RenderProcessGone(base::TerminationStatus status,
 }
 
 void RenderWidgetHostViewMac::Destroy() {
+  // SurfaceIdNamespaces registered with RenderWidgetHostInputEventRouter
+  // have already been cleared when RenderWidgetHostViewBase notified its
+  // observers of our impending destruction.
   [[NSNotificationCenter defaultCenter]
       removeObserver:cocoa_view_
                 name:NSWindowWillCloseNotification
@@ -1082,18 +1078,13 @@ void RenderWidgetHostViewMac::Destroy() {
   // object needs to survive until the stack unwinds.
   pepper_fullscreen_window_.autorelease();
 
-  // Clear SurfaceID namespace ownership before we shutdown the
-  // compositor.
-  if (render_widget_host_ && render_widget_host_->delegate() &&
-      render_widget_host_->delegate()->GetInputEventRouter()) {
-    render_widget_host_->delegate()
-        ->GetInputEventRouter()
-        ->RemoveSurfaceIdNamespaceOwner(GetSurfaceIdNamespace());
-  }
-
   // Delete the delegated frame state, which will reach back into
   // render_widget_host_.
   ShutdownBrowserCompositor();
+
+  // Make sure none of our observers send events for us to process after
+  // we release render_widget_host_.
+  NotifyObserversAboutShutdown();
 
   // We get this call just before |render_widget_host_| deletes
   // itself.  But we are owned by |cocoa_view_|, which may be retained

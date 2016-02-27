@@ -11,6 +11,7 @@
 #include "content/browser/renderer_host/input/synthetic_gesture_target_base.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
+#include "content/browser/renderer_host/render_widget_host_view_base_observer.h"
 #include "content/common/content_switches_internal.h"
 #include "content/public/browser/render_widget_host_view_frame_subscriber.h"
 #include "ui/gfx/display.h"
@@ -377,11 +378,28 @@ RenderWidgetHostViewBase::RenderWidgetHostViewBase()
       current_display_rotation_(gfx::Display::ROTATE_0),
       pinch_zoom_enabled_(content::IsPinchToZoomEnabled()),
       renderer_frame_number_(0),
-      weak_factory_(this) {
-}
+      weak_factory_(this) {}
 
 RenderWidgetHostViewBase::~RenderWidgetHostViewBase() {
   DCHECK(!mouse_locked_);
+  // We call this here to guarantee that observers are notified before we go
+  // away. However, some subclasses may wish to call this earlier in their
+  // shutdown process, e.g. to force removal from
+  // RenderWidgetHostInputEventRouter's surface map before relinquishing a
+  // host pointer, as in RenderWidgetHostViewGuest. There is no harm in calling
+  // NotifyObserversAboutShutdown() twice, as the observers are required to
+  // de-register on the first call, and so the second call does nothing.
+  NotifyObserversAboutShutdown();
+}
+
+void RenderWidgetHostViewBase::NotifyObserversAboutShutdown() {
+  // Note: RenderWidgetHostInputEventRouter is an observer, and uses the
+  // following notification to remove this view from its surface owners map.
+  FOR_EACH_OBSERVER(RenderWidgetHostViewBaseObserver,
+                    observers_,
+                    OnRenderWidgetHostViewBaseDestroyed(this));
+  // All observers are required to disconnect after they are notified.
+  DCHECK(!observers_.might_have_observers());
 }
 
 bool RenderWidgetHostViewBase::OnMessageReceived(const IPC::Message& msg){
@@ -699,6 +717,16 @@ void RenderWidgetHostViewBase::TransformPointToLocalCoordSpace(
     cc::SurfaceId original_surface,
     gfx::Point* transformed_point) {
   *transformed_point = point;
+}
+
+void RenderWidgetHostViewBase::AddObserver(
+    RenderWidgetHostViewBaseObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void RenderWidgetHostViewBase::RemoveObserver(
+    RenderWidgetHostViewBaseObserver* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 cc::SurfaceId RenderWidgetHostViewBase::SurfaceIdForTesting() const {

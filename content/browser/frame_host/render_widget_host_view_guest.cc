@@ -541,7 +541,10 @@ gfx::NativeViewId RenderWidgetHostViewGuest::GetParentForWindowlessPlugin()
 #endif
 
 void RenderWidgetHostViewGuest::DestroyGuestView() {
-  UnregisterSurfaceNamespaceId();
+  // Let our observers know we're going away, since we don't want any event
+  // processing calls coming in after we release host_.
+  NotifyObserversAboutShutdown();
+
   host_->SetView(NULL);
   host_ = NULL;
   base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);

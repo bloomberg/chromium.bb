@@ -14,6 +14,7 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/observer_list.h"
 #include "base/process/kill.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
@@ -63,6 +64,7 @@ class LatencyInfo;
 namespace content {
 class BrowserAccessibilityDelegate;
 class BrowserAccessibilityManager;
+class RenderWidgetHostViewBaseObserver;
 class SyntheticGesture;
 class SyntheticGestureTarget;
 class WebCursor;
@@ -389,12 +391,20 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   static void DetachPluginWindowsCallback(HWND window);
 #endif
 
+  // Add and remove observers for lifetime event notifications. The order in
+  // which notifications are sent to observers is undefined. Clients must be
+  // sure to remove the observer before they go away.
+  void AddObserver(RenderWidgetHostViewBaseObserver* observer);
+  void RemoveObserver(RenderWidgetHostViewBaseObserver* observer);
+
   // Exposed for testing.
   virtual cc::SurfaceId SurfaceIdForTesting() const;
 
  protected:
   // Interface class only, do not construct.
   RenderWidgetHostViewBase();
+
+  void NotifyObserversAboutShutdown();
 
 #if defined(OS_WIN)
   // Shared implementation of MovePluginWindows for use by win and aura/wina.
@@ -457,6 +467,8 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   uint32_t renderer_frame_number_;
 
   base::OneShotTimer flush_input_timer_;
+
+  base::ObserverList<RenderWidgetHostViewBaseObserver> observers_;
 
   base::WeakPtrFactory<RenderWidgetHostViewBase> weak_factory_;
 
