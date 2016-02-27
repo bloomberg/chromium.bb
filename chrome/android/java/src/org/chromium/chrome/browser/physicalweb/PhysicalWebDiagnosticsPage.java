@@ -102,114 +102,57 @@ public class PhysicalWebDiagnosticsPage implements NativePage {
         sb.append(String.format("<font color=\"%s\">%s</font><br/>", color, message));
     }
 
-    private boolean appendSdkVersionReport(StringBuilder sb) {
-        boolean isAndroidKOrLater = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT);
-
-        sb.append("Android SDK version: ");
-        appendResult(sb, isAndroidKOrLater, "Compatible", "Incompatible");
-        return isAndroidKOrLater;
-    }
-
-    private boolean appendDataConnectivityReport(StringBuilder sb) {
-        ConnectivityManager cm =
-                (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
-        boolean isDataConnectionActive = (cm.getActiveNetworkInfo() != null
-                && cm.getActiveNetworkInfo().isConnectedOrConnecting());
-
-        sb.append("Data connection: ");
-        appendResult(sb, isDataConnectionActive, "Connected", "Not connected");
-        return isDataConnectionActive;
-    }
-
-    private boolean isBluetoothPermissionGranted() {
-        return PermissionChecker.checkSelfPermission(mContext, Manifest.permission.BLUETOOTH)
-                == PackageManager.PERMISSION_GRANTED;
-    }
-
-    private int appendBluetoothReport(StringBuilder sb) {
-        // Chrome normally does not have the Bluetooth permission, which is required to check
-        // whether Bluetooth is enabled. Without the Bluetooth permission we must ask the user to
-        // perform a manual check.
-        int successValue = RESULT_INDETERMINATE;
-        if (isBluetoothPermissionGranted()) {
-            BluetoothAdapter bt = BluetoothAdapter.getDefaultAdapter();
-            successValue = (bt != null && bt.isEnabled()) ? RESULT_SUCCESS : RESULT_FAILURE;
-        }
-
-        sb.append("Bluetooth: ");
-        appendResult(sb, successValue, "Enabled", "Disabled", "Needs verification");
-        return successValue;
-    }
-
-    private boolean appendLocationServicesReport(StringBuilder sb) {
-        LocationManager lm = (LocationManager) mContext.getSystemService(Context.LOCATION_SERVICE);
-        boolean isGpsProviderEnabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER);
-        boolean isNetworkProviderEnabled = lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
-        boolean isLocationProviderAvailable = isGpsProviderEnabled || isNetworkProviderEnabled;
-
-        sb.append("Location services: ");
-        appendResult(sb, isLocationProviderAvailable, "Enabled", "Disabled");
-        return isLocationProviderAvailable;
-    }
-
-    private boolean appendLocationAppPermissionReport(StringBuilder sb) {
-        boolean isLocationPermissionGranted = false;
-        isLocationPermissionGranted = PermissionChecker.checkSelfPermission(mContext,
-                Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
-
-        sb.append("Location app permission: ");
-        appendResult(sb, isLocationPermissionGranted, "Granted", "Not granted");
-        return isLocationPermissionGranted;
-    }
-
-    private boolean appendPhysicalWebPrivacyPreferenceReport(StringBuilder sb) {
+    private void appendPrerequisitesReport(StringBuilder sb) {
+        boolean isSdkVersionCorrect = isSdkVersionCorrect();
+        boolean isDataConnectionActive = isDataConnectionActive();
+        int bluetoothStatus = getBluetoothEnabledStatus();
+        boolean isLocationServicesEnabled = isLocationServicesEnabled();
+        boolean isLocationPermissionGranted = isLocationPermissionGranted();
         boolean isPreferenceEnabled = PhysicalWeb.isPhysicalWebPreferenceEnabled(mContext);
         boolean isOnboarding = PhysicalWeb.isOnboarding(mContext);
 
-        String failureMessage = (isOnboarding ? "Default (off)" : "Off");
+        int prerequisitesResult = RESULT_SUCCESS;
+        if (!isSdkVersionCorrect || !isDataConnectionActive || (bluetoothStatus == RESULT_FAILURE)
+                || !isLocationServicesEnabled || !isLocationPermissionGranted
+                || !isPreferenceEnabled) {
+            prerequisitesResult = RESULT_FAILURE;
+        } else if (bluetoothStatus == RESULT_INDETERMINATE) {
+            prerequisitesResult = RESULT_INDETERMINATE;
+        }
 
-        sb.append("Physical Web privacy settings: ");
-        appendResult(sb, isPreferenceEnabled, "On", failureMessage);
-        return isPreferenceEnabled;
-    }
+        sb.append("<h2>Status</h2>");
 
-    private void appendPrerequisitesReport(StringBuilder sb) {
-        boolean isAndroidMOrLater = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M);
+        sb.append("Physical Web is ");
+        appendResult(sb, prerequisitesResult != RESULT_FAILURE, "ON", "OFF");
 
         sb.append("<h2>Prerequisites</h2>");
 
-        boolean isSdkVersionCorrect = appendSdkVersionReport(sb);
-        boolean isDataConnectionActive = appendDataConnectivityReport(sb);
-        int bluetoothStatus = appendBluetoothReport(sb);
-        boolean isLocationProviderAvailable = appendLocationServicesReport(sb);
-        boolean isLocationPermissionGranted = true;
-        if (isAndroidMOrLater) {
-            isLocationPermissionGranted = appendLocationAppPermissionReport(sb);
-        }
-        boolean isPreferenceEnabled = appendPhysicalWebPrivacyPreferenceReport(sb);
+        sb.append("Android SDK version: ");
+        appendResult(sb, isSdkVersionCorrect, "Compatible", "Incompatible");
 
-        int successValue = RESULT_SUCCESS;
-        if (!isSdkVersionCorrect || !isDataConnectionActive || (bluetoothStatus == RESULT_FAILURE)
-                || !isLocationProviderAvailable || !isLocationPermissionGranted
-                || !isPreferenceEnabled) {
-            successValue = RESULT_FAILURE;
-        } else if (bluetoothStatus == RESULT_INDETERMINATE) {
-            successValue = RESULT_INDETERMINATE;
+        sb.append("Data connection: ");
+        appendResult(sb, isDataConnectionActive, "Connected", "Not connected");
+
+        sb.append("Location services: ");
+        appendResult(sb, isLocationServicesEnabled, "Enabled", "Disabled");
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            sb.append("Location app permission: ");
+            appendResult(sb, isLocationPermissionGranted, "Granted", "Not granted");
         }
 
-        sb.append("<br/>");
-        if (successValue == RESULT_SUCCESS) {
-            sb.append("All prerequisite checks ");
-        } else {
-            sb.append("One or more prerequisite checks ");
-        }
-        appendResult(sb, successValue, "SUCCEEDED", "FAILED", "need verification");
+        sb.append("Physical Web privacy settings: ");
+        String preferenceDisabledMessage = (isOnboarding ? "Default (off)" : "Off");
+        appendResult(sb, isPreferenceEnabled, "On", preferenceDisabledMessage);
+
+        sb.append("Bluetooth: ");
+        appendResult(sb, bluetoothStatus, "Enabled", "Disabled", "Unknown");
 
         // Append instructions for how to verify Bluetooth is enabled when we are unable to check
         // programmatically.
-        if (!isBluetoothPermissionGranted()) {
-            sb.append("<br/>To verify Bluetooth is enabled, check that the Bluetooth icon is "
-                    + "shown in the status bar.");
+        if (bluetoothStatus == RESULT_INDETERMINATE) {
+            sb.append("<br/>To verify Bluetooth is enabled on this device, check that the "
+                    + "Bluetooth icon is shown in the status bar.");
         }
     }
 
@@ -247,6 +190,46 @@ public class PhysicalWebDiagnosticsPage implements NativePage {
         sb.append("<br/>");
         appendUrlManagerReport(sb);
         return sb.toString();
+    }
+
+    private boolean isSdkVersionCorrect() {
+        return (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT);
+    }
+
+    private boolean isDataConnectionActive() {
+        ConnectivityManager cm =
+                (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
+        return (cm.getActiveNetworkInfo() != null
+                && cm.getActiveNetworkInfo().isConnectedOrConnecting());
+    }
+
+    private boolean isBluetoothPermissionGranted() {
+        return PermissionChecker.checkSelfPermission(mContext, Manifest.permission.BLUETOOTH)
+                == PackageManager.PERMISSION_GRANTED;
+    }
+
+    private int getBluetoothEnabledStatus() {
+        int statusResult = RESULT_INDETERMINATE;
+        if (isBluetoothPermissionGranted()) {
+            BluetoothAdapter bt = BluetoothAdapter.getDefaultAdapter();
+            statusResult = (bt != null && bt.isEnabled()) ? RESULT_SUCCESS : RESULT_FAILURE;
+        }
+        return statusResult;
+    }
+
+    private boolean isLocationServicesEnabled() {
+        LocationManager lm = (LocationManager) mContext.getSystemService(Context.LOCATION_SERVICE);
+        boolean isGpsProviderEnabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER);
+        boolean isNetworkProviderEnabled = lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+        return isGpsProviderEnabled || isNetworkProviderEnabled;
+    }
+
+    private boolean isLocationPermissionGranted() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+            return true;
+        }
+        return PermissionChecker.checkSelfPermission(mContext,
+                Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
     }
 
     private static Intent createListUrlsIntent(Context context) {
