@@ -163,16 +163,15 @@ static void RecordVideoCodecStats(const VideoDecoderConfig& video_config,
                             AVCOL_RANGE_NB);  // PRESUBMIT_IGNORE_UMA_MAX
 }
 
-static int32_t GetCodecHash(const AVCodecContext* context) {
+static const char kCodecNone[] = "none";
+
+static const char* GetCodecName(const AVCodecContext* context) {
   if (context->codec_descriptor)
-    return HashCodecName(context->codec_descriptor->name);
+    return context->codec_descriptor->name;
   const AVCodecDescriptor* codec_descriptor =
       avcodec_descriptor_get(context->codec_id);
-  if (codec_descriptor)
-    return HashCodecName(codec_descriptor->name);
-
   // If the codec name can't be determined, return none for tracking.
-  return HashCodecName("none");
+  return codec_descriptor ? codec_descriptor->name : kCodecNone;
 }
 
 scoped_ptr<FFmpegDemuxerStream> FFmpegDemuxerStream::Create(
@@ -1074,7 +1073,7 @@ void FFmpegDemuxer::OnFindStreamInfoDone(const PipelineStatusCB& status_cb,
 
       // Log the codec detected, whether it is supported or not.
       UMA_HISTOGRAM_SPARSE_SLOWLY("Media.DetectedAudioCodecHash",
-                                  GetCodecHash(codec_context));
+                                  HashCodecName(GetCodecName(codec_context)));
     } else if (codec_type == AVMEDIA_TYPE_VIDEO) {
       if (video_stream)
         continue;
@@ -1102,7 +1101,7 @@ void FFmpegDemuxer::OnFindStreamInfoDone(const PipelineStatusCB& status_cb,
 #endif
       // Log the codec detected, whether it is supported or not.
       UMA_HISTOGRAM_SPARSE_SLOWLY("Media.DetectedVideoCodecHash",
-                                  GetCodecHash(codec_context));
+                                  HashCodecName(GetCodecName(codec_context)));
     } else if (codec_type == AVMEDIA_TYPE_SUBTITLE) {
       if (codec_context->codec_id != AV_CODEC_ID_WEBVTT || !text_enabled_) {
         continue;
@@ -1270,12 +1269,8 @@ void FFmpegDemuxer::OnFindStreamInfoDone(const PipelineStatusCB& status_cb,
     std::string sample_name = SampleFormatToString(sample_format);
 
     media_log_->SetStringProperty("audio_sample_format", sample_name);
-
-    AVCodec* codec = avcodec_find_decoder(audio_codec->codec_id);
-    if (codec) {
-      media_log_->SetStringProperty("audio_codec_name", codec->name);
-    }
-
+    media_log_->SetStringProperty("audio_codec_name",
+                                  GetCodecName(audio_codec));
     media_log_->SetIntegerProperty("audio_channels_count",
                                    audio_codec->channels);
     media_log_->SetIntegerProperty("audio_samples_per_second",
@@ -1288,26 +1283,15 @@ void FFmpegDemuxer::OnFindStreamInfoDone(const PipelineStatusCB& status_cb,
   if (video_stream) {
     AVCodecContext* video_codec = video_stream->codec;
     media_log_->SetBooleanProperty("found_video_stream", true);
-
-    AVCodec* codec = avcodec_find_decoder(video_codec->codec_id);
-    if (codec) {
-      media_log_->SetStringProperty("video_codec_name", codec->name);
-    } else if (video_codec->codec_id == AV_CODEC_ID_VP9) {
-      // ffmpeg doesn't know about VP9 decoder. So we need to log it explicitly.
-      media_log_->SetStringProperty("video_codec_name", "vp9");
-    }
-
+    media_log_->SetStringProperty("video_codec_name",
+                                  GetCodecName(video_codec));
     media_log_->SetIntegerProperty("width", video_codec->width);
     media_log_->SetIntegerProperty("height", video_codec->height);
-    media_log_->SetIntegerProperty("coded_width",
-                                   video_codec->coded_width);
-    media_log_->SetIntegerProperty("coded_height",
-                                   video_codec->coded_height);
+    media_log_->SetIntegerProperty("coded_width", video_codec->coded_width);
+    media_log_->SetIntegerProperty("coded_height", video_codec->coded_height);
     media_log_->SetStringProperty(
-        "time_base",
-        base::StringPrintf("%d/%d",
-                           video_codec->time_base.num,
-                           video_codec->time_base.den));
+        "time_base", base::StringPrintf("%d/%d", video_codec->time_base.num,
+                                        video_codec->time_base.den));
     media_log_->SetStringProperty(
         "video_format", VideoPixelFormatToString(video_config.format()));
     media_log_->SetBooleanProperty("video_is_encrypted",
