@@ -192,6 +192,41 @@ TEST_F(PresentationServiceDelegateImplTest, AddScreenAvailabilityListener) {
       render_process_id, render_frame_id2, source2.id()));
 }
 
+TEST_F(PresentationServiceDelegateImplTest, AddMultipleListenersToFrame) {
+  ON_CALL(router_, RegisterMediaSinksObserver(_)).WillByDefault(Return(true));
+
+  std::string presentation_url1("http://url1.com");
+  std::string presentation_url2("http://url2.com");
+  MediaSource source1 = MediaSourceForPresentationUrl(presentation_url1);
+  MediaSource source2 = MediaSourceForPresentationUrl(presentation_url2);
+  MockScreenAvailabilityListener listener1(presentation_url1);
+  MockScreenAvailabilityListener listener2(presentation_url2);
+  int render_process_id = 10;
+  int render_frame_id = 1;
+
+  EXPECT_CALL(router_, RegisterMediaSinksObserver(_)).Times(2);
+  EXPECT_TRUE(delegate_impl_->AddScreenAvailabilityListener(
+      render_process_id, render_frame_id, &listener1));
+  EXPECT_TRUE(delegate_impl_->AddScreenAvailabilityListener(
+      render_process_id, render_frame_id, &listener2));
+  EXPECT_TRUE(delegate_impl_->HasScreenAvailabilityListenerForTest(
+      render_process_id, render_frame_id, source1.id()))
+      << "Mapping not found for " << source1.ToString();
+  EXPECT_TRUE(delegate_impl_->HasScreenAvailabilityListenerForTest(
+      render_process_id, render_frame_id, source2.id()))
+      << "Mapping not found for " << source2.ToString();
+
+  EXPECT_CALL(router_, UnregisterMediaSinksObserver(_)).Times(2);
+  delegate_impl_->RemoveScreenAvailabilityListener(
+      render_process_id, render_frame_id, &listener1);
+  delegate_impl_->RemoveScreenAvailabilityListener(
+      render_process_id, render_frame_id, &listener2);
+  EXPECT_FALSE(delegate_impl_->HasScreenAvailabilityListenerForTest(
+      render_process_id, render_frame_id, source1.id()));
+  EXPECT_FALSE(delegate_impl_->HasScreenAvailabilityListenerForTest(
+      render_process_id, render_frame_id, source2.id()));
+}
+
 TEST_F(PresentationServiceDelegateImplTest, AddSameListenerTwice) {
   std::string presentation_url1("http://url1.fakeUrl");
   MediaSource source1(MediaSourceForPresentationUrl(presentation_url1));

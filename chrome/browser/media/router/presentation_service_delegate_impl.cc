@@ -107,7 +107,9 @@ class PresentationFrame {
       content::PresentationScreenAvailabilityListener* listener) const;
   base::SmallMap<std::map<std::string, MediaRoute::Id>>
       presentation_id_to_route_id_;
-  scoped_ptr<PresentationMediaSinksObserver> sinks_observer_;
+  // TODO(btolsch): Use SmallMap here if move operation patch is accepted.
+  std::map<std::string, scoped_ptr<PresentationMediaSinksObserver>>
+      url_to_sinks_observer_;
   base::ScopedPtrHashMap<MediaRoute::Id,
                          scoped_ptr<PresentationConnectionStateSubscription>>
       connection_state_subscriptions_;
@@ -158,15 +160,16 @@ const std::vector<MediaRoute::Id> PresentationFrame::GetRouteIds() const {
 
 bool PresentationFrame::SetScreenAvailabilityListener(
     content::PresentationScreenAvailabilityListener* listener) {
-  if (sinks_observer_ && sinks_observer_->listener() == listener)
+  MediaSource source(GetMediaSourceFromListener(listener));
+  auto& sinks_observer = url_to_sinks_observer_[source.id()];
+  if (sinks_observer && sinks_observer->listener() == listener)
     return false;
 
-  MediaSource source(GetMediaSourceFromListener(listener));
-  sinks_observer_.reset(
+  sinks_observer.reset(
       new PresentationMediaSinksObserver(router_, listener, source));
 
-  if (!sinks_observer_->Init()) {
-    sinks_observer_.reset();
+  if (!sinks_observer->Init()) {
+    url_to_sinks_observer_.erase(source.id());
     listener->OnScreenAvailabilityNotSupported();
     return false;
   }
@@ -176,8 +179,11 @@ bool PresentationFrame::SetScreenAvailabilityListener(
 
 bool PresentationFrame::RemoveScreenAvailabilityListener(
     content::PresentationScreenAvailabilityListener* listener) {
-  if (sinks_observer_ && sinks_observer_->listener() == listener) {
-    sinks_observer_.reset();
+  MediaSource source(GetMediaSourceFromListener(listener));
+  auto sinks_observer_it = url_to_sinks_observer_.find(source.id());
+  if (sinks_observer_it != url_to_sinks_observer_.end() &&
+      sinks_observer_it->second->listener() == listener) {
+    url_to_sinks_observer_.erase(sinks_observer_it);
     return true;
   }
   return false;
@@ -185,7 +191,7 @@ bool PresentationFrame::RemoveScreenAvailabilityListener(
 
 bool PresentationFrame::HasScreenAvailabilityListenerForTest(
     const MediaSource::Id& source_id) const {
-  return sinks_observer_ && sinks_observer_->source().id() == source_id;
+  return url_to_sinks_observer_.find(source_id) != url_to_sinks_observer_.end();
 }
 
 void PresentationFrame::Reset() {
@@ -193,7 +199,7 @@ void PresentationFrame::Reset() {
     router_->DetachRoute(pid_route_id.second);
 
   presentation_id_to_route_id_.clear();
-  sinks_observer_.reset();
+  url_to_sinks_observer_.clear();
   connection_state_subscriptions_.clear();
   session_messages_observers_.clear();
 }
