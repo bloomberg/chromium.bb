@@ -19,8 +19,6 @@ public:
     NodeIntersectionObserverData();
     ~NodeIntersectionObserverData();
 
-    bool hasIntersectionObserver() const;
-    bool hasIntersectionObservation() const;
     IntersectionObservation* getObservationFor(IntersectionObserver&);
     void addObservation(IntersectionObservation&);
     void removeObservation(IntersectionObserver&);

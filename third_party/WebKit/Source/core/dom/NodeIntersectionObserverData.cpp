@@ -15,16 +15,6 @@ NodeIntersectionObserverData::NodeIntersectionObserverData() { }
 
 NodeIntersectionObserverData::~NodeIntersectionObserverData() { }
 
-bool NodeIntersectionObserverData::hasIntersectionObserver() const
-{
-    return !m_intersectionObservers.isEmpty();
-}
-
-bool NodeIntersectionObserverData::hasIntersectionObservation() const
-{
-    return !m_intersectionObservations.isEmpty();
-}
-
 IntersectionObservation* NodeIntersectionObserverData::getObservationFor(IntersectionObserver& observer)
 {
     auto i = m_intersectionObservations.find(&observer);
