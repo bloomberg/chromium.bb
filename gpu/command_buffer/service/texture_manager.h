@@ -985,10 +985,11 @@ class GPU_EXPORT TextureManager : public base::trace_event::MemoryDumpProvider {
   TextureRef* GetTextureInfoForTargetUnlessDefault(
       ContextState* state, GLenum target);
 
-  // Note that internal_format is only checked in relation to the format
-  // parameter, so that this function may be used to validate texSubImage2D.
+  // This function is used to validate TexImage2D and TexSubImage2D and their
+  // variants. But internal_format only checked for callers of TexImage2D and
+  // its variants (tex_image_call is true).
   bool ValidateTextureParameters(
-    ErrorState* error_state, const char* function_name,
+    ErrorState* error_state, const char* function_name, bool tex_image_call,
     GLenum format, GLenum type, GLint internal_format, GLint level);
 
   // base::trace_event::MemoryDumpProvider implementation.

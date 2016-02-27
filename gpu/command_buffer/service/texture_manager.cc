@@ -1965,7 +1965,7 @@ void TextureManager::IncFramebufferStateChangeCount() {
 }
 
 bool TextureManager::ValidateTextureParameters(
-    ErrorState* error_state, const char* function_name,
+    ErrorState* error_state, const char* function_name, bool tex_image_call,
     GLenum format, GLenum type, GLint internal_format, GLint level) {
   const Validators* validators = feature_info_->validators();
   if (!validators->texture_format.IsValid(format)) {
@@ -1978,20 +1978,19 @@ bool TextureManager::ValidateTextureParameters(
         error_state, function_name, type, "type");
     return false;
   }
+  // For TexSubImage calls, internal_format isn't part of the parameters.
+  // So the validation is not necessary for TexSubImage.
+  if (tex_image_call &&
+      !validators->texture_internal_format.IsValid(internal_format)) {
+    ERRORSTATE_SET_GL_ERROR(
+        error_state, GL_INVALID_VALUE, function_name,
+        "invalid internal_format");
+    return false;
+  }
   if (!g_format_type_validator.Get().IsValid(internal_format, format, type)) {
     ERRORSTATE_SET_GL_ERROR(
         error_state, GL_INVALID_OPERATION, function_name,
         "invalid internalformat/format/type combination");
-    return false;
-  }
-  // For TexSubImage calls, internal_format isn't part of the parameters,
-  // so its validation needs to be after the internal_format/format/type
-  // combination validation. Otherwise, an unexpected INVALID_VALUE could be
-  // generated instead of INVALID_OPERATION.
-  if (!validators->texture_internal_format.IsValid(internal_format)) {
-    ERRORSTATE_SET_GL_ERROR(
-        error_state, GL_INVALID_VALUE, function_name,
-        "invalid internal_format");
     return false;
   }
   if (!feature_info_->IsES3Enabled()) {
@@ -2078,7 +2077,7 @@ bool TextureManager::ValidateTexImage(
     return false;
   }
   if (!ValidateTextureParameters(
-      error_state, function_name, args.format, args.type,
+      error_state, function_name, true, args.format, args.type,
       args.internal_format, args.level)) {
     return false;
   }
@@ -2232,7 +2231,7 @@ bool TextureManager::ValidateTexSubImage(ContextState* state,
                             "level does not exist.");
     return false;
   }
-  if (!ValidateTextureParameters(error_state, function_name, args.format,
+  if (!ValidateTextureParameters(error_state, function_name, false, args.format,
                                  args.type, internal_format, args.level)) {
     return false;
   }

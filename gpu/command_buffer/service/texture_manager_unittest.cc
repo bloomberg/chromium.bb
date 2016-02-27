@@ -2278,94 +2278,106 @@ class TextureFormatTypeValidationTest : public TextureManagerTest {
   ~TextureFormatTypeValidationTest() override {}
 
  protected:
-  void ExpectValid(GLenum format, GLenum type, GLint internal_format) {
+  void ExpectValid(
+      bool tex_image_call, GLenum format, GLenum type, GLint internal_format) {
     EXPECT_TRUE(manager_->ValidateTextureParameters(
-        error_state_.get(), "", format, type, internal_format, 0));
+        error_state_.get(), "", tex_image_call,
+        format, type, internal_format, 0));
   }
 
-  void ExpectInvalid(GLenum format, GLenum type, GLint internal_format) {
+  void ExpectInvalid(
+      bool tex_image_call, GLenum format, GLenum type, GLint internal_format) {
     EXPECT_CALL(*error_state_,
                 SetGLError(_, _, _, _, _))
         .Times(1)
         .RetiresOnSaturation();
     EXPECT_FALSE(manager_->ValidateTextureParameters(
-        error_state_.get(), "", format, type, internal_format, 0));
+        error_state_.get(), "", tex_image_call,
+        format, type, internal_format, 0));
   }
 
-  void ExpectInvalidEnum(GLenum format, GLenum type, GLint internal_format) {
+  void ExpectInvalidEnum(
+      bool tex_image_call, GLenum format, GLenum type, GLint internal_format) {
     EXPECT_CALL(*error_state_,
                 SetGLErrorInvalidEnum(_, _, _, _, _))
         .Times(1)
         .RetiresOnSaturation();
     EXPECT_FALSE(manager_->ValidateTextureParameters(
-        error_state_.get(), "", format, type, internal_format, 0));
+        error_state_.get(), "", tex_image_call,
+        format, type, internal_format, 0));
   }
 };
 
 TEST_F(TextureFormatTypeValidationTest, ES2Basic) {
   SetupFeatureInfo("", "OpenGL ES 2.0", false);
 
-  ExpectValid(GL_ALPHA, GL_UNSIGNED_BYTE, GL_ALPHA);
-  ExpectValid(GL_RGB, GL_UNSIGNED_SHORT_5_6_5, GL_RGB);
-  ExpectValid(GL_RGBA, GL_UNSIGNED_SHORT_4_4_4_4, GL_RGBA);
-  ExpectValid(GL_LUMINANCE, GL_UNSIGNED_BYTE, GL_LUMINANCE);
-  ExpectValid(GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, GL_LUMINANCE_ALPHA);
+  ExpectValid(true, GL_ALPHA, GL_UNSIGNED_BYTE, GL_ALPHA);
+  ExpectValid(true, GL_RGB, GL_UNSIGNED_SHORT_5_6_5, GL_RGB);
+  ExpectValid(true, GL_RGBA, GL_UNSIGNED_SHORT_4_4_4_4, GL_RGBA);
+  ExpectValid(true, GL_LUMINANCE, GL_UNSIGNED_BYTE, GL_LUMINANCE);
+  ExpectValid(true, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, GL_LUMINANCE_ALPHA);
 
-  ExpectInvalid(GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, GL_ALPHA);
+  ExpectInvalid(true, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, GL_ALPHA);
 
   // float / half_float.
-  ExpectInvalidEnum(GL_RGBA, GL_FLOAT, GL_RGBA);
-  ExpectInvalidEnum(GL_RGBA, GL_HALF_FLOAT_OES, GL_RGBA);
+  ExpectInvalidEnum(true, GL_RGBA, GL_FLOAT, GL_RGBA);
+  ExpectInvalidEnum(true, GL_RGBA, GL_HALF_FLOAT_OES, GL_RGBA);
 
   // GL_EXT_bgra
-  ExpectInvalidEnum(GL_BGRA_EXT, GL_UNSIGNED_BYTE, GL_BGRA_EXT);
+  ExpectInvalidEnum(true, GL_BGRA_EXT, GL_UNSIGNED_BYTE, GL_BGRA_EXT);
 
   // depth / stencil
-  ExpectInvalidEnum(GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, GL_DEPTH_COMPONENT);
-  ExpectInvalidEnum(GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, GL_DEPTH_STENCIL);
+  ExpectInvalidEnum(
+      true, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, GL_DEPTH_COMPONENT);
+  ExpectInvalidEnum(
+      true, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, GL_DEPTH_STENCIL);
 
   // SRGB
-  ExpectInvalidEnum(GL_SRGB_EXT, GL_UNSIGNED_BYTE, GL_SRGB_EXT);
-  ExpectInvalidEnum(GL_SRGB_ALPHA_EXT, GL_UNSIGNED_BYTE, GL_SRGB_ALPHA_EXT);
+  ExpectInvalidEnum(true, GL_SRGB_EXT, GL_UNSIGNED_BYTE, GL_SRGB_EXT);
+  ExpectInvalidEnum(
+      true, GL_SRGB_ALPHA_EXT, GL_UNSIGNED_BYTE, GL_SRGB_ALPHA_EXT);
 
   // ES3
-  ExpectInvalid(GL_RGB, GL_UNSIGNED_BYTE, GL_RGB8);
+  ExpectInvalid(true, GL_RGB, GL_UNSIGNED_BYTE, GL_RGB8);
 }
 
 TEST_F(TextureFormatTypeValidationTest, ES2WithExtTextureFormatBGRA8888) {
   SetupFeatureInfo("GL_EXT_texture_format_BGRA8888", "OpenGL ES 2.0", false);
 
-  ExpectValid(GL_BGRA_EXT, GL_UNSIGNED_BYTE, GL_BGRA_EXT);
+  ExpectValid(true, GL_BGRA_EXT, GL_UNSIGNED_BYTE, GL_BGRA_EXT);
 }
 
 TEST_F(TextureFormatTypeValidationTest, ES2WithAppleTextureFormatBGRA8888) {
   SetupFeatureInfo("GL_APPLE_texture_format_BGRA8888", "OpenGL ES 2.0", false);
 
-  ExpectValid(GL_BGRA_EXT, GL_UNSIGNED_BYTE, GL_BGRA_EXT);
+  ExpectValid(true, GL_BGRA_EXT, GL_UNSIGNED_BYTE, GL_BGRA_EXT);
 }
 
 TEST_F(TextureFormatTypeValidationTest, ES2WithArbDepth) {
   SetupFeatureInfo("GL_ARB_depth_texture", "OpenGL ES 2.0", false);
 
-  ExpectValid(GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, GL_DEPTH_COMPONENT);
-  ExpectValid(GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, GL_DEPTH_COMPONENT);
-  ExpectInvalidEnum(GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, GL_DEPTH_STENCIL);
+  ExpectValid(true, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, GL_DEPTH_COMPONENT);
+  ExpectValid(true, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, GL_DEPTH_COMPONENT);
+  ExpectInvalidEnum(
+      true, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, GL_DEPTH_STENCIL);
 }
 
 TEST_F(TextureFormatTypeValidationTest, ES2WithOesDepth) {
   SetupFeatureInfo("GL_OES_depth_texture", "OpenGL ES 2.0", false);
 
-  ExpectValid(GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, GL_DEPTH_COMPONENT);
-  ExpectValid(GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, GL_DEPTH_COMPONENT);
-  ExpectInvalidEnum(GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, GL_DEPTH_STENCIL);
+  ExpectValid(true, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, GL_DEPTH_COMPONENT);
+  ExpectValid(true, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, GL_DEPTH_COMPONENT);
+  ExpectInvalidEnum(
+      true, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, GL_DEPTH_STENCIL);
 }
 
 TEST_F(TextureFormatTypeValidationTest, ES2WithAngleDepth) {
   SetupFeatureInfo("GL_ANGLE_depth_texture", "OpenGL ES 2.0", false);
 
-  ExpectValid(GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, GL_DEPTH_COMPONENT);
-  ExpectValid(GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, GL_DEPTH_COMPONENT);
-  ExpectInvalidEnum(GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, GL_DEPTH_STENCIL);
+  ExpectValid(true, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, GL_DEPTH_COMPONENT);
+  ExpectValid(true, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, GL_DEPTH_COMPONENT);
+  ExpectInvalidEnum(
+      true, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, GL_DEPTH_STENCIL);
 }
 
 TEST_F(TextureFormatTypeValidationTest, ES2WithExtPackedDepthStencil) {
@@ -2374,9 +2386,9 @@ TEST_F(TextureFormatTypeValidationTest, ES2WithExtPackedDepthStencil) {
       "OpenGL ES 2.0",
       false);
 
-  ExpectValid(GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, GL_DEPTH_COMPONENT);
-  ExpectValid(GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, GL_DEPTH_COMPONENT);
-  ExpectValid(GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, GL_DEPTH_STENCIL);
+  ExpectValid(true, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, GL_DEPTH_COMPONENT);
+  ExpectValid(true, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, GL_DEPTH_COMPONENT);
+  ExpectValid(true, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, GL_DEPTH_STENCIL);
 }
 
 TEST_F(TextureFormatTypeValidationTest, ES2WithRGWithFloat) {
@@ -2385,54 +2397,56 @@ TEST_F(TextureFormatTypeValidationTest, ES2WithRGWithFloat) {
       "OpenGL ES 2.0",
       false);
 
-  ExpectValid(GL_RED_EXT, GL_HALF_FLOAT_OES, GL_RED_EXT);
-  ExpectValid(GL_RG_EXT, GL_HALF_FLOAT_OES, GL_RG_EXT);
-  ExpectValid(GL_RED_EXT, GL_UNSIGNED_BYTE, GL_RED_EXT);
-  ExpectValid(GL_RG_EXT, GL_UNSIGNED_BYTE, GL_RG_EXT);
+  ExpectValid(true, GL_RED_EXT, GL_HALF_FLOAT_OES, GL_RED_EXT);
+  ExpectValid(true, GL_RG_EXT, GL_HALF_FLOAT_OES, GL_RG_EXT);
+  ExpectValid(true, GL_RED_EXT, GL_UNSIGNED_BYTE, GL_RED_EXT);
+  ExpectValid(true, GL_RG_EXT, GL_UNSIGNED_BYTE, GL_RG_EXT);
 
-  ExpectInvalidEnum(GL_RED_EXT, GL_BYTE, GL_RED_EXT);
-  ExpectInvalidEnum(GL_RG_EXT, GL_BYTE, GL_RG_EXT);
-  ExpectInvalidEnum(GL_RED_EXT, GL_SHORT, GL_RED_EXT);
-  ExpectInvalidEnum(GL_RG_EXT, GL_SHORT, GL_RG_EXT);
+  ExpectInvalidEnum(true, GL_RED_EXT, GL_BYTE, GL_RED_EXT);
+  ExpectInvalidEnum(true, GL_RG_EXT, GL_BYTE, GL_RG_EXT);
+  ExpectInvalidEnum(true, GL_RED_EXT, GL_SHORT, GL_RED_EXT);
+  ExpectInvalidEnum(true, GL_RG_EXT, GL_SHORT, GL_RG_EXT);
 }
 
 TEST_F(TextureFormatTypeValidationTest, ES2WithRGNoFloat) {
   SetupFeatureInfo("GL_ARB_texture_rg", "OpenGL ES 2.0", false);
 
-  ExpectValid(GL_RED_EXT, GL_UNSIGNED_BYTE, GL_RED_EXT);
-  ExpectValid(GL_RG_EXT, GL_UNSIGNED_BYTE, GL_RG_EXT);
+  ExpectValid(true, GL_RED_EXT, GL_UNSIGNED_BYTE, GL_RED_EXT);
+  ExpectValid(true, GL_RG_EXT, GL_UNSIGNED_BYTE, GL_RG_EXT);
 
-  ExpectInvalidEnum(GL_RED_EXT, GL_HALF_FLOAT_OES, GL_RED_EXT);
-  ExpectInvalidEnum(GL_RG_EXT, GL_HALF_FLOAT_OES, GL_RG_EXT);
+  ExpectInvalidEnum(true, GL_RED_EXT, GL_HALF_FLOAT_OES, GL_RED_EXT);
+  ExpectInvalidEnum(true, GL_RG_EXT, GL_HALF_FLOAT_OES, GL_RG_EXT);
 }
 
 TEST_F(TextureFormatTypeValidationTest, ES2OnTopOfES3) {
   SetupFeatureInfo("", "OpenGL ES 3.0", false);
 
-  ExpectInvalidEnum(GL_RGB, GL_FLOAT, GL_RGB);
-  ExpectInvalidEnum(GL_RGBA, GL_FLOAT, GL_RGBA);
-  ExpectInvalidEnum(GL_LUMINANCE, GL_FLOAT, GL_LUMINANCE);
-  ExpectInvalidEnum(GL_LUMINANCE_ALPHA, GL_FLOAT, GL_LUMINANCE_ALPHA);
-  ExpectInvalidEnum(GL_ALPHA, GL_FLOAT, GL_ALPHA);
+  ExpectInvalidEnum(true, GL_RGB, GL_FLOAT, GL_RGB);
+  ExpectInvalidEnum(true, GL_RGBA, GL_FLOAT, GL_RGBA);
+  ExpectInvalidEnum(true, GL_LUMINANCE, GL_FLOAT, GL_LUMINANCE);
+  ExpectInvalidEnum(true, GL_LUMINANCE_ALPHA, GL_FLOAT, GL_LUMINANCE_ALPHA);
+  ExpectInvalidEnum(true, GL_ALPHA, GL_FLOAT, GL_ALPHA);
 
-  ExpectInvalidEnum(GL_SRGB_EXT, GL_UNSIGNED_BYTE, GL_SRGB_EXT);
-  ExpectInvalidEnum(GL_SRGB_ALPHA_EXT, GL_UNSIGNED_BYTE, GL_SRGB_ALPHA_EXT);
+  ExpectInvalidEnum(true, GL_SRGB_EXT, GL_UNSIGNED_BYTE, GL_SRGB_EXT);
+  ExpectInvalidEnum(
+      true, GL_SRGB_ALPHA_EXT, GL_UNSIGNED_BYTE, GL_SRGB_ALPHA_EXT);
 }
 
 TEST_F(TextureFormatTypeValidationTest, ES2WithOesTextureFloat) {
   SetupFeatureInfo("GL_OES_texture_float", "OpenGL ES 2.0", false);
 
-  ExpectValid(GL_RGB, GL_FLOAT, GL_RGB);
-  ExpectValid(GL_RGBA, GL_FLOAT, GL_RGBA);
-  ExpectValid(GL_LUMINANCE, GL_FLOAT, GL_LUMINANCE);
-  ExpectValid(GL_LUMINANCE_ALPHA, GL_FLOAT, GL_LUMINANCE_ALPHA);
-  ExpectValid(GL_ALPHA, GL_FLOAT, GL_ALPHA);
+  ExpectValid(true, GL_RGB, GL_FLOAT, GL_RGB);
+  ExpectValid(true, GL_RGBA, GL_FLOAT, GL_RGBA);
+  ExpectValid(true, GL_LUMINANCE, GL_FLOAT, GL_LUMINANCE);
+  ExpectValid(true, GL_LUMINANCE_ALPHA, GL_FLOAT, GL_LUMINANCE_ALPHA);
+  ExpectValid(true, GL_ALPHA, GL_FLOAT, GL_ALPHA);
 
-  ExpectInvalidEnum(GL_RGB, GL_HALF_FLOAT_OES, GL_RGB);
-  ExpectInvalidEnum(GL_RGBA, GL_HALF_FLOAT_OES, GL_RGBA);
-  ExpectInvalidEnum(GL_LUMINANCE, GL_HALF_FLOAT_OES, GL_LUMINANCE);
-  ExpectInvalidEnum(GL_LUMINANCE_ALPHA, GL_HALF_FLOAT_OES, GL_LUMINANCE_ALPHA);
-  ExpectInvalidEnum(GL_ALPHA, GL_HALF_FLOAT_OES, GL_ALPHA);
+  ExpectInvalidEnum(true, GL_RGB, GL_HALF_FLOAT_OES, GL_RGB);
+  ExpectInvalidEnum(true, GL_RGBA, GL_HALF_FLOAT_OES, GL_RGBA);
+  ExpectInvalidEnum(true, GL_LUMINANCE, GL_HALF_FLOAT_OES, GL_LUMINANCE);
+  ExpectInvalidEnum(
+      true, GL_LUMINANCE_ALPHA, GL_HALF_FLOAT_OES, GL_LUMINANCE_ALPHA);
+  ExpectInvalidEnum(true, GL_ALPHA, GL_HALF_FLOAT_OES, GL_ALPHA);
 }
 
 TEST_F(TextureFormatTypeValidationTest, ES2WithOesTextureFloatLinear) {
@@ -2441,33 +2455,34 @@ TEST_F(TextureFormatTypeValidationTest, ES2WithOesTextureFloatLinear) {
       "OpenGL ES 2.0",
       false);
 
-  ExpectValid(GL_RGB, GL_FLOAT, GL_RGB);
-  ExpectValid(GL_RGBA, GL_FLOAT, GL_RGBA);
-  ExpectValid(GL_LUMINANCE, GL_FLOAT, GL_LUMINANCE);
-  ExpectValid(GL_LUMINANCE_ALPHA, GL_FLOAT, GL_LUMINANCE_ALPHA);
-  ExpectValid(GL_ALPHA, GL_FLOAT, GL_ALPHA);
+  ExpectValid(true, GL_RGB, GL_FLOAT, GL_RGB);
+  ExpectValid(true, GL_RGBA, GL_FLOAT, GL_RGBA);
+  ExpectValid(true, GL_LUMINANCE, GL_FLOAT, GL_LUMINANCE);
+  ExpectValid(true, GL_LUMINANCE_ALPHA, GL_FLOAT, GL_LUMINANCE_ALPHA);
+  ExpectValid(true, GL_ALPHA, GL_FLOAT, GL_ALPHA);
 
-  ExpectInvalidEnum(GL_RGB, GL_HALF_FLOAT_OES, GL_RGB);
-  ExpectInvalidEnum(GL_RGBA, GL_HALF_FLOAT_OES, GL_RGBA);
-  ExpectInvalidEnum(GL_LUMINANCE, GL_HALF_FLOAT_OES, GL_LUMINANCE);
-  ExpectInvalidEnum(GL_LUMINANCE_ALPHA, GL_HALF_FLOAT_OES, GL_LUMINANCE_ALPHA);
-  ExpectInvalidEnum(GL_ALPHA, GL_HALF_FLOAT_OES, GL_ALPHA);
+  ExpectInvalidEnum(true, GL_RGB, GL_HALF_FLOAT_OES, GL_RGB);
+  ExpectInvalidEnum(true, GL_RGBA, GL_HALF_FLOAT_OES, GL_RGBA);
+  ExpectInvalidEnum(true, GL_LUMINANCE, GL_HALF_FLOAT_OES, GL_LUMINANCE);
+  ExpectInvalidEnum(
+      true, GL_LUMINANCE_ALPHA, GL_HALF_FLOAT_OES, GL_LUMINANCE_ALPHA);
+  ExpectInvalidEnum(true, GL_ALPHA, GL_HALF_FLOAT_OES, GL_ALPHA);
 }
 
 TEST_F(TextureFormatTypeValidationTest, ES2WithOesTextureHalfFloat) {
   SetupFeatureInfo("GL_OES_texture_half_float", "OpenGL ES 2.0", false);
 
-  ExpectValid(GL_RGB, GL_HALF_FLOAT_OES, GL_RGB);
-  ExpectValid(GL_RGBA, GL_HALF_FLOAT_OES, GL_RGBA);
-  ExpectValid(GL_LUMINANCE, GL_HALF_FLOAT_OES, GL_LUMINANCE);
-  ExpectValid(GL_LUMINANCE_ALPHA, GL_HALF_FLOAT_OES, GL_LUMINANCE_ALPHA);
-  ExpectValid(GL_ALPHA, GL_HALF_FLOAT_OES, GL_ALPHA);
+  ExpectValid(true, GL_RGB, GL_HALF_FLOAT_OES, GL_RGB);
+  ExpectValid(true, GL_RGBA, GL_HALF_FLOAT_OES, GL_RGBA);
+  ExpectValid(true, GL_LUMINANCE, GL_HALF_FLOAT_OES, GL_LUMINANCE);
+  ExpectValid(true, GL_LUMINANCE_ALPHA, GL_HALF_FLOAT_OES, GL_LUMINANCE_ALPHA);
+  ExpectValid(true, GL_ALPHA, GL_HALF_FLOAT_OES, GL_ALPHA);
 
-  ExpectInvalidEnum(GL_RGB, GL_FLOAT, GL_RGB);
-  ExpectInvalidEnum(GL_RGBA, GL_FLOAT, GL_RGBA);
-  ExpectInvalidEnum(GL_LUMINANCE, GL_FLOAT, GL_LUMINANCE);
-  ExpectInvalidEnum(GL_LUMINANCE_ALPHA, GL_FLOAT, GL_LUMINANCE_ALPHA);
-  ExpectInvalidEnum(GL_ALPHA, GL_FLOAT, GL_ALPHA);
+  ExpectInvalidEnum(true, GL_RGB, GL_FLOAT, GL_RGB);
+  ExpectInvalidEnum(true, GL_RGBA, GL_FLOAT, GL_RGBA);
+  ExpectInvalidEnum(true, GL_LUMINANCE, GL_FLOAT, GL_LUMINANCE);
+  ExpectInvalidEnum(true, GL_LUMINANCE_ALPHA, GL_FLOAT, GL_LUMINANCE_ALPHA);
+  ExpectInvalidEnum(true, GL_ALPHA, GL_FLOAT, GL_ALPHA);
 }
 
 TEST_F(TextureFormatTypeValidationTest, ES2WithOesTextureHalfFloatLinear) {
@@ -2476,44 +2491,46 @@ TEST_F(TextureFormatTypeValidationTest, ES2WithOesTextureHalfFloatLinear) {
       "OpenGL ES 2.0",
       false);
 
-  ExpectValid(GL_RGB, GL_HALF_FLOAT_OES, GL_RGB);
-  ExpectValid(GL_RGBA, GL_HALF_FLOAT_OES, GL_RGBA);
-  ExpectValid(GL_LUMINANCE, GL_HALF_FLOAT_OES, GL_LUMINANCE);
-  ExpectValid(GL_LUMINANCE_ALPHA, GL_HALF_FLOAT_OES, GL_LUMINANCE_ALPHA);
-  ExpectValid(GL_ALPHA, GL_HALF_FLOAT_OES, GL_ALPHA);
+  ExpectValid(true, GL_RGB, GL_HALF_FLOAT_OES, GL_RGB);
+  ExpectValid(true, GL_RGBA, GL_HALF_FLOAT_OES, GL_RGBA);
+  ExpectValid(true, GL_LUMINANCE, GL_HALF_FLOAT_OES, GL_LUMINANCE);
+  ExpectValid(true, GL_LUMINANCE_ALPHA, GL_HALF_FLOAT_OES, GL_LUMINANCE_ALPHA);
+  ExpectValid(true, GL_ALPHA, GL_HALF_FLOAT_OES, GL_ALPHA);
 
-  ExpectInvalidEnum(GL_RGB, GL_FLOAT, GL_RGB);
-  ExpectInvalidEnum(GL_RGBA, GL_FLOAT, GL_RGBA);
-  ExpectInvalidEnum(GL_LUMINANCE, GL_FLOAT, GL_LUMINANCE);
-  ExpectInvalidEnum(GL_LUMINANCE_ALPHA, GL_FLOAT, GL_LUMINANCE_ALPHA);
-  ExpectInvalidEnum(GL_ALPHA, GL_FLOAT, GL_ALPHA);
+  ExpectInvalidEnum(true, GL_RGB, GL_FLOAT, GL_RGB);
+  ExpectInvalidEnum(true, GL_RGBA, GL_FLOAT, GL_RGBA);
+  ExpectInvalidEnum(true, GL_LUMINANCE, GL_FLOAT, GL_LUMINANCE);
+  ExpectInvalidEnum(true, GL_LUMINANCE_ALPHA, GL_FLOAT, GL_LUMINANCE_ALPHA);
+  ExpectInvalidEnum(true, GL_ALPHA, GL_FLOAT, GL_ALPHA);
 }
 
 TEST_F(TextureFormatTypeValidationTest, ES3Basic) {
   SetupFeatureInfo("", "OpenGL ES 3.0", true);
 
-  ExpectValid(GL_ALPHA, GL_UNSIGNED_BYTE, GL_ALPHA);
-  ExpectValid(GL_RGB, GL_UNSIGNED_SHORT_5_6_5, GL_RGB);
-  ExpectValid(GL_RGBA, GL_UNSIGNED_SHORT_4_4_4_4, GL_RGBA);
-  ExpectValid(GL_LUMINANCE, GL_UNSIGNED_BYTE, GL_LUMINANCE);
-  ExpectValid(GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, GL_LUMINANCE_ALPHA);
+  ExpectValid(true, GL_ALPHA, GL_UNSIGNED_BYTE, GL_ALPHA);
+  ExpectValid(true, GL_RGB, GL_UNSIGNED_SHORT_5_6_5, GL_RGB);
+  ExpectValid(true, GL_RGBA, GL_UNSIGNED_SHORT_4_4_4_4, GL_RGBA);
+  ExpectValid(true, GL_LUMINANCE, GL_UNSIGNED_BYTE, GL_LUMINANCE);
+  ExpectValid(true, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, GL_LUMINANCE_ALPHA);
 
-  ExpectValid(GL_RG, GL_BYTE, GL_RG8_SNORM);
-  ExpectValid(GL_RG_INTEGER, GL_UNSIGNED_INT, GL_RG32UI);
-  ExpectValid(GL_RG_INTEGER, GL_SHORT, GL_RG16I);
-  ExpectValid(GL_RGB, GL_UNSIGNED_BYTE, GL_SRGB8);
-  ExpectValid(GL_RGBA, GL_HALF_FLOAT, GL_RGBA16F);
-  ExpectValid(GL_RGBA, GL_FLOAT, GL_RGBA16F);
-  ExpectValid(GL_RGBA, GL_FLOAT, GL_RGBA32F);
+  ExpectValid(true, GL_RG, GL_BYTE, GL_RG8_SNORM);
+  ExpectValid(true, GL_RG_INTEGER, GL_UNSIGNED_INT, GL_RG32UI);
+  ExpectValid(true, GL_RG_INTEGER, GL_SHORT, GL_RG16I);
+  ExpectValid(true, GL_RGB, GL_UNSIGNED_BYTE, GL_SRGB8);
+  ExpectValid(true, GL_RGBA, GL_HALF_FLOAT, GL_RGBA16F);
+  ExpectValid(true, GL_RGBA, GL_FLOAT, GL_RGBA16F);
+  ExpectValid(true, GL_RGBA, GL_FLOAT, GL_RGBA32F);
 
-  ExpectValid(GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, GL_DEPTH_COMPONENT16);
-  ExpectValid(GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, GL_DEPTH_COMPONENT24);
-  ExpectValid(GL_DEPTH_COMPONENT, GL_FLOAT, GL_DEPTH_COMPONENT32F);
-  ExpectValid(GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, GL_DEPTH24_STENCIL8);
-  ExpectValid(GL_DEPTH_STENCIL, GL_FLOAT_32_UNSIGNED_INT_24_8_REV,
+  ExpectValid(
+      true, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, GL_DEPTH_COMPONENT16);
+  ExpectValid(true, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, GL_DEPTH_COMPONENT24);
+  ExpectValid(true, GL_DEPTH_COMPONENT, GL_FLOAT, GL_DEPTH_COMPONENT32F);
+  ExpectValid(
+      true, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, GL_DEPTH24_STENCIL8);
+  ExpectValid(true, GL_DEPTH_STENCIL, GL_FLOAT_32_UNSIGNED_INT_24_8_REV,
               GL_DEPTH32F_STENCIL8);
 
-  ExpectInvalid(GL_RGB_INTEGER, GL_INT, GL_RGBA8);
+  ExpectInvalid(true, GL_RGB_INTEGER, GL_INT, GL_RGBA8);
 }
 
 }  // namespace gles2
