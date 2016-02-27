@@ -11,6 +11,7 @@
     'command': [
       '<(PRODUCT_DIR)/bin/run_content_browsertests',
       '--logcat-output-dir', '${ISOLATED_OUTDIR}/logcats',
+      '-v',
     ],
     'files': [
       '../base/base.isolate',
