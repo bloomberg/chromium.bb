@@ -26,6 +26,7 @@ import android.support.customtabs.ICustomTabsCallback;
 import android.support.customtabs.ICustomTabsService;
 import android.text.TextUtils;
 import android.view.WindowManager;
+import android.widget.RemoteViews;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.FieldTrialList;
@@ -395,27 +396,45 @@ public class CustomTabsConnection extends ICustomTabsService.Stub {
 
     @Override
     public boolean updateVisuals(final ICustomTabsCallback callback, Bundle bundle) {
+        final RemoteViews remoteViews = IntentUtils.safeGetParcelable(bundle,
+                CustomTabsIntent.EXTRA_SECONDARY_TOOLBAR_REMOTEVIEWS);
         final Bundle actionButtonBundle = IntentUtils.safeGetBundle(bundle,
                 CustomTabsIntent.EXTRA_ACTION_BUTTON_BUNDLE);
-        if (actionButtonBundle == null) return false;
-        final int id = actionButtonBundle.getInt(CustomTabsIntent.KEY_ID,
-                CustomTabsIntent.TOOLBAR_ACTION_BUTTON_ID);
-        final Bitmap bitmap = CustomButtonParams.parseBitmapFromBundle(actionButtonBundle);
-        final String description = CustomButtonParams
-                .parseDescriptionFromBundle(actionButtonBundle);
-        if (bitmap == null || description == null) return false;
-
-        try {
-            return ThreadUtils.runOnUiThreadBlocking(new Callable<Boolean>() {
-                @Override
-                public Boolean call() throws Exception {
-                    return CustomTabActivity.updateCustomButton(callback.asBinder(), id, bitmap,
-                            description);
+        boolean result = true;
+        if (actionButtonBundle != null) {
+            final int id = IntentUtils.safeGetInt(actionButtonBundle, CustomTabsIntent.KEY_ID,
+                    CustomTabsIntent.TOOLBAR_ACTION_BUTTON_ID);
+            final Bitmap bitmap = CustomButtonParams.parseBitmapFromBundle(actionButtonBundle);
+            final String description = CustomButtonParams
+                    .parseDescriptionFromBundle(actionButtonBundle);
+            if (bitmap != null && description != null) {
+                try {
+                    result &= ThreadUtils.runOnUiThreadBlocking(new Callable<Boolean>() {
+                        @Override
+                        public Boolean call() throws Exception {
+                            return CustomTabActivity.updateCustomButton(callback.asBinder(), id,
+                                    bitmap, description);
+                        }
+                    });
+                } catch (ExecutionException e) {
+                    result = false;
                 }
-            });
-        } catch (ExecutionException e) {
-            return false;
+            }
         }
+        if (remoteViews != null) {
+            try {
+                result &= ThreadUtils.runOnUiThreadBlocking(new Callable<Boolean>() {
+                    @Override
+                    public Boolean call() throws Exception {
+                        return CustomTabActivity.updateRemoteViews(callback.asBinder(),
+                                remoteViews);
+                    }
+                });
+            } catch (ExecutionException e) {
+                result = false;
+            }
+        }
+        return result;
     }
 
     /**
@@ -493,7 +512,7 @@ public class CustomTabsConnection extends ICustomTabsService.Stub {
      * Notifies the application of a navigation event.
      *
      * Delivers the {@link ICustomTabsConnectionCallback#onNavigationEvent}
-     * callback to the aplication.
+     * callback to the application.
      *
      * @param session The Binder object identifying the session.
      * @param navigationEvent The navigation event code, defined in {@link CustomTabsCallback}

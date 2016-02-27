@@ -49,6 +49,7 @@
 
     <declare-styleable name="BoundedView">
         <attr name="maxWidth" format="dimension" />
+        <attr name="maxHeight" format="dimension" />
     </declare-styleable>
 
     <declare-styleable name="ClipDrawableProgressBar">

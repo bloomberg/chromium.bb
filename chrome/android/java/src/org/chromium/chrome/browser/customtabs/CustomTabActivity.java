@@ -23,6 +23,7 @@ import android.view.ViewGroup;
 import android.view.ViewStub;
 import android.view.Window;
 import android.widget.ImageButton;
+import android.widget.RemoteViews;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Log;
@@ -147,6 +148,20 @@ public class CustomTabActivity extends ChromeActivity {
             return false;
         }
         return sActiveContentHandler.updateCustomButton(id, bitmap, description);
+    }
+
+    /**
+     * Checks whether the active {@link CustomTabContentHandler} belongs to the given session, and
+     * if true, updates {@link RemoteViews} on the secondary toolbar.
+     * @return Whether the update is successful.
+     */
+    static boolean updateRemoteViews(IBinder session, RemoteViews remoteViews) {
+        ThreadUtils.assertOnUiThread();
+        // Do nothing if there is no activity or the activity does not belong to this session.
+        if (sActiveContentHandler == null || !sActiveContentHandler.getSession().equals(session)) {
+            return false;
+        }
+        return sActiveContentHandler.updateRemoteViews(remoteViews);
     }
 
     @Override
@@ -281,6 +296,19 @@ public class CustomTabActivity extends ChromeActivity {
                 } else {
                     updateBottomBarButton(params);
                 }
+                return true;
+            }
+
+            @Override
+            public boolean updateRemoteViews(RemoteViews rv) {
+                if (mIntentDataProvider.getBottomBarRemoteViews() == null) {
+                    // Update only makes sense if we are already showing a RemoteViews.
+                    return false;
+                }
+                ViewGroup bottomBar = (ViewGroup) findViewById(R.id.bottombar);
+                View view = rv.apply(CustomTabActivity.this, bottomBar);
+                bottomBar.removeAllViews();
+                bottomBar.addView(view);
                 return true;
             }
         };
@@ -549,29 +577,37 @@ public class CustomTabActivity extends ChromeActivity {
         shadow.setVisibility(View.VISIBLE);
 
         ViewGroup bottomBar = (ViewGroup) findViewById(R.id.bottombar);
-        bottomBar.setBackgroundColor(mIntentDataProvider.getBottomBarColor());
-        List<CustomButtonParams> items = mIntentDataProvider.getCustomButtonsOnBottombar();
-        for (CustomButtonParams params : items) {
-            if (params.showOnToolbar()) continue;
-            final PendingIntent pendingIntent = params.getPendingIntent();
-            OnClickListener clickListener = null;
-            if (pendingIntent != null) {
-                clickListener = new OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        Intent addedIntent = new Intent();
-                        addedIntent.setData(Uri.parse(getActivityTab().getUrl()));
-                        try {
-                            pendingIntent.send(CustomTabActivity.this, 0, addedIntent, null, null);
-                        } catch (CanceledException e) {
-                            Log.e(TAG,
-                                    "CanceledException while sending pending intent in custom tab");
+        RemoteViews remoteViews = mIntentDataProvider.getBottomBarRemoteViews();
+        if (remoteViews != null) {
+            //TODO(ianwen): add UMA to see the usage of RemoteViews.
+            View inflatedView = remoteViews.apply(this, bottomBar);
+            bottomBar.addView(inflatedView);
+        } else {
+            bottomBar.setBackgroundColor(mIntentDataProvider.getBottomBarColor());
+            List<CustomButtonParams> items = mIntentDataProvider.getCustomButtonsOnBottombar();
+            for (CustomButtonParams params : items) {
+                if (params.showOnToolbar()) continue;
+                final PendingIntent pendingIntent = params.getPendingIntent();
+                OnClickListener clickListener = null;
+                if (pendingIntent != null) {
+                    clickListener = new OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            Intent addedIntent = new Intent();
+                            addedIntent.setData(Uri.parse(getActivityTab().getUrl()));
+                            try {
+                                pendingIntent.send(CustomTabActivity.this, 0, addedIntent, null,
+                                        null);
+                            } catch (CanceledException e) {
+                                Log.e(TAG,
+                                        "CanceledException while sending pending intent.");
+                            }
                         }
-                    }
-                };
+                    };
+                }
+                ImageButton button = params.buildBottomBarButton(this, bottomBar, clickListener);
+                bottomBar.addView(button);
             }
-            ImageButton button = params.buildBottomBarButton(this, bottomBar, clickListener);
-            bottomBar.addView(button);
         }
     }
 

@@ -14,6 +14,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.widget.RemoteViews;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -160,6 +161,14 @@ public class CustomTabsIntent {
      */
     public static final String EXTRA_SECONDARY_TOOLBAR_COLOR =
             "android.support.customtabs.extra.SECONDARY_TOOLBAR_COLOR";
+
+    /**
+     * Extra that specifies the {@link RemoteViews} showing on the secondary toolbar. If this extra
+     * is set, the other secondary toolbar configurations will be overriden. The height of the
+     * {@link RemoteViews} should not exceed 56dp.
+     */
+    public static final String EXTRA_SECONDARY_TOOLBAR_REMOTEVIEWS =
+            "android.support.customtabs.extra.EXTRA_SECONDARY_TOOLBAR_REMOTEVIEWS";
 
     /**
      * Convenience method to create a VIEW intent without a session for the given package.

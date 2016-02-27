@@ -12,7 +12,7 @@ import android.widget.LinearLayout;
 import org.chromium.chrome.R;
 
 /**
- * A LinearLayout that can be constrained to a maximum width.
+ * A LinearLayout that can be constrained to a maximum size.
  *
  * Example:
  *   <org.chromium.chrome.browser.widget.BoundedLinearLayout
@@ -25,9 +25,10 @@ import org.chromium.chrome.R;
  */
 public class BoundedLinearLayout extends LinearLayout {
 
-    private static final int NO_MAX_WIDTH = -1;
+    private static final int NOT_SPECIFIED = -1;
 
     private final int mMaxWidth;
+    private final int mMaxHeight;
 
     /**
      * Constructor for inflating from XML.
@@ -35,7 +36,8 @@ public class BoundedLinearLayout extends LinearLayout {
     public BoundedLinearLayout(Context context, AttributeSet attrs) {
         super(context, attrs);
         TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.BoundedView);
-        mMaxWidth = a.getDimensionPixelSize(R.styleable.BoundedView_maxWidth, NO_MAX_WIDTH);
+        mMaxWidth = a.getDimensionPixelSize(R.styleable.BoundedView_maxWidth, NOT_SPECIFIED);
+        mMaxHeight = a.getDimensionPixelSize(R.styleable.BoundedView_maxHeight, NOT_SPECIFIED);
         a.recycle();
     }
 
@@ -43,10 +45,16 @@ public class BoundedLinearLayout extends LinearLayout {
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         // Limit width to mMaxWidth.
         int widthSize = MeasureSpec.getSize(widthMeasureSpec);
-        if (mMaxWidth != NO_MAX_WIDTH && widthSize > mMaxWidth) {
+        if (mMaxWidth != NOT_SPECIFIED && widthSize > mMaxWidth) {
             int widthMode = MeasureSpec.getMode(widthMeasureSpec);
             if (widthMode == MeasureSpec.UNSPECIFIED) widthMode = MeasureSpec.AT_MOST;
             widthMeasureSpec = MeasureSpec.makeMeasureSpec(mMaxWidth, widthMode);
+        }
+        int heightSize = MeasureSpec.getSize(heightMeasureSpec);
+        if (mMaxHeight != NOT_SPECIFIED && heightSize > mMaxHeight) {
+            int heightMode = MeasureSpec.getMode(heightMeasureSpec);
+            if (heightMode == MeasureSpec.UNSPECIFIED) heightMode = MeasureSpec.AT_MOST;
+            heightMeasureSpec = MeasureSpec.makeMeasureSpec(mMaxHeight, heightMode);
         }
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
     }
