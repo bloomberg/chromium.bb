@@ -10,7 +10,7 @@ function firstPartLoaded()
 {
     window.stop();
     window.setTimeout(function() {
-        var broken = (testingImage.width != 2 && testingImage != 76);
+        var broken = (testingImage.width != 2 && testingImage.width != 76);
         document.getElementById("results").innerHTML = broken ? "PASS" : "FAIL";
         if (window.testRunner)
             testRunner.notifyDone(); 
