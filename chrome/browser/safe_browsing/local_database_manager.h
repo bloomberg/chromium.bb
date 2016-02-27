@@ -72,7 +72,7 @@ class LocalSafeBrowsingDatabaseManager
     // initialized to be empty strings.
     std::vector<GURL> urls;
     std::vector<SBThreatType> url_results;
-    std::vector<std::string> url_metadata;
+    std::vector<ThreatMetadata> url_metadata;
     std::vector<std::string> url_hit_hash;
     std::vector<SBFullHash> full_hashes;
     std::vector<SBThreatType> full_hash_results;

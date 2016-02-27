@@ -705,15 +705,15 @@ class SafeBrowsingServiceMetadataTest
     MalwarePatternType proto;
     switch (GetParam()) {
       case METADATA_NONE:
-        full_hash->metadata = std::string();
+        full_hash->metadata.raw_metadata = std::string();
         break;
       case METADATA_LANDING:
         proto.set_pattern_type(MalwarePatternType::LANDING);
-        full_hash->metadata = proto.SerializeAsString();
+        full_hash->metadata.raw_metadata = proto.SerializeAsString();
         break;
       case METADATA_DISTRIBUTION:
         proto.set_pattern_type(MalwarePatternType::DISTRIBUTION);
-        full_hash->metadata = proto.SerializeAsString();
+        full_hash->metadata.raw_metadata = proto.SerializeAsString();
         break;
     }
   }
@@ -1219,7 +1219,7 @@ class TestSBClient : public base::RefCountedThreadSafe<TestSBClient>,
   // Called when the result of checking a browse URL is known.
   void OnCheckBrowseUrlResult(const GURL& /* url */,
                               SBThreatType threat_type,
-                              const std::string& /* metadata */) override {
+                              const ThreatMetadata& /* metadata */) override {
     threat_type_ = threat_type;
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                             base::Bind(&TestSBClient::CheckDone, this));

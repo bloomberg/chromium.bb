@@ -155,11 +155,13 @@ void SafeBrowsingUIManager::DisplayBlockingPage(
     // applied to malware sites tagged as "landing sites" (see "Types of
     // Malware sites" under
     // https://developers.google.com/safe-browsing/developers_guide_v3#UserWarnings).
+    // TODO(nparker): Replace the use of raw_metadata when other fields are
+    // populated. crbug/589610
     MalwarePatternType proto;
     if (resource.threat_type == SB_THREAT_TYPE_URL_UNWANTED ||
         (resource.threat_type == SB_THREAT_TYPE_URL_MALWARE &&
-         !resource.threat_metadata.empty() &&
-         proto.ParseFromString(resource.threat_metadata) &&
+         !resource.threat_metadata.raw_metadata.empty() &&
+         proto.ParseFromString(resource.threat_metadata.raw_metadata) &&
          proto.pattern_type() == MalwarePatternType::LANDING)) {
       if (!resource.callback.is_null()) {
         DCHECK(resource.callback_thread);

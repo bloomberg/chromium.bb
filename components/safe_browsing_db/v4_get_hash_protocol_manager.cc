@@ -211,11 +211,11 @@ bool V4GetHashProtocolManager::ParseHashResponse(
       if (match.has_platform_type() &&
           match.platform_type() == CHROME_PLATFORM) {
         if (match.has_threat_entry_metadata()) {
-          // For API Abuse, store a csv of the returned permissions.
+          // For API Abuse, store a list of the returned permissions.
           for (const ThreatEntryMetadata::MetadataEntry& m :
                match.threat_entry_metadata().entries()) {
             if (m.key() == "permission") {
-              result.metadata += m.value() + ",";
+              result.metadata.api_permissions.push_back(m.value());
             }
           }
         } else {

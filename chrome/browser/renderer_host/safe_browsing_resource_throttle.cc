@@ -13,6 +13,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
+#include "components/safe_browsing_db/util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/resource_controller.h"
@@ -206,7 +207,7 @@ const char* SafeBrowsingResourceThrottle::GetNameForLogging() const {
 void SafeBrowsingResourceThrottle::OnCheckBrowseUrlResult(
     const GURL& url,
     safe_browsing::SBThreatType threat_type,
-    const std::string& metadata) {
+    const safe_browsing::ThreatMetadata& metadata) {
   CHECK_EQ(state_, STATE_CHECKING_URL);
   CHECK_EQ(url, url_being_checked_);
 
@@ -363,8 +364,8 @@ void SafeBrowsingResourceThrottle::OnCheckUrlTimeout() {
   CHECK_EQ(state_, STATE_CHECKING_URL);
 
   database_manager_->CancelCheck(this);
-  OnCheckBrowseUrlResult(
-      url_being_checked_, safe_browsing::SB_THREAT_TYPE_SAFE, std::string());
+  OnCheckBrowseUrlResult(url_being_checked_, safe_browsing::SB_THREAT_TYPE_SAFE,
+                         safe_browsing::ThreatMetadata());
 }
 
 void SafeBrowsingResourceThrottle::ResumeRequest() {

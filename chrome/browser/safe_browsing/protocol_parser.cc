@@ -155,8 +155,9 @@ bool ParseGetHashMetadata(
       return false;
 
     if (full_hashes) {
-      (*full_hashes)[full_hashes->size() - hash_count + i].metadata.assign(
-          reinterpret_cast<const char*>(meta_data), meta_data_len);
+      (*full_hashes)[full_hashes->size() - hash_count + i]
+          .metadata.raw_metadata.assign(
+              reinterpret_cast<const char*>(meta_data), meta_data_len);
     }
   }
   return true;

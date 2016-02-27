@@ -9,6 +9,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "components/safe_browsing_db/safebrowsing.pb.h"
+#include "components/safe_browsing_db/testing_util.h"
 #include "components/safe_browsing_db/util.h"
 #include "components/safe_browsing_db/v4_get_hash_protocol_manager.h"
 #include "net/base/escape.h"
@@ -142,7 +143,7 @@ TEST_F(SafeBrowsingV4GetHashProtocolManagerTest, TestGetHashErrorHandlingOK) {
   std::vector<SBFullHashResult> expected_full_hashes;
   SBFullHashResult hash_result;
   hash_result.hash = SBFullHashForString("Everything's shiny, Cap'n.");
-  hash_result.metadata = "NOTIFICATIONS,";
+  hash_result.metadata.api_permissions.push_back("NOTIFICATIONS");
   hash_result.cache_duration = base::TimeDelta::FromSeconds(300);
   expected_full_hashes.push_back(hash_result);
   base::TimeDelta expected_cache_duration = base::TimeDelta::FromSeconds(600);
@@ -229,7 +230,8 @@ TEST_F(SafeBrowsingV4GetHashProtocolManagerTest, TestParseHashResponse) {
   EXPECT_EQ(1ul, full_hashes.size());
   EXPECT_TRUE(SBFullHashEqual(SBFullHashForString("Everything's shiny, Cap'n."),
                               full_hashes[0].hash));
-  EXPECT_EQ("NOTIFICATIONS,", full_hashes[0].metadata);
+  EXPECT_EQ(1ul, full_hashes[0].metadata.api_permissions.size());
+  EXPECT_EQ("NOTIFICATIONS", full_hashes[0].metadata.api_permissions[0]);
   EXPECT_EQ(base::TimeDelta::FromSeconds(300), full_hashes[0].cache_duration);
   EXPECT_LE(now + base::TimeDelta::FromSeconds(400), pm->next_gethash_time_);
 }
@@ -318,7 +320,7 @@ TEST_F(SafeBrowsingV4GetHashProtocolManagerTest,
   EXPECT_TRUE(SBFullHashEqual(SBFullHashForString("Not to fret."),
                               full_hashes[0].hash));
   // Metadata should be empty.
-  EXPECT_EQ("", full_hashes[0].metadata);
+  EXPECT_EQ(0ul, full_hashes[0].metadata.api_permissions.size());
   EXPECT_EQ(base::TimeDelta::FromSeconds(0), full_hashes[0].cache_duration);
 }
 

@@ -82,9 +82,10 @@ class SafeBrowsingResourceThrottle
   const char* GetNameForLogging() const override;
 
   // SafeBrowsingDabaseManager::Client implementation (called on IO thread):
-  void OnCheckBrowseUrlResult(const GURL& url,
-                              safe_browsing::SBThreatType result,
-                              const std::string& metadata) override;
+  void OnCheckBrowseUrlResult(
+      const GURL& url,
+      safe_browsing::SBThreatType result,
+      const safe_browsing::ThreatMetadata& metadata) override;
 
  protected:
   SafeBrowsingResourceThrottle(const net::URLRequest* request,

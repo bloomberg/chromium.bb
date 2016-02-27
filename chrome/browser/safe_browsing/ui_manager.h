@@ -78,7 +78,7 @@ class SafeBrowsingUIManager
     bool is_subresource;
     bool is_subframe;
     SBThreatType threat_type;
-    std::string threat_metadata;
+    ThreatMetadata threat_metadata;
     UrlCheckCallback callback;  // This is called back on |callback_thread|.
     scoped_refptr<base::SingleThreadTaskRunner> callback_thread;
     int render_process_host_id;

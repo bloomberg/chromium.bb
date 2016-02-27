@@ -634,6 +634,7 @@
     ],
     'safe_browsing_db_unittest_sources': [
       'safe_browsing_db/prefix_set_unittest.cc',
+      'safe_browsing_db/testing_util.h',
       'safe_browsing_db/util_unittest.cc',
       'safe_browsing_db/v4_get_hash_protocol_manager_unittest.cc',
       'safe_browsing_db/v4_protocol_manager_util_unittest.cc',

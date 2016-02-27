@@ -43,13 +43,15 @@ enum UmaRemoteCallResult {
 
 // This parses the JSON from the GMSCore API and then:
 //   1) Picks the most severe threat type
-//   2) Parses remaining key/value pairs into a MalwarePatternType PB
-//      so DisplayBlockingPage() can unmarshal it.  We make this string
-//      is binary compatible with the Pver3 API's metadata string even
-//      though it comes from Pver4.
+//   2) Parses that threat's key/value pairs into the metadata struct.
 //
 // If anything fails to parse, this sets the threat to "safe".  The caller
 // should report the return value via UMA.
+UmaRemoteCallResult ParseJsonFromGMSCore(const std::string& metadata_str,
+                                         SBThreatType* worst_threat,
+                                         ThreatMetadata* metadata);
+
+// DEPRECATED.  Will be removed.
 UmaRemoteCallResult ParseJsonToThreatAndPB(const std::string& metadata_str,
                                            SBThreatType* worst_threat,
                                            std::string* metadata_pb_str);

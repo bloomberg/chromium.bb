@@ -29,6 +29,12 @@ bool IsKnownList(const std::string& name) {
 }
 }  // namespace
 
+// ThreatMetadata ------------------------------------------------------------
+ThreatMetadata::ThreatMetadata()
+    : threat_pattern_type(ThreatPatternType::NONE) {}
+
+ThreatMetadata::~ThreatMetadata() {}
+
 // SBCachedFullHashResult ------------------------------------------------------
 
 SBCachedFullHashResult::SBCachedFullHashResult() {}

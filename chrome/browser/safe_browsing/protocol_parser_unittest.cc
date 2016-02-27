@@ -451,17 +451,17 @@ TEST(SafeBrowsingProtocolParsingTest, TestGetHash) {
                    "zzzzyyyyxxxxwwwwvvvvuuuuttttssss",
                    sizeof(SBFullHash)), 0);
   EXPECT_EQ(MALWARE, full_hashes[0].list_id);
-  EXPECT_EQ(std::string("ab"), full_hashes[0].metadata);
+  EXPECT_EQ(std::string("ab"), full_hashes[0].metadata.raw_metadata);
   EXPECT_EQ(memcmp(&full_hashes[1].hash,
                    "00112233445566778899aabbccddeeff",
                    sizeof(SBFullHash)), 0);
   EXPECT_EQ(MALWARE, full_hashes[1].list_id);
-  EXPECT_EQ(std::string("xy"), full_hashes[1].metadata);
+  EXPECT_EQ(std::string("xy"), full_hashes[1].metadata.raw_metadata);
   EXPECT_EQ(memcmp(&full_hashes[2].hash,
                    "cafebeefcafebeefdeaddeaddeaddead",
                    sizeof(SBFullHash)), 0);
   EXPECT_EQ(PHISH, full_hashes[2].list_id);
-  EXPECT_EQ(std::string(), full_hashes[2].metadata);
+  EXPECT_EQ(std::string(), full_hashes[2].metadata.raw_metadata);
 }
 
 TEST(SafeBrowsingProtocolParsingTest, TestGetHashWithUnknownList) {
@@ -519,7 +519,7 @@ TEST(SafeBrowsingProtocolParsingTest, TestGetHashWithUnknownListAndMetadata) {
                    "0123456789hashhashhashhashhashha",
                    sizeof(SBFullHash)), 0);
   EXPECT_EQ(MALWARE, full_hashes[0].list_id);
-  EXPECT_EQ(std::string(), full_hashes[0].metadata);
+  EXPECT_EQ(std::string(), full_hashes[0].metadata.raw_metadata);
 }
 
 TEST(SafeBrowsingProtocolParsingTest, TestFormatHash) {

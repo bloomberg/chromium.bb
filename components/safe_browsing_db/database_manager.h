@@ -43,7 +43,7 @@ class SafeBrowsingDatabaseManager
     // Called when the result of checking a browse URL is known.
     virtual void OnCheckBrowseUrlResult(const GURL& url,
                                         SBThreatType threat_type,
-                                        const std::string& metadata) {}
+                                        const ThreatMetadata& metadata) {}
 
     // Called when the result of checking a download URL is known.
     virtual void OnCheckDownloadUrlResult(const std::vector<GURL>& url_chain,
