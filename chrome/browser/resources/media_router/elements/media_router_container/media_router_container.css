@@ -68,8 +68,10 @@
 
 #first-run-flow {
   background-color: var(--paper-blue-500);
+  box-sizing: border-box;
   padding: 24px 16px 4px 16px;
   position: fixed;
+  width: 100%;
 }
 
 #first-run-flow a {
