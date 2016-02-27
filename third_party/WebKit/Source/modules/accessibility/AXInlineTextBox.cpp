@@ -127,7 +127,7 @@ AXObject* AXInlineTextBox::computeParent() const
     if (!m_inlineTextBox || !m_axObjectCache)
         return 0;
 
-    LineLayoutText lineLayoutText = m_inlineTextBox->lineLayoutItem();
+    LineLayoutText lineLayoutText = m_inlineTextBox->getLineLayoutItem();
     return m_axObjectCache->getOrCreate(lineLayoutText);
 }
 

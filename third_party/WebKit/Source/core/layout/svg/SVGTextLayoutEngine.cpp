@@ -113,7 +113,7 @@ void SVGTextLayoutEngine::updateRelativePositionAdjustmentsIfNeeded(float dx, fl
 
 static void computeGlyphOverflow(SVGInlineTextBox* textBox, SVGTextFragment& textFragment)
 {
-    LineLayoutSVGInlineText textLineLayout = LineLayoutSVGInlineText(textBox->lineLayoutItem());
+    LineLayoutSVGInlineText textLineLayout = LineLayoutSVGInlineText(textBox->getLineLayoutItem());
     TextRun run = SVGTextMetrics::constructTextRun(textLineLayout, textFragment.characterOffset, textFragment.length, textLineLayout.styleRef().direction());
 
     float scalingFactor = textLineLayout.scalingFactor();
@@ -173,7 +173,7 @@ void SVGTextLayoutEngine::beginTextPathLayout(SVGInlineFlowBox* flowBox)
     lineLayout.layoutCharactersInTextBoxes(flowBox);
 
     m_inPathLayout = true;
-    LineLayoutSVGTextPath textPath = LineLayoutSVGTextPath(flowBox->lineLayoutItem());
+    LineLayoutSVGTextPath textPath = LineLayoutSVGTextPath(flowBox->getLineLayoutItem());
 
     m_textPath = textPath.layoutPath();
     if (!m_textPath)
@@ -223,7 +223,7 @@ void SVGTextLayoutEngine::layoutInlineTextBox(SVGInlineTextBox* textBox)
 {
     ASSERT(textBox);
 
-    LineLayoutSVGInlineText textLineLayout = LineLayoutSVGInlineText(textBox->lineLayoutItem());
+    LineLayoutSVGInlineText textLineLayout = LineLayoutSVGInlineText(textBox->getLineLayoutItem());
     ASSERT(textLineLayout.parent());
     ASSERT(textLineLayout.parent().node());
     ASSERT(textLineLayout.parent().node()->isSVGElement());
@@ -242,7 +242,7 @@ void SVGTextLayoutEngine::layoutInlineTextBox(SVGInlineTextBox* textBox)
 
 static bool definesTextLengthWithSpacing(const InlineFlowBox* start)
 {
-    SVGTextContentElement* textContentElement = SVGTextContentElement::elementFromLineLayoutItem(start->lineLayoutItem());
+    SVGTextContentElement* textContentElement = SVGTextContentElement::elementFromLineLayoutItem(start->getLineLayoutItem());
     return textContentElement
         && textContentElement->lengthAdjust()->currentValue()->enumValue() == SVGLengthAdjustSpacing
         && textContentElement->textLengthIsSpecifiedByUser();
@@ -255,11 +255,11 @@ void SVGTextLayoutEngine::layoutCharactersInTextBoxes(InlineFlowBox* start)
 
     for (InlineBox* child = start->firstChild(); child; child = child->nextOnLine()) {
         if (child->isSVGInlineTextBox()) {
-            ASSERT(child->lineLayoutItem().isSVGInlineText());
+            ASSERT(child->getLineLayoutItem().isSVGInlineText());
             layoutInlineTextBox(toSVGInlineTextBox(child));
         } else {
             // Skip generated content.
-            Node* node = child->lineLayoutItem().node();
+            Node* node = child->getLineLayoutItem().node();
             if (!node)
                 continue;
 

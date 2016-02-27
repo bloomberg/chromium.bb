@@ -51,7 +51,7 @@ public:
     LayoutGeometryMap(MapCoordinatesFlags = UseTransforms);
     ~LayoutGeometryMap();
 
-    MapCoordinatesFlags mapCoordinatesFlags() const { return m_mapCoordinatesFlags; }
+    MapCoordinatesFlags getMapCoordinatesFlags() const { return m_mapCoordinatesFlags; }
 
     FloatRect absoluteRect(const FloatRect& rect) const
     {

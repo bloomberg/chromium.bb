@@ -39,7 +39,7 @@ void TrailingObjects::updateMidpointsForTrailingObjects(LineMidpointState& lineM
     if (lineMidpointState.numMidpoints() % 2) {
         // Find the trailing space object's midpoint.
         int trailingSpaceMidpoint = lineMidpointState.numMidpoints() - 1;
-        for ( ; trailingSpaceMidpoint > 0 && lineMidpointState.midpoints()[trailingSpaceMidpoint].lineLayoutItem() != m_whitespace; --trailingSpaceMidpoint) { }
+        for ( ; trailingSpaceMidpoint > 0 && lineMidpointState.midpoints()[trailingSpaceMidpoint].getLineLayoutItem() != m_whitespace; --trailingSpaceMidpoint) { }
         ASSERT(trailingSpaceMidpoint >= 0);
         if (collapseFirstSpace == CollapseFirstSpace)
             lineMidpointState.midpoints()[trailingSpaceMidpoint].setOffset(lineMidpointState.midpoints()[trailingSpaceMidpoint].offset() -1);
@@ -52,12 +52,12 @@ void TrailingObjects::updateMidpointsForTrailingObjects(LineMidpointState& lineM
                 // We don't have a midpoint for this box yet.
                 ensureLineBoxInsideIgnoredSpaces(&lineMidpointState, LineLayoutItem(m_objects[i]));
             } else {
-                ASSERT(lineMidpointState.midpoints()[currentMidpoint].lineLayoutItem() == m_objects[i]);
-                ASSERT(lineMidpointState.midpoints()[currentMidpoint + 1].lineLayoutItem() == m_objects[i]);
+                ASSERT(lineMidpointState.midpoints()[currentMidpoint].getLineLayoutItem() == m_objects[i]);
+                ASSERT(lineMidpointState.midpoints()[currentMidpoint + 1].getLineLayoutItem() == m_objects[i]);
             }
             currentMidpoint += 2;
         }
-    } else if (!lBreak.lineLayoutItem()) {
+    } else if (!lBreak.getLineLayoutItem()) {
         ASSERT(collapseFirstSpace == CollapseFirstSpace);
         // Add a new end midpoint that stops right at the very end.
         unsigned length = m_whitespace.textLength();

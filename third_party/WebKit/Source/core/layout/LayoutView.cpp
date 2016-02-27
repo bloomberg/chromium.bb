@@ -366,7 +366,7 @@ const LayoutObject* LayoutView::pushMappingToContainer(const LayoutBoxModelObjec
             offsetForFixedPosition = LayoutSize(scrolledContentOffset());
     }
 
-    if (geometryMap.mapCoordinatesFlags() & TraverseDocumentBoundaries) {
+    if (geometryMap.getMapCoordinatesFlags() & TraverseDocumentBoundaries) {
         if (LayoutPart* parentDocLayoutObject = frame()->ownerLayoutObject()) {
             offset = -LayoutSize(m_frameView->scrollOffset());
             offset += parentDocLayoutObject->contentBoxOffset();
@@ -579,7 +579,7 @@ IntRect LayoutView::selectionBounds()
     LayoutObject* os = m_selectionStart;
     LayoutObject* stop = layoutObjectAfterPosition(m_selectionEnd, m_selectionEndPos);
     while (os && os != stop) {
-        if ((os->canBeSelectionLeaf() || os == m_selectionStart || os == m_selectionEnd) && os->selectionState() != SelectionNone) {
+        if ((os->canBeSelectionLeaf() || os == m_selectionStart || os == m_selectionEnd) && os->getSelectionState() != SelectionNone) {
             // Blocks are responsible for painting line gaps and margin gaps. They must be examined as well.
             selRect.unite(selectionRectForLayoutObject(os));
             const LayoutBlock* cb = os->containingBlock();
@@ -606,7 +606,7 @@ void LayoutView::invalidatePaintForSelection()
     for (LayoutObject* o = m_selectionStart; o && o != end; o = o->nextInPreOrder()) {
         if (!o->canBeSelectionLeaf() && o != m_selectionStart && o != m_selectionEnd)
             continue;
-        if (o->selectionState() == SelectionNone)
+        if (o->getSelectionState() == SelectionNone)
             continue;
 
         o->setShouldInvalidateSelection();
@@ -684,13 +684,13 @@ void LayoutView::setSelection(LayoutObject* start, int startPos, LayoutObject* e
     bool exploringBackwards = false;
     bool continueExploring = os && (os != stop);
     while (continueExploring) {
-        if ((os->canBeSelectionLeaf() || os == m_selectionStart || os == m_selectionEnd) && os->selectionState() != SelectionNone) {
+        if ((os->canBeSelectionLeaf() || os == m_selectionStart || os == m_selectionEnd) && os->getSelectionState() != SelectionNone) {
             // Blocks are responsible for painting line gaps and margin gaps.  They must be examined as well.
-            oldSelectedObjects.set(os, os->selectionState());
+            oldSelectedObjects.set(os, os->getSelectionState());
             if (blockPaintInvalidationMode == PaintInvalidationNewXOROld) {
                 LayoutBlock* cb = os->containingBlock();
                 while (cb && !cb->isLayoutView()) {
-                    SelectedBlockMap::AddResult result = oldSelectedBlocks.add(cb, cb->selectionState());
+                    SelectedBlockMap::AddResult result = oldSelectedBlocks.add(cb, cb->getSelectionState());
                     if (!result.isNewEntry)
                         break;
                     cb = cb->containingBlock();
@@ -737,11 +737,11 @@ void LayoutView::setSelection(LayoutObject* start, int startPos, LayoutObject* e
     exploringBackwards = false;
     continueExploring = o && (o != stop);
     while (continueExploring) {
-        if ((o->canBeSelectionLeaf() || o == start || o == end) && o->selectionState() != SelectionNone) {
-            newSelectedObjects.set(o, o->selectionState());
+        if ((o->canBeSelectionLeaf() || o == start || o == end) && o->getSelectionState() != SelectionNone) {
+            newSelectedObjects.set(o, o->getSelectionState());
             LayoutBlock* cb = o->containingBlock();
             while (cb && !cb->isLayoutView()) {
-                SelectedBlockMap::AddResult result = newSelectedBlocks.add(cb, cb->selectionState());
+                SelectedBlockMap::AddResult result = newSelectedBlocks.add(cb, cb->getSelectionState());
                 if (!result.isNewEntry)
                     break;
                 cb = cb->containingBlock();
@@ -757,7 +757,7 @@ void LayoutView::setSelection(LayoutObject* start, int startPos, LayoutObject* e
     // Have any of the old selected objects changed compared to the new selection?
     for (SelectedObjectMap::iterator i = oldSelectedObjects.begin(); i != oldObjectsEnd; ++i) {
         LayoutObject* obj = i->key;
-        SelectionState newSelectionState = obj->selectionState();
+        SelectionState newSelectionState = obj->getSelectionState();
         SelectionState oldSelectionState = i->value;
         if (newSelectionState != oldSelectionState
             || (m_selectionStart == obj && oldStartPos != m_selectionStartPos)
@@ -776,7 +776,7 @@ void LayoutView::setSelection(LayoutObject* start, int startPos, LayoutObject* e
     SelectedBlockMap::iterator oldBlocksEnd = oldSelectedBlocks.end();
     for (SelectedBlockMap::iterator i = oldSelectedBlocks.begin(); i != oldBlocksEnd; ++i) {
         LayoutBlock* block = i->key;
-        SelectionState newSelectionState = block->selectionState();
+        SelectionState newSelectionState = block->getSelectionState();
         SelectionState oldSelectionState = i->value;
         if (newSelectionState != oldSelectionState) {
             block->setShouldInvalidateSelection();

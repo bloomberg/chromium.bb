@@ -171,7 +171,7 @@ public:
     InlineBox* nextLeafChildIgnoringLineBreak() const;
     InlineBox* prevLeafChildIgnoringLineBreak() const;
 
-    LineLayoutItem lineLayoutItem() const { return LineLayoutItem(&m_layoutObject); }
+    LineLayoutItem getLineLayoutItem() const { return LineLayoutItem(&m_layoutObject); }
 
     InlineFlowBox* parent() const
     {
@@ -256,7 +256,7 @@ public:
 
     virtual void dirtyLineBoxes();
 
-    virtual SelectionState selectionState() const;
+    virtual SelectionState getSelectionState() const;
 
     virtual bool canAccommodateEllipsis(bool ltr, int blockEdge, int ellipsisWidth) const;
     // visibleLeftEdge, visibleRightEdge are in the parent's coordinate system.
@@ -268,16 +268,16 @@ public:
 
     int expansion() const { return m_bitfields.expansion(); }
 
-    bool visibleToHitTestRequest(const HitTestRequest& request) const { return lineLayoutItem().visibleToHitTestRequest(request); }
+    bool visibleToHitTestRequest(const HitTestRequest& request) const { return getLineLayoutItem().visibleToHitTestRequest(request); }
 
     // Anonymous inline: https://drafts.csswg.org/css2/visuren.html#anonymous
-    bool isAnonymousInline() const { return lineLayoutItem().isText() && lineLayoutItem().parent() && lineLayoutItem().parent().isBox(); }
-    EVerticalAlign verticalAlign() const { return isAnonymousInline() ? ComputedStyle::initialVerticalAlign() : lineLayoutItem().style(m_bitfields.firstLine())->verticalAlign(); }
+    bool isAnonymousInline() const { return getLineLayoutItem().isText() && getLineLayoutItem().parent() && getLineLayoutItem().parent().isBox(); }
+    EVerticalAlign verticalAlign() const { return isAnonymousInline() ? ComputedStyle::initialVerticalAlign() : getLineLayoutItem().style(m_bitfields.firstLine())->verticalAlign(); }
 
     // Use with caution! The type is not checked!
     LineLayoutBoxModel boxModelObject() const
     {
-        if (!lineLayoutItem().isText())
+        if (!getLineLayoutItem().isText())
             return LineLayoutBoxModel(toLayoutBoxModelObject(&m_layoutObject));
         return LineLayoutBoxModel(nullptr);
     }

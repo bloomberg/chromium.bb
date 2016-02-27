@@ -50,7 +50,7 @@ void ReplacedPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paint
         return;
 
     if (paintInfo.phase == PaintPhaseSelection)
-        if (m_layoutReplaced.selectionState() == SelectionNone)
+        if (m_layoutReplaced.getSelectionState() == SelectionNone)
             return;
 
     {
@@ -84,7 +84,7 @@ void ReplacedPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paint
 
     // The selection tint never gets clipped by border-radius rounding, since we want it to run right up to the edges of
     // surrounding content.
-    bool drawSelectionTint = paintInfo.phase == PaintPhaseForeground && m_layoutReplaced.selectionState() != SelectionNone && !paintInfo.isPrinting();
+    bool drawSelectionTint = paintInfo.phase == PaintPhaseForeground && m_layoutReplaced.getSelectionState() != SelectionNone && !paintInfo.isPrinting();
     if (drawSelectionTint && !LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(paintInfo.context, m_layoutReplaced, DisplayItem::SelectionTint, adjustedPaintOffset)) {
         LayoutRect selectionPaintingRect = m_layoutReplaced.localSelectionRect();
         selectionPaintingRect.moveBy(adjustedPaintOffset);

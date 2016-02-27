@@ -88,7 +88,7 @@ static void collectTextBoxesInFlowBox(InlineFlowBox* flowBox, Vector<SVGInlineTe
     for (InlineBox* child = flowBox->firstChild(); child; child = child->nextOnLine()) {
         if (child->isInlineFlowBox()) {
             // Skip generated content.
-            if (!child->lineLayoutItem().node())
+            if (!child->getLineLayoutItem().node())
                 continue;
 
             collectTextBoxesInFlowBox(toInlineFlowBox(child), textBoxes);
@@ -105,7 +105,7 @@ typedef bool ProcessTextFragmentCallback(QueryData*, const SVGTextFragment&);
 static bool queryTextBox(QueryData* queryData, const SVGInlineTextBox* textBox, ProcessTextFragmentCallback fragmentCallback)
 {
     queryData->textBox = textBox;
-    queryData->textLineLayout = LineLayoutSVGInlineText(textBox->lineLayoutItem());
+    queryData->textLineLayout = LineLayoutSVGInlineText(textBox->getLineLayoutItem());
 
     queryData->isVerticalText = !queryData->textLineLayout.style()->isHorizontalWritingMode();
 

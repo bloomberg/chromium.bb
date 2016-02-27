@@ -64,7 +64,7 @@ static void invalidateLineBoxPaintOffsetsInternal(PaintController& paintControll
 {
     paintController.invalidatePaintOffset(*inlineBox);
     for (InlineBox* child = inlineBox->firstChild(); child; child = child->nextOnLine()) {
-        if (!child->lineLayoutItem().isText() && child->boxModelObject().hasSelfPaintingLayer())
+        if (!child->getLineLayoutItem().isText() && child->boxModelObject().hasSelfPaintingLayer())
             continue;
         if (child->isInlineFlowBox())
             invalidateLineBoxPaintOffsetsInternal(paintController, toInlineFlowBox(child));

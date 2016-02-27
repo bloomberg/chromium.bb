@@ -120,10 +120,10 @@ void BlockPainter::paintInlineBox(const InlineBox& inlineBox, const PaintInfo& p
     ASSERT(paintInfo.phase != PaintPhaseTextClip);
 
     LayoutPoint childPoint = paintOffset;
-    if (inlineBox.parent()->lineLayoutItem().style()->isFlippedBlocksWritingMode()) // Faster than calling containingBlock().
-        childPoint = LineLayoutAPIShim::layoutObjectFrom(inlineBox.lineLayoutItem())->containingBlock()->flipForWritingModeForChild(toLayoutBox(LineLayoutAPIShim::layoutObjectFrom(inlineBox.lineLayoutItem())), childPoint);
+    if (inlineBox.parent()->getLineLayoutItem().style()->isFlippedBlocksWritingMode()) // Faster than calling containingBlock().
+        childPoint = LineLayoutAPIShim::layoutObjectFrom(inlineBox.getLineLayoutItem())->containingBlock()->flipForWritingModeForChild(toLayoutBox(LineLayoutAPIShim::layoutObjectFrom(inlineBox.getLineLayoutItem())), childPoint);
 
-    ObjectPainter(*LineLayoutAPIShim::constLayoutObjectFrom(inlineBox.lineLayoutItem())).paintAsPseudoStackingContext(paintInfo, childPoint);
+    ObjectPainter(*LineLayoutAPIShim::constLayoutObjectFrom(inlineBox.getLineLayoutItem())).paintAsPseudoStackingContext(paintInfo, childPoint);
 }
 
 void BlockPainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
@@ -136,7 +136,7 @@ void BlockPainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& pa
         // Set previousPaintOffset here in case that m_layoutBlock paints nothing and no
         // LayoutObjectDrawingRecorder updates its previousPaintOffset.
         // TODO(wangxianzhu): Integrate paint offset checking into new paint invalidation.
-        m_layoutBlock.mutableForPainting().setPreviousPaintOffset(paintOffset);
+        m_layoutBlock.getMutableForPainting().setPreviousPaintOffset(paintOffset);
     }
 
     const PaintPhase paintPhase = paintInfo.phase;

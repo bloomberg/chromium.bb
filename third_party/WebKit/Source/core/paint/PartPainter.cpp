@@ -19,7 +19,7 @@ namespace blink {
 
 bool PartPainter::isSelected() const
 {
-    SelectionState s = m_layoutPart.selectionState();
+    SelectionState s = m_layoutPart.getSelectionState();
     if (s == SelectionNone)
         return false;
     if (s == SelectionInside)

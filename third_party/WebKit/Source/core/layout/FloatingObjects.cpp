@@ -90,12 +90,12 @@ PassOwnPtr<FloatingObject> FloatingObject::create(LayoutBox* layoutObject)
 
 PassOwnPtr<FloatingObject> FloatingObject::copyToNewContainer(LayoutSize offset, bool shouldPaint, bool isDescendant) const
 {
-    return adoptPtr(new FloatingObject(layoutObject(), type(), LayoutRect(frameRect().location() - offset, frameRect().size()), shouldPaint, isDescendant, isLowestNonOverhangingFloatInChild()));
+    return adoptPtr(new FloatingObject(layoutObject(), getType(), LayoutRect(frameRect().location() - offset, frameRect().size()), shouldPaint, isDescendant, isLowestNonOverhangingFloatInChild()));
 }
 
 PassOwnPtr<FloatingObject> FloatingObject::unsafeClone() const
 {
-    OwnPtr<FloatingObject> cloneObject = adoptPtr(new FloatingObject(layoutObject(), type(), m_frameRect, m_shouldPaint, m_isDescendant, false));
+    OwnPtr<FloatingObject> cloneObject = adoptPtr(new FloatingObject(layoutObject(), getType(), m_frameRect, m_shouldPaint, m_isDescendant, false));
     cloneObject->m_paginationStrut = m_paginationStrut;
     cloneObject->m_isPlaced = m_isPlaced;
     return cloneObject.release();
@@ -258,7 +258,7 @@ void FloatingObjects::clearLineBoxTreePointers()
     // Clear references to originating lines, since the lines are being deleted
     FloatingObjectSetIterator end = m_set.end();
     for (FloatingObjectSetIterator it = m_set.begin(); it != end; ++it) {
-        ASSERT(!((*it)->originatingLine()) || (*it)->originatingLine()->lineLayoutItem().isEqual(m_layoutObject));
+        ASSERT(!((*it)->originatingLine()) || (*it)->originatingLine()->getLineLayoutItem().isEqual(m_layoutObject));
         (*it)->setOriginatingLine(nullptr);
     }
 }
@@ -306,7 +306,7 @@ LayoutUnit FloatingObjects::lowestFloatLogicalBottom(FloatingObject::Type floatT
         for (FloatingObjectSetIterator it = floatingObjectSet.begin(); it != end; ++it) {
             FloatingObject& floatingObject = *it->get();
             if (floatingObject.isPlaced()) {
-                FloatingObject::Type curType = floatingObject.type();
+                FloatingObject::Type curType = floatingObject.getType();
                 LayoutUnit curFloatLogicalBottom = m_layoutObject->logicalBottomForFloat(floatingObject);
                 if (curType & FloatingObject::FloatLeft && curFloatLogicalBottom > lowestFloatBottomLeft) {
                     lowestFloatBottomLeft = curFloatLogicalBottom;
@@ -325,7 +325,7 @@ LayoutUnit FloatingObjects::lowestFloatLogicalBottom(FloatingObject::Type floatT
         FloatingObject* lowestFloatingObject = nullptr;
         for (FloatingObjectSetIterator it = floatingObjectSet.begin(); it != end; ++it) {
             FloatingObject& floatingObject = *it->get();
-            if (floatingObject.isPlaced() && floatingObject.type() == floatType) {
+            if (floatingObject.isPlaced() && floatingObject.getType() == floatType) {
                 if (m_layoutObject->logicalBottomForFloat(floatingObject) > lowestFloatBottom) {
                     lowestFloatingObject = &floatingObject;
                     lowestFloatBottom = m_layoutObject->logicalBottomForFloat(floatingObject);
@@ -453,7 +453,7 @@ void FloatingObjects::removePlacedObject(FloatingObject& floatingObject)
 FloatingObject* FloatingObjects::add(PassOwnPtr<FloatingObject> floatingObject)
 {
     FloatingObject* newObject = floatingObject.leakPtr();
-    increaseObjectsCount(newObject->type());
+    increaseObjectsCount(newObject->getType());
     m_set.add(adoptPtr(newObject));
     if (newObject->isPlaced())
         addPlacedObject(*newObject);
@@ -463,7 +463,7 @@ FloatingObject* FloatingObjects::add(PassOwnPtr<FloatingObject> floatingObject)
 
 void FloatingObjects::remove(FloatingObject* toBeRemoved)
 {
-    decreaseObjectsCount(toBeRemoved->type());
+    decreaseObjectsCount(toBeRemoved->getType());
     OwnPtr<FloatingObject> floatingObject = m_set.take(toBeRemoved);
     ASSERT(floatingObject->isPlaced() || !floatingObject->isInPlacedTree());
     if (floatingObject->isPlaced())
@@ -563,7 +563,7 @@ template <FloatingObject::Type FloatTypeValue>
 inline void ComputeFloatOffsetAdapter<FloatTypeValue>::collectIfNeeded(const IntervalType& interval)
 {
     const FloatingObject& floatingObject = *(interval.data());
-    if (floatingObject.type() != FloatTypeValue || !rangesIntersect(interval.low(), interval.high(), m_lineTop, m_lineBottom))
+    if (floatingObject.getType() != FloatTypeValue || !rangesIntersect(interval.low(), interval.high(), m_lineTop, m_lineBottom))
         return;
 
     // Make sure the float hasn't changed since it was added to the placed floats tree.

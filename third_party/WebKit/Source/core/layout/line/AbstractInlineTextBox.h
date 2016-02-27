@@ -75,7 +75,7 @@ public:
 
     ~AbstractInlineTextBox();
 
-    LineLayoutText lineLayoutItem() const { return m_lineLayoutItem; }
+    LineLayoutText getLineLayoutItem() const { return m_lineLayoutItem; }
 
     PassRefPtr<AbstractInlineTextBox> nextInlineTextBox() const;
     LayoutRect bounds() const;

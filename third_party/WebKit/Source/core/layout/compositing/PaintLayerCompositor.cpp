@@ -660,7 +660,7 @@ PaintLayerCompositor* PaintLayerCompositor::frameContentsCompositor(LayoutPart* 
 bool PaintLayerCompositor::attachFrameContentLayersToIframeLayer(LayoutPart* layoutObject)
 {
     PaintLayerCompositor* innerCompositor = frameContentsCompositor(layoutObject);
-    if (!innerCompositor || !innerCompositor->staleInCompositingMode() || innerCompositor->rootLayerAttachment() != RootLayerAttachedViaEnclosingFrame)
+    if (!innerCompositor || !innerCompositor->staleInCompositingMode() || innerCompositor->getRootLayerAttachment() != RootLayerAttachedViaEnclosingFrame)
         return false;
 
     PaintLayer* layer = layoutObject->layer();

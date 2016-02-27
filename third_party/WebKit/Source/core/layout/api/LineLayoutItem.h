@@ -335,9 +335,9 @@ public:
         return m_layoutObject->hitTest(result, locationInContainer, accumulatedOffset, filter);
     }
 
-    SelectionState selectionState() const
+    SelectionState getSelectionState() const
     {
-        return m_layoutObject->selectionState();
+        return m_layoutObject->getSelectionState();
     }
 
     Color selectionBackgroundColor() const

@@ -953,7 +953,7 @@ void LayoutBlockFlow::rebuildFloatsFromIntruding()
                     }
 
                     if (oldFloatingObject->originatingLine() && !selfNeedsLayout()) {
-                        ASSERT(oldFloatingObject->originatingLine()->lineLayoutItem().isEqual(this));
+                        ASSERT(oldFloatingObject->originatingLine()->getLineLayoutItem().isEqual(this));
                         oldFloatingObject->originatingLine()->markDirty();
                     }
 
@@ -2300,7 +2300,7 @@ void LayoutBlockFlow::removeFloatingObject(LayoutBox* floatBox)
                 }
                 if (floatingObject.originatingLine()) {
                     if (!selfNeedsLayout()) {
-                        ASSERT(floatingObject.originatingLine()->lineLayoutItem().isEqual(this));
+                        ASSERT(floatingObject.originatingLine()->getLineLayoutItem().isEqual(this));
                         floatingObject.originatingLine()->markDirty();
                     }
 #if ENABLE(ASSERT)

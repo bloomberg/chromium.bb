@@ -142,7 +142,7 @@ void ImageQualityController::highQualityRepaintTimerFired(Timer<ImageQualityCont
         if (i != m_objectLayerSizeMap.end()) {
             // Only invalidate the object if it is animating.
             if (i->value.isResizing) {
-                // TODO(wangxianzhu): Use LayoutObject::mutableForPainting().
+                // TODO(wangxianzhu): Use LayoutObject::getMutableForPainting().
                 const_cast<LayoutObject*>(layoutObject)->setShouldDoFullPaintInvalidation();
             }
             i->value.isResizing = false;

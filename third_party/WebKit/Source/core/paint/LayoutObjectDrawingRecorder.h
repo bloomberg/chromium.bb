@@ -74,7 +74,7 @@ private:
         else
             ASSERT(!paintController.paintOffsetWasInvalidated(layoutObject) || !paintController.clientCacheIsValid(layoutObject));
 
-        layoutObject.mutableForPainting().setPreviousPaintOffset(paintOffset);
+        layoutObject.getMutableForPainting().setPreviousPaintOffset(paintOffset);
     }
 
     Optional<DisplayItemCacheSkipper> m_cacheSkipper;

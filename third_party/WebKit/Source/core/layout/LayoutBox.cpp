@@ -1983,12 +1983,12 @@ void LayoutBox::mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* ance
         rect.move(-containerOffset);
         // If the paintInvalidationContainer is fixed, then the rect is already in its coordinates so doesn't need viewport-adjusting.
         if (ancestor->style()->position() != FixedPosition && container->isLayoutView())
-            toLayoutView(container)->adjustViewportConstrainedOffset(rect, LayoutView::viewportConstrainedPosition(position));
+            toLayoutView(container)->adjustViewportConstrainedOffset(rect, LayoutView::toViewportConstrainedPosition(position));
         return;
     }
 
     if (container->isLayoutView())
-        toLayoutView(container)->mapToVisibleRectInAncestorSpace(ancestor, rect, LayoutView::viewportConstrainedPosition(position), paintInvalidationState);
+        toLayoutView(container)->mapToVisibleRectInAncestorSpace(ancestor, rect, LayoutView::toViewportConstrainedPosition(position), paintInvalidationState);
     else
         container->mapToVisibleRectInAncestorSpace(ancestor, rect, paintInvalidationState);
 }

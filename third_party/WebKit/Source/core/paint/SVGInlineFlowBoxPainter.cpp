@@ -32,7 +32,7 @@ void SVGInlineFlowBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoin
 {
     ASSERT(paintInfo.phase == PaintPhaseForeground || paintInfo.phase == PaintPhaseSelection);
 
-    SVGPaintContext paintContext(*LineLayoutAPIShim::constLayoutObjectFrom(m_svgInlineFlowBox.lineLayoutItem()), paintInfo);
+    SVGPaintContext paintContext(*LineLayoutAPIShim::constLayoutObjectFrom(m_svgInlineFlowBox.getLineLayoutItem()), paintInfo);
     if (paintContext.applyClipMaskAndFilterIfNecessary()) {
         for (InlineBox* child = m_svgInlineFlowBox.firstChild(); child; child = child->nextOnLine())
             child->paint(paintContext.paintInfo(), paintOffset, LayoutUnit(), LayoutUnit());

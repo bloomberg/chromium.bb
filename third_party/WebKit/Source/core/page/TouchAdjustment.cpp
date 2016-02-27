@@ -130,7 +130,7 @@ bool providesContextMenuItems(Node* node)
             return true;
         // Only the selected part of the layoutObject is a valid target, but this will be corrected in
         // appendContextSubtargetsForNode.
-        if (node->layoutObject()->selectionState() != SelectionNone)
+        if (node->layoutObject()->getSelectionState() != SelectionNone)
             return true;
     }
     return false;
@@ -184,11 +184,11 @@ static inline void appendContextSubtargetsForNode(Node* node, SubtargetGeometryL
             lastOffset = offset;
         }
     } else {
-        if (textLayoutObject->selectionState() == SelectionNone)
+        if (textLayoutObject->getSelectionState() == SelectionNone)
             return appendBasicSubtargetsForNode(node, subtargets);
         // If selected, make subtargets out of only the selected part of the text.
         int startPos, endPos;
-        switch (textLayoutObject->selectionState()) {
+        switch (textLayoutObject->getSelectionState()) {
         case SelectionInside:
             startPos = 0;
             endPos = textLayoutObject->textLength();

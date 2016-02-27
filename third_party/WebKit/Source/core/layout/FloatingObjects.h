@@ -52,7 +52,7 @@ public:
 
     PassOwnPtr<FloatingObject> unsafeClone() const;
 
-    Type type() const { return static_cast<Type>(m_type); }
+    Type getType() const { return static_cast<Type>(m_type); }
     LayoutBox* layoutObject() const { return m_layoutObject; }
 
     bool isPlaced() const { return m_isPlaced; }

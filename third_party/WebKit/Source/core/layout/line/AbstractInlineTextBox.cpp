@@ -86,7 +86,7 @@ void AbstractInlineTextBox::detach()
 
 PassRefPtr<AbstractInlineTextBox> AbstractInlineTextBox::nextInlineTextBox() const
 {
-    ASSERT(!m_inlineTextBox || !m_inlineTextBox->lineLayoutItem().needsLayout());
+    ASSERT(!m_inlineTextBox || !m_inlineTextBox->getLineLayoutItem().needsLayout());
     if (!m_inlineTextBox)
         return nullptr;
 
@@ -171,38 +171,38 @@ String AbstractInlineTextBox::text() const
 
 bool AbstractInlineTextBox::isFirst() const
 {
-    ASSERT(!m_inlineTextBox || !m_inlineTextBox->lineLayoutItem().needsLayout());
+    ASSERT(!m_inlineTextBox || !m_inlineTextBox->getLineLayoutItem().needsLayout());
     return !m_inlineTextBox || !m_inlineTextBox->prevTextBox();
 }
 
 bool AbstractInlineTextBox::isLast() const
 {
-    ASSERT(!m_inlineTextBox || !m_inlineTextBox->lineLayoutItem().needsLayout());
+    ASSERT(!m_inlineTextBox || !m_inlineTextBox->getLineLayoutItem().needsLayout());
     return !m_inlineTextBox || !m_inlineTextBox->nextTextBox();
 }
 
 PassRefPtr<AbstractInlineTextBox> AbstractInlineTextBox::nextOnLine() const
 {
-    ASSERT(!m_inlineTextBox || !m_inlineTextBox->lineLayoutItem().needsLayout());
+    ASSERT(!m_inlineTextBox || !m_inlineTextBox->getLineLayoutItem().needsLayout());
     if (!m_inlineTextBox)
         return nullptr;
 
     InlineBox* next = m_inlineTextBox->nextOnLine();
     if (next && next->isInlineTextBox())
-        return getOrCreate(toInlineTextBox(next)->lineLayoutItem(), toInlineTextBox(next));
+        return getOrCreate(toInlineTextBox(next)->getLineLayoutItem(), toInlineTextBox(next));
 
     return nullptr;
 }
 
 PassRefPtr<AbstractInlineTextBox> AbstractInlineTextBox::previousOnLine() const
 {
-    ASSERT(!m_inlineTextBox || !m_inlineTextBox->lineLayoutItem().needsLayout());
+    ASSERT(!m_inlineTextBox || !m_inlineTextBox->getLineLayoutItem().needsLayout());
     if (!m_inlineTextBox)
         return nullptr;
 
     InlineBox* previous = m_inlineTextBox->prevOnLine();
     if (previous && previous->isInlineTextBox())
-        return getOrCreate(toInlineTextBox(previous)->lineLayoutItem(), toInlineTextBox(previous));
+        return getOrCreate(toInlineTextBox(previous)->getLineLayoutItem(), toInlineTextBox(previous));
 
     return nullptr;
 }

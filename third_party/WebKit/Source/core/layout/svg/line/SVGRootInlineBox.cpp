@@ -76,7 +76,7 @@ void SVGRootInlineBox::layoutChildBoxes(InlineFlowBox* start, LayoutRect* childR
     for (InlineBox* child = start->firstChild(); child; child = child->nextOnLine()) {
         LayoutRect boxRect;
         if (child->isSVGInlineTextBox()) {
-            ASSERT(child->lineLayoutItem().isSVGInlineText());
+            ASSERT(child->getLineLayoutItem().isSVGInlineText());
 
             SVGInlineTextBox* textBox = toSVGInlineTextBox(child);
             boxRect = textBox->calculateBoundaries();
@@ -86,7 +86,7 @@ void SVGRootInlineBox::layoutChildBoxes(InlineFlowBox* start, LayoutRect* childR
             textBox->setLogicalHeight(boxRect.height());
         } else {
             // Skip generated content.
-            if (!child->lineLayoutItem().node())
+            if (!child->getLineLayoutItem().node())
                 continue;
 
             SVGInlineFlowBox* flowBox = toSVGInlineFlowBox(child);
@@ -115,7 +115,7 @@ void SVGRootInlineBox::layoutRootBox(const LayoutRect& childRect)
     // Position all children relative to the parent block.
     for (InlineBox* child = firstChild(); child; child = child->nextOnLine()) {
         // Skip generated content.
-        if (!child->lineLayoutItem().node())
+        if (!child->getLineLayoutItem().node())
             continue;
         child->move(LayoutSize(-childRect.x(), -childRect.y()));
     }
@@ -209,8 +209,8 @@ static inline void reverseInlineBoxRangeAndValueListsIfNeeded(void* userData, Ve
 
         // Reordering is only necessary for BiDi text that is _absolutely_ positioned.
         if (firstTextBox->len() == 1 && firstTextBox->len() == lastTextBox->len()) {
-            LineLayoutSVGInlineText firstContext = LineLayoutSVGInlineText(firstTextBox->lineLayoutItem());
-            LineLayoutSVGInlineText lastContext = LineLayoutSVGInlineText(lastTextBox->lineLayoutItem());
+            LineLayoutSVGInlineText firstContext = LineLayoutSVGInlineText(firstTextBox->getLineLayoutItem());
+            LineLayoutSVGInlineText lastContext = LineLayoutSVGInlineText(lastTextBox->getLineLayoutItem());
 
             SVGTextLayoutAttributes* firstAttributes = nullptr;
             SVGTextLayoutAttributes* lastAttributes = nullptr;

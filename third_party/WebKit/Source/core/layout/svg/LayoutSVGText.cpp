@@ -462,7 +462,7 @@ PositionWithAffinity LayoutSVGText::positionForPoint(const LayoutPoint& pointInC
     if (!closestBox)
         return createPositionWithAffinity(0);
 
-    return closestBox->lineLayoutItem().positionForPoint(LayoutPoint(clippedPointInContents.x(), closestBox->y()));
+    return closestBox->getLineLayoutItem().positionForPoint(LayoutPoint(clippedPointInContents.x(), closestBox->y()));
 }
 
 void LayoutSVGText::absoluteQuads(Vector<FloatQuad>& quads, bool* wasFixed) const

@@ -46,7 +46,7 @@ public:
     IntRect selectionRect() const;
 
     LayoutUnit virtualLogicalHeight() const override { return LayoutUnit(m_height); }
-    SelectionState selectionState() const override { return m_selectionState; }
+    SelectionState getSelectionState() const override { return m_selectionState; }
     const AtomicString& ellipsisStr() const { return m_str; }
 
     const char* boxName() const override;

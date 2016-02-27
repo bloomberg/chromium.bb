@@ -66,8 +66,8 @@ public:
     // Adding a pair of midpoints before a character will split it out into a new line box.
     void ensureCharacterGetsLineBox(Iterator& textParagraphSeparator)
     {
-        startIgnoringSpaces(Iterator(0, textParagraphSeparator.lineLayoutItem(), textParagraphSeparator.offset() - 1));
-        stopIgnoringSpaces(Iterator(0, textParagraphSeparator.lineLayoutItem(), textParagraphSeparator.offset()));
+        startIgnoringSpaces(Iterator(0, textParagraphSeparator.getLineLayoutItem(), textParagraphSeparator.offset() - 1));
+        stopIgnoringSpaces(Iterator(0, textParagraphSeparator.getLineLayoutItem(), textParagraphSeparator.offset()));
     }
 
     void checkMidpoints(Iterator& lBreak)
@@ -75,7 +75,7 @@ public:
         // Check to see if our last midpoint is a start point beyond the line break. If so,
         // shave it off the list, and shave off a trailing space if the previous end point doesn't
         // preserve whitespace.
-        if (lBreak.lineLayoutItem() && m_numMidpoints && !(m_numMidpoints % 2)) {
+        if (lBreak.getLineLayoutItem() && m_numMidpoints && !(m_numMidpoints % 2)) {
             Iterator* midpointsIterator = m_midpoints.data();
             Iterator& endpoint = midpointsIterator[m_numMidpoints - 2];
             const Iterator& startpoint = midpointsIterator[m_numMidpoints - 1];
@@ -85,7 +85,7 @@ public:
             if (currpoint == lBreak) {
                 // We hit the line break before the start point. Shave off the start point.
                 m_numMidpoints--;
-                if (endpoint.lineLayoutItem().style()->collapseWhiteSpace() && endpoint.lineLayoutItem().isText())
+                if (endpoint.getLineLayoutItem().style()->collapseWhiteSpace() && endpoint.getLineLayoutItem().isText())
                     endpoint.setOffset(endpoint.offset() - 1);
             }
         }

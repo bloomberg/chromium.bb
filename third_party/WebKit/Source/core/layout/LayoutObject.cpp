@@ -2570,7 +2570,7 @@ LayoutObject* LayoutObject::containerCrossingFrameBoundaries() const
 
 bool LayoutObject::isSelectionBorder() const
 {
-    SelectionState st = selectionState();
+    SelectionState st = getSelectionState();
     return st == SelectionStart || st == SelectionEnd || st == SelectionBoth;
 }
 

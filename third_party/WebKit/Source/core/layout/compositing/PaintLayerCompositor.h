@@ -127,7 +127,7 @@ public:
         RootLayerAttachedViaEnclosingFrame
     };
 
-    RootLayerAttachment rootLayerAttachment() const { return m_rootLayerAttachment; }
+    RootLayerAttachment getRootLayerAttachment() const { return m_rootLayerAttachment; }
     void updateRootLayerAttachment();
     void updateRootLayerPosition();
 

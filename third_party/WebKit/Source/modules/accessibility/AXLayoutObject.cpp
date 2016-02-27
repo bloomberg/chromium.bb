@@ -1006,7 +1006,7 @@ AXObject* AXLayoutObject::nextOnLine() const
 
     AXObject* result = 0;
     for (InlineBox* next = inlineBox->nextOnLine(); next; next = next->nextOnLine()) {
-        LayoutObject* layoutObject = LineLayoutAPIShim::layoutObjectFrom(next->lineLayoutItem());
+        LayoutObject* layoutObject = LineLayoutAPIShim::layoutObjectFrom(next->getLineLayoutItem());
         result = axObjectCache().getOrCreate(layoutObject);
         if (result)
             break;
@@ -1035,7 +1035,7 @@ AXObject* AXLayoutObject::previousOnLine() const
 
     AXObject* result = 0;
     for (InlineBox* prev = inlineBox->prevOnLine(); prev; prev = prev->prevOnLine()) {
-        LayoutObject* layoutObject = LineLayoutAPIShim::layoutObjectFrom(prev->lineLayoutItem());
+        LayoutObject* layoutObject = LineLayoutAPIShim::layoutObjectFrom(prev->getLineLayoutItem());
         result = axObjectCache().getOrCreate(layoutObject);
         if (result)
             break;

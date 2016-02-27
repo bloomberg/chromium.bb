@@ -143,13 +143,13 @@ public:
     {
         if (!includeLogicalLeftEdge())
             return 0;
-        return isHorizontal() ? lineLayoutItem().style(isFirstLineStyle())->borderLeftWidth() : lineLayoutItem().style(isFirstLineStyle())->borderTopWidth();
+        return isHorizontal() ? getLineLayoutItem().style(isFirstLineStyle())->borderLeftWidth() : getLineLayoutItem().style(isFirstLineStyle())->borderTopWidth();
     }
     int borderLogicalRight() const
     {
         if (!includeLogicalRightEdge())
             return 0;
-        return isHorizontal() ? lineLayoutItem().style(isFirstLineStyle())->borderRightWidth() : lineLayoutItem().style(isFirstLineStyle())->borderBottomWidth();
+        return isHorizontal() ? getLineLayoutItem().style(isFirstLineStyle())->borderRightWidth() : getLineLayoutItem().style(isFirstLineStyle())->borderBottomWidth();
     }
     int paddingLogicalLeft() const
     {
@@ -190,7 +190,7 @@ public:
 
     void removeChild(InlineBox* child, MarkLineBoxes);
 
-    SelectionState selectionState() const override;
+    SelectionState getSelectionState() const override;
 
     bool canAccommodateEllipsis(bool ltr, int blockEdge, int ellipsisWidth) const final;
     LayoutUnit placeEllipsisBox(bool ltr, LayoutUnit blockLeftEdge, LayoutUnit blockRightEdge, LayoutUnit ellipsisWidth, LayoutUnit &truncatedWidth, bool&) override;
@@ -224,7 +224,7 @@ public:
     LayoutRect logicalLayoutOverflowRect(LayoutUnit lineTop, LayoutUnit lineBottom) const
     {
         LayoutRect result = layoutOverflowRect(lineTop, lineBottom);
-        if (!lineLayoutItem().isHorizontalWritingMode())
+        if (!getLineLayoutItem().isHorizontalWritingMode())
             result = result.transposedRect();
         return result;
     }
@@ -250,7 +250,7 @@ public:
     LayoutRect logicalVisualOverflowRect(LayoutUnit lineTop, LayoutUnit lineBottom) const
     {
         LayoutRect result = visualOverflowRect(lineTop, lineBottom);
-        if (!lineLayoutItem().isHorizontalWritingMode())
+        if (!getLineLayoutItem().isHorizontalWritingMode())
             result = result.transposedRect();
         return result;
     }

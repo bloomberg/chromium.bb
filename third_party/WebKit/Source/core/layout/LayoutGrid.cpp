@@ -765,7 +765,7 @@ LayoutUnit LayoutGrid::maxContentForChild(LayoutBox& child, GridTrackSizingDirec
     return logicalHeightForChild(child, columnTracks);
 }
 
-// We're basically using a class instead of a std::pair because of accessing gridItem() or gridSpan() is much more
+// We're basically using a class instead of a std::pair because of accessing gridItem() or getGridSpan() is much more
 // self-explanatory that using .first or .second members in the pair. Having a std::pair<LayoutBox*, size_t>
 // does not work either because we still need the GridSpan so we'd have to add an extra hash lookup for each item
 // at the beginning of LayoutGrid::resolveContentBasedTrackSizingFunctionsForItems().
@@ -778,7 +778,7 @@ public:
     }
 
     LayoutBox& gridItem() const { return *m_gridItem; }
-    GridSpan gridSpan() const { return m_gridSpan; }
+    GridSpan getGridSpan() const { return m_gridSpan; }
 
     bool operator<(const GridItemWithSpan other) const { return m_gridSpan.integerSpan() < other.m_gridSpan.integerSpan(); }
 
@@ -991,8 +991,8 @@ void LayoutGrid::resolveContentBasedTrackSizingFunctionsForItems(GridTrackSizing
 
     for (auto it = gridItemsWithSpan.rangeStart; it != gridItemsWithSpan.rangeEnd; ++it) {
         GridItemWithSpan& gridItemWithSpan = *it;
-        ASSERT(gridItemWithSpan.gridSpan().integerSpan() > 1);
-        const GridSpan& itemSpan = gridItemWithSpan.gridSpan();
+        ASSERT(gridItemWithSpan.getGridSpan().integerSpan() > 1);
+        const GridSpan& itemSpan = gridItemWithSpan.getGridSpan();
 
         sizingData.growBeyondGrowthLimitsTracks.shrink(0);
         sizingData.filteredTracks.shrink(0);

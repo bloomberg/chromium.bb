@@ -30,7 +30,7 @@ void LineBreaker::skipLeadingWhitespace(InlineBidiResolver& resolver, LineInfo& 
     FloatingObject* lastFloatFromPreviousLine, LineWidth& width)
 {
     while (!resolver.position().atEnd() && !requiresLineBox(resolver.position(), lineInfo, LeadingWhitespace)) {
-        LayoutObject* object = resolver.position().lineLayoutItem();
+        LayoutObject* object = resolver.position().getLineLayoutItem();
         if (object->isOutOfFlowPositioned()) {
             setStaticPositions(m_block, LineLayoutBox(toLayoutBox(object)), width.indentText());
             if (object->style()->isOriginalDisplayInlineType()) {

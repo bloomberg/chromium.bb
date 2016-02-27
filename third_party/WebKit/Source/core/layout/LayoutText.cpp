@@ -524,8 +524,8 @@ static PositionWithAffinity createPositionWithAffinityForBox(const InlineBox* bo
         affinity = offset > box->caretMinOffset() ? VP_UPSTREAM_IF_POSSIBLE : TextAffinity::Downstream;
         break;
     }
-    int textStartOffset = box->lineLayoutItem().isText() ? LineLayoutText(box->lineLayoutItem()).textStartOffset() : 0;
-    return box->lineLayoutItem().createPositionWithAffinity(offset + textStartOffset, affinity);
+    int textStartOffset = box->getLineLayoutItem().isText() ? LineLayoutText(box->getLineLayoutItem()).textStartOffset() : 0;
+    return box->getLineLayoutItem().createPositionWithAffinity(offset + textStartOffset, affinity);
 }
 
 static PositionWithAffinity createPositionWithAffinityForBoxAfterAdjustingOffsetForBiDi(const InlineTextBox* box, int offset, ShouldAffinityBeDownstream shouldAffinityBeDownstream)
@@ -542,7 +542,7 @@ static PositionWithAffinity createPositionWithAffinityForBoxAfterAdjustingOffset
 
         const InlineBox* prevBox = box->prevLeafChildIgnoringLineBreak();
         if ((prevBox && prevBox->bidiLevel() == box->bidiLevel())
-            || box->lineLayoutItem().containingBlock().style()->direction() == box->direction()) // FIXME: left on 12CBA
+            || box->getLineLayoutItem().containingBlock().style()->direction() == box->direction()) // FIXME: left on 12CBA
             return createPositionWithAffinityForBox(box, box->caretLeftmostOffset(), shouldAffinityBeDownstream);
 
         if (prevBox && prevBox->bidiLevel() > box->bidiLevel()) {
@@ -572,7 +572,7 @@ static PositionWithAffinity createPositionWithAffinityForBoxAfterAdjustingOffset
 
     const InlineBox* nextBox = box->nextLeafChildIgnoringLineBreak();
     if ((nextBox && nextBox->bidiLevel() == box->bidiLevel())
-        || box->lineLayoutItem().containingBlock().style()->direction() == box->direction())
+        || box->getLineLayoutItem().containingBlock().style()->direction() == box->direction())
         return createPositionWithAffinityForBox(box, box->caretRightmostOffset(), shouldAffinityBeDownstream);
 
     // offset is on the right edge
@@ -1185,13 +1185,13 @@ void LayoutText::setSelectionState(SelectionState state)
         if (state == SelectionStart || state == SelectionEnd || state == SelectionBoth) {
             int startPos, endPos;
             selectionStartEnd(startPos, endPos);
-            if (selectionState() == SelectionStart) {
+            if (getSelectionState() == SelectionStart) {
                 endPos = textLength();
 
                 // to handle selection from end of text to end of line
                 if (startPos && startPos == endPos)
                     startPos = endPos - 1;
-            } else if (selectionState() == SelectionEnd) {
+            } else if (getSelectionState() == SelectionEnd) {
                 startPos = 0;
             }
 
@@ -1587,7 +1587,7 @@ LayoutRect LayoutText::selectionRectForPaintInvalidation(const LayoutBoxModelObj
 {
     ASSERT(!needsLayout());
 
-    if (selectionState() == SelectionNone)
+    if (getSelectionState() == SelectionNone)
         return LayoutRect();
     LayoutBlock* cb = containingBlock();
     if (!cb)
@@ -1596,15 +1596,15 @@ LayoutRect LayoutText::selectionRectForPaintInvalidation(const LayoutBoxModelObj
     // Now calculate startPos and endPos for painting selection.
     // We include a selection while endPos > 0
     int startPos, endPos;
-    if (selectionState() == SelectionInside) {
+    if (getSelectionState() == SelectionInside) {
         // We are fully selected.
         startPos = 0;
         endPos = textLength();
     } else {
         selectionStartEnd(startPos, endPos);
-        if (selectionState() == SelectionStart)
+        if (getSelectionState() == SelectionStart)
             endPos = textLength();
-        else if (selectionState() == SelectionEnd)
+        else if (getSelectionState() == SelectionEnd)
             startPos = 0;
     }
 
@@ -1716,7 +1716,7 @@ void LayoutText::checkConsistency() const
 #ifdef CHECK_CONSISTENCY
     const InlineTextBox* prev = nullptr;
     for (const InlineTextBox* child = m_firstTextBox; child; child = child->nextTextBox()) {
-        ASSERT(child->lineLayoutItem().isEqual(this));
+        ASSERT(child->getLineLayoutItem().isEqual(this));
         ASSERT(child->prevTextBox() == prev);
         prev = child;
     }

@@ -45,7 +45,7 @@
 // enabled. This requires the template specialization to be available:
 //
 //   template<> struct ValueToString<T> {
-//       static String string(const T& t);
+//       static String toString(const T& t);
 //   };
 //
 // Note that when complex types are stored in this red/black tree, it

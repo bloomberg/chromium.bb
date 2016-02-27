@@ -89,7 +89,7 @@ RenderedPosition::RenderedPosition(const Position& position, TextAffinity affini
     m_inlineBox = boxPosition.inlineBox;
     m_offset = boxPosition.offsetInBox;
     if (m_inlineBox)
-        m_layoutObject = LineLayoutAPIShim::layoutObjectFrom(m_inlineBox->lineLayoutItem());
+        m_layoutObject = LineLayoutAPIShim::layoutObjectFrom(m_inlineBox->getLineLayoutItem());
     else
         m_layoutObject = layoutObjectFromPosition(position);
 }
@@ -141,7 +141,7 @@ RenderedPosition RenderedPosition::leftBoundaryOfBidiRun(unsigned char bidiLevel
     do {
         InlineBox* prev = box->prevLeafChildIgnoringLineBreak();
         if (!prev || prev->bidiLevel() < bidiLevelOfRun)
-            return RenderedPosition(LineLayoutAPIShim::layoutObjectFrom(box->lineLayoutItem()), box, box->caretLeftmostOffset());
+            return RenderedPosition(LineLayoutAPIShim::layoutObjectFrom(box->getLineLayoutItem()), box, box->caretLeftmostOffset());
         box = prev;
     } while (box);
 
@@ -158,7 +158,7 @@ RenderedPosition RenderedPosition::rightBoundaryOfBidiRun(unsigned char bidiLeve
     do {
         InlineBox* next = box->nextLeafChildIgnoringLineBreak();
         if (!next || next->bidiLevel() < bidiLevelOfRun)
-            return RenderedPosition(LineLayoutAPIShim::layoutObjectFrom(box->lineLayoutItem()), box, box->caretRightmostOffset());
+            return RenderedPosition(LineLayoutAPIShim::layoutObjectFrom(box->getLineLayoutItem()), box, box->caretRightmostOffset());
         box = next;
     } while (box);
 
@@ -213,7 +213,7 @@ Position RenderedPosition::positionAtLeftBoundaryOfBiDiRun() const
     if (atLeftmostOffsetInBox())
         return Position::editingPositionOf(m_layoutObject->node(), m_offset);
 
-    return Position::editingPositionOf(nextLeafChild()->lineLayoutItem().node(), nextLeafChild()->caretLeftmostOffset());
+    return Position::editingPositionOf(nextLeafChild()->getLineLayoutItem().node(), nextLeafChild()->caretLeftmostOffset());
 }
 
 Position RenderedPosition::positionAtRightBoundaryOfBiDiRun() const
@@ -223,7 +223,7 @@ Position RenderedPosition::positionAtRightBoundaryOfBiDiRun() const
     if (atRightmostOffsetInBox())
         return Position::editingPositionOf(m_layoutObject->node(), m_offset);
 
-    return Position::editingPositionOf(prevLeafChild()->lineLayoutItem().node(), prevLeafChild()->caretRightmostOffset());
+    return Position::editingPositionOf(prevLeafChild()->getLineLayoutItem().node(), prevLeafChild()->caretRightmostOffset());
 }
 
 IntRect RenderedPosition::absoluteRect(LayoutUnit* extraWidthToEndOfLine) const

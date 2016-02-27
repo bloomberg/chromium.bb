@@ -726,7 +726,7 @@ LayoutRect LayoutReplaced::selectionRectForPaintInvalidation(const LayoutBoxMode
 
 LayoutRect LayoutReplaced::localSelectionRect() const
 {
-    if (selectionState() == SelectionNone)
+    if (getSelectionState() == SelectionNone)
         return LayoutRect();
 
     if (!inlineBoxWrapper()) {

@@ -71,7 +71,7 @@ void LineWidth::shrinkAvailableWidthForNewFloatIfNeeded(const FloatingObject& ne
         shapeDeltas = shapeOutsideInfo->computeDeltasForContainingBlockLine(m_block, newFloat, m_block.logicalHeight(), lineHeight);
     }
 
-    if (newFloat.type() == FloatingObject::FloatLeft) {
+    if (newFloat.getType() == FloatingObject::FloatLeft) {
         float newLeft = m_block.logicalRightForFloat(newFloat).toFloat();
         if (shapeDeltas.isValid()) {
             if (shapeDeltas.lineOverlapsShape())

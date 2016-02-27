@@ -21,12 +21,12 @@ void SVGRootInlineBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoin
 {
     ASSERT(paintInfo.phase == PaintPhaseForeground || paintInfo.phase == PaintPhaseSelection);
 
-    bool hasSelection = !paintInfo.isPrinting() && m_svgRootInlineBox.selectionState() != SelectionNone;
+    bool hasSelection = !paintInfo.isPrinting() && m_svgRootInlineBox.getSelectionState() != SelectionNone;
 
     PaintInfo paintInfoBeforeFiltering(paintInfo);
-    if (hasSelection && !LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(paintInfoBeforeFiltering.context, *LineLayoutAPIShim::constLayoutObjectFrom(m_svgRootInlineBox.lineLayoutItem()),
+    if (hasSelection && !LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(paintInfoBeforeFiltering.context, *LineLayoutAPIShim::constLayoutObjectFrom(m_svgRootInlineBox.getLineLayoutItem()),
         paintInfoBeforeFiltering.phase, paintOffset)) {
-        LayoutObjectDrawingRecorder recorder(paintInfoBeforeFiltering.context, *LineLayoutAPIShim::constLayoutObjectFrom(m_svgRootInlineBox.lineLayoutItem()), paintInfoBeforeFiltering.phase,
+        LayoutObjectDrawingRecorder recorder(paintInfoBeforeFiltering.context, *LineLayoutAPIShim::constLayoutObjectFrom(m_svgRootInlineBox.getLineLayoutItem()), paintInfoBeforeFiltering.phase,
             paintInfoBeforeFiltering.cullRect().m_rect, paintOffset);
         for (InlineBox* child = m_svgRootInlineBox.firstChild(); child; child = child->nextOnLine()) {
             if (child->isSVGInlineTextBox())
@@ -36,7 +36,7 @@ void SVGRootInlineBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoin
         }
     }
 
-    SVGPaintContext paintContext(*LineLayoutAPIShim::constLayoutObjectFrom(m_svgRootInlineBox.lineLayoutItem()), paintInfoBeforeFiltering);
+    SVGPaintContext paintContext(*LineLayoutAPIShim::constLayoutObjectFrom(m_svgRootInlineBox.getLineLayoutItem()), paintInfoBeforeFiltering);
     if (paintContext.applyClipMaskAndFilterIfNecessary()) {
         for (InlineBox* child = m_svgRootInlineBox.firstChild(); child; child = child->nextOnLine())
             child->paint(paintContext.paintInfo(), paintOffset, LayoutUnit(), LayoutUnit());

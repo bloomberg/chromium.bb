@@ -444,7 +444,7 @@ LayoutRect LayoutListMarker::selectionRectForPaintInvalidation(const LayoutBoxMo
 {
     ASSERT(!needsLayout());
 
-    if (selectionState() == SelectionNone || !inlineBoxWrapper())
+    if (getSelectionState() == SelectionNone || !inlineBoxWrapper())
         return LayoutRect();
 
     RootInlineBox& root = inlineBoxWrapper()->root();

@@ -396,10 +396,10 @@ static inline void writeSVGInlineTextBox(TextStream& ts, SVGInlineTextBox* textB
     if (fragments.isEmpty())
         return;
 
-    LineLayoutSVGInlineText textLineLayout = LineLayoutSVGInlineText(textBox->lineLayoutItem());
+    LineLayoutSVGInlineText textLineLayout = LineLayoutSVGInlineText(textBox->getLineLayoutItem());
 
     const SVGComputedStyle& svgStyle = textLineLayout.style()->svgStyle();
-    String text = textBox->lineLayoutItem().text();
+    String text = textBox->getLineLayoutItem().text();
 
     unsigned fragmentsSize = fragments.size();
     for (unsigned i = 0; i < fragmentsSize; ++i) {

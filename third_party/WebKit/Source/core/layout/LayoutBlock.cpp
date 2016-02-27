@@ -1704,14 +1704,14 @@ Position LayoutBlock::positionForBox(InlineBox *box, bool start) const
     if (!box)
         return Position();
 
-    if (!box->lineLayoutItem().nonPseudoNode())
+    if (!box->getLineLayoutItem().nonPseudoNode())
         return Position::editingPositionOf(nonPseudoNode(), start ? caretMinOffset() : caretMaxOffset());
 
     if (!box->isInlineTextBox())
-        return Position::editingPositionOf(box->lineLayoutItem().nonPseudoNode(), start ? box->lineLayoutItem().caretMinOffset() : box->lineLayoutItem().caretMaxOffset());
+        return Position::editingPositionOf(box->getLineLayoutItem().nonPseudoNode(), start ? box->getLineLayoutItem().caretMinOffset() : box->getLineLayoutItem().caretMaxOffset());
 
     InlineTextBox* textBox = toInlineTextBox(box);
-    return Position::editingPositionOf(box->lineLayoutItem().nonPseudoNode(), start ? textBox->start() : textBox->start() + textBox->len());
+    return Position::editingPositionOf(box->getLineLayoutItem().nonPseudoNode(), start ? textBox->start() : textBox->start() + textBox->len());
 }
 
 static inline bool isEditingBoundary(LayoutObject* ancestor, LayoutObject* child)
@@ -1826,9 +1826,9 @@ PositionWithAffinity LayoutBlock::positionForPointWithInlineChildren(const Layou
         LayoutPoint point(pointInLogicalContents.x(), closestBox->root().blockDirectionPointInLine());
         if (!isHorizontalWritingMode())
             point = point.transposedPoint();
-        if (closestBox->lineLayoutItem().isAtomicInlineLevel())
-            return positionForPointRespectingEditingBoundaries(this, LineLayoutBox(closestBox->lineLayoutItem()), point);
-        return closestBox->lineLayoutItem().positionForPoint(point);
+        if (closestBox->getLineLayoutItem().isAtomicInlineLevel())
+            return positionForPointRespectingEditingBoundaries(this, LineLayoutBox(closestBox->getLineLayoutItem()), point);
+        return closestBox->getLineLayoutItem().positionForPoint(point);
     }
 
     if (lastRootBoxWithChildren) {

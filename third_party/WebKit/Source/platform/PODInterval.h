@@ -62,10 +62,10 @@ namespace blink {
 // available:
 //
 //   template<> struct ValueToString<T> {
-//       static String string(const T& t);
+//       static String toString(const T& t);
 //   };
 //   template<> struct ValueToString<UserData> {
-//       static String string(const UserData& t);
+//       static String toString(const UserData& t);
 //   };
 //
 // Note that this class requires a copy constructor and assignment

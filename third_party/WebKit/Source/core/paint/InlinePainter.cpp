@@ -28,7 +28,7 @@ void InlinePainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOf
         // Set previousPaintOffset here in case that m_layoutInline paints nothing and no
         // LayoutObjectDrawingRecorder updates its previousPaintOffset.
         // TODO(wangxianzhu): Integrate paint offset checking into new paint invalidation.
-        m_layoutInline.mutableForPainting().setPreviousPaintOffset(paintOffset);
+        m_layoutInline.getMutableForPainting().setPreviousPaintOffset(paintOffset);
     }
 
     if (paintInfo.phase == PaintPhaseForeground && paintInfo.isPrinting())

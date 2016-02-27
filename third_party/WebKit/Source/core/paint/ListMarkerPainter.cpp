@@ -72,7 +72,7 @@ void ListMarkerPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& pai
     if (m_layoutListMarker.isImage()) {
         context.drawImage(m_layoutListMarker.image()->image(
             &m_layoutListMarker, marker.size(), m_layoutListMarker.styleRef().effectiveZoom()).get(), marker);
-        if (m_layoutListMarker.selectionState() != SelectionNone) {
+        if (m_layoutListMarker.getSelectionState() != SelectionNone) {
             LayoutRect selRect = m_layoutListMarker.localSelectionRect();
             selRect.moveBy(boxOrigin);
             context.fillRect(pixelSnappedIntRect(selRect), m_layoutListMarker.listItem()->selectionBackgroundColor());

@@ -669,7 +669,7 @@ public:
         HasBoxDecorationBackgroundKnownToBeObscured,
         HasBoxDecorationBackgroundMayBeVisible,
     };
-    bool hasBoxDecorationBackground() const { return m_bitfields.boxDecorationBackgroundState() != NoBoxDecorationBackground; }
+    bool hasBoxDecorationBackground() const { return m_bitfields.getBoxDecorationBackgroundState() != NoBoxDecorationBackground; }
     bool boxDecorationBackgroundIsKnownToBeObscured() const;
     bool mustInvalidateFillLayersPaintOnHeightChange(const FillLayer&) const;
     bool hasBackground() const { return style()->hasBackground(); }
@@ -1128,7 +1128,7 @@ public:
 
     // The current selection state for an object.  For blocks, the state refers to the state of the leaf
     // descendants (as described above in the SelectionState enum declaration).
-    SelectionState selectionState() const { return m_bitfields.selectionState(); }
+    SelectionState getSelectionState() const { return m_bitfields.getSelectionState(); }
     virtual void setSelectionState(SelectionState state) { m_bitfields.setSelectionState(state); }
     inline void setSelectionStateIfNeeded(SelectionState);
     bool canUpdateSelectionOnRootLineBoxes() const;
@@ -1141,7 +1141,7 @@ public:
     LayoutRect selectionRectInViewCoordinates() const;
 
     virtual bool canBeSelectionLeaf() const { return false; }
-    bool hasSelectedChildren() const { return selectionState() != SelectionNone; }
+    bool hasSelectedChildren() const { return getSelectionState() != SelectionNone; }
 
     bool isSelectable() const;
     // Obtains the selection colors that should be used when painting a selection.
@@ -1343,7 +1343,7 @@ public:
 
         LayoutObject& m_layoutObject;
     };
-    MutableForPainting mutableForPainting() const { return MutableForPainting(*this); }
+    MutableForPainting getMutableForPainting() const { return MutableForPainting(*this); }
 
     void setIsScrollAnchorObject() { m_bitfields.setIsScrollAnchorObject(true); }
     // Clears the IsScrollAnchorObject bit, unless any ScrollAnchor still refers to us.
@@ -1855,10 +1855,10 @@ private:
         }
         void clearPositionedState() { m_positionedState = StaticPosition; }
 
-        ALWAYS_INLINE SelectionState selectionState() const { return static_cast<SelectionState>(m_selectionState); }
+        ALWAYS_INLINE SelectionState getSelectionState() const { return static_cast<SelectionState>(m_selectionState); }
         ALWAYS_INLINE void setSelectionState(SelectionState selectionState) { m_selectionState = selectionState; }
 
-        ALWAYS_INLINE BoxDecorationBackgroundState boxDecorationBackgroundState() const { return static_cast<BoxDecorationBackgroundState>(m_boxDecorationBackgroundState); }
+        ALWAYS_INLINE BoxDecorationBackgroundState getBoxDecorationBackgroundState() const { return static_cast<BoxDecorationBackgroundState>(m_boxDecorationBackgroundState); }
         ALWAYS_INLINE void setBoxDecorationBackgroundState(BoxDecorationBackgroundState s) const { m_boxDecorationBackgroundState = s; }
 
         PaintInvalidationReason fullPaintInvalidationReason() const { return static_cast<PaintInvalidationReason>(m_fullPaintInvalidationReason); }
@@ -2038,7 +2038,7 @@ inline bool LayoutObject::layerCreationAllowedForSubtree() const
 
 inline void LayoutObject::setSelectionStateIfNeeded(SelectionState state)
 {
-    if (selectionState() == state)
+    if (getSelectionState() == state)
         return;
 
     setSelectionState(state);
@@ -2064,11 +2064,11 @@ inline void LayoutObject::invalidateBackgroundObscurationStatus()
 
 inline bool LayoutObject::boxDecorationBackgroundIsKnownToBeObscured() const
 {
-    if (m_bitfields.boxDecorationBackgroundState() == HasBoxDecorationBackgroundObscurationStatusInvalid) {
+    if (m_bitfields.getBoxDecorationBackgroundState() == HasBoxDecorationBackgroundObscurationStatusInvalid) {
         BoxDecorationBackgroundState state = computeBackgroundIsKnownToBeObscured() ? HasBoxDecorationBackgroundKnownToBeObscured : HasBoxDecorationBackgroundMayBeVisible;
         m_bitfields.setBoxDecorationBackgroundState(state);
     }
-    return m_bitfields.boxDecorationBackgroundState() == HasBoxDecorationBackgroundKnownToBeObscured;
+    return m_bitfields.getBoxDecorationBackgroundState() == HasBoxDecorationBackgroundKnownToBeObscured;
 }
 
 inline void makeMatrixRenderable(TransformationMatrix& matrix, bool has3DRendering)

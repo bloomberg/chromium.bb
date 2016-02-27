@@ -27,15 +27,15 @@ namespace blink {
 
 InlineIterator BreakingContext::handleEndOfLine()
 {
-    if (m_lineBreak == m_resolver.position() && (!m_lineBreak.lineLayoutItem() || !m_lineBreak.lineLayoutItem().isBR())) {
+    if (m_lineBreak == m_resolver.position() && (!m_lineBreak.getLineLayoutItem() || !m_lineBreak.getLineLayoutItem().isBR())) {
         // we just add as much as possible
         if (m_blockStyle->whiteSpace() == PRE && !m_current.offset()) {
             m_lineBreak.moveTo(m_lastObject, m_lastObject.isText() ? m_lastObject.length() : 0);
-        } else if (m_lineBreak.lineLayoutItem()) {
+        } else if (m_lineBreak.getLineLayoutItem()) {
             // Don't ever break in the middle of a word if we can help it.
             // There's no room at all. We just have to be on this line,
             // even though we'll spill out.
-            m_lineBreak.moveTo(m_current.lineLayoutItem(), m_current.offset());
+            m_lineBreak.moveTo(m_current.getLineLayoutItem(), m_current.offset());
         }
     }
 
@@ -59,7 +59,7 @@ InlineIterator BreakingContext::handleEndOfLine()
         do {
             m_lineBreak.setOffset(m_lineBreak.offset() - 1);
             m_lineBreak.increment();
-        } while (!m_lineBreak.atEnd() && isEmptyInline(m_lineBreak.lineLayoutItem()));
+        } while (!m_lineBreak.atEnd() && isEmptyInline(m_lineBreak.getLineLayoutItem()));
     }
 
     return m_lineBreak;

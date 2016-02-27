@@ -158,7 +158,7 @@ SVGTextPathChunkBuilder::SVGTextPathChunkBuilder()
 
 void SVGTextPathChunkBuilder::handleTextChunk(BoxListConstIterator boxStart, BoxListConstIterator boxEnd)
 {
-    const ComputedStyle& style = (*boxStart)->lineLayoutItem().styleRef();
+    const ComputedStyle& style = (*boxStart)->getLineLayoutItem().styleRef();
 
     ChunkLengthAccumulator lengthAccumulator(!style.isHorizontalWritingMode());
     lengthAccumulator.processRange(boxStart, boxEnd);
@@ -180,7 +180,7 @@ void SVGTextChunkBuilder::handleTextChunk(BoxListConstIterator boxStart, BoxList
 {
     ASSERT(*boxStart);
 
-    const LineLayoutSVGInlineText textLineLayout = LineLayoutSVGInlineText((*boxStart)->lineLayoutItem());
+    const LineLayoutSVGInlineText textLineLayout = LineLayoutSVGInlineText((*boxStart)->getLineLayoutItem());
     const ComputedStyle& style = textLineLayout.styleRef();
 
     // Handle 'lengthAdjust' property.

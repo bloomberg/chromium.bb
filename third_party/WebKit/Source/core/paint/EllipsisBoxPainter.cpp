@@ -18,13 +18,13 @@ namespace blink {
 
 void EllipsisBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, LayoutUnit lineTop, LayoutUnit lineBottom)
 {
-    const ComputedStyle& style = m_ellipsisBox.lineLayoutItem().styleRef(m_ellipsisBox.isFirstLineStyle());
+    const ComputedStyle& style = m_ellipsisBox.getLineLayoutItem().styleRef(m_ellipsisBox.isFirstLineStyle());
     paintEllipsis(paintInfo, paintOffset, lineTop, lineBottom, style);
 }
 
 void EllipsisBoxPainter::paintEllipsis(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, LayoutUnit lineTop, LayoutUnit lineBottom, const ComputedStyle& style)
 {
-    bool haveSelection = !paintInfo.isPrinting() && paintInfo.phase != PaintPhaseTextClip && m_ellipsisBox.selectionState() != SelectionNone;
+    bool haveSelection = !paintInfo.isPrinting() && paintInfo.phase != PaintPhaseTextClip && m_ellipsisBox.getSelectionState() != SelectionNone;
 
     LayoutRect paintRect(m_ellipsisBox.logicalFrameRect());
     if (haveSelection)
@@ -54,9 +54,9 @@ void EllipsisBoxPainter::paintEllipsis(const PaintInfo& paintInfo, const LayoutP
     else if (paintInfo.phase == PaintPhaseSelection)
         return;
 
-    TextPainter::Style textStyle = TextPainter::textPaintingStyle(m_ellipsisBox.lineLayoutItem(), style, paintInfo);
+    TextPainter::Style textStyle = TextPainter::textPaintingStyle(m_ellipsisBox.getLineLayoutItem(), style, paintInfo);
     if (haveSelection)
-        textStyle = TextPainter::selectionPaintingStyle(m_ellipsisBox.lineLayoutItem(), true, paintInfo, textStyle);
+        textStyle = TextPainter::selectionPaintingStyle(m_ellipsisBox.getLineLayoutItem(), true, paintInfo, textStyle);
 
     TextRun textRun = constructTextRun(font, m_ellipsisBox.ellipsisStr(), style, TextRun::AllowTrailingExpansion);
     LayoutPoint textOrigin(boxOrigin.x(), boxOrigin.y() + font.fontMetrics().ascent());
@@ -66,8 +66,8 @@ void EllipsisBoxPainter::paintEllipsis(const PaintInfo& paintInfo, const LayoutP
 
 void EllipsisBoxPainter::paintSelection(GraphicsContext& context, const LayoutPoint& boxOrigin, const ComputedStyle& style, const Font& font)
 {
-    Color textColor = m_ellipsisBox.lineLayoutItem().resolveColor(style, CSSPropertyColor);
-    Color c = m_ellipsisBox.lineLayoutItem().selectionBackgroundColor();
+    Color textColor = m_ellipsisBox.getLineLayoutItem().resolveColor(style, CSSPropertyColor);
+    Color c = m_ellipsisBox.getLineLayoutItem().selectionBackgroundColor();
     if (!c.alpha())
         return;
 
@@ -80,7 +80,7 @@ void EllipsisBoxPainter::paintSelection(GraphicsContext& context, const LayoutPo
     LayoutUnit selectionBottom = m_ellipsisBox.root().selectionBottom();
     LayoutUnit top = m_ellipsisBox.root().selectionTop();
     LayoutUnit h = m_ellipsisBox.root().selectionHeight();
-    const int deltaY = roundToInt(m_ellipsisBox.lineLayoutItem().styleRef().isFlippedLinesWritingMode() ? selectionBottom - m_ellipsisBox.logicalBottom() : m_ellipsisBox.logicalTop() - top);
+    const int deltaY = roundToInt(m_ellipsisBox.getLineLayoutItem().styleRef().isFlippedLinesWritingMode() ? selectionBottom - m_ellipsisBox.logicalBottom() : m_ellipsisBox.logicalTop() - top);
     const FloatPoint localOrigin(LayoutPoint(boxOrigin.x(), boxOrigin.y() - deltaY));
     FloatRect clipRect(localOrigin, FloatSize(LayoutSize(m_ellipsisBox.logicalWidth(), h)));
     context.clip(clipRect);

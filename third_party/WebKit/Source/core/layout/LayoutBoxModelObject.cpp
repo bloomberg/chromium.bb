@@ -78,11 +78,11 @@ static ContinuationMap* continuationMap = nullptr;
 
 void LayoutBoxModelObject::setSelectionState(SelectionState state)
 {
-    if (state == SelectionInside && selectionState() != SelectionNone)
+    if (state == SelectionInside && getSelectionState() != SelectionNone)
         return;
 
-    if ((state == SelectionStart && selectionState() == SelectionEnd)
-        || (state == SelectionEnd && selectionState() == SelectionStart))
+    if ((state == SelectionStart && getSelectionState() == SelectionEnd)
+        || (state == SelectionEnd && getSelectionState() == SelectionStart))
         LayoutObject::setSelectionState(SelectionBoth);
     else
         LayoutObject::setSelectionState(state);

@@ -110,7 +110,7 @@ public:
     using InlineBox::hasSelectedChildren;
     using InlineBox::setHasSelectedChildren;
 
-    SelectionState selectionState() const final;
+    SelectionState getSelectionState() const final;
     InlineBox* firstSelectedBox() const;
     InlineBox* lastSelectedBox() const;
 

@@ -42,7 +42,7 @@ std::ostream& operator<<(std::ostream& ostream, const InlineBoxPosition& inlineB
 {
     if (!inlineBoxPosition.inlineBox)
         return ostream << "null";
-    return ostream << inlineBoxPosition.inlineBox->lineLayoutItem().node() << "@" << inlineBoxPosition.offsetInBox;
+    return ostream << inlineBoxPosition.inlineBox->getLineLayoutItem().node() << "@" << inlineBoxPosition.offsetInBox;
 }
 
 class VisibleUnitsTest : public EditingTestBase {
