@@ -192,6 +192,17 @@ String StylePropertySerializer::getCustomPropertyText(const PropertyValueForSeri
     return result.toString();
 }
 
+static String getApplyAtRuleText(const CSSValue* value, bool isNotFirstDecl)
+{
+    StringBuilder result;
+    if (isNotFirstDecl)
+        result.append(' ');
+    result.appendLiteral("@apply ");
+    result.append(toCSSCustomIdentValue(value)->value());
+    result.append(';');
+    return result.toString();
+}
+
 String StylePropertySerializer::getPropertyText(CSSPropertyID propertyID, const String& value, bool isImportant, bool isNotFirstDecl) const
 {
     StringBuilder result;
@@ -366,6 +377,9 @@ String StylePropertySerializer::asText() const
             continue;
         case CSSPropertyAll:
             result.append(getPropertyText(propertyID, property.value()->cssText(), property.isImportant(), numDecls++));
+            continue;
+        case CSSPropertyApplyAtRule:
+            result.append(getApplyAtRuleText(property.value(), numDecls++));
             continue;
         default:
             break;

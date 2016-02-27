@@ -32,12 +32,14 @@ private:
 
     // These return false if we encounter a reference to an invalid variable with no fallback
 
-    // Resolves a range which may contain var() references
+    // Resolves a range which may contain var() references or @apply rules
     bool resolveTokenRange(CSSParserTokenRange, Vector<CSSParserToken>& result);
     // Resolves the fallback (if present) of a var() reference, starting from the comma
     bool resolveFallback(CSSParserTokenRange, Vector<CSSParserToken>& result);
     // Resolves the contents of a var() reference
     bool resolveVariableReference(CSSParserTokenRange, Vector<CSSParserToken>& result);
+    // Consumes and resolves an @apply rule
+    void resolveApplyAtRule(CSSParserTokenRange&, Vector<CSSParserToken>& result);
 
     // These return null if the custom property is invalid
 

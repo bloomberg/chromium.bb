@@ -14,6 +14,7 @@
 namespace blink {
 
 class CSSParserObserver;
+class CSSParserTokenRange;
 class CSSSelectorList;
 class Element;
 class ImmutableStylePropertySet;
@@ -37,6 +38,7 @@ public:
     static bool parseValue(MutableStylePropertySet*, CSSPropertyID unresolvedProperty, const String&, bool important, StyleSheetContents*);
 
     static bool parseValueForCustomProperty(MutableStylePropertySet*, const AtomicString& propertyName, const String& value, bool important, StyleSheetContents*);
+    static PassRefPtrWillBeRawPtr<ImmutableStylePropertySet> parseCustomPropertySet(CSSParserTokenRange);
 
     // This is for non-shorthands only
     static PassRefPtrWillBeRawPtr<CSSValue> parseSingleValue(CSSPropertyID, const String&, const CSSParserContext& = strictCSSParserContext());

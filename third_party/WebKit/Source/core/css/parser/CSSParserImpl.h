@@ -51,6 +51,7 @@ public:
         AllowNamespaceRules,
         RegularRules,
         KeyframeRules,
+        ApplyRules, // For @apply inside style rules
         NoRules, // For parsing at-rules inside declaration lists
     };
 
@@ -61,6 +62,8 @@ public:
     static PassRefPtrWillBeRawPtr<StyleRuleBase> parseRule(const String&, const CSSParserContext&, StyleSheetContents*, AllowedRulesType);
     static void parseStyleSheet(const String&, const CSSParserContext&, StyleSheetContents*);
     static CSSSelectorList parsePageSelector(CSSParserTokenRange, StyleSheetContents*);
+
+    static PassRefPtrWillBeRawPtr<ImmutableStylePropertySet> parseCustomPropertySet(CSSParserTokenRange);
 
     static PassOwnPtr<Vector<double>> parseKeyframeKeyList(const String&);
 
@@ -93,6 +96,8 @@ private:
     PassRefPtrWillBeRawPtr<StyleRuleFontFace> consumeFontFaceRule(CSSParserTokenRange prelude, CSSParserTokenRange block);
     PassRefPtrWillBeRawPtr<StyleRuleKeyframes> consumeKeyframesRule(bool webkitPrefixed, CSSParserTokenRange prelude, CSSParserTokenRange block);
     PassRefPtrWillBeRawPtr<StyleRulePage> consumePageRule(CSSParserTokenRange prelude, CSSParserTokenRange block);
+    // Updates m_parsedProperties
+    void consumeApplyRule(CSSParserTokenRange prelude);
 
     PassRefPtrWillBeRawPtr<StyleRuleKeyframe> consumeKeyframeStyleRule(CSSParserTokenRange prelude, CSSParserTokenRange block);
     PassRefPtrWillBeRawPtr<StyleRule> consumeStyleRule(CSSParserTokenRange prelude, CSSParserTokenRange block);

@@ -89,6 +89,11 @@ bool CSSParser::parseValueForCustomProperty(MutableStylePropertySet* declaration
     return CSSParserImpl::parseVariableValue(declaration, propertyName, value, important, context);
 }
 
+PassRefPtrWillBeRawPtr<ImmutableStylePropertySet> CSSParser::parseCustomPropertySet(CSSParserTokenRange range)
+{
+    return CSSParserImpl::parseCustomPropertySet(range);
+}
+
 bool CSSParser::parseValue(MutableStylePropertySet* declaration, CSSPropertyID unresolvedProperty, const String& string, bool important, const CSSParserContext& context)
 {
     return CSSParserImpl::parseValue(declaration, unresolvedProperty, string, important, context);

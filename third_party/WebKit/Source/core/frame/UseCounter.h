@@ -1086,6 +1086,7 @@ public:
         ApplicationCacheManifestSelectSecureOrigin = 1246,
         ApplicationCacheAPIInsecureOrigin = 1247,
         ApplicationCacheAPISecureOrigin = 1248,
+        CSSAtRuleApply = 1249,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

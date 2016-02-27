@@ -24,6 +24,7 @@ enum CSSAtRuleID {
     CSSAtRuleViewport = 9,
 
     CSSAtRuleWebkitKeyframes = 10,
+    CSSAtRuleApply = 11,
 };
 
 CSSAtRuleID cssAtRuleID(const CSSParserString&);

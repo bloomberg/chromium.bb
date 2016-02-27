@@ -31,6 +31,8 @@ CSSAtRuleID cssAtRuleID(const CSSParserString& name)
         return CSSAtRuleViewport;
     if (name.equalIgnoringASCIICase("-webkit-keyframes"))
         return CSSAtRuleWebkitKeyframes;
+    if (name.equalIgnoringASCIICase("apply"))
+        return CSSAtRuleApply;
     return CSSAtRuleInvalid;
 }
 
@@ -70,6 +72,10 @@ void countAtRule(UseCounter* useCounter, CSSAtRuleID ruleId)
 
     case CSSAtRuleWebkitKeyframes:
         feature = UseCounter::CSSAtRuleWebkitKeyframes;
+        break;
+
+    case CSSAtRuleApply:
+        feature = UseCounter::CSSAtRuleApply;
         break;
 
     case CSSAtRuleInvalid:

@@ -84,6 +84,7 @@
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/layout/GeneratedChildren.h"
 #include "core/layout/LayoutView.h"
+#include "core/style/StyleVariableData.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGElement.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -1269,15 +1270,37 @@ void StyleResolver::applyAllProperty(StyleResolverState& state, CSSValue* allVal
 }
 
 template <CSSPropertyPriority priority>
+void StyleResolver::applyPropertiesForApplyAtRule(StyleResolverState& state, const CSSValue* value, bool isImportant, bool inheritedOnly, PropertyWhitelistType propertyWhitelistType)
+{
+    if (priority == ResolveVariables)
+        return;
+    if (!state.style()->variables())
+        return;
+    AtomicString name(toCSSCustomIdentValue(value)->value());
+    CSSVariableData* variableData = state.style()->variables()->getVariable(name);
+    if (!variableData)
+        return;
+    const StylePropertySet* propertySet = variableData->propertySet();
+    if (propertySet)
+        applyProperties<priority>(state, propertySet, isImportant, inheritedOnly, propertyWhitelistType);
+}
+
+template <CSSPropertyPriority priority>
 void StyleResolver::applyProperties(StyleResolverState& state, const StylePropertySet* properties, bool isImportant, bool inheritedOnly, PropertyWhitelistType propertyWhitelistType)
 {
     unsigned propertyCount = properties->propertyCount();
     for (unsigned i = 0; i < propertyCount; ++i) {
         StylePropertySet::PropertyReference current = properties->propertyAt(i);
+        CSSPropertyID property = current.id();
+
+        if (property == CSSPropertyApplyAtRule) {
+            applyPropertiesForApplyAtRule<priority>(state, current.value(), isImportant, inheritedOnly, propertyWhitelistType);
+            continue;
+        }
+
         if (isImportant != current.isImportant())
             continue;
 
-        CSSPropertyID property = current.id();
         if (property == CSSPropertyAll) {
             applyAllProperty<priority>(state, current.value(), inheritedOnly, propertyWhitelistType);
             continue;

@@ -4,6 +4,7 @@
 
 #include "core/css/parser/CSSParserImpl.h"
 
+#include "core/css/CSSCustomIdentValue.h"
 #include "core/css/CSSCustomPropertyDeclaration.h"
 #include "core/css/CSSKeyframesRule.h"
 #include "core/css/CSSStyleSheet.h"
@@ -75,6 +76,8 @@ static inline void filterProperties(bool important, const WillBeHeapVector<CSSPr
             if (seenCustomProperties.contains(name))
                 continue;
             seenCustomProperties.add(name);
+        } else if (property.id() == CSSPropertyApplyAtRule) {
+            // TODO(timloh): Do we need to do anything here?
         } else {
             if (seenProperties.get(propertyIDIndex))
                 continue;
@@ -224,6 +227,28 @@ CSSSelectorList CSSParserImpl::parsePageSelector(CSSParserTokenRange range, Styl
     return selectorList;
 }
 
+PassRefPtrWillBeRawPtr<ImmutableStylePropertySet> CSSParserImpl::parseCustomPropertySet(CSSParserTokenRange range)
+{
+    range.consumeWhitespace();
+    if (range.peek().type() != LeftBraceToken)
+        return nullptr;
+    CSSParserTokenRange block = range.consumeBlock();
+    range.consumeWhitespace();
+    if (!range.atEnd())
+        return nullptr;
+    CSSParserImpl parser(strictCSSParserContext());
+    parser.consumeDeclarationList(block, StyleRule::Style);
+
+    // Drop nested @apply rules. Seems nicer to do this here instead of making
+    // a different StyleRule type
+    for (size_t i = parser.m_parsedProperties.size(); i--; ) {
+        if (parser.m_parsedProperties[i].id() == CSSPropertyApplyAtRule)
+            parser.m_parsedProperties.remove(i);
+    }
+
+    return createStylePropertySet(parser.m_parsedProperties, HTMLStandardMode);
+}
+
 PassOwnPtr<Vector<double>> CSSParserImpl::parseKeyframeKeyList(const String& keyList)
 {
     return consumeKeyframeKeyList(CSSTokenizer::Scope(keyList).tokenRange());
@@ -349,14 +374,18 @@ PassRefPtrWillBeRawPtr<StyleRuleBase> CSSParserImpl::consumeAtRule(CSSParserToke
             return consumeImportRule(prelude);
         if (allowedRules <= AllowNamespaceRules && id == CSSAtRuleNamespace)
             return consumeNamespaceRule(prelude);
+        if (allowedRules == ApplyRules && id == CSSAtRuleApply) {
+            consumeApplyRule(prelude);
+            return nullptr; // consumeApplyRule just updates m_parsedProperties
+        }
         return nullptr; // Parse error, unrecognised at-rule without block
     }
 
     CSSParserTokenRange block = range.consumeBlock();
     if (allowedRules == KeyframeRules)
         return nullptr; // Parse error, no at-rules supported inside @keyframes
-    if (allowedRules == NoRules)
-        return nullptr; // Parse error, no at-rules supported inside declaration lists
+    if (allowedRules == NoRules || allowedRules == ApplyRules)
+        return nullptr; // Parse error, no at-rules with blocks supported inside declaration lists
 
     ASSERT(allowedRules <= RegularRules);
 
@@ -602,6 +631,19 @@ PassRefPtrWillBeRawPtr<StyleRulePage> CSSParserImpl::consumePageRule(CSSParserTo
     return StyleRulePage::create(std::move(selectorList), createStylePropertySet(m_parsedProperties, m_context.mode()));
 }
 
+void CSSParserImpl::consumeApplyRule(CSSParserTokenRange prelude)
+{
+    ASSERT(RuntimeEnabledFeatures::cssApplyAtRulesEnabled());
+
+    prelude.consumeWhitespace();
+    const CSSParserToken& ident = prelude.consumeIncludingWhitespace();
+    if (!prelude.atEnd() || !CSSVariableParser::isValidVariableName(ident))
+        return; // Parse error, expected a single custom property name
+    m_parsedProperties.append(CSSProperty(
+        CSSPropertyApplyAtRule,
+        CSSCustomIdentValue::create(ident.value())));
+}
+
 PassRefPtrWillBeRawPtr<StyleRuleKeyframe> CSSParserImpl::consumeKeyframeStyleRule(CSSParserTokenRange prelude, CSSParserTokenRange block)
 {
     OwnPtr<Vector<double>> keyList = consumeKeyframeKeyList(prelude);
@@ -684,7 +726,8 @@ void CSSParserImpl::consumeDeclarationList(CSSParserTokenRange range, StyleRule:
             break;
         }
         case AtKeywordToken: {
-            RefPtrWillBeRawPtr<StyleRuleBase> rule = consumeAtRule(range, NoRules);
+            AllowedRulesType allowedRules = ruleType == StyleRule::Style && RuntimeEnabledFeatures::cssApplyAtRulesEnabled() ? ApplyRules : NoRules;
+            RefPtrWillBeRawPtr<StyleRuleBase> rule = consumeAtRule(range, allowedRules);
             ASSERT_UNUSED(rule, !rule);
             break;
         }

@@ -47,6 +47,13 @@ bool classifyBlock(CSSParserTokenRange range, bool& hasReferences, bool isTopLev
 
         const CSSParserToken& token = range.consume();
         switch (token.type()) {
+        case AtKeywordToken: {
+            // This might have false positives if the @apply doesn't actually match
+            // the syntax, but that just means we do extra computation work.
+            if (token.valueEqualsIgnoringASCIICase("apply"))
+                hasReferences = true;
+            break;
+        }
         case DelimiterToken: {
             if (token.delimiter() == '!' && isTopLevelBlock)
                 return false;

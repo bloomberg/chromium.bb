@@ -155,6 +155,8 @@ String AbstractPropertySetCSSStyleDeclaration::item(unsigned i) const
     StylePropertySet::PropertyReference property = propertySet().propertyAt(i);
     if (RuntimeEnabledFeatures::cssVariablesEnabled() && property.id() == CSSPropertyVariable)
         return toCSSCustomPropertyDeclaration(property.value())->name();
+    if (property.id() == CSSPropertyApplyAtRule)
+        return "@apply";
     return getPropertyName(property.id());
 }
 

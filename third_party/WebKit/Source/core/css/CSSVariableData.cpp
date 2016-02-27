@@ -4,10 +4,21 @@
 
 #include "core/css/CSSVariableData.h"
 
+#include "core/css/parser/CSSParser.h"
 #include "core/css/parser/CSSParserTokenRange.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace blink {
+
+const StylePropertySet* CSSVariableData::propertySet()
+{
+    ASSERT(!m_needsVariableResolution);
+    if (!m_cachedPropertySet) {
+        m_propertySet = CSSParser::parseCustomPropertySet(m_tokens);
+        m_cachedPropertySet = true;
+    }
+    return m_propertySet.get();
+}
 
 template<typename CharacterType> void CSSVariableData::updateTokens(const CSSParserTokenRange& range)
 {
@@ -55,6 +66,7 @@ void CSSVariableData::consumeAndUpdateTokens(const CSSParserTokenRange& range)
 
 CSSVariableData::CSSVariableData(const CSSParserTokenRange& range, bool needsVariableResolution)
     : m_needsVariableResolution(needsVariableResolution)
+    , m_cachedPropertySet(false)
 {
     ASSERT(!range.atEnd());
     consumeAndUpdateTokens(range);

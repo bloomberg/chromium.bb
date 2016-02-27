@@ -564,6 +564,7 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
     case CSSPropertyColumnSpan: return 529;
     case CSSPropertyColumnWidth: return 530;
     case CSSPropertyColumns: return 531;
+    case CSSPropertyApplyAtRule: return 532;
 
     // 1. Add new features above this line (don't change the assigned numbers of the existing
     // items).
@@ -580,7 +581,7 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
     return 0;
 }
 
-static int maximumCSSSampleId() { return 531; }
+static int maximumCSSSampleId() { return 532; }
 
 static EnumerationHistogram& featureObserverHistogram()
 {

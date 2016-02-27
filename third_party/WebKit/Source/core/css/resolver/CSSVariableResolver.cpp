@@ -15,6 +15,7 @@
 #include "core/css/parser/CSSParserTokenRange.h"
 #include "core/css/parser/CSSParserValues.h"
 #include "core/css/parser/CSSPropertyParser.h"
+#include "core/css/parser/CSSVariableParser.h"
 #include "core/css/resolver/StyleBuilder.h"
 #include "core/css/resolver/StyleResolverState.h"
 #include "core/style/StyleVariableData.h"
@@ -87,6 +88,39 @@ bool CSSVariableResolver::resolveVariableReference(CSSParserTokenRange range, Ve
     return true;
 }
 
+void CSSVariableResolver::resolveApplyAtRule(CSSParserTokenRange& range,
+    Vector<CSSParserToken>& result)
+{
+    ASSERT(range.peek().type() == AtKeywordToken && range.peek().valueEqualsIgnoringASCIICase("apply"));
+    CSSParserTokenRange originalRange = range;
+
+    range.consumeIncludingWhitespace();
+    const CSSParserToken& variableName = range.consumeIncludingWhitespace();
+    if (!CSSVariableParser::isValidVariableName(variableName)
+        || !(range.atEnd() || range.peek().type() == SemicolonToken || range.peek().type() == RightBraceToken)) {
+        range = originalRange;
+        result.append(range.consume());
+        return;
+    }
+    if (range.peek().type() == SemicolonToken)
+        range.consume();
+
+    CSSVariableData* variableData = valueForCustomProperty(variableName.value());
+    if (!variableData)
+        return; // Invalid custom property
+
+    CSSParserTokenRange rule = variableData->tokenRange();
+    rule.consumeWhitespace();
+    if (rule.peek().type() != LeftBraceToken)
+        return;
+    CSSParserTokenRange ruleContents = rule.consumeBlock();
+    rule.consumeWhitespace();
+    if (!rule.atEnd())
+        return;
+
+    result.appendRange(ruleContents.begin(), ruleContents.end());
+}
+
 bool CSSVariableResolver::resolveTokenRange(CSSParserTokenRange range,
     Vector<CSSParserToken>& result)
 {
@@ -94,6 +128,9 @@ bool CSSVariableResolver::resolveTokenRange(CSSParserTokenRange range,
     while (!range.atEnd()) {
         if (range.peek().functionId() == CSSValueVar) {
             success &= resolveVariableReference(range.consumeBlock(), result);
+        } else if (range.peek().type() == AtKeywordToken && range.peek().valueEqualsIgnoringASCIICase("apply")
+            && RuntimeEnabledFeatures::cssApplyAtRulesEnabled()) {
+            resolveApplyAtRule(range, result);
         } else {
             result.append(range.consume());
         }
