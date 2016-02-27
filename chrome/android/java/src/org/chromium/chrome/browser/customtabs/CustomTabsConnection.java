@@ -100,6 +100,7 @@ public class CustomTabsConnection extends ICustomTabsService.Stub {
     protected final Application mApplication;
     private final boolean mLogRequests;
     private final AtomicBoolean mWarmupHasBeenCalled = new AtomicBoolean();
+    private final AtomicBoolean mWarmupHasBeenFinished = new AtomicBoolean();
     private final ClientManager mClientManager;
     private ExternalPrerenderHandler mExternalPrerenderHandler;
     private WebContents mSpareWebContents;
@@ -204,6 +205,13 @@ public class CustomTabsConnection extends ICustomTabsService.Stub {
     }
 
     /**
+     * @return Whether {@link CustomTabsConnection#warmup(long)} has been called.
+     */
+    public static boolean hasWarmUpBeenFinished(Application application) {
+        return getInstance(application).mWarmupHasBeenFinished.get();
+    }
+
+    /**
      * Starts as much as possible in anticipation of a future navigation.
      *
      * @param mayCreatesparewebcontents true if warmup() can create a spare renderer.
@@ -222,6 +230,7 @@ public class CustomTabsConnection extends ICustomTabsService.Stub {
                 if (mayCreateSpareWebContents && mPrerender == null && !SysUtils.isLowEndDevice()) {
                     createSpareWebContents();
                 }
+                mWarmupHasBeenFinished.set(true);
             }
         });
         return true;

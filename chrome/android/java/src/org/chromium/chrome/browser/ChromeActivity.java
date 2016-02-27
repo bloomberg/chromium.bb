@@ -254,6 +254,9 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         if (!Build.VERSION.CODENAME.equals("N")) {
             getWindow().setBackgroundDrawable(getBackgroundDrawable());
         }
+        mWindowAndroid = ((ChromeApplication) getApplicationContext())
+                .createActivityWindowAndroid(this);
+        mWindowAndroid.restoreInstanceState(getSavedInstanceState());
     }
 
     @SuppressLint("NewApi")
@@ -261,9 +264,6 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     public void postInflationStartup() {
         super.postInflationStartup();
 
-        mWindowAndroid = ((ChromeApplication) getApplicationContext())
-                .createActivityWindowAndroid(this);
-        mWindowAndroid.restoreInstanceState(getSavedInstanceState());
         mSnackbarManager = new SnackbarManager(getWindow());
         mDataUseSnackbarController = new DataUseSnackbarController(this, getSnackbarManager());
 
@@ -1469,7 +1469,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         return -1;
     }
 
-    private final void postDeferredStartupIfNeeded() {
+    protected final void postDeferredStartupIfNeeded() {
         if (!mDeferredStartupNotified) {
             // We want to perform deferred startup tasks a short time after the first page
             // load completes, but only when the main thread Looper has become idle.

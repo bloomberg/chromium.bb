@@ -1323,7 +1323,7 @@ public final class Tab implements ViewGroup.OnHierarchyChangeListener,
             // Attach the TabContentManager if we have one.  This will bind this Tab's content layer
             // to this manager.
             // TODO(dtrainor): Remove this and move to a pull model instead of pushing the layer.
-            nativeAttachToTabContentManager(mNativeTabAndroid, tabContentManager);
+            attachTabContentManager(tabContentManager);
 
             // If there is a frozen WebContents state or a pending lazy load, don't create a new
             // WebContents.
@@ -1373,7 +1373,7 @@ public final class Tab implements ViewGroup.OnHierarchyChangeListener,
         mContentViewCore.updateWindowAndroid(mWindowAndroid);
 
         // Update for the controllers that need the Compositor from the new Activity.
-        nativeAttachToTabContentManager(mNativeTabAndroid, activity.getTabContentManager());
+        attachTabContentManager(activity.getTabContentManager());
         mFullscreenManager = activity.getFullscreenManager();
         activity.getCompositorViewHolder().prepareForTabReparenting();
 
@@ -1385,6 +1385,15 @@ public final class Tab implements ViewGroup.OnHierarchyChangeListener,
         mTopControlsVisibilityDelegate = mDelegateFactory.createTopControlsVisibilityDelegate(this);
         setInterceptNavigationDelegate(mDelegateFactory.createInterceptNavigationDelegate(this));
         mAppBannerManager = mDelegateFactory.createAppBannerManager(this);
+    }
+
+    /**
+     * Attach the content layer for this tab to the given {@link TabContentManager}.
+     * @param tabContentManager {@link TabContentManager} to attach to.
+     */
+    public void attachTabContentManager(TabContentManager tabContentManager) {
+        if (tabContentManager == null) return;
+        nativeAttachToTabContentManager(mNativeTabAndroid, tabContentManager);
     }
 
     /**

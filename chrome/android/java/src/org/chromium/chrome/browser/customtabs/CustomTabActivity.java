@@ -48,7 +48,6 @@ import org.chromium.chrome.browser.tab.TabIdManager;
 import org.chromium.chrome.browser.tabmodel.AsyncTabParamsManager;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
-import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorImpl;
 import org.chromium.chrome.browser.tabmodel.TabReparentingParams;
@@ -59,6 +58,7 @@ import org.chromium.chrome.browser.widget.findinpage.FindToolbarManager;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.content_public.common.Referrer;
 import org.chromium.ui.base.PageTransition;
 
@@ -80,6 +80,7 @@ public class CustomTabActivity extends ChromeActivity {
     private CustomTabIntentDataProvider mIntentDataProvider;
     private IBinder mSession;
     private CustomTabContentHandler mCustomTabContentHandler;
+    private Tab mMainTab;
 
     // This is to give the right package name while using the client's resources during an
     // overridePendingTransition call.
@@ -89,23 +90,14 @@ public class CustomTabActivity extends ChromeActivity {
 
     private boolean mRecordedStartupUma;
     private boolean mShouldReplaceCurrentEntry;
+    private boolean mHasCreatedTabEarly;
     private CustomTabObserver mTabObserver;
 
     // Only the normal tab model is observed because there is no icognito tabmodel in Custom Tabs.
     private TabModelObserver mTabModelObserver = new EmptyTabModelObserver() {
         @Override
         public void didAddTab(Tab tab, TabLaunchType type) {
-            if (mTabObserver == null) {
-                mTabObserver = new CustomTabObserver(getApplication(), mSession);
-            }
             tab.addObserver(mTabObserver);
-        }
-
-        @Override
-        public void didSelectTab(Tab tab, TabSelectionType type, int lastId) {
-            // TODO(ianwen): If the user selects an background tab by keyboard
-            // shortcuts, close all tabs that are above the selected tab.
-            // http://crbug.com/500058
         }
     };
 
@@ -185,7 +177,14 @@ public class CustomTabActivity extends ChromeActivity {
     public void preInflationStartup() {
         super.preInflationStartup();
         mIntentDataProvider = new CustomTabIntentDataProvider(getIntent(), this);
+        mSession = mIntentDataProvider.getSession();
         supportRequestWindowFeature(Window.FEATURE_ACTION_MODE_OVERLAY);
+        if (CustomTabsConnection.hasWarmUpBeenFinished(getApplication())) {
+            mMainTab = createMainTab();
+            loadUrlInTab(mMainTab, new LoadUrlParams(IntentHandler.getUrlFromIntent(getIntent())),
+                    IntentHandler.getTimestampFromIntent(getIntent()));
+            mHasCreatedTabEarly = true;
+        }
     }
 
     @Override
@@ -212,16 +211,21 @@ public class CustomTabActivity extends ChromeActivity {
 
     @Override
     public void finishNativeInitialization() {
-        mSession = mIntentDataProvider.getSession();
         CustomTabsConnection connection = CustomTabsConnection.getInstance(getApplication());
         // If extra headers have been passed, cancel any current prerender, as
         // prerendering doesn't support extra headers.
         if (IntentHandler.getExtraHeadersFromIntent(getIntent()) != null) {
             connection.cancelPrerender(mSession);
         }
-        Tab mainTab = createMainTab();
+        if (mHasCreatedTabEarly) {
+            // When the tab is created early, we don't have the TabContentManager connected, since
+            // compositor related controllers were not initialized at that point.
+            mMainTab.attachTabContentManager(getTabContentManager());
+        } else {
+            mMainTab = createMainTab();
+        }
         getTabModelSelector().getModel(false).addObserver(mTabModelObserver);
-        getTabModelSelector().getModel(false).addTab(mainTab, 0, mainTab.getLaunchType());
+        getTabModelSelector().getModel(false).addTab(mMainTab, 0, mMainTab.getLaunchType());
 
         ToolbarControlContainer controlContainer = (ToolbarControlContainer) findViewById(
                 R.id.control_container);
@@ -246,11 +250,11 @@ public class CustomTabActivity extends ChromeActivity {
                     }
                 });
 
-        mainTab.setFullscreenManager(getFullscreenManager());
+        mMainTab.setFullscreenManager(getFullscreenManager());
         mCustomTabContentHandler = new CustomTabContentHandler() {
             @Override
             public void loadUrlAndTrackFromTimestamp(LoadUrlParams params, long timestamp) {
-                loadUrlInCurrentTab(params, timestamp);
+                loadUrlInTab(getActivityTab(), params, timestamp);
             }
 
             @Override
@@ -280,13 +284,17 @@ public class CustomTabActivity extends ChromeActivity {
                 return true;
             }
         };
-        DataUseTabUIManager.onCustomTabInitialNavigation(mainTab,
+        DataUseTabUIManager.onCustomTabInitialNavigation(mMainTab,
                 connection.getClientPackageNameForSession(mSession),
                 IntentHandler.getUrlFromIntent(getIntent()));
         recordClientPackageName();
         connection.showSignInToastIfNecessary(mSession, getIntent());
-        loadUrlInCurrentTab(new LoadUrlParams(IntentHandler.getUrlFromIntent(getIntent())),
-                IntentHandler.getTimestampFromIntent(getIntent()));
+        if (mHasCreatedTabEarly) {
+            if (!mMainTab.isLoading()) postDeferredStartupIfNeeded();
+        } else {
+            loadUrlInTab(mMainTab, new LoadUrlParams(IntentHandler.getUrlFromIntent(getIntent())),
+                    IntentHandler.getTimestampFromIntent(getIntent()));
+        }
         super.finishNativeInitialization();
     }
 
@@ -320,6 +328,8 @@ public class CustomTabActivity extends ChromeActivity {
                 false);
         tab.getTabRedirectHandler().updateIntent(getIntent());
         tab.getView().requestFocus();
+        mTabObserver = new CustomTabObserver(getApplication(), mSession);
+        tab.addObserver(mTabObserver);
         return tab;
     }
 
@@ -375,7 +385,7 @@ public class CustomTabActivity extends ChromeActivity {
      * Loads the current tab with the given load params while taking client
      * referrer and extra headers into account.
      */
-    void loadUrlInCurrentTab(LoadUrlParams params, long timeStamp) {
+    private void loadUrlInTab(final Tab tab, final LoadUrlParams params, long timeStamp) {
         Intent intent = getIntent();
         IntentHandler.addReferrerAndHeaders(params, intent, this);
         if (params.getReferrer() == null) {
@@ -387,8 +397,24 @@ public class CustomTabActivity extends ChromeActivity {
         params.setTransitionType(PageTransition.LINK | PageTransition.FROM_API);
         mTabObserver.trackNextPageLoadFromTimestamp(timeStamp);
         if (mShouldReplaceCurrentEntry) params.setShouldReplaceCurrentEntry(true);
+        if (mShouldReplaceCurrentEntry
+                && tab.getWebContents().getNavigationController().getEntryAtIndex(0)
+                == null) {
+            // If the spare web contents has gotten a loadurl but has not committed yet, wait
+            // until commit to start the actual load.
+            tab.getWebContents().addObserver(new WebContentsObserver() {
+                @Override
+                public void didCommitProvisionalLoadForFrame(long frameId, boolean isMainFrame,
+                        String url, int transitionType) {
+                    if (!isMainFrame) return;
+                    tab.loadUrl(params);
+                    tab.getWebContents().removeObserver(this);
+                }
+            });
+        } else {
+            tab.loadUrl(params);
+        }
         mShouldReplaceCurrentEntry = false;
-        getActivityTab().loadUrl(params);
     }
 
     @Override
@@ -400,6 +426,13 @@ public class CustomTabActivity extends ChromeActivity {
     @Override
     public TabModelSelectorImpl getTabModelSelector() {
         return (TabModelSelectorImpl) super.getTabModelSelector();
+    }
+
+    @Override
+    public Tab getActivityTab() {
+        Tab tab = super.getActivityTab();
+        if (tab == null) tab = mMainTab;
+        return tab;
     }
 
     @Override
@@ -668,6 +701,7 @@ public class CustomTabActivity extends ChromeActivity {
             // onDestroy when finish() gets called. Find a way to do this properly without confusing
             // the TabModel and without hiding the tab. crbug.com/590278
             getCurrentTabModel().removeTab(getActivityTab());
+            mMainTab = null;
             tab.getContentViewCore().updateWindowAndroid(null);
 
             Runnable finalizeCallback = new Runnable() {
