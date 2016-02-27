@@ -548,13 +548,13 @@ bool QuicSentPacketManager::OnPacketSent(
     SerializedPacket* serialized_packet,
     QuicPacketNumber original_packet_number,
     QuicTime sent_time,
-    QuicByteCount bytes,
     TransmissionType transmission_type,
     HasRetransmittableData has_retransmittable_data) {
   QuicPacketNumber packet_number = serialized_packet->packet_number;
   DCHECK_LT(0u, packet_number);
   DCHECK(!unacked_packets_.IsUnacked(packet_number));
-  QUIC_BUG_IF(bytes == 0) << "Cannot send empty packets.";
+  QUIC_BUG_IF(serialized_packet->encrypted_length == 0)
+      << "Cannot send empty packets.";
 
   if (delegate_ == nullptr && original_packet_number != 0) {
     if (!pending_retransmissions_.erase(original_packet_number)) {
@@ -576,12 +576,11 @@ bool QuicSentPacketManager::OnPacketSent(
                                        : has_retransmittable_data;
   // TODO(ianswett): Remove sent_time, because it's unused.
   const bool in_flight = send_algorithm_->OnPacketSent(
-      sent_time, unacked_packets_.bytes_in_flight(), packet_number, bytes,
-      has_congestion_controlled_data);
+      sent_time, unacked_packets_.bytes_in_flight(), packet_number,
+      serialized_packet->encrypted_length, has_congestion_controlled_data);
 
   unacked_packets_.AddSentPacket(serialized_packet, original_packet_number,
-                                 transmission_type, sent_time, bytes,
-                                 in_flight);
+                                 transmission_type, sent_time, in_flight);
   // Reset the retransmission timer anytime a pending packet is sent.
   return in_flight;
 }

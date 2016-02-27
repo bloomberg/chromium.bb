@@ -185,8 +185,7 @@ class QuicSentPacketManagerTest : public ::testing::TestWithParam<bool> {
         .WillOnce(Return(true));
     SerializedPacket packet(CreatePacket(new_packet_number, false));
     manager_.OnPacketSent(&packet, old_packet_number, clock_.Now(),
-                          kDefaultLength, TLP_RETRANSMISSION,
-                          HAS_RETRANSMITTABLE_DATA);
+                          TLP_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA);
     EXPECT_TRUE(QuicSentPacketManagerPeer::IsRetransmission(&manager_,
                                                             new_packet_number));
   }
@@ -221,8 +220,8 @@ class QuicSentPacketManagerTest : public ::testing::TestWithParam<bool> {
         .Times(1)
         .WillOnce(Return(true));
     SerializedPacket packet(CreateDataPacket(packet_number));
-    manager_.OnPacketSent(&packet, 0, clock_.Now(), packet.encrypted_length,
-                          NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA);
+    manager_.OnPacketSent(&packet, 0, clock_.Now(), NOT_RETRANSMISSION,
+                          HAS_RETRANSMITTABLE_DATA);
   }
 
   void SendCryptoPacket(QuicPacketNumber packet_number) {
@@ -235,8 +234,8 @@ class QuicSentPacketManagerTest : public ::testing::TestWithParam<bool> {
     packet.retransmittable_frames.push_back(
         QuicFrame(new QuicStreamFrame(1, false, 0, StringPiece())));
     packet.has_crypto_handshake = IS_HANDSHAKE;
-    manager_.OnPacketSent(&packet, 0, clock_.Now(), packet.encrypted_length,
-                          NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA);
+    manager_.OnPacketSent(&packet, 0, clock_.Now(), NOT_RETRANSMISSION,
+                          HAS_RETRANSMITTABLE_DATA);
   }
 
   void SendFecPacket(QuicPacketNumber packet_number) {
@@ -246,8 +245,8 @@ class QuicSentPacketManagerTest : public ::testing::TestWithParam<bool> {
         .Times(1)
         .WillOnce(Return(true));
     SerializedPacket packet(CreateFecPacket(packet_number));
-    manager_.OnPacketSent(&packet, 0, clock_.Now(), packet.encrypted_length,
-                          NOT_RETRANSMISSION, NO_RETRANSMITTABLE_DATA);
+    manager_.OnPacketSent(&packet, 0, clock_.Now(), NOT_RETRANSMISSION,
+                          NO_RETRANSMITTABLE_DATA);
   }
 
   void SendAckPacket(QuicPacketNumber packet_number) {
@@ -257,8 +256,8 @@ class QuicSentPacketManagerTest : public ::testing::TestWithParam<bool> {
         .Times(1)
         .WillOnce(Return(false));
     SerializedPacket packet(CreatePacket(packet_number, false));
-    manager_.OnPacketSent(&packet, 0, clock_.Now(), packet.encrypted_length,
-                          NOT_RETRANSMISSION, NO_RETRANSMITTABLE_DATA);
+    manager_.OnPacketSent(&packet, 0, clock_.Now(), NOT_RETRANSMISSION,
+                          NO_RETRANSMITTABLE_DATA);
   }
 
   // Based on QuicConnection's WritePendingRetransmissions.
@@ -272,8 +271,7 @@ class QuicSentPacketManagerTest : public ::testing::TestWithParam<bool> {
     const PendingRetransmission pending = manager_.NextPendingRetransmission();
     SerializedPacket packet(CreatePacket(retransmission_packet_number, false));
     manager_.OnPacketSent(&packet, pending.packet_number, clock_.Now(),
-                          kDefaultLength, pending.transmission_type,
-                          HAS_RETRANSMITTABLE_DATA);
+                          pending.transmission_type, HAS_RETRANSMITTABLE_DATA);
   }
 
   QuicSentPacketManager manager_;
@@ -1654,11 +1652,12 @@ TEST_F(QuicSentPacketManagerTest,
         .WillOnce(Return(QuicTime::Delta::Zero()));
     EXPECT_EQ(QuicTime::Delta::Zero(),
               manager_.TimeUntilSend(clock_.Now(), HAS_RETRANSMITTABLE_DATA));
-    EXPECT_CALL(*send_algorithm_, OnPacketSent(_, BytesInFlight(), i, 1024,
-                                               HAS_RETRANSMITTABLE_DATA))
+    EXPECT_CALL(*send_algorithm_,
+                OnPacketSent(_, BytesInFlight(), i, kDefaultLength,
+                             HAS_RETRANSMITTABLE_DATA))
         .WillOnce(Return(true));
     SerializedPacket packet(CreatePacket(i, true));
-    manager_.OnPacketSent(&packet, 0, clock_.Now(), 1024, NOT_RETRANSMISSION,
+    manager_.OnPacketSent(&packet, 0, clock_.Now(), NOT_RETRANSMISSION,
                           HAS_RETRANSMITTABLE_DATA);
   }
   EXPECT_CALL(*send_algorithm_, TimeUntilSend(_, _, _))
@@ -1677,11 +1676,12 @@ TEST_F(QuicSentPacketManagerTest, ReceiveWindowLimited) {
         .WillOnce(Return(QuicTime::Delta::Zero()));
     EXPECT_EQ(QuicTime::Delta::Zero(),
               manager_.TimeUntilSend(clock_.Now(), HAS_RETRANSMITTABLE_DATA));
-    EXPECT_CALL(*send_algorithm_, OnPacketSent(_, BytesInFlight(), i, 1024,
-                                               HAS_RETRANSMITTABLE_DATA))
+    EXPECT_CALL(*send_algorithm_,
+                OnPacketSent(_, BytesInFlight(), i, kDefaultLength,
+                             HAS_RETRANSMITTABLE_DATA))
         .WillOnce(Return(true));
     SerializedPacket packet(CreatePacket(i, true));
-    manager_.OnPacketSent(&packet, 0, clock_.Now(), 1024, NOT_RETRANSMISSION,
+    manager_.OnPacketSent(&packet, 0, clock_.Now(), NOT_RETRANSMISSION,
                           HAS_RETRANSMITTABLE_DATA);
   }
   EXPECT_CALL(*send_algorithm_, TimeUntilSend(_, _, _))

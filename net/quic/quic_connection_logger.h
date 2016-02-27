@@ -47,7 +47,6 @@ class NET_EXPORT_PRIVATE QuicConnectionLogger
   void OnPacketSent(const SerializedPacket& serialized_packet,
                     QuicPacketNumber original_packet_number,
                     TransmissionType transmission_type,
-                    size_t encrypted_length,
                     QuicTime sent_time) override;
   void OnPacketReceived(const IPEndPoint& self_address,
                         const IPEndPoint& peer_address,

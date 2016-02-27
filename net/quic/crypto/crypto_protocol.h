@@ -129,6 +129,7 @@ const QuicTag kCHID = TAG('C', 'H', 'I', 'D');   // Channel ID.
 // Client hello tags
 const QuicTag kVER  = TAG('V', 'E', 'R', '\0');  // Version
 const QuicTag kNONC = TAG('N', 'O', 'N', 'C');   // The client's nonce
+const QuicTag kNONP = TAG('N', 'O', 'N', 'P');   // The client's proof nonce
 const QuicTag kKEXS = TAG('K', 'E', 'X', 'S');   // Key exchange methods
 const QuicTag kAEAD = TAG('A', 'E', 'A', 'D');   // Authenticated
                                                  // encryption algorithms

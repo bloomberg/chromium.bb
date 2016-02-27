@@ -300,7 +300,7 @@ void PacketSavingConnection::SendOrQueuePacket(SerializedPacket* packet) {
       QuicUtils::CopyBuffer(*packet), packet->encrypted_length, true));
   // Transfer ownership of the packet to the SentPacketManager and the
   // ack notifier to the AckNotifierManager.
-  sent_packet_manager_.OnPacketSent(packet, 0, QuicTime::Zero(), 1000,
+  sent_packet_manager_.OnPacketSent(packet, 0, QuicTime::Zero(),
                                     NOT_RETRANSMISSION,
                                     HAS_RETRANSMITTABLE_DATA);
 }

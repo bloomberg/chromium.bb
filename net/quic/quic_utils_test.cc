@@ -175,19 +175,7 @@ uint128 IncrementalHashReference(const void* data, size_t len) {
   return hash;
 }
 
-TEST(QuicUtilsHashTest, ReferenceTestSlow) {
-  FLAGS_quic_utils_use_fast_incremental_hash = false;
-  std::vector<uint8_t> data(32);
-  for (size_t i = 0; i < data.size(); ++i) {
-    data[i] = i % 255;
-  }
-  EXPECT_EQ(IncrementalHashReference(data.data(), data.size()),
-            QuicUtils::FNV1a_128_Hash(
-                reinterpret_cast<const char*>(data.data()), data.size()));
-}
-
-TEST(QuicUtilsHashTest, ReferenceTestFast) {
-  FLAGS_quic_utils_use_fast_incremental_hash = true;
+TEST(QuicUtilsHashTest, ReferenceTest) {
   std::vector<uint8_t> data(32);
   for (size_t i = 0; i < data.size(); ++i) {
     data[i] = i % 255;

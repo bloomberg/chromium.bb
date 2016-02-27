@@ -532,11 +532,7 @@ void QuicCryptoServerConfig::ValidateClientHello(
 
     requested_config = GetConfigWithScid(requested_scid);
     primary_config = primary_config_;
-    if (FLAGS_quic_crypto_proof_use_ref) {
-      crypto_proof->config = primary_config_;
-    } else {
-      crypto_proof->primary_scid = primary_config->id;
-    }
+    crypto_proof->config = primary_config_;
   }
 
   if (result->error_code == QUIC_NO_ERROR) {
@@ -596,17 +592,7 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
 
     // Use the config that the client requested in order to do key-agreement.
     // Otherwise give it a copy of |primary_config_| to use.
-    if (FLAGS_quic_crypto_proof_use_ref) {
-      primary_config = crypto_proof->config;
-    } else {
-      primary_config = GetConfigWithScid(crypto_proof->primary_scid);
-    }
-    if (!primary_config) {
-      *error_details = "Configuration not found";
-      QUIC_BUG << "Primary config not found";
-      return QUIC_CRYPTO_INTERNAL_ERROR;
-    }
-
+    primary_config = crypto_proof->config;
     requested_config = GetConfigWithScid(requested_scid);
   }
 

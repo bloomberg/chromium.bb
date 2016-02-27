@@ -292,8 +292,6 @@ TEST_P(QuicCryptoServerStreamTest, ConnectedAfterStatelessHandshake) {
 
   InitializeFakeClient(/* supports_stateless_rejects= */ true);
 
-  client_stream()->CryptoConnect();
-
   // In the stateless case, the second handshake contains a server-nonce, so the
   // AsyncStrikeRegisterVerification() case will still succeed (unlike a 0-RTT
   // handshake).
@@ -302,7 +300,7 @@ TEST_P(QuicCryptoServerStreamTest, ConnectedAfterStatelessHandshake) {
   // On the second round, encryption will be established.
   EXPECT_TRUE(server_stream()->encryption_established());
   EXPECT_TRUE(server_stream()->handshake_confirmed());
-  EXPECT_EQ(2, server_stream()->NumHandshakeMessages());
+  EXPECT_EQ(1, server_stream()->NumHandshakeMessages());
   EXPECT_EQ(1, server_stream()->NumHandshakeMessagesWithServerNonces());
 }
 
@@ -485,7 +483,6 @@ TEST_P(QuicCryptoServerStreamTest, NoTokenBindingWithoutClientSupport) {
 TEST_P(QuicCryptoServerStreamTest, CancelRPCBeforeVerificationCompletes) {
   // Tests that the client can close the connection while the remote strike
   // register verification RPC is still pending.
-  ValueRestore<bool> old_flag(&FLAGS_quic_set_client_hello_cb_nullptr, true);
 
   // Set version to QUIC_VERSION_25 as QUIC_VERSION_26 and later don't support
   // asynchronous strike register RPCs.

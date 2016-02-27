@@ -39,7 +39,7 @@ class GeneralLossAlgorithmTest : public ::testing::Test {
                             0, false, false);
     packet.retransmittable_frames.push_back(QuicFrame(frame));
     unacked_packets_.AddSentPacket(&packet, 0, NOT_RETRANSMISSION, clock_.Now(),
-                                   1000, true);
+                                   true);
   }
 
   void VerifyLosses(QuicPacketNumber largest_observed,

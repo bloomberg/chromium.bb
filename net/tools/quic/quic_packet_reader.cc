@@ -37,22 +37,22 @@ QuicPacketReader::QuicPacketReader() {
 void QuicPacketReader::Initialize() {
 #if MMSG_MORE
   // Zero initialize uninitialized memory.
-  memset(cbuf_, 0, arraysize(cbuf_));
-  memset(buf_, 0, arraysize(buf_));
-  memset(raw_address_, 0, sizeof(raw_address_));
   memset(mmsg_hdr_, 0, sizeof(mmsg_hdr_));
 
   for (int i = 0; i < kNumPacketsPerReadMmsgCall; ++i) {
-    iov_[i].iov_base = buf_ + (kMaxPacketSize * i);
-    iov_[i].iov_len = kMaxPacketSize;
+    packets_[i].iov.iov_base = packets_[i].buf;
+    packets_[i].iov.iov_len = kMaxPacketSize;
+    memset(&packets_[i].raw_address, 0, sizeof(packets_[i].raw_address));
+    memset(packets_[i].cbuf, 0, sizeof(packets_[i].cbuf));
+    memset(packets_[i].buf, 0, sizeof(packets_[i].buf));
 
     msghdr* hdr = &mmsg_hdr_[i].msg_hdr;
-    hdr->msg_name = &raw_address_[i];
+    hdr->msg_name = &packets_[i].raw_address;
     hdr->msg_namelen = sizeof(sockaddr_storage);
-    hdr->msg_iov = &iov_[i];
+    hdr->msg_iov = &packets_[i].iov;
     hdr->msg_iovlen = 1;
 
-    hdr->msg_control = cbuf_ + kSpaceForOverflowAndIp * i;
+    hdr->msg_control = packets_[i].cbuf;
     hdr->msg_controllen = kSpaceForOverflowAndIp;
   }
 #endif
@@ -70,11 +70,10 @@ bool QuicPacketReader::ReadAndDispatchPackets(
 #if MMSG_MORE
   // Re-set the length fields in case recvmmsg has changed them.
   for (int i = 0; i < kNumPacketsPerReadMmsgCall; ++i) {
-    iov_[i].iov_len = kMaxPacketSize;
-    mmsg_hdr_[i].msg_len = 0;
+    DCHECK_EQ(kMaxPacketSize, packets_[i].iov.iov_len);
     msghdr* hdr = &mmsg_hdr_[i].msg_hdr;
     hdr->msg_namelen = sizeof(sockaddr_storage);
-    hdr->msg_iovlen = 1;
+    DCHECK_EQ(1, hdr->msg_iovlen);
     hdr->msg_controllen = kSpaceForOverflowAndIp;
   }
 
@@ -90,7 +89,7 @@ bool QuicPacketReader::ReadAndDispatchPackets(
       continue;
     }
 
-    IPEndPoint client_address = IPEndPoint(raw_address_[i]);
+    IPEndPoint client_address = IPEndPoint(packets_[i].raw_address);
     IPAddressNumber server_ip =
         QuicSocketUtils::GetAddressFromMsghdr(&mmsg_hdr_[i].msg_hdr);
     if (!IsInitializedAddress(server_ip)) {
@@ -98,8 +97,9 @@ bool QuicPacketReader::ReadAndDispatchPackets(
       continue;
     }
 
-    QuicEncryptedPacket packet(reinterpret_cast<char*>(iov_[i].iov_base),
-                               mmsg_hdr_[i].msg_len, false);
+    QuicEncryptedPacket packet(
+        reinterpret_cast<char*>(packets_[i].iov.iov_base), mmsg_hdr_[i].msg_len,
+        false);
     IPEndPoint server_address(server_ip, port);
     processor->ProcessPacket(server_address, client_address, packet);
   }

@@ -644,8 +644,7 @@ bool QuicConnection::OnUnauthenticatedHeader(const QuicPacketHeader& header) {
 
   // If this packet has already been seen, or the sender has told us that it
   // will not be retransmitted, then stop processing the packet.
-  if (FLAGS_quic_drop_non_awaited_packets &&
-      !received_packet_manager_.IsAwaitingPacket(header.packet_number)) {
+  if (!received_packet_manager_.IsAwaitingPacket(header.packet_number)) {
     DVLOG(1) << ENDPOINT << "Packet " << header.packet_number
              << " no longer being waited for.  Discarding.";
     if (debug_visitor_ != nullptr) {
@@ -706,8 +705,10 @@ bool QuicConnection::OnStreamFrame(const QuicStreamFrame& frame) {
   }
   if (frame.stream_id != kCryptoStreamId &&
       last_decrypted_packet_level_ == ENCRYPTION_NONE) {
-    DLOG(WARNING) << ENDPOINT
-                  << "Received an unencrypted data frame: closing connection";
+    QUIC_BUG << ENDPOINT
+             << "Received an unencrypted data frame: closing connection"
+             << " packet_number:" << last_header_.packet_number
+             << " received_packets:" << received_packet_manager_.ack_frame();
     SendConnectionCloseWithDetails(QUIC_UNENCRYPTED_STREAM_DATA,
                                    "Unencrypted stream data seen");
     return false;
@@ -1412,18 +1413,6 @@ bool QuicConnection::ProcessValidatedPacket(const QuicPacketHeader& header) {
     return false;
   }
 
-  // If this packet has already been seen, or the sender has told us that it
-  // will not be retransmitted, then stop processing the packet.
-  if (!FLAGS_quic_drop_non_awaited_packets &&
-      !received_packet_manager_.IsAwaitingPacket(header.packet_number)) {
-    DVLOG(1) << ENDPOINT << "Packet " << header.packet_number
-             << " no longer being waited for.  Discarding.";
-    if (debug_visitor_ != nullptr) {
-      debug_visitor_->OnDuplicatePacket(header.packet_number);
-    }
-    return false;
-  }
-
   if (version_negotiation_state_ != NEGOTIATED_VERSION) {
     if (perspective_ == Perspective::IS_SERVER) {
       if (!header.public_header.version_flag) {
@@ -1664,8 +1653,7 @@ bool QuicConnection::WritePacket(SerializedPacket* packet) {
   if (result.status != WRITE_STATUS_ERROR && debug_visitor_ != nullptr) {
     // Pass the write result to the visitor.
     debug_visitor_->OnPacketSent(*packet, packet->original_packet_number,
-                                 packet->transmission_type, encrypted_length,
-                                 packet_send_time);
+                                 packet->transmission_type, packet_send_time);
   }
   if (packet->transmission_type == NOT_RETRANSMISSION) {
     time_of_last_sent_new_packet_ = packet_send_time;
@@ -1689,7 +1677,7 @@ bool QuicConnection::WritePacket(SerializedPacket* packet) {
 
   bool reset_retransmission_alarm = sent_packet_manager_.OnPacketSent(
       packet, packet->original_packet_number, packet_send_time,
-      encrypted_length, packet->transmission_type, IsRetransmittable(*packet));
+      packet->transmission_type, IsRetransmittable(*packet));
 
   if (reset_retransmission_alarm || !retransmission_alarm_->IsSet()) {
     SetRetransmissionAlarm();
@@ -2025,8 +2013,7 @@ void QuicConnection::MaybeProcessRevivedPacket() {
 QuicFecGroup* QuicConnection::GetFecGroup() {
   QuicFecGroupNumber fec_group_num = last_header_.fec_group;
   if (fec_group_num == 0 ||
-      (FLAGS_quic_drop_non_awaited_packets &&
-       fec_group_num <
+      (fec_group_num <
            received_packet_manager_.peer_least_packet_awaiting_ack() &&
        !ContainsKey(group_map_, fec_group_num))) {
     // If the group number is below peer_least_packet_awaiting_ack and this
@@ -2129,9 +2116,7 @@ void QuicConnection::CloseFecGroupsBefore(QuicPacketNumber packet_number) {
   FecGroupMap::iterator it = group_map_.begin();
   while (it != group_map_.end()) {
     // If the group doesn't protect this packet we can ignore it.
-    if ((!FLAGS_quic_drop_non_awaited_packets &&
-         last_header_.fec_group == it->first) ||
-        !it->second->IsWaitingForPacketBefore(packet_number)) {
+    if (!it->second->IsWaitingForPacketBefore(packet_number)) {
       ++it;
       continue;
     }

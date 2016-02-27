@@ -179,7 +179,6 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   virtual bool OnPacketSent(SerializedPacket* serialized_packet,
                             QuicPacketNumber original_packet_number,
                             QuicTime sent_time,
-                            QuicByteCount bytes,
                             TransmissionType transmission_type,
                             HasRetransmittableData has_retransmittable_data);
 

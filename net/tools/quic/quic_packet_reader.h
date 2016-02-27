@@ -61,18 +61,23 @@ class QuicPacketReader {
   // Storage only used when recvmmsg is available.
 
 #if MMSG_MORE
-  // cbuf_ is used for ancillary data from the kernel on recvmmsg.
-  char cbuf_[kSpaceForOverflowAndIp * kNumPacketsPerReadMmsgCall];
-  // buf_ is used for the data read from the kernel on recvmmsg.
   // TODO(danzh): change it to be a pointer to avoid the allocation on the stack
   // from exceeding maximum allowed frame size.
-  char buf_[kMaxPacketSize * kNumPacketsPerReadMmsgCall];
-  // iov_ and mmsg_hdr_ are used to supply cbuf and buf to the recvmmsg call.
-  iovec iov_[kNumPacketsPerReadMmsgCall];
+  // packets_ and mmsg_hdr_ are used to supply cbuf and buf to the recvmmsg
+  // call.
+
+  struct PacketData {
+    iovec iov;
+    // raw_address is used for address information provided by the recvmmsg
+    // call on the packets.
+    struct sockaddr_storage raw_address;
+    // cbuf is used for ancillary data from the kernel on recvmmsg.
+    char cbuf[kSpaceForOverflowAndIp];
+    // buf is used for the data read from the kernel on recvmmsg.
+    char buf[kMaxPacketSize];
+  };
+  PacketData packets_[kNumPacketsPerReadMmsgCall];
   mmsghdr mmsg_hdr_[kNumPacketsPerReadMmsgCall];
-  // raw_address_ is used for address information provided by the recvmmsg
-  // call on the packets.
-  struct sockaddr_storage raw_address_[kNumPacketsPerReadMmsgCall];
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(QuicPacketReader);

@@ -35,9 +35,9 @@ void QuicUnackedPacketMap::AddSentPacket(SerializedPacket* packet,
                                          QuicPacketNumber old_packet_number,
                                          TransmissionType transmission_type,
                                          QuicTime sent_time,
-                                         QuicByteCount bytes_sent,
                                          bool set_in_flight) {
   QuicPacketNumber packet_number = packet->packet_number;
+  QuicPacketLength bytes_sent = packet->encrypted_length;
   QUIC_BUG_IF(largest_sent_packet_ >= packet_number) << packet_number;
   DCHECK_GE(packet_number, least_unacked_ + unacked_packets_.size());
   while (least_unacked_ + unacked_packets_.size() < packet_number) {

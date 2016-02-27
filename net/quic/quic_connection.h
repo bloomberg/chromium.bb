@@ -169,7 +169,6 @@ class NET_EXPORT_PRIVATE QuicConnectionDebugVisitor
   virtual void OnPacketSent(const SerializedPacket& serialized_packet,
                             QuicPacketNumber original_packet_number,
                             TransmissionType transmission_type,
-                            size_t encrypted_length,
                             QuicTime sent_time) {}
 
   // Called when a packet has been received, but before it is

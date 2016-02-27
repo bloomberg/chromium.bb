@@ -153,6 +153,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
 
   // QuicSession methods:
   void OnStreamFrame(const QuicStreamFrame& frame) override;
+  bool ShouldCreateOutgoingDynamicStream();
   QuicChromiumClientStream* CreateOutgoingDynamicStream(
       SpdyPriority priority) override;
   QuicCryptoClientStream* GetCryptoStream() override;

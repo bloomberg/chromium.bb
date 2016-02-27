@@ -74,7 +74,12 @@ class QuicClientSession : public QuicClientSessionBase {
   QuicCryptoClientConfig* crypto_config() { return crypto_config_; }
 
  private:
+  // If an outgoing stream can be created, return true.
+  bool ShouldCreateOutgoingDynamicStream();
+
+  // If an incoming stream can be created, return true.
   bool ShouldCreateIncomingDynamicStream(QuicStreamId id);
+
   scoped_ptr<QuicCryptoClientStreamBase> crypto_stream_;
   QuicServerId server_id_;
   QuicCryptoClientConfig* crypto_config_;

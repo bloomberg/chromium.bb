@@ -156,12 +156,16 @@ TEST(QuicCryptoClientConfigTest, InchoateChlo) {
   QuicCryptoNegotiatedParameters params;
   CryptoHandshakeMessage msg;
   QuicServerId server_id("www.google.com", 80, PRIVACY_MODE_DISABLED);
-  config.FillInchoateClientHello(server_id, QuicVersionMax(), &state, &params,
-                                 &msg);
+  MockRandom rand;
+  config.FillInchoateClientHello(server_id, QuicVersionMax(), &state, &rand,
+                                 &params, &msg);
 
   QuicTag cver;
   EXPECT_EQ(QUIC_NO_ERROR, msg.GetUint32(kVER, &cver));
   EXPECT_EQ(QuicVersionToQuicTag(QuicVersionMax()), cver);
+  StringPiece proof_nonce;
+  EXPECT_TRUE(msg.GetStringPiece(kNONP, &proof_nonce));
+  EXPECT_EQ(string(32, 'r'), proof_nonce);
 }
 
 TEST(QuicCryptoClientConfigTest, PreferAesGcm) {
@@ -178,8 +182,9 @@ TEST(QuicCryptoClientConfigTest, InchoateChloSecure) {
   QuicCryptoNegotiatedParameters params;
   CryptoHandshakeMessage msg;
   QuicServerId server_id("www.google.com", 443, PRIVACY_MODE_DISABLED);
-  config.FillInchoateClientHello(server_id, QuicVersionMax(), &state, &params,
-                                 &msg);
+  MockRandom rand;
+  config.FillInchoateClientHello(server_id, QuicVersionMax(), &state, &rand,
+                                 &params, &msg);
 
   QuicTag pdmd;
   EXPECT_EQ(QUIC_NO_ERROR, msg.GetUint32(kPDMD, &pdmd));
@@ -203,8 +208,9 @@ TEST(QuicCryptoClientConfigTest, InchoateChloSecureWithSCID) {
   QuicCryptoNegotiatedParameters params;
   CryptoHandshakeMessage msg;
   QuicServerId server_id("www.google.com", 443, PRIVACY_MODE_DISABLED);
-  config.FillInchoateClientHello(server_id, QuicVersionMax(), &state, &params,
-                                 &msg);
+  MockRandom rand;
+  config.FillInchoateClientHello(server_id, QuicVersionMax(), &state, &rand,
+                                 &params, &msg);
 
   StringPiece scid;
   EXPECT_TRUE(msg.GetStringPiece(kSCID, &scid));
@@ -218,8 +224,9 @@ TEST(QuicCryptoClientConfigTest, InchoateChloSecureNoEcdsa) {
   QuicCryptoNegotiatedParameters params;
   CryptoHandshakeMessage msg;
   QuicServerId server_id("www.google.com", 443, PRIVACY_MODE_DISABLED);
-  config.FillInchoateClientHello(server_id, QuicVersionMax(), &state, &params,
-                                 &msg);
+  MockRandom rand;
+  config.FillInchoateClientHello(server_id, QuicVersionMax(), &state, &rand,
+                                 &params, &msg);
 
   QuicTag pdmd;
   EXPECT_EQ(QUIC_NO_ERROR, msg.GetUint32(kPDMD, &pdmd));

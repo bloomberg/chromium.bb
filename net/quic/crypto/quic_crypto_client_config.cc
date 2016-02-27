@@ -18,6 +18,7 @@
 #include "net/quic/crypto/p256_key_exchange.h"
 #include "net/quic/crypto/proof_verifier.h"
 #include "net/quic/crypto/quic_encrypter.h"
+#include "net/quic/crypto/quic_random.h"
 #include "net/quic/quic_bug_tracker.h"
 #include "net/quic/quic_flags.h"
 #include "net/quic/quic_utils.h"
@@ -405,6 +406,7 @@ void QuicCryptoClientConfig::FillInchoateClientHello(
     const QuicServerId& server_id,
     const QuicVersion preferred_version,
     const CachedState* cached,
+    QuicRandom* rand,
     QuicCryptoNegotiatedParameters* out_params,
     CryptoHandshakeMessage* out) const {
   out->set_tag(kCHLO);
@@ -420,6 +422,10 @@ void QuicCryptoClientConfig::FillInchoateClientHello(
   if (!user_agent_id_.empty()) {
     out->SetStringPiece(kUAID, user_agent_id_);
   }
+
+  char proof_nonce[32];
+  rand->RandBytes(proof_nonce, arraysize(proof_nonce));
+  out->SetStringPiece(kNONP, StringPiece(proof_nonce, arraysize(proof_nonce)));
 
   // Even though this is an inchoate CHLO, send the SCID so that
   // the STK can be validated by the server.
@@ -479,8 +485,8 @@ QuicErrorCode QuicCryptoClientConfig::FillClientHello(
     string* error_details) const {
   DCHECK(error_details != nullptr);
 
-  FillInchoateClientHello(server_id, preferred_version, cached, out_params,
-                          out);
+  FillInchoateClientHello(server_id, preferred_version, cached, rand,
+                          out_params, out);
 
   const CryptoHandshakeMessage* scfg = cached->GetServerConfig();
   if (!scfg) {

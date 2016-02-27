@@ -49,6 +49,8 @@ void QuicStreamSequencer::OnStreamFrame(const QuicStreamFrame& frame) {
   const size_t data_len = frame.frame_length;
   if (data_len == 0 && !frame.fin) {
     // Stream frames must have data or a fin flag.
+    LOG(WARNING) << "QUIC_INVALID_STREAM_FRAM: Empty stream frame "
+                    "without FIN set.";
     stream_->CloseConnectionWithDetails(QUIC_INVALID_STREAM_FRAME,
                                         "Empty stream frame without FIN set.");
     return;
@@ -66,6 +68,8 @@ void QuicStreamSequencer::OnStreamFrame(const QuicStreamFrame& frame) {
       clock_->ApproximateNow(), &bytes_written);
 
   if (result == QUIC_INVALID_STREAM_DATA) {
+    LOG(WARNING) << "QUIC_INVALID_STREAM_FRAME: Stream frame "
+                    "overlaps with buffered data.";
     stream_->CloseConnectionWithDetails(
         QUIC_INVALID_STREAM_FRAME, "Stream frame overlaps with buffered data.");
     return;

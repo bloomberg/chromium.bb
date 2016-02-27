@@ -144,6 +144,9 @@ class NET_EXPORT_PRIVATE QuicReceivedPacketManager
 
   virtual bool ack_frame_updated() const;
 
+  // For logging purposes.
+  const QuicAckFrame& ack_frame() const { return ack_frame_; }
+
  private:
   friend class test::QuicConnectionPeer;
   friend class test::QuicReceivedPacketManagerPeer;

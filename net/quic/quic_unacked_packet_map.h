@@ -37,7 +37,6 @@ class NET_EXPORT_PRIVATE QuicUnackedPacketMap {
                      QuicPacketNumber old_packet_number,
                      TransmissionType transmission_type,
                      QuicTime sent_time,
-                     QuicByteCount bytes_sent,
                      bool set_in_flight);
 
   // Returns true if the packet |packet_number| is unacked.

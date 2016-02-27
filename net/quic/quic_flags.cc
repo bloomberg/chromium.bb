@@ -78,10 +78,6 @@ bool FLAGS_quic_use_stream_sequencer_buffer = true;
 // If true, don't send QUIC packets if the send alarm is set.
 bool FLAGS_quic_respect_send_alarm2 = true;
 
-// If ture, sets callback pointer to nullptr after calling Cancel() in
-// QuicCryptoServerStream::CancelOutstandingCallbacks.
-bool FLAGS_quic_set_client_hello_cb_nullptr = true;
-
 // If true, allow each quic stream to write 16k blocks rather than doing a round
 // robin of one packet per session when ack clocked or paced.
 bool FLAGS_quic_batch_writes = true;
@@ -118,22 +114,12 @@ bool FLAGS_quic_validate_stk_without_scid = true;
 // If true, QUIC will support RFC 7539 variants of ChaCha20 Poly1305.
 bool FLAGS_quic_use_rfc7539 = true;
 
-// If true, drop not awaited QUIC packets before decrypting them.
-bool FLAGS_quic_drop_non_awaited_packets = false;
-
-// If true, use the fast implementation of IncrementalHash/FNV1a_128_Hash.
-bool FLAGS_quic_utils_use_fast_incremental_hash = true;
-
 // If true, require QUIC connections to use a valid server nonce or a non-local
 // strike register.
 bool FLAGS_require_strike_register_or_server_nonce = true;
 
 // When turn on, log packet loss into transport connection stats LossEvent.
 bool FLAGS_quic_log_loss_event = true;
-
-// If true, use a free list for the stream frame buffer allocations in
-// QuicPacketCreator.
-bool FLAGS_use_stream_frame_freelist = true;
 
 // If true, for QUIC authenticated encryption algorithms, last 8 bytes
 // of IV comprise packet path id and lower 7 bytes of packet number.
@@ -142,10 +128,6 @@ bool FLAGS_quic_include_path_id_in_iv = true;
 // If true, make sure new incoming streams correctly cede to higher
 // priority (or batch) streams when doing QUIC writes.
 bool FLAGS_quic_cede_correctly = true;
-
-// Has QuicCryptoProof hold a ref to the primary_config instead of storing its
-// SCID.
-bool FLAGS_quic_crypto_proof_use_ref = true;
 
 // If on, max number of incoming and outgoing streams will be different.
 // Incoming will be a little higher than outgoing to tolerate race condition.

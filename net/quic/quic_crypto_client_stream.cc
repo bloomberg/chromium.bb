@@ -307,7 +307,8 @@ void QuicCryptoClientStream::DoSendCHLO(
   if (!cached->IsComplete(session()->connection()->clock()->WallNow())) {
     crypto_config_->FillInchoateClientHello(
         server_id_, session()->connection()->supported_versions().front(),
-        cached, &crypto_negotiated_params_, &out);
+        cached, session()->connection()->random_generator(),
+        &crypto_negotiated_params_, &out);
     // Pad the inchoate client hello to fill up a packet.
     const QuicByteCount kFramingOverhead = 50;  // A rough estimate.
     const QuicByteCount max_packet_size =

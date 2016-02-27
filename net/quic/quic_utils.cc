@@ -56,6 +56,8 @@ uint128 IncrementalHashFast(uint128 uhash, const char* data, size_t len) {
 }
 #endif
 
+#ifndef QUIC_UTIL_HAS_UINT128
+// Slow implementation of IncrementalHash. In practice, only used by Chromium.
 uint128 IncrementalHashSlow(uint128 hash, const char* data, size_t len) {
   // kPrime = 309485009821345068724781371
   static const uint128 kPrime(16777216, 315);
@@ -66,12 +68,11 @@ uint128 IncrementalHashSlow(uint128 hash, const char* data, size_t len) {
   }
   return hash;
 }
+#endif
 
 uint128 IncrementalHash(uint128 hash, const char* data, size_t len) {
 #ifdef QUIC_UTIL_HAS_UINT128
-  return FLAGS_quic_utils_use_fast_incremental_hash
-             ? IncrementalHashFast(hash, data, len)
-             : IncrementalHashSlow(hash, data, len);
+  return IncrementalHashFast(hash, data, len);
 #else
   return IncrementalHashSlow(hash, data, len);
 #endif

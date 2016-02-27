@@ -1398,7 +1398,7 @@ TEST_P(QuicConnectionTest, RejectUnencryptedStreamData) {
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
   EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_UNENCRYPTED_STREAM_DATA,
                                            ConnectionCloseSource::FROM_SELF));
-  ProcessDataPacket(kDefaultPathId, 1, 0, !kEntropyFlag);
+  EXPECT_DFATAL(ProcessDataPacket(kDefaultPathId, 1, 0, !kEntropyFlag), "");
   EXPECT_FALSE(QuicConnectionPeer::GetConnectionClosePacket(&connection_) ==
                nullptr);
   const vector<QuicConnectionCloseFrame>& connection_close_frames =
@@ -3517,24 +3517,9 @@ TEST_P(QuicConnectionTest, CloseFecGroup) {
   ASSERT_EQ(0u, connection_.NumFecGroups());
 }
 
-TEST_P(QuicConnectionTest, FailedToCloseFecGroupWithFecProtectedStopWaiting) {
-  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
-  ValueRestore<bool> old_flag(&FLAGS_quic_drop_non_awaited_packets, false);
-  // Don't send missing packet 1.
-  ProcessFecProtectedPacket(kDefaultPathId, 2, false, !kEntropyFlag,
-                            !kHasStopWaiting);
-  EXPECT_EQ(1u, connection_.NumFecGroups());
-  stop_waiting_ = InitStopWaitingFrame(3);
-  ProcessFecProtectedPacket(kDefaultPathId, 3, false, !kEntropyFlag,
-                            kHasStopWaiting);
-  // This Fec group would be closed but created again.
-  EXPECT_EQ(1u, connection_.NumFecGroups());
-}
-
 TEST_P(QuicConnectionTest,
        CloseFecGroupUnderStopWaitingAndWaitingForPacketsBelowStopWaiting) {
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
-  ValueRestore<bool> old_flag(&FLAGS_quic_drop_non_awaited_packets, true);
   // Don't send missing packet 1.
   ProcessFecProtectedPacket(kDefaultPathId, 2, false, !kEntropyFlag,
                             !kHasStopWaiting);
@@ -3549,7 +3534,6 @@ TEST_P(QuicConnectionTest,
 TEST_P(QuicConnectionTest,
        DoNotCloseFecGroupUnderStopWaitingButNotWaitingForPacketsBelow) {
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
-  ValueRestore<bool> old_flag(&FLAGS_quic_drop_non_awaited_packets, true);
   ProcessFecProtectedPacket(kDefaultPathId, 1, false, !kEntropyFlag,
                             !kHasStopWaiting);
   ProcessFecProtectedPacket(kDefaultPathId, 2, false, !kEntropyFlag,
@@ -5385,10 +5369,8 @@ TEST_P(QuicConnectionTest, OnPacketHeaderDebugVisitor) {
       new MockQuicConnectionDebugVisitor());
   connection_.set_debug_visitor(debug_visitor.get());
   EXPECT_CALL(*debug_visitor, OnPacketHeader(Ref(header))).Times(1);
-  if (FLAGS_quic_drop_non_awaited_packets) {
-    EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_)).Times(1);
-    EXPECT_CALL(*debug_visitor, OnSuccessfulVersionNegotiation(_)).Times(1);
-  }
+  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_)).Times(1);
+  EXPECT_CALL(*debug_visitor, OnSuccessfulVersionNegotiation(_)).Times(1);
   connection_.OnPacketHeader(header);
 }
 
