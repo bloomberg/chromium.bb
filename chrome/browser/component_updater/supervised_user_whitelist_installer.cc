@@ -23,8 +23,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/thread_task_runner_handle.h"
-#include "chrome/browser/profiles/profile_info_cache.h"
-#include "chrome/browser/profiles/profile_info_cache_observer.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/supervised_user/supervised_user_whitelist_service.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
@@ -286,11 +285,12 @@ std::string SupervisedUserWhitelistComponentInstallerTraits::GetName() const {
 
 class SupervisedUserWhitelistInstallerImpl
     : public SupervisedUserWhitelistInstaller,
-      public ProfileInfoCacheObserver {
+      public ProfileAttributesStorage::Observer {
  public:
-  SupervisedUserWhitelistInstallerImpl(ComponentUpdateService* cus,
-                                       ProfileInfoCache* profile_info_cache,
-                                       PrefService* local_state);
+  SupervisedUserWhitelistInstallerImpl(
+      ComponentUpdateService* cus,
+      ProfileAttributesStorage* profile_attributes_storage,
+      PrefService* local_state);
   ~SupervisedUserWhitelistInstallerImpl() override {}
 
  private:
@@ -317,7 +317,7 @@ class SupervisedUserWhitelistInstallerImpl
   void UnregisterWhitelist(const std::string& client_id,
                            const std::string& crx_id) override;
 
-  // ProfileInfoCacheObserver overrides:
+  // ProfileAttributesStorage::Observer overrides:
   void OnProfileWillBeRemoved(const base::FilePath& profile_path) override;
 
   ComponentUpdateService* cus_;
@@ -325,7 +325,8 @@ class SupervisedUserWhitelistInstallerImpl
 
   std::vector<WhitelistReadyCallback> callbacks_;
 
-  ScopedObserver<ProfileInfoCache, ProfileInfoCacheObserver> observer_;
+  ScopedObserver<ProfileAttributesStorage, ProfileAttributesStorage::Observer>
+      observer_;
 
   base::WeakPtrFactory<SupervisedUserWhitelistInstallerImpl> weak_ptr_factory_;
 
@@ -334,7 +335,7 @@ class SupervisedUserWhitelistInstallerImpl
 
 SupervisedUserWhitelistInstallerImpl::SupervisedUserWhitelistInstallerImpl(
     ComponentUpdateService* cus,
-    ProfileInfoCache* profile_info_cache,
+    ProfileAttributesStorage* profile_attributes_storage,
     PrefService* local_state)
     : cus_(cus),
       local_state_(local_state),
@@ -342,7 +343,7 @@ SupervisedUserWhitelistInstallerImpl::SupervisedUserWhitelistInstallerImpl(
       weak_ptr_factory_(this) {
   DCHECK(cus);
   DCHECK(local_state);
-  observer_.Add(profile_info_cache);
+  observer_.Add(profile_attributes_storage);
 }
 
 void SupervisedUserWhitelistInstallerImpl::RegisterComponent(
@@ -537,11 +538,12 @@ void SupervisedUserWhitelistInstallerImpl::OnProfileWillBeRemoved(
 
 // static
 scoped_ptr<SupervisedUserWhitelistInstaller>
-SupervisedUserWhitelistInstaller::Create(ComponentUpdateService* cus,
-                                         ProfileInfoCache* profile_info_cache,
-                                         PrefService* local_state) {
+SupervisedUserWhitelistInstaller::Create(
+    ComponentUpdateService* cus,
+    ProfileAttributesStorage* profile_attributes_storage,
+    PrefService* local_state) {
   return make_scoped_ptr(new SupervisedUserWhitelistInstallerImpl(
-      cus, profile_info_cache, local_state));
+      cus, profile_attributes_storage, local_state));
 }
 
 // static
@@ -554,6 +556,8 @@ void SupervisedUserWhitelistInstaller::RegisterPrefs(
 std::string SupervisedUserWhitelistInstaller::ClientIdForProfilePath(
     const base::FilePath& profile_path) {
   // See ProfileInfoCache::CacheKeyFromProfilePath().
+  // TODO(anthonyvd): update comment when the refactoring of ProfileInfoCache
+  // is completed.
   return profile_path.BaseName().MaybeAsASCII();
 }
 

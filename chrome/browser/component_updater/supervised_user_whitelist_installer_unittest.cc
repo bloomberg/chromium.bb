@@ -22,7 +22,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/browser/component_updater/supervised_user_whitelist_installer.h"
-#include "chrome/browser/profiles/profile_info_cache.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -198,15 +198,17 @@ class SupervisedUserWhitelistInstallerTest : public testing::Test {
 
     ASSERT_TRUE(testing_profile_manager_.SetUp());
 
-    profile_info_cache()->AddProfileToCache(
+    profile_attributes_storage()->AddProfile(
         GetProfilePath(kClientId), base::ASCIIToUTF16("A Profile"),
         std::string(), base::string16(), 0, std::string());
-    profile_info_cache()->AddProfileToCache(
+    profile_attributes_storage()->AddProfile(
         GetProfilePath(kOtherClientId), base::ASCIIToUTF16("Another Profile"),
         std::string(), base::string16(), 0, std::string());
 
     installer_ = SupervisedUserWhitelistInstaller::Create(
-        &component_update_service_, profile_info_cache(), &local_state_);
+        &component_update_service_,
+        profile_attributes_storage(),
+        &local_state_);
 
     ASSERT_TRUE(PathService::Get(DIR_SUPERVISED_USER_WHITELISTS,
                                  &whitelist_base_directory_));
@@ -236,12 +238,12 @@ class SupervisedUserWhitelistInstallerTest : public testing::Test {
   }
 
  protected:
-  ProfileInfoCache* profile_info_cache() {
-    return testing_profile_manager_.profile_info_cache();
+  ProfileAttributesStorage* profile_attributes_storage() {
+    return testing_profile_manager_.profile_attributes_storage();
   }
 
   base::FilePath GetProfilePath(const std::string& profile_name) {
-    return profile_info_cache()->GetUserDataDir().AppendASCII(profile_name);
+    return testing_profile_manager_.profiles_dir().AppendASCII(profile_name);
   }
 
   void PrepareWhitelistFile(const base::FilePath& whitelist_path) {
@@ -399,8 +401,7 @@ TEST_F(SupervisedUserWhitelistInstallerTest,
 
     // This does the same thing in our case as calling UnregisterWhitelist(),
     // but it exercises a different code path.
-    profile_info_cache()->DeleteProfileFromCache(
-        GetProfilePath(kOtherClientId));
+    profile_attributes_storage()->RemoveProfile(GetProfilePath(kOtherClientId));
     run_loop.RunUntilIdle();
   }
   EXPECT_FALSE(component_update_service_.registered_component());
