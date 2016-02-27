@@ -34,9 +34,6 @@ class Array {
   using Data_ =
       internal::Array_Data<typename internal::WrapperTraits<T>::DataType>;
 
-  using iterator = typename std::vector<T>::iterator;
-  using const_iterator = typename std::vector<T>::const_iterator;
-
   // Constructs an empty array.
   Array() : is_null_(false) {}
   // Constructs a null array.
@@ -92,11 +89,6 @@ class Array {
   // null or empty array causes undefined behavior.
   ConstRefType front() const { return vec_.front(); }
   RefType front() { return vec_.front(); }
-
-  iterator begin() { return vec_.begin(); }
-  const_iterator begin() const { return vec_.begin(); }
-  iterator end() { return vec_.end(); }
-  const_iterator end() const { return vec_.end(); }
 
   // Returns the size of the array, which will be zero if the array is null.
   size_t size() const { return vec_.size(); }
