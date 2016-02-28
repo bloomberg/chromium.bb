@@ -16,6 +16,7 @@
 #include "platform/graphics/paint/ClipPaintPropertyNode.h"
 #include "platform/graphics/paint/DisplayItem.h"
 #include "platform/graphics/paint/DrawingDisplayItem.h"
+#include "platform/graphics/paint/ForeignLayerDisplayItem.h"
 #include "platform/graphics/paint/PaintArtifact.h"
 #include "platform/graphics/paint/TransformPaintPropertyNode.h"
 #include "public/platform/Platform.h"
@@ -237,6 +238,24 @@ private:
     Vector<NodeLayerPair, 16> m_clipLayers;
 };
 
+scoped_refptr<cc::Layer> foreignLayerForPaintChunk(const PaintArtifact& paintArtifact, const PaintChunk& paintChunk, gfx::Transform transform)
+{
+    if (paintChunk.size() != 1)
+        return nullptr;
+
+    const auto& displayItem = paintArtifact.displayItemList()[paintChunk.beginIndex];
+    if (!displayItem.isForeignLayer())
+        return nullptr;
+
+    const auto& foreignLayerDisplayItem = static_cast<const ForeignLayerDisplayItem&>(displayItem);
+    scoped_refptr<cc::Layer> layer = foreignLayerDisplayItem.layer();
+    transform.Translate(foreignLayerDisplayItem.location().x(), foreignLayerDisplayItem.location().y());
+    layer->SetTransform(transform);
+    layer->SetBounds(foreignLayerDisplayItem.bounds());
+    layer->SetIsDrawable(true);
+    return layer;
+}
+
 } // namespace
 
 void PaintArtifactCompositor::update(const PaintArtifact& paintArtifact)
@@ -251,37 +270,47 @@ void PaintArtifactCompositor::update(const PaintArtifact& paintArtifact)
     ClipLayerManager clipLayerManager(m_rootLayer.get());
     for (const PaintChunk& paintChunk : paintArtifact.paintChunks()) {
         cc::Layer* parent = clipLayerManager.switchToNewClipLayer(paintChunk.properties.clip.get());
-
-        gfx::Rect combinedBounds = enclosingIntRect(paintChunk.bounds);
-        scoped_refptr<cc::DisplayItemList> displayList = recordPaintChunk(paintArtifact, paintChunk, combinedBounds);
-        OwnPtr<ContentLayerClientImpl> contentLayerClient = adoptPtr(
-            new ContentLayerClientImpl(std::move(displayList), gfx::Rect(combinedBounds.size())));
-
-        // Include the offset in the transform, because it needs to apply in
-        // this layer's transform space (whereas layer position applies in its
-        // parent's transform space).
         gfx::Transform transform = transformToTransformSpace(paintChunk.properties.transform.get(), localTransformSpace(paintChunk.properties.clip.get()));
-        gfx::Vector2dF offset = gfx::PointF(combinedBounds.origin()).OffsetFromOrigin();
-        if (const auto* clip = paintChunk.properties.clip.get()) {
-            // If a clip was applied, its origin needs to be cancelled out in
-            // this transform.
-            FloatPoint offsetDueToClipOffset = clip->clipRect().rect().location();
-            offset -= gfx::Vector2dF(offsetDueToClipOffset.x(), offsetDueToClipOffset.y());
-        }
-        transform.Translate(offset.x(), offset.y());
-
-        scoped_refptr<cc::PictureLayer> layer = cc::PictureLayer::Create(cc::LayerSettings(), contentLayerClient.get());
-        layer->SetBounds(combinedBounds.size());
-        layer->SetTransform(transform);
-        layer->SetIsDrawable(true);
-        layer->SetDoubleSided(!paintChunk.properties.backfaceHidden);
-        if (paintChunk.knownToBeOpaque)
-            layer->SetContentsOpaque(true);
+        scoped_refptr<cc::Layer> layer = layerForPaintChunk(paintArtifact, paintChunk, transform);
         layer->SetNeedsDisplay();
-
-        m_contentLayerClients.append(contentLayerClient.release());
         parent->AddChild(std::move(layer));
     }
 }
+
+scoped_refptr<cc::Layer> PaintArtifactCompositor::layerForPaintChunk(const PaintArtifact& paintArtifact, const PaintChunk& paintChunk, gfx::Transform transform)
+{
+    // If the paint chunk is a foreign layer, just return that layer.
+    if (scoped_refptr<cc::Layer> foreignLayer = foreignLayerForPaintChunk(paintArtifact, paintChunk, transform))
+        return foreignLayer;
+
+    // The common case: create a layer for painted content.
+    gfx::Rect combinedBounds = enclosingIntRect(paintChunk.bounds);
+    scoped_refptr<cc::DisplayItemList> displayList = recordPaintChunk(paintArtifact, paintChunk, combinedBounds);
+    OwnPtr<ContentLayerClientImpl> contentLayerClient = adoptPtr(
+        new ContentLayerClientImpl(std::move(displayList), gfx::Rect(combinedBounds.size())));
+
+    // Include the offset in the transform, because it needs to apply in
+    // this layer's transform space (whereas layer position applies in its
+    // parent's transform space).
+    gfx::Vector2dF offset = gfx::PointF(combinedBounds.origin()).OffsetFromOrigin();
+    if (const auto* clip = paintChunk.properties.clip.get()) {
+        // If a clip was applied, its origin needs to be cancelled out in
+        // this transform.
+        FloatPoint offsetDueToClipOffset = clip->clipRect().rect().location();
+        offset -= gfx::Vector2dF(offsetDueToClipOffset.x(), offsetDueToClipOffset.y());
+    }
+    transform.Translate(offset.x(), offset.y());
+
+    scoped_refptr<cc::PictureLayer> layer = cc::PictureLayer::Create(cc::LayerSettings(), contentLayerClient.get());
+    layer->SetBounds(combinedBounds.size());
+    layer->SetTransform(transform);
+    layer->SetIsDrawable(true);
+    layer->SetDoubleSided(!paintChunk.properties.backfaceHidden);
+    if (paintChunk.knownToBeOpaque)
+        layer->SetContentsOpaque(true);
+    m_contentLayerClients.append(contentLayerClient.release());
+    return layer;
+}
+
 
 } // namespace blink

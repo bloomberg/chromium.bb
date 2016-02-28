@@ -17,6 +17,13 @@
 
 namespace blink {
 
+static PaintChunker::ItemBehavior behaviorOfItemType(DisplayItem::Type type)
+{
+    if (DisplayItem::isForeignLayerType(type))
+        return PaintChunker::RequiresSeparateChunk;
+    return PaintChunker::DefaultBehavior;
+}
+
 const PaintArtifact& PaintController::paintArtifact() const
 {
     ASSERT(m_newDisplayItemList.isEmpty());
@@ -90,7 +97,7 @@ void PaintController::processNewItem(DisplayItem& displayItem)
         displayItem.setSkippedCache();
 
     if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
-        m_newPaintChunks.incrementDisplayItemIndex();
+        m_newPaintChunks.incrementDisplayItemIndex(behaviorOfItemType(displayItem.getType()));
 }
 
 void PaintController::updateCurrentPaintChunkProperties(const PaintChunkProperties& newProperties)

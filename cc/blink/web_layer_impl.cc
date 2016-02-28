@@ -462,6 +462,10 @@ const cc::Layer* WebLayerImpl::ccLayer() const {
   return layer_.get();
 }
 
+cc::Layer* WebLayerImpl::ccLayer() {
+  return layer_.get();
+}
+
 void WebLayerImpl::setElementId(uint64_t id) {
   layer_->SetElementId(id);
 }

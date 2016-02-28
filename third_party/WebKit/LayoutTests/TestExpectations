@@ -450,6 +450,8 @@ crbug.com/580355 virtual/spv2/fast/block/positioning/relayout-on-position-change
 crbug.com/537409 virtual/spv2/svg/as-image/svg-image-with-data-uri.html [ Pass ]
 crbug.com/587236 virtual/spv2/compositing/backface-visibility/backface-visibility-3d.html [ Pass ]
 crbug.com/587236 virtual/spv2/compositing/backface-visibility/backface-visibility-simple.html [ Pass ]
+crbug.com/587970 virtual/spv2/compositing/plugins/webplugin-alpha.html [ Pass ]
+crbug.com/587970 virtual/spv2/compositing/plugins/webplugin-no-alpha.html [ Pass ]
 
 # In imported/web-platform-tests/html/, we prefer checking in failure
 # expectation files. The following tests with [ Failure ] don't have failure

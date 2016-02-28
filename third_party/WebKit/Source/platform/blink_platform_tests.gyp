@@ -111,6 +111,7 @@
         '../wtf/wtf.gyp:wtf',
         'blink_platform.gyp:blink_common',
         'blink_platform.gyp:blink_platform',
+        '<(DEPTH)/cc/cc.gyp:cc',
         '<(DEPTH)/device/battery/battery.gyp:device_battery_mojo_bindings',
         '<(DEPTH)/mojo/mojo_base.gyp:mojo_environment_chromium',
         '<(DEPTH)/mojo/mojo_edk.gyp:mojo_system_impl',
