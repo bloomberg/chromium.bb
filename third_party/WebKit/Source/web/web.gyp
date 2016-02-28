@@ -85,7 +85,13 @@
             'conditions': [
                 ['component=="shared_library"', {
                     'dependencies': [
+                        '../core/core.gyp:webcore_shared',
+                        '../core/core.gyp:webcore_testing',
+                        '../modules/modules.gyp:modules_testing',
+                        '../platform/blink_platform.gyp:blink_common',
+                        '../platform/blink_platform.gyp:blink_platform',
                         '../platform/blink_platform_tests.gyp:blink_platform_test_support',
+                        '../wtf/wtf.gyp:wtf',
                         '../wtf/wtf_tests.gyp:wtf_unittest_helpers',
                         '<(DEPTH)/base/base.gyp:test_support_base',
                         '<(DEPTH)/testing/gmock.gyp:gmock',
@@ -123,27 +129,6 @@
                         '<@(platform_web_unittest_files)',
                         '<@(web_unittest_files)',
                         'WebTestingSupport.cpp',
-                    ],
-                    'conditions': [
-                        ['link_core_modules_separately==1', {
-                            'dependencies': [
-                                '../core/core.gyp:webcore_shared',
-                                '../core/core.gyp:webcore_testing',
-                                '../modules/modules.gyp:modules_testing',
-                                '../platform/blink_platform.gyp:blink_common',
-                                '../platform/blink_platform.gyp:blink_platform',
-                                '../wtf/wtf.gyp:wtf',
-                            ],
-                        }, {
-                            'dependencies': [
-                                '../core/core.gyp:webcore',
-                                '../core/core.gyp:webcore_generated',
-                                '../core/core.gyp:webcore_testing',
-                                '../modules/modules.gyp:modules_testing',
-                                '<(DEPTH)/third_party/libxml/libxml.gyp:libxml',
-                                '<(DEPTH)/third_party/libxslt/libxslt.gyp:libxslt',
-                             ],
-                        }]
                     ],
                     'msvs_settings': {
                       'VCLinkerTool': {

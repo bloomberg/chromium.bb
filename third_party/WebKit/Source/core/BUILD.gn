@@ -42,7 +42,6 @@ if (remove_webcore_debug_symbols) {
 # Config for code that builds as part of core.
 config("config") {
   defines = [ "BLINK_CORE_IMPLEMENTATION=1" ]
-  configs = [ ":link_core_modules_separately" ]
 
   cflags = []
   if (is_win) {
@@ -51,14 +50,6 @@ config("config") {
   }
 }
 core_config_add += [ ":config" ]
-
-# Config for linking core and modules separately in component builds.
-# Required for CoreExport.h and ModulesExport.h.
-config("link_core_modules_separately") {
-  if (is_component_build) {
-    defines = [ "LINK_CORE_MODULES_SEPARATELY=1" ]
-  }
-}
 
 config("core_include_dirs") {
   include_dirs = [
@@ -185,10 +176,7 @@ component("core") {
     configs += [ "//build/config/win:no_incremental_linking" ]
   }
 
-  public_configs = [
-    ":core_include_dirs",
-    ":link_core_modules_separately",
-  ]
+  public_configs = [ ":core_include_dirs" ]
 }
 
 # GYP version: //third_party/WebKit/Source/core/core.gyp:webcore_dom

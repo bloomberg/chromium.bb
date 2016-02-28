@@ -66,7 +66,7 @@ public:
     BLINK_EXPORT void assignNumber(double);
     BLINK_EXPORT void assignInvalid();
     BLINK_EXPORT void assignNull();
-#if !BLINK_WEB_IMPLEMENTATION && LINK_CORE_MODULES_SEPARATELY
+#if !BLINK_WEB_IMPLEMENTATION && BLINK_IMPLEMENTATION && defined(COMPONENT_BUILD)
     void reset()
     {
         m_private.reset();

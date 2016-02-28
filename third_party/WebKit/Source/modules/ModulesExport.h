@@ -5,11 +5,7 @@
 #ifndef ModulesExport_h
 #define ModulesExport_h
 
-#if !defined(LINK_CORE_MODULES_SEPARATELY)
-#define LINK_CORE_MODULES_SEPARATELY 0
-#endif
-
-#if LINK_CORE_MODULES_SEPARATELY && defined(COMPONENT_BUILD)
+#if defined(COMPONENT_BUILD)
 #if defined(WIN32)
 
 #if defined(BLINK_MODULES_IMPLEMENTATION) && BLINK_MODULES_IMPLEMENTATION

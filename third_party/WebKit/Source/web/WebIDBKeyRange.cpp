@@ -44,12 +44,10 @@ void WebIDBKeyRange::assign(const WebIDBKey& lower, const WebIDBKey& upper, bool
         m_private = IDBKeyRange::create(lower, upper, lowerOpen ? IDBKeyRange::LowerBoundOpen : IDBKeyRange::LowerBoundClosed, upperOpen ? IDBKeyRange::UpperBoundOpen : IDBKeyRange::UpperBoundClosed);
 }
 
-#if BLINK_WEB_IMPLEMENTATION || !LINK_CORE_MODULES_SEPARATELY
 void WebIDBKeyRange::reset()
 {
     m_private.reset();
 }
-#endif
 
 WebIDBKey WebIDBKeyRange::lower() const
 {

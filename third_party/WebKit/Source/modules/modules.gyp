@@ -59,7 +59,7 @@
       '<(bindings_modules_v8_output_dir)/initPartialInterfacesInModules.cpp',
     ],
     'conditions': [
-      ['component=="shared_library" and link_core_modules_separately==1', {
+      ['component=="shared_library"', {
         'type': 'shared_library',
         'defines': [
           'BLINK_MODULES_IMPLEMENTATION=1',
@@ -109,7 +109,7 @@
       '<(bindings_modules_v8_output_dir)/V8InternalsPartial.h',
     ],
     'conditions': [
-      ['component=="shared_library" and link_core_modules_separately==1', {
+      ['component=="shared_library"', {
         'dependencies': [
           '../core/core.gyp:webcore_shared',
           '<(DEPTH)/gin/gin.gyp:gin',

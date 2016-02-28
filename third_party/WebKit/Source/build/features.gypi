@@ -52,7 +52,6 @@
       # ../config.gyp, too!
       'enable_oilpan%': 1,
       'blink_logging_always_on%': 0,
-      'link_core_modules_separately%': 1,
     },
     'conditions': [
       ['use_concatenated_impulse_responses==1', {
@@ -96,14 +95,6 @@
           'LOG_DISABLED=0',
         ],
       }],
-      ['link_core_modules_separately==1 and component=="shared_library"', {
-        'feature_defines': [
-          'LINK_CORE_MODULES_SEPARATELY',
-        ],
-      }],
     ],
-
-    # shared build only. If set to 1, link web, core and modules separately.
-    'link_core_modules_separately%': '<(link_core_modules_separately)',
   },
 }

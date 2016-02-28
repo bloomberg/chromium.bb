@@ -499,7 +499,7 @@
         ['exclude', 'testing/js'],
       ],
       'conditions': [
-        ['component!="shared_library" or link_core_modules_separately==0', {
+        ['component!="shared_library"', {
           'dependencies': [
             'webcore',
             'webcore_generated',
@@ -561,7 +561,7 @@
         ],
       },
       'conditions': [
-        ['component!="shared_library" or link_core_modules_separately==0', {
+        ['component!="shared_library"', {
         }, {
           'defines': [
             'BLINK_CORE_IMPLEMENTATION=1',

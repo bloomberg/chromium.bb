@@ -52,9 +52,6 @@ component("modules") {
     "//third_party/zlib",
   ]
 
-  public_configs =
-      [ "//third_party/WebKit/Source/core:link_core_modules_separately" ]
-
   if (is_win) {
     cflags = [ "/wd4334" ]  # Result of 32-bit shift implicitly converted to 64 bits.
     # TODO(GYP)
