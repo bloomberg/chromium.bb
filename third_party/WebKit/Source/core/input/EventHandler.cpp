@@ -286,7 +286,6 @@ DEFINE_TRACE(EventHandler)
     visitor->trace(m_clickNode);
     visitor->trace(m_dragTarget);
     visitor->trace(m_frameSetBeingResized);
-    visitor->trace(m_previousWheelScrolledNode);
     visitor->trace(m_scrollbarHandlingScrollGesture);
     visitor->trace(m_targetForTouchID);
     visitor->trace(m_touchSequenceDocument);
@@ -327,7 +326,6 @@ void EventHandler::clear()
     m_mousePressed = false;
     m_capturesDragging = false;
     m_capturingMouseEventsNode = nullptr;
-    m_previousWheelScrolledNode = nullptr;
     m_targetForTouchID.clear();
     m_touchSequenceDocument.clear();
     m_touchSequenceUserGestureToken.clear();
@@ -1792,9 +1790,6 @@ WebInputEventResult EventHandler::handleWheelEvent(const PlatformWheelEvent& eve
     if (node && node->isTextNode())
         node = FlatTreeTraversal::parent(*node);
 
-    if (m_previousWheelScrolledNode)
-        m_previousWheelScrolledNode = nullptr;
-
     bool isOverWidget = result.isOverWidget();
 
     if (node) {
@@ -1849,22 +1844,20 @@ void EventHandler::defaultWheelEventHandler(Node* startNode, WheelEvent* wheelEv
     if (!wheelEvent->canScroll())
         return;
 
-    Node* stopNode = m_previousWheelScrolledNode.get();
     ScrollGranularity granularity = wheelGranularityToScrollGranularity(wheelEvent);
+    Node* node = nullptr;
 
     // Break up into two scrolls if we need to.  Diagonal movement on
     // a MacBook pro is an example of a 2-dimensional mouse wheel event (where both deltaX and deltaY can be set).
 
     // FIXME: enable scroll customization in this case. See crbug.com/410974.
     if (wheelEvent->getRailsMode() != Event::RailsModeVertical
-        && scroll(ScrollRightIgnoringWritingMode, granularity, startNode, &stopNode, wheelEvent->deltaX()).didScroll)
+        && scroll(ScrollRightIgnoringWritingMode, granularity, startNode, &node, wheelEvent->deltaX()).didScroll)
         wheelEvent->setDefaultHandled();
 
     if (wheelEvent->getRailsMode() != Event::RailsModeHorizontal
-        && scroll(ScrollDownIgnoringWritingMode, granularity, startNode, &stopNode, wheelEvent->deltaY()).didScroll)
+        && scroll(ScrollDownIgnoringWritingMode, granularity, startNode, &node, wheelEvent->deltaY()).didScroll)
         wheelEvent->setDefaultHandled();
-
-    m_previousWheelScrolledNode = stopNode;
 }
 
 WebInputEventResult EventHandler::handleGestureShowPress()

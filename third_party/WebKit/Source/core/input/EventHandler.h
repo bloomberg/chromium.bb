@@ -414,8 +414,6 @@ private:
     PlatformMouseEvent m_mouseDown;
     RefPtr<UserGestureToken> m_lastMouseDownUserGestureToken;
 
-    RefPtrWillBeMember<Node> m_previousWheelScrolledNode;
-
     // The target of each active touch point indexed by the touch ID.
     using TouchTargetMap = WillBeHeapHashMap<unsigned, RefPtrWillBeMember<EventTarget>, DefaultHash<unsigned>::Hash, WTF::UnsignedWithZeroKeyHashTraits<unsigned>>;
     TouchTargetMap m_targetForTouchID;
