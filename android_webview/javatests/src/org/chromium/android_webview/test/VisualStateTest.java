@@ -21,6 +21,7 @@ import org.chromium.android_webview.test.util.GraphicsTestUtils;
 import org.chromium.android_webview.test.util.JavascriptEventObserver;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.parameter.ParameterizedTest;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
@@ -188,6 +189,7 @@ public class VisualStateTest extends AwTestBase {
         assertTrue(testFinishedSignal.await(AwTestBase.WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
+    @ParameterizedTest.Set  // crbug.com/590408
     @Feature({"AndroidWebView"})
     @SmallTest
     public void testOnPageCommitVisible() throws Throwable {
