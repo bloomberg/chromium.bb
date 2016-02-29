@@ -887,7 +887,7 @@ EXTRA_BUCKETS_FILES_BLACKLIST = [
 
 # AFDO common constants.
 # How long does the AFDO_record autotest have to generate the AFDO perf data.
-AFDO_GENERATE_TIMEOUT = 90 * 60
+AFDO_GENERATE_TIMEOUT = 80 * 60
 
 # Stats dashboard elastic search and statsd constants.
 # Host and port information specified in topology.py.
