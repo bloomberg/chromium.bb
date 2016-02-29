@@ -1,0 +1,239 @@
+== chromeos ==
+amd64-generic-chromium-pfq
+amd64-generic-goofy-release
+arm-generic-chromium-pfq
+arm-generic_freon-chromium-pfq
+[auron-b-release-group]
+  buddy-release
+  gandof-release
+  lulu-release
+auron-paladin
+[auron-release-group]
+  auron-release
+  auron_paine-release
+  auron_yuna-release
+  samus-cheets-release
+beaglebone-paladin
+[beaglebone-release-group]
+  beaglebone-release
+  beaglebone_servo-release
+[beltino-a-release-group]
+  mccloud-release
+  panther-release
+[beltino-b-release-group]
+  monroe-release
+  tricky-release
+  zako-release
+butterfly-paladin
+cyan-cheets-android-pfq
+daisy-chromium-pfq
+daisy-paladin
+[daisy-release-group]
+  daisy-release
+  daisy_skate-release
+  daisy_spring-release
+daisy_skate-chrome-pfq
+daisy_skate-paladin
+daisy_spring-paladin
+falco-chrome-pfq
+falco-full-compile-paladin
+falco-paladin
+gizmo-release
+glados-cheets-android-pfq
+glados-paladin
+[glados-release-group]
+  chell-release
+  glados-cheets-release
+  glados-release
+guado_moblab-paladin
+guado_moblab-release
+internal-toolchain-minor
+[ivybridge-release-group]
+  link-release
+  parrot_ivb-release
+  stout-release
+[jecht-release-group]
+  guado-release
+  jecht-release
+  rikku-release
+  tidus-release
+kayle-paladin
+kayle-release
+[kunimitsu-release-group]
+  kunimitsu-release
+  lars-release
+  sentry-release
+lakitu-incremental
+lakitu-paladin
+lakitu-release
+lakitu_mobbuild-paladin
+lakitu_mobbuild-release
+lakitu_next-incremental
+lakitu_next-paladin
+lakitu_next-release
+leon-paladin
+link-depthcharge-full-firmware
+link-paladin
+lumpy-chrome-pfq
+lumpy-incremental-paladin
+lumpy-paladin
+mario-incremental
+master-android-pfq
+master-chromium-pfq
+master-paladin
+master-release
+master-toolchain-release
+monroe-paladin
+nyan-chrome-pfq
+nyan-full-compile-paladin
+nyan-paladin
+[nyan-release-group]
+  nyan-release
+  nyan_big-release
+  nyan_blaze-release
+  nyan_kitty-release
+nyan_freon-paladin
+nyan_freon-release
+oak-paladin
+[oak-release-group]
+  oak-release
+panther-paladin
+panther_embedded-minimal-release
+parrot-paladin
+[peach-release-group]
+  peach_pi-release
+  peach_pit-release
+peach_pit-chrome-pfq
+peach_pit-paladin
+peppy-chrome-pfq
+peppy-paladin
+[pineview-release-group]
+  x86-alex-release
+  x86-alex_he-release
+  x86-mario-release
+  x86-zgb-release
+  x86-zgb_he-release
+pre-cq-launcher
+[rambi-a-release-group]
+  clapper-release
+  enguarde-release
+  expresso-release
+  rambi-release
+[rambi-b-release-group]
+  glimmer-release
+  gnawty-release
+  kip-release
+  quawks-release
+[rambi-c-release-group]
+  candy-release
+  squawks-release
+  swanky-release
+  winky-release
+[rambi-d-release-group]
+  banjo-release
+  ninja-release
+  sumo-release
+[rambi-e-release-group]
+  heli-release
+  orco-release
+rambi-paladin
+samus-cheets-android-pfq
+samus-paladin
+samus-release
+[sandybridge-release-group]
+  butterfly-release
+  lumpy-release
+  parrot-release
+  stumpy-release
+[slippy-release-group]
+  falco-release
+  falco_li-release
+  leon-release
+  peppy-release
+  wolf-release
+smaug-paladin
+smaug-release
+storm-paladin
+[storm-release-group]
+  arkham-release
+  storm-release
+  whirlwind-release
+stout-paladin
+[strago-b-release-group]
+  cyan-cheets-release
+  reks-release
+  terra-release
+  wizpig-release
+[strago-c-release-group]
+  edgar-release
+  setzer-release
+strago-paladin
+[strago-release-group]
+  celes-release
+  cyan-release
+  strago-release
+  ultima-release
+stumpy-paladin
+tricky-chrome-pfq
+tricky-paladin
+[veyron-b-release-group]
+  veyron_gus-release
+  veyron_jaq-release
+  veyron_minnie-release
+  veyron_rialto-release
+[veyron-c-release-group]
+  veyron_brain-release
+  veyron_danger-release
+  veyron_mickey-release
+[veyron-d-release-group]
+  veyron_minnie-cheets-release
+  veyron_romy-release
+  veyron_shark-release
+[veyron-release-group]
+  veyron_jerry-release
+  veyron_mighty-release
+  veyron_pinky-release
+  veyron_speedy-release
+veyron_mighty-paladin
+veyron_minnie-cheets-android-pfq
+veyron_minnie-cheets-paladin
+veyron_minnie-chromium-pfq
+veyron_pinky-chrome-pfq
+veyron_pinky-paladin
+veyron_rialto-paladin
+veyron_speedy-paladin
+whirlwind-paladin
+wolf-paladin
+wolf-tot-paladin
+x86-alex-chrome-pfq
+x86-alex-paladin
+x86-generic-chromium-pfq
+x86-mario-nowithdebug-paladin
+x86-mario-paladin
+x86-zgb-paladin
+
+== chromeos_release ==
+lumpy-pre-flight-branch
+
+== chromiumos ==
+amd64-generic-asan
+amd64-generic-full
+amd64-generic-incremental
+amd64-generic-paladin
+arm-generic-full
+arm-generic-paladin
+chromiumos-sdk
+daisy-full
+daisy-incremental
+gizmo-paladin
+oak-full
+panther_embedded-minimal-paladin
+[toolchain-llvm]
+  daisy-toolchain-llvm
+  peppy-toolchain-llvm
+  x86-alex-toolchain-llvm
+x86-generic-asan
+x86-generic-full
+x86-generic-incremental
+x86-generic-paladin
+
