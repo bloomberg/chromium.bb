@@ -1790,22 +1790,23 @@ WebInputEventResult EventHandler::handleWheelEvent(const PlatformWheelEvent& eve
     if (node && node->isTextNode())
         node = FlatTreeTraversal::parent(*node);
 
-    bool isOverWidget = result.isOverWidget();
-
-    if (node) {
-        // Figure out which view to send the event to.
-        LayoutObject* target = node->layoutObject();
-
-        if (isOverWidget && target && target->isLayoutPart()) {
-            if (Widget* widget = toLayoutPart(target)->widget()) {
-                WebInputEventResult result = passWheelEventToWidget(event, *widget);
-                if (result != WebInputEventResult::NotHandled) {
-                    setFrameWasScrolledByUser();
-                    return result;
-                }
-            }
+    bool sendDOMEvent = true;
+    LocalFrame* subframe = subframeForTargetNode(node);
+    if (subframe) {
+        WebInputEventResult result = subframe->eventHandler().handleWheelEvent(event);
+        if (result != WebInputEventResult::NotHandled) {
+            setFrameWasScrolledByUser();
+            return result;
         }
+        // TODO(dtapuska): Remove this once wheel gesture scroll has
+        // been enabled everywhere; as we can just return early.
+        // http://crbug.com/568183
+        // Don't propagate the DOM event into the parent iframe
+        // but do dispatch the scroll event.
+        sendDOMEvent = false;
+    }
 
+    if (node && sendDOMEvent) {
         RefPtrWillBeRawPtr<Event> domEvent = WheelEvent::create(event, node->document().domWindow());
         DispatchEventResult domEventResult = node->dispatchEvent(domEvent);
         if (domEventResult != DispatchEventResult::NotCanceled) {
@@ -3947,16 +3948,6 @@ WebInputEventResult EventHandler::passMouseReleaseEventToSubframe(MouseEventWith
     if (result != WebInputEventResult::NotHandled)
         return result;
     return WebInputEventResult::HandledSystem;
-}
-
-WebInputEventResult EventHandler::passWheelEventToWidget(const PlatformWheelEvent& wheelEvent, Widget& widget)
-{
-    // If not a FrameView, then probably a plugin widget.  Those will receive
-    // the event via an EventTargetNode dispatch when this returns false.
-    if (!widget.isFrameView())
-        return WebInputEventResult::NotHandled;
-
-    return toFrameView(&widget)->frame().eventHandler().handleWheelEvent(wheelEvent);
 }
 
 DataTransfer* EventHandler::createDraggingDataTransfer() const

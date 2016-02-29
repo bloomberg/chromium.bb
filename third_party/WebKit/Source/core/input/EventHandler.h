@@ -318,7 +318,6 @@ private:
 
     bool passMousePressEventToScrollbar(MouseEventWithHitTestResults&);
 
-    WebInputEventResult passWheelEventToWidget(const PlatformWheelEvent&, Widget&);
     void defaultSpaceEventHandler(KeyboardEvent*);
     void defaultBackspaceEventHandler(KeyboardEvent*);
     void defaultTabEventHandler(KeyboardEvent*);
