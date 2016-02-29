@@ -986,13 +986,23 @@ int HttpStreamFactoryImpl::Job::DoInitConnection() {
       return ERR_NOT_IMPLEMENTED;
     }
     HostPortPair destination;
-    std::string origin_host;
     SSLConfig* ssl_config;
+    GURL url(request_info_.url);
     if (proxy_info_.is_quic()) {
       // A proxy's certificate is expected to be valid for the proxy hostname.
       destination = proxy_info_.proxy_server().host_port_pair();
-      origin_host = destination.host();
       ssl_config = &proxy_ssl_config_;
+      GURL::Replacements replacements;
+      replacements.SetSchemeStr("https");
+      replacements.SetHostStr(destination.host());
+      const std::string new_port = base::UintToString(destination.port());
+      replacements.SetPortStr(new_port);
+      replacements.ClearUsername();
+      replacements.ClearPassword();
+      replacements.ClearPath();
+      replacements.ClearQuery();
+      replacements.ClearRef();
+      url = url.ReplaceComponents(replacements);
 
       // If QUIC is disabled on the destination port, return error.
       if (session_->quic_stream_factory()->IsQuicDisabled(destination.port()))
@@ -1003,12 +1013,12 @@ int HttpStreamFactoryImpl::Job::DoInitConnection() {
       // for the origin of the request (in addition to being valid for the
       // server itself).
       destination = server_;
-      origin_host = origin_url_.host();
       ssl_config = &server_ssl_config_;
     }
+
     int rv =
         quic_request_.Request(destination, request_info_.privacy_mode,
-                              ssl_config->GetCertVerifyFlags(), origin_host,
+                              ssl_config->GetCertVerifyFlags(), url,
                               request_info_.method, net_log_, io_callback_);
     if (rv == OK) {
       using_existing_quic_session_ = true;

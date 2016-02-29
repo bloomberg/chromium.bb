@@ -98,6 +98,10 @@ class NET_EXPORT_PRIVATE QuicClientSessionBase
     return max_open_incoming_streams() * kMaxPromisedStreamsMultiplier;
   }
 
+  QuicClientPushPromiseIndex* push_promise_index() {
+    return push_promise_index_;
+  }
+
  private:
   // For QuicSpdyClientStream to detect that a response corresponds to a
   // promise.

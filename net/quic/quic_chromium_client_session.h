@@ -257,7 +257,8 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
 
  protected:
   // QuicSession methods:
-  QuicSpdyStream* CreateIncomingDynamicStream(QuicStreamId id) override;
+  QuicChromiumClientStream* CreateIncomingDynamicStream(
+      QuicStreamId id) override;
 
  private:
   friend class test::QuicChromiumClientSessionPeer;
@@ -266,6 +267,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   typedef std::list<StreamRequest*> StreamRequestQueue;
 
   QuicChromiumClientStream* CreateOutgoingReliableStreamImpl();
+  QuicChromiumClientStream* CreateIncomingReliableStreamImpl(QuicStreamId id);
   // A completion callback invoked when a read completes.
   void OnReadComplete(int result);
 

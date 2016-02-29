@@ -6,6 +6,7 @@
 
 #include "base/callback_helpers.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -13,6 +14,7 @@
 #include "net/http/http_util.h"
 #include "net/quic/quic_chromium_client_session.h"
 #include "net/quic/quic_chromium_client_stream.h"
+#include "net/quic/quic_client_promised_info.h"
 #include "net/quic/quic_http_utils.h"
 #include "net/quic/quic_utils.h"
 #include "net/quic/spdy_utils.h"
@@ -43,6 +45,8 @@ QuicHttpStream::QuicHttpStream(
       closed_stream_sent_bytes_(0),
       user_buffer_len_(0),
       quic_connection_error_(QUIC_NO_ERROR),
+      found_promise_(false),
+      push_handle_(nullptr),
       weak_factory_(this) {
   DCHECK(session_);
   session_->AddObserver(this);
@@ -52,6 +56,55 @@ QuicHttpStream::~QuicHttpStream() {
   Close(false);
   if (session_)
     session_->RemoveObserver(this);
+}
+
+bool QuicHttpStream::CheckVary(const SpdyHeaderBlock& client_request,
+                               const SpdyHeaderBlock& promise_request,
+                               const SpdyHeaderBlock& promise_response) {
+  HttpResponseInfo promise_response_info;
+
+  HttpRequestInfo promise_request_info;
+  ConvertHeaderBlockToHttpRequestHeaders(promise_request,
+                                         &promise_request_info.extra_headers);
+  HttpRequestInfo client_request_info;
+  ConvertHeaderBlockToHttpRequestHeaders(client_request,
+                                         &client_request_info.extra_headers);
+
+  if (!SpdyHeadersToHttpResponse(promise_response, HTTP2,
+                                 &promise_response_info)) {
+    DLOG(WARNING) << "Invalid headers";
+    return false;
+  }
+
+  HttpVaryData vary_data;
+  if (!vary_data.Init(promise_request_info,
+                      *promise_response_info.headers.get())) {
+    // Promise didn't contain valid vary info, so URL match was sufficient.
+    return true;
+  }
+  // Now compare the client request for matching.
+  return vary_data.MatchesRequest(client_request_info,
+                                  *promise_response_info.headers.get());
+}
+
+void QuicHttpStream::OnRendezvousResult(QuicSpdyStream* stream) {
+  push_handle_ = nullptr;
+  if (stream) {
+    stream_ = static_cast<QuicChromiumClientStream*>(stream);
+    stream_->SetDelegate(this);
+  }
+  // callback_ should be non-null in the case of asynchronous
+  // rendezvous; i.e. |Try()| returned QUIC_PENDING.
+  if (!callback_.is_null()) {
+    if (stream) {
+      next_state_ = STATE_OPEN;
+      DoCallback(OK);
+      return;
+    }
+    // rendezvous has failed so proceed as with a non-push request.
+    next_state_ = STATE_REQUEST_STREAM;
+    OnIOComplete(OK);
+  }
 }
 
 int QuicHttpStream::InitializeStream(const HttpRequestInfo* request_info,
@@ -76,29 +129,105 @@ int QuicHttpStream::InitializeStream(const HttpRequestInfo* request_info,
   DCHECK(success);
   DCHECK(ssl_info_.cert.get());
 
+  if (session_->push_promise_index()->GetPromised(request_info->url.spec())) {
+    // A PUSH_PROMISE frame for this URL has arrived, next steps of
+    // the rendezvous will happen in |SendRequest()| when the browser
+    // request headers (required for push validation) are available.
+    found_promise_ = true;
+    return OK;
+  }
+
+  next_state_ = STATE_REQUEST_STREAM;
+  int rv = DoLoop(OK);
+  if (rv == ERR_IO_PENDING)
+    callback_ = callback;
+
+  return rv;
+}
+
+int QuicHttpStream::DoStreamRequest() {
   int rv = stream_request_.StartRequest(
       session_, &stream_,
       base::Bind(&QuicHttpStream::OnStreamReady, weak_factory_.GetWeakPtr()));
-  if (rv == ERR_IO_PENDING) {
-    callback_ = callback;
-  } else if (rv == OK) {
+  if (rv == OK) {
     stream_->SetDelegate(this);
-  } else if (!was_handshake_confirmed_) {
+    if (response_info_) {
+      next_state_ = STATE_SET_REQUEST_PRIORITY;
+    }
+  } else if (rv != ERR_IO_PENDING && !was_handshake_confirmed_) {
     rv = ERR_QUIC_HANDSHAKE_FAILED;
   }
-
   return rv;
+}
+
+int QuicHttpStream::DoSetRequestPriority() {
+  // Set priority according to request and, and advance to
+  // STATE_SEND_HEADERS.
+  DCHECK(stream_);
+  DCHECK(response_info_);
+  SpdyPriority priority = ConvertRequestPriorityToQuicPriority(priority_);
+  stream_->SetPriority(priority);
+  next_state_ = STATE_SEND_HEADERS;
+  return OK;
 }
 
 void QuicHttpStream::OnStreamReady(int rv) {
   DCHECK(rv == OK || !stream_);
   if (rv == OK) {
     stream_->SetDelegate(this);
+    if (response_info_) {
+      // This happens in the case of a asynchronous push rendezvous
+      // that ultimately fails (e.g. vary failure).  |response_info_|
+      // non-null implies that |DoStreamRequest()| was called via
+      // |SendRequest()|.
+      next_state_ = STATE_SET_REQUEST_PRIORITY;
+      rv = DoLoop(OK);
+    }
   } else if (!was_handshake_confirmed_) {
     rv = ERR_QUIC_HANDSHAKE_FAILED;
   }
+  if (rv != ERR_IO_PENDING) {
+    DoCallback(rv);
+  }
+}
 
-  base::ResetAndReturn(&callback_).Run(rv);
+bool QuicHttpStream::CancelPromiseIfHasBody() {
+  if (!request_body_stream_)
+    return false;
+  // Method type or request with body ineligble for push.
+  this->push_handle_->Cancel();
+  this->push_handle_ = nullptr;
+  next_state_ = STATE_REQUEST_STREAM;
+  return true;
+}
+
+int QuicHttpStream::HandlePromise() {
+  QuicAsyncStatus push_status = session_->push_promise_index()->Try(
+      request_headers_, this, &this->push_handle_);
+
+  switch (push_status) {
+    case QUIC_FAILURE:
+      // Push rendezvous failed.
+      next_state_ = STATE_REQUEST_STREAM;
+      break;
+    case QUIC_SUCCESS:
+      next_state_ = STATE_OPEN;
+      if (!CancelPromiseIfHasBody()) {
+        // Avoid the call to |DoLoop()| below, which would reset
+        // next_state_ to STATE_NONE.
+        return OK;
+      }
+      break;
+    case QUIC_PENDING:
+      if (!CancelPromiseIfHasBody()) {
+        // Have a promise but the promised stream doesn't exist yet.
+        // Still have to do validation before accepting the promised
+        // stream for sure.
+        return ERR_IO_PENDING;
+      }
+      break;
+  }
+  return DoLoop(OK);
 }
 
 int QuicHttpStream::SendRequest(const HttpRequestHeaders& request_headers,
@@ -117,12 +246,11 @@ int QuicHttpStream::SendRequest(const HttpRequestHeaders& request_headers,
     UMA_HISTOGRAM_BOOLEAN("Net.QuicSession.CookieSentToAccountsOverChannelId",
                           ssl_info_.channel_id_sent);
   }
-  if (!stream_) {
-    return ERR_CONNECTION_CLOSED;
+  if ((!found_promise_ && !stream_) || !session_) {
+    return was_handshake_confirmed_ ? ERR_CONNECTION_CLOSED
+                                    : ERR_QUIC_HANDSHAKE_FAILED;
   }
 
-  SpdyPriority priority = ConvertRequestPriorityToQuicPriority(priority_);
-  stream_->SetPriority(priority);
   // Store the serialized request headers.
   CreateSpdyHeadersFromHttpRequest(*request_info_, request_headers, HTTP2,
                                    /*direct=*/true, &request_headers_);
@@ -146,8 +274,15 @@ int QuicHttpStream::SendRequest(const HttpRequestHeaders& request_headers,
   // Store the response info.
   response_info_ = response;
 
-  next_state_ = STATE_SEND_HEADERS;
-  int rv = DoLoop(OK);
+  int rv;
+
+  if (found_promise_) {
+    rv = HandlePromise();
+  } else {
+    next_state_ = STATE_SET_REQUEST_PRIORITY;
+    rv = DoLoop(OK);
+  }
+
   if (rv == ERR_IO_PENDING)
     callback_ = callback;
 
@@ -390,6 +525,12 @@ int QuicHttpStream::DoLoop(int rv) {
     State state = next_state_;
     next_state_ = STATE_NONE;
     switch (state) {
+      case STATE_REQUEST_STREAM:
+        rv = DoStreamRequest();
+        break;
+      case STATE_SET_REQUEST_PRIORITY:
+        rv = DoSetRequestPriority();
+        break;
       case STATE_SEND_HEADERS:
         CHECK_EQ(OK, rv);
         rv = DoSendHeaders();
@@ -584,6 +725,10 @@ void QuicHttpStream::ResetStream() {
   if (read_in_progress_) {
     // |stream_| is going away when Read is called. Should never happen??
     CHECK(false);
+  }
+  if (push_handle_) {
+    push_handle_->Cancel();
+    push_handle_ = nullptr;
   }
   if (!stream_)
     return;

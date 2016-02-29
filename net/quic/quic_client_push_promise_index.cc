@@ -17,6 +17,15 @@ QuicClientPushPromiseIndex::~QuicClientPushPromiseIndex() {}
 
 QuicClientPushPromiseIndex::TryHandle::~TryHandle() {}
 
+QuicClientPromisedInfo* QuicClientPushPromiseIndex::GetPromised(
+    const string& url) {
+  QuicPromisedByUrlMap::iterator it = promised_by_url_.find(url);
+  if (it == promised_by_url_.end()) {
+    return nullptr;
+  }
+  return it->second;
+}
+
 QuicAsyncStatus QuicClientPushPromiseIndex::Try(
     const SpdyHeaderBlock& request,
     QuicClientPushPromiseIndex::Delegate* delegate,

@@ -139,10 +139,12 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
         use_closing_stream_(false),
         crypto_config_(CryptoTestUtils::ProofVerifierForTesting()),
         read_buffer_(new IOBufferWithSize(4096)),
-        connection_id_(2),
+        promise_id_(kServerDataStreamId1),
         stream_id_(kClientDataStreamId1),
+        connection_id_(2),
         maker_(GetParam(), connection_id_, &clock_, kDefaultServerHostName),
-        random_generator_(0) {
+        random_generator_(0),
+        response_offset_(0) {
     IPAddress ip(192, 0, 2, 33);
     peer_addr_ = IPEndPoint(ip, 443);
     self_addr_ = IPEndPoint(ip, 8435);
@@ -247,6 +249,25 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
     stream_.reset(use_closing_stream_
                       ? new AutoClosingStream(session_->GetWeakPtr())
                       : new QuicHttpStream(session_->GetWeakPtr()));
+
+    promised_stream_.reset(use_closing_stream_
+                               ? new AutoClosingStream(session_->GetWeakPtr())
+                               : new QuicHttpStream(session_->GetWeakPtr()));
+
+    push_promise_[":path"] = "/bar";
+    push_promise_[":authority"] = "www.example.org";
+    push_promise_[":version"] = "HTTP/1.1";
+    push_promise_[":method"] = "GET";
+    push_promise_[":scheme"] = "https";
+
+    promised_response_[":status"] = "200 OK";
+    promised_response_[":version"] = "HTTP/1.1";
+    promised_response_["content-type"] = "text/plain";
+
+    promise_url_ = SpdyUtils::GetUrlFromHeaderBlock(push_promise_);
+
+    serialized_push_promise_ =
+        SpdyUtils::SerializeUncompressedHeaders(push_promise_);
   }
 
   void SetRequest(const std::string& method,
@@ -260,14 +281,39 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
     response_data_ = body;
   }
 
+  scoped_ptr<QuicEncryptedPacket> InnerConstructDataPacket(
+      QuicPacketNumber packet_number,
+      QuicStreamId stream_id,
+      bool should_include_version,
+      bool fin,
+      QuicStreamOffset offset,
+      base::StringPiece data) {
+    return maker_.MakeDataPacket(packet_number, stream_id,
+                                 should_include_version, fin, offset, data);
+  }
+
   scoped_ptr<QuicEncryptedPacket> ConstructDataPacket(
       QuicPacketNumber packet_number,
       bool should_include_version,
       bool fin,
       QuicStreamOffset offset,
       base::StringPiece data) {
-    return maker_.MakeDataPacket(packet_number, stream_id_,
-                                 should_include_version, fin, offset, data);
+    return InnerConstructDataPacket(packet_number, stream_id_,
+                                    should_include_version, fin, offset, data);
+  }
+
+  scoped_ptr<QuicEncryptedPacket> InnerConstructRequestHeadersPacket(
+      QuicPacketNumber packet_number,
+      QuicStreamId stream_id,
+      bool should_include_version,
+      bool fin,
+      RequestPriority request_priority,
+      size_t* spdy_headers_frame_length) {
+    SpdyPriority priority =
+        ConvertRequestPriorityToQuicPriority(request_priority);
+    return maker_.MakeRequestHeadersPacket(
+        packet_number, stream_id, should_include_version, fin, priority,
+        request_headers_, spdy_headers_frame_length);
   }
 
   scoped_ptr<QuicEncryptedPacket> ConstructRequestHeadersPacket(
@@ -275,20 +321,27 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
       bool fin,
       RequestPriority request_priority,
       size_t* spdy_headers_frame_length) {
-    SpdyPriority priority =
-        ConvertRequestPriorityToQuicPriority(request_priority);
-    return maker_.MakeRequestHeadersPacket(
-        packet_number, stream_id_, kIncludeVersion, fin, priority,
-        request_headers_, spdy_headers_frame_length);
+    return InnerConstructRequestHeadersPacket(
+        packet_number, stream_id_, kIncludeVersion, fin, request_priority,
+        spdy_headers_frame_length);
+  }
+
+  scoped_ptr<QuicEncryptedPacket> InnerConstructResponseHeadersPacket(
+      QuicPacketNumber packet_number,
+      QuicStreamId stream_id,
+      bool fin,
+      size_t* spdy_headers_frame_length) {
+    return maker_.MakeResponseHeadersPacket(
+        packet_number, stream_id, !kIncludeVersion, fin, response_headers_,
+        spdy_headers_frame_length, &response_offset_);
   }
 
   scoped_ptr<QuicEncryptedPacket> ConstructResponseHeadersPacket(
       QuicPacketNumber packet_number,
       bool fin,
       size_t* spdy_headers_frame_length) {
-    return maker_.MakeResponseHeadersPacket(
-        packet_number, stream_id_, !kIncludeVersion, fin, response_headers_,
-        spdy_headers_frame_length);
+    return InnerConstructResponseHeadersPacket(packet_number, stream_id_, fin,
+                                               spdy_headers_frame_length);
   }
 
   scoped_ptr<QuicEncryptedPacket> ConstructRstStreamPacket(
@@ -304,6 +357,12 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
                                 QUIC_STREAM_CANCELLED);
   }
 
+  scoped_ptr<QuicEncryptedPacket> ConstructRstStreamVaryMismatchPacket(
+      QuicPacketNumber packet_number) {
+    return maker_.MakeRstPacket(packet_number, !kIncludeVersion, promise_id_,
+                                QUIC_PROMISE_VARY_MISMATCH);
+  }
+
   scoped_ptr<QuicEncryptedPacket> ConstructAckAndRstStreamPacket(
       QuicPacketNumber packet_number) {
     return maker_.MakeAckAndRstPacket(packet_number, !kIncludeVersion,
@@ -317,6 +376,14 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
       QuicPacketNumber least_unacked) {
     return maker_.MakeAckPacket(packet_number, largest_received, least_unacked,
                                 !kIncludeCongestionFeedback);
+  }
+
+  void ReceivePromise(QuicStreamId id) {
+    QuicChromiumClientStream* stream =
+        QuicHttpStreamPeer::GetQuicChromiumClientStream(stream_.get());
+    stream->OnStreamHeaders(serialized_push_promise_);
+
+    stream->OnPromiseHeadersComplete(id, serialized_push_promise_.size());
   }
 
   BoundNetLog net_log_;
@@ -343,9 +410,17 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
   std::string response_data_;
   QuicClientPushPromiseIndex push_promise_index_;
 
+  // For server push testing
+  scoped_ptr<QuicHttpStream> promised_stream_;
+  SpdyHeaderBlock push_promise_;
+  SpdyHeaderBlock promised_response_;
+  const QuicStreamId promise_id_;
+  string promise_url_;
+  string serialized_push_promise_;
+  const QuicStreamId stream_id_;
+
  private:
   const QuicConnectionId connection_id_;
-  const QuicStreamId stream_id_;
   QuicTestPacketMaker maker_;
   IPEndPoint self_addr_;
   IPEndPoint peer_addr_;
@@ -354,6 +429,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
   MockCryptoClientStreamFactory crypto_client_stream_factory_;
   scoped_ptr<StaticSocketDataProvider> socket_data_;
   std::vector<PacketToWrite> writes_;
+  QuicStreamOffset response_offset_;
 };
 
 INSTANTIATE_TEST_CASE_P(Version,
@@ -1027,6 +1103,426 @@ TEST_P(QuicHttpStreamTest, SessionClosedBeforeSendBodyComplete) {
                                           callback_.callback()));
   ASSERT_EQ(ERR_QUIC_PROTOCOL_ERROR,
             stream_->SendRequest(headers_, &response_, callback_.callback()));
+}
+
+TEST_P(QuicHttpStreamTest, ServerPushGetRequest) {
+  SetRequest("GET", "/", DEFAULT_PRIORITY);
+  Initialize();
+
+  // Initialize the first stream, for receiving the promise on.
+  request_.method = "GET";
+  request_.url = GURL("http://www.example.org/");
+
+  EXPECT_EQ(OK, stream_->InitializeStream(&request_, DEFAULT_PRIORITY, net_log_,
+                                          callback_.callback()));
+
+  // TODO(ckrasic) - could do this via constructing a PUSH_PROMISE
+  // packet, but does it matter?
+  ReceivePromise(promise_id_);
+  EXPECT_NE(session_->GetPromisedByUrl(promise_url_), nullptr);
+
+  request_.url = GURL(promise_url_);
+
+  // Make the second stream that will exercise the first step of the
+  // server push rendezvous mechanism.
+  EXPECT_EQ(OK,
+            promised_stream_->InitializeStream(&request_, DEFAULT_PRIORITY,
+                                               net_log_, callback_.callback()));
+
+  // Receive the promised response headers.
+  response_headers_ = promised_response_;
+  size_t spdy_response_headers_frame_length;
+  ProcessPacket(InnerConstructResponseHeadersPacket(
+      1, promise_id_, false, &spdy_response_headers_frame_length));
+
+  // Receive the promised response body.
+  const char kResponseBody[] = "Hello world!";
+  ProcessPacket(
+      InnerConstructDataPacket(2, promise_id_, false, kFin, 0, kResponseBody));
+
+  // Now sending a matching request will have successful rendezvous
+  // with the promised stream.
+  EXPECT_EQ(OK, promised_stream_->SendRequest(headers_, &response_,
+                                              callback_.callback()));
+
+  EXPECT_EQ(
+      QuicHttpStreamPeer::GetQuicChromiumClientStream(promised_stream_.get())
+          ->id(),
+      promise_id_);
+
+  // The headers will be immediately available.
+  EXPECT_EQ(OK, promised_stream_->ReadResponseHeaders(callback_.callback()));
+
+  // As will be the body.
+  EXPECT_EQ(
+      static_cast<int>(strlen(kResponseBody)),
+      promised_stream_->ReadResponseBody(
+          read_buffer_.get(), read_buffer_->size(), callback_.callback()));
+  EXPECT_TRUE(promised_stream_->IsResponseBodyComplete());
+  EXPECT_TRUE(AtEof());
+
+  EXPECT_EQ(0, stream_->GetTotalSentBytes());
+  EXPECT_EQ(0, stream_->GetTotalReceivedBytes());
+  EXPECT_EQ(0, promised_stream_->GetTotalSentBytes());
+  EXPECT_EQ(static_cast<int64_t>(spdy_response_headers_frame_length +
+                                 strlen(kResponseBody)),
+            promised_stream_->GetTotalReceivedBytes());
+}
+
+TEST_P(QuicHttpStreamTest, ServerPushGetRequestSlowResponse) {
+  SetRequest("GET", "/", DEFAULT_PRIORITY);
+  Initialize();
+
+  // Initialize the first stream, for receiving the promise on.
+  request_.method = "GET";
+  request_.url = GURL("http://www.example.org/");
+
+  EXPECT_EQ(OK, stream_->InitializeStream(&request_, DEFAULT_PRIORITY, net_log_,
+                                          callback_.callback()));
+
+  // TODO(ckrasic) - could do this via constructing a PUSH_PROMISE
+  // packet, but does it matter?
+  ReceivePromise(promise_id_);
+  EXPECT_NE(session_->GetPromisedByUrl(promise_url_), nullptr);
+
+  request_.url = GURL(promise_url_);
+
+  // Make the second stream that will exercise the first step of the
+  // server push rendezvous mechanism.
+  EXPECT_EQ(OK,
+            promised_stream_->InitializeStream(&request_, DEFAULT_PRIORITY,
+                                               net_log_, callback_.callback()));
+
+  // Now sending a matching request will rendezvous with the promised
+  // stream, but pending secondary validation.
+  EXPECT_EQ(ERR_IO_PENDING, promised_stream_->SendRequest(
+                                headers_, &response_, callback_.callback()));
+
+  // Receive the promised response headers.
+  response_headers_ = promised_response_;
+  size_t spdy_response_headers_frame_length;
+  ProcessPacket(InnerConstructResponseHeadersPacket(
+      1, promise_id_, false, &spdy_response_headers_frame_length));
+
+  // Receive the promised response body.
+  const char kResponseBody[] = "Hello world!";
+  ProcessPacket(
+      InnerConstructDataPacket(2, promise_id_, false, kFin, 0, kResponseBody));
+
+  base::MessageLoop::current()->RunUntilIdle();
+
+  // Rendezvous should have succeeded now, so the promised stream
+  // should point at our push stream, and we should be able read
+  // headers and data from it.
+  EXPECT_EQ(OK, callback_.WaitForResult());
+
+  EXPECT_EQ(
+      QuicHttpStreamPeer::GetQuicChromiumClientStream(promised_stream_.get())
+          ->id(),
+      promise_id_);
+
+  EXPECT_EQ(OK, promised_stream_->ReadResponseHeaders(callback_.callback()));
+
+  EXPECT_EQ(
+      static_cast<int>(strlen(kResponseBody)),
+      promised_stream_->ReadResponseBody(
+          read_buffer_.get(), read_buffer_->size(), callback_.callback()));
+
+  // Callback should return
+  EXPECT_TRUE(promised_stream_->IsResponseBodyComplete());
+  EXPECT_TRUE(AtEof());
+
+  EXPECT_EQ(0, stream_->GetTotalSentBytes());
+  EXPECT_EQ(0, stream_->GetTotalReceivedBytes());
+  EXPECT_EQ(0, promised_stream_->GetTotalSentBytes());
+  EXPECT_EQ(static_cast<int64_t>(spdy_response_headers_frame_length +
+                                 strlen(kResponseBody)),
+            promised_stream_->GetTotalReceivedBytes());
+}
+
+TEST_P(QuicHttpStreamTest, ServerPushCrossOriginOK) {
+  SetRequest("GET", "/", DEFAULT_PRIORITY);
+  Initialize();
+
+  // Initialize the first stream, for receiving the promise on.
+  request_.method = "GET";
+  request_.url = GURL("http://www.example.org/");
+
+  EXPECT_EQ(OK, stream_->InitializeStream(&request_, DEFAULT_PRIORITY, net_log_,
+                                          callback_.callback()));
+
+  // TODO(ckrasic) - could do this via constructing a PUSH_PROMISE
+  // packet, but does it matter?
+
+  push_promise_[":authority"] = "mail.example.org";
+  promise_url_ = SpdyUtils::GetUrlFromHeaderBlock(push_promise_);
+  serialized_push_promise_ =
+      SpdyUtils::SerializeUncompressedHeaders(push_promise_);
+
+  ReceivePromise(promise_id_);
+  EXPECT_NE(session_->GetPromisedByUrl(promise_url_), nullptr);
+
+  request_.url = GURL(promise_url_);
+
+  // Make the second stream that will exercise the first step of the
+  // server push rendezvous mechanism.
+  EXPECT_EQ(OK,
+            promised_stream_->InitializeStream(&request_, DEFAULT_PRIORITY,
+                                               net_log_, callback_.callback()));
+
+  // Receive the promised response headers.
+  response_headers_ = promised_response_;
+  size_t spdy_response_headers_frame_length;
+  ProcessPacket(InnerConstructResponseHeadersPacket(
+      1, promise_id_, false, &spdy_response_headers_frame_length));
+
+  // Receive the promised response body.
+  const char kResponseBody[] = "Hello world!";
+  ProcessPacket(
+      InnerConstructDataPacket(2, promise_id_, false, kFin, 0, kResponseBody));
+
+  // Now sending a matching request will have successful rendezvous
+  // with the promised stream.
+  EXPECT_EQ(OK, promised_stream_->SendRequest(headers_, &response_,
+                                              callback_.callback()));
+
+  EXPECT_EQ(
+      QuicHttpStreamPeer::GetQuicChromiumClientStream(promised_stream_.get())
+          ->id(),
+      promise_id_);
+
+  // The headers will be immediately available.
+  EXPECT_EQ(OK, promised_stream_->ReadResponseHeaders(callback_.callback()));
+
+  // As will be the body.
+  EXPECT_EQ(
+      static_cast<int>(strlen(kResponseBody)),
+      promised_stream_->ReadResponseBody(
+          read_buffer_.get(), read_buffer_->size(), callback_.callback()));
+  EXPECT_TRUE(promised_stream_->IsResponseBodyComplete());
+  EXPECT_TRUE(AtEof());
+
+  EXPECT_EQ(0, stream_->GetTotalSentBytes());
+  EXPECT_EQ(0, stream_->GetTotalReceivedBytes());
+  EXPECT_EQ(0, promised_stream_->GetTotalSentBytes());
+  EXPECT_EQ(static_cast<int64_t>(spdy_response_headers_frame_length +
+                                 strlen(kResponseBody)),
+            promised_stream_->GetTotalReceivedBytes());
+}
+
+TEST_P(QuicHttpStreamTest, ServerPushCrossOriginFail) {
+  SetRequest("GET", "/", DEFAULT_PRIORITY);
+  Initialize();
+
+  // Initialize the first stream, for receiving the promise on.
+  request_.method = "GET";
+  request_.url = GURL("http://www.example.org/");
+
+  EXPECT_EQ(OK, stream_->InitializeStream(&request_, DEFAULT_PRIORITY, net_log_,
+                                          callback_.callback()));
+
+  // TODO(ckrasic) - could do this via constructing a PUSH_PROMISE
+  // packet, but does it matter?
+  push_promise_[":authority"] = "www.notexample.org";
+  promise_url_ = SpdyUtils::GetUrlFromHeaderBlock(push_promise_);
+  serialized_push_promise_ =
+      SpdyUtils::SerializeUncompressedHeaders(push_promise_);
+
+  ReceivePromise(promise_id_);
+  // The promise will have been rejected because the cert doesn't
+  // match.
+  EXPECT_EQ(session_->GetPromisedByUrl(promise_url_), nullptr);
+}
+
+TEST_P(QuicHttpStreamTest, ServerPushVaryCheckOK) {
+  SetRequest("GET", "/", DEFAULT_PRIORITY);
+  Initialize();
+
+  // Initialize the first stream, for receiving the promise on.
+  request_.method = "GET";
+  request_.url = GURL("http://www.example.org/");
+
+  EXPECT_EQ(OK, stream_->InitializeStream(&request_, DEFAULT_PRIORITY, net_log_,
+                                          callback_.callback()));
+
+  push_promise_["accept-encoding"] = "gzip";
+  serialized_push_promise_ =
+      SpdyUtils::SerializeUncompressedHeaders(push_promise_);
+
+  // TODO(ckrasic) - could do this via constructing a PUSH_PROMISE
+  // packet, but does it matter?
+  ReceivePromise(promise_id_);
+  EXPECT_NE(session_->GetPromisedByUrl(promise_url_), nullptr);
+
+  request_.url = GURL(promise_url_);
+
+  // Make the second stream that will exercise the first step of the
+  // server push rendezvous mechanism.
+  EXPECT_EQ(OK,
+            promised_stream_->InitializeStream(&request_, DEFAULT_PRIORITY,
+                                               net_log_, callback_.callback()));
+
+  headers_.SetHeader("accept-encoding", "gzip");
+
+  // Now sending a matching request will rendezvous with the promised
+  // stream, but pending secondary validation.
+  EXPECT_EQ(ERR_IO_PENDING, promised_stream_->SendRequest(
+                                headers_, &response_, callback_.callback()));
+
+  // Receive the promised response headers.
+  promised_response_["vary"] = "accept-encoding";
+  response_headers_ = promised_response_;
+  size_t spdy_response_headers_frame_length;
+  ProcessPacket(InnerConstructResponseHeadersPacket(
+      1, promise_id_, false, &spdy_response_headers_frame_length));
+
+  // Receive the promised response body.
+  const char kResponseBody[] = "Hello world!";
+  ProcessPacket(
+      InnerConstructDataPacket(2, promise_id_, false, kFin, 0, kResponseBody));
+
+  base::MessageLoop::current()->RunUntilIdle();
+
+  // Rendezvous should have succeeded now, so the promised stream
+  // should point at our push stream, and we should be able read
+  // headers and data from it.
+  EXPECT_EQ(OK, callback_.WaitForResult());
+
+  EXPECT_EQ(
+      QuicHttpStreamPeer::GetQuicChromiumClientStream(promised_stream_.get())
+          ->id(),
+      promise_id_);
+
+  EXPECT_EQ(OK, promised_stream_->ReadResponseHeaders(callback_.callback()));
+
+  EXPECT_EQ(
+      static_cast<int>(strlen(kResponseBody)),
+      promised_stream_->ReadResponseBody(
+          read_buffer_.get(), read_buffer_->size(), callback_.callback()));
+
+  // Callback should return
+  EXPECT_TRUE(promised_stream_->IsResponseBodyComplete());
+  EXPECT_TRUE(AtEof());
+
+  EXPECT_EQ(0, stream_->GetTotalSentBytes());
+  EXPECT_EQ(0, stream_->GetTotalReceivedBytes());
+  EXPECT_EQ(0, promised_stream_->GetTotalSentBytes());
+  EXPECT_EQ(static_cast<int64_t>(spdy_response_headers_frame_length +
+                                 strlen(kResponseBody)),
+            promised_stream_->GetTotalReceivedBytes());
+}
+
+TEST_P(QuicHttpStreamTest, ServerPushVaryCheckFail) {
+  SetRequest("GET", "/", DEFAULT_PRIORITY);
+  request_headers_[":scheme"] = "https";
+  request_headers_[":path"] = "/bar";
+  request_headers_["accept-encoding"] = "sdch";
+
+  size_t spdy_request_header_frame_length;
+  AddWrite(ConstructRstStreamVaryMismatchPacket(1));
+  AddWrite(InnerConstructRequestHeadersPacket(
+      2, stream_id_ + 2, !kIncludeVersion, kFin, DEFAULT_PRIORITY,
+      &spdy_request_header_frame_length));
+  AddWrite(ConstructAckPacket(3, 3, 1));
+  AddWrite(ConstructRstStreamCancelledPacket(4));
+  Initialize();
+
+  // Initialize the first stream, for receiving the promise on.
+  request_.method = "GET";
+  request_.url = GURL("http://www.example.org/");
+
+  EXPECT_EQ(OK, stream_->InitializeStream(&request_, DEFAULT_PRIORITY, net_log_,
+                                          callback_.callback()));
+
+  push_promise_["accept-encoding"] = "gzip";
+  serialized_push_promise_ =
+      SpdyUtils::SerializeUncompressedHeaders(push_promise_);
+
+  // TODO(ckrasic) - could do this via constructing a PUSH_PROMISE
+  // packet, but does it matter?
+  ReceivePromise(promise_id_);
+  EXPECT_NE(session_->GetPromisedByUrl(promise_url_), nullptr);
+
+  request_.url = GURL(promise_url_);
+
+  // Make the second stream that will exercise the first step of the
+  // server push rendezvous mechanism.
+  EXPECT_EQ(OK,
+            promised_stream_->InitializeStream(&request_, DEFAULT_PRIORITY,
+                                               net_log_, callback_.callback()));
+
+  headers_.SetHeader("accept-encoding", "sdch");
+
+  // Now sending a matching request will rendezvous with the promised
+  // stream, but pending secondary validation.
+  EXPECT_EQ(ERR_IO_PENDING, promised_stream_->SendRequest(
+                                headers_, &response_, callback_.callback()));
+
+  // Receive the promised response headers.
+  promised_response_["vary"] = "accept-encoding";
+  response_headers_ = promised_response_;
+  size_t spdy_response_headers_frame_length;
+  ProcessPacket(InnerConstructResponseHeadersPacket(
+      1, promise_id_, false, &spdy_response_headers_frame_length));
+
+  base::MessageLoop::current()->RunUntilIdle();
+
+  // Rendezvous should have failed due to vary mismatch, so the
+  // promised stream should have been aborted, and instead we have a
+  // new, regular client initiated stream.
+  EXPECT_EQ(OK, callback_.WaitForResult());
+
+  // Not a server-initiated stream.
+  EXPECT_NE(
+      QuicHttpStreamPeer::GetQuicChromiumClientStream(promised_stream_.get())
+          ->id(),
+      promise_id_);
+
+  // Instead, a new client-initiated stream.
+  EXPECT_EQ(
+      QuicHttpStreamPeer::GetQuicChromiumClientStream(promised_stream_.get())
+          ->id(),
+      stream_id_ + 2);
+
+  // After rendezvous failure, the push stream has been cancelled.
+  EXPECT_EQ(session_->GetPromisedByUrl(promise_url_), nullptr);
+
+  // The rest of the test verifies that the retried as
+  // client-initiated version of |promised_stream_| works as intended.
+
+  // Ack the request.
+  ProcessPacket(ConstructAckPacket(2, 0, 0));
+
+  SetResponse("404 Not Found", std::string());
+  size_t spdy_response_header_frame_length;
+  ProcessPacket(InnerConstructResponseHeadersPacket(
+      3, stream_id_ + 2, kFin, &spdy_response_header_frame_length));
+
+  base::MessageLoop::current()->RunUntilIdle();
+
+  EXPECT_EQ(OK, promised_stream_->ReadResponseHeaders(callback_.callback()));
+  ASSERT_TRUE(response_.headers.get());
+  EXPECT_EQ(404, response_.headers->response_code());
+  EXPECT_TRUE(response_.headers->HasHeaderValue("Content-Type", "text/plain"));
+  EXPECT_FALSE(response_.response_time.is_null());
+  EXPECT_FALSE(response_.request_time.is_null());
+
+  // There is no body, so this should return immediately.
+  EXPECT_EQ(
+      0, promised_stream_->ReadResponseBody(
+             read_buffer_.get(), read_buffer_->size(), callback_.callback()));
+  EXPECT_TRUE(promised_stream_->IsResponseBodyComplete());
+
+  stream_->Close(true);
+
+  EXPECT_TRUE(AtEof());
+
+  // QuicHttpStream::GetTotalSent/ReceivedBytes currently only includes the
+  // headers and payload.
+  EXPECT_EQ(static_cast<int64_t>(spdy_request_header_frame_length),
+            promised_stream_->GetTotalSentBytes());
+  EXPECT_EQ(static_cast<int64_t>(spdy_response_header_frame_length),
+            promised_stream_->GetTotalReceivedBytes());
 }
 
 }  // namespace test

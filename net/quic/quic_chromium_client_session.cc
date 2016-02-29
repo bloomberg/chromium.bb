@@ -622,10 +622,37 @@ bool QuicChromiumClientSession::CanPool(const std::string& hostname,
                               server_id_.host(), hostname);
 }
 
-QuicSpdyStream* QuicChromiumClientSession::CreateIncomingDynamicStream(
-    QuicStreamId id) {
-  DLOG(ERROR) << "Server push not supported";
-  return nullptr;
+QuicChromiumClientStream*
+QuicChromiumClientSession::CreateIncomingDynamicStream(QuicStreamId id) {
+  if (!connection()->connected()) {
+    LOG(DFATAL) << "ShouldCreateIncomingDynamicStream called when disconnected";
+    return nullptr;
+  }
+  if (goaway_received()) {
+    DVLOG(1) << "Failed to create a new outgoing stream. "
+             << "Already received goaway.";
+    return nullptr;
+  }
+  if (going_away_) {
+    return nullptr;
+  }
+  if (id % 2 != 0) {
+    LOG(WARNING) << "Received invalid push stream id " << id;
+    connection()->SendConnectionCloseWithDetails(
+        QUIC_INVALID_STREAM_ID, "Server created odd numbered stream");
+    return nullptr;
+  }
+  return CreateIncomingReliableStreamImpl(id);
+}
+
+QuicChromiumClientStream*
+QuicChromiumClientSession::CreateIncomingReliableStreamImpl(QuicStreamId id) {
+  DCHECK(connection()->connected());
+  QuicChromiumClientStream* stream =
+      new QuicChromiumClientStream(id, this, net_log_);
+  stream->CloseWriteSide();
+  ++num_total_streams_;
+  return stream;
 }
 
 void QuicChromiumClientSession::CloseStream(QuicStreamId stream_id) {

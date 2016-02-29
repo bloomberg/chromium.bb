@@ -76,7 +76,7 @@ class NET_EXPORT_PRIVATE QuicStreamRequest {
   int Request(const HostPortPair& host_port_pair,
               PrivacyMode privacy_mode,
               int cert_verify_flags,
-              base::StringPiece origin_host,
+              const GURL& url,
               base::StringPiece method,
               const BoundNetLog& net_log,
               const CompletionCallback& callback);
@@ -101,6 +101,7 @@ class NET_EXPORT_PRIVATE QuicStreamRequest {
   QuicStreamFactory* factory_;
   HostPortPair host_port_pair_;
   std::string origin_host_;
+  string url_;
   PrivacyMode privacy_mode_;
   BoundNetLog net_log_;
   CompletionCallback callback_;
@@ -172,7 +173,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   int Create(const HostPortPair& host_port_pair,
              PrivacyMode privacy_mode,
              int cert_verify_flags,
-             base::StringPiece origin_host,
+             const GURL& url,
              base::StringPiece method,
              const BoundNetLog& net_log,
              QuicStreamRequest* request);
@@ -527,6 +528,8 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   std::set<HostPortPair> quic_supported_servers_at_startup_;
 
   NetworkConnection network_connection_;
+
+  int num_push_streams_created_;
 
   QuicClientPushPromiseIndex push_promise_index_;
 

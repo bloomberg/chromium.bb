@@ -213,6 +213,21 @@ TEST_F(QuicClientPromisedInfoTest, PushPromiseInvalidUrl) {
   EXPECT_EQ(session_.GetPromisedByUrl(promise_url_), nullptr);
 }
 
+TEST_F(QuicClientPromisedInfoTest, PushPromiseInvalidUrl) {
+  // Promise with an unsafe method
+  push_promise_[":method"] = "PUT";
+  serialized_push_promise_ =
+      SpdyUtils::SerializeUncompressedHeaders(push_promise_);
+
+  EXPECT_CALL(*connection_,
+              SendRstStream(promise_id_, QUIC_INVALID_PROMISE_METHOD, 0));
+  ReceivePromise(promise_id_);
+
+  // Verify that the promise headers were ignored
+  EXPECT_EQ(session_.GetPromisedById(promise_id_), nullptr);
+  EXPECT_EQ(session_.GetPromisedByUrl(promise_url_), nullptr);
+}
+
 TEST_F(QuicClientPromisedInfoTest, PushPromiseUnauthorizedUrl) {
   session_.set_authorized(false);
 

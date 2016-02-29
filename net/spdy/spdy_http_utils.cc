@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "net/base/escape.h"
@@ -190,6 +191,22 @@ NET_EXPORT_PRIVATE RequestPriority ConvertSpdyPriorityToRequestPriority(
   // Note that SpdyPriority is not an enum, hence the magic constants.
   return (priority >= 5) ?
       IDLE : static_cast<RequestPriority>(4 - priority);
+}
+
+NET_EXPORT_PRIVATE void ConvertHeaderBlockToHttpRequestHeaders(
+    const SpdyHeaderBlock& spdy_headers,
+    HttpRequestHeaders* http_headers) {
+  for (const auto& it : spdy_headers) {
+    base::StringPiece key = it.first;
+    if (key[0] == ':') {
+      key.remove_prefix(1);
+    }
+    std::vector<base::StringPiece> values = base::SplitStringPiece(
+        it.second, "\0", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+    for (const auto& value : values) {
+      http_headers->SetHeader(key, value);
+    }
+  }
 }
 
 GURL GetUrlFromHeaderBlock(const SpdyHeaderBlock& headers,

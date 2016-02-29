@@ -90,6 +90,15 @@ TEST_F(QuicClientPushPromiseIndexTest, TryNoPromise) {
   EXPECT_EQ(index_.Try(request_, nullptr, &handle_), QUIC_FAILURE);
 }
 
+TEST_F(QuicClientPushPromiseIndexTest, GetNoPromise) {
+  EXPECT_EQ(index_.GetPromised(url_), nullptr);
+}
+
+TEST_F(QuicClientPushPromiseIndexTest, GetPromise) {
+  (*index_.promised_by_url())[url_] = &promised_;
+  EXPECT_EQ(index_.GetPromised(url_), &promised_);
+}
+
 }  // namespace
 }  // namespace test
 }  // namespace net

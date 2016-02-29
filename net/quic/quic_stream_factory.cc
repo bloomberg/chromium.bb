@@ -38,6 +38,7 @@
 #include "net/quic/quic_chromium_connection_helper.h"
 #include "net/quic/quic_chromium_packet_reader.h"
 #include "net/quic/quic_chromium_packet_writer.h"
+#include "net/quic/quic_client_promised_info.h"
 #include "net/quic/quic_clock.h"
 #include "net/quic/quic_connection.h"
 #include "net/quic/quic_crypto_client_stream_factory.h"
@@ -507,17 +508,17 @@ QuicStreamRequest::~QuicStreamRequest() {
 int QuicStreamRequest::Request(const HostPortPair& host_port_pair,
                                PrivacyMode privacy_mode,
                                int cert_verify_flags,
-                               base::StringPiece origin_host,
+                               const GURL& url,
                                base::StringPiece method,
                                const BoundNetLog& net_log,
                                const CompletionCallback& callback) {
   DCHECK(!stream_);
   DCHECK(callback_.is_null());
   DCHECK(factory_);
-  origin_host_ = origin_host.as_string();
+  origin_host_ = url.host();
   privacy_mode_ = privacy_mode;
   int rv = factory_->Create(host_port_pair, privacy_mode, cert_verify_flags,
-                            origin_host, method, net_log, this);
+                            url, method, net_log, this);
   if (rv == ERR_IO_PENDING) {
     host_port_pair_ = host_port_pair;
     net_log_ = net_log;
@@ -644,6 +645,7 @@ QuicStreamFactory::QuicStreamFactory(
       port_seed_(random_generator_->RandUint64()),
       check_persisted_supports_quic_(true),
       has_initialized_data_(false),
+      num_push_streams_created_(0),
       task_runner_(nullptr),
       weak_factory_(this) {
   if (disable_quic_on_timeout_with_open_streams)
@@ -764,17 +766,35 @@ bool QuicStreamFactory::CanUseExistingSession(QuicServerId server_id,
 int QuicStreamFactory::Create(const HostPortPair& host_port_pair,
                               PrivacyMode privacy_mode,
                               int cert_verify_flags,
-                              base::StringPiece origin_host,
+                              const GURL& url,
                               base::StringPiece method,
                               const BoundNetLog& net_log,
                               QuicStreamRequest* request) {
+  // Enforce session affinity for promised streams.
+  QuicClientPromisedInfo* promised =
+      push_promise_index_.GetPromised(url.spec());
+  if (promised) {
+    QuicChromiumClientSession* session =
+        static_cast<QuicChromiumClientSession*>(promised->session());
+    DCHECK(session);
+    if (session->server_id().privacy_mode() == privacy_mode) {
+      request->set_stream(CreateFromSession(session));
+      ++num_push_streams_created_;
+      return OK;
+    }
+    // This should happen extremely rarely (if ever), but if somehow a
+    // request comes in with a mismatched privacy mode, consider the
+    // promise borked.
+    promised->Cancel();
+  }
+
   QuicServerId server_id(host_port_pair, privacy_mode);
   // TODO(rtenneti): crbug.com/498823 - delete active_sessions_.empty() checks.
   if (!active_sessions_.empty()) {
     SessionMap::iterator it = active_sessions_.find(server_id);
     if (it != active_sessions_.end()) {
       QuicChromiumClientSession* session = it->second;
-      if (!session->CanPool(origin_host.as_string(), privacy_mode))
+      if (!session->CanPool(url.host(), privacy_mode))
         return ERR_ALTERNATIVE_CERT_NOT_VALID_FOR_ORIGIN;
       request->set_stream(CreateFromSession(session));
       return OK;
@@ -807,7 +827,7 @@ int QuicStreamFactory::Create(const HostPortPair& host_port_pair,
     }
   }
 
-  bool server_and_origin_have_same_host = host_port_pair.host() == origin_host;
+  bool server_and_origin_have_same_host = host_port_pair.host() == url.host();
   scoped_ptr<Job> job(new Job(
       this, host_resolver_, host_port_pair, server_and_origin_have_same_host,
       WasQuicRecentlyBroken(server_id), privacy_mode, cert_verify_flags,
@@ -830,7 +850,7 @@ int QuicStreamFactory::Create(const HostPortPair& host_port_pair,
     if (it == active_sessions_.end())
       return ERR_QUIC_PROTOCOL_ERROR;
     QuicChromiumClientSession* session = it->second;
-    if (!session->CanPool(origin_host.as_string(), privacy_mode))
+    if (!session->CanPool(url.host(), privacy_mode))
       return ERR_ALTERNATIVE_CERT_NOT_VALID_FOR_ORIGIN;
     request->set_stream(CreateFromSession(session));
   }
