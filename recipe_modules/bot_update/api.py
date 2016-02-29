@@ -131,9 +131,7 @@ class BotUpdateApi(recipe_api.RecipeApi):
     else:
       email_file = key_file = None
 
-    rev_map = {}
-    if self.m.gclient.c:
-      rev_map = self.m.gclient.c.got_revision_mapping.as_jsonish()
+    rev_map = cfg.got_revision_mapping.as_jsonish()
 
     flags = [
         # 1. Do we want to run? (master/builder/slave).
