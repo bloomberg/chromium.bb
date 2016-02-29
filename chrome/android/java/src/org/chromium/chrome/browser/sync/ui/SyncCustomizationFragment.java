@@ -240,8 +240,8 @@ public class SyncCustomizationFragment extends PreferenceFragment
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
+    public void onStart() {
+        super.onStart();
         mIsBackendInitialized = mProfileSyncService.isBackendInitialized();
         mIsPassphraseRequired =
                 mIsBackendInitialized && mProfileSyncService.isPassphraseRequiredForDecryption();
@@ -252,8 +252,9 @@ public class SyncCustomizationFragment extends PreferenceFragment
     }
 
     @Override
-    public void onPause() {
-        super.onPause();
+    public void onStop() {
+        super.onStop();
+
         mProfileSyncService.removeSyncStateChangedListener(this);
         // If this activity is closing, apply configuration changes and tell sync that
         // the user is done configuring sync.

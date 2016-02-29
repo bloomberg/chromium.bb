@@ -34,7 +34,8 @@ public class SyncedAccountPreference extends ListPreference {
         boolean syncEnabled = AndroidSyncSettings.isSyncEnabled(getContext());
         if (!syncEnabled) {
             setEnabled(false);
-            return;
+            // Don't return at this point, we still want the preference to display the currently
+            // signed in account
         }
 
         Account[] accounts = AccountManagerHelper.get(getContext()).getGoogleAccounts();
