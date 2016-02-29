@@ -30,19 +30,14 @@ public class ChromeBackgroundService extends GcmTaskService {
     private static final String TAG = "BackgroundService";
 
     @Override
-    public int onRunTask(TaskParams params) {
-        Log.i(TAG, "Woken up at " + new java.util.Date().toString());
-        handleRunTask(params.getTag());
-        return GcmNetworkManager.RESULT_SUCCESS;
-    }
-
     @VisibleForTesting
-    public void handleRunTask(final String tag) {
+    public int onRunTask(final TaskParams params) {
+        Log.i(TAG, "Woken up at " + new java.util.Date().toString());
         final Context context = this;
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                switch(tag) {
+                switch(params.getTag()) {
                     case BackgroundSyncLauncher.TASK_TAG:
                         handleBackgroundSyncEvent(context);
                         break;
@@ -52,11 +47,12 @@ public class ChromeBackgroundService extends GcmTaskService {
                         break;
 
                     default:
-                        Log.i(TAG, "Unknown task tag " + tag);
+                        Log.i(TAG, "Unknown task tag " + params.getTag());
                         break;
                 }
             }
         });
+        return GcmNetworkManager.RESULT_SUCCESS;
     }
 
     private void handleBackgroundSyncEvent(Context context) {

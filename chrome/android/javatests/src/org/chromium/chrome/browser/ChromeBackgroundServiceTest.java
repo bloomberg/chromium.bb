@@ -8,6 +8,8 @@ import android.content.Context;
 import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 
+import com.google.android.gms.gcm.TaskParams;
+
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.AdvancedMockContext;
@@ -92,7 +94,7 @@ public class ChromeBackgroundServiceTest extends InstrumentationTestCase {
 
     private void startOnRunTaskAndVerify(String taskTag, boolean shouldStart,
             boolean shouldFetchSnippets) {
-        mTaskService.handleRunTask(taskTag);
+        mTaskService.onRunTask(new TaskParams(taskTag));
         mTaskService.checkExpectations(shouldStart);
         mSnippetsController.checkExpectations(shouldFetchSnippets);
     }

@@ -124,6 +124,10 @@
   *;
 }
 
+-keepclassmembers class com.google.android.gms.gcm.TaskParams {
+  public <init>(java.lang.String);
+}
+
 -keepnames class jp.tomorrowkey.android.gifplayer.** {
   public *;
 }
