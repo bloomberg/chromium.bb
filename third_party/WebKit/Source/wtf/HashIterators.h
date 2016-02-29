@@ -54,8 +54,8 @@ public:
     HashTableConstIteratorAdapter& operator++() { ++m_impl; return *this; }
     // postfix ++ intentionally omitted
 
-    Keys getKeys() { return Keys(*this); }
-    Values getValues() { return Values(*this); }
+    Keys keys() { return Keys(*this); }
+    Values values() { return Values(*this); }
 
     typename HashTableType::const_iterator m_impl;
 };
@@ -85,8 +85,8 @@ public:
         return i;
     }
 
-    Keys getKeys() { return Keys(*this); }
-    Values getValues() { return Values(*this); }
+    Keys keys() { return Keys(*this); }
+    Values values() { return Values(*this); }
 
     typename HashTableType::iterator m_impl;
 };
