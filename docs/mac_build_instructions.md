@@ -24,8 +24,7 @@
 ## Getting the code
 
 [Check out the source code](http://dev.chromium.org/developers/how-tos/get-the-code)
-using Git. If you're new to the project, you can skip all the information about
-git-svn, since you will not be committing directly to the repository.
+using Git.
 
 Before checking out, go to the
 [waterfall](http://build.chromium.org/buildbot/waterfall/) and check that the
