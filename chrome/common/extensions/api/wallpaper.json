@@ -31,12 +31,12 @@
             "data": {
               "type": "binary",
               "optional": true,
-              "description": "The jpeg or png encoded wallpaper image."
+              "description": "The jpeg or png encoded wallpaper image as an ArrayBuffer."
             },
             "url": {
               "type": "string",
               "optional": true,
-              "description": "The URL of the wallpaper to be set."
+              "description": "The URL of the wallpaper to be set (can be relative)."
             },
             "layout": {
               "$ref": "WallpaperLayout",
@@ -49,7 +49,7 @@
             "thumbnail": {
               "type": "boolean",
               "optional": true,
-              "description": "True if a 128x60 thumbnail should be generated."
+              "description": "True if a 128x60 thumbnail should be generated. Layout and ratio are not supported yet."
             }
           }
         },
