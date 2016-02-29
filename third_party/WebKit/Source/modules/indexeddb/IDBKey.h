@@ -107,7 +107,7 @@ public:
         MinType
     };
 
-    Type type() const { return m_type; }
+    Type getType() const { return m_type; }
     bool isValid() const;
 
     const KeyArray& array() const

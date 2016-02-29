@@ -174,7 +174,7 @@ enum class ResponseType {
 void RecordResponseTypeForAdd(const Member<Response>& response)
 {
     ResponseType type = ResponseType::EnumMax;
-    switch (response->response()->type()) {
+    switch (response->response()->getType()) {
     case FetchResponseData::BasicType:
         type = ResponseType::BasicType;
         break;

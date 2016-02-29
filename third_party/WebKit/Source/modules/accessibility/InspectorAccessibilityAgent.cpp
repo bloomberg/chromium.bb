@@ -81,7 +81,7 @@ void fillGlobalStates(AXObject* axObject, protocol::Array<AXProperty>* propertie
         properties->addItem(createProperty(AXGlobalStatesEnum::HiddenRoot, createRelatedNodeListValue(hiddenRoot)));
     }
 
-    InvalidState invalidState = axObject->invalidState();
+    InvalidState invalidState = axObject->getInvalidState();
     switch (invalidState) {
     case InvalidStateUndefined:
         break;

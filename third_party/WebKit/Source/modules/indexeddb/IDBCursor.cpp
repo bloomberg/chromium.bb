@@ -62,7 +62,7 @@ IDBCursor::IDBCursor(PassOwnPtr<WebIDBCursor> backend, WebIDBCursorDirection dir
 {
     ASSERT(m_backend);
     ASSERT(m_request);
-    ASSERT(m_source->type() == IDBAny::IDBObjectStoreType || m_source->type() == IDBAny::IDBIndexType);
+    ASSERT(m_source->getType() == IDBAny::IDBObjectStoreType || m_source->getType() == IDBAny::IDBIndexType);
     ASSERT(m_transaction);
 }
 
@@ -168,7 +168,7 @@ void IDBCursor::continueFunction(ScriptState* scriptState, const ScriptValue& ke
 void IDBCursor::continuePrimaryKey(ScriptState* scriptState, const ScriptValue& keyValue, const ScriptValue& primaryKeyValue, ExceptionState& exceptionState)
 {
     IDB_TRACE("IDBCursor::continuePrimaryKey");
-    if (m_source->type() != IDBAny::IDBIndexType) {
+    if (m_source->getType() != IDBAny::IDBIndexType) {
         exceptionState.throwDOMException(InvalidAccessError, "The cursor's source is not an index.");
         return;
     }
@@ -359,14 +359,14 @@ void IDBCursor::setValueReady(IDBKey* key, IDBKey* primaryKey, PassRefPtr<IDBVal
 
 IDBObjectStore* IDBCursor::effectiveObjectStore() const
 {
-    if (m_source->type() == IDBAny::IDBObjectStoreType)
+    if (m_source->getType() == IDBAny::IDBObjectStoreType)
         return m_source->idbObjectStore();
     return m_source->idbIndex()->objectStore();
 }
 
 bool IDBCursor::isDeleted() const
 {
-    if (m_source->type() == IDBAny::IDBObjectStoreType)
+    if (m_source->getType() == IDBAny::IDBObjectStoreType)
         return m_source->idbObjectStore()->isDeleted();
     return m_source->idbIndex()->isDeleted();
 }

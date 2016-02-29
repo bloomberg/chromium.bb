@@ -65,7 +65,7 @@ static v8::Local<v8::Value> deserializeIDBValueArray(v8::Isolate*, v8::Local<v8:
 
 v8::Local<v8::Value> toV8(const IDBKeyPath& value, v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
 {
-    switch (value.type()) {
+    switch (value.getType()) {
     case IDBKeyPath::NullType:
         return v8::Null(isolate);
     case IDBKeyPath::StringType:
@@ -89,7 +89,7 @@ v8::Local<v8::Value> toV8(const IDBKey* key, v8::Local<v8::Object> creationConte
 
     v8::Local<v8::Context> context = isolate->GetCurrentContext();
 
-    switch (key->type()) {
+    switch (key->getType()) {
     case IDBKey::InvalidType:
     case IDBKey::MinType:
         ASSERT_NOT_REACHED();
@@ -132,7 +132,7 @@ v8::Local<v8::Value> toV8(const IDBAny* impl, v8::Local<v8::Object> creationCont
     if (!impl)
         return v8::Null(isolate);
 
-    switch (impl->type()) {
+    switch (impl->getType()) {
     case IDBAny::UndefinedType:
         return v8::Undefined(isolate);
     case IDBAny::NullType:
@@ -294,7 +294,7 @@ static IDBKey* createIDBKeyFromValueAndKeyPath(v8::Isolate* isolate, v8::Local<v
 {
     ASSERT(!keyPath.isNull());
     v8::HandleScope handleScope(isolate);
-    if (keyPath.type() == IDBKeyPath::ArrayType) {
+    if (keyPath.getType() == IDBKeyPath::ArrayType) {
         IDBKey::KeyArray result;
         const Vector<String>& array = keyPath.array();
         for (size_t i = 0; i < array.size(); ++i) {
@@ -306,7 +306,7 @@ static IDBKey* createIDBKeyFromValueAndKeyPath(v8::Isolate* isolate, v8::Local<v
         return IDBKey::createArray(result);
     }
 
-    ASSERT(keyPath.type() == IDBKeyPath::StringType);
+    ASSERT(keyPath.getType() == IDBKeyPath::StringType);
     return createIDBKeyFromValueAndKeyPath(isolate, value, keyPath.string(), exceptionState, allowExperimentalTypes);
 }
 
@@ -366,7 +366,7 @@ bool injectV8KeyIntoV8Value(v8::Isolate* isolate, v8::Local<v8::Value> key, v8::
     IDB_TRACE("injectIDBV8KeyIntoV8Value");
     ASSERT(isolate->InContext());
 
-    ASSERT(keyPath.type() == IDBKeyPath::StringType);
+    ASSERT(keyPath.getType() == IDBKeyPath::StringType);
     Vector<String> keyPathElements = parseKeyPath(keyPath.string());
 
     // The conbination of a key generator and an empty key path is forbidden by spec.
@@ -423,7 +423,7 @@ bool injectV8KeyIntoV8Value(v8::Isolate* isolate, v8::Local<v8::Value> key, v8::
 bool canInjectIDBKeyIntoScriptValue(v8::Isolate* isolate, const ScriptValue& scriptValue, const IDBKeyPath& keyPath)
 {
     IDB_TRACE("canInjectIDBKeyIntoScriptValue");
-    ASSERT(keyPath.type() == IDBKeyPath::StringType);
+    ASSERT(keyPath.getType() == IDBKeyPath::StringType);
     Vector<String> keyPathElements = parseKeyPath(keyPath.string());
 
     if (!keyPathElements.size())

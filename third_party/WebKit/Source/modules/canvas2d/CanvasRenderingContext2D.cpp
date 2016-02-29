@@ -580,7 +580,7 @@ bool CanvasRenderingContext2D::parseColorOrCurrentColor(Color& color, const Stri
 
 String CanvasRenderingContext2D::textAlign() const
 {
-    return textAlignName(state().textAlign());
+    return textAlignName(state().getTextAlign());
 }
 
 void CanvasRenderingContext2D::setTextAlign(const String& s)
@@ -588,14 +588,14 @@ void CanvasRenderingContext2D::setTextAlign(const String& s)
     TextAlign align;
     if (!parseTextAlign(s, align))
         return;
-    if (state().textAlign() == align)
+    if (state().getTextAlign() == align)
         return;
     modifiableState().setTextAlign(align);
 }
 
 String CanvasRenderingContext2D::textBaseline() const
 {
-    return textBaselineName(state().textBaseline());
+    return textBaselineName(state().getTextBaseline());
 }
 
 void CanvasRenderingContext2D::setTextBaseline(const String& s)
@@ -603,7 +603,7 @@ void CanvasRenderingContext2D::setTextBaseline(const String& s)
     TextBaseline baseline;
     if (!parseTextBaseline(s, baseline))
         return;
-    if (state().textBaseline() == baseline)
+    if (state().getTextBaseline() == baseline)
         return;
     modifiableState().setTextBaseline(baseline);
 }
@@ -627,9 +627,9 @@ static inline TextDirection toTextDirection(CanvasRenderingContext2DState::Direc
 
 String CanvasRenderingContext2D::direction() const
 {
-    if (state().direction() == CanvasRenderingContext2DState::DirectionInherit)
+    if (state().getDirection() == CanvasRenderingContext2DState::DirectionInherit)
         canvas()->document().updateLayoutTreeForNode(canvas());
-    return toTextDirection(state().direction(), canvas()) == RTL ? rtl : ltr;
+    return toTextDirection(state().getDirection(), canvas()) == RTL ? rtl : ltr;
 }
 
 void CanvasRenderingContext2D::setDirection(const String& directionString)
@@ -644,7 +644,7 @@ void CanvasRenderingContext2D::setDirection(const String& directionString)
     else
         return;
 
-    if (state().direction() == direction)
+    if (state().getDirection() == direction)
         return;
 
     modifiableState().setDirection(direction);
@@ -682,10 +682,10 @@ TextMetrics* CanvasRenderingContext2D::measureText(const String& text)
     const Font& font = accessFont();
 
     TextDirection direction;
-    if (state().direction() == CanvasRenderingContext2DState::DirectionInherit)
+    if (state().getDirection() == CanvasRenderingContext2DState::DirectionInherit)
         direction = determineDirectionality(text);
     else
-        direction = toTextDirection(state().direction(), canvas());
+        direction = toTextDirection(state().getDirection(), canvas());
     TextRun textRun(text, 0, 0, TextRun::AllowTrailingExpansion | TextRun::ForbidLeadingExpansion, direction, false);
     textRun.setNormalizeSpace(true);
     FloatRect textBounds = font.selectionRectForText(textRun, FloatPoint(), font.fontDescription().computedSize(), 0, -1, true);
@@ -753,7 +753,7 @@ void CanvasRenderingContext2D::drawTextInternal(const String& text, double x, do
     // FIXME: Need to turn off font smoothing.
 
     const ComputedStyle* computedStyle = 0;
-    TextDirection direction = toTextDirection(state().direction(), canvas(), &computedStyle);
+    TextDirection direction = toTextDirection(state().getDirection(), canvas(), &computedStyle);
     bool isRTL = direction == RTL;
     bool override = computedStyle ? isOverride(computedStyle->unicodeBidi()) : false;
 
@@ -766,7 +766,7 @@ void CanvasRenderingContext2D::drawTextInternal(const String& text, double x, do
     bool useMaxWidth = (maxWidth && *maxWidth < fontWidth);
     double width = useMaxWidth ? *maxWidth : fontWidth;
 
-    TextAlign align = state().textAlign();
+    TextAlign align = state().getTextAlign();
     if (align == StartTextAlign)
         align = isRTL ? RightTextAlign : LeftTextAlign;
     else if (align == EndTextAlign)
@@ -823,7 +823,7 @@ const Font& CanvasRenderingContext2D::accessFont()
 
 int CanvasRenderingContext2D::getFontBaseline(const FontMetrics& fontMetrics) const
 {
-    switch (state().textBaseline()) {
+    switch (state().getTextBaseline()) {
     case TopTextBaseline:
         return fontMetrics.ascent();
     case HangingTextBaseline:

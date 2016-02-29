@@ -41,7 +41,7 @@ public:
 
     FetchResponseData* clone(ExecutionContext*);
 
-    Type type() const { return m_type; }
+    Type getType() const { return m_type; }
     const KURL& url() const { return m_url; }
     unsigned short status() const { return m_status; }
     AtomicString statusMessage() const { return m_statusMessage; }

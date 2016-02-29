@@ -707,7 +707,7 @@ public:
     virtual String text() const { return String(); }
     virtual AccessibilityTextDirection textDirection() const { return AccessibilityTextDirectionLTR; }
     virtual int textLength() const { return 0; }
-    virtual TextStyle textStyle() const { return TextStyleNone; }
+    virtual TextStyle getTextStyle() const { return TextStyleNone; }
     virtual KURL url() const { return KURL(); }
 
     // Load inline text boxes for just this node, even if
@@ -728,7 +728,7 @@ public:
     // Properties of interactive elements.
     virtual String actionVerb() const;
     virtual AccessibilityButtonState checkboxOrRadioValue() const;
-    virtual InvalidState invalidState() const { return InvalidStateUndefined; }
+    virtual InvalidState getInvalidState() const { return InvalidStateUndefined; }
     // Only used when invalidState() returns InvalidStateOther.
     virtual String ariaInvalidValue() const { return String(); }
     virtual String valueDescription() const { return String(); }
@@ -762,7 +762,7 @@ public:
     virtual bool supportsARIAFlowTo() const { return false; }
     virtual bool supportsARIAOwns() const { return false; }
     bool supportsRangeValue() const;
-    virtual SortDirection sortDirection() const { return SortDirectionUndefined; }
+    virtual SortDirection getSortDirection() const { return SortDirectionUndefined; }
 
     // Returns 0-based index.
     int indexInParent() const;

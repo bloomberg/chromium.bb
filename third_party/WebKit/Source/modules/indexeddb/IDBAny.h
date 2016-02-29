@@ -95,7 +95,7 @@ public:
         IDBValueArrayType
     };
 
-    Type type() const { return m_type; }
+    Type getType() const { return m_type; }
     // Use type() to figure out which one of these you're allowed to call.
     DOMStringList* domStringList() const;
     IDBCursor* idbCursor() const;

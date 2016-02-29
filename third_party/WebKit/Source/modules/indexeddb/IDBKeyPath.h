@@ -59,7 +59,7 @@ public:
         ArrayType
     };
 
-    Type type() const { return m_type; }
+    Type getType() const { return m_type; }
 
     const Vector<String>& array() const
     {

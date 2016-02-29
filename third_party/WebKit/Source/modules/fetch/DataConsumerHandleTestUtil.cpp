@@ -127,7 +127,7 @@ WebDataConsumerHandle::Result DataConsumerHandleTestUtil::ReplayingHandle::Conte
 
     const Command& command = top();
     Result result = Ok;
-    switch (command.name()) {
+    switch (command.getName()) {
     case Command::Data: {
         auto& body = command.body();
         *available = body.size() - offset();

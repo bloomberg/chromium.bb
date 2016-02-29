@@ -106,7 +106,7 @@ protected:
     String text() const override;
     AccessibilityTextDirection textDirection() const final;
     int textLength() const override;
-    TextStyle textStyle() const final;
+    TextStyle getTextStyle() const final;
     KURL url() const override;
 
     // Inline text boxes.

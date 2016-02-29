@@ -86,7 +86,7 @@ void checkKeyPathStringValue(v8::Isolate* isolate, const ScriptValue& value, con
 {
     IDBKey* idbKey = checkKeyFromValueAndKeyPathInternal(isolate, value, keyPath);
     ASSERT_TRUE(idbKey);
-    ASSERT_EQ(IDBKey::StringType, idbKey->type());
+    ASSERT_EQ(IDBKey::StringType, idbKey->getType());
     ASSERT_TRUE(expected == idbKey->string());
 }
 
@@ -94,7 +94,7 @@ void checkKeyPathNumberValue(v8::Isolate* isolate, const ScriptValue& value, con
 {
     IDBKey* idbKey = checkKeyFromValueAndKeyPathInternal(isolate, value, keyPath);
     ASSERT_TRUE(idbKey);
-    ASSERT_EQ(IDBKey::NumberType, idbKey->type());
+    ASSERT_EQ(IDBKey::NumberType, idbKey->getType());
     ASSERT_TRUE(expected == idbKey->number());
 }
 

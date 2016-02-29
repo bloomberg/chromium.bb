@@ -141,7 +141,7 @@ protected:
 
     // Properties of interactive elements.
     AccessibilityButtonState checkboxOrRadioValue() const final;
-    InvalidState invalidState() const final;
+    InvalidState getInvalidState() const final;
     // Only used when invalidState() returns InvalidStateOther.
     String ariaInvalidValue() const final;
     String valueDescription() const override;

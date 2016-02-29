@@ -84,7 +84,7 @@ private:
         static ParamEvent createSetTargetEvent(float value, double time, double timeConstant);
         static ParamEvent createSetValueCurveEvent(DOMFloat32Array* curve, double time, double duration);
 
-        Type type() const { return m_type; }
+        Type getType() const { return m_type; }
         float value() const { return m_value; }
         double time() const { return m_time; }
         double timeConstant() const { return m_timeConstant; }

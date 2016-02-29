@@ -129,7 +129,7 @@ public:
         Remove
     };
 
-    Type type() const { return m_type; }
+    Type getType() const { return m_type; }
 
     const Persistent<ContentDecryptionModuleResult> result() const
     {
@@ -632,7 +632,7 @@ void MediaKeySession::actionTimerFired(Timer<MediaKeySession>*)
     while (!pendingActions.isEmpty()) {
         PendingAction* action = pendingActions.takeFirst();
 
-        switch (action->type()) {
+        switch (action->getType()) {
         case PendingAction::GenerateRequest:
             // NOTE: Continue step 9 of MediaKeySession::generateRequest().
             WTF_LOG(Media, "MediaKeySession(%p)::actionTimerFired: GenerateRequest", this);

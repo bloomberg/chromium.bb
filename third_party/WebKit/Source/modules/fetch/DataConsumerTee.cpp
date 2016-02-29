@@ -224,7 +224,7 @@ public:
             m_offset += size;
         }
     }
-    Result result() { return m_result; }
+    Result getResult() { return m_result; }
 
 private:
     DestinationContext()
@@ -285,7 +285,7 @@ public:
         *available = 0;
         *buffer = nullptr;
         if (context()->isEmpty())
-            return context()->result();
+            return context()->getResult();
 
         const OwnPtr<Vector<char>>& chunk = context()->top();
         *available = chunk->size() - context()->offset();

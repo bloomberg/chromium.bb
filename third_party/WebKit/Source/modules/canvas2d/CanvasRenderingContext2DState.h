@@ -105,22 +105,22 @@ public:
     };
 
     void setDirection(Direction direction) { m_direction = direction; }
-    Direction direction() const { return m_direction; }
+    Direction getDirection() const { return m_direction; }
 
     void setTextAlign(TextAlign align) { m_textAlign = align; }
-    TextAlign textAlign() const { return m_textAlign; }
+    TextAlign getTextAlign() const { return m_textAlign; }
 
     void setTextBaseline(TextBaseline baseline) { m_textBaseline = baseline; }
-    TextBaseline textBaseline() const { return m_textBaseline; }
+    TextBaseline getTextBaseline() const { return m_textBaseline; }
 
     void setLineWidth(double lineWidth) { m_strokePaint.setStrokeWidth(lineWidth); }
     double lineWidth() const { return m_strokePaint.getStrokeWidth(); }
 
     void setLineCap(LineCap lineCap) { m_strokePaint.setStrokeCap(static_cast<SkPaint::Cap>(lineCap)); }
-    LineCap lineCap() const { return static_cast<LineCap>(m_strokePaint.getStrokeCap()); }
+    LineCap getLineCap() const { return static_cast<LineCap>(m_strokePaint.getStrokeCap()); }
 
     void setLineJoin(LineJoin lineJoin) { m_strokePaint.setStrokeJoin(static_cast<SkPaint::Join>(lineJoin)); }
-    LineJoin lineJoin() const { return static_cast<LineJoin>(m_strokePaint.getStrokeJoin()); }
+    LineJoin getLineJoin() const { return static_cast<LineJoin>(m_strokePaint.getStrokeJoin()); }
 
     void setMiterLimit(double miterLimit) { m_strokePaint.setStrokeMiter(miterLimit); }
     double miterLimit() const { return m_strokePaint.getStrokeMiter(); }

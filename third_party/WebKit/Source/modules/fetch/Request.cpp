@@ -594,7 +594,7 @@ Request* Request::clone(ExceptionState& exceptionState)
 
     FetchRequestData* request = m_request->clone(executionContext());
     Headers* headers = Headers::create(request->headerList());
-    headers->setGuard(m_headers->guard());
+    headers->setGuard(m_headers->getGuard());
     return new Request(executionContext(), request, headers);
 }
 

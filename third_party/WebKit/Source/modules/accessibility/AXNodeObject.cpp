@@ -1272,7 +1272,7 @@ RGBA32 AXNodeObject::colorValue() const
     return color.rgb();
 }
 
-InvalidState AXNodeObject::invalidState() const
+InvalidState AXNodeObject::getInvalidState() const
 {
     if (hasAttribute(aria_invalidAttr)) {
         const AtomicString& attributeValue = getAttribute(aria_invalidAttr);
@@ -1330,7 +1330,7 @@ int AXNodeObject::setSize() const
 
 String AXNodeObject::ariaInvalidValue() const
 {
-    if (invalidState() == InvalidStateOther)
+    if (getInvalidState() == InvalidStateOther)
         return getAttribute(aria_invalidAttr);
 
     return String();

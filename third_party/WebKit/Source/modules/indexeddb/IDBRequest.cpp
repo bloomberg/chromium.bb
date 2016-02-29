@@ -176,9 +176,9 @@ IDBCursor* IDBRequest::getResultCursor() const
 {
     if (!m_result)
         return nullptr;
-    if (m_result->type() == IDBAny::IDBCursorType)
+    if (m_result->getType() == IDBAny::IDBCursorType)
         return m_result->idbCursor();
-    if (m_result->type() == IDBAny::IDBCursorWithValueType)
+    if (m_result->getType() == IDBAny::IDBCursorWithValueType)
         return m_result->idbCursorWithValue();
     return nullptr;
 }
@@ -291,9 +291,9 @@ void IDBRequest::onSuccess(const Vector<RefPtr<IDBValue>>& values)
 #if ENABLE(ASSERT)
 static IDBObjectStore* effectiveObjectStore(IDBAny* source)
 {
-    if (source->type() == IDBAny::IDBObjectStoreType)
+    if (source->getType() == IDBAny::IDBObjectStoreType)
         return source->idbObjectStore();
-    if (source->type() == IDBAny::IDBIndexType)
+    if (source->getType() == IDBAny::IDBIndexType)
         return source->idbIndex()->objectStore();
 
     ASSERT_NOT_REACHED();

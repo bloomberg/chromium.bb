@@ -51,7 +51,7 @@ public:
     // fills in the start location and column span of cell
     virtual void columnIndexRange(std::pair<unsigned, unsigned>& columnRange);
     // In the case of cells that act as row or column headers.
-    SortDirection sortDirection() const final;
+    SortDirection getSortDirection() const final;
     virtual AccessibilityRole scanToDecideHeaderRole();
 
 protected:

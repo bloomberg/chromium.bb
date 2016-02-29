@@ -197,7 +197,7 @@ void AXTableCell::columnIndexRange(std::pair<unsigned, unsigned>& columnRange)
     columnRange.second = cell->table()->absoluteColumnToEffectiveColumn(cell->absoluteColumnIndex() + cell->colSpan()) - columnRange.first;
 }
 
-SortDirection AXTableCell::sortDirection() const
+SortDirection AXTableCell::getSortDirection() const
 {
     if (roleValue() != RowHeaderRole
         && roleValue() != ColumnHeaderRole)

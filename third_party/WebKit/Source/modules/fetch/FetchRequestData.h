@@ -61,7 +61,7 @@ public:
     void setRedirect(WebURLRequest::FetchRedirectMode redirect) { m_redirect = redirect; }
     WebURLRequest::FetchRedirectMode redirect() const { return m_redirect; }
     void setResponseTainting(Tainting tainting) { m_responseTainting = tainting; }
-    Tainting tainting() const { return m_responseTainting; }
+    Tainting responseTainting() const { return m_responseTainting; }
     FetchHeaderList* headerList() const { return m_headerList.get(); }
     void setHeaderList(FetchHeaderList* headerList) { m_headerList = headerList; }
     BodyStreamBuffer* buffer() const { return m_buffer; }

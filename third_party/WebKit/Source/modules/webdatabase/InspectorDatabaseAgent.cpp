@@ -93,7 +93,7 @@ public:
         const Vector<SQLValue>& data = rowList->values();
         for (size_t i = 0; i < data.size(); ++i) {
             const SQLValue& value = rowList->values()[i];
-            switch (value.type()) {
+            switch (value.getType()) {
             case SQLValue::StringValue: values->addItem(protocol::StringValue::create(value.string())); break;
             case SQLValue::NumberValue: values->addItem(protocol::FundamentalValue::create(value.number())); break;
             case SQLValue::NullValue: values->addItem(protocol::Value::null()); break;

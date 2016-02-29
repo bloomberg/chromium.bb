@@ -111,7 +111,7 @@ public:
 
         IDBRequest* idbRequest = static_cast<IDBRequest*>(event->target());
         IDBAny* requestResult = idbRequest->resultAsAny();
-        if (requestResult->type() != IDBAny::DOMStringListType) {
+        if (requestResult->getType() != IDBAny::DOMStringListType) {
             m_requestCallback->sendFailure("Unexpected result type.");
             return;
         }
@@ -174,7 +174,7 @@ public:
 
         IDBOpenDBRequest* idbOpenDBRequest = static_cast<IDBOpenDBRequest*>(event->target());
         IDBAny* requestResult = idbOpenDBRequest->resultAsAny();
-        if (requestResult->type() != IDBAny::IDBDatabaseType) {
+        if (requestResult->getType() != IDBAny::IDBDatabaseType) {
             m_executableWithDatabase->requestCallback()->sendFailure("Unexpected result type.");
             return;
         }
@@ -275,7 +275,7 @@ static IDBIndex* indexForObjectStore(IDBObjectStore* idbObjectStore, const Strin
 static PassOwnPtr<KeyPath> keyPathFromIDBKeyPath(const IDBKeyPath& idbKeyPath)
 {
     OwnPtr<KeyPath> keyPath;
-    switch (idbKeyPath.type()) {
+    switch (idbKeyPath.getType()) {
     case IDBKeyPath::NullType:
         keyPath = KeyPath::create().setType(KeyPath::TypeEnum::Null).build();
         break;
@@ -433,11 +433,11 @@ public:
 
         IDBRequest* idbRequest = static_cast<IDBRequest*>(event->target());
         IDBAny* requestResult = idbRequest->resultAsAny();
-        if (requestResult->type() == IDBAny::IDBValueType) {
+        if (requestResult->getType() == IDBAny::IDBValueType) {
             end(false);
             return;
         }
-        if (requestResult->type() != IDBAny::IDBCursorWithValueType) {
+        if (requestResult->getType() != IDBAny::IDBCursorWithValueType) {
             m_requestCallback->sendFailure("Unexpected result type.");
             return;
         }

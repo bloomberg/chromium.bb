@@ -196,7 +196,7 @@ IDBObjectStore* IDBDatabase::createObjectStore(const String& name, const IDBKeyP
         return nullptr;
     }
 
-    if (autoIncrement && ((keyPath.type() == IDBKeyPath::StringType && keyPath.string().isEmpty()) || keyPath.type() == IDBKeyPath::ArrayType)) {
+    if (autoIncrement && ((keyPath.getType() == IDBKeyPath::StringType && keyPath.string().isEmpty()) || keyPath.getType() == IDBKeyPath::ArrayType)) {
         exceptionState.throwDOMException(InvalidAccessError, "The autoIncrement option was set but the keyPath option was empty or an array.");
         return nullptr;
     }

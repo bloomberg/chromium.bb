@@ -166,7 +166,7 @@ DispatchEventResult IDBOpenDBRequest::dispatchEventInternal(PassRefPtrWillBeRawP
 {
     // If the connection closed between onUpgradeNeeded and the delivery of the "success" event,
     // an "error" event should be fired instead.
-    if (event->type() == EventTypeNames::success && resultAsAny()->type() == IDBAny::IDBDatabaseType && resultAsAny()->idbDatabase()->isClosePending()) {
+    if (event->type() == EventTypeNames::success && resultAsAny()->getType() == IDBAny::IDBDatabaseType && resultAsAny()->idbDatabase()->isClosePending()) {
         dequeueEvent(event.get());
         setResult(nullptr);
         onError(DOMException::create(AbortError, "The connection was closed."));

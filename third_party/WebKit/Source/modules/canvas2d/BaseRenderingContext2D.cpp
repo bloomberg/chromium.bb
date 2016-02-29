@@ -203,7 +203,7 @@ void BaseRenderingContext2D::setLineWidth(double width)
 
 String BaseRenderingContext2D::lineCap() const
 {
-    return lineCapName(state().lineCap());
+    return lineCapName(state().getLineCap());
 }
 
 void BaseRenderingContext2D::setLineCap(const String& s)
@@ -211,14 +211,14 @@ void BaseRenderingContext2D::setLineCap(const String& s)
     LineCap cap;
     if (!parseLineCap(s, cap))
         return;
-    if (state().lineCap() == cap)
+    if (state().getLineCap() == cap)
         return;
     modifiableState().setLineCap(cap);
 }
 
 String BaseRenderingContext2D::lineJoin() const
 {
-    return lineJoinName(state().lineJoin());
+    return lineJoinName(state().getLineJoin());
 }
 
 void BaseRenderingContext2D::setLineJoin(const String& s)
@@ -226,7 +226,7 @@ void BaseRenderingContext2D::setLineJoin(const String& s)
     LineJoin join;
     if (!parseLineJoin(s, join))
         return;
-    if (state().lineJoin() == join)
+    if (state().getLineJoin() == join)
         return;
     modifiableState().setLineJoin(join);
 }
@@ -769,8 +769,8 @@ bool BaseRenderingContext2D::isPointInStrokeInternal(const Path& path, const dou
 
     StrokeData strokeData;
     strokeData.setThickness(state().lineWidth());
-    strokeData.setLineCap(state().lineCap());
-    strokeData.setLineJoin(state().lineJoin());
+    strokeData.setLineCap(state().getLineCap());
+    strokeData.setLineJoin(state().getLineJoin());
     strokeData.setMiterLimit(state().miterLimit());
     Vector<float> lineDash(state().lineDash().size());
     std::copy(state().lineDash().begin(), state().lineDash().end(), lineDash.begin());
@@ -1257,9 +1257,9 @@ void BaseRenderingContext2D::inflateStrokeRect(FloatRect& rect) const
     // compared to Path::strokeBoundingRect().
     static const double root2 = sqrtf(2);
     double delta = state().lineWidth() / 2;
-    if (state().lineJoin() == MiterJoin)
+    if (state().getLineJoin() == MiterJoin)
         delta *= state().miterLimit();
-    else if (state().lineCap() == SquareCap)
+    else if (state().getLineCap() == SquareCap)
         delta *= root2;
 
     rect.inflate(delta);

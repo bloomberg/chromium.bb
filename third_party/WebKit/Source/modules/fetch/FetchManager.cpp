@@ -297,7 +297,7 @@ void FetchManager::Loader::didReceiveResponse(unsigned long, const ResourceRespo
         // as a redirect response, and execute tainting.
     }
     if (!taintedResponse) {
-        switch (m_request->tainting()) {
+        switch (m_request->responseTainting()) {
         case FetchRequestData::BasicTainting:
             taintedResponse = responseData->createBasicFilteredResponse();
             break;

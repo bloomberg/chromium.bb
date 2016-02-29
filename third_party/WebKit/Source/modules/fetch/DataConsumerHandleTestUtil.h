@@ -376,7 +376,7 @@ public:
             m_body.append(body, size);
         }
         Command(Name name, const char* body) : Command(name, body, strlen(body)) { }
-        Name name() const { return m_name; }
+        Name getName() const { return m_name; }
         const Vector<char>& body() const { return m_body; }
 
     private:

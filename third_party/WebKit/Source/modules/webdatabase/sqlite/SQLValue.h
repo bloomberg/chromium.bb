@@ -44,7 +44,7 @@ public:
     SQLValue(const String& s) : m_type(StringValue), m_number(0.0), m_string(s) { }
     SQLValue(const SQLValue&);
 
-    Type type() const { return m_type; }
+    Type getType() const { return m_type; }
 
     String string() const;
     double number() const;

@@ -199,7 +199,7 @@ void RespondWithObserver::responseWasFulfilled(const ScriptValue& value)
     //   - |request|'s mode is not |no-cors| and response's type is |opaque|.
     //   - |request| is a client request and |response|'s type is neither
     //     |basic| nor |default|."
-    const FetchResponseData::Type responseType = response->response()->type();
+    const FetchResponseData::Type responseType = response->response()->getType();
     if (responseType == FetchResponseData::ErrorType) {
         responseWasRejected(WebServiceWorkerResponseErrorResponseTypeError);
         return;

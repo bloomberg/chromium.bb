@@ -937,14 +937,14 @@ int AXLayoutObject::textLength() const
     return text().length();
 }
 
-TextStyle AXLayoutObject::textStyle() const
+TextStyle AXLayoutObject::getTextStyle() const
 {
     if (!m_layoutObject)
-        return AXNodeObject::textStyle();
+        return AXNodeObject::getTextStyle();
 
     const ComputedStyle* style = m_layoutObject->style();
     if (!style)
-        return AXNodeObject::textStyle();
+        return AXNodeObject::getTextStyle();
 
     unsigned textStyle = TextStyleNone;
     if (style->fontWeight() == FontWeightBold)

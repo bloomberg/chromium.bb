@@ -69,7 +69,7 @@ FetchResponseData* createFetchResponseDataFromWebResponse(ExecutionContext* exec
     case WebServiceWorkerResponseTypeDefault:
         break;
     case WebServiceWorkerResponseTypeError:
-        ASSERT(response->type() == FetchResponseData::ErrorType);
+        ASSERT(response->getType() == FetchResponseData::ErrorType);
         break;
     }
 
@@ -290,7 +290,7 @@ Response* Response::redirect(ExecutionContext* context, const String& url, unsig
 String Response::type() const
 {
     // "The type attribute's getter must return response's type."
-    switch (m_response->type()) {
+    switch (m_response->getType()) {
     case FetchResponseData::BasicType:
         return "basic";
     case FetchResponseData::CORSType:
@@ -354,7 +354,7 @@ Response* Response::clone(ExceptionState& exceptionState)
 
     FetchResponseData* response = m_response->clone(executionContext());
     Headers* headers = Headers::create(response->headerList());
-    headers->setGuard(m_headers->guard());
+    headers->setGuard(m_headers->getGuard());
     return new Response(executionContext(), response, headers);
 }
 

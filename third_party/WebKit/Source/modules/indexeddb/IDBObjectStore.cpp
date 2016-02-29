@@ -197,14 +197,14 @@ static void generateIndexKeysForValue(v8::Isolate* isolate, const IDBIndexMetada
     if (!indexKey)
         return;
 
-    if (!indexMetadata.multiEntry || indexKey->type() != IDBKey::ArrayType) {
+    if (!indexMetadata.multiEntry || indexKey->getType() != IDBKey::ArrayType) {
         if (!indexKey->isValid())
             return;
 
         indexKeys->append(indexKey);
     } else {
         ASSERT(indexMetadata.multiEntry);
-        ASSERT(indexKey->type() == IDBKey::ArrayType);
+        ASSERT(indexKey->getType() == IDBKey::ArrayType);
         indexKey = IDBKey::createMultiEntryArray(indexKey->array());
 
         for (size_t i = 0; i < indexKey->array().size(); ++i)
@@ -454,7 +454,7 @@ private:
 
         IDBAny* cursorAny = request->resultAsAny();
         IDBCursorWithValue* cursor = nullptr;
-        if (cursorAny->type() == IDBAny::IDBCursorWithValueType)
+        if (cursorAny->getType() == IDBAny::IDBCursorWithValueType)
             cursor = cursorAny->idbCursorWithValue();
 
         Vector<int64_t> indexIds;
@@ -517,7 +517,7 @@ IDBIndex* IDBObjectStore::createIndex(ScriptState* scriptState, const String& na
         return nullptr;
     }
 
-    if (keyPath.type() == IDBKeyPath::ArrayType && options.multiEntry()) {
+    if (keyPath.getType() == IDBKeyPath::ArrayType && options.multiEntry()) {
         exceptionState.throwDOMException(InvalidAccessError, "The keyPath argument was an array and the multiEntry option is true.");
         return nullptr;
     }

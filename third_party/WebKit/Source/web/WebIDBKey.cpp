@@ -129,7 +129,7 @@ static void convertToWebIDBKeyArray(const IDBKey::KeyArray& array, WebVector<Web
     WebVector<WebIDBKey> subkeys;
     for (size_t i = 0; i < array.size(); ++i) {
         IDBKey* key = array[i];
-        switch (key->type()) {
+        switch (key->getType()) {
         case IDBKey::ArrayType:
             convertToWebIDBKeyArray(key->array(), subkeys);
             keys[i] = WebIDBKey::createArray(subkeys);
@@ -196,7 +196,7 @@ WebIDBKeyType WebIDBKey::keyType() const
 {
     if (!m_private.get())
         return WebIDBKeyTypeNull;
-    return static_cast<WebIDBKeyType>(m_private->type());
+    return static_cast<WebIDBKeyType>(m_private->getType());
 }
 
 bool WebIDBKey::isValid() const

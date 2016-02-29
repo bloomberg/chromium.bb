@@ -665,7 +665,7 @@ WebAXInvalidState WebAXObject::invalidState() const
     if (isDetached())
         return WebAXInvalidStateUndefined;
 
-    return static_cast<WebAXInvalidState>(m_private->invalidState());
+    return static_cast<WebAXInvalidState>(m_private->getInvalidState());
 }
 
 // Only used when invalidState() returns WebAXInvalidStateOther.
@@ -972,7 +972,7 @@ WebAXTextStyle WebAXObject::textStyle() const
     if (isDetached())
         return WebAXTextStyleNone;
 
-    return static_cast<WebAXTextStyle>(m_private->textStyle());
+    return static_cast<WebAXTextStyle>(m_private->getTextStyle());
 }
 
 WebURL WebAXObject::url() const
@@ -1378,7 +1378,7 @@ WebAXSortDirection WebAXObject::sortDirection() const
     if (isDetached())
         return WebAXSortDirectionUndefined;
 
-    return static_cast<WebAXSortDirection>(m_private->sortDirection());
+    return static_cast<WebAXSortDirection>(m_private->getSortDirection());
 }
 
 void WebAXObject::loadInlineTextBoxes() const

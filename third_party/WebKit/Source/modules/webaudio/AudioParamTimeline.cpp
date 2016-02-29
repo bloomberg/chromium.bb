@@ -81,7 +81,7 @@ String AudioParamTimeline::eventToString(const ParamEvent& event)
 
     // Get a nice printable name for the event and update the args if necessary.
     String s;
-    switch (event.type()) {
+    switch (event.getType()) {
     case ParamEvent::SetValue:
         s = "setValueAtTime";
         break;
@@ -203,7 +203,7 @@ void AudioParamTimeline::insertEvent(const ParamEvent& event, ExceptionState& ex
 
     // Sanity check the event. Be super careful we're not getting infected with NaN or Inf. These
     // should have been handled by the caller.
-    bool isValid = event.type() < ParamEvent::LastType
+    bool isValid = event.getType() < ParamEvent::LastType
         && std::isfinite(event.value())
         && std::isfinite(event.time())
         && std::isfinite(event.timeConstant())
@@ -220,7 +220,7 @@ void AudioParamTimeline::insertEvent(const ParamEvent& event, ExceptionState& ex
     double insertTime = event.time();
 
     for (i = 0; i < m_events.size(); ++i) {
-        if (event.type() == ParamEvent::SetValueCurve) {
+        if (event.getType() == ParamEvent::SetValueCurve) {
             // If this event is a SetValueCurve, make sure it doesn't overlap any existing
             // event. It's ok if the SetValueCurve starts at the same time as the end of some other
             // duration.
@@ -233,7 +233,7 @@ void AudioParamTimeline::insertEvent(const ParamEvent& event, ExceptionState& ex
             }
         } else {
             // Otherwise, make sure this event doesn't overlap any existing SetValueCurve event.
-            if (m_events[i].type() == ParamEvent::SetValueCurve) {
+            if (m_events[i].getType() == ParamEvent::SetValueCurve) {
                 double endTime = m_events[i].time() + m_events[i].duration();
                 if (event.time() >= m_events[i].time() && event.time() < endTime) {
                     exceptionState.throwDOMException(
@@ -245,7 +245,7 @@ void AudioParamTimeline::insertEvent(const ParamEvent& event, ExceptionState& ex
         }
 
         // Overwrite same event type and time.
-        if (m_events[i].time() == insertTime && m_events[i].type() == event.type()) {
+        if (m_events[i].time() == insertTime && m_events[i].getType() == event.getType()) {
             m_events[i] = event;
             return;
         }
@@ -405,7 +405,7 @@ float AudioParamTimeline::valuesForFrameRangeImpl(
 
             // Condition is currentFrame - 1 < eventFrame <= currentFrame, but currentFrame is
             // unsigned and could be 0, so use currentFrame < eventFrame + 1 instead.
-            if (!((event.type() == ParamEvent::SetValue
+            if (!((event.getType() == ParamEvent::SetValue
                 && (eventFrame <= currentFrame)
                 && (currentFrame < eventFrame + 1))))
                 continue;
@@ -439,7 +439,7 @@ float AudioParamTimeline::valuesForFrameRangeImpl(
         size_t fillToFrame = fillToEndFrame - startFrame;
         fillToFrame = std::min(fillToFrame, static_cast<size_t>(numberOfValues));
 
-        ParamEvent::Type nextEventType = nextEvent ? static_cast<ParamEvent::Type>(nextEvent->type()) : ParamEvent::LastType /* unknown */;
+        ParamEvent::Type nextEventType = nextEvent ? static_cast<ParamEvent::Type>(nextEvent->getType()) : ParamEvent::LastType /* unknown */;
 
         // First handle linear and exponential ramps which require looking ahead to the next event.
         if (nextEventType == ParamEvent::LinearRampToValue) {
@@ -530,7 +530,7 @@ float AudioParamTimeline::valuesForFrameRangeImpl(
             }
         } else {
             // Handle event types not requiring looking ahead to the next event.
-            switch (event.type()) {
+            switch (event.getType()) {
             case ParamEvent::SetValue:
             case ParamEvent::LinearRampToValue:
                 {
