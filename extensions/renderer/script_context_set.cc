@@ -132,8 +132,7 @@ const Extension* ScriptContextSet::GetExtensionFromFrameAndWorld(
   if (world_id != 0) {
     // Isolated worlds (content script).
     extension_id = ScriptInjection::GetHostIdForIsolatedWorld(world_id);
-  } else if (!frame->document().securityOrigin().isUnique()) {
-    // TODO(kalman): Delete the above check.
+  } else {
     // Extension pages (chrome-extension:// URLs).
     GURL frame_url = ScriptContext::GetDataSourceURLForFrame(frame);
     frame_url = ScriptContext::GetEffectiveDocumentURL(frame, frame_url,

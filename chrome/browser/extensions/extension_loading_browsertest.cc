@@ -19,8 +19,10 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/devtools_agent_host.h"
+#include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/process_manager.h"
+#include "extensions/test/extension_test_message_listener.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -160,6 +162,80 @@ IN_PROC_BROWSER_TEST_F(ExtensionLoadingTest,
 
   // Keepalive count should stabilize back to 1, because DevTools is still open.
   EXPECT_EQ(1, process_manager->GetLazyKeepaliveCount(extension));
+}
+
+// Tests whether the extension runtime stays valid when an extension reloads
+// while a devtools extension is hammering the frame with eval requests.
+// Regression test for https://crbug.com/544182
+IN_PROC_BROWSER_TEST_F(ExtensionLoadingTest, RuntimeValidWhileDevToolsOpen) {
+  TestExtensionDir devtools_dir;
+  TestExtensionDir inspect_dir;
+
+  const char kDevtoolsManifest[] =
+      "{"
+      "  'name': 'Devtools',"
+      "  'version': '1',"
+      "  'manifest_version': 2,"
+      "  'devtools_page': 'devtools.html'"
+      "}";
+
+  const char kDevtoolsJs[] =
+      "setInterval(function() {"
+      "  chrome.devtools.inspectedWindow.eval('1', function() {"
+      "  });"
+      "}, 4);"
+      "chrome.test.sendMessage('devtools_page_ready');";
+
+  const char kTargetManifest[] =
+      "{"
+      "  'name': 'Inspect target',"
+      "  'version': '1',"
+      "  'manifest_version': 2,"
+      "  'background': {"
+      "    'scripts': ['background.js']"
+      "  }"
+      "}";
+
+  // A script to duck-type whether it runs in a background page.
+  const char kTargetJs[] =
+      "var is_valid = !!(chrome.tabs && chrome.tabs.create);";
+
+  devtools_dir.WriteManifestWithSingleQuotes(kDevtoolsManifest);
+  devtools_dir.WriteFile(FILE_PATH_LITERAL("devtools.js"), kDevtoolsJs);
+  devtools_dir.WriteFile(FILE_PATH_LITERAL("devtools.html"),
+                         "<script src='devtools.js'></script>");
+
+  inspect_dir.WriteManifestWithSingleQuotes(kTargetManifest);
+  inspect_dir.WriteFile(FILE_PATH_LITERAL("background.js"), kTargetJs);
+  const Extension* devtools_ext = LoadExtension(devtools_dir.unpacked_path());
+  ASSERT_TRUE(devtools_ext);
+
+  const Extension* inspect_ext = LoadExtension(inspect_dir.unpacked_path());
+  ASSERT_TRUE(inspect_ext);
+  const std::string inspect_ext_id = inspect_ext->id();
+
+  // Open the devtools and wait until the devtools_page is ready.
+  ExtensionTestMessageListener devtools_ready("devtools_page_ready", false);
+  devtools_util::InspectBackgroundPage(inspect_ext, profile());
+  ASSERT_TRUE(devtools_ready.WaitUntilSatisfied());
+
+  // Reload the extension. The devtools window will stay open, but temporarily
+  // be detached. As soon as the background is attached again, the devtools
+  // continues with spamming eval requests.
+  ReloadExtension(inspect_ext_id);
+  WaitForExtensionViewsToLoad();
+
+  content::WebContents* bg_contents =
+      ProcessManager::Get(profile())
+          ->GetBackgroundHostForExtension(inspect_ext_id)
+          ->host_contents();
+  ASSERT_TRUE(bg_contents);
+
+  // Now check whether the extension runtime is valid (see kTargetJs).
+  bool is_valid = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      bg_contents, "domAutomationController.send(is_valid);", &is_valid));
+  EXPECT_TRUE(is_valid);
 }
 
 }  // namespace
