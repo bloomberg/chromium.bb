@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "content/browser/mojo/mojo_shell_context.h"
-#include "mojo/shell/capability_filter.h"
 
 namespace content {
 

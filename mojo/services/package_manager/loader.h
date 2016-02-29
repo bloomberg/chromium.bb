@@ -5,7 +5,7 @@
 #ifndef MOJO_SERVICES_PACKAGE_MANAGER_LOADER_H_
 #define MOJO_SERVICES_PACKAGE_MANAGER_LOADER_H_
 
-#include "mojo/shell/application_loader.h"
+#include "mojo/shell/loader.h"
 
 namespace base {
 class BlockingPool;
@@ -20,13 +20,13 @@ namespace package_manager {
 
 class ApplicationCatalogStore;
 
-class Loader : public mojo::shell::ApplicationLoader {
+class Loader : public mojo::shell::Loader {
  public:
   Loader(base::TaskRunner* blocking_pool,
          scoped_ptr<package_manager::ApplicationCatalogStore> app_catalog);
   ~Loader() override;
 
-  // mojo::shell::ApplicationLoader:
+  // mojo::shell::Loader:
   void Load(const std::string& name,
             mojo::shell::mojom::ShellClientRequest request) override;
 

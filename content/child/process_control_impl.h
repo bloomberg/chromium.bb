@@ -14,7 +14,7 @@
 
 namespace mojo {
 namespace shell {
-class ApplicationLoader;
+class Loader;
 }  // namespace shell
 }  // namespace mojo
 
@@ -26,12 +26,10 @@ class ProcessControlImpl : public ProcessControl {
   ProcessControlImpl();
   ~ProcessControlImpl() override;
 
-  using NameToLoaderMap =
-      std::map<std::string, mojo::shell::ApplicationLoader*>;
+  using NameToLoaderMap = std::map<std::string, mojo::shell::Loader*>;
 
-  // Registers Mojo applications loaders for names.
-  virtual void RegisterApplicationLoaders(
-      NameToLoaderMap* name_to_loader_map) = 0;
+  // Registers Mojo loaders for names.
+  virtual void RegisterLoaders(NameToLoaderMap* name_to_loader_map) = 0;
 
   // ProcessControl:
   void LoadApplication(

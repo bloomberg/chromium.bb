@@ -14,8 +14,8 @@
 #include "base/run_loop.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/services/package_manager/package_manager.h"
-#include "mojo/shell/application_loader.h"
 #include "mojo/shell/connect_util.h"
+#include "mojo/shell/loader.h"
 #include "mojo/shell/public/cpp/connector.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
 #include "mojo/shell/public/cpp/shell_client.h"
@@ -96,14 +96,14 @@ class TestClient {
   DISALLOW_COPY_AND_ASSIGN(TestClient);
 };
 
-class TestApplicationLoader : public ApplicationLoader,
-                              public ShellClient,
-                              public InterfaceFactory<TestService> {
+class TestLoader : public Loader,
+                   public ShellClient,
+                   public InterfaceFactory<TestService> {
  public:
-  explicit TestApplicationLoader(TestContext* context)
+  explicit TestLoader(TestContext* context)
       : context_(context), num_loads_(0) {}
 
-  ~TestApplicationLoader() override {
+  ~TestLoader() override {
     ++context_->num_loader_deletes;
     shell_connection_.reset();
   }
@@ -114,9 +114,9 @@ class TestApplicationLoader : public ApplicationLoader,
   }
 
  private:
-  // ApplicationLoader implementation.
+  // Loader implementation.
   void Load(const std::string& name,
-            InterfaceRequest<mojom::ShellClient> request) override {
+            mojom::ShellClientRequest request) override {
     ++num_loads_;
     shell_connection_.reset(new ShellConnection(this, std::move(request)));
   }
@@ -139,14 +139,14 @@ class TestApplicationLoader : public ApplicationLoader,
   int num_loads_;
   std::string last_requestor_name_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestApplicationLoader);
+  DISALLOW_COPY_AND_ASSIGN(TestLoader);
 };
 
-class ClosingApplicationLoader : public ApplicationLoader {
+class ClosingLoader : public Loader {
  private:
-  // ApplicationLoader implementation.
+  // Loader implementation.
   void Load(const std::string& name,
-            InterfaceRequest<mojom::ShellClient> request) override {
+            mojom::ShellClientRequest request) override {
   }
 };
 
@@ -337,7 +337,7 @@ class TestCImpl : public TestC {
 };
 
 class Tester : public ShellClient,
-               public ApplicationLoader,
+               public Loader,
                public InterfaceFactory<TestA>,
                public InterfaceFactory<TestB>,
                public InterfaceFactory<TestC> {
@@ -403,9 +403,8 @@ class ApplicationManagerTest : public testing::Test {
   void SetUp() override {
     application_manager_.reset(
         new ApplicationManager(nullptr, nullptr, nullptr));
-    test_loader_ = new TestApplicationLoader(&context_);
-    application_manager_->set_default_loader(
-        scoped_ptr<ApplicationLoader>(test_loader_));
+    test_loader_ = new TestLoader(&context_);
+    application_manager_->set_default_loader(scoped_ptr<Loader>(test_loader_));
 
     TestServicePtr service_proxy;
     ConnectToInterface(kTestURLString, &service_proxy);
@@ -447,7 +446,7 @@ class ApplicationManagerTest : public testing::Test {
   }
 
   base::ShadowingAtExitManager at_exit_;
-  TestApplicationLoader* test_loader_;
+  TestLoader* test_loader_;
   TesterContext tester_context_;
   TestContext context_;
   base::MessageLoop loop_;
@@ -476,27 +475,23 @@ TEST_F(ApplicationManagerTest, ClientError) {
 TEST_F(ApplicationManagerTest, Deletes) {
   {
     ApplicationManager am(nullptr, nullptr, nullptr);
-    TestApplicationLoader* default_loader =
-        new TestApplicationLoader(&context_);
-    TestApplicationLoader* name_loader1 = new TestApplicationLoader(&context_);
-    TestApplicationLoader* name_loader2 = new TestApplicationLoader(&context_);
-    am.set_default_loader(scoped_ptr<ApplicationLoader>(default_loader));
-    am.SetLoaderForName(scoped_ptr<ApplicationLoader>(name_loader1),
-                        "test:test1");
-    am.SetLoaderForName(scoped_ptr<ApplicationLoader>(name_loader2),
-                        "test:test1");
+    TestLoader* default_loader = new TestLoader(&context_);
+    TestLoader* name_loader1 = new TestLoader(&context_);
+    TestLoader* name_loader2 = new TestLoader(&context_);
+    am.set_default_loader(scoped_ptr<Loader>(default_loader));
+    am.SetLoaderForName(scoped_ptr<Loader>(name_loader1), "test:test1");
+    am.SetLoaderForName(scoped_ptr<Loader>(name_loader2), "test:test1");
   }
   EXPECT_EQ(3, context_.num_loader_deletes);
 }
 
 // Test for SetLoaderForName() & set_default_loader().
 TEST_F(ApplicationManagerTest, SetLoaders) {
-  TestApplicationLoader* default_loader = new TestApplicationLoader(&context_);
-  TestApplicationLoader* name_loader = new TestApplicationLoader(&context_);
-  application_manager_->set_default_loader(
-      scoped_ptr<ApplicationLoader>(default_loader));
+  TestLoader* default_loader = new TestLoader(&context_);
+  TestLoader* name_loader = new TestLoader(&context_);
+  application_manager_->set_default_loader(scoped_ptr<Loader>(default_loader));
   application_manager_->SetLoaderForName(
-      scoped_ptr<ApplicationLoader>(name_loader), "test:test1");
+      scoped_ptr<Loader>(name_loader), "test:test1");
 
   // test::test1 should go to name_loader.
   TestServicePtr test_service;
@@ -560,8 +555,7 @@ TEST_F(ApplicationManagerTest, DISABLED_BDeleted) {
   loop_.Run();
 
   // Kills the a app.
-  application_manager_->SetLoaderForName(scoped_ptr<ApplicationLoader>(),
-                                         kTestAURLString);
+  application_manager_->SetLoaderForName(scoped_ptr<Loader>(), kTestAURLString);
   loop_.Run();
 
   EXPECT_EQ(1, tester_context_.num_b_deletes());
@@ -601,9 +595,9 @@ TEST_F(ApplicationManagerTest, NoServiceNoLoad) {
 }
 
 TEST_F(ApplicationManagerTest, TestEndApplicationClosure) {
-  ClosingApplicationLoader* loader = new ClosingApplicationLoader();
+  ClosingLoader* loader = new ClosingLoader();
   application_manager_->SetLoaderForName(
-      scoped_ptr<ApplicationLoader>(loader), "test:test");
+      scoped_ptr<Loader>(loader), "test:test");
 
   bool called = false;
   scoped_ptr<ConnectParams> params(new ConnectParams);

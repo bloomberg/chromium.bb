@@ -34,7 +34,6 @@
 #include "mojo/services/tracing/public/cpp/trace_provider_impl.h"
 #include "mojo/services/tracing/public/cpp/tracing_impl.h"
 #include "mojo/services/tracing/public/interfaces/tracing.mojom.h"
-#include "mojo/shell/application_loader.h"
 #include "mojo/shell/connect_params.h"
 #include "mojo/shell/public/cpp/names.h"
 #include "mojo/shell/runner/host/in_process_native_runner.h"

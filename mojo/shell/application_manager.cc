@@ -237,7 +237,7 @@ mojom::ShellClientRequest ApplicationManager::InitInstanceForEmbedder(
   return request;
 }
 
-void ApplicationManager::SetLoaderForName(scoped_ptr<ApplicationLoader> loader,
+void ApplicationManager::SetLoaderForName(scoped_ptr<Loader> loader,
                                           const std::string& name) {
   NameToLoaderMap::iterator it = name_to_loader_.find(name);
   if (it != name_to_loader_.end())
@@ -302,8 +302,8 @@ void ApplicationManager::AddListener(
 
 void ApplicationManager::InitPackageManager(
     scoped_ptr<package_manager::ApplicationCatalogStore> app_catalog) {
-  scoped_ptr<ApplicationLoader> loader(new package_manager::Loader(
-      file_task_runner_, std::move(app_catalog)));
+  scoped_ptr<Loader> loader(
+      new package_manager::Loader(file_task_runner_, std::move(app_catalog)));
 
   mojom::ShellClientRequest request;
   std::string name = "mojo:package_manager";
@@ -478,15 +478,14 @@ void ApplicationManager::OnGotResolvedName(
 
 bool ApplicationManager::LoadWithLoader(const Identity& target,
                                         mojom::ShellClientRequest* request) {
-  ApplicationLoader* loader = GetLoaderForName(target.name());
+  Loader* loader = GetLoaderForName(target.name());
   if (!loader)
     return false;
   loader->Load(target.name(), std::move(*request));
   return true;
 }
 
-ApplicationLoader* ApplicationManager::GetLoaderForName(
-    const std::string& name) {
+Loader* ApplicationManager::GetLoaderForName(const std::string& name) {
   auto name_it = name_to_loader_.find(name);
   if (name_it != name_to_loader_.end())
     return name_it->second;

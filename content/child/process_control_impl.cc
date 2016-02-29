@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/stl_util.h"
-#include "content/common/mojo/static_application_loader.h"
+#include "content/common/mojo/static_loader.h"
 #include "content/public/common/content_client.h"
 
 namespace content {
@@ -26,7 +26,7 @@ void ProcessControlImpl::LoadApplication(
   // Only register loaders when we need it.
   if (!has_registered_loaders_) {
     DCHECK(name_to_loader_map_.empty());
-    RegisterApplicationLoaders(&name_to_loader_map_);
+    RegisterLoaders(&name_to_loader_map_);
     has_registered_loaders_ = true;
   }
 

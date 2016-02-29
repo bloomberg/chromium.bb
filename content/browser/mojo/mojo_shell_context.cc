@@ -14,7 +14,7 @@
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/common/gpu/gpu_process_launch_causes.h"
 #include "content/common/mojo/mojo_shell_connection_impl.h"
-#include "content/common/mojo/static_application_loader.h"
+#include "content/common/mojo/static_loader.h"
 #include "content/common/process_control.mojom.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -24,9 +24,9 @@
 #include "content/public/common/service_registry.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/string.h"
-#include "mojo/shell/application_loader.h"
 #include "mojo/shell/connect_params.h"
 #include "mojo/shell/identity.h"
+#include "mojo/shell/loader.h"
 #include "mojo/shell/native_runner.h"
 #include "mojo/shell/public/cpp/shell_client.h"
 #include "mojo/shell/public/interfaces/shell.mojom.h"
@@ -63,34 +63,32 @@ void OnApplicationLoaded(const std::string& name, bool success) {
 
 // The default loader to use for all applications. This does nothing but drop
 // the Application request.
-class DefaultApplicationLoader : public mojo::shell::ApplicationLoader {
+class DefaultLoader : public mojo::shell::Loader {
  public:
-  DefaultApplicationLoader() {}
-  ~DefaultApplicationLoader() override {}
+   DefaultLoader() {}
+   ~DefaultLoader() override {}
 
  private:
-  // mojo::shell::ApplicationLoader:
+  // mojo::shell::Loader:
   void Load(const std::string& name,
-            mojo::InterfaceRequest<mojo::shell::mojom::ShellClient> request)
-                override {}
+            mojo::shell::mojom::ShellClientRequest request) override {}
 
-  DISALLOW_COPY_AND_ASSIGN(DefaultApplicationLoader);
+  DISALLOW_COPY_AND_ASSIGN(DefaultLoader);
 };
 
 // This launches a utility process and forwards the Load request the
 // ProcessControl service there. The utility process is sandboxed iff
 // |use_sandbox| is true.
-class UtilityProcessLoader : public mojo::shell::ApplicationLoader {
+class UtilityProcessLoader : public mojo::shell::Loader {
  public:
   UtilityProcessLoader(const base::string16& process_name, bool use_sandbox)
       : process_name_(process_name), use_sandbox_(use_sandbox) {}
   ~UtilityProcessLoader() override {}
 
  private:
-  // mojo::shell::ApplicationLoader:
+  // mojo::shell::Loader:
   void Load(const std::string& name,
-            mojo::InterfaceRequest<mojo::shell::mojom::ShellClient> request)
-                override {
+            mojo::shell::mojom::ShellClientRequest request) override {
     ProcessControlPtr process_control;
     auto process_request = mojo::GetProxy(&process_control);
     BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
@@ -126,16 +124,15 @@ void RequestGpuProcessControl(mojo::InterfaceRequest<ProcessControl> request) {
 }
 
 // Forwards the load request to the GPU process.
-class GpuProcessLoader : public mojo::shell::ApplicationLoader {
+class GpuProcessLoader : public mojo::shell::Loader {
  public:
   GpuProcessLoader() {}
   ~GpuProcessLoader() override {}
 
  private:
-  // mojo::shell::ApplicationLoader:
+  // mojo::shell::Loader:
   void Load(const std::string& name,
-            mojo::InterfaceRequest<mojo::shell::mojom::ShellClient> request)
-                override {
+            mojo::shell::mojom::ShellClientRequest request) override {
     ProcessControlPtr process_control;
     auto process_request = mojo::GetProxy(&process_control);
     BrowserThread::PostTask(
@@ -211,7 +208,7 @@ MojoShellContext::MojoShellContext() {
       std::move(native_runner_factory), file_task_runner.get(), nullptr));
 
   application_manager_->set_default_loader(
-      scoped_ptr<mojo::shell::ApplicationLoader>(new DefaultApplicationLoader));
+      scoped_ptr<mojo::shell::Loader>(new DefaultLoader));
 
   StaticApplicationMap apps;
   GetContentClient()->browser()->RegisterInProcessMojoApplications(&apps);
@@ -223,9 +220,7 @@ MojoShellContext::MojoShellContext() {
   }
   for (const auto& entry : apps) {
     application_manager_->SetLoaderForName(
-        scoped_ptr<mojo::shell::ApplicationLoader>(
-            new StaticApplicationLoader(entry.second)),
-        entry.first);
+        make_scoped_ptr(new StaticLoader(entry.second)), entry.first);
   }
 
   ContentBrowserClient::OutOfProcessMojoApplicationMap sandboxed_apps;
@@ -234,7 +229,7 @@ MojoShellContext::MojoShellContext() {
       ->RegisterOutOfProcessMojoApplications(&sandboxed_apps);
   for (const auto& app : sandboxed_apps) {
     application_manager_->SetLoaderForName(
-        scoped_ptr<mojo::shell::ApplicationLoader>(
+        make_scoped_ptr(
             new UtilityProcessLoader(app.second, true /* use_sandbox */)),
         app.first);
   }
@@ -245,15 +240,14 @@ MojoShellContext::MojoShellContext() {
       ->RegisterUnsandboxedOutOfProcessMojoApplications(&unsandboxed_apps);
   for (const auto& app : unsandboxed_apps) {
     application_manager_->SetLoaderForName(
-        scoped_ptr<mojo::shell::ApplicationLoader>(
+        make_scoped_ptr(
             new UtilityProcessLoader(app.second, false /* use_sandbox */)),
         app.first);
   }
 
 #if (ENABLE_MOJO_MEDIA_IN_GPU_PROCESS)
-  application_manager_->SetLoaderForName(
-      scoped_ptr<mojo::shell::ApplicationLoader>(new GpuProcessLoader()),
-      "mojo:media");
+  application_manager_->SetLoaderForName(make_scoped_ptr(new GpuProcessLoader),
+                                         "mojo:media");
 #endif
 
   if (!IsRunningInMojoShell()) {

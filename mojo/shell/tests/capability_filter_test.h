@@ -6,8 +6,8 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
-#include "mojo/shell/application_loader.h"
 #include "mojo/shell/application_manager.h"
+#include "mojo/shell/loader.h"
 #include "mojo/shell/public/cpp/shell_client.h"
 #include "mojo/shell/public/cpp/shell_connection.h"
 #include "mojo/shell/tests/capability_filter_unittest.mojom.h"
@@ -44,20 +44,20 @@ class TestApplication : public ShellClient {
   DISALLOW_COPY_AND_ASSIGN(TestApplication);
 };
 
-class TestLoader : public ApplicationLoader {
+class CapabilityFilterTestLoader : public Loader {
  public:
-  explicit TestLoader(ShellClient* delegate);
-  ~TestLoader() override;
+  explicit CapabilityFilterTestLoader(ShellClient* delegate);
+  ~CapabilityFilterTestLoader() override;
 
  private:
-  // Overridden from ApplicationLoader:
+  // Overridden from Loader:
   void Load(const std::string& name,
-            InterfaceRequest<mojom::ShellClient> request) override;
+            mojom::ShellClientRequest request) override;
 
   scoped_ptr<ShellClient> delegate_;
   scoped_ptr<ShellConnection> app_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestLoader);
+  DISALLOW_COPY_AND_ASSIGN(CapabilityFilterTestLoader);
 };
 
 class CapabilityFilterTest : public testing::Test {
@@ -69,7 +69,7 @@ class CapabilityFilterTest : public testing::Test {
   template <class T>
   void CreateLoader(const std::string& name) {
     application_manager_->SetLoaderForName(
-        make_scoped_ptr(new TestLoader(new T)), name);
+        make_scoped_ptr(new CapabilityFilterTestLoader(new T)), name);
   }
 
   void RunBlockingTest();

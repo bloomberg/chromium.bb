@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
-#include "content/common/mojo/static_application_loader.h"
+#include "content/common/mojo/static_loader.h"
 #include "content/public/test/test_mojo_app.h"
 
 namespace content {
@@ -24,8 +24,7 @@ ShellContentUtilityClient::~ShellContentUtilityClient() {
 
 void ShellContentUtilityClient::RegisterMojoApplications(
     StaticMojoApplicationMap* apps) {
-  apps->insert(
-      std::make_pair(kTestMojoAppUrl, base::Bind(&CreateTestApp)));
+  apps->insert(std::make_pair(kTestMojoAppUrl, base::Bind(&CreateTestApp)));
 }
 
 }  // namespace content

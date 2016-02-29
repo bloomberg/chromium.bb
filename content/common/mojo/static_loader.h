@@ -10,7 +10,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "mojo/shell/application_loader.h"
+#include "mojo/shell/loader.h"
 
 namespace base {
 class SimpleThread;
@@ -22,26 +22,25 @@ class ShellClient;
 
 namespace content {
 
-// An ApplicationLoader which loads a single type of app from a given
-// mojo::ShellClient factory. A Load() request is fulfilled by creating an
+// An Loader which loads a single type of app from a given
+// mojo::ShellClientFactory. A Load() request is fulfilled by creating an
 // instance of the app on a new thread. Only one instance of the app will run at
 // a time. Any Load requests received while the app is running will be dropped.
-class StaticApplicationLoader : public mojo::shell::ApplicationLoader {
+class StaticLoader : public mojo::shell::Loader {
  public:
-  using ApplicationFactory =
-      base::Callback<scoped_ptr<mojo::ShellClient>()>;
+  using ApplicationFactory = base::Callback<scoped_ptr<mojo::ShellClient>()>;
 
   // Constructs a static loader for |factory|.
-  explicit StaticApplicationLoader(const ApplicationFactory& factory);
+  explicit StaticLoader(const ApplicationFactory& factory);
 
   // Constructs a static loader for |factory| with a closure that will be called
   // when the loaded application quits.
-  StaticApplicationLoader(const ApplicationFactory& factory,
+  StaticLoader(const ApplicationFactory& factory,
                           const base::Closure& quit_callback);
 
-  ~StaticApplicationLoader() override;
+  ~StaticLoader() override;
 
-  // mojo::shell::ApplicationLoader:
+  // mojo::shell::Loader:
   void Load(const std::string& name,
             mojo::shell::mojom::ShellClientRequest request) override;
 
@@ -57,9 +56,9 @@ class StaticApplicationLoader : public mojo::shell::ApplicationLoader {
   // Thread for the application if currently running.
   scoped_ptr<base::SimpleThread> thread_;
 
-  base::WeakPtrFactory<StaticApplicationLoader> weak_factory_;
+  base::WeakPtrFactory<StaticLoader> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(StaticApplicationLoader);
+  DISALLOW_COPY_AND_ASSIGN(StaticLoader);
 };
 
 }  // namespace content

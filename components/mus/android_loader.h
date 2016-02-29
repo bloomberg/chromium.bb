@@ -6,7 +6,7 @@
 #define COMPONENTS_MUS_ANDROID_LOADER_H_
 
 #include "base/macros.h"
-#include "mojo/shell/application_loader.h"
+#include "mojo/shell/loader.h"
 
 namespace mojo {
 class ShellConnection;
@@ -14,16 +14,15 @@ class ShellConnection;
 
 namespace mus {
 
-class AndroidLoader : public mojo::shell::ApplicationLoader {
+class AndroidLoader : public mojo::shell::Loader {
  public:
   AndroidLoader();
   ~AndroidLoader();
 
  private:
-  // Overridden from mojo::shell::ApplicationLoader:
-  void Load(
-      const GURL& url,
-      mojo::InterfaceRequest<mojo::shell::mojom::ShellClient> request) override;
+  // Overridden from mojo::shell::Loader:
+  void Load(const std::string& name,
+            mojo::shell::mojom::ShellClientRequest request) override;
 
   scoped_ptr<mojo::ShellConnection> app_;
 

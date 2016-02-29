@@ -13,10 +13,9 @@
 #include "base/threading/simple_thread.h"
 #include "mojo/message_pump/message_pump_mojo.h"
 #include "mojo/services/package_manager/package_manager.h"
-#include "mojo/shell/application_loader.h"
 #include "mojo/shell/application_manager.h"
-#include "mojo/shell/capability_filter.h"
 #include "mojo/shell/connect_params.h"
+#include "mojo/shell/loader.h"
 #include "mojo/shell/public/cpp/shell_client.h"
 #include "mojo/shell/public/cpp/shell_connection.h"
 #include "mojo/shell/standalone/context.h"
@@ -29,18 +28,16 @@ scoped_ptr<base::MessagePump> CreateMessagePumpMojo() {
   return make_scoped_ptr(new common::MessagePumpMojo);
 }
 
-// Used to obtain the ShellClientRequest for an application. When
-// ApplicationLoader::Load() is called a callback is run with the
-// ShellClientRequest.
-class BackgroundApplicationLoader : public ApplicationLoader {
+// Used to obtain the ShellClientRequest for an application. When Loader::Load()
+// is called a callback is run with the ShellClientRequest.
+class BackgroundLoader : public Loader {
  public:
   using Callback = base::Callback<void(mojom::ShellClientRequest)>;
 
-  explicit BackgroundApplicationLoader(const Callback& callback)
-      : callback_(callback) {}
-  ~BackgroundApplicationLoader() override {}
+  explicit BackgroundLoader(const Callback& callback) : callback_(callback) {}
+  ~BackgroundLoader() override {}
 
-  // ApplicationLoader:
+  // Loader:
   void Load(const std::string& name,
             mojom::ShellClientRequest request) override {
     DCHECK(!callback_.is_null());  // Callback should only be run once.
@@ -52,7 +49,7 @@ class BackgroundApplicationLoader : public ApplicationLoader {
  private:
   Callback callback_;
 
-  DISALLOW_COPY_AND_ASSIGN(BackgroundApplicationLoader);
+  DISALLOW_COPY_AND_ASSIGN(BackgroundLoader);
 };
 
 class MojoMessageLoop : public base::MessageLoop {
@@ -86,7 +83,7 @@ class BackgroundShell::MojoThread : public base::SimpleThread {
 
     // Ownership of |loader| passes to ApplicationManager.
     const std::string name = params->target().name();
-    BackgroundApplicationLoader* loader = new BackgroundApplicationLoader(
+    BackgroundLoader* loader = new BackgroundLoader(
         base::Bind(&MojoThread::OnGotApplicationRequest, base::Unretained(this),
                    name, signal, request));
     context_->application_manager()->SetLoaderForName(make_scoped_ptr(loader),

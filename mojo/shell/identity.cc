@@ -48,5 +48,29 @@ Identity CreateShellIdentity() {
   return id;
 }
 
+CapabilityFilter GetPermissiveCapabilityFilter() {
+  CapabilityFilter filter;
+  AllowedInterfaces interfaces;
+  interfaces.insert("*");
+  filter["*"] = interfaces;
+  return filter;
+}
+
+AllowedInterfaces GetAllowedInterfaces(const CapabilityFilter& filter,
+                                       const Identity& identity) {
+  // Start by looking for interfaces specific to the supplied identity.
+  auto it = filter.find(identity.name());
+  if (it != filter.end())
+    return it->second;
+
+  // Fall back to looking for a wildcard rule.
+  it = filter.find("*");
+  if (filter.size() == 1 && it != filter.end())
+    return it->second;
+
+  // Finally, nothing is allowed.
+  return AllowedInterfaces();
+}
+
 }  // namespace shell
 }  // namespace mojo

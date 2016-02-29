@@ -12,9 +12,8 @@ namespace mus {
 AndroidLoader::AndroidLoader() {}
 AndroidLoader::~AndroidLoader() {}
 
-void AndroidLoader::Load(
-    const GURL& url,
-    mojo::InterfaceRequest<mojo::shell::mojom::ShellClient> request) {
+void AndroidLoader::Load(const const std::string& name,
+                         mojo::shell::mojom::ShellClientRequest request) {
   DCHECK(request.is_pending());
   app_.reset(new mojo::ShellConnection(new MandolineUIServicesApp,
                                        std::move(request)));

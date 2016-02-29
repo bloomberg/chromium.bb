@@ -12,7 +12,7 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/services/package_manager/package_manager.h"
-#include "mojo/shell/application_loader.h"
+#include "mojo/shell/loader.h"
 #include "mojo/shell/public/cpp/connection.h"
 #include "mojo/shell/public/cpp/connector.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
@@ -25,7 +25,7 @@ namespace test {
 // Lives on the main thread of the test.
 // Listens for interfaces exposed/blocked and for application connections being
 // closed. Quits |loop| when all expectations are met.
-class ConnectionValidator : public ApplicationLoader,
+class ConnectionValidator : public Loader,
                             public ShellClient,
                             public InterfaceFactory<Validator>,
                             public Validator {
@@ -49,9 +49,9 @@ class ConnectionValidator : public ApplicationLoader,
   }
 
  private:
-  // Overridden from ApplicationLoader:
+  // Overridden from Loader:
   void Load(const std::string& name,
-            InterfaceRequest<mojom::ShellClient> request) override {
+            mojom::ShellClientRequest request) override {
     app_.reset(new ShellConnection(this, std::move(request)));
   }
 
@@ -62,8 +62,7 @@ class ConnectionValidator : public ApplicationLoader,
   }
 
   // Overridden from InterfaceFactory<Validator>:
-  void Create(Connection* connection,
-              InterfaceRequest<Validator> request) override {
+  void Create(Connection* connection, ValidatorRequest request) override {
     validator_bindings_.AddBinding(this, std::move(request));
   }
 
@@ -132,14 +131,12 @@ class ServiceApplication : public ShellClient,
   }
 
   // Overridden from InterfaceFactory<Safe>:
-  void Create(Connection* connection,
-              InterfaceRequest<Safe> request) override {
+  void Create(Connection* connection, SafeRequest request) override {
     safe_bindings_.AddBinding(this, std::move(request));
   }
 
   // Overridden from InterfaceFactory<Unsafe>:
-  void Create(Connection* connection,
-              InterfaceRequest<Unsafe> request) override {
+  void Create(Connection* connection, UnsafeRequest request) override {
     unsafe_bindings_.AddBinding(this, std::move(request));
   }
 
@@ -190,13 +187,14 @@ void TestApplication::ConnectionClosed(const std::string& service_name) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// TestLoader:
+// CapabilityFilterTestLoader:
 
-TestLoader::TestLoader(ShellClient* delegate) : delegate_(delegate) {}
-TestLoader::~TestLoader() {}
+CapabilityFilterTestLoader::CapabilityFilterTestLoader(ShellClient* delegate)
+    : delegate_(delegate) {}
+CapabilityFilterTestLoader::~CapabilityFilterTestLoader() {}
 
-void TestLoader::Load(const std::string& name,
-                      InterfaceRequest<mojom::ShellClient> request) {
+void CapabilityFilterTestLoader::Load(const std::string& name,
+                                      mojom::ShellClientRequest request) {
   app_.reset(new ShellConnection(delegate_.get(), std::move(request)));
 }
 

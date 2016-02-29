@@ -5,7 +5,7 @@
 #include "content/utility/utility_process_control_impl.h"
 
 #include "base/bind.h"
-#include "content/common/mojo/static_application_loader.h"
+#include "content/common/mojo/static_loader.h"
 #include "content/public/common/content_client.h"
 #include "content/public/utility/content_utility_client.h"
 #include "content/public/utility/utility_thread.h"
@@ -30,7 +30,7 @@ UtilityProcessControlImpl::UtilityProcessControlImpl() {}
 
 UtilityProcessControlImpl::~UtilityProcessControlImpl() {}
 
-void UtilityProcessControlImpl::RegisterApplicationLoaders(
+void UtilityProcessControlImpl::RegisterLoaders(
     NameToLoaderMap* name_to_loader_map) {
   NameToLoaderMap& map_ref = *name_to_loader_map;
 
@@ -38,12 +38,12 @@ void UtilityProcessControlImpl::RegisterApplicationLoaders(
   GetContentClient()->utility()->RegisterMojoApplications(&apps);
 
   for (const auto& entry : apps) {
-    map_ref[entry.first] = new StaticApplicationLoader(
-        entry.second, base::Bind(&QuitProcess));
+    map_ref[entry.first] =
+        new StaticLoader(entry.second, base::Bind(&QuitProcess));
   }
 
 #if defined(ENABLE_MOJO_MEDIA_IN_UTILITY_PROCESS)
-  map_ref["mojo:media"] = new StaticApplicationLoader(
+  map_ref["mojo:media"] = new StaticLoader(
       base::Bind(&media::CreateMojoMediaApplication), base::Bind(&QuitProcess));
 #endif
 }

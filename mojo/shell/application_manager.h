@@ -15,10 +15,9 @@
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "mojo/services/package_manager/package_manager.h"
 #include "mojo/services/package_manager/public/interfaces/shell_resolver.mojom.h"
-#include "mojo/shell/application_loader.h"
-#include "mojo/shell/capability_filter.h"
 #include "mojo/shell/connect_params.h"
 #include "mojo/shell/identity.h"
+#include "mojo/shell/loader.h"
 #include "mojo/shell/native_runner.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
 #include "mojo/shell/public/cpp/shell_client.h"
@@ -60,7 +59,7 @@ class ApplicationManager : public ShellClient,
   // See native_runner.h and RunNativeApplication().
   // |file_task_runner| provides access to a thread to perform file copy
   // operations on. This may be null only in testing environments where
-  // applications are loaded via ApplicationLoader implementations.
+  // applications are loaded via Loader implementations.
   ApplicationManager(
       scoped_ptr<NativeRunnerFactory> native_runner_factory,
       base::TaskRunner* file_task_runner,
@@ -84,19 +83,18 @@ class ApplicationManager : public ShellClient,
   mojom::ShellClientRequest InitInstanceForEmbedder(const std::string& name);
 
   // Sets the default Loader to be used if not overridden by SetLoaderForName().
-  void set_default_loader(scoped_ptr<ApplicationLoader> loader) {
+  void set_default_loader(scoped_ptr<Loader> loader) {
     default_loader_ = std::move(loader);
   }
 
   // Sets a Loader to be used for a specific name.
-  void SetLoaderForName(scoped_ptr<ApplicationLoader> loader,
-                        const std::string& name);
+  void SetLoaderForName(scoped_ptr<Loader> loader, const std::string& name);
 
  private:
   class Instance;
 
   using IdentityToInstanceMap = std::map<Identity, Instance*>;
-  using NameToLoaderMap = std::map<std::string, ApplicationLoader*>;
+  using NameToLoaderMap = std::map<std::string, Loader*>;
   using IdentityToShellClientFactoryMap =
       std::map<Identity, mojom::ShellClientFactoryPtr>;
 
@@ -161,14 +159,14 @@ class ApplicationManager : public ShellClient,
                          mojom::CapabilityFilterPtr base_filter,
                          const String& file_url);
 
-  // Tries to load |target| with an ApplicationLoader. Returns true if one was
-  // registered and it was loaded, in which case |request| is taken.
+  // Tries to load |target| with an Loader. Returns true if one was registered
+  // and it was loaded, in which case |request| is taken.
   bool LoadWithLoader(const Identity& target,
                       mojom::ShellClientRequest* request);
 
   // Returns the appropriate loader for |name|, or the default loader if there
   // is no loader configured for the name.
-  ApplicationLoader* GetLoaderForName(const std::string& name);
+  Loader* GetLoaderForName(const std::string& name);
 
   void CleanupRunner(NativeRunner* runner);
 
@@ -180,7 +178,7 @@ class ApplicationManager : public ShellClient,
   // Loader management.
   // Loaders are chosen in the order they are listed here.
   NameToLoaderMap name_to_loader_;
-  scoped_ptr<ApplicationLoader> default_loader_;
+  scoped_ptr<Loader> default_loader_;
 
   IdentityToInstanceMap identity_to_instance_;
 

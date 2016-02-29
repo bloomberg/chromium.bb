@@ -5,10 +5,21 @@
 #ifndef MOJO_SHELL_IDENTITY_H_
 #define MOJO_SHELL_IDENTITY_H_
 
-#include "mojo/shell/capability_filter.h"
+#include <stdint.h>
+
+#include <map>
+#include <set>
+#include <string>
 
 namespace mojo {
 namespace shell {
+
+// A set of names of interfaces that may be exposed to an application.
+using AllowedInterfaces = std::set<std::string>;
+// A map of allowed applications to allowed interface sets. See shell.mojom for
+// more details.
+using CapabilityFilter = std::map<std::string, AllowedInterfaces>;
+
 
 // Represents the identity of an application.
 // |name| is the structured name of the application.
@@ -56,6 +67,15 @@ class Identity {
 // Creates an identity for the Shell, used when the Shell connects to
 // applications.
 Identity CreateShellIdentity();
+
+// Returns a capability filter that allows an application to connect to any
+// other application and any service exposed by other applications.
+CapabilityFilter GetPermissiveCapabilityFilter();
+
+// Returns the set of interfaces that an application instance with |filter| is
+// allowed to see from an instance with |identity|.
+AllowedInterfaces GetAllowedInterfaces(const CapabilityFilter& filter,
+                                       const Identity& identity);
 
 }  // namespace shell
 }  // namespace mojo

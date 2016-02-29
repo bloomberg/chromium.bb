@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "mojo/shell/application_manager.h"
-#include "mojo/shell/capability_filter.h"
 #include "mojo/shell/connect_params.h"
 
 namespace mojo {

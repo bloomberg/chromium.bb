@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/mojo/static_application_loader.h"
+#include "content/common/mojo/static_loader.h"
 
 #include <utility>
 
@@ -27,7 +27,7 @@ class RunnerThread : public base::SimpleThread {
                mojo::shell::mojom::ShellClientRequest request,
                scoped_refptr<base::TaskRunner> exit_task_runner,
                const base::Closure& exit_callback,
-               const StaticApplicationLoader::ApplicationFactory& factory)
+               const StaticLoader::ApplicationFactory& factory)
       : base::SimpleThread("Mojo Application: " + name),
         request_(std::move(request)),
         exit_task_runner_(exit_task_runner),
@@ -46,39 +46,36 @@ class RunnerThread : public base::SimpleThread {
   mojo::shell::mojom::ShellClientRequest request_;
   scoped_refptr<base::TaskRunner> exit_task_runner_;
   base::Closure exit_callback_;
-  StaticApplicationLoader::ApplicationFactory factory_;
+  StaticLoader::ApplicationFactory factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RunnerThread);
 };
 
 }  // namespace
 
-StaticApplicationLoader::StaticApplicationLoader(
-    const ApplicationFactory& factory)
-    : StaticApplicationLoader(factory, base::Closure()) {
+StaticLoader::StaticLoader(const ApplicationFactory& factory)
+    : StaticLoader(factory, base::Closure()) {
 }
 
-StaticApplicationLoader::StaticApplicationLoader(
-    const ApplicationFactory& factory,
-    const base::Closure& quit_callback)
+StaticLoader::StaticLoader(const ApplicationFactory& factory,
+                           const base::Closure& quit_callback)
     : factory_(factory), quit_callback_(quit_callback), weak_factory_(this) {
 }
 
-StaticApplicationLoader::~StaticApplicationLoader() {
+StaticLoader::~StaticLoader() {
   if (thread_)
     StopAppThread();
 }
 
-void StaticApplicationLoader::Load(
-    const std::string& name,
-    mojo::shell::mojom::ShellClientRequest request) {
+void StaticLoader::Load(const std::string& name,
+                        mojo::shell::mojom::ShellClientRequest request) {
   if (thread_)
     return;
 
   // If the application's thread quits on its own before this loader dies, we
   // reset the Thread object, allowing future Load requests to be fulfilled
   // with a new app instance.
-  auto exit_callback = base::Bind(&StaticApplicationLoader::StopAppThread,
+  auto exit_callback = base::Bind(&StaticLoader::StopAppThread,
                                   weak_factory_.GetWeakPtr());
   thread_.reset(new RunnerThread(name, std::move(request),
                                  base::ThreadTaskRunnerHandle::Get(),
@@ -86,7 +83,7 @@ void StaticApplicationLoader::Load(
   thread_->Start();
 }
 
-void StaticApplicationLoader::StopAppThread() {
+void StaticLoader::StopAppThread() {
   thread_->Join();
   thread_.reset();
   if (!quit_callback_.is_null())
