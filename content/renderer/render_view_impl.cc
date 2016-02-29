@@ -2260,6 +2260,10 @@ bool RenderViewImpl::Send(IPC::Message* message) {
   return RenderWidget::Send(message);
 }
 
+RenderWidget* RenderViewImpl::GetWidget() const {
+  return const_cast<RenderWidget*>(static_cast<const RenderWidget*>(this));
+}
+
 RenderFrameImpl* RenderViewImpl::GetMainRenderFrame() {
   return main_render_frame_;
 }

@@ -110,7 +110,7 @@ TEST_F(PepperFileChooserHostTest, Show) {
   std::vector<content::FileChooserFileInfo> selected_info_vector;
   selected_info_vector.push_back(selected_info);
   RenderViewImpl* view_impl = static_cast<RenderViewImpl*>(view_);
-  ViewMsg_RunFileChooserResponse response(view_impl->routing_id(),
+  ViewMsg_RunFileChooserResponse response(view_impl->GetRoutingID(),
                                           selected_info_vector);
   EXPECT_TRUE(view_impl->OnMessageReceived(response));
 

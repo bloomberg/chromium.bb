@@ -429,6 +429,7 @@ class CONTENT_EXPORT RenderViewImpl
   // RenderView implementation -------------------------------------------------
 
   bool Send(IPC::Message* message) override;
+  RenderWidget* GetWidget() const override;
   RenderFrameImpl* GetMainRenderFrame() override;
   int GetRoutingID() const override;
   gfx::Size GetSize() const override;
