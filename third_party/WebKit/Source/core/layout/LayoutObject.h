@@ -479,7 +479,6 @@ public:
     bool isListMarker() const { return isOfType(LayoutObjectListMarker); }
     bool isMedia() const { return isOfType(LayoutObjectMedia); }
     bool isMenuList() const { return isOfType(LayoutObjectMenuList); }
-    bool isMeter() const { return isOfType(LayoutObjectMeter); }
     bool isProgress() const { return isOfType(LayoutObjectProgress); }
     bool isQuote() const { return isOfType(LayoutObjectQuote); }
     bool isLayoutButton() const { return isOfType(LayoutObjectLayoutButton); }
@@ -1386,7 +1385,6 @@ protected:
         LayoutObjectListMarker,
         LayoutObjectMedia,
         LayoutObjectMenuList,
-        LayoutObjectMeter,
         LayoutObjectProgress,
         LayoutObjectQuote,
         LayoutObjectLayoutButton,
