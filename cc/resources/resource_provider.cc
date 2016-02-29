@@ -1094,6 +1094,9 @@ ResourceProvider::ScopedWriteLockGr::ScopedWriteLockGr(
       set_sync_token_(false) {
   DCHECK(thread_checker_.CalledOnValidThread());
   resource_provider_->LazyAllocate(resource_);
+  if (resource_->dirty_image) {
+    resource_provider_->BindImageForSampling(resource_);
+  }
 }
 
 ResourceProvider::ScopedWriteLockGr::~ScopedWriteLockGr() {
@@ -1135,18 +1138,13 @@ void ResourceProvider::ScopedWriteLockGr::InitSkSurface(
     surface_props =
         SkSurfaceProps(flags, SkSurfaceProps::kLegacyFontHost_InitType);
   }
-  gr_surface_ =
-      skia::AdoptRef(gr_context->textureProvider()->wrapBackendTexture(
-          desc, kBorrow_GrWrapOwnership));
-  if (gr_surface_)
-    sk_surface_ = skia::AdoptRef(SkSurface::NewRenderTargetDirect(
-        gr_surface_->asRenderTarget(), &surface_props));
+  sk_surface_ = skia::AdoptRef(SkSurface::NewFromBackendTextureAsRenderTarget(
+      gr_context, desc, &surface_props));
 }
 
 void ResourceProvider::ScopedWriteLockGr::ReleaseSkSurface() {
-  DCHECK(gr_surface_);
-  gr_surface_->prepareForExternalIO();
-  gr_surface_.clear();
+  DCHECK(sk_surface_);
+  sk_surface_->prepareForExternalIO();
   sk_surface_.clear();
 }
 

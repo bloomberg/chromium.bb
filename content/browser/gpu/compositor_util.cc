@@ -239,12 +239,6 @@ bool IsGpuMemoryBufferCompositorResourcesEnabled() {
   if (!BrowserGpuMemoryBufferManager::IsNativeGpuMemoryBuffersEnabled())
     return false;
 
-  // GPU rasterization does not support GL_TEXTURE_RECTANGLE_ARB, which is
-  // required by GpuMemoryBuffers on Mac.
-  // http://crbug.com/551072
-  if (IsForceGpuRasterizationEnabled() || IsGpuRasterizationEnabled())
-    return false;
-
 #if defined(OS_MACOSX)
   return true;
 #else
