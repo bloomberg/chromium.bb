@@ -16,7 +16,7 @@
 namespace mojo {
 
 // Use this class to manage a set of bindings, which are automatically destroyed
-// and removed from the set when the pipe they bound to is disconnected.
+// and removed from the set when the pipe they are bound to is disconnected.
 template <typename Interface>
 class BindingSet {
  public:
