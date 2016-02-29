@@ -185,15 +185,30 @@ TEST_F(RendererWebMediaPlayerDelegateTest, IdleDelegatesAreSuspended) {
     run_loop.Run();
   }
 
-  // Pausing should also count as idle.
-  delegate_manager_->DidPause(delegate_id_1, false);
+  // Pausing should not count as idle if playback didn't reach end of stream.
+  delegate_manager_->DidPause(delegate_id_1, false /* reached_end_of_stream */);
   testing::StrictMock<MockWebMediaPlayerDelegateObserver> observer_3;
   const int delegate_id_3 = delegate_manager_->AddObserver(&observer_3);
   delegate_manager_->DidPlay(delegate_id_3, true, true, false,
                              base::TimeDelta());
 
-  // Adding the observer should instantly queue the timeout task, once run the
-  // first delegate should be expired while the third is kept alive.
+  // Adding the observer should instantly queue the timeout task, once run no
+  // delegates should have been expired.
+  {
+    base::RunLoop run_loop;
+    base::MessageLoop::current()->PostTask(FROM_HERE, run_loop.QuitClosure());
+    tick_clock.Advance(kIdleTimeout + base::TimeDelta::FromMicroseconds(1));
+    run_loop.Run();
+  }
+
+  delegate_manager_->DidPlay(delegate_id_1, true, true, false,
+                             base::TimeDelta());
+
+  // Pausing after reaching end of stream should count as idle.
+  delegate_manager_->DidPause(delegate_id_1, true /* reached_end_of_stream */);
+
+  // Once the timeout task runs the first delegate should be expired while the
+  // third is kept alive.
   {
     EXPECT_CALL(observer_1, OnHidden(true))
         .WillOnce(RunClosure(base::Bind(

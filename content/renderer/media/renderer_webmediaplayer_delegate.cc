@@ -56,7 +56,8 @@ void RendererWebMediaPlayerDelegate::DidPlay(int delegate_id,
 void RendererWebMediaPlayerDelegate::DidPause(int delegate_id,
                                               bool reached_end_of_stream) {
   DCHECK(id_map_.Lookup(delegate_id));
-  AddIdleDelegate(delegate_id);
+  if (reached_end_of_stream)
+    AddIdleDelegate(delegate_id);
   Send(new MediaPlayerDelegateHostMsg_OnMediaPaused(routing_id(), delegate_id,
                                                     reached_end_of_stream));
 }

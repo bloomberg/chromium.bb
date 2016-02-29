@@ -1517,7 +1517,7 @@ void WebMediaPlayerAndroid::OnHidden(bool must_suspend) {
   // If we're idle or playing video, pause and release resources; audio only
   // players are allowed to continue playing in the background unless indicated
   // otherwise by the call.
-  if (must_suspend || hasVideo() || paused())
+  if (must_suspend || (paused() && playback_completed_) || hasVideo())
     SuspendAndReleaseResources();
 }
 
