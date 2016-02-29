@@ -32,7 +32,7 @@ bool WebPDecoder(const void* input, size_t input_size, SkBitmap* bitmap) {
     return false;
   }
   // Animations are not supported.
-  DCHECK_EQ(config.input.has_animation, 0);
+  DCHECK_EQ(0, config.input.has_animation);
 
   // Allocate correct size for the bitmap based on the WebPBitstreamFeatures.
   bitmap->allocN32Pixels(config.input.width, config.input.height);
@@ -41,7 +41,6 @@ bool WebPDecoder(const void* input, size_t input_size, SkBitmap* bitmap) {
   // Setup the decoder buffer based on the WebPBitstreamFeatures.
   WebPDecBuffer decoderBuffer;
 
-  DCHECK(config.input.has_alpha);
 #if SK_B32_SHIFT  // Output little-endian RGBA pixels (Android).
   decoderBuffer.colorspace = MODE_rgbA;
 #else  // Output little-endian BGRA pixels.
