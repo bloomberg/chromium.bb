@@ -25,6 +25,26 @@
       },
     },
     {
+      'target_name': 'linux_dmabuf_protocol',
+      'type': 'static_library',
+      'dependencies' : [
+        '../wayland/wayland.gyp:wayland_util',
+      ],
+      'sources': [
+        'include/protocol/linux-dmabuf-unstable-v1-client-protocol.h',
+        'include/protocol/linux-dmabuf-unstable-v1-server-protocol.h',
+        'protocol/linux-dmabuf-protocol.c',
+      ],
+      'include_dirs': [
+        'include/protocol',
+      ],
+      'direct_dependent_settings': {
+        'include_dirs': [
+          'include/protocol',
+        ],
+      },
+    },
+    {
       'target_name': 'scaler_protocol',
       'type': 'static_library',
       'dependencies' : [
