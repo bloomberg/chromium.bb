@@ -5,12 +5,22 @@
  * TODO(ryoh): REMOVE this file if we decide how to define annotations for this
  * API.
  * @see https://codereview.chromium.org/1679983003/
- */
- /**
+*/
+/**
  * @const
  * @see https://goo.gl/7dvJFW
  */
 chrome.wallpaper = {};
+
+/**
+ * @enum {string}
+ * @see https://goo.gl/7dvJFW#type-WallpaperLayout
+ */
+chrome.wallpaper.WallpaperLayout = {
+  STRETCH: '',
+  CENTER: '',
+  CENTER_CROPPED: '',
+};
 
 /**
  * Sets wallpaper to the image at url or wallpaperData with the specified
@@ -18,11 +28,11 @@ chrome.wallpaper = {};
  * @param {{
  *    data: (ArrayBuffer|undefined),
  *    url: (string|undefined),
- *    layout: string,
+ *    layout: (chrome.wallpaper.WallpaperLayout|string),
  *    filename: string,
  *    thumbnail: (boolean|undefined)
  *  }} details
  * @param {function(ArrayBuffer=)} callback
- *
+ * @see https://goo.gl/7dvJFW#method-setWallpaper
  */
- chrome.wallpaper.setWallpaper = function(details, callback) {};
+chrome.wallpaper.setWallpaper = function(details, callback) {};
