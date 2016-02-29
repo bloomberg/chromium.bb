@@ -73,8 +73,12 @@ class ProxyResolverMac : public ProxyResolver {
   int GetProxyForURL(const GURL& url,
                      ProxyInfo* results,
                      const CompletionCallback& callback,
-                     scoped_ptr<Request>* request,
+                     RequestHandle* request,
                      const BoundNetLog& net_log) override;
+
+  void CancelRequest(RequestHandle request) override;
+
+  LoadState GetLoadState(RequestHandle request) const override;
 
  private:
   const scoped_refptr<ProxyResolverScriptData> script_data_;
@@ -92,7 +96,7 @@ ProxyResolverMac::~ProxyResolverMac() {}
 int ProxyResolverMac::GetProxyForURL(const GURL& query_url,
                                      ProxyInfo* results,
                                      const CompletionCallback& /*callback*/,
-                                     scoped_ptr<Request>* /*request*/,
+                                     RequestHandle* /*request*/,
                                      const BoundNetLog& net_log) {
   base::ScopedCFTypeRef<CFStringRef> query_ref(
       base::SysUTF8ToCFStringRef(query_url.spec()));
@@ -197,6 +201,15 @@ int ProxyResolverMac::GetProxyForURL(const GURL& query_url,
   // Else do nothing (results is already guaranteed to be in the default state).
 
   return OK;
+}
+
+void ProxyResolverMac::CancelRequest(RequestHandle request) {
+  NOTREACHED();
+}
+
+LoadState ProxyResolverMac::GetLoadState(RequestHandle request) const {
+  NOTREACHED();
+  return LOAD_STATE_IDLE;
 }
 
 }  // namespace

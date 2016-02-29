@@ -11,74 +11,61 @@
 
 namespace net {
 
-MockAsyncProxyResolver::RequestImpl::RequestImpl(scoped_ptr<Job> job)
-    : job_(std::move(job)) {
-  DCHECK(job_);
-}
-
-MockAsyncProxyResolver::RequestImpl::~RequestImpl() {
-  MockAsyncProxyResolver* resolver = job_->Resolver();
-  // AddCancelledJob will check if request is already cancelled
-  resolver->AddCancelledJob(std::move(job_));
-}
-
-LoadState MockAsyncProxyResolver::RequestImpl::GetLoadState() {
-  return LOAD_STATE_RESOLVING_PROXY_FOR_URL;
-}
-
-MockAsyncProxyResolver::Job::Job(MockAsyncProxyResolver* resolver,
-                                 const GURL& url,
-                                 ProxyInfo* results,
-                                 const CompletionCallback& callback)
+MockAsyncProxyResolver::Request::Request(MockAsyncProxyResolver* resolver,
+                                         const GURL& url,
+                                         ProxyInfo* results,
+                                         const CompletionCallback& callback)
     : resolver_(resolver),
       url_(url),
       results_(results),
       callback_(callback),
-      origin_loop_(base::MessageLoop::current()) {}
+      origin_loop_(base::MessageLoop::current()) {
+}
 
-MockAsyncProxyResolver::Job::~Job() {}
-
-void MockAsyncProxyResolver::Job::CompleteNow(int rv) {
+void MockAsyncProxyResolver::Request::CompleteNow(int rv) {
   CompletionCallback callback = callback_;
 
-  resolver_->RemovePendingJob(this);
+  // May delete |this|.
+  resolver_->RemovePendingRequest(this);
 
   callback.Run(rv);
 }
+
+MockAsyncProxyResolver::Request::~Request() {}
 
 MockAsyncProxyResolver::~MockAsyncProxyResolver() {}
 
 int MockAsyncProxyResolver::GetProxyForURL(const GURL& url,
                                            ProxyInfo* results,
                                            const CompletionCallback& callback,
-                                           scoped_ptr<Request>* request,
+                                           RequestHandle* request_handle,
                                            const BoundNetLog& /*net_log*/) {
-  scoped_ptr<Job> job(new Job(this, url, results, callback));
+  scoped_refptr<Request> request = new Request(this, url, results, callback);
+  pending_requests_.push_back(request);
 
-  pending_jobs_.push_back(job.get());
-  request->reset(new RequestImpl(std::move(job)));
+  if (request_handle)
+    *request_handle = reinterpret_cast<RequestHandle>(request.get());
 
-  // Test code completes the request by calling job->CompleteNow().
+  // Test code completes the request by calling request->CompleteNow().
   return ERR_IO_PENDING;
 }
 
-void MockAsyncProxyResolver::AddCancelledJob(scoped_ptr<Job> job) {
-  std::vector<Job*>::iterator it =
-      std::find(pending_jobs_.begin(), pending_jobs_.end(), job.get());
-  // Because this is called always when RequestImpl is destructed,
-  // we need to check if it is still in pending jobs.
-  if (it != pending_jobs_.end()) {
-    cancelled_jobs_.push_back(std::move(job));
-    pending_jobs_.erase(it);
-  }
+void MockAsyncProxyResolver::CancelRequest(RequestHandle request_handle) {
+  scoped_refptr<Request> request = reinterpret_cast<Request*>(request_handle);
+  cancelled_requests_.push_back(request);
+  RemovePendingRequest(request.get());
 }
 
-void MockAsyncProxyResolver::RemovePendingJob(Job* job) {
-  DCHECK(job);
-  std::vector<Job*>::iterator it =
-      std::find(pending_jobs_.begin(), pending_jobs_.end(), job);
-  DCHECK(it != pending_jobs_.end());
-  pending_jobs_.erase(it);
+LoadState MockAsyncProxyResolver::GetLoadState(
+    RequestHandle request_handle) const {
+  return LOAD_STATE_RESOLVING_PROXY_FOR_URL;
+}
+
+void MockAsyncProxyResolver::RemovePendingRequest(Request* request) {
+  RequestsList::iterator it = std::find(
+      pending_requests_.begin(), pending_requests_.end(), request);
+  DCHECK(it != pending_requests_.end());
+  pending_requests_.erase(it);
 }
 
 MockAsyncProxyResolver::MockAsyncProxyResolver() {
@@ -178,9 +165,17 @@ ForwardingProxyResolver::ForwardingProxyResolver(ProxyResolver* impl)
 int ForwardingProxyResolver::GetProxyForURL(const GURL& query_url,
                                             ProxyInfo* results,
                                             const CompletionCallback& callback,
-                                            scoped_ptr<Request>* request,
+                                            RequestHandle* request,
                                             const BoundNetLog& net_log) {
   return impl_->GetProxyForURL(query_url, results, callback, request, net_log);
+}
+
+void ForwardingProxyResolver::CancelRequest(RequestHandle request) {
+  impl_->CancelRequest(request);
+}
+
+LoadState ForwardingProxyResolver::GetLoadState(RequestHandle request) const {
+  return impl_->GetLoadState(request);
 }
 
 }  // namespace net

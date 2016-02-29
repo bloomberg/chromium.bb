@@ -10954,13 +10954,20 @@ class CapturingProxyResolver : public ProxyResolver {
   int GetProxyForURL(const GURL& url,
                      ProxyInfo* results,
                      const CompletionCallback& callback,
-                     scoped_ptr<Request>* request,
+                     RequestHandle* request,
                      const BoundNetLog& net_log) override {
     ProxyServer proxy_server(ProxyServer::SCHEME_HTTP,
                              HostPortPair("myproxy", 80));
     results->UseProxyServer(proxy_server);
     resolved_.push_back(url);
     return OK;
+  }
+
+  void CancelRequest(RequestHandle request) override { NOTREACHED(); }
+
+  LoadState GetLoadState(RequestHandle request) const override {
+    NOTREACHED();
+    return LOAD_STATE_IDLE;
   }
 
   const std::vector<GURL>& resolved() const { return resolved_; }

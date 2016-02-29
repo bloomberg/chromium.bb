@@ -50,13 +50,20 @@ class NET_EXPORT ProxyResolverV8Tracing {
   // Gets a list of proxy servers to use for |url|. This request always
   // runs asynchronously and notifies the result by running |callback|. If the
   // result code is OK then the request was successful and |results| contains
-  // the proxy resolution information.  Request can be cancelled by resetting
-  // |*request|.
+  // the proxy resolution information. If |request| is non-null, |*request| is
+  // written to, and can be passed to CancelRequest().
   virtual void GetProxyForURL(const GURL& url,
                               ProxyInfo* results,
                               const CompletionCallback& callback,
-                              scoped_ptr<ProxyResolver::Request>* request,
+                              ProxyResolver::RequestHandle* request,
                               scoped_ptr<Bindings> bindings) = 0;
+
+  // Cancels |request|.
+  virtual void CancelRequest(ProxyResolver::RequestHandle request) = 0;
+
+  // Gets the LoadState for |request|.
+  virtual LoadState GetLoadState(
+      ProxyResolver::RequestHandle request) const = 0;
 };
 
 // A factory for ProxyResolverV8Tracing instances. The default implementation,

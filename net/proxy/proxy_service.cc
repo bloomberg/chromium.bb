@@ -185,10 +185,18 @@ class ProxyResolverNull : public ProxyResolver {
   int GetProxyForURL(const GURL& url,
                      ProxyInfo* results,
                      const CompletionCallback& callback,
-                     scoped_ptr<Request>* request,
+                     RequestHandle* request,
                      const BoundNetLog& net_log) override {
     return ERR_NOT_IMPLEMENTED;
   }
+
+  void CancelRequest(RequestHandle request) override { NOTREACHED(); }
+
+  LoadState GetLoadState(RequestHandle request) const override {
+    NOTREACHED();
+    return LOAD_STATE_IDLE;
+  }
+
 };
 
 // ProxyResolver that simulates a PAC script which returns
@@ -201,10 +209,17 @@ class ProxyResolverFromPacString : public ProxyResolver {
   int GetProxyForURL(const GURL& url,
                      ProxyInfo* results,
                      const CompletionCallback& callback,
-                     scoped_ptr<Request>* request,
+                     RequestHandle* request,
                      const BoundNetLog& net_log) override {
     results->UsePacString(pac_string_);
     return OK;
+  }
+
+  void CancelRequest(RequestHandle request) override { NOTREACHED(); }
+
+  LoadState GetLoadState(RequestHandle request) const override {
+    NOTREACHED();
+    return LOAD_STATE_IDLE;
   }
 
  private:
@@ -763,6 +778,7 @@ class ProxyService::PacRequest
         url_(url),
         load_flags_(load_flags),
         proxy_delegate_(proxy_delegate),
+        resolve_job_(NULL),
         config_id_(ProxyConfig::kInvalidConfigID),
         config_source_(PROXY_CONFIG_SOURCE_UNKNOWN),
         net_log_(net_log),
@@ -788,7 +804,7 @@ class ProxyService::PacRequest
 
   bool is_started() const {
     // Note that !! casts to bool. (VS gives a warning otherwise).
-    return !!resolve_job_.get();
+    return !!resolve_job_;
   }
 
   void StartAndCompleteCheckingForSynchronous() {
@@ -803,7 +819,8 @@ class ProxyService::PacRequest
   void CancelResolveJob() {
     DCHECK(is_started());
     // The request may already be running in the resolver.
-    resolve_job_.reset();
+    resolver()->CancelRequest(resolve_job_);
+    resolve_job_ = NULL;
     DCHECK(!is_started());
   }
 
@@ -831,12 +848,12 @@ class ProxyService::PacRequest
   int QueryDidComplete(int result_code) {
     DCHECK(!was_cancelled());
 
-    // This state is cleared when resolve_job_ is reset below.
+    // This state is cleared when resolve_job_ is set to nullptr below.
     bool script_executed = is_started();
 
     // Clear |resolve_job_| so is_started() returns false while
     // DidFinishResolvingProxy() runs.
-    resolve_job_.reset();
+    resolve_job_ = nullptr;
 
     // Note that DidFinishResolvingProxy might modify |results_|.
     int rv = service_->DidFinishResolvingProxy(
@@ -862,7 +879,7 @@ class ProxyService::PacRequest
 
   LoadState GetLoadState() const {
     if (is_started())
-      return resolve_job_->GetLoadState();
+      return resolver()->GetLoadState(resolve_job_);
     return LOAD_STATE_RESOLVING_PROXY_FOR_URL;
   }
 
@@ -895,7 +912,7 @@ class ProxyService::PacRequest
   GURL url_;
   int load_flags_;
   ProxyDelegate* proxy_delegate_;
-  scoped_ptr<ProxyResolver::Request> resolve_job_;
+  ProxyResolver::RequestHandle resolve_job_;
   ProxyConfig::ID config_id_;  // The config id when the resolve was started.
   ProxyConfigSource config_source_;  // The source of proxy settings.
   BoundNetLog net_log_;

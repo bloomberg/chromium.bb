@@ -274,14 +274,25 @@ class TestProxyFallbackProxyDelegate : public ProxyDelegate {
   int proxy_fallback_net_error_;
 };
 
-using JobMap = std::map<GURL, MockAsyncProxyResolver::Job*>;
+using RequestMap =
+    std::map<GURL, scoped_refptr<MockAsyncProxyResolver::Request>>;
 
-// Given a jobmap and a list of target URLs |urls|, asserts that the set of URLs
-// of the jobs appearing in |list| is exactly the set of URLs in |urls|.
-JobMap GetJobsForURLs(const JobMap& map, const std::vector<GURL>& urls) {
-  size_t a = urls.size();
-  size_t b = map.size();
-  if (a != b) {
+// Given a list of requests |list| from a MockAsyncProxyResolver and a list of
+// target URLs |_urls|, asserts that the set of URLs of the requests appearing
+// in |list| is exactly the set of URLs in |_urls|, and produces a RequestMap in
+// |*map| containing the requests corresponding to those target |_urls|.
+//
+// Note that this function must return void to allow use of gtest's ASSERT_*
+// macros inside it.
+RequestMap GetRequestsForURLs(
+    const MockAsyncProxyResolver::RequestsList& requests,
+    const std::vector<GURL>& urls) {
+  RequestMap map;
+
+  for (const auto& it : requests)
+    map[it->url()] = it;
+
+  if (urls.size() != map.size()) {
     ADD_FAILURE() << "map size (" << map.size() << ") != urls size ("
                   << urls.size() << ")";
     return map;
@@ -297,11 +308,11 @@ JobMap GetJobsForURLs(const JobMap& map, const std::vector<GURL>& urls) {
 
 // Given a MockAsyncProxyResolver |resolver| and some GURLs, validates that the
 // set of pending request URLs for |resolver| is exactly the supplied list of
-// URLs and returns a map from URLs to the corresponding pending jobs.
-JobMap GetPendingJobsForURLs(const MockAsyncProxyResolver& resolver,
-                             const GURL& url1 = GURL(),
-                             const GURL& url2 = GURL(),
-                             const GURL& url3 = GURL()) {
+// URLs and returns a map from URLs to the corresponding pending requests.
+RequestMap GetPendingRequestsForURLs(const MockAsyncProxyResolver& resolver,
+                                     const GURL& url1 = GURL(),
+                                     const GURL& url2 = GURL(),
+                                     const GURL& url3 = GURL()) {
   std::vector<GURL> urls;
   if (!url1.is_empty())
     urls.push_back(url1);
@@ -309,23 +320,16 @@ JobMap GetPendingJobsForURLs(const MockAsyncProxyResolver& resolver,
     urls.push_back(url2);
   if (!url3.is_empty())
     urls.push_back(url3);
-
-  JobMap map;
-  for (MockAsyncProxyResolver::Job* it : resolver.pending_jobs()) {
-    DCHECK(it);
-    map[it->url()] = it;
-  }
-
-  return GetJobsForURLs(map, urls);
+  return GetRequestsForURLs(resolver.pending_requests(), urls);
 }
 
 // Given a MockAsyncProxyResolver |resolver| and some GURLs, validates that the
 // set of cancelled request URLs for |resolver| is exactly the supplied list of
-// URLs and returns a map from URLs to the corresponding cancelled jobs.
-JobMap GetCancelledJobsForURLs(const MockAsyncProxyResolver& resolver,
-                               const GURL& url1 = GURL(),
-                               const GURL& url2 = GURL(),
-                               const GURL& url3 = GURL()) {
+// URLs and returns a map from URLs to the corresponding cancelled requests.
+RequestMap GetCancelledRequestsForURLs(const MockAsyncProxyResolver& resolver,
+                                       const GURL& url1 = GURL(),
+                                       const GURL& url2 = GURL(),
+                                       const GURL& url3 = GURL()) {
   std::vector<GURL> urls;
   if (!url1.is_empty())
     urls.push_back(url1);
@@ -333,15 +337,7 @@ JobMap GetCancelledJobsForURLs(const MockAsyncProxyResolver& resolver,
     urls.push_back(url2);
   if (!url3.is_empty())
     urls.push_back(url3);
-
-  JobMap map;
-  for (const scoped_ptr<MockAsyncProxyResolver::Job>& it :
-       resolver.cancelled_jobs()) {
-    DCHECK(it);
-    map[it->url()] = it.get();
-  }
-
-  return GetJobsForURLs(map, urls);
+  return GetRequestsForURLs(resolver.cancelled_requests(), urls);
 }
 
 }  // namespace
@@ -411,7 +407,7 @@ TEST_F(ProxyServiceTest, OnResolveProxyCallbackAddProxy) {
 
   // Verify that the ProxyDelegate's behavior is stateless across
   // invocations of ResolveProxy. Start by having the callback add a proxy
-  // and checking that subsequent jobs are not affected.
+  // and checking that subsequent requests are not affected.
   delegate.set_add_proxy(true);
 
   // Callback should interpose:
@@ -507,12 +503,12 @@ TEST_F(ProxyServiceTest, PAC) {
             factory->pending_requests()[0]->script_data()->url());
   factory->pending_requests()[0]->CompleteNowWithForwarder(OK, &resolver);
 
-  ASSERT_EQ(1u, resolver.pending_jobs().size());
-  EXPECT_EQ(url, resolver.pending_jobs()[0]->url());
+  ASSERT_EQ(1u, resolver.pending_requests().size());
+  EXPECT_EQ(url, resolver.pending_requests()[0]->url());
 
   // Set the result in proxy resolver.
-  resolver.pending_jobs()[0]->results()->UseNamedProxy("foopy");
-  resolver.pending_jobs()[0]->CompleteNow(OK);
+  resolver.pending_requests()[0]->results()->UseNamedProxy("foopy");
+  resolver.pending_requests()[0]->CompleteNow(OK);
 
   EXPECT_EQ(OK, callback.WaitForResult());
   EXPECT_FALSE(info.is_direct());
@@ -563,10 +559,10 @@ TEST_F(ProxyServiceTest, PAC_NoIdentityOrHash) {
             factory->pending_requests()[0]->script_data()->url());
   factory->pending_requests()[0]->CompleteNowWithForwarder(OK, &resolver);
 
-  ASSERT_EQ(1u, resolver.pending_jobs().size());
+  ASSERT_EQ(1u, resolver.pending_requests().size());
   // The URL should have been simplified, stripping the username/password/hash.
   EXPECT_EQ(GURL("http://www.google.com/?ref"),
-            resolver.pending_jobs()[0]->url());
+            resolver.pending_requests()[0]->url());
 
   // We end here without ever completing the request -- destruction of
   // ProxyService will cancel the outstanding request.
@@ -594,12 +590,12 @@ TEST_F(ProxyServiceTest, PAC_FailoverWithoutDirect) {
             factory->pending_requests()[0]->script_data()->url());
   factory->pending_requests()[0]->CompleteNowWithForwarder(OK, &resolver);
 
-  ASSERT_EQ(1u, resolver.pending_jobs().size());
-  EXPECT_EQ(url, resolver.pending_jobs()[0]->url());
+  ASSERT_EQ(1u, resolver.pending_requests().size());
+  EXPECT_EQ(url, resolver.pending_requests()[0]->url());
 
   // Set the result in proxy resolver.
-  resolver.pending_jobs()[0]->results()->UseNamedProxy("foopy:8080");
-  resolver.pending_jobs()[0]->CompleteNow(OK);
+  resolver.pending_requests()[0]->results()->UseNamedProxy("foopy:8080");
+  resolver.pending_requests()[0]->CompleteNow(OK);
 
   EXPECT_EQ(OK, callback1.WaitForResult());
   EXPECT_FALSE(info.is_direct());
@@ -648,11 +644,11 @@ TEST_F(ProxyServiceTest, PAC_RuntimeError) {
             factory->pending_requests()[0]->script_data()->url());
   factory->pending_requests()[0]->CompleteNowWithForwarder(OK, &resolver);
 
-  ASSERT_EQ(1u, resolver.pending_jobs().size());
-  EXPECT_EQ(url, resolver.pending_jobs()[0]->url());
+  ASSERT_EQ(1u, resolver.pending_requests().size());
+  EXPECT_EQ(url, resolver.pending_requests()[0]->url());
 
   // Simulate a failure in the PAC executor.
-  resolver.pending_jobs()[0]->CompleteNow(ERR_PAC_SCRIPT_FAILED);
+  resolver.pending_requests()[0]->CompleteNow(ERR_PAC_SCRIPT_FAILED);
 
   EXPECT_EQ(OK, callback1.WaitForResult());
 
@@ -706,13 +702,13 @@ TEST_F(ProxyServiceTest, PAC_FailoverAfterDirect) {
             factory->pending_requests()[0]->script_data()->url());
   factory->pending_requests()[0]->CompleteNowWithForwarder(OK, &resolver);
 
-  ASSERT_EQ(1u, resolver.pending_jobs().size());
-  EXPECT_EQ(url, resolver.pending_jobs()[0]->url());
+  ASSERT_EQ(1u, resolver.pending_requests().size());
+  EXPECT_EQ(url, resolver.pending_requests()[0]->url());
 
   // Set the result in proxy resolver.
-  resolver.pending_jobs()[0]->results()->UsePacString(
+  resolver.pending_requests()[0]->results()->UsePacString(
       "DIRECT ; PROXY foobar:10 ; DIRECT ; PROXY foobar:20");
-  resolver.pending_jobs()[0]->CompleteNow(OK);
+  resolver.pending_requests()[0]->CompleteNow(OK);
 
   EXPECT_EQ(OK, callback1.WaitForResult());
   EXPECT_TRUE(info.is_direct());
@@ -778,11 +774,11 @@ TEST_F(ProxyServiceTest, PAC_ConfigSourcePropagates) {
                                 NULL, NULL, BoundNetLog());
   ASSERT_EQ(ERR_IO_PENDING, rv);
   factory->pending_requests()[0]->CompleteNowWithForwarder(OK, &resolver);
-  ASSERT_EQ(1u, resolver.pending_jobs().size());
+  ASSERT_EQ(1u, resolver.pending_requests().size());
 
   // Set the result in proxy resolver.
-  resolver.pending_jobs()[0]->results()->UseNamedProxy("foopy");
-  resolver.pending_jobs()[0]->CompleteNow(OK);
+  resolver.pending_requests()[0]->results()->UseNamedProxy("foopy");
+  resolver.pending_requests()[0]->CompleteNow(OK);
 
   EXPECT_EQ(OK, callback.WaitForResult());
   EXPECT_EQ(PROXY_CONFIG_SOURCE_TEST, info.config_source());
@@ -820,11 +816,11 @@ TEST_F(ProxyServiceTest, ProxyResolverFails) {
             factory->pending_requests()[0]->script_data()->url());
   factory->pending_requests()[0]->CompleteNowWithForwarder(OK, &resolver);
 
-  ASSERT_EQ(1u, resolver.pending_jobs().size());
-  EXPECT_EQ(url, resolver.pending_jobs()[0]->url());
+  ASSERT_EQ(1u, resolver.pending_requests().size());
+  EXPECT_EQ(url, resolver.pending_requests()[0]->url());
 
   // Fail the first resolve request in MockAsyncProxyResolver.
-  resolver.pending_jobs()[0]->CompleteNow(ERR_FAILED);
+  resolver.pending_requests()[0]->CompleteNow(ERR_FAILED);
 
   // Although the proxy resolver failed the request, ProxyService implicitly
   // falls-back to DIRECT.
@@ -843,13 +839,13 @@ TEST_F(ProxyServiceTest, ProxyResolverFails) {
                             NULL, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
-  ASSERT_EQ(1u, resolver.pending_jobs().size());
-  EXPECT_EQ(url, resolver.pending_jobs()[0]->url());
+  ASSERT_EQ(1u, resolver.pending_requests().size());
+  EXPECT_EQ(url, resolver.pending_requests()[0]->url());
 
   // This time we will have the resolver succeed (perhaps the PAC script has
   // a dependency on the current time).
-  resolver.pending_jobs()[0]->results()->UseNamedProxy("foopy_valid:8080");
-  resolver.pending_jobs()[0]->CompleteNow(OK);
+  resolver.pending_requests()[0]->results()->UseNamedProxy("foopy_valid:8080");
+  resolver.pending_requests()[0]->CompleteNow(OK);
 
   EXPECT_EQ(OK, callback2.WaitForResult());
   EXPECT_FALSE(info.is_direct());
@@ -884,11 +880,11 @@ TEST_F(ProxyServiceTest, ProxyResolverTerminatedDuringRequest) {
             factory->pending_requests()[0]->script_data()->url());
   factory->pending_requests()[0]->CompleteNowWithForwarder(OK, &resolver);
 
-  ASSERT_EQ(1u, resolver.pending_jobs().size());
-  EXPECT_EQ(url, resolver.pending_jobs()[0]->url());
+  ASSERT_EQ(1u, resolver.pending_requests().size());
+  EXPECT_EQ(url, resolver.pending_requests()[0]->url());
 
   // Fail the first resolve request in MockAsyncProxyResolver.
-  resolver.pending_jobs()[0]->CompleteNow(ERR_PAC_SCRIPT_TERMINATED);
+  resolver.pending_requests()[0]->CompleteNow(ERR_PAC_SCRIPT_TERMINATED);
 
   // Although the proxy resolver failed the request, ProxyService implicitly
   // falls-back to DIRECT.
@@ -914,12 +910,12 @@ TEST_F(ProxyServiceTest, ProxyResolverTerminatedDuringRequest) {
             factory->pending_requests()[0]->script_data()->url());
   factory->pending_requests()[0]->CompleteNowWithForwarder(OK, &resolver);
 
-  ASSERT_EQ(1u, resolver.pending_jobs().size());
-  EXPECT_EQ(url, resolver.pending_jobs()[0]->url());
+  ASSERT_EQ(1u, resolver.pending_requests().size());
+  EXPECT_EQ(url, resolver.pending_requests()[0]->url());
 
   // This time we will have the resolver succeed.
-  resolver.pending_jobs()[0]->results()->UseNamedProxy("foopy_valid:8080");
-  resolver.pending_jobs()[0]->CompleteNow(OK);
+  resolver.pending_requests()[0]->results()->UseNamedProxy("foopy_valid:8080");
+  resolver.pending_requests()[0]->CompleteNow(OK);
 
   EXPECT_EQ(OK, callback2.WaitForResult());
   EXPECT_FALSE(info.is_direct());
@@ -960,10 +956,10 @@ TEST_F(ProxyServiceTest,
             factory->pending_requests()[0]->script_data()->url());
   factory->pending_requests()[0]->CompleteNowWithForwarder(OK, &resolver);
 
-  JobMap jobs = GetPendingJobsForURLs(resolver, url1, url2);
+  RequestMap requests = GetPendingRequestsForURLs(resolver, url1, url2);
 
   // Fail the first resolve request in MockAsyncProxyResolver.
-  jobs[url1]->CompleteNow(ERR_PAC_SCRIPT_TERMINATED);
+  requests[url1]->CompleteNow(ERR_PAC_SCRIPT_TERMINATED);
 
   // Although the proxy resolver failed the request, ProxyService implicitly
   // falls-back to DIRECT.
@@ -976,7 +972,7 @@ TEST_F(ProxyServiceTest,
   EXPECT_LE(info.proxy_resolve_start_time(), info.proxy_resolve_end_time());
 
   // The second request is cancelled when the proxy resolver terminates.
-  jobs = GetCancelledJobsForURLs(resolver, url2);
+  requests = GetCancelledRequestsForURLs(resolver, url2);
 
   // Since a second request was in progress, the ProxyService starts
   // initializating a new ProxyResolver.
@@ -985,11 +981,11 @@ TEST_F(ProxyServiceTest,
             factory->pending_requests()[0]->script_data()->url());
   factory->pending_requests()[0]->CompleteNowWithForwarder(OK, &resolver);
 
-  jobs = GetPendingJobsForURLs(resolver, url2);
+  requests = GetPendingRequestsForURLs(resolver, url2);
 
   // This request succeeds.
-  jobs[url2]->results()->UseNamedProxy("foopy_valid:8080");
-  jobs[url2]->CompleteNow(OK);
+  requests[url2]->results()->UseNamedProxy("foopy_valid:8080");
+  requests[url2]->CompleteNow(OK);
 
   EXPECT_EQ(OK, callback2.WaitForResult());
   EXPECT_FALSE(info.is_direct());
@@ -1119,11 +1115,11 @@ TEST_F(ProxyServiceTest, ProxyResolverFailsInJavaScriptMandatoryPac) {
             factory->pending_requests()[0]->script_data()->url());
   factory->pending_requests()[0]->CompleteNowWithForwarder(OK, &resolver);
 
-  ASSERT_EQ(1u, resolver.pending_jobs().size());
-  EXPECT_EQ(url, resolver.pending_jobs()[0]->url());
+  ASSERT_EQ(1u, resolver.pending_requests().size());
+  EXPECT_EQ(url, resolver.pending_requests()[0]->url());
 
   // Fail the first resolve request in MockAsyncProxyResolver.
-  resolver.pending_jobs()[0]->CompleteNow(ERR_FAILED);
+  resolver.pending_requests()[0]->CompleteNow(ERR_FAILED);
 
   // As the proxy resolver failed the request and is configured for a mandatory
   // PAC script, ProxyService must not implicitly fall-back to DIRECT.
@@ -1138,13 +1134,13 @@ TEST_F(ProxyServiceTest, ProxyResolverFailsInJavaScriptMandatoryPac) {
                             NULL, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
-  ASSERT_EQ(1u, resolver.pending_jobs().size());
-  EXPECT_EQ(url, resolver.pending_jobs()[0]->url());
+  ASSERT_EQ(1u, resolver.pending_requests().size());
+  EXPECT_EQ(url, resolver.pending_requests()[0]->url());
 
   // This time we will have the resolver succeed (perhaps the PAC script has
   // a dependency on the current time).
-  resolver.pending_jobs()[0]->results()->UseNamedProxy("foopy_valid:8080");
-  resolver.pending_jobs()[0]->CompleteNow(OK);
+  resolver.pending_requests()[0]->results()->UseNamedProxy("foopy_valid:8080");
+  resolver.pending_requests()[0]->CompleteNow(OK);
 
   EXPECT_EQ(OK, callback2.WaitForResult());
   EXPECT_FALSE(info.is_direct());
@@ -1178,13 +1174,13 @@ TEST_F(ProxyServiceTest, ProxyFallback) {
             factory->pending_requests()[0]->script_data()->url());
   factory->pending_requests()[0]->CompleteNowWithForwarder(OK, &resolver);
 
-  ASSERT_EQ(1u, resolver.pending_jobs().size());
-  EXPECT_EQ(url, resolver.pending_jobs()[0]->url());
+  ASSERT_EQ(1u, resolver.pending_requests().size());
+  EXPECT_EQ(url, resolver.pending_requests()[0]->url());
 
   // Set the result in proxy resolver.
-  resolver.pending_jobs()[0]->results()->UseNamedProxy(
+  resolver.pending_requests()[0]->results()->UseNamedProxy(
       "foopy1:8080;foopy2:9090");
-  resolver.pending_jobs()[0]->CompleteNow(OK);
+  resolver.pending_requests()[0]->CompleteNow(OK);
 
   // The first item is valid.
   EXPECT_EQ(OK, callback1.WaitForResult());
@@ -1223,14 +1219,14 @@ TEST_F(ProxyServiceTest, ProxyFallback) {
                             NULL, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
-  ASSERT_EQ(1u, resolver.pending_jobs().size());
-  EXPECT_EQ(url, resolver.pending_jobs()[0]->url());
+  ASSERT_EQ(1u, resolver.pending_requests().size());
+  EXPECT_EQ(url, resolver.pending_requests()[0]->url());
 
   // Set the result in proxy resolver -- the second result is already known
   // to be bad, so we will not try to use it initially.
-  resolver.pending_jobs()[0]->results()->UseNamedProxy(
+  resolver.pending_requests()[0]->results()->UseNamedProxy(
       "foopy3:7070;foopy1:8080;foopy2:9090");
-  resolver.pending_jobs()[0]->CompleteNow(OK);
+  resolver.pending_requests()[0]->CompleteNow(OK);
 
   EXPECT_EQ(OK, callback3.WaitForResult());
   EXPECT_FALSE(info.is_direct());
@@ -1282,14 +1278,14 @@ TEST_F(ProxyServiceTest, ProxyFallback) {
                             NULL, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
-  ASSERT_EQ(1u, resolver.pending_jobs().size());
-  EXPECT_EQ(url, resolver.pending_jobs()[0]->url());
+  ASSERT_EQ(1u, resolver.pending_requests().size());
+  EXPECT_EQ(url, resolver.pending_requests()[0]->url());
 
   // This time, the first 3 results have been found to be bad, but only the
   // first proxy has been confirmed ...
-  resolver.pending_jobs()[0]->results()->UseNamedProxy(
+  resolver.pending_requests()[0]->results()->UseNamedProxy(
       "foopy1:8080;foopy3:7070;foopy2:9090;foopy4:9091");
-  resolver.pending_jobs()[0]->CompleteNow(OK);
+  resolver.pending_requests()[0]->CompleteNow(OK);
 
   // ... therefore, we should see the second proxy first.
   EXPECT_EQ(OK, callback7.WaitForResult());
@@ -1328,13 +1324,13 @@ TEST_F(ProxyServiceTest, ProxyFallbackToDirect) {
             factory->pending_requests()[0]->script_data()->url());
   factory->pending_requests()[0]->CompleteNowWithForwarder(OK, &resolver);
 
-  ASSERT_EQ(1u, resolver.pending_jobs().size());
-  EXPECT_EQ(url, resolver.pending_jobs()[0]->url());
+  ASSERT_EQ(1u, resolver.pending_requests().size());
+  EXPECT_EQ(url, resolver.pending_requests()[0]->url());
 
   // Set the result in proxy resolver.
-  resolver.pending_jobs()[0]->results()->UsePacString(
+  resolver.pending_requests()[0]->results()->UsePacString(
       "PROXY foopy1:8080; PROXY foopy2:9090; DIRECT");
-  resolver.pending_jobs()[0]->CompleteNow(OK);
+  resolver.pending_requests()[0]->CompleteNow(OK);
 
   // Get the first result.
   EXPECT_EQ(OK, callback1.WaitForResult());
@@ -1401,13 +1397,13 @@ TEST_F(ProxyServiceTest, ProxyFallback_NewSettings) {
             factory->pending_requests()[0]->script_data()->url());
   factory->pending_requests()[0]->CompleteNowWithForwarder(OK, &resolver);
 
-  ASSERT_EQ(1u, resolver.pending_jobs().size());
-  EXPECT_EQ(url, resolver.pending_jobs()[0]->url());
+  ASSERT_EQ(1u, resolver.pending_requests().size());
+  EXPECT_EQ(url, resolver.pending_requests()[0]->url());
 
   // Set the result in proxy resolver.
-  resolver.pending_jobs()[0]->results()->UseNamedProxy(
+  resolver.pending_requests()[0]->results()->UseNamedProxy(
       "foopy1:8080;foopy2:9090");
-  resolver.pending_jobs()[0]->CompleteNow(OK);
+  resolver.pending_requests()[0]->CompleteNow(OK);
 
   // The first item is valid.
   EXPECT_EQ(OK, callback1.WaitForResult());
@@ -1428,12 +1424,12 @@ TEST_F(ProxyServiceTest, ProxyFallback_NewSettings) {
             factory->pending_requests()[0]->script_data()->url());
   factory->pending_requests()[0]->CompleteNowWithForwarder(OK, &resolver);
 
-  ASSERT_EQ(1u, resolver.pending_jobs().size());
-  EXPECT_EQ(url, resolver.pending_jobs()[0]->url());
+  ASSERT_EQ(1u, resolver.pending_requests().size());
+  EXPECT_EQ(url, resolver.pending_requests()[0]->url());
 
-  resolver.pending_jobs()[0]->results()->UseNamedProxy(
+  resolver.pending_requests()[0]->results()->UseNamedProxy(
       "foopy1:8080;foopy2:9090");
-  resolver.pending_jobs()[0]->CompleteNow(OK);
+  resolver.pending_requests()[0]->CompleteNow(OK);
 
   // The first proxy is still there since the configuration changed.
   EXPECT_EQ(OK, callback2.WaitForResult());
@@ -1463,12 +1459,12 @@ TEST_F(ProxyServiceTest, ProxyFallback_NewSettings) {
             factory->pending_requests()[0]->script_data()->url());
   factory->pending_requests()[0]->CompleteNowWithForwarder(OK, &resolver);
 
-  ASSERT_EQ(1u, resolver.pending_jobs().size());
-  EXPECT_EQ(url, resolver.pending_jobs()[0]->url());
+  ASSERT_EQ(1u, resolver.pending_requests().size());
+  EXPECT_EQ(url, resolver.pending_requests()[0]->url());
 
-  resolver.pending_jobs()[0]->results()->UseNamedProxy(
+  resolver.pending_requests()[0]->results()->UseNamedProxy(
       "foopy1:8080;foopy2:9090");
-  resolver.pending_jobs()[0]->CompleteNow(OK);
+  resolver.pending_requests()[0]->CompleteNow(OK);
 
   EXPECT_EQ(OK, callback4.WaitForResult());
   EXPECT_EQ("foopy1:8080", info.proxy_server().ToURI());
@@ -1503,12 +1499,12 @@ TEST_F(ProxyServiceTest, ProxyFallback_BadConfig) {
   EXPECT_EQ(GURL("http://foopy/proxy.pac"),
             factory->pending_requests()[0]->script_data()->url());
   factory->pending_requests()[0]->CompleteNowWithForwarder(OK, &resolver);
-  ASSERT_EQ(1u, resolver.pending_jobs().size());
-  EXPECT_EQ(url, resolver.pending_jobs()[0]->url());
+  ASSERT_EQ(1u, resolver.pending_requests().size());
+  EXPECT_EQ(url, resolver.pending_requests()[0]->url());
 
-  resolver.pending_jobs()[0]->results()->UseNamedProxy(
+  resolver.pending_requests()[0]->results()->UseNamedProxy(
       "foopy1:8080;foopy2:9090");
-  resolver.pending_jobs()[0]->CompleteNow(OK);
+  resolver.pending_requests()[0]->CompleteNow(OK);
 
   // The first item is valid.
   EXPECT_EQ(OK, callback1.WaitForResult());
@@ -1533,11 +1529,11 @@ TEST_F(ProxyServiceTest, ProxyFallback_BadConfig) {
                             NULL, NULL, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
-  ASSERT_EQ(1u, resolver.pending_jobs().size());
-  EXPECT_EQ(url, resolver.pending_jobs()[0]->url());
+  ASSERT_EQ(1u, resolver.pending_requests().size());
+  EXPECT_EQ(url, resolver.pending_requests()[0]->url());
 
   // This simulates a javascript runtime error in the PAC script.
-  resolver.pending_jobs()[0]->CompleteNow(ERR_FAILED);
+  resolver.pending_requests()[0]->CompleteNow(ERR_FAILED);
 
   // Although the resolver failed, the ProxyService will implicitly fall-back
   // to a DIRECT connection.
@@ -1555,12 +1551,12 @@ TEST_F(ProxyServiceTest, ProxyFallback_BadConfig) {
       callback4.callback(), NULL, NULL, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
-  ASSERT_EQ(1u, resolver.pending_jobs().size());
-  EXPECT_EQ(url, resolver.pending_jobs()[0]->url());
+  ASSERT_EQ(1u, resolver.pending_requests().size());
+  EXPECT_EQ(url, resolver.pending_requests()[0]->url());
 
-  resolver.pending_jobs()[0]->results()->UseNamedProxy(
+  resolver.pending_requests()[0]->results()->UseNamedProxy(
       "foopy1:8080;foopy2:9090");
-  resolver.pending_jobs()[0]->CompleteNow(OK);
+  resolver.pending_requests()[0]->CompleteNow(OK);
 
   // The first proxy is not there since the it was added to the bad proxies
   // list by the earlier ReconsiderProxyAfterError().
@@ -1601,12 +1597,12 @@ TEST_F(ProxyServiceTest, ProxyFallback_BadConfigMandatory) {
   EXPECT_EQ(GURL("http://foopy/proxy.pac"),
             factory->pending_requests()[0]->script_data()->url());
   factory->pending_requests()[0]->CompleteNowWithForwarder(OK, &resolver);
-  ASSERT_EQ(1u, resolver.pending_jobs().size());
-  EXPECT_EQ(url, resolver.pending_jobs()[0]->url());
+  ASSERT_EQ(1u, resolver.pending_requests().size());
+  EXPECT_EQ(url, resolver.pending_requests()[0]->url());
 
-  resolver.pending_jobs()[0]->results()->UseNamedProxy(
+  resolver.pending_requests()[0]->results()->UseNamedProxy(
       "foopy1:8080;foopy2:9090");
-  resolver.pending_jobs()[0]->CompleteNow(OK);
+  resolver.pending_requests()[0]->CompleteNow(OK);
 
   // The first item is valid.
   EXPECT_EQ(OK, callback1.WaitForResult());
@@ -1631,11 +1627,11 @@ TEST_F(ProxyServiceTest, ProxyFallback_BadConfigMandatory) {
                             NULL, NULL, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
-  ASSERT_EQ(1u, resolver.pending_jobs().size());
-  EXPECT_EQ(url, resolver.pending_jobs()[0]->url());
+  ASSERT_EQ(1u, resolver.pending_requests().size());
+  EXPECT_EQ(url, resolver.pending_requests()[0]->url());
 
   // This simulates a javascript runtime error in the PAC script.
-  resolver.pending_jobs()[0]->CompleteNow(ERR_FAILED);
+  resolver.pending_requests()[0]->CompleteNow(ERR_FAILED);
 
   // Although the resolver failed, the ProxyService will NOT fall-back
   // to a DIRECT connection as it is configured as mandatory.
@@ -1654,12 +1650,12 @@ TEST_F(ProxyServiceTest, ProxyFallback_BadConfigMandatory) {
       callback4.callback(), NULL, NULL, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
-  ASSERT_EQ(1u, resolver.pending_jobs().size());
-  EXPECT_EQ(url, resolver.pending_jobs()[0]->url());
+  ASSERT_EQ(1u, resolver.pending_requests().size());
+  EXPECT_EQ(url, resolver.pending_requests()[0]->url());
 
-  resolver.pending_jobs()[0]->results()->UseNamedProxy(
+  resolver.pending_requests()[0]->results()->UseNamedProxy(
       "foopy1:8080;foopy2:9090");
-  resolver.pending_jobs()[0]->CompleteNow(OK);
+  resolver.pending_requests()[0]->CompleteNow(OK);
 
   // The first proxy is not there since the it was added to the bad proxies
   // list by the earlier ReconsiderProxyAfterError().
@@ -1936,7 +1932,7 @@ TEST_F(ProxyServiceTest, CancelInProgressRequest) {
             factory->pending_requests()[0]->script_data()->url());
   factory->pending_requests()[0]->CompleteNowWithForwarder(OK, &resolver);
 
-  GetPendingJobsForURLs(resolver, url1);
+  GetPendingRequestsForURLs(resolver, url1);
 
   ProxyInfo info2;
   TestCompletionCallback callback2;
@@ -1945,34 +1941,34 @@ TEST_F(ProxyServiceTest, CancelInProgressRequest) {
                             &request2, NULL, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
-  GetPendingJobsForURLs(resolver, url1, url2);
+  GetPendingRequestsForURLs(resolver, url1, url2);
 
   ProxyInfo info3;
   TestCompletionCallback callback3;
   rv = service.ResolveProxy(url3, LOAD_NORMAL, &info3, callback3.callback(),
                             NULL, NULL, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
-  GetPendingJobsForURLs(resolver, url1, url2, url3);
+  GetPendingRequestsForURLs(resolver, url1, url2, url3);
 
   // Cancel the second request
   service.CancelPacRequest(request2);
 
-  JobMap jobs = GetPendingJobsForURLs(resolver, url1, url3);
+  RequestMap requests = GetPendingRequestsForURLs(resolver, url1, url3);
 
-  // Complete the two un-cancelled jobs.
+  // Complete the two un-cancelled requests.
   // We complete the last one first, just to mix it up a bit.
-  jobs[url3]->results()->UseNamedProxy("request3:80");
-  jobs[url3]->CompleteNow(OK);  // dsaadsasd
+  requests[url3]->results()->UseNamedProxy("request3:80");
+  requests[url3]->CompleteNow(OK);
 
-  jobs[url1]->results()->UseNamedProxy("request1:80");
-  jobs[url1]->CompleteNow(OK);
+  requests[url1]->results()->UseNamedProxy("request1:80");
+  requests[url1]->CompleteNow(OK);
 
-  // Complete and verify that jobs ran as expected.
+  // Complete and verify that requests ran as expected.
   EXPECT_EQ(OK, callback1.WaitForResult());
   EXPECT_EQ("request1:80", info1.proxy_server().ToURI());
 
   EXPECT_FALSE(callback2.have_result());  // Cancelled.
-  GetCancelledJobsForURLs(resolver, url2);
+  GetCancelledRequestsForURLs(resolver, url2);
 
   EXPECT_EQ(OK, callback3.WaitForResult());
   EXPECT_EQ("request3:80", info3.proxy_server().ToURI());
@@ -2045,24 +2041,24 @@ TEST_F(ProxyServiceTest, InitialPACScriptDownload) {
             factory->pending_requests()[0]->script_data()->utf16());
   factory->pending_requests()[0]->CompleteNowWithForwarder(OK, &resolver);
 
-  JobMap jobs = GetPendingJobsForURLs(resolver, url1, url2, url3);
+  RequestMap requests = GetPendingRequestsForURLs(resolver, url1, url2, url3);
 
   EXPECT_EQ(LOAD_STATE_RESOLVING_PROXY_FOR_URL, service.GetLoadState(request1));
   EXPECT_EQ(LOAD_STATE_RESOLVING_PROXY_FOR_URL, service.GetLoadState(request2));
   EXPECT_EQ(LOAD_STATE_RESOLVING_PROXY_FOR_URL, service.GetLoadState(request3));
 
-  // Complete all the jobs (in some order).
+  // Complete all the requests (in some order).
 
-  jobs[url3]->results()->UseNamedProxy("request3:80");
-  jobs[url3]->CompleteNow(OK);
+  requests[url3]->results()->UseNamedProxy("request3:80");
+  requests[url3]->CompleteNow(OK);
 
-  jobs[url1]->results()->UseNamedProxy("request1:80");
-  jobs[url1]->CompleteNow(OK);
+  requests[url1]->results()->UseNamedProxy("request1:80");
+  requests[url1]->CompleteNow(OK);
 
-  jobs[url2]->results()->UseNamedProxy("request2:80");
-  jobs[url2]->CompleteNow(OK);
+  requests[url2]->results()->UseNamedProxy("request2:80");
+  requests[url2]->CompleteNow(OK);
 
-  // Complete and verify that jobs ran as expected.
+  // Complete and verify that requests ran as expected.
   EXPECT_EQ(OK, callback1.WaitForResult());
   EXPECT_EQ("request1:80", info1.proxy_server().ToURI());
   EXPECT_FALSE(info1.proxy_resolve_start_time().is_null());
@@ -2100,7 +2096,7 @@ TEST_F(ProxyServiceTest, ChangeScriptFetcherWhilePACDownloadInProgress) {
   service.SetProxyScriptFetchers(
       fetcher, make_scoped_ptr(new DoNothingDhcpProxyScriptFetcher()));
 
-  // Start 2 jobs.
+  // Start 2 requests.
 
   ProxyInfo info1;
   TestCompletionCallback callback1;
@@ -2140,7 +2136,7 @@ TEST_F(ProxyServiceTest, ChangeScriptFetcherWhilePACDownloadInProgress) {
             factory->pending_requests()[0]->script_data()->utf16());
   factory->pending_requests()[0]->CompleteNowWithForwarder(OK, &resolver);
 
-  GetPendingJobsForURLs(resolver, url1, url2);
+  GetPendingRequestsForURLs(resolver, url1, url2);
 }
 
 // Test cancellation of a request, while the PAC script is being fetched.
@@ -2190,7 +2186,7 @@ TEST_F(ProxyServiceTest, CancelWhilePACFetching) {
   // Nothing has been sent to the factory yet.
   EXPECT_TRUE(factory->pending_requests().empty());
 
-  // Cancel the first 2 jobs.
+  // Cancel the first 2 requests.
   service.CancelPacRequest(request1);
   service.CancelPacRequest(request2);
 
@@ -2205,17 +2201,17 @@ TEST_F(ProxyServiceTest, CancelWhilePACFetching) {
             factory->pending_requests()[0]->script_data()->utf16());
   factory->pending_requests()[0]->CompleteNowWithForwarder(OK, &resolver);
 
-  ASSERT_EQ(1u, resolver.pending_jobs().size());
-  EXPECT_EQ(GURL("http://request3"), resolver.pending_jobs()[0]->url());
+  ASSERT_EQ(1u, resolver.pending_requests().size());
+  EXPECT_EQ(GURL("http://request3"), resolver.pending_requests()[0]->url());
 
-  // Complete all the jobs.
-  resolver.pending_jobs()[0]->results()->UseNamedProxy("request3:80");
-  resolver.pending_jobs()[0]->CompleteNow(OK);
+  // Complete all the requests.
+  resolver.pending_requests()[0]->results()->UseNamedProxy("request3:80");
+  resolver.pending_requests()[0]->CompleteNow(OK);
 
   EXPECT_EQ(OK, callback3.WaitForResult());
   EXPECT_EQ("request3:80", info3.proxy_server().ToURI());
 
-  EXPECT_TRUE(resolver.cancelled_jobs().empty());
+  EXPECT_TRUE(resolver.cancelled_requests().empty());
 
   EXPECT_FALSE(callback1.have_result());  // Cancelled.
   EXPECT_FALSE(callback2.have_result());  // Cancelled.
@@ -2290,18 +2286,18 @@ TEST_F(ProxyServiceTest, FallbackFromAutodetectToCustomPac) {
             factory->pending_requests()[0]->script_data()->utf16());
   factory->pending_requests()[0]->CompleteNowWithForwarder(OK, &resolver);
 
-  // Now finally, the pending jobs should have been sent to the resolver
+  // Now finally, the pending requests should have been sent to the resolver
   // (which was initialized with custom PAC script).
 
-  JobMap jobs = GetPendingJobsForURLs(resolver, url1, url2);
+  RequestMap requests = GetPendingRequestsForURLs(resolver, url1, url2);
 
-  // Complete the pending jobs.
-  jobs[url2]->results()->UseNamedProxy("request2:80");
-  jobs[url2]->CompleteNow(OK);
-  jobs[url1]->results()->UseNamedProxy("request1:80");
-  jobs[url1]->CompleteNow(OK);
+  // Complete the pending requests.
+  requests[url2]->results()->UseNamedProxy("request2:80");
+  requests[url2]->CompleteNow(OK);
+  requests[url1]->results()->UseNamedProxy("request1:80");
+  requests[url1]->CompleteNow(OK);
 
-  // Verify that jobs ran as expected.
+  // Verify that requests ran as expected.
   EXPECT_EQ(OK, callback1.WaitForResult());
   EXPECT_EQ("request1:80", info1.proxy_server().ToURI());
   EXPECT_FALSE(info1.proxy_resolve_start_time().is_null());
@@ -2371,18 +2367,18 @@ TEST_F(ProxyServiceTest, FallbackFromAutodetectToCustomPac2) {
             factory->pending_requests()[0]->script_data()->utf16());
   factory->pending_requests()[0]->CompleteNowWithForwarder(OK, &resolver);
 
-  // Now finally, the pending jobs should have been sent to the resolver
+  // Now finally, the pending requests should have been sent to the resolver
   // (which was initialized with custom PAC script).
 
-  JobMap jobs = GetPendingJobsForURLs(resolver, url1, url2);
+  RequestMap requests = GetPendingRequestsForURLs(resolver, url1, url2);
 
-  // Complete the pending jobs.
-  jobs[url2]->results()->UseNamedProxy("request2:80");
-  jobs[url2]->CompleteNow(OK);
-  jobs[url1]->results()->UseNamedProxy("request1:80");
-  jobs[url1]->CompleteNow(OK);
+  // Complete the pending requests.
+  requests[url2]->results()->UseNamedProxy("request2:80");
+  requests[url2]->CompleteNow(OK);
+  requests[url1]->results()->UseNamedProxy("request1:80");
+  requests[url1]->CompleteNow(OK);
 
-  // Verify that jobs ran as expected.
+  // Verify that requests ran as expected.
   EXPECT_EQ(OK, callback1.WaitForResult());
   EXPECT_EQ("request1:80", info1.proxy_server().ToURI());
 
@@ -2408,7 +2404,7 @@ TEST_F(ProxyServiceTest, FallbackFromAutodetectToCustomToManual) {
   service.SetProxyScriptFetchers(
       fetcher, make_scoped_ptr(new DoNothingDhcpProxyScriptFetcher()));
 
-  // Start 2 jobs.
+  // Start 2 requests.
 
   ProxyInfo info1;
   TestCompletionCallback callback1;
@@ -2442,7 +2438,7 @@ TEST_F(ProxyServiceTest, FallbackFromAutodetectToCustomToManual) {
   // sent to it.
   ASSERT_EQ(0u, factory->pending_requests().size());
 
-  // Verify that jobs ran as expected -- they should have fallen back to
+  // Verify that requests ran as expected -- they should have fallen back to
   // the manual proxy configuration for HTTP urls.
   EXPECT_EQ(OK, callback1.WaitForResult());
   EXPECT_EQ("foopy:80", info1.proxy_server().ToURI());
@@ -2491,12 +2487,13 @@ TEST_F(ProxyServiceTest, BypassDoesntApplyToPac) {
             factory->pending_requests()[0]->script_data()->utf16());
   factory->pending_requests()[0]->CompleteNowWithForwarder(OK, &resolver);
 
-  ASSERT_EQ(1u, resolver.pending_jobs().size());
-  EXPECT_EQ(GURL("http://www.google.com"), resolver.pending_jobs()[0]->url());
+  ASSERT_EQ(1u, resolver.pending_requests().size());
+  EXPECT_EQ(GURL("http://www.google.com"),
+            resolver.pending_requests()[0]->url());
 
   // Complete the pending request.
-  resolver.pending_jobs()[0]->results()->UseNamedProxy("request1:80");
-  resolver.pending_jobs()[0]->CompleteNow(OK);
+  resolver.pending_requests()[0]->results()->UseNamedProxy("request1:80");
+  resolver.pending_requests()[0]->CompleteNow(OK);
 
   // Verify that request ran as expected.
   EXPECT_EQ(OK, callback1.WaitForResult());
@@ -2509,12 +2506,13 @@ TEST_F(ProxyServiceTest, BypassDoesntApplyToPac) {
                             callback2.callback(), NULL, NULL, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
-  ASSERT_EQ(1u, resolver.pending_jobs().size());
-  EXPECT_EQ(GURL("http://www.google.com"), resolver.pending_jobs()[0]->url());
+  ASSERT_EQ(1u, resolver.pending_requests().size());
+  EXPECT_EQ(GURL("http://www.google.com"),
+            resolver.pending_requests()[0]->url());
 
   // Complete the pending request.
-  resolver.pending_jobs()[0]->results()->UseNamedProxy("request2:80");
-  resolver.pending_jobs()[0]->CompleteNow(OK);
+  resolver.pending_requests()[0]->results()->UseNamedProxy("request2:80");
+  resolver.pending_requests()[0]->CompleteNow(OK);
 
   EXPECT_EQ(OK, callback2.WaitForResult());
   EXPECT_EQ("request2:80", info2.proxy_server().ToURI());
@@ -2636,9 +2634,9 @@ TEST_F(ProxyServiceTest, UpdateConfigFromPACToDirect) {
   factory->pending_requests()[0]->CompleteNowWithForwarder(OK, &resolver);
 
   // Complete the pending request.
-  ASSERT_EQ(1u, resolver.pending_jobs().size());
-  resolver.pending_jobs()[0]->results()->UseNamedProxy("request1:80");
-  resolver.pending_jobs()[0]->CompleteNow(OK);
+  ASSERT_EQ(1u, resolver.pending_requests().size());
+  resolver.pending_requests()[0]->results()->UseNamedProxy("request1:80");
+  resolver.pending_requests()[0]->CompleteNow(OK);
 
   // Verify that request ran as expected.
   EXPECT_EQ(OK, callback1.WaitForResult());
@@ -2648,7 +2646,7 @@ TEST_F(ProxyServiceTest, UpdateConfigFromPACToDirect) {
   // (Even though the configuration isn't old/bad).
   //
   // This new configuration no longer has auto_detect set, so
-  // jobs should complete synchronously now as direct-connect.
+  // requests should complete synchronously now as direct-connect.
   config_service->SetConfig(ProxyConfig::CreateDirect());
 
   // Start another request -- the effective configuration has changed.
@@ -2709,12 +2707,12 @@ TEST_F(ProxyServiceTest, NetworkChangeTriggersPacRefetch) {
             factory->pending_requests()[0]->script_data()->utf16());
   factory->pending_requests()[0]->CompleteNowWithForwarder(OK, &resolver);
 
-  ASSERT_EQ(1u, resolver.pending_jobs().size());
-  EXPECT_EQ(GURL("http://request1"), resolver.pending_jobs()[0]->url());
+  ASSERT_EQ(1u, resolver.pending_requests().size());
+  EXPECT_EQ(GURL("http://request1"), resolver.pending_requests()[0]->url());
 
   // Complete the pending request.
-  resolver.pending_jobs()[0]->results()->UseNamedProxy("request1:80");
-  resolver.pending_jobs()[0]->CompleteNow(OK);
+  resolver.pending_requests()[0]->results()->UseNamedProxy("request1:80");
+  resolver.pending_requests()[0]->CompleteNow(OK);
 
   // Wait for completion callback, and verify that the request ran as expected.
   EXPECT_EQ(OK, callback1.WaitForResult());
@@ -2751,12 +2749,12 @@ TEST_F(ProxyServiceTest, NetworkChangeTriggersPacRefetch) {
             factory->pending_requests()[0]->script_data()->utf16());
   factory->pending_requests()[0]->CompleteNowWithForwarder(OK, &resolver);
 
-  ASSERT_EQ(1u, resolver.pending_jobs().size());
-  EXPECT_EQ(GURL("http://request2"), resolver.pending_jobs()[0]->url());
+  ASSERT_EQ(1u, resolver.pending_requests().size());
+  EXPECT_EQ(GURL("http://request2"), resolver.pending_requests()[0]->url());
 
   // Complete the pending second request.
-  resolver.pending_jobs()[0]->results()->UseNamedProxy("request2:80");
-  resolver.pending_jobs()[0]->CompleteNow(OK);
+  resolver.pending_requests()[0]->results()->UseNamedProxy("request2:80");
+  resolver.pending_requests()[0]->CompleteNow(OK);
 
   // Wait for completion callback, and verify that the request ran as expected.
   EXPECT_EQ(OK, callback2.WaitForResult());
@@ -2869,12 +2867,12 @@ TEST_F(ProxyServiceTest, PACScriptRefetchAfterFailure) {
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   // Check that it was sent to the resolver.
-  ASSERT_EQ(1u, resolver.pending_jobs().size());
-  EXPECT_EQ(GURL("http://request2"), resolver.pending_jobs()[0]->url());
+  ASSERT_EQ(1u, resolver.pending_requests().size());
+  EXPECT_EQ(GURL("http://request2"), resolver.pending_requests()[0]->url());
 
   // Complete the pending second request.
-  resolver.pending_jobs()[0]->results()->UseNamedProxy("request2:80");
-  resolver.pending_jobs()[0]->CompleteNow(OK);
+  resolver.pending_requests()[0]->results()->UseNamedProxy("request2:80");
+  resolver.pending_requests()[0]->CompleteNow(OK);
 
   // Wait for completion callback, and verify that the request ran as expected.
   EXPECT_EQ(OK, callback2.WaitForResult());
@@ -2932,12 +2930,12 @@ TEST_F(ProxyServiceTest, PACScriptRefetchAfterContentChange) {
             factory->pending_requests()[0]->script_data()->utf16());
   factory->pending_requests()[0]->CompleteNowWithForwarder(OK, &resolver);
 
-  ASSERT_EQ(1u, resolver.pending_jobs().size());
-  EXPECT_EQ(GURL("http://request1"), resolver.pending_jobs()[0]->url());
+  ASSERT_EQ(1u, resolver.pending_requests().size());
+  EXPECT_EQ(GURL("http://request1"), resolver.pending_requests()[0]->url());
 
   // Complete the pending request.
-  resolver.pending_jobs()[0]->results()->UseNamedProxy("request1:80");
-  resolver.pending_jobs()[0]->CompleteNow(OK);
+  resolver.pending_requests()[0]->results()->UseNamedProxy("request1:80");
+  resolver.pending_requests()[0]->CompleteNow(OK);
 
   // Wait for completion callback, and verify that the request ran as expected.
   EXPECT_EQ(OK, callback1.WaitForResult());
@@ -2953,7 +2951,7 @@ TEST_F(ProxyServiceTest, PACScriptRefetchAfterContentChange) {
   fetcher->WaitUntilFetch();
 
   ASSERT_TRUE(factory->pending_requests().empty());
-  ASSERT_TRUE(resolver.pending_jobs().empty());
+  ASSERT_TRUE(resolver.pending_requests().empty());
 
   // Make sure that our background checker is trying to download the expected
   // PAC script (same one as before). This time we will simulate a successful
@@ -2981,12 +2979,12 @@ TEST_F(ProxyServiceTest, PACScriptRefetchAfterContentChange) {
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   // Check that it was sent to the resolver.
-  ASSERT_EQ(1u, resolver.pending_jobs().size());
-  EXPECT_EQ(GURL("http://request2"), resolver.pending_jobs()[0]->url());
+  ASSERT_EQ(1u, resolver.pending_requests().size());
+  EXPECT_EQ(GURL("http://request2"), resolver.pending_requests()[0]->url());
 
   // Complete the pending second request.
-  resolver.pending_jobs()[0]->results()->UseNamedProxy("request2:80");
-  resolver.pending_jobs()[0]->CompleteNow(OK);
+  resolver.pending_requests()[0]->results()->UseNamedProxy("request2:80");
+  resolver.pending_requests()[0]->CompleteNow(OK);
 
   // Wait for completion callback, and verify that the request ran as expected.
   EXPECT_EQ(OK, callback2.WaitForResult());
@@ -3044,12 +3042,12 @@ TEST_F(ProxyServiceTest, PACScriptRefetchAfterContentUnchanged) {
             factory->pending_requests()[0]->script_data()->utf16());
   factory->pending_requests()[0]->CompleteNowWithForwarder(OK, &resolver);
 
-  ASSERT_EQ(1u, resolver.pending_jobs().size());
-  EXPECT_EQ(GURL("http://request1"), resolver.pending_jobs()[0]->url());
+  ASSERT_EQ(1u, resolver.pending_requests().size());
+  EXPECT_EQ(GURL("http://request1"), resolver.pending_requests()[0]->url());
 
   // Complete the pending request.
-  resolver.pending_jobs()[0]->results()->UseNamedProxy("request1:80");
-  resolver.pending_jobs()[0]->CompleteNow(OK);
+  resolver.pending_requests()[0]->results()->UseNamedProxy("request1:80");
+  resolver.pending_requests()[0]->CompleteNow(OK);
 
   // Wait for completion callback, and verify that the request ran as expected.
   EXPECT_EQ(OK, callback1.WaitForResult());
@@ -3065,7 +3063,7 @@ TEST_F(ProxyServiceTest, PACScriptRefetchAfterContentUnchanged) {
   fetcher->WaitUntilFetch();
 
   ASSERT_TRUE(factory->pending_requests().empty());
-  ASSERT_TRUE(resolver.pending_jobs().empty());
+  ASSERT_TRUE(resolver.pending_requests().empty());
 
   // Make sure that our background checker is trying to download the expected
   // PAC script (same one as before). We will simulate the same response as
@@ -3077,7 +3075,7 @@ TEST_F(ProxyServiceTest, PACScriptRefetchAfterContentUnchanged) {
   base::MessageLoop::current()->RunUntilIdle();
 
   ASSERT_TRUE(factory->pending_requests().empty());
-  ASSERT_TRUE(resolver.pending_jobs().empty());
+  ASSERT_TRUE(resolver.pending_requests().empty());
 
   // At this point the ProxyService is still running the same PAC script as
   // before.
@@ -3090,12 +3088,12 @@ TEST_F(ProxyServiceTest, PACScriptRefetchAfterContentUnchanged) {
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   // Check that it was sent to the resolver.
-  ASSERT_EQ(1u, resolver.pending_jobs().size());
-  EXPECT_EQ(GURL("http://request2"), resolver.pending_jobs()[0]->url());
+  ASSERT_EQ(1u, resolver.pending_requests().size());
+  EXPECT_EQ(GURL("http://request2"), resolver.pending_requests()[0]->url());
 
   // Complete the pending second request.
-  resolver.pending_jobs()[0]->results()->UseNamedProxy("request2:80");
-  resolver.pending_jobs()[0]->CompleteNow(OK);
+  resolver.pending_requests()[0]->results()->UseNamedProxy("request2:80");
+  resolver.pending_requests()[0]->CompleteNow(OK);
 
   // Wait for completion callback, and verify that the request ran as expected.
   EXPECT_EQ(OK, callback2.WaitForResult());
@@ -3153,12 +3151,12 @@ TEST_F(ProxyServiceTest, PACScriptRefetchAfterSuccess) {
             factory->pending_requests()[0]->script_data()->utf16());
   factory->pending_requests()[0]->CompleteNowWithForwarder(OK, &resolver);
 
-  ASSERT_EQ(1u, resolver.pending_jobs().size());
-  EXPECT_EQ(GURL("http://request1"), resolver.pending_jobs()[0]->url());
+  ASSERT_EQ(1u, resolver.pending_requests().size());
+  EXPECT_EQ(GURL("http://request1"), resolver.pending_requests()[0]->url());
 
   // Complete the pending request.
-  resolver.pending_jobs()[0]->results()->UseNamedProxy("request1:80");
-  resolver.pending_jobs()[0]->CompleteNow(OK);
+  resolver.pending_requests()[0]->results()->UseNamedProxy("request1:80");
+  resolver.pending_requests()[0]->CompleteNow(OK);
 
   // Wait for completion callback, and verify that the request ran as expected.
   EXPECT_EQ(OK, callback1.WaitForResult());
@@ -3174,7 +3172,7 @@ TEST_F(ProxyServiceTest, PACScriptRefetchAfterSuccess) {
   fetcher->WaitUntilFetch();
 
   ASSERT_TRUE(factory->pending_requests().empty());
-  ASSERT_TRUE(resolver.pending_jobs().empty());
+  ASSERT_TRUE(resolver.pending_requests().empty());
 
   // Make sure that our background checker is trying to download the expected
   // PAC script (same one as before). This time we will simulate a failure
@@ -3307,12 +3305,12 @@ TEST_F(ProxyServiceTest, PACScriptRefetchAfterActivity) {
             factory->pending_requests()[0]->script_data()->utf16());
   factory->pending_requests()[0]->CompleteNowWithForwarder(OK, &resolver);
 
-  ASSERT_EQ(1u, resolver.pending_jobs().size());
-  EXPECT_EQ(GURL("http://request1"), resolver.pending_jobs()[0]->url());
+  ASSERT_EQ(1u, resolver.pending_requests().size());
+  EXPECT_EQ(GURL("http://request1"), resolver.pending_requests()[0]->url());
 
   // Complete the pending request.
-  resolver.pending_jobs()[0]->results()->UseNamedProxy("request1:80");
-  resolver.pending_jobs()[0]->CompleteNow(OK);
+  resolver.pending_requests()[0]->results()->UseNamedProxy("request1:80");
+  resolver.pending_requests()[0]->CompleteNow(OK);
 
   // Wait for completion callback, and verify that the request ran as expected.
   EXPECT_EQ(OK, callback1.WaitForResult());
@@ -3324,7 +3322,7 @@ TEST_F(ProxyServiceTest, PACScriptRefetchAfterActivity) {
 
   ASSERT_FALSE(fetcher->has_pending_request());
   ASSERT_TRUE(factory->pending_requests().empty());
-  ASSERT_TRUE(resolver.pending_jobs().empty());
+  ASSERT_TRUE(resolver.pending_requests().empty());
 
   // Start a second request.
   ProxyInfo info2;
@@ -3334,10 +3332,10 @@ TEST_F(ProxyServiceTest, PACScriptRefetchAfterActivity) {
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   // This request should have sent work to the resolver; complete it.
-  ASSERT_EQ(1u, resolver.pending_jobs().size());
-  EXPECT_EQ(GURL("http://request2"), resolver.pending_jobs()[0]->url());
-  resolver.pending_jobs()[0]->results()->UseNamedProxy("request2:80");
-  resolver.pending_jobs()[0]->CompleteNow(OK);
+  ASSERT_EQ(1u, resolver.pending_requests().size());
+  EXPECT_EQ(GURL("http://request2"), resolver.pending_requests()[0]->url());
+  resolver.pending_requests()[0]->results()->UseNamedProxy("request2:80");
+  resolver.pending_requests()[0]->CompleteNow(OK);
 
   EXPECT_EQ(OK, callback2.WaitForResult());
   EXPECT_EQ("request2:80", info2.proxy_server().ToURI());

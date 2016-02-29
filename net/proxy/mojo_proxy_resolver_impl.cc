@@ -40,7 +40,7 @@ class MojoProxyResolverImpl::Job {
   interfaces::ProxyResolverRequestClientPtr client_;
   ProxyInfo result_;
   GURL url_;
-  scoped_ptr<net::ProxyResolver::Request> request_;
+  net::ProxyResolver::RequestHandle request_handle_;
   bool done_;
 
   DISALLOW_COPY_AND_ASSIGN(Job);
@@ -77,14 +77,18 @@ MojoProxyResolverImpl::Job::Job(
     : resolver_(resolver),
       client_(std::move(client)),
       url_(url),
+      request_handle_(nullptr),
       done_(false) {}
 
-MojoProxyResolverImpl::Job::~Job() {}
+MojoProxyResolverImpl::Job::~Job() {
+  if (request_handle_ && !done_)
+    resolver_->resolver_->CancelRequest(request_handle_);
+}
 
 void MojoProxyResolverImpl::Job::Start() {
   resolver_->resolver_->GetProxyForURL(
       url_, &result_, base::Bind(&Job::GetProxyDone, base::Unretained(this)),
-      &request_,
+      &request_handle_,
       make_scoped_ptr(new MojoProxyResolverV8TracingBindings<
                       interfaces::ProxyResolverRequestClient>(client_.get())));
   client_.set_connection_error_handler(base::Bind(
