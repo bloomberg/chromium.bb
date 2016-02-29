@@ -37,7 +37,8 @@ class MuxerTest : public testing::Test {
  public:
   MuxerTest() {
     EXPECT_TRUE(GetTestDataDir().length() > 0);
-    filename_ = std::tmpnam(nullptr);
+    filename_ = GetTempFileName();
+    EXPECT_GT(filename_.length(), 0u);
     temp_file_ = FilePtr(std::fopen(filename_.c_str(), "wb"), FILEDeleter());
     EXPECT_TRUE(writer_.Open(filename_.c_str()));
     is_writer_open_ = true;
@@ -442,7 +443,7 @@ TEST_F(MuxerTest, CuesBeforeClusters) {
   mkvparser::MkvReader reader;
   reader.Open(filename_.c_str());
   MkvWriter cues_writer;
-  std::string cues_filename = std::tmpnam(nullptr);
+  std::string cues_filename = GetTempFileName();
   cues_writer.Open(cues_filename.c_str());
   EXPECT_TRUE(segment_.CopyAndMoveCuesBeforeClusters(&reader, &cues_writer));
   reader.Close();
