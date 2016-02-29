@@ -83,7 +83,7 @@ PasswordDialogControllerImpl::GetAccoutChooserTitle() const {
 }
 
 base::string16 PasswordDialogControllerImpl::GetAutoSigninPromoTitle() const {
-  int message_id = IsSyncingSettings(profile_)
+  int message_id = IsSyncingAutosignSetting(profile_)
                        ? IDS_AUTO_SIGNIN_FIRST_RUN_TITLE_MANY_DEVICES
                        : IDS_AUTO_SIGNIN_FIRST_RUN_TITLE_LOCAL_DEVICE;
   return l10n_util::GetStringUTF16(message_id);

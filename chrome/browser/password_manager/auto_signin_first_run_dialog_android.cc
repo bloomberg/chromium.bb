@@ -51,7 +51,7 @@ void AutoSigninFirstRunDialogAndroid::ShowDialog() {
   gfx::NativeWindow native_window = web_contents_->GetTopLevelNativeWindow();
   base::android::ScopedJavaGlobalRef<jobject> java_dialog_global;
   base::string16 message = l10n_util::GetStringUTF16(
-      IsSyncingSettings(profile)
+      IsSyncingAutosignSetting(profile)
           ? IDS_AUTO_SIGNIN_FIRST_RUN_TITLE_MANY_DEVICES
           : IDS_AUTO_SIGNIN_FIRST_RUN_TITLE_LOCAL_DEVICE);
   base::string16 ok_button_text =

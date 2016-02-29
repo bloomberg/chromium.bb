@@ -173,10 +173,10 @@ base::string16 GetDisplayUsername(const autofill::PasswordForm& form) {
              : form.username_value;
 }
 
-bool IsSyncingSettings(Profile* profile) {
+bool IsSyncingAutosignSetting(Profile* profile) {
   const ProfileSyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile);
   return (sync_service && sync_service->IsFirstSetupComplete() &&
           sync_service->IsSyncActive() &&
-          sync_service->GetActiveDataTypes().Has(syncer::PREFERENCES));
+          sync_service->GetActiveDataTypes().Has(syncer::PRIORITY_PREFERENCES));
 }

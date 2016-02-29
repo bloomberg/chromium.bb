@@ -92,7 +92,8 @@ void GetBrandedTextAndLinkRange(
 // Returns an username in the form that should be shown in the bubble.
 base::string16 GetDisplayUsername(const autofill::PasswordForm& form);
 
-// Check if |profile| syncing settings. The view appearance might depend on it.
-bool IsSyncingSettings(Profile* profile);
+// Check if |profile| syncing the Auto sign-in settings (by checking that user
+// syncs the PRIORITY_PREFERENCE). The view appearance might depend on it.
+bool IsSyncingAutosignSetting(Profile* profile);
 
 #endif  // CHROME_BROWSER_UI_PASSWORDS_MANAGE_PASSWORDS_VIEW_UTILS_H_
