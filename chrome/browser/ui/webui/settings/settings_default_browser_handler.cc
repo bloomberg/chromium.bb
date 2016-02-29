@@ -12,6 +12,14 @@
 
 namespace settings {
 
+namespace {
+
+bool IsDisabledByPolicy(const BooleanPrefMember& pref) {
+  return pref.IsManaged() && !pref.GetValue();
+}
+
+}  // namespace
+
 DefaultBrowserHandler::DefaultBrowserHandler(content::WebUI* webui)
     : default_browser_worker_(new shell_integration::DefaultBrowserWorker(
           this,
@@ -53,7 +61,7 @@ void DefaultBrowserHandler::SetDefaultWebClientUIState(
                                     shell_integration::STATE_IS_DEFAULT);
   base::FundamentalValue can_be_default(
       state != shell_integration::STATE_UNKNOWN &&
-      !default_browser_policy_.IsManaged() &&
+      !IsDisabledByPolicy(default_browser_policy_) &&
       shell_integration::CanSetAsDefaultBrowser() !=
           shell_integration::SET_DEFAULT_NOT_ALLOWED);
 
@@ -67,7 +75,7 @@ void DefaultBrowserHandler::RequestDefaultBrowserState(
 }
 
 void DefaultBrowserHandler::SetAsDefaultBrowser(const base::ListValue* args) {
-  CHECK(!default_browser_policy_.IsManaged());
+  CHECK(!IsDisabledByPolicy(default_browser_policy_));
 
   default_browser_worker_->StartSetAsDefault();
 

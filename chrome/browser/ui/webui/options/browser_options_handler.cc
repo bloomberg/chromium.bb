@@ -173,6 +173,10 @@ void AppendExtensionData(const std::string& key,
 }
 #endif  // defined(OS_WIN)
 
+bool IsDisabledByPolicy(const BooleanPrefMember& pref) {
+  return pref.IsManaged() && !pref.GetValue();
+}
+
 }  // namespace
 
 namespace options {
@@ -1098,7 +1102,7 @@ void BrowserOptionsHandler::UpdateDefaultBrowserState() {
 void BrowserOptionsHandler::BecomeDefaultBrowser(const base::ListValue* args) {
   // If the default browser setting is managed then we should not be able to
   // call this function.
-  if (default_browser_policy_.IsManaged())
+  if (IsDisabledByPolicy(default_browser_policy_))
     return;
 
   content::RecordAction(UserMetricsAction("Options_SetAsDefaultBrowser"));
@@ -1157,7 +1161,7 @@ void BrowserOptionsHandler::SetDefaultBrowserUIString(int status_string_id) {
       status_string_id == IDS_OPTIONS_DEFAULTBROWSER_DEFAULT);
 
   base::FundamentalValue can_be_default(
-      !default_browser_policy_.IsManaged() &&
+      !IsDisabledByPolicy(default_browser_policy_) &&
       (status_string_id == IDS_OPTIONS_DEFAULTBROWSER_DEFAULT ||
        status_string_id == IDS_OPTIONS_DEFAULTBROWSER_NOTDEFAULT));
 
