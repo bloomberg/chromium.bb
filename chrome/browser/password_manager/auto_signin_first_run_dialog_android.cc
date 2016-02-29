@@ -45,8 +45,8 @@ void AutoSigninFirstRunDialogAndroid::ShowDialog() {
   gfx::Range explanation_link_range = gfx::Range();
   GetBrandedTextAndLinkRange(
       is_smartlock_branding_enabled,
-      IDS_MANAGE_PASSWORDS_AUTO_SIGNIN_SMART_LOCK_WELCOME,
-      IDS_MANAGE_PASSWORDS_AUTO_SIGNIN_DEFAULT_WELCOME, &explanation,
+      IDS_AUTO_SIGNIN_FIRST_RUN_SMART_LOCK_TEXT,
+      IDS_AUTO_SIGNIN_FIRST_RUN_TEXT, &explanation,
       &explanation_link_range);
   gfx::NativeWindow native_window = web_contents_->GetTopLevelNativeWindow();
   base::android::ScopedJavaGlobalRef<jobject> java_dialog_global;
