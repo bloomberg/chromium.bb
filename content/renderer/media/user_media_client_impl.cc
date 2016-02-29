@@ -69,8 +69,17 @@ void CopyBlinkRequestToStreamControls(const blink::WebUserMediaRequest& request,
     // TODO(hta): Get alternatives only mentioned in advanced array.
     CopyVector(audio_basic.deviceId.ideal(),
                &controls->audio.alternate_device_ids);
-    if (!audio_basic.hotwordEnabled.matches(false))
-      controls->hotword_enabled = true;
+
+    if (audio_basic.hotwordEnabled.hasExact()) {
+      controls->hotword_enabled = audio_basic.hotwordEnabled.exact();
+    } else {
+      for (const auto& audio_advanced : request.audioConstraints().advanced()) {
+        if (audio_advanced.hotwordEnabled.hasExact()) {
+          controls->hotword_enabled = audio_advanced.hotwordEnabled.exact();
+          break;
+        }
+      }
+    }
   }
   if (!request.videoConstraints().isNull()) {
     const blink::WebMediaTrackConstraintSet& video_basic =
