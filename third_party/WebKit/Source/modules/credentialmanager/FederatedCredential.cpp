@@ -19,6 +19,15 @@ FederatedCredential* FederatedCredential::create(WebFederatedCredential* webFede
 
 FederatedCredential* FederatedCredential::create(const FederatedCredentialData& data, ExceptionState& exceptionState)
 {
+    if (data.id().isEmpty()) {
+        exceptionState.throwTypeError("'id' must not be empty.");
+        return nullptr;
+    }
+    if (data.provider().isEmpty()) {
+        exceptionState.throwTypeError("'provider' must not be empty.");
+        return nullptr;
+    }
+
     KURL iconURL = parseStringAsURL(data.iconURL(), exceptionState);
     KURL providerURL = parseStringAsURL(data.provider(), exceptionState);
     if (exceptionState.hadException())

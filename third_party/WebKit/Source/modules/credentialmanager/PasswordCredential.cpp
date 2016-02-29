@@ -25,9 +25,19 @@ PasswordCredential* PasswordCredential::create(WebPasswordCredential* webPasswor
 
 PasswordCredential* PasswordCredential::create(const PasswordCredentialData& data, ExceptionState& exceptionState)
 {
+    if (data.id().isEmpty()) {
+        exceptionState.throwTypeError("'id' must not be empty.");
+        return nullptr;
+    }
+    if (data.password().isEmpty()) {
+        exceptionState.throwTypeError("'password' must not be empty.");
+        return nullptr;
+    }
+
     KURL iconURL = parseStringAsURL(data.iconURL(), exceptionState);
     if (exceptionState.hadException())
         return nullptr;
+
     return new PasswordCredential(data.id(), data.password(), data.name(), iconURL);
 }
 
