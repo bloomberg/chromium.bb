@@ -78,6 +78,7 @@ class TestRtcpPacketBuilder {
                uint32_t media_ssrc,
                base::TimeDelta target_delay);
   void AddCst2(const std::vector<uint32_t>& later_received_frames);
+  void AddErrorCst2();  // With wrong identifier.
 
   void AddReceiverLog(uint32_t sender_ssrc);
   void AddReceiverFrameLog(uint32_t rtp_timestamp,

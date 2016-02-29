@@ -52,6 +52,12 @@ struct RtcpCastMessage {
   uint32_t ack_frame_id;
   uint16_t target_delay_ms;
   MissingFramesAndPacketsMap missing_frames_and_packets;
+  // This wrap-around counter is incremented by one for each ACK/NACK Cast
+  // packet sent.
+  uint8_t feedback_count;
+  // The set of received frames that have frame IDs strictly equal to or larger
+  // than |ack_frame_id + 2|.
+  std::vector<uint32_t> received_later_frames;
 };
 
 // Log messages from receiver to sender.

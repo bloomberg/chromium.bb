@@ -91,6 +91,18 @@ class RtcpParserTest : public ::testing::Test {
         frame_it == parser.cast_message().missing_frames_and_packets.end());
   }
 
+  void ExpectExtendedCastFeedback(
+      const RtcpParser& parser,
+      const std::vector<uint32_t>& receiving_frames) {
+    EXPECT_TRUE(parser.has_cst2_message());
+    EXPECT_EQ(kFeedbackSeq, parser.cast_message().feedback_count);
+    ASSERT_EQ(parser.cast_message().received_later_frames.size(),
+              receiving_frames.size());
+    for (size_t i = 0; i < receiving_frames.size(); ++i)
+      EXPECT_EQ(parser.cast_message().received_later_frames[i],
+                receiving_frames[i]);
+  }
+
   void ExpectReceiverLog(const RtcpParser& parser,
                          const RtcpReceiverLogMessage& expected_receiver_log) {
     EXPECT_TRUE(parser.has_receiver_log());
@@ -326,19 +338,71 @@ TEST_F(RtcpParserTest, InjectReceiverReportPacketWithCastFeedback) {
   ExpectCastFeedback(parser2);
 }
 
-TEST_F(RtcpParserTest, ExtendedCastFeedbackDoesNotBreakParsing) {
+TEST_F(RtcpParserTest, ExtendedCastFeedbackParsing) {
+  // Empty ACK field.
   TestRtcpPacketBuilder builder;
   builder.AddRr(kSenderSsrc, 1);
   builder.AddRb(kSourceSsrc);
   builder.AddCast(kSenderSsrc, kSourceSsrc, kTargetDelay);
-  builder.AddCst2(std::vector<uint32_t>{kAckFrameId + 2, kAckFrameId + 3});
-
-  // Parse should succeed with the added CST2 section in the feedback, even
-  // though we don't currently parse it directly.
+  std::vector<uint32_t> receiving_frames;
+  builder.AddCst2(receiving_frames);
   RtcpParser parser(kSourceSsrc, kSenderSsrc);
   EXPECT_TRUE(parser.Parse(builder.Reader()));
   ExpectLastReport(parser);
   ExpectCastFeedback(parser);
+  ExpectExtendedCastFeedback(parser, receiving_frames);
+
+  // One ACK bitmask.
+  TestRtcpPacketBuilder builder2;
+  builder2.AddRr(kSenderSsrc, 1);
+  builder2.AddRb(kSourceSsrc);
+  builder2.AddCast(kSenderSsrc, kSourceSsrc, kTargetDelay);
+  receiving_frames.push_back(kAckFrameId + 2);
+  receiving_frames.push_back(kAckFrameId + 3);
+  builder2.AddCst2(receiving_frames);
+  RtcpParser parser2(kSourceSsrc, kSenderSsrc);
+  EXPECT_TRUE(parser2.Parse(builder2.Reader()));
+  ExpectLastReport(parser2);
+  ExpectCastFeedback(parser2);
+  ExpectExtendedCastFeedback(parser2, receiving_frames);
+
+  // Mutiple ACK bitmasks.
+  TestRtcpPacketBuilder builder3;
+  builder3.AddRr(kSenderSsrc, 1);
+  builder3.AddRb(kSourceSsrc);
+  builder3.AddCast(kSenderSsrc, kSourceSsrc, kTargetDelay);
+  receiving_frames.clear();
+  for (size_t i = 0; i < 15; ++i)
+    receiving_frames.push_back(kAckFrameId + 2 + i * 10);
+  builder3.AddCst2(receiving_frames);
+  RtcpParser parser3(kSourceSsrc, kSenderSsrc);
+  EXPECT_TRUE(parser3.Parse(builder3.Reader()));
+  ExpectLastReport(parser3);
+  ExpectCastFeedback(parser3);
+  ExpectExtendedCastFeedback(parser3, receiving_frames);
+
+  // Expected to be ignored if there is error in the extended ACK message.
+  TestRtcpPacketBuilder builder4;
+  builder4.AddRr(kSenderSsrc, 1);
+  builder4.AddRb(kSourceSsrc);
+  builder4.AddCast(kSenderSsrc, kSourceSsrc, kTargetDelay);
+  builder4.AddErrorCst2();
+  RtcpParser parser4(kSourceSsrc, kSenderSsrc);
+  EXPECT_TRUE(parser4.Parse(builder4.Reader()));
+  ExpectLastReport(parser4);
+  ExpectCastFeedback(parser4);
+  EXPECT_FALSE(parser4.has_cst2_message());
+
+  // Expected to be ignored if there is only "CST2" identifier.
+  TestRtcpPacketBuilder builder5;
+  builder5.AddRr(kSenderSsrc, 1);
+  builder5.AddRb(kSourceSsrc);
+  receiving_frames.clear();
+  builder5.AddCst2(receiving_frames);
+  RtcpParser parser5(kSourceSsrc, kSenderSsrc);
+  EXPECT_TRUE(parser5.Parse(builder5.Reader()));
+  ExpectLastReport(parser5);
+  EXPECT_FALSE(parser5.has_cst2_message());
 }
 
 TEST_F(RtcpParserTest, InjectReceiverReportWithReceiverLogVerificationBase) {

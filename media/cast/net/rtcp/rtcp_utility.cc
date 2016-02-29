@@ -33,6 +33,7 @@ RtcpParser::RtcpParser(uint32_t local_ssrc, uint32_t remote_ssrc)
       has_sender_report_(false),
       has_last_report_(false),
       has_cast_message_(false),
+      has_cst2_message_(false),
       has_receiver_reference_time_report_(false) {}
 
 RtcpParser::~RtcpParser() {}
@@ -44,6 +45,7 @@ bool RtcpParser::Parse(base::BigEndianReader* reader) {
   has_last_report_ = false;
   receiver_log_.clear();
   has_cast_message_ = false;
+  has_cst2_message_ = false;
   has_receiver_reference_time_report_ = false;
 
   while (reader->remaining()) {
@@ -311,6 +313,29 @@ bool RtcpParser::ParseFeedbackCommon(base::BigEndianReader* reader,
   }
 
   has_cast_message_ = true;
+
+  // Parse the extended feedback (Cst2). Ignore it if any error occurs.
+  if ((!reader->ReadU32(&name)) || (name != kCst2))
+    return true;
+  if (!reader->ReadU8(&cast_message_.feedback_count))
+    return true;
+  uint8_t number_of_receiving_fields;
+  if (!reader->ReadU8(&number_of_receiving_fields))
+    return true;
+  for (size_t i = 0; i < number_of_receiving_fields; ++i) {
+    uint32_t frame_id = cast_message_.ack_frame_id + (i << 3) + 1;
+    uint8_t bitmask;
+    if (!reader->ReadU8(&bitmask))
+      return true;
+    while (bitmask) {
+      ++frame_id;
+      if (bitmask & 1)
+        cast_message_.received_later_frames.push_back(frame_id);
+      bitmask >>= 1;
+    }
+  }
+
+  has_cst2_message_ = true;
   return true;
 }
 

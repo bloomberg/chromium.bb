@@ -162,13 +162,13 @@ void TestRtcpPacketBuilder::AddCst2(
 
   std::vector<uint8_t> ack_bitmasks;
   for (uint32_t ack_frame : later_received_frames) {
-    CHECK_LE(kAckFrameId, ack_frame);
-    const size_t bit_index = ack_frame - kAckFrameId - 1;
+    CHECK_LE(kAckFrameId + 2, ack_frame);
+    const size_t bit_index = ack_frame - kAckFrameId - 2;
     const size_t index = bit_index / 8;
     const size_t bit_index_within_byte = bit_index % 8;
     if (index >= ack_bitmasks.size())
       ack_bitmasks.resize(index + 1);
-    ack_bitmasks[index] |= (1 << (8 - bit_index_within_byte - 1));
+    ack_bitmasks[index] |= 1 << bit_index_within_byte;
   }
 
   CHECK_LT(ack_bitmasks.size(), 256u);
@@ -181,6 +181,17 @@ void TestRtcpPacketBuilder::AddCst2(
        num_bytes_written % 4; ++num_bytes_written) {
     big_endian_writer_.WriteU8(0);
   }
+}
+
+void TestRtcpPacketBuilder::AddErrorCst2() {
+  big_endian_writer_.WriteU8('C');
+  big_endian_writer_.WriteU8('A');
+  big_endian_writer_.WriteU8('S');
+  big_endian_writer_.WriteU8('T');
+  big_endian_writer_.WriteU8(kFeedbackSeq);
+  big_endian_writer_.WriteU8(0);
+  big_endian_writer_.WriteU8(0);
+  big_endian_writer_.WriteU8(0);
 }
 
 void TestRtcpPacketBuilder::AddReceiverLog(uint32_t sender_ssrc) {

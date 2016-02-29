@@ -22,6 +22,8 @@ static const size_t kRtcpCnameSize = 256;
 
 static const uint32_t kCast = ('C' << 24) + ('A' << 16) + ('S' << 8) + 'T';
 
+static const uint32_t kCst2 = ('C' << 24) + ('S' << 16) + ('T' << 8) + '2';
+
 static const uint8_t kReceiverLogSubtype = 2;
 
 static const size_t kRtcpMaxReceiverLogMessages = 256;
@@ -58,6 +60,8 @@ class RtcpParser {
   bool has_cast_message() const { return has_cast_message_; }
   const RtcpCastMessage& cast_message() const { return cast_message_; }
   RtcpCastMessage* mutable_cast_message() { return &cast_message_; }
+  // Return if successfully parsed the extended feedback.
+  bool has_cst2_message() const { return has_cst2_message_; }
 
   bool has_receiver_reference_time_report() const {
     return has_receiver_reference_time_report_;
@@ -103,6 +107,7 @@ class RtcpParser {
 
   bool has_cast_message_;
   RtcpCastMessage cast_message_;
+  bool has_cst2_message_;
 
   bool has_receiver_reference_time_report_;
   RtcpReceiverReferenceTimeReport receiver_reference_time_report_;
