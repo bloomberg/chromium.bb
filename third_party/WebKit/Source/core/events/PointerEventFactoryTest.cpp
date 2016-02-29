@@ -86,9 +86,10 @@ PassRefPtrWillBeRawPtr<PointerEvent> PointerEventFactoryTest::createAndCheckTouc
 }
 
 void PointerEventFactoryTest::cloneAndCheckPointerEvent(
-    PassRefPtrWillBeRawPtr<PointerEvent> pointerEvent,
+    PassRefPtrWillBeRawPtr<PointerEvent> prpPointerEvent,
     const AtomicString& type)
 {
+    RefPtrWillBeRawPtr<PointerEvent> pointerEvent = prpPointerEvent;
     RefPtrWillBeRawPtr<PointerEvent> clonePointerEvent =
         m_pointerEventFactory.create(pointerEvent, type, nullptr);
     EXPECT_EQ(clonePointerEvent->pointerType(), pointerEvent->pointerType());
