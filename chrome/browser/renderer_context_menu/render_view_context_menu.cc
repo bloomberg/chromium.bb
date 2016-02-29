@@ -39,8 +39,9 @@
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_attributes_entry.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
-#include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_window.h"
@@ -906,57 +907,53 @@ void RenderViewContextMenu::AppendLinkItems() {
     if (g_browser_process->profile_manager() &&
         GetProfile()->GetProfileType() == Profile::REGULAR_PROFILE) {
       ProfileManager* profile_manager = g_browser_process->profile_manager();
-      const ProfileInfoCache& profile_info_cache =
-          profile_manager->GetProfileInfoCache();
-
       // Find all regular profiles other than the current one which have at
       // least one open window.
-      std::vector<size_t> target_profiles;
-      const size_t profile_count = profile_info_cache.GetNumberOfProfiles();
-      for (size_t profile_index = 0; profile_index < profile_count;
-           ++profile_index) {
-        base::FilePath profile_path =
-            profile_info_cache.GetPathOfProfileAtIndex(profile_index);
+      std::vector<ProfileAttributesEntry*> entries =
+          profile_manager->GetProfileAttributesStorage().
+              GetAllProfilesAttributesSortedByName();
+      std::vector<ProfileAttributesEntry*> target_profiles_entries;
+      for (ProfileAttributesEntry* entry : entries) {
+        base::FilePath profile_path = entry->GetPath();
         Profile* profile = profile_manager->GetProfileByPath(profile_path);
-        if ((profile != GetProfile()) &&
-            !profile_info_cache.IsOmittedProfileAtIndex(profile_index) &&
-            !profile_info_cache.ProfileIsSigninRequiredAtIndex(profile_index)) {
-          target_profiles.push_back(profile_index);
+        if (profile != GetProfile() &&
+            !entry->IsOmitted() && !entry->IsSigninRequired()) {
+          target_profiles_entries.push_back(entry);
           if (chrome::FindLastActiveWithProfile(profile))
             multiple_profiles_open_ = true;
         }
       }
 
-      if (!target_profiles.empty()) {
+      if (!target_profiles_entries.empty()) {
         UMA_HISTOGRAM_ENUMERATION("RenderViewContextMenu.OpenLinkAsUserShown",
-                                  target_profiles.size(),
+                                  target_profiles_entries.size(),
                                   kOpenLinkAsUserMaxProfilesReported);
       }
 
-      if (target_profiles.size() == 1) {
-        size_t profile_index = target_profiles[0];
+      if (target_profiles_entries.size() == 1u) {
+        int menu_index = static_cast<int>(profile_link_paths_.size());
+        ProfileAttributesEntry* entry = target_profiles_entries.front();
+        profile_link_paths_.push_back(entry->GetPath());
         menu_model_.AddItem(
-            IDC_OPEN_LINK_IN_PROFILE_FIRST + profile_index,
-            l10n_util::GetStringFUTF16(
-                IDS_CONTENT_CONTEXT_OPENLINKINPROFILE,
-                profile_info_cache.GetNameOfProfileAtIndex(profile_index)));
-        AddIconToLastMenuItem(
-            profile_info_cache.GetAvatarIconOfProfileAtIndex(profile_index),
-            &menu_model_);
-      } else if (target_profiles.size() > 1) {
-        for (size_t profile_index : target_profiles) {
+            IDC_OPEN_LINK_IN_PROFILE_FIRST + menu_index,
+            l10n_util::GetStringFUTF16(IDS_CONTENT_CONTEXT_OPENLINKINPROFILE,
+                                       entry->GetName()));
+        AddIconToLastMenuItem(entry->GetAvatarIcon(), &menu_model_);
+      } else if (target_profiles_entries.size() > 1u) {
+        for (ProfileAttributesEntry* entry : entries) {
+          int menu_index = static_cast<int>(profile_link_paths_.size());
           // In extreme cases, we might have more profiles than available
           // command ids. In that case, just stop creating new entries - the
           // menu is probably useless at this point already.
-          if (IDC_OPEN_LINK_IN_PROFILE_FIRST + profile_index >
-              IDC_OPEN_LINK_IN_PROFILE_LAST)
+          if (IDC_OPEN_LINK_IN_PROFILE_FIRST + menu_index >
+              IDC_OPEN_LINK_IN_PROFILE_LAST) {
             break;
+          }
+          profile_link_paths_.push_back(entry->GetPath());
           profile_link_submenu_model_.AddItem(
-              IDC_OPEN_LINK_IN_PROFILE_FIRST + profile_index,
-              profile_info_cache.GetNameOfProfileAtIndex(profile_index));
-          AddIconToLastMenuItem(
-              profile_info_cache.GetAvatarIconOfProfileAtIndex(profile_index),
-              &profile_link_submenu_model_);
+              IDC_OPEN_LINK_IN_PROFILE_FIRST + menu_index, entry->GetName());
+          AddIconToLastMenuItem(entry->GetAvatarIcon(),
+                                &profile_link_submenu_model_);
         }
         menu_model_.AddSubMenuWithStringId(
             IDC_CONTENT_CONTEXT_OPENLINKINPROFILE,
@@ -1682,14 +1679,12 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
 
   if (id >= IDC_OPEN_LINK_IN_PROFILE_FIRST &&
       id <= IDC_OPEN_LINK_IN_PROFILE_LAST) {
-    ProfileManager* profile_manager = g_browser_process->profile_manager();
-    const ProfileInfoCache& profile_info_cache =
-        profile_manager->GetProfileInfoCache();
+    size_t index = static_cast<size_t>(id - IDC_OPEN_LINK_IN_PROFILE_FIRST);
+    DCHECK_LE(index, profile_link_paths_.size());
+    base::FilePath profile_path = profile_link_paths_[index];
 
-    base::FilePath profile_path = profile_info_cache.GetPathOfProfileAtIndex(
-        id - IDC_OPEN_LINK_IN_PROFILE_FIRST);
-
-    Profile* profile = profile_manager->GetProfileByPath(profile_path);
+    Profile* profile =
+        g_browser_process->profile_manager()->GetProfileByPath(profile_path);
     UmaEnumOpenLinkAsUser profile_state;
     if (chrome::FindLastActiveWithProfile(profile)) {
       profile_state = OPEN_LINK_AS_USER_ACTIVE_PROFILE_ENUM_ID;

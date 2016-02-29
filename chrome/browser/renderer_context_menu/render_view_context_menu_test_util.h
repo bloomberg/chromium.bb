@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_RENDERER_CONTEXT_MENU_RENDER_VIEW_CONTEXT_MENU_TEST_UTIL_H_
 #define CHROME_BROWSER_RENDERER_CONTEXT_MENU_RENDER_VIEW_CONTEXT_MENU_TEST_UTIL_H_
 
+#include <stddef.h>
+
+#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu.h"
 #include "url/gurl.h"
@@ -57,6 +60,8 @@ class TestRenderViewContextMenu : public RenderViewContextMenu {
   bool GetMenuModelAndItemIndex(int command_id,
                                 ui::MenuModel** found_model,
                                 int* found_index);
+
+  size_t GetItemIndexByProfilePath(const base::FilePath& path);
 
 #if defined(ENABLE_EXTENSIONS)
   extensions::ContextMenuMatcher& extension_items() { return extension_items_; }

@@ -7,7 +7,9 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
+#include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
@@ -170,6 +172,7 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
   GURL selection_navigation_url_;
 
   ui::SimpleMenuModel profile_link_submenu_model_;
+  std::vector<base::FilePath> profile_link_paths_;
   bool multiple_profiles_open_;
   ui::SimpleMenuModel protocol_handler_submenu_model_;
   ProtocolHandlerRegistry* protocol_handler_registry_;
