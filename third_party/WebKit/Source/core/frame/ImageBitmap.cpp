@@ -132,6 +132,8 @@ static PassRefPtr<StaticBitmapImage> cropImage(Image* image, const IntRect& crop
     }
 
     RefPtr<SkSurface> surface = adoptRef(SkSurface::NewRasterN32Premul(cropRect.width(), cropRect.height()));
+    if (!surface)
+        return nullptr;
     if (srcRect.isEmpty())
         return StaticBitmapImage::create(adoptRef(surface->newImageSnapshot()));
 
@@ -157,6 +159,8 @@ ImageBitmap::ImageBitmap(HTMLImageElement* image, const IntRect& cropRect, Docum
     parseOptions(options, flipY);
 
     m_image = cropImage(image->cachedImage()->image(), cropRect, flipY, m_isPremultiplied);
+    if (!m_image)
+        return;
     m_image->setOriginClean(!image->wouldTaintOrigin(document->securityOrigin()));
 }
 
@@ -199,6 +203,8 @@ ImageBitmap::ImageBitmap(HTMLCanvasElement* canvas, const IntRect& cropRect, con
 
     // canvas is always premultiplied, so set the last parameter to true and convert to un-premul later
     m_image = cropImage(canvas->copiedImage(BackBuffer, PreferAcceleration).get(), cropRect, flipY, true);
+    if (!m_image)
+        return;
     if (!m_isPremultiplied)
         m_image = StaticBitmapImage::create(premulSkImageToUnPremul(m_image->imageForCurrentFrame().get()));
     m_image->setOriginClean(canvas->originClean());
@@ -285,6 +291,8 @@ ImageBitmap::ImageBitmap(ImageBitmap* bitmap, const IntRect& cropRect, const Ima
     bool flipY;
     parseOptions(options, flipY);
     m_image = cropImage(bitmap->bitmapImage(), cropRect, flipY, m_isPremultiplied, bitmap->isPremultiplied());
+    if (!m_image)
+        return;
     m_image->setOriginClean(bitmap->originClean());
 }
 
@@ -293,6 +301,8 @@ ImageBitmap::ImageBitmap(PassRefPtr<StaticBitmapImage> image, const IntRect& cro
     bool flipY;
     parseOptions(options, flipY);
     m_image = cropImage(image.get(), cropRect, flipY, m_isPremultiplied);
+    if (!m_image)
+        return;
     m_image->setOriginClean(image->originClean());
 }
 

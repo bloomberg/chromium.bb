@@ -186,7 +186,13 @@ function nextCheck(elementIndex) {
         checkCrop(imageBitmaps.negativeCrop);
         checkEmpty(imageBitmaps.empty);
         checkEmpty(imageBitmaps.emptyTwo);
-        nextCheck(elementIndex + 1);
+        createImageBitmap(element, 0, 0, Math.pow(10, 6), Math.pow(10, 6)).then(function() {
+            testFailed('Creating a huge ImageBitmap is resolved unexpectedly.');
+            finishJSTest();
+        }, function() {
+            testPassed('Creating a huge ImageBitmap is rejected as expected.');
+            nextCheck(elementIndex + 1);
+        });
     }, shouldNotBeCalled);
 }
 
@@ -406,6 +412,7 @@ function checkEmpty(imageBitmap) {
     shouldBeClear(11, 11);
     shouldBeClear(22, 22);
 }
+
 </script>
 </body>
 </html>

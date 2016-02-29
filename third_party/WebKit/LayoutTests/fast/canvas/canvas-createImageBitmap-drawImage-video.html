@@ -66,7 +66,7 @@ function videoLoaded() {
     var p7 = createImageBitmap(video, 100, 100, -100, -100).then(function (image) { imageBitmaps.negativeCrop = image });
     var p8 = createImageBitmap(video, -300, -300, 300, 300).then(function (image) { imageBitmaps.empty = image });
     var p9 = createImageBitmap(video, 400, 300, 300, 300).then(function (image) { imageBitmaps.emptyTwo = image });
-
+    var p10 = createImageBitmap(video, 0, 0, Math.pow(10, 6), Math.pow(10, 6)).then(function(image) { imageBitmaps.hugeCrop = image });
     Promise.all([p1, p2, p3, p4, p5, p6, p7, p8, p9]).then(function() {
         checkNoCrop(imageBitmaps.noCrop);
         checkCrop(imageBitmaps.crop);
@@ -77,7 +77,13 @@ function videoLoaded() {
         checkCrop(imageBitmaps.negativeCrop);
         checkEmpty(imageBitmaps.empty);
         checkEmpty(imageBitmaps.emptyTwo);
-        finishJSTest();
+        createImageBitmap(video, 0, 0, Math.pow(10, 6), Math.pow(10, 6)).then(function() {
+            testFailed('Creating a huge ImageBitmap is resolved unexpectedly.');
+            finishJSTest();
+         }, function() {
+             testPassed('Creating a huge ImageBitmap is rejected as expected.');
+             finishJSTest();
+         });
     }, function() {
         testFailed("Promise was rejected.");
         finishJSTest();

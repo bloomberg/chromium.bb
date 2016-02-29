@@ -507,6 +507,7 @@ PASS d[0] is 0
 PASS d[1] is 0
 PASS d[2] is 0
 PASS d[3] is 0
+PASS Creating a huge ImageBitmap is rejected as expected.
 Checking HTMLCanvasElement.
 Check no crop.
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
@@ -1007,6 +1008,7 @@ PASS d[0] is 0
 PASS d[1] is 0
 PASS d[2] is 0
 PASS d[3] is 0
+PASS Creating a huge ImageBitmap is rejected as expected.
 Checking ImageData.
 Check no crop.
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
@@ -1507,6 +1509,7 @@ PASS d[0] is 0
 PASS d[1] is 0
 PASS d[2] is 0
 PASS d[3] is 0
+PASS Creating a huge ImageBitmap is rejected as expected.
 Checking ImageBitmap.
 Check no crop.
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
@@ -2007,6 +2010,7 @@ PASS d[0] is 0
 PASS d[1] is 0
 PASS d[2] is 0
 PASS d[3] is 0
+PASS Creating a huge ImageBitmap is rejected as expected.
 Checking Blob.
 Check no crop.
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
@@ -2507,6 +2511,7 @@ PASS d[0] is 0
 PASS d[1] is 0
 PASS d[2] is 0
 PASS d[3] is 0
+PASS Creating a huge ImageBitmap is rejected as expected.
 PASS successfullyParsed is true
 
 TEST COMPLETE

@@ -13,7 +13,7 @@ ScriptPromise ImageBitmapSource::fulfillImageBitmap(ScriptState* scriptState, Pa
 {
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
-    if (imageBitmap) {
+    if (imageBitmap && imageBitmap->bitmapImage()) {
         resolver->resolve(imageBitmap);
     } else {
         resolver->reject(ScriptValue(scriptState, v8::Null(scriptState->isolate())));

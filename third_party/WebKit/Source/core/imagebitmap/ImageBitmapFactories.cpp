@@ -242,7 +242,12 @@ void ImageBitmapFactories::ImageBitmapLoader::resolvePromiseOnOriginalThread(Pas
     }
 
     RefPtrWillBeRawPtr<ImageBitmap> imageBitmap = ImageBitmap::create(image, m_cropRect, m_options);
-    m_resolver->resolve(imageBitmap.release());
+    if (imageBitmap && imageBitmap->bitmapImage()) {
+        m_resolver->resolve(imageBitmap.release());
+    } else {
+        rejectPromise();
+        return;
+    }
     m_factory->didFinishLoading(this);
 }
 
