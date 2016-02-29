@@ -314,6 +314,7 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
                    skip_chroot_upgrade=True,
                    chrome_root=self._run.options.chrome_root,
                    noworkon=noworkon,
+                   noretry=self._run.config.nobuildretry,
                    extra_env=self._portage_extra_env)
 
     if self._update_metadata:

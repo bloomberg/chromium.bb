@@ -69,6 +69,7 @@
         "manifest_version": false,
         "master": false,
         "name": null,
+        "nobuildretry": false,
         "overlays": "public",
         "packages": [],
         "paygen": false,

@@ -769,6 +769,9 @@ def DefaultSettings():
       # If not None, the name (in constants.CIDB_KNOWN_WATERFALLS) of the
       # waterfall that this target should be active on.
       active_waterfall=None,
+
+      # If true, skip package retries in BuildPackages step.
+      nobuildretry=False,
   )
 
 

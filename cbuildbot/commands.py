@@ -444,7 +444,7 @@ def UpdateBinhostJson(buildroot):
 
 def Build(buildroot, board, build_autotest, usepkg, chrome_binhost_only,
           packages=(), skip_chroot_upgrade=True, noworkon=False,
-          extra_env=None, chrome_root=None):
+          extra_env=None, chrome_root=None, noretry=False):
   """Wrapper around build_packages.
 
   Args:
@@ -461,6 +461,7 @@ def Build(buildroot, board, build_autotest, usepkg, chrome_binhost_only,
     noworkon: If set, don't force-build workon packages.
     extra_env: A dictionary of environmental variables to set during generation.
     chrome_root: The directory where chrome is stored.
+    noretry: Do not retry package failures.
   """
   cmd = ['./build_packages', '--board=%s' % board,
          '--accept_licenses=@CHROMEOS', '--withdebugsymbols']
@@ -479,6 +480,9 @@ def Build(buildroot, board, build_autotest, usepkg, chrome_binhost_only,
 
   if noworkon:
     cmd.append('--noworkon')
+
+  if noretry:
+    cmd.append('--nobuildretry')
 
   chroot_args = []
   if chrome_root:
