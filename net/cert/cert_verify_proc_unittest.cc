@@ -1176,7 +1176,7 @@ TEST_F(CertVerifyProcTest, IsIssuedByKnownRootIgnoresTestRoots) {
 // The issue is caused by servers supplying the cross-certified intermediate
 // (necessary for certain mobile platforms), which OS X does not recognize
 // as already existing within its trust store.
-TEST_F(CertVerifyProcTest, CybertrustGTERoot) {
+TEST_F(CertVerifyProcTest, DISABLED_CybertrustGTERoot) {
   CertificateList certs = CreateCertificateListFromFile(
       GetTestCertsDirectory(),
       "cybertrust_omniroot_chain.pem",
