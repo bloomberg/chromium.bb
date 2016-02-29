@@ -119,8 +119,10 @@ public:
         v8::Local<v8::Object> wrapper = v8::Local<v8::Object>::New(m_isolate, v8::Persistent<v8::Object>::Cast(*value));
         ASSERT(V8DOMWrapper::hasInternalFieldsSet(wrapper));
         const WrapperTypeInfo* type = toWrapperTypeInfo(wrapper);
-        if (type != npObjectTypeInfo() && toScriptWrappable(wrapper)->hasPendingActivity())
+        if (type != npObjectTypeInfo() && toScriptWrappable(wrapper)->hasPendingActivity()) {
+            v8::Persistent<v8::Object>::Cast(*value).MarkActive();
             return;
+        }
 
         if (classId == WrapperTypeInfo::NodeClassId) {
             ASSERT(V8Node::hasInstance(wrapper, m_isolate));
