@@ -12,6 +12,47 @@
 #include "core/inspector/ConsoleMessage.h"
 #include "core/workers/WorkerGlobalScope.h"
 
+namespace {
+
+const char* milestoneString(int milestone)
+{
+    // These are the Estimated Stable Dates:
+    // https://www.chromium.org/developers/calendar
+
+    switch (milestone) {
+    case 50:
+        return "M50, around April 2016";
+    case 51:
+        return "M51, around May 2016";
+    case 52:
+        return "M52, around July 2016";
+    case 53:
+        return "M53, around September 2016";
+    case 54:
+        return "M54, around October 2016";
+    }
+
+    ASSERT_NOT_REACHED();
+    return nullptr;
+}
+
+String replacedBy(const char* feature, const char* replacement)
+{
+    return String::format("%s is deprecated. Please use %s instead.", feature, replacement);
+}
+
+String willBeRemoved(const char* feature, int milestone, const char* details)
+{
+    return String::format("%s is deprecated and will be removed in %s. See https://www.chromestatus.com/features/%s for more details.", feature, milestoneString(milestone), details);
+}
+
+String replacedWillBeRemoved(const char* feature, const char* replacement, int milestone, const char* details)
+{
+    return String::format("%s is deprecated and will be removed in %s. Please use %s instead. See https://www.chromestatus.com/features/%s for more details.", feature, milestoneString(milestone), replacement, details);
+}
+
+} // anonymous namespace
+
 namespace blink {
 
 Deprecation::Deprecation()
@@ -101,43 +142,6 @@ void Deprecation::countDeprecationIfNotPrivateScript(v8::Isolate* isolate, Execu
     if (DOMWrapperWorld::current(isolate).isPrivateScriptIsolatedWorld())
         return;
     Deprecation::countDeprecation(context, feature);
-}
-
-static const char* milestoneString(int milestone)
-{
-    // These are the Estimated Stable Dates:
-    // https://www.chromium.org/developers/calendar
-
-    switch (milestone) {
-    case 50:
-        return "M50, around April 2016";
-    case 51:
-        return "M51, around May 2016";
-    case 52:
-        return "M52, around July 2016";
-    case 53:
-        return "M53, around September 2016";
-    case 54:
-        return "M54, around October 2016";
-    }
-
-    ASSERT_NOT_REACHED();
-    return nullptr;
-}
-
-static String replacedBy(const char* feature, const char* replacement)
-{
-    return String::format("%s is deprecated. Please use %s instead.", feature, replacement);
-}
-
-String Deprecation::willBeRemoved(const char* feature, int milestone, const char* details)
-{
-    return String::format("%s is deprecated and will be removed in %s. See https://www.chromestatus.com/features/%s for more details.", feature, milestoneString(milestone), details);
-}
-
-static String replacedWillBeRemoved(const char* feature, const char* replacement, int milestone, const char* details)
-{
-    return String::format("%s is deprecated and will be removed in %s. Please use %s instead. See https://www.chromestatus.com/features/%s for more details.", feature, milestoneString(milestone), replacement, details);
 }
 
 String Deprecation::deprecationMessage(UseCounter::Feature feature)

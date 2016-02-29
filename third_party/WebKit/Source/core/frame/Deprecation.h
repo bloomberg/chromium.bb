@@ -43,8 +43,6 @@ public:
     static void countDeprecationIfNotPrivateScript(v8::Isolate*, ExecutionContext*, UseCounter::Feature);
     static String deprecationMessage(UseCounter::Feature);
 
-    static String willBeRemoved(const char* feature, int milestone, const char* details);
-
 protected:
     void suppress(CSSPropertyID unresolvedProperty);
     bool isSuppressed(CSSPropertyID unresolvedProperty);
