@@ -85,7 +85,7 @@ AC_ARG_ENABLE([dtd-validation],
 	      [AC_HELP_STRING([--disable-dtd-validation],
 			      [Disable DTD validation of the protocol])],
 	      [],
-	      [enable_dtdvalidation=yes])
+	      [enable_dtd_validation=yes])
 
 AM_CONDITIONAL(USE_HOST_SCANNER, test "x$with_host_scanner" = xyes)
 
@@ -121,7 +121,8 @@ PKG_CHECK_MODULES(EXPAT, [expat], [],
 	 AC_SUBST(EXPAT_LIBS)
 	])
 
-if test "x$enable_dtdvalidation" = "xyes"; then
+AM_CONDITIONAL([DTD_VALIDATION], [test "x$enable_dtd_validation" = "xyes"])
+if test "x$enable_dtd_validation" = "xyes"; then
 	PKG_CHECK_MODULES(LIBXML, [libxml-2.0])
 	AC_DEFINE(HAVE_LIBXML, 1, [libxml-2.0 is available])
 	AC_CONFIG_LINKS([src/wayland.dtd.embed:protocol/wayland.dtd])

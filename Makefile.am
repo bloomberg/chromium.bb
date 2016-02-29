@@ -23,11 +23,14 @@ pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA =
 
 bin_PROGRAMS = wayland-scanner
-wayland_scanner_SOURCES = src/scanner.c src/dtddata.S
+wayland_scanner_SOURCES = src/scanner.c
 wayland_scanner_CFLAGS = $(EXPAT_CFLAGS) $(LIBXML_CFLAGS) $(AM_CFLAGS)
 wayland_scanner_LDADD = $(EXPAT_LIBS) $(LIBXML_LIBS) libwayland-util.la
 pkgconfig_DATA += src/wayland-scanner.pc
 
+if DTD_VALIDATION
+wayland_scanner_SOURCES += src/dtddata.S
+endif
 src/dtddata.o: protocol/wayland.dtd
 
 if USE_HOST_SCANNER

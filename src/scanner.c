@@ -40,13 +40,13 @@
 
 #if HAVE_LIBXML
 #include <libxml/parser.h>
-#endif
-
-#include "wayland-util.h"
 
 /* Embedded wayland.dtd file, see dtddata.S */
 extern char DTD_DATA_begin;
 extern int DTD_DATA_len;
+#endif
+
+#include "wayland-util.h"
 
 enum side {
 	CLIENT,
