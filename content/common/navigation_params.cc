@@ -31,8 +31,8 @@ CommonNavigationParams::CommonNavigationParams()
       should_replace_current_entry(false),
       report_type(FrameMsg_UILoadMetricsReportType::NO_REPORT),
       lofi_state(LOFI_UNSPECIFIED),
-      navigation_start(base::TimeTicks::Now()) {
-}
+      navigation_start(base::TimeTicks::Now()),
+      method("GET") {}
 
 CommonNavigationParams::CommonNavigationParams(
     const GURL& url,
@@ -46,7 +46,8 @@ CommonNavigationParams::CommonNavigationParams(
     const GURL& base_url_for_data_url,
     const GURL& history_url_for_data_url,
     LoFiState lofi_state,
-    const base::TimeTicks& navigation_start)
+    const base::TimeTicks& navigation_start,
+    std::string method)
     : url(url),
       referrer(referrer),
       transition(transition),
@@ -58,8 +59,8 @@ CommonNavigationParams::CommonNavigationParams(
       base_url_for_data_url(base_url_for_data_url),
       history_url_for_data_url(history_url_for_data_url),
       lofi_state(lofi_state),
-      navigation_start(navigation_start) {
-}
+      navigation_start(navigation_start),
+      method(method) {}
 
 CommonNavigationParams::CommonNavigationParams(
     const CommonNavigationParams& other) = default;
@@ -74,14 +75,12 @@ BeginNavigationParams::BeginNavigationParams()
       request_context_type(REQUEST_CONTEXT_TYPE_LOCATION) {}
 
 BeginNavigationParams::BeginNavigationParams(
-    std::string method,
     std::string headers,
     int load_flags,
     bool has_user_gesture,
     bool skip_service_worker,
     RequestContextType request_context_type)
-    : method(method),
-      headers(headers),
+    : headers(headers),
       load_flags(load_flags),
       has_user_gesture(has_user_gesture),
       skip_service_worker(skip_service_worker),
@@ -91,7 +90,7 @@ BeginNavigationParams::BeginNavigationParams(
     const BeginNavigationParams& other) = default;
 
 StartNavigationParams::StartNavigationParams()
-    : is_post(false),
+    :
 #if defined(OS_ANDROID)
       has_user_gesture(false),
 #endif
@@ -100,7 +99,6 @@ StartNavigationParams::StartNavigationParams()
 }
 
 StartNavigationParams::StartNavigationParams(
-    bool is_post,
     const std::string& extra_headers,
     const std::vector<unsigned char>& browser_initiated_post_data,
 #if defined(OS_ANDROID)
@@ -108,8 +106,7 @@ StartNavigationParams::StartNavigationParams(
 #endif
     int transferred_request_child_id,
     int transferred_request_request_id)
-    : is_post(is_post),
-      extra_headers(extra_headers),
+    : extra_headers(extra_headers),
       browser_initiated_post_data(browser_initiated_post_data),
 #if defined(OS_ANDROID)
       has_user_gesture(has_user_gesture),

@@ -71,8 +71,6 @@ scoped_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
     bool is_same_document_history_load,
     const base::TimeTicks& navigation_start,
     NavigationControllerImpl* controller) {
-  std::string method = entry.GetHasPostData() ? "POST" : "GET";
-
   // Copy existing headers and add necessary headers that may not be present
   // in the RequestNavigationParams.
   net::HttpRequestHeaders headers;
@@ -96,7 +94,7 @@ scoped_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
       frame_tree_node, entry.ConstructCommonNavigationParams(
                            dest_url, dest_referrer, navigation_type, lofi_state,
                            navigation_start),
-      BeginNavigationParams(method, headers.ToString(),
+      BeginNavigationParams(headers.ToString(),
                             LoadFlagFromNavigationType(navigation_type),
                             false,  // has_user_gestures
                             false,  // skip_service_worker
@@ -210,8 +208,10 @@ void NavigationRequest::BeginNavigation() {
     // It's safe to use base::Unretained because this NavigationRequest owns
     // the NavigationHandle where the callback will be stored.
     // TODO(clamy): pass the real value for |is_external_protocol| if needed.
+    // TODO(clamy): pass the method to the NavigationHandle instead of a
+    // boolean.
     navigation_handle_->WillStartRequest(
-        begin_params_.method == "POST",
+        common_params_.method == "POST",
         Referrer::SanitizeForRequest(common_params_.url,
                                      common_params_.referrer),
         begin_params_.has_user_gesture, common_params_.transition, false,
@@ -246,7 +246,7 @@ void NavigationRequest::OnRequestRedirected(
     const net::RedirectInfo& redirect_info,
     const scoped_refptr<ResourceResponse>& response) {
   common_params_.url = redirect_info.new_url;
-  begin_params_.method = redirect_info.new_method;
+  common_params_.method = redirect_info.new_method;
   common_params_.referrer.url = GURL(redirect_info.new_referrer);
 
   // TODO(clamy): Have CSP + security upgrade checks here.
@@ -256,7 +256,7 @@ void NavigationRequest::OnRequestRedirected(
   // NavigationHandle where the callback will be stored.
   // TODO(clamy): pass the real value for |is_external_protocol| if needed.
   navigation_handle_->WillRedirectRequest(
-      common_params_.url, begin_params_.method == "POST",
+      common_params_.url, common_params_.method == "POST",
       common_params_.referrer.url, false, response->head.headers,
       base::Bind(&NavigationRequest::OnRedirectChecksComplete,
                  base::Unretained(this)));

@@ -554,7 +554,6 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
     CHECK(IsBrowserSideNavigationEnabled());
     DCHECK(!sync_load_response);
     DCHECK_NE(WebURLRequest::FrameTypeNone, request.frameType());
-    DCHECK_EQ("GET", request.httpMethod().latin1());
     request_info.resource_body_stream_url = stream_override_->stream_url;
   }
 

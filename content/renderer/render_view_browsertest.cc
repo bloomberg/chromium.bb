@@ -539,6 +539,7 @@ TEST_F(RenderViewImplTest, OnNavigationHttpPost) {
   common_params.url = GURL("data:text/html,<div>Page</div>");
   common_params.navigation_type = FrameMsg_Navigate_Type::NORMAL;
   common_params.transition = ui::PAGE_TRANSITION_TYPED;
+  common_params.method = "POST";
   request_params.page_id = -1;
 
   // Set up post data.
@@ -546,7 +547,6 @@ TEST_F(RenderViewImplTest, OnNavigationHttpPost) {
       "post \0\ndata");
   const unsigned int length = 11;
   const std::vector<unsigned char> post_data(raw_data, raw_data + length);
-  start_params.is_post = true;
   start_params.browser_initiated_post_data = post_data;
 
   frame()->Navigate(common_params, start_params, request_params);
@@ -2497,15 +2497,14 @@ TEST_F(RenderViewImplTest, NavigationStartOverride) {
   // days from now is *not* reported as one that starts in the future; as we
   // sanitize the override allowing a maximum of ::Now().
   CommonNavigationParams late_common_params;
-  StartNavigationParams late_start_params;
   late_common_params.url = GURL("data:text/html,<div>Another page</div>");
   late_common_params.navigation_type = FrameMsg_Navigate_Type::NORMAL;
   late_common_params.transition = ui::PAGE_TRANSITION_TYPED;
   late_common_params.navigation_start =
       base::TimeTicks::Now() + base::TimeDelta::FromDays(42);
-  late_start_params.is_post = true;
+  late_common_params.method = "POST";
 
-  frame()->Navigate(late_common_params, late_start_params,
+  frame()->Navigate(late_common_params, StartNavigationParams(),
                     RequestNavigationParams());
   ProcessPendingMessages();
   base::Time after_navigation =

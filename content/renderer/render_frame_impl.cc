@@ -526,6 +526,8 @@ WebURLRequest CreateURLRequestForNavigation(
       request.setHTTPReferrer(web_referrer, common_params.referrer.policy);
   }
 
+  request.setHTTPMethod(WebString::fromUTF8(common_params.method));
+
   RequestExtraData* extra_data = new RequestExtraData();
   extra_data->set_stream_override(std::move(stream_override));
   extra_data->set_lofi_state(common_params.lofi_state);
@@ -601,7 +603,7 @@ CommonNavigationParams MakeCommonNavigationParams(
       request->url(), referrer, extra_data->transition_type(),
       FrameMsg_Navigate_Type::NORMAL, true, should_replace_current_entry,
       ui_timestamp, report_type, GURL(), GURL(), extra_data->lofi_state(),
-      base::TimeTicks::Now());
+      base::TimeTicks::Now(), request->httpMethod().latin1());
 }
 
 media::Context3D GetSharedMainThreadContext3D() {
@@ -5445,9 +5447,7 @@ void RenderFrameImpl::NavigateInternal(
       }
     }
 
-    if (start_params.is_post && !browser_side_navigation) {
-      request.setHTTPMethod(WebString::fromUTF8("POST"));
-
+    if (common_params.method == "POST" && !browser_side_navigation) {
       // Set post data.
       WebHTTPBody http_body;
       http_body.initialize();
@@ -5738,11 +5738,11 @@ void RenderFrameImpl::BeginNavigation(blink::WebURLRequest* request,
   Send(new FrameHostMsg_BeginNavigation(
       routing_id_,
       MakeCommonNavigationParams(request, should_replace_current_entry),
-      BeginNavigationParams(
-          request->httpMethod().latin1(), GetWebURLRequestHeaders(*request),
-          GetLoadFlagsForWebURLRequest(*request), request->hasUserGesture(),
-          request->skipServiceWorker(),
-          GetRequestContextTypeForWebURLRequest(*request)),
+      BeginNavigationParams(GetWebURLRequestHeaders(*request),
+                            GetLoadFlagsForWebURLRequest(*request),
+                            request->hasUserGesture(),
+                            request->skipServiceWorker(),
+                            GetRequestContextTypeForWebURLRequest(*request)),
       GetRequestBodyForWebURLRequest(*request)));
 }
 

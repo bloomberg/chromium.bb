@@ -1448,7 +1448,15 @@ void ResourceDispatcherHostImpl::BeginRequest(
                                    : request_data.url,
       request_data.priority, nullptr);
 
-  new_request->set_method(request_data.method);
+  // PlzNavigate: Always set the method to GET when gaining access to the
+  // stream that contains the response body of a navigation. Otherwise the data
+  // that was already fetched by the browser will not be transmitted to the
+  // renderer.
+  if (is_navigation_stream_request)
+    new_request->set_method("GET");
+  else
+    new_request->set_method(request_data.method);
+
   new_request->set_first_party_for_cookies(
       request_data.first_party_for_cookies);
   new_request->set_initiator(request_data.request_initiator);
@@ -2179,7 +2187,7 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
       // needs to be checked relative to the child that /requested/ the
       // navigation. It's where file upload checks, etc., come in.
       (delegate_ && !delegate_->ShouldBeginRequest(
-          info.begin_params.method,
+          info.common_params.method,
           info.common_params.url,
           resource_type,
           resource_context))) {
@@ -2214,7 +2222,7 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
   new_request = request_context->CreateRequest(
       info.common_params.url, net::HIGHEST, nullptr);
 
-  new_request->set_method(info.begin_params.method);
+  new_request->set_method(info.common_params.method);
   new_request->set_first_party_for_cookies(
       info.first_party_for_cookies);
   new_request->set_initiator(info.request_initiator);

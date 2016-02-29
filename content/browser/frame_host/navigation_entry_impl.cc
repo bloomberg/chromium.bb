@@ -584,7 +584,7 @@ CommonNavigationParams NavigationEntryImpl::ConstructCommonNavigationParams(
       dest_url, dest_referrer, GetTransitionType(), navigation_type,
       !IsViewSourceMode(), should_replace_entry(), ui_timestamp, report_type,
       GetBaseURLForDataURL(), GetHistoryURLForDataURL(), lofi_state,
-      navigation_start);
+      navigation_start, GetHasPostData() ? "POST" : "GET");
 }
 
 StartNavigationParams NavigationEntryImpl::ConstructStartNavigationParams()
@@ -597,8 +597,7 @@ StartNavigationParams NavigationEntryImpl::ConstructStartNavigationParams()
             GetBrowserInitiatedPostData()->size());
   }
 
-  return StartNavigationParams(GetHasPostData(), extra_headers(),
-                               browser_initiated_post_data,
+  return StartNavigationParams(extra_headers(), browser_initiated_post_data,
 #if defined(OS_ANDROID)
                                has_user_gesture(),
 #endif

@@ -1954,7 +1954,7 @@ void RenderFrameHostImpl::NavigateToInterstitialURL(const GURL& data_url) {
       data_url, Referrer(), ui::PAGE_TRANSITION_LINK,
       FrameMsg_Navigate_Type::NORMAL, false, false, base::TimeTicks::Now(),
       FrameMsg_UILoadMetricsReportType::NO_REPORT, GURL(), GURL(), LOFI_OFF,
-      base::TimeTicks::Now());
+      base::TimeTicks::Now(), "GET");
   if (IsBrowserSideNavigationEnabled()) {
     CommitNavigation(nullptr, nullptr, common_params,
                      RequestNavigationParams());

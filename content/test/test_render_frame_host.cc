@@ -346,7 +346,7 @@ void TestRenderFrameHost::SendRendererInitiatedNavigationRequest(
   InitializeRenderFrameIfNeeded();
 
   if (IsBrowserSideNavigationEnabled()) {
-    BeginNavigationParams begin_params("GET", std::string(), net::LOAD_NORMAL,
+    BeginNavigationParams begin_params(std::string(), net::LOAD_NORMAL,
                                        has_user_gesture, false,
                                        REQUEST_CONTEXT_TYPE_HYPERLINK);
     CommonNavigationParams common_params;
