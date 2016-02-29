@@ -1,3 +1,0 @@
-CONSOLE MESSAGE: line 7: PLUGIN: src: blah
-
-This tests that an object tag with a data attribute gets a src attribute as well.

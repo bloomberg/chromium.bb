@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <stdint.h>
+#include <string.h>
 
 #include <sstream>
 #include <utility>
@@ -36,6 +37,15 @@ class BlinkTestInstance : public pp::Instance {
   ~BlinkTestInstance() override {}
 
   bool Init(uint32_t argc, const char* argn[], const char* argv[]) {
+    // Used by layout tests that want to inspect the args the plugin is
+    // instantiated with.
+    for (uint32_t i = 0; i < argc; ++i) {
+      if (!strcmp(argn[i], "logargs")) {
+        LogMessage("plugin args:");
+        for (uint32_t j = 0; j < argc; ++j)
+          LogMessage("  name = ", argn[j], ", value = ", argv[j]);
+      }
+    }
     return RequestFilteringInputEvents(PP_INPUTEVENT_CLASS_MOUSE |
                                        PP_INPUTEVENT_CLASS_KEYBOARD) == PP_OK;
   }
