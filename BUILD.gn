@@ -880,3 +880,29 @@ group("chromium_builder_perf") {
     }
   }
 }
+
+# Because of the source assignment filter, many targets end up over-filtering
+# their sources if the output directory contains a platform name. Assert that
+# this doesn't happen. http://crbug.com/548283
+template("assert_valid_out_dir") {
+  # List copied from //build/config/BUILDCONFIG.gn.
+  set_sources_assignment_filter([
+                                  "*\bandroid/*",
+                                  "*\bchromeos/*",
+                                  "*\bcocoa/*",
+                                  "*\bios/*",
+                                  "*\blinux/*",
+                                  "*\bmac/*",
+                                  "*\bposix/*",
+                                  "*\bwin/*",
+                                ])
+  assert(target_name != "")  # Mark as used.
+  sources = invoker.actual_sources
+  assert(
+      sources == invoker.actual_sources,
+      "Do not use a platform name in your output directory (found \"$root_build_dir\"). http://crbug.com/548283")
+}
+
+assert_valid_out_dir("_unused") {
+  actual_sources = [ "$root_build_dir/foo" ]
+}

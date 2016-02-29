@@ -35,21 +35,6 @@ declare_args() {
   dcheck_always_on = false
 }
 
-# Because of the source assignment filter, many targets end up over-filtering
-# their sources if the output directory contains a platform name. Assert that
-# this doesn't happen. http://crbug.com/548283
-template("assert_valid_out_dir") {
-  assert(target_name != "")  # Mark as used.
-  assert(
-      invoker.sources == invoker.actual_sources,
-      "Do not use a platform name in your output directory (found \"$root_build_dir\"). http://crbug.com/548283")
-}
-
-assert_valid_out_dir("_check_output_dir_has_no_platform_name") {
-  actual_sources = [ "$root_build_dir/foo" ]
-  sources = actual_sources
-}
-
 # TODO(brettw) Most of these should be removed. Instead of global feature
 # flags, we should have more modular flags that apply only to a target and its
 # dependents. For example, depending on the "x11" meta-target should define
