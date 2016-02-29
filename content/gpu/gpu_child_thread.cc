@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/lazy_instance.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/threading/worker_pool.h"
 #include "build/build_config.h"
 #include "content/child/child_process.h"
@@ -22,10 +23,14 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/gpu/content_gpu_client.h"
+#include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/config/gpu_info_collector.h"
+#include "gpu/config/gpu_switches.h"
+#include "gpu/config/gpu_util.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_sync_message_filter.h"
 #include "ui/gl/gl_implementation.h"
+#include "ui/gl/gl_switches.h"
 #include "ui/gl/gpu_switching_manager.h"
 
 #if defined(USE_OZONE)
@@ -38,6 +43,15 @@ namespace {
 
 static base::LazyInstance<scoped_refptr<ThreadSafeSender> >
     g_thread_safe_sender = LAZY_INSTANCE_INITIALIZER;
+
+bool GetSizeTFromSwitch(const base::CommandLine* command_line,
+                        const base::StringPiece& switch_string,
+                        size_t* value) {
+  if (!command_line->HasSwitch(switch_string))
+    return false;
+  std::string switch_value(command_line->GetSwitchValueASCII(switch_string));
+  return base::StringToSizeT(switch_value, value);
+}
 
 bool GpuProcessLogMessageHandler(int severity,
                                  const char* file, int line,
@@ -142,6 +156,7 @@ GpuChildThread::GpuChildThread(
     GpuMemoryBufferFactory* gpu_memory_buffer_factory,
     gpu::SyncPointManager* sync_point_manager)
     : ChildThreadImpl(GetOptions(gpu_memory_buffer_factory)),
+      gpu_preferences_(GetGpuPreferencesFromCommandLine()),
       dead_on_arrival_(dead_on_arrival),
       sync_point_manager_(sync_point_manager),
       gpu_info_(gpu_info),
@@ -156,6 +171,7 @@ GpuChildThread::GpuChildThread(
 }
 
 GpuChildThread::GpuChildThread(
+    const gpu::GpuPreferences& gpu_preferences,
     const InProcessChildThreadParams& params,
     GpuMemoryBufferFactory* gpu_memory_buffer_factory,
     gpu::SyncPointManager* sync_point_manager)
@@ -164,6 +180,7 @@ GpuChildThread::GpuChildThread(
                           .AddStartupFilter(new GpuMemoryBufferMessageFilter(
                               gpu_memory_buffer_factory))
                           .Build()),
+      gpu_preferences_(gpu_preferences),
       dead_on_arrival_(false),
       sync_point_manager_(sync_point_manager),
       in_browser_process_(true),
@@ -357,11 +374,12 @@ void GpuChildThread::OnInitialize() {
   // Defer creation of the render thread. This is to prevent it from handling
   // IPC messages before the sandbox has been enabled and all other necessary
   // initialization has succeeded.
-  gpu_channel_manager_.reset(new GpuChannelManager(
-      this, watchdog_thread_.get(), base::ThreadTaskRunnerHandle::Get().get(),
-      ChildProcess::current()->io_task_runner(),
-      ChildProcess::current()->GetShutDownEvent(), sync_point_manager_,
-      gpu_memory_buffer_factory_));
+  gpu_channel_manager_.reset(
+      new GpuChannelManager(gpu_preferences_, this, watchdog_thread_.get(),
+                            base::ThreadTaskRunnerHandle::Get().get(),
+                            ChildProcess::current()->io_task_runner(),
+                            ChildProcess::current()->GetShutDownEvent(),
+                            sync_point_manager_, gpu_memory_buffer_factory_));
 
 #if defined(USE_OZONE)
   ui::OzonePlatform::GetInstance()
@@ -379,6 +397,70 @@ void GpuChildThread::StopWatchdog() {
   if (watchdog_thread_.get()) {
     watchdog_thread_->Stop();
   }
+}
+
+// static
+gpu::GpuPreferences GpuChildThread::GetGpuPreferencesFromCommandLine() {
+  // TODO(penghuang): share below code with
+  // android_webview/browser/deferred_gpu_command_service.cc
+  // http://crbug.com/590825
+  // For any modification of below code, deferred_gpu_command_service.cc should
+  // be updated as well.
+  DCHECK(base::CommandLine::InitializedForCurrentProcess());
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
+  gpu::GpuPreferences gpu_preferences;
+  gpu_preferences.single_process =
+      command_line->HasSwitch(switches::kSingleProcess);
+  gpu_preferences.in_process_gpu =
+      command_line->HasSwitch(switches::kInProcessGPU);
+  gpu_preferences.ui_prioritize_in_gpu_process =
+      command_line->HasSwitch(switches::kUIPrioritizeInGpuProcess);
+  gpu_preferences.compile_shader_always_succeeds =
+      command_line->HasSwitch(switches::kCompileShaderAlwaysSucceeds);
+  gpu_preferences.disable_gl_error_limit =
+    command_line->HasSwitch(switches::kDisableGLErrorLimit);
+  gpu_preferences.disable_glsl_translator =
+    command_line->HasSwitch(switches::kDisableGLSLTranslator);
+  gpu_preferences.disable_gpu_driver_bug_workarounds =
+    command_line->HasSwitch(switches::kDisableGpuDriverBugWorkarounds);
+  gpu_preferences.disable_shader_name_hashing =
+    command_line->HasSwitch(switches::kDisableShaderNameHashing);
+  gpu_preferences.enable_gpu_command_logging =
+    command_line->HasSwitch(switches::kEnableGPUCommandLogging);
+  gpu_preferences.enable_gpu_debugging =
+    command_line->HasSwitch(switches::kEnableGPUDebugging);
+  gpu_preferences.enable_gpu_service_logging_gpu =
+    command_line->HasSwitch(switches::kEnableGPUServiceLoggingGPU);
+  gpu_preferences.disable_gpu_program_cache =
+    command_line->HasSwitch(switches::kDisableGpuProgramCache);
+  gpu_preferences.enforce_gl_minimums =
+    command_line->HasSwitch(switches::kEnforceGLMinimums);
+  if (GetSizeTFromSwitch(command_line, switches::kForceGpuMemAvailableMb,
+                         &gpu_preferences.force_gpu_mem_available)) {
+    gpu_preferences.force_gpu_mem_available *= 1024 * 1024;
+  }
+  if (GetSizeTFromSwitch(command_line, switches::kGpuProgramCacheSizeKb,
+                         &gpu_preferences.gpu_program_cache_size)) {
+    gpu_preferences.gpu_program_cache_size *= 1024;
+  }
+  gpu_preferences.enable_share_group_async_texture_upload =
+    command_line->HasSwitch(switches::kEnableShareGroupAsyncTextureUpload);
+  gpu_preferences.enable_subscribe_uniform_extension =
+    command_line->HasSwitch(switches::kEnableSubscribeUniformExtension);
+  gpu_preferences.enable_threaded_texture_mailboxes =
+    command_line->HasSwitch(switches::kEnableThreadedTextureMailboxes);
+  gpu_preferences.gl_shader_interm_output =
+    command_line->HasSwitch(switches::kGLShaderIntermOutput);
+  gpu_preferences.emulate_shader_precision =
+    command_line->HasSwitch(switches::kEmulateShaderPrecision);
+  gpu_preferences.enable_gpu_service_logging =
+      command_line->HasSwitch(switches::kEnableGPUServiceLogging);
+  gpu_preferences.enable_gpu_service_tracing =
+      command_line->HasSwitch(switches::kEnableGPUServiceTracing);
+  gpu_preferences.enable_unsafe_es3_apis =
+    command_line->HasSwitch(switches::kEnableUnsafeES3APIs);
+  return gpu_preferences;
 }
 
 void GpuChildThread::OnCollectGraphicsInfo() {

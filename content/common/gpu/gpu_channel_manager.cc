@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
@@ -20,17 +19,13 @@
 #include "content/common/gpu/gpu_memory_manager.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/gpu/image_transport_surface.h"
-#include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/command_buffer/common/value_state.h"
 #include "gpu/command_buffer/service/feature_info.h"
-#include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/memory_program_cache.h"
 #include "gpu/command_buffer/service/shader_translator_cache.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
-#include "ipc/message_filter.h"
-#include "ipc/message_router.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_share_group.h"
 
@@ -52,6 +47,7 @@ const int kMaxKeepAliveTimeMs = 200;
 }
 
 GpuChannelManager::GpuChannelManager(
+    const gpu::GpuPreferences& gpu_preferences,
     GpuChannelManagerDelegate* delegate,
     GpuWatchdog* watchdog,
     base::SingleThreadTaskRunner* task_runner,
@@ -61,11 +57,12 @@ GpuChannelManager::GpuChannelManager(
     GpuMemoryBufferFactory* gpu_memory_buffer_factory)
     : task_runner_(task_runner),
       io_task_runner_(io_task_runner),
+      gpu_preferences_(gpu_preferences),
       delegate_(delegate),
       watchdog_(watchdog),
       shutdown_event_(shutdown_event),
       share_group_(new gfx::GLShareGroup),
-      mailbox_manager_(gpu::gles2::MailboxManager::Create()),
+      mailbox_manager_(gpu::gles2::MailboxManager::Create(gpu_preferences)),
       gpu_memory_manager_(this),
       sync_point_manager_(sync_point_manager),
       sync_point_client_waiter_(
@@ -74,9 +71,7 @@ GpuChannelManager::GpuChannelManager(
       weak_factory_(this) {
   DCHECK(task_runner);
   DCHECK(io_task_runner);
-  const base::CommandLine* command_line =
-      base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kUIPrioritizeInGpuProcess))
+  if (gpu_preferences_.ui_prioritize_in_gpu_process)
     preemption_flag_ = new gpu::PreemptionFlag;
 }
 
@@ -93,17 +88,20 @@ gpu::gles2::ProgramCache* GpuChannelManager::program_cache() {
   if (!program_cache_.get() &&
       (gfx::g_driver_gl.ext.b_GL_ARB_get_program_binary ||
        gfx::g_driver_gl.ext.b_GL_OES_get_program_binary) &&
-      !base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableGpuProgramCache)) {
-    program_cache_.reset(new gpu::gles2::MemoryProgramCache());
+      !gpu_preferences_.disable_gpu_program_cache) {
+    program_cache_.reset(new gpu::gles2::MemoryProgramCache(
+          gpu_preferences_.gpu_program_cache_size,
+          gpu_preferences_.disable_gpu_shader_disk_cache));
   }
   return program_cache_.get();
 }
 
 gpu::gles2::ShaderTranslatorCache*
 GpuChannelManager::shader_translator_cache() {
-  if (!shader_translator_cache_.get())
-    shader_translator_cache_ = new gpu::gles2::ShaderTranslatorCache;
+  if (!shader_translator_cache_.get()) {
+    shader_translator_cache_ =
+        new gpu::gles2::ShaderTranslatorCache(gpu_preferences_);
+  }
   return shader_translator_cache_.get();
 }
 

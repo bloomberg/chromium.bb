@@ -60,12 +60,14 @@ void TestGpuChannelManagerDelegate::SendAcceleratedSurfaceCreatedChildWindow(
 #endif
 
 TestGpuChannelManager::TestGpuChannelManager(
+    const gpu::GpuPreferences& gpu_preferences,
     GpuChannelManagerDelegate* delegate,
     base::SingleThreadTaskRunner* task_runner,
     base::SingleThreadTaskRunner* io_task_runner,
     gpu::SyncPointManager* sync_point_manager,
     GpuMemoryBufferFactory* gpu_memory_buffer_factory)
-    : GpuChannelManager(delegate,
+    : GpuChannelManager(gpu_preferences,
+                        delegate,
                         nullptr,
                         task_runner,
                         io_task_runner,
@@ -146,7 +148,8 @@ GpuChannelTestCommon::GpuChannelTestCommon()
       sync_point_manager_(new gpu::SyncPointManager(false)),
       channel_manager_delegate_(new TestGpuChannelManagerDelegate()),
       channel_manager_(
-          new TestGpuChannelManager(channel_manager_delegate_.get(),
+          new TestGpuChannelManager(gpu_preferences_,
+                                    channel_manager_delegate_.get(),
                                     task_runner_.get(),
                                     io_task_runner_.get(),
                                     sync_point_manager_.get(),

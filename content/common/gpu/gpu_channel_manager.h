@@ -36,6 +36,7 @@ class GLShareGroup;
 }
 
 namespace gpu {
+struct GpuPreferences;
 class PreemptionFlag;
 class SyncPointClient;
 class SyncPointManager;
@@ -69,7 +70,8 @@ struct BufferPresentedParams;
 // browser process to them based on the corresponding renderer ID.
 class CONTENT_EXPORT GpuChannelManager {
  public:
-  GpuChannelManager(GpuChannelManagerDelegate* delegate,
+  GpuChannelManager(const gpu::GpuPreferences& gpu_preferences,
+                    GpuChannelManagerDelegate* delegate,
                     GpuWatchdog* watchdog,
                     base::SingleThreadTaskRunner* task_runner,
                     base::SingleThreadTaskRunner* io_task_runner,
@@ -106,6 +108,9 @@ class CONTENT_EXPORT GpuChannelManager {
   void BufferPresented(const BufferPresentedParams& params);
 #endif
 
+  const gpu::GpuPreferences& gpu_preferences() const {
+    return gpu_preferences_;
+  }
   gpu::gles2::ProgramCache* program_cache();
   gpu::gles2::ShaderTranslatorCache* shader_translator_cache();
   gpu::gles2::FramebufferCompletenessCache* framebuffer_completeness_cache();
@@ -168,6 +173,8 @@ class CONTENT_EXPORT GpuChannelManager {
   void ScheduleWakeUpGpu();
   void DoWakeUpGpu();
 #endif
+
+  const gpu::GpuPreferences& gpu_preferences_;
 
   GpuChannelManagerDelegate* const delegate_;
 #if defined(OS_MACOSX)

@@ -2,14 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "gpu/command_buffer/service/shader_translator_cache.h"
+
 #include <GLES2/gl2.h>
 
-#include "gpu/command_buffer/service/shader_translator_cache.h"
+#include "gpu/command_buffer/service/gpu_preferences.h"
 
 namespace gpu {
 namespace gles2 {
 
-ShaderTranslatorCache::ShaderTranslatorCache() {
+ShaderTranslatorCache::ShaderTranslatorCache(
+    const GpuPreferences& gpu_preferences)
+    : gpu_preferences_(gpu_preferences) {
 }
 
 ShaderTranslatorCache::~ShaderTranslatorCache() {
@@ -43,7 +47,8 @@ scoped_refptr<ShaderTranslator> ShaderTranslatorCache::GetTranslator(
 
   ShaderTranslator* translator = new ShaderTranslator();
   if (translator->Init(shader_type, shader_spec, resources,
-                       shader_output_language, driver_bug_workarounds)) {
+                       shader_output_language, driver_bug_workarounds,
+                       gpu_preferences_.gl_shader_interm_output)) {
     cache_[params] = translator;
     translator->AddDestructionObserver(this);
     return translator;

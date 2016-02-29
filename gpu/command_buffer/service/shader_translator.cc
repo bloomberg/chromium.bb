@@ -15,7 +15,6 @@
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/trace_event/trace_event.h"
-#include "gpu/command_buffer/service/gpu_switches.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_version_info.h"
 
@@ -162,14 +161,16 @@ ShaderTranslator::DestructionObserver::~DestructionObserver() {
 
 ShaderTranslator::ShaderTranslator()
     : compiler_(NULL),
-      driver_bug_workarounds_(static_cast<ShCompileOptions>(0)) {
+      driver_bug_workarounds_(static_cast<ShCompileOptions>(0)),
+      gl_shader_interm_output_(false) {
 }
 
 bool ShaderTranslator::Init(GLenum shader_type,
                             ShShaderSpec shader_spec,
                             const ShBuiltInResources* resources,
                             ShShaderOutput shader_output_language,
-                            ShCompileOptions driver_bug_workarounds) {
+                            ShCompileOptions driver_bug_workarounds,
+                            bool gl_shader_interm_output) {
   // Make sure Init is called only once.
   DCHECK(compiler_ == NULL);
   DCHECK(shader_type == GL_FRAGMENT_SHADER || shader_type == GL_VERTEX_SHADER);
@@ -186,6 +187,7 @@ bool ShaderTranslator::Init(GLenum shader_type,
                                     shader_output_language, resources);
   }
   driver_bug_workarounds_ = driver_bug_workarounds;
+  gl_shader_interm_output_ = gl_shader_interm_output;
   return compiler_ != NULL;
 }
 
@@ -195,8 +197,7 @@ int ShaderTranslator::GetCompileOptions() const {
       SH_LIMIT_EXPRESSION_COMPLEXITY | SH_LIMIT_CALL_STACK_DEPTH |
       SH_CLAMP_INDIRECT_ARRAY_BOUNDS;
 
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kGLShaderIntermOutput))
+  if (gl_shader_interm_output_)
     compile_options |= SH_INTERMEDIATE_TREE;
 
   compile_options |= driver_bug_workarounds_;

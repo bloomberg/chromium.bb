@@ -11,6 +11,7 @@
 #include "base/threading/thread.h"
 #include "components/mus/gles2/command_buffer_driver_manager.h"
 #include "components/mus/gles2/command_buffer_task_runner.h"
+#include "gpu/command_buffer/service/gpu_preferences.h"
 #include "gpu/command_buffer/service/mailbox_manager_impl.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
 #include "gpu/config/gpu_info.h"
@@ -36,6 +37,10 @@ class GpuState : public base::RefCountedThreadSafe<GpuState> {
   }
 
   void StopThreads();
+
+  const gpu::GpuPreferences& gpu_preferences() const {
+    return gpu_preferences_;
+  }
 
   CommandBufferTaskRunner* command_buffer_task_runner() const {
     return command_buffer_task_runner_.get();
@@ -74,6 +79,7 @@ class GpuState : public base::RefCountedThreadSafe<GpuState> {
   // |control_thread_| is for mojo incoming calls of CommandBufferImpl.
   base::Thread control_thread_;
 
+  gpu::GpuPreferences gpu_preferences_;
   scoped_refptr<CommandBufferTaskRunner> command_buffer_task_runner_;
   scoped_ptr<CommandBufferDriverManager> driver_manager_;
   scoped_ptr<gpu::SyncPointManager> sync_point_manager_;

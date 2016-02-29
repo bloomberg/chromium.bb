@@ -17,7 +17,6 @@
 
 #include "base/callback.h"
 #include "base/callback_helpers.h"
-#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
@@ -42,8 +41,8 @@
 #include "gpu/command_buffer/service/gles2_cmd_clear_framebuffer.h"
 #include "gpu/command_buffer/service/gles2_cmd_copy_texture_chromium.h"
 #include "gpu/command_buffer/service/gles2_cmd_validation.h"
+#include "gpu/command_buffer/service/gpu_preferences.h"
 #include "gpu/command_buffer/service/gpu_state_tracer.h"
-#include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/command_buffer/service/gpu_tracer.h"
 #include "gpu/command_buffer/service/image_manager.h"
 #include "gpu/command_buffer/service/logger.h"
@@ -2577,10 +2576,8 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
       shader_texture_lod_explicitly_enabled_(false),
       compile_shader_always_succeeds_(false),
       lose_context_when_out_of_memory_(false),
-      service_logging_(base::CommandLine::InitializedForCurrentProcess()
-                           ? base::CommandLine::ForCurrentProcess()->HasSwitch(
-                                 switches::kEnableGPUServiceLoggingGPU)
-                           : false),
+      service_logging_(
+          group_->gpu_preferences().enable_gpu_service_logging_gpu),
       viewport_max_width_(0),
       viewport_max_height_(0),
       texture_state_(group_->feature_info()->workarounds()),
@@ -2620,21 +2617,14 @@ bool GLES2DecoderImpl::Initialize(const scoped_refptr<gfx::GLSurface>& surface,
   set_initialized();
   gpu_state_tracer_ = GPUStateTracer::Create(&state_);
 
-  if (base::CommandLine::InitializedForCurrentProcess()) {
-    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableGPUDebugging)) {
-      set_debug(true);
-    }
+  if (group_->gpu_preferences().enable_gpu_debugging)
+    set_debug(true);
 
-    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableGPUCommandLogging)) {
-      set_log_commands(true);
-    }
+  if (group_->gpu_preferences().enable_gpu_command_logging)
+    set_log_commands(true);
 
-    compile_shader_always_succeeds_ =
-        base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kCompileShaderAlwaysSucceeds);
-  }
+  compile_shader_always_succeeds_ =
+      group_->gpu_preferences().compile_shader_always_succeeds;
 
   // Take ownership of the context and surface. The surface can be replaced with
   // SetSurface.
@@ -3305,10 +3295,8 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
   if (workarounds().remove_pow_with_constant_exponent)
     driver_bug_workarounds |= SH_REMOVE_POW_WITH_CONSTANT_EXPONENT;
 
-  if (base::CommandLine::InitializedForCurrentProcess() &&
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEmulateShaderPrecision))
-    resources.WEBGL_debug_shader_precision = true;
+  resources.WEBGL_debug_shader_precision =
+      group_->gpu_preferences().emulate_shader_precision;
 
   ShShaderOutput shader_output_language =
       ShaderTranslator::GetShaderOutputLanguageForContext(

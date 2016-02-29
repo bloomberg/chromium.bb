@@ -190,7 +190,8 @@ void GLES2DecoderTestBase::InitDecoderWithCommandLine(
   if (command_line)
     feature_info = new FeatureInfo(*command_line);
   group_ = scoped_refptr<ContextGroup>(
-      new ContextGroup(NULL, memory_tracker_, new ShaderTranslatorCache,
+      new ContextGroup(gpu_preferences_, NULL, memory_tracker_,
+                       new ShaderTranslatorCache(gpu_preferences_),
                        new FramebufferCompletenessCache, feature_info.get(),
                        new SubscriptionRefSet, new ValueStateMap,
                        normalized_init.bind_generates_resource));

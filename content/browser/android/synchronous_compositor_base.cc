@@ -21,20 +21,23 @@ class SynchronousCompositorClient;
 
 namespace {
 
-gpu::SyncPointManager* g_sync_point_manager = nullptr;
+base::LazyInstance<scoped_refptr<gpu::InProcessCommandBuffer::Service>>
+    g_gpu_service = LAZY_INSTANCE_INITIALIZER;
 
 base::Thread* CreateInProcessGpuThreadForSynchronousCompositor(
     const InProcessChildThreadParams& params) {
-  DCHECK(g_sync_point_manager);
-  return new InProcessGpuThread(params, g_sync_point_manager);
+  DCHECK(g_gpu_service.Get());
+  return new InProcessGpuThread(params,
+                                g_gpu_service.Get()->gpu_preferences(),
+                                g_gpu_service.Get()->sync_point_manager());
 }
 
 }  // namespace
 
 void SynchronousCompositor::SetGpuService(
     scoped_refptr<gpu::InProcessCommandBuffer::Service> service) {
-  DCHECK(!g_sync_point_manager);
-  g_sync_point_manager = service->sync_point_manager();
+  DCHECK(!g_gpu_service.Get());
+  g_gpu_service.Get() = service;
   GpuProcessHost::RegisterGpuMainThreadFactory(
       CreateInProcessGpuThreadForSynchronousCompositor);
 }

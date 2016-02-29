@@ -166,7 +166,8 @@ EGLSurface Display::CreateWindowSurface(EGLConfig config,
     return NULL;
 
   scoped_refptr<gpu::gles2::ContextGroup> group(new gpu::gles2::ContextGroup(
-      NULL, NULL, new gpu::gles2::ShaderTranslatorCache,
+      gpu_preferences_, NULL, NULL,
+      new gpu::gles2::ShaderTranslatorCache(gpu_preferences_),
       new gpu::gles2::FramebufferCompletenessCache, NULL, NULL, NULL, true));
 
   decoder_.reset(gpu::gles2::GLES2Decoder::Create(group.get()));

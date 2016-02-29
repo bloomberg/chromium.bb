@@ -14,6 +14,7 @@
 #include "gpu/command_buffer/client/gpu_control.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/service/feature_info.h"
+#include "gpu/command_buffer/service/gpu_preferences.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
@@ -150,6 +151,8 @@ class GLManager : private GpuControl {
   bool OnWaitFenceSync(gpu::CommandBufferNamespace namespace_id,
                        gpu::CommandBufferId command_buffer_id,
                        uint64_t release);
+
+  gpu::GpuPreferences gpu_preferences_;
 
   SyncPointManager* sync_point_manager_;  // Non-owning.
 

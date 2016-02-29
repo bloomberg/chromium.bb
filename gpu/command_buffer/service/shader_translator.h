@@ -44,7 +44,8 @@ class ShaderTranslatorInterface
                     ShShaderSpec shader_spec,
                     const ShBuiltInResources* resources,
                     ShShaderOutput shader_output_language,
-                    ShCompileOptions driver_bug_workarounds) = 0;
+                    ShCompileOptions driver_bug_workarounds,
+                    bool gl_shader_interm_output) = 0;
 
   // Translates the given shader source.
   // Returns true if translation is successful, false otherwise.
@@ -100,7 +101,8 @@ class GPU_EXPORT ShaderTranslator
             ShShaderSpec shader_spec,
             const ShBuiltInResources* resources,
             ShShaderOutput shader_output_language,
-            ShCompileOptions driver_bug_workarounds) override;
+            ShCompileOptions driver_bug_workarounds,
+            bool gl_shader_interm_output) override;
 
   // Overridden from ShaderTranslatorInterface.
   bool Translate(const std::string& shader_source,
@@ -126,6 +128,7 @@ class GPU_EXPORT ShaderTranslator
 
   ShHandle compiler_;
   ShCompileOptions driver_bug_workarounds_;
+  bool gl_shader_interm_output_;
   base::ObserverList<DestructionObserver> destruction_observers_;
 };
 

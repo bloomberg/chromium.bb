@@ -66,6 +66,8 @@
     'command_buffer/service/gles2_cmd_validation.h',
     'command_buffer/service/gles2_cmd_validation_autogen.h',
     'command_buffer/service/gles2_cmd_validation_implementation_autogen.h',
+    'command_buffer/service/gpu_preferences.cc',
+    'command_buffer/service/gpu_preferences.h',
     'command_buffer/service/gpu_scheduler.cc',
     'command_buffer/service/gpu_scheduler.h',
     'command_buffer/service/gpu_state_tracer.cc',

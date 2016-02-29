@@ -67,16 +67,18 @@ class ProgramBinaryEmulator {
 class MemoryProgramCacheTest : public GpuServiceTest {
  public:
   static const size_t kCacheSizeBytes = 1024;
+  static const bool kDisableGpuDiskCache = false;
   static const GLuint kVertexShaderClientId = 90;
   static const GLuint kVertexShaderServiceId = 100;
   static const GLuint kFragmentShaderClientId = 91;
   static const GLuint kFragmentShaderServiceId = 100;
 
   MemoryProgramCacheTest()
-      : cache_(new MemoryProgramCache(kCacheSizeBytes)),
+      : cache_(new MemoryProgramCache(kCacheSizeBytes, kDisableGpuDiskCache)),
         vertex_shader_(NULL),
         fragment_shader_(NULL),
-        shader_cache_count_(0) { }
+        shader_cache_count_(0) {
+  }
   ~MemoryProgramCacheTest() override { shader_manager_.Destroy(false); }
 
   void ShaderCacheCb(const std::string& key, const std::string& shader) {

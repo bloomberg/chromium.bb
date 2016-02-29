@@ -19,13 +19,16 @@
 #include "gpu/command_buffer/service/program_cache.h"
 
 namespace gpu {
+
+struct GpuPreferences;
+
 namespace gles2 {
 
 // Program cache that stores binaries completely in-memory
 class GPU_EXPORT MemoryProgramCache : public ProgramCache {
  public:
-  MemoryProgramCache();
-  explicit MemoryProgramCache(const size_t max_cache_size_bytes);
+  MemoryProgramCache(size_t max_cache_size_bytes,
+                     bool disable_gpu_shader_disk_cache);
   ~MemoryProgramCache() override;
 
   ProgramLoadResult LoadLinkedProgram(
@@ -150,6 +153,7 @@ class GPU_EXPORT MemoryProgramCache : public ProgramCache {
                          scoped_refptr<ProgramCacheValue> > ProgramMRUCache;
 
   const size_t max_size_bytes_;
+  const bool disable_gpu_shader_disk_cache_;
   size_t curr_size_bytes_;
   ProgramMRUCache store_;
 

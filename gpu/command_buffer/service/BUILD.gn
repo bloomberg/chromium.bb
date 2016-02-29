@@ -64,6 +64,8 @@ source_set("service_sources") {
     "gles2_cmd_validation.h",
     "gles2_cmd_validation_autogen.h",
     "gles2_cmd_validation_implementation_autogen.h",
+    "gpu_preferences.cc",
+    "gpu_preferences.h",
     "gpu_scheduler.cc",
     "gpu_scheduler.h",
     "gpu_state_tracer.cc",

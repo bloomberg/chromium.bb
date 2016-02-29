@@ -14,7 +14,7 @@
 #include "gpu/command_buffer/common/value_state.h"
 #include "gpu/command_buffer/service/buffer_manager.h"
 #include "gpu/command_buffer/service/framebuffer_manager.h"
-#include "gpu/command_buffer/service/gpu_switches.h"
+#include "gpu/command_buffer/service/gpu_preferences.h"
 #include "gpu/command_buffer/service/mailbox_manager_impl.h"
 #include "gpu/command_buffer/service/path_manager.h"
 #include "gpu/command_buffer/service/program_manager.h"
@@ -58,6 +58,7 @@ DisallowedFeatures AdjustDisallowedFeatures(
 }  // namespace anonymous
 
 ContextGroup::ContextGroup(
+    const GpuPreferences& gpu_preferences,
     const scoped_refptr<MailboxManager>& mailbox_manager,
     const scoped_refptr<MemoryTracker>& memory_tracker,
     const scoped_refptr<ShaderTranslatorCache>& shader_translator_cache,
@@ -67,7 +68,8 @@ ContextGroup::ContextGroup(
     const scoped_refptr<SubscriptionRefSet>& subscription_ref_set,
     const scoped_refptr<ValueStateMap>& pending_valuebuffer_state,
     bool bind_generates_resource)
-    : mailbox_manager_(mailbox_manager),
+    : gpu_preferences_(gpu_preferences),
+      mailbox_manager_(mailbox_manager),
       memory_tracker_(memory_tracker),
       shader_translator_cache_(shader_translator_cache),
 #if defined(OS_MACOSX)
@@ -83,11 +85,7 @@ ContextGroup::ContextGroup(
 #endif
       subscription_ref_set_(subscription_ref_set),
       pending_valuebuffer_state_(pending_valuebuffer_state),
-      enforce_gl_minimums_(
-          base::CommandLine::InitializedForCurrentProcess()
-              ? base::CommandLine::ForCurrentProcess()->HasSwitch(
-                    switches::kEnforceGLMinimums)
-              : false),
+      enforce_gl_minimums_(gpu_preferences_.enforce_gl_minimums),
       bind_generates_resource_(bind_generates_resource),
       max_vertex_attribs_(0u),
       max_texture_units_(0u),
@@ -347,7 +345,8 @@ bool ContextGroup::Initialize(GLES2Decoder* decoder,
 
   program_manager_.reset(
       new ProgramManager(program_cache_, max_varying_vectors_,
-                         max_dual_source_draw_buffers_, feature_info_.get()));
+                         max_dual_source_draw_buffers_, gpu_preferences_,
+                         feature_info_.get()));
 
   if (!texture_manager_->Initialize()) {
     LOG(ERROR) << "Context::Group::Initialize failed because texture manager "

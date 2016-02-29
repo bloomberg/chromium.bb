@@ -223,7 +223,8 @@ void GLManager::InitializeWithCommandLine(const GLManager::Options& options,
     if (command_line)
       feature_info = new gles2::FeatureInfo(*command_line);
     context_group = new gles2::ContextGroup(
-        mailbox_manager_.get(), NULL, new gpu::gles2::ShaderTranslatorCache,
+        gpu_preferences_, mailbox_manager_.get(), NULL,
+        new gpu::gles2::ShaderTranslatorCache(gpu_preferences_),
         new gpu::gles2::FramebufferCompletenessCache, feature_info, NULL, NULL,
         options.bind_generates_resource);
   }

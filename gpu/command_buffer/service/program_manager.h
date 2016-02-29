@@ -21,6 +21,9 @@
 #include "gpu/gpu_export.h"
 
 namespace gpu {
+
+struct GpuPreferences;
+
 namespace gles2 {
 
 class FeatureInfo;
@@ -28,7 +31,6 @@ class ProgramCache;
 class ProgramManager;
 class Shader;
 class ShaderManager;
-class FeatureInfo;
 
 // This is used to track which attributes a particular program needs
 // so we can verify at glDrawXXX time that every attribute is either disabled
@@ -542,10 +544,11 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
 // need to be shared by multiple GLES2Decoders.
 class GPU_EXPORT ProgramManager {
  public:
-  explicit ProgramManager(ProgramCache* program_cache,
-                          uint32_t max_varying_vectors,
-                          uint32_t max_dual_source_draw_buffers,
-                          FeatureInfo* feature_info);
+  ProgramManager(ProgramCache* program_cache,
+                 uint32_t max_varying_vectors,
+                 uint32_t max_dual_source_draw_buffers,
+                 const GpuPreferences& gpu_preferences,
+                 FeatureInfo* feature_info);
   ~ProgramManager();
 
   // Must call before destruction.
@@ -618,6 +621,7 @@ class GPU_EXPORT ProgramManager {
   uint32_t max_varying_vectors_;
   uint32_t max_dual_source_draw_buffers_;
 
+  const GpuPreferences& gpu_preferences_;
   scoped_refptr<FeatureInfo> feature_info_;
 
   DISALLOW_COPY_AND_ASSIGN(ProgramManager);

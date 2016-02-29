@@ -111,8 +111,9 @@ bool CommandBufferDriver::Initialize(
   const bool bind_generates_resource = attrib_helper.bind_generates_resource;
   scoped_refptr<gpu::gles2::ContextGroup> context_group =
       new gpu::gles2::ContextGroup(
-          gpu_state_->mailbox_manager(), new GpuMemoryTracker,
-          new gpu::gles2::ShaderTranslatorCache,
+          gpu_state_->gpu_preferences(), gpu_state_->mailbox_manager(),
+          new GpuMemoryTracker,
+          new gpu::gles2::ShaderTranslatorCache(gpu_state_->gpu_preferences()),
           new gpu::gles2::FramebufferCompletenessCache, nullptr, nullptr,
           nullptr, bind_generates_resource);
 

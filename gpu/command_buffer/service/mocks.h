@@ -92,12 +92,13 @@ class MockShaderTranslator : public ShaderTranslatorInterface {
  public:
   MockShaderTranslator();
 
-  MOCK_METHOD5(Init,
+  MOCK_METHOD6(Init,
                bool(sh::GLenum shader_type,
                     ShShaderSpec shader_spec,
                     const ShBuiltInResources* resources,
                     ShShaderOutput shader_output_language,
-                    ShCompileOptions driver_bug_workarounds));
+                    ShCompileOptions driver_bug_workarounds,
+                    bool gl_shader_interm_output));
   MOCK_CONST_METHOD10(Translate,
                       bool(const std::string& shader_source,
                            std::string* info_log,

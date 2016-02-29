@@ -33,10 +33,12 @@ class ShaderTranslatorTest : public testing::Test {
 
     ASSERT_TRUE(vertex_translator_->Init(GL_VERTEX_SHADER, SH_GLES2_SPEC,
                                          &resources, shader_output_language_,
-                                         SH_EMULATE_BUILT_IN_FUNCTIONS));
+                                         SH_EMULATE_BUILT_IN_FUNCTIONS,
+                                         false));
     ASSERT_TRUE(fragment_translator_->Init(GL_FRAGMENT_SHADER, SH_GLES2_SPEC,
                                            &resources, shader_output_language_,
-                                           static_cast<ShCompileOptions>(0)));
+                                           static_cast<ShCompileOptions>(0),
+                                           false));
   }
   void TearDown() override {
     vertex_translator_ = NULL;
@@ -70,10 +72,11 @@ class ES3ShaderTranslatorTest : public testing::Test {
 
     ASSERT_TRUE(vertex_translator_->Init(GL_VERTEX_SHADER, SH_GLES3_SPEC,
                                          &resources, shader_output_language_,
-                                         SH_EMULATE_BUILT_IN_FUNCTIONS));
+                                         SH_EMULATE_BUILT_IN_FUNCTIONS, false));
     ASSERT_TRUE(fragment_translator_->Init(GL_FRAGMENT_SHADER, SH_GLES3_SPEC,
                                            &resources, shader_output_language_,
-                                           static_cast<ShCompileOptions>(0)));
+                                           static_cast<ShCompileOptions>(0),
+                                           false));
   }
   void TearDown() override {
     vertex_translator_ = NULL;
@@ -424,14 +427,17 @@ TEST_F(ShaderTranslatorTest, OptionsString) {
 
   ASSERT_TRUE(translator_1->Init(GL_VERTEX_SHADER, SH_GLES2_SPEC, &resources,
                                  SH_GLSL_150_CORE_OUTPUT,
-                                 SH_EMULATE_BUILT_IN_FUNCTIONS));
+                                 SH_EMULATE_BUILT_IN_FUNCTIONS,
+                                 false));
   ASSERT_TRUE(translator_2->Init(GL_FRAGMENT_SHADER, SH_GLES2_SPEC, &resources,
                                  SH_GLSL_150_CORE_OUTPUT,
-                                 static_cast<ShCompileOptions>(0)));
+                                 static_cast<ShCompileOptions>(0),
+                                 false));
   resources.EXT_draw_buffers = 1;
   ASSERT_TRUE(translator_3->Init(GL_VERTEX_SHADER, SH_GLES2_SPEC, &resources,
                                  SH_GLSL_150_CORE_OUTPUT,
-                                 SH_EMULATE_BUILT_IN_FUNCTIONS));
+                                 SH_EMULATE_BUILT_IN_FUNCTIONS,
+                                 false));
 
   std::string options_1(
       translator_1->GetStringForOptionsThatWouldAffectCompilation());
@@ -463,11 +469,13 @@ TEST_F(ShaderTranslatorOutputVersionTest, DISABLED_CompatibilityOutput) {
   scoped_refptr<ShaderTranslator> vertex_translator = new ShaderTranslator();
   ASSERT_TRUE(vertex_translator->Init(GL_VERTEX_SHADER, SH_GLES2_SPEC,
                                       &resources, shader_output_language,
-                                      compile_options));
+                                      compile_options,
+                                      false));
   scoped_refptr<ShaderTranslator> fragment_translator = new ShaderTranslator();
   ASSERT_TRUE(fragment_translator->Init(GL_FRAGMENT_SHADER, SH_GLES2_SPEC,
                                         &resources, shader_output_language,
-                                        compile_options));
+                                        compile_options,
+                                        false));
 
   std::string translated_source;
   int shader_version;
@@ -530,7 +538,7 @@ TEST_P(ShaderTranslatorOutputVersionTest, HasCorrectOutputGLSLVersion) {
       ShaderTranslator::GetShaderOutputLanguageForContext(
           output_context_version);
   ASSERT_TRUE(translator->Init(GL_VERTEX_SHADER, SH_GLES2_SPEC, &resources,
-                               shader_output_language, compile_options));
+                               shader_output_language, compile_options, false));
 
   std::string translated_source;
   int shader_version;

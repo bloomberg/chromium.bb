@@ -28,8 +28,8 @@
 #include "gpu/command_buffer/service/command_buffer_service.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/gl_context_virtual.h"
+#include "gpu/command_buffer/service/gpu_preferences.h"
 #include "gpu/command_buffer/service/gpu_scheduler.h"
-#include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/command_buffer/service/image_factory.h"
 #include "gpu/command_buffer/service/image_manager.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
@@ -152,7 +152,15 @@ scoped_refptr<InProcessCommandBuffer::Service> GetInitialService(
 
 InProcessCommandBuffer::Service::Service() {}
 
+InProcessCommandBuffer::Service::Service(const GpuPreferences& gpu_preferences)
+    : gpu_preferences_(gpu_preferences) {}
+
 InProcessCommandBuffer::Service::~Service() {}
+
+const gpu::GpuPreferences&
+InProcessCommandBuffer::Service::gpu_preferences() {
+  return gpu_preferences_;
+}
 
 scoped_refptr<gfx::GLShareGroup>
 InProcessCommandBuffer::Service::share_group() {
@@ -164,7 +172,7 @@ InProcessCommandBuffer::Service::share_group() {
 scoped_refptr<gles2::MailboxManager>
 InProcessCommandBuffer::Service::mailbox_manager() {
   if (!mailbox_manager_.get()) {
-    mailbox_manager_ = gles2::MailboxManager::Create();
+    mailbox_manager_ = gles2::MailboxManager::Create(gpu_preferences());
   }
   return mailbox_manager_;
 }
@@ -189,9 +197,10 @@ gpu::gles2::ProgramCache* InProcessCommandBuffer::Service::program_cache() {
   if (!program_cache_.get() &&
       (gfx::g_driver_gl.ext.b_GL_ARB_get_program_binary ||
        gfx::g_driver_gl.ext.b_GL_OES_get_program_binary) &&
-      !base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableGpuProgramCache)) {
-    program_cache_.reset(new gpu::gles2::MemoryProgramCache());
+      !gpu_preferences().disable_gpu_program_cache) {
+    program_cache_.reset(new gpu::gles2::MemoryProgramCache(
+          gpu_preferences().gpu_program_cache_size,
+          gpu_preferences().disable_gpu_shader_disk_cache));
   }
   return program_cache_.get();
 }
@@ -336,7 +345,8 @@ bool InProcessCommandBuffer::InitializeOnGpuThread(
   decoder_.reset(gles2::GLES2Decoder::Create(
       params.context_group
           ? params.context_group->decoder_->GetContextGroup()
-          : new gles2::ContextGroup(service_->mailbox_manager(), NULL,
+          : new gles2::ContextGroup(service_->gpu_preferences(),
+                                    service_->mailbox_manager(), NULL,
                                     service_->shader_translator_cache(),
                                     service_->framebuffer_completeness_cache(),
                                     NULL, service_->subscription_ref_set(),
@@ -1070,8 +1080,10 @@ bool GpuInProcessThread::UseVirtualizedGLContexts() {
 
 scoped_refptr<gles2::ShaderTranslatorCache>
 GpuInProcessThread::shader_translator_cache() {
-  if (!shader_translator_cache_.get())
-    shader_translator_cache_ = new gpu::gles2::ShaderTranslatorCache;
+  if (!shader_translator_cache_.get()) {
+    shader_translator_cache_ =
+        new gpu::gles2::ShaderTranslatorCache(gpu_preferences());
+  }
   return shader_translator_cache_;
 }
 

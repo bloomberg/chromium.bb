@@ -15,6 +15,7 @@
 #include "gpu/command_buffer/client/gpu_control.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
+#include "gpu/command_buffer/service/gpu_preferences.h"
 #include "gpu/command_buffer/service/gpu_scheduler.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gl/gl_context.h"
@@ -105,6 +106,7 @@ class Display : private gpu::GpuControl {
  private:
   EGLNativeDisplayType display_id_;
 
+  gpu::GpuPreferences gpu_preferences_;
   bool is_initialized_;
 
   bool create_offscreen_;

@@ -23,6 +23,7 @@
 #include "content/common/gpu/gpu_config.h"
 #include "content/common/gpu/x_util.h"
 #include "content/common/process_control.mojom.h"
+#include "gpu/command_buffer/service/gpu_preferences.h"
 #include "gpu/config/gpu_info.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
@@ -57,7 +58,8 @@ class GpuChildThread : public ChildThreadImpl,
                  GpuMemoryBufferFactory* gpu_memory_buffer_factory,
                  gpu::SyncPointManager* sync_point_manager);
 
-  GpuChildThread(const InProcessChildThreadParams& params,
+  GpuChildThread(const gpu::GpuPreferences& gpu_preferences,
+                 const InProcessChildThreadParams& params,
                  GpuMemoryBufferFactory* gpu_memory_buffer_factory,
                  gpu::SyncPointManager* sync_point_manager);
 
@@ -68,12 +70,14 @@ class GpuChildThread : public ChildThreadImpl,
   void Init(const base::Time& process_start_time);
   void StopWatchdog();
 
+  static gpu::GpuPreferences GetGpuPreferencesFromCommandLine();
+
+ private:
   // ChildThread overrides.
   bool Send(IPC::Message* msg) override;
   bool OnControlMessageReceived(const IPC::Message& msg) override;
   bool OnMessageReceived(const IPC::Message& msg) override;
 
- private:
   // GpuChannelManagerDelegate implementation.
   void AddSubscription(int32_t client_id, unsigned int target) override;
   void ChannelEstablished(const IPC::ChannelHandle& channel_handle) override;
@@ -130,6 +134,8 @@ class GpuChildThread : public ChildThreadImpl,
 
   void BindProcessControlRequest(
       mojo::InterfaceRequest<ProcessControl> request);
+
+  gpu::GpuPreferences gpu_preferences_;
 
   // Set this flag to true if a fatal error occurred before we receive the
   // OnInitialize message, in which case we just declare ourselves DOA.

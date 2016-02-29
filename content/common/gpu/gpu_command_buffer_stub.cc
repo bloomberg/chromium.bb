@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/command_line.h"
 #include "base/hash.h"
 #include "base/json/json_writer.h"
 #include "base/macros.h"
@@ -28,7 +27,6 @@
 #include "content/common/gpu/media/gpu_video_encode_accelerator.h"
 #include "content/common/gpu/media_messages.h"
 #include "content/public/common/content_client.h"
-#include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/sync_token.h"
@@ -44,7 +42,6 @@
 #include "gpu/command_buffer/service/transfer_buffer_manager.h"
 #include "gpu/command_buffer/service/valuebuffer_manager.h"
 #include "ui/gl/gl_bindings.h"
-#include "ui/gl/gl_switches.h"
 
 #if defined(OS_WIN)
 #include "base/win/win_util.h"
@@ -217,8 +214,9 @@ GpuCommandBufferStub::GpuCommandBufferStub(
            attrib_parser.bind_generates_resource);
   } else {
     context_group_ = new gpu::gles2::ContextGroup(
-        mailbox_manager, new GpuCommandBufferMemoryTracker(
-                             channel, command_buffer_id_.GetUnsafeValue()),
+        channel_->gpu_channel_manager()->gpu_preferences(), mailbox_manager,
+        new GpuCommandBufferMemoryTracker(channel,
+                                          command_buffer_id_.GetUnsafeValue()),
         channel_->gpu_channel_manager()->shader_translator_cache(),
         channel_->gpu_channel_manager()->framebuffer_completeness_cache(), NULL,
         subscription_ref_set, pending_valuebuffer_state,
@@ -622,8 +620,8 @@ void GpuCommandBufferStub::OnInitialize(
     return;
   }
 
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableGPUServiceLogging)) {
+  if (channel_->gpu_channel_manager()->
+      gpu_preferences().enable_gpu_service_logging) {
     decoder_->set_log_commands(true);
   }
 
@@ -1130,10 +1128,8 @@ bool GpuCommandBufferStub::CheckContextLost() {
     // Work around issues with recovery by allowing a new GPU process to launch.
     if ((was_lost_by_robustness ||
          context_group_->feature_info()->workarounds().exit_on_context_lost) &&
-        !base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kSingleProcess) &&
-        !base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kInProcessGPU)) {
+        !channel_->gpu_channel_manager()->gpu_preferences().single_process &&
+        !channel_->gpu_channel_manager()->gpu_preferences().in_process_gpu) {
       LOG(ERROR) << "Exiting GPU process because some drivers cannot recover"
                  << " from problems.";
       // Signal the message loop to quit to shut down other threads

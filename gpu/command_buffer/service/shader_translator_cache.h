@@ -15,6 +15,9 @@
 #include "third_party/angle/include/GLSLANG/ShaderLang.h"
 
 namespace gpu {
+
+struct GpuPreferences;
+
 namespace gles2 {
 
 // This class is not thread safe and can only be created and destroyed
@@ -27,7 +30,7 @@ class GPU_EXPORT ShaderTranslatorCache
     : public base::RefCounted<ShaderTranslatorCache>,
       public NON_EXPORTED_BASE(ShaderTranslator::DestructionObserver) {
  public:
-  ShaderTranslatorCache();
+  explicit ShaderTranslatorCache(const GpuPreferences& gpu_preferences);
 
   // ShaderTranslator::DestructionObserver implementation
   void OnDestruct(ShaderTranslator* translator) override;
@@ -81,6 +84,8 @@ class GPU_EXPORT ShaderTranslatorCache
     ShaderTranslatorInitParams();
     ShaderTranslatorInitParams& operator=(const ShaderTranslatorInitParams&);
   };
+
+  const GpuPreferences& gpu_preferences_;
 
   typedef std::map<ShaderTranslatorInitParams, ShaderTranslator* > Cache;
   Cache cache_;

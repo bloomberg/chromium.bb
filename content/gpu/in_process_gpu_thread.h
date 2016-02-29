@@ -9,8 +9,10 @@
 #include "base/threading/thread.h"
 #include "content/common/content_export.h"
 #include "content/common/in_process_child_thread_params.h"
+#include "gpu/command_buffer/service/gpu_preferences.h"
 
 namespace gpu {
+struct GpuPreferences;
 class SyncPointManager;
 }
 
@@ -24,6 +26,7 @@ class GpuProcess;
 class InProcessGpuThread : public base::Thread {
  public:
   InProcessGpuThread(const InProcessChildThreadParams& params,
+                     const gpu::GpuPreferences& gpu_preferences,
                      gpu::SyncPointManager* sync_point_manager_override);
   ~InProcessGpuThread() override;
 
@@ -36,6 +39,8 @@ class InProcessGpuThread : public base::Thread {
 
   // Deleted in CleanUp() on the gpu thread, so don't use smart pointers.
   GpuProcess* gpu_process_;
+
+  const gpu::GpuPreferences gpu_preferences_;
 
   // Can be null if overridden.
   scoped_ptr<gpu::SyncPointManager> sync_point_manager_;

@@ -24,6 +24,7 @@
 #include "base/threading/thread.h"
 #include "gpu/command_buffer/client/gpu_control.h"
 #include "gpu/command_buffer/common/command_buffer.h"
+#include "gpu/command_buffer/service/gpu_preferences.h"
 #include "gpu/gpu_export.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/native_widget_types.h"
@@ -141,6 +142,7 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   class Service {
    public:
     Service();
+    explicit Service(const gpu::GpuPreferences& gpu_preferences);
     virtual ~Service();
 
     virtual void AddRef() const = 0;
@@ -159,6 +161,7 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
     virtual scoped_refptr<gles2::FramebufferCompletenessCache>
     framebuffer_completeness_cache() = 0;
     virtual SyncPointManager* sync_point_manager() = 0;
+    const GpuPreferences& gpu_preferences();
     scoped_refptr<gfx::GLShareGroup> share_group();
     scoped_refptr<gles2::MailboxManager> mailbox_manager();
     scoped_refptr<gles2::SubscriptionRefSet> subscription_ref_set();
@@ -166,6 +169,7 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
     gpu::gles2::ProgramCache* program_cache();
 
    private:
+    const GpuPreferences gpu_preferences_;
     scoped_refptr<gfx::GLShareGroup> share_group_;
     scoped_refptr<gles2::MailboxManager> mailbox_manager_;
     scoped_refptr<gles2::SubscriptionRefSet> subscription_ref_set_;

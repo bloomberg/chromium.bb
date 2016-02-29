@@ -8,6 +8,7 @@
 #include "content/common/gpu/gpu_channel.h"
 #include "content/common/gpu/gpu_channel_manager.h"
 #include "content/common/gpu/gpu_channel_manager_delegate.h"
+#include "gpu/command_buffer/service/gpu_preferences.h"
 #include "ipc/ipc_test_sink.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -64,7 +65,8 @@ class TestGpuChannelManagerDelegate : public GpuChannelManagerDelegate {
 
 class TestGpuChannelManager : public GpuChannelManager {
  public:
-  TestGpuChannelManager(GpuChannelManagerDelegate* delegate,
+  TestGpuChannelManager(const gpu::GpuPreferences& gpu_preferences,
+                        GpuChannelManagerDelegate* delegate,
                         base::SingleThreadTaskRunner* task_runner,
                         base::SingleThreadTaskRunner* io_task_runner,
                         gpu::SyncPointManager* sync_point_manager,
@@ -121,6 +123,7 @@ class GpuChannelTestCommon : public testing::Test {
   base::TestSimpleTaskRunner* task_runner() { return task_runner_.get(); }
 
  private:
+  gpu::GpuPreferences gpu_preferences_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   scoped_refptr<base::TestSimpleTaskRunner> io_task_runner_;
   scoped_ptr<gpu::SyncPointManager> sync_point_manager_;

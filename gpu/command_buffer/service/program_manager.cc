@@ -26,7 +26,7 @@
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
-#include "gpu/command_buffer/service/gpu_switches.h"
+#include "gpu/command_buffer/service/gpu_preferences.h"
 #include "gpu/command_buffer/service/program_cache.h"
 #include "gpu/command_buffer/service/shader_manager.h"
 #include "third_party/re2/src/re2/re2.h"
@@ -493,8 +493,7 @@ void Program::Update() {
   }
 
 #if !defined(NDEBUG)
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableGPUServiceLoggingGPU)) {
+  if (manager_->gpu_preferences_.enable_gpu_service_logging_gpu) {
     DVLOG(1) << "----: attribs for service_id: " << service_id();
     for (size_t ii = 0; ii < attrib_infos_.size(); ++ii) {
       const VertexAttrib& info = attrib_infos_[ii];
@@ -508,8 +507,7 @@ void Program::Update() {
   UpdateUniforms();
 
 #if !defined(NDEBUG)
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableGPUServiceLoggingGPU)) {
+  if (manager_->gpu_preferences_.enable_gpu_service_logging_gpu) {
     DVLOG(1) << "----: uniforms for service_id: " << service_id();
     size_t ii = 0;
     for (const UniformInfo& info : uniform_infos_) {
@@ -2264,15 +2262,18 @@ Program::~Program() {
   }
 }
 
-ProgramManager::ProgramManager(ProgramCache* program_cache,
-                               uint32_t max_varying_vectors,
-                               uint32_t max_dual_source_draw_buffers,
-                               FeatureInfo* feature_info)
+ProgramManager::ProgramManager(
+    ProgramCache* program_cache,
+    uint32_t max_varying_vectors,
+    uint32_t max_dual_source_draw_buffers,
+    const GpuPreferences& gpu_preferences,
+    FeatureInfo* feature_info)
     : program_count_(0),
       have_context_(true),
       program_cache_(program_cache),
       max_varying_vectors_(max_varying_vectors),
       max_dual_source_draw_buffers_(max_dual_source_draw_buffers),
+      gpu_preferences_(gpu_preferences),
       feature_info_(feature_info) {}
 
 ProgramManager::~ProgramManager() {

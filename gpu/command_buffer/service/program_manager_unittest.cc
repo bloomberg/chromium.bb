@@ -17,6 +17,7 @@
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/service/common_decoder.h"
 #include "gpu/command_buffer/service/feature_info.h"
+#include "gpu/command_buffer/service/gpu_preferences.h"
 #include "gpu/command_buffer/service/gpu_service_test.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/command_buffer/service/mocks.h"
@@ -59,11 +60,12 @@ class ProgramManagerTestBase : public GpuServiceTest {
   virtual void SetupProgramManager() {
     manager_.reset(new ProgramManager(nullptr, kMaxVaryingVectors,
                                       kMaxDualSourceDrawBuffers,
+                                      gpu_preferences_,
                                       feature_info_.get()));
   }
   void SetUpBase(const char* gl_version,
                  const char* gl_extensions,
-                 FeatureInfo* feature_info = NULL) {
+                 FeatureInfo* feature_info = nullptr) {
     GpuServiceTest::SetUpWithGLVersion(gl_version, gl_extensions);
     TestHelper::SetupFeatureInfoInitExpectationsWithGLVersion(
         gl_.get(), gl_extensions, "", gl_version);
@@ -85,6 +87,7 @@ class ProgramManagerTestBase : public GpuServiceTest {
   }
 
   scoped_ptr<ProgramManager> manager_;
+  GpuPreferences gpu_preferences_;
   scoped_refptr<FeatureInfo> feature_info_;
 };
 
@@ -1948,6 +1951,7 @@ class ProgramManagerWithCacheTest : public ProgramManagerTestBase {
   void SetupProgramManager() override {
     manager_.reset(new ProgramManager(cache_.get(), kMaxVaryingVectors,
                                       kMaxDualSourceDrawBuffers,
+                                      gpu_preferences_,
                                       feature_info_.get()));
   }
 
