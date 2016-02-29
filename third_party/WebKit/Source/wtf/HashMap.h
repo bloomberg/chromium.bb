@@ -182,22 +182,22 @@ public:
 
     iterator begin()
     {
-        return HashMapType::begin().keys();
+        return HashMapType::begin().getKeys();
     }
 
     iterator end()
     {
-        return HashMapType::end().keys();
+        return HashMapType::end().getKeys();
     }
 
     const_iterator begin() const
     {
-        return HashMapType::begin().keys();
+        return HashMapType::begin().getKeys();
     }
 
     const_iterator end() const
     {
-        return HashMapType::end().keys();
+        return HashMapType::end().getKeys();
     }
 
 private:
@@ -221,22 +221,22 @@ public:
 
     iterator begin()
     {
-        return HashMapType::begin().values();
+        return HashMapType::begin().getValues();
     }
 
     iterator end()
     {
-        return HashMapType::end().values();
+        return HashMapType::end().getValues();
     }
 
     const_iterator begin() const
     {
-        return HashMapType::begin().values();
+        return HashMapType::begin().getValues();
     }
 
     const_iterator end() const
     {
-        return HashMapType::end().values();
+        return HashMapType::end().getValues();
     }
 
 private:
@@ -491,8 +491,8 @@ inline void copyKeysToVector(const HashMap<T, U, V, W, X, Y>& collection, Z& vec
 
     vector.resize(collection.size());
 
-    iterator it = collection.begin().keys();
-    iterator end = collection.end().keys();
+    iterator it = collection.begin().getKeys();
+    iterator end = collection.end().getKeys();
     for (unsigned i = 0; it != end; ++it, ++i)
         vector[i] = *it;
 }
@@ -504,8 +504,8 @@ inline void copyValuesToVector(const HashMap<T, U, V, W, X, Y>& collection, Z& v
 
     vector.resize(collection.size());
 
-    iterator it = collection.begin().values();
-    iterator end = collection.end().values();
+    iterator it = collection.begin().getValues();
+    iterator end = collection.end().getValues();
     for (unsigned i = 0; it != end; ++it, ++i)
         vector[i] = *it;
 }
