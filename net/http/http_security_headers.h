@@ -20,6 +20,10 @@ namespace net {
 
 const int64_t kMaxHSTSAgeSecs = 86400 * 365;  // 1 year
 
+// RFC7469 suggests that 60 days is a reasonable maximum max-age value
+// http://tools.ietf.org/html/rfc7469#section-4.1
+const int64_t kMaxHPKPAgeSecs = 86400 * 60;  // 60 days
+
 // Parses |value| as a Strict-Transport-Security header value. If successful,
 // returns true and sets |*max_age| and |*include_subdomains|.
 // Otherwise returns false and leaves the output parameters unchanged.

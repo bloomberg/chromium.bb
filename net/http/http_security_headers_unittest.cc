@@ -530,7 +530,7 @@ static void TestValidPKPHeaders(HashValueTag tag) {
       "max-age=39408299  ;" + backup_pin + ";" + good_pin + ";  ", chain_hashes,
       &max_age, &include_subdomains, &hashes, &report_uri));
   expect_max_age = base::TimeDelta::FromSeconds(
-      std::min(kMaxHSTSAgeSecs, static_cast<int64_t>(INT64_C(39408299))));
+      std::min(kMaxHPKPAgeSecs, static_cast<int64_t>(INT64_C(39408299))));
   EXPECT_EQ(expect_max_age, max_age);
   EXPECT_FALSE(include_subdomains);
 
@@ -539,7 +539,7 @@ static void TestValidPKPHeaders(HashValueTag tag) {
           good_pin + ";" + backup_pin + ";   ",
       chain_hashes, &max_age, &include_subdomains, &hashes, &report_uri));
   expect_max_age = base::TimeDelta::FromSeconds(
-      std::min(kMaxHSTSAgeSecs, static_cast<int64_t>(INT64_C(394082038))));
+      std::min(kMaxHPKPAgeSecs, static_cast<int64_t>(INT64_C(394082038))));
   EXPECT_EQ(expect_max_age, max_age);
   EXPECT_TRUE(include_subdomains);
 
@@ -561,7 +561,7 @@ static void TestValidPKPHeaders(HashValueTag tag) {
       "  max-age=999999999999999999999999999999999999999999999  ;  " +
           backup_pin + ";" + good_pin + ";   ",
       chain_hashes, &max_age, &include_subdomains, &hashes, &report_uri));
-  expect_max_age = base::TimeDelta::FromSeconds(kMaxHSTSAgeSecs);
+  expect_max_age = base::TimeDelta::FromSeconds(kMaxHPKPAgeSecs);
   EXPECT_EQ(expect_max_age, max_age);
   EXPECT_FALSE(include_subdomains);
 
@@ -570,7 +570,7 @@ static void TestValidPKPHeaders(HashValueTag tag) {
           backup_pin + ";" + good_pin +
           ";   report-uri=\"http://example.test/foo\"",
       chain_hashes, &max_age, &include_subdomains, &hashes, &report_uri));
-  expect_max_age = base::TimeDelta::FromSeconds(kMaxHSTSAgeSecs);
+  expect_max_age = base::TimeDelta::FromSeconds(kMaxHPKPAgeSecs);
   expect_report_uri = GURL("http://example.test/foo");
   EXPECT_EQ(expect_max_age, max_age);
   EXPECT_FALSE(include_subdomains);
