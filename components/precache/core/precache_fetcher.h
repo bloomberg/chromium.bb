@@ -26,6 +26,8 @@ class URLRequestContextGetter;
 
 namespace precache {
 
+class PrecacheConfigurationSettings;
+
 // Visible for testing.
 extern const int kNoTracking;
 
@@ -107,15 +109,15 @@ class PrecacheFetcher {
   // Determines the list of manifest URLs to fetch according to the list of
   // |starting_hosts_| and information from the precache configuration settings.
   // If the fetch of the configuration settings fails, then precaching ends.
-  void OnConfigFetchComplete(const net::URLFetcher& source);
+  void OnConfigFetchComplete(const net::URLFetcher* source);
 
   // Called when a precache manifest has been fetched. Builds the list of
   // resource URLs to fetch according to the URLs in the manifest. If the fetch
   // of a manifest fails, then it skips to the next manifest.
-  void OnManifestFetchComplete(const net::URLFetcher& source);
+  void OnManifestFetchComplete(const net::URLFetcher* source);
 
   // Called when a resource has been fetched.
-  void OnResourceFetchComplete(const net::URLFetcher& source);
+  void OnResourceFetchComplete(const net::URLFetcher* source);
 
   // The prioritized list of starting hosts that the server will pick resource
   // URLs to be precached for.
@@ -135,15 +137,17 @@ class PrecacheFetcher {
   // Non-owning pointer. Should not be NULL.
   PrecacheDelegate* precache_delegate_;
 
+  scoped_ptr<PrecacheConfigurationSettings> config_;
+
   // Tally of the total number of bytes contained in URL fetches, including
   // config, manifests, and resources. This the number of bytes as they would be
   // compressed over the network.
-  int total_response_bytes_;
+  size_t total_response_bytes_;
 
   // Tally of the total number of bytes received over the network from URL
   // fetches (the same ones as in total_response_bytes_). This includes response
   // headers and intermediate responses such as 30xs.
-  int network_response_bytes_;
+  size_t network_response_bytes_;
 
   scoped_ptr<Fetcher> fetcher_;
 
@@ -162,15 +166,34 @@ class PrecacheFetcher {
 // response to different kinds of fetches, e.g. OnConfigFetchComplete when
 // configuration settings are fetched, OnManifestFetchComplete when a manifest
 // is fetched, etc.
+//
+// This class tries to increase freshness while limiting network usage, by using
+// the following strategy:
+// 1.  Fetch the URL from the cache.
+// 2a. If it's present and lacks revalidation headers, then stop.
+// 2b. If it's not present, or it's present and has revalidation headers, then
+//     refetch over the network.
+//
+// This allows the precache to "refresh" cache entries by increasing their
+// expiration date, but minimizes the network impact of doing so, by performing
+// only conditional GETs.
+//
+// On completion it calls the given callback. This class cancels requests whose
+// responses are or will be larger than max_bytes. In such a case, |callback|
+// will be called with nullptr.
 class PrecacheFetcher::Fetcher : public net::URLFetcherDelegate {
  public:
   // Construct a new Fetcher. This will create and start a new URLFetcher for
   // the specified URL using the specified request context.
   Fetcher(net::URLRequestContextGetter* request_context,
           const GURL& url,
-          const base::Callback<void(const net::URLFetcher&)>& callback,
-          bool is_resource_request);
+          const base::Callback<void(const net::URLFetcher*)>& callback,
+          bool is_resource_request,
+          size_t max_bytes);
   ~Fetcher() override;
+  void OnURLFetchDownloadProgress(const net::URLFetcher* source,
+                                  int64_t current,
+                                  int64_t total) override;
   void OnURLFetchComplete(const net::URLFetcher* source) override;
   int64_t response_bytes() const { return response_bytes_; }
   int64_t network_response_bytes() const { return network_response_bytes_; }
@@ -183,8 +206,9 @@ class PrecacheFetcher::Fetcher : public net::URLFetcherDelegate {
 
   net::URLRequestContextGetter* const request_context_;
   const GURL url_;
-  const base::Callback<void(const net::URLFetcher&)> callback_;
+  const base::Callback<void(const net::URLFetcher*)> callback_;
   const bool is_resource_request_;
+  const size_t max_bytes_;
 
   FetchStage fetch_stage_;
   // The url_fetcher_cache_ is kept alive until Fetcher destruction for testing.

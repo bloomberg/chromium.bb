@@ -4,9 +4,3 @@ include_rules = [
   "+net/url_request",
   "+sql",
 ]
-
-specific_include_rules = {
-  '.*_[a-z]*test\.cc': [
-    "+net/http",
-  ],
-}
