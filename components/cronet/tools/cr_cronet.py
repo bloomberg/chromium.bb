@@ -30,7 +30,8 @@ def install(release_arg):
 
 def test(release_arg, extra_options):
   return run('build/android/test_runner.py instrumentation '+ \
-             release_arg + ' --test-apk=CronetTestInstrumentation',
+             release_arg + ' --test-apk=CronetTestInstrumentation' + \
+             '--fast-local-dev',
              extra_options)
 
 
