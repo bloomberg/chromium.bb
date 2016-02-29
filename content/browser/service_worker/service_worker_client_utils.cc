@@ -441,30 +441,17 @@ void NavigateClient(const GURL& url,
           base::Bind(&DidNavigate, context, script_url.GetOrigin(), callback)));
 }
 
-void GetClient(const base::WeakPtr<ServiceWorkerVersion>& controller,
-               const std::string& client_uuid,
-               const base::WeakPtr<ServiceWorkerContextCore>& context,
+void GetClient(ServiceWorkerProviderHost* provider_host,
                const ClientCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  ServiceWorkerProviderHost* provider_host =
-      context->GetProviderHostByClientID(client_uuid);
+  blink::WebServiceWorkerClientType client_type = provider_host->client_type();
+  DCHECK(client_type == blink::WebServiceWorkerClientTypeWindow ||
+         client_type == blink::WebServiceWorkerClientTypeWorker ||
+         client_type == blink::WebServiceWorkerClientTypeSharedWorker)
+      << client_type;
 
-  if (!provider_host) {
-    // The client may already have been closed, just ignore.
-    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                            base::Bind(callback, ServiceWorkerClientInfo()));
-    return;
-  }
-
-  if (provider_host->document_url().GetOrigin() !=
-      controller->script_url().GetOrigin()) {
-    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                            base::Bind(callback, ServiceWorkerClientInfo()));
-    return;
-  }
-
-  if (provider_host->client_type() == blink::WebServiceWorkerClientTypeWindow) {
+  if (client_type == blink::WebServiceWorkerClientTypeWindow) {
     BrowserThread::PostTaskAndReplyWithResult(
         BrowserThread::UI, FROM_HERE,
         base::Bind(&GetWindowClientInfoOnUI, provider_host->process_id(),
@@ -472,11 +459,6 @@ void GetClient(const base::WeakPtr<ServiceWorkerVersion>& controller,
         callback);
     return;
   }
-
-  DCHECK(provider_host->client_type() ==
-             blink::WebServiceWorkerClientTypeWorker ||
-         provider_host->client_type() ==
-             blink::WebServiceWorkerClientTypeSharedWorker);
 
   ServiceWorkerClientInfo client_info(
       provider_host->client_uuid(), blink::WebPageVisibilityStateHidden,

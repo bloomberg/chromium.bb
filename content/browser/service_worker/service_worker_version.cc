@@ -942,12 +942,21 @@ void ServiceWorkerVersion::DispatchExtendableMessageEventAfterStartWorker(
 
 void ServiceWorkerVersion::OnGetClient(int request_id,
                                        const std::string& client_uuid) {
+  if (!context_)
+    return;
   TRACE_EVENT_ASYNC_BEGIN1("ServiceWorker", "ServiceWorkerVersion::OnGetClient",
                            request_id, "client_uuid", client_uuid);
+  ServiceWorkerProviderHost* provider_host =
+      context_->GetProviderHostByClientID(client_uuid);
+  if (!provider_host ||
+      provider_host->document_url().GetOrigin() != script_url_.GetOrigin()) {
+    // The promise will be resolved to 'undefined'.
+    OnGetClientFinished(request_id, ServiceWorkerClientInfo());
+    return;
+  }
   service_worker_client_utils::GetClient(
-      weak_factory_.GetWeakPtr(), client_uuid, context_,
-      base::Bind(&ServiceWorkerVersion::OnGetClientFinished,
-                 weak_factory_.GetWeakPtr(), request_id));
+      provider_host, base::Bind(&ServiceWorkerVersion::OnGetClientFinished,
+                                weak_factory_.GetWeakPtr(), request_id));
 }
 
 void ServiceWorkerVersion::OnGetClientFinished(

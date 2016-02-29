@@ -54,11 +54,9 @@ void NavigateClient(const GURL& url,
                     const base::WeakPtr<ServiceWorkerContextCore>& context,
                     const NavigationCallback& callback);
 
-// Gets a client matched by |client_uuid|. |callback| is called with the client
-// information on completion.
-void GetClient(const base::WeakPtr<ServiceWorkerVersion>& controller,
-               const std::string& client_uuid,
-               const base::WeakPtr<ServiceWorkerContextCore>& context,
+// Gets the client specified by |provider_host|. |callback| is called with the
+// client information on completion.
+void GetClient(ServiceWorkerProviderHost* provider_host,
                const ClientCallback& callback);
 
 // Collects clients matched with |options|. |callback| is called with the client
