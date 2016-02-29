@@ -45,7 +45,6 @@
 
 #if OS(MACOSX)
 #include <AvailabilityMacros.h>
-#include <CoreFoundation/CFString.h>
 #if __MAC_OS_X_VERSION_MIN_REQUIRED >= 1080
 #define WTF_USE_APPLE_SYSTEM_LOG 1
 #include <asl.h>
@@ -73,43 +72,11 @@
 WTF_ATTRIBUTE_PRINTF(1, 0)
 static void vprintf_stderr_common(const char* format, va_list args)
 {
-#if OS(MACOSX)
-    if (strstr(format, "%@")) {
-        CFStringRef cfFormat = CFStringCreateWithCString(nullptr, format, kCFStringEncodingUTF8);
-
-#if COMPILER(CLANG)
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wformat-nonliteral"
-#endif
-        CFStringRef str = CFStringCreateWithFormatAndArguments(nullptr, nullptr, cfFormat, args);
-#if COMPILER(CLANG)
-#pragma clang diagnostic pop
-#endif
-        CFIndex length = CFStringGetMaximumSizeForEncoding(CFStringGetLength(str), kCFStringEncodingUTF8);
-        char* buffer = (char*)malloc(length + 1);
-
-        CFStringGetCString(str, buffer, length, kCFStringEncodingUTF8);
-
-#if USE(APPLE_SYSTEM_LOG)
-        asl_log(0, 0, ASL_LEVEL_NOTICE, "%s", buffer);
-#endif
-        fputs(buffer, stderr);
-
-        free(buffer);
-        CFRelease(str);
-        CFRelease(cfFormat);
-        return;
-    }
-
-#if USE(APPLE_SYSTEM_LOG)
+#if OS(MACOSX) && USE(APPLE_SYSTEM_LOG)
     va_list copyOfArgs;
     va_copy(copyOfArgs, args);
     asl_vlog(0, 0, ASL_LEVEL_NOTICE, format, copyOfArgs);
     va_end(copyOfArgs);
-#endif
-
-    // Fall through to write to stderr in the same manner as other platforms.
-
 #elif OS(ANDROID)
     __android_log_vprint(ANDROID_LOG_WARN, "WebKit", format, args);
 #elif OS(WIN)

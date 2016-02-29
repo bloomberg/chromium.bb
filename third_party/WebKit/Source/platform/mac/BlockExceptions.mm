@@ -30,7 +30,7 @@
 void ReportBlockedObjCException(NSException *exception)
 {
 #if ENABLE(ASSERT)
-    ASSERT_WITH_MESSAGE(0, "Uncaught exception - %@", exception);
+    ASSERT_WITH_MESSAGE(0, "Uncaught exception - %s", [[exception description] UTF8String]);
 #else
     NSLog(@"*** WebKit discarding exception: <%@> %@", [exception name], [exception reason]);
 #endif
