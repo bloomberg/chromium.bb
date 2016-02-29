@@ -877,6 +877,34 @@ character_data(void *data, const XML_Char *s, int len)
 }
 
 static void
+format_text_to_comment(const char *text, bool standalone_comment)
+{
+	int bol = 1, start = 0, i, length;
+	bool comment_started = !standalone_comment;
+
+	length = strlen(text);
+	for (i = 0; i <= length; i++) {
+		if (bol && (text[i] == ' ' || text[i] == '\t')) {
+			continue;
+		} else if (bol) {
+			bol = 0;
+			start = i;
+		}
+		if (text[i] == '\n' ||
+		    (text[i] == '\0' && !(start == i))) {
+			printf("%s%s%.*s\n",
+			       comment_started ? " *" : "/*",
+			       i > start ? " " : "",
+			       i - start, text + start);
+			bol = 1;
+			comment_started = true;
+		}
+	}
+	if (comment_started && standalone_comment)
+		printf(" */\n\n");
+}
+
+static void
 emit_opcodes(struct wl_list *message_list, struct interface *interface)
 {
 	struct message *m;
@@ -898,9 +926,11 @@ emit_opcode_versions(struct wl_list *message_list, struct interface *interface)
 {
 	struct message *m;
 
-	wl_list_for_each(m, message_list, link)
+	wl_list_for_each(m, message_list, link) {
+		printf("/**\n * @ingroup iface_%s\n */\n", interface->name);
 		printf("#define %s_%s_SINCE_VERSION\t%d\n",
 		       interface->uppercase_name, m->uppercase_name, m->since);
+	}
 
 	printf("\n");
 }
@@ -940,6 +970,7 @@ emit_stubs(struct wl_list *message_list, struct interface *interface)
 	struct arg *a, *ret;
 	int has_destructor, has_destroy;
 
+	printf("/** @ingroup iface_%s */\n", interface->name);
 	printf("static inline void\n"
 	       "%s_set_user_data(struct %s *%s, void *user_data)\n"
 	       "{\n"
@@ -948,6 +979,7 @@ emit_stubs(struct wl_list *message_list, struct interface *interface)
 	       interface->name, interface->name, interface->name,
 	       interface->name);
 
+	printf("/** @ingroup iface_%s */\n", interface->name);
 	printf("static inline void *\n"
 	       "%s_get_user_data(struct %s *%s)\n"
 	       "{\n"
@@ -981,7 +1013,8 @@ emit_stubs(struct wl_list *message_list, struct interface *interface)
 		exit(EXIT_FAILURE);
 	}
 
-	if (!has_destroy && strcmp(interface->name, "wl_display") != 0)
+	if (!has_destroy && strcmp(interface->name, "wl_display") != 0) {
+		printf("/** @ingroup iface_%s */\n", interface->name);
 		printf("static inline void\n"
 		       "%s_destroy(struct %s *%s)\n"
 		       "{\n"
@@ -990,6 +1023,7 @@ emit_stubs(struct wl_list *message_list, struct interface *interface)
 		       "}\n\n",
 		       interface->name, interface->name, interface->name,
 		       interface->name);
+	}
 
 	if (wl_list_empty(message_list))
 		return;
@@ -1009,6 +1043,11 @@ emit_stubs(struct wl_list *message_list, struct interface *interface)
 				ret = a;
 		}
 
+		printf("/**\n"
+		       " * @ingroup iface_%s\n", interface->name);
+		if (m->description && m->description->text)
+			format_text_to_comment(m->description->text, false);
+		printf(" */\n");
 		if (ret && ret->interface_name == NULL)
 			printf("static inline void *\n");
 		else if (ret)
@@ -1104,6 +1143,17 @@ emit_event_wrappers(struct wl_list *message_list, struct interface *interface)
 		return;
 
 	wl_list_for_each(m, message_list, link) {
+		printf("/**\n"
+		       " * @ingroup iface_%s\n"
+		       " * Sends an %s event to the client owning the resource.\n",
+		       interface->name,
+		       m->name);
+		printf("* @param resource_ The client's resource\n");
+		wl_list_for_each(a, &m->arg_list, link) {
+			if (a->summary)
+				printf(" * @param %s %s\n", a->name, a->summary);
+		}
+		printf(" */\n");
 		printf("static inline void\n"
 		       "%s_send_%s(struct wl_resource *resource_",
 		       interface->name, m->name);
@@ -1150,28 +1200,23 @@ emit_enumerations(struct interface *interface)
 
 		if (desc) {
 			printf("/**\n");
-			desc_dump(desc->summary,
-				  " * %s_%s - ",
-				  interface->name, e->name);
-			wl_list_for_each(entry, &e->entry_list, link) {
-				desc_dump(entry->summary,
-					  " * @%s_%s_%s: ",
-					  interface->uppercase_name,
-					  e->uppercase_name,
-					  entry->uppercase_name);
-			}
-			if (desc->text) {
-				printf(" *\n");
-				desc_dump(desc->text, " * ");
-			}
+			printf(" * @ingroup iface_%s\n", interface->name);
+			format_text_to_comment(desc->summary, false);
+			if (desc->text)
+				format_text_to_comment(desc->text, false);
 			printf(" */\n");
 		}
 		printf("enum %s_%s {\n", interface->name, e->name);
-		wl_list_for_each(entry, &e->entry_list, link)
+		wl_list_for_each(entry, &e->entry_list, link) {
+			if (entry->summary)
+				printf("\t/**\n"
+				       "\t * %s\n"
+				       "\t */\n", entry->summary);
 			printf("\t%s_%s_%s = %s,\n",
 			       interface->uppercase_name,
 			       e->uppercase_name,
 			       entry->uppercase_name, entry->value);
+		}
 		printf("};\n");
 		printf("#endif /* %s_%s_ENUM */\n\n",
 		       interface->uppercase_name, e->uppercase_name);
@@ -1188,20 +1233,11 @@ emit_structs(struct wl_list *message_list, struct interface *interface, enum sid
 	if (wl_list_empty(message_list))
 		return;
 
-	if (interface->description) {
-		struct description *desc = interface->description;
-		printf("/**\n");
-		desc_dump(desc->summary, " * %s - ", interface->name);
-		wl_list_for_each(m, message_list, link) {
-			struct description *mdesc = m->description;
-			desc_dump(mdesc ? mdesc->summary : "(none)",
-				  " * @%s: ",
-				  m->name);
-		}
-		printf(" *\n");
-		desc_dump(desc->text, " * ");
-		printf(" */\n");
-	}
+	printf("/**\n");
+	printf(" * @ingroup iface_%s\n", interface->name);
+	printf(" * @struct %s_%s\n", interface->name,
+	       (side == SERVER) ? "interface" : "listener");
+	printf(" */\n");
 	printf("struct %s_%s {\n", interface->name,
 	       (side == SERVER) ? "interface" : "listener");
 
@@ -1209,24 +1245,24 @@ emit_structs(struct wl_list *message_list, struct interface *interface, enum sid
 		struct description *mdesc = m->description;
 
 		printf("\t/**\n");
-		desc_dump(mdesc ? mdesc->summary : "(none)",
-			  "\t * %s - ", m->name);
-		wl_list_for_each(a, &m->arg_list, link) {
-			if (side == SERVER && a->type == NEW_ID &&
-			    a->interface_name == NULL)
-				printf("\t * @interface: name of the objects interface\n"
-				       "\t * @version: version of the objects interface\n");
-
-
-			desc_dump(a->summary ? a->summary : "(none)",
-				  "\t * @%s: ", a->name);
-		}
 		if (mdesc) {
+			if (mdesc->summary)
+				printf("\t * %s\n", mdesc->summary);
 			printf("\t *\n");
 			desc_dump(mdesc->text, "\t * ");
 		}
+		wl_list_for_each(a, &m->arg_list, link) {
+			if (side == SERVER && a->type == NEW_ID &&
+			    a->interface_name == NULL)
+				printf("\t * @param interface name of the objects interface\n"
+				       "\t * @param version version of the objects interface\n");
+
+			if (a->summary)
+				printf("\t * @param %s %s\n", a->name,
+				       a->summary);
+		}
 		if (m->since > 1) {
-			printf("\t * @since: %d\n", m->since);
+			printf("\t * @since %d\n", m->since);
 		}
 		printf("\t */\n");
 		printf("\tvoid (*%s)(", m->name);
@@ -1266,6 +1302,9 @@ emit_structs(struct wl_list *message_list, struct interface *interface, enum sid
 	printf("};\n\n");
 
 	if (side == CLIENT) {
+	    printf("/**\n"
+		   " * @ingroup %s_iface\n"
+		   " */\n", interface->name);
 	    printf("static inline int\n"
 		   "%s_add_listener(struct %s *%s,\n"
 		   "%sconst struct %s_listener *listener, void *data)\n"
@@ -1279,34 +1318,6 @@ emit_structs(struct wl_list *message_list, struct interface *interface, enum sid
 		   interface->name,
 		   indent(37));
 	}
-}
-
-static void
-format_copyright(const char *copyright)
-{
-	int bol = 1, start = 0, i, length;
-	bool comment_started = false;
-
-	length = strlen(copyright);
-	for (i = 0; i <= length; i++) {
-		if (bol && (copyright[i] == ' ' || copyright[i] == '\t')) {
-			continue;
-		} else if (bol) {
-			bol = 0;
-			start = i;
-		}
-		if (copyright[i] == '\n' ||
-		    (copyright[i] == '\0' && !(start == i))) {
-			printf("%s%s%.*s\n",
-			       comment_started ? " *" : "/*",
-			       i > start ? " " : "",
-			       i - start, copyright + start);
-			bol = 1;
-			comment_started = true;
-		}
-	}
-	if (comment_started)
-		printf(" */\n\n");
 }
 
 static void
@@ -1362,15 +1373,52 @@ get_include_name(bool core, enum side side)
 }
 
 static void
+emit_mainpage_blurb(const struct protocol *protocol, enum side side)
+{
+	struct interface *i;
+
+	printf("/**\n"
+	       " * @page page_%s The %s protocol\n",
+	       protocol->name, protocol->name);
+
+	if (protocol->description) {
+		if (protocol->description->summary) {
+			printf(" * %s\n"
+			       " *\n", protocol->description->summary);
+		}
+
+		if (protocol->description->text) {
+			printf(" * @section page_desc_%s Description\n", protocol->name);
+			format_text_to_comment(protocol->description->text, false);
+			printf(" *\n");
+		}
+	}
+
+	printf(" * @section page_ifaces_%s Interfaces\n", protocol->name);
+	wl_list_for_each(i, &protocol->interface_list, link) {
+		printf(" * - @subpage page_iface_%s - %s\n",
+		       i->name,
+		       i->description && i->description->summary ?  i->description->summary : "");
+	}
+
+	if (protocol->copyright) {
+		printf(" * @section page_copyright_%s Copyright\n",
+		       protocol->name);
+		printf(" * <pre>\n");
+		format_text_to_comment(protocol->copyright, false);
+		printf(" * </pre>\n");
+	}
+
+	printf(" */\n");
+}
+
+static void
 emit_header(struct protocol *protocol, enum side side)
 {
 	struct interface *i, *i_next;
 	struct wl_array types;
 	const char *s = (side == SERVER) ? "SERVER" : "CLIENT";
 	char **p, *prev;
-
-	if (protocol->copyright)
-		format_copyright(protocol->copyright);
 
 	printf("#ifndef %s_%s_PROTOCOL_H\n"
 	       "#define %s_%s_PROTOCOL_H\n"
@@ -1387,6 +1435,8 @@ emit_header(struct protocol *protocol, enum side side)
 	       protocol->uppercase_name, s,
 	       protocol->uppercase_name, s,
 	       get_include_name(protocol->core_headers, side));
+
+	emit_mainpage_blurb(protocol, side);
 
 	wl_array_init(&types);
 	wl_list_for_each(i, &protocol->interface_list, link) {
@@ -1411,6 +1461,24 @@ emit_header(struct protocol *protocol, enum side side)
 	printf("\n");
 
 	wl_list_for_each(i, &protocol->interface_list, link) {
+		printf("/**\n"
+		       " * @page page_iface_%s %s\n",
+		       i->name, i->name);
+		if (i->description && i->description->text) {
+			printf(" * @section page_iface_%s_desc Description\n",
+			       i->name);
+			format_text_to_comment(i->description->text, false);
+		}
+		printf(" * @section page_iface_%s_api API\n"
+		       " * See @ref iface_%s.\n"
+		       " */\n",
+		       i->name, i->name);
+		printf("/**\n"
+		       " * @defgroup iface_%s The %s interface\n",
+		       i->name, i->name);
+		if (i->description && i->description->text)
+			format_text_to_comment(i->description->text, false);
+		printf(" */\n");
 		printf("extern const struct wl_interface "
 		       "%s_interface;\n", i->name);
 	}
@@ -1554,7 +1622,7 @@ emit_code(struct protocol *protocol)
 	char **p, *prev;
 
 	if (protocol->copyright)
-		format_copyright(protocol->copyright);
+		format_text_to_comment(protocol->copyright, true);
 
 	printf("#include <stdlib.h>\n"
 	       "#include <stdint.h>\n"

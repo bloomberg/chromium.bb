@@ -1,0 +1,13 @@
+/**
+ * @mainpage
+ * Wayland protocol API documentation.
+ *
+ * @section ifaces Interfaces
+ * For the list of available interfaces, please see the
+ * <a href="modules.html">modules</a> list.
+ *
+ * @section protocols Protocols
+ * For the list of protocols, please see the
+ * <a href="pages.html">Related Pages</a>.
+ *
+ */
