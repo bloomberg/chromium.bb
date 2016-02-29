@@ -108,6 +108,28 @@ class ErrorTask : public MockWebSpeechRecognizer::Task {
   DISALLOW_COPY_AND_ASSIGN(ErrorTask);
 };
 
+// Task for tidying up after recognition task has ended.
+class EndedTask : public MockWebSpeechRecognizer::Task {
+ public:
+  EndedTask(MockWebSpeechRecognizer* mock,
+            blink::WebSpeechRecognitionHandle handle)
+      : MockWebSpeechRecognizer::Task(mock), handle_(handle) {}
+
+  ~EndedTask() override {}
+
+  void run() override {
+    // Reset recognizer's handle if it hasn't been replaced.
+    if (recognizer_->Handle() == handle_)
+      recognizer_->Handle().reset();
+    handle_.reset();
+  }
+
+ private:
+  blink::WebSpeechRecognitionHandle handle_;
+
+  DISALLOW_COPY_AND_ASSIGN(EndedTask);
+};
+
 }  // namespace
 
 MockWebSpeechRecognizer::MockWebSpeechRecognizer()
@@ -155,6 +177,7 @@ void MockWebSpeechRecognizer::start(
       new ClientCallTask(this, &blink::WebSpeechRecognizerClient::didEndAudio));
   task_queue_.push_back(
       new ClientCallTask(this, &blink::WebSpeechRecognizerClient::didEnd));
+  task_queue_.push_back(new EndedTask(this, handle_));
 
   StartTaskQueue();
 }
@@ -179,6 +202,8 @@ void MockWebSpeechRecognizer::abort(
   was_aborted_ = true;
   task_queue_.push_back(
       new ClientCallTask(this, &blink::WebSpeechRecognizerClient::didEnd));
+  task_queue_.push_back(new EndedTask(this, handle_));
+
   StartTaskQueue();
 }
 
@@ -216,6 +241,8 @@ void MockWebSpeechRecognizer::SetError(const blink::WebString& error,
   task_queue_.push_back(new ErrorTask(this, code, message));
   task_queue_.push_back(
       new ClientCallTask(this, &blink::WebSpeechRecognizerClient::didEnd));
+  task_queue_.push_back(new EndedTask(this, handle_));
+
   StartTaskQueue();
 }
 
