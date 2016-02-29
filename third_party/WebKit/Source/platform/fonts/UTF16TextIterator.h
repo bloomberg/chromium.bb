@@ -47,14 +47,10 @@ public:
 
         character = *m_characters;
         m_currentGlyphLength = 1;
-
-        if (!U16_IS_SURROGATE(character) || consumeSurrogatePair(character)) {
-            if (U_GET_GC_MASK(character) & U_GC_M_MASK)
-                consumeMultipleUChar();
+        if (!U16_IS_SURROGATE(character))
             return true;
-        }
 
-        return false;
+        return consumeSurrogatePair(character);
     }
 
     void advance()

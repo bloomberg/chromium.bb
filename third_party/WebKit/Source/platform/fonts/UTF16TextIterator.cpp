@@ -67,8 +67,7 @@ bool UTF16TextIterator::isValidSurrogatePair(UChar32& character)
 
 bool UTF16TextIterator::consumeSurrogatePair(UChar32& character)
 {
-    if (!U16_IS_SURROGATE(character))
-        return true;
+    ASSERT(U16_IS_SURROGATE(character));
 
     if (!isValidSurrogatePair(character)) {
         character = replacementCharacter;
@@ -79,23 +78,6 @@ bool UTF16TextIterator::consumeSurrogatePair(UChar32& character)
     character = U16_GET_SUPPLEMENTARY(character, low);
     m_currentGlyphLength = 2;
     return true;
-}
-
-void UTF16TextIterator::consumeMultipleUChar()
-{
-    const UChar* markCharactersEnd = m_characters + m_currentGlyphLength;
-    int markLength = m_currentGlyphLength;
-    while (markCharactersEnd < m_charactersEnd) {
-        UChar32 nextCharacter;
-        int nextCharacterLength = 0;
-        U16_NEXT(markCharactersEnd, nextCharacterLength,
-            m_charactersEnd - markCharactersEnd, nextCharacter);
-        if (!(U_GET_GC_MASK(nextCharacter) & U_GC_M_MASK))
-            break;
-        markLength += nextCharacterLength;
-        markCharactersEnd += nextCharacterLength;
-    }
-    m_currentGlyphLength = markLength;
 }
 
 } // namespace blink
