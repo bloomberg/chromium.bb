@@ -52,7 +52,7 @@ class MEDIA_EXPORT AudioManagerBase : public AudioManager {
   ~AudioManagerBase() override;
 
   // AudioManager:
-  scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() override;
+  scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() const override;
   scoped_refptr<base::SingleThreadTaskRunner> GetWorkerTaskRunner() override;
   base::string16 GetAudioInputDeviceModel() override;
   void ShowAudioInputSettings() override;

@@ -308,7 +308,8 @@ class AudioManagerMac::AudioPowerObserver : public base::PowerObserver {
  public:
   AudioPowerObserver()
       : is_suspending_(false),
-        is_monitoring_(base::PowerMonitor::Get()) {
+        is_monitoring_(base::PowerMonitor::Get()),
+        num_resume_notifications_(0) {
     // The PowerMonitor requires significant setup (a CFRunLoop and preallocated
     // IO ports) so it's not available under unit tests.  See the OSX impl of
     // base::PowerMonitorDeviceSource for more details.
@@ -324,11 +325,18 @@ class AudioManagerMac::AudioPowerObserver : public base::PowerObserver {
     base::PowerMonitor::Get()->RemoveObserver(this);
   }
 
-  bool ShouldDeferStreamStart() {
+  size_t num_resume_notifications() const { return num_resume_notifications_; }
+
+  bool ShouldDeferStreamStart() const {
     DCHECK(thread_checker_.CalledOnValidThread());
     // Start() should be deferred if the system is in the middle of a suspend or
     // has recently started the process of resuming.
     return is_suspending_ || base::TimeTicks::Now() < earliest_start_time_;
+  }
+
+  bool IsOnBatteryPower() const {
+    DCHECK(thread_checker_.CalledOnValidThread());
+    return base::PowerMonitor::Get()->IsOnBatteryPower();
   }
 
  private:
@@ -339,6 +347,7 @@ class AudioManagerMac::AudioPowerObserver : public base::PowerObserver {
 
   void OnResume() override {
     DCHECK(thread_checker_.CalledOnValidThread());
+    ++num_resume_notifications_;
     is_suspending_ = false;
     earliest_start_time_ = base::TimeTicks::Now() +
         base::TimeDelta::FromSeconds(kStartDelayInSecsForPowerEvents);
@@ -348,6 +357,7 @@ class AudioManagerMac::AudioPowerObserver : public base::PowerObserver {
   const bool is_monitoring_;
   base::TimeTicks earliest_start_time_;
   base::ThreadChecker thread_checker_;
+  size_t num_resume_notifications_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioPowerObserver);
 };
@@ -791,9 +801,19 @@ int AudioManagerMac::ChooseBufferSize(bool is_input, int sample_rate) {
   return buffer_size;
 }
 
-bool AudioManagerMac::ShouldDeferStreamStart() {
+bool AudioManagerMac::ShouldDeferStreamStart() const {
   DCHECK(GetTaskRunner()->BelongsToCurrentThread());
   return power_observer_->ShouldDeferStreamStart();
+}
+
+bool AudioManagerMac::IsOnBatteryPower() const {
+  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
+  return power_observer_->IsOnBatteryPower();
+}
+
+size_t AudioManagerMac::GetNumberOfResumeNotifications() const {
+  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
+  return power_observer_->num_resume_notifications();
 }
 
 bool AudioManagerMac::MaybeChangeBufferSize(AudioDeviceID device_id,

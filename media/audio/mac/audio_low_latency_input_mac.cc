@@ -4,11 +4,14 @@
 
 #include "media/audio/mac/audio_low_latency_input_mac.h"
 #include <CoreServices/CoreServices.h>
+#include <mach/mach.h>
+#include <string>
 
 #include "base/logging.h"
 #include "base/mac/mac_logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
+#include "base/sys_info.h"
 #include "base/time/time.h"
 #include "media/audio/mac/audio_manager_mac.h"
 #include "media/base/audio_bus.h"
@@ -116,6 +119,51 @@ static OSStatus GetInputDeviceStreamFormat(
                            kAudioUnitScope_Input, 1, format, &property_size);
   DVLOG(1) << "Input device stream format: " << *format;
   return result;
+}
+
+// Returns the number of physical processors on the device.
+static int NumberOfPhysicalProcessors() {
+  mach_port_t mach_host = mach_host_self();
+  host_basic_info hbi = {};
+  mach_msg_type_number_t info_count = HOST_BASIC_INFO_COUNT;
+  kern_return_t kr =
+      host_info(mach_host, HOST_BASIC_INFO, reinterpret_cast<host_info_t>(&hbi),
+                &info_count);
+  mach_port_deallocate(mach_task_self(), mach_host);
+
+  int n_physical_cores = 0;
+  if (kr != KERN_SUCCESS) {
+    n_physical_cores = 1;
+    LOG(ERROR) << "Failed to determine number of physical cores, assuming 1";
+  } else {
+    n_physical_cores = hbi.physical_cpu;
+  }
+  DCHECK_EQ(HOST_BASIC_INFO_COUNT, info_count);
+  return n_physical_cores;
+}
+
+// Adds extra system information to Media.AudioXXXMac UMA statistics.
+// Only called when it has been detected that audio callbacks does not start
+// as expected.
+static void AddSystemInfoToUMA(bool is_on_battery, int num_resumes) {
+  // Logs true or false depending on if the machine is on battery power or not.
+  UMA_HISTOGRAM_BOOLEAN("Media.Audio.IsOnBatteryPowerMac", is_on_battery);
+  // Number of logical processors/cores on the current machine.
+  UMA_HISTOGRAM_COUNTS("Media.Audio.LogicalProcessorsMac",
+                       base::SysInfo::NumberOfProcessors());
+  // Number of physical processors/cores on the current machine.
+  UMA_HISTOGRAM_COUNTS("Media.Audio.PhysicalProcessorsMac",
+                       NumberOfPhysicalProcessors());
+  // Counts number of times the system has resumed from power suspension.
+  UMA_HISTOGRAM_COUNTS_1000("Media.Audio.ResumeEventsMac", num_resumes);
+  // System uptime in hours.
+  UMA_HISTOGRAM_COUNTS_1000("Media.Audio.UptimeMac",
+                            base::SysInfo::Uptime().InHours());
+  DVLOG(1) << "uptime: " << base::SysInfo::Uptime().InHours();
+  DVLOG(1) << "logical processors: " << base::SysInfo::NumberOfProcessors();
+  DVLOG(1) << "physical processors: " << NumberOfPhysicalProcessors();
+  DVLOG(1) << "battery power: " << is_on_battery;
+  DVLOG(1) << "resume events: " << num_resumes;
 }
 
 // See "Technical Note TN2091 - Device input using the HAL Output Audio Unit"
@@ -1072,6 +1120,10 @@ void AUAudioInputStream::AddHistogramsForFailedStartup() {
   // set of the |device_property_changes_map_| map. Add UMA stats if valuable
   // data is found.
   AddDevicePropertyChangesToUMA(true);
+  // Add information about things like number of logical processors, number
+  // of system resume events etc.
+  AddSystemInfoToUMA(manager_->IsOnBatteryPower(),
+                     manager_->GetNumberOfResumeNotifications());
 }
 
 void AUAudioInputStream::AddDevicePropertyChangesToUMA(bool startup_failed) {

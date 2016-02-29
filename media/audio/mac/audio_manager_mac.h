@@ -72,7 +72,13 @@ class MEDIA_EXPORT AudioManagerMac : public AudioManagerBase {
   // again after |kStartDelayInSecsForPowerEvents| has elapsed. If false, the
   // stream may be started immediately.
   enum { kStartDelayInSecsForPowerEvents = 2 };
-  bool ShouldDeferStreamStart();
+  bool ShouldDeferStreamStart() const;
+
+  // True if the device is on battery power.
+  bool IsOnBatteryPower() const;
+
+  // Number of times the device has resumed from power suspension.
+  size_t GetNumberOfResumeNotifications() const;
 
   // Changes the I/O buffer size for |device_id| if |desired_buffer_size| is
   // lower than the current device buffer size. The buffer size can also be

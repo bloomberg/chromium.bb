@@ -99,7 +99,7 @@ class MockAudioManager : public AudioManagerAnyPlatform {
   MockAudioManager() : AudioManagerAnyPlatform(&fake_audio_log_factory_) {}
   ~MockAudioManager() override {}
 
-  scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() override {
+  scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() const override {
     return base::MessageLoop::current()->task_runner();
   }
 

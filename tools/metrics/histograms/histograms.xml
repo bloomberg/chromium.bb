@@ -19065,6 +19065,22 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Media.Audio.IsOnBatteryPowerMac" enum="BooleanOnBattery">
+  <owner>henrika@chromium.org</owner>
+  <summary>
+    Indicates if the Mac OSX device is on battery power or not. Only sampled
+    when Media.Audio.InputStartupSuccessMac reports 'Failure'.
+  </summary>
+</histogram>
+
+<histogram name="Media.Audio.LogicalProcessorsMac">
+  <owner>henrika@chromium.org</owner>
+  <summary>
+    The number of logical processors/cores available on the Mac OSX device. Only
+    sampled when Media.Audio.InputStartupSuccessMac reports 'Failure'.
+  </summary>
+</histogram>
+
 <histogram name="Media.Audio.NumberOfBasicInputStreamsMac">
   <owner>henrika@chromium.org</owner>
   <summary>
@@ -19086,6 +19102,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     Number of created output audio streams. Only sampled when
     Media.Audio.InputStartupSuccessMac reports 'Failure'.
+  </summary>
+</histogram>
+
+<histogram name="Media.Audio.PhysicalProcessorsMac">
+  <owner>henrika@chromium.org</owner>
+  <summary>
+    The number of physical processors/cores available on the Mac OSX device.
+    Only sampled when Media.Audio.InputStartupSuccessMac reports 'Failure'.
   </summary>
 </histogram>
 
@@ -19148,6 +19172,23 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     AUAudioInputStream object. It might not be able to fulfill this request. The
     actual size is given by Media.Audio.ActualInputBufferFrameSizeMac. Only
     sampled when Media.Audio.InputStartupSuccessMac reports 'Failure'.
+  </summary>
+</histogram>
+
+<histogram name="Media.Audio.ResumeEventsMac">
+  <owner>henrika@chromium.org</owner>
+  <summary>
+    Counts the number of times the system has resumed from power suspension.
+    Counting is reset each time Chrome restarts. Only sampled when
+    Media.Audio.InputStartupSuccessMac reports 'Failure'.
+  </summary>
+</histogram>
+
+<histogram name="Media.Audio.UptimeMac" units="hours">
+  <owner>henrika@chromium.org</owner>
+  <summary>
+    Reports the system uptime in hours for Mac OS X devices. Only sampled when
+    Media.Audio.InputStartupSuccessMac reports 'Failure'.
   </summary>
 </histogram>
 
@@ -59842,6 +59883,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <enum name="BooleanNullVisitor" type="int">
   <int value="0" label="Connection's visitor is not a nullptr"/>
   <int value="1" label="Connection's visitor is a nullptr"/>
+</enum>
+
+<enum name="BooleanOnBattery" type="int">
+  <int value="0" label="Not on battery"/>
+  <int value="1" label="On Battery"/>
 </enum>
 
 <enum name="BooleanOrphan" type="int">

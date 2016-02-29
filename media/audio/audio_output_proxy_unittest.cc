@@ -104,7 +104,8 @@ class MockAudioManager : public AudioManagerBase {
   MOCK_METHOD2(MakeAudioInputStream, AudioInputStream*(
       const AudioParameters& params, const std::string& device_id));
   MOCK_METHOD0(ShowAudioInputSettings, void());
-  MOCK_METHOD0(GetTaskRunner, scoped_refptr<base::SingleThreadTaskRunner>());
+  MOCK_CONST_METHOD0(GetTaskRunner,
+                     scoped_refptr<base::SingleThreadTaskRunner>());
   MOCK_METHOD0(GetWorkerTaskRunner,
                scoped_refptr<base::SingleThreadTaskRunner>());
   MOCK_METHOD1(GetAudioInputDeviceNames, void(

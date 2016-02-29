@@ -178,7 +178,7 @@ class MEDIA_EXPORT AudioManager {
       const std::string& device_id) = 0;
 
   // Returns the task runner used for audio IO.
-  virtual scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() = 0;
+  virtual scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() const = 0;
 
   // Heavyweight tasks should use GetWorkerTaskRunner() instead of
   // GetTaskRunner(). On most platforms they are the same, but some share the

@@ -127,7 +127,8 @@ base::string16 AudioManagerBase::GetAudioInputDeviceModel() {
   return base::string16();
 }
 
-scoped_refptr<base::SingleThreadTaskRunner> AudioManagerBase::GetTaskRunner() {
+scoped_refptr<base::SingleThreadTaskRunner> AudioManagerBase::GetTaskRunner()
+    const {
   return task_runner_;
 }
 
