@@ -83,7 +83,7 @@ public:
 
     bool complete() const;
 
-    bool hasPendingActivity() const { return imageLoader().hasPendingActivity(); }
+    bool hasPendingActivity() const override { return imageLoader().hasPendingActivity(); }
 
     bool canContainRangeEndPoint() const override { return false; }
 
