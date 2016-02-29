@@ -28,6 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "core/dom/ActiveDOMObject.h"
+
 #include "core/dom/Document.h"
 #include "core/testing/DummyPageHolder.h"
 #include "testing/gmock/include/gmock/gmock.h"

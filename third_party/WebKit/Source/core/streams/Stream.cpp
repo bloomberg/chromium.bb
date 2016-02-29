@@ -37,7 +37,7 @@
 namespace blink {
 
 Stream::Stream(ExecutionContext* context, const String& mediaType)
-    : ActiveDOMObject(context)
+    : ContextLifecycleObserver(context)
     , m_mediaType(mediaType)
     , m_isNeutered(false)
 {
@@ -75,15 +75,7 @@ Stream::~Stream()
     BlobRegistry::unregisterStreamURL(m_internalURL);
 }
 
-void Stream::suspend()
-{
-}
-
-void Stream::resume()
-{
-}
-
-void Stream::stop()
+void Stream::contextDestroyed()
 {
     neuter();
     abort();
@@ -91,7 +83,7 @@ void Stream::stop()
 
 DEFINE_TRACE(Stream)
 {
-    ActiveDOMObject::trace(visitor);
+    ContextLifecycleObserver::trace(visitor);
 }
 
 } // namespace blink

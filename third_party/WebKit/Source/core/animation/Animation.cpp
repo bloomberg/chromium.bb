@@ -66,18 +66,15 @@ Animation* Animation::create(AnimationEffect* effect, AnimationTimeline* timelin
     }
 
     Animation* animation = new Animation(timeline->document()->contextDocument().get(), *timeline, effect);
-    animation->suspendIfNeeded();
-
     if (timeline) {
         timeline->animationAttached(*animation);
         animation->attachCompositorTimeline();
     }
-
     return animation;
 }
 
 Animation::Animation(ExecutionContext* executionContext, AnimationTimeline& timeline, AnimationEffect* content)
-    : ActiveDOMObject(executionContext)
+    : ContextLifecycleObserver(executionContext)
     , m_playState(Idle)
     , m_playbackRate(1)
     , m_startTime(nullValue())
@@ -640,7 +637,7 @@ const AtomicString& Animation::interfaceName() const
 
 ExecutionContext* Animation::executionContext() const
 {
-    return ActiveDOMObject::executionContext();
+    return ContextLifecycleObserver::executionContext();
 }
 
 bool Animation::hasPendingActivity() const
@@ -648,7 +645,7 @@ bool Animation::hasPendingActivity() const
     return m_pendingFinishedEvent || (!m_finished && hasEventListeners(EventTypeNames::finish));
 }
 
-void Animation::stop()
+void Animation::contextDestroyed()
 {
     PlayStateUpdateScope updateScope(*this, TimingUpdateOnDemand);
 
@@ -1085,7 +1082,7 @@ DEFINE_TRACE(Animation)
     visitor->trace(m_finishedPromise);
     visitor->trace(m_readyPromise);
     RefCountedGarbageCollectedEventTargetWithInlineData<Animation>::trace(visitor);
-    ActiveDOMObject::trace(visitor);
+    ContextLifecycleObserver::trace(visitor);
 }
 
 } // namespace blink

@@ -61,7 +61,7 @@ namespace blink {
 const unsigned long long EventSource::defaultReconnectDelay = 3000;
 
 inline EventSource::EventSource(ExecutionContext* context, const KURL& url, const EventSourceInit& eventSourceInit)
-    : ActiveDOMObject(context)
+    : ContextLifecycleObserver(context)
     , m_url(url)
     , m_withCredentials(eventSourceInit.withCredentials())
     , m_state(CONNECTING)
@@ -91,9 +91,7 @@ EventSource* EventSource::create(ExecutionContext* context, const String& url, c
     }
 
     EventSource* source = new EventSource(context, fullURL, eventSourceInit);
-
     source->scheduleInitialConnect();
-    source->suspendIfNeeded();
     return source;
 }
 
@@ -195,7 +193,8 @@ void EventSource::close()
     if (m_parser)
         m_parser->stop();
 
-    // Stop trying to reconnect if EventSource was explicitly closed or if ActiveDOMObject::stop() was called.
+    // Stop trying to reconnect if EventSource was explicitly closed
+    // or if ContextLifecycleObserver::stop() was called.
     if (m_connectTimer.isActive()) {
         m_connectTimer.stop();
     }
@@ -215,7 +214,7 @@ const AtomicString& EventSource::interfaceName() const
 
 ExecutionContext* EventSource::executionContext() const
 {
-    return ActiveDOMObject::executionContext();
+    return ContextLifecycleObserver::executionContext();
 }
 
 void EventSource::didReceiveResponse(unsigned long, const ResourceResponse& response, PassOwnPtr<WebDataConsumerHandle> handle)
@@ -336,7 +335,7 @@ void EventSource::abortConnectionAttempt()
     dispatchEvent(Event::create(EventTypeNames::error));
 }
 
-void EventSource::stop()
+void EventSource::contextDestroyed()
 {
     close();
 }
@@ -350,7 +349,7 @@ DEFINE_TRACE(EventSource)
 {
     visitor->trace(m_parser);
     RefCountedGarbageCollectedEventTargetWithInlineData::trace(visitor);
-    ActiveDOMObject::trace(visitor);
+    ContextLifecycleObserver::trace(visitor);
     EventSourceParser::Client::trace(visitor);
 }
 

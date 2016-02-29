@@ -15,11 +15,10 @@
 namespace blink {
 
 ReadableStreamReader::ReadableStreamReader(ExecutionContext* executionContext, ReadableStream* stream)
-    : ActiveDOMObject(executionContext)
+    : ContextLifecycleObserver(executionContext)
     , m_stream(stream)
     , m_closed(new ClosedPromise(executionContext, this, ClosedPromise::Closed))
 {
-    suspendIfNeeded();
     ASSERT(m_stream->isLockedTo(nullptr));
     m_stream->setReader(this);
 
@@ -110,20 +109,19 @@ bool ReadableStreamReader::hasPendingActivity() const
     return isActive() && m_stream->stateInternal() == ReadableStream::Readable;
 }
 
-void ReadableStreamReader::stop()
+void ReadableStreamReader::contextDestroyed()
 {
     if (isActive()) {
         // Calling |error| will release the lock.
         m_stream->error(DOMException::create(AbortError, "The frame stops working."));
     }
-    ActiveDOMObject::stop();
 }
 
 DEFINE_TRACE(ReadableStreamReader)
 {
     visitor->trace(m_stream);
     visitor->trace(m_closed);
-    ActiveDOMObject::trace(visitor);
+    ContextLifecycleObserver::trace(visitor);
 }
 
 } // namespace blink

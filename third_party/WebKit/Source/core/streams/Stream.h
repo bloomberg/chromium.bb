@@ -33,7 +33,7 @@
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
-#include "core/dom/ActiveDOMObject.h"
+#include "core/dom/ContextLifecycleObserver.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
 #include "wtf/text/WTFString.h"
@@ -42,18 +42,20 @@ namespace blink {
 
 class ExecutionContext;
 
-class CORE_EXPORT Stream final : public GarbageCollectedFinalized<Stream>, public ScriptWrappable, public ActiveDOMObject {
+class CORE_EXPORT Stream final : public GarbageCollectedFinalized<Stream>, public ScriptWrappable, public ContextLifecycleObserver {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(Stream);
     DEFINE_WRAPPERTYPEINFO();
 public:
     static Stream* create(ExecutionContext* context, const String& mediaType)
     {
-        Stream* stream = new Stream(context, mediaType);
-        stream->suspendIfNeeded();
-        return stream;
+        return new Stream(context, mediaType);
     }
 
+#if ENABLE(OILPAN)
+    ~Stream();
+#else
     ~Stream() override;
+#endif
 
     // Returns the internal URL referring to this stream.
     const KURL& url() const { return m_internalURL; }
@@ -77,12 +79,8 @@ public:
     void neuter() { m_isNeutered = true; }
     bool isNeutered() const { return m_isNeutered; }
 
-    // Implementation of ActiveDOMObject.
-    //
-    // FIXME: Implement suspend() and resume() when necessary.
-    void suspend() override;
-    void resume() override;
-    void stop() override;
+    // TODO(yhirano): Implement suspend()/resume() if necessary.
+    void contextDestroyed() override;
 
     DECLARE_VIRTUAL_TRACE();
 

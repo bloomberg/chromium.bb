@@ -32,7 +32,7 @@
 #ifndef EventSource_h
 #define EventSource_h
 
-#include "core/dom/ActiveDOMObject.h"
+#include "core/dom/ContextLifecycleObserver.h"
 #include "core/events/EventTarget.h"
 #include "core/loader/ThreadableLoader.h"
 #include "core/loader/ThreadableLoaderClient.h"
@@ -49,7 +49,7 @@ class EventSourceInit;
 class ExceptionState;
 class ResourceResponse;
 
-class CORE_EXPORT EventSource final : public RefCountedGarbageCollectedEventTargetWithInlineData<EventSource>, private ThreadableLoaderClient, public ActiveDOMObject, public EventSourceParser::Client {
+class CORE_EXPORT EventSource final : public RefCountedGarbageCollectedEventTargetWithInlineData<EventSource>, private ThreadableLoaderClient, public ContextLifecycleObserver, public EventSourceParser::Client {
     DEFINE_WRAPPERTYPEINFO();
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(EventSource);
     USING_GARBAGE_COLLECTED_MIXIN(EventSource);
@@ -79,13 +79,11 @@ public:
     const AtomicString& interfaceName() const override;
     ExecutionContext* executionContext() const override;
 
-    // ActiveDOMObject
-    //
-    // Note: suspend() is noop since ScopedPageLoadDeferrer calls
-    // Page::setDefersLoading() and it defers delivery of events from the
-    // loader, and therefore the methods of this class for receiving
-    // asynchronous events from the loader won't be invoked.
-    void stop() override;
+    // Note: We don't need to override suspend() because it is noop since
+    // ScopedPageLoadDeferrer calls Page::setDefersLoading() and it defers
+    // delivery of events from the loader, and therefore the methods of this
+    // class for receiving asynchronous events from the loader won't be invoked.
+    void contextDestroyed() override;
 
     bool hasPendingActivity() const override;
 

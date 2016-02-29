@@ -7,6 +7,7 @@
 #include "core/css/MediaList.h"
 #include "core/css/MediaQueryListListener.h"
 #include "core/css/MediaQueryMatcher.h"
+#include "core/dom/ActiveDOMObject.h"
 #include "core/dom/Document.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -26,7 +27,7 @@ TEST(MediaQueryListTest, CrashInStop)
     RefPtrWillBeRawPtr<Document> document = Document::create();
     RefPtrWillBeRawPtr<MediaQueryList> list = MediaQueryList::create(document.get(), MediaQueryMatcher::create(*document), MediaQuerySet::create());
     list->addListener(adoptRefWillBeNoop(new TestListener()));
-    list->stop();
+    list->contextDestroyed();
     // This test passes if it's not crashed.
 }
 

@@ -32,7 +32,7 @@
 #define FileReader_h
 
 #include "core/CoreExport.h"
-#include "core/dom/ActiveDOMObject.h"
+#include "core/dom/ContextLifecycleObserver.h"
 #include "core/events/EventTarget.h"
 #include "core/fileapi/FileError.h"
 #include "core/fileapi/FileReaderLoader.h"
@@ -49,7 +49,7 @@ class ExceptionState;
 class ExecutionContext;
 class StringOrArrayBuffer;
 
-class CORE_EXPORT FileReader final : public RefCountedGarbageCollectedEventTargetWithInlineData<FileReader>, public ActiveDOMObject, public FileReaderLoaderClient {
+class CORE_EXPORT FileReader final : public RefCountedGarbageCollectedEventTargetWithInlineData<FileReader>, public ContextLifecycleObserver, public FileReaderLoaderClient {
     DEFINE_WRAPPERTYPEINFO();
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(FileReader);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(FileReader);
@@ -77,13 +77,12 @@ public:
     FileError* error() { return m_error; }
     void result(StringOrArrayBuffer& resultAttribute) const;
 
-    // ActiveDOMObject
-    void stop() override;
+    void contextDestroyed() override;
     bool hasPendingActivity() const override;
 
     // EventTarget
     const AtomicString& interfaceName() const override;
-    ExecutionContext* executionContext() const override { return ActiveDOMObject::executionContext(); }
+    ExecutionContext* executionContext() const override { return ContextLifecycleObserver::executionContext(); }
 
     // FileReaderLoaderClient
     void didStartLoading() override;

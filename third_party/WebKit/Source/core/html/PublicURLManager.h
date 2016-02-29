@@ -26,7 +26,7 @@
 #ifndef PublicURLManager_h
 #define PublicURLManager_h
 
-#include "core/dom/ActiveDOMObject.h"
+#include "core/dom/ContextLifecycleObserver.h"
 #include "platform/heap/Handle.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
@@ -41,7 +41,7 @@ class SecurityOrigin;
 class URLRegistry;
 class URLRegistrable;
 
-class PublicURLManager final : public NoBaseWillBeGarbageCollectedFinalized<PublicURLManager>, public ActiveDOMObject {
+class PublicURLManager final : public NoBaseWillBeGarbageCollectedFinalized<PublicURLManager>, public ContextLifecycleObserver {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(PublicURLManager);
     USING_FAST_MALLOC_WILL_BE_REMOVED(PublicURLManager);
 public:
@@ -52,7 +52,7 @@ public:
     void revoke(const String& uuid);
 
     // ActiveDOMObject interface.
-    void stop() override;
+    void contextDestroyed() override;
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -66,7 +66,6 @@ private:
     typedef HashMap<URLRegistry*, URLMap> RegistryURLMap;
 
     RegistryURLMap m_registryToURL;
-    bool m_isStopped;
 };
 
 } // namespace blink

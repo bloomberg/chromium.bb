@@ -37,7 +37,7 @@
 #include "core/CSSPropertyNames.h"
 #include "core/CoreExport.h"
 #include "core/animation/AnimationEffect.h"
-#include "core/dom/ActiveDOMObject.h"
+#include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/DOMException.h"
 #include "core/events/EventTarget.h"
 #include "platform/animation/CompositorAnimationPlayerClient.h"
@@ -54,7 +54,7 @@ class ExceptionState;
 
 class CORE_EXPORT Animation final
     : public RefCountedGarbageCollectedEventTargetWithInlineData<Animation>
-    , public ActiveDOMObject
+    , public ContextLifecycleObserver
     , public WebCompositorAnimationDelegate
     , public CompositorAnimationPlayerClient {
     DEFINE_WRAPPERTYPEINFO();
@@ -116,7 +116,7 @@ public:
     const AtomicString& interfaceName() const override;
     ExecutionContext* executionContext() const override;
     bool hasPendingActivity() const override;
-    void stop() override;
+    void contextDestroyed() override;
 
     double playbackRate() const;
     void setPlaybackRate(double);
