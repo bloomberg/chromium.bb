@@ -52,13 +52,29 @@ def PsoFromLLVMAssembly(base_name):
                              llvm_passes='')
 
 
+LLVM_PASSES = (
+    # The following is a subset of "-pnacl-abi-simplify-preopt".  We don't
+    # want to run the full "-pnacl-abi-simplify-preopt" because it
+    # internalizes symbols that we want to export via "-convert-to-pso".
+    '-resolve-aliases '
+    '-nacl-global-cleanup '
+    '-expand-varargs '
+    '-rewrite-pnacl-library-calls '
+    '-rewrite-llvm-intrinsic-calls '
+    # Convert thread-local variables into non-thread-local global variables
+    # for now because ConvertToPSO doesn't support TLS yet.
+    '-minsfi-strip-tls '
+    '-convert-to-pso '
+    '-pnacl-abi-simplify-postopt')
+
+
 def MakeAndTranslatePll(dest, source_file):
   return MakeAndTranslatePso(
       dest, [env.ComponentObject(source_file)],
       # Skip the pre-opt passes because they add TLS functions.  However,
       # we still need to run the post-opt passes so that the LLVM IR passes
       # the PNaCl ABI checker.
-      llvm_passes='-convert-to-pso -pnacl-abi-simplify-postopt')
+      llvm_passes=LLVM_PASSES)
 
 
 # Under SFI NaCl, the loader currently depends on the allocate_code_data()
@@ -92,7 +108,7 @@ test_pll = MakeAndTranslatePll('test_pll', 'test_pll.c')
 
 pll_symbols_test = env.ComponentProgram(
     'pll_symbols_test', ['pll_symbols_test.cc'],
-    EXTRA_LIBS=['${NONIRT_LIBS}', 'pnacl_dynloader', 'pll_loader'])
+    EXTRA_LIBS=['${NONIRT_LIBS}', 'pnacl_dynloader', 'pll_loader_lib'])
 
 node = env.CommandSelLdrTestNacl(
     'pll_symbols_test.out', pll_symbols_test, [test_pll],
@@ -108,7 +124,7 @@ test_pll_b = MakeAndTranslatePll('test_pll_b', 'test_pll_b.c')
 
 pll_loader_test = env.ComponentProgram(
     'pll_loader_test', ['pll_loader_test.cc'],
-    EXTRA_LIBS=['${NONIRT_LIBS}', 'pll_loader'])
+    EXTRA_LIBS=['${NONIRT_LIBS}', 'pll_loader_lib'])
 
 node = env.CommandSelLdrTestNacl(
     'pll_loader_test.out', pll_loader_test, [test_pll_a, test_pll_b],
@@ -117,3 +133,38 @@ node = env.CommandSelLdrTestNacl(
 env.AddNodeToTestSuite(
     node, ['small_tests', 'toolchain_tests'],
     'run_pll_loader_test', is_broken=is_broken)
+
+
+libc_obj = env.Command(
+    'libc${OBJSUFFIX}',
+    # libnacl should come first so that it can override definitions in libc.
+    [env.File('${LIB_DIR}/libnacl.a'),
+     env.File('${NACL_SDK_LIB}/libc.a'),
+     env.ComponentObject('libc_entry.c')],
+    '${LD} -r --whole-archive ${SOURCES} -o ${TARGET}')
+
+translated_pll_libc = MakeAndTranslatePso(
+    'translated_pll_libc', libc_obj,
+    llvm_passes=LLVM_PASSES)
+translated_pll_hello_world = MakeAndTranslatePso(
+    'translated_pll_hello_world',
+    [env.ComponentObject('hello_world${OBJSUFFIX}',
+                         '../hello_world/hello_world.c')],
+    llvm_passes=LLVM_PASSES)
+
+# Ideally we would have this ComponentProgram() definition in
+# src/untrusted/pll_loader/nacl.scons instead; see the comment there for
+# why we don't.
+pll_loader = env.ComponentProgram(
+    'pll_loader', [],
+    EXTRA_LIBS=['${NONIRT_LIBS}', 'pll_loader_main', 'pll_loader_lib'])
+
+node = env.CommandSelLdrTestNacl(
+    'pll_hello_world_test.out', pll_loader,
+    [translated_pll_libc, translated_pll_hello_world],
+    # Add '-a' to enable filesystem access for opening DSOs.
+    sel_ldr_flags=['-a'],
+    stdout_golden=env.File('../hello_world/hello_world.stdout'))
+env.AddNodeToTestSuite(
+    node, ['small_tests', 'toolchain_tests'],
+    'run_pll_hello_world_test', is_broken=is_broken)

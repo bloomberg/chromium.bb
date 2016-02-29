@@ -74,7 +74,7 @@ LIBRARY_DEPENDENCIES_DEFAULT = {
     'pnacl_dynloader': [
         'platform',
         ],
-    'pll_loader': [
+    'pll_loader_lib': [
         'platform',
         'pnacl_dynloader',
         ],

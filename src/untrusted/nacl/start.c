@@ -22,8 +22,6 @@ void __libc_fini_array(void);
  */
 int __nacl_main(int argc, char **argv, char **envp) __attribute__((weak));
 
-int main(int argc, char **argv, char **envp);
-
 void *__nacl_initial_thread_stack_end;
 
 /*
