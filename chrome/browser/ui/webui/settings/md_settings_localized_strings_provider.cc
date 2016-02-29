@@ -910,6 +910,10 @@ void AddWebContentStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString("loading", IDS_SETTINGS_LOADING);
   html_source->AddLocalizedString("advancedFontSettings",
                                   IDS_SETTINGS_ADVANCED_FONT_SETTINGS);
+  html_source->AddLocalizedString("requiresWebStoreExtension",
+                                  IDS_SETTINGS_REQUIRES_WEB_STORE_EXTENSION);
+  html_source->AddLocalizedString("quickBrownFox",
+                                  IDS_SETTINGS_QUICK_BROWN_FOX);
 }
 
 }  // namespace
