@@ -211,7 +211,7 @@ void LayoutInline::updateAlwaysCreateLineBoxes(bool fullLayout)
     bool alwaysCreateLineBoxesNew = (parentLayoutInline && parentLayoutInline->alwaysCreateLineBoxes())
         || (parentLayoutInline && parentStyle.verticalAlign() != BASELINE)
         || style()->verticalAlign() != BASELINE
-        || style()->textEmphasisMark() != TextEmphasisMarkNone
+        || style()->getTextEmphasisMark() != TextEmphasisMarkNone
         || (checkFonts && (!parentStyle.font().fontMetrics().hasIdenticalAscentDescentAndLineGap(style()->font().fontMetrics())
         || parentStyle.lineHeight() != style()->lineHeight()));
 

@@ -3787,7 +3787,7 @@ ScrollBehavior FrameView::scrollBehaviorStyle() const
 {
     Element* scrollElement = m_frame->document()->scrollingElement();
     LayoutObject* layoutObject = scrollElement ? scrollElement->layoutObject() : nullptr;
-    if (layoutObject && layoutObject->style()->scrollBehavior() == ScrollBehaviorSmooth)
+    if (layoutObject && layoutObject->style()->getScrollBehavior() == ScrollBehaviorSmooth)
         return ScrollBehaviorSmooth;
 
     return ScrollBehaviorInstant;

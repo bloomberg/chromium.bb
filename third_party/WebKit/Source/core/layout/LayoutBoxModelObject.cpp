@@ -239,7 +239,7 @@ void LayoutBoxModelObject::styleDidChange(StyleDifference diff, const ComputedSt
     }
 
     if (oldStyle && wasHorizontalWritingMode != isHorizontalWritingMode()) {
-        // Changing the writingMode() may change isOrthogonalWritingModeRoot()
+        // Changing the getWritingMode() may change isOrthogonalWritingModeRoot()
         // of children. Make sure all children are marked/unmarked as orthogonal
         // writing-mode roots.
         bool newHorizontalWritingMode = isHorizontalWritingMode();

@@ -41,7 +41,7 @@ namespace blink {
 
 static PassRefPtrWillBeRawPtr<CSSValue> valueForCenterCoordinate(CSSValuePool& pool, const ComputedStyle& style, const BasicShapeCenterCoordinate& center, EBoxOrient orientation)
 {
-    if (center.direction() == BasicShapeCenterCoordinate::TopLeft)
+    if (center.getDirection() == BasicShapeCenterCoordinate::TopLeft)
         return pool.createValue(center.length(), style);
 
     CSSValueID keyword = orientation == HORIZONTAL ? CSSValueRight : CSSValueBottom;
@@ -91,7 +91,7 @@ PassRefPtrWillBeRawPtr<CSSValue> valueForBasicShape(const ComputedStyle& style, 
         const BasicShapePolygon* polygon = toBasicShapePolygon(basicShape);
         RefPtrWillBeRawPtr<CSSBasicShapePolygonValue> polygonValue = CSSBasicShapePolygonValue::create();
 
-        polygonValue->setWindRule(polygon->windRule());
+        polygonValue->setWindRule(polygon->getWindRule());
         const Vector<Length>& values = polygon->values();
         for (unsigned i = 0; i < values.size(); i += 2)
             polygonValue->appendPoint(pool.createValue(values.at(i), style), pool.createValue(values.at(i + 1), style));

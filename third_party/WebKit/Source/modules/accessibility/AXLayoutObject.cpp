@@ -951,9 +951,9 @@ TextStyle AXLayoutObject::getTextStyle() const
         textStyle |= TextStyleBold;
     if (style->fontDescription().style() == FontStyleItalic)
         textStyle |= TextStyleItalic;
-    if (style->textDecoration() == TextDecorationUnderline)
+    if (style->getTextDecoration() == TextDecorationUnderline)
         textStyle |= TextStyleUnderline;
-    if (style->textDecoration() == TextDecorationLineThrough)
+    if (style->getTextDecoration() == TextDecorationLineThrough)
         textStyle |= TextStyleLineThrough;
 
     return static_cast<TextStyle>(textStyle);

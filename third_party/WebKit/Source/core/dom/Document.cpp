@@ -1580,7 +1580,7 @@ void Document::inheritHtmlAndBodyElementStyles(StyleRecalcChange change)
         didRecalcDocumentElement = true;
     }
 
-    WritingMode rootWritingMode = documentElementStyle->writingMode();
+    WritingMode rootWritingMode = documentElementStyle->getWritingMode();
     TextDirection rootDirection = documentElementStyle->direction();
 
     HTMLElement* body = this->body();
@@ -1592,7 +1592,7 @@ void Document::inheritHtmlAndBodyElementStyles(StyleRecalcChange change)
             body->clearAnimationStyleChange();
         if (!bodyStyle || body->needsStyleRecalc() || didRecalcDocumentElement)
             bodyStyle = ensureStyleResolver().styleForElement(body, documentElementStyle.get());
-        rootWritingMode = bodyStyle->writingMode();
+        rootWritingMode = bodyStyle->getWritingMode();
         rootDirection = bodyStyle->direction();
     }
 
@@ -1662,7 +1662,7 @@ void Document::inheritHtmlAndBodyElementStyles(StyleRecalcChange change)
     }
 
     RefPtr<ComputedStyle> documentStyle = layoutView()->mutableStyle();
-    if (documentStyle->writingMode() != rootWritingMode
+    if (documentStyle->getWritingMode() != rootWritingMode
         || documentStyle->direction() != rootDirection
         || documentStyle->visitedDependentColor(CSSPropertyBackgroundColor) != backgroundColor
         || documentStyle->backgroundLayers() != backgroundLayers
@@ -1685,13 +1685,13 @@ void Document::inheritHtmlAndBodyElementStyles(StyleRecalcChange change)
 
     if (body) {
         if (const ComputedStyle* style = body->computedStyle()) {
-            if (style->direction() != rootDirection || style->writingMode() != rootWritingMode)
+            if (style->direction() != rootDirection || style->getWritingMode() != rootWritingMode)
                 body->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::WritingModeChange));
         }
     }
 
     if (const ComputedStyle* style = documentElement()->computedStyle()) {
-        if (style->direction() != rootDirection || style->writingMode() != rootWritingMode)
+        if (style->direction() != rootDirection || style->getWritingMode() != rootWritingMode)
             documentElement()->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::WritingModeChange));
     }
 }
@@ -2057,7 +2057,7 @@ void Document::pageSizeAndMarginsInPixels(int pageIndex, IntSize& pageSize, int&
 
     int width = pageSize.width();
     int height = pageSize.height();
-    switch (style->pageSizeType()) {
+    switch (style->getPageSizeType()) {
     case PAGE_SIZE_AUTO:
         break;
     case PAGE_SIZE_AUTO_LANDSCAPE:

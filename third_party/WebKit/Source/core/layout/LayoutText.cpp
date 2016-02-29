@@ -727,7 +727,7 @@ ALWAYS_INLINE float LayoutText::widthFromFont(const Font& f, int start, int len,
     TextRun run = constructTextRun(f, this, start, len, styleRef(), textDirection);
     run.setCharactersLength(textLength() - start);
     ASSERT(run.charactersLength() >= run.length());
-    run.setTabSize(!style()->collapseWhiteSpace(), style()->tabSize());
+    run.setTabSize(!style()->collapseWhiteSpace(), style()->getTabSize());
     run.setXPos(leadWidth + textWidthSoFar);
 
     FloatRect newGlyphBounds;
@@ -1081,7 +1081,7 @@ void LayoutText::computePreferredLogicalWidths(float leadWidth, HashSet<const Si
                 TextRun run = constructTextRun(f, this, i, 1, styleToUse, textDirection);
                 run.setCharactersLength(len - i);
                 ASSERT(run.charactersLength() >= run.length());
-                run.setTabSize(!style()->collapseWhiteSpace(), style()->tabSize());
+                run.setTabSize(!style()->collapseWhiteSpace(), style()->getTabSize());
                 run.setXPos(leadWidth + currMaxWidth);
 
                 currMaxWidth += f.width(run);
@@ -1513,7 +1513,7 @@ float LayoutText::width(unsigned from, unsigned len, const Font& f, LayoutUnit x
         run.setCharactersLength(textLength() - from);
         ASSERT(run.charactersLength() >= run.length());
 
-        run.setTabSize(!style()->collapseWhiteSpace(), style()->tabSize());
+        run.setTabSize(!style()->collapseWhiteSpace(), style()->getTabSize());
         run.setXPos(xPos.toFloat());
         w = f.width(run, fallbackFonts, glyphBounds);
     }

@@ -296,7 +296,7 @@ PassRefPtr<ComputedStyle> LayoutTextControlSingleLine::createInnerEditorStyle(co
 
 bool LayoutTextControlSingleLine::textShouldBeTruncated() const
 {
-    return document().focusedElement() != node() && styleRef().textOverflow() == TextOverflowEllipsis;
+    return document().focusedElement() != node() && styleRef().getTextOverflow() == TextOverflowEllipsis;
 }
 
 void LayoutTextControlSingleLine::autoscroll(const IntPoint& position)

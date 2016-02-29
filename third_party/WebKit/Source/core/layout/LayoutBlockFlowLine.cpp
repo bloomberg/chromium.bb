@@ -333,7 +333,7 @@ ETextAlign LayoutBlockFlow::textAlignmentForLine(bool endsWithSoftBreak) const
     if (endsWithSoftBreak)
         return alignment;
 
-    TextAlignLast alignmentLast = style()->textAlignLast();
+    TextAlignLast alignmentLast = style()->getTextAlignLast();
     switch (alignmentLast) {
     case TextAlignLastStart:
         return TASTART;
@@ -615,7 +615,7 @@ BidiRun* LayoutBlockFlow::computeInlineDirectionPositionsForSegment(RootInlineBo
     bool isAfterExpansion = true;
     ExpansionOpportunities expansions;
     LayoutObject* previousObject = nullptr;
-    TextJustify textJustify = style()->textJustify();
+    TextJustify textJustify = style()->getTextJustify();
 
     BidiRun* r = firstRun;
     for (; r; r = r->next()) {
@@ -1544,9 +1544,9 @@ void LayoutBlockFlow::layoutInlineChildren(bool relayoutChildren, LayoutUnit& pa
     // FIXME: CSS3 says that descendants that are clipped must also know how to truncate.  This is insanely
     // difficult to figure out in general (especially in the middle of doing layout), so we only handle the
     // simple case of an anonymous block truncating when it's parent is clipped.
-    bool hasTextOverflow = (style()->textOverflow() && hasOverflowClip())
+    bool hasTextOverflow = (style()->getTextOverflow() && hasOverflowClip())
         || (isAnonymousBlock() && parent() && parent()->isLayoutBlock() && toLayoutBlock(parent())->canCollapseAnonymousBlockChild()
-            && parent()->style()->textOverflow() && parent()->hasOverflowClip());
+            && parent()->style()->getTextOverflow() && parent()->hasOverflowClip());
 
     // Walk all the lines and delete our ellipsis line boxes if they exist.
     if (hasTextOverflow)

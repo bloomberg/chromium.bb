@@ -81,7 +81,7 @@ LayoutUnit SnapToLinesLayouter::computeInitialPositionAdjustment(LayoutUnit& ste
     // 7. Round line to an integer by adding 0.5 and then flooring it.
     LayoutUnit linePosition(floorf(m_cueBox.snapToLinesPosition() + 0.5f));
 
-    WritingMode writingMode = m_cueBox.style()->writingMode();
+    WritingMode writingMode = m_cueBox.style()->getWritingMode();
     // 8. Vertical Growing Left: Add one to line then negate it.
     if (writingMode == RightToLeftWritingMode)
         linePosition = -(linePosition + 1);

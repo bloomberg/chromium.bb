@@ -256,7 +256,7 @@ LayoutUnit LayoutTableCell::paddingTop() const
 {
     LayoutUnit result = computedCSSPaddingTop();
     if (isHorizontalWritingMode())
-        result += (style()->writingMode() == TopToBottomWritingMode ? intrinsicPaddingBefore() : intrinsicPaddingAfter());
+        result += (style()->getWritingMode() == TopToBottomWritingMode ? intrinsicPaddingBefore() : intrinsicPaddingAfter());
     // TODO(leviw): The floor call should be removed when Table is sub-pixel aware. crbug.com/377847
     return LayoutUnit(result.floor());
 }
@@ -265,7 +265,7 @@ LayoutUnit LayoutTableCell::paddingBottom() const
 {
     LayoutUnit result = computedCSSPaddingBottom();
     if (isHorizontalWritingMode())
-        result += (style()->writingMode() == TopToBottomWritingMode ? intrinsicPaddingAfter() : intrinsicPaddingBefore());
+        result += (style()->getWritingMode() == TopToBottomWritingMode ? intrinsicPaddingAfter() : intrinsicPaddingBefore());
     // TODO(leviw): The floor call should be removed when Table is sub-pixel aware. crbug.com/377847
     return LayoutUnit(result.floor());
 }
@@ -274,7 +274,7 @@ LayoutUnit LayoutTableCell::paddingLeft() const
 {
     LayoutUnit result = computedCSSPaddingLeft();
     if (!isHorizontalWritingMode())
-        result += (style()->writingMode() == LeftToRightWritingMode ? intrinsicPaddingBefore() : intrinsicPaddingAfter());
+        result += (style()->getWritingMode() == LeftToRightWritingMode ? intrinsicPaddingBefore() : intrinsicPaddingAfter());
     // TODO(leviw): The floor call should be removed when Table is sub-pixel aware. crbug.com/377847
     return LayoutUnit(result.floor());
 }
@@ -283,7 +283,7 @@ LayoutUnit LayoutTableCell::paddingRight() const
 {
     LayoutUnit result = computedCSSPaddingRight();
     if (!isHorizontalWritingMode())
-        result += (style()->writingMode() == LeftToRightWritingMode ? intrinsicPaddingAfter() : intrinsicPaddingBefore());
+        result += (style()->getWritingMode() == LeftToRightWritingMode ? intrinsicPaddingAfter() : intrinsicPaddingBefore());
     // TODO(leviw): The floor call should be removed when Table is sub-pixel aware. crbug.com/377847
     return LayoutUnit(result.floor());
 }
@@ -494,8 +494,8 @@ CollapsedBorderValue LayoutTableCell::computeCollapsedStartBorder(IncludeBorderC
 
     // For the start border, we need to check, in order of precedence:
     // (1) Our start border.
-    int startColorProperty = includeColor ? CSSProperty::resolveDirectionAwareProperty(CSSPropertyWebkitBorderStartColor, styleForCellFlow().direction(), styleForCellFlow().writingMode()) : 0;
-    int endColorProperty = includeColor ? CSSProperty::resolveDirectionAwareProperty(CSSPropertyWebkitBorderEndColor, styleForCellFlow().direction(), styleForCellFlow().writingMode()) : 0;
+    int startColorProperty = includeColor ? CSSProperty::resolveDirectionAwareProperty(CSSPropertyWebkitBorderStartColor, styleForCellFlow().direction(), styleForCellFlow().getWritingMode()) : 0;
+    int endColorProperty = includeColor ? CSSProperty::resolveDirectionAwareProperty(CSSPropertyWebkitBorderEndColor, styleForCellFlow().direction(), styleForCellFlow().getWritingMode()) : 0;
     CollapsedBorderValue result(style()->borderStart(), includeColor ? resolveColor(startColorProperty) : Color(), BCELL);
 
     // (2) The end border of the preceding cell.
@@ -576,8 +576,8 @@ CollapsedBorderValue LayoutTableCell::computeCollapsedEndBorder(IncludeBorderCol
 
     // For end border, we need to check, in order of precedence:
     // (1) Our end border.
-    int startColorProperty = includeColor ? CSSProperty::resolveDirectionAwareProperty(CSSPropertyWebkitBorderStartColor, styleForCellFlow().direction(), styleForCellFlow().writingMode()) : 0;
-    int endColorProperty = includeColor ? CSSProperty::resolveDirectionAwareProperty(CSSPropertyWebkitBorderEndColor, styleForCellFlow().direction(), styleForCellFlow().writingMode()) : 0;
+    int startColorProperty = includeColor ? CSSProperty::resolveDirectionAwareProperty(CSSPropertyWebkitBorderStartColor, styleForCellFlow().direction(), styleForCellFlow().getWritingMode()) : 0;
+    int endColorProperty = includeColor ? CSSProperty::resolveDirectionAwareProperty(CSSPropertyWebkitBorderEndColor, styleForCellFlow().direction(), styleForCellFlow().getWritingMode()) : 0;
     CollapsedBorderValue result = CollapsedBorderValue(style()->borderEnd(), includeColor ? resolveColor(endColorProperty) : Color(), BCELL);
 
     // (2) The start border of the following cell.
@@ -655,8 +655,8 @@ CollapsedBorderValue LayoutTableCell::computeCollapsedBeforeBorder(IncludeBorder
 
     // For before border, we need to check, in order of precedence:
     // (1) Our before border.
-    int beforeColorProperty = includeColor ? CSSProperty::resolveDirectionAwareProperty(CSSPropertyWebkitBorderBeforeColor, styleForCellFlow().direction(), styleForCellFlow().writingMode()) : 0;
-    int afterColorProperty = includeColor ? CSSProperty::resolveDirectionAwareProperty(CSSPropertyWebkitBorderAfterColor, styleForCellFlow().direction(), styleForCellFlow().writingMode()) : 0;
+    int beforeColorProperty = includeColor ? CSSProperty::resolveDirectionAwareProperty(CSSPropertyWebkitBorderBeforeColor, styleForCellFlow().direction(), styleForCellFlow().getWritingMode()) : 0;
+    int afterColorProperty = includeColor ? CSSProperty::resolveDirectionAwareProperty(CSSPropertyWebkitBorderAfterColor, styleForCellFlow().direction(), styleForCellFlow().getWritingMode()) : 0;
     CollapsedBorderValue result = CollapsedBorderValue(style()->borderBefore(), includeColor ? resolveColor(beforeColorProperty) : Color(), BCELL);
 
     LayoutTableCell* prevCell = table->cellAbove(this);
@@ -733,8 +733,8 @@ CollapsedBorderValue LayoutTableCell::computeCollapsedAfterBorder(IncludeBorderC
 
     // For after border, we need to check, in order of precedence:
     // (1) Our after border.
-    int beforeColorProperty = includeColor ? CSSProperty::resolveDirectionAwareProperty(CSSPropertyWebkitBorderBeforeColor, styleForCellFlow().direction(), styleForCellFlow().writingMode()) : 0;
-    int afterColorProperty = includeColor ? CSSProperty::resolveDirectionAwareProperty(CSSPropertyWebkitBorderAfterColor, styleForCellFlow().direction(), styleForCellFlow().writingMode()) : 0;
+    int beforeColorProperty = includeColor ? CSSProperty::resolveDirectionAwareProperty(CSSPropertyWebkitBorderBeforeColor, styleForCellFlow().direction(), styleForCellFlow().getWritingMode()) : 0;
+    int afterColorProperty = includeColor ? CSSProperty::resolveDirectionAwareProperty(CSSPropertyWebkitBorderAfterColor, styleForCellFlow().direction(), styleForCellFlow().getWritingMode()) : 0;
     CollapsedBorderValue result = CollapsedBorderValue(style()->borderAfter(), includeColor ? resolveColor(afterColorProperty) : Color(), BCELL);
 
     LayoutTableCell* nextCell = table->cellBelow(this);

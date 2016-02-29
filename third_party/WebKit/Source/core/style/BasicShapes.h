@@ -50,7 +50,7 @@ class CORE_EXPORT BasicShape : public RefCounted<BasicShape> {
 public:
     virtual ~BasicShape() { }
 
-    enum Type {
+    enum ShapeType {
         BasicShapeEllipseType,
         BasicShapePolygonType,
         BasicShapeCircleType,
@@ -61,11 +61,11 @@ public:
     bool isSameType(const BasicShape& other) const { return type() == other.type(); }
 
     virtual void path(Path&, const FloatRect&) = 0;
-    virtual WindRule windRule() const { return RULE_NONZERO; }
+    virtual WindRule getWindRule() const { return RULE_NONZERO; }
     virtual PassRefPtr<BasicShape> blend(const BasicShape*, double) const = 0;
     virtual bool operator==(const BasicShape&) const = 0;
 
-    virtual Type type() const = 0;
+    virtual ShapeType type() const = 0;
 
 protected:
     BasicShape()
@@ -93,7 +93,7 @@ public:
     }
 
     BasicShapeCenterCoordinate(const BasicShapeCenterCoordinate& other)
-        : m_direction(other.direction())
+        : m_direction(other.getDirection())
         , m_length(other.length())
         , m_computedLength(other.m_computedLength)
     {
@@ -101,7 +101,7 @@ public:
 
     bool operator==(const BasicShapeCenterCoordinate& other) const { return m_direction == other.m_direction && m_length == other.m_length && m_computedLength == other.m_computedLength; }
 
-    Direction direction() const { return m_direction; }
+    Direction getDirection() const { return m_direction; }
     const Length& length() const { return m_length; }
     const Length& computedLength() const { return m_computedLength; }
 
@@ -119,19 +119,19 @@ private:
 class BasicShapeRadius {
     DISALLOW_NEW();
 public:
-    enum Type {
+    enum RadiusType {
         Value,
         ClosestSide,
         FarthestSide
     };
     BasicShapeRadius() : m_type(ClosestSide) { }
     explicit BasicShapeRadius(const Length& v) : m_value(v), m_type(Value) { }
-    explicit BasicShapeRadius(Type t) : m_type(t) { }
+    explicit BasicShapeRadius(RadiusType t) : m_type(t) { }
     BasicShapeRadius(const BasicShapeRadius& other) : m_value(other.value()), m_type(other.type()) { }
     bool operator==(const BasicShapeRadius& other) const { return m_type == other.m_type && m_value == other.m_value; }
 
     const Length& value() const { return m_value; }
-    Type type() const { return m_type; }
+    RadiusType type() const { return m_type; }
 
     bool canBlend(const BasicShapeRadius& other) const
     {
@@ -149,7 +149,7 @@ public:
 
 private:
     Length m_value;
-    Type m_type;
+    RadiusType m_type;
 
 };
 
@@ -170,7 +170,7 @@ public:
     PassRefPtr<BasicShape> blend(const BasicShape*, double) const override;
     bool operator==(const BasicShape&) const override;
 
-    Type type() const override { return BasicShapeCircleType; }
+    ShapeType type() const override { return BasicShapeCircleType; }
 private:
     BasicShapeCircle() { }
 
@@ -200,7 +200,7 @@ public:
     PassRefPtr<BasicShape> blend(const BasicShape*, double) const override;
     bool operator==(const BasicShape&) const override;
 
-    Type type() const override { return BasicShapeEllipseType; }
+    ShapeType type() const override { return BasicShapeEllipseType; }
 private:
     BasicShapeEllipse() { }
 
@@ -227,9 +227,9 @@ public:
     PassRefPtr<BasicShape> blend(const BasicShape*, double) const override;
     bool operator==(const BasicShape&) const override;
 
-    WindRule windRule() const override { return m_windRule; }
+    WindRule getWindRule() const override { return m_windRule; }
 
-    Type type() const override { return BasicShapePolygonType; }
+    ShapeType type() const override { return BasicShapePolygonType; }
 private:
     BasicShapePolygon()
         : m_windRule(RULE_NONZERO)
@@ -269,7 +269,7 @@ public:
     PassRefPtr<BasicShape> blend(const BasicShape*, double) const override;
     bool operator==(const BasicShape&) const override;
 
-    Type type() const override { return BasicShapeInsetType; }
+    ShapeType type() const override { return BasicShapeInsetType; }
 private:
     BasicShapeInset() { }
 

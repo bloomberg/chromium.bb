@@ -1352,7 +1352,7 @@ bool WebLocalFrameImpl::getPrintPresetOptionsForPlugin(const WebNode& node, WebP
 
 bool WebLocalFrameImpl::hasCustomPageSizeStyle(int pageIndex)
 {
-    return frame()->document()->styleForPage(pageIndex)->pageSizeType() != PAGE_SIZE_AUTO;
+    return frame()->document()->styleForPage(pageIndex)->getPageSizeType() != PAGE_SIZE_AUTO;
 }
 
 bool WebLocalFrameImpl::isPageBoxVisible(int pageIndex)

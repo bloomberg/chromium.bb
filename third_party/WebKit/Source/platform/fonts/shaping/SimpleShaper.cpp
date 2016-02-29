@@ -49,7 +49,7 @@ SimpleShaper::SimpleShaper(const Font* font, const TextRun& run, const GlyphData
         m_expansionPerOpportunity = 0;
     } else {
         bool isAfterExpansion = m_isAfterExpansion;
-        unsigned expansionOpportunityCount = m_textRun.is8Bit() ? Character::expansionOpportunityCount(m_textRun.characters8(), m_textRun.length(), m_textRun.direction(), isAfterExpansion, m_textRun.textJustify()) : Character::expansionOpportunityCount(m_textRun.characters16(), m_textRun.length(), m_textRun.direction(), isAfterExpansion, m_textRun.textJustify());
+        unsigned expansionOpportunityCount = m_textRun.is8Bit() ? Character::expansionOpportunityCount(m_textRun.characters8(), m_textRun.length(), m_textRun.direction(), isAfterExpansion, m_textRun.getTextJustify()) : Character::expansionOpportunityCount(m_textRun.characters16(), m_textRun.length(), m_textRun.direction(), isAfterExpansion, m_textRun.getTextJustify());
         if (isAfterExpansion && !m_textRun.allowsTrailingExpansion())
             expansionOpportunityCount--;
 
@@ -72,7 +72,7 @@ float SimpleShaper::characterWidth(UChar32 character, const GlyphData& glyphData
     ASSERT(fontData);
 
     if (UNLIKELY(character == tabulationCharacter && m_textRun.allowTabs()))
-        return m_font->tabWidth(*fontData, m_textRun.tabSize(), m_textRun.xPos() + m_runWidthSoFar);
+        return m_font->tabWidth(*fontData, m_textRun.getTabSize(), m_textRun.xPos() + m_runWidthSoFar);
 
     float width = fontData->widthForGlyph(glyphData.glyph);
 
@@ -89,8 +89,8 @@ float SimpleShaper::adjustSpacing(float width, const CharacterData& charData)
     if (width)
         width += m_font->fontDescription().letterSpacing();
 
-    bool isExpansionOpportunity = Character::treatAsSpace(charData.character) || (m_textRun.textJustify() == TextJustifyDistribute);
-    if (isExpansionOpportunity || (m_textRun.textJustify() == TextJustifyAuto && Character::isCJKIdeographOrSymbol(charData.character))) {
+    bool isExpansionOpportunity = Character::treatAsSpace(charData.character) || (m_textRun.getTextJustify() == TextJustifyDistribute);
+    if (isExpansionOpportunity || (m_textRun.getTextJustify() == TextJustifyAuto && Character::isCJKIdeographOrSymbol(charData.character))) {
         // Distribute the run's total expansion evenly over all expansion opportunities in the run.
         if (m_expansion) {
             if (!isExpansionOpportunity && !m_isAfterExpansion) {

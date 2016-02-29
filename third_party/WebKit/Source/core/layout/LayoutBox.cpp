@@ -4221,12 +4221,12 @@ LayoutRect LayoutBox::visualOverflowRectForPropagation(const ComputedStyle& pare
     // If the writing modes of the child and parent match, then we don't have to
     // do anything fancy. Just return the result.
     LayoutRect rect = visualOverflowRect();
-    if (parentStyle.writingMode() == style()->writingMode())
+    if (parentStyle.getWritingMode() == style()->getWritingMode())
         return rect;
 
     // We are putting ourselves into our parent's coordinate space.  If there is a flipped block mismatch
     // in a particular axis, then we have to flip the rect along that axis.
-    if (style()->writingMode() == RightToLeftWritingMode || parentStyle.writingMode() == RightToLeftWritingMode)
+    if (style()->getWritingMode() == RightToLeftWritingMode || parentStyle.getWritingMode() == RightToLeftWritingMode)
         rect.setX(size().width() - rect.maxX());
 
     return rect;
@@ -4271,12 +4271,12 @@ LayoutRect LayoutBox::layoutOverflowRectForPropagation(const ComputedStyle& pare
 
     // If the writing modes of the child and parent match, then we don't have to
     // do anything fancy. Just return the result.
-    if (parentStyle.writingMode() == style()->writingMode())
+    if (parentStyle.getWritingMode() == style()->getWritingMode())
         return rect;
 
     // We are putting ourselves into our parent's coordinate space.  If there is a flipped block mismatch
     // in a particular axis, then we have to flip the rect along that axis.
-    if (style()->writingMode() == RightToLeftWritingMode || parentStyle.writingMode() == RightToLeftWritingMode)
+    if (style()->getWritingMode() == RightToLeftWritingMode || parentStyle.getWritingMode() == RightToLeftWritingMode)
         rect.setX(size().width() - rect.maxX());
 
     return rect;

@@ -298,7 +298,7 @@ void LayoutGrid::styleDidChange(StyleDifference diff, const ComputedStyle* oldSt
 
     if (explicitGridDidResize(*oldStyle)
         || namedGridLinesDefinitionDidChange(*oldStyle)
-        || oldStyle->gridAutoFlow() != styleRef().gridAutoFlow())
+        || oldStyle->getGridAutoFlow() != styleRef().getGridAutoFlow())
         dirtyGrid();
 }
 
@@ -1795,7 +1795,7 @@ void LayoutGrid::updateAutoMarginsInColumnAxisIfNeeded(LayoutBox& child)
 GridAxisPosition LayoutGrid::columnAxisPositionForChild(const LayoutBox& child) const
 {
     bool hasOrthogonalWritingMode = child.isHorizontalWritingMode() != isHorizontalWritingMode();
-    bool hasSameWritingMode = child.styleRef().writingMode() == styleRef().writingMode();
+    bool hasSameWritingMode = child.styleRef().getWritingMode() == styleRef().getWritingMode();
 
     switch (ComputedStyle::resolveAlignment(styleRef(), child.styleRef(), ItemPositionStretch)) {
     case ItemPositionSelfStart:

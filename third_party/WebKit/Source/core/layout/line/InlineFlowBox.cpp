@@ -128,7 +128,7 @@ void InlineFlowBox::addToLine(InlineBox* child)
                     || (parentStyle.verticalAlign() != BASELINE && !isRootInlineBox()) || childStyle.verticalAlign() != BASELINE)
                     shouldClearDescendantsHaveSameLineHeightAndBaseline = true;
             }
-            if (childStyle.hasTextCombine() || childStyle.textEmphasisMark() != TextEmphasisMarkNone)
+            if (childStyle.hasTextCombine() || childStyle.getTextEmphasisMark() != TextEmphasisMarkNone)
                 shouldClearDescendantsHaveSameLineHeightAndBaseline = true;
         } else {
             if (child->getLineLayoutItem().isBR()) {
@@ -155,7 +155,7 @@ void InlineFlowBox::addToLine(InlineBox* child)
     if (!child->getLineLayoutItem().isOutOfFlowPositioned()) {
         if (child->isText()) {
             const ComputedStyle& childStyle = child->getLineLayoutItem().styleRef(isFirstLineStyle());
-            if (childStyle.letterSpacing() < 0 || childStyle.textShadow() || childStyle.textEmphasisMark() != TextEmphasisMarkNone || childStyle.textStrokeWidth())
+            if (childStyle.letterSpacing() < 0 || childStyle.textShadow() || childStyle.getTextEmphasisMark() != TextEmphasisMarkNone || childStyle.textStrokeWidth())
                 child->clearKnownToHaveNoOverflow();
         } else if (child->getLineLayoutItem().isAtomicInlineLevel()) {
             LineLayoutBox box = LineLayoutBox(child->getLineLayoutItem());
@@ -651,7 +651,7 @@ void InlineFlowBox::placeBoxesInBlockDirection(LayoutUnit top, LayoutUnit maxHei
                 // Treat the leading on the first and last lines of ruby runs as not being part of the overall lineTop/lineBottom.
                 // Really this is a workaround hack for the fact that ruby should have been done as line layout and not done using
                 // inline-block.
-                if (getLineLayoutItem().style()->isFlippedLinesWritingMode() == (curr->getLineLayoutItem().style()->rubyPosition() == RubyPositionAfter))
+                if (getLineLayoutItem().style()->isFlippedLinesWritingMode() == (curr->getLineLayoutItem().style()->getRubyPosition() == RubyPositionAfter))
                     hasAnnotationsBefore = true;
                 else
                     hasAnnotationsAfter = true;
@@ -756,7 +756,7 @@ inline void InlineFlowBox::addBoxShadowVisualOverflow(LayoutRect& logicalVisualO
     if (!parent() && (!isFirstLineStyle() || &style == getLineLayoutItem().style()))
         return;
 
-    WritingMode writingMode = style.writingMode();
+    WritingMode writingMode = style.getWritingMode();
     ShadowList* boxShadow = style.boxShadow();
     if (!boxShadow)
         return;
@@ -785,7 +785,7 @@ inline void InlineFlowBox::addBorderOutsetVisualOverflow(LayoutRect& logicalVisu
 
     // Similar to how glyph overflow works, if our lines are flipped, then it's actually the opposite border that applies, since
     // the line is "upside down" in terms of block coordinates. vertical-rl and horizontal-bt are the flipped line modes.
-    LayoutRectOutsets logicalOutsets = style.borderImageOutsets().logicalOutsetsWithFlippedLines(style.writingMode());
+    LayoutRectOutsets logicalOutsets = style.borderImageOutsets().logicalOutsetsWithFlippedLines(style.getWritingMode());
 
     if (!includeLogicalLeftEdge())
         logicalOutsets.setLeft(LayoutUnit());
@@ -833,7 +833,7 @@ inline void InlineFlowBox::addTextBoxVisualOverflow(InlineTextBox* textBox, Glyp
     float rightGlyphOverflow = strokeOverflow + rightGlyphEdge;
 
     TextEmphasisPosition emphasisMarkPosition;
-    if (style.textEmphasisMark() != TextEmphasisMarkNone && textBox->getEmphasisMarkPosition(style, emphasisMarkPosition)) {
+    if (style.getTextEmphasisMark() != TextEmphasisMarkNone && textBox->getEmphasisMarkPosition(style, emphasisMarkPosition)) {
         float emphasisMarkHeight = style.font().emphasisMarkHeight(style.textEmphasisMarkString());
         if ((emphasisMarkPosition == TextEmphasisPositionOver) == (!style.isFlippedLinesWritingMode()))
             topGlyphOverflow = std::min(topGlyphOverflow, -emphasisMarkHeight);
@@ -847,7 +847,7 @@ inline void InlineFlowBox::addTextBoxVisualOverflow(InlineTextBox* textBox, Glyp
 
     LayoutRectOutsets textShadowLogicalOutsets;
     if (ShadowList* textShadow = style.textShadow())
-        textShadowLogicalOutsets = LayoutRectOutsets(textShadow->rectOutsetsIncludingOriginal()).logicalOutsets(style.writingMode());
+        textShadowLogicalOutsets = LayoutRectOutsets(textShadow->rectOutsetsIncludingOriginal()).logicalOutsets(style.getWritingMode());
 
     // FIXME: This code currently uses negative values for expansion of the top
     // and left edges. This should be cleaned up.
@@ -1148,7 +1148,7 @@ LayoutUnit InlineFlowBox::computeOverAnnotationAdjustment(LayoutUnit allowedPosi
         if (curr->isInlineFlowBox())
             result = std::max(result, toInlineFlowBox(curr)->computeOverAnnotationAdjustment(allowedPosition));
 
-        if (curr->getLineLayoutItem().isAtomicInlineLevel() && curr->getLineLayoutItem().isRubyRun() && curr->getLineLayoutItem().style()->rubyPosition() == RubyPositionBefore) {
+        if (curr->getLineLayoutItem().isAtomicInlineLevel() && curr->getLineLayoutItem().isRubyRun() && curr->getLineLayoutItem().style()->getRubyPosition() == RubyPositionBefore) {
             LineLayoutRubyRun rubyRun = LineLayoutRubyRun(curr->getLineLayoutItem());
             LayoutRubyText* rubyText = rubyRun.rubyText();
             if (!rubyText)
@@ -1172,7 +1172,7 @@ LayoutUnit InlineFlowBox::computeOverAnnotationAdjustment(LayoutUnit allowedPosi
         if (curr->isInlineTextBox()) {
             const ComputedStyle& style = curr->getLineLayoutItem().styleRef(isFirstLineStyle());
             TextEmphasisPosition emphasisMarkPosition;
-            if (style.textEmphasisMark() != TextEmphasisMarkNone && toInlineTextBox(curr)->getEmphasisMarkPosition(style, emphasisMarkPosition) && emphasisMarkPosition == TextEmphasisPositionOver) {
+            if (style.getTextEmphasisMark() != TextEmphasisMarkNone && toInlineTextBox(curr)->getEmphasisMarkPosition(style, emphasisMarkPosition) && emphasisMarkPosition == TextEmphasisPositionOver) {
                 if (!style.isFlippedLinesWritingMode()) {
                     int topOfEmphasisMark = curr->logicalTop() - style.font().emphasisMarkHeight(style.textEmphasisMarkString());
                     result = std::max(result, allowedPosition - topOfEmphasisMark);
@@ -1196,7 +1196,7 @@ LayoutUnit InlineFlowBox::computeUnderAnnotationAdjustment(LayoutUnit allowedPos
         if (curr->isInlineFlowBox())
             result = std::max(result, toInlineFlowBox(curr)->computeUnderAnnotationAdjustment(allowedPosition));
 
-        if (curr->getLineLayoutItem().isAtomicInlineLevel() && curr->getLineLayoutItem().isRubyRun() && curr->getLineLayoutItem().style()->rubyPosition() == RubyPositionAfter) {
+        if (curr->getLineLayoutItem().isAtomicInlineLevel() && curr->getLineLayoutItem().isRubyRun() && curr->getLineLayoutItem().style()->getRubyPosition() == RubyPositionAfter) {
             LineLayoutRubyRun rubyRun = LineLayoutRubyRun(curr->getLineLayoutItem());
             LayoutRubyText* rubyText = rubyRun.rubyText();
             if (!rubyText)
@@ -1219,7 +1219,7 @@ LayoutUnit InlineFlowBox::computeUnderAnnotationAdjustment(LayoutUnit allowedPos
 
         if (curr->isInlineTextBox()) {
             const ComputedStyle& style = curr->getLineLayoutItem().styleRef(isFirstLineStyle());
-            if (style.textEmphasisMark() != TextEmphasisMarkNone && style.textEmphasisPosition() == TextEmphasisPositionUnder) {
+            if (style.getTextEmphasisMark() != TextEmphasisMarkNone && style.getTextEmphasisPosition() == TextEmphasisPositionUnder) {
                 if (!style.isFlippedLinesWritingMode()) {
                     LayoutUnit bottomOfEmphasisMark = curr->logicalBottom() + style.font().emphasisMarkHeight(style.textEmphasisMarkString());
                     result = std::max(result, bottomOfEmphasisMark - allowedPosition);

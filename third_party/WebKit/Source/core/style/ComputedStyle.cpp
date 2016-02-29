@@ -1228,7 +1228,7 @@ const AtomicString& ComputedStyle::hyphenString() const
 
 const AtomicString& ComputedStyle::textEmphasisMarkString() const
 {
-    switch (textEmphasisMark()) {
+    switch (getTextEmphasisMark()) {
     case TextEmphasisMarkNone:
         return nullAtom;
     case TextEmphasisMarkCustom:
@@ -1236,27 +1236,27 @@ const AtomicString& ComputedStyle::textEmphasisMarkString() const
     case TextEmphasisMarkDot: {
         DEFINE_STATIC_LOCAL(AtomicString, filledDotString, (&bulletCharacter, 1));
         DEFINE_STATIC_LOCAL(AtomicString, openDotString, (&whiteBulletCharacter, 1));
-        return textEmphasisFill() == TextEmphasisFillFilled ? filledDotString : openDotString;
+        return getTextEmphasisFill() == TextEmphasisFillFilled ? filledDotString : openDotString;
     }
     case TextEmphasisMarkCircle: {
         DEFINE_STATIC_LOCAL(AtomicString, filledCircleString, (&blackCircleCharacter, 1));
         DEFINE_STATIC_LOCAL(AtomicString, openCircleString, (&whiteCircleCharacter, 1));
-        return textEmphasisFill() == TextEmphasisFillFilled ? filledCircleString : openCircleString;
+        return getTextEmphasisFill() == TextEmphasisFillFilled ? filledCircleString : openCircleString;
     }
     case TextEmphasisMarkDoubleCircle: {
         DEFINE_STATIC_LOCAL(AtomicString, filledDoubleCircleString, (&fisheyeCharacter, 1));
         DEFINE_STATIC_LOCAL(AtomicString, openDoubleCircleString, (&bullseyeCharacter, 1));
-        return textEmphasisFill() == TextEmphasisFillFilled ? filledDoubleCircleString : openDoubleCircleString;
+        return getTextEmphasisFill() == TextEmphasisFillFilled ? filledDoubleCircleString : openDoubleCircleString;
     }
     case TextEmphasisMarkTriangle: {
         DEFINE_STATIC_LOCAL(AtomicString, filledTriangleString, (&blackUpPointingTriangleCharacter, 1));
         DEFINE_STATIC_LOCAL(AtomicString, openTriangleString, (&whiteUpPointingTriangleCharacter, 1));
-        return textEmphasisFill() == TextEmphasisFillFilled ? filledTriangleString : openTriangleString;
+        return getTextEmphasisFill() == TextEmphasisFillFilled ? filledTriangleString : openTriangleString;
     }
     case TextEmphasisMarkSesame: {
         DEFINE_STATIC_LOCAL(AtomicString, filledSesameString, (&sesameDotCharacter, 1));
         DEFINE_STATIC_LOCAL(AtomicString, openSesameString, (&whiteSesameDotCharacter, 1));
-        return textEmphasisFill() == TextEmphasisFillFilled ? filledSesameString : openSesameString;
+        return getTextEmphasisFill() == TextEmphasisFillFilled ? filledSesameString : openSesameString;
     }
     case TextEmphasisMarkAuto:
         ASSERT_NOT_REACHED();
@@ -1456,13 +1456,13 @@ void ComputedStyle::addAppliedTextDecoration(const AppliedTextDecoration& decora
 
 void ComputedStyle::applyTextDecorations()
 {
-    if (textDecoration() == TextDecorationNone)
+    if (getTextDecoration() == TextDecorationNone)
         return;
 
-    TextDecorationStyle style = textDecorationStyle();
+    TextDecorationStyle style = getTextDecorationStyle();
     StyleColor styleColor = decorationColorIncludingFallback(insideLink() == InsideVisitedLink);
 
-    int decorations = textDecoration();
+    int decorations = getTextDecoration();
 
     if (decorations & TextDecorationUnderline) {
         // To save memory, we don't use AppliedTextDecoration objects in the
@@ -1605,7 +1605,7 @@ Color ComputedStyle::visitedDependentColor(int colorProperty) const
 
 const BorderValue& ComputedStyle::borderBefore() const
 {
-    switch (writingMode()) {
+    switch (getWritingMode()) {
     case TopToBottomWritingMode:
         return borderTop();
     case LeftToRightWritingMode:
@@ -1619,7 +1619,7 @@ const BorderValue& ComputedStyle::borderBefore() const
 
 const BorderValue& ComputedStyle::borderAfter() const
 {
-    switch (writingMode()) {
+    switch (getWritingMode()) {
     case TopToBottomWritingMode:
         return borderBottom();
     case LeftToRightWritingMode:
@@ -1647,7 +1647,7 @@ const BorderValue& ComputedStyle::borderEnd() const
 
 int ComputedStyle::borderBeforeWidth() const
 {
-    switch (writingMode()) {
+    switch (getWritingMode()) {
     case TopToBottomWritingMode:
         return borderTopWidth();
     case LeftToRightWritingMode:
@@ -1661,7 +1661,7 @@ int ComputedStyle::borderBeforeWidth() const
 
 int ComputedStyle::borderAfterWidth() const
 {
-    switch (writingMode()) {
+    switch (getWritingMode()) {
     case TopToBottomWritingMode:
         return borderBottomWidth();
     case LeftToRightWritingMode:
@@ -1748,7 +1748,7 @@ bool ComputedStyle::columnRuleEquivalent(const ComputedStyle* otherStyle) const
         && visitedDependentColor(CSSPropertyColumnRuleColor) == otherStyle->visitedDependentColor(CSSPropertyColumnRuleColor);
 }
 
-TextEmphasisMark ComputedStyle::textEmphasisMark() const
+TextEmphasisMark ComputedStyle::getTextEmphasisMark() const
 {
     TextEmphasisMark mark = static_cast<TextEmphasisMark>(rareInheritedData->textEmphasisMark);
     if (mark != TextEmphasisMarkAuto)

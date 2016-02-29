@@ -754,7 +754,7 @@ public:
     LocalFrame* frame() const { return document().frame(); }
 
     virtual LayoutMultiColumnSpannerPlaceholder* spannerPlaceholder() const { return nullptr; }
-    bool isColumnSpanAll() const { return style()->columnSpan() == ColumnSpanAll && spannerPlaceholder(); }
+    bool isColumnSpanAll() const { return style()->getColumnSpan() == ColumnSpanAll && spannerPlaceholder(); }
 
     // We include isLayoutButton in this check because buttons are implemented
     // using flex box but should still support first-line|first-letter.

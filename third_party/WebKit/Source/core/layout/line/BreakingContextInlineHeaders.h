@@ -535,7 +535,7 @@ ALWAYS_INLINE float textWidth(LineLayoutText text, unsigned from, unsigned len, 
         return text.width(from, len, font, LayoutUnit(xPos), text.style()->direction(), fallbackFonts, glyphBounds);
 
     TextRun run = constructTextRun(font, text, from, len, text.styleRef());
-    run.setTabSize(!collapseWhiteSpace, text.style()->tabSize());
+    run.setTabSize(!collapseWhiteSpace, text.style()->getTabSize());
     run.setXPos(xPos);
     return font.width(run, fallbackFonts, glyphBounds);
 }
@@ -975,10 +975,10 @@ inline void BreakingContext::commitAndUpdateLineBreakIfNeeded()
 inline IndentTextOrNot requiresIndent(bool isFirstLine, bool isAfterHardLineBreak, const ComputedStyle& style)
 {
     IndentTextOrNot indentText = DoNotIndentText;
-    if (isFirstLine || (isAfterHardLineBreak && style.textIndentLine()) == TextIndentEachLine)
+    if (isFirstLine || (isAfterHardLineBreak && style.getTextIndentLine()) == TextIndentEachLine)
         indentText = IndentText;
 
-    if (style.textIndentType() == TextIndentHanging)
+    if (style.getTextIndentType() == TextIndentHanging)
         indentText = indentText == IndentText ? DoNotIndentText : IndentText;
 
     return indentText;

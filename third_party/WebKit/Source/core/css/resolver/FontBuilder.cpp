@@ -235,7 +235,7 @@ static FontOrientation fontOrientation(const ComputedStyle& style)
     if (style.isHorizontalWritingMode())
         return FontOrientation::Horizontal;
 
-    switch (style.textOrientation()) {
+    switch (style.getTextOrientation()) {
     case TextOrientationMixed:
         return FontOrientation::VerticalMixed;
     case TextOrientationUpright:

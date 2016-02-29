@@ -56,7 +56,7 @@ TouchAction computeEffectiveTouchAction(const Node& node)
     for (const Node* curNode = &node; curNode; curNode = parentNodeAcrossFrames(curNode)) {
         if (LayoutObject* layoutObject = curNode->layoutObject()) {
             if (supportsTouchAction(*layoutObject)) {
-                TouchAction action = layoutObject->style()->touchAction();
+                TouchAction action = layoutObject->style()->getTouchAction();
                 action |= handledTouchActions;
                 effectiveTouchAction &= action;
                 if (effectiveTouchAction == TouchActionNone)

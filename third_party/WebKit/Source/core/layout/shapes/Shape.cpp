@@ -142,7 +142,7 @@ PassOwnPtr<Shape> Shape::createShape(const BasicShape* basicShape, const LayoutS
                 floatValueForLength(values.at(i + 1), boxHeight));
             (*vertices)[i / 2] = physicalPointToLogical(vertex, logicalBoxSize.height().toFloat(), writingMode);
         }
-        shape = createPolygonShape(vertices.release(), polygon->windRule());
+        shape = createPolygonShape(vertices.release(), polygon->getWindRule());
         break;
     }
 

@@ -2044,10 +2044,10 @@ void LayoutObject::styleWillChange(StyleDifference diff, const ComputedStyle& ne
     // Since a CSS property cannot be applied directly to a text node, a
     // handler will have already been added for its parent so ignore it.
     // TODO: Remove this blocking event handler; crbug.com/318381
-    TouchAction oldTouchAction = m_style ? m_style->touchAction() : TouchActionAuto;
-    if (node() && !node()->isTextNode() && (oldTouchAction == TouchActionAuto) != (newStyle.touchAction() == TouchActionAuto)) {
+    TouchAction oldTouchAction = m_style ? m_style->getTouchAction() : TouchActionAuto;
+    if (node() && !node()->isTextNode() && (oldTouchAction == TouchActionAuto) != (newStyle.getTouchAction() == TouchActionAuto)) {
         EventHandlerRegistry& registry = document().frameHost()->eventHandlerRegistry();
-        if (newStyle.touchAction() != TouchActionAuto)
+        if (newStyle.getTouchAction() != TouchActionAuto)
             registry.didAddEventHandler(*node(), EventHandlerRegistry::TouchEventBlocking);
         else
             registry.didRemoveEventHandler(*node(), EventHandlerRegistry::TouchEventBlocking);
@@ -2136,13 +2136,13 @@ void LayoutObject::propagateStyleToAnonymousChildren(bool blockChildrenOnly)
 void LayoutObject::setStyleWithWritingModeOfParent(PassRefPtr<ComputedStyle> style)
 {
     if (parent())
-        style->setWritingMode(parent()->styleRef().writingMode());
+        style->setWritingMode(parent()->styleRef().getWritingMode());
     setStyle(style);
 }
 
 void LayoutObject::addChildWithWritingModeOfParent(LayoutObject* newChild, LayoutObject* beforeChild)
 {
-    if (newChild->mutableStyleRef().setWritingMode(styleRef().writingMode())
+    if (newChild->mutableStyleRef().setWritingMode(styleRef().getWritingMode())
         && newChild->isBoxModelObject()) {
         newChild->setHorizontalWritingMode(isHorizontalWritingMode());
     }
@@ -2665,7 +2665,7 @@ void LayoutObject::willBeDestroyed()
     // for text nodes so don't try removing for one too. Need to check if
     // m_style is null in cases of partial construction. Any handler we added
     // previously may have already been removed by the Document independently.
-    if (node() && !node()->isTextNode() && m_style && m_style->touchAction() != TouchActionAuto) {
+    if (node() && !node()->isTextNode() && m_style && m_style->getTouchAction() != TouchActionAuto) {
         EventHandlerRegistry& registry = document().frameHost()->eventHandlerRegistry();
         if (registry.eventHandlerTargets(EventHandlerRegistry::TouchEventBlocking)->contains(node()))
             registry.didRemoveEventHandler(*node(), EventHandlerRegistry::TouchEventBlocking);
@@ -3114,10 +3114,10 @@ void LayoutObject::getTextDecorations(unsigned decorations, AppliedTextDecoratio
     TextDecorationStyle resultStyle;
     do {
         styleToUse = curr->style(firstlineStyle);
-        currDecs = styleToUse->textDecoration();
+        currDecs = styleToUse->getTextDecoration();
         currDecs &= decorations;
         resultColor = styleToUse->visitedDependentColor(CSSPropertyTextDecorationColor);
-        resultStyle = styleToUse->textDecorationStyle();
+        resultStyle = styleToUse->getTextDecorationStyle();
         // Parameter 'decorations' is cast as an int to enable the bitwise operations below.
         if (currDecs) {
             if (currDecs & TextDecorationUnderline) {

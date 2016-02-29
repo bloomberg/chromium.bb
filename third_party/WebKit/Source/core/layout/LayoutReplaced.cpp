@@ -489,7 +489,7 @@ void LayoutReplaced::computePositionedLogicalHeight(LogicalExtentComputedValues&
 LayoutRect LayoutReplaced::replacedContentRect(const LayoutSize* overriddenIntrinsicSize) const
 {
     LayoutRect contentRect = contentBoxRect();
-    ObjectFit objectFit = style()->objectFit();
+    ObjectFit objectFit = style()->getObjectFit();
 
     if (objectFit == ObjectFitFill && style()->objectPosition() == ComputedStyle::initialObjectPosition()) {
         return contentRect;

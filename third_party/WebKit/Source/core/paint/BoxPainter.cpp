@@ -692,7 +692,7 @@ void BoxPainter::paintBoxShadow(const PaintInfo& info, const LayoutRect& paintRe
 
 bool BoxPainter::shouldForceWhiteBackgroundForPrintEconomy(const ComputedStyle& style, const Document& document)
 {
-    return document.printing() && style.printColorAdjust() == PrintColorAdjustEconomy
+    return document.printing() && style.getPrintColorAdjust() == PrintColorAdjustEconomy
         && (!document.settings() || !document.settings()->shouldPrintBackgrounds());
 }
 

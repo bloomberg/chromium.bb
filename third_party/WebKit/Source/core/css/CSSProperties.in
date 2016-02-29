@@ -95,10 +95,10 @@ font-weight interpolable, inherited, font, type_name=FontWeight, name_for_method
 font-feature-settings inherited, font, name_for_methods=FeatureSettings, converter=convertFontFeatureSettings
 -webkit-font-smoothing inherited, font, type_name=FontSmoothingMode
 -webkit-locale inherited, font, custom_value
-text-orientation inherited, custom_value
--webkit-text-orientation inherited, custom_value
-writing-mode inherited, custom_value
--webkit-writing-mode inherited, custom_value
+text-orientation inherited, custom_value, type_name=TextOrientation
+-webkit-text-orientation inherited, custom_value, type_name=TextOrientation
+writing-mode inherited, custom_value, type_name=WritingMode
+-webkit-writing-mode inherited, custom_value, type_name=WritingMode
 text-rendering inherited, font, type_name=TextRenderingMode
 zoom custom_all
 
@@ -190,7 +190,7 @@ float type_name=EFloat, name_for_methods=Floating
 flood-color interpolable, svg, converter=convertColor
 flood-opacity interpolable, svg, converter=convertNumberOrPercentage
 grid-auto-columns runtime_flag=CSSGridLayout, converter=convertGridTrackSize
-grid-auto-flow runtime_flag=CSSGridLayout, converter=convertGridAutoFlow
+grid-auto-flow runtime_flag=CSSGridLayout, converter=convertGridAutoFlow, type_name=GridAutoFlow
 grid-auto-rows runtime_flag=CSSGridLayout, converter=convertGridTrackSize
 grid-column-end runtime_flag=CSSGridLayout, converter=convertGridPosition
 grid-column-gap runtime_flag=CSSGridLayout, converter=convertLength
@@ -284,7 +284,7 @@ stroke-miterlimit interpolable, inherited, svg, type_name=float, name_for_method
 stroke-opacity interpolable, inherited, svg, converter=convertNumberOrPercentage
 stroke-width interpolable, inherited, svg, converter=convertUnzoomedLength
 table-layout
-tab-size inherited, converter=convertLengthOrTabSpaces
+tab-size inherited, converter=convertLengthOrTabSpaces, type_name=TabSize
 text-align inherited, custom_value
 text-align-last inherited, type_name=TextAlignLast
 text-anchor inherited, svg
@@ -292,7 +292,7 @@ text-combine-upright inherited, type_name=TextCombine, name_for_methods=TextComb
 // FIXME: We shouldn't switch between shorthand/not shorthand based on a runtime flag
 text-decoration use_handlers_for=CSSPropertyTextDecorationLine, longhands=text-decoration-line;text-decoration-style;text-decoration-color
 text-decoration-color runtime_flag=CSS3TextDecorations, interpolable, custom_all
-text-decoration-line runtime_flag=CSS3TextDecorations, name_for_methods=TextDecoration, converter=convertFlags<TextDecoration>
+text-decoration-line runtime_flag=CSS3TextDecorations, name_for_methods=TextDecoration, type_name=TextDecoration, converter=convertFlags<TextDecoration>
 text-decoration-style runtime_flag=CSS3TextDecorations, type_name=TextDecorationStyle
 text-indent interpolable, inherited, custom_all
 text-justify runtime_flag=CSS3Text, inherited, type_name=TextJustify
@@ -301,7 +301,7 @@ text-shadow interpolable, inherited, converter=convertShadow
 text-transform inherited
 text-underline-position runtime_flag=CSS3TextDecorations, inherited, type_name=TextUnderlinePosition
 top interpolable, initial=initialOffset, converter=convertLengthOrAuto
-touch-action converter=convertFlags<TouchAction>
+touch-action converter=convertFlags<TouchAction>, type_name=TouchAction
 transform interpolable, custom_value
 transform-origin interpolable, converter=convertTransformOrigin
 transform-style name_for_methods=TransformStyle3D

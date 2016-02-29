@@ -775,7 +775,7 @@ void InlineTextBoxPainter::paintDecoration(const PaintInfo& paintInfo, const Lay
     float doubleOffset = textDecorationThickness + 1.f;
 
     if (deco & TextDecorationUnderline) {
-        const int underlineOffset = computeUnderlineOffset(styleToUse.textUnderlinePosition(), styleToUse.fontMetrics(), &m_inlineTextBox, textDecorationThickness);
+        const int underlineOffset = computeUnderlineOffset(styleToUse.getTextUnderlinePosition(), styleToUse.fontMetrics(), &m_inlineTextBox, textDecorationThickness);
         paintAppliedDecoration(context, FloatPoint(localOrigin) + FloatPoint(0, underlineOffset), width.toFloat(), doubleOffset, 1, underline, textDecorationThickness, antialiasDecoration, isPrinting);
     }
     if (deco & TextDecorationOverline) {

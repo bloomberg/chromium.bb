@@ -522,7 +522,7 @@ void TextAutosizer::updatePageInfo()
         m_pageInfo.m_pageNeedsAutosizing = false;
     } else {
         LayoutView* layoutView = m_document->layoutView();
-        bool horizontalWritingMode = isHorizontalWritingMode(layoutView->style()->writingMode());
+        bool horizontalWritingMode = isHorizontalWritingMode(layoutView->style()->getWritingMode());
 
         // FIXME: With out-of-process iframes, the top frame can be remote and
         // doesn't have sizing information. Just return if this is the case.

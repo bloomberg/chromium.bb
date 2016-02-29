@@ -155,7 +155,7 @@ void HarfBuzzShaper::setExpansion(float padding)
     // If we have padding to distribute, then we try to give an equal
     // amount to each expansion opportunity.
     bool isAfterExpansion = m_isAfterExpansion;
-    m_expansionOpportunityCount = Character::expansionOpportunityCount(m_normalizedBuffer.get(), m_normalizedBufferLength, m_textRun.direction(), isAfterExpansion, m_textRun.textJustify());
+    m_expansionOpportunityCount = Character::expansionOpportunityCount(m_normalizedBuffer.get(), m_normalizedBufferLength, m_textRun.direction(), isAfterExpansion, m_textRun.getTextJustify());
     if (isAfterExpansion && !m_textRun.allowsTrailingExpansion()) {
         ASSERT(m_expansionOpportunityCount > 0);
         --m_expansionOpportunityCount;
@@ -730,7 +730,7 @@ PassRefPtr<ShapeResult> ShapeResult::createForTabulationCharacters(const Font* f
     float position = textRun.xPos() + positionOffset;
     float startPosition = position;
     for (unsigned i = 0; i < count; i++) {
-        float advance = font->tabWidth(*fontData, textRun.tabSize(), position);
+        float advance = font->tabWidth(*fontData, textRun.getTabSize(), position);
         run->m_glyphData[i].characterIndex = i;
         run->setGlyphAndPositions(i, fontData->spaceGlyph(), advance, 0, 0);
         position += advance;
@@ -766,7 +766,7 @@ float HarfBuzzShaper::adjustSpacing(ShapeResult::RunInfo* run, size_t glyphIndex
         return spacing;
     }
 
-    if (m_textRun.textJustify() != TextJustify::TextJustifyAuto) {
+    if (m_textRun.getTextJustify() != TextJustify::TextJustifyAuto) {
         m_isAfterExpansion = false;
         return spacing;
     }

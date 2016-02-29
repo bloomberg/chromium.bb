@@ -360,7 +360,7 @@ bool LayoutFlexibleBox::isHorizontalFlow() const
 bool LayoutFlexibleBox::isLeftToRightFlow() const
 {
     if (isColumnFlow())
-        return style()->writingMode() == TopToBottomWritingMode || style()->writingMode() == LeftToRightWritingMode;
+        return style()->getWritingMode() == TopToBottomWritingMode || style()->getWritingMode() == LeftToRightWritingMode;
     return style()->isLeftToRightDirection() ^ (style()->flexDirection() == FlowRowReverse);
 }
 
@@ -473,7 +473,7 @@ LayoutUnit LayoutFlexibleBox::computeMainAxisExtentForChild(const LayoutBox& chi
 
 LayoutFlexibleBox::TransformedWritingMode LayoutFlexibleBox::transformedWritingMode() const
 {
-    WritingMode mode = style()->writingMode();
+    WritingMode mode = style()->getWritingMode();
     if (!isColumnFlow()) {
         static_assert(static_cast<TransformedWritingMode>(TopToBottomWritingMode) == TransformedWritingMode::TopToBottomWritingMode
             && static_cast<TransformedWritingMode>(LeftToRightWritingMode) == TransformedWritingMode::LeftToRightWritingMode

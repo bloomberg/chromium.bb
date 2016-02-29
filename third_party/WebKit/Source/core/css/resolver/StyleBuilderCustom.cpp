@@ -424,8 +424,8 @@ void StyleBuilderFunctions::applyValueCSSPropertyTextAlign(StyleResolverState& s
 void StyleBuilderFunctions::applyInheritCSSPropertyTextIndent(StyleResolverState& state)
 {
     state.style()->setTextIndent(state.parentStyle()->textIndent());
-    state.style()->setTextIndentLine(state.parentStyle()->textIndentLine());
-    state.style()->setTextIndentType(state.parentStyle()->textIndentType());
+    state.style()->setTextIndentLine(state.parentStyle()->getTextIndentLine());
+    state.style()->setTextIndentType(state.parentStyle()->getTextIndentType());
 }
 
 void StyleBuilderFunctions::applyInitialCSSPropertyTextIndent(StyleResolverState& state)
@@ -560,8 +560,8 @@ void StyleBuilderFunctions::applyInitialCSSPropertyWebkitTextEmphasisStyle(Style
 
 void StyleBuilderFunctions::applyInheritCSSPropertyWebkitTextEmphasisStyle(StyleResolverState& state)
 {
-    state.style()->setTextEmphasisFill(state.parentStyle()->textEmphasisFill());
-    state.style()->setTextEmphasisMark(state.parentStyle()->textEmphasisMark());
+    state.style()->setTextEmphasisFill(state.parentStyle()->getTextEmphasisFill());
+    state.style()->setTextEmphasisMark(state.parentStyle()->getTextEmphasisMark());
     state.style()->setTextEmphasisCustomMark(state.parentStyle()->textEmphasisCustomMark());
 }
 

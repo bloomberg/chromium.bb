@@ -150,7 +150,7 @@ const Shape& ShapeOutsideInfo::computedShape() const
     ASSERT(m_layoutBox.containingBlock());
     const ComputedStyle& containingBlockStyle = *m_layoutBox.containingBlock()->style();
 
-    WritingMode writingMode = containingBlockStyle.writingMode();
+    WritingMode writingMode = containingBlockStyle.getWritingMode();
     // Make sure contentWidth is not negative. This can happen when containing block has a vertical scrollbar and
     // its content is smaller than the scrollbar width.
     LayoutUnit maximumValue = m_layoutBox.containingBlock() ? std::max(LayoutUnit(), m_layoutBox.containingBlock()->contentWidth()) : LayoutUnit();
@@ -209,8 +209,8 @@ LayoutUnit ShapeOutsideInfo::logicalTopOffset() const
     switch (referenceBox(*m_layoutBox.style()->shapeOutside())) {
     case MarginBox: return -m_layoutBox.marginBefore(m_layoutBox.containingBlock()->style());
     case BorderBox: return LayoutUnit();
-    case PaddingBox: return borderBeforeInWritingMode(m_layoutBox, m_layoutBox.containingBlock()->style()->writingMode());
-    case ContentBox: return borderAndPaddingBeforeInWritingMode(m_layoutBox, m_layoutBox.containingBlock()->style()->writingMode());
+    case PaddingBox: return borderBeforeInWritingMode(m_layoutBox, m_layoutBox.containingBlock()->style()->getWritingMode());
+    case ContentBox: return borderAndPaddingBeforeInWritingMode(m_layoutBox, m_layoutBox.containingBlock()->style()->getWritingMode());
     case BoxMissing: break;
     }
 

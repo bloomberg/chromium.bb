@@ -405,7 +405,7 @@ void StyleAdjuster::adjustStyleForDisplay(ComputedStyle& style, const ComputedSt
 
     // FIXME: Don't support this mutation for pseudo styles like first-letter or first-line, since it's not completely
     // clear how that should work.
-    if (style.display() == INLINE && style.styleType() == NOPSEUDO && style.writingMode() != parentStyle.writingMode())
+    if (style.display() == INLINE && style.styleType() == NOPSEUDO && style.getWritingMode() != parentStyle.getWritingMode())
         style.setDisplay(INLINE_BLOCK);
 
     // After performing the display mutation, check table rows. We do not honor position: relative table rows or cells.
@@ -421,12 +421,12 @@ void StyleAdjuster::adjustStyleForDisplay(ComputedStyle& style, const ComputedSt
     if (style.display() == TABLE_COLUMN || style.display() == TABLE_COLUMN_GROUP || style.display() == TABLE_FOOTER_GROUP
         || style.display() == TABLE_HEADER_GROUP || style.display() == TABLE_ROW || style.display() == TABLE_ROW_GROUP
         || style.display() == TABLE_CELL)
-        style.setWritingMode(parentStyle.writingMode());
+        style.setWritingMode(parentStyle.getWritingMode());
 
     // FIXME: Since we don't support block-flow on flexible boxes yet, disallow setting
     // of block-flow to anything other than TopToBottomWritingMode.
     // https://bugs.webkit.org/show_bug.cgi?id=46418 - Flexible box support.
-    if (style.writingMode() != TopToBottomWritingMode && (style.display() == BOX || style.display() == INLINE_BOX))
+    if (style.getWritingMode() != TopToBottomWritingMode && (style.display() == BOX || style.display() == INLINE_BOX))
         style.setWritingMode(TopToBottomWritingMode);
 
     if (parentStyle.isDisplayFlexibleOrGridBox()) {

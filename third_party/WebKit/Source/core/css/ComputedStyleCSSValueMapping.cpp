@@ -1383,7 +1383,7 @@ const HashMap<AtomicString, RefPtr<CSSVariableData>>* ComputedStyleCSSValueMappi
 PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID propertyID, const ComputedStyle& style, const LayoutObject* layoutObject, Node* styledNode, bool allowVisitedStyle)
 {
     const SVGComputedStyle& svgStyle = style.svgStyle();
-    propertyID = CSSProperty::resolveDirectionAwareProperty(propertyID, style.direction(), style.writingMode());
+    propertyID = CSSProperty::resolveDirectionAwareProperty(propertyID, style.direction(), style.getWritingMode());
     switch (propertyID) {
     case CSSPropertyInvalid:
         return nullptr;
@@ -1552,14 +1552,14 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
     case CSSPropertyColor:
         return cssValuePool().createColorValue(allowVisitedStyle ? style.visitedDependentColor(CSSPropertyColor).rgb() : style.color().rgb());
     case CSSPropertyWebkitPrintColorAdjust:
-        return cssValuePool().createValue(style.printColorAdjust());
+        return cssValuePool().createValue(style.getPrintColorAdjust());
     case CSSPropertyColumnCount:
         if (style.hasAutoColumnCount())
             return cssValuePool().createIdentifierValue(CSSValueAuto);
         return cssValuePool().createValue(style.columnCount(), CSSPrimitiveValue::UnitType::Number);
     case CSSPropertyColumnFill:
         ASSERT(RuntimeEnabledFeatures::columnFillEnabled());
-        return cssValuePool().createValue(style.columnFill());
+        return cssValuePool().createValue(style.getColumnFill());
     case CSSPropertyColumnGap:
         if (style.hasNormalColumnGap())
             return cssValuePool().createIdentifierValue(CSSValueNormal);
@@ -1571,7 +1571,7 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
     case CSSPropertyColumnRuleWidth:
         return zoomAdjustedPixelValue(style.columnRuleWidth(), style);
     case CSSPropertyColumnSpan:
-        return cssValuePool().createIdentifierValue(style.columnSpan() ? CSSValueAll : CSSValueNone);
+        return cssValuePool().createIdentifierValue(style.getColumnSpan() ? CSSValueAll : CSSValueNone);
     case CSSPropertyWebkitColumnBreakAfter:
         return cssValuePool().createValue(mapToColumnBreakValue(style.breakAfter()));
     case CSSPropertyWebkitColumnBreakBefore:
@@ -1584,7 +1584,7 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
         return zoomAdjustedPixelValue(style.columnWidth(), style);
     case CSSPropertyTabSize:
         return cssValuePool().createValue(
-            style.tabSize().getPixelSize(1.0), style.tabSize().isSpaces() ? CSSPrimitiveValue::UnitType::Number : CSSPrimitiveValue::UnitType::Pixels);
+            style.getTabSize().getPixelSize(1.0), style.getTabSize().isSpaces() ? CSSPrimitiveValue::UnitType::Number : CSSPrimitiveValue::UnitType::Pixels);
     case CSSPropertyCursor: {
         RefPtrWillBeRawPtr<CSSValueList> list = nullptr;
         CursorList* cursors = style.cursors();
@@ -1675,7 +1675,7 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
     }
     case CSSPropertyGridAutoFlow: {
         RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
-        switch (style.gridAutoFlow()) {
+        switch (style.getGridAutoFlow()) {
         case AutoFlowRow:
         case AutoFlowRowDense:
             list->append(cssValuePool().createIdentifierValue(CSSValueRow));
@@ -1688,7 +1688,7 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
             ASSERT_NOT_REACHED();
         }
 
-        switch (style.gridAutoFlow()) {
+        switch (style.getGridAutoFlow()) {
         case AutoFlowRowDense:
         case AutoFlowColumnDense:
             list->append(cssValuePool().createIdentifierValue(CSSValueDense));
@@ -1866,7 +1866,7 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
         }
         return zoomAdjustedPixelValueForLength(style.minWidth(), style);
     case CSSPropertyObjectFit:
-        return cssValuePool().createValue(style.objectFit());
+        return cssValuePool().createValue(style.getObjectFit());
     case CSSPropertyObjectPosition:
         return CSSValuePair::create(
             zoomAdjustedPixelValueForLength(style.objectPosition().x(), style),
@@ -1951,29 +1951,29 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
     case CSSPropertyRight:
         return valueForPositionOffset(style, CSSPropertyRight, layoutObject);
     case CSSPropertyWebkitRubyPosition:
-        return cssValuePool().createValue(style.rubyPosition());
+        return cssValuePool().createValue(style.getRubyPosition());
     case CSSPropertyScrollBehavior:
-        return cssValuePool().createValue(style.scrollBehavior());
+        return cssValuePool().createValue(style.getScrollBehavior());
     case CSSPropertyTableLayout:
         return cssValuePool().createValue(style.tableLayout());
     case CSSPropertyTextAlign:
         return cssValuePool().createValue(style.textAlign());
     case CSSPropertyTextAlignLast:
-        return cssValuePool().createValue(style.textAlignLast());
+        return cssValuePool().createValue(style.getTextAlignLast());
     case CSSPropertyTextDecoration:
         if (RuntimeEnabledFeatures::css3TextDecorationsEnabled())
             return valuesForShorthandProperty(textDecorationShorthand(), style, layoutObject, styledNode, allowVisitedStyle);
         // Fall through.
     case CSSPropertyTextDecorationLine:
-        return renderTextDecorationFlagsToCSSValue(style.textDecoration());
+        return renderTextDecorationFlagsToCSSValue(style.getTextDecoration());
     case CSSPropertyTextDecorationStyle:
-        return valueForTextDecorationStyle(style.textDecorationStyle());
+        return valueForTextDecorationStyle(style.getTextDecorationStyle());
     case CSSPropertyTextDecorationColor:
         return currentColorOrValidColor(style, style.textDecorationColor());
     case CSSPropertyTextJustify:
-        return cssValuePool().createValue(style.textJustify());
+        return cssValuePool().createValue(style.getTextJustify());
     case CSSPropertyTextUnderlinePosition:
-        return cssValuePool().createValue(style.textUnderlinePosition());
+        return cssValuePool().createValue(style.getTextUnderlinePosition());
     case CSSPropertyWebkitTextDecorationsInEffect:
         return renderTextDecorationFlagsToCSSValue(style.textDecorationsInEffect());
     case CSSPropertyWebkitTextFillColor:
@@ -1981,9 +1981,9 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
     case CSSPropertyWebkitTextEmphasisColor:
         return currentColorOrValidColor(style, style.textEmphasisColor());
     case CSSPropertyWebkitTextEmphasisPosition:
-        return cssValuePool().createValue(style.textEmphasisPosition());
+        return cssValuePool().createValue(style.getTextEmphasisPosition());
     case CSSPropertyWebkitTextEmphasisStyle:
-        switch (style.textEmphasisMark()) {
+        switch (style.getTextEmphasisMark()) {
         case TextEmphasisMarkNone:
             return cssValuePool().createIdentifierValue(CSSValueNone);
         case TextEmphasisMarkCustom:
@@ -1997,18 +1997,18 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
         case TextEmphasisMarkTriangle:
         case TextEmphasisMarkSesame: {
             RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
-            list->append(cssValuePool().createValue(style.textEmphasisFill()));
-            list->append(cssValuePool().createValue(style.textEmphasisMark()));
+            list->append(cssValuePool().createValue(style.getTextEmphasisFill()));
+            list->append(cssValuePool().createValue(style.getTextEmphasisMark()));
             return list.release();
         }
         }
     case CSSPropertyTextIndent: {
         RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
         list->append(zoomAdjustedPixelValueForLength(style.textIndent(), style));
-        if (RuntimeEnabledFeatures::css3TextEnabled() && (style.textIndentLine() == TextIndentEachLine || style.textIndentType() == TextIndentHanging)) {
-            if (style.textIndentLine() == TextIndentEachLine)
+        if (RuntimeEnabledFeatures::css3TextEnabled() && (style.getTextIndentLine() == TextIndentEachLine || style.getTextIndentType() == TextIndentHanging)) {
+            if (style.getTextIndentLine() == TextIndentEachLine)
                 list->append(cssValuePool().createIdentifierValue(CSSValueEachLine));
-            if (style.textIndentType() == TextIndentHanging)
+            if (style.getTextIndentType() == TextIndentHanging)
                 list->append(cssValuePool().createIdentifierValue(CSSValueHanging));
         }
         return list.release();
@@ -2018,7 +2018,7 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
     case CSSPropertyTextRendering:
         return cssValuePool().createValue(style.fontDescription().textRendering());
     case CSSPropertyTextOverflow:
-        if (style.textOverflow())
+        if (style.getTextOverflow())
             return cssValuePool().createIdentifierValue(CSSValueEllipsis);
         return cssValuePool().createIdentifierValue(CSSValueClip);
     case CSSPropertyWebkitTextSecurity:
@@ -2032,7 +2032,7 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
     case CSSPropertyTop:
         return valueForPositionOffset(style, CSSPropertyTop, layoutObject);
     case CSSPropertyTouchAction:
-        return touchActionFlagsToCSSValue(style.touchAction());
+        return touchActionFlagsToCSSValue(style.getTouchAction());
     case CSSPropertyUnicodeBidi:
         return cssValuePool().createValue(style.unicodeBidi());
     case CSSPropertyVerticalAlign:
@@ -2084,7 +2084,7 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
     case CSSPropertyWordWrap:
         return cssValuePool().createValue(style.overflowWrap());
     case CSSPropertyWebkitLineBreak:
-        return cssValuePool().createValue(style.lineBreak());
+        return cssValuePool().createValue(style.getLineBreak());
     case CSSPropertyResize:
         return cssValuePool().createValue(style.resize());
     case CSSPropertyFontKerning:
@@ -2365,17 +2365,17 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
         return cssValuePool().createValue(style.pointerEvents());
     case CSSPropertyWritingMode:
     case CSSPropertyWebkitWritingMode:
-        return cssValuePool().createValue(style.writingMode());
+        return cssValuePool().createValue(style.getWritingMode());
     case CSSPropertyWebkitTextCombine:
-        if (style.textCombine() == TextCombineAll)
+        if (style.getTextCombine() == TextCombineAll)
             return CSSPrimitiveValue::createIdentifier(CSSValueHorizontal);
     case CSSPropertyTextCombineUpright:
-        return cssValuePool().createValue(style.textCombine());
+        return cssValuePool().createValue(style.getTextCombine());
     case CSSPropertyWebkitTextOrientation:
-        if (style.textOrientation() == TextOrientationMixed)
+        if (style.getTextOrientation() == TextOrientationMixed)
             return CSSPrimitiveValue::createIdentifier(CSSValueVerticalRight);
     case CSSPropertyTextOrientation:
-        return CSSPrimitiveValue::create(style.textOrientation());
+        return CSSPrimitiveValue::create(style.getTextOrientation());
     case CSSPropertyContent:
         return valueForContentData(style);
     case CSSPropertyCounterIncrement:
@@ -2659,7 +2659,7 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
     case CSSPropertyRy:
         return zoomAdjustedPixelValueForLength(svgStyle.ry(), style);
     case CSSPropertyScrollSnapType:
-        return cssValuePool().createValue(style.scrollSnapType());
+        return cssValuePool().createValue(style.getScrollSnapType());
     case CSSPropertyScrollSnapPointsX:
         return valueForScrollSnapPoints(style.scrollSnapPointsX(), style);
     case CSSPropertyScrollSnapPointsY:

@@ -271,7 +271,7 @@ bool LayoutMultiColumnSet::heightIsAuto() const
         // column-fill is auto also matches the old multicol implementation, which has no support
         // for this property.
         if (RuntimeEnabledFeatures::columnFillEnabled()) {
-            if (multiColumnBlockFlow()->style()->columnFill() == ColumnFillBalance)
+            if (multiColumnBlockFlow()->style()->getColumnFill() == ColumnFillBalance)
                 return true;
         }
         if (LayoutBox* next = nextSiblingBox()) {

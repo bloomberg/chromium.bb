@@ -443,34 +443,34 @@ public:
     void setMarginLeft(LayoutUnit margin) { m_marginBoxOutsets.setLeft(margin); }
     void setMarginRight(LayoutUnit margin) { m_marginBoxOutsets.setRight(margin); }
 
-    LayoutUnit marginLogicalLeft() const { return m_marginBoxOutsets.logicalLeft(style()->writingMode()); }
-    LayoutUnit marginLogicalRight() const { return m_marginBoxOutsets.logicalRight(style()->writingMode()); }
+    LayoutUnit marginLogicalLeft() const { return m_marginBoxOutsets.logicalLeft(style()->getWritingMode()); }
+    LayoutUnit marginLogicalRight() const { return m_marginBoxOutsets.logicalRight(style()->getWritingMode()); }
 
-    LayoutUnit marginBefore(const ComputedStyle* overrideStyle = nullptr) const final { return m_marginBoxOutsets.before((overrideStyle ? overrideStyle : style())->writingMode()); }
-    LayoutUnit marginAfter(const ComputedStyle* overrideStyle = nullptr) const final { return m_marginBoxOutsets.after((overrideStyle ? overrideStyle : style())->writingMode()); }
+    LayoutUnit marginBefore(const ComputedStyle* overrideStyle = nullptr) const final { return m_marginBoxOutsets.before((overrideStyle ? overrideStyle : style())->getWritingMode()); }
+    LayoutUnit marginAfter(const ComputedStyle* overrideStyle = nullptr) const final { return m_marginBoxOutsets.after((overrideStyle ? overrideStyle : style())->getWritingMode()); }
     LayoutUnit marginStart(const ComputedStyle* overrideStyle = nullptr) const final
     {
         const ComputedStyle* styleToUse = overrideStyle ? overrideStyle : style();
-        return m_marginBoxOutsets.start(styleToUse->writingMode(), styleToUse->direction());
+        return m_marginBoxOutsets.start(styleToUse->getWritingMode(), styleToUse->direction());
     }
     LayoutUnit marginEnd(const ComputedStyle* overrideStyle = nullptr) const final
     {
         const ComputedStyle* styleToUse = overrideStyle ? overrideStyle : style();
-        return m_marginBoxOutsets.end(styleToUse->writingMode(), styleToUse->direction());
+        return m_marginBoxOutsets.end(styleToUse->getWritingMode(), styleToUse->direction());
     }
-    LayoutUnit marginOver() const final { return m_marginBoxOutsets.over(style()->writingMode()); }
-    LayoutUnit marginUnder() const final { return m_marginBoxOutsets.under(style()->writingMode()); }
-    void setMarginBefore(LayoutUnit value, const ComputedStyle* overrideStyle = nullptr) { m_marginBoxOutsets.setBefore((overrideStyle ? overrideStyle : style())->writingMode(), value); }
-    void setMarginAfter(LayoutUnit value, const ComputedStyle* overrideStyle = nullptr) { m_marginBoxOutsets.setAfter((overrideStyle ? overrideStyle : style())->writingMode(), value); }
+    LayoutUnit marginOver() const final { return m_marginBoxOutsets.over(style()->getWritingMode()); }
+    LayoutUnit marginUnder() const final { return m_marginBoxOutsets.under(style()->getWritingMode()); }
+    void setMarginBefore(LayoutUnit value, const ComputedStyle* overrideStyle = nullptr) { m_marginBoxOutsets.setBefore((overrideStyle ? overrideStyle : style())->getWritingMode(), value); }
+    void setMarginAfter(LayoutUnit value, const ComputedStyle* overrideStyle = nullptr) { m_marginBoxOutsets.setAfter((overrideStyle ? overrideStyle : style())->getWritingMode(), value); }
     void setMarginStart(LayoutUnit value, const ComputedStyle* overrideStyle = nullptr)
     {
         const ComputedStyle* styleToUse = overrideStyle ? overrideStyle : style();
-        m_marginBoxOutsets.setStart(styleToUse->writingMode(), styleToUse->direction(), value);
+        m_marginBoxOutsets.setStart(styleToUse->getWritingMode(), styleToUse->direction(), value);
     }
     void setMarginEnd(LayoutUnit value, const ComputedStyle* overrideStyle = nullptr)
     {
         const ComputedStyle* styleToUse = overrideStyle ? overrideStyle : style();
-        m_marginBoxOutsets.setEnd(styleToUse->writingMode(), styleToUse->direction(), value);
+        m_marginBoxOutsets.setEnd(styleToUse->getWritingMode(), styleToUse->direction(), value);
     }
 
     // The following functions are used to implement collapsing margins.
@@ -753,7 +753,7 @@ public:
 
     virtual void markForPaginationRelayoutIfNeeded(SubtreeLayoutScope&);
 
-    bool isWritingModeRoot() const { return !parent() || parent()->style()->writingMode() != style()->writingMode(); }
+    bool isWritingModeRoot() const { return !parent() || parent()->style()->getWritingMode() != style()->getWritingMode(); }
     bool isOrthogonalWritingModeRoot() const { return parent() && parent()->isHorizontalWritingMode() != isHorizontalWritingMode(); }
     void markOrthogonalWritingModeRoot();
     void unmarkOrthogonalWritingModeRoot();

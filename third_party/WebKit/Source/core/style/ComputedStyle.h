@@ -486,10 +486,10 @@ public:
     const Length& bottom() const { return surround->offset.bottom(); }
 
     // Accessors for positioned object edges that take into account writing mode.
-    const Length& logicalLeft() const { return surround->offset.logicalLeft(writingMode()); }
-    const Length& logicalRight() const { return surround->offset.logicalRight(writingMode()); }
-    const Length& logicalTop() const { return surround->offset.before(writingMode()); }
-    const Length& logicalBottom() const { return surround->offset.after(writingMode()); }
+    const Length& logicalLeft() const { return surround->offset.logicalLeft(getWritingMode()); }
+    const Length& logicalRight() const { return surround->offset.logicalRight(getWritingMode()); }
+    const Length& logicalTop() const { return surround->offset.before(getWritingMode()); }
+    const Length& logicalBottom() const { return surround->offset.after(getWritingMode()); }
 
     // Whether or not a positioned element requires normal flow x/y to be computed
     // to determine its position.
@@ -606,17 +606,17 @@ public:
     float textAutosizingMultiplier() const { return inherited->textAutosizingMultiplier; }
 
     const Length& textIndent() const { return rareInheritedData->indent; }
-    TextIndentLine textIndentLine() const { return static_cast<TextIndentLine>(rareInheritedData->m_textIndentLine); }
-    TextIndentType textIndentType() const { return static_cast<TextIndentType>(rareInheritedData->m_textIndentType); }
+    TextIndentLine getTextIndentLine() const { return static_cast<TextIndentLine>(rareInheritedData->m_textIndentLine); }
+    TextIndentType getTextIndentType() const { return static_cast<TextIndentType>(rareInheritedData->m_textIndentType); }
     ETextAlign textAlign() const { return static_cast<ETextAlign>(inherited_flags._text_align); }
-    TextAlignLast textAlignLast() const { return static_cast<TextAlignLast>(rareInheritedData->m_textAlignLast); }
-    TextJustify textJustify() const { return static_cast<TextJustify>(rareInheritedData->m_textJustify); }
+    TextAlignLast getTextAlignLast() const { return static_cast<TextAlignLast>(rareInheritedData->m_textAlignLast); }
+    TextJustify getTextJustify() const { return static_cast<TextJustify>(rareInheritedData->m_textJustify); }
     ETextTransform textTransform() const { return static_cast<ETextTransform>(inherited_flags._text_transform); }
     TextDecoration textDecorationsInEffect() const;
     const Vector<AppliedTextDecoration>& appliedTextDecorations() const;
-    TextDecoration textDecoration() const { return static_cast<TextDecoration>(visual->textDecoration); }
-    TextUnderlinePosition textUnderlinePosition() const { return static_cast<TextUnderlinePosition>(rareInheritedData->m_textUnderlinePosition); }
-    TextDecorationStyle textDecorationStyle() const { return static_cast<TextDecorationStyle>(rareNonInheritedData->m_textDecorationStyle); }
+    TextDecoration getTextDecoration() const { return static_cast<TextDecoration>(visual->textDecoration); }
+    TextUnderlinePosition getTextUnderlinePosition() const { return static_cast<TextUnderlinePosition>(rareInheritedData->m_textUnderlinePosition); }
+    TextDecorationStyle getTextDecorationStyle() const { return static_cast<TextDecorationStyle>(rareNonInheritedData->m_textDecorationStyle); }
     float wordSpacing() const;
     float letterSpacing() const;
     StyleVariableData* variables() const;
@@ -683,7 +683,7 @@ public:
 
     bool breakOnlyAfterWhiteSpace() const
     {
-        return whiteSpace() == PRE_WRAP || lineBreak() == LineBreakAfterWhiteSpace;
+        return whiteSpace() == PRE_WRAP || getLineBreak() == LineBreakAfterWhiteSpace;
     }
 
     bool breakWords() const
@@ -721,28 +721,28 @@ public:
     const Length& marginBottom() const { return surround->margin.bottom(); }
     const Length& marginLeft() const { return surround->margin.left(); }
     const Length& marginRight() const { return surround->margin.right(); }
-    const Length& marginBefore() const { return surround->margin.before(writingMode()); }
-    const Length& marginAfter() const { return surround->margin.after(writingMode()); }
-    const Length& marginStart() const { return surround->margin.start(writingMode(), direction()); }
-    const Length& marginEnd() const { return surround->margin.end(writingMode(), direction()); }
-    const Length& marginOver() const { return surround->margin.over(writingMode()); }
-    const Length& marginUnder() const { return surround->margin.under(writingMode()); }
-    const Length& marginStartUsing(const ComputedStyle* otherStyle) const { return surround->margin.start(otherStyle->writingMode(), otherStyle->direction()); }
-    const Length& marginEndUsing(const ComputedStyle* otherStyle) const { return surround->margin.end(otherStyle->writingMode(), otherStyle->direction()); }
-    const Length& marginBeforeUsing(const ComputedStyle* otherStyle) const { return surround->margin.before(otherStyle->writingMode()); }
-    const Length& marginAfterUsing(const ComputedStyle* otherStyle) const { return surround->margin.after(otherStyle->writingMode()); }
+    const Length& marginBefore() const { return surround->margin.before(getWritingMode()); }
+    const Length& marginAfter() const { return surround->margin.after(getWritingMode()); }
+    const Length& marginStart() const { return surround->margin.start(getWritingMode(), direction()); }
+    const Length& marginEnd() const { return surround->margin.end(getWritingMode(), direction()); }
+    const Length& marginOver() const { return surround->margin.over(getWritingMode()); }
+    const Length& marginUnder() const { return surround->margin.under(getWritingMode()); }
+    const Length& marginStartUsing(const ComputedStyle* otherStyle) const { return surround->margin.start(otherStyle->getWritingMode(), otherStyle->direction()); }
+    const Length& marginEndUsing(const ComputedStyle* otherStyle) const { return surround->margin.end(otherStyle->getWritingMode(), otherStyle->direction()); }
+    const Length& marginBeforeUsing(const ComputedStyle* otherStyle) const { return surround->margin.before(otherStyle->getWritingMode()); }
+    const Length& marginAfterUsing(const ComputedStyle* otherStyle) const { return surround->margin.after(otherStyle->getWritingMode()); }
 
     const LengthBox& paddingBox() const { return surround->padding; }
     const Length& paddingTop() const { return surround->padding.top(); }
     const Length& paddingBottom() const { return surround->padding.bottom(); }
     const Length& paddingLeft() const { return surround->padding.left(); }
     const Length& paddingRight() const { return surround->padding.right(); }
-    const Length& paddingBefore() const { return surround->padding.before(writingMode()); }
-    const Length& paddingAfter() const { return surround->padding.after(writingMode()); }
-    const Length& paddingStart() const { return surround->padding.start(writingMode(), direction()); }
-    const Length& paddingEnd() const { return surround->padding.end(writingMode(), direction()); }
-    const Length& paddingOver() const { return surround->padding.over(writingMode()); }
-    const Length& paddingUnder() const { return surround->padding.under(writingMode()); }
+    const Length& paddingBefore() const { return surround->padding.before(getWritingMode()); }
+    const Length& paddingAfter() const { return surround->padding.after(getWritingMode()); }
+    const Length& paddingStart() const { return surround->padding.start(getWritingMode(), direction()); }
+    const Length& paddingEnd() const { return surround->padding.end(getWritingMode(), direction()); }
+    const Length& paddingOver() const { return surround->padding.over(getWritingMode()); }
+    const Length& paddingUnder() const { return surround->padding.under(getWritingMode()); }
 
     ECursor cursor() const { return static_cast<ECursor>(inherited_flags._cursor_style); }
     CursorList* cursors() const { return rareInheritedData->cursorData.get(); }
@@ -822,7 +822,7 @@ public:
     const NamedGridAreaMap& namedGridArea() const { return rareNonInheritedData->m_grid->m_namedGridArea; }
     size_t namedGridAreaRowCount() const { return rareNonInheritedData->m_grid->m_namedGridAreaRowCount; }
     size_t namedGridAreaColumnCount() const { return rareNonInheritedData->m_grid->m_namedGridAreaColumnCount; }
-    GridAutoFlow gridAutoFlow() const { return static_cast<GridAutoFlow>(rareNonInheritedData->m_grid->m_gridAutoFlow); }
+    GridAutoFlow getGridAutoFlow() const { return static_cast<GridAutoFlow>(rareNonInheritedData->m_grid->m_gridAutoFlow); }
     bool isGridAutoFlowDirectionRow() const { return (rareNonInheritedData->m_grid->m_gridAutoFlow & InternalAutoFlowDirectionRow) == InternalAutoFlowDirectionRow; }
     bool isGridAutoFlowDirectionColumn() const { return (rareNonInheritedData->m_grid->m_gridAutoFlow & InternalAutoFlowDirectionColumn) == InternalAutoFlowDirectionColumn; }
     bool isGridAutoFlowAlgorithmSparse() const { return (rareNonInheritedData->m_grid->m_gridAutoFlow & InternalAutoFlowAlgorithmSparse) == InternalAutoFlowAlgorithmSparse; }
@@ -855,12 +855,12 @@ public:
     EUserModify userModify() const { return static_cast<EUserModify>(rareInheritedData->userModify); }
     EUserDrag userDrag() const { return static_cast<EUserDrag>(rareNonInheritedData->userDrag); }
     EUserSelect userSelect() const { return static_cast<EUserSelect>(rareInheritedData->userSelect); }
-    TextOverflow textOverflow() const { return static_cast<TextOverflow>(rareNonInheritedData->textOverflow); }
+    TextOverflow getTextOverflow() const { return static_cast<TextOverflow>(rareNonInheritedData->textOverflow); }
     EMarginCollapse marginBeforeCollapse() const { return static_cast<EMarginCollapse>(rareNonInheritedData->marginBeforeCollapse); }
     EMarginCollapse marginAfterCollapse() const { return static_cast<EMarginCollapse>(rareNonInheritedData->marginAfterCollapse); }
     EWordBreak wordBreak() const { return static_cast<EWordBreak>(rareInheritedData->wordBreak); }
     EOverflowWrap overflowWrap() const { return static_cast<EOverflowWrap>(rareInheritedData->overflowWrap); }
-    LineBreak lineBreak() const { return static_cast<LineBreak>(rareInheritedData->lineBreak); }
+    LineBreak getLineBreak() const { return static_cast<LineBreak>(rareInheritedData->lineBreak); }
     const AtomicString& highlight() const { return rareInheritedData->highlight; }
     const AtomicString& hyphenationString() const { return rareInheritedData->hyphenationString; }
     const AtomicString& locale() const { return fontDescription().locale(false); }
@@ -879,14 +879,14 @@ public:
     unsigned short columnCount() const { return rareNonInheritedData->m_multiCol->m_count; }
     bool hasAutoColumnCount() const { return rareNonInheritedData->m_multiCol->m_autoCount; }
     bool specifiesColumns() const { return !hasAutoColumnCount() || !hasAutoColumnWidth(); }
-    ColumnFill columnFill() const { return static_cast<ColumnFill>(rareNonInheritedData->m_multiCol->m_fill); }
+    ColumnFill getColumnFill() const { return static_cast<ColumnFill>(rareNonInheritedData->m_multiCol->m_fill); }
     float columnGap() const { return rareNonInheritedData->m_multiCol->m_gap; }
     bool hasNormalColumnGap() const { return rareNonInheritedData->m_multiCol->m_normalGap; }
     EBorderStyle columnRuleStyle() const { return rareNonInheritedData->m_multiCol->m_rule.style(); }
     unsigned short columnRuleWidth() const { return rareNonInheritedData->m_multiCol->ruleWidth(); }
     bool columnRuleIsTransparent() const { return rareNonInheritedData->m_multiCol->m_rule.isTransparent(); }
     bool columnRuleEquivalent(const ComputedStyle* otherStyle) const;
-    ColumnSpan columnSpan() const { return static_cast<ColumnSpan>(rareNonInheritedData->m_multiCol->m_columnSpan); }
+    ColumnSpan getColumnSpan() const { return static_cast<ColumnSpan>(rareNonInheritedData->m_multiCol->m_columnSpan); }
     bool hasInlineTransform() const { return rareNonInheritedData->m_hasInlineTransform; }
     bool hasCompositorProxy() const { return rareNonInheritedData->m_hasCompositorProxy; }
     const TransformOperations& transform() const { return rareNonInheritedData->m_transform->m_operations; }
@@ -907,17 +907,17 @@ public:
     const Length& motionOffset() const { return rareNonInheritedData->m_transform->m_motion.m_offset; }
     const StyleMotionRotation& motionRotation() const { return rareNonInheritedData->m_transform->m_motion.m_rotation; }
 
-    TextEmphasisFill textEmphasisFill() const { return static_cast<TextEmphasisFill>(rareInheritedData->textEmphasisFill); }
-    TextEmphasisMark textEmphasisMark() const;
+    TextEmphasisFill getTextEmphasisFill() const { return static_cast<TextEmphasisFill>(rareInheritedData->textEmphasisFill); }
+    TextEmphasisMark getTextEmphasisMark() const;
     const AtomicString& textEmphasisCustomMark() const { return rareInheritedData->textEmphasisCustomMark; }
-    TextEmphasisPosition textEmphasisPosition() const { return static_cast<TextEmphasisPosition>(rareInheritedData->textEmphasisPosition); }
+    TextEmphasisPosition getTextEmphasisPosition() const { return static_cast<TextEmphasisPosition>(rareInheritedData->textEmphasisPosition); }
     const AtomicString& textEmphasisMarkString() const;
 
-    RubyPosition rubyPosition() const { return static_cast<RubyPosition>(rareInheritedData->m_rubyPosition); }
+    RubyPosition getRubyPosition() const { return static_cast<RubyPosition>(rareInheritedData->m_rubyPosition); }
 
-    TextOrientation textOrientation() const { return static_cast<TextOrientation>(rareInheritedData->m_textOrientation); }
+    TextOrientation getTextOrientation() const { return static_cast<TextOrientation>(rareInheritedData->m_textOrientation); }
 
-    ObjectFit objectFit() const { return static_cast<ObjectFit>(rareNonInheritedData->m_objectFit); }
+    ObjectFit getObjectFit() const { return static_cast<ObjectFit>(rareNonInheritedData->m_objectFit); }
     LengthPoint objectPosition() const { return rareNonInheritedData->m_objectPosition; }
 
     // Return true if any transform related property (currently transform/motionPath, transformStyle3D, perspective,
@@ -933,13 +933,13 @@ public:
     void applyTransform(TransformationMatrix&, const FloatRect& boundingBox, ApplyTransformOrigin, ApplyMotionPath, ApplyIndependentTransformProperties) const;
     bool hasMask() const { return rareNonInheritedData->m_mask.hasImage() || rareNonInheritedData->m_maskBoxImage.hasImage(); }
 
-    TextCombine textCombine() const { return static_cast<TextCombine>(rareInheritedData->m_textCombine); }
-    bool hasTextCombine() const { return textCombine() != TextCombineNone; }
+    TextCombine getTextCombine() const { return static_cast<TextCombine>(rareInheritedData->m_textCombine); }
+    bool hasTextCombine() const { return getTextCombine() != TextCombineNone; }
 
     uint8_t snapHeightPosition() const { return rareInheritedData->m_snapHeightPosition; }
     uint8_t snapHeightUnit() const { return rareInheritedData->m_snapHeightUnit; }
 
-    TabSize tabSize() const { return rareInheritedData->m_tabSize; }
+    TabSize getTabSize() const { return rareInheritedData->m_tabSize; }
 
     RespectImageOrientationEnum respectImageOrientation() const { return static_cast<RespectImageOrientationEnum>(rareInheritedData->m_respectImageOrientation); }
 
@@ -963,7 +963,7 @@ public:
     const Length& perspectiveOriginX() const { return perspectiveOrigin().x(); }
     const Length& perspectiveOriginY() const { return perspectiveOrigin().y(); }
     const FloatSize& pageSize() const { return rareNonInheritedData->m_pageSize; }
-    PageSizeType pageSizeType() const { return static_cast<PageSizeType>(rareNonInheritedData->m_pageSizeType); }
+    PageSizeType getPageSizeType() const { return static_cast<PageSizeType>(rareNonInheritedData->m_pageSizeType); }
 
     bool hasCurrentOpacityAnimation() const { return rareNonInheritedData->m_hasCurrentOpacityAnimation; }
     bool hasCurrentTransformAnimation() const { return rareNonInheritedData->m_hasCurrentTransformAnimation; }
@@ -981,10 +981,10 @@ public:
     Color tapHighlightColor() const { return rareInheritedData->tapHighlightColor; }
     ETextSecurity textSecurity() const { return static_cast<ETextSecurity>(rareInheritedData->textSecurity); }
 
-    WritingMode writingMode() const { return static_cast<WritingMode>(inherited_flags.m_writingMode); }
-    bool isHorizontalWritingMode() const { return blink::isHorizontalWritingMode(writingMode()); }
-    bool isFlippedLinesWritingMode() const { return blink::isFlippedLinesWritingMode(writingMode()); }
-    bool isFlippedBlocksWritingMode() const { return blink::isFlippedBlocksWritingMode(writingMode()); }
+    WritingMode getWritingMode() const { return static_cast<WritingMode>(inherited_flags.m_writingMode); }
+    bool isHorizontalWritingMode() const { return blink::isHorizontalWritingMode(getWritingMode()); }
+    bool isFlippedLinesWritingMode() const { return blink::isFlippedLinesWritingMode(getWritingMode()); }
+    bool isFlippedBlocksWritingMode() const { return blink::isFlippedBlocksWritingMode(getWritingMode()); }
 
     EImageRendering imageRendering() const { return static_cast<EImageRendering>(rareInheritedData->m_imageRendering); }
 
@@ -1008,11 +1008,11 @@ public:
 
     bool shouldPlaceBlockDirectionScrollbarOnLogicalLeft() const { return !isLeftToRightDirection() && isHorizontalWritingMode(); }
 
-    TouchAction touchAction() const { return static_cast<TouchAction>(rareNonInheritedData->m_touchAction); }
+    TouchAction getTouchAction() const { return static_cast<TouchAction>(rareNonInheritedData->m_touchAction); }
 
-    ScrollBehavior scrollBehavior() const { return static_cast<ScrollBehavior>(rareNonInheritedData->m_scrollBehavior); }
+    ScrollBehavior getScrollBehavior() const { return static_cast<ScrollBehavior>(rareNonInheritedData->m_scrollBehavior); }
 
-    ScrollSnapType scrollSnapType() const { return static_cast<ScrollSnapType>(rareNonInheritedData->m_scrollSnapType); }
+    ScrollSnapType getScrollSnapType() const { return static_cast<ScrollSnapType>(rareNonInheritedData->m_scrollSnapType); }
     ScrollSnapPoints scrollSnapPointsX() const { return rareNonInheritedData->m_scrollSnap->m_xPoints; }
     ScrollSnapPoints scrollSnapPointsY() const { return rareNonInheritedData->m_scrollSnap->m_yPoints; }
     Vector<LengthPoint> scrollSnapCoordinate() const { return rareNonInheritedData->m_scrollSnap->m_coordinates; }
@@ -1265,7 +1265,7 @@ public:
     void setInsideLink(EInsideLink insideLink) { inherited_flags._insideLink = insideLink; }
     void setIsLink(bool b) { noninherited_flags.isLink = b; }
 
-    PrintColorAdjust printColorAdjust() const { return static_cast<PrintColorAdjust>(inherited_flags.m_printColorAdjust); }
+    PrintColorAdjust getPrintColorAdjust() const { return static_cast<PrintColorAdjust>(inherited_flags.m_printColorAdjust); }
     void setPrintColorAdjust(PrintColorAdjust value) { inherited_flags.m_printColorAdjust = value; }
 
     // A stacking context is painted atomically and defines a stacking order, whereas
@@ -1607,7 +1607,7 @@ public:
 
     bool setWritingMode(WritingMode v)
     {
-        if (v == writingMode())
+        if (v == getWritingMode())
             return false;
 
         inherited_flags.m_writingMode = v;

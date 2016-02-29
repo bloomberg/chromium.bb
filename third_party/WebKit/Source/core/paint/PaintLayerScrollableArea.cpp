@@ -740,7 +740,7 @@ bool PaintLayerScrollableArea::updateAfterLayout(SubtreeLayoutScope* delayedLayo
 
 ScrollBehavior PaintLayerScrollableArea::scrollBehaviorStyle() const
 {
-    return box().style()->scrollBehavior();
+    return box().style()->getScrollBehavior();
 }
 
 bool PaintLayerScrollableArea::hasHorizontalOverflow() const

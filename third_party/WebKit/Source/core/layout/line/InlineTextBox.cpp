@@ -148,7 +148,7 @@ SelectionState InlineTextBox::getSelectionState() const
         int lastSelectable = start() + len() - (isLineBreak() ? 1 : 0);
 
         // FIXME: Remove -webkit-line-break: LineBreakAfterWhiteSpace.
-        int endOfLineAdjustmentForCSSLineBreak = getLineLayoutItem().style()->lineBreak() == LineBreakAfterWhiteSpace ? -1 : 0;
+        int endOfLineAdjustmentForCSSLineBreak = getLineLayoutItem().style()->getLineBreak() == LineBreakAfterWhiteSpace ? -1 : 0;
         bool start = (state != SelectionEnd && startPos >= m_start && startPos <= m_start + m_len + endOfLineAdjustmentForCSSLineBreak);
         bool end = (state != SelectionStart && endPos > m_start && endPos <= lastSelectable);
         if (start && end)
@@ -399,10 +399,10 @@ bool InlineTextBox::nodeAtPoint(HitTestResult& result, const HitTestLocation& lo
 bool InlineTextBox::getEmphasisMarkPosition(const ComputedStyle& style, TextEmphasisPosition& emphasisPosition) const
 {
     // This function returns true if there are text emphasis marks and they are suppressed by ruby text.
-    if (style.textEmphasisMark() == TextEmphasisMarkNone)
+    if (style.getTextEmphasisMark() == TextEmphasisMarkNone)
         return false;
 
-    emphasisPosition = style.textEmphasisPosition();
+    emphasisPosition = style.getTextEmphasisPosition();
     if (emphasisPosition == TextEmphasisPositionUnder)
         return true; // Ruby text is always over, so it cannot suppress emphasis marks under.
 
@@ -583,8 +583,8 @@ TextRun InlineTextBox::constructTextRun(const ComputedStyle& style, const Font& 
     ASSERT(maximumLength >= static_cast<int>(string.length()));
 
     TextRun run(string, textPos().toFloat(), expansion(), expansionBehavior(), direction(), dirOverride() || style.rtlOrdering() == VisualOrder);
-    run.setTabSize(!style.collapseWhiteSpace(), style.tabSize());
-    run.setTextJustify(style.textJustify());
+    run.setTabSize(!style.collapseWhiteSpace(), style.getTabSize());
+    run.setTextJustify(style.getTextJustify());
 
     // Propagate the maximum length of the characters buffer to the TextRun, even when we're only processing a substring.
     run.setCharactersLength(maximumLength);

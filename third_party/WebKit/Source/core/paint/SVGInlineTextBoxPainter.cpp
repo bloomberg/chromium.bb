@@ -188,7 +188,7 @@ static inline LayoutObject* findLayoutObjectDefininingTextDecoration(InlineFlowB
     while (parentBox) {
         layoutObject = LineLayoutAPIShim::layoutObjectFrom(parentBox->getLineLayoutItem());
 
-        if (layoutObject->style() && layoutObject->style()->textDecoration() != TextDecorationNone)
+        if (layoutObject->style() && layoutObject->style()->getTextDecoration() != TextDecorationNone)
             break;
 
         parentBox = parentBox->parent();

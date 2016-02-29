@@ -107,7 +107,7 @@ public:
         m_path.clear();
         m_path = adoptPtr(new Path);
         m_shape->path(*m_path, boundingRect);
-        m_path->setWindRule(m_shape->windRule());
+        m_path->setWindRule(m_shape->getWindRule());
         return *m_path;
     }
 

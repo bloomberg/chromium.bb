@@ -240,7 +240,7 @@ bool LayoutImage::foregroundIsKnownToBeOpaqueInRect(const LayoutRect& localRect,
     if (style()->objectPosition() != ComputedStyle::initialObjectPosition())
         return false;
     // Object-fit may leave parts of the content box empty.
-    ObjectFit objectFit = style()->objectFit();
+    ObjectFit objectFit = style()->getObjectFit();
     if (objectFit != ObjectFitFill && objectFit != ObjectFitCover)
         return false;
     if (!m_imageResource->cachedImage())

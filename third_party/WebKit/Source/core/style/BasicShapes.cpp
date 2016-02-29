@@ -47,7 +47,7 @@ bool BasicShape::canBlend(const BasicShape* other) const
     // Just polygons with same number of vertices can be animated.
     if (type() == BasicShape::BasicShapePolygonType
         && (toBasicShapePolygon(this)->values().size() != toBasicShapePolygon(other)->values().size()
-        || toBasicShapePolygon(this)->windRule() != toBasicShapePolygon(other)->windRule()))
+        || toBasicShapePolygon(this)->getWindRule() != toBasicShapePolygon(other)->getWindRule()))
         return false;
 
     // Circles with keywords for radii or center coordinates cannot be animated.
@@ -201,7 +201,7 @@ PassRefPtr<BasicShape> BasicShapePolygon::blend(const BasicShape* other, double 
     if (!length)
         return result.release();
 
-    result->setWindRule(o->windRule());
+    result->setWindRule(o->getWindRule());
 
     for (size_t i = 0; i < length; i = i + 2) {
         result->appendPoint(m_values.at(i).blend(o->values().at(i), progress, ValueRangeAll),
