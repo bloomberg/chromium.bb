@@ -27,6 +27,7 @@ static_library("libfuzzer_main") {
       "../../third_party/llvm/lib/Fuzzer/FuzzerMutate.cpp",
       "../../third_party/llvm/lib/Fuzzer/FuzzerSHA1.cpp",
       "../../third_party/llvm/lib/Fuzzer/FuzzerSanitizerOptions.cpp",
+      "../../third_party/llvm/lib/Fuzzer/FuzzerTracePC.cpp",
       "../../third_party/llvm/lib/Fuzzer/FuzzerTraceState.cpp",
       "../../third_party/llvm/lib/Fuzzer/FuzzerUtil.cpp",
     ]
