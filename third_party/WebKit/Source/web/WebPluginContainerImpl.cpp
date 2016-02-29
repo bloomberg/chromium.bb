@@ -67,14 +67,12 @@
 #include "platform/HostWindow.h"
 #include "platform/KeyboardCodes.h"
 #include "platform/PlatformGestureEvent.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/exported/WrappedResourceResponse.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/paint/CullRect.h"
-#include "platform/graphics/paint/ForeignLayerDisplayItem.h"
 #include "platform/scroll/ScrollAnimatorBase.h"
 #include "platform/scroll/ScrollbarTheme.h"
 #include "public/platform/Platform.h"
@@ -123,15 +121,6 @@ void WebPluginContainerImpl::paint(GraphicsContext& context, const CullRect& cul
     // Don't paint anything if the plugin doesn't intersect.
     if (!cullRect.intersectsCullRect(frameRect()))
         return;
-
-    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled() && m_webLayer) {
-        // With Slimming Paint v2, composited plugins should have their layers
-        // inserted rather than invoking WebPlugin::paint.
-        recordForeignLayer(
-            context, *m_element->layoutObject(), DisplayItem::ForeignLayerPlugin,
-            m_webLayer, location(), size());
-        return;
-    }
 
     if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(context, *m_element->layoutObject(), DisplayItem::Type::WebPlugin, LayoutPoint()))
         return;

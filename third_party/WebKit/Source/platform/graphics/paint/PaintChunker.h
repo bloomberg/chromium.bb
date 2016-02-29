@@ -21,14 +21,6 @@ class PLATFORM_EXPORT PaintChunker final {
     DISALLOW_NEW();
     WTF_MAKE_NONCOPYABLE(PaintChunker);
 public:
-    enum ItemBehavior {
-        // Can be combined with adjacent items when building chunks.
-        DefaultBehavior = 0,
-
-        // Item requires its own paint chunk.
-        RequiresSeparateChunk,
-    };
-
     PaintChunker();
     ~PaintChunker();
 
@@ -37,7 +29,7 @@ public:
     const PaintChunkProperties& currentPaintChunkProperties() const { return m_currentProperties; }
     void updateCurrentPaintChunkProperties(const PaintChunkProperties&);
 
-    void incrementDisplayItemIndex(ItemBehavior);
+    void incrementDisplayItemIndex();
     void decrementDisplayItemIndex();
 
     void clear();
@@ -48,7 +40,6 @@ public:
 
 private:
     Vector<PaintChunk> m_chunks;
-    Vector<ItemBehavior> m_chunkBehavior;
     PaintChunkProperties m_currentProperties;
 };
 

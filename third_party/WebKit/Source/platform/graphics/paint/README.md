@@ -147,13 +147,6 @@ See [Display item caching](../../../core/paint/README.md#paint-result-caching).
 Holds an `SkPicture` which contains the Skia commands required to draw some atom
 of content.
 
-#### [ForeignLayerDisplayItem](ForeignLayerDisplayItem.h)
-
-Draws an atom of content, but using a `cc::Layer` produced by some agent outside
-of the normal Blink paint system (for example, a plugin). Since they always map
-to a `cc::Layer`, they are always the only display item in their paint chunk,
-and are ineligible for squashing with other layers.
-
 ### Paired begin/end display items
 
 *** aside

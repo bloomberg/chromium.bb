@@ -5,7 +5,6 @@
 #ifndef TestPaintArtifact_h
 #define TestPaintArtifact_h
 
-#include "base/memory/ref_counted.h"
 #include "platform/graphics/Color.h"
 #include "platform/graphics/paint/DisplayItemList.h"
 #include "platform/graphics/paint/PaintArtifact.h"
@@ -13,10 +12,6 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/Vector.h"
-
-namespace cc {
-class Layer;
-}
 
 namespace blink {
 
@@ -48,7 +43,6 @@ public:
     TestPaintArtifact& chunk(PassRefPtr<TransformPaintPropertyNode>, PassRefPtr<ClipPaintPropertyNode>, PassRefPtr<EffectPaintPropertyNode>);
     TestPaintArtifact& chunk(const PaintChunkProperties&);
     TestPaintArtifact& rectDrawing(const FloatRect& bounds, Color);
-    TestPaintArtifact& foreignLayer(const FloatPoint&, const IntSize&, scoped_refptr<cc::Layer>);
 
     // Can't add more things once this is called.
     const PaintArtifact& build();

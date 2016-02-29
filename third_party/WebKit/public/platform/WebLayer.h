@@ -240,7 +240,6 @@ public:
 
     // Gets the underlying cc layer.
     virtual const cc::Layer* ccLayer() const = 0;
-    virtual cc::Layer* ccLayer() = 0;
 
     virtual void setElementId(uint64_t) = 0;
     virtual uint64_t elementId() const = 0;

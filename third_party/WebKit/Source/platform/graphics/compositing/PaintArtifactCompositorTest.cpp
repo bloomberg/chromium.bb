@@ -5,7 +5,6 @@
 #include "platform/graphics/compositing/PaintArtifactCompositor.h"
 
 #include "cc/layers/layer.h"
-#include "cc/layers/layer_settings.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/paint/PaintArtifact.h"
 #include "platform/testing/PictureMatchers.h"
@@ -305,21 +304,6 @@ TEST_F(PaintArtifactCompositorTest, SiblingClips)
             Pointee(drawsRectangle(FloatRect(0, 0, 640, 480), Color::black)));
         EXPECT_EQ(translation(-400, 0), blackLayer->transform());
     }
-}
-
-TEST_F(PaintArtifactCompositorTest, ForeignLayerPassesThrough)
-{
-    scoped_refptr<cc::Layer> layer = cc::Layer::Create(cc::LayerSettings());
-
-    TestPaintArtifact artifact;
-    artifact.chunk(PaintChunkProperties())
-        .foreignLayer(FloatPoint(50, 100), IntSize(400, 300), layer);
-    update(artifact.build());
-
-    ASSERT_EQ(1u, rootLayer()->children().size());
-    EXPECT_EQ(layer, rootLayer()->child_at(0));
-    EXPECT_EQ(gfx::Size(400, 300), layer->bounds());
-    EXPECT_EQ(translation(50, 100), layer->transform());
 }
 
 } // namespace

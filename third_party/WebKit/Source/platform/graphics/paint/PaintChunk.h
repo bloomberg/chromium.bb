@@ -24,12 +24,6 @@ struct PaintChunk {
     PaintChunk(unsigned begin, unsigned end, const PaintChunkProperties& props)
         : beginIndex(begin), endIndex(end), properties(props), knownToBeOpaque(false) { }
 
-    unsigned size() const
-    {
-        ASSERT(endIndex >= beginIndex);
-        return endIndex - beginIndex;
-    }
-
     // Index of the first drawing in this chunk.
     unsigned beginIndex;
 

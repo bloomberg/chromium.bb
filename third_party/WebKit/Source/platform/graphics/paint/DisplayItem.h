@@ -113,10 +113,6 @@ public:
         CachedDrawingFirst,
         CachedDrawingLast = CachedDrawingFirst + DrawingLast - DrawingFirst,
 
-        ForeignLayerFirst,
-        ForeignLayerPlugin = ForeignLayerFirst,
-        ForeignLayerLast = ForeignLayerPlugin,
-
         ClipFirst,
         ClipBoxPaintPhaseFirst = ClipFirst,
         ClipBoxPaintPhaseLast = ClipBoxPaintPhaseFirst + PaintPhaseMax,
@@ -305,8 +301,6 @@ public:
     DEFINE_PAINT_PHASE_CONVERSION_METHOD(Drawing)
     DEFINE_CATEGORY_METHODS(CachedDrawing)
     DEFINE_CONVERSION_METHODS(Drawing, drawing, CachedDrawing, cachedDrawing)
-
-    DEFINE_CATEGORY_METHODS(ForeignLayer)
 
     DEFINE_PAIRED_CATEGORY_METHODS(Clip, clip)
     DEFINE_PAINT_PHASE_CONVERSION_METHOD(ClipLayerFragment)
