@@ -10,6 +10,19 @@ if (is_android) {
   import("//build/config/android/rules.gni")
 }
 
+declare_args() {
+  # Denotes the type of Cast product. This is #defined as CAST_PRODUCT_TYPE in
+  # version.h. This is an integer in the range [0-4].
+  cast_product_type = 0
+
+  # If true, IS_CAST_DEBUG_BUILD() will evaluate to 1 in version.h. Otherwise,
+  # it will evaluate to 0. Overriding this when is_debug=false is useful for
+  # doing engineering builds.
+  cast_is_debug = is_debug
+}
+
+assert(cast_product_type >= 0 && cast_product_type <= 4)
+
 # GYP target: chromecast.gyp:cast_base
 source_set("base") {
   sources = [
@@ -119,22 +132,52 @@ source_set("cast_sys_info") {
   }
 }
 
+# This target runs a script which generates a file containing key-value pairs.
+# //build/util/version.py will parse this file, creating "version.h". This
+# target shall only be depended upon by ":cast_version".
+action("generate_cast_version_params") {
+  visibility = [ ":cast_version_action" ]
+
+  script = "//chromecast/tools/build/generate_cast_version_params.py"
+
+  params_file = "$root_gen_dir/cast_version_params"
+  outputs = [
+    params_file,
+  ]
+
+  args = [
+    "-o",
+    rebase_path(params_file),
+    "-p",
+    "$cast_product_type",
+  ]
+
+  if (cast_is_debug) {
+    args += [ "-d" ]
+  }
+
+  if (chromecast_branding != "public") {
+    args += [
+      "-r",
+      rebase_path("//chromecast/internal/build/cast_build_release"),
+    ]
+  }
+}
+
 process_version("cast_version") {
   template_file = "version.h.in"
   output = "$target_gen_dir/version.h"
+
+  params_file = get_target_outputs(":generate_cast_version_params")
+  deps = [
+    ":generate_cast_version_params",
+  ]
+
   extra_args = [
     "-e",
     "VERSION_FULL=\"%s.%s.%s.%s\"%(MAJOR,MINOR,BUILD,PATCH)",
-
-    # TODO(slan): Populate the fields below with real values
-    "-e",
-    "CAST_BUILD_INCREMENTAL=20150608.181153",
-    "-e",
-    "CAST_BUILD_RELEASE=1.15",
-    "-e",
-    "CAST_IS_DEBUG_BUILD=1",
-    "-e",
-    "CAST_PRODUCT_TYPE=0",
+    "-f",
+    rebase_path(params_file[0]),
   ]
 }
 

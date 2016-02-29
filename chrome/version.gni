@@ -124,6 +124,8 @@ template("process_version") {
       args += [ rebase_path(invoker.template_file, root_build_dir) ]
     }
 
+    forward_variables_from(invoker, [ "deps" ])
+
     if (process_only) {
       # When processing only, visibility gets applied to this target.
       forward_variables_from(invoker, [ "visibility" ])
