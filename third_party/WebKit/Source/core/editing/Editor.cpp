@@ -792,32 +792,21 @@ bool Editor::insertTextWithoutSendingTextEvent(const String& text, bool selectIn
     if (text.isEmpty())
         return false;
 
-    VisibleSelection selection = selectionForCommand(triggeringEvent);
+    const VisibleSelection& selection = selectionForCommand(triggeringEvent);
     if (!selection.isContentEditable())
         return false;
 
     spellChecker().updateMarkersForWordsAffectedByEditing(isSpaceOrNewline(text[0]));
 
-    // Get the selection to use for the event that triggered this insertText.
-    // If the event handler changed the selection, we may want to use a different selection
-    // that is contained in the event target.
-    selection = selectionForCommand(triggeringEvent);
-    if (selection.isContentEditable()) {
-        if (Node* selectionStart = selection.start().anchorNode()) {
-            RefPtrWillBeRawPtr<Document> document(selectionStart->document());
+    // Insert the text
+    TypingCommand::insertText(*selection.start().document(), text, selection,
+        selectInsertedText ? TypingCommand::SelectInsertedText : 0,
+        triggeringEvent && triggeringEvent->isComposition() ? TypingCommand::TextCompositionConfirm : TypingCommand::TextCompositionNone);
 
-            // Insert the text
-            TypingCommand::Options options = 0;
-            if (selectInsertedText)
-                options |= TypingCommand::SelectInsertedText;
-            TypingCommand::insertText(*document.get(), text, selection, options, triggeringEvent && triggeringEvent->isComposition() ? TypingCommand::TextCompositionConfirm : TypingCommand::TextCompositionNone);
-
-            // Reveal the current selection
-            if (LocalFrame* editedFrame = document->frame()) {
-                if (Page* page = editedFrame->page())
-                    toLocalFrame(page->focusController().focusedOrMainFrame())->selection().revealSelection(ScrollAlignment::alignCenterIfNeeded);
-            }
-        }
+    // Reveal the current selection
+    if (LocalFrame* editedFrame = selection.start().document()->frame()) {
+        if (Page* page = editedFrame->page())
+            toLocalFrame(page->focusController().focusedOrMainFrame())->selection().revealSelection(ScrollAlignment::alignCenterIfNeeded);
     }
 
     return true;
