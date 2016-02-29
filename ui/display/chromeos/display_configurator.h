@@ -92,6 +92,11 @@ class DISPLAY_EXPORT DisplayConfigurator : public NativeDisplayObserver {
     virtual void OnDisplayModeChangeFailed(
         const DisplayStateList& displays,
         MultipleDisplayState failed_new_state) {}
+
+    // Called after the power state has been changed. |power_state| contains
+    // the just-applied power state.
+    virtual void OnPowerStateChanged(
+        chromeos::DisplayPowerState power_state) {}
   };
 
   // Interface for classes that make decisions about which display state
@@ -298,7 +303,11 @@ class DISPLAY_EXPORT DisplayConfigurator : public NativeDisplayObserver {
   void RestoreRequestedPowerStateAfterResume();
 
   // Notifies observers about an attempted state change.
-  void NotifyObservers(bool success, MultipleDisplayState attempted_state);
+  void NotifyDisplayStateObservers(bool success,
+                                   MultipleDisplayState attempted_state);
+
+  // Notifies observers about a power state change.
+  void NotifyPowerStateObservers();
 
   // Returns the display state that should be used with |cached_displays_| while
   // in |power_state|.

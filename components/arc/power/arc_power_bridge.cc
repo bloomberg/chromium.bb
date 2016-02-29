@@ -11,7 +11,6 @@
 #include "base/logging.h"
 #include "chromeos/dbus/power_policy_controller.h"
 #include "components/arc/arc_service_manager.h"
-#include "ui/display/chromeos/display_configurator.h"
 
 namespace arc {
 
@@ -25,11 +24,6 @@ ArcPowerBridge::~ArcPowerBridge() {
   ReleaseAllDisplayWakeLocks();
 }
 
-void ArcPowerBridge::OnStateChanged(ArcBridgeService::State state) {
-  if (state == ArcBridgeService::State::STOPPING)
-    ReleaseAllDisplayWakeLocks();
-}
-
 void ArcPowerBridge::OnPowerInstanceReady() {
   PowerInstance* power_instance = arc_bridge_service()->power_instance();
   if (!power_instance) {
@@ -38,6 +32,24 @@ void ArcPowerBridge::OnPowerInstanceReady() {
   }
 
   power_instance->Init(binding_.CreateInterfacePtrAndBind());
+  ash::Shell::GetInstance()->display_configurator()->AddObserver(this);
+}
+
+void ArcPowerBridge::OnPowerInstanceClosed() {
+  ash::Shell::GetInstance()->display_configurator()->RemoveObserver(this);
+  ReleaseAllDisplayWakeLocks();
+}
+
+void ArcPowerBridge::OnPowerStateChanged(
+    chromeos::DisplayPowerState power_state) {
+  PowerInstance* power_instance = arc_bridge_service()->power_instance();
+  if (!power_instance) {
+    LOG(ERROR) << "PowerInstance is not available";
+    return;
+  }
+
+  bool enabled = (power_state != chromeos::DISPLAY_POWER_ALL_OFF);
+  power_instance->SetInteractive(enabled);
 }
 
 void ArcPowerBridge::OnAcquireDisplayWakeLock(

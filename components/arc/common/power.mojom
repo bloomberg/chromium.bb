@@ -28,5 +28,8 @@ interface PowerHost {
 
 interface PowerInstance {
   // Establishes full-duplex communication with the host.
-  Init(PowerHost host_ptr);
+  Init@0(PowerHost host_ptr);
+
+  // Alerts the instance to a change in interactive state.
+  [MinVersion=1] SetInteractive@1(bool enabled);
 };

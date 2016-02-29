@@ -11,6 +11,7 @@
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "ui/display/chromeos/display_configurator.h"
 
 namespace arc {
 
@@ -18,14 +19,18 @@ namespace arc {
 // ARC instances.
 class ArcPowerBridge : public ArcService,
                        public ArcBridgeService::Observer,
+                       public ui::DisplayConfigurator::Observer,
                        public PowerHost {
  public:
   explicit ArcPowerBridge(ArcBridgeService* bridge_service);
   ~ArcPowerBridge() override;
 
   // ArcBridgeService::Observer overrides.
-  void OnStateChanged(ArcBridgeService::State state) override;
   void OnPowerInstanceReady() override;
+  void OnPowerInstanceClosed() override;
+
+  // DisplayConfigurator::Observer overrides.
+  void OnPowerStateChanged(chromeos::DisplayPowerState power_state) override;
 
   // PowerHost overrides.
   void OnAcquireDisplayWakeLock(DisplayWakeLockType type) override;

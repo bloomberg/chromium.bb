@@ -517,6 +517,7 @@ void DisplayConfigurator::SetInitialDisplayPower(
     chromeos::DisplayPowerState power_state) {
   DCHECK_EQ(current_display_state_, MULTIPLE_DISPLAY_STATE_INVALID);
   requested_power_state_ = current_power_state_ = power_state;
+  NotifyPowerStateObservers();
 }
 
 void DisplayConfigurator::Init(bool is_panel_fitting_enabled) {
@@ -877,7 +878,7 @@ void DisplayConfigurator::SetDisplayMode(MultipleDisplayState new_state) {
     if (mirroring_controller_ &&
         new_state == MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED)
       mirroring_controller_->SetSoftwareMirroring(false);
-    NotifyObservers(true, new_state);
+    NotifyDisplayStateObservers(true, new_state);
     return;
   }
 
@@ -1012,6 +1013,7 @@ void DisplayConfigurator::OnConfigured(
 
   cached_displays_ = displays;
   if (success) {
+    chromeos::DisplayPowerState old_power_state = current_power_state_;
     current_display_state_ = new_display_state;
     current_power_state_ = new_power_state;
 
@@ -1032,10 +1034,13 @@ void DisplayConfigurator::OnConfigured(
     // present).
     if (!requested_power_state_change_)
       requested_power_state_ = new_power_state;
+
+    if (old_power_state != current_power_state_)
+      NotifyPowerStateObservers();
   }
 
   configuration_task_.reset();
-  NotifyObservers(success, new_display_state);
+  NotifyDisplayStateObservers(success, new_display_state);
   CallAndClearInProgressCallbacks(success);
 
   if (success && !configure_timer_.IsRunning() &&
@@ -1088,7 +1093,7 @@ void DisplayConfigurator::RestoreRequestedPowerStateAfterResume() {
                   base::Bind(&DoNothing));
 }
 
-void DisplayConfigurator::NotifyObservers(
+void DisplayConfigurator::NotifyDisplayStateObservers(
     bool success,
     MultipleDisplayState attempted_state) {
   if (success) {
@@ -1099,6 +1104,11 @@ void DisplayConfigurator::NotifyObservers(
         Observer, observers_, OnDisplayModeChangeFailed(cached_displays_,
                                                         attempted_state));
   }
+}
+
+void DisplayConfigurator::NotifyPowerStateObservers() {
+  FOR_EACH_OBSERVER(
+      Observer, observers_, OnPowerStateChanged(current_power_state_));
 }
 
 int64_t DisplayConfigurator::AddVirtualDisplay(gfx::Size display_size) {
