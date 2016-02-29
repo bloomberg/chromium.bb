@@ -68,6 +68,7 @@ xml/%/index.xml: $(top_srcdir)/src/scanner.c $(scanned_src_files_%) wayland.doxy
 
 html/%/index.html: $(scanned_src_files_%) wayland.doxygen $(diagrams) $(diagram_maps) | html/%
 	$(AM_V_GEN)(cat wayland.doxygen; \
+          echo "PROJECT_NAME=\"Wayland $* API\""; \
           echo "GENERATE_HTML=YES"; \
           echo "HTML_OUTPUT=html/$*"; \
           echo "INPUT= $(scanned_src_files_$*) $(extra_doxygen_$*)"; \
