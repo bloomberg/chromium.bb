@@ -66,6 +66,31 @@ Polymer({
   },
 
   /**
+   * Performs photo capture from the live camera stream. 'phototaken' event
+   * will be fired as soon as captured photo is available, with 'dataURL'
+   * property containing the photo encoded as a data URL.
+   * @private
+   */
+  takePhoto: function() {
+    if (!this.cameraOnline_)
+      return;
+    var canvas =
+        /** @type {HTMLCanvasElement} */ (document.createElement('canvas'));
+    canvas.width = CAPTURE_SIZE.width;
+    canvas.height = CAPTURE_SIZE.height;
+    this.captureFrame_(
+        this.$.cameraVideo,
+        /** @type {!CanvasRenderingContext2D} */ (canvas.getContext('2d')));
+
+    var photoDataUrl = this.isFlipped_ ? this.flipFrame_(canvas) :
+                                         canvas.toDataURL('image/png');
+    this.fire('phototaken', {photoDataUrl: photoDataUrl});
+
+    announceAccessibleMessage(
+        loadTimeData.getString('photoCaptureAccessibleText'));
+  },
+
+  /**
    * Observer for the cameraActive property.
    * @private
    */
@@ -137,31 +162,6 @@ Polymer({
     var flipMessageId = this.isFlipped_ ?
        'photoFlippedAccessibleText' : 'photoFlippedBackAccessibleText';
     announceAccessibleMessage(loadTimeData.getString(flipMessageId));
-  },
-
-  /**
-   * Performs photo capture from the live camera stream. 'phototaken' event
-   * will be fired as soon as captured photo is available, with 'dataURL'
-   * property containing the photo encoded as a data URL.
-   * @private
-   */
-  onTapTakePhoto_: function() {
-    if (!this.cameraOnline_)
-      return;
-    var canvas = /** @type {HTMLCanvasElement} */(
-        document.createElement('canvas'));
-    canvas.width = CAPTURE_SIZE.width;
-    canvas.height = CAPTURE_SIZE.height;
-    this.captureFrame_(
-        this.$.cameraVideo,
-        /** @type {!CanvasRenderingContext2D} */(canvas.getContext('2d')));
-
-    var photoDataUrl = this.isFlipped_ ? this.flipFrame_(canvas) :
-                                         canvas.toDataURL('image/png');
-    this.fire('phototaken', {photoDataUrl: photoDataUrl});
-
-    announceAccessibleMessage(
-        loadTimeData.getString('photoCaptureAccessibleText'));
   },
 
   /**

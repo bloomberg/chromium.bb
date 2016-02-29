@@ -1,5 +1,6 @@
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/util.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-a11y-keys/iron-a11y-keys.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/image-icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-selector/iron-selector.html">
@@ -13,7 +14,10 @@
   <link rel="import" type="css" href="change_picture.css">
   <template>
     <style include="settings-shared"></style>
-    <div id="container" class="settings-box">
+    <div id="container" class="settings-box" tabindex="0">
+      <iron-a11y-keys keys="up down left right space enter"
+          on-keys-pressed="onKeysPress_">
+      </iron-a11y-keys>
       <div id="availableIcons" class="start">
         <iron-selector id="selector" on-iron-activate="onImageActivate_"
             selected-item="{{selectedItem_}}">
@@ -51,7 +55,7 @@
               i18n-values="title:discardPhoto" on-tap="onTapDiscardOldImage_">
           </paper-icon-button>
         </div>
-        <settings-camera
+        <settings-camera id="camera"
             camera-active="[[isCameraActive_(cameraPresent_, selectedItem_)]]"
             on-phototaken="onPhotoTaken_">
       </div>

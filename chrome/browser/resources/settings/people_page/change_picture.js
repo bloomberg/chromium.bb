@@ -219,6 +219,63 @@ Polymer({
   },
 
   /**
+   * Handler for when accessibility-specific keys are pressed.
+   * @param {!{detail: !{key: string}}} e
+   */
+  onKeysPress_: function(e) {
+    if (!this.selectedItem_)
+      return;
+
+    // In the old Options user images grid, the 'up' and 'down' keys had
+    // different behavior depending on whether ChromeVox was on or off.
+    // If ChromeVox was on, 'up' or 'down' would select the next or previous
+    // image on the left or right. If ChromeVox was off, it would select the
+    // image spatially above or below using calculated columns.
+    //
+    // The code below implements the simple behavior of selecting the image
+    // to the left or right (as if ChromeVox was always on).
+    //
+    // TODO(tommycli): Investigate if it's necessary to calculate columns
+    // and select the image on the top or bottom for non-ChromeVox users.
+    var /** IronSelectorElement */ selector = this.$.selector;
+    switch (e.detail.key) {
+      case 'up':
+      case 'left':
+        // This loop always terminates because the file and profile icons are
+        // never hidden.
+        do {
+          selector.selectPrevious();
+        } while (this.selectedItem_.hidden);
+
+        this.lastSelectedImageType_ = this.selectedItem_.dataset.type;
+        break;
+
+      case 'down':
+      case 'right':
+        // This loop always terminates because the file and profile icons are
+        // never hidden.
+        do {
+          selector.selectNext();
+        } while (this.selectedItem_.hidden);
+
+        this.lastSelectedImageType_ = this.selectedItem_.dataset.type;
+        break;
+
+      case 'enter':
+      case 'space':
+        if (this.selectedItem_.dataset.type == 'camera') {
+          var /** SettingsCameraElement */ camera = this.$.camera;
+          camera.takePhoto();
+        } else if (this.selectedItem_.dataset.type == 'file') {
+          settings.ChangePicturePrivateApi.chooseFile();
+        } else if (this.selectedItem_.dataset.type == 'old') {
+          this.onTapDiscardOldImage_();
+        }
+        break;
+    }
+  },
+
+  /**
    * Handler for when the an image is activated.
    * @param {!Event} event
    * @private
@@ -278,7 +335,7 @@ Polymer({
    * @private
    */
   isPreviewImageHidden_: function(selectedItem) {
-    if (selectedItem == undefined)
+    if (!selectedItem)
       return true;
 
     var type = selectedItem.dataset.type;
@@ -291,9 +348,8 @@ Polymer({
    * @private
    */
   isCameraActive_: function(cameraPresent, selectedItem) {
-    return cameraPresent &&
-           selectedItem != undefined &&
-           selectedItem.dataset.type == 'camera';
+    return cameraPresent && selectedItem &&
+        selectedItem.dataset.type == 'camera';
   },
 
   /**
@@ -302,7 +358,7 @@ Polymer({
    * @private
    */
   isDiscardHidden_: function(selectedItem) {
-    return selectedItem == undefined || selectedItem.dataset.type != 'old';
+    return !selectedItem || selectedItem.dataset.type != 'old';
   },
 
   /**

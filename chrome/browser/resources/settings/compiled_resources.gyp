@@ -16,7 +16,6 @@
         'languages_page/compiled_resources.gyp:*',
         'on_startup_page/compiled_resources.gyp:*',
         'passwords_and_forms_page/compiled_resources.gyp:*',
-        'people_page/compiled_resources.gyp:*',
         'prefs/compiled_resources.gyp:*',
         'settings_page/compiled_resources.gyp:*',
         'site_settings/compiled_resources.gyp:*',
