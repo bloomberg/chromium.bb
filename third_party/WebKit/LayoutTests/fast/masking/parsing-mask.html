@@ -77,11 +77,11 @@ testInner("-webkit-mask", "center center", "50% 50%");
 
 testInner("-webkit-mask-position", "left 10px top 15px", "left 10px top 15px");
 testInner("-webkit-mask-position", "left 10% top 30%", "left 10% top 30%");
-testInner("-webkit-mask-position", "right top 15px", "right 0% top 15px");
-testInner("-webkit-mask-position", "left 10px center", "left 10px top 50%");
-testInner("-webkit-mask-position", "center top 20px", "left 50% top 20px");
-testInner("-webkit-mask-position", "center left 30px", "left 30px top 50%");
-testInner("-webkit-mask-position", "left 20% top", "left 20% top 0%");
+testInner("-webkit-mask-position", "right top 15px", "right top 15px");
+testInner("-webkit-mask-position", "left 10px center", "left 10px center");
+testInner("-webkit-mask-position", "center top 20px", "center top 20px");
+testInner("-webkit-mask-position", "center left 30px", "left 30px center");
+testInner("-webkit-mask-position", "left 20% top", "left 20% top");
 
 // test mask-source-type
 testInner("mask-source-type", "alpha", "alpha");

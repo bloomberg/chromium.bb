@@ -4499,6 +4499,58 @@ bool CSSPropertyParser::consumeLegacyBreakProperty(CSSPropertyID property, bool 
     return true;
 }
 
+static bool consumeBackgroundPosition(CSSParserTokenRange& range, const CSSParserContext& context, UnitlessQuirk unitless, RefPtrWillBeRawPtr<CSSValue>& resultX, RefPtrWillBeRawPtr<CSSValue>& resultY)
+{
+    do {
+        RefPtrWillBeRawPtr<CSSValue> positionX = nullptr;
+        RefPtrWillBeRawPtr<CSSValue> positionY = nullptr;
+        if (!consumePosition(range, context.mode(), unitless, positionX, positionY))
+            return false;
+        addBackgroundValue(resultX, positionX);
+        addBackgroundValue(resultY, positionY);
+    } while (consumeCommaIncludingWhitespace(range));
+    return true;
+}
+
+static bool consumeRepeatStyleComponent(CSSParserTokenRange& range, RefPtrWillBeRawPtr<CSSValue>& value1, RefPtrWillBeRawPtr<CSSValue>& value2, bool& implicit)
+{
+    if (consumeIdent<CSSValueRepeatX>(range)) {
+        value1 = cssValuePool().createIdentifierValue(CSSValueRepeat);
+        value2 = cssValuePool().createIdentifierValue(CSSValueNoRepeat);
+        implicit = true;
+        return true;
+    }
+    if (consumeIdent<CSSValueRepeatY>(range)) {
+        value1 = cssValuePool().createIdentifierValue(CSSValueNoRepeat);
+        value2 = cssValuePool().createIdentifierValue(CSSValueRepeat);
+        implicit = true;
+        return true;
+    }
+    value1 = consumeIdent<CSSValueRepeat, CSSValueNoRepeat, CSSValueRound, CSSValueSpace>(range);
+    if (!value1)
+        return false;
+
+    value2 = consumeIdent<CSSValueRepeat, CSSValueNoRepeat, CSSValueRound, CSSValueSpace>(range);
+    if (!value2) {
+        value2 = value1;
+        implicit = true;
+    }
+    return true;
+}
+
+static bool consumeRepeatStyle(CSSParserTokenRange& range, RefPtrWillBeRawPtr<CSSValue>& resultX, RefPtrWillBeRawPtr<CSSValue>& resultY, bool& implicit)
+{
+    do {
+        RefPtrWillBeRawPtr<CSSValue> repeatX = nullptr;
+        RefPtrWillBeRawPtr<CSSValue> repeatY = nullptr;
+        if (!consumeRepeatStyleComponent(range, repeatX, repeatY, implicit))
+            return false;
+        addBackgroundValue(resultX, repeatX);
+        addBackgroundValue(resultY, repeatY);
+    } while (consumeCommaIncludingWhitespace(range));
+    return true;
+}
+
 bool CSSPropertyParser::parseShorthand(CSSPropertyID unresolvedProperty, bool important)
 {
     CSSPropertyID property = resolveCSSPropertyID(unresolvedProperty);
@@ -4640,6 +4692,27 @@ bool CSSPropertyParser::parseShorthand(CSSPropertyID unresolvedProperty, bool im
     case CSSPropertyWebkitColumnBreakBefore:
     case CSSPropertyWebkitColumnBreakInside:
         return consumeLegacyBreakProperty(property, important);
+    case CSSPropertyWebkitMaskPosition:
+    case CSSPropertyBackgroundPosition: {
+        RefPtrWillBeRawPtr<CSSValue> resultX = nullptr;
+        RefPtrWillBeRawPtr<CSSValue> resultY = nullptr;
+        if (!consumeBackgroundPosition(m_range, m_context, UnitlessQuirk::Allow, resultX, resultY) || !m_range.atEnd())
+            return false;
+        addProperty(property == CSSPropertyBackgroundPosition ? CSSPropertyBackgroundPositionX : CSSPropertyWebkitMaskPositionX, resultX.release(), important);
+        addProperty(property == CSSPropertyBackgroundPosition ? CSSPropertyBackgroundPositionY : CSSPropertyWebkitMaskPositionY, resultY.release(), important);
+        return true;
+    }
+    case CSSPropertyBackgroundRepeat:
+    case CSSPropertyWebkitMaskRepeat: {
+        RefPtrWillBeRawPtr<CSSValue> resultX = nullptr;
+        RefPtrWillBeRawPtr<CSSValue> resultY = nullptr;
+        bool implicit = false;
+        if (!consumeRepeatStyle(m_range, resultX, resultY, implicit) || !m_range.atEnd())
+            return false;
+        addProperty(property == CSSPropertyBackgroundRepeat ? CSSPropertyBackgroundRepeatX : CSSPropertyWebkitMaskRepeatX, resultX.release(), important, implicit);
+        addProperty(property == CSSPropertyBackgroundRepeat ? CSSPropertyBackgroundRepeatY : CSSPropertyWebkitMaskRepeatY, resultY.release(), important, implicit);
+        return true;
+    }
     default:
         m_currentShorthand = oldShorthand;
         CSSParserValueList valueList(m_range);

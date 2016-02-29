@@ -222,7 +222,7 @@ void CSSToStyleMap::mapFillXPosition(StyleResolverState& state, FillLayer* layer
     if (value.isValuePair())
         length = toCSSPrimitiveValue(toCSSValuePair(value).second()).convertToLength(state.cssToLengthConversionData());
     else
-        length = toCSSPrimitiveValue(value).convertToLength(state.cssToLengthConversionData());
+        length = StyleBuilderConverter::convertPositionLength<CSSValueLeft, CSSValueRight>(state, toCSSPrimitiveValue(value));
 
     layer->setXPosition(length);
     if (value.isValuePair())
@@ -243,7 +243,7 @@ void CSSToStyleMap::mapFillYPosition(StyleResolverState& state, FillLayer* layer
     if (value.isValuePair())
         length = toCSSPrimitiveValue(toCSSValuePair(value).second()).convertToLength(state.cssToLengthConversionData());
     else
-        length = toCSSPrimitiveValue(value).convertToLength(state.cssToLengthConversionData());
+        length = StyleBuilderConverter::convertPositionLength<CSSValueTop, CSSValueBottom>(state, toCSSPrimitiveValue(value));
 
     layer->setYPosition(length);
     if (value.isValuePair())

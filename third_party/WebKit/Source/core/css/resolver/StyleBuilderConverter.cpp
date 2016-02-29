@@ -655,7 +655,7 @@ StyleMotionRotation StyleBuilderConverter::convertMotionRotation(const CSSValue&
 }
 
 template <CSSValueID cssValueFor0, CSSValueID cssValueFor100>
-static Length convertPositionLength(StyleResolverState& state, const CSSValue& value)
+Length StyleBuilderConverter::convertPositionLength(StyleResolverState& state, const CSSValue& value)
 {
     if (value.isValuePair()) {
         const CSSValuePair& pair = toCSSValuePair(value);
@@ -704,25 +704,6 @@ float StyleBuilderConverter::convertPerspective(StyleResolverState& state, const
     if (primitiveValue.getValueID() == CSSValueNone)
         return ComputedStyle::initialPerspective();
     return convertPerspectiveLength(state, primitiveValue);
-}
-
-template <CSSValueID cssValueFor0, CSSValueID cssValueFor100>
-static Length convertOriginLength(StyleResolverState& state, const CSSPrimitiveValue& primitiveValue)
-{
-    if (primitiveValue.isValueID()) {
-        switch (primitiveValue.getValueID()) {
-        case cssValueFor0:
-            return Length(0, Percent);
-        case cssValueFor100:
-            return Length(100, Percent);
-        case CSSValueCenter:
-            return Length(50, Percent);
-        default:
-            ASSERT_NOT_REACHED();
-        }
-    }
-
-    return StyleBuilderConverter::convertLength(state, primitiveValue);
 }
 
 EPaintOrder StyleBuilderConverter::convertPaintOrder(StyleResolverState&, const CSSValue& cssPaintOrder)
@@ -882,8 +863,8 @@ TransformOrigin StyleBuilderConverter::convertTransformOrigin(StyleResolverState
     const CSSPrimitiveValue& primitiveValueZ = toCSSPrimitiveValue(*list.item(2));
 
     return TransformOrigin(
-        convertOriginLength<CSSValueLeft, CSSValueRight>(state, primitiveValueX),
-        convertOriginLength<CSSValueTop, CSSValueBottom>(state, primitiveValueY),
+        convertPositionLength<CSSValueLeft, CSSValueRight>(state, primitiveValueX),
+        convertPositionLength<CSSValueTop, CSSValueBottom>(state, primitiveValueY),
         StyleBuilderConverter::convertComputedLength<float>(state, primitiveValueZ)
     );
 }

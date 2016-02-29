@@ -341,25 +341,6 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::legacyParseValue(CSSProperty
 bool CSSPropertyParser::legacyParseShorthand(CSSPropertyID propertyID, bool important)
 {
     switch (propertyID) {
-    case CSSPropertyBackgroundPosition:
-    case CSSPropertyBackgroundRepeat:
-    case CSSPropertyWebkitMaskPosition:
-    case CSSPropertyWebkitMaskRepeat: {
-        RefPtrWillBeRawPtr<CSSValue> val1 = nullptr;
-        RefPtrWillBeRawPtr<CSSValue> val2 = nullptr;
-        CSSPropertyID propId1, propId2;
-        if (parseFillProperty(propertyID, propId1, propId2, val1, val2)) {
-            ShorthandScope scope(this, propertyID);
-            addProperty(propId1, val1.release(), important);
-            if (val2)
-                addProperty(propId2, val2.release(), important);
-            m_implicitShorthand = false;
-            return true;
-        }
-        m_implicitShorthand = false;
-        return true;
-    }
-
     case CSSPropertyGridGap:
         ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
         return parseGridGapShorthand(important);

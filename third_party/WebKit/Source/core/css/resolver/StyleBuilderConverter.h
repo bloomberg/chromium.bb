@@ -110,6 +110,7 @@ public:
     static PassRefPtr<StylePath> convertPath(StyleResolverState&, const CSSValue&);
     static PassRefPtr<StylePath> convertPathOrNone(StyleResolverState&, const CSSValue&);
     static StyleMotionRotation convertMotionRotation(const CSSValue&);
+    template <CSSValueID cssValueFor0, CSSValueID cssValueFor100> static Length convertPositionLength(StyleResolverState&, const CSSValue&);
 };
 
 template <typename T>
