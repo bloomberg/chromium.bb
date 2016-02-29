@@ -22,6 +22,10 @@ class PageLoadMetricsObserverTestHarness
   PageLoadMetricsObserverTestHarness();
   ~PageLoadMetricsObserverTestHarness() override;
 
+  // Helper that fills in any timing fields that MWCO requires but that are
+  // currently missing.
+  static void PopulateRequiredTimingFields(PageLoadTiming* inout_timing);
+
   void SetUp() override;
 
   virtual void RegisterObservers(PageLoadTracker* tracker) {}

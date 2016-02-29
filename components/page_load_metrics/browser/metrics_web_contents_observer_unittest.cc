@@ -153,6 +153,7 @@ TEST_F(MetricsWebContentsObserverTest, SamePageNoTrigger) {
 
   PageLoadTiming timing;
   timing.navigation_start = base::Time::FromDoubleT(1);
+  timing.response_start = base::TimeDelta::FromMilliseconds(1);
   timing.first_layout = first_layout;
 
   content::WebContentsTester* web_contents_tester =
