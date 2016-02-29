@@ -231,7 +231,7 @@ TEST_F(PrecacheFetcherFetcherTest, ResourceNotInCache) {
   EXPECT_EQ(true, callback_called_);
 }
 
-TEST_F(PrecacheFetcherFetcherTest, ResourceHasStrongValidators) {
+TEST_F(PrecacheFetcherFetcherTest, ResourceHasValidators) {
   GURL url(kGoodResourceURL);
 
   net::FakeURLFetcher *fetcher1 = nullptr, *fetcher2 = nullptr;

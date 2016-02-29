@@ -1248,6 +1248,15 @@ bool HttpResponseHeaders::HasStrongValidators() const {
                                        date_header);
 }
 
+bool HttpResponseHeaders::HasValidators() const {
+  std::string etag_header;
+  EnumerateHeader(NULL, "etag", &etag_header);
+  std::string last_modified_header;
+  EnumerateHeader(NULL, "Last-Modified", &last_modified_header);
+  return HttpUtil::HasValidators(GetHttpVersion(), etag_header,
+                                 last_modified_header);
+}
+
 // From RFC 2616:
 // Content-Length = "Content-Length" ":" 1*DIGIT
 int64_t HttpResponseHeaders::GetContentLength() const {

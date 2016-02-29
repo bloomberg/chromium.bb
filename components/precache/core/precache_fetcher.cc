@@ -191,7 +191,7 @@ void PrecacheFetcher::Fetcher::OnURLFetchComplete(const URLFetcher* source) {
   if (fetch_stage_ == FetchStage::CACHE &&
       (source->GetStatus().error() == net::ERR_CACHE_MISS ||
        (source->GetResponseHeaders() &&
-        source->GetResponseHeaders()->HasStrongValidators()))) {
+        source->GetResponseHeaders()->HasValidators()))) {
     // If the resource was not found in the cache, request it from the
     // network.
     //

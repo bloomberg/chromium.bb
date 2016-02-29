@@ -738,6 +738,9 @@ bool HttpUtil::HasStrongValidators(HttpVersion version,
                                    const std::string& etag_header,
                                    const std::string& last_modified_header,
                                    const std::string& date_header) {
+  if (!HasValidators(version, etag_header, last_modified_header))
+    return false;
+
   if (version < HttpVersion(1, 1))
     return false;
 
@@ -761,7 +764,25 @@ bool HttpUtil::HasStrongValidators(HttpVersion version,
   if (!base::Time::FromString(date_header.c_str(), &date))
     return false;
 
+  // Last-Modified is implicitly weak unless it is at least 60 seconds before
+  // the Date value.
   return ((date - last_modified).InSeconds() >= 60);
+}
+
+bool HttpUtil::HasValidators(HttpVersion version,
+                             const std::string& etag_header,
+                             const std::string& last_modified_header) {
+  if (version < HttpVersion(1, 0))
+    return false;
+
+  base::Time last_modified;
+  if (base::Time::FromString(last_modified_header.c_str(), &last_modified))
+    return true;
+
+  // It is OK to consider an empty string in etag_header to be a missing header
+  // since valid ETags are always quoted-strings (see RFC 2616 3.11) and thus
+  // empty ETags aren't empty strings (i.e., an empty ETag might be "\"\"").
+  return version >= HttpVersion(1, 1) && !etag_header.empty();
 }
 
 // Functions for histogram initialization.  The code 0 is put in the map to

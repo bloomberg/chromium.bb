@@ -1634,6 +1634,40 @@ INSTANTIATE_TEST_CASE_P(HttpResponseHeaders,
                         HasStrongValidatorsTest,
                         testing::ValuesIn(strong_validators_tests));
 
+TEST(HttpResponseHeadersTest, HasValidatorsNone) {
+  std::string headers("HTTP/1.1 200 OK");
+  HeadersToRaw(&headers);
+  scoped_refptr<HttpResponseHeaders> parsed(new HttpResponseHeaders(headers));
+  EXPECT_FALSE(parsed->HasValidators());
+}
+
+TEST(HttpResponseHeadersTest, HasValidatorsEtag) {
+  std::string headers(
+      "HTTP/1.1 200 OK\n"
+      "etag: \"anything\"");
+  HeadersToRaw(&headers);
+  scoped_refptr<HttpResponseHeaders> parsed(new HttpResponseHeaders(headers));
+  EXPECT_TRUE(parsed->HasValidators());
+}
+
+TEST(HttpResponseHeadersTest, HasValidatorsLastModified) {
+  std::string headers(
+      "HTTP/1.1 200 OK\n"
+      "Last-Modified: Wed, 28 Nov 2007 00:40:10 GMT");
+  HeadersToRaw(&headers);
+  scoped_refptr<HttpResponseHeaders> parsed(new HttpResponseHeaders(headers));
+  EXPECT_TRUE(parsed->HasValidators());
+}
+
+TEST(HttpResponseHeadersTest, HasValidatorsWeakEtag) {
+  std::string headers(
+      "HTTP/1.1 200 OK\n"
+      "etag: W/\"anything\"");
+  HeadersToRaw(&headers);
+  scoped_refptr<HttpResponseHeaders> parsed(new HttpResponseHeaders(headers));
+  EXPECT_TRUE(parsed->HasValidators());
+}
+
 struct AddHeaderTestData {
   const char* orig_headers;
   const char* new_header;

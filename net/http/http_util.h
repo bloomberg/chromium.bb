@@ -205,10 +205,19 @@ class NET_EXPORT HttpUtil {
 
   // Returns true if the parameters describe a response with a strong etag or
   // last-modified header.  See section 13.3.3 of RFC 2616.
+  // An empty string should be passed for missing headers.
   static bool HasStrongValidators(HttpVersion version,
                                   const std::string& etag_header,
                                   const std::string& last_modified_header,
                                   const std::string& date_header);
+
+  // Returns true if this response has any validator (either a Last-Modified or
+  // an ETag) regardless of whether it is strong or weak.  See section 13.3.3 of
+  // RFC 2616.
+  // An empty string should be passed for missing headers.
+  static bool HasValidators(HttpVersion version,
+                            const std::string& etag_header,
+                            const std::string& last_modified_header);
 
   // Gets a vector of common HTTP status codes for histograms of status
   // codes.  Currently returns everything in the range [100, 600), plus 0

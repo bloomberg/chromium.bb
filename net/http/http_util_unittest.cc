@@ -1200,4 +1200,63 @@ TEST(HttpUtilTest, IsValidHeaderValueRFC7230) {
   EXPECT_TRUE(HttpUtil::IsValidHeaderValueRFC7230("q\x80q"));
 }
 
+TEST(HttpUtilTest, HasValidators) {
+  const char* const kMissing = "";
+  const char* const kEtagEmpty = "\"\"";
+  const char* const kEtagStrong = "\"strong\"";
+  const char* const kEtagWeak = "W/\"weak\"";
+  const char* const kLastModified = "Tue, 15 Nov 1994 12:45:26 GMT";
+  const char* const kLastModifiedInvalid = "invalid";
+
+  const HttpVersion v0_9 = HttpVersion(0, 9);
+  EXPECT_FALSE(HttpUtil::HasValidators(v0_9, kMissing, kMissing));
+  EXPECT_FALSE(HttpUtil::HasValidators(v0_9, kEtagStrong, kMissing));
+  EXPECT_FALSE(HttpUtil::HasValidators(v0_9, kEtagWeak, kMissing));
+  EXPECT_FALSE(HttpUtil::HasValidators(v0_9, kEtagEmpty, kMissing));
+
+  EXPECT_FALSE(HttpUtil::HasValidators(v0_9, kMissing, kLastModified));
+  EXPECT_FALSE(HttpUtil::HasValidators(v0_9, kEtagStrong, kLastModified));
+  EXPECT_FALSE(HttpUtil::HasValidators(v0_9, kEtagWeak, kLastModified));
+  EXPECT_FALSE(HttpUtil::HasValidators(v0_9, kEtagEmpty, kLastModified));
+
+  EXPECT_FALSE(HttpUtil::HasValidators(v0_9, kMissing, kLastModifiedInvalid));
+  EXPECT_FALSE(
+      HttpUtil::HasValidators(v0_9, kEtagStrong, kLastModifiedInvalid));
+  EXPECT_FALSE(HttpUtil::HasValidators(v0_9, kEtagWeak, kLastModifiedInvalid));
+  EXPECT_FALSE(HttpUtil::HasValidators(v0_9, kEtagEmpty, kLastModifiedInvalid));
+
+  const HttpVersion v1_0 = HttpVersion(1, 0);
+  EXPECT_FALSE(HttpUtil::HasValidators(v1_0, kMissing, kMissing));
+  EXPECT_FALSE(HttpUtil::HasValidators(v1_0, kEtagStrong, kMissing));
+  EXPECT_FALSE(HttpUtil::HasValidators(v1_0, kEtagWeak, kMissing));
+  EXPECT_FALSE(HttpUtil::HasValidators(v1_0, kEtagEmpty, kMissing));
+
+  EXPECT_TRUE(HttpUtil::HasValidators(v1_0, kMissing, kLastModified));
+  EXPECT_TRUE(HttpUtil::HasValidators(v1_0, kEtagStrong, kLastModified));
+  EXPECT_TRUE(HttpUtil::HasValidators(v1_0, kEtagWeak, kLastModified));
+  EXPECT_TRUE(HttpUtil::HasValidators(v1_0, kEtagEmpty, kLastModified));
+
+  EXPECT_FALSE(HttpUtil::HasValidators(v1_0, kMissing, kLastModifiedInvalid));
+  EXPECT_FALSE(
+      HttpUtil::HasValidators(v1_0, kEtagStrong, kLastModifiedInvalid));
+  EXPECT_FALSE(HttpUtil::HasValidators(v1_0, kEtagWeak, kLastModifiedInvalid));
+  EXPECT_FALSE(HttpUtil::HasValidators(v1_0, kEtagEmpty, kLastModifiedInvalid));
+
+  const HttpVersion v1_1 = HttpVersion(1, 1);
+  EXPECT_FALSE(HttpUtil::HasValidators(v1_1, kMissing, kMissing));
+  EXPECT_TRUE(HttpUtil::HasValidators(v1_1, kEtagStrong, kMissing));
+  EXPECT_TRUE(HttpUtil::HasValidators(v1_1, kEtagWeak, kMissing));
+  EXPECT_TRUE(HttpUtil::HasValidators(v1_1, kEtagEmpty, kMissing));
+
+  EXPECT_TRUE(HttpUtil::HasValidators(v1_1, kMissing, kLastModified));
+  EXPECT_TRUE(HttpUtil::HasValidators(v1_1, kEtagStrong, kLastModified));
+  EXPECT_TRUE(HttpUtil::HasValidators(v1_1, kEtagWeak, kLastModified));
+  EXPECT_TRUE(HttpUtil::HasValidators(v1_1, kEtagEmpty, kLastModified));
+
+  EXPECT_FALSE(HttpUtil::HasValidators(v1_1, kMissing, kLastModifiedInvalid));
+  EXPECT_TRUE(HttpUtil::HasValidators(v1_1, kEtagStrong, kLastModifiedInvalid));
+  EXPECT_TRUE(HttpUtil::HasValidators(v1_1, kEtagWeak, kLastModifiedInvalid));
+  EXPECT_TRUE(HttpUtil::HasValidators(v1_1, kEtagEmpty, kLastModifiedInvalid));
+}
+
 }  // namespace net

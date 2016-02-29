@@ -273,6 +273,11 @@ class NET_EXPORT HttpResponseHeaders
   // See section 13.3.3 of RFC 2616.
   bool HasStrongValidators() const;
 
+  // Returns true if this response has any validator (either a Last-Modified or
+  // an ETag) regardless of whether it is strong or weak.  See section 13.3.3 of
+  // RFC 2616.
+  bool HasValidators() const;
+
   // Extracts the value of the Content-Length header or returns -1 if there is
   // no such header in the response.
   int64_t GetContentLength() const;
