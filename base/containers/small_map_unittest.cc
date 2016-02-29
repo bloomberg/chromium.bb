@@ -479,4 +479,58 @@ TEST(SmallMap, SubclassInitializationWithFunctionObject) {
   EXPECT_EQ(1u, m.count(-1));
 }
 
+// This class acts as a basic implementation of a move-only type. The canonical
+// example of such a type is scoped_ptr/unique_ptr.
+class MoveOnlyType {
+ public:
+  MoveOnlyType() : value_(0) {}
+  explicit MoveOnlyType(int value) : value_(value) {}
+
+  MoveOnlyType(MoveOnlyType&& other) {
+    *this = std::move(other);
+  }
+
+  MoveOnlyType& operator=(MoveOnlyType&& other) {
+    value_ = other.value_;
+    other.value_ = 0;
+    return *this;
+  }
+
+  MoveOnlyType(const MoveOnlyType&) = delete;
+  MoveOnlyType& operator=(const MoveOnlyType&) = delete;
+
+  int value() const { return value_; }
+
+ private:
+  int value_;
+};
+
+TEST(SmallMap, MoveOnlyValueType) {
+  SmallMap<std::map<int, MoveOnlyType>, 2> m;
+
+  m[0] = MoveOnlyType(1);
+  m[1] = MoveOnlyType(2);
+  m.erase(m.begin());
+
+  // SmallMap will move m[1] to an earlier index in the internal array.
+  EXPECT_EQ(m.size(), 1u);
+  EXPECT_EQ(m[1].value(), 2);
+
+  m[0] = MoveOnlyType(1);
+  // SmallMap must move the values from the array into the internal std::map.
+  m[2] = MoveOnlyType(3);
+
+  EXPECT_EQ(m.size(), 3u);
+  EXPECT_EQ(m[0].value(), 1);
+  EXPECT_EQ(m[1].value(), 2);
+  EXPECT_EQ(m[2].value(), 3);
+
+  m.erase(m.begin());
+
+  // SmallMap should also let internal std::map erase with a move-only type.
+  EXPECT_EQ(m.size(), 2u);
+  EXPECT_EQ(m[1].value(), 2);
+  EXPECT_EQ(m[2].value(), 3);
+}
+
 }  // namespace base

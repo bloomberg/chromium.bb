@@ -517,7 +517,7 @@ class SmallMap {
       array_[i].Destroy();
       --size_;
       if (i != size_) {
-        array_[i].Init(*array_[size_]);
+        array_[i].InitFromMove(std::move(array_[size_]));
         array_[size_].Destroy();
       }
     } else {
@@ -594,7 +594,7 @@ class SmallMap {
     ManualConstructor<value_type> temp_array[kArraySize];
 
     for (int i = 0; i < kArraySize; i++) {
-      temp_array[i].Init(*array_[i]);
+      temp_array[i].InitFromMove(std::move(array_[i]));
       array_[i].Destroy();
     }
 
@@ -604,7 +604,7 @@ class SmallMap {
 
     // Insert elements into it.
     for (int i = 0; i < kArraySize; i++) {
-      map_->insert(*temp_array[i]);
+      map_->insert(std::move(*temp_array[i]));
       temp_array[i].Destroy();
     }
   }

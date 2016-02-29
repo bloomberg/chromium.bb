@@ -54,8 +54,12 @@ class ManualConstructor {
   inline const Type& operator*() const { return *get(); }
 
   template <typename... Ts>
-  inline void Init(const Ts&... params) {
-    new(space_.void_data()) Type(params...);
+  inline void Init(Ts&&... params) {
+    new(space_.void_data()) Type(std::forward<Ts>(params)...);
+  }
+
+  inline void InitFromMove(ManualConstructor<Type>&& o) {
+    Init(std::move(*o));
   }
 
   inline void Destroy() {
