@@ -159,14 +159,24 @@ void PageLoadTracker::LogAbortChainHistograms(
 
 void PageLoadTracker::WebContentsHidden() {
   // Only log the first time we background in a given page load.
-  if (background_time_.is_null())
+  if (background_time_.is_null()) {
+    // Make sure we either started in the foreground and haven't been
+    // foregrounded yet, or started in the background and have already been
+    // foregrounded.
+    DCHECK_EQ(started_in_foreground_, foreground_time_.is_null());
     background_time_ = base::TimeTicks::Now();
+  }
 }
 
 void PageLoadTracker::WebContentsShown() {
   // Only log the first time we foreground in a given page load.
-  if (foreground_time_.is_null())
+  if (foreground_time_.is_null()) {
+    // Make sure we either started in the background and haven't been
+    // backgrounded yet, or started in the foreground and have already been
+    // backgrounded.
+    DCHECK_NE(started_in_foreground_, background_time_.is_null());
     foreground_time_ = base::TimeTicks::Now();
+  }
 }
 
 void PageLoadTracker::Commit(content::NavigationHandle* navigation_handle) {
@@ -439,6 +449,8 @@ void MetricsWebContentsObserver::DidRedirectNavigation(
 }
 
 void MetricsWebContentsObserver::WasShown() {
+  if (in_foreground_)
+    return;
   in_foreground_ = true;
   if (committed_load_)
     committed_load_->WebContentsShown();
@@ -448,6 +460,8 @@ void MetricsWebContentsObserver::WasShown() {
 }
 
 void MetricsWebContentsObserver::WasHidden() {
+  if (!in_foreground_)
+    return;
   in_foreground_ = false;
   if (committed_load_)
     committed_load_->WebContentsHidden();
