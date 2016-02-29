@@ -10,6 +10,7 @@
 enum {
   kPrimaryIPCChannel = 0,
   kStatsTableSharedMemFd,
+  kMojoIPCChannel,
 
   // The first key that can be use to register descriptors.
   kIPCDescriptorMax

@@ -624,6 +624,10 @@ const char kMemoryMetrics[]                 = "memory-metrics";
 // Use a Mojo-based LocalStorage implementation.
 const char kMojoLocalStorage[]              = "mojo-local-storage";
 
+// A random token a child process can exchange for a primordial message pipe
+// to the browser.
+const char kMojoPrimordialPipeToken[]       = "mojo-primordial-pipe-token";
+
 // Mutes audio sent to the audio device so it is not audible during
 // automated testing.
 const char kMuteAudio[]                     = "mute-audio";

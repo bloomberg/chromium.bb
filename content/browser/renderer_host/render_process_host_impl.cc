@@ -701,7 +701,7 @@ bool RenderProcessHostImpl::Init() {
   if (channel_)
     return true;
 
-  RegisterChildWithExternalShell(id_, instance_id_++, this);
+  shell_pipe_token_ = RegisterChildWithExternalShell(id_, instance_id_++, this);
 
   base::CommandLine::StringType renderer_prefix;
   // A command prefix is something prepended to the command line of the spawned
@@ -1624,6 +1624,11 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     if (value.empty() || value == switches::kRendererProcess) {
       renderer_cmd->AppendSwitch(switches::kWaitForDebugger);
     }
+  }
+
+  if (!shell_pipe_token_.empty()) {
+    renderer_cmd->AppendSwitchASCII(switches::kMojoPrimordialPipeToken,
+                                    shell_pipe_token_);
   }
 
 #if defined(OS_WIN) && !defined(OFFICIAL_BUILD)
@@ -2576,19 +2581,6 @@ void RenderProcessHostImpl::OnProcessLaunched() {
   NotificationService::current()->Notify(NOTIFICATION_RENDERER_PROCESS_CREATED,
                                          Source<RenderProcessHost>(this),
                                          NotificationService::NoDetails());
-
-  if (child_process_launcher_.get()) {
-    base::ProcessHandle process_handle =
-        child_process_launcher_->GetProcess().Handle();
-    mojo::edk::ScopedPlatformHandle client_pipe =
-        mojo::edk::ChildProcessLaunched(process_handle);
-    Send(new ChildProcessMsg_SetMojoParentPipeHandle(
-        IPC::GetFileHandleForProcess(client_pipe.release().handle,
-                                     process_handle, true)));
-  }
-
-  // Send the mojo shell handle to the renderer.
-  SendExternalMojoShellHandleToChild(GetHandle(), this);
 
   // Allow Mojo to be setup before the renderer sees any Chrome IPC messages.
   // This way, Mojo can be safely used from the renderer in response to any
