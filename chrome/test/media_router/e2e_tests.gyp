@@ -12,6 +12,9 @@
           'dependencies': [
             '../../chrome.gyp:browser_tests_run',
           ],
+          'includes': [
+            '../../../build/isolate.gypi',
+          ],
           'sources': [
             'media_router_tests.isolate',
           ],
