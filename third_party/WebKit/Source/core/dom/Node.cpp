@@ -1121,9 +1121,6 @@ bool Node::isEqualNode(Node* other) const
     if (nodeType != other->getNodeType())
         return false;
 
-    if (nodeName() != other->nodeName())
-        return false;
-
     if (nodeValue() != other->nodeValue())
         return false;
 
@@ -1134,14 +1131,13 @@ bool Node::isEqualNode(Node* other) const
         if (toAttr(this)->namespaceURI() != toAttr(other)->namespaceURI())
             return false;
     } else if (isElementNode()) {
-        if (toElement(this)->localName() != toElement(other)->localName())
-            return false;
-
-        if (toElement(this)->namespaceURI() != toElement(other)->namespaceURI())
+        if (toElement(this)->tagQName() != toElement(other)->tagQName())
             return false;
 
         if (!toElement(this)->hasEquivalentAttributes(toElement(other)))
             return false;
+    } else if (nodeName() != other->nodeName()) {
+        return false;
     }
 
     Node* child = firstChild();
