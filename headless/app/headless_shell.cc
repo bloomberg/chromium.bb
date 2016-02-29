@@ -65,7 +65,6 @@ class HeadlessShell : public HeadlessWebContents::Observer {
 
   // HeadlessWebContents::Observer implementation:
   void DocumentOnLoadCompletedInMainFrame() override {
-    LOG(DEBUG) << "Document load completed";
     ShutdownIfNeeded();
   }
 
