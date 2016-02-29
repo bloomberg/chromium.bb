@@ -422,7 +422,7 @@ void ContentViewCoreImpl::UpdateFrameInfo(
     bool is_mobile_optimized_hint) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (obj.is_null())
+  if (obj.is_null() || !window_android_)
     return;
 
   window_android_->set_content_offset(
