@@ -78,15 +78,17 @@ public class AutoSigninFirstRunDialog
                 R.layout.single_line_bottom_text_dialog, null);
         TextView summaryView = (TextView) view.findViewById(R.id.summary);
 
-        if (mExplanationLinkStart != 0 && mExplanationLinkEnd != 0) {
+        if (mExplanationLinkStart != mExplanationLinkEnd && mExplanationLinkEnd != 0) {
             SpannableString spanableExplanation = new SpannableString(mExplanation);
             spanableExplanation.setSpan(new ClickableSpan() {
                 @Override
                 public void onClick(View view) {
                     nativeOnLinkClicked(mNativeAutoSigninFirstRunDialog);
+                    mDialog.dismiss();
                 }
             }, mExplanationLinkStart, mExplanationLinkEnd, Spanned.SPAN_INCLUSIVE_INCLUSIVE);
             summaryView.setText(spanableExplanation);
+            summaryView.setMovementMethod(LinkMovementMethod.getInstance());
         } else {
             summaryView.setText(mExplanation);
             summaryView.setMovementMethod(LinkMovementMethod.getInstance());
