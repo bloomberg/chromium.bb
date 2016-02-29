@@ -156,8 +156,9 @@ gfx::Size ContentSettingBubbleContents::GetPreferredSize() const {
   gfx::Size preferred_size(views::View::GetPreferredSize());
   int preferred_width =
       (!content_setting_bubble_model_->bubble_content().domain_lists.empty() &&
-       (kMinMultiLineContentsWidth > preferred_size.width())) ?
-      kMinMultiLineContentsWidth : preferred_size.width();
+       (kMinMultiLineContentsWidth > preferred_size.width()))
+          ? kMinMultiLineContentsWidth
+          : preferred_size.width();
   preferred_size.set_width(std::min(preferred_width, kMaxContentsWidth));
   return preferred_size;
 }
@@ -169,6 +170,7 @@ void ContentSettingBubbleContents::UpdateMenuLabel(
        it != media_menus_.end(); ++it) {
     if (it->second->type == type) {
       it->first->SetText(base::UTF8ToUTF16(label));
+      it->first->Layout();
       return;
     }
   }
