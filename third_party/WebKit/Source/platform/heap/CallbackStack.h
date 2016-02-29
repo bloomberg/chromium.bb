@@ -37,7 +37,7 @@ public:
         VisitorCallback m_callback;
     };
 
-    explicit CallbackStack(size_t blockSize = defaultBlockSize);
+    explicit CallbackStack(size_t blockSize = kDefaultBlockSize);
     ~CallbackStack();
 
     void clear();
@@ -55,10 +55,9 @@ public:
 #endif
 
     static const size_t kMinimalBlockSize;
+    static const size_t kDefaultBlockSize = (1 << 13);
 
 private:
-    static const size_t defaultBlockSize = (1 << 13);
-
     class Block {
         USING_FAST_MALLOC(Block);
     public:

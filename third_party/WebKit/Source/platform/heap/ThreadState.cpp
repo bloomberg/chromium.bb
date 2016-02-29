@@ -131,7 +131,10 @@ ThreadState::ThreadState()
     m_likelyToBePromptlyFreed = adoptArrayPtr(new int[likelyToBePromptlyFreedArraySize]);
     clearHeapAges();
 
-    m_threadLocalWeakCallbackStack = new CallbackStack();
+    // There is little use of weak references and collections off the main thread;
+    // use a much lower initial block reservation.
+    size_t initialBlockSize = isMainThread() ? CallbackStack::kDefaultBlockSize : CallbackStack::kMinimalBlockSize;
+    m_threadLocalWeakCallbackStack = new CallbackStack(initialBlockSize);
 }
 
 ThreadState::~ThreadState()
