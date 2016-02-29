@@ -24,8 +24,10 @@ namespace ui {
 // one process to another.
 struct AX_EXPORT AXNodeData {
   AXNodeData();
-  AXNodeData(const AXNodeData& other);
   virtual ~AXNodeData();
+
+  AXNodeData(const AXNodeData& other);
+  AXNodeData& operator=(AXNodeData other);
 
   // Accessing accessibility attributes:
   //
@@ -95,8 +97,8 @@ struct AX_EXPORT AXNodeData {
   bool IsRoot() const;
   void SetRoot();
 
-  // This is a simple serializable struct. All member variables should be
-  // public and copyable.
+  // As much as possible this should behave as a simple, serializable,
+  // copyable struct.
   int32_t id;
   AXRole role;
   uint32_t state;

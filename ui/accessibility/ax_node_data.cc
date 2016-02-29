@@ -62,9 +62,36 @@ AXNodeData::AXNodeData()
       state(0xFFFFFFFF) {
 }
 
-AXNodeData::AXNodeData(const AXNodeData& other) = default;
-
 AXNodeData::~AXNodeData() {
+}
+
+AXNodeData::AXNodeData(const AXNodeData& other) {
+  id = other.id;
+  role = other.role;
+  state = other.state;
+  location = other.location;
+  string_attributes = other.string_attributes;
+  int_attributes = other.int_attributes;
+  float_attributes = other.float_attributes;
+  bool_attributes = other.bool_attributes;
+  intlist_attributes = other.intlist_attributes;
+  html_attributes = other.html_attributes;
+  child_ids = other.child_ids;
+}
+
+AXNodeData& AXNodeData::operator=(AXNodeData other) {
+  id = other.id;
+  role = other.role;
+  state = other.state;
+  location = other.location;
+  string_attributes = other.string_attributes;
+  int_attributes = other.int_attributes;
+  float_attributes = other.float_attributes;
+  bool_attributes = other.bool_attributes;
+  intlist_attributes = other.intlist_attributes;
+  html_attributes = other.html_attributes;
+  child_ids = other.child_ids;
+  return *this;
 }
 
 bool AXNodeData::HasBoolAttribute(AXBoolAttribute attribute) const {
