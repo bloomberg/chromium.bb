@@ -157,10 +157,10 @@
     ],
     "NTPPopularSites": [
         {
-            "group_name": "Enabled",
+            "group_name": "Enabled5",
             "params": {
                 "country": "IN",
-                "version": "4"
+                "version": "5"
             }
         }
     ],
