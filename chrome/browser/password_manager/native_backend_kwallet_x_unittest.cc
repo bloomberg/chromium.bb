@@ -983,6 +983,40 @@ TEST_P(NativeBackendKWalletTest, RemoveLoginsSyncedBetween) {
   TestRemoveLoginsBetween(SYNCED);
 }
 
+TEST_P(NativeBackendKWalletTest, DisableAutoSignInForAllLogins) {
+  NativeBackendKWalletStub backend(42, desktop_env_);
+  EXPECT_TRUE(backend.InitWithBus(mock_session_bus_));
+
+  form_google_.skip_zero_click = false;
+
+  BrowserThread::PostTask(
+      BrowserThread::DB, FROM_HERE,
+      base::Bind(base::IgnoreResult(&NativeBackendKWallet::AddLogin),
+                 base::Unretained(&backend), form_google_));
+
+  RunDBThread();
+
+  // Set the canonical forms to the updated value for the following comparison.
+  form_google_.skip_zero_click = true;
+  PasswordStoreChangeList expected_changes;
+  expected_changes.push_back(
+      PasswordStoreChange(PasswordStoreChange::UPDATE, form_google_));
+
+  PasswordStoreChangeList changes;
+  BrowserThread::PostTaskAndReplyWithResult(
+      BrowserThread::DB, FROM_HERE,
+      base::Bind(&NativeBackendKWallet::DisableAutoSignInForAllLogins,
+                 base::Unretained(&backend), &changes),
+      base::Bind(&CheckPasswordChangesWithResult, &expected_changes, &changes));
+  RunDBThread();
+
+  std::vector<const PasswordForm*> forms;
+  forms.push_back(&form_google_);
+  ExpectationArray expected;
+  expected.push_back(make_pair(std::string(form_google_.signon_realm), forms));
+  CheckPasswordForms("Chrome Form Data (42)", expected);
+}
+
 TEST_P(NativeBackendKWalletTest, ReadDuplicateForms) {
   NativeBackendKWalletStub backend(42, desktop_env_);
   EXPECT_TRUE(backend.InitWithBus(mock_session_bus_));

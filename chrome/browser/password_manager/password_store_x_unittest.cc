@@ -82,6 +82,11 @@ class FailingBackend : public PasswordStoreX::NativeBackend {
     return false;
   }
 
+  bool DisableAutoSignInForAllLogins(
+      password_manager::PasswordStoreChangeList* changes) override {
+    return false;
+  }
+
   // Use this as a landmine to check whether results of failed Get*Logins calls
   // get ignored.
   static ScopedVector<autofill::PasswordForm> CreateTrashForms() {
@@ -181,6 +186,11 @@ class MockBackend : public PasswordStoreX::NativeBackend {
         erase(i--);
       }
     }
+    return true;
+  }
+
+  bool DisableAutoSignInForAllLogins(
+      password_manager::PasswordStoreChangeList* changes) override {
     return true;
   }
 

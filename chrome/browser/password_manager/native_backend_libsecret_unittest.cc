@@ -875,6 +875,37 @@ TEST_F(NativeBackendLibsecretTest, RemoveLoginsSyncedBetween) {
   CheckRemoveLoginsBetween(SYNCED);
 }
 
+TEST_F(NativeBackendLibsecretTest, DisableAutoSignInForAllLogins) {
+  NativeBackendLibsecret backend(42);
+  backend.Init();
+  form_google_.skip_zero_click = false;
+  form_facebook_.skip_zero_click = false;
+
+  VerifiedAdd(&backend, form_google_);
+  VerifiedAdd(&backend, form_facebook_);
+
+  EXPECT_EQ(2u, global_mock_libsecret_items->size());
+  for (const auto& item : *global_mock_libsecret_items)
+    CheckUint32Attribute(item, "should_skip_zero_click", 0);
+
+  // Set the canonical forms to the updated value for the following comparison.
+  form_google_.skip_zero_click = true;
+  form_facebook_.skip_zero_click = true;
+  PasswordStoreChangeList expected_changes;
+  expected_changes.push_back(
+      PasswordStoreChange(PasswordStoreChange::UPDATE, form_facebook_));
+  expected_changes.push_back(
+      PasswordStoreChange(PasswordStoreChange::UPDATE, form_google_));
+
+  PasswordStoreChangeList changes;
+  EXPECT_TRUE(backend.DisableAutoSignInForAllLogins(&changes));
+  CheckPasswordChanges(expected_changes, changes);
+
+  EXPECT_EQ(2u, global_mock_libsecret_items->size());
+  for (const auto& item : *global_mock_libsecret_items)
+    CheckUint32Attribute(item, "should_skip_zero_click", 1);
+}
+
 TEST_F(NativeBackendLibsecretTest, SomeKeyringAttributesAreMissing) {
   // Absent attributes should be filled with default values.
   NativeBackendLibsecret backend(42);

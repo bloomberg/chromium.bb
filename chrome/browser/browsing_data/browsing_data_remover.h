@@ -353,6 +353,9 @@ class BrowsingDataRemover : public KeyedService
   // cleared.
   void OnClearedPasswordsStats();
 
+  // Callback for when the autosignin state of passwords has been revoked.
+  void OnClearedAutoSignIn();
+
   // Callback for when cookies have been deleted. Invokes NotifyIfDone.
   void OnClearedCookies();
 
@@ -452,6 +455,7 @@ class BrowsingDataRemover : public KeyedService
 #if defined(ENABLE_WEBRTC)
   bool waiting_for_clear_webrtc_logs_ = false;
 #endif
+  bool waiting_for_clear_auto_sign_in_ = false;
 
   // The removal mask for the current removal operation.
   int remove_mask_ = 0;

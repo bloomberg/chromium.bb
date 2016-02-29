@@ -1024,6 +1024,29 @@ bool LoginDatabase::RemoveLoginsSyncedBetween(base::Time delete_begin,
   return s.Run();
 }
 
+bool LoginDatabase::GetAutoSignInLogins(
+    ScopedVector<autofill::PasswordForm>* forms) const {
+  DCHECK(forms);
+  sql::Statement s(db_.GetCachedStatement(
+      SQL_FROM_HERE,
+      "SELECT origin_url, action_url, username_element, username_value, "
+      "password_element, password_value, submit_element, signon_realm, "
+      "ssl_valid, preferred, date_created, blacklisted_by_user, "
+      "scheme, password_type, possible_usernames, times_used, form_data, "
+      "date_synced, display_name, icon_url, "
+      "federation_url, skip_zero_click, generation_upload_status FROM logins "
+      "WHERE skip_zero_click = 0 ORDER BY origin_url"));
+
+  return StatementToForms(&s, nullptr, forms);
+}
+
+bool LoginDatabase::DisableAutoSignInForAllLogins() {
+  sql::Statement s(db_.GetCachedStatement(
+      SQL_FROM_HERE, "UPDATE logins SET skip_zero_click = 1;"));
+
+  return s.Run();
+}
+
 // static
 LoginDatabase::EncryptionResult LoginDatabase::InitPasswordFormFromStatement(
     PasswordForm* form,

@@ -2277,3 +2277,27 @@ TEST_F(BrowsingDataRemoverTest, RemovePasswordsByOrigin) {
   BlockUntilOriginDataRemoved(BrowsingDataRemover::EVERYTHING,
                               BrowsingDataRemover::REMOVE_PASSWORDS, kOrigin1);
 }
+
+TEST_F(BrowsingDataRemoverTest, DisableAutoSignIn) {
+  RemovePasswordsTester tester(GetProfile());
+
+  EXPECT_CALL(*tester.store(), DisableAutoSignInForAllLoginsImpl())
+      .WillOnce(Return(password_manager::PasswordStoreChangeList()));
+
+  BlockUntilBrowsingDataRemoved(BrowsingDataRemover::EVERYTHING,
+                                BrowsingDataRemover::REMOVE_COOKIES, false);
+}
+
+TEST_F(BrowsingDataRemoverTest, DisableAutoSignInAfterRemovingPasswords) {
+  RemovePasswordsTester tester(GetProfile());
+
+  EXPECT_CALL(*tester.store(), RemoveLoginsCreatedBetweenImpl(_, _))
+      .WillOnce(Return(password_manager::PasswordStoreChangeList()));
+  EXPECT_CALL(*tester.store(), DisableAutoSignInForAllLoginsImpl())
+      .WillOnce(Return(password_manager::PasswordStoreChangeList()));
+
+  BlockUntilBrowsingDataRemoved(BrowsingDataRemover::EVERYTHING,
+                                BrowsingDataRemover::REMOVE_COOKIES |
+                                    BrowsingDataRemover::REMOVE_PASSWORDS,
+                                false);
+}

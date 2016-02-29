@@ -189,6 +189,11 @@ PasswordStoreChangeList PasswordStoreProxyMac::RemoveLoginsSyncedBetweenImpl(
   return GetBackend()->RemoveLoginsSyncedBetweenImpl(delete_begin, delete_end);
 }
 
+PasswordStoreChangeList
+PasswordStoreProxyMac::DisableAutoSignInForAllLoginsImpl() {
+  return GetBackend()->DisableAutoSignInForAllLoginsImpl();
+}
+
 bool PasswordStoreProxyMac::RemoveStatisticsCreatedBetweenImpl(
     base::Time delete_begin,
     base::Time delete_end) {

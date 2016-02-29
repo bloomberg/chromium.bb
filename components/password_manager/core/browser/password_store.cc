@@ -148,6 +148,12 @@ void PasswordStore::RemoveStatisticsCreatedBetween(
                  delete_begin, delete_end, completion));
 }
 
+void PasswordStore::DisableAutoSignInForAllLogins(
+    const base::Closure& completion) {
+  ScheduleTask(base::Bind(&PasswordStore::DisableAutoSignInForAllLoginsInternal,
+                          this, completion));
+}
+
 void PasswordStore::TrimAffiliationCache() {
   if (affiliated_match_helper_)
     affiliated_match_helper_->TrimAffiliationCache();
@@ -390,6 +396,13 @@ void PasswordStore::RemoveStatisticsCreatedBetweenInternal(
     base::Time delete_end,
     const base::Closure& completion) {
   RemoveStatisticsCreatedBetweenImpl(delete_begin, delete_end);
+  if (!completion.is_null())
+    main_thread_runner_->PostTask(FROM_HERE, completion);
+}
+
+void PasswordStore::DisableAutoSignInForAllLoginsInternal(
+    const base::Closure& completion) {
+  DisableAutoSignInForAllLoginsImpl();
   if (!completion.is_null())
     main_thread_runner_->PostTask(FROM_HERE, completion);
 }

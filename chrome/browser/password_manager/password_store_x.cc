@@ -162,6 +162,18 @@ PasswordStoreChangeList PasswordStoreX::RemoveLoginsSyncedBetweenImpl(
   return changes;
 }
 
+PasswordStoreChangeList PasswordStoreX::DisableAutoSignInForAllLoginsImpl() {
+  CheckMigration();
+  PasswordStoreChangeList changes;
+  if (use_native_backend() &&
+      backend_->DisableAutoSignInForAllLogins(&changes)) {
+    allow_fallback_ = false;
+  } else if (allow_default_store()) {
+    changes = PasswordStoreDefault::DisableAutoSignInForAllLoginsImpl();
+  }
+  return changes;
+}
+
 namespace {
 
 struct LoginLessThan {

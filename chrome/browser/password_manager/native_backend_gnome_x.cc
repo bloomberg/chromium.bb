@@ -681,6 +681,23 @@ bool NativeBackendGnome::RemoveLoginsSyncedBetween(
   return RemoveLoginsBetween(delete_begin, delete_end, SYNC_TIMESTAMP, changes);
 }
 
+bool NativeBackendGnome::DisableAutoSignInForAllLogins(
+    password_manager::PasswordStoreChangeList* changes) {
+  ScopedVector<PasswordForm> forms;
+  if (!GetAllLogins(&forms))
+    return false;
+
+  for (auto& form : forms) {
+    if (!form->skip_zero_click) {
+      form->skip_zero_click = true;
+      if (!UpdateLogin(*form, changes))
+        return false;
+    }
+  }
+
+  return true;
+}
+
 bool NativeBackendGnome::GetLogins(const PasswordForm& form,
                                    ScopedVector<PasswordForm>* forms) {
   DCHECK_CURRENTLY_ON(BrowserThread::DB);

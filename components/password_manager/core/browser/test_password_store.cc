@@ -115,6 +115,10 @@ PasswordStoreChangeList TestPasswordStore::RemoveLoginsSyncedBetweenImpl(
   return PasswordStoreChangeList();
 }
 
+PasswordStoreChangeList TestPasswordStore::DisableAutoSignInForAllLoginsImpl() {
+  return PasswordStoreChangeList();
+}
+
 bool TestPasswordStore::RemoveStatisticsCreatedBetweenImpl(
     base::Time delete_begin,
     base::Time delete_end) {

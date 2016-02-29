@@ -88,6 +88,26 @@ template<> std::string GetFirstColumn(const sql::Statement& s) {
   return s.ColumnString(0);
 };
 
+bool AddZeroClickableLogin(LoginDatabase* db,
+                           const std::string& unique_string) {
+  // Example password form.
+  PasswordForm form;
+  form.origin = GURL("https://example.com/");
+  form.username_element = ASCIIToUTF16(unique_string);
+  form.username_value = ASCIIToUTF16(unique_string);
+  form.password_element = ASCIIToUTF16(unique_string);
+  form.submit_element = ASCIIToUTF16("signIn");
+  form.signon_realm = form.origin.spec();
+  form.display_name = ASCIIToUTF16(unique_string);
+  form.icon_url = GURL("https://example.com/");
+  form.federation_origin = url::Origin(GURL("https://example.com/"));
+  form.date_created = base::Time::Now();
+
+  form.skip_zero_click = false;
+
+  return db->AddLogin(form) == AddChangeForForm(form);
+}
+
 }  // namespace
 
 // Serialization routines for vectors implemented in login_database.cc.
@@ -734,6 +754,42 @@ TEST_F(LoginDatabaseTest, RemoveLoginsSyncedBetween) {
   // Verify nothing is left.
   EXPECT_TRUE(db().GetAutofillableLogins(&result));
   EXPECT_EQ(0U, result.size());
+}
+
+TEST_F(LoginDatabaseTest, GetAutoSignInLogins) {
+  ScopedVector<autofill::PasswordForm> result;
+
+  EXPECT_TRUE(AddZeroClickableLogin(&db(), "foo1"));
+  EXPECT_TRUE(AddZeroClickableLogin(&db(), "foo2"));
+  EXPECT_TRUE(AddZeroClickableLogin(&db(), "foo3"));
+  EXPECT_TRUE(AddZeroClickableLogin(&db(), "foo4"));
+
+  EXPECT_TRUE(db().GetAutoSignInLogins(&result));
+  EXPECT_EQ(4U, result.size());
+  for (const auto& form : result)
+    EXPECT_FALSE(form->skip_zero_click);
+
+  EXPECT_TRUE(db().DisableAutoSignInForAllLogins());
+  EXPECT_TRUE(db().GetAutoSignInLogins(&result));
+  EXPECT_EQ(0U, result.size());
+}
+
+TEST_F(LoginDatabaseTest, DisableAutoSignInForAllLogins) {
+  ScopedVector<autofill::PasswordForm> result;
+
+  EXPECT_TRUE(AddZeroClickableLogin(&db(), "foo1"));
+  EXPECT_TRUE(AddZeroClickableLogin(&db(), "foo2"));
+  EXPECT_TRUE(AddZeroClickableLogin(&db(), "foo3"));
+  EXPECT_TRUE(AddZeroClickableLogin(&db(), "foo4"));
+
+  EXPECT_TRUE(db().GetAutofillableLogins(&result));
+  for (const auto& form : result)
+    EXPECT_FALSE(form->skip_zero_click);
+
+  EXPECT_TRUE(db().DisableAutoSignInForAllLogins());
+  EXPECT_TRUE(db().GetAutofillableLogins(&result));
+  for (const auto& form : result)
+    EXPECT_TRUE(form->skip_zero_click);
 }
 
 TEST_F(LoginDatabaseTest, BlacklistedLogins) {

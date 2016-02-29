@@ -581,6 +581,22 @@ bool NativeBackendKWallet::RemoveLoginsSyncedBetween(
   return RemoveLoginsBetween(delete_begin, delete_end, SYNC_TIMESTAMP, changes);
 }
 
+bool NativeBackendKWallet::DisableAutoSignInForAllLogins(
+    password_manager::PasswordStoreChangeList* changes) {
+  ScopedVector<autofill::PasswordForm> all_forms;
+  if (!GetAllLogins(&all_forms))
+    return false;
+
+  for (auto& form : all_forms) {
+    if (!form->skip_zero_click) {
+      form->skip_zero_click = true;
+      if (!UpdateLogin(*form, changes))
+        return false;
+    }
+  }
+  return true;
+}
+
 bool NativeBackendKWallet::GetLogins(
     const PasswordForm& form,
     ScopedVector<autofill::PasswordForm>* forms) {

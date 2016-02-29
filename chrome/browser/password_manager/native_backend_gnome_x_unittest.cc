@@ -1165,6 +1165,49 @@ TEST_F(NativeBackendGnomeTest, RemoveLoginsSyncedBetween) {
   CheckRemoveLoginsBetween(SYNCED);
 }
 
+TEST_F(NativeBackendGnomeTest, DisableAutoSignInForAllLogins) {
+  NativeBackendGnome backend(42);
+  backend.Init();
+  form_google_.skip_zero_click = false;
+  form_facebook_.skip_zero_click = false;
+
+  BrowserThread::PostTask(
+      BrowserThread::DB, FROM_HERE,
+      base::Bind(base::IgnoreResult(&NativeBackendGnome::AddLogin),
+                 base::Unretained(&backend), form_google_));
+  BrowserThread::PostTask(
+      BrowserThread::DB, FROM_HERE,
+      base::Bind(base::IgnoreResult(&NativeBackendGnome::AddLogin),
+                 base::Unretained(&backend), form_facebook_));
+
+  RunBothThreads();
+
+  EXPECT_EQ(2u, mock_keyring_items.size());
+  for (const auto& item : mock_keyring_items)
+    CheckUint32Attribute(&item, "should_skip_zero_click", 0);
+
+  // Set the canonical forms to the updated value for the following comparison.
+  form_google_.skip_zero_click = true;
+  form_facebook_.skip_zero_click = true;
+  PasswordStoreChangeList expected_changes;
+  expected_changes.push_back(
+      PasswordStoreChange(PasswordStoreChange::UPDATE, form_facebook_));
+  expected_changes.push_back(
+      PasswordStoreChange(PasswordStoreChange::UPDATE, form_google_));
+
+  PasswordStoreChangeList changes;
+  BrowserThread::PostTaskAndReplyWithResult(
+      BrowserThread::DB, FROM_HERE,
+      base::Bind(&NativeBackendGnome::DisableAutoSignInForAllLogins,
+                 base::Unretained(&backend), &changes),
+      base::Bind(&CheckPasswordChangesWithResult, &expected_changes, &changes));
+  RunBothThreads();
+
+  EXPECT_EQ(2u, mock_keyring_items.size());
+  for (const auto& item : mock_keyring_items)
+    CheckUint32Attribute(&item, "should_skip_zero_click", 1);
+}
+
 TEST_F(NativeBackendGnomeTest, ReadDuplicateForms) {
   NativeBackendGnome backend(42);
   backend.Init();

@@ -1198,6 +1198,18 @@ PasswordStoreChangeList PasswordStoreMac::RemoveLoginsSyncedBetweenImpl(
   return changes;
 }
 
+PasswordStoreChangeList PasswordStoreMac::DisableAutoSignInForAllLoginsImpl() {
+  ScopedVector<PasswordForm> forms;
+  PasswordStoreChangeList list;
+  if (login_metadata_db_ && login_metadata_db_->GetAutoSignInLogins(&forms) &&
+      login_metadata_db_->DisableAutoSignInForAllLogins()) {
+    for (const auto& form : forms)
+      list.push_back(PasswordStoreChange(PasswordStoreChange::UPDATE, *form));
+  }
+
+  return list;
+}
+
 bool PasswordStoreMac::RemoveStatisticsCreatedBetweenImpl(
     base::Time delete_begin,
     base::Time delete_end) {

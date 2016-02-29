@@ -137,6 +137,21 @@ PasswordStoreChangeList PasswordStoreDefault::RemoveLoginsSyncedBetweenImpl(
   return changes;
 }
 
+PasswordStoreChangeList
+PasswordStoreDefault::DisableAutoSignInForAllLoginsImpl() {
+  ScopedVector<autofill::PasswordForm> forms;
+  PasswordStoreChangeList changes;
+  if (login_db_ && login_db_->GetAutoSignInLogins(&forms)) {
+    if (login_db_->DisableAutoSignInForAllLogins()) {
+      for (const auto* form : forms) {
+        changes.push_back(
+            PasswordStoreChange(PasswordStoreChange::UPDATE, *form));
+      }
+    }
+  }
+  return changes;
+}
+
 bool PasswordStoreDefault::RemoveStatisticsCreatedBetweenImpl(
     base::Time delete_begin,
     base::Time delete_end) {

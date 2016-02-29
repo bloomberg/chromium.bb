@@ -77,6 +77,9 @@ class LoginDatabase {
   bool RemoveLoginsSyncedBetween(base::Time delete_begin,
                                  base::Time delete_end);
 
+  // Sets the 'skip_zero_click' flag to 'true' for all logins.
+  bool DisableAutoSignInForAllLogins();
+
   // All Get* methods below overwrite |forms| with the returned credentials. On
   // success, those methods return true.
 
@@ -107,6 +110,10 @@ class LoginDatabase {
 
   // Gets the complete list of blacklisted credentials.
   bool GetBlacklistLogins(ScopedVector<autofill::PasswordForm>* forms) const
+      WARN_UNUSED_RESULT;
+
+  // Gets the list of auto-sign-inable credentials.
+  bool GetAutoSignInLogins(ScopedVector<autofill::PasswordForm>* forms) const
       WARN_UNUSED_RESULT;
 
   // Deletes the login database file on disk, and creates a new, empty database.

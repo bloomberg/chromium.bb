@@ -46,6 +46,7 @@ class MockPasswordStore : public PasswordStore {
                PasswordStoreChangeList(base::Time, base::Time));
   MOCK_METHOD2(RemoveStatisticsCreatedBetweenImpl,
                bool(base::Time, base::Time));
+  MOCK_METHOD0(DisableAutoSignInForAllLoginsImpl, PasswordStoreChangeList());
   ScopedVector<autofill::PasswordForm> FillMatchingLogins(
       const autofill::PasswordForm& form) override {
     return ScopedVector<autofill::PasswordForm>();

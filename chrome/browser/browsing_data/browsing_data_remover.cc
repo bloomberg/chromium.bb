@@ -621,9 +621,6 @@ void BrowsingDataRemover::RemoveImpl(const TimeRange& time_range,
     }
 
     MediaDeviceIDSalt::Reset(profile_->GetPrefs());
-
-    // TODO(mkwst): If we're not removing passwords, then clear the 'zero-click'
-    // flag for all credentials in the password store.
   }
 
   // Channel IDs are not separated for protected and unprotected web
@@ -724,6 +721,21 @@ void BrowsingDataRemover::RemoveImpl(const TimeRange& time_range,
         password_store->RemoveLoginsByOriginAndTime(
             remove_origin, delete_begin_, delete_end_, on_cleared_passwords);
       }
+    }
+  }
+
+  if (remove_mask & REMOVE_COOKIES) {
+    password_manager::PasswordStore* password_store =
+        PasswordStoreFactory::GetForProfile(profile_,
+                                            ServiceAccessType::EXPLICIT_ACCESS)
+            .get();
+
+    if (password_store) {
+      waiting_for_clear_auto_sign_in_ = true;
+      base::Closure on_cleared_auto_sign_in =
+          base::Bind(&BrowsingDataRemover::OnClearedAutoSignIn,
+                     weak_ptr_factory_.GetWeakPtr());
+      password_store->DisableAutoSignInForAllLogins(on_cleared_auto_sign_in);
     }
   }
 
@@ -986,22 +998,16 @@ base::Time BrowsingDataRemover::CalculateBeginDeleteTime(
 
 bool BrowsingDataRemover::AllDone() {
   return !waiting_for_clear_autofill_origin_urls_ &&
-         !waiting_for_clear_cache_ &&
-         !waiting_for_clear_content_licenses_ &&
-         !waiting_for_clear_channel_ids_ &&
-         !waiting_for_clear_cookies_count_ &&
+         !waiting_for_clear_cache_ && !waiting_for_clear_content_licenses_ &&
+         !waiting_for_clear_channel_ids_ && !waiting_for_clear_cookies_count_ &&
          !waiting_for_clear_domain_reliability_monitor_ &&
-         !waiting_for_clear_form_ &&
-         !waiting_for_clear_history_ &&
+         !waiting_for_clear_form_ && !waiting_for_clear_history_ &&
          !waiting_for_clear_hostname_resolution_cache_ &&
-         !waiting_for_clear_keyword_data_ &&
-         !waiting_for_clear_nacl_cache_ &&
+         !waiting_for_clear_keyword_data_ && !waiting_for_clear_nacl_cache_ &&
          !waiting_for_clear_network_predictor_ &&
          !waiting_for_clear_networking_history_ &&
-         !waiting_for_clear_passwords_ &&
-         !waiting_for_clear_passwords_stats_ &&
-         !waiting_for_clear_platform_keys_ &&
-         !waiting_for_clear_plugin_data_ &&
+         !waiting_for_clear_passwords_ && !waiting_for_clear_passwords_stats_ &&
+         !waiting_for_clear_platform_keys_ && !waiting_for_clear_plugin_data_ &&
          !waiting_for_clear_pnacl_cache_ &&
 #if BUILDFLAG(ANDROID_JAVA_UI)
          !waiting_for_clear_precache_history_ &&
@@ -1011,7 +1017,8 @@ bool BrowsingDataRemover::AllDone() {
 #if defined(ENABLE_WEBRTC)
          !waiting_for_clear_webrtc_logs_ &&
 #endif
-         !waiting_for_clear_storage_partition_data_;
+         !waiting_for_clear_storage_partition_data_ &&
+         !waiting_for_clear_auto_sign_in_;
 }
 
 void BrowsingDataRemover::OnKeywordsLoaded() {
@@ -1142,6 +1149,12 @@ void BrowsingDataRemover::OnClearedPasswords() {
 void BrowsingDataRemover::OnClearedPasswordsStats() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   waiting_for_clear_passwords_stats_ = false;
+  NotifyIfDone();
+}
+
+void BrowsingDataRemover::OnClearedAutoSignIn() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  waiting_for_clear_auto_sign_in_ = false;
   NotifyIfDone();
 }
 

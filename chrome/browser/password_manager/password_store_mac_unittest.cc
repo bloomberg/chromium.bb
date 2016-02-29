@@ -1684,6 +1684,42 @@ TEST_F(PasswordStoreMacTest, TestRemoveLoginsSyncedBetween) {
   CheckRemoveLoginsBetween(this, false);
 }
 
+TEST_F(PasswordStoreMacTest, TestDisableAutoSignInForAllLogins) {
+  PasswordFormData www_form_data_facebook = {
+      PasswordForm::SCHEME_HTML,
+      "http://www.facebook.com/",
+      "http://www.facebook.com/index.html",
+      "login",
+      L"submit",
+      L"username",
+      L"password",
+      L"joe_user",
+      L"sekrit",
+      true,
+      false,
+      0};
+  scoped_ptr<PasswordForm> form_facebook =
+      CreatePasswordFormFromDataForTesting(www_form_data_facebook);
+  form_facebook->skip_zero_click = false;
+
+  // Add the zero-clickable form to the database.
+  PasswordsChangeObserver observer(store());
+  store()->AddLogin(*form_facebook);
+  EXPECT_CALL(observer, OnLoginsChanged(GetAddChangeList(*form_facebook)));
+  observer.WaitAndVerify(this);
+
+  ScopedVector<autofill::PasswordForm> forms;
+  EXPECT_TRUE(login_db()->GetAutoSignInLogins(&forms));
+  EXPECT_EQ(1u, forms.size());
+  EXPECT_FALSE(forms[0]->skip_zero_click);
+
+  store()->DisableAutoSignInForAllLogins(base::Closure());
+  FinishAsyncProcessing();
+
+  EXPECT_TRUE(login_db()->GetAutoSignInLogins(&forms));
+  EXPECT_EQ(0u, forms.size());
+}
+
 TEST_F(PasswordStoreMacTest, TestRemoveLoginsMultiProfile) {
   // Make sure that RemoveLoginsCreatedBetween does affect only the correct
   // profile.
