@@ -122,7 +122,7 @@ void SVGPath::add(PassRefPtrWillBeRawPtr<SVGPropertyBase> other, SVGElement*)
 void SVGPath::calculateAnimatedValue(SVGAnimationElement* animationElement, float percentage, unsigned repeatCount, PassRefPtrWillBeRawPtr<SVGPropertyBase> fromValue, PassRefPtrWillBeRawPtr<SVGPropertyBase> toValue, PassRefPtrWillBeRawPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement*)
 {
     ASSERT(animationElement);
-    bool isToAnimation = animationElement->animationMode() == ToAnimation;
+    bool isToAnimation = animationElement->getAnimationMode() == ToAnimation;
 
     const SVGPath& to = toSVGPath(*toValue);
     const SVGPathByteStream& toStream = to.byteStream();

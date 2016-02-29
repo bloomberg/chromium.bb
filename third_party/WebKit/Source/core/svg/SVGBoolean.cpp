@@ -60,7 +60,7 @@ void SVGBoolean::add(PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*)
 void SVGBoolean::calculateAnimatedValue(SVGAnimationElement* animationElement, float percentage, unsigned repeatCount, PassRefPtrWillBeRawPtr<SVGPropertyBase> from, PassRefPtrWillBeRawPtr<SVGPropertyBase> to, PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*)
 {
     ASSERT(animationElement);
-    bool fromBoolean = animationElement->animationMode() == ToAnimation ? m_value : toSVGBoolean(from)->value();
+    bool fromBoolean = animationElement->getAnimationMode() == ToAnimation ? m_value : toSVGBoolean(from)->value();
     bool toBoolean = toSVGBoolean(to)->value();
 
     animationElement->animateDiscreteType<bool>(percentage, fromBoolean, toBoolean, m_value);

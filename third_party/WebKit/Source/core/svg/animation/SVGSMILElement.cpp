@@ -599,7 +599,7 @@ void SVGSMILElement::connectSyncBaseConditions()
     m_syncBaseConditionsConnected = true;
     for (unsigned n = 0; n < m_conditions.size(); ++n) {
         Condition* condition = m_conditions[n].get();
-        if (condition->type() == Condition::Syncbase) {
+        if (condition->getType() == Condition::Syncbase) {
             ASSERT(!condition->baseID().isEmpty());
             Element* element = treeScope().getElementById(AtomicString(condition->baseID()));
             if (!element || !isSVGSMILElement(*element)) {
@@ -620,7 +620,7 @@ void SVGSMILElement::disconnectSyncBaseConditions()
     m_syncBaseConditionsConnected = false;
     for (unsigned n = 0; n < m_conditions.size(); ++n) {
         Condition* condition = m_conditions[n].get();
-        if (condition->type() == Condition::Syncbase) {
+        if (condition->getType() == Condition::Syncbase) {
             if (condition->syncBase())
                 condition->syncBase()->removeSyncBaseDependent(this);
             condition->setSyncBase(0);
@@ -633,7 +633,7 @@ void SVGSMILElement::connectEventBaseConditions()
     disconnectEventBaseConditions();
     for (unsigned n = 0; n < m_conditions.size(); ++n) {
         Condition* condition = m_conditions[n].get();
-        if (condition->type() == Condition::EventBase) {
+        if (condition->getType() == Condition::EventBase) {
             ASSERT(!condition->syncBase());
             SVGElement* eventBase = eventBaseFor(*condition);
             if (!eventBase) {
@@ -653,7 +653,7 @@ void SVGSMILElement::disconnectEventBaseConditions()
 {
     for (unsigned n = 0; n < m_conditions.size(); ++n) {
         Condition* condition = m_conditions[n].get();
-        if (condition->type() == Condition::EventBase) {
+        if (condition->getType() == Condition::EventBase) {
             ASSERT(!condition->syncBase());
             if (!condition->eventListener())
                 continue;
@@ -1249,7 +1249,7 @@ void SVGSMILElement::createInstanceTimesFromSyncbase(SVGSMILElement* syncBase)
     // the associated times instead of creating new ones.
     for (unsigned n = 0; n < m_conditions.size(); ++n) {
         Condition* condition = m_conditions[n].get();
-        if (condition->type() == Condition::Syncbase && condition->syncBase() == syncBase) {
+        if (condition->getType() == Condition::Syncbase && condition->syncBase() == syncBase) {
             ASSERT(condition->name() == "begin" || condition->name() == "end");
             // No nested time containers in SVG, no need for crazy time space conversions. Phew!
             SMILTime time = 0;
@@ -1262,7 +1262,7 @@ void SVGSMILElement::createInstanceTimesFromSyncbase(SVGSMILElement* syncBase)
             SMILTime elapsed = this->elapsed();
             if (elapsed.isUnresolved())
                 continue;
-            if (condition->beginOrEnd() == Begin)
+            if (condition->getBeginOrEnd() == Begin)
                 addBeginTime(elapsed, time);
             else
                 addEndTime(elapsed, time);
@@ -1290,7 +1290,7 @@ void SVGSMILElement::handleConditionEvent(Event* event, Condition* condition)
     SMILTime elapsed = this->elapsed();
     if (elapsed.isUnresolved())
         return;
-    if (condition->beginOrEnd() == Begin)
+    if (condition->getBeginOrEnd() == Begin)
         addBeginTime(elapsed, elapsed + condition->offset());
     else
         addEndTime(elapsed, elapsed + condition->offset());

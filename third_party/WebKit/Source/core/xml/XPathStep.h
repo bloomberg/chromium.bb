@@ -76,7 +76,7 @@ public:
         }
         DEFINE_INLINE_TRACE() { visitor->trace(m_mergedPredicates); }
 
-        Kind kind() const { return m_kind; }
+        Kind getKind() const { return m_kind; }
         const AtomicString& data() const { return m_data; }
         const AtomicString& namespaceURI() const { return m_namespaceURI; }
         HeapVector<Member<Predicate>>& mergedPredicates() { return m_mergedPredicates; }
@@ -100,7 +100,7 @@ public:
 
     void evaluate(EvaluationContext&, Node* context, NodeSet&) const;
 
-    Axis axis() const { return m_axis; }
+    Axis getAxis() const { return m_axis; }
     const NodeTest& nodeTest() const { return *m_nodeTest; }
 
 private:

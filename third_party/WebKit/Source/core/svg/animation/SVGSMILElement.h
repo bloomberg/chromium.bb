@@ -191,8 +191,8 @@ private:
         ~Condition();
         DECLARE_TRACE();
 
-        Type type() const { return m_type; }
-        BeginOrEnd beginOrEnd() const { return m_beginOrEnd; }
+        Type getType() const { return m_type; }
+        BeginOrEnd getBeginOrEnd() const { return m_beginOrEnd; }
         String baseID() const { return m_baseID; }
         String name() const { return m_name; }
         SMILTime offset() const { return m_offset; }

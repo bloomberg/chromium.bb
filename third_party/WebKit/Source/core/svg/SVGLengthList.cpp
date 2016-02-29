@@ -139,7 +139,7 @@ void SVGLengthList::calculateAnimatedValue(SVGAnimationElement* animationElement
     size_t toLengthListSize = toList->length();
     size_t toAtEndOfDurationListSize = toAtEndOfDurationList->length();
 
-    if (!adjustFromToListValues(fromList, toList, percentage, animationElement->animationMode()))
+    if (!adjustFromToListValues(fromList, toList, percentage, animationElement->getAnimationMode()))
         return;
 
     for (size_t i = 0; i < toLengthListSize; ++i) {

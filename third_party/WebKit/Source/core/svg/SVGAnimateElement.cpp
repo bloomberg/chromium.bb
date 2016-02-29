@@ -106,7 +106,7 @@ void SVGAnimateElement::calculateAnimatedValue(float percentage, unsigned repeat
     if (isSVGSetElement(*this))
         percentage = 1;
 
-    if (calcMode() == CalcModeDiscrete)
+    if (getCalcMode() == CalcModeDiscrete)
         percentage = percentage < 0.5 ? 0 : 1;
 
     // Target element might have changed.
@@ -142,11 +142,11 @@ bool SVGAnimateElement::calculateFromAndByValues(const String& fromString, const
     if (!targetElement)
         return false;
 
-    if (animationMode() == ByAnimation && !isAdditive())
+    if (getAnimationMode() == ByAnimation && !isAdditive())
         return false;
 
     // from-by animation may only be used with attributes that support addition (e.g. most numeric attributes).
-    if (animationMode() == FromByAnimation && !animatedPropertyTypeSupportsAddition())
+    if (getAnimationMode() == FromByAnimation && !animatedPropertyTypeSupportsAddition())
         return false;
 
     ASSERT(!isSVGSetElement(*this));
@@ -366,7 +366,7 @@ bool SVGAnimateElement::animatedPropertyTypeSupportsAddition()
 
 bool SVGAnimateElement::isAdditive()
 {
-    if (animationMode() == ByAnimation || animationMode() == FromByAnimation) {
+    if (getAnimationMode() == ByAnimation || getAnimationMode() == FromByAnimation) {
         if (!animatedPropertyTypeSupportsAddition())
             return false;
     }

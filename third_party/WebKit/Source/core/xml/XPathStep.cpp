@@ -86,7 +86,7 @@ void Step::optimize()
 bool optimizeStepPair(Step* first, Step* second)
 {
     if (first->m_axis == Step::DescendantOrSelfAxis
-        && first->nodeTest().kind() == Step::NodeTest::AnyNodeTest
+        && first->nodeTest().getKind() == Step::NodeTest::AnyNodeTest
         && !first->m_predicates.size()
         && !first->nodeTest().mergedPredicates().size()) {
 
@@ -97,7 +97,7 @@ bool optimizeStepPair(Step* first, Step* second)
         // /descendant-or-self::node()/child::NodeTest to /descendant::NodeTest.
         if (second->m_axis == Step::ChildAxis && second->predicatesAreContextListInsensitive()) {
             first->m_axis = Step::DescendantAxis;
-            first->nodeTest() = Step::NodeTest(second->nodeTest().kind(), second->nodeTest().data(), second->nodeTest().namespaceURI());
+            first->nodeTest() = Step::NodeTest(second->nodeTest().getKind(), second->nodeTest().data(), second->nodeTest().namespaceURI());
             swap(second->nodeTest().mergedPredicates(), first->nodeTest().mergedPredicates());
             swap(second->m_predicates, first->m_predicates);
             first->optimize();
@@ -167,7 +167,7 @@ static inline Node::NodeType primaryNodeType(Step::Axis axis)
 // Evaluate NodeTest without considering merged predicates.
 static inline bool nodeMatchesBasicTest(Node* node, Step::Axis axis, const Step::NodeTest& nodeTest)
 {
-    switch (nodeTest.kind()) {
+    switch (nodeTest.getKind()) {
     case Step::NodeTest::TextNodeTest: {
         Node::NodeType type = node->getNodeType();
         return type == Node::TEXT_NODE || type == Node::CDATA_SECTION_NODE;
@@ -370,7 +370,7 @@ void Step::nodesInAxis(EvaluationContext& evaluationContext, Node* context, Node
         Element* contextElement = toElement(context);
         // Avoid lazily creating attribute nodes for attributes that we do not
         // need anyway.
-        if (nodeTest().kind() == NodeTest::NameTest && nodeTest().data() != starAtom) {
+        if (nodeTest().getKind() == NodeTest::NameTest && nodeTest().data() != starAtom) {
             RefPtrWillBeRawPtr<Attr> attr = contextElement->getAttributeNodeNS(nodeTest().namespaceURI(), nodeTest().data());
             // In XPath land, namespace nodes are not accessible on the attribute axis.
             if (attr && attr->namespaceURI() != XMLNSNames::xmlnsNamespaceURI) {

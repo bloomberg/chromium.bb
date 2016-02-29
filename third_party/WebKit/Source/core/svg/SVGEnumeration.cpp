@@ -88,7 +88,7 @@ void SVGEnumerationBase::add(PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement
 void SVGEnumerationBase::calculateAnimatedValue(SVGAnimationElement* animationElement, float percentage, unsigned repeatCount, PassRefPtrWillBeRawPtr<SVGPropertyBase> from, PassRefPtrWillBeRawPtr<SVGPropertyBase> to, PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*)
 {
     ASSERT(animationElement);
-    unsigned short fromEnumeration = animationElement->animationMode() == ToAnimation ? m_value : toSVGEnumerationBase(from)->value();
+    unsigned short fromEnumeration = animationElement->getAnimationMode() == ToAnimation ? m_value : toSVGEnumerationBase(from)->value();
     unsigned short toEnumeration = toSVGEnumerationBase(to)->value();
 
     animationElement->animateDiscreteType<unsigned short>(percentage, fromEnumeration, toEnumeration, m_value);

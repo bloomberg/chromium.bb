@@ -134,14 +134,14 @@ void LocationPath::evaluate(EvaluationContext& context, NodeSet& nodes) const
         NodeSet* newNodes = NodeSet::create();
         WillBeHeapHashSet<RawPtrWillBeMember<Node>> newNodesSet;
 
-        bool needToCheckForDuplicateNodes = !nodes.subtreesAreDisjoint() || (step->axis() != Step::ChildAxis && step->axis() != Step::SelfAxis
-            && step->axis() != Step::DescendantAxis && step->axis() != Step::DescendantOrSelfAxis && step->axis() != Step::AttributeAxis);
+        bool needToCheckForDuplicateNodes = !nodes.subtreesAreDisjoint() || (step->getAxis() != Step::ChildAxis && step->getAxis() != Step::SelfAxis
+            && step->getAxis() != Step::DescendantAxis && step->getAxis() != Step::DescendantOrSelfAxis && step->getAxis() != Step::AttributeAxis);
 
         if (needToCheckForDuplicateNodes)
             resultIsSorted = false;
 
         // This is a simplified check that can be improved to handle more cases.
-        if (nodes.subtreesAreDisjoint() && (step->axis() == Step::ChildAxis || step->axis() == Step::SelfAxis))
+        if (nodes.subtreesAreDisjoint() && (step->getAxis() == Step::ChildAxis || step->getAxis() == Step::SelfAxis))
             newNodes->markSubtreesDisjoint(true);
 
         for (unsigned j = 0; j < nodes.size(); j++) {

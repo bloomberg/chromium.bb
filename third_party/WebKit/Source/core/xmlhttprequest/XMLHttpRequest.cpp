@@ -907,7 +907,7 @@ void XMLHttpRequest::createRequest(PassRefPtr<EncodedFormData> httpBody, Excepti
 
     // When responseType is set to "blob", we redirect the downloaded data to a
     // file-handle directly.
-    m_downloadingToFile = responseTypeCode() == ResponseTypeBlob;
+    m_downloadingToFile = getResponseTypeCode() == ResponseTypeBlob;
     if (m_downloadingToFile) {
         request.setDownloadToFile(true);
         resourceLoaderOptions.dataBufferingPolicy = DoNotBufferData;

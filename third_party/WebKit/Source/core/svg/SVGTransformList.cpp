@@ -349,7 +349,7 @@ void SVGTransformList::add(PassRefPtrWillBeRawPtr<SVGPropertyBase> other, SVGEle
 void SVGTransformList::calculateAnimatedValue(SVGAnimationElement* animationElement, float percentage, unsigned repeatCount, PassRefPtrWillBeRawPtr<SVGPropertyBase> fromValue, PassRefPtrWillBeRawPtr<SVGPropertyBase> toValue, PassRefPtrWillBeRawPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement* contextElement)
 {
     ASSERT(animationElement);
-    bool isToAnimation = animationElement->animationMode() == ToAnimation;
+    bool isToAnimation = animationElement->getAnimationMode() == ToAnimation;
 
     // Spec: To animations provide specific functionality to get a smooth change from the underlying value to the
     // 'to' attribute value, which conflicts mathematically with the requirement for additive transform animations

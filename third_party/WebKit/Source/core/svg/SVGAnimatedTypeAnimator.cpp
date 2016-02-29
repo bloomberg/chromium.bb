@@ -237,7 +237,7 @@ void SVGAnimatedTypeAnimator::calculateAnimatedValue(float percentage, unsigned 
     ASSERT(m_animationElement);
     ASSERT(m_contextElement);
 
-    RefPtrWillBeRawPtr<SVGPropertyBase> fromValue = m_animationElement->animationMode() == ToAnimation ? animated : from;
+    RefPtrWillBeRawPtr<SVGPropertyBase> fromValue = m_animationElement->getAnimationMode() == ToAnimation ? animated : from;
     RefPtrWillBeRawPtr<SVGPropertyBase> toValue = to;
     RefPtrWillBeRawPtr<SVGPropertyBase> toAtEndOfDurationValue = toAtEndOfDuration;
     RefPtrWillBeRawPtr<SVGPropertyBase> animatedValue = animated;

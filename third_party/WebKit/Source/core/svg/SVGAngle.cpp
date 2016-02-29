@@ -389,7 +389,7 @@ void SVGAngle::assign(const SVGAngle& other)
 void SVGAngle::calculateAnimatedValue(SVGAnimationElement* animationElement, float percentage, unsigned repeatCount, PassRefPtrWillBeRawPtr<SVGPropertyBase> from, PassRefPtrWillBeRawPtr<SVGPropertyBase> to, PassRefPtrWillBeRawPtr<SVGPropertyBase> toAtEndOfDuration, SVGElement*)
 {
     ASSERT(animationElement);
-    bool isToAnimation = animationElement->animationMode() == ToAnimation;
+    bool isToAnimation = animationElement->getAnimationMode() == ToAnimation;
 
     RefPtrWillBeRawPtr<SVGAngle> fromAngle = isToAnimation ? PassRefPtrWillBeRawPtr<SVGAngle>(this) : toSVGAngle(from);
     RefPtrWillBeRawPtr<SVGAngle> toAngle = toSVGAngle(to);

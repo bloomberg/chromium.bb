@@ -67,7 +67,7 @@ void V8XMLHttpRequest::responseAttributeGetterCustom(const v8::FunctionCallbackI
 {
     XMLHttpRequest* xmlHttpRequest = V8XMLHttpRequest::toImpl(info.Holder());
 
-    switch (xmlHttpRequest->responseTypeCode()) {
+    switch (xmlHttpRequest->getResponseTypeCode()) {
     case XMLHttpRequest::ResponseTypeDefault:
     case XMLHttpRequest::ResponseTypeText:
         responseTextAttributeGetterCustom(info);

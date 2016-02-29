@@ -128,7 +128,7 @@ public:
     Stream* responseLegacyStream();
     unsigned timeout() const { return m_timeoutMilliseconds; }
     void setTimeout(unsigned timeout, ExceptionState&);
-    ResponseTypeCode responseTypeCode() const { return m_responseTypeCode; }
+    ResponseTypeCode getResponseTypeCode() const { return m_responseTypeCode; }
     String responseType();
     void setResponseType(const String&, ExceptionState&);
     String responseURL();

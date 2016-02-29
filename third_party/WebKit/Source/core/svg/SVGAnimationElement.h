@@ -81,8 +81,8 @@ public:
 
     virtual bool isAdditive();
     bool isAccumulated() const;
-    AnimationMode animationMode() const { return m_animationMode; }
-    CalcMode calcMode() const { return m_calcMode; }
+    AnimationMode getAnimationMode() const { return m_animationMode; }
+    CalcMode getCalcMode() const { return m_calcMode; }
 
     enum ShouldApplyAnimation {
         DontApplyAnimation,
@@ -110,7 +110,7 @@ public:
     template<typename AnimatedType>
     void animateDiscreteType(float percentage, const AnimatedType& fromType, const AnimatedType& toType, AnimatedType& animatedType)
     {
-        if ((animationMode() == FromToAnimation && percentage > 0.5) || animationMode() == ToAnimation || percentage == 1) {
+        if ((getAnimationMode() == FromToAnimation && percentage > 0.5) || getAnimationMode() == ToAnimation || percentage == 1) {
             animatedType = AnimatedType(toType);
             return;
         }
@@ -120,7 +120,7 @@ public:
     void animateAdditiveNumber(float percentage, unsigned repeatCount, float fromNumber, float toNumber, float toAtEndOfDurationNumber, float& animatedNumber)
     {
         float number;
-        if (calcMode() == CalcModeDiscrete)
+        if (getCalcMode() == CalcModeDiscrete)
             number = percentage < 0.5 ? fromNumber : toNumber;
         else
             number = (toNumber - fromNumber) * percentage + fromNumber;
@@ -128,7 +128,7 @@ public:
         if (isAccumulated() && repeatCount)
             number += toAtEndOfDurationNumber * repeatCount;
 
-        if (isAdditive() && animationMode() != ToAnimation)
+        if (isAdditive() && getAnimationMode() != ToAnimation)
             animatedNumber += number;
         else
             animatedNumber = number;
@@ -148,7 +148,7 @@ protected:
         AttributeTypeXML,
         AttributeTypeAuto
     };
-    AttributeType attributeType() const { return m_attributeType; }
+    AttributeType getAttributeType() const { return m_attributeType; }
 
     String toValue() const;
     String byValue() const;

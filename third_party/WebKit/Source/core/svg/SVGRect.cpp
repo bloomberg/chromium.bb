@@ -112,7 +112,7 @@ void SVGRect::add(PassRefPtrWillBeRawPtr<SVGPropertyBase> other, SVGElement*)
 void SVGRect::calculateAnimatedValue(SVGAnimationElement* animationElement, float percentage, unsigned repeatCount, PassRefPtrWillBeRawPtr<SVGPropertyBase> fromValue, PassRefPtrWillBeRawPtr<SVGPropertyBase> toValue, PassRefPtrWillBeRawPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement*)
 {
     ASSERT(animationElement);
-    RefPtrWillBeRawPtr<SVGRect> fromRect = animationElement->animationMode() == ToAnimation ? PassRefPtrWillBeRawPtr<SVGRect>(this) : toSVGRect(fromValue);
+    RefPtrWillBeRawPtr<SVGRect> fromRect = animationElement->getAnimationMode() == ToAnimation ? PassRefPtrWillBeRawPtr<SVGRect>(this) : toSVGRect(fromValue);
     RefPtrWillBeRawPtr<SVGRect> toRect = toSVGRect(toValue);
     RefPtrWillBeRawPtr<SVGRect> toAtEndOfDurationRect = toSVGRect(toAtEndOfDurationValue);
 

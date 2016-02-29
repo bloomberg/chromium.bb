@@ -79,7 +79,7 @@ public:
     static const struct AdoptTag { } adopt;
     Value(NodeSet* value, const AdoptTag&) : m_type(NodeSetValue), m_bool(false), m_number(0),  m_data(ValueData::create(value)) { }
 
-    Type type() const { return m_type; }
+    Type getType() const { return m_type; }
 
     bool isNodeSet() const { return m_type == NodeSetValue; }
     bool isBoolean() const { return m_type == BooleanValue; }
