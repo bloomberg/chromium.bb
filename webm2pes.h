@@ -44,13 +44,13 @@ struct PesHeaderField {
   std::uint64_t bits;
 
   // Number of bits in the value.
-  const std::uint32_t num_bits;
+  const int num_bits;
 
   // Index into the header for the byte in which |bits| will be written.
   const std::uint8_t index;
 
   // Number of bits to shift value before or'ing.
-  const std::uint8_t shift;
+  const int shift;
 };
 
 // Data is stored in buffers before being written to output files.
