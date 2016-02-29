@@ -45,11 +45,11 @@ class Display {
       size_t size);
 
 #if defined(USE_OZONE)
-  // Creates a buffer for the prime fd.
-  scoped_ptr<Buffer> CreatePrimeBuffer(base::ScopedFD fd,
-                                       const gfx::Size& size,
-                                       gfx::BufferFormat format,
-                                       int stride);
+  // Creates a buffer for a Linux DMA-buf file descriptor.
+  scoped_ptr<Buffer> CreateLinuxDMABufBuffer(base::ScopedFD fd,
+                                             const gfx::Size& size,
+                                             gfx::BufferFormat format,
+                                             int stride);
 #endif
 
   // Creates a shell surface for an existing surface.

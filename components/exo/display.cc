@@ -49,11 +49,12 @@ scoped_ptr<SharedMemory> Display::CreateSharedMemory(
 }
 
 #if defined(USE_OZONE)
-scoped_ptr<Buffer> Display::CreatePrimeBuffer(base::ScopedFD fd,
-                                              const gfx::Size& size,
-                                              gfx::BufferFormat format,
-                                              int stride) {
-  TRACE_EVENT1("exo", "Display::CreatePrimeBuffer", "size", size.ToString());
+scoped_ptr<Buffer> Display::CreateLinuxDMABufBuffer(base::ScopedFD fd,
+                                                    const gfx::Size& size,
+                                                    gfx::BufferFormat format,
+                                                    int stride) {
+  TRACE_EVENT1("exo", "Display::CreateLinuxDMABufBuffer", "size",
+               size.ToString());
 
   gfx::GpuMemoryBufferHandle handle;
   handle.type = gfx::OZONE_NATIVE_PIXMAP;

@@ -14,6 +14,7 @@
 #include <xdg-shell-unstable-v5-server-protocol.h>
 
 #include <algorithm>
+#include <iterator>
 #include <string>
 #include <utility>
 
@@ -44,6 +45,8 @@
 #include "ui/events/keycodes/dom/keycode_converter.h"
 
 #if defined(USE_OZONE)
+#include <drm_fourcc.h>
+#include <linux-dmabuf-unstable-v1-server-protocol.h>
 #include <wayland-drm-server-protocol.h>
 #endif
 
@@ -473,9 +476,9 @@ void drm_create_prime_buffer(wl_client* client,
   }
 
   scoped_ptr<Buffer> buffer =
-      GetUserDataAs<Display>(resource)
-          ->CreatePrimeBuffer(base::ScopedFD(name), gfx::Size(width, height),
-                              supported_format->buffer_format, stride0);
+      GetUserDataAs<Display>(resource)->CreateLinuxDMABufBuffer(
+          base::ScopedFD(name), gfx::Size(width, height),
+          supported_format->buffer_format, stride0);
   if (!buffer) {
     wl_resource_post_no_memory(resource);
     return;
@@ -508,6 +511,163 @@ void bind_drm(wl_client* client, void* data, uint32_t version, uint32_t id) {
   for (const auto& supported_format : drm_supported_formats)
     wl_drm_send_format(resource, supported_format.drm_format);
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// linux_buffer_params_interface:
+
+const struct dmabuf_supported_format {
+  uint32_t dmabuf_format;
+  gfx::BufferFormat buffer_format;
+} dmabuf_supported_formats[] = {
+    {DRM_FORMAT_XBGR8888, gfx::BufferFormat::RGBX_8888},
+    {DRM_FORMAT_ABGR8888, gfx::BufferFormat::RGBA_8888},
+    {DRM_FORMAT_XRGB8888, gfx::BufferFormat::BGRX_8888},
+    {DRM_FORMAT_ARGB8888, gfx::BufferFormat::BGRA_8888}};
+
+struct LinuxBufferParams {
+  explicit LinuxBufferParams(Display* display)
+      : display(display), stride(0), offset(0) {}
+
+  Display* const display;
+  base::ScopedFD fd;
+  uint32_t stride;
+  uint32_t offset;
+};
+
+void linux_buffer_params_destroy(wl_client* client, wl_resource* resource) {
+  wl_resource_destroy(resource);
+}
+
+void linux_buffer_params_add(wl_client* client,
+                             wl_resource* resource,
+                             int32_t fd,
+                             uint32_t plane_idx,
+                             uint32_t offset,
+                             uint32_t stride,
+                             uint32_t modifier_hi,
+                             uint32_t modifier_lo) {
+  if (plane_idx) {
+    wl_resource_post_error(resource, ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_PLANE_IDX,
+                           "plane_idx too large");
+    return;
+  }
+
+  LinuxBufferParams* linux_buffer_params =
+      GetUserDataAs<LinuxBufferParams>(resource);
+  if (linux_buffer_params->fd.is_valid()) {
+    wl_resource_post_error(resource, ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_PLANE_SET,
+                           "plane already set");
+    return;
+  }
+
+  linux_buffer_params->fd.reset(fd);
+  linux_buffer_params->stride = stride;
+  linux_buffer_params->offset = offset;
+}
+
+void linux_buffer_params_create(wl_client* client,
+                                wl_resource* resource,
+                                int32_t width,
+                                int32_t height,
+                                uint32_t format,
+                                uint32_t flags) {
+  if (width <= 0 || height <= 0) {
+    wl_resource_post_error(resource,
+                           ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_INVALID_DIMENSIONS,
+                           "invalid width or height");
+    return;
+  }
+
+  const auto* supported_format = std::find_if(
+      std::begin(dmabuf_supported_formats), std::end(dmabuf_supported_formats),
+      [format](const dmabuf_supported_format& supported_format) {
+        return supported_format.dmabuf_format == format;
+      });
+  if (supported_format == std::end(dmabuf_supported_formats)) {
+    wl_resource_post_error(resource,
+                           ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_INVALID_FORMAT,
+                           "format not supported");
+    return;
+  }
+
+  if (flags & (ZWP_LINUX_BUFFER_PARAMS_V1_FLAGS_Y_INVERT |
+               ZWP_LINUX_BUFFER_PARAMS_V1_FLAGS_INTERLACED)) {
+    wl_resource_post_error(resource,
+                           ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_INCOMPLETE,
+                           "flags not supported");
+    return;
+  }
+
+  LinuxBufferParams* linux_buffer_params =
+      GetUserDataAs<LinuxBufferParams>(resource);
+  if (linux_buffer_params->offset) {
+    wl_resource_post_error(resource,
+                           ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_OUT_OF_BOUNDS,
+                           "offset not supported");
+    return;
+  }
+
+  scoped_ptr<Buffer> buffer =
+      linux_buffer_params->display->CreateLinuxDMABufBuffer(
+          std::move(linux_buffer_params->fd), gfx::Size(width, height),
+          supported_format->buffer_format, linux_buffer_params->stride);
+  if (!buffer) {
+    zwp_linux_buffer_params_v1_send_failed(resource);
+    return;
+  }
+
+  wl_resource* buffer_resource =
+      wl_resource_create(client, &wl_buffer_interface, 1, 0);
+
+  buffer->set_release_callback(base::Bind(&HandleBufferReleaseCallback,
+                                          base::Unretained(buffer_resource)));
+
+  zwp_linux_buffer_params_v1_send_created(resource, buffer_resource);
+}
+
+const struct zwp_linux_buffer_params_v1_interface
+    linux_buffer_params_implementation = {linux_buffer_params_destroy,
+                                          linux_buffer_params_add,
+                                          linux_buffer_params_create};
+
+////////////////////////////////////////////////////////////////////////////////
+// linux_dmabuf_interface:
+
+void linux_dmabuf_destroy(wl_client* client, wl_resource* resource) {
+  wl_resource_destroy(resource);
+}
+
+void linux_dmabuf_create_params(wl_client* client,
+                                wl_resource* resource,
+                                uint32_t id) {
+  scoped_ptr<LinuxBufferParams> linux_buffer_params =
+      make_scoped_ptr(new LinuxBufferParams(GetUserDataAs<Display>(resource)));
+
+  wl_resource* linux_buffer_params_resource =
+      wl_resource_create(client, &zwp_linux_buffer_params_v1_interface, 1, id);
+
+  SetImplementation(linux_buffer_params_resource,
+                    &linux_buffer_params_implementation,
+                    std::move(linux_buffer_params));
+}
+
+const struct zwp_linux_dmabuf_v1_interface linux_dmabuf_implementation = {
+    linux_dmabuf_destroy, linux_dmabuf_create_params};
+
+void bind_linux_dmabuf(wl_client* client,
+                       void* data,
+                       uint32_t version,
+                       uint32_t id) {
+  wl_resource* resource =
+      wl_resource_create(client, &zwp_linux_dmabuf_v1_interface, 1, id);
+
+  wl_resource_set_implementation(resource, &linux_dmabuf_implementation, data,
+                                 nullptr);
+
+  for (const auto& supported_format : dmabuf_supported_formats)
+    zwp_linux_dmabuf_v1_send_format(resource, supported_format.dmabuf_format);
+}
+
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1594,6 +1754,8 @@ Server::Server(Display* display)
 #if defined(USE_OZONE)
   wl_global_create(wl_display_.get(), &wl_drm_interface, drm_version, display_,
                    bind_drm);
+  wl_global_create(wl_display_.get(), &zwp_linux_dmabuf_v1_interface, 1,
+                   display_, bind_linux_dmabuf);
 #endif
   wl_global_create(wl_display_.get(), &wl_subcompositor_interface, 1, display_,
                    bind_subcompositor);

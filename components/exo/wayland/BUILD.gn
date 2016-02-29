@@ -11,6 +11,12 @@ if (use_xkbcommon) {
   }
 }
 
+if (use_ozone) {
+  pkg_config("libdrm") {
+    packages = [ "libdrm" ]
+  }
+}
+
 source_set("wayland") {
   sources = [
     "scoped_wl.cc",
@@ -35,12 +41,15 @@ source_set("wayland") {
   ]
 
   if (use_ozone) {
-    deps += [ "//third_party/mesa:wayland_drm_protocol" ]
+    deps += [
+      "//third_party/mesa:wayland_drm_protocol",
+      "//third_party/wayland-protocols:linux_dmabuf_protocol",
+    ]
+    configs += [ ":libdrm" ]
   }
 
   if (use_xkbcommon) {
     configs += [ ":xkbcommon" ]
-
     defines += [ "USE_XKBCOMMON" ]
   }
 }

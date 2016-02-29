@@ -53,7 +53,7 @@ TEST_F(DisplayTest, CreateSharedMemory) {
 }
 
 #if defined(USE_OZONE)
-TEST_F(DisplayTest, CreatePrimeBuffer) {
+TEST_F(DisplayTest, CreateLinuxDMABufBuffer) {
   const gfx::Size buffer_size(256, 256);
 
   scoped_ptr<Display> display(new Display);
@@ -72,7 +72,7 @@ TEST_F(DisplayTest, CreatePrimeBuffer) {
   EXPECT_TRUE(buffer1);
 
   // Creating a prime buffer using an invalid fd should fail.
-  scoped_ptr<Buffer> buffer2 = display->CreatePrimeBuffer(
+  scoped_ptr<Buffer> buffer2 = display->CreateLinuxDMABufBuffer(
       base::ScopedFD(), buffer_size, gfx::BufferFormat::RGBA_8888,
       buffer_size.width() * 4);
   EXPECT_FALSE(buffer2);

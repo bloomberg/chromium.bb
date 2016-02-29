@@ -86,7 +86,9 @@
           'conditions': [
             ['use_ozone==1', {
               'dependencies': [
+                '../build/linux/system.gyp:libdrm',
                 '../third_party/mesa/mesa.gyp:wayland_drm_protocol',
+                '../third_party/wayland-protocols/wayland-protocols.gyp:linux_dmabuf_protocol',
               ],
             }],
             ['use_xkbcommon==1', {
