@@ -78,6 +78,33 @@ void OnGlobalDumpDone(MemoryDumpCallback wrapped_callback,
   }
 }
 
+// Proxy class which wraps a ConvertableToTraceFormat owned by the
+// |session_state| into a proxy object that can be added to the trace event log.
+// This is to solve the problem that the MemoryDumpSessionState is refcounted
+// but the tracing subsystem wants a scoped_ptr<ConvertableToTraceFormat>.
+template <typename T>
+struct SessionStateConvertableProxy : public ConvertableToTraceFormat {
+  using GetterFunctPtr = T* (MemoryDumpSessionState::*)() const;
+
+  SessionStateConvertableProxy(
+      scoped_refptr<MemoryDumpSessionState> session_state,
+      GetterFunctPtr getter_function)
+      : session_state(session_state), getter_function(getter_function) {}
+
+  void AppendAsTraceFormat(std::string* out) const override {
+    return (session_state.get()->*getter_function)()->AppendAsTraceFormat(out);
+  }
+
+  void EstimateTraceMemoryOverhead(
+      TraceEventMemoryOverhead* overhead) override {
+    return (session_state.get()->*getter_function)()
+        ->EstimateTraceMemoryOverhead(overhead);
+  }
+
+  scoped_refptr<MemoryDumpSessionState> session_state;
+  GetterFunctPtr const getter_function;
+};
+
 }  // namespace
 
 // static
@@ -527,15 +554,15 @@ void MemoryDumpManager::FinalizeDumpAndAddToTrace(
   for (const auto& kv : pmd_async_state->process_dumps) {
     ProcessId pid = kv.first;  // kNullProcessId for the current process.
     ProcessMemoryDump* process_memory_dump = kv.second.get();
-    TracedValue* traced_value = new TracedValue();
-    scoped_refptr<ConvertableToTraceFormat> event_value(traced_value);
-    process_memory_dump->AsValueInto(traced_value);
+    scoped_ptr<TracedValue> traced_value(new TracedValue);
+    process_memory_dump->AsValueInto(traced_value.get());
     traced_value->SetString("level_of_detail",
                             MemoryDumpLevelOfDetailToString(
                                 pmd_async_state->req_args.level_of_detail));
     const char* const event_name =
         MemoryDumpTypeToString(pmd_async_state->req_args.dump_type);
 
+    scoped_ptr<ConvertableToTraceFormat> event_value(std::move(traced_value));
     TRACE_EVENT_API_ADD_TRACE_EVENT_WITH_PROCESS_ID(
         TRACE_EVENT_PHASE_MEMORY_DUMP,
         TraceLog::GetCategoryGroupEnabled(kTraceCategory), event_name,
@@ -580,31 +607,35 @@ void MemoryDumpManager::OnTraceLogEnabled() {
   AutoLock lock(lock_);
 
   DCHECK(delegate_);  // At this point we must have a delegate.
-
-  scoped_refptr<StackFrameDeduplicator> stack_frame_deduplicator = nullptr;
-  scoped_refptr<TypeNameDeduplicator> type_name_deduplicator = nullptr;
+  session_state_ = new MemoryDumpSessionState;
 
   if (heap_profiling_enabled_) {
     // If heap profiling is enabled, the stack frame deduplicator and type name
     // deduplicator will be in use. Add a metadata events to write the frames
     // and type IDs.
-    stack_frame_deduplicator = new StackFrameDeduplicator;
-    type_name_deduplicator = new TypeNameDeduplicator;
+    session_state_->SetStackFrameDeduplicator(
+        make_scoped_ptr(new StackFrameDeduplicator));
+
+    session_state_->SetTypeNameDeduplicator(
+        make_scoped_ptr(new TypeNameDeduplicator));
+
     TRACE_EVENT_API_ADD_METADATA_EVENT(
         TraceLog::GetCategoryGroupEnabled("__metadata"), "stackFrames",
         "stackFrames",
-        scoped_refptr<ConvertableToTraceFormat>(stack_frame_deduplicator));
+        make_scoped_ptr(
+            new SessionStateConvertableProxy<StackFrameDeduplicator>(
+                session_state_,
+                &MemoryDumpSessionState::stack_frame_deduplicator)));
+
     TRACE_EVENT_API_ADD_METADATA_EVENT(
         TraceLog::GetCategoryGroupEnabled("__metadata"), "typeNames",
         "typeNames",
-        scoped_refptr<ConvertableToTraceFormat>(type_name_deduplicator));
+        make_scoped_ptr(new SessionStateConvertableProxy<TypeNameDeduplicator>(
+            session_state_, &MemoryDumpSessionState::type_name_deduplicator)));
   }
 
   DCHECK(!dump_thread_);
   dump_thread_ = std::move(dump_thread);
-  session_state_ = new MemoryDumpSessionState(stack_frame_deduplicator,
-                                              type_name_deduplicator);
-
   subtle::NoBarrier_Store(&memory_tracing_enabled_, 1);
 
   // TODO(primiano): This is a temporary hack to disable periodic memory dumps

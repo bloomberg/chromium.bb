@@ -17,7 +17,7 @@
 #include "base/callback.h"
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted_memory.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
@@ -44,9 +44,11 @@ typedef base::Callback<bool(const char* category_group_name,
 
 // For any argument of type TRACE_VALUE_TYPE_CONVERTABLE the provided
 // class must implement this interface.
-class BASE_EXPORT ConvertableToTraceFormat
-    : public RefCounted<ConvertableToTraceFormat> {
+class BASE_EXPORT ConvertableToTraceFormat {
  public:
+  ConvertableToTraceFormat() {}
+  virtual ~ConvertableToTraceFormat() {}
+
   // Append the class info to the provided |out| string. The appended
   // data must be a valid JSON object. Strings must be properly quoted, and
   // escaped. There is no processing applied to the content after it is
@@ -61,11 +63,8 @@ class BASE_EXPORT ConvertableToTraceFormat
     return result;
   }
 
- protected:
-  virtual ~ConvertableToTraceFormat() {}
-
  private:
-  friend class RefCounted<ConvertableToTraceFormat>;
+  DISALLOW_COPY_AND_ASSIGN(ConvertableToTraceFormat);
 };
 
 const int kTraceMaxNumArgs = 2;
@@ -93,26 +92,23 @@ class BASE_EXPORT TraceEvent {
   TraceEvent();
   ~TraceEvent();
 
-  // We don't need to copy TraceEvent except when TraceEventBuffer is cloned.
-  // Use explicit copy method to avoid accidentally misuse of copy.
-  void CopyFrom(const TraceEvent& other);
+  void MoveFrom(scoped_ptr<TraceEvent> other);
 
-  void Initialize(
-      int thread_id,
-      TimeTicks timestamp,
-      ThreadTicks thread_timestamp,
-      char phase,
-      const unsigned char* category_group_enabled,
-      const char* name,
-      const char* scope,
-      unsigned long long id,
-      unsigned long long bind_id,
-      int num_args,
-      const char** arg_names,
-      const unsigned char* arg_types,
-      const unsigned long long* arg_values,
-      const scoped_refptr<ConvertableToTraceFormat>* convertable_values,
-      unsigned int flags);
+  void Initialize(int thread_id,
+                  TimeTicks timestamp,
+                  ThreadTicks thread_timestamp,
+                  char phase,
+                  const unsigned char* category_group_enabled,
+                  const char* name,
+                  const char* scope,
+                  unsigned long long id,
+                  unsigned long long bind_id,
+                  int num_args,
+                  const char** arg_names,
+                  const unsigned char* arg_types,
+                  const unsigned long long* arg_values,
+                  scoped_ptr<ConvertableToTraceFormat>* convertable_values,
+                  unsigned int flags);
 
   void Reset();
 
@@ -142,7 +138,7 @@ class BASE_EXPORT TraceEvent {
 
   // Exposed for unittesting:
 
-  const base::RefCountedString* parameter_copy_storage() const {
+  const std::string* parameter_copy_storage() const {
     return parameter_copy_storage_.get();
   }
 
@@ -167,10 +163,10 @@ class BASE_EXPORT TraceEvent {
   unsigned long long id_;
   TraceValue arg_values_[kTraceMaxNumArgs];
   const char* arg_names_[kTraceMaxNumArgs];
-  scoped_refptr<ConvertableToTraceFormat> convertable_values_[kTraceMaxNumArgs];
+  scoped_ptr<ConvertableToTraceFormat> convertable_values_[kTraceMaxNumArgs];
   const unsigned char* category_group_enabled_;
   const char* name_;
-  scoped_refptr<base::RefCountedString> parameter_copy_storage_;
+  scoped_ptr<std::string> parameter_copy_storage_;
   // Depending on TRACE_EVENT_FLAG_HAS_PROCESS_ID the event will have either:
   //  tid: thread_id_, pid: current_process_id (default case).
   //  tid: -1, pid: process_id_ (when flags_ & TRACE_EVENT_FLAG_HAS_PROCESS_ID).

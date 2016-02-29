@@ -5,7 +5,7 @@
 #include <iterator>
 
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/trace_event/heap_profiler_allocation_context.h"
 #include "base/trace_event/heap_profiler_stack_frame_deduplicator.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -30,7 +30,7 @@ TEST(StackFrameDeduplicatorTest, SingleBacktrace) {
   //   CreateWidget [1]
   //     malloc [2]
 
-  scoped_refptr<StackFrameDeduplicator> dedup = new StackFrameDeduplicator;
+  scoped_ptr<StackFrameDeduplicator> dedup(new StackFrameDeduplicator);
   ASSERT_EQ(2, dedup->Insert(std::begin(bt), std::end(bt)));
 
   auto iter = dedup->begin();
@@ -63,7 +63,7 @@ TEST(StackFrameDeduplicatorTest, MultipleRoots) {
   // Note that there will be two instances of CreateWidget,
   // with different parents.
 
-  scoped_refptr<StackFrameDeduplicator> dedup = new StackFrameDeduplicator;
+  scoped_ptr<StackFrameDeduplicator> dedup(new StackFrameDeduplicator);
   ASSERT_EQ(1, dedup->Insert(std::begin(bt0), std::end(bt0)));
   ASSERT_EQ(3, dedup->Insert(std::begin(bt1), std::end(bt1)));
 
@@ -95,7 +95,7 @@ TEST(StackFrameDeduplicatorTest, Deduplication) {
   //
   // Note that BrowserMain will be re-used.
 
-  scoped_refptr<StackFrameDeduplicator> dedup = new StackFrameDeduplicator;
+  scoped_ptr<StackFrameDeduplicator> dedup(new StackFrameDeduplicator);
   ASSERT_EQ(1, dedup->Insert(std::begin(bt0), std::end(bt0)));
   ASSERT_EQ(2, dedup->Insert(std::begin(bt1), std::end(bt1)));
 
@@ -121,7 +121,7 @@ TEST(StackFrameDeduplicatorTest, Deduplication) {
 TEST(StackFrameDeduplicatorTest, NullPaddingIsRemoved) {
   StackFrame bt0[] = {kBrowserMain, nullptr, nullptr, nullptr};
 
-  scoped_refptr<StackFrameDeduplicator> dedup = new StackFrameDeduplicator;
+  scoped_ptr<StackFrameDeduplicator> dedup(new StackFrameDeduplicator);
 
   // There are four frames in the backtrace, but the null pointers should be
   // skipped, so only one frame is inserted, which will have index 0.

@@ -237,10 +237,10 @@ bool DisplayItemList::ShouldBeAnalyzedForSolidColor() const {
   return ApproximateOpCount() <= kOpCountThatIsOkToAnalyze;
 }
 
-scoped_refptr<base::trace_event::ConvertableToTraceFormat>
+scoped_ptr<base::trace_event::ConvertableToTraceFormat>
 DisplayItemList::AsValue(bool include_items) const {
-  scoped_refptr<base::trace_event::TracedValue> state =
-      new base::trace_event::TracedValue();
+  scoped_ptr<base::trace_event::TracedValue> state(
+      new base::trace_event::TracedValue());
 
   state->BeginDictionary("params");
   if (include_items) {
@@ -273,7 +273,7 @@ DisplayItemList::AsValue(bool include_items) const {
     state->SetString("skp64", b64_picture);
   }
 
-  return state;
+  return std::move(state);
 }
 
 void DisplayItemList::EmitTraceSnapshot() const {

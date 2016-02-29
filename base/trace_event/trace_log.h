@@ -191,7 +191,7 @@ class BASE_EXPORT TraceLog : public MemoryDumpProvider {
       const char** arg_names,
       const unsigned char* arg_types,
       const unsigned long long* arg_values,
-      const scoped_refptr<ConvertableToTraceFormat>* convertable_values,
+      scoped_ptr<ConvertableToTraceFormat>* convertable_values,
       unsigned int flags);
   TraceEventHandle AddTraceEventWithBindId(
       char phase,
@@ -204,7 +204,7 @@ class BASE_EXPORT TraceLog : public MemoryDumpProvider {
       const char** arg_names,
       const unsigned char* arg_types,
       const unsigned long long* arg_values,
-      const scoped_refptr<ConvertableToTraceFormat>* convertable_values,
+      scoped_ptr<ConvertableToTraceFormat>* convertable_values,
       unsigned int flags);
   TraceEventHandle AddTraceEventWithProcessId(
       char phase,
@@ -217,7 +217,7 @@ class BASE_EXPORT TraceLog : public MemoryDumpProvider {
       const char** arg_names,
       const unsigned char* arg_types,
       const unsigned long long* arg_values,
-      const scoped_refptr<ConvertableToTraceFormat>* convertable_values,
+      scoped_ptr<ConvertableToTraceFormat>* convertable_values,
       unsigned int flags);
   TraceEventHandle AddTraceEventWithThreadIdAndTimestamp(
       char phase,
@@ -231,7 +231,7 @@ class BASE_EXPORT TraceLog : public MemoryDumpProvider {
       const char** arg_names,
       const unsigned char* arg_types,
       const unsigned long long* arg_values,
-      const scoped_refptr<ConvertableToTraceFormat>* convertable_values,
+      scoped_ptr<ConvertableToTraceFormat>* convertable_values,
       unsigned int flags);
   TraceEventHandle AddTraceEventWithThreadIdAndTimestamp(
       char phase,
@@ -246,7 +246,7 @@ class BASE_EXPORT TraceLog : public MemoryDumpProvider {
       const char** arg_names,
       const unsigned char* arg_types,
       const unsigned long long* arg_values,
-      const scoped_refptr<ConvertableToTraceFormat>* convertable_values,
+      scoped_ptr<ConvertableToTraceFormat>* convertable_values,
       unsigned int flags);
 
   // Adds a metadata event that will be written when the trace log is flushed.
@@ -257,7 +257,7 @@ class BASE_EXPORT TraceLog : public MemoryDumpProvider {
       const char** arg_names,
       const unsigned char* arg_types,
       const unsigned long long* arg_values,
-      const scoped_refptr<ConvertableToTraceFormat>* convertable_values,
+      scoped_ptr<ConvertableToTraceFormat>* convertable_values,
       unsigned int flags);
 
   void UpdateTraceEventDuration(const unsigned char* category_group_enabled,

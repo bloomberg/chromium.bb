@@ -53,8 +53,7 @@ class BASE_EXPORT ProcessMemoryDump {
   using AllocatorDumpsMap =
       std::unordered_map<std::string, scoped_ptr<MemoryAllocatorDump>>;
 
-  using HeapDumpsMap =
-      std::unordered_map<std::string, scoped_refptr<TracedValue>>;
+  using HeapDumpsMap = std::unordered_map<std::string, scoped_ptr<TracedValue>>;
 
 #if defined(COUNT_RESIDENT_BYTES_SUPPORTED)
   // Returns the total bytes resident for a virtual address range, with given
@@ -117,7 +116,7 @@ class BASE_EXPORT ProcessMemoryDump {
   // must have the correct format. |trace_event::HeapDumper| will generate such
   // a value from a |trace_event::AllocationRegister|.
   void AddHeapDump(const std::string& absolute_name,
-                   scoped_refptr<TracedValue> heap_dump);
+                   scoped_ptr<TracedValue> heap_dump);
 
   // Adds an ownership relationship between two MemoryAllocatorDump(s) with the
   // semantics: |source| owns |target|, and has the effect of attributing

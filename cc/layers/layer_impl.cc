@@ -94,6 +94,7 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl,
       current_draw_mode_(DRAW_MODE_NONE),
       element_id_(0),
       mutable_properties_(MutableProperty::kNone),
+      debug_info_(nullptr),
       force_render_surface_(false),
       frame_timing_requests_dirty_(false),
       visited_(false),
@@ -203,8 +204,9 @@ void LayerImpl::SetScrollParent(LayerImpl* parent) {
 }
 
 void LayerImpl::SetDebugInfo(
-    scoped_refptr<base::trace_event::ConvertableToTraceFormat> other) {
-  debug_info_ = other;
+    scoped_ptr<base::trace_event::ConvertableToTraceFormat> debug_info) {
+  owned_debug_info_ = std::move(debug_info);
+  debug_info_ = owned_debug_info_.get();
   SetNeedsPushProperties();
 }
 
@@ -609,7 +611,8 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   update_rect_.Union(layer->update_rect());
   layer->SetUpdateRect(update_rect_);
 
-  layer->SetDebugInfo(debug_info_);
+  if (owned_debug_info_)
+    layer->SetDebugInfo(std::move(owned_debug_info_));
 
   if (frame_timing_requests_dirty_) {
     layer->SetFrameTimingRequests(frame_timing_requests_);
@@ -1644,7 +1647,7 @@ void LayerImpl::AsValueInto(base::trace_event::TracedValue* state) const {
   if (LayerUtils::GetAnimationBounds(*this, &box))
     MathUtil::AddToTracedValue("animation_bounds", box, state);
 
-  if (debug_info_.get()) {
+  if (debug_info_) {
     std::string str;
     debug_info_->AppendAsTraceFormat(&str);
     base::JSONReader json_reader;

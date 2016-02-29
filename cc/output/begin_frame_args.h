@@ -82,7 +82,7 @@ struct CC_EXPORT BeginFrameArgs {
 
   bool IsValid() const { return interval >= base::TimeDelta(); }
 
-  scoped_refptr<base::trace_event::ConvertableToTraceFormat> AsValue() const;
+  scoped_ptr<base::trace_event::ConvertableToTraceFormat> AsValue() const;
   void AsValueInto(base::trace_event::TracedValue* dict) const;
 
   void ToProtobuf(proto::BeginFrameArgs* proto) const;

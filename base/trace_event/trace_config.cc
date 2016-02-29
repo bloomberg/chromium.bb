@@ -63,12 +63,10 @@ class ConvertableTraceConfigToTraceFormat
  public:
   explicit ConvertableTraceConfigToTraceFormat(const TraceConfig& trace_config)
       : trace_config_(trace_config) {}
+  ~ConvertableTraceConfigToTraceFormat() override {}
   void AppendAsTraceFormat(std::string* out) const override {
     out->append(trace_config_.ToString());
   }
-
- protected:
-  ~ConvertableTraceConfigToTraceFormat() override {}
 
  private:
   const TraceConfig trace_config_;
@@ -158,9 +156,9 @@ std::string TraceConfig::ToString() const {
   return json;
 }
 
-scoped_refptr<ConvertableToTraceFormat>
-TraceConfig::AsConvertableToTraceFormat() const {
-  return new ConvertableTraceConfigToTraceFormat(*this);
+scoped_ptr<ConvertableToTraceFormat> TraceConfig::AsConvertableToTraceFormat()
+    const {
+  return make_scoped_ptr(new ConvertableTraceConfigToTraceFormat(*this));
 }
 
 std::string TraceConfig::ToCategoryFilterString() const {

@@ -153,8 +153,8 @@ class BASE_EXPORT TraceConfig {
   // formatted.
   std::string ToString() const;
 
-  // Returns a scoped_refptr and wrap TraceConfig in ConvertableToTraceFormat
-  scoped_refptr<ConvertableToTraceFormat> AsConvertableToTraceFormat() const;
+  // Returns a copy of the TraceConfig wrapped in a ConvertableToTraceFormat
+  scoped_ptr<ConvertableToTraceFormat> AsConvertableToTraceFormat() const;
 
   // Write the string representation of the CategoryFilter part.
   std::string ToCategoryFilterString() const;

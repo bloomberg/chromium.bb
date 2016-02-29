@@ -804,6 +804,7 @@ void Layer::SetForceRenderSurface(bool force) {
 class LayerDebugInfo : public base::trace_event::ConvertableToTraceFormat {
  public:
   explicit LayerDebugInfo(const std::string& name) : name_(name) {}
+  ~LayerDebugInfo() override {}
   void AppendAsTraceFormat(std::string* out) const override {
     base::DictionaryValue dictionary;
     dictionary.SetString("layer_name", name_);
@@ -811,13 +812,12 @@ class LayerDebugInfo : public base::trace_event::ConvertableToTraceFormat {
   }
 
  private:
-  ~LayerDebugInfo() override {}
   std::string name_;
 };
 
-scoped_refptr<base::trace_event::ConvertableToTraceFormat> Layer::TakeDebugInfo(
+scoped_ptr<base::trace_event::ConvertableToTraceFormat> Layer::TakeDebugInfo(
     cc::Layer* layer) {
-  return new LayerDebugInfo(name_);
+  return make_scoped_ptr(new LayerDebugInfo(name_));
 }
 
 void Layer::CollectAnimators(

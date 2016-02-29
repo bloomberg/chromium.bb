@@ -134,8 +134,9 @@ const int64_t kMaxTimeSinceIdleMs = 10;
 
 class DevToolsChannelData : public base::trace_event::ConvertableToTraceFormat {
  public:
-  static scoped_refptr<base::trace_event::ConvertableToTraceFormat>
+  static scoped_ptr<base::trace_event::ConvertableToTraceFormat>
   CreateForChannel(GpuChannel* channel);
+  ~DevToolsChannelData() override {}
 
   void AppendAsTraceFormat(std::string* out) const override {
     std::string tmp;
@@ -145,17 +146,16 @@ class DevToolsChannelData : public base::trace_event::ConvertableToTraceFormat {
 
  private:
   explicit DevToolsChannelData(base::Value* value) : value_(value) {}
-  ~DevToolsChannelData() override {}
   scoped_ptr<base::Value> value_;
   DISALLOW_COPY_AND_ASSIGN(DevToolsChannelData);
 };
 
-scoped_refptr<base::trace_event::ConvertableToTraceFormat>
+scoped_ptr<base::trace_event::ConvertableToTraceFormat>
 DevToolsChannelData::CreateForChannel(GpuChannel* channel) {
   scoped_ptr<base::DictionaryValue> res(new base::DictionaryValue);
   res->SetInteger("renderer_pid", channel->GetClientPID());
   res->SetDouble("used_bytes", channel->GetMemoryUsage());
-  return new DevToolsChannelData(res.release());
+  return make_scoped_ptr(new DevToolsChannelData(res.release()));
 }
 
 gpu::CommandBufferId GetCommandBufferID(int channel_id, int32_t route_id) {

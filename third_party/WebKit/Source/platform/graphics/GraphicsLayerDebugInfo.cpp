@@ -32,9 +32,10 @@ GraphicsLayerDebugInfo::GraphicsLayerDebugInfo()
 
 GraphicsLayerDebugInfo::~GraphicsLayerDebugInfo() { }
 
-scoped_refptr<base::trace_event::TracedValue> GraphicsLayerDebugInfo::asTracedValue() const
+scoped_ptr<base::trace_event::TracedValue> GraphicsLayerDebugInfo::asTracedValue() const
 {
-    scoped_refptr<base::trace_event::TracedValue> tracedValue = new base::trace_event::TracedValue;
+    scoped_ptr<base::trace_event::TracedValue> tracedValue(
+        new base::trace_event::TracedValue());
     appendAnnotatedInvalidateRects(tracedValue.get());
     appendCompositingReasons(tracedValue.get());
     appendSquashingDisallowedReasons(tracedValue.get());

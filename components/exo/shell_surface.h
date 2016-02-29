@@ -99,7 +99,7 @@ class ShellSurface : public SurfaceDelegate,
   static Surface* GetMainSurface(const aura::Window* window);
 
   // Returns a trace value representing the state of the surface.
-  scoped_refptr<base::trace_event::TracedValue> AsTracedValue() const;
+  scoped_ptr<base::trace_event::TracedValue> AsTracedValue() const;
 
   // Overridden from SurfaceDelegate:
   void OnSurfaceCommit() override;

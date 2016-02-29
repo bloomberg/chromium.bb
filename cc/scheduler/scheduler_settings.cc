@@ -22,10 +22,10 @@ SchedulerSettings::SchedulerSettings()
 
 SchedulerSettings::~SchedulerSettings() {}
 
-scoped_refptr<base::trace_event::ConvertableToTraceFormat>
+scoped_ptr<base::trace_event::ConvertableToTraceFormat>
 SchedulerSettings::AsValue() const {
-  scoped_refptr<base::trace_event::TracedValue> state =
-      new base::trace_event::TracedValue();
+  scoped_ptr<base::trace_event::TracedValue> state(
+      new base::trace_event::TracedValue());
   state->SetBoolean("use_external_begin_frame_source",
                     use_external_begin_frame_source);
   state->SetBoolean("main_frame_while_swap_throttled_enabled",
@@ -42,7 +42,7 @@ SchedulerSettings::AsValue() const {
   state->SetBoolean("throttle_frame_production", throttle_frame_production);
   state->SetInteger("background_frame_interval",
                     background_frame_interval.InMicroseconds());
-  return state;
+  return std::move(state);
 }
 
 }  // namespace cc

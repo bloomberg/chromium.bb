@@ -364,7 +364,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   virtual void SetIsMask(bool is_mask) {}
   virtual bool IsSuitableForGpuRasterization() const;
 
-  virtual scoped_refptr<base::trace_event::ConvertableToTraceFormat>
+  virtual scoped_ptr<base::trace_event::ConvertableToTraceFormat>
   TakeDebugInfo();
 
   void SetLayerClient(LayerClient* client) { client_ = client; }

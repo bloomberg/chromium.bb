@@ -1035,7 +1035,7 @@ TraceEventHandle TraceLog::AddTraceEvent(
     const char** arg_names,
     const unsigned char* arg_types,
     const unsigned long long* arg_values,
-    const scoped_refptr<ConvertableToTraceFormat>* convertable_values,
+    scoped_ptr<ConvertableToTraceFormat>* convertable_values,
     unsigned int flags) {
   int thread_id = static_cast<int>(base::PlatformThread::CurrentId());
   base::TimeTicks now = base::TimeTicks::Now();
@@ -1067,7 +1067,7 @@ TraceEventHandle TraceLog::AddTraceEventWithBindId(
     const char** arg_names,
     const unsigned char* arg_types,
     const unsigned long long* arg_values,
-    const scoped_refptr<ConvertableToTraceFormat>* convertable_values,
+    scoped_ptr<ConvertableToTraceFormat>* convertable_values,
     unsigned int flags) {
   int thread_id = static_cast<int>(base::PlatformThread::CurrentId());
   base::TimeTicks now = base::TimeTicks::Now();
@@ -1099,7 +1099,7 @@ TraceEventHandle TraceLog::AddTraceEventWithProcessId(
     const char** arg_names,
     const unsigned char* arg_types,
     const unsigned long long* arg_values,
-    const scoped_refptr<ConvertableToTraceFormat>* convertable_values,
+    scoped_ptr<ConvertableToTraceFormat>* convertable_values,
     unsigned int flags) {
   base::TimeTicks now = base::TimeTicks::Now();
   return AddTraceEventWithThreadIdAndTimestamp(
@@ -1133,7 +1133,7 @@ TraceEventHandle TraceLog::AddTraceEventWithThreadIdAndTimestamp(
     const char** arg_names,
     const unsigned char* arg_types,
     const unsigned long long* arg_values,
-    const scoped_refptr<ConvertableToTraceFormat>* convertable_values,
+    scoped_ptr<ConvertableToTraceFormat>* convertable_values,
     unsigned int flags) {
   return AddTraceEventWithThreadIdAndTimestamp(
       phase,
@@ -1165,7 +1165,7 @@ TraceEventHandle TraceLog::AddTraceEventWithThreadIdAndTimestamp(
     const char** arg_names,
     const unsigned char* arg_types,
     const unsigned long long* arg_values,
-    const scoped_refptr<ConvertableToTraceFormat>* convertable_values,
+    scoped_ptr<ConvertableToTraceFormat>* convertable_values,
     unsigned int flags) {
   TraceEventHandle handle = {0, 0, 0};
   if (!*category_group_enabled)
@@ -1337,7 +1337,7 @@ void TraceLog::AddMetadataEvent(
     const char** arg_names,
     const unsigned char* arg_types,
     const unsigned long long* arg_values,
-    const scoped_refptr<ConvertableToTraceFormat>* convertable_values,
+    scoped_ptr<ConvertableToTraceFormat>* convertable_values,
     unsigned int flags) {
   scoped_ptr<TraceEvent> trace_event(new TraceEvent);
   int thread_id = static_cast<int>(base::PlatformThread::CurrentId());
@@ -1492,9 +1492,12 @@ uint64_t TraceLog::MangleEventId(uint64_t id) {
 void TraceLog::AddMetadataEventsWhileLocked() {
   lock_.AssertAcquired();
 
-  // Copy metadata added by |AddMetadataEvent| into the trace log.
-  for (const scoped_ptr<TraceEvent>& event : metadata_events_)
-    AddEventToThreadSharedChunkWhileLocked(nullptr, false)->CopyFrom(*event);
+  // Move metadata added by |AddMetadataEvent| into the trace log.
+  while (!metadata_events_.empty()) {
+    TraceEvent* event = AddEventToThreadSharedChunkWhileLocked(nullptr, false);
+    event->MoveFrom(std::move(metadata_events_.back()));
+    metadata_events_.pop_back();
+  }
 
 #if !defined(OS_NACL)  // NaCl shouldn't expose the process id.
   InitializeMetadataEvent(AddEventToThreadSharedChunkWhileLocked(NULL, false),

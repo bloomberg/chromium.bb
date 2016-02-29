@@ -47,6 +47,7 @@ class BASE_EXPORT StackFrameDeduplicator : public ConvertableToTraceFormat {
   using ConstIterator = std::vector<FrameNode>::const_iterator;
 
   StackFrameDeduplicator();
+  ~StackFrameDeduplicator() override;
 
   // Inserts a backtrace where |beginFrame| is a pointer to the bottom frame
   // (e.g. main) and |endFrame| is a pointer past the top frame (most recently
@@ -66,8 +67,6 @@ class BASE_EXPORT StackFrameDeduplicator : public ConvertableToTraceFormat {
   void EstimateTraceMemoryOverhead(TraceEventMemoryOverhead* overhead) override;
 
  private:
-  ~StackFrameDeduplicator() override;
-
   std::map<StackFrame, int> roots_;
   std::vector<FrameNode> frames_;
 

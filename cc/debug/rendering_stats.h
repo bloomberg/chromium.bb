@@ -58,7 +58,7 @@ struct CC_EXPORT RenderingStats {
   TimeDeltaList commit_to_activate_duration;
   TimeDeltaList commit_to_activate_duration_estimate;
 
-  scoped_refptr<base::trace_event::ConvertableToTraceFormat> AsTraceableData()
+  scoped_ptr<base::trace_event::ConvertableToTraceFormat> AsTraceableData()
       const;
   void Add(const RenderingStats& other);
 };

@@ -26,6 +26,7 @@ namespace {
 class SystemStatsHolder : public base::trace_event::ConvertableToTraceFormat {
  public:
   SystemStatsHolder() { }
+  ~SystemStatsHolder() override {}
 
   // Fills system_metrics_ with profiled system memory and disk stats.
   // Uses the previous stats to compute rates if this is not the first profile.
@@ -37,8 +38,6 @@ class SystemStatsHolder : public base::trace_event::ConvertableToTraceFormat {
   }
 
  private:
-  ~SystemStatsHolder() override {}
-
   SystemMetrics system_stats_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemStatsHolder);
@@ -105,14 +104,13 @@ void TraceEventSystemStatsMonitor::StartProfiling() {
 
 // If system tracing is enabled, dumps a profile to the tracing system.
 void TraceEventSystemStatsMonitor::DumpSystemStats() {
-  scoped_refptr<SystemStatsHolder> dump_holder = new SystemStatsHolder();
+  scoped_ptr<SystemStatsHolder> dump_holder(new SystemStatsHolder());
   dump_holder->GetSystemProfilingStats();
 
   TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID(
       TRACE_DISABLED_BY_DEFAULT("system_stats"),
-      "base::TraceEventSystemStatsMonitor::SystemStats",
-      this,
-      scoped_refptr<ConvertableToTraceFormat>(dump_holder));
+      "base::TraceEventSystemStatsMonitor::SystemStats", this,
+      std::move(dump_holder));
 }
 
 void TraceEventSystemStatsMonitor::StopProfiling() {

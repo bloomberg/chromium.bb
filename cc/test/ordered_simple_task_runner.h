@@ -37,7 +37,7 @@ class TestOrderablePendingTask : public base::TestPendingTask {
   bool operator<(const TestOrderablePendingTask& other) const;
 
   // base::trace_event tracing functionality
-  scoped_refptr<base::trace_event::ConvertableToTraceFormat> AsValue() const;
+  scoped_ptr<base::trace_event::ConvertableToTraceFormat> AsValue() const;
   void AsValueInto(base::trace_event::TracedValue* state) const;
 
  private:
@@ -106,7 +106,7 @@ class OrderedSimpleTaskRunner : public base::SingleThreadTaskRunner {
   bool RunForPeriod(base::TimeDelta period);
 
   // base::trace_event tracing functionality
-  scoped_refptr<base::trace_event::ConvertableToTraceFormat> AsValue() const;
+  scoped_ptr<base::trace_event::ConvertableToTraceFormat> AsValue() const;
   virtual void AsValueInto(base::trace_event::TracedValue* state) const;
 
   // Common conditions to run for, exposed publicly to allow external users to

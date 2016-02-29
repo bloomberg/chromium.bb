@@ -129,7 +129,7 @@ class CC_EXPORT SchedulerStateMachine {
   };
   static const char* ActionToString(Action action);
 
-  scoped_refptr<base::trace_event::ConvertableToTraceFormat> AsValue() const;
+  scoped_ptr<base::trace_event::ConvertableToTraceFormat> AsValue() const;
   void AsValueInto(base::trace_event::TracedValue* dict) const;
 
   Action NextAction() const;

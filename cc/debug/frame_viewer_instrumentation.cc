@@ -26,18 +26,18 @@ const char kSourceFrameNumber[] = "sourceFrameNumber";
 const char kAnalyzeTask[] = "AnalyzeTask";
 const char kRasterTask[] = "RasterTask";
 
-scoped_refptr<base::trace_event::ConvertableToTraceFormat> TileDataAsValue(
+scoped_ptr<base::trace_event::ConvertableToTraceFormat> TileDataAsValue(
     const void* tile_id,
     TileResolution tile_resolution,
     int source_frame_number,
     int layer_id) {
-  scoped_refptr<base::trace_event::TracedValue> res(
+  scoped_ptr<base::trace_event::TracedValue> res(
       new base::trace_event::TracedValue());
   TracedValue::SetIDRef(tile_id, res.get(), kTileId);
   res->SetString(kTileResolution, TileResolutionToString(tile_resolution));
   res->SetInteger(kSourceFrameNumber, source_frame_number);
   res->SetInteger(kLayerId, layer_id);
-  return res;
+  return std::move(res);
 }
 
 }  // namespace

@@ -253,15 +253,15 @@ class TaskSetFinishedTaskImpl : public TileTask {
 RasterTaskCompletionStats::RasterTaskCompletionStats()
     : completed_count(0u), canceled_count(0u) {}
 
-scoped_refptr<base::trace_event::ConvertableToTraceFormat>
+scoped_ptr<base::trace_event::ConvertableToTraceFormat>
 RasterTaskCompletionStatsAsValue(const RasterTaskCompletionStats& stats) {
-  scoped_refptr<base::trace_event::TracedValue> state =
-      new base::trace_event::TracedValue();
+  scoped_ptr<base::trace_event::TracedValue> state(
+      new base::trace_event::TracedValue());
   state->SetInteger("completed_count",
                     base::saturated_cast<int>(stats.completed_count));
   state->SetInteger("canceled_count",
                     base::saturated_cast<int>(stats.canceled_count));
-  return state;
+  return std::move(state);
 }
 
 // static
@@ -477,12 +477,12 @@ void TileManager::Flush() {
   flush_stats_ = RasterTaskCompletionStats();
 }
 
-scoped_refptr<base::trace_event::ConvertableToTraceFormat>
+scoped_ptr<base::trace_event::ConvertableToTraceFormat>
 TileManager::BasicStateAsValue() const {
-  scoped_refptr<base::trace_event::TracedValue> value =
-      new base::trace_event::TracedValue();
+  scoped_ptr<base::trace_event::TracedValue> value(
+      new base::trace_event::TracedValue());
   BasicStateAsValueInto(value.get());
-  return value;
+  return std::move(value);
 }
 
 void TileManager::BasicStateAsValueInto(
@@ -1104,18 +1104,17 @@ bool TileManager::DetermineResourceRequiresSwizzle(const Tile* tile) const {
   return tile_task_runner_->GetResourceRequiresSwizzle(!tile->is_opaque());
 }
 
-scoped_refptr<base::trace_event::ConvertableToTraceFormat>
+scoped_ptr<base::trace_event::ConvertableToTraceFormat>
 TileManager::ScheduledTasksStateAsValue() const {
-  scoped_refptr<base::trace_event::TracedValue> state =
-      new base::trace_event::TracedValue();
-
+  scoped_ptr<base::trace_event::TracedValue> state(
+      new base::trace_event::TracedValue());
   state->BeginDictionary("tasks_pending");
   state->SetBoolean("ready_to_activate", signals_.ready_to_activate);
   state->SetBoolean("ready_to_draw", signals_.ready_to_draw);
   state->SetBoolean("all_tile_tasks_completed",
                     signals_.all_tile_tasks_completed);
   state->EndDictionary();
-  return state;
+  return std::move(state);
 }
 
 // Utility function that can be used to create a "Task set finished" task that

@@ -201,7 +201,7 @@ class SCHEDULER_EXPORT TaskQueueManager
       const internal::TaskQueueImpl::Task& pending_task,
       const internal::TaskQueueImpl* queue);
 
-  scoped_refptr<base::trace_event::ConvertableToTraceFormat>
+  scoped_ptr<base::trace_event::ConvertableToTraceFormat>
   AsValueWithSelectorResult(bool should_run,
                             internal::WorkQueue* selected_work_queue) const;
 

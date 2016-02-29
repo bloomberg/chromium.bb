@@ -34,7 +34,7 @@ class CC_EXPORT SchedulerSettings {
   int maximum_number_of_failed_draws_before_draw_is_forced;
   base::TimeDelta background_frame_interval;
 
-  scoped_refptr<base::trace_event::ConvertableToTraceFormat> AsValue() const;
+  scoped_ptr<base::trace_event::ConvertableToTraceFormat> AsValue() const;
 };
 
 }  // namespace cc

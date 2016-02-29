@@ -17,6 +17,7 @@
 namespace base {
 class DictionaryValue;
 class ListValue;
+class RefCountedMemory;
 }
 
 namespace content {

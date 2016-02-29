@@ -22,8 +22,8 @@ namespace {
 
 std::string CompositeToString(
     scoped_ptr<FrameTimingTracker::CompositeTimingSet> timingset) {
-  scoped_refptr<base::trace_event::TracedValue> value =
-      new base::trace_event::TracedValue();
+  scoped_ptr<base::trace_event::TracedValue> value(
+      new base::trace_event::TracedValue());
   value->BeginArray("values");
   std::set<int> rect_ids;
   for (const auto& pair : *timingset)
@@ -49,8 +49,8 @@ std::string CompositeToString(
 
 std::string MainFrameToString(
     scoped_ptr<FrameTimingTracker::MainFrameTimingSet> timingset) {
-  scoped_refptr<base::trace_event::TracedValue> value =
-      new base::trace_event::TracedValue();
+  scoped_ptr<base::trace_event::TracedValue> value(
+      new base::trace_event::TracedValue());
   value->BeginArray("values");
   std::set<int> rect_ids;
   for (const auto& pair : *timingset)

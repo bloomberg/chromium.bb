@@ -364,7 +364,7 @@ class COMPOSITOR_EXPORT Layer
   bool force_render_surface() const { return force_render_surface_; }
 
   // LayerClient
-  scoped_refptr<base::trace_event::ConvertableToTraceFormat> TakeDebugInfo(
+  scoped_ptr<base::trace_event::ConvertableToTraceFormat> TakeDebugInfo(
       cc::Layer* layer) override;
 
   // Whether this layer has animations waiting to get sent to its cc::Layer.

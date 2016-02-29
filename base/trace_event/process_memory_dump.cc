@@ -191,9 +191,9 @@ MemoryAllocatorDump* ProcessMemoryDump::GetSharedGlobalAllocatorDump(
 }
 
 void ProcessMemoryDump::AddHeapDump(const std::string& absolute_name,
-                                    scoped_refptr<TracedValue> heap_dump) {
+                                    scoped_ptr<TracedValue> heap_dump) {
   DCHECK_EQ(0ul, heap_dumps_.count(absolute_name));
-  heap_dumps_[absolute_name] = heap_dump;
+  heap_dumps_[absolute_name] = std::move(heap_dump);
 }
 
 void ProcessMemoryDump::Clear() {
@@ -227,7 +227,10 @@ void ProcessMemoryDump::TakeAllDumpsFrom(ProcessMemoryDump* other) {
                                 other->allocator_dumps_edges_.end());
   other->allocator_dumps_edges_.clear();
 
-  heap_dumps_.insert(other->heap_dumps_.begin(), other->heap_dumps_.end());
+  for (auto& it : other->heap_dumps_) {
+    DCHECK_EQ(0ul, heap_dumps_.count(it.first));
+    heap_dumps_.insert(std::make_pair(it.first, std::move(it.second)));
+  }
   other->heap_dumps_.clear();
 }
 

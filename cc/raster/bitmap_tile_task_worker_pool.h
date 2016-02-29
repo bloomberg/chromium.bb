@@ -55,8 +55,7 @@ class CC_EXPORT BitmapTileTaskWorkerPool : public TileTaskWorkerPool,
                            ResourceProvider* resource_provider);
 
  private:
-  scoped_refptr<base::trace_event::ConvertableToTraceFormat> StateAsValue()
-      const;
+  scoped_ptr<base::trace_event::ConvertableToTraceFormat> StateAsValue() const;
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   TaskGraphRunner* task_graph_runner_;

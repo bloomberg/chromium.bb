@@ -443,9 +443,9 @@ bool Surface::HasSurfaceObserver(const SurfaceObserver* observer) const {
   return observers_.HasObserver(observer);
 }
 
-scoped_refptr<base::trace_event::TracedValue> Surface::AsTracedValue() const {
-  scoped_refptr<base::trace_event::TracedValue> value =
-      new base::trace_event::TracedValue;
+scoped_ptr<base::trace_event::TracedValue> Surface::AsTracedValue() const {
+  scoped_ptr<base::trace_event::TracedValue> value(
+      new base::trace_event::TracedValue());
   value->SetString("name", layer()->name());
   return value;
 }

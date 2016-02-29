@@ -12,7 +12,7 @@
 #include "base/base_export.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/trace_event/memory_allocator_dump_guid.h"
 #include "base/values.h"
 
@@ -93,7 +93,7 @@ class BASE_EXPORT MemoryAllocatorDump {
  private:
   const std::string absolute_name_;
   ProcessMemoryDump* const process_memory_dump_;  // Not owned (PMD owns this).
-  scoped_refptr<TracedValue> attributes_;
+  scoped_ptr<TracedValue> attributes_;
   MemoryAllocatorDumpGuid guid_;
   int flags_;  // See enum Flags.
 

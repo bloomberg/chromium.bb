@@ -147,12 +147,12 @@ inline void DidRequestMainThreadFrame(int layer_tree_host_id) {
                        layer_tree_host_id);
 }
 
-inline scoped_refptr<base::trace_event::ConvertableToTraceFormat>
+inline scoped_ptr<base::trace_event::ConvertableToTraceFormat>
 BeginMainThreadFrameData(int frame_id) {
-  scoped_refptr<base::trace_event::TracedValue> value =
-      new base::trace_event::TracedValue();
+  scoped_ptr<base::trace_event::TracedValue> value(
+      new base::trace_event::TracedValue());
   value->SetInteger("frameId", frame_id);
-  return value;
+  return std::move(value);
 }
 
 inline void WillBeginMainThreadFrame(int layer_tree_host_id, int frame_id) {
@@ -162,12 +162,12 @@ inline void WillBeginMainThreadFrame(int layer_tree_host_id, int frame_id) {
       internal::kData, BeginMainThreadFrameData(frame_id));
 }
 
-inline scoped_refptr<base::trace_event::ConvertableToTraceFormat>
+inline scoped_ptr<base::trace_event::ConvertableToTraceFormat>
 NeedsBeginFrameData(bool needs_begin_frame) {
-  scoped_refptr<base::trace_event::TracedValue> value =
-      new base::trace_event::TracedValue();
+  scoped_ptr<base::trace_event::TracedValue> value(
+      new base::trace_event::TracedValue());
   value->SetInteger("needsBeginFrame", needs_begin_frame);
-  return value;
+  return std::move(value);
 }
 
 inline void NeedsBeginFrameChanged(int layer_tree_host_id, bool new_value) {

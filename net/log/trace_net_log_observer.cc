@@ -62,7 +62,7 @@ void TraceNetLogObserver::OnAddEntry(const NetLog::Entry& entry) {
           kNetLogTracingCategory, NetLog::EventTypeToString(entry.type()),
           entry.source().id, "source_type",
           NetLog::SourceTypeToString(entry.source().type), "params",
-          scoped_refptr<base::trace_event::ConvertableToTraceFormat>(
+          scoped_ptr<base::trace_event::ConvertableToTraceFormat>(
               new TracedValue(std::move(params))));
       break;
     case NetLog::PHASE_END:
@@ -70,7 +70,7 @@ void TraceNetLogObserver::OnAddEntry(const NetLog::Entry& entry) {
           kNetLogTracingCategory, NetLog::EventTypeToString(entry.type()),
           entry.source().id, "source_type",
           NetLog::SourceTypeToString(entry.source().type), "params",
-          scoped_refptr<base::trace_event::ConvertableToTraceFormat>(
+          scoped_ptr<base::trace_event::ConvertableToTraceFormat>(
               new TracedValue(std::move(params))));
       break;
     case NetLog::PHASE_NONE:
@@ -78,7 +78,7 @@ void TraceNetLogObserver::OnAddEntry(const NetLog::Entry& entry) {
           kNetLogTracingCategory, NetLog::EventTypeToString(entry.type()),
           entry.source().id, "source_type",
           NetLog::SourceTypeToString(entry.source().type), "params",
-          scoped_refptr<base::trace_event::ConvertableToTraceFormat>(
+          scoped_ptr<base::trace_event::ConvertableToTraceFormat>(
               new TracedValue(std::move(params))));
       break;
   }

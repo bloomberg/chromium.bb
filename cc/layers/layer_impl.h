@@ -619,8 +619,8 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
 
   virtual void RunMicroBenchmark(MicroBenchmarkImpl* benchmark);
 
-  virtual void SetDebugInfo(
-      scoped_refptr<base::trace_event::ConvertableToTraceFormat> other);
+  void SetDebugInfo(
+      scoped_ptr<base::trace_event::ConvertableToTraceFormat> debug_info);
 
   bool IsDrawnRenderSurfaceLayerListMember() const;
 
@@ -861,7 +861,8 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   DrawProperties draw_properties_;
   PerformanceProperties<LayerImpl> performance_properties_;
 
-  scoped_refptr<base::trace_event::ConvertableToTraceFormat> debug_info_;
+  scoped_ptr<base::trace_event::ConvertableToTraceFormat> owned_debug_info_;
+  base::trace_event::ConvertableToTraceFormat* debug_info_;
   scoped_ptr<RenderSurfaceImpl> render_surface_;
 
   bool force_render_surface_;

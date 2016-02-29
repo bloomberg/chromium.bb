@@ -20,15 +20,12 @@ void IssueImplThreadRenderingStatsEvent(const RenderingStats& stats) {
 }
 
 void IssueDisplayRenderingStatsEvent() {
-  scoped_refptr<base::trace_event::TracedValue> record_data =
-      new base::trace_event::TracedValue();
+  scoped_ptr<base::trace_event::TracedValue> record_data(
+      new base::trace_event::TracedValue());
   record_data->SetInteger("frame_count", 1);
   TRACE_EVENT_INSTANT1(
-      "benchmark",
-      "BenchmarkInstrumentation::DisplayRenderingStats",
-      TRACE_EVENT_SCOPE_THREAD,
-      "data",
-      scoped_refptr<base::trace_event::ConvertableToTraceFormat>(record_data));
+      "benchmark", "BenchmarkInstrumentation::DisplayRenderingStats",
+      TRACE_EVENT_SCOPE_THREAD, "data", std::move(record_data));
 }
 
 }  // namespace benchmark_instrumentation

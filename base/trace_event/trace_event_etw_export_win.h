@@ -50,7 +50,7 @@ class BASE_EXPORT TraceEventETWExport {
       const char** arg_names,
       const unsigned char* arg_types,
       const unsigned long long* arg_values,
-      const scoped_refptr<ConvertableToTraceFormat>* convertable_values);
+      const scoped_ptr<ConvertableToTraceFormat>* convertable_values);
 
   // Exports an ETW event that marks the end of a complete event.
   static void AddCompleteEndEvent(const char* name);

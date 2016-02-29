@@ -64,12 +64,12 @@ bool TestOrderablePendingTask::operator<(
   return ShouldRunBefore(other);
 }
 
-scoped_refptr<base::trace_event::ConvertableToTraceFormat>
+scoped_ptr<base::trace_event::ConvertableToTraceFormat>
 TestOrderablePendingTask::AsValue() const {
-  scoped_refptr<base::trace_event::TracedValue> state =
-      new base::trace_event::TracedValue();
+  scoped_ptr<base::trace_event::TracedValue> state(
+      new base::trace_event::TracedValue());
   AsValueInto(state.get());
-  return state;
+  return std::move(state);
 }
 
 void TestOrderablePendingTask::AsValueInto(
@@ -261,12 +261,12 @@ bool OrderedSimpleTaskRunner::RunForPeriod(base::TimeDelta period) {
 }
 
 // base::trace_event tracing functionality
-scoped_refptr<base::trace_event::ConvertableToTraceFormat>
+scoped_ptr<base::trace_event::ConvertableToTraceFormat>
 OrderedSimpleTaskRunner::AsValue() const {
-  scoped_refptr<base::trace_event::TracedValue> state =
-      new base::trace_event::TracedValue();
+  scoped_ptr<base::trace_event::TracedValue> state(
+      new base::trace_event::TracedValue());
   AsValueInto(state.get());
-  return state;
+  return std::move(state);
 }
 
 void OrderedSimpleTaskRunner::AsValueInto(

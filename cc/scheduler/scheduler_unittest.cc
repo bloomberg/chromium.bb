@@ -207,8 +207,7 @@ class FakeSchedulerClient : public SchedulerClient {
   BeginFrameArgs last_begin_main_frame_args_;
   base::TimeTicks posted_begin_impl_frame_deadline_;
   std::vector<const char*> actions_;
-  std::vector<scoped_refptr<base::trace_event::ConvertableToTraceFormat>>
-      states_;
+  std::vector<scoped_ptr<base::trace_event::ConvertableToTraceFormat>> states_;
   TestScheduler* scheduler_;
 };
 

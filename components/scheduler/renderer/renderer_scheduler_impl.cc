@@ -959,22 +959,21 @@ void RendererSchedulerImpl::SetTimerQueueSuspensionWhenBackgroundedEnabled(
   MainThreadOnly().timer_queue_suspension_when_backgrounded_enabled = enabled;
 }
 
-scoped_refptr<base::trace_event::ConvertableToTraceFormat>
+scoped_ptr<base::trace_event::ConvertableToTraceFormat>
 RendererSchedulerImpl::AsValue(base::TimeTicks optional_now) const {
   base::AutoLock lock(any_thread_lock_);
   return AsValueLocked(optional_now);
 }
 
-scoped_refptr<base::trace_event::ConvertableToTraceFormat>
+scoped_ptr<base::trace_event::ConvertableToTraceFormat>
 RendererSchedulerImpl::AsValueLocked(base::TimeTicks optional_now) const {
   helper_.CheckOnValidThread();
   any_thread_lock_.AssertAcquired();
 
   if (optional_now.is_null())
     optional_now = helper_.scheduler_tqm_delegate()->NowTicks();
-  scoped_refptr<base::trace_event::TracedValue> state =
-      new base::trace_event::TracedValue();
-
+  scoped_ptr<base::trace_event::TracedValue> state(
+      new base::trace_event::TracedValue());
   state->SetBoolean(
       "has_visible_render_widget_with_touch_handler",
       MainThreadOnly().has_visible_render_widget_with_touch_handler);
@@ -1049,7 +1048,7 @@ RendererSchedulerImpl::AsValueLocked(base::TimeTicks optional_now) const {
   AnyThread().user_model.AsValueInto(state.get());
   render_widget_scheduler_signals_.AsValueInto(state.get());
 
-  return state;
+  return std::move(state);
 }
 
 void RendererSchedulerImpl::OnIdlePeriodStarted() {

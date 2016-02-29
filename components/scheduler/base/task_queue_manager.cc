@@ -366,13 +366,13 @@ LazyNow TaskQueueManager::CreateLazyNow() const {
   return LazyNow(delegate_.get());
 }
 
-scoped_refptr<base::trace_event::ConvertableToTraceFormat>
+scoped_ptr<base::trace_event::ConvertableToTraceFormat>
 TaskQueueManager::AsValueWithSelectorResult(
     bool should_run,
     internal::WorkQueue* selected_work_queue) const {
   DCHECK(main_thread_checker_.CalledOnValidThread());
-  scoped_refptr<base::trace_event::TracedValue> state =
-      new base::trace_event::TracedValue();
+  scoped_ptr<base::trace_event::TracedValue> state(
+      new base::trace_event::TracedValue());
   state->BeginArray("queues");
   for (auto& queue : queues_)
     queue->AsValueInto(state.get());
@@ -390,7 +390,7 @@ TaskQueueManager::AsValueWithSelectorResult(
   for (auto& time_domain : time_domains_)
     time_domain->AsValueInto(state.get());
   state->EndArray();
-  return state;
+  return std::move(state);
 }
 
 void TaskQueueManager::OnTaskQueueEnabled(internal::TaskQueueImpl* queue) {

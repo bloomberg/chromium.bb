@@ -19,7 +19,9 @@ const int kBytesPerPixel = 4;
 
 class Snapshot : public base::trace_event::ConvertableToTraceFormat {
  public:
-  static scoped_refptr<Snapshot> Create(const ContextState* state);
+  static scoped_ptr<Snapshot> Create(const ContextState* state);
+
+  ~Snapshot() override {}
 
   // Save a screenshot of the currently bound framebuffer.
   bool SaveScreenshot(const gfx::Size& size);
@@ -29,7 +31,6 @@ class Snapshot : public base::trace_event::ConvertableToTraceFormat {
 
  private:
   explicit Snapshot(const ContextState* state);
-  ~Snapshot() override {}
 
   const ContextState* state_;
 
@@ -43,8 +44,8 @@ class Snapshot : public base::trace_event::ConvertableToTraceFormat {
 
 Snapshot::Snapshot(const ContextState* state) : state_(state) {}
 
-scoped_refptr<Snapshot> Snapshot::Create(const ContextState* state) {
-  return scoped_refptr<Snapshot>(new Snapshot(state));
+scoped_ptr<Snapshot> Snapshot::Create(const ContextState* state) {
+  return make_scoped_ptr(new Snapshot(state));
 }
 
 bool Snapshot::SaveScreenshot(const gfx::Size& size) {
@@ -116,17 +117,15 @@ void GPUStateTracer::TakeSnapshotWithCurrentFramebuffer(const gfx::Size& size) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("gpu.debug"),
                "GPUStateTracer::TakeSnapshotWithCurrentFramebuffer");
 
-  scoped_refptr<Snapshot> snapshot(Snapshot::Create(state_));
+  scoped_ptr<Snapshot> snapshot(Snapshot::Create(state_));
 
   // Only save a screenshot for now.
   if (!snapshot->SaveScreenshot(size))
     return;
 
-  TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID(
-      TRACE_DISABLED_BY_DEFAULT("gpu.debug"),
-      "gpu::State",
-      state_,
-      scoped_refptr<base::trace_event::ConvertableToTraceFormat>(snapshot));
+  TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID(TRACE_DISABLED_BY_DEFAULT("gpu.debug"),
+                                      "gpu::State", state_,
+                                      std::move(snapshot));
 }
 
 }  // namespace gles2

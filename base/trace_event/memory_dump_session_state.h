@@ -6,7 +6,7 @@
 #define BASE_TRACE_EVENT_MEMORY_DUMP_SESSION_STATE_H_
 
 #include "base/base_export.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/trace_event/heap_profiler_stack_frame_deduplicator.h"
 #include "base/trace_event/heap_profiler_type_name_deduplicator.h"
 
@@ -18,21 +18,25 @@ namespace trace_event {
 class BASE_EXPORT MemoryDumpSessionState
     : public RefCountedThreadSafe<MemoryDumpSessionState> {
  public:
-  MemoryDumpSessionState(
-      const scoped_refptr<StackFrameDeduplicator>& stack_frame_deduplicator,
-      const scoped_refptr<TypeNameDeduplicator>& type_name_deduplicator);
+  MemoryDumpSessionState();
 
   // Returns the stack frame deduplicator that should be used by memory dump
   // providers when doing a heap dump.
-  StackFrameDeduplicator* stack_frame_deduplicator() {
+  StackFrameDeduplicator* stack_frame_deduplicator() const {
     return stack_frame_deduplicator_.get();
   }
 
+  void SetStackFrameDeduplicator(
+      scoped_ptr<StackFrameDeduplicator> stack_frame_deduplicator);
+
   // Returns the type name deduplicator that should be used by memory dump
   // providers when doing a heap dump.
-  TypeNameDeduplicator* type_name_deduplicator() {
+  TypeNameDeduplicator* type_name_deduplicator() const {
     return type_name_deduplicator_.get();
   }
+
+  void SetTypeNameDeduplicator(
+      scoped_ptr<TypeNameDeduplicator> type_name_deduplicator);
 
  private:
   friend class RefCountedThreadSafe<MemoryDumpSessionState>;
@@ -40,11 +44,11 @@ class BASE_EXPORT MemoryDumpSessionState
 
   // Deduplicates backtraces in heap dumps so they can be written once when the
   // trace is finalized.
-  scoped_refptr<StackFrameDeduplicator> stack_frame_deduplicator_;
+  scoped_ptr<StackFrameDeduplicator> stack_frame_deduplicator_;
 
   // Deduplicates type names in heap dumps so they can be written once when the
   // trace is finalized.
-  scoped_refptr<TypeNameDeduplicator> type_name_deduplicator_;
+  scoped_ptr<TypeNameDeduplicator> type_name_deduplicator_;
 };
 
 }  // namespace trace_event

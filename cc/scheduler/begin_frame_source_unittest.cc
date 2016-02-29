@@ -199,8 +199,8 @@ TEST(BeginFrameSourceBaseTest, DetectAsValueIntoLoop) {
   obs.source_ = &source;
   source.AddObserver(&obs);
 
-  scoped_refptr<base::trace_event::TracedValue> state =
-      new base::trace_event::TracedValue();
+  scoped_ptr<base::trace_event::TracedValue> state(
+      new base::trace_event::TracedValue());
   source.AsValueInto(state.get());
 }
 

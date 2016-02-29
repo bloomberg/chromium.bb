@@ -19,7 +19,9 @@ TEST(TestPendingTaskTest, TraceSupport) {
   TRACE_EVENT1("test", "TestPendingTask::TraceSupport", "task", task.AsValue());
 
   // Just a basic check that the trace output has *something* in it.
-  EXPECT_THAT(task.AsValue()->ToString(), ::testing::HasSubstr("post_time"));
+  scoped_ptr<base::trace_event::ConvertableToTraceFormat> task_value(
+      task.AsValue());
+  EXPECT_THAT(task_value->ToString(), ::testing::HasSubstr("post_time"));
 }
 
 TEST(TestPendingTaskTest, ToString) {

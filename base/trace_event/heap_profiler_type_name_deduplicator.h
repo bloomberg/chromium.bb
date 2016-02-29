@@ -21,19 +21,18 @@ class TraceEventMemoryOverhead;
 class BASE_EXPORT TypeNameDeduplicator : public ConvertableToTraceFormat {
  public:
   TypeNameDeduplicator();
+  ~TypeNameDeduplicator() override;
 
   // Inserts a type name and returns its ID.
   int Insert(const char* type_name);
+
+  // Writes the type ID -> type name mapping to the trace log.
+  void AppendAsTraceFormat(std::string* out) const override;
 
   // Estimates memory overhead including |sizeof(TypeNameDeduplicator)|.
   void EstimateTraceMemoryOverhead(TraceEventMemoryOverhead* overhead) override;
 
  private:
-  ~TypeNameDeduplicator() override;
-
-  // Writes the type ID -> type name mapping to the trace log.
-  void AppendAsTraceFormat(std::string* out) const override;
-
   // Map from type name to type ID.
   std::map<const char*, int> type_ids_;
 

@@ -78,7 +78,7 @@ void FrameCaptured(base::TimeTicks timestamp, const SkBitmap& bitmap,
   TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID_AND_TIMESTAMP(
       TRACE_DISABLED_BY_DEFAULT("devtools.screenshot"), "Screenshot", 1,
       timestamp.ToInternalValue(),
-      scoped_refptr<base::trace_event::ConvertableToTraceFormat>(
+      scoped_ptr<base::trace_event::ConvertableToTraceFormat>(
           new TraceableDevToolsScreenshot(bitmap)));
 }
 

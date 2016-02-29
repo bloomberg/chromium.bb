@@ -137,7 +137,7 @@ class CC_EXPORT Scheduler : public BeginFrameObserverBase {
 
   void SetDeferCommits(bool defer_commits);
 
-  scoped_refptr<base::trace_event::ConvertableToTraceFormat> AsValue() const;
+  scoped_ptr<base::trace_event::ConvertableToTraceFormat> AsValue() const;
   void AsValueInto(base::trace_event::TracedValue* value) const override;
 
   void SetChildrenNeedBeginFrames(bool children_need_begin_frames);

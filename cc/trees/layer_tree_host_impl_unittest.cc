@@ -7305,8 +7305,8 @@ TEST_F(LayerTreeHostImplTest, ForcedDrawToSoftwareDeviceBasicRender) {
   EXPECT_EQ(1, software_device->frames_ended_);
 
   // Call another API method that is likely to hit nullptr in this mode.
-  scoped_refptr<base::trace_event::TracedValue> state =
-      make_scoped_refptr(new base::trace_event::TracedValue());
+  scoped_ptr<base::trace_event::TracedValue> state(
+      new base::trace_event::TracedValue());
   host_impl_->ActivationStateAsValueInto(state.get());
 }
 

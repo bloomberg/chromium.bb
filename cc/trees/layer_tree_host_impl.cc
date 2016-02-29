@@ -3543,12 +3543,12 @@ base::TimeDelta LayerTreeHostImpl::CurrentBeginFrameInterval() const {
   return current_begin_frame_tracker_.Interval();
 }
 
-scoped_refptr<base::trace_event::ConvertableToTraceFormat>
+scoped_ptr<base::trace_event::ConvertableToTraceFormat>
 LayerTreeHostImpl::AsValueWithFrame(FrameData* frame) const {
-  scoped_refptr<base::trace_event::TracedValue> state =
-      new base::trace_event::TracedValue();
+  scoped_ptr<base::trace_event::TracedValue> state(
+      new base::trace_event::TracedValue());
   AsValueWithFrameInto(frame, state.get());
-  return state;
+  return std::move(state);
 }
 
 void LayerTreeHostImpl::AsValueWithFrameInto(

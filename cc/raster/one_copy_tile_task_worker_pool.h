@@ -129,8 +129,7 @@ class CC_EXPORT OneCopyTileTaskWorkerPool
   void ReduceMemoryUsage();
   void ReleaseBuffersNotUsedSince(base::TimeTicks time);
 
-  scoped_refptr<base::trace_event::ConvertableToTraceFormat> StateAsValue()
-      const;
+  scoped_ptr<base::trace_event::ConvertableToTraceFormat> StateAsValue() const;
   void StagingStateAsValueInto(
       base::trace_event::TracedValue* staging_state) const;
 

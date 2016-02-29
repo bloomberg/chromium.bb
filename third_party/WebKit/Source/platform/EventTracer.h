@@ -31,7 +31,7 @@
 #ifndef EventTracer_h
 #define EventTracer_h
 
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "platform/PlatformExport.h"
 #include "wtf/Allocator.h"
 #include "wtf/PassOwnPtr.h"
@@ -109,7 +109,7 @@ private:
         const char* argNames[],
         const unsigned char argTypes[],
         const unsigned long long argValues[],
-        const scoped_refptr<base::trace_event::ConvertableToTraceFormat>* convertables,
+        scoped_ptr<base::trace_event::ConvertableToTraceFormat>* convertables,
         unsigned flags);
 };
 

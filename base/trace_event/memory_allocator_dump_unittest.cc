@@ -128,7 +128,7 @@ TEST(MemoryAllocatorDumpTest, GuidGeneration) {
 
 TEST(MemoryAllocatorDumpTest, DumpIntoProcessMemoryDump) {
   FakeMemoryAllocatorDumpProvider fmadp;
-  ProcessMemoryDump pmd(new MemoryDumpSessionState(nullptr, nullptr));
+  ProcessMemoryDump pmd(new MemoryDumpSessionState);
   MemoryDumpArgs dump_args = {MemoryDumpLevelOfDetail::DETAILED};
 
   fmadp.OnMemoryDump(dump_args, &pmd);
@@ -167,7 +167,7 @@ TEST(MemoryAllocatorDumpTest, DumpIntoProcessMemoryDump) {
   ASSERT_FALSE(attrs->HasKey(MemoryAllocatorDump::kNameObjectCount));
 
   // Check that the AsValueInfo doesn't hit any DCHECK.
-  scoped_refptr<TracedValue> traced_value(new TracedValue());
+  scoped_ptr<TracedValue> traced_value(new TracedValue);
   pmd.AsValueInto(traced_value.get());
 }
 
@@ -175,7 +175,7 @@ TEST(MemoryAllocatorDumpTest, DumpIntoProcessMemoryDump) {
 #if !defined(NDEBUG) && !defined(OS_ANDROID) && !defined(OS_IOS)
 TEST(MemoryAllocatorDumpTest, ForbidDuplicatesDeathTest) {
   FakeMemoryAllocatorDumpProvider fmadp;
-  ProcessMemoryDump pmd(new MemoryDumpSessionState(nullptr, nullptr));
+  ProcessMemoryDump pmd(new MemoryDumpSessionState);
   pmd.CreateAllocatorDump("foo_allocator");
   pmd.CreateAllocatorDump("bar_allocator/heap");
   ASSERT_DEATH(pmd.CreateAllocatorDump("foo_allocator"), "");

@@ -7,13 +7,20 @@
 namespace base {
 namespace trace_event {
 
-MemoryDumpSessionState::MemoryDumpSessionState(
-    const scoped_refptr<StackFrameDeduplicator>& stack_frame_deduplicator,
-    const scoped_refptr<TypeNameDeduplicator>& type_name_deduplicator)
-    : stack_frame_deduplicator_(stack_frame_deduplicator),
-      type_name_deduplicator_(type_name_deduplicator) {}
+MemoryDumpSessionState::MemoryDumpSessionState() {}
 
-MemoryDumpSessionState::~MemoryDumpSessionState() {
+MemoryDumpSessionState::~MemoryDumpSessionState() {}
+
+void MemoryDumpSessionState::SetStackFrameDeduplicator(
+    scoped_ptr<StackFrameDeduplicator> stack_frame_deduplicator) {
+  DCHECK(!stack_frame_deduplicator_);
+  stack_frame_deduplicator_ = std::move(stack_frame_deduplicator);
+}
+
+void MemoryDumpSessionState::SetTypeNameDeduplicator(
+    scoped_ptr<TypeNameDeduplicator> type_name_deduplicator) {
+  DCHECK(!type_name_deduplicator_);
+  type_name_deduplicator_ = std::move(type_name_deduplicator);
 }
 
 }  // namespace trace_event

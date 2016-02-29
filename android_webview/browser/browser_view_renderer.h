@@ -133,9 +133,9 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient {
   void CancelFallbackTick();
   void UpdateCompositorIsActive();
   bool CompositeSW(SkCanvas* canvas);
-  scoped_refptr<base::trace_event::ConvertableToTraceFormat>
-  RootLayerStateAsValue(const gfx::Vector2dF& total_scroll_offset_dip,
-                        const gfx::SizeF& scrollable_size_dip);
+  scoped_ptr<base::trace_event::ConvertableToTraceFormat> RootLayerStateAsValue(
+      const gfx::Vector2dF& total_scroll_offset_dip,
+      const gfx::SizeF& scrollable_size_dip);
 
   bool CompositeHw();
   void ReturnUnusedResource(scoped_ptr<ChildFrame> frame);

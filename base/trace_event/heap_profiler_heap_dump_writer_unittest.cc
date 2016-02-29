@@ -9,7 +9,6 @@
 
 #include "base/json/json_reader.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/trace_event/heap_profiler_allocation_context.h"
 #include "base/trace_event/heap_profiler_heap_dump_writer.h"
@@ -40,7 +39,7 @@ namespace trace_event {
 namespace internal {
 
 scoped_ptr<const Value> WriteAndReadBack(const std::set<Entry>& entries) {
-  scoped_refptr<TracedValue> traced_value = Serialize(entries);
+  scoped_ptr<TracedValue> traced_value = Serialize(entries);
   std::string json;
   traced_value->AppendAsTraceFormat(&json);
   return JSONReader::Read(json);
@@ -198,8 +197,8 @@ TEST(HeapDumpWriterTest, BacktraceTypeNameTable) {
   // +--------+--------------------+-----------------+-----+
   // | Sum    |                 28 |              49 |  77 |
 
-  auto sf_deduplicator = make_scoped_refptr(new StackFrameDeduplicator);
-  auto tn_deduplicator = make_scoped_refptr(new TypeNameDeduplicator);
+  auto sf_deduplicator = make_scoped_ptr(new StackFrameDeduplicator);
+  auto tn_deduplicator = make_scoped_ptr(new TypeNameDeduplicator);
   HeapDumpWriter writer(sf_deduplicator.get(), tn_deduplicator.get());
   const std::set<Entry>& dump = writer.Summarize(bytes_by_context);
 
@@ -263,8 +262,8 @@ TEST(HeapDumpWriterTest, InsignificantValuesNotDumped) {
   ctx.backtrace.frames[2] = kInitialize;
   bytes_by_context[ctx] = 512;
 
-  auto sf_deduplicator = make_scoped_refptr(new StackFrameDeduplicator);
-  auto tn_deduplicator = make_scoped_refptr(new TypeNameDeduplicator);
+  auto sf_deduplicator = make_scoped_ptr(new StackFrameDeduplicator);
+  auto tn_deduplicator = make_scoped_ptr(new TypeNameDeduplicator);
   HeapDumpWriter writer(sf_deduplicator.get(), tn_deduplicator.get());
   const std::set<Entry>& dump = writer.Summarize(bytes_by_context);
 

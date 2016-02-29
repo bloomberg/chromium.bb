@@ -5,7 +5,6 @@
 #include <string>
 
 #include "base/json/json_reader.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/trace_event/heap_profiler_type_name_deduplicator.h"
 #include "base/values.h"
@@ -21,9 +20,9 @@ const char kBool[] = "bool";
 const char kString[] = "string";
 const char kNeedsEscape[] = "\"quotes\"";
 
-scoped_ptr<Value> DumpAndReadBack(const ConvertableToTraceFormat& convertable) {
+scoped_ptr<Value> DumpAndReadBack(const TypeNameDeduplicator& deduplicator) {
   std::string json;
-  convertable.AppendAsTraceFormat(&json);
+  deduplicator.AppendAsTraceFormat(&json);
   return JSONReader::Read(json);
 }
 
@@ -34,7 +33,7 @@ TEST(TypeNameDeduplicatorTest, Deduplication) {
   // 2: bool
   // 3: string
 
-  scoped_refptr<TypeNameDeduplicator> dedup = new TypeNameDeduplicator;
+  scoped_ptr<TypeNameDeduplicator> dedup(new TypeNameDeduplicator);
   ASSERT_EQ(1, dedup->Insert(kInt));
   ASSERT_EQ(2, dedup->Insert(kBool));
   ASSERT_EQ(3, dedup->Insert(kString));
@@ -49,7 +48,7 @@ TEST(TypeNameDeduplicatorTest, Deduplication) {
 }
 
 TEST(TypeNameDeduplicatorTest, EscapeTypeName) {
-  scoped_refptr<TypeNameDeduplicator> dedup = new TypeNameDeduplicator;
+  scoped_ptr<TypeNameDeduplicator> dedup(new TypeNameDeduplicator);
   ASSERT_EQ(1, dedup->Insert(kNeedsEscape));
 
   // Reading json should not fail, because the type name should have been

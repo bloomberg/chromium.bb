@@ -26,6 +26,7 @@ class BASE_EXPORT TracedValue : public ConvertableToTraceFormat {
  public:
   TracedValue();
   explicit TracedValue(size_t capacity);
+  ~TracedValue() override;
 
   void EndDictionary();
   void EndArray();
@@ -75,8 +76,6 @@ class BASE_EXPORT TracedValue : public ConvertableToTraceFormat {
   scoped_ptr<base::Value> ToBaseValue() const;
 
  private:
-  ~TracedValue() override;
-
   Pickle pickle_;
 
 #ifndef NDEBUG

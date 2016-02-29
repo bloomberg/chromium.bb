@@ -85,7 +85,7 @@ struct RasterTaskCompletionStats {
   size_t completed_count;
   size_t canceled_count;
 };
-scoped_refptr<base::trace_event::ConvertableToTraceFormat>
+scoped_ptr<base::trace_event::ConvertableToTraceFormat>
 RasterTaskCompletionStatsAsValue(const RasterTaskCompletionStats& stats);
 
 // This class manages tiles, deciding which should get rasterized and which
@@ -136,7 +136,7 @@ class CC_EXPORT TileManager {
     return &image_decode_controller_;
   }
 
-  scoped_refptr<base::trace_event::ConvertableToTraceFormat> BasicStateAsValue()
+  scoped_ptr<base::trace_event::ConvertableToTraceFormat> BasicStateAsValue()
       const;
   void BasicStateAsValueInto(base::trace_event::TracedValue* dict) const;
   const MemoryHistory::Entry& memory_stats_from_last_assign() const {
@@ -281,7 +281,7 @@ class CC_EXPORT TileManager {
   scoped_refptr<TileTask> CreateTaskSetFinishedTask(
       void (TileManager::*callback)());
 
-  scoped_refptr<base::trace_event::ConvertableToTraceFormat>
+  scoped_ptr<base::trace_event::ConvertableToTraceFormat>
   ScheduledTasksStateAsValue() const;
 
   TileManagerClient* client_;

@@ -780,12 +780,12 @@ void Scheduler::ProcessScheduledActions() {
   SetupNextBeginFrameIfNeeded();
 }
 
-scoped_refptr<base::trace_event::ConvertableToTraceFormat> Scheduler::AsValue()
+scoped_ptr<base::trace_event::ConvertableToTraceFormat> Scheduler::AsValue()
     const {
-  scoped_refptr<base::trace_event::TracedValue> state =
-      new base::trace_event::TracedValue();
+  scoped_ptr<base::trace_event::TracedValue> state(
+      new base::trace_event::TracedValue());
   AsValueInto(state.get());
-  return state;
+  return std::move(state);
 }
 
 void Scheduler::AsValueInto(base::trace_event::TracedValue* state) const {

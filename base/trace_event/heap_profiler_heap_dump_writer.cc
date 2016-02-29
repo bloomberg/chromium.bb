@@ -248,9 +248,9 @@ const std::set<Entry>& HeapDumpWriter::Summarize(
   return entries_;
 }
 
-scoped_refptr<TracedValue> Serialize(const std::set<Entry>& entries) {
+scoped_ptr<TracedValue> Serialize(const std::set<Entry>& entries) {
   std::string buffer;
-  scoped_refptr<TracedValue> traced_value = new TracedValue;
+  scoped_ptr<TracedValue> traced_value(new TracedValue);
 
   traced_value->BeginArray("entries");
 
@@ -289,7 +289,7 @@ scoped_refptr<TracedValue> Serialize(const std::set<Entry>& entries) {
 
 }  // namespace internal
 
-scoped_refptr<TracedValue> ExportHeapDump(
+scoped_ptr<TracedValue> ExportHeapDump(
     const hash_map<AllocationContext, size_t>& bytes_by_size,
     StackFrameDeduplicator* stack_frame_deduplicator,
     TypeNameDeduplicator* type_name_deduplicator) {

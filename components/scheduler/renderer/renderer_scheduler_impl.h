@@ -182,9 +182,9 @@ class SCHEDULER_EXPORT RendererSchedulerImpl
   void EndIdlePeriod();
 
   // Returns the serialized scheduler state for tracing.
-  scoped_refptr<base::trace_event::ConvertableToTraceFormat> AsValue(
+  scoped_ptr<base::trace_event::ConvertableToTraceFormat> AsValue(
       base::TimeTicks optional_now) const;
-  scoped_refptr<base::trace_event::ConvertableToTraceFormat> AsValueLocked(
+  scoped_ptr<base::trace_event::ConvertableToTraceFormat> AsValueLocked(
       base::TimeTicks optional_now) const;
 
   static bool ShouldPrioritizeInputEvent(

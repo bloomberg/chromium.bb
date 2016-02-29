@@ -453,9 +453,9 @@ gfx::Size Buffer::GetSize() const {
   return gpu_memory_buffer_->GetSize();
 }
 
-scoped_refptr<base::trace_event::TracedValue> Buffer::AsTracedValue() const {
-  scoped_refptr<base::trace_event::TracedValue> value =
-      new base::trace_event::TracedValue;
+scoped_ptr<base::trace_event::TracedValue> Buffer::AsTracedValue() const {
+  scoped_ptr<base::trace_event::TracedValue> value(
+      new base::trace_event::TracedValue());
   gfx::Size size = gpu_memory_buffer_->GetSize();
   value->SetInteger("width", size.width());
   value->SetInteger("height", size.height());

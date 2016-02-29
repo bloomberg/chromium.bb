@@ -123,7 +123,7 @@ class Surface : public aura::Window,
   bool HasSurfaceObserver(const SurfaceObserver* observer) const;
 
   // Returns a trace value representing the state of the surface.
-  scoped_refptr<base::trace_event::TracedValue> AsTracedValue() const;
+  scoped_ptr<base::trace_event::TracedValue> AsTracedValue() const;
 
   bool HasPendingDamageForTesting(const gfx::Rect& damage) const {
     return pending_damage_.contains(gfx::RectToSkIRect(damage));

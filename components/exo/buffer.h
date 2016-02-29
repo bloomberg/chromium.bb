@@ -63,7 +63,7 @@ class Buffer : public base::SupportsWeakPtr<Buffer> {
   gfx::Size GetSize() const;
 
   // Returns a trace value representing the state of the buffer.
-  scoped_refptr<base::trace_event::TracedValue> AsTracedValue() const;
+  scoped_ptr<base::trace_event::TracedValue> AsTracedValue() const;
 
  private:
   class Texture;

@@ -59,7 +59,7 @@ struct TestPendingTask {
   // Functions for using test pending task with tracing, useful in unit
   // testing.
   void AsValueInto(base::trace_event::TracedValue* state) const;
-  scoped_refptr<base::trace_event::ConvertableToTraceFormat> AsValue() const;
+  scoped_ptr<base::trace_event::ConvertableToTraceFormat> AsValue() const;
   std::string ToString() const;
 };
 

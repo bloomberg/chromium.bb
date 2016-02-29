@@ -512,7 +512,7 @@ class CC_EXPORT LayerTreeHostImpl
 
   void AsValueWithFrameInto(FrameData* frame,
                             base::trace_event::TracedValue* value) const;
-  scoped_refptr<base::trace_event::ConvertableToTraceFormat> AsValueWithFrame(
+  scoped_ptr<base::trace_event::ConvertableToTraceFormat> AsValueWithFrame(
       FrameData* frame) const;
   void ActivationStateAsValueInto(base::trace_event::TracedValue* value) const;
 

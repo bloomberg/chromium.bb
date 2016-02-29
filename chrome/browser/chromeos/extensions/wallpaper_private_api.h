@@ -14,6 +14,10 @@
 #include "components/signin/core/account_id/account_id.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
+namespace base {
+class RefCountedBytes;
+}
+
 namespace chromeos {
 class UserImage;
 }  // namespace chromeos

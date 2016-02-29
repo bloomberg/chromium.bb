@@ -11,6 +11,10 @@
 #include "components/signin/core/account_id/account_id.h"
 #include "net/url_request/url_request_status.h"
 
+namespace base {
+class RefCountedBytes;
+}
+
 // Implementation of chrome.wallpaper.setWallpaper API.
 // After this API being called, a jpeg encoded wallpaper will be saved to
 // /home/chronos/custom_wallpaper/{resolution}/{user_id_hash}/file_name. The
@@ -64,4 +68,3 @@ class WallpaperSetWallpaperFunction : public WallpaperFunctionBase {
 };
 
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_WALLPAPER_API_H_
-

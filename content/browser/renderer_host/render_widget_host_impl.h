@@ -51,6 +51,10 @@ struct ViewHostMsg_SelectionBounds_Params;
 struct ViewHostMsg_TextInputState_Params;
 struct ViewHostMsg_UpdateRect_Params;
 
+namespace base {
+class RefCountedBytes;
+}
+
 namespace blink {
 class WebInputEvent;
 #if defined(OS_ANDROID)

@@ -31,7 +31,7 @@
 #ifndef GraphicsLayerDebugInfo_h
 #define GraphicsLayerDebugInfo_h
 
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/graphics/CompositingReasons.h"
 #include "platform/graphics/PaintInvalidationReason.h"
@@ -55,7 +55,7 @@ public:
     GraphicsLayerDebugInfo();
     ~GraphicsLayerDebugInfo();
 
-    scoped_refptr<base::trace_event::TracedValue> asTracedValue() const;
+    scoped_ptr<base::trace_event::TracedValue> asTracedValue() const;
 
     CompositingReasons getCompositingReasons() const { return m_compositingReasons; }
     void setCompositingReasons(CompositingReasons reasons) { m_compositingReasons = reasons; }

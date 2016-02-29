@@ -58,8 +58,7 @@ class CC_EXPORT ZeroCopyTileTaskWorkerPool : public TileTaskWorkerPool,
                              ResourceFormat preferred_tile_format);
 
  private:
-  scoped_refptr<base::trace_event::ConvertableToTraceFormat> StateAsValue()
-      const;
+  scoped_ptr<base::trace_event::ConvertableToTraceFormat> StateAsValue() const;
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   TaskGraphRunner* task_graph_runner_;
