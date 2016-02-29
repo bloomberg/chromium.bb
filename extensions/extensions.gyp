@@ -217,8 +217,11 @@
       'msvs_disabled_warnings': [ 4267, ],
       'conditions': [
         ['enable_wifi_display==1', {
+          'dependencies': [
+            '../third_party/wds/wds.gyp:libwds',
+          ],
           'sources': [
-            '<@(extensions_render_sources_wifi_display)',
+            '<@(extensions_renderer_sources_wifi_display)',
           ],
         }],
       ],

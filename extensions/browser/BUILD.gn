@@ -101,6 +101,13 @@ source_set("browser") {
           sources += win_or_mac_sources
         }
       }
+      if (enable_wifi_display) {
+        wifi_display_sources = rebase_path(
+                extensions_gypi_values.extensions_browser_sources_wifi_display,
+                ".",
+                "//extensions")
+        sources += wifi_display_sources
+      }
     }
   }
 }

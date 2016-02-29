@@ -1033,7 +1033,9 @@
       'renderer/worker_script_context_set.cc',
       'renderer/worker_script_context_set.h',
     ],
-    'extensions_render_sources_wifi_display': [
+    'extensions_renderer_sources_wifi_display': [
+      'renderer/api/display_source/wifi_display/wifi_display_media_manager.cc',
+      'renderer/api/display_source/wifi_display/wifi_display_media_manager.h',
       'renderer/api/display_source/wifi_display/wifi_display_session.cc',
       'renderer/api/display_source/wifi_display/wifi_display_session.h',
     ],

@@ -5,16 +5,29 @@
 #ifndef EXTENSIONS_RENDERER_API_DISPLAY_SOURCE_WIFI_DISPLAY_WIFI_DISPLAY_SESSION_H_
 #define EXTENSIONS_RENDERER_API_DISPLAY_SOURCE_WIFI_DISPLAY_WIFI_DISPLAY_SESSION_H_
 
+#include <map>
 #include <string>
 
 #include "extensions/common/mojo/wifi_display_session_service.mojom.h"
 #include "extensions/renderer/api/display_source/display_source_session.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "third_party/wds/src/libwds/public/source.h"
+
+namespace base {
+class Timer;
+}  // namespace base
 
 namespace extensions {
 
+class WiFiDisplayMediaManager;
+
+// This class represents a single Wi-Fi Display session.
+// It manages life-cycle of the session and it is also responsible for
+// exchange of session controlling (RTSP) messages with the sink.
 class WiFiDisplaySession: public DisplaySourceSession,
-                          public WiFiDisplaySessionServiceClient {
+                          public WiFiDisplaySessionServiceClient,
+                          public wds::Peer::Delegate,
+                          public wds::Peer::Observer {
  public:
   explicit WiFiDisplaySession(
       const DisplaySourceSessionParams& params);
@@ -36,19 +49,37 @@ class WiFiDisplaySession: public DisplaySourceSession,
   void OnError(int32_t type, const mojo::String& description) override;
   void OnMessage(const mojo::String& data) override;
 
+  // wds::Peer::Delegate overrides.
+  unsigned CreateTimer(int seconds) override;
+  void ReleaseTimer(unsigned timer_id) override;
+  void SendRTSPData(const std::string& message) override;
+  std::string GetLocalIPAddress() const override;
+  int GetNextCSeq(int* initial_peer_cseq = nullptr) const override;
+
+  // wds::Peer::Observer overrides.
+  void ErrorOccurred(wds::ErrorType error) override;
+  void SessionCompleted() override;
+
   // A connection error handler for the mojo objects used in this class.
-  void OnConnectionError();
+  void OnIPCConnectionError();
 
   void RunStartCallback(bool success, const std::string& error = "");
   void RunTerminateCallback(bool success, const std::string& error = "");
 
  private:
+  scoped_ptr<wds::Source> wfd_source_;
+  scoped_ptr<WiFiDisplayMediaManager> media_manager_;
   WiFiDisplaySessionServicePtr service_;
   mojo::Binding<WiFiDisplaySessionServiceClient> binding_;
   std::string ip_address_;
+  std::map<int, scoped_ptr<base::Timer>> timers_;
+
   DisplaySourceSessionParams params_;
   CompletionCallback start_completion_callback_;
   CompletionCallback teminate_completion_callback_;
+  // Holds sequence number for the following RTSP request-response pair.
+  mutable int cseq_;
+  int timer_id_;
   base::WeakPtrFactory<WiFiDisplaySession> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WiFiDisplaySession);
