@@ -70,20 +70,21 @@ class SupervisedUserSettingsServiceTest : public ::testing::Test {
         new syncer::SyncChangeProcessorWrapperForTest(sync_processor_.get()));
   }
 
-  void StartSyncing(const syncer::SyncDataList& initial_sync_data) {
+  syncer::SyncMergeResult StartSyncing(
+      const syncer::SyncDataList& initial_sync_data) {
     scoped_ptr<syncer::SyncErrorFactory> error_handler(
         new MockSyncErrorFactory(syncer::SUPERVISED_USER_SETTINGS));
     syncer::SyncMergeResult result = settings_service_.MergeDataAndStartSyncing(
         syncer::SUPERVISED_USER_SETTINGS, initial_sync_data,
         CreateSyncProcessor(), std::move(error_handler));
     EXPECT_FALSE(result.error().IsSet());
+    return result;
   }
 
   void UploadSplitItem(const std::string& key, const std::string& value) {
     split_items_.SetStringWithoutPathExpansion(key, value);
     settings_service_.UploadItem(
-        SupervisedUserSettingsService::MakeSplitSettingKey(kSplitItemName,
-                                                           key),
+        SupervisedUserSettingsService::MakeSplitSettingKey(kSplitItemName, key),
         scoped_ptr<base::Value>(new base::StringValue(value)));
   }
 
@@ -97,7 +98,7 @@ class SupervisedUserSettingsServiceTest : public ::testing::Test {
   void VerifySyncDataItem(syncer::SyncData sync_data) {
     const sync_pb::ManagedUserSettingSpecifics& supervised_user_setting =
         sync_data.GetSpecifics().managed_user_setting();
-    base::Value* expected_value = NULL;
+    base::Value* expected_value = nullptr;
     if (supervised_user_setting.name() == kAtomicItemName) {
       expected_value = atomic_setting_value_.get();
     } else {
@@ -150,7 +151,7 @@ class SupervisedUserSettingsServiceTest : public ::testing::Test {
 TEST_F(SupervisedUserSettingsServiceTest, ProcessAtomicSetting) {
   StartSyncing(syncer::SyncDataList());
   ASSERT_TRUE(settings_);
-  const base::Value* value = NULL;
+  const base::Value* value = nullptr;
   EXPECT_FALSE(settings_->GetWithoutPathExpansion(kSettingsName, &value));
 
   settings_.reset();
@@ -173,7 +174,7 @@ TEST_F(SupervisedUserSettingsServiceTest, ProcessAtomicSetting) {
 TEST_F(SupervisedUserSettingsServiceTest, ProcessSplitSetting) {
   StartSyncing(syncer::SyncDataList());
   ASSERT_TRUE(settings_);
-  const base::Value* value = NULL;
+  const base::Value* value = nullptr;
   EXPECT_FALSE(settings_->GetWithoutPathExpansion(kSettingsName, &value));
 
   base::DictionaryValue dict;
@@ -197,13 +198,83 @@ TEST_F(SupervisedUserSettingsServiceTest, ProcessSplitSetting) {
   EXPECT_FALSE(error.IsSet()) << error.ToString();
   ASSERT_TRUE(settings_);
   ASSERT_TRUE(settings_->GetWithoutPathExpansion(kSettingsName, &value));
-  const base::DictionaryValue* dict_value = NULL;
+  const base::DictionaryValue* dict_value = nullptr;
   ASSERT_TRUE(value->GetAsDictionary(&dict_value));
   EXPECT_TRUE(dict_value->Equals(&dict));
 }
 
+TEST_F(SupervisedUserSettingsServiceTest, Merge) {
+  syncer::SyncMergeResult result = StartSyncing(syncer::SyncDataList());
+  EXPECT_EQ(0, result.num_items_before_association());
+  EXPECT_EQ(0, result.num_items_added());
+  EXPECT_EQ(0, result.num_items_modified());
+  EXPECT_EQ(0, result.num_items_deleted());
+  EXPECT_EQ(0, result.num_items_after_association());
+
+  ASSERT_TRUE(settings_);
+  const base::Value* value = nullptr;
+  EXPECT_FALSE(settings_->GetWithoutPathExpansion(kSettingsName, &value));
+
+  settings_.reset();
+
+  {
+    syncer::SyncDataList sync_data;
+    // Adding 1 Atomic entry.
+    sync_data.push_back(SupervisedUserSettingsService::CreateSyncDataForSetting(
+        kSettingsName, base::StringValue(kSettingsValue)));
+    // Adding 2 SplitSettings from dictionary.
+    base::DictionaryValue dict;
+    dict.SetString("foo", "bar");
+    dict.SetInteger("eaudecologne", 4711);
+    for (base::DictionaryValue::Iterator it(dict); !it.IsAtEnd();
+         it.Advance()) {
+      sync_data.push_back(
+          SupervisedUserSettingsService::CreateSyncDataForSetting(
+              SupervisedUserSettingsService::MakeSplitSettingKey(kSplitItemName,
+                                                                 it.key()),
+              it.value()));
+    }
+    result = StartSyncing(sync_data);
+    EXPECT_EQ(0, result.num_items_before_association());
+    EXPECT_EQ(3, result.num_items_added());
+    EXPECT_EQ(0, result.num_items_modified());
+    EXPECT_EQ(0, result.num_items_deleted());
+    EXPECT_EQ(3, result.num_items_after_association());
+    settings_service_.StopSyncing(syncer::SUPERVISED_USER_SETTINGS);
+  }
+
+  {
+    // Here we are carry over the preference state that was set earlier.
+    syncer::SyncDataList sync_data;
+    // Adding 1 atomic Item in the queue.
+    UploadAtomicItem("hurdle");
+    // Adding 2 split Item in the queue.
+    UploadSplitItem("burp", "baz");
+    UploadSplitItem("item", "second");
+
+    base::DictionaryValue dict;
+    dict.SetString("foo", "burp");
+    dict.SetString("item", "first");
+    // Adding 2 SplitSettings from dictionary.
+    for (base::DictionaryValue::Iterator it(dict); !it.IsAtEnd();
+         it.Advance()) {
+      sync_data.push_back(
+          SupervisedUserSettingsService::CreateSyncDataForSetting(
+              SupervisedUserSettingsService::MakeSplitSettingKey(kSplitItemName,
+                                                                 it.key()),
+              it.value()));
+    }
+    result = StartSyncing(sync_data);
+    EXPECT_EQ(6, result.num_items_before_association());
+    EXPECT_EQ(0, result.num_items_added());
+    EXPECT_EQ(1, result.num_items_modified());
+    EXPECT_EQ(2, result.num_items_deleted());
+    EXPECT_EQ(4, result.num_items_after_association());
+  }
+}
+
 TEST_F(SupervisedUserSettingsServiceTest, SetLocalSetting) {
-  const base::Value* value = NULL;
+  const base::Value* value = nullptr;
   EXPECT_FALSE(settings_->GetWithoutPathExpansion(kSettingsName, &value));
 
   settings_.reset();
@@ -284,7 +355,7 @@ TEST_F(SupervisedUserSettingsServiceTest, UploadItem) {
     VerifySyncDataItem(sync_data_item);
 
   // The uploaded items should not show up as settings.
-  const base::Value* value = NULL;
+  const base::Value* value = nullptr;
   EXPECT_FALSE(settings_->GetWithoutPathExpansion(kAtomicItemName, &value));
   EXPECT_FALSE(settings_->GetWithoutPathExpansion(kSplitItemName, &value));
 
