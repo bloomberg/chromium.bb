@@ -116,6 +116,7 @@ http/tests/xmlhttprequest/origin-whitelisting-ip-addresses.html [ Failure ]
 http/tests/security/mixedContent/insecure-eventsource-in-main-frame.html [ Failure ]
 
 # Uninvestigated failures under http/tests/security:
+crbug.com/590773 http/tests/security/mixedContent/active-subresource-in-http-iframe-not-blocked.https.html [ Timeout ]
 http/tests/security/cookies/third-party-cookie-blocking.html [ Timeout ]
 http/tests/security/cookies/third-party-cookie-blocking-user-action.html [ Timeout ]
 http/tests/security/cookies/third-party-cookie-blocking-xslt.xml [ Timeout ]
