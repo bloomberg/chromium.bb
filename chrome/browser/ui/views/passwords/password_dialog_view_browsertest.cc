@@ -406,12 +406,12 @@ IN_PROC_BROWSER_TEST_F(PasswordDialogViewTest,
   // Blocked automatic sign-in will not prompt:
   scoped_ptr<autofill::PasswordForm> blocked_form(
       new autofill::PasswordForm(form));
-  client()->NotifyUserAutoSigninBlockedOnFirstRun(std::move(blocked_form));
+  client()->NotifyUserCouldBeAutoSignedIn(std::move(blocked_form));
   ASSERT_FALSE(controller()->current_autosignin_prompt());
 
   // Successful login with a distinct form after block will not prompt:
   blocked_form.reset(new autofill::PasswordForm(form));
-  client()->NotifyUserAutoSigninBlockedOnFirstRun(std::move(blocked_form));
+  client()->NotifyUserCouldBeAutoSignedIn(std::move(blocked_form));
   form.username_value = base::ASCIIToUTF16("notpeter@pan.test");
   client()->NotifySuccessfulLoginWithExistingPassword(form);
   ASSERT_FALSE(controller()->current_autosignin_prompt());
@@ -421,7 +421,7 @@ IN_PROC_BROWSER_TEST_F(PasswordDialogViewTest,
   browser()->profile()->GetPrefs()->SetBoolean(
       password_manager::prefs::kCredentialsEnableAutosignin, false);
   blocked_form.reset(new autofill::PasswordForm(form));
-  client()->NotifyUserAutoSigninBlockedOnFirstRun(std::move(blocked_form));
+  client()->NotifyUserCouldBeAutoSignedIn(std::move(blocked_form));
   client()->NotifySuccessfulLoginWithExistingPassword(form);
   ASSERT_FALSE(controller()->current_autosignin_prompt());
   browser()->profile()->GetPrefs()->SetBoolean(
@@ -429,7 +429,7 @@ IN_PROC_BROWSER_TEST_F(PasswordDialogViewTest,
 
   // Successful login with the same form after block will prompt:
   blocked_form.reset(new autofill::PasswordForm(form));
-  client()->NotifyUserAutoSigninBlockedOnFirstRun(std::move(blocked_form));
+  client()->NotifyUserCouldBeAutoSignedIn(std::move(blocked_form));
   client()->NotifySuccessfulLoginWithExistingPassword(form);
   ASSERT_TRUE(controller()->current_autosignin_prompt());
 }

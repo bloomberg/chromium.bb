@@ -64,7 +64,7 @@ class ChromePasswordManagerClient
   void GeneratePassword() override;
   void NotifyUserAutoSignin(
       ScopedVector<autofill::PasswordForm> local_forms) override;
-  void NotifyUserAutoSigninBlockedOnFirstRun(
+  void NotifyUserCouldBeAutoSignedIn(
       scoped_ptr<autofill::PasswordForm> form) override;
   void NotifySuccessfulLoginWithExistingPassword(
       const autofill::PasswordForm& form) override;
@@ -183,9 +183,9 @@ class ChromePasswordManagerClient
 
   scoped_ptr<password_manager::LogManager> log_manager_;
 
-  // Set during 'NotifyUserAutoSigninBlockedOnFirstRun' in order to store the
+  // Set during 'NotifyUserCouldBeAutoSignedIn' in order to store the
   // form for potential use during 'NotifySuccessfulLoginWithExistingPassword'.
-  scoped_ptr<autofill::PasswordForm> form_blocked_on_first_run_;
+  scoped_ptr<autofill::PasswordForm> possible_auto_sign_in_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromePasswordManagerClient);
 };

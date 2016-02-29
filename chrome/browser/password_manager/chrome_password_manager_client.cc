@@ -322,33 +322,29 @@ void ChromePasswordManagerClient::NotifyUserAutoSignin(
 #endif
 }
 
-void ChromePasswordManagerClient::NotifyUserAutoSigninBlockedOnFirstRun(
+void ChromePasswordManagerClient::NotifyUserCouldBeAutoSignedIn(
     scoped_ptr<autofill::PasswordForm> form) {
-  DCHECK(
-      password_bubble_experiment::ShouldShowAutoSignInPromptFirstRunExperience(
-          GetPrefs()));
-  form_blocked_on_first_run_ = std::move(form);
+  possible_auto_sign_in_ = std::move(form);
 }
 
 void ChromePasswordManagerClient::NotifySuccessfulLoginWithExistingPassword(
     const autofill::PasswordForm& form) {
-  if (form.skip_zero_click &&
-      credential_manager_dispatcher_.IsZeroClickAllowed() &&
-      GetPasswordStore()) {
-    autofill::PasswordForm update(form);
-    update.skip_zero_click = false;
-    GetPasswordStore()->UpdateLogin(update);
-  }
-
-  if (!form_blocked_on_first_run_)
+  if (!possible_auto_sign_in_)
     return;
 
-  if (form_blocked_on_first_run_->username_value == form.username_value &&
-      form_blocked_on_first_run_->password_value == form.password_value &&
-      form_blocked_on_first_run_->origin == form.origin) {
+  if (possible_auto_sign_in_->username_value == form.username_value &&
+      possible_auto_sign_in_->password_value == form.password_value &&
+      possible_auto_sign_in_->origin == form.origin) {
     PromptUserToEnableAutosigninIfNecessary();
+    if (form.skip_zero_click &&
+        credential_manager_dispatcher_.IsZeroClickAllowed() &&
+        GetPasswordStore()) {
+      autofill::PasswordForm update(form);
+      update.skip_zero_click = false;
+      GetPasswordStore()->UpdateLogin(update);
+    }
   }
-  form_blocked_on_first_run_.reset();
+  possible_auto_sign_in_.reset();
 }
 
 void ChromePasswordManagerClient::AutomaticPasswordSave(

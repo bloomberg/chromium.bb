@@ -32,7 +32,7 @@ class StubPasswordManagerClient : public PasswordManagerClient {
       override;
   void NotifyUserAutoSignin(
       ScopedVector<autofill::PasswordForm> local_forms) override;
-  void NotifyUserAutoSigninBlockedOnFirstRun(
+  void NotifyUserCouldBeAutoSignedIn(
       scoped_ptr<autofill::PasswordForm>) override;
   void NotifySuccessfulLoginWithExistingPassword(
       const autofill::PasswordForm& form) override;

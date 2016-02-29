@@ -114,7 +114,7 @@ class PasswordManagerClient {
   // Inform the embedder that automatic signin would have happened if the user
   // had been through the first-run experience to ensure their opt-in. |form|
   // contains the PasswordForm that would have been delivered.
-  virtual void NotifyUserAutoSigninBlockedOnFirstRun(
+  virtual void NotifyUserCouldBeAutoSignedIn(
       scoped_ptr<autofill::PasswordForm> form) = 0;
 
   // Inform the embedder that the user signed in with a saved credential.

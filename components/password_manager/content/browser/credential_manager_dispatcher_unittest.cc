@@ -56,7 +56,7 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
   MOCK_CONST_METHOD0(DidLastPageLoadEncounterSSLErrors, bool());
   MOCK_METHOD1(NotifyUserAutoSigninPtr,
                bool(const std::vector<autofill::PasswordForm*>& local_forms));
-  MOCK_METHOD1(NotifyUserAutoSigninBlockedOnFirstRunPtr,
+  MOCK_METHOD1(NotifyUserCouldBeAutoSignedInPtr,
                bool(autofill::PasswordForm* form));
   MOCK_METHOD2(PromptUserToSavePasswordPtr,
                void(PasswordFormManager*, CredentialSourceType type));
@@ -82,9 +82,9 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
     return true;
   }
 
-  void NotifyUserAutoSigninBlockedOnFirstRun(
+  void NotifyUserCouldBeAutoSignedIn(
       scoped_ptr<autofill::PasswordForm> form) override {
-    NotifyUserAutoSigninBlockedOnFirstRunPtr(form.get());
+    NotifyUserCouldBeAutoSignedInPtr(form.get());
   }
 
   PasswordStore* GetPasswordStore() const override { return store_; }
@@ -626,7 +626,7 @@ TEST_F(CredentialManagerDispatcherTest,
 
   std::vector<GURL> federations;
 
-  EXPECT_CALL(*client_, NotifyUserAutoSigninBlockedOnFirstRunPtr(_)).Times(0);
+  EXPECT_CALL(*client_, NotifyUserCouldBeAutoSignedInPtr(_)).Times(0);
   dispatcher()->OnRequestCredential(kRequestId, true, true, federations);
 
   ExpectZeroClickSignInSuccess(CredentialType::CREDENTIAL_TYPE_PASSWORD);
@@ -639,7 +639,7 @@ TEST_F(CredentialManagerDispatcherTest,
 
   std::vector<GURL> federations;
 
-  EXPECT_CALL(*client_, NotifyUserAutoSigninBlockedOnFirstRunPtr(_)).Times(0);
+  EXPECT_CALL(*client_, NotifyUserCouldBeAutoSignedInPtr(_)).Times(0);
   dispatcher()->OnRequestCredential(kRequestId, true, false, federations);
 
   ExpectZeroClickSignInFailure();
@@ -654,7 +654,7 @@ TEST_F(CredentialManagerDispatcherTest,
   std::vector<GURL> federations;
   federations.push_back(GURL("https://example.com/"));
 
-  EXPECT_CALL(*client_, NotifyUserAutoSigninBlockedOnFirstRunPtr(_)).Times(0);
+  EXPECT_CALL(*client_, NotifyUserCouldBeAutoSignedInPtr(_)).Times(0);
   dispatcher()->OnRequestCredential(kRequestId, true, true, federations);
 
   ExpectZeroClickSignInSuccess(CredentialType::CREDENTIAL_TYPE_FEDERATED);
@@ -669,7 +669,7 @@ TEST_F(CredentialManagerDispatcherTest,
   std::vector<GURL> federations;
   federations.push_back(GURL("https://not-example.com/"));
 
-  EXPECT_CALL(*client_, NotifyUserAutoSigninBlockedOnFirstRunPtr(_)).Times(0);
+  EXPECT_CALL(*client_, NotifyUserCouldBeAutoSignedInPtr(_)).Times(0);
   dispatcher()->OnRequestCredential(kRequestId, true, true, federations);
 
   ExpectZeroClickSignInFailure();
@@ -770,7 +770,22 @@ TEST_F(CredentialManagerDispatcherTest, RequestCredentialWithoutFirstRun) {
 
   std::vector<GURL> federations;
   EXPECT_CALL(*client_,
-              NotifyUserAutoSigninBlockedOnFirstRunPtr(testing::Pointee(form_)))
+              NotifyUserCouldBeAutoSignedInPtr(testing::Pointee(form_)))
+      .Times(1);
+  dispatcher()->OnRequestCredential(kRequestId, true, true, federations);
+
+  ExpectZeroClickSignInFailure();
+}
+
+TEST_F(CredentialManagerDispatcherTest, RequestCredentialWithFirstRunAndSkip) {
+  client_->set_first_run_seen(true);
+
+  form_.skip_zero_click = true;
+  store_->AddLogin(form_);
+
+  std::vector<GURL> federations;
+  EXPECT_CALL(*client_,
+              NotifyUserCouldBeAutoSignedInPtr(testing::Pointee(form_)))
       .Times(1);
   dispatcher()->OnRequestCredential(kRequestId, true, true, federations);
 

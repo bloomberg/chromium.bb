@@ -99,9 +99,8 @@ void CredentialManagerPendingRequestTask::OnGetPasswordStoreResults(
   // Moreover, we only return such a credential if the user has opted-in via the
   // first-run experience.
   bool can_use_autosignin = local_results.size() == 1u &&
-                            !local_results[0]->skip_zero_click &&
                             delegate_->IsZeroClickAllowed();
-  if (can_use_autosignin &&
+  if (can_use_autosignin && !local_results[0]->skip_zero_click &&
       !password_bubble_experiment::ShouldShowAutoSignInPromptFirstRunExperience(
           delegate_->client()->GetPrefs())) {
     CredentialInfo info(*local_results[0],
@@ -113,26 +112,27 @@ void CredentialManagerPendingRequestTask::OnGetPasswordStoreResults(
     return;
   }
 
-  // If we didn't even try to ask the user for credentials because the site
-  // asked us for zero-click only and we're blocked on the first-run experience,
-  // then notify the client.
-  if (zero_click_only_ && can_use_autosignin &&
-      password_bubble_experiment::ShouldShowAutoSignInPromptFirstRunExperience(
-          delegate_->client()->GetPrefs())) {
-    scoped_ptr<autofill::PasswordForm> form(
-        new autofill::PasswordForm(*local_results[0]));
-    delegate_->client()->NotifyUserAutoSigninBlockedOnFirstRun(std::move(form));
-  }
-
   // Otherwise, return an empty credential if we're in zero-click-only mode
   // or if the user chooses not to return a credential, and the credential the
   // user chooses if they pick one.
+  scoped_ptr<autofill::PasswordForm> potential_autosignin_form(
+      new autofill::PasswordForm(*local_results[0]));
   if (zero_click_only_ ||
       !delegate_->client()->PromptUserToChooseCredentials(
           std::move(local_results), std::move(federated_results), origin_,
           base::Bind(
               &CredentialManagerPendingRequestTaskDelegate::SendCredential,
               base::Unretained(delegate_), id_))) {
+    if (can_use_autosignin) {
+      // The user had credentials, but either chose not to share them with the
+      // site, or was prevented from doing so by lack of zero-click (or the
+      // first-run experience). So, notify the client that we could potentially
+      // have used zero-click; if the user signs in with the same form via
+      // autofill, we'll toggle the flag for them.
+      delegate_->client()->NotifyUserCouldBeAutoSignedIn(
+          std::move(potential_autosignin_form));
+    }
+
     delegate_->SendCredential(id_, CredentialInfo());
   }
 }

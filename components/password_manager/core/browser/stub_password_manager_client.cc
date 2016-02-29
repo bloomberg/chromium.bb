@@ -45,7 +45,7 @@ void StubPasswordManagerClient::NotifyUserAutoSignin(
     ScopedVector<autofill::PasswordForm> local_forms) {
 }
 
-void StubPasswordManagerClient::NotifyUserAutoSigninBlockedOnFirstRun(
+void StubPasswordManagerClient::NotifyUserCouldBeAutoSignedIn(
     scoped_ptr<autofill::PasswordForm> form) {}
 
 void StubPasswordManagerClient::NotifySuccessfulLoginWithExistingPassword(
