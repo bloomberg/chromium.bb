@@ -87,7 +87,7 @@
 	</description>
       </entry>
       <entry name="persistent" value="2">
-	<description summary="the pointer constraint is may reactivate">
+	<description summary="the pointer constraint may reactivate">
 	  A persistent pointer constraint may again reactivate once it has
 	  been deactivated. See the corresponding deactivation event
 	  (wp_locked_pointer.unlocked and wp_confined_pointer.unconfined) for
