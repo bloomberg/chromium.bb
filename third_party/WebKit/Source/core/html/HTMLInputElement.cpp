@@ -47,6 +47,7 @@
 #include "core/events/MouseEvent.h"
 #include "core/events/ScopedEventQueue.h"
 #include "core/events/TouchEvent.h"
+#include "core/frame/Deprecation.h"
 #include "core/frame/EventHandlerRegistry.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
@@ -745,7 +746,7 @@ void HTMLInputElement::parseAttribute(const QualifiedName& name, const AtomicStr
         // time to relayout for this change.
         if ((m_maxResults < 0) != (oldResults < 0))
             lazyReattachIfAttached();
-        UseCounter::count(document(), UseCounter::ResultsAttribute);
+        Deprecation::countDeprecation(document(), UseCounter::ResultsAttribute);
     } else if (name == incrementalAttr) {
         UseCounter::count(document(), UseCounter::IncrementalAttribute);
     } else if (name == minAttr) {

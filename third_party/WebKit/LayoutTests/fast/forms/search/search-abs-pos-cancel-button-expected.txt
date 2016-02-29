@@ -1,3 +1,4 @@
+CONSOLE WARNING: 'results' attribute is deprecated and will be removed in M53, around September 2016. See https://www.chromestatus.com/features/5738199536107520 for more details.
 Test for https://bugs.webkit.org/show_bug.cgi?id=24503:
 Can't click the clear button of an absolutely positioned search field.
 

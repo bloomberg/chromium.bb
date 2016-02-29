@@ -340,6 +340,9 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature)
     case UseCounter::HTMLKeygenElement:
         return willBeRemoved("The <keygen> element", 54, "5716060992962560");
 
+    case UseCounter::ResultsAttribute:
+        return willBeRemoved("'results' attribute", 53, "5738199536107520");
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
         return String();

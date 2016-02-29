@@ -1,2 +1,3 @@
+CONSOLE WARNING: 'results' attribute is deprecated and will be removed in M53, around September 2016. See https://www.chromestatus.com/features/5738199536107520 for more details.
 
 The inner text element of the search input should never be 0-height: PASS
