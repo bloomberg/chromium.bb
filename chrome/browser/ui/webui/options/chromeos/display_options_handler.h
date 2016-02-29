@@ -41,9 +41,6 @@ class DisplayOptionsHandler : public ::options::OptionsPageUIHandler,
   // Sends all of the current display information to the web_ui of options page.
   void SendAllDisplayInfo();
 
-  // Sends the specified display information to the web_ui of options page.
-  void SendDisplayInfo(const std::vector<gfx::Display>& displays);
-
   // Enables or disables the display settings UI.
   void UpdateDisplaySettingsEnabled();
 

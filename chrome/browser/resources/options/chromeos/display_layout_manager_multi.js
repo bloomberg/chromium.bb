@@ -9,10 +9,6 @@ cr.define('options', function() {
 
   var DisplayLayoutManager = options.DisplayLayoutManager;
 
-  /** @const */ var FAKE_ID_PREFIX = 'fakeId';
-  var fakeDisplayNum = 3;
-  var fakeDisplays = [];
-
   /**
    * @constructor
    * @extends {options.DisplayLayoutManager}
@@ -32,18 +28,6 @@ cr.define('options', function() {
 
     /** @type {options.DisplayLayoutType} */
     dragLayoutType_: options.DisplayLayoutType.RIGHT,
-
-    /** @override */
-    createDisplayArea: function(displayAreaDiv, minVisualScale) {
-      // Add fake displays just before creating divs.
-      this.createFakeDisplays_(fakeDisplayNum);
-      for (var i = 0; i < fakeDisplayNum; ++i) {
-        var fake = fakeDisplays[i];
-        this.displayLayoutMap_[fake.id] = fake;
-      }
-      return DisplayLayoutManager.prototype.createDisplayArea.call(
-          this, displayAreaDiv, minVisualScale);
-    },
 
     /** @override */
     setFocusedId: function(focusedId, opt_userAction) {
@@ -141,17 +125,6 @@ cr.define('options', function() {
       // Update any orphaned children. This may cause the dragged display to
       // be re-attached if it was attached to a child.
       this.updateOrphans_(orphanIds);
-
-      // Update the fake displays.
-      for (var i = 0; i < fakeDisplayNum; ++i) {
-        var fakeId = fakeDisplays[i].id;
-        var current = this.displayLayoutMap_[fakeId];
-        var bounds = /** @type {!options.DisplayBounds} */ (
-            this.calcLayoutBounds_(current));
-        fakeDisplays[i] = new options.DisplayLayout(
-            current.id, current.name, bounds, current.layoutType,
-            current.parentId);
-      }
 
       this.highlightEdge_('', undefined);  // Remove any highlights.
       this.dragId_ = '';
@@ -387,33 +360,6 @@ cr.define('options', function() {
       var parentBounds = this.calcLayoutBounds_(parent);
       return layout.calculateBounds(parentBounds);
     },
-
-    /**
-     * @param {number} num
-     */
-    createFakeDisplays_: function(num) {
-      if (num != fakeDisplayNum)
-        fakeDisplays = [];
-      var primary;
-      for (var id in this.displayLayoutMap_) {
-        var layout = this.displayLayoutMap_[id];
-        if (layout.parentId == '')
-          primary = layout;
-      }
-      for (var i = 0; i < num; ++i) {
-        if (i < fakeDisplays.length) {
-          fakeDisplays[i].div = null;
-        } else {
-          var fakeId = FAKE_ID_PREFIX + i;
-          var layoutType = /** @type {options.DisplayLayoutType} */ (i % 4);
-          var bounds = /** @type {!options.DisplayBounds} */ (primary.bounds);
-          var fakeDisplayLayout = new options.DisplayLayout(
-              fakeId, 'Fake Display ' + i, bounds, layoutType, primary.id);
-          fakeDisplayLayout.bounds = this.calcLayoutBounds_(fakeDisplayLayout);
-          fakeDisplays.push(fakeDisplayLayout);
-        }
-      }
-    }
   };
 
   // Export

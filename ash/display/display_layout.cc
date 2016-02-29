@@ -4,6 +4,7 @@
 
 #include "ash/display/display_layout.h"
 
+#include <algorithm>
 #include <sstream>
 
 #include "ash/ash_switches.h"
@@ -316,6 +317,16 @@ std::string DisplayLayout::ToString() const {
   if (added)
     s << ")]";
   return s.str();
+}
+
+const DisplayPlacement* DisplayLayout::FindPlacementById(
+    int64_t display_id) const {
+  const auto iter =
+      std::find_if(placement_list.begin(), placement_list.end(),
+                   [display_id](const DisplayPlacement* placement) {
+                     return placement->display_id == display_id;
+                   });
+  return (iter == placement_list.end()) ? nullptr : *iter;
 }
 
 }  // namespace ash

@@ -28,6 +28,8 @@ class ASH_EXPORT DisplayLayoutBuilder final {
 
   DisplayLayoutBuilder& SetMirrored(bool mirrored);
 
+  DisplayLayoutBuilder& ClearPlacements();
+
   // Adds a display placement.
   DisplayLayoutBuilder& AddDisplayPlacement(int64_t display_id,
                                             int64_t parent_id,

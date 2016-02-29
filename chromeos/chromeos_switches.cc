@@ -129,6 +129,9 @@ const char kDisableNewKoreanIme[] = "disable-new-korean-ime";
 // Disables mtp write support.
 const char kDisableMtpWriteSupport[] = "disable-mtp-write-support";
 
+// Enable the multiple display layout UI.
+const char kDisableMultiDisplayLayout[] = "disable-multi-display-layout";
+
 // If this switch is set, the options for suggestions as typing on physical
 // keyboard will be enabled.
 const char kEnablePhysicalKeyboardAutocorrect[] =
@@ -157,9 +160,6 @@ const char kEnableScreenshotTestingWithMode[] =
 // Enable Kiosk mode for ChromeOS. Note this switch refers to retail mode rather
 // than the kiosk app mode.
 const char kEnableKioskMode[] = "enable-kiosk-mode";
-
-// Enable the multiple display layout UI.
-const char kEnableMultiDisplayLayout[] = "enable-multi-display-layout";
 
 // Enables request of tablet site (via user agent override).
 const char kEnableRequestTabletSite[] = "enable-request-tablet-site";

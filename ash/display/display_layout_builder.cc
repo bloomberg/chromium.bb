@@ -27,6 +27,11 @@ DisplayLayoutBuilder& DisplayLayoutBuilder::SetMirrored(bool mirrored) {
   return *this;
 }
 
+DisplayLayoutBuilder& DisplayLayoutBuilder::ClearPlacements() {
+  layout_->placement_list.clear();
+  return *this;
+}
+
 DisplayLayoutBuilder& DisplayLayoutBuilder::AddDisplayPlacement(
     int64_t display_id,
     int64_t parent_display_id,

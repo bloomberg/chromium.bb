@@ -46,8 +46,11 @@ options.ColorProfile;
  *   id: string,
  *   isInternal: boolean,
  *   isPrimary: boolean,
- *   resolutions: !Array<!options.DisplayMode>,
+ *   layoutType: (!options.DisplayLayoutType|undefined),
  *   name: string,
+ *   offset: (number|undefined),
+ *   parentId: (string|undefined),
+ *   resolutions: !Array<!options.DisplayMode>,
  *   rotation: number
  * }}
  */
@@ -104,13 +107,6 @@ cr.define('options', function() {
      * @private
      */
     displays_: [],
-
-    /**
-     * Whether to use DisplayLayoutManagerMulti.
-     * @type {boolean}
-     * @private
-     */
-    multiDisplayLayout_: false,
 
     /**
      * Manages the display layout.
@@ -241,12 +237,9 @@ cr.define('options', function() {
      * @param {boolean} enabled Whether the page should be enabled.
      * @param {boolean} showUnifiedDesktop Whether the unified desktop option
      *     should be present.
-     * @param {boolean} multiDisplayLayout Whether to use
-     *     DisplayLayoutManagerMulti.
      */
-    setEnabled: function(enabled, showUnifiedDesktop, multiDisplayLayout) {
+    setEnabled: function(enabled, showUnifiedDesktop) {
       this.showUnifiedDesktopOption_ = showUnifiedDesktop;
-      this.multiDisplayLayout_ = multiDisplayLayout;
       if (this.enabled_ == enabled)
         return;
       this.enabled_ = enabled;
@@ -340,20 +333,12 @@ cr.define('options', function() {
      * @private
      */
     sendDragResult_: function() {
-      // The first non-primary display is the secondary display.
-      var secondaryId;
+      var layouts = [];
       for (var i = 0; i < this.displays_.length; i++) {
-        if (!this.displays_[i].isPrimary) {
-          secondaryId = this.displays_[i].id;
-          break;
-        }
+        var id = this.displays_[i].id;
+        layouts.push(this.displayLayoutManager_.getDisplayLayout(id));
       }
-      assert(!!secondaryId);
-      var displayLayout =
-          this.displayLayoutManager_.getDisplayLayout(secondaryId);
-      chrome.send(
-          'setDisplayLayout',
-          [secondaryId, displayLayout.layoutType, displayLayout.offset]);
+      chrome.send('setDisplayLayout', [layouts]);
     },
 
     /**
@@ -643,31 +628,22 @@ cr.define('options', function() {
 
     /**
      * Layouts the display rectangles according to the current layout_.
-     * @param {options.DisplayLayoutType} layoutType
      * @private
      */
-    layoutDisplays_: function(layoutType) {
-      // Create the layout manager.
-      if (this.multiDisplayLayout_)
+    layoutDisplays_: function() {
+      // Create the layout manager. TODO(stevenjb): Elim DisplayLayoutManager()
+      // once DisplayLayoutManagerMulti is well tested.
+      if (this.displays_.length > 2)
         this.displayLayoutManager_ = new options.DisplayLayoutManagerMulti();
       else
         this.displayLayoutManager_ = new options.DisplayLayoutManager();
 
-      // Create the display layouts. Child displays are parented to the primary.
-      // TODO(stevenjb): DisplayInfo should provide the parent id for displays.
-      var primaryDisplayId = '';
+      // Create the display layouts.
       for (var i = 0; i < this.displays_.length; i++) {
         var display = this.displays_[i];
-        if (display.isPrimary) {
-          primaryDisplayId = display.id;
-          break;
-        }
-      }
-      for (var i = 0; i < this.displays_.length; i++) {
-        var display = this.displays_[i];
-        var parentId = display.isPrimary ? '' : primaryDisplayId;
         var layout = new options.DisplayLayout(
-            display.id, display.name, display.bounds, layoutType, parentId);
+            display.id, display.name, display.bounds, display.layoutType,
+            display.offset, display.parentId);
         this.displayLayoutManager_.addDisplayLayout(layout);
       }
 
@@ -685,12 +661,9 @@ cr.define('options', function() {
      * @param {options.MultiDisplayMode} mode multi display mode.
      * @param {!Array<!options.DisplayInfo>} displays The list of the display
      *     information.
-     * @param {options.DisplayLayoutType} layoutType The layout type for the
-     *     secondary display.
-     * @param {number} offset The offset of the secondary display.
      * @private
      */
-    onDisplayChanged_: function(mode, displays, layoutType, offset) {
+    onDisplayChanged_: function(mode, displays) {
       if (!this.visible)
         return;
 
@@ -716,7 +689,7 @@ cr.define('options', function() {
       if (this.mirroring_)
         this.layoutMirroringDisplays_();
       else
-        this.layoutDisplays_(layoutType);
+        this.layoutDisplays_();
 
       $('display-options-select-mirroring').value =
           mirroring ? 'mirroring' : 'extended';
@@ -738,10 +711,8 @@ cr.define('options', function() {
     }
   };
 
-  DisplayOptions.setDisplayInfo = function(
-      mode, displays, layoutType, offset) {
-    DisplayOptions.getInstance().onDisplayChanged_(
-        mode, displays, layoutType, offset);
+  DisplayOptions.setDisplayInfo = function(mode, displays) {
+    DisplayOptions.getInstance().onDisplayChanged_(mode, displays);
   };
 
   // Export

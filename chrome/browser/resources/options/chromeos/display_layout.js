@@ -76,17 +76,22 @@ cr.define('options', function() {
    * @param {string} id
    * @param {string} name
    * @param {!options.DisplayBounds} bounds
-   * @param {!options.DisplayLayoutType} layoutType
-   * @param {string} parentId
+   * @param {!options.DisplayLayoutType|undefined} layoutType
+   * @param {number|undefined} offset
+   * @param {string|undefined} parentId
    * @return {!options.DisplayLayout}
    */
-  function DisplayLayout(id, name, bounds, layoutType, parentId) {
+  function DisplayLayout(id, name, bounds, layoutType, offset, parentId) {
     this.bounds = bounds;
     this.id = id;
-    this.layoutType = layoutType;
+    if (layoutType != undefined)
+      this.layoutType = layoutType;
     this.name = name;
+    if (offset != undefined)
+      this.offset = offset;
     this.originalDivOffsets = {x: 0, y: 0};
-    this.parentId = parentId;
+    if (parentId != undefined)
+      this.parentId = parentId;
   }
 
   // Class describing a display layout.

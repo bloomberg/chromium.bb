@@ -111,6 +111,10 @@ class ASH_EXPORT DisplayLayout final {
   // Returns string representation of the layout for debugging/testing.
   std::string ToString() const;
 
+  // Returns the DisplayPlacement entry in |placement_list| matching
+  // |display_id| if it exists, otherwise returns nullptr.
+  const DisplayPlacement* FindPlacementById(int64_t display_id) const;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(DisplayLayout);
 };
