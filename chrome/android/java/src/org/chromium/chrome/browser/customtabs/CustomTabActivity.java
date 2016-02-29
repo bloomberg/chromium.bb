@@ -205,11 +205,16 @@ public class CustomTabActivity extends ChromeActivity {
     @Override
     public void postInflationStartup() {
         super.postInflationStartup();
+        mSession = mIntentDataProvider.getSession();
         setTabModelSelector(new TabModelSelectorImpl(this,
                 TabModelSelectorImpl.CUSTOM_TABS_SELECTOR_INDEX, getWindowAndroid(), false));
         getToolbarManager().setCloseButtonDrawable(mIntentDataProvider.getCloseButtonDrawable());
         getToolbarManager().setShowTitle(mIntentDataProvider.getTitleVisibilityState()
                 == CustomTabsIntent.SHOW_PAGE_TITLE);
+        if (CustomTabsConnection.getInstance(getApplication())
+                .shouldHideDomainForSession(mSession)) {
+            getToolbarManager().setUrlBarHidden(true);
+        }
         int toolbarColor = mIntentDataProvider.getToolbarColor();
         getToolbarManager().updatePrimaryColor(toolbarColor);
         if (toolbarColor != ApiCompatibilityUtils.getColor(

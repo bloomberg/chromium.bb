@@ -14,6 +14,7 @@ import android.graphics.drawable.Drawable;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.Pair;
+import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
@@ -52,6 +53,9 @@ import org.chromium.ui.base.WindowAndroid;
 public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
         View.OnLongClickListener {
     private static final int TITLE_ANIM_DELAY_MS = 200;
+    private static final int STATE_DOMAIN_ONLY = 0;
+    private static final int STATE_TITLE_ONLY = 1;
+    private static final int STATE_DOMAIN_AND_TITLE = 2;
 
     private View mLocationBarFrameLayout;
     private View mTitleUrlContainer;
@@ -60,7 +64,6 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
     private ImageView mSecurityButton;
     private ImageButton mCustomActionButton;
     private int mSecurityIconType;
-    private boolean mShouldShowTitle;
     private ImageButton mCloseButton;
 
     // Whether dark tint should be applied to icons and text.
@@ -69,6 +72,8 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
     private CustomTabToolbarAnimationDelegate mAnimDelegate;
     private boolean mBackgroundColorSet;
     private long mInitializeTimeStamp;
+    private int mState = STATE_DOMAIN_ONLY;
+    private boolean mIsFirstLoad = true;
 
     private Runnable mTitleAnimationStarter = new Runnable() {
         @Override
@@ -199,8 +204,45 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
 
     @Override
     public void setShowTitle(boolean showTitle) {
-        mShouldShowTitle = showTitle;
-        if (mShouldShowTitle) mAnimDelegate.prepareTitleAnim(mUrlBar, mTitleBar);
+        if (showTitle) {
+            mState = STATE_DOMAIN_AND_TITLE;
+            mAnimDelegate.prepareTitleAnim(mUrlBar, mTitleBar);
+        } else {
+            mState = STATE_DOMAIN_ONLY;
+        }
+    }
+
+    @Override
+    public void setUrlBarHidden(boolean hideUrlBar) {
+        // Urlbar visibility cannot be toggled if it is the only visible element.
+        if (mState == STATE_DOMAIN_ONLY) return;
+
+        if (hideUrlBar && mState == STATE_DOMAIN_AND_TITLE) {
+            mState = STATE_TITLE_ONLY;
+            mAnimDelegate.setTitleAnimationEnabled(false);
+            mUrlBar.setVisibility(View.GONE);
+            mTitleBar.setVisibility(View.VISIBLE);
+            LayoutParams lp = (LayoutParams) mTitleBar.getLayoutParams();
+            lp.bottomMargin = 0;
+            mTitleBar.setLayoutParams(lp);
+            mTitleBar.setTextSize(TypedValue.COMPLEX_UNIT_PX,
+                    getResources().getDimension(R.dimen.location_bar_url_text_size));
+        } else if (!hideUrlBar && mState == STATE_TITLE_ONLY) {
+            mState = STATE_DOMAIN_AND_TITLE;
+            mTitleBar.setVisibility(View.VISIBLE);
+            mUrlBar.setTextSize(TypedValue.COMPLEX_UNIT_PX,
+                    getResources().getDimension(R.dimen.custom_tabs_url_text_size));
+            mUrlBar.setVisibility(View.VISIBLE);
+            LayoutParams lp = (LayoutParams) mTitleBar.getLayoutParams();
+            lp.bottomMargin = getResources()
+                    .getDimensionPixelSize(R.dimen.custom_tabs_toolbar_vertical_padding);
+            mTitleBar.setLayoutParams(lp);
+            mTitleBar.setTextSize(TypedValue.COMPLEX_UNIT_PX,
+                    getResources().getDimension(R.dimen.custom_tabs_title_text_size));
+            updateSecurityIcon(getSecurityLevel());
+        } else {
+            assert false : "Unreached state";
+        }
     }
 
     @Override
@@ -214,7 +256,7 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
         // It takes some time to parse the title of the webcontent, and before that Tab#getTitle
         // always return the url. We postpone the title animation until the title is authentic.
         // TODO(yusufo): Clear the explicit references to about:blank here and for domain.
-        if (mShouldShowTitle
+        if (mState == STATE_DOMAIN_AND_TITLE
                 && !TextUtils.equals(currentTab.getTitle(), currentTab.getUrl())
                 && !TextUtils.equals(currentTab.getTitle(), "about:blank")) {
             long duration = System.currentTimeMillis() - mInitializeTimeStamp;
@@ -233,6 +275,11 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
     protected void onNavigatedToDifferentPage() {
         super.onNavigatedToDifferentPage();
         setTitleToPageTitle();
+        if (mIsFirstLoad) {
+            mIsFirstLoad = false;
+        } else if (mState == STATE_TITLE_ONLY) {
+            setUrlBarHidden(false);
+        }
     }
 
     @Override
@@ -381,7 +428,7 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
 
     @Override
     public void updateSecurityIcon(int securityLevel) {
-        if (mSecurityIconType == securityLevel) return;
+        if (mSecurityIconType == securityLevel || mState == STATE_TITLE_ONLY) return;
         mSecurityIconType = securityLevel;
 
         if (securityLevel == ConnectionSecurityLevel.NONE) {

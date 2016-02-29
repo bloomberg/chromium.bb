@@ -334,6 +334,11 @@ abstract class ToolbarLayout extends FrameLayout implements Toolbar {
     public void setCustomTabCloseClickHandler(OnClickListener listener) { }
 
     /**
+     * Sets whether the urlbar should be hidden on first page load.
+     */
+    public void setUrlBarHidden(boolean hide) { }
+
+    /**
      * Tells the Toolbar to update what buttons it is currently displaying.
      */
     public void updateButtonVisibility() { }

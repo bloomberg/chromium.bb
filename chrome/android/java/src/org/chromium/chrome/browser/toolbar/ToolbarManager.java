@@ -936,6 +936,13 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
     }
 
     /**
+     * @see ToolbarLayout#setUrlBarHidden(boolean)
+     */
+    public void setUrlBarHidden(boolean hidden) {
+        mToolbar.setUrlBarHidden(hidden);
+    }
+
+    /**
      * Focuses or unfocuses the URL bar.
      * @param focused Whether URL bar should be focused.
      */

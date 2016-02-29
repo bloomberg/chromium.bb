@@ -87,6 +87,13 @@ class CustomTabToolbarAnimationDelegate {
         mSecurityButtonHideAnimator.playSequentially(fadeOut, translateLeft);
     }
 
+    /**
+     * Sets whether the title scaling animation is enabled.
+     */
+    void setTitleAnimationEnabled(boolean enabled) {
+        mShouldRunTitleAnimation = enabled;
+    }
+
     void prepareTitleAnim(TextView urlBar, TextView titleBar) {
         mTitleBar = titleBar;
         mUrlBar = urlBar;

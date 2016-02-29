@@ -52,9 +52,10 @@ class ClientManager {
         public final String packageName;
         public final ICustomTabsCallback callback;
         public final IBinder.DeathRecipient deathRecipient;
-        private ServiceConnection mKeepAliveConnection = null;
-        private String mPredictedUrl = null;
-        private long mLastMayLaunchUrlTimestamp = 0;
+        private boolean mShouldHideDomain;
+        private ServiceConnection mKeepAliveConnection;
+        private String mPredictedUrl;
+        private long mLastMayLaunchUrlTimestamp;
 
         public SessionParams(Context context, int uid, ICustomTabsCallback callback,
                 IBinder.DeathRecipient deathRecipient) {
@@ -238,6 +239,23 @@ class ClientManager {
     public synchronized ICustomTabsCallback getCallbackForSession(IBinder session) {
         SessionParams params = mSessionParams.get(session);
         return params != null ? params.callback : null;
+    }
+
+    /**
+     * @return Whether the urlbar should be hidden for the session on first page load. Urls are
+     *         foced to show up after the user navigates away.
+     */
+    public synchronized boolean shouldHideDomainForSession(IBinder session) {
+        SessionParams params = mSessionParams.get(session);
+        return params != null ? params.mShouldHideDomain : false;
+    }
+
+    /**
+     * Sets whether the urlbar should be hidden for a given session.
+     */
+    public synchronized void setHideDomainForSession(IBinder session, boolean hide) {
+        SessionParams params = mSessionParams.get(session);
+        if (params != null) params.mShouldHideDomain = hide;
     }
 
     /** Tries to bind to a client to keep it alive, and returns true for success. */

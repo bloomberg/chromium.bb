@@ -99,10 +99,10 @@ public class CustomTabsConnection extends ICustomTabsService.Stub {
     @VisibleForTesting
     PrerenderedUrlParams mPrerender;
     protected final Application mApplication;
+    protected final ClientManager mClientManager;
     private final boolean mLogRequests;
     private final AtomicBoolean mWarmupHasBeenCalled = new AtomicBoolean();
     private final AtomicBoolean mWarmupHasBeenFinished = new AtomicBoolean();
-    private final ClientManager mClientManager;
     private ExternalPrerenderHandler mExternalPrerenderHandler;
     private WebContents mSpareWebContents;
 
@@ -494,6 +494,11 @@ public class CustomTabsConnection extends ICustomTabsService.Stub {
     /** See {@link ClientManager#getReferrerForSession(IBinder)} */
     public Referrer getReferrerForSession(IBinder session) {
         return mClientManager.getReferrerForSession(session);
+    }
+
+    /** @see ClientManager#shouldHideDomainForSession(IBinder) */
+    public boolean shouldHideDomainForSession(IBinder session) {
+        return mClientManager.shouldHideDomainForSession(session);
     }
 
     /** See {@link ClientManager#getClientPackageNameForSession(IBinder)} */
