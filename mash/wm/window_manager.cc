@@ -39,7 +39,7 @@ WindowManager::~WindowManager() {
 }
 
 void WindowManager::Initialize(RootWindowController* root_controller,
-                               mash::shell::mojom::ShellPtr shell) {
+                               mash::shell::mojom::Shell* shell) {
   DCHECK(root_controller);
   DCHECK(!root_controller_);
   root_controller_ = root_controller;
@@ -66,7 +66,8 @@ void WindowManager::Initialize(RootWindowController* root_controller,
   window_manager_client_->SetFrameDecorationValues(
       std::move(frame_decoration_values));
 
-  shell->AddScreenlockStateListener(binding_.CreateInterfacePtrAndBind());
+  if (shell)
+    shell->AddScreenlockStateListener(binding_.CreateInterfacePtrAndBind());
 }
 
 gfx::Rect WindowManager::CalculateDefaultBounds(mus::Window* window) const {

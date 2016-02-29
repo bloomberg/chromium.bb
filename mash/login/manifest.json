@@ -1,0 +1,5 @@
+{
+  "name": "mojo:mash_login",
+  "display_name": "Login",
+  "capabilities": { "*": [ "*" ] }
+}

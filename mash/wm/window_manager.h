@@ -28,7 +28,7 @@ class WindowManager : public mus::WindowObserver,
   ~WindowManager() override;
 
   void Initialize(RootWindowController* root_controller,
-                  mash::shell::mojom::ShellPtr shell);
+                  mash::shell::mojom::Shell* shell);
 
   mus::WindowManagerClient* window_manager_client() {
     return window_manager_client_;

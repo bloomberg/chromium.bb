@@ -1,0 +1,63 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef MASH_INIT_INIT_H_
+#define MASH_INIT_INIT_H_
+
+#include <map>
+
+#include "base/callback.h"
+#include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
+#include "mash/init/public/interfaces/login.mojom.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/shell/public/cpp/connector.h"
+#include "mojo/shell/public/cpp/shell_client.h"
+
+namespace mojo {
+class Connection;
+}
+
+namespace mash {
+namespace init{
+
+class Init : public mojo::ShellClient,
+             public mojom::Login,
+             public mojo::InterfaceFactory<mojom::Login> {
+ public:
+  Init();
+  ~Init() override;
+
+ private:
+  // mojo::ShellClient:
+  void Initialize(mojo::Connector* connector, const std::string& url,
+                  uint32_t id, uint32_t user_id) override;
+
+  // mojom::Login:
+  void LoginAs(uint32_t user_id) override;
+
+  // mojo::InterfaceFactory<mojom::Login>:
+  void Create(mojo::Connection* connection,
+              mojom::LoginRequest request) override;
+
+  void StartWindowManager();
+  void StartLogin();
+
+  // Starts the application at |url|, running |restart_callback| if the
+  // connection to the application is closed.
+  void StartRestartableService(mojo::Connector::ConnectParams* params,
+                               const base::Closure& restart_callback);
+
+  mojo::Connector* connector_;
+  std::map<std::string, scoped_ptr<mojo::Connection>> connections_;
+  mojo::BindingSet<mojom::Login> login_bindings_;
+  scoped_ptr<mojo::Connection> mus_connection_;
+
+  DISALLOW_COPY_AND_ASSIGN(Init);
+};
+
+}  // namespace init
+}  // namespace mash
+
+#endif  // MASH_INIT_INIT_H_

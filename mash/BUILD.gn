@@ -12,6 +12,8 @@ group("all") {
     ":tests",
     "//components/leveldb",
     "//mash/example",
+    "//mash/init",
+    "//mash/login",
     "//mash/screenlock",
     "//mash/shell",
     "//mash/task_viewer",

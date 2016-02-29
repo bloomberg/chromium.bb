@@ -29,7 +29,7 @@ void ShellApplicationDelegate::Initialize(mojo::Connector* connector,
 }
 
 bool ShellApplicationDelegate::AcceptConnection(mojo::Connection* connection) {
-  connection->AddInterface<mash::shell::mojom::Shell>(this);
+  connection->AddInterface<mojom::Shell>(this);
   return true;
 }
 
@@ -62,8 +62,8 @@ void ShellApplicationDelegate::UnlockScreen() {
 
 void ShellApplicationDelegate::Create(
     mojo::Connection* connection,
-    mojo::InterfaceRequest<mash::shell::mojom::Shell> r) {
-  bindings_.AddBinding(this, std::move(r));
+    mojom::ShellRequest request) {
+  bindings_.AddBinding(this, std::move(request));
 }
 
 void ShellApplicationDelegate::StartWindowManager() {
@@ -116,6 +116,7 @@ void ShellApplicationDelegate::StartRestartableService(
   if (connection) {
     connection->SetRemoteInterfaceProviderConnectionErrorHandler(
         restart_callback);
+    connection->AddInterface<mojom::Shell>(this);
     connections_[url] = std::move(connection);
   }
 }

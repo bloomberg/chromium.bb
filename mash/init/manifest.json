@@ -1,0 +1,5 @@
+{
+  "name": "mojo:mash_init",
+  "display_name": "Root Controller",
+  "capabilities": { "*": [ "*" ] }
+}
