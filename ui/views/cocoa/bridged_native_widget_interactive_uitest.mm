@@ -14,6 +14,7 @@
 #import "ui/base/test/windowed_nsnotification_observer.h"
 #import "ui/events/test/cocoa_test_event_utils.h"
 #include "ui/views/test/widget_test.h"
+#include "ui/views/widget/native_widget_mac.h"
 #include "ui/views/window/native_frame_view.h"
 
 namespace views {

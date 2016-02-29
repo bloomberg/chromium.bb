@@ -199,6 +199,7 @@ static_library("test_support") {
   ]
   sources = [
     "test/default_platform_test_helper.cc",
+    "test/native_widget_factory_desktop.cc",
   ]
 }
 
