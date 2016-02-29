@@ -310,8 +310,8 @@ TEST_F(HTMLSelectElementTest, DefaultToolTip)
     document().documentElement()->setInnerHTML("<select size=4><option value="">Placeholder</option><optgroup><option>o2</option></optgroup></select>", ASSERT_NO_EXCEPTION);
     document().view()->updateAllLifecyclePhases();
     HTMLSelectElement* select = toHTMLSelectElement(document().body()->firstChild());
-    Element* option = toElement(select->firstChild());
-    Element* optgroup = toElement(option->nextSibling());
+    RefPtrWillBeRawPtr<Element> option = toElement(select->firstChild());
+    RefPtrWillBeRawPtr<Element> optgroup = toElement(option->nextSibling());
 
     EXPECT_EQ(String(), select->defaultToolTip()) << "defaultToolTip for SELECT without FORM and without required attribute should return null string.";
     EXPECT_EQ(select->defaultToolTip(), option->defaultToolTip());
