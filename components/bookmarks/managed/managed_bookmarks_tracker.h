@@ -38,6 +38,7 @@ class ManagedBookmarksTracker {
   static const char kName[];
   static const char kUrl[];
   static const char kChildren[];
+  static const char kFolderName[];
 
   // If |is_supervised| is true, this will track supervised bookmarks rather
   // than managed bookmarks.

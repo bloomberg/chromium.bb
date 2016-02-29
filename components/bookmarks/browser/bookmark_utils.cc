@@ -441,6 +441,10 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
       prefs::kShowManagedBookmarksInBookmarkBar,
       true,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  RegisterManagedBookmarksPrefs(registry);
+}
+
+void RegisterManagedBookmarksPrefs(PrefRegistrySimple* registry) {
   // Don't sync this, as otherwise, due to a limitation in sync, it
   // will cause a deadlock (see http://crbug.com/97955).  If we truly
   // want to sync the expanded state of folders, it should be part of
@@ -448,6 +452,8 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterListPref(prefs::kBookmarkEditorExpandedNodes,
                              new base::ListValue);
   registry->RegisterListPref(prefs::kManagedBookmarks);
+  registry->RegisterStringPref(
+      prefs::kManagedBookmarksFolderName, std::string());
   registry->RegisterListPref(prefs::kSupervisedBookmarks);
 }
 

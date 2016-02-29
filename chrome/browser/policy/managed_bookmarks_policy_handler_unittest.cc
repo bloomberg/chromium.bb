@@ -39,6 +39,11 @@ TEST_F(ManagedBookmarksPolicyHandlerTest, ApplyPolicySettings) {
              POLICY_SCOPE_USER,
              POLICY_SOURCE_CLOUD,
              base::JSONReader::Read("["
+                                    // The following gets filtered out from the
+                                    // JSON string when parsed.
+                                    "  {"
+                                    "    \"toplevel_name\": \"abc 123\""
+                                    "  },"
                                     "  {"
                                     "    \"name\": \"Google\","
                                     "    \"url\": \"google.com\""
@@ -77,6 +82,15 @@ TEST_F(ManagedBookmarksPolicyHandlerTest, ApplyPolicySettings) {
   EXPECT_TRUE(
       store_->GetValue(bookmarks::prefs::kManagedBookmarks, &pref_value));
   ASSERT_TRUE(pref_value);
+
+  // Make sure the kManagedBookmarksFolderName pref is set correctly.
+  const base::Value* folder_value = NULL;
+  std::string folder_name;
+  EXPECT_TRUE(store_->GetValue(bookmarks::prefs::kManagedBookmarksFolderName,
+                               &folder_value));
+  ASSERT_TRUE(folder_value);
+  ASSERT_TRUE(folder_value->GetAsString(&folder_name));
+  EXPECT_EQ("abc 123", folder_name);
 
   scoped_ptr<base::Value> expected(
       extensions::ListBuilder()
@@ -119,6 +133,49 @@ TEST_F(ManagedBookmarksPolicyHandlerTest, ApplyPolicySettings) {
                                    .Build())
                            .Build())
                   .Build())
+          .Build());
+  EXPECT_TRUE(pref_value->Equals(expected.get()));
+}
+#endif  // defined(ENABLE_EXTENSIONS)
+
+#if defined(ENABLE_EXTENSIONS)
+TEST_F(ManagedBookmarksPolicyHandlerTest, ApplyPolicySettingsNoTitle) {
+  EXPECT_FALSE(store_->GetValue(bookmarks::prefs::kManagedBookmarks, NULL));
+
+  PolicyMap policy;
+  policy.Set(key::kManagedBookmarks,
+             POLICY_LEVEL_MANDATORY,
+             POLICY_SCOPE_USER,
+             POLICY_SOURCE_CLOUD,
+             base::JSONReader::Read("["
+                                    "  {"
+                                    "    \"name\": \"Google\","
+                                    "    \"url\": \"google.com\""
+                                    "  }"
+                                    "]")
+                 .release(),
+             NULL);
+  UpdateProviderPolicy(policy);
+  const base::Value* pref_value = NULL;
+  EXPECT_TRUE(
+      store_->GetValue(bookmarks::prefs::kManagedBookmarks, &pref_value));
+  ASSERT_TRUE(pref_value);
+
+  // Make sure the kManagedBookmarksFolderName pref is set correctly.
+  const base::Value* folder_value = NULL;
+  std::string folder_name;
+  EXPECT_TRUE(store_->GetValue(bookmarks::prefs::kManagedBookmarksFolderName,
+                               &folder_value));
+  ASSERT_TRUE(folder_value);
+  ASSERT_TRUE(folder_value->GetAsString(&folder_name));
+  EXPECT_EQ("", folder_name);
+
+  scoped_ptr<base::Value> expected(
+      extensions::ListBuilder()
+          .Append(extensions::DictionaryBuilder()
+                      .Set("name", "Google")
+                      .Set("url", "http://google.com/")
+                      .Build())
           .Build());
   EXPECT_TRUE(pref_value->Equals(expected.get()));
 }

@@ -14,6 +14,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_offset_string_conversions.h"
 #include "components/bookmarks/browser/bookmark_node_data.h"
+#include "components/prefs/pref_registry_simple.h"
 
 class GURL;
 
@@ -93,6 +94,9 @@ void GetBookmarksMatchingProperties(BookmarkModel* model,
 
 // Register user preferences for Bookmarks Bar.
 void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
+
+// Register managed bookmarks preferences.
+void RegisterManagedBookmarksPrefs(PrefRegistrySimple* registry);
 
 // Returns the parent for newly created folders/bookmarks. If |selection| has
 // one element and it is a folder, |selection[0]| is returned, otherwise

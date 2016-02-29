@@ -7486,6 +7486,7 @@
           'properties': {
             'name': { 'type': 'string' },
             'url': { 'type': 'string' },
+            'toplevel_name': { 'type': 'string' },
             'children': {
               'type': 'array',
               'items': { '$ref': 'BookmarkType' },
@@ -7541,7 +7542,9 @@
       name="GOOGLE_COM">"google.com"</ph> becomes <ph
       name="HTTPS_GOOGLE_COM">"https://google.com/"</ph>.
 
-      These bookmarks are placed in a "Managed bookmarks" folder that can't be modified by the user, but the user can choose to hide it from the bookmark bar. Managed bookmarks are not synced to the user account and can't be modified by extensions.''',
+      These bookmarks are placed in a "Managed bookmarks" folder that can't be modified by the user, but the user can choose to hide it from the bookmark bar. Managed bookmarks are not synced to the user account and can't be modified by extensions.
+
+      The folder name for the bookmarks is customizable by adding a {"toplevel_name": "some name"} list item.''',
     },
     {
       'name': 'DataCompressionProxyEnabled',

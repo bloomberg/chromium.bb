@@ -25,6 +25,7 @@ class ManagedBookmarksPolicyHandler : public SchemaValidatingPolicyHandler {
                            PrefValueMap* prefs) override;
 
  private:
+  std::string GetFolderName(const base::ListValue& list);
   void FilterBookmarks(base::ListValue* bookmarks);
 
   DISALLOW_COPY_AND_ASSIGN(ManagedBookmarksPolicyHandler);

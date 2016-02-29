@@ -40,8 +40,27 @@ void ManagedBookmarksPolicyHandler::ApplyPolicySettings(
   if (!value || !value->GetAsList(&list))
     return;
 
+  prefs->SetString(bookmarks::prefs::kManagedBookmarksFolderName,
+                   GetFolderName(*list));
   FilterBookmarks(list);
   prefs->SetValue(bookmarks::prefs::kManagedBookmarks, std::move(value));
+}
+
+std::string
+ManagedBookmarksPolicyHandler::GetFolderName(const base::ListValue& list) {
+  // Iterate over the list, and try to find the FolderName.
+  for (auto el : list) {
+    const base::DictionaryValue* dict = NULL;
+    if (!el || !el->GetAsDictionary(&dict)) continue;
+
+    std::string name;
+    if (dict->GetString(ManagedBookmarksTracker::kFolderName, &name)) {
+      return name;
+    }
+  }
+
+  // FolderName not present.
+  return std::string();
 }
 
 void ManagedBookmarksPolicyHandler::FilterBookmarks(base::ListValue* list) {

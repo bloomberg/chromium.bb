@@ -15,6 +15,7 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_model_observer.h"
 #include "components/bookmarks/browser/bookmark_node.h"
+#include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "components/bookmarks/test/mock_bookmark_model_observer.h"
@@ -38,9 +39,7 @@ class ManagedBookmarksTrackerTest : public testing::Test {
   ~ManagedBookmarksTrackerTest() override {}
 
   void SetUp() override {
-    prefs_.registry()->RegisterListPref(prefs::kManagedBookmarks);
-    prefs_.registry()->RegisterListPref(prefs::kSupervisedBookmarks);
-    prefs_.registry()->RegisterListPref(prefs::kBookmarkEditorExpandedNodes);
+    RegisterManagedBookmarksPrefs(prefs_.registry());
   }
 
   void TearDown() override {
@@ -196,6 +195,23 @@ TEST_F(ManagedBookmarksTrackerTest, LoadInitial) {
   EXPECT_TRUE(managed_node()->IsVisible());
 
   scoped_ptr<base::DictionaryValue> expected(CreateExpectedTree());
+  EXPECT_TRUE(NodeMatchesValue(managed_node(), expected.get()));
+}
+
+TEST_F(ManagedBookmarksTrackerTest, LoadInitialWithTitle) {
+  // Set the managed folder title.
+  const char kExpectedFolderName[] = "foo";
+  prefs_.SetString(prefs::kManagedBookmarksFolderName, kExpectedFolderName);
+  // Set a policy before loading the model.
+  prefs_.SetManagedPref(prefs::kManagedBookmarks, CreateTestTree());
+  CreateModel(false /* is_supervised */);
+  EXPECT_TRUE(model_->bookmark_bar_node()->empty());
+  EXPECT_TRUE(model_->other_node()->empty());
+  EXPECT_FALSE(managed_node()->empty());
+  EXPECT_TRUE(managed_node()->IsVisible());
+
+  scoped_ptr<base::DictionaryValue> expected(
+      CreateFolder(kExpectedFolderName, CreateTestTree()));
   EXPECT_TRUE(NodeMatchesValue(managed_node(), expected.get()));
 }
 

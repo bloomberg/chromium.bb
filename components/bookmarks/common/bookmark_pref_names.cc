@@ -19,6 +19,10 @@ const char kEditBookmarksEnabled[] = "bookmarks.editing_enabled";
 // the bookmark name and target URL respectively.
 const char kManagedBookmarks[] = "bookmarks.managed_bookmarks";
 
+// String which specifies the Managed Bookmarks folder name
+const char kManagedBookmarksFolderName[] =
+    "bookmarks.managed_bookmarks_folder_name";
+
 // Boolean which specifies whether the apps shortcut is visible on the bookmark
 // bar.
 const char kShowAppsShortcutInBookmarkBar[] = "bookmark_bar.show_apps_shortcut";
