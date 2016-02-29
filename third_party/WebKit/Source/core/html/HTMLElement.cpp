@@ -234,7 +234,7 @@ void HTMLElement::collectStyleForPresentationAttribute(const QualifiedName& name
         } else {
             if (isValidDirAttribute(value))
                 addPropertyToPresentationAttributeStyle(style, CSSPropertyDirection, value);
-            else
+            else if (isHTMLBodyElement(*this))
                 addPropertyToPresentationAttributeStyle(style, CSSPropertyDirection, "ltr");
             if (!hasTagName(bdiTag) && !hasTagName(bdoTag) && !hasTagName(outputTag))
                 addPropertyToPresentationAttributeStyle(style, CSSPropertyUnicodeBidi, CSSValueIsolate);
