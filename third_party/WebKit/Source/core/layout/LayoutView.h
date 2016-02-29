@@ -222,6 +222,9 @@ private:
     void checkLayoutState();
 #endif
 
+    void updateFromStyle() override;
+    bool allowsOverflowClip() const override;
+
     friend class ForceHorriblySlowRectMapping;
 
     bool shouldUsePrintingLayout() const;

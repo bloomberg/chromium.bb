@@ -108,6 +108,8 @@ private:
 
     void setNeedsPaintInvalidation();
 
+    bool allowsOverflowClip() const override { return false; }
+
     RawPtrWillBeUntracedMember<LayoutScrollbar> m_scrollbar;
     ScrollbarPart m_part;
 };

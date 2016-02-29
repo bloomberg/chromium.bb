@@ -71,6 +71,8 @@ private:
     void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) final;
     void addOverflowFromChildren() final;
 
+    bool allowsOverflowClip() const override { return false; }
+
     bool textShouldBeTruncated() const;
     HTMLElement* innerSpinButtonElement() const;
 

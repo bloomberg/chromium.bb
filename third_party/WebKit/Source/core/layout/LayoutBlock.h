@@ -346,6 +346,11 @@ protected:
 
     void styleWillChange(StyleDifference, const ComputedStyle& newStyle) override;
     void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
+    void updateFromStyle() override;
+
+    // Returns true if non-visible overflow should be respected. Otherwise hasOverflowClip() will be
+    // false and we won't create scrollable area for this object even if overflow is non-visible.
+    virtual bool allowsOverflowClip() const;
 
     virtual bool hasLineIfEmpty() const;
 

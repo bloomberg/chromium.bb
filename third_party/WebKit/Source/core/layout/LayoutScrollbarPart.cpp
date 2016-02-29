@@ -180,7 +180,6 @@ void LayoutScrollbarPart::styleDidChange(StyleDifference diff, const ComputedSty
     setInline(false);
     clearPositionedState();
     setFloating(false);
-    setHasOverflowClip(false);
     if (oldStyle && (diff.needsPaintInvalidation() || diff.needsLayout()))
         setNeedsPaintInvalidation();
 }

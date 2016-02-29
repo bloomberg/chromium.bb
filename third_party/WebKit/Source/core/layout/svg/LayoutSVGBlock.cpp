@@ -35,11 +35,9 @@ LayoutSVGBlock::LayoutSVGBlock(SVGElement* element)
 {
 }
 
-void LayoutSVGBlock::updateFromStyle()
+bool LayoutSVGBlock::allowsOverflowClip() const
 {
-    LayoutBlock::updateFromStyle();
-
-    // LayoutSVGlock, used by Layout(SVGText|ForeignObject), is not allowed to call setHasOverflowClip(true).
+    // LayoutSVGlock, used by Layout(SVGText|ForeignObject), is not allowed to have overflow clip.
     // LayoutBlock assumes a layer to be present when the overflow clip functionality is requested. Both
     // Layout(SVGText|ForeignObject) return 'NoPaintLayer' on 'layerTypeRequired'. Fine for LayoutSVGText.
     //
@@ -51,7 +49,7 @@ void LayoutSVGBlock::updateFromStyle()
     //
     // Note: This does NOT affect overflow handling on outer/inner <svg> elements - this is handled
     // manually by LayoutSVGRoot - which owns the documents enclosing root layer and thus works fine.
-    setHasOverflowClip(false);
+    return false;
 }
 
 void LayoutSVGBlock::absoluteRects(Vector<IntRect>&, const LayoutPoint&) const

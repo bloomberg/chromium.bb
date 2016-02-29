@@ -174,7 +174,6 @@ void LayoutTextControlSingleLine::styleDidChange(StyleDifference diff, const Com
     LayoutTextControl::styleDidChange(diff, oldStyle);
     if (HTMLElement* placeholder = inputElement()->placeholderElement())
         placeholder->setInlineStyleProperty(CSSPropertyTextOverflow, textShouldBeTruncated() ? CSSValueEllipsis : CSSValueClip);
-    setHasOverflowClip(false);
 }
 
 void LayoutTextControlSingleLine::capsLockStateMayHaveChanged()

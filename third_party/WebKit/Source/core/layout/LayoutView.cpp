@@ -1008,4 +1008,18 @@ void LayoutView::sendMediaPositionChangeNotifications(const IntRect& visibleRect
     }
 }
 
+void LayoutView::updateFromStyle()
+{
+    LayoutBlockFlow::updateFromStyle();
+
+    // LayoutView of the main frame is responsible for painting base background.
+    if (!document().ownerElement())
+        setHasBoxDecorationBackground(true);
+}
+
+bool LayoutView::allowsOverflowClip() const
+{
+    return document().settings() && document().settings()->rootLayerScrolls();
+}
+
 } // namespace blink

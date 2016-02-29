@@ -49,7 +49,7 @@ protected:
 
     bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVG || LayoutBlockFlow::isOfType(type); }
 private:
-    void updateFromStyle() final;
+    bool allowsOverflowClip() const final;
 
     void absoluteRects(Vector<IntRect>&, const LayoutPoint& accumulatedOffset) const final;
 

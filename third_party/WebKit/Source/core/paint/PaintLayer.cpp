@@ -1469,9 +1469,14 @@ void PaintLayer::updateStackingNode()
 
 void PaintLayer::updateScrollableArea()
 {
-    ASSERT(!m_scrollableArea);
-    if (requiresScrollableArea())
-        m_scrollableArea = PaintLayerScrollableArea::create(*this);
+    if (requiresScrollableArea()) {
+        if (!m_scrollableArea)
+            m_scrollableArea = PaintLayerScrollableArea::create(*this);
+    } else if (m_scrollableArea) {
+        if (m_scrollableArea)
+            m_scrollableArea->dispose();
+        m_scrollableArea.clear();
+    }
 }
 
 bool PaintLayer::hasOverflowControls() const
@@ -2577,6 +2582,7 @@ void PaintLayer::styleChanged(StyleDifference diff, const ComputedStyle* oldStyl
     m_stackingNode->updateIsTreatedAsStackingContext();
     m_stackingNode->updateStackingNodesAfterStyleChange(oldStyle);
 
+    updateScrollableArea();
     if (m_scrollableArea)
         m_scrollableArea->updateAfterStyleChange(oldStyle);
 
