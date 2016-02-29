@@ -21,6 +21,9 @@ void ShowAutoSigninPrompt(content::WebContents* web_contents,
 
   JNIEnv* env = base::android::AttachCurrentThread();
   TabAndroid* tab = TabAndroid::FromWebContents(web_contents);
+  // TODO(melandory): https://crbug.com/590838 Introduce proper fix.
+  if (tab == nullptr)
+    return;
   ScopedJavaLocalRef<jstring> java_message =
       base::android::ConvertUTF16ToJavaString(env, message);
   Java_AutoSigninSnackbarController_showSnackbar(
