@@ -6,3 +6,4 @@ per-file mime_sniffer*=mmenke@chromium.org
 
 # For all files relating to the network quality estimator.
 per-file network_quality*=bengr@chromium.org
+per-file socket_performance_watcher*=bengr@chromium.org
