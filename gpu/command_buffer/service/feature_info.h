@@ -194,9 +194,6 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
 
   bool unsafe_es3_apis_enabled_;
 
-  // Whether the command line switch kEnableGLPathRendering is passed in.
-  bool enable_gl_path_rendering_switch_;
-
   bool chromium_color_buffer_float_rgba_available_;
   bool chromium_color_buffer_float_rgb_available_;
   bool ext_color_buffer_float_available_;

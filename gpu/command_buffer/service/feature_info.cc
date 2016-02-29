@@ -223,9 +223,6 @@ void FeatureInfo::InitializeBasicState(const base::CommandLine* command_line) {
   enable_unsafe_es3_apis_switch_ =
       command_line->HasSwitch(switches::kEnableUnsafeES3APIs);
 
-  enable_gl_path_rendering_switch_ =
-      command_line->HasSwitch(switches::kEnableGLPathRendering);
-
   // The shader translator is needed to translate from WebGL-conformant GLES SL
   // to normal GLES SL, enforce WebGL conformance, translate from GLES SL 1.0 to
   // target context GLSL, implement emulation of OpenGL ES features on OpenGL,
@@ -1245,15 +1242,13 @@ void FeatureInfo::InitializeFeatures() {
     }
   }
 
-  if (enable_gl_path_rendering_switch_ &&
-      extensions.Contains("GL_NV_framebuffer_mixed_samples")) {
+  if (extensions.Contains("GL_NV_framebuffer_mixed_samples")) {
     AddExtensionString("GL_CHROMIUM_framebuffer_mixed_samples");
     feature_flags_.chromium_framebuffer_mixed_samples = true;
     validators_.g_l_state.AddValue(GL_COVERAGE_MODULATION_CHROMIUM);
   }
 
-  if (enable_gl_path_rendering_switch_ &&
-      extensions.Contains("GL_NV_path_rendering")) {
+  if (extensions.Contains("GL_NV_path_rendering")) {
     bool has_dsa = gl_version_info_->IsAtLeastGL(4, 5) ||
                    extensions.Contains("GL_EXT_direct_state_access");
     bool has_piq = gl_version_info_->IsAtLeastGL(4, 3) ||

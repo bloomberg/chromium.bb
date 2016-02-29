@@ -71,11 +71,6 @@ const char kGLShaderIntermOutput[] = "gl-shader-interm-output";
 // round intermediate values in ANGLE.
 const char kEmulateShaderPrecision[] = "emulate-shader-precision";
 
-// Enables using path rendering implementation implemented currently
-// in NV_path_rendering OpenGL extension. Requires compatible hardware
-// and driver. This is used in GPU rasterization.
-const char kEnableGLPathRendering[] = "enable-gl-path-rendering";
-
 const char* kGpuSwitches[] = {
     kCompileShaderAlwaysSucceeds,
     kDisableGLErrorLimit,
@@ -95,7 +90,6 @@ const char* kGpuSwitches[] = {
     kEnableSubscribeUniformExtension,
     kGLShaderIntermOutput,
     kEmulateShaderPrecision,
-    kEnableGLPathRendering,
 };
 
 const int kNumGpuSwitches = arraysize(kGpuSwitches);

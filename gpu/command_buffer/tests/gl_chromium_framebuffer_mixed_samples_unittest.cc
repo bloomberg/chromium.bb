@@ -25,9 +25,7 @@ class CHROMIUMFramebufferMixedSamplesTest : public testing::Test {
   const GLuint kHeight = 100;
 
   void SetUp() override {
-    base::CommandLine command_line(*base::CommandLine::ForCurrentProcess());
-    command_line.AppendSwitch(switches::kEnableGLPathRendering);
-    gl_.InitializeWithCommandLine(GLManager::Options(), &command_line);
+    gl_.Initialize(GLManager::Options());
   }
 
   void TearDown() override { gl_.Destroy(); }
