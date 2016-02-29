@@ -58,7 +58,6 @@ protected:
     virtual bool paintTextArea(const LayoutObject&, const PaintInfo&, const IntRect&) { return true; }
     virtual bool paintMenuList(const LayoutObject&, const PaintInfo&, const IntRect&) { return true; }
     virtual bool paintMenuListButton(const LayoutObject&, const PaintInfo&, const IntRect&) { return true; }
-    virtual bool paintMeter(const LayoutObject&, const PaintInfo&, const IntRect&);
     virtual bool paintProgressBar(const LayoutObject&, const PaintInfo&, const IntRect&) { return true; }
     virtual bool paintSliderTrack(const LayoutObject&, const PaintInfo&, const IntRect&) { return true; }
     virtual bool paintSliderThumb(const LayoutObject&, const PaintInfo&, const IntRect&) { return true; }

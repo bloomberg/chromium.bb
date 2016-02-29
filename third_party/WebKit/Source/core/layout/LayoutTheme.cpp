@@ -35,7 +35,6 @@
 #include "core/html/HTMLDataListOptionsCollection.h"
 #include "core/html/HTMLFormControlElement.h"
 #include "core/html/HTMLInputElement.h"
-#include "core/html/HTMLMeterElement.h"
 #include "core/html/HTMLOptionElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/shadow/MediaControlElements.h"
@@ -399,10 +398,6 @@ bool LayoutTheme::isControlStyled(const ComputedStyle& style) const
     case ButtonPart:
     case ProgressBarPart:
     case MeterPart:
-    case RelevancyLevelIndicatorPart:
-    case ContinuousCapacityLevelIndicatorPart:
-    case DiscreteCapacityLevelIndicatorPart:
-    case RatingLevelIndicatorPart:
         return style.hasAuthorBackground() || style.hasAuthorBorder();
 
     case MenulistPart:
@@ -620,16 +615,6 @@ void LayoutTheme::adjustInnerSpinButtonStyle(ComputedStyle&) const
 
 void LayoutTheme::adjustMenuListStyle(ComputedStyle&, Element*) const
 {
-}
-
-IntSize LayoutTheme::meterSizeForBounds(const LayoutMeter&, const IntRect& bounds) const
-{
-    return bounds.size();
-}
-
-bool LayoutTheme::supportsMeter(ControlPart) const
-{
-    return false;
 }
 
 double LayoutTheme::animationRepeatIntervalForProgressBar() const

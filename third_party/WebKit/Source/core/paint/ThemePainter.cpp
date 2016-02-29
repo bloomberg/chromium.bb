@@ -29,7 +29,6 @@
 #include "core/html/HTMLOptionElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/shadow/ShadowElementNames.h"
-#include "core/layout/LayoutMeter.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/layout/LayoutView.h"
 #include "core/paint/MediaControlsPainter.h"
@@ -99,11 +98,7 @@ bool ThemePainter::paint(const LayoutObject& o, const PaintInfo& paintInfo, cons
     case MenulistPart:
         return paintMenuList(o, paintInfo, r);
     case MeterPart:
-    case RelevancyLevelIndicatorPart:
-    case ContinuousCapacityLevelIndicatorPart:
-    case DiscreteCapacityLevelIndicatorPart:
-    case RatingLevelIndicatorPart:
-        return paintMeter(o, paintInfo, r);
+        return true;
     case ProgressBarPart:
         return paintProgressBar(o, paintInfo, r);
     case SliderHorizontalPart:
@@ -180,10 +175,6 @@ bool ThemePainter::paintBorderOnly(const LayoutObject& o, const PaintInfo& paint
     case ButtonPart:
     case MenulistPart:
     case MeterPart:
-    case RelevancyLevelIndicatorPart:
-    case ContinuousCapacityLevelIndicatorPart:
-    case DiscreteCapacityLevelIndicatorPart:
-    case RatingLevelIndicatorPart:
     case ProgressBarPart:
     case SliderHorizontalPart:
     case SliderVerticalPart:
@@ -214,10 +205,6 @@ bool ThemePainter::paintDecorations(const LayoutObject& o, const PaintInfo& pain
     case ButtonPart:
     case MenulistPart:
     case MeterPart:
-    case RelevancyLevelIndicatorPart:
-    case ContinuousCapacityLevelIndicatorPart:
-    case DiscreteCapacityLevelIndicatorPart:
-    case RatingLevelIndicatorPart:
     case ProgressBarPart:
     case SliderHorizontalPart:
     case SliderVerticalPart:
@@ -232,11 +219,6 @@ bool ThemePainter::paintDecorations(const LayoutObject& o, const PaintInfo& pain
     }
 
     return false;
-}
-
-bool ThemePainter::paintMeter(const LayoutObject&, const PaintInfo&, const IntRect&)
-{
-    return true;
 }
 
 void ThemePainter::paintSliderTicks(const LayoutObject& o, const PaintInfo& paintInfo, const IntRect&rect)

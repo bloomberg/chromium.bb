@@ -1303,6 +1303,12 @@ crbug.com/531286 virtual/gpu/fast/canvas/yuv-video-on-accelerated-canvas.html [ 
 crbug.com/535478 [ Win ] virtual/threaded/inspector/tracing/decode-resize.html [ Pass Failure ]
 
 crbug.com/524646 [ Mac10.10 ] fast/dom/shadow/shadowdom-for-button.html [ Failure ]
+crbug.com/590129 fast/dom/HTMLMeterElement/meter-boundary-values.html [ NeedsRebaseline ]
+crbug.com/590129 fast/dom/HTMLMeterElement/meter-element-repaint-on-update-value.html [ NeedsRebaseline ]
+crbug.com/590129 fast/dom/HTMLMeterElement/meter-element.html [ NeedsRebaseline ]
+crbug.com/590129 fast/dom/HTMLMeterElement/meter-optimums.html [ NeedsRebaseline ]
+crbug.com/590129 fast/dom/HTMLMeterElement/meter-styles-changing-pseudo.html [ NeedsRebaseline ]
+crbug.com/590129 fast/dom/HTMLMeterElement/meter-styles.html [ NeedsRebaseline ]
 
 crbug.com/538717 [ Win Mac Linux ] http/tests/permissions/chromium/test-request-multiple-window.html [ Failure Pass Timeout ]
 crbug.com/538717 [ Win Mac Linux ] http/tests/permissions/chromium/test-request-multiple-worker.html [ Failure Pass Timeout ]

@@ -36,7 +36,6 @@ public:
 
 private:
     bool paintCapsLockIndicator(const LayoutObject&, const PaintInfo&, const IntRect&) override;
-    bool paintMeter(const LayoutObject&, const PaintInfo&, const IntRect&) override;
     bool paintTextField(const LayoutObject&, const PaintInfo&, const IntRect&) override;
     bool paintTextArea(const LayoutObject&, const PaintInfo&, const IntRect&) override;
     bool paintMenuList(const LayoutObject&, const PaintInfo&, const IntRect&) override;

@@ -20,7 +20,6 @@
 
 #import "core/paint/ThemePainterMac.h"
 
-#import "core/layout/LayoutMeter.h"
 #import "core/layout/LayoutProgress.h"
 #import "core/layout/LayoutThemeMac.h"
 #import "core/layout/LayoutView.h"
@@ -188,21 +187,6 @@ bool ThemePainterMac::paintMenuList(const LayoutObject& o, const PaintInfo& pain
         [popupButton cr_drawFocusRingWithFrame:inflatedRect inView:view];
     [popupButton setControlView:nil];
 
-    return false;
-}
-
-bool ThemePainterMac::paintMeter(const LayoutObject& layoutObject, const PaintInfo& paintInfo, const IntRect& rect)
-{
-    if (!layoutObject.isMeter())
-        return true;
-
-    LocalCurrentGraphicsContext localContext(paintInfo.context, &paintInfo.cullRect().m_rect, rect);
-
-    NSLevelIndicatorCell* cell = m_layoutTheme.levelIndicatorFor(toLayoutMeter(layoutObject));
-    GraphicsContextStateSaver stateSaver(paintInfo.context);
-
-    [cell drawWithFrame:rect inView:m_layoutTheme.documentViewFor(layoutObject)];
-    [cell setControlView:nil];
     return false;
 }
 

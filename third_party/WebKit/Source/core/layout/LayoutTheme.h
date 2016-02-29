@@ -37,7 +37,6 @@ class ComputedStyle;
 class Element;
 class FileList;
 class HTMLInputElement;
-class LayoutMeter;
 class Theme;
 class ThemePainter;
 
@@ -157,9 +156,6 @@ public:
     // Media controls
     String formatMediaControlsTime(float time) const;
     String formatMediaControlsCurrentTime(float currentTime, float duration) const;
-
-    virtual IntSize meterSizeForBounds(const LayoutMeter&, const IntRect&) const;
-    virtual bool supportsMeter(ControlPart) const;
 
     // Returns size of one slider tick mark for a horizontal track.
     // For vertical tracks we rotate it and use it. i.e. Width is always length along the track.
