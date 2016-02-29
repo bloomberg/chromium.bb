@@ -36,16 +36,23 @@ namespace test {
 class MuxerTest : public testing::Test {
  public:
   MuxerTest() {
-    EXPECT_TRUE(GetTestDataDir().length() > 0);
-    filename_ = GetTempFileName();
-    EXPECT_GT(filename_.length(), 0u);
-    temp_file_ = FilePtr(std::fopen(filename_.c_str(), "wb"), FILEDeleter());
-    EXPECT_TRUE(writer_.Open(filename_.c_str()));
-    is_writer_open_ = true;
-    memset(dummy_data_, 0, kFrameLength);
+    Init();
   }
 
   ~MuxerTest() { CloseWriter(); }
+
+  // Simple init function for use by constructor. Calls made here to allow use
+  // of ASSERT_* macros-- this is necessary here because all failures in Init()
+  // are fatal, but the ASSERT_* gtest macros cannot be used in a constructor.
+  void Init() {
+    ASSERT_TRUE(GetTestDataDir().length() > 0);
+    filename_ = GetTempFileName();
+    ASSERT_GT(filename_.length(), 0u);
+    temp_file_ = FilePtr(std::fopen(filename_.c_str(), "wb"), FILEDeleter());
+    ASSERT_TRUE(writer_.Open(filename_.c_str()));
+    is_writer_open_ = true;
+    memset(dummy_data_, 0, kFrameLength);
+  }
 
   void AddDummyFrameAndFinalize(int track_number) {
     EXPECT_TRUE(segment_.AddFrame(&dummy_data_[0], kFrameLength, track_number,
@@ -444,6 +451,7 @@ TEST_F(MuxerTest, CuesBeforeClusters) {
   reader.Open(filename_.c_str());
   MkvWriter cues_writer;
   std::string cues_filename = GetTempFileName();
+  ASSERT_GT(cues_filename.length(), 0u);
   cues_writer.Open(cues_filename.c_str());
   EXPECT_TRUE(segment_.CopyAndMoveCuesBeforeClusters(&reader, &cues_writer));
   reader.Close();
