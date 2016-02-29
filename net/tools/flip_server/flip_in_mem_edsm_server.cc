@@ -52,7 +52,7 @@ double FLAGS_server_think_time_in_s = 0;
 
 net::FlipConfig g_proxy_config;
 
-bool GotQuitFromStdin() {
+static bool GotQuitFromStdin() {
   // Make stdin nonblocking. Yes this is done each time. Oh well.
   fcntl(0, F_SETFL, O_NONBLOCK);
   char c;
@@ -67,22 +67,16 @@ bool GotQuitFromStdin() {
           (maybequit.c_str()[0] == 'q' || maybequit.c_str()[0] == 'Q'));
 }
 
-const char* BoolToStr(bool b) {
-  if (b)
-    return "true";
-  return "false";
-}
-
-static bool wantExit = false;
-static bool wantLogClose = false;
-void SignalHandler(int signum) {
+static bool g_want_exit = false;
+static bool g_want_log_close = false;
+static void SignalHandler(int signum) {
   switch (signum) {
     case SIGTERM:
     case SIGINT:
-      wantExit = true;
+      g_want_exit = true;
       break;
     case SIGHUP:
-      wantLogClose = true;
+      g_want_log_close = true;
       break;
   }
 }
@@ -286,21 +280,21 @@ int main(int argc, char** argv) {
       break;
     }
     std::string value = cl.GetSwitchValueASCII(name.str());
-    std::vector<std::string> valueArgs = base::SplitString(
+    std::vector<std::string> value_args = base::SplitString(
         value, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-    CHECK_EQ((unsigned int)9, valueArgs.size());
-    int spdy_only = atoi(valueArgs[8].c_str());
+    CHECK_EQ((unsigned int)9, value_args.size());
+    int spdy_only = atoi(value_args[8].c_str());
     // If wait_for_iface is enabled, then this call will block
     // indefinitely until the interface is raised.
     g_proxy_config.AddAcceptor(net::FLIP_HANDLER_PROXY,
-                               valueArgs[0],
-                               valueArgs[1],
-                               valueArgs[2],
-                               valueArgs[3],
-                               valueArgs[4],
-                               valueArgs[5],
-                               valueArgs[6],
-                               valueArgs[7],
+                               value_args[0],
+                               value_args[1],
+                               value_args[2],
+                               value_args[3],
+                               value_args[4],
+                               value_args[5],
+                               value_args[6],
+                               value_args[7],
                                spdy_only,
                                FLAGS_accept_backlog_size,
                                FLAGS_disable_nagle,
@@ -315,15 +309,15 @@ int main(int argc, char** argv) {
   if (cl.HasSwitch("spdy-server")) {
     spdy_memory_cache.AddFiles();
     std::string value = cl.GetSwitchValueASCII("spdy-server");
-    std::vector<std::string> valueArgs = base::SplitString(
+    std::vector<std::string> value_args = base::SplitString(
         value, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-    while (valueArgs.size() < 4)
-      valueArgs.push_back(std::string());
+    while (value_args.size() < 4)
+      value_args.push_back(std::string());
     g_proxy_config.AddAcceptor(net::FLIP_HANDLER_SPDY_SERVER,
-                               valueArgs[0],
-                               valueArgs[1],
-                               valueArgs[2],
-                               valueArgs[3],
+                               value_args[0],
+                               value_args[1],
+                               value_args[2],
+                               value_args[3],
                                std::string(),
                                std::string(),
                                std::string(),
@@ -342,15 +336,15 @@ int main(int argc, char** argv) {
   if (cl.HasSwitch("http-server")) {
     http_memory_cache.AddFiles();
     std::string value = cl.GetSwitchValueASCII("http-server");
-    std::vector<std::string> valueArgs = base::SplitString(
+    std::vector<std::string> value_args = base::SplitString(
         value, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-    while (valueArgs.size() < 4)
-      valueArgs.push_back(std::string());
+    while (value_args.size() < 4)
+      value_args.push_back(std::string());
     g_proxy_config.AddAcceptor(net::FLIP_HANDLER_HTTP_SERVER,
-                               valueArgs[0],
-                               valueArgs[1],
-                               valueArgs[2],
-                               valueArgs[3],
+                               value_args[0],
+                               value_args[1],
+                               value_args[2],
+                               value_args[3],
                                std::string(),
                                std::string(),
                                std::string(),
@@ -364,12 +358,12 @@ int main(int argc, char** argv) {
                                &http_memory_cache);
   }
 
-  std::vector<net::SMAcceptorThread*> sm_worker_threads_;
+  std::vector<net::SMAcceptorThread*> sm_worker_threads;
 
   for (i = 0; i < g_proxy_config.acceptors_.size(); i++) {
     net::FlipAcceptor* acceptor = g_proxy_config.acceptors_[i];
 
-    sm_worker_threads_.push_back(new net::SMAcceptorThread(
+    sm_worker_threads.push_back(new net::SMAcceptorThread(
         acceptor, (net::MemoryCache*)acceptor->memory_cache_));
     // Note that spdy_memory_cache is not threadsafe, it is merely
     // thread compatible. Thus, if ever we are to spawn multiple threads,
@@ -379,24 +373,24 @@ int main(int argc, char** argv) {
     // The latter is what is currently being done as we spawn
     // a separate thread for each http and spdy server acceptor.
 
-    sm_worker_threads_.back()->InitWorker();
-    sm_worker_threads_.back()->Start();
+    sm_worker_threads.back()->InitWorker();
+    sm_worker_threads.back()->Start();
   }
 
-  while (!wantExit) {
+  while (!g_want_exit) {
     // Close logfile when HUP signal is received. Logging system will
     // automatically reopen on next log message.
-    if (wantLogClose) {
-      wantLogClose = false;
+    if (g_want_log_close) {
+      g_want_log_close = false;
       VLOG(1) << "HUP received, reopening log file.";
       logging::CloseLogFile();
     }
     if (GotQuitFromStdin()) {
-      for (unsigned int i = 0; i < sm_worker_threads_.size(); ++i) {
-        sm_worker_threads_[i]->Quit();
+      for (unsigned int i = 0; i < sm_worker_threads.size(); ++i) {
+        sm_worker_threads[i]->Quit();
       }
-      for (unsigned int i = 0; i < sm_worker_threads_.size(); ++i) {
-        sm_worker_threads_[i]->Join();
+      for (unsigned int i = 0; i < sm_worker_threads.size(); ++i) {
+        sm_worker_threads[i]->Join();
       }
       break;
     }
