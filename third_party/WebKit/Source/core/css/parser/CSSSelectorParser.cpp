@@ -20,6 +20,9 @@ static void recordSelectorStats(const CSSParserContext& context, const CSSSelect
         for (const CSSSelector* current = selector; current ; current = current->tagHistory()) {
             UseCounter::Feature feature = UseCounter::NumberOfFeatures;
             switch (current->getPseudoType()) {
+            case CSSSelector::PseudoAny:
+                feature = UseCounter::CSSSelectorPseudoAny;
+                break;
             case CSSSelector::PseudoUnresolved:
                 feature = UseCounter::CSSSelectorPseudoUnresolved;
                 break;
