@@ -52,6 +52,7 @@ class MOJO_SYSTEM_IMPL_EXPORT WaitSetDispatcher : public Dispatcher {
 
   struct WaitState {
     WaitState();
+    WaitState(const WaitState& other);
     ~WaitState();
 
     scoped_refptr<Dispatcher> dispatcher;

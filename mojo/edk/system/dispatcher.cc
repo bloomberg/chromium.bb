@@ -17,6 +17,9 @@ namespace edk {
 
 Dispatcher::DispatcherInTransit::DispatcherInTransit() {}
 
+Dispatcher::DispatcherInTransit::DispatcherInTransit(
+    const DispatcherInTransit& other) = default;
+
 Dispatcher::DispatcherInTransit::~DispatcherInTransit() {}
 
 MojoResult Dispatcher::WriteMessage(const void* bytes,

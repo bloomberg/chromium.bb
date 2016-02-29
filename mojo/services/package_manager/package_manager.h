@@ -27,6 +27,7 @@ using CapabilityFilter = std::map<std::string, AllowedInterfaces>;
 // Static information about an application package known to the PackageManager.
 struct ApplicationInfo {
   ApplicationInfo();
+  ApplicationInfo(const ApplicationInfo& other);
   ~ApplicationInfo();
 
   std::string name;

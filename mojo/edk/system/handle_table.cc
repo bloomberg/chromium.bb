@@ -126,6 +126,8 @@ HandleTable::Entry::Entry() {}
 HandleTable::Entry::Entry(scoped_refptr<Dispatcher> dispatcher)
     : dispatcher(dispatcher) {}
 
+HandleTable::Entry::Entry(const Entry& other) = default;
+
 HandleTable::Entry::~Entry() {}
 
 }  // namespace edk

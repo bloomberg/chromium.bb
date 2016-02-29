@@ -88,6 +88,7 @@ const char ApplicationCatalogStore::kDisplayNameKey[] = "display_name";
 const char ApplicationCatalogStore::kCapabilitiesKey[] = "capabilities";
 
 ApplicationInfo::ApplicationInfo() {}
+ApplicationInfo::ApplicationInfo(const ApplicationInfo& other) = default;
 ApplicationInfo::~ApplicationInfo() {}
 
 PackageManager::PackageManager(base::TaskRunner* blocking_pool,

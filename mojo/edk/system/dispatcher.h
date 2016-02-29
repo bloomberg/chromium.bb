@@ -41,6 +41,7 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher
  public:
   struct DispatcherInTransit {
     DispatcherInTransit();
+    DispatcherInTransit(const DispatcherInTransit& other);
     ~DispatcherInTransit();
 
     scoped_refptr<Dispatcher> dispatcher;

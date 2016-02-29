@@ -37,6 +37,7 @@ class Identity {
   Identity(const std::string& in_name,
            const std::string& in_qualifier,
            uint32_t user_id);
+  Identity(const Identity& other);
   ~Identity();
 
   bool operator<(const Identity& other) const;

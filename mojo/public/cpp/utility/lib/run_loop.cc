@@ -251,6 +251,8 @@ RunLoop::PendingTask::PendingTask(const Closure& task,
     : task(task), run_time(run_time), sequence_number(sequence_number) {
 }
 
+RunLoop::PendingTask::PendingTask(const PendingTask& other) = default;
+
 RunLoop::PendingTask::~PendingTask() {
 }
 

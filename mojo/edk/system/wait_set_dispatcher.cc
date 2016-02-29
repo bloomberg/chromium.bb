@@ -34,6 +34,8 @@ class WaitSetDispatcher::Waiter final : public Awakable {
 
 WaitSetDispatcher::WaitState::WaitState() {}
 
+WaitSetDispatcher::WaitState::WaitState(const WaitState& other) = default;
+
 WaitSetDispatcher::WaitState::~WaitState() {}
 
 WaitSetDispatcher::WaitSetDispatcher()

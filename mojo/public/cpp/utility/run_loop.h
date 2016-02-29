@@ -136,6 +136,7 @@ class RunLoop {
     PendingTask(const Closure& task,
                 MojoTimeTicks runtime,
                 uint64_t sequence_number);
+    PendingTask(const PendingTask& other);
     ~PendingTask();
 
     bool operator<(const PendingTask& other) const;

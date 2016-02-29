@@ -53,6 +53,7 @@ class HandleTable {
   struct Entry {
    Entry();
    explicit Entry(scoped_refptr<Dispatcher> dispatcher);
+   Entry(const Entry& other);
    ~Entry();
 
    scoped_refptr<Dispatcher> dispatcher;

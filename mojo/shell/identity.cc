@@ -21,6 +21,8 @@ Identity::Identity(const std::string& name, const std::string& qualifier,
       qualifier_(qualifier.empty() ? GetNamePath(name_) : qualifier),
       user_id_(user_id) {}
 
+Identity::Identity(const Identity& other) = default;
+
 Identity::~Identity() {}
 
 bool Identity::operator<(const Identity& other) const {
