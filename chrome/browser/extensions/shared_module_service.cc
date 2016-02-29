@@ -187,6 +187,11 @@ void SharedModuleService::OnExtensionUninstalled(
     content::BrowserContext* browser_context,
     const Extension* extension,
     extensions::UninstallReason reason) {
+  // Do not call PruneSharedModules() for an uninstall that we were responsible
+  // for.
+  if (reason == extensions::UNINSTALL_REASON_ORPHANED_SHARED_MODULE)
+    return;
+
   PruneSharedModules();
 }
 
