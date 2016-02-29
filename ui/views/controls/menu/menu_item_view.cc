@@ -547,7 +547,7 @@ void MenuItemView::Layout() {
         continue;
       int width = child->GetPreferredSize().width();
       child->SetBounds(x - width, 0, width, height());
-      x -= width - kChildXPadding;
+      x -= width + kChildXPadding;
     }
     // Position |icon_view|.
     const MenuConfig& config = MenuConfig::instance();

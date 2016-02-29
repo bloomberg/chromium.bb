@@ -558,6 +558,9 @@ class VIEWS_EXPORT MenuController : public WidgetObserver {
   void SetInitialHotTrackedView(MenuItemView* item,
                                 SelectionIncrementDirectionType direction);
 
+  // Updates the current |hot_button_| and its hot tracked state.
+  void SetHotTrackedButton(CustomButton* hot_button);
+
   // The active instance.
   static MenuController* active_instance_;
 
@@ -655,6 +658,9 @@ class VIEWS_EXPORT MenuController : public WidgetObserver {
   // ViewStorage id used to store the view mouse drag events are forwarded to.
   // See UpdateActiveMouseView() for details.
   const int active_mouse_view_id_;
+
+  // Current hot tracked child button if any.
+  CustomButton* hot_button_;
 
   internal::MenuControllerDelegate* delegate_;
 

@@ -407,6 +407,11 @@ class MenuControllerTest : public ViewsTestBase {
     menu_controller_->SetSelectionOnPointerDown(source, event);
   }
 
+  void ProcessMouseMoved(SubmenuView* source,
+                         const ui::MouseEvent& event) {
+    menu_controller_->OnMouseMoved(source, event);
+  }
+
   void RunMenu() {
 #if defined(USE_AURA)
     scoped_ptr<MenuKeyEventHandler> key_event_handler(new MenuKeyEventHandler);
@@ -439,6 +444,19 @@ class MenuControllerTest : public ViewsTestBase {
   }
   MenuController::ExitType menu_exit_type() const {
     return menu_controller_->exit_type_;
+  }
+
+  void AddButtonMenuItems() {
+    menu_item()->SetBounds(0, 0, 200, 300);
+    MenuItemView* item_view =
+        menu_item()->AppendMenuItemWithLabel(5, base::ASCIIToUTF16("Five"));
+    for (int i = 0; i < 3; ++i) {
+      LabelButton* button =
+          new LabelButton(nullptr, base::ASCIIToUTF16("Label"));
+      button->SetFocusable(true);
+      item_view->AddChildView(button);
+    }
+    menu_item()->GetSubmenu()->ShowAt(owner(), menu_item()->bounds(), false);
   }
 
  private:
@@ -700,6 +718,116 @@ TEST_F(MenuControllerTest, SelectByChar) {
 
   // Clear references in menu controller to the menu item that is going away.
   ResetSelection();
+}
+
+TEST_F(MenuControllerTest, SelectChildButtonView) {
+  AddButtonMenuItems();
+  View* buttons_view = menu_item()->GetSubmenu()->child_at(4);
+  ASSERT_NE(nullptr, buttons_view);
+  CustomButton* button1 =
+      CustomButton::AsCustomButton(buttons_view->child_at(0));
+  ASSERT_NE(nullptr, button1);
+  CustomButton* button2 =
+      CustomButton::AsCustomButton(buttons_view->child_at(1));
+  ASSERT_NE(nullptr, button2);
+  CustomButton* button3 =
+      CustomButton::AsCustomButton(buttons_view->child_at(2));
+  ASSERT_NE(nullptr, button2);
+
+  // Handle searching for 'f'; should find "Four".
+  SelectByChar('f');
+  EXPECT_EQ(4, pending_state_item()->GetCommand());
+
+  EXPECT_FALSE(button1->IsHotTracked());
+  EXPECT_FALSE(button2->IsHotTracked());
+  EXPECT_FALSE(button3->IsHotTracked());
+
+  // Move selection to |button1|.
+  IncrementSelection();
+  EXPECT_EQ(5, pending_state_item()->GetCommand());
+  EXPECT_TRUE(button1->IsHotTracked());
+  EXPECT_FALSE(button2->IsHotTracked());
+  EXPECT_FALSE(button3->IsHotTracked());
+
+  // Move selection to |button2|.
+  IncrementSelection();
+  EXPECT_EQ(5, pending_state_item()->GetCommand());
+  EXPECT_FALSE(button1->IsHotTracked());
+  EXPECT_TRUE(button2->IsHotTracked());
+  EXPECT_FALSE(button3->IsHotTracked());
+
+  // Move selection to |button3|.
+  IncrementSelection();
+  EXPECT_EQ(5, pending_state_item()->GetCommand());
+  EXPECT_FALSE(button1->IsHotTracked());
+  EXPECT_FALSE(button2->IsHotTracked());
+  EXPECT_TRUE(button3->IsHotTracked());
+
+  // Move a mouse to hot track the |button1|.
+  gfx::Point location(button1->GetBoundsInScreen().CenterPoint());
+  ui::MouseEvent event(ui::ET_MOUSE_MOVED, location, location,
+                       ui::EventTimeForNow(), 0, 0);
+  SubmenuView* sub_menu = menu_item()->GetSubmenu();
+  ProcessMouseMoved(sub_menu, event);
+
+  // Incrementing selection should move hot tracking to the second button (next
+  // after the first button).
+  IncrementSelection();
+  EXPECT_EQ(5, pending_state_item()->GetCommand());
+  EXPECT_FALSE(button1->IsHotTracked());
+  EXPECT_TRUE(button2->IsHotTracked());
+  EXPECT_FALSE(button3->IsHotTracked());
+
+  // Increment selection twice to wrap around.
+  IncrementSelection();
+  IncrementSelection();
+  EXPECT_EQ(1, pending_state_item()->GetCommand());
+
+  // Clear references in menu controller to the menu item that is going away.
+  ResetSelection();
+}
+
+TEST_F(MenuControllerTest, DeleteChildButtonView) {
+  AddButtonMenuItems();
+
+  // Handle searching for 'f'; should find "Four".
+  SelectByChar('f');
+  EXPECT_EQ(4, pending_state_item()->GetCommand());
+
+  View* buttons_view = menu_item()->GetSubmenu()->child_at(4);
+  ASSERT_NE(nullptr, buttons_view);
+  CustomButton* button1 =
+      CustomButton::AsCustomButton(buttons_view->child_at(0));
+  ASSERT_NE(nullptr, button1);
+  CustomButton* button2 =
+      CustomButton::AsCustomButton(buttons_view->child_at(1));
+  ASSERT_NE(nullptr, button2);
+  CustomButton* button3 =
+      CustomButton::AsCustomButton(buttons_view->child_at(2));
+  ASSERT_NE(nullptr, button2);
+  EXPECT_FALSE(button1->IsHotTracked());
+  EXPECT_FALSE(button2->IsHotTracked());
+  EXPECT_FALSE(button3->IsHotTracked());
+
+  // Increment twice to move selection to |button2|.
+  IncrementSelection();
+  IncrementSelection();
+  EXPECT_EQ(5, pending_state_item()->GetCommand());
+  EXPECT_FALSE(button1->IsHotTracked());
+  EXPECT_TRUE(button2->IsHotTracked());
+  EXPECT_FALSE(button3->IsHotTracked());
+
+  // Delete |button2| while it is hot-tracked.
+  // This should update MenuController via ViewHierarchyChanged and reset
+  // |hot_button_|.
+  delete button2;
+
+  // Incrementing selection should now set hot-tracked item to |button1|.
+  // It should not crash.
+  IncrementSelection();
+  EXPECT_EQ(5, pending_state_item()->GetCommand());
+  EXPECT_TRUE(button1->IsHotTracked());
+  EXPECT_FALSE(button3->IsHotTracked());
 }
 
 // Tests that a menu opened asynchronously, will notify its
