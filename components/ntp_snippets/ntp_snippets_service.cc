@@ -11,6 +11,9 @@
 #include "base/path_service.h"
 #include "base/task_runner_util.h"
 #include "base/values.h"
+#include "components/ntp_snippets/pref_names.h"
+#include "components/pref_registry/pref_registry_syncable.h"
+#include "components/prefs/pref_service.h"
 
 namespace {
 
@@ -25,16 +28,20 @@ bool ReadFileToString(const base::FilePath& path, std::string* data) {
   return success;
 }
 
+const char kContentInfo[] = "contentInfo";
+
 }  // namespace
 
 namespace ntp_snippets {
 
 NTPSnippetsService::NTPSnippetsService(
+    PrefService* pref_service,
     scoped_refptr<base::SequencedTaskRunner> file_task_runner,
     const std::string& application_language_code,
     NTPSnippetsScheduler* scheduler,
     scoped_ptr<NTPSnippetsFetcher> snippets_fetcher)
-    : loaded_(false),
+    : pref_service_(pref_service),
+      loaded_(false),
       file_task_runner_(file_task_runner),
       application_language_code_(application_language_code),
       scheduler_(scheduler),
@@ -47,11 +54,21 @@ NTPSnippetsService::NTPSnippetsService(
 
 NTPSnippetsService::~NTPSnippetsService() {}
 
+// static
+void NTPSnippetsService::RegisterProfilePrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterListPref(prefs::kSnippets);
+}
+
 void NTPSnippetsService::Init(bool enabled) {
-  // If enabled, get snippets immediately. If we've downloaded them before,
-  // this will just read from disk.
-  if (enabled)
-    FetchSnippets(false);
+  // If enabled, get any existing snippets immediately from prefs.
+  if (enabled) {
+    LoadFromPrefs();
+
+    // If we don't have any snippets yet, start a fetch.
+    if (snippets_.empty())
+      FetchSnippets(false);
+  }
 
   // The scheduler only exists on Android so far, it's null on other platforms.
   if (!scheduler_)
@@ -83,12 +100,23 @@ void NTPSnippetsService::RemoveObserver(NTPSnippetsServiceObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
+void NTPSnippetsService::OnSnippetsDownloaded(
+    const base::FilePath& download_path) {
+  std::string* downloaded_data = new std::string;
+  base::PostTaskAndReplyWithResult(
+      file_task_runner_.get(), FROM_HERE,
+      base::Bind(&ReadFileToString, download_path, downloaded_data),
+      base::Bind(&NTPSnippetsService::OnFileReadDone,
+                 weak_ptr_factory_.GetWeakPtr(), base::Owned(downloaded_data)));
+}
+
 void NTPSnippetsService::OnFileReadDone(const std::string* json, bool success) {
   if (!success)
     return;
 
   DCHECK(json);
   LoadFromJSONString(*json);
+  StoreToPrefs();
 }
 
 bool NTPSnippetsService::LoadFromJSONString(const std::string& str) {
@@ -104,16 +132,19 @@ bool NTPSnippetsService::LoadFromJSONString(const std::string& str) {
   if (!top_dict->GetList("recos", &list))
     return false;
 
-  for (const base::Value* const value : *list) {
+  return LoadFromJSONList(*list);
+}
+
+bool NTPSnippetsService::LoadFromJSONList(const base::ListValue& list) {
+  for (const base::Value* const value : list) {
     const base::DictionaryValue* dict = nullptr;
     if (!value->GetAsDictionary(&dict))
       return false;
 
     const base::DictionaryValue* content = nullptr;
-    if (!dict->GetDictionary("contentInfo", &content))
+    if (!dict->GetDictionary(kContentInfo, &content))
       return false;
-    scoped_ptr<NTPSnippet> snippet =
-        NTPSnippet::NTPSnippetFromDictionary(*content);
+    scoped_ptr<NTPSnippet> snippet = NTPSnippet::CreateFromDictionary(*content);
     if (!snippet)
       return false;
 
@@ -136,14 +167,25 @@ bool NTPSnippetsService::LoadFromJSONString(const std::string& str) {
   return true;
 }
 
-void NTPSnippetsService::OnSnippetsDownloaded(
-    const base::FilePath& download_path) {
-  std::string* downloaded_data = new std::string;
-  base::PostTaskAndReplyWithResult(
-      file_task_runner_.get(), FROM_HERE,
-      base::Bind(&ReadFileToString, download_path, downloaded_data),
-      base::Bind(&NTPSnippetsService::OnFileReadDone,
-                 weak_ptr_factory_.GetWeakPtr(), base::Owned(downloaded_data)));
+void NTPSnippetsService::LoadFromPrefs() {
+  // |pref_service_| can be null in tests.
+  if (!pref_service_)
+    return;
+  if (!LoadFromJSONList(*pref_service_->GetList(prefs::kSnippets)))
+    LOG(ERROR) << "Failed to parse snippets from prefs";
+}
+
+void NTPSnippetsService::StoreToPrefs() {
+  // |pref_service_| can be null in tests.
+  if (!pref_service_)
+    return;
+  base::ListValue list;
+  for (const auto& snippet : snippets_) {
+    scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
+    dict->Set(kContentInfo, snippet->ToDictionary());
+    list.Append(std::move(dict));
+  }
+  pref_service_->Set(prefs::kSnippets, list);
 }
 
 }  // namespace ntp_snippets

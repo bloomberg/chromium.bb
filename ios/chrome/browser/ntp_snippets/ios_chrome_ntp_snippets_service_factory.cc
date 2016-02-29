@@ -62,7 +62,8 @@ IOSChromeNTPSnippetsServiceFactory::BuildServiceInstanceFor(
               base::SequencedWorkerPool::GetSequenceToken(),
               base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
   return make_scoped_ptr(new ntp_snippets::NTPSnippetsService(
-      task_runner, GetApplicationContext()->GetApplicationLocale(), scheduler,
+      chrome_browser_state->GetPrefs(), task_runner,
+      GetApplicationContext()->GetApplicationLocale(), scheduler,
       make_scoped_ptr(new ntp_snippets::NTPSnippetsFetcher(
           task_runner, (SigninManagerBase*)signin_manager, token_service,
           request_context, browser_state->GetStatePath()))));

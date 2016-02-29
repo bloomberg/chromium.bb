@@ -68,7 +68,8 @@ KeyedService* NTPSnippetsServiceFactory::BuildServiceInstanceFor(
               base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
 
   return new ntp_snippets::NTPSnippetsService(
-      task_runner, g_browser_process->GetApplicationLocale(), scheduler,
+      profile->GetPrefs(), task_runner,
+      g_browser_process->GetApplicationLocale(), scheduler,
       make_scoped_ptr(new ntp_snippets::NTPSnippetsFetcher(
           task_runner, signin_manager, token_service, request_context,
           profile->GetPath())));

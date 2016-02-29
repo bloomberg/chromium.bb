@@ -20,6 +20,17 @@
 #include "components/ntp_snippets/ntp_snippets_fetcher.h"
 #include "components/ntp_snippets/ntp_snippets_scheduler.h"
 
+class PrefService;
+
+namespace base {
+class FilePath;
+class ListValue;
+}
+
+namespace user_prefs {
+class PrefRegistrySyncable;
+}
+
 namespace ntp_snippets {
 
 class NTPSnippetsServiceObserver;
@@ -35,11 +46,14 @@ class NTPSnippetsService : public KeyedService, NTPSnippetsFetcher::Observer {
   // 'en' or 'en-US'. Note that this code should only specify the language, not
   // the locale, so 'en_US' (english language with US locale) and 'en-GB_US'
   // (British english person in the US) are not language code.
-  NTPSnippetsService(scoped_refptr<base::SequencedTaskRunner> file_task_runner,
+  NTPSnippetsService(PrefService* pref_service,
+                     scoped_refptr<base::SequencedTaskRunner> file_task_runner,
                      const std::string& application_language_code,
                      NTPSnippetsScheduler* scheduler,
                      scoped_ptr<NTPSnippetsFetcher> snippets_fetcher);
   ~NTPSnippetsService() override;
+
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   void Init(bool enabled);
 
@@ -80,13 +94,23 @@ class NTPSnippetsService : public KeyedService, NTPSnippetsFetcher::Observer {
   }
 
  private:
-  void OnFileReadDone(const std::string* json, bool success);
   void OnSnippetsDownloaded(const base::FilePath& download_path);
+  void OnFileReadDone(const std::string* json, bool success);
 
-  // Expects the JSON to be a list of dictionaries with keys matching the
-  // properties of a snippet (url, title, site_title, etc...). The url is the
-  // only mandatory value.
+  // Expects a top-level dictionary containing a "recos" list, which will be
+  // passed to |LoadFromJSONList|.
   bool LoadFromJSONString(const std::string& str);
+
+  // Expects a list of dictionaries each containing a "contentInfo" dictionary
+  // with keys matching the properties of a  snippet (url, title, site_title,
+  // etc...). The url is the only mandatory value.
+  bool LoadFromJSONList(const base::ListValue& list);
+
+  // TODO(treib): Investigate a better storage, maybe LevelDB or SQLite?
+  void LoadFromPrefs();
+  void StoreToPrefs();
+
+  PrefService* pref_service_;
 
   // True if the suggestions are loaded.
   bool loaded_;

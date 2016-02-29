@@ -25,6 +25,8 @@
         'ntp_snippets/ntp_snippets_scheduler.h',
         'ntp_snippets/ntp_snippets_service.cc',
         'ntp_snippets/ntp_snippets_service.h',
+        'ntp_snippets/pref_names.cc',
+        'ntp_snippets/pref_names.h',
       ],
     },
   ],

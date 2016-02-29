@@ -10,13 +10,18 @@ source_set("ntp_snippets") {
     "ntp_snippet.h",
     "ntp_snippets_fetcher.cc",
     "ntp_snippets_fetcher.h",
+    "ntp_snippets_scheduler.h",
     "ntp_snippets_service.cc",
     "ntp_snippets_service.h",
+    "pref_names.cc",
+    "pref_names.h",
   ]
 
   public_deps = [
     "//base",
     "//components/keyed_service/core",
+    "//components/pref_registry",
+    "//components/prefs",
     "//components/signin/core/browser",
     "//google_apis",
     "//net",

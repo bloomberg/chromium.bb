@@ -60,11 +60,11 @@ class NTPSnippetsServiceTest : public testing::Test {
     FakeSigninManagerBase* signin_manager =  new FakeSigninManagerBase(
         signin_client_.get(), account_tracker_.get());
 
-    scoped_ptr<NTPSnippetsService> service(
-        new NTPSnippetsService(task_runner.get(), std::string("fr"), nullptr,
-          make_scoped_ptr(new NTPSnippetsFetcher(task_runner.get(),
-            signin_manager, token_service, request_context_getter,
-            base::FilePath()))));
+    scoped_ptr<NTPSnippetsService> service(new NTPSnippetsService(
+        nullptr, task_runner.get(), std::string("fr"), nullptr,
+        make_scoped_ptr(new NTPSnippetsFetcher(
+            task_runner.get(), signin_manager, token_service,
+            request_context_getter, base::FilePath()))));
     return service;
   }
 
