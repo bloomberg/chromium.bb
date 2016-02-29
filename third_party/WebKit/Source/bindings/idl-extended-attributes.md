@@ -124,7 +124,7 @@ Extended attributes on members of an implemented interface work as normal. Howev
 
 ### Inheritance
 
-Extended attributes are generally not inherited: only extended attributes on the interface itself are consulted. However, there are a handful of extended attributes that are inherited (applying them to an ancestor interface applies them to the descendants). These are extended attributes that affect memory management, and currently consists of `[ActiveDOMObject]` and `[DependentLifetime]`; the up-to-date list is [compute_dependencies.INHERITED_EXTENDED_ATTRIBUTES](https://code.google.com/p/chromium/codesearch#chromium/src/third_party/WebKit/Source/bindings/scripts/compute_dependencies.py&q=INHERITED_EXTENDED_ATTRIBUTES).
+Extended attributes are generally not inherited: only extended attributes on the interface itself are consulted. However, there are a handful of extended attributes that are inherited (applying them to an ancestor interface applies them to the descendants). These are extended attributes that affect memory management, and currently consists of `[DependentLifetime]`; the up-to-date list is [compute_dependencies.INHERITED_EXTENDED_ATTRIBUTES](https://code.google.com/p/chromium/codesearch#chromium/src/third_party/WebKit/Source/bindings/scripts/compute_dependencies.py&q=INHERITED_EXTENDED_ATTRIBUTES).
 
 ## Standard Web IDL Extended Attributes
 
@@ -471,42 +471,6 @@ Usage: Can be specified on attributes or interfaces.
 ## Common Blink-specific IDL Extended Attributes
 
 These extended attributes are widely used.
-
-### [ActiveDOMObject] _(i)_
-
-Summary: `[ActiveDOMObject]` indicates that a given DOM object should be kept alive as long as the DOM object has pending activities.
-
-Usage: `[ActiveDOMObject]` can be specified on interfaces, and **is inherited**:
-
-```webidl
-[
-    ActiveDOMObject,
-] interface Foo {
-    ...
-};
-```
-
-If an interface X has `[ActiveDOMObject]` and an interface Y inherits the interface X, then the interface Y will also have `[ActiveDOMObject]`. For example
-
-```webidl
-[
-    ActiveDOMObject,
-] interface Foo {};
-```
-
-interface Bar : Foo {};  // inherits [ActiveDOMObject] from Foo
-If a given DOM object needs to be kept alive as long as the DOM object has pending activities, you need to specify `[ActiveDOMObject]`. For example, `[ActiveDOMObject]` can be used when the DOM object is expecting events to be raised in the future.
-
-If you use `[ActiveDOMObject]`, the corresponding Blink class needs to inherit ActiveDOMObject. For example, in case of XMLHttpRequest, core/xml/XMLHttpRequest.h would look like this:
-
-```c++
-class XMLHttpRequest : public ActiveDOMObject
-{
-    ...;
-};
-```
-
-Then you need to implement the virtual methods of the ActiveDOMObject class, e.g. contextDestroyed(), canSuspend(), suspend(), resume() and stop().
 
 ### [PerWorldBindings] _(m, a)_
 
@@ -894,6 +858,14 @@ Usage: `[DependentLifetime]` can be specified on interfaces, and **is inherited*
 
 interface Bar : Foo { ... };  // inherits [DependentLifetime]
 ```
+
+If a DOM object does not have `[DependentLifetime]`, V8's GC collects the wrapper of the DOM object
+if the wrapper is unreachable on the JS side (i.e., V8's GC assumes that the wrapper should not be
+reachable in the DOM side). Use `[DependentLifetime]` to relax the assumption.
+For example, if the DOM object implements hasPendingActivity(), it must be annotated with
+`[DependentLifetime]`. Otherwise, the wrapper will be collected regardless of the returned value
+of the hasPendingActivity(). DOM objects that are pointed to by `[SetWrapperReferenceFrom]` and
+`[SetWrapperReferenceTo]` must be annotated with `[DependentLifetime]`.
 
 ### [DeprecateAs] _(m, a, c)_
 
