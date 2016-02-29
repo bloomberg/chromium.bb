@@ -40,8 +40,7 @@ public class AutoSigninSnackbarController
                 new AutoSigninSnackbarController(snackbarManager, tab);
         Snackbar snackbar = Snackbar.make(text, snackbarController, Snackbar.TYPE_NOTIFICATION);
         Resources resources = tab.getWindowAndroid().getActivity().get().getResources();
-        int backgroundColor = ApiCompatibilityUtils.getColor(resources,
-                R.color.smart_lock_auto_signin_snackbar_background_color);
+        int backgroundColor = ApiCompatibilityUtils.getColor(resources, R.color.light_active_color);
         Bitmap icon = BitmapFactory.decodeResource(
                 resources, R.drawable.account_management_no_picture);
         snackbar.setSingleLine(false).setBackgroundColor(backgroundColor).setProfileImage(icon);
