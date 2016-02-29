@@ -47,6 +47,10 @@ class ChromeClassTester {
   // "<anonymous namespace>".
   std::string GetNamespace(const clang::Decl* record);
 
+  // Utility method to check whether the given record has any of the ignored
+  // base classes.
+  bool HasIgnoredBases(const clang::CXXRecordDecl* record);
+
   // Utility method for subclasses to check if this class is within an
   // implementation (.cc, .cpp, .mm) file.
   bool InImplementationFile(clang::SourceLocation location);
@@ -93,6 +97,9 @@ class ChromeClassTester {
 
   // List of types that we don't check.
   std::set<std::string> ignored_record_names_;
+
+  // List of base classes that we skip when checking complex class ctors/dtors.
+  std::set<std::string> ignored_base_classes_;
 };
 
 #endif  // TOOLS_CLANG_PLUGINS_CHROMECLASSTESTER_H_

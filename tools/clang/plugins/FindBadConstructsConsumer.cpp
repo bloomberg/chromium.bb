@@ -230,6 +230,10 @@ void FindBadConstructsConsumer::CheckCtorDtorWeight(
   if (record->getIdentifier() == NULL)
     return;
 
+  // Skip records that derive from ignored base classes.
+  if (HasIgnoredBases(record))
+    return;
+
   // Count the number of templated base classes as a feature of whether the
   // destructor can be inlined.
   int templated_base_classes = 0;
