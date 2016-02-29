@@ -717,6 +717,7 @@ public class CustomTabActivity extends ChromeActivity {
      * Opens the URL currently being displayed in the Custom Tab in the regular browser.
      */
     void openCurrentUrlInBrowser() {
+        if (getActivityTab() == null) return;
         String url = getTabModelSelector().getCurrentTab().getUrl();
         if (DomDistillerUrlUtils.isDistilledPage(url)) {
             url = DomDistillerUrlUtils.getOriginalUrlFromDistillerUrl(url);
