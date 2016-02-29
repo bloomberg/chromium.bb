@@ -414,7 +414,7 @@ Summary: Signals that a `readonly` attribute that returns an object type always 
 
 This attribute has no effect on code generation and should simply be used in Blink IDL files if the specification uses it.
 
-### [TreatNullAs] _(a,p), [TreatUndefinedAs] &nbsp; (a,p)_
+### [TreatNullAs] _(a,p)_, [TreatUndefinedAs] _(a,p)_
 
 Standard: [TreatNullAs](http://heycam.github.io/webidl/#TreatNullAs)
 
@@ -464,7 +464,7 @@ Implementation: **Non-standard**: `[Unforgeable]` for attributes has an unspeced
 
 Standard: [Unscopeable](http://heycam.github.io/webidl/#Unscopeable)
 
-Summary: The interface member will not appear as a named property within with statements.
+Summary: The interface member will not appear as a named property within `with` statements.
 
 Usage: Can be specified on attributes or interfaces.
 
@@ -493,7 +493,7 @@ Usage:
 
 For methods all calls are logged, and by default for attributes all access (calls to getter or setter) are logged, but this can be restricted to just read (getter) or just write (setter).
 
-### [CallWith] _(m, a), [SetterCallWith] &nbsp; (a), [ConstructorCallWith] &nbsp; (i)_
+### [CallWith] _(m, a)_, [SetterCallWith] _(a)_, [ConstructorCallWith] _(i)_
 
 Summary: `[CallWith]` indicates that the bindings code calls the Blink implementation with additional information.
 
