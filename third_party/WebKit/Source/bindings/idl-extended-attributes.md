@@ -1402,15 +1402,6 @@ The FlexibleArrayBufferView itself can then either refer to an actual ArrayBuffe
 
 Usage: Applies to arguments of methods. See modules/webgl/WebGLRenderingContextBase.idl for an example.
 
-### [KeepAttributeAliveForGC] _(a)_
-
-Summary: `[KeepAttributeAliveForGC]` forces the attribute wrapper to be kept alive. Used in only one place, may be removed when we implement `[ReachableFrom]` and `[ReachableTo]`.
-
-This behavior is default for read only attributes of wrapper type (interface types, with some exceptions), with some exceptions.
-For performance reasons we keep the attribute wrapper alive while the owner wrapper is alive, because the attribute never changes.
-
-Usage: Applies to attributes, takes no arguments.
-
 ### [PermissiveDictionaryConversion] _(p, d)_
 
 Summary: `[PermissiveDictionaryConversion]` relaxes the rules about what types of values may be passed for an argument of dictionary type.
