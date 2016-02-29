@@ -8,7 +8,14 @@
 {%- macro declare_callback(method) -%}
 mojo::Callback<void(
 {%-   for param in method.response_parameters -%}
-{{param.kind|cpp_result_type}}
+{#- TODO(yzshen): Previously |cpp_result_type| is used here incorrectly.
+    The outcome is we will use mojo::String instead of const mojo::String&.
+    Preserve the behavior temporarily. #}
+{%- if not param.kind|is_string_kind -%}
+{{param.kind|cpp_const_wrapper_type}}
+{%- else -%}
+mojo::String
+{%- endif %}
 {%- if not loop.last %}, {% endif %}
 {%-   endfor -%}
 )>

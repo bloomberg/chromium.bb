@@ -11,21 +11,10 @@
 #include "mojo/public/cpp/bindings/lib/array_internal.h"
 #include "mojo/public/cpp/bindings/lib/map_data_internal.h"
 #include "mojo/public/cpp/bindings/lib/map_internal.h"
-#include "mojo/public/cpp/bindings/lib/string_serialization.h"
+#include "mojo/public/cpp/bindings/lib/serialization_forward.h"
 #include "mojo/public/cpp/bindings/map.h"
 
 namespace mojo {
-
-template <typename Key, typename Value>
-inline size_t GetSerializedSize_(const Map<Key, Value>& input);
-
-template <typename ValidateParams, typename E, typename F>
-inline void SerializeArray_(
-    Array<E> input,
-    internal::Buffer* buf,
-    internal::Array_Data<F>** output,
-    const internal::ArrayValidateParams* validate_params);
-
 namespace internal {
 
 template <typename MapType,

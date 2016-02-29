@@ -4,7 +4,7 @@
 
 module mojo.test;
 
-interface TestCodeGeneration {
+interface TestSyncCodeGeneration {
   [Sync]
   NoInput() => (int32 result);
 

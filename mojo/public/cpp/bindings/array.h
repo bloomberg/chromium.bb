@@ -27,9 +27,9 @@ template <typename T>
 class Array {
   MOJO_MOVE_ONLY_TYPE(Array)
  public:
-  using Traits = internal::ArrayTraits<T, internal::IsMoveOnlyType<T>::value>;
   using ConstRefType = typename std::vector<T>::const_reference;
   using RefType = typename std::vector<T>::reference;
+  using ElementType = T;
 
   using Data_ =
       internal::Array_Data<typename internal::WrapperTraits<T>::DataType>;
@@ -168,7 +168,7 @@ class Array {
   Array Clone() const {
     Array result;
     result.is_null_ = is_null_;
-    Traits::Clone(vec_, &result.vec_);
+    CloneTraits<T>::Clone(vec_, &result.vec_);
     return std::move(result);
   }
 
@@ -201,6 +201,29 @@ class Array {
   bool operator==(const Array<U>& other) const = delete;
   template <typename U>
   bool operator!=(const Array<U>& other) const = delete;
+
+  template <typename U,
+            bool is_move_only_type = internal::IsMoveOnlyType<U>::value>
+  struct CloneTraits {};
+
+  template <typename U>
+  struct CloneTraits<U, false> {
+    static inline void Clone(const std::vector<T>& src_vec,
+                             std::vector<T>* dest_vec) {
+      dest_vec->assign(src_vec.begin(), src_vec.end());
+    }
+  };
+
+  template <typename U>
+  struct CloneTraits<U, true> {
+    static inline void Clone(const std::vector<T>& src_vec,
+                             std::vector<T>* dest_vec) {
+      dest_vec->clear();
+      dest_vec->reserve(src_vec.size());
+      for (const auto& element : src_vec)
+        dest_vec->push_back(element.Clone());
+    }
+  };
 
   void Take(Array* other) {
     operator=(nullptr);

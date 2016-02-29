@@ -9,14 +9,23 @@
 
 #include "mojo/public/cpp/bindings/lib/interface_id.h"
 #include "mojo/public/cpp/bindings/lib/template_util.h"
-#include "mojo/public/cpp/bindings/struct_ptr.h"
 #include "mojo/public/cpp/system/core.h"
 
 namespace mojo {
+class String;
+
+template <typename T>
+class StructPtr;
+
+template <typename T>
+class InlinedStructPtr;
+
 namespace internal {
 
 template <typename T>
 class Array_Data;
+
+using String_Data = Array_Data<char>;
 
 #pragma pack(push, 1)
 
@@ -146,6 +155,11 @@ struct WrapperTraits<InlinedStructPtr<S>, true> {
 template <typename S>
 struct WrapperTraits<S, true> {
   typedef typename S::Data_* DataType;
+};
+
+template <>
+struct WrapperTraits<String, false> {
+  typedef String_Data* DataType;
 };
 
 }  // namespace internal

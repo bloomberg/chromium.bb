@@ -9,8 +9,8 @@
 #include <utility>
 
 #include "mojo/public/cpp/bindings/lib/array_internal.h"
-#include "mojo/public/cpp/bindings/lib/array_serialization.h"
 #include "mojo/public/cpp/bindings/lib/fixed_buffer.h"
+#include "mojo/public/cpp/bindings/lib/serialization.h"
 #include "mojo/public/cpp/bindings/tests/container_test_util.h"
 #include "mojo/public/interfaces/bindings/tests/test_structs.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"

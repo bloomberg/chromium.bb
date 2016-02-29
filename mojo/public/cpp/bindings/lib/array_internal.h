@@ -23,10 +23,6 @@
 #include "mojo/public/cpp/bindings/lib/validation_errors.h"
 
 namespace mojo {
-template <typename T>
-class Array;
-class String;
-
 namespace internal {
 
 // std::numeric_limits<uint32_t>::max() is not a compile-time constant (until
@@ -462,34 +458,7 @@ class Array_Data {
 static_assert(sizeof(Array_Data<char>) == 8, "Bad sizeof(Array_Data)");
 
 // UTF-8 encoded
-typedef Array_Data<char> String_Data;
-
-template <typename T, bool kIsMoveOnlyType>
-struct ArrayTraits {};
-
-template <typename T>
-struct ArrayTraits<T, false> {
-  static inline void Clone(const std::vector<T>& src_vec,
-                           std::vector<T>* dest_vec) {
-    dest_vec->assign(src_vec.begin(), src_vec.end());
-  }
-};
-
-template <typename T>
-struct ArrayTraits<T, true> {
-  static inline void Clone(const std::vector<T>& src_vec,
-                           std::vector<T>* dest_vec) {
-    dest_vec->clear();
-    dest_vec->reserve(src_vec.size());
-    for (const auto& element : src_vec)
-      dest_vec->push_back(element.Clone());
-  }
-};
-
-template <>
-struct WrapperTraits<String, false> {
-  typedef String_Data* DataType;
-};
+using String_Data = Array_Data<char>;
 
 }  // namespace internal
 }  // namespace mojo
