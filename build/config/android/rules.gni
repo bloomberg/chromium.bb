@@ -1450,6 +1450,11 @@ template("android_apk") {
       has_alternative_locale_resource = true
     }
 
+    # Added emma to the target's classpath via its .build_config.
+    if (emma_coverage && !_emma_never_instrument) {
+      deps += [ "//third_party/android_tools:emma_device" ]
+    }
+
     proguard_enabled = _proguard_enabled
     if (_proguard_enabled) {
       proguard_info = "$_proguard_jar_path.info"
@@ -1675,11 +1680,6 @@ template("android_apk") {
         _dex_arg_key = "${_rebased_build_config}:final_dex:dependency_dex_files"
       }
       args = [ "--inputs=@FileArg($_dex_arg_key)" ]
-    }
-
-    if (emma_coverage && !_emma_never_instrument) {
-      no_locals = true
-      sources += [ "$android_sdk_root/tools/lib/emma_device.jar" ]
     }
   }
 

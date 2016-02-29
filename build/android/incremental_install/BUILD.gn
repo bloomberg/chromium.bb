@@ -14,4 +14,5 @@ android_library("bootstrap_java") {
     "java/org/chromium/incrementalinstall/LockFile.java",
     "java/org/chromium/incrementalinstall/Reflect.java",
   ]
+  emma_never_instrument = true
 }

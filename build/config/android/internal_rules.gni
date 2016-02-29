@@ -310,7 +310,8 @@ template("dex") {
       args += [ "--incremental" ]
     }
 
-    if (defined(invoker.no_locals) && invoker.no_locals) {
+    # EMMA requires --no-locals.
+    if (emma_coverage) {
       args += [ "--no-locals=1" ]
     }
 
@@ -1743,7 +1744,6 @@ template("java_library_impl") {
         _jar_path,
       ]
       output = _dex_path
-      no_locals = _emma_instrument
       deps = [
         ":$_compile_java_target",
       ]
