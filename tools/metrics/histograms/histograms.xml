@@ -31122,7 +31122,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="NewTabPage.MostVisited">
+<histogram name="NewTabPage.MostVisited" enum="MostVisitedTileIndex">
   <owner>beaudoin@chromium.org</owner>
   <owner>justincohen@chromium.org</owner>
   <owner>newt@chromium.org</owner>
@@ -31469,7 +31469,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Time spent on the Suggested Sites NTP pane, in seconds.</summary>
 </histogram>
 
-<histogram name="NewTabPage.SuggestionsImpression">
+<histogram name="NewTabPage.SuggestionsImpression" enum="MostVisitedTileIndex">
   <owner>beaudoin@chromium.org</owner>
   <summary>
     Histogram for impressions on the various most visited tiles. The value is
@@ -31519,7 +31519,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="NewTabPage.TileOfflineAvailable">
+<histogram name="NewTabPage.TileOfflineAvailable" enum="MostVisitedTileIndex">
   <owner>treib@chromium.org</owner>
   <summary>
     The number of times a tile was available offline, per tile index - compare
@@ -73591,6 +73591,25 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="0" label="chrome.dll"/>
   <int value="1" label="chrome_elf.dll"/>
   <int value="2" label="ntdll.dll"/>
+</enum>
+
+<enum name="MostVisitedTileIndex" type="int">
+  <summary>
+    Index of a tile on the new tab page. This is only an enum so that the
+    dashboard won't produce misleading statistics like averages.
+  </summary>
+  <int value="0" label="0"/>
+  <int value="1" label="1"/>
+  <int value="2" label="2"/>
+  <int value="3" label="3"/>
+  <int value="4" label="4"/>
+  <int value="5" label="5"/>
+  <int value="6" label="6"/>
+  <int value="7" label="7"/>
+  <int value="8" label="8"/>
+  <int value="9" label="9"/>
+  <int value="10" label="10"/>
+  <int value="11" label="11"/>
 </enum>
 
 <enum name="MostVisitedTileType" type="int">
