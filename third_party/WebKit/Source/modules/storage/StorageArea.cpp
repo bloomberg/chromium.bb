@@ -154,11 +154,6 @@ bool StorageArea::canAccessStorage(LocalFrame* frame)
     return result;
 }
 
-size_t StorageArea::memoryBytesUsedByCache()
-{
-    return m_storageArea->memoryBytesUsedByCache();
-}
-
 void StorageArea::dispatchLocalStorageEvent(const String& key, const String& oldValue, const String& newValue, SecurityOrigin* securityOrigin, const KURL& pageURL, WebStorageArea* sourceAreaInstance)
 {
     // Iterate over all pages that have a StorageNamespaceController supplement.

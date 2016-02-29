@@ -36,7 +36,6 @@ class WebStorageAreaImpl : public blink::WebStorageArea {
   void removeItem(const blink::WebString& key,
                   const blink::WebURL& page_url) override;
   void clear(const blink::WebURL& url) override;
-  size_t memoryBytesUsedByCache() const override;
 
  private:
   int connection_id_;

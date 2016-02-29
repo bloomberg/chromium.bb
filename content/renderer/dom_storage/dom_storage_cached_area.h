@@ -52,8 +52,6 @@ class CONTENT_EXPORT DOMStorageCachedArea
   void ApplyMutation(const base::NullableString16& key,
                      const base::NullableString16& new_value);
 
-  size_t MemoryBytesUsedByCache() const;
-
  private:
   friend class DOMStorageCachedAreaTest;
   friend class base::RefCounted<DOMStorageCachedArea>;

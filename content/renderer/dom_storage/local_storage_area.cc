@@ -47,10 +47,6 @@ void LocalStorageArea::removeItem(
 void LocalStorageArea::clear(const WebURL& page_url) {
 }
 
-size_t LocalStorageArea::memoryBytesUsedByCache() const {
-  return 0u;
-}
-
 void LocalStorageArea::KeyChanged(mojo::Array<uint8_t> key,
                                   mojo::Array<uint8_t> new_value,
                                   mojo::Array<uint8_t> old_value,

@@ -76,8 +76,4 @@ void WebStorageAreaImpl::clear(const WebURL& page_url) {
   cached_area_->Clear(connection_id_, page_url);
 }
 
-size_t WebStorageAreaImpl::memoryBytesUsedByCache() const {
-  return cached_area_->MemoryBytesUsedByCache();
-}
-
 }  // namespace content

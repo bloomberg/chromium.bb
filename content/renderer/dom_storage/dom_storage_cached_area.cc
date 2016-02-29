@@ -140,10 +140,6 @@ void DOMStorageCachedArea::ApplyMutation(
   map_->set_quota(kPerStorageAreaQuota);
 }
 
-size_t DOMStorageCachedArea::MemoryBytesUsedByCache() const {
-  return map_.get() ? map_->bytes_used() : 0;
-}
-
 void DOMStorageCachedArea::Prime(int connection_id) {
   DCHECK(!map_.get());
 

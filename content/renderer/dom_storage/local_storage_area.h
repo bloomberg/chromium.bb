@@ -36,7 +36,6 @@ class LocalStorageArea : public blink::WebStorageArea,
   void removeItem(const blink::WebString& key,
                   const blink::WebURL& page_url) override;
   void clear(const blink::WebURL& url) override;
-  size_t memoryBytesUsedByCache() const override;
 
   // LevelDBObserver:
   void KeyChanged(mojo::Array<uint8_t> key,

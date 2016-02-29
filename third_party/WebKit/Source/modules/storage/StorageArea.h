@@ -65,7 +65,6 @@ public:
     bool contains(const String& key, ExceptionState&, LocalFrame* sourceFrame);
 
     bool canAccessStorage(LocalFrame*);
-    size_t memoryBytesUsedByCache();
 
     static void dispatchLocalStorageEvent(const String& key, const String& oldValue, const String& newValue,
         SecurityOrigin*, const KURL& pageURL, WebStorageArea* sourceAreaInstance);
