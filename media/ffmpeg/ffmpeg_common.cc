@@ -11,6 +11,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
+#include "media/base/audio_decoder_config.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_util.h"
@@ -110,8 +111,8 @@ static AudioCodec CodecIDToAudioCodec(AVCodecID codec_id) {
   return kUnknownAudioCodec;
 }
 
-static AVCodecID AudioCodecToCodecID(AudioCodec audio_codec,
-                                     SampleFormat sample_format) {
+AVCodecID AudioCodecToCodecID(AudioCodec audio_codec,
+                              SampleFormat sample_format) {
   switch (audio_codec) {
     case kCodecAAC:
       return AV_CODEC_ID_AAC;

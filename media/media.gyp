@@ -240,6 +240,8 @@
         'base/audio_buffer_queue.cc',
         'base/audio_buffer_queue.h',
         'base/audio_capturer_source.h',
+        'base/audio_codecs.cc',
+        'base/audio_codecs.h',
         'base/audio_converter.cc',
         'base/audio_converter.h',
         'base/audio_decoder.cc',

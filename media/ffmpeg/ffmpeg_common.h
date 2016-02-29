@@ -12,9 +12,10 @@
 
 #include "base/compiler_specific.h"
 #include "base/time/time.h"
-#include "media/base/audio_decoder_config.h"
+#include "media/base/audio_codecs.h"
 #include "media/base/channel_layout.h"
 #include "media/base/media_export.h"
+#include "media/base/sample_format.h"
 #include "media/base/video_codecs.h"
 #include "media/base/video_frame.h"
 #include "media/ffmpeg/ffmpeg_deleters.h"
@@ -121,6 +122,8 @@ MEDIA_EXPORT bool AVCodecContextToAudioDecoderConfig(
 MEDIA_EXPORT ChannelLayout ChannelLayoutToChromeChannelLayout(int64_t layout,
                                                               int channels);
 
+MEDIA_EXPORT AVCodecID AudioCodecToCodecID(AudioCodec audio_codec,
+                                           SampleFormat sample_format);
 MEDIA_EXPORT AVCodecID VideoCodecToCodecID(VideoCodec video_codec);
 
 // Converts FFmpeg's audio sample format to Chrome's SampleFormat.
