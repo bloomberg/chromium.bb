@@ -89,7 +89,7 @@ struct PaintLayerPaintingInfo {
         , m_globalPaintFlags(globalPaintFlags)
     { }
 
-    GlobalPaintFlags globalPaintFlags() const { return m_globalPaintFlags; }
+    GlobalPaintFlags getGlobalPaintFlags() const { return m_globalPaintFlags; }
 
     // TODO(jchaffraix): We should encapsulate all these fields.
     PaintLayer* rootLayer;

@@ -106,7 +106,7 @@ public:
     void setSentDidFinishLoad() { m_state = SentDidFinishLoad; }
     bool sentDidFinishLoad() const { return m_state == SentDidFinishLoad; }
 
-    NavigationType navigationType() const { return m_navigationType; }
+    NavigationType getNavigationType() const { return m_navigationType; }
     void setNavigationType(NavigationType navigationType) { m_navigationType = navigationType; }
 
     void setDefersLoading(bool);

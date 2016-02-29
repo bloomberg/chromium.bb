@@ -50,7 +50,7 @@ unsigned short PerformanceNavigation::type() const
     if (!documentLoader)
         return TYPE_NAVIGATE;
 
-    switch (documentLoader->navigationType()) {
+    switch (documentLoader->getNavigationType()) {
     case NavigationTypeReload:
         return TYPE_RELOAD;
     case NavigationTypeBackForward:

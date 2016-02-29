@@ -422,7 +422,7 @@ void BoxPainter::paintFillLayer(const LayoutBoxModelObject& obj, const PaintInfo
 
     BackgroundImageGeometry geometry;
     if (bgImage)
-        geometry.calculate(obj, paintInfo.paintContainer(), paintInfo.globalPaintFlags(), bgLayer, scrolledPaintRect);
+        geometry.calculate(obj, paintInfo.paintContainer(), paintInfo.getGlobalPaintFlags(), bgLayer, scrolledPaintRect);
     bool shouldPaintBackgroundImage = bgImage && bgImage->canRender();
 
     // Paint the color first underneath all images, culled if background image occludes it.
@@ -504,7 +504,7 @@ void BoxPainter::paintMaskImages(const PaintInfo& paintInfo, const LayoutRect& p
     // Figure out if we need to push a transparency layer to render our mask.
     bool pushTransparencyLayer = false;
     bool compositedMask = m_layoutBox.hasLayer() && m_layoutBox.layer()->hasCompositedMask();
-    bool flattenCompositingLayers = paintInfo.globalPaintFlags() & GlobalPaintFlattenCompositingLayers;
+    bool flattenCompositingLayers = paintInfo.getGlobalPaintFlags() & GlobalPaintFlattenCompositingLayers;
 
     bool allMaskImagesLoaded = true;
 

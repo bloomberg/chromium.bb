@@ -95,7 +95,7 @@ struct CORE_EXPORT PaintInfo {
 
     const LayoutBoxModelObject* paintContainer() const { return m_paintContainer; }
 
-    GlobalPaintFlags globalPaintFlags() const { return m_globalPaintFlags; }
+    GlobalPaintFlags getGlobalPaintFlags() const { return m_globalPaintFlags; }
 
     PaintLayerFlags paintFlags() const { return m_paintFlags; }
 

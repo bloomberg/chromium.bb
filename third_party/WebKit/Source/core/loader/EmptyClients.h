@@ -250,7 +250,7 @@ public:
     PassOwnPtr<WebMediaPlayer> createWebMediaPlayer(HTMLMediaElement&, WebMediaPlayer::LoadType, const WebURL&, WebMediaPlayerClient*) override;
     PassOwnPtr<WebMediaSession> createWebMediaSession() override;
 
-    ObjectContentType objectContentType(const KURL&, const String&, bool) override { return ObjectContentType(); }
+    ObjectContentType getObjectContentType(const KURL&, const String&, bool) override { return ObjectContentType(); }
 
     void didCreateNewDocument() override {}
     void dispatchDidClearWindowObjectInMainWorld() override {}

@@ -92,7 +92,7 @@ bool WebDataSourceImpl::replacesCurrentHistoryItem() const
 
 WebNavigationType WebDataSourceImpl::navigationType() const
 {
-    return toWebNavigationType(DocumentLoader::navigationType());
+    return toWebNavigationType(DocumentLoader::getNavigationType());
 }
 
 WebDataSource::ExtraData* WebDataSourceImpl::extraData() const

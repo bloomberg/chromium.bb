@@ -227,7 +227,7 @@ PassOwnPtr<GraphicsLayer> CompositedLayerMapping::createGraphicsLayer(Compositin
 
 void CompositedLayerMapping::createPrimaryGraphicsLayer()
 {
-    m_graphicsLayer = createGraphicsLayer(m_owningLayer.compositingReasons(), m_owningLayer.squashingDisallowedReasons());
+    m_graphicsLayer = createGraphicsLayer(m_owningLayer.getCompositingReasons(), m_owningLayer.squashingDisallowedReasons());
 
     updateOpacity(layoutObject()->styleRef());
     updateTransform(layoutObject()->styleRef());
@@ -346,7 +346,7 @@ void CompositedLayerMapping::updateCompositingReasons()
 {
     // All other layers owned by this mapping will have the same compositing reason
     // for their lifetime, so they are initialized only when created.
-    m_graphicsLayer->setCompositingReasons(m_owningLayer.compositingReasons());
+    m_graphicsLayer->setCompositingReasons(m_owningLayer.getCompositingReasons());
     m_graphicsLayer->setSquashingDisallowedReasons(m_owningLayer.squashingDisallowedReasons());
 }
 

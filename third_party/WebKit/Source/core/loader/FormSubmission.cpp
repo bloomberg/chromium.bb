@@ -103,7 +103,7 @@ void FormSubmission::Attributes::updateEncodingType(const String& type)
     m_isMultiPartForm = (m_encodingType == "multipart/form-data");
 }
 
-FormSubmission::Method FormSubmission::Attributes::parseMethodType(const String& type)
+FormSubmission::SubmitMethod FormSubmission::Attributes::parseMethodType(const String& type)
 {
     if (equalIgnoringCase(type, "post"))
         return FormSubmission::PostMethod;
@@ -117,7 +117,7 @@ void FormSubmission::Attributes::updateMethodType(const String& type)
     m_method = parseMethodType(type);
 }
 
-String FormSubmission::Attributes::methodString(Method method)
+String FormSubmission::Attributes::methodString(SubmitMethod method)
 {
     switch (method) {
     case GetMethod:
@@ -142,7 +142,7 @@ void FormSubmission::Attributes::copyFrom(const Attributes& other)
     m_acceptCharset = other.m_acceptCharset;
 }
 
-inline FormSubmission::FormSubmission(Method method, const KURL& action, const AtomicString& target, const AtomicString& contentType, HTMLFormElement* form, PassRefPtr<EncodedFormData> data, const String& boundary, PassRefPtrWillBeRawPtr<Event> event)
+inline FormSubmission::FormSubmission(SubmitMethod method, const KURL& action, const AtomicString& target, const AtomicString& contentType, HTMLFormElement* form, PassRefPtr<EncodedFormData> data, const String& boundary, PassRefPtrWillBeRawPtr<Event> event)
     : m_method(method)
     , m_action(action)
     , m_target(target)

@@ -835,7 +835,7 @@ PassOwnPtr<WebMediaSession> FrameLoaderClientImpl::createWebMediaSession()
     return adoptPtr(m_webFrame->client()->createMediaSession());
 }
 
-ObjectContentType FrameLoaderClientImpl::objectContentType(
+ObjectContentType FrameLoaderClientImpl::getObjectContentType(
     const KURL& url,
     const String& explicitMimeType,
     bool shouldPreferPlugInsForImages)

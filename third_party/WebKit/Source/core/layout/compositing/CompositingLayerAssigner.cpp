@@ -88,7 +88,7 @@ bool CompositingLayerAssigner::needsOwnBacking(const PaintLayer* layer) const
     if (!m_compositor->canBeComposited(layer))
         return false;
 
-    return requiresCompositing(layer->compositingReasons()) || (m_compositor->staleInCompositingMode() && layer->isRootLayer());
+    return requiresCompositing(layer->getCompositingReasons()) || (m_compositor->staleInCompositingMode() && layer->isRootLayer());
 }
 
 CompositingStateTransitionType CompositingLayerAssigner::computeCompositedLayerUpdate(PaintLayer* layer)
@@ -102,7 +102,7 @@ CompositingStateTransitionType CompositingLayerAssigner::computeCompositedLayerU
         if (layer->hasCompositedLayerMapping())
             update = RemoveOwnCompositedLayerMapping;
 
-        if (!layer->subtreeIsInvisible() && m_compositor->canBeComposited(layer) && requiresSquashing(layer->compositingReasons())) {
+        if (!layer->subtreeIsInvisible() && m_compositor->canBeComposited(layer) && requiresSquashing(layer->getCompositingReasons())) {
             // We can't compute at this time whether the squashing layer update is a no-op,
             // since that requires walking the paint layer tree.
             update = PutInSquashingLayer;
@@ -251,10 +251,10 @@ static ScrollingCoordinator* scrollingCoordinatorFromLayer(PaintLayer& layer)
 
 void CompositingLayerAssigner::assignLayersToBackingsInternal(PaintLayer* layer, SquashingState& squashingState, Vector<PaintLayer*>& layersNeedingPaintInvalidation)
 {
-    if (requiresSquashing(layer->compositingReasons())) {
+    if (requiresSquashing(layer->getCompositingReasons())) {
         SquashingDisallowedReasons reasonsPreventingSquashing = getReasonsPreventingSquashing(layer, squashingState);
         if (reasonsPreventingSquashing) {
-            layer->setCompositingReasons(layer->compositingReasons() | CompositingReasonSquashingDisallowed);
+            layer->setCompositingReasons(layer->getCompositingReasons() | CompositingReasonSquashingDisallowed);
             layer->setSquashingDisallowedReasons(reasonsPreventingSquashing);
         }
     }
@@ -294,7 +294,7 @@ void CompositingLayerAssigner::assignLayersToBackingsInternal(PaintLayer* layer,
 
     // At this point, if the layer is to be separately composited, then its backing becomes the most recent in paint-order.
     if (layer->compositingState() == PaintsIntoOwnBacking) {
-        ASSERT(!requiresSquashing(layer->compositingReasons()));
+        ASSERT(!requiresSquashing(layer->getCompositingReasons()));
         squashingState.updateSquashingStateForNewMapping(layer->compositedLayerMapping(), layer->hasCompositedLayerMapping(), layersNeedingPaintInvalidation);
     }
 

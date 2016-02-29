@@ -45,7 +45,7 @@ class HTMLFormElement;
 
 class FormSubmission : public RefCountedWillBeGarbageCollectedFinalized<FormSubmission> {
 public:
-    enum Method { GetMethod, PostMethod, DialogMethod };
+    enum SubmitMethod { GetMethod, PostMethod, DialogMethod };
 
     class Attributes {
         DISALLOW_NEW();
@@ -58,10 +58,10 @@ public:
         {
         }
 
-        Method method() const { return m_method; }
-        static Method parseMethodType(const String&);
+        SubmitMethod method() const { return m_method; }
+        static SubmitMethod parseMethodType(const String&);
         void updateMethodType(const String&);
-        static String methodString(Method);
+        static String methodString(SubmitMethod);
 
         const String& action() const { return m_action; }
         void parseAction(const String&);
@@ -80,7 +80,7 @@ public:
         void copyFrom(const Attributes&);
 
     private:
-        Method m_method;
+        SubmitMethod m_method;
         bool m_isMultiPartForm;
 
         String m_action;
@@ -96,7 +96,7 @@ public:
 
     KURL requestURL() const;
 
-    Method method() const { return m_method; }
+    SubmitMethod method() const { return m_method; }
     const KURL& action() const { return m_action; }
     const AtomicString& target() const { return m_target; }
     void clearTarget() { m_target = nullAtom; }
@@ -107,12 +107,12 @@ public:
     const String& result() const { return m_result; }
 
 private:
-    FormSubmission(Method, const KURL& action, const AtomicString& target, const AtomicString& contentType, HTMLFormElement*, PassRefPtr<EncodedFormData>, const String& boundary, PassRefPtrWillBeRawPtr<Event>);
+    FormSubmission(SubmitMethod, const KURL& action, const AtomicString& target, const AtomicString& contentType, HTMLFormElement*, PassRefPtr<EncodedFormData>, const String& boundary, PassRefPtrWillBeRawPtr<Event>);
     // FormSubmission for DialogMethod
     FormSubmission(const String& result);
 
     // FIXME: Hold an instance of Attributes instead of individual members.
-    Method m_method;
+    SubmitMethod m_method;
     KURL m_action;
     AtomicString m_target;
     AtomicString m_contentType;

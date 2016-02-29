@@ -914,7 +914,7 @@ void FrameLoader::load(const FrameLoadRequest& passedRequest, FrameLoadType fram
         return;
     }
 
-    setReferrerForFrameRequest(request.resourceRequest(), request.shouldSendReferrer(), request.originDocument());
+    setReferrerForFrameRequest(request.resourceRequest(), request.getShouldSendReferrer(), request.originDocument());
 
     FrameLoadType newLoadType = (frameLoadType == FrameLoadTypeStandard) ?
         determineFrameLoadType(request) : frameLoadType;
@@ -924,7 +924,7 @@ void FrameLoader::load(const FrameLoadRequest& passedRequest, FrameLoadType fram
             client()->loadURLExternally(request.resourceRequest(), NavigationPolicyDownload, String(), false);
         } else {
             request.resourceRequest().setFrameType(WebURLRequest::FrameTypeAuxiliary);
-            createWindowForRequest(request, *m_frame, policy, request.shouldSendReferrer(), request.shouldSetOpener());
+            createWindowForRequest(request, *m_frame, policy, request.getShouldSendReferrer(), request.getShouldSetOpener());
         }
         return;
     }

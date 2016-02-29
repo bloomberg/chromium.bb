@@ -164,8 +164,8 @@ TextPainter::Style TextPainter::selectionPaintingStyle(LineLayoutItem lineLayout
 
     if (haveSelection) {
         if (!usesTextAsClip) {
-            selectionStyle.fillColor = layoutObject.selectionForegroundColor(paintInfo.globalPaintFlags());
-            selectionStyle.emphasisMarkColor = layoutObject.selectionEmphasisMarkColor(paintInfo.globalPaintFlags());
+            selectionStyle.fillColor = layoutObject.selectionForegroundColor(paintInfo.getGlobalPaintFlags());
+            selectionStyle.emphasisMarkColor = layoutObject.selectionEmphasisMarkColor(paintInfo.getGlobalPaintFlags());
         }
 
         if (const ComputedStyle* pseudoStyle = layoutObject.getCachedPseudoStyle(SELECTION)) {

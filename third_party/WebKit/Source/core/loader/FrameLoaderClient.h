@@ -164,7 +164,7 @@ public:
 
     virtual PassOwnPtr<WebMediaSession> createWebMediaSession() = 0;
 
-    virtual ObjectContentType objectContentType(const KURL&, const String& mimeType, bool shouldPreferPlugInsForImages) = 0;
+    virtual ObjectContentType getObjectContentType(const KURL&, const String& mimeType, bool shouldPreferPlugInsForImages) = 0;
 
     virtual void didCreateNewDocument() = 0;
     virtual void dispatchDidClearWindowObjectInMainWorld() = 0;

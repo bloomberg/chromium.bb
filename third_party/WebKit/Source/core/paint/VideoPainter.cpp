@@ -43,7 +43,7 @@ void VideoPainter::paintReplaced(const PaintInfo& paintInfo, const LayoutPoint& 
     LayoutObjectDrawingRecorder drawingRecorder(context, m_layoutVideo, paintInfo.phase, contentRect, paintOffset);
 
     // Video frames are only painted in software for printing or capturing node images via web APIs.
-    bool forceSoftwareVideoPaint = paintInfo.globalPaintFlags() & GlobalPaintFlattenCompositingLayers;
+    bool forceSoftwareVideoPaint = paintInfo.getGlobalPaintFlags() & GlobalPaintFlattenCompositingLayers;
 
     if (displayingPoster || !forceSoftwareVideoPaint) {
         // This will display the poster image, if one is present, and otherwise paint nothing.

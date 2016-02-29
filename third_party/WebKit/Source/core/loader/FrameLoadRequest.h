@@ -86,10 +86,10 @@ public:
     HTMLFormElement* form() const { return m_form.get(); }
     void setForm(PassRefPtrWillBeRawPtr<HTMLFormElement> form) { m_form = form; }
 
-    ShouldSendReferrer shouldSendReferrer() const { return m_shouldSendReferrer; }
+    ShouldSendReferrer getShouldSendReferrer() const { return m_shouldSendReferrer; }
     void setShouldSendReferrer(ShouldSendReferrer shouldSendReferrer) { m_shouldSendReferrer = shouldSendReferrer; }
 
-    ShouldSetOpener shouldSetOpener() const { return m_shouldSetOpener; }
+    ShouldSetOpener getShouldSetOpener() const { return m_shouldSetOpener; }
     void setShouldSetOpener(ShouldSetOpener shouldSetOpener) { m_shouldSetOpener = shouldSetOpener; }
 
     ContentSecurityPolicyDisposition shouldCheckMainWorldContentSecurityPolicy() const { return m_shouldCheckMainWorldContentSecurityPolicy; }

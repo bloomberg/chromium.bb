@@ -593,7 +593,7 @@ public:
     bool lostGroupedMapping() const { ASSERT(isAllowedToQueryCompositingState()); return m_lostGroupedMapping; }
     void setLostGroupedMapping(bool b) { m_lostGroupedMapping = b; }
 
-    CompositingReasons compositingReasons() const { ASSERT(isAllowedToQueryCompositingState()); return m_rareData ? m_rareData->compositingReasons : CompositingReasonNone; }
+    CompositingReasons getCompositingReasons() const { ASSERT(isAllowedToQueryCompositingState()); return m_rareData ? m_rareData->compositingReasons : CompositingReasonNone; }
     void setCompositingReasons(CompositingReasons, CompositingReasons mask = CompositingReasonAll);
 
     SquashingDisallowedReasons squashingDisallowedReasons() const { ASSERT(isAllowedToQueryCompositingState()); return m_rareData ? m_rareData->squashingDisallowedReasons : SquashingDisallowedReasonsNone; }

@@ -129,7 +129,7 @@ public:
         const WTF::String&, bool loadManually, DetachedPluginPolicy) override;
     PassOwnPtr<WebMediaPlayer> createWebMediaPlayer(HTMLMediaElement&, WebMediaPlayer::LoadType, const WebURL&, WebMediaPlayerClient*) override;
     PassOwnPtr<WebMediaSession> createWebMediaSession() override;
-    ObjectContentType objectContentType(
+    ObjectContentType getObjectContentType(
         const KURL&, const WTF::String& mimeType, bool shouldPreferPlugInsForImages) override;
     void didChangeScrollOffset() override;
     void didUpdateCurrentHistoryItem() override;

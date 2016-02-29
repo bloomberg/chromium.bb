@@ -433,7 +433,7 @@ bool HTMLPlugInElement::isImageType()
 
     if (LocalFrame* frame = document().frame()) {
         KURL completedURL = document().completeURL(m_url);
-        return frame->loader().client()->objectContentType(completedURL, m_serviceType, shouldPreferPlugInsForImages()) == ObjectContentImage;
+        return frame->loader().client()->getObjectContentType(completedURL, m_serviceType, shouldPreferPlugInsForImages()) == ObjectContentImage;
     }
 
     return Image::supportsType(m_serviceType);
@@ -467,7 +467,7 @@ bool HTMLPlugInElement::wouldLoadAsNetscapePlugin(const String& url, const Strin
     KURL completedURL;
     if (!url.isEmpty())
         completedURL = document().completeURL(url);
-    return document().frame()->loader().client()->objectContentType(completedURL, serviceType, shouldPreferPlugInsForImages()) == ObjectContentNetscapePlugin;
+    return document().frame()->loader().client()->getObjectContentType(completedURL, serviceType, shouldPreferPlugInsForImages()) == ObjectContentNetscapePlugin;
 }
 
 bool HTMLPlugInElement::requestObject(const String& url, const String& mimeType, const Vector<String>& paramNames, const Vector<String>& paramValues)
@@ -555,7 +555,7 @@ bool HTMLPlugInElement::shouldUsePlugin(const KURL& url, const String& mimeType,
         }
     }
 
-    ObjectContentType objectType = document().frame()->loader().client()->objectContentType(url, mimeType, shouldPreferPlugInsForImages());
+    ObjectContentType objectType = document().frame()->loader().client()->getObjectContentType(url, mimeType, shouldPreferPlugInsForImages());
     // If an object's content can't be handled and it has no fallback, let
     // it be handled as a plugin to show the broken plugin icon.
     useFallback = objectType == ObjectContentNone && hasFallback;
