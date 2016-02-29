@@ -1594,7 +1594,7 @@
         'syzygy_optimize%': 0,
       }],
       ['sanitizer_coverage==1', {
-        'sanitizer_coverage': 'edge,indirect-calls,8bit-counters,trace-cmp',
+        'sanitizer_coverage': 'edge,indirect-calls,8bit-counters',
       }],
       # Get binutils version so we can enable debug fission if we can.
       ['os_posix==1 and OS!="mac" and OS!="ios"', {
