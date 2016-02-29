@@ -18,7 +18,7 @@ class GitApi(recipe_api.RecipeApi):
       kwargs.setdefault('cwd', self.m.path['checkout'])
     git_cmd = ['git']
     if self.m.platform.is_win:
-      git_cmd = [self.m.path['depot_tools'].join('git.bat')]
+      git_cmd = [self.package_resource('git.bat')]
     options = kwargs.pop('git_config_options', {})
     for k, v in sorted(options.iteritems()):
       git_cmd.extend(['-c', '%s=%s' % (k, v)])
@@ -172,8 +172,7 @@ class GitApi(recipe_api.RecipeApi):
       remote_name = 'origin'
 
     if self.m.platform.is_win:
-      git_setup_args += ['--git_cmd_path',
-                         self.m.path['depot_tools'].join('git.bat')]
+      git_setup_args += ['--git_cmd_path', self.package_resource('git.bat')]
 
     step_suffix = '' if step_suffix is  None else ' (%s)' % step_suffix
     self.m.python(

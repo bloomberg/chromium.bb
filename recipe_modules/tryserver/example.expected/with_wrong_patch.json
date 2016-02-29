@@ -1,7 +1,7 @@
 [
   {
     "cmd": [
-      "[DEPOT_TOOLS]\\git.bat",
+      "RECIPE_PACKAGE[depot_tools]\\git.bat",
       "diff",
       "--cached",
       "--name-only"
