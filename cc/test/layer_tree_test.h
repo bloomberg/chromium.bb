@@ -159,7 +159,6 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   LayerTreeHost* layer_tree_host();
   bool delegating_renderer() const { return delegating_renderer_; }
   FakeOutputSurface* output_surface() { return output_surface_; }
-  int LastCommittedSourceFrameNumber(LayerTreeHostImpl* impl) const;
 
   // Use these only for tests in threaded or remote mode.
   ProxyMainForTest* GetProxyMainForTest() const;

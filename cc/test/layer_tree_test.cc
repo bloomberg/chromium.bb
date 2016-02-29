@@ -974,16 +974,6 @@ TestWebGraphicsContext3D* LayerTreeTest::TestContext() {
       ->TestContext3d();
 }
 
-int LayerTreeTest::LastCommittedSourceFrameNumber(LayerTreeHostImpl* impl)
-    const {
-  if (impl->pending_tree())
-    return impl->pending_tree()->source_frame_number();
-  if (impl->active_tree())
-    return impl->active_tree()->source_frame_number();
-  // Source frames start at 0, so this is invalid.
-  return -1;
-}
-
 void LayerTreeTest::DestroyLayerTreeHost() {
   if (layer_tree_host_ && layer_tree_host_->root_layer())
     layer_tree_host_->root_layer()->SetLayerTreeHost(NULL);
