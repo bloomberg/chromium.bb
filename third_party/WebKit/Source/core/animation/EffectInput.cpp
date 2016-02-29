@@ -47,95 +47,62 @@
 
 namespace blink {
 
-EffectModel* EffectInput::convert(Element* element, const Vector<Dictionary>& keyframeDictionaryVector, ExceptionState& exceptionState)
+namespace {
+
+bool compareKeyframes(const RefPtr<StringKeyframe>& a, const RefPtr<StringKeyframe>& b)
 {
-    if (!element)
-        return nullptr;
+    return a->offset() < b->offset();
+}
 
-    StyleSheetContents* styleSheetContents = element->document().elementSheet().contents();
-    StringKeyframeVector keyframes;
-    double lastOffset = 0;
-    bool encounteredCompositableProperty = false;
+// Gets offset value from keyframeDictionary and returns false if this value was invalid.
+bool getAndCheckOffset(const Dictionary& keyframeDictionary, double& offset, double lastOffset, ExceptionState& exceptionState)
+{
+    DictionaryHelper::get(keyframeDictionary, "offset", offset);
 
-    for (const auto& keyframeDictionary : keyframeDictionaryVector) {
-        RefPtr<StringKeyframe> keyframe = StringKeyframe::create();
-
-        ScriptValue scriptValue;
-        bool frameHasOffset = DictionaryHelper::get(keyframeDictionary, "offset", scriptValue) && !scriptValue.isNull();
-
-        if (frameHasOffset) {
-            double offset;
-            DictionaryHelper::get(keyframeDictionary, "offset", offset);
-
-            // Keyframes with offsets outside the range [0.0, 1.0] are an error.
-            if (std::isnan(offset)) {
-                exceptionState.throwDOMException(InvalidModificationError, "Non numeric offset provided");
-            }
-
-            if (offset < 0 || offset > 1) {
-                exceptionState.throwDOMException(InvalidModificationError, "Offsets provided outside the range [0, 1]");
-                return nullptr;
-            }
-
-            if (offset < lastOffset) {
-                exceptionState.throwDOMException(InvalidModificationError, "Keyframes with specified offsets are not sorted");
-                return nullptr;
-            }
-
-            lastOffset = offset;
-
-            keyframe->setOffset(offset);
-        }
-        keyframes.append(keyframe);
-
-        String compositeString;
-        DictionaryHelper::get(keyframeDictionary, "composite", compositeString);
-        if (compositeString == "add")
-            keyframe->setComposite(EffectModel::CompositeAdd);
-        // TODO(alancutter): Support "accumulate" keyframe composition.
-
-        String timingFunctionString;
-        if (DictionaryHelper::get(keyframeDictionary, "easing", timingFunctionString)) {
-            if (RefPtr<TimingFunction> timingFunction = AnimationInputHelpers::parseTimingFunction(timingFunctionString))
-                keyframe->setEasing(timingFunction);
-        }
-
-        Vector<String> keyframeProperties;
-        keyframeDictionary.getPropertyNames(keyframeProperties);
-        for (const auto& property : keyframeProperties) {
-            String value;
-            DictionaryHelper::get(keyframeDictionary, property, value);
-
-            CSSPropertyID cssProperty = AnimationInputHelpers::keyframeAttributeToCSSProperty(property, element->document());
-            if (cssProperty != CSSPropertyInvalid) {
-                if (!encounteredCompositableProperty && CompositorAnimations::isCompositableProperty(cssProperty))
-                    encounteredCompositableProperty = true;
-
-                keyframe->setCSSPropertyValue(cssProperty, value, element, styleSheetContents);
-                continue;
-            }
-
-            if (property == "offset"
-                || property == "composite"
-                || property == "easing") {
-                continue;
-            }
-
-            cssProperty = AnimationInputHelpers::keyframeAttributeToPresentationAttribute(property, *element);
-            if (cssProperty != CSSPropertyInvalid) {
-                keyframe->setPresentationAttributeValue(cssProperty, value, element, styleSheetContents);
-                continue;
-            }
-
-            const QualifiedName* svgAttribute = AnimationInputHelpers::keyframeAttributeToSVGAttribute(property, *element);
-            if (svgAttribute)
-                keyframe->setSVGAttributeValue(*svgAttribute, value);
-        }
+    // Keyframes with offsets outside the range [0.0, 1.0] are an error.
+    if (std::isnan(offset)) {
+        exceptionState.throwTypeError("Non numeric offset provided");
+        return false;
     }
 
+    if (offset < 0 || offset > 1) {
+        exceptionState.throwTypeError("Offsets provided outside the range [0, 1]");
+        return false;
+    }
+
+    if (offset < lastOffset) {
+        exceptionState.throwTypeError("Keyframes with specified offsets are not sorted");
+        return false;
+    }
+
+    return true;
+}
+
+// Returns true if the property passed in is a compositable property.
+bool setKeyframeValue(Element& element, StringKeyframe& keyframe, const String& property, const String& value)
+{
+    StyleSheetContents* styleSheetContents = element.document().elementSheet().contents();
+    CSSPropertyID cssProperty = AnimationInputHelpers::keyframeAttributeToCSSProperty(property, element.document());
+    if (cssProperty != CSSPropertyInvalid) {
+        keyframe.setCSSPropertyValue(cssProperty, value, &element, styleSheetContents);
+        return CompositorAnimations::isCompositableProperty(cssProperty);
+    }
+    cssProperty = AnimationInputHelpers::keyframeAttributeToPresentationAttribute(property, element);
+    if (cssProperty != CSSPropertyInvalid) {
+        keyframe.setPresentationAttributeValue(cssProperty, value, &element, styleSheetContents);
+        return false;
+    }
+    const QualifiedName* svgAttribute = AnimationInputHelpers::keyframeAttributeToSVGAttribute(property, element);
+    if (svgAttribute)
+        keyframe.setSVGAttributeValue(*svgAttribute, value);
+    return false;
+}
+
+EffectModel* createEffectModelFromKeyframes(Element& element, const StringKeyframeVector& keyframes, bool encounteredCompositableProperty, ExceptionState& exceptionState)
+{
     // TODO(alancutter): Remove this once composited animations no longer depend on AnimatableValues.
-    if (encounteredCompositableProperty && element->inActiveDocument())
-        element->document().updateLayoutTreeForNode(element);
+    if (encounteredCompositableProperty && element.inActiveDocument())
+        element.document().updateLayoutTreeForNode(&element);
 
     StringKeyframeEffectModel* keyframeEffectModel = StringKeyframeEffectModel::create(keyframes);
     if (!RuntimeEnabledFeatures::cssAdditiveAnimationsEnabled()) {
@@ -156,10 +123,12 @@ EffectModel* EffectInput::convert(Element* element, const Vector<Dictionary>& ke
             }
         }
     }
-    keyframeEffectModel->forceConversionsToAnimatableValues(*element, element->computedStyle());
+    keyframeEffectModel->forceConversionsToAnimatableValues(element, element.computedStyle());
 
     return keyframeEffectModel;
 }
+
+} // namespace
 
 EffectModel* EffectInput::convert(Element* element, const EffectModelOrDictionarySequenceOrDictionary& effectInput, ExceptionState& exceptionState)
 {
@@ -168,11 +137,137 @@ EffectModel* EffectInput::convert(Element* element, const EffectModelOrDictionar
     if (effectInput.isDictionarySequence())
         return convert(element, effectInput.getAsDictionarySequence(), exceptionState);
     if (effectInput.isDictionary()) {
-        Vector<Dictionary> keyframes;
-        keyframes.append(effectInput.getAsDictionary());
-        return convert(element, keyframes, exceptionState);
+        return convert(element, effectInput.getAsDictionary(), exceptionState);
     }
     return nullptr;
+}
+
+EffectModel* EffectInput::convert(Element* element, const Vector<Dictionary>& keyframeDictionaryVector, ExceptionState& exceptionState)
+{
+    if (!element)
+        return nullptr;
+
+    StringKeyframeVector keyframes;
+    double lastOffset = 0;
+    bool encounteredCompositableProperty = false;
+
+    for (const auto& keyframeDictionary : keyframeDictionaryVector) {
+        RefPtr<StringKeyframe> keyframe = StringKeyframe::create();
+
+        ScriptValue scriptValue;
+        bool frameHasOffset = DictionaryHelper::get(keyframeDictionary, "offset", scriptValue) && !scriptValue.isNull();
+
+        double offset = 0.0;
+        if (frameHasOffset) {
+            if (!getAndCheckOffset(keyframeDictionary, offset, lastOffset, exceptionState))
+                return nullptr;
+            lastOffset = offset;
+            keyframe->setOffset(offset);
+        }
+
+        String compositeString;
+        DictionaryHelper::get(keyframeDictionary, "composite", compositeString);
+        if (compositeString == "add")
+            keyframe->setComposite(EffectModel::CompositeAdd);
+        // TODO(alancutter): Support "accumulate" keyframe composition.
+
+        String timingFunctionString;
+        if (DictionaryHelper::get(keyframeDictionary, "easing", timingFunctionString)) {
+            if (RefPtr<TimingFunction> timingFunction = AnimationInputHelpers::parseTimingFunction(timingFunctionString))
+                keyframe->setEasing(timingFunction);
+        }
+
+        Vector<String> keyframeProperties;
+        keyframeDictionary.getPropertyNames(keyframeProperties);
+        for (const auto& property : keyframeProperties) {
+            if (property == "offset"
+                || property == "composite"
+                || property == "easing") {
+                continue;
+            }
+
+            Vector<String> values;
+            if (DictionaryHelper::get(keyframeDictionary, property, values)) {
+                exceptionState.throwTypeError("Lists of values not permitted in array-form list of keyframes");
+                return nullptr;
+            }
+
+            String value;
+            DictionaryHelper::get(keyframeDictionary, property, value);
+
+            encounteredCompositableProperty |= setKeyframeValue(*element, *keyframe.get(), property, value);
+        }
+        keyframes.append(keyframe);
+    }
+
+    return createEffectModelFromKeyframes(*element, keyframes, encounteredCompositableProperty, exceptionState);
+}
+
+EffectModel* EffectInput::convert(Element* element, const Dictionary& keyframeDictionary, ExceptionState& exceptionState)
+{
+    if (!element)
+        return nullptr;
+
+    StringKeyframeVector keyframes;
+    bool encounteredCompositableProperty = false;
+
+    String timingFunctionString;
+    RefPtr<TimingFunction> timingFunction = nullptr;
+    if (DictionaryHelper::get(keyframeDictionary, "easing", timingFunctionString))
+        timingFunction = AnimationInputHelpers::parseTimingFunction(timingFunctionString);
+
+    ScriptValue scriptValue;
+    bool frameHasOffset = DictionaryHelper::get(keyframeDictionary, "offset", scriptValue) && !scriptValue.isNull();
+    double offset = 0.0;
+    if (frameHasOffset && !getAndCheckOffset(keyframeDictionary, offset, 0.0, exceptionState))
+        return nullptr;
+
+    String compositeString;
+    DictionaryHelper::get(keyframeDictionary, "composite", compositeString);
+
+    Vector<String> keyframeProperties;
+    keyframeDictionary.getPropertyNames(keyframeProperties);
+    for (const auto& property : keyframeProperties) {
+        if (property == "offset"
+            || property == "composite"
+            || property == "easing") {
+            continue;
+        }
+
+        Vector<String> values;
+        bool isList = DictionaryHelper::get(keyframeDictionary, property, values);
+        if (!isList) {
+            String value;
+            DictionaryHelper::get(keyframeDictionary, property, value);
+            values.append(value);
+        }
+
+        size_t numKeyframes = values.size();
+        for (size_t i = 0; i < numKeyframes; ++i) {
+            RefPtr<StringKeyframe> keyframe = StringKeyframe::create();
+
+            if (frameHasOffset)
+                keyframe->setOffset(offset);
+            else if (numKeyframes == 1)
+                keyframe->setOffset(1.0);
+            else
+                keyframe->setOffset(i / (numKeyframes - 1.0));
+
+            if (timingFunction)
+                keyframe->setEasing(timingFunction);
+
+            if (compositeString == "add")
+                keyframe->setComposite(EffectModel::CompositeAdd);
+            // TODO(alancutter): Support "accumulate" keyframe composition.
+
+            encounteredCompositableProperty |= setKeyframeValue(*element, *keyframe.get(), property, values[i]);
+            keyframes.append(keyframe);
+        }
+    }
+
+    std::sort(keyframes.begin(), keyframes.end(), compareKeyframes);
+
+    return createEffectModelFromKeyframes(*element, keyframes, encounteredCompositableProperty, exceptionState);
 }
 
 } // namespace blink

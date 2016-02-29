@@ -26,6 +26,7 @@ public:
 
 private:
     static EffectModel* convert(Element*, const Vector<Dictionary>& keyframeDictionaryVector, ExceptionState&);
+    static EffectModel* convert(Element*, const Dictionary& keyframeDictionary, ExceptionState&);
 };
 
 } // namespace blink

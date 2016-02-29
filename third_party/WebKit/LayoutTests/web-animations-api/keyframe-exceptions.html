@@ -13,7 +13,7 @@ function assert_throws_with_message(e, f, m) {
 }
 
 test(function() {
-  assert_throws_with_message('InvalidModificationError',
+  assert_throws_with_message('TypeError',
     function() {
       document.documentElement.animate([
         {offset: 0.6},
@@ -23,7 +23,7 @@ test(function() {
     "Failed to execute 'animate' on 'Element': Keyframes with specified offsets are not sorted"
   );
 
-  assert_throws_with_message('InvalidModificationError',
+  assert_throws_with_message('TypeError',
     function() {
       document.documentElement.animate([
         {offset: 'a donkey'}
@@ -32,7 +32,7 @@ test(function() {
     "Failed to execute 'animate' on 'Element': Non numeric offset provided"
   );
 
-  assert_throws_with_message('InvalidModificationError',
+  assert_throws_with_message('TypeError',
     function() {
       document.documentElement.animate([
         {offset: -1}

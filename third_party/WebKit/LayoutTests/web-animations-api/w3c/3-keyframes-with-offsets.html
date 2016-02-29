@@ -92,7 +92,7 @@ test(function() {
     offsetKeyframeB,
     offsetKeyframeC,
   ], offsetKeyframeBExpectations, 'with ordered offsets');
-  assert_throws('InvalidModificationError', function() {
+  assert_throws({name: 'TypeError'}, function() {
     assertAnimationStyles([
       offsetKeyframeA,
       offsetKeyframeC,
@@ -100,7 +100,7 @@ test(function() {
     ], offsetKeyframeBExpectations, 'with unordered offsets (1)');
   });
 
-  assert_throws('InvalidModificationError', function() {
+  assert_throws({name: 'TypeError'}, function() {
     assertAnimationStyles([
       offsetKeyframeB,
       offsetKeyframeA,
@@ -108,7 +108,7 @@ test(function() {
     ], offsetKeyframeBExpectations, 'with unordered offsets (2)');
   });
 
-  assert_throws('InvalidModificationError', function() {
+  assert_throws({name: 'TypeError'}, function() {
     assertAnimationStyles([
       offsetKeyframeB,
       offsetKeyframeC,
@@ -116,7 +116,7 @@ test(function() {
     ], offsetKeyframeBExpectations, 'with unordered offsets (3)');
   });
 
-  assert_throws('InvalidModificationError', function() {
+  assert_throws({name: 'TypeError'}, function() {
     assertAnimationStyles([
       offsetKeyframeC,
       offsetKeyframeA,
@@ -124,7 +124,7 @@ test(function() {
     ], offsetKeyframeBExpectations, 'with unordered offsets (4)');
   });
 
-  assert_throws('InvalidModificationError', function() {
+  assert_throws({name: 'TypeError'}, function() {
     assertAnimationStyles([
       offsetKeyframeC,
       offsetKeyframeB,

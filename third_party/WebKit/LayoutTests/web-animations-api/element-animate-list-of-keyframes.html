@@ -13,63 +13,234 @@
 </style>
 
 <body>
-    <div id='e1' class='anim'></div>
-    <div id='e2' class='anim'></div>
-    <div id='e3' class='anim'></div>
 </body>
 
 <script>
-var e1 = document.getElementById('e1');
-var e2 = document.getElementById('e2');
-var e3 = document.getElementById('e3');
+var addAnimDiv = function() {
+    var element = document.createElement('div');
+    element.className = 'anim';
+    document.body.appendChild(element);
+    return element;
+};
 
-var e1Style = getComputedStyle(e1);
-var e2Style = getComputedStyle(e2);
-var e3Style = getComputedStyle(e3);
-
-var durationValue = 1;
+var assertEquivalentFramesSyntax = function(testParams) {
+    var e1 = addAnimDiv();
+    var e2 = addAnimDiv();
+    var e1Style = getComputedStyle(e1);
+    var e2Style = getComputedStyle(e2);
+    var options = {duration: testParams.duration, fill: "forwards"};
+    var player1 = e1.animate(testParams.listOfKeyframes, options);
+    var player2 = e2.animate(testParams.keyframeWithListOfValues, options);
+    player1.pause();
+    player2.pause();
+    for (var i = 0; i < testParams.expectationList.length; i++) {
+        var expected = testParams.expectationList[i];
+        player1.currentTime = expected.at;
+        player2.currentTime = expected.at;
+        for (var property in expected.is) {
+            assert_equals(e1Style.getPropertyValue(property), expected.is[property]);
+            assert_equals(e2Style.getPropertyValue(property), expected.is[property]);
+        }
+    }
+};
 
 test(function() {
-    var player = e1.animate([
+    var element = addAnimDiv();
+    var elementStyle = getComputedStyle(element);
+    var player = element.animate([
         {left: '10px', opacity: '1', offset: 0},
         {left: '100px', opacity: '0', offset: 1}
-    ], durationValue);
+    ], 1);
     player.pause();
-    player.currentTime = durationValue / 2;
-    assert_equals(e1Style.left, '55px');
-    assert_equals(e1Style.opacity, '0.5');
+    player.currentTime = 0.5;
+    assert_equals(elementStyle.left, '55px');
+    assert_equals(elementStyle.opacity, '0.5');
 }, 'Calling animate() should start an animation.');
 
 test(function() {
-    var player = e2.animate([
+    assertEquivalentFramesSyntax({
+        listOfKeyframes: [
+            {left: '10px', opacity: '1'},
+            {left: '100px', opacity: '0'},
+            {left: '150px', opacity: '1'}
+        ],
+        keyframeWithListOfValues: {
+            left: ['10px', '100px', '150px'],
+            opacity: ['1', '0', '1']
+        },
+        duration: 1,
+        expectationList: [
+            {at: 0, is: {left: '10px', opacity: '1'}},
+            {at: 0.25, is: {left: '55px', opacity: '0.5'}},
+            {at: 0.5, is: {left: '100px', opacity: '0'}},
+            {at: 0.75, is: {left: '125px', opacity: '0.5'}},
+            {at: 1, is: {left: '150px', opacity: '1'}}
+        ]
+    });
+}, 'Calling animate() with alternative list syntax should give same result.');
+
+test(function() {
+    var element = addAnimDiv();
+    var elementStyle = getComputedStyle(element);
+    var player = element.animate([
         {backgroundColor: 'green', offset: 0},
         {backgroundColor: 'purple', offset: 1}
-    ], durationValue);
+    ], 1);
     player.pause();
-    player.currentTime = durationValue / 2;
-    assert_equals(e2Style.backgroundColor, 'rgb(64, 64, 64)');
+    player.currentTime = 0.5;
+    assert_equals(elementStyle.backgroundColor, 'rgb(64, 64, 64)');
 }, 'Calling animate() should start an animation. CamelCase property names should be parsed.');
 
 test(function() {
-    var player = e1.animate([
+    var element = addAnimDiv();
+    var elementStyle = getComputedStyle(element);
+    var player = element.animate([
         {left: '10px', offset: '0'},
         {left: '100px', offset: '1'}
-    ], durationValue);
+    ], 1);
     player.pause();
-    player.currentTime = durationValue / 2;
-    assert_equals(e1Style.left, '55px');
+    player.currentTime = 0.5;
+    assert_equals(elementStyle.left, '55px');
 }, 'Offsets may be specified as strings.');
 
 test(function() {
+    assertEquivalentFramesSyntax({
+        listOfKeyframes: [
+            {left: '0px', easing: 'steps(2, start)'},
+            {left: '100px', easing: 'steps(2, start)'},
+            {left: '300px'}
+        ],
+        keyframeWithListOfValues: {
+            left: ['0px', '100px', '300px'],
+            easing: 'steps(2, start)'
+        },
+        duration: 1,
+        expectationList: [
+            {at: 0, is: {left: '50px'}},
+            {at: 0.25, is: {left: '100px'}},
+            {at: 0.5, is: {left: '200px'}},
+            {at: 0.75, is: {left: '300px'}}
+        ]
+    });
+}, 'When using the alternative list syntax, all keyframes have the same timing function.');
+
+test(function() {
+    assertEquivalentFramesSyntax({
+        listOfKeyframes: [
+            {left: '0px', offset: 0.5},
+            {left: '100px', offset: 0.5}
+        ],
+        keyframeWithListOfValues: {
+            left: ['0px', '100px'],
+            offset: 0.5
+        },
+        duration: 1,
+        expectationList: [
+            {at: 0, is: {left: '10px'}},
+            {at: 0.25, is: {left: '5px'}},
+            {at: 0.49, is: {left: '0.2px'}},
+            {at: 0.5, is: {left: '100px'}},
+            {at: 0.75, is: {left: '55px'}},
+            {at: 1, is: {left: '10px'}}
+        ]
+    });
+}, 'When using the alternative list syntax, offset is applied to all specified keyframes.');
+
+test(function() {
+    assertEquivalentFramesSyntax({
+        listOfKeyframes: [
+            {left: '0px', composite: 'add'},
+            {left: '100px', composite: 'add'}
+        ],
+        keyframeWithListOfValues: {
+            left: ['0px', '100px'],
+            composite: 'add'
+        },
+        duration: 1,
+        expectationList: [
+            {at: 0, is: {left: '10px'}},
+            {at: 0.5, is: {left: '60px'}},
+            {at: 1, is: {left: '110px'}}
+        ]
+    });
+}, 'When using the alternative list syntax, composite is applied to all keyframes.');
+
+test(function() {
+    assertEquivalentFramesSyntax({
+        listOfKeyframes: [
+            {left: '0px', offset: 0},
+            {opacity: '0', offset: 0},
+            {left: '10px', offset: 0.33},
+            {opacity: '0.4', offset: 0.5},
+            {left: '40px', offset: 0.67},
+            {left: '100px', offset: 1},
+            {opacity: '1', offset: 1}
+        ],
+        keyframeWithListOfValues: {
+            left: ['0px', '10px', '40px', '100px'],
+            opacity: ['0', '0.4', '1']
+        },
+        duration: 1,
+        expectationList: [
+            {at: 0, is: {left: '0px', opacity: '0'}},
+            {at: 0.5, is: {left: '25px', opacity: '0.4'}},
+            {at: 1, is: {left: '100px', opacity: '1'}}
+        ]
+    });
+}, 'When using the alternative list syntax, properties can have different length lists.');
+
+test(function() {
+    assertEquivalentFramesSyntax({
+        listOfKeyframes: [
+            {left: '100px'}
+        ],
+        keyframeWithListOfValues: {
+            left: ['100px']
+        },
+        duration: 1,
+        expectationList: [
+            {at: 0, is: {left: '10px'}},
+            {at: 0.5, is: {left: '55px'}},
+            {at: 1, is: {left: '100px'}}
+        ]
+    });
+    assertEquivalentFramesSyntax({
+        listOfKeyframes: [
+            {left: '100px'}
+        ],
+        keyframeWithListOfValues: {
+            left: '100px'
+        },
+        duration: 1,
+        expectationList: [
+            {at: 0, is: {left: '10px'}},
+            {at: 0.5, is: {left: '55px'}},
+            {at: 1, is: {left: '100px'}}
+        ]
+    });
+}, 'The list of keyframes can have one element.');
+
+test(function() {
+    var element = addAnimDiv();
+    var keyframes = [
+        {left: ['10px', '100px']},
+        {left: ['5px', '50px']}
+    ];
+    assert_throws({name: 'TypeError'}, function() { element.animate(keyframes, 1); });
+}, 'Should throw when mixing two different list syntaxes.');
+
+test(function() {
+    var element = addAnimDiv();
     var keyframes = [
         {opacity: '0.5', offset: 0.5},
         {opacity: '0.9', offset: 1},
         {opacity: '0', offset: 0}
     ];
-    assert_throws('InvalidModificationError', function() { e1.animate(keyframes, durationValue); });
+    assert_throws({name: 'TypeError'}, function() { element.animate(keyframes, 1); });
 }, 'Should throw when keyframes have unsorted offsets.');
 
 test(function() {
+    var element = addAnimDiv();
     var keyframes = [
         {opacity: '1', offset: -1},
         {opacity: '1', offset: NaN},
@@ -77,25 +248,27 @@ test(function() {
         {opacity: '0.5', offset: 1},
         {opacity: '0', offset: 0}
     ];
-    assert_throws('InvalidModificationError', function() { e1.animate(keyframes, durationValue); });
+    assert_throws({name: 'TypeError'}, function() { element.animate(keyframes, 1); });
 }, 'Should throw when keyframes has offsets outside the range [0.0, 1.0].');
 
 test(function() {
+    var element = addAnimDiv();
     var keyframes = [
         {opacity: '0.5'},
         {opacity: '1', offset: 1},
         {opacity: '0', offset: 0}
     ];
-    assert_throws('InvalidModificationError', function() { e1.animate(keyframes, durationValue); });
+    assert_throws({name: 'TypeError'}, function() { element.animate(keyframes, 1); });
 }, 'Should throw when keyframes are not loosely sorted and any have no offset.');
 
 test(function() {
+    var element = addAnimDiv();
     var keyframes = [
         {opacity: '0.5', offset: null},
         {opacity: '1', offset: 1},
         {opacity: '0', offset: 0}
     ];
-    assert_throws('InvalidModificationError', function() { e1.animate(keyframes, durationValue); });
+    assert_throws({name: 'TypeError'}, function() { element.animate(keyframes, 1); });
 }, 'Should throw when keyframes are not loosely sorted and any have null offset.');
 
 var keyframesWithInvalid = [
@@ -103,11 +276,14 @@ var keyframesWithInvalid = [
         {width: '1000px', foo: 'bar', offset: 1}];
 
 test(function() {
-    var player = e3.animate(keyframesWithInvalid, {duration: durationValue, fill: 'forwards'});
+    var element = addAnimDiv();
+    var elementStyle = getComputedStyle(element);
+    var player = element.animate(keyframesWithInvalid, {duration: 1, fill: 'forwards'});
     player.pause();
-    player.currentTime = durationValue;
-    assert_equals(e3Style.width, '1000px');
-    assert_equals(e3Style.backgroundColor, 'rgb(0, 0, 0)');
-    assert_equals(e3Style.foo, undefined);
+    player.currentTime = 1;
+    assert_equals(elementStyle.width, '1000px');
+    assert_equals(elementStyle.backgroundColor, 'rgb(0, 0, 0)');
+    assert_equals(elementStyle.foo, undefined);
 }, 'Calling animate() with a pre-constructed keyframes list should start an animation. Invalid style declarations should be ignored.');
+
 </script>

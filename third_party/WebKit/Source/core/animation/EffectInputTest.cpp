@@ -73,7 +73,7 @@ TEST_F(AnimationEffectInputTest, UnsortedOffsets)
 
     EffectInput::convert(element.get(), EffectModelOrDictionarySequenceOrDictionary::fromDictionarySequence(jsKeyframes), exceptionState);
     EXPECT_TRUE(exceptionState.hadException());
-    EXPECT_EQ(InvalidModificationError, exceptionState.code());
+    EXPECT_EQ(V8TypeError, exceptionState.code());
 }
 
 TEST_F(AnimationEffectInputTest, LooslySorted)
@@ -144,7 +144,7 @@ TEST_F(AnimationEffectInputTest, Invalid)
 
     EffectInput::convert(element.get(), EffectModelOrDictionarySequenceOrDictionary::fromDictionarySequence(jsKeyframes), exceptionState);
     EXPECT_TRUE(exceptionState.hadException());
-    EXPECT_EQ(InvalidModificationError, exceptionState.code());
+    EXPECT_EQ(V8TypeError, exceptionState.code());
 }
 
 } // namespace blink

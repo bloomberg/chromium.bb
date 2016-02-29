@@ -35,7 +35,7 @@ test(function() {
     0.5: {opacity: '0.5', left: '50px'},
   });
 
-  assert_throws('InvalidModificationError', function() {
+  assert_throws({name: 'TypeError'}, function() {
     assertAnimationStyles([
       {opacity: '0.75', left: '75px', offset: 1},
       {opacity: '0.25', left: '25px', offset: 0},
