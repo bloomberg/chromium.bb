@@ -961,6 +961,14 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   }
 #endif  // !defined(OS_CHROMEOS)
 
+#if defined(OS_MACOSX)
+  // The MaterialDesignController needs to look at command line flags, which
+  // are not available until this point. Now that they are, proceed with
+  // (conditionally) loading the Material Design resource packs. See
+  // https://crbug.com/585290 .
+  ui::ResourceBundle::GetSharedInstance().LoadMaterialDesignResources();
+#endif
+
 #if defined(OS_WIN)
   // This is needed to enable ETW exporting when requested in about:flags.
   // Normally, we enable it in ContentMainRunnerImpl::Initialize when the flag

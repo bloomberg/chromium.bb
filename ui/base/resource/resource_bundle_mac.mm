@@ -49,20 +49,6 @@ base::FilePath GetResourcesPakFilePath(NSString* name, NSString* mac_locale) {
 }  // namespace
 
 void ResourceBundle::LoadCommonResources() {
-  // The material design data packs contain some of the same asset IDs as in
-  // the non-material design data packs. Add these to the ResourceBundle
-  // first so that they are searched first when a request for an asset is
-  // made.
-  if (MaterialDesignController::IsModeMaterial()) {
-    AddMaterialDesignDataPackFromPath(
-        GetResourcesPakFilePath(@"chrome_material_100_percent", nil),
-        SCALE_FACTOR_100P);
-
-    AddOptionalMaterialDesignDataPackFromPath(
-        GetResourcesPakFilePath(@"chrome_material_200_percent", nil),
-        SCALE_FACTOR_200P);
-  }
-
   AddDataPackFromPath(GetResourcesPakFilePath(@"chrome_100_percent",
                         nil), SCALE_FACTOR_100P);
 
@@ -71,6 +57,40 @@ void ResourceBundle::LoadCommonResources() {
   if (IsScaleFactorSupported(SCALE_FACTOR_200P)) {
     AddDataPackFromPath(GetResourcesPakFilePath(@"chrome_200_percent", nil),
                         SCALE_FACTOR_200P);
+  }
+}
+
+void ResourceBundle::LoadMaterialDesignResources() {
+  if (!MaterialDesignController::IsModeMaterial()) {
+    return;
+  }
+
+  // The Material Design data packs contain some of the same asset IDs as in
+  // the non-Material Design data packs. Set aside the current packs and add the
+  // Material Design packs so that they are searched first when a request for an
+  // asset is made. The Material Design packs cannot be loaded in
+  // LoadCommonResources() because the MaterialDesignController is not always
+  // initialized at the time it is called.
+  // TODO(shrike) - remove this method and restore loading of Material Design
+  // packs to LoadCommonResources() when the MaterialDesignController goes away.
+  std::vector<scoped_ptr<ResourceHandle>> tmp_packs;
+  for (auto it = data_packs_.begin(); it != data_packs_.end(); ++it) {
+    scoped_ptr<ResourceHandle> next_pack(*it);
+    tmp_packs.push_back(std::move(next_pack));
+  }
+  data_packs_.weak_clear();
+
+  AddMaterialDesignDataPackFromPath(
+      GetResourcesPakFilePath(@"chrome_material_100_percent", nil),
+      SCALE_FACTOR_100P);
+
+  AddOptionalMaterialDesignDataPackFromPath(
+      GetResourcesPakFilePath(@"chrome_material_200_percent", nil),
+      SCALE_FACTOR_200P);
+
+  // Add back the non-Material Design packs so that they serve as a fallback.
+  for (auto it = tmp_packs.begin(); it != tmp_packs.end(); ++it) {
+    data_packs_.push_back(std::move(*it));
   }
 }
 

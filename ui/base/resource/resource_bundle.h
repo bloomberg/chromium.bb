@@ -285,6 +285,12 @@ class UI_BASE_EXPORT ResourceBundle {
   // Returns SCALE_FACTOR_100P if no resource is loaded.
   ScaleFactor GetMaxScaleFactor() const;
 
+#if defined(OS_MACOSX)
+  // Loads Material Design data packs and makes them the first items in
+  // |data_packs_|.
+  void LoadMaterialDesignResources();
+#endif
+
  protected:
   // Returns true if |scale_factor| is supported by this platform.
   static bool IsScaleFactorSupported(ScaleFactor scale_factor);
@@ -297,10 +303,13 @@ class UI_BASE_EXPORT ResourceBundle {
                            CountMaterialDesignDataPacksInResourceBundle);
   FRIEND_TEST_ALL_PREFIXES(ResourceBundleMacImageTest,
                            CheckImageFromMaterialDesign);
+  FRIEND_TEST_ALL_PREFIXES(ChromeBrowserMainMacBrowserTest,
+                           MDResourceAccess);
 
   friend class ResourceBundleMacImageTest;
   friend class ResourceBundleImageTest;
   friend class ResourceBundleTest;
+  friend class ChromeBrowserMainMacBrowserTest;
 
   class ResourceBundleImageSource;
   friend class ResourceBundleImageSource;
