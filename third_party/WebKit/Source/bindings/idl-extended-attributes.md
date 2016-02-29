@@ -822,12 +822,6 @@ v8::Handle<v8::Value> V8XXX::callAsFunctionCallback(const v8::Arguments& args)
 }
 ```
 
-#### [Custom=ToV8] _(i)_
-
-*** note
-**FIXME:** Lets you specify a Custom ::toV8 function.
-***
-
 #### [Custom=VisitDOMWrapper] _(i)_
 
 
@@ -851,12 +845,6 @@ void V8XXX::visitDOMWrapper(DOMDataStore* store, void* object, v8::Persistent<v8
     ...
 }
 ```
-
-#### [Custom=Wrap] _(i)_
-
-*** note
-**FIXME:** Lets you specify a Custom ::wrap function.
-***
 
 ### [CustomElementCallbacks] _(m, a)_
 
