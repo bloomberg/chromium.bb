@@ -225,10 +225,10 @@ eventBindings.registerArgumentMassager(
       var options = args[0];
       var onSuccessCallback = function(entries, hasNext) {
         var error = false;
-        for (var i = 0; i < entries; i++) {
-          if (!validateMetadata(options, entries[i])) {
+        for (var i = 0; i < entries.length; i++) {
+          if (!verifyMetadata(options, entries[i])) {
             error = true;
-            return;
+            break;
           }
         }
 
