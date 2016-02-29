@@ -74,6 +74,13 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader, priv
             LoadAsynchronously
         };
 
+        enum EnforceContentSecurityPolicyDirective {
+            EnforceWorkerDirective,
+            EnforceConnectSrcDirective,
+            EnforceManifestSrcDirective,
+            EnforceMediaSrcDirective,
+        };
+
         DocumentThreadableLoader(Document&, ThreadableLoaderClient*, BlockingBehavior, const ThreadableLoaderOptions&, const ResourceLoaderOptions&);
 
         void clear();
@@ -199,7 +206,7 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader, priv
 
         const bool m_async;
 
-        // Holds the original request context (used for sanity checks).
+        // Holds the original request context (used for sanity checks and Content Security Policy enforcement).
         WebURLRequest::RequestContext m_requestContext;
 
         // Holds the original request for fallback in case the Service Worker

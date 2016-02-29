@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="../../../media-resources/media-file.js"></script>
+    <script src="/resources/testharness.js"></script>
+    <script src="/resources/testharnessreport.js"></script>
+    <meta http-equiv="Content-Security-Policy" content="media-src 'self' http://localhost:8000; connect-src 'self'">
+</head>
+<body>
+    <video id="video"/>
+    <script>
+        var video = document.getElementById("video");
+        var source = document.getElementById("source");
+        var t = async_test("video source redirects to location disallowed by connect-src");
+        video.addEventListener("loadedmetadata", function () {
+            t.done();
+        });
+        var mediaFile = findMediaFile("video", "content/test");
+        var mimeType = mimeTypeForFile(mediaFile);
+        video.src = "/security/resources/redir.php?url=" + encodeURIComponent("http://localhost:8000/resources/load-and-stall.cgi?name=../../../media/" + mediaFile + "&mimeType=" + mimeType + "&stallAt=100000");
+        video.load();
+    </script>
+</body>
+</html>

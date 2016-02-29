@@ -897,7 +897,7 @@ void XMLHttpRequest::createRequest(PassRefPtr<EncodedFormData> httpBody, Excepti
     options.preflightPolicy = uploadEvents ? ForcePreflight : ConsiderPreflight;
     options.crossOriginRequestPolicy = UseAccessControl;
     options.initiator = FetchInitiatorTypeNames::xmlhttprequest;
-    options.contentSecurityPolicyEnforcement = ContentSecurityPolicy::shouldBypassMainWorld(&executionContext) ? DoNotEnforceContentSecurityPolicy : EnforceConnectSrcDirective;
+    options.contentSecurityPolicyEnforcement = ContentSecurityPolicy::shouldBypassMainWorld(&executionContext) ? DoNotEnforceContentSecurityPolicy : EnforceContentSecurityPolicy;
     options.timeoutMilliseconds = m_timeoutMilliseconds;
 
     ResourceLoaderOptions resourceLoaderOptions;

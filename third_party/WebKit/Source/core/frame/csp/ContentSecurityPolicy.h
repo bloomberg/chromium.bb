@@ -200,6 +200,8 @@ public:
     bool allowScriptWithHash(const String& source) const;
     bool allowStyleWithHash(const String& source) const;
 
+    bool allowRequest(WebURLRequest::RequestContext, const KURL&, RedirectStatus = DidNotRedirect, ReportingStatus = SendReport) const;
+
     void usesScriptHashAlgorithms(uint8_t ContentSecurityPolicyHashAlgorithm);
     void usesStyleHashAlgorithms(uint8_t ContentSecurityPolicyHashAlgorithm);
 

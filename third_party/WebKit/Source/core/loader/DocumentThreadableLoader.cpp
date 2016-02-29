@@ -899,9 +899,10 @@ bool DocumentThreadableLoader::isAllowedRedirect(const KURL& url) const
 
 bool DocumentThreadableLoader::isAllowedByContentSecurityPolicy(const KURL& url, ContentSecurityPolicy::RedirectStatus redirectStatus) const
 {
-    if (m_options.contentSecurityPolicyEnforcement != EnforceConnectSrcDirective)
+    if (m_options.contentSecurityPolicyEnforcement != EnforceContentSecurityPolicy)
         return true;
-    return document().contentSecurityPolicy()->allowConnectToSource(url, redirectStatus);
+
+    return document().contentSecurityPolicy()->allowRequest(m_requestContext, url, redirectStatus);
 }
 
 StoredCredentials DocumentThreadableLoader::effectiveAllowCredentials() const

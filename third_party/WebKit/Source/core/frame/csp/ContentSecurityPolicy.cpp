@@ -536,6 +536,60 @@ bool ContentSecurityPolicy::allowStyleWithHash(const String& source) const
     return checkDigest<&CSPDirectiveList::allowStyleHash>(source, m_styleHashAlgorithmsUsed, m_policies);
 }
 
+bool ContentSecurityPolicy::allowRequest(WebURLRequest::RequestContext context, const KURL& url, RedirectStatus redirectStatus, ReportingStatus reportingStatus) const
+{
+    switch (context) {
+    case WebURLRequest::RequestContextAudio:
+    case WebURLRequest::RequestContextTrack:
+    case WebURLRequest::RequestContextVideo:
+        return allowMediaFromSource(url, redirectStatus, reportingStatus);
+    case WebURLRequest::RequestContextBeacon:
+    case WebURLRequest::RequestContextEventSource:
+    case WebURLRequest::RequestContextFetch:
+    case WebURLRequest::RequestContextXMLHttpRequest:
+        return allowConnectToSource(url, redirectStatus, reportingStatus);
+    case WebURLRequest::RequestContextEmbed:
+    case WebURLRequest::RequestContextObject:
+    case WebURLRequest::RequestContextPlugin:
+        return allowObjectFromSource(url, redirectStatus, reportingStatus);
+    case WebURLRequest::RequestContextFavicon:
+    case WebURLRequest::RequestContextImage:
+    case WebURLRequest::RequestContextImageSet:
+        return allowImageFromSource(url, redirectStatus, reportingStatus);
+    case WebURLRequest::RequestContextFont:
+        return allowFontFromSource(url, redirectStatus, reportingStatus);
+    case WebURLRequest::RequestContextForm:
+        return allowFormAction(url, redirectStatus, reportingStatus);
+    case WebURLRequest::RequestContextFrame:
+    case WebURLRequest::RequestContextIframe:
+        return allowChildFrameFromSource(url, redirectStatus, reportingStatus);
+    case WebURLRequest::RequestContextImport:
+    case WebURLRequest::RequestContextScript:
+    case WebURLRequest::RequestContextXSLT:
+        return allowScriptFromSource(url, redirectStatus, reportingStatus);
+    case WebURLRequest::RequestContextManifest:
+        return allowManifestFromSource(url, redirectStatus, reportingStatus);
+    case WebURLRequest::RequestContextServiceWorker:
+    case WebURLRequest::RequestContextSharedWorker:
+    case WebURLRequest::RequestContextWorker:
+        return allowWorkerContextFromSource(url, redirectStatus, reportingStatus);
+    case WebURLRequest::RequestContextStyle:
+        return allowStyleFromSource(url, redirectStatus, reportingStatus);
+    case WebURLRequest::RequestContextCSPReport:
+    case WebURLRequest::RequestContextDownload:
+    case WebURLRequest::RequestContextHyperlink:
+    case WebURLRequest::RequestContextInternal:
+    case WebURLRequest::RequestContextLocation:
+    case WebURLRequest::RequestContextPing:
+    case WebURLRequest::RequestContextPrefetch:
+    case WebURLRequest::RequestContextSubresource:
+    case WebURLRequest::RequestContextUnspecified:
+        return true;
+    }
+    ASSERT_NOT_REACHED();
+    return true;
+}
+
 void ContentSecurityPolicy::usesScriptHashAlgorithms(uint8_t algorithms)
 {
     m_scriptHashAlgorithmsUsed |= algorithms;

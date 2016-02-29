@@ -133,7 +133,7 @@ void EventSource::connect()
     ThreadableLoaderOptions options;
     options.preflightPolicy = PreventPreflight;
     options.crossOriginRequestPolicy = UseAccessControl;
-    options.contentSecurityPolicyEnforcement = ContentSecurityPolicy::shouldBypassMainWorld(&executionContext) ? DoNotEnforceContentSecurityPolicy : EnforceConnectSrcDirective;
+    options.contentSecurityPolicyEnforcement = ContentSecurityPolicy::shouldBypassMainWorld(&executionContext) ? DoNotEnforceContentSecurityPolicy : EnforceContentSecurityPolicy;
 
     ResourceLoaderOptions resourceLoaderOptions;
     resourceLoaderOptions.allowCredentials = (origin->canRequestNoSuborigin(m_url) || m_withCredentials) ? AllowStoredCredentials : DoNotAllowStoredCredentials;

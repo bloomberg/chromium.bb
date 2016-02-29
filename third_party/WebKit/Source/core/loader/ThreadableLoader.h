@@ -59,7 +59,7 @@ enum PreflightPolicy {
 };
 
 enum ContentSecurityPolicyEnforcement {
-    EnforceConnectSrcDirective,
+    EnforceContentSecurityPolicy,
     DoNotEnforceContentSecurityPolicy,
 };
 
@@ -68,7 +68,7 @@ struct ThreadableLoaderOptions {
     ThreadableLoaderOptions()
         : preflightPolicy(ConsiderPreflight)
         , crossOriginRequestPolicy(DenyCrossOriginRequests)
-        , contentSecurityPolicyEnforcement(EnforceConnectSrcDirective)
+        , contentSecurityPolicyEnforcement(EnforceContentSecurityPolicy)
         , timeoutMilliseconds(0) { }
 
     // When adding members, CrossThreadThreadableLoaderOptionsData should

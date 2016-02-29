@@ -588,7 +588,7 @@ void FetchManager::Loader::performHTTPFetch(bool corsFlag, bool corsPreflightFla
     resourceLoaderOptions.securityOrigin = m_request->origin().get();
 
     ThreadableLoaderOptions threadableLoaderOptions;
-    threadableLoaderOptions.contentSecurityPolicyEnforcement = ContentSecurityPolicy::shouldBypassMainWorld(executionContext()) ? DoNotEnforceContentSecurityPolicy : EnforceConnectSrcDirective;
+    threadableLoaderOptions.contentSecurityPolicyEnforcement = ContentSecurityPolicy::shouldBypassMainWorld(executionContext()) ? DoNotEnforceContentSecurityPolicy : EnforceContentSecurityPolicy;
     if (corsPreflightFlag)
         threadableLoaderOptions.preflightPolicy = ForcePreflight;
     switch (m_request->mode()) {
@@ -639,7 +639,7 @@ void FetchManager::Loader::performDataFetch()
     resourceLoaderOptions.securityOrigin = m_request->origin().get();
 
     ThreadableLoaderOptions threadableLoaderOptions;
-    threadableLoaderOptions.contentSecurityPolicyEnforcement = ContentSecurityPolicy::shouldBypassMainWorld(executionContext()) ? DoNotEnforceContentSecurityPolicy : EnforceConnectSrcDirective;
+    threadableLoaderOptions.contentSecurityPolicyEnforcement = ContentSecurityPolicy::shouldBypassMainWorld(executionContext()) ? DoNotEnforceContentSecurityPolicy : EnforceContentSecurityPolicy;
     threadableLoaderOptions.crossOriginRequestPolicy = AllowCrossOriginRequests;
 
     InspectorInstrumentation::willStartFetch(executionContext(), this);
