@@ -578,7 +578,7 @@ public class DocumentActivity extends ChromeActivity {
         boolean isCreatedWithWebContents = asyncParams != null
                 && asyncParams.getWebContents() != null;
 
-        if (params.getTabToReparent() != null) {
+        if (params != null && params.getTabToReparent() != null) {
             mTab = params.getTabToReparent();
             mTab.reparentToActivity(this, new DocumentTabDelegateFactory());
         } else {
