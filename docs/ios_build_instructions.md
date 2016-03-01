@@ -89,25 +89,16 @@ file.
 file (removing the `chromium_ios_signing=0` if you want to make
 developer-signed builds):
 
-{
-
+`{
 "GYP\_DEFINES" : "OS=ios chromium\_ios\_signing=0",
-
 "GYP\_GENERATORS" : "ninja,xcode-ninja",
-
-}
-
-\
+}`
 
 Then make sure you sync again to get all the new files like the
 following. At the end it will run gyp\_chromium which will regenerate
 all the build files according to the new settings.
 
-\
-
 `gclient sync`
-
-\
 
 Troubleshooting
 ---------------
