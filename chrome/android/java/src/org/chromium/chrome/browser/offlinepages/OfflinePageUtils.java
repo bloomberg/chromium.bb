@@ -35,14 +35,14 @@ public class OfflinePageUtils {
      * Returns the number of free bytes on the storage.
      */
     public static long getFreeSpaceInBytes() {
-        return Environment.getExternalStorageDirectory().getUsableSpace();
+        return Environment.getDataDirectory().getUsableSpace();
     }
 
     /**
      * Returns the number of total bytes on the storage.
      */
     public static long getTotalSpaceInBytes() {
-        return Environment.getExternalStorageDirectory().getTotalSpace();
+        return Environment.getDataDirectory().getTotalSpace();
     }
 
     /**
@@ -50,8 +50,7 @@ public class OfflinePageUtils {
      * free up some space.
      */
     public static boolean isStorageAlmostFull() {
-        return Environment.getExternalStorageDirectory().getUsableSpace()
-                < STORAGE_ALMOST_FULL_THRESHOLD_BYTES;
+        return getFreeSpaceInBytes() < STORAGE_ALMOST_FULL_THRESHOLD_BYTES;
     }
 
     /**
