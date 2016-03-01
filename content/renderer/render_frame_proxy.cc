@@ -101,7 +101,7 @@ RenderFrameProxy* RenderFrameProxy::CreateFrameProxy(
     web_frame =
         blink::WebRemoteFrame::create(replicated_state.scope, proxy.get());
     render_view->webview()->setMainFrame(web_frame);
-    render_widget = render_view;
+    render_widget = render_view->GetWidget();
   } else {
     // Create a frame under an existing parent. The parent is always expected
     // to be a RenderFrameProxy, because navigations initiated by local frames

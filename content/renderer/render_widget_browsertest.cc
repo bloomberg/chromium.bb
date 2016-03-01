@@ -11,9 +11,7 @@ namespace content {
 
 class RenderWidgetTest : public RenderViewTest {
  protected:
-  RenderWidget* widget() {
-    return static_cast<RenderViewImpl*>(view_);
-  }
+  RenderWidget* widget() { return view_->GetWidget(); }
 
   void OnResize(const ResizeParams& params) {
     widget()->OnResize(params);
