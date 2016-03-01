@@ -666,6 +666,11 @@ body.performance-test * {
   position: fixed;
 }
 
+#album .buttons button[disabled],
+#browser .buttons button[disabled] {
+  display: none;
+}
+
 #album {
   background: black;
 }
