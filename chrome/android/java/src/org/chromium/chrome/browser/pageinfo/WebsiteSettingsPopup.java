@@ -911,6 +911,9 @@ public class WebsiteSettingsPopup implements OnClickListener {
                 DateFormat df = DateFormat.getDateInstance(DateFormat.MEDIUM);
                 offlinePageCreationDate = df.format(creationDate);
                 offlinePageOriginalUrl = tab.getOfflinePageOriginalUrl();
+                if (offlinePageOriginalUrl.startsWith("https://")) {
+                    offlinePageOriginalUrl = offlinePageOriginalUrl.substring(8);
+                }
             }
             offlinePageBridge.destroy();
         }

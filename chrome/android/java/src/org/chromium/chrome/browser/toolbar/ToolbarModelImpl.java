@@ -97,6 +97,9 @@ class ToolbarModelImpl extends ToolbarModel implements ToolbarDataProvider, Tool
         } else if (mTab.isOfflinePage()) {
             String originalUrl = mTab.getOfflinePageOriginalUrl();
             displayText = DomDistillerTabUtils.getFormattedUrlFromOriginalDistillerUrl(originalUrl);
+            if (displayText.startsWith("https://")) {
+                displayText = displayText.substring(8);
+            }
         }
 
         return displayText;

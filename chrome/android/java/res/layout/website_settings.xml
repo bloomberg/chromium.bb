@@ -31,7 +31,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="start|top"
-                android:paddingEnd="12dp"
+                android:paddingEnd="8dp"
                 android:src="@drawable/offline_bolt"
                 android:visibility="gone"
                 android:contentDescription="@string/page_info_offline_icon" />
