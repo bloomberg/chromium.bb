@@ -1040,7 +1040,6 @@ ResourceProvider::ScopedWriteLockSoftware::ScopedWriteLockSoftware(
 
 ResourceProvider::ScopedWriteLockSoftware::~ScopedWriteLockSoftware() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  resource_->SetSynchronized();
   resource_provider_->UnlockForWrite(resource_);
 }
 
@@ -1068,6 +1067,7 @@ ResourceProvider::ScopedWriteLockGpuMemoryBuffer::
   resource_provider_->LazyCreateImage(resource_);
   resource_->dirty_image = true;
   resource_->is_overlay_candidate = true;
+  resource_->SetSynchronized();
 
   // GpuMemoryBuffer provides direct access to the memory used by the GPU.
   // Read lock fences are required to ensure that we're not trying to map a
@@ -1327,7 +1327,20 @@ void ResourceProvider::PrepareSendToParent(const ResourceIdArray& resource_ids,
   std::vector<Resource*> resources;
   resources.reserve(resource_ids.size());
   for (const ResourceId id : resource_ids) {
-    resources.push_back(GetResource(id));
+    Resource* resource = GetResource(id);
+    // Check the synchronization and sync token state when delegated sync points
+    // are required. The only case where we allow a sync token to not be set is
+    // the case where the image is dirty. In that case we will bind the image
+    // lazily and generate a sync token at that point.
+    DCHECK(!output_surface_->capabilities().delegated_sync_points_required ||
+           resource->dirty_image || !resource->needs_sync_token());
+
+    // If we are validating the resource to be sent, the resource cannot be
+    // in a LOCALLY_USED state. It must have been properly synchronized.
+    DCHECK(!output_surface_->capabilities().delegated_sync_points_required ||
+           Resource::LOCALLY_USED != resource->synchronization_state());
+
+    resources.push_back(resource);
   }
 
   // Lazily create any mailboxes and verify all unverified sync tokens.
@@ -1362,6 +1375,7 @@ void ResourceProvider::PrepareSendToParent(const ResourceIdArray& resource_ids,
   }
   for (Resource* resource : need_synchronization_resources) {
     resource->UpdateSyncToken(new_sync_token);
+    resource->SetSynchronized();
   }
 
   // Transfer Resources

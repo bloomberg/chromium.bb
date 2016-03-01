@@ -53,7 +53,11 @@ TEST(TextureLayerImplTest, Occlusion) {
   gpu::Mailbox mailbox;
   impl.output_surface()->context_provider()->ContextGL()->GenMailboxCHROMIUM(
       mailbox.name);
-  TextureMailbox texture_mailbox(mailbox, gpu::SyncToken(), GL_TEXTURE_2D);
+  TextureMailbox texture_mailbox(
+      mailbox,
+      gpu::SyncToken(gpu::CommandBufferNamespace::GPU_IO, 0x123,
+                     gpu::CommandBufferId::FromUnsafeValue(0x234), 0x456),
+      GL_TEXTURE_2D);
 
   TextureLayerImpl* texture_layer_impl =
       impl.AddChildToRoot<TextureLayerImpl>();

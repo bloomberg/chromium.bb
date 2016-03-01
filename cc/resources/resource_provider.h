@@ -483,19 +483,20 @@ class CC_EXPORT ResourceProvider
       // a sync token arrives from an external resource (such as a child or
       // parent), it is automatically initialized as NEEDS_WAIT as well
       // since we still need to wait on it before the resource is synchronized
-      // on the current context.
+      // on the current context. It is an error to use the resource locally for
+      // reading or writing if the resource is in this state.
       NEEDS_WAIT,
 
       // The SYNCHRONIZED state indicates that the resource has been properly
       // synchronized locally. This can either synchronized externally (such
       // as the case of software rasterized bitmaps), or synchronized
       // internally using a sync token that has been waited upon. In the
-      // former case which was synchronized externally, a corresponding sync
-      // token will not exist. In the latter case which was synchronized from
-      // the NEEDS_WAIT state, a corresponding sync token will exist which
-      // is assocaited with the resource. This sync token is still valid and
-      // still associated with the resource and can be passed as an external
-      // resource for others to wait on.
+      // former case where the resource was synchronized externally, a
+      // corresponding sync token will not exist. In the latter case which was
+      // synchronized from the NEEDS_WAIT state, a corresponding sync token will
+      // exist which is assocaited with the resource. This sync token is still
+      // valid and still associated with the resource and can be passed as an
+      // external resource for others to wait on.
       SYNCHRONIZED,
     };
 

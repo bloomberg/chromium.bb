@@ -673,9 +673,10 @@ bool Canvas2DLayerBridge::prepareMailbox(WebExternalTextureMailbox* outMailbox, 
         mailboxInfo.m_image.clear();
     } else {
         // FIXME: We'd rather insert a syncpoint than perform a flush here,
-        // but currentlythe canvas will flicker if we don't flush here.
+        // but currently the canvas will flicker if we don't flush here.
+        const WGC3Duint64 fenceSync = webContext->insertFenceSyncCHROMIUM();
         webContext->flush();
-        // mailboxInfo.m_mailbox.syncPoint = webContext->insertSyncPoint();
+        mailboxInfo.m_mailbox.validSyncToken = webContext->genSyncTokenCHROMIUM(fenceSync, mailboxInfo.m_mailbox.syncToken);
     }
     webContext->bindTexture(GL_TEXTURE_2D, 0);
     // Because we are changing the texture binding without going through skia,
