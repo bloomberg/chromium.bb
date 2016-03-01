@@ -25,6 +25,7 @@ class DataReductionProxySettings;
 namespace net {
 class NetLog;
 class NetworkDelegate;
+class ProxyDelegate;
 class URLRequestContext;
 class URLRequestContextGetter;
 class URLRequestInterceptor;
@@ -56,6 +57,10 @@ class CronetDataReductionProxy {
   // request headers.
   scoped_ptr<net::NetworkDelegate> CreateNetworkDelegate(
       scoped_ptr<net::NetworkDelegate> wrapped_network_delegate);
+
+  // Constructs a proxy delegate suitable for adding Data Reduction Proxy
+  // proxy resolution.
+  scoped_ptr<net::ProxyDelegate> CreateProxyDelegate();
 
   // Constructs a URLRequestInterceptor suitable for carrying out the Data
   // Reduction Proxy's bypass protocol.

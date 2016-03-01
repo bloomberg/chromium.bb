@@ -26,6 +26,7 @@
 #include "build/build_config.h"
 #include "net/base/net_export.h"
 #include "net/base/network_delegate.h"
+#include "net/base/proxy_delegate.h"
 #include "net/dns/host_resolver.h"
 #include "net/http/http_network_session.h"
 #include "net/proxy/proxy_config_service.h"
@@ -169,6 +170,12 @@ class NET_EXPORT URLRequestContextBuilder {
   // Build is called.
   void set_network_delegate(scoped_ptr<NetworkDelegate> delegate) {
     network_delegate_ = std::move(delegate);
+  }
+
+  // Temporarily stores a ProxyDelegate. Ownership is transferred to
+  // UrlRequestContextStorage during Build.
+  void set_proxy_delegate(scoped_ptr<ProxyDelegate> delegate) {
+    proxy_delegate_ = std::move(delegate);
   }
 
   // Sets a specific HttpAuthHandlerFactory to be used by the URLRequestContext
@@ -331,6 +338,7 @@ class NET_EXPORT URLRequestContextBuilder {
   scoped_ptr<ProxyConfigService> proxy_config_service_;
   scoped_ptr<ProxyService> proxy_service_;
   scoped_ptr<NetworkDelegate> network_delegate_;
+  scoped_ptr<ProxyDelegate> proxy_delegate_;
   scoped_refptr<CookieStore> cookie_store_;
   scoped_ptr<FtpTransactionFactory> ftp_transaction_factory_;
   scoped_ptr<HttpAuthHandlerFactory> http_auth_handler_factory_;

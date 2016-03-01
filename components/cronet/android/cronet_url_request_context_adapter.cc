@@ -418,6 +418,8 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
         GetNetworkTaskRunner(), net_log_.get()));
     network_delegate = data_reduction_proxy_->CreateNetworkDelegate(
         std::move(network_delegate));
+    context_builder.set_proxy_delegate(
+        data_reduction_proxy_->CreateProxyDelegate());
     std::vector<scoped_ptr<net::URLRequestInterceptor>> interceptors;
     interceptors.push_back(data_reduction_proxy_->CreateInterceptor());
     context_builder.SetInterceptors(std::move(interceptors));

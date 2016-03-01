@@ -11,6 +11,7 @@
 #include "base/single_thread_task_runner.h"
 #include "components/cronet/android/cronet_in_memory_pref_store.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_delegate.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_network_delegate.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_prefs.h"
@@ -104,6 +105,10 @@ CronetDataReductionProxy::CreateNetworkDelegate(
     scoped_ptr<net::NetworkDelegate> wrapped_network_delegate) {
   return io_data_->CreateNetworkDelegate(std::move(wrapped_network_delegate),
                                          false /* No bypass UMA */);
+}
+
+scoped_ptr<net::ProxyDelegate> CronetDataReductionProxy::CreateProxyDelegate() {
+  return io_data_->CreateProxyDelegate();
 }
 
 scoped_ptr<net::URLRequestInterceptor>

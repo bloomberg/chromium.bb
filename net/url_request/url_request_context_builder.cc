@@ -424,6 +424,10 @@ scoped_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
       http_network_session_params_.quic_prefer_aes;
   network_session_params.quic_migrate_sessions_early =
       http_network_session_params_.quic_migrate_sessions_early;
+  if (proxy_delegate_) {
+    network_session_params.proxy_delegate = proxy_delegate_.get();
+    storage->set_proxy_delegate(std::move(proxy_delegate_));
+  }
 
   storage->set_http_network_session(
       make_scoped_ptr(new HttpNetworkSession(network_session_params)));

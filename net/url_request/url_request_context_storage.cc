@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "net/base/network_delegate.h"
+#include "net/base/proxy_delegate.h"
 #include "net/base/sdch_manager.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cookies/cookie_store.h"
@@ -79,6 +80,11 @@ void URLRequestContextStorage::set_network_delegate(
     scoped_ptr<NetworkDelegate> network_delegate) {
   context_->set_network_delegate(network_delegate.get());
   network_delegate_ = std::move(network_delegate);
+}
+
+void URLRequestContextStorage::set_proxy_delegate(
+    scoped_ptr<ProxyDelegate> proxy_delegate) {
+  proxy_delegate_ = std::move(proxy_delegate);
 }
 
 void URLRequestContextStorage::set_http_server_properties(
