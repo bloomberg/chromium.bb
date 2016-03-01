@@ -1634,6 +1634,8 @@
     ],
     # ARC only sources of app_list.
     'chrome_unit_tests_app_list_chromeos_arc_sources': [
+      'browser/ui/app_list/arc/arc_app_test.cc',
+      'browser/ui/app_list/arc/arc_app_test.h',
       'browser/ui/app_list/arc/arc_app_unittest.cc',
     ],
     'chrome_unit_tests_arc_sources': [

@@ -151,10 +151,6 @@ class ArcAppListPrefs : public KeyedService,
   // Owned by the BrowserContext.
   PrefService* prefs_;
 
-  // Unowned pointer. arc::ArcBridgeService exists during whole user session
-  // and owned by arc::ArcServiceManager.
-  arc::ArcBridgeService* const bridge_service_;
-
   // List of observers.
   base::ObserverList<Observer> observer_list_;
   // Keeps root folder where ARC app icons for different scale factor are

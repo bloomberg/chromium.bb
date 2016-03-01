@@ -111,20 +111,22 @@ std::string ArcAppListPrefs::GetAppId(const std::string& package_name,
 
 ArcAppListPrefs::ArcAppListPrefs(const base::FilePath& base_path,
                                  PrefService* prefs)
-    : prefs_(prefs), bridge_service_(arc::ArcBridgeService::Get()),
-      binding_(this), weak_ptr_factory_(this) {
+    : prefs_(prefs), binding_(this), weak_ptr_factory_(this) {
   base_path_ = base_path.AppendASCII(prefs::kArcApps);
 
-  if (!bridge_service_)
+  arc::ArcBridgeService* bridge_service = arc::ArcBridgeService::Get();
+  if (!bridge_service)
     return;
 
-  bridge_service_->AddObserver(this);
-  OnStateChanged(bridge_service_->state());
+  bridge_service->AddObserver(this);
+  OnStateChanged(bridge_service->state());
 }
 
 ArcAppListPrefs::~ArcAppListPrefs() {
-  if (bridge_service_)
-    bridge_service_->RemoveObserver(this);
+  arc::ArcBridgeService* bridge_service = arc::ArcBridgeService::Get();
+  if (!bridge_service)
+    return;
+  bridge_service->RemoveObserver(this);
 }
 
 base::FilePath ArcAppListPrefs::GetAppPath(const std::string& app_id) const {
@@ -175,11 +177,12 @@ void ArcAppListPrefs::RequestIcon(const std::string& app_id,
     return;
   }
 
-  if (!bridge_service_) {
+  arc::ArcBridgeService* bridge_service = arc::ArcBridgeService::Get();
+  if (!bridge_service) {
     NOTREACHED();
     return;
   }
-  arc::AppInstance* app_instance = bridge_service_->app_instance();
+  arc::AppInstance* app_instance = bridge_service->app_instance();
   if (!app_instance) {
     VLOG(2) << "Request to load icon when bridge service is not ready: "
             <<  app_id << ".";
@@ -264,11 +267,12 @@ void ArcAppListPrefs::OnStateChanged(arc::ArcBridgeService::State state) {
 }
 
 void ArcAppListPrefs::OnAppInstanceReady() {
-  if (!bridge_service_) {
+  arc::ArcBridgeService* bridge_service = arc::ArcBridgeService::Get();
+  if (!bridge_service) {
     NOTREACHED();
     return;
   }
-  arc::AppInstance* app_instance = bridge_service_->app_instance();
+  arc::AppInstance* app_instance = bridge_service->app_instance();
   if (!app_instance) {
     VLOG(2) << "Request to refresh app list when bridge service is not ready.";
     return;

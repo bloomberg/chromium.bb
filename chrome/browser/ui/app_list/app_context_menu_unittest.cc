@@ -21,22 +21,14 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/app_list/arc/arc_app_item.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
-#include "components/arc/arc_bridge_service.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_test.h"
 #include "components/arc/test/fake_app_instance.h"
 #include "components/arc/test/fake_arc_bridge_service.h"
 #endif
 
 namespace {
-
-#if defined(OS_CHROMEOS)
-const char kArcFakeAppName[] = "ArcFakeApp";
-const char kArcFakeAppActivity[] = "arc.fake.app.activity";
-const char kArcFakeAppPackage[] = "arc.fake.app";
-#endif
 
 class FakeAppContextMenuDelegate : public app_list::AppContextMenuDelegate {
  public:
@@ -159,24 +151,6 @@ class AppContextMenuTest : public AppListTestBase {
     EXPECT_EQ(state_index, states.size());
   }
 
-#if defined(OS_CHROMEOS)
-  void CreateArcBridge() {
-    arc_bridge_service_.reset(new arc::FakeArcBridgeService());
-    arc_app_instance_.reset(
-        new arc::FakeAppInstance(ArcAppListPrefs::Get(profile())));
-    arc::AppInstancePtr instance;
-    arc_app_instance_->Bind(mojo::GetProxy(&instance));
-    arc_bridge_service_->OnAppInstanceReady(std::move(instance));
-    arc_app_instance_->WaitForOnAppInstanceReady();
-
-    arc_fake_app_.name = kArcFakeAppName;
-    arc_fake_app_.package_name = kArcFakeAppPackage;
-    arc_fake_app_.activity = kArcFakeAppActivity;
-
-    arc_bridge_service_->SetReady();
-  }
-#endif
-
   FakeAppListControllerDelegate* controller() {
     return controller_.get();
   }
@@ -188,16 +162,6 @@ class AppContextMenuTest : public AppListTestBase {
   Profile* profile() {
     return profile_.get();
   }
-
-#if defined(OS_CHROMEOS)
-  arc::FakeAppInstance* arc_app_instance() {
-    return arc_app_instance_.get();
-  }
-
-  const arc::AppInfo& arc_fake_app() const {
-    return arc_fake_app_;
-  }
-#endif
 
   void AddSeparator(std::vector<MenuState>& states) {
     if (states.empty() || states.back().command_id == -1)
@@ -314,11 +278,6 @@ class AppContextMenuTest : public AppListTestBase {
   scoped_ptr<KeyedService> menu_manager_;
   scoped_ptr<FakeAppListControllerDelegate> controller_;
   scoped_ptr<FakeAppContextMenuDelegate> menu_delegate_;
-#if defined(OS_CHROMEOS)
-  arc::AppInfo arc_fake_app_;
-  scoped_ptr<arc::FakeArcBridgeService> arc_bridge_service_;
-  scoped_ptr<arc::FakeAppInstance> arc_app_instance_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(AppContextMenuTest);
 };
@@ -380,20 +339,16 @@ TEST_F(AppContextMenuTest, NonExistingExtensionApp) {
 
 #if defined(OS_CHROMEOS)
 TEST_F(AppContextMenuTest, ArcMenu) {
-  CreateArcBridge();
+  ArcAppTest arc_test;
+  arc_test.SetUp(profile());
+  arc_test.bridge_service()->SetReady();
 
-  const std::string app_id = ArcAppListPrefs::GetAppId(
-      kArcFakeAppPackage, kArcFakeAppActivity);
-  controller()->SetAppPinnable(app_id,
-      AppListControllerDelegate::PIN_EDITABLE);
+  const arc::AppInfo& app_info = arc_test.fake_apps()[0];
+  const std::string app_id = ArcAppTest::GetAppId(app_info);
+  controller()->SetAppPinnable(app_id, AppListControllerDelegate::PIN_EDITABLE);
 
-  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_.get());
-  ASSERT_NE(nullptr, prefs);
-
-  std::vector<arc::AppInfo> fake_apps;
-  fake_apps.push_back(arc_fake_app());
-  arc_app_instance()->RefreshAppList();
-  arc_app_instance()->SendRefreshAppList(fake_apps);
+  arc_test.app_instance()->RefreshAppList();
+  arc_test.app_instance()->SendRefreshAppList(arc_test.fake_apps());
 
   ArcAppItem item(profile(), nullptr, app_id, std::string(), true);
 
@@ -410,20 +365,18 @@ TEST_F(AppContextMenuTest, ArcMenu) {
   EXPECT_EQ(false, menu->IsItemCheckedAt(2));
 
   // Test activate request.
-  EXPECT_EQ(0u, arc_app_instance()->launch_requests().
-      size());
+  EXPECT_EQ(0u, arc_test.app_instance()->launch_requests().size());
 
   menu->ActivatedAt(0);
-  arc_app_instance()->WaitForIncomingMethodCall();
+  arc_test.app_instance()->WaitForIncomingMethodCall();
 
   const ScopedVector<arc::FakeAppInstance::Request>& launch_requests =
-      arc_app_instance()->launch_requests();
+      arc_test.app_instance()->launch_requests();
   ASSERT_EQ(1u, launch_requests.size());
-  EXPECT_EQ(true, launch_requests[0]->IsForApp(arc_fake_app()));
+  EXPECT_EQ(true, launch_requests[0]->IsForApp(app_info));
 
-  fake_apps.clear();
-  arc_app_instance()->RefreshAppList();
-  arc_app_instance()->SendRefreshAppList(fake_apps);
+  arc_test.app_instance()->RefreshAppList();
+  arc_test.app_instance()->SendRefreshAppList(std::vector<arc::AppInfo>());
   item.SetReady(false);
 
   EXPECT_EQ(item.GetContextMenuModel(), menu);

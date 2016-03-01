@@ -15,30 +15,21 @@
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "base/run_loop.h"
-#include "base/strings/string_util.h"
 #include "base/task_runner_util.h"
 #include "chrome/browser/ui/app_list/app_list_test_util.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_icon.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_item.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_model_builder.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_test.h"
 #include "chrome/browser/ui/app_list/test/test_app_list_controller_delegate.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/arc/arc_bridge_service.h"
 #include "components/arc/test/fake_app_instance.h"
 #include "components/arc/test/fake_arc_bridge_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/app_list/app_list_model.h"
 #include "ui/gfx/image/image_skia.h"
-
-namespace {
-
-std::string GetAppId(const arc::AppInfo& app_info) {
-  return ArcAppListPrefs::GetAppId(app_info.package_name, app_info.activity);
-}
-
-}  // namespace
 
 class ArcAppModelBuilderTest : public AppListTestBase {
  public:
@@ -51,39 +42,9 @@ class ArcAppModelBuilderTest : public AppListTestBase {
   void SetUp() override {
     AppListTestBase::SetUp();
 
-    // Make sure we have enough data for test.
-    for (int i = 0; i < 3; ++i) {
-      arc::AppInfo app;
-      char buffer[16];
-      base::snprintf(buffer, arraysize(buffer), "Fake App %d", i);
-      app.name = buffer;
-      base::snprintf(buffer, arraysize(buffer), "fake.app.%d", i);
-      app.package_name = buffer;
-      base::snprintf(buffer, arraysize(buffer), "fake.app.%d.activity", i);
-      app.activity = buffer;
-      fake_apps_.push_back(app);
-    }
-
-    bridge_service_.reset(new arc::FakeArcBridgeService());
-    app_instance_.reset(
-        new arc::FakeAppInstance(ArcAppListPrefs::Get(profile_.get())));
-    arc::AppInstancePtr instance;
-    app_instance_->Bind(mojo::GetProxy(&instance));
-    bridge_service_->OnAppInstanceReady(std::move(instance));
-    app_instance_->WaitForOnAppInstanceReady();
-
-    // Check initial conditions.
-    EXPECT_EQ(bridge_service_.get(), arc::ArcBridgeService::Get());
-    EXPECT_EQ(true, !arc::ArcBridgeService::Get()->available());
-    EXPECT_EQ(arc::ArcBridgeService::State::STOPPED,
-              arc::ArcBridgeService::Get()->state());
+    arc_test_.SetUp(profile_.get());
 
     CreateBuilder();
-
-    // At this point we should have ArcAppListPrefs as observer of service.
-    EXPECT_EQ(
-        true,
-        bridge_service()->HasObserver(ArcAppListPrefs::Get(profile_.get())));
   }
 
   void TearDown() override { ResetBuilder(); }
@@ -151,7 +112,7 @@ class ArcAppModelBuilderTest : public AppListTestBase {
     ASSERT_EQ(apps.size(), GetArcItemCount());
     // In principle, order of items is not defined.
     for (auto& app : apps) {
-      const std::string id = GetAppId(app);
+      const std::string id = ArcAppTest::GetAppId(app);
       EXPECT_NE(std::find(ids.begin(), ids.end(), id), ids.end());
       scoped_ptr<ArcAppListPrefs::AppInfo> app_info = prefs->GetApp(id);
       ASSERT_NE(nullptr, app_info.get());
@@ -176,7 +137,7 @@ class ArcAppModelBuilderTest : public AppListTestBase {
 
     // Process requested apps.
     for (auto& app : apps) {
-      const std::string id = GetAppId(app);
+      const std::string id = ArcAppTest::GetAppId(app);
       std::vector<std::string>::iterator it_id = std::find(ids.begin(),
                                                            ids.end(),
                                                            id);
@@ -204,19 +165,23 @@ class ArcAppModelBuilderTest : public AppListTestBase {
 
   AppListControllerDelegate* controller() { return controller_.get(); }
 
-  arc::FakeArcBridgeService* bridge_service() { return bridge_service_.get(); }
+  const std::vector<arc::AppInfo>& fake_apps() const {
+    return arc_test_.fake_apps();
+  }
 
-  arc::FakeAppInstance* app_instance() { return app_instance_.get(); }
+  arc::FakeArcBridgeService* bridge_service() {
+    return arc_test_.bridge_service();
+  }
 
-  const std::vector<arc::AppInfo>& fake_apps() const { return fake_apps_; }
+  arc::FakeAppInstance* app_instance() {
+    return arc_test_.app_instance();
+  }
 
  private:
+  ArcAppTest arc_test_;
   scoped_ptr<app_list::AppListModel> model_;
   scoped_ptr<test::TestAppListControllerDelegate> controller_;
   scoped_ptr<ArcAppModelBuilder> builder_;
-  scoped_ptr<arc::FakeArcBridgeService> bridge_service_;
-  scoped_ptr<arc::FakeAppInstance> app_instance_;
-  std::vector<arc::AppInfo> fake_apps_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcAppModelBuilderTest);
 };
@@ -275,8 +240,8 @@ TEST_F(ArcAppModelBuilderTest, StopStartServicePreserveApps) {
 
   bridge_service()->SetReady();
   app_instance()->RefreshAppList();
-  EXPECT_EQ(static_cast<size_t>(0), GetArcItemCount());
-  EXPECT_EQ(static_cast<size_t>(0), prefs->GetAppIds().size());
+  EXPECT_EQ(0u, GetArcItemCount());
+  EXPECT_EQ(0u, prefs->GetAppIds().size());
 
   app_instance()->SendRefreshAppList(fake_apps());
   std::vector<std::string> ids = prefs->GetAppIds();
@@ -330,8 +295,8 @@ TEST_F(ArcAppModelBuilderTest, LaunchApps) {
   // Simulate item activate.
   const arc::AppInfo& app_first = fake_apps()[0];
   const arc::AppInfo& app_last = fake_apps()[0];
-  ArcAppItem* item_first = FindArcItem(GetAppId(app_first));
-  ArcAppItem* item_last = FindArcItem(GetAppId(app_last));
+  ArcAppItem* item_first = FindArcItem(ArcAppTest::GetAppId(app_first));
+  ArcAppItem* item_last = FindArcItem(ArcAppTest::GetAppId(app_last));
   ASSERT_NE(nullptr, item_first);
   ASSERT_NE(nullptr, item_last);
   item_first->Activate(0);
@@ -343,14 +308,14 @@ TEST_F(ArcAppModelBuilderTest, LaunchApps) {
 
   const ScopedVector<arc::FakeAppInstance::Request>& launch_requests =
       app_instance()->launch_requests();
-  ASSERT_EQ(static_cast<size_t>(3), launch_requests.size());
+  ASSERT_EQ(3u, launch_requests.size());
   EXPECT_EQ(true, launch_requests[0]->IsForApp(app_first));
   EXPECT_EQ(true, launch_requests[1]->IsForApp(app_last));
   EXPECT_EQ(true, launch_requests[2]->IsForApp(app_first));
 
   // Test an attempt to launch of a not-ready app.
   bridge_service()->SetStopped();
-  item_first = FindArcItem(GetAppId(app_first));
+  item_first = FindArcItem(ArcAppTest::GetAppId(app_first));
   ASSERT_NE(nullptr, item_first);
   size_t launch_request_count_before = app_instance()->launch_requests().size();
   item_first->Activate(0);
@@ -376,7 +341,7 @@ TEST_F(ArcAppModelBuilderTest, RequestIcons) {
   for (auto& scale_factor : scale_factors) {
     expected_mask |= 1 <<  scale_factor;
     for (auto& app : fake_apps()) {
-      ArcAppItem* app_item = FindArcItem(GetAppId(app));
+      ArcAppItem* app_item = FindArcItem(ArcAppTest::GetAppId(app));
       ASSERT_NE(nullptr, app_item);
       const float scale = ui::GetScaleForScaleFactor(scale_factor);
       app_item->icon().GetRepresentation(scale);
@@ -414,7 +379,7 @@ TEST_F(ArcAppModelBuilderTest, RequestIcons) {
   // factor.
   EXPECT_EQ(fake_apps().size(), app_masks.size());
   for (auto& app : fake_apps()) {
-    const std::string id = GetAppId(app);
+    const std::string id = ArcAppTest::GetAppId(app);
     ASSERT_NE(app_masks.find(id), app_masks.end());
     EXPECT_EQ(app_masks[id], expected_mask);
   }
@@ -424,7 +389,6 @@ TEST_F(ArcAppModelBuilderTest, InstallIcon) {
   // Make sure we are on UI thread.
   ASSERT_EQ(true,
             content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-
 
   bridge_service()->SetReady();
   app_instance()->RefreshAppList();
@@ -437,11 +401,11 @@ TEST_F(ArcAppModelBuilderTest, InstallIcon) {
 
   const ui::ScaleFactor scale_factor = ui::GetSupportedScaleFactors()[0];
   const float scale = ui::GetScaleForScaleFactor(scale_factor);
-  const base::FilePath icon_path = prefs->GetIconPath(GetAppId(app),
+  const base::FilePath icon_path = prefs->GetIconPath(ArcAppTest::GetAppId(app),
                                                       scale_factor);
   EXPECT_EQ(true, !base::PathExists(icon_path));
 
-  const ArcAppItem* app_item = FindArcItem(GetAppId(app));
+  const ArcAppItem* app_item = FindArcItem(ArcAppTest::GetAppId(app));
   EXPECT_NE(nullptr, app_item);
   // This initiates async loading.
   app_item->icon().GetRepresentation(scale);
@@ -487,7 +451,7 @@ TEST_F(ArcAppModelBuilderTest, RemoveAppCleanUpFolder) {
   ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_.get());
   ASSERT_NE(nullptr, prefs);
 
-  const std::string app_id = GetAppId(app);
+  const std::string app_id = ArcAppTest::GetAppId(app);
   const base::FilePath app_path = prefs->GetAppPath(app_id);
   const ui::ScaleFactor scale_factor = ui::GetSupportedScaleFactors()[0];
 
