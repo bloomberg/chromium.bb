@@ -8,15 +8,11 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "build/build_config.h"
+#include "base/thread_task_runner_handle.h"
 #include "content/common/gpu/client/gpu_channel_host.h"
 #include "content/common/gpu/media_messages.h"
-#include "content/common/view_messages.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_utils.h"
-
-#if defined(OS_WIN)
-#include "content/public/common/sandbox_init.h"
-#endif  // OS_WIN
 
 using media::VideoDecodeAccelerator;
 namespace content {
