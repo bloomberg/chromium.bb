@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sync/internal_api/public/model_type_entity.h"
+#include "sync/internal_api/public/processor_entity_tracker.h"
 
 #include <stdint.h>
 #include <utility>
@@ -17,18 +17,18 @@
 
 namespace syncer_v2 {
 
-// Some simple sanity tests for the ModelTypeEntity.
+// Some simple sanity tests for the ProcessorEntityTracker.
 //
 // A lot of the more complicated sync logic is implemented in the
-// SharedModelTypeProcessor that owns the ModelTypeEntity.  We can't unit test
-// it here.
+// SharedModelTypeProcessor that owns the ProcessorEntityTracker.  We can't unit
+// test it here.
 //
 // Instead, we focus on simple tests to make sure that variables are getting
 // properly intialized and flags properly set.  Anything more complicated would
 // be a redundant and incomplete version of the SharedModelTypeProcessor tests.
-class ModelTypeEntityTest : public ::testing::Test {
+class ProcessorEntityTrackerTest : public ::testing::Test {
  public:
-  ModelTypeEntityTest()
+  ProcessorEntityTrackerTest()
       : kServerId("ServerID"),
         kClientTag("sample.pref.name"),
         kClientTagHash(GetSyncableHash(kClientTag)),
@@ -44,20 +44,20 @@ class ModelTypeEntityTest : public ::testing::Test {
     return syncer::syncable::GenerateSyncableHash(syncer::PREFERENCES, tag);
   }
 
-  scoped_ptr<ModelTypeEntity> NewLocalItem(const std::string& tag) {
-    return scoped_ptr<ModelTypeEntity>(
-        ModelTypeEntity::CreateNew(tag, GetSyncableHash(tag), "", kCtime));
+  scoped_ptr<ProcessorEntityTracker> NewLocalItem(const std::string& tag) {
+    return scoped_ptr<ProcessorEntityTracker>(ProcessorEntityTracker::CreateNew(
+        tag, GetSyncableHash(tag), "", kCtime));
   }
 
-  scoped_ptr<ModelTypeEntity> NewLocalItem(
+  scoped_ptr<ProcessorEntityTracker> NewLocalItem(
       const std::string& tag,
       const sync_pb::EntitySpecifics& specifics) {
-    scoped_ptr<ModelTypeEntity> entity(NewLocalItem(tag));
+    scoped_ptr<ProcessorEntityTracker> entity(NewLocalItem(tag));
     MakeLocalChange(entity.get(), specifics);
     return entity;
   }
 
-  void MakeLocalChange(ModelTypeEntity* entity,
+  void MakeLocalChange(ProcessorEntityTracker* entity,
                        const sync_pb::EntitySpecifics& specifics) {
     scoped_ptr<EntityData> entity_data = make_scoped_ptr(new EntityData());
     entity_data->client_tag_hash = entity->metadata().client_tag_hash();
@@ -67,26 +67,26 @@ class ModelTypeEntityTest : public ::testing::Test {
     entity->MakeLocalChange(std::move(entity_data));
   }
 
-  scoped_ptr<ModelTypeEntity> NewServerItem() {
-    return scoped_ptr<ModelTypeEntity>(ModelTypeEntity::CreateNew(
+  scoped_ptr<ProcessorEntityTracker> NewServerItem() {
+    return scoped_ptr<ProcessorEntityTracker>(ProcessorEntityTracker::CreateNew(
         kClientTag, kClientTagHash, kServerId, kCtime));
   }
 
-  scoped_ptr<ModelTypeEntity> NewServerItem(
+  scoped_ptr<ProcessorEntityTracker> NewServerItem(
       int64_t version,
       const sync_pb::EntitySpecifics& specifics) {
-    scoped_ptr<ModelTypeEntity> entity(NewServerItem());
+    scoped_ptr<ProcessorEntityTracker> entity(NewServerItem());
     ApplyUpdateFromServer(entity.get(), version, specifics);
     return entity;
   }
 
-  void ApplyUpdateFromServer(ModelTypeEntity* entity,
+  void ApplyUpdateFromServer(ProcessorEntityTracker* entity,
                              int64_t version,
                              const sync_pb::EntitySpecifics& specifics) {
     ApplyUpdateFromServer(entity, version, specifics, kMtime);
   }
 
-  void ApplyUpdateFromServer(ModelTypeEntity* entity,
+  void ApplyUpdateFromServer(ProcessorEntityTracker* entity,
                              int64_t version,
                              const sync_pb::EntitySpecifics& specifics,
                              base::Time mtime) {
@@ -103,7 +103,8 @@ class ModelTypeEntityTest : public ::testing::Test {
     entity->ApplyUpdateFromServer(response_data);
   }
 
-  bool HasSpecificsHash(const scoped_ptr<ModelTypeEntity>& entity) const {
+  bool HasSpecificsHash(
+      const scoped_ptr<ProcessorEntityTracker>& entity) const {
     return !entity->metadata().specifics_hash().empty();
   }
 
@@ -115,8 +116,8 @@ class ModelTypeEntityTest : public ::testing::Test {
   sync_pb::EntitySpecifics specifics;
 };
 
-TEST_F(ModelTypeEntityTest, NewItem) {
-  scoped_ptr<ModelTypeEntity> entity(NewLocalItem("asdf"));
+TEST_F(ProcessorEntityTrackerTest, NewItem) {
+  scoped_ptr<ProcessorEntityTracker> entity(NewLocalItem("asdf"));
 
   EXPECT_EQ(entity->client_tag(), "asdf");
   EXPECT_EQ(entity->metadata().client_tag_hash(), GetSyncableHash("asdf"));
@@ -129,8 +130,8 @@ TEST_F(ModelTypeEntityTest, NewItem) {
   EXPECT_FALSE(entity->UpdateIsInConflict(1));
 }
 
-TEST_F(ModelTypeEntityTest, NewLocalItem) {
-  scoped_ptr<ModelTypeEntity> entity(NewLocalItem("asdf", specifics));
+TEST_F(ProcessorEntityTrackerTest, NewLocalItem) {
+  scoped_ptr<ProcessorEntityTracker> entity(NewLocalItem("asdf", specifics));
 
   EXPECT_TRUE(entity->HasCommitData());
   EXPECT_TRUE(HasSpecificsHash(entity));
@@ -139,8 +140,8 @@ TEST_F(ModelTypeEntityTest, NewLocalItem) {
   EXPECT_TRUE(entity->UpdateIsInConflict(1));
 }
 
-TEST_F(ModelTypeEntityTest, FromServerUpdate) {
-  scoped_ptr<ModelTypeEntity> entity(NewServerItem());
+TEST_F(ProcessorEntityTrackerTest, FromServerUpdate) {
+  scoped_ptr<ProcessorEntityTracker> entity(NewServerItem());
 
   EXPECT_EQ(entity->client_tag(), kClientTag);
   EXPECT_EQ(entity->metadata().client_tag_hash(), kClientTagHash);
@@ -163,9 +164,9 @@ TEST_F(ModelTypeEntityTest, FromServerUpdate) {
 // thing about them is that they don't have specifics, so it can be hard to
 // detect their type.  Fortunately, this class doesn't care about types in
 // received updates.
-TEST_F(ModelTypeEntityTest, TombstoneUpdate) {
+TEST_F(ProcessorEntityTrackerTest, TombstoneUpdate) {
   // Empty EntitySpecifics indicates tombstone update.
-  scoped_ptr<ModelTypeEntity> entity(
+  scoped_ptr<ProcessorEntityTracker> entity(
       NewServerItem(10, sync_pb::EntitySpecifics()));
 
   EXPECT_EQ(kClientTagHash, entity->metadata().client_tag_hash());
@@ -180,9 +181,9 @@ TEST_F(ModelTypeEntityTest, TombstoneUpdate) {
 }
 
 // Apply a deletion update.
-TEST_F(ModelTypeEntityTest, ApplyUpdate) {
+TEST_F(ProcessorEntityTrackerTest, ApplyUpdate) {
   // Start with a non-deleted state with version 10.
-  scoped_ptr<ModelTypeEntity> entity(NewServerItem(10, specifics));
+  scoped_ptr<ProcessorEntityTracker> entity(NewServerItem(10, specifics));
 
   EXPECT_TRUE(HasSpecificsHash(entity));
 
@@ -197,9 +198,9 @@ TEST_F(ModelTypeEntityTest, ApplyUpdate) {
   EXPECT_FALSE(entity->UpdateIsReflection(12));
 }
 
-TEST_F(ModelTypeEntityTest, LocalChange) {
+TEST_F(ProcessorEntityTrackerTest, LocalChange) {
   // Start with a non-deleted state with version 10.
-  scoped_ptr<ModelTypeEntity> entity(NewServerItem(10, specifics));
+  scoped_ptr<ProcessorEntityTracker> entity(NewServerItem(10, specifics));
 
   std::string specifics_hash = entity->metadata().specifics_hash();
 
@@ -221,9 +222,9 @@ TEST_F(ModelTypeEntityTest, LocalChange) {
   EXPECT_TRUE(entity->UpdateIsInConflict(11));
 }
 
-TEST_F(ModelTypeEntityTest, LocalDeletion) {
+TEST_F(ProcessorEntityTrackerTest, LocalDeletion) {
   // Start with a non-deleted state with version 10.
-  scoped_ptr<ModelTypeEntity> entity(NewServerItem(10, specifics));
+  scoped_ptr<ProcessorEntityTracker> entity(NewServerItem(10, specifics));
   EXPECT_TRUE(HasSpecificsHash(entity));
 
   // Make a local delete.
@@ -241,10 +242,10 @@ TEST_F(ModelTypeEntityTest, LocalDeletion) {
   EXPECT_TRUE(entity->UpdateIsInConflict(11));
 }
 
-// Verify generation of CommitRequestData from ModelTypeEntity.
+// Verify generation of CommitRequestData from ProcessorEntityTracker.
 // Verify that the sequence number increments on local changes.
-TEST_F(ModelTypeEntityTest, InitializeCommitRequestData) {
-  scoped_ptr<ModelTypeEntity> entity(NewLocalItem(kClientTag));
+TEST_F(ProcessorEntityTrackerTest, InitializeCommitRequestData) {
+  scoped_ptr<ProcessorEntityTracker> entity(NewLocalItem(kClientTag));
   MakeLocalChange(entity.get(), specifics);
 
   CommitRequestData commit_request;

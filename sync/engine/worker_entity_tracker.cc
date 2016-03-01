@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sync/engine/entity_tracker.h"
+#include "sync/engine/worker_entity_tracker.h"
 
 #include <stdint.h>
 
@@ -14,22 +14,23 @@
 
 namespace syncer_v2 {
 
-scoped_ptr<EntityTracker> EntityTracker::FromUpdateResponse(
+scoped_ptr<WorkerEntityTracker> WorkerEntityTracker::FromUpdateResponse(
     const UpdateResponseData& data) {
-  return make_scoped_ptr(new EntityTracker(
+  return make_scoped_ptr(new WorkerEntityTracker(
       data.entity->id, data.entity->client_tag_hash, 0, data.response_version));
 }
 
-scoped_ptr<EntityTracker> EntityTracker::FromCommitRequest(
+scoped_ptr<WorkerEntityTracker> WorkerEntityTracker::FromCommitRequest(
     const CommitRequestData& data) {
-  return make_scoped_ptr(
-      new EntityTracker(data.entity->id, data.entity->client_tag_hash, 0, 0));
+  return make_scoped_ptr(new WorkerEntityTracker(
+      data.entity->id, data.entity->client_tag_hash, 0, 0));
 }
 
-EntityTracker::EntityTracker(const std::string& id,
-                             const std::string& client_tag_hash,
-                             int64_t highest_commit_response_version,
-                             int64_t highest_gu_response_version)
+WorkerEntityTracker::WorkerEntityTracker(
+    const std::string& id,
+    const std::string& client_tag_hash,
+    int64_t highest_commit_response_version,
+    int64_t highest_gu_response_version)
     : id_(id),
       client_tag_hash_(client_tag_hash),
       highest_commit_response_version_(highest_commit_response_version),
@@ -37,14 +38,14 @@ EntityTracker::EntityTracker(const std::string& id,
       sequence_number_(0),
       base_version_(kUncommittedVersion) {}
 
-EntityTracker::~EntityTracker() {}
+WorkerEntityTracker::~WorkerEntityTracker() {}
 
-bool EntityTracker::HasPendingCommit() const {
+bool WorkerEntityTracker::HasPendingCommit() const {
   return !!pending_commit_;
 }
 
-void EntityTracker::PrepareCommitProto(sync_pb::SyncEntity* commit_entity,
-                                       int64_t* sequence_number) const {
+void WorkerEntityTracker::PrepareCommitProto(sync_pb::SyncEntity* commit_entity,
+                                             int64_t* sequence_number) const {
   DCHECK(HasPendingCommit());
   DCHECK(!client_tag_hash_.empty());
 
@@ -73,7 +74,7 @@ void EntityTracker::PrepareCommitProto(sync_pb::SyncEntity* commit_entity,
   *sequence_number = sequence_number_;
 }
 
-void EntityTracker::RequestCommit(const CommitRequestData& data) {
+void WorkerEntityTracker::RequestCommit(const CommitRequestData& data) {
   DCHECK_GE(data.base_version, base_version_)
       << "Base version should never decrease";
 
@@ -116,9 +117,9 @@ void EntityTracker::RequestCommit(const CommitRequestData& data) {
   // so it can be committed at the next possible opportunity.
 }
 
-void EntityTracker::ReceiveCommitResponse(const std::string& response_id,
-                                          int64_t response_version,
-                                          int64_t sequence_number) {
+void WorkerEntityTracker::ReceiveCommitResponse(const std::string& response_id,
+                                                int64_t response_version,
+                                                int64_t sequence_number) {
   // Commit responses, especially after the first commit, can update our ID.
   id_ = response_id;
 
@@ -141,7 +142,7 @@ void EntityTracker::ReceiveCommitResponse(const std::string& response_id,
   ClearPendingCommit();
 }
 
-void EntityTracker::ReceiveUpdate(int64_t version) {
+void WorkerEntityTracker::ReceiveUpdate(int64_t version) {
   if (version <= highest_gu_response_version_)
     return;
 
@@ -158,7 +159,7 @@ void EntityTracker::ReceiveUpdate(int64_t version) {
   }
 }
 
-bool EntityTracker::ReceivePendingUpdate(const UpdateResponseData& data) {
+bool WorkerEntityTracker::ReceivePendingUpdate(const UpdateResponseData& data) {
   if (data.response_version < highest_gu_response_version_)
     return false;
 
@@ -168,19 +169,19 @@ bool EntityTracker::ReceivePendingUpdate(const UpdateResponseData& data) {
   return true;
 }
 
-bool EntityTracker::HasPendingUpdate() const {
+bool WorkerEntityTracker::HasPendingUpdate() const {
   return !!pending_update_;
 }
 
-UpdateResponseData EntityTracker::GetPendingUpdate() const {
+UpdateResponseData WorkerEntityTracker::GetPendingUpdate() const {
   return *pending_update_;
 }
 
-void EntityTracker::ClearPendingUpdate() {
+void WorkerEntityTracker::ClearPendingUpdate() {
   pending_update_.reset();
 }
 
-bool EntityTracker::IsInConflict() const {
+bool WorkerEntityTracker::IsInConflict() const {
   if (!HasPendingCommit())
     return false;
 
@@ -203,11 +204,11 @@ bool EntityTracker::IsInConflict() const {
   }
 }
 
-bool EntityTracker::IsServerKnown() const {
+bool WorkerEntityTracker::IsServerKnown() const {
   return base_version_ != kUncommittedVersion;
 }
 
-void EntityTracker::ClearPendingCommit() {
+void WorkerEntityTracker::ClearPendingCommit() {
   pending_commit_.reset();
 }
 

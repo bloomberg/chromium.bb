@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SYNC_INTERNAL_API_PUBLIC_MODEL_TYPE_ENTITY_H_
-#define SYNC_INTERNAL_API_PUBLIC_MODEL_TYPE_ENTITY_H_
+#ifndef SYNC_INTERNAL_API_PUBLIC_PROCESSOR_ENTITY_TRACKER_H_
+#define SYNC_INTERNAL_API_PUBLIC_PROCESSOR_ENTITY_TRACKER_H_
 
 #include <stdint.h>
 
@@ -19,17 +19,14 @@ namespace syncer_v2 {
 struct CommitRequestData;
 struct UpdateResponseData;
 
-// This is the model thread's representation of a sync entity which is used
-// to cache entity data and metadata in SharedModelTypeProcessor.
-//
-// The metadata part of ModelTypeEntity is loaded on Sync startup and is always
-// present. The data part of ModelTypeEntity is cached temporarily, only for
-// in-flight entities that are being committed to the server.
-//
-class SYNC_EXPORT ModelTypeEntity {
+// This class is used by the SharedModelTypeProcessor to track the state of each
+// entity with its type. It can be considered a helper class internal to the
+// processor. It manages the metadata for its entity and caches entity data
+// upon a local change until commit confirmation is received.
+class SYNC_EXPORT ProcessorEntityTracker {
  public:
   // Construct an instance representing a new locally-created item.
-  static scoped_ptr<ModelTypeEntity> CreateNew(
+  static scoped_ptr<ProcessorEntityTracker> CreateNew(
       const std::string& client_tag,
       const std::string& client_tag_hash,
       const std::string& id,
@@ -37,11 +34,11 @@ class SYNC_EXPORT ModelTypeEntity {
 
   // Construct an instance representing an item loaded from storage on init.
   // This method swaps out the contents of |metadata|.
-  static scoped_ptr<ModelTypeEntity> CreateFromMetadata(
+  static scoped_ptr<ProcessorEntityTracker> CreateFromMetadata(
       const std::string& client_tag,
       sync_pb::EntityMetadata* metadata);
 
-  ~ModelTypeEntity();
+  ~ProcessorEntityTracker();
 
   // Returns entity's client tag.
   const std::string& client_tag() const { return client_tag_; }
@@ -115,11 +112,11 @@ class SYNC_EXPORT ModelTypeEntity {
   bool HasCommitData() const;
 
  private:
-  friend class ModelTypeEntityTest;
+  friend class ProcessorEntityTrackerTest;
 
   // The constructor swaps the data from the passed metadata.
-  ModelTypeEntity(const std::string& client_tag,
-                  sync_pb::EntityMetadata* metadata);
+  ProcessorEntityTracker(const std::string& client_tag,
+                         sync_pb::EntityMetadata* metadata);
 
   // Increment sequence number in the metadata.
   void IncrementSequenceNumber();
@@ -148,4 +145,4 @@ class SYNC_EXPORT ModelTypeEntity {
 
 }  // namespace syncer_v2
 
-#endif  // SYNC_INTERNAL_API_PUBLIC_MODEL_TYPE_ENTITY_H_
+#endif  // SYNC_INTERNAL_API_PUBLIC_PROCESSOR_ENTITY_TRACKER_H_

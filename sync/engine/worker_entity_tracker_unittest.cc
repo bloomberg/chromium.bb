@@ -3,7 +3,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sync/engine/entity_tracker.h"
+#include "sync/engine/worker_entity_tracker.h"
 
 #include <stdint.h>
 
@@ -17,17 +17,17 @@
 
 namespace syncer_v2 {
 
-// Some simple tests for the EntityTracker.
+// Some simple tests for the WorkerEntityTracker.
 //
-// The EntityTracker is an implementation detail of the ModelTypeWorker.
+// The WorkerEntityTracker is an implementation detail of the ModelTypeWorker.
 // As such, it doesn't make much sense to test it exhaustively, since it
 // already gets a lot of test coverage from the ModelTypeWorker unit tests.
 //
 // These tests are intended as a basic sanity check.  Anything more complicated
 // would be redundant.
-class EntityTrackerTest : public ::testing::Test {
+class WorkerEntityTrackerTest : public ::testing::Test {
  public:
-  EntityTrackerTest()
+  WorkerEntityTrackerTest()
       : kServerId("ServerID"),
         kClientTag("some.sample.tag"),
         kClientTagHash(
@@ -39,7 +39,7 @@ class EntityTrackerTest : public ::testing::Test {
     specifics.mutable_preference()->set_value("pref.value");
   }
 
-  ~EntityTrackerTest() override {}
+  ~WorkerEntityTrackerTest() override {}
 
   CommitRequestData MakeCommitRequestData(int64_t sequence_number,
                                           int64_t base_version) {
@@ -78,9 +78,9 @@ class EntityTrackerTest : public ::testing::Test {
 };
 
 // Construct a new entity from a server update.  Then receive another update.
-TEST_F(EntityTrackerTest, FromUpdateResponse) {
-  scoped_ptr<EntityTracker> entity(
-      EntityTracker::FromUpdateResponse(MakeUpdateResponseData(10)));
+TEST_F(WorkerEntityTrackerTest, FromUpdateResponse) {
+  scoped_ptr<WorkerEntityTracker> entity(
+      WorkerEntityTracker::FromUpdateResponse(MakeUpdateResponseData(10)));
   EXPECT_FALSE(entity->HasPendingCommit());
 
   entity->ReceiveUpdate(20);
@@ -88,11 +88,12 @@ TEST_F(EntityTrackerTest, FromUpdateResponse) {
 }
 
 // Construct a new entity from a commit request.  Then serialize it.
-TEST_F(EntityTrackerTest, FromCommitRequest) {
+TEST_F(WorkerEntityTrackerTest, FromCommitRequest) {
   const int64_t kSequenceNumber = 22;
   const int64_t kBaseVersion = 33;
   CommitRequestData data = MakeCommitRequestData(kSequenceNumber, kBaseVersion);
-  scoped_ptr<EntityTracker> entity(EntityTracker::FromCommitRequest(data));
+  scoped_ptr<WorkerEntityTracker> entity(
+      WorkerEntityTracker::FromCommitRequest(data));
   entity->RequestCommit(data);
 
   ASSERT_TRUE(entity->HasPendingCommit());
@@ -113,9 +114,9 @@ TEST_F(EntityTrackerTest, FromCommitRequest) {
 }
 
 // Start with a server initiated entity.  Commit over top of it.
-TEST_F(EntityTrackerTest, RequestCommit) {
-  scoped_ptr<EntityTracker> entity(
-      EntityTracker::FromUpdateResponse(MakeUpdateResponseData(10)));
+TEST_F(WorkerEntityTrackerTest, RequestCommit) {
+  scoped_ptr<WorkerEntityTracker> entity(
+      WorkerEntityTracker::FromUpdateResponse(MakeUpdateResponseData(10)));
 
   entity->RequestCommit(MakeCommitRequestData(1, 10));
 
@@ -124,9 +125,9 @@ TEST_F(EntityTrackerTest, RequestCommit) {
 
 // Start with a server initiated entity.  Fail to request a commit because of
 // an out of date base version.
-TEST_F(EntityTrackerTest, RequestCommitFailure) {
-  scoped_ptr<EntityTracker> entity(
-      EntityTracker::FromUpdateResponse(MakeUpdateResponseData(10)));
+TEST_F(WorkerEntityTrackerTest, RequestCommitFailure) {
+  scoped_ptr<WorkerEntityTracker> entity(
+      WorkerEntityTracker::FromUpdateResponse(MakeUpdateResponseData(10)));
   EXPECT_FALSE(entity->HasPendingCommit());
 
   entity->RequestCommit(MakeCommitRequestData(23, 5 /* base_version 5 < 10 */));
@@ -134,9 +135,10 @@ TEST_F(EntityTrackerTest, RequestCommitFailure) {
 }
 
 // Start with a pending commit.  Clobber it with an incoming update.
-TEST_F(EntityTrackerTest, UpdateClobbersCommit) {
+TEST_F(WorkerEntityTrackerTest, UpdateClobbersCommit) {
   CommitRequestData data = MakeCommitRequestData(22, 33);
-  scoped_ptr<EntityTracker> entity(EntityTracker::FromCommitRequest(data));
+  scoped_ptr<WorkerEntityTracker> entity(
+      WorkerEntityTracker::FromCommitRequest(data));
   entity->RequestCommit(data);
 
   EXPECT_TRUE(entity->HasPendingCommit());
@@ -147,9 +149,10 @@ TEST_F(EntityTrackerTest, UpdateClobbersCommit) {
 
 // Start with a pending commit.  Send it a reflected update that
 // will not override the in-progress commit.
-TEST_F(EntityTrackerTest, ReflectedUpdateDoesntClobberCommit) {
+TEST_F(WorkerEntityTrackerTest, ReflectedUpdateDoesntClobberCommit) {
   CommitRequestData data = MakeCommitRequestData(22, 33);
-  scoped_ptr<EntityTracker> entity(EntityTracker::FromCommitRequest(data));
+  scoped_ptr<WorkerEntityTracker> entity(
+      WorkerEntityTracker::FromCommitRequest(data));
   entity->RequestCommit(data);
 
   EXPECT_TRUE(entity->HasPendingCommit());

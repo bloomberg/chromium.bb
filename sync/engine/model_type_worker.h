@@ -32,7 +32,7 @@ class SingleThreadTaskRunner;
 namespace syncer_v2 {
 
 class ModelTypeProcessor;
-class EntityTracker;
+class WorkerEntityTracker;
 
 // A smart cache for sync types that use message passing (rather than
 // transactions and the syncable::Directory) to communicate with the sync
@@ -96,7 +96,7 @@ class SYNC_EXPORT ModelTypeWorker : public syncer::UpdateHandler,
   base::WeakPtr<ModelTypeWorker> AsWeakPtr();
 
  private:
-  using EntityMap = std::map<std::string, scoped_ptr<EntityTracker>>;
+  using EntityMap = std::map<std::string, scoped_ptr<WorkerEntityTracker>>;
 
   // Stores a single commit request in this object's internal state.
   void StorePendingCommit(const CommitRequestData& request);
@@ -112,13 +112,13 @@ class SYNC_EXPORT ModelTypeWorker : public syncer::UpdateHandler,
   bool CanCommitItems() const;
 
   // Initializes the parts of a commit entity that are the responsibility of
-  // this class, and not the EntityTracker.  Some fields, like the
+  // this class, and not the WorkerEntityTracker.  Some fields, like the
   // client-assigned ID, can only be set by an entity with knowledge of the
   // entire data type's state.
   void HelpInitializeCommitEntity(sync_pb::SyncEntity* commit_entity);
 
   // Attempts to decrypt pending updates stored in the EntityMap.  If
-  // successful, will remove the update from the its EntityTracker and forward
+  // successful, will remove the update from the its tracker and forward
   // it to the proxy thread for application.  Will forward any new encryption
   // keys to the proxy to trigger re-encryption if necessary.
   void OnCryptographerUpdated();

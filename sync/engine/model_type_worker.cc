@@ -16,8 +16,8 @@
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "sync/engine/commit_contribution.h"
-#include "sync/engine/entity_tracker.h"
 #include "sync/engine/non_blocking_type_commit_contribution.h"
+#include "sync/engine/worker_entity_tracker.h"
 #include "sync/internal_api/public/model_type_processor.h"
 #include "sync/syncable/syncable_util.h"
 #include "sync/util/cryptographer.h"
@@ -134,11 +134,11 @@ SyncerError ModelTypeWorker::ProcessGetUpdatesResponse(
     UpdateResponseData response_data;
     response_data.response_version = update_entity->version();
 
-    EntityTracker* entity_tracker = nullptr;
+    WorkerEntityTracker* entity_tracker = nullptr;
     EntityMap::const_iterator map_it = entities_.find(client_tag_hash);
     if (map_it == entities_.end()) {
-      scoped_ptr<EntityTracker> scoped_entity_tracker =
-          EntityTracker::FromUpdateResponse(response_data);
+      scoped_ptr<WorkerEntityTracker> scoped_entity_tracker =
+          WorkerEntityTracker::FromUpdateResponse(response_data);
       entity_tracker = scoped_entity_tracker.get();
       entities_.insert(
           std::make_pair(client_tag_hash, std::move(scoped_entity_tracker)));
@@ -199,8 +199,8 @@ void ModelTypeWorker::ApplyUpdates(syncer::sessions::StatusController* status) {
 
     data_type_state_.set_initial_sync_done(true);
 
-    model_type_processor_->OnUpdateReceived(
-        data_type_state_, UpdateResponseDataList());
+    model_type_processor_->OnUpdateReceived(data_type_state_,
+                                            UpdateResponseDataList());
   }
 }
 
@@ -242,7 +242,7 @@ scoped_ptr<CommitContribution> ModelTypeWorker::GetContribution(
   // TODO(rlarocque): Avoid iterating here.
   for (EntityMap::const_iterator it = entities_.begin();
        it != entities_.end() && space_remaining > 0; ++it) {
-    EntityTracker* entity = it->second.get();
+    WorkerEntityTracker* entity = it->second.get();
     if (entity->HasPendingCommit()) {
       sync_pb::SyncEntity* commit_entity = commit_entities.Add();
       int64_t sequence_number = -1;
@@ -269,11 +269,11 @@ void ModelTypeWorker::StorePendingCommit(const CommitRequestData& request) {
     DCHECK_EQ(type_, syncer::GetModelTypeFromSpecifics(data.specifics));
   }
 
-  EntityTracker* entity;
+  WorkerEntityTracker* entity;
   EntityMap::const_iterator map_it = entities_.find(data.client_tag_hash);
   if (map_it == entities_.end()) {
-    scoped_ptr<EntityTracker> scoped_entity =
-        EntityTracker::FromCommitRequest(request);
+    scoped_ptr<WorkerEntityTracker> scoped_entity =
+        WorkerEntityTracker::FromCommitRequest(request);
     entity = scoped_entity.get();
     entities_.insert(
         std::make_pair(data.client_tag_hash, std::move(scoped_entity)));
@@ -299,7 +299,7 @@ void ModelTypeWorker::OnCommitResponse(
       continue;
     }
 
-    EntityTracker* entity = map_it->second.get();
+    WorkerEntityTracker* entity = map_it->second.get();
     entity->ReceiveCommitResponse(response_it->id,
                                   response_it->response_version,
                                   response_it->sequence_number);

@@ -12,7 +12,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "sync/engine/commit_queue.h"
 #include "sync/internal_api/public/activation_context.h"
-#include "sync/internal_api/public/model_type_entity.h"
+#include "sync/internal_api/public/processor_entity_tracker.h"
 #include "sync/syncable/syncable_util.h"
 
 namespace syncer_v2 {
@@ -105,8 +105,8 @@ void SharedModelTypeProcessor::OnMetadataLoaded(
     std::vector<std::string> entities_to_commit;
 
     for (auto it = metadata_map.begin(); it != metadata_map.end(); it++) {
-      scoped_ptr<ModelTypeEntity> entity =
-          ModelTypeEntity::CreateFromMetadata(it->first, &it->second);
+      scoped_ptr<ProcessorEntityTracker> entity =
+          ProcessorEntityTracker::CreateFromMetadata(it->first, &it->second);
       if (entity->RequiresCommitData()) {
         entities_to_commit.push_back(entity->client_tag());
       }
@@ -133,7 +133,7 @@ void SharedModelTypeProcessor::OnDataLoaded(syncer::SyncError error,
                                             scoped_ptr<DataBatch> data_batch) {
   while (data_batch->HasNext()) {
     TagAndData data = data_batch->Next();
-    ModelTypeEntity* entity = GetEntityForTag(data.first);
+    ProcessorEntityTracker* entity = GetEntityForTag(data.first);
     // If the entity wasn't deleted or updated with new commit.
     if (entity != nullptr && entity->RequiresCommitData()) {
       entity->CacheCommitData(data.second.get());
@@ -233,7 +233,7 @@ void SharedModelTypeProcessor::Put(const std::string& tag,
     data->modification_time = base::Time::Now();
   }
 
-  ModelTypeEntity* entity = GetEntityForTagHash(data->client_tag_hash);
+  ProcessorEntityTracker* entity = GetEntityForTagHash(data->client_tag_hash);
 
   if (entity == nullptr) {
     // The service is creating a new entity.
@@ -261,7 +261,7 @@ void SharedModelTypeProcessor::Delete(
     return;
   }
 
-  ModelTypeEntity* entity = GetEntityForTag(tag);
+  ProcessorEntityTracker* entity = GetEntityForTag(tag);
   if (entity == nullptr) {
     // That's unusual, but not necessarily a bad thing.
     // Missing is as good as deleted as far as the model is concerned.
@@ -292,7 +292,7 @@ void SharedModelTypeProcessor::FlushPendingCommitRequests() {
 
   // TODO(rlarocque): Do something smarter than iterate here.
   for (auto it = entities_.begin(); it != entities_.end(); ++it) {
-    ModelTypeEntity* entity = it->second.get();
+    ProcessorEntityTracker* entity = it->second.get();
     if (entity->RequiresCommitRequest()) {
       DCHECK(!entity->RequiresCommitData());
       CommitRequestData request;
@@ -315,7 +315,7 @@ void SharedModelTypeProcessor::OnCommitCompleted(
   change_list->UpdateDataTypeState(data_type_state_);
 
   for (const CommitResponseData& data : response_list) {
-    ModelTypeEntity* entity = GetEntityForTagHash(data.client_tag_hash);
+    ProcessorEntityTracker* entity = GetEntityForTagHash(data.client_tag_hash);
     if (entity == nullptr) {
       NOTREACHED() << "Received commit response for missing item."
                    << " type: " << type_
@@ -358,7 +358,7 @@ void SharedModelTypeProcessor::OnUpdateReceived(
     const EntityData& data = update.entity.value();
     const std::string& client_tag_hash = data.client_tag_hash;
 
-    ModelTypeEntity* entity = GetEntityForTagHash(client_tag_hash);
+    ProcessorEntityTracker* entity = GetEntityForTagHash(client_tag_hash);
     if (entity == nullptr) {
       if (data.is_deleted()) {
         DLOG(WARNING) << "Received remote delete for a non-existing item."
@@ -434,7 +434,7 @@ void SharedModelTypeProcessor::OnInitialUpdateReceived(
   metadata_changes->UpdateDataTypeState(data_type_state_);
 
   for (const UpdateResponseData& update : updates) {
-    ModelTypeEntity* entity = CreateEntity(update.entity.value());
+    ProcessorEntityTracker* entity = CreateEntity(update.entity.value());
     const std::string& tag = entity->client_tag();
     entity->ApplyUpdateFromServer(update);
     metadata_changes->UpdateMetadata(tag, entity->metadata());
@@ -453,29 +453,29 @@ std::string SharedModelTypeProcessor::GetHashForTag(const std::string& tag) {
   return syncer::syncable::GenerateSyncableHash(type_, tag);
 }
 
-ModelTypeEntity* SharedModelTypeProcessor::GetEntityForTag(
+ProcessorEntityTracker* SharedModelTypeProcessor::GetEntityForTag(
     const std::string& tag) {
   return GetEntityForTagHash(GetHashForTag(tag));
 }
 
-ModelTypeEntity* SharedModelTypeProcessor::GetEntityForTagHash(
+ProcessorEntityTracker* SharedModelTypeProcessor::GetEntityForTagHash(
     const std::string& tag_hash) {
   auto it = entities_.find(tag_hash);
   return it != entities_.end() ? it->second.get() : nullptr;
 }
 
-ModelTypeEntity* SharedModelTypeProcessor::CreateEntity(
+ProcessorEntityTracker* SharedModelTypeProcessor::CreateEntity(
     const std::string& tag,
     const EntityData& data) {
   DCHECK(entities_.find(data.client_tag_hash) == entities_.end());
-  scoped_ptr<ModelTypeEntity> entity = ModelTypeEntity::CreateNew(
+  scoped_ptr<ProcessorEntityTracker> entity = ProcessorEntityTracker::CreateNew(
       tag, data.client_tag_hash, data.id, data.creation_time);
-  ModelTypeEntity* entity_ptr = entity.get();
+  ProcessorEntityTracker* entity_ptr = entity.get();
   entities_[data.client_tag_hash] = std::move(entity);
   return entity_ptr;
 }
 
-ModelTypeEntity* SharedModelTypeProcessor::CreateEntity(
+ProcessorEntityTracker* SharedModelTypeProcessor::CreateEntity(
     const EntityData& data) {
   // Let the service define |client_tag| based on the entity data.
   const std::string tag = service_->GetClientTag(data);

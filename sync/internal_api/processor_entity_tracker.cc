@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sync/internal_api/public/model_type_entity.h"
+#include "sync/internal_api/public/processor_entity_tracker.h"
 
 #include <stdint.h>
 
@@ -15,7 +15,7 @@
 
 namespace syncer_v2 {
 
-scoped_ptr<ModelTypeEntity> ModelTypeEntity::CreateNew(
+scoped_ptr<ProcessorEntityTracker> ProcessorEntityTracker::CreateNew(
     const std::string& client_tag,
     const std::string& client_tag_hash,
     const std::string& id,
@@ -30,18 +30,20 @@ scoped_ptr<ModelTypeEntity> ModelTypeEntity::CreateNew(
   metadata.set_server_version(kUncommittedVersion);
   metadata.set_creation_time(syncer::TimeToProtoTime(creation_time));
 
-  return scoped_ptr<ModelTypeEntity>(
-      new ModelTypeEntity(client_tag, &metadata));
+  return scoped_ptr<ProcessorEntityTracker>(
+      new ProcessorEntityTracker(client_tag, &metadata));
 }
 
-scoped_ptr<ModelTypeEntity> ModelTypeEntity::CreateFromMetadata(
+scoped_ptr<ProcessorEntityTracker> ProcessorEntityTracker::CreateFromMetadata(
     const std::string& client_tag,
     sync_pb::EntityMetadata* metadata) {
-  return scoped_ptr<ModelTypeEntity>(new ModelTypeEntity(client_tag, metadata));
+  return scoped_ptr<ProcessorEntityTracker>(
+      new ProcessorEntityTracker(client_tag, metadata));
 }
 
-ModelTypeEntity::ModelTypeEntity(const std::string& client_tag,
-                                 sync_pb::EntityMetadata* metadata)
+ProcessorEntityTracker::ProcessorEntityTracker(
+    const std::string& client_tag,
+    sync_pb::EntityMetadata* metadata)
     : client_tag_(client_tag),
       commit_requested_sequence_number_(metadata->acked_sequence_number()) {
   DCHECK(metadata->has_client_tag_hash());
@@ -49,9 +51,9 @@ ModelTypeEntity::ModelTypeEntity(const std::string& client_tag,
   metadata_.Swap(metadata);
 }
 
-ModelTypeEntity::~ModelTypeEntity() {}
+ProcessorEntityTracker::~ProcessorEntityTracker() {}
 
-void ModelTypeEntity::CacheCommitData(EntityData* data) {
+void ProcessorEntityTracker::CacheCommitData(EntityData* data) {
   DCHECK(RequiresCommitRequest());
   if (data->client_tag_hash.empty()) {
     data->client_tag_hash = metadata_.client_tag_hash();
@@ -60,31 +62,31 @@ void ModelTypeEntity::CacheCommitData(EntityData* data) {
   DCHECK(HasCommitData());
 }
 
-bool ModelTypeEntity::HasCommitData() const {
+bool ProcessorEntityTracker::HasCommitData() const {
   return !commit_data_->client_tag_hash.empty();
 }
 
-bool ModelTypeEntity::IsUnsynced() const {
+bool ProcessorEntityTracker::IsUnsynced() const {
   return metadata_.sequence_number() > metadata_.acked_sequence_number();
 }
 
-bool ModelTypeEntity::RequiresCommitRequest() const {
+bool ProcessorEntityTracker::RequiresCommitRequest() const {
   return metadata_.sequence_number() > commit_requested_sequence_number_;
 }
 
-bool ModelTypeEntity::RequiresCommitData() const {
+bool ProcessorEntityTracker::RequiresCommitData() const {
   return RequiresCommitRequest() && !HasCommitData() && !metadata_.is_deleted();
 }
 
-bool ModelTypeEntity::UpdateIsReflection(int64_t update_version) const {
+bool ProcessorEntityTracker::UpdateIsReflection(int64_t update_version) const {
   return metadata_.server_version() >= update_version;
 }
 
-bool ModelTypeEntity::UpdateIsInConflict(int64_t update_version) const {
+bool ProcessorEntityTracker::UpdateIsInConflict(int64_t update_version) const {
   return IsUnsynced() && !UpdateIsReflection(update_version);
 }
 
-void ModelTypeEntity::ApplyUpdateFromServer(
+void ProcessorEntityTracker::ApplyUpdateFromServer(
     const UpdateResponseData& response_data) {
   DCHECK(metadata_.has_client_tag_hash());
   DCHECK(!metadata_.client_tag_hash().empty());
@@ -109,7 +111,7 @@ void ModelTypeEntity::ApplyUpdateFromServer(
   encryption_key_name_ = response_data.encryption_key_name;
 }
 
-void ModelTypeEntity::MakeLocalChange(scoped_ptr<EntityData> data) {
+void ProcessorEntityTracker::MakeLocalChange(scoped_ptr<EntityData> data) {
   DCHECK(!metadata_.client_tag_hash().empty());
   DCHECK_EQ(metadata_.client_tag_hash(), data->client_tag_hash);
   DCHECK(!data->modification_time.is_null());
@@ -125,7 +127,8 @@ void ModelTypeEntity::MakeLocalChange(scoped_ptr<EntityData> data) {
   CacheCommitData(data.get());
 }
 
-void ModelTypeEntity::UpdateDesiredEncryptionKey(const std::string& name) {
+void ProcessorEntityTracker::UpdateDesiredEncryptionKey(
+    const std::string& name) {
   if (encryption_key_name_ == name)
     return;
 
@@ -138,15 +141,17 @@ void ModelTypeEntity::UpdateDesiredEncryptionKey(const std::string& name) {
   IncrementSequenceNumber();
 }
 
-void ModelTypeEntity::Delete() {
+void ProcessorEntityTracker::Delete() {
   IncrementSequenceNumber();
   metadata_.set_is_deleted(true);
   metadata_.clear_specifics_hash();
   // Clear any cached pending commit data.
-  if (HasCommitData()) commit_data_.reset();
+  if (HasCommitData())
+    commit_data_.reset();
 }
 
-void ModelTypeEntity::InitializeCommitRequestData(CommitRequestData* request) {
+void ProcessorEntityTracker::InitializeCommitRequestData(
+    CommitRequestData* request) {
   if (!metadata_.is_deleted()) {
     DCHECK(HasCommitData());
     DCHECK_EQ(commit_data_->client_tag_hash, metadata_.client_tag_hash());
@@ -166,7 +171,7 @@ void ModelTypeEntity::InitializeCommitRequestData(CommitRequestData* request) {
   commit_requested_sequence_number_ = metadata_.sequence_number();
 }
 
-void ModelTypeEntity::ReceiveCommitResponse(
+void ProcessorEntityTracker::ReceiveCommitResponse(
     const std::string& id,
     int64_t sequence_number,
     int64_t response_version,
@@ -178,19 +183,19 @@ void ModelTypeEntity::ReceiveCommitResponse(
   encryption_key_name_ = encryption_key_name;
 }
 
-void ModelTypeEntity::ClearTransientSyncState() {
+void ProcessorEntityTracker::ClearTransientSyncState() {
   // If we have any unacknowledged commit requests outstanding, they've been
   // dropped and we should forget about them.
   commit_requested_sequence_number_ = metadata_.acked_sequence_number();
 }
 
-void ModelTypeEntity::IncrementSequenceNumber() {
+void ProcessorEntityTracker::IncrementSequenceNumber() {
   DCHECK(metadata_.has_sequence_number());
   metadata_.set_sequence_number(metadata_.sequence_number() + 1);
 }
 
 // Update hash string for EntitySpecifics.
-void ModelTypeEntity::UpdateSpecificsHash(
+void ProcessorEntityTracker::UpdateSpecificsHash(
     const sync_pb::EntitySpecifics& specifics) {
   if (specifics.ByteSize() > 0) {
     std::string hash_input;

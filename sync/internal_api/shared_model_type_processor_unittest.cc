@@ -326,8 +326,8 @@ class SharedModelTypeProcessorTest : public ::testing::Test,
   void UpdateDesiredEncryptionKey(const std::string& key_name) {
     sync_pb::DataTypeState data_type_state(db_.data_type_state());
     data_type_state.set_encryption_key_name(key_name);
-    type_processor()->OnUpdateReceived(
-        data_type_state, UpdateResponseDataList());
+    type_processor()->OnUpdateReceived(data_type_state,
+                                       UpdateResponseDataList());
   }
 
   // Sets the key_name that the mock CommitQueue will claim is in use
@@ -1116,7 +1116,8 @@ TEST_F(SharedModelTypeProcessorTest, DISABLED_Disable) {
 
 // Test re-encrypt everything when desired encryption key changes.
 // TODO(stanisc): crbug/561814: Disabled due to data caching changes in
-// ModelTypeEntity. Revisit the test once fetching of data is implemented.
+// ProcessorEntityTracker. Revisit the test once fetching of data is
+// implemented.
 TEST_F(SharedModelTypeProcessorTest, DISABLED_ReEncryptCommitsWithNewKey) {
   InitializeToReadyState();
 
@@ -1147,7 +1148,8 @@ TEST_F(SharedModelTypeProcessorTest, DISABLED_ReEncryptCommitsWithNewKey) {
 
 // Test receipt of updates with new and old keys.
 // TODO(stanisc): crbug/561814: Disabled due to data caching changes in
-// ModelTypeEntity. Revisit the test once fetching of data is implemented.
+// ProcessorEntityTracker. Revisit the test once fetching of data is
+// implemented.
 TEST_F(SharedModelTypeProcessorTest, DISABLED_ReEncryptUpdatesWithNewKey) {
   InitializeToReadyState();
 

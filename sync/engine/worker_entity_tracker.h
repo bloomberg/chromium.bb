@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SYNC_ENGINE_ENTITY_TRACKER_H_
-#define SYNC_ENGINE_ENTITY_TRACKER_H_
+#ifndef SYNC_ENGINE_WORKER_ENTITY_TRACKER_H_
+#define SYNC_ENGINE_WORKER_ENTITY_TRACKER_H_
 
 #include <stdint.h>
 
@@ -31,16 +31,16 @@ struct UpdateResponseData;
 //
 // This object may contain state associated with a pending commit, pending
 // update, or both.
-class SYNC_EXPORT EntityTracker {
+class SYNC_EXPORT WorkerEntityTracker {
  public:
-  ~EntityTracker();
+  ~WorkerEntityTracker();
 
   // Initialize a new entity based on an update response.
-  static scoped_ptr<EntityTracker> FromUpdateResponse(
+  static scoped_ptr<WorkerEntityTracker> FromUpdateResponse(
       const UpdateResponseData& data);
 
   // Initialize a new entity based on a commit request.
-  static scoped_ptr<EntityTracker> FromCommitRequest(
+  static scoped_ptr<WorkerEntityTracker> FromCommitRequest(
       const CommitRequestData& data);
 
   // Returns true if this entity should be commited to the server.
@@ -85,10 +85,10 @@ class SYNC_EXPORT EntityTracker {
  private:
   // Initializes the entity tracker's main fields. Does not initialize state
   // related to a pending commit.
-  EntityTracker(const std::string& id,
-                const std::string& client_tag_hash,
-                int64_t highest_commit_response_version,
-                int64_t highest_gu_response_version);
+  WorkerEntityTracker(const std::string& id,
+                      const std::string& client_tag_hash,
+                      int64_t highest_commit_response_version,
+                      int64_t highest_gu_response_version);
 
   // Checks if the current state indicates a conflict.
   //
@@ -130,9 +130,9 @@ class SYNC_EXPORT EntityTracker {
   // source of pending updates is updates that can't currently be decrypted.
   scoped_ptr<UpdateResponseData> pending_update_;
 
-  DISALLOW_COPY_AND_ASSIGN(EntityTracker);
+  DISALLOW_COPY_AND_ASSIGN(WorkerEntityTracker);
 };
 
 }  // namespace syncer_v2
 
-#endif  // SYNC_ENGINE_ENTITY_TRACKER_H_
+#endif  // SYNC_ENGINE_WORKER_ENTITY_TRACKER_H_

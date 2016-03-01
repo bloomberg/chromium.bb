@@ -27,7 +27,7 @@
 namespace syncer_v2 {
 struct ActivationContext;
 class CommitQueue;
-class ModelTypeEntity;
+class ProcessorEntityTracker;
 
 // A sync component embedded on the synced type's thread that helps to handle
 // communication between sync and model type threads.
@@ -87,7 +87,7 @@ class SYNC_EXPORT SharedModelTypeProcessor : public ModelTypeProcessor,
  private:
   friend class SharedModelTypeProcessorTest;
 
-  using EntityMap = std::map<std::string, scoped_ptr<ModelTypeEntity>>;
+  using EntityMap = std::map<std::string, scoped_ptr<ProcessorEntityTracker>>;
   using UpdateMap = std::map<std::string, scoped_ptr<UpdateResponseData>>;
 
   // Callback for ModelTypeService::GetData(). Used when we need to load data
@@ -108,17 +108,18 @@ class SYNC_EXPORT SharedModelTypeProcessor : public ModelTypeProcessor,
   std::string GetHashForTag(const std::string& tag);
 
   // Gets the entity for the given tag, or null if there isn't one.
-  ModelTypeEntity* GetEntityForTag(const std::string& tag);
+  ProcessorEntityTracker* GetEntityForTag(const std::string& tag);
 
   // Gets the entity for the given tag hash, or null if there isn't one.
-  ModelTypeEntity* GetEntityForTagHash(const std::string& tag_hash);
+  ProcessorEntityTracker* GetEntityForTagHash(const std::string& tag_hash);
 
   // Create an entity in the entity map for |tag| and return a pointer to it.
   // Requires that no entity for |tag| already exists in the map.
-  ModelTypeEntity* CreateEntity(const std::string& tag, const EntityData& data);
+  ProcessorEntityTracker* CreateEntity(const std::string& tag,
+                                       const EntityData& data);
 
   // Version of the above that generates a tag for |data|.
-  ModelTypeEntity* CreateEntity(const EntityData& data);
+  ProcessorEntityTracker* CreateEntity(const EntityData& data);
 
   syncer::ModelType type_;
   sync_pb::DataTypeState data_type_state_;
