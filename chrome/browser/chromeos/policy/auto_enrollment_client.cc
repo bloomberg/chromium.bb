@@ -221,15 +221,17 @@ void AutoEnrollmentClient::ReportProgress(AutoEnrollmentState state) {
 }
 
 void AutoEnrollmentClient::NextStep() {
-  if (!RetryStep()) {
-    // Protocol finished successfully, report result.
-    const RestoreMode restore_mode = GetRestoreMode();
-    bool trigger_enrollment =
-        (restore_mode == RESTORE_MODE_REENROLLMENT_REQUESTED ||
-         restore_mode == RESTORE_MODE_REENROLLMENT_ENFORCED);
+  if (RetryStep()) {
+    return;
+  }
 
-    ReportProgress(trigger_enrollment ? AUTO_ENROLLMENT_STATE_TRIGGER_ENROLLMENT
-                                      : AUTO_ENROLLMENT_STATE_NO_ENROLLMENT);
+  // Protocol finished successfully, report result.
+  const RestoreMode restore_mode = GetRestoreMode();
+  if (restore_mode == RESTORE_MODE_REENROLLMENT_REQUESTED ||
+      restore_mode == RESTORE_MODE_REENROLLMENT_ENFORCED) {
+    ReportProgress(AUTO_ENROLLMENT_STATE_TRIGGER_ENROLLMENT);
+  } else {
+    ReportProgress(AUTO_ENROLLMENT_STATE_NO_ENROLLMENT);
   }
 }
 
@@ -395,6 +397,10 @@ bool AutoEnrollmentClient::OnDeviceStateRequestCompletion(
                  state_response.has_disabled_state(),
                  new base::StringValue(
                      state_response.disabled_state().message()));
+
+      // This is part of normal operation.  Logging as "WARNING" nevertheless to
+      // make sure it's preserved in the logs.
+      LOG(WARNING) << "Restore mode: " << restore_mode;
     }
     local_state_->CommitPendingWrite();
     device_state_available_ = true;

@@ -112,22 +112,31 @@ void AutoEnrollmentController::Start() {
   // accepted, or right after a reboot if the EULA has already been accepted.
 
   // Do not communicate auto-enrollment data to the server if
-  // 1. we are running telemetry tests.
-  // 2. modulus configuration is not present.
-  // 3. Auto-enrollment is disabled via the command line.
-  // 4. This is the first boot ever, so re-enrollment checks are pointless. This
-  //    also enables factories to start full guest sessions for testing, see
-  //    http://crbug.com/397354 for more context.
-
+  // 1. we are running telemetry tests or
+  // 2. modulus configuration is not present or
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(chromeos::switches::kDisableGaiaServices) ||
       (!command_line->HasSwitch(
            chromeos::switches::kEnterpriseEnrollmentInitialModulus) &&
        !command_line->HasSwitch(
-           chromeos::switches::kEnterpriseEnrollmentModulusLimit)) ||
-      GetMode() == MODE_NONE ||
-      IsFirstDeviceSetup()) {
-    LOG(WARNING) << "Auto-enrollment disabled.";
+           chromeos::switches::kEnterpriseEnrollmentModulusLimit))) {
+    LOG(WARNING) << "Auto-enrollment disabled: " << "not configured.";
+    UpdateState(policy::AUTO_ENROLLMENT_STATE_NO_ENROLLMENT);
+    return;
+  }
+
+  // 3. auto-enrollment is disabled via the command line or
+  if (GetMode() == MODE_NONE) {
+    LOG(WARNING) << "Auto-enrollment disabled: " << "no mode.";
+    UpdateState(policy::AUTO_ENROLLMENT_STATE_NO_ENROLLMENT);
+    return;
+  }
+
+  // 4. this is the first boot ever, so re-enrollment checks are pointless. This
+  //    also enables factories to start full guest sessions for testing, see
+  //    http://crbug.com/397354 for more context.
+  if (IsFirstDeviceSetup()) {
+    LOG(WARNING) << "Auto-enrollment disabled: " << "first setup.";
     UpdateState(policy::AUTO_ENROLLMENT_STATE_NO_ENROLLMENT);
     return;
   }
