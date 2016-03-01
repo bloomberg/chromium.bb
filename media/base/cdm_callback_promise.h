@@ -36,7 +36,9 @@ class MEDIA_EXPORT CdmCallbackPromise : public CdmPromiseTemplate<T...> {
                       const std::string& error_message) override;
 
  private:
+  using CdmPromiseTemplate<T...>::IsPromiseSettled;
   using CdmPromiseTemplate<T...>::MarkPromiseSettled;
+  using CdmPromiseTemplate<T...>::RejectPromiseOnDestruction;
 
   base::Callback<void(const T&...)> resolve_cb_;
   PromiseRejectedCB reject_cb_;

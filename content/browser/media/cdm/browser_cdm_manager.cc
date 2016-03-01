@@ -72,7 +72,10 @@ class CdmPromiseInternal : public media::CdmPromiseTemplate<T...> {
     DCHECK(manager_);
   }
 
-  ~CdmPromiseInternal() final {}
+  ~CdmPromiseInternal() final {
+    if (!IsPromiseSettled())
+      RejectPromiseOnDestruction();
+  }
 
   // CdmPromiseTemplate<> implementation.
   void resolve(const T&... result) final;
@@ -88,7 +91,9 @@ class CdmPromiseInternal : public media::CdmPromiseTemplate<T...> {
   }
 
  private:
+  using media::CdmPromiseTemplate<T...>::IsPromiseSettled;
   using media::CdmPromiseTemplate<T...>::MarkPromiseSettled;
+  using media::CdmPromiseTemplate<T...>::RejectPromiseOnDestruction;
 
   base::WeakPtr<BrowserCdmManager> const manager_;
   const int render_frame_id_;

@@ -33,7 +33,9 @@ class MojoCdmPromise : public CdmPromiseTemplate<T...> {
               const std::string& error_message) final;
 
  private:
-  using media::CdmPromiseTemplate<T...>::MarkPromiseSettled;
+  using CdmPromiseTemplate<T...>::IsPromiseSettled;
+  using CdmPromiseTemplate<T...>::MarkPromiseSettled;
+  using CdmPromiseTemplate<T...>::RejectPromiseOnDestruction;
 
   CallbackType callback_;
 };

@@ -24,7 +24,7 @@ namespace media {
 // If constructed with a |uma_name|, CdmResultPromise will report the promise
 // result (success or rejection code) to UMA.
 template <typename... T>
-class CdmResultPromise : public media::CdmPromiseTemplate<T...> {
+class CdmResultPromise : public CdmPromiseTemplate<T...> {
  public:
   CdmResultPromise(const blink::WebContentDecryptionModuleResult& result,
                    const std::string& uma_name);
@@ -32,12 +32,14 @@ class CdmResultPromise : public media::CdmPromiseTemplate<T...> {
 
   // CdmPromiseTemplate<T> implementation.
   void resolve(const T&... result) override;
-  void reject(media::MediaKeys::Exception exception_code,
+  void reject(MediaKeys::Exception exception_code,
               uint32_t system_code,
               const std::string& error_message) override;
 
  private:
-  using media::CdmPromiseTemplate<T...>::MarkPromiseSettled;
+  using CdmPromiseTemplate<T...>::IsPromiseSettled;
+  using CdmPromiseTemplate<T...>::MarkPromiseSettled;
+  using CdmPromiseTemplate<T...>::RejectPromiseOnDestruction;
 
   blink::WebContentDecryptionModuleResult web_cdm_result_;
 
@@ -56,6 +58,8 @@ CdmResultPromise<T...>::CdmResultPromise(
 
 template <typename... T>
 CdmResultPromise<T...>::~CdmResultPromise() {
+  if (!IsPromiseSettled())
+    RejectPromiseOnDestruction();
 }
 
 // "inline" is needed to prevent multiple definition error.
@@ -68,7 +72,7 @@ inline void CdmResultPromise<>::resolve() {
 }
 
 template <typename... T>
-void CdmResultPromise<T...>::reject(media::MediaKeys::Exception exception_code,
+void CdmResultPromise<T...>::reject(MediaKeys::Exception exception_code,
                                     uint32_t system_code,
                                     const std::string& error_message) {
   MarkPromiseSettled();

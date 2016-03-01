@@ -37,8 +37,11 @@ MojoCdmPromise<T...>::MojoCdmPromise(const CallbackType& callback)
 
 template <typename... T>
 MojoCdmPromise<T...>::~MojoCdmPromise() {
-  if (!callback_.is_null())
-    DVLOG(1) << "Promise not resolved before destruction.";
+  if (IsPromiseSettled())
+    return;
+
+  DCHECK(!callback_.is_null());
+  RejectPromiseOnDestruction();
 }
 
 template <typename... T>

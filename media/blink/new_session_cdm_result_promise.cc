@@ -36,6 +36,8 @@ NewSessionCdmResultPromise::NewSessionCdmResultPromise(
 }
 
 NewSessionCdmResultPromise::~NewSessionCdmResultPromise() {
+  if (!IsPromiseSettled())
+    RejectPromiseOnDestruction();
 }
 
 void NewSessionCdmResultPromise::resolve(const std::string& session_id) {

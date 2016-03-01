@@ -29,8 +29,11 @@ class CdmPromiseInternal : public ::media::CdmPromiseTemplate<T...> {
         promise_(std::move(promise)) {}
 
   ~CdmPromiseInternal() final {
-    // Promise must be resolved or rejected before destruction.
-    DCHECK(!promise_);
+    if (IsPromiseSettled())
+      return;
+
+    DCHECK(promise_);
+    RejectPromiseOnDestruction();
   }
 
   // CdmPromiseTemplate<> implementation.
@@ -48,7 +51,9 @@ class CdmPromiseInternal : public ::media::CdmPromiseTemplate<T...> {
   }
 
  private:
+  using ::media::CdmPromiseTemplate<T...>::IsPromiseSettled;
   using ::media::CdmPromiseTemplate<T...>::MarkPromiseSettled;
+  using ::media::CdmPromiseTemplate<T...>::RejectPromiseOnDestruction;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   scoped_ptr<::media::CdmPromiseTemplate<T...>> promise_;

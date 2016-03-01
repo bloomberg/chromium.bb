@@ -99,12 +99,25 @@ class MEDIA_EXPORT CdmPromiseTemplate : public CdmPromise {
   }
 
  protected:
+  bool IsPromiseSettled() const { return is_settled_; }
+
   // All implementations must call this method in resolve() and reject() methods
   // to indicate that the promise has been settled.
   void MarkPromiseSettled() {
     // Promise can only be settled once.
     DCHECK(!is_settled_);
     is_settled_ = true;
+  }
+
+  // Must be called by the concrete destructor if !IsPromiseSettled().
+  // Note: We can't call reject() in ~CdmPromise() because reject() is virtual.
+  void RejectPromiseOnDestruction() {
+    DCHECK(!is_settled_);
+    std::string message =
+        "Unfulfilled promise rejected automatically during destruction.";
+    DVLOG(1) << message;
+    reject(MediaKeys::INVALID_STATE_ERROR, 0, message);
+    DCHECK(is_settled_);
   }
 
  private:
