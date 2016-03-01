@@ -42,7 +42,7 @@ enum DistanceModelType {
     // Uses a 3D cartesian coordinate system
     void setPosition(float x, float y, float z);
     void setOrientation(float x, float y, float z);
-    void setVelocity(float x, float y, float z);
+    [DeprecateAs=PannerNodeSetVelocity] void setVelocity(float x, float y, float z);
 
     // Distance model
     attribute DistanceModelType distanceModel;

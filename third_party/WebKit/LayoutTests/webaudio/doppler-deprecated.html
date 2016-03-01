@@ -1,0 +1,21 @@
+<!DOCTYPE HTML>
+<script src="../resources/js-test.js"></script>
+<script>
+description("Tests doppler deprecation messages");
+
+var context = new AudioContext();
+var listener = context.listener;
+var panner = context.createPanner();
+
+shouldBe("listener.dopplerFactor", "1");
+evalAndLog("listener.dopplerFactor = 2");
+shouldBe("listener.dopplerFactor", "2");
+
+shouldBe("listener.speedOfSound", "343.3");
+evalAndLog("listener.speedOfSound = 400");
+shouldBe("listener.speedOfSound", "400");
+
+evalAndLog("listener.setVelocity(0, 0, 0)");
+
+evalAndLog("panner.setVelocity(0, 0, 0)");
+</script>

@@ -30,6 +30,8 @@ const char* milestoneString(int milestone)
         return "M53, around September 2016";
     case 54:
         return "M54, around October 2016";
+    case 55:
+        return "M55, around November 2016";
     }
 
     ASSERT_NOT_REACHED();
@@ -44,6 +46,11 @@ String replacedBy(const char* feature, const char* replacement)
 String willBeRemoved(const char* feature, int milestone, const char* details)
 {
     return String::format("%s is deprecated and will be removed in %s. See https://www.chromestatus.com/features/%s for more details.", feature, milestoneString(milestone), details);
+}
+
+String dopplerWillBeRemoved(const char* feature, int milestone, const char* details)
+{
+    return String::format("%s is deprecated and will be removed in %s. It has no effect as the Web Audio doppler effects have already been removed internally. See https://www.chromestatus.com/features/%s for more details.", feature, milestoneString(milestone), details);
 }
 
 String replacedWillBeRemoved(const char* feature, const char* replacement, int milestone, const char* details)
@@ -236,13 +243,16 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature)
         return replacedBy("'CanvasRenderingContext2D.webkitImageSmoothingEnabled'", "'CanvasRenderingContext2D.imageSmoothingEnabled'");
 
     case UseCounter::AudioListenerDopplerFactor:
-        return "dopplerFactor is deprecated and will be removed in M45 when all doppler effects are removed";
+        return dopplerWillBeRemoved("'AudioListener.dopplerFactor'", 55, "5238926818148352");
 
     case UseCounter::AudioListenerSpeedOfSound:
-        return "speedOfSound is deprecated and will be removed in M45 when all doppler effects are removed";
+        return dopplerWillBeRemoved("'AudioListener.speedOfSound'", 55, "5238926818148352");
 
     case UseCounter::AudioListenerSetVelocity:
-        return "setVelocity() is deprecated and will be removed in M45 when all doppler effects are removed";
+        return dopplerWillBeRemoved("'AudioListener.setVelocity()'", 55, "5238926818148352");
+
+    case UseCounter::PannerNodeSetVelocity:
+        return dopplerWillBeRemoved("'PannerNode.setVelocity()'", 55, "5238926818148352");
 
     case UseCounter::PrefixedWindowURL:
         return replacedBy("'webkitURL'", "'URL'");

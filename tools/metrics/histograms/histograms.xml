@@ -67731,6 +67731,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1248" label="ApplicationCacheAPISecureOrigin"/>
   <int value="1249" label="CSSAtRuleApply"/>
   <int value="1250" label="CSSSelectorPseudoAny"/>
+  <int value="1251" label="PannerNodeSetVelocity"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">
