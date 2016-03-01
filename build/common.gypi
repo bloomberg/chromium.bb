@@ -4608,6 +4608,7 @@
                   # crashing on the bots: crbug.com/161942.
                   # '-Wl,--threads',
                   # '-Wl,--thread-count=4',
+                  '-Wl,--gdb-index',
                 ],
                 'conditions': [
                   # TODO(thestig): Enable this for disabled cases.
