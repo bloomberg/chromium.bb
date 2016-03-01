@@ -882,8 +882,10 @@ void InspectorCSSAgent::getMatchedStylesForNode(ErrorString* errorString, int no
 
     Document* ownerDocument = element->ownerDocument();
     // A non-active document has no styles.
-    if (!ownerDocument->isActive())
+    if (!ownerDocument->isActive()) {
+        *errorString = "Document is not active";
         return;
+    }
 
     // FIXME: It's really gross for the inspector to reach in and access StyleResolver
     // directly here. We need to provide the Inspector better APIs to get this information

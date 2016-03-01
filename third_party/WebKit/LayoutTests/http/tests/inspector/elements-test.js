@@ -916,11 +916,12 @@ InspectorTest.dumpBreadcrumb = function(message)
     InspectorTest.addResult(result.join(" > "));
 }
 
-InspectorTest.matchingSelectors = function(rule)
+InspectorTest.matchingSelectors = function(matchedStyles, rule)
 {
     var selectors = [];
-    for (var i = 0; i < rule.matchingSelectors.length; ++i)
-        selectors.push(rule.selectors[rule.matchingSelectors[i]].text);
+    var matchingSelectors = matchedStyles.matchingSelectors(rule);
+    for (var i = 0; i < matchingSelectors.length; ++i)
+        selectors.push(rule.selectors[matchingSelectors[i]].text);
     return "[" + selectors.join(", ") + "]";
 }
 

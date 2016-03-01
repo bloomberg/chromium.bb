@@ -10,7 +10,7 @@ function test()
     var nodeId;
     var nodeStyles;
     var rule;
-    var matchedRules;
+    var matchedStyleResult;
 
     InspectorTest.runTestSuite([
         function testSetUp(next) {
@@ -44,6 +44,7 @@ function test()
                 }
 
                 nodeStyles = matchedResult.nodeStyles();
+                matchedStyleResult = matchedResult;
                 next();
             }
         },
@@ -66,20 +67,27 @@ function test()
                     InspectorTest.completeTest();
                 } else {
                     dumpProperties(rule.style);
-                    rule.setSelectorText(nodeId, "body").then(successCallback);
+                    rule.setSelectorText("body")
+                        .then(onSelectorUpdated)
+                        .then(successCallback);
                 }
             }
 
-            function successCallback(success)
+            function onSelectorUpdated(success)
             {
                 if (!success) {
                     InspectorTest.addResult("[!] Failed to change selector");
                     InspectorTest.completeTest();
                     return;
                 }
+                return matchedStyleResult.recomputeMatchingSelectors(rule);
+            }
+
+            function successCallback()
+            {
                 InspectorTest.addResult("=== Selector changed ===");
                 InspectorTest.addResult(rule.selectorText() + " {" + rule.style.cssText + "}");
-                InspectorTest.addResult("Selectors matching the (#inspected) node: " + InspectorTest.matchingSelectors(rule));
+                InspectorTest.addResult("Selectors matching the (#inspected) node: " + InspectorTest.matchingSelectors(matchedStyleResult, rule));
                 next();
             }
         }

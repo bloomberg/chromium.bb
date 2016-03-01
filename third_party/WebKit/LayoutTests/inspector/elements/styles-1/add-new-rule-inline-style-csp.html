@@ -9,6 +9,7 @@ function test()
 {
     var nodeId;
     var rule;
+    var matchedStyles;
 
 
     InspectorTest.runTestSuite([
@@ -29,9 +30,10 @@ function test()
             function successCallback(section)
             {
                 rule = section.style().parentRule;
+                matchedStyles = section._matchedStyles;
                 InspectorTest.addResult("=== Rule added ===");
                 InspectorTest.addResult(rule.selectorText() + " {" + rule.style.cssText + "}");
-                InspectorTest.addResult("Selectors matching the (#inspected) node: " + InspectorTest.matchingSelectors(rule));
+                InspectorTest.addResult("Selectors matching the (#inspected) node: " + InspectorTest.matchingSelectors(matchedStyles, rule));
                 next();
             }
         },
@@ -48,21 +50,27 @@ function test()
                     InspectorTest.completeTest();
                 } else {
                     dumpProperties(rule.style);
-                    rule.setSelectorText(nodeId, "body").then(successCallback);
+                    rule.setSelectorText("body")
+                        .then(onSelectorUpdated)
+                        .then(successCallback)
                 }
             }
 
-            function successCallback(success)
+            function onSelectorUpdated(success)
             {
                 if (!success) {
                     InspectorTest.addResult("[!] Failed to change selector");
                     InspectorTest.completeTest();
                     return;
                 }
-                var doesAffectSelectedNode = rule.matchingSelectors.length > 0;
+                return matchedStyles.recomputeMatchingSelectors(rule);
+            }
+
+            function successCallback()
+            {
                 InspectorTest.addResult("=== Selector changed ===");
                 InspectorTest.addResult(rule.selectorText() + " {" + rule.style.cssText + "}");
-                InspectorTest.addResult("Selectors matching the (#inspected) node: " + InspectorTest.matchingSelectors(rule));
+                InspectorTest.addResult("Selectors matching the (#inspected) node: " + InspectorTest.matchingSelectors(matchedStyles, rule));
 
                 next();
             }
