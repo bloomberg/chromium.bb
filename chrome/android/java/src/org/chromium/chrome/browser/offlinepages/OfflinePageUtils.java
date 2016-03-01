@@ -183,8 +183,7 @@ public class OfflinePageUtils {
         }
 
         // Set up the tab observer to watch for the tab being unhidden or connectivity.
-        OfflinePageTabObserver.addObserverForTab(
-                activity, tab, connected, tab.getUserBookmarkId(), snackbarController);
+        OfflinePageTabObserver.addObserverForTab(activity, tab, connected, snackbarController);
         return;
     }
 
