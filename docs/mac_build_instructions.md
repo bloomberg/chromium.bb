@@ -136,7 +136,7 @@ information about writing code for Chromium and contributing it.
 ## Using Xcode-Ninja Hybrid
 
 While using Xcode is unsupported, GYP supports a hybrid approach of using ninja
-for building, but Xcode for editing and driving compliation.  Xcode can still be
+for building, but Xcode for editing and driving compilation. Xcode can still be
 slow, but it runs fairly well even **with indexing enabled**.
 
 With hybrid builds, compilation is still handled by ninja, and can be run by the
