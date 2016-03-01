@@ -77,7 +77,7 @@ public:
         {
             return adoptPtrWillBeNoop(new CanvasRenderingContext2D(canvas, attrs, document));
         }
-        CanvasRenderingContext::ContextType contextType() const override { return CanvasRenderingContext::Context2d; }
+        CanvasRenderingContext::ContextType getContextType() const override { return CanvasRenderingContext::Context2d; }
         void onError(HTMLCanvasElement*, const String& error) override { }
     };
 
@@ -190,7 +190,7 @@ private:
     void drawFocusRing(const Path&);
     void updateElementAccessibility(const Path&, Element*);
 
-    CanvasRenderingContext::ContextType contextType() const override { return CanvasRenderingContext::Context2d; }
+    CanvasRenderingContext::ContextType getContextType() const override { return CanvasRenderingContext::Context2d; }
     bool is2d() const override { return true; }
     bool isAccelerated() const override;
     bool hasAlpha() const override { return m_hasAlpha; }

@@ -43,13 +43,13 @@ public:
         ~Factory() override {}
 
         PassOwnPtrWillBeRawPtr<CanvasRenderingContext> create(HTMLCanvasElement*, const CanvasContextCreationAttributes&, Document&) override;
-        CanvasRenderingContext::ContextType contextType() const override { return CanvasRenderingContext::ContextWebgl; }
+        CanvasRenderingContext::ContextType getContextType() const override { return CanvasRenderingContext::ContextWebgl; }
         void onError(HTMLCanvasElement*, const String& error) override;
     };
 
     ~WebGLRenderingContext() override;
 
-    CanvasRenderingContext::ContextType contextType() const override { return CanvasRenderingContext::ContextWebgl; }
+    CanvasRenderingContext::ContextType getContextType() const override { return CanvasRenderingContext::ContextWebgl; }
     unsigned version() const override { return 1; }
     String contextName() const override { return "WebGLRenderingContext"; }
     void registerContextExtensions() override;

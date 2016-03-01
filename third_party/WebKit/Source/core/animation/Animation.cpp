@@ -867,7 +867,7 @@ double Animation::timeToEffectChange()
         ? m_content->timeToForwardsEffectChange() / m_playbackRate
         : m_content->timeToReverseEffectChange() / -m_playbackRate;
 
-    return !hasActiveAnimationsOnCompositor() && m_content->phase() == AnimationEffect::PhaseActive
+    return !hasActiveAnimationsOnCompositor() && m_content->getPhase() == AnimationEffect::PhaseActive
         ? 0
         : result;
 }
@@ -996,7 +996,7 @@ Animation::PlayStateUpdateScope::~PlayStateUpdateScope()
     // the finished promise.
     if (m_animation->m_readyPromise && newPlayState != oldPlayState) {
         if (newPlayState == Idle) {
-            if (m_animation->m_readyPromise->state() == AnimationPromise::Pending) {
+            if (m_animation->m_readyPromise->getState() == AnimationPromise::Pending) {
                 m_animation->m_readyPromise->reject(DOMException::create(AbortError));
             }
             m_animation->m_readyPromise->reset();
@@ -1004,14 +1004,14 @@ Animation::PlayStateUpdateScope::~PlayStateUpdateScope()
         } else if (oldPlayState == Pending) {
             m_animation->m_readyPromise->resolve(m_animation);
         } else if (newPlayState == Pending) {
-            ASSERT(m_animation->m_readyPromise->state() != AnimationPromise::Pending);
+            ASSERT(m_animation->m_readyPromise->getState() != AnimationPromise::Pending);
             m_animation->m_readyPromise->reset();
         }
     }
 
     if (m_animation->m_finishedPromise && newPlayState != oldPlayState) {
         if (newPlayState == Idle) {
-            if (m_animation->m_finishedPromise->state() == AnimationPromise::Pending) {
+            if (m_animation->m_finishedPromise->getState() == AnimationPromise::Pending) {
                 m_animation->m_finishedPromise->reject(DOMException::create(AbortError));
             }
             m_animation->m_finishedPromise->reset();

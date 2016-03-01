@@ -92,7 +92,7 @@ template<typename HolderType, typename ResolvedType, typename RejectedType>
 template<typename PassResolvedType>
 void ScriptPromiseProperty<HolderType, ResolvedType, RejectedType>::resolve(PassResolvedType value)
 {
-    if (state() != Pending) {
+    if (getState() != Pending) {
         ASSERT_NOT_REACHED();
         return;
     }
@@ -106,7 +106,7 @@ template<typename HolderType, typename ResolvedType, typename RejectedType>
 template<typename PassRejectedType>
 void ScriptPromiseProperty<HolderType, ResolvedType, RejectedType>::reject(PassRejectedType value)
 {
-    if (state() != Pending) {
+    if (getState() != Pending) {
         ASSERT_NOT_REACHED();
         return;
     }
@@ -128,14 +128,14 @@ v8::Local<v8::Object> ScriptPromiseProperty<HolderType, ResolvedType, RejectedTy
 template<typename HolderType, typename ResolvedType, typename RejectedType>
 v8::Local<v8::Value> ScriptPromiseProperty<HolderType, ResolvedType, RejectedType>::resolvedValue(v8::Isolate* isolate, v8::Local<v8::Object> creationContext)
 {
-    ASSERT(state() == Resolved);
+    ASSERT(getState() == Resolved);
     return toV8(m_resolved, creationContext, isolate);
 }
 
 template<typename HolderType, typename ResolvedType, typename RejectedType>
 v8::Local<v8::Value> ScriptPromiseProperty<HolderType, ResolvedType, RejectedType>::rejectedValue(v8::Isolate* isolate, v8::Local<v8::Object> creationContext)
 {
-    ASSERT(state() == Rejected);
+    ASSERT(getState() == Rejected);
     return toV8(m_rejected, creationContext, isolate);
 }
 

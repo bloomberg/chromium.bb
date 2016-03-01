@@ -87,7 +87,7 @@ public:
 
     virtual bool isKeyframeEffect() const { return false; }
 
-    Phase phase() const { return ensureCalculated().phase; }
+    Phase getPhase() const { return ensureCalculated().phase; }
     bool isCurrent() const { return ensureCalculated().isCurrent; }
     bool isInEffect() const { return ensureCalculated().isInEffect; }
     bool isInPlay() const { return ensureCalculated().isInPlay; }

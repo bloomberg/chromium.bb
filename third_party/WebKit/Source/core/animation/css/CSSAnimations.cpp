@@ -731,7 +731,7 @@ bool CSSAnimations::AnimationEventDelegate::requiresIterationEvents(const Animat
 
 void CSSAnimations::AnimationEventDelegate::onEventCondition(const AnimationEffect& animationNode)
 {
-    const AnimationEffect::Phase currentPhase = animationNode.phase();
+    const AnimationEffect::Phase currentPhase = animationNode.getPhase();
     const double currentIteration = animationNode.currentIteration();
 
     if (m_previousPhase != currentPhase
@@ -772,7 +772,7 @@ EventTarget* CSSAnimations::TransitionEventDelegate::eventTarget() const
 
 void CSSAnimations::TransitionEventDelegate::onEventCondition(const AnimationEffect& animationNode)
 {
-    const AnimationEffect::Phase currentPhase = animationNode.phase();
+    const AnimationEffect::Phase currentPhase = animationNode.getPhase();
     if (currentPhase == AnimationEffect::PhaseAfter && currentPhase != m_previousPhase && document().hasListenerType(Document::TRANSITIONEND_LISTENER)) {
         String propertyName = getPropertyNameString(m_property);
         const Timing& timing = animationNode.specifiedTiming();

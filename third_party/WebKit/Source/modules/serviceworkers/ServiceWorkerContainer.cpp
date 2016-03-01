@@ -153,7 +153,7 @@ public:
 
     void onSuccess(WebPassOwnPtr<WebServiceWorkerRegistration::Handle> handle) override
     {
-        ASSERT(m_ready->state() == ReadyProperty::Pending);
+        ASSERT(m_ready->getState() == ReadyProperty::Pending);
 
         if (m_ready->executionContext() && !m_ready->executionContext()->activeDOMObjectsAreStopped())
             m_ready->resolve(ServiceWorkerRegistration::getOrCreate(m_ready->executionContext(), handle.release()));

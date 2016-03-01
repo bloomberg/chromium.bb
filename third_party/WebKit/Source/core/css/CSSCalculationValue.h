@@ -80,7 +80,7 @@ public:
     virtual void accumulatePixelsAndPercent(const CSSToLengthConversionData&, PixelsAndPercent&, float multiplier = 1) const = 0;
     virtual String customCSSText() const = 0;
     virtual bool equals(const CSSCalcExpressionNode& other) const { return m_category == other.m_category && m_isInteger == other.m_isInteger; }
-    virtual Type type() const = 0;
+    virtual Type getType() const = 0;
 
     CalculationCategory category() const { return m_category; }
     virtual CSSPrimitiveValue::UnitType typeWithCalcResolved() const = 0;

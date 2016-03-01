@@ -74,7 +74,7 @@ void BatteryManager::didUpdateData()
     BatteryStatus oldStatus = m_batteryStatus;
     m_batteryStatus = *BatteryDispatcher::instance().latestData();
 
-    if (m_batteryProperty->state() == ScriptPromisePropertyBase::Pending) {
+    if (m_batteryProperty->getState() == ScriptPromisePropertyBase::Pending) {
         m_batteryProperty->resolve(this);
         return;
     }

@@ -39,7 +39,7 @@ public:
         Resolved,
         Rejected,
     };
-    State state() const { return m_state; }
+    State getState() const { return m_state; }
 
     ScriptPromise promise(DOMWrapperWorld&);
 

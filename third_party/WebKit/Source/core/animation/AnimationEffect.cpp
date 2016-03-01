@@ -188,8 +188,8 @@ void AnimationEffect::updateInheritedTime(double inheritedTime, TimingUpdateReas
 
         m_calculated.phase = currentPhase;
         m_calculated.isInEffect = !isNull(activeTime);
-        m_calculated.isInPlay = phase() == PhaseActive;
-        m_calculated.isCurrent = phase() == PhaseBefore || isInPlay();
+        m_calculated.isInPlay = getPhase() == PhaseActive;
+        m_calculated.isCurrent = getPhase() == PhaseBefore || isInPlay();
         m_calculated.localTime = m_lastUpdateTime;
     }
 

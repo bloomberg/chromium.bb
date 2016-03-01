@@ -230,7 +230,7 @@ double KeyframeEffect::calculateTimeToEffectChange(bool forwards, double localTi
     const double start = specifiedTiming().startDelay;
     const double end = start + activeDurationInternal();
 
-    switch (phase()) {
+    switch (getPhase()) {
     case PhaseNone:
         return std::numeric_limits<double>::infinity();
     case PhaseBefore:

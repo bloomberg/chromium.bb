@@ -199,7 +199,7 @@ TEST_F(ScriptPromisePropertyGarbageCollectedTest, Promise_IsStableObjectInMainWo
         ScriptState::Scope scope(mainScriptState());
         EXPECT_EQ(v.v8Value().As<v8::Object>()->CreationContext(), toV8Context(&document(), mainWorld()));
     }
-    EXPECT_EQ(Property::Pending, property()->state());
+    EXPECT_EQ(Property::Pending, property()->getState());
 }
 
 TEST_F(ScriptPromisePropertyGarbageCollectedTest, Promise_IsStableObjectInVariousWorlds)
@@ -221,7 +221,7 @@ TEST_F(ScriptPromisePropertyGarbageCollectedTest, Promise_IsStableObjectInVariou
         ScriptState::Scope scope(mainScriptState());
         EXPECT_EQ(v.v8Value().As<v8::Object>()->CreationContext(), toV8Context(&document(), mainWorld()));
     }
-    EXPECT_EQ(Property::Pending, property()->state());
+    EXPECT_EQ(Property::Pending, property()->getState());
 }
 
 TEST_F(ScriptPromisePropertyGarbageCollectedTest, Promise_IsStableObjectAfterSettling)
@@ -230,7 +230,7 @@ TEST_F(ScriptPromisePropertyGarbageCollectedTest, Promise_IsStableObjectAfterSet
     GarbageCollectedScriptWrappable* value = new GarbageCollectedScriptWrappable("value");
 
     property()->resolve(value);
-    EXPECT_EQ(Property::Resolved, property()->state());
+    EXPECT_EQ(Property::Resolved, property()->getState());
 
     ScriptPromise w = promise(DOMWrapperWorld::mainWorld());
     EXPECT_EQ(v, w);
@@ -254,7 +254,7 @@ TEST_F(ScriptPromisePropertyGarbageCollectedTest, Promise_DoesNotImpedeGarbageCo
     gc();
     EXPECT_TRUE(observation->wasCollected());
 
-    EXPECT_EQ(Property::Pending, property()->state());
+    EXPECT_EQ(Property::Pending, property()->getState());
 }
 
 TEST_F(ScriptPromisePropertyGarbageCollectedTest, Resolve_ResolvesScriptPromise)
@@ -279,7 +279,7 @@ TEST_F(ScriptPromisePropertyGarbageCollectedTest, Resolve_ResolvesScriptPromise)
 
     GarbageCollectedScriptWrappable* value = new GarbageCollectedScriptWrappable("value");
     property()->resolve(value);
-    EXPECT_EQ(Property::Resolved, property()->state());
+    EXPECT_EQ(Property::Resolved, property()->getState());
 
     isolate()->RunMicrotasks();
     EXPECT_EQ(1u, nResolveCalls);
@@ -305,7 +305,7 @@ TEST_F(ScriptPromisePropertyGarbageCollectedTest, ResolveAndGetPromiseOnOtherWor
     EXPECT_NE(promise, otherPromise);
     GarbageCollectedScriptWrappable* value = new GarbageCollectedScriptWrappable("value");
     property()->resolve(value);
-    EXPECT_EQ(Property::Resolved, property()->state());
+    EXPECT_EQ(Property::Resolved, property()->getState());
 
     isolate()->RunMicrotasks();
     EXPECT_EQ(1u, nResolveCalls);
@@ -328,7 +328,7 @@ TEST_F(ScriptPromisePropertyGarbageCollectedTest, Reject_RejectsScriptPromise)
 {
     GarbageCollectedScriptWrappable* reason = new GarbageCollectedScriptWrappable("reason");
     property()->reject(reason);
-    EXPECT_EQ(Property::Rejected, property()->state());
+    EXPECT_EQ(Property::Rejected, property()->getState());
 
     ScriptValue actual, otherActual;
     size_t nRejectCalls = 0;
@@ -354,7 +354,7 @@ TEST_F(ScriptPromisePropertyGarbageCollectedTest, Reject_RejectsScriptPromise)
 TEST_F(ScriptPromisePropertyGarbageCollectedTest, Promise_DeadContext)
 {
     property()->resolve(new GarbageCollectedScriptWrappable("value"));
-    EXPECT_EQ(Property::Resolved, property()->state());
+    EXPECT_EQ(Property::Resolved, property()->getState());
 
     destroyContext();
 
@@ -372,7 +372,7 @@ TEST_F(ScriptPromisePropertyGarbageCollectedTest, Resolve_DeadContext)
     EXPECT_TRUE(!property()->executionContext() || property()->executionContext()->activeDOMObjectsAreStopped());
 
     property()->resolve(new GarbageCollectedScriptWrappable("value"));
-    EXPECT_EQ(Property::Pending, property()->state());
+    EXPECT_EQ(Property::Pending, property()->getState());
 
     v8::Isolate::GetCurrent()->RunMicrotasks();
 }
@@ -443,7 +443,7 @@ TEST_F(ScriptPromisePropertyRefCountedTest, Resolve)
 
     RefPtr<RefCountedScriptWrappable> value = RefCountedScriptWrappable::create("value");
     property()->resolve(value.get());
-    EXPECT_EQ(Property::Resolved, property()->state());
+    EXPECT_EQ(Property::Resolved, property()->getState());
 
     isolate()->RunMicrotasks();
     EXPECT_EQ(1u, nResolveCalls);
@@ -462,7 +462,7 @@ TEST_F(ScriptPromisePropertyRefCountedTest, Reject)
 
     RefPtr<RefCountedScriptWrappable> reason = RefCountedScriptWrappable::create("reason");
     property()->reject(reason);
-    EXPECT_EQ(Property::Rejected, property()->state());
+    EXPECT_EQ(Property::Rejected, property()->getState());
 
     isolate()->RunMicrotasks();
     EXPECT_EQ(1u, nRejectCalls);

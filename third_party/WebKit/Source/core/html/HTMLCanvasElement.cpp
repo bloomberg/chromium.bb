@@ -202,7 +202,7 @@ CanvasRenderingContextFactory* HTMLCanvasElement::getRenderingContextFactory(int
 
 void HTMLCanvasElement::registerRenderingContextFactory(PassOwnPtr<CanvasRenderingContextFactory> renderingContextFactory)
 {
-    CanvasRenderingContext::ContextType type = renderingContextFactory->contextType();
+    CanvasRenderingContext::ContextType type = renderingContextFactory->getContextType();
     ASSERT(type < CanvasRenderingContext::ContextTypeCount);
     ASSERT(!renderingContextFactories()[type]);
     renderingContextFactories()[type] = renderingContextFactory;
@@ -241,7 +241,7 @@ CanvasRenderingContext* HTMLCanvasElement::getCanvasRenderingContext(const Strin
     // seeing a dangling pointer. So for now we will disallow the context from being changed
     // once it is created.
     if (m_context) {
-        if (m_context->contextType() == contextType)
+        if (m_context->getContextType() == contextType)
             return m_context.get();
 
         factory->onError(this, "Canvas has an existing context of a different type");

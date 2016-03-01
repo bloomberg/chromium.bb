@@ -183,7 +183,7 @@ bool FontFaceSet::shouldSignalReady() const
 {
     if (!m_loadingFonts.isEmpty())
         return false;
-    return m_isLoading || m_ready->state() == ReadyProperty::Pending;
+    return m_isLoading || m_ready->getState() == ReadyProperty::Pending;
 }
 
 void FontFaceSet::handlePendingEventsAndPromises()
@@ -240,7 +240,7 @@ void FontFaceSet::addToLoadingFonts(PassRefPtrWillBeRawPtr<FontFace> fontFace)
     if (!m_isLoading) {
         m_isLoading = true;
         m_shouldFireLoadingEvent = true;
-        if (m_ready->state() != ReadyProperty::Pending)
+        if (m_ready->getState() != ReadyProperty::Pending)
             m_ready->reset();
         handlePendingEventsAndPromisesSoon();
     }
@@ -366,7 +366,7 @@ void FontFaceSet::fireDoneEventIfPossible()
             dispatchEvent(errorEvent);
     }
 
-    if (m_ready->state() == ReadyProperty::Pending)
+    if (m_ready->getState() == ReadyProperty::Pending)
         m_ready->resolve(this);
 }
 

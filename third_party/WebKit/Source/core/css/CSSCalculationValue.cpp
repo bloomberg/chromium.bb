@@ -250,13 +250,13 @@ public:
 
     bool equals(const CSSCalcExpressionNode& other) const override
     {
-        if (type() != other.type())
+        if (getType() != other.getType())
             return false;
 
         return compareCSSValuePtr(m_value, static_cast<const CSSCalcPrimitiveValue&>(other).m_value);
     }
 
-    Type type() const override { return CssCalcPrimitiveValue; }
+    Type getType() const override { return CssCalcPrimitiveValue; }
     CSSPrimitiveValue::UnitType typeWithCalcResolved() const override
     {
         return m_value->typeWithCalcResolved();
@@ -486,7 +486,7 @@ public:
 
     bool equals(const CSSCalcExpressionNode& exp) const override
     {
-        if (type() != exp.type())
+        if (getType() != exp.getType())
             return false;
 
         const CSSCalcBinaryOperation& other = static_cast<const CSSCalcBinaryOperation&>(exp);
@@ -495,7 +495,7 @@ public:
             && m_operator == other.m_operator;
     }
 
-    Type type() const override { return CssCalcBinaryOperation; }
+    Type getType() const override { return CssCalcBinaryOperation; }
 
     CSSPrimitiveValue::UnitType typeWithCalcResolved() const override
     {
