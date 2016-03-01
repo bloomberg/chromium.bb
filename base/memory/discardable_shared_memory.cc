@@ -221,6 +221,10 @@ DiscardableSharedMemory::LockResult DiscardableSharedMemory::Lock(
   DCHECK_EQ(locked_pages_.size(), locked_page_count_);
 #endif
 
+  // Always behave as if memory was purged when trying to lock a 0 byte segment.
+  if (!length)
+      return PURGED;
+
 // Pin pages if supported.
 #if defined(OS_ANDROID)
   SharedMemoryHandle handle = shared_memory_.handle();

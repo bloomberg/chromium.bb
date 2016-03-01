@@ -358,7 +358,7 @@ TEST(DiscardableSharedMemoryTest, ZeroSize) {
 
   // Lock and unlock memory.
   DiscardableSharedMemory::LockResult lock_rv = memory.Lock(0, 0);
-  EXPECT_EQ(DiscardableSharedMemory::SUCCESS, lock_rv);
+  EXPECT_NE(DiscardableSharedMemory::FAILED, lock_rv);
   memory.SetNow(Time::FromDoubleT(2));
   memory.Unlock(0, 0);
 }
