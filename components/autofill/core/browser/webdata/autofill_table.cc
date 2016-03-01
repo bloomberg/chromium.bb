@@ -140,7 +140,7 @@ void BindCreditCardToStatement(const CreditCard& credit_card,
   int index = 0;
   s->BindString(index++, credit_card.guid());
 
-  s->BindString16(index++, GetInfo(credit_card, CREDIT_CARD_NAME));
+  s->BindString16(index++, GetInfo(credit_card, CREDIT_CARD_NAME_FULL));
   s->BindString16(index++, GetInfo(credit_card, CREDIT_CARD_EXP_MONTH));
   s->BindString16(index++, GetInfo(credit_card, CREDIT_CARD_EXP_4_DIGIT_YEAR));
   BindEncryptedCardToColumn(s, index++,
@@ -173,7 +173,7 @@ scoped_ptr<CreditCard> CreditCardFromStatement(const sql::Statement& s) {
   credit_card->set_guid(s.ColumnString(index++));
   DCHECK(base::IsValidGUID(credit_card->guid()));
 
-  credit_card->SetRawInfo(CREDIT_CARD_NAME, s.ColumnString16(index++));
+  credit_card->SetRawInfo(CREDIT_CARD_NAME_FULL, s.ColumnString16(index++));
   credit_card->SetRawInfo(CREDIT_CARD_EXP_MONTH, s.ColumnString16(index++));
   credit_card->SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR,
                           s.ColumnString16(index++));
@@ -1228,7 +1228,7 @@ bool AutofillTable::GetServerCreditCards(
     }
 
     card->SetServerStatus(ServerStatusStringToEnum(s.ColumnString(index++)));
-    card->SetRawInfo(CREDIT_CARD_NAME, s.ColumnString16(index++));
+    card->SetRawInfo(CREDIT_CARD_NAME_FULL, s.ColumnString16(index++));
     card->SetRawInfo(CREDIT_CARD_EXP_MONTH, s.ColumnString16(index++));
     card->SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, s.ColumnString16(index++));
     credit_cards->push_back(card);
@@ -1265,7 +1265,7 @@ void AutofillTable::SetServerCreditCards(
     masked_insert.BindString(1, card.type());
     masked_insert.BindString(2,
                              ServerStatusEnumToString(card.GetServerStatus()));
-    masked_insert.BindString16(3, card.GetRawInfo(CREDIT_CARD_NAME));
+    masked_insert.BindString16(3, card.GetRawInfo(CREDIT_CARD_NAME_FULL));
     masked_insert.BindString16(4, card.LastFourDigits());
     masked_insert.BindString16(5, card.GetRawInfo(CREDIT_CARD_EXP_MONTH));
     masked_insert.BindString16(6,

@@ -15,4 +15,4 @@ CREDIT_CARD_NUMBER | cardNum |  |  | _1-cc
 CREDIT_CARD_VERIFICATION_CODE | cid |  |  | _1-cc
 CREDIT_CARD_EXP_MONTH | /peapod/handler/iditarod/CheckoutRegistrationHandler.expirationMonth | Expiration Date: | 0 | _1-cc
 CREDIT_CARD_EXP_4_DIGIT_YEAR | /peapod/handler/iditarod/CheckoutRegistrationHandler.expirationYear | / | 0 | _1-cc
-CREDIT_CARD_NAME | cardName | Shorty Nge | Shorty Nge | _1-cc
+CREDIT_CARD_NAME_FULL | cardName | Shorty Nge | Shorty Nge | _1-cc

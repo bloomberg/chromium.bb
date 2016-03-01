@@ -9,7 +9,7 @@ PHONE_HOME_WHOLE_NUMBER | enterAddressPhoneNumber | Phone number |  | enterAddre
 ADDRESS_HOME_COUNTRY | enterAddressCountryCode |  | US | enterAddressFullName_1-default
 UNKNOWN_TYPE | AddressType | Optional Delivery Preferences | OTH | enterAddressFullName_1-default
 UNKNOWN_TYPE | GateCode | Security Access Code |  | enterAddressFullName_1-default
-CREDIT_CARD_NAME | name | Name on card |  | name_1-cc
+CREDIT_CARD_NAME_FULL | name | Name on card |  | name_1-cc
 CREDIT_CARD_NUMBER | addCreditCardNumber | Card number |  | name_1-cc
 CREDIT_CARD_EXP_MONTH | month | Expiration date | 1 | name_1-cc
 CREDIT_CARD_EXP_4_DIGIT_YEAR | year | Expiration date | 2014 | name_1-cc

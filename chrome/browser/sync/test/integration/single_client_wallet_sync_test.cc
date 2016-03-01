@@ -222,7 +222,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest, Download) {
   ASSERT_EQ(kDefaultCardExpMonth, card->expiration_month());
   ASSERT_EQ(kDefaultCardExpYear, card->expiration_year());
   ASSERT_EQ(base::UTF8ToUTF16(kDefaultCardName),
-            card->GetRawInfo(autofill::ServerFieldType::CREDIT_CARD_NAME));
+            card->GetRawInfo(autofill::ServerFieldType::CREDIT_CARD_NAME_FULL));
 }
 
 // Wallet data should get cleared from the database when sync is disabled.

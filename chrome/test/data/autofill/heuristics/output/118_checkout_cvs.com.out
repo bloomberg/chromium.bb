@@ -27,8 +27,8 @@ CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR | expfield | Exp |  | fname_1-cc
 UNKNOWN_TYPE | cvvfield | CVV |  | fname_1-default
 CREDIT_CARD_VERIFICATION_CODE | cvvfield | |CVV |  | fname_1-cc
 UNKNOWN_TYPE | chk1 | Use ... as Billing Address. | on | fname_1-default
-CREDIT_CARD_NAME | ffname | First Name |  | fname_1-cc
-NAME_LAST | flname | Last Name |  | fname_1-default
+CREDIT_CARD_NAME_FIRST | ffname | First Name |  | fname_1-cc
+CREDIT_CARD_NAME_LAST | flname | Last Name |  | fname_1-cc
 ADDRESS_HOME_LINE1 | fstreetAddr | Street Address |  | fname_1-default
 ADDRESS_HOME_LINE2 | fstreetAddr1 | Apartment, Building, Floor, Etc |  | fname_1-default
 ADDRESS_HOME_CITY | fcity | City |  | fname_1-default

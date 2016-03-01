@@ -8,7 +8,7 @@ ADDRESS_HOME_ZIP | zc | Zip Code: |  | fn_1-default
 ADDRESS_HOME_STATE | st | State: |  | fn_1-default
 EMAIL_ADDRESS | em | Email: |  | fn_1-default
 PHONE_HOME_WHOLE_NUMBER | ph | Phone Number: |  | fn_1-default
-CREDIT_CARD_NAME | c1 | Name on card: |  | fn_1-cc
+CREDIT_CARD_NAME_FULL | c1 | Name on card: |  | fn_1-cc
 CREDIT_CARD_NUMBER | c2 | Card Number: |  | fn_1-cc
 CREDIT_CARD_EXP_MONTH | c3 | Expiration Month: |  | fn_1-cc
 CREDIT_CARD_EXP_4_DIGIT_YEAR | c4 | Expiration Year: |  | fn_1-cc

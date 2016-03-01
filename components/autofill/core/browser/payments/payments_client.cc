@@ -294,9 +294,10 @@ class UploadCardRequest : public PaymentsRequest {
     context->SetString("language_code", app_locale);
     request_dict.Set("context", std::move(context));
 
-    request_dict.SetString("cardholder_name",
-                           request_details_.card.GetInfo(
-                               AutofillType(CREDIT_CARD_NAME), app_locale));
+    request_dict.SetString(
+        "cardholder_name",
+        request_details_.card.GetInfo(AutofillType(CREDIT_CARD_NAME_FULL),
+                                      app_locale));
 
     scoped_ptr<base::ListValue> addresses(new base::ListValue());
     for (const AutofillProfile& profile : request_details_.profiles) {

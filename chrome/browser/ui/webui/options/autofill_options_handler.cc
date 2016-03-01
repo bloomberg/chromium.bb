@@ -453,8 +453,7 @@ void AutofillOptionsHandler::LoadCreditCardEditor(const base::ListValue* args) {
   base::DictionaryValue credit_card_data;
   credit_card_data.SetString("guid", credit_card->guid());
   credit_card_data.SetString(
-      "nameOnCard",
-      credit_card->GetRawInfo(autofill::CREDIT_CARD_NAME));
+      "nameOnCard", credit_card->GetRawInfo(autofill::CREDIT_CARD_NAME_FULL));
   credit_card_data.SetString(
       "creditCardNumber",
       credit_card->GetRawInfo(autofill::CREDIT_CARD_NUMBER));
@@ -543,7 +542,7 @@ void AutofillOptionsHandler::SetCreditCard(const base::ListValue* args) {
 
   base::string16 value;
   if (args->GetString(1, &value))
-    credit_card.SetRawInfo(autofill::CREDIT_CARD_NAME, value);
+    credit_card.SetRawInfo(autofill::CREDIT_CARD_NAME_FULL, value);
 
   if (args->GetString(2, &value))
     credit_card.SetRawInfo(autofill::CREDIT_CARD_NUMBER, value);

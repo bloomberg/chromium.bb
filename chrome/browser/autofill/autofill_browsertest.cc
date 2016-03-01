@@ -364,7 +364,7 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, FillProfileCrazyCharacters) {
 
   std::vector<CreditCard> cards;
   CreditCard card1;
-  card1.SetRawInfo(CREDIT_CARD_NAME,
+  card1.SetRawInfo(CREDIT_CARD_NAME_FULL,
                    WideToUTF16(L"\u751f\u6d3b\u5f88\u6709\u89c4\u5f8b "
                                L"\u4ee5\u73a9\u4e3a\u4e3b"));
   card1.SetRawInfo(CREDIT_CARD_NUMBER, WideToUTF16(L"6011111111111117"));
@@ -373,14 +373,14 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, FillProfileCrazyCharacters) {
   cards.push_back(card1);
 
   CreditCard card2;
-  card2.SetRawInfo(CREDIT_CARD_NAME, WideToUTF16(L"John Williams"));
+  card2.SetRawInfo(CREDIT_CARD_NAME_FULL, WideToUTF16(L"John Williams"));
   card2.SetRawInfo(CREDIT_CARD_NUMBER, WideToUTF16(L"WokoAwesome12345"));
   card2.SetRawInfo(CREDIT_CARD_EXP_MONTH, WideToUTF16(L"10"));
   card2.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, WideToUTF16(L"2015"));
   cards.push_back(card2);
 
   CreditCard card3;
-  card3.SetRawInfo(CREDIT_CARD_NAME,
+  card3.SetRawInfo(CREDIT_CARD_NAME_FULL,
                    WideToUTF16(L"\u0623\u062d\u0645\u062f\u064a "
                                L"\u0646\u062c\u0627\u062f "
                                L"\u0644\u0645\u062d\u0627\u0648\u0644\u0647 "
@@ -396,7 +396,7 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, FillProfileCrazyCharacters) {
   cards.push_back(card3);
 
   CreditCard card4;
-  card4.SetRawInfo(CREDIT_CARD_NAME,
+  card4.SetRawInfo(CREDIT_CARD_NAME_FULL,
                    WideToUTF16(L"\u039d\u03ad\u03b5\u03c2 "
                                L"\u03c3\u03c5\u03b3\u03c7\u03c9\u03bd\u03b5"
                                L"\u03cd\u03c3\u03b5\u03b9\u03c2 "

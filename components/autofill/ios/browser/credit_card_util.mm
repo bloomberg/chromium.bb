@@ -13,7 +13,7 @@ namespace autofill {
 NSString* GetCreditCardName(const CreditCard& credit_card,
                             const std::string& locale) {
   return base::SysUTF16ToNSString(credit_card.GetInfo(
-      autofill::AutofillType(autofill::CREDIT_CARD_NAME), locale));
+      autofill::AutofillType(autofill::CREDIT_CARD_NAME_FULL), locale));
 }
 
 NSString* GetCreditCardObfuscatedNumber(const CreditCard& credit_card) {

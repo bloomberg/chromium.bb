@@ -1,5 +1,5 @@
 UNKNOWN_TYPE | creditCard | American Express Discover |  | creditCard_1-default
-CREDIT_CARD_NAME | cardholderName | Cardholder's name |  | creditCard_1-cc
+CREDIT_CARD_NAME_FULL | cardholderName | Cardholder's name |  | creditCard_1-cc
 CREDIT_CARD_EXP_MONTH | expireMonth | Expiration Date |  | creditCard_1-cc
 CREDIT_CARD_EXP_4_DIGIT_YEAR | expireYear | Expiration Date |  | creditCard_1-cc
 CREDIT_CARD_VERIFICATION_CODE | securityNumber | CVV Number 3 or 4 digit number |  | creditCard_1-cc

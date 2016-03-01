@@ -513,15 +513,21 @@ AutofillType AutofillField::Type() const {
   if (server_type_ != NO_SERVER_DATA) {
     // See http://crbug.com/429236 for background on why we might not always
     // believe the server.
-    // See http://crbug.com/441488 for potential improvements to the server
-    // which may obviate the need for this logic.
+    // TODO(http://crbug.com/589129) investigate how well the server is doing in
+    // regard to credit card predictions.
     bool believe_server =
-        !(server_type_ == NAME_FULL && heuristic_type_ == CREDIT_CARD_NAME) &&
-        !(server_type_ == CREDIT_CARD_NAME && heuristic_type_ == NAME_FULL) &&
+        !(server_type_ == NAME_FULL &&
+          heuristic_type_ == CREDIT_CARD_NAME_FULL) &&
+        !(server_type_ == CREDIT_CARD_NAME_FULL &&
+          heuristic_type_ == NAME_FULL) &&
+        !(server_type_ == NAME_FIRST &&
+          heuristic_type_ == CREDIT_CARD_NAME_FIRST) &&
+        !(server_type_ == NAME_LAST &&
+          heuristic_type_ == CREDIT_CARD_NAME_LAST) &&
         // CVC is sometimes type="password", which tricks the server.
         // See http://crbug.com/469007
         !(AutofillType(server_type_).group() == PASSWORD_FIELD &&
-              heuristic_type_ == CREDIT_CARD_VERIFICATION_CODE);
+          heuristic_type_ == CREDIT_CARD_VERIFICATION_CODE);
     if (believe_server)
       return AutofillType(server_type_);
   }

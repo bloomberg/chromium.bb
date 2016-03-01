@@ -501,7 +501,7 @@ TEST_F(PersonalDataManagerTest, AddUpdateRemoveCreditCards) {
   ExpectSameElements(cards, personal_data_->GetCreditCards());
 
   // Update, remove, and add.
-  credit_card0.SetRawInfo(CREDIT_CARD_NAME, ASCIIToUTF16("Joe"));
+  credit_card0.SetRawInfo(CREDIT_CARD_NAME_FULL, ASCIIToUTF16("Joe"));
   personal_data_->UpdateCreditCard(credit_card0);
   personal_data_->RemoveByGUID(credit_card1.guid());
   personal_data_->AddCreditCard(credit_card2);
@@ -585,7 +585,7 @@ TEST_F(PersonalDataManagerTest, UpdateUnverifiedProfilesAndCreditCards) {
 
   // Try to update with data changed as well.
   profile.SetRawInfo(NAME_FIRST, ASCIIToUTF16("John"));
-  credit_card.SetRawInfo(CREDIT_CARD_NAME, ASCIIToUTF16("Joe"));
+  credit_card.SetRawInfo(CREDIT_CARD_NAME_FULL, ASCIIToUTF16("Joe"));
 
   personal_data_->UpdateProfile(profile);
   personal_data_->UpdateCreditCard(credit_card);
@@ -839,17 +839,17 @@ TEST_F(PersonalDataManagerTest, PopulateUniqueIDsOnLoad) {
 
 TEST_F(PersonalDataManagerTest, SetUniqueCreditCardLabels) {
   CreditCard credit_card0(base::GenerateGUID(), "https://www.example.com");
-  credit_card0.SetRawInfo(CREDIT_CARD_NAME, ASCIIToUTF16("John"));
+  credit_card0.SetRawInfo(CREDIT_CARD_NAME_FULL, ASCIIToUTF16("John"));
   CreditCard credit_card1(base::GenerateGUID(), "https://www.example.com");
-  credit_card1.SetRawInfo(CREDIT_CARD_NAME, ASCIIToUTF16("Paul"));
+  credit_card1.SetRawInfo(CREDIT_CARD_NAME_FULL, ASCIIToUTF16("Paul"));
   CreditCard credit_card2(base::GenerateGUID(), "https://www.example.com");
-  credit_card2.SetRawInfo(CREDIT_CARD_NAME, ASCIIToUTF16("Ringo"));
+  credit_card2.SetRawInfo(CREDIT_CARD_NAME_FULL, ASCIIToUTF16("Ringo"));
   CreditCard credit_card3(base::GenerateGUID(), "https://www.example.com");
-  credit_card3.SetRawInfo(CREDIT_CARD_NAME, ASCIIToUTF16("Other"));
+  credit_card3.SetRawInfo(CREDIT_CARD_NAME_FULL, ASCIIToUTF16("Other"));
   CreditCard credit_card4(base::GenerateGUID(), "https://www.example.com");
-  credit_card4.SetRawInfo(CREDIT_CARD_NAME, ASCIIToUTF16("Ozzy"));
+  credit_card4.SetRawInfo(CREDIT_CARD_NAME_FULL, ASCIIToUTF16("Ozzy"));
   CreditCard credit_card5(base::GenerateGUID(), "https://www.example.com");
-  credit_card5.SetRawInfo(CREDIT_CARD_NAME, ASCIIToUTF16("Dio"));
+  credit_card5.SetRawInfo(CREDIT_CARD_NAME_FULL, ASCIIToUTF16("Dio"));
 
   // Add the test credit cards to the database.
   personal_data_->AddCreditCard(credit_card0);
@@ -2520,7 +2520,7 @@ TEST_F(PersonalDataManagerTest, SaveImportedCreditCardWithVerifiedData) {
 
   CreditCard new_verified_card = credit_card;
   new_verified_card.set_guid(base::GenerateGUID());
-  new_verified_card.SetRawInfo(CREDIT_CARD_NAME, ASCIIToUTF16("B. Small"));
+  new_verified_card.SetRawInfo(CREDIT_CARD_NAME_FULL, ASCIIToUTF16("B. Small"));
   EXPECT_TRUE(new_verified_card.IsVerified());
 
   personal_data_->SaveImportedCreditCard(new_verified_card);
@@ -2533,7 +2533,8 @@ TEST_F(PersonalDataManagerTest, SaveImportedCreditCardWithVerifiedData) {
   // Expect that the saved credit card is updated.
   const std::vector<CreditCard*>& results = personal_data_->GetCreditCards();
   ASSERT_EQ(1U, results.size());
-  EXPECT_EQ(ASCIIToUTF16("B. Small"), results[0]->GetRawInfo(CREDIT_CARD_NAME));
+  EXPECT_EQ(ASCIIToUTF16("B. Small"),
+            results[0]->GetRawInfo(CREDIT_CARD_NAME_FULL));
 }
 
 TEST_F(PersonalDataManagerTest, GetNonEmptyTypes) {
@@ -2650,7 +2651,7 @@ TEST_F(PersonalDataManagerTest, GetNonEmptyTypes) {
   EXPECT_TRUE(non_empty_types.count(PHONE_HOME_COUNTRY_CODE));
   EXPECT_TRUE(non_empty_types.count(PHONE_HOME_CITY_AND_NUMBER));
   EXPECT_TRUE(non_empty_types.count(PHONE_HOME_WHOLE_NUMBER));
-  EXPECT_TRUE(non_empty_types.count(CREDIT_CARD_NAME));
+  EXPECT_TRUE(non_empty_types.count(CREDIT_CARD_NAME_FULL));
   EXPECT_TRUE(non_empty_types.count(CREDIT_CARD_NUMBER));
   EXPECT_TRUE(non_empty_types.count(CREDIT_CARD_TYPE));
   EXPECT_TRUE(non_empty_types.count(CREDIT_CARD_EXP_MONTH));
@@ -2700,27 +2701,29 @@ TEST_F(PersonalDataManagerTest, IncognitoReadOnly) {
   steve_jobs.SetRawInfo(NAME_FIRST, ASCIIToUTF16("Steve"));
   personal_data_->SaveImportedProfile(steve_jobs);
 
-  bill_gates.SetRawInfo(CREDIT_CARD_NAME, ASCIIToUTF16("Bill Gates"));
+  bill_gates.SetRawInfo(CREDIT_CARD_NAME_FULL, ASCIIToUTF16("Bill Gates"));
   personal_data_->SaveImportedCreditCard(bill_gates);
 
   ResetPersonalDataManager(USER_MODE_INCOGNITO);
   EXPECT_EQ(ASCIIToUTF16("Steven"),
             personal_data_->GetProfiles()[0]->GetRawInfo(NAME_FIRST));
-  EXPECT_EQ(ASCIIToUTF16("William H. Gates"),
-            personal_data_->GetCreditCards()[0]->GetRawInfo(CREDIT_CARD_NAME));
+  EXPECT_EQ(
+      ASCIIToUTF16("William H. Gates"),
+      personal_data_->GetCreditCards()[0]->GetRawInfo(CREDIT_CARD_NAME_FULL));
 
   // Updating existing profiles shouldn't work.
   steve_jobs.SetRawInfo(NAME_FIRST, ASCIIToUTF16("Steve"));
   personal_data_->UpdateProfile(steve_jobs);
 
-  bill_gates.SetRawInfo(CREDIT_CARD_NAME, ASCIIToUTF16("Bill Gates"));
+  bill_gates.SetRawInfo(CREDIT_CARD_NAME_FULL, ASCIIToUTF16("Bill Gates"));
   personal_data_->UpdateCreditCard(bill_gates);
 
   ResetPersonalDataManager(USER_MODE_INCOGNITO);
   EXPECT_EQ(ASCIIToUTF16("Steven"),
             personal_data_->GetProfiles()[0]->GetRawInfo(NAME_FIRST));
-  EXPECT_EQ(ASCIIToUTF16("William H. Gates"),
-            personal_data_->GetCreditCards()[0]->GetRawInfo(CREDIT_CARD_NAME));
+  EXPECT_EQ(
+      ASCIIToUTF16("William H. Gates"),
+      personal_data_->GetCreditCards()[0]->GetRawInfo(CREDIT_CARD_NAME_FULL));
 
   // Removing shouldn't work.
   personal_data_->RemoveByGUID(steve_jobs.guid());
@@ -3025,7 +3028,7 @@ TEST_F(PersonalDataManagerTest, GetCreditCardSuggestions_LocalCardsRanking) {
   // the platform, but the last 4 digits should appear).
   std::vector<Suggestion> suggestions =
       personal_data_->GetCreditCardSuggestions(
-          AutofillType(CREDIT_CARD_NAME),
+          AutofillType(CREDIT_CARD_NAME_FULL),
           /* field_contents= */ base::string16());
   ASSERT_EQ(3U, suggestions.size());
 
@@ -3072,7 +3075,7 @@ TEST_F(PersonalDataManagerTest,
 
   std::vector<Suggestion> suggestions =
       personal_data_->GetCreditCardSuggestions(
-          AutofillType(CREDIT_CARD_NAME),
+          AutofillType(CREDIT_CARD_NAME_FULL),
           /* field_contents= */ base::string16());
   ASSERT_EQ(5U, suggestions.size());
 
@@ -3171,7 +3174,7 @@ TEST_F(PersonalDataManagerTest, GetCreditCardSuggestions_ServerDuplicates) {
 
   std::vector<Suggestion> suggestions =
       personal_data_->GetCreditCardSuggestions(
-          AutofillType(CREDIT_CARD_NAME),
+          AutofillType(CREDIT_CARD_NAME_FULL),
           /* field_contents= */ base::string16());
   ASSERT_EQ(4U, suggestions.size());
   EXPECT_EQ(ASCIIToUTF16("John Dillinger"), suggestions[0].value);
@@ -3218,7 +3221,7 @@ TEST_F(PersonalDataManagerTest,
 
   std::vector<Suggestion> suggestions =
       personal_data_->GetCreditCardSuggestions(
-          AutofillType(CREDIT_CARD_NAME),
+          AutofillType(CREDIT_CARD_NAME_FULL),
           /* field_contents= */ base::string16());
   ASSERT_EQ(3U, suggestions.size());
 
@@ -3234,7 +3237,8 @@ TEST_F(PersonalDataManagerTest,
   base::MessageLoop::current()->Run();
 
   suggestions = personal_data_->GetCreditCardSuggestions(
-      AutofillType(CREDIT_CARD_NAME), /* field_contents= */ base::string16());
+      AutofillType(CREDIT_CARD_NAME_FULL),
+      /* field_contents= */ base::string16());
   ASSERT_EQ(3U, suggestions.size());
 }
 

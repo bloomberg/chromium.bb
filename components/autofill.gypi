@@ -115,6 +115,8 @@
         'autofill/core/browser/autofill_country.h',
         'autofill/core/browser/autofill_data_model.cc',
         'autofill/core/browser/autofill_data_model.h',
+        'autofill/core/browser/autofill_data_util.cc',
+        'autofill/core/browser/autofill_data_util.h',
         'autofill/core/browser/autofill_download_manager.cc',
         'autofill/core/browser/autofill_download_manager.h',
         'autofill/core/browser/autofill_driver.h',

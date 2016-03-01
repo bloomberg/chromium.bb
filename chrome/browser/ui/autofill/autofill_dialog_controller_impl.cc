@@ -1685,7 +1685,7 @@ void AutofillDialogControllerImpl::FillOutputForSectionWithComparator(
       FillFormGroupFromOutputs(output, &card);
 
       // The card holder name comes from the billing address section.
-      card.SetRawInfo(CREDIT_CARD_NAME,
+      card.SetRawInfo(CREDIT_CARD_NAME_FULL,
                       GetValueFromSection(SECTION_BILLING, NAME_BILLING_FULL));
 
       if (ShouldSaveDetailsLocally()) {

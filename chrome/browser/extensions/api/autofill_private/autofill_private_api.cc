@@ -326,9 +326,8 @@ ExtensionFunction::ResponseAction AutofillPrivateSaveCreditCardFunction::Run() {
   autofill::CreditCard credit_card(guid, kSettingsOrigin);
 
   if (card->name) {
-    credit_card.SetRawInfo(
-        autofill::CREDIT_CARD_NAME,
-        base::UTF8ToUTF16(*card->name));
+    credit_card.SetRawInfo(autofill::CREDIT_CARD_NAME_FULL,
+                           base::UTF8ToUTF16(*card->name));
   }
 
   if (card->card_number) {

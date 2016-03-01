@@ -1982,6 +1982,42 @@ TEST_F(AutofillManagerTest, FillCreditCardFormYearMonth) {
       kDefaultPageID, false, "2012", "04");
 }
 
+// Test that we correctly fill a credit card form with first and last cardholder
+// name.
+TEST_F(AutofillManagerTest, FillCreditCardFormSplitName) {
+  // Set up our form data.
+  FormData form;
+  form.name = ASCIIToUTF16("MyForm");
+  form.origin = GURL("https://myform.com/form.html");
+  form.action = GURL("https://myform.com/submit.html");
+
+  FormFieldData field;
+  test::CreateTestFormField("Card Name", "cardname", "", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Last Name", "cardlastname", "", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Card Number", "cardnumber", "", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("CVC", "cvc", "", "text", &field);
+  form.fields.push_back(field);
+
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+
+  const char guid[] = "00000000-0000-0000-0000-000000000004";
+  int response_page_id = 0;
+  FormData response_data;
+  FillAutofillFormDataAndSaveResults(kDefaultPageID, form, *form.fields.begin(),
+                                     MakeFrontendID(guid, std::string()),
+                                     &response_page_id, &response_data);
+  ExpectFilledField("Card Name", "cardname", "Elvis", "text",
+                    response_data.fields[0]);
+  ExpectFilledField("Last Name", "cardlastname", "Presley", "text",
+                    response_data.fields[1]);
+  ExpectFilledField("Card Number", "cardnumber", "4234567890123456", "text",
+                    response_data.fields[2]);
+}
+
 // Test that we correctly fill a combined address and credit card form.
 TEST_F(AutofillManagerTest, FillAddressAndCreditCardForm) {
   // Set up our form data.
@@ -3354,7 +3390,7 @@ TEST_F(AutofillManagerTest, DeterminePossibleFieldTypesForUpload) {
       {"2", PHONE_HOME_CITY_CODE},
 
       // Credit card fields matches.
-      {"Elvis Presley", CREDIT_CARD_NAME},
+      {"Elvis Presley", CREDIT_CARD_NAME_FULL},
       {"4234-5678-9012-3456", CREDIT_CARD_NUMBER},
       {"04", CREDIT_CARD_EXP_MONTH},
       {"April", CREDIT_CARD_EXP_MONTH},

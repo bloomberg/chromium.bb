@@ -8,7 +8,7 @@ ADDRESS_HOME_ZIP | zc | CAP: |  | fn_1-default
 ADDRESS_HOME_STATE | st | Provincia: |  | fn_1-default
 EMAIL_ADDRESS | em | E-mail: |  | fn_1-default
 PHONE_HOME_WHOLE_NUMBER | ph | Telefono: |  | fn_1-default
-CREDIT_CARD_NAME | c1 | Nome titolare carta: |  | fn_1-cc
+CREDIT_CARD_NAME_FULL | c1 | Nome titolare carta: |  | fn_1-cc
 CREDIT_CARD_NUMBER | c2 | Numero carta di credito: |  | fn_1-cc
 CREDIT_CARD_EXP_MONTH | c3 | Data di scadenza: |  | fn_1-cc
 CREDIT_CARD_EXP_4_DIGIT_YEAR | c4 | Data di scadenza: |  | fn_1-cc

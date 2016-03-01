@@ -102,7 +102,9 @@ FieldTypeGroup AutofillType::group() const {
     case ADDRESS_BILLING_DEPENDENT_LOCALITY:
       return ADDRESS_BILLING;
 
-    case CREDIT_CARD_NAME:
+    case CREDIT_CARD_NAME_FULL:
+    case CREDIT_CARD_NAME_FIRST:
+    case CREDIT_CARD_NAME_LAST:
     case CREDIT_CARD_NUMBER:
     case CREDIT_CARD_EXP_MONTH:
     case CREDIT_CARD_EXP_2_DIGIT_YEAR:
@@ -171,7 +173,9 @@ FieldTypeGroup AutofillType::group() const {
     case HTML_TYPE_FULL_ADDRESS:
       return html_mode_ == HTML_MODE_BILLING ? ADDRESS_BILLING : ADDRESS_HOME;
 
-    case HTML_TYPE_CREDIT_CARD_NAME:
+    case HTML_TYPE_CREDIT_CARD_NAME_FULL:
+    case HTML_TYPE_CREDIT_CARD_NAME_FIRST:
+    case HTML_TYPE_CREDIT_CARD_NAME_LAST:
     case HTML_TYPE_CREDIT_CARD_NUMBER:
     case HTML_TYPE_CREDIT_CARD_EXP:
     case HTML_TYPE_CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR:
@@ -340,8 +344,14 @@ ServerFieldType AutofillType::GetStorableType() const {
     case HTML_TYPE_FULL_ADDRESS:
       return UNKNOWN_TYPE;
 
-    case HTML_TYPE_CREDIT_CARD_NAME:
-      return CREDIT_CARD_NAME;
+    case HTML_TYPE_CREDIT_CARD_NAME_FULL:
+      return CREDIT_CARD_NAME_FULL;
+
+    case HTML_TYPE_CREDIT_CARD_NAME_FIRST:
+      return CREDIT_CARD_NAME_FIRST;
+
+    case HTML_TYPE_CREDIT_CARD_NAME_LAST:
+      return CREDIT_CARD_NAME_LAST;
 
     case HTML_TYPE_CREDIT_CARD_NUMBER:
       return CREDIT_CARD_NUMBER;
@@ -570,8 +580,12 @@ std::string AutofillType::ToString() const {
       return "ADDRESS_BILLING_ZIP";
     case ADDRESS_BILLING_COUNTRY:
       return "ADDRESS_BILLING_COUNTRY";
-    case CREDIT_CARD_NAME:
-      return "CREDIT_CARD_NAME";
+    case CREDIT_CARD_NAME_FULL:
+      return "CREDIT_CARD_NAME_FULL";
+    case CREDIT_CARD_NAME_FIRST:
+      return "CREDIT_CARD_NAME_FIRST";
+    case CREDIT_CARD_NAME_LAST:
+      return "CREDIT_CARD_NAME_LAST";
     case CREDIT_CARD_NUMBER:
       return "CREDIT_CARD_NUMBER";
     case CREDIT_CARD_EXP_MONTH:
@@ -675,8 +689,12 @@ std::string AutofillType::ToString() const {
       return "HTML_TYPE_POSTAL_CODE";
     case HTML_TYPE_FULL_ADDRESS:
       return "HTML_TYPE_FULL_ADDRESS";
-    case HTML_TYPE_CREDIT_CARD_NAME:
-      return "HTML_TYPE_CREDIT_CARD_NAME";
+    case HTML_TYPE_CREDIT_CARD_NAME_FULL:
+      return "HTML_TYPE_CREDIT_CARD_NAME_FULL";
+    case HTML_TYPE_CREDIT_CARD_NAME_FIRST:
+      return "HTML_TYPE_CREDIT_CARD_NAME_FIRST";
+    case HTML_TYPE_CREDIT_CARD_NAME_LAST:
+      return "HTML_TYPE_CREDIT_CARD_NAME_LAST";
     case HTML_TYPE_CREDIT_CARD_NUMBER:
       return "HTML_TYPE_CREDIT_CARD_NUMBER";
     case HTML_TYPE_CREDIT_CARD_EXP:

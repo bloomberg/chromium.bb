@@ -914,7 +914,8 @@ TEST_F(AutofillTableTest, CreditCard) {
   // Add a 'Work' credit card.
   CreditCard work_creditcard;
   work_creditcard.set_origin("https://www.example.com/");
-  work_creditcard.SetRawInfo(CREDIT_CARD_NAME, ASCIIToUTF16("Jack Torrance"));
+  work_creditcard.SetRawInfo(CREDIT_CARD_NAME_FULL,
+                             ASCIIToUTF16("Jack Torrance"));
   work_creditcard.SetRawInfo(CREDIT_CARD_NUMBER,
                              ASCIIToUTF16("1234567890123456"));
   work_creditcard.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("04"));
@@ -944,7 +945,8 @@ TEST_F(AutofillTableTest, CreditCard) {
   // Add a 'Target' credit card.
   CreditCard target_creditcard;
   target_creditcard.set_origin(std::string());
-  target_creditcard.SetRawInfo(CREDIT_CARD_NAME, ASCIIToUTF16("Jack Torrance"));
+  target_creditcard.SetRawInfo(CREDIT_CARD_NAME_FULL,
+                               ASCIIToUTF16("Jack Torrance"));
   target_creditcard.SetRawInfo(CREDIT_CARD_NUMBER,
                                ASCIIToUTF16("1111222233334444"));
   target_creditcard.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("06"));
@@ -970,7 +972,8 @@ TEST_F(AutofillTableTest, CreditCard) {
 
   // Update the 'Target' credit card.
   target_creditcard.set_origin("Interactive Autofill dialog");
-  target_creditcard.SetRawInfo(CREDIT_CARD_NAME, ASCIIToUTF16("Charles Grady"));
+  target_creditcard.SetRawInfo(CREDIT_CARD_NAME_FULL,
+                               ASCIIToUTF16("Charles Grady"));
   Time pre_modification_time = Time::Now();
   EXPECT_TRUE(table_->UpdateCreditCard(target_creditcard));
   Time post_modification_time = Time::Now();
@@ -1077,7 +1080,7 @@ TEST_F(AutofillTableTest, UpdateAutofillProfile) {
 TEST_F(AutofillTableTest, UpdateCreditCard) {
   // Add a credit card to the db.
   CreditCard credit_card;
-  credit_card.SetRawInfo(CREDIT_CARD_NAME, ASCIIToUTF16("Jack Torrance"));
+  credit_card.SetRawInfo(CREDIT_CARD_NAME_FULL, ASCIIToUTF16("Jack Torrance"));
   credit_card.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("1234567890123456"));
   credit_card.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("04"));
   credit_card.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, ASCIIToUTF16("2013"));
@@ -1203,7 +1206,7 @@ TEST_F(AutofillTableTest, UpdateProfileOriginOnly) {
 TEST_F(AutofillTableTest, UpdateCreditCardOriginOnly) {
   // Add a credit card to the db.
   CreditCard credit_card;
-  credit_card.SetRawInfo(CREDIT_CARD_NAME, ASCIIToUTF16("Jack Torrance"));
+  credit_card.SetRawInfo(CREDIT_CARD_NAME_FULL, ASCIIToUTF16("Jack Torrance"));
   credit_card.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("1234567890123456"));
   credit_card.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("04"));
   credit_card.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, ASCIIToUTF16("2013"));
@@ -1563,14 +1566,14 @@ TEST_F(AutofillTableTest, Autofill_GetAllAutofillEntries_TwoSame) {
 TEST_F(AutofillTableTest, SetGetServerCards) {
   std::vector<CreditCard> inputs;
   inputs.push_back(CreditCard(CreditCard::FULL_SERVER_CARD, "a123"));
-  inputs[0].SetRawInfo(CREDIT_CARD_NAME, ASCIIToUTF16("Paul F. Tompkins"));
+  inputs[0].SetRawInfo(CREDIT_CARD_NAME_FULL, ASCIIToUTF16("Paul F. Tompkins"));
   inputs[0].SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("1"));
   inputs[0].SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, ASCIIToUTF16("2020"));
   inputs[0].SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("4111111111111111"));
 
   inputs.push_back(
       CreditCard(CreditCard::MASKED_SERVER_CARD, "b456"));
-  inputs[1].SetRawInfo(CREDIT_CARD_NAME, ASCIIToUTF16("Rick Roman"));
+  inputs[1].SetRawInfo(CREDIT_CARD_NAME_FULL, ASCIIToUTF16("Rick Roman"));
   inputs[1].SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("12"));
   inputs[1].SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, ASCIIToUTF16("1997"));
   inputs[1].SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("1111"));
@@ -1608,7 +1611,7 @@ TEST_F(AutofillTableTest, MaskUnmaskServerCards) {
   base::string16 masked_number(ASCIIToUTF16("1111"));
   std::vector<CreditCard> inputs;
   inputs.push_back(CreditCard(CreditCard::MASKED_SERVER_CARD, "a123"));
-  inputs[0].SetRawInfo(CREDIT_CARD_NAME, ASCIIToUTF16("Jay Johnson"));
+  inputs[0].SetRawInfo(CREDIT_CARD_NAME_FULL, ASCIIToUTF16("Jay Johnson"));
   inputs[0].SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("1"));
   inputs[0].SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, ASCIIToUTF16("2020"));
   inputs[0].SetRawInfo(CREDIT_CARD_NUMBER, masked_number);
@@ -1645,7 +1648,8 @@ TEST_F(AutofillTableTest, MaskUnmaskServerCards) {
 TEST_F(AutofillTableTest, SetServerCardModify) {
   // Add a masked card.
   CreditCard masked_card(CreditCard::MASKED_SERVER_CARD, "a123");
-  masked_card.SetRawInfo(CREDIT_CARD_NAME, ASCIIToUTF16("Paul F. Tompkins"));
+  masked_card.SetRawInfo(CREDIT_CARD_NAME_FULL,
+                         ASCIIToUTF16("Paul F. Tompkins"));
   masked_card.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("1"));
   masked_card.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, ASCIIToUTF16("2020"));
   masked_card.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("1111"));
@@ -1684,7 +1688,7 @@ TEST_F(AutofillTableTest, SetServerCardModify) {
 
   // Set inputs that do not include our old card.
   CreditCard random_card(CreditCard::MASKED_SERVER_CARD, "b456");
-  random_card.SetRawInfo(CREDIT_CARD_NAME, ASCIIToUTF16("Rick Roman"));
+  random_card.SetRawInfo(CREDIT_CARD_NAME_FULL, ASCIIToUTF16("Rick Roman"));
   random_card.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("12"));
   random_card.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, ASCIIToUTF16("1997"));
   random_card.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("2222"));
@@ -1719,7 +1723,8 @@ TEST_F(AutofillTableTest, SetServerCardModify) {
 TEST_F(AutofillTableTest, SetServerCardUpdateUsageStats) {
   // Add a masked card.
   CreditCard masked_card(CreditCard::MASKED_SERVER_CARD, "a123");
-  masked_card.SetRawInfo(CREDIT_CARD_NAME, ASCIIToUTF16("Paul F. Tompkins"));
+  masked_card.SetRawInfo(CREDIT_CARD_NAME_FULL,
+                         ASCIIToUTF16("Paul F. Tompkins"));
   masked_card.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("1"));
   masked_card.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, ASCIIToUTF16("2020"));
   masked_card.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("1111"));
@@ -1857,7 +1862,8 @@ TEST_F(AutofillTableTest, DeleteUnmaskedCard) {
   // Add a masked card.
   base::string16 masked_number = ASCIIToUTF16("1111");
   CreditCard masked_card(CreditCard::MASKED_SERVER_CARD, "a123");
-  masked_card.SetRawInfo(CREDIT_CARD_NAME, ASCIIToUTF16("Paul F. Tompkins"));
+  masked_card.SetRawInfo(CREDIT_CARD_NAME_FULL,
+                         ASCIIToUTF16("Paul F. Tompkins"));
   masked_card.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("1"));
   masked_card.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, ASCIIToUTF16("2020"));
   masked_card.SetRawInfo(CREDIT_CARD_NUMBER, masked_number);

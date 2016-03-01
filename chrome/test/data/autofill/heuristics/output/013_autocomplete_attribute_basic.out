@@ -19,10 +19,10 @@ UNKNOWN_TYPE | al4 |  |  | na_1-default
 HTML_TYPE_COUNTRY_CODE | ac |  |  | na_1-default
 HTML_TYPE_COUNTRY_NAME | an |  |  | na_1-default
 HTML_TYPE_POSTAL_CODE | ap |  |  | na_1-default
-HTML_TYPE_CREDIT_CARD_NAME | cn |  |  | na_1-cc
-UNKNOWN_TYPE | cg |  |  | na_1-default
+HTML_TYPE_CREDIT_CARD_NAME_FULL | cn |  |  | na_1-cc
+HTML_TYPE_CREDIT_CARD_NAME_FIRST | cg |  |  | na_1-cc
 UNKNOWN_TYPE | ca |  |  | na_1-default
-UNKNOWN_TYPE | cf |  |  | na_1-default
+HTML_TYPE_CREDIT_CARD_NAME_LAST | cf |  |  | na_1-cc
 HTML_TYPE_CREDIT_CARD_NUMBER | cc |  |  | na_1-cc
 HTML_TYPE_CREDIT_CARD_EXP | ce |  |  | na_1-cc
 HTML_TYPE_CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR | c5 |  |  | na_1-cc

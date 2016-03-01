@@ -2,7 +2,7 @@ UNKNOWN_TYPE | /bodybuilding/commerce/order/purchase/CardPaymentInfoFormHandler.
 UNKNOWN_TYPE | /bodybuilding/commerce/order/purchase/CardPaymentInfoFormHandler.billingInfo.paymentType | Paypal | payPalPayment | /bodybuilding/commerce/order/purchase/CardPaymentInfoFormHandler.billingInfo.paymentType_1-default
 UNKNOWN_TYPE | /bodybuilding/commerce/order/purchase/CardPaymentInfoFormHandler.billingInfo.paymentType | Gift Certificate | giftCertificate | /bodybuilding/commerce/order/purchase/CardPaymentInfoFormHandler.billingInfo.paymentType_1-default
 CREDIT_CARD_TYPE | /bodybuilding/commerce/order/purchase/CardPaymentInfoFormHandler.billingInfo.creditCard.creditCardType | Credit Card Type | visa | /bodybuilding/commerce/order/purchase/CardPaymentInfoFormHandler.billingInfo.paymentType_1-cc
-CREDIT_CARD_NAME | cardholder | Cardholder Name |  | /bodybuilding/commerce/order/purchase/CardPaymentInfoFormHandler.billingInfo.paymentType_1-cc
+CREDIT_CARD_NAME_FULL | cardholder | Cardholder Name |  | /bodybuilding/commerce/order/purchase/CardPaymentInfoFormHandler.billingInfo.paymentType_1-cc
 CREDIT_CARD_NUMBER | cardnumber | Credit Card Number |  | /bodybuilding/commerce/order/purchase/CardPaymentInfoFormHandler.billingInfo.paymentType_1-cc
 CREDIT_CARD_EXP_MONTH | /bodybuilding/commerce/order/purchase/CardPaymentInfoFormHandler.billingInfo.creditCard.expirationMonth | Expiration Date | 01 | /bodybuilding/commerce/order/purchase/CardPaymentInfoFormHandler.billingInfo.paymentType_1-cc
 CREDIT_CARD_EXP_4_DIGIT_YEAR | /bodybuilding/commerce/order/purchase/CardPaymentInfoFormHandler.billingInfo.creditCard.expirationYear | Expiration Date | 2015 | /bodybuilding/commerce/order/purchase/CardPaymentInfoFormHandler.billingInfo.paymentType_1-cc

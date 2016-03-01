@@ -9,7 +9,7 @@ UNKNOWN_TYPE | CreditCardInformation.BillingCreditCardEntry.CardTypes_Selected |
 CREDIT_CARD_NUMBER | CreditCardInformation.BillingCreditCardEntry.CardNumber | Card Number |  | MyWalletInformation.UseMyWalletFunds_1-cc
 CREDIT_CARD_EXP_MONTH | CreditCardInformation.BillingCreditCardEntry.ExpirationMonths_Selected | Expiration* |  | MyWalletInformation.UseMyWalletFunds_1-cc
 CREDIT_CARD_EXP_4_DIGIT_YEAR | CreditCardInformation.BillingCreditCardEntry.ExpirationYears_Selected | Expiration* |  | MyWalletInformation.UseMyWalletFunds_1-cc
-CREDIT_CARD_NAME | CreditCardInformation.BillingCreditCardEntry.CardPersonName | Name on Card |  | MyWalletInformation.UseMyWalletFunds_1-cc
+CREDIT_CARD_NAME_FULL | CreditCardInformation.BillingCreditCardEntry.CardPersonName | Name on Card |  | MyWalletInformation.UseMyWalletFunds_1-cc
 ADDRESS_HOME_COUNTRY | CreditCardInformation.BillingAddressEntry.Countries_Selected | Country | US | MyWalletInformation.UseMyWalletFunds_1-default
 ADDRESS_HOME_LINE1 | CreditCardInformation.BillingAddressEntry.Address1 | Address |  | MyWalletInformation.UseMyWalletFunds_1-default
 ADDRESS_HOME_LINE2 | CreditCardInformation.BillingAddressEntry.Address2 | Address Line 2 |  | MyWalletInformation.UseMyWalletFunds_1-default
@@ -26,7 +26,7 @@ UNKNOWN_TYPE | TripInsurance.QuoteID | No, I choose not to protect my purchase. 
 CREDIT_CARD_NUMBER | AncillaryCreditCardInformation.BillingCreditCardEntry.CardNumber | Card Number |  | CreditCardInformation.BillingPhoneNumberEntry.CountryCode_Selected_1-cc
 CREDIT_CARD_EXP_MONTH | AncillaryCreditCardInformation.BillingCreditCardEntry.ExpirationMonths_Selected | Expiration* |  | CreditCardInformation.BillingPhoneNumberEntry.CountryCode_Selected_1-cc
 CREDIT_CARD_EXP_4_DIGIT_YEAR | AncillaryCreditCardInformation.BillingCreditCardEntry.ExpirationYears_Selected | Expiration* |  | CreditCardInformation.BillingPhoneNumberEntry.CountryCode_Selected_1-cc
-CREDIT_CARD_NAME | AncillaryCreditCardInformation.BillingCreditCardEntry.CardPersonName | Name on Card |  | CreditCardInformation.BillingPhoneNumberEntry.CountryCode_Selected_1-cc
+CREDIT_CARD_NAME_FULL | AncillaryCreditCardInformation.BillingCreditCardEntry.CardPersonName | Name on Card |  | CreditCardInformation.BillingPhoneNumberEntry.CountryCode_Selected_1-cc
 ADDRESS_HOME_COUNTRY | AncillaryCreditCardInformation.BillingAddressEntry.Countries_Selected | Country | US | CreditCardInformation.BillingPhoneNumberEntry.CountryCode_Selected_1-default
 ADDRESS_HOME_LINE1 | AncillaryCreditCardInformation.BillingAddressEntry.Address1 | Address |  | CreditCardInformation.BillingPhoneNumberEntry.CountryCode_Selected_1-default
 ADDRESS_HOME_LINE2 | AncillaryCreditCardInformation.BillingAddressEntry.Address2 | Address Line 2 |  | CreditCardInformation.BillingPhoneNumberEntry.CountryCode_Selected_1-default

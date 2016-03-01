@@ -1083,7 +1083,7 @@ bool AutofillManager::GetProfilesForCreditCardUpload(
   // requests that are guaranteed to fail.
   base::string16 verified_name;
   base::string16 card_name =
-      card.GetInfo(AutofillType(CREDIT_CARD_NAME), app_locale_);
+      card.GetInfo(AutofillType(CREDIT_CARD_NAME_FULL), app_locale_);
   if (!card_name.empty()) {
     verified_name = RemoveMiddleInitial(card_name);
   }

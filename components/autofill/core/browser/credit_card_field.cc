@@ -111,6 +111,16 @@ scoped_ptr<FormField> CreditCardField::Parse(AutofillScanner* scanner) {
                      &credit_card_field->cardholder_)) {
         continue;
       }
+    } else if (!credit_card_field->cardholder_last_) {
+      // Search for a last name. Since this is a dangerously generic search, we
+      // execute it only after we have found a valid credit card (first) name
+      // and haven't yet parsed the expiration date (which usually appears at
+      // the end).
+      if (!credit_card_field->expiration_month_ &&
+          ParseField(scanner, base::UTF8ToUTF16(kLastNameRe),
+                     &credit_card_field->cardholder_last_)) {
+        continue;
+      }
     }
 
     // Check for a credit card type (Visa, MasterCard, etc.) field.
@@ -328,9 +338,15 @@ void CreditCardField::AddClassifications(
   // then ignore both fields. Putting them into separate fields is probably
   // wrong, because the credit card can also contain a middle name or middle
   // initial.
-  if (cardholder_last_ == nullptr)
-    AddClassification(cardholder_, CREDIT_CARD_NAME, kBaseCreditCardParserScore,
-                      field_candidates);
+  if (cardholder_last_ == nullptr) {
+    AddClassification(cardholder_, CREDIT_CARD_NAME_FULL,
+                      kBaseCreditCardParserScore, field_candidates);
+  } else {
+    AddClassification(cardholder_, CREDIT_CARD_NAME_FIRST,
+                      kBaseCreditCardParserScore, field_candidates);
+    AddClassification(cardholder_last_, CREDIT_CARD_NAME_LAST,
+                      kBaseCreditCardParserScore, field_candidates);
+  }
 
   if (expiration_date_) {
     DCHECK(!expiration_month_);

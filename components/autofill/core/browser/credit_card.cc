@@ -22,6 +22,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/validation.h"
@@ -264,8 +265,14 @@ CreditCard::ServerStatus CreditCard::GetServerStatus() const {
 base::string16 CreditCard::GetRawInfo(ServerFieldType type) const {
   DCHECK_EQ(CREDIT_CARD, AutofillType(type).group());
   switch (type) {
-    case CREDIT_CARD_NAME:
+    case CREDIT_CARD_NAME_FULL:
       return name_on_card_;
+
+    case CREDIT_CARD_NAME_FIRST:
+      return data_util::SplitName(name_on_card_).given;
+
+    case CREDIT_CARD_NAME_LAST:
+      return data_util::SplitName(name_on_card_).family;
 
     case CREDIT_CARD_EXP_MONTH:
       return ExpirationMonthAsString();
@@ -312,7 +319,7 @@ void CreditCard::SetRawInfo(ServerFieldType type,
                             const base::string16& value) {
   DCHECK_EQ(CREDIT_CARD, AutofillType(type).group());
   switch (type) {
-    case CREDIT_CARD_NAME:
+    case CREDIT_CARD_NAME_FULL:
       name_on_card_ = value;
       break;
 
@@ -552,10 +559,9 @@ int CreditCard::Compare(const CreditCard& credit_card) const {
   // The following CreditCard field types are the only types we store in the
   // WebDB so far, so we're only concerned with matching these types in the
   // credit card.
-  const ServerFieldType types[] = { CREDIT_CARD_NAME,
-                                    CREDIT_CARD_NUMBER,
-                                    CREDIT_CARD_EXP_MONTH,
-                                    CREDIT_CARD_EXP_4_DIGIT_YEAR };
+  const ServerFieldType types[] = {CREDIT_CARD_NAME_FULL, CREDIT_CARD_NUMBER,
+                                   CREDIT_CARD_EXP_MONTH,
+                                   CREDIT_CARD_EXP_4_DIGIT_YEAR};
   for (size_t i = 0; i < arraysize(types); ++i) {
     int comparison =
         GetRawInfo(types[i]).compare(credit_card.GetRawInfo(types[i]));
@@ -633,8 +639,9 @@ bool CreditCard::IsValid() const {
              expiration_year_, expiration_month_, base::Time::Now());
 }
 
+// TODO(crbug.com/589536): Upload new credit card types to the server.
 void CreditCard::GetSupportedTypes(ServerFieldTypeSet* supported_types) const {
-  supported_types->insert(CREDIT_CARD_NAME);
+  supported_types->insert(CREDIT_CARD_NAME_FULL);
   supported_types->insert(CREDIT_CARD_NUMBER);
   supported_types->insert(CREDIT_CARD_TYPE);
   supported_types->insert(CREDIT_CARD_EXP_MONTH);
@@ -763,23 +770,17 @@ bool CreditCard::ConvertMonth(const base::string16& month,
 
 // So we can compare CreditCards with EXPECT_EQ().
 std::ostream& operator<<(std::ostream& os, const CreditCard& credit_card) {
-  return os
-      << base::UTF16ToUTF8(credit_card.Label())
-      << " "
-      << credit_card.guid()
-      << " "
-      << credit_card.origin()
-      << " "
-      << base::UTF16ToUTF8(credit_card.GetRawInfo(CREDIT_CARD_NAME))
-      << " "
-      << base::UTF16ToUTF8(credit_card.GetRawInfo(CREDIT_CARD_TYPE))
-      << " "
-      << base::UTF16ToUTF8(credit_card.GetRawInfo(CREDIT_CARD_NUMBER))
-      << " "
-      << base::UTF16ToUTF8(credit_card.GetRawInfo(CREDIT_CARD_EXP_MONTH))
-      << " "
-      << base::UTF16ToUTF8(
-             credit_card.GetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR));
+  return os << base::UTF16ToUTF8(credit_card.Label()) << " "
+            << credit_card.guid() << " " << credit_card.origin() << " "
+            << base::UTF16ToUTF8(credit_card.GetRawInfo(CREDIT_CARD_NAME_FULL))
+            << " "
+            << base::UTF16ToUTF8(credit_card.GetRawInfo(CREDIT_CARD_TYPE))
+            << " "
+            << base::UTF16ToUTF8(credit_card.GetRawInfo(CREDIT_CARD_NUMBER))
+            << " "
+            << base::UTF16ToUTF8(credit_card.GetRawInfo(CREDIT_CARD_EXP_MONTH))
+            << " " << base::UTF16ToUTF8(
+                          credit_card.GetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR));
 }
 
 // These values must match the values in WebKitPlatformSupportImpl in

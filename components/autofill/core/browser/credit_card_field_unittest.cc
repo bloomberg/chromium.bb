@@ -156,7 +156,7 @@ TEST_F(CreditCardFieldTest, ParseFullCreditCard) {
             field_candidates_map_[ASCIIToUTF16("type")].BestHeuristicType());
   ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("name")) !=
               field_candidates_map_.end());
-  EXPECT_EQ(CREDIT_CARD_NAME,
+  EXPECT_EQ(CREDIT_CARD_NAME_FULL,
             field_candidates_map_[ASCIIToUTF16("name")].BestHeuristicType());
   ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("number")) !=
               field_candidates_map_.end());
@@ -201,7 +201,7 @@ TEST_F(CreditCardFieldTest, ParseExpMonthYear) {
   AddClassifications();
   ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("name1")) !=
               field_candidates_map_.end());
-  EXPECT_EQ(CREDIT_CARD_NAME,
+  EXPECT_EQ(CREDIT_CARD_NAME_FULL,
             field_candidates_map_[ASCIIToUTF16("name1")].BestHeuristicType());
   ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("number2")) !=
               field_candidates_map_.end());
@@ -242,7 +242,7 @@ TEST_F(CreditCardFieldTest, ParseExpMonthYear2) {
   AddClassifications();
   ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("name1")) !=
               field_candidates_map_.end());
-  EXPECT_EQ(CREDIT_CARD_NAME,
+  EXPECT_EQ(CREDIT_CARD_NAME_FULL,
             field_candidates_map_[ASCIIToUTF16("name1")].BestHeuristicType());
   ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("number2")) !=
               field_candidates_map_.end());
@@ -279,7 +279,7 @@ TEST_F(CreditCardFieldTest, ParseExpField) {
   AddClassifications();
   ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("name1")) !=
               field_candidates_map_.end());
-  EXPECT_EQ(CREDIT_CARD_NAME,
+  EXPECT_EQ(CREDIT_CARD_NAME_FULL,
             field_candidates_map_[ASCIIToUTF16("name1")].BestHeuristicType());
   ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("number2")) !=
               field_candidates_map_.end());
@@ -312,7 +312,7 @@ TEST_F(CreditCardFieldTest, ParseExpField2DigitYear) {
   AddClassifications();
   ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("name1")) !=
               field_candidates_map_.end());
-  EXPECT_EQ(CREDIT_CARD_NAME,
+  EXPECT_EQ(CREDIT_CARD_NAME_FULL,
             field_candidates_map_[ASCIIToUTF16("name1")].BestHeuristicType());
   ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("number2")) !=
               field_candidates_map_.end());
@@ -346,7 +346,7 @@ TEST_F(CreditCardFieldTest, ParseExpField2DigitYearDueToMaxLength) {
   AddClassifications();
   ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("name1")) !=
               field_candidates_map_.end());
-  EXPECT_EQ(CREDIT_CARD_NAME,
+  EXPECT_EQ(CREDIT_CARD_NAME_FULL,
             field_candidates_map_[ASCIIToUTF16("name1")].BestHeuristicType());
   ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("number2")) !=
               field_candidates_map_.end());
@@ -379,7 +379,7 @@ TEST_F(CreditCardFieldTest, ParseExpField4DigitYear) {
   AddClassifications();
   ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("name1")) !=
               field_candidates_map_.end());
-  EXPECT_EQ(CREDIT_CARD_NAME,
+  EXPECT_EQ(CREDIT_CARD_NAME_FULL,
             field_candidates_map_[ASCIIToUTF16("name1")].BestHeuristicType());
   ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("number2")) !=
               field_candidates_map_.end());
@@ -404,7 +404,7 @@ TEST_F(CreditCardFieldTest, ParseCreditCardHolderNameWithCCFullName) {
   AddClassifications();
   ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("name1")) !=
               field_candidates_map_.end());
-  EXPECT_EQ(CREDIT_CARD_NAME,
+  EXPECT_EQ(CREDIT_CARD_NAME_FULL,
             field_candidates_map_[ASCIIToUTF16("name1")].BestHeuristicType());
 }
 
@@ -573,7 +573,7 @@ TEST_F(CreditCardFieldTest, ParseMultipleCreditCardNumbers) {
 
   ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("name1")) !=
               field_candidates_map_.end());
-  EXPECT_EQ(CREDIT_CARD_NAME,
+  EXPECT_EQ(CREDIT_CARD_NAME_FULL,
             field_candidates_map_[ASCIIToUTF16("name1")].BestHeuristicType());
   ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("number2")) !=
               field_candidates_map_.end());

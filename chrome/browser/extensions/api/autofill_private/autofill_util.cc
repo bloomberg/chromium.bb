@@ -119,7 +119,7 @@ scoped_ptr<autofill_private::CreditCardEntry> CreditCardToCreditCardEntry(
   // Add all credit card fields to the entry.
   card->guid.reset(new std::string(credit_card.guid()));
   card->name.reset(new std::string(base::UTF16ToUTF8(
-      credit_card.GetRawInfo(autofill::CREDIT_CARD_NAME))));
+      credit_card.GetRawInfo(autofill::CREDIT_CARD_NAME_FULL))));
   card->card_number.reset(new std::string(base::UTF16ToUTF8(
       credit_card.GetRawInfo(autofill::CREDIT_CARD_NUMBER))));
   card->expiration_month.reset(new std::string(base::UTF16ToUTF8(

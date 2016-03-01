@@ -820,9 +820,9 @@ std::vector<Suggestion> PersonalDataManager::GetCreditCardSuggestions(
       suggestion->label = credit_card->GetInfo(
           AutofillType(CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR), app_locale_);
     } else if (credit_card->number().empty()) {
-      if (type.GetStorableType() != CREDIT_CARD_NAME) {
-        suggestion->label =
-            credit_card->GetInfo(AutofillType(CREDIT_CARD_NAME), app_locale_);
+      if (type.GetStorableType() != CREDIT_CARD_NAME_FULL) {
+        suggestion->label = credit_card->GetInfo(
+            AutofillType(CREDIT_CARD_NAME_FULL), app_locale_);
       }
     } else {
 #if defined(OS_ANDROID)

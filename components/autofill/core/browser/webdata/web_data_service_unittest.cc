@@ -440,10 +440,10 @@ TEST_F(WebDataServiceAutofillTest, CreditCardRemove) {
 TEST_F(WebDataServiceAutofillTest, CreditUpdate) {
   CreditCard card1("E4D2662E-5E16-44F3-AF5A-5A77FAE4A6F3",
                    "https://ejemplo.mx");
-  card1.SetRawInfo(CREDIT_CARD_NAME, ASCIIToUTF16("Abe"));
+  card1.SetRawInfo(CREDIT_CARD_NAME_FULL, ASCIIToUTF16("Abe"));
   CreditCard card2("B9C52112-BD5F-4080-84E1-C651D2CB90E2",
                    "https://example.com");
-  card2.SetRawInfo(CREDIT_CARD_NAME, ASCIIToUTF16("Alice"));
+  card2.SetRawInfo(CREDIT_CARD_NAME_FULL, ASCIIToUTF16("Alice"));
 
   wds_->AddCreditCard(card1);
   wds_->AddCreditCard(card2);
@@ -460,7 +460,7 @@ TEST_F(WebDataServiceAutofillTest, CreditUpdate) {
   STLDeleteElements(&consumer.result());
 
   CreditCard card2_changed(card2);
-  card2_changed.SetRawInfo(CREDIT_CARD_NAME, ASCIIToUTF16("Bill"));
+  card2_changed.SetRawInfo(CREDIT_CARD_NAME_FULL, ASCIIToUTF16("Bill"));
 
   wds_->UpdateCreditCard(card2_changed);
   WaitForDatabaseThread();

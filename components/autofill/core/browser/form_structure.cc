@@ -209,7 +209,13 @@ HtmlFieldType FieldTypeFromAutocompleteAttributeValue(
   }
 
   if (autocomplete_attribute_value == "cc-name")
-    return HTML_TYPE_CREDIT_CARD_NAME;
+    return HTML_TYPE_CREDIT_CARD_NAME_FULL;
+
+  if (autocomplete_attribute_value == "cc-given-name")
+    return HTML_TYPE_CREDIT_CARD_NAME_FIRST;
+
+  if (autocomplete_attribute_value == "cc-family-name")
+    return HTML_TYPE_CREDIT_CARD_NAME_LAST;
 
   if (autocomplete_attribute_value == "cc-number")
     return HTML_TYPE_CREDIT_CARD_NUMBER;

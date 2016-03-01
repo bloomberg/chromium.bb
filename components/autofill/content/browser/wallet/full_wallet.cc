@@ -72,7 +72,7 @@ base::string16 FullWallet::GetInfo(const std::string& app_locale,
     case CREDIT_CARD_NUMBER:
       return base::ASCIIToUTF16(GetPan());
 
-    case CREDIT_CARD_NAME:
+    case CREDIT_CARD_NAME_FULL:
       return billing_address()->recipient_name();
 
     case CREDIT_CARD_VERIFICATION_CODE:

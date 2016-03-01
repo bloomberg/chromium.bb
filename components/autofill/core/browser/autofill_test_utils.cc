@@ -280,7 +280,7 @@ void SetProfileInfoWithGuid(AutofillProfile* profile,
 void SetCreditCardInfo(CreditCard* credit_card,
     const char* name_on_card, const char* card_number,
     const char* expiration_month, const char* expiration_year) {
-  check_and_set(credit_card, CREDIT_CARD_NAME, name_on_card);
+  check_and_set(credit_card, CREDIT_CARD_NAME_FULL, name_on_card);
   check_and_set(credit_card, CREDIT_CARD_NUMBER, card_number);
   check_and_set(credit_card, CREDIT_CARD_EXP_MONTH, expiration_month);
   check_and_set(credit_card, CREDIT_CARD_EXP_4_DIGIT_YEAR, expiration_year);

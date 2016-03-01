@@ -70,7 +70,8 @@ CreditCard CardFromSpecifics(const sync_pb::WalletMaskedCreditCard& card) {
   result.SetNumber(base::UTF8ToUTF16(card.last_four()));
   result.SetServerStatus(ServerToLocalStatus(card.status()));
   result.SetTypeForMaskedCard(CardTypeFromWalletCardType(card.type()));
-  result.SetRawInfo(CREDIT_CARD_NAME, base::UTF8ToUTF16(card.name_on_card()));
+  result.SetRawInfo(CREDIT_CARD_NAME_FULL,
+                    base::UTF8ToUTF16(card.name_on_card()));
   result.SetExpirationMonth(card.exp_month());
   result.SetExpirationYear(card.exp_year());
   return result;

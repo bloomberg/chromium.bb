@@ -131,13 +131,15 @@ ScopedJavaLocalRef<jobject> CreateJavaCreditCardFromNative(
       ConvertUTF8ToJavaString(env, card.origin()).obj(),
       card.record_type() == CreditCard::LOCAL_CARD,
       card.record_type() == CreditCard::FULL_SERVER_CARD,
-      ConvertUTF16ToJavaString(env, card.GetRawInfo(CREDIT_CARD_NAME)).obj(),
+      ConvertUTF16ToJavaString(env, card.GetRawInfo(CREDIT_CARD_NAME_FULL))
+          .obj(),
       ConvertUTF16ToJavaString(env, card.GetRawInfo(CREDIT_CARD_NUMBER)).obj(),
       ConvertUTF16ToJavaString(env, card.TypeAndLastFourDigits()).obj(),
       ConvertUTF16ToJavaString(env, card.GetRawInfo(CREDIT_CARD_EXP_MONTH))
           .obj(),
-      ConvertUTF16ToJavaString(
-          env, card.GetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR)).obj());
+      ConvertUTF16ToJavaString(env,
+                               card.GetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR))
+          .obj());
 }
 
 void PopulateNativeCreditCardFromJava(
@@ -147,7 +149,7 @@ void PopulateNativeCreditCardFromJava(
   card->set_origin(
       ConvertJavaStringToUTF8(Java_CreditCard_getOrigin(env, jcard)));
   card->SetRawInfo(
-      CREDIT_CARD_NAME,
+      CREDIT_CARD_NAME_FULL,
       ConvertJavaStringToUTF16(Java_CreditCard_getName(env, jcard)));
   card->SetRawInfo(
       CREDIT_CARD_NUMBER,

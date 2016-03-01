@@ -124,16 +124,16 @@ const char kStateRe[] =
 // credit_card_field.cc
 /////////////////////////////////////////////////////////////////////////////
 const char kNameOnCardRe[] =
-    "card.?(?:holder|owner)|name.*\\bon\\b.*card"
+    "card.?(?:holder|owner)|name.*(\\b)?on(\\b)?.*card"
     "|(?:card|cc).?name|cc.?full.?name"
-    "|karteninhaber"  // de-DE
-    "|nombre.*tarjeta"  // es
-    "|nom.*carte"  // fr-FR
-    "|nome.*cart"  // it-IT
-    "|名前"  // ja-JP
-    "|Имя.*карты"  // ru
+    "|karteninhaber"                   // de-DE
+    "|nombre.*tarjeta"                 // es
+    "|nom.*carte"                      // fr-FR
+    "|nome.*cart"                      // it-IT
+    "|名前"                            // ja-JP
+    "|Имя.*карты"                      // ru
     "|信用卡开户名|开户名|持卡人姓名"  // zh-CN
-    "|持卡人姓名";  // zh-TW
+    "|持卡人姓名";                     // zh-TW
 const char kNameOnCardContextualRe[] =
     "name";
 const char kCardNumberRe[] =

@@ -30,7 +30,7 @@ UNKNOWN_TYPE | PaymentTypeSelection | Pay with a Credit or Debit Card | 0 | Body
 CREDIT_CARD_NUMBER | Body$CCNumber | Card Number |  | Body$BillingIsShippingCheckboxB_1-cc
 CREDIT_CARD_EXP_MONTH | Body$CCExpirationDateMonth | Expiration Date | 0 | Body$BillingIsShippingCheckboxB_1-cc
 CREDIT_CARD_EXP_4_DIGIT_YEAR | Body$CCExpirationDateYear | Expiration Date | 0 | Body$BillingIsShippingCheckboxB_1-cc
-CREDIT_CARD_NAME | Body$CCNameOnCard | Name on Card |  | Body$BillingIsShippingCheckboxB_1-cc
+CREDIT_CARD_NAME_FULL | Body$CCNameOnCard | Name on Card |  | Body$BillingIsShippingCheckboxB_1-cc
 UNKNOWN_TYPE | IsDebitCard | Yes | 1 | Body$BillingIsShippingCheckboxB_1-default
 UNKNOWN_TYPE | IsDebitCard | No | 0 | Body$BillingIsShippingCheckboxB_1-default
 UNKNOWN_TYPE | Body$SaveCC4Later | Save information for future purchases | on | Body$BillingIsShippingCheckboxB_1-default

@@ -292,6 +292,7 @@ AutofillProfile& AutofillProfile::operator=(const AutofillProfile& profile) {
   return *this;
 }
 
+// TODO(crbug.com/589535): Disambiguate similar field types before uploading.
 void AutofillProfile::GetMatchingTypes(
     const base::string16& text,
     const std::string& app_locale,

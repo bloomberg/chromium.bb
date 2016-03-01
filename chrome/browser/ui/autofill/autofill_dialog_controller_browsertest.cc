@@ -899,9 +899,8 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
   ASSERT_TRUE(controller);
 
   const CreditCard& credit_card = test::GetVerifiedCreditCard();
-  ASSERT_TRUE(
-      credit_card.GetRawInfo(CREDIT_CARD_NAME).find(ASCIIToUTF16("zebra")) ==
-          base::string16::npos);
+  ASSERT_TRUE(credit_card.GetRawInfo(CREDIT_CARD_NAME_FULL)
+                  .find(ASCIIToUTF16("zebra")) == base::string16::npos);
   AddCreditcardToProfile(controller->profile(), credit_card);
   AddAutofillProfileToProfile(controller->profile(),
                               test::GetVerifiedProfile());

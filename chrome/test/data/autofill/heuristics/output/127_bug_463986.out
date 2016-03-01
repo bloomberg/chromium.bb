@@ -13,20 +13,20 @@ PHONE_HOME_WHOLE_NUMBER | mobile | Mobile * |  | salutation_1-default
 UNKNOWN_TYPE | paymentMethod | 31.89 USD by | CC | salutation_1-default
 CREDIT_CARD_TYPE | accountBrandDropDown | Card Brand | VISA | salutation_1-cc
 CREDIT_CARD_NUMBER | cardNumber | Card Number |  | salutation_1-cc
-CREDIT_CARD_NAME | ccHolder | Card holder |  | salutation_1-cc
+CREDIT_CARD_NAME_FULL | ccHolder | Card holder |  | salutation_1-cc
 UNKNOWN_TYPE | identificationValue | CPF/CNPJ |  | salutation_1-default
 CREDIT_CARD_EXP_MONTH | accountExpiryMonth | Expiration Date | - | salutation_1-cc
 CREDIT_CARD_EXP_4_DIGIT_YEAR | accountExpiryYear | Expiration Date | - | salutation_1-cc
 CREDIT_CARD_VERIFICATION_CODE | accountVerification | Verification Number * |  | salutation_1-cc
 UNKNOWN_TYPE | accountBrandDropDown | Card Brand |  | salutation_1-default
 CREDIT_CARD_NUMBER | cardNumber | Card Number |  | salutation_1-cc
-CREDIT_CARD_NAME | ccHolder | Card holder |  | salutation_1-cc
+CREDIT_CARD_NAME_FULL | ccHolder | Card holder |  | salutation_1-cc
 CREDIT_CARD_EXP_MONTH | accountExpiryMonth | Expiration Date | - | salutation_1-cc
 CREDIT_CARD_EXP_4_DIGIT_YEAR | accountExpiryYear | Expiration Date | - | salutation_1-cc
 CREDIT_CARD_VERIFICATION_CODE | accountVerification | Verification Number * |  | salutation_1-cc
 CREDIT_CARD_TYPE | accountBrandDropDown | Card Brand | VISA | salutation_1-cc
 CREDIT_CARD_NUMBER | cardNumber | Card Number |  | salutation_1-cc
-CREDIT_CARD_NAME | ccHolder | Card holder |  | salutation_1-cc
+CREDIT_CARD_NAME_FULL | ccHolder | Card holder |  | salutation_1-cc
 CREDIT_CARD_EXP_MONTH | accountExpiryMonth | Expiration Date | - | salutation_1-cc
 CREDIT_CARD_EXP_4_DIGIT_YEAR | accountExpiryYear | Expiration Date | - | salutation_1-cc
 CREDIT_CARD_VERIFICATION_CODE | accountVerification | Verification Number * |  | salutation_1-cc

@@ -1,4 +1,4 @@
-CREDIT_CARD_NAME | paymentMethodForm.newCreditCardCustomerName | Name on card* |  | paymentMethodForm.newCreditCardCustomerName_1-cc
+CREDIT_CARD_NAME_FULL | paymentMethodForm.newCreditCardCustomerName | Name on card* |  | paymentMethodForm.newCreditCardCustomerName_1-cc
 CREDIT_CARD_NUMBER | paymentMethodForm.cardNumber | Card number* |  | paymentMethodForm.newCreditCardCustomerName_1-cc
 CREDIT_CARD_VERIFICATION_CODE | paymentMethodForm.cardVerificationNumber | Security code* |  | paymentMethodForm.newCreditCardCustomerName_1-cc
 CREDIT_CARD_EXP_MONTH | paymentMethodForm.expirationMonth | 04 |  | paymentMethodForm.newCreditCardCustomerName_1-cc

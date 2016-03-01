@@ -483,7 +483,7 @@ class AutofillDialogControllerTest : public ChromeRenderViewHostTestHarness {
     EXPECT_FALSE(shipping_country.empty());
     EXPECT_EQ(billing_country, shipping_country);
 
-    EXPECT_EQ(CREDIT_CARD_NAME,
+    EXPECT_EQ(CREDIT_CARD_NAME_FULL,
               form_structure()->field(1)->Type().GetStorableType());
     base::string16 cc_name = form_structure()->field(1)->value;
     EXPECT_EQ(NAME_FULL, form_structure()->field(6)->Type().GetStorableType());
@@ -984,7 +984,7 @@ TEST_F(AutofillDialogControllerTest, AutofillCreditCards) {
 
   // Empty cards are ignored.
   CreditCard empty_card(base::GenerateGUID(), kSettingsOrigin);
-  empty_card.SetRawInfo(CREDIT_CARD_NAME, ASCIIToUTF16("John Doe"));
+  empty_card.SetRawInfo(CREDIT_CARD_NAME_FULL, ASCIIToUTF16("John Doe"));
   controller()->GetTestingManager()->AddTestingCreditCard(&empty_card);
   EXPECT_FALSE(controller()->MenuModelForSection(SECTION_CC));
 
@@ -1030,7 +1030,7 @@ TEST_F(AutofillDialogControllerTest, DontUseBillingAsShipping) {
   EXPECT_FALSE(shipping_state.empty());
   EXPECT_NE(billing_state, shipping_state);
 
-  EXPECT_EQ(CREDIT_CARD_NAME,
+  EXPECT_EQ(CREDIT_CARD_NAME_FULL,
             form_structure()->field(1)->Type().GetStorableType());
   base::string16 cc_name = form_structure()->field(1)->value;
   EXPECT_EQ(NAME_FULL, form_structure()->field(6)->Type().GetStorableType());
@@ -1480,7 +1480,7 @@ TEST_F(AutofillDialogControllerTest, SaveCreditCardIncludesName_NoBilling) {
   TestPersonalDataManager* test_pdm = controller()->GetTestingManager();
   const CreditCard& imported_card = test_pdm->imported_credit_card();
   EXPECT_EQ(test_profile.GetInfo(AutofillType(NAME_FULL), "en-US"),
-            imported_card.GetRawInfo(CREDIT_CARD_NAME));
+            imported_card.GetRawInfo(CREDIT_CARD_NAME_FULL));
 }
 
 TEST_F(AutofillDialogControllerTest, SaveCreditCardIncludesName_WithBilling) {
@@ -1499,7 +1499,7 @@ TEST_F(AutofillDialogControllerTest, SaveCreditCardIncludesName_WithBilling) {
 
   const CreditCard& imported_card = test_pdm->imported_credit_card();
   EXPECT_EQ(test_profile.GetInfo(AutofillType(NAME_FULL), "en-US"),
-            imported_card.GetRawInfo(CREDIT_CARD_NAME));
+            imported_card.GetRawInfo(CREDIT_CARD_NAME_FULL));
 
   controller()->ViewClosed();
 }
