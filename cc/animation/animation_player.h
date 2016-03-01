@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "cc/animation/animation.h"
+#include "cc/animation/animation_curve.h"
 #include "cc/base/cc_export.h"
 
 namespace cc {
@@ -69,7 +70,8 @@ class CC_EXPORT AnimationPlayer : public base::RefCounted<AnimationPlayer>,
   void PauseAnimation(int animation_id, double time_offset);
   void RemoveAnimation(int animation_id);
   void AbortAnimation(int animation_id);
-  void AbortAnimations(TargetProperty::Type target_property);
+  void AbortAnimations(TargetProperty::Type target_property,
+                       bool needs_completion);
 
   void PushPropertiesTo(AnimationPlayer* player_impl);
 
@@ -83,6 +85,10 @@ class CC_EXPORT AnimationPlayer : public base::RefCounted<AnimationPlayer>,
   void NotifyAnimationAborted(base::TimeTicks monotonic_time,
                               TargetProperty::Type target_property,
                               int group);
+  void NotifyAnimationTakeover(base::TimeTicks monotonic_time,
+                               TargetProperty::Type target_property,
+                               double animation_start_time,
+                               scoped_ptr<AnimationCurve> curve);
 
   // Whether this player has animations waiting to get sent to LAC.
   bool has_pending_animations_for_testing() const {

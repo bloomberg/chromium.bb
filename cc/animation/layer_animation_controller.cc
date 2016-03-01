@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "cc/animation/animation.h"
+#include "cc/animation/animation_curve.h"
 #include "cc/animation/animation_delegate.h"
 #include "cc/animation/animation_events.h"
 #include "cc/animation/animation_registrar.h"
@@ -127,12 +128,23 @@ void LayerAnimationController::AbortAnimation(int animation_id) {
 }
 
 void LayerAnimationController::AbortAnimations(
-    TargetProperty::Type target_property) {
+    TargetProperty::Type target_property,
+    bool needs_completion) {
+  if (needs_completion)
+    DCHECK(target_property == TargetProperty::SCROLL_OFFSET);
+
   bool aborted_transform_animation = false;
   for (size_t i = 0; i < animations_.size(); ++i) {
     if (animations_[i]->target_property() == target_property &&
         !animations_[i]->is_finished()) {
-      animations_[i]->SetRunState(Animation::ABORTED, last_tick_time_);
+      // Currently only impl-only scroll offset animations can be completed on
+      // the main thread.
+      if (needs_completion && animations_[i]->is_impl_only()) {
+        animations_[i]->SetRunState(Animation::ABORTED_BUT_NEEDS_COMPLETION,
+                                    last_tick_time_);
+      } else {
+        animations_[i]->SetRunState(Animation::ABORTED, last_tick_time_);
+      }
       if (target_property == TargetProperty::TRANSFORM)
         aborted_transform_animation = true;
     }
@@ -421,6 +433,17 @@ void LayerAnimationController::NotifyAnimationFinished(
 
       return;
     }
+  }
+}
+
+void LayerAnimationController::NotifyAnimationTakeover(
+    const AnimationEvent& event) {
+  DCHECK(event.target_property == TargetProperty::SCROLL_OFFSET);
+  if (layer_animation_delegate_) {
+    scoped_ptr<AnimationCurve> animation_curve = event.curve->Clone();
+    layer_animation_delegate_->NotifyAnimationTakeover(
+        event.monotonic_time, event.target_property, event.animation_start_time,
+        std::move(animation_curve));
   }
 }
 
@@ -920,6 +943,35 @@ void LayerAnimationController::MarkAnimationsForDeletion(
                                     monotonic_time);
         marked_animations_for_deletions = true;
       }
+      continue;
+    }
+
+    // If running on the compositor and need to complete an aborted animation
+    // on the main thread.
+    if (events &&
+        animations_[i]->run_state() ==
+            Animation::ABORTED_BUT_NEEDS_COMPLETION) {
+      AnimationEvent aborted_event(AnimationEvent::TAKEOVER, id_, group_id,
+                                   animations_[i]->target_property(),
+                                   monotonic_time);
+      aborted_event.animation_start_time =
+          (animations_[i]->start_time() - base::TimeTicks()).InSecondsF();
+      const ScrollOffsetAnimationCurve* scroll_offset_animation_curve =
+          animations_[i]->curve()->ToScrollOffsetAnimationCurve();
+      aborted_event.curve = scroll_offset_animation_curve->Clone();
+      // Notify the compositor that the animation is finished.
+      if (layer_animation_delegate_) {
+        layer_animation_delegate_->NotifyAnimationFinished(
+            aborted_event.monotonic_time, aborted_event.target_property,
+            aborted_event.group_id);
+      }
+      // Notify main thread.
+      events->events_.push_back(aborted_event);
+
+      // Remove the animation from the compositor.
+      animations_[i]->SetRunState(Animation::WAITING_FOR_DELETION,
+                                  monotonic_time);
+      marked_animations_for_deletions = true;
       continue;
     }
 

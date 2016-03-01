@@ -115,6 +115,7 @@ class CC_EXPORT AnimationHost {
 
   bool FilterIsAnimatingOnImplOnly(int layer_id) const;
   bool OpacityIsAnimatingOnImplOnly(int layer_id) const;
+  bool ScrollOffsetIsAnimatingOnImplOnly(int layer_id) const;
   bool TransformIsAnimatingOnImplOnly(int layer_id) const;
 
   bool HasFilterAnimationThatInflatesBounds(int layer_id) const;
@@ -151,7 +152,7 @@ class CC_EXPORT AnimationHost {
       const gfx::ScrollOffset& max_scroll_offset,
       base::TimeTicks frame_monotonic_time);
 
-  void ScrollAnimationAbort();
+  void ScrollAnimationAbort(bool needs_completion);
 
  private:
   explicit AnimationHost(ThreadInstance thread_instance);

@@ -9457,6 +9457,64 @@ TEST_F(LayerTreeHostImplTimelinesTest, ScrollAnimatedAborted) {
   host_impl_->DidFinishImplFrame();
 }
 
+// Test that a smooth scroll offset animation is marked finished when a main
+// thread scrolling reason is added. The animation is then finished on the
+// main thread.
+TEST_F(LayerTreeHostImplTimelinesTest,
+       ScrollAnimatedFinishedByMainThreadScrollingReason) {
+  const gfx::Size content_size(1000, 1000);
+  const gfx::Size viewport_size(500, 500);
+  CreateBasicVirtualViewportLayers(viewport_size, content_size);
+
+  DrawFrame();
+
+  base::TimeTicks start_time =
+      base::TimeTicks() + base::TimeDelta::FromMilliseconds(100);
+
+  BeginFrameArgs begin_frame_args =
+      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE);
+
+  // Perform animated scroll.
+  EXPECT_EQ(
+      InputHandler::SCROLL_ON_IMPL_THREAD,
+      host_impl_->ScrollAnimated(gfx::Point(), gfx::Vector2d(0, 100)).thread);
+
+  LayerImpl* scrolling_layer = host_impl_->CurrentlyScrollingLayer();
+
+  begin_frame_args.frame_time = start_time;
+  host_impl_->WillBeginImplFrame(begin_frame_args);
+  host_impl_->Animate();
+  host_impl_->UpdateAnimationState(true);
+
+  EXPECT_TRUE(host_impl_->animation_host()->HasAnyAnimationTargetingProperty(
+      scrolling_layer->id(), TargetProperty::SCROLL_OFFSET));
+
+  EXPECT_EQ(gfx::ScrollOffset(), scrolling_layer->CurrentScrollOffset());
+  host_impl_->DidFinishImplFrame();
+
+  begin_frame_args.frame_time =
+      start_time + base::TimeDelta::FromMilliseconds(50);
+  host_impl_->WillBeginImplFrame(begin_frame_args);
+  host_impl_->Animate();
+  host_impl_->UpdateAnimationState(true);
+
+  float y = scrolling_layer->CurrentScrollOffset().y();
+  EXPECT_TRUE(y > 1 && y < 49);
+
+  // Add main thread scrolling reason.
+  scrolling_layer->set_main_thread_scrolling_reasons(
+      MainThreadScrollingReason::kHasNonLayerViewportConstrainedObjects);
+  host_impl_->UpdateAnimationState(true);
+
+  // The main thread scrolling reason should have marked the smooth scroll
+  // animation as finished.
+  EXPECT_FALSE(
+      host_impl_->animation_host()->HasActiveAnimation(scrolling_layer->id()));
+  EXPECT_TRUE(y > 1 && y < 49);
+  EXPECT_EQ(NULL, host_impl_->CurrentlyScrollingLayer());
+  host_impl_->DidFinishImplFrame();
+}
+
 // Evolved from LayerTreeHostImplTest.ScrollAnimated.
 TEST_F(LayerTreeHostImplTimelinesTest, ScrollAnimated) {
   const gfx::Size content_size(1000, 1000);

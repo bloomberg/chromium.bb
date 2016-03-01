@@ -95,4 +95,18 @@ void CompositorAnimationPlayer::NotifyAnimationAborted(
         m_delegate->notifyAnimationAborted((monotonicTime - base::TimeTicks()).InSecondsF(), group);
 }
 
+void CompositorAnimationPlayer::NotifyAnimationTakeover(
+    base::TimeTicks monotonicTime,
+    cc::TargetProperty::Type,
+    double animationStartTime,
+    scoped_ptr<cc::AnimationCurve> curve)
+{
+    if (m_delegate) {
+        m_delegate->notifyAnimationTakeover(
+            (monotonicTime - base::TimeTicks()).InSecondsF(),
+            animationStartTime,
+            std::move(curve));
+    }
+}
+
 } // namespace blink

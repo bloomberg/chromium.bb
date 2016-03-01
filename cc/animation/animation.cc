@@ -20,7 +20,8 @@ static const char* const s_runStateNames[] = {"WAITING_FOR_TARGET_AVAILABILITY",
                                               "RUNNING",
                                               "PAUSED",
                                               "FINISHED",
-                                              "ABORTED"};
+                                              "ABORTED",
+                                              "ABORTED_BUT_NEEDS_COMPLETION"};
 
 static_assert(static_cast<int>(cc::Animation::LAST_RUN_STATE) + 1 ==
                   arraysize(s_runStateNames),

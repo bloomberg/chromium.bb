@@ -47,7 +47,8 @@ class CC_EXPORT LayerAnimationController
   void PauseAnimation(int animation_id, base::TimeDelta time_offset);
   void RemoveAnimation(int animation_id);
   void AbortAnimation(int animation_id);
-  void AbortAnimations(TargetProperty::Type target_property);
+  void AbortAnimations(TargetProperty::Type target_property,
+                       bool needs_completion = false);
 
   // Ensures that the list of active animations on the main thread and the impl
   // thread are kept in sync. This function does not take ownership of the impl
@@ -98,6 +99,7 @@ class CC_EXPORT LayerAnimationController
   void NotifyAnimationFinished(const AnimationEvent& event);
   void NotifyAnimationAborted(const AnimationEvent& event);
   void NotifyAnimationPropertyUpdate(const AnimationEvent& event);
+  void NotifyAnimationTakeover(const AnimationEvent& event);
 
   void AddValueObserver(LayerAnimationValueObserver* observer);
   void RemoveValueObserver(LayerAnimationValueObserver* observer);

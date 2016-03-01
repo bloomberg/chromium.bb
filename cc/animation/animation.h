@@ -27,7 +27,10 @@ class CC_EXPORT Animation {
   // the STARTING state, and then into the RUNNING state. RUNNING animations may
   // toggle between RUNNING and PAUSED, and may be stopped by moving into either
   // the ABORTED or FINISHED states. A FINISHED animation was allowed to run to
-  // completion, but an ABORTED animation was not.
+  // completion, but an ABORTED animation was not. An animation in the state
+  // ABORTED_BUT_NEEDS_COMPLETION is an animation that was aborted for
+  // some reason, but needs to be finished. Currently this is for impl-only
+  // scroll offset animations that need to be completed on the main thread.
   enum RunState {
     WAITING_FOR_TARGET_AVAILABILITY = 0,
     WAITING_FOR_DELETION,
@@ -36,8 +39,9 @@ class CC_EXPORT Animation {
     PAUSED,
     FINISHED,
     ABORTED,
+    ABORTED_BUT_NEEDS_COMPLETION,
     // This sentinel must be last.
-    LAST_RUN_STATE = ABORTED
+    LAST_RUN_STATE = ABORTED_BUT_NEEDS_COMPLETION
   };
 
   enum Direction {

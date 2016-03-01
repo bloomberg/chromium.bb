@@ -39,6 +39,12 @@ CompositorScrollOffsetAnimationCurve::CompositorScrollOffsetAnimationCurve(
 {
 }
 
+CompositorScrollOffsetAnimationCurve::CompositorScrollOffsetAnimationCurve(
+    cc::ScrollOffsetAnimationCurve* curve)
+    : m_curve(curve->CloneToScrollOffsetAnimationCurve())
+{
+}
+
 CompositorScrollOffsetAnimationCurve::~CompositorScrollOffsetAnimationCurve()
 {
 }

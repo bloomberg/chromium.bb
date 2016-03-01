@@ -30,6 +30,7 @@
 
 #include "platform/scroll/ScrollAnimator.h"
 
+#include "cc/animation/scroll_offset_animation_curve.h"
 #include "platform/TraceEvent.h"
 #include "platform/animation/CompositorAnimation.h"
 #include "platform/graphics/CompositorFactory.h"
@@ -120,15 +121,26 @@ ScrollResultOneDimensional ScrollAnimator::userScroll(
     FloatPoint targetPos = desiredTargetPosition();
     targetPos.moveBy(pixelDelta);
 
+    if (willAnimateToOffset(targetPos)) {
+        m_lastGranularity = granularity;
+        // Report unused delta only if there is no animation running. See
+        // comment below regarding scroll latching.
+        return ScrollResultOneDimensional(/* didScroll */ true, /* unusedScrollDelta */ 0);
+    }
+    // Report unused delta only if there is no animation and we are not
+    // starting one. This ensures we latch for the duration of the
+    // animation rather than animating multiple scrollers at the same time.
+    return ScrollResultOneDimensional(/* didScroll */ false, delta);
+}
+
+bool ScrollAnimator::willAnimateToOffset(const FloatPoint& targetPos)
+{
     if (m_runState == RunState::PostAnimationCleanup)
         resetAnimationState();
 
     if (m_animationCurve && m_runState != RunState::WaitingToCancelOnCompositor) {
-        if ((targetPos - m_targetOffset).isZero()) {
-            // Report unused delta only if there is no animation running. See
-            // comment below regarding scroll latching.
-            return ScrollResultOneDimensional(/* didScroll */ true, /* unusedScrollDelta */ 0);
-        }
+        if ((targetPos - m_targetOffset).isZero())
+            return true;
 
         m_targetOffset = targetPos;
         ASSERT(m_runState == RunState::RunningOnMainThread
@@ -139,30 +151,25 @@ ScrollResultOneDimensional ScrollAnimator::userScroll(
             || m_runState == RunState::RunningOnCompositorButNeedsUpdate) {
             if (registerAndScheduleAnimation())
                 m_runState = RunState::RunningOnCompositorButNeedsUpdate;
-            return ScrollResultOneDimensional(/* didScroll */ true, /* unusedScrollDelta */ 0);
+            return true;
         }
 
         // Running on the main thread, simply update the target offset instead
         // of sending to the compositor.
         m_animationCurve->updateTarget(m_timeFunction() - m_startTime, targetPos);
-        return ScrollResultOneDimensional(/* didScroll */ true, /* unusedScrollDelta */ 0);
+        return true;
     }
 
-    if ((targetPos - currentPosition()).isZero()) {
-        // Report unused delta only if there is no animation and we are not
-        // starting one. This ensures we latch for the duration of the
-        // animation rather than animating multiple scrollers at the same time.
-        return ScrollResultOneDimensional(/* didScroll */ false, delta);
-    }
+    if ((targetPos - currentPosition()).isZero())
+        return false;
 
     m_targetOffset = targetPos;
     m_startTime = m_timeFunction();
-    m_lastGranularity = granularity;
 
     if (registerAndScheduleAnimation())
         m_runState = RunState::WaitingToSendToCompositor;
 
-    return ScrollResultOneDimensional(/* didScroll */ true, /* unusedScrollDelta */ 0);
+    return true;
 }
 
 void ScrollAnimator::scrollToOffsetWithoutAnimation(const FloatPoint& offset)
@@ -326,6 +333,28 @@ void ScrollAnimator::notifyCompositorAnimationAborted(int groupId)
 void ScrollAnimator::notifyCompositorAnimationFinished(int groupId)
 {
     ScrollAnimatorCompositorCoordinator::compositorAnimationFinished(groupId);
+}
+
+void ScrollAnimator::notifyAnimationTakeover(
+    double monotonicTime,
+    double animationStartTime,
+    scoped_ptr<cc::AnimationCurve> curve)
+{
+    // If there is already an animation running and the compositor asks to take
+    // over an animation, do nothing to avoid judder.
+    if (hasRunningAnimation())
+        return;
+
+    cc::ScrollOffsetAnimationCurve* scrollOffsetAnimationCurve =
+        curve->ToScrollOffsetAnimationCurve();
+    FloatPoint targetValue(scrollOffsetAnimationCurve->target_value().x(),
+        scrollOffsetAnimationCurve->target_value().y());
+    if (willAnimateToOffset(targetValue)) {
+        m_animationCurve = adoptPtr(
+            CompositorFactory::current().createScrollOffsetAnimationCurve(
+                std::move(scrollOffsetAnimationCurve)));
+        m_startTime = animationStartTime;
+    }
 }
 
 void ScrollAnimator::cancelAnimation()

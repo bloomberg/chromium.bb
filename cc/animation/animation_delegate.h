@@ -7,6 +7,7 @@
 
 #include "base/time/time.h"
 #include "cc/animation/animation.h"
+#include "cc/animation/animation_curve.h"
 
 namespace cc {
 
@@ -22,6 +23,11 @@ class CC_EXPORT AnimationDelegate {
   virtual void NotifyAnimationAborted(base::TimeTicks monotonic_time,
                                       TargetProperty::Type target_property,
                                       int group) = 0;
+
+  virtual void NotifyAnimationTakeover(base::TimeTicks monotonic_time,
+                                       TargetProperty::Type target_property,
+                                       double animation_start_time,
+                                       scoped_ptr<AnimationCurve> curve) = 0;
 
  protected:
   virtual ~AnimationDelegate() {}

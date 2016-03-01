@@ -128,6 +128,10 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   void NotifyAnimationAborted(base::TimeTicks monotonic_time,
                               TargetProperty::Type target_property,
                               int group) override{};
+  void NotifyAnimationTakeover(base::TimeTicks monotonic_time,
+                               TargetProperty::Type target_property,
+                               double animation_start_time,
+                               scoped_ptr<AnimationCurve> curve) override {}
 
   // Tree structure.
   LayerImpl* parent() { return parent_; }
@@ -506,9 +510,7 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   void ApplySentScrollDeltasFromAbortedCommit();
 
   void set_main_thread_scrolling_reasons(
-      uint32_t main_thread_scrolling_reasons) {
-    main_thread_scrolling_reasons_ = main_thread_scrolling_reasons;
-  }
+      uint32_t main_thread_scrolling_reasons);
   uint32_t main_thread_scrolling_reasons() const {
     return main_thread_scrolling_reasons_;
   }

@@ -160,10 +160,11 @@ void AnimationPlayer::AbortAnimation(int animation_id) {
   SetNeedsCommit();
 }
 
-void AnimationPlayer::AbortAnimations(TargetProperty::Type target_property) {
+void AnimationPlayer::AbortAnimations(TargetProperty::Type target_property,
+                                      bool needs_completion) {
   if (element_animations_) {
     element_animations_->layer_animation_controller()->AbortAnimations(
-        target_property);
+        target_property, needs_completion);
     SetNeedsCommit();
   } else {
     auto animations_to_remove = std::remove_if(
@@ -209,6 +210,19 @@ void AnimationPlayer::NotifyAnimationAborted(
   if (layer_animation_delegate_)
     layer_animation_delegate_->NotifyAnimationAborted(monotonic_time,
                                                       target_property, group);
+}
+
+void AnimationPlayer::NotifyAnimationTakeover(
+    base::TimeTicks monotonic_time,
+    TargetProperty::Type target_property,
+    double animation_start_time,
+    scoped_ptr<AnimationCurve> curve) {
+  if (layer_animation_delegate_) {
+    DCHECK(curve);
+    layer_animation_delegate_->NotifyAnimationTakeover(
+        monotonic_time, target_property, animation_start_time,
+        std::move(curve));
+  }
 }
 
 void AnimationPlayer::SetNeedsCommit() {

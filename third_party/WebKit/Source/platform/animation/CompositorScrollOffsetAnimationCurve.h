@@ -28,6 +28,7 @@ public:
     };
 
     CompositorScrollOffsetAnimationCurve(FloatPoint, TimingFunctionType, ScrollDurationBehavior);
+    CompositorScrollOffsetAnimationCurve(cc::ScrollOffsetAnimationCurve*);
     ~CompositorScrollOffsetAnimationCurve() override;
 
     // CompositorAnimationCurve implementation.

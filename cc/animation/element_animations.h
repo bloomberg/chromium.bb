@@ -8,6 +8,8 @@
 #include "base/containers/linked_list.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
+#include "cc/animation/animation_curve.h"
 #include "cc/animation/animation_delegate.h"
 #include "cc/animation/layer_animation_controller.h"
 #include "cc/animation/layer_animation_value_provider.h"
@@ -103,6 +105,10 @@ class CC_EXPORT ElementAnimations : public AnimationDelegate,
   void NotifyAnimationAborted(base::TimeTicks monotonic_time,
                               TargetProperty::Type target_property,
                               int group) override;
+  void NotifyAnimationTakeover(base::TimeTicks monotonic_time,
+                               TargetProperty::Type target_property,
+                               double animation_start_time,
+                               scoped_ptr<AnimationCurve> curve) override;
 
   // LayerAnimationValueProvider implementation.
   gfx::ScrollOffset ScrollOffsetForAnimation() const override;

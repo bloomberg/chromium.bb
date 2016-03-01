@@ -6,6 +6,7 @@
 #define ScrollAnimatorCompositorCoordinator_h
 
 #include "base/gtest_prod_util.h"
+#include "cc/animation/animation_curve.h"
 #include "platform/PlatformExport.h"
 #include "platform/animation/CompositorAnimationPlayerClient.h"
 #include "platform/heap/Handle.h"
@@ -60,6 +61,10 @@ protected:
     void notifyAnimationStarted(double monotonicTime, int group) override;
     void notifyAnimationFinished(double monotonicTime, int group) override;
     void notifyAnimationAborted(double monotonicTime, int group) override;
+    void notifyAnimationTakeover(
+        double monotonicTime,
+        double animationStartTime,
+        scoped_ptr<cc::AnimationCurve>) override { };
 
     // CompositorAnimationPlayerClient implementation.
     CompositorAnimationPlayer* compositorPlayer() const override;

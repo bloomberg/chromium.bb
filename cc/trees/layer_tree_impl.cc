@@ -1866,6 +1866,14 @@ bool LayerTreeImpl::OpacityIsAnimatingOnImplOnly(const LayerImpl* layer) const {
              : false;
 }
 
+bool LayerTreeImpl::ScrollOffsetIsAnimatingOnImplOnly(
+    const LayerImpl* layer) const {
+  return layer_tree_host_impl_->animation_host()
+             ? layer_tree_host_impl_->animation_host()
+                   ->ScrollOffsetIsAnimatingOnImplOnly(layer->id())
+             : false;
+}
+
 bool LayerTreeImpl::TransformIsAnimatingOnImplOnly(
     const LayerImpl* layer) const {
   return layer_tree_host_impl_->animation_host()

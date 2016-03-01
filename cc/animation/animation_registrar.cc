@@ -132,6 +132,10 @@ void AnimationRegistrar::SetAnimationEvents(
           (*iter).second->NotifyAnimationPropertyUpdate(
               events->events_[event_index]);
           break;
+
+        case AnimationEvent::TAKEOVER:
+          (*iter).second->NotifyAnimationTakeover(events->events_[event_index]);
+          break;
       }
     }
   }

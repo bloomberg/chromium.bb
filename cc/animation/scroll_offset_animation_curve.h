@@ -36,6 +36,8 @@ class CC_EXPORT ScrollOffsetAnimationCurve : public AnimationCurve {
   base::TimeDelta Duration() const override;
   CurveType Type() const override;
   scoped_ptr<AnimationCurve> Clone() const override;
+  scoped_ptr<ScrollOffsetAnimationCurve> CloneToScrollOffsetAnimationCurve()
+      const;
 
  private:
   ScrollOffsetAnimationCurve(const gfx::ScrollOffset& target_value,

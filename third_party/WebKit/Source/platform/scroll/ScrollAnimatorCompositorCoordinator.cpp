@@ -4,6 +4,7 @@
 
 #include "platform/scroll/ScrollAnimatorCompositorCoordinator.h"
 
+#include "cc/animation/scroll_offset_animation_curve.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/animation/CompositorAnimationPlayer.h"
 #include "platform/animation/CompositorAnimationTimeline.h"

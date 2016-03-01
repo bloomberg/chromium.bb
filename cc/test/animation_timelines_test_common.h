@@ -155,6 +155,10 @@ class TestAnimationDelegate : public AnimationDelegate {
   void NotifyAnimationAborted(base::TimeTicks monotonic_time,
                               TargetProperty::Type target_property,
                               int group) override {}
+  void NotifyAnimationTakeover(base::TimeTicks monotonic_time,
+                               TargetProperty::Type target_property,
+                               double animation_start_time,
+                               scoped_ptr<AnimationCurve> curve) override {}
   bool started_;
   bool finished_;
 };

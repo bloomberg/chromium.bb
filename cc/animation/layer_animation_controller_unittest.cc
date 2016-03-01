@@ -1025,6 +1025,7 @@ class FakeAnimationDelegate : public AnimationDelegate {
       : started_(false),
         finished_(false),
         aborted_(false),
+        takeover_(false),
         start_time_(base::TimeTicks()) {}
 
   void NotifyAnimationStarted(TimeTicks monotonic_time,
@@ -1046,11 +1047,20 @@ class FakeAnimationDelegate : public AnimationDelegate {
     aborted_ = true;
   }
 
+  void NotifyAnimationTakeover(base::TimeTicks monotonic_time,
+                               TargetProperty::Type target_property,
+                               double animation_start_time,
+                               scoped_ptr<AnimationCurve> curve) override {
+    takeover_ = true;
+  }
+
   bool started() { return started_; }
 
   bool finished() { return finished_; }
 
   bool aborted() { return aborted_; }
+
+  bool takeover() { return takeover_; }
 
   TimeTicks start_time() { return start_time_; }
 
@@ -1058,6 +1068,7 @@ class FakeAnimationDelegate : public AnimationDelegate {
   bool started_;
   bool finished_;
   bool aborted_;
+  bool takeover_;
   TimeTicks start_time_;
 };
 
@@ -1899,6 +1910,72 @@ TEST(LayerAnimationControllerTest, ImplThreadAbortedAnimationGetsDeleted) {
   EXPECT_TRUE(dummy.animation_waiting_for_deletion());
   EXPECT_EQ(Animation::WAITING_FOR_DELETION,
             controller->GetAnimation(TargetProperty::OPACITY)->run_state());
+
+  controller->PushAnimationUpdatesTo(controller_impl.get());
+  controller_impl->ActivateAnimations();
+  EXPECT_FALSE(controller->GetAnimationById(animation_id));
+  EXPECT_FALSE(controller_impl->GetAnimationById(animation_id));
+}
+
+// Test that an impl-only scroll offset animation that needs to be completed on
+// the main thread gets deleted.
+TEST(LayerAnimationControllerTest, ImplThreadTakeoverAnimationGetsDeleted) {
+  FakeLayerAnimationValueObserver dummy_impl;
+  scoped_refptr<LayerAnimationController> controller_impl(
+      LayerAnimationController::Create(0));
+  controller_impl->AddValueObserver(&dummy_impl);
+  FakeLayerAnimationValueObserver dummy;
+  scoped_refptr<LayerAnimationController> controller(
+      LayerAnimationController::Create(0));
+  controller->AddValueObserver(&dummy);
+  FakeAnimationDelegate delegate_impl;
+  controller_impl->set_layer_animation_delegate(&delegate_impl);
+  FakeAnimationDelegate delegate;
+  controller->set_layer_animation_delegate(&delegate);
+
+  // Add impl-only scroll offset animation.
+  int animation_id = 1;
+  gfx::ScrollOffset initial_value(100.f, 300.f);
+  gfx::ScrollOffset target_value(300.f, 200.f);
+  scoped_ptr<ScrollOffsetAnimationCurve> curve(
+      ScrollOffsetAnimationCurve::Create(target_value,
+                                         EaseInOutTimingFunction::Create()));
+  curve->SetInitialValue(initial_value);
+  scoped_ptr<Animation> animation(Animation::Create(
+      std::move(curve), animation_id, 0, TargetProperty::SCROLL_OFFSET));
+  animation->set_start_time(TicksFromSecondsF(123));
+  animation->set_is_impl_only(true);
+  controller_impl->AddAnimation(std::move(animation));
+
+  controller->PushAnimationUpdatesTo(controller_impl.get());
+  controller_impl->ActivateAnimations();
+  EXPECT_TRUE(controller_impl->GetAnimationById(animation_id));
+
+  controller_impl->AbortAnimations(TargetProperty::SCROLL_OFFSET,
+                                   true /* needs_completion*/);
+  EXPECT_EQ(Animation::ABORTED_BUT_NEEDS_COMPLETION,
+            controller_impl->GetAnimation(TargetProperty::SCROLL_OFFSET)
+                ->run_state());
+  EXPECT_FALSE(dummy.animation_waiting_for_deletion());
+  EXPECT_FALSE(dummy_impl.animation_waiting_for_deletion());
+
+  AnimationEvents events;
+  controller_impl->Animate(kInitialTickTime);
+  controller_impl->UpdateState(true, &events);
+  EXPECT_TRUE(delegate_impl.finished());
+  EXPECT_TRUE(dummy_impl.animation_waiting_for_deletion());
+  EXPECT_EQ(1u, events.events_.size());
+  EXPECT_EQ(AnimationEvent::TAKEOVER, events.events_[0].type);
+  EXPECT_EQ(123, events.events_[0].animation_start_time);
+  EXPECT_EQ(
+      target_value,
+      events.events_[0].curve->ToScrollOffsetAnimationCurve()->target_value());
+  EXPECT_EQ(Animation::WAITING_FOR_DELETION,
+            controller_impl->GetAnimation(TargetProperty::SCROLL_OFFSET)
+                ->run_state());
+
+  controller->NotifyAnimationTakeover(events.events_[0]);
+  EXPECT_TRUE(delegate.takeover());
 
   controller->PushAnimationUpdatesTo(controller_impl.get());
   controller_impl->ActivateAnimations();

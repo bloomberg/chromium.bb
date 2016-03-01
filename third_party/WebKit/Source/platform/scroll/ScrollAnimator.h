@@ -67,6 +67,11 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 protected:
+    void notifyAnimationTakeover(
+        double monotonicTime,
+        double animationStartTime,
+        scoped_ptr<cc::AnimationCurve>) override;
+
     OwnPtr<CompositorScrollOffsetAnimationCurve> m_animationCurve;
     double m_startTime;
     WTF::TimeFunction m_timeFunction;
@@ -81,6 +86,11 @@ private:
 
     void addMainThreadScrollingReason();
     void removeMainThreadScrollingReason();
+
+    // Returns true if will animate to the given target position. Returns false
+    // only when there is no animation running and we are not starting one
+    // because we are already at targetPos.
+    bool willAnimateToOffset(const FloatPoint& targetPos);
 
     FloatPoint m_targetOffset;
     ScrollGranularity m_lastGranularity;

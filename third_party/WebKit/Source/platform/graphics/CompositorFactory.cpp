@@ -36,6 +36,12 @@ public:
             durationBehavior);
     }
 
+    CompositorScrollOffsetAnimationCurve* createScrollOffsetAnimationCurve(
+        cc::ScrollOffsetAnimationCurve* curve)
+    {
+        return new CompositorScrollOffsetAnimationCurve(curve);
+    }
+
     CompositorTransformAnimationCurve* createTransformAnimationCurve() override
     {
         return new CompositorTransformAnimationCurve();

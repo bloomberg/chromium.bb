@@ -14,6 +14,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
+#include "cc/animation/animation_host.h"
 #include "cc/animation/animation_registrar.h"
 #include "cc/animation/mutable_properties.h"
 #include "cc/base/math_util.h"
@@ -499,6 +500,26 @@ skia::RefPtr<SkPicture> LayerImpl::GetPicture() {
 
 scoped_ptr<LayerImpl> LayerImpl::CreateLayerImpl(LayerTreeImpl* tree_impl) {
   return LayerImpl::Create(tree_impl, layer_id_, scroll_offset_);
+}
+
+void LayerImpl::set_main_thread_scrolling_reasons(
+    uint32_t main_thread_scrolling_reasons) {
+  if (main_thread_scrolling_reasons_ == main_thread_scrolling_reasons)
+    return;
+
+  if (main_thread_scrolling_reasons &
+          MainThreadScrollingReason::kHasNonLayerViewportConstrainedObjects &&
+      layer_tree_impl()) {
+    if (layer_tree_impl()->ScrollOffsetIsAnimatingOnImplOnly(this)) {
+      layer_tree_impl()->animation_host()->ScrollAnimationAbort(
+          true /* needs_completion */);
+    } else if (layer_animation_controller()) {
+      layer_animation_controller()->AbortAnimations(
+          TargetProperty::SCROLL_OFFSET);
+    }
+  }
+
+  main_thread_scrolling_reasons_ = main_thread_scrolling_reasons;
 }
 
 void LayerImpl::PushPropertiesTo(LayerImpl* layer) {

@@ -134,6 +134,11 @@ AnimationCurve::CurveType ScrollOffsetAnimationCurve::Type() const {
 }
 
 scoped_ptr<AnimationCurve> ScrollOffsetAnimationCurve::Clone() const {
+  return CloneToScrollOffsetAnimationCurve();
+}
+
+scoped_ptr<ScrollOffsetAnimationCurve>
+ScrollOffsetAnimationCurve::CloneToScrollOffsetAnimationCurve() const {
   scoped_ptr<TimingFunction> timing_function(
       static_cast<TimingFunction*>(timing_function_->Clone().release()));
   scoped_ptr<ScrollOffsetAnimationCurve> curve_clone =
@@ -142,7 +147,7 @@ scoped_ptr<AnimationCurve> ScrollOffsetAnimationCurve::Clone() const {
   curve_clone->total_animation_duration_ = total_animation_duration_;
   curve_clone->last_retarget_ = last_retarget_;
   curve_clone->has_set_initial_value_ = has_set_initial_value_;
-  return std::move(curve_clone);
+  return curve_clone;
 }
 
 static double VelocityBasedDurationBound(gfx::Vector2dF old_delta,

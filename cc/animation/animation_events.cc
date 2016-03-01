@@ -19,7 +19,38 @@ AnimationEvent::AnimationEvent(AnimationEvent::Type type,
       is_impl_only(false),
       opacity(0.f) {}
 
-AnimationEvent::AnimationEvent(const AnimationEvent& other) = default;
+AnimationEvent::AnimationEvent(const AnimationEvent& other) {
+  type = other.type;
+  layer_id = other.layer_id;
+  group_id = other.group_id;
+  target_property = other.target_property;
+  monotonic_time = other.monotonic_time;
+  is_impl_only = other.is_impl_only;
+  opacity = other.opacity;
+  transform = other.transform;
+  filters = other.filters;
+  animation_start_time = other.animation_start_time;
+  if (other.curve)
+    curve = other.curve->Clone();
+}
+
+AnimationEvent& AnimationEvent::operator=(const AnimationEvent& other) {
+  type = other.type;
+  layer_id = other.layer_id;
+  group_id = other.group_id;
+  target_property = other.target_property;
+  monotonic_time = other.monotonic_time;
+  is_impl_only = other.is_impl_only;
+  opacity = other.opacity;
+  transform = other.transform;
+  filters = other.filters;
+  animation_start_time = other.animation_start_time;
+  if (other.curve)
+    curve = other.curve->Clone();
+  return *this;
+}
+
+AnimationEvent::~AnimationEvent() {}
 
 AnimationEvents::AnimationEvents() {}
 

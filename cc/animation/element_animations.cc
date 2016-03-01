@@ -270,6 +270,22 @@ void ElementAnimations::NotifyAnimationAborted(
   }
 }
 
+void ElementAnimations::NotifyAnimationTakeover(
+    base::TimeTicks monotonic_time,
+    TargetProperty::Type target_property,
+    double animation_start_time,
+    scoped_ptr<AnimationCurve> curve) {
+  DCHECK(curve);
+  for (PlayersListNode* node = players_list_->head();
+       node != players_list_->end(); node = node->next()) {
+    scoped_ptr<AnimationCurve> animation_curve = curve->Clone();
+    AnimationPlayer* player = node->value();
+    player->NotifyAnimationTakeover(monotonic_time, target_property,
+                                    animation_start_time,
+                                    std::move(animation_curve));
+  }
+}
+
 gfx::ScrollOffset ElementAnimations::ScrollOffsetForAnimation() const {
   DCHECK(layer_animation_controller_);
   if (animation_host()) {

@@ -30,6 +30,10 @@ class WebToCCAnimationDelegateAdapter : public cc::AnimationDelegate {
   void NotifyAnimationAborted(base::TimeTicks monotonic_time,
                               cc::TargetProperty::Type target_property,
                               int group) override;
+  void NotifyAnimationTakeover(base::TimeTicks monotonic_time,
+                               cc::TargetProperty::Type target_property,
+                               double animation_start_time,
+                               scoped_ptr<cc::AnimationCurve> curve) override {}
 
   blink::WebCompositorAnimationDelegate* delegate_;
 

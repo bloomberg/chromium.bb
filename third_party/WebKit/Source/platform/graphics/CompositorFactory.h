@@ -40,6 +40,9 @@ public:
         CompositorAnimationCurve::TimingFunctionType,
         CompositorScrollOffsetAnimationCurve::ScrollDurationBehavior) { return nullptr; }
 
+    virtual CompositorScrollOffsetAnimationCurve* createScrollOffsetAnimationCurve(
+        cc::ScrollOffsetAnimationCurve* curve) { return nullptr; }
+
     virtual CompositorTransformAnimationCurve* createTransformAnimationCurve() { return nullptr; }
 
     virtual CompositorTransformOperations* createTransformOperations() { return nullptr; }

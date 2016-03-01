@@ -109,6 +109,9 @@ class CC_EXPORT LayerTreeImpl {
   bool RequiresHighResToDraw() const;
   bool SmoothnessTakesPriority() const;
   VideoFrameControllerClient* GetVideoFrameControllerClient() const;
+  AnimationHost* animation_host() const {
+    return layer_tree_host_impl_->animation_host();
+  }
 
   // Tree specific methods exposed to layer-impl tree.
   // ---------------------------------------------------------------------------
@@ -390,6 +393,7 @@ class CC_EXPORT LayerTreeImpl {
 
   bool FilterIsAnimatingOnImplOnly(const LayerImpl* layer) const;
   bool OpacityIsAnimatingOnImplOnly(const LayerImpl* layer) const;
+  bool ScrollOffsetIsAnimatingOnImplOnly(const LayerImpl* layer) const;
   bool TransformIsAnimatingOnImplOnly(const LayerImpl* layer) const;
 
   bool AnimationsPreserveAxisAlignment(const LayerImpl* layer) const;

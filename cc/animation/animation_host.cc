@@ -98,10 +98,10 @@ class AnimationHost::ScrollOffsetAnimations : public AnimationDelegate {
     return true;
   }
 
-  void ScrollAnimationAbort() {
+  void ScrollAnimationAbort(bool needs_completion) {
     DCHECK(scroll_offset_animation_player_);
     scroll_offset_animation_player_->AbortAnimations(
-        TargetProperty::SCROLL_OFFSET);
+        TargetProperty::SCROLL_OFFSET, needs_completion);
   }
 
   // AnimationDelegate implementation.
@@ -118,6 +118,10 @@ class AnimationHost::ScrollOffsetAnimations : public AnimationDelegate {
   void NotifyAnimationAborted(base::TimeTicks monotonic_time,
                               TargetProperty::Type target_property,
                               int group) override {}
+  void NotifyAnimationTakeover(base::TimeTicks monotonic_time,
+                               TargetProperty::Type target_property,
+                               double animation_start_time,
+                               scoped_ptr<AnimationCurve> curve) override {}
 
  private:
   void ReattachScrollOffsetPlayerIfNeeded(int layer_id) {
@@ -476,6 +480,16 @@ bool AnimationHost::OpacityIsAnimatingOnImplOnly(int layer_id) const {
   return animation && animation->is_impl_only();
 }
 
+bool AnimationHost::ScrollOffsetIsAnimatingOnImplOnly(int layer_id) const {
+  LayerAnimationController* controller = GetControllerForLayerId(layer_id);
+  if (!controller)
+    return false;
+
+  Animation* animation =
+      controller->GetAnimation(TargetProperty::SCROLL_OFFSET);
+  return animation && animation->is_impl_only();
+}
+
 bool AnimationHost::TransformIsAnimatingOnImplOnly(int layer_id) const {
   LayerAnimationController* controller = GetControllerForLayerId(layer_id);
   if (!controller)
@@ -586,9 +600,9 @@ bool AnimationHost::ImplOnlyScrollAnimationUpdateTarget(
       layer_id, scroll_delta, max_scroll_offset, frame_monotonic_time);
 }
 
-void AnimationHost::ScrollAnimationAbort() {
+void AnimationHost::ScrollAnimationAbort(bool needs_completion) {
   DCHECK(scroll_offset_animations_);
-  return scroll_offset_animations_->ScrollAnimationAbort();
+  return scroll_offset_animations_->ScrollAnimationAbort(needs_completion);
 }
 
 }  // namespace cc

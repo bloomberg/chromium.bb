@@ -3748,7 +3748,7 @@ void LayerTreeHostImpl::UpdateRootLayerStateForSynchronousInputHandler() {
 
 void LayerTreeHostImpl::ScrollAnimationAbort(LayerImpl* layer_impl) {
   if (animation_host_)
-    return animation_host_->ScrollAnimationAbort();
+    return animation_host_->ScrollAnimationAbort(false /* needs_completion */);
 
   layer_impl->layer_animation_controller()->AbortAnimations(
       TargetProperty::SCROLL_OFFSET);
