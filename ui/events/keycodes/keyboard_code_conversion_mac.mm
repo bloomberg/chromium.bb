@@ -18,6 +18,9 @@ namespace ui {
 
 namespace {
 
+// This value is not defined but shows up as 0x36.
+const int kVK_RightCommand = 0x36;
+
 // A struct to hold a Windows keycode to Mac virtual keycode mapping.
 struct KeyCodeMap {
   KeyboardCode keycode;
@@ -108,8 +111,8 @@ const KeyCodeMap kKeyCodesMap[] = {
   { VKEY_Y /* 0x59 */, kVK_ANSI_Y, 'y' },
   { VKEY_Z /* 0x5A */, kVK_ANSI_Z, 'z' },
   { VKEY_LWIN /* 0x5B */, kVK_Command, 0 },
-  { VKEY_RWIN /* 0x5C */, 0x36, 0 },
-  { VKEY_APPS /* 0x5D */, 0x36, 0 },
+  { VKEY_RWIN /* 0x5C */, kVK_RightCommand, 0 },
+  { VKEY_APPS /* 0x5D */, kVK_RightCommand, 0 },
   { VKEY_SLEEP /* 0x5F */, -1, 0 },
   { VKEY_NUMPAD0 /* 0x60 */, kVK_ANSI_Keypad0, '0' },
   { VKEY_NUMPAD1 /* 0x61 */, kVK_ANSI_Keypad1, '1' },
@@ -451,6 +454,7 @@ DomKey DomKeyFromKeyCode(unsigned short keyCode) {
     case kVK_Escape:
       return DomKey::ESCAPE;
     case kVK_Command:
+    case kVK_RightCommand:
       return DomKey::META;
     case kVK_Shift:
     case kVK_RightShift:
@@ -634,7 +638,8 @@ DomKey DomKeyFromCharCode(unichar char_code) {
 }
 
 UniChar MacKeycodeAndModifiersToCharacter(unsigned short mac_keycode,
-                                          int modifiers) {
+                                          int modifiers,
+                                          bool* is_dead_key) {
   // Convert NSEvent modifiers to format UCKeyTranslate accepts. See docs
   // on UCKeyTranslate for more info.
   int unicode_modifiers = 0;
@@ -668,7 +673,8 @@ UniChar MacKeycodeAndModifiersToCharacter(unsigned short mac_keycode,
                      arraysize(unicode_string), &char_count, unicode_string);
 
   OSSTATUS_DCHECK(status == noErr, status);
-  if (dead_key_state != 0) {
+  *is_dead_key = dead_key_state != 0;
+  if (*is_dead_key) {
     // A dead key, injecting space to get the diacritic in an isolated form.
     status = UCKeyTranslate(layout, static_cast<UInt16>(kVK_Space),
                             kUCKeyActionDown, 0, LMGetKbdLast(), 0,
@@ -791,7 +797,16 @@ DomKey DomKeyFromNSEvent(NSEvent* event) {
   // Keyboard layout and modifiers already applied; whereas the keyCode
   // doesn't.
   if ([event type] == NSKeyDown || [event type] == NSKeyUp) {
-    // Have to use [event characters] to handle dead key state.
+    // Cannot use [event characters] to check whether it's a dead key, because
+    // KeyUp event has the character form of the dead key in [event characters].
+    bool is_dead_key = false;
+    // MacKeycodeAndModifiersToCharacter() is efficient (around 6E-4 ms).
+    unichar dead_dom_key_char = MacKeycodeAndModifiersToCharacter(
+        [event keyCode], [event modifierFlags], &is_dead_key);
+    if (is_dead_key)
+      return DomKey::DeadKeyFromCombiningCharacter(dead_dom_key_char);
+
+    // [event characters] will have dead key state applied.
     NSString* characters = [event characters];
     if ([characters length] > 0) {
       // An invalid dead key combination will produce two characters, according
@@ -811,11 +826,13 @@ DomKey DomKeyFromNSEvent(NSEvent* event) {
         // character, the key value should be the character without modifiers
         // except Shift and AltGr.
         // See https://w3c.github.io/uievents/#keys-guidelines
+        bool unused_is_dead_key;
         const int kAllowedModifiersMask =
             NSShiftKeyMask | NSAlphaShiftKeyMask | NSAlternateKeyMask;
         // MacKeycodeAndModifiersToCharacter() is efficient (around 6E-4 ms).
         dom_key_char = MacKeycodeAndModifiersToCharacter(
-            [event keyCode], [event modifierFlags] & kAllowedModifiersMask);
+            [event keyCode], [event modifierFlags] & kAllowedModifiersMask,
+            &unused_is_dead_key);
       }
       if (!std::iscntrl(dom_key_char))
         return DomKeyFromCharCode(dom_key_char);

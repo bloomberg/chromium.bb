@@ -299,15 +299,13 @@ TEST(WebInputEventBuilderMacTest, DomKeyCtrlAlt) {
                {kVK_ANSI_8, u"•"[0], u"8"[0]}, {kVK_ANSI_9, u"ª"[0], u"9"[0]},
                {kVK_ANSI_A, u"å"[0], u"å"[0]}, {kVK_ANSI_B, u"∫"[0], u"∫"[0]},
                {kVK_ANSI_C, u"ç"[0], u"ç"[0]}, {kVK_ANSI_D, u"∂"[0], u"∂"[0]},
-               {kVK_ANSI_E, u"´"[0], u"´"[0]}, {kVK_ANSI_F, u"ƒ"[0], u"ƒ"[0]},
-               {kVK_ANSI_G, u"©"[0], u"©"[0]}, {kVK_ANSI_H, u"˙"[0], u"˙"[0]},
-               {kVK_ANSI_I, u"ˆ"[0], u"ˆ"[0]}, {kVK_ANSI_J, u"∆"[0], u"∆"[0]},
+               {kVK_ANSI_F, u"ƒ"[0], u"ƒ"[0]}, {kVK_ANSI_G, u"©"[0], u"©"[0]},
+               {kVK_ANSI_H, u"˙"[0], u"˙"[0]}, {kVK_ANSI_J, u"∆"[0], u"∆"[0]},
                {kVK_ANSI_K, u"˚"[0], u"˚"[0]}, {kVK_ANSI_L, u"¬"[0], u"¬"[0]},
-               {kVK_ANSI_M, u"µ"[0], u"µ"[0]}, {kVK_ANSI_N, u"˜"[0], u"˜"[0]},
-               {kVK_ANSI_O, u"ø"[0], u"ø"[0]}, {kVK_ANSI_P, u"π"[0], u"π"[0]},
-               {kVK_ANSI_Q, u"œ"[0], u"œ"[0]}, {kVK_ANSI_R, u"®"[0], u"®"[0]},
-               {kVK_ANSI_S, u"ß"[0], u"ß"[0]}, {kVK_ANSI_T, u"†"[0], u"†"[0]},
-               {kVK_ANSI_U, u"¨"[0], u"¨"[0]}, {kVK_ANSI_V, u"√"[0], u"√"[0]},
+               {kVK_ANSI_M, u"µ"[0], u"µ"[0]}, {kVK_ANSI_O, u"ø"[0], u"ø"[0]},
+               {kVK_ANSI_P, u"π"[0], u"π"[0]}, {kVK_ANSI_Q, u"œ"[0], u"œ"[0]},
+               {kVK_ANSI_R, u"®"[0], u"®"[0]}, {kVK_ANSI_S, u"ß"[0], u"ß"[0]},
+               {kVK_ANSI_T, u"†"[0], u"†"[0]}, {kVK_ANSI_V, u"√"[0], u"√"[0]},
                {kVK_ANSI_W, u"∑"[0], u"∑"[0]}, {kVK_ANSI_X, u"≈"[0], u"≈"[0]},
                {kVK_ANSI_Y, u"¥"[0], u"¥"[0]}, {kVK_ANSI_Z, u"Ω"[0], u"Ω"[0]}};
 
@@ -319,12 +317,42 @@ TEST(WebInputEventBuilderMacTest, DomKeyCtrlAlt) {
     EXPECT_EQ(ui::DomKey::FromCharacter(entry.alt_character), web_event.domKey)
         << "a " << entry.alt_character;
     // Tests ctrl_alt_dom_key.
-    mac_event = BuildFakeKeyEvent(entry.mac_key_code, entry.ctrl_alt_character,
-                                  NSAlternateKeyMask, NSKeyDown);
+    mac_event =
+        BuildFakeKeyEvent(entry.mac_key_code, entry.ctrl_alt_character,
+                          NSControlKeyMask | NSAlternateKeyMask, NSKeyDown);
     web_event = WebKeyboardEventBuilder::Build(mac_event);
     EXPECT_EQ(ui::DomKey::FromCharacter(entry.ctrl_alt_character),
               web_event.domKey)
         << "a_c " << entry.ctrl_alt_character;
+  }
+
+  struct DeadDomKeyTestCase {
+    int mac_key_code;
+    unichar alt_accent_character;
+  } dead_key_table[] = {{kVK_ANSI_E, u"´"[0]},
+                        {kVK_ANSI_I, u"ˆ"[0]},
+                        {kVK_ANSI_N, u"˜"[0]},
+                        {kVK_ANSI_U, u"¨"[0]}};
+
+  for (const DeadDomKeyTestCase& entry : dead_key_table) {
+    // Tests alt_accent_character.
+    NSEvent* mac_event =
+        BuildFakeKeyEvent(entry.mac_key_code, 0, NSAlternateKeyMask, NSKeyDown);
+    WebKeyboardEvent web_event = WebKeyboardEventBuilder::Build(mac_event);
+    EXPECT_EQ(
+        ui::DomKey::DeadKeyFromCombiningCharacter(entry.alt_accent_character),
+        web_event.domKey)
+        << "a " << entry.alt_accent_character;
+
+    // Tests alt_accent_character with ctrl.
+    mac_event =
+        BuildFakeKeyEvent(entry.mac_key_code, 0,
+                          NSControlKeyMask | NSAlternateKeyMask, NSKeyDown);
+    web_event = WebKeyboardEventBuilder::Build(mac_event);
+    EXPECT_EQ(
+        ui::DomKey::DeadKeyFromCombiningCharacter(entry.alt_accent_character),
+        web_event.domKey)
+        << "a_c " << entry.alt_accent_character;
   }
 }
 
