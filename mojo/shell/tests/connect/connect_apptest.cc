@@ -12,7 +12,7 @@
 #include "base/run_loop.h"
 #include "mojo/shell/public/cpp/application_test_base.h"
 #include "mojo/shell/public/interfaces/application_manager.mojom.h"
-#include "mojo/shell/tests/package_test.mojom.h"
+#include "mojo/shell/tests/connect/connect_test.mojom.h"
 
 // Tests that multiple applications can be packaged in a single Mojo application
 // implementing ShellClientFactory; that these applications can be specified by
@@ -29,16 +29,16 @@ void ReceiveName(std::string* out_name,
 }
 }  // namespace
 
-using PackageApptest = mojo::test::ApplicationTestBase;
+using ConnectApptest = mojo::test::ApplicationTestBase;
 
-TEST_F(PackageApptest, Basic) {
+TEST_F(ConnectApptest, Basic) {
   std::set<uint32_t> ids;
   {
     // We need to do this to force the shell to read the test app's manifest and
     // register aliases.
-    test::mojom::PackageTestServicePtr root_service;
+    test::mojom::ConnectTestServicePtr root_service;
     scoped_ptr<Connection> connection =
-        connector()->Connect("mojo:package_test_package");
+        connector()->Connect("mojo:connect_test_package");
     connection->GetInterface(&root_service);
     base::RunLoop run_loop;
     std::string root_name;
@@ -52,9 +52,9 @@ TEST_F(PackageApptest, Basic) {
   {
     // Now subsequent connects to applications provided by the root app will be
     // resolved correctly.
-    test::mojom::PackageTestServicePtr service_a;
+    test::mojom::ConnectTestServicePtr service_a;
     scoped_ptr<Connection> connection =
-        connector()->Connect("mojo:package_test_a");
+        connector()->Connect("mojo:connect_test_a");
     connection->GetInterface(&service_a);
     base::RunLoop run_loop;
     std::string a_name;
@@ -67,9 +67,9 @@ TEST_F(PackageApptest, Basic) {
   }
 
   {
-    test::mojom::PackageTestServicePtr service_b;
+    test::mojom::ConnectTestServicePtr service_b;
     scoped_ptr<Connection> connection =
-        connector()->Connect("mojo:package_test_b");
+        connector()->Connect("mojo:connect_test_b");
     connection->GetInterface(&service_b);
     base::RunLoop run_loop;
     std::string b_name;

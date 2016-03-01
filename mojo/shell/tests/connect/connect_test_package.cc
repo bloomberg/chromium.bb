@@ -18,7 +18,7 @@
 #include "mojo/shell/public/cpp/interface_factory.h"
 #include "mojo/shell/public/cpp/shell_client.h"
 #include "mojo/shell/public/interfaces/shell_client_factory.mojom.h"
-#include "mojo/shell/tests/package_test.mojom.h"
+#include "mojo/shell/tests/connect/connect_test.mojom.h"
 
 // Tests that multiple applications can be packaged in a single Mojo application
 // implementing ShellClientFactory; that these applications can be specified by
@@ -27,12 +27,12 @@
 namespace mojo {
 namespace shell {
 
-using GetNameCallback = test::mojom::PackageTestService::GetNameCallback;
+using GetNameCallback = test::mojom::ConnectTestService::GetNameCallback;
 
 class ProvidedShellClient
     : public ShellClient,
-      public InterfaceFactory<test::mojom::PackageTestService>,
-      public test::mojom::PackageTestService,
+      public InterfaceFactory<test::mojom::ConnectTestService>,
+      public test::mojom::ConnectTestService,
       public base::SimpleThread {
  public:
   ProvidedShellClient(const std::string& name,
@@ -55,18 +55,18 @@ class ProvidedShellClient
                    base::Unretained(this)));
   }
   bool AcceptConnection(Connection* connection) override {
-    connection->AddInterface<test::mojom::PackageTestService>(
+    connection->AddInterface<test::mojom::ConnectTestService>(
         this);
     return true;
   }
 
-  // InterfaceFactory<test::mojom::PackageTestService>:
+  // InterfaceFactory<test::mojom::ConnectTestService>:
   void Create(Connection* connection,
-              test::mojom::PackageTestServiceRequest request) override {
+              test::mojom::ConnectTestServiceRequest request) override {
     bindings_.AddBinding(this, std::move(request));
   }
 
-  // test::mojom::PackageTestService:
+  // test::mojom::ConnectTestService:
   void GetName(const GetNameCallback& callback) override {
     callback.Run(name_);
   }
@@ -85,32 +85,32 @@ class ProvidedShellClient
 
   const std::string name_;
   mojom::ShellClientRequest request_;
-  BindingSet<test::mojom::PackageTestService> bindings_;
+  BindingSet<test::mojom::ConnectTestService> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(ProvidedShellClient);
 };
 
-class PackageTestShellClient
+class ConnectTestShellClient
     : public ShellClient,
       public InterfaceFactory<mojom::ShellClientFactory>,
-      public InterfaceFactory<test::mojom::PackageTestService>,
+      public InterfaceFactory<test::mojom::ConnectTestService>,
       public mojom::ShellClientFactory,
-      public test::mojom::PackageTestService {
+      public test::mojom::ConnectTestService {
  public:
-  PackageTestShellClient() {}
-  ~PackageTestShellClient() override {}
+  ConnectTestShellClient() {}
+  ~ConnectTestShellClient() override {}
 
  private:
   // mojo::ShellClient:
   void Initialize(Connector* connector, const std::string& name,
                   uint32_t id, uint32_t user_id) override {
     bindings_.set_connection_error_handler(
-        base::Bind(&PackageTestShellClient::OnConnectionError,
+        base::Bind(&ConnectTestShellClient::OnConnectionError,
                    base::Unretained(this)));
   }
   bool AcceptConnection(Connection* connection) override {
     connection->AddInterface<ShellClientFactory>(this);
-    connection->AddInterface<test::mojom::PackageTestService>(this);
+    connection->AddInterface<test::mojom::ConnectTestService>(this);
     return true;
   }
   bool ShellConnectionLost() override {
@@ -127,22 +127,22 @@ class PackageTestShellClient
     shell_client_factory_bindings_.AddBinding(this, std::move(request));
   }
 
-  // InterfaceFactory<test::mojom::PackageTestService>:
+  // InterfaceFactory<test::mojom::ConnectTestService>:
   void Create(Connection* connection,
-              test::mojom::PackageTestServiceRequest request) override {
+              test::mojom::ConnectTestServiceRequest request) override {
     bindings_.AddBinding(this, std::move(request));
   }
 
   // mojom::ShellClientFactory:
   void CreateShellClient(mojom::ShellClientRequest request,
                          const String& name) override {
-    if (name == "mojo:package_test_a")
+    if (name == "mojo:connect_test_a")
       new ProvidedShellClient("A", std::move(request));
-    else if (name == "mojo:package_test_b")
+    else if (name == "mojo:connect_test_b")
       new ProvidedShellClient("B", std::move(request));
   }
 
-  // test::mojom::PackageTestService:
+  // test::mojom::ConnectTestService:
   void GetName(const GetNameCallback& callback) override {
     callback.Run("ROOT");
   }
@@ -154,9 +154,9 @@ class PackageTestShellClient
 
   std::vector<scoped_ptr<ShellClient>> delegates_;
   BindingSet<mojom::ShellClientFactory> shell_client_factory_bindings_;
-  BindingSet<test::mojom::PackageTestService> bindings_;
+  BindingSet<test::mojom::ConnectTestService> bindings_;
 
-  DISALLOW_COPY_AND_ASSIGN(PackageTestShellClient);
+  DISALLOW_COPY_AND_ASSIGN(ConnectTestShellClient);
 };
 
 }  // namespace shell
@@ -165,6 +165,6 @@ class PackageTestShellClient
 
 MojoResult MojoMain(MojoHandle shell_handle) {
   MojoResult rv = mojo::ApplicationRunner(
-      new mojo::shell::PackageTestShellClient).Run(shell_handle);
+      new mojo::shell::ConnectTestShellClient).Run(shell_handle);
   return rv;
 }

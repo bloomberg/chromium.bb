@@ -23,7 +23,7 @@ source_set("test_support") {
   ]
 
   deps = [
-    ":test_bindings",
+    ":interfaces",
     "//mojo/shell",
     "//mojo/shell/public/cpp",
     "//mojo/shell/public/interfaces",
@@ -41,7 +41,7 @@ test("mojo_shell_unittests") {
   ]
 
   deps = [
-    ":test_bindings",
+    ":interfaces",
     ":test_support",
     "//base",
     "//base/test:test_support",
@@ -58,11 +58,9 @@ test("mojo_shell_unittests") {
   ]
 }
 
-mojom("test_bindings") {
+mojom("interfaces") {
   sources = [
-    "application_manager_apptests.mojom",
     "capability_filter_unittest.mojom",
-    "package_test.mojom",
     "test.mojom",
   ]
 }
@@ -71,117 +69,8 @@ mojo_native_application("apptests") {
   output_name = "mojo_shell_apptests"
   testonly = true
 
-  sources = [
-    "application_manager_apptest.cc",
-    "package_apptest.cc",
-  ]
-
   deps = [
-    ":apptests_manifest",
-    ":test_bindings",
-    "//base",
-    "//base/test:test_config",
-    "//mojo/common:common_base",
-    "//mojo/shell/public/cpp:sources",
-    "//mojo/shell/public/cpp:test_support",
-    "//mojo/shell/public/interfaces",
-  ]
-
-  data_deps = [
-    ":application_manager_apptest_driver",
-    ":application_manager_apptest_target",
-    ":package_test_package",
-  ]
-}
-
-mojo_application_manifest("apptests_manifest") {
-  application_name = "mojo_shell_apptests"
-  source = "application_manager_apptest_manifest.json"
-}
-
-mojo_application_manifest("package_test_a_manifest") {
-  application_name = "package_test_a"
-  source = "package_test_app_a_manifest.json"
-}
-
-mojo_application_manifest("package_test_b_manifest") {
-  application_name = "package_test_b"
-  source = "package_test_app_b_manifest.json"
-}
-
-mojo_native_application("package_test_package") {
-  testonly = true
-  sources = [
-    "package_test_package.cc",
-  ]
-  deps = [
-    ":package_test_package_manifest",
-    ":test_bindings",
-    "//base",
-    "//mojo/common:common_base",
-    "//mojo/shell/public/cpp:sources",
-    "//mojo/shell/public/interfaces",
-  ]
-}
-
-mojo_application_manifest("package_test_package_manifest") {
-  application_name = "package_test_package"
-  source = "package_test_package_manifest.json"
-  deps = [
-    ":package_test_a_manifest",
-    ":package_test_b_manifest",
-  ]
-  packaged_applications = [
-    "package_test_a",
-    "package_test_b",
-  ]
-}
-
-executable("application_manager_apptest_driver") {
-  testonly = true
-
-  sources = [
-    "application_manager_apptest_driver.cc",
-  ]
-
-  deps = [
-    ":copy_application_manager_apptest_driver_manifest",
-    ":test_bindings",
-    "//base",
-    "//base:base_static",
-    "//build/config/sanitizers:deps",
-    "//mojo/common:common_base",
-    "//mojo/edk/system",
-    "//mojo/shell/public/cpp",
-    "//mojo/shell/public/interfaces",
-    "//mojo/shell/runner:init",
-    "//mojo/shell/runner/child:test_native_main",
-    "//mojo/shell/runner/common",
-  ]
-}
-
-copy("copy_application_manager_apptest_driver_manifest") {
-  sources = [
-    "application_manager_apptest_driver_manifest.json",
-  ]
-  outputs = [
-    "${root_out_dir}/{{source_file_part}}",
-  ]
-}
-
-executable("application_manager_apptest_target") {
-  testonly = true
-
-  sources = [
-    "application_manager_apptest_target.cc",
-  ]
-
-  deps = [
-    ":test_bindings",
-    "//base",
-    "//build/config/sanitizers:deps",
-    "//mojo/common:common_base",
-    "//mojo/shell/public/cpp",
-    "//mojo/shell/runner/child:test_native_main",
+    "//mojo/shell/tests/application_manager",
+    "//mojo/shell/tests/connect",
   ]
 }

@@ -4,6 +4,6 @@
 
 module mojo.shell.test.mojom;
 
-interface PackageTestService {
+interface ConnectTestService {
   GetName() => (string name);
 };

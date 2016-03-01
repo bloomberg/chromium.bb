@@ -10,7 +10,7 @@
 #include "mojo/shell/public/cpp/shell_client.h"
 #include "mojo/shell/runner/child/test_native_main.h"
 #include "mojo/shell/runner/init.h"
-#include "mojo/shell/tests/application_manager_apptests.mojom.h"
+#include "mojo/shell/tests/application_manager/application_manager_apptests.mojom.h"
 
 using mojo::shell::test::mojom::CreateInstanceForHandleTestPtr;
 

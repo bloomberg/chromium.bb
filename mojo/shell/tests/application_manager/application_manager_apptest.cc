@@ -16,7 +16,7 @@
 #include "mojo/shell/public/cpp/interface_factory.h"
 #include "mojo/shell/public/cpp/shell_client.h"
 #include "mojo/shell/public/interfaces/application_manager.mojom.h"
-#include "mojo/shell/tests/application_manager_apptests.mojom.h"
+#include "mojo/shell/tests/application_manager/application_manager_apptests.mojom.h"
 
 using mojo::shell::test::mojom::CreateInstanceForHandleTest;
 
