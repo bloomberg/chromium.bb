@@ -1297,14 +1297,6 @@ const LayerListImpl* LayerTreeHostImpl::pending_list() const {
   return pending_tree_.get() ? pending_tree_->list() : nullptr;
 }
 
-LayerListImpl* LayerTreeHostImpl::recycle_list() {
-  return recycle_tree_.get() ? recycle_tree_->list() : nullptr;
-}
-
-const LayerListImpl* LayerTreeHostImpl::recycle_list() const {
-  return recycle_tree_.get() ? recycle_tree_->list() : nullptr;
-}
-
 scoped_ptr<EvictionTilePriorityQueue> LayerTreeHostImpl::BuildEvictionQueue(
     TreePriority tree_priority) {
   TRACE_EVENT0("disabled-by-default-cc.debug",
@@ -3827,12 +3819,12 @@ bool LayerTreeHostImpl::ScrollAnimationUpdateTarget(
 bool LayerTreeHostImpl::IsLayerInTree(int layer_id,
                                       LayerListType list_type) const {
   if (list_type == LayerListType::ACTIVE) {
-    return active_tree() ? active_list()->LayerById(layer_id) != nullptr
+    return active_tree() ? active_tree()->list()->LayerById(layer_id) != nullptr
                          : false;
   } else {
-    if (pending_tree() && pending_list()->LayerById(layer_id))
+    if (pending_tree() && pending_tree()->list()->LayerById(layer_id))
       return true;
-    if (recycle_tree() && recycle_list()->LayerById(layer_id))
+    if (recycle_tree() && recycle_tree()->list()->LayerById(layer_id))
       return true;
 
     return false;
@@ -3978,7 +3970,8 @@ void LayerTreeHostImpl::ScrollOffsetAnimationFinished() {
 gfx::ScrollOffset LayerTreeHostImpl::GetScrollOffsetForAnimation(
     int layer_id) const {
   if (active_tree()) {
-    LayerAnimationValueProvider* layer = active_list()->LayerById(layer_id);
+    LayerAnimationValueProvider* layer =
+        active_tree()->list()->LayerById(layer_id);
     if (layer)
       return layer->ScrollOffsetForAnimation();
   }

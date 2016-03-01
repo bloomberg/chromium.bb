@@ -1306,7 +1306,7 @@ class LayerTreeHostTestDamageWithScale : public LayerTreeHostTest {
     // cleanup. AddTilingUntilNextDraw ensures that it remains there during
     // damage calculation.
     FakePictureLayerImpl* child_layer_impl = static_cast<FakePictureLayerImpl*>(
-        host_impl->active_list()->LayerById(child_layer_->id()));
+        host_impl->active_tree()->list()->LayerById(child_layer_->id()));
     child_layer_impl->AddTilingUntilNextDraw(1.3f);
   }
 
@@ -1333,7 +1333,8 @@ class LayerTreeHostTestDamageWithScale : public LayerTreeHostTest {
       case 1: {
         FakePictureLayerImpl* child_layer_impl =
             static_cast<FakePictureLayerImpl*>(
-                host_impl->active_list()->LayerById(child_layer_->id()));
+                host_impl->active_tree()->list()->LayerById(
+                    child_layer_->id()));
         // We remove tilings pretty aggressively if they are not ideal. Add this
         // back in so that we can compare
         // child_layer_impl->GetEnclosingRectInTargetSpace to the damage.

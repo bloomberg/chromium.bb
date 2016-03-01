@@ -179,7 +179,7 @@ class LayerTreeHostScrollTestScrollMultipleRedraw
 
   void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
     LayerImpl* scroll_layer =
-        impl->active_list()->LayerById(scroll_layer_->id());
+        impl->active_tree()->list()->LayerById(scroll_layer_->id());
     if (impl->active_tree()->source_frame_number() == 0 &&
         impl->SourceAnimationFrameNumberForTesting() == 1) {
       // First draw after first commit.
@@ -832,7 +832,7 @@ class LayerTreeHostScrollTestSimple : public LayerTreeHostScrollTest {
     LayerImpl* root = impl->active_tree()->root_layer();
     LayerImpl* scroll_layer = impl->OuterViewportScrollLayer();
     LayerImpl* pending_root =
-        impl->active_list()->FindPendingLayerById(root->id());
+        impl->active_tree()->list()->FindPendingLayerById(root->id());
 
     switch (impl->active_tree()->source_frame_number()) {
       case 0:

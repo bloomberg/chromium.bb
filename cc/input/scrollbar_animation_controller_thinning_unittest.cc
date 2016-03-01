@@ -90,7 +90,7 @@ TEST_F(ScrollbarAnimationControllerThinningTest, Idle) {
 
 // Check that scrollbar disappears when the layer becomes non-scrollable.
 TEST_F(ScrollbarAnimationControllerThinningTest, HideOnResize) {
-  LayerImpl* scroll_layer = host_impl_.active_list()->LayerById(1);
+  LayerImpl* scroll_layer = host_impl_.active_tree()->list()->LayerById(1);
   ASSERT_TRUE(scroll_layer);
   EXPECT_EQ(gfx::Size(200, 200), scroll_layer->bounds());
 

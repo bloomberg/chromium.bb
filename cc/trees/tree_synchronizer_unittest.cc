@@ -788,7 +788,7 @@ TEST_F(TreeSynchronizerTest, SynchronizeCurrentlyScrollingNode) {
                           host_impl->active_tree());
 
   host_impl->active_tree()->SetCurrentlyScrollingLayer(
-      host_impl->active_list()->LayerById(scroll_layer->id()));
+      host_impl->active_tree()->list()->LayerById(scroll_layer->id()));
   transient_scroll_layer->SetScrollClipLayerId(Layer::INVALID_ID);
   host_->BuildPropertyTreesForTesting();
 

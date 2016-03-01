@@ -103,7 +103,7 @@ class TileManagerTilePriorityQueueTest : public testing::Test {
     CHECK(!host_impl_.pending_tree());
     pending_layer_ = NULL;
     active_layer_ = static_cast<FakePictureLayerImpl*>(
-        host_impl_.active_list()->LayerById(id_));
+        host_impl_.active_tree()->list()->LayerById(id_));
     bool update_lcd_text = false;
     host_impl_.active_tree()->UpdateDrawProperties(update_lcd_text);
   }
@@ -146,7 +146,7 @@ class TileManagerTilePriorityQueueTest : public testing::Test {
     pending_tree->SetRootLayer(std::move(pending_layer));
 
     pending_layer_ = static_cast<FakePictureLayerImpl*>(
-        host_impl_.pending_list()->LayerById(id_));
+        host_impl_.pending_tree()->list()->LayerById(id_));
 
     // Add tilings/tiles for the layer.
     bool update_lcd_text = false;
