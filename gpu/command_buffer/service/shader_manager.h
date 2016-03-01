@@ -183,10 +183,6 @@ class GPU_EXPORT Shader : public base::RefCounted<Shader> {
     interface_block_map_ = InterfaceBlockMap(interface_block_map);
   }
 
-  void AddUniformToUniformMap(sh::Uniform uniform) {
-    uniform_map_[uniform.mappedName] = uniform;
-  }
-
   void set_output_variable_list(
       const OutputVariableList& output_variable_list) {
     // copied because cache might be cleared

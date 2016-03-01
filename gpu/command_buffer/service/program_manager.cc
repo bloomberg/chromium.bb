@@ -586,8 +586,46 @@ void Program::UpdateUniforms() {
         is_array = info->arraySize > 0;
         type = info->type;
         size = std::max(1u, info->arraySize);
+      } else {
+        const InterfaceBlockMap& interface_block_map =
+            shader->interface_block_map();
+        for (const auto& key_value : interface_block_map) {
+          const sh::InterfaceBlock& block = key_value.second;
+          bool find = false;
+          if (block.instanceName.empty()) {
+            for (const auto& value : block.fields) {
+              if (value.findInfoByMappedName(service_name, &info,
+                      &client_name)) {
+                find = true;
+                break;
+              }
+            }
+          } else {
+            size_t pos = service_name.find_first_of('.');
+            std::string top_variable_name = service_name.substr(0, pos);
+            if (block.mappedName == top_variable_name) {
+              DCHECK(pos != std::string::npos);
+              for (const auto& field : block.fields) {
+                if (field.findInfoByMappedName(service_name.substr(
+                    pos + 1), &info, &client_name)) {
+                  find = true;
+                  client_name = block.name + "." + client_name;
+                  break;
+                }
+              }
+            }
+          }
+          if (find) {
+            DCHECK(!client_name.empty());
+            is_array = info->arraySize > 0;
+            type = info->type;
+            size = std::max(1u, info->arraySize);
+            break;
+          }
+        }
       }
     }
+
     if (client_name.empty()) {
       // This happens only in cases where we do not have ANGLE or run unit tests
       // (or ANGLE has a severe bug).
@@ -1084,7 +1122,6 @@ bool Program::Link(ShaderManager* manager,
   GLint success = 0;
   glGetProgramiv(service_id(), GL_LINK_STATUS, &success);
   if (success == GL_TRUE) {
-    GatherInterfaceBlockInfo();
     Update();
     if (link) {
       // ANGLE updates the translated shader sources on link.
@@ -1328,68 +1365,6 @@ void Program::GetVertexAttribData(
   // TODO(zmo): this path should never be reached unless there is a serious
   // bug in the driver or in ANGLE translator.
   *original_name = name;
-}
-
-template <typename VarT>
-void Program::GetUniformBlockMembers(
-    Shader* shader, const std::vector<VarT>& fields,
-    const std::string& prefix) {
-  for (const VarT& field : fields) {
-    const std::string& full_name =
-        (prefix.empty() ? field.name : prefix + "." + field.name);
-    const std::string& mapped_name = *(shader->GetMappedName(field.name));
-
-    if (field.isStruct()) {
-      for (unsigned int array_element = 0; array_element < field.elementCount();
-           ++array_element) {
-        std::string array_string = base::StringPrintf("[%d]", array_element);
-        const std::string uniform_element_name =
-            full_name + (field.isArray() ? array_string: "");
-        GetUniformBlockMembers(shader, field.fields, uniform_element_name);
-      }
-    } else {
-      sh::Uniform info;
-      info.name = full_name;
-      info.mappedName = mapped_name;
-      info.type = field.type;
-      info.arraySize = field.arraySize;
-      info.precision = field.precision;
-      shader->AddUniformToUniformMap(info);
-    }
-  }
-}
-
-void Program::GetUniformBlockFromInterfaceBlock(
-    Shader* shader, const sh::InterfaceBlock& interface_block) {
-  GLuint program_id = service_id();
-
-  // Don't define this block at all if it's not active in the implementation
-  const std::string* mapped_name = shader->GetMappedName(interface_block.name);
-  GLuint block_index = glGetUniformBlockIndex(program_id, mapped_name->c_str());
-  if (block_index == GL_INVALID_INDEX)
-    return;
-
-  GetUniformBlockMembers(shader, interface_block.fields, "");
-}
-
-void Program::GatherInterfaceBlockInfo() {
-  base::hash_set<std::string> visited_list;
-  for (auto shader : attached_shaders_) {
-    const InterfaceBlockMap& interface_block_map =
-        shader->interface_block_map();
-    for (const auto& key_value : interface_block_map) {
-      const sh::InterfaceBlock& block = key_value.second;
-      // Only 'packed' blocks are allowed to be considered inactive.
-      if (!block.staticUse && block.layout == sh::BLOCKLAYOUT_PACKED)
-        continue;
-
-      if (visited_list.find(block.name) != visited_list.end())
-        continue;
-
-      GetUniformBlockFromInterfaceBlock(shader.get(), block);
-      visited_list.insert(block.name);
-    }
-  }
 }
 
 const Program::UniformInfo*
@@ -1969,9 +1944,17 @@ bool Program::GetUniformBlocks(CommonDecoder::Bucket* bucket) const {
     DCHECK_EQ(param, length + 1);
     names[ii] = std::string(&buffer[0], length);
     // TODO(zmo): optimize the name mapping lookup.
-    const std::string* original_name = GetOriginalNameFromHashedName(names[ii]);
+    size_t pos = names[ii].find_first_of('[');
+    const std::string* original_name;
+    std::string array_index_str = "";
+    if (pos != std::string::npos) {
+      original_name = GetOriginalNameFromHashedName(names[ii].substr(0, pos));
+      array_index_str = names[ii].substr(pos);
+    } else {
+      original_name = GetOriginalNameFromHashedName(names[ii]);
+    }
     if (original_name)
-      names[ii] = *original_name;
+      names[ii] = *original_name + array_index_str;
     blocks[ii].name_length = names[ii].size() + 1;
     size += blocks[ii].name_length;
 
