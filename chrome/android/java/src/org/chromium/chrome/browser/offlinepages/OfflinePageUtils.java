@@ -138,6 +138,22 @@ public class OfflinePageUtils {
     }
 
     /**
+     * Strips scheme from the original URL of the offline page. This is meant to be used by UI.
+     * @param onlineUrl an online URL to from which the scheme is removed
+     * @return onlineUrl without the scheme
+     */
+    public static String stripSchemeFromOnlineUrl(String onlineUrl) {
+        // Offline pages are only saved for https:// and http:// schemes.
+        if (onlineUrl.startsWith("https://")) {
+            return onlineUrl.substring(8);
+        } else if (onlineUrl.startsWith("http://")) {
+            return onlineUrl.substring(7);
+        } else {
+            return onlineUrl;
+        }
+    }
+
+    /**
      * Shows the snackbar for the current tab to provide offline specific information if needed.
      * @param activity The activity owning the tab.
      * @param tab The current tab.

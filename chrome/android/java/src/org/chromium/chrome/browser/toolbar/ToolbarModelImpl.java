@@ -13,6 +13,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.dom_distiller.DomDistillerServiceFactory;
 import org.chromium.chrome.browser.dom_distiller.DomDistillerTabUtils;
 import org.chromium.chrome.browser.ntp.NewTabPage;
+import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.toolbar.ToolbarModel.ToolbarModelDelegate;
 import org.chromium.components.dom_distiller.core.DomDistillerService;
@@ -96,10 +97,8 @@ class ToolbarModelImpl extends ToolbarModel implements ToolbarDataProvider, Tool
             }
         } else if (mTab.isOfflinePage()) {
             String originalUrl = mTab.getOfflinePageOriginalUrl();
-            displayText = DomDistillerTabUtils.getFormattedUrlFromOriginalDistillerUrl(originalUrl);
-            if (displayText.startsWith("https://")) {
-                displayText = displayText.substring(8);
-            }
+            displayText = OfflinePageUtils.stripSchemeFromOnlineUrl(
+                  DomDistillerTabUtils.getFormattedUrlFromOriginalDistillerUrl(originalUrl));
         }
 
         return displayText;

@@ -46,6 +46,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ContentSettingsType;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
+import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.omnibox.OmniboxUrlEmphasizer;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.Preferences;
@@ -910,10 +911,8 @@ public class WebsiteSettingsPopup implements OnClickListener {
                 Date creationDate = new Date(item.getCreationTimeMs());
                 DateFormat df = DateFormat.getDateInstance(DateFormat.MEDIUM);
                 offlinePageCreationDate = df.format(creationDate);
-                offlinePageOriginalUrl = tab.getOfflinePageOriginalUrl();
-                if (offlinePageOriginalUrl.startsWith("https://")) {
-                    offlinePageOriginalUrl = offlinePageOriginalUrl.substring(8);
-                }
+                offlinePageOriginalUrl = OfflinePageUtils.stripSchemeFromOnlineUrl(
+                        tab.getOfflinePageOriginalUrl());
             }
             offlinePageBridge.destroy();
         }
