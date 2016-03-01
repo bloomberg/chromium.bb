@@ -1130,7 +1130,6 @@ bool CSSPropertyParser::parseFillProperty(CSSPropertyID propId, CSSPropertyID& p
                 m_valueList->next();
             break;
         }
-        case CSSPropertyWebkitBackgroundComposite:
         case CSSPropertyWebkitMaskComposite:
             if (val->id >= CSSValueClear && val->id <= CSSValuePlusLighter) {
                 currValue = cssValuePool().createIdentifierValue(val->id);

@@ -3478,7 +3478,6 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeBackgroundComponent(CSSPropertyID
         return consumeBackgroundAttachment(range);
     case CSSPropertyBackgroundOrigin:
         return consumeBackgroundBox(range);
-    case CSSPropertyWebkitBackgroundComposite:
     case CSSPropertyWebkitMaskComposite:
         return consumeBackgroundComposite(range);
     case CSSPropertyMaskSourceType:
@@ -3878,7 +3877,6 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
     case CSSPropertyBackgroundPositionY:
     case CSSPropertyBackgroundSize:
     case CSSPropertyMaskSourceType:
-    case CSSPropertyWebkitBackgroundComposite:
     case CSSPropertyWebkitBackgroundClip:
     case CSSPropertyWebkitBackgroundOrigin:
     case CSSPropertyWebkitMaskClip:

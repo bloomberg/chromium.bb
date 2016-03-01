@@ -201,7 +201,7 @@ no-repeat
 // round
 // space
 //
-// -webkit-background-composite
+// -webkit-mask-composite
 //
 clear
 copy

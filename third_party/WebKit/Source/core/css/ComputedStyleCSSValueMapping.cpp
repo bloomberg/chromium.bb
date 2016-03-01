@@ -1424,7 +1424,6 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
             list->append(valueForFillSourceType(currLayer->maskSourceType()));
         return list.release();
     }
-    case CSSPropertyWebkitBackgroundComposite:
     case CSSPropertyWebkitMaskComposite: {
         RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
         const FillLayer* currLayer = propertyID == CSSPropertyWebkitMaskComposite ? &style.maskLayers() : &style.backgroundLayers();

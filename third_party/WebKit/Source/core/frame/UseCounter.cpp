@@ -219,7 +219,7 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
     // CSSPropertyWebkitAspectRatio was 176
     case CSSPropertyAliasWebkitBackfaceVisibility: return 177;
     case CSSPropertyWebkitBackgroundClip: return 178;
-    case CSSPropertyWebkitBackgroundComposite: return 179;
+    // case CSSPropertyWebkitBackgroundComposite: return 179;
     case CSSPropertyWebkitBackgroundOrigin: return 180;
     case CSSPropertyAliasWebkitBackgroundSize: return 181;
     case CSSPropertyWebkitBorderAfter: return 182;

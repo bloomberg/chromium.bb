@@ -22,7 +22,6 @@ shouldBeEqualToString('test("backgroundImage", "background-image: url(data:image
 shouldBeEqualToString('test("backgroundRepeat", "background-image: none, none, none, none; background-repeat: repeat-x, repeat-y, repeat, no-repeat;")', 'repeat-x, repeat-y, repeat, no-repeat');
 shouldBeEqualToString('test("backgroundSize", "background-image: none, none, none; background-size: contain, cover, 20px 10%;")', 'contain, cover, 20px 10%');
 shouldBeEqualToString('test("webkitBackgroundSize", "background-image: none, none, none; -webkit-background-size: contain, cover, 20px 10%;")', 'contain, cover, 20px 10%');
-shouldBeEqualToString('test("webkitBackgroundComposite", "background-image: none, none, none; -webkit-background-composite: source-over, copy, destination-in")', 'source-over, copy, destination-in');
 shouldBeEqualToString('test("backgroundAttachment", "background-image: none, none, none; background-attachment: fixed, scroll, local;")', 'fixed, scroll, local');
 shouldBeEqualToString('test("backgroundClip", "background-image: none, none; background-clip: border-box, padding-box;")', 'border-box, padding-box');
 shouldBeEqualToString('test("webkitBackgroundClip", "background-image: none, none; -webkit-background-clip: border-box, padding-box;")', 'border-box, padding-box');

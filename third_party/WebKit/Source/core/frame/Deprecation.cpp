@@ -104,12 +104,9 @@ void Deprecation::warnOnDeprecatedProperties(const LocalFrame* frame, CSSPropert
 
 String Deprecation::deprecationMessage(CSSPropertyID unresolvedProperty)
 {
-    switch (unresolvedProperty) {
-    case CSSPropertyWebkitBackgroundComposite:
-        return willBeRemoved("'-webkit-background-composite'", 51, "6607299456008192");
-    default:
-        return emptyString();
-    }
+    // TODO: Add a switch here when there are properties that we intend to deprecate.
+    // Returning an empty string for now.
+    return emptyString();
 }
 
 void Deprecation::countDeprecation(const LocalFrame* frame, UseCounter::Feature feature)
