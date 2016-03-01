@@ -598,11 +598,7 @@ class WebContentsViewAura::WindowObserver
   }
 
  private:
-  void SendScreenRects() {
-    RenderWidgetHostImpl::From(
-        view_->web_contents_->GetRenderViewHost()->GetWidget())
-        ->SendScreenRects();
-  }
+  void SendScreenRects() { view_->web_contents_->SendScreenRects(); }
 
 #if defined(OS_WIN)
   void UpdateConstrainedWindows(aura::Window* exclude) {

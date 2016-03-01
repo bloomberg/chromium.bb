@@ -105,9 +105,7 @@ void BrowserPluginEmbedder::ClearGuestDragStateIfApplicable() {
 // static
 bool BrowserPluginEmbedder::DidSendScreenRectsCallback(
    WebContents* guest_web_contents) {
-  RenderWidgetHostImpl::From(
-      guest_web_contents->GetRenderViewHost()->GetWidget())
-      ->SendScreenRects();
+  static_cast<WebContentsImpl*>(guest_web_contents)->SendScreenRects();
   // Not handled => Iterate over all guests.
   return false;
 }

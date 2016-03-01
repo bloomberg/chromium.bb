@@ -68,6 +68,7 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
   gfx::NativeViewId GetNativeViewId() const override;
   gfx::NativeViewAccessible GetNativeViewAccessible() override;
   gfx::Rect GetViewBounds() const override;
+  gfx::Rect GetBoundsInRootWindow() override;
   gfx::Size GetPhysicalBackingSize() const override;
   base::string16 GetSelectedText() const override;
 

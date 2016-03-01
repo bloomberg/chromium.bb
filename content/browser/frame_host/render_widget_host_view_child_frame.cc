@@ -104,8 +104,18 @@ bool RenderWidgetHostViewChildFrame::IsShowing() {
 
 gfx::Rect RenderWidgetHostViewChildFrame::GetViewBounds() const {
   gfx::Rect rect;
-  if (frame_connector_)
+  if (frame_connector_) {
     rect = frame_connector_->ChildFrameRect();
+
+    RenderWidgetHostView* parent_view =
+        frame_connector_->GetParentRenderWidgetHostView();
+
+    // The parent_view can be null in tests when using a TestWebContents.
+    if (parent_view) {
+      // Translate frame_rect by the parent's RenderWidgetHostView offset.
+      rect.Offset(parent_view->GetViewBounds().OffsetFromOrigin());
+    }
+  }
   return rect;
 }
 
@@ -342,8 +352,16 @@ bool RenderWidgetHostViewChildFrame::GetScreenColorProfile(
 }
 
 gfx::Rect RenderWidgetHostViewChildFrame::GetBoundsInRootWindow() {
-  // We do not have any root window specific parts in this view.
-  return GetViewBounds();
+  gfx::Rect rect;
+  if (frame_connector_) {
+    RenderWidgetHostViewBase* root_view =
+        frame_connector_->GetRootRenderWidgetHostView();
+
+    // The root_view can be null in tests when using a TestWebContents.
+    if (root_view)
+      rect = root_view->GetBoundsInRootWindow();
+  }
+  return rect;
 }
 
 #if defined(USE_AURA)

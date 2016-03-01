@@ -100,6 +100,12 @@ class CONTENT_EXPORT CrossProcessFrameConnector {
   // page) has focus.
   bool HasFocus();
 
+  // Returns the parent RenderWidgetHostView or nullptr it it doesn't have one.
+  RenderWidgetHostViewBase* GetParentRenderWidgetHostView();
+
+  // Returns the view for the top-level frame under the same WebContents.
+  RenderWidgetHostViewBase* GetRootRenderWidgetHostView();
+
   // Exposed for tests.
   RenderWidgetHostViewBase* GetRootRenderWidgetHostViewForTesting() {
     return GetRootRenderWidgetHostView();
@@ -117,9 +123,6 @@ class CONTENT_EXPORT CrossProcessFrameConnector {
 
   void SetDeviceScaleFactor(float scale_factor);
   void SetSize(gfx::Rect frame_rect);
-
-  // Retrieve the view for the top-level frame under the same WebContents.
-  RenderWidgetHostViewBase* GetRootRenderWidgetHostView();
 
   // The RenderFrameProxyHost that routes messages to the parent frame's
   // renderer process.

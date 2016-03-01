@@ -249,4 +249,27 @@ CrossProcessFrameConnector::GetRootRenderWidgetHostView() {
   return static_cast<RenderWidgetHostViewBase*>(top_host->GetView());
 }
 
+RenderWidgetHostViewBase*
+CrossProcessFrameConnector::GetParentRenderWidgetHostView() {
+  FrameTreeNode* parent =
+      frame_proxy_in_parent_renderer_->frame_tree_node()->parent();
+
+  if (!parent &&
+      frame_proxy_in_parent_renderer_->frame_tree_node()
+          ->render_manager()
+          ->GetOuterDelegateNode()) {
+    parent = frame_proxy_in_parent_renderer_->frame_tree_node()
+                 ->render_manager()
+                 ->GetOuterDelegateNode()
+                 ->parent();
+  }
+
+  if (parent) {
+    return static_cast<RenderWidgetHostViewBase*>(
+        parent->current_frame_host()->GetView());
+  }
+
+  return nullptr;
+}
+
 }  // namespace content

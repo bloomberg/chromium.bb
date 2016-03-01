@@ -10,6 +10,7 @@
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/renderer_host/input/synthetic_gesture_target_base.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
+#include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base_observer.h"
 #include "content/common/content_switches_internal.h"
@@ -544,7 +545,7 @@ void RenderWidgetHostViewBase::UpdateScreenInfo(gfx::NativeView view) {
     impl = RenderWidgetHostImpl::From(GetRenderWidgetHost());
 
   if (impl)
-    impl->SendScreenRects();
+    impl->delegate()->SendScreenRects();
 
   if (HasDisplayPropertyChanged(view) && impl)
     impl->NotifyScreenInfoChanged();

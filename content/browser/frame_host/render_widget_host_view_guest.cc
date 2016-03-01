@@ -184,6 +184,10 @@ gfx::Rect RenderWidgetHostViewGuest::GetViewBounds() const {
       guest_->GetScreenCoordinates(embedder_bounds.origin()), size_);
 }
 
+gfx::Rect RenderWidgetHostViewGuest::GetBoundsInRootWindow() {
+  return GetViewBounds();
+}
+
 void RenderWidgetHostViewGuest::RenderProcessGone(
     base::TerminationStatus status,
     int error_code) {

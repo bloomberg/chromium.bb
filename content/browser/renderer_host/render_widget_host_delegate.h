@@ -183,6 +183,9 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   // WebContents.
   virtual void OnRenderFrameProxyVisibilityChanged(bool visible) {}
 
+  // Update the renderer's cache of the screen rect of the view and window.
+  virtual void SendScreenRects() {}
+
  protected:
   virtual ~RenderWidgetHostDelegate() {}
 };

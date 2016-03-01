@@ -1262,9 +1262,7 @@ void ContentViewCoreImpl::WasResized(JNIEnv* env,
   root_layer_->SetBounds(physical_size);
 
   if (view) {
-    RenderWidgetHostImpl* host = RenderWidgetHostImpl::From(
-        view->GetRenderWidgetHost());
-    host->SendScreenRects();
+    web_contents_->SendScreenRects();
     view->WasResized();
   }
 }

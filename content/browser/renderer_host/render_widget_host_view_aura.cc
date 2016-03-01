@@ -882,8 +882,14 @@ void RenderWidgetHostViewAura::HandleParentBoundsChanged() {
         window_->GetBoundsInRootWindow());
   }
 #endif
-  if (!in_shutdown_)
-    host_->SendScreenRects();
+  if (!in_shutdown_) {
+    // Send screen rects through the delegate if there is one. Not every
+    // RenderWidgetHost has a delegate (for example, drop-down widgets).
+    if (host_->delegate())
+      host_->delegate()->SendScreenRects();
+    else
+      host_->SendScreenRects();
+  }
 }
 
 void RenderWidgetHostViewAura::ParentHierarchyChanged() {

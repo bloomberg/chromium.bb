@@ -2620,7 +2620,10 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
   if (!renderWidgetHostView_->render_widget_host_)
     return;
 
-  renderWidgetHostView_->render_widget_host_->SendScreenRects();
+  if (renderWidgetHostView_->render_widget_host_->delegate())
+    renderWidgetHostView_->render_widget_host_->delegate()->SendScreenRects();
+  else
+    renderWidgetHostView_->render_widget_host_->SendScreenRects();
   renderWidgetHostView_->render_widget_host_->WasResized();
   if (renderWidgetHostView_->delegated_frame_host_)
     renderWidgetHostView_->delegated_frame_host_->WasResized();

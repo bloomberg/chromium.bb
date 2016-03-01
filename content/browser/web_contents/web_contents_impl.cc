@@ -2207,7 +2207,10 @@ void WebContentsImpl::OnMoveValidationMessage(
     delegate_->MoveValidationMessage(this, anchor_in_root_view);
 }
 
-void WebContentsImpl::DidSendScreenRects(RenderWidgetHostImpl* rwh) {
+void WebContentsImpl::SendScreenRects() {
+  RenderWidgetHostImpl::From(GetRenderViewHost()->GetWidget())
+      ->SendScreenRects();
+
   if (browser_plugin_embedder_)
     browser_plugin_embedder_->DidSendScreenRects();
 }

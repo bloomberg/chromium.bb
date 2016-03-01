@@ -152,9 +152,11 @@ class TestOverscrollDelegate : public OverscrollControllerDelegate {
 
 class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
  public:
-  MockRenderWidgetHostDelegate() {}
+  MockRenderWidgetHostDelegate() : rwh_(nullptr) {}
   ~MockRenderWidgetHostDelegate() override {}
   const NativeWebKeyboardEvent* last_event() const { return last_event_.get(); }
+  void set_widget_host(RenderWidgetHostImpl* rwh) { rwh_ = rwh; }
+
  protected:
   // RenderWidgetHostDelegate:
   bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
@@ -166,9 +168,14 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
   void Copy() override {}
   void Paste() override {}
   void SelectAll() override {}
+  void SendScreenRects() override {
+    if (rwh_)
+      rwh_->SendScreenRects();
+  }
 
  private:
   scoped_ptr<NativeWebKeyboardEvent> last_event_;
+  RenderWidgetHostImpl* rwh_;
   DISALLOW_COPY_AND_ASSIGN(MockRenderWidgetHostDelegate);
 };
 
@@ -406,8 +413,10 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
     sink_ = &process_host_->sink();
 
     int32_t routing_id = process_host_->GetNextRoutingID();
-    parent_host_ =
-        new RenderWidgetHostImpl(&delegate_, process_host_, routing_id, false);
+    delegates_.push_back(make_scoped_ptr(new MockRenderWidgetHostDelegate));
+    parent_host_ = new RenderWidgetHostImpl(delegates_.back().get(),
+                                            process_host_, routing_id, false);
+    delegates_.back()->set_widget_host(parent_host_);
     parent_view_ = new RenderWidgetHostViewAura(parent_host_,
                                                 is_guest_view_hack_);
     parent_view_->InitAsChild(NULL);
@@ -416,8 +425,10 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
                                           gfx::Rect());
 
     routing_id = process_host_->GetNextRoutingID();
-    widget_host_ =
-        new RenderWidgetHostImpl(&delegate_, process_host_, routing_id, false);
+    delegates_.push_back(make_scoped_ptr(new MockRenderWidgetHostDelegate));
+    widget_host_ = new RenderWidgetHostImpl(delegates_.back().get(),
+                                            process_host_, routing_id, false);
+    delegates_.back()->set_widget_host(widget_host_);
     widget_host_->Init();
     view_ = new FakeRenderWidgetHostViewAura(widget_host_, is_guest_view_hack_);
   }
@@ -529,7 +540,7 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
   BrowserThreadImpl browser_thread_for_ui_;
   scoped_ptr<aura::test::AuraTestHelper> aura_test_helper_;
   scoped_ptr<BrowserContext> browser_context_;
-  MockRenderWidgetHostDelegate delegate_;
+  std::vector<scoped_ptr<MockRenderWidgetHostDelegate>> delegates_;
   MockRenderProcessHost* process_host_;
 
   // Tests should set these to NULL if they've already triggered their
@@ -1940,8 +1951,10 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFrames) {
   // Create a bunch of renderers.
   for (size_t i = 0; i < renderer_count; ++i) {
     int32_t routing_id = process_host_->GetNextRoutingID();
-    hosts[i] =
-        new RenderWidgetHostImpl(&delegate_, process_host_, routing_id, false);
+    delegates_.push_back(make_scoped_ptr(new MockRenderWidgetHostDelegate));
+    hosts[i] = new RenderWidgetHostImpl(delegates_.back().get(), process_host_,
+                                        routing_id, false);
+    delegates_.back()->set_widget_host(hosts[i]);
     hosts[i]->Init();
     views[i] = new FakeRenderWidgetHostViewAura(hosts[i], false);
     views[i]->InitAsChild(NULL);
@@ -2104,8 +2117,10 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFramesWithLocking) {
   // Create a bunch of renderers.
   for (size_t i = 0; i < renderer_count; ++i) {
     int32_t routing_id = process_host_->GetNextRoutingID();
-    hosts[i] =
-        new RenderWidgetHostImpl(&delegate_, process_host_, routing_id, false);
+    delegates_.push_back(make_scoped_ptr(new MockRenderWidgetHostDelegate));
+    hosts[i] = new RenderWidgetHostImpl(delegates_.back().get(), process_host_,
+                                        routing_id, false);
+    delegates_.back()->set_widget_host(hosts[i]);
     hosts[i]->Init();
     views[i] = new FakeRenderWidgetHostViewAura(hosts[i], false);
     views[i]->InitAsChild(NULL);
@@ -2173,8 +2188,10 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFramesWithMemoryPressure) {
   // Create a bunch of renderers.
   for (size_t i = 0; i < renderer_count; ++i) {
     int32_t routing_id = process_host_->GetNextRoutingID();
-    hosts[i] =
-        new RenderWidgetHostImpl(&delegate_, process_host_, routing_id, false);
+    delegates_.push_back(make_scoped_ptr(new MockRenderWidgetHostDelegate));
+    hosts[i] = new RenderWidgetHostImpl(delegates_.back().get(), process_host_,
+                                        routing_id, false);
+    delegates_.back()->set_widget_host(hosts[i]);
     hosts[i]->Init();
     views[i] = new FakeRenderWidgetHostViewAura(hosts[i], false);
     views[i]->InitAsChild(NULL);
@@ -3998,7 +4015,7 @@ TEST_F(RenderWidgetHostViewAuraTest, KeyEvent) {
                          ui::EF_NONE);
   view_->OnKeyEvent(&key_event);
 
-  const NativeWebKeyboardEvent* event = delegate_.last_event();
+  const NativeWebKeyboardEvent* event = delegates_.back()->last_event();
   EXPECT_NE(nullptr, event);
   if (event) {
     EXPECT_EQ(key_event.key_code(), event->windowsKeyCode);
