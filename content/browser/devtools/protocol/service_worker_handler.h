@@ -92,6 +92,7 @@ class ServiceWorkerHandler : public DevToolsAgentHostClient,
                        const ServiceWorkerContextObserver::ErrorInfo& info);
 
   void OpenNewDevToolsWindow(int process_id, int devtools_agent_route_id);
+  void ClearForceUpdate();
 
   scoped_refptr<ServiceWorkerContextWrapper> context_;
   scoped_ptr<Client> client_;

@@ -253,6 +253,7 @@ void ServiceWorkerHandler::SetRenderFrameHost(
   render_frame_host_ = render_frame_host;
   // Do not call UpdateHosts yet, wait for load to commit.
   if (!render_frame_host) {
+    ClearForceUpdate();
     context_ = nullptr;
     return;
   }
@@ -334,8 +335,7 @@ Response ServiceWorkerHandler::Disable() {
   enabled_ = false;
 
   ServiceWorkerDevToolsManager::GetInstance()->RemoveObserver(this);
-  for (const auto registration_id : force_update_enabled_registrations_)
-    context_->SetForceUpdateOnPageLoad(registration_id, false);
+  ClearForceUpdate();
   for (const auto& pair : attached_hosts_)
     pair.second->DetachClient();
   attached_hosts_.clear();
@@ -613,6 +613,14 @@ void ServiceWorkerHandler::ReportWorkerTerminated(
   client_->WorkerTerminated(WorkerTerminatedParams::Create()->
       set_worker_id(host->GetId()));
   attached_hosts_.erase(it);
+}
+
+void ServiceWorkerHandler::ClearForceUpdate() {
+  if (context_) {
+    for (const auto registration_id : force_update_enabled_registrations_)
+      context_->SetForceUpdateOnPageLoad(registration_id, false);
+  }
+  force_update_enabled_registrations_.clear();
 }
 
 }  // namespace service_worker
