@@ -23,9 +23,10 @@ public:
     }
 
     USBIsochronousInTransferResult(PassRefPtr<DOMArrayBuffer> data, const HeapVector<Member<USBIsochronousInTransferPacket>>& packets)
-        : m_data(DOMDataView::create(data, 0, data->byteLength()))
-        , m_packets(packets)
+        : m_packets(packets)
     {
+        unsigned byteLength = data->byteLength();
+        m_data = DOMDataView::create(data, 0, byteLength);
     }
 
     virtual ~USBIsochronousInTransferResult() {}
@@ -39,7 +40,7 @@ public:
     DEFINE_INLINE_TRACE() { visitor->trace(m_packets); }
 
 private:
-    const RefPtr<DOMDataView> m_data;
+    RefPtr<DOMDataView> m_data;
     const HeapVector<Member<USBIsochronousInTransferPacket>> m_packets;
 };
 

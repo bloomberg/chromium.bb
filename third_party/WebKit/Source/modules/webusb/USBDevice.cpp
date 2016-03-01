@@ -141,7 +141,7 @@ public:
         HeapVector<Member<USBIsochronousInTransferPacket>> packets(webTransferInfo->status.size());
         size_t byteOffset = 0;
         for (size_t i = 0; i < webTransferInfo->status.size(); ++i) {
-            packets.append(USBIsochronousInTransferPacket::create(convertTransferStatus(webTransferInfo->status[i]), DOMDataView::create(buffer, byteOffset, webTransferInfo->bytesTransferred[i])));
+            packets[i] = USBIsochronousInTransferPacket::create(convertTransferStatus(webTransferInfo->status[i]), DOMDataView::create(buffer, byteOffset, webTransferInfo->bytesTransferred[i]));
             byteOffset += webTransferInfo->packetLength[i];
         }
         return USBIsochronousInTransferResult::create(buffer, packets);
@@ -159,7 +159,7 @@ public:
         ASSERT(webTransferInfo->status.size() == webTransferInfo->bytesTransferred.size());
         HeapVector<Member<USBIsochronousOutTransferPacket>> packets(webTransferInfo->status.size());
         for (size_t i = 0; i < webTransferInfo->status.size(); ++i)
-            packets.append(USBIsochronousOutTransferPacket::create(convertTransferStatus(webTransferInfo->status[i]), webTransferInfo->bytesTransferred[i]));
+            packets[i] = USBIsochronousOutTransferPacket::create(convertTransferStatus(webTransferInfo->status[i]), webTransferInfo->bytesTransferred[i]);
         return USBIsochronousOutTransferResult::create(packets);
     }
 };

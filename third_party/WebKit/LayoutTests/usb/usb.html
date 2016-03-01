@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../resources/mojo-helpers.js"></script>
+<script src="resources/fake-devices.js"></script>
+<script src="resources/usb-helpers.js"></script>
+<script>
+'use strict';
+
+usb_test(usb => {
+  usb.mockDeviceManager.addMockDevice(usb.fakeDevices[0]);
+
+  return navigator.usb.getDevices().then(devices => {
+    assert_equals(devices.length, 1);
+    usb.assertDeviceInfoEquals(devices[0], usb.fakeDevices[0]);
+  });
+}, 'getDevices returns devices exposed by the DeviceManager service.');
+
+usb_test(usb => {
+  return callWithKeyDown(() => navigator.usb.requestDevice({ filters: [] })
+    .then(device => {
+      assert_unreachable('requestDevice should reject when no device selected');
+    })
+    .catch(error => {
+      assert_equals(error.code, DOMException.NOT_FOUND_ERR);
+      return Promise.resolve();
+    })
+  );
+}, 'requestDevice rejects when no device is chosen');
+
+usb_test(usb => {
+  usb.mockPermissionBubble.setChosenDevice(usb.fakeDevices[0]);
+  return callWithKeyDown(() => navigator.usb.requestDevice({ filters: [] })
+    .then(device => {
+      usb.assertDeviceInfoEquals(device, usb.fakeDevices[0]);
+    })
+  );
+}, 'requestDevice returns the device chosen by the user');
+
+usb_test(usb => {
+  let promise = new Promise((resolve, reject) => {
+    navigator.usb.addEventListener('connect', e => {
+      usb.assertDeviceInfoEquals(e.device, usb.fakeDevices[0]);
+      resolve();
+    });
+  });
+
+  usb.mockDeviceManager.addMockDevice(usb.fakeDevices[0]);
+  return promise;
+}, 'onconnect event is trigged by adding a device');
+
+usb_test(usb => {
+  let promise = new Promise((resolve, reject) => {
+    navigator.usb.addEventListener('disconnect', e => {
+      usb.assertDeviceInfoEquals(e.device, usb.fakeDevices[0]);
+      resolve();
+    });
+  });
+
+  usb.mockDeviceManager.addMockDevice(usb.fakeDevices[0]);
+  usb.mockDeviceManager.removeMockDevice(usb.fakeDevices[0]);
+  return promise;
+}, 'ondisconnect event is triggered by removing a device');
+</script>

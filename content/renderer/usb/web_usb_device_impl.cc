@@ -178,6 +178,10 @@ void OnIsochronousTransferIn(
   auto scoped_callbacks = callbacks.PassCallbacks();
   scoped_ptr<blink::WebUSBTransferInfo> info(new blink::WebUSBTransferInfo());
   info->data.assign(data);
+  info->status =
+      blink::WebVector<blink::WebUSBTransferInfo::Status>(packets.size());
+  info->packetLength = blink::WebVector<uint32_t>(packets.size());
+  info->bytesTransferred = blink::WebVector<uint32_t>(packets.size());
   for (size_t i = 0; i < packets.size(); ++i) {
     switch (packets[i]->status) {
       case device::usb::TransferStatus::COMPLETED:
@@ -204,6 +208,9 @@ void OnIsochronousTransferOut(
     mojo::Array<device::usb::IsochronousPacketPtr> packets) {
   auto scoped_callbacks = callbacks.PassCallbacks();
   scoped_ptr<blink::WebUSBTransferInfo> info(new blink::WebUSBTransferInfo());
+  info->status =
+      blink::WebVector<blink::WebUSBTransferInfo::Status>(packets.size());
+  info->bytesTransferred = blink::WebVector<uint32_t>(packets.size());
   for (size_t i = 0; i < packets.size(); ++i) {
     switch (packets[i]->status) {
       case device::usb::TransferStatus::COMPLETED:

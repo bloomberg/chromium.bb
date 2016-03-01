@@ -6,42 +6,58 @@
 
 // Fix up the global window.define, since all baked-in Mojo modules expect to
 // find it there. This define() also returns a promise to the module.
-function define(name, deps, factory) {
-  return new Promise(resolve => {
-    mojo.define(name, deps, (...modules) => {
-      let result = factory(...modules);
-      resolve(result);
-      return result;
-    });
+let define = (function(){
+  let moduleCache = new Map();
+
+  return function(name, deps, factory) {
+    let promise = moduleCache.get(name);
+    if (promise === undefined) {
+      // This promise must be cached as mojo.define will only call the factory
+      // function the first time the module is defined.
+      promise = new Promise(resolve => {
+        mojo.define(name, deps, (...modules) => {
+          let result = factory(...modules);
+          resolve(result);
+          return result;
+        });
+      });
+      moduleCache.set(name, promise);
+    }
+    return promise;
+  }
+})();
+
+define('Mojo Helpers', [
+    'mojo/public/js/core',
+    'mojo/public/js/router',
+    'mojo/public/js/support',
+    'content/public/renderer/service_provider'
+], (core, router, support, serviceProvider) => {
+  add_completion_callback(() => {
+    serviceProvider.clearServiceOverridesForTesting();
   });
-}
+
+  return {
+    core: core,
+    router: router,
+    support: support,
+
+    // |serviceProvider| is a bit of a misnomer. It should probably be
+    // called |serviceRegistry|, so let's call it that here.
+    serviceRegistry: serviceProvider,
+  };
+});
 
 // Returns a promise to an object that exposes common Mojo module interfaces.
 // Additional modules to load can be specified in the |modules| parameter. The
 // result will contain them, in the same order, in the |modules| field.
 function loadMojoModules(name, modules = []) {
-  return define('Mojo layout test module: ' + name, [
-      'mojo/public/js/core',
-      'mojo/public/js/router',
-      'mojo/public/js/support',
-      'content/public/renderer/service_provider',
-  ].concat(modules), (core, router, support, serviceProvider, ...rest) => {
-    return {
-      core: core,
-      router: router,
-      support: support,
-
-      // |serviceProvider| is a bit of a misnomer. It should probably be
-      // called |serviceRegistry|, so let's call it that here.
-      serviceRegistry: serviceProvider,
-
-      modules: rest,
-    };
+  return define('Mojo modules: ' + name,
+                [ 'Mojo Helpers' ].concat(modules),
+                (mojo, ...rest) => {
+    mojo.modules = rest
+    return mojo;
   });
-}
-
-function mojoTestCleanUp(mojo) {
-  mojo.serviceRegistry.clearServiceOverridesForTesting();
 }
 
 // Runs a promise_test which depends on the Mojo system API modules available to
@@ -49,10 +65,7 @@ function mojoTestCleanUp(mojo) {
 // that exposes common Mojo module interfaces.
 function mojo_test(func, name, properties) {
   promise_test(() => loadMojoModules(name).then(mojo => {
-    let result = Promise.resolve(func(mojo));
-    let cleanUp = () => mojoTestCleanUp(mojo);
-    result.then(cleanUp, cleanUp);
-    return result;
+    return Promise.resolve(func(mojo));
   }), name, properties);
 }
 
