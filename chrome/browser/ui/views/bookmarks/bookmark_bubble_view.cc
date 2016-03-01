@@ -238,16 +238,15 @@ views::View* BookmarkBubbleView::GetInitiallyFocusedView() {
   return title_tf_;
 }
 
-scoped_ptr<views::View> BookmarkBubbleView::CreateFootnoteView() {
+views::View* BookmarkBubbleView::CreateFootnoteView() {
   if (!SyncPromoUI::ShouldShowSyncPromo(profile_))
     return nullptr;
 
   content::RecordAction(
       base::UserMetricsAction("Signin_Impression_FromBookmarkBubble"));
 
-  return scoped_ptr<views::View>(
-      new BubbleSyncPromoView(delegate_.get(), IDS_BOOKMARK_SYNC_PROMO_LINK,
-                              IDS_BOOKMARK_SYNC_PROMO_MESSAGE));
+  return new BubbleSyncPromoView(delegate_.get(), IDS_BOOKMARK_SYNC_PROMO_LINK,
+                                 IDS_BOOKMARK_SYNC_PROMO_MESSAGE);
 }
 
 BookmarkBubbleView::BookmarkBubbleView(

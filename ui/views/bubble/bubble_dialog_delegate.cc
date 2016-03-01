@@ -1,12 +1,11 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/views/bubble/bubble_delegate.h"
+#include "ui/views/bubble/bubble_dialog_delegate.h"
 
 #include "build/build_config.h"
 #include "ui/accessibility/ax_view_state.h"
-#include "ui/base/default_style.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/rect.h"
@@ -16,6 +15,7 @@
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
+#include "ui/views/window/dialog_client_view.h"
 
 #if defined(OS_WIN)
 #include "ui/base/win/shell.h"
@@ -26,7 +26,7 @@ namespace views {
 namespace {
 
 // Create a widget to host the bubble.
-Widget* CreateBubbleWidget(BubbleDelegateView* bubble) {
+Widget* CreateBubbleWidget(BubbleDialogDelegateView* bubble) {
   Widget* bubble_widget = new Widget();
   Widget::InitParams bubble_params(Widget::InitParams::TYPE_BUBBLE);
   bubble_params.delegate = bubble;
@@ -36,8 +36,9 @@ Widget* CreateBubbleWidget(BubbleDelegateView* bubble) {
     bubble_params.parent = bubble->parent_window();
   else if (bubble->anchor_widget())
     bubble_params.parent = bubble->anchor_widget()->GetNativeView();
-  bubble_params.activatable = bubble->CanActivate() ?
-      Widget::InitParams::ACTIVATABLE_YES : Widget::InitParams::ACTIVATABLE_NO;
+  bubble_params.activatable = bubble->CanActivate()
+                                  ? Widget::InitParams::ACTIVATABLE_YES
+                                  : Widget::InitParams::ACTIVATABLE_NO;
   bubble->OnBeforeBubbleWidgetInit(&bubble_params, bubble_widget);
   bubble_widget->Init(bubble_params);
   if (bubble_params.parent)
@@ -48,13 +49,165 @@ Widget* CreateBubbleWidget(BubbleDelegateView* bubble) {
 }  // namespace
 
 // static
-const char BubbleDelegateView::kViewClassName[] = "BubbleDelegateView";
+const char BubbleDialogDelegateView::kViewClassName[] =
+    "BubbleDialogDelegateView";
 
-BubbleDelegateView::BubbleDelegateView()
-    : BubbleDelegateView(nullptr, BubbleBorder::TOP_LEFT) {}
+BubbleDialogDelegateView::~BubbleDialogDelegateView() {
+  if (GetWidget())
+    GetWidget()->RemoveObserver(this);
+  SetLayoutManager(NULL);
+  SetAnchorView(NULL);
+}
 
-BubbleDelegateView::BubbleDelegateView(View* anchor_view,
-                                       BubbleBorder::Arrow arrow)
+// static
+Widget* BubbleDialogDelegateView::CreateBubble(
+    BubbleDialogDelegateView* bubble_delegate) {
+  bubble_delegate->Init();
+  // Get the latest anchor widget from the anchor view at bubble creation time.
+  bubble_delegate->SetAnchorView(bubble_delegate->GetAnchorView());
+  Widget* bubble_widget = CreateBubbleWidget(bubble_delegate);
+
+#if defined(OS_WIN)
+  // If glass is enabled, the bubble is allowed to extend outside the bounds of
+  // the parent frame and let DWM handle compositing.  If not, then we don't
+  // want to allow the bubble to extend the frame because it will be clipped.
+  bubble_delegate->set_adjust_if_offscreen(ui::win::IsAeroGlassEnabled());
+#elif (defined(OS_LINUX) && !defined(OS_CHROMEOS)) || defined(OS_MACOSX)
+  // Linux clips bubble windows that extend outside their parent window bounds.
+  // Mac never adjusts.
+  bubble_delegate->set_adjust_if_offscreen(false);
+#endif
+
+  bubble_delegate->SizeToContents();
+  bubble_widget->AddObserver(bubble_delegate);
+  return bubble_widget;
+}
+
+bool BubbleDialogDelegateView::ShouldShowCloseButton() const {
+  return false;
+}
+
+ClientView* BubbleDialogDelegateView::CreateClientView(Widget* widget) {
+  DialogClientView* client = new DialogClientView(widget, GetContentsView());
+  client->set_button_row_insets(gfx::Insets());
+  return client;
+}
+
+NonClientFrameView* BubbleDialogDelegateView::CreateNonClientFrameView(
+    Widget* widget) {
+  BubbleFrameView* frame = new BubbleFrameView(
+      gfx::Insets(kPanelVertMargin, kPanelHorizMargin, 0, kPanelHorizMargin),
+      margins());
+  // Note: In CreateBubble, the call to SizeToContents() will cause
+  // the relayout that this call requires.
+  frame->SetTitleFontList(GetTitleFontList());
+  frame->SetFootnoteView(CreateFootnoteView());
+
+  BubbleBorder::Arrow adjusted_arrow = arrow();
+  if (base::i18n::IsRTL())
+    adjusted_arrow = BubbleBorder::horizontal_mirror(adjusted_arrow);
+  frame->SetBubbleBorder(scoped_ptr<BubbleBorder>(
+      new BubbleBorder(adjusted_arrow, shadow(), color())));
+  return frame;
+}
+
+void BubbleDialogDelegateView::GetAccessibleState(ui::AXViewState* state) {
+  state->role = ui::AX_ROLE_DIALOG;
+}
+
+const char* BubbleDialogDelegateView::GetClassName() const {
+  return kViewClassName;
+}
+
+void BubbleDialogDelegateView::OnWidgetClosing(Widget* widget) {
+  DCHECK(GetBubbleFrameView());
+  if (widget == GetWidget() && close_reason_ == CloseReason::UNKNOWN &&
+      GetBubbleFrameView()->close_button_clicked()) {
+    close_reason_ = CloseReason::CLOSE_BUTTON;
+  }
+}
+
+void BubbleDialogDelegateView::OnWidgetDestroying(Widget* widget) {
+  if (anchor_widget() == widget)
+    SetAnchorView(NULL);
+}
+
+void BubbleDialogDelegateView::OnWidgetVisibilityChanging(Widget* widget,
+                                                          bool visible) {
+#if defined(OS_WIN)
+  // On Windows we need to handle this before the bubble is visible or hidden.
+  // Please see the comment on the OnWidgetVisibilityChanging function. On
+  // other platforms it is fine to handle it after the bubble is shown/hidden.
+  HandleVisibilityChanged(widget, visible);
+#endif
+}
+
+void BubbleDialogDelegateView::OnWidgetVisibilityChanged(Widget* widget,
+                                                         bool visible) {
+#if !defined(OS_WIN)
+  HandleVisibilityChanged(widget, visible);
+#endif
+}
+
+void BubbleDialogDelegateView::OnWidgetActivationChanged(Widget* widget,
+                                                         bool active) {
+  if (close_on_deactivate() && widget == GetWidget() && !active) {
+    if (close_reason_ == CloseReason::UNKNOWN)
+      close_reason_ = CloseReason::DEACTIVATION;
+    GetWidget()->Close();
+  }
+}
+
+void BubbleDialogDelegateView::OnWidgetBoundsChanged(
+    Widget* widget,
+    const gfx::Rect& new_bounds) {
+  if (GetBubbleFrameView() && anchor_widget() == widget)
+    SizeToContents();
+}
+
+View* BubbleDialogDelegateView::GetAnchorView() const {
+  return ViewStorage::GetInstance()->RetrieveView(anchor_view_storage_id_);
+}
+
+gfx::Rect BubbleDialogDelegateView::GetAnchorRect() const {
+  if (!GetAnchorView())
+    return anchor_rect_;
+
+  anchor_rect_ = GetAnchorView()->GetBoundsInScreen();
+  anchor_rect_.Inset(anchor_view_insets_);
+  return anchor_rect_;
+}
+
+void BubbleDialogDelegateView::OnBeforeBubbleWidgetInit(
+    Widget::InitParams* params,
+    Widget* widget) const {}
+
+void BubbleDialogDelegateView::UseCompactMargins() {
+  const int kCompactMargin = 6;
+  margins_.Set(kCompactMargin, kCompactMargin, kCompactMargin, kCompactMargin);
+}
+
+void BubbleDialogDelegateView::SetAlignment(
+    BubbleBorder::BubbleAlignment alignment) {
+  GetBubbleFrameView()->bubble_border()->set_alignment(alignment);
+  SizeToContents();
+}
+
+void BubbleDialogDelegateView::SetArrowPaintType(
+    BubbleBorder::ArrowPaintType paint_type) {
+  GetBubbleFrameView()->bubble_border()->set_paint_arrow(paint_type);
+  SizeToContents();
+}
+
+void BubbleDialogDelegateView::OnAnchorBoundsChanged() {
+  SizeToContents();
+}
+
+BubbleDialogDelegateView::BubbleDialogDelegateView()
+    : BubbleDialogDelegateView(nullptr, BubbleBorder::TOP_LEFT) {}
+
+BubbleDialogDelegateView::BubbleDialogDelegateView(View* anchor_view,
+                                                   BubbleBorder::Arrow arrow)
     : close_on_esc_(true),
       close_on_deactivate_(true),
       anchor_view_storage_id_(ViewStorage::GetInstance()->CreateStorageID()),
@@ -77,161 +230,21 @@ BubbleDelegateView::BubbleDelegateView(View* anchor_view,
   UpdateColorsFromTheme(GetNativeTheme());
 }
 
-BubbleDelegateView::~BubbleDelegateView() {
-  if (GetWidget())
-    GetWidget()->RemoveObserver(this);
-  SetLayoutManager(NULL);
-  SetAnchorView(NULL);
+gfx::Rect BubbleDialogDelegateView::GetBubbleBounds() {
+  // The argument rect has its origin at the bubble's arrow anchor point;
+  // its size is the preferred size of the bubble's client view (this view).
+  bool anchor_minimized = anchor_widget() && anchor_widget()->IsMinimized();
+  return GetBubbleFrameView()->GetUpdatedWindowBounds(
+      GetAnchorRect(), GetWidget()->client_view()->GetPreferredSize(),
+      adjust_if_offscreen_ && !anchor_minimized);
 }
 
-// static
-Widget* BubbleDelegateView::CreateBubble(BubbleDelegateView* bubble_delegate) {
-  bubble_delegate->Init();
-  // Get the latest anchor widget from the anchor view at bubble creation time.
-  bubble_delegate->SetAnchorView(bubble_delegate->GetAnchorView());
-  Widget* bubble_widget = CreateBubbleWidget(bubble_delegate);
-
-#if defined(OS_WIN)
-  // If glass is enabled, the bubble is allowed to extend outside the bounds of
-  // the parent frame and let DWM handle compositing.  If not, then we don't
-  // want to allow the bubble to extend the frame because it will be clipped.
-  bubble_delegate->set_adjust_if_offscreen(ui::win::IsAeroGlassEnabled());
-#elif (defined(OS_LINUX) && !defined(OS_CHROMEOS)) || defined(OS_MACOSX)
-  // Linux clips bubble windows that extend outside their parent window bounds.
-  // Mac never adjusts.
-  bubble_delegate->set_adjust_if_offscreen(false);
-#endif
-
-  bubble_delegate->SizeToContents();
-  bubble_widget->AddObserver(bubble_delegate);
-  return bubble_widget;
+const gfx::FontList& BubbleDialogDelegateView::GetTitleFontList() const {
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  return rb.GetFontList(ui::ResourceBundle::MediumFont);
 }
 
-BubbleDelegateView* BubbleDelegateView::AsBubbleDelegate() {
-  return this;
-}
-
-bool BubbleDelegateView::ShouldShowCloseButton() const {
-  return false;
-}
-
-View* BubbleDelegateView::GetContentsView() {
-  return this;
-}
-
-NonClientFrameView* BubbleDelegateView::CreateNonClientFrameView(
-    Widget* widget) {
-  BubbleFrameView* frame = new BubbleFrameView(
-      gfx::Insets(kPanelVertMargin, kPanelHorizMargin, 0, kPanelHorizMargin),
-      margins());
-  // Note: In CreateBubble, the call to SizeToContents() will cause
-  // the relayout that this call requires.
-  frame->SetTitleFontList(GetTitleFontList());
-  frame->SetFootnoteView(CreateFootnoteView());
-
-  BubbleBorder::Arrow adjusted_arrow = arrow();
-  if (base::i18n::IsRTL())
-    adjusted_arrow = BubbleBorder::horizontal_mirror(adjusted_arrow);
-  frame->SetBubbleBorder(scoped_ptr<BubbleBorder>(
-      new BubbleBorder(adjusted_arrow, shadow(), color())));
-  return frame;
-}
-
-void BubbleDelegateView::GetAccessibleState(ui::AXViewState* state) {
-  state->role = ui::AX_ROLE_DIALOG;
-}
-
-const char* BubbleDelegateView::GetClassName() const {
-  return kViewClassName;
-}
-
-void BubbleDelegateView::OnWidgetClosing(Widget* widget) {
-  DCHECK(GetBubbleFrameView());
-  if (widget == GetWidget() && close_reason_ == CloseReason::UNKNOWN &&
-      GetBubbleFrameView()->close_button_clicked()) {
-    close_reason_ = CloseReason::CLOSE_BUTTON;
-  }
-}
-
-void BubbleDelegateView::OnWidgetDestroying(Widget* widget) {
-  if (anchor_widget() == widget)
-    SetAnchorView(NULL);
-}
-
-void BubbleDelegateView::OnWidgetVisibilityChanging(Widget* widget,
-                                                    bool visible) {
-#if defined(OS_WIN)
-  // On Windows we need to handle this before the bubble is visible or hidden.
-  // Please see the comment on the OnWidgetVisibilityChanging function. On
-  // other platforms it is fine to handle it after the bubble is shown/hidden.
-  HandleVisibilityChanged(widget, visible);
-#endif
-}
-
-void BubbleDelegateView::OnWidgetVisibilityChanged(Widget* widget,
-                                                   bool visible) {
-#if !defined(OS_WIN)
-  HandleVisibilityChanged(widget, visible);
-#endif
-}
-
-void BubbleDelegateView::OnWidgetActivationChanged(Widget* widget,
-                                                   bool active) {
-  if (close_on_deactivate() && widget == GetWidget() && !active) {
-    if (close_reason_ == CloseReason::UNKNOWN)
-      close_reason_ = CloseReason::DEACTIVATION;
-    GetWidget()->Close();
-  }
-}
-
-void BubbleDelegateView::OnWidgetBoundsChanged(Widget* widget,
-                                               const gfx::Rect& new_bounds) {
-  if (GetBubbleFrameView() && anchor_widget() == widget)
-    SizeToContents();
-}
-
-View* BubbleDelegateView::GetAnchorView() const {
-  return ViewStorage::GetInstance()->RetrieveView(anchor_view_storage_id_);
-}
-
-gfx::Rect BubbleDelegateView::GetAnchorRect() const {
-  if (!GetAnchorView())
-    return anchor_rect_;
-
-  anchor_rect_ = GetAnchorView()->GetBoundsInScreen();
-  anchor_rect_.Inset(anchor_view_insets_);
-  return anchor_rect_;
-}
-
-void BubbleDelegateView::OnBeforeBubbleWidgetInit(Widget::InitParams* params,
-                                                  Widget* widget) const {
-}
-
-View* BubbleDelegateView::CreateFootnoteView() {
-  return nullptr;
-}
-
-void BubbleDelegateView::UseCompactMargins() {
-  const int kCompactMargin = 6;
-  margins_.Set(kCompactMargin, kCompactMargin, kCompactMargin, kCompactMargin);
-}
-
-void BubbleDelegateView::SetAlignment(BubbleBorder::BubbleAlignment alignment) {
-  GetBubbleFrameView()->bubble_border()->set_alignment(alignment);
-  SizeToContents();
-}
-
-void BubbleDelegateView::SetArrowPaintType(
-    BubbleBorder::ArrowPaintType paint_type) {
-  GetBubbleFrameView()->bubble_border()->set_paint_arrow(paint_type);
-  SizeToContents();
-}
-
-void BubbleDelegateView::OnAnchorBoundsChanged() {
-  SizeToContents();
-}
-
-bool BubbleDelegateView::AcceleratorPressed(
+bool BubbleDialogDelegateView::AcceleratorPressed(
     const ui::Accelerator& accelerator) {
   if (!close_on_esc() || accelerator.key_code() != ui::VKEY_ESCAPE)
     return false;
@@ -240,13 +253,14 @@ bool BubbleDelegateView::AcceleratorPressed(
   return true;
 }
 
-void BubbleDelegateView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
+void BubbleDialogDelegateView::OnNativeThemeChanged(
+    const ui::NativeTheme* theme) {
   UpdateColorsFromTheme(theme);
 }
 
-void BubbleDelegateView::Init() {}
+void BubbleDialogDelegateView::Init() {}
 
-void BubbleDelegateView::SetAnchorView(View* anchor_view) {
+void BubbleDialogDelegateView::SetAnchorView(View* anchor_view) {
   // When the anchor view gets set the associated anchor widget might
   // change as well.
   if (!anchor_view || anchor_widget() != anchor_view->GetWidget()) {
@@ -276,36 +290,24 @@ void BubbleDelegateView::SetAnchorView(View* anchor_view) {
     OnAnchorBoundsChanged();
 }
 
-void BubbleDelegateView::SetAnchorRect(const gfx::Rect& rect) {
+void BubbleDialogDelegateView::SetAnchorRect(const gfx::Rect& rect) {
   anchor_rect_ = rect;
   if (GetWidget())
     OnAnchorBoundsChanged();
 }
 
-void BubbleDelegateView::SizeToContents() {
+void BubbleDialogDelegateView::SizeToContents() {
   GetWidget()->SetBounds(GetBubbleBounds());
 }
 
-BubbleFrameView* BubbleDelegateView::GetBubbleFrameView() const {
+BubbleFrameView* BubbleDialogDelegateView::GetBubbleFrameView() const {
   const NonClientView* view =
       GetWidget() ? GetWidget()->non_client_view() : NULL;
   return view ? static_cast<BubbleFrameView*>(view->frame_view()) : NULL;
 }
 
-gfx::Rect BubbleDelegateView::GetBubbleBounds() {
-  // The argument rect has its origin at the bubble's arrow anchor point;
-  // its size is the preferred size of the bubble's client view (this view).
-  bool anchor_minimized = anchor_widget() && anchor_widget()->IsMinimized();
-  return GetBubbleFrameView()->GetUpdatedWindowBounds(GetAnchorRect(),
-      GetPreferredSize(), adjust_if_offscreen_ && !anchor_minimized);
-}
-
-const gfx::FontList& BubbleDelegateView::GetTitleFontList() const {
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  return rb.GetFontListWithDelta(ui::kTitleFontSizeDelta);
-}
-
-void BubbleDelegateView::UpdateColorsFromTheme(const ui::NativeTheme* theme) {
+void BubbleDialogDelegateView::UpdateColorsFromTheme(
+    const ui::NativeTheme* theme) {
   if (!color_explicitly_set_)
     color_ = theme->GetSystemColor(ui::NativeTheme::kColorId_BubbleBackground);
   set_background(Background::CreateSolidBackground(color()));
@@ -314,7 +316,8 @@ void BubbleDelegateView::UpdateColorsFromTheme(const ui::NativeTheme* theme) {
     frame_view->bubble_border()->set_background_color(color());
 }
 
-void BubbleDelegateView::HandleVisibilityChanged(Widget* widget, bool visible) {
+void BubbleDialogDelegateView::HandleVisibilityChanged(Widget* widget,
+                                                       bool visible) {
   if (widget == GetWidget() && anchor_widget() &&
       anchor_widget()->GetTopLevelWidget()) {
     if (visible)

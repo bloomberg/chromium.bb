@@ -28,7 +28,6 @@ class DialogExample : public DialogDelegateView {
   ~DialogExample() override;
   base::string16 GetWindowTitle() const override;
   View* CreateExtraView() override;
-  View* CreateTitlebarExtraView() override;
   View* CreateFootnoteView() override;
 };
 
@@ -59,12 +58,6 @@ View* DialogExample::CreateExtraView() {
   LabelButton* button = new LabelButton(NULL, ASCIIToUTF16("Extra button!"));
   button->SetStyle(Button::STYLE_BUTTON);
   return button;
-}
-
-View* DialogExample::CreateTitlebarExtraView() {
-  Label* label = new Label(ASCIIToUTF16("Extra view!"));
-  label->SetEnabledColor(SK_ColorBLUE);
-  return label;
 }
 
 View* DialogExample::CreateFootnoteView() {

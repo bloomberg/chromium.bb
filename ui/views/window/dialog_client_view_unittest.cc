@@ -30,7 +30,6 @@ class TestDialogClientView : public DialogClientView {
 
   void CreateExtraViews() {
     CreateExtraView();
-    CreateFootnoteView();
   }
 
  private:
@@ -44,8 +43,7 @@ class DialogClientViewTest : public ViewsTestBase,
  public:
   DialogClientViewTest()
       : dialog_buttons_(ui::DIALOG_BUTTON_NONE),
-        extra_view_(NULL),
-        footnote_view_(NULL) {}
+        extra_view_(nullptr) {}
   ~DialogClientViewTest() override {}
 
   // testing::Test implementation.
@@ -65,7 +63,6 @@ class DialogClientViewTest : public ViewsTestBase,
       *padding = *extra_view_padding_;
     return extra_view_padding_.get() != nullptr;
   }
-  View* CreateFootnoteView() override { return footnote_view_; }
   int GetDialogButtons() const override { return dialog_buttons_; }
 
  protected:
@@ -106,13 +103,6 @@ class DialogClientViewTest : public ViewsTestBase,
     client_view_->Layout();
   }
 
-  // Sets the footnote view.
-  void SetFootnoteView(View* view) {
-    DCHECK(!footnote_view_);
-    footnote_view_ = view;
-    client_view_->CreateExtraViews();
-  }
-
   TestDialogClientView* client_view() { return client_view_.get(); }
 
  private:
@@ -124,7 +114,6 @@ class DialogClientViewTest : public ViewsTestBase,
   int dialog_buttons_;
   View* extra_view_;  // weak
   scoped_ptr<int> extra_view_padding_;  // Null by default.
-  View* footnote_view_;  // weak
 
   DISALLOW_COPY_AND_ASSIGN(DialogClientViewTest);
 };
@@ -254,45 +243,6 @@ TEST_F(DialogClientViewTest, LayoutWithButtons) {
   client_view()->SetBoundsRect(gfx::Rect(gfx::Point(0, 0), no_extra_view_size));
   client_view()->Layout();
   EXPECT_GT(width_of_extra_view, extra_view->bounds().width());
-}
-
-// Test the effect of the footnote view on layout.
-TEST_F(DialogClientViewTest, LayoutWithFootnote) {
-  CheckContentsIsSetToPreferredSize();
-  gfx::Size no_footnote_size = client_view()->bounds().size();
-
-  View* footnote_view = new StaticSizedView(gfx::Size(200, 200));
-  SetFootnoteView(footnote_view);
-  CheckContentsIsSetToPreferredSize();
-  EXPECT_GT(client_view()->bounds().height(), no_footnote_size.height());
-  EXPECT_EQ(200, footnote_view->bounds().height());
-  gfx::Size with_footnote_size = client_view()->bounds().size();
-  EXPECT_EQ(with_footnote_size.width(), footnote_view->bounds().width());
-
-  SetDialogButtons(ui::DIALOG_BUTTON_CANCEL);
-  CheckContentsIsSetToPreferredSize();
-  EXPECT_LE(with_footnote_size.height(), client_view()->bounds().height());
-  EXPECT_LE(with_footnote_size.width(), client_view()->bounds().width());
-  gfx::Size with_footnote_and_button_size = client_view()->bounds().size();
-
-  SetDialogButtons(ui::DIALOG_BUTTON_NONE);
-  footnote_view->SetVisible(false);
-  CheckContentsIsSetToPreferredSize();
-  EXPECT_EQ(no_footnote_size.height(), client_view()->bounds().height());
-  EXPECT_EQ(no_footnote_size.width(), client_view()->bounds().width());
-}
-
-// Test that GetHeightForWidth is respected for the footnote view.
-TEST_F(DialogClientViewTest, LayoutWithFootnoteHeightForWidth) {
-  CheckContentsIsSetToPreferredSize();
-  gfx::Size no_footnote_size = client_view()->bounds().size();
-
-  View* footnote_view = new ProportionallySizedView(3);
-  SetFootnoteView(footnote_view);
-  CheckContentsIsSetToPreferredSize();
-  EXPECT_GT(client_view()->bounds().height(), no_footnote_size.height());
-  EXPECT_EQ(footnote_view->bounds().width() * 3,
-            footnote_view->bounds().height());
 }
 
 }  // namespace views

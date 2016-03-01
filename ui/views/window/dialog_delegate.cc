@@ -94,10 +94,6 @@ bool DialogDelegate::GetExtraViewPadding(int* padding) {
   return false;
 }
 
-View* DialogDelegate::CreateTitlebarExtraView() {
-  return NULL;
-}
-
 View* DialogDelegate::CreateFootnoteView() {
   return NULL;
 }
@@ -206,10 +202,8 @@ NonClientFrameView* DialogDelegate::CreateDialogFrameView(Widget* widget) {
   border->set_use_theme_background_color(true);
   frame->SetBubbleBorder(std::move(border));
   DialogDelegate* delegate = widget->widget_delegate()->AsDialogDelegate();
-  if (delegate) {
-    frame->SetTitlebarExtraView(
-        make_scoped_ptr(delegate->CreateTitlebarExtraView()));
-  }
+  if (delegate)
+    frame->SetFootnoteView(delegate->CreateFootnoteView());
   return frame;
 }
 

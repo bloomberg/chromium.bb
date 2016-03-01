@@ -50,7 +50,7 @@ class ExtensionInstalledBubbleView : public BubbleSyncPromoDelegate,
 
  private:
   // views::BubbleDelegateView:
-  scoped_ptr<views::View> CreateFootnoteView() override;
+  View* CreateFootnoteView() override;
   void WindowClosing() override;
   gfx::Rect GetAnchorRect() const override;
   void OnWidgetClosing(views::Widget* widget) override;

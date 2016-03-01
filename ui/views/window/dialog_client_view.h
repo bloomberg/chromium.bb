@@ -19,14 +19,13 @@ class Widget;
 
 // DialogClientView provides adornments for a dialog's content view, including
 // custom-labeled [OK] and [Cancel] buttons with [Enter] and [Esc] accelerators.
-// The view also displays the delegate's extra view alongside the buttons and
-// the delegate's footnote view below the buttons. The view appears like below.
-// NOTE: The contents view is not inset on the top or side client view edges.
+// The view also displays the delegate's extra view alongside the buttons. The
+// view appears like below. NOTE: The contents view is not inset on the top or
+// side client view edges.
 //   +------------------------------+
 //   |        Contents View         |
 //   +------------------------------+
 //   | [Extra View]   [OK] [Cancel] |
-//   | [      Footnote View       ] |
 //   +------------------------------+
 class VIEWS_EXPORT DialogClientView : public ClientView,
                                       public ButtonListener {
@@ -61,6 +60,10 @@ class VIEWS_EXPORT DialogClientView : public ClientView,
   // ButtonListener implementation:
   void ButtonPressed(Button* sender, const ui::Event& event) override;
 
+  void set_button_row_insets(const gfx::Insets& insets) {
+    button_row_insets_ = insets;
+  }
+
  protected:
   // For testing.
   explicit DialogClientView(View* contents_view);
@@ -70,9 +73,6 @@ class VIEWS_EXPORT DialogClientView : public ClientView,
 
   // Create and add the extra view, if supplied by the delegate.
   void CreateExtraView();
-
-  // Creates and adds the footnote view, if supplied by the delegate.
-  void CreateFootnoteView();
 
   // View implementation.
   void ChildPreferredSizeChanged(View* child) override;
@@ -93,6 +93,9 @@ class VIEWS_EXPORT DialogClientView : public ClientView,
   // Returns the insets for the buttons and extra view.
   gfx::Insets GetButtonRowInsets() const;
 
+  // How much to inset the button row.
+  gfx::Insets button_row_insets_;
+
   // Sets up the focus chain for the child views. This is required since the
   // delegate may choose to add/remove views at any time.
   void SetupFocusChain();
@@ -103,9 +106,6 @@ class VIEWS_EXPORT DialogClientView : public ClientView,
 
   // The extra view shown in the row of buttons; may be NULL.
   View* extra_view_;
-
-  // The footnote view shown below the buttons; may be NULL.
-  View* footnote_view_;
 
   // True if we've notified the delegate the window is closing and the delegate
   // allowed the close. In some situations it's possible to get two closes (see

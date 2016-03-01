@@ -71,8 +71,8 @@ class BookmarkBubbleView : public views::BubbleDelegateView,
 
   // views::BubbleDelegateView:
   const char* GetClassName() const override;
-  views::View* GetInitiallyFocusedView() override;
-  scoped_ptr<views::View> CreateFootnoteView() override;
+  View* GetInitiallyFocusedView() override;
+  View* CreateFootnoteView() override;
 
   // Creates a BookmarkBubbleView.
   BookmarkBubbleView(views::View* anchor_view,

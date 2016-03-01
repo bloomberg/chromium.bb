@@ -176,13 +176,13 @@ void ExtensionInstalledBubbleView::UpdateAnchorView() {
   SetAnchorView(reference_view);
 }
 
-scoped_ptr<views::View> ExtensionInstalledBubbleView::CreateFootnoteView() {
+views::View* ExtensionInstalledBubbleView::CreateFootnoteView() {
   if (!(bubble_->options() & ExtensionInstalledBubble::SIGN_IN_PROMO))
     return nullptr;
 
-  return scoped_ptr<views::View>(
-      new BubbleSyncPromoView(this, IDS_EXTENSION_INSTALLED_SYNC_PROMO_LINK_NEW,
-                              IDS_EXTENSION_INSTALLED_SYNC_PROMO_NEW));
+  return new BubbleSyncPromoView(this,
+                                 IDS_EXTENSION_INSTALLED_SYNC_PROMO_LINK_NEW,
+                                 IDS_EXTENSION_INSTALLED_SYNC_PROMO_NEW);
 }
 
 void ExtensionInstalledBubbleView::WindowClosing() {

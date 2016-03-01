@@ -87,14 +87,15 @@ TEST_F(BookmarkBubbleViewTest, SyncPromoSignedIn) {
   SetUpSigninManager("fake_username");
   CreateBubbleView();
   bubble_->Init();
-  EXPECT_FALSE(bubble_->CreateFootnoteView());
+  scoped_ptr<views::View> footnote(bubble_->CreateFootnoteView());
+  EXPECT_FALSE(footnote);
 }
 
 // Verifies that the sync promo is displayed for a user that is not signed in.
 TEST_F(BookmarkBubbleViewTest, SyncPromoNotSignedIn) {
   CreateBubbleView();
   bubble_->Init();
-  scoped_ptr<views::View> footnote = bubble_->CreateFootnoteView();
+  scoped_ptr<views::View> footnote(bubble_->CreateFootnoteView());
 #if defined(OS_CHROMEOS)
   EXPECT_FALSE(footnote);
 #else  // !defined(OS_CHROMEOS)

@@ -49,6 +49,8 @@
       'bubble/bubble_border.h',
       'bubble/bubble_delegate.cc',
       'bubble/bubble_delegate.h',
+      'bubble/bubble_dialog_delegate.cc',
+      'bubble/bubble_dialog_delegate.h',
       'bubble/bubble_frame_view.cc',
       'bubble/bubble_frame_view.h',
       'button_drag_utils.cc',

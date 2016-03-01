@@ -78,7 +78,6 @@ BubbleFrameView::BubbleFrameView(const gfx::Insets& title_margins,
       title_icon_(new views::ImageView()),
       title_(nullptr),
       close_(nullptr),
-      titlebar_extra_view_(nullptr),
       footnote_container_(nullptr),
       close_button_clicked_(false) {
   AddChildView(title_icon_);
@@ -308,19 +307,6 @@ void BubbleFrameView::Layout() {
       title_icon_size.width() + title_label_size.width() + padding);
   bounds.set_height(title_height);
 
-  if (titlebar_extra_view_) {
-    const int extra_width = close_->x() - bounds.right();
-    gfx::Size size = titlebar_extra_view_->GetPreferredSize();
-    size.SetToMin(gfx::Size(std::max(0, extra_width), size.height()));
-    gfx::Rect titlebar_extra_view_bounds(
-        close_->x() - size.width(),
-        bounds.y(),
-        size.width(),
-        bounds.height());
-    titlebar_extra_view_bounds.Subtract(bounds);
-    titlebar_extra_view_->SetBoundsRect(titlebar_extra_view_bounds);
-  }
-
   if (footnote_container_) {
     gfx::Rect local_bounds = GetContentsBounds();
     int height = footnote_container_->GetHeightForWidth(local_bounds.width());
@@ -332,11 +318,6 @@ void BubbleFrameView::Layout() {
 
 const char* BubbleFrameView::GetClassName() const {
   return kViewClassName;
-}
-
-void BubbleFrameView::ChildPreferredSizeChanged(View* child) {
-  if (child == titlebar_extra_view_ || child == title_)
-    Layout();
 }
 
 void BubbleFrameView::OnThemeChanged() {
@@ -368,21 +349,11 @@ void BubbleFrameView::SetBubbleBorder(scoped_ptr<BubbleBorder> border) {
   set_background(new views::BubbleBackground(bubble_border_));
 }
 
-void BubbleFrameView::SetTitlebarExtraView(scoped_ptr<View> view) {
-  if (!view)
-    return;
-
-  DCHECK(!titlebar_extra_view_);
-  titlebar_extra_view_ = view.release();
-  AddChildView(titlebar_extra_view_);
-}
-
-void BubbleFrameView::SetFootnoteView(scoped_ptr<View> view) {
+void BubbleFrameView::SetFootnoteView(View* view) {
   if (!view)
     return;
 
   DCHECK(!footnote_container_);
-
   footnote_container_ = new views::View();
   footnote_container_->SetLayoutManager(
       new BoxLayout(BoxLayout::kVertical, content_margins_.left(),
@@ -391,7 +362,7 @@ void BubbleFrameView::SetFootnoteView(scoped_ptr<View> view) {
       Background::CreateSolidBackground(kFootnoteBackgroundColor));
   footnote_container_->SetBorder(
       Border::CreateSolidSidedBorder(1, 0, 0, 0, kFootnoteBorderColor));
-  footnote_container_->AddChildView(view.release());
+  footnote_container_->AddChildView(view);
   AddChildView(footnote_container_);
 }
 
@@ -511,8 +482,6 @@ gfx::Size BubbleFrameView::GetSizeForClientSize(
   title_bar_width += title_icon_size.width();
   if (close_->visible())
     title_bar_width += close_->width() + 1;
-  if (titlebar_extra_view_)
-    title_bar_width += titlebar_extra_view_->GetPreferredSize().width();
 
   gfx::Size size(client_size);
   gfx::Insets client_insets = GetInsets();

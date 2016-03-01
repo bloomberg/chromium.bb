@@ -56,11 +56,6 @@ class VIEWS_EXPORT DialogDelegate : public ui::DialogModel,
   // If a custom padding should be used, returns true and populates |padding|.
   virtual bool GetExtraViewPadding(int* padding);
 
-  // Override this function to display an extra view in the titlebar.
-  // Overrides may construct the view; this will only be called once per dialog.
-  // Note: this only works for new style dialogs.
-  virtual View* CreateTitlebarExtraView();
-
   // Override this function to display a footnote view below the buttons.
   // Overrides may construct the view; this will only be called once per dialog.
   virtual View* CreateFootnoteView();

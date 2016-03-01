@@ -78,12 +78,12 @@ void SaveCardBubbleViews::Hide() {
   Close();
 }
 
-scoped_ptr<views::View> SaveCardBubbleViews::CreateFootnoteView() {
+views::View* SaveCardBubbleViews::CreateFootnoteView() {
   if (controller_->GetLegalMessageLines().empty())
     return nullptr;
 
   // Use BoxLayout to provide insets around the label.
-  scoped_ptr<View> view(new View());
+  View* view = new View();
   view->SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
 

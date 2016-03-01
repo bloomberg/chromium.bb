@@ -12,14 +12,12 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "ui/views/bubble/bubble_delegate.h"
-#include "ui/views/controls/button/button.h"
+#include "ui/views/bubble/bubble_dialog_delegate.h"
 #include "ui/views/controls/styled_label_listener.h"
 
 namespace views {
 class Checkbox;
 class GridLayout;
-class LabelButton;
 class Widget;
 }
 
@@ -33,14 +31,12 @@ class Browser;
 // It creates a session restore request bubble when the previous session has
 // crashed. It also presents an option to enable metrics reporting, if it not
 // enabled already.
-class SessionCrashedBubbleView
-    : public SessionCrashedBubble,
-      public views::BubbleDelegateView,
-      public views::ButtonListener,
-      public views::StyledLabelListener,
-      public content::WebContentsObserver,
-      public content::NotificationObserver,
-      public TabStripModelObserver {
+class SessionCrashedBubbleView : public SessionCrashedBubble,
+                                 public views::BubbleDialogDelegateView,
+                                 public views::StyledLabelListener,
+                                 public content::WebContentsObserver,
+                                 public content::NotificationObserver,
+                                 public TabStripModelObserver {
  public:
   // A helper class that listens to browser removal event.
   class BrowserRemovalObserver;
@@ -59,18 +55,18 @@ class SessionCrashedBubbleView
   ~SessionCrashedBubbleView() override;
 
   // WidgetDelegateView methods.
-  views::View* GetInitiallyFocusedView() override;
   base::string16 GetWindowTitle() const override;
   bool ShouldShowWindowTitle() const override;
   bool ShouldShowCloseButton() const override;
   void OnWidgetDestroying(views::Widget* widget) override;
-  scoped_ptr<views::View> CreateFootnoteView() override;
+  views::View* CreateFootnoteView() override;
+  bool Accept() override;
+  bool Close() override;
+  int GetDialogButtons() const override;
+  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
 
-  // views::BubbleDelegateView methods.
+  // views::BubbleDialogDelegateView methods.
   void Init() override;
-
-  // views::ButtonListener methods.
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // views::StyledLabelListener methods.
   void StyledLabelLinkClicked(views::StyledLabel* label,
@@ -98,7 +94,7 @@ class SessionCrashedBubbleView
   void TabDetachedAt(content::WebContents* contents, int index) override;
 
   // Restore previous session after user selects so.
-  void RestorePreviousSession(views::Button* sender);
+  void RestorePreviousSession();
 
   // Close and destroy the bubble.
   void CloseBubble();
@@ -110,9 +106,6 @@ class SessionCrashedBubbleView
 
   // The web content associated with current bubble.
   content::WebContents* web_contents_;
-
-  // Button for the user to confirm a session restore.
-  views::LabelButton* restore_button_;
 
   // Checkbox for the user to opt-in to UMA reporting.
   views::Checkbox* uma_option_;

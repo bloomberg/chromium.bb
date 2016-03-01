@@ -1,16 +1,16 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_VIEWS_BUBBLE_BUBBLE_DELEGATE_H_
-#define UI_VIEWS_BUBBLE_BUBBLE_DELEGATE_H_
+#ifndef UI_VIEWS_BUBBLE_BUBBLE_DIALOG_DELEGATE_H_
+#define UI_VIEWS_BUBBLE_BUBBLE_DIALOG_DELEGATE_H_
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/widget/widget.h"
-#include "ui/views/widget/widget_delegate.h"
 #include "ui/views/widget/widget_observer.h"
+#include "ui/views/window/dialog_delegate.h"
 
 namespace gfx {
 class FontList;
@@ -21,11 +21,9 @@ namespace views {
 
 class BubbleFrameView;
 
-// BubbleDelegateView creates frame and client views for bubble Widgets.
-// BubbleDelegateView itself is the client's contents view.
-// TODO(estade): remove this in favor of BubbleDialogDelegateView.
-class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
-                                        public WidgetObserver {
+// BubbleDialogDelegateView is a special DialogDelegateView for bubbles.
+class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
+                                              public WidgetObserver {
  public:
   // Internal class name.
   static const char kViewClassName[];
@@ -37,17 +35,14 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
     UNKNOWN,
   };
 
-  BubbleDelegateView();
-  BubbleDelegateView(View* anchor_view, BubbleBorder::Arrow arrow);
-  ~BubbleDelegateView() override;
+  ~BubbleDialogDelegateView() override;
 
   // Create and initialize the bubble Widget(s) with proper bounds.
-  static Widget* CreateBubble(BubbleDelegateView* bubble_delegate);
+  static Widget* CreateBubble(BubbleDialogDelegateView* bubble_delegate);
 
   // WidgetDelegateView overrides:
-  BubbleDelegateView* AsBubbleDelegate() override;
   bool ShouldShowCloseButton() const override;
-  View* GetContentsView() override;
+  ClientView* CreateClientView(Widget* widget) override;
   NonClientFrameView* CreateNonClientFrameView(Widget* widget) override;
   void GetAccessibleState(ui::AXViewState* state) override;
   const char* GetClassName() const override;
@@ -112,9 +107,6 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
   virtual void OnBeforeBubbleWidgetInit(Widget::InitParams* params,
                                         Widget* widget) const;
 
-  // Creates and returns a view to be displayed at the bottom of the bubble.
-  virtual View* CreateFootnoteView();
-
   // Sets |margins_| to a default picked for smaller bubbles.
   void UseCompactMargins();
 
@@ -131,6 +123,9 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
   void OnAnchorBoundsChanged();
 
  protected:
+  BubbleDialogDelegateView();
+  BubbleDialogDelegateView(View* anchor_view, BubbleBorder::Arrow arrow);
+
   // Get bubble bounds from the anchor rect and client view's preferred size.
   virtual gfx::Rect GetBubbleBounds();
 
@@ -212,9 +207,9 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
 
   CloseReason close_reason_;
 
-  DISALLOW_COPY_AND_ASSIGN(BubbleDelegateView);
+  DISALLOW_COPY_AND_ASSIGN(BubbleDialogDelegateView);
 };
 
 }  // namespace views
 
-#endif  // UI_VIEWS_BUBBLE_BUBBLE_DELEGATE_H_
+#endif  // UI_VIEWS_BUBBLE_BUBBLE_DELEGATE2_H_

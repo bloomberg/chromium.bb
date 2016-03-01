@@ -46,10 +46,10 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/button/checkbox.h"
-#include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/separator.h"
 #include "ui/views/controls/styled_label.h"
+#include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
@@ -213,7 +213,7 @@ void SessionCrashedBubbleView::ShowForReal(
   SessionCrashedBubbleView* crash_bubble =
       new SessionCrashedBubbleView(anchor_view, browser, web_contents,
                                    offer_uma_optin);
-  views::BubbleDelegateView::CreateBubble(crash_bubble)->Show();
+  views::BubbleDialogDelegateView::CreateBubble(crash_bubble)->Show();
 
   RecordBubbleHistogramValue(SESSION_CRASHED_BUBBLE_SHOWN);
   if (uma_opted_in_already)
@@ -225,11 +225,10 @@ SessionCrashedBubbleView::SessionCrashedBubbleView(
     Browser* browser,
     content::WebContents* web_contents,
     bool offer_uma_optin)
-    : BubbleDelegateView(anchor_view, views::BubbleBorder::TOP_RIGHT),
+    : BubbleDialogDelegateView(anchor_view, views::BubbleBorder::TOP_RIGHT),
       content::WebContentsObserver(web_contents),
       browser_(browser),
       web_contents_(web_contents),
-      restore_button_(NULL),
       uma_option_(NULL),
       offer_uma_optin_(offer_uma_optin),
       started_navigation_(false),
@@ -247,10 +246,6 @@ SessionCrashedBubbleView::~SessionCrashedBubbleView() {
   browser_->tab_strip_model()->RemoveObserver(this);
 }
 
-views::View* SessionCrashedBubbleView::GetInitiallyFocusedView() {
-  return restore_button_;
-}
-
 base::string16 SessionCrashedBubbleView::GetWindowTitle() const {
   return l10n_util::GetStringUTF16(IDS_SESSION_CRASHED_BUBBLE_TITLE);
 }
@@ -266,10 +261,12 @@ bool SessionCrashedBubbleView::ShouldShowCloseButton() const {
 void SessionCrashedBubbleView::OnWidgetDestroying(views::Widget* widget) {
   if (!restored_)
     RecordBubbleHistogramValue(SESSION_CRASHED_BUBBLE_IGNORED);
-  BubbleDelegateView::OnWidgetDestroying(widget);
+  BubbleDialogDelegateView::OnWidgetDestroying(widget);
 }
 
 void SessionCrashedBubbleView::Init() {
+  SetLayoutManager(new views::FillLayout());
+
   // Description text label.
   views::Label* text_label = new views::Label(
       l10n_util::GetStringUTF16(IDS_SESSION_CRASHED_VIEW_MESSAGE));
@@ -277,37 +274,10 @@ void SessionCrashedBubbleView::Init() {
   text_label->SetLineHeight(20);
   text_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   text_label->SizeToFit(kWidthOfDescriptionText);
-
-  // Restore button.
-  restore_button_ = new views::LabelButton(
-      this, l10n_util::GetStringUTF16(IDS_SESSION_CRASHED_VIEW_RESTORE_BUTTON));
-  restore_button_->SetStyle(views::Button::STYLE_BUTTON);
-  restore_button_->SetIsDefault(true);
-
-  GridLayout* layout = new GridLayout(this);
-  SetLayoutManager(layout);
-
-  // Text row.
-  const int kTextColumnSetId = 0;
-  views::ColumnSet* cs = layout->AddColumnSet(kTextColumnSetId);
-  cs->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
-                GridLayout::FIXED, kWidthOfDescriptionText, 0);
-
-  // Restore button row.
-  const int kButtonColumnSetId = 1;
-  cs = layout->AddColumnSet(kButtonColumnSetId);
-  cs->AddColumn(GridLayout::TRAILING, GridLayout::CENTER, 1,
-                GridLayout::USE_PREF, 0, 0);
-
-  layout->StartRow(0, kTextColumnSetId);
-  layout->AddView(text_label);
-  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
-
-  layout->StartRow(0, kButtonColumnSetId);
-  layout->AddView(restore_button_);
+  AddChildView(text_label);
 }
 
-scoped_ptr<views::View> SessionCrashedBubbleView::CreateFootnoteView() {
+views::View* SessionCrashedBubbleView::CreateFootnoteView() {
   if (!offer_uma_optin_)
     return nullptr;
 
@@ -346,8 +316,8 @@ scoped_ptr<views::View> SessionCrashedBubbleView::CreateFootnoteView() {
   uma_label->SetBorder(views::Border::CreateEmptyBorder(1, 0, 0, 0));
 
   // Create a view to hold the checkbox and the text.
-  scoped_ptr<views::View> uma_view(new views::View());
-  GridLayout* uma_layout = new GridLayout(uma_view.get());
+  views::View* uma_view = new views::View();
+  GridLayout* uma_layout = new GridLayout(uma_view);
   uma_view->SetLayoutManager(uma_layout);
 
   const int kReportColumnSetId = 0;
@@ -365,10 +335,24 @@ scoped_ptr<views::View> SessionCrashedBubbleView::CreateFootnoteView() {
   return uma_view;
 }
 
-void SessionCrashedBubbleView::ButtonPressed(views::Button* sender,
-                                             const ui::Event& event) {
-  DCHECK_EQ(sender, restore_button_);
-  RestorePreviousSession(sender);
+bool SessionCrashedBubbleView::Accept() {
+  RestorePreviousSession();
+  return true;
+}
+
+bool SessionCrashedBubbleView::Close() {
+  // Don't default to Accept() just because that's the only choice. Instead, do
+  // nothing.
+  return true;
+}
+
+int SessionCrashedBubbleView::GetDialogButtons() const {
+  return ui::DIALOG_BUTTON_OK;
+}
+
+base::string16 SessionCrashedBubbleView::GetDialogButtonLabel(
+    ui::DialogButton button) const {
+  return l10n_util::GetStringUTF16(IDS_SESSION_CRASHED_VIEW_RESTORE_BUTTON);
 }
 
 void SessionCrashedBubbleView::StyledLabelLinkClicked(views::StyledLabel* label,
@@ -418,7 +402,7 @@ void SessionCrashedBubbleView::TabDetachedAt(content::WebContents* contents,
     CloseBubble();
 }
 
-void SessionCrashedBubbleView::RestorePreviousSession(views::Button* sender) {
+void SessionCrashedBubbleView::RestorePreviousSession() {
   SessionRestore::RestoreSessionAfterCrash(browser_);
   RecordBubbleHistogramValue(SESSION_CRASHED_BUBBLE_RESTORED);
   restored_ = true;
