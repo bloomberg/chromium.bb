@@ -1213,11 +1213,14 @@ void QuicStreamFactory::ClearCachedStatesInCryptoConfig() {
 }
 
 void QuicStreamFactory::OnIPAddressChanged() {
+  num_timeouts_with_open_streams_ = 0;
   CloseAllSessions(ERR_NETWORK_CHANGED, QUIC_IP_ADDRESS_CHANGED);
   set_require_confirmation(true);
 }
 
-void QuicStreamFactory::OnNetworkConnected(NetworkHandle network) {}
+void QuicStreamFactory::OnNetworkConnected(NetworkHandle network) {
+  num_timeouts_with_open_streams_ = 0;
+}
 
 void QuicStreamFactory::OnNetworkMadeDefault(NetworkHandle network) {}
 
