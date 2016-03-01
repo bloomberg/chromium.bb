@@ -47,7 +47,6 @@ gfx::NativeWindow CastScreen::GetWindowUnderCursor() {
 }
 
 gfx::NativeWindow CastScreen::GetWindowAtScreenPoint(const gfx::Point& point) {
-  NOTIMPLEMENTED();
   return gfx::NativeWindow(nullptr);
 }
 
