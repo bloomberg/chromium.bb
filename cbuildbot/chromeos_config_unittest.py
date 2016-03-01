@@ -312,6 +312,35 @@ class CBuildBotTest(GenerateChromeosConfigTestBase):
               build_name, [x.name for x in configs],
               'Master paladin %s cannot be a slave of itself.' % build_name)
 
+  def testMasterBuildTypes(self):
+    """Test that all masters are of a whitelisted unique build type."""
+    # Note: This is a whitelist of build type that are allowed to have a
+    # master config. Do not add entries to this list without consulting with the
+    # chrome-infra team.
+    # TODO(akeshet): Remove this whitelist requirement once buildbot master
+    # logic is fully chromite-driven.
+    BUILD_TYPE_WHITELIST = (
+        'canary',
+        'pfq',
+        'paladin',
+        'toolchain',
+        'chrome',
+        'android',
+    )
+
+    found_types = set()
+    for _, config in self.all_configs.iteritems():
+      if config.master:
+        self.assertTrue(config.build_type in BUILD_TYPE_WHITELIST,
+                        'Config %s has build_type %s, which is not an allowed '
+                        'type for a master build. Please consult with '
+                        'chrome-infra before adding this config.' %
+                        (config.name, config.build_type))
+        self.assertFalse(config.build_type in found_types,
+                         'Duplicate master configs of build type %s' %
+                         config.build_type)
+        found_types.add(config.build_type)
+
   def testGetSlavesOnTrybot(self):
     """Make sure every master has a sane list of slaves"""
     mock_options = mock.Mock()
