@@ -15,6 +15,7 @@ import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.PathUtils;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.net.CronetEngine.UrlRequestInfo;
 import org.chromium.net.TestUrlRequestCallback.ResponseStep;
@@ -812,8 +813,12 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
                 callback.mError.getMessage());
     }
 
+    /*
     @SmallTest
     @Feature({"Cronet"})
+    crbug.com/568132
+    */
+    @DisabledTest
     public void testEnableHttpCacheDiskNewEngine() throws Exception {
         enableCache(CronetEngine.Builder.HTTP_CACHE_DISK);
         String url = NativeTestServer.getFileURL("/cacheable.txt");
