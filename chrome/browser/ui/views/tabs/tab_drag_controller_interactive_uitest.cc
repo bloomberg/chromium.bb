@@ -2255,8 +2255,6 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestTouch,
   ASSERT_TRUE(ReleaseInput2());
 }
 
-#if defined(OS_CHROMEOS)
-
 namespace {
 
 void DetachToDockedWindowNextStep(
@@ -2342,9 +2340,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
 
 #endif  // OS_CHROMEOS
 
-#endif
-
-#if defined(USE_ASH) && defined(OS_CHROMEOS)  // TODO(win_ash,linux_ash)
+#if defined(USE_ASH)
 INSTANTIATE_TEST_CASE_P(TabDragging,
                         DetachToBrowserInSeparateDisplayTabDragControllerTest,
                         ::testing::Values("mouse", "touch"));
@@ -2357,7 +2353,7 @@ INSTANTIATE_TEST_CASE_P(TabDragging,
 INSTANTIATE_TEST_CASE_P(TabDragging,
                         DetachToBrowserTabDragControllerTestTouch,
                         ::testing::Values("touch"));
-#elif defined(USE_ASH)
+#else
 INSTANTIATE_TEST_CASE_P(TabDragging,
                         DetachToBrowserTabDragControllerTest,
                         ::testing::Values("mouse"));
