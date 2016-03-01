@@ -37,6 +37,7 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Restriction;
@@ -115,6 +116,8 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
                 getInstrumentation().getContext(), Environment.getExternalStorageDirectory());
         mTestPage = mTestServer.getURL(TEST_PAGE);
         mTestPage2 = mTestServer.getURL(TEST_PAGE_2);
+        LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER)
+                .ensureInitialized(getInstrumentation().getContext());
     }
 
     @Override

@@ -35,8 +35,6 @@ import org.chromium.base.SysUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.SuppressFBWarnings;
-import org.chromium.base.library_loader.LibraryLoader;
-import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeApplication;
@@ -167,16 +165,6 @@ public class CustomTabsConnection extends ICustomTabsService.Stub {
     private static void initializeBrowser(final Application app) {
         ThreadUtils.assertOnUiThread();
         try {
-            // Loading the native library may spuriously trigger StrictMode violations when
-            // running instrumentation tests. This does not happen if full Chrome has
-            // started before reaching this point.
-            // crbug.com/574532
-            if (!LibraryLoader.isInitialized()) {
-                StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
-                LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER)
-                        .ensureInitialized(app.getApplicationContext());
-                StrictMode.setThreadPolicy(oldPolicy);
-            }
             ChromeBrowserInitializer.getInstance(app).handleSynchronousStartup();
         } catch (ProcessInitException e) {
             Log.e(TAG, "ProcessInitException while starting the browser process.");

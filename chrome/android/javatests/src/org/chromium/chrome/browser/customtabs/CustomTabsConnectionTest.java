@@ -20,6 +20,8 @@ import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.library_loader.LibraryLoader;
+import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.content_public.browser.WebContents;
 
@@ -39,6 +41,8 @@ public class CustomTabsConnectionTest extends InstrumentationTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         mContext = getInstrumentation().getTargetContext().getApplicationContext();
+        LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER)
+                .ensureInitialized(mContext);
         mCustomTabsConnection = CustomTabsTestUtils.setUpConnection((Application) mContext);
     }
 
