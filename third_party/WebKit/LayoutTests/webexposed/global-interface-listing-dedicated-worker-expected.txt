@@ -326,6 +326,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     getter upper
 [Worker]     getter upperOpen
 [Worker]     method constructor
+[Worker]     method includes
 [Worker] interface IDBObjectStore
 [Worker]     getter autoIncrement
 [Worker]     getter indexNames
@@ -799,6 +800,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     getter upper
 [Worker]     getter upperOpen
 [Worker]     method constructor
+[Worker]     method includes
 [Worker] interface webkitIDBObjectStore
 [Worker]     getter autoIncrement
 [Worker]     getter indexNames

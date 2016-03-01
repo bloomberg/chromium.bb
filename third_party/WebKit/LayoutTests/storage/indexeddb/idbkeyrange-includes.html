@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<title>IndexedDB: IDBKeyRange.includes()</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script>
+test(function(t) {
+    var range = IDBKeyRange.bound(12, 34);
+    assert_throws(new TypeError, function() { range.includes(); },
+        'throws if key is not specified');
+
+    assert_throws('DataError', function() { range.includes(undefined); },
+        'throws if key is undefined');
+    assert_throws('DataError', function() { range.includes(null); },
+        'throws if key is null');
+    assert_throws('DataError', function() { range.includes({}); },
+        'throws if key is not valid type');
+    assert_throws('DataError', function() { range.includes(NaN); },
+        'throws if key is not valid number');
+    assert_throws('DataError', function() { range.includes(new Date(NaN)); },
+        'throws if key is not valid date');
+    assert_throws('DataError', function() {
+        var a = []; a[0] = a; range.includes(a);
+    }, 'throws if key is not valid array');
+}, 'Invalid input');
+
+test(function(t) {
+    var range;
+
+    // Both closed (inclusive).
+    range = IDBKeyRange.bound(12, 34);
+    assert_false(range.includes(11));
+    assert_true(range.includes(12));
+    assert_true(range.includes(22));
+    assert_true(range.includes(34));
+    assert_false(range.includes(11));
+    assert_false(range.includes(35));
+
+    // Lower open.
+    range = IDBKeyRange.bound(12, 34, true);
+    assert_false(range.includes(11));
+    assert_false(range.includes(12));
+    assert_true(range.includes(22));
+    assert_true(range.includes(34));
+    assert_false(range.includes(11));
+    assert_false(range.includes(35));
+
+    // Upper open.
+    range = IDBKeyRange.bound(12, 34, false, true);
+    assert_false(range.includes(11));
+    assert_true(range.includes(12));
+    assert_true(range.includes(22));
+    assert_false(range.includes(34));
+    assert_false(range.includes(11));
+    assert_false(range.includes(35));
+
+    // Both open (exclusive).
+    range = IDBKeyRange.bound(12, 34, true, true);
+    assert_false(range.includes(11));
+    assert_false(range.includes(12));
+    assert_true(range.includes(22));
+    assert_false(range.includes(34));
+    assert_false(range.includes(11));
+    assert_false(range.includes(35));
+
+}, 'Range with both bounds');
+
+test(function(t) {
+    var range;
+
+    // Closed (inclusive).
+    range = IDBKeyRange.lowerBound(12);
+    assert_false(range.includes(11));
+    assert_true(range.includes(12));
+    assert_true(range.includes(13));
+
+    // Open (exclusive).
+    range = IDBKeyRange.lowerBound(12, true);
+    assert_false(range.includes(11));
+    assert_false(range.includes(12));
+    assert_true(range.includes(13));
+}, 'Range with lower bound');
+
+test(function(t) {
+    var range;
+
+    // Closed (inclusive).
+    range = IDBKeyRange.upperBound(12);
+    assert_true(range.includes(11));
+    assert_true(range.includes(12));
+    assert_false(range.includes(13));
+
+    // Open (exclusive).
+    range = IDBKeyRange.upperBound(12, true);
+    assert_true(range.includes(11));
+    assert_false(range.includes(12));
+    assert_false(range.includes(13));
+}, 'Range with upper bound');
+
+test(function(t) {
+    var range = IDBKeyRange.only(12);
+    assert_false(range.includes(11));
+    assert_true(range.includes(12));
+    assert_false(range.includes(13));
+}, 'Range with only one key');
+
+test(function(t) {
+    assert_true(IDBKeyRange.bound(new Date(0), new Date())
+        .includes(new Date(102729600000)));
+    assert_false(IDBKeyRange.bound(new Date(0), new Date(1e11))
+        .includes(new Date(1e11 + 1)));
+
+    assert_true(IDBKeyRange.bound('a', 'c').includes('b'));
+    assert_false(IDBKeyRange.bound('a', 'c').includes('d'));
+
+    assert_true(IDBKeyRange.bound([], [[], []]).includes([[]]));
+    assert_false(IDBKeyRange.bound([], [[]]).includes([[[]]]));
+
+}, 'Non-numeric keys');
+
+</script>

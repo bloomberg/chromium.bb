@@ -74,6 +74,8 @@ public:
 
     static IDBKeyRange* only(IDBKey* value, ExceptionState&);
 
+    bool includes(ExecutionContext*, const ScriptValue& key, ExceptionState&);
+
 private:
     IDBKeyRange(IDBKey* lower, IDBKey* upper, LowerBoundType lowerType, UpperBoundType upperType);
 

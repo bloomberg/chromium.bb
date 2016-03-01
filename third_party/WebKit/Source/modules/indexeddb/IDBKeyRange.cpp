@@ -156,4 +156,38 @@ IDBKeyRange* IDBKeyRange::bound(ExecutionContext* context, const ScriptValue& lo
     return IDBKeyRange::create(lower, upper, lowerOpen ? LowerBoundOpen : LowerBoundClosed, upperOpen ? UpperBoundOpen : UpperBoundClosed);
 }
 
+bool IDBKeyRange::includes(ExecutionContext* context, const ScriptValue& keyValue, ExceptionState& exceptionState)
+{
+    IDBKey* key = ScriptValue::to<IDBKey*>(toIsolate(context), keyValue, exceptionState);
+    if (exceptionState.hadException())
+        return false;
+    if (!key || !key->isValid()) {
+        exceptionState.throwDOMException(DataError, IDBDatabase::notValidKeyErrorMessage);
+        return false;
+    }
+
+    if (m_lower) {
+        short c = key->compare(m_lower);
+        if (lowerOpen()) {
+            if (c <= 0)
+                return false;
+        } else {
+            if (c < 0)
+                return false;
+        }
+    }
+
+    if (m_upper) {
+        short c = key->compare(m_upper);
+        if (upperOpen()) {
+            if (c >= 0)
+                return false;
+        } else {
+            if (c > 0)
+                return false;
+        }
+    }
+    return true;
+}
+
 } // namespace blink

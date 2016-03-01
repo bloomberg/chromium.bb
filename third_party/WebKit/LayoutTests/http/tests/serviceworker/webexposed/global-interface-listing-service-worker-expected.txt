@@ -344,6 +344,7 @@ interface IDBKeyRange
     getter upper
     getter upperOpen
     method constructor
+    method includes
 interface IDBObjectStore
     getter autoIncrement
     getter indexNames
@@ -814,6 +815,7 @@ interface webkitIDBKeyRange
     getter upper
     getter upperOpen
     method constructor
+    method includes
 interface webkitIDBObjectStore
     getter autoIncrement
     getter indexNames
