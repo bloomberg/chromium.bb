@@ -85,7 +85,7 @@ public:
         USING_FAST_MALLOC_WILL_BE_REMOVED(ResourceData);
         friend class NetworkResourcesData;
     public:
-        ResourceData(const String& requestId, const String& loaderId);
+        ResourceData(const String& requestId, const String& loaderId, const KURL&);
 
         String requestId() const { return m_requestId; }
         String loaderId() const { return m_loaderId; }
@@ -93,8 +93,7 @@ public:
         String frameId() const { return m_frameId; }
         void setFrameId(const String& frameId) { m_frameId = frameId; }
 
-        KURL url() const { return m_url; }
-        void setUrl(const KURL& url) { m_url = url; }
+        KURL requestedURL() const { return m_requestedURL; }
 
         bool hasContent() const { return !m_content.isNull(); }
         String content() const { return m_content; }
@@ -143,7 +142,7 @@ public:
         String m_requestId;
         String m_loaderId;
         String m_frameId;
-        KURL m_url;
+        KURL m_requestedURL;
         String m_content;
         RefPtrWillBeMember<XHRReplayData> m_xhrReplayData;
         bool m_base64Encoded;
@@ -167,7 +166,7 @@ public:
     }
     ~NetworkResourcesData();
 
-    void resourceCreated(const String& requestId, const String& loaderId);
+    void resourceCreated(const String& requestId, const String& loaderId, const KURL&);
     void responseReceived(const String& requestId, const String& frameId, const ResourceResponse&);
     void setResourceType(const String& requestId, InspectorPageAgent::ResourceType);
     InspectorPageAgent::ResourceType resourceType(const String& requestId);

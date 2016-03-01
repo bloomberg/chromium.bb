@@ -128,7 +128,7 @@ void InspectorResourceContentLoader::start()
         for (CSSStyleSheet* styleSheet : styleSheets) {
             if (styleSheet->isInline() || !styleSheet->contents()->loadCompleted())
                 continue;
-            String url = styleSheet->baseURL().string();
+            String url = styleSheet->href();
             if (url.isEmpty() || urlsToFetch.contains(url))
                 continue;
             urlsToFetch.add(url);

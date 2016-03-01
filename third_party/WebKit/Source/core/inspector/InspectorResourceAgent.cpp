@@ -464,7 +464,7 @@ void InspectorResourceAgent::willSendRequestInternal(LocalFrame* frame, unsigned
 {
     String requestId = IdentifiersFactory::requestId(identifier);
     String loaderId = IdentifiersFactory::loaderId(loader);
-    m_resourcesData->resourceCreated(requestId, loaderId);
+    m_resourcesData->resourceCreated(requestId, loaderId, request.url());
 
     InspectorPageAgent::ResourceType type = InspectorPageAgent::OtherResource;
     if (initiatorInfo.name == FetchInitiatorTypeNames::xmlhttprequest) {
@@ -1079,7 +1079,7 @@ bool InspectorResourceAgent::fetchResourceContent(Document* document, const KURL
 
     // Then fall back to resource data.
     for (auto& resource : m_resourcesData->resources()) {
-        if (resource->url() == url) {
+        if (resource->requestedURL() == url) {
             *content = resource->content();
             *base64Encoded = resource->base64Encoded();
             return true;

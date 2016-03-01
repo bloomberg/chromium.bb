@@ -71,9 +71,10 @@ DEFINE_TRACE(XHRReplayData)
 }
 
 // ResourceData
-NetworkResourcesData::ResourceData::ResourceData(const String& requestId, const String& loaderId)
+NetworkResourcesData::ResourceData::ResourceData(const String& requestId, const String& loaderId, const KURL& requestedURL)
     : m_requestId(requestId)
     , m_loaderId(loaderId)
+    , m_requestedURL(requestedURL)
     , m_base64Encoded(false)
     , m_isContentEvicted(false)
     , m_type(InspectorPageAgent::OtherResource)
@@ -170,10 +171,10 @@ DEFINE_TRACE(NetworkResourcesData)
 #endif
 }
 
-void NetworkResourcesData::resourceCreated(const String& requestId, const String& loaderId)
+void NetworkResourcesData::resourceCreated(const String& requestId, const String& loaderId, const KURL& requestedURL)
 {
     ensureNoDataForRequestId(requestId);
-    m_requestIdToResourceDataMap.set(requestId, new ResourceData(requestId, loaderId));
+    m_requestIdToResourceDataMap.set(requestId, new ResourceData(requestId, loaderId, requestedURL));
 }
 
 void NetworkResourcesData::responseReceived(const String& requestId, const String& frameId, const ResourceResponse& response)
@@ -182,7 +183,6 @@ void NetworkResourcesData::responseReceived(const String& requestId, const Strin
     if (!resourceData)
         return;
     resourceData->setFrameId(frameId);
-    resourceData->setUrl(response.url());
     resourceData->setMimeType(response.mimeType());
     resourceData->setTextEncodingName(response.textEncodingName());
     resourceData->setDecoder(InspectorPageAgent::createResourceTextDecoder(response.mimeType(), response.textEncodingName()));
