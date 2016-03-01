@@ -29,16 +29,13 @@
 #include "core/CoreExport.h"
 #include "core/dom/MutationObserver.h"
 #include "core/dom/SimulatedClickOptions.h"
-#include "core/dom/StyleChangeReason.h"
 #include "core/dom/TreeScope.h"
 #include "core/dom/TreeShared.h"
 #include "core/editing/EditingBoundary.h"
 #include "core/events/EventTarget.h"
-#include "core/inspector/InstanceCounters.h"
 #include "core/style/ComputedStyleConstants.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/heap/Handle.h"
-#include "platform/weborigin/KURLHash.h"
 #include "wtf/Forward.h"
 
 // This needs to be here because Document.h also depends on it.
@@ -87,6 +84,7 @@ class SVGQualifiedName;
 class ShadowRoot;
 template <typename NodeType> class StaticNodeTypeList;
 using StaticNodeList = StaticNodeTypeList<Node>;
+class StyleChangeReasonForTracing;
 class TagCollection;
 class Text;
 class TouchEvent;

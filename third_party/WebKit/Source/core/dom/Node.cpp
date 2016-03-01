@@ -82,6 +82,7 @@
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/html/HTMLSlotElement.h"
 #include "core/input/EventHandler.h"
+#include "core/inspector/InstanceCounters.h"
 #include "core/layout/LayoutBox.h"
 #include "core/page/ContextMenuController.h"
 #include "core/page/Page.h"

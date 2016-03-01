@@ -20,6 +20,7 @@
 
 #include "core/svg/SVGEllipseElement.h"
 
+#include "core/dom/StyleChangeReason.h"
 #include "core/layout/svg/LayoutSVGEllipse.h"
 #include "core/svg/SVGLength.h"
 

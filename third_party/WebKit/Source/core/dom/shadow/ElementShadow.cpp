@@ -29,6 +29,7 @@
 #include "core/css/StyleSheetList.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/NodeTraversal.h"
+#include "core/dom/StyleChangeReason.h"
 #include "core/dom/shadow/DistributedNodes.h"
 #include "core/frame/Deprecation.h"
 #include "core/html/HTMLContentElement.h"

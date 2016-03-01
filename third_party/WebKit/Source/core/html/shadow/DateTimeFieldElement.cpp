@@ -28,6 +28,7 @@
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 #include "core/HTMLNames.h"
 #include "core/dom/Document.h"
+#include "core/dom/StyleChangeReason.h"
 #include "core/dom/Text.h"
 #include "core/events/KeyboardEvent.h"
 #include "core/layout/TextRunConstructor.h"

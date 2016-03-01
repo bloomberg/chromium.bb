@@ -32,6 +32,7 @@
 #include "core/dom/Element.h"
 #include "core/dom/MutationObserverInterestGroup.h"
 #include "core/dom/MutationRecord.h"
+#include "core/dom/StyleChangeReason.h"
 #include "core/dom/StyleEngine.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "platform/RuntimeEnabledFeatures.h"

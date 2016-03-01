@@ -30,6 +30,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/DocumentStyleSheetCollector.h"
 #include "core/dom/ProcessingInstruction.h"
+#include "core/dom/StyleChangeReason.h"
 #include "core/dom/StyleEngine.h"
 #include "core/dom/StyleSheetCandidate.h"
 #include "platform/RuntimeEnabledFeatures.h"

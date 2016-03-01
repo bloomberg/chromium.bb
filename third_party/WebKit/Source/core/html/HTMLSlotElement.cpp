@@ -33,6 +33,7 @@
 #include "core/HTMLNames.h"
 #include "core/dom/Microtask.h"
 #include "core/dom/NodeTraversal.h"
+#include "core/dom/StyleChangeReason.h"
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/InsertionPoint.h"
 #include "core/events/Event.h"

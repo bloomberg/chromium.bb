@@ -23,6 +23,7 @@
 
 #include "core/svg/SVGMaskElement.h"
 
+#include "core/dom/StyleChangeReason.h"
 #include "core/layout/svg/LayoutSVGResourceMasker.h"
 
 namespace blink {

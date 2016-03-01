@@ -32,6 +32,7 @@
 
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 #include "core/CSSValueKeywords.h"
+#include "core/dom/StyleChangeReason.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/events/KeyboardEvent.h"
 #include "core/events/ScopedEventQueue.h"

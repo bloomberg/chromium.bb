@@ -35,6 +35,7 @@
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/QualifiedName.h"
 #include "core/dom/StaticNodeList.h"
+#include "core/dom/StyleChangeReason.h"
 #include "core/dom/shadow/ElementShadow.h"
 
 namespace blink {

@@ -34,6 +34,7 @@
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/IdTargetObserverRegistry.h"
 #include "core/dom/NodeComputedStyle.h"
+#include "core/dom/StyleChangeReason.h"
 #include "core/dom/TreeScopeAdopter.h"
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/ShadowRoot.h"

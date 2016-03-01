@@ -21,6 +21,7 @@
 
 #include "core/layout/LayoutTextControl.h"
 
+#include "core/dom/StyleChangeReason.h"
 #include "core/html/HTMLTextFormControlElement.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutTheme.h"

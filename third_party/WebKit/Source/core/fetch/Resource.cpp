@@ -32,6 +32,7 @@
 #include "core/fetch/ResourceFetcher.h"
 #include "core/fetch/ResourceLoader.h"
 #include "core/inspector/InspectorInstrumentation.h"
+#include "core/inspector/InstanceCounters.h"
 #include "platform/Logging.h"
 #include "platform/SharedBuffer.h"
 #include "platform/TraceEvent.h"

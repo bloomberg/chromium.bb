@@ -20,6 +20,7 @@
 
 #include "core/svg/SVGPathElement.h"
 
+#include "core/dom/StyleChangeReason.h"
 #include "core/layout/svg/LayoutSVGPath.h"
 #include "core/svg/SVGMPathElement.h"
 #include "core/svg/SVGPathQuery.h"

@@ -10,5 +10,6 @@ include_rules = [
     "!core/dom/XMLDocument.h",
     "!core/html/parser/TextResourceDecoder.h",
     "!core/inspector/InspectorInstrumentation.h",
+    "!core/inspector/InstanceCounters.h",
     "!core/svg/graphics/SVGImage.h",
 ]

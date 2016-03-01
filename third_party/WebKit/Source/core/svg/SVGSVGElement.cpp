@@ -29,6 +29,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/StaticNodeList.h"
+#include "core/dom/StyleChangeReason.h"
 #include "core/editing/FrameSelection.h"
 #include "core/events/EventListener.h"
 #include "core/frame/Deprecation.h"
