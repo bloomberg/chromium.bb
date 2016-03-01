@@ -5,7 +5,7 @@
 # If you would like to add a new extended attribute or value, please:
 #     (1) add the extended attribute or value to this file
 #     (2) add an explanation to the Blink IDL extended attributes document:
-#         idl-extended-attributes.md (in this directory)
+#         IDLExtendedAttributes.md (in this directory)
 #     (3) add appropriate test cases to run-bindings-tests
 #
 # The syntax of this file is as follows:
