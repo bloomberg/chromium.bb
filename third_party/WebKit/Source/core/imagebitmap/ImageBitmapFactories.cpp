@@ -44,7 +44,7 @@
 #include "core/workers/WorkerGlobalScope.h"
 #include "platform/SharedBuffer.h"
 #include "platform/ThreadSafeFunctional.h"
-#include "platform/graphics/ImageSource.h"
+#include "platform/image-decoders/ImageDecoder.h"
 #include "platform/threading/BackgroundTaskRunner.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebThread.h"
@@ -219,15 +219,19 @@ void ImageBitmapFactories::ImageBitmapLoader::decodeImageOnDecoderThread(WebTask
     ASSERT(!isMainThread());
     RefPtr<SharedBuffer> sharedBuffer = SharedBuffer::create((char*)m_loader.arrayBufferResult()->data(), static_cast<size_t>(m_loader.arrayBufferResult()->byteLength()));
 
-    OwnPtr<ImageSource> source = adoptPtr(new ImageSource());
-    source->setData(*sharedBuffer, true);
-
-    taskRunner->postTask(BLINK_FROM_HERE, threadSafeBind(&ImageBitmapFactories::ImageBitmapLoader::resolvePromiseOnOriginalThread, AllowCrossThreadAccess(this), source.release()));
+    OwnPtr<ImageDecoder> decoder(ImageDecoder::create(*sharedBuffer, ImageDecoder::AlphaPremultiplied, ImageDecoder::GammaAndColorProfileApplied));
+    if (decoder)
+        decoder->setData(sharedBuffer.get(), true);
+    taskRunner->postTask(BLINK_FROM_HERE, threadSafeBind(&ImageBitmapFactories::ImageBitmapLoader::resolvePromiseOnOriginalThread, AllowCrossThreadAccess(this), decoder.release()));
 }
 
-void ImageBitmapFactories::ImageBitmapLoader::resolvePromiseOnOriginalThread(PassOwnPtr<ImageSource> source)
+void ImageBitmapFactories::ImageBitmapLoader::resolvePromiseOnOriginalThread(PassOwnPtr<ImageDecoder> decoder)
 {
-    RefPtr<SkImage> frame = source->createFrameAtIndex(0);
+    if (!decoder) {
+        rejectPromise();
+        return;
+    }
+    RefPtr<SkImage> frame = ImageBitmap::getSkImageFromDecoder(decoder);
     ASSERT(!frame || (frame->width() && frame->height()));
     if (!frame) {
         rejectPromise();

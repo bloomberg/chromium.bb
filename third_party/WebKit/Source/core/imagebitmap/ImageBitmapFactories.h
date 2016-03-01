@@ -49,7 +49,7 @@ class ExceptionState;
 class ExecutionContext;
 class ImageBitmapSource;
 class ImageBitmapOptions;
-class ImageSource;
+class ImageDecoder;
 class WebTaskRunner;
 
 typedef HTMLImageElementOrHTMLVideoElementOrHTMLCanvasElementOrBlobOrImageDataOrImageBitmap ImageBitmapSourceUnion;
@@ -94,7 +94,7 @@ private:
 
         void scheduleAsyncImageBitmapDecoding();
         void decodeImageOnDecoderThread(WebTaskRunner*);
-        void resolvePromiseOnOriginalThread(PassOwnPtr<ImageSource>);
+        void resolvePromiseOnOriginalThread(PassOwnPtr<ImageDecoder>);
 
         // FileReaderLoaderClient
         void didStartLoading() override { }

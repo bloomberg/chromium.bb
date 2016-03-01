@@ -24,6 +24,7 @@ namespace blink {
 class HTMLCanvasElement;
 class HTMLVideoElement;
 class ImageData;
+class ImageDecoder;
 
 enum AlphaDisposition {
     PremultiplyAlpha,
@@ -40,6 +41,7 @@ public:
     static PassRefPtrWillBeRawPtr<ImageBitmap> create(ImageBitmap*, const IntRect&, const ImageBitmapOptions& = ImageBitmapOptions());
     static PassRefPtrWillBeRawPtr<ImageBitmap> create(PassRefPtr<StaticBitmapImage>);
     static PassRefPtrWillBeRawPtr<ImageBitmap> create(PassRefPtr<StaticBitmapImage>, const IntRect&, const ImageBitmapOptions& = ImageBitmapOptions());
+    static PassRefPtr<SkImage> getSkImageFromDecoder(PassOwnPtr<ImageDecoder>);
 
     StaticBitmapImage* bitmapImage() const { return (m_image) ? m_image.get() : nullptr; }
     PassOwnPtr<uint8_t[]> copyBitmapData(AlphaDisposition alphaOp = DontPremultiplyAlpha);

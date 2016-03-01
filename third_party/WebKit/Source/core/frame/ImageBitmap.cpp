@@ -89,6 +89,19 @@ static PassRefPtr<SkImage> premulSkImageToUnPremul(SkImage* input)
     return newSkImageFromRaster(info, dstPixels.release(), input->width() * info.bytesPerPixel());
 }
 
+PassRefPtr<SkImage> ImageBitmap::getSkImageFromDecoder(PassOwnPtr<ImageDecoder> decoder)
+{
+    if (!decoder->frameCount())
+        return nullptr;
+    ImageFrame* frame = decoder->frameBufferAtIndex(0);
+    if (!frame || frame->status() != ImageFrame::FrameComplete)
+        return nullptr;
+    SkBitmap bitmap = frame->bitmap();
+    if (!frameIsValid(bitmap))
+        return nullptr;
+    return adoptRef(SkImage::NewFromBitmap(bitmap));
+}
+
 static PassRefPtr<StaticBitmapImage> cropImage(Image* image, const IntRect& cropRect, bool flipY, bool premultiplyAlpha, bool isBitmapPremultiplied = true)
 {
     ASSERT(image);
@@ -114,15 +127,9 @@ static PassRefPtr<StaticBitmapImage> cropImage(Image* image, const IntRect& crop
         if (!decoder)
             return nullptr;
         decoder->setData(image->data(), true);
-        if (!decoder->frameCount())
+        skiaImage = ImageBitmap::getSkImageFromDecoder(decoder.release());
+        if (!skiaImage)
             return nullptr;
-        ImageFrame* frame = decoder->frameBufferAtIndex(0);
-        if (!frame || frame->status() != ImageFrame::FrameComplete)
-            return nullptr;
-        SkBitmap bitmap = frame->bitmap();
-        if (!frameIsValid(bitmap))
-            return nullptr;
-        skiaImage = adoptRef(SkImage::NewFromBitmap(bitmap));
     }
 
     if (cropRect == srcRect) {
