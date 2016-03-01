@@ -120,7 +120,7 @@ void PaintLayerFilterInfo::updateReferenceFilterClients(const FilterOperations& 
         } else {
             // Reference is internal; add layer as a client so we can trigger
             // filter paint invalidation on SVG attribute change.
-            Element* filter = m_layer->layoutObject()->node()->document().getElementById(referenceFilterOperation->fragment());
+            Element* filter = m_layer->layoutObject()->document().getElementById(referenceFilterOperation->fragment());
             if (!isSVGFilterElement(filter))
                 continue;
             addFilterReference(toSVGFilterElement(filter));
