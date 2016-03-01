@@ -38,9 +38,14 @@ scoped_ptr<TestApplicationCatalogStore> BuildTestApplicationCatalogStore() {
 // Uses BackgroundShell to start the shell in the background and connects to
 // background_shell_test_app, verifying we can send a message to the app.
 // An ApplicationCatalogStore is supplied to avoid using a manifest.
+#if defined(OS_ANDROID)
 // TODO(crbug.com/589784): This test is disabled, as it fails
 // on the Android GN bot.
-TEST(BackgroundShellTest, DISABLED_Basic) {
+#define MAYBE_Basic DISABLED_Basic
+#else
+#define MAYBE_Basic Basic
+#endif
+TEST(BackgroundShellTest, MAYBE_Basic) {
   base::MessageLoop message_loop;
   BackgroundShell background_shell;
   scoped_ptr<BackgroundShell::InitParams> init_params(
