@@ -556,6 +556,12 @@ TEST_F(AutofillFieldTest, FillSelectControlWithExpirationMonth) {
       // Values start at 01 and the first content is a placeholder.
       {{"01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12",
         "13"},
+       NotNumericMonthsContentsWithPlaceholder()},
+      // Values start at 0 after a placeholder.
+      {{"?", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11"},
+       NotNumericMonthsContentsWithPlaceholder()},
+      // Values start at 1 after a placeholder.
+      {{"?", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"},
        NotNumericMonthsContentsWithPlaceholder()}};
 
   for (TestCase test_case : test_cases) {

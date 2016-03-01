@@ -224,11 +224,18 @@ bool FillExpirationMonthSelectControl(const base::string16& value,
       --month;
   } else if (trimmed_values.size() == 13) {
     // The select presumably uses the first value as a placeholder.
-    // If the first value of the select is 1, increment the value of |month| to
-    // skip the placeholder value (January = 2).
     int first_value;
-    if (StringToInt(trimmed_values[0], &first_value) && first_value == 1)
+    // If the first value is not a number. Check the second value and apply the
+    // same logic as if there was no placeholder.
+    if (!StringToInt(trimmed_values[0], &first_value)) {
+      int second_value;
+      if (StringToInt(trimmed_values[1], &second_value) && second_value == 0)
+        --month;
+    } else if (first_value == 1) {
+      // If the first value of the select is 1, increment the value of |month|
+      // to skip the placeholder value (January = 2).
       ++month;
+    }
   }
 
   // Attempt to match the user's |month| with the field's value attributes.
