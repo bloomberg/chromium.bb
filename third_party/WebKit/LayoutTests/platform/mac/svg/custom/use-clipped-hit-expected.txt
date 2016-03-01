@@ -9,9 +9,11 @@
         [90, 116, 64, 18],
         [90, 116, 64, 18],
         [90, 116, 44, 18],
-        [90, 116, 44, 18]
+        [90, 116, 44, 18],
+        [89, 115, 3, 20]
       ],
       "paintInvalidationClients": [
+        "LayoutSVGText text id='status'",
         "InlineTextBox ''",
         "LayoutSVGInlineText #text",
         "RootInlineBox",

@@ -112,8 +112,6 @@ crbug.com/502531 fast/borders/border-antialiasing.html [ Failure ]
 crbug.com/538697 [ Win7 Debug ] virtual/threaded/printing/webgl-oversized-printing.html [ Crash ]
 crbug.com/538697 [ Win7 Debug ] printing/webgl-oversized-printing.html [ Crash ]
 
-crbug.com/528922 svg/custom/use-clipped-hit.svg [ NeedsRebaseline ]
-
 # Ref-tests that fail due to character based shaping/fallback.
 crbug.com/404597 fast/text/international/inline-plaintext-is-isolated.html [ Failure ]
 crbug.com/404597 fast/text/international/bdi-dir-default-to-auto.html [ Failure ]
