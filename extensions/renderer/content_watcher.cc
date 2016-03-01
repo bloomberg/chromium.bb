@@ -49,9 +49,14 @@ void ContentWatcher::OnWatchPages(
         : css_selectors_(css_selectors) {}
 
     bool Visit(content::RenderView* view) override {
+      // TODO(dcheng): This should be rewritten to be frame-oriented. It
+      // probably breaks declarative content for OOPI.
       for (blink::WebFrame* frame = view->GetWebView()->mainFrame(); frame;
-           frame = frame->traverseNext(/*wrap=*/false))
-        frame->document().watchCSSSelectors(css_selectors_);
+           frame = frame->traverseNext(/*wrap=*/false)) {
+        if (frame->isWebRemoteFrame())
+          continue;
+        frame->toWebLocalFrame()->document().watchCSSSelectors(css_selectors_);
+      }
 
       return true;  // Continue visiting.
     }
