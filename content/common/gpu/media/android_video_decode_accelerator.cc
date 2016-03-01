@@ -106,6 +106,16 @@ static inline const base::TimeDelta ErrorPostingDelay() {
   return base::TimeDelta::FromSeconds(2);
 }
 
+// For RecordFormatChangedMetric.
+enum FormatChangedValue {
+  CodecInitialized = false,
+  MissingFormatChanged = true
+};
+
+static inline void RecordFormatChangedMetric(FormatChangedValue value) {
+  UMA_HISTOGRAM_BOOLEAN("Media.AVDA.MissingFormatChanged", !!value);
+}
+
 // Handle OnFrameAvailable callbacks safely.  Since they occur asynchronously,
 // we take care that the AVDA that wants them still exists.  A WeakPtr to
 // the AVDA would be preferable, except that OnFrameAvailable callbacks can
@@ -631,6 +641,17 @@ bool AndroidVideoDecodeAccelerator::DequeueOutput() {
     return false;
   }
 
+  if (!picturebuffers_requested_) {
+    // If, somehow, we get a decoded frame back before a FORMAT_CHANGED
+    // message, then we might not have any picture buffers to use.  This
+    // isn't supposed to happen (see EncodeDecodeTest.java#617).
+    // Log a metric to see how common this is.
+    RecordFormatChangedMetric(FormatChangedValue::MissingFormatChanged);
+    media_codec_->ReleaseOutputBuffer(buf_index, false);
+    POST_ERROR(PLATFORM_FAILURE, "Dequeued buffers before FORMAT_CHANGED.");
+    return false;
+  }
+
   // Get the bitstream buffer id from the timestamp.
   auto it = bitstream_buffers_in_decoder_.find(presentation_timestamp);
 
@@ -824,6 +845,9 @@ bool AndroidVideoDecodeAccelerator::ConfigureMediaCodec() {
   media_codec_.reset(media::VideoCodecBridge::CreateDecoder(
       codec_, needs_protected_surface_, gfx::Size(320, 240),
       surface_.j_surface().obj(), media_crypto, false));
+
+  // Record one instance of the codec being initialized.
+  RecordFormatChangedMetric(FormatChangedValue::CodecInitialized);
 
   strategy_->CodecChanged(media_codec_.get(), output_picture_buffers_);
   if (!media_codec_) {

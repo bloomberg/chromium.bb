@@ -18,7 +18,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "10.17",
+  "version": "10.18",
   "entries": [
     {
       "id": 1,
@@ -1188,6 +1188,26 @@ LONG_STRING_CONST(
       "features": [
         "gpu_rasterization",
         "accelerated_2d_canvas"
+      ]
+    },
+    {
+      "id": 109,
+      "description": "MediaCodec on Adreno 330 / 4.2.2 doesn't always send FORMAT_CHANGED",
+      "cr_bugs": [585963],
+      "os": {
+        "type": "android",
+        "version": {
+          "op": "=",
+          "value": "4.2.2"
+        }
+      },
+      "gl_renderer": "Adreno \\(TM\\) 330",
+      "driver_version": {
+        "op": "=",
+        "value": "45.0"
+      },
+      "features": [
+        "accelerated_video_decode"
       ]
     }
   ]

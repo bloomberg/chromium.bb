@@ -19372,6 +19372,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Media.AVDA.MissingFormatChanged" enum="BooleanFormatChanged">
+  <owner>liberato@chromium.org</owner>
+  <summary>
+    Number of times that AVDA stopped decoding because MediaCodec failed to
+    provide a FORMAT_CHANGED message before sending decoded frames back.  True
+    counts indicate instances where FORMAT_CHANGE was missed, while false
+    instances indicate any MediaCodec initialization by AVDA.
+  </summary>
+</histogram>
+
 <histogram name="Media.AvdaCodecImage.WaitTimeForFrame" units="ms">
   <owner>liberato@chromium.org</owner>
   <summary>
@@ -59753,6 +59763,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <enum name="BooleanForceDisabled" type="int">
   <int value="0" label="Not Force Disabled"/>
   <int value="1" label="Force Disabled"/>
+</enum>
+
+<enum name="BooleanFormatChanged" type="int">
+  <int value="0" label="Any Codec Initialized"/>
+  <int value="1" label="Missing FORMAT_CHANGED message"/>
 </enum>
 
 <enum name="BooleanFormManager" type="int">
