@@ -14,20 +14,20 @@ namespace device {
 namespace win {
 
 struct BLEDevice;
-struct BLEGattService;
-struct BLEGattCharacteristic;
-struct BLEGattDescriptor;
+struct GattService;
+struct GattCharacteristic;
+struct GattDescriptor;
 
 // The key of BLEDevicesMap is the string of the BLE device address.
 typedef std::unordered_map<std::string, scoped_ptr<BLEDevice>> BLEDevicesMap;
-// The key of BLEGattServicesMap, BLEGattCharacteristicsMap and
-// BLEGattDescriptorsMap is the string of the attribute handle.
-typedef std::unordered_map<std::string, scoped_ptr<BLEGattService>>
-    BLEGattServicesMap;
-typedef std::unordered_map<std::string, scoped_ptr<BLEGattCharacteristic>>
-    BLEGattCharacteristicsMap;
-typedef std::unordered_map<std::string, scoped_ptr<BLEGattDescriptor>>
-    BLEGattDescriptorsMap;
+// The key of GattServicesMap, GattCharacteristicsMap and GattDescriptorsMap is
+// the string of the attribute handle.
+typedef std::unordered_map<std::string, scoped_ptr<GattService>>
+    GattServicesMap;
+typedef std::unordered_map<std::string, scoped_ptr<GattCharacteristic>>
+    GattCharacteristicsMap;
+typedef std::unordered_map<std::string, scoped_ptr<GattDescriptor>>
+    GattDescriptorsMap;
 // The key of BLEAttributeHandleTable is the string of the BLE device address.
 typedef std::unordered_map<std::string, scoped_ptr<std::set<USHORT>>>
     BLEAttributeHandleTable;
@@ -36,28 +36,28 @@ struct BLEDevice {
   BLEDevice();
   ~BLEDevice();
   scoped_ptr<BluetoothLowEnergyDeviceInfo> device_info;
-  BLEGattServicesMap primary_services;
+  GattServicesMap primary_services;
 };
 
-struct BLEGattService {
-  BLEGattService();
-  ~BLEGattService();
+struct GattService {
+  GattService();
+  ~GattService();
   scoped_ptr<BTH_LE_GATT_SERVICE> service_info;
-  BLEGattServicesMap included_services;
-  BLEGattCharacteristicsMap included_characteristics;
+  GattServicesMap included_services;
+  GattCharacteristicsMap included_characteristics;
 };
 
-struct BLEGattCharacteristic {
-  BLEGattCharacteristic();
-  ~BLEGattCharacteristic();
+struct GattCharacteristic {
+  GattCharacteristic();
+  ~GattCharacteristic();
   scoped_ptr<BTH_LE_GATT_CHARACTERISTIC> characteristic_info;
   scoped_ptr<BTH_LE_GATT_CHARACTERISTIC_VALUE> value;
-  BLEGattDescriptorsMap included_descriptors;
+  GattDescriptorsMap included_descriptors;
 };
 
-struct BLEGattDescriptor {
-  BLEGattDescriptor();
-  ~BLEGattDescriptor();
+struct GattDescriptor {
+  GattDescriptor();
+  ~GattDescriptor();
   scoped_ptr<BTH_LE_GATT_DESCRIPTOR> descriptor_info;
   scoped_ptr<BTH_LE_GATT_DESCRIPTOR_VALUE> value;
 };
@@ -84,35 +84,51 @@ class BluetoothLowEnergyWrapperFake : public BluetoothLowEnergyWrapper {
       const PBTH_LE_GATT_SERVICE service,
       scoped_ptr<BTH_LE_GATT_CHARACTERISTIC>* out_included_characteristics,
       USHORT* out_counts) override;
+  HRESULT ReadDescriptorsOfACharacteristic(
+      base::FilePath& service_path,
+      const PBTH_LE_GATT_CHARACTERISTIC characteristic,
+      scoped_ptr<BTH_LE_GATT_DESCRIPTOR>* out_included_descriptors,
+      USHORT* out_counts) override;
 
   BLEDevice* SimulateBLEDevice(std::string device_name,
                                BLUETOOTH_ADDRESS device_address);
   BLEDevice* GetSimulatedBLEDevice(std::string device_address);
 
   // Note: |parent_service| may be nullptr to indicate a primary service.
-  BLEGattService* SimulateBLEGattService(BLEDevice* device,
-                                         BLEGattService* parent_service,
-                                         const BTH_LE_UUID& uuid);
+  GattService* SimulateGattService(BLEDevice* device,
+                                   GattService* parent_service,
+                                   const BTH_LE_UUID& uuid);
 
   // Note: |parent_service| may be nullptr to indicate a primary service.
-  void SimulateBLEGattServiceRemoved(BLEDevice* device,
-                                     BLEGattService* parent_service,
-                                     std::string attribute_handle);
+  void SimulateGattServiceRemoved(BLEDevice* device,
+                                  GattService* parent_service,
+                                  std::string attribute_handle);
 
   // Note: |chain_of_att_handle| contains the attribute handles of the services
   // in order from primary service to target service. The last item in
   // |chain_of_att_handle| is the target service's attribute handle.
-  BLEGattService* GetSimulatedGattService(
+  GattService* GetSimulatedGattService(
       BLEDevice* device,
       const std::vector<std::string>& chain_of_att_handle);
-  BLEGattCharacteristic* SimulateBLEGattCharacterisc(
+  GattCharacteristic* SimulateGattCharacterisc(
       std::string device_address,
-      BLEGattService* parent_service,
+      GattService* parent_service,
       const BTH_LE_GATT_CHARACTERISTIC& characteristic);
-  void SimulateBLEGattCharacteriscRemove(BLEGattService* parent_service,
-                                         std::string attribute_handle);
+  void SimulateGattCharacteriscRemove(GattService* parent_service,
+                                      std::string attribute_handle);
+  GattCharacteristic* GetSimulatedGattCharacteristic(
+      GattService* parent_service,
+      std::string attribute_handle);
+  void SimulateGattDescriptor(std::string device_address,
+                              GattCharacteristic* characteristic,
+                              const BTH_LE_UUID& uuid);
 
  private:
+  // Get simulated characteristic by |service_path| and |characteristic| info.
+  GattCharacteristic* GetSimulatedGattCharacteristic(
+      base::FilePath& service_path,
+      const PBTH_LE_GATT_CHARACTERISTIC characteristic);
+
   // Generate an unique attribute handle on |device_address|.
   USHORT GenerateAUniqueAttributeHandle(std::string device_address);
 
@@ -122,16 +138,16 @@ class BluetoothLowEnergyWrapperFake : public BluetoothLowEnergyWrapper {
   // Generate GATT service device path of the service with
   // |service_attribute_handle|. |resident_device_path| is the BLE device this
   // GATT service belongs to.
-  base::string16 GenerateBLEGattServiceDevicePath(
+  base::string16 GenerateGattServiceDevicePath(
       base::string16 resident_device_path,
       USHORT service_attribute_handle);
 
   // Extract device address from the device |path| generated by
-  // GenerateBLEDevicePath or GenerateBLEGattServiceDevicePath.
+  // GenerateBLEDevicePath or GenerateGattServiceDevicePath.
   base::string16 ExtractDeviceAddressFromDevicePath(base::string16 path);
 
   // Extract service attribute handles from the |path| generated by
-  // GenerateBLEGattServiceDevicePath.
+  // GenerateGattServiceDevicePath.
   std::vector<std::string> ExtractServiceAttributeHandlesFromDevicePath(
       base::string16 path);
 

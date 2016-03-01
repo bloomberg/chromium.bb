@@ -126,6 +126,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothTaskManagerWin
   typedef base::Callback<
       void(scoped_ptr<BTH_LE_GATT_CHARACTERISTIC>, uint16_t, HRESULT)>
       GetGattIncludedCharacteristicsCallback;
+  typedef base::Callback<
+      void(scoped_ptr<BTH_LE_GATT_DESCRIPTOR>, uint16_t, HRESULT)>
+      GetGattIncludedDescriptorsCallback;
 
   // Get all included characteristics of a given service. The service is
   // uniquely identified by its |uuid| and |attribute_handle| with service
@@ -136,6 +139,14 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothTaskManagerWin
       const BluetoothUUID& uuid,
       uint16_t attribute_handle,
       const GetGattIncludedCharacteristicsCallback& callback);
+
+  // Get all included descriptors of a given |characterisitc| in service
+  // with |service_path|. The result is returned asynchronously through
+  // |callback|.
+  void PostGetGattIncludedDescriptors(
+      const base::FilePath& service_path,
+      const PBTH_LE_GATT_CHARACTERISTIC characteristic,
+      const GetGattIncludedDescriptorsCallback& callback);
 
  private:
   friend class base::RefCountedThreadSafe<BluetoothTaskManagerWin>;
@@ -233,6 +244,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothTaskManagerWin
       BluetoothUUID uuid,
       uint16_t attribute_handle,
       const GetGattIncludedCharacteristicsCallback& callback);
+  void GetGattIncludedDescriptors(
+      base::FilePath service_path,
+      BTH_LE_GATT_CHARACTERISTIC characteristic,
+      const GetGattIncludedDescriptorsCallback& callback);
 
   // UI task runner reference.
   scoped_refptr<base::SequencedTaskRunner> ui_task_runner_;

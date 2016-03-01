@@ -18,14 +18,14 @@ namespace win {
 BLEDevice::BLEDevice() {}
 BLEDevice::~BLEDevice() {}
 
-BLEGattService::BLEGattService() {}
-BLEGattService::~BLEGattService() {}
+GattService::GattService() {}
+GattService::~GattService() {}
 
-BLEGattCharacteristic::BLEGattCharacteristic() {}
-BLEGattCharacteristic::~BLEGattCharacteristic() {}
+GattCharacteristic::GattCharacteristic() {}
+GattCharacteristic::~GattCharacteristic() {}
 
-BLEGattDescriptor::BLEGattDescriptor() {}
-BLEGattDescriptor::~BLEGattDescriptor() {}
+GattDescriptor::GattDescriptor() {}
+GattDescriptor::~GattDescriptor() {}
 
 BluetoothLowEnergyWrapperFake::BluetoothLowEnergyWrapperFake() {}
 BluetoothLowEnergyWrapperFake::~BluetoothLowEnergyWrapperFake() {}
@@ -65,7 +65,7 @@ bool BluetoothLowEnergyWrapperFake::
       BluetoothLowEnergyDeviceInfo* device_info =
           new BluetoothLowEnergyDeviceInfo();
       *device_info = *(device.second->device_info);
-      base::string16 path = GenerateBLEGattServiceDevicePath(
+      base::string16 path = GenerateGattServiceDevicePath(
           device.second->device_info->path.value(),
           service.second->service_info->AttributeHandle);
       device_info->path = base::FilePath(path);
@@ -107,7 +107,7 @@ bool BluetoothLowEnergyWrapperFake::EnumerateKnownBluetoothLowEnergyServices(
     }
   } else {
     // Return corresponding GATT service for BLE GATT service device.
-    BLEGattService* target_service =
+    GattService* target_service =
         GetSimulatedGattService(it_d->second.get(), service_attribute_handles);
     BluetoothLowEnergyServiceInfo* service_info =
         new BluetoothLowEnergyServiceInfo();
@@ -129,7 +129,7 @@ HRESULT BluetoothLowEnergyWrapperFake::ReadCharacteristicsOfAService(
       ExtractDeviceAddressFromDevicePath(service_path.value());
   const std::vector<std::string> service_att_handles =
       ExtractServiceAttributeHandlesFromDevicePath(service_path.value());
-  BLEGattService* target_service = GetSimulatedGattService(
+  GattService* target_service = GetSimulatedGattService(
       GetSimulatedBLEDevice(
           std::string(device_address.begin(), device_address.end())),
       service_att_handles);
@@ -151,6 +151,30 @@ HRESULT BluetoothLowEnergyWrapperFake::ReadCharacteristicsOfAService(
     return S_OK;
   }
   return HRESULT_FROM_WIN32(ERROR_NO_MORE_ITEMS);
+}
+
+HRESULT BluetoothLowEnergyWrapperFake::ReadDescriptorsOfACharacteristic(
+    base::FilePath& service_path,
+    const PBTH_LE_GATT_CHARACTERISTIC characteristic,
+    scoped_ptr<BTH_LE_GATT_DESCRIPTOR>* out_included_descriptors,
+    USHORT* out_counts) {
+  GattCharacteristic* target_characteristic =
+      GetSimulatedGattCharacteristic(service_path, characteristic);
+  if (target_characteristic == nullptr)
+    return HRESULT_FROM_WIN32(ERROR_NOT_FOUND);
+
+  std::size_t number_of_included_descriptors =
+      target_characteristic->included_descriptors.size();
+  PBTH_LE_GATT_DESCRIPTOR win_descriptors_info =
+      new BTH_LE_GATT_DESCRIPTOR[number_of_included_descriptors];
+  *out_counts = USHORT(number_of_included_descriptors);
+  std::size_t i = 0;
+  for (const auto& d : target_characteristic->included_descriptors) {
+    win_descriptors_info[i] = *(d.second->descriptor_info);
+    i++;
+  }
+  out_included_descriptors->reset(win_descriptors_info);
+  return S_OK;
 }
 
 BLEDevice* BluetoothLowEnergyWrapperFake::SimulateBLEDevice(
@@ -178,13 +202,13 @@ BLEDevice* BluetoothLowEnergyWrapperFake::GetSimulatedBLEDevice(
   return it_d->second.get();
 }
 
-BLEGattService* BluetoothLowEnergyWrapperFake::SimulateBLEGattService(
+GattService* BluetoothLowEnergyWrapperFake::SimulateGattService(
     BLEDevice* device,
-    BLEGattService* parent_service,
+    GattService* parent_service,
     const BTH_LE_UUID& uuid) {
   CHECK(device);
 
-  BLEGattService* service = new BLEGattService();
+  GattService* service = new GattService();
   PBTH_LE_GATT_SERVICE service_info = new BTH_LE_GATT_SERVICE[1];
   std::string string_device_address =
       BluetoothAddressToCanonicalString(device->device_info->address);
@@ -204,9 +228,9 @@ BLEGattService* BluetoothLowEnergyWrapperFake::SimulateBLEGattService(
   return service;
 }
 
-void BluetoothLowEnergyWrapperFake::SimulateBLEGattServiceRemoved(
+void BluetoothLowEnergyWrapperFake::SimulateGattServiceRemoved(
     BLEDevice* device,
-    BLEGattService* parent_service,
+    GattService* parent_service,
     std::string attribute_handle) {
   if (parent_service) {
     parent_service->included_services.erase(attribute_handle);
@@ -215,11 +239,11 @@ void BluetoothLowEnergyWrapperFake::SimulateBLEGattServiceRemoved(
   }
 }
 
-BLEGattService* BluetoothLowEnergyWrapperFake::GetSimulatedGattService(
+GattService* BluetoothLowEnergyWrapperFake::GetSimulatedGattService(
     BLEDevice* device,
     const std::vector<std::string>& chain_of_att_handle) {
   // First, find the root primary service.
-  BLEGattServicesMap::iterator it_s =
+  GattServicesMap::iterator it_s =
       device->primary_services.find(chain_of_att_handle[0]);
   if (it_s == device->primary_services.end())
     return nullptr;
@@ -229,7 +253,7 @@ BLEGattService* BluetoothLowEnergyWrapperFake::GetSimulatedGattService(
   for (std::size_t i = 1; i < chain_of_att_handle.size(); i++) {
     std::string included_att_handle = std::string(
         chain_of_att_handle[i].begin(), chain_of_att_handle[i].end());
-    BLEGattServicesMap::iterator it_i =
+    GattServicesMap::iterator it_i =
         it_s->second->included_services.find(included_att_handle);
     if (it_i == it_s->second->included_services.end())
       return nullptr;
@@ -238,14 +262,13 @@ BLEGattService* BluetoothLowEnergyWrapperFake::GetSimulatedGattService(
   return it_s->second.get();
 }
 
-BLEGattCharacteristic*
-BluetoothLowEnergyWrapperFake::SimulateBLEGattCharacterisc(
+GattCharacteristic* BluetoothLowEnergyWrapperFake::SimulateGattCharacterisc(
     std::string device_address,
-    BLEGattService* parent_service,
+    GattService* parent_service,
     const BTH_LE_GATT_CHARACTERISTIC& characteristic) {
   CHECK(parent_service);
 
-  BLEGattCharacteristic* win_characteristic = new BLEGattCharacteristic();
+  GattCharacteristic* win_characteristic = new GattCharacteristic();
   PBTH_LE_GATT_CHARACTERISTIC win_characteristic_info =
       new BTH_LE_GATT_CHARACTERISTIC[1];
   *win_characteristic_info = characteristic;
@@ -258,11 +281,57 @@ BluetoothLowEnergyWrapperFake::SimulateBLEGattCharacterisc(
   return win_characteristic;
 }
 
-void BluetoothLowEnergyWrapperFake::SimulateBLEGattCharacteriscRemove(
-    BLEGattService* parent_service,
+void BluetoothLowEnergyWrapperFake::SimulateGattCharacteriscRemove(
+    GattService* parent_service,
     std::string attribute_handle) {
   CHECK(parent_service);
   parent_service->included_characteristics.erase(attribute_handle);
+}
+
+GattCharacteristic*
+BluetoothLowEnergyWrapperFake::GetSimulatedGattCharacteristic(
+    GattService* parent_service,
+    std::string attribute_handle) {
+  CHECK(parent_service);
+  GattCharacteristicsMap::iterator it =
+      parent_service->included_characteristics.find(attribute_handle);
+  if (it != parent_service->included_characteristics.end())
+    return it->second.get();
+  return nullptr;
+}
+
+void BluetoothLowEnergyWrapperFake::SimulateGattDescriptor(
+    std::string device_address,
+    GattCharacteristic* characteristic,
+    const BTH_LE_UUID& uuid) {
+  scoped_ptr<GattDescriptor> descriptor(new GattDescriptor());
+  descriptor->descriptor_info.reset(new BTH_LE_GATT_DESCRIPTOR[1]);
+  descriptor->descriptor_info->DescriptorUuid = uuid;
+  descriptor->descriptor_info->AttributeHandle =
+      GenerateAUniqueAttributeHandle(device_address);
+  characteristic->included_descriptors[std::to_string(
+      descriptor->descriptor_info->AttributeHandle)] = std::move(descriptor);
+}
+
+GattCharacteristic*
+BluetoothLowEnergyWrapperFake::GetSimulatedGattCharacteristic(
+    base::FilePath& service_path,
+    const PBTH_LE_GATT_CHARACTERISTIC characteristic) {
+  base::string16 device_address =
+      ExtractDeviceAddressFromDevicePath(service_path.value());
+  BLEDevice* target_device = GetSimulatedBLEDevice(
+      std::string(device_address.begin(), device_address.end()));
+  if (target_device == nullptr)
+    return nullptr;
+  const std::vector<std::string> service_att_handles =
+      ExtractServiceAttributeHandlesFromDevicePath(service_path.value());
+  GattService* target_service =
+      GetSimulatedGattService(target_device, service_att_handles);
+  if (target_service == nullptr)
+    return nullptr;
+  GattCharacteristic* target_characteristic = GetSimulatedGattCharacteristic(
+      target_service, std::to_string(characteristic->AttributeHandle));
+  return target_characteristic;
 }
 
 USHORT BluetoothLowEnergyWrapperFake::GenerateAUniqueAttributeHandle(
@@ -300,7 +369,7 @@ base::string16 BluetoothLowEnergyWrapperFake::GenerateBLEDevicePath(
   return base::string16(device_address.begin(), device_address.end());
 }
 
-base::string16 BluetoothLowEnergyWrapperFake::GenerateBLEGattServiceDevicePath(
+base::string16 BluetoothLowEnergyWrapperFake::GenerateGattServiceDevicePath(
     base::string16 resident_device_path,
     USHORT service_attribute_handle) {
   std::string sub_path = std::to_string(service_attribute_handle);

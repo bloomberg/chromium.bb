@@ -728,30 +728,62 @@ HRESULT BluetoothLowEnergyWrapper::ReadCharacteristicsOfAService(
   if (!file.IsValid())
     return HRESULT_FROM_WIN32(ERROR_OPEN_FAILED);
 
-  USHORT required_length = 0;
+  USHORT allocated_length = 0;
   HRESULT hr = BluetoothGATTGetCharacteristics(file.GetPlatformFile(), service,
-                                               0, NULL, &required_length,
+                                               0, NULL, &allocated_length,
                                                BLUETOOTH_GATT_FLAG_NONE);
   if (hr != HRESULT_FROM_WIN32(ERROR_MORE_DATA))
     return hr;
 
   out_included_characteristics->reset(
-      new BTH_LE_GATT_CHARACTERISTIC[required_length]);
-  USHORT actual_length = required_length;
-  hr = BluetoothGATTGetCharacteristics(
-      file.GetPlatformFile(), service, actual_length,
-      out_included_characteristics->get(), &required_length,
-      BLUETOOTH_GATT_FLAG_NONE);
-  if (SUCCEEDED(hr) && required_length != actual_length) {
+      new BTH_LE_GATT_CHARACTERISTIC[allocated_length]);
+  hr = BluetoothGATTGetCharacteristics(file.GetPlatformFile(), service,
+                                       allocated_length,
+                                       out_included_characteristics->get(),
+                                       out_counts, BLUETOOTH_GATT_FLAG_NONE);
+  if (SUCCEEDED(hr) && allocated_length != *out_counts) {
     LOG(ERROR) << "Retrieved charactersitics is not equal to expected"
-               << " actual_length " << actual_length << " required_length "
-               << required_length;
+               << " allocated_length " << allocated_length << " got "
+               << *out_counts;
     hr = HRESULT_FROM_WIN32(ERROR_INVALID_USER_BUFFER);
   }
-  *out_counts = actual_length;
 
   if (FAILED(hr)) {
     out_included_characteristics->reset(nullptr);
+    *out_counts = 0;
+  }
+  return hr;
+}
+
+HRESULT BluetoothLowEnergyWrapper::ReadDescriptorsOfACharacteristic(
+    base::FilePath& service_path,
+    const PBTH_LE_GATT_CHARACTERISTIC characteristic,
+    scoped_ptr<BTH_LE_GATT_DESCRIPTOR>* out_included_descriptors,
+    USHORT* out_counts) {
+  base::File file(service_path, base::File::FLAG_OPEN | base::File::FLAG_READ);
+  if (!file.IsValid())
+    return HRESULT_FROM_WIN32(ERROR_OPEN_FAILED);
+
+  USHORT allocated_length = 0;
+  HRESULT hr = BluetoothGATTGetDescriptors(
+      file.GetPlatformFile(), characteristic, 0, NULL, &allocated_length,
+      BLUETOOTH_GATT_FLAG_NONE);
+  if (hr != HRESULT_FROM_WIN32(ERROR_MORE_DATA))
+    return hr;
+
+  out_included_descriptors->reset(new BTH_LE_GATT_DESCRIPTOR[allocated_length]);
+  hr = BluetoothGATTGetDescriptors(
+      file.GetPlatformFile(), characteristic, allocated_length,
+      out_included_descriptors->get(), out_counts, BLUETOOTH_GATT_FLAG_NONE);
+  if (SUCCEEDED(hr) && allocated_length != *out_counts) {
+    LOG(ERROR) << "Retrieved descriptors is not equal to expected"
+               << " allocated_length " << allocated_length << " got "
+               << *out_counts;
+    hr = HRESULT_FROM_WIN32(ERROR_INVALID_USER_BUFFER);
+  }
+
+  if (FAILED(hr)) {
+    out_included_descriptors->reset(nullptr);
     *out_counts = 0;
   }
   return hr;

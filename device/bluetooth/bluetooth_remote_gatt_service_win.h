@@ -60,6 +60,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattServiceWin
   // Update included services and characteristics.
   void Update();
   uint16_t GetAttributeHandle() const { return service_attribute_handle_; }
+  base::FilePath GetServicePath() { return service_path_; }
+  BluetoothAdapterWin* GetWinAdapter() { return adapter_; }
 
  private:
   void OnGetIncludedCharacteristics(

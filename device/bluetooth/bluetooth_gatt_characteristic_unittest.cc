@@ -17,11 +17,13 @@
 #include "device/bluetooth/test/bluetooth_test_android.h"
 #elif defined(OS_MACOSX)
 #include "device/bluetooth/test/bluetooth_test_mac.h"
+#elif defined(OS_WIN)
+#include "device/bluetooth/test/bluetooth_test_win.h"
 #endif
 
 namespace device {
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
 class BluetoothGattCharacteristicTest : public BluetoothTest {
  public:
   // Creates adapter_, device_, service_, characteristic1_, & characteristic2_.
@@ -123,7 +125,7 @@ class BluetoothGattCharacteristicTest : public BluetoothTest {
 };
 #endif
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_WIN)
 TEST_F(BluetoothGattCharacteristicTest, GetIdentifier) {
   InitWithFakeAdapter();
   StartLowEnergyDiscoverySession();
@@ -184,9 +186,9 @@ TEST_F(BluetoothGattCharacteristicTest, GetIdentifier) {
 
   EXPECT_NE(char5->GetIdentifier(), char6->GetIdentifier());
 }
-#endif  // defined(OS_ANDROID)
+#endif  // defined(OS_ANDROID) || defined(OS_WIN)
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_WIN)
 TEST_F(BluetoothGattCharacteristicTest, GetUUID) {
   InitWithFakeAdapter();
   StartLowEnergyDiscoverySession();
@@ -222,9 +224,9 @@ TEST_F(BluetoothGattCharacteristicTest, GetUUID) {
   EXPECT_EQ(uuid2, char2->GetUUID());
   EXPECT_EQ(uuid2, char3->GetUUID());
 }
-#endif  // defined(OS_ANDROID)
+#endif  // defined(OS_ANDROID) || defined(OS_WIN)
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_WIN)
 TEST_F(BluetoothGattCharacteristicTest, GetProperties) {
   InitWithFakeAdapter();
   StartLowEnergyDiscoverySession();
@@ -250,9 +252,9 @@ TEST_F(BluetoothGattCharacteristicTest, GetProperties) {
   EXPECT_EQ(0, properties1);
   EXPECT_EQ(7, properties2);
 }
-#endif  // defined(OS_ANDROID)
+#endif  // defined(OS_ANDROID) || defined(OS_WIN)
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_WIN)
 // Tests GetService.
 TEST_F(BluetoothGattCharacteristicTest, GetService) {
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate());
@@ -260,7 +262,7 @@ TEST_F(BluetoothGattCharacteristicTest, GetService) {
   EXPECT_EQ(service_, characteristic1_->GetService());
   EXPECT_EQ(service_, characteristic2_->GetService());
 }
-#endif  // defined(OS_ANDROID)
+#endif  // defined(OS_ANDROID) || defined(OS_WIN)
 
 #if defined(OS_ANDROID)
 // Tests ReadRemoteCharacteristic and GetValue with empty value buffer.
@@ -898,15 +900,15 @@ TEST_F(BluetoothGattCharacteristicTest, StartNotifySession_Multiple) {
 }
 #endif  // defined(OS_ANDROID)
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_WIN)
 TEST_F(BluetoothGattCharacteristicTest, GetDescriptors_FindNone) {
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate());
 
   EXPECT_EQ(0u, characteristic1_->GetDescriptors().size());
 }
-#endif  // defined(OS_ANDROID)
+#endif  // defined(OS_ANDROID) || defined(OS_WIN)
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_WIN)
 TEST_F(BluetoothGattCharacteristicTest, GetDescriptors_and_GetDescriptor) {
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate());
 
@@ -949,6 +951,6 @@ TEST_F(BluetoothGattCharacteristicTest, GetDescriptors_and_GetDescriptor) {
   // ... but not uuid 3
   EXPECT_FALSE(c1_uuid1 == uuid3 || c1_uuid2 == uuid3);
 }
-#endif  // defined(OS_ANDROID)
+#endif  // defined(OS_ANDROID) || defined(OS_WIN)
 
 }  // namespace device

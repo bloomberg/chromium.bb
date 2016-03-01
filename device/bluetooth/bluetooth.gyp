@@ -95,6 +95,8 @@
         'bluetooth_remote_gatt_characteristic_win.h',
         'bluetooth_remote_gatt_descriptor_android.cc',
         'bluetooth_remote_gatt_descriptor_android.h',
+        'bluetooth_remote_gatt_descriptor_win.cc',
+        'bluetooth_remote_gatt_descriptor_win.h',
         'bluetooth_remote_gatt_service_android.cc',
         'bluetooth_remote_gatt_service_android.h',
         'bluetooth_remote_gatt_service_win.cc',

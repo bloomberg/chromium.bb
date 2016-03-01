@@ -41,6 +41,8 @@ class BluetoothTestWin : public BluetoothTestBase {
   void SimulateGattCharacteristicRemoved(
       BluetoothGattService* service,
       BluetoothGattCharacteristic* characteristic) override;
+  void SimulateGattDescriptor(BluetoothGattCharacteristic* characteristic,
+                              const std::string& uuid) override;
 
  private:
   scoped_refptr<base::TestSimpleTaskRunner> ui_task_runner_;
@@ -51,9 +53,12 @@ class BluetoothTestWin : public BluetoothTestBase {
   win::BluetoothLowEnergyWrapperFake* fake_bt_le_wrapper_;
 
   void AdapterInitCallback();
-  win::BLEGattService* GetSimulatedService(win::BLEDevice* device,
-                                           BluetoothGattService* service);
+  win::GattService* GetSimulatedService(win::BLEDevice* device,
+                                        BluetoothGattService* service);
+  win::GattCharacteristic* GetSimulatedCharacteristic(
+      BluetoothGattCharacteristic* characteristic);
   void ForceRefreshDevice();
+  void FinishPendingTasks();
 };
 
 // Defines common test fixture name. Use TEST_F(BluetoothTest, YourTestName).

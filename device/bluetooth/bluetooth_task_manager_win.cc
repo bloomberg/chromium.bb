@@ -58,14 +58,14 @@ bool BluetoothUUIDToWinBLEUUID(const device::BluetoothUUID& uuid,
     return false;
 
   if (uuid.format() == device::BluetoothUUID::kFormat16Bit) {
-    out_win_uuid->IsShortUuid = true;
+    out_win_uuid->IsShortUuid = TRUE;
     unsigned int data = 0;
     int result = sscanf_s(uuid.value().c_str(), "%04x", &data);
     if (result != 1)
       return false;
     out_win_uuid->Value.ShortUuid = data;
   } else {
-    out_win_uuid->IsShortUuid = false;
+    out_win_uuid->IsShortUuid = FALSE;
     unsigned int data[11];
     int result =
         sscanf_s(uuid.value().c_str(),
@@ -791,6 +791,24 @@ void BluetoothTaskManagerWin::GetGattIncludedCharacteristics(
                             number_of_charateristics, hr));
 }
 
+void BluetoothTaskManagerWin::GetGattIncludedDescriptors(
+    base::FilePath service_path,
+    BTH_LE_GATT_CHARACTERISTIC characteristic,
+    const GetGattIncludedDescriptorsCallback& callback) {
+  scoped_ptr<BTH_LE_GATT_DESCRIPTOR> win_descriptors_info;
+  uint16_t number_of_descriptors = 0;
+
+  HRESULT hr =
+      win::BluetoothLowEnergyWrapper::GetInstance()
+          ->ReadDescriptorsOfACharacteristic(
+              service_path, (PBTH_LE_GATT_CHARACTERISTIC)(&characteristic),
+              &win_descriptors_info, &number_of_descriptors);
+
+  ui_task_runner_->PostTask(
+      FROM_HERE, base::Bind(callback, base::Passed(&win_descriptors_info),
+                            number_of_descriptors, hr));
+}
+
 void BluetoothTaskManagerWin::PostGetGattIncludedCharacteristics(
     const base::FilePath& service_path,
     const BluetoothUUID& uuid,
@@ -801,6 +819,17 @@ void BluetoothTaskManagerWin::PostGetGattIncludedCharacteristics(
       FROM_HERE,
       base::Bind(&BluetoothTaskManagerWin::GetGattIncludedCharacteristics, this,
                  service_path, uuid, attribute_handle, callback));
+}
+
+void BluetoothTaskManagerWin::PostGetGattIncludedDescriptors(
+    const base::FilePath& service_path,
+    const PBTH_LE_GATT_CHARACTERISTIC characteristic,
+    const GetGattIncludedDescriptorsCallback& callback) {
+  DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
+  bluetooth_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&BluetoothTaskManagerWin::GetGattIncludedDescriptors, this,
+                 service_path, *characteristic, callback));
 }
 
 }  // namespace device
