@@ -24,7 +24,8 @@
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/synchronization/lock.h"
+#include "base/memory/weak_ptr.h"
+#include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "net/base/net_export.h"
 #include "net/cookies/canonical_cookie.h"
@@ -48,9 +49,6 @@ class ParsedCookie;
 // optional permanent storage that implements the PersistentCookieStore
 // interface.
 //
-// This class IS thread-safe. Normally, it is only used on the I/O thread, but
-// is also accessed directly through Automation for UI testing.
-//
 // Tasks may be deferred if all affected cookies are not yet loaded from the
 // backing store. Otherwise, callbacks may be invoked immediately.
 //
@@ -60,8 +58,6 @@ class ParsedCookie;
 // chain loads the cookie store on DB thread. In the latter case, the cookie
 // task will be queued in tasks_pending_for_key_ while PermanentCookieStore
 // loads cookies for the specified domain key(eTLD+1) on DB thread.
-//
-// Callbacks are guaranteed to be invoked on the calling thread.
 //
 // TODO(deanm) Implement CookieMonster, the cookie database.
 //  - Verify that our domain enforcement and non-dotted handling is correct
@@ -241,9 +237,6 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // For SetCookieWithCreationTime.
   FRIEND_TEST_ALL_PREFIXES(CookieMonsterTest,
                            TestCookieDeleteAllCreatedBetweenTimestamps);
-  // For SetCookieWithCreationTime.
-  FRIEND_TEST_ALL_PREFIXES(MultiThreadedCookieMonsterTest,
-                           ThreadCheckDeleteAllCreatedBetweenForHost);
 
   // For gargage collection constants.
   FRIEND_TEST_ALL_PREFIXES(CookieMonsterTest, TestHostGarbageCollection);
@@ -442,11 +435,9 @@ class NET_EXPORT CookieMonster : public CookieStore {
 
   // Fetches all cookies if the backing store exists and they're not already
   // being fetched.
-  // Note: this method should always be called with lock_ held.
   void FetchAllCookiesIfNecessary();
 
   // Fetches all cookies from the backing store.
-  // Note: this method should always be called with lock_ held.
   void FetchAllCookies();
 
   // Whether all cookies should be fetched as soon as any is requested.
@@ -644,9 +635,13 @@ class NET_EXPORT CookieMonster : public CookieStore {
                          CookieList* cookies_to_add,
                          CookieList* cookies_to_delete);
 
+  // Runs the given callback. Used to avoid running callbacks after the store
+  // has been destroyed.
+  void RunCallback(const base::Closure& callback);
+
   // Run all cookie changed callbacks that are monitoring |cookie|.
   // |removed| is true if the cookie was deleted.
-  void RunCallbacks(const CanonicalCookie& cookie, bool removed);
+  void RunCookieChangedCallbacks(const CanonicalCookie& cookie, bool removed);
 
   // Histogram variables; see CookieMonster::InitializeHistograms() in
   // cookie_monster.cc for details.
@@ -713,9 +708,6 @@ class NET_EXPORT CookieMonster : public CookieStore {
 
   scoped_refptr<CookieMonsterDelegate> delegate_;
 
-  // Lock for thread-safety
-  base::Lock lock_;
-
   base::Time last_statistic_record_time_;
 
   bool persist_session_cookies_;
@@ -723,6 +715,10 @@ class NET_EXPORT CookieMonster : public CookieStore {
   typedef std::map<std::pair<GURL, std::string>,
                    linked_ptr<CookieChangedCallbackList>> CookieChangedHookMap;
   CookieChangedHookMap hook_map_;
+
+  base::ThreadChecker thread_checker_;
+
+  base::WeakPtrFactory<CookieMonster> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CookieMonster);
 };
@@ -780,6 +776,8 @@ class NET_EXPORT CookieMonster::PersistentCookieStore
   // Initializes the store and retrieves the existing cookies. This will be
   // called only once at startup. The callback will return all the cookies
   // that are not yet returned to CookieMonster by previous priority loads.
+  //
+  // |loaded_callback| may not be NULL.
   virtual void Load(const LoadedCallback& loaded_callback) = 0;
 
   // Does a priority load of all cookies for the domain key (eTLD+1). The
@@ -787,6 +785,8 @@ class NET_EXPORT CookieMonster::PersistentCookieStore
   // loads, which includes cookies for the requested domain key if they are not
   // already returned, plus all cookies that are chain-loaded and not yet
   // returned to CookieMonster.
+  //
+  // |loaded_callback| may not be NULL.
   virtual void LoadCookiesForKey(const std::string& key,
                                  const LoadedCallback& loaded_callback) = 0;
 
@@ -797,7 +797,8 @@ class NET_EXPORT CookieMonster::PersistentCookieStore
   // Instructs the store to not discard session only cookies on shutdown.
   virtual void SetForceKeepSessionState() = 0;
 
-  // Flushes the store and posts |callback| when complete.
+  // Flushes the store and posts |callback| when complete. |callback| may be
+  // NULL.
   virtual void Flush(const base::Closure& callback) = 0;
 
  protected:

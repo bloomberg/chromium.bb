@@ -181,6 +181,10 @@ class SQLitePersistentCookieStore::Backend
   // that have been loaded from DB since last IO notification.
   void Notify(const LoadedCallback& loaded_callback, bool load_success);
 
+  // Flushes (Commits) pending operations on the background runner, and invokes
+  // |callback| on the client thread when done.
+  void FlushAndNotifyInBackground(const base::Closure& callback);
+
   // Sends notification when the entire store is loaded, and reports metrics
   // for the total time to load and aggregated results from any priority loads
   // that occurred.
@@ -506,6 +510,13 @@ void SQLitePersistentCookieStore::Backend::LoadKeyAndNotifyInBackground(
       base::Bind(
           &SQLitePersistentCookieStore::Backend::CompleteLoadForKeyInForeground,
           this, loaded_callback, success, posted_at));
+}
+
+void SQLitePersistentCookieStore::Backend::FlushAndNotifyInBackground(
+    const base::Closure& callback) {
+  Commit();
+  if (!callback.is_null())
+    PostClientTask(FROM_HERE, callback);
 }
 
 void SQLitePersistentCookieStore::Backend::CompleteLoadForKeyInForeground(
@@ -1159,14 +1170,8 @@ void SQLitePersistentCookieStore::Backend::Commit() {
 void SQLitePersistentCookieStore::Backend::Flush(
     const base::Closure& callback) {
   DCHECK(!background_task_runner_->RunsTasksOnCurrentThread());
-  PostBackgroundTask(FROM_HERE, base::Bind(&Backend::Commit, this));
-
-  if (!callback.is_null()) {
-    // We want the completion task to run immediately after Commit() returns.
-    // Posting it from here means there is less chance of another task getting
-    // onto the message queue first, than if we posted it from Commit() itself.
-    PostBackgroundTask(FROM_HERE, callback);
-  }
+  PostBackgroundTask(FROM_HERE, base::Bind(&Backend::FlushAndNotifyInBackground,
+                                           this, callback));
 }
 
 // Fire off a close message to the background runner.  We could still have a
@@ -1357,6 +1362,7 @@ void SQLitePersistentCookieStore::Close(const base::Closure& callback) {
 }
 
 void SQLitePersistentCookieStore::Load(const LoadedCallback& loaded_callback) {
+  DCHECK(!loaded_callback.is_null());
   if (backend_)
     backend_->Load(loaded_callback);
   else
@@ -1366,6 +1372,7 @@ void SQLitePersistentCookieStore::Load(const LoadedCallback& loaded_callback) {
 void SQLitePersistentCookieStore::LoadCookiesForKey(
     const std::string& key,
     const LoadedCallback& loaded_callback) {
+  DCHECK(!loaded_callback.is_null());
   if (backend_)
     backend_->LoadCookiesForKey(key, loaded_callback);
   else

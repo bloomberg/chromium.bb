@@ -24,12 +24,13 @@ namespace net {
 
 class CookieMonster;
 
-// An interface for storing and retrieving cookies. Implementations need to
-// be thread safe as its methods can be accessed from IO as well as UI threads.
+// An interface for storing and retrieving cookies. Implementations are not
+// thread safe, as with most other net classes. All methods must be invoked on
+// the network thread, and all callbacks will be calle there.
 //
-// All async functions may either invoke the callback asynchronously on the same
-// thread, or they may be invoked immediately (prior to return of the
-// asynchronous function).
+// All async functions may either invoke the callback asynchronously, or they
+// may be invoked immediately (prior to return of the asynchronous function).
+// Destroying the CookieStore will cancel pending async callbacks.
 class NET_EXPORT CookieStore : public base::RefCountedThreadSafe<CookieStore> {
  public:
   // Callback definitions.
@@ -171,13 +172,6 @@ class NET_EXPORT CookieStore : public base::RefCountedThreadSafe<CookieStore> {
 
   // Flush the backing store (if any) to disk and post the given callback when
   // done.
-  // WARNING: THE CALLBACK WILL RUN ON A RANDOM THREAD. IT MUST BE THREAD SAFE.
-  // It may be posted to the current thread, or it may run on the thread that
-  // actually does the flushing. Your Task should generally post a notification
-  // to the thread you actually want to be notified on.
-  // TODO(mmenke):  Once this class is no longer thread-safe, this will always
-  // be invoked on the CookieStore's thread, and this comment can be removed.
-  // https://crbug.com/46185
   virtual void FlushStore(const base::Closure& callback) = 0;
 
   // Protects session cookies from deletion on shutdown, if the underlying
