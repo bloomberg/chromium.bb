@@ -89,11 +89,16 @@ LockStateController::LockStateController()
       shutdown_after_lock_(false),
       animating_lock_(false),
       can_cancel_lock_animation_(false),
+      lock_fail_timer_is_stopped_(true),
       weak_ptr_factory_(this) {
+  // TODO(jdufault): Remove after resolving crbug.com/452599.
+  VLOG(0) << "Constructing LockStateController instance " << this;
   Shell::GetPrimaryRootWindow()->GetHost()->AddObserver(this);
 }
 
 LockStateController::~LockStateController() {
+  // TODO(jdufault): Remove after resolving crbug.com/452599.
+  VLOG(0) << "Destroying LockStateController instance " << this;
   Shell::GetPrimaryRootWindow()->GetHost()->RemoveObserver(this);
 }
 
@@ -137,6 +142,9 @@ void LockStateController::StartLockAnimationAndLockImmediately(
 }
 
 bool LockStateController::LockRequested() {
+  // TODO(jdufault): Remove DCHECK after resolving crbug.com/452599; this is not
+  // expected to trigger. The DCHECK is only present to assert all assumptions.
+  DCHECK(lock_fail_timer_is_stopped_ != lock_fail_timer_.IsRunning());
   return lock_fail_timer_.IsRunning();
 }
 
@@ -223,6 +231,9 @@ void LockStateController::OnHostCloseRequested(
 
 void LockStateController::OnLoginStateChanged(
     user::LoginStatus status) {
+  // TODO(jdufault): Remove after resolving crbug.com/452599.
+  VLOG(0) << "LockStateController::OnLoginStateChanged login_status_: "
+          << login_status_ << ", status: " << status;
   if (status != user::LOGGED_IN_LOCKED)
     login_status_ = status;
   system_is_locked_ = (status == user::LOGGED_IN_LOCKED);
@@ -246,7 +257,12 @@ void LockStateController::OnAppTerminating() {
 void LockStateController::OnLockStateChanged(bool locked) {
   DCHECK((lock_fail_timer_.IsRunning() && lock_duration_timer_ != nullptr) ||
          (!lock_fail_timer_.IsRunning() && lock_duration_timer_ == nullptr));
-  VLOG(1) << "OnLockStateChanged " << locked;
+  VLOG(1) << "OnLockStateChanged called with locked: " << locked
+          << ", shutting_down_: " << shutting_down_
+          << ", system_is_locked_: " << system_is_locked_
+          << ", lock_fail_timer_.IsRunning(): " << lock_fail_timer_.IsRunning()
+          << ", lock_fail_timer_is_stopped_: " << lock_fail_timer_is_stopped_;
+
   if (shutting_down_ || (system_is_locked_ == locked))
     return;
 
@@ -254,7 +270,12 @@ void LockStateController::OnLockStateChanged(bool locked) {
 
   if (locked) {
     StartPostLockAnimation();
+
+    // TODO(jdufault): Remove after resolving crbug.com/452599.
+    VLOG(0) << "Stopping lock_fail_timer_";
     lock_fail_timer_.Stop();
+    lock_fail_timer_is_stopped_ = true;
+
     if (lock_duration_timer_) {
       UMA_HISTOGRAM_LOCK_TIMES("Ash.WindowManager.Lock.Success",
                                lock_duration_timer_->Elapsed());
@@ -276,7 +297,10 @@ void LockStateController::OnLockFailTimeout() {
     loading_webpage = delegate_->IsLoading() ? "true" : "false";
 
   LOG(FATAL) << "Screen lock took too long; crashing intentionally "
-             << "(loading webpage? " << loading_webpage << ")";
+             << "(loading webpage: " << loading_webpage
+             << ", lock_fail_timer.IsRunning: " << lock_fail_timer_.IsRunning()
+             << ", lock_fail_timer_is_stopped_: " << lock_fail_timer_is_stopped_
+             << ")";
 }
 
 void LockStateController::StartLockToShutdownTimer() {
@@ -537,8 +561,12 @@ void LockStateController::PreLockAnimationFinished(bool request_lock) {
     timeout *= 2;
   }
 #endif
+  // TODO(jdufault): Remove after resolving crbug.com/452599.
+  VLOG(0) << "Starting LockFailTimer with a timeout of " << timeout << "s";
   lock_fail_timer_.Start(
       FROM_HERE, timeout, this, &LockStateController::OnLockFailTimeout);
+  lock_fail_timer_is_stopped_ = false;
+
   lock_duration_timer_.reset(new base::ElapsedTimer());
 }
 
