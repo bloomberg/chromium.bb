@@ -14,7 +14,7 @@ Simply put, community discussions should be
 
 ## Be respectful and constructive.
 
-Treat everyone with respect. Build on each others ideas. Each of us has the
+Treat everyone with respect. Build on each other's ideas. Each of us has the
 right to enjoy our experience and participate without fear of harassment,
 discrimination, or condescension, whether blatant or subtle. Remember that
 Chromium is a geographically distributed team and that you may not be
@@ -51,8 +51,8 @@ conduct.
  * Inappropriate sexual content
  * Unwelcome sexual or otherwise aggressive attention
  * Continued one-on-one communication after requests to cease
- * Distribution or threat of distribution of peoples personally identifying
-   information, AKA doxing
+ * Distribution or threat of distribution of people's personally identifying
+   information, AKA “doxing”
 
 ## Consequences for failing to comply with this policy
 
