@@ -100,9 +100,6 @@ crbug.com/588598 web-animations-api/player-cancel-event.html [ Leak ]
 # Untriaged but known leaks of ActiveDOMObject (fast).
 # -----------------------------------------------------------------
 crbug.com/506529 fast/mediastream/MediaStreamConstructor.html [ Leak ]
-crbug.com/506529 fast/speech/scripted/speechrecognition-basics.html [ Leak ]
-crbug.com/506529 fast/speech/scripted/speechrecognition-errors.html [ Leak ]
-crbug.com/506529 fast/speech/scripted/start-exception.html [ Leak ]
 crbug.com/506529 fast/events/constructors/media-stream-event-constructor.html [ Leak ]
 crbug.com/506529 fast/files/workers/worker-read-blob-async-crash.html [ Leak ]
 crbug.com/506529 virtual/pointerevent/fast/events/constructors/media-stream-event-constructor.html [ Leak ]
