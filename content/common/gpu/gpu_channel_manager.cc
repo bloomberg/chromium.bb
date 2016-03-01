@@ -155,15 +155,15 @@ scoped_ptr<GpuChannel> GpuChannelManager::CreateGpuChannel(
                      allow_view_command_buffers, allow_real_time_streams));
 }
 
-void GpuChannelManager::EstablishChannel(const EstablishChannelParams& params) {
+IPC::ChannelHandle GpuChannelManager::EstablishChannel(
+    const EstablishChannelParams& params) {
   scoped_ptr<GpuChannel> channel(CreateGpuChannel(
       params.client_id, params.client_tracing_id, params.preempts,
       params.allow_view_command_buffers, params.allow_real_time_streams));
   IPC::ChannelHandle channel_handle = channel->Init(shutdown_event_);
 
   gpu_channels_.set(params.client_id, std::move(channel));
-
-  delegate_->ChannelEstablished(channel_handle);
+  return channel_handle;
 }
 
 void GpuChannelManager::CloseChannel(const IPC::ChannelHandle& channel_handle) {

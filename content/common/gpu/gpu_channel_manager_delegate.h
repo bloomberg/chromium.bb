@@ -25,9 +25,6 @@ class GpuChannelManagerDelegate {
   // the browser should start sending the corresponding information
   virtual void AddSubscription(int32_t client_id, unsigned int target) = 0;
 
-  // Response from GPU to an EstablishChannel request.
-  virtual void ChannelEstablished(const IPC::ChannelHandle& channel_handle) = 0;
-
   // Tells the delegate that an offscreen context was created for the provided
   // |active_url|.
   virtual void DidCreateOffscreenContext(const GURL& active_url) = 0;

@@ -80,7 +80,6 @@ class GpuChildThread : public ChildThreadImpl,
 
   // GpuChannelManagerDelegate implementation.
   void AddSubscription(int32_t client_id, unsigned int target) override;
-  void ChannelEstablished(const IPC::ChannelHandle& channel_handle) override;
   void DidCreateOffscreenContext(const GURL& active_url) override;
   void DidDestroyChannel(int client_id) override;
   void DidDestroyOffscreenContext(const GURL& active_url) override;

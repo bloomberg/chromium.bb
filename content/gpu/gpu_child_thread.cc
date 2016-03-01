@@ -296,11 +296,6 @@ void GpuChildThread::AddSubscription(int32_t client_id, unsigned int target) {
   Send(new GpuHostMsg_AddSubscription(client_id, target));
 }
 
-void GpuChildThread::ChannelEstablished(
-    const IPC::ChannelHandle& channel_handle) {
-  Send(new GpuHostMsg_ChannelEstablished(channel_handle));
-}
-
 void GpuChildThread::DidCreateOffscreenContext(const GURL& active_url) {
   Send(new GpuHostMsg_DidCreateOffscreenContext(active_url));
 }
@@ -564,8 +559,12 @@ void GpuChildThread::OnBufferPresented(const BufferPresentedParams& params) {
 #endif
 
 void GpuChildThread::OnEstablishChannel(const EstablishChannelParams& params) {
-  if (gpu_channel_manager_)
-    gpu_channel_manager_->EstablishChannel(params);
+  if (!gpu_channel_manager_)
+    return;
+
+  IPC::ChannelHandle channel_handle =
+      gpu_channel_manager_->EstablishChannel(params);
+  Send(new GpuHostMsg_ChannelEstablished(channel_handle));
 }
 
 void GpuChildThread::OnCloseChannel(const IPC::ChannelHandle& channel_handle) {

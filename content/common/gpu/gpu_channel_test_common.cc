@@ -19,11 +19,6 @@ TestGpuChannelManagerDelegate::~TestGpuChannelManagerDelegate() {}
 void TestGpuChannelManagerDelegate::AddSubscription(int32_t client_id,
                                                     unsigned int target) {}
 
-void TestGpuChannelManagerDelegate::ChannelEstablished(
-    const IPC::ChannelHandle& channel_handle) {
-  last_established_channel_handle_ = channel_handle;
-}
-
 void TestGpuChannelManagerDelegate::DidCreateOffscreenContext(
     const GURL& active_url) {}
 

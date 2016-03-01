@@ -29,14 +29,9 @@ class TestGpuChannelManagerDelegate : public GpuChannelManagerDelegate {
   TestGpuChannelManagerDelegate();
   ~TestGpuChannelManagerDelegate() override;
 
-  const IPC::ChannelHandle& last_established_channel_handle() const {
-    return last_established_channel_handle_;
-  }
-
  private:
   // GpuChannelManagerDelegate implementation:
   void AddSubscription(int32_t client_id, unsigned int target) override;
-  void ChannelEstablished(const IPC::ChannelHandle& channel_handle) override;
   void DidCreateOffscreenContext(const GURL& active_url) override;
   void DidDestroyChannel(int client_id) override;
   void DidDestroyOffscreenContext(const GURL& active_url) override;
@@ -57,8 +52,6 @@ class TestGpuChannelManagerDelegate : public GpuChannelManagerDelegate {
       const gfx::PluginWindowHandle& parent_window,
       const gfx::PluginWindowHandle& child_window) override;
 #endif
-
-  IPC::ChannelHandle last_established_channel_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(TestGpuChannelManagerDelegate);
 };

@@ -36,9 +36,7 @@ TEST_F(GpuChannelManagerTest, EstablishChannel) {
   params.preempts = false;
   params.allow_view_command_buffers = false;
   params.allow_real_time_streams = false;
-  channel_manager()->EstablishChannel(params);
-  IPC::ChannelHandle handle =
-      channel_manager_delegate()->last_established_channel_handle();
+  IPC::ChannelHandle handle = channel_manager()->EstablishChannel(params);
   EXPECT_NE("", handle.name);
 
   GpuChannel* channel = channel_manager()->LookupChannel(kClientId);
