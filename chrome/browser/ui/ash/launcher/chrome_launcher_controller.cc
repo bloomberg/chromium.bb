@@ -16,7 +16,6 @@
 #include "ash/shelf/shelf_item_delegate_manager.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_model.h"
-#include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/wm/window_util.h"
@@ -504,10 +503,8 @@ ChromeLauncherController::~ChromeLauncherController() {
   // Reset the app window controller here since it has a weak pointer to this.
   app_window_controller_.reset();
 
-  for (std::set<ash::Shelf*>::iterator iter = shelves_.begin();
-       iter != shelves_.end();
-       ++iter)
-    (*iter)->shelf_widget()->shelf_layout_manager()->RemoveObserver(this);
+  for (auto iter : shelves_)
+    iter->shelf_layout_manager()->RemoveObserver(this);
 
   model_->RemoveObserver(this);
   if (ash::Shell::HasInstance())
@@ -1170,7 +1167,7 @@ ChromeLauncherController::ActivateWindowOrMinimizeIfActive(
 
 void ChromeLauncherController::OnShelfCreated(ash::Shelf* shelf) {
   shelves_.insert(shelf);
-  shelf->shelf_widget()->shelf_layout_manager()->AddObserver(this);
+  shelf->shelf_layout_manager()->AddObserver(this);
 }
 
 void ChromeLauncherController::OnShelfDestroyed(ash::Shelf* shelf) {

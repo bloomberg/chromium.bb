@@ -13,12 +13,12 @@
 
 namespace ash {
 
-class ShelfLayoutManager;
+class Shelf;
 
 // Shelf overflow chevron button.
 class OverflowButton : public views::CustomButton {
  public:
-  OverflowButton(views::ButtonListener* listener, ShelfLayoutManager* shelf);
+  OverflowButton(views::ButtonListener* listener, Shelf* shelf);
   ~OverflowButton() override;
 
   void OnShelfAlignmentChanged();
@@ -35,7 +35,7 @@ class OverflowButton : public views::CustomButton {
   gfx::ImageSkia right_image_;
   // Bottom image is owned by the resource bundle.
   const gfx::ImageSkia* bottom_image_;
-  ShelfLayoutManager* shelf_;
+  Shelf* shelf_;
 
   DISALLOW_COPY_AND_ASSIGN(OverflowButton);
 };

@@ -425,10 +425,8 @@ DockedWindowLayoutManager::~DockedWindowLayoutManager() {
 }
 
 void DockedWindowLayoutManager::Shutdown() {
-  if (shelf_ && shelf_->shelf_widget()) {
-    ShelfLayoutManager* shelf_layout_manager =
-        shelf_->shelf_widget()->shelf_layout_manager();
-    shelf_layout_manager->RemoveObserver(this);
+  if (shelf_ && shelf_->shelf_layout_manager()) {
+    shelf_->shelf_layout_manager()->RemoveObserver(this);
     shelf_observer_.reset();
   }
   shelf_ = NULL;
@@ -539,10 +537,8 @@ void DockedWindowLayoutManager::FinishDragging(DockedAction action,
 void DockedWindowLayoutManager::SetShelf(Shelf* shelf) {
   DCHECK(!shelf_);
   shelf_ = shelf;
-  if (shelf_->shelf_widget()) {
-    ShelfLayoutManager* shelf_layout_manager =
-        shelf_->shelf_widget()->shelf_layout_manager();
-    shelf_layout_manager->AddObserver(this);
+  if (shelf_->shelf_layout_manager()) {
+    shelf_->shelf_layout_manager()->AddObserver(this);
     shelf_observer_.reset(new ShelfWindowObserver(this));
   }
 }
@@ -755,8 +751,7 @@ void DockedWindowLayoutManager::SetChildBounds(
   if (IsPopupOrTransient(child))
     return;
   // Whenever one of our windows is moved or resized enforce layout.
-  ShelfLayoutManager* shelf_layout =
-      shelf_->shelf_widget()->shelf_layout_manager();
+  ShelfLayoutManager* shelf_layout = shelf_->shelf_layout_manager();
   if (shelf_layout)
     shelf_layout->UpdateVisibilityState();
 }
@@ -807,15 +802,12 @@ void DockedWindowLayoutManager::OnShelfAlignmentChanged(
   if (dock_container_->GetRootWindow() != root_window)
     return;
 
-  if (!shelf_ || !shelf_->shelf_widget())
-    return;
-
-  if (alignment_ == DOCKED_ALIGNMENT_NONE)
+  if (!shelf_ || alignment_ == DOCKED_ALIGNMENT_NONE)
     return;
 
   // Do not allow shelf and dock on the same side. Switch side that
   // the dock is attached to and move all dock windows to that new side.
-  ShelfAlignment shelf_alignment = shelf_->shelf_widget()->GetAlignment();
+  ShelfAlignment shelf_alignment = shelf_->alignment();
   if (alignment_ == DOCKED_ALIGNMENT_LEFT &&
       shelf_alignment == SHELF_ALIGNMENT_LEFT) {
     alignment_ = DOCKED_ALIGNMENT_RIGHT;

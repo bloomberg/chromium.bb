@@ -981,7 +981,7 @@ TEST_F(ShelfViewTest, AssertNoButtonsOverlap) {
   };
 
   for (ShelfAlignment alignment : kAlignments) {
-    EXPECT_TRUE(shelf_view_->shelf_layout_manager()->SetAlignment(alignment));
+    shelf_view_->shelf()->SetAlignment(alignment);
     // For every 2 successive visible icons, expect that their bounds don't
     // intersect.
     for (int i = 1; i < test_api_->GetButtonCount() - 1; ++i) {
@@ -1340,11 +1340,11 @@ TEST_F(ShelfViewTest, ShelfItemStatusPlatformApp) {
 // Confirm that shelf item bounds are correctly updated on shelf changes.
 TEST_F(ShelfViewTest, ShelfItemBoundsCheck) {
   VerifyShelfItemBoundsAreValid();
-  shelf_view_->shelf_layout_manager()->SetAutoHideBehavior(
+  shelf_view_->shelf()->shelf_layout_manager()->SetAutoHideBehavior(
       SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
   test_api_->RunMessageLoopUntilAnimationsDone();
   VerifyShelfItemBoundsAreValid();
-  shelf_view_->shelf_layout_manager()->SetAutoHideBehavior(
+  shelf_view_->shelf()->shelf_layout_manager()->SetAutoHideBehavior(
       SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
   test_api_->RunMessageLoopUntilAnimationsDone();
   VerifyShelfItemBoundsAreValid();
@@ -1395,7 +1395,7 @@ TEST_F(ShelfViewTest, ShelfTooltipTest) {
   EXPECT_EQ(platform_button, GetTooltipAnchorView());
 }
 
-// Verify a fix for crash caused by a tooltip update for a deletedshelf
+// Verify a fix for crash caused by a tooltip update for a deleted shelf
 // button, see crbug.com/288838.
 TEST_F(ShelfViewTest, RemovingItemClosesTooltip) {
   ShelfButtonHost* button_host = shelf_view_;

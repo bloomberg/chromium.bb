@@ -7,8 +7,8 @@
 #include <algorithm>
 
 #include "ash/root_window_controller.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_constants.h"
-#include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
@@ -32,12 +32,9 @@ const int kShelfViewLeadingInset = 8;
 
 }  // namespace
 
-OverflowBubbleView::OverflowBubbleView()
-    : shelf_view_(NULL) {
-}
+OverflowBubbleView::OverflowBubbleView() : shelf_view_(NULL) {}
 
-OverflowBubbleView::~OverflowBubbleView() {
-}
+OverflowBubbleView::~OverflowBubbleView() {}
 
 void OverflowBubbleView::InitOverflowBubble(views::View* anchor,
                                             ShelfView* shelf_view) {
@@ -65,9 +62,7 @@ void OverflowBubbleView::InitOverflowBubble(views::View* anchor,
 }
 
 bool OverflowBubbleView::IsHorizontalAlignment() const {
-  ShelfLayoutManager* shelf_layout_manager = GetShelfLayoutManager();
-  return shelf_layout_manager ? shelf_layout_manager->IsHorizontalAlignment()
-                              : false;
+  return shelf_view_ ? shelf_view_->shelf()->IsHorizontalAlignment() : false;
 }
 
 const gfx::Size OverflowBubbleView::GetContentsSize() const {
@@ -76,14 +71,11 @@ const gfx::Size OverflowBubbleView::GetContentsSize() const {
 
 // Gets arrow location based on shelf alignment.
 views::BubbleBorder::Arrow OverflowBubbleView::GetBubbleArrow() const {
-  ShelfLayoutManager* shelf_layout_manager = GetShelfLayoutManager();
-  return shelf_layout_manager ?
-      shelf_layout_manager->SelectValueForShelfAlignment(
-          views::BubbleBorder::BOTTOM_LEFT,
-          views::BubbleBorder::LEFT_TOP,
-          views::BubbleBorder::RIGHT_TOP,
-          views::BubbleBorder::TOP_LEFT) :
-      views::BubbleBorder::NONE;
+  if (!shelf_view_)
+    return views::BubbleBorder::NONE;
+  return shelf_view_->shelf()->SelectValueForShelfAlignment(
+      views::BubbleBorder::BOTTOM_LEFT, views::BubbleBorder::LEFT_TOP,
+      views::BubbleBorder::RIGHT_TOP, views::BubbleBorder::TOP_LEFT);
 }
 
 void OverflowBubbleView::ScrollByXOffset(int x_offset) {
@@ -104,10 +96,6 @@ void OverflowBubbleView::ScrollByYOffset(int y_offset) {
   int y = std::min(contents_size.height() - visible_bounds.height(),
                    std::max(0, scroll_offset_.y() + y_offset));
   scroll_offset_.set_y(y);
-}
-
-ShelfLayoutManager* OverflowBubbleView::GetShelfLayoutManager() const {
-  return shelf_view_ ? shelf_view_->shelf_layout_manager() : nullptr;
 }
 
 gfx::Size OverflowBubbleView::GetPreferredSize() const {

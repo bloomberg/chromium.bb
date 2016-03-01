@@ -466,12 +466,10 @@ gfx::Rect GetMinimizeAnimationTargetBoundsInScreen(aura::Window* window) {
   // width will be 0 but the position in the launcher and the major dimension
   // are still reported correctly and the window can be animated to the launcher
   // item's light bar.
-  ShelfLayoutManager* layout_manager =
-      shelf->shelf_widget()->shelf_layout_manager();
   if (item_rect.width() != 0 || item_rect.height() != 0) {
-    if (layout_manager->visibility_state() == SHELF_AUTO_HIDE) {
+    if (shelf->shelf_layout_manager()->visibility_state() == SHELF_AUTO_HIDE) {
       gfx::Rect shelf_bounds = shelf->shelf_widget()->GetWindowBoundsInScreen();
-      switch (layout_manager->GetAlignment()) {
+      switch (shelf->alignment()) {
         case SHELF_ALIGNMENT_BOTTOM:
           item_rect.set_y(shelf_bounds.y());
           break;
@@ -495,18 +493,11 @@ gfx::Rect GetMinimizeAnimationTargetBoundsInScreen(aura::Window* window) {
   gfx::Rect work_area =
       gfx::Screen::GetScreen()->GetDisplayNearestWindow(window).work_area();
   int ltr_adjusted_x = base::i18n::IsRTL() ? work_area.right() : work_area.x();
-  switch (layout_manager->GetAlignment()) {
-    case SHELF_ALIGNMENT_BOTTOM:
-      return gfx::Rect(ltr_adjusted_x, work_area.bottom(), 0, 0);
-    case SHELF_ALIGNMENT_TOP:
-      return gfx::Rect(ltr_adjusted_x, work_area.y(), 0, 0);
-    case SHELF_ALIGNMENT_LEFT:
-      return gfx::Rect(work_area.x(), work_area.y(), 0, 0);
-    case SHELF_ALIGNMENT_RIGHT:
-      return gfx::Rect(work_area.right(), work_area.y(), 0, 0);
-  }
-  NOTREACHED();
-  return gfx::Rect();
+  return shelf->SelectValueForShelfAlignment(
+      gfx::Rect(ltr_adjusted_x, work_area.bottom(), 0, 0),
+      gfx::Rect(work_area.x(), work_area.y(), 0, 0),
+      gfx::Rect(work_area.right(), work_area.y(), 0, 0),
+      gfx::Rect(ltr_adjusted_x, work_area.y(), 0, 0));
 }
 
 }  // namespace ash

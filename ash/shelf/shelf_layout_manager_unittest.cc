@@ -180,11 +180,9 @@ class ShelfDragCallback {
         scroll_.y(),
         scroll_.x());
     bool increasing_drag =
-        GetShelfLayoutManager()->SelectValueForShelfAlignment(
-            scroll_delta < 0,
-            scroll_delta > 0,
-            scroll_delta < 0,
-            scroll_delta > 0);
+        GetShelfWidget()->shelf()->SelectValueForShelfAlignment(
+            scroll_delta < 0, scroll_delta > 0,
+            scroll_delta < 0, scroll_delta > 0);
     int shelf_size = GetShelfLayoutManager()->PrimaryAxisValue(
         shelf_bounds.height(),
         shelf_bounds.width());

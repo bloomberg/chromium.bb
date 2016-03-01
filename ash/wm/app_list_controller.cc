@@ -55,12 +55,9 @@ ui::Layer* GetLayer(views::Widget* widget) {
 // Gets arrow location based on shelf alignment.
 views::BubbleBorder::Arrow GetBubbleArrow(aura::Window* window) {
   DCHECK(Shell::HasInstance());
-  return ShelfLayoutManager::ForShelf(window)->
-      SelectValueForShelfAlignment(
-          views::BubbleBorder::BOTTOM_CENTER,
-          views::BubbleBorder::LEFT_CENTER,
-          views::BubbleBorder::RIGHT_CENTER,
-          views::BubbleBorder::TOP_CENTER);
+  return Shelf::ForWindow(window)->SelectValueForShelfAlignment(
+      views::BubbleBorder::BOTTOM_CENTER, views::BubbleBorder::LEFT_CENTER,
+      views::BubbleBorder::RIGHT_CENTER, views::BubbleBorder::TOP_CENTER);
 }
 
 // Offset given |rect| towards shelf.

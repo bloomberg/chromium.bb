@@ -8,8 +8,8 @@
 
 #include "ash/ash_constants.h"
 #include "ash/ash_switches.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_button_host.h"
-#include "ash/shelf/shelf_layout_manager.h"
 #include "base/time/time.h"
 #include "grit/ash_resources.h"
 #include "skia/ext/image_operations.h"
@@ -180,8 +180,7 @@ class ShelfButton::BarView : public views::ImageView,
       double animation = animating_ ?
           ShelfButtonAnimation::GetInstance()->GetAnimation() : 1.0;
       double scale = .35 + .65 * animation;
-      if (host_->shelf_layout_manager()->GetAlignment() ==
-          SHELF_ALIGNMENT_BOTTOM) {
+      if (host_->shelf()->alignment() == SHELF_ALIGNMENT_BOTTOM) {
         int width = base_bounds_.width() * scale;
         bounds.set_width(std::min(width, kIconSize));
         int x_offset = (base_bounds_.width() - bounds.width()) / 2;
@@ -236,21 +235,21 @@ const char ShelfButton::kViewClassName[] = "ash/ShelfButton";
 
 ShelfButton* ShelfButton::Create(views::ButtonListener* listener,
                                  ShelfButtonHost* host,
-                                 ShelfLayoutManager* shelf_layout_manager) {
-  ShelfButton* button = new ShelfButton(listener, host, shelf_layout_manager);
+                                 Shelf* shelf) {
+  ShelfButton* button = new ShelfButton(listener, host, shelf);
   button->Init();
   return button;
 }
 
 ShelfButton::ShelfButton(views::ButtonListener* listener,
                          ShelfButtonHost* host,
-                         ShelfLayoutManager* shelf_layout_manager)
+                         Shelf* shelf)
     : CustomButton(listener),
       host_(host),
       icon_view_(NULL),
       bar_(new BarView(this)),
       state_(STATE_NORMAL),
-      shelf_layout_manager_(shelf_layout_manager),
+      shelf_(shelf),
       destroyed_flag_(NULL) {
   SetAccessibilityFocusable(true);
 
@@ -402,11 +401,9 @@ void ShelfButton::GetAccessibleState(ui::AXViewState* state) {
 
 void ShelfButton::Layout() {
   const gfx::Rect button_bounds(GetContentsBounds());
-  int icon_pad =
-      shelf_layout_manager_->GetAlignment() != SHELF_ALIGNMENT_BOTTOM ?
-      kIconPadVertical : kIconPad;
-  int x_offset = shelf_layout_manager_->PrimaryAxisValue(0, icon_pad);
-  int y_offset = shelf_layout_manager_->PrimaryAxisValue(icon_pad, 0);
+  int icon_pad = shelf_->IsHorizontalAlignment() ? kIconPad : kIconPadVertical;
+  int x_offset = shelf_->PrimaryAxisValue(0, icon_pad);
+  int y_offset = shelf_->PrimaryAxisValue(icon_pad, 0);
 
   int icon_width = std::min(kIconSize,
       button_bounds.width() - x_offset);
@@ -415,15 +412,15 @@ void ShelfButton::Layout() {
 
   // If on the left or top 'invert' the inset so the constant gap is on
   // the interior (towards the center of display) edge of the shelf.
-  if (SHELF_ALIGNMENT_LEFT == shelf_layout_manager_->GetAlignment())
+  if (SHELF_ALIGNMENT_LEFT == shelf_->alignment())
     x_offset = button_bounds.width() - (kIconSize + icon_pad);
 
-  if (SHELF_ALIGNMENT_TOP == shelf_layout_manager_->GetAlignment())
+  if (SHELF_ALIGNMENT_TOP == shelf_->alignment())
     y_offset = button_bounds.height() - (kIconSize + icon_pad);
 
   // Center icon with respect to the secondary axis, and ensure
   // that the icon doesn't occlude the bar highlight.
-  if (shelf_layout_manager_->IsHorizontalAlignment()) {
+  if (shelf_->IsHorizontalAlignment()) {
     x_offset = std::max(0, button_bounds.width() - icon_width) / 2;
     if (y_offset + icon_height + kBarSize > button_bounds.height())
       icon_height = button_bounds.height() - (y_offset + kBarSize);
@@ -520,19 +517,13 @@ ShelfButton::IconView* ShelfButton::CreateIconView() {
   return new IconView;
 }
 
-bool ShelfButton::IsShelfHorizontal() const {
-  return shelf_layout_manager_->IsHorizontalAlignment();
-}
-
 void ShelfButton::UpdateState() {
   UpdateBar();
 
-  icon_view_->SetHorizontalAlignment(
-      shelf_layout_manager_->PrimaryAxisValue(views::ImageView::CENTER,
-                                              views::ImageView::LEADING));
-  icon_view_->SetVerticalAlignment(
-      shelf_layout_manager_->PrimaryAxisValue(views::ImageView::LEADING,
-                                              views::ImageView::CENTER));
+  icon_view_->SetHorizontalAlignment(shelf_->PrimaryAxisValue(
+      views::ImageView::CENTER, views::ImageView::LEADING));
+  icon_view_->SetVerticalAlignment(shelf_->PrimaryAxisValue(
+      views::ImageView::LEADING, views::ImageView::CENTER));
   SchedulePaint();
 }
 
@@ -553,28 +544,22 @@ void ShelfButton::UpdateBar() {
   if (bar_id != 0) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     const gfx::ImageSkia* image = rb.GetImageNamed(bar_id).ToImageSkia();
-    if (shelf_layout_manager_->GetAlignment() == SHELF_ALIGNMENT_BOTTOM) {
+    if (shelf_->alignment() == SHELF_ALIGNMENT_BOTTOM) {
       bar_->SetImage(*image);
     } else {
-      bar_->SetImage(gfx::ImageSkiaOperations::CreateRotatedImage(*image,
-          shelf_layout_manager_->SelectValueForShelfAlignment(
-              SkBitmapOperations::ROTATION_90_CW,
-              SkBitmapOperations::ROTATION_90_CW,
-              SkBitmapOperations::ROTATION_270_CW,
-              SkBitmapOperations::ROTATION_180_CW)));
+      bar_->SetImage(gfx::ImageSkiaOperations::CreateRotatedImage(
+          *image, shelf_->SelectValueForShelfAlignment(
+                      SkBitmapOperations::ROTATION_90_CW,
+                      SkBitmapOperations::ROTATION_90_CW,
+                      SkBitmapOperations::ROTATION_270_CW,
+                      SkBitmapOperations::ROTATION_180_CW)));
     }
-    bar_->SetHorizontalAlignment(
-        shelf_layout_manager_->SelectValueForShelfAlignment(
-            views::ImageView::CENTER,
-            views::ImageView::LEADING,
-            views::ImageView::TRAILING,
-            views::ImageView::CENTER));
-    bar_->SetVerticalAlignment(
-        shelf_layout_manager_->SelectValueForShelfAlignment(
-            views::ImageView::TRAILING,
-            views::ImageView::CENTER,
-            views::ImageView::CENTER,
-            views::ImageView::LEADING));
+    bar_->SetHorizontalAlignment(shelf_->SelectValueForShelfAlignment(
+        views::ImageView::CENTER, views::ImageView::LEADING,
+        views::ImageView::TRAILING, views::ImageView::CENTER));
+    bar_->SetVerticalAlignment(shelf_->SelectValueForShelfAlignment(
+        views::ImageView::TRAILING, views::ImageView::CENTER,
+        views::ImageView::CENTER, views::ImageView::LEADING));
     bar_->SchedulePaint();
   }
 

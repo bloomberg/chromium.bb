@@ -18,7 +18,6 @@
 #include "ash/shelf/shelf_navigator.h"
 #include "ash/shelf/shelf_util.h"
 #include "ash/shelf/shelf_view.h"
-#include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
@@ -47,8 +46,7 @@ Shelf::Shelf(ShelfModel* shelf_model,
       alignment_(shelf_widget->GetAlignment()),
       delegate_(shelf_delegate),
       shelf_widget_(shelf_widget) {
-  shelf_view_ = new ShelfView(
-      shelf_model, delegate_, shelf_widget_->shelf_layout_manager());
+  shelf_view_ = new ShelfView(shelf_model, delegate_, this);
   shelf_view_->Init();
   shelf_widget_->GetContentsView()->AddChildView(shelf_view_);
   shelf_widget_->GetNativeView()->SetName(kNativeViewName);
@@ -61,14 +59,12 @@ Shelf::~Shelf() {
 
 // static
 Shelf* Shelf::ForPrimaryDisplay() {
-  ShelfWidget* shelf_widget =
-      RootWindowController::ForShelf(Shell::GetPrimaryRootWindow())->shelf();
-  return shelf_widget ? shelf_widget->shelf() : NULL;
+  return Shelf::ForWindow(Shell::GetPrimaryRootWindow());
 }
 
 // static
-Shelf* Shelf::ForWindow(aura::Window* window) {
-  ShelfWidget* shelf_widget = RootWindowController::ForShelf(window)->shelf();
+Shelf* Shelf::ForWindow(const aura::Window* window) {
+  ShelfWidget* shelf_widget = RootWindowController::ForWindow(window)->shelf();
   return shelf_widget ? shelf_widget->shelf() : NULL;
 }
 
@@ -76,6 +72,11 @@ void Shelf::SetAlignment(ShelfAlignment alignment) {
   alignment_ = alignment;
   shelf_view_->OnShelfAlignmentChanged();
   // ShelfLayoutManager will resize the shelf.
+}
+
+bool Shelf::IsHorizontalAlignment() const {
+  return alignment_ == SHELF_ALIGNMENT_BOTTOM ||
+         alignment_ == SHELF_ALIGNMENT_TOP;
 }
 
 gfx::Rect Shelf::GetScreenBoundsOfItemIconForWindow(

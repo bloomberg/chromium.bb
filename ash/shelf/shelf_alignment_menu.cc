@@ -5,7 +5,7 @@
 #include "ash/shelf/shelf_alignment_menu.h"
 
 #include "ash/metrics/user_metrics_recorder.h"
-#include "ash/shelf/shelf_layout_manager.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_types.h"
 #include "ash/shell.h"
 #include "grit/ash_strings.h"
@@ -33,11 +33,10 @@ ShelfAlignmentMenu::ShelfAlignmentMenu(aura::Window* root)
 ShelfAlignmentMenu::~ShelfAlignmentMenu() {}
 
 bool ShelfAlignmentMenu::IsCommandIdChecked(int command_id) const {
-  return ShelfLayoutManager::ForShelf(root_window_)
+  return Shelf::ForWindow(root_window_)
       ->SelectValueForShelfAlignment(MENU_ALIGN_BOTTOM == command_id,
                                      MENU_ALIGN_LEFT == command_id,
-                                     MENU_ALIGN_RIGHT == command_id,
-                                     false);
+                                     MENU_ALIGN_RIGHT == command_id, false);
 }
 
 bool ShelfAlignmentMenu::IsCommandIdEnabled(int command_id) const {

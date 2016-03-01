@@ -311,8 +311,8 @@ void PanelLayoutManager::SetShelf(Shelf* shelf) {
   DCHECK(!shelf_layout_manager_);
   shelf_ = shelf;
   shelf_->AddIconObserver(this);
-  if (shelf_->shelf_widget()) {
-    shelf_layout_manager_ = shelf_->shelf_widget()->shelf_layout_manager();
+  if (shelf_->shelf_layout_manager()) {
+    shelf_layout_manager_ = shelf_->shelf_layout_manager();
     WillChangeVisibilityState(shelf_layout_manager_->visibility_state());
     shelf_layout_manager_->AddObserver(this);
   }
@@ -584,8 +584,7 @@ void PanelLayoutManager::MinimizePanel(aura::Window* panel) {
   panel_slide_settings.SetTransitionDuration(
       base::TimeDelta::FromMilliseconds(kPanelSlideDurationMilliseconds));
   gfx::Rect bounds(panel->bounds());
-  bounds.Offset(GetSlideInAnimationOffset(
-      shelf_->shelf_widget()->GetAlignment()));
+  bounds.Offset(GetSlideInAnimationOffset(shelf_->alignment()));
   SetChildBoundsDirect(panel, bounds);
   panel->Hide();
   layer->SetOpacity(0);
@@ -618,9 +617,8 @@ void PanelLayoutManager::Relayout() {
     return;
   base::AutoReset<bool> auto_reset_in_layout(&in_layout_, true);
 
-  ShelfAlignment alignment = shelf_->shelf_widget()->GetAlignment();
-  bool horizontal = alignment == SHELF_ALIGNMENT_TOP ||
-                    alignment == SHELF_ALIGNMENT_BOTTOM;
+  const ShelfAlignment alignment = shelf_->alignment();
+  const bool horizontal = shelf_->IsHorizontalAlignment();
   gfx::Rect shelf_bounds = ash::ScreenUtil::ConvertRectFromScreen(
       panel_container_, shelf_->shelf_widget()->GetWindowBoundsInScreen());
   int panel_start_bounds = kPanelIdealSpacing;
@@ -778,10 +776,6 @@ void PanelLayoutManager::UpdateStacking(aura::Window* active_panel) {
     active_panel = last_active_panel_;
   }
 
-  ShelfAlignment alignment = shelf_->alignment();
-  bool horizontal = alignment == SHELF_ALIGNMENT_TOP ||
-                    alignment == SHELF_ALIGNMENT_BOTTOM;
-
   // We want to to stack the panels like a deck of cards:
   // ,--,--,--,-------.--.--.
   // |  |  |  |       |  |  |
@@ -792,6 +786,7 @@ void PanelLayoutManager::UpdateStacking(aura::Window* active_panel) {
   // the titlebar--even though it doesn't update the shelf icon positions, we
   // still want the visual effect.
   std::map<int, aura::Window*> window_ordering;
+  const bool horizontal = shelf_->IsHorizontalAlignment();
   for (PanelList::const_iterator it = panel_windows_.begin();
        it != panel_windows_.end(); ++it) {
     gfx::Rect bounds = it->window->bounds();
@@ -826,10 +821,7 @@ void PanelLayoutManager::UpdateStacking(aura::Window* active_panel) {
 }
 
 void PanelLayoutManager::UpdateCallouts() {
-  ShelfAlignment alignment = shelf_->alignment();
-  bool horizontal = alignment == SHELF_ALIGNMENT_TOP ||
-                    alignment == SHELF_ALIGNMENT_BOTTOM;
-
+  const bool horizontal = shelf_->IsHorizontalAlignment();
   for (PanelList::iterator iter = panel_windows_.begin();
        iter != panel_windows_.end(); ++iter) {
     aura::Window* panel = iter->window;
@@ -865,7 +857,7 @@ void PanelLayoutManager::UpdateCallouts() {
           current_bounds.y() - callout_bounds.y(),
           callout_bounds.bottom() - current_bounds.bottom());
     }
-    switch (alignment) {
+    switch (shelf_->alignment()) {
       case SHELF_ALIGNMENT_BOTTOM:
         callout_bounds.set_y(bounds.bottom());
         break;

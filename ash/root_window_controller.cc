@@ -274,13 +274,6 @@ void RootWindowController::CreateForSecondaryDisplay(AshWindowTreeHost* host) {
 }
 
 // static
-RootWindowController* RootWindowController::ForShelf(
-    const aura::Window* window) {
-  CHECK(Shell::HasInstance());
-  return GetRootWindowController(window->GetRootWindow());
-}
-
-// static
 RootWindowController* RootWindowController::ForWindow(
     const aura::Window* window) {
   CHECK(Shell::HasInstance());

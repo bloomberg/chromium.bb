@@ -34,6 +34,7 @@ class MenuRunner;
 }
 
 namespace ash {
+class Shelf;
 class ShelfDelegate;
 class ShelfIconObserver;
 class ShelfItemDelegateManager;
@@ -43,7 +44,6 @@ class DragImageView;
 class OverflowBubble;
 class OverflowButton;
 class ShelfButton;
-class ShelfLayoutManager;
 class ShelfTooltipManager;
 
 namespace test {
@@ -64,16 +64,13 @@ class ASH_EXPORT ShelfView : public views::View,
                              public views::BoundsAnimatorObserver,
                              public app_list::ApplicationDragAndDropHost {
  public:
-  ShelfView(ShelfModel* model,
-            ShelfDelegate* delegate,
-            ShelfLayoutManager* manager);
+  ShelfView(ShelfModel* model, ShelfDelegate* delegate, Shelf* shelf);
   ~ShelfView() override;
 
   ShelfTooltipManager* tooltip_manager() { return tooltip_.get(); }
 
-  ShelfLayoutManager* shelf_layout_manager() { return layout_manager_; }
-
-  ShelfModel* model() { return model_; }
+  Shelf* shelf() const { return shelf_; }
+  ShelfModel* model() const { return model_; }
 
   void Init();
 
@@ -163,9 +160,7 @@ class ASH_EXPORT ShelfView : public views::View,
   //     button.
   bool is_overflow_mode() const { return overflow_mode_; }
 
-  bool dragging() const {
-    return drag_pointer_ != NONE;
-  }
+  bool dragging() const { return drag_pointer_ != NONE; }
 
   // Sets the bounds of each view to its ideal bounds.
   void LayoutToIdealBounds();
@@ -329,6 +324,9 @@ class ASH_EXPORT ShelfView : public views::View,
   // Delegate; owned by Launcher.
   ShelfDelegate* delegate_;
 
+  // The shelf; owned by ShelfWidget.
+  Shelf* shelf_;
+
   // Used to manage the set of active launcher buttons. There is a view per
   // item in |model_|.
   scoped_ptr<views::ViewModel> view_model_;
@@ -427,9 +425,6 @@ class ASH_EXPORT ShelfView : public views::View,
 
   // Holds ShelfItemDelegateManager.
   ShelfItemDelegateManager* item_manager_;
-
-  // Holds ShelfLayoutManager.
-  ShelfLayoutManager* layout_manager_;
 
   // True when this ShelfView is used for Overflow Bubble.
   bool overflow_mode_;

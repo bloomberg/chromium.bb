@@ -10,18 +10,17 @@
 #include "ash/ash_switches.h"
 #include "ash/drag_drop/drag_image_view.h"
 #include "ash/metrics/user_metrics_recorder.h"
-#include "ash/root_window_controller.h"
 #include "ash/scoped_target_root_window.h"
 #include "ash/shelf/app_list_button.h"
 #include "ash/shelf/overflow_bubble.h"
 #include "ash/shelf/overflow_bubble_view.h"
 #include "ash/shelf/overflow_button.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_button.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_delegate.h"
 #include "ash/shelf/shelf_icon_observer.h"
 #include "ash/shelf/shelf_item_delegate_manager.h"
-#include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_menu_model.h"
 #include "ash/shelf/shelf_model.h"
 #include "ash/shelf/shelf_tooltip_manager.h"
@@ -363,11 +362,10 @@ class ShelfView::StartFadeAnimationDelegate : public gfx::AnimationDelegate {
   DISALLOW_COPY_AND_ASSIGN(StartFadeAnimationDelegate);
 };
 
-ShelfView::ShelfView(ShelfModel* model,
-                     ShelfDelegate* delegate,
-                     ShelfLayoutManager* manager)
+ShelfView::ShelfView(ShelfModel* model, ShelfDelegate* delegate, Shelf* shelf)
     : model_(model),
       delegate_(delegate),
+      shelf_(shelf),
       view_model_(new views::ViewModel),
       first_visible_index_(0),
       last_visible_index_(-1),
@@ -388,7 +386,6 @@ ShelfView::ShelfView(ShelfModel* model,
       dragged_off_shelf_(false),
       snap_back_from_rip_off_view_(NULL),
       item_manager_(Shell::GetInstance()->shelf_item_delegate_manager()),
-      layout_manager_(manager),
       overflow_mode_(false),
       main_shelf_(NULL),
       dragged_off_from_overflow_to_shelf_(false),
@@ -399,7 +396,7 @@ ShelfView::ShelfView(ShelfModel* model,
   bounds_animator_->AddObserver(this);
   set_context_menu_controller(this);
   focus_search_.reset(new ShelfFocusSearch(view_model_.get()));
-  tooltip_.reset(new ShelfTooltipManager(manager, this));
+  tooltip_.reset(new ShelfTooltipManager(shelf->shelf_layout_manager(), this));
 }
 
 ShelfView::~ShelfView() {
@@ -421,7 +418,7 @@ void ShelfView::Init() {
     view_model_->Add(child, static_cast<int>(i - items.begin()));
     AddChildView(child);
   }
-  overflow_button_ = new OverflowButton(this, shelf_layout_manager());
+  overflow_button_ = new OverflowButton(this, shelf_);
   overflow_button_->set_context_menu_controller(this);
   ConfigureChildView(overflow_button_);
   AddChildView(overflow_button_);
@@ -486,19 +483,18 @@ void ShelfView::UpdatePanelIconPosition(ShelfID id,
                               midpoint.y());
   int target_index = current_index;
   while (target_index > first_panel_index &&
-         layout_manager_->PrimaryAxisValue(
-             view_model_->ideal_bounds(target_index).x(),
-             view_model_->ideal_bounds(target_index).y()) >
-         layout_manager_->PrimaryAxisValue(midpoint_in_view.x(),
-                                           midpoint_in_view.y())) {
+         shelf_->PrimaryAxisValue(view_model_->ideal_bounds(target_index).x(),
+                                  view_model_->ideal_bounds(target_index).y()) >
+             shelf_->PrimaryAxisValue(midpoint_in_view.x(),
+                                      midpoint_in_view.y())) {
     --target_index;
   }
   while (target_index < view_model_->view_size() - 1 &&
-         layout_manager_->PrimaryAxisValue(
+         shelf_->PrimaryAxisValue(
              view_model_->ideal_bounds(target_index).right(),
              view_model_->ideal_bounds(target_index).bottom()) <
-         layout_manager_->PrimaryAxisValue(midpoint_in_view.x(),
-                                           midpoint_in_view.y())) {
+             shelf_->PrimaryAxisValue(midpoint_in_view.x(),
+                                      midpoint_in_view.y())) {
     ++target_index;
   }
   if (current_index != target_index)
@@ -710,7 +706,7 @@ void ShelfView::UpdateAllButtonsVisibilityInOverflowMode() {
 }
 
 void ShelfView::CalculateIdealBounds(IdealBounds* bounds) const {
-  int available_size = layout_manager_->PrimaryAxisValue(width(), height());
+  int available_size = shelf_->PrimaryAxisValue(width(), height());
   DCHECK(model_->item_count() == view_model_->view_size());
   if (!available_size)
     return;
@@ -723,8 +719,8 @@ void ShelfView::CalculateIdealBounds(IdealBounds* bounds) const {
   int button_size = kShelfButtonSize;
   int button_spacing = kShelfButtonSpacing;
 
-  int w = layout_manager_->PrimaryAxisValue(button_size, width());
-  int h = layout_manager_->PrimaryAxisValue(height(), button_size);
+  int w = shelf_->PrimaryAxisValue(button_size, width());
+  int h = shelf_->PrimaryAxisValue(height(), button_size);
   for (int i = 0; i < view_model_->view_size(); ++i) {
     if (i < first_visible_index_) {
       view_model_->set_ideal_bounds(i, gfx::Rect(x, y, 0, 0));
@@ -732,8 +728,8 @@ void ShelfView::CalculateIdealBounds(IdealBounds* bounds) const {
     }
 
     view_model_->set_ideal_bounds(i, gfx::Rect(x, y, w, h));
-    x = layout_manager_->PrimaryAxisValue(x + w + button_spacing, x);
-    y = layout_manager_->PrimaryAxisValue(y, y + h + button_spacing);
+    x = shelf_->PrimaryAxisValue(x + w + button_spacing, x);
+    y = shelf_->PrimaryAxisValue(y, y + h + button_spacing);
   }
 
   if (is_overflow_mode()) {
@@ -743,21 +739,23 @@ void ShelfView::CalculateIdealBounds(IdealBounds* bounds) const {
 
   // Right aligned icons.
   int end_position = available_size - button_spacing;
-  x = layout_manager_->PrimaryAxisValue(end_position, 0);
-  y = layout_manager_->PrimaryAxisValue(0, end_position);
+  x = shelf_->PrimaryAxisValue(end_position, 0);
+  y = shelf_->PrimaryAxisValue(0, end_position);
   for (int i = view_model_->view_size() - 1;
        i >= first_panel_index; --i) {
-    x = layout_manager_->PrimaryAxisValue(x - w - button_spacing, x);
-    y = layout_manager_->PrimaryAxisValue(y, y - h - button_spacing);
+    x = shelf_->PrimaryAxisValue(x - w - button_spacing, x);
+    y = shelf_->PrimaryAxisValue(y, y - h - button_spacing);
     view_model_->set_ideal_bounds(i, gfx::Rect(x, y, w, h));
-    end_position = layout_manager_->PrimaryAxisValue(x, y);
+    end_position = shelf_->PrimaryAxisValue(x, y);
   }
 
   // Icons on the left / top are guaranteed up to kLeftIconProportion of
   // the available space.
-  int last_icon_position = layout_manager_->PrimaryAxisValue(
-      view_model_->ideal_bounds(last_button_index).right(),
-      view_model_->ideal_bounds(last_button_index).bottom()) + button_size;
+  int last_icon_position =
+      shelf_->PrimaryAxisValue(
+          view_model_->ideal_bounds(last_button_index).right(),
+          view_model_->ideal_bounds(last_button_index).bottom()) +
+      button_size;
   int reserved_icon_space = available_size * kReservedNonPanelIconProportion;
   if (last_icon_position < reserved_icon_space)
     end_position = last_icon_position;
@@ -765,8 +763,8 @@ void ShelfView::CalculateIdealBounds(IdealBounds* bounds) const {
     end_position = std::max(end_position, reserved_icon_space);
 
   bounds->overflow_bounds.set_size(
-      gfx::Size(layout_manager_->PrimaryAxisValue(w, width()),
-                layout_manager_->PrimaryAxisValue(height(), h)));
+      gfx::Size(shelf_->PrimaryAxisValue(w, width()),
+                shelf_->PrimaryAxisValue(height(), h)));
 
   last_visible_index_ = DetermineLastVisibleIndex(
       end_position - button_size);
@@ -814,10 +812,10 @@ void ShelfView::CalculateIdealBounds(IdealBounds* bounds) const {
       x = 0;
       y = 0;
     } else {
-      x = layout_manager_->PrimaryAxisValue(
+      x = shelf_->PrimaryAxisValue(
           view_model_->ideal_bounds(last_visible_index_).right(),
           view_model_->ideal_bounds(last_visible_index_).x());
-      y = layout_manager_->PrimaryAxisValue(
+      y = shelf_->PrimaryAxisValue(
           view_model_->ideal_bounds(last_visible_index_).y(),
           view_model_->ideal_bounds(last_visible_index_).bottom());
     }
@@ -827,8 +825,8 @@ void ShelfView::CalculateIdealBounds(IdealBounds* bounds) const {
 
     // Add more space between last visible item and overflow button.
     // Without this, two buttons look too close compared with other items.
-    x = layout_manager_->PrimaryAxisValue(x + button_spacing, x);
-    y = layout_manager_->PrimaryAxisValue(y, y + button_spacing);
+    x = shelf_->PrimaryAxisValue(x + button_spacing, x);
+    y = shelf_->PrimaryAxisValue(y, y + button_spacing);
 
     bounds->overflow_bounds.set_x(x);
     bounds->overflow_bounds.set_y(y);
@@ -843,9 +841,9 @@ void ShelfView::CalculateIdealBounds(IdealBounds* bounds) const {
 int ShelfView::DetermineLastVisibleIndex(int max_value) const {
   int index = model_->FirstPanelIndex() - 1;
   while (index >= 0 &&
-         layout_manager_->PrimaryAxisValue(
-             view_model_->ideal_bounds(index).right(),
-             view_model_->ideal_bounds(index).bottom()) > max_value) {
+         shelf_->PrimaryAxisValue(view_model_->ideal_bounds(index).right(),
+                                  view_model_->ideal_bounds(index).bottom()) >
+             max_value) {
     index--;
   }
   return index;
@@ -854,9 +852,9 @@ int ShelfView::DetermineLastVisibleIndex(int max_value) const {
 int ShelfView::DetermineFirstVisiblePanelIndex(int min_value) const {
   int index = model_->FirstPanelIndex();
   while (index < view_model_->view_size() &&
-         layout_manager_->PrimaryAxisValue(
-             view_model_->ideal_bounds(index).right(),
-             view_model_->ideal_bounds(index).bottom()) < min_value) {
+         shelf_->PrimaryAxisValue(view_model_->ideal_bounds(index).right(),
+                                  view_model_->ideal_bounds(index).bottom()) <
+             min_value) {
     ++index;
   }
   return index;
@@ -893,7 +891,7 @@ views::View* ShelfView::CreateViewForItem(const ShelfItem& item) {
     case TYPE_PLATFORM_APP:
     case TYPE_DIALOG:
     case TYPE_APP_PANEL: {
-      ShelfButton* button = ShelfButton::Create(this, this, layout_manager_);
+      ShelfButton* button = ShelfButton::Create(this, this, shelf_);
       button->SetImage(item.image);
       ReflectItemStatus(item, button);
       view = button;
@@ -901,7 +899,7 @@ views::View* ShelfView::CreateViewForItem(const ShelfItem& item) {
     }
 
     case TYPE_APP_LIST: {
-      view = new AppListButton(this, this, layout_manager_->shelf_widget());
+      view = new AppListButton(this, this, shelf_->shelf_widget());
       break;
     }
 
@@ -985,7 +983,7 @@ void ShelfView::ContinueDrag(const ui::LocatedEvent& event) {
       last_drag_index > last_visible_index_)
     last_drag_index = last_visible_index_;
   int x = 0, y = 0;
-  if (layout_manager_->IsHorizontalAlignment()) {
+  if (shelf_->IsHorizontalAlignment()) {
     x = std::max(view_model_->ideal_bounds(indices.first).x(),
                      drag_point.x() - drag_origin_.x());
     x = std::min(view_model_->ideal_bounds(last_drag_index).right() -
@@ -1005,13 +1003,11 @@ void ShelfView::ContinueDrag(const ui::LocatedEvent& event) {
     drag_view_->SetY(y);
   }
 
-  int target_index =
-      views::ViewModelUtils::DetermineMoveIndex(
-          *view_model_, drag_view_,
-          layout_manager_->IsHorizontalAlignment() ?
-              views::ViewModelUtils::HORIZONTAL :
-              views::ViewModelUtils::VERTICAL,
-          x, y);
+  int target_index = views::ViewModelUtils::DetermineMoveIndex(
+      *view_model_, drag_view_,
+      shelf_->IsHorizontalAlignment() ? views::ViewModelUtils::HORIZONTAL
+                                      : views::ViewModelUtils::VERTICAL,
+      x, y);
   target_index =
       std::min(indices.second, std::max(target_index, indices.first));
 
@@ -1258,8 +1254,7 @@ void ShelfView::ToggleOverflowBubble() {
   if (!overflow_bubble_)
     overflow_bubble_.reset(new OverflowBubble());
 
-  ShelfView* overflow_view =
-      new ShelfView(model_, delegate_, layout_manager_);
+  ShelfView* overflow_view = new ShelfView(model_, delegate_, shelf_);
   overflow_view->overflow_mode_ = true;
   overflow_view->Init();
   overflow_view->set_owner_overflow_bubble(overflow_bubble_.get());
@@ -1342,7 +1337,7 @@ gfx::Rect ShelfView::GetBoundsForDragInsertInScreen() {
       last_button_bounds = overflow_button_->bounds();
     }
 
-    if (layout_manager_->IsHorizontalAlignment()) {
+    if (shelf_->IsHorizontalAlignment()) {
       preferred_size = gfx::Size(last_button_bounds.right() + leading_inset_,
                                  kShelfSize);
     } else {
@@ -1416,9 +1411,8 @@ gfx::Size ShelfView::GetPreferredSize() const {
           view_model_->ideal_bounds(last_button_index) :
           gfx::Rect(gfx::Size(kShelfSize, kShelfSize));
 
-  if (layout_manager_->IsHorizontalAlignment()) {
+  if (shelf_->IsHorizontalAlignment())
     return gfx::Size(last_button_bounds.right() + leading_inset_, kShelfSize);
-  }
 
   return gfx::Size(kShelfSize,
                    last_button_bounds.bottom() + leading_inset_);
@@ -1619,12 +1613,11 @@ void ShelfView::PointerPressedOnButton(views::View* view,
   drag_view_ = static_cast<ShelfButton*>(view);
   drag_origin_ = gfx::Point(event.x(), event.y());
   UMA_HISTOGRAM_ENUMERATION("Ash.ShelfAlignmentUsage",
-      layout_manager_->SelectValueForShelfAlignment(
-          SHELF_ALIGNMENT_UMA_ENUM_VALUE_BOTTOM,
-          SHELF_ALIGNMENT_UMA_ENUM_VALUE_LEFT,
-          SHELF_ALIGNMENT_UMA_ENUM_VALUE_RIGHT,
-          -1),
-      SHELF_ALIGNMENT_UMA_ENUM_VALUE_COUNT);
+                            shelf_->SelectValueForShelfAlignment(
+                                SHELF_ALIGNMENT_UMA_ENUM_VALUE_BOTTOM,
+                                SHELF_ALIGNMENT_UMA_ENUM_VALUE_LEFT,
+                                SHELF_ALIGNMENT_UMA_ENUM_VALUE_RIGHT, -1),
+                            SHELF_ALIGNMENT_UMA_ENUM_VALUE_COUNT);
 }
 
 void ShelfView::PointerDraggedOnButton(views::View* view,
@@ -1838,11 +1831,9 @@ void ShelfView::ShowMenu(ui::MenuModel* menu_model,
   views::MenuAnchorPosition menu_alignment = views::MENU_ANCHOR_TOPLEFT;
   gfx::Rect anchor_point = gfx::Rect(click_point, gfx::Size());
 
-  ShelfWidget* shelf = RootWindowController::ForShelf(
-      GetWidget()->GetNativeView())->shelf();
   if (!context_menu) {
     // Application lists use a bubble.
-    ShelfAlignment align = shelf->GetAlignment();
+    ShelfAlignment align = shelf_->alignment();
     anchor_point = source->GetBoundsInScreen();
 
     // It is possible to invoke the menu while it is sliding into view. To cover
@@ -1878,7 +1869,8 @@ void ShelfView::ShowMenu(ui::MenuModel* menu_model,
   bool got_deleted = false;
   got_deleted_ = &got_deleted;
 
-  shelf->ForceUndimming(true);
+  ShelfWidget* shelf_widget = shelf_->shelf_widget();
+  shelf_widget->ForceUndimming(true);
   // NOTE: if you convert to HAS_MNEMONICS be sure and update menu building
   // code.
   if (launcher_menu_runner_->RunMenuAt(source->GetWidget(),
@@ -1889,12 +1881,12 @@ void ShelfView::ShowMenu(ui::MenuModel* menu_model,
       views::MenuRunner::MENU_DELETED) {
     if (!got_deleted) {
       got_deleted_ = NULL;
-      shelf->ForceUndimming(false);
+      shelf_widget->ForceUndimming(false);
     }
     return;
   }
   got_deleted_ = NULL;
-  shelf->ForceUndimming(false);
+  shelf_widget->ForceUndimming(false);
 
   // If it is a context menu and we are showing overflow bubble
   // we want to hide overflow bubble.
@@ -1967,25 +1959,10 @@ bool ShelfView::ShouldShowTooltipForView(const views::View* view) const {
 }
 
 int ShelfView::CalculateShelfDistance(const gfx::Point& coordinate) const {
-  ShelfWidget* shelf = RootWindowController::ForShelf(
-      GetWidget()->GetNativeView())->shelf();
-  ShelfAlignment align = shelf->GetAlignment();
   const gfx::Rect bounds = GetBoundsInScreen();
-  int distance = 0;
-  switch (align) {
-    case SHELF_ALIGNMENT_BOTTOM:
-      distance = bounds.y() - coordinate.y();
-      break;
-    case SHELF_ALIGNMENT_LEFT:
-      distance = coordinate.x() - bounds.right();
-      break;
-    case SHELF_ALIGNMENT_RIGHT:
-      distance = bounds.x() - coordinate.x();
-      break;
-    case SHELF_ALIGNMENT_TOP:
-      distance = coordinate.y() - bounds.bottom();
-      break;
-  }
+  int distance = shelf_->SelectValueForShelfAlignment(
+      bounds.y() - coordinate.y(), coordinate.x() - bounds.right(),
+      bounds.x() - coordinate.x(), coordinate.y() - bounds.bottom());
   return distance > 0 ? distance : 0;
 }
 

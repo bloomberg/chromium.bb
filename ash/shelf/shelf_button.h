@@ -12,8 +12,8 @@
 #include "ui/views/controls/image_view.h"
 
 namespace ash {
+class Shelf;
 class ShelfButtonHost;
-class ShelfLayoutManager;
 
 // Button used for items on the launcher, except for the AppList.
 class ASH_EXPORT ShelfButton : public views::CustomButton {
@@ -43,7 +43,7 @@ class ASH_EXPORT ShelfButton : public views::CustomButton {
   // Called to create an instance of a ShelfButton.
   static ShelfButton* Create(views::ButtonListener* listener,
                              ShelfButtonHost* host,
-                             ShelfLayoutManager* shelf_layout_manager);
+                             Shelf* shelf);
 
   // Sets the image to display for this entry.
   void SetImage(const gfx::ImageSkia& image);
@@ -55,9 +55,7 @@ class ASH_EXPORT ShelfButton : public views::CustomButton {
   void AddState(State state);
   void ClearState(State state);
   int state() const { return state_; }
-  const ShelfLayoutManager* shelf_layout_manager() const {
-    return shelf_layout_manager_;
-  }
+  const Shelf* shelf() const { return shelf_; }
 
   // Returns the bounds of the icon.
   gfx::Rect GetIconBounds() const;
@@ -72,7 +70,7 @@ class ASH_EXPORT ShelfButton : public views::CustomButton {
  protected:
   ShelfButton(views::ButtonListener* listener,
               ShelfButtonHost* host,
-              ShelfLayoutManager* shelf_layout_manager);
+              Shelf* shelf);
 
   // Class that draws the icon part of a button, so it can be animated
   // independently of the rest. This can be subclassed to provide a custom
@@ -123,10 +121,6 @@ class ASH_EXPORT ShelfButton : public views::CustomButton {
  private:
   class BarView;
 
-  // Returns true if the shelf is horizontal. If this returns false the shelf is
-  // vertical.
-  bool IsShelfHorizontal() const;
-
   // Updates the parts of the button to reflect the current |state_| and
   // alignment. This may add or remove views, layout and paint.
   void UpdateState();
@@ -142,7 +136,7 @@ class ASH_EXPORT ShelfButton : public views::CustomButton {
   // together.
   int state_;
 
-  ShelfLayoutManager* shelf_layout_manager_;
+  Shelf* shelf_;
 
   gfx::ShadowValues icon_shadows_;
 

@@ -510,26 +510,28 @@ void Shell::UpdateShelfVisibility() {
 
 void Shell::SetShelfAutoHideBehavior(ShelfAutoHideBehavior behavior,
                                      aura::Window* root_window) {
-  ash::ShelfLayoutManager::ForShelf(root_window)->SetAutoHideBehavior(behavior);
+  ShelfWidget* shelf_widget = GetRootWindowController(root_window)->shelf();
+  shelf_widget->shelf_layout_manager()->SetAutoHideBehavior(behavior);
 }
 
 ShelfAutoHideBehavior Shell::GetShelfAutoHideBehavior(
     aura::Window* root_window) const {
-  return ash::ShelfLayoutManager::ForShelf(root_window)->auto_hide_behavior();
+  ShelfWidget* shelf_widget = GetRootWindowController(root_window)->shelf();
+  return shelf_widget->shelf_layout_manager()->auto_hide_behavior();
 }
 
 void Shell::SetShelfAlignment(ShelfAlignment alignment,
                               aura::Window* root_window) {
-  if (ash::ShelfLayoutManager::ForShelf(root_window)->SetAlignment(alignment)) {
+  ShelfWidget* shelf_widget = GetRootWindowController(root_window)->shelf();
+  if (shelf_widget->shelf_layout_manager()->SetAlignment(alignment)) {
     FOR_EACH_OBSERVER(
         ShellObserver, observers_, OnShelfAlignmentChanged(root_window));
   }
 }
 
 ShelfAlignment Shell::GetShelfAlignment(const aura::Window* root_window) {
-  return GetRootWindowController(root_window)
-      ->GetShelfLayoutManager()
-      ->GetAlignment();
+  ShelfWidget* shelf_widget = GetRootWindowController(root_window)->shelf();
+  return shelf_widget->shelf_layout_manager()->GetAlignment();
 }
 
 void Shell::NotifyFullscreenStateChange(bool is_fullscreen,
@@ -614,8 +616,8 @@ void Shell::SetTouchHudProjectionEnabled(bool enabled) {
 }
 
 #if defined(OS_CHROMEOS)
-ash::FirstRunHelper* Shell::CreateFirstRunHelper() {
-  return new ash::FirstRunHelperImpl;
+FirstRunHelper* Shell::CreateFirstRunHelper() {
+  return new FirstRunHelperImpl;
 }
 
 void Shell::SetCursorCompositingEnabled(bool enabled) {
@@ -1038,7 +1040,7 @@ void Shell::Init(const ShellInitParams& init_params) {
       new ::wm::ShadowController(activation_client_));
 
   // Create system_tray_notifier_ before the delegate.
-  system_tray_notifier_.reset(new ash::SystemTrayNotifier());
+  system_tray_notifier_.reset(new SystemTrayNotifier());
 
   // Initialize system_tray_delegate_ before initializing StatusAreaWidget.
   system_tray_delegate_.reset(delegate()->CreateSystemTrayDelegate());
@@ -1090,8 +1092,8 @@ void Shell::Init(const ShellInitParams& init_params) {
 #if defined(OS_CHROMEOS)
   // Set accelerator controller delegates.
   accelerator_controller_->SetBrightnessControlDelegate(
-      scoped_ptr<ash::BrightnessControlDelegate>(
-          new ash::system::BrightnessControllerChromeos));
+      scoped_ptr<BrightnessControlDelegate>(
+          new system::BrightnessControllerChromeos));
 
   power_event_observer_.reset(new PowerEventObserver());
   user_activity_notifier_.reset(

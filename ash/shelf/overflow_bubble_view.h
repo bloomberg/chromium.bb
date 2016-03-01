@@ -11,7 +11,6 @@
 #include "ui/views/bubble/bubble_delegate.h"
 
 namespace ash {
-class ShelfLayoutManager;
 class ShelfView;
 
 namespace test {
@@ -42,8 +41,6 @@ class ASH_EXPORT OverflowBubbleView : public views::BubbleDelegateView {
 
   void ScrollByXOffset(int x_offset);
   void ScrollByYOffset(int y_offset);
-
-  ShelfLayoutManager* GetShelfLayoutManager() const;
 
   // views::View overrides:
   gfx::Size GetPreferredSize() const override;

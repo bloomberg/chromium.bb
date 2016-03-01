@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
@@ -105,7 +106,8 @@ void ChromeVoxPanel::Close() {
 
 void ChromeVoxPanel::DidFirstVisuallyNonEmptyPaint() {
   widget_->Show();
-  ash::ShelfLayoutManager::ForShelf(GetRootWindow())
+  ash::Shelf::ForWindow(GetRootWindow())
+      ->shelf_layout_manager()
       ->SetChromeVoxPanelHeight(kPanelHeight);
 }
 

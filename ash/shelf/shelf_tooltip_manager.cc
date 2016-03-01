@@ -4,6 +4,7 @@
 
 #include "ash/shelf/shelf_tooltip_manager.h"
 
+#include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shell.h"
@@ -344,12 +345,10 @@ void ShelfTooltipManager::CreateBubble(views::View* anchor,
 
   anchor_ = anchor;
   text_ = text;
-  views::BubbleBorder::Arrow arrow =
-      shelf_layout_manager_->SelectValueForShelfAlignment(
-          views::BubbleBorder::BOTTOM_CENTER,
-          views::BubbleBorder::LEFT_CENTER,
-          views::BubbleBorder::RIGHT_CENTER,
-          views::BubbleBorder::TOP_CENTER);
+  Shelf* shelf = shelf_layout_manager_->shelf_widget()->shelf();
+  views::BubbleBorder::Arrow arrow = shelf->SelectValueForShelfAlignment(
+      views::BubbleBorder::BOTTOM_CENTER, views::BubbleBorder::LEFT_CENTER,
+      views::BubbleBorder::RIGHT_CENTER, views::BubbleBorder::TOP_CENTER);
 
   view_ = new ShelfTooltipBubble(anchor, arrow, this);
   widget_ = view_->GetWidget();

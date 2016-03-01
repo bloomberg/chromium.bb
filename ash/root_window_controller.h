@@ -85,12 +85,6 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   // Creates and Initialize the RootWindowController for secondary displays.
   static void CreateForSecondaryDisplay(AshWindowTreeHost* host);
 
-  // Returns a RootWindowController that has a shelf for given
-  // |window|. This returns the RootWindowController for the |window|'s
-  // root window when multiple shelf mode is enabled, or the primary
-  // RootWindowController otherwise.
-  static RootWindowController* ForShelf(const aura::Window* window);
-
   // Returns a RootWindowController of the window's root window.
   static RootWindowController* ForWindow(const aura::Window* window);
 

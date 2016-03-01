@@ -5,7 +5,6 @@
 #include "ash/wm/panels/panel_layout_manager.h"
 
 #include "ash/ash_switches.h"
-#include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_button.h"
@@ -119,7 +118,7 @@ class PanelLayoutManagerTest : public test::AshTestBase {
     // Waits until all shelf view animations are done.
     shelf_view_test()->RunMessageLoopUntilAnimationsDone();
 
-    Shelf* shelf = RootWindowController::ForShelf(panel)->shelf()->shelf();
+    Shelf* shelf = Shelf::ForWindow(panel);
     gfx::Rect icon_bounds = shelf->GetScreenBoundsOfItemIconForWindow(panel);
     ASSERT_FALSE(icon_bounds.width() == 0 && icon_bounds.height() == 0);
 
@@ -162,7 +161,7 @@ class PanelLayoutManagerTest : public test::AshTestBase {
     base::RunLoop().RunUntilIdle();
     views::Widget* widget = GetCalloutWidgetForPanel(panel);
 
-    Shelf* shelf = RootWindowController::ForShelf(panel)->shelf()->shelf();
+    Shelf* shelf = Shelf::ForWindow(panel);
     gfx::Rect icon_bounds = shelf->GetScreenBoundsOfItemIconForWindow(panel);
     ASSERT_FALSE(icon_bounds.IsEmpty());
 
@@ -237,21 +236,16 @@ class PanelLayoutManagerTest : public test::AshTestBase {
 
   void SetShelfAutoHideBehavior(aura::Window* window,
                                 ShelfAutoHideBehavior behavior) {
-    ShelfLayoutManager* shelf = RootWindowController::ForWindow(window)
-                                    ->shelf()
-                                    ->shelf_layout_manager();
-    shelf->SetAutoHideBehavior(behavior);
-    ShelfView* shelf_view = GetShelfView(Shelf::ForWindow(window));
-    test::ShelfViewTestAPI test_api(shelf_view);
+    Shelf* shelf = Shelf::ForWindow(window);
+    shelf->shelf_layout_manager()->SetAutoHideBehavior(behavior);
+    test::ShelfViewTestAPI test_api(GetShelfView(shelf));
     test_api.RunMessageLoopUntilAnimationsDone();
   }
 
   void SetShelfVisibilityState(aura::Window* window,
                                ShelfVisibilityState visibility_state) {
-    ShelfLayoutManager* shelf = RootWindowController::ForWindow(window)
-                                    ->shelf()
-                                    ->shelf_layout_manager();
-    shelf->SetState(visibility_state);
+    Shelf* shelf = Shelf::ForWindow(window);
+    shelf->shelf_layout_manager()->SetState(visibility_state);
   }
 
   ShelfView* GetShelfView(Shelf* shelf) {

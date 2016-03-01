@@ -10,6 +10,7 @@
 #include "ash/display/display_manager.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/screen_util.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_types.h"
 #include "ash/shell.h"
@@ -34,7 +35,7 @@ class AshPopupAlignmentDelegateTest : public test::AshTestBase {
         keyboard::switches::kEnableVirtualKeyboard);
     test::AshTestBase::SetUp();
     SetAlignmentDelegate(make_scoped_ptr(new AshPopupAlignmentDelegate(
-        ShelfLayoutManager::ForShelf(Shell::GetPrimaryRootWindow()))));
+        Shelf::ForPrimaryDisplay()->shelf_layout_manager())));
   }
 
   void TearDown() override {
@@ -43,7 +44,8 @@ class AshPopupAlignmentDelegateTest : public test::AshTestBase {
   }
 
   void SetKeyboardBounds(const gfx::Rect& new_bounds) {
-    ShelfLayoutManager::ForShelf(Shell::GetPrimaryRootWindow())
+    Shelf::ForPrimaryDisplay()
+        ->shelf_layout_manager()
         ->OnKeyboardBoundsChanging(new_bounds);
   }
 
@@ -179,8 +181,7 @@ TEST_F(AshPopupAlignmentDelegateTest, AutoHide) {
   Shell::GetInstance()->SetShelfAutoHideBehavior(
       SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS,
       Shell::GetPrimaryRootWindow());
-  ShelfLayoutManager::ForShelf(Shell::GetPrimaryRootWindow())->
-      UpdateAutoHideStateNow();
+  Shelf::ForPrimaryDisplay()->shelf_layout_manager()->UpdateAutoHideStateNow();
   EXPECT_EQ(origin_x, alignment_delegate()->GetToastOriginX(toast_size));
   EXPECT_LT(baseline, alignment_delegate()->GetBaseLine());
 }
@@ -281,7 +282,7 @@ TEST_F(AshPopupAlignmentDelegateTest, Extended) {
     return;
   UpdateDisplay("600x600,800x800");
   SetAlignmentDelegate(make_scoped_ptr(new AshPopupAlignmentDelegate(
-      ShelfLayoutManager::ForShelf(Shell::GetPrimaryRootWindow()))));
+      Shelf::ForPrimaryDisplay()->shelf_layout_manager())));
 
   gfx::Display second_display = ScreenUtil::GetSecondaryDisplay();
   aura::Window* second_root =
@@ -289,7 +290,7 @@ TEST_F(AshPopupAlignmentDelegateTest, Extended) {
           ->window_tree_host_manager()
           ->GetRootWindowForDisplayId(second_display.id());
   AshPopupAlignmentDelegate for_2nd_display(
-      ShelfLayoutManager::ForShelf(second_root));
+      Shelf::ForWindow(second_root)->shelf_layout_manager());
   UpdateWorkArea(&for_2nd_display, second_display);
   // Make sure that the toast position on the secondary display is
   // positioned correctly.
@@ -309,7 +310,7 @@ TEST_F(AshPopupAlignmentDelegateTest, Unified) {
 
   UpdateDisplay("600x600,800x800");
   SetAlignmentDelegate(make_scoped_ptr(new AshPopupAlignmentDelegate(
-      ShelfLayoutManager::ForShelf(Shell::GetPrimaryRootWindow()))));
+      Shelf::ForPrimaryDisplay()->shelf_layout_manager())));
 
   EXPECT_GT(600,
             alignment_delegate()->GetToastOriginX(gfx::Rect(0, 0, 10, 10)));

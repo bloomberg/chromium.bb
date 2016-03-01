@@ -544,12 +544,6 @@ void ShelfLayoutManager::SetChromeVoxPanelHeight(int height) {
   LayoutShelf();
 }
 
-// static
-ShelfLayoutManager* ShelfLayoutManager::ForShelf(aura::Window* window) {
-  ShelfWidget* shelf = RootWindowController::ForShelf(window)->shelf();
-  return shelf ? shelf->shelf_layout_manager() : NULL;
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // ShelfLayoutManager, private:
 

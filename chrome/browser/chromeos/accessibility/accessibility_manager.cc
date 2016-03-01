@@ -13,6 +13,7 @@
 #include "ash/high_contrast/high_contrast_controller.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/session/session_state_delegate.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
 #include "ash/sticky_keys/sticky_keys_controller.h"
@@ -1221,7 +1222,9 @@ void AccessibilityManager::OnChromeVoxPanelClosing() {
   aura::Window* root_window = chromevox_panel_->GetRootWindow();
   chromevox_panel_widget_observer_.reset(nullptr);
   chromevox_panel_ = nullptr;
-  ash::ShelfLayoutManager::ForShelf(root_window)->SetChromeVoxPanelHeight(0);
+  ash::Shelf::ForWindow(root_window)
+      ->shelf_layout_manager()
+      ->SetChromeVoxPanelHeight(0);
 }
 
 void AccessibilityManager::OnChromeVoxPanelDestroying() {

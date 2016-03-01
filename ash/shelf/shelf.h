@@ -8,6 +8,7 @@
 #include "ash/ash_export.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_types.h"
+#include "ash/shelf/shelf_widget.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/gfx/geometry/size.h"
@@ -35,12 +36,10 @@ class ShelfDelegate;
 class ShelfIconObserver;
 class ShelfModel;
 class ShelfView;
-class ShelfWidget;
 
 namespace test {
 class ShelfTestAPI;
 }
-
 
 class ASH_EXPORT Shelf {
  public:
@@ -53,12 +52,36 @@ class ASH_EXPORT Shelf {
   static Shelf* ForPrimaryDisplay();
 
   // Return the shelf for the display that |window| is currently on, or a shelf
-  // on primary display if the shelf per display feature  is disabled. NULL if
-  // no user is logged in yet.
-  static Shelf* ForWindow(aura::Window* window);
+  // on primary display if the shelf per display feature is disabled. NULL if no
+  // user is logged in yet.
+  static Shelf* ForWindow(const aura::Window* window);
 
   void SetAlignment(ShelfAlignment alignment);
   ShelfAlignment alignment() const { return alignment_; }
+  bool IsHorizontalAlignment() const;
+
+  // A helper functions that chooses values specific to a shelf alignment.
+  template <typename T>
+  T SelectValueForShelfAlignment(T bottom, T left, T right, T top) const {
+    switch (alignment_) {
+      case SHELF_ALIGNMENT_BOTTOM:
+        return bottom;
+      case SHELF_ALIGNMENT_LEFT:
+        return left;
+      case SHELF_ALIGNMENT_RIGHT:
+        return right;
+      case SHELF_ALIGNMENT_TOP:
+        return top;
+    }
+    NOTREACHED();
+    return right;
+  }
+
+  // A helper functions that chooses values specific to a shelf alignment type.
+  template <typename T>
+  T PrimaryAxisValue(T horizontal, T vertical) const {
+    return IsHorizontalAlignment() ? horizontal : vertical;
+  }
 
   // Returns the screen bounds of the item for the specified window. If there is
   // no item for the specified window an empty rect is returned.
@@ -95,6 +118,11 @@ class ASH_EXPORT Shelf {
   void LaunchAppIndexAt(int item_index);
 
   ShelfWidget* shelf_widget() { return shelf_widget_; }
+
+  // TODO(msw): ShelfLayoutManager should not be accessed externally.
+  ShelfLayoutManager* shelf_layout_manager() {
+    return shelf_widget_->shelf_layout_manager();
+  }
 
   // Set the bounds of the shelf view.
   void SetShelfViewBounds(gfx::Rect bounds);

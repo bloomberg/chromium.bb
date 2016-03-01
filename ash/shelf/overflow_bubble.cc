@@ -6,7 +6,7 @@
 
 #include "ash/root_window_controller.h"
 #include "ash/shelf/overflow_bubble_view.h"
-#include "ash/shelf/shelf_layout_manager.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
@@ -94,7 +94,7 @@ void OverflowBubble::OnWidgetDestroying(views::Widget* widget) {
   DCHECK(widget == bubble_->GetWidget());
   bubble_ = NULL;
   anchor_ = NULL;
-  shelf_view_->shelf_layout_manager()->shelf_widget()->shelf()->SchedulePaint();
+  shelf_view_->shelf()->SchedulePaint();
   shelf_view_ = NULL;
 }
 

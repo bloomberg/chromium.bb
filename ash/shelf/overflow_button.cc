@@ -5,6 +5,7 @@
 #include "ash/shelf/overflow_button.h"
 
 #include "ash/ash_switches.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_widget.h"
 #include "grit/ash_resources.h"
@@ -34,8 +35,7 @@ const int kBackgroundOffset = (48 - kButtonHoverSize) / 2;
 
 }  // namesapce
 
-OverflowButton::OverflowButton(views::ButtonListener* listener,
-                               ShelfLayoutManager* shelf)
+OverflowButton::OverflowButton(views::ButtonListener* listener, Shelf* shelf)
     : CustomButton(listener), bottom_image_(nullptr), shelf_(shelf) {
   ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
   bottom_image_ = rb->GetImageNamed(IDR_ASH_SHELF_OVERFLOW).ToImageSkia();
@@ -80,12 +80,10 @@ void OverflowButton::PaintBackground(gfx::Canvas* canvas, int alpha) {
 }
 
 void OverflowButton::OnPaint(gfx::Canvas* canvas) {
-  ShelfAlignment alignment = shelf_->GetAlignment();
-
   gfx::Rect bounds(GetContentsBounds());
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   int background_image_id = 0;
-  if (shelf_->shelf_widget()->shelf()->IsShowingOverflowBubble())
+  if (shelf_->IsShowingOverflowBubble())
     background_image_id = IDR_AURA_NOTIFICATION_BACKGROUND_PRESSED;
   else if (shelf_->shelf_widget()->GetDimsShelf())
     background_image_id = IDR_AURA_NOTIFICATION_BACKGROUND_ON_BLACK;
@@ -94,6 +92,7 @@ void OverflowButton::OnPaint(gfx::Canvas* canvas) {
 
   const gfx::ImageSkia* background =
       rb.GetImageNamed(background_image_id).ToImageSkia();
+  ShelfAlignment alignment = shelf_->alignment();
   if (alignment == SHELF_ALIGNMENT_LEFT) {
     bounds = gfx::Rect(
         bounds.right() - background->width() -

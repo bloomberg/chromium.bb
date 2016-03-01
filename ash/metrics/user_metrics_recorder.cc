@@ -6,12 +6,11 @@
 
 #include "ash/metrics/desktop_task_switch_metric_recorder.h"
 #include "ash/session/session_state_delegate.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_delegate.h"
 #include "ash/shelf/shelf_item_types.h"
-#include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_model.h"
 #include "ash/shelf/shelf_view.h"
-#include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/system/tray/system_tray_delegate.h"
@@ -622,18 +621,16 @@ void UserMetricsRecorder::OnShellShuttingDown() {
 }
 
 void UserMetricsRecorder::RecordPeriodicMetrics() {
-  ShelfLayoutManager* manager =
-      ShelfLayoutManager::ForShelf(Shell::GetPrimaryRootWindow());
+  Shelf* shelf = Shelf::ForPrimaryDisplay();
   // TODO(bruthig): Investigating whether the check for |manager| is necessary
   // and add tests if it is.
-  if (manager) {
+  if (shelf) {
     // TODO(bruthig): Consider tracking the time spent in each alignment.
     UMA_HISTOGRAM_ENUMERATION("Ash.ShelfAlignmentOverTime",
-                              manager->SelectValueForShelfAlignment(
+                              shelf->SelectValueForShelfAlignment(
                                   SHELF_ALIGNMENT_UMA_ENUM_VALUE_BOTTOM,
                                   SHELF_ALIGNMENT_UMA_ENUM_VALUE_LEFT,
-                                  SHELF_ALIGNMENT_UMA_ENUM_VALUE_RIGHT,
-                                  -1),
+                                  SHELF_ALIGNMENT_UMA_ENUM_VALUE_RIGHT, -1),
                               SHELF_ALIGNMENT_UMA_ENUM_VALUE_COUNT);
   }
 

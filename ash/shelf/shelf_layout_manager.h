@@ -219,10 +219,6 @@ class ASH_EXPORT ShelfLayoutManager
   // available work area from the top of the screen.
   void SetChromeVoxPanelHeight(int height);
 
-  // Returns a ShelfLayoutManager on the display which has a shelf for
-  // given |window|. See RootWindowController::ForShelf for more info.
-  static ShelfLayoutManager* ForShelf(aura::Window* window);
-
  private:
   class AutoHideEventFilter;
   class UpdateShelfObserver;
