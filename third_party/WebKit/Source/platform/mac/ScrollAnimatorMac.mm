@@ -729,19 +729,19 @@ void ScrollAnimatorMac::dispose()
     m_sendContentAreaScrolledTaskFactory->cancel();
 }
 
-ScrollResultOneDimensional ScrollAnimatorMac::userScroll(ScrollbarOrientation orientation, ScrollGranularity granularity, float step, float delta)
+ScrollResultOneDimensional ScrollAnimatorMac::userScroll(ScrollbarOrientation orientation, ScrollGranularity granularity, float delta)
 {
     m_haveScrolledSincePageLoad = true;
 
     if (!m_scrollableArea->scrollAnimatorEnabled())
-        return ScrollAnimatorBase::userScroll(orientation, granularity, step, delta);
+        return ScrollAnimatorBase::userScroll(orientation, granularity, delta);
 
     if (granularity == ScrollByPixel || granularity == ScrollByPrecisePixel)
-        return ScrollAnimatorBase::userScroll(orientation, granularity, step, delta);
+        return ScrollAnimatorBase::userScroll(orientation, granularity, delta);
 
     float currentPos = orientation == HorizontalScrollbar ? m_currentPosX : m_currentPosY;
-    float usedPixelDelta = computeDeltaToConsume(orientation, step * delta);
-    float newPos = currentPos + usedPixelDelta;
+    float usedDelta = computeDeltaToConsume(orientation, delta);
+    float newPos = currentPos + usedDelta;
     if (currentPos == newPos)
         return ScrollResultOneDimensional(false);
 
@@ -754,7 +754,7 @@ ScrollResultOneDimensional ScrollAnimatorMac::userScroll(ScrollbarOrientation or
 
     [m_scrollAnimationHelper.get() scrollToPoint:newPoint];
 
-    return ScrollResultOneDimensional(true, delta - (usedPixelDelta / step));
+    return ScrollResultOneDimensional(true, delta - usedDelta);
 }
 
 void ScrollAnimatorMac::scrollToOffsetWithoutAnimation(const FloatPoint& offset)

@@ -99,10 +99,10 @@ void ScrollAnimator::resetAnimationState()
 }
 
 ScrollResultOneDimensional ScrollAnimator::userScroll(
-    ScrollbarOrientation orientation, ScrollGranularity granularity, float step, float delta)
+    ScrollbarOrientation orientation, ScrollGranularity granularity, float delta)
 {
     if (!m_scrollableArea->scrollAnimatorEnabled())
-        return ScrollAnimatorBase::userScroll(orientation, granularity, step, delta);
+        return ScrollAnimatorBase::userScroll(orientation, granularity, delta);
 
     TRACE_EVENT0("blink", "ScrollAnimator::scroll");
 
@@ -110,12 +110,12 @@ ScrollResultOneDimensional ScrollAnimator::userScroll(
         // Cancel scroll animation because asked to instant scroll.
         if (hasRunningAnimation())
             cancelAnimation();
-        return ScrollAnimatorBase::userScroll(orientation, granularity, step, delta);
+        return ScrollAnimatorBase::userScroll(orientation, granularity, delta);
     }
 
-    float usedPixelDelta = computeDeltaToConsume(orientation, step * delta);
+    float usedDelta = computeDeltaToConsume(orientation, delta);
     FloatPoint pixelDelta = (orientation == VerticalScrollbar
-        ? FloatPoint(0, usedPixelDelta) : FloatPoint(usedPixelDelta, 0));
+        ? FloatPoint(0, usedDelta) : FloatPoint(usedDelta, 0));
 
     FloatPoint targetPos = desiredTargetPosition();
     targetPos.moveBy(pixelDelta);

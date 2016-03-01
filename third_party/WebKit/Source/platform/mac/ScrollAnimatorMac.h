@@ -91,7 +91,7 @@ private:
     OwnPtr<WebTaskRunner> m_taskRunner;
     FloatSize m_contentAreaScrolledTimerScrollDelta;
 
-    ScrollResultOneDimensional userScroll(ScrollbarOrientation, ScrollGranularity, float step, float delta) override;
+    ScrollResultOneDimensional userScroll(ScrollbarOrientation, ScrollGranularity, float delta) override;
     void scrollToOffsetWithoutAnimation(const FloatPoint&) override;
 
     void handleWheelEventPhase(PlatformWheelEventPhase) override;

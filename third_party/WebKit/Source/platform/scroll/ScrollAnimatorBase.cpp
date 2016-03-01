@@ -56,11 +56,11 @@ float ScrollAnimatorBase::computeDeltaToConsume(ScrollbarOrientation orientation
     return (currentPos == newPos) ? 0.0f : (newPos - currentPos);
 }
 
-ScrollResultOneDimensional ScrollAnimatorBase::userScroll(ScrollbarOrientation orientation, ScrollGranularity, float step, float delta)
+ScrollResultOneDimensional ScrollAnimatorBase::userScroll(ScrollbarOrientation orientation, ScrollGranularity, float delta)
 {
     float& currentPos = (orientation == HorizontalScrollbar) ? m_currentPosX : m_currentPosY;
-    float usedPixelDelta = computeDeltaToConsume(orientation, step * delta);
-    float newPos = currentPos + usedPixelDelta;
+    float usedDelta = computeDeltaToConsume(orientation, delta);
+    float newPos = currentPos + usedDelta;
     if (currentPos == newPos)
         return ScrollResultOneDimensional(false, delta);
 
@@ -68,7 +68,7 @@ ScrollResultOneDimensional ScrollAnimatorBase::userScroll(ScrollbarOrientation o
 
     notifyPositionChanged();
 
-    return ScrollResultOneDimensional(true, delta - (usedPixelDelta / step));
+    return ScrollResultOneDimensional(true, delta - usedDelta);
 }
 
 void ScrollAnimatorBase::scrollToOffsetWithoutAnimation(const FloatPoint& offset)

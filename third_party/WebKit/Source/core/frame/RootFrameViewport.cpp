@@ -249,15 +249,13 @@ ScrollResultOneDimensional RootFrameViewport::userScroll(ScrollDirectionPhysical
         // to the scroll animator and letting it compute the total delta, we
         // give it the delta it should scroll. This way we can apply the
         // unused delta from the visual viewport to the layout viewport.
-        // TODO(ymalik): ScrollAnimator should return unused delta in pixles
-        // rather than in terms of steps.
         delta *= step;
 
         cancelProgrammaticScrollAnimation();
 
         float visualUsedDelta = visualViewport().scrollAnimator().computeDeltaToConsume(orientation, delta);
         ScrollResultOneDimensional visualResult = visualViewport().scrollAnimator().userScroll(
-            orientation, granularity, 1 /* step */, visualUsedDelta);
+            orientation, granularity, visualUsedDelta);
 
         // Scroll the layout viewport if all of the scroll was not applied to the
         // visual viewport.
@@ -265,10 +263,10 @@ ScrollResultOneDimensional RootFrameViewport::userScroll(ScrollDirectionPhysical
             return visualResult;
 
         ScrollResultOneDimensional layoutResult = layoutViewport().scrollAnimator().userScroll(
-            orientation, granularity, 1 /* step */, delta - visualUsedDelta);
+            orientation, granularity, delta - visualUsedDelta);
 
         return ScrollResultOneDimensional(visualResult.didScroll || layoutResult.didScroll,
-            layoutResult.unusedScrollDelta / step);
+            layoutResult.unusedScrollDelta);
     }
 
     if (visualViewport().userInputScrollable(orientation))

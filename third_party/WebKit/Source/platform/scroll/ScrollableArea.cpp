@@ -170,7 +170,7 @@ ScrollResultOneDimensional ScrollableArea::userScroll(ScrollDirectionPhysical di
     if (direction == ScrollUp || direction == ScrollLeft)
         delta = -delta;
 
-    return scrollAnimator().userScroll(orientation, granularity, step, delta);
+    return scrollAnimator().userScroll(orientation, granularity, step * delta);
 }
 
 void ScrollableArea::setScrollPosition(const DoublePoint& position, ScrollType scrollType, ScrollBehavior behavior)

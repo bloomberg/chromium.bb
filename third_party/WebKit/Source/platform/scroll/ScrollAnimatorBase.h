@@ -59,7 +59,7 @@ public:
     // the destination.  Otherwise, starts scrolling towards the destination and
     // didScroll is true.  Scrolling may be immediate or animated. The base
     // class implementation always scrolls immediately, never animates.
-    virtual ScrollResultOneDimensional userScroll(ScrollbarOrientation, ScrollGranularity, float step, float delta);
+    virtual ScrollResultOneDimensional userScroll(ScrollbarOrientation, ScrollGranularity, float delta);
 
     virtual void scrollToOffsetWithoutAnimation(const FloatPoint&);
 
