@@ -269,6 +269,7 @@ enum ContextType {
 
 struct GLES2_UTILS_EXPORT ContextCreationAttribHelper {
   ContextCreationAttribHelper();
+  ContextCreationAttribHelper(const ContextCreationAttribHelper& other);
 
   void Serialize(std::vector<int32_t>* attribs) const;
   bool Parse(const std::vector<int32_t>& attribs);

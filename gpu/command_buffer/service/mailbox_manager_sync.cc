@@ -166,6 +166,9 @@ MailboxManagerSync::TextureGroupRef::TextureGroupRef(unsigned version,
     : version(version), group(group) {
 }
 
+MailboxManagerSync::TextureGroupRef::TextureGroupRef(
+    const TextureGroupRef& other) = default;
+
 MailboxManagerSync::TextureGroupRef::~TextureGroupRef() {
 }
 

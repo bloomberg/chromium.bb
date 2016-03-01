@@ -57,6 +57,7 @@ class GPU_EXPORT GPUTestConfig {
   };
 
   GPUTestConfig();
+  GPUTestConfig(const GPUTestConfig& other);
   virtual ~GPUTestConfig();
 
   void set_os(int32_t os);

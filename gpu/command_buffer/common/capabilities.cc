@@ -86,4 +86,6 @@ Capabilities::Capabilities()
       major_version(2),
       minor_version(0) {}
 
+Capabilities::Capabilities(const Capabilities& other) = default;
+
 }  // namespace gpu

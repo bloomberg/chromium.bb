@@ -300,6 +300,7 @@ class GPU_EXPORT Texture {
 
   struct FaceInfo {
     FaceInfo();
+    FaceInfo(const FaceInfo& other);
     ~FaceInfo();
 
     // This is relative to base_level and max_level of a texture.

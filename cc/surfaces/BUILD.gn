@@ -51,6 +51,7 @@ component("surfaces") {
     "//base/third_party/dynamic_annotations",
     "//cc",
     "//gpu/command_buffer/client:gles2_interface",
+    "//gpu/command_buffer/common",
     "//skia",
     "//ui/events:events_base",
     "//ui/gfx",

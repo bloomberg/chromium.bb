@@ -166,6 +166,8 @@ GLES2DecoderTestBase::InitState::InitState()
       use_native_vao(true),
       context_type(CONTEXT_TYPE_OPENGLES2) {}
 
+GLES2DecoderTestBase::InitState::InitState(const InitState& other) = default;
+
 void GLES2DecoderTestBase::InitDecoder(const InitState& init) {
   InitDecoderWithCommandLine(init, NULL);
 }

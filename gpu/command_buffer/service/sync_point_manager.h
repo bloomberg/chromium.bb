@@ -78,6 +78,7 @@ class GPU_EXPORT SyncPointOrderData
     OrderFence(uint32_t order,
                uint64_t release,
                scoped_refptr<SyncPointClientState> state);
+    OrderFence(const OrderFence& other);
     ~OrderFence();
 
     bool operator>(const OrderFence& rhs) const {
@@ -157,6 +158,7 @@ class GPU_EXPORT SyncPointClientState
     base::Closure callback_closure;
 
     ReleaseCallback(uint64_t release, const base::Closure& callback);
+    ReleaseCallback(const ReleaseCallback& other);
     ~ReleaseCallback();
 
     bool operator>(const ReleaseCallback& rhs) const {

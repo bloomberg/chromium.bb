@@ -45,6 +45,7 @@ struct GPU_EXPORT Capabilities {
   };
 
   Capabilities();
+  Capabilities(const Capabilities& other);
 
   template <typename T>
   void VisitStagePrecisions(unsigned stage,

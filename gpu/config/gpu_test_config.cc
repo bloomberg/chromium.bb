@@ -83,6 +83,8 @@ GPUTestConfig::GPUTestConfig()
       build_type_(kBuildTypeUnknown),
       api_(kAPIUnknown) {}
 
+GPUTestConfig::GPUTestConfig(const GPUTestConfig& other) = default;
+
 GPUTestConfig::~GPUTestConfig() {
 }
 

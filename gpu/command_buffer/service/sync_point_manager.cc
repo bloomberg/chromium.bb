@@ -135,6 +135,8 @@ SyncPointOrderData::OrderFence::OrderFence(
     scoped_refptr<SyncPointClientState> state)
     : order_num(order), fence_release(release), client_state(state) {}
 
+SyncPointOrderData::OrderFence::OrderFence(const OrderFence& other) = default;
+
 SyncPointOrderData::OrderFence::~OrderFence() {}
 
 SyncPointOrderData::SyncPointOrderData()
@@ -176,6 +178,9 @@ SyncPointClientState::ReleaseCallback::ReleaseCallback(
     uint64_t release,
     const base::Closure& callback)
     : release_count(release), callback_closure(callback) {}
+
+SyncPointClientState::ReleaseCallback::ReleaseCallback(
+    const ReleaseCallback& other) = default;
 
 SyncPointClientState::ReleaseCallback::~ReleaseCallback() {}
 

@@ -251,6 +251,9 @@ Program::UniformInfo::UniformInfo(const std::string& client_name,
   texture_units.clear();
   texture_units.resize(num_texture_units, 0);
 }
+
+Program::UniformInfo::UniformInfo(const UniformInfo& other) = default;
+
 Program::UniformInfo::~UniformInfo() {}
 
 bool ProgramManager::HasBuiltInPrefix(const std::string& name) {

@@ -404,6 +404,8 @@ Texture::FaceInfo::FaceInfo()
     : num_mip_levels(0) {
 }
 
+Texture::FaceInfo::FaceInfo(const FaceInfo& other) = default;
+
 Texture::FaceInfo::~FaceInfo() {
 }
 

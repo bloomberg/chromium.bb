@@ -310,6 +310,8 @@ TextureDefinition::LevelInfo::LevelInfo(GLenum target,
       cleared_rect(cleared_rect) {
 }
 
+TextureDefinition::LevelInfo::LevelInfo(const LevelInfo& other) = default;
+
 TextureDefinition::LevelInfo::~LevelInfo() {}
 
 TextureDefinition::TextureDefinition()
@@ -356,6 +358,8 @@ TextureDefinition::TextureDefinition(
                           level.height, level.depth, level.border, level.format,
                           level.type, level.cleared_rect);
 }
+
+TextureDefinition::TextureDefinition(const TextureDefinition& other) = default;
 
 TextureDefinition::~TextureDefinition() {
 }

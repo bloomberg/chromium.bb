@@ -67,6 +67,8 @@ using VideoDecodeAcceleratorSupportedProfiles =
 
 struct GPU_EXPORT VideoDecodeAcceleratorCapabilities {
   VideoDecodeAcceleratorCapabilities();
+  VideoDecodeAcceleratorCapabilities(
+      const VideoDecodeAcceleratorCapabilities& other);
   ~VideoDecodeAcceleratorCapabilities();
   VideoDecodeAcceleratorSupportedProfiles supported_profiles;
   uint32_t flags;
@@ -107,6 +109,7 @@ struct GPU_EXPORT GPUInfo {
   };
 
   GPUInfo();
+  GPUInfo(const GPUInfo& other);
   ~GPUInfo();
 
   bool SupportsAccelerated2dCanvas() const {

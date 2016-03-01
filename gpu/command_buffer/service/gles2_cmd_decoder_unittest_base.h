@@ -197,6 +197,7 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
 
   struct InitState {
     InitState();
+    InitState(const InitState& other);
 
     std::string extensions;
     std::string gl_version;

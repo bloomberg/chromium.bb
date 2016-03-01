@@ -45,6 +45,7 @@ enum GpuTracerSource {
 // Marker structure for a Trace.
 struct TraceMarker {
   TraceMarker(const std::string& category, const std::string& name);
+  TraceMarker(const TraceMarker& other);
   ~TraceMarker();
 
   std::string category_;

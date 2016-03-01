@@ -8,6 +8,8 @@ namespace gpu {
 
 DxDiagNode::DxDiagNode() {}
 
+DxDiagNode::DxDiagNode(const DxDiagNode& other) = default;
+
 DxDiagNode::~DxDiagNode() {}
 
 }  // namespace gpu

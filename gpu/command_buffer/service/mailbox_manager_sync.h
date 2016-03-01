@@ -79,6 +79,7 @@ class GPU_EXPORT MailboxManagerSync : public MailboxManager {
 
   struct TextureGroupRef {
     TextureGroupRef(unsigned version, TextureGroup* group);
+    TextureGroupRef(const TextureGroupRef& other);
     ~TextureGroupRef();
     unsigned version;
     scoped_refptr<TextureGroup> group;

@@ -51,6 +51,9 @@ namespace gpu {
 VideoDecodeAcceleratorCapabilities::VideoDecodeAcceleratorCapabilities()
     : flags(0) {}
 
+VideoDecodeAcceleratorCapabilities::VideoDecodeAcceleratorCapabilities(
+    const VideoDecodeAcceleratorCapabilities& other) = default;
+
 VideoDecodeAcceleratorCapabilities::~VideoDecodeAcceleratorCapabilities() {}
 
 GPUInfo::GPUDevice::GPUDevice()
@@ -80,6 +83,8 @@ GPUInfo::GPUInfo()
 #endif
       jpeg_decode_accelerator_supported(false) {
 }
+
+GPUInfo::GPUInfo(const GPUInfo& other) = default;
 
 GPUInfo::~GPUInfo() { }
 

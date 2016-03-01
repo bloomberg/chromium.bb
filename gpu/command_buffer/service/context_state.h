@@ -33,6 +33,7 @@ class Renderbuffer;
 // State associated with each texture unit.
 struct GPU_EXPORT TextureUnit {
   TextureUnit();
+  TextureUnit(const TextureUnit& other);
   ~TextureUnit();
 
   // The last target that was bound to this texture unit.

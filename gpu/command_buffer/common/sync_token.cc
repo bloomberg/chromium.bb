@@ -22,4 +22,6 @@ SyncToken::SyncToken(CommandBufferNamespace namespace_id,
       command_buffer_id_(command_buffer_id),
       release_count_(release_count) {}
 
+SyncToken::SyncToken(const SyncToken& other) = default;
+
 }  // namespace gpu

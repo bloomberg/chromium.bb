@@ -87,6 +87,8 @@ TextureUnit::TextureUnit()
     : bind_target(GL_TEXTURE_2D) {
 }
 
+TextureUnit::TextureUnit(const TextureUnit& other) = default;
+
 TextureUnit::~TextureUnit() {
 }
 

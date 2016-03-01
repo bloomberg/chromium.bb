@@ -1415,6 +1415,9 @@ ContextCreationAttribHelper::ContextCreationAttribHelper()
       lose_context_when_out_of_memory(false),
       context_type(CONTEXT_TYPE_OPENGLES2) {}
 
+ContextCreationAttribHelper::ContextCreationAttribHelper(
+    const ContextCreationAttribHelper& other) = default;
+
 void ContextCreationAttribHelper::Serialize(
     std::vector<int32_t>* attribs) const {
   if (alpha_size != -1) {

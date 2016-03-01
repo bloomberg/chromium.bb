@@ -33,6 +33,7 @@ class GPU_EXPORT VertexAttrib {
   typedef std::list<VertexAttrib*> VertexAttribList;
 
   VertexAttrib();
+  VertexAttrib(const VertexAttrib& other);
   ~VertexAttrib();
 
   // Returns true if this VertexAttrib can access index.

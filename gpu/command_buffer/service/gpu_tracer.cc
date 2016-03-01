@@ -43,6 +43,8 @@ TraceMarker::TraceMarker(const std::string& category, const std::string& name)
       trace_(NULL) {
 }
 
+TraceMarker::TraceMarker(const TraceMarker& other) = default;
+
 TraceMarker::~TraceMarker() {
 }
 

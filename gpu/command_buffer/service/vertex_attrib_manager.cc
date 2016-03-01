@@ -41,6 +41,8 @@ VertexAttrib::VertexAttrib()
       list_(NULL) {
 }
 
+VertexAttrib::VertexAttrib(const VertexAttrib& other) = default;
+
 VertexAttrib::~VertexAttrib() {
 }
 

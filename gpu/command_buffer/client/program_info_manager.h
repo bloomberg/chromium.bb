@@ -106,6 +106,7 @@ class GLES2_IMPL_EXPORT ProgramInfoManager {
    public:
     struct UniformInfo {
       UniformInfo(GLsizei _size, GLenum _type, const std::string& _name);
+      UniformInfo(const UniformInfo& other);
       ~UniformInfo();
 
       GLsizei size;
@@ -136,6 +137,7 @@ class GLES2_IMPL_EXPORT ProgramInfoManager {
     };
     struct UniformBlock {
       UniformBlock();
+      UniformBlock(const UniformBlock& other);
       ~UniformBlock();
 
       GLuint binding;
@@ -155,6 +157,7 @@ class GLES2_IMPL_EXPORT ProgramInfoManager {
     };
 
     Program();
+    Program(const Program& other);
     ~Program();
 
     const VertexAttrib* GetAttribInfo(GLint index) const;

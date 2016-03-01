@@ -88,6 +88,7 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
 
   struct UniformInfo {
     UniformInfo();
+    UniformInfo(const UniformInfo& other);
     UniformInfo(const std::string& client_name,
                 GLint client_location_base,
                 GLenum _type,
