@@ -12,6 +12,7 @@ TODO(pasko): implement cache preparation and WPR.
 """
 
 import argparse
+import csv
 import json
 import logging
 import os
@@ -285,13 +286,17 @@ class SandwichRunner(object):
 
 def _ArgumentParser():
   """Build a command line argument's parser."""
+  # Command parser when dealing with jobs.
+  common_job_parser = argparse.ArgumentParser(add_help=False)
+  common_job_parser.add_argument('--job', required=True,
+                                 help='JSON file with job description.')
+
+  # Main parser
   parser = argparse.ArgumentParser()
-  parser.add_argument('--job', required=True,
-                      help='JSON file with job description.')
   subparsers = parser.add_subparsers(dest='subcommand', help='subcommand line')
 
   # Record WPR subcommand.
-  record_wpr = subparsers.add_parser('record-wpr',
+  record_wpr = subparsers.add_parser('record-wpr', parents=[common_job_parser],
                                      help='Record WPR from sandwich job.')
   record_wpr.add_argument('--wpr-archive', required=True, type=str,
                           dest='wpr_archive_path',
@@ -302,10 +307,11 @@ def _ArgumentParser():
                                      help='Patch WPR response headers.')
   patch_wpr.add_argument('--wpr-archive', required=True, type=str,
                          dest='wpr_archive_path',
-                         help='Web page replay archive to generate.')
+                         help='Web page replay archive to patch.')
 
   # Create cache subcommand.
   create_cache_parser = subparsers.add_parser('create-cache',
+      parents=[common_job_parser],
       help='Create cache from sandwich job.')
   create_cache_parser.add_argument('--cache-archive', required=True, type=str,
                                    dest='cache_archive_path',
@@ -316,7 +322,8 @@ def _ArgumentParser():
                                        'the cache from.')
 
   # Run subcommand.
-  run_parser = subparsers.add_parser('run', help='Run sandwich benchmark.')
+  run_parser = subparsers.add_parser('run', parents=[common_job_parser],
+                                     help='Run sandwich benchmark.')
   run_parser.add_argument('--output', required=True, type=str,
                           dest='trace_output_directory',
                           help='Path of output directory to create.')
@@ -350,6 +357,18 @@ def _ArgumentParser():
                           dest='wpr_archive_path',
                           help='Web page replay archive to load job\'s urls ' +
                               'from.')
+
+  # Pull metrics subcommand.
+  create_cache_parser = subparsers.add_parser('extract-metrics',
+      help='Extracts metrics from a loading trace and saves as CSV.')
+  create_cache_parser.add_argument('--trace-directory', required=True,
+                                   dest='trace_output_directory', type=str,
+                                   help='Path of loading traces directory.')
+  create_cache_parser.add_argument('--out-metrics', default=None, type=str,
+                                   dest='metrics_csv_path',
+                                   help='Path where to save the metrics\'s '+
+                                      'CSV.')
+
   return parser
 
 
@@ -358,6 +377,8 @@ def _RecordWprMain(args):
   sandwich_runner.PullConfigFromArgs(args)
   sandwich_runner.wpr_record = True
   sandwich_runner.PrintConfig()
+  if not os.path.isdir(os.path.dirname(args.wpr_archive_path)):
+    os.makedirs(os.path.dirname(args.wpr_archive_path))
   sandwich_runner.Run()
   return 0
 
@@ -397,6 +418,8 @@ def _CreateCacheMain(args):
   sandwich_runner.PullConfigFromArgs(args)
   sandwich_runner.cache_operation = 'save'
   sandwich_runner.PrintConfig()
+  if not os.path.isdir(os.path.dirname(args.cache_archive_path)):
+    os.makedirs(os.path.dirname(args.cache_archive_path))
   sandwich_runner.Run()
   return 0
 
@@ -406,6 +429,19 @@ def _RunJobMain(args):
   sandwich_runner.PullConfigFromArgs(args)
   sandwich_runner.PrintConfig()
   sandwich_runner.Run()
+  return 0
+
+
+def _ExtractMetricsMain(args):
+  trace_metrics_list = pull_sandwich_metrics.PullMetricsFromOutputDirectory(
+      args.trace_output_directory)
+  trace_metrics_list.sort(key=lambda e: e['id'])
+  with open(args.metrics_csv_path, 'w') as csv_file:
+    writer = csv.DictWriter(csv_file,
+                            fieldnames=pull_sandwich_metrics.CSV_FIELD_NAMES)
+    writer.writeheader()
+    for trace_metrics in trace_metrics_list:
+      writer.writerow(trace_metrics)
   return 0
 
 
@@ -427,6 +463,8 @@ def main(command_line_args):
     return _CreateCacheMain(args)
   if args.subcommand == 'run':
     return _RunJobMain(args)
+  if args.subcommand == 'extract-metrics':
+    return _ExtractMetricsMain(args)
   assert False
 
 

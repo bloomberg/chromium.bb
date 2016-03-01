@@ -1,4 +1,3 @@
-#! /usr/bin/env python
 # Copyright 2016 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -8,8 +7,6 @@
 python pull_sandwich_metrics.py -h
 """
 
-import argparse
-import csv
 import json
 import logging
 import os
@@ -21,7 +18,7 @@ import tracing
 
 CATEGORIES = ['blink.user_timing', 'disabled-by-default-memory-infra']
 
-_CSV_FIELD_NAMES = [
+CSV_FIELD_NAMES = [
     'id',
     'url',
     'total_load',
@@ -114,7 +111,7 @@ def _PullMetricsFromLoadingTrace(loading_trace):
     loading_trace: loading_trace_module.LoadingTrace.
 
   Returns:
-    Dictionary with all _CSV_FIELD_NAMES's field set (except the 'id').
+    Dictionary with all CSV_FIELD_NAMES's field set (except the 'id').
   """
   browser_dump_events = _GetBrowserDumpEvents(loading_trace.tracing_track)
   web_page_tracked_events = _GetWebPageTrackedEvents(
@@ -139,7 +136,7 @@ def _PullMetricsFromLoadingTrace(loading_trace):
   }
 
 
-def _PullMetricsFromOutputDirectory(output_directory_path):
+def PullMetricsFromOutputDirectory(output_directory_path):
   """Pulls all the metrics from all the traces of a sandwich run directory.
 
   Args:
@@ -147,7 +144,7 @@ def _PullMetricsFromOutputDirectory(output_directory_path):
         metrics from.
 
   Returns:
-    List of dictionaries with all _CSV_FIELD_NAMES's field set.
+    List of dictionaries with all CSV_FIELD_NAMES's field set.
   """
   assert os.path.isdir(output_directory_path)
   run_infos = None
@@ -174,26 +171,3 @@ def _PullMetricsFromOutputDirectory(output_directory_path):
   assert len(metrics) > 0, ('Looks like \'{}\' was not a sandwich ' +
                             'run directory.').format(output_directory_path)
   return metrics
-
-
-def main():
-  logging.basicConfig(level=logging.INFO)
-
-  parser = argparse.ArgumentParser()
-  parser.add_argument('output', type=str,
-                      help='Output directory of run_sandwich.py command.')
-  args = parser.parse_args()
-
-  trace_metrics_list = _PullMetricsFromOutputDirectory(args.output)
-  trace_metrics_list.sort(key=lambda e: e['id'])
-  cs_file_path = os.path.join(args.output, 'trace_analysis.csv')
-  with open(cs_file_path, 'w') as csv_file:
-    writer = csv.DictWriter(csv_file, fieldnames=_CSV_FIELD_NAMES)
-    writer.writeheader()
-    for trace_metrics in trace_metrics_list:
-      writer.writerow(trace_metrics)
-  return 0
-
-
-if __name__ == '__main__':
-  sys.exit(main())
