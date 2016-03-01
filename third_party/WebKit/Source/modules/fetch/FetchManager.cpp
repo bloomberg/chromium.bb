@@ -274,6 +274,7 @@ void FetchManager::Loader::didReceiveResponse(unsigned long, const ResourceRespo
         responseData->headerList()->append(it.key, it.value);
     responseData->setURL(response.url());
     responseData->setMIMEType(response.mimeType());
+    responseData->setResponseTime(response.responseTime());
 
     FetchResponseData* taintedResponse = nullptr;
 

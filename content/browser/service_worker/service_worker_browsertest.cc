@@ -14,6 +14,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/browser/fileapi/chrome_blob_storage_context.h"
 #include "content/browser/service_worker/embedded_worker_instance.h"
@@ -945,6 +946,31 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, FetchEvent_Response) {
       base::Bind(&ReadResponseBody,
                  &body, base::Owned(blob_data_handle.release())));
   EXPECT_EQ("This resource is gone. Gone, gone, gone.", body);
+}
+
+IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
+                       FetchEvent_ResponseTime) {
+  ServiceWorkerFetchEventResult result;
+  ServiceWorkerResponse response1;
+  ServiceWorkerResponse response2;
+  scoped_ptr<storage::BlobDataHandle> blob_data_handle;
+  const base::Time start_time(base::Time::Now());
+
+  RunOnIOThread(
+      base::Bind(&self::SetUpRegistrationOnIOThread, this,
+                 "/service_worker/fetch_event_response_via_cache.js"));
+
+  FetchOnRegisteredWorker(&result, &response1, &blob_data_handle);
+  ASSERT_EQ(SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE, result);
+  EXPECT_EQ(200, response1.status_code);
+  EXPECT_EQ("OK", response1.status_text);
+  EXPECT_TRUE(response1.response_time >= start_time);
+
+  FetchOnRegisteredWorker(&result, &response2, &blob_data_handle);
+  ASSERT_EQ(SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE, result);
+  EXPECT_EQ(200, response2.status_code);
+  EXPECT_EQ("OK", response2.status_text);
+  EXPECT_EQ(response1.response_time, response2.response_time);
 }
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,

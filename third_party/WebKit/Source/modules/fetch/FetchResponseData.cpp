@@ -168,6 +168,7 @@ FetchResponseData* FetchResponseData::clone(ExecutionContext* executionContext)
     newResponse->m_statusMessage = m_statusMessage;
     newResponse->m_headerList = m_headerList->clone();
     newResponse->m_mimeType = m_mimeType;
+    newResponse->m_responseTime = m_responseTime;
 
     switch (m_type) {
     case BasicType:
@@ -216,6 +217,7 @@ void FetchResponseData::populateWebServiceWorkerResponse(WebServiceWorkerRespons
     response.setStatus(status());
     response.setStatusText(statusMessage());
     response.setResponseType(fetchTypeToWebType(m_type));
+    response.setResponseTime(responseTime());
     for (size_t i = 0; i < headerList()->size(); ++i) {
         const FetchHeaderList::Header* header = headerList()->list()[i].get();
         response.appendHeader(header->first, header->second);
@@ -227,6 +229,7 @@ FetchResponseData::FetchResponseData(Type type, unsigned short status, AtomicStr
     , m_status(status)
     , m_statusMessage(statusMessage)
     , m_headerList(FetchHeaderList::create())
+    , m_responseTime(0)
 {
 }
 
