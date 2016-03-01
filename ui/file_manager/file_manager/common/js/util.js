@@ -975,7 +975,6 @@ util.getRootTypeLabel = function(locationInfo) {
     case VolumeManagerCommon.RootType.DRIVE_RECENT:
       return str('DRIVE_RECENT_COLLECTION_LABEL');
     case VolumeManagerCommon.RootType.DRIVE_OTHER:
-    case VolumeManagerCommon.RootType.DOWNLOADS:
     case VolumeManagerCommon.RootType.ARCHIVE:
     case VolumeManagerCommon.RootType.REMOVABLE:
     case VolumeManagerCommon.RootType.MTP:
