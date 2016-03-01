@@ -40,6 +40,10 @@ typedef struct CGSize CGSize;
 #endif
 #endif
 
+namespace gfx {
+class Size;
+}
+
 namespace blink {
 
 class PLATFORM_EXPORT IntSize {
@@ -126,6 +130,8 @@ public:
     operator NSSize() const;
 #endif
 #endif
+
+    operator gfx::Size() const;
 
 #ifndef NDEBUG
     String toString() const;

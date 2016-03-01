@@ -760,6 +760,8 @@
       'graphics/paint/FilterDisplayItem.h',
       'graphics/paint/FloatClipDisplayItem.cpp',
       'graphics/paint/FloatClipDisplayItem.h',
+      'graphics/paint/ForeignLayerDisplayItem.cpp',
+      'graphics/paint/ForeignLayerDisplayItem.h',
       'graphics/paint/PaintArtifact.cpp',
       'graphics/paint/PaintArtifact.h',
       'graphics/paint/PaintArtifactToSkCanvas.cpp',

@@ -4,9 +4,15 @@
 
 #include "platform/geometry/IntSize.h"
 
+#include "ui/gfx/geometry/size.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
+
+IntSize::operator gfx::Size() const
+{
+    return gfx::Size(width(), height());
+}
 
 #ifndef NDEBUG
 String IntSize::toString() const
