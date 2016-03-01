@@ -52,10 +52,8 @@ using HandlePassingInformation = base::FileHandleMappingVector;
 // platform differences in suppressing |SIGPIPE|.
 class MOJO_SYSTEM_IMPL_EXPORT PlatformChannelPair {
  public:
-  static const char kMojoPlatformChannelHandleSwitch[];
-
   // If |client_is_blocking| is true, then the client handle only supports
-  // blocking reads and writes. The default is nonblocking.
+   // blocking reads and writes. The default is nonblocking.
   PlatformChannelPair(bool client_is_blocking = false);
   ~PlatformChannelPair();
 
@@ -92,6 +90,8 @@ class MOJO_SYSTEM_IMPL_EXPORT PlatformChannelPair {
   void ChildProcessLaunched();
 
  private:
+  static const char kMojoPlatformChannelHandleSwitch[];
+
   ScopedPlatformHandle server_handle_;
   ScopedPlatformHandle client_handle_;
 

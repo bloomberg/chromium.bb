@@ -52,11 +52,11 @@
 #include "content/child/websocket_dispatcher.h"
 #include "content/common/child_process_messages.h"
 #include "content/common/in_process_child_thread_params.h"
+#include "content/common/mojo/mojo_messages.h"
 #include "content/common/mojo/mojo_shell_connection_impl.h"
 #include "content/public/common/content_switches.h"
 #include "ipc/attachment_broker.h"
 #include "ipc/attachment_broker_unprivileged.h"
-#include "ipc/ipc_descriptors.h"
 #include "ipc/ipc_logging.h"
 #include "ipc/ipc_platform_file.h"
 #include "ipc/ipc_switches.h"
@@ -64,14 +64,9 @@
 #include "ipc/ipc_sync_message_filter.h"
 #include "ipc/mojo/ipc_channel_mojo.h"
 #include "mojo/edk/embedder/embedder.h"
-#include "mojo/edk/embedder/platform_channel_pair.h"
 
 #if defined(USE_OZONE)
 #include "ui/ozone/public/client_native_pixmap_factory.h"
-#endif
-
-#if defined(OS_POSIX)
-#include "base/posix/global_descriptors.h"
 #endif
 
 using tracked_objects::ThreadData;
@@ -250,20 +245,6 @@ void QuitClosure::PostQuitFromNonMainThread() {
 base::LazyInstance<QuitClosure> g_quit_closure = LAZY_INSTANCE_INITIALIZER;
 #endif
 
-void InitializeMojoIPCChannel() {
-  mojo::edk::ScopedPlatformHandle platform_channel;
-#if defined(OS_WIN)
-  platform_channel =
-      mojo::edk::PlatformChannelPair::PassClientHandleFromParentProcess(
-          *base::CommandLine::ForCurrentProcess());
-#elif defined(OS_POSIX)
-  platform_channel.reset(mojo::edk::PlatformHandle(
-      base::GlobalDescriptors::GetInstance()->Get(kMojoIPCChannel)));
-#endif
-  CHECK(platform_channel.is_valid());
-  mojo::edk::SetParentPipeHandle(std::move(platform_channel));
-}
-
 }  // namespace
 
 ChildThread* ChildThread::Get() {
@@ -398,19 +379,6 @@ void ChildThreadImpl::Init(const Options& options) {
   if (!IsInBrowserProcess()) {
     // Don't double-initialize IPC support in single-process mode.
     mojo_ipc_support_.reset(new IPC::ScopedIPCSupport(GetIOTaskRunner()));
-
-    InitializeMojoIPCChannel();
-  }
-
-  // If this process was launched with a primordial pipe token, we exchange it
-  // for a pipe to connect to the shell.
-  std::string pipe_token =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kMojoPrimordialPipeToken);
-  if (!pipe_token.empty() && MojoShellConnectionImpl::Get()) {
-    mojo::ScopedMessagePipeHandle pipe =
-        mojo::edk::CreateChildMessagePipe(pipe_token);
-    MojoShellConnectionImpl::Get()->BindToMessagePipe(std::move(pipe));
   }
 
   mojo_application_.reset(new MojoApplication(GetIOTaskRunner()));
@@ -651,6 +619,10 @@ bool ChildThreadImpl::OnMessageReceived(const IPC::Message& msg) {
                         OnProfilingPhaseCompleted)
     IPC_MESSAGE_HANDLER(ChildProcessMsg_SetProcessBackgrounded,
                         OnProcessBackgrounded)
+    IPC_MESSAGE_HANDLER(MojoMsg_BindExternalMojoShellHandle,
+                        OnBindExternalMojoShellHandle)
+    IPC_MESSAGE_HANDLER(ChildProcessMsg_SetMojoParentPipeHandle,
+                        OnSetMojoParentPipeHandle)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -703,6 +675,27 @@ void ChildThreadImpl::OnGetChildProfilerData(int sequence_number,
 
 void ChildThreadImpl::OnProfilingPhaseCompleted(int profiling_phase) {
   ThreadData::OnProfilingPhaseCompleted(profiling_phase);
+}
+
+void ChildThreadImpl::OnBindExternalMojoShellHandle(
+    const IPC::PlatformFileForTransit& file) {
+  if (!MojoShellConnectionImpl::Get())
+    return;
+#if defined(OS_POSIX)
+  base::PlatformFile handle = file.fd;
+#elif defined(OS_WIN)
+  base::PlatformFile handle = file;
+#endif
+  mojo::ScopedMessagePipeHandle pipe =
+      mojo_shell_channel_init_.Init(handle, GetIOTaskRunner());
+  MojoShellConnectionImpl::Get()->BindToMessagePipe(std::move(pipe));
+}
+
+void ChildThreadImpl::OnSetMojoParentPipeHandle(
+    const IPC::PlatformFileForTransit& file) {
+  mojo::edk::SetParentPipeHandle(
+      mojo::edk::ScopedPlatformHandle(mojo::edk::PlatformHandle(
+          IPC::PlatformFileForTransitToPlatformFile(file))));
 }
 
 ChildThreadImpl* ChildThreadImpl::current() {

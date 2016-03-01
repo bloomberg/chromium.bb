@@ -16,7 +16,6 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
-#include "mojo/edk/embedder/platform_channel_pair.h"
 
 namespace base {
 class CommandLine;
@@ -99,7 +98,6 @@ class CONTENT_EXPORT ChildProcessLauncher : public base::NonThreadSafe {
                         ZygoteHandle zygote,
 #if defined(OS_ANDROID)
                         base::ScopedFD ipcfd,
-                        base::ScopedFD mojo_fd,
 #endif
                         base::Process process);
 
@@ -129,9 +127,6 @@ class CONTENT_EXPORT ChildProcessLauncher : public base::NonThreadSafe {
   // Controls whether the child process should be terminated on browser
   // shutdown. Default behavior is to terminate the child.
   const bool terminate_child_on_shutdown_;
-
-  // Platform channel used to establish Mojo IPC.
-  mojo::edk::PlatformChannelPair mojo_platform_channel_;
 
   base::WeakPtrFactory<ChildProcessLauncher> weak_factory_;
 

@@ -85,7 +85,6 @@ void MojoShellConnectionImpl::WaitForShell(
   runner_connection_.reset(mojo::shell::RunnerConnection::ConnectToRunner(
       &request, std::move(handle), false /* exit_on_error */));
   if (!runner_connection_) {
-    DLOG(ERROR) << "Unable to connect to the Mojo shell.";
     delete this;
     lazy_tls_ptr.Pointer()->Set(nullptr);
     return;

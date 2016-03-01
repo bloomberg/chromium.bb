@@ -180,19 +180,6 @@ void NodeController::ReservePort(const std::string& token,
 
 void NodeController::MergePortIntoParent(const std::string& token,
                                          const ports::PortRef& port) {
-  {
-    // This request may be coming from within the process that reserved the
-    // "parent" side (e.g. for Chrome single-process mode), so if this token is
-    // reserved locally, merge locally instead.
-    base::AutoLock lock(reserved_ports_lock_);
-    auto it = reserved_ports_.find(token);
-    if (it != reserved_ports_.end()) {
-      node_->MergePorts(port, name_, it->second.name());
-      reserved_ports_.erase(it);
-      return;
-    }
-  }
-
   scoped_refptr<NodeChannel> parent = GetParentChannel();
   if (parent) {
     parent->RequestPortMerge(port.name(), token);
