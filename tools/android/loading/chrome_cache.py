@@ -8,6 +8,7 @@
 from datetime import datetime
 import json
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -276,6 +277,32 @@ class CacheBackend(object):
     stdout_data, _ = process.communicate()
     assert process.returncode == 0
     return stdout_data
+
+
+def ApplyUrlWhitelistToCacheArchive(cache_archive_path,
+                                    whitelisted_urls,
+                                    output_cache_archive_path):
+  """Generate a new cache archive containing only whitelisted urls.
+
+  Args:
+    cache_archive_path: Path of the cache archive to apply the white listing.
+    whitelisted_urls: Set of url to keep in cache.
+    output_cache_archive_path: Destination path of cache archive containing only
+      white-listed urls.
+  """
+  cache_temp_directory = tempfile.mkdtemp(suffix='.cache')
+  try:
+    UnzipDirectoryContent(cache_archive_path, cache_temp_directory)
+    backend = CacheBackend(cache_temp_directory, 'simple')
+    cached_urls = backend.ListKeys()
+    for cached_url in cached_urls:
+      if cached_url not in whitelisted_urls:
+        backend.DeleteKey(cached_url)
+    for cached_url in backend.ListKeys():
+      assert cached_url in whitelisted_urls
+    ZipDirectoryContent(cache_temp_directory, output_cache_archive_path)
+  finally:
+    shutil.rmtree(cache_temp_directory)
 
 
 if __name__ == '__main__':
