@@ -107,8 +107,8 @@ class PresentationFrame {
       content::PresentationScreenAvailabilityListener* listener) const;
   base::SmallMap<std::map<std::string, MediaRoute::Id>>
       presentation_id_to_route_id_;
-  // TODO(btolsch): Use SmallMap here if move operation patch is accepted.
-  std::map<std::string, scoped_ptr<PresentationMediaSinksObserver>>
+  base::SmallMap<
+      std::map<std::string, scoped_ptr<PresentationMediaSinksObserver>>>
       url_to_sinks_observer_;
   base::ScopedPtrHashMap<MediaRoute::Id,
                          scoped_ptr<PresentationConnectionStateSubscription>>
