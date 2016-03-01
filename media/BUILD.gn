@@ -157,6 +157,8 @@ component("media") {
     "filters/jpeg_parser.h",
     "filters/media_source_state.cc",
     "filters/media_source_state.h",
+    "filters/memory_data_source.cc",
+    "filters/memory_data_source.h",
     "filters/opus_audio_decoder.cc",
     "filters/opus_audio_decoder.h",
     "filters/opus_constants.cc",
