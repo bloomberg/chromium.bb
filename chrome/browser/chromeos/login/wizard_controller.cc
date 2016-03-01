@@ -214,7 +214,7 @@ const char WizardController::kTestNoScreenName[] = "test:nowindow";
 
 // Initialize default controller.
 // static
-WizardController* WizardController::default_controller_ = NULL;
+WizardController* WizardController::default_controller_ = nullptr;
 
 // static
 bool WizardController::skip_post_login_screens_ = false;
@@ -225,30 +225,14 @@ bool WizardController::zero_delay_enabled_ = false;
 ///////////////////////////////////////////////////////////////////////////////
 // WizardController, public:
 
-PrefService* WizardController::local_state_for_testing_ = NULL;
+PrefService* WizardController::local_state_for_testing_ = nullptr;
 
 WizardController::WizardController(LoginDisplayHost* host,
                                    OobeDisplay* oobe_display)
-    : current_screen_(NULL),
-      previous_screen_(NULL),
-#if defined(GOOGLE_CHROME_BUILD)
-      is_official_build_(true),
-#else
-      is_official_build_(false),
-#endif
-      is_out_of_box_(false),
-      host_(host),
+    : host_(host),
       oobe_display_(oobe_display),
-      usage_statistics_reporting_(true),
-      skip_update_enroll_after_eula_(false),
-      retry_auto_enrollment_check_(false),
-      login_screen_started_(false),
-      user_image_screen_return_to_previous_hack_(false),
-      timezone_resolved_(false),
-      shark_controller_detected_(false),
-      hid_screen_(nullptr),
       weak_factory_(this) {
-  DCHECK(default_controller_ == NULL);
+  DCHECK(default_controller_ == nullptr);
   default_controller_ = this;
   AccessibilityManager* accessibility_manager = AccessibilityManager::Get();
   CHECK(accessibility_manager);
@@ -259,7 +243,7 @@ WizardController::WizardController(LoginDisplayHost* host,
 
 WizardController::~WizardController() {
   if (default_controller_ == this) {
-    default_controller_ = NULL;
+    default_controller_ = nullptr;
   } else {
     NOTREACHED() << "More than one controller are alive.";
   }
@@ -398,7 +382,7 @@ BaseScreen* WizardController::CreateScreen(const std::string& screen_name) {
         this, oobe_display_->GetDeviceDisabledScreenActor());
   }
 
-  return NULL;
+  return nullptr;
 }
 
 void WizardController::ShowNetworkScreen() {
@@ -420,7 +404,7 @@ void WizardController::ShowLoginScreen(const LoginScreenContext& context) {
   SetStatusAreaVisible(true);
   host_->StartSignInScreen(context);
   smooth_show_timer_.Stop();
-  oobe_display_ = NULL;
+  oobe_display_ = nullptr;
   login_screen_started_ = true;
 }
 
@@ -702,7 +686,7 @@ void WizardController::OnUserImageSelected() {
       base::Bind(&UserSessionManager::DoBrowserLaunch,
                  base::Unretained(UserSessionManager::GetInstance()),
                  ProfileManager::GetActiveUserProfile(), host_));
-  host_ = NULL;
+  host_ = nullptr;
 }
 
 void WizardController::OnUserImageSkipped() {
@@ -710,11 +694,14 @@ void WizardController::OnUserImageSkipped() {
 }
 
 void WizardController::OnEnrollmentDone() {
-  // If the enrollment screen was shown as part of OOBE, OOBE is considered
-  // finished only after the enrollment screen is done. This is relevant for
-  // forced enrollment flows, e.g. for remora devices and forced re-enrollment.
-  if (prescribed_enrollment_config_.should_enroll())
-    PerformOOBECompletedActions();
+  PerformOOBECompletedActions();
+
+  // Restart to make the login page pick up the policy changes resulting from
+  // enrollment recovery.  (Not pretty, but this codepath is rarely exercised.)
+  if (prescribed_enrollment_config_.mode ==
+      policy::EnrollmentConfig::MODE_RECOVERY) {
+    chrome::AttemptRestart();
+  }
 
   // TODO(mnissler): Unify the logic for auto-login for Public Sessions and
   // Kiosk Apps and make this code cover both cases: http://crbug.com/234694.
@@ -829,19 +816,18 @@ void WizardController::PerformPostEulaActions() {
 }
 
 void WizardController::PerformOOBECompletedActions() {
+  // Avoid marking OOBE as completed multiple times if going from login screen
+  // to enrollment screen (and back).
+  if (oobe_marked_completed_) {
+    return;
+  }
+
   UMA_HISTOGRAM_COUNTS_100(
       "HIDDetection.TimesDialogShownPerOOBECompleted",
       GetLocalState()->GetInteger(prefs::kTimesHIDDialogShown));
   GetLocalState()->ClearPref(prefs::kTimesHIDDialogShown);
   StartupUtils::MarkOobeCompleted();
-
-  // Restart to make the login page pick up the policy changes resulting from
-  // enrollment recovery.
-  // TODO(tnagel): Find a way to update login page without reboot.
-  if (prescribed_enrollment_config_.mode ==
-      policy::EnrollmentConfig::MODE_RECOVERY) {
-    chrome::AttemptRestart();
-  }
+  oobe_marked_completed_ = true;
 }
 
 void WizardController::SetCurrentScreen(BaseScreen* new_current) {
@@ -868,8 +854,8 @@ void WizardController::ShowCurrentScreen() {
 void WizardController::SetCurrentScreenSmooth(BaseScreen* new_current,
                                               bool use_smoothing) {
   if (current_screen_ == new_current ||
-      new_current == NULL ||
-      oobe_display_ == NULL) {
+      new_current == nullptr ||
+      oobe_display_ == nullptr) {
     return;
   }
 
