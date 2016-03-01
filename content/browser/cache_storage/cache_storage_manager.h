@@ -117,11 +117,11 @@ class CONTENT_EXPORT CacheStorageManager {
   void DeleteOriginData(const GURL& origin,
                         const storage::QuotaClient::DeletionCallback& callback);
   void DeleteOriginData(const GURL& origin);
-  static void DeleteOriginDidClose(
+  void DeleteOriginDidClose(
       const GURL& origin,
       const storage::QuotaClient::DeletionCallback& callback,
       scoped_ptr<CacheStorage> cache_storage,
-      base::WeakPtr<CacheStorageManager> cache_manager);
+      int64_t origin_size);
 
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter()
       const {

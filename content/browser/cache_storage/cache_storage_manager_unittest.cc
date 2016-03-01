@@ -305,6 +305,16 @@ class CacheStorageManagerTest : public testing::Test {
     run_loop->Quit();
   }
 
+  int64_t GetSizeThenCloseAllCaches(const GURL& origin) {
+    base::RunLoop loop;
+    CacheStorage* cache_storage = CacheStorageForOrigin(origin);
+    cache_storage->GetSizeThenCloseAllCaches(
+        base::Bind(&CacheStorageManagerTest::UsageCallback,
+                   base::Unretained(this), &loop));
+    loop.Run();
+    return callback_usage_;
+  }
+
  protected:
   // Temporary directory must be allocated first so as to be destroyed last.
   base::ScopedTempDir temp_dir_;
@@ -659,6 +669,20 @@ TEST_P(CacheStorageManagerTestP, GetAllOriginsUsage) {
   }
 }
 
+TEST_P(CacheStorageManagerTestP, GetSizeThenCloseAllCaches) {
+  EXPECT_TRUE(Open(origin1_, "foo"));
+  EXPECT_TRUE(CachePut(callback_cache_, GURL("http://example.com/foo")));
+  EXPECT_TRUE(CachePut(callback_cache_, GURL("http://example.com/foo2")));
+  EXPECT_TRUE(Open(origin1_, "bar"));
+  EXPECT_TRUE(CachePut(callback_cache_, GURL("http://example.com/bar")));
+
+  int64_t origin_size = GetOriginUsage(origin1_);
+  EXPECT_LT(0, origin_size);
+
+  EXPECT_EQ(origin_size, GetSizeThenCloseAllCaches(origin1_));
+  EXPECT_FALSE(CachePut(callback_cache_, GURL("http://example.com/baz")));
+}
+
 TEST_F(CacheStorageManagerTest, DeleteUnreferencedCacheDirectories) {
   // Create a referenced cache.
   EXPECT_TRUE(Open(origin1_, "foo"));
@@ -990,14 +1014,20 @@ TEST_P(CacheStorageQuotaClientTestP, QuotaGetOriginsForHost) {
 }
 
 TEST_P(CacheStorageQuotaClientTestP, QuotaDeleteOriginData) {
+  EXPECT_EQ(0, QuotaGetOriginUsage(origin1_));
   EXPECT_TRUE(Open(origin1_, "foo"));
   // Call put to test that initialized caches are properly deleted too.
   EXPECT_TRUE(CachePut(callback_cache_, GURL("http://example.com/foo")));
   EXPECT_TRUE(Open(origin1_, "bar"));
   EXPECT_TRUE(Open(origin2_, "baz"));
 
+  int64_t origin1_size = QuotaGetOriginUsage(origin1_);
+  EXPECT_LT(0, origin1_size);
+
   EXPECT_TRUE(QuotaDeleteOriginData(origin1_));
 
+  EXPECT_EQ(-1 * origin1_size, quota_manager_proxy_->last_notified_delta());
+  EXPECT_EQ(0, QuotaGetOriginUsage(origin1_));
   EXPECT_FALSE(Has(origin1_, "foo"));
   EXPECT_FALSE(Has(origin1_, "bar"));
   EXPECT_TRUE(Has(origin2_, "baz"));

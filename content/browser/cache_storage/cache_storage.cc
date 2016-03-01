@@ -46,11 +46,6 @@ std::string HexedHash(const std::string& value) {
   return valued_hexed_hash;
 }
 
-void CloseAllCachesDidCloseCache(const scoped_refptr<CacheStorageCache>& cache,
-                                 const base::Closure& barrier_closure) {
-  barrier_closure.Run();
-}
-
 void SizeRetrievedFromCache(const scoped_refptr<CacheStorageCache>& cache,
                             const base::Closure& closure,
                             int64_t* accumulator,
@@ -61,7 +56,8 @@ void SizeRetrievedFromCache(const scoped_refptr<CacheStorageCache>& cache,
 
 void SizeRetrievedFromAllCaches(scoped_ptr<int64_t> accumulator,
                                 const CacheStorage::SizeCallback& callback) {
-  callback.Run(*accumulator);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(callback, *accumulator));
 }
 
 }  // namespace
@@ -573,19 +569,18 @@ void CacheStorage::MatchAllCaches(
                  base::Passed(std::move(request)), pending_callback));
 }
 
-void CacheStorage::CloseAllCaches(const base::Closure& callback) {
+void CacheStorage::GetSizeThenCloseAllCaches(const SizeCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  if (!initialized_) {
-    callback.Run();
-    return;
-  }
+  if (!initialized_)
+    LazyInit();
 
-  base::Closure pending_callback = base::Bind(
-      &CacheStorage::PendingClosure, weak_factory_.GetWeakPtr(), callback);
-  scheduler_->ScheduleOperation(base::Bind(&CacheStorage::CloseAllCachesImpl,
-                                           weak_factory_.GetWeakPtr(),
-                                           pending_callback));
+  CacheStorageCache::SizeCallback pending_callback = base::Bind(
+      &CacheStorage::PendingSizeCallback, weak_factory_.GetWeakPtr(), callback);
+
+  scheduler_->ScheduleOperation(
+      base::Bind(&CacheStorage::GetSizeThenCloseAllCachesImpl,
+                 weak_factory_.GetWeakPtr(), pending_callback));
 }
 
 void CacheStorage::Size(const CacheStorage::SizeCallback& callback) {
@@ -907,32 +902,23 @@ void CacheStorage::RemovePreservedCache(const CacheStorageCache* cache) {
   preserved_caches_.erase(cache);
 }
 
-void CacheStorage::CloseAllCachesImpl(const base::Closure& callback) {
-  int live_cache_count = 0;
-  for (const auto& key_value : cache_map_) {
-    if (key_value.second)
-      live_cache_count += 1;
+void CacheStorage::GetSizeThenCloseAllCachesImpl(const SizeCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(initialized_);
+
+  scoped_ptr<int64_t> accumulator(new int64_t(0));
+  int64_t* accumulator_ptr = accumulator.get();
+
+  base::Closure barrier_closure = base::BarrierClosure(
+      ordered_cache_names_.size(),
+      base::Bind(&SizeRetrievedFromAllCaches,
+                 base::Passed(std::move(accumulator)), callback));
+
+  for (const std::string& cache_name : ordered_cache_names_) {
+    scoped_refptr<CacheStorageCache> cache = GetLoadedCache(cache_name);
+    cache->GetSizeThenClose(base::Bind(&SizeRetrievedFromCache, cache,
+                                       barrier_closure, accumulator_ptr));
   }
-
-  if (live_cache_count == 0) {
-    callback.Run();
-    return;
-  }
-
-  // The closure might modify this object so delay calling it until after
-  // iterating through cache_map_ by adding one to the barrier.
-  base::Closure barrier_closure =
-      base::BarrierClosure(live_cache_count + 1, base::Bind(callback));
-
-  for (auto& key_value : cache_map_) {
-    if (key_value.second) {
-      key_value.second->Close(base::Bind(
-          CloseAllCachesDidCloseCache,
-          make_scoped_refptr(key_value.second.get()), barrier_closure));
-    }
-  }
-
-  barrier_closure.Run();
 }
 
 void CacheStorage::SizeImpl(const SizeCallback& callback) {

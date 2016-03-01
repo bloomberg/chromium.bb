@@ -92,9 +92,9 @@ class CONTENT_EXPORT CacheStorage {
   void MatchAllCaches(scoped_ptr<ServiceWorkerFetchRequest> request,
                       const CacheStorageCache::ResponseCallback& callback);
 
-  // Calls close on each cache and runs the callback after all of them have
-  // closed.
-  void CloseAllCaches(const base::Closure& callback);
+  // Sums the sizes of each cache and closes them. Runs |callback| with the
+  // size.
+  void GetSizeThenCloseAllCaches(const SizeCallback& callback);
 
   // The size of all of the origin's contents. This value should be used as an
   // estimate only since the cache may be modified at any time.
@@ -186,7 +186,7 @@ class CONTENT_EXPORT CacheStorage {
   void MatchAllCachesDidMatchAll(
       scoped_ptr<CacheStorageCache::ResponseCallback> callback);
 
-  void CloseAllCachesImpl(const base::Closure& callback);
+  void GetSizeThenCloseAllCachesImpl(const SizeCallback& callback);
 
   void SizeImpl(const SizeCallback& callback);
 

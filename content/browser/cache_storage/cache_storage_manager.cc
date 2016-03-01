@@ -340,10 +340,10 @@ void CacheStorageManager::DeleteOriginData(
 
   CacheStorage* cache_storage = it->second.release();
   cache_storage_map_.erase(origin);
-  cache_storage->CloseAllCaches(
-      base::Bind(&CacheStorageManager::DeleteOriginDidClose, origin, callback,
-                 base::Passed(make_scoped_ptr(cache_storage)),
-                 weak_ptr_factory_.GetWeakPtr()));
+  cache_storage->GetSizeThenCloseAllCaches(
+      base::Bind(&CacheStorageManager::DeleteOriginDidClose,
+                 weak_ptr_factory_.GetWeakPtr(), origin, callback,
+                 base::Passed(make_scoped_ptr(cache_storage))));
 }
 
 void CacheStorageManager::DeleteOriginData(const GURL& origin) {
@@ -351,34 +351,30 @@ void CacheStorageManager::DeleteOriginData(const GURL& origin) {
   DeleteOriginData(origin, base::Bind(&EmptyQuotaStatusCallback));
 }
 
-// static
 void CacheStorageManager::DeleteOriginDidClose(
     const GURL& origin,
     const storage::QuotaClient::DeletionCallback& callback,
     scoped_ptr<CacheStorage> cache_storage,
-    base::WeakPtr<CacheStorageManager> cache_manager) {
+    int64_t origin_size) {
   // TODO(jkarlin): Deleting the storage leaves any unfinished operations
-  // hanging, resulting in unresolved promises. Fix this by guaranteeing that
-  // callbacks are called in ServiceWorkerStorage.
+  // hanging, resulting in unresolved promises. Fix this by returning early from
+  // CacheStorage operations posted after GetSizeThenCloseAllCaches is called.
   cache_storage.reset();
 
-  if (!cache_manager) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, storage::kQuotaErrorAbort));
-    return;
-  }
+  quota_manager_proxy_->NotifyStorageModified(
+      storage::QuotaClient::kServiceWorkerCache, origin,
+      storage::kStorageTypeTemporary, -1 * origin_size);
 
-  if (cache_manager->IsMemoryBacked()) {
+  if (IsMemoryBacked()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(callback, storage::kQuotaStatusOk));
     return;
   }
 
-  cache_manager->MigrateOrigin(origin);
+  MigrateOrigin(origin);
   PostTaskAndReplyWithResult(
-      cache_manager->cache_task_runner_.get(), FROM_HERE,
-      base::Bind(&DeleteDir,
-                 ConstructOriginPath(cache_manager->root_path_, origin)),
+      cache_task_runner_.get(), FROM_HERE,
+      base::Bind(&DeleteDir, ConstructOriginPath(root_path_, origin)),
       base::Bind(&DeleteOriginDidDeleteDir, callback));
 }
 
