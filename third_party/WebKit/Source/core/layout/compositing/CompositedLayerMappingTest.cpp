@@ -116,7 +116,7 @@ TEST_F(CompositedLayerMappingTest, VerticalRightLeftWritingModeDocument)
     document().settings()->setMainFrameClipsContent(false);
 
     document().view()->updateAllLifecyclePhases();
-    document().view()->scrollTo(DoublePoint(-5000, 0));
+    document().view()->setScrollPosition(DoublePoint(-5000, 0), ProgrammaticScroll);
     document().view()->updateAllLifecyclePhases();
 
     PaintLayer* paintLayer = document().layoutView()->layer();

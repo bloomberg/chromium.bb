@@ -362,7 +362,6 @@ public:
     // ScrollableArea interface
     void scrollControlWasSetNeedsPaintInvalidation() override { }
     void getTickmarks(Vector<IntRect>&) const override;
-    void scrollTo(const DoublePoint&);
     IntRect scrollableAreaBoundingBox() const override;
     bool scrollAnimatorEnabled() const override;
     bool usesCompositedScrolling() const override;
@@ -641,7 +640,6 @@ protected:
 private:
     explicit FrameView(LocalFrame*);
 
-    void setScrollOffset(const IntPoint&, ScrollType) override;
     void setScrollOffset(const DoublePoint&, ScrollType) override;
 
     enum LifeCycleUpdateOption {
@@ -705,7 +703,6 @@ private:
     bool processUrlFragmentHelper(const String&, UrlFragmentBehavior);
     void setFragmentAnchor(Node*);
     void scrollToFragmentAnchor();
-    void scrollPositionChanged();
     void didScrollTimerFired(Timer<FrameView>*);
 
     void updateLayersAndCompositingAfterScrollIfNeeded();

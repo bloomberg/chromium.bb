@@ -317,18 +317,8 @@ private:
     void programmaticScrollHelper(const DoublePoint&, ScrollBehavior);
     void userScrollHelper(const DoublePoint&, ScrollBehavior);
 
-    // This function should be overriden by subclasses to perform the actual
-    // scroll of the content. By default the DoublePoint version will just
-    // call into the IntPoint version. If fractional scroll is needed, one
-    // can override the DoublePoint version to take advantage of the double
-    // precision scroll offset.
-    // FIXME: Remove the IntPoint version. And change the function to
-    // take DoubleSize. crbug.com/414283.
-    virtual void setScrollOffset(const IntPoint&, ScrollType) = 0;
-    virtual void setScrollOffset(const DoublePoint& offset, ScrollType scrollType)
-    {
-        setScrollOffset(flooredIntPoint(offset), scrollType);
-    }
+    // This function should be overriden by subclasses to perform the actual scroll of the content.
+    virtual void setScrollOffset(const DoublePoint& offset, ScrollType) = 0;
 
     virtual int lineStep(ScrollbarOrientation) const;
     virtual int pageStep(ScrollbarOrientation) const;

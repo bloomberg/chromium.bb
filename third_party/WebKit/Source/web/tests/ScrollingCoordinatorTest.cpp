@@ -211,7 +211,7 @@ TEST_F(ScrollingCoordinatorTest, fractionalScrollingNonLayerFixedPosition)
     forceFullCompositingUpdate();
 
     FrameView* frameView = frame()->view();
-    frameView->scrollTo(DoublePoint(1.5, 1.5));
+    frameView->setScrollPosition(DoublePoint(1.5, 1.5), ProgrammaticScroll);
     WebLayer* rootScrollLayer = getRootScrollLayer();
     // Scroll on main if there is non-composited fixed position element.
     // And the containing scroll layer should not get fractional scroll offset.

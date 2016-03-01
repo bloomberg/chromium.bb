@@ -210,7 +210,6 @@ public:
         return IntPoint(contentsSize().width() - visibleWidth(), contentsSize().height() - visibleHeight());
     }
 
-    void setScrollOffset(const IntPoint& scrollOffset, ScrollType) override { m_scrollPosition = scrollOffset; }
     void setScrollOffset(const DoublePoint& scrollOffset, ScrollType) override { m_scrollPosition = scrollOffset; }
     DoublePoint scrollPositionDouble() const override { return m_scrollPosition; }
     IntPoint scrollPosition() const override { return flooredIntPoint(m_scrollPosition); }

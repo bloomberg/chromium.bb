@@ -188,7 +188,6 @@ public:
     bool shouldPlaceVerticalScrollbarOnLeft() const override { return false; }
     bool scrollAnimatorEnabled() const override;
     void scrollControlWasSetNeedsPaintInvalidation() override { }
-    void setScrollOffset(const IntPoint&, ScrollType) override;
     void setScrollOffset(const DoublePoint&, ScrollType) override;
     GraphicsLayer* layerForContainer() const override;
     GraphicsLayer* layerForScrolling() const override;

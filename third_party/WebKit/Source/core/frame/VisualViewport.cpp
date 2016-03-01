@@ -544,11 +544,6 @@ IntSize VisualViewport::contentsSize() const
     return frame->view()->visibleContentRect(IncludeScrollbars).size();
 }
 
-void VisualViewport::setScrollOffset(const IntPoint& offset, ScrollType scrollType)
-{
-    setScrollOffset(DoublePoint(offset), scrollType);
-}
-
 void VisualViewport::setScrollOffset(const DoublePoint& offset, ScrollType)
 {
     setLocation(toFloatPoint(offset));

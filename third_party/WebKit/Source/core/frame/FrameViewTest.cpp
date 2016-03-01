@@ -153,8 +153,11 @@ TEST_F(FrameViewTest, SetPaintInvalidationOutOfUpdateAllLifecyclePhases)
 // performance. See crbug.com/586852 for details.
 TEST_F(FrameViewTest, HideTooltipWhenScrollPositionChanges)
 {
+    document().body()->setInnerHTML("<div style='width:1000px;height:1000px'></div>", ASSERT_NO_EXCEPTION);
+    document().view()->updateAllLifecyclePhases();
+
     EXPECT_CALL(chromeClient(), setToolTip(String(), _));
-    document().view()->scrollTo(DoublePoint(1, 1));
+    document().view()->setScrollPosition(DoublePoint(1, 1), UserScroll);
 }
 
 } // namespace

@@ -46,7 +46,6 @@ public:
     int scrollSize(ScrollbarOrientation) const override;
     bool isScrollCornerVisible() const override;
     IntRect scrollCornerRect() const override;
-    void setScrollOffset(const IntPoint&, ScrollType) override;
     void setScrollOffset(const DoublePoint&, ScrollType) override;
     IntPoint scrollPosition() const override;
     DoublePoint scrollPositionDouble() const override;

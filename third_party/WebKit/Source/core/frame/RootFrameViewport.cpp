@@ -118,11 +118,6 @@ LayoutRect RootFrameViewport::scrollIntoView(const LayoutRect& rectInContent, co
     return rectInContent;
 }
 
-void RootFrameViewport::setScrollOffset(const IntPoint& offset, ScrollType scrollType)
-{
-    setScrollOffset(DoublePoint(offset), scrollType);
-}
-
 void RootFrameViewport::setScrollOffset(const DoublePoint& offset, ScrollType scrollType)
 {
     distributeScrollBetweenViewports(DoublePoint(offset), scrollType, ScrollBehaviorInstant);

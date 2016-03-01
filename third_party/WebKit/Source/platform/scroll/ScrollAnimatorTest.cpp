@@ -62,7 +62,7 @@ public:
     MOCK_CONST_METHOD1(scrollSize, int(ScrollbarOrientation));
     MOCK_CONST_METHOD0(isScrollCornerVisible, bool());
     MOCK_CONST_METHOD0(scrollCornerRect, IntRect());
-    MOCK_METHOD2(setScrollOffset, void(const IntPoint&, ScrollType));
+    MOCK_METHOD2(setScrollOffset, void(const DoublePoint&, ScrollType));
     MOCK_METHOD0(scrollControlWasSetNeedsPaintInvalidation, void());
     MOCK_CONST_METHOD0(enclosingScrollableArea, ScrollableArea*());
     MOCK_CONST_METHOD0(minimumScrollPosition, IntPoint());

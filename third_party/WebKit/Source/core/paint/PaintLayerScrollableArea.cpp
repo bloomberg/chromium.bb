@@ -333,11 +333,6 @@ int PaintLayerScrollableArea::scrollSize(ScrollbarOrientation orientation) const
     return (orientation == HorizontalScrollbar) ? scrollDimensions.width() : scrollDimensions.height();
 }
 
-void PaintLayerScrollableArea::setScrollOffset(const IntPoint& newScrollOffset, ScrollType scrollType)
-{
-    setScrollOffset(DoublePoint(newScrollOffset), scrollType);
-}
-
 void PaintLayerScrollableArea::setScrollOffset(const DoublePoint& newScrollOffset, ScrollType scrollType)
 {
     if (scrollOffset() == toDoubleSize(newScrollOffset))

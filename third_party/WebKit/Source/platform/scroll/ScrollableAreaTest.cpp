@@ -44,7 +44,7 @@ public:
     bool userInputScrollable(ScrollbarOrientation) const override { return true; }
     bool scrollbarsCanBeActive () const override { return true; }
     bool shouldPlaceVerticalScrollbarOnLeft() const override { return false; }
-    void setScrollOffset(const IntPoint& offset, ScrollType) override { m_scrollPosition = offset.shrunkTo(m_maximumScrollPosition); }
+    void setScrollOffset(const DoublePoint& offset, ScrollType) override { m_scrollPosition = flooredIntPoint(offset).shrunkTo(m_maximumScrollPosition); }
     IntPoint scrollPosition() const override { return m_scrollPosition; }
     IntPoint minimumScrollPosition() const override { return IntPoint(); }
     IntPoint maximumScrollPosition() const override { return m_maximumScrollPosition; }

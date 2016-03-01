@@ -77,7 +77,6 @@ protected:
     {
     }
 
-    void setScrollOffset(const IntPoint& offset, ScrollType) override { m_scrollPosition = offset; }
     void setScrollOffset(const DoublePoint& offset, ScrollType) override { m_scrollPosition = offset; }
     bool shouldUseIntegerScrollOffset() const override { return true; }
     bool isActive() const override { return true; }

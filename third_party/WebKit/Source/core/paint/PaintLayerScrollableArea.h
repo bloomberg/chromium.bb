@@ -353,7 +353,6 @@ private:
 
     void computeScrollDimensions();
 
-    void setScrollOffset(const IntPoint&, ScrollType) override;
     void setScrollOffset(const DoublePoint&, ScrollType) override;
 
     int verticalScrollbarStart(int minX, int maxX) const;

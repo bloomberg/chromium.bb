@@ -1602,32 +1602,6 @@ void FrameView::setLayoutSize(const IntSize& size)
     setLayoutSizeInternal(size);
 }
 
-void FrameView::scrollPositionChanged()
-{
-    Document* document = m_frame->document();
-    document->enqueueScrollEventForNode(document);
-
-    m_frame->eventHandler().dispatchFakeMouseMoveEventSoon();
-    Page* page = frame().page();
-    if (page)
-        page->chromeClient().clearToolTip();
-
-    if (LayoutView* layoutView = document->layoutView()) {
-        if (layoutView->usesCompositing())
-            layoutView->compositor()->frameViewDidScroll();
-    }
-
-    if (m_didScrollTimer.isActive())
-        m_didScrollTimer.stop();
-    m_didScrollTimer.startOneShot(resourcePriorityUpdateDelayAfterScroll, BLINK_FROM_HERE);
-
-    if (AXObjectCache* cache = m_frame->document()->existingAXObjectCache())
-        cache->handleScrollPositionChanged(this);
-
-    layoutView()->clearHitTestCache();
-    frame().loader().saveScrollState();
-}
-
 void FrameView::didScrollTimerFired(Timer<FrameView>*)
 {
     if (m_frame->document() && m_frame->document()->layoutView())
@@ -2157,29 +2131,6 @@ bool FrameView::isActive() const
 {
     Page* page = frame().page();
     return page && page->focusController().isActive();
-}
-
-void FrameView::scrollTo(const DoublePoint& newPosition)
-{
-    DoublePoint oldPosition = m_scrollPosition;
-    DoubleSize scrollDelta = newPosition - oldPosition;
-    if (scrollDelta.isZero())
-        return;
-
-    if (m_frame->settings() && m_frame->settings()->rootLayerScrolls()) {
-        // Don't scroll the FrameView!
-        ASSERT_NOT_REACHED();
-    }
-
-    m_scrollPosition = newPosition;
-
-    if (!scrollbarsSuppressed())
-        m_pendingScrollDelta += scrollDelta;
-
-    clearFragmentAnchor();
-    updateLayersAndCompositingAfterScrollIfNeeded();
-    scrollPositionChanged();
-    frame().loader().client()->didChangeScrollOffset();
 }
 
 void FrameView::invalidatePaintForTickmarks()
@@ -3264,14 +3215,53 @@ int FrameView::scrollSize(ScrollbarOrientation orientation) const
     return scrollbar->totalSize() - scrollbar->visibleSize();
 }
 
-void FrameView::setScrollOffset(const IntPoint& offset, ScrollType)
+void FrameView::setScrollOffset(const DoublePoint& offset, ScrollType scrollType)
 {
-    scrollTo(clampScrollPosition(offset));
-}
+    // TODO(skobes): We shouldn't have to clamp here; instead we should update callers
+    // ScrollableArea::scrollPositionChanged to only pass clamped offsets.
+    DoublePoint newPosition = clampScrollPosition(offset);
 
-void FrameView::setScrollOffset(const DoublePoint& offset, ScrollType)
-{
-    scrollTo(clampScrollPosition(offset));
+    DoublePoint oldPosition = m_scrollPosition;
+    DoubleSize scrollDelta = newPosition - oldPosition;
+    if (scrollDelta.isZero())
+        return;
+
+    if (m_frame->settings() && m_frame->settings()->rootLayerScrolls()) {
+        // Don't scroll the FrameView!
+        ASSERT_NOT_REACHED();
+    }
+
+    m_scrollPosition = newPosition;
+
+    if (!scrollbarsSuppressed())
+        m_pendingScrollDelta += scrollDelta;
+
+    clearFragmentAnchor();
+    updateLayersAndCompositingAfterScrollIfNeeded();
+
+    Document* document = m_frame->document();
+    document->enqueueScrollEventForNode(document);
+
+    m_frame->eventHandler().dispatchFakeMouseMoveEventSoon();
+    Page* page = frame().page();
+    if (page)
+        page->chromeClient().clearToolTip();
+
+    if (LayoutView* layoutView = document->layoutView()) {
+        if (layoutView->usesCompositing())
+            layoutView->compositor()->frameViewDidScroll();
+    }
+
+    if (m_didScrollTimer.isActive())
+        m_didScrollTimer.stop();
+    m_didScrollTimer.startOneShot(resourcePriorityUpdateDelayAfterScroll, BLINK_FROM_HERE);
+
+    if (AXObjectCache* cache = m_frame->document()->existingAXObjectCache())
+        cache->handleScrollPositionChanged(this);
+
+    layoutView()->clearHitTestCache();
+    frame().loader().saveScrollState();
+    frame().loader().client()->didChangeScrollOffset();
 }
 
 void FrameView::windowResizerRectChanged()
