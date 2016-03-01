@@ -44,8 +44,8 @@ CustomElementUpgradeCandidateMap::~CustomElementUpgradeCandidateMap()
 #if !ENABLE(OILPAN)
     // With Oilpan enabled, the observer table keeps a weak reference to the
     // element; no need for explicit removal.
-    UpgradeCandidateMap::const_iterator::Keys end = m_upgradeCandidates.end().keys();
-    for (UpgradeCandidateMap::const_iterator::Keys it = m_upgradeCandidates.begin().keys(); it != end; ++it)
+    UpgradeCandidateMap::const_iterator::KeysIterator end = m_upgradeCandidates.end().keys();
+    for (UpgradeCandidateMap::const_iterator::KeysIterator it = m_upgradeCandidates.begin().keys(); it != end; ++it)
         unobserve(*it);
 #endif
 }

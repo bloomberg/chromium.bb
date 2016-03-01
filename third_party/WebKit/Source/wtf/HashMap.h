@@ -177,8 +177,8 @@ class HashMap<KeyArg, MappedArg, HashArg, KeyTraitsArg, MappedTraitsArg, Allocat
     DISALLOW_NEW();
 public:
     typedef HashMap<KeyArg, MappedArg, HashArg, KeyTraitsArg, MappedTraitsArg, Allocator> HashMapType;
-    typedef typename HashMapType::iterator::Keys iterator;
-    typedef typename HashMapType::const_iterator::Keys const_iterator;
+    typedef typename HashMapType::iterator::KeysIterator iterator;
+    typedef typename HashMapType::const_iterator::KeysIterator const_iterator;
 
     iterator begin()
     {
@@ -216,8 +216,8 @@ class HashMap<KeyArg, MappedArg, HashArg, KeyTraitsArg, MappedTraitsArg, Allocat
     DISALLOW_NEW();
 public:
     typedef HashMap<KeyArg, MappedArg, HashArg, KeyTraitsArg, MappedTraitsArg, Allocator> HashMapType;
-    typedef typename HashMapType::iterator::Values iterator;
-    typedef typename HashMapType::const_iterator::Values const_iterator;
+    typedef typename HashMapType::iterator::ValuesIterator iterator;
+    typedef typename HashMapType::const_iterator::ValuesIterator const_iterator;
 
     iterator begin()
     {
@@ -487,7 +487,7 @@ inline bool operator!=(const HashMap<T, U, V, W, X, Y>& a, const HashMap<T, U, V
 template <typename T, typename U, typename V, typename W, typename X, typename Y, typename Z>
 inline void copyKeysToVector(const HashMap<T, U, V, W, X, Y>& collection, Z& vector)
 {
-    typedef typename HashMap<T, U, V, W, X, Y>::const_iterator::Keys iterator;
+    typedef typename HashMap<T, U, V, W, X, Y>::const_iterator::KeysIterator iterator;
 
     vector.resize(collection.size());
 
@@ -500,7 +500,7 @@ inline void copyKeysToVector(const HashMap<T, U, V, W, X, Y>& collection, Z& vec
 template <typename T, typename U, typename V, typename W, typename X, typename Y, typename Z>
 inline void copyValuesToVector(const HashMap<T, U, V, W, X, Y>& collection, Z& vector)
 {
-    typedef typename HashMap<T, U, V, W, X, Y>::const_iterator::Values iterator;
+    typedef typename HashMap<T, U, V, W, X, Y>::const_iterator::ValuesIterator iterator;
 
     vector.resize(collection.size());
 

@@ -930,8 +930,8 @@ void SVGElement::synchronizeAnimatedSVGAttribute(const QualifiedName& name) cons
     const_cast<SVGElement*>(this)->ensureAttributeAnimValUpdated();
 
     if (name == anyQName()) {
-        AttributeToPropertyMap::const_iterator::Values it = m_attributeToPropertyMap.values().begin();
-        AttributeToPropertyMap::const_iterator::Values end = m_attributeToPropertyMap.values().end();
+        AttributeToPropertyMap::const_iterator::ValuesIterator it = m_attributeToPropertyMap.values().begin();
+        AttributeToPropertyMap::const_iterator::ValuesIterator end = m_attributeToPropertyMap.values().end();
         for (; it != end; ++it) {
             if ((*it)->needsSynchronizeAttribute())
                 (*it)->synchronizeAttribute();
