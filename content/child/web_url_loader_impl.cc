@@ -270,8 +270,8 @@ void SetSecurityStyleAndDetails(const GURL& url,
   }
 
   blink::WebURLResponse::WebSecurityDetails webSecurityDetails(
-      WebString::fromUTF8(protocol), WebString::fromUTF8(cipher),
-      WebString::fromUTF8(key_exchange), WebString::fromUTF8(mac),
+      WebString::fromUTF8(protocol), WebString::fromUTF8(key_exchange),
+      WebString::fromUTF8(cipher), WebString::fromUTF8(mac),
       ssl_status.cert_id, num_unknown_scts, num_invalid_scts, num_valid_scts);
 
   response->setSecurityDetails(webSecurityDetails);
