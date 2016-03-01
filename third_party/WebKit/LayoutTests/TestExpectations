@@ -488,9 +488,6 @@ crbug.com/413731 imported/web-platform-tests/shadow-dom/untriaged/user-interacti
 crbug.com/552532 [ Win10 ] fast/replaced/no-focus-ring-embed.html [ Pass Crash ]
 crbug.com/552532 [ Win10 ] fast/replaced/no-focus-ring-object.html [ Pass Crash ]
 crbug.com/552532 [ Win10 ] plugins/focus.html [ Pass Crash ]
-crbug.com/552532 [ Win10 ] plugins/keyboard-events.html [ Pass Crash ]
-crbug.com/552532 [ Win10 ] plugins/mouse-events-fixedpos.html [ Pass Crash ]
-crbug.com/552532 [ Win10 ] plugins/mouse-events.html [ Pass Crash ]
 crbug.com/552532 [ Win10 ] plugins/plugin-initiate-popup-window.html [ Pass Crash ]
 crbug.com/552532 [ Win10 ] plugins/tabindex.html [ Pass Crash ]
 
