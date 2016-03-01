@@ -629,8 +629,6 @@
           'sources!': [
             'base/audio_video_metadata_extractor.cc',
             'base/audio_video_metadata_extractor.h',
-            'base/container_names.cc',
-            'base/container_names.h',
             'base/media_file_checker.cc',
             'base/media_file_checker.h',
             'ffmpeg/ffmpeg_common.cc',
@@ -1332,7 +1330,6 @@
             # These tests are confused by Android always having proprietary
             # codecs enabled, but ffmpeg_branding=Chromium. These should be
             # fixed, see http://crbug.com/570762.
-            'filters/audio_decoder_unittest.cc',
             'filters/audio_file_reader_unittest.cc',
             'filters/ffmpeg_demuxer_unittest.cc',
           ],

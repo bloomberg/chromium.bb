@@ -5,6 +5,7 @@
 // MSVC++ requires this to be set before any other includes to get M_PI.
 #define _USE_MATH_DEFINES
 #include <cmath>
+#include <sstream>
 
 #include "media/base/audio_hash.h"
 
@@ -50,6 +51,19 @@ std::string AudioHash::ToString() const {
   for (size_t i = 0; i < arraysize(audio_hash_); ++i)
     result += base::StringPrintf("%.2f,", audio_hash_[i]);
   return result;
+}
+
+bool AudioHash::IsEquivalent(const std::string& other, double tolerance) const {
+  float other_hash;
+  char comma;
+
+  std::stringstream is(other);
+  for (size_t i = 0; i < arraysize(audio_hash_); ++i) {
+    is >> other_hash >> comma;
+    if (fabs(audio_hash_[i] - other_hash) > tolerance)
+      return false;
+  }
+  return true;
 }
 
 }  // namespace media

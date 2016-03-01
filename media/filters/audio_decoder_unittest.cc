@@ -277,7 +277,9 @@ class AudioDecoderTest : public testing::TestWithParam<DecoderTestData> {
     // Generate a lossy hash of the audio used for comparison across platforms.
     AudioHash audio_hash;
     audio_hash.Update(output.get(), output->frames());
-    EXPECT_EQ(sample_info.hash, audio_hash.ToString());
+    EXPECT_TRUE(audio_hash.IsEquivalent(sample_info.hash, 0.02))
+        << "Audio hashes differ. Expected: " << sample_info.hash
+        << " Actual: " << audio_hash.ToString();
 
     if (!exact_hash.empty()) {
       EXPECT_EQ(exact_hash, GetDecodedAudioMD5(i));
@@ -453,6 +455,9 @@ INSTANTIATE_TEST_CASE_P(OpusAudioDecoderBehavioralTest,
                         OpusAudioDecoderBehavioralTest,
                         testing::ValuesIn(kOpusBehavioralTest));
 
+// Disable all FFmpeg decoder tests on Android. http://crbug.com/570762.
+#if !defined(OS_ANDROID)
+
 #if defined(USE_PROPRIETARY_CODECS)
 const DecodedBufferExpectations kSfxMp3Expectations[] = {
     {0, 1065, "2.81,3.99,4.53,4.10,3.08,2.46,"},
@@ -533,5 +538,7 @@ INSTANTIATE_TEST_CASE_P(FFmpegAudioDecoderTest,
 INSTANTIATE_TEST_CASE_P(FFmpegAudioDecoderBehavioralTest,
                         FFmpegAudioDecoderBehavioralTest,
                         testing::ValuesIn(kFFmpegBehavioralTest));
+
+#endif  // !defined(OS_ANDROID)
 
 }  // namespace media

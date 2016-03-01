@@ -157,6 +157,8 @@ component("media") {
     "filters/jpeg_parser.h",
     "filters/media_source_state.cc",
     "filters/media_source_state.h",
+    "filters/opus_audio_decoder.cc",
+    "filters/opus_audio_decoder.h",
     "filters/opus_constants.cc",
     "filters/opus_constants.h",
     "filters/source_buffer_range.cc",
@@ -347,13 +349,6 @@ component("media") {
       ]
     }
     allow_circular_includes_from = [ "//media/base/android" ]
-  }
-
-  if (!is_android || media_use_ffmpeg) {
-    sources += [
-      "filters/opus_audio_decoder.cc",
-      "filters/opus_audio_decoder.h",
-    ]
   }
 
   if (current_cpu != "arm" && is_chromeos) {
@@ -642,6 +637,7 @@ test("media_unittests") {
   if (media_use_ffmpeg) {
     sources += [
       "ffmpeg/ffmpeg_common_unittest.cc",
+      "filters/audio_decoder_unittest.cc",
       "filters/blocking_url_protocol_unittest.cc",
       "filters/ffmpeg_glue_unittest.cc",
       "filters/in_memory_url_protocol_unittest.cc",
@@ -652,7 +648,6 @@ test("media_unittests") {
         # These tests are confused by Android always having proprietary
         # codecs enabled, but ffmpeg_branding=Chromium.  These should be
         # fixed, http://crbug.com/570762.
-        "filters/audio_decoder_unittest.cc",
         "filters/audio_file_reader_unittest.cc",
         "filters/ffmpeg_demuxer_unittest.cc",
 

@@ -88,6 +88,8 @@ source_set("base") {
     "channel_mixer.h",
     "channel_mixing_matrix.cc",
     "channel_mixing_matrix.h",
+    "container_names.cc",
+    "container_names.h",
     "data_buffer.cc",
     "data_buffer.h",
     "data_source.cc",
@@ -238,10 +240,6 @@ source_set("base") {
   ]
 
   if (media_use_ffmpeg) {
-    sources += [
-      "container_names.cc",
-      "container_names.h",
-    ]
     if (!is_android) {
       sources += [
         "audio_video_metadata_extractor.cc",

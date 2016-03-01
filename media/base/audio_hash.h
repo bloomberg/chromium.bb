@@ -43,6 +43,11 @@ class MEDIA_EXPORT AudioHash {
   // Return a string representation of the current hash.
   std::string ToString() const;
 
+  // Compare with another hash value given as string representation.
+  // Returns true if for every bucket the difference between this and
+  // other is less than tolerance.
+  bool IsEquivalent(const std::string& other, double tolerance) const;
+
  private:
   // Storage for the audio hash.  The number of buckets controls the importance
   // of position in the hash.  A higher number reduces the chance of false
