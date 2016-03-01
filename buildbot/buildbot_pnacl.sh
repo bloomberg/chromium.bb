@@ -147,9 +147,9 @@ gyp-mips32-build() {
   export PATH=$PATH:$PWD/toolchain/linux_x86/mips_trusted/bin/
   export GYP_DEFINES="target_arch=mipsel"
   export GYP_CROSSCOMPILE=1
-  # NOTE: this step is also run implicitly as part of gclient runhooks --force
-  #       it uses the exported env vars so we have to run it again
-  build/gyp_nacl
+  # NOTE: gclient runhooks and gyp_nacl use the exported env vars so we have to
+  # run it again
+  gclient runhooks
 
   echo "@@@BUILD_STEP gyp_compile [${gypmode}]@@@"
   ninja -C ../out/${gypmode} -v

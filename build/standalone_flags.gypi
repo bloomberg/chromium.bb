@@ -96,6 +96,10 @@
     # arm_neon==0).
     'arm_fpu%': 'vfpv3',
 
+    # Default MIPS arch variant. This is set in the conditions block
+    # below for MIPS targets.
+    'mips_arch_variant%': 'r2',
+
     'mac_deployment_target%': '10.6',
 
     'nacl_strict_warnings%': 1,
@@ -393,13 +397,27 @@
               ['_toolset=="target"', {
                 # Copied from chromium build/common.gypi
                 'conditions': [
-                  ['clang==1', {
-                    'cflags': [ '-target mipsel-linux-gnu', '-march=mips32r6', ],
-                    'ldflags': [ '-target mipsel-linux-gnu', ],
-                  }, { # clang==0
-                    'cflags': ['-mips32r6', '-Wa,-mips32r6', ],
+                  ['mips_arch_variant=="r1"', {
+                    'conditions': [
+                      ['clang==1', {
+                        'cflags': [ '-target mipsel-linux-gnu', '-march=mips32', ],
+                        'ldflags': [ '-target mipsel-linux-gnu', ],
+                      }, { # clang==0
+                        'cflags': ['-mips32', '-Wa,-mips32', ],
+                      }],
+                    ],
                   }],
-                ],
+                  ['mips_arch_variant=="r2"', {
+                    'conditions': [
+                      ['clang==1', {
+                        'cflags': [ '-target mipsel-linux-gnu', '-march=mips32r2', ],
+                        'ldflags': [ '-target mipsel-linux-gnu', ],
+                      }, { # clang==0
+                        'cflags': ['-mips32r2', '-Wa,-mips32r2', ],
+                      }],
+                    ],
+                  }]
+                ]
               }],
             ],
           }],
