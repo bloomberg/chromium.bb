@@ -360,7 +360,8 @@ CGFloat LineWidthFromContext(CGContextRef context) {
   return newTabButtonImage;
 }
 
-+ (NSBezierPath*)newTabButtonBezierPathWithInset:(CGFloat)inset {
++ (NSBezierPath*)newTabButtonBezierPathWithInset:(int)inset
+                                       lineWidth:(CGFloat)lineWidth {
   NSBezierPath* bezierPath = [NSBezierPath bezierPath];
 
   // Bottom edge.
@@ -376,12 +377,13 @@ CGFloat LineWidthFromContext(CGContextRef context) {
   [bezierPath lineToPoint:NSMakePoint(0.7125 + inset, 14.25 - inset)];
 
   // Upper-left corner.
-  [bezierPath curveToPoint:NSMakePoint(1.71 + inset, 16.2688 - inset)
+  const float topEdgeY = 16.2688;
+  [bezierPath curveToPoint:NSMakePoint(1.71 + inset, topEdgeY - inset)
              controlPoint1:NSMakePoint(0.246496 + inset, 15.2613 - inset)
              controlPoint2:NSMakePoint(0.916972 + inset, 16.3489 - inset)];
 
   // Top edge.
-  [bezierPath lineToPoint:NSMakePoint(23.275 - inset, 16.2688 - inset)];
+  [bezierPath lineToPoint:NSMakePoint(23.275 - inset, topEdgeY - inset)];
 
   // Upper right corner.
   [bezierPath curveToPoint:NSMakePoint(27.645 - inset, 14.7012 - inset)
@@ -398,6 +400,17 @@ CGFloat LineWidthFromContext(CGContextRef context) {
 
   [bezierPath closePath];
 
+  // On non-Retina machines, adjust the path so that the top line rests along
+  // a pixel line (to get a crisp line on the display).
+  if (lineWidth == 1) {
+    NSAffineTransform* translateTransform = [NSAffineTransform transform];
+    [translateTransform translateXBy:0
+                                 yBy:0.5 - (topEdgeY - trunc(topEdgeY))];
+    [bezierPath transformUsingAffineTransform:translateTransform];
+  }
+
+  [bezierPath setLineWidth:lineWidth];
+
   return bezierPath;
 }
 
@@ -406,11 +419,11 @@ CGFloat LineWidthFromContext(CGContextRef context) {
       cr_setPatternPhase:[imageRep patternPhasePosition]
       forView:[imageRep destView]];
 
-  NSBezierPath* bezierPath = [self newTabButtonBezierPathWithInset:0];
   CGContextRef context = static_cast<CGContextRef>(
       [[NSGraphicsContext currentContext] graphicsPort]);
   CGFloat lineWidth = LineWidthFromContext(context);
-  [bezierPath setLineWidth:lineWidth];
+  NSBezierPath* bezierPath = [self newTabButtonBezierPathWithInset:0
+                                                         lineWidth:lineWidth];
 
   if ([imageRep fillColor]) {
     [[imageRep fillColor] set];
@@ -475,8 +488,8 @@ CGFloat LineWidthFromContext(CGContextRef context) {
       break;
   }
   if (inset != -1) {
-    bezierPath = [self newTabButtonBezierPathWithInset:inset];
-    [bezierPath setLineWidth:lineWidth];
+    bezierPath = [self newTabButtonBezierPathWithInset:inset
+                                             lineWidth:lineWidth];
     [bezierPath fill];
   }
 }
@@ -487,7 +500,10 @@ CGFloat LineWidthFromContext(CGContextRef context) {
 
   [image lockFocus];
   [fillColor set];
-  [[NewTabButton newTabButtonBezierPathWithInset:0] fill];
+  CGContextRef context = static_cast<CGContextRef>(
+      [[NSGraphicsContext currentContext] graphicsPort]);
+  CGFloat lineWidth = LineWidthFromContext(context);
+  [[NewTabButton newTabButtonBezierPathWithInset:0 lineWidth:lineWidth] fill];
   [image unlockFocus];
   return image;
 }
