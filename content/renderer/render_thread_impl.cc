@@ -2135,19 +2135,19 @@ void RenderThreadImpl::WidgetRestored() {
 }
 
 void RenderThreadImpl::OnRendererHidden() {
+  blink::mainThreadIsolate()->IsolateInBackgroundNotification();
   // TODO(rmcilroy): Remove IdleHandler and replace it with an IdleTask
   // scheduled by the RendererScheduler - http://crbug.com/469210.
   if (!GetContentClient()->renderer()->RunIdleHandlerWhenWidgetsHidden())
     return;
   ScheduleIdleHandler(kInitialIdleHandlerDelayMs);
-  blink::mainThreadIsolate()->IsolateInBackgroundNotification();
 }
 
 void RenderThreadImpl::OnRendererVisible() {
+  blink::mainThreadIsolate()->IsolateInForegroundNotification();
   if (!GetContentClient()->renderer()->RunIdleHandlerWhenWidgetsHidden())
     return;
   ScheduleIdleHandler(kLongIdleHandlerDelayMs);
-  blink::mainThreadIsolate()->IsolateInForegroundNotification();
 }
 
 void RenderThreadImpl::ReleaseFreeMemory() {
