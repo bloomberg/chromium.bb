@@ -1098,7 +1098,8 @@ void WebGL2RenderingContextBase::texSubImage3D(GLenum target, GLint level, GLint
         // The UNSIGNED_INT_10F_11F_11F_REV type pack/unpack isn't implemented.
         type = GL_FLOAT;
     }
-    OwnPtr<uint8_t[]> pixelData = bitmap->copyBitmapData(PremultiplyAlpha);
+    ASSERT(bitmap->bitmapImage());
+    OwnPtr<uint8_t[]> pixelData = bitmap->copyBitmapData(bitmap->isPremultiplied() ? PremultiplyAlpha : DontPremultiplyAlpha);
     Vector<uint8_t> data;
     bool needConversion = true;
     if (format == GL_RGBA && type == GL_UNSIGNED_BYTE) {
