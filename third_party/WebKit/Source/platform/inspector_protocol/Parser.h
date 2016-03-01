@@ -14,7 +14,7 @@ namespace protocol {
 
 class Value;
 
-PLATFORM_EXPORT PassRefPtr<Value> parseJSON(const String& json);
+PLATFORM_EXPORT PassOwnPtr<Value> parseJSON(const String& json);
 
 } // namespace platform
 } // namespace blink

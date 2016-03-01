@@ -188,7 +188,7 @@ PassOwnPtr<AXValueSource> createValueSource(NameSource& nameSource)
         if (nameSource.attribute == aria_labelledbyAttr || nameSource.attribute == aria_labeledbyAttr) {
             OwnPtr<AXValue> attributeValue = createRelatedNodeListValue(nameSource.relatedObjects, AXValueTypeEnum::IdrefList);
             if (!nameSource.attributeValue.isNull())
-                attributeValue->setValue(protocol::StringValue::create(nameSource.attributeValue.string()).get());
+                attributeValue->setValue(protocol::StringValue::create(nameSource.attributeValue.string()));
             valueSource->setAttributeValue(attributeValue.release());
         } else if (nameSource.attribute == QualifiedName::null()) {
             valueSource->setNativeSourceValue(createRelatedNodeListValue(nameSource.relatedObjects, AXValueTypeEnum::NodeList));

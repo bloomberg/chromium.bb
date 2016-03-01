@@ -419,12 +419,12 @@ bool decodeString(const CharType* start, const CharType* end, String* output)
 }
 
 template<typename CharType>
-PassRefPtr<Value> buildValue(const CharType* start, const CharType* end, const CharType** valueTokenEnd, int depth)
+PassOwnPtr<Value> buildValue(const CharType* start, const CharType* end, const CharType** valueTokenEnd, int depth)
 {
     if (depth > stackLimit)
         return nullptr;
 
-    RefPtr<Value> result;
+    OwnPtr<Value> result;
     const CharType* tokenStart;
     const CharType* tokenEnd;
     Token token = parseToken(start, end, &tokenStart, &tokenEnd);
@@ -459,14 +459,14 @@ PassRefPtr<Value> buildValue(const CharType* start, const CharType* end, const C
         break;
     }
     case ArrayBegin: {
-        RefPtr<ListValue> array = ListValue::create();
+        OwnPtr<ListValue> array = ListValue::create();
         start = tokenEnd;
         token = parseToken(start, end, &tokenStart, &tokenEnd);
         while (token != ArrayEnd) {
-            RefPtr<Value> arrayNode = buildValue(start, end, &tokenEnd, depth + 1);
+            OwnPtr<Value> arrayNode = buildValue(start, end, &tokenEnd, depth + 1);
             if (!arrayNode)
                 return nullptr;
-            array->pushValue(arrayNode);
+            array->pushValue(arrayNode.release());
 
             // After a list value, we expect a comma or the end of the list.
             start = tokenEnd;
@@ -487,7 +487,7 @@ PassRefPtr<Value> buildValue(const CharType* start, const CharType* end, const C
         break;
     }
     case ObjectBegin: {
-        RefPtr<DictionaryValue> object = DictionaryValue::create();
+        OwnPtr<DictionaryValue> object = DictionaryValue::create();
         start = tokenEnd;
         token = parseToken(start, end, &tokenStart, &tokenEnd);
         while (token != ObjectEnd) {
@@ -503,10 +503,10 @@ PassRefPtr<Value> buildValue(const CharType* start, const CharType* end, const C
                 return nullptr;
             start = tokenEnd;
 
-            RefPtr<Value> value = buildValue(start, end, &tokenEnd, depth + 1);
+            OwnPtr<Value> value = buildValue(start, end, &tokenEnd, depth + 1);
             if (!value)
                 return nullptr;
-            object->setValue(key, value);
+            object->setValue(key, value.release());
             start = tokenEnd;
 
             // After a key/value pair, we expect a comma or the end of the
@@ -538,11 +538,11 @@ PassRefPtr<Value> buildValue(const CharType* start, const CharType* end, const C
 }
 
 template<typename CharType>
-PassRefPtr<Value> parseJSONInternal(const CharType* start, unsigned length)
+PassOwnPtr<Value> parseJSONInternal(const CharType* start, unsigned length)
 {
     const CharType* end = start + length;
     const CharType *tokenEnd;
-    RefPtr<Value> value = buildValue(start, end, &tokenEnd, 0);
+    OwnPtr<Value> value = buildValue(start, end, &tokenEnd, 0);
     if (!value || tokenEnd != end)
         return nullptr;
     return value.release();
@@ -550,7 +550,7 @@ PassRefPtr<Value> parseJSONInternal(const CharType* start, unsigned length)
 
 } // anonymous namespace
 
-PassRefPtr<Value> parseJSON(const String& json)
+PassOwnPtr<Value> parseJSON(const String& json)
 {
     if (json.isEmpty())
         return nullptr;

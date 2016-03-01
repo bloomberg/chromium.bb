@@ -69,7 +69,7 @@ public:
     ~InspectorRuntimeAgent() override;
 
     // InspectorBaseAgent overrides.
-    void setState(PassRefPtr<protocol::DictionaryValue>) override;
+    void setState(protocol::DictionaryValue*) override;
     void setFrontend(protocol::Frontend*) override;
     void clearFrontend() override;
     void restore() override;

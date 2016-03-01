@@ -89,7 +89,7 @@ InspectorHeapProfilerAgent::~InspectorHeapProfilerAgent()
 }
 
 // InspectorBaseAgent overrides.
-void InspectorHeapProfilerAgent::setState(PassRefPtr<protocol::DictionaryValue> state)
+void InspectorHeapProfilerAgent::setState(protocol::DictionaryValue* state)
 {
     InspectorBaseAgent::setState(state);
     m_v8HeapProfilerAgent->setInspectorState(m_state);

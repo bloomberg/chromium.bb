@@ -110,11 +110,11 @@ public:
 private:
     InspectorDOMDebuggerAgent(v8::Isolate*, InspectorDOMAgent*, V8RuntimeAgent*, V8DebuggerAgent*);
 
-    void pauseOnNativeEventIfNeeded(PassRefPtr<protocol::DictionaryValue> eventData, bool synchronous);
-    PassRefPtr<protocol::DictionaryValue> preparePauseOnNativeEventData(const String& eventName, const String* targetName);
+    void pauseOnNativeEventIfNeeded(PassOwnPtr<protocol::DictionaryValue> eventData, bool synchronous);
+    PassOwnPtr<protocol::DictionaryValue> preparePauseOnNativeEventData(const String& eventName, const String* targetName);
 
-    PassRefPtr<protocol::DictionaryValue> eventListenerBreakpoints();
-    PassRefPtr<protocol::DictionaryValue> xhrBreakpoints();
+    protocol::DictionaryValue* eventListenerBreakpoints();
+    protocol::DictionaryValue* xhrBreakpoints();
 
     void descriptionForDOMEvent(Node* target, int breakpointType, bool insertion, protocol::DictionaryValue* description);
     void updateSubtreeBreakpoints(Node*, uint32_t rootMask, bool set);

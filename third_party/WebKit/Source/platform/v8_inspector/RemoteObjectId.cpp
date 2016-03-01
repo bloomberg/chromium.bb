@@ -14,13 +14,13 @@ namespace blink {
 
 RemoteObjectIdBase::RemoteObjectIdBase() : m_injectedScriptId(0) { }
 
-PassRefPtr<protocol::DictionaryValue> RemoteObjectIdBase::parseInjectedScriptId(const String& objectId)
+PassOwnPtr<protocol::DictionaryValue> RemoteObjectIdBase::parseInjectedScriptId(const String& objectId)
 {
-    RefPtr<protocol::Value> parsedValue = protocol::parseJSON(objectId);
+    OwnPtr<protocol::Value> parsedValue = protocol::parseJSON(objectId);
     if (!parsedValue || parsedValue->type() != protocol::Value::TypeObject)
         return nullptr;
 
-    RefPtr<protocol::DictionaryValue> parsedObjectId = protocol::DictionaryValue::cast(parsedValue.release());
+    OwnPtr<protocol::DictionaryValue> parsedObjectId = adoptPtr(protocol::DictionaryValue::cast(parsedValue.leakPtr()));
     bool success = parsedObjectId->getNumber("injectedScriptId", &m_injectedScriptId);
     if (success)
         return parsedObjectId.release();
@@ -32,7 +32,7 @@ RemoteObjectId::RemoteObjectId() : RemoteObjectIdBase(), m_id(0) { }
 PassOwnPtr<RemoteObjectId> RemoteObjectId::parse(const String& objectId)
 {
     OwnPtr<RemoteObjectId> result = adoptPtr(new RemoteObjectId());
-    RefPtr<protocol::DictionaryValue> parsedObjectId = result->parseInjectedScriptId(objectId);
+    OwnPtr<protocol::DictionaryValue> parsedObjectId = result->parseInjectedScriptId(objectId);
     if (!parsedObjectId)
         return nullptr;
 
@@ -47,7 +47,7 @@ RemoteCallFrameId::RemoteCallFrameId() : RemoteObjectIdBase(), m_frameOrdinal(0)
 PassOwnPtr<RemoteCallFrameId> RemoteCallFrameId::parse(const String& objectId)
 {
     OwnPtr<RemoteCallFrameId> result = adoptPtr(new RemoteCallFrameId());
-    RefPtr<protocol::DictionaryValue> parsedObjectId = result->parseInjectedScriptId(objectId);
+    OwnPtr<protocol::DictionaryValue> parsedObjectId = result->parseInjectedScriptId(objectId);
     if (!parsedObjectId)
         return nullptr;
 
@@ -55,7 +55,7 @@ PassOwnPtr<RemoteCallFrameId> RemoteCallFrameId::parse(const String& objectId)
     if (!success)
         return nullptr;
 
-    RefPtr<protocol::Value> value = parsedObjectId->get("asyncOrdinal");
+    protocol::Value* value = parsedObjectId->get("asyncOrdinal");
     if (value &&!value->asNumber(&result->m_asyncStackOrdinal))
         return nullptr;
     return result.release();

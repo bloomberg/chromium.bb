@@ -2042,7 +2042,7 @@ void InspectorDOMAgent::getRelayoutBoundary(ErrorString* errorString, int nodeId
     *relayoutBoundaryNodeId = pushNodePathToFrontend(resultNode);
 }
 
-void InspectorDOMAgent::getHighlightObjectForTest(ErrorString* errorString, int nodeId, RefPtr<protocol::DictionaryValue>* result)
+void InspectorDOMAgent::getHighlightObjectForTest(ErrorString* errorString, int nodeId, OwnPtr<protocol::DictionaryValue>* result)
 {
     Node* node = assertNode(errorString, nodeId);
     if (!node)

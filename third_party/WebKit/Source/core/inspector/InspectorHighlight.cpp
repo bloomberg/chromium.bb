@@ -25,7 +25,7 @@ public:
     PathBuilder() : m_path(protocol::ListValue::create()) { }
     virtual ~PathBuilder() { }
 
-    PassRefPtr<protocol::ListValue> path() const { return m_path; }
+    PassOwnPtr<protocol::ListValue> release() { return m_path.release(); }
 
     void appendPath(const Path& path)
     {
@@ -44,7 +44,7 @@ private:
     void appendPathElement(const PathElement*);
     void appendPathCommandAndPoints(const char* command, const FloatPoint points[], size_t length);
 
-    RefPtr<protocol::ListValue> m_path;
+    OwnPtr<protocol::ListValue> m_path;
 };
 
 void PathBuilder::appendPathCommandAndPoints(const char* command, const FloatPoint points[], size_t length)
@@ -90,11 +90,11 @@ public:
         , m_layoutObject(layoutObject)
         , m_shapeOutsideInfo(shapeOutsideInfo) { }
 
-    static RefPtr<protocol::ListValue> buildPath(FrameView& view, LayoutObject& layoutObject, const ShapeOutsideInfo& shapeOutsideInfo, const Path& path)
+    static PassOwnPtr<protocol::ListValue> buildPath(FrameView& view, LayoutObject& layoutObject, const ShapeOutsideInfo& shapeOutsideInfo, const Path& path)
     {
         ShapePathBuilder builder(view, layoutObject, shapeOutsideInfo);
         builder.appendPath(path);
-        return builder.path();
+        return builder.release();
     }
 
 protected:
@@ -163,9 +163,9 @@ const ShapeOutsideInfo* shapeOutsideInfoForNode(Node* node, Shape::DisplayPaths*
     return shapeOutsideInfo;
 }
 
-PassRefPtr<protocol::DictionaryValue> buildElementInfo(Element* element)
+PassOwnPtr<protocol::DictionaryValue> buildElementInfo(Element* element)
 {
-    RefPtr<protocol::DictionaryValue> elementInfo = protocol::DictionaryValue::create();
+    OwnPtr<protocol::DictionaryValue> elementInfo = protocol::DictionaryValue::create();
     Element* realElement = element;
     PseudoElement* pseudoElement = nullptr;
     if (element->isPseudoElement()) {
@@ -200,7 +200,7 @@ PassRefPtr<protocol::DictionaryValue> buildElementInfo(Element* element)
     LayoutObject* layoutObject = element->layoutObject();
     FrameView* containingView = element->document().view();
     if (!layoutObject || !containingView)
-        return elementInfo;
+        return elementInfo.release();
 
     // layoutObject the getBoundingClientRect() data in the tooltip
     // to be consistent with the rulers (see http://crbug.com/262338).
@@ -208,7 +208,7 @@ PassRefPtr<protocol::DictionaryValue> buildElementInfo(Element* element)
     elementInfo->setString("nodeWidth", String::number(boundingBox->width()));
     elementInfo->setString("nodeHeight", String::number(boundingBox->height()));
 
-    return elementInfo;
+    return elementInfo.release();
 }
 
 } // namespace
@@ -250,12 +250,12 @@ void InspectorHighlight::appendQuad(const FloatQuad& quad, const Color& fillColo
     Path path = quadToPath(quad);
     PathBuilder builder;
     builder.appendPath(path);
-    appendPath(builder.path(), fillColor, outlineColor, name);
+    appendPath(builder.release(), fillColor, outlineColor, name);
 }
 
-void InspectorHighlight::appendPath(PassRefPtr<protocol::ListValue> path, const Color& fillColor, const Color& outlineColor, const String& name)
+void InspectorHighlight::appendPath(PassOwnPtr<protocol::ListValue> path, const Color& fillColor, const Color& outlineColor, const String& name)
 {
-    RefPtr<protocol::DictionaryValue> object = protocol::DictionaryValue::create();
+    OwnPtr<protocol::DictionaryValue> object = protocol::DictionaryValue::create();
     object->setValue("path", path);
     object->setString("fillColor", fillColor.serialized());
     if (outlineColor != Color::transparent)
@@ -321,14 +321,14 @@ void InspectorHighlight::appendNodeHighlight(Node* node, const InspectorHighligh
     appendQuad(margin, highlightConfig.margin, Color::transparent, "margin");
 }
 
-PassRefPtr<protocol::DictionaryValue> InspectorHighlight::asProtocolValue() const
+PassOwnPtr<protocol::DictionaryValue> InspectorHighlight::asProtocolValue() const
 {
-    RefPtr<protocol::DictionaryValue> object = protocol::DictionaryValue::create();
-    object->setArray("paths", m_highlightPaths);
+    OwnPtr<protocol::DictionaryValue> object = protocol::DictionaryValue::create();
+    object->setValue("paths", m_highlightPaths->clone());
     object->setBoolean("showRulers", m_showRulers);
     object->setBoolean("showExtensionLines", m_showExtensionLines);
     if (m_elementInfo)
-        object->setObject("elementInfo", m_elementInfo);
+        object->setValue("elementInfo", m_elementInfo->clone());
     object->setBoolean("displayAsMaterial", m_displayAsMaterial);
     return object.release();
 }
@@ -362,8 +362,8 @@ bool InspectorHighlight::getBoxModel(Node* node, OwnPtr<protocol::DOM::BoxModel>
     if (const ShapeOutsideInfo* shapeOutsideInfo = shapeOutsideInfoForNode(node, &paths, &boundsQuad)) {
         (*model)->setShapeOutside(protocol::DOM::ShapeOutsideInfo::create()
             .setBounds(buildArrayForQuad(boundsQuad))
-            .setShape(protocol::Array<RefPtr<protocol::Value>>::parse(ShapePathBuilder::buildPath(*view, *layoutObject, *shapeOutsideInfo, paths.shape), &errors))
-            .setMarginShape(protocol::Array<RefPtr<protocol::Value>>::parse(ShapePathBuilder::buildPath(*view, *layoutObject, *shapeOutsideInfo, paths.marginShape), &errors))
+            .setShape(protocol::Array<protocol::Value>::parse(ShapePathBuilder::buildPath(*view, *layoutObject, *shapeOutsideInfo, paths.shape).get(), &errors))
+            .setMarginShape(protocol::Array<protocol::Value>::parse(ShapePathBuilder::buildPath(*view, *layoutObject, *shapeOutsideInfo, paths.marginShape).get(), &errors))
             .build());
     }
 

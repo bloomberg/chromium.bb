@@ -62,7 +62,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
     // InspectorBaseAgent overrides.
-    void setState(PassRefPtr<protocol::DictionaryValue>) override;
+    void setState(protocol::DictionaryValue*) override;
     void setFrontend(protocol::Frontend*) override;
     void clearFrontend() override;
     void restore() override;

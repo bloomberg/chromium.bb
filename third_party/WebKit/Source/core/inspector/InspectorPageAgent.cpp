@@ -388,23 +388,24 @@ void InspectorPageAgent::disable(ErrorString*)
 
 void InspectorPageAgent::addScriptToEvaluateOnLoad(ErrorString*, const String& source, String* identifier)
 {
-    RefPtr<protocol::DictionaryValue> scripts = m_state->getObject(PageAgentState::pageAgentScriptsToEvaluateOnLoad);
+    protocol::DictionaryValue* scripts = m_state->getObject(PageAgentState::pageAgentScriptsToEvaluateOnLoad);
     if (!scripts) {
-        scripts = protocol::DictionaryValue::create();
-        m_state->setObject(PageAgentState::pageAgentScriptsToEvaluateOnLoad, scripts);
+        OwnPtr<protocol::DictionaryValue> newScripts = protocol::DictionaryValue::create();
+        scripts = newScripts.get();
+        m_state->setObject(PageAgentState::pageAgentScriptsToEvaluateOnLoad, newScripts.release());
     }
     // Assure we don't override existing ids -- m_lastScriptIdentifier could get out of sync WRT actual
     // scripts once we restored the scripts from the cookie during navigation.
     do {
         *identifier = String::number(++m_lastScriptIdentifier);
-    } while (scripts->find(*identifier) != scripts->end());
+    } while (scripts->get(*identifier));
     scripts->setString(*identifier, source);
 }
 
 void InspectorPageAgent::removeScriptToEvaluateOnLoad(ErrorString* error, const String& identifier)
 {
-    RefPtr<protocol::DictionaryValue> scripts = m_state->getObject(PageAgentState::pageAgentScriptsToEvaluateOnLoad);
-    if (!scripts || scripts->find(identifier) == scripts->end()) {
+    protocol::DictionaryValue* scripts = m_state->getObject(PageAgentState::pageAgentScriptsToEvaluateOnLoad);
+    if (!scripts || !scripts->get(identifier)) {
         *error = "Script not found";
         return;
     }
@@ -589,7 +590,7 @@ void InspectorPageAgent::didClearDocumentOfWindowObject(LocalFrame* frame)
     if (!frontend())
         return;
 
-    RefPtr<protocol::DictionaryValue> scripts = m_state->getObject(PageAgentState::pageAgentScriptsToEvaluateOnLoad);
+    protocol::DictionaryValue* scripts = m_state->getObject(PageAgentState::pageAgentScriptsToEvaluateOnLoad);
     if (scripts) {
         for (const auto& script : *scripts) {
             String scriptText;

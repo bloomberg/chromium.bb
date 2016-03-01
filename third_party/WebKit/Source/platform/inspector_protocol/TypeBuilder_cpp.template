@@ -62,33 +62,36 @@ String ErrorSupport::errors()
     return builder.toString();
 }
 
-PassOwnPtr<Object> Object::parse(PassRefPtr<protocol::Value> value, ErrorSupport* errors)
+PassOwnPtr<Object> Object::parse(protocol::Value* value, ErrorSupport* errors)
 {
-    RefPtr<protocol::DictionaryValue> object = DictionaryValue::cast(value);
+    protocol::DictionaryValue* object = DictionaryValue::cast(value);
     if (!object) {
         errors->addError("object expected");
         return nullptr;
     }
-    return adoptPtr(new Object(object.release()));
+    return adoptPtr(new Object(adoptPtr(static_cast<DictionaryValue*>(object->clone().leakPtr()))));
 }
 
-PassRefPtr<protocol::DictionaryValue> Object::serialize() const
+PassOwnPtr<protocol::DictionaryValue> Object::serialize() const
 {
-    return m_object;
+    return DictionaryValue::cast(m_object->clone());
 }
 
 PassOwnPtr<Object> Object::clone() const
 {
-    return adoptPtr(new Object(m_object));
+    return adoptPtr(new Object(DictionaryValue::cast(m_object->clone())));
 }
 
-Object::Object(PassRefPtr<protocol::DictionaryValue> object) : m_object(object) { }
+Object::Object(PassOwnPtr<protocol::DictionaryValue> object) : m_object(object) { }
 Object::~Object() { }
 
-PassRefPtr<protocol::Value> toValue(int value) { return FundamentalValue::create(value); }
-PassRefPtr<protocol::Value> toValue(double value) { return FundamentalValue::create(value); }
-PassRefPtr<protocol::Value> toValue(bool value) { return FundamentalValue::create(value); }
-PassRefPtr<protocol::Value> toValue(const String& param) { return StringValue::create(param); }
+PassOwnPtr<protocol::Value> toValue(int value) { return FundamentalValue::create(value); }
+PassOwnPtr<protocol::Value> toValue(double value) { return FundamentalValue::create(value); }
+PassOwnPtr<protocol::Value> toValue(bool value) { return FundamentalValue::create(value); }
+PassOwnPtr<protocol::Value> toValue(const String& param) { return StringValue::create(param); }
+PassOwnPtr<protocol::Value> toValue(Value* param) { return param->clone(); }
+PassOwnPtr<protocol::Value> toValue(DictionaryValue* param) { return param->clone(); }
+PassOwnPtr<protocol::Value> toValue(ListValue* param) { return param->clone(); }
 
 // ------------- Enum values from types.
 {% for domain in api.domains %}
@@ -113,7 +116,7 @@ const char* {{type.id}}::{{property.name | to_title_case}}Enum::{{ literal | das
     {% endfor %}
     {% if not (type.type == "object") or not ("properties" in type) %}{% continue %}{% endif %}
 
-PassOwnPtr<{{type.id}}> {{type.id}}::parse(PassRefPtr<protocol::Value> value, ErrorSupport* errors)
+PassOwnPtr<{{type.id}}> {{type.id}}::parse(protocol::Value* value, ErrorSupport* errors)
 {
     if (!value || value->type() != protocol::Value::TypeObject) {
         errors->addError("object expected");
@@ -121,10 +124,10 @@ PassOwnPtr<{{type.id}}> {{type.id}}::parse(PassRefPtr<protocol::Value> value, Er
     }
 
     OwnPtr<{{type.id}}> result = adoptPtr(new {{type.id}}());
-    RefPtr<protocol::DictionaryValue> object = DictionaryValue::cast(value);
+    protocol::DictionaryValue* object = DictionaryValue::cast(value);
     errors->push();
     {% for property in type.properties %}
-    RefPtr<protocol::Value> {{property.name}}Value = object->get("{{property.name}}");
+    protocol::Value* {{property.name}}Value = object->get("{{property.name}}");
       {% if property.optional %}
     if ({{property.name}}Value) {
         errors->setName("{{property.name}}");
@@ -141,15 +144,15 @@ PassOwnPtr<{{type.id}}> {{type.id}}::parse(PassRefPtr<protocol::Value> value, Er
     return result.release();
 }
 
-PassRefPtr<protocol::DictionaryValue> {{type.id}}::serialize() const
+PassOwnPtr<protocol::DictionaryValue> {{type.id}}::serialize() const
 {
-    RefPtr<protocol::DictionaryValue> result = DictionaryValue::create();
+    OwnPtr<protocol::DictionaryValue> result = DictionaryValue::create();
     {% for property in type.properties %}
       {% if property.optional %}
     if (m_{{property.name}}.isJust())
         result->setValue("{{property.name}}", toValue(m_{{property.name}}.fromJust()));
       {% else %}
-    result->setValue("{{property.name}}", toValue(m_{{property.name}}));
+    result->setValue("{{property.name}}", toValue({{resolve_type(property).to_raw_type % ("m_" + property.name)}}));
       {% endif %}
     {% endfor %}
     return result.release();

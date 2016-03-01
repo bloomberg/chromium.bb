@@ -55,7 +55,7 @@ void InspectorAgent::appended(InstrumentingAgents* instrumentingAgents)
     init();
 }
 
-void InspectorAgent::setState(PassRefPtr<protocol::DictionaryValue> state)
+void InspectorAgent::setState(protocol::DictionaryValue* state)
 {
     m_state = state;
 }
@@ -68,10 +68,10 @@ InspectorAgentRegistry::InspectorAgentRegistry(InstrumentingAgents* instrumentin
 
 void InspectorAgentRegistry::append(PassOwnPtrWillBeRawPtr<InspectorAgent> agent)
 {
-    ASSERT(m_state->find(agent->name()) == m_state->end());
-    RefPtr<protocol::DictionaryValue> agentState = protocol::DictionaryValue::create();
-    m_state->setObject(agent->name(), agentState);
-    agent->setState(agentState);
+    ASSERT(!m_state->get(agent->name()));
+    OwnPtr<protocol::DictionaryValue> agentState = protocol::DictionaryValue::create();
+    agent->setState(agentState.get());
+    m_state->setObject(agent->name(), agentState.release());
     agent->appended(m_instrumentingAgents);
     m_agents.append(agent);
 }
@@ -90,17 +90,18 @@ void InspectorAgentRegistry::clearFrontend()
 
 void InspectorAgentRegistry::restore(const String& savedState)
 {
-    RefPtr<protocol::Value> state = protocol::parseJSON(savedState);
+    OwnPtr<protocol::Value> state = protocol::parseJSON(savedState);
     if (state)
-        m_state = protocol::DictionaryValue::cast(state);
+        m_state = protocol::DictionaryValue::cast(state.release());
     if (!m_state)
         m_state = protocol::DictionaryValue::create();
 
     for (size_t i = 0; i < m_agents.size(); i++) {
-        RefPtr<protocol::DictionaryValue> agentState = m_state->getObject(m_agents[i]->name());
+        protocol::DictionaryValue* agentState = m_state->getObject(m_agents[i]->name());
         if (!agentState) {
-            agentState = protocol::DictionaryValue::create();
-            m_state->setObject(m_agents[i]->name(), agentState);
+            OwnPtr<protocol::DictionaryValue> newState = protocol::DictionaryValue::create();
+            agentState = newState.get();
+            m_state->setObject(m_agents[i]->name(), newState.release());
         }
         m_agents[i]->setState(agentState);
     }

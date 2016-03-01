@@ -27,26 +27,26 @@ namespace blink {
 
 namespace {
 
-PassRefPtr<protocol::DictionaryValue> createAnchor(const String& type, const String& propertyName, PassRefPtr<protocol::DictionaryValue> valueDescription)
+PassOwnPtr<protocol::DictionaryValue> createAnchor(const String& type, const String& propertyName, PassOwnPtr<protocol::DictionaryValue> valueDescription)
 {
-    RefPtr<protocol::DictionaryValue> object = protocol::DictionaryValue::create();
+    OwnPtr<protocol::DictionaryValue> object = protocol::DictionaryValue::create();
     object->setString("type", type);
     object->setString("propertyName", propertyName);
     object->setObject("propertyValue", valueDescription);
     return object.release();
 }
 
-PassRefPtr<protocol::DictionaryValue> pointToJSON(FloatPoint point)
+PassOwnPtr<protocol::DictionaryValue> pointToJSON(FloatPoint point)
 {
-    RefPtr<protocol::DictionaryValue> object = protocol::DictionaryValue::create();
+    OwnPtr<protocol::DictionaryValue> object = protocol::DictionaryValue::create();
     object->setNumber("x", point.x());
     object->setNumber("y", point.y());
     return object.release();
 }
 
-PassRefPtr<protocol::DictionaryValue> quadToJSON(FloatQuad& quad)
+PassOwnPtr<protocol::DictionaryValue> quadToJSON(FloatQuad& quad)
 {
-    RefPtr<protocol::DictionaryValue> object = protocol::DictionaryValue::create();
+    OwnPtr<protocol::DictionaryValue> object = protocol::DictionaryValue::create();
     object->setObject("p1", pointToJSON(quad.p1()));
     object->setObject("p2", pointToJSON(quad.p2()));
     object->setObject("p3", pointToJSON(quad.p3()));
@@ -165,8 +165,8 @@ DEFINE_TRACE(LayoutEditor)
 
 void LayoutEditor::rebuild()
 {
-    RefPtr<protocol::DictionaryValue> object = protocol::DictionaryValue::create();
-    RefPtr<protocol::ListValue> anchors = protocol::ListValue::create();
+    OwnPtr<protocol::DictionaryValue> object = protocol::DictionaryValue::create();
+    OwnPtr<protocol::ListValue> anchors = protocol::ListValue::create();
 
     appendAnchorFor(anchors.get(), "padding", "padding-top");
     appendAnchorFor(anchors.get(), "padding", "padding-right");
@@ -255,13 +255,13 @@ bool LayoutEditor::growInside(String propertyName, CSSPrimitiveValue* value)
     return false;
 }
 
-PassRefPtr<protocol::DictionaryValue> LayoutEditor::createValueDescription(const String& propertyName)
+PassOwnPtr<protocol::DictionaryValue> LayoutEditor::createValueDescription(const String& propertyName)
 {
     RefPtrWillBeRawPtr<CSSPrimitiveValue> cssValue = getPropertyCSSValue(cssPropertyID(propertyName));
     if (cssValue && !(cssValue->isLength() || cssValue->isPercentage()))
         return nullptr;
 
-    RefPtr<protocol::DictionaryValue> object = protocol::DictionaryValue::create();
+    OwnPtr<protocol::DictionaryValue> object = protocol::DictionaryValue::create();
     object->setNumber("value", cssValue ? cssValue->getFloatValue() : 0);
     CSSPrimitiveValue::UnitType unitType = cssValue ? cssValue->typeWithCalcResolved() : CSSPrimitiveValue::UnitType::Pixels;
     object->setString("unit", CSSPrimitiveValue::unitTypeToString(unitType));
@@ -276,7 +276,7 @@ PassRefPtr<protocol::DictionaryValue> LayoutEditor::createValueDescription(const
 
 void LayoutEditor::appendAnchorFor(protocol::ListValue* anchors, const String& type, const String& propertyName)
 {
-    RefPtr<protocol::DictionaryValue> description = createValueDescription(propertyName);
+    OwnPtr<protocol::DictionaryValue> description = createValueDescription(propertyName);
     if (description)
         anchors->pushValue(createAnchor(type, propertyName, description.release()));
 }
@@ -366,9 +366,9 @@ void LayoutEditor::editableSelectorUpdated(bool hasChanged) const
         m_cssAgent->layoutEditorItemSelected(m_element.get(), style);
 }
 
-PassRefPtr<protocol::DictionaryValue> LayoutEditor::currentSelectorInfo(CSSStyleDeclaration* style) const
+PassOwnPtr<protocol::DictionaryValue> LayoutEditor::currentSelectorInfo(CSSStyleDeclaration* style) const
 {
-    RefPtr<protocol::DictionaryValue> object = protocol::DictionaryValue::create();
+    OwnPtr<protocol::DictionaryValue> object = protocol::DictionaryValue::create();
     CSSStyleRule* rule = style->parentRule() ? toCSSStyleRule(style->parentRule()) : nullptr;
     String currentSelectorText = rule ? rule->selectorText() : "element.style";
     object->setString("selector", currentSelectorText);
@@ -379,7 +379,7 @@ PassRefPtr<protocol::DictionaryValue> LayoutEditor::currentSelectorInfo(CSSStyle
 
     Vector<String> medias;
     buildMediaListChain(rule, medias);
-    RefPtr<protocol::ListValue> mediaListValue = protocol::ListValue::create();
+    OwnPtr<protocol::ListValue> mediaListValue = protocol::ListValue::create();
     for (size_t i = 0; i < medias.size(); ++i)
         mediaListValue->pushValue(protocol::StringValue::create(medias[i]));
 
@@ -391,7 +391,7 @@ PassRefPtr<protocol::DictionaryValue> LayoutEditor::currentSelectorInfo(CSSStyle
     if (!elements || exceptionState.hadException())
         return object.release();
 
-    RefPtr<protocol::ListValue> highlights = protocol::ListValue::create();
+    OwnPtr<protocol::ListValue> highlights = protocol::ListValue::create();
     InspectorHighlightConfig config = affectedNodesHighlightConfig();
     for (unsigned i = 0; i < elements->length(); ++i) {
         Element* element = elements->item(i);
@@ -413,10 +413,10 @@ bool LayoutEditor::setCSSPropertyValueInCurrentRule(const String& value)
     return errorString.isEmpty();
 }
 
-void LayoutEditor::evaluateInOverlay(const String& method, PassRefPtr<protocol::Value> argument) const
+void LayoutEditor::evaluateInOverlay(const String& method, PassOwnPtr<protocol::Value> argument) const
 {
     ScriptForbiddenScope::AllowUserAgentScript allowScript;
-    RefPtr<protocol::ListValue> command = protocol::ListValue::create();
+    OwnPtr<protocol::ListValue> command = protocol::ListValue::create();
     command->pushValue(protocol::StringValue::create(method));
     command->pushValue(argument);
     m_scriptController->executeScriptInMainWorld("dispatch(" + command->toJSONString() + ")", ScriptController::ExecuteScriptWhenScriptsDisabled);

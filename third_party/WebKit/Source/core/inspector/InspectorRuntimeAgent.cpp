@@ -56,7 +56,7 @@ InspectorRuntimeAgent::~InspectorRuntimeAgent()
 }
 
 // InspectorBaseAgent overrides.
-void InspectorRuntimeAgent::setState(PassRefPtr<protocol::DictionaryValue> state)
+void InspectorRuntimeAgent::setState(protocol::DictionaryValue* state)
 {
     InspectorBaseAgent::setState(state);
     m_v8RuntimeAgent->setInspectorState(m_state);

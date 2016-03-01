@@ -11,7 +11,6 @@
 #include "platform/inspector_protocol/Values.h"
 #include "wtf/Assertions.h"
 #include "wtf/PassOwnPtr.h"
-#include "wtf/PassRefPtr.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/WTFString.h"
 
@@ -80,34 +79,18 @@ public:
     using MaybeBase::operator=;
 };
 
-template<typename T>
-class Maybe<RefPtr<T>> {
-public:
-    Maybe() { }
-    Maybe(RefPtr<T> value) : m_value(value) { }
-    Maybe(PassRefPtr<T> value) : m_value(value) { }
-    Maybe(T* value) : m_value(value) { }
-    void operator=(PassRefPtr<T> value) { m_value = value; }
-    PassRefPtr<T> fromJust() const { ASSERT(m_value); return m_value; }
-    PassRefPtr<T> fromMaybe(const PassRefPtr<T> defaultValue) const { return m_value || defaultValue; }
-    bool isJust() const { return !!m_value; }
-    PassRefPtr<T> takeJust() { return m_value; }
-
-protected:
-    RefPtr<T> m_value;
-};
-
 template<typename T> class Array;
 
-PLATFORM_EXPORT PassRefPtr<protocol::Value> toValue(int value);
-PLATFORM_EXPORT PassRefPtr<protocol::Value> toValue(double value);
-PLATFORM_EXPORT PassRefPtr<protocol::Value> toValue(bool value);
-PLATFORM_EXPORT PassRefPtr<protocol::Value> toValue(const String& param);
-template<typename T> PassRefPtr<protocol::Value> toValue(PassRefPtr<T> param) { return param; }
-template<typename T> PassRefPtr<protocol::Value> toValue(const RefPtr<T>& param) { return param; }
-template<typename T> PassRefPtr<protocol::Value> toValue(T* param) { return param->serialize(); }
-template<typename T> PassRefPtr<protocol::Value> toValue(PassOwnPtr<T> param) { return param->serialize(); }
-template<typename T> PassRefPtr<protocol::Value> toValue(const OwnPtr<T>& param) { return param->serialize(); }
+PLATFORM_EXPORT PassOwnPtr<protocol::Value> toValue(int value);
+PLATFORM_EXPORT PassOwnPtr<protocol::Value> toValue(double value);
+PLATFORM_EXPORT PassOwnPtr<protocol::Value> toValue(bool value);
+PLATFORM_EXPORT PassOwnPtr<protocol::Value> toValue(const String& param);
+PLATFORM_EXPORT PassOwnPtr<protocol::Value> toValue(protocol::Value* param);
+PLATFORM_EXPORT PassOwnPtr<protocol::Value> toValue(protocol::DictionaryValue* param);
+PLATFORM_EXPORT PassOwnPtr<protocol::Value> toValue(protocol::ListValue* param);
+template<typename T> PassOwnPtr<protocol::Value> toValue(T* param) { return param->serialize(); }
+template<typename T> PassOwnPtr<protocol::Value> toValue(const OwnPtr<T>& param) { static_assert(sizeof(T) == 0, "use raw pointer version."); return nullptr; }
+template<typename T> PassOwnPtr<protocol::Value> toValue(PassOwnPtr<T> param) { static_assert(sizeof(T) == 0, "use raw pointer version."); return nullptr; }
 
 class PLATFORM_EXPORT ErrorSupport {
 public:
@@ -131,7 +114,7 @@ private:
 template<typename T>
 struct FromValue
 {
-    static PassOwnPtr<T> parse(PassRefPtr<protocol::Value> value, ErrorSupport* errors)
+    static PassOwnPtr<T> parse(protocol::Value* value, ErrorSupport* errors)
     {
         return T::parse(value, errors);
     }
@@ -140,7 +123,7 @@ struct FromValue
 template<>
 struct FromValue<bool>
 {
-    static bool parse(PassRefPtr<protocol::Value> value, ErrorSupport* errors)
+    static bool parse(protocol::Value* value, ErrorSupport* errors)
     {
         bool result = false;
         bool success = value ? value->asBoolean(&result) : false;
@@ -153,7 +136,7 @@ struct FromValue<bool>
 template<>
 struct FromValue<int>
 {
-    static int parse(PassRefPtr<protocol::Value> value, ErrorSupport* errors)
+    static int parse(protocol::Value* value, ErrorSupport* errors)
     {
         int result = 0;
         bool success = value ? value->asNumber(&result) : false;
@@ -166,7 +149,7 @@ struct FromValue<int>
 template<>
 struct FromValue<double>
 {
-    static double parse(PassRefPtr<protocol::Value> value, ErrorSupport* errors)
+    static double parse(protocol::Value* value, ErrorSupport* errors)
     {
         double result = 0;
         bool success = value ? value->asNumber(&result) : false;
@@ -179,7 +162,7 @@ struct FromValue<double>
 template<>
 struct FromValue<String>
 {
-    static String parse(PassRefPtr<protocol::Value> value, ErrorSupport* errors)
+    static String parse(protocol::Value* value, ErrorSupport* errors)
     {
         String result;
         bool success = value ? value->asString(&result) : false;
@@ -189,33 +172,49 @@ struct FromValue<String>
     }
 };
 
-template<typename T>
-struct FromValue<RefPtr<T>>
+template<>
+struct FromValue<Value>
 {
-    static PassRefPtr<T> parse(PassRefPtr<protocol::Value> value, ErrorSupport* errors)
+    static PassOwnPtr<Value> parse(protocol::Value* value, ErrorSupport* errors)
     {
-        if (!value)
+        String result;
+        bool success = !!value;
+        if (!success)
             errors->addError("value expected");
-        return value;
+        return value->clone();
     }
 };
 
 template<>
-struct FromValue<RefPtr<protocol::DictionaryValue>>
+struct FromValue<DictionaryValue>
 {
-    static PassRefPtr<protocol::DictionaryValue> parse(PassRefPtr<protocol::Value> value, ErrorSupport* errors)
+    static PassOwnPtr<DictionaryValue> parse(protocol::Value* value, ErrorSupport* errors)
     {
-        if (value && value->type() == protocol::Value::TypeObject)
-            return DictionaryValue::cast(value);
-        errors->addError("object expected");
-        return nullptr;
+        String result;
+        bool success = value && value->type() == protocol::Value::TypeObject;
+        if (!success)
+            errors->addError("object expected");
+        return DictionaryValue::cast(value->clone());
+    }
+};
+
+template<>
+struct FromValue<ListValue>
+{
+    static PassOwnPtr<ListValue> parse(protocol::Value* value, ErrorSupport* errors)
+    {
+        String result;
+        bool success = value && value->type() == protocol::Value::TypeArray;
+        if (!success)
+            errors->addError("list expected");
+        return ListValue::cast(value->clone());
     }
 };
 
 template<typename T>
 struct FromValue<protocol::Array<T>>
 {
-    static PassOwnPtr<protocol::Array<T>> parse(PassRefPtr<protocol::Value> value, ErrorSupport* errors)
+    static PassOwnPtr<protocol::Array<T>> parse(protocol::Value* value, ErrorSupport* errors)
     {
         return protocol::Array<T>::parse(value, errors);
     }
@@ -229,9 +228,9 @@ public:
         return adoptPtr(new Array<T>());
     }
 
-    static PassOwnPtr<Array<T>> parse(PassRefPtr<protocol::Value> value, ErrorSupport* errors)
+    static PassOwnPtr<Array<T>> parse(protocol::Value* value, ErrorSupport* errors)
     {
-        RefPtr<protocol::ListValue> array = ListValue::cast(value);
+        protocol::ListValue* array = ListValue::cast(value);
         if (!array) {
             errors->addError("array expected");
             return nullptr;
@@ -264,9 +263,9 @@ public:
         return m_vector[index];
     }
 
-    PassRefPtr<protocol::ListValue> serialize()
+    PassOwnPtr<protocol::ListValue> serialize()
     {
-        RefPtr<protocol::ListValue> result = ListValue::create();
+        OwnPtr<protocol::ListValue> result = ListValue::create();
         for (auto& item : m_vector)
             result->pushValue(toValue(item));
         return result.release();
@@ -280,7 +279,6 @@ template<> class Array<String> : public ArrayBase<String> {};
 template<> class Array<int> : public ArrayBase<int> {};
 template<> class Array<double> : public ArrayBase<double> {};
 template<> class Array<bool> : public ArrayBase<bool> {};
-template<typename T> class Array<RefPtr<T>> : public ArrayBase<RefPtr<T>> {};
 
 template<typename T>
 class Array {
@@ -290,9 +288,9 @@ public:
         return adoptPtr(new Array<T>());
     }
 
-    static PassOwnPtr<Array<T>> parse(PassRefPtr<protocol::Value> value, ErrorSupport* errors)
+    static PassOwnPtr<Array<T>> parse(protocol::Value* value, ErrorSupport* errors)
     {
-        RefPtr<protocol::ListValue> array = ListValue::cast(value);
+        protocol::ListValue* array = ListValue::cast(value);
         if (!array) {
             errors->addError("array expected");
             return nullptr;
@@ -323,11 +321,11 @@ public:
         return m_vector[index].get();
     }
 
-    PassRefPtr<protocol::ListValue> serialize()
+    PassOwnPtr<protocol::ListValue> serialize()
     {
-        RefPtr<protocol::ListValue> result = ListValue::create();
+        OwnPtr<protocol::ListValue> result = ListValue::create();
         for (auto& item : m_vector)
-            result->pushValue(toValue(item));
+            result->pushValue(toValue(item.get()));
         return result.release();
     }
 
@@ -337,14 +335,14 @@ private:
 
 class PLATFORM_EXPORT Object {
 public:
-    static PassOwnPtr<Object> parse(PassRefPtr<protocol::Value> value, ErrorSupport* errors);
+    static PassOwnPtr<Object> parse(protocol::Value* value, ErrorSupport* errors);
     ~Object();
 
-    PassRefPtr<protocol::DictionaryValue> serialize() const;
+    PassOwnPtr<protocol::DictionaryValue> serialize() const;
     PassOwnPtr<Object> clone() const;
 private:
-    Object(PassRefPtr<protocol::DictionaryValue> object);
-    RefPtr<protocol::DictionaryValue> m_object;
+    Object(PassOwnPtr<protocol::DictionaryValue> object);
+    OwnPtr<protocol::DictionaryValue> m_object;
 };
 
 {% for domain in api.domains %}
@@ -416,7 +414,7 @@ namespace {{domain.domain}} {
 // {{type.description}}
 class PLATFORM_EXPORT {{type.id}} {
 public:
-    static PassOwnPtr<{{type.id}}> parse(PassRefPtr<protocol::Value> value, ErrorSupport* errors);
+    static PassOwnPtr<{{type.id}}> parse(protocol::Value* value, ErrorSupport* errors);
 
     ~{{type.id}}() { }
     {% for property in type.properties %}
@@ -438,7 +436,7 @@ public:
     void set{{property.name | to_title_case}}({{resolve_type(property).pass_type}} value) { m_{{property.name}} = value; }
     {% endfor %}
 
-    PassRefPtr<protocol::DictionaryValue> serialize() const;
+    PassOwnPtr<protocol::DictionaryValue> serialize() const;
     PassOwnPtr<{{type.id}}> clone() const;
 
     template<int STATE>

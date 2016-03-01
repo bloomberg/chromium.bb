@@ -32,18 +32,18 @@ void Frontend::{{domain.domain}}::{{event.name}}(
       {%- endif %} {{parameter.name}}{%- if not loop.last -%}, {% endif -%}
     {% endfor -%})
 {
-    RefPtr<protocol::DictionaryValue> jsonMessage = DictionaryValue::create();
+    OwnPtr<protocol::DictionaryValue> jsonMessage = DictionaryValue::create();
     jsonMessage->setString("method", "{{domain.domain}}.{{event.name}}");
-    RefPtr<protocol::DictionaryValue> paramsObject = DictionaryValue::create();
+    OwnPtr<protocol::DictionaryValue> paramsObject = DictionaryValue::create();
     {% for parameter in event.parameters %}
       {% if "optional" in parameter %}
     if ({{parameter.name}}.isJust())
         paramsObject->setValue("{{parameter.name}}", toValue({{parameter.name}}.fromJust()));
       {% else %}
-    paramsObject->setValue("{{parameter.name}}", toValue({{parameter.name}}));
+    paramsObject->setValue("{{parameter.name}}", toValue({{resolve_type(parameter).to_raw_type % parameter.name}}));
       {% endif %}
     {% endfor %}
-    jsonMessage->setObject("params", paramsObject);
+    jsonMessage->setObject("params", paramsObject.release());
     if (m_frontendChannel)
         m_frontendChannel->sendProtocolNotification(jsonMessage.release());
 }

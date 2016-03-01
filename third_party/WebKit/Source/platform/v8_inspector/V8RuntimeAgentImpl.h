@@ -56,7 +56,7 @@ public:
     ~V8RuntimeAgentImpl() override;
 
     // State management methods.
-    void setInspectorState(PassRefPtr<protocol::DictionaryValue>) override;
+    void setInspectorState(protocol::DictionaryValue*) override;
     void setFrontend(protocol::Frontend::Runtime*) override;
     void clearFrontend() override;
     void restore() override;
@@ -131,7 +131,7 @@ private:
     void reportExecutionContextDestroyed(v8::Local<v8::Context>) override;
     PassOwnPtr<protocol::Runtime::ExceptionDetails> createExceptionDetails(v8::Isolate*, v8::Local<v8::Message>);
 
-    RefPtr<protocol::DictionaryValue> m_state;
+    protocol::DictionaryValue* m_state;
     protocol::Frontend::Runtime* m_frontend;
     OwnPtr<InjectedScriptManager> m_injectedScriptManager;
     V8DebuggerImpl* m_debugger;

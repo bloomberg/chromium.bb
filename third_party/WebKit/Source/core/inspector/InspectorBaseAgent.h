@@ -66,14 +66,14 @@ public:
     virtual void discardAgent() { }
     virtual void didCommitLoadForLocalFrame(LocalFrame*) { }
     virtual void flushPendingProtocolNotifications() { }
-    virtual void setState(PassRefPtr<protocol::DictionaryValue>);
+    virtual void setState(protocol::DictionaryValue*);
 
     String name() const { return m_name; }
     void appended(InstrumentingAgents*);
 
 protected:
     RawPtrWillBeMember<InstrumentingAgents> m_instrumentingAgents;
-    RefPtr<protocol::DictionaryValue> m_state;
+    protocol::DictionaryValue* m_state;
 
 private:
     String m_name;
@@ -99,7 +99,7 @@ public:
 
 private:
     RawPtrWillBeMember<InstrumentingAgents> m_instrumentingAgents;
-    RefPtr<protocol::DictionaryValue> m_state;
+    OwnPtr<protocol::DictionaryValue> m_state;
     WillBeHeapVector<OwnPtrWillBeMember<InspectorAgent>> m_agents;
 };
 

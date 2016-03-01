@@ -9,7 +9,7 @@
 #include "wtf/Allocator.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
-#include "wtf/RefCounted.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/TypeTraits.h"
 #include "wtf/Vector.h"
 #include "wtf/text/StringHash.h"
@@ -22,15 +22,16 @@ class ListValue;
 class DictionaryValue;
 class Value;
 
-class PLATFORM_EXPORT Value : public RefCounted<Value> {
+class PLATFORM_EXPORT Value {
+    WTF_MAKE_NONCOPYABLE(Value);
 public:
     static const int maxDepth = 1000;
 
     virtual ~Value() { }
 
-    static PassRefPtr<Value> null()
+    static PassOwnPtr<Value> null()
     {
-        return adoptRef(new Value());
+        return adoptPtr(new Value());
     }
 
     typedef enum {
@@ -53,6 +54,7 @@ public:
 
     String toJSONString() const;
     virtual void writeJSON(StringBuilder* output) const;
+    virtual PassOwnPtr<Value> clone() const;
 
 protected:
     Value() : m_type(TypeNull) { }
@@ -67,27 +69,26 @@ private:
 
 class PLATFORM_EXPORT FundamentalValue : public Value {
 public:
-
-    static PassRefPtr<FundamentalValue> create(bool value)
+    static PassOwnPtr<FundamentalValue> create(bool value)
     {
-        return adoptRef(new FundamentalValue(value));
+        return adoptPtr(new FundamentalValue(value));
     }
 
-    static PassRefPtr<FundamentalValue> create(int value)
+    static PassOwnPtr<FundamentalValue> create(int value)
     {
-        return adoptRef(new FundamentalValue(value));
+        return adoptPtr(new FundamentalValue(value));
     }
 
-    static PassRefPtr<FundamentalValue> create(double value)
+    static PassOwnPtr<FundamentalValue> create(double value)
     {
-        return adoptRef(new FundamentalValue(value));
+        return adoptPtr(new FundamentalValue(value));
     }
 
     bool asBoolean(bool* output) const override;
     bool asNumber(double* output) const override;
     bool asNumber(int* output) const override;
-
     void writeJSON(StringBuilder* output) const override;
+    PassOwnPtr<Value> clone() const override;
 
 private:
     explicit FundamentalValue(bool value) : Value(TypeBoolean), m_boolValue(value) { }
@@ -102,19 +103,19 @@ private:
 
 class PLATFORM_EXPORT StringValue : public Value {
 public:
-    static PassRefPtr<StringValue> create(const String& value)
+    static PassOwnPtr<StringValue> create(const String& value)
     {
-        return adoptRef(new StringValue(value));
+        return adoptPtr(new StringValue(value));
     }
 
-    static PassRefPtr<StringValue> create(const char* value)
+    static PassOwnPtr<StringValue> create(const char* value)
     {
-        return adoptRef(new StringValue(value));
+        return adoptPtr(new StringValue(value));
     }
 
     bool asString(String* output) const override;
-
     void writeJSON(StringBuilder* output) const override;
+    PassOwnPtr<Value> clone() const override;
 
 private:
     explicit StringValue(const String& value) : Value(TypeString), m_stringValue(value) { }
@@ -125,49 +126,54 @@ private:
 
 class PLATFORM_EXPORT DictionaryValue : public Value {
 private:
-    typedef HashMap<String, RefPtr<Value>> Dictionary;
+    typedef HashMap<String, OwnPtr<Value>> Dictionary;
 
 public:
     typedef Dictionary::iterator iterator;
     typedef Dictionary::const_iterator const_iterator;
 
-    static PassRefPtr<DictionaryValue> create()
+    static PassOwnPtr<DictionaryValue> create()
     {
-        return adoptRef(new DictionaryValue());
+        return adoptPtr(new DictionaryValue());
     }
 
-    static PassRefPtr<DictionaryValue> cast(PassRefPtr<Value> value)
+    static DictionaryValue* cast(Value* value)
     {
         if (!value || value->type() != TypeObject)
             return nullptr;
-        return adoptRef(static_cast<DictionaryValue*>(value.leakRef()));
+        return static_cast<DictionaryValue*>(value);
+    }
+
+    static PassOwnPtr<DictionaryValue> cast(PassOwnPtr<Value> value)
+    {
+        return adoptPtr(DictionaryValue::cast(value.leakPtr()));
     }
 
     void writeJSON(StringBuilder* output) const override;
+    PassOwnPtr<Value> clone() const override;
 
     int size() const { return m_data.size(); }
 
     void setBoolean(const String& name, bool);
     void setNumber(const String& name, double);
     void setString(const String& name, const String&);
-    void setValue(const String& name, PassRefPtr<Value>);
-    void setObject(const String& name, PassRefPtr<DictionaryValue>);
-    void setArray(const String& name, PassRefPtr<ListValue>);
+    void setValue(const String& name, PassOwnPtr<Value>);
+    void setObject(const String& name, PassOwnPtr<DictionaryValue>);
+    void setArray(const String& name, PassOwnPtr<ListValue>);
 
-    iterator find(const String& name);
-    const_iterator find(const String& name) const;
     bool getBoolean(const String& name, bool* output) const;
     template<class T> bool getNumber(const String& name, T* output) const
     {
-        RefPtr<Value> value = get(name);
+        Value* value = get(name);
         if (!value)
             return false;
         return value->asNumber(output);
     }
     bool getString(const String& name, String* output) const;
-    PassRefPtr<DictionaryValue> getObject(const String& name) const;
-    PassRefPtr<ListValue> getArray(const String& name) const;
-    PassRefPtr<Value> get(const String& name) const;
+
+    DictionaryValue* getObject(const String& name) const;
+    ListValue* getArray(const String& name) const;
+    Value* get(const String& name) const;
 
     bool booleanProperty(const String& name, bool defaultValue) const;
 
@@ -188,38 +194,36 @@ private:
 
 class PLATFORM_EXPORT ListValue : public Value {
 public:
-    typedef Vector<RefPtr<Value>>::iterator iterator;
-    typedef Vector<RefPtr<Value>>::const_iterator const_iterator;
-
-    static PassRefPtr<ListValue> create()
+    static PassOwnPtr<ListValue> create()
     {
-        return adoptRef(new ListValue());
+        return adoptPtr(new ListValue());
     }
 
-    static PassRefPtr<ListValue> cast(PassRefPtr<Value> value)
+    static ListValue* cast(Value* value)
     {
         if (!value || value->type() != TypeArray)
             return nullptr;
-        return adoptRef(static_cast<ListValue*>(value.leakRef()));
+        return static_cast<ListValue*>(value);
+    }
+
+    static PassOwnPtr<ListValue> cast(PassOwnPtr<Value> value)
+    {
+        return adoptPtr(ListValue::cast(value.leakPtr()));
     }
 
     ~ListValue() override;
 
     void writeJSON(StringBuilder* output) const override;
+    PassOwnPtr<Value> clone() const override;
 
-    void pushValue(PassRefPtr<Value>);
+    void pushValue(PassOwnPtr<Value>);
 
-    PassRefPtr<Value> get(size_t index);
+    Value* get(size_t index);
     unsigned length() const { return m_data.size(); }
-
-    iterator begin() { return m_data.begin(); }
-    iterator end() { return m_data.end(); }
-    const_iterator begin() const { return m_data.begin(); }
-    const_iterator end() const { return m_data.end(); }
 
 private:
     ListValue();
-    Vector<RefPtr<Value>> m_data;
+    Vector<OwnPtr<Value>> m_data;
 };
 
 } // namespace protocol

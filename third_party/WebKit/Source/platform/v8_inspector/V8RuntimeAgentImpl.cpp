@@ -301,7 +301,7 @@ void V8RuntimeAgentImpl::runScript(ErrorString* errorString,
     *result = injectedScript->wrapObject(value, objectGroup.fromMaybe(""));
 }
 
-void V8RuntimeAgentImpl::setInspectorState(PassRefPtr<protocol::DictionaryValue> state)
+void V8RuntimeAgentImpl::setInspectorState(protocol::DictionaryValue* state)
 {
     m_state = state;
 }

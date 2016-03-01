@@ -45,7 +45,7 @@ public:
     virtual void reportProtocolError(int sessionId, int callId, CommonErrorCode, const String& errorMessage, ErrorSupport* errors) const;
     using Dispatcher::reportProtocolError;
 
-    void sendResponse(int sessionId, int callId, const ErrorString& invocationError, ErrorSupport* errors, PassRefPtr<protocol::DictionaryValue> result);
+    void sendResponse(int sessionId, int callId, const ErrorString& invocationError, ErrorSupport* errors, PassOwnPtr<protocol::DictionaryValue> result);
     bool isActive() { return m_frontendChannel; }
 
 {% for domain in api.domains %}
@@ -53,14 +53,14 @@ public:
 {% endfor %}
 
 private:
-    using CallHandler = void (DispatcherImpl::*)(int sessionId, int callId, DictionaryValue* messageObject, ErrorSupport* errors);
+    using CallHandler = void (DispatcherImpl::*)(int sessionId, int callId, PassOwnPtr<DictionaryValue> messageObject, ErrorSupport* errors);
     using DispatchMap = HashMap<String, CallHandler>;
 
 {% for domain in api.domains %}
   {% for command in domain.commands %}
     {% if "redirect" in command %}{% continue %}{% endif %}
     {% if "handlers" in command and not ("renderer" in command["handlers"]) %}{% continue %}{% endif %}
-    void {{domain.domain}}_{{command.name}}(int sessionId, int callId, DictionaryValue* requestMessageObject, ErrorSupport*);
+    void {{domain.domain}}_{{command.name}}(int sessionId, int callId, PassOwnPtr<DictionaryValue> requestMessageObject, ErrorSupport*);
   {% endfor %}
 {% endfor %}
 
@@ -70,7 +70,7 @@ private:
     {{domain.domain}}CommandHandler* m_{{domain.domain | lower}}Agent;
 {% endfor %}
 
-    void sendResponse(int sessionId, int callId, ErrorString invocationError, PassRefPtr<protocol::DictionaryValue> result)
+    void sendResponse(int sessionId, int callId, ErrorString invocationError, PassOwnPtr<protocol::DictionaryValue> result)
     {
         sendResponse(sessionId, callId, invocationError, nullptr, result);
     }
@@ -105,20 +105,20 @@ void Dispatcher::{{domain.domain}}CommandHandler::{{command.name | to_title_case
         {%- if not loop.last -%}, {% endif -%}
       {% endfor %})
 {
-    RefPtr<protocol::DictionaryValue> resultObject = DictionaryValue::create();
+    OwnPtr<protocol::DictionaryValue> resultObject = DictionaryValue::create();
       {% for parameter in command.returns %}
         {% if "optional" in parameter %}
     if ({{parameter.name}}.isJust())
         resultObject->setValue("{{parameter.name}}", toValue({{parameter.name}}.fromJust()));
        {% else %}
-    resultObject->setValue("{{parameter.name}}", toValue({{parameter.name}}));
+    resultObject->setValue("{{parameter.name}}", toValue({{resolve_type(parameter).to_raw_type % parameter.name}}));
         {% endif %}
       {% endfor %}
     sendIfActive(resultObject.release(), ErrorString());
 }
     {% endif %}
 
-void DispatcherImpl::{{domain.domain}}_{{command.name}}(int sessionId, int callId, DictionaryValue* requestMessageObject, ErrorSupport* errors)
+void DispatcherImpl::{{domain.domain}}_{{command.name}}(int sessionId, int callId, PassOwnPtr<DictionaryValue> requestMessageObject, ErrorSupport* errors)
 {
     if (!m_{{domain.domain | lower}}Agent)
         errors->addError("{{domain.domain}} handler is not available.");
@@ -130,10 +130,10 @@ void DispatcherImpl::{{domain.domain}}_{{command.name}}(int sessionId, int callI
     {% if "parameters" in command %}
 
     // Prepare input parameters.
-    RefPtr<protocol::DictionaryValue> object = DictionaryValue::cast(requestMessageObject->get("params"));
+    protocol::DictionaryValue* object = DictionaryValue::cast(requestMessageObject->get("params"));
     errors->push();
       {% for property in command.parameters %}
-    RefPtr<protocol::Value> {{property.name}}Value = object ? object->get("{{property.name}}") : nullptr;
+    protocol::Value* {{property.name}}Value = object ? object->get("{{property.name}}") : nullptr;
         {% if property.optional %}
     Maybe<{{resolve_type(property).raw_type}}> in_{{property.name}};
     if ({{property.name}}Value) {
@@ -156,7 +156,7 @@ void DispatcherImpl::{{domain.domain}}_{{command.name}}(int sessionId, int callI
     RefPtr<{{domain.domain}}CommandHandler::{{command.name | to_title_case}}Callback> callback = adoptRef(new {{domain.domain}}CommandHandler::{{command.name | to_title_case}}Callback(this, sessionId, callId));
     {% elif "returns" in command %}
     // Declare output parameters.
-    RefPtr<protocol::DictionaryValue> result = DictionaryValue::create();
+    OwnPtr<protocol::DictionaryValue> result = DictionaryValue::create();
       {% for property in command.returns %}
         {% if "optional" in property %}
     Maybe<{{resolve_type(property).raw_type}}> out_{{property.name}};
@@ -189,11 +189,11 @@ void DispatcherImpl::{{domain.domain}}_{{command.name}}(int sessionId, int callI
         if (out_{{parameter.name}}.isJust())
             result->setValue("{{parameter.name}}", toValue(out_{{parameter.name}}.fromJust()));
         {% else %}
-        result->setValue("{{parameter.name}}", toValue(out_{{parameter.name}}));
+        result->setValue("{{parameter.name}}", toValue({{resolve_type(parameter).to_raw_type % ("out_" + parameter.name)}}));
         {% endif %}
       {% endfor %}
     }
-    sendResponse(sessionId, callId, error, result);
+    sendResponse(sessionId, callId, error, result.release());
     {% elif not("async" in command) %}
     sendResponse(sessionId, callId, error);
     {% endif %}
@@ -210,16 +210,16 @@ void DispatcherImpl::dispatch(int sessionId, const String& message)
 {
     RefPtr<Dispatcher> protect(this);
     int callId = 0;
-    RefPtr<protocol::Value> parsedMessage = parseJSON(message);
+    OwnPtr<protocol::Value> parsedMessage = parseJSON(message);
     ASSERT(parsedMessage);
-    RefPtr<protocol::DictionaryValue> messageObject = DictionaryValue::cast(parsedMessage.release());
+    OwnPtr<protocol::DictionaryValue> messageObject = DictionaryValue::cast(parsedMessage.release());
     ASSERT(messageObject);
 
-    RefPtr<protocol::Value> callIdValue = messageObject->get("id");
+    protocol::Value* callIdValue = messageObject->get("id");
     bool success = callIdValue->asNumber(&callId);
     ASSERT_UNUSED(success, success);
 
-    RefPtr<protocol::Value> methodValue = messageObject->get("method");
+    protocol::Value* methodValue = messageObject->get("method");
     String method;
     success = methodValue && methodValue->asString(&method);
     ASSERT_UNUSED(success, success);
@@ -231,17 +231,17 @@ void DispatcherImpl::dispatch(int sessionId, const String& message)
     }
 
     protocol::ErrorSupport errors;
-    ((*this).*it->value)(sessionId, callId, messageObject.get(), &errors);
+    ((*this).*it->value)(sessionId, callId, messageObject.release(), &errors);
 }
 
-void DispatcherImpl::sendResponse(int sessionId, int callId, const ErrorString& invocationError, ErrorSupport* errors, PassRefPtr<protocol::DictionaryValue> result)
+void DispatcherImpl::sendResponse(int sessionId, int callId, const ErrorString& invocationError, ErrorSupport* errors, PassOwnPtr<protocol::DictionaryValue> result)
 {
     if (invocationError.length() || (errors && errors->hasErrors())) {
         reportProtocolError(sessionId, callId, ServerError, invocationError, errors);
         return;
     }
 
-    RefPtr<protocol::DictionaryValue> responseMessage = DictionaryValue::create();
+    OwnPtr<protocol::DictionaryValue> responseMessage = DictionaryValue::create();
     responseMessage->setNumber("id", callId);
     responseMessage->setObject("result", result);
     if (m_frontendChannel)
@@ -259,14 +259,14 @@ void DispatcherImpl::reportProtocolError(int sessionId, int callId, CommonErrorC
     ASSERT(code >=0);
     ASSERT((unsigned)code < m_commonErrors.size());
     ASSERT(m_commonErrors[code]);
-    RefPtr<protocol::DictionaryValue> error = DictionaryValue::create();
+    OwnPtr<protocol::DictionaryValue> error = DictionaryValue::create();
     error->setNumber("code", m_commonErrors[code]);
     error->setString("message", errorMessage);
     ASSERT(error);
     if (errors && errors->hasErrors())
         error->setString("data", errors->errors());
-    RefPtr<protocol::DictionaryValue> message = DictionaryValue::create();
-    message->setObject("error", error);
+    OwnPtr<protocol::DictionaryValue> message = DictionaryValue::create();
+    message->setObject("error", error.release());
     message->setNumber("id", callId);
     if (m_frontendChannel)
         m_frontendChannel->sendProtocolResponse(sessionId, callId, message.release());
@@ -274,11 +274,11 @@ void DispatcherImpl::reportProtocolError(int sessionId, int callId, CommonErrorC
 
 bool Dispatcher::getCommandName(const String& message, String* result)
 {
-    RefPtr<protocol::Value> value = parseJSON(message);
+    OwnPtr<protocol::Value> value = parseJSON(message);
     if (!value)
         return false;
 
-    RefPtr<protocol::DictionaryValue> object = DictionaryValue::cast(value.release());
+    protocol::DictionaryValue* object = DictionaryValue::cast(value.get());
     if (!object)
         return false;
 
@@ -304,7 +304,7 @@ bool Dispatcher::CallbackBase::isActive()
     return !m_alreadySent && m_backendImpl->isActive();
 }
 
-void Dispatcher::CallbackBase::sendIfActive(PassRefPtr<protocol::DictionaryValue> partialMessage, const ErrorString& invocationError)
+void Dispatcher::CallbackBase::sendIfActive(PassOwnPtr<protocol::DictionaryValue> partialMessage, const ErrorString& invocationError)
 {
     if (m_alreadySent)
         return;

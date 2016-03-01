@@ -27,7 +27,7 @@ public:
     template <typename T>
     class Agent {
     public:
-        virtual void setInspectorState(PassRefPtr<protocol::DictionaryValue>) = 0;
+        virtual void setInspectorState(protocol::DictionaryValue*) = 0;
         virtual void setFrontend(T*) = 0;
         virtual void clearFrontend() = 0;
         virtual void restore() = 0;

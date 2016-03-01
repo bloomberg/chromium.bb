@@ -133,8 +133,8 @@ private:
     void waitForCreateWindow(LocalFrame*) override;
 
     // protocol::FrontendChannel implementation.
-    void sendProtocolResponse(int sessionId, int callId, PassRefPtr<protocol::DictionaryValue> message) override;
-    void sendProtocolNotification(PassRefPtr<protocol::DictionaryValue> message) override;
+    void sendProtocolResponse(int sessionId, int callId, PassOwnPtr<protocol::DictionaryValue> message) override;
+    void sendProtocolNotification(PassOwnPtr<protocol::DictionaryValue> message) override;
     void flush() override;
 
     // WebThread::TaskObserver implementation.
@@ -173,7 +173,7 @@ private:
     InspectorAgentRegistry m_agents;
     bool m_deferredAgentsInitialized;
 
-    typedef Vector<std::pair<int, RefPtr<protocol::Value>>> NotificationQueue;
+    typedef Vector<std::pair<int, OwnPtr<protocol::Value>>> NotificationQueue;
     NotificationQueue m_notificationQueue;
     int m_sessionId;
     String m_stateCookie;

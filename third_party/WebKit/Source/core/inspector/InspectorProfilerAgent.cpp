@@ -58,7 +58,7 @@ InspectorProfilerAgent::~InspectorProfilerAgent()
 }
 
 // InspectorBaseAgent overrides.
-void InspectorProfilerAgent::setState(PassRefPtr<protocol::DictionaryValue> state)
+void InspectorProfilerAgent::setState(protocol::DictionaryValue* state)
 {
     InspectorBaseAgent::setState(state);
     m_v8ProfilerAgent->setInspectorState(m_state);

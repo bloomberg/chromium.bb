@@ -115,27 +115,27 @@ def create_user_type_definition(domain_name, type):
 
 def create_object_type_definition():
     return {
-        "return_type": "PassRefPtr<protocol::DictionaryValue>",
-        "pass_type": "PassRefPtr<protocol::DictionaryValue>",
-        "to_raw_type": "%s",
+        "return_type": "PassOwnPtr<protocol::DictionaryValue>",
+        "pass_type": "PassOwnPtr<protocol::DictionaryValue>",
+        "to_raw_type": "%s.get()",
         "to_pass_type": "%s.release()",
-        "type": "RefPtr<protocol::DictionaryValue>",
-        "raw_type": "RefPtr<protocol::DictionaryValue>",
-        "raw_pass_type": "PassRefPtr<protocol::DictionaryValue>",
-        "raw_return_type": "RefPtr<protocol::DictionaryValue>",
+        "type": "OwnPtr<protocol::DictionaryValue>",
+        "raw_type": "protocol::DictionaryValue",
+        "raw_pass_type": "protocol::DictionaryValue*",
+        "raw_return_type": "protocol::DictionaryValue*",
     }
 
 
 def create_any_type_definition():
     return {
-        "return_type": "PassRefPtr<protocol::Value>",
-        "pass_type": "PassRefPtr<protocol::Value>",
+        "return_type": "PassOwnPtr<protocol::Value>",
+        "pass_type": "PassOwnPtr<protocol::Value>",
+        "to_raw_type": "%s.get()",
         "to_pass_type": "%s.release()",
-        "to_raw_type": "%s",
-        "type": "RefPtr<protocol::Value>",
-        "raw_type": "RefPtr<protocol::Value>",
-        "raw_pass_type": "PassRefPtr<protocol::Value>",
-        "raw_return_type": "RefPtr<protocol::Value>",
+        "type": "OwnPtr<protocol::Value>",
+        "raw_type": "protocol::Value",
+        "raw_pass_type": "protocol::Value*",
+        "raw_return_type": "protocol::Value*",
     }
 
 

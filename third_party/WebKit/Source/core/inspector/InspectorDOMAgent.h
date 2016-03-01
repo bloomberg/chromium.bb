@@ -153,7 +153,7 @@ public:
     void getBoxModel(ErrorString*, int nodeId, OwnPtr<protocol::DOM::BoxModel>*) override;
     void getNodeForLocation(ErrorString*, int x, int y, int* outNodeId) override;
     void getRelayoutBoundary(ErrorString*, int nodeId, int* outNodeId) override;
-    void getHighlightObjectForTest(ErrorString*, int nodeId, RefPtr<protocol::DictionaryValue>* highlight) override;
+    void getHighlightObjectForTest(ErrorString*, int nodeId, OwnPtr<protocol::DictionaryValue>* highlight) override;
 
     bool enabled() const;
     void releaseDanglingNodes();

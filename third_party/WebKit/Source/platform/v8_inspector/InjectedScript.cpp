@@ -54,7 +54,7 @@ using blink::protocol::Maybe;
 
 namespace blink {
 
-static PassOwnPtr<protocol::Runtime::ExceptionDetails> toExceptionDetails(PassRefPtr<protocol::DictionaryValue> object)
+static PassOwnPtr<protocol::Runtime::ExceptionDetails> toExceptionDetails(protocol::DictionaryValue* object)
 {
     String text;
     if (!object->getString("text", &text))
@@ -73,11 +73,11 @@ static PassOwnPtr<protocol::Runtime::ExceptionDetails> toExceptionDetails(PassRe
     int originScriptId = 0;
     object->getNumber("scriptId", &originScriptId);
 
-    RefPtr<protocol::ListValue> stackTrace = object->getArray("stackTrace");
+    protocol::ListValue* stackTrace = object->getArray("stackTrace");
     if (stackTrace && stackTrace->length() > 0) {
         OwnPtr<protocol::Array<protocol::Runtime::CallFrame>> frames = protocol::Array<protocol::Runtime::CallFrame>::create();
         for (unsigned i = 0; i < stackTrace->length(); ++i) {
-            RefPtr<protocol::DictionaryValue> stackFrame = protocol::DictionaryValue::cast(stackTrace->get(i));
+            protocol::DictionaryValue* stackFrame = protocol::DictionaryValue::cast(stackTrace->get(i));
             int lineNumber = 0;
             stackFrame->getNumber("lineNumber", &lineNumber);
             int column = 0;
@@ -140,7 +140,7 @@ void InjectedScript::evaluate(ErrorString* errorString, const String& expression
     function.appendArgument(includeCommandLineAPI);
     function.appendArgument(returnByValue);
     function.appendArgument(generatePreview);
-    makeEvalCall(errorString, function, result, wasThrown, exceptionDetails);
+    *result = makeEvalCall(errorString, function, wasThrown, exceptionDetails);
 }
 
 void InjectedScript::callFunctionOn(ErrorString* errorString, const String& objectId, const String& expression, const String& arguments, bool returnByValue, bool generatePreview, OwnPtr<protocol::Runtime::RemoteObject>* result, Maybe<bool>* wasThrown)
@@ -152,7 +152,7 @@ void InjectedScript::callFunctionOn(ErrorString* errorString, const String& obje
     function.appendArgument(arguments);
     function.appendArgument(returnByValue);
     function.appendArgument(generatePreview);
-    makeEvalCall(errorString, function, result, wasThrown);
+    *result = makeEvalCall(errorString, function, wasThrown);
 }
 
 void InjectedScript::evaluateOnCallFrame(ErrorString* errorString, v8::Local<v8::Object> callFrames, bool isAsyncCallStack, const String& callFrameId, const String& expression, const String& objectGroup, bool includeCommandLineAPI, bool returnByValue, bool generatePreview, OwnPtr<RemoteObject>* result, Maybe<bool>* wasThrown, Maybe<protocol::Runtime::ExceptionDetails>* exceptionDetails)
@@ -167,7 +167,7 @@ void InjectedScript::evaluateOnCallFrame(ErrorString* errorString, v8::Local<v8:
     function.appendArgument(includeCommandLineAPI);
     function.appendArgument(returnByValue);
     function.appendArgument(generatePreview);
-    makeEvalCall(errorString, function, result, wasThrown, exceptionDetails);
+    *result = makeEvalCall(errorString, function, wasThrown, exceptionDetails);
 }
 
 void InjectedScript::restartFrame(ErrorString* errorString, v8::Local<v8::Object> callFrames, const String& callFrameId)
@@ -176,8 +176,7 @@ void InjectedScript::restartFrame(ErrorString* errorString, v8::Local<v8::Object
     V8FunctionCall function(m_client, context(), v8Value(), "restartFrame");
     function.appendArgument(callFrames);
     function.appendArgument(callFrameId);
-    RefPtr<protocol::Value> resultValue;
-    makeCall(function, &resultValue);
+    OwnPtr<protocol::Value> resultValue = makeCall(function);
     if (resultValue) {
         if (resultValue->type() == protocol::Value::TypeString) {
             resultValue->asString(errorString);
@@ -196,8 +195,7 @@ void InjectedScript::getStepInPositions(ErrorString* errorString, v8::Local<v8::
     V8FunctionCall function(m_client, context(), v8Value(), "getStepInPositions");
     function.appendArgument(callFrames);
     function.appendArgument(callFrameId);
-    RefPtr<protocol::Value> resultValue;
-    makeCall(function, &resultValue);
+    OwnPtr<protocol::Value> resultValue = makeCall(function);
     if (resultValue) {
         if (resultValue->type() == protocol::Value::TypeString) {
             resultValue->asString(errorString);
@@ -205,7 +203,7 @@ void InjectedScript::getStepInPositions(ErrorString* errorString, v8::Local<v8::
         }
         if (resultValue->type() == protocol::Value::TypeArray) {
             protocol::ErrorSupport errors(errorString);
-            *positions = Array<protocol::Debugger::Location>::parse(resultValue.release(), &errors);
+            *positions = Array<protocol::Debugger::Location>::parse(resultValue.get(), &errors);
             return;
         }
     }
@@ -236,8 +234,7 @@ void InjectedScript::setVariableValue(ErrorString* errorString,
     function.appendArgument(scopeNumber);
     function.appendArgument(variableName);
     function.appendArgument(newValueStr);
-    RefPtr<protocol::Value> resultValue;
-    makeCall(function, &resultValue);
+    OwnPtr<protocol::Value> resultValue = makeCall(function);
     if (!resultValue) {
         *errorString = "Internal error";
         return;
@@ -254,10 +251,9 @@ void InjectedScript::getFunctionDetails(ErrorString* errorString, const String& 
     v8::HandleScope handles(m_isolate);
     V8FunctionCall function(m_client, context(), v8Value(), "getFunctionDetails");
     function.appendArgument(functionId);
-    RefPtr<protocol::Value> resultValue;
-    makeCall(function, &resultValue);
+    OwnPtr<protocol::Value> resultValue = makeCall(function);
     protocol::ErrorSupport errors(errorString);
-    *result = FunctionDetails::parse(resultValue, &errors);
+    *result = FunctionDetails::parse(resultValue.get(), &errors);
 }
 
 void InjectedScript::getGeneratorObjectDetails(ErrorString* errorString, const String& objectId, OwnPtr<GeneratorObjectDetails>* result)
@@ -265,10 +261,9 @@ void InjectedScript::getGeneratorObjectDetails(ErrorString* errorString, const S
     v8::HandleScope handles(m_isolate);
     V8FunctionCall function(m_client, context(), v8Value(), "getGeneratorObjectDetails");
     function.appendArgument(objectId);
-    RefPtr<protocol::Value> resultValue;
-    makeCall(function, &resultValue);
+    OwnPtr<protocol::Value> resultValue = makeCall(function);
     protocol::ErrorSupport errors(errorString);
-    *result = GeneratorObjectDetails::parse(resultValue, &errors);
+    *result = GeneratorObjectDetails::parse(resultValue.get(), &errors);
 }
 
 void InjectedScript::getCollectionEntries(ErrorString* errorString, const String& objectId, OwnPtr<Array<CollectionEntry>>* result)
@@ -276,10 +271,9 @@ void InjectedScript::getCollectionEntries(ErrorString* errorString, const String
     v8::HandleScope handles(m_isolate);
     V8FunctionCall function(m_client, context(), v8Value(), "getCollectionEntries");
     function.appendArgument(objectId);
-    RefPtr<protocol::Value> resultValue;
-    makeCall(function, &resultValue);
+    OwnPtr<protocol::Value> resultValue = makeCall(function);
     protocol::ErrorSupport errors(errorString);
-    *result = Array<CollectionEntry>::parse(resultValue, &errors);
+    *result = Array<CollectionEntry>::parse(resultValue.get(), &errors);
 }
 
 void InjectedScript::getProperties(ErrorString* errorString, const String& objectId, bool ownProperties, bool accessorPropertiesOnly, bool generatePreview, OwnPtr<Array<PropertyDescriptor>>* properties, Maybe<protocol::Runtime::ExceptionDetails>* exceptionDetails)
@@ -291,15 +285,14 @@ void InjectedScript::getProperties(ErrorString* errorString, const String& objec
     function.appendArgument(accessorPropertiesOnly);
     function.appendArgument(generatePreview);
 
-    RefPtr<protocol::Value> result;
-    makeCallWithExceptionDetails(function, &result, exceptionDetails);
+    OwnPtr<protocol::Value> result = makeCallWithExceptionDetails(function, exceptionDetails);
     if (exceptionDetails->isJust()) {
         // FIXME: make properties optional
         *properties = Array<PropertyDescriptor>::create();
         return;
     }
     protocol::ErrorSupport errors(errorString);
-    *properties = Array<PropertyDescriptor>::parse(result.release(), &errors);
+    *properties = Array<PropertyDescriptor>::parse(result.get(), &errors);
 }
 
 void InjectedScript::getInternalProperties(ErrorString* errorString, const String& objectId, Maybe<Array<InternalPropertyDescriptor>>* properties, Maybe<protocol::Runtime::ExceptionDetails>* exceptionDetails)
@@ -308,22 +301,21 @@ void InjectedScript::getInternalProperties(ErrorString* errorString, const Strin
     V8FunctionCall function(m_client, context(), v8Value(), "getInternalProperties");
     function.appendArgument(objectId);
 
-    RefPtr<protocol::Value> result;
-    makeCallWithExceptionDetails(function, &result, exceptionDetails);
+    OwnPtr<protocol::Value> result = makeCallWithExceptionDetails(function, exceptionDetails);
     if (exceptionDetails->isJust())
         return;
     protocol::ErrorSupport errors(errorString);
-    OwnPtr<Array<InternalPropertyDescriptor>> array = Array<InternalPropertyDescriptor>::parse(result.release(), &errors);
+    OwnPtr<Array<InternalPropertyDescriptor>> array = Array<InternalPropertyDescriptor>::parse(result.get(), &errors);
     if (!errors.hasErrors() && array->length() > 0)
         *properties = array.release();
 }
 
 void InjectedScript::releaseObject(const String& objectId)
 {
-    RefPtr<protocol::Value> parsedObjectId = protocol::parseJSON(objectId);
+    OwnPtr<protocol::Value> parsedObjectId = protocol::parseJSON(objectId);
     if (!parsedObjectId)
         return;
-    RefPtr<protocol::DictionaryValue> object = protocol::DictionaryValue::cast(parsedObjectId);
+    protocol::DictionaryValue* object = protocol::DictionaryValue::cast(parsedObjectId.get());
     if (!object)
         return;
     int boundId = 0;
@@ -360,10 +352,10 @@ PassOwnPtr<Array<CallFrame>> InjectedScript::wrapCallFrames(v8::Local<v8::Object
     bool hadException = false;
     v8::Local<v8::Value> callFramesValue = callFunctionWithEvalEnabled(function, hadException);
     ASSERT(!hadException);
-    RefPtr<protocol::Value> result = toProtocolValue(context(), callFramesValue);
+    OwnPtr<protocol::Value> result = toProtocolValue(context(), callFramesValue);
     protocol::ErrorSupport errors;
     if (result && result->type() == protocol::Value::TypeArray)
-        return Array<CallFrame>::parse(result.release(), &errors);
+        return Array<CallFrame>::parse(result.get(), &errors);
     return Array<CallFrame>::create();
 }
 
@@ -380,7 +372,7 @@ PassOwnPtr<protocol::Runtime::RemoteObject> InjectedScript::wrapObject(v8::Local
     if (hadException)
         return nullptr;
     protocol::ErrorSupport errors;
-    return protocol::Runtime::RemoteObject::parse(toProtocolValue(context(), r), &errors);
+    return protocol::Runtime::RemoteObject::parse(toProtocolValue(context(), r).get(), &errors);
 }
 
 PassOwnPtr<protocol::Runtime::RemoteObject> InjectedScript::wrapTable(v8::Local<v8::Value> table, v8::Local<v8::Value> columns) const
@@ -398,7 +390,7 @@ PassOwnPtr<protocol::Runtime::RemoteObject> InjectedScript::wrapTable(v8::Local<
     if (hadException)
         return nullptr;
     protocol::ErrorSupport errors;
-    return protocol::Runtime::RemoteObject::parse(toProtocolValue(context(), r), &errors);
+    return protocol::Runtime::RemoteObject::parse(toProtocolValue(context(), r).get(), &errors);
 }
 
 v8::Local<v8::Value> InjectedScript::findObject(const RemoteObjectId& objectId) const
@@ -428,8 +420,7 @@ void InjectedScript::setCustomObjectFormatterEnabled(bool enabled)
     v8::HandleScope handles(m_isolate);
     V8FunctionCall function(m_client, context(), v8Value(), "setCustomObjectFormatterEnabled");
     function.appendArgument(enabled);
-    RefPtr<protocol::Value> result;
-    makeCall(function, &result);
+    makeCall(function);
 }
 
 bool InjectedScript::canAccessInspectedWindow() const
@@ -464,11 +455,12 @@ v8::Local<v8::Value> InjectedScript::callFunctionWithEvalEnabled(V8FunctionCall&
     return resultValue;
 }
 
-void InjectedScript::makeCall(V8FunctionCall& function, RefPtr<protocol::Value>* result)
+PassOwnPtr<protocol::Value> InjectedScript::makeCall(V8FunctionCall& function)
 {
+    OwnPtr<protocol::Value> result;
     if (!canAccessInspectedWindow()) {
-        *result = protocol::StringValue::create("Can not access given context.");
-        return;
+        result = protocol::StringValue::create("Can not access given context.");
+        return nullptr;
     }
 
     bool hadException = false;
@@ -476,50 +468,51 @@ void InjectedScript::makeCall(V8FunctionCall& function, RefPtr<protocol::Value>*
 
     ASSERT(!hadException);
     if (!hadException) {
-        *result = toProtocolValue(function.context(), resultValue);
-        if (!*result)
-            *result = protocol::StringValue::create(String::format("Object has too long reference chain(must not be longer than %d)", protocol::Value::maxDepth));
+        result = toProtocolValue(function.context(), resultValue);
+        if (!result)
+            result = protocol::StringValue::create(String::format("Object has too long reference chain(must not be longer than %d)", protocol::Value::maxDepth));
     } else {
-        *result = protocol::StringValue::create("Exception while making a call.");
+        result = protocol::StringValue::create("Exception while making a call.");
     }
+    return result.release();
 }
 
-void InjectedScript::makeEvalCall(ErrorString* errorString, V8FunctionCall& function, OwnPtr<protocol::Runtime::RemoteObject>* objectResult, Maybe<bool>* wasThrown, Maybe<protocol::Runtime::ExceptionDetails>* exceptionDetails)
+PassOwnPtr<protocol::Runtime::RemoteObject> InjectedScript::makeEvalCall(ErrorString* errorString, V8FunctionCall& function, Maybe<bool>* wasThrown, Maybe<protocol::Runtime::ExceptionDetails>* exceptionDetails)
 {
-    RefPtr<protocol::Value> result;
-    makeCall(function, &result);
+    OwnPtr<protocol::Value> result = makeCall(function);
     if (!result) {
         *errorString = "Internal error: result value is empty";
-        return;
+        return nullptr;
     }
     if (result->type() == protocol::Value::TypeString) {
         result->asString(errorString);
         ASSERT(errorString->length());
-        return;
+        return nullptr;
     }
-    RefPtr<protocol::DictionaryValue> resultPair = protocol::DictionaryValue::cast(result);
+    protocol::DictionaryValue* resultPair = protocol::DictionaryValue::cast(result.get());
     if (!resultPair) {
         *errorString = "Internal error: result is not an Object";
-        return;
+        return nullptr;
     }
-    RefPtr<protocol::DictionaryValue> resultObj = resultPair->getObject("result");
+    protocol::DictionaryValue* resultObj = resultPair->getObject("result");
     bool wasThrownVal = false;
     if (!resultObj || !resultPair->getBoolean("wasThrown", &wasThrownVal)) {
         *errorString = "Internal error: result is not a pair of value and wasThrown flag";
-        return;
+        return nullptr;
     }
     if (wasThrownVal) {
-        RefPtr<protocol::DictionaryValue> objectExceptionDetails = resultPair->getObject("exceptionDetails");
+        protocol::DictionaryValue* objectExceptionDetails = resultPair->getObject("exceptionDetails");
         if (objectExceptionDetails)
-            *exceptionDetails = toExceptionDetails(objectExceptionDetails.release());
+            *exceptionDetails = toExceptionDetails(objectExceptionDetails);
     }
     protocol::ErrorSupport errors(errorString);
-    *objectResult = protocol::Runtime::RemoteObject::parse(resultObj, &errors);
     *wasThrown = wasThrownVal;
+    return protocol::Runtime::RemoteObject::parse(resultObj, &errors);
 }
 
-void InjectedScript::makeCallWithExceptionDetails(V8FunctionCall& function, RefPtr<protocol::Value>* result, Maybe<protocol::Runtime::ExceptionDetails>* exceptionDetails)
+PassOwnPtr<protocol::Value> InjectedScript::makeCallWithExceptionDetails(V8FunctionCall& function, Maybe<protocol::Runtime::ExceptionDetails>* exceptionDetails)
 {
+    OwnPtr<protocol::Value> result;
     v8::HandleScope handles(m_isolate);
     v8::Context::Scope scope(context());
     v8::TryCatch tryCatch(m_isolate);
@@ -529,10 +522,11 @@ void InjectedScript::makeCallWithExceptionDetails(V8FunctionCall& function, RefP
         String text = !message.IsEmpty() ? toWTFStringWithTypeCheck(message->Get()) : "Internal error";
         *exceptionDetails = protocol::Runtime::ExceptionDetails::create().setText(text).build();
     } else {
-        *result = toProtocolValue(function.context(), resultValue);
-        if (!*result)
-            *result = protocol::StringValue::create(String::format("Object has too long reference chain(must not be longer than %d)", protocol::Value::maxDepth));
+        result = toProtocolValue(function.context(), resultValue);
+        if (!result)
+            result = protocol::StringValue::create(String::format("Object has too long reference chain(must not be longer than %d)", protocol::Value::maxDepth));
     }
+    return result.release();
 }
 
 void InjectedScript::dispose()

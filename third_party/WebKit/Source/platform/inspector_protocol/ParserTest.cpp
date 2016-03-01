@@ -13,9 +13,9 @@ namespace protocol {
 
 TEST(ParserTest, Reading)
 {
-    RefPtr<protocol::Value> tmpValue;
-    RefPtr<protocol::Value> root;
-    RefPtr<protocol::Value> root2;
+    protocol::Value* tmpValue;
+    OwnPtr<protocol::Value> root;
+    OwnPtr<protocol::Value> root2;
     String strVal;
     int intVal = 0;
 
@@ -58,20 +58,20 @@ TEST(ParserTest, Reading)
     EXPECT_EQ("sample string", strVal);
     root = parseJSON("[1, /* comment, 2 ] */ \n 3]");
     ASSERT_TRUE(root.get());
-    RefPtr<protocol::ListValue> list = ListValue::cast(root);
+    protocol::ListValue* list = ListValue::cast(root.get());
     ASSERT_TRUE(list);
     EXPECT_EQ(2u, list->length());
     tmpValue = list->get(0);
-    ASSERT_TRUE(tmpValue.get());
+    ASSERT_TRUE(tmpValue);
     EXPECT_TRUE(tmpValue->asNumber(&intVal));
     EXPECT_EQ(1, intVal);
     tmpValue = list->get(1);
-    ASSERT_TRUE(tmpValue.get());
+    ASSERT_TRUE(tmpValue);
     EXPECT_TRUE(tmpValue->asNumber(&intVal));
     EXPECT_EQ(3, intVal);
     root = parseJSON("[1, /*a*/2, 3]");
     ASSERT_TRUE(root.get());
-    list = ListValue::cast(root);
+    list = ListValue::cast(root.get());
     ASSERT_TRUE(list);
     EXPECT_EQ(3u, list->length());
     root = parseJSON("/* comment **/42");
@@ -254,7 +254,7 @@ TEST(ParserTest, Reading)
     root = parseJSON("[true, false, null]");
     ASSERT_TRUE(root.get());
     EXPECT_EQ(Value::TypeArray, root->type());
-    list = ListValue::cast(root);
+    list = ListValue::cast(root.get());
     ASSERT_TRUE(list);
     EXPECT_EQ(3U, list->length());
 
@@ -262,7 +262,7 @@ TEST(ParserTest, Reading)
     root = parseJSON("[]");
     ASSERT_TRUE(root.get());
     EXPECT_EQ(Value::TypeArray, root->type());
-    list = ListValue::cast(root);
+    list = ListValue::cast(root.get());
     ASSERT_TRUE(list);
     EXPECT_EQ(0U, list->length());
 
@@ -270,7 +270,7 @@ TEST(ParserTest, Reading)
     root = parseJSON("[[true], [], [false, [], [null]], null]");
     ASSERT_TRUE(root.get());
     EXPECT_EQ(Value::TypeArray, root->type());
-    list = ListValue::cast(root);
+    list = ListValue::cast(root.get());
     ASSERT_TRUE(list);
     EXPECT_EQ(4U, list->length());
 
@@ -293,11 +293,11 @@ TEST(ParserTest, Reading)
     root = parseJSON("[true]");
     ASSERT_TRUE(root.get());
     EXPECT_EQ(Value::TypeArray, root->type());
-    list = ListValue::cast(root);
+    list = ListValue::cast(root.get());
     ASSERT_TRUE(list);
     EXPECT_EQ(1U, list->length());
     tmpValue = list->get(0);
-    ASSERT_TRUE(tmpValue.get());
+    ASSERT_TRUE(tmpValue);
     EXPECT_EQ(Value::TypeBoolean, tmpValue->type());
     bool boolValue = false;
     EXPECT_TRUE(tmpValue->asBoolean(&boolValue));
@@ -321,13 +321,13 @@ TEST(ParserTest, Reading)
     root = parseJSON("{\"number\":9.87654321, \"null\":null , \"\\x53\" : \"str\" }");
     ASSERT_TRUE(root.get());
     EXPECT_EQ(Value::TypeObject, root->type());
-    RefPtr<protocol::DictionaryValue> objectVal = DictionaryValue::cast(root);
+    protocol::DictionaryValue* objectVal = DictionaryValue::cast(root.get());
     ASSERT_TRUE(objectVal);
     doubleVal = 0.0;
     EXPECT_TRUE(objectVal->getNumber("number", &doubleVal));
     EXPECT_DOUBLE_EQ(9.87654321, doubleVal);
-    RefPtr<protocol::Value> nullVal = objectVal->get("null");
-    ASSERT_TRUE(nullVal.get());
+    protocol::Value* nullVal = objectVal->get("null");
+    ASSERT_TRUE(nullVal);
     EXPECT_EQ(Value::TypeNull, nullVal->type());
     EXPECT_TRUE(objectVal->getString("S", &strVal));
     EXPECT_EQ("str", strVal);
@@ -355,24 +355,24 @@ TEST(ParserTest, Reading)
     root = parseJSON("{\"inner\":{\"array\":[true]},\"false\":false,\"d\":{}}");
     ASSERT_TRUE(root.get());
     EXPECT_EQ(Value::TypeObject, root->type());
-    objectVal = DictionaryValue::cast(root);
+    objectVal = DictionaryValue::cast(root.get());
     ASSERT_TRUE(objectVal);
-    RefPtr<protocol::DictionaryValue> innerObject = objectVal->getObject("inner");
-    ASSERT_TRUE(innerObject.get());
-    RefPtr<protocol::ListValue> innerArray = innerObject->getArray("array");
-    ASSERT_TRUE(innerArray.get());
+    protocol::DictionaryValue* innerObject = objectVal->getObject("inner");
+    ASSERT_TRUE(innerObject);
+    protocol::ListValue* innerArray = innerObject->getArray("array");
+    ASSERT_TRUE(innerArray);
     EXPECT_EQ(1U, innerArray->length());
     boolValue = true;
     EXPECT_TRUE(objectVal->getBoolean("false", &boolValue));
     EXPECT_FALSE(boolValue);
     innerObject = objectVal->getObject("d");
-    EXPECT_TRUE(innerObject.get());
+    EXPECT_TRUE(innerObject);
 
     // Test keys with periods
     root = parseJSON("{\"a.b\":3,\"c\":2,\"d.e.f\":{\"g.h.i.j\":1}}");
     ASSERT_TRUE(root.get());
     EXPECT_EQ(Value::TypeObject, root->type());
-    objectVal = DictionaryValue::cast(root);
+    objectVal = DictionaryValue::cast(root.get());
     ASSERT_TRUE(objectVal);
     int integerValue = 0;
     EXPECT_TRUE(objectVal->getNumber("a.b", &integerValue));
@@ -380,7 +380,7 @@ TEST(ParserTest, Reading)
     EXPECT_TRUE(objectVal->getNumber("c", &integerValue));
     EXPECT_EQ(2, integerValue);
     innerObject = objectVal->getObject("d.e.f");
-    ASSERT_TRUE(innerObject.get());
+    ASSERT_TRUE(innerObject);
     EXPECT_EQ(1, innerObject->size());
     EXPECT_TRUE(innerObject->getNumber("g.h.i.j", &integerValue));
     EXPECT_EQ(1, integerValue);
@@ -388,10 +388,10 @@ TEST(ParserTest, Reading)
     root = parseJSON("{\"a\":{\"b\":2},\"a.b\":1}");
     ASSERT_TRUE(root.get());
     EXPECT_EQ(Value::TypeObject, root->type());
-    objectVal = DictionaryValue::cast(root);
+    objectVal = DictionaryValue::cast(root.get());
     ASSERT_TRUE(objectVal);
     innerObject = objectVal->getObject("a");
-    ASSERT_TRUE(innerObject.get());
+    ASSERT_TRUE(innerObject);
     EXPECT_TRUE(innerObject->getNumber("b", &integerValue));
     EXPECT_EQ(2, integerValue);
     EXPECT_TRUE(objectVal->getNumber("a.b", &integerValue));
@@ -447,7 +447,7 @@ TEST(ParserTest, Reading)
     root = parseJSON(notEvil.toString());
     ASSERT_TRUE(root.get());
     EXPECT_EQ(Value::TypeArray, root->type());
-    list = ListValue::cast(root);
+    list = ListValue::cast(root.get());
     ASSERT_TRUE(list);
     EXPECT_EQ(5001U, list->length());
 
@@ -462,7 +462,7 @@ TEST(ParserTest, Reading)
     root = parseJSON("{\"path\": \"/tmp/\\xc3\\xa0\\xc3\\xa8\\xc3\\xb2.png\"}");
     ASSERT_TRUE(root.get());
     EXPECT_EQ(Value::TypeObject, root->type());
-    objectVal = DictionaryValue::cast(root);
+    objectVal = DictionaryValue::cast(root.get());
     ASSERT_TRUE(objectVal);
     EXPECT_TRUE(objectVal->getString("path", &strVal));
     UChar tmp5[] = {0x2f, 0x74, 0x6d, 0x70, 0x2f, 0xe0, 0xe8, 0xf2, 0x2e, 0x70, 0x6e, 0x67};
@@ -544,7 +544,7 @@ TEST(ParserTest, InvalidSanity)
     };
 
     for (size_t i = 0; i < WTF_ARRAY_LENGTH(invalidJson); ++i) {
-        RefPtr<protocol::Value> result = parseJSON(invalidJson[i]);
+        OwnPtr<protocol::Value> result = parseJSON(invalidJson[i]);
         EXPECT_FALSE(result.get());
     }
 }

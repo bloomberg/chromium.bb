@@ -89,7 +89,7 @@ public:
     void didExecuteScript();
 
     // InspectorBaseAgent overrides.
-    void setState(PassRefPtr<protocol::DictionaryValue>) override;
+    void setState(protocol::DictionaryValue*) override;
     void init() override;
     void setFrontend(protocol::Frontend*) override;
     void clearFrontend() override;

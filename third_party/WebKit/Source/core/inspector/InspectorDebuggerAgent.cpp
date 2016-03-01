@@ -318,7 +318,7 @@ bool InspectorDebuggerAgent::isPaused()
 
 void InspectorDebuggerAgent::scriptExecutionBlockedByCSP(const String& directiveText)
 {
-    RefPtr<protocol::DictionaryValue> directive = protocol::DictionaryValue::create();
+    OwnPtr<protocol::DictionaryValue> directive = protocol::DictionaryValue::create();
     directive->setString("directiveText", directiveText);
     m_v8DebuggerAgent->breakProgramOnException(protocol::Debugger::Paused::ReasonEnum::CSPViolation, directive.release());
 }
@@ -334,7 +334,7 @@ void InspectorDebuggerAgent::didExecuteScript()
 }
 
 // InspectorBaseAgent overrides.
-void InspectorDebuggerAgent::setState(PassRefPtr<protocol::DictionaryValue> state)
+void InspectorDebuggerAgent::setState(protocol::DictionaryValue* state)
 {
     InspectorBaseAgent::setState(state);
     m_v8DebuggerAgent->setInspectorState(m_state);

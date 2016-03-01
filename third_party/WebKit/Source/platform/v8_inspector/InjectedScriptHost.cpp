@@ -75,11 +75,11 @@ void InjectedScriptHost::disconnect()
     m_inspectedObjects.clear();
 }
 
-void InjectedScriptHost::inspectImpl(PassRefPtr<protocol::Value> object, PassRefPtr<protocol::Value> hints)
+void InjectedScriptHost::inspectImpl(PassOwnPtr<protocol::Value> object, PassOwnPtr<protocol::Value> hints)
 {
     if (m_inspectCallback) {
         protocol::ErrorSupport errors;
-        OwnPtr<protocol::Runtime::RemoteObject> remoteObject = protocol::Runtime::RemoteObject::parse(object, &errors);
+        OwnPtr<protocol::Runtime::RemoteObject> remoteObject = protocol::Runtime::RemoteObject::parse(object.get(), &errors);
         (*m_inspectCallback)(remoteObject.release(), protocol::DictionaryValue::cast(hints));
     }
 }

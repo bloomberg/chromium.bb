@@ -35,7 +35,7 @@ public:
     // Embedder API.
     using ClearConsoleCallback = Function<void()>;
     virtual void setClearConsoleCallback(PassOwnPtr<ClearConsoleCallback>) = 0;
-    using InspectCallback = Function<void(PassOwnPtr<protocol::Runtime::RemoteObject>, PassRefPtr<protocol::DictionaryValue>)>;
+    using InspectCallback = Function<void(PassOwnPtr<protocol::Runtime::RemoteObject>, PassOwnPtr<protocol::DictionaryValue>)>;
     virtual void setInspectObjectCallback(PassOwnPtr<InspectCallback>) = 0;
     // FIXME: remove while preserving the default context evaluation.
     virtual int ensureDefaultContextAvailable(v8::Local<v8::Context>) = 0;

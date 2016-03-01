@@ -487,7 +487,7 @@ void WebDevToolsAgentImpl::initializeDeferredAgents()
 
     m_workerAgent->setPageConsoleAgent(m_pageConsoleAgent);
     m_pageRuntimeAgent->v8Agent()->setClearConsoleCallback(bind<>(&InspectorConsoleAgent::clearAllMessages, m_pageConsoleAgent.get()));
-    m_pageRuntimeAgent->v8Agent()->setInspectObjectCallback(bind<PassOwnPtr<protocol::Runtime::RemoteObject>, PassRefPtr<protocol::DictionaryValue>>(&InspectorInspectorAgent::inspect, m_inspectorAgent.get()));
+    m_pageRuntimeAgent->v8Agent()->setInspectObjectCallback(bind<PassOwnPtr<protocol::Runtime::RemoteObject>, PassOwnPtr<protocol::DictionaryValue>>(&InspectorInspectorAgent::inspect, m_inspectorAgent.get()));
 
     if (m_overlay)
         m_overlay->init(cssAgent, debuggerAgent, m_domAgent.get());
@@ -650,7 +650,7 @@ void WebDevToolsAgentImpl::failedToRequestDevTools()
     ClientMessageLoopAdapter::resumeForCreateWindow();
 }
 
-void WebDevToolsAgentImpl::sendProtocolResponse(int sessionId, int callId, PassRefPtr<protocol::DictionaryValue> message)
+void WebDevToolsAgentImpl::sendProtocolResponse(int sessionId, int callId, PassOwnPtr<protocol::DictionaryValue> message)
 {
     if (!m_attached)
         return;
@@ -667,7 +667,7 @@ void WebDevToolsAgentImpl::sendProtocolResponse(int sessionId, int callId, PassR
     m_client->sendProtocolMessage(sessionId, callId, message->toJSONString(), stateToSend);
 }
 
-void WebDevToolsAgentImpl::sendProtocolNotification(PassRefPtr<protocol::DictionaryValue> message)
+void WebDevToolsAgentImpl::sendProtocolNotification(PassOwnPtr<protocol::DictionaryValue> message)
 {
     if (!m_attached)
         return;

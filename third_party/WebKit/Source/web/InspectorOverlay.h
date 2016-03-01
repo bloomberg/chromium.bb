@@ -130,7 +130,7 @@ private:
     LocalFrame* overlayMainFrame();
     void reset(const IntSize& viewportSize, const IntPoint& documentScrollOffset);
     void evaluateInOverlay(const String& method, const String& argument);
-    void evaluateInOverlay(const String& method, PassRefPtr<protocol::Value> argument);
+    void evaluateInOverlay(const String& method, PassOwnPtr<protocol::Value> argument);
     void onTimer(Timer<InspectorOverlay>*);
     void rebuildOverlayPage();
     void invalidate();

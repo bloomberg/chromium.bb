@@ -67,7 +67,7 @@ public:
     void clearInspectedObjects();
     V8RuntimeAgent::Inspectable* inspectedObject(unsigned num);
 
-    void inspectImpl(PassRefPtr<protocol::Value> objectToInspect, PassRefPtr<protocol::Value> hints);
+    void inspectImpl(PassOwnPtr<protocol::Value> objectToInspect, PassOwnPtr<protocol::Value> hints);
 
     void clearConsoleMessages();
     void debugFunction(const String& scriptId, int lineNumber, int columnNumber);

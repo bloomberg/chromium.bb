@@ -63,7 +63,7 @@ void reportTransactionFailed(ExecuteSQLCallback* requestCallback, SQLError* erro
     OwnPtr<protocol::Database::Error> errorObject = protocol::Database::Error::create()
         .setMessage(error->message())
         .setCode(error->code()).build();
-    requestCallback->sendSuccess(Maybe<protocol::Array<String>>(), Maybe<protocol::Array<RefPtr<protocol::Value>>>(), errorObject.release());
+    requestCallback->sendSuccess(Maybe<protocol::Array<String>>(), Maybe<protocol::Array<protocol::Value>>(), errorObject.release());
 }
 
 class StatementCallback final : public SQLStatementCallback {
@@ -89,7 +89,7 @@ public:
         for (size_t i = 0; i < columns.size(); ++i)
             columnNames->addItem(columns[i]);
 
-        OwnPtr<protocol::Array<RefPtr<protocol::Value>>> values = protocol::Array<RefPtr<protocol::Value>>::create();
+        OwnPtr<protocol::Array<protocol::Value>> values = protocol::Array<protocol::Value>::create();
         const Vector<SQLValue>& data = rowList->values();
         for (size_t i = 0; i < data.size(); ++i) {
             const SQLValue& value = rowList->values()[i];

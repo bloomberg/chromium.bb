@@ -65,7 +65,7 @@ public:
     // Generic code called from custom implementations.
     void evaluateForTestInFrontend(long testCallId, const String& script);
 
-    void inspect(PassOwnPtr<protocol::Runtime::RemoteObject> objectToInspect, PassRefPtr<protocol::DictionaryValue> hints);
+    void inspect(PassOwnPtr<protocol::Runtime::RemoteObject> objectToInspect, PassOwnPtr<protocol::DictionaryValue> hints);
 
 private:
     InspectorInspectorAgent();

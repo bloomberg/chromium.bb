@@ -21,11 +21,11 @@ public:
     virtual ~V8DebuggerAgent() { }
 
     // API for the embedder to report native activities.
-    virtual void schedulePauseOnNextStatement(const String& breakReason, PassRefPtr<protocol::DictionaryValue> data) = 0;
+    virtual void schedulePauseOnNextStatement(const String& breakReason, PassOwnPtr<protocol::DictionaryValue> data) = 0;
     virtual void cancelPauseOnNextStatement() = 0;
     virtual bool canBreakProgram() = 0;
-    virtual void breakProgram(const String& breakReason, PassRefPtr<protocol::DictionaryValue> data) = 0;
-    virtual void breakProgramOnException(const String& breakReason, PassRefPtr<protocol::DictionaryValue> data) = 0;
+    virtual void breakProgram(const String& breakReason, PassOwnPtr<protocol::DictionaryValue> data) = 0;
+    virtual void breakProgramOnException(const String& breakReason, PassOwnPtr<protocol::DictionaryValue> data) = 0;
     virtual void willExecuteScript(int scriptId) = 0;
     virtual void didExecuteScript() = 0;
     virtual void reset() = 0;

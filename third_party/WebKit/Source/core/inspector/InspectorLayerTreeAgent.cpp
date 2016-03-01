@@ -435,14 +435,14 @@ void InspectorLayerTreeAgent::profileSnapshot(ErrorString* errorString, const St
     }
 }
 
-void InspectorLayerTreeAgent::snapshotCommandLog(ErrorString* errorString, const String& snapshotId, OwnPtr<Array<RefPtr<protocol::DictionaryValue>>>* commandLog)
+void InspectorLayerTreeAgent::snapshotCommandLog(ErrorString* errorString, const String& snapshotId, OwnPtr<Array<protocol::DictionaryValue>>* commandLog)
 {
     const PictureSnapshot* snapshot = snapshotById(errorString, snapshotId);
     if (!snapshot)
         return;
     protocol::ErrorSupport errors(errorString);
-    RefPtr<protocol::Value> logValue = protocol::parseJSON(snapshot->snapshotCommandLog()->toJSONString());
-    *commandLog = Array<RefPtr<protocol::DictionaryValue>>::parse(logValue, &errors);
+    OwnPtr<protocol::Value> logValue = protocol::parseJSON(snapshot->snapshotCommandLog()->toJSONString());
+    *commandLog = Array<protocol::DictionaryValue>::parse(logValue.get(), &errors);
 }
 
 void InspectorLayerTreeAgent::willAddPageOverlay(const GraphicsLayer* layer)

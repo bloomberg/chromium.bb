@@ -25,7 +25,7 @@ public:
     explicit V8ProfilerAgentImpl(V8Debugger*);
     ~V8ProfilerAgentImpl() override;
 
-    void setInspectorState(PassRefPtr<protocol::DictionaryValue> state) override { m_state = state; }
+    void setInspectorState(protocol::DictionaryValue* state) override { m_state = state; }
     void setFrontend(protocol::Frontend::Profiler* frontend) override { m_frontend = frontend; }
     void clearFrontend() override;
     void restore() override;
@@ -52,7 +52,7 @@ private:
 
     V8DebuggerImpl* m_debugger;
     v8::Isolate* m_isolate;
-    RefPtr<protocol::DictionaryValue> m_state;
+    protocol::DictionaryValue* m_state;
     protocol::Frontend::Profiler* m_frontend;
     bool m_enabled;
     bool m_recordingCPUProfile;

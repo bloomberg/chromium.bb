@@ -5,6 +5,7 @@
 #include "platform/inspector_protocol/Values.h"
 
 #include "platform/Decimal.h"
+#include "platform/inspector_protocol/Parser.h"
 #include "wtf/MathExtras.h"
 #include "wtf/text/StringBuilder.h"
 
@@ -95,6 +96,11 @@ void Value::writeJSON(StringBuilder* output) const
     output->append(nullString, 4);
 }
 
+PassOwnPtr<Value> Value::clone() const
+{
+    return Value::null();
+}
+
 bool FundamentalValue::asBoolean(bool* output) const
 {
     if (type() != TypeBoolean)
@@ -136,6 +142,11 @@ void FundamentalValue::writeJSON(StringBuilder* output) const
     }
 }
 
+PassOwnPtr<Value> FundamentalValue::clone() const
+{
+    return type() == TypeNumber ? FundamentalValue::create(m_doubleValue) : FundamentalValue::create(m_boolValue);
+}
+
 bool StringValue::asString(String* output) const
 {
     *output = m_stringValue;
@@ -146,6 +157,11 @@ void StringValue::writeJSON(StringBuilder* output) const
 {
     ASSERT(type() == TypeString);
     doubleQuoteStringForJSON(m_stringValue, output);
+}
+
+PassOwnPtr<Value> StringValue::clone() const
+{
+    return StringValue::create(m_stringValue);
 }
 
 DictionaryValue::~DictionaryValue()
@@ -167,40 +183,30 @@ void DictionaryValue::setString(const String& name, const String& value)
     setValue(name, StringValue::create(value));
 }
 
-void DictionaryValue::setValue(const String& name, PassRefPtr<Value> value)
+void DictionaryValue::setValue(const String& name, PassOwnPtr<Value> value)
 {
     ASSERT(value);
     if (m_data.set(name, value).isNewEntry)
         m_order.append(name);
 }
 
-void DictionaryValue::setObject(const String& name, PassRefPtr<DictionaryValue> value)
+void DictionaryValue::setObject(const String& name, PassOwnPtr<DictionaryValue> value)
 {
     ASSERT(value);
     if (m_data.set(name, value).isNewEntry)
         m_order.append(name);
 }
 
-void DictionaryValue::setArray(const String& name, PassRefPtr<ListValue> value)
+void DictionaryValue::setArray(const String& name, PassOwnPtr<ListValue> value)
 {
     ASSERT(value);
     if (m_data.set(name, value).isNewEntry)
         m_order.append(name);
-}
-
-DictionaryValue::iterator DictionaryValue::find(const String& name)
-{
-    return m_data.find(name);
-}
-
-DictionaryValue::const_iterator DictionaryValue::find(const String& name) const
-{
-    return m_data.find(name);
 }
 
 bool DictionaryValue::getBoolean(const String& name, bool* output) const
 {
-    RefPtr<protocol::Value> value = get(name);
+    protocol::Value* value = get(name);
     if (!value)
         return false;
     return value->asBoolean(output);
@@ -208,28 +214,28 @@ bool DictionaryValue::getBoolean(const String& name, bool* output) const
 
 bool DictionaryValue::getString(const String& name, String* output) const
 {
-    RefPtr<protocol::Value> value = get(name);
+    protocol::Value* value = get(name);
     if (!value)
         return false;
     return value->asString(output);
 }
 
-PassRefPtr<DictionaryValue> DictionaryValue::getObject(const String& name) const
+DictionaryValue* DictionaryValue::getObject(const String& name) const
 {
     return DictionaryValue::cast(get(name));
 }
 
-PassRefPtr<protocol::ListValue> DictionaryValue::getArray(const String& name) const
+protocol::ListValue* DictionaryValue::getArray(const String& name) const
 {
     return ListValue::cast(get(name));
 }
 
-PassRefPtr<protocol::Value> DictionaryValue::get(const String& name) const
+protocol::Value* DictionaryValue::get(const String& name) const
 {
     Dictionary::const_iterator it = m_data.find(name);
     if (it == m_data.end())
         return nullptr;
-    return it->value;
+    return it->value.get();
 }
 
 bool DictionaryValue::booleanProperty(const String& name, bool defaultValue) const
@@ -265,6 +271,17 @@ void DictionaryValue::writeJSON(StringBuilder* output) const
     output->append('}');
 }
 
+PassOwnPtr<Value> DictionaryValue::clone() const
+{
+    OwnPtr<DictionaryValue> result = DictionaryValue::create();
+    for (size_t i = 0; i < m_order.size(); ++i) {
+        Dictionary::const_iterator it = m_data.find(m_order[i]);
+        ASSERT(it != m_data.end());
+        result->setValue(it->key, it->value->clone());
+    }
+    return result.release();
+}
+
 DictionaryValue::DictionaryValue()
     : Value(TypeObject)
     , m_data()
@@ -279,12 +296,20 @@ ListValue::~ListValue()
 void ListValue::writeJSON(StringBuilder* output) const
 {
     output->append('[');
-    for (Vector<RefPtr<protocol::Value>>::const_iterator it = m_data.begin(); it != m_data.end(); ++it) {
+    for (Vector<OwnPtr<protocol::Value>>::const_iterator it = m_data.begin(); it != m_data.end(); ++it) {
         if (it != m_data.begin())
             output->append(',');
         (*it)->writeJSON(output);
     }
     output->append(']');
+}
+
+PassOwnPtr<Value> ListValue::clone() const
+{
+    OwnPtr<ListValue> result = ListValue::create();
+    for (Vector<OwnPtr<protocol::Value>>::const_iterator it = m_data.begin(); it != m_data.end(); ++it)
+        result->pushValue((*it)->clone());
+    return result.release();
 }
 
 ListValue::ListValue()
@@ -293,16 +318,16 @@ ListValue::ListValue()
 {
 }
 
-void ListValue::pushValue(PassRefPtr<protocol::Value> value)
+void ListValue::pushValue(PassOwnPtr<protocol::Value> value)
 {
     ASSERT(value);
     m_data.append(value);
 }
 
-PassRefPtr<protocol::Value> ListValue::get(size_t index)
+protocol::Value* ListValue::get(size_t index)
 {
     ASSERT_WITH_SECURITY_IMPLICATION(index < m_data.size());
-    return m_data[index];
+    return m_data[index].get();
 }
 
 } // namespace protocol

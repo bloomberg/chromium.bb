@@ -23,7 +23,7 @@ public:
     explicit V8HeapProfilerAgentImpl(v8::Isolate*, V8RuntimeAgent*);
     ~V8HeapProfilerAgentImpl() override;
 
-    void setInspectorState(PassRefPtr<protocol::DictionaryValue> state) override { m_state = state; }
+    void setInspectorState(protocol::DictionaryValue* state) override { m_state = state; }
     void setFrontend(protocol::Frontend::HeapProfiler* frontend) override { m_frontend = frontend; }
     void clearFrontend() override;
     void restore() override;
@@ -54,7 +54,7 @@ private:
     v8::Isolate* m_isolate;
     V8RuntimeAgent* m_runtimeAgent;
     protocol::Frontend::HeapProfiler* m_frontend;
-    RefPtr<protocol::DictionaryValue> m_state;
+    protocol::DictionaryValue* m_state;
 };
 
 } // namespace blink

@@ -125,9 +125,9 @@ private:
     bool canAccessInspectedWindow() const;
     v8::Local<v8::Value> v8Value() const;
     v8::Local<v8::Value> callFunctionWithEvalEnabled(V8FunctionCall&, bool& hadException) const;
-    void makeCall(V8FunctionCall&, RefPtr<protocol::Value>* result);
-    void makeEvalCall(ErrorString*, V8FunctionCall&, OwnPtr<protocol::Runtime::RemoteObject>* result, Maybe<bool>* wasThrown, Maybe<protocol::Runtime::ExceptionDetails>* = 0);
-    void makeCallWithExceptionDetails(V8FunctionCall&, RefPtr<protocol::Value>* result, Maybe<protocol::Runtime::ExceptionDetails>*);
+    PassOwnPtr<protocol::Value> makeCall(V8FunctionCall&);
+    PassOwnPtr<protocol::Runtime::RemoteObject> makeEvalCall(ErrorString*, V8FunctionCall&, Maybe<bool>* wasThrown, Maybe<protocol::Runtime::ExceptionDetails>* = 0);
+    PassOwnPtr<protocol::Value> makeCallWithExceptionDetails(V8FunctionCall&, Maybe<protocol::Runtime::ExceptionDetails>*);
 
     InjectedScriptManager* m_manager;
     v8::Isolate* m_isolate;

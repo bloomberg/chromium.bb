@@ -53,17 +53,17 @@ public:
     static InspectorHighlightConfig defaultConfig();
     static bool buildNodeQuads(Node*, FloatQuad* content, FloatQuad* padding, FloatQuad* border, FloatQuad* margin);
 
-    void appendPath(PassRefPtr<protocol::ListValue> path, const Color& fillColor, const Color& outlineColor, const String& name = String());
+    void appendPath(PassOwnPtr<protocol::ListValue> path, const Color& fillColor, const Color& outlineColor, const String& name = String());
     void appendQuad(const FloatQuad&, const Color& fillColor, const Color& outlineColor = Color::transparent, const String& name = String());
     void appendEventTargetQuads(Node* eventTargetNode, const InspectorHighlightConfig&);
-    PassRefPtr<protocol::DictionaryValue> asProtocolValue() const;
+    PassOwnPtr<protocol::DictionaryValue> asProtocolValue() const;
 
 private:
     void appendNodeHighlight(Node*, const InspectorHighlightConfig&);
     void appendPathsForShapeOutside(Node*, const InspectorHighlightConfig&);
 
-    RefPtr<protocol::DictionaryValue> m_elementInfo;
-    RefPtr<protocol::ListValue> m_highlightPaths;
+    OwnPtr<protocol::DictionaryValue> m_elementInfo;
+    OwnPtr<protocol::ListValue> m_highlightPaths;
     bool m_showRulers;
     bool m_showExtensionLines;
     bool m_displayAsMaterial;

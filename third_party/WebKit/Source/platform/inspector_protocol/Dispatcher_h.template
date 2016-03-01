@@ -29,7 +29,7 @@ public:
         bool isActive();
 
     protected:
-        void sendIfActive(PassRefPtr<protocol::DictionaryValue> partialMessage, const ErrorString& invocationError);
+        void sendIfActive(PassOwnPtr<protocol::DictionaryValue> partialMessage, const ErrorString& invocationError);
 
     private:
         void disable() { m_alreadySent = true; }

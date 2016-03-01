@@ -61,7 +61,7 @@ public:
     V8DebuggerAgentImpl(InjectedScriptManager*, V8DebuggerImpl*, int contextGroupId);
     ~V8DebuggerAgentImpl() override;
 
-    void setInspectorState(PassRefPtr<protocol::DictionaryValue>) override;
+    void setInspectorState(protocol::DictionaryValue*) override;
     void setFrontend(protocol::Frontend::Debugger* frontend) override { m_frontend = frontend; }
     void clearFrontend() override;
     void restore() override;
@@ -165,11 +165,11 @@ public:
         const String& scriptId,
         PassOwnPtr<protocol::Array<protocol::Debugger::ScriptPosition>> positions) override;
 
-    void schedulePauseOnNextStatement(const String& breakReason, PassRefPtr<protocol::DictionaryValue> data) override;
+    void schedulePauseOnNextStatement(const String& breakReason, PassOwnPtr<protocol::DictionaryValue> data) override;
     void cancelPauseOnNextStatement() override;
     bool canBreakProgram() override;
-    void breakProgram(const String& breakReason, PassRefPtr<protocol::DictionaryValue> data) override;
-    void breakProgramOnException(const String& breakReason, PassRefPtr<protocol::DictionaryValue> data) override;
+    void breakProgram(const String& breakReason, PassOwnPtr<protocol::DictionaryValue> data) override;
+    void breakProgramOnException(const String& breakReason, PassOwnPtr<protocol::DictionaryValue> data) override;
     void willExecuteScript(int scriptId) override;
     void didExecuteScript() override;
 
@@ -251,7 +251,7 @@ private:
     V8DebuggerImpl* m_debugger;
     int m_contextGroupId;
     bool m_enabled;
-    RefPtr<protocol::DictionaryValue> m_state;
+    protocol::DictionaryValue* m_state;
     protocol::Frontend::Debugger* m_frontend;
     v8::Isolate* m_isolate;
     v8::Global<v8::Context> m_pausedContext;
@@ -262,7 +262,7 @@ private:
     MuteBreakpoins m_muteBreakpoints;
     String m_continueToLocationBreakpointId;
     String m_breakReason;
-    RefPtr<protocol::DictionaryValue> m_breakAuxData;
+    OwnPtr<protocol::DictionaryValue> m_breakAuxData;
     DebuggerStep m_scheduledDebuggerStep;
     bool m_skipNextDebuggerStepOut;
     bool m_javaScriptPauseScheduled;

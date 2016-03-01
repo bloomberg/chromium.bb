@@ -23,7 +23,7 @@ protected:
     RemoteObjectIdBase();
     ~RemoteObjectIdBase() { }
 
-    PassRefPtr<protocol::DictionaryValue> parseInjectedScriptId(const String&);
+    PassOwnPtr<protocol::DictionaryValue> parseInjectedScriptId(const String&);
 
     int m_injectedScriptId;
 };
