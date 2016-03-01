@@ -52,6 +52,8 @@ const char kSessionManagerCheckArcAvailability[] = "CheckArcAvailability";
 const char kSessionManagerStartArcInstance[] = "StartArcInstance";
 const char kSessionManagerStopArcInstance[] = "StopArcInstance";
 const char kSessionManagerGetArcStartTimeTicks[] = "GetArcStartTimeTicks";
+const char kSessionManagerStartContainer[] = "StartContainer";
+const char kSessionManagerStopContainer[] = "StopContainer";
 // Signals
 const char kLoginPromptVisibleSignal[] = "LoginPromptVisible";
 const char kSessionStateChangedSignal[] = "SessionStateChanged";
