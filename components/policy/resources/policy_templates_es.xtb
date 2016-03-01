@@ -505,15 +505,6 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
           Si no se establece esta política, se usará la política AskGeolocation y el usuario podrá modificarla.</translation>
 <translation id="2650049181907741121">Acción que se realiza cuando el usuario cierra la tapa</translation>
 <translation id="2660846099862559570">No utilizar nunca un proxy</translation>
-<translation id="2665596266623707739">Advertencia: La alternativa de usar TLS 1.0 se eliminará de <ph name="PRODUCT_NAME" /> después de la versión 47 (en enero de 2016 aproximadamente) y la opción tls1 dejará de funcionar.
-
-      Cuando no es posible establecer el protocolo de enlace TLS, <ph name="PRODUCT_NAME" /> vuelve a intentar establecer la conexión con una versión inferior de TLS para evitar errores en los servidores HTTPS. Esta opción configura la versión en la que se detendrá el proceso alternativo. Si un servidor lleva a cabo la negociación de la versión correctamente (es decir, sin interrumpir la conexión), esta opción no se aplicará. En cualquier caso, la conexión resultante debe cumplir la política SSLVersionMin.
-
-      Si no se configura esta política, <ph name="PRODUCT_NAME" /> utiliza la versión mínima predeterminada, que es TLS 1.0 en <ph name="PRODUCT_NAME" /> 44 y TLS 1.1 en versiones posteriores. Ten en cuenta que, solo si <ph name="PRODUCT_NAME" /> evita el uso de servidores con errores que no puedan negociar las versiones correctamente, no se inhabilitará la compatibilidad con TLS 1.0.
-
-      De lo contrario, se puede establecer uno de los siguientes valores: tls1, tls1.1 o tls1.2. Si se debe mantener la compatibilidad con un servidor con errores, se puede configurar tls1. Se trata de una solución provisional y el servidor debería arreglarse rápidamente.
-
-     Al establecer tls1.2, se inhabilitan todos los valores alternativos pero es posible que afecte a la compatibilidad de forma significativa.</translation>
 <translation id="267596348720209223">Permite especificar las codificaciones de caracteres admitidas por el proveedor de búsquedas. Las codificaciones son nombres de páginas de códigos, como UTF-8, GB2312 o ISO-8859-1. Los intentos de uso se hacen en el orden especificado.
 
           Esta política es opcional. Si no se establece se usará el valor predeterminado, es decir, UTF-8.

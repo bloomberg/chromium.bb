@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ca">
-<translation id="1015255576907412255">Contacteu amb l'administrador del sistema per obtenir més informació.</translation>
 <translation id="1015730422737071372">Proporcioneu més informació</translation>
 <translation id="1032854598605920125">Gira en el sentit de les agulles del rellotge</translation>
 <translation id="1038842779957582377">nom desconegut</translation>
@@ -300,7 +299,6 @@
 <translation id="4176463684765177261">Desactivat</translation>
 <translation id="4196861286325780578">&amp;Refés el moviment</translation>
 <translation id="4220128509585149162">Errors</translation>
-<translation id="4241404202385006548">Desactiveu les extensions i, tot seguit, torneu a carregar aquesta pàgina web.</translation>
 <translation id="4250680216510889253">No</translation>
 <translation id="4258748452823770588">Signatura errònia</translation>
 <translation id="4268298190799576220">En aquest moment Chromium no ha pogut verificar la vostra targeta. Torneu-ho a provar més tard.</translation>
@@ -440,7 +438,6 @@
 <translation id="6203231073485539293">Comprovació de la connexió a Internet</translation>
 <translation id="6218753634732582820">Voleu suprimir l'adreça de Chromium?</translation>
 <translation id="6232139169545176020">No s'admet l'esquema URI sol·licitat.</translation>
-<translation id="6237614789842758826">Cerca a Google</translation>
 <translation id="6259156558325130047">&amp;Refés el canvi d'ordre</translation>
 <translation id="6262796033958342538">S'han rebut diverses capçaleres d'ubicacions diferents. Per tal de protegir-vos
         contra atacs de divisió de respostes HTTP, aquest comportament no es permet.</translation>
@@ -516,7 +513,6 @@
 <translation id="7087282848513945231">Comptat</translation>
 <translation id="7088615885725309056">Més antic</translation>
 <translation id="7108649287766967076">La traducció a <ph name="TARGET_LANGUAGE" /> ha fallat.</translation>
-<translation id="7117303293717852287">Tornar a carregar aquesta pàgina web</translation>
 <translation id="7139724024395191329">Emirat</translation>
 <translation id="7179921470347911571">Torna'l a iniciar ara</translation>
 <translation id="7180611975245234373">Actualitza</translation>
@@ -563,7 +559,6 @@ El mode d'incògnit, <ph name="SHORTCUT_KEY" />, us pot resultar pràctic la pro
 <translation id="7592362899630581445">El certificat del servidor incompleix les restriccions de nom.</translation>
 <translation id="759889825892636187"><ph name="HOST_NAME" /> no pot gestionar la sol·licitud en aquest moment.</translation>
 <translation id="7600965453749440009">No tradueixis mai de: <ph name="LANGUAGE" /></translation>
-<translation id="7602848207066046655">No s'ha trobat el servidor de <ph name="HOST_NAME" />, <ph name="BEGIN_ABBR" />.</translation>
 <translation id="7610193165460212391">El valor es troba fora de l'interval <ph name="VALUE" /> .</translation>
 <translation id="7613889955535752492">Data de caducitat: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Ja teniu dades encriptades amb una versió diferent de la contrasenya del vostre compte de Google. Introduïu-la a continuació.</translation>
@@ -644,7 +639,6 @@ El mode d'incògnit, <ph name="SHORTCUT_KEY" />, us pot resultar pràctic la pro
 <translation id="8488350697529856933">Objectiu d'aplicació</translation>
 <translation id="8494979374722910010">Ha fallat l'intent de connectar amb el servidor.</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> ha tardat massa a respondre.</translation>
-<translation id="8508677083825928015">Baixa recursos prèviament per carregar pàgines més ràpidament</translation>
 <translation id="8530504477309582336">Google Payments no admet aquest tipus de targeta. Seleccioneu-ne una altra.</translation>
 <translation id="8550022383519221471">El servei de sincronització no està disponible per al vostre domini.</translation>
 <translation id="8553075262323480129">S'ha produït un error en fer la traducció perquè no s'ha pogut determinar l'idioma de la pàgina.</translation>

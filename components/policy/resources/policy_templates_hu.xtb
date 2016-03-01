@@ -451,15 +451,6 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
 <translation id="2646290749315461919">Lehetővé teszi, hogy megadja azon weboldalak listáját, amelyek követhetik a felhasználók tartózkodási helyét. A felhasználók tartózkodási helyének követése lehet alapértelmezetten engedélyezett, alapértelmezetten tiltott, vagy megkérdezheti a felhasználót minden alkalommal, amikor egy webhely a tartózkodási helyét szeretné tudni. Ha a házirend konfigurálatlanul marad, a rendszer az "AskGeolocation" értéket használja, amelyet a felhasználó módosíthat.</translation>
 <translation id="2650049181907741121">Az a művelet, amelyet akkor végez a rendszer, ha a felhasználó lezárja a fedelet</translation>
 <translation id="2660846099862559570">Soha ne használjon proxyt</translation>
-<translation id="2665596266623707739">Figyelem: A 47. verzió után (körülbelül 2016 januárjában) eltávolítjuk a TLS 1.0-ás verziót a <ph name="PRODUCT_NAME" /> termékből, és onnantól a „tls1” lehetőség nem működik.
-
-      Ha a TLS-kézfogás sikertelen, a <ph name="PRODUCT_NAME" /> újból megpróbálja a csatlakozást a TLS egy alacsonyabb verziójával, hogy kiküszöbölje a HTTPS-szerverek programhibáit. Ez a beállítás azt a verziót konfigurálja, amelynél a tartalékfolyamat leáll. Ha a szerver helyesen hajtja végre a verzióegyeztetést (azaz a kapcsolat megszakítása nélkül), akkor a rendszer nem alkalmazza ezt a beállítást. Mindettől függetlenül az ennek eredményeként létrejövő kapcsolatnak meg kell felelnie az SSLVersionMin paraméternek.
-
-      Ha ez a házirend nincs beállítva, akkor a <ph name="PRODUCT_NAME" /> egy alapértelmezett minimumverziót használ, ami a TLS 1.0 a <ph name="PRODUCT_NAME" /> 44. és a TLS 1.1 az újabb verzióiban. Lényeges, hogy ez nem kapcsolja ki a TLS 1.0 támogatását, hanem csupán azt, hogy a <ph name="PRODUCT_NAME" /> kiküszöbölje-e azokat a hibásan működő szervereket, amelyek nem tudják helyesen egyeztetni a verziókat.
-
-      Egyébként a következő értékek valamelyikére lehet állítani: „tls1”, „tls1.1” vagy „tls1.2”. Ha fenn kell tartani a kompatibilitást a hibásan működő szerverrel, akkor „tls1” értékre állítható. Ez átmeneti intézkedés, és a szervert mielőbb meg kell javítani.
-
-      A „tls1.2” beállítás kikapcsolja valamennyi tartalékot, de a kompatibilitást érintő jelentős hatása lehet.</translation>
 <translation id="267596348720209223">Meghatározza a keresési szolgáltató által támogatott karakterkódolásokat. A kódolások kódtáblanevek, például UTF-8, GB2312 vagy ISO-8859-1. A szolgáltató a megadott sorrendben próbálja őket használni. A házirend nem kötelező. Ha nincs beállítva, akkor a rendszer az alapértelmezés szerinti UTF-8-at használja. A házirend csak akkor teljesül, ha a "DefaultSearchProviderEnabled" házirend engedélyezve van.</translation>
 <translation id="2682225790874070339">Letiltja a Google Drive szolgáltatást a <ph name="PRODUCT_OS_NAME" /> Fájlok alkalmazásában</translation>
 <translation id="268577405881275241">Az adattömörítő proxyfunkció engedélyezése</translation>

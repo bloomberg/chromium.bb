@@ -24,7 +24,6 @@ Du må ha slått på Bluetooth og Posisjon for å bruke det fysiske nettet.</tra
 <translation id="1346090444609141578">Det er ingen lagrede sider her</translation>
 <translation id="1369915414381695676">Nettstedet <ph name="SITE_NAME" /> er lagt til</translation>
 <translation id="1373696734384179344">Det er ikke nok ledig minne til å laste ned det valgte innholdet.</translation>
-<translation id="1379156015317873965">Forbedre ytelsen ved sideinnlasting</translation>
 <translation id="138361230106469022">Hei, <ph name="FULL_NAME" /></translation>
 <translation id="1383876407941801731">Søk</translation>
 <translation id="1389974829397082527">Det er ingen bokmerker her</translation>
@@ -126,7 +125,6 @@ Du kan kontrollere det fysiske nettet i personverninnstillingene i Chrome.</tran
 <translation id="2707726405694321444">Last inn siden på nytt</translation>
 <translation id="2709516037105925701">Autofyll</translation>
 <translation id="271033894570825754">Ny</translation>
-<translation id="2718352093833049315">Bare på Wi-Fi</translation>
 <translation id="2748463065602559597">Du ser på en sikker Google Chrome-side.</translation>
 <translation id="2762000892062317888">akkurat nå</translation>
 <translation id="2770465223704140727">Fjern fra listen</translation>
@@ -262,6 +260,7 @@ Hvis du vil endre søkeordet, kan du trykke på det og holde for å merke det. H
 <translation id="4836364883164334657">Tilkoblingen din til dette nettstedet er ikke privat. Hackere kan prøve å stjele informasjonen din (for eksempel bilder, passord, meldinger og kredittkortinformasjon) fra <ph name="DOMAIN_NAME" />.</translation>
 <translation id="4842511359652954519">Finn ut mer</translation>
 <translation id="4850886885716139402">Visning</translation>
+<translation id="4875622588773761625">Vil du at <ph name="PASSWORD_MANAGER_BRAND" /> skal oppdatere passordet for dette nettstedet?</translation>
 <translation id="4881695831933465202">Åpne</translation>
 <translation id="4885273946141277891">For mange Chrome-forekomster.</translation>
 <translation id="4927198283430892231">Lagrede sider tar for tiden opp <ph name="TOTAL_OFFLINE_STORAGE_SIZE" />.</translation>
@@ -307,7 +306,6 @@ Bare åpne Chrome på datamaskinen, gå til menyen, og velg «Logg på Chrome».
 <translation id="5323972449344932352">Start Chrome</translation>
 <translation id="5324858694974489420">Foreldreinnstillinger</translation>
 <translation id="5327248766486351172">Navn</translation>
-<translation id="5335200807405507442">Hent sideressurser på forhånd</translation>
 <translation id="5345040418939504969">Slettet <ph name="BOOKMARK_TITLE" /></translation>
 <translation id="5345083863238459644">Posisjonstilgang er også <ph name="BEGIN_LINK" />slått av for denne enheten<ph name="END_LINK" />.</translation>
 <translation id="5380554235172449987">Send aldri</translation>
@@ -485,7 +483,6 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="7498271377022651285">Vent litt</translation>
 <translation id="7501135638693251872">Alle bokmerker</translation>
 <translation id="7521387064766892559">JavaScript</translation>
-<translation id="7561196759112975576">Alltid</translation>
 <translation id="7562080006725997899">Sletter nettlesingsdata</translation>
 <translation id="7588950540487816470">Fysisk nett</translation>
 <translation id="7596558890252710462">Operativsystem</translation>
@@ -519,7 +516,6 @@ Du er imidlertid ikke usynlig. Inkognitomodus skjuler ikke surfingen din for arb
 <translation id="7876243839304621966">Fjern alle</translation>
 <translation id="7947953824732555851">Godta og logg på</translation>
 <translation id="7949961459945740081">Få de nyeste funksjonene</translation>
-<translation id="7961015016161918242">Aldri</translation>
 <translation id="7963646190083259054">Leverandør:</translation>
 <translation id="7987073022710626672">Vilkår for bruk av Chrome</translation>
 <translation id="7998918019931843664">Åpne lukkede faner igjen</translation>
@@ -612,5 +608,6 @@ For å få nye lisenser må du koble deg til Internett og spille av innholdet du
 <translation id="945632385593298557">Tilgang til mikrofonen din</translation>
 <translation id="954352821720225055">Bokmerket er ikke tilgjengelig lokalt. Lagringsplassen er nesten full.</translation>
 <translation id="969096075394517431">Endre språk</translation>
+<translation id="981121421437150478">Uten nett</translation>
 <translation id="983192555821071799">Lukk alle faner</translation>
 </translationbundle>

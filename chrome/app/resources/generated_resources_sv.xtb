@@ -265,7 +265,6 @@
 <translation id="1401874662068168819">Gin Yieh</translation>
 <translation id="140240131475089220">Tyst felsökning</translation>
 <translation id="140250605646987970">Din mobil hittades, men Smart Lock fungerar bara för enheter med Android 5.0 och senare. &lt;a&gt;Läs mer&lt;/a&gt;</translation>
-<translation id="1405126334425076373">Muspekare</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (kontrollerad)</translation>
 <translation id="1405476660552109915">Vill du spara kontot för den här webbplatsen med <ph name="PASSWORD_MANAGER_BRAND" />?</translation>
 <translation id="1406500794671479665">Verifierar …</translation>
@@ -535,7 +534,6 @@
 <translation id="175772926354468439">Aktivera tema</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="1758831820837444715">Konfigurera Ethernet-nätverk</translation>
-<translation id="1761647635297215796">Ger webbplatser åtkomst till API:et för WebAudio.</translation>
 <translation id="1763046204212875858">Skapa programgenvägar</translation>
 <translation id="1763108912552529023">Fortsätt att utforska</translation>
 <translation id="1764226536771329714">beta</translation>
@@ -877,7 +875,6 @@ När du har skapat en ny kontrollerad användare kan du hantera inställningarna
 <translation id="2286454467119466181">Enkel</translation>
 <translation id="2286950485307333924">Du är nu inloggad i Chrome</translation>
 <translation id="2287590536030307392">Inaktivera alla trådlösa anslutningar.</translation>
-<translation id="2289383640829819703">Inga nedladdningar hittades.</translation>
 <translation id="2291643155573394834">Nästa flik</translation>
 <translation id="2294358108254308676">Vill du installera <ph name="PRODUCT_NAME" />?</translation>
 <translation id="2296019197782308739">EAP-metod:</translation>
@@ -936,7 +933,6 @@ När du har skapat en ny kontrollerad användare kan du hantera inställningarna
 <translation id="2384596874640104496">Sinhalesiskt tangentbord</translation>
 <translation id="2385700042425247848">Namn på tjänsten</translation>
 <translation id="2386631145847373156">Du kan bara logga ut om du är inloggad.</translation>
-<translation id="2386784019642337415">Läsa och ändra sökmotorer (standard och anpassade)</translation>
 <translation id="2390045462562521613">Spara inte det här nätverket</translation>
 <translation id="2391243203977115091"><ph name="FILE_COUNT" /> nya foton hittades
     <ph name="LINE_BREAK1" />
@@ -1414,7 +1410,6 @@ hanteraren
 <translation id="3025729795978504041">Högerklicka på knappen ovan om du vill visa för andra.</translation>
 <translation id="3026050830483105579">Här hittar du allt.</translation>
 <translation id="302620147503052030">Visa knapp</translation>
-<translation id="3030138564564344289">Försök att ladda ned igen</translation>
 <translation id="3031417829280473749">Agent X</translation>
 <translation id="3031557471081358569">Välj objekt att importera:</translation>
 <translation id="3033332627063280038">Aktiverar den experimentella implementeringen av direktivet stale-while-revalidate för cacheminnet. Det tillåter att servrar anger att vissa resurser kan valideras om i bakgrunden för att förbättra latensen.</translation>
@@ -2338,7 +2333,6 @@ Tryck på någon tangent om du vill fortsätta utforska.</translation>
 <translation id="4363372140743955595">Omverifiering för lösenordshanteraren</translation>
 <translation id="4364444725319685468"><ph name="FILE_NAME" /> har laddats ned</translation>
 <translation id="4364830672918311045">Visa aviseringar</translation>
-<translation id="4365486896593700706">WebAudio</translation>
 <translation id="4365673000813822030">Oj, synkroniseringen har slutat fungera.</translation>
 <translation id="4366509400410520531">Tillåts av dig</translation>
 <translation id="4367782753568896354">Det gick inte att installera:</translation>
@@ -2359,7 +2353,7 @@ Tryck på någon tangent om du vill fortsätta utforska.</translation>
 <translation id="4389091756366370506">Användare <ph name="VALUE" /></translation>
 <translation id="4394049700291259645">Inaktivera</translation>
 <translation id="4396124683129237657">Nytt kreditkort ...</translation>
-<translation id="4401841120781282684">Aktiverar alltid Åtgärd från användaragent för inläsning av WebFonts. Flaggan påverkar bara när åtgärden är aktiverad.</translation>
+<translation id="4401841120781282684">Använd för att aktivera Åtgärd från användaragent för WebFonts läses alltid in. Flaggan påverkar bara när åtgärden är aktiverad.</translation>
 <translation id="4408599188496843485">H&amp;jälp</translation>
 <translation id="4409697491990005945">Marginaler</translation>
 <translation id="4411578466613447185">Kodsigneringscertifikat</translation>
@@ -2399,7 +2393,6 @@ Tryck på någon tangent om du vill fortsätta utforska.</translation>
 <translation id="4467798014533545464">Visa webbadress</translation>
 <translation id="4470564870223067757">Hangul 2 Set</translation>
 <translation id="4474155171896946103">Lägg till bokmärke på alla flikar...</translation>
-<translation id="4475552974751346499">Sök i nedladdningar</translation>
 <translation id="4477219268485577442">Bulgariska (fonetiskt)</translation>
 <translation id="4478664379124702289">Spara l&amp;änk som...</translation>
 <translation id="4479639480957787382">Ethernet</translation>
@@ -2705,7 +2698,6 @@ Tryck på någon tangent om du vill fortsätta utforska.</translation>
 <translation id="4941246025622441835">Använd den här enhetsanmälan när enheten upptas för företagshantering:</translation>
 <translation id="4942394808693235155">Sök efter och installera uppdateringar</translation>
 <translation id="494286511941020793">Hjälp för proxykonfiguration</translation>
-<translation id="4945378551914476156">Bokmärken, historik, lösenord och andra liknande inställningar synkroniseras med Google-kontot så att du kan använda dem på alla ställen där du använder Chrome. Du kan ändra det här i <ph name="BEGIN_LINK" /></translation>
 <translation id="4950138595962845479">Alternativ...</translation>
 <translation id="4952186391360931024">Inte Material Design</translation>
 <translation id="4954544650880561668">Enhetskontroll</translation>
@@ -3117,7 +3109,6 @@ Tryck på någon tangent om du vill fortsätta utforska.</translation>
 <translation id="5537725057119320332">Casta</translation>
 <translation id="5538092967727216836">Hämta ram igen</translation>
 <translation id="5542132724887566711">Profil</translation>
-<translation id="5542721662280972920">Krypterade medietillägg på video- och ljudobjekt.</translation>
 <translation id="5543983818738093899">Kontrollerar status …</translation>
 <translation id="5544363333869861395">Cachelagra data från V8:s textanalysator.</translation>
 <translation id="5546477470896554111">Hantera strömkälla …</translation>
@@ -3374,7 +3365,6 @@ Tryck på någon tangent om du vill fortsätta utforska.</translation>
   <ph name="EXPONENT_HEX_DUMP" /></translation>
 <translation id="59174027418879706">Aktiverat</translation>
 <translation id="592068147111860043">Ange vilka PPAPI-pluginprogram som ska köras med sandlådeprincipen för låsning under Win32k.</translation>
-<translation id="5921225488888777945">Utfasad version av krypterade medietillägg för video- och ljudobjekt.</translation>
 <translation id="5925147183566400388">Pekare för certifieringspraxis</translation>
 <translation id="5930693802084567591">Dina data har krypterats med Google-lösenord den <ph name="TIME" />. Ange den nedan.</translation>
 <translation id="5931146425219109062">Läsa och ändra all din data på de webbplatser du besöker</translation>
@@ -3496,12 +3486,10 @@ Tryck på någon tangent om du vill fortsätta utforska.</translation>
 <translation id="6116921718742659598">Ändra språk- och inmatningsinställningar</translation>
 <translation id="6117536376248197233">Inaktivera tidslinjer för sammansatta animeringar i renderare.</translation>
 <translation id="6120205520491252677">Fäst den här sidan på startskärmen ...</translation>
-<translation id="6120816415558830169">Nedladdat av &lt;a&gt;<ph name="EXTENSION" />&lt;/a&gt;</translation>
 <translation id="6122081475643980456">Din internetanslutning kontrolleras</translation>
 <translation id="6122093587541546701">E-postadress (valfritt):</translation>
 <translation id="6122875415561139701">Skrivbehörigheten för åtgärden saknas på: <ph name="DEVICE_NAME" />.</translation>
 <translation id="6124650939968185064">Följande tillägg är beroende av detta tillägg:</translation>
-<translation id="612701906868237915">Logga in automatiskt på dina enheter</translation>
 <translation id="6129938384427316298">Kommentar för Netscape-certifikat</translation>
 <translation id="6129953537138746214">Blanksteg</translation>
 <translation id="6132383530370527946">Det finstilta</translation>
@@ -3636,7 +3624,6 @@ Tryck på någon tangent om du vill fortsätta utforska.</translation>
 <translation id="6344170822609224263">Få åtkomst till en lista med nätverksanslutningar</translation>
 <translation id="6345221851280129312">okänd storlek</translation>
 <translation id="6347003977836730270">Aktivera den nya bubblan Översätt UX i stället för informationsfältet.</translation>
-<translation id="6347887127637865679">Krypterade medietillägg</translation>
 <translation id="6348657800373377022">Kombinationsruta</translation>
 <translation id="6349839454356033837">Det gick inte att spela upp videon med Android.</translation>
 <translation id="6353618411602605519">Kroatiskt tangentbord</translation>
@@ -3987,7 +3974,7 @@ Tryck på någon tangent om du vill fortsätta utforska.</translation>
 <translation id="6915804003454593391">Användare:</translation>
 <translation id="6916590542764765824">Hantera tillägg</translation>
 <translation id="6918340160281024199">US Workman</translation>
-<translation id="6920569915859786172">Aktivera åtgärd från användaragent för inläsning av WebFonts.</translation>
+<translation id="6920569915859786172">Aktiverar Åtgärd från användaragent för WebFonts läses alltid in.</translation>
 <translation id="6920989436227028121">Öppna som en vanlig flik</translation>
 <translation id="6922128026973287222">Spara data och bläddra snabbare med Google Databesparing. Klicka här om du vill veta mer.</translation>
 <translation id="6929555043669117778">Fortsätt att blockera popup-program</translation>
@@ -4038,7 +4025,6 @@ Tryck på någon tangent om du vill fortsätta utforska.</translation>
 <translation id="6991665348624301627">Välj en plats</translation>
 <translation id="699220179437400583">Rapportera uppgifter om möjliga säkerhetsincidenter till Google automatiskt</translation>
 <translation id="6993929801679678186">Visa förslag från Autofyll</translation>
-<translation id="6994840493536325068">Logga automatiskt in på webbplatser med den här enheten</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> mappar har valts</translation>
 <translation id="6998872712520806535">{NUM_PAGES,plural, =1{Följande sida svarar inte. Du kan vänta på att den svarar eller stänga den.}other{Följande sidor svarar inte. Du kan vänta tills de svarar eller stänga dem.}}</translation>
 <translation id="7002055706763150362">Om du vill konfigurera Smart Lock för Chrome måste Google vara säker på att det är du som gör ändringen, så du måste först ange ditt lösenord.</translation>
@@ -4697,7 +4683,6 @@ Tryck på någon tangent om du vill fortsätta utforska.</translation>
 <translation id="7987485481246785146">Tangentbord baserat på sorani/kurdiska och arabiska</translation>
 <translation id="7988930390477596403">Den aktiveras nästa gång du låser upp <ph name="DEVICE_TYPE" />. Med Smart Lock kan du låsa upp enheten med din mobil utan att ange något lösenord. Bluetooth måste vara aktiverat för att Smart Lock ska kunna aktiveras.</translation>
 <translation id="7989023212944932320">Google Säker webbsökning upptäckte nyligen <ph name="BEGIN_LINK" />skadlig programvara<ph name="END_LINK" /> på <ph name="SITE" />. Webbplatser som vanligtvis är säkra utsätts ibland för skadlig programvara. Det skadliga innehållet kommer från <ph name="SUBRESOURCE_HOST" />, som är en känd distributör av skadlig programvara. Kom tillbaka om några timmar.</translation>
-<translation id="7990249708898521239">Krypterade medietillägg med prefix</translation>
 <translation id="7994370417837006925">Multiinloggning</translation>
 <translation id="799547531016638432">Ta bort genväg</translation>
 <translation id="79962507603257656">Nedladdningsstatus i meddelandecenter</translation>

@@ -505,15 +505,6 @@
           Nenustačius šios politikos bus naudojama „Klausti geografinės vietos“ ir naudotojas (-a) galės tai pakeisti.</translation>
 <translation id="2650049181907741121">Veiksmas, kuris bus atliktas, kai naudotojas uždarys dangtelį</translation>
 <translation id="2660846099862559570">Niekada nenaudoti tarpinio serverio</translation>
-<translation id="2665596266623707739">Įspėjimas: 1.0 versijos TLS surogatas bus pašalintas iš „<ph name="PRODUCT_NAME" />“ po 47 versijos (maždaug 2016 m. sausio mėn.) ir parinktis „tls1“ nebeveiks.
-
-      Kai įvyks TLS išankstinio suderinimo klaida, „<ph name="PRODUCT_NAME" />“ bandys dar kartą užmegzti ryšį su senesnės versijos TLS, kad pašalintų riktus HTTPS serveriuose. Nustačius šį nustatymą konfigūruojama versija, kurią pasiekus šis surogato procesas bus sustabdytas. Jei serveris tinkamai vykdo versijos derybas (t. y. nenutraukdamas ryšio), šis nustatymas netaikomas. Nepaisant to, užmegztas ryšys vis tiek turi atitikti „SSLVersionMin“.
-
-      Jei ši politika nesukonfigūruota, „<ph name="PRODUCT_NAME" />“ naudojama numatytoji minimali versija, kuri yra TLS 1.0, naudojant 44 versijos „<ph name="PRODUCT_NAME" />“, ir TLS 1.1, naudojant naujesnes versijas. Atminkite, kad dėl to nėra išjungiamas 1.0 versijos TLS palaikymas, tik nustatoma, ar „<ph name="PRODUCT_NAME" />“ pašalins serverių, kurie negali tinkamai suderinti versijų, riktus.
-
-      Nepavykus to atlikti gali būti nustatyta viena iš nurodytų verčių: „tls1“, „tls1.1“ arba „tls1.2“. Jei reikia užtikrinti suderinamumą su serveriu, kuriame yra riktų, galima nustatyti vertę „tls1“. Tai laikina priemonė; serverį reikia greitai sutvarkyti.
-
-      Nustačius nustatymą „tls1.2“, išjungiamas visas surogatas, bet tai gali stipriai paveikti suderinamumą.</translation>
 <translation id="267596348720209223">Nurodomos paieškos teikėjo palaikomos simbolių koduotės. Koduotės – tai kodų puslapių pavadinimai, pvz., UTF-8, GB2312 ir ISO-8859-1. Jie išbandomi nurodyta tvarka.
 
           Ši politika pasirenkama. Jos nenustačius numatytasis nustatymas bus UTF-8.
@@ -1311,7 +1302,7 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 
           Jei šis nustatymas išjungtas arba nenustatytas, taikoma numatytoji ryšio tipo politika. Teikiant nuotolinę pagalbą, klientams iš bet kurio domeno leidžiama prisijungti prie prieglobos. Teikiant nuotolinę prieigą bet kuriuo metu, gali prisijungti tik prieglobos savininkas.
 
-          Taip pat žr. RemoteAccessHostDomain.</translation>
+          Taip pat žr. „RemoteAccessHostDomain“.</translation>
 <translation id="5630352020869108293">Atkurti paskutinę sesiją</translation>
 <translation id="5645779841392247734">Leisti slapukus šiose svetainėse</translation>
 <translation id="5677038592630896441">Reikalaujama, kad vietinio naudotojo ir nuotolinės prieigos prieglobos serverio savininko vardai atitiktų.
@@ -1760,7 +1751,7 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 
           Jei šis nustatymas išjungtas arba nenustatytas, tada prieglobas galima bendrinti naudojant bet kurią paskyrą.
 
-          Taip pat žr. RemoteAccessHostClientDomain.</translation>
+          Taip pat žr. „RemoteAccessHostClientDomain“.</translation>
 <translation id="6997592395211691850">Ar internetinės OCSP / CRL patikros reikalingos vietiniams patikimiems prieraišams</translation>
 <translation id="7003334574344702284">Pagal šią politiką priverstinai importuojami išsaugoti slaptažodžiai iš ankstesnės numatytosios naršyklės (jei įgalinta). Be to, jei įgalinta, ši politika turi įtakos importavimo dialogo langui.
 

@@ -24,7 +24,6 @@
 <translation id="1346090444609141578">這個資料夾中尚未儲存任何網頁</translation>
 <translation id="1369915414381695676">已新增 <ph name="SITE_NAME" /> 網站</translation>
 <translation id="1373696734384179344">記憶體不足，無法下載您選取的這項內容。</translation>
-<translation id="1379156015317873965">改善網頁載入效能</translation>
 <translation id="138361230106469022"><ph name="FULL_NAME" />，您好：</translation>
 <translation id="1383876407941801731">搜尋</translation>
 <translation id="1389974829397082527">這裡沒有任何書籤</translation>
@@ -126,7 +125,6 @@ Chrome 會在您的裝置解鎖時掃描附近的網頁。這些網頁經由 Goo
 <translation id="2707726405694321444">重新整理頁面</translation>
 <translation id="2709516037105925701">自動填入</translation>
 <translation id="271033894570825754">新</translation>
-<translation id="2718352093833049315">僅限連上 Wi-Fi 網路時</translation>
 <translation id="2748463065602559597">您正在瀏覽安全型 Google Chrome 網頁。</translation>
 <translation id="2762000892062317888">剛剛</translation>
 <translation id="2770465223704140727">從清單中移除</translation>
@@ -262,6 +260,7 @@ Chrome 會在您的裝置解鎖時掃描附近的網頁。這些網頁經由 Goo
 <translation id="4836364883164334657">您與這個網站之間的連線不是私人連線。攻擊者可能會嘗試從 <ph name="DOMAIN_NAME" /> 竊取您的資訊 (例如相片、密碼、郵件和信用卡資訊)。</translation>
 <translation id="4842511359652954519">閱讀完整內容</translation>
 <translation id="4850886885716139402">檢視</translation>
+<translation id="4875622588773761625">您要讓 <ph name="PASSWORD_MANAGER_BRAND" /> 更新您在這個網站設定的密碼嗎？</translation>
 <translation id="4881695831933465202">開啟</translation>
 <translation id="4885273946141277891">Chrome 實例的數量已超出上限。</translation>
 <translation id="4927198283430892231">已儲存的網頁目前佔用了 <ph name="TOTAL_OFFLINE_STORAGE_SIZE" />。</translation>
@@ -307,7 +306,6 @@ Chrome 會在您的裝置解鎖時掃描附近的網頁。這些網頁經由 Goo
 <translation id="5323972449344932352">啟動 Chrome</translation>
 <translation id="5324858694974489420">家長設定</translation>
 <translation id="5327248766486351172">名稱</translation>
-<translation id="5335200807405507442">預先擷取網頁資源</translation>
 <translation id="5345040418939504969">已刪除的「<ph name="BOOKMARK_TITLE" />」</translation>
 <translation id="5345083863238459644">這個裝置的<ph name="BEGIN_LINK" />位置資訊存取功能已一併關閉<ph name="END_LINK" />。</translation>
 <translation id="5380554235172449987">一律不傳送</translation>
@@ -452,7 +450,7 @@ Chrome 會在您的裝置解鎖時掃描附近的網頁。這些網頁經由 Goo
 <translation id="7022756207310403729">在瀏覽器中開啟</translation>
 <translation id="7026897394897382018">啟用 Data Saver</translation>
 <translation id="7029809446516969842">密碼</translation>
-<translation id="7031882061095297553">同步到</translation>
+<translation id="7031882061095297553">同步處理</translation>
 <translation id="7053983685419859001">封鎖</translation>
 <translation id="7056999826593229648">偵測到連線速度緩慢</translation>
 <translation id="7057058088140140610">使用 Google Payments 儲存的信用卡和地址資訊。</translation>
@@ -485,7 +483,6 @@ Chrome 會在您的裝置解鎖時掃描附近的網頁。這些網頁經由 Goo
 <translation id="7498271377022651285">請稍候…</translation>
 <translation id="7501135638693251872">所有書籤</translation>
 <translation id="7521387064766892559">JavaScript</translation>
-<translation id="7561196759112975576">永遠使用</translation>
 <translation id="7562080006725997899">正在清除瀏覽資料</translation>
 <translation id="7588950540487816470">實體化網路</translation>
 <translation id="7596558890252710462">作業系統</translation>
@@ -519,7 +516,6 @@ Chrome 會在您的裝置解鎖時掃描附近的網頁。這些網頁經由 Goo
 <translation id="7876243839304621966">全部移除</translation>
 <translation id="7947953824732555851">接受並登入</translation>
 <translation id="7949961459945740081">取得最新功能</translation>
-<translation id="7961015016161918242">永不</translation>
 <translation id="7963646190083259054">供應商：</translation>
 <translation id="7987073022710626672">Chrome 服務條款</translation>
 <translation id="7998918019931843664">重新開啟先前關閉的分頁</translation>
@@ -612,5 +608,6 @@ Chrome 會在您的裝置解鎖時掃描附近的網頁。這些網頁經由 Goo
 <translation id="945632385593298557">存取您的麥克風</translation>
 <translation id="954352821720225055">儲存空間即將用盡，因此無法離線存取書籤。</translation>
 <translation id="969096075394517431">變更語言</translation>
+<translation id="981121421437150478">離線</translation>
 <translation id="983192555821071799">關閉所有分頁</translation>
 </translationbundle>

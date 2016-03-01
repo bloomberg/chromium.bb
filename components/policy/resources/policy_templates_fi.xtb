@@ -449,15 +449,6 @@ Jos tämä asetus ei ole käytössä, käyttäjät eivät voi tulostaa tuotteest
 <translation id="2646290749315461919">Voit määrittää, voivatko sivustot seurata käyttäjän fyysistä sijaintia. Voit sallia tai kieltää käyttäjien sijainnin seuraamisen oletuksena, tai kysyä käyttäjältä aina sivuston pyytäessä sijaintitietoja. Jos tätä käytäntöä ei ole määritetty, AskGeolocation-käytäntöä käytetään ja käyttäjä voi muuttaa asetusta.</translation>
 <translation id="2650049181907741121">Toiminto, kun käyttäjä sulkee kannen</translation>
 <translation id="2660846099862559570">Älä käytä välityspalvelinta</translation>
-<translation id="2665596266623707739">Varoitus: Versiosta 47 alkaen (noin tammikuussa 2016) <ph name="PRODUCT_NAME" /> ei enää tue TLS-version 1.0 käyttöä varalla. Tämän jälkeen arvo tls1 lakkaa toimimasta.
-
-      Jos TLS-kättely epäonnistuu, <ph name="PRODUCT_NAME" /> yrittää kiertää HTTPS-palvelinten virheitä muodostamalla yhteyden uudelleen TLS:n vanhemmalla versiolla. Tämä asetus määrittää version, johon varatoiminto pysähtyy. Jos palvelin suorittaa neuvottelun oikein (eli katkaisematta yhteyttä), tällä asetuksella ei ole vaikutusta. Tavasta riippumatta muodostetun yhteyden täytyy vastata käytäntöä SSLVersionMin.
-
-      Jos tätä käytäntöä ei määritetä, <ph name="PRODUCT_NAME" /> käyttää oletusarvoista vähimmäisversiota, joka on TLS 1.0 <ph name="PRODUCT_NAME" /> 44:ssä ja TLS 1.1 uudemmissa versioissa. Huom. Tämä ei poista TLS 1.0:n tukea, vaan se vain määrittää, voiko <ph name="PRODUCT_NAME" /> kiertää palvelinten virheitä, jos käytettävän version neuvottelua ei suoriteta oikein.
-
-      Käytännön arvoksi voidaan asettaa tls1, tls1.1 tai tls1.2. Jos yhteensopivuus virheitä sisältävän palvelimen kanssa täytyy varmistaa, arvoksi voidaan asettaa tls1. Tämä on kuitenkin tilapäinen toimenpide, ja palvelimen virheet tulee korjata ensi tilassa.
-
-      Arvo tls1.2 poistaa varatoiminnon käytöstä, mikä voi vaikuttaa merkittävästi palvelinten yhteensopivuuteen.</translation>
 <translation id="267596348720209223">Määrittää hakupalvelun tukemat merkkikoodaukset. Koodaukset ovat koodisivun nimiä, kuten UTF-8, GB2312 ja ISO-8859-1. Koodauksia yritetään käyttää määritetyssä järjestyksessä. Tämä käytäntö on valinnainen, ja jos sitä ei ole määritetty, käytetään oletusasetusta (UTF-8). Tämä käytäntö on voimassa vain, jos DefaultSearchProviderEnabled-käytäntö on käytössä.</translation>
 <translation id="2682225790874070339">Poistaa Google Driven käytöstä tuotteen <ph name="PRODUCT_OS_NAME" /> Tiedostot-sovelluksesta</translation>
 <translation id="268577405881275241">Ota käyttöön tietojen pakkauksen välitysominaisuus</translation>
@@ -834,6 +825,7 @@ Jos tätä asetusta ei ole määritetty, kaikentyyppisiä sovelluksia ja laajenn
 
           Käytäntö on voimassa vain, jos käytäntö DefaultSearchProviderEnabled on käytössä.</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 tai uudempi</translation>
+<translation id="4322842393287974810">Salli automaattisesti ilman viivettä käynnistettävän kioskisovelluksen hallinnoida käyttöjärjestelmän <ph name="PRODUCT_OS_NAME" /> versiota</translation>
 <translation id="4325690621216251241">Lisää uloskirjautumispainike järjestelmäpalkkiin</translation>
 <translation id="4347908978527632940">Jos arvo on tosi ja käyttäjä on valvottu käyttäjä, muut Android-sovellukset voivat kysyä käyttäjän verkkorajoitukset sisällöntarjoajalta.
 
@@ -1674,6 +1666,13 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
 <translation id="7340034977315324840">Ilmoita laitteen käyttöajat</translation>
 <translation id="7381326101471547614">Poistaa käytöstä SPDY-protokollan tuotteessa <ph name="PRODUCT_NAME" />. Jos tämä käytäntö on käytössä, SPDY-protokolla ei ole käytettävissä tuotteessa <ph name="PRODUCT_NAME" />. Jos tätä käytäntöä ei oteta käyttöön, SDPY-protokollaa voi käyttää. Jos käytäntöä ei ole määritetty, SDPY on käytettävissä.</translation>
 <translation id="7384999953864505698">Sallii QUIC-protokollan käytön</translation>
+<translation id="7406651467768226499">Tämä määrittää, sallitaanko automaattisesti ilman viivettä käynnistettävän kioskisovelluksen hallinnoida käyttöjärjestelmän <ph name="PRODUCT_OS_NAME" /> versiota.
+
+      Tämä käytäntö määrittää, sallitaanko automaattisesti ilman viivettä käynnistettävän kioskisovelluksen hallinnoida käyttöjärjestelmän <ph name="PRODUCT_OS_NAME" /> versiota määrittämällä required_platform_version-luetteloavain, jota käytetään automaattisesti päivitettävän kohdeversion etuliitteenä.
+
+      Jos käytännön arvo on tosi, automaattisesti ilman viivettä käynnistettävän kioskisovelluksen required_platform_version-luetteloavaimen arvoa käytetään automaattisesti päivitettävän kohdeversion etuliitteenä.
+
+      Jos käytäntöä ei ole määritetty tai sen arvo on epätosi, required_platform_version-luetteloavainta ei oteta huomioon ja automaattinen päivitys suoritetaan tavallisesti.</translation>
 <translation id="7417972229667085380">Prosenttiosuus, jolla käyttämättömyyden viive skaalataan esitystilassa (ei enää käytössä)</translation>
 <translation id="7421483919690710988">Aseta levyn mediavälimuistin koko tavuina</translation>
 <translation id="7424751532654212117">Käytöstä poistettujen laajennuksien poikkeukset</translation>

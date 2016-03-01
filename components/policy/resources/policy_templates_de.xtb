@@ -449,15 +449,6 @@ Falls die Richtlinie auf "false" gesetzt wird, kann eine verzögerungsfreie auto
 <translation id="2646290749315461919">Ermöglicht Ihnen festzulegen, ob Websites den Standort des Nutzers mitverfolgen dürfen. Die Mitverfolgung des Standorts kann standardmäßig gestattet oder nicht gestattet sein oder auf Anfrage beim Nutzer erfolgen. Wenn diese Richtlinie nicht konfiguriert ist, so kommt "AskGeolocation" zum Einsatz, wobei der Nutzer dies ändern kann.</translation>
 <translation id="2650049181907741121">Auszuführende Aktion beim Zuklappen des Geräts</translation>
 <translation id="2660846099862559570">Nie Proxy verwenden</translation>
-<translation id="2665596266623707739">Achtung: Der TLS-1.0-Fallback wird nach Version 47 (ungefähr im Januar 2016) aus <ph name="PRODUCT_NAME" /> entfernt. Die Option "tls1" funktioniert dann nicht mehr.
-
-      Wenn ein TLS-Handshake fehlschlägt, versucht <ph name="PRODUCT_NAME" />, eine Verbindung mit einer niedrigeren TLS-Version herzustellen, um Programmfehler bei HTTPS-Servern zu umgehen. Mit dieser Einstellung wird die Version festgelegt, bei der dieser Fallback-Vorgang beendet wird. Wenn ein Server die Versionsaushandlung korrekt, d. h. ohne Unterbrechung der Verbindung durchführt, wird diese Einstellung nicht angewendet. Ungeachtet dessen muss die sich daraus ergebende Verbindung dem Parameter "SSLVersionMin" entsprechen.
-
-      Ist diese Richtlinie nicht konfiguriert, verwendet <ph name="PRODUCT_NAME" /> die Standardmindestversion TLS 1.0 in <ph name="PRODUCT_NAME" /> 44 und TLS 1.1 in späteren Versionen. Die Unterstützung von TLS 1.0 wird dadurch nicht deaktiviert, es wird lediglich festgelegt, ob <ph name="PRODUCT_NAME" /> fehlerträchtige Server umgeht, die keine korrekten Versionsaushandlungen durchführen können.
-
-      Andernfalls kann einer der folgenden Werte eingestellt werden: "tls1", "tls1.1" oder "tls1.2". Wenn die Kompatibilität mit einem fehlerträchtigen Server aufrechterhalten werden muss, kann "tls1" eingestellt werden. Hierbei handelt es sich um einen provisorischen Wert und der Server sollte schnell repariert werden.
-
-      Mit der Einstellung "tls1.2" wird der gesamte Fallback-Vorgang deaktiviert. Dies kann sich jedoch erheblich auf die Kompatibilität auswirken.</translation>
 <translation id="267596348720209223">Gibt die vom Suchanbieter unterstützten Zeichencodierungen an. Codierungen sind Codepage-Namen wie UTF-8, GB2312 und ISO-8859-1. Sie werden in der Reihenfolge durchprobiert, in der sie angegeben werden. Diese Richtlinie ist optional. Ist sie nicht konfiguriert, so kommt der Standardwert UTF-8 zum Einsatz. Diese Richtlinie wird nur umgesetzt, wenn die Richtlinie "DefaultSearchProviderEnabled" aktiviert ist.</translation>
 <translation id="2682225790874070339">Synchronisierung zwischen Google Drive und der App "Dateien" von <ph name="PRODUCT_OS_NAME" /> deaktivieren</translation>
 <translation id="268577405881275241">Funktion für Datenkomprimierungs-Proxy aktivieren</translation>

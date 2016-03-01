@@ -1,7 +1,18 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fi">
+<translation id="1091157412887719337">Tehtävä epäonnistui. Koneita ei ole käytettävissä.</translation>
+<translation id="2004526128230838685">Tehtävä epäonnistui. Tapahtui tuntematon virhe.</translation>
+<translation id="2023631438558435272">Tehtävä epäonnistui. Vastaus on virheellinen.</translation>
+<translation id="2353984724370197742">Tehtävä epäonnistui. Verkon pyyntö epäonnistui.</translation>
+<translation id="3046825211487065480">Tehtävä epäonnistui. Toinen pyyntö lähetettiin ennen kuin ensimmäiseen pyyntöön vastattiin.</translation>
 <translation id="3407245330823033366">Valitse Blimpin kanssa käytettävä tili.</translation>
+<translation id="3775180005489871350">Tehtävä epäonnistui. Tapahtui virhe 400 (BAD_REQUEST).</translation>
+<translation id="4542350224991263059">Tehtävä epäonnistui. Käyttäjän käyttötunnus on vanhentunut.</translation>
+<translation id="4562971394107096647">Tehtävä epäonnistui. Tapahtui palvelinvirhe.</translation>
 <translation id="4641972508298030550">Käyttäjän todennus epäonnistui.</translation>
+<translation id="5860346505531085166">Tehtävä epäonnistui. Tilillä ei ole käyttöoikeutta.</translation>
+<translation id="704835510384979817">Tehtävä epäonnistui. Koneiden versiot eivät täsmää.</translation>
+<translation id="7961542533680218955">Tehtävä onnistui.</translation>
 <translation id="8514856595257368555">Tunnus noudettu.</translation>
 </translationbundle>

@@ -45,7 +45,7 @@
 <translation id="2674318244760992338">voettekst</translation>
 <translation id="2723001399770238859">audio</translation>
 <translation id="2746543609216772311">Waarde moet <ph name="MINIMUM_DATE_OR_TIME" /> of later zijn.</translation>
-<translation id="2759744352195237655">pop-up-knop</translation>
+<translation id="2759744352195237655">pop-upknop</translation>
 <translation id="2761667185364618470">Vink dit selectievakje aan als je wilt doorgaan.</translation>
 <translation id="2846343701378493991">1024 (gemiddeld niveau)</translation>
 <translation id="2896972712917208084">groep met keuzerondjes</translation>
@@ -98,7 +98,7 @@
 <translation id="5164977714490026579">Waarde moet groter dan of gelijk zijn aan <ph name="MINIMUM" />.</translation>
 <translation id="5307600278924710095">Geef een naamgedeelte op, gevolgd door '<ph name="ATSIGN" />'. '<ph name="INVALIDADDRESS" />' is onvolledig.</translation>
 <translation id="5406322316791861025">figuur</translation>
-<translation id="5453733299334684579">structuuritem</translation>
+<translation id="5453733299334684579">item in boomstructuur</translation>
 <translation id="5466621249238537318">Selecteer een of meer bestanden.</translation>
 <translation id="5468998798572797635">volledig scherm sluiten</translation>
 <translation id="5476505524087279545">Deselecteren</translation>

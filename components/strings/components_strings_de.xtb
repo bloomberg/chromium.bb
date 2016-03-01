@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="de">
-<translation id="1015255576907412255">Um weitere Informationen zu erhalten, wenden Sie sich an Ihren Systemadministrator.</translation>
 <translation id="1015730422737071372">Weitere Details angeben</translation>
 <translation id="1032854598605920125">Im Uhrzeigersinn drehen</translation>
 <translation id="1038842779957582377">Unbekannter Name</translation>
@@ -304,7 +303,6 @@
 <translation id="4176463684765177261">Deaktiviert</translation>
 <translation id="4196861286325780578">&amp;Verschieben wiederholen</translation>
 <translation id="4220128509585149162">Abstürze</translation>
-<translation id="4241404202385006548">Deaktivieren Sie Ihre Erweiterungen und laden Sie die Webseite erneut.</translation>
 <translation id="4250680216510889253">Nein</translation>
 <translation id="4258748452823770588">Fehlerhafte Signatur</translation>
 <translation id="4268298190799576220">Chromium kann Ihre Karte momentan nicht verifizieren. Bitte versuchen Sie es später noch einmal.</translation>
@@ -444,7 +442,6 @@
 <translation id="6203231073485539293">Bitte überprüfen Sie Ihre Internetverbindung.</translation>
 <translation id="6218753634732582820">Adresse aus Chromium entfernen?</translation>
 <translation id="6232139169545176020">URI-Schema wird nicht unterstützt.</translation>
-<translation id="6237614789842758826">Führen Sie eine Google-Suche durch.</translation>
 <translation id="6259156558325130047">&amp;Neu anordnen rückgängig machen</translation>
 <translation id="6262796033958342538">Es wurden mehrere unterschiedliche "Location"-Header empfangen. Dies ist zum
     Schutz vor HTTP Response Splitting-Angriffen unzulässig.</translation>
@@ -520,7 +517,6 @@
 <translation id="7087282848513945231">Landkreis</translation>
 <translation id="7088615885725309056">Älter</translation>
 <translation id="7108649287766967076">Bei der Übersetzung (<ph name="TARGET_LANGUAGE" />) ist ein Fehler aufgetreten.</translation>
-<translation id="7117303293717852287">Laden Sie die Webseite erneut.</translation>
 <translation id="7139724024395191329">Emirat</translation>
 <translation id="7179921470347911571">Jetzt neu starten</translation>
 <translation id="7180611975245234373">Aktualisieren</translation>
@@ -567,7 +563,6 @@ Geheimtipp: Verwenden Sie nächstes Mal den Inkognitomodus (<ph name="SHORTCUT_K
 <translation id="7592362899630581445">Das Serverzertifikat verstößt gegen Namensbeschränkungen.</translation>
 <translation id="759889825892636187"><ph name="HOST_NAME" /> kann diese Anfrage momentan nicht verarbeiten.</translation>
 <translation id="7600965453749440009"><ph name="LANGUAGE" /> nie übersetzen</translation>
-<translation id="7602848207066046655">Die <ph name="BEGIN_ABBR" /> des Servers von <ph name="HOST_NAME" /> wurde nicht gefunden.</translation>
 <translation id="7610193165460212391">Wert liegt außerhalb des zulässigen Bereichs (<ph name="VALUE" />).</translation>
 <translation id="7613889955535752492">Gültig bis: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Sie verfügen bereits über Daten, die mit einem vorherigen Passwort für Ihr Google-Konto verschlüsselt wurden. Bitte geben Sie dieses Passwort unten ein.</translation>
@@ -647,7 +642,6 @@ Geheimtipp: Verwenden Sie nächstes Mal den Inkognitomodus (<ph name="SHORTCUT_K
 <translation id="8488350697529856933">Gilt für</translation>
 <translation id="8494979374722910010">Die Verbindung zum Server kann nicht hergestellt werden.</translation>
 <translation id="8498891568109133222">Die Antwort von <ph name="HOST_NAME" /> hat zu lange gedauert.</translation>
-<translation id="8508677083825928015">Vorabruf von Ressourcen zum schnelleren Laden von Seiten</translation>
 <translation id="8530504477309582336">Dieser Kartentyp wird von Google Payments nicht unterstützt. Bitte verwenden Sie eine andere Karte.</translation>
 <translation id="8550022383519221471">Der Synchronisierungsdienst ist nicht für diese Domain verfügbar.</translation>
 <translation id="8553075262323480129">Die Übersetzung ist fehlgeschlagen, weil die Sprache der Seite nicht ermittelt werden konnte.</translation>

@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="es-419">
-<translation id="1015255576907412255">Comunícate con el administrador del sistema para obtener más información.</translation>
 <translation id="1015730422737071372">Proporciona más detalles</translation>
 <translation id="1032854598605920125">Girar a la derecha</translation>
 <translation id="1038842779957582377">nombre desconocido</translation>
@@ -302,7 +301,6 @@
 <translation id="4176463684765177261">Deshabilitado</translation>
 <translation id="4196861286325780578">&amp;Rehacer Mover</translation>
 <translation id="4220128509585149162">Fallos</translation>
-<translation id="4241404202385006548">Inhabilita las extensiones y vuelve a cargar esta página web.</translation>
 <translation id="4250680216510889253">No</translation>
 <translation id="4258748452823770588">Firma no válida</translation>
 <translation id="4268298190799576220">Chrome no pudo verificar tu tarjeta. Vuelve a intentarlo más tarde.</translation>
@@ -442,7 +440,6 @@
 <translation id="6203231073485539293">Comprueba tu conexión a Internet.</translation>
 <translation id="6218753634732582820">¿Confirmas que quieres quitar la dirección de Chromium?</translation>
 <translation id="6232139169545176020">No se admite el esquema de URI solicitado.</translation>
-<translation id="6237614789842758826">Haz una búsqueda en Google.</translation>
 <translation id="6259156558325130047">&amp;Rehacer Reorganizar</translation>
 <translation id="6262796033958342538">Se recibieron varios encabezados de ubicación distintos. Esta acción se prohíbe para asegurar la protección contra ataques de división de respuesta HTTP.</translation>
 <translation id="6263376278284652872">Marcadores de <ph name="DOMAIN" /></translation>
@@ -516,7 +513,6 @@
 <translation id="7087282848513945231">Condado</translation>
 <translation id="7088615885725309056">Anterior</translation>
 <translation id="7108649287766967076">Se produjo un error en la traducción al <ph name="TARGET_LANGUAGE" />.</translation>
-<translation id="7117303293717852287">Vuelve a cargar esta página web.</translation>
 <translation id="7139724024395191329">Emirato</translation>
 <translation id="7179921470347911571">Reiniciar ahora</translation>
 <translation id="7180611975245234373">Actualizar</translation>
@@ -563,7 +559,6 @@
 <translation id="7592362899630581445">El certificado del servidor no cumple con las restricciones de nombre.</translation>
 <translation id="759889825892636187"><ph name="HOST_NAME" /> no puede procesar esta solicitud en este momento.</translation>
 <translation id="7600965453749440009">Nunca traducir <ph name="LANGUAGE" /></translation>
-<translation id="7602848207066046655">No se encontró el servidor de <ph name="HOST_NAME" /> (<ph name="BEGIN_ABBR" />).</translation>
 <translation id="7610193165460212391">El valor <ph name="VALUE" /> está fuera del rango.</translation>
 <translation id="7613889955535752492">Vencimiento: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Ya has utilizado otra versión de la contraseña de tu cuenta de Google para encriptar contenido. Ingrésala a continuación.</translation>
@@ -644,7 +639,6 @@
 <translation id="8488350697529856933">Se aplica a</translation>
 <translation id="8494979374722910010">Se ha producido un error al intentar conectar con el servidor.</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> tardó demasiado en responder.</translation>
-<translation id="8508677083825928015">Solicitar los recursos previamente para cargar las páginas más rápido</translation>
 <translation id="8530504477309582336">Google Payments no admite este tipo de tarjeta. Selecciona otra tarjeta.</translation>
 <translation id="8550022383519221471">El servicio de sincronización no está disponible para tu dominio.</translation>
 <translation id="8553075262323480129">Falló la traducción debido a que no se pudo determinar el idioma de la página.</translation>

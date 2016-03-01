@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="gu">
-<translation id="1015255576907412255">વધુ માહિતી માટે તમારા સિસ્ટમ સંચાલકનો સંપર્ક કરો.</translation>
 <translation id="1015730422737071372">અતિરિક્ત વિગતો પ્રદાન કરો</translation>
 <translation id="1032854598605920125">ઘડિયાળની દિશામાં ફેરવો</translation>
 <translation id="1038842779957582377">અજ્ઞાત નામ</translation>
@@ -302,7 +301,6 @@
 <translation id="4176463684765177261">અક્ષમ કરેલું</translation>
 <translation id="4196861286325780578">&amp;ખસેડવું ફરી કરો</translation>
 <translation id="4220128509585149162">ક્રેશેસ</translation>
-<translation id="4241404202385006548">તમારા એક્સ્ટેન્શન્સને અક્ષમ કરો અને પછી આ વેબપૃષ્ઠને ફરીથી લોડ કરો</translation>
 <translation id="4250680216510889253">નહીં</translation>
 <translation id="4258748452823770588">ખરાબ હસ્તાક્ષર</translation>
 <translation id="4268298190799576220">આ સમયે Chromium તમારું કાર્ડ ચકાસવા અસમર્થ હતું. કૃપા કરીને પછી ફરીથી પ્રયત્ન કરશો.</translation>
@@ -442,7 +440,6 @@
 <translation id="6203231073485539293">તમારું ઇન્ટરનેટ કનેક્શન તપાસો</translation>
 <translation id="6218753634732582820">Chromium માંથી સરનામું દૂર કરીએ?</translation>
 <translation id="6232139169545176020">વિનંતિ કરેલી URI Scheme ને સમર્થન નથી.</translation>
-<translation id="6237614789842758826">Google પર શોધો</translation>
 <translation id="6259156558325130047">&amp;પુનઃક્રમાંકિત કરવું ફરી કરો</translation>
 <translation id="6262796033958342538">બહુવિધ ચોક્કસ સ્થાન મથાળા પ્રાપ્ત થયાં.  આ HTTP પ્રતિસાદ વિભાજિત કરતાં હુમલા 
     સામે સુરક્ષા કરવાને નામંજૂર કરે છે.</translation>
@@ -518,7 +515,6 @@
 <translation id="7087282848513945231">પરગણું</translation>
 <translation id="7088615885725309056">વધુ જૂનું</translation>
 <translation id="7108649287766967076"><ph name="TARGET_LANGUAGE" /> માં અનુવાદ નિષ્ફળ રહ્યો.</translation>
-<translation id="7117303293717852287">આ વેબપૃષ્ઠ ફરીથી લોડ કરો</translation>
 <translation id="7139724024395191329">એમિરાત</translation>
 <translation id="7179921470347911571">હમણાં ફરીથી લોંચ કરો</translation>
 <translation id="7180611975245234373">તાજું કરો</translation>
@@ -565,7 +561,6 @@
 <translation id="7592362899630581445">સર્વરનું પ્રમાણપત્ર, નામ નિગ્રહોનું ઉલ્લંઘન કરે છે.</translation>
 <translation id="759889825892636187"><ph name="HOST_NAME" />, હાલમાં આ વિનંતીને હેન્ડલ કરવામાં અસમર્થ છે.</translation>
 <translation id="7600965453749440009"><ph name="LANGUAGE" /> નું ક્યારેય અનુવાદ કરશો નહીં</translation>
-<translation id="7602848207066046655"><ph name="HOST_NAME" /> નું <ph name="BEGIN_ABBR" /> સર્વર શોધી શકાયું નથી.</translation>
 <translation id="7610193165460212391">મૂલ્ય <ph name="VALUE" /> શ્રેણી બહારનું છે.</translation>
 <translation id="7613889955535752492">સમાપ્તિ: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">તમારી પાસે પેહલાથી જ ડેટા છે જે તમારા Google એકાઉન્ટ પાસવર્ડના વિવિધ સંસ્કરણોંનો ઉપયોગ કરીને એન્ક્રિપ્ટ કરેલો છે. </translation>
@@ -645,7 +640,6 @@
 <translation id="8488350697529856933">આમને લાગુ</translation>
 <translation id="8494979374722910010">સર્વર સાથે કનેક્ટ થવાનો પ્રયાસ નિષ્ફળ થયો છે.</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> એ પ્રતિસાદ આપવા માટે ઘણો સમય લીધો.</translation>
-<translation id="8508677083825928015">પૃષ્ઠોને વધુ ઝડપથી લોડ કરવા માટે સંસાધનોનું પૂર્વ આનયન કરો</translation>
 <translation id="8530504477309582336">Google Payments દ્વારા આ પ્રકારના કાર્ડને સમર્થન નથી. કૃપા કરીને બીજું કાર્ડ પસંદ કરો.</translation>
 <translation id="8550022383519221471">સમન્વયન સેવા તમારા ડોમેન માટે ઉપલબ્ધ નથી.</translation>
 <translation id="8553075262323480129">ભાષાંતર નિષ્ફળ રહ્યું કારણ કે પૃષ્ઠની ભાષા નિર્ધારિત થઈ શકી નથી.</translation>

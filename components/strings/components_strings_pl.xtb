@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="pl">
-<translation id="1015255576907412255">Aby uzyskać więcej informacji, skontaktuj się z administratorem systemu.</translation>
 <translation id="1015730422737071372">Podaj dodatkowe informacje</translation>
 <translation id="1032854598605920125">Obróć w prawo</translation>
 <translation id="1038842779957582377">nieznana nazwa</translation>
@@ -302,7 +301,6 @@
 <translation id="4176463684765177261">Wyłączone</translation>
 <translation id="4196861286325780578">&amp;Ponów przeniesienie</translation>
 <translation id="4220128509585149162">Awarie</translation>
-<translation id="4241404202385006548">Wyłącz rozszerzenia, a następnie ponownie załaduj tę stronę internetową</translation>
 <translation id="4250680216510889253">Nie</translation>
 <translation id="4258748452823770588">Nieprawidłowy podpis</translation>
 <translation id="4268298190799576220">Chromium nie może obecnie zweryfikować karty. Spróbuj ponownie później.</translation>
@@ -442,7 +440,6 @@
 <translation id="6203231073485539293">Sprawdź połączenie z internetem</translation>
 <translation id="6218753634732582820">Usunąć ten adres z Chromium?</translation>
 <translation id="6232139169545176020">Żądany schemat URI nie jest obsługiwany.</translation>
-<translation id="6237614789842758826">Szukaj w Google</translation>
 <translation id="6259156558325130047">&amp;Ponów zmianę kolejności</translation>
 <translation id="6262796033958342538">Odebrano wiele różnych nagłówków Location. Jest to niedozwolone, by zapobiec
     atakom polegającym na rozdzieleniu odpowiedzi HTTP.</translation>
@@ -517,7 +514,6 @@
 <translation id="7087282848513945231">Hrabstwo</translation>
 <translation id="7088615885725309056">Starsze</translation>
 <translation id="7108649287766967076">Tłumaczenie na <ph name="TARGET_LANGUAGE" /> nie powiodło się.</translation>
-<translation id="7117303293717852287">Ponownie załaduj tę stronę internetową</translation>
 <translation id="7139724024395191329">Emirat</translation>
 <translation id="7179921470347911571">Uruchom ponownie teraz</translation>
 <translation id="7180611975245234373">Odśwież</translation>
@@ -564,7 +560,6 @@ Psst! Następnym razem możesz użyć trybu incognito <ph name="SHORTCUT_KEY" />
 <translation id="7592362899630581445">Certyfikat serwera narusza ograniczenia dotyczące nazw.</translation>
 <translation id="759889825892636187">Serwer <ph name="HOST_NAME" /> nie może teraz obsłużyć tego żądania.</translation>
 <translation id="7600965453749440009">Nigdy nie tłumacz z języka: <ph name="LANGUAGE" /></translation>
-<translation id="7602848207066046655">Nie znaleziono <ph name="BEGIN_ABBR" /> serwera <ph name="HOST_NAME" />.</translation>
 <translation id="7610193165460212391">Wartość spoza zakresu (<ph name="VALUE" />)</translation>
 <translation id="7613889955535752492">Wygasa: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Masz już dane zaszyfrowane przy użyciu innej wersji hasła konta Google. Wpisz je poniżej.</translation>
@@ -645,7 +640,6 @@ Psst! Następnym razem możesz użyć trybu incognito <ph name="SHORTCUT_KEY" />
 <translation id="8488350697529856933">Dotyczy</translation>
 <translation id="8494979374722910010">Próba połączenia z serwerem nie powiodła się.</translation>
 <translation id="8498891568109133222">Serwer <ph name="HOST_NAME" /> potrzebował zbyt wiele czasu na odpowiedź.</translation>
-<translation id="8508677083825928015">Wstępnie pobieraj zasoby, by szybciej wczytywać strony</translation>
 <translation id="8530504477309582336">Karty tego typu nie są obsługiwane w Google Payments. Wybierz inną.</translation>
 <translation id="8550022383519221471">Usługa synchronizacji nie jest dostępna w Twojej domenie.</translation>
 <translation id="8553075262323480129">Tłumaczenie nie powiodło się, ponieważ nie można określić języka strony.</translation>

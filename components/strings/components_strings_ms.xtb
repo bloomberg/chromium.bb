@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ms">
-<translation id="1015255576907412255">Hubungi pentadbir sistem anda untuk mendapatkan maklumat lanjut.</translation>
 <translation id="1015730422737071372">Berikan butiran tambahan</translation>
 <translation id="1032854598605920125">Putar ikut arah jam</translation>
 <translation id="1038842779957582377">nama tidak diketahui</translation>
@@ -222,6 +221,7 @@
 <translation id="3254409185687681395">Tanda halaman ini</translation>
 <translation id="3270847123878663523">&amp;Buat asal Susun semula</translation>
 <translation id="3286538390144397061">Mulakan Semula Sekarang</translation>
+<translation id="3305707030755673451">Data anda disulitkan dengan ungkapan laluan segerak anda pada <ph name="TIME" />. Masukkannya untuk memulakan penyegerakan.</translation>
 <translation id="333371639341676808">Halang halaman ini daripada mencipta dialog tambahan.</translation>
 <translation id="3340978935015468852">tetapan</translation>
 <translation id="3355823806454867987">Tukar tetapan proksi...</translation>
@@ -303,7 +303,6 @@
 <translation id="4176463684765177261">Dilumpuhkan</translation>
 <translation id="4196861286325780578">&amp;Buat semula pindahkan</translation>
 <translation id="4220128509585149162">Nahas</translation>
-<translation id="4241404202385006548">Lumpuhkan sambungan anda dan kemudian muat semula halaman web ini</translation>
 <translation id="4250680216510889253">Tidak</translation>
 <translation id="4258748452823770588">Tandatangan tidak elok</translation>
 <translation id="4268298190799576220">Chromium tidak dapat mengesahkan kad anda pada masa ini. Sila cuba lagi nanti.</translation>
@@ -443,7 +442,6 @@
 <translation id="6203231073485539293">Semak sambungan Internet anda</translation>
 <translation id="6218753634732582820">Alih keluar alamat daripada Chromium?</translation>
 <translation id="6232139169545176020">Skim URI yang diminta tidak disokong.</translation>
-<translation id="6237614789842758826">Cari di Google</translation>
 <translation id="6259156558325130047">&amp;Buat Asal Susun Semula</translation>
 <translation id="6262796033958342538">Berbilang pengepala Lokasi berbeza diterima.  Hal ini tidak dibenarkan bagi melindungi
     daripada serangan pemisahan respons HTTP.</translation>
@@ -519,7 +517,6 @@
 <translation id="7087282848513945231">Daerah</translation>
 <translation id="7088615885725309056">Lebih lama</translation>
 <translation id="7108649287766967076">Terjemahan kepada <ph name="TARGET_LANGUAGE" /> gagal.</translation>
-<translation id="7117303293717852287">Muat semula halaman web ini</translation>
 <translation id="7139724024395191329">Emiriah</translation>
 <translation id="7179921470347911571">Lancarkan Semula Sekarang</translation>
 <translation id="7180611975245234373">Muat semula</translation>
@@ -566,7 +563,6 @@ Psst! <ph name="SHORTCUT_KEY" /> mod Inkognito mungkin akan berguna pada masa ak
 <translation id="7592362899630581445">Sijil pelayan melanggar kekangan nama.</translation>
 <translation id="759889825892636187"><ph name="HOST_NAME" /> tidak dapat mengendalikan permintaan ini pada masa ini.</translation>
 <translation id="7600965453749440009">Jangan sekali-kali terjemahkan <ph name="LANGUAGE" /></translation>
-<translation id="7602848207066046655"><ph name="BEGIN_ABBR" /> pelayan <ph name="HOST_NAME" /> tidak ditemui.</translation>
 <translation id="7610193165460212391">Nilai berada di luar julat <ph name="VALUE" /></translation>
 <translation id="7613889955535752492">Tamat: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Anda sudah mempunyai data yang disulitkan menggunakan versi kata laluan Akaun Google anda yang berbeza. Sila masukkannya di bawah.</translation>
@@ -647,7 +643,6 @@ Psst! <ph name="SHORTCUT_KEY" /> mod Inkognito mungkin akan berguna pada masa ak
 <translation id="8488350697529856933">Diguna pakai untuk</translation>
 <translation id="8494979374722910010">Cubaan untuk disambungkan ke pelayar gagal.</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> mengambil masa terlalu lama untuk bertindak balas.</translation>
-<translation id="8508677083825928015">Praambil sumber untuk memuatkan halaman dengan lebih cepat</translation>
 <translation id="8530504477309582336">Kad jenis ini tidak disokong oleh Google Payments. Sila pilih kad yang lain.</translation>
 <translation id="8550022383519221471">Perkhidmatan segerak tidak tersedia untuk domain anda.</translation>
 <translation id="8553075262323480129">Gagal terjemahan kerana bahasa halaman tidak dapat ditentukan.</translation>
@@ -710,6 +705,7 @@ Psst! <ph name="SHORTCUT_KEY" /> mod Inkognito mungkin akan berguna pada masa ak
 <translation id="9170848237812810038">&amp;Buat asal</translation>
 <translation id="917450738466192189">Sijil pelayan tidak sah.</translation>
 <translation id="9183425211371246419"><ph name="HOST_NAME" /> menggunakan protokol yang tidak disokong.</translation>
+<translation id="9205078245616868884">Data anda disulitkan dengan ungkapan laluan segerak anda. Masukkannya untuk memulakan penyegerakan.</translation>
 <translation id="9207861905230894330">Gagal menambahkan artikel.</translation>
 <translation id="933612690413056017">Tiada sambungan Internet</translation>
 <translation id="933712198907837967">Diners Club</translation>

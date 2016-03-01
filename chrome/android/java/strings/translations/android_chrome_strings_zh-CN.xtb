@@ -24,7 +24,6 @@
 <translation id="1346090444609141578">此处未保存任何网页</translation>
 <translation id="1369915414381695676">网站 <ph name="SITE_NAME" /> 已添加</translation>
 <translation id="1373696734384179344">内存不足，无法下载所选内容。</translation>
-<translation id="1379156015317873965">提高网页加载速度</translation>
 <translation id="138361230106469022"><ph name="FULL_NAME" />，您好！</translation>
 <translation id="1383876407941801731">搜索</translation>
 <translation id="1389974829397082527">该文件夹中没有书签</translation>
@@ -126,7 +125,6 @@
 <translation id="2707726405694321444">刷新网页</translation>
 <translation id="2709516037105925701">自动填充</translation>
 <translation id="271033894570825754">新建</translation>
-<translation id="2718352093833049315">仅限 Wi-Fi</translation>
 <translation id="2748463065602559597">您正在查看的是安全的 Google Chrome 浏览器网页。</translation>
 <translation id="2762000892062317888">刚刚</translation>
 <translation id="2770465223704140727">从列表中移除</translation>
@@ -262,6 +260,7 @@
 <translation id="4836364883164334657">您与此网站之间的连接不是私密连接。攻击者可能会试图从 <ph name="DOMAIN_NAME" /> 窃取您的信息（例如照片、密码、电子邮件和信用卡信息）。</translation>
 <translation id="4842511359652954519">了解详情</translation>
 <translation id="4850886885716139402">视图</translation>
+<translation id="4875622588773761625">要让<ph name="PASSWORD_MANAGER_BRAND" />更新您登录此网站时使用的密码吗？</translation>
 <translation id="4881695831933465202">打开</translation>
 <translation id="4885273946141277891">Chrome 实例数量已超出上限。</translation>
 <translation id="4927198283430892231">保存的网页目前占用了 <ph name="TOTAL_OFFLINE_STORAGE_SIZE" /> 的空间。</translation>
@@ -307,7 +306,6 @@
 <translation id="5323972449344932352">启动 Chrome</translation>
 <translation id="5324858694974489420">家长设置</translation>
 <translation id="5327248766486351172">名称</translation>
-<translation id="5335200807405507442">预提取网页资源</translation>
 <translation id="5345040418939504969">已删除“<ph name="BOOKMARK_TITLE" />”</translation>
 <translation id="5345083863238459644"><ph name="BEGIN_LINK" />此设备的位置信息使用权也已被停用<ph name="END_LINK" />。</translation>
 <translation id="5380554235172449987">一律不发送</translation>
@@ -485,7 +483,6 @@
 <translation id="7498271377022651285">请稍候…</translation>
 <translation id="7501135638693251872">所有书签</translation>
 <translation id="7521387064766892559">JavaScript</translation>
-<translation id="7561196759112975576">永远</translation>
 <translation id="7562080006725997899">正在清除浏览数据</translation>
 <translation id="7588950540487816470">实物网</translation>
 <translation id="7596558890252710462">操作系统</translation>
@@ -519,7 +516,6 @@
 <translation id="7876243839304621966">全部删除</translation>
 <translation id="7947953824732555851">接受并登录</translation>
 <translation id="7949961459945740081">获取最新功能</translation>
-<translation id="7961015016161918242">一律不</translation>
 <translation id="7963646190083259054">供应商：</translation>
 <translation id="7987073022710626672">Chrome 服务条款</translation>
 <translation id="7998918019931843664">重新打开关闭的标签页</translation>
@@ -612,5 +608,6 @@
 <translation id="945632385593298557">使用您的麦克风</translation>
 <translation id="954352821720225055">存储空间即将用尽，无法为书签创建离线副本。</translation>
 <translation id="969096075394517431">更改语言</translation>
+<translation id="981121421437150478">离线</translation>
 <translation id="983192555821071799">关闭所有标签页</translation>
 </translationbundle>

@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="vi">
-<translation id="1015255576907412255">Liên hệ với quản trị viên hệ thống của bạn để biết thêm thông tin.</translation>
 <translation id="1015730422737071372">Cung cấp chi tiết bổ sung</translation>
 <translation id="1032854598605920125">Xoay theo chiều kim đồng hồ</translation>
 <translation id="1038842779957582377">tên không biết</translation>
@@ -222,6 +221,7 @@
 <translation id="3254409185687681395">Đánh dấu trang này</translation>
 <translation id="3270847123878663523">&amp;Hoàn tác sắp xếp lại</translation>
 <translation id="3286538390144397061">Khởi động lại Ngay bây giờ</translation>
+<translation id="3305707030755673451">Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng bộ hóa của bạn vào <ph name="TIME" />. Nhập cụm mật khẩu đó để bắt đầu đồng bộ hóa.</translation>
 <translation id="333371639341676808">Ngăn không cho trang này tạo hộp thoại bổ sung.</translation>
 <translation id="3340978935015468852">cài đặt</translation>
 <translation id="3355823806454867987">Thay đổi cài đặt proxy...</translation>
@@ -303,7 +303,6 @@
 <translation id="4176463684765177261">Đã bị vô hiệu</translation>
 <translation id="4196861286325780578">&amp;Làm lại di chuyển</translation>
 <translation id="4220128509585149162">Sự cố</translation>
-<translation id="4241404202385006548">Tắt tiện ích của bạn rồi tải lại trang web này</translation>
 <translation id="4250680216510889253">Không</translation>
 <translation id="4258748452823770588">Chữ ký không hợp lệ</translation>
 <translation id="4268298190799576220">Chromium không thể xác minh thẻ của bạn vào lúc này. Vui lòng thử lại sau.</translation>
@@ -443,7 +442,6 @@
 <translation id="6203231073485539293">Kiểm tra kết nối Internet của bạn</translation>
 <translation id="6218753634732582820">Bạn muốn xóa địa chỉ khỏi Chromium?</translation>
 <translation id="6232139169545176020">Giao thức URI yêu cầu không được hỗ trợ.</translation>
-<translation id="6237614789842758826">Tìm kiếm trên Google</translation>
 <translation id="6259156558325130047">&amp;Làm lại sắp xếp lại</translation>
 <translation id="6262796033958342538">Đã nhận được nhiều tiêu đề Vị trí khác nhau.  Điều này không được phép nhằm bảo vệ
     chống lại các cuộc tấn công phân nhỏ phản hồi HTTP.</translation>
@@ -519,7 +517,6 @@
 <translation id="7087282848513945231">Hạt</translation>
 <translation id="7088615885725309056">Cũ hơn</translation>
 <translation id="7108649287766967076">Bản dịch sang <ph name="TARGET_LANGUAGE" /> không thành công.</translation>
-<translation id="7117303293717852287">Tải lại trang web này</translation>
 <translation id="7139724024395191329">Tiểu vương quốc</translation>
 <translation id="7179921470347911571">Chạy lại ngay bây giờ</translation>
 <translation id="7180611975245234373">Làm mới</translation>
@@ -566,7 +563,6 @@ Lưu ý! Chế độ ẩn danh <ph name="SHORTCUT_KEY" /> có thể hữu ích v
 <translation id="7592362899630581445">Chứng chỉ của máy chủ vi phạm hạn chế tên.</translation>
 <translation id="759889825892636187"><ph name="HOST_NAME" /> hiện không thể xử lý yêu cầu này.</translation>
 <translation id="7600965453749440009">Không bao giờ dịch <ph name="LANGUAGE" /></translation>
-<translation id="7602848207066046655">Không thể tìm thấy <ph name="BEGIN_ABBR" /> máy chủ của <ph name="HOST_NAME" />.</translation>
 <translation id="7610193165460212391">Giá trị nằm ngoài phạm vi <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">Hết hạn: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Bạn đã có dữ liệu được mã hóa bằng mật khẩu khác của Tài khoản Google. Vui lòng nhập mật khẩu đó bên dưới.</translation>
@@ -647,7 +643,6 @@ Lưu ý! Chế độ ẩn danh <ph name="SHORTCUT_KEY" /> có thể hữu ích v
 <translation id="8488350697529856933">Áp dụng cho</translation>
 <translation id="8494979374722910010">Không kết nối với máy chủ.</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> mất quá nhiều thời gian để phản hồi.</translation>
-<translation id="8508677083825928015">Tìm nạp trước tài nguyên để tải trang nhanh hơn</translation>
 <translation id="8530504477309582336">Google Payments không hỗ trợ loại thẻ này. Vui lòng chọn thẻ khác.</translation>
 <translation id="8550022383519221471">Dịch vụ đồng bộ hóa không khả dụng cho tên miền của bạn.</translation>
 <translation id="8553075262323480129">Dịch thất bại do ngôn ngữ của trang không được xác định.</translation>
@@ -710,6 +705,7 @@ Lưu ý! Chế độ ẩn danh <ph name="SHORTCUT_KEY" /> có thể hữu ích v
 <translation id="9170848237812810038">H&amp;oàn tác</translation>
 <translation id="917450738466192189">Chứng chỉ của máy chủ không hợp lệ.</translation>
 <translation id="9183425211371246419"><ph name="HOST_NAME" /> sử dụng giao thức không được hỗ trợ.</translation>
+<translation id="9205078245616868884">Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng bộ hóa. Nhập cụm mật khẩu đó để bắt đầu đồng bộ hóa.</translation>
 <translation id="9207861905230894330">Không thêm được bài viết.</translation>
 <translation id="933612690413056017">Không có kết nối Internet</translation>
 <translation id="933712198907837967">Diners Club</translation>

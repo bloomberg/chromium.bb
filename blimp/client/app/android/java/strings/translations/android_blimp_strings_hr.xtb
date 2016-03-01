@@ -1,7 +1,18 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="hr">
+<translation id="1091157412887719337">Dodjeljivanje nije uspjelo. Tražilica nije dostupna.</translation>
+<translation id="2004526128230838685">Dodjeljivanje nije uspjelo zbog nepoznatog problema.</translation>
+<translation id="2023631438558435272">Dodjeljivanje nije uspjelo zbog nevažećeg odgovora.</translation>
+<translation id="2353984724370197742">Dodjeljivanje nije uspjelo. Mrežni zahtjev nije uspio.</translation>
+<translation id="3046825211487065480">Dodjeljivanje nije uspjelo. Drugi zahtjev poslan je prije odgovora na prvi zahtjev.</translation>
 <translation id="3407245330823033366">Odaberite račun koji ćete upotrebljavati s Blimpom.</translation>
+<translation id="3775180005489871350">Dodjeljivanje nije uspjelo. Pogreška 400 (BAD_REQUEST).</translation>
+<translation id="4542350224991263059">Dodjeljivanje nije uspjelo. Korisnička je oznaka za pristup istekla.</translation>
+<translation id="4562971394107096647">Dodjeljivanje nije uspjelo. Pogreška poslužitelja.</translation>
 <translation id="4641972508298030550">Autentifikacija korisnika nije uspjela.</translation>
+<translation id="5860346505531085166">Dodjeljivanje nije uspjelo. Račun nema pristup.</translation>
+<translation id="704835510384979817">Dodjeljivanje nije uspjelo. Nema podudarne verzije tražilice.</translation>
+<translation id="7961542533680218955">Dodjeljivanje je uspjelo.</translation>
 <translation id="8514856595257368555">Oznaka je dohvaćena.</translation>
 </translationbundle>

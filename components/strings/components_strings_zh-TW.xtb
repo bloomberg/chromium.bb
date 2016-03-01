@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-TW">
-<translation id="1015255576907412255">如需詳細資訊，請與您的系統管理員聯絡。</translation>
 <translation id="1015730422737071372">提供其他詳細資訊</translation>
 <translation id="1032854598605920125">順時針旋轉</translation>
 <translation id="1038842779957582377">不明名稱</translation>
@@ -303,7 +302,6 @@
 <translation id="4176463684765177261">已停用</translation>
 <translation id="4196861286325780578">重做移動(&amp;R)</translation>
 <translation id="4220128509585149162">當機</translation>
-<translation id="4241404202385006548">停用擴充功能，然後重新載入這個網頁</translation>
 <translation id="4250680216510889253">否</translation>
 <translation id="4258748452823770588">簽名有誤</translation>
 <translation id="4268298190799576220">Chromium 目前無法驗證您的信用卡，請稍後再試。</translation>
@@ -443,7 +441,6 @@
 <translation id="6203231073485539293">檢查網際網路連線</translation>
 <translation id="6218753634732582820">要從 Chromium 中移除地址嗎？</translation>
 <translation id="6232139169545176020">要求的 URI 協定不受支援。</translation>
-<translation id="6237614789842758826">Google 搜尋</translation>
 <translation id="6259156558325130047">重做重新排序(&amp;R)</translation>
 <translation id="6262796033958342538">系統收到多個不同的 Location 標頭。為了免於受到 HTTP 回應分割攻擊，
     上述情形是不允許的。</translation>
@@ -519,7 +516,6 @@
 <translation id="7087282848513945231">郡</translation>
 <translation id="7088615885725309056">較舊記錄</translation>
 <translation id="7108649287766967076">無法將網頁內容翻譯成<ph name="TARGET_LANGUAGE" />。</translation>
-<translation id="7117303293717852287">重新載入這個網頁</translation>
 <translation id="7139724024395191329">大公國</translation>
 <translation id="7179921470347911571">立即重新啟動</translation>
 <translation id="7180611975245234373">重新整理</translation>
@@ -566,7 +562,6 @@
 <translation id="7592362899630581445">伺服器憑證的名稱不符合限制。</translation>
 <translation id="759889825892636187"><ph name="HOST_NAME" /> 目前無法處理這項要求。</translation>
 <translation id="7600965453749440009">一律不翻譯<ph name="LANGUAGE" /></translation>
-<translation id="7602848207066046655">找不到 <ph name="HOST_NAME" /> 的伺服器 <ph name="BEGIN_ABBR" />。</translation>
 <translation id="7610193165460212391">值超出 <ph name="VALUE" /> 的範圍。</translation>
 <translation id="7613889955535752492">有效期限：<ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">您已經使用其他版本的「Google 帳戶」密碼對資料進行加密，請在下方輸入密碼。</translation>
@@ -647,7 +642,6 @@
 <translation id="8488350697529856933">適用對象</translation>
 <translation id="8494979374722910010">嘗試連接伺服器失敗。</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> 的回應時間過長。</translation>
-<translation id="8508677083825928015">預先擷取資源，以便更快載入網頁</translation>
 <translation id="8530504477309582336">Google Payments 不支援此類型卡片，請選取其他卡片。</translation>
 <translation id="8550022383519221471">您的網域無法使用同步處理服務</translation>
 <translation id="8553075262323480129">無法判定網頁的語言，翻譯作業失敗。</translation>

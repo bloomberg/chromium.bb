@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="lt">
-<translation id="1015255576907412255">Jei reikia daugiau informacijos, susisiekite su sistemos administratoriumi.</translation>
 <translation id="1015730422737071372">Pateikti papildomos išsamios informacijos</translation>
 <translation id="1032854598605920125">Pasukti pagal laikrodžio rodyklę</translation>
 <translation id="1038842779957582377">nežinomas pavadinimas</translation>
@@ -304,7 +303,6 @@
 <translation id="4176463684765177261">Neleista</translation>
 <translation id="4196861286325780578">&amp;Perkelti dar kartą</translation>
 <translation id="4220128509585149162">Gedimai</translation>
-<translation id="4241404202385006548">Neleiskite plėtinių ir iš naujo įkelkite šį tinklalapį</translation>
 <translation id="4250680216510889253">Ne</translation>
 <translation id="4258748452823770588">Netinkamas parašas</translation>
 <translation id="4268298190799576220">Šiuo metu „Chromium“ negali patvirtinti jūsų kortelės. Bandykite dar kartą vėliau.</translation>
@@ -444,7 +442,6 @@
 <translation id="6203231073485539293">Patikrinkite interneto ryšį</translation>
 <translation id="6218753634732582820">Pašalinti adresą iš „Chromium“?</translation>
 <translation id="6232139169545176020">Prašoma URI schema nepalaikoma.</translation>
-<translation id="6237614789842758826">„Google“ paieška</translation>
 <translation id="6259156558325130047">&amp;Pertvarkyti dar kartą</translation>
 <translation id="6262796033958342538">Gautos kelios skirtingos vietos antraštės. Tai neleidžiama siekiant apsisaugoti nuo
     HTTP atsako skaidymo išpuolių.</translation>
@@ -520,7 +517,6 @@
 <translation id="7087282848513945231">Apygarda</translation>
 <translation id="7088615885725309056">Ankstesnė</translation>
 <translation id="7108649287766967076">Verčiant į <ph name="TARGET_LANGUAGE" /> įvyko klaida.</translation>
-<translation id="7117303293717852287">Iš naujo įkelti šį tinklalapį</translation>
 <translation id="7139724024395191329">Emyratas</translation>
 <translation id="7179921470347911571">Paleisti iš naujo dabar</translation>
 <translation id="7180611975245234373">Atnaujinti</translation>
@@ -567,7 +563,6 @@ Ei! Kitą kartą gali būti naudinga naudoti inkognito režimą (<ph name="SHORT
 <translation id="7592362899630581445">Serverio sertifikatas pažeidžia pavadinimų apribojimus.</translation>
 <translation id="759889825892636187"><ph name="HOST_NAME" /> šiuo metu negalima apdoroti šios užklausos.</translation>
 <translation id="7600965453749440009">Niekada neversti <ph name="LANGUAGE" /></translation>
-<translation id="7602848207066046655">Nepavyko rasti <ph name="HOST_NAME" /> serverio <ph name="BEGIN_ABBR" />.</translation>
 <translation id="7610193165460212391">Vertė nepatenka į diapazoną <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">Galioja iki: <ph name="EXPIRATION_YEAR" />-<ph name="EXPIRATION_MONTH" /></translation>
 <translation id="7615602087246926389">Jau turite duomenų, kurie šifruojami naudojant kitos versijos „Google“ paskyros slaptažodį. Įveskite juos toliau.</translation>
@@ -578,7 +573,7 @@ Ei! Kitą kartą gali būti naudinga naudoti inkognito režimą (<ph name="SHORT
 <translation id="7658239707568436148">Atšaukti</translation>
 <translation id="7668654391829183341">Nežinomas įrenginys</translation>
 <translation id="7674629440242451245">Domina naujos „Chrome“ funkcijos? Išbandykite mūsų kuriamą kanalą adresu chrome.com/dev.</translation>
-<translation id="769344199378576125">Rodyti neprisijungus išsaugotas žymes</translation>
+<translation id="769344199378576125">Rodyti išsaugotas žymes neprisijungus</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />Eiti į svetainę <ph name="SITE" /> (nesaugu)<ph name="END_LINK" /></translation>
 <translation id="7716424297397655342">Nepavyksta įkelti šios svetainės iš talpyklos</translation>
 <translation id="7733391738235763478">(<ph name="NUMBER_VISITS" />)</translation>
@@ -649,7 +644,6 @@ Ei! Kitą kartą gali būti naudinga naudoti inkognito režimą (<ph name="SHORT
 <translation id="8488350697529856933">Taikoma</translation>
 <translation id="8494979374722910010">Nepavyko prisijungti prie serverio.</translation>
 <translation id="8498891568109133222">Per ilgai laukta <ph name="HOST_NAME" /> atsako.</translation>
-<translation id="8508677083825928015">Iš anksto iškviesti išteklius, kad puslapiai būtų greičiau įkeliami</translation>
 <translation id="8530504477309582336">„Google Payments“ nepalaiko šio tipo kortelės. Pasirinkite kitą kortelę.</translation>
 <translation id="8550022383519221471">Sinchronizavimo paslauga negalima jūsų domenui.</translation>
 <translation id="8553075262323480129">Išversti negalima, nes nepavyko nustatyti puslapio kalbos.</translation>

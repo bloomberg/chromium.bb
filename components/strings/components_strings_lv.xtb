@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="lv">
-<translation id="1015255576907412255">Lai iegūtu plašāku informāciju, sazinieties ar sistēmas administratoru.</translation>
 <translation id="1015730422737071372">Sniegt papildu informāciju</translation>
 <translation id="1032854598605920125">Pagriezt pulksteņrādītāju kustības virzienā</translation>
 <translation id="1038842779957582377">nezināms nosaukums</translation>
@@ -303,7 +302,6 @@
 <translation id="4176463684765177261">Atspējots</translation>
 <translation id="4196861286325780578">&amp;Atcelt pārvietošanas atsaukšanu</translation>
 <translation id="4220128509585149162">Avārijas</translation>
-<translation id="4241404202385006548">Atspējojiet paplašinājumus un pēc tam atkārtoti ielādējiet šo tīmekļa lapu.</translation>
 <translation id="4250680216510889253">Nē</translation>
 <translation id="4258748452823770588">Paraksts nav derīgs.</translation>
 <translation id="4268298190799576220">Chromium pašlaik nevar verificēt jūsu karti. Lūdzu, vēlāk mēģiniet vēlreiz.</translation>
@@ -443,7 +441,6 @@
 <translation id="6203231073485539293">Interneta savienojuma pārbaude</translation>
 <translation id="6218753634732582820">Vai noņemt adresi no pārlūka Chromium?</translation>
 <translation id="6232139169545176020">Pieprasītā URI shēma netiek atbalstīta.</translation>
-<translation id="6237614789842758826">Meklēšana Google tīklā</translation>
 <translation id="6259156558325130047">&amp;Pārkārtošanas atsaukuma atcelšana</translation>
 <translation id="6262796033958342538">Saņemti vairāki atrašanās vietas virsraksti. Tas nav atļauts, lai nodrošinātu
     aizsardzību pret HTTP atbilžu sadalīšanas uzbrukumiem.</translation>
@@ -519,7 +516,6 @@
 <translation id="7087282848513945231">Grāfiste</translation>
 <translation id="7088615885725309056">Vecāka</translation>
 <translation id="7108649287766967076">Neizdevās tulkot šādā valodā: <ph name="TARGET_LANGUAGE" />.</translation>
-<translation id="7117303293717852287">Tīmekļa lapas atkārtota ielāde</translation>
 <translation id="7139724024395191329">Emirāts</translation>
 <translation id="7179921470347911571">Restartēt tūlīt</translation>
 <translation id="7180611975245234373">Atsvaidzināt</translation>
@@ -566,7 +562,6 @@ Nākamreiz jums varētu noderēt inkognito režīms (<ph name="SHORTCUT_KEY" />)
 <translation id="7592362899630581445">Servera sertifikātā ir pārkāpti nosaukuma ierobežojumi.</translation>
 <translation id="759889825892636187"><ph name="HOST_NAME" /> pašlaik nevar apstrādāt šo pieprasījumu.</translation>
 <translation id="7600965453749440009">Nekad netulkot saturu, kas rakstīts <ph name="LANGUAGE" /> valodā</translation>
-<translation id="7602848207066046655">Nevarēja atrast vietnes <ph name="HOST_NAME" /> serveri <ph name="BEGIN_ABBR" />.</translation>
 <translation id="7610193165460212391">Vērtība pārsniedz diapazonu: <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">Derīguma termiņš: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Jums jau ir dati, kas šifrēti, izmantojot citu Google konta paroles versiju. Ievadiet to šeit.</translation>
@@ -647,7 +642,6 @@ Nākamreiz jums varētu noderēt inkognito režīms (<ph name="SHORTCUT_KEY" />)
 <translation id="8488350697529856933">Attiecas uz</translation>
 <translation id="8494979374722910010">Mēģinājums savienoties ar serveri neizdevās.</translation>
 <translation id="8498891568109133222">Vietne <ph name="HOST_NAME" /> pārāk ilgi nereaģēja.</translation>
-<translation id="8508677083825928015">Sākotnēji iegūt resursus, lai ātrāk ielādētu lapas</translation>
 <translation id="8530504477309582336">Šis kartes veids netiek atbalstīts pakalpojumā Google Payments. Lūdzu, atlasiet citu karti.</translation>
 <translation id="8550022383519221471">Sinhronizācijas ierīce jūsu domēnam nav pieejama.</translation>
 <translation id="8553075262323480129">Tulkošana neizdevās, jo lapas valoda nav nosakāma.</translation>

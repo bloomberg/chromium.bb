@@ -460,15 +460,6 @@
 <translation id="2646290749315461919">Vă permite să setați dacă site-urile web au permisiunea să urmărească locația fizică a utilizatorilor. Urmărirea locației fizice a utilizatorilor poate fi permisă în mod prestabilit, refuzată în mod prestabilit sau utilizatorul poate fi întrebat de fiecare dată când un site web solicită locația fizică. Dacă politica este lăsată nesetată, va fi utilizată politica „AskGeolocation”, dar utilizatorul va putea să o schimbe.</translation>
 <translation id="2650049181907741121">Măsura care se va lua atunci când utilizatorul închide capacul</translation>
 <translation id="2660846099862559570">Nu utiliza niciodată un proxy</translation>
-<translation id="2665596266623707739">Avertisment: revenirea la versiunea TLS 1.0 va fi eliminată din <ph name="PRODUCT_NAME" /> după versiunea 47 (aproximativ în ianuarie 2016), iar opțiunea „tls1” nu va mai funcționa de la data respectivă.
-
-      Când un dialog de confirmare TLS nu se finalizează, <ph name="PRODUCT_NAME" /> va reîncerca să se conecteze folosind o versiune TLS inferioară, pentru a evita erorile de pe serverele HTTPS. Această setare configurează versiunea la care se va opri procesul de revenire. Dacă un server efectuează corect negocierea versiunii (de ex., fără să întrerupă conexiunea), atunci setarea nu se aplică. În orice caz, conexiunea rezultată trebuie totuși să respecte SSLVersionMin.
-
-      Dacă această politică nu este configurată, atunci <ph name="PRODUCT_NAME" /> folosește o versiune minimă prestabilită, care pentru <ph name="PRODUCT_NAME" /> 44 este TLS 1.0, iar pentru versiuni ulterioare este TLS 1.1. Reține că astfel nu se dezactivează compatibilitatea pentru TLS 1.0, ci doar se stabilește dacă <ph name="PRODUCT_NAME" /> va ocoli serverele cu erori care nu pot negocia corect versiunile.
-
-      În caz contrar, poate fi setată la următoarele valori: „tls1”, „tls1.1” sau „tls1.2”. Dacă trebuie menținută compatibilitatea cu un server cu erori, aceasta poate fi setată la „tls1”. Aceasta este o măsură temporară, iar problemele de pe server trebuie să fie remediate rapid.
-
-      Setarea la valoarea „tls1.2” dezactivează orice revenire la o versiune anterioară, însă acest aspect poate avea un impact important asupra compatibilității.</translation>
 <translation id="267596348720209223">Specifică codificările de caractere acceptate de furnizorul de căutare. Codificările reprezintă nume ale paginilor cu coduri cum ar fi UTF-8, GB2312 și ISO-8859-1. Acestea sunt încercate în ordinea furnizată. Politica este opțională. Dacă nu este setată, va fi utilizată codificarea standard, care este UTF-8. Această politică este urmată numai în cazul în care este activată politica „DefaultSearchProviderEnabled”.</translation>
 <translation id="2682225790874070339">Dezactivează Drive în aplicația Fișiere din <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="268577405881275241">Activează funcția proxy de comprimare a datelor</translation>
@@ -1104,7 +1095,7 @@
       trimis ca atare în procesul ARC. Momentan, această setare este folosită
       numai pentru a specifica instalarea forțată a aplicațiilor.
 
-      Dacă această politică nu este configurată, nicio aplicația nu va fi instalată automat.</translation>
+      Dacă această politică nu este configurată, nicio aplicație nu va fi instalată automat.</translation>
 <translation id="5365946944967967336">Afișează butonul Pagina de pornire în bara de instrumente</translation>
 <translation id="5366977351895725771">Dacă această politică nu este activată, crearea utilizatorilor monitorizați de către acest utilizator va fi dezactivată. Utilizatorii monitorizați existenți vor fi în continuare disponibili.
 

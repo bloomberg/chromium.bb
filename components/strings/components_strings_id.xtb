@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="id">
-<translation id="1015255576907412255">Hubungi administrator sistem Anda untuk informasi selengkapnya.</translation>
 <translation id="1015730422737071372">Berikan detail tambahan</translation>
 <translation id="1032854598605920125">Putar searah jarum jam</translation>
 <translation id="1038842779957582377">nama tidak diketahui</translation>
@@ -222,6 +221,7 @@
 <translation id="3254409185687681395">Bookmark laman ini</translation>
 <translation id="3270847123878663523">&amp;Urungkan Pengaturan Ulang</translation>
 <translation id="3286538390144397061">Mulai Ulang Sekarang</translation>
+<translation id="3305707030755673451">Data Anda dienkripsi dengan frasa sandi sinkronisasi pada tanggal <ph name="TIME" />. Masukkan frasa sandi untuk memulai sinkronisasi.</translation>
 <translation id="333371639341676808">Cegah dialog lain dari laman ini.</translation>
 <translation id="3340978935015468852">setelan</translation>
 <translation id="3355823806454867987">Ubah setelan proxy...</translation>
@@ -303,7 +303,6 @@
 <translation id="4176463684765177261">Dinonaktifkan</translation>
 <translation id="4196861286325780578">&amp;Ulangi pemindahan</translation>
 <translation id="4220128509585149162">Kerusakan</translation>
-<translation id="4241404202385006548">Nonaktifkan ekstensi Anda kemudian muat ulang laman web ini</translation>
 <translation id="4250680216510889253">Tidak</translation>
 <translation id="4258748452823770588">Tanda tangan salah</translation>
 <translation id="4268298190799576220">Saat ini Chromium tidak dapat memverifikasi kartu. Coba lagi nanti.</translation>
@@ -443,7 +442,6 @@
 <translation id="6203231073485539293">Periksa sambungan internet Anda</translation>
 <translation id="6218753634732582820">Hapus alamat dari Chromium?</translation>
 <translation id="6232139169545176020">Skema URI yang diminta tidak didukung.</translation>
-<translation id="6237614789842758826">Telusuri di Google</translation>
 <translation id="6259156558325130047">&amp;Ulangi Pengaturan Ulang</translation>
 <translation id="6262796033958342538">Beberapa header Lokasi yang berbeda diterima.  Hal ini tidak diizinkan untuk melindungi
     dari serangan yang memecah tanggapan HTTP.</translation>
@@ -519,7 +517,6 @@
 <translation id="7087282848513945231">County</translation>
 <translation id="7088615885725309056">Lawas</translation>
 <translation id="7108649287766967076">Penerjemahan ke <ph name="TARGET_LANGUAGE" /> gagal.</translation>
-<translation id="7117303293717852287">Muat ulang laman web ini</translation>
 <translation id="7139724024395191329">Emirate</translation>
 <translation id="7179921470347911571">Luncurkan Ulang Sekarang</translation>
 <translation id="7180611975245234373">Segarkan</translation>
@@ -566,7 +563,6 @@ Ssst! <ph name="SHORTCUT_KEY" /> mode penyamaran mungkin berguna suatu saat nant
 <translation id="7592362899630581445">Sertifikat server melanggar batasan nama.</translation>
 <translation id="759889825892636187"><ph name="HOST_NAME" /> saat ini tidak dapat menangani permintaan ini.</translation>
 <translation id="7600965453749440009">Jangan pernah terjemahkan bahasa <ph name="LANGUAGE" /></translation>
-<translation id="7602848207066046655">Server <ph name="HOST_NAME" /> <ph name="BEGIN_ABBR" /> tidak dapat ditemukan.</translation>
 <translation id="7610193165460212391">Nilai di luar jangkauan <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">Masa berlaku habis: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Anda sudah memiliki data yang dienkripsi menggunakan versi sandi Akun Google yang berbeda. Masukkan sandi di bawah.</translation>
@@ -647,7 +643,6 @@ Ssst! <ph name="SHORTCUT_KEY" /> mode penyamaran mungkin berguna suatu saat nant
 <translation id="8488350697529856933">Berlaku untuk</translation>
 <translation id="8494979374722910010">Upaya tersambung ke server gagal.</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> membutuhkan terlalu banyak waktu untuk merespons.</translation>
-<translation id="8508677083825928015">Ambil sumber daya terlebih dahulu untuk memuat laman dengan lebih cepat</translation>
 <translation id="8530504477309582336">Kartu jenis ini tidak didukung oleh Google Payments. Pilih kartu lain.</translation>
 <translation id="8550022383519221471">Layanan sinkronisasi tidak tersedia untuk domain Anda.</translation>
 <translation id="8553075262323480129">Terjemahan gagal karena bahasa laman tidak dapat ditentukan.</translation>
@@ -710,6 +705,7 @@ Ssst! <ph name="SHORTCUT_KEY" /> mode penyamaran mungkin berguna suatu saat nant
 <translation id="9170848237812810038">&amp;Urung</translation>
 <translation id="917450738466192189">Sertifikat server tidak valid.</translation>
 <translation id="9183425211371246419"><ph name="HOST_NAME" /> menggunakan protokol yang tidak didukung.</translation>
+<translation id="9205078245616868884">Data Anda dienkripsi dengan frasa sandi sinkronisasi. Masukkan frasa sandi untuk memulai sinkronisasi.</translation>
 <translation id="9207861905230894330">Gagal menambahkan artikel.</translation>
 <translation id="933612690413056017">Tidak ada koneksi Internet</translation>
 <translation id="933712198907837967">Diners Club</translation>

@@ -24,7 +24,6 @@
 <translation id="1346090444609141578">Tu ni shranjenih strani</translation>
 <translation id="1369915414381695676">Spletno mesto <ph name="SITE_NAME" /> je bilo dodano</translation>
 <translation id="1373696734384179344">Za prenos izbrane vsebine ni dovolj pomnilnika.</translation>
-<translation id="1379156015317873965">Izboljšanje učinkovitosti nalaganja strani</translation>
 <translation id="138361230106469022">Pozdravljeni, <ph name="FULL_NAME" /></translation>
 <translation id="1383876407941801731">Išči</translation>
 <translation id="1389974829397082527">Tu ni nobenega zaznamka</translation>
@@ -126,7 +125,6 @@ Fizični splet lahko nadzirate v Chromovih nastavitvah zasebnosti.</translation>
 <translation id="2707726405694321444">Osveži stran</translation>
 <translation id="2709516037105925701">Samodejno izpolnjevanje</translation>
 <translation id="271033894570825754">Novo</translation>
-<translation id="2718352093833049315">Samo v omrežju Wi-Fi</translation>
 <translation id="2748463065602559597">Ogledujete si varno stran Google Chrome.</translation>
 <translation id="2762000892062317888">pravkar</translation>
 <translation id="2770465223704140727">Odstrani s seznama</translation>
@@ -262,6 +260,7 @@ Prijavljate se z upravljanim računom in s tem njegovemu skrbniku omogočate nad
 <translation id="4836364883164334657">Vaša povezava s tem spletnim mestom ni zasebna. Napadalci morda poskušajo ukrasti vaše podatke (na primer fotografije, gesla, sporočila in podatke o kreditnih karticah) iz domene <ph name="DOMAIN_NAME" />.</translation>
 <translation id="4842511359652954519">Več o tem</translation>
 <translation id="4850886885716139402">Pogled</translation>
+<translation id="4875622588773761625">Ali želite, da <ph name="PASSWORD_MANAGER_BRAND" /> posodobi geslo za to spletno mesto?</translation>
 <translation id="4881695831933465202">Odpri</translation>
 <translation id="4885273946141277891">To število primerkov Chroma ni podprto.</translation>
 <translation id="4927198283430892231">Shranjene strani trenutno zasedajo <ph name="TOTAL_OFFLINE_STORAGE_SIZE" />.</translation>
@@ -307,7 +306,6 @@ V računalniku odprite Chrome, nato meni in izberite »Prijava v Chrome …«</t
 <translation id="5323972449344932352">Zagon Chroma</translation>
 <translation id="5324858694974489420">Starševske nastavitve</translation>
 <translation id="5327248766486351172">Ime</translation>
-<translation id="5335200807405507442">Vnaprejšnji prenos sredstev strani</translation>
 <translation id="5345040418939504969">Izbrisano: <ph name="BOOKMARK_TITLE" /></translation>
 <translation id="5345083863238459644">Dostop do lokacije je prav tako <ph name="BEGIN_LINK" />izklopljen za to napravo<ph name="END_LINK" />.</translation>
 <translation id="5380554235172449987">Nikoli ne pošlji</translation>
@@ -485,7 +483,6 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="7498271377022651285">Počakajte …</translation>
 <translation id="7501135638693251872">Vsi zaznamki</translation>
 <translation id="7521387064766892559">JavaScript</translation>
-<translation id="7561196759112975576">Vedno</translation>
 <translation id="7562080006725997899">Brisanje podatkov brskanja</translation>
 <translation id="7588950540487816470">Fizični splet</translation>
 <translation id="7596558890252710462">Operacijski sistem</translation>
@@ -519,7 +516,6 @@ Kljub temu niste nevidni. Če uporabljate način brez beleženja zgodovine, brsk
 <translation id="7876243839304621966">Odstrani vse</translation>
 <translation id="7947953824732555851">Sprejem in prijava</translation>
 <translation id="7949961459945740081">Prejmite najnovejše funkcije</translation>
-<translation id="7961015016161918242">Nikoli</translation>
 <translation id="7963646190083259054">Ponudnik:</translation>
 <translation id="7987073022710626672">Pogoji storitve za Chrome</translation>
 <translation id="7998918019931843664">Vnovično odpiranje zaprtega zavihka</translation>
@@ -612,5 +608,6 @@ Nove licence dobite tako, da se povežete v internet in predvajate preneseno vse
 <translation id="945632385593298557">Dostop do mikrofona</translation>
 <translation id="954352821720225055">Zaznamek ni na voljo brez povezave. Shramba je skoraj polna.</translation>
 <translation id="969096075394517431">Spreminjanje jezikov</translation>
+<translation id="981121421437150478">Brez povezave</translation>
 <translation id="983192555821071799">Zapri vse zavihke</translation>
 </translationbundle>

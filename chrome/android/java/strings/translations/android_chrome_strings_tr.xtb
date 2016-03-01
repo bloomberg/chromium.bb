@@ -24,7 +24,6 @@ Fiziksel Web'i kullanabilmeniz için Bluetooth ve Konum özelliklerinin açık o
 <translation id="1346090444609141578">Burada kaydedilmiş sayfa yok</translation>
 <translation id="1369915414381695676"><ph name="SITE_NAME" /> sitesi eklendi</translation>
 <translation id="1373696734384179344">Seçilen içeriği indirmek için bellek yetersiz.</translation>
-<translation id="1379156015317873965">Sayfa yükleme performansını iyileştirme</translation>
 <translation id="138361230106469022">Merhaba <ph name="FULL_NAME" />,</translation>
 <translation id="1383876407941801731">Ara</translation>
 <translation id="1389974829397082527">Burada yer işareti yok</translation>
@@ -126,7 +125,6 @@ Fiziksel Web'i Chrome gizlilik ayarlarından kontrol edebilirsiniz.</translation
 <translation id="2707726405694321444">Sayfayı yenile</translation>
 <translation id="2709516037105925701">Otomatik doldurma</translation>
 <translation id="271033894570825754">Yeni</translation>
-<translation id="2718352093833049315">Yaln. Kablosuzda</translation>
 <translation id="2748463065602559597">Güvenli bir Google Chrome sayfasını görüntülüyorsunuz.</translation>
 <translation id="2762000892062317888">az önce</translation>
 <translation id="2770465223704140727">Listeden kaldır</translation>
@@ -262,6 +260,7 @@ Arama teriminizi düzeltmek için uzun basarak terimi seçin. Aramanızı ayrın
 <translation id="4836364883164334657">Bu siteye bağlantınız gizli değil. Saldırganlar <ph name="DOMAIN_NAME" /> alan adından bilgilerinizi (ör. fotoğraflarınızı, şifrelerinizi, iletilerinizi ve kredi kartı bilgilerinizi) çalmaya çalışabilir.</translation>
 <translation id="4842511359652954519">Devamı</translation>
 <translation id="4850886885716139402">Görüntüle</translation>
+<translation id="4875622588773761625">Bu siteye ait şifrenizin <ph name="PASSWORD_MANAGER_BRAND" /> tarafından güncellenmesini ister misiniz?</translation>
 <translation id="4881695831933465202">Aç</translation>
 <translation id="4885273946141277891">Desteklenmeyen sayıda Chrome örneği var.</translation>
 <translation id="4927198283430892231">Kaydedilen sayfalar şu anda <ph name="TOTAL_OFFLINE_STORAGE_SIZE" /> yer kaplıyor.</translation>
@@ -307,7 +306,6 @@ Bunun için bilgisayarınızda Chrome'u açmanız ve menüye gidip "Chrome'da ot
 <translation id="5323972449344932352">Chrome'u başlat</translation>
 <translation id="5324858694974489420">Ebeveyn Ayarları</translation>
 <translation id="5327248766486351172">Ad</translation>
-<translation id="5335200807405507442">Sayfa kaynaklarını önceden getir</translation>
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE" /> silindi</translation>
 <translation id="5345083863238459644">Konum erişimi de <ph name="BEGIN_LINK" />bu cihaz için kapatıldı<ph name="END_LINK" />.</translation>
 <translation id="5380554235172449987">Hiçbir zaman gönderme</translation>
@@ -485,7 +483,6 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="7498271377022651285">Lütfen bekleyin…</translation>
 <translation id="7501135638693251872">Tüm yer işaretleri</translation>
 <translation id="7521387064766892559">JavaScript</translation>
-<translation id="7561196759112975576">Her zaman</translation>
 <translation id="7562080006725997899">Göz atma verileri temizleniyor</translation>
 <translation id="7588950540487816470">Fiziksel Web</translation>
 <translation id="7596558890252710462">İşletim sistemi</translation>
@@ -519,7 +516,6 @@ Yine de, görünmez değilsiniz. Gizli moda geçmeniz web'de yaptıklarınızı 
 <translation id="7876243839304621966">Tümünü kaldır</translation>
 <translation id="7947953824732555851">Kabul et ve oturum aç</translation>
 <translation id="7949961459945740081">En yeni özellikleri al</translation>
-<translation id="7961015016161918242">Hiçbir Zaman</translation>
 <translation id="7963646190083259054">Firma:</translation>
 <translation id="7987073022710626672">Chrome Hizmet Şartları</translation>
 <translation id="7998918019931843664">Kapatılan sekmeyi yeniden aç</translation>
@@ -612,5 +608,6 @@ Yeni lisansları edinmek için İnternet'e bağlanın ve indirdiğiniz içeriği
 <translation id="945632385593298557">Mikrofonunuza erişim</translation>
 <translation id="954352821720225055">Yer işareti çevrimdışı olarak kullanılamıyor. Depolama alanı neredeyse dolmak üzere.</translation>
 <translation id="969096075394517431">Dilleri değiştir</translation>
+<translation id="981121421437150478">Çevrimdışı</translation>
 <translation id="983192555821071799">Tüm sekmeleri kapat</translation>
 </translationbundle>

@@ -505,15 +505,6 @@
 <translation id="2646290749315461919">Membenarkan anda menetapkan sama ada tapak web dibenarkan untuk mengesan lokasi fizikal pengguna. Penjejakan lokasi fizikal pengguna boleh dibenarkan secara lalai, dinafikan secara lalai atau pengguna boleh ditanya setiap kali tapak web meminta lokasi fizikal. Jika dasar ini tidak ditetapkan, 'AskGeolocation' akan digunakan dan pengguna akan dapat mengubah.</translation>
 <translation id="2650049181907741121">Tindakan yang perlu diambil apabila pengguna menutup penutup</translation>
 <translation id="2660846099862559570">Jangan sekali-kali menggunakan proksi</translation>
-<translation id="2665596266623707739">Amaran: Versi jatuh balik TLS 1.0 akan dialih keluar daripada <ph name="PRODUCT_NAME" /> selepas versi 47 (sekitar Januari 2016) dan pilihan "tls1" akan berhenti berfungsi selepas itu.
-
-      Apabila jabat tangan TLS gagal dilakukan, <ph name="PRODUCT_NAME" /> akan mencuba semula sambungan dengan versi TLS lebih rendah agar dapat menangani masalah pepijat dalam pelayan HTTPS. Tetapan ini mengkonfigurasikan versi tersebut yang dapat menghentikan proses jatuh balik ini. Jika pelayan melaksanakan rundingan versi dengan betul (iaitu tanpa memutuskan sambungan), maka tetapan ini tidak digunakan. Namun demikian, sambungan yang terhasil masih perlu mematuhi SSLVersionMin.
-
-      Jika dasar ini tidak dikonfigurasikan, maka <ph name="PRODUCT_NAME" /> menggunakan versi minimum lalai iaitu TLS 1.0 dalam <ph name="PRODUCT_NAME" /> 44 dan TLS 1.1 dalam versi lebih kemudian. Harap maklum bahawa hal ini tidak melumpuhkan sokongan untuk TLS 1.0, hanya sama ada <ph name="PRODUCT_NAME" /> akan menangani masalah pelayan berpepijat yang tidak boleh merundingkan versi dengan betul.
-
-      Jika tidak, tetapan boleh dilakukan menggunakan salah satu nilai berikut: "tls1", "tls1.1" atau "tls1.2". Jika keserasian dengan pelayan berpepijat perlu dikekalkan, pilih tetapan "tls1". Ini langkah sementara dan pelayan seharusnya dapat dibetulkan dengan cepat.
-
-      Tetapan "tls1.2" melumpuhkan semua jatuh balik tetapi ini mungkin memberikan kesan keserasian yang ketara.</translation>
 <translation id="267596348720209223">Menentukan pengekodan aksara yang disokong oleh penyedia carian. Pengekodan ialah nama halaman kod seperti UTF-8, GB2312 dan ISO-8859-1. Ia diuji dalam urutan yang diberikan.
 
           Dasar ini merupakan pilihan. Jika tidak ditetapkan, kod lalai, iaitu UTF-8 akan digunakan.
@@ -939,6 +930,7 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
 
           Dasar ini hanya dipatuhi jika dasar 'DefaultSearchProviderEnabled' didayakan.</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 atau lebih baharu</translation>
+<translation id="4322842393287974810">Benarkan apl kios kelewatan sifar yang dilancarkan secara automatik untuk mengawal versi <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4325690621216251241">Tambahkan butang log keluar pada dulang sistem</translation>
 <translation id="4347908978527632940">Jika benar dan pengguna merupakan pengguna di bawah seliaan, maka apl Android lain boleh mengemukakan pertanyaan berkaitan pengehadan web pengguna melalui penyedia kandungan.
 
@@ -1226,7 +1218,7 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
 <translation id="5330684698007383292">Benarkan <ph name="PRODUCT_FRAME_NAME" /> mengendalikan jenis kandungan berikut</translation>
 <translation id="5345267406698765263">Menentukan dasar aplikasi ARC sebagai rentetan JSON yang boleh
       diserahkan seadanya kepada waktu jalan ARC. Pada masa ini, tetapan ini
-      digunakan untuk menentukan pemasangan paksa apl semata-mata.
+      digunakan untuk menentukan pemasangan apl secara paksa semata-mata.
 
       Jika dasar ini dibiarkan tanpa ditetapkan, tiada apl yang akan dipasang
       secara automatik.</translation>
@@ -1898,6 +1890,13 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 <translation id="7340034977315324840">Laporkan masa aktiviti peranti</translation>
 <translation id="7381326101471547614">Melumpuhkan penggunaan protokol SPDY dalam <ph name="PRODUCT_NAME" />. Jika dasar ini didayakan, protokol SPDY tidak akan tersedia dalam <ph name="PRODUCT_NAME" />. Menetapkan dasar ini kepada dilumpuhkan akan membolehkan penggunaan SPDY. Jika dasar ini dibiarkan tanpa ditetapkan, SPDY akan tersedia.</translation>
 <translation id="7384999953864505698">Membenarkan protokol QUIC</translation>
+<translation id="7406651467768226499">Sama ada hendak membenarkan apl kios kelewatan sifar yang dilancarkan secara automatik untuk mengawal versi <ph name="PRODUCT_OS_NAME" />.
+
+      Dasar ini mengawal sama anda hendak membenarkan apl kios kelewatan sifar yang dilancarkan secara automatik untuk mengawal versi <ph name="PRODUCT_OS_NAME" /> dengan mengisytiharkan required_platform_version dalam manifesnya dan menggunakannya sebagai awalan versi sasaran kemas kini automatik.
+
+      Jika dasar ini ditetapkan kepada benar, nilai kunci manifes required_platform_version apl kios kelewatan sifar yang dilancarkan secara automatik digunakan sebagai awalan versi sasaran kemas kini automatik.
+
+      Jika dasar ini tidak dikonfigurasi atau ditetapkan sebagai palsu, kunci manifes required_platform_version diabaikan dan kemas kini automatik diteruskan seperti biasa.</translation>
 <translation id="7417972229667085380">Peratusan yang digunakan untuk skala kelewatan melahu dalam mod penyampaian (tidak akan digunakan lagi)</translation>
 <translation id="7421483919690710988">Tetapkan saiz cache cakera media dalam bait</translation>
 <translation id="7424751532654212117">Senarai pengecualian kepada senarai pemalam dilumpuhkan</translation>

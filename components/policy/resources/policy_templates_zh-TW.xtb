@@ -450,15 +450,6 @@
 <translation id="2646290749315461919">允許您設定是否要讓網站追蹤使用者的實際位置。您可以直接預設為允許或不允許追蹤使用者的實際位置，或讓網站每次要求實際位置時都詢問使用者一次。如果未設定這項政策，系統會使用「AskGeolocation」，不過使用者可以變更設定。</translation>
 <translation id="2650049181907741121">使用者蓋上螢幕時所採取的動作</translation>
 <translation id="2660846099862559570">永不使用 Proxy</translation>
-<translation id="2665596266623707739">警告：我們將於 <ph name="PRODUCT_NAME" /> 47 版發佈 (大約在 2016 年 1 月) 之後淘汰 TLS 1.0 版遞補功能，並停止支援「tls1」選項。
-
-      當 TLS 交握失敗時，<ph name="PRODUCT_NAME" /> 會重新嘗試以較低版本的 TLS 建立連線，以忽略 HTTPS 伺服器發生的錯誤。這項設定可讓您指定要在哪個版本停止遞補程序。如過伺服器正確執行版本交涉 (亦即不中斷連線)，系統就不會套用這項設定。不過，最終的連線仍然必須符合 SSLVersionMin 要求。
-
-      如果未設定這項政策，<ph name="PRODUCT_NAME" /> 會使用預設的最低版本 (在 <ph name="PRODUCT_NAME" /> 44 版本中為 TLS 1.0，在 44 以上的版本中則為 TLS 1.1)。請注意，這只會影響 <ph name="PRODUCT_NAME" /> 是否略過發生錯誤的伺服器 (無法正確交涉版本)，系統並不會因此停止支援 TLS 1.0。   
-
-      否則，系統可能會將其設為以下其中一個值：「tls1」、「tls1.1」或「tls1.2」。如果必須與發生錯誤的伺服器維持相容，系統可能會將值設為「tls1」。這種方法是權宜之計，伺服器錯誤應該很快就會解決。
-
-      如果設定值是「tls1.2」，系統會全面停用遞補功能，但相容性可能會因此受到重大影響。</translation>
 <translation id="267596348720209223">指定搜尋引擎支援的字元編碼。編碼就是 UTF-8、GB2312 和 ISO-8859-1 等字碼頁名稱。系統會以提供的順序來測試。這項政策是選擇性的，如果未設定，預設會使用的是 UTF-8。只有在啟用「DefaultSearchProviderEnabled」政策時，系統才會遵循這項政策。</translation>
 <translation id="2682225790874070339">停用 <ph name="PRODUCT_OS_NAME" />「檔案」應用程式中的雲端硬碟</translation>
 <translation id="268577405881275241">啟用資料壓縮 Proxy 功能</translation>

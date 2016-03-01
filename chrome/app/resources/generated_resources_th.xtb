@@ -265,7 +265,6 @@
 <translation id="1401874662068168819">Gin Yieh</translation>
 <translation id="140240131475089220">การแก้ไขข้อบกพร่องแบบเงียบ</translation>
 <translation id="140250605646987970">พบโทรศัพท์ แต่Smart Lock จะทำงานบนอุปกรณ์ที่ใช้ Android 5.0 ขึ้นไปเท่านั้น &lt;a&gt;เรียนรู้เพิ่มเติม&lt;/a&gt;</translation>
-<translation id="1405126334425076373">เคอร์เซอร์เมาส์</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (อยู่ภายใต้การดูแล)</translation>
 <translation id="1405476660552109915">คุณต้องการให้ <ph name="PASSWORD_MANAGER_BRAND" /> บันทึกบัญชีของคุณสำหรับเว็บไซต์นี้ไหม</translation>
 <translation id="1406500794671479665">กำลังยืนยันความถูกต้อง...</translation>
@@ -536,7 +535,6 @@
 <translation id="175772926354468439">เปิดใช้งานธีม</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="1758831820837444715">กำหนดค่าเครือข่ายอีเทอร์เน็ต</translation>
-<translation id="1761647635297215796">อนุญาตให้เว็บไซต์ต่างๆ เข้าถึง WebAudio API ได้</translation>
 <translation id="1763046204212875858">สร้างทางลัดไปยังแอปพลิเคชัน</translation>
 <translation id="1763108912552529023">สำรวจต่อไป</translation>
 <translation id="1764226536771329714">เบต้า</translation>
@@ -877,7 +875,6 @@
 <translation id="2286454467119466181">ง่าย</translation>
 <translation id="2286950485307333924">คุณได้ลงชื่อเข้าใช้ Chrome แล้ว</translation>
 <translation id="2287590536030307392">ปิดการเชื่อมต่อไร้สายทั้งหมด</translation>
-<translation id="2289383640829819703">ไม่พบการดาวน์โหลด</translation>
 <translation id="2291643155573394834">แท็บถัดไป</translation>
 <translation id="2294358108254308676">คุณต้องการติดตั้ง <ph name="PRODUCT_NAME" /> หรือไม่</translation>
 <translation id="2296019197782308739">วิธีการ EAP:</translation>
@@ -936,7 +933,6 @@
 <translation id="2384596874640104496">แป้นพิมพ์ภาษาสิงหล</translation>
 <translation id="2385700042425247848">ชื่อบริการ:</translation>
 <translation id="2386631145847373156">คุณสามารถออกจากระบบได้เฉพาะเมื่อลงชื่อเข้าใช้แล้ว</translation>
-<translation id="2386784019642337415">อ่านและเปลี่ยนเครื่องมือค้นหาเริ่มต้นและที่กำหนดเอง</translation>
 <translation id="2390045462562521613">ไม่ต้องจำเครือข่ายนี้</translation>
 <translation id="2391243203977115091">พบรูปภาพใหม่ <ph name="FILE_COUNT" /> ภาพ
     <ph name="LINE_BREAK1" />
@@ -1412,7 +1408,6 @@
 <translation id="3025729795978504041">คลิกขวาที่ปุ่มด้านบนเพื่อดูคนอื่น</translation>
 <translation id="3026050830483105579">ทั้งหมดอยู่ที่นี่แล้ว</translation>
 <translation id="302620147503052030">ปุ่มแสดง</translation>
-<translation id="3030138564564344289">ลองดาวน์โหลดอีกครั้ง</translation>
 <translation id="3031417829280473749">เอเจนต์เอ็กซ์</translation>
 <translation id="3031557471081358569">เลือกรายการที่จะนำเข้าต่อไปนี้:</translation>
 <translation id="3033332627063280038">เปิดการใช้ Cache-Control: คำสั่งไม่อัปเดตขณะตรวจสอบใหม่ รุ่นทดลอง ซึ่งเป็นการอนุญาตให้เซิร์ฟเวอร์ระบุทรัพยากรที่ระบบกำลังตรวจสอบในพื้นหลังอีกครั้งเพื่อลดเวลาแฝง</translation>
@@ -2335,7 +2330,6 @@
 <translation id="4363372140743955595">การตรวจสอบสิทธิ์ตัวจัดการรหัสผ่านอีกครั้ง</translation>
 <translation id="4364444725319685468">ดาวน์โหลด <ph name="FILE_NAME" /> แล้ว</translation>
 <translation id="4364830672918311045">แสดงการแจ้งเตือน</translation>
-<translation id="4365486896593700706">WebAudio</translation>
 <translation id="4365673000813822030">อ๊ะ การซิงค์หยุดทำงาน</translation>
 <translation id="4366509400410520531">อนุญาตโดยคุณ</translation>
 <translation id="4367782753568896354">เราไม่สามารถติดตั้ง:</translation>
@@ -2396,7 +2390,6 @@
 <translation id="4467798014533545464">แสดง URL</translation>
 <translation id="4470564870223067757">ฮังกูลแบบ 2 ชุด</translation>
 <translation id="4474155171896946103">บุ๊กมาร์กแท็บทั้งหมด...</translation>
-<translation id="4475552974751346499">ค้นสิ่งที่ดาวน์โหลดไว้</translation>
 <translation id="4477219268485577442">การออกเสียงภาษาบัลแกเรีย</translation>
 <translation id="4478664379124702289">บันทึก&amp;ลิงก์เป็น...</translation>
 <translation id="4479639480957787382">อีเทอร์เน็ต</translation>
@@ -2701,7 +2694,6 @@
 <translation id="4941246025622441835">ใช้ข้อกำหนดของอุปกรณ์นี้เมื่อลงทะเบียนอุปกรณ์สำหรับการจัดการองค์กร:</translation>
 <translation id="4942394808693235155">ตรวจหาและนำการอัปเดตไปใช้</translation>
 <translation id="494286511941020793">ความช่วยเหลือในการกำหนดค่าพร็อกซี</translation>
-<translation id="4945378551914476156">บุ๊กมาร์ก ประวัติการเข้าชม รหัสผ่าน และการตั้งค่าอื่นๆ ของคุณจะซิงค์กับบัญชี Google เพื่อให้คุณสามารถใช้งานได้ทุกที่ที่ใช้ Chrome คุณสามารถเปลี่ยนการทำงานนี้ได้ใน <ph name="BEGIN_LINK" /></translation>
 <translation id="4950138595962845479">ตัวเลือก...</translation>
 <translation id="4952186391360931024">ไม่ใช่ Material</translation>
 <translation id="4954544650880561668">การควบคุมอุปกรณ์</translation>
@@ -3001,7 +2993,7 @@
 <translation id="5390284375844109566">ฐานข้อมูลที่มีการจัดทำดัชนี</translation>
 <translation id="5392544185395226057">เปิดใช้งานการสนับสนุนสำหรับ Native Client</translation>
 <translation id="5393125431335030955">ปลั๊กอินนี้จะทำงานบนเดสก์ท็อปเท่านั้น</translation>
-<translation id="5393559999218790205">ปิดใช้งานเส้นควบคุมเวลาการเคลื่อนไหวของคอมโพสิเตอร์ UI</translation>
+<translation id="5393559999218790205">ปิดใช้เส้นควบคุมเวลาภาพเคลื่อนไหวการจัดวางองค์ประกอบ UI</translation>
 <translation id="5396126354477659676"><ph name="PEPPER_PLUGIN_NAME" /> บน <ph name="PEPPER_PLUGIN_DOMAIN" /> ต้องการเข้าถึงคอมพิวเตอร์ของคุณ</translation>
 <translation id="539755880180803351">ป้อนข้อมูลในเว็บฟอร์มด้วยการคาดคะเนประเภทฟิลด์การป้อนอัตโนมัติเป็นข้อความตัวยึด</translation>
 <translation id="5397578532367286026">การใช้งานและประวัติของผู้ใช้รายนี้อาจถูกตรวจสอบโดยผู้จัดการ (<ph name="MANAGER_EMAIL" />) บน chrome.com</translation>
@@ -3025,7 +3017,7 @@
 <translation id="5423849171846380976">เปิดอยู่</translation>
 <translation id="5425470845862293575">เปิดให้ใช้งานระบบแสดงผลแบบอักษร DirectWrite แบบทดลอง</translation>
 <translation id="5425722269016440406">คุณต้องออนไลน์เพื่อปิด Smart Lock เนื่องจากการตั้งค่านี้ได้ซิงค์กับโทรศัพท์และอุปกรณ์อื่นๆ โปรดเชื่อมต่อเครือข่ายก่อน</translation>
-<translation id="5426623592374109001">ใช้ระบบย่อยของภาพเคลื่อนไหวที่แทรกเก่าสำหรับการเคลื่อนไหวคอมโพสิตใน UI</translation>
+<translation id="5426623592374109001">ใช้ระบบย่อยของภาพเคลื่อนไหวที่แทรกเดิมเป็นภาพเคลื่อนไหวขององค์ประกอบใน UI</translation>
 <translation id="5427459444770871191">หมุน&amp;ตามเข็มนาฬิกา</translation>
 <translation id="5428105026674456456">สเปน</translation>
 <translation id="542872847390508405">คุณกำลังเรียกดูในฐานะผู้เยี่ยมชม</translation>
@@ -3113,7 +3105,6 @@
 <translation id="5537725057119320332">ส่ง</translation>
 <translation id="5538092967727216836">โหลดเฟรมซ้ำ</translation>
 <translation id="5542132724887566711">โปรไฟล์</translation>
-<translation id="5542721662280972920">ส่วนขยายสื่อที่เข้ารหัสในองค์ประกอบภาพและเสียง</translation>
 <translation id="5543983818738093899">กำลังตรวจสอบสถานะ...</translation>
 <translation id="5544363333869861395">ข้อมูลแคชของโปรแกรมแยกวิเคราะห์ V8</translation>
 <translation id="5546477470896554111">จัดการแหล่งพลังงาน...</translation>
@@ -3370,7 +3361,6 @@
   <ph name="EXPONENT_HEX_DUMP" /></translation>
 <translation id="59174027418879706">เปิดใช้งานแล้ว</translation>
 <translation id="592068147111860043">ระบุปลั๊กอิน PPAPI ที่จะเรียกใช้ภายในนโยบายแซนด์บ็อกซ์ Win32k Lockdown</translation>
-<translation id="5921225488888777945">เวอร์ชันที่เลิกใช้งานแล้วของส่วนขยายสื่อที่เข้ารหัสในองค์ประกอบวิดีโอและเสียง</translation>
 <translation id="5925147183566400388">ตัวชี้ไปยังคำชี้แจงเกี่ยวกับแนวทางปฏิบัติสำหรับใบรับรอง</translation>
 <translation id="5930693802084567591">ข้อมูลของคุณถูกเข้ารหัสด้วยรหัสผ่าน Google ของคุณแล้วเมื่อ <ph name="TIME" /> โปรดป้อนด้านล่าง</translation>
 <translation id="5931146425219109062">อ่านและเปลี่ยนแปลงข้อมูลทั้งหมดบนเว็บไซต์ที่คุณเข้าชม</translation>
@@ -3488,14 +3478,12 @@
 <translation id="6111974609785983504">อนุญาตโดยค่าเริ่มต้น</translation>
 <translation id="6113134669445407638">ปิดใช้ Delay Agnostic AEC ใน WebRTC โปรดใช้หากความล่าช้าของระบบตามที่รายงานน่าเชื่อถือ หรือหากผู้อื่นประสบกับเสียงก้องจากเครื่องของคุณ</translation>
 <translation id="6116921718742659598">เปลี่ยนการตั้งค่าภาษาและการป้อนข้อมูล</translation>
-<translation id="6117536376248197233">ปิดใช้งานเส้นควบคุมเวลาการเคลื่อนไหวของคอมโพสิเตอร์ในโหมดแสดงภาพ</translation>
+<translation id="6117536376248197233">ปิดใช้เส้นควบคุมเวลาภาพเคลื่อนไหวขององค์ประกอบในโหมดแสดงภาพ</translation>
 <translation id="6120205520491252677">ตรึงหน้าเว็บนี้ไว้ที่หน้าจอเริ่ม...</translation>
-<translation id="6120816415558830169">ดาวน์โหลดโดย &lt;a&gt;<ph name="EXTENSION" />&lt;/a&gt;</translation>
 <translation id="6122081475643980456">กำลังมีการควบคุมการเชื่อมต่ออินเทอร์เน็ตของคุณ</translation>
 <translation id="6122093587541546701">อีเมล (ไม่บังคับ):</translation>
 <translation id="6122875415561139701">ไม่อนุญาตให้เขียนใน "<ph name="DEVICE_NAME" />"</translation>
 <translation id="6124650939968185064">ส่วนขยายต่อไปนี้ต้องพึ่งพาส่วนขยายนี้:</translation>
-<translation id="612701906868237915">ลงชื่อเข้าใช้อุปกรณ์ทุกเครื่องของคุณโดยอัตโนมัติ</translation>
 <translation id="6129938384427316298">ความคิดเห็นเกี่ยวกับใบรับรองของ Netscape</translation>
 <translation id="6129953537138746214">ช่องว่าง</translation>
 <translation id="6132383530370527946">The Small Print</translation>
@@ -3630,7 +3618,6 @@
 <translation id="6344170822609224263">เข้าถึงรายการเชื่อมต่อเครือข่าย</translation>
 <translation id="6345221851280129312">ไม่ทราบขนาด</translation>
 <translation id="6347003977836730270">เปิดใช้การเสนอ UX ลูกโป่งแปลภาษาใหม่แทนแถบข้อมูล</translation>
-<translation id="6347887127637865679">ส่วนขยายสื่อที่เข้ารหัส</translation>
 <translation id="6348657800373377022">ช่องตัวเลือกรวม</translation>
 <translation id="6349839454356033837">Android ประสบปัญหาในการเล่นสื่อ</translation>
 <translation id="6353618411602605519">แป้นพิมพ์ภาษาโครเอเชีย</translation>
@@ -4032,7 +4019,6 @@
 <translation id="6991665348624301627">เลือกปลายทาง</translation>
 <translation id="699220179437400583">รายงานรายละเอียดของเหตุการณ์ความปลอดภัยที่เป็นไปได้ต่อ Google โดยอัตโนมัติ</translation>
 <translation id="6993929801679678186">แสดงการคาดคะเนการป้อนอัตโนมัติ</translation>
-<translation id="6994840493536325068">ลงชื่อเข้าใช้เว็บไซต์บนอุปกรณ์นี้โดยอัตโนมัติ</translation>
 <translation id="6998711733709403587">เลือก <ph name="SELCTED_FOLDERS_COUNT" /> โฟลเดอร์</translation>
 <translation id="6998872712520806535">{NUM_PAGES,plural, =1{หน้าต่อไปนี้ไม่มีการตอบสนอง คุณสามารถรอให้ตอบสนองหรือปิดไปเลยได้}other{หน้าต่อไปนี้ไม่มีการตอบสนอง คุณสามารถรอให้ตอบสนองหรือปิดไปเลยได้}}</translation>
 <translation id="7002055706763150362">ในการตั้งค่า Smart Lock สำหรับ Chromebook นั้น Google จะต้องตรวจสอบว่าเป็นคุณจริงๆ โปรดพิมพ์รหัสผ่านเพื่อเริ่มต้นใช้งาน</translation>
@@ -4692,7 +4678,6 @@
 <translation id="7987485481246785146">แป้นพิมพ์ภาษาเคิร์ดโซรานีแบบอารบิก</translation>
 <translation id="7988930390477596403">จะมีการเปิดใช้งานในครั้งถัดไปที่คุณปลดล็อก <ph name="DEVICE_TYPE" /> นี้ Smart Lock ช่วยให้คุณสามารถปลดล็อกอุปกรณ์นี้ด้วยโทรศัพท์ได้โดยไม่ต้องใช้รหัสผ่าน ระบบจะเปิดบลูทูธเพื่อเปิดใช้ Smart Lock</translation>
 <translation id="7989023212944932320">เมื่อเร็วๆ นี้ Google Safe Browsing <ph name="BEGIN_LINK" />ตรวจพบมัลแวร์<ph name="END_LINK" />ใน <ph name="SITE" /> เว็บไซต์ที่โดยปกติจะปลอดภัยบางครั้งอาจติดมัลแวร์ เนื้อหาที่เป็นอันตรายมาจาก <ph name="SUBRESOURCE_HOST" /> ซึ่งเป็นผู้เผยแพร่มัลแวร์ที่เป็นที่รู้จัก คุณต้องกลับมาใหม่ในอีก 2-3 ชั่วโมง</translation>
-<translation id="7990249708898521239">ส่วนขยายสื่อที่เข้ารหัสและมีคำนำหน้า</translation>
 <translation id="7994370417837006925">การลงชื่อเข้าสู่ระบบพร้อมกันหลายบัญชี</translation>
 <translation id="799547531016638432">ลบทางลัด</translation>
 <translation id="79962507603257656">สถานะการดาวน์โหลดในศูนย์การแจ้งเตือน</translation>
@@ -4708,7 +4693,7 @@
 รักษาไฟล์กุญแจของคุณไว้ในที่ปลอดภัย คุณจะต้องใช้ไฟล์นี้ในการสร้างส่วนขยายรุ่นใหม่</translation>
 <translation id="799923393800005025">สามารถดูได้</translation>
 <translation id="7999338963698132743">ตัวจัดการงานใหม่</translation>
-<translation id="8000004253404706714">ใช้ระบบย่อยของภาพเคลื่อนไหวที่แทรกเก่าสำหรับการเคลื่อนไหวคอมโพสิตในโหมดแสดงภาพ</translation>
+<translation id="8000004253404706714">ใช้ระบบย่อยของภาพเคลื่อนไหวที่แทรกเดิมเป็นภาพเคลื่อนไหวขององค์ประกอบในโหมดแสดงภาพ</translation>
 <translation id="8004582292198964060">เบราว์เซอร์</translation>
 <translation id="8007030362289124303">แบตเตอรี่ต่ำ</translation>
 <translation id="8008356846765065031">อินเทอร์เน็ตถูกตัด โปรดตรวจสอบการเชื่อมต่ออินเทอร์เน็ต</translation>

@@ -24,7 +24,6 @@
 <translation id="1346090444609141578">Немає збережених сторінок</translation>
 <translation id="1369915414381695676">Сайт <ph name="SITE_NAME" /> додано</translation>
 <translation id="1373696734384179344">Недостатньо пам’яті, щоб завантажити вибраний вміст.</translation>
-<translation id="1379156015317873965">Покращувати ефективність завантаження сторінок</translation>
 <translation id="138361230106469022">Вітаємо, <ph name="FULL_NAME" />!</translation>
 <translation id="1383876407941801731">Пошук</translation>
 <translation id="1389974829397082527">Немає закладок</translation>
@@ -126,7 +125,6 @@
 <translation id="2707726405694321444">Оновити сторінку</translation>
 <translation id="2709516037105925701">Автозаповнення</translation>
 <translation id="271033894570825754">Новий</translation>
-<translation id="2718352093833049315">Лише у Wi-Fi</translation>
 <translation id="2748463065602559597">Ви переглядаєте безпечну сторінку Google Chrome.</translation>
 <translation id="2762000892062317888">щойно</translation>
 <translation id="2770465223704140727">Видалити зі списку</translation>
@@ -262,6 +260,7 @@
 <translation id="4836364883164334657">Ваше з’єднання з цим сайтом не конфіденційне. Зловмисники можуть намагатися викрасти ваші дані з домену <ph name="DOMAIN_NAME" /> (зокрема фотографії, паролі, повідомлення та дані кредитних карток).</translation>
 <translation id="4842511359652954519">Докладніше</translation>
 <translation id="4850886885716139402">Перегляд</translation>
+<translation id="4875622588773761625">Оновити пароль для цього сайту в <ph name="PASSWORD_MANAGER_BRAND" />?</translation>
 <translation id="4881695831933465202">Відкрити</translation>
 <translation id="4885273946141277891">Забагато копій Chrome.</translation>
 <translation id="4927198283430892231">Зараз збережені сторінки займають <ph name="TOTAL_OFFLINE_STORAGE_SIZE" />.</translation>
@@ -298,7 +297,7 @@
 <translation id="5233638681132016545">Нова вкладка</translation>
 <translation id="5271967389191913893">Вміст, який ви хочете завантажити, не можна відкрити на цьому пристрої.</translation>
 <translation id="5275558766013849309">Вкладки відображатимуться разом із нещодавно відкритими додатками.</translation>
-<translation id="5301954838959518834">Зрозуміло</translation>
+<translation id="5301954838959518834">OK</translation>
 <translation id="5302048478445481009">Мова</translation>
 <translation id="5304593522240415983">Це поле не може бути порожнім</translation>
 <translation id="5308933389783727448">Шукати серед збережених сторінок</translation>
@@ -307,7 +306,6 @@
 <translation id="5323972449344932352">Запустити Chrome</translation>
 <translation id="5324858694974489420">Батьківські налаштування</translation>
 <translation id="5327248766486351172">Назва</translation>
-<translation id="5335200807405507442">Попередня вибірка ресурсів сторінки</translation>
 <translation id="5345040418939504969">Закладку "<ph name="BOOKMARK_TITLE" />" видалено</translation>
 <translation id="5345083863238459644">Доступ до геоданих також <ph name="BEGIN_LINK" />вимкнено на цьому пристрої<ph name="END_LINK" />.</translation>
 <translation id="5380554235172449987">Ніколи не надсилати</translation>
@@ -468,7 +466,7 @@
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />Довідка<ph name="END_LINK" /></translation>
 <translation id="7299721129597238157">Видалити закладку</translation>
 <translation id="7324738665594301612">Перевірка передавання сторінок HTTPS через сервери Google є частиною експерименту.</translation>
-<translation id="7346909386216857016">Зрозуміло</translation>
+<translation id="7346909386216857016">OK</translation>
 <translation id="7363354739009474003">Відео "<ph name="VIDEO_TITLE" />" завантажується</translation>
 <translation id="7366340029385295517">Трансляція на екран "<ph name="SCREEN_NAME" />"</translation>
 <translation id="7375125077091615385">Тип:</translation>
@@ -485,7 +483,6 @@
 <translation id="7498271377022651285">Зачекайте…</translation>
 <translation id="7501135638693251872">Усі закладки</translation>
 <translation id="7521387064766892559">JavaScript</translation>
-<translation id="7561196759112975576">Завжди</translation>
 <translation id="7562080006725997899">Очищення даних веб-перегляду</translation>
 <translation id="7588950540487816470">Інтернет навколо нас</translation>
 <translation id="7596558890252710462">Операційна система</translation>
@@ -519,7 +516,6 @@
 <translation id="7876243839304621966">Видалити все</translation>
 <translation id="7947953824732555851">Прийняти й увійти</translation>
 <translation id="7949961459945740081">Завантажити найновіші функції</translation>
-<translation id="7961015016161918242">Ніколи</translation>
 <translation id="7963646190083259054">Постачальник:</translation>
 <translation id="7987073022710626672">Умови використання Google Chrome</translation>
 <translation id="7998918019931843664">Знову відкрити закриту вкладку</translation>
@@ -612,5 +608,6 @@
 <translation id="945632385593298557">Доступ до мікрофона</translation>
 <translation id="954352821720225055">Закладку не збережено офлайн. Пам’ять майже заповнена.</translation>
 <translation id="969096075394517431">Змінити мови</translation>
+<translation id="981121421437150478">Офлайн</translation>
 <translation id="983192555821071799">Закрити всі вкладки</translation>
 </translationbundle>

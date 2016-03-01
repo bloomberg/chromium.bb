@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="te">
-<translation id="1015255576907412255">మరింత సమాచారం కోసం మీ సిస్టమ్ నిర్వాహకుడిని సంప్రదించండి.</translation>
 <translation id="1015730422737071372">అదనపు వివరాలను అందించండి</translation>
 <translation id="1032854598605920125">సవ్యదిశలో తిప్పు</translation>
 <translation id="1038842779957582377">తెలియని పేరు</translation>
@@ -303,7 +302,6 @@
 <translation id="4176463684765177261">ఆపివేయబడింది</translation>
 <translation id="4196861286325780578">&amp;తరలించడాన్ని పునరావృతం చేయి</translation>
 <translation id="4220128509585149162">క్రాష్‌లు</translation>
-<translation id="4241404202385006548">మీ పొడిగింపులను నిలిపివేసి, ఆపై ఈ వెబ్‌పేజీని మళ్లీ లోడ్ చేయండి</translation>
 <translation id="4250680216510889253">కాదు</translation>
 <translation id="4258748452823770588">చెల్లని సంతకం</translation>
 <translation id="4268298190799576220">Chromium ప్రస్తుతం మీ కార్డ్‌ను ధృవీకరించలేకపోయింది. దయచేసి తర్వాత మళ్లీ ప్రయత్నించండి.</translation>
@@ -443,7 +441,6 @@
 <translation id="6203231073485539293">మీ ఇంటర్నెట్ కనెక్షన్‌ను తనిఖీ చేయండి</translation>
 <translation id="6218753634732582820">Chromium నుండి చిరునామాను తీసివేయాలా?</translation>
 <translation id="6232139169545176020">అభ్యర్థించిన URI స్కీమ్‌కు మద్దతు లేదు.</translation>
-<translation id="6237614789842758826">Googleలో శోధించండి</translation>
 <translation id="6259156558325130047">&amp;మళ్లీ క్రమం చేయడాన్ని పునరావృతం చేయి</translation>
 <translation id="6262796033958342538">పలు ప్రత్యేక స్థాన ముఖ్యశీర్షికలు స్వీకరించబడ్డాయి.  ఇది HTTP ప్రతిస్పందన విభజన దాడులకు వ్యతిరేకంగా రక్షణను అందించడానికి అనుమతించబడలేదు.</translation>
 <translation id="6263376278284652872"><ph name="DOMAIN" /> బుక్‌మార్క్‌లు</translation>
@@ -517,7 +514,6 @@
 <translation id="7087282848513945231">కౌంటి</translation>
 <translation id="7088615885725309056">పాతవి</translation>
 <translation id="7108649287766967076"><ph name="TARGET_LANGUAGE" />కు అనువాదం విఫలమైంది.</translation>
-<translation id="7117303293717852287">ఈ వెబ్‌పేజీని మళ్లీ లోడ్ చేయండి</translation>
 <translation id="7139724024395191329">ఎమిరేట్</translation>
 <translation id="7179921470347911571">ఇప్పుడే పునఃప్రారంభించు</translation>
 <translation id="7180611975245234373">రీఫ్రెష్ చేయి</translation>
@@ -564,7 +560,6 @@
 <translation id="7592362899630581445">సర్వర్ యొక్క ప్రమాణపత్రం పేరు పరిమితులను ఉల్లంఘిస్తోంది.</translation>
 <translation id="759889825892636187"><ph name="HOST_NAME" /> ప్రస్తుతం ఈ అభ్యర్థనను నిర్వహించలేదు.</translation>
 <translation id="7600965453749440009"><ph name="LANGUAGE" />ను ఎప్పటికీ అనువదించవద్దు</translation>
-<translation id="7602848207066046655"><ph name="HOST_NAME" /> సర్వర్ <ph name="BEGIN_ABBR" /> కనుగొనబడలేదు.</translation>
 <translation id="7610193165460212391">విలువ <ph name="VALUE" /> పరిధి వెలుపల ఉంది.</translation>
 <translation id="7613889955535752492">గడువు ముగింపు: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">మీకు ఇప్పటికే మీ Google ఖాతా పాస్‌వర్డ్ యొక్క మరొక సంస్కరణను ఉపయోగించి ఎన్‌క్రిప్ట్ అయిన డేటా ఉంది. దయచేసి దాన్ని దిగువ నమోదు చేయండి.</translation>
@@ -645,7 +640,6 @@
 <translation id="8488350697529856933">వీటికి వర్తిస్తుంది</translation>
 <translation id="8494979374722910010">సర్వర్‌కు కనెక్ట్ చెయ్యడానికి చేసిన ప్రయత్నం విఫలమైంది.</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> ప్రతిస్పందించడానికి చాలా ఎక్కువ సమయం పట్టింది.</translation>
-<translation id="8508677083825928015">పేజీలను మరింత శీఘ్రంగా లోడ్ చేయడానికి వనరులను ముందుగానే పొందండి</translation>
 <translation id="8530504477309582336">Google Payments ఈ రకమైన కార్డ్‌కి మద్దతివ్వదు. దయచేసి వేరొక కార్డ్‌ను ఎంచుకోండి.</translation>
 <translation id="8550022383519221471">సమకాలీకరణ సేవ మీ డొమైన్‌కు అందుబాటులో లేదు.</translation>
 <translation id="8553075262323480129">పేజీ భాష నిర్థారించలేకపోయినందున అనువాదం విఫలమైంది.</translation>

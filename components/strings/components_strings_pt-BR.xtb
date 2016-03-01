@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="pt-BR">
-<translation id="1015255576907412255">Entre em contato com o administrador do sistema para mais informações.</translation>
 <translation id="1015730422737071372">Forneça detalhes adicionais</translation>
 <translation id="1032854598605920125">Girar no sentido horário</translation>
 <translation id="1038842779957582377">nome desconhecido</translation>
@@ -222,6 +221,7 @@
 <translation id="3254409185687681395">Adicionar esta página aos favoritos</translation>
 <translation id="3270847123878663523">&amp;Desfazer reordenar</translation>
 <translation id="3286538390144397061">Reiniciar agora</translation>
+<translation id="3305707030755673451">Seus dados foram criptografados com sua senha longa de sincronização no dia <ph name="TIME" />. Informe-a para começar a sincronização.</translation>
 <translation id="333371639341676808">Impedir que esta página crie caixas de diálogo adicionais.</translation>
 <translation id="3340978935015468852">configurações</translation>
 <translation id="3355823806454867987">Alterar configurações de proxy...</translation>
@@ -303,7 +303,6 @@
 <translation id="4176463684765177261">Desativado</translation>
 <translation id="4196861286325780578">&amp;Refazer mover</translation>
 <translation id="4220128509585149162">Falhas</translation>
-<translation id="4241404202385006548">Desative suas extensões e atualize esta página da Web.</translation>
 <translation id="4250680216510889253">Não</translation>
 <translation id="4258748452823770588">Assinatura inválida</translation>
 <translation id="4268298190799576220">Não foi possível verificar seu cartão com o Chromium no momento. Tente novamente mais tarde.</translation>
@@ -443,7 +442,6 @@
 <translation id="6203231073485539293">Verifique sua conexão com a Internet</translation>
 <translation id="6218753634732582820">Remover endereço do Chromium?</translation>
 <translation id="6232139169545176020">O esquema de URI solicitado não é suportado.</translation>
-<translation id="6237614789842758826">Pesquise no Google</translation>
 <translation id="6259156558325130047">&amp;Refazer reordenar</translation>
 <translation id="6262796033958342538">Vários cabeçalhos de local diferentes foram recebidos. Para garantir proteção contra
     ataques de divisão de resposta HTTP, o conteúdo foi bloqueado.</translation>
@@ -519,7 +517,6 @@
 <translation id="7087282848513945231">Condado</translation>
 <translation id="7088615885725309056">Mais antigo</translation>
 <translation id="7108649287766967076">Falha na tradução para <ph name="TARGET_LANGUAGE" />.</translation>
-<translation id="7117303293717852287">Atualize esta página da Web</translation>
 <translation id="7139724024395191329">Emirado</translation>
 <translation id="7179921470347911571">Reiniciar agora</translation>
 <translation id="7180611975245234373">Atualizar</translation>
@@ -566,7 +563,6 @@ Dica: o modo de navegação anônimo <ph name="SHORTCUT_KEY" /> pode ser útil d
 <translation id="7592362899630581445">O certificado do servidor viola as restrições de nome.</translation>
 <translation id="759889825892636187"><ph name="HOST_NAME" /> não consegue atender a esta solicitação no momento.</translation>
 <translation id="7600965453749440009">Nunca traduzir do <ph name="LANGUAGE" /></translation>
-<translation id="7602848207066046655">Não foi possível encontrar o servidor <ph name="BEGIN_ABBR" /> de <ph name="HOST_NAME" />.</translation>
 <translation id="7610193165460212391">O valor não corresponde ao período <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">Data de expiração: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Você já possui dados criptografados utilizando uma versão diferente de sua senha para a Conta do Google. Digite-a abaixo.</translation>
@@ -647,7 +643,6 @@ Dica: o modo de navegação anônimo <ph name="SHORTCUT_KEY" /> pode ser útil d
 <translation id="8488350697529856933">Aplicável a</translation>
 <translation id="8494979374722910010">Falha ao tentar estabelecer conexão com o servidor.</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> demorou muito para responder.</translation>
-<translation id="8508677083825928015">Recursos de pré-chamada para carregar páginas mais rapidamente</translation>
 <translation id="8530504477309582336">Este tipo de cartão não é aceito pelo Google Payments. Selecione outro cartão.</translation>
 <translation id="8550022383519221471">O serviço de sincronização não está disponível para seu domínio.</translation>
 <translation id="8553075262323480129">A tradução falhou porque não foi possível determinar o idioma da página.</translation>
@@ -711,6 +706,7 @@ incomuns e incorretas. Isso pode acontecer quando um invasor está fingindo ser 
 <translation id="9170848237812810038">&amp;Desfazer</translation>
 <translation id="917450738466192189">O certificado do servidor é inválido.</translation>
 <translation id="9183425211371246419"><ph name="HOST_NAME" /> usa um protocolo incompatível.</translation>
+<translation id="9205078245616868884">Seus dados são criptografados com sua senha longa de sincronização. Informe-a para começar a sincronização.</translation>
 <translation id="9207861905230894330">Falha ao adicionar artigo.</translation>
 <translation id="933612690413056017">Não há conexão com a Internet</translation>
 <translation id="933712198907837967">Diners Club</translation>

@@ -24,7 +24,6 @@
 <translation id="1346090444609141578">ここに保存されているページはありません</translation>
 <translation id="1369915414381695676">サイト <ph name="SITE_NAME" /> を追加しました</translation>
 <translation id="1373696734384179344">選択したコンテンツをダウンロードするにはメモリが不足しています。</translation>
-<translation id="1379156015317873965">ページの表示速度が向上します</translation>
 <translation id="138361230106469022">こんにちは、<ph name="FULL_NAME" /> さん</translation>
 <translation id="1383876407941801731">検索</translation>
 <translation id="1389974829397082527">ブックマークはありません</translation>
@@ -126,7 +125,6 @@ Chrome のプライバシー設定でフィジカル ウェブを管理できま
 <translation id="2707726405694321444">ページを更新</translation>
 <translation id="2709516037105925701">自動入力</translation>
 <translation id="271033894570825754">新しいファイル</translation>
-<translation id="2718352093833049315">Wi-Fi接続時のみ</translation>
 <translation id="2748463065602559597">Google Chrome の安全なページを表示しています。</translation>
 <translation id="2762000892062317888">たった今</translation>
 <translation id="2770465223704140727">リストから削除</translation>
@@ -262,6 +260,7 @@ Chrome のプライバシー設定でフィジカル ウェブを管理できま
 <translation id="4836364883164334657">このサイトへの接続はプライベート接続ではありません。悪意のあるユーザーが、<ph name="DOMAIN_NAME" /> 上のあなたの情報（写真、パスワード、メッセージ、クレジット カード番号など）を不正に取得しようとしている可能性があります。</translation>
 <translation id="4842511359652954519">もっと見る</translation>
 <translation id="4850886885716139402">表示</translation>
+<translation id="4875622588773761625"><ph name="PASSWORD_MANAGER_BRAND" /> でこのサイトのパスワードを更新しますか？</translation>
 <translation id="4881695831933465202">開く</translation>
 <translation id="4885273946141277891">Chrome のインスタンス数の上限を超えています。</translation>
 <translation id="4927198283430892231">保存したページに使用されている容量は現在 <ph name="TOTAL_OFFLINE_STORAGE_SIZE" /> です。</translation>
@@ -307,7 +306,6 @@ Chrome のプライバシー設定でフィジカル ウェブを管理できま
 <translation id="5323972449344932352">Chrome を起動</translation>
 <translation id="5324858694974489420">保護者設定</translation>
 <translation id="5327248766486351172">名前</translation>
-<translation id="5335200807405507442">ページリソースのプリフェッチ</translation>
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE" /> を削除しました</translation>
 <translation id="5345083863238459644">現在地情報へのアクセスは<ph name="BEGIN_LINK" />この端末でもオフになっています<ph name="END_LINK" />。</translation>
 <translation id="5380554235172449987">送信しない</translation>
@@ -485,7 +483,6 @@ Chrome のプライバシー設定でフィジカル ウェブを管理できま
 <translation id="7498271377022651285">お待ちください…</translation>
 <translation id="7501135638693251872">すべてのブックマーク</translation>
 <translation id="7521387064766892559">Javascript</translation>
-<translation id="7561196759112975576">常に使用</translation>
 <translation id="7562080006725997899">閲覧データの消去</translation>
 <translation id="7588950540487816470">フィジカルウェブ</translation>
 <translation id="7596558890252710462">オペレーティング システム</translation>
@@ -519,7 +516,6 @@ Chrome のプライバシー設定でフィジカル ウェブを管理できま
 <translation id="7876243839304621966">すべて削除</translation>
 <translation id="7947953824732555851">同意してログイン</translation>
 <translation id="7949961459945740081">最新機能を取得</translation>
-<translation id="7961015016161918242">使用しない</translation>
 <translation id="7963646190083259054">ベンダー:</translation>
 <translation id="7987073022710626672">Chrome 利用規約</translation>
 <translation id="7998918019931843664">閉じたタブを開く</translation>
@@ -612,5 +608,6 @@ Chrome のプライバシー設定でフィジカル ウェブを管理できま
 <translation id="945632385593298557">マイクへのアクセス</translation>
 <translation id="954352821720225055">ブックマークをオフラインで使用できません。ストレージの空き容量が少なくなっています。</translation>
 <translation id="969096075394517431">言語を変更</translation>
+<translation id="981121421437150478">オフライン</translation>
 <translation id="983192555821071799">すべてのタブを閉じる</translation>
 </translationbundle>

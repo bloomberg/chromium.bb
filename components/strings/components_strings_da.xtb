@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="da">
-<translation id="1015255576907412255">Kontakt systemadministratoren for at få flere oplysninger.</translation>
 <translation id="1015730422737071372">Angiv yderligere oplysninger</translation>
 <translation id="1032854598605920125">Rotér med uret</translation>
 <translation id="1038842779957582377">ukendt navn</translation>
@@ -303,7 +302,6 @@
 <translation id="4176463684765177261">Deaktiveret</translation>
 <translation id="4196861286325780578">&amp;Annuller fortryd flytning</translation>
 <translation id="4220128509585149162">Nedbrud</translation>
-<translation id="4241404202385006548">Deaktiver dine udvidelser, og genindlæs derefter denne webside</translation>
 <translation id="4250680216510889253">Nej</translation>
 <translation id="4258748452823770588">Forkert signatur</translation>
 <translation id="4268298190799576220">Chrome kan ikke bekræfte dit kort i øjeblikket. Prøv igen senere.</translation>
@@ -443,7 +441,6 @@
 <translation id="6203231073485539293">Kontrollér din internetforbindelse</translation>
 <translation id="6218753634732582820">Vil du fjerne adressen fra Chromium?</translation>
 <translation id="6232139169545176020">Det anmodede URI-skema understøttes ikke</translation>
-<translation id="6237614789842758826">Søg på Google</translation>
 <translation id="6259156558325130047">&amp;Annuller fortryd omarrangering</translation>
 <translation id="6262796033958342538">Der er modtaget flere overskrifter med placeringer.  Dette er ikke tilladt, idet der 
     skal kunne beskyttes mod angreb med opdelte HTTP-svar.</translation>
@@ -519,7 +516,6 @@
 <translation id="7087282848513945231">Amt/region</translation>
 <translation id="7088615885725309056">Ældre</translation>
 <translation id="7108649287766967076">Oversættelsen til <ph name="TARGET_LANGUAGE" /> mislykkedes.</translation>
-<translation id="7117303293717852287">Genindlæs denne webside</translation>
 <translation id="7139724024395191329">Emirat</translation>
 <translation id="7179921470347911571">Genstart nu</translation>
 <translation id="7180611975245234373">Opdater</translation>
@@ -566,7 +562,6 @@ Psst! Prøv at bruge Inkognitotilstand <ph name="SHORTCUT_KEY" /> næste gang.</
 <translation id="7592362899630581445">Begrænsningerne for serverens certifikatnavn er overtrådt.</translation>
 <translation id="759889825892636187"><ph name="HOST_NAME" /> kan i øjeblikket ikke behandle denne anmodning.</translation>
 <translation id="7600965453749440009">Oversæt aldrig <ph name="LANGUAGE" /></translation>
-<translation id="7602848207066046655">Serveren for <ph name="HOST_NAME" /> <ph name="BEGIN_ABBR" /> kunne ikke findes.</translation>
 <translation id="7610193165460212391">Værdien er uden for intervallet <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">Udløbsdato: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Du har allerede data, der er krypteret med en anden version af adgangskoden til din Google-konto. Indtast adgangskoden i feltet nedenfor.</translation>
@@ -647,7 +642,6 @@ Psst! Prøv at bruge Inkognitotilstand <ph name="SHORTCUT_KEY" /> næste gang.</
 <translation id="8488350697529856933">Gælder for</translation>
 <translation id="8494979374722910010">Forsøg på at oprette forbindelse til serveren mislykkedes.</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> var for lang tid om at svare.</translation>
-<translation id="8508677083825928015">Hent ressourcer til hurtigere sideindlæsning på forhånd</translation>
 <translation id="8530504477309582336">Denne korttype understøttes ikke af Google Payments. Vælg et andet kort.</translation>
 <translation id="8550022383519221471">Synkroniseringstjenesten er ikke tilgængelig for dit domæne.</translation>
 <translation id="8553075262323480129">Oversættelsen mislykkedes, fordi sidens sprog ikke kunne fastslås.</translation>

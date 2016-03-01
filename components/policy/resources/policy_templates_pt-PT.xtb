@@ -461,15 +461,6 @@
 <translation id="2646290749315461919">Permite definir se os Web sites têm permissão para monitorizar a localização física dos utilizadores. A monitorização da localização física dos utilizadores pode ser permitida por predefinição, negada por predefinição ou o utilizador pode ser questionado sempre que um Web site solicitar a localização física. Se esta política não for definida, será utilizada a definição "AskGeolocation" e o utilizador poderá alterá-la.</translation>
 <translation id="2650049181907741121">Ação a realizar quando o utilizador fecha a tampa</translation>
 <translation id="2660846099862559570">Nunca utilizar proxy</translation>
-<translation id="2665596266623707739">Aviso: a alternativa da versão TLS 1.0 será removida do <ph name="PRODUCT_NAME" /> após a versão 47 (por volta de janeiro de 2016) e a opção "tls1" deixará de funcionar nessa altura.
-
-      Quando um handshake de TLS falhar, o <ph name="PRODUCT_NAME" /> irá tentar estabelecer ligação com uma versão inferior do TLS para contornar os erros dos servidores HTTPS. Esta definição configura a versão na qual este processo alternativo pára. Se um servidor executar corretamente a negociação da versão (ou seja, sem interromper a ligação), esta definição não se aplica. Independentemente disso, a ligação resultante deve, mesmo assim, estar em conformidade com a política SSLVersionMin.
-
-      Se esta política não estiver configurada, o <ph name="PRODUCT_NAME" /> utiliza uma versão mínima predefinida, que é TLS 1.0 no <ph name="PRODUCT_NAME" /> 44 e TLS 1.1 em versões posteriores. Tenha em atenção que esta operação não desativa o suporte para TLS 1.0, mas determina apenas se o <ph name="PRODUCT_NAME" /> deve contornar servidores com erros que não consigam negociar versões corretamente.
-
-      Caso contrário, é possível defini-la para um dos seguintes valores: "tls1", "tls1.1" ou "tls1.2". Se for necessário manter a compatibilidade com um servidor com erros, é possível definir para "tls1". Esta é uma medida temporária e o servidor deve ser reparado rapidamente.
-
-      Uma definição de "tls1.2" desativa todas as alternativas, porém, pode ter um impacto significativo na compatibilidade.</translation>
 <translation id="267596348720209223">Especifica as codificações de caracteres suportadas pelo fornecedor de pesquisas. As codificações são nomes de páginas de códigos, como UTF-8, GB2312 e ISO-8859-1, e são selecionadas por esta ordem. Esta política é opcional. Se não for definida, a codificação predefinida será UTF-8. Esta política aplica-se apenas se a política "DefaultSearchProviderEnabled" estiver ativada.</translation>
 <translation id="2682225790874070339">Desativa o Google Drive na aplicação Ficheiros do <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="268577405881275241">Ativar a funcionalidade proxy de compressão de dados</translation>
@@ -844,6 +835,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
           Esta política só será seguida se a política "DefaultSearchProviderEnabled" estiver ativada.</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 ou posterior</translation>
+<translation id="4322842393287974810">Permitir que a aplicação de quiosque de início automático com atraso zero controle a versão do <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4325690621216251241">Adicionar um botão para terminar sessão ao tabuleiro do sistema</translation>
 <translation id="4347908978527632940">Se estiver definida como verdadeira e o utilizador for um utilizador supervisionado, outras aplicações Android podem consultar as restrições Web do utilizador através de um fornecedor de conteúdos.
 
@@ -1684,6 +1676,13 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="7340034977315324840">Comunicar períodos de atividade do aparelho</translation>
 <translation id="7381326101471547614">Desativa a utilização do protocolo SPDY em <ph name="PRODUCT_NAME" />. Se esta política estiver ativada, o protocolo SPDY não estará disponível em <ph name="PRODUCT_NAME" />. A desativação desta política permitirá a utilização do protocolo SPDY. Se esta política não for definida, o protocolo SPDY estará disponível.</translation>
 <translation id="7384999953864505698">Permite o protocolo QUIC</translation>
+<translation id="7406651467768226499">Permitir ou não que a aplicação de quiosque de início automático com atraso zero controle a versão do <ph name="PRODUCT_OS_NAME" />.
+
+      Esta política controla se a aplicação de quiosque de início automático com atraso zero tem autorização para controlar a versão do <ph name="PRODUCT_OS_NAME" /> ao declarar uma chave required_platform_version no respetivo manifesto e utilizá-la como o prefixo da versão alvo da atualização automática.
+
+      Se a política estiver definida como verdadeira, o valor da chave do manifesto required_platform_version da aplicação de quiosque de início automático com atraso zero é utilizado como o prefixo da versão alvo da atualização automática.
+
+      Se a política não estiver configurada ou estiver definida como falsa, a chave do manifesto required_platform_version é ignorada e a atualização automática decorre como habitualmente.</translation>
 <translation id="7417972229667085380">Percentagem que determina a escala do atraso de inatividade no modo de apresentação (descontinuado)</translation>
 <translation id="7421483919690710988">Definir o tamanho da cache do disco multimédia em bytes</translation>
 <translation id="7424751532654212117">Lista de exceções à lista de plug-ins desativados</translation>

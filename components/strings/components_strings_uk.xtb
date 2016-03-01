@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="uk">
-<translation id="1015255576907412255">Зв’яжіться зі своїм системним адміністратором, щоб дізнатися більше.</translation>
 <translation id="1015730422737071372">Надати додаткову інформацію</translation>
 <translation id="1032854598605920125">Обернути за годинниковою стрілкою</translation>
 <translation id="1038842779957582377">Невідоме ім’я</translation>
@@ -303,7 +302,6 @@
 <translation id="4176463684765177261">Вимкнено</translation>
 <translation id="4196861286325780578">&amp;Повторити переміщення</translation>
 <translation id="4220128509585149162">Збої в роботі</translation>
-<translation id="4241404202385006548">Вимкніть розширення та оновіть цю веб-сторінку</translation>
 <translation id="4250680216510889253">ні</translation>
 <translation id="4258748452823770588">Недійсний підпис</translation>
 <translation id="4268298190799576220">Chromium не вдалося підтвердити вашу картку. Спробуйте пізніше.</translation>
@@ -443,7 +441,6 @@
 <translation id="6203231073485539293">Перевірте з’єднання з Інтернетом</translation>
 <translation id="6218753634732582820">Видалити адресу з Chromium?</translation>
 <translation id="6232139169545176020">Потрібна схема URI не підтримується.</translation>
-<translation id="6237614789842758826">Виконайте пошук у Google</translation>
 <translation id="6259156558325130047">&amp;Повторити перевпорядкування</translation>
 <translation id="6262796033958342538">Отримано кілька окремих заголовків Location. Це заборонено з метою захисту
     від атак, націлених на розділення відповідей HTTP.</translation>
@@ -519,7 +516,6 @@
 <translation id="7087282848513945231">Округ або графство</translation>
 <translation id="7088615885725309056">Давніше</translation>
 <translation id="7108649287766967076">Помилка перекладу такою мовою: <ph name="TARGET_LANGUAGE" />.</translation>
-<translation id="7117303293717852287">Оновіть цю веб-сторінку</translation>
 <translation id="7139724024395191329">Емірат</translation>
 <translation id="7179921470347911571">Перезапустити зараз</translation>
 <translation id="7180611975245234373">Оновити</translation>
@@ -566,7 +562,6 @@
 <translation id="7592362899630581445">Сертифікат сервера порушує обмежувальні умови щодо імен.</translation>
 <translation id="759889825892636187">Хост <ph name="HOST_NAME" /> зараз не може обробити цей запит.</translation>
 <translation id="7600965453749440009">Ніколи не перекладати з такої мови: <ph name="LANGUAGE" /></translation>
-<translation id="7602848207066046655">Адресу <ph name="BEGIN_ABBR" /> сервера хосту <ph name="HOST_NAME" /> не знайдено.</translation>
 <translation id="7610193165460212391">Значення за межами діапазону <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">Діє до: <ph name="EXPIRATION_MONTH" />.<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Ви вже зашифрували дані, використовуючи іншу версію пароля облікового запису Google. Введіть його нижче.</translation>
@@ -646,7 +641,6 @@
 <translation id="8488350697529856933">Застосовується до:</translation>
 <translation id="8494979374722910010">Спроба з’єднатися з сервером виявилась невдалою.</translation>
 <translation id="8498891568109133222">Хост <ph name="HOST_NAME" /> довго не відповідає.</translation>
-<translation id="8508677083825928015">Заздалегідь отримувати ресурси, щоб швидше завантажувати сторінки</translation>
 <translation id="8530504477309582336">Цей тип картки не підтримується в Google Payments. Виберіть іншу картку.</translation>
 <translation id="8550022383519221471">Послуга синхронізації недоступна для вашого домену.</translation>
 <translation id="8553075262323480129">Помилка перекладу. Неможливо визначити мову сторінки.</translation>

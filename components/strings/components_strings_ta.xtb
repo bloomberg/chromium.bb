@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ta">
-<translation id="1015255576907412255">மேலும் தகவலுக்கு உங்கள் கணினி நிர்வாகியைத் தொடர்புகொள்ளவும்.</translation>
 <translation id="1015730422737071372">கூடுதல் விவரங்களை வழங்கவும்</translation>
 <translation id="1032854598605920125">கடிகாரத்திசையில் சுழற்று</translation>
 <translation id="1038842779957582377">அறியப்படாத பெயர்</translation>
@@ -296,7 +295,6 @@
 <translation id="4176463684765177261">முடக்கப்பட்டது</translation>
 <translation id="4196861286325780578">&amp;நகர்த்தலை மீண்டும் செய்</translation>
 <translation id="4220128509585149162">செயலிழப்புகள்</translation>
-<translation id="4241404202385006548">உங்கள் நீட்டிப்புகளை முடக்கவும், பின்னர் இந்த இணையப்பக்கத்தை மீண்டும் ஏற்றவும்</translation>
 <translation id="4250680216510889253">இல்லை</translation>
 <translation id="4258748452823770588">தவறான கையொப்பம்</translation>
 <translation id="4268298190799576220">இப்போது உங்கள் கார்டை Chromium ஆல் சரிபார்க்க முடியவில்லை. பின்னர் முயற்சிக்கவும்.</translation>
@@ -435,7 +433,6 @@
 <translation id="6203231073485539293">உங்கள் இணைய இணைப்பைச் சரிபார்க்கவும்</translation>
 <translation id="6218753634732582820">Chromium இலிருந்து முகவரியை அகற்றவா?</translation>
 <translation id="6232139169545176020">கோரப்பட்ட URI திட்டம் ஆதரவளிக்கவில்லை.</translation>
-<translation id="6237614789842758826">Google இல் தேடவும்</translation>
 <translation id="6259156558325130047">&amp;மறுவரிசைப்படுத்தலை மீண்டும் செய்</translation>
 <translation id="6262796033958342538">ஒன்றுக்கு மேற்பட்ட, தனித்தனி இருப்பிடத் தலைப்புகள் பெறப்பட்டன. HTTP பதிலளிப்பு பிரிப்புத் தாக்குதல்களுக்கு எதிரான பாதுகாப்பை வழங்க இதற்கு அனுமதியில்லை.</translation>
 <translation id="6263376278284652872"><ph name="DOMAIN" /> புக்மார்க்குகள்</translation>
@@ -509,7 +506,6 @@
 <translation id="7087282848513945231">மாகாணம்</translation>
 <translation id="7088615885725309056">பழையவை</translation>
 <translation id="7108649287766967076"><ph name="TARGET_LANGUAGE" /> க்கான மொழிபெயர்ப்பு தோல்வியடைந்தது.</translation>
-<translation id="7117303293717852287">இந்த இணையப்பக்கத்தை மீண்டும் ஏற்றவும்</translation>
 <translation id="7139724024395191329">எமிரேட்</translation>
 <translation id="7179921470347911571">இப்போது மீண்டும் தொடங்கு</translation>
 <translation id="7180611975245234373">புதுப்பி</translation>
@@ -556,7 +552,6 @@
 <translation id="7592362899630581445">பெயர் கட்டுப்பாடுகளைச் சேவையகத்தின் சான்றிதழ் மீறுகிறது.</translation>
 <translation id="759889825892636187"><ph name="HOST_NAME" /> ஆல் தற்போது இந்தக் கோரிக்கையைக் கையாள முடியவில்லை.</translation>
 <translation id="7600965453749440009"><ph name="LANGUAGE" /> ஐ எப்போதும் மொழிபெயர்க்க வேண்டாம்</translation>
-<translation id="7602848207066046655"><ph name="BEGIN_ABBR" /> என்கிற <ph name="HOST_NAME" /> இன் சேவையகத்தைக் கண்டறிய முடியவில்லை.</translation>
 <translation id="7610193165460212391"><ph name="VALUE" /> என்ற மதிப்பு வரம்பை மீறியுள்ளது.</translation>
 <translation id="7613889955535752492">காலாவதியாவது: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">உங்கள் Google கணக்கு கடவுச்சொல்லின் மற்றொரு பதிப்பைப் பயன்படுத்தி குறியாக்கப்பட்ட தரவு உங்களிடம் ஏற்கனவே உள்ளது. கீழே அதை உள்ளிடுக.</translation>
@@ -633,7 +628,6 @@
 <translation id="8488350697529856933">இதற்குப் பொருந்தும்</translation>
 <translation id="8494979374722910010">சர்வரும் இணைப்பதற்கான முயற்சி தோல்வியடைந்தது.</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> பதிலளிக்க நீண்ட நேரம் எடுத்துக்கொண்டது.</translation>
-<translation id="8508677083825928015">மிக விரைவாகப் பக்கங்களை ஏற்ற, மூலங்களை எடுக்கவும்</translation>
 <translation id="8530504477309582336">Google Payments இல் இந்த வகையான கார்டு ஆதரிக்கப்படாது. வேறொரு கார்டைத் தேர்ந்தெடுக்கவும்.</translation>
 <translation id="8550022383519221471">உங்கள் டொமைனிற்கு ஒத்திசைத்தல் சேவை கிடைக்கவில்லை.</translation>
 <translation id="8553075262323480129">பக்கத்தின் மொழியைத் தீர்மானிக்க முடியாததால் மொழிபெயர்ப்பு தோல்வியடைந்தது.</translation>

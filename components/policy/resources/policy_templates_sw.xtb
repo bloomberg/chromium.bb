@@ -254,7 +254,7 @@ Sera hii ikiondolewa, chaguo-msingi zitatumika kwa mipangilio yote.</translation
       Sera hii ikiwekwa kuwa ndivyo, <ph name="PRODUCT_OS_NAME" /> itajaribu kupakua sasisho za data  kiotomatiki kupitia HTTP. Sera ikiwekwa kuwa sivyo ama isiwekwe, HTTPS itatumika kupakua sasisho za data kiotomatiki.</translation>
 <translation id="2006530844219044261">Usimamizi wa nishati</translation>
 <translation id="201557587962247231">Idadi ya upakiaji wa ripoti ya hali ya kifaa</translation>
-<translation id="2024476116966025075">Weka mipangilio ya jina la kikoa linalohitajika kwa seva teja za ufikiaji wa mbali</translation>
+<translation id="2024476116966025075">Weka mipangilio ya jina la kikoa linalohitajika kwa ajili ya seva teja za ufikiaji wa mbali</translation>
 <translation id="2030905906517501646">Nenomsingi la mtoa huduma chaguo-msingi wa utafutaji</translation>
 <translation id="206623763829450685">Hubainisha mipango ya uthibitishaji wa HTTP inayotumia na <ph name="PRODUCT_NAME" />.
 
@@ -494,15 +494,6 @@ Sera hii ikiondolewa, chaguo-msingi zitatumika kwa mipangilio yote.</translation
           Ikiwa sera hii itasalia kama haijawekwa, 'AskGeolocation' itatumika na mtumiaji ataweza kuibadilisha.</translation>
 <translation id="2650049181907741121">Hatua ya kuchukua mtumiaji anapofunga mfuniko</translation>
 <translation id="2660846099862559570">Usitumie proksi kamwe</translation>
-<translation id="2665596266623707739">Onyo: Toleo la TLS 1.0 mbadala litaondolewa kwenye <ph name="PRODUCT_NAME" /> baada ya toleo la 47 (kufikia Januari 2016) na chaguo la "tls1" litaacha kufanya kazi wakati huo.
-
-      TLS ikishindwa kukubaliana, <ph name="PRODUCT_NAME" /> itajaribu tena muunganisho kwa kutumia toleo la chini la TLS ili kutatua hitilafu katika seva za HTTPS. Mipangilio hii husanidi toleo ambalo mchakato wa mbadala huu utaacha kufanya kazi. Seva ikitekeleza makubaliano ya toleo vizuri (yaani bila kukata muunganisho) basi mipangilio hii haitumiki. Hata hivyo, lazima muunganisho unaotokea utii SSLVersionMin.
-
-      Ikiwa sera hii haitasanidiwa basi <ph name="PRODUCT_NAME" /> hutumia toleo chaguo-msingi la chini ambalo ni TLS 1.0 katika <ph name="PRODUCT_NAME" /> 44 na TLS 1.1 katika matoleo ya baadaye. Kumbuka hili halizimi matumizi ya TLS 1.0, ni wapo tu <ph name="PRODUCT_NAME" /> itafanya kazi kwenye seva zenye hitilafu ambazo haziwezi kuendesha matoleo vizuri.
-
-      Vinginevyo inaweza kuwekwa kuwa mojawapo ya thamani zifuatazo: "tls1", "tls1.1" au "tls1.2". Ikiwa ni lazima muoano na seva zenye hitilafu udumishwe, hii inaweza kuwekwa kuwa "tls1". Huu ni mkakati tu wa muda na seva inapaswa kurekebishwa haraka.
-
-      Mipangilio ya "tls1.2" huzima mbadala zote lakini hili linaweza kuwa na athari kubwa ya muoano.</translation>
 <translation id="267596348720209223">Inabainisha usimbaji wa vibambo unaohimiliwa na kitoaji cha utafutaji. Usimbaji ni majini ya ukurasa msimbo kama UTF-8, GB2312, na ISO-8859-1. Yanajaribiwa katika mpangilio uliotolewa.
 
           Sera hii ni ya hiari. Ikiwa haijawekwa, chaguo-msingi itatumika ambayo nis UTF-8.
@@ -925,6 +916,7 @@ Thamani ya sera inapaswa kubainishwa katika sekunde. Thamani huwekwa pamoja ili 
 
           Sera hii inatumika tu endapo sera ya 'DefaultSearchProviderEnabled' imewashwa.</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 au ya karibuni zaidi</translation>
+<translation id="4322842393287974810">Ruhusu kipengele kilichofunguliwa kiotomatiki bila chochote kuchelewesha programu inayotumia skrini nzima kudhibiti toleo la <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4325690621216251241">Ongeza kitufe cha kuondoka kwenye chano la mfumo</translation>
 <translation id="4347908978527632940">Ikiwa ndivyo na mtumiaji ni anayesimamiwa, basi programu nyingine za Android zinaweza kudadisi vikwazo vya wavuti vya mtumiaji kupitia kwa mtoa huduma za maudhui.
 
@@ -1207,7 +1199,7 @@ Sera hii huathiri aina zote za vifaa vya kuingiza video na si tu kamera iliyojen
 <translation id="5307432759655324440">Upatikanaji wa hali fiche</translation>
 <translation id="5318185076587284965">Washa matumizi ya seva za relei kwa mpangishi wa ufikiaji wa mbali</translation>
 <translation id="5330684698007383292">Ruhusu <ph name="PRODUCT_FRAME_NAME" /> kushughulikia aina zifuatazo za maudhui</translation>
-<translation id="5345267406698765263">Hubainisha sera ya programu ya ARC kama mfuatano wa JSON ambao unaweza
+<translation id="5345267406698765263">Hubainisha sera ya programu ya ARC ikiwa mfuatano wa JSON ambao unaweza
       kutolewa kama ulivyo programu kwenye ARC inapotumika. Kwa sasa, mipangilio inatumika tu kubainisha usakinishaji wa kulazimisha wa programu.
 
       Sera hii isipowekwa, hakuna programu zitakazosakinishwa kiotomatiki.</translation>
@@ -1873,6 +1865,13 @@ Kama sera haitawekwa, kikuza skrini kitazimwa wakati skrini ya kuingia katika ak
 
       Ikiwa sera hii itaachwa bila kuwekwa, SPDY itapatikana.</translation>
 <translation id="7384999953864505698">Huruhusu itifaki ya QUIC</translation>
+<translation id="7406651467768226499">Kuruhusu au kutoruhusu kipengele kilichofunguliwa kiotomatiki bila chochote kuchelewesha programu inayotumia skrini nzima kudhibiti toleo la <ph name="PRODUCT_OS_NAME" />.
+
+      Sera hii hudhibiti ikiwa uruhusu kipengele kilichofunguliwa kiotomatiki bila chochote kuchelewesha programu inayotumia skrini nzima kudhibiti toleo la <ph name="PRODUCT_OS_NAME" /> kwa kutangaza required_platform_version katika faili yake ya maelezo na kuitumia kama kiambishi awali cha toleo lengwa la sasisho otomatiki.
+
+     Sera hii ikiwekwa kuwa ndivyo, thamani ya ufunguo wa faili ya maelezo ya required_platform_version ya kipengele kilichofunguliwa kiotomatiki bila chochote kuchelewesha programu inayotumia skrini nzima inatumika kama kiambishi awali cha toleo lengwa la sasisho otomatiki.
+
+     Sera hii isipoweka mipangilio au ikawekwa kuwa sivyo, ufunguo wa faili ya maelezo ya required_platform_version hupuuzwa na kusasisha kiotomatiki huendelea kama kawaida.</translation>
 <translation id="7417972229667085380">Asilimia ya kupima kuchelewesha kwa mwanga wa skrini katika modi ya wasilisho (kimewacha kuendesha huduma)</translation>
 <translation id="7421483919690710988">Weka ukubwa wa akiba ya diski ya media katika vipimo vya baiti</translation>
 <translation id="7424751532654212117">Orodha ya vighairi katika orodha ya programu jalizi zilizolemazwa</translation>

@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="es">
-<translation id="1015255576907412255">Ponte en contacto con el administrador del sistema para obtener más información.</translation>
 <translation id="1015730422737071372">Proporciónanos más detalles</translation>
 <translation id="1032854598605920125">Girar hacia la derecha</translation>
 <translation id="1038842779957582377">nombre desconocido</translation>
@@ -303,7 +302,6 @@
 <translation id="4176463684765177261">Inhabilitado</translation>
 <translation id="4196861286325780578">&amp;Rehacer movimiento</translation>
 <translation id="4220128509585149162">La página no responde o se cierra</translation>
-<translation id="4241404202385006548">Inhabilita las extensiones y, a continuación, vuelve a cargar esta página web</translation>
 <translation id="4250680216510889253">No</translation>
 <translation id="4258748452823770588">Firma errónea</translation>
 <translation id="4268298190799576220">Chromium no ha podido verificar tu tarjeta en este momento. Vuelve a intentarlo más tarde.</translation>
@@ -443,7 +441,6 @@
 <translation id="6203231073485539293">Comprueba tu conexión a Internet</translation>
 <translation id="6218753634732582820">¿Quitar dirección de Chromium?</translation>
 <translation id="6232139169545176020">El esquema de URI solicitado no es compatible.</translation>
-<translation id="6237614789842758826">Buscar en Google</translation>
 <translation id="6259156558325130047">&amp;Rehacer reorganización</translation>
 <translation id="6262796033958342538">Se han recibido varios encabezados de ubicación.  Esto no se permite para ofrecer protección
     frente a ataques de división de respuesta HTTP.</translation>
@@ -519,7 +516,6 @@
 <translation id="7087282848513945231">Condado</translation>
 <translation id="7088615885725309056">Más antiguos</translation>
 <translation id="7108649287766967076">No se ha podido realizar la traducción al <ph name="TARGET_LANGUAGE" />.</translation>
-<translation id="7117303293717852287">Volver a cargar esta página</translation>
 <translation id="7139724024395191329">Emirato</translation>
 <translation id="7179921470347911571">Reiniciar ahora</translation>
 <translation id="7180611975245234373">Actualizar</translation>
@@ -566,7 +562,6 @@
 <translation id="7592362899630581445">El certificado del servidor incluye un nombre que está fuera de su cobertura.</translation>
 <translation id="759889825892636187">La página <ph name="HOST_NAME" /> no puede procesar esta solicitud ahora.</translation>
 <translation id="7600965453749440009">No traducir nunca del <ph name="LANGUAGE" /></translation>
-<translation id="7602848207066046655">No se ha podido encontrar el servidor de la página <ph name="HOST_NAME" /> (<ph name="BEGIN_ABBR" />).</translation>
 <translation id="7610193165460212391">El valor <ph name="VALUE" /> se encuentra fuera del intervalo.</translation>
 <translation id="7613889955535752492">Caducidad: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Has usado anteriormente otra versión de la contraseña de tu cuenta de Google para el cifrado de datos. Introdúcela a continuación.</translation>
@@ -647,7 +642,6 @@
 <translation id="8488350697529856933">Aplicable a</translation>
 <translation id="8494979374722910010">Se ha producido un error al intentar conectar con el servidor.</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> ha tardado demasiado tiempo en responder.</translation>
-<translation id="8508677083825928015">Cargar recursos previamente para que las páginas se carguen de forma más rápida</translation>
 <translation id="8530504477309582336">Google Payments no admite este tipo de tarjeta. Selecciona otra.</translation>
 <translation id="8550022383519221471">El servicio de sincronización no está disponible en tu dominio.</translation>
 <translation id="8553075262323480129">La traducción no se ha realizado correctamente porque no se ha podido determinar el idioma de la página.</translation>

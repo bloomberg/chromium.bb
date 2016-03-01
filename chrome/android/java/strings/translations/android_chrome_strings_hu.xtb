@@ -24,7 +24,6 @@ A Fizikai web használatához be kell kapcsolnia a Bluetooth funkciót és a hel
 <translation id="1346090444609141578">Nincsenek mentett oldalak</translation>
 <translation id="1369915414381695676">A(z) <ph name="SITE_NAME" /> webhely hozzáadva</translation>
 <translation id="1373696734384179344">Nincs elegendő memória a kiválasztott tartalom letöltéséhez.</translation>
-<translation id="1379156015317873965">Oldal betöltési idejének javítása</translation>
 <translation id="138361230106469022">Üdv, <ph name="FULL_NAME" />!</translation>
 <translation id="1383876407941801731">Keresés</translation>
 <translation id="1389974829397082527">Itt nincsenek könyvjelzők</translation>
@@ -126,7 +125,6 @@ A Fizikai webet a Chrome adatvédelmi beállításaiban kezelheti.</translation>
 <translation id="2707726405694321444">Oldal frissítése</translation>
 <translation id="2709516037105925701">Automatikus kitöltés</translation>
 <translation id="271033894570825754">Új</translation>
-<translation id="2718352093833049315">Csak Wi-Fi-n</translation>
 <translation id="2748463065602559597">Ön egy biztonságos Google Chrome-oldalt lát.</translation>
 <translation id="2762000892062317888">éppen most</translation>
 <translation id="2770465223704140727">Eltávolítás a listából</translation>
@@ -262,6 +260,7 @@ A keresési kifejezés módosításához hosszú nyomva tartással hajthat végr
 <translation id="4836364883164334657">Kapcsolódása ehhez a webhelyhez nem privát. Előfordulhat, hogy támadók megpróbálják ellopni az Ön adatait (például fotóit, jelszavait, üzeneteit és bankkártyaadatait) a(z) <ph name="DOMAIN_NAME" /> webhelyről.</translation>
 <translation id="4842511359652954519">További információ</translation>
 <translation id="4850886885716139402">Nézet</translation>
+<translation id="4875622588773761625">Szeretné, hogy a(z) <ph name="PASSWORD_MANAGER_BRAND" /> frissítse jelszavát ezen a webhelyen?</translation>
 <translation id="4881695831933465202">Megnyitás</translation>
 <translation id="4885273946141277891">Ilyen sok Chrome-példány nem futhat egyszerre.</translation>
 <translation id="4927198283430892231">A mentett oldalak jelenleg <ph name="TOTAL_OFFLINE_STORAGE_SIZE" /> helyet foglalnak el.</translation>
@@ -307,7 +306,6 @@ Ehhez elég elindítani a Chrome-ot számítógépén, megnyitni a menüt, majd 
 <translation id="5323972449344932352">A Chrome indítása</translation>
 <translation id="5324858694974489420">Szülői beállítások</translation>
 <translation id="5327248766486351172">Név</translation>
-<translation id="5335200807405507442">Oldalerőforrások előzetes lehívása</translation>
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE" /> törölve</translation>
 <translation id="5345083863238459644">A helyadatokhoz való hozzáférés is <ph name="BEGIN_LINK" />ki van kapcsolva ezen az eszközön<ph name="END_LINK" />.</translation>
 <translation id="5380554235172449987">Soha ne küldjön</translation>
@@ -485,7 +483,6 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="7498271377022651285">Kérjük, várjon…</translation>
 <translation id="7501135638693251872">Minden könyvjelző</translation>
 <translation id="7521387064766892559">JavaScript</translation>
-<translation id="7561196759112975576">Mindig</translation>
 <translation id="7562080006725997899">Böngészési adatok törlése</translation>
 <translation id="7588950540487816470">Fizikai web</translation>
 <translation id="7596558890252710462">Operációs rendszer</translation>
@@ -519,7 +516,6 @@ Mindazonáltal Ön nem lesz láthatatlan. Az inkognitómód használatával nem 
 <translation id="7876243839304621966">Összes eltávolítása</translation>
 <translation id="7947953824732555851">Elfogadás és bejelentkezés</translation>
 <translation id="7949961459945740081">A legújabb funkciók megszerzése</translation>
-<translation id="7961015016161918242">Soha</translation>
 <translation id="7963646190083259054">Szolgáltató:</translation>
 <translation id="7987073022710626672">Chrome – Általános Szerződési Feltételek</translation>
 <translation id="7998918019931843664">Bezárt lap megnyitása</translation>
@@ -612,5 +608,6 @@ Az új engedélyek beszerzéséhez kapcsolódjon az internethez, és játssza le
 <translation id="945632385593298557">Hozzáférés a mikrofonhoz</translation>
 <translation id="954352821720225055">A könyvjelző nem áll rendelkezésre offline. A tárhely már majdnem megtelt.</translation>
 <translation id="969096075394517431">Nyelvek módosítása</translation>
+<translation id="981121421437150478">Offline</translation>
 <translation id="983192555821071799">Az összes lap bezárása</translation>
 </translationbundle>

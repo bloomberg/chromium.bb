@@ -133,7 +133,7 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
 <translation id="1522425503138261032">Permitir a los sitios que rastreen la ubicación física de los usuarios.</translation>
 <translation id="152657506688053119">Lista de las URL alternativas para el proveedor de búsqueda predeterminado</translation>
 <translation id="1530812829012954197">Siempre procesar los siguientes patrones de direcciones URL en el navegador del host</translation>
-<translation id="1553684822621013552">Cuando esta política se establece como verdadera, ARC estará habilitado para el usuario
+<translation id="1553684822621013552">Cuando esta política se establece en true, ARC estará habilitado para el usuario
       (sujeto a verificaciones adicionales de configuraciones de políticas. ARC
       permanecerá inhabilitado si se habilita el modo efímero o el acceso
       múltiple en la sesión de usuario actual)
@@ -442,15 +442,6 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
 <translation id="2646290749315461919">Te permite establecer si los sitios web pueden rastrear la ubicación física de los usuarios. El rastreo de la ubicación física de los usuarios puede autorizarse en forma predeterminada, puede denegarse en forma predeterminada o se le puede preguntar al usuario cada vez que un sitio web solicita la ubicación física. Si esta política no se configura, se usará "AskGeolocation" y el usuario podrá cambiarla.</translation>
 <translation id="2650049181907741121">Medida que se debe tomar cuando el usuario cierra la tapa</translation>
 <translation id="2660846099862559570">Nunca usar un proxy</translation>
-<translation id="2665596266623707739">Advertencia: El resguardo de la versión de TLS 1.0 se eliminará de <ph name="PRODUCT_NAME" /> después de la versión 47 (alrededor de enero de 2016) y la opción "tls1" dejará de funcionar.
-
-      Cuando ocurra un error de enlace de TLS, <ph name="PRODUCT_NAME" /> volverá a probar la conexión con una versión anterior de TLS para que solucione los errores en los servidores HTTPS. Este ajuste configura la versión en la que se interrumpirá el proceso de resguardo. Si un servidor realiza una negociación de versión correctamente (es decir, sin interrumpir la conexión), esta configuración no se aplica. Independientemente de esto, la conexión resultante debe cumplir con SSLVersionMin.
-
-      Si esta política no se configura, <ph name="PRODUCT_NAME" /> usa una versión mínima predeterminada que es TLS 1.0 en <ph name="PRODUCT_NAME" /> 44 y TLS 1.1 en versiones posteriores. Se debe tener en cuenta que esto no inhabilita la compatibilidad con TLS 1.0, únicamente si <ph name="PRODUCT_NAME" /> soluciona los servidores con errores que no pueden negociar versiones correctamente.
-
-      De lo contrario, puede establecerse en uno de los siguientes valores: "tls1", "tls1.1" o "tls1.2". Si se debe mantener la compatibilidad con un servidor con errores, se puede establecer en "tls1". Esta es una medida temporal y los errores del servidor se deben solucionar rápidamente.
-
-      Una configuración de "tls1.2" inhabilita todo el resguardo pero puede tener un impacto de compatibilidad significativo.</translation>
 <translation id="267596348720209223">Especifica la codificación de caracteres admitida por el proveedor de búsqueda. Las codificaciones son nombres de páginas de códigos, como UTF-8, GB2312 e ISO-8859-1. Se prueban en el orden dado. Esta política es opcional. Si no se configura, se usará el valor predeterminado, que es UTF-8. Esta política solo se respeta si la política "DefaultSearchProviderEnabled" está habilitada.</translation>
 <translation id="2682225790874070339">Inhabilita Drive en la aplicación Archivos de <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="268577405881275241">Habilitar la función del proxy de compresión de datos</translation>
@@ -1139,13 +1130,13 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
       Si no se establece esta política, los usuarios podrán elegir si los archivos se deben ocultar automáticamente.</translation>
 <translation id="557658534286111200">Habilitar o inhabilitar la edición de marcadores</translation>
 <translation id="5586942249556966598">No hacer nada</translation>
-<translation id="5613179474872285001">Configura el nombre de dominio de cliente requerido que se impondrá a los clientes de acceso remoto y que evitará que los usuarios lo cambien.
+<translation id="5613179474872285001">Configura el nombre de dominio de cliente requerido que se impondrá a los clientes de acceso remoto y evita que los usuarios lo cambien.
 
           Si esta configuración está habilitada, solo los clientes de un dominio específico pueden conectarse al host.
 
           Si esta configuración está inhabilitada, se aplica la política predeterminada para el tipo de conexión habilitada. Para la asistencia remota, esto permite que los clientes de cualquier dominio puedan conectarse al host. Para el acceso remoto en cualquier momento, solo el propietario del host puede conectarse.
 
-          Consulte también la política RemoteAccessHostDomain.</translation>
+          Consulta también la política RemoteAccessHostDomain.</translation>
 <translation id="5630352020869108293">Restaurar la última sesión</translation>
 <translation id="5645779841392247734">Permitir cookies en estos sitios</translation>
 <translation id="5677038592630896441">Requiere que el nombre del usuario local y el propietario del host de acceso remoto coincidan.
@@ -1526,13 +1517,13 @@ desactivarlo).</translation>
 <translation id="6943577887654905793">Nombre de preferencia de Mac/Linux:</translation>
 <translation id="69525503251220566">Parámetro que proporciona una función de búsqueda por imagen para el proveedor de búsquedas predeterminado</translation>
 <translation id="6956272732789158625">No permitir que los sitios utilicen la generación de claves</translation>
-<translation id="695891079107014261">Configura el nombre de dominio de host requerido que se impondrá a los hosts de acceso remoto y que evitará que los usuarios lo cambien.
+<translation id="695891079107014261">Configura el nombre de dominio de host requerido que se impondrá a los hosts de acceso remoto y evita que los usuarios lo cambien.
 
           Si esta configuración está habilitada, los hosts pueden compartirse solamente utilizando cuentas registradas en el nombre de dominio especificado.
 
           Si esta configuración está inhabilitada o no está establecida, los hosts pueden compartirse utilizando cualquier cuenta.
 
-          Consulte también la política RemoteAccessHostClientDomain.</translation>
+          Consulta también la política RemoteAccessHostClientDomain.</translation>
 <translation id="6997592395211691850">Establecer si es necesario realizar comprobaciones de OCSP/CRL en línea para los anclajes de confianza locales</translation>
 <translation id="7003334574344702284">Esta política, si se habilita, fuerza la importación de las contraseñas guardadas del navegador predeterminado anterior. Si se la habilita, esta política también afecta el cuadro de diálogo de importación. Si se la inhabilita, no se importan las contraseñas guardadas. Si no se configura, se le puede preguntar al usuario si desea importar las contraseñas guardadas o la importación puede realizarse de forma automática.</translation>
 <translation id="7003746348783715221">Preferencias de <ph name="PRODUCT_NAME" /></translation>

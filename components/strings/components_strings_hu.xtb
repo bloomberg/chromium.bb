@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="hu">
-<translation id="1015255576907412255">Ha további információra van szüksége, vegye fel a kapcsolatot rendszergazdájával.</translation>
 <translation id="1015730422737071372">További részletek megadása</translation>
 <translation id="1032854598605920125">Forgatás jobbra</translation>
 <translation id="1038842779957582377">Ismeretlen név</translation>
@@ -301,7 +300,6 @@
 <translation id="4176463684765177261">Kikapcsolva</translation>
 <translation id="4196861286325780578">&amp;Áthelyezés újra</translation>
 <translation id="4220128509585149162">Összeomlások</translation>
-<translation id="4241404202385006548">Tiltsa le bővítményeit, majd töltse be újra ezt a weboldalt</translation>
 <translation id="4250680216510889253">Nem</translation>
 <translation id="4258748452823770588">Rossz aláírás</translation>
 <translation id="4268298190799576220">A Chromium ez alkalommal nem tudta azonosítani kártyáját. Próbálja újra később.</translation>
@@ -441,7 +439,6 @@
 <translation id="6203231073485539293">Ellenőrizze az internetkapcsolatot</translation>
 <translation id="6218753634732582820">Eltávolítja a címet a Chromiumból?</translation>
 <translation id="6232139169545176020">A kért URI-séma nem támogatott.</translation>
-<translation id="6237614789842758826">Keresés a Google-on</translation>
 <translation id="6259156558325130047">&amp;Átrendezés újra</translation>
 <translation id="6262796033958342538">Több Location (hely) fejléc érkezett. Ez nem megengedett a HTTP-válaszok     felosztásán alapuló támadások elleni védelem miatt.</translation>
 <translation id="6263376278284652872"><ph name="DOMAIN" /> könyvjelzők</translation>
@@ -516,7 +513,6 @@
 <translation id="7087282848513945231">Megye</translation>
 <translation id="7088615885725309056">Régebbi</translation>
 <translation id="7108649287766967076">A(z) <ph name="TARGET_LANGUAGE" /> nyelvre fordítás sikertelen volt.</translation>
-<translation id="7117303293717852287">A weboldal újratöltése</translation>
 <translation id="7139724024395191329">Emírség</translation>
 <translation id="7179921470347911571">Újraindítás most</translation>
 <translation id="7180611975245234373">Frissítés</translation>
@@ -563,7 +559,6 @@ Pszt! Az inkognitómód (<ph name="SHORTCUT_KEY" />) hasznos lehet a következő
 <translation id="7592362899630581445">A szervertanúsítvány sérti a névre vonatkozó megkötéseket.</translation>
 <translation id="759889825892636187">A(z) <ph name="HOST_NAME" /> jelenleg nem tudja kezelni ezt a kérést.</translation>
 <translation id="7600965453749440009">Soha ne fordítsa le a(z) <ph name="LANGUAGE" /> nyelvű szöveget</translation>
-<translation id="7602848207066046655">A(z) <ph name="HOST_NAME" /> <ph name="BEGIN_ABBR" /> szervere nem található.</translation>
 <translation id="7610193165460212391">Az érték kívül esik a következő tartományon: <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">Lejárat: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Már rendelkezik olyan adattal, amely Google-fiókja jelszavának egy másik verziójával van titkosítva. Kérjük, lentebb adja azt meg.</translation>
@@ -644,7 +639,6 @@ Pszt! Az inkognitómód (<ph name="SHORTCUT_KEY" />) hasznos lehet a következő
 <translation id="8488350697529856933">A következőre érvényes</translation>
 <translation id="8494979374722910010">A szerverhez való kapcsolódás sikertelen.</translation>
 <translation id="8498891568109133222">A(z) <ph name="HOST_NAME" /> túl hosszú ideje nem válaszol.</translation>
-<translation id="8508677083825928015">Források előzetes lehívása az oldalak gyorsabb betöltéséhez</translation>
 <translation id="8530504477309582336">A Google Payments nem támogatja az ilyen típusú kártyákat. Kérjük, válasszon egy másikat.</translation>
 <translation id="8550022383519221471">A szinkronizálási szolgáltatás az Ön domainjén nem érhető el.</translation>
 <translation id="8553075262323480129">A fordítás nem sikerült, mivel az oldal nyelvét nem lehet megállapítani.</translation>

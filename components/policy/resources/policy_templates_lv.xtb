@@ -506,15 +506,6 @@
           Ja šī politika nav iestatīta, tiks lietota politika AskGeolocation un lietotājs to varēs mainīt.</translation>
 <translation id="2650049181907741121">Pēc vāka aizvēršanas veicamā darbība</translation>
 <translation id="2660846099862559570">Nekad nelietot starpniekserveri</translation>
-<translation id="2665596266623707739">Brīdinājums! TLS 1.0. versijas atkāpšanās protokols tiks noņemts no pārlūka <ph name="PRODUCT_NAME" /> pēc 47. versijas izlaišanas (ap 2016. gada janvāri), un tad vairs nedarbosies opcija “tls1”.
-
-      Ja neizdodas izveidot TLS savienojumu, <ph name="PRODUCT_NAME" /> atkārtoti mēģina izveidot savienojumu ar vecāku TLS versiju, lai apietu kļūdas HTTPS serveros. Ar šo iestatījumu tiek konfigurēta versija, kurā beigsies šis atkāpšanās process. Ja versijas serverī tiek saskaņotas pareizi (t.i., nepārtraucot savienojumu), šis iestatījums netiek izmantots. Neatkarīgi no šī iestatījuma izveidotajam savienojumam joprojām ir jāatbilst politikai SSLVersionMin.
-
-      Ja šī politika nav konfigurēta, pārlūkā <ph name="PRODUCT_NAME" /> tiek izmantota noklusējuma minimālā versija, kas ir TLS 1.0 <ph name="PRODUCT_NAME" /> 44. versijā un TLS 1.1 jaunākās versijās. Ņemiet vērā, ka šādi netiek atspējots TLS 1.0 atbalsts, bet gan tikai tas, vai <ph name="PRODUCT_NAME" /> apies kļūdainos serverus, kuros nevar pareizi saskaņot versijas.
-
-      Pretējā gadījumā var tikt iestatīta kāda no šīm vērtībām: “tls1”, “tls1.1” vai “tls1.2”. Ja ir jāuztur saderība ar kļūdainu serveri, var tikt iestatīta vērtība “tls1”. Šis ir pagaidu risinājums, un serverī drīzumā ir jāveic labojumi.
-
-      Iestatot vērtību “tls1.2”, tiek atspējots viss atkāpšanās process, taču tas var būtiski ietekmēt saderību.</translation>
 <translation id="267596348720209223">Norāda meklētājprogrammas atbalstītos rakstzīmju kodējumus. Kodējumi ir kodu lapu nosaukumi, piemēram, UTF-8, GB2312 un ISO-8859-1. Tie tiek izmēģināti ievadītajā secībā.
 
           Šī politika ir neobligāta. Ja tā nav iestatīta, tiks lietots noklusējums: UTF-8.

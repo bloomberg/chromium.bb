@@ -475,15 +475,6 @@ Z prohlížeče <ph name="PRODUCT_NAME" /> verze 29 a novějších verzí bylo t
          Není-li zásada nastavena, bude použita zásada AskGeolocation a uživatel ji bude moci změnit.</translation>
 <translation id="2650049181907741121">Akce při zavření víka</translation>
 <translation id="2660846099862559570">Nikdy nepoužívat proxy server</translation>
-<translation id="2665596266623707739">Upozornění: Záloha verze TLS 1.0 bude z prohlížeče <ph name="PRODUCT_NAME" /> po verzi 47 odstraněna (přibližně v lednu 2016) a možnost tls1 pak přestane fungovat.
-
-Pokud selže metoda handshake protokolu TLS, prohlížeč <ph name="PRODUCT_NAME" /> se pokusí o připojení znovu, ale použije nižší verzi protokolu TLS jako dočasné řešení pro případ chyby serveru HTTPS. Toto nastavení konfiguruje verzi, u které se tento záložní proces zastaví. Pokud server provede vyjednávání verze správně (tzn. bez přerušení spojení), toto nastavení se nepoužije. Bez ohledu na toto nastavení musí výsledné připojení odpovídat také zásadě SSLVersionMin.
-
-Pokud tato zásada není nakonfigurovaná, použije prohlížeč <ph name="PRODUCT_NAME" /> výchozí minimální verzi (TLS 1.0 u <ph name="PRODUCT_NAME" /> 44 a TLS 1.1 u novějších verzí). Tato zásada nedeaktivuje podporu protokolu TLS 1.0, pouze určuje, zda se bude prohlížeč <ph name="PRODUCT_NAME" /> snažit řešit potíže s chybami na serverech, které brání správnému vyjednání verzí. 
-
-Zásadu lze nastavit na jednu z následujících hodnot: tls1, tls1.1 nebo tls1.2. Pokud je třeba zajistit kompatibilitu s chybovým serverem, lze nastavit hodnotu tls1. Jedná se však o nouzové řešení a server by měl být co nejrychleji opraven.
-
-Nastavíte-li hodnotu tls1.2, záložní proces bude deaktivován, ale může to výrazně ovlivnit kompatibilitu.</translation>
 <translation id="267596348720209223">Určuje kódování znaků podporovaná poskytovatelem vyhledávání. Kódování jsou názvy stránek kódů, například UTF-8, GB2312 nebo ISO-8859-1. Budou vyzkoušena v uvedeném pořadí.
 
           Tato zásada je nepovinná. Pokud není nastavena, použije se výchozí kódování UTF-8.

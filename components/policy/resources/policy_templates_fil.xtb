@@ -504,15 +504,6 @@
           Kung hinayaang hindi nakatakda ang patakarang ito, gagamitin ang 'AskGeolocation' at magagawa itong baguhin ng user.</translation>
 <translation id="2650049181907741121">Pagkilos na gagawin kapag isinara ng user ang takip</translation>
 <translation id="2660846099862559570">Huwag kailanman gumamit ng proxy</translation>
-<translation id="2665596266623707739">Babala: Aalisin na ang fallback na bersyon ng TLS 1.0 mula sa <ph name="PRODUCT_NAME" /> pagkatapos ng bersyon 47 (mga Enero 2016) at hindi na gagana ang opsyong "tls1" pagkatapos noon.
-
-      Kapag hindi nakumpleto ang isang TLS handshake, susubukang muli ng <ph name="PRODUCT_NAME" /> ang koneksyon sa mas mababang bersyon ng TLS upang makahanap ng paraan sa mga bug sa mga HTTPS server. Kino-configure ng setting na ito ang bersyon kung saan hihinto ang fallback na proseso na ito. Kung maisagawa nang tama ng isang server ang paghahanap ng kompromiso sa bersyon (ibig sabihin, nang hindi nawawala ang koneksyon), hindi nalalapat ang setting na ito. Anuman ang mangyari, dapat pa ring sumusunod sa SSLVersionMin ang magreresultang koneksyon.
-
-      Kung hindi naka-configure ang patakarang ito, gagamit ang <ph name="PRODUCT_NAME" /> ng default na minimum na bersyon, at ito ay TLS 1.0 sa <ph name="PRODUCT_NAME" /> 44 at TLS 1.1 sa mga mas bagong bersyon. Tandaang hindi nito dini-disable ang suporta para sa TLS 1.0, kung gagana lang ang <ph name="PRODUCT_NAME" /> sa mga server na may maraming bug na hindi makakahanap ng kompromiso sa mga bersyon nang tama.
-
-      Kung hindi, maaari itong itakda sa isa sa mga sumusunod na value: "tls1", "tls1.1" o "tls1.2". Kung kailangang mapanatili ang compatibility sa isang server na may maraming bug, maaari itong itakda sa "tls1". Isa itong pansamantalang remedyo at dapat na maayos agad ang server.
-
-      Kapag itinakda sa "tls1.2", idi-disable nito ang lahat ng fallback ngunit maaari itong magkaroon ng malaking epekto sa compatibility.</translation>
 <translation id="267596348720209223">Tinutukoy ang mga pag-encode ng character na sinusuportahan ng provider ng paghahanap. Ang mga pag-encode ay mga pangalan ng pahina ng code tulad ng UTF-8, GB2312, at ISO-8859-1. Sinusubukan ang mga ito sa pagkakasunud-sunod na ibinigay.
 
           Opsyonal ang patakarang ito. Kung hindi nakatakda, gagamitin ang default na UTF-8.

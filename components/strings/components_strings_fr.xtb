@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fr">
-<translation id="1015255576907412255">Pour plus d'informations, contactez votre administrateur système.</translation>
 <translation id="1015730422737071372">Fournir des informations supplémentaires</translation>
 <translation id="1032854598605920125">Faire pivoter vers la droite</translation>
 <translation id="1038842779957582377">Nom inconnu</translation>
@@ -303,7 +302,6 @@
 <translation id="4176463684765177261">Désactivé</translation>
 <translation id="4196861286325780578">&amp;Rétablir le déplacement</translation>
 <translation id="4220128509585149162">Plantages</translation>
-<translation id="4241404202385006548">Désactivez les extensions, puis actualisez cette page Web.</translation>
 <translation id="4250680216510889253">Non</translation>
 <translation id="4258748452823770588">Signature incorrecte.</translation>
 <translation id="4268298190799576220">Impossible de valider votre carte dans Chromium pour le moment. Veuillez réessayer ultérieurement.</translation>
@@ -443,7 +441,6 @@
 <translation id="6203231073485539293">Vérifiez votre connexion Internet</translation>
 <translation id="6218753634732582820">Supprimer l'adresse de Chromium ?</translation>
 <translation id="6232139169545176020">Schéma d'URI demandé non accepté.</translation>
-<translation id="6237614789842758826">Effectuez une recherche sur Google</translation>
 <translation id="6259156558325130047">&amp;Rétablir la réorganisation</translation>
 <translation id="6262796033958342538">Plusieurs en-têtes Location ont été reçus. Ceci n'est pas autorisé afin de se prémunir
     contre les attaques de type séparation de réponse HTTP.</translation>
@@ -519,7 +516,6 @@
 <translation id="7087282848513945231">Comté</translation>
 <translation id="7088615885725309056">Ancien</translation>
 <translation id="7108649287766967076">Échec de la traduction en <ph name="TARGET_LANGUAGE" />.</translation>
-<translation id="7117303293717852287">Actualisez cette page</translation>
 <translation id="7139724024395191329">Émirat</translation>
 <translation id="7179921470347911571">Relancer maintenant</translation>
 <translation id="7180611975245234373">Actualiser</translation>
@@ -566,7 +562,6 @@ Conseil : Le mode navigation privée (<ph name="SHORTCUT_KEY" />) pourra vous �
 <translation id="7592362899630581445">Le certificat du serveur ne respecte pas les restrictions de noms.</translation>
 <translation id="759889825892636187">Impossible de traiter cette demande via <ph name="HOST_NAME" /> à l'heure actuelle.</translation>
 <translation id="7600965453749440009">Ne jamais traduire les pages rédigées en <ph name="LANGUAGE" /> </translation>
-<translation id="7602848207066046655">L'adresse <ph name="BEGIN_ABBR" /> du serveur <ph name="HOST_NAME" /> est introuvable.</translation>
 <translation id="7610193165460212391">La valeur <ph name="VALUE" /> est hors limites.</translation>
 <translation id="7613889955535752492">Date d'expiration : <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Vous disposez déjà de données chiffrées à l'aide d'une autre version de votre mot de passe de compte Google. Veuillez saisir celui-ci ci-dessous.</translation>
@@ -647,7 +642,6 @@ Conseil : Le mode navigation privée (<ph name="SHORTCUT_KEY" />) pourra vous �
 <translation id="8488350697529856933">S'applique à</translation>
 <translation id="8494979374722910010">Échec de la tentative de connexion au serveur.</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> a mis trop de temps à répondre.</translation>
-<translation id="8508677083825928015">Prélire les ressources pour charger les pages plus rapidement</translation>
 <translation id="8530504477309582336">Ce type de carte n'est pas compatible avec Google Payments. Veuillez sélectionner une autre carte.</translation>
 <translation id="8550022383519221471">Le service de synchronisation n'est pas disponible pour votre domaine.</translation>
 <translation id="8553075262323480129">La traduction a échoué, car nous n'avons pas pu déterminer la langue de la page.</translation>

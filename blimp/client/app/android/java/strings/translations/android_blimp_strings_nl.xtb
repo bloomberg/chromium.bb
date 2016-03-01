@@ -1,7 +1,18 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="nl">
+<translation id="1091157412887719337">Toewijzing mislukt. Geen engine beschikbaar.</translation>
+<translation id="2004526128230838685">Toewijzing mislukt. Onbekend probleem.</translation>
+<translation id="2023631438558435272">Toewijzing mislukt. Ongeldige reactie.</translation>
+<translation id="2353984724370197742">Toewijzing mislukt. Netwerkverzoek mislukt.</translation>
+<translation id="3046825211487065480">Toewijzing mislukt. Het tweede verzoek is verzonden voordat er op het eerste verzoek is gereageerd.</translation>
 <translation id="3407245330823033366">Kies een account om te gebruiken met Blimp.</translation>
+<translation id="3775180005489871350">Toewijzing mislukt. 400-fout (BAD_REQUEST).</translation>
+<translation id="4542350224991263059">Toewijzing mislukt. Toegangstoken van gebruiker is verlopen.</translation>
+<translation id="4562971394107096647">Toewijzing mislukt. Serverfout.</translation>
 <translation id="4641972508298030550">Kan gebruiker niet verifiëren.</translation>
+<translation id="5860346505531085166">Toewijzing mislukt. Account heeft geen toegang.</translation>
+<translation id="704835510384979817">Toewijzing mislukt. Geen overeenkomende engine-versie.</translation>
+<translation id="7961542533680218955">Toewijzing voltooid.</translation>
 <translation id="8514856595257368555">Token opgehaald.</translation>
 </translationbundle>

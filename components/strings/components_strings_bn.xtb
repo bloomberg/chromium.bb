@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="bn">
-<translation id="1015255576907412255">আরো তথ্যের জন্য আপনার সিস্টেম প্রশাসকের সাথে যোগাযোগ করুন৷</translation>
 <translation id="1015730422737071372">অতিরিক্ত বিবরণ দিন</translation>
 <translation id="1032854598605920125">ঘড়ির কাঁটার দিকে ঘোরান</translation>
 <translation id="1038842779957582377">অজানা নাম</translation>
@@ -304,7 +303,6 @@
 <translation id="4176463684765177261">অক্ষম</translation>
 <translation id="4196861286325780578">&amp;সরানোর কাজটি পুনরায় করুন</translation>
 <translation id="4220128509585149162">ক্র্যাশেস</translation>
-<translation id="4241404202385006548">আপনার এক্সটেনশানগুলি অক্ষম করুন এবং তারপরে এই ওয়েব পৃষ্ঠাটি পুনরায় লোড করুন</translation>
 <translation id="4250680216510889253">না</translation>
 <translation id="4258748452823770588">ত্রুটিপূর্ণ স্বাক্ষর</translation>
 <translation id="4268298190799576220">Chromium এই মুহূর্তে আপনার কার্ড যাচাই করতে অক্ষম হয়েছে৷ দয়া করে পরে আবার চেষ্টা করুন৷</translation>
@@ -443,7 +441,6 @@
 <translation id="6203231073485539293">আপনার ইন্টারনেট সংযোগ পরীক্ষা করুন</translation>
 <translation id="6218753634732582820">Chromium থেকে ঠিকানা সরাবেন?</translation>
 <translation id="6232139169545176020">অনুরোধ করা URI স্কিম সমর্থিত হয়নি৷</translation>
-<translation id="6237614789842758826">Google এ অনুসন্ধান করুন</translation>
 <translation id="6259156558325130047">&amp;পুনর্বিন্যাসকে পুনরায় করুন</translation>
 <translation id="6262796033958342538">একাধিক স্বতন্ত্র অবস্থান শিরলেখ পাওয়া গেছে৷ এটি HTTP প্রতিক্রিয়া
         বিভাজন আক্রমণ রক্ষা করার জন্য অননুমোদিত৷</translation>
@@ -519,7 +516,6 @@
 <translation id="7087282848513945231">দেশ</translation>
 <translation id="7088615885725309056">পূর্বতর</translation>
 <translation id="7108649287766967076"><ph name="TARGET_LANGUAGE" /> এ অনুবাদ ব্যর্থ হয়েছে৷</translation>
-<translation id="7117303293717852287">এই ওয়েব পৃষ্ঠাটি পুনরায় লোড করুন</translation>
 <translation id="7139724024395191329">এমিরেট</translation>
 <translation id="7179921470347911571">এখনই পুনঃলঞ্চ করুন</translation>
 <translation id="7180611975245234373">রিফ্রেশ করুন</translation>
@@ -566,7 +562,6 @@
 <translation id="7592362899630581445">সার্ভারের শংসাপত্র, নামের সীমাবদ্ধতাগুলি লঙ্ঘন করে৷</translation>
 <translation id="759889825892636187"><ph name="HOST_NAME" /> বর্তমানে এই অনুরোধটি পরিচালনা করতে অক্ষম।</translation>
 <translation id="7600965453749440009"><ph name="LANGUAGE" /> কখনও অনুবাদ করবেন না</translation>
-<translation id="7602848207066046655"><ph name="HOST_NAME" /> এর সার্ভার <ph name="BEGIN_ABBR" /> খুঁজে পাওয়া যায়নি।</translation>
 <translation id="7610193165460212391">সীমার বাইরে মান <ph name="VALUE" />৷</translation>
 <translation id="7613889955535752492">মেয়াদোত্তীর্ণ: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">আপনার কাছে ইতিমধ্যেই এমন ডেটা আছে যা Google অ্যাকাউন্টের পাসওয়ার্ডের কোনো ভিন্ন সংস্করণ ব্যবহারের দ্বারা এনক্রিপ্ট করা হয়৷ দয়া করে এটিকে নীচে লিখুন৷</translation>
@@ -647,7 +642,6 @@
 <translation id="8488350697529856933">এতে প্রয়োগ হয়</translation>
 <translation id="8494979374722910010">সার্ভারে সংযোগের প্রচেষ্টা ব্যর্থ হয়েছে৷</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> সাড়া দিতে খুবে বেশি সময় নিয়েছে।</translation>
-<translation id="8508677083825928015">পৃষ্ঠাগুলি আরো দ্রুত লোড করতে প্রাক সংগৃহিত সম্পদগুলি</translation>
 <translation id="8530504477309582336">এই ধরনের কার্ড Google Payments দ্বারা সমর্থিত নয়৷ দয়া করে একটি আলাদা কার্ড নির্বাচন করুন৷</translation>
 <translation id="8550022383519221471">আপনার ডোমেনের জন্য সিঙ্ক পরিষেবা উপলব্ধ নেই৷</translation>
 <translation id="8553075262323480129">পৃষ্ঠার ভাষা নির্ধারণ না করতে পারার কারণে অনুবাদ ব্যর্থ হয়েছে৷</translation>

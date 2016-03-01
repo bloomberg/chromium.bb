@@ -24,7 +24,6 @@
 <translation id="1346090444609141578">אין כאן דפים שנשמרו</translation>
 <translation id="1369915414381695676">האתר <ph name="SITE_NAME" /> נוסף</translation>
 <translation id="1373696734384179344">אין מספיק זיכרון להורדת התוכן הנבחר.</translation>
-<translation id="1379156015317873965">שיפור בביצועי טעינת הדפים</translation>
 <translation id="138361230106469022">שלום <ph name="FULL_NAME" /></translation>
 <translation id="1383876407941801731">חפש</translation>
 <translation id="1389974829397082527">אין כאן סימניות</translation>
@@ -126,7 +125,6 @@ Chrome יחפש דפים בקרבת מקום כשהמכשיר אינו נעול.
 <translation id="2707726405694321444">רענן את הדף</translation>
 <translation id="2709516037105925701">מילוי אוטומטי</translation>
 <translation id="271033894570825754">חדש</translation>
-<translation id="2718352093833049315">‏רק ב-Wi-Fi</translation>
 <translation id="2748463065602559597">‏אתה מציג דף Google Chrome מאובטח.</translation>
 <translation id="2762000892062317888">ברגע זה</translation>
 <translation id="2770465223704140727">הסר מהרשימה</translation>
@@ -262,6 +260,7 @@ Chrome יחפש דפים בקרבת מקום כשהמכשיר אינו נעול.
 <translation id="4836364883164334657">החיבור אל האתר הזה אינו פרטי. ייתכן שתוקפים מנסים לגנוב את המידע שלך (לדוגמה: תמונות, סיסמאות, הודעות וכרטיסי אשראי) מ-<ph name="DOMAIN_NAME" />.</translation>
 <translation id="4842511359652954519">קרא עוד</translation>
 <translation id="4850886885716139402">הצג</translation>
+<translation id="4875622588773761625">האם תרצה ש-<ph name="PASSWORD_MANAGER_BRAND" /> יעדכן את הסיסמה שלך בשביל האתר הזה?</translation>
 <translation id="4881695831933465202">פתח</translation>
 <translation id="4885273946141277891">‏מספר בלתי נתמך של מופעי Chrome.</translation>
 <translation id="4927198283430892231">דפים שמורים מנצלים כעת <ph name="TOTAL_OFFLINE_STORAGE_SIZE" />.</translation>
@@ -307,7 +306,6 @@ Chrome יחפש דפים בקרבת מקום כשהמכשיר אינו נעול.
 <translation id="5323972449344932352">‏הפעל את Chrome</translation>
 <translation id="5324858694974489420">הגדרות הורים</translation>
 <translation id="5327248766486351172">שם</translation>
-<translation id="5335200807405507442">קריאה מוקדמת למשאבי דף</translation>
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE" /> נמחק</translation>
 <translation id="5345083863238459644">הגישה למיקום <ph name="BEGIN_LINK" />כבויה גם בשביל המכשיר הזה<ph name="END_LINK" />.</translation>
 <translation id="5380554235172449987">לעולם אל תשלח</translation>
@@ -485,7 +483,6 @@ Chrome יחפש דפים בקרבת מקום כשהמכשיר אינו נעול.
 <translation id="7498271377022651285">המתן…</translation>
 <translation id="7501135638693251872">כל הסימניות</translation>
 <translation id="7521387064766892559">JavaScript</translation>
-<translation id="7561196759112975576">תמיד</translation>
 <translation id="7562080006725997899">מנקה נתוני גלישה</translation>
 <translation id="7588950540487816470">האינטרנט הווירטופיזי</translation>
 <translation id="7596558890252710462">מערכת הפעלה</translation>
@@ -519,7 +516,6 @@ Chrome יחפש דפים בקרבת מקום כשהמכשיר אינו נעול.
 <translation id="7876243839304621966">הסר הכל</translation>
 <translation id="7947953824732555851">קבל והיכנס</translation>
 <translation id="7949961459945740081">קבלת התכונות האחרונות</translation>
-<translation id="7961015016161918242">אף פעם</translation>
 <translation id="7963646190083259054">ספק:</translation>
 <translation id="7987073022710626672">‏התנאים וההגבלות של Chrome</translation>
 <translation id="7998918019931843664">פתח מחדש כרטיסייה שנסגרה</translation>
@@ -610,5 +606,6 @@ Chrome יחפש דפים בקרבת מקום כשהמכשיר אינו נעול.
 <translation id="945632385593298557">גישה למיקרופון שלך</translation>
 <translation id="954352821720225055">הסימניה אינה זמינה במצב לא מקוון. מיצית כמעט את כל נפח האחסון.</translation>
 <translation id="969096075394517431">החלף שפות</translation>
+<translation id="981121421437150478">לא מקוון</translation>
 <translation id="983192555821071799">סגור את כל הכרטיסיות</translation>
 </translationbundle>

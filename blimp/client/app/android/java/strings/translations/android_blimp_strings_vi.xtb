@@ -1,7 +1,18 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="vi">
+<translation id="1091157412887719337">Phân công không thành công.  Không có công cụ.</translation>
+<translation id="2004526128230838685">Phân công không thành công. Sự cố không xác định.</translation>
+<translation id="2023631438558435272">Phân công không thành công.  Phản hồi không hợp lệ.</translation>
+<translation id="2353984724370197742">Phân công không thành công.  Yêu cầu mạng không thành công.</translation>
+<translation id="3046825211487065480">Phân công không thành công.  Yêu cầu thứ hai đã được gửi trước khi yêu cầu thứ nhất được phản hồi.</translation>
 <translation id="3407245330823033366">Vui lòng chọn tài khoản để sử dụng với Blimp.</translation>
+<translation id="3775180005489871350">Phân công không thành công.  Lỗi 400 (BAD_REQUEST).</translation>
+<translation id="4542350224991263059">Phân công không thành công.  Mã truy cập người dùng đã hết hạn.</translation>
+<translation id="4562971394107096647">Phân công không thành công.  Lỗi máy chủ.</translation>
 <translation id="4641972508298030550">Không thể xác thực được người dùng.</translation>
+<translation id="5860346505531085166">Phân công không thành công.  Tài khoản không có quyền truy cập.</translation>
+<translation id="704835510384979817">Phân công không thành công.  Không có phiên bản công cụ phù hợp.</translation>
+<translation id="7961542533680218955">Đã phân công thành công.</translation>
 <translation id="8514856595257368555">Đã truy xuất mã thông báo.</translation>
 </translationbundle>

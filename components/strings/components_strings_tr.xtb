@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="tr">
-<translation id="1015255576907412255">Daha fazla bilgi için sistem yöneticinizle bağlantı kurun.</translation>
 <translation id="1015730422737071372">Diğer ayrıntıları sağlayın</translation>
 <translation id="1032854598605920125">Saat yönünde döndür</translation>
 <translation id="1038842779957582377">bilinmeyen ad</translation>
@@ -194,7 +193,7 @@
 <translation id="3005723025932146533">Kaydedilen kopyayı göster</translation>
 <translation id="3010559122411665027">Liste girişi "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
 <translation id="3024663005179499861">Yanlış politika türü</translation>
-<translation id="3037605927509011580">Hata!</translation>
+<translation id="3037605927509011580">Hay aksi!</translation>
 <translation id="3041612393474885105">Sertifika Bilgileri</translation>
 <translation id="3093245981617870298">Çevrimdışısınız.</translation>
 <translation id="3105172416063519923">Öğe Kimliği:</translation>
@@ -302,7 +301,6 @@
 <translation id="4176463684765177261">Devre dışı</translation>
 <translation id="4196861286325780578">Taşımayı &amp;yeniden yap</translation>
 <translation id="4220128509585149162">Kilitlenmeler</translation>
-<translation id="4241404202385006548">Uzantılarınızı devre dışı bırakın ve sonra bu web sayfasını yeniden yükleyin.</translation>
 <translation id="4250680216510889253">Hayır</translation>
 <translation id="4258748452823770588">İmza yanlış</translation>
 <translation id="4268298190799576220">Chromium, şu anda kartınızı doğrulayamıyor. Lütfen daha sonra tekrar deneyin.</translation>
@@ -442,7 +440,6 @@
 <translation id="6203231073485539293">İnternet bağlantınızı kontrol edin</translation>
 <translation id="6218753634732582820">Adres Chromium'dan kaldırılsın mı?</translation>
 <translation id="6232139169545176020">İstenen URI Şeması desteklenmiyor.</translation>
-<translation id="6237614789842758826">Google'da arama yapın.</translation>
 <translation id="6259156558325130047">Sıralama Değişikliğini &amp;Yeniden Yap</translation>
 <translation id="6262796033958342538">Birden fazla Location (Konum) üst bilgisi alındı. HTTP yanıtını bölme saldırılarına
     karşı korumak için buna izin verilmez.</translation>
@@ -518,7 +515,6 @@
 <translation id="7087282848513945231">İlçe</translation>
 <translation id="7088615885725309056">Daha eski</translation>
 <translation id="7108649287766967076"><ph name="TARGET_LANGUAGE" /> diline çeviri başarısız oldu.</translation>
-<translation id="7117303293717852287">Bu web sayfasını yeniden yükleyin.</translation>
 <translation id="7139724024395191329">Emirlik</translation>
 <translation id="7179921470347911571">Şimdi Yeniden Başlat</translation>
 <translation id="7180611975245234373">Yenile</translation>
@@ -565,7 +561,6 @@ Hatırlatma! Bir dahaki sefere Gizli mod <ph name="SHORTCUT_KEY" /> kullanışl�
 <translation id="7592362899630581445">Sunucunun sertifikası ad sınırlamasını ihlal ediyor.</translation>
 <translation id="759889825892636187"><ph name="HOST_NAME" /> şu anda bu isteği işleme alamıyor.</translation>
 <translation id="7600965453749440009"><ph name="LANGUAGE" /> dilini asla çevirme</translation>
-<translation id="7602848207066046655"><ph name="HOST_NAME" /> ana makinesinin <ph name="BEGIN_ABBR" /> sunucusu bulunamadı.</translation>
 <translation id="7610193165460212391">Değer aralık dışında: <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">Son kullanım tarihi: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Google Hesabı şifrenizin farklı bir sürümü kullanılarak şifrelenmiş verileriniz zaten var. Lütfen bu şifreyi aşağıya girin.</translation>
@@ -646,7 +641,6 @@ Hatırlatma! Bir dahaki sefere Gizli mod <ph name="SHORTCUT_KEY" /> kullanışl�
 <translation id="8488350697529856933">Uygulandığı yer</translation>
 <translation id="8494979374722910010">Sunucuya bağlanma denemesi başarısız oldu.</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> ana makinesinin yanıt vermesi çok uzun sürdü.</translation>
-<translation id="8508677083825928015">Sayfaları daha hızlı yüklemek için kaynakları ön getir</translation>
 <translation id="8530504477309582336">Google Payments, bu kart türünü desteklememektedir. Lütfen farklı bir kart seçin.</translation>
 <translation id="8550022383519221471">Senkronizasyon hizmeti alan adınızda kullanılamıyor.</translation>
 <translation id="8553075262323480129">Sayfanın dili belirlenemediğinden çeviri başarısız oldu.</translation>

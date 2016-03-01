@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ja">
-<translation id="1015255576907412255">詳しくは、システム管理者にお問い合わせください。</translation>
 <translation id="1015730422737071372">詳細を報告する</translation>
 <translation id="1032854598605920125">時計回りに回転</translation>
 <translation id="1038842779957582377">不明な名前</translation>
@@ -302,7 +301,6 @@
 <translation id="4176463684765177261">無効</translation>
 <translation id="4196861286325780578">移動のやり直し（&amp;R）</translation>
 <translation id="4220128509585149162">クラッシュ</translation>
-<translation id="4241404202385006548">拡張機能を無効にし、このウェブページを再読み込みしてください。</translation>
 <translation id="4250680216510889253">いいえ</translation>
 <translation id="4258748452823770588">署名が不適切です</translation>
 <translation id="4268298190799576220">現在、Chromium でカードを確認できません。しばらくしてからもう一度お試しください。</translation>
@@ -442,7 +440,6 @@
 <translation id="6203231073485539293">インターネット接続を確認してください</translation>
 <translation id="6218753634732582820">Chromium からアドレスを削除してもよろしいですか？</translation>
 <translation id="6232139169545176020">要求された URI スキームは非対応です。</translation>
-<translation id="6237614789842758826">Google で検索</translation>
 <translation id="6259156558325130047">順序変更のやり直し（&amp;R）</translation>
 <translation id="6262796033958342538">複数の異なる Location ヘッダーを受信しました。これは、HTTP レスポンス
     分割攻撃を防ぐために禁止されています。</translation>
@@ -517,7 +514,6 @@
 <translation id="7087282848513945231">郡</translation>
 <translation id="7088615885725309056">古い</translation>
 <translation id="7108649287766967076"><ph name="TARGET_LANGUAGE" />に翻訳できませんでした。</translation>
-<translation id="7117303293717852287">このウェブページを再読み込みしてください</translation>
 <translation id="7139724024395191329">管轄区域</translation>
 <translation id="7179921470347911571">今すぐ再起動</translation>
 <translation id="7180611975245234373">更新</translation>
@@ -564,7 +560,6 @@
 <translation id="7592362899630581445">サーバーの証明書が名前の制約に違反しています。</translation>
 <translation id="759889825892636187"><ph name="HOST_NAME" /> では現在このリクエストを処理できません。</translation>
 <translation id="7600965453749440009"><ph name="LANGUAGE" />を翻訳しない</translation>
-<translation id="7602848207066046655"><ph name="HOST_NAME" /> のサーバー <ph name="BEGIN_ABBR" /> が見つかりませんでした。</translation>
 <translation id="7610193165460212391">値（<ph name="VALUE" />）が範囲外です。</translation>
 <translation id="7613889955535752492">有効期限: <ph name="EXPIRATION_MONTH" /> / <ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">別の Google アカウント パスワードを使って暗号化したデータが既にあります。パスワードを以下に入力してください。</translation>
@@ -640,7 +635,6 @@
 <translation id="8488350697529856933">適用先</translation>
 <translation id="8494979374722910010">サーバーに接続できませんでした。</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> からの応答時間が長すぎます。</translation>
-<translation id="8508677083825928015">リソースをプリフェッチしてページをより迅速に読み込む</translation>
 <translation id="8530504477309582336">この種類のカードは Google ペイメントでご利用いただけません。別のカードを選択してください。</translation>
 <translation id="8550022383519221471">お客様のドメインでは同期サービスをご利用いただけません。</translation>
 <translation id="8553075262323480129">ページの言語を検出できないため翻訳できません。</translation>

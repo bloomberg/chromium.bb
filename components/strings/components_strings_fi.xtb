@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fi">
-<translation id="1015255576907412255">Saat lisätietoja ottamalla yhteyttä järjestelmänvalvojaan.</translation>
 <translation id="1015730422737071372">Lisätietoja</translation>
 <translation id="1032854598605920125">Käännä myötäpäivään</translation>
 <translation id="1038842779957582377">tuntematon nimi</translation>
@@ -222,6 +221,7 @@
 <translation id="3254409185687681395">Luo kirjanmerkki tälle sivulle</translation>
 <translation id="3270847123878663523">K&amp;umoa uudelleenjärjestely</translation>
 <translation id="3286538390144397061">Käynnistä uudelleen</translation>
+<translation id="3305707030755673451">Tietosi salattiin synkronoinnin tunnuslauseesi avulla <ph name="TIME" />. Aloita synkronointi antamalla tunnuslause.</translation>
 <translation id="333371639341676808">Estä tätä sivua luomasta muita viestejä.</translation>
 <translation id="3340978935015468852">asetuksissa</translation>
 <translation id="3355823806454867987">Muuta välityspalvelimen asetuksia...</translation>
@@ -303,7 +303,6 @@
 <translation id="4176463684765177261">Pois käytöstä</translation>
 <translation id="4196861286325780578">&amp;Toista siirto</translation>
 <translation id="4220128509585149162">Kaatuu</translation>
-<translation id="4241404202385006548">Poista asennetut laajennukset käytöstä ja päivitä tämä sivu</translation>
 <translation id="4250680216510889253">Ei</translation>
 <translation id="4258748452823770588">Virheellinen allekirjoitus</translation>
 <translation id="4268298190799576220">Chromium ei voinut vahvistaa korttiasi. Yritä myöhemmin uudelleen.</translation>
@@ -443,7 +442,6 @@
 <translation id="6203231073485539293">Tarkista internetyhteytesi</translation>
 <translation id="6218753634732582820">Poistetaanko osoite Chromiumista?</translation>
 <translation id="6232139169545176020">Pyydettyä URI-mallia ei tueta.</translation>
-<translation id="6237614789842758826">Hae Googlesta</translation>
 <translation id="6259156558325130047">&amp;Toista uudelleenjärjestely</translation>
 <translation id="6262796033958342538">Useita erillisiä Location-ylätunnisteita vastaanotettu.  Tätä ei sallita
     HTTP-vastausten jakamishyökkäyksiltä suojautumiseksi.</translation>
@@ -518,7 +516,6 @@
 <translation id="7087282848513945231">Kunta</translation>
 <translation id="7088615885725309056">Vanhempi</translation>
 <translation id="7108649287766967076">Käännös kielelle <ph name="TARGET_LANGUAGE" /> epäonnistui.</translation>
-<translation id="7117303293717852287">Lataa verkkosivu uudelleen</translation>
 <translation id="7139724024395191329">Emiirikunta</translation>
 <translation id="7179921470347911571">Käynnistä uudelleen</translation>
 <translation id="7180611975245234373">Päivitä</translation>
@@ -565,7 +562,6 @@ Psst! Suosittelemme käyttämään ensi kerralla incognito-tilaa <ph name="SHORT
 <translation id="7592362899630581445">Palvelimen varmenne rikkoo nimirajoituksia.</translation>
 <translation id="759889825892636187"><ph name="HOST_NAME" /> ei voi käsitellä tätä pyyntöä tällä hetkellä.</translation>
 <translation id="7600965453749440009">Älä koskaan käännä kieltä <ph name="LANGUAGE" /></translation>
-<translation id="7602848207066046655">Sivuston <ph name="HOST_NAME" /> palvelinta <ph name="BEGIN_ABBR" /> ei löytynyt.</translation>
 <translation id="7610193165460212391">Arvo on alueen ulkopuolella (<ph name="VALUE" />).</translation>
 <translation id="7613889955535752492">Vanhenee: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Tietojasi on jo salattu Google-tilisi salasanan muulla versiolla. Syötä salasana alla.</translation>
@@ -645,7 +641,6 @@ Psst! Suosittelemme käyttämään ensi kerralla incognito-tilaa <ph name="SHORT
 <translation id="8488350697529856933">Käyttöalue</translation>
 <translation id="8494979374722910010">Yritys muodostaa yhteys palvelimeen epäonnistui.</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> ei vastannut riittävän nopeasti.</translation>
-<translation id="8508677083825928015">Hae resursseja valmiiksi, jotta sivut latautuvat nopeammin</translation>
 <translation id="8530504477309582336">Google Payments ei tue tämän tyyppistä korttia. Valitse eri kortti.</translation>
 <translation id="8550022383519221471">Synkronointipalvelu ei ole käytettävissä verkkotunnuksessasi.</translation>
 <translation id="8553075262323480129">Käännös epäonnistui, sillä sivun kieltä ei voitu määrittää.</translation>
@@ -708,6 +703,7 @@ Psst! Suosittelemme käyttämään ensi kerralla incognito-tilaa <ph name="SHORT
 <translation id="9170848237812810038">K&amp;umoa</translation>
 <translation id="917450738466192189">Palvelimen varmenne ei kelpaa.</translation>
 <translation id="9183425211371246419"><ph name="HOST_NAME" /> käyttää protokollaa, jota ei tueta.</translation>
+<translation id="9205078245616868884">Tietosi on salattu synkronoinnin tunnuslauseesi avulla. Aloita synkronointi antamalla tunnuslause.</translation>
 <translation id="9207861905230894330">Artikkelin lisääminen epäonnistui.</translation>
 <translation id="933612690413056017">Ei internetyhteyttä</translation>
 <translation id="933712198907837967">Diners Club</translation>

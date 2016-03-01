@@ -24,7 +24,6 @@ Debes activar la ubicación y el Bluetooth para utilizar la Web física.</transl
 <translation id="1346090444609141578">No tienes páginas guardadas</translation>
 <translation id="1369915414381695676">Se ha añadido el sitio <ph name="SITE_NAME" /></translation>
 <translation id="1373696734384179344">No hay memoria suficiente para descargar el contenido seleccionado.</translation>
-<translation id="1379156015317873965">Mejorar rendimiento de carga de páginas</translation>
 <translation id="138361230106469022">Hola, <ph name="FULL_NAME" />:</translation>
 <translation id="1383876407941801731">Buscar</translation>
 <translation id="1389974829397082527">Ningún marcador incluido</translation>
@@ -126,7 +125,6 @@ Puedes controlar la Web física en la configuración de privacidad de Chrome.</t
 <translation id="2707726405694321444">Actualizar página</translation>
 <translation id="2709516037105925701">Autocompletar</translation>
 <translation id="271033894570825754">Nuevo</translation>
-<translation id="2718352093833049315">Solo en Wi-Fi</translation>
 <translation id="2748463065602559597">Estás viendo una página de Google Chrome segura.</translation>
 <translation id="2762000892062317888">ahora mismo</translation>
 <translation id="2770465223704140727">Eliminar de la lista</translation>
@@ -262,6 +260,7 @@ Para ajustar el término de búsqueda, mantén pulsado el texto para seleccionar
 <translation id="4836364883164334657">Tu conexión a este sitio web no es privada. Un atacante podría intentar robar tu información (fotos, contraseñas, mensajes, tarjetas de crédito, etc.) del dominio <ph name="DOMAIN_NAME" />.</translation>
 <translation id="4842511359652954519">Más información</translation>
 <translation id="4850886885716139402">Ver</translation>
+<translation id="4875622588773761625">¿Quieres que <ph name="PASSWORD_MANAGER_BRAND" /> actualice tu contraseña para este sitio web?</translation>
 <translation id="4881695831933465202">Abrir</translation>
 <translation id="4885273946141277891">Número de instancias de Chrome no admitido.</translation>
 <translation id="4927198283430892231">Las páginas guardadas ocupan <ph name="TOTAL_OFFLINE_STORAGE_SIZE" />.</translation>
@@ -307,7 +306,6 @@ Solo tienes que abrir Chrome en tu ordenador, ir al menú y seleccionar "Iniciar
 <translation id="5323972449344932352">Iniciar Chrome</translation>
 <translation id="5324858694974489420">Configuración parental</translation>
 <translation id="5327248766486351172">Nombre</translation>
-<translation id="5335200807405507442">Solicitud previa de recursos de página</translation>
 <translation id="5345040418939504969">Se ha eliminado <ph name="BOOKMARK_TITLE" /></translation>
 <translation id="5345083863238459644">El acceso a la ubicación también está <ph name="BEGIN_LINK" />desactivado en este dispositivo<ph name="END_LINK" />.</translation>
 <translation id="5380554235172449987">No enviar nunca</translation>
@@ -485,7 +483,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="7498271377022651285">Espera…</translation>
 <translation id="7501135638693251872">Todos los marcadores</translation>
 <translation id="7521387064766892559">JavaScript</translation>
-<translation id="7561196759112975576">Siempre</translation>
 <translation id="7562080006725997899">Borrando datos de navegación</translation>
 <translation id="7588950540487816470">Web física</translation>
 <translation id="7596558890252710462">Sistema operativo</translation>
@@ -519,7 +516,6 @@ No obstante, tus acciones no serán totalmente invisibles. El uso del modo incó
 <translation id="7876243839304621966">Eliminar todo</translation>
 <translation id="7947953824732555851">Aceptar y acceder</translation>
 <translation id="7949961459945740081">Obtener las últimas funciones</translation>
-<translation id="7961015016161918242">Nunca</translation>
 <translation id="7963646190083259054">Proveedor:</translation>
 <translation id="7987073022710626672">Condiciones de servicio de Chrome</translation>
 <translation id="7998918019931843664">Volver a abrir pestaña cerrada</translation>
@@ -612,5 +608,6 @@ Para obtener nuevas licencias, conéctate a Internet y reproduce el contenido de
 <translation id="945632385593298557">Acceder al micrófono</translation>
 <translation id="954352821720225055">Marcador no disponible sin conexión. Espacio de almacenamiento casi lleno.</translation>
 <translation id="969096075394517431">Cambiar idiomas</translation>
+<translation id="981121421437150478">Sin conexión</translation>
 <translation id="983192555821071799">Cerrar todas las pestañas</translation>
 </translationbundle>

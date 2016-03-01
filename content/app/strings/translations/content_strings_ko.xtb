@@ -20,7 +20,7 @@
 <translation id="167575180612809735">바쁨 표시기</translation>
 <translation id="1729654308190250600">비어 있지 않은 이메일 주소를 입력해 주세요.</translation>
 <translation id="1758486001363313524">다른 일자...</translation>
-<translation id="1806710327868736751">alert_dialog</translation>
+<translation id="1806710327868736751">알림 대화상자</translation>
 <translation id="1821985195704844674">트리 격자</translation>
 <translation id="1822429046913737220">오전/오후</translation>
 <translation id="1832974991323546415">원격 기기에서 재생</translation>
@@ -149,9 +149,9 @@
 <translation id="7740016676195725605">캡션 표시 중지</translation>
 <translation id="7740050170769002709">HTML 콘텐츠</translation>
 <translation id="7789962463072032349">일시중지</translation>
-<translation id="7802800022689234070">공개 삼각형</translation>
+<translation id="7802800022689234070">펼치기/접기 삼각형</translation>
 <translation id="7888071071722539607">이메일 주소에 '<ph name="ATSIGN" />'를 포함해 주세요. '<ph name="INVALIDADDRESS" />'에 '<ph name="ATSIGN" />'가 없습니다.</translation>
-<translation id="7891486169920085145">분할기</translation>
+<translation id="7891486169920085145">분할선</translation>
 <translation id="795667975304826397">선택된 파일 없음</translation>
 <translation id="8053789581856978548">검색어 입력란</translation>
 <translation id="8115662671911883373">캡션 표시 시작</translation>

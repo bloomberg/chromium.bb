@@ -265,7 +265,6 @@
 <translation id="1401874662068168819">Gin Yieh</translation>
 <translation id="140240131475089220">Debugging im Hintergrund</translation>
 <translation id="140250605646987970">Ihr Smartphone wurde gefunden, aber Smart Lock funktioniert nur auf Geräten mit Android 5.0 und höher. &lt;a&gt;Weitere Informationen&lt;/a&gt;</translation>
-<translation id="1405126334425076373">Mauszeiger</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (betreut)</translation>
 <translation id="1405476660552109915">Soll <ph name="PASSWORD_MANAGER_BRAND" /> Ihr Password für diese Website speichern?</translation>
 <translation id="1406500794671479665">Überprüfung wird durchgeführt...</translation>
@@ -533,7 +532,6 @@
 <translation id="175772926354468439">Design aktivieren</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="1758831820837444715">Ethernetnetzwerk konfigurieren</translation>
-<translation id="1761647635297215796">Erlaubt Websites, auf die WebAudio API zuzugreifen.</translation>
 <translation id="1763046204212875858">App-Verknüpfungen erstellen</translation>
 <translation id="1763108912552529023">Weiter erkunden</translation>
 <translation id="1764226536771329714">Beta</translation>
@@ -874,7 +872,6 @@ Nach der Erstellung eines neuen betreuten Nutzers können Sie die Einstellungen 
 <translation id="2286454467119466181">Einfach</translation>
 <translation id="2286950485307333924">Sie sind jetzt in Chrome angemeldet.</translation>
 <translation id="2287590536030307392">Alle Drahtlosverbindungen werden deaktiviert.</translation>
-<translation id="2289383640829819703">Keine Downloads gefunden</translation>
 <translation id="2291643155573394834">Nächster Tab</translation>
 <translation id="2294358108254308676">Möchten Sie <ph name="PRODUCT_NAME" /> installieren?</translation>
 <translation id="2296019197782308739">EAP-Methode:</translation>
@@ -933,7 +930,6 @@ Nach der Erstellung eines neuen betreuten Nutzers können Sie die Einstellungen 
 <translation id="2384596874640104496">Singhalesische Tastatur</translation>
 <translation id="2385700042425247848">Dienstname</translation>
 <translation id="2386631145847373156">Eine Abmeldung ist nur bei vorheriger Anmeldung möglich.</translation>
-<translation id="2386784019642337415">Standardmäßige und benutzerdefinierte Suchmaschinen lesen und ändern</translation>
 <translation id="2390045462562521613">Dieses Netzwerk löschen</translation>
 <translation id="2391243203977115091"><ph name="FILE_COUNT" /> neue Fotos gefunden.
     <ph name="LINE_BREAK1" />
@@ -1408,7 +1404,6 @@ Ich glaube nicht, dass diese Website blockiert werden sollte.</translation>
 <translation id="3025729795978504041">Klicken Sie mit der rechten Maustaste auf die Schaltfläche oben, um andere Nutzer zu sehen.</translation>
 <translation id="3026050830483105579">Alles an einem zentralen Ort.</translation>
 <translation id="302620147503052030">Schaltfläche anzeigen</translation>
-<translation id="3030138564564344289">Download wiederholen</translation>
 <translation id="3031417829280473749">Agentin X</translation>
 <translation id="3031557471081358569">Zu importierende Daten wählen:</translation>
 <translation id="3033332627063280038">Aktivieren Sie die experimentelle Implementierung der Richtlinie "Cache-Control: stale-while-revalidate". Dadurch können Server angeben, dass einige Ressourcen im Hintergrund erneut überprüft werden sollten, um die Latenz zu verbessern.</translation>
@@ -2332,7 +2327,6 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 <translation id="4363372140743955595">Erneute Authentifizierung von Passwortmanager</translation>
 <translation id="4364444725319685468"><ph name="FILE_NAME" /> heruntergeladen</translation>
 <translation id="4364830672918311045">Benachrichtigungen einblenden</translation>
-<translation id="4365486896593700706">WebAudio</translation>
 <translation id="4365673000813822030">Hoppla, die Synchronisierung funktioniert nicht mehr.</translation>
 <translation id="4366509400410520531">Von Ihnen zugelassen</translation>
 <translation id="4367782753568896354">Folgende Erweiterungen konnten nicht installiert werden:</translation>
@@ -2393,7 +2387,6 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 <translation id="4467798014533545464">URL anzeigen</translation>
 <translation id="4470564870223067757">Hangul 2 Set</translation>
 <translation id="4474155171896946103">Alle Tabs als Lesezeichen speichern...</translation>
-<translation id="4475552974751346499">In Downloads suchen</translation>
 <translation id="4477219268485577442">Bulgarisch – phonetisch</translation>
 <translation id="4478664379124702289">Lin&amp;k speichern unter...</translation>
 <translation id="4479639480957787382">Ethernet</translation>
@@ -2696,7 +2689,6 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 <translation id="4941246025622441835">Diese Geräteanforderung beim Registrieren des Geräts für die Unternehmensverwaltung verwenden:</translation>
 <translation id="4942394808693235155">Updates suchen und installieren</translation>
 <translation id="494286511941020793">Proxy-Konfigurationshilfe</translation>
-<translation id="4945378551914476156">Lesezeichen, Verlauf, Passwörter und andere Einstellungen werden mit Ihrem Google-Konto synchronisiert, damit Sie diese mit Chrome überall nutzen können. Sie können diese Einstellung unter dem folgenden Link ändern: <ph name="BEGIN_LINK" /></translation>
 <translation id="4950138595962845479">Optionen...</translation>
 <translation id="4952186391360931024">Non-Material</translation>
 <translation id="4954544650880561668">Gerätesteuerung</translation>
@@ -3106,7 +3098,6 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 <translation id="5537725057119320332">Übertragen</translation>
 <translation id="5538092967727216836">Frame neu laden</translation>
 <translation id="5542132724887566711">Profil</translation>
-<translation id="5542721662280972920">Verschlüsselte Medienerweiterungen für Video- und Audioelemente.</translation>
 <translation id="5543983818738093899">Status wird überprüft...</translation>
 <translation id="5544363333869861395">V8-Parser-Daten im Cache speichern.</translation>
 <translation id="5546477470896554111">Stromquelle verwalten...</translation>
@@ -3363,7 +3354,6 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
   <ph name="EXPONENT_HEX_DUMP" /></translation>
 <translation id="59174027418879706">Aktiviert</translation>
 <translation id="592068147111860043">PPAPI-Plug-ins angeben, die gemäß der Richtlinie zur Win32k-Sperrung in der Sandbox ausgeführt werden</translation>
-<translation id="5921225488888777945">Eingestellte Version der verschlüsselten Medienerweiterungen für Video- und Audioelemente.</translation>
 <translation id="5925147183566400388">Verweis auf Certification Practice Statement</translation>
 <translation id="5930693802084567591">Ihre Daten sind seit dem <ph name="TIME" /> mit Ihrem Google-Passwort verschlüsselt. Geben Sie dieses unten ein.</translation>
 <translation id="5931146425219109062">Alle Ihre Daten auf von Ihnen besuchten Websites lesen und ändern</translation>
@@ -3483,12 +3473,10 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 <translation id="6116921718742659598">Sprach- und Eingabeeinstellungen ändern</translation>
 <translation id="6117536376248197233">Zeitachsen für die Animationszusammensetzung in Renderern deaktivieren.</translation>
 <translation id="6120205520491252677">Diese Seite an Startbildschirm anheften...</translation>
-<translation id="6120816415558830169">Heruntergeladen von &lt;a&gt;<ph name="EXTENSION" />&lt;/a&gt;</translation>
 <translation id="6122081475643980456">Internetverbindung wird kontrolliert</translation>
 <translation id="6122093587541546701">E-Mail-Adresse (optional):</translation>
 <translation id="6122875415561139701">Der Schreibvorgang ist auf folgendem Gerät nicht erlaubt: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="6124650939968185064">Die folgenden Erweiterungen hängen von dieser Erweiterung ab:</translation>
-<translation id="612701906868237915">Automatisch auf allen meinen Geräten anmelden</translation>
 <translation id="6129938384427316298">Kommentar zu Netscape-Zertifikaten</translation>
 <translation id="6129953537138746214">Leerzeichen</translation>
 <translation id="6132383530370527946">Das Kleingedruckte</translation>
@@ -3623,7 +3611,6 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 <translation id="6344170822609224263">Auf Liste der Netzwerkverbindungen zugreifen</translation>
 <translation id="6345221851280129312">unbekannte Größe</translation>
 <translation id="6347003977836730270">Dadurch wird das neue Übersetzer-Infofeld anstelle der Infoleiste angeboten.</translation>
-<translation id="6347887127637865679">Verschlüsselte Medienerweiterungen</translation>
 <translation id="6348657800373377022">Kombinationsfeld</translation>
 <translation id="6349839454356033837">Bei der Wiedergabe der Medien mit Android ist ein Problem aufgetreten.</translation>
 <translation id="6353618411602605519">Kroatische Tastatur</translation>
@@ -4024,7 +4011,6 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 <translation id="6991665348624301627">Ziel auswählen</translation>
 <translation id="699220179437400583">Details zu möglichen sicherheitsrelevanten Zwischenfällen automatisch an Google senden</translation>
 <translation id="6993929801679678186">AutoFill-Vorschläge anzeigen</translation>
-<translation id="6994840493536325068">Automatisch auf Websites auf diesem Gerät anmelden</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> Ordner ausgewählt</translation>
 <translation id="6998872712520806535">{NUM_PAGES,plural, =1{Die folgende Seite reagiert nicht mehr. Sie können warten, bis die Seite wieder reagiert, oder sie schließen.}other{Die folgenden Seiten reagieren nicht mehr. Sie können warten, bis die Seiten wieder reagieren, oder sie schließen.}}</translation>
 <translation id="7002055706763150362">Zum Einrichten von Smart Lock für Chromebooks müssen wir Sie authentifizieren. Geben Sie bitte Ihr Passwort ein.</translation>
@@ -4687,7 +4673,6 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 <translation id="7987485481246785146">Sorani-Tastatur nach arabischem Layout</translation>
 <translation id="7988930390477596403">Die Funktion wird bei der nächsten <ph name="DEVICE_TYPE" />-Entsperrung aktiviert. Mit Smart Lock entsperren Sie dieses Gerät mit Ihrem Telefon ‒ ganz ohne Passwort. Zur Nutzung von Smart Lock wird Bluetooth aktiviert.</translation>
 <translation id="7989023212944932320">Google Safe Browsing hat kürzlich <ph name="BEGIN_LINK" />Malware<ph name="END_LINK" /> auf <ph name="SITE" /> gefunden. Websites, die in der Regel sicher sind, können gelegentlich mit Malware infiziert sein. Der schädliche Inhalt stammt von <ph name="SUBRESOURCE_HOST" />, einem bekannten Verteiler von Malware. Versuchen Sie es in ein paar Stunden erneut.</translation>
-<translation id="7990249708898521239">Vorangestellte verschlüsselte Medienerweiterungen</translation>
 <translation id="7994370417837006925">Mehrfachanmeldung</translation>
 <translation id="799547531016638432">Verknüpfung entfernen</translation>
 <translation id="79962507603257656">Downloadstatus im Benachrichtigungscenter</translation>

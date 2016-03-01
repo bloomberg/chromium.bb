@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ar">
-<translation id="1015255576907412255">اتصل بمشرف النظام للحصول على المزيد من المعلومات.</translation>
 <translation id="1015730422737071372">تقديم تفاصيل إضافية</translation>
 <translation id="1032854598605920125">تدوير في اتجاه عقارب الساعة</translation>
 <translation id="1038842779957582377">اسم غير معروف</translation>
@@ -222,6 +221,7 @@
 <translation id="3254409185687681395">وضع إشارة على هذه الصفحة</translation>
 <translation id="3270847123878663523">تراجع عن إعادة الت&amp;رتيب</translation>
 <translation id="3286538390144397061">إعادة التشغيل الآن</translation>
+<translation id="3305707030755673451">تم تشفير بياناتك باستخدام عبارة مرور المزامنة في <ph name="TIME" />. أدخلها لبدء المزامنة.</translation>
 <translation id="333371639341676808">منع هذه الصفحة من إنشاء مربّعات حوار إضافية.</translation>
 <translation id="3340978935015468852">الإعدادات</translation>
 <translation id="3355823806454867987">تغيير إعدادات الخادم الوكيل...</translation>
@@ -303,7 +303,6 @@
 <translation id="4176463684765177261">معطل</translation>
 <translation id="4196861286325780578">إ&amp;عادة النقل</translation>
 <translation id="4220128509585149162">الأعطال</translation>
-<translation id="4241404202385006548">يمكن تعطيل الإضافات ثم إعادة تحميل صفحة الويب هذه</translation>
 <translation id="4250680216510889253">لا</translation>
 <translation id="4258748452823770588">توقيع غير صالح</translation>
 <translation id="4268298190799576220">‏لم يتمكن Chromium من التحقق من بطاقتك في الوقت الحالي. يُرجى إعادة المحاولة في وقت لاحق.</translation>
@@ -443,7 +442,6 @@
 <translation id="6203231073485539293">التحقق من اتصالك بالإنترنت</translation>
 <translation id="6218753634732582820">‏هل تريد إزالة العنوان من Chromium؟</translation>
 <translation id="6232139169545176020">‏معرف الموارد المنتظم (URI) المطلوب غير متوافق.</translation>
-<translation id="6237614789842758826">‏بحث على Google</translation>
 <translation id="6259156558325130047">إعادة إ&amp;جراء الترتيب</translation>
 <translation id="6262796033958342538">‏تم تلقي عدة رؤوس مواقع مختلفة.  لا يُسمح بهذا للحماية
    من هجمات تقسيم ردود HTTP.</translation>
@@ -518,7 +516,6 @@
 <translation id="7087282848513945231">المقاطعة/الإقليم/المنطقة</translation>
 <translation id="7088615885725309056">أقدم</translation>
 <translation id="7108649287766967076">أخفقت الترجمة إلى <ph name="TARGET_LANGUAGE" />.</translation>
-<translation id="7117303293717852287">إعادة تحميل صفحة الويب هذه</translation>
 <translation id="7139724024395191329">الإمارة</translation>
 <translation id="7179921470347911571">إعادة التشغيل الآن</translation>
 <translation id="7180611975245234373">تحديث</translation>
@@ -565,7 +562,6 @@
 <translation id="7592362899630581445">تنتهك شهادة الخادم القيود المفروضة على الاسم.</translation>
 <translation id="759889825892636187">يتعذر على <ph name="HOST_NAME" /> معالجة هذا الطلب حاليًا.</translation>
 <translation id="7600965453749440009">عدم الترجمة مطلقًا من اللغة <ph name="LANGUAGE" /></translation>
-<translation id="7602848207066046655">تعذر العثور على خادم <ph name="BEGIN_ABBR" /> لـ <ph name="HOST_NAME" />.</translation>
 <translation id="7610193165460212391">القيمة خارج النطاق <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">تاريخ انتهاء الصلاحية: <ph name="EXPIRATION_MONTH" /> / <ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">‏لديك فعلاً بيانات تم تشفيرها باستخدام نسخة أخرى من كلمة مرور حسابك في Google. الرجاء إدخالها أدناه.</translation>
@@ -646,7 +642,6 @@
 <translation id="8488350697529856933">تنطبق على</translation>
 <translation id="8494979374722910010">إخفاق محاولة الاتصال بالخادم.</translation>
 <translation id="8498891568109133222">استغرق <ph name="HOST_NAME" /> وقتًا أطول مما يجب للاستجابة.</translation>
-<translation id="8508677083825928015">موارد الجلب المسبق لتحميل الصفحات بسرعة أكبر</translation>
 <translation id="8530504477309582336">‏هذا النوع من البطاقات غير متوافق مع Google Payments. يُرجى تحديد بطاقة مختلفة.</translation>
 <translation id="8550022383519221471">خدمة المزامنة غير متاحة لنطاقك.</translation>
 <translation id="8553075262323480129">أخفقت الترجمة لتعذر تحديد لغة الصفحة.</translation>
@@ -709,6 +704,7 @@
 <translation id="9170848237812810038">&amp;إلغاء</translation>
 <translation id="917450738466192189">شهادة الخادم غير صالحة.</translation>
 <translation id="9183425211371246419">يستخدم <ph name="HOST_NAME" /> بروتوكول غير مدعوم.</translation>
+<translation id="9205078245616868884">يتم تشفير بياناتك باستخدام عبارة مرور المزامنة. أدخلها لبدء المزامنة.</translation>
 <translation id="9207861905230894330">أخفقت إضافة مقالة.</translation>
 <translation id="933612690413056017">لا يوجد اتصال بالإنترنت</translation>
 <translation id="933712198907837967">Diners Club</translation>

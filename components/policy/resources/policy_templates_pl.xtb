@@ -449,15 +449,6 @@
 <translation id="2646290749315461919">Umożliwia określenie, czy witryny mogą śledzić fizyczną lokalizację użytkownika. Śledzenie fizycznej lokalizacji użytkownika może być domyślnie dozwolone lub zabronione bądź użytkownik może być o to pytany za każdym razem, gdy witryna żąda informacji o lokalizacji. W przypadku nieskonfigurowania tej zasady używane będzie ustawienie „AskGeolocation”, a użytkownik będzie mógł je zmienić.</translation>
 <translation id="2650049181907741121">Działanie, jakie ma zostać wykonane po zamknięciu pokrywy przez użytkownika</translation>
 <translation id="2660846099862559570">Nigdy nie używaj serwera proxy</translation>
-<translation id="2665596266623707739">Ostrzeżenie: możliwość zastępczego użycia wersji 1.0 protokołu TLS zostanie wycofana z <ph name="PRODUCT_NAME" /> po wersji 47 (w okolicach stycznia 2016 roku.), a opcja „tls1” przestanie działać.
-
-      Jeśli uzgadnianie połączenia w protokole TLS się nie powiedzie, <ph name="PRODUCT_NAME" /> podejmuje ponowną próbę nawiązania połączenia przy użyciu starszej wersji protokołu TLS, by obejść błędy w działaniu serwerów HTTPS. To ustawienie pozwala skonfigurować wersję, przy której ten proces zastępczego używania innej wersji się zatrzyma. Jeśli serwer prawidłowo (tj. bez przerywania połączenia) przeprowadzi negocjowanie wersji, ustawienie nie będzie stosowane. Niezależnie od sposobu, w jaki zostanie nawiązane, połączenie musi być zgodne z wartością SSLVersionMin.
-
-      Jeśli ta zasada nie jest skonfigurowana, <ph name="PRODUCT_NAME" /> stosuje minimalną domyślną wersję, czyli TLS 1.0 w przypadku <ph name="PRODUCT_NAME" /> 44 oraz TLS 1.1 w późniejszych wersjach. Pamiętaj, że to nie wyłącza obsługi protokołu TLS 1.0, tylko określa, czy będzie możliwość obejścia wadliwie działających serwerów, które nie są w stanie przeprowadzić prawidłowego negocjowania wersji w <ph name="PRODUCT_NAME" />.
-
-      W przeciwnym wypadku można ustawić jedną z tych wartości: „tls1”, „tls1.1” lub „tls1.2”. Jeśli utrzymanie zgodności z wadliwie działającym serwerem jest konieczne, można wybrać „tls1”. To jednak rozwiązanie tymczasowe – serwer trzeba szybko naprawić.
-
-      Ustawienie „tls1.2” wyłącza zastępcze używanie innej wersji, ale może to mieć duży wpływ na zgodność.</translation>
 <translation id="267596348720209223">Pozwala określić kodowania znaków obsługiwane przez dostawcę wyszukiwania. Kodowania są określane za pomocą nazw stron kodowych, np. UTF-8, GB2312 czy ISO-8859-1. Są stosowane w podanej kolejności. Ta zasada jest opcjonalna. Jeśli nie zostanie skonfigurowana, będzie używana wartość domyślna, czyli UTF-8. Zasada ta jest stosowana tylko przy włączonej zasadzie „DefaultSearchProviderEnabled”.</translation>
 <translation id="2682225790874070339">Wyłącz Dysk w aplikacji Pliki w <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="268577405881275241">Włącz serwer proxy kompresowania danych</translation>
@@ -870,7 +861,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="4449545651113180484">Obróć ekran w prawo o 270 stopni</translation>
 <translation id="4467952432486360968">Blokuj pliki cookie innych firm</translation>
 <translation id="4474167089968829729">Włącz zapisywanie haseł w menedżerze haseł</translation>
-<translation id="4480694116501920047">Wymuś stosowanie filtru SafeSearch</translation>
+<translation id="4480694116501920047">Wymuś stosowanie filtra SafeSearch</translation>
 <translation id="4482640907922304445">Powoduje pokazanie przycisku strony startowej na pasku narzędzi <ph name="PRODUCT_NAME" />. Jeśli włączysz to ustawienie, przycisk strony startowej będzie zawsze widoczny. W przypadku wyłączenia ustawienia przycisk nigdy nie jest widoczny. Jeśli ustawienie jest włączone lub wyłączone, użytkownicy nie mogą go zmienić ani zastąpić w <ph name="PRODUCT_NAME" />. W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, czy chce, aby przycisk strony startowej był pokazywany.</translation>
 <translation id="4492287494009043413">Wyłącza tworzenie zrzutów ekranu</translation>
 <translation id="450537894712826981">Ustala rozmiar pamięci podręcznej, której <ph name="PRODUCT_NAME" /> będzie używać do zapisywania plików pamięci podręcznej na dysku.
@@ -980,7 +971,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="4962195944157514011">Określa URL wyszukiwarki używanej podczas wyszukiwania domyślnego. URL powinien zawierać ciąg „<ph name="SEARCH_TERM_MARKER" />”, który podczas zapytania zostanie zastąpiony hasłami wyszukiwanymi przez użytkownika. Ta opcja musi być ustawiona w przypadku włączenia zasady „DefaultSearchProviderEnabled” i tylko wtedy będzie uwzględniana.</translation>
 <translation id="4971529314808359013">Umożliwia określenie listy wzorców adresu URL definiujących witryny, dla których <ph name="PRODUCT_NAME" /> automatycznie wybiera certyfikaty klienta, jeśli dana witryna żąda certyfikatu.
 
-          Wartość musi być tablicą słowników JSON odwzorowanych na ciąg. Każdy słownik musi mieć postać { "pattern": "$URL_PATTERN", "filter" : $FILTER }, gdzie $URL_PATTERN jest wzorcem ustawiającym zawartość. $FILTER ogranicza certyfikaty klienta, spośród których przeglądarka może dokonać automatycznego wyboru. Niezależnie od filtru wybierane mogą być tylko te certyfikaty, które są zgodne z żądaniem certyfikatu serwera. Jeśli $FILTER ma postać { "ISSUER": { "CN": "$ISSUER_CN" } }, to dodatkowo wybierane będą tylko te certyfikaty klienta, które zostały wydane przez certyfikat z CommonName $ISSUER_CN. Jeśli $FILTER jest pustym słownikiem {}, wybór certyfikatów klienta nie jest dodatkowo ograniczany.
+          Wartość musi być tablicą słowników JSON odwzorowanych na ciąg. Każdy słownik musi mieć postać { "pattern": "$URL_PATTERN", "filter" : $FILTER }, gdzie $URL_PATTERN jest wzorcem ustawiającym zawartość. $FILTER ogranicza certyfikaty klienta, spośród których przeglądarka może dokonać automatycznego wyboru. Niezależnie od filtra wybierane mogą być tylko te certyfikaty, które są zgodne z żądaniem certyfikatu serwera. Jeśli $FILTER ma postać { "ISSUER": { "CN": "$ISSUER_CN" } }, to dodatkowo wybierane będą tylko te certyfikaty klienta, które zostały wydane przez certyfikat z CommonName $ISSUER_CN. Jeśli $FILTER jest pustym słownikiem {}, wybór certyfikatów klienta nie jest dodatkowo ograniczany.
 
           Jeśli ta zasada nie jest ustawiona, automatyczna selekcja nie będzie przeprowadzana w żadnej witrynie.</translation>
 <translation id="4980301635509504364">Zezwala na przechwytywanie wideo lub tego zabrania.
@@ -1257,7 +1248,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 
       Jeśli ta opcja zostanie włączona, filtr SafeSearch w wyszukiwarce Google będzie zawsze aktywny.
 
-      W przypadku wyłączenia tego ustawienia lub niepodania wartości nie będzie wymuszane stosowanie filtru SafeSearch w wyszukiwarce Google.</translation>
+      W przypadku wyłączenia tego ustawienia lub niepodania wartości nie będzie wymuszane stosowanie filtra SafeSearch w wyszukiwarce Google.</translation>
 <translation id="5946082169633555022">Wersja beta</translation>
 <translation id="5950205771952201658">Ignorowana w razie błędu sieci kontrola online, czy certyfikat nie został unieważniony, w rzeczywistości nie poprawia bezpieczeństwa, dlatego w <ph name="PRODUCT_NAME" /> 19 i nowszych wersjach jest domyślnie wyłączona. Jeśli zasada ma wartość prawda, przywraca poprzedni sposób działania i powoduje wykonywanie kontroli OCSP/CRL online.
 
@@ -1610,7 +1601,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
           Pamiętaj, że jeśli <ph name="PRODUCT_NAME" /> działa „w tle”, sesja może się nie zamknąć po zamknięciu ostatniego okna przeglądarki, tylko pozostać aktywna do czasu wyjścia z przeglądarki. Więcej informacji o konfigurowaniu tego działania znajdziesz w opisie zasady BackgroundModeEnabled.
 
           Jeśli zgodnie z ustawieniem zasady RestoreOnStartup adresy URL z poprzednich sesji mają być wznawiane, ta zasada nie będzie przestrzegana, a pliki cookie witryn będą trwale zapisywane.</translation>
-<translation id="7207095846245296855">Wymuś stosowanie filtru Google SafeSearch</translation>
+<translation id="7207095846245296855">Wymuś stosowanie filtra Google SafeSearch</translation>
 <translation id="7216442368414164495">Umożliwia użytkownikom wyrażenie zgody na generowanie rozszerzonych raportów przez usługę Bezpieczne przeglądanie</translation>
 <translation id="7227967227357489766">Określa listę użytkowników, którzy mogą logować się do urządzenia. Pozycje mają postać <ph name="USER_WHITELIST_ENTRY_FORMAT" />, np. <ph name="USER_WHITELIST_ENTRY_EXAMPLE" />. Aby zezwolić na logowanie dowolnym użytkownikom z domeny, użyj wpisów w postaci <ph name="USER_WHITELIST_ENTRY_WILDCARD" />.
 
@@ -2035,11 +2026,11 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="8870318296973696995">Strona startowa</translation>
 <translation id="8905426178924715309">Ta zasada została wycofana. Zamiast niej użyj ForceGoogleSafeSearch lub ForceYouTubeSafetyMode. Zasada zostanie zignorowana, jeśli ustawiona zostanie zasada ForceGoogleSafeSearch lub ForceYouTubeSafetyMode.
 
-      Wymusza realizację zapytań w wyszukiwarce Google przy użyciu filtru SafeSearch i uniemożliwia użytkownikom zmianę tego ustawienia. To ustawienie wymusza też włączenie Trybu bezpiecznego w YouTube.
+      Wymusza realizację zapytań w wyszukiwarce Google przy użyciu filtra SafeSearch i uniemożliwia użytkownikom zmianę tego ustawienia. To ustawienie wymusza też włączenie Trybu bezpiecznego w YouTube.
 
       Jeśli włączysz to ustawienie, filtr SafeSearch w wyszukiwarce Google i YouTube będzie zawsze aktywny.
 
-      Jeśli je wyłączysz albo nie podasz wartości, stosowanie filtru SafeSearch w wyszukiwarce Google i YouTube nie będzie wymuszane.</translation>
+      Jeśli je wyłączysz albo nie podasz wartości, stosowanie filtra SafeSearch w wyszukiwarce Google i YouTube nie będzie wymuszane.</translation>
 <translation id="8906768759089290519">Włącz tryb gościa</translation>
 <translation id="8908294717014659003">Pozwala określić, czy strony mogą korzystać z urządzeń do rejestrowania multimediów. Dostęp do tych urządzeń może być dozwolony domyślnie lub użytkownik może być pytany za każdym razem, gdy strona chce użyć urządzenia do rejestrowania multimediów.
 

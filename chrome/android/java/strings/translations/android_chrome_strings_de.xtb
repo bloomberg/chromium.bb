@@ -24,7 +24,6 @@ Zur Verwendung von Physical Web müssen Bluetooth und der Standortdienst aktivie
 <translation id="1346090444609141578">Keine gespeicherten Seiten vorhanden</translation>
 <translation id="1369915414381695676">Website "<ph name="SITE_NAME" />" hinzugefügt</translation>
 <translation id="1373696734384179344">Der Speicher reicht nicht aus, um den ausgewählten Inhalt herunterzuladen.</translation>
-<translation id="1379156015317873965">Seiten schneller laden</translation>
 <translation id="138361230106469022">Hallo <ph name="FULL_NAME" /></translation>
 <translation id="1383876407941801731">Suchen</translation>
 <translation id="1389974829397082527">Keine Lesezeichen vorhanden</translation>
@@ -126,7 +125,6 @@ Chrome sucht nach Seiten in Ihrer Nähe, wenn Ihr Gerät entsperrt ist. Diese Se
 <translation id="2707726405694321444">Seite aktualisieren</translation>
 <translation id="2709516037105925701">AutoFill</translation>
 <translation id="271033894570825754">Neu</translation>
-<translation id="2718352093833049315">Nur bei WLAN</translation>
 <translation id="2748463065602559597">Dies ist eine sichere Google Chrome-Seite.</translation>
 <translation id="2762000892062317888">gerade eben</translation>
 <translation id="2770465223704140727">Aus Liste entfernen</translation>
@@ -262,6 +260,7 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="4836364883164334657">Ihre Verbindung zu dieser Website ist nicht sicher. Unbefugte Dritte könnten versuchen, Ihre Informationen von <ph name="DOMAIN_NAME" /> zu stehlen, etwa Fotos, Passwörter, Nachrichten oder Kreditkartendaten.</translation>
 <translation id="4842511359652954519">Mehr anzeigen</translation>
 <translation id="4850886885716139402">Anzeigen</translation>
+<translation id="4875622588773761625">Soll <ph name="PASSWORD_MANAGER_BRAND" /> Ihr Passwort für diese Website aktualisieren?</translation>
 <translation id="4881695831933465202">Öffnen</translation>
 <translation id="4885273946141277891">Nicht unterstützte Anzahl von Chrome-Instanzen</translation>
 <translation id="4927198283430892231">Die gespeicherten Seiten belegen momentan <ph name="TOTAL_OFFLINE_STORAGE_SIZE" />.</translation>
@@ -307,7 +306,6 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="5323972449344932352">Chrome starten</translation>
 <translation id="5324858694974489420">Jugendschutzeinstellungen</translation>
 <translation id="5327248766486351172">Name</translation>
-<translation id="5335200807405507442">Seitenressourcen vorabrufen</translation>
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE" /> gelöscht</translation>
 <translation id="5345083863238459644">Der Standortzugriff ist auch <ph name="BEGIN_LINK" />für dieses Gerät deaktiviert<ph name="END_LINK" />.</translation>
 <translation id="5380554235172449987">Nie senden</translation>
@@ -485,7 +483,6 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="7498271377022651285">Bitte warten...</translation>
 <translation id="7501135638693251872">Alle Lesezeichen</translation>
 <translation id="7521387064766892559">JavaScript</translation>
-<translation id="7561196759112975576">Immer</translation>
 <translation id="7562080006725997899">Browserdaten werden gelöscht</translation>
 <translation id="7588950540487816470">Physical Web</translation>
 <translation id="7596558890252710462">Betriebssystem</translation>
@@ -519,7 +516,6 @@ Sie sind jedoch nicht unsichtbar. Der Inkognitomodus verhindert nicht, dass Info
 <translation id="7876243839304621966">Alle entfernen</translation>
 <translation id="7947953824732555851">Akzeptieren und anmelden</translation>
 <translation id="7949961459945740081">Neue Funktionen herunterladen</translation>
-<translation id="7961015016161918242">Nie</translation>
 <translation id="7963646190083259054">Anbieter:</translation>
 <translation id="7987073022710626672">Chrome-Nutzungsbedingungen</translation>
 <translation id="7998918019931843664">Geschlossenen Tab wieder öffnen</translation>
@@ -612,5 +608,6 @@ Um neue Lizenzen zu erwerben, stellen Sie eine Internetverbindung her und spiele
 <translation id="945632385593298557">Mikrofonzugriff</translation>
 <translation id="954352821720225055">Lesezeichen offline nicht verfügbar. Der Speicher ist fast voll.</translation>
 <translation id="969096075394517431">Sprachen ändern</translation>
+<translation id="981121421437150478">Offline</translation>
 <translation id="983192555821071799">Alle Tabs schließen</translation>
 </translationbundle>

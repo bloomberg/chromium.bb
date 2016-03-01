@@ -265,7 +265,6 @@
 <translation id="1401874662068168819">精業</translation>
 <translation id="140240131475089220">無訊息偵錯</translation>
 <translation id="140250605646987970">找到您的手機，但 Smart Lock 僅適用於搭載 Android 5.0 以上版本的裝置。&lt;a&gt;瞭解詳情&lt;/a&gt;</translation>
-<translation id="1405126334425076373">滑鼠游標</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (受監管)</translation>
 <translation id="1405476660552109915">您要讓 <ph name="PASSWORD_MANAGER_BRAND" /> 儲存您在這個網站使用的帳戶嗎？</translation>
 <translation id="1406500794671479665">驗證中...</translation>
@@ -536,7 +535,6 @@
 <translation id="175772926354468439">啟用主題</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="1758831820837444715">設定乙太網路</translation>
-<translation id="1761647635297215796">允許網站存取 WebAudio API。</translation>
 <translation id="1763046204212875858">建立應用程式捷徑</translation>
 <translation id="1763108912552529023">繼續探索</translation>
 <translation id="1764226536771329714">測試版</translation>
@@ -877,7 +875,6 @@
 <translation id="2286454467119466181">簡單</translation>
 <translation id="2286950485307333924">您現在已登入 Chrome</translation>
 <translation id="2287590536030307392">關閉所有無線連線。</translation>
-<translation id="2289383640829819703">找不到下載內容。</translation>
 <translation id="2291643155573394834">下一個分頁</translation>
 <translation id="2294358108254308676">是否要安裝「<ph name="PRODUCT_NAME" />」？</translation>
 <translation id="2296019197782308739">EAP 方法：</translation>
@@ -936,7 +933,6 @@
 <translation id="2384596874640104496">錫蘭文鍵盤</translation>
 <translation id="2385700042425247848">服務名稱：</translation>
 <translation id="2386631145847373156">只有在登入狀態下才會顯示登出按鈕。</translation>
-<translation id="2386784019642337415">讀取及變更預設和自訂搜尋引擎</translation>
 <translation id="2390045462562521613">不記錄這個網路</translation>
 <translation id="2391243203977115091">找到 <ph name="FILE_COUNT" /> 張新相片
     <ph name="LINE_BREAK1" />
@@ -1412,7 +1408,6 @@
 <translation id="3025729795978504041">在上方按鈕按一下滑鼠右鍵，即可查看其他使用者。</translation>
 <translation id="3026050830483105579">一切盡在其中！</translation>
 <translation id="302620147503052030">顯示按鈕</translation>
-<translation id="3030138564564344289">重新嘗試下載</translation>
 <translation id="3031417829280473749">特務 X</translation>
 <translation id="3031557471081358569">選取要匯入的項目：</translation>
 <translation id="3033332627063280038">啟用實驗性 Cache-Control: stale-while-revalidate 指令實作功能。這樣一來，伺服器便可指定在背景重新驗證部分資源，以改善延遲情況。</translation>
@@ -2334,7 +2329,6 @@
 <translation id="4363372140743955595">密碼管理員重新驗證</translation>
 <translation id="4364444725319685468"><ph name="FILE_NAME" /> 下載完成</translation>
 <translation id="4364830672918311045">顯示通知</translation>
-<translation id="4365486896593700706">WebAudio</translation>
 <translation id="4365673000813822030">糟糕，同步處理已停止運作。</translation>
 <translation id="4366509400410520531">依據您的設定允許</translation>
 <translation id="4367782753568896354">無法安裝：</translation>
@@ -2395,7 +2389,6 @@
 <translation id="4467798014533545464">顯示網址</translation>
 <translation id="4470564870223067757">韓文 2 Set</translation>
 <translation id="4474155171896946103">將所有分頁加入書籤...</translation>
-<translation id="4475552974751346499">搜尋下載內容</translation>
 <translation id="4477219268485577442">保加利亞文 (拼音)</translation>
 <translation id="4478664379124702289">另存連結(&amp;K)...</translation>
 <translation id="4479639480957787382">乙太網路</translation>
@@ -2698,7 +2691,6 @@
 <translation id="4941246025622441835">為企業管理服務註冊裝置時使用這個裝置申請單：</translation>
 <translation id="4942394808693235155">檢查並套用更新</translation>
 <translation id="494286511941020793">Proxy 設定說明</translation>
-<translation id="4945378551914476156">您的書籤、歷史紀錄、密碼和其他設定都會在您的 Google 帳戶中保持同步，讓您在 Chrome 中使用。您可以在 [<ph name="BEGIN_LINK" />] 中變更這項設定</translation>
 <translation id="4950138595962845479">選項...</translation>
 <translation id="4952186391360931024">非質感</translation>
 <translation id="4954544650880561668">裝置管理</translation>
@@ -3108,7 +3100,6 @@
 <translation id="5537725057119320332">投放</translation>
 <translation id="5538092967727216836">重新載入頁框</translation>
 <translation id="5542132724887566711">設定檔</translation>
-<translation id="5542721662280972920">針對影音元素的 Encrypted Media Extensions。</translation>
 <translation id="5543983818738093899">正在檢查狀態...</translation>
 <translation id="5544363333869861395">快取 V8 剖析器資料。</translation>
 <translation id="5546477470896554111">管理電源...</translation>
@@ -3365,7 +3356,6 @@
   <ph name="EXPONENT_HEX_DUMP" /></translation>
 <translation id="59174027418879706">已啟用</translation>
 <translation id="592068147111860043">指定 PPAPI 外掛程式，該程式將在 Win32k 鎖定沙盒政策中執行。</translation>
-<translation id="5921225488888777945">舊版 Encrypted Media Extensions (用於處理影音元素，已不再支援)。</translation>
 <translation id="5925147183566400388">憑證實務作業基準指標</translation>
 <translation id="5930693802084567591">您已在 <ph name="TIME" />使用 Google 密碼對資料進行加密，請在下方輸入密碼。</translation>
 <translation id="5931146425219109062">讀取及變更您造訪過的網站上的所有資料</translation>
@@ -3485,12 +3475,10 @@
 <translation id="6116921718742659598">變更語言和輸入設定</translation>
 <translation id="6117536376248197233">在轉譯器中停用撰寫器動畫時間軸。</translation>
 <translation id="6120205520491252677">將這個網頁固定到開始畫面...</translation>
-<translation id="6120816415558830169">由「&lt;a&gt;<ph name="EXTENSION" />&lt;/a&gt;」下載</translation>
 <translation id="6122081475643980456">您的網際網路連線目前受到控制</translation>
 <translation id="6122093587541546701">電子郵件地址 (選填)：</translation>
 <translation id="6122875415561139701">無法在以下裝置上執行寫入作業：「<ph name="DEVICE_NAME" />」。</translation>
 <translation id="6124650939968185064">下列擴充功能與這個擴充功能之間有相依關係：</translation>
-<translation id="612701906868237915">在您的所有裝置上自動登入</translation>
 <translation id="6129938384427316298">Netscape 憑證評論</translation>
 <translation id="6129953537138746214">空格</translation>
 <translation id="6132383530370527946">使用者授權合約</translation>
@@ -3625,7 +3613,6 @@
 <translation id="6344170822609224263">存取網路連線清單</translation>
 <translation id="6345221851280129312">大小不明</translation>
 <translation id="6347003977836730270">啟用系統提供的新版翻譯泡泡 UX，取代資訊列。</translation>
-<translation id="6347887127637865679">Encrypted Media Extensions</translation>
 <translation id="6348657800373377022">下拉式方塊</translation>
 <translation id="6349839454356033837">Android 無法順利播放媒體。</translation>
 <translation id="6353618411602605519">克羅埃西亞文鍵盤</translation>
@@ -4026,7 +4013,6 @@
 <translation id="6991665348624301627">選取目的地</translation>
 <translation id="699220179437400583">自動將疑似安全性事件的詳細資料回報給 Google</translation>
 <translation id="6993929801679678186">顯示自動填入建議</translation>
-<translation id="6994840493536325068">在這個裝置上自動登入網站</translation>
 <translation id="6998711733709403587">已選取 <ph name="SELCTED_FOLDERS_COUNT" /> 個資料夾</translation>
 <translation id="6998872712520806535">{NUM_PAGES,plural, =1{以下這個網頁無回應。您可以等待網頁回應，也可以關閉網頁。}other{以下這些網頁無回應。您可以等待網頁回應，也可以關閉網頁。}}</translation>
 <translation id="7002055706763150362">如要設定 Chromebook 專用 Smart Lock，請先輸入您的密碼，讓 Google 確認操作者是您本人。</translation>
@@ -4683,7 +4669,6 @@
 <translation id="7987485481246785146">索拉尼庫爾德式阿拉伯文鍵盤</translation>
 <translation id="7988930390477596403">當您下次解鎖這台 <ph name="DEVICE_TYPE" /> 時，這項功能就會啟用。有了 Smart Lock，您就可以使用手機解鎖這個裝置，而不需輸入密碼。裝置必須開啟藍牙功能才能啟用 Smart Lock。</translation>
 <translation id="7989023212944932320">Google 安全瀏覽功能最近在 <ph name="SITE" /> 上<ph name="BEGIN_LINK" />偵測到惡意軟體<ph name="END_LINK" />。即使是平常可以安全使用的網站，有時也會遭到惡意軟體感染。這些惡意內容來自已知的惡意軟體散佈網站 <ph name="SUBRESOURCE_HOST" />。建議您過幾小時後再返回這個網站。</translation>
-<translation id="7990249708898521239">附有前置字串的 Encrypted Media Extensions</translation>
 <translation id="7994370417837006925">多帳戶登入</translation>
 <translation id="799547531016638432">移除捷徑</translation>
 <translation id="79962507603257656">通知中心內的下載狀態</translation>

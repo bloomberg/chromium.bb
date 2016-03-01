@@ -1,7 +1,18 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="pt-BR">
+<translation id="1091157412887719337">Falha na atribuição. Nenhum mecanismo disponível.</translation>
+<translation id="2004526128230838685">Falha na atribuição. Problema desconhecido.</translation>
+<translation id="2023631438558435272">Falha na atribuição. Resposta inválida.</translation>
+<translation id="2353984724370197742">Falha na atribuição. Falha na solicitação de rede.</translation>
+<translation id="3046825211487065480">Falha na atribuição. Segunda solicitação enviada antes de a primeira solicitação responder.</translation>
 <translation id="3407245330823033366">Escolha uma conta para usar com o Blimp.</translation>
+<translation id="3775180005489871350">Falha na atribuição. Erro 400 (BAD_REQUEST).</translation>
+<translation id="4542350224991263059">Falha na atribuição. Token de acesso do usuário expirado.</translation>
+<translation id="4562971394107096647">Falha na atribuição. Erro do servidor.</translation>
 <translation id="4641972508298030550">Não foi possível autenticar usuário.</translation>
+<translation id="5860346505531085166">Falha na atribuição. A conta não tem acesso.</translation>
+<translation id="704835510384979817">Falha na atribuição. Nenhuma versão compatível do mecanismo.</translation>
+<translation id="7961542533680218955">Atribuição concluída.</translation>
 <translation id="8514856595257368555">Token recuperado.</translation>
 </translationbundle>

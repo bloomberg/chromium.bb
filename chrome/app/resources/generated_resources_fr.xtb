@@ -265,7 +265,6 @@
 <translation id="1401874662068168819">Gin Yieh</translation>
 <translation id="140240131475089220">Débogage en arrière-plan</translation>
 <translation id="140250605646987970">Votre téléphone a été trouvé, mais Smart Lock est compatible uniquement avec les appareils Android 5.0 ou version ultérieure. &lt;a&gt;En savoir plus&lt;/a&gt;</translation>
-<translation id="1405126334425076373">Curseur de la souris</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (supervisé)</translation>
 <translation id="1405476660552109915">Voulez-vous que <ph name="PASSWORD_MANAGER_BRAND" /> enregistre votre compte pour ce site ?</translation>
 <translation id="1406500794671479665">Vérification en cours…</translation>
@@ -536,7 +535,6 @@
 <translation id="175772926354468439">Activer le thème</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="1758831820837444715">Configurer le réseau Ethernet</translation>
-<translation id="1761647635297215796">Cette option permet d'autoriser les sites Web à accéder à l'API WebAudio.</translation>
 <translation id="1763046204212875858">Créer des raccourcis vers des applications</translation>
 <translation id="1763108912552529023">Poursuivre la découverte</translation>
 <translation id="1764226536771329714">bêta</translation>
@@ -877,7 +875,6 @@ Une fois que vous avez créé un compte utilisateur supervisé, vous pouvez gér
 <translation id="2286454467119466181">Simple</translation>
 <translation id="2286950485307333924">Vous êtes connecté à Chrome</translation>
 <translation id="2287590536030307392">Cette option désactive toutes les connexions sans fil.</translation>
-<translation id="2289383640829819703">Aucun téléchargement trouvé</translation>
 <translation id="2291643155573394834">Onglet suivant</translation>
 <translation id="2294358108254308676">Souhaitez-vous installer <ph name="PRODUCT_NAME" /> ?</translation>
 <translation id="2296019197782308739">Méthode EAP :</translation>
@@ -936,7 +933,6 @@ Une fois que vous avez créé un compte utilisateur supervisé, vous pouvez gér
 <translation id="2384596874640104496">Clavier cinghalais</translation>
 <translation id="2385700042425247848">Nom du service :</translation>
 <translation id="2386631145847373156">La déconnexion n'est possible que si vous êtes déjà connecté</translation>
-<translation id="2386784019642337415">Consulter et modifier les moteurs de recherche par défaut et personnalisés</translation>
 <translation id="2390045462562521613">Ignorer ce réseau</translation>
 <translation id="2391243203977115091"><ph name="FILE_COUNT" /> nouvelles photos trouvées.
     <ph name="LINE_BREAK1" />
@@ -1412,7 +1408,6 @@ Je ne pense pas que ce site devrait être bloqué.</translation>
 <translation id="3025729795978504041">Faites un clic droit sur le bouton ci-dessus pour afficher d'autres utilisateurs.</translation>
 <translation id="3026050830483105579">Tout est là.</translation>
 <translation id="302620147503052030">Afficher le bouton</translation>
-<translation id="3030138564564344289">Réessayer le téléchargement</translation>
 <translation id="3031417829280473749">Agent X</translation>
 <translation id="3031557471081358569">Sélectionnez les éléments à importer :</translation>
 <translation id="3033332627063280038">Activer l'implémentation expérimentale de la directive "Cache-Control: stale-while-revalidate" (elle permet aux serveurs d'exiger la revalidation de certaines ressources en arrière-plan pour optimiser la latence)</translation>
@@ -2336,7 +2331,6 @@ Pour poursuivre l'exploration, veuillez appuyer sur n'importe quelle touche.</tr
 <translation id="4363372140743955595">Nouvelle authentification du gestionnaire de mots de passe</translation>
 <translation id="4364444725319685468">"<ph name="FILE_NAME" />" téléchargé</translation>
 <translation id="4364830672918311045">Afficher les notifications</translation>
-<translation id="4365486896593700706">WebAudio</translation>
 <translation id="4365673000813822030">Petit problème… La synchronisation s'est arrêtée.</translation>
 <translation id="4366509400410520531">Autorisée par vous-même</translation>
 <translation id="4367782753568896354">L'installation des éléments suivants a échoué :</translation>
@@ -2397,7 +2391,6 @@ Pour poursuivre l'exploration, veuillez appuyer sur n'importe quelle touche.</tr
 <translation id="4467798014533545464">Afficher l'URL</translation>
 <translation id="4470564870223067757">Hangûl, dubeol-sik</translation>
 <translation id="4474155171896946103">Ajouter tous les onglets aux favoris...</translation>
-<translation id="4475552974751346499">Rechercher dans les téléchargements</translation>
 <translation id="4477219268485577442">Phonétique bulgare</translation>
 <translation id="4478664379124702289">Enregistrer le lie&amp;n sous...</translation>
 <translation id="4479639480957787382">Ethernet </translation>
@@ -2702,7 +2695,6 @@ Pour poursuivre l'exploration, appuyez sur n'importe quelle touche.</translation
 <translation id="4941246025622441835">Utiliser cette réquisition pour l'enregistrement de l'appareil dans le cadre de la gestion d'entreprise :</translation>
 <translation id="4942394808693235155">Rechercher et appliquer des mises à jour</translation>
 <translation id="494286511941020793">Aide pour la configuration de proxy</translation>
-<translation id="4945378551914476156">Vos favoris, votre historique, vos mots de passe et d'autres paramètres sont synchronisés avec votre compte Google afin que vous puissiez les utiliser sur tous les appareils sur lesquels vous vous connectez à Chrome. Vous pouvez sélectionner les éléments à synchroniser dans <ph name="BEGIN_LINK" />.</translation>
 <translation id="4950138595962845479">Options...</translation>
 <translation id="4952186391360931024">Autre que Material</translation>
 <translation id="4954544650880561668">Contrôle de l'appareil</translation>
@@ -3114,7 +3106,6 @@ Pour poursuivre l'exploration, appuyez sur n'importe quelle touche.</translation
 <translation id="5537725057119320332">Caster</translation>
 <translation id="5538092967727216836">Actualiser le cadre</translation>
 <translation id="5542132724887566711">Profil</translation>
-<translation id="5542721662280972920">Cette option permet d'utiliser les API Encrypted Media Extensions pour les éléments audio et vidéo.</translation>
 <translation id="5543983818738093899">Vérification de l'état en cours…</translation>
 <translation id="5544363333869861395">Mettre en cache les données générées par l'analyseur du moteur V8</translation>
 <translation id="5546477470896554111">Gérer la source d'alimentation</translation>
@@ -3372,7 +3363,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
   <ph name="EXPONENT_HEX_DUMP" /></translation>
 <translation id="59174027418879706">Activée</translation>
 <translation id="592068147111860043">Spécifier les plug-ins PPAPI qui seront exécutés dans le cadre de la règle de bac à sable Win32k Lockdown.</translation>
-<translation id="5921225488888777945">Version obsolète des API Encrypted Media Extensions pour les éléments audio et vidéo</translation>
 <translation id="5925147183566400388">Pointeur de la déclaration CPS (Certification Practice Statement)</translation>
 <translation id="5930693802084567591">Vos données ont été chiffrées avec votre mot de passe Google le <ph name="TIME" />. Veuillez le saisir ci-dessous.</translation>
 <translation id="5931146425219109062">Accéder à toutes vos données sur les sites Web que vous consultez et les modifier</translation>
@@ -3494,12 +3484,10 @@ Il est possible que certaines fonctionnalités ne soient pas disponibles. Veuill
 <translation id="6116921718742659598">Modifier les paramètres de langue et de saisie</translation>
 <translation id="6117536376248197233">Désactiver les timelines des animations du compositeur dans les moteurs de rendu</translation>
 <translation id="6120205520491252677">Épingler cette page à l'écran de démarrage…</translation>
-<translation id="6120816415558830169">Téléchargé par &lt;a&gt;<ph name="EXTENSION" />&lt;/a&gt;</translation>
 <translation id="6122081475643980456">Une extension a pris le contrôle de votre connexion Internet</translation>
 <translation id="6122093587541546701">E-mail (facultatif) :</translation>
 <translation id="6122875415561139701">L'opération d'écriture n'est pas autorisée sur l'appareil <ph name="DEVICE_NAME" />.</translation>
 <translation id="6124650939968185064">Les extensions suivantes dépendent de cette extension :</translation>
-<translation id="612701906868237915">Connectez-vous automatiquement sur tous vos appareils</translation>
 <translation id="6129938384427316298">Commentaire du certificat Netscape</translation>
 <translation id="6129953537138746214">Espace</translation>
 <translation id="6132383530370527946">Conditions générales</translation>
@@ -3634,7 +3622,6 @@ Il est possible que certaines fonctionnalités ne soient pas disponibles. Veuill
 <translation id="6344170822609224263">Accéder à la liste des connexions réseau</translation>
 <translation id="6345221851280129312">taille inconnue</translation>
 <translation id="6347003977836730270">Activer la nouvelle expérience utilisateur Traduction par info-bulle qui est proposée à la place de la barre d'infos</translation>
-<translation id="6347887127637865679">API Encrypted Media Extensions</translation>
 <translation id="6348657800373377022">Liste déroulante</translation>
 <translation id="6349839454356033837">Un problème de lecture multimédias est survenu dans Android.</translation>
 <translation id="6353618411602605519">Clavier croate</translation>
@@ -4036,7 +4023,6 @@ Il est possible que certaines fonctionnalités ne soient pas disponibles. Veuill
 <translation id="6991665348624301627">Sélectionner un emplacement de destination</translation>
 <translation id="699220179437400583">Signaler automatiquement les incidents de sécurité potentiels à Google</translation>
 <translation id="6993929801679678186">Afficher les prédictions de saisie automatique</translation>
-<translation id="6994840493536325068">Connectez-vous automatiquement aux sites sur cet appareil</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> dossiers sélectionnés</translation>
 <translation id="6998872712520806535">{NUM_PAGES,plural, =1{La page suivante ne répond plus. Vous pouvez attendre qu'elle soit de nouveau accessible ou la fermer.}one{La page suivante ne répond plus. Vous pouvez attendre qu'elle soit de nouveau accessible ou la fermer.}other{Les pages suivantes ne répondent plus. Vous pouvez attendre qu'elles soient de nouveau accessibles ou les fermer.}}</translation>
 <translation id="7002055706763150362">Pour configurer Smart Lock pour Chromebook, nous devons vérifier qu'il s'agit bien de vous. Pour commencer, saisissez votre mot de passe.</translation>
@@ -4696,7 +4682,6 @@ Il est possible que certaines fonctionnalités ne soient pas disponibles. Veuill
 <translation id="7987485481246785146">Clavier kurde sorani (arabe)</translation>
 <translation id="7988930390477596403">Il sera activé au prochain déverrouillage de ce <ph name="DEVICE_TYPE" />. Avec Smart Lock, votre téléphone déverrouillera cet appareil sans mot de passe. Le Bluetooth sera activé pour permettre à Smart Lock de fonctionner.</translation>
 <translation id="7989023212944932320">La fonctionnalité de navigation sécurisée Google a récemment permis de <ph name="BEGIN_LINK" />détecter des logiciels malveillants<ph name="END_LINK" /> sur le site <ph name="SITE" />. Un site Web qui est normalement sans danger peut parfois être infecté par des logiciels malveillants. Le contenu en cause provient de l'hôte "<ph name="SUBRESOURCE_HOST" />", une source de logiciels malveillants connue. Revenez sur ce site dans quelques heures.</translation>
-<translation id="7990249708898521239">API Encrypted Media Extensions préfixées</translation>
 <translation id="7994370417837006925">Connexion multicompte</translation>
 <translation id="799547531016638432">Supprimer le raccourci</translation>
 <translation id="79962507603257656">Télécharger l'état dans le centre de notifications</translation>

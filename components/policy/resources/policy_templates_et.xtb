@@ -503,15 +503,6 @@
           Kui jätate selle reegli määramata, siis kasutatakse reeglit „AskGeolocation” ja kasutaja saab seda muuta.</translation>
 <translation id="2650049181907741121">Tehtav toiming, kui kasutaja kaane sulgeb</translation>
 <translation id="2660846099862559570">Ära kunagi kasuta puhverserverit</translation>
-<translation id="2665596266623707739">Hoiatus. TLS-i versiooni 1.0 taandeversioon eemaldatakse brauserist <ph name="PRODUCT_NAME" /> pärast 47. versiooni (eeldatavalt 2016. aasta jaanuaris), misjärel lakkab valik „tls1” töötamast.
-
-      Kui TLS-i käitlus nurjub, üritab <ph name="PRODUCT_NAME" /> uuesti ühendust luua TLS-i vanema versiooniga, et vältida HTTPS-serverites esinevaid vigu. See seade määrab versiooni, mille juures taandeprotsess peatub. Seade ei kehti, kui versiooni läbirääkimine serveris õnnestub (st ühendus ei katke). Sellele vaatamata peab loodav ühendus vastama reeglile SSLVersionMin.
-
-      Kui jätate reegli seadistamata, kasutab <ph name="PRODUCT_NAME" /> vaikimisi miinimumversiooni – TLS 1.0 brauseri <ph name="PRODUCT_NAME" /> 44. versioonis ja TLS 1.1 uuemates versioonides. Pange tähele, et see ei keela TLS 1.0 tuge, vaid määrab, kas <ph name="PRODUCT_NAME" /> väldib vigadega servereid, milles versioonide läbirääkimine ei õnnestu.
-
-      Reegli võib seada ka ühele järgmistest väärtustest: „tls1”, „tls1.1” või „tls1.2”. Kui ühilduvus vigadega serveriga peab säilima, võib valida väärtuse „tls1”. See on ajutine abinõu ja server tuleb kiiresti parandada.
-
-      Seade „tls1.2” keelab taandeversioonide kasutamise täielikult, kuid see võib ühilduvust märkimisväärselt mõjutada.</translation>
 <translation id="267596348720209223">Määrab tähemärkide kodeeringu, mida otsingupakkuja toetab. Kodeeringud on koodilehtede nimed, näiteks UTF-8, GB2312 või ISO-8859-1. Neid proovitakse sisestatud järjestuses.
 
           See reegel on valikuline. Kui jätate selle määramata, siis kasutatakse vaikeseadet UTF-8.

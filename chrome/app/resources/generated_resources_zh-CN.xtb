@@ -265,7 +265,6 @@
 <translation id="1401874662068168819">Gin Yieh</translation>
 <translation id="140240131475089220">静默调试</translation>
 <translation id="140250605646987970">已找到您的手机，但 Smart Lock 仅适用于运行 Android 5.0 或更高版本的设备。&lt;a&gt;了解详情&lt;/a&gt;</translation>
-<translation id="1405126334425076373">鼠标指针</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" />（受监管用户）</translation>
 <translation id="1405476660552109915">您希望 <ph name="PASSWORD_MANAGER_BRAND" /> 保存您在此网站上使用的帐户吗？</translation>
 <translation id="1406500794671479665">正在验证...</translation>
@@ -533,7 +532,6 @@
 <translation id="175772926354468439">启用主题背景</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="1758831820837444715">配置以太网</translation>
-<translation id="1761647635297215796">允许网站使用 WebAudio API。</translation>
 <translation id="1763046204212875858">创建应用快捷方式</translation>
 <translation id="1763108912552529023">继续了解</translation>
 <translation id="1764226536771329714">测试版</translation>
@@ -873,7 +871,6 @@
 <translation id="2286454467119466181">简单</translation>
 <translation id="2286950485307333924">现在您已登录到Chrome</translation>
 <translation id="2287590536030307392">停用所有无线连接。</translation>
-<translation id="2289383640829819703">未找到任何下载内容。</translation>
 <translation id="2291643155573394834">下一标签页</translation>
 <translation id="2294358108254308676">要安装<ph name="PRODUCT_NAME" />吗？</translation>
 <translation id="2296019197782308739">EAP 方法：</translation>
@@ -932,7 +929,6 @@
 <translation id="2384596874640104496">僧伽罗语键盘</translation>
 <translation id="2385700042425247848">服务名称：</translation>
 <translation id="2386631145847373156">退出按钮只有在登录状态下才会显示。</translation>
-<translation id="2386784019642337415">读取和更改默认搜索引擎和自定义搜索引擎</translation>
 <translation id="2390045462562521613">不保存此网络信息</translation>
 <translation id="2391243203977115091">找到了 <ph name="FILE_COUNT" /> 张新照片
     <ph name="LINE_BREAK1" />
@@ -1407,7 +1403,6 @@
 <translation id="3025729795978504041">右键点击上方的按钮，即可查看其他用户。</translation>
 <translation id="3026050830483105579">无限精彩，尽在其中。</translation>
 <translation id="302620147503052030">显示按钮</translation>
-<translation id="3030138564564344289">重试下载</translation>
 <translation id="3031417829280473749">女特工</translation>
 <translation id="3031557471081358569">选择要导入的内容：</translation>
 <translation id="3033332627063280038">启用 Cache-Control 的实验性实施功能：stale-while-revalidate 指令。此操作允许服务器指定部分资源可以在后台进行重新验证以改善延迟情况。</translation>
@@ -2327,7 +2322,6 @@
 <translation id="4363372140743955595">密码管理器重新验证</translation>
 <translation id="4364444725319685468"><ph name="FILE_NAME" /> 已下载完毕</translation>
 <translation id="4364830672918311045">显示通知</translation>
-<translation id="4365486896593700706">WebAudio</translation>
 <translation id="4365673000813822030">糟糕，同步已停止。</translation>
 <translation id="4366509400410520531">您允许</translation>
 <translation id="4367782753568896354">我们无法安装：</translation>
@@ -2388,7 +2382,6 @@
 <translation id="4467798014533545464">显示网址</translation>
 <translation id="4470564870223067757">韩语(2 Set)</translation>
 <translation id="4474155171896946103">为所有标签页添加书签...</translation>
-<translation id="4475552974751346499">搜索下载内容</translation>
 <translation id="4477219268485577442">保加利亚语（注音）</translation>
 <translation id="4478664379124702289">链接存储为(&amp;K)...</translation>
 <translation id="4479639480957787382">以太网</translation>
@@ -2690,7 +2683,6 @@
 <translation id="4941246025622441835">将设备登记到企业管理目录下时使用此设备前提条件：</translation>
 <translation id="4942394808693235155">检查并应用更新</translation>
 <translation id="494286511941020793">代理配置帮助</translation>
-<translation id="4945378551914476156">您的书签、历史记录、密码和其他设置将同步到您的 Google 帐户，这样您便可以在使用 Chrome 时随时使用这些内容。如果要更改此设置，请前往 <ph name="BEGIN_LINK" /></translation>
 <translation id="4950138595962845479">选项...</translation>
 <translation id="4952186391360931024">非 Material</translation>
 <translation id="4954544650880561668">设备控制</translation>
@@ -3099,7 +3091,6 @@
 <translation id="5537725057119320332">投射</translation>
 <translation id="5538092967727216836">重新加载框架</translation>
 <translation id="5542132724887566711">个人资料</translation>
-<translation id="5542721662280972920">针对视频和音频元素的 Encrypted Media Extensions。</translation>
 <translation id="5543983818738093899">正在检查状态…</translation>
 <translation id="5544363333869861395">缓存 V8 解析器生成的数据。</translation>
 <translation id="5546477470896554111">管理电源…</translation>
@@ -3356,7 +3347,6 @@
   <ph name="EXPONENT_HEX_DUMP" /></translation>
 <translation id="59174027418879706">已启用</translation>
 <translation id="592068147111860043">指定将在 Win32k 锁定沙盒政策框架内运行的 PPAPI 插件。</translation>
-<translation id="5921225488888777945">针对视频和音频元素的 Encrypted Media Extensions 的已弃用版本。</translation>
 <translation id="5925147183566400388">核证作业准则 (Certification Practice Statement) 指针</translation>
 <translation id="5930693802084567591">您的数据已于 <ph name="TIME" />使用您的 Google 密码加密，请在下方输入该密码。</translation>
 <translation id="5931146425219109062">读取和更改您在访问的网站上的所有数据</translation>
@@ -3476,12 +3466,10 @@
 <translation id="6116921718742659598">更改语言和输入设置</translation>
 <translation id="6117536376248197233">在渲染程序中停用合成器动画时间轴。</translation>
 <translation id="6120205520491252677">将此网页固定到“开始”屏幕...</translation>
-<translation id="6120816415558830169">已通过“&lt;a&gt;<ph name="EXTENSION" />&lt;/a&gt;”下载完毕</translation>
 <translation id="6122081475643980456">您的互联网连接受到控制</translation>
 <translation id="6122093587541546701">电子邮件（可选）：</translation>
 <translation id="6122875415561139701">禁止在“<ph name="DEVICE_NAME" />”上执行写入操作。</translation>
 <translation id="6124650939968185064">需先安装此扩展程序，下列扩展程序才能正常使用：</translation>
-<translation id="612701906868237915">在您所有的设备上自动登录</translation>
 <translation id="6129938384427316298">Netscape 证书评论</translation>
 <translation id="6129953537138746214">空格</translation>
 <translation id="6132383530370527946">小号字体打印</translation>
@@ -3616,7 +3604,6 @@
 <translation id="6344170822609224263">网络连接的访问权限列表</translation>
 <translation id="6345221851280129312">大小未知</translation>
 <translation id="6347003977836730270">启用新的翻译气泡用户体验而非显示信息栏。</translation>
-<translation id="6347887127637865679">Encrypted Media Extensions</translation>
 <translation id="6348657800373377022">组合框</translation>
 <translation id="6349839454356033837">Android 在播放媒体时遇到了问题。</translation>
 <translation id="6353618411602605519">克罗地亚语键盘</translation>
@@ -4017,7 +4004,6 @@
 <translation id="6991665348624301627">选择目标打印机</translation>
 <translation id="699220179437400583">自动向Google报告可能出现的安全事件详情</translation>
 <translation id="6993929801679678186">显示自动填充预测内容</translation>
-<translation id="6994840493536325068">在此设备上自动登录网站</translation>
 <translation id="6998711733709403587">已选择 <ph name="SELCTED_FOLDERS_COUNT" /> 个文件夹</translation>
 <translation id="6998872712520806535">{NUM_PAGES,plural, =1{以下页面已停止响应。您可以等待该页面恢复响应，也可以将其关闭。}other{以下页面已停止响应。您可以等待这些页面恢复响应，也可以将其关闭。}}</translation>
 <translation id="7002055706763150362">要设置 Smart Lock（Chromebook 版），您需要先输入密码，因为 Google 需要确认是您本人在操作。</translation>
@@ -4668,7 +4654,6 @@
 <translation id="7987485481246785146">索拉尼库尔德语（阿拉伯语字母）键盘</translation>
 <translation id="7988930390477596403">在您下次为此 <ph name="DEVICE_TYPE" /> 解锁后，系统将会启用此功能。Smart Lock 启用后，配对手机将能够用来为此设备解锁 - 无需输入密码。要启用 Smart Lock，需开启蓝牙。</translation>
 <translation id="7989023212944932320">Google安全浏览功能最近在<ph name="SITE" />上<ph name="BEGIN_LINK" />检测到了恶意软件<ph name="END_LINK" />。平常非常安全的网站有时也会感染恶意软件。检测到的恶意内容来自于一个出了名的恶意软件散布方<ph name="SUBRESOURCE_HOST" />。请过几个小时后再重新访问。</translation>
-<translation id="7990249708898521239">带前缀的 Encrypted Media Extensions</translation>
 <translation id="7994370417837006925">多帐户登录</translation>
 <translation id="799547531016638432">删除快捷方式</translation>
 <translation id="79962507603257656">通知中心内的下载状态</translation>

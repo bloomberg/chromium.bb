@@ -265,7 +265,6 @@
 <translation id="1401874662068168819">Gin Yieh</translation>
 <translation id="140240131475089220">サイレント デバッグ</translation>
 <translation id="140250605646987970">スマートフォンが見つかりましたが、Smart Lock は Android 5.0 以上を搭載した端末でのみ機能します。&lt;a&gt;詳細&lt;/a&gt;</translation>
-<translation id="1405126334425076373">マウス カーソル</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" />（管理対象）</translation>
 <translation id="1405476660552109915"><ph name="PASSWORD_MANAGER_BRAND" /> でこのサイトのアカウントを保存しますか？</translation>
 <translation id="1406500794671479665">確認中...</translation>
@@ -537,7 +536,6 @@
 <translation id="175772926354468439">テーマを有効にする</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="1758831820837444715">イーサネット ネットワークの設定</translation>
-<translation id="1761647635297215796">ウェブサイトからの WebAudio API へのアクセスを許可します。</translation>
 <translation id="1763046204212875858">アプリケーションのショートカットを作成</translation>
 <translation id="1763108912552529023">さらに確認</translation>
 <translation id="1764226536771329714">ベータ版</translation>
@@ -878,7 +876,6 @@
 <translation id="2286454467119466181">シンプル</translation>
 <translation id="2286950485307333924">Chrome にログイン済み</translation>
 <translation id="2287590536030307392">すべての無線接続をオフにします。</translation>
-<translation id="2289383640829819703">ダウンロード ファイルは見つかりませんでした。</translation>
 <translation id="2291643155573394834">次のタブ</translation>
 <translation id="2294358108254308676"><ph name="PRODUCT_NAME" /> をインストールしますか？</translation>
 <translation id="2296019197782308739">EAP 方式:</translation>
@@ -937,7 +934,6 @@
 <translation id="2384596874640104496">シンハラ語キーボード</translation>
 <translation id="2385700042425247848">サービス名:</translation>
 <translation id="2386631145847373156">ログアウトできるのはログインしている場合のみです。</translation>
-<translation id="2386784019642337415">既定とカスタムの検索エンジンの読み取りと変更</translation>
 <translation id="2390045462562521613">このネットワークの記録を削除</translation>
 <translation id="2391243203977115091"><ph name="FILE_COUNT" /> 件の新しい写真が見つかりました
     <ph name="LINE_BREAK1" />
@@ -1413,7 +1409,6 @@
 <translation id="3025729795978504041">他のユーザーを表示するには上のボタンを右クリックします。</translation>
 <translation id="3026050830483105579">ダウンロードしたアプリもすべてここから起動できます。</translation>
 <translation id="302620147503052030">ボタンを表示する</translation>
-<translation id="3030138564564344289">ダウンロードを再試行</translation>
 <translation id="3031417829280473749">エージェント X</translation>
 <translation id="3031557471081358569">インポートするデータを選択:</translation>
 <translation id="3033332627063280038">キャッシュ制御: stale-while-revalidate 指令の試験運用を有効にします。有効にすると、サーバーでは待ち時間短縮のため一部リソースの再確認をバックグラウンドで行うことを指定できるようになります。</translation>
@@ -2337,7 +2332,6 @@
 <translation id="4363372140743955595">パスワード マネージャの再認証</translation>
 <translation id="4364444725319685468"><ph name="FILE_NAME" /> をダウンロードしました</translation>
 <translation id="4364830672918311045">通知を表示</translation>
-<translation id="4365486896593700706">WebAudio</translation>
 <translation id="4365673000813822030">同期は停止されました。</translation>
 <translation id="4366509400410520531">自分で許可</translation>
 <translation id="4367782753568896354">インストールできませんでした:</translation>
@@ -2398,7 +2392,6 @@
 <translation id="4467798014533545464">URL を表示</translation>
 <translation id="4470564870223067757">ハングル（2 ボル式）</translation>
 <translation id="4474155171896946103">すべてのタブをブックマークに追加...</translation>
-<translation id="4475552974751346499">ダウンロード検索</translation>
 <translation id="4477219268485577442">ブルガリア語（表音）</translation>
 <translation id="4478664379124702289">リンク先を別名で保存(&amp;K)...</translation>
 <translation id="4479639480957787382">イーサネット</translation>
@@ -2704,7 +2697,6 @@
 <translation id="4941246025622441835">エンタープライズ管理のためにデバイスを登録するときにこのデバイス利用申請を使用する:</translation>
 <translation id="4942394808693235155">アップデートを確認して適用</translation>
 <translation id="494286511941020793">プロキシ設定ヘルプ</translation>
-<translation id="4945378551914476156">ブックマーク、履歴、パスワードなどの設定が Google アカウントに同期され、どの端末の Chrome でも利用できるようになります。この設定は次の場所で変更できます: <ph name="BEGIN_LINK" /></translation>
 <translation id="4950138595962845479">オプション...</translation>
 <translation id="4952186391360931024">マテリアルを使用しない</translation>
 <translation id="4954544650880561668">デバイス制御</translation>
@@ -3116,7 +3108,6 @@
 <translation id="5537725057119320332">キャスト</translation>
 <translation id="5538092967727216836">フレームを再読み込み</translation>
 <translation id="5542132724887566711">プロフィール</translation>
-<translation id="5542721662280972920">動画と音声の要素に Encrypted Media Extensions を使用する</translation>
 <translation id="5543983818738093899">ステータスを確認しています...</translation>
 <translation id="5544363333869861395">V8 パーサーデータをキャッシュする</translation>
 <translation id="5546477470896554111">電源を管理...</translation>
@@ -3373,7 +3364,6 @@
   <ph name="EXPONENT_HEX_DUMP" /></translation>
 <translation id="59174027418879706">有効</translation>
 <translation id="592068147111860043">Win32k のロックダウン サンドボックス ポリシー内で実行される PPAPI プラグインを指定します。</translation>
-<translation id="5921225488888777945">動画と音声の要素に Encrypted Media Extensions のサポート終了バージョンを使用します。</translation>
 <translation id="5925147183566400388">CPS（認証実施規定）ポインタ</translation>
 <translation id="5930693802084567591">データは <ph name="TIME" /> に Google パスワードで暗号化されました。Google パスワードを入力してください。</translation>
 <translation id="5931146425219109062">アクセスしたウェブサイト上にある自分の全データの読み取りと変更</translation>
@@ -3493,12 +3483,10 @@
 <translation id="6116921718742659598">言語と入力の設定を変更</translation>
 <translation id="6117536376248197233">レンダラの合成アニメーション タイムラインを無効にする</translation>
 <translation id="6120205520491252677">このページを起動画面に固定...</translation>
-<translation id="6120816415558830169">&lt;a&gt;<ph name="EXTENSION" />&lt;/a&gt; によりダウンロード</translation>
 <translation id="6122081475643980456">インターネット接続が制限されています</translation>
 <translation id="6122093587541546701">メール（省略可）:</translation>
 <translation id="6122875415561139701">「<ph name="DEVICE_NAME" />」での書き込み操作は許可されていません。</translation>
 <translation id="6124650939968185064">次の拡張機能は、この拡張機能に依存しています:</translation>
-<translation id="612701906868237915">すべての端末で自動ログイン</translation>
 <translation id="6129938384427316298">Netscape 証明書コメント</translation>
 <translation id="6129953537138746214">スペース</translation>
 <translation id="6132383530370527946">利用規約</translation>
@@ -3633,7 +3621,6 @@
 <translation id="6344170822609224263">ネットワーク接続のリストにアクセスする</translation>
 <translation id="6345221851280129312">不明なサイズ</translation>
 <translation id="6347003977836730270">情報バーの代わりに新しい翻訳バルーンが表示されるようにします。</translation>
-<translation id="6347887127637865679">Encrypted Media Extensions</translation>
 <translation id="6348657800373377022">コンボ ボックス</translation>
 <translation id="6349839454356033837">問題が発生したため、Android でメディアを再生できません。</translation>
 <translation id="6353618411602605519">クロアチア語のキーボード</translation>
@@ -4036,7 +4023,6 @@
 <translation id="6991665348624301627">送信先の選択</translation>
 <translation id="699220179437400583">セキュリティに関する事象についての詳細を Google に自動送信する</translation>
 <translation id="6993929801679678186">自動入力の予測候補を表示</translation>
-<translation id="6994840493536325068">この端末でサイトに自動ログイン</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> 個のフォルダを選択しました</translation>
 <translation id="6998872712520806535">{NUM_PAGES,plural, =1{次のページは応答していません。応答があるまで待つか、強制終了することができます。}other{次のページは応答していません。応答があるまで待つか、強制終了することができます。}}</translation>
 <translation id="7002055706763150362">Smart Lock for Chromebook を設定するには、Google に対する本人確認が必要です。開始するにはパスワードを入力してください。</translation>
@@ -4698,7 +4684,6 @@
 <translation id="7987485481246785146">ソラニークルド語キーボード（アラビア語ベース）</translation>
 <translation id="7988930390477596403">次回この <ph name="DEVICE_TYPE" /> のロックを解除すると有効になります。Smart Lock を使用すると、スマートフォンが手元にあるときにパスワードを入力しなくてもこのデバイスのロックを解除できます。Smart Lock を有効にするために、Bluetooth がオンになります。</translation>
 <translation id="7989023212944932320"><ph name="SITE" /> では最近、Google セーフ ブラウジングにより、<ph name="BEGIN_LINK" />不正なソフトウェアが検出されました<ph name="END_LINK" />。通常は安全なウェブサイトであっても、不正なソフトウェアに感染している場合があります。今回の悪意のあるコンテンツは、不正なソフトウェアの既知の配布元である「<ph name="SUBRESOURCE_HOST" />」からもたらされました。数時間おいてからもう一度アクセスしてみてください。</translation>
-<translation id="7990249708898521239">プレフィックス付き Encrypted Media Extensions</translation>
 <translation id="7994370417837006925">マルチ ログイン</translation>
 <translation id="799547531016638432">ショートカットを削除</translation>
 <translation id="79962507603257656">通知センターでのダウンロード ステータス</translation>

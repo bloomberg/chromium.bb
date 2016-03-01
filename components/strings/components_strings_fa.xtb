@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fa">
-<translation id="1015255576907412255">برای کسب اطلاعات بیشتر با سرپرست سیستم خود تماس بگیرید.</translation>
 <translation id="1015730422737071372">جزئیات بیشتری ارائه دهید</translation>
 <translation id="1032854598605920125">چرخش در جهت عقربه‌های ساعت</translation>
 <translation id="1038842779957582377">نام ناشناخته</translation>
@@ -222,6 +221,7 @@
 <translation id="3254409185687681395">نشانک گذاری این صفحه</translation>
 <translation id="3270847123878663523">&amp;واگرد ترتیب‌بندی مجدد</translation>
 <translation id="3286538390144397061">راه‌اندازی مجدد اکنون</translation>
+<translation id="3305707030755673451">داده‌های شما در تاریخ <ph name="TIME" /> با عبارت عبور همگام‌سازی‌تان رمزگذاری شد. برای شروع همگام‌سازی آن را وارد کنید.</translation>
 <translation id="333371639341676808">از ایجاد کادرهای گفتگوی دیگر توسط این صفحه جلوگیری شود.</translation>
 <translation id="3340978935015468852">تنظیمات</translation>
 <translation id="3355823806454867987">تغییر تنظیمات پروکسی...</translation>
@@ -303,7 +303,6 @@
 <translation id="4176463684765177261">غیرفعال شد</translation>
 <translation id="4196861286325780578">&amp;انجام مجدد انتقال</translation>
 <translation id="4220128509585149162">خرابی ها</translation>
-<translation id="4241404202385006548">افزونه‌ها را غیرفعال کنید و سپس این صفحه وب را تازه‌سازی کنید</translation>
 <translation id="4250680216510889253">نه</translation>
 <translation id="4258748452823770588">امضای نادرست</translation>
 <translation id="4268298190799576220">‏Chromium در حال حاضر نمی‌تواند کارتتان را تأیید کند. لطفاً بعداً دوباره امتحان کنید.</translation>
@@ -443,7 +442,6 @@
 <translation id="6203231073485539293">اتصال اینترنتتان را بررسی کنید</translation>
 <translation id="6218753634732582820">‏آدرس از Chromium پاک شود؟</translation>
 <translation id="6232139169545176020">‏طرح نشانی وب درخواستی پشتیبانی نمی‌‎شود.</translation>
-<translation id="6237614789842758826">‏جستجو در Google</translation>
 <translation id="6259156558325130047">&amp;انجام مجدد ترتیب‌بندی مجدد</translation>
 <translation id="6262796033958342538">‏چند عنوان متمایز مکان دریافت شد.  برای محافظت در مقابل حملات
     جداکننده پاسخ HTTP، این عنوان‌ها اجازه داده نشدند.</translation>
@@ -519,7 +517,6 @@
 <translation id="7087282848513945231">شهرستان</translation>
 <translation id="7088615885725309056">قدیمی تر</translation>
 <translation id="7108649287766967076">ترجمه به <ph name="TARGET_LANGUAGE" /> انجام نشد.</translation>
-<translation id="7117303293717852287">تازه‌سازی این صفحه وب</translation>
 <translation id="7139724024395191329">امارت</translation>
 <translation id="7179921470347911571">اکنون راه‌اندازی مجدد شود</translation>
 <translation id="7180611975245234373">بازخوانی</translation>
@@ -566,7 +563,6 @@
 <translation id="7592362899630581445">گواهی سرور محدودیت‌های نام را نقض می‌کند.</translation>
 <translation id="759889825892636187"><ph name="HOST_NAME" /> درحال حاضر نمی‌تواند این درخواست را انجام دهد.</translation>
 <translation id="7600965453749440009">هرگز <ph name="LANGUAGE" /> ترجمه نشود</translation>
-<translation id="7602848207066046655">سرور <ph name="HOST_NAME" />‏ <ph name="BEGIN_ABBR" /> پیدا نمی‌شود.</translation>
 <translation id="7610193165460212391">مقدار خارج از محدوده <ph name="VALUE" /> است.</translation>
 <translation id="7613889955535752492">انقضا: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">‏شما در حال حاضر داده‌هایی دارید که با استفاده از نسخه دیگری از گذرواژه حساب Google شما رمزگذاری شده‌اند. لطفاً آن را در زیر وارد کنید.</translation>
@@ -647,7 +643,6 @@
 <translation id="8488350697529856933">اعمال برای</translation>
 <translation id="8494979374722910010">تلاش برای اتصال به سرور ناموفق بود.</translation>
 <translation id="8498891568109133222">پاسخ <ph name="HOST_NAME" /> بیش از حد طول کشیده است.</translation>
-<translation id="8508677083825928015">واکشی اولیه منابع برای بارگیری سریع‌تر صفحه‌ها</translation>
 <translation id="8530504477309582336">‏Google Payments این نوع کارت را پشتیبانی نمی‌کند. لطفاً کارت دیگری انتخاب کنید.</translation>
 <translation id="8550022383519221471">خدمات همگام‌سازی برای دامنهٔ شما موجود نیست.</translation>
 <translation id="8553075262323480129">ترجمه انجام نشد زیرا زبان صفحه تعیین نشد.</translation>
@@ -710,6 +705,7 @@
 <translation id="9170848237812810038">&amp;واگرد</translation>
 <translation id="917450738466192189">گواهی سرور نامعتبر است.</translation>
 <translation id="9183425211371246419"><ph name="HOST_NAME" /> از یک پروتکل پشتیبانی‌نشده استفاده می‌کند.</translation>
+<translation id="9205078245616868884">داده‌های شما با عبارت عبور همگام‌سازی رمزگذاری می‌شود. برای شروع همگام‌سازی آن را وارد کنید.</translation>
 <translation id="9207861905230894330">افزودن مقاله ناموفق بود.</translation>
 <translation id="933612690413056017">اتصال اینترنت قطع است</translation>
 <translation id="933712198907837967">Diners Club</translation>

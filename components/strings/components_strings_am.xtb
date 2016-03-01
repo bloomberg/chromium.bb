@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="am">
-<translation id="1015255576907412255">ተጨማሪ መረጃ ለማግኘት የስርዓት አስተዳዳሪዎን ያግኙ።</translation>
 <translation id="1015730422737071372">ተጨማሪ ዝርዝሮችን ያቅርቡ</translation>
 <translation id="1032854598605920125">በሰዓት አቅጣጫ አሽከርክር</translation>
 <translation id="1038842779957582377">ያልታወቀ ስም</translation>
@@ -221,6 +220,7 @@
 <translation id="3254409185687681395">ለእዚህ ገጽ ዕልባት አብጅ</translation>
 <translation id="3270847123878663523">&amp;ዳግም ደርድርን ቀልብስ</translation>
 <translation id="3286538390144397061">አሁን ዳግም አስጀምር</translation>
+<translation id="3305707030755673451">የእርስዎ ውሂብ <ph name="TIME" /> ላይ በእርስዎ የስምረት የይለፍ ቃል ተመስጥሯል። ስምረትን ለመጀመር ያስገቡት።</translation>
 <translation id="333371639341676808">ይህ ገጽ ተጨማሪ ማገናኛዎችን እንዳይፈጥር አግድ።</translation>
 <translation id="3340978935015468852">ቅንብሮች</translation>
 <translation id="3355823806454867987">የተኪ ቅንብሮችን በመቀየር ላይ...</translation>
@@ -302,7 +302,6 @@
 <translation id="4176463684765177261">ተሰናክሏል</translation>
 <translation id="4196861286325780578">&amp;ውሰድን ድገም</translation>
 <translation id="4220128509585149162">ብልሽቶች</translation>
-<translation id="4241404202385006548">ቅጥያዎችዎን ያሰናክሉና ከዚያ ይህን ድረ-ገጽ ዳግም ይጫኑት</translation>
 <translation id="4250680216510889253">አይ</translation>
 <translation id="4258748452823770588">መጥፎ ፊርማ</translation>
 <translation id="4268298190799576220">Chrome የእርስዎን ካርድ በዚህ ጊዜ ላይ ለማረጋገጥ አልቻለም። እባክዎ ቆይተው እንደገና ይሞክሩ።</translation>
@@ -444,7 +443,6 @@ nil</translation>
 <translation id="6203231073485539293">የበይነመረብ ግኑኝነትዎን ያረጋግጡ</translation>
 <translation id="6218753634732582820">ከChromium ላይ አድራሻ ይወገድ?</translation>
 <translation id="6232139169545176020">የተጠየቀው የዩ አር አይ ሙሉ ምስርት አይደገፍም።</translation>
-<translation id="6237614789842758826">በGoogle ላይ ይፈልጉ</translation>
 <translation id="6259156558325130047">&amp;ዳግም ደርድርን ድገም</translation>
 <translation id="6262796033958342538">በርካታ የተለዩ የአካባቢ ራስጌዎች ደርሰዋል።  ይሄ የኤች ቲ ቲ ፒ ስንጠቃ ጥቃቶችን ለመከላከል ተብሎ አይፈቅድም።</translation>
 <translation id="6263376278284652872"><ph name="DOMAIN" /> እልባቶች</translation>
@@ -519,7 +517,6 @@ nil</translation>
 <translation id="7087282848513945231">አውራጃ</translation>
 <translation id="7088615885725309056">የቆየ</translation>
 <translation id="7108649287766967076">ወደ <ph name="TARGET_LANGUAGE" /> መተርጎም አልተሳካም።</translation>
-<translation id="7117303293717852287">ይህን ድረ-ገጽ ዳግም ይጫኑ</translation>
 <translation id="7139724024395191329">ኤሚሬት</translation>
 <translation id="7179921470347911571">አሁን ዳግም ያስጀምሩ</translation>
 <translation id="7180611975245234373">አድስ</translation>
@@ -566,7 +563,6 @@ nil</translation>
 <translation id="7592362899630581445">የአገልጋዩ እውቅና ማረጋገጫ አንዳንድ ገደቦችን ይጥሳል።</translation>
 <translation id="759889825892636187"><ph name="HOST_NAME" /> በአሁኑ ጊዜ ይህን ጥያቄ ተቀብሎ ለማስተናገድ አይችልም።</translation>
 <translation id="7600965453749440009"><ph name="LANGUAGE" />ን በጭራሽ አትተርጉም</translation>
-<translation id="7602848207066046655">የ<ph name="HOST_NAME" /> አገልጋይ <ph name="BEGIN_ABBR" /> ሊገኝ አልተቻለም።</translation>
 <translation id="7610193165460212391">እሴት ከክልል <ph name="VALUE" /> ውጪ ነው።</translation>
 <translation id="7613889955535752492">የሚያበቃበት ጊዜ፦ <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">አስቀድሞ በተለየ የGoogle መለያዎ ይለፍ ቃል ስሪት የተመሰጠረ ውሂብ አለዎት። እባክዎ ከታች ያስገቡት።</translation>
@@ -644,7 +640,6 @@ nil</translation>
 <translation id="8488350697529856933">የሚመለከተው ለ</translation>
 <translation id="8494979374722910010">ከአገልጋዩ ጋር ለመገናኘት የተደረገው ሙከራ ከሽፏል።</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> ምላሽ ለመስጠት ከልክ በላይ ረዥም ጊዜ ወስዷል።</translation>
-<translation id="8508677083825928015">ገጾችን በበለጠ ፍጥነት ለመጫን ንብረቶችን ቅድሚያ አምጣ</translation>
 <translation id="8530504477309582336">ይህ የካርድ አይነት በGoogle ክፍያዎች አይደገፍም። እባክዎ የተለየ ካርድ ይምረጡ።</translation>
 <translation id="8550022383519221471">የማመሳሰል አገልግሎት ለጎራዎ አይገኝም።</translation>
 <translation id="8553075262323480129">የገጹ ቋንቋ ሊታወቅ ስላልቻለ ትርጉሙ አልተሳካም።</translation>
@@ -707,6 +702,7 @@ nil</translation>
 <translation id="9170848237812810038">&amp;ቀልብስ</translation>
 <translation id="917450738466192189">የአገልጋይ እውቅና ማረጋገጫ ልክ ያልኾነ ነው።</translation>
 <translation id="9183425211371246419"><ph name="HOST_NAME" /> የማይጠቀም ፕሮቶኮል ይጠቀማል።</translation>
+<translation id="9205078245616868884">የእርስዎ ውሂብ በእርስዎ የስምረት የይለፍ ቃል ተመስጥሯል። ስምረትን ለመጀመር ያስገቡት።</translation>
 <translation id="9207861905230894330">ጽሑፍ ማከል አልተቻለም።</translation>
 <translation id="933612690413056017">ምንም የበይነመረብ ግንኙነት የለም</translation>
 <translation id="933712198907837967">Diners Club</translation>

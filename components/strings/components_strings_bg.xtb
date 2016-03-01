@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="bg">
-<translation id="1015255576907412255">Свържете се със системния си администратор за още информация.</translation>
 <translation id="1015730422737071372">Въвеждане на допълнителни подробности</translation>
 <translation id="1032854598605920125">Завъртане по часовниковата стрелка</translation>
 <translation id="1038842779957582377">неизвестно име</translation>
@@ -303,7 +302,6 @@
 <translation id="4176463684765177261">Деактивирано</translation>
 <translation id="4196861286325780578">&amp;Възстановяване на преместването</translation>
 <translation id="4220128509585149162">Сривове</translation>
-<translation id="4241404202385006548">Деактивирайте разширенията и след това презаредете тази уеб страница</translation>
 <translation id="4250680216510889253">Не</translation>
 <translation id="4258748452823770588">Невалиден подпис</translation>
 <translation id="4268298190799576220">Chromium не можа да потвърди картата ви. Моля, опитайте отново по-късно.</translation>
@@ -443,7 +441,6 @@
 <translation id="6203231073485539293">Проверете връзката си с интернет</translation>
 <translation id="6218753634732582820">Адресът да се премахне ли от Chromium?</translation>
 <translation id="6232139169545176020">Заявената URI схема не се поддържа.</translation>
-<translation id="6237614789842758826">Търсете с Google</translation>
 <translation id="6259156558325130047">&amp;Възстановяване на пренареждането</translation>
 <translation id="6262796033958342538">Получени са няколко различни заглавки „Location“. Това не е разрешено, за да се предотвратят
 атаки чрез разделяне на HTTP отговорите.</translation>
@@ -519,7 +516,6 @@
 <translation id="7087282848513945231">Окръг</translation>
 <translation id="7088615885725309056">По-стара</translation>
 <translation id="7108649287766967076">Преводът на <ph name="TARGET_LANGUAGE" /> не бе успешен.</translation>
-<translation id="7117303293717852287">Презаредете тази уеб страница</translation>
 <translation id="7139724024395191329">Емирство</translation>
 <translation id="7179921470347911571">Стартиране отново сега</translation>
 <translation id="7180611975245234373">Опресняване</translation>
@@ -566,7 +562,6 @@
 <translation id="7592362899630581445">Сертификатът на сървъра нарушава ограниченията за име.</translation>
 <translation id="759889825892636187">Понастоящем <ph name="HOST_NAME" /> не може да обработи тази заявка.</translation>
 <translation id="7600965453749440009">Никога да не се превежда от <ph name="LANGUAGE" /></translation>
-<translation id="7602848207066046655">Не можа да се намери <ph name="BEGIN_ABBR" /> на сървъра на <ph name="HOST_NAME" />.</translation>
 <translation id="7610193165460212391">Стойността е извън обхват <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">Валидна до: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Вече имате данни, които са шифровани посредством друга версия на паролата за профила ви в Google. Моля, въведете я по-долу.</translation>
@@ -647,7 +642,6 @@
 <translation id="8488350697529856933">Прилага се към</translation>
 <translation id="8494979374722910010">Опитът за установяване на връзка със сървъра не бе успешен.</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> не отговаря твърде дълго време.</translation>
-<translation id="8508677083825928015">Предварително зареждане на ресурсите с цел по-бързо отваряне на страниците</translation>
 <translation id="8530504477309582336">Този тип карта не се поддържа от Google Payments. Моля, изберете друга.</translation>
 <translation id="8550022383519221471">Услугата за синхронизиране не е налице за вашия домейн.</translation>
 <translation id="8553075262323480129">Преводът не бе успешен, защото езикът на страницата не можа да бъде определен.</translation>

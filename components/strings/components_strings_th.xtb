@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="th">
-<translation id="1015255576907412255">ติดต่อผู้ดูแลระบบเพื่อขอข้อมูลเพิ่มเติม</translation>
 <translation id="1015730422737071372">ให้รายละเอียดเพิ่มเติม</translation>
 <translation id="1032854598605920125">หมุนตามเข็มนาฬิกา</translation>
 <translation id="1038842779957582377">ไม่ทราบชื่อ</translation>
@@ -303,7 +302,6 @@
 <translation id="4176463684765177261">ปิดการใช้งานแล้ว</translation>
 <translation id="4196861286325780578">&amp;ทำซ้ำการย้าย</translation>
 <translation id="4220128509585149162">การขัดข้อง</translation>
-<translation id="4241404202385006548">ปิดส่วนขยายแล้วโหลดหน้าเว็บนี้ซ้ำ</translation>
 <translation id="4250680216510889253">ไม่มี</translation>
 <translation id="4258748452823770588">ลายเซ็นไม่เหมาะสม</translation>
 <translation id="4268298190799576220">Chromium ไม่สามารถยืนยันบัตรของคุณได้ในขณะนี้ โปรดลองอีกครั้งในภายหลัง</translation>
@@ -443,7 +441,6 @@
 <translation id="6203231073485539293">ตรวจสอบการเชื่อมต่ออินเทอร์เน็ต</translation>
 <translation id="6218753634732582820">ต้องการนำที่อยู่ออกจาก Chromium ใช่ไหม</translation>
 <translation id="6232139169545176020">ไม่สนับสนุนสกีม URI ที่ระบุ</translation>
-<translation id="6237614789842758826">ค้นหาใน Google</translation>
 <translation id="6259156558325130047">&amp;ทำซ้ำการจัดลำดับใหม่</translation>
 <translation id="6262796033958342538">ได้รับส่วนหัวตำแหน่งที่แตกต่างกันหลายส่วน  ไม่อนุญาตให้ทำเช่นนี้เพื่อป้องกัน
     การโจมตีเพื่อแยกการตอบสนองของ HTTP</translation>
@@ -519,7 +516,6 @@
 <translation id="7087282848513945231">อำเภอ</translation>
 <translation id="7088615885725309056">เก่ากว่า</translation>
 <translation id="7108649287766967076">การแปลเป็น <ph name="TARGET_LANGUAGE" /> ล้มเหลว</translation>
-<translation id="7117303293717852287">โหลดหน้าเว็บนี้ซ้ำ</translation>
 <translation id="7139724024395191329">เอมิเรต</translation>
 <translation id="7179921470347911571">เปิดใช้งานใหม่เดี๋ยวนี้</translation>
 <translation id="7180611975245234373">รีเฟรช</translation>
@@ -566,7 +562,6 @@
 <translation id="7592362899630581445">ใบรับรองของเซิร์ฟเวอร์ละเมิดข้อกำหนดชื่อ</translation>
 <translation id="759889825892636187"><ph name="HOST_NAME" /> ไม่สามารถดำเนินการกับคำขอนี้ในขณะนี้</translation>
 <translation id="7600965453749440009">ไม่ต้องแปลภาษา<ph name="LANGUAGE" /></translation>
-<translation id="7602848207066046655">ไม่พบเซิร์ฟเวอร์ <ph name="BEGIN_ABBR" /> ของ <ph name="HOST_NAME" /></translation>
 <translation id="7610193165460212391">ค่าอยู่นอกช่วง <ph name="VALUE" /></translation>
 <translation id="7613889955535752492">หมดอายุ: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">คุณมีข้อมูลที่ถูกเข้ารหัสโดยใช้รหัสผ่านบัญชี Google รูปแบบอื่นอยู่แล้ว โปรดป้อนรหัสผ่านด้านล่าง</translation>
@@ -647,7 +642,6 @@
 <translation id="8488350697529856933">ใช้กับ</translation>
 <translation id="8494979374722910010">ความพยายามเชื่อมต่อเซิร์ฟเวอร์ล้มเหลว</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> ใช้เวลาตอบกลับนานเกินไป</translation>
-<translation id="8508677083825928015">ดึงทรัพยากรล่วงหน้าเพื่อการโหลดหน้าที่รวดเร็วยิ่งขึ้น</translation>
 <translation id="8530504477309582336">Google Payments ไม่สนับสนุนบัตรประเภทนี้ โปรดเลือกบัตรอื่น</translation>
 <translation id="8550022383519221471">บริการซิงค์ไม่มีให้บริการสำหรับโดเมนของคุณ</translation>
 <translation id="8553075262323480129">การแปลล้มเหลวเนื่องจากไม่สามารถระบุภาษาของหน้าเว็บนี้ได้</translation>

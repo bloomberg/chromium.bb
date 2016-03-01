@@ -1,7 +1,18 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ar">
+<translation id="1091157412887719337">أخفق التعيين.  لا يتوفر محرك.</translation>
+<translation id="2004526128230838685">أخفق التعيين. مشكلة غير معروفة.</translation>
+<translation id="2023631438558435272">أخفق التعيين.  استجابة غير صالحة.</translation>
+<translation id="2353984724370197742">أخفق التعيين.  أخفق طلب الشبكة.</translation>
+<translation id="3046825211487065480">أخفق التعيين. تم إرسال الطلب الثاني قبل استجابة الطلب الأول.</translation>
 <translation id="3407245330823033366">‏يُرجى اختيار حساب لاستخدامه مع Blimp.</translation>
+<translation id="3775180005489871350">‏أخفق التعيين. الخطأ 400 (BAD_REQUEST)</translation>
+<translation id="4542350224991263059">أخفق التعيين. انتهاء صلاحية رمز الدخول إلى المستخدم.</translation>
+<translation id="4562971394107096647">أخفق التعيين. خطأ في الخادم.</translation>
 <translation id="4641972508298030550">تتعذر مصادقة المستخدم.</translation>
+<translation id="5860346505531085166">أخفق التعيين. لا تتوفر إمكانية الدخول إلى الحساب.</translation>
+<translation id="704835510384979817">أخفق التعيين. لا يوجد إصدار محرك مطابق.</translation>
+<translation id="7961542533680218955">تم نجاح التعيين.</translation>
 <translation id="8514856595257368555">تم استرداد الرمز المميز.</translation>
 </translationbundle>

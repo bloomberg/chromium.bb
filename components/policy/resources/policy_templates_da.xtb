@@ -453,15 +453,6 @@
 <translation id="2646290749315461919">Giver dig mulighed for at angive, om websites skal have tilladelse til at spore brugernes fysiske placering. Sporing af brugernes fysiske placering kan tillades som standard, nægtes som standard, eller brugeren kan blive spurgt, hver gang et website anmoder om den fysiske placering. Hvis denne politik ikke angives, anvendes "AskGeolocation", og brugeren vil kunne ændre den.</translation>
 <translation id="2650049181907741121">Handling, der skal udføres, når brugeren slår skærmen ned</translation>
 <translation id="2660846099862559570">Brug aldrig en proxy</translation>
-<translation id="2665596266623707739">Advarsel: TLS 1.0 alternativversionen fjernes fra <ph name="PRODUCT_NAME" /> efter version 47 (omkring januar 2016), og muligheden for at vælge "tls1" vil ikke længere være til stede.
-
-      Når et TLS-håndtryk mislykkes, prøver <ph name="PRODUCT_NAME" /> at oprette forbindelse igen med en mindre version af TLS for at løse problemet med fejl i HTTPS-servere. Denne indstilling konfigurerer den version, hvor denne fallback-proces stopper. Hvis en server udfører versionsforhanding korrekt (dvs. uden at afbryde forbindelsen), anvendes denne indstilling ikke. Uanset hvad skal den resulterende forbindelse stadig være i overensstemmelse med SSLVersionMin.
-
-      Hvis denne politik ikke indstilles, benytter <ph name="PRODUCT_NAME" /> en standardminimumversion, som er TLS 1.0 i <ph name="PRODUCT_NAME" /> 44 og TLS 1.1 i nyere versioner. Bemærk, at dette ikke deaktiverer understøttelse af TLS 1.0, kun hvorvidt <ph name="PRODUCT_NAME" /> vil løse problemet med buggy-servere, som ikke kan forhandle versioner korrekt.
-
-      Ellers kan den indstilles til en af følgende værdier: "tls1", "tls1.1" eller "tls1.2". Hvis kompatibilitet med en buggy-server skal opretholdes, kan den konfigureres til "tls1". Dette er en midlertidig løsning, og problemet med serveren bør snarest udbedres.
-
-      En konfiguration med "tls1.2" deaktiverer alle alternativer, men dette kan have en væsentlig indvirkning på kompatibiliteten.</translation>
 <translation id="267596348720209223">Angiver tegnkodninger, der understøttes af søgemaskinen. Kodninger er tegntabelnavne såsom UTF-8, GB2312, og ISO-8859-1. De afprøves i den angivne rækkefølge. Denne politik er valgfri. Hvis den ikke er angivet, anvendes standarden, UTF-8. Denne politik respekteres kun, hvis politikken "DefaultSearchProviderEnabled" er aktiveret.</translation>
 <translation id="2682225790874070339">Deaktiverer Drev i appen Filer i <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="268577405881275241">Aktivér proxyfunktionen for datakomprimering</translation>

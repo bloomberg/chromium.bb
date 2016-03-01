@@ -24,7 +24,6 @@ Vous devez activer le Bluetooth et les services de localisation pour utiliser le
 <translation id="1346090444609141578">Aucune page enregistrée ici</translation>
 <translation id="1369915414381695676">Site "<ph name="SITE_NAME" />" ajouté</translation>
 <translation id="1373696734384179344">Mémoire insuffisante pour télécharger le contenu sélectionné.</translation>
-<translation id="1379156015317873965">Améliorer les performances de chargement des pages</translation>
 <translation id="138361230106469022">Bonjour "<ph name="FULL_NAME" />"</translation>
 <translation id="1383876407941801731">Rechercher</translation>
 <translation id="1389974829397082527">Aucun favori ici</translation>
@@ -126,7 +125,6 @@ Vous pouvez contrôler le Web physique dans les paramètres de confidentialité 
 <translation id="2707726405694321444">Actualiser la page</translation>
 <translation id="2709516037105925701">Saisie automatique</translation>
 <translation id="271033894570825754">Nouveau</translation>
-<translation id="2718352093833049315">Wi-Fi uniquement</translation>
 <translation id="2748463065602559597">Cette page Google Chrome est sécurisée.</translation>
 <translation id="2762000892062317888">à l'instant</translation>
 <translation id="2770465223704140727">Retirer de la liste</translation>
@@ -262,6 +260,7 @@ Pour modifier le terme de recherche, appuyez sur celui-ci de manière prolongée
 <translation id="4836364883164334657">Votre connexion à ce site n'est pas en mode privé. Il se peut que des individus malveillants tentent de voler vos informations (photos, mots de passe, messages, numéros de carte de paiement, etc.) à partir de <ph name="DOMAIN_NAME" />.</translation>
 <translation id="4842511359652954519">Lire la suite</translation>
 <translation id="4850886885716139402">Afficher</translation>
+<translation id="4875622588773761625">Voulez-vous que <ph name="PASSWORD_MANAGER_BRAND" /> modifie votre mot de passe pour ce site ?</translation>
 <translation id="4881695831933465202">Ouvrir</translation>
 <translation id="4885273946141277891">Le nombre d'instances de Chrome n'est pas compatible.</translation>
 <translation id="4927198283430892231">Les pages enregistrées occupent <ph name="TOTAL_OFFLINE_STORAGE_SIZE" />.</translation>
@@ -307,7 +306,6 @@ Il vous suffit d'ouvrir Chrome sur votre ordinateur, d'accéder au menu, puis de
 <translation id="5323972449344932352">Lancer Chrome</translation>
 <translation id="5324858694974489420">Paramètres parentaux</translation>
 <translation id="5327248766486351172">Nom</translation>
-<translation id="5335200807405507442">Prélecture des ressources de pages</translation>
 <translation id="5345040418939504969">Le favori "<ph name="BOOKMARK_TITLE" />" a été supprimé.</translation>
 <translation id="5345083863238459644">L'accès aux données de localisation est également <ph name="BEGIN_LINK" />désactivé pour cet appareil<ph name="END_LINK" />.</translation>
 <translation id="5380554235172449987">Ne jamais envoyer</translation>
@@ -486,7 +484,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="7498271377022651285">Veuillez patienter…</translation>
 <translation id="7501135638693251872">Tous les favoris</translation>
 <translation id="7521387064766892559">JavaScript</translation>
-<translation id="7561196759112975576">Toujours</translation>
 <translation id="7562080006725997899">Effacement des données de navigation en cours</translation>
 <translation id="7588950540487816470">Web physique</translation>
 <translation id="7596558890252710462">Système d'exploitation</translation>
@@ -520,7 +517,6 @@ Vous n'êtes cependant pas devenu invisible. L'utilisation du mode navigation pr
 <translation id="7876243839304621966">Tout supprimer</translation>
 <translation id="7947953824732555851">Accepter/Se connecter</translation>
 <translation id="7949961459945740081">Obtenir dernières fonctionnalités</translation>
-<translation id="7961015016161918242">Jamais</translation>
 <translation id="7963646190083259054">Fournisseur :</translation>
 <translation id="7987073022710626672">Conditions d'utilisation de Chrome</translation>
 <translation id="7998918019931843664">Rouvrir un onglet fermé</translation>
@@ -613,5 +609,6 @@ Pour obtenir de nouvelles licences, connectez-vous à Internet et lisez le conte
 <translation id="945632385593298557">Accéder à votre micro</translation>
 <translation id="954352821720225055">Le favori n'est pas disponible hors connexion. La mémoire de stockage est presque pleine.</translation>
 <translation id="969096075394517431">Modifier les langues</translation>
+<translation id="981121421437150478">Hors connexion</translation>
 <translation id="983192555821071799">Fermer tous les onglets</translation>
 </translationbundle>

@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="el">
-<translation id="1015255576907412255">Για περισσότερες πληροφορίες, επικοινωνήστε με το διαχειριστή του συστήματός σας.</translation>
 <translation id="1015730422737071372">Καταχωρίστε επιπλέον λεπτομέρειες</translation>
 <translation id="1032854598605920125">Περιστροφή προς τα δεξιά</translation>
 <translation id="1038842779957582377">άγνωστο όνομα</translation>
@@ -222,6 +221,7 @@
 <translation id="3254409185687681395">Προσθήκη αυτής της σελίδας στους σελιδοδείκτες</translation>
 <translation id="3270847123878663523">&amp;Αναίρεση αναδιάταξης</translation>
 <translation id="3286538390144397061">Άμεση επανεκκίνηση</translation>
+<translation id="3305707030755673451">Τα δεδομένα σας κρυπτογραφήθηκαν με τη δική σας φράση πρόσβασης συγχρονισμού στις <ph name="TIME" />. Πληκτρολογήστε την για να ξεκινήσει ο συγχρονισμός.</translation>
 <translation id="333371639341676808">Αποτροπή δημιουργίας πρόσθετων πλαισίων διαλόγου από αυτή τη σελίδα.</translation>
 <translation id="3340978935015468852">ρυθμίσεις</translation>
 <translation id="3355823806454867987">Αλλαγή ρυθμίσεων διακομιστή μεσολάβησης...</translation>
@@ -303,7 +303,6 @@
 <translation id="4176463684765177261">Απενεργοποιημένη</translation>
 <translation id="4196861286325780578">&amp;Επανάληψη μετακίνησης</translation>
 <translation id="4220128509585149162">Απότομες διακοπές λειτουργίας</translation>
-<translation id="4241404202385006548">Απενεργοποιήστε τις επεκτάσεις και, στη συνέχεια, επαναλάβετε τη φόρτωση αυτής της ιστοσελίδας</translation>
 <translation id="4250680216510889253">Όχι</translation>
 <translation id="4258748452823770588">Εσφαλμένη υπογραφή</translation>
 <translation id="4268298190799576220">Δεν ήταν δυνατή η επαλήθευση της κάρτας σας από το Chromium αυτήν τη στιγμή. Δοκιμάστε ξανά αργότερα.</translation>
@@ -443,7 +442,6 @@
 <translation id="6203231073485539293">Ελέγξτε τη σύνδεσή σας στο Internet</translation>
 <translation id="6218753634732582820">Να καταργηθεί η διεύθυνση από το Chromium;</translation>
 <translation id="6232139169545176020">Δεν υποστηρ. το πλάνο URI που ζητήθηκε.</translation>
-<translation id="6237614789842758826">Αναζήτηση στο Google</translation>
 <translation id="6259156558325130047">&amp;Επανάληψη αναδιάταξης</translation>
 <translation id="6262796033958342538">Λήφθηκαν πολλές ξεχωριστές κεφαλίδες Location. Αυτό δεν επιτρέπεται για λόγους προστασίας
     έναντι επιθέσεων διαχωρισμού απόκρισης HTTP.</translation>
@@ -519,7 +517,6 @@
 <translation id="7087282848513945231">Περιφέρεια</translation>
 <translation id="7088615885725309056">Παλαιότερο</translation>
 <translation id="7108649287766967076">Η μετάφραση στα <ph name="TARGET_LANGUAGE" /> απέτυχε.</translation>
-<translation id="7117303293717852287">Επαναφόρτωση αυτής της ιστοσελίδας</translation>
 <translation id="7139724024395191329">Εμιράτο</translation>
 <translation id="7179921470347911571">Επανεκκίνηση τώρα</translation>
 <translation id="7180611975245234373">Ανανέωση</translation>
@@ -566,7 +563,6 @@
 <translation id="7592362899630581445">Το πιστοποιητικό του διακομιστή παραβαίνει τους περιορισμούς ονόματος.</translation>
 <translation id="759889825892636187">Αυτήν τη στιγμή, ο κεντρικός υπολογιστής <ph name="HOST_NAME" /> δεν μπορεί να διαχειριστεί αυτό το αίτημα.</translation>
 <translation id="7600965453749440009">Να μην γίνεται ποτέ μετάφραση από <ph name="LANGUAGE" /></translation>
-<translation id="7602848207066046655">Δεν ήταν δυνατός ο εντοπισμός του διακομιστή <ph name="BEGIN_ABBR" /> του κεντρικού υπολογιστή <ph name="HOST_NAME" />.</translation>
 <translation id="7610193165460212391">Η τιμή είναι εκτός του εύρους τιμών <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">Λήξη: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Έχετε ήδη δεδομένα που είναι κρυπτογραφημένα με χρήση διαφορετικής έκδοσης του κωδικού πρόσβασης για τον Λογαριασμό σας Google. Εισαγάγετέ τον παρακάτω.</translation>
@@ -647,7 +643,6 @@
 <translation id="8488350697529856933">Ισχύει για</translation>
 <translation id="8494979374722910010">Η προσπάθεια σύνδεσης με το διακομιστή απέτυχε.</translation>
 <translation id="8498891568109133222">Ο κεντρικός υπολογιστής <ph name="HOST_NAME" /> άργησε πολύ να ανταποκριθεί.</translation>
-<translation id="8508677083825928015">Πρόωρη λήψη πόρων για πιο γρήγορη φόρτωση σελίδων</translation>
 <translation id="8530504477309582336">Αυτός ο τύπος κάρτας δεν υποστηρίζεται από το Google Payments. Επιλέξτε άλλη κάρτα.</translation>
 <translation id="8550022383519221471">Η υπηρεσία συγχρονισμού δεν είναι διαθέσιμη για τον τομέα σας.</translation>
 <translation id="8553075262323480129">Η μετάφραση απέτυχε επειδή δεν ήταν δυνατός ο προσδιορισμός της σελίδας.</translation>
@@ -710,6 +705,7 @@
 <translation id="9170848237812810038">Αναί&amp;ρεση</translation>
 <translation id="917450738466192189">Το πιστοποιητικό του διακομιστή δεν είναι έγκυρο.</translation>
 <translation id="9183425211371246419">Ο κεντρικός υπολογιστής <ph name="HOST_NAME" /> χρησιμοποιεί μη υποστηριζόμενο πρωτόκολλο.</translation>
+<translation id="9205078245616868884">Τα δεδομένα σας είναι κρυπτογραφημένα με τη δική σας φράση πρόσβασης συγχρονισμού. Πληκτρολογήστε την για να ξεκινήσει ο συγχρονισμός.</translation>
 <translation id="9207861905230894330">Αποτυχία προσθήκης άρθρου.</translation>
 <translation id="933612690413056017">Δεν υπάρχει σύνδεση στο διαδίκτυο</translation>
 <translation id="933712198907837967">Diners Club</translation>

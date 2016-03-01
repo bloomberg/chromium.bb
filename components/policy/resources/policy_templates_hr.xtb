@@ -453,15 +453,6 @@
 <translation id="2646290749315461919">Omogućuje da postavite smiju li web-lokacije pratiti fizičku lokaciju korisnika. Praćenje fizičke lokacije korisnika može biti dopušteno prema zadanim postavkama, odbijeno prema zadanim postavkama ili se korisniku može postaviti upit svaki puta kada web-lokacija zahtijeva fizičku lokaciju. Ako ovo pravilo nije postavljeno, upotrebljavat će se pravilo "AskGeolocation", a korisnik će to moći promijeniti.</translation>
 <translation id="2650049181907741121">Radnja koja će se izvršiti kada korisnik spusti poklopac</translation>
 <translation id="2660846099862559570">Nikad ne upotrebljavaj proxy</translation>
-<translation id="2665596266623707739">Upozorenje: rezervni postupak za verziju TLS 1.0 uklonit će se iz preglednika <ph name="PRODUCT_NAME" /> nakon verzije 47 (otprilike u siječnju 2016.) i opcija "tls1" tada će prestati funkcionirati.
-
-      U slučaju neuspjelog rukovanja TLS-a <ph name="PRODUCT_NAME" /> ponovo će isprobati vezu sa starijom verzijom TLS-a da bi zaobišao programske pogreške na HTTPS poslužiteljima. Ta postavka konfigurira verziju na kojoj će se rezervni postupak zaustaviti. Ako poslužitelj ispravno dogovori verziju (tj., bez prekidanja veze), ta se postavka neće primijeniti. Neovisno o tome, postignuta veza mora i dalje biti u skladu s pravilom SSLVersionMin.
-
-      Ako se to pravilo ne konfigurira, <ph name="PRODUCT_NAME" /> upotrebljava zadanu minimalnu verziju, a to je TLS 1.0 za <ph name="PRODUCT_NAME" /> 44 i TLS 1.1 za novije verzije. Time se ne onemogućuje podrška za TLS 1.0, već se samo određuje hoće li <ph name="PRODUCT_NAME" /> zaobići poslužitelje s pogreškama koji ne mogu ispravno dogovoriti verzije.
-
-      U protivnom se može postaviti na jednu od sljedećih verzija: "tls1", "tls1.1" ili "tls1.2". Ako se mora održati kompatibilnost s poslužiteljem koji sadrži pogreške, pravilo se može postaviti na "tls1". To je samo privremena mjera i problem na poslužitelju potrebno je brzo riješiti.
-
-      Postavka "tls1.2" onemogućuje sve rezervne postupke, ali to može imati značajan utjecaj na kompatibilnost.</translation>
 <translation id="267596348720209223">Određuje kodiranje znakova koje podržava davatelj usluga pretraživanja. Kodiranja su nazivi kodnih stranica poput UTF-8, GB2312 i ISO-8859-1. Isprobavaju se navedenim redoslijedom. Ovo je pravilo izborno. Ako nije postavljeno, upotrebljavat će se zadana stranica UTF-8. Ovo će se pravilo poštovati samo ako je omogućeno pravilo "DefaultSearchProviderEnabled".</translation>
 <translation id="2682225790874070339">Onemogućuje Disk u aplikaciji Datoteke za <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="268577405881275241">Omogući značajku proxyja za kompresiju podataka</translation>
@@ -833,6 +824,7 @@
 
           To se pravilo poštuje samo ako je omogućeno pravilo "DefaultSearchProviderEnabled".</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 ili noviji</translation>
+<translation id="4322842393287974810">Dopusti kiosk aplikaciji pokrenutoj automatski bez odgode da upravlja verzijom proizvoda <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4325690621216251241">Dodaj gumb za odjavu na programsku traku</translation>
 <translation id="4347908978527632940">Ako se pravilo postavi na "True" i korisnik je nadzirani korisnik, onda druge Androidove aplikacije mogu postaviti upit za korisnikova ograničenja za web putem davatelja sadržaja.
 
@@ -1673,6 +1665,13 @@
 <translation id="7340034977315324840">Izvješće o vremenima aktivnosti uređaja</translation>
 <translation id="7381326101471547614">Onemogućuje upotrebe protokola SPDY za uslugu <ph name="PRODUCT_NAME" />. Ako se to pravilo omogućuje, protokol SPDY neće biti dostupan za uslugu <ph name="PRODUCT_NAME" />. Onemogućavanjem ovog pravila dopustit će se upotreba protokola SPDY. Ako se to pravilo ne postavi, SPDY neće biti dostupan.</translation>
 <translation id="7384999953864505698">Omogući QUIC protokol</translation>
+<translation id="7406651467768226499">Određuje hoće li kiosk aplikacija pokrenuta automatski bez odgode upravljati verzijom proizvoda <ph name="PRODUCT_OS_NAME" />.
+
+      To pravilo određuje hoće li kiosk aplikacija pokrenuta automatski bez odgode upravljati verzijom proizvoda <ph name="PRODUCT_OS_NAME" /> tako što u manifestu navodi potrebnu verziju platforme i upotrebljava je kao prefiks verzije koji će se ciljati prilikom automatskog ažuriranja.
+
+      Ako se to pravilo postavi na True, vrijednost potrebne verzije platforme ključa manifesta kiosk aplikacije pokrenute automatski bez odgode upotrebljava se kao prefiks verzije koji će se ciljati prilikom automatskog ažuriranja.
+
+      Ako se to pravilo ne konfigurira ili se postavi na False, ključ manifesta potrebne verzije platforme zanemaruje se i automatsko ažuriranje izvodi se na uobičajen način.</translation>
 <translation id="7417972229667085380">Postotak za skaliranje odgode u stanju mirovanja u načinu prezentacije (obustavljeno)</translation>
 <translation id="7421483919690710988">Postavite veličinu predmemorije medijskog diska u bajtovima</translation>
 <translation id="7424751532654212117">Popis iznimki popisa onemogućenih dodataka</translation>

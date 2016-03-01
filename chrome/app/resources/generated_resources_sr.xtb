@@ -265,7 +265,6 @@
 <translation id="1401874662068168819">Жин Ји</translation>
 <translation id="140240131475089220">Тихо отклањање грешака</translation>
 <translation id="140250605646987970">Телефон је пронађен. Али Smart Lock функционише само на уређајима који имају Android 5.0 и новије верзије. &lt;a&gt;Сазнајте више&lt;/a&gt;</translation>
-<translation id="1405126334425076373">Курсор миша</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (контролисано)</translation>
 <translation id="1405476660552109915">Желите ли да <ph name="PASSWORD_MANAGER_BRAND" /> сачува налог за овај сајт?</translation>
 <translation id="1406500794671479665">Верификовање...</translation>
@@ -533,7 +532,6 @@
 <translation id="175772926354468439">Омогући тему</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="1758831820837444715">Конфигурисање етернет мреже</translation>
-<translation id="1761647635297215796">Дозвољава веб-сајтовима да приступају API-ју WebAudio.</translation>
 <translation id="1763046204212875858">Направите пречице за апликације</translation>
 <translation id="1763108912552529023">Настави са истраживањем</translation>
 <translation id="1764226536771329714">бета</translation>
@@ -875,7 +873,6 @@
 <translation id="2286454467119466181">Једноставан</translation>
 <translation id="2286950485307333924">Сада сте пријављени у Chrome</translation>
 <translation id="2287590536030307392">Искључите све бежичне везе.</translation>
-<translation id="2289383640829819703">Нису пронађена никаква преузимања.</translation>
 <translation id="2291643155573394834">Следећа картица</translation>
 <translation id="2294358108254308676">Желите ли да инсталирате <ph name="PRODUCT_NAME" />?</translation>
 <translation id="2296019197782308739">EAP метод:</translation>
@@ -934,7 +931,6 @@
 <translation id="2384596874640104496">Синхалска тастатура</translation>
 <translation id="2385700042425247848">Назив услуге:</translation>
 <translation id="2386631145847373156">Одјављивање је могуће само када сте пријављени.</translation>
-<translation id="2386784019642337415">Читање и мењање подразумеваних и прилагођених претраживача</translation>
 <translation id="2390045462562521613">Заборави ову мрежу</translation>
 <translation id="2391243203977115091">Пронађене су нове слике (<ph name="FILE_COUNT" />)
     <ph name="LINE_BREAK1" />
@@ -1409,7 +1405,6 @@
 <translation id="3025729795978504041">Кликните десним тастером миша на дугме изнад да би се приказале друге особе.</translation>
 <translation id="3026050830483105579">Све је ту.</translation>
 <translation id="302620147503052030">Прикажи дугме</translation>
-<translation id="3030138564564344289">Покушај поново са преузимањем</translation>
 <translation id="3031417829280473749">Агент Икс</translation>
 <translation id="3031557471081358569">Изаберите ставке за увоз:</translation>
 <translation id="3033332627063280038">Омогућите експерименталну примену директиве Cache-Control: stale-while-revalidate. На тај начин дозвољавате серверима да наведу да ће неки ресурси можда бити поново проверени у позадини да би се смањило кашњење.</translation>
@@ -2333,7 +2328,6 @@
 <translation id="4363372140743955595">Поновна потврда аутентичности менаџера лозинки</translation>
 <translation id="4364444725319685468">Преузели сте <ph name="FILE_NAME" /></translation>
 <translation id="4364830672918311045">Приказуј обавештења</translation>
-<translation id="4365486896593700706">WebAudio</translation>
 <translation id="4365673000813822030">Упс, синхронизација је престала да функционише.</translation>
 <translation id="4366509400410520531">Ви сте дозволили</translation>
 <translation id="4367782753568896354">Нисмо могли да инсталирамо:</translation>
@@ -2394,7 +2388,6 @@
 <translation id="4467798014533545464">Прикажи URL</translation>
 <translation id="4470564870223067757">Хангул, 2 реда</translation>
 <translation id="4474155171896946103">Обележи све картице...</translation>
-<translation id="4475552974751346499">Претражите преузимања</translation>
 <translation id="4477219268485577442">бугарска фонетска</translation>
 <translation id="4478664379124702289">Сачувај ве&amp;зу као...</translation>
 <translation id="4479639480957787382">Етернет</translation>
@@ -2700,7 +2693,6 @@
 <translation id="4941246025622441835">Користи овај захтев за уређај при регистрацији уређаја за управљање предузећем:</translation>
 <translation id="4942394808693235155">Потражи и примени ажурирања</translation>
 <translation id="494286511941020793">Помоћ за конфигурацију проксија</translation>
-<translation id="4945378551914476156">Обележивачи, историја, лозинке и друга подешавања ће се синхронизовати са Google налогом да бисте могли да их користите свуда где користите Chrome. То можете да промените у одељку <ph name="BEGIN_LINK" /></translation>
 <translation id="4950138595962845479">Опције...</translation>
 <translation id="4952186391360931024">Није за Material</translation>
 <translation id="4954544650880561668">Контрола уређаја</translation>
@@ -3112,7 +3104,6 @@
 <translation id="5537725057119320332">Пребацуј</translation>
 <translation id="5538092967727216836">Поново учитај оквир</translation>
 <translation id="5542132724887566711">Профил</translation>
-<translation id="5542721662280972920">Шифровани додаци за медије на видео и аудио елементима.</translation>
 <translation id="5543983818738093899">Провера статуса...</translation>
 <translation id="5544363333869861395">Кеширање података V8 рашчлањивача.</translation>
 <translation id="5546477470896554111">Управљај извором напајања...</translation>
@@ -3371,7 +3362,6 @@
   <ph name="EXPONENT_HEX_DUMP" /></translation>
 <translation id="59174027418879706">Омогућено</translation>
 <translation id="592068147111860043">Наведите PPAPI додатне компоненте које ће се покретати у оквиру смерница за заштићено окружење Win32k закључавања.</translation>
-<translation id="5921225488888777945">Застарела верзија додатака за шифроване медије на видео и аудио елементима.</translation>
 <translation id="5925147183566400388">Показивач изјаве о пракси издавања сертификата</translation>
 <translation id="5930693802084567591">Подаци су шифровани помоћу Google лозинке од <ph name="TIME" />. Унесите је у наставку.</translation>
 <translation id="5931146425219109062">Читање и мењање свих ваших података на веб-сајтовима које посећујете</translation>
@@ -3493,12 +3483,10 @@
 <translation id="6116921718742659598">Промени подешавања језика и уноса</translation>
 <translation id="6117536376248197233">Онемогући временске линије за алатку за слагање анимација у приказивачима.</translation>
 <translation id="6120205520491252677">Закачи ову страницу на Почетни екран...</translation>
-<translation id="6120816415558830169">Преузео је додатак &lt;a&gt;<ph name="EXTENSION" />&lt;/a&gt;</translation>
 <translation id="6122081475643980456">Интернет веза се контролише</translation>
 <translation id="6122093587541546701">Имејл (опционално):</translation>
 <translation id="6122875415561139701">Операција писања није дозвољена на: „<ph name="DEVICE_NAME" />“.</translation>
 <translation id="6124650939968185064">Следећи додаци зависе од овог додатка:</translation>
-<translation id="612701906868237915">Аутоматски се пријављујте на свим уређајима</translation>
 <translation id="6129938384427316298">Коментар Netscape сертификата</translation>
 <translation id="6129953537138746214">Размак</translation>
 <translation id="6132383530370527946">Уговор</translation>
@@ -3633,7 +3621,6 @@
 <translation id="6344170822609224263">Приступ листи мрежних веза</translation>
 <translation id="6345221851280129312">непозната величина</translation>
 <translation id="6347003977836730270">Уместо траке са информацијама нуди се корисничко искуство Омогући нови облачић за превод.</translation>
-<translation id="6347887127637865679">Додаци за шифроване медије</translation>
 <translation id="6348657800373377022">Комбиновани оквир</translation>
 <translation id="6349839454356033837">Android има потешкоћа при репродукцији медијског садржаја.</translation>
 <translation id="6353618411602605519">Језик тастатуре: хрватски</translation>
@@ -4034,7 +4021,6 @@
 <translation id="6991665348624301627">Изаберите одредиште</translation>
 <translation id="699220179437400583">Аутоматски пријави Google-у детаље о могућим безбедносним инцидентима</translation>
 <translation id="6993929801679678186">Прикажи предвиђања Аутоматског попуњавања</translation>
-<translation id="6994840493536325068">Аутоматски се пријављујте на сајтове на овом уређају</translation>
 <translation id="6998711733709403587">Изабраних директоријума: <ph name="SELCTED_FOLDERS_COUNT" /></translation>
 <translation id="6998872712520806535">{NUM_PAGES,plural, =1{Следећа страница је престала да се одазива. Можете да сачекате да почне да се одазива или да је затворите.}one{Следеће странице су престале да се одазивају. Можете да чекате да почну да се одазивају или да их затворите.}few{Следеће странице су престале да се одазивају. Можете да чекате да почну да се одазивају или да их затворите.}other{Следеће странице су престале да се одазивају. Можете да чекате да почну да се одазивају или да их затворите.}}</translation>
 <translation id="7002055706763150362">Да бисте подесили Smart Lock за Chromebook, Google мора да провери да ли сте то ви – унесите лозинку да бисте почели.</translation>
@@ -4690,7 +4676,6 @@
 <translation id="7987485481246785146">Сорани курдска тастатура заснована на арапском</translation>
 <translation id="7988930390477596403">Активираће се следећи пут када откључате овај <ph name="DEVICE_TYPE" />. Уз Smart Lock телефон може да откључава овај уређај – без лозинке. Bluetooth ће се укључити да би се омогућио Smart Lock.</translation>
 <translation id="7989023212944932320">Google безбедно прегледање је недавно <ph name="BEGIN_LINK" />открило малвер<ph name="END_LINK" /> на <ph name="SITE" />. Веб-сајтови који су обично безбедни се понекад заразе малвером. Злонамеран садржај потиче са <ph name="SUBRESOURCE_HOST" />, који је познати дистрибутер малвера. Требало би да се вратите за неколико сати.</translation>
-<translation id="7990249708898521239">Додаци за шифроване медије са префиксом</translation>
 <translation id="7994370417837006925">Вишеструко пријављивање</translation>
 <translation id="799547531016638432">Уклони пречицу</translation>
 <translation id="79962507603257656">Статус преузимања у центру за обавештења</translation>

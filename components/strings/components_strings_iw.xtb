@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="iw">
-<translation id="1015255576907412255">צור קשר עם מנהל המערכת לקבלת מידע נוסף.</translation>
 <translation id="1015730422737071372">ספק פרטים נוספים</translation>
 <translation id="1032854598605920125">סובב בכיוון השעון</translation>
 <translation id="1038842779957582377">שם לא ידוע</translation>
@@ -305,7 +304,6 @@
 <translation id="4176463684765177261">מושבת</translation>
 <translation id="4196861286325780578">&amp;ביצוע מחדש של העברה</translation>
 <translation id="4220128509585149162">קריסה</translation>
-<translation id="4241404202385006548">השבת את התוספים ולאחר מכן טען מחדש דף האינטרנט הזה</translation>
 <translation id="4250680216510889253">לא</translation>
 <translation id="4258748452823770588">חתימה שגויה</translation>
 <translation id="4268298190799576220">‏ל-Chromium אין כרגע אפשרות לאמת את הכרטיס. נסה שוב מאוחר יותר.</translation>
@@ -450,7 +448,6 @@ Del</translation>
 <translation id="6203231073485539293">בדוק את חיבור האינטרנט</translation>
 <translation id="6218753634732582820">‏האם להסיר מ-Chromium את הכתובת?</translation>
 <translation id="6232139169545176020">‏סכימת ה-URI המבוקשת אינה נתמכת.</translation>
-<translation id="6237614789842758826">‏חפש ב-Google</translation>
 <translation id="6259156558325130047">&amp;ביצוע מחדש של שינוי סדר</translation>
 <translation id="6262796033958342538">‏התקבלו מספר כותרות מיקום נפרדות: הדבר אסור,
   כהגנה מפני מתקפות פיצול של תגובת HTTP.</translation>
@@ -526,7 +523,6 @@ Del</translation>
 <translation id="7087282848513945231">מחוז (בבריטניה ובאירלנד)</translation>
 <translation id="7088615885725309056">ישן יותר</translation>
 <translation id="7108649287766967076">התרגום ל<ph name="TARGET_LANGUAGE" /> נכשל.</translation>
-<translation id="7117303293717852287">טען מחדש את דף האינטרנט הזה</translation>
 <translation id="7139724024395191329">אמירות</translation>
 <translation id="7179921470347911571">הפעל מחדש עכשיו</translation>
 <translation id="7180611975245234373">רענן</translation>
@@ -573,7 +569,6 @@ Del</translation>
 <translation id="7592362899630581445">אישור השרת מפר את אילוצי השמות.</translation>
 <translation id="759889825892636187"><ph name="HOST_NAME" /> לא יכול לטפל כרגע בבקשה הזו.</translation>
 <translation id="7600965453749440009">אל תתרגם לעולם <ph name="LANGUAGE" /></translation>
-<translation id="7602848207066046655">לא ניתן היה למצוא את השרת של <ph name="HOST_NAME" /> <ph name="BEGIN_ABBR" />.</translation>
 <translation id="7610193165460212391">הערך מחוץ לטווח <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">תפוגה: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">‏יש לך כבר נתונים שהוצפנו באמצעות גירסה אחרת של סיסמת חשבון Google שלך. הזן אותה למטה.</translation>
@@ -654,7 +649,6 @@ Del</translation>
 <translation id="8488350697529856933">חל על</translation>
 <translation id="8494979374722910010">ניסיון ההתחברות לשרת נכשל.</translation>
 <translation id="8498891568109133222">ל-<ph name="HOST_NAME" /> נדרש זמן רב מדי להגיב.</translation>
-<translation id="8508677083825928015">בצע אחזור מוקדם של משאבים כדי לטעון דפים מהר יותר</translation>
 <translation id="8530504477309582336">‏סוג הכרטיס הזה אינו נתמך על ידי Google Payments. בחר כרטיס אחר.</translation>
 <translation id="8550022383519221471">שירות הסינכרון אינו זמין לדומיין שלך.</translation>
 <translation id="8553075262323480129">התרגום נכשל כיוון שלא הייתה אפשרות לקבוע את שפת הדף.</translation>

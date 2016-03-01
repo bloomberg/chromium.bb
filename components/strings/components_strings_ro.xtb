@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ro">
-<translation id="1015255576907412255">Contactați administratorul de sistem pentru mai multe informații.</translation>
 <translation id="1015730422737071372">Specifică detalii suplimentare</translation>
 <translation id="1032854598605920125">Rotește în sensul acelor de ceasornic</translation>
 <translation id="1038842779957582377">nume necunoscut</translation>
@@ -302,7 +301,6 @@
 <translation id="4176463684765177261">Dezactivat</translation>
 <translation id="4196861286325780578">&amp;Repetați mutarea</translation>
 <translation id="4220128509585149162">Blocări</translation>
-<translation id="4241404202385006548">Dezactivați extensiile, apoi reîncărcați această pagină web</translation>
 <translation id="4250680216510889253">Nu</translation>
 <translation id="4258748452823770588">Semnătură greșită</translation>
 <translation id="4268298190799576220">Momentan, Chromium nu a putut să verifice cardul. Încearcă din nou mai târziu.</translation>
@@ -442,7 +440,6 @@
 <translation id="6203231073485539293">Verificați conexiunea la internet</translation>
 <translation id="6218753634732582820">Elimini adresa din Chromium?</translation>
 <translation id="6232139169545176020">Schema URI solicitată nu este acceptată.</translation>
-<translation id="6237614789842758826">Căutați pe Google</translation>
 <translation id="6259156558325130047">&amp;Repetați reordonarea</translation>
 <translation id="6262796033958342538">S-au primit mai multe anteturi Location distincte. Acest lucru nu este permis,
     ca măsură de protecție împotriva atacurilor prin divizarea răspunsului HTTP.</translation>
@@ -517,7 +514,6 @@
 <translation id="7087282848513945231">Comitat</translation>
 <translation id="7088615885725309056">Mai vechi</translation>
 <translation id="7108649287766967076">Traducerea în <ph name="TARGET_LANGUAGE" /> nu a reușit.</translation>
-<translation id="7117303293717852287">Reîncărcați pagina web</translation>
 <translation id="7139724024395191329">Emirat</translation>
 <translation id="7179921470347911571">Relansează acum</translation>
 <translation id="7180611975245234373">Actualizați</translation>
@@ -564,7 +560,6 @@ Data viitoare ați putea utiliza combinația <ph name="SHORTCUT_KEY" /> pentru a
 <translation id="7592362899630581445">Certificatul serverului încalcă limitările privind numele.</translation>
 <translation id="759889825892636187">Momentan, <ph name="HOST_NAME" /> nu poate procesa această solicitare.</translation>
 <translation id="7600965453749440009">Nu traduce niciodată din <ph name="LANGUAGE" /></translation>
-<translation id="7602848207066046655">Nu s-a găsit <ph name="BEGIN_ABBR" /> pentru serverul <ph name="HOST_NAME" />.</translation>
 <translation id="7610193165460212391">Valoarea este în afara intervalului <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">Expiră pe: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Aveți deja date criptate utilizând o versiune diferită a parolei pentru Contul dvs. Google. Introduceți-o mai jos.</translation>
@@ -645,7 +640,6 @@ Data viitoare ați putea utiliza combinația <ph name="SHORTCUT_KEY" /> pentru a
 <translation id="8488350697529856933">Se aplică pentru</translation>
 <translation id="8494979374722910010">Încercarea de conectare la server nu a reușit.</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> a răspuns prea târziu.</translation>
-<translation id="8508677083825928015">Preia în avans resursele pentru a încărca paginile mai rapid</translation>
 <translation id="8530504477309582336">Acest tip de card nu este acceptat de Google Payments. Selectează alt card.</translation>
 <translation id="8550022383519221471">Serviciul de sincronizare nu este disponibil pentru domeniul tău.</translation>
 <translation id="8553075262323480129">Traducerea nu a reușit, deoarece nu a putut fi stabilită limba paginii.</translation>

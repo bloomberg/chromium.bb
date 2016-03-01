@@ -24,7 +24,6 @@ Pentru a folosi Webul material, trebuie să activezi Bluetooth și Locația.</tr
 <translation id="1346090444609141578">Nu există pagini salvate aici</translation>
 <translation id="1369915414381695676">Site-ul <ph name="SITE_NAME" /> a fost adăugat</translation>
 <translation id="1373696734384179344">Memorie insuficientă pentru descărcarea conținutului selectat.</translation>
-<translation id="1379156015317873965">Îmbunătățește performanța de încărcare a paginii</translation>
 <translation id="138361230106469022">Bună ziua, <ph name="FULL_NAME" /></translation>
 <translation id="1383876407941801731">Caută</translation>
 <translation id="1389974829397082527">Dosarul nu conține marcaje</translation>
@@ -126,7 +125,6 @@ Poți să controlezi Webul material din setările de confidențialitate Chrome.<
 <translation id="2707726405694321444">Actualizează pagina</translation>
 <translation id="2709516037105925701">Completare automată</translation>
 <translation id="271033894570825754">Nou</translation>
-<translation id="2718352093833049315">Numai prin Wi-Fi</translation>
 <translation id="2748463065602559597">Acum afișează o pagină Google Chrome securizată.</translation>
 <translation id="2762000892062317888">adineauri</translation>
 <translation id="2770465223704140727">Elimină din listă</translation>
@@ -262,6 +260,7 @@ Pentru a ajusta termenii căutării, apasă lung pentru a selecta. Pentru a rafi
 <translation id="4836364883164334657">Conexiunea la acest site nu este privată. Atacatorii ar putea încerca să-ți fure informațiile (de exemplu, fotografii, parole, mesaje și carduri de credit) de pe <ph name="DOMAIN_NAME" />.</translation>
 <translation id="4842511359652954519">Află mai multe</translation>
 <translation id="4850886885716139402">Afișează</translation>
+<translation id="4875622588773761625">Dorești ca <ph name="PASSWORD_MANAGER_BRAND" /> să îți actualizeze parola pentru acest site?</translation>
 <translation id="4881695831933465202">Deschide</translation>
 <translation id="4885273946141277891">Număr de instanțe Chrome neacceptat.</translation>
 <translation id="4927198283430892231">Paginile salvate ocupă momentan <ph name="TOTAL_OFFLINE_STORAGE_SIZE" />.</translation>
@@ -307,7 +306,6 @@ Deschide Chrome pe computer, accesează meniul și selectează „Conectează-te
 <translation id="5323972449344932352">Lansează Chrome</translation>
 <translation id="5324858694974489420">Setări parentale</translation>
 <translation id="5327248766486351172">Nume</translation>
-<translation id="5335200807405507442">Preluare în avans a resurselor paginii</translation>
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE" /> a fost șters</translation>
 <translation id="5345083863238459644">Accesul la locație este <ph name="BEGIN_LINK" />dezactivat și pe acest dispozitiv<ph name="END_LINK" />.</translation>
 <translation id="5380554235172449987">Nu trimite niciodată</translation>
@@ -485,7 +483,6 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="7498271377022651285">Așteaptă...</translation>
 <translation id="7501135638693251872">Toate marcajele</translation>
 <translation id="7521387064766892559">JavaScript</translation>
-<translation id="7561196759112975576">Întotdeauna</translation>
 <translation id="7562080006725997899">Se șterg datele de navigare</translation>
 <translation id="7588950540487816470">Web material</translation>
 <translation id="7596558890252710462">Sistem de operare</translation>
@@ -519,7 +516,6 @@ Cu toate acestea, nu ești invizibil(ă). Trecerea în modul incognito nu ascund
 <translation id="7876243839304621966">Elimină tot</translation>
 <translation id="7947953824732555851">Accept și conectare</translation>
 <translation id="7949961459945740081">Obține ultimele funcții</translation>
-<translation id="7961015016161918242">Niciodată</translation>
 <translation id="7963646190083259054">Producător:</translation>
 <translation id="7987073022710626672">Termenii și condițiile Chrome</translation>
 <translation id="7998918019931843664">Redeschideți fila închisă</translation>
@@ -612,5 +608,6 @@ Pentru licențe noi, conectează-te la internet și redă conținutul descărcat
 <translation id="945632385593298557">Accesează microfonul</translation>
 <translation id="954352821720225055">Marcajul nu este disponibil offline. Spațiu de stocare aproape plin.</translation>
 <translation id="969096075394517431">Schimbați limbile</translation>
+<translation id="981121421437150478">Offline</translation>
 <translation id="983192555821071799">Închide toate filele</translation>
 </translationbundle>

@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ml">
-<translation id="1015255576907412255">കൂടുതൽ വിവരങ്ങൾക്കായി നിങ്ങളുടെ സിസ്റ്റം അഡ്‌മിനിസ്‌ട്രേറ്ററെ ബന്ധപ്പെടുക.</translation>
 <translation id="1015730422737071372">കൂടുതൽ വിശദാംശങ്ങൾ നൽകുക</translation>
 <translation id="1032854598605920125">ഘടികാരദിശയിൽ‌ തിരിക്കുക</translation>
 <translation id="1038842779957582377">അജ്ഞാത നാമം</translation>
@@ -302,7 +301,6 @@
 <translation id="4176463684765177261">അപ്രാപ്‌തമാക്കി</translation>
 <translation id="4196861286325780578">&amp;നീക്കുന്നത് വീണ്ടും ചെയ്യുക</translation>
 <translation id="4220128509585149162">ക്രാഷുകള്‍</translation>
-<translation id="4241404202385006548">നിങ്ങളുടെ വിപുലീകരണങ്ങൾ പ്രവർത്തനരഹിതമാക്കി ഈ വെബ്‌പേജ് വീണ്ടും ലോഡുചെയ്യുക</translation>
 <translation id="4250680216510889253">ഇല്ല</translation>
 <translation id="4258748452823770588">മോശം സിഗ്‌നേച്ചർ</translation>
 <translation id="4268298190799576220">Chromium-ത്തിന് ഇപ്പോൾ നിങ്ങളുടെ കാർഡ് പരിശോധിപ്പിച്ചുറപ്പിക്കാനായില്ല. പിന്നീട് വീണ്ടും ശ്രമിക്കുക.</translation>
@@ -442,7 +440,6 @@
 <translation id="6203231073485539293">നിങ്ങളുടെ ഇന്റർനെറ്റ് കണക്ഷൻ പരിശോധിക്കുക</translation>
 <translation id="6218753634732582820">Chromium-ത്തിൽ നിന്ന് വിലാസം നീക്കംചെയ്യണോ?</translation>
 <translation id="6232139169545176020">അഭ്യർത്ഥിച്ച URI സ്‌കീം പിന്തുണയ്‌ക്കാത്തതാണ്.</translation>
-<translation id="6237614789842758826">Google-ൽ തിരയുക</translation>
 <translation id="6259156558325130047">&amp;പുനഃക്രമീകരിക്കുന്നത് വീണ്ടും ചെയ്യുക</translation>
 <translation id="6262796033958342538">ഒന്നിലധികം വ്യത്യസ്‌തമായ ലൊക്കേഷൻ തലക്കെട്ടുകൾ ലഭിച്ചു.  HTTP പ്രതികരണത്തെ വിഭജിക്കുന്ന ആക്രമണങ്ങളിൽ നിന്ന് പരിരക്ഷിക്കാൻ, ഇതിന്റെ
         അനുമതി റദ്ദാക്കിയിരിക്കുന്നു.</translation>
@@ -517,7 +514,6 @@
 <translation id="7087282848513945231">രാജ്യം</translation>
 <translation id="7088615885725309056">വളരെ പഴയ</translation>
 <translation id="7108649287766967076"><ph name="TARGET_LANGUAGE" /> ഭാഷയിലേക്കുള്ള വിവർത്തനം പരാജയപ്പെട്ടു.</translation>
-<translation id="7117303293717852287">ഈ വെബ്പേജ് വീണ്ടും ലോഡുചെയ്യുക</translation>
 <translation id="7139724024395191329">എമിറേറ്റ്</translation>
 <translation id="7179921470347911571">ഇപ്പോള്‍ വീണ്ടും സമാരംഭിക്കുക</translation>
 <translation id="7180611975245234373">പുതുക്കുക</translation>
@@ -564,7 +560,6 @@
 <translation id="7592362899630581445">സെർവറിന്റെ സർട്ടിഫിക്കറ്റ് പേരിന്റെ പരിധി ലംഘിക്കുന്നു.</translation>
 <translation id="759889825892636187"><ph name="HOST_NAME" />-ന് നിലവിൽ ഈ അഭ്യർത്ഥന കൈകാര്യം ചെയ്യാനാകുന്നില്ല.</translation>
 <translation id="7600965453749440009"><ph name="LANGUAGE" /> ഒരിക്കലും വിവര്‍‌ത്തനം ചെയ്യരുത്</translation>
-<translation id="7602848207066046655"><ph name="HOST_NAME" /> ഹോസ്‌റ്റിന്റെ സെർവർ <ph name="BEGIN_ABBR" /> കണ്ടെത്താനായില്ല.</translation>
 <translation id="7610193165460212391">മൂല്യം പരിധിക്ക് പുറത്താണ് <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">കാലഹരണപ്പെടുന്നത്: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">നിങ്ങൾക്ക് ഇതിനകം കൈവശമുള്ള എൻക്രിപ്‌റ്റ് ചെയ്ത ഡാറ്റ നിങ്ങളുടെ Google അക്കൗണ്ട് പാസ്‌വേഡിന്റെ ഒരു വ്യത്യസ്ത പതിപ്പ് ഉപയോഗിക്കുന്നു. ദയവായി അത് താഴെ നൽകുക.</translation>
@@ -645,7 +640,6 @@
 <translation id="8488350697529856933">ഇതിന് ബാധകമാക്കുന്നു</translation>
 <translation id="8494979374722910010">സര്‍വറിലേക്ക് കണക്റ്റ് ചെയ്യുന്നതിനുള്ള ശ്രമം പരാജയപ്പെട്ടു.</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> പ്രതികരിക്കാൻ കൂടുതൽ സമയമെടുത്തു.</translation>
-<translation id="8508677083825928015">പേജുകൾ കൂടുതൽ വേഗത്തിൽ ലോഡുചെയ്യാൻ ഉറവിടങ്ങളെ പ്രിഫെച്ചുചെയ്യുക</translation>
 <translation id="8530504477309582336">Google പേയ്‌മെന്റ് ഇത്തരം കാർഡിനെ പിന്തുണയ്ക്കുന്നില്ല. മറ്റൊന്ന് തിരഞ്ഞെടുക്കുക.</translation>
 <translation id="8550022383519221471">ഈ സേവനം നിങ്ങളുടെ ഡൊമെയ്നിന് ലഭ്യമല്ല.</translation>
 <translation id="8553075262323480129">പേജിന്‍റെ ഭാഷ നിര്‍‌ണ്ണയിക്കാന്‍‌ കഴിയാത്തതിനാല്‍‌ വിവര്‍‌ത്തനം പരാജയപ്പെട്ടു.</translation>

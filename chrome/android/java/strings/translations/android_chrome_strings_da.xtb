@@ -24,7 +24,6 @@ Du skal aktivere Bluetooth og Placering for at kunne bruge Fysisk web.</translat
 <translation id="1346090444609141578">Der er ingen gemte sider her</translation>
 <translation id="1369915414381695676">Websitet <ph name="SITE_NAME" /> blev tilføjet</translation>
 <translation id="1373696734384179344">Der er ikke nok hukommelse til at downloade det valgte indhold.</translation>
-<translation id="1379156015317873965">Gør indlæsningen af siden bedre</translation>
 <translation id="138361230106469022">Hej <ph name="FULL_NAME" /></translation>
 <translation id="1383876407941801731">Søg</translation>
 <translation id="1389974829397082527">Der er ingen bogmærker her</translation>
@@ -126,7 +125,6 @@ Du kan kontrollere Fysisk web i indstillingerne for beskyttelse af personlige op
 <translation id="2707726405694321444">Opdater siden</translation>
 <translation id="2709516037105925701">AutoFyld</translation>
 <translation id="271033894570825754">Nyt</translation>
-<translation id="2718352093833049315">Kun på Wi-Fi</translation>
 <translation id="2748463065602559597">Du får vist en sikker Google Chrome-side.</translation>
 <translation id="2762000892062317888">lige nu</translation>
 <translation id="2770465223704140727">Fjern fra listen</translation>
@@ -262,6 +260,7 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="4836364883164334657">Din forbindelse til dette website er ikke privat. Hackere kan forsøge at stjæle dine oplysninger (f.eks. billeder, adgangskoder, meddelelser og kreditkort) fra <ph name="DOMAIN_NAME" />.</translation>
 <translation id="4842511359652954519">Læs mere</translation>
 <translation id="4850886885716139402">Vis</translation>
+<translation id="4875622588773761625">Skal <ph name="PASSWORD_MANAGER_BRAND" /> opdatere din adgangskode til dette website?</translation>
 <translation id="4881695831933465202">Åbn</translation>
 <translation id="4885273946141277891">Der er flere forekomster af Chrome, end der understøttes.</translation>
 <translation id="4927198283430892231">Gemte sider fylder i øjeblikket <ph name="TOTAL_OFFLINE_STORAGE_SIZE" /> .</translation>
@@ -307,7 +306,6 @@ Du skal bare åbne Chrome på din computer, gå til menuen og vælge "Log ind i 
 <translation id="5323972449344932352">Åbn Chrome</translation>
 <translation id="5324858694974489420">Indstillinger for forældrekontrol</translation>
 <translation id="5327248766486351172">Navn</translation>
-<translation id="5335200807405507442">Sideressourcer for prefetch</translation>
 <translation id="5345040418939504969">Slettede <ph name="BOOKMARK_TITLE" /></translation>
 <translation id="5345083863238459644">Placeringsadgang er også <ph name="BEGIN_LINK" />slået fra for denne enhed<ph name="END_LINK" />.</translation>
 <translation id="5380554235172449987">Send aldrig</translation>
@@ -485,7 +483,6 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="7498271377022651285">Vent…</translation>
 <translation id="7501135638693251872">Alle bogmærker</translation>
 <translation id="7521387064766892559">JavaScript</translation>
-<translation id="7561196759112975576">Altid</translation>
 <translation id="7562080006725997899">Browserdata ryddes</translation>
 <translation id="7588950540487816470">Fysisk web</translation>
 <translation id="7596558890252710462">Operativsystem</translation>
@@ -519,7 +516,6 @@ Husk, at du ikke er usynlig. Inkognitotilstanden skjuler ikke dine søgninger fo
 <translation id="7876243839304621966">Fjern alt</translation>
 <translation id="7947953824732555851">Acceptér og log ind</translation>
 <translation id="7949961459945740081">Hent de nyeste funktioner</translation>
-<translation id="7961015016161918242">Aldrig</translation>
 <translation id="7963646190083259054">Leverandør:</translation>
 <translation id="7987073022710626672">Chromes servicevilkår</translation>
 <translation id="7998918019931843664">Åbn lukket fane igen</translation>
@@ -612,5 +608,6 @@ Du kan få nye licenser ved at oprette forbindelse til internettet og afspille d
 <translation id="945632385593298557">Adgang til din mikrofon</translation>
 <translation id="954352821720225055">Bogmærket er ikke tilgængeligt offline. Der er næsten ikke mere lagerplads.</translation>
 <translation id="969096075394517431">Skift sprog</translation>
+<translation id="981121421437150478">Offline</translation>
 <translation id="983192555821071799">Luk alle faner</translation>
 </translationbundle>

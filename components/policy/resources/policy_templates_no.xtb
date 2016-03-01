@@ -483,15 +483,6 @@
 <translation id="2646290749315461919">Gjør at du kan angi om nettsteder tillates å spore brukernes fysiske posisjon. Sporing av brukernes fysiske posisjon kan tillates som standard, nektes som standard, eller brukeren kan blir spurt hver gang et nettsted ber om den fysiske posisjonen. Hvis denne retningslinjen ikke angis, brukes AskGeolocation, og brukeren kan endre på dette.</translation>
 <translation id="2650049181907741121">Handling som skal utføres når brukeren lukker lokket</translation>
 <translation id="2660846099862559570">Aldri bruk mellomtjener</translation>
-<translation id="2665596266623707739">Advarsel: Funksjonen for tilbakefall til TLS-versjon 1.0 fjernes fra <ph name="PRODUCT_NAME" /> etter versjon 47 (cirka januar 2016), og «tls1»-alternativet slutter å fungere.
-
-      Når TLS-håndtrykk mislykkes, prøver <ph name="PRODUCT_NAME" /> å koble til med en lavere TLS-versjon for å omgå feil på HTTPS-tjenerne. Denne innstillingen konfigurerer hvilken versjon tilbakefallprosessen skal stoppe på. Hvis en tjener utfører versjonsforhandlingen korrekt (dvs. uten å bryte tilkoblingen), gjelder ikke denne innstillingen. Den resulterende tilkoblingen må uansett overholde SSLVersionMin.
-
-      Hvis du ikke konfigurerer denne regelen, brukes det en standard minimumsversjon i <ph name="PRODUCT_NAME" /> (TLS 1.0 i <ph name="PRODUCT_NAME" /> 44 og TLS 1.1 i nyere versjoner). Vær oppmerksom på at støtten for TLS 1.0 ikke slås av, og dette har bare innvirkning på om <ph name="PRODUCT_NAME" /> kan omgå problemfylte tjenere som ikke kan forhandle versjonene på riktig måte.
-
-      Eventuelt kan du bruke én av disse verdiene: «tls1», «tls1.1» eller «tls1.2». Hvis kompatibiliteten med en problemfylt tjener må bevares, kan du bruke «tls1». Dette er en midlertidig løsning, og tjeneren bør fikses raskt.
-
-      Hvis du bruker «tls1.2»-innstillingen, slås all funksjonaliteten for tilbakefall av. Dette kan imidlertid ha stor innvirkning på kompatibiliteten.</translation>
 <translation id="267596348720209223">Angir tegnkodingen som støttes av søkeleverandøren. Kodingene er kodesidenavn som UTF-8, GB2312 og ISO-8859-1. De prøves i oppgitt rekkefølge.
 
           Denne retningslinjen er valgfri. Hvis den ikke er angitt, vil standarden brukes, som er UTF-8.
@@ -1168,7 +1159,7 @@
 <translation id="5318185076587284965">Aktiver bruken av relétjenere ved fjerntilgangsverten</translation>
 <translation id="5330684698007383292">Gi <ph name="PRODUCT_FRAME_NAME" /> tillatelse til å håndtere de følgende innholdstypene</translation>
 <translation id="5345267406698765263">Spesifiserer ARC-programregelen som en JSON-streng som kan
-      leveres som den er til ARC-kjøringen. For øyeblikket brukes denne innstillingen
+      leveres som den er, til ARC-kjøringen. For øyeblikket brukes denne innstillingen
       utelukkende for å spesifisere tvungen installering av appene.
 
       Hvis denne regelen ikke er spesifisert, blir ingen apper installert automatisk.</translation>

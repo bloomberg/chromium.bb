@@ -135,8 +135,8 @@
 <translation id="1530812829012954197">Renderitza sempre els patrons d'URL següents al navegador de l'amfitrió</translation>
 <translation id="1553684822621013552">Quan aquesta política s'estableix en "true", s'activa ARC per a l'usuari
       (depenent de les comprovacions addicionals de la configuració de la política;
-      però ARC no estarà disponible encara que el mode efímer
-      o l'inici de sessió múltiple estiguin activats a la sessió d'usuari actual).
+      però ARC no estarà disponible si el mode efímer
+      o l'inici de sessió múltiple estan activats a la sessió d'usuari actual).
 
       Si aquesta opció de configuració està desactivada o no està configurada,
       els usuaris d'empreses no poden utilitzar ARC.</translation>
@@ -453,15 +453,6 @@ Si aquesta opció està desactivada o no especificada, no apareix cap botó gran
 <translation id="2646290749315461919">Us permet definir si els llocs web poden rastrejar la ubicació física dels usuaris. El seguiment de la ubicació física dels usuaris es pot autoritzar o denegar de manera predeterminada o bé es pot preguntar a l'usuari cada vegada que un lloc web demani la ubicació física. Si no es defineix aquesta política, s'utilitzarà el paràmetre "AskGeolocation" i l'usuari podrà canviar-lo.</translation>
 <translation id="2650049181907741121">Acció que cal dur a terme quan l'usuari tanca la tapa</translation>
 <translation id="2660846099862559570">No facis servir mai un servidor intermediari</translation>
-<translation id="2665596266623707739">Advertiment: la versió alternativa de TLS 1.0 ja no estarà disponible a <ph name="PRODUCT_NAME" /> a partir de la versió 47 (cap al gener del 2016), moment en què l'opció "tls1" deixarà de funcionar.
-
-      Quan un protocol d'enllaç de TLS falli, <ph name="PRODUCT_NAME" /> provarà de tornar a establir la connexió amb una versió anterior de TLS per solucionar qualsevol error dels servidors HTTPS. Aquesta opció configura la versió en què es detindrà el procés alternatiu. Si un servidor realitza correctament una negociació de versions (és a dir, sense interrompre la connexió), aquesta opció no s'aplica. En qualsevol cas, la connexió que en resulti ha de complir la política SSLVersionMin.
-
-      Si aquesta política no es configura, <ph name="PRODUCT_NAME" /> utilitza la versió mínima predeterminada (és a dir, TLS 1.0 a <ph name="PRODUCT_NAME" /> 44 i TLS 1.1 en versions posteriors). Tingueu en compte que només si <ph name="PRODUCT_NAME" /> evita l'ús de servidors amb errors que no puguin negociar versions correctament, no es desactivarà la comptabilitat amb TLS 1.0.
-
-      També es poden establir aquests valors: "tls1", "tls1.1" o "tls1.2". Si cal mantenir la compatibilitat amb un servidor amb errors, es pot establir en "tls1", un recurs temporal que permetrà esmenar el servidor ràpidament.
-
-      Si s'estableix en "tls1.2", es desactiven totes les alternatives i pot afectar la compatibilitat considerablement.</translation>
 <translation id="267596348720209223">Especifica les codificacions de caràcters que admet el proveïdor de cerca. Les codificacions són noms de pàgines de codi com ara UTF-8, GB2312 i ISO-8859-1. Es proven per ordre. Aquesta política és opcional. Si no es defineix, s'utilitzarà el valor predeterminat, que és UTF-8. Aquesta política només es respecta si la política "DefaultSearchProviderEnabled" està activada.</translation>
 <translation id="2682225790874070339">Desactiva Drive a l'aplicació Fitxers de <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="268577405881275241">Activa la funció del servidor intermediari de compressió de dades</translation>
@@ -1152,7 +1143,7 @@ Si es defineix aquesta política, els usuaris no podran canviar-la ni sobreescri
 Si la política no es defineix, els usuaris podran triar si el prestatge s'ha d'amagar automàticament.</translation>
 <translation id="557658534286111200">Activa o desactiva l'edició d'adreces d'interès.</translation>
 <translation id="5586942249556966598">No facis res</translation>
-<translation id="5613179474872285001">Configura el nom requerit per al domini client que s'imposarà als clients d'accés remot. A més, impedeix que els usuaris el canviïn.
+<translation id="5613179474872285001">Configura el nom requerit per al domini de client que s'imposarà als clients d'accés remot. A més, impedeix que els usuaris el canviïn.
 
           Si aquesta opció de configuració està activada, només els clients del domini especificat poden connectar-se a l'amfitrió.
 
@@ -1546,7 +1537,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="6943577887654905793">Nom de la preferència de Mac/Linux:</translation>
 <translation id="69525503251220566">Paràmetre que proporciona la funció de cerca per imatge per al proveïdor de cerca predeterminat</translation>
 <translation id="6956272732789158625">No permetis que cap lloc utilitzi la generació de claus</translation>
-<translation id="695891079107014261">Configura el nom requerit per al domini amfitrió que s'imposarà als amfitrions d'accés remot. A més, impedeix que els usuaris el canviïn.
+<translation id="695891079107014261">Configura el nom requerit per al domini d'amfitrió que s'imposarà als amfitrions d'accés remot. A més, impedeix que els usuaris el canviïn.
 
           Si aquesta opció de configuració està activada, els amfitrions només es poden compartir fent servir comptes registrats al nom de domini especificat.
 

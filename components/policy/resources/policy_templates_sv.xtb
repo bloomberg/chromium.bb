@@ -509,15 +509,6 @@
           Om policyn inte har angetts används AskGeolocation och användaren kan ändra inställningen.</translation>
 <translation id="2650049181907741121">Åtgärd som ska vidtas när användaren stänger locket</translation>
 <translation id="2660846099862559570">Använd aldrig en proxy</translation>
-<translation id="2665596266623707739">Varning: Alternativet TLS version 1.0 tas bort från <ph name="PRODUCT_NAME" /> efter version 47 (i januari 2016) och alternativet tls1 slutar då att fungera.
-
-      När en TLS-handskakning misslyckas försöker <ph name="PRODUCT_NAME" /> ansluta igen med en lägre version av TLS för att kunna kringgå fel i HTTPS-servrar. Den här inställningen konfigurerar versionen då den alternativa processen upphör. Om versionsförhandling utförs korrekt i en server (dvs. utan att bryta anslutningen) gäller denna inställning inte. I vilket fall som helst måste den resulterande anslutningen överensstämma med SSLVersionMin.
-
-      Om den här policyn inte är konfigurerad använder <ph name="PRODUCT_NAME" /> en lägsta standardversion som är TLS 1.0 i <ph name="PRODUCT_NAME" /> 44 och TLS 1.1 i senare versioner. Tänk på att detta inte inaktiverar stöd för TLS 1.0. Det avgör bara om <ph name="PRODUCT_NAME" /> kringgår servrar med fel som inte kan förhandla versioner korrekt.
-
-      I annat fall kan den ställas in på något av följande värden: tls1, tls1.1 eller tls1.2. Om kompatibiliteten med en server med fel måste upprätthållas kan den ställas in på tls1. Det här är en nödlösning och servern bör snabbt åtgärdas.
-
-      Inställningen tls1.2 inaktiverar alla alternativ, men det kan påverka kompatibiliteten betydligt.</translation>
 <translation id="267596348720209223">Policyn anger vilka teckenkodningar som stöds av sökleverantören. Kodningar är kodsidenamn som UTF-8, GB2312 och ISO-8859-1. De testas i den ordning som de anges.
 
           Policyn är valfri. Om den inte anges används standarden UTF-8.

@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="pt-BR">
+<translation id="1040144152982955218">Procurando dispositivos… <ph name="BEGIN_LINK" />receber ajuda<ph name="END_LINK" /></translation>
 <translation id="1056898198331236512">Aviso</translation>
 <translation id="10614374240317010">Nunca salvam</translation>
 <translation id="1061441684050139317">O Chrome precisa ter acesso ao microfone para compartilhá-lo com este site.</translation>
@@ -8,6 +9,7 @@
 <translation id="1095407227123756519">Adicione uma conta para ver seus favoritos, histórico, senhas e outras configurações em todos os seus dispositivos.</translation>
 <translation id="1098052486217676340">Concluído</translation>
 <translation id="1121094540300013208">Relatórios de uso e falhas</translation>
+<translation id="1137305377394488060">da última hora</translation>
 <translation id="1178581264944972037">Pausar</translation>
 <translation id="1181037720776840403">Remover</translation>
 <translation id="1197267115302279827">Mover favoritos</translation>
@@ -24,7 +26,6 @@
 <translation id="1346090444609141578">Nenhuma página salva aqui</translation>
 <translation id="1369915414381695676">Site <ph name="SITE_NAME" /> adicionado</translation>
 <translation id="1373696734384179344">Memória insuficiente para fazer o download do conteúdo selecionado.</translation>
-<translation id="1379156015317873965">Melhorar o desempenho de carregamento da página</translation>
 <translation id="138361230106469022">Olá, <ph name="FULL_NAME" /></translation>
 <translation id="1383876407941801731">Pesquisar</translation>
 <translation id="1389974829397082527">Não há favoritos aqui</translation>
@@ -100,6 +101,7 @@ O Chrome verificará páginas nas proximidades quando o dispositivo estiver desb
 <translation id="2351097562818989364">As configurações de tradução foram redefinidas.</translation>
 <translation id="2359808026110333948">Continuar</translation>
 <translation id="2381756643783702095">Perguntar antes de enviar (recomendado)</translation>
+<translation id="2385560268894525395">da última semana</translation>
 <translation id="2387895666653383613">Escala do texto</translation>
 <translation id="238909021488141516">Ocorreu um erro durante o download do conteúdo.</translation>
 <translation id="2414886740292270097">Escuro</translation>
@@ -126,7 +128,6 @@ O Chrome verificará páginas nas proximidades quando o dispositivo estiver desb
 <translation id="2707726405694321444">Atualizar página</translation>
 <translation id="2709516037105925701">Preenchimento automático</translation>
 <translation id="271033894570825754">Novo</translation>
-<translation id="2718352093833049315">Apenas com Wi-Fi</translation>
 <translation id="2748463065602559597">Você está em uma página segura do Google Chrome.</translation>
 <translation id="2762000892062317888">agora mesmo</translation>
 <translation id="2770465223704140727">Remover da lista</translation>
@@ -141,8 +142,10 @@ O Chrome verificará páginas nas proximidades quando o dispositivo estiver desb
 <translation id="2956410042958133412">Esta conta é gerenciada por <ph name="PARENT_NAME_1" /> e <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. Todos os direitos reservados.</translation>
 <translation id="2968755619301702150">Leitor de certificados</translation>
+<translation id="2996291259634659425">Criar senha longa</translation>
 <translation id="2996809686854298943">O URL é obrigatório</translation>
 <translation id="3029704984691124060">As senhas não correspondem</translation>
+<translation id="3036750288708366620"><ph name="BEGIN_LINK" />Receber ajuda<ph name="END_LINK" /></translation>
 <translation id="3063601790762993062">Salvar vídeo</translation>
 <translation id="306566828762083630">O armazenamento do dispositivo está cheio. Remova outras mídias para liberar espaço.</translation>
 <translation id="307329814453917357">Oferecer para traduzir páginas usando o Google Tradutor</translation>
@@ -153,6 +156,7 @@ O Chrome verificará páginas nas proximidades quando o dispositivo estiver desb
 <translation id="3190152372525844641">Ative as permissões para o Chrome nas <ph name="BEGIN_LINK" />configurações do Android<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> de dados armazenados</translation>
 <translation id="3207960819495026254">Adicionada aos favoritos</translation>
+<translation id="321773570071367578">Se você esqueceu sua senha longa ou deseja alterar essa configuração, <ph name="BEGIN_LINK" />redefina a sincronização<ph name="END_LINK" /></translation>
 <translation id="3227137524299004712">Microfone</translation>
 <translation id="3232754137068452469">App da Web</translation>
 <translation id="3244271242291266297">MM</translation>
@@ -195,6 +199,7 @@ Para ajustar seu termo de pesquisa, mantenha-o pressionado para selecionar. Para
 <translation id="3895926599014793903">Forçar ativação de zoom</translation>
 <translation id="3917783807003067648">O local está bloqueado</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
+<translation id="3931947361983910192">das últimas quatro semanas</translation>
 <translation id="393697183122708255">Nenhuma pesq. por voz ativada disponível</translation>
 <translation id="3950820424414687140">Fazer login</translation>
 <translation id="3988213473815854515">O local é permitido</translation>
@@ -216,6 +221,8 @@ Para ajustar seu termo de pesquisa, mantenha-o pressionado para selecionar. Para
 <translation id="4195643157523330669">Abrir em uma nova guia</translation>
 <translation id="4198229475320555619">Favorito de <ph name="PAGE_SIZE_STRING" /> salvo off-line</translation>
 <translation id="423410644998903704">O Chrome precisa ter acesso às permissões para compartilhá-las com este site.</translation>
+<translation id="4247939399682707041">Substitui os dados deste dispositivo com os dados de <ph name="ACCOUNT" />. É possível recuperar os dados já existentes voltando para <ph name="ACCOUNT" /></translation>
+<translation id="424864128008805179">Sair do Google Chrome?</translation>
 <translation id="4254813446494774748">Idioma de tradução:</translation>
 <translation id="4256782883801055595">Licenças de código aberto</translation>
 <translation id="4259722352634471385">A Navegação GPS está bloqueada: <ph name="URL" /></translation>
@@ -235,6 +242,7 @@ Para ajustar seu termo de pesquisa, mantenha-o pressionado para selecionar. Para
 <translation id="4457399174246232812">As futuras páginas da Web física nas proximidades serão exibidas na sua lista de notificações</translation>
 <translation id="4498934959426056365">Geração de chaves</translation>
 <translation id="4505554159887937799">Salvas off-line</translation>
+<translation id="4508440807153586353">Somente uma pessoa com sua senha longa pode ler seus dados criptografados. A senha longa não é enviada ou armazenada pelo Google. Se você esquecer sua senha longa ou desejar alterar essa configuração, será necessário redefinir a sincronização. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{# dia atrás}one{# dias atrás}other{# dias atrás}}</translation>
 <translation id="4522570452068850558">Detalhes</translation>
 <translation id="4526249700380860531">Ver e gerenciar as senhas salvas em <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
@@ -262,6 +270,7 @@ Para ajustar seu termo de pesquisa, mantenha-o pressionado para selecionar. Para
 <translation id="4836364883164334657">Sua conexão com este site não é particular. Invasores podem tentar roubar suas informações, como fotos, senhas, mensagens e cartões de crédito de <ph name="DOMAIN_NAME" />.</translation>
 <translation id="4842511359652954519">Leia mais</translation>
 <translation id="4850886885716139402">Visualizar</translation>
+<translation id="4875622588773761625">Deseja que <ph name="PASSWORD_MANAGER_BRAND" /> atualize sua senha para este site?</translation>
 <translation id="4881695831933465202">Abrir</translation>
 <translation id="4885273946141277891">Número de instâncias do Google Chrome não suportado.</translation>
 <translation id="4927198283430892231">As páginas salvas estão ocupando <ph name="TOTAL_OFFLINE_STORAGE_SIZE" /> no momento.</translation>
@@ -298,6 +307,7 @@ Basta abrir o Chrome no computador, ir até o menu e selecionar “Fazer login n
 <translation id="5233638681132016545">Nova guia</translation>
 <translation id="5271967389191913893">Não é possível abrir no dispositivo o conteúdo a ser transferido por download.</translation>
 <translation id="5275558766013849309">As guias serão mantidas com os aplicativos recentes.</translation>
+<translation id="5284584623296338184">Alterações feitas nos seus favoritos, histórico, senhas e outras configurações não serão mais sincronizadas com sua Conta do Google. No entanto, os dados já existentes permanecerão armazenados na Conta do Google.</translation>
 <translation id="5301954838959518834">Entendi</translation>
 <translation id="5302048478445481009">Idioma</translation>
 <translation id="5304593522240415983">Este campo não pode ficar em branco</translation>
@@ -307,7 +317,6 @@ Basta abrir o Chrome no computador, ir até o menu e selecionar “Fazer login n
 <translation id="5323972449344932352">Iniciar o Google Chrome</translation>
 <translation id="5324858694974489420">Configurações parentais</translation>
 <translation id="5327248766486351172">Nome</translation>
-<translation id="5335200807405507442">Recursos da página de pré-busca</translation>
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE" /> excluído</translation>
 <translation id="5345083863238459644">O acesso a locais também está <ph name="BEGIN_LINK" />desativado para este dispositivo<ph name="END_LINK" />.</translation>
 <translation id="5380554235172449987">Nunca enviar</translation>
@@ -317,6 +326,7 @@ Basta abrir o Chrome no computador, ir até o menu e selecionar “Fazer login n
 <translation id="5424715742813396254">Editar nome/senha salvos ou exceção</translation>
 <translation id="5442257541162692417">Editar página salva</translation>
 <translation id="544291274896356069">Se este link for aberto em um aplicativo externo, você sairá do modo de navegação anônima. Continuar?</translation>
+<translation id="5487521232677179737">Limpar dados</translation>
 <translation id="5487729733663684359">As atualizações do Chrome não são mais compatíveis com esta versão do Android.</translation>
 <translation id="5511351932351731210">Enviar sempre</translation>
 <translation id="5512137114520586844">Esta conta é gerenciada por <ph name="PARENT_NAME" />.</translation>
@@ -361,6 +371,7 @@ Basta abrir o Chrome no computador, ir até o menu e selecionar “Fazer login n
 <translation id="5911030830365207728">Google Tradutor</translation>
 <translation id="5916664084637901428">Ativado</translation>
 <translation id="5939518447894949180">Redefinir</translation>
+<translation id="5965336165840183977">Limpa os dados sincronizados de todos os dispositivos. Você não será desconectado da sua Conta do Google. As configurações do site salvas não serão excluídas e podem refletir seus hábitos de navegação.</translation>
 <translation id="5968595432776860642">Reproduzindo “<ph name="VIDEO_TITLE" />”</translation>
 <translation id="6010869025736512584">Acessando entrada de vídeo</translation>
 <translation id="6012342843556706400">O Chrome precisa ter acesso ao local para compartilhá-lo com este site.</translation>
@@ -423,6 +434,7 @@ Por exemplo, alguns websites podem responder a esta solicitação mostrando anú
 <translation id="6720988912937197322">Página salva não disponível off-line</translation>
 <translation id="6722992508235227685">Seus favoritos, histórico, senhas e outras configurações serão sincronizados com sua Conta do Google para que você possa usá-los em todos os dispositivos. Escolha o que sincronizar em <ph name="BEGIN_LINK1" />Configurações<ph name="END_LINK1" />.</translation>
 <translation id="6738867403308150051">Fazendo o download...</translation>
+<translation id="6762156594045689028">Para alterar essa configuração, <ph name="BEGIN_LINK" />redefina a sincronização<ph name="END_LINK" /></translation>
 <translation id="6770414673596662518">O sistema de Navegação segura do Chrome também é usado para detectar páginas maliciosas e proteger você contra phishing, malware e downloads nocivos.</translation>
 <translation id="6784675033504223784">Pesquisar por "<ph name="SEARCH_TERM" />"</translation>
 <translation id="6790428901817661496">Reproduzir</translation>
@@ -456,6 +468,8 @@ Por exemplo, alguns websites podem responder a esta solicitação mostrando anú
 <translation id="7056999826593229648">Conexão lenta detectada</translation>
 <translation id="7057058088140140610">Cartões de crédito e endereços que usam o Google Payments</translation>
 <translation id="7063006564040364415">Não foi possível conectar ao servidor de sincronização.</translation>
+<translation id="7074853159844403180"><ph name="SITE" /> deseja parear com:</translation>
+<translation id="7081639897063626814">Manter os dados já existentes separados</translation>
 <translation id="7094922512924405309">Nenhuma página da Web física foi encontrada nas proximidades</translation>
 <translation id="7095930899177687653"><ph name="OPEN_TABS" /> guias abertas</translation>
 <translation id="7096034533295549981">Carregando vídeo</translation>
@@ -467,6 +481,7 @@ Por exemplo, alguns websites podem responder a esta solicitação mostrando anú
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />Ajuda<ph name="END_LINK" /></translation>
 <translation id="7299721129597238157">Excluir favorito</translation>
 <translation id="7324738665594301612">Estamos testando o uso de proxy de páginas HTTPS por meio de servidores do Google como parte de um experimento.</translation>
+<translation id="7346217184097589238">As configurações do site salvas não serão excluídas e podem refletir seus hábitos de navegação.</translation>
 <translation id="7346909386216857016">Ok, entendi.</translation>
 <translation id="7363354739009474003">Carregando "<ph name="VIDEO_TITLE" />"</translation>
 <translation id="7366340029385295517">Transmitindo em <ph name="SCREEN_NAME" /></translation>
@@ -482,9 +497,9 @@ Por exemplo, alguns websites podem responder a esta solicitação mostrando anú
 <translation id="748127970106343339">Confirmar exclusão da credencial do dispositivo</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (atualizada <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7498271377022651285">Aguarde...</translation>
+<translation id="7499262814309712782">Conta de sincronização</translation>
 <translation id="7501135638693251872">Todos os favoritos</translation>
 <translation id="7521387064766892559">JavaScript</translation>
-<translation id="7561196759112975576">Sempre</translation>
 <translation id="7562080006725997899">Limpando dados de navegação</translation>
 <translation id="7588950540487816470">Web física</translation>
 <translation id="7596558890252710462">Sistema operacional</translation>
@@ -518,7 +533,6 @@ No entanto, você não fica invisível. O modo anônimo não oculta sua navegaç
 <translation id="7876243839304621966">Remover tudo</translation>
 <translation id="7947953824732555851">Aceitar/fazer login</translation>
 <translation id="7949961459945740081">Atualizar recursos</translation>
-<translation id="7961015016161918242">Nunca</translation>
 <translation id="7963646190083259054">Fornecedor:</translation>
 <translation id="7987073022710626672">Termos de Serviço do Chrome</translation>
 <translation id="7998918019931843664">Reabrir guia fechada</translation>
@@ -535,12 +549,15 @@ No entanto, você não fica invisível. O modo anônimo não oculta sua navegaç
 <translation id="8137558756159375272">"Toque para pesquisar" envia a palavra selecionada e a página atual como contexto para a Pesquisa Google. Desative esse recurso em <ph name="BEGIN_LINK" />Configurações<ph name="END_LINK" />.</translation>
 <translation id="8146397137182589628">Não salva off-line</translation>
 <translation id="8168435359814927499">Conteúdo</translation>
+<translation id="8173098127580644436">desde o começo</translation>
 <translation id="8200772114523450471">Retomar</translation>
 <translation id="8209050860603202033">Abrir imagem</translation>
 <translation id="8218346974737627104">Confirmar login</translation>
 <translation id="8218934717680664417">Agora é possível pesquisar com um toque</translation>
+<translation id="8223946939421658889">Limpar dados</translation>
 <translation id="8261506727792406068">Excluir</translation>
 <translation id="8275818695183729150">Permitir (para pesquisas na barra de endereço)</translation>
+<translation id="8283853025636624853">Sincronizando com <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
 <translation id="8310344678080805313">Guias padrão</translation>
 <translation id="8374821112118309944">Atualize o TalkBack para receber uma versão mais nova.</translation>
 <translation id="8396312449826231789">Somente sites aprovados</translation>
@@ -587,6 +604,7 @@ Para receber novas licenças, conecte-se à Internet e use seu conteúdo baixado
 <translation id="8941248009481596111">Sua conexão a este site é particular.</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8959122750345127698">A Navegação GPS está inacessível: <ph name="URL" /></translation>
+<translation id="8979340629087822094">do dia anterior</translation>
 <translation id="8987061207681586800">O Chrome é seu</translation>
 <translation id="9019902583201351841">Gerenciado pelos seus pais</translation>
 <translation id="9020607083536754075">Fechar a guia atual e retornar para o app anterior</translation>
@@ -610,5 +628,6 @@ Para receber novas licenças, conecte-se à Internet e use seu conteúdo baixado
 <translation id="945632385593298557">Acessar seu microfone</translation>
 <translation id="954352821720225055">Favorito não disponível off-line. Armazenamento quase cheio.</translation>
 <translation id="969096075394517431">Alterar idiomas</translation>
+<translation id="981121421437150478">Off-line</translation>
 <translation id="983192555821071799">Fechar todas as guias</translation>
 </translationbundle>

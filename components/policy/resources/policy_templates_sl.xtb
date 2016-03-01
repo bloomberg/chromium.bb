@@ -505,15 +505,6 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
           Če ta pravilnik ni nastavljen, bo uporabljen pravilnik »AskGeolocation« in uporabnik ga bo lahko spremenil.</translation>
 <translation id="2650049181907741121">Dejanje, ki naj se izvede, ko uporabnik zapre pokrov</translation>
 <translation id="2660846099862559570">Nikoli ne uporabi proxyja</translation>
-<translation id="2665596266623707739">Opozorilo: preklop na TLS 1.0 bo odstranjen iz brskalnika <ph name="PRODUCT_NAME" /> po različici 47 (približno januarja 2016) in možnost »tls1« bo tedaj prenehala delovati.
-
-      Če rokovanje TLS ne uspe, bo <ph name="PRODUCT_NAME" /> poskusil vzpostaviti povezavo z nižjo različico TLS-ja, da mu ne bo treba upoštevati napak v strežnikih HTTPS. Ta nastavitev konfigurira različico, pri kateri se postopek preklopa ustavi. Če strežnik pravilno izvede pogajanja glede različice (tj. brez prekinitve povezave), se ta nastavitev ne uporabi. Ne glede na to mora biti vzpostavljena povezava skladna s pravilnikom SSLVersionMin.
-
-      Če ta pravilnik ni konfiguriran, <ph name="PRODUCT_NAME" /> uporablja privzeto najnižjo različico, ki je v brskalniku <ph name="PRODUCT_NAME" /> različice 44 TLS 1.0, v poznejših različicah pa TLS 1.1. S tem ni onemogočena podpora za TLS 1.0, temveč je zgolj določeno, ali <ph name="PRODUCT_NAME" /> ne bo upošteval strežnikov z napakami, ki ne morejo pravilno izvesti pogajanj glede različice.
-
-      Sicer je lahko nastavljen na eno od teh vrednosti: »tls1«, »tls1.1« ali »tls1.2«. Če je treba ohraniti združljivost s strežnikom, je pravilnik lahko nastavljen na »tls1«. To je začasen ukrep in napake v strežniku je treba hitro odpraviti.
-
-      Nastavitev »tls1.2« onemogoča vse preklope, vendar ima to lahko precejšen vpliv na združljivost.</translation>
 <translation id="267596348720209223">Določa kodiranja znakov, ki jih podpira ponudnik iskanja. Kodiranja so imena kodnih strani, na primer UTF-8, GB2312 in ISO-8859-1. Poskusi uporabe potekajo po navedenem vrstnem redu.
 
           Ta pravilnik je izbiren. Če ni nastavljen, bo uporabljena privzeta nastavitev, ki je UTF-8.

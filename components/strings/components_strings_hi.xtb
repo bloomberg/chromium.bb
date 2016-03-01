@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="hi">
-<translation id="1015255576907412255">अधिक जानकारी के लिए अपने सिस्टम व्यवस्थापक से संपर्क करें.</translation>
 <translation id="1015730422737071372">अतिरिक्त विवरण प्रदान करें</translation>
 <translation id="1032854598605920125">घड़ी की दिशा में घुमाएं</translation>
 <translation id="1038842779957582377">अज्ञात नाम</translation>
@@ -301,7 +300,6 @@
 <translation id="4176463684765177261">अक्षम</translation>
 <translation id="4196861286325780578">&amp;ले जाना फिर से करें</translation>
 <translation id="4220128509585149162">क्रैश</translation>
-<translation id="4241404202385006548">अपने एक्सटेेंशन अक्षम करें और फिर इस वेबपृष्ठ को पुन: लोड करें</translation>
 <translation id="4250680216510889253">नहीं</translation>
 <translation id="4258748452823770588">खराब हस्ताक्षर</translation>
 <translation id="4268298190799576220">क्रोमियम इस समय आपका कार्ड सत्‍यापित नहीं कर सका. कृपया बाद में पुन: प्रयास करें.</translation>
@@ -441,7 +439,6 @@
 <translation id="6203231073485539293">अपना इंटरनेट कनेक्शन जांचें</translation>
 <translation id="6218753634732582820">क्रोमियम से पता निकालें?</translation>
 <translation id="6232139169545176020">अनुरोधित URL स्कीम समर्थित नहीं है.</translation>
-<translation id="6237614789842758826">Google पर खोजें</translation>
 <translation id="6259156558325130047">&amp;पुन: क्रमित करना फिर से करें</translation>
 <translation id="6262796033958342538">भिन्‍न स्‍थान वाले एकाधिक शीर्षलेख प्राप्त हुए.  HTTP प्रतिसाद विभाजन
     हमलों से सुरक्षा करने के लिए इसकी अनुमति नहीं है.</translation>
@@ -517,7 +514,6 @@
 <translation id="7087282848513945231">काउंटी</translation>
 <translation id="7088615885725309056">इससे पुराने</translation>
 <translation id="7108649287766967076"><ph name="TARGET_LANGUAGE" /> में अनुवाद विफल रहा.</translation>
-<translation id="7117303293717852287">यह वेबपृष्ठ पुन: लोड करें</translation>
 <translation id="7139724024395191329">अमीरात</translation>
 <translation id="7179921470347911571">अभी पुन: लॉन्‍च करें</translation>
 <translation id="7180611975245234373">रीफ्रेश करें</translation>
@@ -562,7 +558,6 @@
 <translation id="7592362899630581445">सर्वर का प्रमाणपत्र नाम संबंधी प्रतिबंधों का उल्लंघन करता है.</translation>
 <translation id="759889825892636187"><ph name="HOST_NAME" /> वर्तमान में इस अनुरोध का प्रबंधन कर पाने में असमर्थ है.</translation>
 <translation id="7600965453749440009">कभी भी <ph name="LANGUAGE" /> का अनुवाद न करें</translation>
-<translation id="7602848207066046655"><ph name="HOST_NAME" /> का सर्वर <ph name="BEGIN_ABBR" /> ढूंढ़ा नहीं जा सका.</translation>
 <translation id="7610193165460212391"><ph name="VALUE" /> मान सीमा से बाहर है.</translation>
 <translation id="7613889955535752492">समय-सीमा समाप्त: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">आपके पास पहले से ऐसा डेटा है, जिसे आपके Google खाते के पासवर्ड के किसी भिन्‍न वर्शन का उपयोग करके एन्क्रिप्ट किया गया है. कृपया उसे नीचे लिखें.</translation>
@@ -642,7 +637,6 @@
 <translation id="8488350697529856933">इस पर लागू होती है</translation>
 <translation id="8494979374722910010">सर्वर से कनेक्ट करने का प्रयास विफ़ल रहा.</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> ने प्रतिसाद देने में अत्यधिक समय लिया.</translation>
-<translation id="8508677083825928015">पृष्‍ठों को अधिक तेज़ी से लोड करने के लिए संसाधनों को प्रीफ़ेच करें</translation>
 <translation id="8530504477309582336">कार्ड का यह प्रकार Google पेमेंट्स द्वारा समर्थित नहीं है. कृपया कोई भिन्न कार्ड चुनें.</translation>
 <translation id="8550022383519221471">आपके डोमेन के लिए समन्‍वयन सेवा उपलब्‍ध नहीं है.</translation>
 <translation id="8553075262323480129">अनुवाद विफल हो गया क्योंकि पृष्ठ की भाषा निर्धारित नहीं की जा सकी.</translation>

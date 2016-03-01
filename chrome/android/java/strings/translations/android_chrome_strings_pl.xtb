@@ -24,7 +24,6 @@ Aby korzystać z internetu rzeczy, musisz włączyć Bluetooth i Lokalizację.</
 <translation id="1346090444609141578">Nie ma tu zapisanych stron</translation>
 <translation id="1369915414381695676">Strona <ph name="SITE_NAME" /> została dodana</translation>
 <translation id="1373696734384179344">Za mało pamięci, by pobrać te treści.</translation>
-<translation id="1379156015317873965">Popraw szybkość wczytywania stron</translation>
 <translation id="138361230106469022">Witamy, <ph name="FULL_NAME" /></translation>
 <translation id="1383876407941801731">Szukaj</translation>
 <translation id="1389974829397082527">Tu nie ma zakładek</translation>
@@ -126,7 +125,6 @@ Internet rzeczy możesz skonfigurować w ustawieniach prywatności w Chrome.</tr
 <translation id="2707726405694321444">Odśwież stronę</translation>
 <translation id="2709516037105925701">Autouzupełnianie</translation>
 <translation id="271033894570825754">Nowy</translation>
-<translation id="2718352093833049315">Tylko przez Wi-Fi</translation>
 <translation id="2748463065602559597">Przeglądasz bezpieczną stronę Google Chrome.</translation>
 <translation id="2762000892062317888">przed chwilą</translation>
 <translation id="2770465223704140727">Usuń z listy</translation>
@@ -232,7 +230,7 @@ Aby dostosować wyszukiwane hasło, naciśnij je i przytrzymaj, by je zaznaczyć
 <translation id="4412992751769744546">Zezwalaj na pliki cookie innych firm</translation>
 <translation id="4440256989292146959">Przeglądaj więcej za mniej</translation>
 <translation id="4452548195519783679">Utworzono zakładkę w folderze <ph name="FOLDER_NAME" /></translation>
-<translation id="4457399174246232812">Strony internetu rzeczy dostępne w pobliżu będą pojawiać się na liście powiadomień</translation>
+<translation id="4457399174246232812">Strony internetu rzeczy w pobliżu będą pojawiać się na liście powiadomień</translation>
 <translation id="4498934959426056365">Generowanie kluczy</translation>
 <translation id="4505554159887937799">Zapisane offline</translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{# dzień temu}few{# dni temu}many{# dni temu}other{# dnia temu}}</translation>
@@ -262,6 +260,7 @@ Aby dostosować wyszukiwane hasło, naciśnij je i przytrzymaj, by je zaznaczyć
 <translation id="4836364883164334657">Połączenie ze stroną nie jest prywatne. Hakerzy mogą próbować wykraść Twoje informacje z <ph name="DOMAIN_NAME" /> (np. zdjęcia, hasła, wiadomości lub dane kart kredytowych).</translation>
 <translation id="4842511359652954519">Dowiedz się więcej</translation>
 <translation id="4850886885716139402">Widok</translation>
+<translation id="4875622588773761625">Czy <ph name="PASSWORD_MANAGER_BRAND" /> ma zaktualizować hasło do tej strony?</translation>
 <translation id="4881695831933465202">Otwórz</translation>
 <translation id="4885273946141277891">Nieobsługiwana liczba wystąpień Chrome.</translation>
 <translation id="4927198283430892231">Zapisane strony zajmują obecnie <ph name="TOTAL_OFFLINE_STORAGE_SIZE" />.</translation>
@@ -307,7 +306,6 @@ Wystarczy uruchomić Chrome na komputerze i w menu wybrać „Zaloguj się w Chr
 <translation id="5323972449344932352">Uruchom Chrome</translation>
 <translation id="5324858694974489420">Ustawienia rodzicielskie</translation>
 <translation id="5327248766486351172">Nazwa</translation>
-<translation id="5335200807405507442">Pobierz wstępnie zasoby strony</translation>
 <translation id="5345040418939504969">Usunięto: <ph name="BOOKMARK_TITLE" /></translation>
 <translation id="5345083863238459644">Dostęp do lokalizacji jest też <ph name="BEGIN_LINK" />wyłączony na tym urządzeniu<ph name="END_LINK" />.</translation>
 <translation id="5380554235172449987">Nigdy nie wysyłaj</translation>
@@ -485,7 +483,6 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="7498271377022651285">Czekaj…</translation>
 <translation id="7501135638693251872">Wszystkie zakładki</translation>
 <translation id="7521387064766892559">JavaScript</translation>
-<translation id="7561196759112975576">Zawsze</translation>
 <translation id="7562080006725997899">Czyszczenie danych przeglądania</translation>
 <translation id="7588950540487816470">Internet rzeczy</translation>
 <translation id="7596558890252710462">System operacyjny</translation>
@@ -519,7 +516,6 @@ To jednak nie oznacza, że Cię nie widać. Nawet gdy przejdziesz w tryb incogni
 <translation id="7876243839304621966">Usuń wszystkie</translation>
 <translation id="7947953824732555851">Zaakceptuj i zaloguj się</translation>
 <translation id="7949961459945740081">Używaj najnowszych funkcji</translation>
-<translation id="7961015016161918242">Nigdy</translation>
 <translation id="7963646190083259054">Dostawca:</translation>
 <translation id="7987073022710626672">Warunki korzystania z Chrome</translation>
 <translation id="7998918019931843664">Otwórz ponownie zamkniętą kartę</translation>
@@ -612,5 +608,6 @@ Aby otrzymać nowe licencje, połącz się z internetem i odtwórz pobrane treś
 <translation id="945632385593298557">Dostęp do mikrofonu</translation>
 <translation id="954352821720225055">Zakładka niedostępna offline. Pamięć jest prawie pełna.</translation>
 <translation id="969096075394517431">Zmień języki</translation>
+<translation id="981121421437150478">Offline</translation>
 <translation id="983192555821071799">Zamknij wszystkie karty</translation>
 </translationbundle>

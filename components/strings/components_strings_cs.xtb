@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="cs">
-<translation id="1015255576907412255">Další informace získáte u správce systému.</translation>
 <translation id="1015730422737071372">Zadejte další podrobnosti</translation>
 <translation id="1032854598605920125">Otočit ve směru hodinových ručiček</translation>
 <translation id="1038842779957582377">neznámé jméno</translation>
@@ -289,7 +288,6 @@
 <translation id="4176463684765177261">Deaktivováno</translation>
 <translation id="4196861286325780578">&amp;Opakovat přesunutí</translation>
 <translation id="4220128509585149162">Selhání</translation>
-<translation id="4241404202385006548">Deaktivujte rozšíření a poté tuto webovou stránku načtěte znovu.</translation>
 <translation id="4250680216510889253">Ne</translation>
 <translation id="4258748452823770588">Chybný podpis</translation>
 <translation id="4268298190799576220">Prohlížeč Chromium vaši kartu aktuálně nemohl ověřit. Zkuste to znovu později.</translation>
@@ -428,7 +426,6 @@ Kontaktujte administrátora systému.</translation>
 <translation id="6203231073485539293">Zkontrolujte připojení k internetu</translation>
 <translation id="6218753634732582820">Odstranit adresu z prohlížeče Chromium?</translation>
 <translation id="6232139169545176020">Požadované schéma URI není podporováno.</translation>
-<translation id="6237614789842758826">Hledejte na Googlu</translation>
 <translation id="6259156558325130047">&amp;Opakovat změnu uspořádání</translation>
 <translation id="6262796033958342538">Bylo přijato několik různých záhlaví Location. Toto je z důvodu ochrany proti útokům rozdělujícím odpověď HTTP zakázáno.</translation>
 <translation id="6263376278284652872">Záložky webu <ph name="DOMAIN" /></translation>
@@ -498,7 +495,6 @@ Kontaktujte administrátora systému.</translation>
 <translation id="7087282848513945231">Obvod</translation>
 <translation id="7088615885725309056">Starší</translation>
 <translation id="7108649287766967076">Překlad do jazyka <ph name="TARGET_LANGUAGE" /> se nezdařil.</translation>
-<translation id="7117303293717852287">Načtěte tuto webovou stránku znovu</translation>
 <translation id="7139724024395191329">Emirát</translation>
 <translation id="7179921470347911571">Spustit znovu</translation>
 <translation id="7180611975245234373">Obnovit</translation>
@@ -545,7 +541,6 @@ Pssst! Příště by se vám mohl hodit anonymní režim (<ph name="SHORTCUT_KEY
 <translation id="7592362899630581445">Certifikát serveru porušuje omezení názvů domén.</translation>
 <translation id="759889825892636187">Web <ph name="HOST_NAME" /> momentálně tento požadavek nemůže zpracovat.</translation>
 <translation id="7600965453749440009">Jazyk <ph name="LANGUAGE" /> nikdy nepřekládat</translation>
-<translation id="7602848207066046655">Server <ph name="BEGIN_ABBR" /> webu <ph name="HOST_NAME" /> nelze najít.</translation>
 <translation id="7610193165460212391">Hodnota <ph name="VALUE" /> je mimo rozsah.</translation>
 <translation id="7613889955535752492">Vypršení platnosti: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Již máte údaje, které jsou šifrovány pomocí jiné verze vašeho hesla k účtu Google. Zadejte toto heslo prosím níže.</translation>
@@ -615,7 +610,6 @@ Pssst! Příště by se vám mohl hodit anonymní režim (<ph name="SHORTCUT_KEY
 <translation id="8488350697529856933">Platí pro</translation>
 <translation id="8494979374722910010">Tento pokus o spojení se serverem se nezdařil.</translation>
 <translation id="8498891568109133222">Odpověď webu <ph name="HOST_NAME" /> trvala příliš dlouho.</translation>
-<translation id="8508677083825928015">Předběžně načítat zdroje za účelem rychlejšího načítání stránek</translation>
 <translation id="8530504477309582336">Služba Google Payments tento typ karty nepodporuje. Vyberte prosím jinou kartu.</translation>
 <translation id="8550022383519221471">Služba synchronizace není pro vaši doménu k dispozici.</translation>
 <translation id="8553075262323480129">Překlad se nezdařil. Nepodařilo se rozpoznat jazyk stránky.</translation>

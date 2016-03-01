@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="mr">
-<translation id="1015255576907412255">अधिक माहितीसाठी आपल्या सिस्टीम प्रशासकाशी संपर्क साधा.</translation>
 <translation id="1015730422737071372">अतिरिक्त तपशील प्रदान करा</translation>
 <translation id="1032854598605920125">घड्याळाच्या दिशेने फिरवा</translation>
 <translation id="1038842779957582377">अज्ञात नाव</translation>
@@ -302,7 +301,6 @@
 <translation id="4176463684765177261">अक्षम</translation>
 <translation id="4196861286325780578">&amp;हलवा पुन्हा करा</translation>
 <translation id="4220128509585149162">क्रॅश होते</translation>
-<translation id="4241404202385006548">आपले विस्तार अक्षम करा आणि नंतर हे वेबपृष्ठ रीलोड करा</translation>
 <translation id="4250680216510889253">नाही</translation>
 <translation id="4258748452823770588">खराब स्वाक्षरी</translation>
 <translation id="4268298190799576220">Chromium यावेळी आपले कार्ड सत्यापित करण्यात अक्षम होते. कृपया नंतर पुन्हा प्रयत्न करा.</translation>
@@ -443,7 +441,6 @@
 <translation id="6203231073485539293">आपले इंटरनेट कनेक्शन तपासा</translation>
 <translation id="6218753634732582820">Chromium वरून पत्ता काढायचा?</translation>
 <translation id="6232139169545176020">विनंती केलेली URI योजना समर्थित नाही.</translation>
-<translation id="6237614789842758826">Google वर शोधा</translation>
 <translation id="6259156558325130047">&amp;पुनर्क्रमित करा पुन्हा करा</translation>
 <translation id="6262796033958342538">एकाधिक स्पष्ट स्थान शीर्षलेख प्राप्त झाले. HTTP प्रतिसाद विभाजन करणार्‍या हल्ल्यांपासून 
         संरक्षण करण्यासाठी याला अनुमती नाही.</translation>
@@ -519,7 +516,6 @@
 <translation id="7087282848513945231">परगणा</translation>
 <translation id="7088615885725309056">थोडा जुना</translation>
 <translation id="7108649287766967076"><ph name="TARGET_LANGUAGE" /> मध्ये भाषांतर अयशस्वी झाले.</translation>
-<translation id="7117303293717852287">हे वेबपृष्ठ रीलोड करा</translation>
 <translation id="7139724024395191329">अमिरात</translation>
 <translation id="7179921470347911571">आत्ता पुन्हा लाँच करा </translation>
 <translation id="7180611975245234373">रीफ्रेश करा</translation>
@@ -566,7 +562,6 @@
 <translation id="7592362899630581445">सर्व्हरचे प्रमाणपत्र नाव मर्यादांचे उल्लंघन करते.</translation>
 <translation id="759889825892636187"><ph name="HOST_NAME" /> सध्या ही विनंती हाताळण्यात अक्षम आहे.</translation>
 <translation id="7600965453749440009">कधीही <ph name="LANGUAGE" /> चा अनुवाद करु नका</translation>
-<translation id="7602848207066046655"><ph name="HOST_NAME" /> चा सर्व्हर <ph name="BEGIN_ABBR" /> शोधणे शक्य झाले नाही.</translation>
 <translation id="7610193165460212391">मूल्य <ph name="VALUE" /> श्रेणीच्या बाहेर आहे.</translation>
 <translation id="7613889955535752492">कालबाह्य: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">आपल्याकडे आधीपासूनच डेटा आहे जो आपल्या Google खाते संकेतशब्दाची विभिन्न आवृत्ती वापरुन कूटबद्ध करण्‍यात आला आहे. कृपया तो खाली प्रविष्‍ट करा.</translation>
@@ -644,7 +639,6 @@
 <translation id="8488350697529856933">यावर लागू होते</translation>
 <translation id="8494979374722910010">सर्व्हरशी कनेक्ट करण्याचा प्रयत्न अयशस्वी.</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> नी प्रतिसाद देण्यात बराच वेळ घेतला.</translation>
-<translation id="8508677083825928015">पृष्ठे अधिक द्रुतपणे लोड करण्यासाठी संसाधने अगोदर आणा</translation>
 <translation id="8530504477309582336">या प्रकारचे कार्ड Google Payments द्वारे समर्थित नाही. कृपया एक भिन्न कार्ड निवडा.</translation>
 <translation id="8550022383519221471">समक्रमित सेवा आपल्या डोमेनसाठी उपलब्ध नाही.</translation>
 <translation id="8553075262323480129">अनुवाद करण्यात अयशस्वी कारण पृष्ठाची भाषा निर्धारित करणे शक्य नाही.</translation>

@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sl">
-<translation id="1015255576907412255">Če želite več informacij, se obrnite na skrbnika sistema.</translation>
 <translation id="1015730422737071372">Navedite dodatne podrobnosti</translation>
 <translation id="1032854598605920125">Sukanje v smeri urnega kazalca</translation>
 <translation id="1038842779957582377">neznano ime</translation>
@@ -304,7 +303,6 @@
 <translation id="4176463684765177261">Onemogočeno</translation>
 <translation id="4196861286325780578">&amp;Uveljavi premik</translation>
 <translation id="4220128509585149162">Zrušitve</translation>
-<translation id="4241404202385006548">Onemogočite razširitve in nato znova naložite to spletno stran.</translation>
 <translation id="4250680216510889253">Ne</translation>
 <translation id="4258748452823770588">Napačen podpis</translation>
 <translation id="4268298190799576220">Chromium trenutno ni mogel preveriti vaše kartice. Poskusite znova pozneje.</translation>
@@ -444,7 +442,6 @@
 <translation id="6203231073485539293">Preverite internetno povezavo</translation>
 <translation id="6218753634732582820">Želite naslov odstraniti iz Chromiuma?</translation>
 <translation id="6232139169545176020">Zahtevana shema URI ni podprta.</translation>
-<translation id="6237614789842758826">Poiščite v Googlu</translation>
 <translation id="6259156558325130047">&amp;Uveljavi razvrstitev</translation>
 <translation id="6262796033958342538">Prejetih je bilo več glav z različnimi polji Location. To je zaradi zaščite pred
     napadi z delitvijo odzivov HTTP prepovedano.</translation>
@@ -520,7 +517,6 @@
 <translation id="7087282848513945231">Okraj</translation>
 <translation id="7088615885725309056">Starejše</translation>
 <translation id="7108649287766967076">Prevod v jezik <ph name="TARGET_LANGUAGE" /> ni uspel.</translation>
-<translation id="7117303293717852287">Znova naložite to stran</translation>
 <translation id="7139724024395191329">Emirat</translation>
 <translation id="7179921470347911571">Znova zaženi</translation>
 <translation id="7180611975245234373">Osveži</translation>
@@ -567,7 +563,6 @@ Pst! Naslednjič vam lahko pride prav bližnjica <ph name="SHORTCUT_KEY" /> za n
 <translation id="7592362899630581445">Strežnikovo potrdilo krši omejitve imen.</translation>
 <translation id="759889825892636187">Spletno mesto <ph name="HOST_NAME" /> trenutno ne more obdelati te zahteve.</translation>
 <translation id="7600965453749440009">Nikoli ne prevedi iz jezika: <ph name="LANGUAGE" /></translation>
-<translation id="7602848207066046655">Strežnika spletnega mesta <ph name="HOST_NAME" /> <ph name="BEGIN_ABBR" /> ni bilo mogoče najti.</translation>
 <translation id="7610193165460212391">Vrednost je zunaj obsega <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">Veljavnost do: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Podatke, ki so šifrirani z drugo različico gesla za Google Račun, že imate. Geslo vnesite spodaj.</translation>
@@ -648,7 +643,6 @@ Pst! Naslednjič vam lahko pride prav bližnjica <ph name="SHORTCUT_KEY" /> za n
 <translation id="8488350697529856933">Velja za</translation>
 <translation id="8494979374722910010">Poskus vzpostavljanja povezave s strežnikom ni uspel.</translation>
 <translation id="8498891568109133222">Spletno mesto <ph name="HOST_NAME" /> se ni odzvalo v ustreznem času.</translation>
-<translation id="8508677083825928015">Vnaprejšnji prenos sredstev za hitrejše nalaganje strani</translation>
 <translation id="8530504477309582336">Ta vrsta kartice ni podprta v storitvi Google Payments. Izberite drugo kartico.</translation>
 <translation id="8550022383519221471">Sinhronizacija ni na voljo za vašo domeno.</translation>
 <translation id="8553075262323480129">Prevod ni uspel, ker ni mogoče določiti jezika strani.</translation>

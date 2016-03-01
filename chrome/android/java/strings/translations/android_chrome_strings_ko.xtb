@@ -24,7 +24,6 @@
 <translation id="1346090444609141578">저장된 페이지 없음</translation>
 <translation id="1369915414381695676"><ph name="SITE_NAME" /> 사이트 추가됨</translation>
 <translation id="1373696734384179344">선택한 콘텐츠를 다운로드할 공간이 부족합니다.</translation>
-<translation id="1379156015317873965">페이지 로드 성능 개선</translation>
 <translation id="138361230106469022"><ph name="FULL_NAME" />님, 안녕하세요.</translation>
 <translation id="1383876407941801731">검색</translation>
 <translation id="1389974829397082527">이 폴더에는 북마크가 없습니다.</translation>
@@ -126,7 +125,6 @@ Chrome 개인정보 보호 설정에서 피지컬 웹을 관리할 수 있습니
 <translation id="2707726405694321444">페이지 새로고침</translation>
 <translation id="2709516037105925701">자동완성</translation>
 <translation id="271033894570825754">새 파일</translation>
-<translation id="2718352093833049315">Wi-Fi 연결 시</translation>
 <translation id="2748463065602559597">지금 안전한 Chrome 페이지를 보고 계십니다.</translation>
 <translation id="2762000892062317888">방금 전</translation>
 <translation id="2770465223704140727">목록에서 삭제</translation>
@@ -262,6 +260,7 @@ Chrome 개인정보 보호 설정에서 피지컬 웹을 관리할 수 있습니
 <translation id="4836364883164334657">이 사이트에 비공개로 연결하도록 설정되지 않았습니다. 누군가가 <ph name="DOMAIN_NAME" />에서 사용자의 정보(예: 사진, 비밀번호, 메시지, 신용카드)를 도용하려고 공격을 시도하는 중일 수 있습니다.</translation>
 <translation id="4842511359652954519">자세히 알아보기</translation>
 <translation id="4850886885716139402">보기</translation>
+<translation id="4875622588773761625"><ph name="PASSWORD_MANAGER_BRAND" />에서 이 사이트의 비밀번호를 업데이트하도록 하시겠습니까?</translation>
 <translation id="4881695831933465202">열기</translation>
 <translation id="4885273946141277891">지원되지 않는 Chrome 인스턴스 수입니다.</translation>
 <translation id="4927198283430892231">현재 저장된 페이지의 크기는 <ph name="TOTAL_OFFLINE_STORAGE_SIZE" />입니다.</translation>
@@ -307,7 +306,6 @@ Chrome 개인정보 보호 설정에서 피지컬 웹을 관리할 수 있습니
 <translation id="5323972449344932352">Chrome 실행</translation>
 <translation id="5324858694974489420">자녀 보호 설정</translation>
 <translation id="5327248766486351172">이름</translation>
-<translation id="5335200807405507442">페이지 리소스 프리패치</translation>
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE" /> 삭제됨</translation>
 <translation id="5345083863238459644">위치 정보 액세스 또한 <ph name="BEGIN_LINK" />이 기기에서 사용 중지되었습니다<ph name="END_LINK" />.</translation>
 <translation id="5380554235172449987">보내지 않기</translation>
@@ -422,7 +420,7 @@ Chrome 개인정보 보호 설정에서 피지컬 웹을 관리할 수 있습니
 <translation id="6699351163704950317">모든 저장된 페이지</translation>
 <translation id="6710213216561001401">이전</translation>
 <translation id="6720988912937197322">저장한 페이지를 오프라인에서 사용할 수 없습니다.</translation>
-<translation id="6722992508235227685">북마크, 방문 기록, 비밀번호 등 기타 설정이 Google 계정에 동기화되어 모든 기기에서 사용할 수 있습니다. <ph name="BEGIN_LINK1" />설정<ph name="END_LINK1" />에서 동기화할 대상을 선택할 수 있습니다.</translation>
+<translation id="6722992508235227685">북마크, 방문 기록, 비밀번호 등 기타 설정이 Google 계정에 동기화되어 모든 기기에서 사용할 수 있습니다. <ph name="BEGIN_LINK1" />설정<ph name="END_LINK1" />에서 동기화할 항목을 선택할 수 있습니다.</translation>
 <translation id="6738867403308150051">다운로드 중...</translation>
 <translation id="6770414673596662518">또한 Chrome의 세이프 브라우징 시스템이 악성 웹페이지를 탐지하여 피싱, 멀웨어, 유해한 다운로드로부터 사용자를 보호합니다.</translation>
 <translation id="6784675033504223784">'<ph name="SEARCH_TERM" />' 검색</translation>
@@ -485,7 +483,6 @@ Chrome 개인정보 보호 설정에서 피지컬 웹을 관리할 수 있습니
 <translation id="7498271377022651285">잠시 기다려 주세요…</translation>
 <translation id="7501135638693251872">모든 북마크</translation>
 <translation id="7521387064766892559">자바스크립트</translation>
-<translation id="7561196759112975576">항상</translation>
 <translation id="7562080006725997899">인터넷 사용 기록 삭제</translation>
 <translation id="7588950540487816470">피지컬 웹</translation>
 <translation id="7596558890252710462">운영체제</translation>
@@ -519,7 +516,6 @@ Chrome 개인정보 보호 설정에서 피지컬 웹을 관리할 수 있습니
 <translation id="7876243839304621966">모두 삭제</translation>
 <translation id="7947953824732555851">수락 및 로그인</translation>
 <translation id="7949961459945740081">최신 기능 다운로드</translation>
-<translation id="7961015016161918242">사용하지 않음</translation>
 <translation id="7963646190083259054">공급업체:</translation>
 <translation id="7987073022710626672">Chrome 서비스 약관</translation>
 <translation id="7998918019931843664">닫은 탭 다시 열기</translation>
@@ -612,5 +608,6 @@ Chrome 개인정보 보호 설정에서 피지컬 웹을 관리할 수 있습니
 <translation id="945632385593298557">마이크에 액세스</translation>
 <translation id="954352821720225055">북마크를 오프라인에서 사용할 수 없습니다. 저장용량이 얼마 남지 않았습니다.</translation>
 <translation id="969096075394517431">언어 변경</translation>
+<translation id="981121421437150478">오프라인</translation>
 <translation id="983192555821071799">탭 모두 닫기</translation>
 </translationbundle>

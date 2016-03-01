@@ -24,7 +24,6 @@ Chcete-li fyzický web používat, je třeba aktivovat Bluetooth a určování 
 <translation id="1346090444609141578">Žádné uložené stránky tu nejsou</translation>
 <translation id="1369915414381695676">Byl přidán web <ph name="SITE_NAME" /></translation>
 <translation id="1373696734384179344">Ke stažení vybraného obsahu není k dispozici dostatek paměti.</translation>
-<translation id="1379156015317873965">Zlepšit výkon při načítání stránek</translation>
 <translation id="138361230106469022">Dobrý den, <ph name="FULL_NAME" /></translation>
 <translation id="1383876407941801731">Vyhledávání</translation>
 <translation id="1389974829397082527">Nejsou zde žádné záložky</translation>
@@ -126,7 +125,6 @@ Fyzický web můžete v Chromu ovládat v nastavení ochrany soukromí.</trans
 <translation id="2707726405694321444">Obnovit stránku</translation>
 <translation id="2709516037105925701">Automatické vyplňování</translation>
 <translation id="271033894570825754">Nové</translation>
-<translation id="2718352093833049315">Pouze v sítích Wi-Fi</translation>
 <translation id="2748463065602559597">Zobrazujete zabezpečenou stránku Google Chrome.</translation>
 <translation id="2762000892062317888">právě teď</translation>
 <translation id="2770465223704140727">Odstranit ze seznamu</translation>
@@ -262,6 +260,7 @@ Chcete-li vyhledávací dotaz upravit, proveďte výběr dlouhým stisknutím. C
 <translation id="4836364883164334657">Připojení k tomuto webu není soukromé. Útočníci se mohou pokusit ukrást vaše údaje na webu <ph name="DOMAIN_NAME" /> (například fotky, hesla, zprávy nebo informace o platebních kartách).</translation>
 <translation id="4842511359652954519">Další informace</translation>
 <translation id="4850886885716139402">Zobrazit</translation>
+<translation id="4875622588773761625">Chcete, aby aplikace <ph name="PASSWORD_MANAGER_BRAND" /> aktualizovala vaše heslo pro tento web?</translation>
 <translation id="4881695831933465202">Otevřít</translation>
 <translation id="4885273946141277891">Nepodporovaný počet instancí Chromu.</translation>
 <translation id="4927198283430892231">Uložené hry v současné době zabírají <ph name="TOTAL_OFFLINE_STORAGE_SIZE" />.</translation>
@@ -307,7 +306,6 @@ Stačí otevřít Chrome v počítači, přejít do nabídky a zvolit možnost P
 <translation id="5323972449344932352">Spustit Chrome</translation>
 <translation id="5324858694974489420">Rodičovská nastavení</translation>
 <translation id="5327248766486351172">Název</translation>
-<translation id="5335200807405507442">Předběžně načítat zdroje stránek</translation>
 <translation id="5345040418939504969">Záložka <ph name="BOOKMARK_TITLE" /> byla smazána</translation>
 <translation id="5345083863238459644">Přístup k poloze je <ph name="BEGIN_LINK" />vypnut také v tomto zařízení<ph name="END_LINK" />.</translation>
 <translation id="5380554235172449987">Nikdy neodesílat</translation>
@@ -485,7 +483,6 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="7498271377022651285">Čekejte prosím…</translation>
 <translation id="7501135638693251872">Všechny záložky</translation>
 <translation id="7521387064766892559">JavaScript</translation>
-<translation id="7561196759112975576">Vždy</translation>
 <translation id="7562080006725997899">Mazání údajů o prohlížení</translation>
 <translation id="7588950540487816470">Fyzický web</translation>
 <translation id="7596558890252710462">Operační systém</translation>
@@ -519,7 +516,6 @@ Nejste však neviditelní. Anonymní režim neskryje vaši aktivitu před zaměs
 <translation id="7876243839304621966">Odstranit vše</translation>
 <translation id="7947953824732555851">Přijmout a přihlásit</translation>
 <translation id="7949961459945740081">Získejte nejnovější funkce</translation>
-<translation id="7961015016161918242">Nikdy</translation>
 <translation id="7963646190083259054">Dodavatel:</translation>
 <translation id="7987073022710626672">Smluvní podmínky Chrome</translation>
 <translation id="7998918019931843664">Znovu otevřít zavřenou kartu</translation>
@@ -612,5 +608,6 @@ Chcete-li získat nové licence, připojte se k internetu a přehrajte stažen
 <translation id="945632385593298557">Přístup k mikrofonu</translation>
 <translation id="954352821720225055">Záložka není k dispozici offline. Úložiště je téměř plné.</translation>
 <translation id="969096075394517431">Změnit jazyky</translation>
+<translation id="981121421437150478">Offline</translation>
 <translation id="983192555821071799">Zavřít všechny karty</translation>
 </translationbundle>

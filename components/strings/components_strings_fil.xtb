@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fil">
-<translation id="1015255576907412255">Makipag-ugnay sa iyong system administrator para sa higit pang impormasyon.</translation>
 <translation id="1015730422737071372">Magbigay ng mga karagdagang detalye</translation>
 <translation id="1032854598605920125">I-rotate pakanan</translation>
 <translation id="1038842779957582377">Hindi kilalang pangalan</translation>
@@ -303,7 +302,6 @@
 <translation id="4176463684765177261">Hindi Pinagana</translation>
 <translation id="4196861286325780578">&amp;Gawing muli ang paglilipat</translation>
 <translation id="4220128509585149162">Mga Pag-crash</translation>
-<translation id="4241404202385006548">I-disable ang iyong mga extension at pagkatapos ay i-reload ang webpage na ito</translation>
 <translation id="4250680216510889253">Hindi</translation>
 <translation id="4258748452823770588">Maling lagda</translation>
 <translation id="4268298190799576220">Hindi na-verify ng Chromium ang iyong card sa pagkakataong ito. Pakisubukang muli sa ibang pagkakataon.</translation>
@@ -443,7 +441,6 @@
 <translation id="6203231073485539293">Suriin ang iyong koneksyon sa Internet</translation>
 <translation id="6218753634732582820">Gusto mo bang alisin ang address sa Chromium?</translation>
 <translation id="6232139169545176020">Di suportado ang hiniling na URI Scheme.</translation>
-<translation id="6237614789842758826">Maghanap Sa Google</translation>
 <translation id="6259156558325130047">&amp;Gawing Muli ang Pagbabago sa Ayos</translation>
 <translation id="6262796033958342538">Nakatanggap ng maraming natatanging Location na header.  Hindi ito pinahihintulutan
     upang mapigilan ang mga pag-atake sa HTTP response splitting.</translation>
@@ -519,7 +516,6 @@
 <translation id="7087282848513945231">County</translation>
 <translation id="7088615885725309056">Mas Nauna</translation>
 <translation id="7108649287766967076">Nabigo ang pag-translate sa <ph name="TARGET_LANGUAGE" />.</translation>
-<translation id="7117303293717852287">I-reload ang webpage na ito</translation>
 <translation id="7139724024395191329">Emirate</translation>
 <translation id="7179921470347911571">Ilunsad Muli Ngayon</translation>
 <translation id="7180611975245234373">I-refresh</translation>
@@ -566,7 +562,6 @@ Psst! Maaaring maging kapaki-pakinabang ang mode na incognito <ph name="SHORTCUT
 <translation id="7592362899630581445">Lumabag ang certificate ng server sa limitasyon sa pangalan.</translation>
 <translation id="759889825892636187">Sa kasalukuyan, hindi magagawa ng <ph name="HOST_NAME" /> ang kahilingang ito.</translation>
 <translation id="7600965453749440009">Huwag isalin kailanman ang <ph name="LANGUAGE" /></translation>
-<translation id="7602848207066046655">Hindi makita ang server ng <ph name="HOST_NAME" /> na <ph name="BEGIN_ABBR" />.</translation>
 <translation id="7610193165460212391">Wala sa sakop ang halaga <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">Exp: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Mayroon ka nang data na na-encrypt gamit ang ibang bersyon ng iyong password ng Google Account. Pakilagay ito sa ibaba.</translation>
@@ -647,7 +642,6 @@ Psst! Maaaring maging kapaki-pakinabang ang mode na incognito <ph name="SHORTCUT
 <translation id="8488350697529856933">Nalalapat sa</translation>
 <translation id="8494979374722910010">Ang pagtangka sa pagkunekta sa server ay nabigo.</translation>
 <translation id="8498891568109133222">Masyadong matagal bago nakatugon ang <ph name="HOST_NAME" />.</translation>
-<translation id="8508677083825928015">I-prefetch ang mga mapagkukunan upang ma-load nang mas mabilis ang mga page</translation>
 <translation id="8530504477309582336">Ang ganitong uri ng card ay hindi sinusuportahan ng Google Payments. Mangyaring pumili ng ibang card.</translation>
 <translation id="8550022383519221471">Hindi available ang serbisyo ng pag-sync para sa iyong domain.</translation>
 <translation id="8553075262323480129">Nabigo ang pag-translate dahil hindi matukoy ang wika ng pahina.</translation>

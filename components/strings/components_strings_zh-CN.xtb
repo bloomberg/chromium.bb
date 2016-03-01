@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-CN">
-<translation id="1015255576907412255">有关详情，请联系您的系统管理员。</translation>
 <translation id="1015730422737071372">提供其他详细信息</translation>
 <translation id="1032854598605920125">顺时针旋转</translation>
 <translation id="1038842779957582377">未知名称</translation>
@@ -292,7 +291,6 @@
 <translation id="4176463684765177261">已停用</translation>
 <translation id="4196861286325780578">恢复移动(&amp;R)</translation>
 <translation id="4220128509585149162">崩溃</translation>
-<translation id="4241404202385006548">请停用扩展程序，然后重新加载此网页</translation>
 <translation id="4250680216510889253">否</translation>
 <translation id="4258748452823770588">签名无效</translation>
 <translation id="4268298190799576220">Chromium 目前无法验证您的信用卡，请稍后重试。</translation>
@@ -431,7 +429,6 @@
 <translation id="6203231073485539293">请检查您的互联网连接是否正常</translation>
 <translation id="6218753634732582820">要从 Chromium 中移除地址吗？</translation>
 <translation id="6232139169545176020">请求的 URI 方案不受支持。</translation>
-<translation id="6237614789842758826">请在Google上搜索</translation>
 <translation id="6259156558325130047">恢复顺序调整(&amp;R)</translation>
 <translation id="6262796033958342538">系统收到了多个不同的 Location 标头。为了避免遭到 HTTP 响应拆分攻击，这种情况是不允许的。</translation>
 <translation id="6263376278284652872"><ph name="DOMAIN" /> 书签</translation>
@@ -501,7 +498,6 @@
 <translation id="7087282848513945231">县/郡</translation>
 <translation id="7088615885725309056">往前</translation>
 <translation id="7108649287766967076">无法翻译成<ph name="TARGET_LANGUAGE" />。</translation>
-<translation id="7117303293717852287">请重新加载此网页</translation>
 <translation id="7139724024395191329">酋长国</translation>
 <translation id="7179921470347911571">立即重新启动</translation>
 <translation id="7180611975245234373">刷新</translation>
@@ -548,7 +544,6 @@
 <translation id="7592362899630581445">服务器的证书违反了域名限制。</translation>
 <translation id="759889825892636187"><ph name="HOST_NAME" /> 目前无法处理此请求。</translation>
 <translation id="7600965453749440009">一律不翻译<ph name="LANGUAGE" /></translation>
-<translation id="7602848207066046655">无法找到 <ph name="HOST_NAME" /> 的服务器 <ph name="BEGIN_ABBR" />。</translation>
 <translation id="7610193165460212391">值超出了范围 (<ph name="VALUE" />)。</translation>
 <translation id="7613889955535752492">过期时间：<ph name="EXPIRATION_YEAR" /> 年 <ph name="EXPIRATION_MONTH" /> 月</translation>
 <translation id="7615602087246926389">您已经使用不同版本的 Google 帐户密码加密了数据。请在下方输入。</translation>
@@ -621,7 +616,6 @@
 <translation id="8488350697529856933">适用对象</translation>
 <translation id="8494979374722910010">无法连接到服务器。</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> 的响应时间过长。</translation>
-<translation id="8508677083825928015">预提取资源，以便更快速地加载网页</translation>
 <translation id="8530504477309582336">Google Payments 不支持这种类型的信用卡，请选择其他卡。</translation>
 <translation id="8550022383519221471">您的域不支持同步服务。</translation>
 <translation id="8553075262323480129">系统无法确定该网页的语言，因此无法进行翻译。</translation>

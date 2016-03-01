@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="hr">
-<translation id="1015255576907412255">Obratite se administratoru sustava za više informacija.</translation>
 <translation id="1015730422737071372">Navedite dodatne pojedinosti</translation>
 <translation id="1032854598605920125">Zakretanje u smjeru kazaljke na satu</translation>
 <translation id="1038842779957582377">nepoznati naziv</translation>
@@ -222,6 +221,7 @@
 <translation id="3254409185687681395">Označi ovu stranicu</translation>
 <translation id="3270847123878663523">&amp;Poništi promjenu rasporeda</translation>
 <translation id="3286538390144397061">Ponovo pokreni sad</translation>
+<translation id="3305707030755673451">Vaši su podaci šifrirani vašom šifrom za sinkronizaciju <ph name="TIME" />. Unesite je da biste pokrenuli sinkronizaciju.</translation>
 <translation id="333371639341676808">Spriječite ovu stranicu od stvaranja dodatnih dijaloga.</translation>
 <translation id="3340978935015468852">postavke</translation>
 <translation id="3355823806454867987">Promijeni proxy postavke...</translation>
@@ -303,7 +303,6 @@
 <translation id="4176463684765177261">Onemogućeno</translation>
 <translation id="4196861286325780578">&amp;Ponovi premještanje</translation>
 <translation id="4220128509585149162">Padovi programa</translation>
-<translation id="4241404202385006548">Onemogućite proširenja pa ponovo učitajte ovu web-stranicu</translation>
 <translation id="4250680216510889253">Ne</translation>
 <translation id="4258748452823770588">Potpis nije valjan</translation>
 <translation id="4268298190799576220">Chromium nije uspio potvrditi vašu karticu u ovom trenutku. Pokušajte ponovo kasnije.</translation>
@@ -443,7 +442,6 @@
 <translation id="6203231073485539293">Provjerite internetsku vezu</translation>
 <translation id="6218753634732582820">Želite li ukloniti adresu iz Chromiuma?</translation>
 <translation id="6232139169545176020">Tražena shema URI-ja nije podržana.</translation>
-<translation id="6237614789842758826">Pretražite na Googleu</translation>
 <translation id="6259156558325130047">&amp;Ponovi promjenu rasporeda</translation>
 <translation id="6262796033958342538">Primljeno je više zasebnih zaglavlja lokacije. To nije dopušteno radi
     zaštite od napada koji razdvajaju HTTP odgovore.</translation>
@@ -519,7 +517,6 @@
 <translation id="7087282848513945231">Županija</translation>
 <translation id="7088615885725309056">Starije</translation>
 <translation id="7108649287766967076">Prijevod na <ph name="TARGET_LANGUAGE" /> nije uspio.</translation>
-<translation id="7117303293717852287">Ponovo učitajte ovu web-stranicu</translation>
 <translation id="7139724024395191329">Emirat</translation>
 <translation id="7179921470347911571">Ponovo pokreni sada</translation>
 <translation id="7180611975245234373">Osvježi</translation>
@@ -566,7 +563,6 @@ Psst! Sljedeći bi vam put mogao koristiti anonimni način <ph name="SHORTCUT_KE
 <translation id="7592362899630581445">Certifikat poslužitelja krši ograničenja naziva.</translation>
 <translation id="759889825892636187">Host <ph name="HOST_NAME" /> trenutačno ne može obraditi zahtjev.</translation>
 <translation id="7600965453749440009">Nikad ne prevodi <ph name="LANGUAGE" /></translation>
-<translation id="7602848207066046655">Oznaka <ph name="BEGIN_ABBR" /> poslužitelja hosta <ph name="HOST_NAME" /> nije pronađena.</translation>
 <translation id="7610193165460212391">Vrijednost je izvan raspona <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">Istječe: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Već imate podatke koji su kriptirani pomoću druge verzije zaporke vašeg Google računa. Unesite je u nastavku.</translation>
@@ -647,7 +643,6 @@ Psst! Sljedeći bi vam put mogao koristiti anonimni način <ph name="SHORTCUT_KE
 <translation id="8488350697529856933">Primjenjuje se na</translation>
 <translation id="8494979374722910010">Pokušaj povezivanja s poslužiteljem nije uspio.</translation>
 <translation id="8498891568109133222">Hostu <ph name="HOST_NAME" /> bilo je potrebno previše vremena za odgovor.</translation>
-<translation id="8508677083825928015">Unaprijed dohvati resurse radi bržeg učitavanja stranica</translation>
 <translation id="8530504477309582336">Google Payments ne podržava tu vrstu kartice. Odaberite neku drugu karticu.</translation>
 <translation id="8550022383519221471">Usluga sinkroniziranja nije dostupna za vašu domenu.</translation>
 <translation id="8553075262323480129">Prijevod nije uspio jer nije bilo moguće odrediti jezik stranice.</translation>
@@ -711,6 +706,7 @@ i netočne vjerodajnice. To može značiti da se neki napadač pokušava predsta
 <translation id="9170848237812810038">&amp;Poništi</translation>
 <translation id="917450738466192189">Certifikat poslužitelja nije valjan.</translation>
 <translation id="9183425211371246419">Host <ph name="HOST_NAME" /> upotrebljava nepodržane protokole.</translation>
+<translation id="9205078245616868884">Vaši su podaci šifrirani vašom šifrom za sinkronizaciju. Unesite je da biste pokrenuli sinkronizaciju.</translation>
 <translation id="9207861905230894330">Dodavanje članka nije uspjelo.</translation>
 <translation id="933612690413056017">Nema internetske veze</translation>
 <translation id="933712198907837967">Diners Club</translation>

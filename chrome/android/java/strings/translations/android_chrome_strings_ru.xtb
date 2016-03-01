@@ -24,7 +24,6 @@
 <translation id="1346090444609141578">Сохраненных страниц нет</translation>
 <translation id="1369915414381695676">Добавлен сайт <ph name="SITE_NAME" /></translation>
 <translation id="1373696734384179344">Недостаточно памяти для скачивания выбранного контента.</translation>
-<translation id="1379156015317873965">Более эффективная загрузка страниц</translation>
 <translation id="138361230106469022">Здравствуйте, <ph name="FULL_NAME" />!</translation>
 <translation id="1383876407941801731">Поиск</translation>
 <translation id="1389974829397082527">Закладок пока нет</translation>
@@ -126,7 +125,6 @@
 <translation id="2707726405694321444">Обновить страницу</translation>
 <translation id="2709516037105925701">Автозаполнение</translation>
 <translation id="271033894570825754">Новый</translation>
-<translation id="2718352093833049315">Только Wi-Fi</translation>
 <translation id="2748463065602559597">Вы просматриваете безопасную страницу Google Chrome.</translation>
 <translation id="2762000892062317888">только что</translation>
 <translation id="2770465223704140727">Удалить из списка</translation>
@@ -262,6 +260,7 @@
 <translation id="4836364883164334657">Подключение не защищено. Злоумышленники могут похитить ваши данные (например, пароли, сообщения или номера банковских карт) в домене <ph name="DOMAIN_NAME" />.</translation>
 <translation id="4842511359652954519">Подробнее…</translation>
 <translation id="4850886885716139402">Посмотреть</translation>
+<translation id="4875622588773761625">Обновить пароль для этого сайта в сервисе "<ph name="PASSWORD_MANAGER_BRAND" />"?</translation>
 <translation id="4881695831933465202">Открыть</translation>
 <translation id="4885273946141277891">Конфликт версий Chrome</translation>
 <translation id="4927198283430892231">Сохраненные страницы занимают <ph name="TOTAL_OFFLINE_STORAGE_SIZE" />.</translation>
@@ -307,7 +306,6 @@
 <translation id="5323972449344932352">Запустить Chrome</translation>
 <translation id="5324858694974489420">Родительские настройки</translation>
 <translation id="5327248766486351172">Название</translation>
-<translation id="5335200807405507442">Запрос настроек и файлов страницы</translation>
 <translation id="5345040418939504969">Закладка "<ph name="BOOKMARK_TITLE" />" удалена</translation>
 <translation id="5345083863238459644">На этом устройстве также <ph name="BEGIN_LINK" />открыт<ph name="END_LINK" /> доступ к местоположению.</translation>
 <translation id="5380554235172449987">Не отправлять</translation>
@@ -485,7 +483,6 @@
 <translation id="7498271377022651285">Подождите…</translation>
 <translation id="7501135638693251872">Все закладки</translation>
 <translation id="7521387064766892559">JavaScript</translation>
-<translation id="7561196759112975576">Всегда</translation>
 <translation id="7562080006725997899">Очистить историю</translation>
 <translation id="7588950540487816470">Интернет вокруг нас</translation>
 <translation id="7596558890252710462">Операционная система</translation>
@@ -519,7 +516,6 @@
 <translation id="7876243839304621966">Удалить все</translation>
 <translation id="7947953824732555851">Принять и войти</translation>
 <translation id="7949961459945740081">C новыми функциями</translation>
-<translation id="7961015016161918242">Нет</translation>
 <translation id="7963646190083259054">Поставщик:</translation>
 <translation id="7987073022710626672">Условия использования Chrome</translation>
 <translation id="7998918019931843664">Восстановить закрытую вкладку</translation>
@@ -612,5 +608,6 @@
 <translation id="945632385593298557">Доступ к микрофону</translation>
 <translation id="954352821720225055">Закладка не сохранена в офлайн-режиме: недостаточно свободного места.</translation>
 <translation id="969096075394517431">Изменить языки</translation>
+<translation id="981121421437150478">Офлайн</translation>
 <translation id="983192555821071799">Закрыть все вкладки</translation>
 </translationbundle>

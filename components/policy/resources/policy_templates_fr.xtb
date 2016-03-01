@@ -508,15 +508,6 @@ Cette règle n'est respectée que si la règle "DefaultSearchProviderEnabled" es
 Si cette règle n'est pas configurée, le paramètre "AskGeolocation" est utilisé et l'utilisateur est en mesure de le modifier.</translation>
 <translation id="2650049181907741121">Action à effectuer lorsque l'utilisateur ferme le couvercle</translation>
 <translation id="2660846099862559570">Ne jamais utiliser de proxy</translation>
-<translation id="2665596266623707739">Avertissement : Le remplacement de la version TLS 1.0 sera supprimé du produit <ph name="PRODUCT_NAME" /> après la version 47 (aux environs du mois de janvier 2016), et l'option "tls1" cessera alors de fonctionner.
-
-      En cas d'échec d'un handshake TLS, <ph name="PRODUCT_NAME" /> tentera d'établir une nouvelle connexion avec une version inférieure de TLS afin de remédier aux bugs au niveau des serveurs HTTPS. Ce paramètre configure la version au niveau de laquelle le processus de remplacement cessera de fonctionner. Si un serveur effectue correctement une négociation de version (c'est-à-dire sans interrompre la connexion), ce paramètre ne s'applique pas. Quoi qu'il en soit, la connexion qui en résulte doit être conforme à SSLVersionMin.
-
-      Si cette règle n'est pas configurée, <ph name="PRODUCT_NAME" /> utilise une version minimale par défaut qui est TLS 1.0 dans <ph name="PRODUCT_NAME" /> 44 et TLS 1.1 dans les versions ultérieures. Notez que cela ne désactive pas la compatibilité avec TLS 1.0, mais affecte simplement l'aptitude du produit <ph name="PRODUCT_NAME" /> à contourner les serveurs qui comportent des bugs et qui sont incapables de négocier correctement les versions.
-
-      Dans le cas contraire, l'une des valeurs suivantes peut être définie : "tls1", "tls1.1" ou "tls1.2". Si la compatibilité avec un serveur qui comporte des bugs doit être conservée, la règle peut être définie sur "tls1". Il s'agit là d'une solution provisoire, et le serveur devrait être corrigé dans les plus brefs délais.
-
-      La définition d'une valeur "tls1.2" entraîne la désactivation de toute requête de remplacement, mais cela risque d'avoir un impact non négligeable sur le plan de la compatibilité.</translation>
 <translation id="267596348720209223">Spécifie les codages de caractères compatibles avec le moteur de recherche. Les codages sont des noms de page de code, comme UTF-8, GB2312 et ISO-8859-1. Ils sont testés dans l'ordre indiqué. 
 
 Cette règle est facultative. Si elle n'est pas configurée, la valeur par défaut UTF-8 est utilisée. 

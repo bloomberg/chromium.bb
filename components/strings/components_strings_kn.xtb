@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="kn">
-<translation id="1015255576907412255">ಹೆಚ್ಚಿನ ಮಾಹಿತಿಗಾಗಿ ನಿಮ್ಮ ಸಿಸ್ಟಂ ನಿರ್ವಾಹಕರನ್ನು ಸಂಪರ್ಕಿಸಿ.</translation>
 <translation id="1015730422737071372">ಹೆಚ್ಚುವರಿ ವಿವರಗಳನ್ನು ಒದಗಿಸಿ</translation>
 <translation id="1032854598605920125">ಪ್ರದಕ್ಷಿಣಾಕಾರದಲ್ಲಿ ತಿರುಗಿಸು</translation>
 <translation id="1038842779957582377">ಆಜ್ಞಾತ ಹೆಸರು</translation>
@@ -296,7 +295,6 @@
 <translation id="4176463684765177261">ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ</translation>
 <translation id="4196861286325780578">&amp;ಸರಿಸುವುದನ್ನು ಮತ್ತೆಮಾಡು</translation>
 <translation id="4220128509585149162">ವಿಫಲತೆಗಳು</translation>
-<translation id="4241404202385006548">ನಿಮ್ಮ ವಿಸ್ತರಣೆಗಳನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿ, ತದನಂತರ ಈ ವೆಬ್‌ಪುಟವನ್ನು ಮರುಲೊಡ್ ಮಾಡಿ</translation>
 <translation id="4250680216510889253">ಇಲ್ಲ</translation>
 <translation id="4258748452823770588">ತಪ್ಪಾದ ಸಹಿ</translation>
 <translation id="4268298190799576220">ಈ ಸಮಯದಲ್ಲಿ Chromium ಗೆ ನಿಮ್ಮ ಕಾರ್ಡ್ ಪರಿಶೀಲಿಸಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ. ದಯವಿಟ್ಟು ನಂತರ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.</translation>
@@ -435,7 +433,6 @@
 <translation id="6203231073485539293">ನಿಮ್ಮ ಇಂಟರ್ನೆಟ್ ಸಂಪರ್ಕವನ್ನು ಪರಿಶೀಲಿಸಿ</translation>
 <translation id="6218753634732582820">Chromium ನಿಂದ ವಿಳಾಸವನ್ನು ತೆಗೆದುಹಾಕುವುದೇ?</translation>
 <translation id="6232139169545176020">ವಿನಂತಿಸಿರುವ URI ಸ್ಕೀಮ್‌ ಅನ್ನು ಬೆಂಬಲಿಸಲಾಗುವುದಿಲ್ಲ.</translation>
-<translation id="6237614789842758826">Google ನಲ್ಲಿ ಹುಡುಕಿ</translation>
 <translation id="6259156558325130047">&amp;ಮರುಕ್ರಮಗೊಳಿಸುವುದನ್ನು ಮತ್ತೆಮಾಡು</translation>
 <translation id="6262796033958342538">ಅನೇಕ ಅನನ್ಯ ಸ್ಥಳ ಶಿರೋನಾಮೆಗಳನ್ನು ಸ್ವೀಕರಿಸಲಾಗಿದೆ. HTTP ಪ್ರತಿಕ್ರಿಯೆ ವಿಭಜಿಸುವ ಆಕ್ರಮಣಗಳ ವಿರುದ್ಧ ರಕ್ಷಿಸಲು ಇದನ್ನು ಅನುಮತಿಸಲಾಗಿಲ್ಲ.</translation>
 <translation id="6263376278284652872"><ph name="DOMAIN" /> ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು</translation>
@@ -509,7 +506,6 @@
 <translation id="7087282848513945231">ರಾಷ್ಟ್ರ</translation>
 <translation id="7088615885725309056">ಹಳೆಯದು</translation>
 <translation id="7108649287766967076"><ph name="TARGET_LANGUAGE" /> ಗೆ ಅನುವಾದ ವಿಫಲವಾಗಿದೆ.</translation>
-<translation id="7117303293717852287">ಈ ವೆಬ್‌ಪುಟವನ್ನು ಮರುಲೋಡ್ ಮಾಡಿ</translation>
 <translation id="7139724024395191329">ಎಮಿರೇಟ್</translation>
 <translation id="7179921470347911571">ಇದೀಗ ಮರುಪ್ರಾರಂಭಿಸು</translation>
 <translation id="7180611975245234373">ರೀಫ್ರೆಶ್ ಮಾಡಿ</translation>
@@ -556,7 +552,6 @@
 <translation id="7592362899630581445">ಸರ್ವರ್ ಪ್ರಮಾಣಪತ್ರವು ಹೆಸರಿನ ನಿರ್ಬಂಧನೆಗಳನ್ನು ಉಲ್ಲಂಘಿಸುತ್ತದೆ.</translation>
 <translation id="759889825892636187"><ph name="HOST_NAME" /> ಗೆ ಪ್ರಸ್ತುತ ಈ ವಿನಂತಿಯನ್ನು ನಿರ್ವಹಿಸಲು ಸಾಧ್ಯವಾಗುತ್ತಿಲ್ಲ.</translation>
 <translation id="7600965453749440009"><ph name="LANGUAGE" /> ಅನ್ನು ಎಂದಿಗೂ ಅನುವಾದಿಸಬೇಡ</translation>
-<translation id="7602848207066046655"><ph name="HOST_NAME" /> ನ ಸರ್ವರ್ <ph name="BEGIN_ABBR" /> ಕಂಡುಬರಲಿಲ್ಲ.</translation>
 <translation id="7610193165460212391">ಮೌಲ್ಯವು ವ್ಯಾಪ್ತಿಯಿಂದ <ph name="VALUE" /> ಹೊರಗಿದೆ.</translation>
 <translation id="7613889955535752492">ಅವಧಿ ಮೀರುವ ಸಮಯ: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">ನಿಮ್ಮ Google ಖಾತೆಯ ಪಾಸ್‌ವರ್ಡ್‌ನ ಬೇರೆ ಆವೃತ್ತಿಯನ್ನು ಬಳಸಿಕೊಂಡು ಎನ್‌ಕ್ರಿಪ್ಟ್ ಮಾಡಲಾದ ಡೇಟಾವನ್ನು ನೀವು ಈಗಾಗಲೇ ಹೊಂದಿರುವಿರಿ. ದಯವಿಟ್ಟು  ಕೆಳಗೆ ಇದನ್ನು ನಮೂದಿಸಿ.</translation>
@@ -635,7 +630,6 @@
 <translation id="8488350697529856933">ಇದಕ್ಕೆ ಅನ್ವಯಿಸಲಾಗುತ್ತದೆ</translation>
 <translation id="8494979374722910010">ಸರ್ವರ್‌ಗೆ ಸಂಪರ್ಕಿಸಲು ಮಾಡಿದ ಪ್ರಯತ್ನ ವಿಫಲವಾಗಿದೆ.</translation>
 <translation id="8498891568109133222">ಪ್ರತಿಕ್ರಿಯಿಸಲು <ph name="HOST_NAME" /> ಹೆಚ್ಚು ಸಮಯ ತೆಗೆದುಕೊಂಡಿದೆ.</translation>
-<translation id="8508677083825928015">ಪುಟಗಳನ್ನು ಹೆಚ್ಚು ವೇಗವಾಗಿ ಲೋಡ್ ಮಾಡಲು ಸಂಪನ್ಮೂಲಗಳನ್ನು ಮುಂಚಿತವಾಗಿ ಪಡೆಯಿರಿ</translation>
 <translation id="8530504477309582336">ಈ ಪ್ರಕಾರದ ಕಾರ್ಡ್ ಅನ್ನು Google Payments ಬೆಂಬಲಿಸುವುದಿಲ್ಲ. ದಯವಿಟ್ಟು ಬೇರೆ ಕಾರ್ಡ್ ಆಯ್ಕೆಮಾಡಿ.</translation>
 <translation id="8550022383519221471">ಸಿಂಕ್ ಸೇವೆಯು ನಿಮ್ಮ ಡೊಮೇನ್‌ಗೆ ಲಭ್ಯವಿಲ್ಲ.</translation>
 <translation id="8553075262323480129">ಪುಟದ ಭಾಷೆಯನ್ನು ಗುರುತಿಸಲು ಅಸಾಧ್ಯವಾದ ಕಾರಣ ಭಾಷಾಂತರವು ವಿಫಲವಾಗಿದೆ.</translation>

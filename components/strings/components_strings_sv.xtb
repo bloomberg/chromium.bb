@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sv">
-<translation id="1015255576907412255">Kontakta systemadministratören om du vill ha mer information.</translation>
 <translation id="1015730422737071372">Ange ytterligare information</translation>
 <translation id="1032854598605920125">Rotera medurs</translation>
 <translation id="1038842779957582377">okänt namn</translation>
@@ -303,7 +302,6 @@
 <translation id="4176463684765177261">Inaktiverad</translation>
 <translation id="4196861286325780578">&amp;Gör om Flytta</translation>
 <translation id="4220128509585149162">Kraschar</translation>
-<translation id="4241404202385006548">Inaktivera tilläggen och hämta webbsidan igen.</translation>
 <translation id="4250680216510889253">Nej</translation>
 <translation id="4258748452823770588">Felaktig signatur</translation>
 <translation id="4268298190799576220">Chromium kunde inte verifiera kortet. Försök igen senare.</translation>
@@ -443,7 +441,6 @@
 <translation id="6203231073485539293">Kontrollera internetanslutningen</translation>
 <translation id="6218753634732582820">Vill du ta bort adressen från Chromium?</translation>
 <translation id="6232139169545176020">Det begärda URI-schemat stöds inte.</translation>
-<translation id="6237614789842758826">Sök på Google</translation>
 <translation id="6259156558325130047">&amp;Gör om Ändra ordning</translation>
 <translation id="6262796033958342538">Flera rubriker med Location togs emot. Eftersom vi vill förhindra attacker
     med delade HTTP-svar är detta inte tillåtet.</translation>
@@ -519,7 +516,6 @@
 <translation id="7087282848513945231">Grevskap</translation>
 <translation id="7088615885725309056">Äldre</translation>
 <translation id="7108649287766967076">Översättningen till <ph name="TARGET_LANGUAGE" /> misslyckades.</translation>
-<translation id="7117303293717852287">Läs in webbsidan igen</translation>
 <translation id="7139724024395191329">Emirat</translation>
 <translation id="7179921470347911571">Starta om nu</translation>
 <translation id="7180611975245234373">Uppdatera</translation>
@@ -566,7 +562,6 @@ Psst! Nästa gång kanske inkognitoläget <ph name="SHORTCUT_KEY" /> kan vara n�
 <translation id="7592362899630581445">Serverns certifikat strider mot namnrestriktionerna.</translation>
 <translation id="759889825892636187"><ph name="HOST_NAME" /> kan för närvarande inte hantera förfrågan.</translation>
 <translation id="7600965453749440009">Översätt aldrig från <ph name="LANGUAGE" /></translation>
-<translation id="7602848207066046655">Det gick inte att hitta <ph name="HOST_NAME" />s server <ph name="BEGIN_ABBR" />.</translation>
 <translation id="7610193165460212391">Värdet är utanför intervallet <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">Upphör: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Du har redan data som krypteras med en annan version av ditt lösenord till Google-kontot. Ange det nedan.</translation>
@@ -647,7 +642,6 @@ Psst! Nästa gång kanske inkognitoläget <ph name="SHORTCUT_KEY" /> kan vara n�
 <translation id="8488350697529856933">Gäller för</translation>
 <translation id="8494979374722910010">Försöket att ansluta till servern misslyckades.</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> tog för lång tid på sig att svara.</translation>
-<translation id="8508677083825928015">Förhämta resurser så att sidor läses in snabbare.</translation>
 <translation id="8530504477309582336">Den här korttypen stöds inte i Google Payments. Välj ett annat kort.</translation>
 <translation id="8550022383519221471">Synkroniseringstjänsten är inte tillgänglig för din domän.</translation>
 <translation id="8553075262323480129">Det gick inte att översätta eftersom det inte gick att avgöra vilket språk som användes på sidan.</translation>

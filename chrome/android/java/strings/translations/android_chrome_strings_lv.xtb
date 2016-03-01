@@ -24,7 +24,6 @@ Lai izmantotu fizisko tīmekli, ir jābūt ieslēgtam Bluetooth savienojumam un 
 <translation id="1346090444609141578">Šeit nav nevienas saglabātas lapas</translation>
 <translation id="1369915414381695676">Tika pievienota vietne <ph name="SITE_NAME" /></translation>
 <translation id="1373696734384179344">Nepietiek vietas, lai lejupielādētu atlasīto saturu.</translation>
-<translation id="1379156015317873965">Uzlabot lapu ielādes veiktspēju</translation>
 <translation id="138361230106469022">Sveicināti, <ph name="FULL_NAME" />!</translation>
 <translation id="1383876407941801731">Meklēt</translation>
 <translation id="1389974829397082527">Šeit nav nevienas grāmatzīmes.</translation>
@@ -126,7 +125,6 @@ Fizisko tīmekli varat kontrolēt Chrome konfidencialitātes iestatījumos.</tra
 <translation id="2707726405694321444">Atsvaidzināt lapu</translation>
 <translation id="2709516037105925701">Automātiskā aizpilde</translation>
 <translation id="271033894570825754">Jauns</translation>
-<translation id="2718352093833049315">Tikai Wi-Fi</translation>
 <translation id="2748463065602559597">Jūs skatāt drošu Google Chrome lapu.</translation>
 <translation id="2762000892062317888">tikko</translation>
 <translation id="2770465223704140727">Noņemt no saraksta</translation>
@@ -262,6 +260,7 @@ Lai pielāgotu meklēšanas vienumu, nospiediet un turiet to. Lai veiktu precīz
 <translation id="4836364883164334657">Jūsu savienojums ar šo vietni nav privāts. Uzbrucēji var mēģināt nozagt jūsu informāciju (piemēram, fotoattēlus, paroles, ziņojumus vai kredītkaršu datus) no domēna <ph name="DOMAIN_NAME" />.</translation>
 <translation id="4842511359652954519">Uzzināt vairāk</translation>
 <translation id="4850886885716139402">Skatīt</translation>
+<translation id="4875622588773761625">Vai vēlaties, lai <ph name="PASSWORD_MANAGER_BRAND" /> atjauninātu jūsu paroli šai vietnei?</translation>
 <translation id="4881695831933465202">Atvērt</translation>
 <translation id="4885273946141277891">Neatbalstīts Chrome instanču skaits</translation>
 <translation id="4927198283430892231">Saglabāto lapu aizņemtā krātuves vieta: <ph name="TOTAL_OFFLINE_STORAGE_SIZE" />.</translation>
@@ -307,7 +306,6 @@ Vienkārši atveriet pārlūku Chrome savā datorā, atveriet izvēlni un atlasi
 <translation id="5323972449344932352">Palaist Chrome</translation>
 <translation id="5324858694974489420">Vecāku iestatījumi</translation>
 <translation id="5327248766486351172">Nosaukums</translation>
-<translation id="5335200807405507442">Lapas resursu sākotnējo datu iegūšana</translation>
 <translation id="5345040418939504969">Grāmatzīme <ph name="BOOKMARK_TITLE" /> tika dzēsta</translation>
 <translation id="5345083863238459644">Piekļuve atrašanās vietas datiem ir arī <ph name="BEGIN_LINK" />izslēgta šai ierīcei<ph name="END_LINK" />.</translation>
 <translation id="5380554235172449987">Nekad nesūtīt</translation>
@@ -485,7 +483,6 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="7498271377022651285">Lūdzu, uzgaidiet...</translation>
 <translation id="7501135638693251872">Visas grāmatzīmes</translation>
 <translation id="7521387064766892559">JavaScript</translation>
-<translation id="7561196759112975576">Vienmēr</translation>
 <translation id="7562080006725997899">Notiek pārlūkošanas datu notīrīšana</translation>
 <translation id="7588950540487816470">Fiziskais tīmeklis</translation>
 <translation id="7596558890252710462">Operētājsistēma</translation>
@@ -519,7 +516,6 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="7876243839304621966">Noņemt visu</translation>
 <translation id="7947953824732555851">Pieņemt un pierakst.</translation>
 <translation id="7949961459945740081">Saņemiet jaunākās funkcijas</translation>
-<translation id="7961015016161918242">Nekad</translation>
 <translation id="7963646190083259054">Nodrošina:</translation>
 <translation id="7987073022710626672">Lietošanas noteikumi</translation>
 <translation id="7998918019931843664">Vēlreiz atvērt aizvērto cilni</translation>
@@ -612,5 +608,6 @@ Lai iegūtu jaunas licences, izveidojiet savienojumu ar internetu un atskaņojie
 <translation id="945632385593298557">Piekļuve mikrofonam</translation>
 <translation id="954352821720225055">Grāmatzīme nav pieejama bezsaistē. Krātuvē ir maz vietas.</translation>
 <translation id="969096075394517431">Mainīt valodas</translation>
+<translation id="981121421437150478">Bezsaistē</translation>
 <translation id="983192555821071799">Aizvērt visas cilnes</translation>
 </translationbundle>

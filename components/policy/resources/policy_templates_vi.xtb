@@ -500,15 +500,6 @@
           Nếu không thiết lập chính sách này, 'AskGeolocation' sẽ được sử dụng và người dùng có thể thay đổi cài đặt này.</translation>
 <translation id="2650049181907741121">Hành động sẽ thực hiện khi người dùng đóng nắp</translation>
 <translation id="2660846099862559570">Không bao giờ sử dụng proxy</translation>
-<translation id="2665596266623707739">Cảnh báo: Phiên bản dự phòng TLS 1.0 sẽ bị xóa khỏi <ph name="PRODUCT_NAME" /> sau phiên bản 47 (ra mắt vào khoảng tháng 1 năm 2016) và tùy chọn "tls1" sẽ ngừng hoạt động ngay sau đó.
-
-      Khi không kết hợp được qua TLS, <ph name="PRODUCT_NAME" /> sẽ thử kết nối lại với phiên bản TLS thấp hơn để khắc phục các lỗi trong máy chủ HTTPS. Cài đặt này sẽ định cấu hình phiên bản mà tại đó quá trình dự phòng này sẽ ngừng. Nếu máy chủ thực hiện đúng cách việc dàn xếp phiên bản (tức là không phá vỡ kết nối) thì cài đặt này sẽ không áp dụng. Tuy nhiên, kết nối đầu ra vẫn phải tuân thủ SSLVersionMin.
-
-      Nếu chính sách này không được định cấu hình thì <ph name="PRODUCT_NAME" /> sẽ sử dụng phiên bản tối thiểu mặc định là TLS 1.0 trong <ph name="PRODUCT_NAME" /> 44 và TLS 1.1 trong các phiên bản mới hơn. Xin lưu ý rằng điều này không tắt hỗ trợ cho TLS 1.0, chỉ khi <ph name="PRODUCT_NAME" /> giải quyết các máy chủ bị lỗi mà không thể dàn xếp phiên bản đúng cách.
-
-      Ngoài ra, chính sách này có thể được đặt thành một trong các giá trị sau: "tls1", "tls1.1" hoặc "tls1.2". Nếu phải duy trì tính tương thích với máy chủ bị lỗi thì chính sách này có thể được đặt thành "tls1". Đây là một giải pháp tạm thời và máy chủ cần được khắc phục nhanh chóng.
-
-      Cài đặt "tls1.2" sẽ vô hiệu hóa tất cả phiên bản dự phòng nhưng điều này có thể tác động đáng kể đến tính tương thích.</translation>
 <translation id="267596348720209223">Chỉ định các mã hóa ký tự được nhà cung cấp dịch vụ tìm kiếm hỗ trợ. Mã hóa là các tên trang mã như UTF-8, GB2312  và ISO-8859-1. Các mã này được thử theo thứ tự cung cấp.
 
           Chính sách này là tùy chọn. Nếu không thiết lập, mặc định được sử dụng sẽ là UTF-8.
@@ -929,6 +920,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
           Chính sách này chỉ được tuân theo nếu kích hoạt chính sách 'DefaultSearchProviderEnabled'.</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 hoặc mới hơn</translation>
+<translation id="4322842393287974810">Cho phép ứng dụng kiosk tự động khởi chạy với độ trễ bằng không kiểm soát phiên bản <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4325690621216251241">Thêm một nút đăng xuất vào khay hệ thống</translation>
 <translation id="4347908978527632940">Nếu đúng và người dùng là người dùng được giám sát thì các ứng dụng Android khác có thể truy vấn các giới hạn web của người dùng thông qua nhà cung cấp nội dung.
 
@@ -1888,6 +1880,13 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
       Nếu không thiết lập chính sách này, SPDY sẽ sẵn có.</translation>
 <translation id="7384999953864505698">Cho phép giao thức QUIC</translation>
+<translation id="7406651467768226499">Dù có cho phép ứng dụng kiosk tự động khởi chạy với độ trễ bằng không kiểm soát phiên bản <ph name="PRODUCT_OS_NAME" /> hay không.
+
+      Chính sách này kiểm soát việc có cho phép ứng dụng kiosk tự động khởi chạy với độ trễ bằng không kiểm soát phiên bản <ph name="PRODUCT_OS_NAME" /> bằng cách tuyên bố required_platform_version trong tệp kê khai và sử dụng tệp này làm tiền tố phiên bản đích cập nhật tự động.
+
+      Nếu chính sách được đặt thành đúng, giá trị của khóa tệp kê khai required_platform_version của ứng dụng kiosk tự động khởi chạy với độ trễ bằng không được sử dụng làm tiền tố phiên bản đích cập nhật tự động.
+
+      Nếu chính sách chưa được định cấu hình hoặc được đặt thành sai, khóa tệp kê khai required_platform_version bị bỏ qua và tự động cập nhật tiến hành như bình thường.</translation>
 <translation id="7417972229667085380">Tỷ lệ phần trăm theo đó xác định độ trễ khi không hoạt động trong chế độ bản trình bày (không dùng nữa)</translation>
 <translation id="7421483919690710988">Đặt kích thước bộ nhớ cache của đĩa phương tiện theo byte</translation>
 <translation id="7424751532654212117">Danh sách các trường hợp ngoại lệ của danh sách plugin bị vô hiệu hóa</translation>

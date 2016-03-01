@@ -504,15 +504,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
           If this policy is left not set, 'AskGeolocation' will be used and the user will be able to change it.</translation>
 <translation id="2650049181907741121">Action to take when the user closes the lid</translation>
 <translation id="2660846099862559570">Never use a proxy</translation>
-<translation id="2665596266623707739">Warning: The TLS 1.0 version fallback will be removed from <ph name="PRODUCT_NAME" /> after version 47 (around January 2016) and the "tls1" option will stop working then.
-
-      When a TLS handshake fails, <ph name="PRODUCT_NAME" /> will retry the connection with a lesser version of TLS in order to work around bugs in HTTPS servers. This setting configures the version at which this fallback process will stop. If a server performs version negotiation correctly (i.e. without breaking the connection) then this setting doesn't apply. Regardless, the resulting connection must still comply with SSLVersionMin.
-
-      If this policy is not configured then <ph name="PRODUCT_NAME" /> uses a default minimum version which is TLS 1.0 in <ph name="PRODUCT_NAME" /> 44 and TLS 1.1 in later versions. Note this does not disable support for TLS 1.0, only whether <ph name="PRODUCT_NAME" /> will work around buggy servers which cannot negotiate versions correctly.
-
-      Otherwise it may be set to one of the following values: "tls1", "tls1.1" or "tls1.2". If compatibility with a buggy server must be maintained, this may be set to "tls1". This is a stopgap measure and the server should be rapidly fixed.
-
-      A setting of "tls1.2" disables all fallback but this may have a significant compatibility impact.</translation>
 <translation id="267596348720209223">Specifies the character encodings supported by the search provider. Encodings are code page names like UTF-8, GB2312, and ISO-8859-1. They are tried in the order provided.
 
           This policy is optional. If not set, the default will be used which is UTF-8.
@@ -941,6 +932,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
           This policy is only respected if the 'DefaultSearchProviderEnabled' policy is enabled.</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 or later</translation>
+<translation id="4322842393287974810">Allow the auto launched with zero delay kiosk app to control <ph name="PRODUCT_OS_NAME" /> version</translation>
 <translation id="4325690621216251241">Add a logout button to the system tray</translation>
 <translation id="4347908978527632940">If true and the user is a supervised user, then other Android apps can query the user's web restrictions through a content provider.
 
@@ -1907,6 +1899,13 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
       If this policy is left not set, SPDY will be available.</translation>
 <translation id="7384999953864505698">Allows QUIC protocol</translation>
+<translation id="7406651467768226499">Whether to allow the auto launched with zero delay kiosk app to control <ph name="PRODUCT_OS_NAME" /> version.
+
+      This policy controls whether to allow the auto launched with zero delay kiosk app to control <ph name="PRODUCT_OS_NAME" /> version by declaring a required_platform_version in its manifest and use it as the auto update target version prefix.
+
+      If the policy is set to true, the value of required_platform_version manifest key of the auto launched with zero delay kiosk app is used as auto update target version prefix.
+
+      If the policy is not configured or set to false, the required_platform_version manifest key is ignored and auto update proceeds as normal.</translation>
 <translation id="7417972229667085380">Percentage by which to scale the idle delay in presentation mode (deprecated)</translation>
 <translation id="7421483919690710988">Set media disk cache size in bytes</translation>
 <translation id="7424751532654212117">List of exceptions to the list of disabled plugins</translation>
