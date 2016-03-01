@@ -70,33 +70,6 @@ void SRTHasCompleted(SRTCompleted value) {
                             SRT_COMPLETED_MAX);
 }
 
-void ReportVersionWithUma(const base::Version& version) {
-  DCHECK(!version.components().empty());
-  // The minor version is the 2nd last component of the version,
-  // or just the first component if there is only 1.
-  uint32_t minor_version = 0;
-  if (version.components().size() > 1)
-    minor_version = version.components()[version.components().size() - 2];
-  else
-    minor_version = version.components()[0];
-  UMA_HISTOGRAM_SPARSE_SLOWLY("SoftwareReporter.MinorVersion", minor_version);
-
-  // The major version for X.Y.Z is X*256^3+Y*256+Z. If there are additional
-  // components, only the first three count, and if there are less than 3, the
-  // missing values are just replaced by zero. So 1 is equivalent 1.0.0.
-  DCHECK_LT(version.components()[0], 0x100U);
-  uint32_t major_version = 0x1000000 * version.components()[0];
-  if (version.components().size() >= 2) {
-    DCHECK_LT(version.components()[1], 0x10000U);
-    major_version += 0x100 * version.components()[1];
-  }
-  if (version.components().size() >= 3) {
-    DCHECK_LT(version.components()[2], 0x100U);
-    major_version += version.components()[2];
-  }
-  UMA_HISTOGRAM_SPARSE_SLOWLY("SoftwareReporter.MajorVersion", major_version);
-}
-
 void ReportUploadsWithUma(const base::string16& upload_results) {
   base::WStringTokenizer tokenizer(upload_results, L";");
   int failure_count = 0;
@@ -150,10 +123,8 @@ class SwReporterInstallerTraits : public ComponentInstallerTraits {
                       const base::FilePath& install_dir,
                       scoped_ptr<base::DictionaryValue> manifest) override {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    ReportVersionWithUma(version);
     safe_browsing::RunSwReporter(install_dir.Append(kSwReporterExeName),
-                                 version.GetString(),
-                                 base::ThreadTaskRunnerHandle::Get(),
+                                 version, base::ThreadTaskRunnerHandle::Get(),
                                  base::WorkerPool::GetTaskRunner(true));
   }
 

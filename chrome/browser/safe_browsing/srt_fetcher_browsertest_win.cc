@@ -39,15 +39,15 @@ class SRTFetcherTest : public InProcessBrowserTest {
   }
 
   void RunReporter() {
-    RunSwReporter(base::FilePath(), "bla", task_runner_, task_runner_);
+    RunSwReporter(base::FilePath(), base::Version("1.2.3"), task_runner_,
+                  task_runner_);
   }
 
   void PromptTriggerForTesting(Browser* browser, const std::string& version) {
     prompt_trigger_called_ = true;
   }
 
-  int ReporterLauncherForTesting(const base::FilePath& exe_path,
-                       const std::string& version) {
+  int ReporterLauncherForTesting(const base::FilePath& exe_path) {
     reporter_launched_ = true;
     return exit_code_to_report_;
   }

@@ -11,6 +11,7 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
+#include "base/version.h"
 
 namespace base {
 class FilePath;
@@ -51,7 +52,7 @@ const int kSRTFetcherID = 47;
 // version. The task runners are provided to allow tests to provide their own.
 void RunSwReporter(
     const base::FilePath& exe_path,
-    const std::string& version,
+    const base::Version& version,
     const scoped_refptr<base::TaskRunner>& main_thread_task_runner,
     const scoped_refptr<base::TaskRunner>& blocking_task_runner);
 
@@ -67,8 +68,7 @@ bool ReporterFoundUws();
 bool UserHasRunCleaner();
 
 // Test mocks for launching the reporter and showing the prompt
-typedef base::Callback<int(const base::FilePath& exe_path,
-                           const std::string& version)> ReporterLauncher;
+typedef base::Callback<int(const base::FilePath& exe_path)> ReporterLauncher;
 typedef base::Callback<void(Browser*, const std::string&)> PromptTrigger;
 void SetReporterLauncherForTesting(const ReporterLauncher& reporter_launcher);
 void SetPromptTriggerForTesting(const PromptTrigger& prompt_trigger);

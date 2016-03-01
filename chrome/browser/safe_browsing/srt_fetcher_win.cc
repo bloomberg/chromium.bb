@@ -143,10 +143,9 @@ void DisplaySRTPrompt(const base::FilePath& download_path) {
 // wait for termination to collect its exit code. This task could be
 // interrupted by a shutdown at any time, so it shouldn't depend on anything
 // external that could be shut down beforehand.
-int LaunchAndWaitForExit(const base::FilePath& exe_path,
-                         const std::string& version) {
+int LaunchAndWaitForExit(const base::FilePath& exe_path) {
   if (!g_reporter_launcher_.is_null())
-    return g_reporter_launcher_.Run(exe_path, version);
+    return g_reporter_launcher_.Run(exe_path);
   base::Process reporter_process =
       base::LaunchProcess(exe_path.value(), base::LaunchOptions());
   // This exit code is used to identify that a reporter run didn't happen, so
@@ -160,6 +159,34 @@ int LaunchAndWaitForExit(const base::FilePath& exe_path,
     RecordReporterStepHistogram(SW_REPORTER_FAILED_TO_START);
   }
   return exit_code;
+}
+
+// Reports the software reporter tool's version via UMA.
+void ReportVersion(const base::Version& version) {
+  DCHECK(!version.components().empty());
+  // The minor version is the 2nd last component of the version,
+  // or just the first component if there is only 1.
+  uint32_t minor_version = 0;
+  if (version.components().size() > 1)
+    minor_version = version.components()[version.components().size() - 2];
+  else
+    minor_version = version.components()[0];
+  UMA_HISTOGRAM_SPARSE_SLOWLY("SoftwareReporter.MinorVersion", minor_version);
+
+  // The major version for X.Y.Z is X*256^3+Y*256+Z. If there are additional
+  // components, only the first three count, and if there are less than 3, the
+  // missing values are just replaced by zero. So 1 is equivalent 1.0.0.
+  DCHECK_LT(version.components()[0], 0x100U);
+  uint32_t major_version = 0x1000000 * version.components()[0];
+  if (version.components().size() >= 2) {
+    DCHECK_LT(version.components()[1], 0x10000U);
+    major_version += 0x100 * version.components()[1];
+  }
+  if (version.components().size() >= 3) {
+    DCHECK_LT(version.components()[2], 0x100U);
+    major_version += version.components()[2];
+  }
+  UMA_HISTOGRAM_SPARSE_SLOWLY("SoftwareReporter.MajorVersion", major_version);
 }
 
 // Reports UwS found by the software reporter tool via UMA and RAPPOR.
@@ -294,11 +321,11 @@ class SRTFetcher : public net::URLFetcherDelegate {
 namespace {
 
 // Try to fetch the SRT, and on success, show the prompt to run it.
-void MaybeFetchSRT(Browser* browser, const std::string& reporter_version) {
+void MaybeFetchSRT(Browser* browser, const base::Version& reporter_version) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (!g_prompt_trigger_.is_null()) {
-    g_prompt_trigger_.Run(browser, reporter_version);
+    g_prompt_trigger_.Run(browser, reporter_version.GetString());
     return;
   }
   Profile* profile = browser->profile();
@@ -325,7 +352,8 @@ void MaybeFetchSRT(Browser* browser, const std::string& reporter_version) {
     if (local_state)
       local_state->SetBoolean(prefs::kSwReporterPendingPrompt, false);
   }
-  prefs->SetString(prefs::kSwReporterPromptVersion, reporter_version);
+  prefs->SetString(prefs::kSwReporterPromptVersion,
+                   reporter_version.GetString());
 
   // Download the SRT.
   RecordReporterStepHistogram(SW_REPORTER_DOWNLOAD_START);
@@ -439,7 +467,7 @@ class ReporterRunner : public chrome::BrowserListObserver {
   // Starts the sequence of attempts to run the reporter.
   static void Run(
       const base::FilePath& exe_path,
-      const std::string& version,
+      const base::Version& version,
       const scoped_refptr<base::TaskRunner>& main_thread_task_runner,
       const scoped_refptr<base::TaskRunner>& blocking_task_runner) {
     if (!instance_)
@@ -447,7 +475,8 @@ class ReporterRunner : public chrome::BrowserListObserver {
     DCHECK(instance_->thread_checker_.CalledOnValidThread());
     // There's nothing to do if the path and version of the reporter has not
     // changed, we just keep running the tasks that are running now.
-    if (instance_->exe_path_ == exe_path && instance_->version_ == version)
+    if (instance_->exe_path_ == exe_path && instance_->version_.IsValid() &&
+        instance_->version_ == version)
       return;
     bool first_run = instance_->exe_path_.empty();
 
@@ -479,7 +508,9 @@ class ReporterRunner : public chrome::BrowserListObserver {
   // This method is called on the UI thread when the reporter run has completed.
   // This is run as a task posted from an interruptible worker thread so should
   // be resilient to unexpected shutdown.
-  void ReporterDone(const base::Time& reporter_start_time, int exit_code) {
+  void ReporterDone(const base::Time& reporter_start_time,
+                    const base::Version& version,
+                    int exit_code) {
     DCHECK(thread_checker_.CalledOnValidThread());
 
     base::TimeDelta reporter_running_time =
@@ -494,6 +525,7 @@ class ReporterRunner : public chrome::BrowserListObserver {
     if (exit_code == kReporterFailureExitCode)
       return;
 
+    ReportVersion(version);
     UMA_HISTOGRAM_SPARSE_SLOWLY("SoftwareReporter.ExitCode", exit_code);
     ReportFoundUwS();
     PrefService* local_state = g_browser_process->local_state();
@@ -537,7 +569,7 @@ class ReporterRunner : public chrome::BrowserListObserver {
   void TryToRun() {
     DCHECK(thread_checker_.CalledOnValidThread());
     PrefService* local_state = g_browser_process->local_state();
-    if (version_.empty() || !local_state) {
+    if (!version_.IsValid() || !local_state) {
       DCHECK(exe_path_.empty());
       return;
     }
@@ -567,9 +599,9 @@ class ReporterRunner : public chrome::BrowserListObserver {
       // test task runner won't need to force it.
       base::PostTaskAndReplyWithResult(
           blocking_task_runner_.get(), FROM_HERE,
-          base::Bind(&LaunchAndWaitForExit, exe_path_, version_),
+          base::Bind(&LaunchAndWaitForExit, exe_path_),
           base::Bind(&ReporterRunner::ReporterDone, base::Unretained(this),
-                     base::Time::Now()));
+                     base::Time::Now(), version_));
     } else {
       main_thread_task_runner_->PostDelayedTask(
           FROM_HERE,
@@ -579,7 +611,7 @@ class ReporterRunner : public chrome::BrowserListObserver {
   }
 
   base::FilePath exe_path_;
-  std::string version_;
+  base::Version version_;
   scoped_refptr<base::TaskRunner> main_thread_task_runner_;
   scoped_refptr<base::TaskRunner> blocking_task_runner_;
 
@@ -602,7 +634,7 @@ ReporterRunner* ReporterRunner::instance_ = nullptr;
 
 void RunSwReporter(
     const base::FilePath& exe_path,
-    const std::string& version,
+    const base::Version& version,
     const scoped_refptr<base::TaskRunner>& main_thread_task_runner,
     const scoped_refptr<base::TaskRunner>& blocking_task_runner) {
   ReporterRunner::Run(exe_path, version, main_thread_task_runner,
