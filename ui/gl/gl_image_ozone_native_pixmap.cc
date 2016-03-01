@@ -142,6 +142,19 @@ void GLImageOzoneNativePixmap::Destroy(bool have_context) {
   gl::GLImageEGL::Destroy(have_context);
 }
 
+bool GLImageOzoneNativePixmap::CopyTexImage(unsigned target) {
+  if (egl_image_ == EGL_NO_IMAGE_KHR) {
+    // Pass-through image type fails to bind and copy; make sure we
+    // don't draw with uninitialized texture.
+    std::vector<unsigned char> data(size_.width() * size_.height() * 4);
+    glTexImage2D(target, 0, GL_RGBA, size_.width(),
+                 size_.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                 data.data());
+    return true;
+  }
+  return GLImageEGL::CopyTexImage(target);
+}
+
 bool GLImageOzoneNativePixmap::ScheduleOverlayPlane(AcceleratedWidget widget,
                                                     int z_order,
                                                     OverlayTransform transform,
