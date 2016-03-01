@@ -50,7 +50,7 @@ InspectorTest.prepareConsoleMessageText = function(messageElement, consoleMessag
     messageText = messageText.replace(/(?:InjectedScript\.)?_?evaluate\w* @ VM:\d+/g, "");
     // Strip out InjectedScript line numbers from console message anchor.
     var functionName = consoleMessage && consoleMessage.stackTrace && consoleMessage.stackTrace.callFrames[0] && consoleMessage.stackTrace.callFrames[0].functionName || "";
-    if (functionName.indexOf("InjectedScript") !== -1)
+    if (functionName.indexOf("evaluate") !== -1)
         messageText = messageText.replace(/\bVM:\d+/, ""); // Only first replace.
     if (messageText.startsWith("Navigated to")) {
         var fileName = messageText.split(" ").pop().split("/").pop();
