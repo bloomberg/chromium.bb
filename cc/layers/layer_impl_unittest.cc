@@ -26,14 +26,20 @@
 namespace cc {
 namespace {
 
-#define EXECUTE_AND_VERIFY_SUBTREE_CHANGED(code_to_test)                       \
-  root->ResetAllChangeTrackingForSubtree();                                    \
-  code_to_test;                                                                \
-  EXPECT_TRUE(root->needs_push_properties());                                  \
-  EXPECT_FALSE(child->needs_push_properties());                                \
-  EXPECT_FALSE(grand_child->needs_push_properties());                          \
-  EXPECT_TRUE(root->LayerPropertyChanged());                                   \
-  EXPECT_TRUE(child->LayerPropertyChanged());                                  \
+#define EXECUTE_AND_VERIFY_SUBTREE_CHANGED(code_to_test) \
+  root->ResetAllChangeTrackingForSubtree();              \
+  root->layer_tree_impl()                                \
+      ->property_trees()                                 \
+      ->transform_tree.ResetChangeTracking();            \
+  root->layer_tree_impl()                                \
+      ->property_trees()                                 \
+      ->effect_tree.ResetChangeTracking();               \
+  code_to_test;                                          \
+  EXPECT_TRUE(root->needs_push_properties());            \
+  EXPECT_FALSE(child->needs_push_properties());          \
+  EXPECT_FALSE(grand_child->needs_push_properties());    \
+  EXPECT_TRUE(root->LayerPropertyChanged());             \
+  EXPECT_TRUE(child->LayerPropertyChanged());            \
   EXPECT_TRUE(grand_child->LayerPropertyChanged());
 
 #define EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(code_to_test)                \
@@ -113,7 +119,7 @@ TEST(LayerImplTest, VerifyLayerChangesAreTrackedProperly) {
   std::set<LayerImpl*>* scroll_children = new std::set<LayerImpl*>();
   scroll_children->insert(scroll_child);
   scroll_children->insert(root);
-  root->SetHasRenderSurface(true);
+  root->SetForceRenderSurface(true);
 
   scoped_ptr<LayerImpl> clip_parent =
       LayerImpl::Create(host_impl.active_tree(), 5);
@@ -121,6 +127,7 @@ TEST(LayerImplTest, VerifyLayerChangesAreTrackedProperly) {
   std::set<LayerImpl*>* clip_children = new std::set<LayerImpl*>();
   clip_children->insert(clip_child);
   clip_children->insert(root);
+  root->ResetAllChangeTrackingForSubtree();
 
   root->AddChild(LayerImpl::Create(host_impl.active_tree(), 7));
   LayerImpl* child = root->children()[0].get();
@@ -167,7 +174,7 @@ TEST(LayerImplTest, VerifyLayerChangesAreTrackedProperly) {
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetScrollDelta(gfx::Vector2d()));
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->PushScrollOffsetFromMainThread(
       gfx::ScrollOffset(arbitrary_vector2d)));
-  EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetOpacity(arbitrary_number));
+  EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->OnOpacityAnimated(arbitrary_number));
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetTransform(arbitrary_transform));
 
   // Changing these properties only affects the layer itself.
@@ -349,7 +356,8 @@ TEST(LayerImplTest, VerifyNeedsUpdateDrawProperties) {
       layer->SetBackgroundColor(arbitrary_color));
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(
       layer->SetBackgroundFilters(arbitrary_filters));
-  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetOpacity(arbitrary_number));
+  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(
+      layer->OnOpacityAnimated(arbitrary_number));
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetBlendMode(arbitrary_blend_mode);
                                       layer->NoteLayerPropertyChanged());
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetTransform(arbitrary_transform));

@@ -1705,10 +1705,9 @@ void LayerTreeHostImpl::DrawLayers(FrameData* frame) {
         DidDrawDamagedArea();
   }
   active_tree_->root_layer()->ResetAllChangeTrackingForSubtree();
-  active_tree_->root_layer()
-      ->layer_tree_impl()
-      ->property_trees()
-      ->transform_tree.ResetChangeTracking();
+  active_tree_->property_trees()->transform_tree.ResetChangeTracking();
+  active_tree_->property_trees()->effect_tree.ResetChangeTracking();
+  active_tree_->property_trees()->changed = false;
 
   active_tree_->set_has_ever_been_drawn(true);
   devtools_instrumentation::DidDrawFrame(id_);
@@ -1993,14 +1992,24 @@ void LayerTreeHostImpl::ActivateSyncTree() {
                                              active_tree_->DetachLayerTree(),
                                              active_tree_.get()));
     }
+    // We need to preserve the damage status of property trees on active tree.
+    // We do this by pushing the damage status from active tree property trees
+    // to pending tree property trees.
+    if (active_tree_->property_trees()->changed) {
+      if (pending_tree_->property_trees()->sequence_number ==
+          active_tree_->property_trees()->sequence_number)
+        active_tree_->property_trees()->PushChangeTrackingTo(
+            pending_tree_->property_trees());
+      else
+        active_tree_->root_layer()->PushLayerPropertyChangedForSubtree();
+    }
     TreeSynchronizer::PushProperties(pending_tree_->root_layer(),
                                      active_tree_->root_layer());
     pending_tree_->PushPropertiesTo(active_tree_.get());
     if (pending_tree_->root_layer()) {
-      pending_tree_->root_layer()
-          ->layer_tree_impl()
-          ->property_trees()
-          ->transform_tree.ResetChangeTracking();
+      pending_tree_->property_trees()->transform_tree.ResetChangeTracking();
+      pending_tree_->property_trees()->effect_tree.ResetChangeTracking();
+      pending_tree_->property_trees()->changed = false;
     }
 
     // Now that we've synced everything from the pending tree to the active

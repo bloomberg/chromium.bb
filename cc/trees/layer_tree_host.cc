@@ -426,6 +426,18 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
 
   sync_tree->RegisterSelection(selection_);
 
+  bool property_trees_changed_on_active_tree =
+      sync_tree->IsActiveTree() && sync_tree->property_trees()->changed;
+  // We need to preserve the damage status of property trees on active tree. We
+  // do this by pushing the damage status from active tree property trees to
+  // main thread property trees.
+  if (root_layer_ && property_trees_changed_on_active_tree) {
+    if (property_trees_.sequence_number ==
+        sync_tree->property_trees()->sequence_number)
+      sync_tree->property_trees()->PushChangeTrackingTo(&property_trees_);
+    else
+      sync_tree->root_layer()->PushLayerPropertyChangedForSubtree();
+  }
   // Setting property trees must happen before pushing the page scale.
   sync_tree->SetPropertyTrees(property_trees_);
 
@@ -485,6 +497,12 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
 
   micro_benchmark_controller_.ScheduleImplBenchmarks(host_impl);
   property_trees_.transform_tree.ResetChangeTracking();
+  // We don't track changes to effect tree on main thread. But, to preserve any
+  // change tracking done on active tree's effect tree, we copy it to the main
+  // thread's effect tree before we push the main thread property trees to
+  // active tree.
+  if (property_trees_changed_on_active_tree)
+    property_trees_.effect_tree.ResetChangeTracking();
 }
 
 void LayerTreeHost::WillCommit() {

@@ -258,6 +258,9 @@ struct CC_EXPORT EffectNodeData {
   bool has_background_filters;
   bool is_drawn;
   bool has_animated_opacity;
+  // We need to track changes to opacity on the compositor to compute damage
+  // rect.
+  bool opacity_changed;
   int num_copy_requests_in_subtree;
   int transform_id;
   int clip_id;
@@ -525,9 +528,13 @@ class CC_EXPORT EffectTree final : public PropertyTree<EffectNode> {
 
   void UpdateEffects(int id);
 
+  void UpdateOpacityChanged(EffectNode* node, EffectNode* parent_node);
+
   void ClearCopyRequests();
 
   bool ContributesToDrawnSurface(int id);
+
+  void ResetChangeTracking();
 
   void ToProtobuf(proto::PropertyTree* proto) const;
   void FromProtobuf(const proto::PropertyTree& proto);
@@ -575,11 +582,17 @@ class CC_EXPORT PropertyTrees final {
   ScrollTree scroll_tree;
   bool needs_rebuild;
   bool non_root_surfaces_enabled;
+  // Change tracking done on property trees needs to be preserved across commits
+  // (when they are not rebuild). We cache a global bool which stores whether
+  // we did any change tracking so that we can skip copying the change status
+  // between property trees when this bool is false.
+  bool changed;
   int sequence_number;
 
   void SetInnerViewportContainerBoundsDelta(gfx::Vector2dF bounds_delta);
   void SetOuterViewportContainerBoundsDelta(gfx::Vector2dF bounds_delta);
   void SetInnerViewportScrollBoundsDelta(gfx::Vector2dF bounds_delta);
+  void PushChangeTrackingTo(PropertyTrees* tree);
 
   gfx::Vector2dF inner_viewport_container_bounds_delta() const {
     return inner_viewport_container_bounds_delta_;

@@ -5983,6 +5983,7 @@ TEST_F(LayerTreeHostImplTest, BlendingOffWhenDrawingOpaqueLayers) {
   // Layer with translucent opacity, drawn with blending.
   layer1->SetContentsOpaque(true);
   layer1->SetOpacity(0.5f);
+  layer1->NoteLayerPropertyChanged();
   layer1->SetExpectation(true, false);
   layer1->SetUpdateRect(gfx::Rect(layer1->bounds()));
   SetNeedsRebuildPropertyTrees();
@@ -5994,6 +5995,7 @@ TEST_F(LayerTreeHostImplTest, BlendingOffWhenDrawingOpaqueLayers) {
   // Layer with translucent opacity and painting, drawn with blending.
   layer1->SetContentsOpaque(true);
   layer1->SetOpacity(0.5f);
+  layer1->NoteLayerPropertyChanged();
   layer1->SetExpectation(true, false);
   layer1->SetUpdateRect(gfx::Rect(layer1->bounds()));
   SetNeedsRebuildPropertyTrees();
@@ -6013,10 +6015,12 @@ TEST_F(LayerTreeHostImplTest, BlendingOffWhenDrawingOpaqueLayers) {
   // 2 opaque layers, drawn without blending.
   layer1->SetContentsOpaque(true);
   layer1->SetOpacity(1.f);
+  layer1->NoteLayerPropertyChanged();
   layer1->SetExpectation(false, false);
   layer1->SetUpdateRect(gfx::Rect(layer1->bounds()));
   layer2->SetContentsOpaque(true);
   layer2->SetOpacity(1.f);
+  layer2->NoteLayerPropertyChanged();
   layer2->SetExpectation(false, false);
   layer2->SetUpdateRect(gfx::Rect(layer1->bounds()));
   SetNeedsRebuildPropertyTrees();
@@ -6062,6 +6066,7 @@ TEST_F(LayerTreeHostImplTest, BlendingOffWhenDrawingOpaqueLayers) {
   // carries the inherited opacity).
   layer1->SetContentsOpaque(true);
   layer1->SetOpacity(0.5f);
+  layer1->NoteLayerPropertyChanged();
   layer1->SetForceRenderSurface(true);
   layer1->SetExpectation(false, true);
   layer1->SetUpdateRect(gfx::Rect(layer1->bounds()));
@@ -6081,10 +6086,12 @@ TEST_F(LayerTreeHostImplTest, BlendingOffWhenDrawingOpaqueLayers) {
   // layer1 not culled.
   layer1->SetContentsOpaque(true);
   layer1->SetOpacity(1.f);
+  layer1->NoteLayerPropertyChanged();
   layer1->SetExpectation(false, false);
   layer1->SetUpdateRect(gfx::Rect(layer1->bounds()));
   layer2->SetContentsOpaque(true);
   layer2->SetOpacity(0.5f);
+  layer2->NoteLayerPropertyChanged();
   layer2->SetExpectation(true, false);
   layer2->SetUpdateRect(gfx::Rect(layer1->bounds()));
   SetNeedsRebuildPropertyTrees();
@@ -6097,10 +6104,12 @@ TEST_F(LayerTreeHostImplTest, BlendingOffWhenDrawingOpaqueLayers) {
   // A second way of making the child non-opaque.
   layer1->SetContentsOpaque(true);
   layer1->SetOpacity(1.f);
+  layer1->NoteLayerPropertyChanged();
   layer1->SetExpectation(false, false);
   layer1->SetUpdateRect(gfx::Rect(layer1->bounds()));
   layer2->SetContentsOpaque(false);
   layer2->SetOpacity(1.f);
+  layer2->NoteLayerPropertyChanged();
   layer2->SetExpectation(true, false);
   layer2->SetUpdateRect(gfx::Rect(layer1->bounds()));
   SetNeedsRebuildPropertyTrees();
@@ -6114,10 +6123,12 @@ TEST_F(LayerTreeHostImplTest, BlendingOffWhenDrawingOpaqueLayers) {
   // blended.
   layer1->SetContentsOpaque(true);
   layer1->SetOpacity(1.f);
+  layer1->NoteLayerPropertyChanged();
   layer1->SetExpectation(false, false);
   layer1->SetUpdateRect(gfx::Rect(layer1->bounds()));
   layer2->SetContentsOpaque(true);
   layer2->SetOpacity(1.f);
+  layer2->NoteLayerPropertyChanged();
   layer2->SetExpectation(false, false);
   layer2->SetUpdateRect(gfx::Rect(layer1->bounds()));
   SetNeedsRebuildPropertyTrees();

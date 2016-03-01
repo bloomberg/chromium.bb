@@ -1721,55 +1721,6 @@ TEST_F(LayerTest, PushPropertiesCausesLayerPropertyChangedForOpacity) {
 }
 
 TEST_F(LayerTest,
-       PushPropsDoesntCauseLayerPropertyChangedDuringImplOnlyOpacityAnim) {
-  scoped_refptr<Layer> test_layer = Layer::Create(layer_settings_);
-  scoped_ptr<LayerImpl> impl_layer =
-      LayerImpl::Create(host_impl_.active_tree(), 1);
-
-  EXPECT_SET_NEEDS_FULL_TREE_SYNC(1,
-                                  layer_tree_host_->SetRootLayer(test_layer));
-
-  scoped_ptr<AnimationRegistrar> registrar;
-  if (settings().use_compositor_animation_timelines) {
-    AddOpacityTransitionToLayerWithPlayer(impl_layer->id(), timeline_impl(),
-                                          1.0, 0.3f, 0.7f, false);
-  } else {
-    registrar = AnimationRegistrar::Create();
-    impl_layer->layer_animation_controller()->SetAnimationRegistrar(
-        registrar.get());
-
-    AddOpacityTransitionToController(impl_layer->layer_animation_controller(),
-                                     1.0, 0.3f, 0.7f, false);
-  }
-
-  EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetOpacity(0.5f));
-
-  EXPECT_FALSE(impl_layer->LayerPropertyChanged());
-  test_layer->PushPropertiesTo(impl_layer.get());
-  EXPECT_TRUE(impl_layer->LayerPropertyChanged());
-
-  impl_layer->ResetAllChangeTrackingForSubtree();
-  if (settings().use_compositor_animation_timelines) {
-    int animation_id = AddOpacityTransitionToLayerWithPlayer(
-        impl_layer->id(), timeline_impl(), 1.0, 0.3f, 0.7f, false);
-    GetAnimationFromLayerWithExistingPlayer(impl_layer->id(), timeline_impl(),
-                                            animation_id)
-        ->set_is_impl_only(true);
-  } else {
-    AddOpacityTransitionToController(impl_layer->layer_animation_controller(),
-                                     1.0, 0.3f, 0.7f, false);
-    impl_layer->layer_animation_controller()
-        ->GetAnimation(TargetProperty::OPACITY)
-        ->set_is_impl_only(true);
-  }
-  EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetOpacity(0.75f));
-
-  EXPECT_FALSE(impl_layer->LayerPropertyChanged());
-  test_layer->PushPropertiesTo(impl_layer.get());
-  EXPECT_FALSE(impl_layer->LayerPropertyChanged());
-}
-
-TEST_F(LayerTest,
        PushPropsDoesntCauseLayerPropertyChangedDuringImplOnlyFilterAnim) {
   scoped_refptr<Layer> test_layer = Layer::Create(layer_settings_);
   scoped_ptr<LayerImpl> impl_layer =

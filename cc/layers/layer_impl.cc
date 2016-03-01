@@ -689,10 +689,19 @@ base::DictionaryValue* LayerImpl::LayerTreeAsJson() const {
 bool LayerImpl::LayerPropertyChanged() const {
   if (layer_property_changed_)
     return true;
-  TransformNode* node =
+  if (transform_tree_index() == -1)
+    return false;
+  TransformNode* transform_node =
       layer_tree_impl()->property_trees()->transform_tree.Node(
           transform_tree_index());
-  if (node && node->data.transform_changed)
+  if (transform_node && transform_node->data.transform_changed)
+    return true;
+  if (effect_tree_index() == -1)
+    return false;
+  EffectNode* effect_node =
+      layer_tree_impl()->property_trees()->effect_tree.Node(
+          effect_tree_index());
+  if (effect_node && effect_node->data.opacity_changed)
     return true;
   return false;
 }
@@ -722,6 +731,26 @@ void LayerImpl::NoteLayerPropertyChangedForDescendants() {
   for (size_t i = 0; i < children_.size(); ++i)
     children_[i]->NoteLayerPropertyChangedForDescendantsInternal();
   SetNeedsPushProperties();
+}
+
+void LayerImpl::PushLayerPropertyChangedForSubtreeInternal() {
+  if (LayerPropertyChanged())
+    NoteLayerPropertyChanged();
+  for (size_t i = 0; i < children_.size(); ++i)
+    children_[i]->PushLayerPropertyChangedForSubtreeInternal();
+}
+
+void LayerImpl::PushLayerPropertyChangedForSubtree() {
+  // We need to update property trees first as layer property can change
+  // when its corresponsing property tree node changes.
+  PropertyTrees* property_trees = layer_tree_impl()->property_trees();
+  EffectTree effect_tree = property_trees->effect_tree;
+  for (int i = 1; i < static_cast<int>(effect_tree.size()); ++i) {
+    EffectNode* node = effect_tree.Node(i);
+    EffectNode* parent_node = effect_tree.parent(node);
+    property_trees->effect_tree.UpdateOpacityChanged(node, parent_node);
+  }
+  PushLayerPropertyChangedForSubtreeInternal();
 }
 
 void LayerImpl::ValidateQuadResourcesInternal(DrawQuad* quad) const {
@@ -854,9 +883,12 @@ void LayerImpl::UpdatePropertyTreeOpacity() {
     // corresponding Layer at the time of the last commit. For example, an
     // opacity animation might have been in progress at the time the last commit
     // started, but might have finished since then on the compositor thread.
-    if (node->owner_id != id())
+    float effective_opacity = EffectiveOpacity();
+    if (node->owner_id != id() || node->data.opacity == effective_opacity)
       return;
-    node->data.opacity = EffectiveOpacity();
+    node->data.opacity = effective_opacity;
+    node->data.opacity_changed = true;
+    layer_tree_impl()->property_trees()->changed = true;
     effect_tree.set_needs_update(true);
   }
 }
@@ -887,8 +919,11 @@ void LayerImpl::OnOpacityAnimated(float opacity) {
   SetOpacity(opacity);
   // When hide_layer_and_subtree is true, the effective opacity is zero and we
   // need not update the opacity on property trees.
-  if (!hide_layer_and_subtree_)
+  if (!hide_layer_and_subtree_) {
     UpdatePropertyTreeOpacity();
+    SetNeedsPushProperties();
+    layer_tree_impl()->set_needs_update_draw_properties();
+  }
 }
 
 void LayerImpl::OnTransformAnimated(const gfx::Transform& transform) {
@@ -1135,7 +1170,6 @@ void LayerImpl::SetOpacity(float opacity) {
     return;
 
   opacity_ = opacity;
-  NoteLayerPropertyChangedForSubtree();
 }
 
 float LayerImpl::EffectiveOpacity() const {

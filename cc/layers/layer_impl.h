@@ -685,6 +685,8 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
 
   void NoteLayerPropertyChanged();
 
+  void PushLayerPropertyChangedForSubtree();
+
  protected:
   LayerImpl(LayerTreeImpl* layer_impl,
             int id,
@@ -718,6 +720,7 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   void PushScrollOffset(const gfx::ScrollOffset* scroll_offset);
   void DidUpdateScrollOffset();
   void NoteLayerPropertyChangedForDescendantsInternal();
+  void PushLayerPropertyChangedForSubtreeInternal();
 
   virtual const char* LayerTypeAsString() const;
 

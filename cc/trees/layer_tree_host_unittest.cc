@@ -687,6 +687,41 @@ class LayerTreeHostTestPushPropertiesTo : public LayerTreeHostTest {
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestPushPropertiesTo);
 
+// Verify damage status of property trees is preserved after commit.
+class LayerTreeHostTestPropertyTreesChangedSync : public LayerTreeHostTest {
+ protected:
+  void SetupTree() override {
+    scoped_refptr<Layer> root = Layer::Create(layer_settings());
+    layer_tree_host()->SetRootLayer(root);
+    LayerTreeHostTest::SetupTree();
+  }
+
+  void BeginTest() override {
+    index_ = 0;
+    PostSetNeedsCommitToMainThread();
+  }
+
+  void CommitCompleteOnThread(LayerTreeHostImpl* impl) override {
+    switch (index_) {
+      case 0:
+        index_++;
+        impl->active_tree()->root_layer()->ResetAllChangeTrackingForSubtree();
+        impl->active_tree()->root_layer()->OnOpacityAnimated(0.5f);
+        PostSetNeedsCommitToMainThread();
+        break;
+      case 1:
+        EXPECT_TRUE(impl->active_tree()->root_layer()->LayerPropertyChanged());
+        EndTest();
+        break;
+    }
+  }
+
+  void AfterTest() override {}
+  int index_;
+};
+
+SINGLE_THREAD_TEST_F(LayerTreeHostTestPropertyTreesChangedSync);
+
 // 1 setNeedsRedraw after the first commit has completed should lead to 1
 // additional draw.
 class LayerTreeHostTestSetNeedsRedraw : public LayerTreeHostTest {

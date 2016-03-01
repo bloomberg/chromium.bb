@@ -533,6 +533,7 @@ void Layer::SetOpacity(float opacity) {
   if (opacity_ == opacity)
     return;
   opacity_ = opacity;
+  SetSubtreePropertyChanged();
   SetNeedsCommit();
 }
 

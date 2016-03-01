@@ -82,7 +82,7 @@ message ClipNodeData {
 }
 
 // Proto for struct EffectNodeData.
-// NEXT ID: 11
+// NEXT ID: 12
 message EffectNodeData {
   optional float opacity = 1;
   optional float screen_space_opacity = 2;
@@ -91,6 +91,7 @@ message EffectNodeData {
   optional bool has_background_filters = 5;
   optional bool is_drawn = 6;
   optional bool has_animated_opacity = 7;
+  optional bool opacity_changed = 11;
   optional int64 num_copy_requests_in_subtree = 8;
   optional int64 transform_id = 9;
   optional int64 clip_id = 10;
@@ -173,7 +174,7 @@ message TransformTreeData {
 }
 
 // Proto for class PropertyTrees.
-// NEXT ID: 11
+// NEXT ID: 12
 message PropertyTrees {
   optional PropertyTree transform_tree = 1;
   optional PropertyTree effect_tree = 2;
@@ -182,6 +183,7 @@ message PropertyTrees {
 
   optional bool needs_rebuild = 4;
   optional bool non_root_surfaces_enabled = 5;
+  optional bool changed = 11;
   optional int64 sequence_number = 6;
 
   optional Vector2dF inner_viewport_container_bounds_delta = 8;
