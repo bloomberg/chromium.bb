@@ -94,9 +94,9 @@ TEST_F(AnimationPlayerTest, AttachDetachTimelineIfLayerAttached) {
 }
 
 TEST_F(AnimationPlayerTest, PropertiesMutate) {
-  client_.RegisterLayer(layer_id_, LayerTreeType::ACTIVE);
-  client_impl_.RegisterLayer(layer_id_, LayerTreeType::PENDING);
-  client_impl_.RegisterLayer(layer_id_, LayerTreeType::ACTIVE);
+  client_.RegisterLayer(layer_id_, LayerListType::ACTIVE);
+  client_impl_.RegisterLayer(layer_id_, LayerListType::PENDING);
+  client_impl_.RegisterLayer(layer_id_, LayerListType::ACTIVE);
 
   host_->AddAnimationTimeline(timeline_);
   timeline_->AttachPlayer(player_);
@@ -122,18 +122,18 @@ TEST_F(AnimationPlayerTest, PropertiesMutate) {
 
   host_->PushPropertiesTo(host_impl_);
 
-  EXPECT_FALSE(client_.IsPropertyMutated(layer_id_, LayerTreeType::ACTIVE,
+  EXPECT_FALSE(client_.IsPropertyMutated(layer_id_, LayerListType::ACTIVE,
                                          TargetProperty::OPACITY));
-  EXPECT_FALSE(client_.IsPropertyMutated(layer_id_, LayerTreeType::ACTIVE,
+  EXPECT_FALSE(client_.IsPropertyMutated(layer_id_, LayerListType::ACTIVE,
                                          TargetProperty::TRANSFORM));
-  EXPECT_FALSE(client_.IsPropertyMutated(layer_id_, LayerTreeType::ACTIVE,
+  EXPECT_FALSE(client_.IsPropertyMutated(layer_id_, LayerListType::ACTIVE,
                                          TargetProperty::FILTER));
 
-  EXPECT_FALSE(client_impl_.IsPropertyMutated(layer_id_, LayerTreeType::ACTIVE,
+  EXPECT_FALSE(client_impl_.IsPropertyMutated(layer_id_, LayerListType::ACTIVE,
                                               TargetProperty::OPACITY));
-  EXPECT_FALSE(client_impl_.IsPropertyMutated(layer_id_, LayerTreeType::ACTIVE,
+  EXPECT_FALSE(client_impl_.IsPropertyMutated(layer_id_, LayerListType::ACTIVE,
                                               TargetProperty::TRANSFORM));
-  EXPECT_FALSE(client_impl_.IsPropertyMutated(layer_id_, LayerTreeType::ACTIVE,
+  EXPECT_FALSE(client_impl_.IsPropertyMutated(layer_id_, LayerListType::ACTIVE,
                                               TargetProperty::FILTER));
 
   host_impl_->animation_registrar()->ActivateAnimations();
@@ -145,25 +145,25 @@ TEST_F(AnimationPlayerTest, PropertiesMutate) {
   time += base::TimeDelta::FromSecondsD(duration);
   AnimateLayersTransferEvents(time, 3u);
 
-  client_.ExpectOpacityPropertyMutated(layer_id_, LayerTreeType::ACTIVE,
+  client_.ExpectOpacityPropertyMutated(layer_id_, LayerListType::ACTIVE,
                                        end_opacity);
-  client_.ExpectTransformPropertyMutated(layer_id_, LayerTreeType::ACTIVE,
+  client_.ExpectTransformPropertyMutated(layer_id_, LayerListType::ACTIVE,
                                          transform_x, transform_y);
-  client_.ExpectFilterPropertyMutated(layer_id_, LayerTreeType::ACTIVE,
+  client_.ExpectFilterPropertyMutated(layer_id_, LayerListType::ACTIVE,
                                       end_brightness);
 
-  client_impl_.ExpectOpacityPropertyMutated(layer_id_, LayerTreeType::ACTIVE,
+  client_impl_.ExpectOpacityPropertyMutated(layer_id_, LayerListType::ACTIVE,
                                             end_opacity);
-  client_impl_.ExpectTransformPropertyMutated(layer_id_, LayerTreeType::ACTIVE,
+  client_impl_.ExpectTransformPropertyMutated(layer_id_, LayerListType::ACTIVE,
                                               transform_x, transform_y);
-  client_impl_.ExpectFilterPropertyMutated(layer_id_, LayerTreeType::ACTIVE,
+  client_impl_.ExpectFilterPropertyMutated(layer_id_, LayerListType::ACTIVE,
                                            end_brightness);
 
-  client_impl_.ExpectOpacityPropertyMutated(layer_id_, LayerTreeType::PENDING,
+  client_impl_.ExpectOpacityPropertyMutated(layer_id_, LayerListType::PENDING,
                                             end_opacity);
-  client_impl_.ExpectTransformPropertyMutated(layer_id_, LayerTreeType::PENDING,
+  client_impl_.ExpectTransformPropertyMutated(layer_id_, LayerListType::PENDING,
                                               transform_x, transform_y);
-  client_impl_.ExpectFilterPropertyMutated(layer_id_, LayerTreeType::PENDING,
+  client_impl_.ExpectFilterPropertyMutated(layer_id_, LayerListType::PENDING,
                                            end_brightness);
 }
 
@@ -171,9 +171,9 @@ TEST_F(AnimationPlayerTest, AttachTwoPlayersToOneLayer) {
   TestAnimationDelegate delegate1;
   TestAnimationDelegate delegate2;
 
-  client_.RegisterLayer(layer_id_, LayerTreeType::ACTIVE);
-  client_impl_.RegisterLayer(layer_id_, LayerTreeType::PENDING);
-  client_impl_.RegisterLayer(layer_id_, LayerTreeType::ACTIVE);
+  client_.RegisterLayer(layer_id_, LayerListType::ACTIVE);
+  client_impl_.RegisterLayer(layer_id_, LayerListType::PENDING);
+  client_impl_.RegisterLayer(layer_id_, LayerListType::ACTIVE);
 
   scoped_refptr<AnimationPlayer> player1 =
       AnimationPlayer::Create(AnimationIdProvider::NextPlayerId());
@@ -229,26 +229,26 @@ TEST_F(AnimationPlayerTest, AttachTwoPlayersToOneLayer) {
   EXPECT_TRUE(delegate1.finished_);
   EXPECT_TRUE(delegate2.finished_);
 
-  client_.ExpectOpacityPropertyMutated(layer_id_, LayerTreeType::ACTIVE,
+  client_.ExpectOpacityPropertyMutated(layer_id_, LayerListType::ACTIVE,
                                        end_opacity);
-  client_.ExpectTransformPropertyMutated(layer_id_, LayerTreeType::ACTIVE,
+  client_.ExpectTransformPropertyMutated(layer_id_, LayerListType::ACTIVE,
                                          transform_x, transform_y);
 
-  client_impl_.ExpectOpacityPropertyMutated(layer_id_, LayerTreeType::ACTIVE,
+  client_impl_.ExpectOpacityPropertyMutated(layer_id_, LayerListType::ACTIVE,
                                             end_opacity);
-  client_impl_.ExpectTransformPropertyMutated(layer_id_, LayerTreeType::ACTIVE,
+  client_impl_.ExpectTransformPropertyMutated(layer_id_, LayerListType::ACTIVE,
                                               transform_x, transform_y);
 
-  client_impl_.ExpectOpacityPropertyMutated(layer_id_, LayerTreeType::PENDING,
+  client_impl_.ExpectOpacityPropertyMutated(layer_id_, LayerListType::PENDING,
                                             end_opacity);
-  client_impl_.ExpectTransformPropertyMutated(layer_id_, LayerTreeType::PENDING,
+  client_impl_.ExpectTransformPropertyMutated(layer_id_, LayerListType::PENDING,
                                               transform_x, transform_y);
 }
 
 TEST_F(AnimationPlayerTest, AddRemoveAnimationToNonAttachedPlayer) {
-  client_.RegisterLayer(layer_id_, LayerTreeType::ACTIVE);
-  client_impl_.RegisterLayer(layer_id_, LayerTreeType::PENDING);
-  client_impl_.RegisterLayer(layer_id_, LayerTreeType::ACTIVE);
+  client_.RegisterLayer(layer_id_, LayerListType::ACTIVE);
+  client_impl_.RegisterLayer(layer_id_, LayerListType::PENDING);
+  client_impl_.RegisterLayer(layer_id_, LayerListType::ACTIVE);
 
   const double duration = 1.;
   const float start_opacity = .7f;
@@ -277,14 +277,14 @@ TEST_F(AnimationPlayerTest, AddRemoveAnimationToNonAttachedPlayer) {
 
   host_->PushPropertiesTo(host_impl_);
 
-  EXPECT_FALSE(client_.IsPropertyMutated(layer_id_, LayerTreeType::ACTIVE,
+  EXPECT_FALSE(client_.IsPropertyMutated(layer_id_, LayerListType::ACTIVE,
                                          TargetProperty::OPACITY));
-  EXPECT_FALSE(client_impl_.IsPropertyMutated(layer_id_, LayerTreeType::ACTIVE,
+  EXPECT_FALSE(client_impl_.IsPropertyMutated(layer_id_, LayerListType::ACTIVE,
                                               TargetProperty::OPACITY));
 
-  EXPECT_FALSE(client_.IsPropertyMutated(layer_id_, LayerTreeType::ACTIVE,
+  EXPECT_FALSE(client_.IsPropertyMutated(layer_id_, LayerListType::ACTIVE,
                                          TargetProperty::FILTER));
-  EXPECT_FALSE(client_impl_.IsPropertyMutated(layer_id_, LayerTreeType::ACTIVE,
+  EXPECT_FALSE(client_impl_.IsPropertyMutated(layer_id_, LayerListType::ACTIVE,
                                               TargetProperty::FILTER));
 
   host_impl_->animation_registrar()->ActivateAnimations();
@@ -296,21 +296,21 @@ TEST_F(AnimationPlayerTest, AddRemoveAnimationToNonAttachedPlayer) {
   time += base::TimeDelta::FromSecondsD(duration);
   AnimateLayersTransferEvents(time, 1u);
 
-  client_.ExpectOpacityPropertyMutated(layer_id_, LayerTreeType::ACTIVE,
+  client_.ExpectOpacityPropertyMutated(layer_id_, LayerListType::ACTIVE,
                                        end_opacity);
-  client_impl_.ExpectOpacityPropertyMutated(layer_id_, LayerTreeType::ACTIVE,
+  client_impl_.ExpectOpacityPropertyMutated(layer_id_, LayerListType::ACTIVE,
                                             end_opacity);
-  client_impl_.ExpectOpacityPropertyMutated(layer_id_, LayerTreeType::PENDING,
+  client_impl_.ExpectOpacityPropertyMutated(layer_id_, LayerListType::PENDING,
                                             end_opacity);
 
-  EXPECT_FALSE(client_.IsPropertyMutated(layer_id_, LayerTreeType::ACTIVE,
+  EXPECT_FALSE(client_.IsPropertyMutated(layer_id_, LayerListType::ACTIVE,
                                          TargetProperty::FILTER));
-  EXPECT_FALSE(client_impl_.IsPropertyMutated(layer_id_, LayerTreeType::ACTIVE,
+  EXPECT_FALSE(client_impl_.IsPropertyMutated(layer_id_, LayerListType::ACTIVE,
                                               TargetProperty::FILTER));
 }
 
 TEST_F(AnimationPlayerTest, AddRemoveAnimationCausesSetNeedsCommit) {
-  client_.RegisterLayer(layer_id_, LayerTreeType::ACTIVE);
+  client_.RegisterLayer(layer_id_, LayerListType::ACTIVE);
   host_->AddAnimationTimeline(timeline_);
   timeline_->AttachPlayer(player_);
   player_->AttachLayer(layer_id_);

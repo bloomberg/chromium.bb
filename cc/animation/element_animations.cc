@@ -15,26 +15,26 @@ namespace cc {
 
 class ElementAnimations::ValueObserver : public LayerAnimationValueObserver {
  public:
-  ValueObserver(ElementAnimations* element_animation, LayerTreeType tree_type)
-      : element_animations_(element_animation), tree_type_(tree_type) {
+  ValueObserver(ElementAnimations* element_animation, LayerListType list_type)
+      : element_animations_(element_animation), list_type_(list_type) {
     DCHECK(element_animations_);
   }
 
   // LayerAnimationValueObserver implementation.
   void OnFilterAnimated(const FilterOperations& filters) override {
-    element_animations_->SetFilterMutated(tree_type_, filters);
+    element_animations_->SetFilterMutated(list_type_, filters);
   }
 
   void OnOpacityAnimated(float opacity) override {
-    element_animations_->SetOpacityMutated(tree_type_, opacity);
+    element_animations_->SetOpacityMutated(list_type_, opacity);
   }
 
   void OnTransformAnimated(const gfx::Transform& transform) override {
-    element_animations_->SetTransformMutated(tree_type_, transform);
+    element_animations_->SetTransformMutated(list_type_, transform);
   }
 
   void OnScrollOffsetAnimated(const gfx::ScrollOffset& scroll_offset) override {
-    element_animations_->SetScrollOffsetMutated(tree_type_, scroll_offset);
+    element_animations_->SetScrollOffsetMutated(list_type_, scroll_offset);
   }
 
   void OnAnimationWaitingForDeletion() override {
@@ -44,14 +44,14 @@ class ElementAnimations::ValueObserver : public LayerAnimationValueObserver {
 
   void OnTransformIsPotentiallyAnimatingChanged(bool is_animating) override {
     element_animations_->SetTransformIsPotentiallyAnimatingChanged(
-        tree_type_, is_animating);
+        list_type_, is_animating);
   }
 
-  bool IsActive() const override { return tree_type_ == LayerTreeType::ACTIVE; }
+  bool IsActive() const override { return list_type_ == LayerListType::ACTIVE; }
 
  private:
   ElementAnimations* element_animations_;
-  const LayerTreeType tree_type_;
+  const LayerListType list_type_;
 
   DISALLOW_COPY_AND_ASSIGN(ValueObserver);
 };
@@ -85,10 +85,10 @@ void ElementAnimations::CreateLayerAnimationController(int layer_id) {
 
   DCHECK(animation_host_->mutator_host_client());
   if (animation_host_->mutator_host_client()->IsLayerInTree(
-          layer_id, LayerTreeType::ACTIVE))
+          layer_id, LayerListType::ACTIVE))
     CreateActiveValueObserver();
   if (animation_host_->mutator_host_client()->IsLayerInTree(
-          layer_id, LayerTreeType::PENDING))
+          layer_id, LayerListType::PENDING))
     CreatePendingValueObserver();
 }
 
@@ -96,9 +96,9 @@ void ElementAnimations::DestroyLayerAnimationController() {
   DCHECK(animation_host_);
 
   if (active_value_observer_)
-    SetTransformIsPotentiallyAnimatingChanged(LayerTreeType::ACTIVE, false);
+    SetTransformIsPotentiallyAnimatingChanged(LayerListType::ACTIVE, false);
   if (pending_value_observer_)
-    SetTransformIsPotentiallyAnimatingChanged(LayerTreeType::PENDING, false);
+    SetTransformIsPotentiallyAnimatingChanged(LayerListType::PENDING, false);
 
   DestroyPendingValueObserver();
   DestroyActiveValueObserver();
@@ -111,11 +111,11 @@ void ElementAnimations::DestroyLayerAnimationController() {
   }
 }
 
-void ElementAnimations::LayerRegistered(int layer_id, LayerTreeType tree_type) {
+void ElementAnimations::LayerRegistered(int layer_id, LayerListType list_type) {
   DCHECK(layer_animation_controller_);
   DCHECK_EQ(layer_animation_controller_->id(), layer_id);
 
-  if (tree_type == LayerTreeType::ACTIVE) {
+  if (list_type == LayerListType::ACTIVE) {
     if (!active_value_observer_)
       CreateActiveValueObserver();
   } else {
@@ -125,9 +125,9 @@ void ElementAnimations::LayerRegistered(int layer_id, LayerTreeType tree_type) {
 }
 
 void ElementAnimations::LayerUnregistered(int layer_id,
-                                          LayerTreeType tree_type) {
+                                          LayerListType list_type) {
   DCHECK_EQ(this->layer_id(), layer_id);
-  tree_type == LayerTreeType::ACTIVE ? DestroyActiveValueObserver()
+  list_type == LayerListType::ACTIVE ? DestroyActiveValueObserver()
                                      : DestroyPendingValueObserver();
 }
 
@@ -158,52 +158,52 @@ void ElementAnimations::PushPropertiesTo(
       element_animations_impl->layer_animation_controller());
 }
 
-void ElementAnimations::SetFilterMutated(LayerTreeType tree_type,
+void ElementAnimations::SetFilterMutated(LayerListType list_type,
                                          const FilterOperations& filters) {
   DCHECK(layer_id());
   DCHECK(animation_host());
   DCHECK(animation_host()->mutator_host_client());
   animation_host()->mutator_host_client()->SetLayerFilterMutated(
-      layer_id(), tree_type, filters);
+      layer_id(), list_type, filters);
 }
 
-void ElementAnimations::SetOpacityMutated(LayerTreeType tree_type,
+void ElementAnimations::SetOpacityMutated(LayerListType list_type,
                                           float opacity) {
   DCHECK(layer_id());
   DCHECK(animation_host());
   DCHECK(animation_host()->mutator_host_client());
   animation_host()->mutator_host_client()->SetLayerOpacityMutated(
-      layer_id(), tree_type, opacity);
+      layer_id(), list_type, opacity);
 }
 
-void ElementAnimations::SetTransformMutated(LayerTreeType tree_type,
+void ElementAnimations::SetTransformMutated(LayerListType list_type,
                                             const gfx::Transform& transform) {
   DCHECK(layer_id());
   DCHECK(animation_host());
   DCHECK(animation_host()->mutator_host_client());
   animation_host()->mutator_host_client()->SetLayerTransformMutated(
-      layer_id(), tree_type, transform);
+      layer_id(), list_type, transform);
 }
 
 void ElementAnimations::SetScrollOffsetMutated(
-    LayerTreeType tree_type,
+    LayerListType list_type,
     const gfx::ScrollOffset& scroll_offset) {
   DCHECK(layer_id());
   DCHECK(animation_host());
   DCHECK(animation_host()->mutator_host_client());
   animation_host()->mutator_host_client()->SetLayerScrollOffsetMutated(
-      layer_id(), tree_type, scroll_offset);
+      layer_id(), list_type, scroll_offset);
 }
 
 void ElementAnimations::SetTransformIsPotentiallyAnimatingChanged(
-    LayerTreeType tree_type,
+    LayerListType list_type,
     bool is_animating) {
   DCHECK(layer_id());
   DCHECK(animation_host());
   DCHECK(animation_host()->mutator_host_client());
   animation_host()
       ->mutator_host_client()
-      ->LayerTransformIsPotentiallyAnimatingChanged(layer_id(), tree_type,
+      ->LayerTransformIsPotentiallyAnimatingChanged(layer_id(), list_type,
                                                     is_animating);
 }
 
@@ -211,7 +211,7 @@ void ElementAnimations::CreateActiveValueObserver() {
   DCHECK(layer_animation_controller_);
   DCHECK(!active_value_observer_);
   active_value_observer_ =
-      make_scoped_ptr(new ValueObserver(this, LayerTreeType::ACTIVE));
+      make_scoped_ptr(new ValueObserver(this, LayerListType::ACTIVE));
   layer_animation_controller_->AddValueObserver(active_value_observer_.get());
 }
 
@@ -226,7 +226,7 @@ void ElementAnimations::CreatePendingValueObserver() {
   DCHECK(layer_animation_controller_);
   DCHECK(!pending_value_observer_);
   pending_value_observer_ =
-      make_scoped_ptr(new ValueObserver(this, LayerTreeType::PENDING));
+      make_scoped_ptr(new ValueObserver(this, LayerListType::PENDING));
   layer_animation_controller_->AddValueObserver(pending_value_observer_.get());
 }
 

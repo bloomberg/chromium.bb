@@ -27,11 +27,11 @@ class ElementAnimationsTest : public AnimationTimelinesTest {
 TEST_F(ElementAnimationsTest, AttachToLayerInActiveTree) {
   // Set up the layer which is in active tree for main thread and not
   // yet passed onto the impl thread.
-  client_.RegisterLayer(layer_id_, LayerTreeType::ACTIVE);
-  client_impl_.RegisterLayer(layer_id_, LayerTreeType::PENDING);
+  client_.RegisterLayer(layer_id_, LayerListType::ACTIVE);
+  client_impl_.RegisterLayer(layer_id_, LayerListType::PENDING);
 
-  EXPECT_TRUE(client_.IsLayerInTree(layer_id_, LayerTreeType::ACTIVE));
-  EXPECT_FALSE(client_.IsLayerInTree(layer_id_, LayerTreeType::PENDING));
+  EXPECT_TRUE(client_.IsLayerInTree(layer_id_, LayerListType::ACTIVE));
+  EXPECT_FALSE(client_.IsLayerInTree(layer_id_, LayerListType::PENDING));
 
   host_->AddAnimationTimeline(timeline_);
 
@@ -58,16 +58,16 @@ TEST_F(ElementAnimationsTest, AttachToLayerInActiveTree) {
       element_animations_impl->has_pending_value_observer_for_testing());
 
   // Create the layer in the impl active tree.
-  client_impl_.RegisterLayer(layer_id_, LayerTreeType::ACTIVE);
+  client_impl_.RegisterLayer(layer_id_, LayerListType::ACTIVE);
   EXPECT_TRUE(element_animations_impl->has_active_value_observer_for_testing());
   EXPECT_TRUE(
       element_animations_impl->has_pending_value_observer_for_testing());
 
-  EXPECT_TRUE(client_impl_.IsLayerInTree(layer_id_, LayerTreeType::ACTIVE));
-  EXPECT_TRUE(client_impl_.IsLayerInTree(layer_id_, LayerTreeType::PENDING));
+  EXPECT_TRUE(client_impl_.IsLayerInTree(layer_id_, LayerListType::ACTIVE));
+  EXPECT_TRUE(client_impl_.IsLayerInTree(layer_id_, LayerListType::PENDING));
 
   // kill layer on main thread.
-  client_.UnregisterLayer(layer_id_, LayerTreeType::ACTIVE);
+  client_.UnregisterLayer(layer_id_, LayerListType::ACTIVE);
   EXPECT_EQ(element_animations, player_->element_animations());
   EXPECT_FALSE(element_animations->has_active_value_observer_for_testing());
   EXPECT_FALSE(element_animations->has_pending_value_observer_for_testing());
@@ -80,14 +80,14 @@ TEST_F(ElementAnimationsTest, AttachToLayerInActiveTree) {
       element_animations_impl->has_pending_value_observer_for_testing());
 
   // Kill layer on impl thread in pending tree.
-  client_impl_.UnregisterLayer(layer_id_, LayerTreeType::PENDING);
+  client_impl_.UnregisterLayer(layer_id_, LayerListType::PENDING);
   EXPECT_EQ(element_animations_impl, player_impl_->element_animations());
   EXPECT_TRUE(element_animations_impl->has_active_value_observer_for_testing());
   EXPECT_FALSE(
       element_animations_impl->has_pending_value_observer_for_testing());
 
   // Kill layer on impl thread in active tree.
-  client_impl_.UnregisterLayer(layer_id_, LayerTreeType::ACTIVE);
+  client_impl_.UnregisterLayer(layer_id_, LayerListType::ACTIVE);
   EXPECT_EQ(element_animations_impl, player_impl_->element_animations());
   EXPECT_FALSE(
       element_animations_impl->has_active_value_observer_for_testing());
@@ -137,17 +137,17 @@ TEST_F(ElementAnimationsTest, AttachToNotYetCreatedLayer) {
       element_animations_impl->has_pending_value_observer_for_testing());
 
   // Create layer.
-  client_.RegisterLayer(layer_id_, LayerTreeType::ACTIVE);
+  client_.RegisterLayer(layer_id_, LayerListType::ACTIVE);
   EXPECT_TRUE(element_animations->has_active_value_observer_for_testing());
   EXPECT_FALSE(element_animations->has_pending_value_observer_for_testing());
 
-  client_impl_.RegisterLayer(layer_id_, LayerTreeType::PENDING);
+  client_impl_.RegisterLayer(layer_id_, LayerListType::PENDING);
   EXPECT_FALSE(
       element_animations_impl->has_active_value_observer_for_testing());
   EXPECT_TRUE(
       element_animations_impl->has_pending_value_observer_for_testing());
 
-  client_impl_.RegisterLayer(layer_id_, LayerTreeType::ACTIVE);
+  client_impl_.RegisterLayer(layer_id_, LayerListType::ACTIVE);
   EXPECT_TRUE(element_animations_impl->has_active_value_observer_for_testing());
   EXPECT_TRUE(
       element_animations_impl->has_pending_value_observer_for_testing());

@@ -81,7 +81,7 @@ TEST_F(CompositorMutableStateTest, NoMutableState)
     hostImpl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
 
     CompositorMutations mutations;
-    CompositorMutableStateProvider provider(hostImpl().active_tree(), &mutations);
+    CompositorMutableStateProvider provider(hostImpl().active_tree()->list(), &mutations);
     OwnPtr<CompositorMutableState> state(provider.getMutableStateFor(42));
     EXPECT_FALSE(state);
 }
@@ -99,7 +99,7 @@ TEST_F(CompositorMutableStateTest, MutableStateNoMutableProperties)
     hostImpl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
 
     CompositorMutations mutations;
-    CompositorMutableStateProvider provider(hostImpl().active_tree(), &mutations);
+    CompositorMutableStateProvider provider(hostImpl().active_tree()->list(), &mutations);
     OwnPtr<CompositorMutableState> state(provider.getMutableStateFor(42));
     EXPECT_FALSE(state);
 }
@@ -130,7 +130,7 @@ TEST_F(CompositorMutableStateTest, MutableStateMutableProperties)
     hostImpl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
 
     CompositorMutations mutations;
-    CompositorMutableStateProvider provider(hostImpl().active_tree(), &mutations);
+    CompositorMutableStateProvider provider(hostImpl().active_tree()->list(), &mutations);
 
     OwnPtr<CompositorMutableState> state(provider.getMutableStateFor(layer->element_id()));
     EXPECT_TRUE(state.get());

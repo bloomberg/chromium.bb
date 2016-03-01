@@ -144,7 +144,7 @@ class TileManagerPerfTest : public testing::Test {
     CHECK(!host_impl_.pending_tree());
     pending_root_layer_ = NULL;
     active_root_layer_ = static_cast<FakePictureLayerImpl*>(
-        host_impl_.active_tree()->LayerById(id_));
+        host_impl_.active_tree()->list()->LayerById(id_));
   }
 
   void SetupDefaultTreesWithFixedTileSize(const gfx::Size& layer_bounds,
@@ -176,7 +176,7 @@ class TileManagerPerfTest : public testing::Test {
     pending_tree->BuildPropertyTreesForTesting();
 
     pending_root_layer_ = static_cast<FakePictureLayerImpl*>(
-        host_impl_.pending_tree()->LayerById(id_));
+        host_impl_.pending_tree()->list()->LayerById(id_));
   }
 
   void RunRasterQueueConstructTest(const std::string& test_name,

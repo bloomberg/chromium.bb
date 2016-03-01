@@ -56,6 +56,7 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl,
       replica_layer_id_(-1),
       layer_id_(id),
       layer_tree_impl_(tree_impl),
+      layer_list_impl_(tree_impl->list()),
       scroll_offset_(scroll_offset),
       scroll_clip_layer_id_(Layer::INVALID_ID),
       main_thread_scrolling_reasons_(
@@ -102,11 +103,10 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl,
       layer_or_descendant_has_touch_handler_(false),
       sorted_for_recursion_(false) {
   DCHECK_GT(layer_id_, 0);
-  DCHECK(layer_tree_impl_);
-  layer_tree_impl_->RegisterLayer(this);
+  layer_list_impl_->RegisterLayer(this);
 
   if (!layer_tree_impl_->settings().use_compositor_animation_timelines) {
-    AnimationRegistrar* registrar = layer_tree_impl_->GetAnimationRegistrar();
+    AnimationRegistrar* registrar = layer_list_impl_->GetAnimationRegistrar();
     layer_animation_controller_ =
         registrar->GetAnimationControllerForId(layer_id_);
     layer_animation_controller_->AddValueObserver(this);
@@ -116,7 +116,7 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl,
     }
   }
 
-  layer_tree_impl_->AddToElementMap(this);
+  layer_list_impl_->AddToElementMap(this);
 
   SetNeedsPushProperties();
 }
@@ -133,9 +133,9 @@ LayerImpl::~LayerImpl() {
   if (!copy_requests_.empty() && layer_tree_impl_->IsActiveTree())
     layer_tree_impl()->RemoveLayerWithCopyOutputRequest(this);
   layer_tree_impl_->UnregisterScrollLayer(this);
-  layer_tree_impl_->UnregisterLayer(this);
+  layer_list_impl_->UnregisterLayer(this);
 
-  layer_tree_impl_->RemoveFromElementMap(this);
+  layer_list_impl_->RemoveFromElementMap(this);
 
   TRACE_EVENT_OBJECT_DELETED_WITH_ID(
       TRACE_DISABLED_BY_DEFAULT("cc.debug"), "cc::LayerImpl", this);
@@ -197,7 +197,7 @@ void LayerImpl::SetScrollParent(LayerImpl* parent) {
     return;
 
   if (parent)
-    DCHECK_EQ(layer_tree_impl()->LayerById(parent->id()), parent);
+    DCHECK_EQ(layer_list_impl_->LayerById(parent->id()), parent);
 
   scroll_parent_ = parent;
   SetNeedsPushProperties();
@@ -470,13 +470,13 @@ void LayerImpl::SetScrollClipLayer(int scroll_clip_layer_id) {
   if (scroll_clip_layer_id_ == scroll_clip_layer_id)
     return;
 
-  layer_tree_impl()->UnregisterScrollLayer(this);
+  layer_tree_impl_->UnregisterScrollLayer(this);
   scroll_clip_layer_id_ = scroll_clip_layer_id;
-  layer_tree_impl()->RegisterScrollLayer(this);
+  layer_tree_impl_->RegisterScrollLayer(this);
 }
 
 LayerImpl* LayerImpl::scroll_clip_layer() const {
-  return layer_tree_impl()->LayerById(scroll_clip_layer_id_);
+  return layer_list_impl_->LayerById(scroll_clip_layer_id_);
 }
 
 bool LayerImpl::scrollable() const {
@@ -563,7 +563,7 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
 
   LayerImpl* scroll_parent = nullptr;
   if (scroll_parent_) {
-    scroll_parent = layer->layer_tree_impl()->LayerById(scroll_parent_->id());
+    scroll_parent = layer->layer_list_impl_->LayerById(scroll_parent_->id());
     DCHECK(scroll_parent);
   }
 
@@ -574,8 +574,7 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
          it != scroll_children_->end();
          ++it) {
       DCHECK_EQ((*it)->scroll_parent(), this);
-      LayerImpl* scroll_child =
-          layer->layer_tree_impl()->LayerById((*it)->id());
+      LayerImpl* scroll_child = layer->layer_list_impl_->LayerById((*it)->id());
       DCHECK(scroll_child);
       scroll_children->insert(scroll_child);
     }
@@ -586,8 +585,7 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
 
   LayerImpl* clip_parent = nullptr;
   if (clip_parent_) {
-    clip_parent = layer->layer_tree_impl()->LayerById(
-        clip_parent_->id());
+    clip_parent = layer->layer_list_impl_->LayerById(clip_parent_->id());
     DCHECK(clip_parent);
   }
 
@@ -596,7 +594,7 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
     std::set<LayerImpl*>* clip_children = new std::set<LayerImpl*>;
     for (std::set<LayerImpl*>::iterator it = clip_children_->begin();
         it != clip_children_->end(); ++it)
-      clip_children->insert(layer->layer_tree_impl()->LayerById((*it)->id()));
+      clip_children->insert(layer->layer_list_impl_->LayerById((*it)->id()));
     layer->SetClipChildren(clip_children);
   } else {
     layer->SetClipChildren(nullptr);
@@ -635,7 +633,7 @@ bool LayerImpl::IsAffectedByPageScale() const {
 
 gfx::Vector2dF LayerImpl::FixedContainerSizeDelta() const {
   LayerImpl* scroll_clip_layer =
-      layer_tree_impl()->LayerById(scroll_clip_layer_id_);
+      layer_list_impl_->LayerById(scroll_clip_layer_id_);
   if (!scroll_clip_layer)
     return gfx::Vector2dF();
 
@@ -1212,9 +1210,9 @@ void LayerImpl::SetElementId(uint64_t element_id) {
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("compositor-worker"),
                "LayerImpl::SetElementId", "id", element_id);
 
-  layer_tree_impl_->RemoveFromElementMap(this);
+  layer_list_impl_->RemoveFromElementMap(this);
   element_id_ = element_id;
-  layer_tree_impl_->AddToElementMap(this);
+  layer_list_impl_->AddToElementMap(this);
   SetNeedsPushProperties();
 }
 
@@ -1227,7 +1225,7 @@ void LayerImpl::SetMutableProperties(uint32_t properties) {
 
   mutable_properties_ = properties;
   // If this layer is already in the element map, update its properties.
-  layer_tree_impl_->AddToElementMap(this);
+  layer_list_impl_->AddToElementMap(this);
   SetNeedsPushProperties();
 }
 
@@ -1486,7 +1484,7 @@ void LayerImpl::PushScrollOffset(const gfx::ScrollOffset* scroll_offset) {
   DCHECK(scroll_offset || IsActive());
   bool changed = false;
   if (scroll_offset) {
-    DCHECK(!IsActive() || !layer_tree_impl_->FindPendingTreeLayerById(id()));
+    DCHECK(!IsActive() || !layer_list_impl_->FindPendingLayerById(id()));
     changed |= scroll_offset_->PushFromMainThread(*scroll_offset);
   }
   if (IsActive()) {
@@ -1523,7 +1521,7 @@ void LayerImpl::DidUpdateScrollOffset() {
 
   // Inform the pending twin that a property changed.
   if (layer_tree_impl()->IsActiveTree()) {
-    LayerImpl* pending_twin = layer_tree_impl()->FindPendingTreeLayerById(id());
+    LayerImpl* pending_twin = layer_list_impl_->FindPendingLayerById(id());
     if (pending_twin)
       pending_twin->DidUpdateScrollOffset();
   }
@@ -1601,11 +1599,8 @@ void LayerImpl::GetAllPrioritizedTilesForTracing(
 
 void LayerImpl::AsValueInto(base::trace_event::TracedValue* state) const {
   TracedValue::MakeDictIntoImplicitSnapshotWithCategory(
-      TRACE_DISABLED_BY_DEFAULT("cc.debug"),
-      state,
-      "cc::LayerImpl",
-      LayerTypeAsString(),
-      this);
+      TRACE_DISABLED_BY_DEFAULT("cc.debug"), state, "cc::LayerImpl",
+      LayerTypeAsString(), this);
   state->SetInteger("layer_id", id());
   MathUtil::AddToTracedValue("bounds", bounds_, state);
 

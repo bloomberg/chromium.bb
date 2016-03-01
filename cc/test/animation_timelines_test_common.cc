@@ -54,8 +54,8 @@ void TestHostClient::ClearMutatedProperties() {
 }
 
 bool TestHostClient::IsLayerInTree(int layer_id,
-                                   LayerTreeType tree_type) const {
-  return tree_type == LayerTreeType::ACTIVE
+                                   LayerListType list_type) const {
+  return list_type == LayerListType::ACTIVE
              ? layers_in_active_tree_.count(layer_id)
              : layers_in_pending_tree_.count(layer_id);
 }
@@ -67,37 +67,37 @@ void TestHostClient::SetMutatorsNeedCommit() {
 void TestHostClient::SetMutatorsNeedRebuildPropertyTrees() {}
 
 void TestHostClient::SetLayerFilterMutated(int layer_id,
-                                           LayerTreeType tree_type,
+                                           LayerListType list_type,
                                            const FilterOperations& filters) {
   for (unsigned i = 0; i < filters.size(); ++i) {
     const FilterOperation& filter = filters.at(i);
     if (filter.type() == FilterOperation::BRIGHTNESS) {
-      TestLayer* layer = FindTestLayer(layer_id, tree_type);
+      TestLayer* layer = FindTestLayer(layer_id, list_type);
       layer->set_brightness(filter.amount());
     }
   }
 }
 
 void TestHostClient::SetLayerOpacityMutated(int layer_id,
-                                            LayerTreeType tree_type,
+                                            LayerListType list_type,
                                             float opacity) {
-  TestLayer* layer = FindTestLayer(layer_id, tree_type);
+  TestLayer* layer = FindTestLayer(layer_id, list_type);
   layer->set_opacity(opacity);
 }
 
 void TestHostClient::SetLayerTransformMutated(int layer_id,
-                                              LayerTreeType tree_type,
+                                              LayerListType list_type,
                                               const gfx::Transform& transform) {
-  TestLayer* layer = FindTestLayer(layer_id, tree_type);
+  TestLayer* layer = FindTestLayer(layer_id, list_type);
   gfx::Vector2dF vec = transform.To2dTranslation();
   layer->set_transform(static_cast<int>(vec.x()), static_cast<int>(vec.y()));
 }
 
 void TestHostClient::SetLayerScrollOffsetMutated(
     int layer_id,
-    LayerTreeType tree_type,
+    LayerListType list_type,
     const gfx::ScrollOffset& scroll_offset) {
-  TestLayer* layer = FindTestLayer(layer_id, tree_type);
+  TestLayer* layer = FindTestLayer(layer_id, list_type);
   layer->set_scroll_offset(scroll_offset);
 }
 
@@ -106,22 +106,22 @@ gfx::ScrollOffset TestHostClient::GetScrollOffsetForAnimation(
   return gfx::ScrollOffset();
 }
 
-void TestHostClient::RegisterLayer(int layer_id, LayerTreeType tree_type) {
-  LayerIdToTestLayer& layers_in_tree = tree_type == LayerTreeType::ACTIVE
+void TestHostClient::RegisterLayer(int layer_id, LayerListType list_type) {
+  LayerIdToTestLayer& layers_in_tree = list_type == LayerListType::ACTIVE
                                            ? layers_in_active_tree_
                                            : layers_in_pending_tree_;
   DCHECK(layers_in_tree.find(layer_id) == layers_in_tree.end());
   layers_in_tree[layer_id] = TestLayer::Create();
 
   DCHECK(host_);
-  host_->RegisterLayer(layer_id, tree_type);
+  host_->RegisterLayer(layer_id, list_type);
 }
 
-void TestHostClient::UnregisterLayer(int layer_id, LayerTreeType tree_type) {
+void TestHostClient::UnregisterLayer(int layer_id, LayerListType list_type) {
   DCHECK(host_);
-  host_->UnregisterLayer(layer_id, tree_type);
+  host_->UnregisterLayer(layer_id, list_type);
 
-  LayerIdToTestLayer& layers_in_tree = tree_type == LayerTreeType::ACTIVE
+  LayerIdToTestLayer& layers_in_tree = list_type == LayerListType::ACTIVE
                                            ? layers_in_active_tree_
                                            : layers_in_pending_tree_;
   auto kv = layers_in_tree.find(layer_id);
@@ -130,41 +130,41 @@ void TestHostClient::UnregisterLayer(int layer_id, LayerTreeType tree_type) {
 }
 
 bool TestHostClient::IsPropertyMutated(int layer_id,
-                                       LayerTreeType tree_type,
+                                       LayerListType list_type,
                                        TargetProperty::Type property) const {
-  TestLayer* layer = FindTestLayer(layer_id, tree_type);
+  TestLayer* layer = FindTestLayer(layer_id, list_type);
   return layer->is_property_mutated(property);
 }
 
 void TestHostClient::ExpectFilterPropertyMutated(int layer_id,
-                                                 LayerTreeType tree_type,
+                                                 LayerListType list_type,
                                                  float brightness) const {
-  TestLayer* layer = FindTestLayer(layer_id, tree_type);
+  TestLayer* layer = FindTestLayer(layer_id, list_type);
   EXPECT_TRUE(layer->is_property_mutated(TargetProperty::OPACITY));
   EXPECT_EQ(brightness, layer->brightness());
 }
 
 void TestHostClient::ExpectOpacityPropertyMutated(int layer_id,
-                                                  LayerTreeType tree_type,
+                                                  LayerListType list_type,
                                                   float opacity) const {
-  TestLayer* layer = FindTestLayer(layer_id, tree_type);
+  TestLayer* layer = FindTestLayer(layer_id, list_type);
   EXPECT_TRUE(layer->is_property_mutated(TargetProperty::OPACITY));
   EXPECT_EQ(opacity, layer->opacity());
 }
 
 void TestHostClient::ExpectTransformPropertyMutated(int layer_id,
-                                                    LayerTreeType tree_type,
+                                                    LayerListType list_type,
                                                     int transform_x,
                                                     int transform_y) const {
-  TestLayer* layer = FindTestLayer(layer_id, tree_type);
+  TestLayer* layer = FindTestLayer(layer_id, list_type);
   EXPECT_TRUE(layer->is_property_mutated(TargetProperty::OPACITY));
   EXPECT_EQ(transform_x, layer->transform_x());
   EXPECT_EQ(transform_y, layer->transform_y());
 }
 
 TestLayer* TestHostClient::FindTestLayer(int layer_id,
-                                         LayerTreeType tree_type) const {
-  const LayerIdToTestLayer& layers_in_tree = tree_type == LayerTreeType::ACTIVE
+                                         LayerListType list_type) const {
+  const LayerIdToTestLayer& layers_in_tree = list_type == LayerListType::ACTIVE
                                                  ? layers_in_active_tree_
                                                  : layers_in_pending_tree_;
   auto kv = layers_in_tree.find(layer_id);

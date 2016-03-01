@@ -1929,7 +1929,7 @@ TEST_F(LayerTreeImplTest, HitCheckingTouchHandlerOverlappingRegions) {
   // behind it.
   EXPECT_TRUE(result_layer);
 
-  host_impl().active_tree()->LayerById(1234)->SetContentsOpaque(true);
+  host_impl().active_tree()->list()->LayerById(1234)->SetContentsOpaque(true);
   result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPointInTouchHandlerRegion(
           test_point);
@@ -2358,18 +2358,18 @@ TEST_F(LayerTreeImplTest, SelectionBoundsWithLargeTransforms) {
 }
 
 TEST_F(LayerTreeImplTest, NumLayersTestOne) {
-  EXPECT_EQ(0u, host_impl().active_tree()->NumLayers());
+  EXPECT_EQ(0u, host_impl().active_tree()->list()->NumLayers());
   scoped_ptr<LayerImpl> root = LayerImpl::Create(host_impl().active_tree(), 1);
-  EXPECT_EQ(1u, host_impl().active_tree()->NumLayers());
+  EXPECT_EQ(1u, host_impl().active_tree()->list()->NumLayers());
 }
 
 TEST_F(LayerTreeImplTest, NumLayersSmallTree) {
-  EXPECT_EQ(0u, host_impl().active_tree()->NumLayers());
+  EXPECT_EQ(0u, host_impl().active_tree()->list()->NumLayers());
   scoped_ptr<LayerImpl> root = LayerImpl::Create(host_impl().active_tree(), 1);
   root->AddChild(LayerImpl::Create(host_impl().active_tree(), 2));
   root->AddChild(LayerImpl::Create(host_impl().active_tree(), 3));
   root->child_at(1)->AddChild(LayerImpl::Create(host_impl().active_tree(), 4));
-  EXPECT_EQ(4u, host_impl().active_tree()->NumLayers());
+  EXPECT_EQ(4u, host_impl().active_tree()->list()->NumLayers());
 }
 
 TEST_F(LayerTreeImplTest, DeviceScaleFactorNeedsDrawPropertiesUpdate) {

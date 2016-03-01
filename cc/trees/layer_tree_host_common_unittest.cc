@@ -5232,7 +5232,7 @@ TEST_F(LayerTreeHostCommonTest, OpacityAnimatingOnPendingTree) {
   inputs2.can_adjust_raster_scales = true;
   LayerTreeHostCommon::CalculateDrawProperties(&inputs2);
 
-  LayerImpl* child_ptr = root->layer_tree_impl()->LayerById(2);
+  LayerImpl* child_ptr = root->layer_tree_impl()->list()->LayerById(2);
   EffectTree tree = root->layer_tree_impl()->property_trees()->effect_tree;
   EffectNode* node = tree.Node(child_ptr->effect_tree_index());
   EXPECT_FALSE(node->data.is_drawn);
@@ -5250,7 +5250,7 @@ TEST_F(LayerTreeHostCommonTest, OpacityAnimatingOnPendingTree) {
   inputs3.can_adjust_raster_scales = true;
   LayerTreeHostCommon::CalculateDrawProperties(&inputs3);
 
-  child_ptr = root->layer_tree_impl()->LayerById(2);
+  child_ptr = root->layer_tree_impl()->list()->LayerById(2);
   tree = root->layer_tree_impl()->property_trees()->effect_tree;
   node = tree.Node(child_ptr->effect_tree_index());
   EXPECT_TRUE(node->data.is_drawn);

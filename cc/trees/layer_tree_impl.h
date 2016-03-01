@@ -8,7 +8,6 @@
 #include <map>
 #include <set>
 #include <string>
-#include <unordered_map>
 #include <vector>
 
 #include "base/macros.h"
@@ -17,6 +16,7 @@
 #include "cc/input/event_listener_properties.h"
 #include "cc/input/layer_selection_bound.h"
 #include "cc/layers/layer_impl.h"
+#include "cc/layers/layer_list_impl.h"
 #include "cc/output/begin_frame_args.h"
 #include "cc/output/renderer.h"
 #include "cc/output/swap_promise.h"
@@ -39,7 +39,6 @@ class HeadsUpDisplayLayerImpl;
 class LayerExternalScrollOffsetListener;
 class LayerScrollOffsetDelegate;
 class LayerTreeDebugState;
-class LayerTreeImpl;
 class LayerTreeSettings;
 class MemoryHistory;
 class OutputSurface;
@@ -94,8 +93,6 @@ class CC_EXPORT LayerTreeImpl {
   bool IsPendingTree() const;
   bool IsRecycleTree() const;
   bool IsSyncTree() const;
-  LayerImpl* FindActiveTreeLayerById(int id);
-  LayerImpl* FindPendingTreeLayerById(int id);
   bool PinchGestureActive() const;
   BeginFrameArgs CurrentBeginFrameArgs() const;
   base::TimeDelta CurrentBeginFrameInterval() const;
@@ -139,18 +136,6 @@ class CC_EXPORT LayerTreeImpl {
 
   void PushPropertiesTo(LayerTreeImpl* tree_impl);
 
-  // TODO(thakis): Consider marking this CC_EXPORT once we understand
-  // http://crbug.com/575700 better.
-  struct ElementLayers {
-    // Transform and opacity mutations apply to this layer.
-    LayerImpl* main = nullptr;
-    // Scroll mutations apply to this layer.
-    LayerImpl* scroll = nullptr;
-  };
-
-  void AddToElementMap(LayerImpl* layer);
-  void RemoveFromElementMap(LayerImpl* layer);
-  ElementLayers GetMutableLayers(uint64_t element_id);
   int source_frame_number() const { return source_frame_number_; }
   void set_source_frame_number(int frame_number) {
     source_frame_number_ = frame_number;
@@ -188,10 +173,8 @@ class CC_EXPORT LayerTreeImpl {
                                 int inner_viewport_scroll_layer_id,
                                 int outer_viewport_scroll_layer_id);
   void ClearViewportLayers();
-  LayerImpl* OverscrollElasticityLayer() {
-    return LayerById(overscroll_elasticity_layer_id_);
-  }
-  LayerImpl* PageScaleLayer() { return LayerById(page_scale_layer_id_); }
+  LayerImpl* OverscrollElasticityLayer();
+  LayerImpl* PageScaleLayer();
   void ApplySentScrollAndScaleDeltasFromAbortedCommit();
 
   SkColor background_color() const { return background_color_; }
@@ -279,16 +262,6 @@ class CC_EXPORT LayerTreeImpl {
   gfx::SizeF ScrollableViewportSize() const;
 
   gfx::Rect RootScrollLayerDeviceViewportBounds() const;
-
-  LayerImpl* LayerById(int id) const;
-
-  // These should be called by LayerImpl's ctor/dtor.
-  void RegisterLayer(LayerImpl* layer);
-  void UnregisterLayer(LayerImpl* layer);
-
-  size_t NumLayers();
-
-  AnimationRegistrar* GetAnimationRegistrar() const;
 
   void DidBecomeActive();
 
@@ -453,12 +426,16 @@ class CC_EXPORT LayerTreeImpl {
         event_properties;
   }
 
+  // TODO(vollick): every consumer of list() needs to be taught how to operate
+  // on a LayerListImpl directly.
+  LayerListImpl* list() { return layer_list_.get(); }
+  const LayerListImpl* list() const { return layer_list_.get(); }
+
  protected:
-  explicit LayerTreeImpl(
-      LayerTreeHostImpl* layer_tree_host_impl,
-      scoped_refptr<SyncedProperty<ScaleGroup>> page_scale_factor,
-      scoped_refptr<SyncedTopControls> top_controls_shown_ratio,
-      scoped_refptr<SyncedElasticOverscroll> elastic_overscroll);
+  LayerTreeImpl(LayerTreeHostImpl* layer_tree_host_impl,
+                scoped_refptr<SyncedProperty<ScaleGroup>> page_scale_factor,
+                scoped_refptr<SyncedTopControls> top_controls_shown_ratio,
+                scoped_refptr<SyncedElasticOverscroll> elastic_overscroll);
   float ClampPageScaleFactorToLimits(float page_scale_factor) const;
   void PushPageScaleFactorAndLimits(const float* page_scale_factor,
                                     float min_page_scale_factor,
@@ -494,11 +471,6 @@ class CC_EXPORT LayerTreeImpl {
   float painted_device_scale_factor_;
 
   scoped_refptr<SyncedElasticOverscroll> elastic_overscroll_;
-
-  using LayerIdMap = std::unordered_map<int, LayerImpl*>;
-  LayerIdMap layer_id_map_;
-
-  std::unordered_map<uint64_t, ElementLayers> element_layers_map_;
 
   // Maps from clip layer ids to scroll layer ids.  Note that this only includes
   // the subset of clip layers that act as scrolling containers.  (This is
@@ -553,6 +525,12 @@ class CC_EXPORT LayerTreeImpl {
   scoped_refptr<SyncedTopControls> top_controls_shown_ratio_;
 
   scoped_ptr<PendingPageScaleAnimation> pending_page_scale_animation_;
+
+  // We will eventually replace layer tree impl with the a layer list. To
+  // minimize changes to plumbing, we will keep the layer list internal to the
+  // LayerTreeImpl and teach clients to make use of the layer list rather than
+  // the layer tree.
+  scoped_ptr<LayerListImpl> layer_list_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LayerTreeImpl);

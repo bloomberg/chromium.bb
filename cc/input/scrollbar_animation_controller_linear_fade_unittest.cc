@@ -131,7 +131,7 @@ TEST_F(ScrollbarAnimationControllerLinearFadeTest,
 }
 
 TEST_F(ScrollbarAnimationControllerLinearFadeTest, HideOnResize) {
-  LayerImpl* scroll_layer = host_impl_.active_tree()->LayerById(1);
+  LayerImpl* scroll_layer = host_impl_.active_tree()->list()->LayerById(1);
   ASSERT_TRUE(scroll_layer);
   EXPECT_EQ(gfx::Size(200, 200), scroll_layer->bounds());
 
@@ -162,7 +162,7 @@ TEST_F(ScrollbarAnimationControllerLinearFadeTest, HideOnResize) {
 }
 
 TEST_F(VerticalScrollbarAnimationControllerLinearFadeTest, HideOnResize) {
-  LayerImpl* scroll_layer = host_impl_.active_tree()->LayerById(1);
+  LayerImpl* scroll_layer = host_impl_.active_tree()->list()->LayerById(1);
   ASSERT_TRUE(scroll_layer);
   EXPECT_EQ(gfx::Size(200, 200), scroll_layer->bounds());
 
@@ -195,7 +195,7 @@ TEST_F(ScrollbarAnimationControllerLinearFadeTest,
        HideOnUserNonScrollableHorz) {
   EXPECT_EQ(HORIZONTAL, scrollbar_layer_->orientation());
 
-  LayerImpl* scroll_layer = host_impl_.active_tree()->LayerById(1);
+  LayerImpl* scroll_layer = host_impl_.active_tree()->list()->LayerById(1);
   ASSERT_TRUE(scroll_layer);
   scroll_layer->set_user_scrollable_horizontal(false);
 
@@ -211,7 +211,7 @@ TEST_F(ScrollbarAnimationControllerLinearFadeTest,
        ShowOnUserNonScrollableVert) {
   EXPECT_EQ(HORIZONTAL, scrollbar_layer_->orientation());
 
-  LayerImpl* scroll_layer = host_impl_.active_tree()->LayerById(1);
+  LayerImpl* scroll_layer = host_impl_.active_tree()->list()->LayerById(1);
   ASSERT_TRUE(scroll_layer);
   scroll_layer->set_user_scrollable_vertical(false);
 
@@ -227,7 +227,7 @@ TEST_F(VerticalScrollbarAnimationControllerLinearFadeTest,
        HideOnUserNonScrollableVert) {
   EXPECT_EQ(VERTICAL, scrollbar_layer_->orientation());
 
-  LayerImpl* scroll_layer = host_impl_.active_tree()->LayerById(1);
+  LayerImpl* scroll_layer = host_impl_.active_tree()->list()->LayerById(1);
   ASSERT_TRUE(scroll_layer);
   scroll_layer->set_user_scrollable_vertical(false);
 
@@ -243,7 +243,7 @@ TEST_F(VerticalScrollbarAnimationControllerLinearFadeTest,
        ShowOnUserNonScrollableHorz) {
   EXPECT_EQ(VERTICAL, scrollbar_layer_->orientation());
 
-  LayerImpl* scroll_layer = host_impl_.active_tree()->LayerById(1);
+  LayerImpl* scroll_layer = host_impl_.active_tree()->list()->LayerById(1);
   ASSERT_TRUE(scroll_layer);
   scroll_layer->set_user_scrollable_horizontal(false);
 

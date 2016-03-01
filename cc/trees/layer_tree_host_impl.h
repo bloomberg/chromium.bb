@@ -257,24 +257,24 @@ class CC_EXPORT LayerTreeHostImpl
   bool AnimationsPreserveAxisAlignment(const LayerImpl* layer) const;
 
   // LayerTreeMutatorsClient implementation.
-  bool IsLayerInTree(int layer_id, LayerTreeType tree_type) const override;
+  bool IsLayerInTree(int layer_id, LayerListType list_type) const override;
   void SetMutatorsNeedCommit() override;
   void SetMutatorsNeedRebuildPropertyTrees() override;
   void SetLayerFilterMutated(int layer_id,
-                             LayerTreeType tree_type,
+                             LayerListType list_type,
                              const FilterOperations& filters) override;
   void SetLayerOpacityMutated(int layer_id,
-                              LayerTreeType tree_type,
+                              LayerListType list_type,
                               float opacity) override;
   void SetLayerTransformMutated(int layer_id,
-                                LayerTreeType tree_type,
+                                LayerListType list_type,
                                 const gfx::Transform& transform) override;
   void SetLayerScrollOffsetMutated(
       int layer_id,
-      LayerTreeType tree_type,
+      LayerListType list_type,
       const gfx::ScrollOffset& scroll_offset) override;
   void LayerTransformIsPotentiallyAnimatingChanged(int layer_id,
-                                                   LayerTreeType tree_type,
+                                                   LayerListType list_type,
                                                    bool is_animating) override;
   void ScrollOffsetAnimationFinished() override;
   gfx::ScrollOffset GetScrollOffsetForAnimation(int layer_id) const override;
@@ -408,6 +408,14 @@ class CC_EXPORT LayerTreeHostImpl
   virtual void WillBeginImplFrame(const BeginFrameArgs& args);
   virtual void DidFinishImplFrame();
   void DidModifyTilePriorities();
+
+  // TODO(vollick): we will retain both the _tree() and _list() accessors while
+  // we migrate to layer lists, but the plan is to eventually remove the _tree()
+  // ones.
+  LayerListImpl* active_list();
+  const LayerListImpl* active_list() const;
+  LayerListImpl* pending_list();
+  const LayerListImpl* pending_list() const;
 
   LayerTreeImpl* active_tree() { return active_tree_.get(); }
   const LayerTreeImpl* active_tree() const { return active_tree_.get(); }
@@ -840,6 +848,8 @@ class CC_EXPORT LayerTreeHostImpl
 
   DISALLOW_COPY_AND_ASSIGN(LayerTreeHostImpl);
 };
+
+typedef LayerTreeHostImpl LayerListHostImpl;
 
 }  // namespace cc
 
