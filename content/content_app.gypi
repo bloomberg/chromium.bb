@@ -17,6 +17,9 @@
     '../ui/gfx/gfx.gyp:gfx_geometry',
     'content_common_mojo_bindings.gyp:content_common_mojo_bindings',
   ],
+  'export_dependent_settings': [
+    'content_common_mojo_bindings.gyp:content_common_mojo_bindings',
+  ],
   'sources': [
     'app/android/app_jni_registrar.cc',
     'app/android/app_jni_registrar.h',
