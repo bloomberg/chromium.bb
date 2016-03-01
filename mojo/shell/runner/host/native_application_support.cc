@@ -13,12 +13,6 @@
 #include "mojo/platform_handle/platform_handle_private_thunks.h"
 #include "mojo/public/platform/native/system_thunks.h"
 
-#if defined(NATIVE_APPLICATION_USE_GLES2_IMPL)
-#include "mojo/public/platform/native/gles2_impl_chromium_extension_thunks.h"
-#include "mojo/public/platform/native/gles2_impl_thunks.h"
-#include "mojo/public/platform/native/gles2_thunks.h"
-#endif
-
 namespace mojo {
 namespace shell {
 
@@ -69,29 +63,6 @@ bool RunNativeApplication(
     LOG(ERROR) << "MojoSetSystemThunks not found";
     return false;
   }
-
-#if defined(NATIVE_APPLICATION_USE_GLES2_IMPL)
-  if (SetThunks(&MojoMakeGLES2ControlThunks, "MojoSetGLES2ControlThunks",
-                app_library)) {
-    // If we have the control thunks, we should also have the GLES2
-    // implementation thunks.
-    if (!SetThunks(&MojoMakeGLES2ImplThunks, "MojoSetGLES2ImplThunks",
-                   app_library)) {
-      LOG(ERROR)
-          << "MojoSetGLES2ControlThunks found, but not MojoSetGLES2ImplThunks";
-      return false;
-    }
-
-    // If the application is using GLES2 extension points, register those
-    // thunks. Applications may use or not use any of these, so don't warn if
-    // they are missing.
-    SetThunks(MojoMakeGLES2ImplChromiumExtensionThunks,
-              "MojoSetGLES2ImplChromiumExtensionThunks", app_library);
-  }
-#endif
-
-// Unlike system thunks, we don't warn on a lack of GLES2 thunks because
-// not everything is a visual app.
 
 #if !defined(OS_WIN)
   // On Windows, initializing base::CommandLine with null parameters gets the

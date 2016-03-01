@@ -52,7 +52,7 @@ source_set("cpp") {
     "//components/mus/common",
     "//mojo/converters/geometry",
     "//mojo/converters/surfaces",
-    "//mojo/gles2:headers",
+    "//mojo/gles2",
     "//mojo/gpu:mojo_gles2_implementation",
     "//mojo/public/cpp/bindings:bindings",
     "//mojo/public/cpp/environment",

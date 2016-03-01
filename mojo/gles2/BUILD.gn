@@ -10,23 +10,6 @@ config("gles2_use_mojo") {
   defines = [ "GLES2_USE_MOJO" ]
 }
 
-source_set("headers") {
-  sources = [
-    "command_buffer_client_impl.h",
-    "gles2_context.h",
-  ]
-
-  public_deps = [
-    "//base",
-    "//components/mus/public/interfaces",
-    "//gpu/command_buffer/client",
-    "//gpu/command_buffer/client:gles2_implementation",
-    "//gpu/command_buffer/common",
-    "//mojo/public/c/gles2",
-    "//mojo/public/cpp/bindings",
-  ]
-}
-
 component("gles2") {
   output_name = "mojo_gles2_impl"
   sources = [
@@ -46,8 +29,15 @@ component("gles2") {
     ":gles2_use_mojo",
     ":mojo_use_gles2",
   ]
-  public_configs = [ ":gles2_use_mojo" ]
+  public_configs = [
+    ":gles2_use_mojo",
+    "//third_party/khronos:khronos_headers",
+  ]
   all_dependent_configs = [ ":mojo_use_gles2" ]
+
+  public_deps = [
+    "//mojo/public/c/gles2",
+  ]
 
   deps = [
     "//base",
@@ -61,7 +51,6 @@ component("gles2") {
     "//gpu/command_buffer/common",
     "//mojo/environment:chromium",
     "//mojo/platform_handle:for_component",
-    "//mojo/public/c/gles2",
     "//mojo/public/c/system:for_component",
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/system",
