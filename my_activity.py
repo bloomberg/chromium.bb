@@ -102,19 +102,8 @@ gerrit_instances = [
 
 google_code_projects = [
   {
-    'name': 'brillo',
-    'shorturl': 'brbug.com',
-  },
-  {
     'name': 'chromium',
     'shorturl': 'crbug.com',
-  },
-  {
-    'name': 'chromium-os',
-    'shorturl': 'crosbug.com',
-  },
-  {
-    'name': 'chrome-os-partner',
   },
   {
     'name': 'google-breakpad',
@@ -410,10 +399,10 @@ class MyActivity(object):
   def project_hosting_issue_search(self, instance):
     auth_config = auth.extract_auth_config_from_options(self.options)
     authenticator = auth.get_authenticator_for_host(
-        "code.google.com", auth_config)
+        "bugs.chromium.org", auth_config)
     http = authenticator.authorize(httplib2.Http())
-    url = "https://www.googleapis.com/projecthosting/v2/projects/%s/issues" % (
-       instance["name"])
+    url = ("https://monorail-prod.appspot.com/_ah/api/monorail/v1/projects"
+           "/%s/issues") % instance["name"]
     epoch = datetime.utcfromtimestamp(0)
     user_str = '%s@chromium.org' % self.user
 
