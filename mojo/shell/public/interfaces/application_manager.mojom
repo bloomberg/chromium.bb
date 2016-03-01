@@ -6,35 +6,34 @@ module mojo.shell.mojom;
 
 import "mojo/shell/public/interfaces/shell.mojom";
 
-struct ApplicationInfo {
+struct InstanceInfo {
   uint32 id;
   string name;
   string qualifier;
   uint32 pid;
 };
 
-// Implemented by an application that wishes to be informed when the list of
-// running applications changes.
-interface ApplicationManagerListener {
+// Implemented by a client that wishes to be informed when the list of running
+// instances changes.
+interface InstanceListener {
   // Called once when the listener is added via
-  // ApplicationManager::AddListener() to provide the initial list of running
-  // applications that the listener observes changes against.
-  SetRunningApplications(array<ApplicationInfo> applications);
+  // ApplicationManager::AddInstanceListener() to provide the initial list of
+  // instances that the listener observes changes against.
+  SetExistingInstances(array<InstanceInfo> instances);
 
-  // Called when the application manager has started tracking an application.
+  // Called when the application manager has started tracking an instance.
   // This happens when the application manager first handles a request to launch
-  // the application, and before any process or content handler is created for
-  // it.
-  ApplicationInstanceCreated(ApplicationInfo application);
+  // the instance, before any process is created for it.
+  InstanceCreated(InstanceInfo instance);
 
-  // Called when the application manager has stopped tracking an application.
+  // Called when the application manager has stopped tracking an instance.
   // (i.e. when it has ended/quit).
-  ApplicationInstanceDestroyed(uint32 id);
+  InstanceDestroyed(uint32 id);
 
-  // Called when a pid is available for the application. This could be because a
+  // Called when a pid is available for the instance. This could be because a
   // process was created by the runner for it, or because an existing content
   // handler process was assigned.
-  ApplicationPIDAvailable(uint32 id, uint32 pid);
+  InstancePIDAvailable(uint32 id, uint32 pid);
 };
 
 // Implemented by an object in the application manager associated with a
@@ -56,6 +55,6 @@ interface ApplicationManager {
                           CapabilityFilter filter,
                           PIDReceiver& pid_receiver);
 
-  // The listener is removed when the pipe is closed.
-  AddListener(ApplicationManagerListener listener);
+  // The listener is removed when the |listener| pipe is closed.
+  AddInstanceListener(InstanceListener listener);
 };

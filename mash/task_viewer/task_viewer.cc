@@ -31,17 +31,14 @@ namespace mash {
 namespace task_viewer {
 namespace {
 
-using ListenerRequest =
-    mojo::InterfaceRequest<mojo::shell::mojom::ApplicationManagerListener>;
-using mojo::shell::mojom::ApplicationInfoPtr;
+using mojo::shell::mojom::InstanceInfoPtr;
 
-class TaskViewerContents
-    : public views::WidgetDelegateView,
-      public ui::TableModel,
-      public views::ButtonListener,
-      public mojo::shell::mojom::ApplicationManagerListener {
+class TaskViewerContents : public views::WidgetDelegateView,
+                           public ui::TableModel,
+                           public views::ButtonListener,
+                           public mojo::shell::mojom::InstanceListener {
  public:
-  TaskViewerContents(ListenerRequest request,
+  TaskViewerContents(mojo::shell::mojom::InstanceListenerRequest request,
                      package_manager::mojom::CatalogPtr catalog)
       : binding_(this, std::move(request)),
         catalog_(std::move(catalog)),
@@ -139,32 +136,30 @@ class TaskViewerContents
     process.Terminate(9, true);
   }
 
-  // Overridden from mojo::shell::mojom::ApplicationManagerListener:
-  void SetRunningApplications(
-      mojo::Array<ApplicationInfoPtr> applications) override {
+  // Overridden from mojo::shell::mojom::InstanceListener:
+  void SetExistingInstances(mojo::Array<InstanceInfoPtr> instances) override {
     // This callback should only be called with an empty model.
     DCHECK(instances_.empty());
     mojo::Array<mojo::String> names;
-    for (size_t i = 0; i < applications.size(); ++i) {
-      InsertInstance(applications[i]->id, applications[i]->name,
-                     applications[i]->pid);
-      names.push_back(applications[i]->name);
+    for (size_t i = 0; i < instances.size(); ++i) {
+      InsertInstance(instances[i]->id, instances[i]->name, instances[i]->pid);
+      names.push_back(instances[i]->name);
     }
     catalog_->GetEntries(std::move(names),
                          base::Bind(&TaskViewerContents::OnGotCatalogEntries,
                                     weak_ptr_factory_.GetWeakPtr()));
   }
-  void ApplicationInstanceCreated(ApplicationInfoPtr application) override {
-    DCHECK(!ContainsId(application->id));
-    InsertInstance(application->id, application->name, application->pid);
+  void InstanceCreated(InstanceInfoPtr instance) override {
+    DCHECK(!ContainsId(instance->id));
+    InsertInstance(instance->id, instance->name, instance->pid);
     observer_->OnItemsAdded(static_cast<int>(instances_.size()), 1);
     mojo::Array<mojo::String> names;
-    names.push_back(application->name);
+    names.push_back(instance->name);
     catalog_->GetEntries(std::move(names),
                          base::Bind(&TaskViewerContents::OnGotCatalogEntries,
                                     weak_ptr_factory_.GetWeakPtr()));
   }
-  void ApplicationInstanceDestroyed(uint32_t id) override {
+  void InstanceDestroyed(uint32_t id) override {
     for (auto it = instances_.begin(); it != instances_.end(); ++it) {
       if ((*it)->id == id) {
         observer_->OnItemsRemoved(
@@ -175,7 +170,7 @@ class TaskViewerContents
     }
     NOTREACHED();
   }
-  void ApplicationPIDAvailable(uint32_t id, uint32_t pid) override {
+  void InstancePIDAvailable(uint32_t id, uint32_t pid) override {
     for (auto it = instances_.begin(); it != instances_.end(); ++it) {
       if ((*it)->id == id) {
         (*it)->pid = pid;
@@ -243,7 +238,7 @@ class TaskViewerContents
     return columns;
   }
 
-  mojo::Binding<mojo::shell::mojom::ApplicationManagerListener> binding_;
+  mojo::Binding<mojo::shell::mojom::InstanceListener> binding_;
   package_manager::mojom::CatalogPtr catalog_;
 
   views::TableView* table_view_;
@@ -274,9 +269,9 @@ void TaskViewer::Initialize(mojo::Connector* connector,
   mojo::shell::mojom::ApplicationManagerPtr application_manager;
   connector->ConnectToInterface("mojo:shell", &application_manager);
 
-  mojo::shell::mojom::ApplicationManagerListenerPtr listener;
-  ListenerRequest request = GetProxy(&listener);
-  application_manager->AddListener(std::move(listener));
+  mojo::shell::mojom::InstanceListenerPtr listener;
+  mojo::shell::mojom::InstanceListenerRequest request = GetProxy(&listener);
+  application_manager->AddInstanceListener(std::move(listener));
 
   package_manager::mojom::CatalogPtr catalog;
   connector->ConnectToInterface("mojo:package_manager", &catalog);

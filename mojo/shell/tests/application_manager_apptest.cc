@@ -65,7 +65,7 @@ class ApplicationManagerAppTestDelegate
 }  // namespace
 
 class ApplicationManagerAppTest : public mojo::test::ApplicationTestBase,
-                                  public mojom::ApplicationManagerListener {
+                                  public mojom::InstanceListener {
  public:
   ApplicationManagerAppTest() : delegate_(nullptr), binding_(this) {}
   ~ApplicationManagerAppTest() override {}
@@ -75,8 +75,8 @@ class ApplicationManagerAppTest : public mojo::test::ApplicationTestBase,
   }
 
  protected:
-  struct ApplicationInfo {
-    ApplicationInfo(uint32_t id, const std::string& name)
+  struct InstanceInfo {
+    InstanceInfo(uint32_t id, const std::string& name)
         : id(id), name(name), pid(base::kNullProcessId) {}
 
     uint32_t id;
@@ -88,17 +88,18 @@ class ApplicationManagerAppTest : public mojo::test::ApplicationTestBase,
     mojom::ApplicationManagerPtr application_manager;
     connector()->ConnectToInterface("mojo:shell", &application_manager);
 
-    application_manager->AddListener(binding_.CreateInterfacePtrAndBind());
+    application_manager->AddInstanceListener(
+        binding_.CreateInterfacePtrAndBind());
     binding_.WaitForIncomingMethodCall();
   }
 
-  bool ContainsApplicationWithName(const std::string& name) const {
-    for (const auto& application : initial_applications_) {
-      if (application.name == name)
+  bool ContainsInstanceWithName(const std::string& name) const {
+    for (const auto& instance : initial_instances_) {
+      if (instance.name == name)
         return true;
     }
-    for (const auto& application : applications_) {
-      if (application.name == name)
+    for (const auto& instance : instances_) {
+      if (instance.name == name)
         return true;
     }
     return false;
@@ -109,8 +110,8 @@ class ApplicationManagerAppTest : public mojo::test::ApplicationTestBase,
     return delegate_->target_id();
   }
 
-  const std::vector<ApplicationInfo>& applications() const {
-    return applications_;
+  const std::vector<InstanceInfo>& instances() const {
+    return instances_;
   }
 
   ApplicationManagerAppTestDelegate* delegate() { return delegate_; }
@@ -122,41 +123,38 @@ class ApplicationManagerAppTest : public mojo::test::ApplicationTestBase,
     return delegate_;
   }
 
-  // mojom::ApplicationManagerListener:
-  void SetRunningApplications(
-      Array<mojom::ApplicationInfoPtr> applications) override {
-    for (size_t i = 0; i < applications.size(); ++i) {
-      initial_applications_.push_back(ApplicationInfo(applications[i]->id,
-                                                      applications[i]->name));
+  // mojom::InstanceListener:
+  void SetExistingInstances(Array<mojom::InstanceInfoPtr> instances) override {
+    for (size_t i = 0; i < instances.size(); ++i) {
+      initial_instances_.push_back(InstanceInfo(instances[i]->id,
+                                                instances[i]->name));
     }
   }
-  void ApplicationInstanceCreated(
-      mojom::ApplicationInfoPtr application) override {
-    applications_.push_back(
-        ApplicationInfo(application->id, application->name));
+  void InstanceCreated(mojom::InstanceInfoPtr instance) override {
+    instances_.push_back(InstanceInfo(instance->id, instance->name));
   }
-  void ApplicationInstanceDestroyed(uint32_t id) override {
-    for (auto it = applications_.begin(); it != applications_.end(); ++it) {
-      auto& application = *it;
-      if (application.id == id) {
-        applications_.erase(it);
+  void InstanceDestroyed(uint32_t id) override {
+    for (auto it = instances_.begin(); it != instances_.end(); ++it) {
+      auto& instance = *it;
+      if (instance.id == id) {
+        instances_.erase(it);
         break;
       }
     }
   }
-  void ApplicationPIDAvailable(uint32_t id, uint32_t pid) override {
-    for (auto& application : applications_) {
-      if (application.id == id) {
-        application.pid = pid;
+  void InstancePIDAvailable(uint32_t id, uint32_t pid) override {
+    for (auto& instance : instances_) {
+      if (instance.id == id) {
+        instance.pid = pid;
         break;
       }
     }
   }
 
   ApplicationManagerAppTestDelegate* delegate_;
-  Binding<mojom::ApplicationManagerListener> binding_;
-  std::vector<ApplicationInfo> applications_;
-  std::vector<ApplicationInfo> initial_applications_;
+  Binding<mojom::InstanceListener> binding_;
+  std::vector<InstanceInfo> instances_;
+  std::vector<InstanceInfo> initial_instances_;
 
   DISALLOW_COPY_AND_ASSIGN(ApplicationManagerAppTest);
 };
@@ -181,24 +179,24 @@ TEST_F(ApplicationManagerAppTest, CreateInstanceForHandle) {
 
   // 3. Validate that this test suite's name was received from the application
   //    manager.
-  EXPECT_TRUE(ContainsApplicationWithName("mojo:mojo_shell_apptests"));
+  EXPECT_TRUE(ContainsInstanceWithName("mojo:mojo_shell_apptests"));
 
   // 4. Validate that the right applications/processes were created.
   //    Note that the target process will be created even if the tests are
   //    run with --single-process.
-  EXPECT_EQ(2u, applications().size());
+  EXPECT_EQ(2u, instances().size());
   {
-    auto& application = applications().front();
-    EXPECT_EQ(remote_id, application.id);
-    EXPECT_EQ("exe:application_manager_apptest_driver", application.name);
-    EXPECT_NE(base::kNullProcessId, application.pid);
+    auto& instance = instances().front();
+    EXPECT_EQ(remote_id, instance.id);
+    EXPECT_EQ("exe:application_manager_apptest_driver", instance.name);
+    EXPECT_NE(base::kNullProcessId, instance.pid);
   }
   {
-    auto& application = applications().back();
+    auto& instance = instances().back();
     // We learn about the target process id via a ping from it.
-    EXPECT_EQ(target_id(), application.id);
-    EXPECT_EQ("exe:application_manager_apptest_target", application.name);
-    EXPECT_NE(base::kNullProcessId, application.pid);
+    EXPECT_EQ(target_id(), instance.id);
+    EXPECT_EQ("exe:application_manager_apptest_target", instance.name);
+    EXPECT_NE(base::kNullProcessId, instance.pid);
   }
 
   driver.set_connection_error_handler(

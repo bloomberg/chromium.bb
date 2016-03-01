@@ -32,6 +32,15 @@
 
 namespace mojo {
 namespace shell {
+namespace {
+const char kPackageManagerName[] = "mojo:package_manager";
+
+void EmptyResolverCallback(const String& resolved_name,
+                           const String& resolved_qualifier,
+                           mojom::CapabilityFilterPtr base_filter,
+                           const String& file_url) {}
+
+}
 
 // Encapsulates a connection to an instance of an application, tracked by the
 // shell's ApplicationManager.
@@ -47,7 +56,12 @@ class ApplicationManager::Instance : public mojom::Connector,
       allow_any_application_(identity.filter().size() == 1 &&
       identity.filter().count("*") == 1),
       shell_client_(std::move(shell_client)),
-      pid_receiver_binding_(this) {
+      pid_receiver_binding_(this),
+      weak_factory_(this) {
+    if (identity_.name() == "mojo:shell" ||
+        manager_->GetLoaderForName(identity_.name())) {
+      pid_ = base::Process::Current().Pid();
+    }
     DCHECK_NE(kInvalidApplicationID, id_);
   }
 
@@ -76,20 +90,45 @@ class ApplicationManager::Instance : public mojom::Connector,
         Array<String>::From(interfaces), params->target().name());
   }
 
-  // Required before GetProcessId can be called.
-  void SetNativeRunner(NativeRunner* native_runner) {
-    native_runner_ = native_runner;
+  scoped_ptr<NativeRunner> StartWithFileURL(const GURL& file_url,
+                                            mojom::ShellClientRequest request,
+                                            bool start_sandboxed,
+                                            NativeRunnerFactory* factory) {
+    base::FilePath path = util::UrlToFilePath(file_url);
+    scoped_ptr<NativeRunner> runner = factory->Create(path);
+    runner_ = runner.get();
+    runner_->Start(path, identity_, start_sandboxed, std::move(request),
+                   base::Bind(&Instance::PIDAvailable,
+                              weak_factory_.GetWeakPtr()),
+                   base::Bind(&ApplicationManager::CleanupRunner,
+                              manager_->weak_ptr_factory_.GetWeakPtr(),
+                              runner_));
+    return runner;
   }
 
-  void BindPIDReceiver(mojom::PIDReceiverRequest pid_receiver) {
-    pid_receiver_binding_.Bind(std::move(pid_receiver));
+  scoped_ptr<NativeRunner> StartWithChannel(
+      ScopedHandle channel,
+      mojom::ShellClientRequest request,
+      mojom::PIDReceiverRequest pid_receiver_request,
+      NativeRunnerFactory* factory) {
+    pid_receiver_binding_.Bind(std::move(pid_receiver_request));
+    scoped_ptr<NativeRunner> runner = factory->Create(base::FilePath());
+    runner_ = runner.get();
+    runner_->InitHost(std::move(channel), std::move(request));
+    return runner;
   }
 
-  mojom::ShellClient* shell_client() { return shell_client_.get(); }
+  mojom::InstanceInfoPtr CreateInstanceInfo() const {
+    mojom::InstanceInfoPtr info(mojom::InstanceInfo::New());
+    info->id = id_;
+    info->name = identity_.name();
+    info->qualifier = identity_.qualifier();
+    info->pid = pid_;
+    return info;
+  }
+
   const Identity& identity() const { return identity_; }
   uint32_t id() const { return id_; }
-  base::ProcessId pid() const { return pid_; }
-  void set_pid(base::ProcessId pid) { pid_ = pid; }
 
  private:
   // Connector implementation:
@@ -125,8 +164,7 @@ class ApplicationManager::Instance : public mojom::Connector,
 
   // PIDReceiver implementation:
   void SetPID(uint32_t pid) override {
-    // This will call us back to update pid_.
-    manager_->ApplicationPIDAvailable(id_, pid);
+    PIDAvailable(pid);
   }
 
   uint32_t GenerateUniqueID() const {
@@ -134,6 +172,11 @@ class ApplicationManager::Instance : public mojom::Connector,
     ++id;
     CHECK_NE(kInvalidApplicationID, id);
     return id;
+  }
+
+  void PIDAvailable(base::ProcessId pid) {
+    pid_ = pid;
+    manager_->NotifyPIDAvailable(id_, pid_);
   }
 
   ApplicationManager* const manager_;
@@ -146,8 +189,9 @@ class ApplicationManager::Instance : public mojom::Connector,
   mojom::ShellClientPtr shell_client_;
   Binding<mojom::PIDReceiver> pid_receiver_binding_;
   BindingSet<mojom::Connector> connectors_;
-  NativeRunner* native_runner_ = nullptr;
+  NativeRunner* runner_ = nullptr;
   base::ProcessId pid_ = base::kNullProcessId;
+  base::WeakPtrFactory<Instance> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(Instance);
 };
@@ -279,22 +323,20 @@ void ApplicationManager::CreateInstanceForHandle(
   target_id.set_filter(filter->filter.To<CapabilityFilter>());
   mojom::ShellClientRequest request;
   Instance* instance = CreateInstance(target_id, &request);
-  instance->BindPIDReceiver(std::move(pid_receiver));
-  scoped_ptr<NativeRunner> runner =
-      native_runner_factory_->Create(base::FilePath());
-  runner->InitHost(std::move(channel), std::move(request));
-  instance->SetNativeRunner(runner.get());
-  native_runners_.push_back(std::move(runner));
+  native_runners_.push_back(
+      instance->StartWithChannel(std::move(channel), std::move(request),
+                                 std::move(pid_receiver),
+                                 native_runner_factory_.get()));
 }
 
-void ApplicationManager::AddListener(
-    mojom::ApplicationManagerListenerPtr listener) {
-  Array<mojom::ApplicationInfoPtr> applications;
-  for (auto& entry : identity_to_instance_)
-    applications.push_back(CreateApplicationInfoForInstance(entry.second));
-  listener->SetRunningApplications(std::move(applications));
+void ApplicationManager::AddInstanceListener(
+    mojom::InstanceListenerPtr listener) {
+  Array<mojom::InstanceInfoPtr> instances;
+  for (auto& instance : identity_to_instance_)
+    instances.push_back(instance.second->CreateInstanceInfo());
+  listener->SetExistingInstances(std::move(instances));
 
-  listeners_.AddInterfacePtr(std::move(listener));
+  instance_listeners_.AddInterfacePtr(std::move(listener));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -304,15 +346,22 @@ void ApplicationManager::InitPackageManager(
     scoped_ptr<package_manager::ApplicationCatalogStore> app_catalog) {
   scoped_ptr<Loader> loader(
       new package_manager::Loader(file_task_runner_, std::move(app_catalog)));
-
-  mojom::ShellClientRequest request;
-  std::string name = "mojo:package_manager";
-  CreateInstance(Identity(name), &request);
-  loader->Load(name, std::move(request));
-
+  Loader* loader_raw = loader.get();
+  std::string name = kPackageManagerName;
   SetLoaderForName(std::move(loader), name);
 
+  mojom::ShellClientRequest request;
+  CreateInstance(Identity(name), &request);
+  loader_raw->Load(name, std::move(request));
+
   ConnectToInterface(this, CreateShellIdentity(), name, &shell_resolver_);
+
+  // Seed the catalog with manifest info for the shell & package manager.
+  if (file_task_runner_) {
+    shell_resolver_->ResolveMojoName(name, base::Bind(&EmptyResolverCallback));
+    shell_resolver_->ResolveMojoName("mojo:shell",
+                                     base::Bind(&EmptyResolverCallback));
+  }
 }
 
 void ApplicationManager::TerminateShellConnections() {
@@ -327,10 +376,9 @@ void ApplicationManager::OnInstanceError(Instance* instance) {
   int id = instance->id();
   delete it->second;
   identity_to_instance_.erase(it);
-  listeners_.ForAllPtrs(
-      [this, id](mojom::ApplicationManagerListener* listener) {
-        listener->ApplicationInstanceDestroyed(id);
-      });
+  instance_listeners_.ForAllPtrs([this, id](mojom::InstanceListener* listener) {
+                                   listener->InstanceDestroyed(id);
+                                 });
   if (!instance_quit_callback_.is_null())
     instance_quit_callback_.Run(identity);
 }
@@ -341,19 +389,10 @@ ApplicationManager::Instance* ApplicationManager::GetExistingInstance(
   return it != identity_to_instance_.end() ? it->second : nullptr;
 }
 
-void ApplicationManager::ApplicationPIDAvailable(
-    uint32_t id,
-    base::ProcessId pid) {
-  for (auto& instance : identity_to_instance_) {
-    if (instance.second->id() == id) {
-      instance.second->set_pid(pid);
-      break;
-    }
-  }
-  listeners_.ForAllPtrs(
-      [this, id, pid](mojom::ApplicationManagerListener* listener) {
-        listener->ApplicationPIDAvailable(id, pid);
-      });
+void ApplicationManager::NotifyPIDAvailable(uint32_t id, base::ProcessId pid) {
+  instance_listeners_.ForAllPtrs([id, pid](mojom::InstanceListener* listener) {
+                                   listener->InstancePIDAvailable(id, pid);
+                                 });
 }
 
 bool ApplicationManager::ConnectToExistingInstance(
@@ -378,11 +417,10 @@ ApplicationManager::Instance* ApplicationManager::CreateInstance(
   DCHECK(identity_to_instance_.find(target_id) ==
          identity_to_instance_.end());
   identity_to_instance_[target_id] = instance;
-  mojom::ApplicationInfoPtr application_info =
-      CreateApplicationInfoForInstance(instance);
-  listeners_.ForAllPtrs(
-      [this, &application_info](mojom::ApplicationManagerListener* listener) {
-        listener->ApplicationInstanceCreated(application_info.Clone());
+  mojom::InstanceInfoPtr info = instance->CreateInstanceInfo();
+  instance_listeners_.ForAllPtrs(
+      [this, &info](mojom::InstanceListener* listener) {
+        listener->InstanceCreated(info.Clone());
       });
   instance->Initialize();
   return instance;
@@ -464,15 +502,10 @@ void ApplicationManager::OnGotResolvedName(
         target.name(), std::move(request));
   } else {
     bool start_sandboxed = false;
-    base::FilePath path = util::UrlToFilePath(file_url.To<GURL>());
-    scoped_ptr<NativeRunner> runner = native_runner_factory_->Create(path);
-    runner->Start(path, target, start_sandboxed, std::move(request),
-                  base::Bind(&ApplicationManager::ApplicationPIDAvailable,
-                             weak_ptr_factory_.GetWeakPtr(), instance->id()),
-                  base::Bind(&ApplicationManager::CleanupRunner,
-                             weak_ptr_factory_.GetWeakPtr(), runner.get()));
-    instance->SetNativeRunner(runner.get());
-    native_runners_.push_back(std::move(runner));
+    native_runners_.push_back(
+        instance->StartWithFileURL(file_url.To<GURL>(), std::move(request),
+                                   start_sandboxed,
+                                   native_runner_factory_.get()));
   }
 }
 
@@ -499,19 +532,6 @@ void ApplicationManager::CleanupRunner(NativeRunner* runner) {
       return;
     }
   }
-}
-
-mojom::ApplicationInfoPtr ApplicationManager::CreateApplicationInfoForInstance(
-    Instance* instance) const {
-  mojom::ApplicationInfoPtr info(mojom::ApplicationInfo::New());
-  info->id = instance->id();
-  info->name = instance->identity().name();
-  info->qualifier = instance->identity().qualifier();
-  if (instance->identity().name() == "mojo:shell")
-    info->pid = base::Process::Current().Pid();
-  else
-    info->pid = instance->pid();
-  return info;
 }
 
 }  // namespace shell

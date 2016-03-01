@@ -41,7 +41,7 @@ ApplicationInfo BuildApplicationInfoFromDictionary(
   ApplicationInfo info;
   std::string name_string;
   CHECK(value.GetString(ApplicationCatalogStore::kNameKey, &name_string));
-  CHECK(mojo::IsValidName(name_string));
+  CHECK(mojo::IsValidName(name_string)) << "Invalid Name: " << name_string;
   info.name = name_string;
   CHECK(value.GetString(ApplicationCatalogStore::kDisplayNameKey,
                         &info.display_name));

@@ -110,7 +110,7 @@ class ApplicationManager : public ShellClient,
                                const String& name,
                                mojom::CapabilityFilterPtr filter,
                                mojom::PIDReceiverRequest pid_receiver) override;
-  void AddListener(mojom::ApplicationManagerListenerPtr listener) override;
+  void AddInstanceListener(mojom::InstanceListenerPtr listener) override;
 
   void InitPackageManager(
       scoped_ptr<package_manager::ApplicationCatalogStore> app_catalog);
@@ -125,7 +125,7 @@ class ApplicationManager : public ShellClient,
 
   Instance* GetExistingInstance(const Identity& identity) const;
 
-  void ApplicationPIDAvailable(uint32_t id, base::ProcessId pid);
+  void NotifyPIDAvailable(uint32_t id, base::ProcessId pid);
 
   // Attempt to complete the connection requested by |params| by connecting to
   // an existing instance. If there is an existing instance, |params| is taken,
@@ -170,9 +170,6 @@ class ApplicationManager : public ShellClient,
 
   void CleanupRunner(NativeRunner* runner);
 
-  mojom::ApplicationInfoPtr CreateApplicationInfoForInstance(
-      Instance* instance) const;
-
   package_manager::mojom::ShellResolverPtr shell_resolver_;
 
   // Loader management.
@@ -189,7 +186,7 @@ class ApplicationManager : public ShellClient,
   // The Instance created by the shell embedder, if any.
   Instance* embedder_instance_ = nullptr;
 
-  InterfacePtrSet<mojom::ApplicationManagerListener> listeners_;
+  InterfacePtrSet<mojom::InstanceListener> instance_listeners_;
 
   base::Callback<void(const Identity&)> instance_quit_callback_;
   base::TaskRunner* file_task_runner_;
