@@ -244,7 +244,7 @@ class GpuBenchmarkingContext {
     if (!init_compositor)
       return true;
 
-    compositor_ = render_view_impl_->GetWidget()->compositor();
+    compositor_ = render_view_impl_->compositor();
     if (!compositor_) {
       web_frame_ = NULL;
       web_view_ = NULL;
@@ -396,7 +396,7 @@ bool BeginSmoothScroll(v8::Isolate* isolate,
   // TODO(nduca): If the render_view_impl is destroyed while the gesture is in
   // progress, we will leak the callback and context. This needs to be fixed,
   // somehow.
-  context.render_view_impl()->GetWidget()->QueueSyntheticGesture(
+  context.render_view_impl()->QueueSyntheticGesture(
       std::move(gesture_params),
       base::Bind(&OnSyntheticGestureCompleted, callback_and_context));
 
@@ -438,7 +438,7 @@ bool BeginSmoothDrag(v8::Isolate* isolate,
   // TODO(nduca): If the render_view_impl is destroyed while the gesture is in
   // progress, we will leak the callback and context. This needs to be fixed,
   // somehow.
-  context.render_view_impl()->GetWidget()->QueueSyntheticGesture(
+  context.render_view_impl()->QueueSyntheticGesture(
       std::move(gesture_params),
       base::Bind(&OnSyntheticGestureCompleted, callback_and_context));
 
@@ -561,7 +561,7 @@ bool GpuBenchmarking::SmoothScrollBy(gin::Arguments* args) {
     return false;
 
   float page_scale_factor = context.web_view()->pageScaleFactor();
-  blink::WebRect rect = context.render_view_impl()->GetWidget()->windowRect();
+  blink::WebRect rect = context.render_view_impl()->windowRect();
 
   float pixels_to_scroll = 0;
   v8::Local<v8::Function> callback;
@@ -631,7 +631,7 @@ bool GpuBenchmarking::Swipe(gin::Arguments* args) {
     return false;
 
   float page_scale_factor = context.web_view()->pageScaleFactor();
-  blink::WebRect rect = context.render_view_impl()->GetWidget()->windowRect();
+  blink::WebRect rect = context.render_view_impl()->windowRect();
 
   std::string direction = "up";
   float pixels_to_scroll = 0;
@@ -666,7 +666,7 @@ bool GpuBenchmarking::ScrollBounce(gin::Arguments* args) {
     return false;
 
   float page_scale_factor = context.web_view()->pageScaleFactor();
-  blink::WebRect rect = context.render_view_impl()->GetWidget()->windowRect();
+  blink::WebRect rect = context.render_view_impl()->windowRect();
 
   std::string direction = "down";
   float distance_length = 0;
@@ -729,7 +729,7 @@ bool GpuBenchmarking::ScrollBounce(gin::Arguments* args) {
   // TODO(nduca): If the render_view_impl is destroyed while the gesture is in
   // progress, we will leak the callback and context. This needs to be fixed,
   // somehow.
-  context.render_view_impl()->GetWidget()->QueueSyntheticGesture(
+  context.render_view_impl()->QueueSyntheticGesture(
       std::move(gesture_params),
       base::Bind(&OnSyntheticGestureCompleted, callback_and_context));
 
@@ -777,7 +777,7 @@ bool GpuBenchmarking::PinchBy(gin::Arguments* args) {
   // TODO(nduca): If the render_view_impl is destroyed while the gesture is in
   // progress, we will leak the callback and context. This needs to be fixed,
   // somehow.
-  context.render_view_impl()->GetWidget()->QueueSyntheticGesture(
+  context.render_view_impl()->QueueSyntheticGesture(
       std::move(gesture_params),
       base::Bind(&OnSyntheticGestureCompleted, callback_and_context));
 
@@ -843,7 +843,7 @@ bool GpuBenchmarking::Tap(gin::Arguments* args) {
   // TODO(nduca): If the render_view_impl is destroyed while the gesture is in
   // progress, we will leak the callback and context. This needs to be fixed,
   // somehow.
-  context.render_view_impl()->GetWidget()->QueueSyntheticGesture(
+  context.render_view_impl()->QueueSyntheticGesture(
       std::move(gesture_params),
       base::Bind(&OnSyntheticGestureCompleted, callback_and_context));
 

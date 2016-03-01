@@ -830,7 +830,7 @@ RenderFrameImpl* RenderFrameImpl::CreateMainFrame(
   // WasShown and WasHidden, separating page-level visibility from
   // frame-level visibility.
   // TODO(avi): This DCHECK is to track cleanup for https://crbug.com/545684
-  DCHECK_EQ(render_view->GetWidget(), render_frame->render_widget_)
+  DCHECK_EQ(render_view, render_frame->render_widget_)
       << "Main frame is no longer reusing the RenderView as its widget! "
       << "Does the RenderFrame need to register itself with the RenderWidget?";
   return render_frame;

@@ -103,7 +103,7 @@ class CONTENT_EXPORT RenderViewObserver : public IPC::Listener,
   // can null out its pointer.
   void RenderViewGone();
 
-  RenderViewImpl* render_view_;
+  RenderView* render_view_;
   // The routing ID of the associated RenderView.
   int routing_id_;
 

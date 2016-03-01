@@ -2760,12 +2760,12 @@ TEST_F(RenderViewImplScaleFactorTest, AutoResizeWithZoomForDSF) {
   DoSetUp();
   view()->EnableAutoResizeForTesting(gfx::Size(5, 5), gfx::Size(1000, 1000));
   LoadHTML(kAutoResizeTestPage);
-  gfx::Size size_at_1x = view()->GetWidget()->size();
+  gfx::Size size_at_1x = view()->size();
   ASSERT_FALSE(size_at_1x.IsEmpty());
 
   SetDeviceScaleFactor(2.f);
   LoadHTML(kAutoResizeTestPage);
-  gfx::Size size_at_2x = view()->GetWidget()->size();
+  gfx::Size size_at_2x = view()->size();
   EXPECT_EQ(size_at_1x, size_at_2x);
 }
 
@@ -2773,12 +2773,12 @@ TEST_F(RenderViewImplScaleFactorTest, AutoResizeWithoutZoomForDSF) {
   DoSetUp();
   view()->EnableAutoResizeForTesting(gfx::Size(5, 5), gfx::Size(1000, 1000));
   LoadHTML(kAutoResizeTestPage);
-  gfx::Size size_at_1x = view()->GetWidget()->size();
+  gfx::Size size_at_1x = view()->size();
   ASSERT_FALSE(size_at_1x.IsEmpty());
 
   SetDeviceScaleFactor(2.f);
   LoadHTML(kAutoResizeTestPage);
-  gfx::Size size_at_2x = view()->GetWidget()->size();
+  gfx::Size size_at_2x = view()->size();
   EXPECT_EQ(size_at_1x, size_at_2x);
 }
 

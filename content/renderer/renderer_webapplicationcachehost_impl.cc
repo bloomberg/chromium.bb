@@ -20,7 +20,8 @@ RendererWebApplicationCacheHostImpl::RendererWebApplicationCacheHostImpl(
     WebApplicationCacheHostClient* client,
     AppCacheBackend* backend)
     : WebApplicationCacheHostImpl(client, backend),
-      routing_id_(render_view->GetRoutingID()) {}
+      routing_id_(render_view->routing_id()) {
+}
 
 void RendererWebApplicationCacheHostImpl::OnLogMessage(
     AppCacheLogLevel log_level, const std::string& message) {

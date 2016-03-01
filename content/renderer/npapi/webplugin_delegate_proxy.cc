@@ -141,7 +141,7 @@ void WebPluginDelegateProxy::PluginDestroyed() {
 #if defined(OS_WIN)
   if (dummy_activation_window_ && render_view_) {
     render_view_->Send(new ViewHostMsg_WindowlessPluginDummyWindowDestroyed(
-        render_view_->GetRoutingID(), dummy_activation_window_));
+        render_view_->routing_id(), dummy_activation_window_));
   }
   dummy_activation_window_ = NULL;
 #endif
@@ -268,7 +268,7 @@ bool WebPluginDelegateProxy::Initialize(
   params.page_url = page_url_;
   params.arg_names = arg_names;
   params.arg_values = arg_values;
-  params.host_render_view_routing_id = render_view_->GetRoutingID();
+  params.host_render_view_routing_id = render_view_->routing_id();
   params.load_manually = load_manually;
 
   result = false;
@@ -677,8 +677,8 @@ void WebPluginDelegateProxy::SetWindowFocus(bool window_has_focus) {
 void WebPluginDelegateProxy::SetContainerVisibility(bool is_visible) {
   IPC::Message* msg;
   if (is_visible) {
-    gfx::Rect window_frame = render_view_->GetWidget()->rootWindowRect();
-    gfx::Rect view_frame = render_view_->GetWidget()->windowRect();
+    gfx::Rect window_frame = render_view_->rootWindowRect();
+    gfx::Rect view_frame = render_view_->windowRect();
     blink::WebView* webview = render_view_->webview();
     msg = new PluginMsg_ContainerShown(instance_id_, window_frame, view_frame,
                                        webview && webview->isActive());
@@ -743,7 +743,7 @@ void WebPluginDelegateProxy::OnSetWindowlessData(
 
   dummy_activation_window_ = dummy_activation_window;
   render_view_->Send(new ViewHostMsg_WindowlessPluginDummyWindowCreated(
-      render_view_->GetRoutingID(), dummy_activation_window_));
+      render_view_->routing_id(), dummy_activation_window_));
 
   // Bug 25583: this can be null because some "virus scanners" block the
   // DuplicateHandle call in the plugin process.
@@ -764,7 +764,7 @@ void WebPluginDelegateProxy::OnNotifyIMEStatus(int input_type,
   params.mode = ui::TEXT_INPUT_MODE_DEFAULT;
   params.can_compose_inline = true;
   render_view_->Send(new ViewHostMsg_TextInputStateChanged(
-      render_view_->GetRoutingID(), params));
+      render_view_->routing_id(), params));
 
   ViewHostMsg_SelectionBounds_Params bounds_params;
   bounds_params.anchor_rect = bounds_params.focus_rect = caret_rect;
@@ -772,7 +772,8 @@ void WebPluginDelegateProxy::OnNotifyIMEStatus(int input_type,
       blink::WebTextDirectionLeftToRight;
   bounds_params.is_anchor_first = true;
   render_view_->Send(new ViewHostMsg_SelectionBoundsChanged(
-      render_view_->GetRoutingID(), bounds_params));
+      render_view_->routing_id(),
+      bounds_params));
 }
 #endif
 

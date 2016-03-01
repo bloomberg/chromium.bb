@@ -39,7 +39,6 @@ class Size;
 namespace content {
 
 class RenderFrame;
-class RenderWidget;
 class RenderViewVisitor;
 struct SSLStatus;
 struct WebPreferences;
@@ -67,9 +66,6 @@ class CONTENT_EXPORT RenderView : public IPC::Sender {
   // Applies WebKit related preferences to this view.
   static void ApplyWebPreferences(const WebPreferences& preferences,
                                   blink::WebView* web_view);
-
-  // Returns the RenderWidget for this RenderView.
-  virtual RenderWidget* GetWidget() const = 0;
 
   // Returns the main RenderFrame.
   virtual RenderFrame* GetMainRenderFrame() = 0;

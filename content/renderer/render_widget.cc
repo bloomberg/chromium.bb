@@ -298,9 +298,8 @@ RenderWidget* RenderWidget::CreateForFrame(
   // routing ID. https://crbug.com/545684
   RenderViewImpl* view = RenderViewImpl::FromRoutingID(routing_id);
   if (view) {
-    view->AttachWebFrameWidget(
-        RenderWidget::CreateWebFrameWidget(view->GetWidget(), frame));
-    return view->GetWidget();
+    view->AttachWebFrameWidget(RenderWidget::CreateWebFrameWidget(view, frame));
+    return view;
   }
   scoped_refptr<RenderWidget> widget(
       new RenderWidget(compositor_deps, blink::WebPopupTypeNone, screen_info,
