@@ -5,9 +5,11 @@
 // Multiply-included message file, hence no include guard here, but see below
 // for a much smaller-than-usual include guard section.
 
+#include "content/common/content_export.h"
 #include "gpu/config/gpu_info.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/param_traits_macros.h"
+#include "media/base/bitstream_buffer.h"
 #include "media/base/decrypt_config.h"
 #include "media/base/video_types.h"
 #include "media/video/jpeg_decode_accelerator.h"
@@ -19,6 +21,24 @@
 
 #define IPC_MESSAGE_START MediaMsgStart
 
+#ifndef CONTENT_COMMON_GPU_MEDIA_MESSAGES_H_
+#define CONTENT_COMMON_GPU_MEDIA_MESSAGES_H_
+
+namespace IPC {
+template <>
+struct ParamTraits<media::BitstreamBuffer> {
+  using param_type = media::BitstreamBuffer;
+  static void Write(base::Pickle* m, const param_type& p);
+  static bool Read(const base::Pickle* m,
+                   base::PickleIterator* iter,
+                   param_type* r);
+  static void Log(const param_type& p, std::string* l);
+};
+
+}  // namespace IPC
+
+#endif  // CONTENT_COMMON_GPU_MEDIA_MESSAGES_H_
+
 IPC_ENUM_TRAITS_MAX_VALUE(media::JpegDecodeAccelerator::Error,
                           media::JpegDecodeAccelerator::LARGEST_ERROR_ENUM)
 IPC_ENUM_TRAITS_MAX_VALUE(media::VideoEncodeAccelerator::Error,
@@ -28,22 +48,10 @@ IPC_ENUM_TRAITS_MIN_MAX_VALUE(media::VideoCodecProfile,
                               media::VIDEO_CODEC_PROFILE_MAX)
 
 IPC_STRUCT_BEGIN(AcceleratedJpegDecoderMsg_Decode_Params)
-  IPC_STRUCT_MEMBER(int32_t, input_buffer_id)
+  IPC_STRUCT_MEMBER(media::BitstreamBuffer, input_buffer)
   IPC_STRUCT_MEMBER(gfx::Size, coded_size)
-  IPC_STRUCT_MEMBER(base::SharedMemoryHandle, input_buffer_handle)
-  IPC_STRUCT_MEMBER(uint32_t, input_buffer_size)
   IPC_STRUCT_MEMBER(base::SharedMemoryHandle, output_video_frame_handle)
   IPC_STRUCT_MEMBER(uint32_t, output_buffer_size)
-IPC_STRUCT_END()
-
-IPC_STRUCT_BEGIN(AcceleratedVideoDecoderMsg_Decode_Params)
-  IPC_STRUCT_MEMBER(int32_t, bitstream_buffer_id)
-  IPC_STRUCT_MEMBER(base::SharedMemoryHandle, buffer_handle)
-  IPC_STRUCT_MEMBER(uint32_t, size)
-  IPC_STRUCT_MEMBER(base::TimeDelta, presentation_timestamp)
-  IPC_STRUCT_MEMBER(std::string, key_id)
-  IPC_STRUCT_MEMBER(std::string, iv)
-  IPC_STRUCT_MEMBER(std::vector<media::SubsampleEntry>, subsamples)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(AcceleratedVideoEncoderMsg_Encode_Params)
@@ -120,8 +128,7 @@ IPC_SYNC_MESSAGE_ROUTED5_1(GpuCommandBufferMsg_CreateVideoEncoder,
 IPC_MESSAGE_ROUTED1(AcceleratedVideoDecoderMsg_SetCdm, int32_t /* CDM ID */)
 
 // Send input buffer for decoding.
-IPC_MESSAGE_ROUTED1(AcceleratedVideoDecoderMsg_Decode,
-                    AcceleratedVideoDecoderMsg_Decode_Params)
+IPC_MESSAGE_ROUTED1(AcceleratedVideoDecoderMsg_Decode, media::BitstreamBuffer)
 
 // Give the texture IDs for the textures the decoder will use for output.
 IPC_MESSAGE_ROUTED2(AcceleratedVideoDecoderMsg_AssignPictureBuffers,

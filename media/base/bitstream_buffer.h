@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/shared_memory.h"
 #include "base/time/time.h"
+#include "ipc/ipc_param_traits.h"
 #include "media/base/decrypt_config.h"
 #include "media/base/media_export.h"
 #include "media/base/timestamp_constants.h"
@@ -21,6 +22,8 @@ namespace media {
 // data.  This is the media-namespace equivalent of PP_VideoBitstreamBuffer_Dev.
 class MEDIA_EXPORT BitstreamBuffer {
  public:
+  BitstreamBuffer();
+
   BitstreamBuffer(int32_t id, base::SharedMemoryHandle handle, size_t size);
 
   BitstreamBuffer(int32_t id,
@@ -37,6 +40,8 @@ class MEDIA_EXPORT BitstreamBuffer {
   int32_t id() const { return id_; }
   base::SharedMemoryHandle handle() const { return handle_; }
   size_t size() const { return size_; }
+
+  void set_handle(const base::SharedMemoryHandle& handle) { handle_ = handle; }
 
   // The timestamp is only valid if it's not equal to |media::kNoTimestamp()|.
   base::TimeDelta presentation_timestamp() const {
@@ -66,6 +71,8 @@ class MEDIA_EXPORT BitstreamBuffer {
   std::string key_id_;                      // key ID.
   std::string iv_;                          // initialization vector
   std::vector<SubsampleEntry> subsamples_;  // clear/cypher sizes
+
+  friend struct IPC::ParamTraits<media::BitstreamBuffer>;
 
   // Allow compiler-generated copy & assign constructors.
 };

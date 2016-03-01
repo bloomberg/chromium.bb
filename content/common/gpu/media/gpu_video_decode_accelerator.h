@@ -23,8 +23,6 @@
 #include "media/video/video_decode_accelerator.h"
 #include "ui/gfx/geometry/size.h"
 
-struct AcceleratedVideoDecoderMsg_Decode_Params;
-
 namespace content {
 
 class GpuVideoDecodeAccelerator
@@ -93,7 +91,7 @@ class GpuVideoDecodeAccelerator
 
   // Handlers for IPC messages.
   void OnSetCdm(int cdm_id);
-  void OnDecode(const AcceleratedVideoDecoderMsg_Decode_Params& params);
+  void OnDecode(const media::BitstreamBuffer& bitstream_buffer);
   void OnAssignPictureBuffers(const std::vector<int32_t>& buffer_ids,
                               const std::vector<uint32_t>& texture_ids);
   void OnReusePictureBuffer(int32_t picture_buffer_id);

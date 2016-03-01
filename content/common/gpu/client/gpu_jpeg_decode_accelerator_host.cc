@@ -152,12 +152,15 @@ void GpuJpegDecodeAcceleratorHost::Decode(
   DCHECK(
       base::SharedMemory::IsHandleValid(video_frame->shared_memory_handle()));
 
+  AcceleratedJpegDecoderMsg_Decode_Params decode_params;
+  decode_params.input_buffer = bitstream_buffer;
   base::SharedMemoryHandle input_handle =
       channel_->ShareToGpuProcess(bitstream_buffer.handle());
   if (!base::SharedMemory::IsHandleValid(input_handle)) {
     DLOG(ERROR) << "Failed to duplicate handle of BitstreamBuffer";
     return;
   }
+  decode_params.input_buffer.set_handle(input_handle);
   base::SharedMemoryHandle output_handle =
       channel_->ShareToGpuProcess(video_frame->shared_memory_handle());
   if (!base::SharedMemory::IsHandleValid(output_handle)) {
@@ -176,11 +179,7 @@ void GpuJpegDecodeAcceleratorHost::Decode(
   size_t output_buffer_size = media::VideoFrame::AllocationSize(
       video_frame->format(), video_frame->coded_size());
 
-  AcceleratedJpegDecoderMsg_Decode_Params decode_params;
   decode_params.coded_size = video_frame->coded_size();
-  decode_params.input_buffer_id = bitstream_buffer.id();
-  decode_params.input_buffer_handle = input_handle;
-  decode_params.input_buffer_size = bitstream_buffer.size();
   decode_params.output_video_frame_handle = output_handle;
   decode_params.output_buffer_size = output_buffer_size;
   Send(new AcceleratedJpegDecoderMsg_Decode(decoder_route_id_, decode_params));

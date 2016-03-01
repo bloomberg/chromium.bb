@@ -492,16 +492,8 @@ void GpuVideoDecodeAccelerator::OnSetCdm(int cdm_id) {
 // Runs on IO thread if video_decode_accelerator_->CanDecodeOnIOThread() is
 // true, otherwise on the main thread.
 void GpuVideoDecodeAccelerator::OnDecode(
-    const AcceleratedVideoDecoderMsg_Decode_Params& params) {
+    const media::BitstreamBuffer& bitstream_buffer) {
   DCHECK(video_decode_accelerator_);
-  media::BitstreamBuffer bitstream_buffer(params.bitstream_buffer_id,
-                                          params.buffer_handle, params.size,
-                                          params.presentation_timestamp);
-  if (!params.key_id.empty()) {
-    bitstream_buffer.SetDecryptConfig(
-        media::DecryptConfig(params.key_id, params.iv, params.subsamples));
-  }
-
   video_decode_accelerator_->Decode(bitstream_buffer);
 }
 

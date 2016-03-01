@@ -119,24 +119,16 @@ void GpuVideoDecodeAcceleratorHost::Decode(
   DCHECK(CalledOnValidThread());
   if (!channel_)
     return;
-
-  base::SharedMemoryHandle handle = channel_->ShareToGpuProcess(
-      bitstream_buffer.handle());
+  media::BitstreamBuffer buffer_to_send = bitstream_buffer;
+  base::SharedMemoryHandle handle =
+      channel_->ShareToGpuProcess(bitstream_buffer.handle());
   if (!base::SharedMemory::IsHandleValid(handle)) {
     NOTREACHED() << "Failed to duplicate buffer handler";
     return;
   }
-
-  AcceleratedVideoDecoderMsg_Decode_Params params;
-  params.bitstream_buffer_id = bitstream_buffer.id();
-  params.buffer_handle = handle;
-  params.size = bitstream_buffer.size();
-  params.presentation_timestamp = bitstream_buffer.presentation_timestamp();
-  params.key_id = bitstream_buffer.key_id();
-  params.iv = bitstream_buffer.iv();
-  params.subsamples = bitstream_buffer.subsamples();
-
-  Send(new AcceleratedVideoDecoderMsg_Decode(decoder_route_id_, params));
+  buffer_to_send.set_handle(handle);
+  Send(
+      new AcceleratedVideoDecoderMsg_Decode(decoder_route_id_, buffer_to_send));
 }
 
 void GpuVideoDecodeAcceleratorHost::AssignPictureBuffers(

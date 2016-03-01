@@ -198,33 +198,27 @@ class GpuJpegDecodeAccelerator::MessageFilter : public IPC::MessageFilter {
 
     if (!VerifyDecodeParams(params)) {
       NotifyDecodeStatusOnIOThread(
-          *route_id, params.input_buffer_id,
+          *route_id, params.input_buffer.id(),
           media::JpegDecodeAccelerator::INVALID_ARGUMENT);
-      if (base::SharedMemory::IsHandleValid(params.input_buffer_handle))
-        base::SharedMemory::CloseHandle(params.input_buffer_handle);
       if (base::SharedMemory::IsHandleValid(params.output_video_frame_handle))
         base::SharedMemory::CloseHandle(params.output_video_frame_handle);
       return;
     }
 
     // For handles in |params|, from now on, |params.output_video_frame_handle|
-    // is taken cared by scoper. |params.input_buffer_handle| need to be closed
-    // manually for early exits.
+    // is taken cared by scoper. |params.input_buffer.handle()| need to be
+    // closed manually for early exits.
     scoped_ptr<base::SharedMemory> output_shm(
         new base::SharedMemory(params.output_video_frame_handle, false));
     if (!output_shm->Map(params.output_buffer_size)) {
       LOG(ERROR) << "Could not map output shared memory for input buffer id "
-                 << params.input_buffer_id;
+                 << params.input_buffer.id();
       NotifyDecodeStatusOnIOThread(
-          *route_id, params.input_buffer_id,
+          *route_id, params.input_buffer.id(),
           media::JpegDecodeAccelerator::PLATFORM_FAILURE);
-      base::SharedMemory::CloseHandle(params.input_buffer_handle);
+      base::SharedMemory::CloseHandle(params.input_buffer.handle());
       return;
     }
-
-    media::BitstreamBuffer input_buffer(params.input_buffer_id,
-                                        params.input_buffer_handle,
-                                        params.input_buffer_size);
 
     uint8_t* shm_memory = static_cast<uint8_t*>(output_shm->memory());
     scoped_refptr<media::VideoFrame> frame =
@@ -240,11 +234,11 @@ class GpuJpegDecodeAccelerator::MessageFilter : public IPC::MessageFilter {
             base::TimeDelta());                // timestamp
     if (!frame.get()) {
       LOG(ERROR) << "Could not create VideoFrame for input buffer id "
-                 << params.input_buffer_id;
+                 << params.input_buffer.id();
       NotifyDecodeStatusOnIOThread(
-          *route_id, params.input_buffer_id,
+          *route_id, params.input_buffer.id(),
           media::JpegDecodeAccelerator::PLATFORM_FAILURE);
-      base::SharedMemory::CloseHandle(params.input_buffer_handle);
+      base::SharedMemory::CloseHandle(params.input_buffer.handle());
       return;
     }
     frame->AddDestructionObserver(
@@ -252,7 +246,7 @@ class GpuJpegDecodeAccelerator::MessageFilter : public IPC::MessageFilter {
 
     DCHECK_GT(client_map_.count(*route_id), 0u);
     Client* client = client_map_[*route_id];
-    client->Decode(input_buffer, frame);
+    client->Decode(params.input_buffer, frame);
   }
 
  protected:
