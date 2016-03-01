@@ -79,7 +79,7 @@ static struct av1_extracfg default_extra_cfg = {
   DEFAULT_QM_FIRST,  // qm_min
   DEFAULT_QM_LAST,   // qm_max
 #endif
-  1,                    // frame_parallel_decoding_mode
+  0,                    // frame_parallel_decoding_mode
   NO_AQ,                // aq_mode
   0,                    // frame_periodic_delta_q
   AOM_BITS_8,           // Bit depth
