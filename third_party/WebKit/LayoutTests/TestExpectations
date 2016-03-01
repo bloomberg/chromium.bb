@@ -129,7 +129,8 @@ crbug.com/492664 [ Mac ] imported/csswg-test/css-writing-modes-3/bidi-embed-002.
 crbug.com/492664 [ Mac ] imported/csswg-test/css-writing-modes-3/bidi-isolate-002.html [ Failure ]
 crbug.com/492664 [ Win ] imported/csswg-test/css-writing-modes-3/bidi-override-005.html [ Failure ]
 crbug.com/492664 [ Win ] imported/csswg-test/css-writing-modes-3/bidi-plaintext-001.html [ Failure ]
-crbug.com/463358 crbug.com/581963 [ Linux Mac Debug ] svg/transforms/text-with-pattern-inside-transformed-html.xhtml [ Failure ]
+# TODO(fmalita): re-enabled after https://codereview.chromium.org/1745163002/
+# crbug.com/463358 crbug.com/581963 [ Linux Mac Debug ] svg/transforms/text-with-pattern-inside-transformed-html.xhtml [ Failure ]
 crbug.com/463358 [ Mac Linux Debug ] fast/backgrounds/transformed-body-html-background.html [ Failure ]
 crbug.com/463358 [ Mac Linux Debug ] css3/masking/clip-path-polygon-nonzero.html [ Failure ]
 crbug.com/463358 [ Mac Linux ] fast/transforms/transformed-caret.html [ Pass Failure ]
@@ -533,6 +534,13 @@ crbug.com/404597 fast/css/text-overflow-ellipsis-button.html [ Pass Failure ]
 crbug.com/404597 [ Win ] fast/selectors/007a.html [ Pass Failure ]
 
 crbug.com/505364 imported/web-platform-tests/custom-elements/instantiating-custom-elements/extensions-to-document-interface/create-element-interface-type-is-a-type-extension.html [ Failure ]
+
+# SK_SUPPORT_LEGACY_PICTURESHADER_ROUNDING
+crbug.com/590447 css3/images/cross-fade-background-size.html [ NeedsRebaseline ]
+crbug.com/590447 svg/custom/js-late-pattern-and-object-creation.svg [ NeedsRebaseline ]
+crbug.com/590447 svg/custom/js-late-pattern-creation.svg [ NeedsRebaseline ]
+crbug.com/590447 svg/custom/pattern-scaling.svg [ NeedsRebaseline ]
+crbug.com/590447 svg/transforms/text-with-pattern-inside-transformed-html.xhtml [ NeedsRebaseline ]
 
 crbug.com/517840 imported/web-platform-tests/webrtc/rtcpeerconnection/rtcpeerconnection-idl.html [ Failure Timeout ]
 
