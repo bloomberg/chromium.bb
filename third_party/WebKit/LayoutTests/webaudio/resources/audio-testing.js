@@ -550,10 +550,15 @@ var Should = (function () {
 
         this._checkNaN(value, 'EXPECTED');
 
-        if (this.target >= value)
-            this._testPassed("is greater than or equal to " + value);
-        else
-            this._testFailed("(" + this.target + ") is not greater than or equal to " + value);
+        var prefix = '(' + this.target + ') ';
+
+        if (this.target >= value) {
+            if (!this.verbose)
+                prefix = '';
+            this._testPassed(prefix + "is greater than or equal to " + value);
+        } else {
+            this._testFailed(prefix + "is not greater than or equal to " + value);
+        }
         return this._success;
     }
 
@@ -593,10 +598,15 @@ var Should = (function () {
 
         this._checkNaN(value, 'EXPECTED');
 
-        if (this.target <= value)
-            this._testPassed("is less than or equal to " + value);
-        else
-            this._testFailed("(" + this.target + ") is not less than or equal to " + value);
+        var prefix = '(' + this.target + ') ';
+
+        if (this.target <= value) {
+            if (!this.verbose)
+                prefix = '';
+            this._testPassed(prefix + "is less than or equal to " + value);
+        } else {
+            this._testFailed(prefix + "is not less than or equal to " + value);
+        }
         return this._success;
     }
 

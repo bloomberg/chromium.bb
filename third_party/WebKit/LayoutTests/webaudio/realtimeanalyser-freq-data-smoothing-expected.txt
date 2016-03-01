@@ -1,0 +1,15 @@
+Test AnalyserNode getFloatFrequencyData and getByteFrequencyData, Smoothing
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS First 512-point FFT at frame 512 equals [-100,-100,-96.1,-92.2,-88.1,-42.5,-28.3,-25.0,-30.7,-48.7,-89.7,-85.4,-45.9,-33.4,-31.2,-38.1,...] with an element-wise tolerance of {absoluteThreshold: 0, relativeThreshold: 0.0000057607}.
+PASS 512-point byte FFT equals [0,0,14,28,43,209,255,255,252,186,37,53,197,242,250,225,...] with an element-wise tolerance of 0.
+PASS Smoothed 512-point FFT at frame 1536 equals [-94.6,-93.1,-90.1,-87.2,-85.6,-38.9,-24.8,-21.5,-27.2,-45.1,-87.5,-78.7,-42.4,-29.9,-27.7,-34.6,...] with an element-wise tolerance of {absoluteThreshold: 0, relativeThreshold: 0.000015979}.
+PASS 512-point byte FFT equals [19,25,36,46,52,222,255,255,255,199,45,77,209,255,255,238,...] with an element-wise tolerance of 0.
+PASS FFT smoothing performed correctly with smoothing constant 0.5.
+
+PASS successfullyParsed is true
+
+TEST COMPLETE
+
