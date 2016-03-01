@@ -110,58 +110,6 @@ CanvasRenderingContext2DState::CanvasRenderingContext2DState(const CanvasRenderi
         static_cast<CSSFontSelector*>(m_font.fontSelector())->registerForInvalidationCallbacks(this);
 }
 
-CanvasRenderingContext2DState& CanvasRenderingContext2DState::operator=(const CanvasRenderingContext2DState& other)
-{
-    if (this == &other)
-        return *this;
-
-#if !ENABLE(OILPAN)
-    if (m_realizedFont)
-        static_cast<CSSFontSelector*>(m_font.fontSelector())->unregisterForInvalidationCallbacks(this);
-#endif
-
-    m_unrealizedSaveCount = other.m_unrealizedSaveCount;
-    m_unparsedStrokeColor = other.m_unparsedStrokeColor;
-    m_unparsedFillColor = other.m_unparsedFillColor;
-    m_strokeStyle = other.m_strokeStyle;
-    m_fillStyle = other.m_fillStyle;
-    m_strokePaint = other.m_strokePaint;
-    m_fillPaint = other.m_fillPaint;
-    m_imagePaint = other.m_imagePaint;
-    m_shadowOffset = other.m_shadowOffset;
-    m_shadowBlur = other.m_shadowBlur;
-    m_shadowColor = other.m_shadowColor;
-    m_emptyDrawLooper = other.m_emptyDrawLooper;
-    m_shadowOnlyDrawLooper = other.m_shadowOnlyDrawLooper;
-    m_shadowAndForegroundDrawLooper = other.m_shadowAndForegroundDrawLooper;
-    m_shadowOnlyImageFilter = other.m_shadowOnlyImageFilter;
-    m_shadowAndForegroundImageFilter = other.m_shadowAndForegroundImageFilter;
-    m_globalAlpha = other.m_globalAlpha;
-    m_transform = other.m_transform;
-    m_lineDash = other.m_lineDash;
-    m_lineDashOffset = other.m_lineDashOffset;
-    m_unparsedFont = other.m_unparsedFont;
-    m_font = other.m_font;
-    m_textAlign = other.m_textAlign;
-    m_textBaseline = other.m_textBaseline;
-    m_direction = other.m_direction;
-    m_realizedFont = other.m_realizedFont;
-    m_isTransformInvertible = other.m_isTransformInvertible;
-    m_hasClip = other.m_hasClip;
-    m_hasComplexClip = other.m_hasComplexClip;
-    m_fillStyleDirty = other.m_fillStyleDirty;
-    m_strokeStyleDirty = other.m_strokeStyleDirty;
-    m_lineDashDirty = other.m_lineDashDirty;
-    m_clipList = other.m_clipList;
-    m_imageSmoothingEnabled = other.m_imageSmoothingEnabled;
-    m_imageSmoothingQuality = other.m_imageSmoothingQuality;
-
-    if (m_realizedFont)
-        static_cast<CSSFontSelector*>(m_font.fontSelector())->registerForInvalidationCallbacks(this);
-
-    return *this;
-}
-
 CanvasRenderingContext2DState::~CanvasRenderingContext2DState()
 {
 #if !ENABLE(OILPAN)

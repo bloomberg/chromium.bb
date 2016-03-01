@@ -19,6 +19,7 @@ class CSSValue;
 class Element;
 
 class CanvasRenderingContext2DState final : public NoBaseWillBeGarbageCollectedFinalized<CanvasRenderingContext2DState>, public CSSFontSelectorClient {
+    WTF_MAKE_NONCOPYABLE(CanvasRenderingContext2DState);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(CanvasRenderingContext2DState);
     USING_FAST_MALLOC_WILL_BE_REMOVED(CanvasRenderingContext2DState);
 public:
@@ -46,7 +47,6 @@ public:
     {
         return adoptPtrWillBeNoop(new CanvasRenderingContext2DState(other, mode));
     }
-    CanvasRenderingContext2DState& operator=(const CanvasRenderingContext2DState&);
 
     // CSSFontSelectorClient implementation
     void fontsNeedUpdate(CSSFontSelector*) override;
@@ -165,7 +165,7 @@ public:
 
 private:
     CanvasRenderingContext2DState();
-    CanvasRenderingContext2DState(const CanvasRenderingContext2DState&, ClipListCopyMode = CopyClipList);
+    CanvasRenderingContext2DState(const CanvasRenderingContext2DState&, ClipListCopyMode);
 
     void updateLineDash() const;
     void updateStrokeStyle() const;
