@@ -85,7 +85,8 @@ void CastRenderer::Initialize(
   if (audio_stream) {
     AvPipelineClient audio_client;
     audio_client.wait_for_key_cb = waiting_for_decryption_key_cb;
-    audio_client.eos_cb = ended_cb;
+    audio_client.eos_cb =
+        base::Bind(&CastRenderer::OnEos, base::Unretained(this), STREAM_AUDIO);
     audio_client.playback_error_cb = error_cb;
     audio_client.statistics_cb = statistics_cb;
     scoped_ptr<CodedFrameProvider> frame_provider(new DemuxerStreamAdapter(
@@ -107,7 +108,8 @@ void CastRenderer::Initialize(
     // TODO(alokp): Set VideoPipelineClient::natural_size_changed_cb.
     video_client.av_pipeline_client.wait_for_key_cb =
         waiting_for_decryption_key_cb;
-    video_client.av_pipeline_client.eos_cb = ended_cb;
+    video_client.av_pipeline_client.eos_cb =
+        base::Bind(&CastRenderer::OnEos, base::Unretained(this), STREAM_VIDEO);
     video_client.av_pipeline_client.playback_error_cb = error_cb;
     video_client.av_pipeline_client.statistics_cb = statistics_cb;
     // TODO(alokp): Change MediaPipelineImpl API to accept a single config
@@ -124,6 +126,7 @@ void CastRenderer::Initialize(
     }
   }
 
+  ended_cb_ = ended_cb;
   init_cb.Run(::media::PIPELINE_OK);
 }
 
@@ -140,6 +143,9 @@ void CastRenderer::Flush(const base::Closure& flush_cb) {
 
 void CastRenderer::StartPlayingFrom(base::TimeDelta time) {
   DCHECK(task_runner_->BelongsToCurrentThread());
+
+  eos_[STREAM_AUDIO] = !pipeline_->HasAudio();
+  eos_[STREAM_VIDEO] = !pipeline_->HasVideo();
   pipeline_->StartPlayingFrom(time);
 }
 
@@ -166,6 +172,15 @@ bool CastRenderer::HasAudio() {
 bool CastRenderer::HasVideo() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   return pipeline_->HasVideo();
+}
+
+void CastRenderer::OnEos(Stream stream) {
+  DCHECK(!eos_[stream]);
+  eos_[stream] = true;
+  CMALOG(kLogControl) << __FUNCTION__ << ": eos_audio=" << eos_[STREAM_AUDIO]
+                      << " eos_video=" << eos_[STREAM_VIDEO];
+  if (eos_[STREAM_AUDIO] && eos_[STREAM_VIDEO])
+    ended_cb_.Run();
 }
 
 }  // namespace media

@@ -45,11 +45,16 @@ class CastRenderer : public ::media::Renderer {
   bool HasVideo() final;
 
  private:
+  enum Stream { STREAM_AUDIO, STREAM_VIDEO };
+  void OnEos(Stream stream);
+
   scoped_refptr<CmaMediaPipelineClient> pipeline_client_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   scoped_refptr<BalancedMediaTaskRunnerFactory> media_task_runner_factory_;
   scoped_ptr<TaskRunnerImpl> backend_task_runner_;
   scoped_ptr<MediaPipelineImpl> pipeline_;
+  bool eos_[2];
+  base::Closure ended_cb_;
   DISALLOW_COPY_AND_ASSIGN(CastRenderer);
 };
 
