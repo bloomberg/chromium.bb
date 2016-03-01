@@ -39,6 +39,7 @@ import page_track
 import pull_sandwich_metrics
 import trace_recorder
 import tracing
+import wpr_backend
 
 
 # Use options layer to access constants.
@@ -296,6 +297,13 @@ def _ArgumentParser():
                           dest='wpr_archive_path',
                           help='Web page replay archive to generate.')
 
+  # Patch WPR subcommand.
+  patch_wpr = subparsers.add_parser('patch-wpr',
+                                     help='Patch WPR response headers.')
+  patch_wpr.add_argument('--wpr-archive', required=True, type=str,
+                         dest='wpr_archive_path',
+                         help='Web page replay archive to generate.')
+
   # Create cache subcommand.
   create_cache_parser = subparsers.add_parser('create-cache',
       help='Create cache from sandwich job.')
@@ -354,6 +362,36 @@ def _RecordWprMain(args):
   return 0
 
 
+def _PatchWprMain(args):
+  # Sets the resources cache max-age to 10 years.
+  MAX_AGE = 10 * 365 * 24 * 60 * 60
+  CACHE_CONTROL = 'public, max-age={}'.format(MAX_AGE)
+
+  wpr_archive = wpr_backend.WprArchiveBackend(args.wpr_archive_path)
+  for url_entry in wpr_archive.ListUrlEntries():
+    response_headers = url_entry.GetResponseHeadersDict()
+    if 'cache-control' in response_headers and \
+        response_headers['cache-control'] == CACHE_CONTROL:
+      continue
+    logging.info('patching %s' % url_entry.url)
+    # TODO(gabadie): may need to patch Last-Modified and If-Modified-Since.
+    # TODO(gabadie): may need to delete ETag.
+    # TODO(gabadie): may need to patch Vary.
+    # TODO(gabadie): may need to take care of x-cache.
+    #
+    # Override the cache-control header to set the resources max age to MAX_AGE.
+    #
+    # Important note: Some resources holding sensitive information might have
+    # cache-control set to no-store which allow the resource to be cached but
+    # not cached in the file system. NoState-Prefetch is going to take care of
+    # this case. But in here, to simulate NoState-Prefetch, we don't have other
+    # choices but save absolutely all cached resources on disk so they survive
+    # after killing chrome for cache save, modification and push.
+    url_entry.SetResponseHeader('cache-control', CACHE_CONTROL)
+  wpr_archive.Persist()
+  return 0
+
+
 def _CreateCacheMain(args):
   sandwich_runner = SandwichRunner(args.job)
   sandwich_runner.PullConfigFromArgs(args)
@@ -383,6 +421,8 @@ def main(command_line_args):
 
   if args.subcommand == 'record-wpr':
     return _RecordWprMain(args)
+  if args.subcommand == 'patch-wpr':
+    return _PatchWprMain(args)
   if args.subcommand == 'create-cache':
     return _CreateCacheMain(args)
   if args.subcommand == 'run':
