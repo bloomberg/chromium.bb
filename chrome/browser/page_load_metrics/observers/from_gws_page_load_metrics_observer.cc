@@ -4,6 +4,8 @@
 
 #include "chrome/browser/page_load_metrics/observers/from_gws_page_load_metrics_observer.h"
 
+#include <string>
+
 #include "base/metrics/histogram.h"
 #include "base/strings/string_util.h"
 #include "components/page_load_metrics/browser/page_load_metrics_util.h"
@@ -74,6 +76,10 @@ void FromGWSPageLoadMetricsObserver::OnComplete(
         "PageLoad.Clients.FromGWS.Timing2."
         "NavigationToDOMContentLoadedEventFired",
         timing.dom_content_loaded_event_start);
+    PAGE_LOAD_HISTOGRAM(
+        "PageLoad.Clients.FromGWS.Timing2."
+        "DOMLoadingToDOMContentLoadedEventFired",
+        timing.dom_content_loaded_event_start - timing.dom_loading);
   }
   if (WasStartedInForegroundEventInForeground(timing.load_event_start,
                                               extra_info)) {
@@ -109,6 +115,9 @@ void FromGWSPageLoadMetricsObserver::OnComplete(
     PAGE_LOAD_HISTOGRAM(
         "PageLoad.Clients.FromGWS.Timing2.NavigationToFirstContentfulPaint",
         timing.first_contentful_paint);
+    PAGE_LOAD_HISTOGRAM(
+        "PageLoad.Clients.FromGWS.Timing2.DOMLoadingToFirstContentfulPaint",
+        timing.first_contentful_paint - timing.dom_loading);
   }
 }
 

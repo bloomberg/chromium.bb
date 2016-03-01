@@ -29,6 +29,10 @@ struct PageLoadTiming {
   // Time that the first byte of the response is received.
   base::TimeDelta response_start;
 
+  // Time that the document transitions to the 'loading' state. This is roughly
+  // the time that the HTML parser begins parsing the main HTML resource.
+  base::TimeDelta dom_loading;
+
   // Time immediately before the DOMContentLoaded event is fired.
   base::TimeDelta dom_content_loaded_event_start;
 

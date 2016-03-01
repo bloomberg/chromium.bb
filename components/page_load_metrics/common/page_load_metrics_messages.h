@@ -15,6 +15,7 @@
 IPC_STRUCT_TRAITS_BEGIN(page_load_metrics::PageLoadTiming)
   IPC_STRUCT_TRAITS_MEMBER(navigation_start)
   IPC_STRUCT_TRAITS_MEMBER(response_start)
+  IPC_STRUCT_TRAITS_MEMBER(dom_loading)
   IPC_STRUCT_TRAITS_MEMBER(dom_content_loaded_event_start)
   IPC_STRUCT_TRAITS_MEMBER(load_event_start)
   IPC_STRUCT_TRAITS_MEMBER(first_layout)

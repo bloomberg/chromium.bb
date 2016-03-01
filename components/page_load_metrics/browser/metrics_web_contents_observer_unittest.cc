@@ -92,8 +92,12 @@ class MetricsWebContentsObserverTest
     num_errors_ += count;
   }
 
-  void CheckTotalEvents() {
+  void CheckTotalErrorEvents() {
     histogram_tester_.ExpectTotalCount(internal::kErrorEvents, num_errors_);
+  }
+
+  void CheckNoErrorEvents() {
+    histogram_tester_.ExpectTotalCount(internal::kErrorEvents, 0);
   }
 
   void AssertNoNonEmptyTimingReported() {
@@ -119,11 +123,8 @@ class MetricsWebContentsObserverTest
 };
 
 TEST_F(MetricsWebContentsObserverTest, NotInMainFrame) {
-  base::TimeDelta first_layout = base::TimeDelta::FromMilliseconds(1);
-
   PageLoadTiming timing;
   timing.navigation_start = base::Time::FromDoubleT(1);
-  timing.first_layout = first_layout;
 
   content::WebContentsTester* web_contents_tester =
       content::WebContentsTester::For(web_contents());
@@ -146,15 +147,13 @@ TEST_F(MetricsWebContentsObserverTest, NotInMainFrame) {
   web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
 
   AssertNoNonEmptyTimingReported();
+  CheckErrorEvent(ERR_IPC_FROM_WRONG_FRAME, 1);
+  CheckTotalErrorEvents();
 }
 
 TEST_F(MetricsWebContentsObserverTest, SamePageNoTrigger) {
-  base::TimeDelta first_layout = base::TimeDelta::FromMilliseconds(1);
-
   PageLoadTiming timing;
   timing.navigation_start = base::Time::FromDoubleT(1);
-  timing.response_start = base::TimeDelta::FromMilliseconds(1);
-  timing.first_layout = first_layout;
 
   content::WebContentsTester* web_contents_tester =
       content::WebContentsTester::For(web_contents());
@@ -166,12 +165,13 @@ TEST_F(MetricsWebContentsObserverTest, SamePageNoTrigger) {
   web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrlAnchor));
   // A same page navigation shouldn't trigger logging UMA for the original.
   AssertNoNonEmptyTimingReported();
+  CheckNoErrorEvents();
 }
 
 TEST_F(MetricsWebContentsObserverTest, DontLogPrerender) {
   PageLoadTiming timing;
   timing.navigation_start = base::Time::FromDoubleT(1);
-  timing.first_layout = base::TimeDelta::FromMilliseconds(10);
+
   content::WebContentsTester* web_contents_tester =
       content::WebContentsTester::For(web_contents());
   embedder_interface_->set_is_prerendering(true);
@@ -183,6 +183,8 @@ TEST_F(MetricsWebContentsObserverTest, DontLogPrerender) {
 
   web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl2));
   AssertNoTimingReported();
+  CheckErrorEvent(ERR_IPC_WITH_NO_RELEVANT_LOAD, 1);
+  CheckTotalErrorEvents();
 }
 
 TEST_F(MetricsWebContentsObserverTest, DontLogIrrelevantNavigation) {
@@ -203,13 +205,12 @@ TEST_F(MetricsWebContentsObserverTest, DontLogIrrelevantNavigation) {
 
   CheckErrorEvent(ERR_IPC_FROM_BAD_URL_SCHEME, 1);
   CheckErrorEvent(ERR_IPC_WITH_NO_RELEVANT_LOAD, 1);
-  CheckTotalEvents();
+  CheckTotalErrorEvents();
 }
 
 TEST_F(MetricsWebContentsObserverTest, NotInMainError) {
   PageLoadTiming timing;
   timing.navigation_start = base::Time::FromDoubleT(1);
-  timing.first_layout = base::TimeDelta::FromMilliseconds(1);
 
   content::WebContentsTester* web_contents_tester =
       content::WebContentsTester::For(web_contents());
@@ -227,6 +228,7 @@ TEST_F(MetricsWebContentsObserverTest, NotInMainError) {
       PageLoadMetricsMsg_TimingUpdated(observer_->routing_id(), timing),
       subframe);
   CheckErrorEvent(ERR_IPC_FROM_WRONG_FRAME, 1);
+  CheckTotalErrorEvents();
 }
 
 TEST_F(MetricsWebContentsObserverTest, BadIPC) {
@@ -247,7 +249,7 @@ TEST_F(MetricsWebContentsObserverTest, BadIPC) {
       main_rfh());
 
   CheckErrorEvent(ERR_BAD_TIMING_IPC, 1);
-  CheckTotalEvents();
+  CheckTotalErrorEvents();
 }
 
 TEST_F(MetricsWebContentsObserverTest, ObservePartialNavigation) {
@@ -255,7 +257,6 @@ TEST_F(MetricsWebContentsObserverTest, ObservePartialNavigation) {
   observer_.reset();
   PageLoadTiming timing;
   timing.navigation_start = base::Time::FromDoubleT(10);
-  timing.first_layout = base::TimeDelta::FromSeconds(2);
 
   content::WebContentsTester* web_contents_tester =
       content::WebContentsTester::For(web_contents());
@@ -274,6 +275,8 @@ TEST_F(MetricsWebContentsObserverTest, ObservePartialNavigation) {
   // Navigate again to force histogram logging.
   web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl2));
   AssertNoTimingReported();
+  CheckErrorEvent(ERR_IPC_WITH_NO_RELEVANT_LOAD, 1);
+  CheckTotalErrorEvents();
 }
 
 TEST_F(MetricsWebContentsObserverTest, DontLogAbortChains) {
@@ -281,6 +284,8 @@ TEST_F(MetricsWebContentsObserverTest, DontLogAbortChains) {
   NavigateAndCommit(GURL(kDefaultTestUrl2));
   NavigateAndCommit(GURL(kDefaultTestUrl));
   histogram_tester_.ExpectTotalCount(internal::kAbortChainSizeNewNavigation, 0);
+  CheckErrorEvent(ERR_NO_IPCS_RECEIVED, 2);
+  CheckTotalErrorEvents();
 }
 
 TEST_F(MetricsWebContentsObserverTest, LogAbortChains) {
@@ -305,6 +310,7 @@ TEST_F(MetricsWebContentsObserverTest, LogAbortChains) {
   histogram_tester_.ExpectTotalCount(internal::kAbortChainSizeNewNavigation, 1);
   histogram_tester_.ExpectBucketCount(internal::kAbortChainSizeNewNavigation, 3,
                                       1);
+  CheckNoErrorEvents();
 }
 
 }  // namespace page_load_metrics

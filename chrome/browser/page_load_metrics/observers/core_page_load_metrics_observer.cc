@@ -48,12 +48,16 @@ const char kHistogramFirstTextPaint[] =
     "PageLoad.Timing2.NavigationToFirstTextPaint";
 const char kHistogramDomContentLoaded[] =
     "PageLoad.Timing2.NavigationToDOMContentLoadedEventFired";
+const char kHistogramDomLoadingToDomContentLoaded[] =
+    "PageLoad.Timing2.DOMLoadingToDOMContentLoadedEventFired";
 const char kHistogramLoad[] = "PageLoad.Timing2.NavigationToLoadEventFired";
 const char kHistogramFirstPaint[] = "PageLoad.Timing2.NavigationToFirstPaint";
 const char kHistogramFirstImagePaint[] =
     "PageLoad.Timing2.NavigationToFirstImagePaint";
 const char kHistogramFirstContentfulPaint[] =
     "PageLoad.Timing2.NavigationToFirstContentfulPaint";
+const char kHistogramDomLoadingToFirstContentfulPaint[] =
+    "PageLoad.Timing2.DOMLoadingToFirstContentfulPaint";
 const char kBackgroundHistogramCommit[] =
     "PageLoad.Timing2.NavigationToCommit.Background";
 const char kBackgroundHistogramFirstLayout[] =
@@ -151,8 +155,9 @@ void CorePageLoadMetricsObserver::RecordTimingHistograms(
     }
   }
 
-  // The rest of the histograms require the load to have commit and be relevant.
-  // If |timing.IsEmpty()|, then this load was not tracked by the renderer.
+  // The rest of the histograms require the load to have committed and be
+  // relevant. If |timing.IsEmpty()|, then this load was not tracked by the
+  // renderer.
   if (info.time_to_commit.is_zero() || timing.IsEmpty())
     return;
 
@@ -167,6 +172,9 @@ void CorePageLoadMetricsObserver::RecordTimingHistograms(
             timing.dom_content_loaded_event_start, info)) {
       PAGE_LOAD_HISTOGRAM(internal::kHistogramDomContentLoaded,
                           timing.dom_content_loaded_event_start);
+      PAGE_LOAD_HISTOGRAM(
+          internal::kHistogramDomLoadingToDomContentLoaded,
+          timing.dom_content_loaded_event_start - timing.dom_loading);
     } else {
       PAGE_LOAD_HISTOGRAM(internal::kBackgroundHistogramDomContentLoaded,
                           timing.dom_content_loaded_event_start);
@@ -244,6 +252,8 @@ void CorePageLoadMetricsObserver::RecordTimingHistograms(
         PAGE_LOAD_HISTOGRAM(internal::kHistogramFirstContentfulPaintLow,
                             timing.first_contentful_paint);
       }
+      PAGE_LOAD_HISTOGRAM(internal::kHistogramDomLoadingToFirstContentfulPaint,
+                          timing.first_contentful_paint - timing.dom_loading);
     } else {
       PAGE_LOAD_HISTOGRAM(internal::kBackgroundHistogramFirstContentfulPaint,
                           timing.first_contentful_paint);

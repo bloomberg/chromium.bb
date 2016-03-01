@@ -4,6 +4,8 @@
 
 #include "components/page_load_metrics/renderer/metrics_render_frame_observer.h"
 
+#include <string>
+
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "components/page_load_metrics/renderer/page_timing_metrics_sender.h"
@@ -111,6 +113,7 @@ PageLoadTiming MetricsRenderFrameObserver::GetTiming() const {
   double start = perf.navigationStart();
   timing.navigation_start = base::Time::FromDoubleT(start);
   timing.response_start = ClampDelta(perf.responseStart(), start);
+  timing.dom_loading = ClampDelta(perf.domLoading(), start);
   timing.dom_content_loaded_event_start =
       ClampDelta(perf.domContentLoadedEventStart(), start);
   timing.load_event_start = ClampDelta(perf.loadEventStart(), start);

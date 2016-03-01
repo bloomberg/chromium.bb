@@ -4,6 +4,8 @@
 
 #include "components/page_load_metrics/browser/metrics_web_contents_observer.h"
 
+#include <algorithm>
+#include <string>
 #include <utility>
 
 #include "base/location.h"
@@ -67,11 +69,17 @@ bool IsValidPageLoadTiming(const PageLoadTiming& timing) {
 
   // Verify proper ordering between the various timings.
 
-  if (!EventsInOrder(timing.response_start,
-                     timing.dom_content_loaded_event_start)) {
-    // We sometimes get a zero response_start with a non-zero DCL. See
+  if (!EventsInOrder(timing.response_start, timing.dom_loading)) {
+    // We sometimes get a zero response_start with a non-zero DOM loading. See
     // crbug.com/590212.
     DLOG(ERROR) << "Invalid response_start " << timing.response_start
+                << " for dom_loading " << timing.dom_loading;
+    return false;
+  }
+
+  if (!EventsInOrder(timing.dom_loading,
+                     timing.dom_content_loaded_event_start)) {
+    DLOG(FATAL) << "Invalid dom_loading " << timing.dom_loading
                 << " for dom_content_loaded_event_start "
                 << timing.dom_content_loaded_event_start;
     return false;
@@ -88,10 +96,8 @@ bool IsValidPageLoadTiming(const PageLoadTiming& timing) {
     return false;
   }
 
-  if (!EventsInOrder(timing.response_start, timing.first_layout)) {
-    // We sometimes get a zero response_start with a non-zero first layout. See
-    // crbug.com/590212.
-    DLOG(ERROR) << "Invalid response_start " << timing.response_start
+  if (!EventsInOrder(timing.dom_loading, timing.first_layout)) {
+    DLOG(FATAL) << "Invalid dom_loading " << timing.dom_loading
                 << " for first_layout " << timing.first_layout;
     return false;
   }
