@@ -1607,7 +1607,7 @@ static void stringOrNullAttributeAttributeSetter(v8::Local<v8::Value> v8Value, c
 {
     v8::Local<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toImpl(holder);
-    V8StringResource<TreatNullAsNullString> cppValue = v8Value;
+    V8StringResource<TreatNullAndUndefinedAsNullString> cppValue = v8Value;
     if (!cppValue.prepare())
         return;
     impl->setStringOrNullAttribute(cppValue);
@@ -1742,7 +1742,7 @@ static void testEnumOrNullAttributeAttributeSetter(v8::Local<v8::Value> v8Value,
     v8::Local<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "testEnumOrNullAttribute", "TestObject", holder, info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(holder);
-    V8StringResource<TreatNullAsNullString> cppValue = v8Value;
+    V8StringResource<TreatNullAndUndefinedAsNullString> cppValue = v8Value;
     if (!cppValue.prepare())
         return;
     const char* validValues[] = {
@@ -2244,7 +2244,7 @@ static void cachedStringOrNoneAttributeAttributeSetter(v8::Local<v8::Value> v8Va
 {
     v8::Local<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toImpl(holder);
-    V8StringResource<TreatNullAsNullString> cppValue = v8Value;
+    V8StringResource<TreatNullAndUndefinedAsNullString> cppValue = v8Value;
     if (!cppValue.prepare())
         return;
     impl->setCachedStringOrNoneAttribute(cppValue);
@@ -7679,7 +7679,7 @@ static void voidMethodDefaultNullableByteStringArgMethod(const v8::FunctionCallb
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodDefaultNullableByteStringArg", "TestObject", info.Holder(), info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(info.Holder());
-    V8StringResource<TreatNullAsNullString> defaultStringArg;
+    V8StringResource<TreatNullAndUndefinedAsNullString> defaultStringArg;
     {
         if (!info[0]->IsUndefined()) {
             defaultStringArg = toByteString(info.GetIsolate(), info[0], exceptionState);
@@ -7700,7 +7700,7 @@ static void voidMethodDefaultNullableByteStringArgMethodCallback(const v8::Funct
 static void voidMethodDefaultNullableStringArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
-    V8StringResource<TreatNullAsNullString> defaultStringArg;
+    V8StringResource<TreatNullAndUndefinedAsNullString> defaultStringArg;
     {
         if (!info[0]->IsUndefined()) {
             defaultStringArg = info[0];
