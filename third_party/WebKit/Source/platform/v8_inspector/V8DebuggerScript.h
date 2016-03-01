@@ -48,6 +48,7 @@ public:
     String sourceURL() const;
     String sourceMappingURL() const { return m_sourceMappingURL; }
     String source() const { return m_source; }
+    String hash() const { return m_hash; }
     int startLine() const { return m_startLine; }
     int startColumn() const { return m_startColumn; }
     int endLine() const { return m_endLine; }
@@ -61,6 +62,7 @@ public:
     V8DebuggerScript& setSourceURL(const String&);
     V8DebuggerScript& setSourceMappingURL(const String&);
     V8DebuggerScript& setSource(const String&);
+    V8DebuggerScript& setHash(const String&);
     V8DebuggerScript& setStartLine(int);
     V8DebuggerScript& setStartColumn(int);
     V8DebuggerScript& setEndLine(int);
@@ -75,6 +77,7 @@ private:
     String m_sourceURL;
     String m_sourceMappingURL;
     String m_source;
+    String m_hash;
     int m_startLine;
     int m_startColumn;
     int m_endLine;

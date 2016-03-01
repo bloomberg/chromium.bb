@@ -1,0 +1,41 @@
+<html>
+<head>
+<script type="text/javascript" src="../../http/tests/inspector-protocol/inspector-protocol-test.js"></script>
+<script>
+function test()
+{
+    var hashes = [ "3FB75160AB1F4E4E82675BC4CD924D3481ABE278", "3DCE1FBEAB1F4E4E82675BC4CD924D3481ABE278", "3938780E1AC4B414D9464CC4C2CE4144D52D9AF" ];
+
+    InspectorTest.eventHandler["Debugger.scriptParsed"] = function(messageObject)
+    {
+        if (messageObject.params.hash === hashes[0])
+            InspectorTest.log("Hash received: " + hashes.shift());
+    }
+    InspectorTest.sendCommandOrDie("Debugger.enable");
+    InspectorTest.sendCommandOrDie("Runtime.evaluate", { expression: "eval(\"\")" }, step1);
+
+    function step1()
+    {
+        InspectorTest.sendCommandOrDie("Runtime.evaluate", { expression: "eval(\"239;\")" }, step2);
+    }
+
+    function step2()
+    {
+        var longScript = "var b = 1;";
+        for (var i = 0; i < 1024; ++i)
+            longScript += "++b;";
+        InspectorTest.sendCommandOrDie("Runtime.evaluate", { expression: "eval(\"" + longScript + "\")" }, step3);
+    }
+
+    function step3()
+    {
+        if (hashes.length)
+            InspectorTest.log("Not received: " + JSON.stringify(hashes));
+        InspectorTest.completeTest();
+    }
+}
+</script>
+</head>
+<body onLoad="runTest();">
+</body>
+</html>

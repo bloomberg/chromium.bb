@@ -47,6 +47,12 @@ V8DebuggerScript& V8DebuggerScript::setSource(const String& source)
     return *this;
 }
 
+V8DebuggerScript& V8DebuggerScript::setHash(const String& hash)
+{
+    m_hash = hash;
+    return *this;
+}
+
 V8DebuggerScript& V8DebuggerScript::setStartLine(int startLine)
 {
     m_startLine = startLine;
