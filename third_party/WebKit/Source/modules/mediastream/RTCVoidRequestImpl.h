@@ -31,7 +31,7 @@
 #ifndef RTCVoidRequestImpl_h
 #define RTCVoidRequestImpl_h
 
-#include "core/dom/ActiveDOMObject.h"
+#include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/ExceptionCode.h"
 #include "platform/heap/Handle.h"
 #include "platform/mediastream/RTCVoidRequest.h"
@@ -42,7 +42,7 @@ class RTCPeerConnection;
 class RTCPeerConnectionErrorCallback;
 class VoidCallback;
 
-class RTCVoidRequestImpl final : public RTCVoidRequest, public ActiveDOMObject {
+class RTCVoidRequestImpl final : public RTCVoidRequest, public ContextLifecycleObserver {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(RTCVoidRequestImpl);
 public:
     static RTCVoidRequestImpl* create(ExecutionContext*, RTCPeerConnection*, VoidCallback*, RTCPeerConnectionErrorCallback*);
@@ -52,8 +52,7 @@ public:
     void requestSucceeded() override;
     void requestFailed(const String& error) override;
 
-    // ActiveDOMObject
-    void stop() override;
+    void contextDestroyed() override;
 
     DECLARE_VIRTUAL_TRACE();
 

@@ -53,7 +53,6 @@ CanvasCaptureMediaStreamTrack::CanvasCaptureMediaStreamTrack(const CanvasCapture
     , m_canvasElement(track.m_canvasElement)
     , m_drawListener(track.m_drawListener)
 {
-    suspendIfNeeded();
     m_canvasElement->addListener(m_drawListener.get());
 }
 
@@ -61,7 +60,6 @@ CanvasCaptureMediaStreamTrack::CanvasCaptureMediaStreamTrack(MediaStreamComponen
     : MediaStreamTrack(element->executionContext(), component)
     , m_canvasElement(element)
 {
-    suspendIfNeeded();
     m_drawListener = AutoCanvasDrawListener::create(handler);
     m_canvasElement->addListener(m_drawListener.get());
 }
@@ -70,7 +68,6 @@ CanvasCaptureMediaStreamTrack::CanvasCaptureMediaStreamTrack(MediaStreamComponen
     : MediaStreamTrack(element->executionContext(), component)
     , m_canvasElement(element)
 {
-    suspendIfNeeded();
     if (frameRate == 0) {
         m_drawListener = OnRequestCanvasDrawListener::create(handler);
     } else {

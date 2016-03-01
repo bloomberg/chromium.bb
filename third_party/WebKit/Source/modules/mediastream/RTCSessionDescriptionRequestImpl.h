@@ -31,7 +31,7 @@
 #ifndef RTCSessionDescriptionRequestImpl_h
 #define RTCSessionDescriptionRequestImpl_h
 
-#include "core/dom/ActiveDOMObject.h"
+#include "core/dom/ContextLifecycleObserver.h"
 #include "platform/heap/Handle.h"
 #include "platform/mediastream/RTCSessionDescriptionRequest.h"
 #include "wtf/PassOwnPtr.h"
@@ -44,7 +44,7 @@ class RTCPeerConnectionErrorCallback;
 class RTCSessionDescriptionCallback;
 class WebRTCSessionDescription;
 
-class RTCSessionDescriptionRequestImpl final : public RTCSessionDescriptionRequest, public ActiveDOMObject {
+class RTCSessionDescriptionRequestImpl final : public RTCSessionDescriptionRequest, public ContextLifecycleObserver {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(RTCSessionDescriptionRequestImpl);
 public:
     static RTCSessionDescriptionRequestImpl* create(ExecutionContext*, RTCPeerConnection*, RTCSessionDescriptionCallback*, RTCPeerConnectionErrorCallback*);
@@ -53,8 +53,7 @@ public:
     void requestSucceeded(const WebRTCSessionDescription&) override;
     void requestFailed(const String& error) override;
 
-    // ActiveDOMObject
-    void stop() override;
+    void contextDestroyed() override;
 
     DECLARE_VIRTUAL_TRACE();
 

@@ -43,16 +43,13 @@ namespace blink {
 
 MediaStreamTrack* MediaStreamTrack::create(ExecutionContext* context, MediaStreamComponent* component)
 {
-    MediaStreamTrack* track = new MediaStreamTrack(context, component);
-    track->suspendIfNeeded();
-    return track;
+    return new MediaStreamTrack(context, component);
 }
 
 MediaStreamTrack::MediaStreamTrack(ExecutionContext* context, MediaStreamComponent* component)
-    : ActiveDOMObject(context)
+    : ContextLifecycleObserver(context)
     , m_readyState(MediaStreamSource::ReadyStateLive)
     , m_isIteratingRegisteredMediaStreams(false)
-    , m_stopped(false)
     , m_component(component)
 {
     m_component->source()->addObserver(this);
@@ -171,7 +168,7 @@ MediaStreamTrack* MediaStreamTrack::clone(ExecutionContext* context)
 
 bool MediaStreamTrack::ended() const
 {
-    return m_stopped || (m_readyState == MediaStreamSource::ReadyStateEnded);
+    return !executionContext() || (m_readyState == MediaStreamSource::ReadyStateEnded);
 }
 
 void MediaStreamTrack::sourceChangedState()
@@ -203,11 +200,6 @@ void MediaStreamTrack::propagateTrackEnded()
     for (HeapHashSet<Member<MediaStream>>::iterator iter = m_registeredMediaStreams.begin(); iter != m_registeredMediaStreams.end(); ++iter)
         (*iter)->trackEnded();
     m_isIteratingRegisteredMediaStreams = false;
-}
-
-void MediaStreamTrack::stop()
-{
-    m_stopped = true;
 }
 
 bool MediaStreamTrack::hasPendingActivity() const
@@ -254,7 +246,7 @@ const AtomicString& MediaStreamTrack::interfaceName() const
 
 ExecutionContext* MediaStreamTrack::executionContext() const
 {
-    return ActiveDOMObject::executionContext();
+    return ContextLifecycleObserver::executionContext();
 }
 
 DEFINE_TRACE(MediaStreamTrack)
@@ -262,7 +254,7 @@ DEFINE_TRACE(MediaStreamTrack)
     visitor->trace(m_registeredMediaStreams);
     visitor->trace(m_component);
     RefCountedGarbageCollectedEventTargetWithInlineData<MediaStreamTrack>::trace(visitor);
-    ActiveDOMObject::trace(visitor);
+    ContextLifecycleObserver::trace(visitor);
 }
 
 } // namespace blink

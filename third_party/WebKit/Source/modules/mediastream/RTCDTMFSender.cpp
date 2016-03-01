@@ -51,18 +51,15 @@ RTCDTMFSender* RTCDTMFSender::create(ExecutionContext* context, WebRTCPeerConnec
         return nullptr;
     }
 
-    RTCDTMFSender* dtmfSender = new RTCDTMFSender(context, track, handler.release());
-    dtmfSender->suspendIfNeeded();
-    return dtmfSender;
+    return new RTCDTMFSender(context, track, handler.release());
 }
 
 RTCDTMFSender::RTCDTMFSender(ExecutionContext* context, MediaStreamTrack* track, PassOwnPtr<WebRTCDTMFSenderHandler> handler)
-    : ActiveDOMObject(context)
+    : ContextLifecycleObserver(context)
     , m_track(track)
     , m_duration(defaultToneDurationMs)
     , m_interToneGap(defaultInterToneGapMs)
     , m_handler(handler)
-    , m_stopped(false)
     , m_scheduledEventTimer(this, &RTCDTMFSender::scheduledEventTimerFired)
 {
     m_handler->setClient(this);
@@ -133,12 +130,11 @@ const AtomicString& RTCDTMFSender::interfaceName() const
 
 ExecutionContext* RTCDTMFSender::executionContext() const
 {
-    return ActiveDOMObject::executionContext();
+    return ContextLifecycleObserver::executionContext();
 }
 
-void RTCDTMFSender::stop()
+void RTCDTMFSender::contextDestroyed()
 {
-    m_stopped = true;
     m_handler->setClient(0);
 }
 
@@ -152,7 +148,7 @@ void RTCDTMFSender::scheduleDispatchEvent(PassRefPtrWillBeRawPtr<Event> event)
 
 void RTCDTMFSender::scheduledEventTimerFired(Timer<RTCDTMFSender>*)
 {
-    if (m_stopped)
+    if (!executionContext())
         return;
 
     WillBeHeapVector<RefPtrWillBeMember<Event>> events;
@@ -168,7 +164,7 @@ DEFINE_TRACE(RTCDTMFSender)
     visitor->trace(m_track);
     visitor->trace(m_scheduledEvents);
     RefCountedGarbageCollectedEventTargetWithInlineData<RTCDTMFSender>::trace(visitor);
-    ActiveDOMObject::trace(visitor);
+    ContextLifecycleObserver::trace(visitor);
 }
 
 } // namespace blink
