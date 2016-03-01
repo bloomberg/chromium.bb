@@ -1590,7 +1590,10 @@ void BrowserOptionsHandler::HandleDefaultZoomFactor(
     const base::ListValue* args) {
   double zoom_factor;
   if (ExtractDoubleValue(args, &zoom_factor)) {
-    Profile::FromWebUI(web_ui())->GetZoomLevelPrefs()->SetDefaultZoomLevelPref(
+    ChromeZoomLevelPrefs* zoom_level_prefs =
+        Profile::FromWebUI(web_ui())->GetZoomLevelPrefs();
+    DCHECK(zoom_level_prefs);
+    zoom_level_prefs->SetDefaultZoomLevelPref(
         content::ZoomFactorToZoomLevel(zoom_factor));
   }
 }

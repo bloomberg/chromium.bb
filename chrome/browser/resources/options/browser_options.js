@@ -1802,7 +1802,8 @@ cr.define('options', function() {
      */
     setNetworkPredictionValue_: function(pref) {
       var checkbox = $('networkPredictionOptions');
-      checkbox.disabled = pref.disabled;
+      checkbox.disabled = pref.disabled ||
+                          loadTimeData.getBoolean('profileIsGuest');
       checkbox.checked = (pref.value != NetworkPredictionOptions.NEVER);
     },
 
