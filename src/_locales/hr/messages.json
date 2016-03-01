@@ -216,7 +216,11 @@
     "description": "Label for the OK button in the alert dialog."
   },
   "deleteConfirmationMsg": {
-    "message": "Želite li doista ukloniti tu sliku iz galerije?",
-    "description": "Confirmation message before removing a picture from the gallery."
+    "message": "Želite li doista ukloniti tu stavku?",
+    "description": "Confirmation message before removing a selected item from the gallery."
+  },
+  "deleteMultiConfirmationMsg": {
+    "message": "Želite li doista ukloniti te stavke?",
+    "description": "Confirmation message before removing multiple selected items from the gallery."
   }
 }

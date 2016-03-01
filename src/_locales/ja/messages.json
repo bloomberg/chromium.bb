@@ -216,7 +216,11 @@
     "description": "Label for the OK button in the alert dialog."
   },
   "deleteConfirmationMsg": {
-    "message": "ギャラリーからこの画像を削除してもよろしいですか？",
-    "description": "Confirmation message before removing a picture from the gallery."
+    "message": "このアイテムを削除してもよろしいですか？",
+    "description": "Confirmation message before removing a selected item from the gallery."
+  },
+  "deleteMultiConfirmationMsg": {
+    "message": "これらのアイテムを削除してもよろしいですか？",
+    "description": "Confirmation message before removing multiple selected items from the gallery."
   }
 }

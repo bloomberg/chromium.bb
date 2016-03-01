@@ -216,7 +216,11 @@
     "description": "Label for the OK button in the alert dialog."
   },
   "deleteConfirmationMsg": {
-    "message": "Möchten Sie dieses Bild wirklich aus der Galerie entfernen?",
-    "description": "Confirmation message before removing a picture from the gallery."
+    "message": "Möchten Sie dieses Bild wirklich entfernen?",
+    "description": "Confirmation message before removing a selected item from the gallery."
+  },
+  "deleteMultiConfirmationMsg": {
+    "message": "Möchten Sie diese Bilder wirklich entfernen?",
+    "description": "Confirmation message before removing multiple selected items from the gallery."
   }
 }

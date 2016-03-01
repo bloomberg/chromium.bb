@@ -184,7 +184,7 @@
     "description": "Message shown when activating the timer."
   },
   "toggleTimerInactiveMessage": {
-    "message": "டைமர் செயலற்றநிலையில் உள்ளது",
+    "message": "டைமர் செயலற்ற நிலையில் உள்ளது",
     "description": "Message shown when inactivating the timer."
   },
   "toggleMultiActiveMessage": {
@@ -216,7 +216,11 @@
     "description": "Label for the OK button in the alert dialog."
   },
   "deleteConfirmationMsg": {
-    "message": "இந்தப் படத்தைக் கேலரியிலிருந்து நிச்சயமாக அகற்ற விரும்புகிறீர்களா?",
-    "description": "Confirmation message before removing a picture from the gallery."
+    "message": "இந்த உருப்படியை நிச்சயமாக அகற்ற விரும்புகிறீர்களா?",
+    "description": "Confirmation message before removing a selected item from the gallery."
+  },
+  "deleteMultiConfirmationMsg": {
+    "message": "இந்த உருப்படிகளை நிச்சயமாக அகற்ற விரும்புகிறீர்களா?",
+    "description": "Confirmation message before removing multiple selected items from the gallery."
   }
 }

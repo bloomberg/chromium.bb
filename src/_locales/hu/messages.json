@@ -216,7 +216,11 @@
     "description": "Label for the OK button in the alert dialog."
   },
   "deleteConfirmationMsg": {
-    "message": "Biztosan eltávolítja ezt a képet a galériából?",
-    "description": "Confirmation message before removing a picture from the gallery."
+    "message": "Biztosan eltávolítja ezt az elemet?",
+    "description": "Confirmation message before removing a selected item from the gallery."
+  },
+  "deleteMultiConfirmationMsg": {
+    "message": "Biztosan eltávolítja ezeket az elemeket?",
+    "description": "Confirmation message before removing multiple selected items from the gallery."
   }
 }

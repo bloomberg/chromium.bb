@@ -52,7 +52,7 @@
     "description": "Bunny Head effect's name."
   },
   "sepiaEffect": {
-    "message": "सेपिया",
+    "message": "सीपीया",
     "description": "Sepia effect's name. Makes the image look like an old picture."
   },
   "retro30Effect": {
@@ -72,7 +72,7 @@
     "description": "Photo Lab effect's name. Makes the image look like developed in a home photo laboratory."
   },
   "modernEffect": {
-    "message": "मॉर्डन",
+    "message": "मॉडर्न",
     "description": "Modern effect's name. Colorizes parts of the image with different colors."
   },
   "swirlEffect": {
@@ -216,7 +216,11 @@
     "description": "Label for the OK button in the alert dialog."
   },
   "deleteConfirmationMsg": {
-    "message": "क्या आप वाकई इस चित्र को गैलरी से हटाना चाहते हैं?",
-    "description": "Confirmation message before removing a picture from the gallery."
+    "message": "क्या आप वाकई इस आइटम को निकालना चाहते हैं?",
+    "description": "Confirmation message before removing a selected item from the gallery."
+  },
+  "deleteMultiConfirmationMsg": {
+    "message": "क्या आप वाकई इन आइटम को निकालना चाहते हैं?",
+    "description": "Confirmation message before removing multiple selected items from the gallery."
   }
 }

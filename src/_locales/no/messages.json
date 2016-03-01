@@ -96,7 +96,7 @@
     "description": "Ghost effect's name. Duplicates face when moving."
   },
   "errorMsgNoCamera": {
-    "message": "Kameraet ditt er utilgjengelig akkurat nå.",
+    "message": "Kameraet ditt er ikke tilgjengelig akkurat nå.",
     "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
   "errorMsgNoCameraHint": {
@@ -168,7 +168,7 @@
     "description": "Label for the red picture taking button."
   },
   "toggleTimerButton": {
-    "message": "Slå tidtaker av eller på",
+    "message": "Slå tidtakeren av eller på",
     "description": "Label for the button to toggle the countdown timer."
   },
   "toggleMultiButton": {
@@ -216,7 +216,11 @@
     "description": "Label for the OK button in the alert dialog."
   },
   "deleteConfirmationMsg": {
-    "message": "Er du sikker på at du vil fjerne dette bildet fra galleriet?",
-    "description": "Confirmation message before removing a picture from the gallery."
+    "message": "Vil du virkelig fjerne dette elementet?",
+    "description": "Confirmation message before removing a selected item from the gallery."
+  },
+  "deleteMultiConfirmationMsg": {
+    "message": "Vil du virkelig fjerne disse elementene?",
+    "description": "Confirmation message before removing multiple selected items from the gallery."
   }
 }

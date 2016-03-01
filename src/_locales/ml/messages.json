@@ -76,7 +76,7 @@
     "description": "Modern effect's name. Colorizes parts of the image with different colors."
   },
   "swirlEffect": {
-    "message": "സ്വിറൽ",
+    "message": "നീർച്ചുഴി",
     "description": "Swirl effect's name. Makes the image look like a whirlpool."
   },
   "tiltShiftEffect": {
@@ -100,7 +100,7 @@
     "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
   "errorMsgNoCameraHint": {
-    "message": "ക്യാമറ ശരിയായി കണക്റ്റുചെയ്‌തിട്ടുണ്ടോയെന്ന് പരിശോധിക്കുക.",
+    "message": "ക്യാമറ ശരിയായാണോ കണക്റ്റുചെയ്തിരിക്കുന്നതെന്ന് പരിശോധിക്കുക.",
     "description": "Hint message shown below the main error message. A hint for a user why the error occured."
   },
   "errorMsgGallerySaveFailed": {
@@ -212,11 +212,15 @@
     "description": "Label for the dismissing button in the confirmation dialog."
   },
   "dialogOKButton": {
-    "message": "ഉവ്വ്",
+    "message": "ശരി",
     "description": "Label for the OK button in the alert dialog."
   },
   "deleteConfirmationMsg": {
-    "message": "ഗാലറിയിൽ നിന്ന് നിങ്ങൾക്ക് ഈ ചിത്രം ശരിക്കും നീക്കംചെയ്യണോ?",
-    "description": "Confirmation message before removing a picture from the gallery."
+    "message": "നിങ്ങൾക്ക് ശരിക്കും ഈ ഇനം നീക്കംചെയ്യണമെന്നുണ്ടോ?",
+    "description": "Confirmation message before removing a selected item from the gallery."
+  },
+  "deleteMultiConfirmationMsg": {
+    "message": "നിങ്ങൾക്ക് ശരിക്കും ഈ ഇനങ്ങൾ നീക്കംചെയ്യണമെന്നുണ്ടോ?",
+    "description": "Confirmation message before removing multiple selected items from the gallery."
   }
 }

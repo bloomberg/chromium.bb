@@ -72,7 +72,7 @@
     "description": "Photo Lab effect's name. Makes the image look like developed in a home photo laboratory."
   },
   "modernEffect": {
-    "message": "Kisasa",
+    "message": "Ya kisasa",
     "description": "Modern effect's name. Colorizes parts of the image with different colors."
   },
   "swirlEffect": {
@@ -96,7 +96,7 @@
     "description": "Ghost effect's name. Duplicates face when moving."
   },
   "errorMsgNoCamera": {
-    "message": "Kamera yako haipatikani sasa hivi.",
+    "message": "Kamera yako haipatikani kwa sasa.",
     "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
   "errorMsgNoCameraHint": {
@@ -120,7 +120,7 @@
     "description": "Error message shown when saving the selected file to an external directory failed."
   },
   "errorMsgNoWebGL": {
-    "message": "Kuongeza kasi kwa kutumia maunzi hakupatikani.",
+    "message": "Kipengele cha kuongeza kasi kwa kutumia maunzi hakipatikani.",
     "description": "Error message shown when WebGL is not available."
   },
   "errorMsgNoWebGLHint": {
@@ -152,7 +152,7 @@
     "description": "Label for the back button."
   },
   "maximizeButton": {
-    "message": "Tanua",
+    "message": "Panua",
     "description": "Text to speech Label for the maximize button."
   },
   "closeButton": {
@@ -188,19 +188,19 @@
     "description": "Message shown when inactivating the timer."
   },
   "toggleMultiActiveMessage": {
-    "message": "Upigaji picha nyingi unatumika",
+    "message": "Kipengele cha kupiga picha nyingi kinatumika",
     "description": "Message shown when activating the multi-shot feature."
   },
   "toggleMultiInactiveMessage": {
-    "message": "Upigaji picha nyingi hautumiki",
+    "message": "Kipengele cha kupiga picha nyingi hakitumiki",
     "description": "Message shown when inactivating the multi-shot feature."
   },
   "toggleMirrorActiveMessage": {
-    "message": "Uakisi unatumika",
+    "message": "Kipengele cha uakisi kinatumika",
     "description": "Message shown when activating the preview mirroring."
   },
   "toggleMirrorInactiveMessage": {
-    "message": "Uakisi hautumiki",
+    "message": "Kipengele cha uakisi hakitumiki",
     "description": "Message shown when inactivating the preview mirroring."
   },
   "dialogYesButton": {
@@ -208,7 +208,7 @@
     "description": "Label for the accepting button in the confirmation dialog."
   },
   "dialogNoButton": {
-    "message": "La",
+    "message": "Hapana",
     "description": "Label for the dismissing button in the confirmation dialog."
   },
   "dialogOKButton": {
@@ -216,7 +216,11 @@
     "description": "Label for the OK button in the alert dialog."
   },
   "deleteConfirmationMsg": {
-    "message": "Una uhakika ungependa kuondoa picha kwenye matunzio?",
-    "description": "Confirmation message before removing a picture from the gallery."
+    "message": "Una uhakika ungependa kuondoa kipengee hiki?",
+    "description": "Confirmation message before removing a selected item from the gallery."
+  },
+  "deleteMultiConfirmationMsg": {
+    "message": "Una uhakika ungependa kuondoa vipengee hivi?",
+    "description": "Confirmation message before removing multiple selected items from the gallery."
   }
 }

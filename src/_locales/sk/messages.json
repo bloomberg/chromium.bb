@@ -80,7 +80,7 @@
     "description": "Swirl effect's name. Makes the image look like a whirlpool."
   },
   "tiltShiftEffect": {
-    "message": "Tilt shift",
+    "message": "Naklonenie-zdvih",
     "description": "Tils Shift effect's name."
   },
   "cinemaEffect": {
@@ -216,7 +216,11 @@
     "description": "Label for the OK button in the alert dialog."
   },
   "deleteConfirmationMsg": {
-    "message": "Naozaj chcete odstrániť tento obrázok z galérie?",
-    "description": "Confirmation message before removing a picture from the gallery."
+    "message": "Naozaj chcete odstrániť túto položku?",
+    "description": "Confirmation message before removing a selected item from the gallery."
+  },
+  "deleteMultiConfirmationMsg": {
+    "message": "Naozaj chcete odstrániť tieto položky?",
+    "description": "Confirmation message before removing multiple selected items from the gallery."
   }
 }

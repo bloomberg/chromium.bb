@@ -216,7 +216,11 @@
     "description": "Label for the OK button in the alert dialog."
   },
   "deleteConfirmationMsg": {
-    "message": "Справді видалити цю фотографію з галереї?",
-    "description": "Confirmation message before removing a picture from the gallery."
+    "message": "Видалити цей елемент?",
+    "description": "Confirmation message before removing a selected item from the gallery."
+  },
+  "deleteMultiConfirmationMsg": {
+    "message": "Видалити ці елементи?",
+    "description": "Confirmation message before removing multiple selected items from the gallery."
   }
 }

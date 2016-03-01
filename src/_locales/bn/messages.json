@@ -216,7 +216,11 @@
     "description": "Label for the OK button in the alert dialog."
   },
   "deleteConfirmationMsg": {
-    "message": "আপনি কি গ্যালারি থেকে এই ছবিটি সত্যিই সরাতে চান?",
-    "description": "Confirmation message before removing a picture from the gallery."
+    "message": "আপনি কি সত্যিই এই আইটেমটি সরাতে চান?",
+    "description": "Confirmation message before removing a selected item from the gallery."
+  },
+  "deleteMultiConfirmationMsg": {
+    "message": "আপনি কি সত্যিই এই আইটেমগুলি সরাতে চান?",
+    "description": "Confirmation message before removing multiple selected items from the gallery."
   }
 }

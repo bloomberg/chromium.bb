@@ -238,10 +238,10 @@ camera.views.GalleryBase.prototype.deleteSelection = function() {
   if (!selectedIndexes.length)
     return;
 
-  // TODO(yuli): Revise the confirmation message for deleting multiple pictures.
   this.router.navigate(camera.Router.ViewIdentifier.DIALOG, {
     type: camera.views.Dialog.Type.CONFIRMATION,
-    message: chrome.i18n.getMessage('deleteConfirmationMsg')
+    message: chrome.i18n.getMessage(selectedIndexes.length == 1 ?
+        'deleteConfirmationMsg' : 'deleteMultiConfirmationMsg')
   }, function(result) {
     if (!result.isPositive)
       return;

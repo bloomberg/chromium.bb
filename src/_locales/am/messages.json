@@ -216,7 +216,11 @@
     "description": "Label for the OK button in the alert dialog."
   },
   "deleteConfirmationMsg": {
-    "message": "እርግጠኛ ነዎት ይህን ምስል ከማዕከለ-ስዕላት ማስወገድ ይፈልጋሉ?",
-    "description": "Confirmation message before removing a picture from the gallery."
+    "message": "የምር ይህን ንጥል ማስወገድ ይፈልጋሉ?",
+    "description": "Confirmation message before removing a selected item from the gallery."
+  },
+  "deleteMultiConfirmationMsg": {
+    "message": "የምር እነዚህን ንጥሎች ማስወገድ ይፈልጋሉ?",
+    "description": "Confirmation message before removing multiple selected items from the gallery."
   }
 }
