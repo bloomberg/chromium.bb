@@ -110,8 +110,6 @@ public:
     template <typename Collection>
     void removeAll(const Collection& toBeRemoved) { WTF::removeAll(*this, toBeRemoved); }
 
-    static bool isValidValue(ValuePeekInType);
-
     ValuePassOutType take(iterator);
     ValuePassOutType take(ValuePeekInType);
     ValuePassOutType takeAny();
@@ -227,23 +225,6 @@ template <typename T, typename U, typename V, typename W>
 inline void HashSet<T, U, V, W>::clear()
 {
     m_impl.clear();
-}
-
-template <typename T, typename U, typename V, typename W>
-inline bool HashSet<T, U, V, W>::isValidValue(ValuePeekInType value)
-{
-    if (ValueTraits::isDeletedValue(value))
-        return false;
-
-    if (HashFunctions::safeToCompareToEmptyOrDeleted) {
-        if (value == ValueTraits::emptyValue())
-            return false;
-    } else {
-        if (isHashTraitsEmptyValue<ValueTraits>(value))
-            return false;
-    }
-
-    return true;
 }
 
 template <typename T, typename U, typename V, typename W>
