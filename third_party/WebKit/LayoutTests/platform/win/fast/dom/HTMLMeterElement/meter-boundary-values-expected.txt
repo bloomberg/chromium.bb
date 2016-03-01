@@ -19,7 +19,7 @@ layer at (0,0) size 800x600
           LayoutText {#text} at (8,0) size 108x17
             text run at (8,0) width 108: "|10,20,30,40,50: "
           LayoutBlockFlow {METER} at (115.64,1.19) size 80x16
-            LayoutMeter {DIV} at (0,0) size 80x16
+            LayoutBlockFlow {DIV} at (0,0) size 80x16
               LayoutBlockFlow {DIV} at (0,0) size 80x16
                 LayoutBlockFlow {DIV} at (0,0) size 0x16
         LayoutListItem {LI} at (40,36) size 744x18
@@ -30,7 +30,7 @@ layer at (0,0) size 800x600
           LayoutText {#text} at (16,0) size 89x17
             text run at (16,0) width 89: ",20,30,40,50: "
           LayoutBlockFlow {METER} at (104.44,1.19) size 80x16
-            LayoutMeter {DIV} at (0,0) size 80x16
+            LayoutBlockFlow {DIV} at (0,0) size 80x16
               LayoutBlockFlow {DIV} at (0,0) size 80x16
                 LayoutBlockFlow {DIV} at (0,0) size 0x16
         LayoutListItem {LI} at (40,54) size 744x18
@@ -43,7 +43,7 @@ layer at (0,0) size 800x600
           LayoutText {#text} at (36,0) size 69x17
             text run at (36,0) width 69: ",30,40,50: "
           LayoutBlockFlow {METER} at (104.44,1.19) size 80x16
-            LayoutMeter {DIV} at (0,0) size 80x16
+            LayoutBlockFlow {DIV} at (0,0) size 80x16
               LayoutBlockFlow {DIV} at (0,0) size 80x16
                 LayoutBlockFlow {DIV} at (0,0) size 20x16
           LayoutText {#text} at (184,0) size 113x17
@@ -58,7 +58,7 @@ layer at (0,0) size 800x600
           LayoutText {#text} at (56,0) size 49x17
             text run at (56,0) width 49: ",40,50: "
           LayoutBlockFlow {METER} at (104.44,1.19) size 80x16
-            LayoutMeter {DIV} at (0,0) size 80x16
+            LayoutBlockFlow {DIV} at (0,0) size 80x16
               LayoutBlockFlow {DIV} at (0,0) size 80x16
                 LayoutBlockFlow {DIV} at (0,0) size 40x16
           LayoutText {#text} at (184,0) size 113x17
@@ -73,7 +73,7 @@ layer at (0,0) size 800x600
           LayoutText {#text} at (76,0) size 29x17
             text run at (76,0) width 29: ",50: "
           LayoutBlockFlow {METER} at (104.44,1.19) size 80x16
-            LayoutMeter {DIV} at (0,0) size 80x16
+            LayoutBlockFlow {DIV} at (0,0) size 80x16
               LayoutBlockFlow {DIV} at (0,0) size 80x16
                 LayoutBlockFlow {DIV} at (0,0) size 60x16
           LayoutText {#text} at (184,0) size 113x17
@@ -88,7 +88,7 @@ layer at (0,0) size 800x600
           LayoutText {#text} at (96,0) size 9x17
             text run at (96,0) width 9: ": "
           LayoutBlockFlow {METER} at (104.44,1.19) size 80x16
-            LayoutMeter {DIV} at (0,0) size 80x16
+            LayoutBlockFlow {DIV} at (0,0) size 80x16
               LayoutBlockFlow {DIV} at (0,0) size 80x16
                 LayoutBlockFlow {DIV} at (0,0) size 80x16
           LayoutText {#text} at (184,0) size 121x17
@@ -103,7 +103,7 @@ layer at (0,0) size 800x600
           LayoutText {#text} at (115,0) size 9x17
             text run at (115,0) width 9: ": "
           LayoutBlockFlow {METER} at (123.64,1.19) size 80x16
-            LayoutMeter {DIV} at (0,0) size 80x16
+            LayoutBlockFlow {DIV} at (0,0) size 80x16
               LayoutBlockFlow {DIV} at (0,0) size 80x16
                 LayoutBlockFlow {DIV} at (0,0) size 80x16
           LayoutText {#text} at (203,0) size 121x17
@@ -118,7 +118,7 @@ layer at (0,0) size 800x600
           LayoutText {#text} at (36,0) size 69x17
             text run at (36,0) width 69: ",30,40,50: "
           LayoutBlockFlow {METER} at (104.44,1.19) size 80x16
-            LayoutMeter {DIV} at (0,0) size 80x16
+            LayoutBlockFlow {DIV} at (0,0) size 80x16
               LayoutBlockFlow {DIV} at (0,0) size 80x16
                 LayoutBlockFlow {DIV} at (0,0) size 0x16
         LayoutListItem {LI} at (40,162) size 744x18
@@ -131,7 +131,7 @@ layer at (0,0) size 800x600
           LayoutText {#text} at (76,0) size 29x17
             text run at (76,0) width 29: ",40: "
           LayoutBlockFlow {METER} at (104.44,1.19) size 80x16
-            LayoutMeter {DIV} at (0,0) size 80x16
+            LayoutBlockFlow {DIV} at (0,0) size 80x16
               LayoutBlockFlow {DIV} at (0,0) size 80x16
                 LayoutBlockFlow {DIV} at (0,0) size 80x16
           LayoutText {#text} at (184,0) size 113x17
@@ -144,7 +144,7 @@ layer at (0,0) size 800x600
           LayoutText {#text} at (8,0) size 108x17
             text run at (8,0) width 108: "|10,10,10,20,30: "
           LayoutBlockFlow {METER} at (115.64,1.19) size 80x16
-            LayoutMeter {DIV} at (0,0) size 80x16
+            LayoutBlockFlow {DIV} at (0,0) size 80x16
               LayoutBlockFlow {DIV} at (0,0) size 80x16
                 LayoutBlockFlow {DIV} at (0,0) size 0x16
         LayoutListItem {LI} at (40,198) size 744x18
@@ -157,7 +157,7 @@ layer at (0,0) size 800x600
           LayoutText {#text} at (56,0) size 49x17
             text run at (56,0) width 49: ",20,30: "
           LayoutBlockFlow {METER} at (104.44,1.19) size 80x16
-            LayoutMeter {DIV} at (0,0) size 80x16
+            LayoutBlockFlow {DIV} at (0,0) size 80x16
               LayoutBlockFlow {DIV} at (0,0) size 80x16
                 LayoutBlockFlow {DIV} at (0,0) size 0x16
         LayoutListItem {LI} at (40,216) size 744x18
@@ -170,7 +170,7 @@ layer at (0,0) size 800x600
           LayoutText {#text} at (56,0) size 49x17
             text run at (56,0) width 49: ",30,30: "
           LayoutBlockFlow {METER} at (104.44,1.19) size 80x16
-            LayoutMeter {DIV} at (0,0) size 80x16
+            LayoutBlockFlow {DIV} at (0,0) size 80x16
               LayoutBlockFlow {DIV} at (0,0) size 80x16
                 LayoutBlockFlow {DIV} at (0,0) size 80x16
           LayoutText {#text} at (184,0) size 113x17
@@ -185,7 +185,7 @@ layer at (0,0) size 800x600
           LayoutText {#text} at (115,0) size 9x17
             text run at (115,0) width 9: ": "
           LayoutBlockFlow {METER} at (123.64,1.19) size 80x16
-            LayoutMeter {DIV} at (0,0) size 80x16
+            LayoutBlockFlow {DIV} at (0,0) size 80x16
               LayoutBlockFlow {DIV} at (0,0) size 80x16
                 LayoutBlockFlow {DIV} at (0,0) size 80x16
           LayoutText {#text} at (203,0) size 113x17
@@ -200,7 +200,7 @@ layer at (0,0) size 800x600
           LayoutText {#text} at (56,0) size 49x17
             text run at (56,0) width 49: ",20,30: "
           LayoutBlockFlow {METER} at (104.44,1.19) size 80x16
-            LayoutMeter {DIV} at (0,0) size 80x16
+            LayoutBlockFlow {DIV} at (0,0) size 80x16
               LayoutBlockFlow {DIV} at (0,0) size 80x16
                 LayoutBlockFlow {DIV} at (0,0) size 40x16
           LayoutText {#text} at (184,0) size 113x17

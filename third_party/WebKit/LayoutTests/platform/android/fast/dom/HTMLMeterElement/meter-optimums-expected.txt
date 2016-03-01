@@ -18,7 +18,7 @@ layer at (0,0) size 800x603 backgroundClip at (0,0) size 800x600 clip at (0,0) s
           LayoutText {#text} at (0,0) size 71x19
             text run at (0,0) width 71: "value=150: "
           LayoutBlockFlow {METER} at (71,2.19) size 80x16
-            LayoutBlockFlow {DIV} at (0,0) size 80x16
+            LayoutMeter {DIV} at (0,0) size 80x16
               LayoutBlockFlow {DIV} at (0,0) size 80x16
                 LayoutBlockFlow {DIV} at (0,0) size 20x16
         LayoutListItem {LI} at (40,20) size 744x20
@@ -26,7 +26,7 @@ layer at (0,0) size 800x603 backgroundClip at (0,0) size 800x600 clip at (0,0) s
           LayoutText {#text} at (0,0) size 71x19
             text run at (0,0) width 71: "value=450: "
           LayoutBlockFlow {METER} at (71,2.19) size 80x16
-            LayoutBlockFlow {DIV} at (0,0) size 80x16
+            LayoutMeter {DIV} at (0,0) size 80x16
               LayoutBlockFlow {DIV} at (0,0) size 80x16
                 LayoutBlockFlow {DIV} at (0,0) size 36x16
         LayoutListItem {LI} at (40,40) size 744x20
@@ -34,7 +34,7 @@ layer at (0,0) size 800x603 backgroundClip at (0,0) size 800x600 clip at (0,0) s
           LayoutText {#text} at (0,0) size 71x19
             text run at (0,0) width 71: "value=750: "
           LayoutBlockFlow {METER} at (71,2.19) size 80x16
-            LayoutBlockFlow {DIV} at (0,0) size 80x16
+            LayoutMeter {DIV} at (0,0) size 80x16
               LayoutBlockFlow {DIV} at (0,0) size 80x16
                 LayoutBlockFlow {DIV} at (0,0) size 60x16
         LayoutListItem {LI} at (40,60) size 744x20
@@ -42,7 +42,7 @@ layer at (0,0) size 800x603 backgroundClip at (0,0) size 800x600 clip at (0,0) s
           LayoutText {#text} at (0,0) size 55x19
             text run at (0,0) width 55: "value=0: "
           LayoutBlockFlow {METER} at (55,2.19) size 80x16
-            LayoutBlockFlow {DIV} at (0,0) size 80x16
+            LayoutMeter {DIV} at (0,0) size 80x16
               LayoutBlockFlow {DIV} at (0,0) size 80x16
                 LayoutBlockFlow {DIV} at (0,0) size 0x16
         LayoutListItem {LI} at (40,80) size 744x20
@@ -50,7 +50,7 @@ layer at (0,0) size 800x603 backgroundClip at (0,0) size 800x600 clip at (0,0) s
           LayoutText {#text} at (0,0) size 79x19
             text run at (0,0) width 79: "value=1000: "
           LayoutBlockFlow {METER} at (79,2.19) size 80x16
-            LayoutBlockFlow {DIV} at (0,0) size 80x16
+            LayoutMeter {DIV} at (0,0) size 80x16
               LayoutBlockFlow {DIV} at (0,0) size 80x16
                 LayoutBlockFlow {DIV} at (0,0) size 80x16
       LayoutBlockFlow {H2} at (0,265.16) size 784x27
@@ -62,7 +62,7 @@ layer at (0,0) size 800x603 backgroundClip at (0,0) size 800x600 clip at (0,0) s
           LayoutText {#text} at (0,0) size 71x19
             text run at (0,0) width 71: "value=150: "
           LayoutBlockFlow {METER} at (71,2.19) size 80x16
-            LayoutBlockFlow {DIV} at (0,0) size 80x16
+            LayoutMeter {DIV} at (0,0) size 80x16
               LayoutBlockFlow {DIV} at (0,0) size 80x16
                 LayoutBlockFlow {DIV} at (0,0) size 20x16
         LayoutListItem {LI} at (40,20) size 744x20
@@ -70,7 +70,7 @@ layer at (0,0) size 800x603 backgroundClip at (0,0) size 800x600 clip at (0,0) s
           LayoutText {#text} at (0,0) size 71x19
             text run at (0,0) width 71: "value=450: "
           LayoutBlockFlow {METER} at (71,2.19) size 80x16
-            LayoutBlockFlow {DIV} at (0,0) size 80x16
+            LayoutMeter {DIV} at (0,0) size 80x16
               LayoutBlockFlow {DIV} at (0,0) size 80x16
                 LayoutBlockFlow {DIV} at (0,0) size 36x16
         LayoutListItem {LI} at (40,40) size 744x20
@@ -78,7 +78,7 @@ layer at (0,0) size 800x603 backgroundClip at (0,0) size 800x600 clip at (0,0) s
           LayoutText {#text} at (0,0) size 71x19
             text run at (0,0) width 71: "value=750: "
           LayoutBlockFlow {METER} at (71,2.19) size 80x16
-            LayoutBlockFlow {DIV} at (0,0) size 80x16
+            LayoutMeter {DIV} at (0,0) size 80x16
               LayoutBlockFlow {DIV} at (0,0) size 80x16
                 LayoutBlockFlow {DIV} at (0,0) size 60x16
         LayoutListItem {LI} at (40,60) size 744x20
@@ -86,7 +86,7 @@ layer at (0,0) size 800x603 backgroundClip at (0,0) size 800x600 clip at (0,0) s
           LayoutText {#text} at (0,0) size 55x19
             text run at (0,0) width 55: "value=0: "
           LayoutBlockFlow {METER} at (55,2.19) size 80x16
-            LayoutBlockFlow {DIV} at (0,0) size 80x16
+            LayoutMeter {DIV} at (0,0) size 80x16
               LayoutBlockFlow {DIV} at (0,0) size 80x16
                 LayoutBlockFlow {DIV} at (0,0) size 0x16
         LayoutListItem {LI} at (40,80) size 744x20
@@ -94,7 +94,7 @@ layer at (0,0) size 800x603 backgroundClip at (0,0) size 800x600 clip at (0,0) s
           LayoutText {#text} at (0,0) size 79x19
             text run at (0,0) width 79: "value=1000: "
           LayoutBlockFlow {METER} at (79,2.19) size 80x16
-            LayoutBlockFlow {DIV} at (0,0) size 80x16
+            LayoutMeter {DIV} at (0,0) size 80x16
               LayoutBlockFlow {DIV} at (0,0) size 80x16
                 LayoutBlockFlow {DIV} at (0,0) size 80x16
       LayoutBlockFlow {H2} at (0,431.97) size 784x27
@@ -106,7 +106,7 @@ layer at (0,0) size 800x603 backgroundClip at (0,0) size 800x600 clip at (0,0) s
           LayoutText {#text} at (0,0) size 71x19
             text run at (0,0) width 71: "value=150: "
           LayoutBlockFlow {METER} at (71,2.19) size 80x16
-            LayoutBlockFlow {DIV} at (0,0) size 80x16
+            LayoutMeter {DIV} at (0,0) size 80x16
               LayoutBlockFlow {DIV} at (0,0) size 80x16
                 LayoutBlockFlow {DIV} at (0,0) size 20x16
         LayoutListItem {LI} at (40,20) size 744x20
@@ -114,7 +114,7 @@ layer at (0,0) size 800x603 backgroundClip at (0,0) size 800x600 clip at (0,0) s
           LayoutText {#text} at (0,0) size 71x19
             text run at (0,0) width 71: "value=450: "
           LayoutBlockFlow {METER} at (71,2.19) size 80x16
-            LayoutBlockFlow {DIV} at (0,0) size 80x16
+            LayoutMeter {DIV} at (0,0) size 80x16
               LayoutBlockFlow {DIV} at (0,0) size 80x16
                 LayoutBlockFlow {DIV} at (0,0) size 36x16
         LayoutListItem {LI} at (40,40) size 744x20
@@ -122,7 +122,7 @@ layer at (0,0) size 800x603 backgroundClip at (0,0) size 800x600 clip at (0,0) s
           LayoutText {#text} at (0,0) size 71x19
             text run at (0,0) width 71: "value=750: "
           LayoutBlockFlow {METER} at (71,2.19) size 80x16
-            LayoutBlockFlow {DIV} at (0,0) size 80x16
+            LayoutMeter {DIV} at (0,0) size 80x16
               LayoutBlockFlow {DIV} at (0,0) size 80x16
                 LayoutBlockFlow {DIV} at (0,0) size 60x16
         LayoutListItem {LI} at (40,60) size 744x20
@@ -130,7 +130,7 @@ layer at (0,0) size 800x603 backgroundClip at (0,0) size 800x600 clip at (0,0) s
           LayoutText {#text} at (0,0) size 55x19
             text run at (0,0) width 55: "value=0: "
           LayoutBlockFlow {METER} at (55,2.19) size 80x16
-            LayoutBlockFlow {DIV} at (0,0) size 80x16
+            LayoutMeter {DIV} at (0,0) size 80x16
               LayoutBlockFlow {DIV} at (0,0) size 80x16
                 LayoutBlockFlow {DIV} at (0,0) size 0x16
         LayoutListItem {LI} at (40,80) size 744x20
@@ -138,6 +138,6 @@ layer at (0,0) size 800x603 backgroundClip at (0,0) size 800x600 clip at (0,0) s
           LayoutText {#text} at (0,0) size 79x19
             text run at (0,0) width 79: "value=1000: "
           LayoutBlockFlow {METER} at (79,2.19) size 80x16
-            LayoutBlockFlow {DIV} at (0,0) size 80x16
+            LayoutMeter {DIV} at (0,0) size 80x16
               LayoutBlockFlow {DIV} at (0,0) size 80x16
                 LayoutBlockFlow {DIV} at (0,0) size 80x16
