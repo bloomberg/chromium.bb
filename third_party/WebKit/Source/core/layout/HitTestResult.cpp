@@ -22,6 +22,7 @@
 #include "core/layout/HitTestResult.h"
 
 #include "core/HTMLNames.h"
+#include "core/InputTypeNames.h"
 #include "core/dom/PseudoElement.h"
 #include "core/dom/shadow/FlatTreeTraversal.h"
 #include "core/dom/shadow/ShadowRoot.h"
@@ -341,7 +342,7 @@ KURL HitTestResult::absoluteImageURL() const
     // don't have a LayoutImage (e.g. because the image didn't load and we are using an alt container).
     // For other elements we don't create alt containers so ensure they contain a loaded image.
     if (isHTMLImageElement(*innerNodeOrImageMapImage)
-        || (isHTMLInputElement(*innerNodeOrImageMapImage) && toHTMLInputElement(innerNodeOrImageMapImage)->isImage()))
+        || (isHTMLInputElement(*innerNodeOrImageMapImage) && toHTMLInputElement(innerNodeOrImageMapImage)->type() == InputTypeNames::image))
         urlString = toElement(*innerNodeOrImageMapImage).imageSourceURL();
     else if ((innerNodeOrImageMapImage->layoutObject() && innerNodeOrImageMapImage->layoutObject()->isImage())
         && (isHTMLEmbedElement(*innerNodeOrImageMapImage)

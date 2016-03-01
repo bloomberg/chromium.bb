@@ -59,7 +59,6 @@ private:
     bool shouldRespectAlignAttribute() override;
     bool canBeSuccessfulSubmitButton() override;
     bool isEnumeratable() override;
-    bool isImage() const override;
     bool shouldRespectHeightAndWidthAttributes() override;
     unsigned height() const override;
     unsigned width() const override;

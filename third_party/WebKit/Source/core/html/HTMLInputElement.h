@@ -92,8 +92,9 @@ public:
     // Returns true if the type is email, number, password, search, tel, text,
     // or url.
     bool isTextField() const;
-
-    bool isImage() const;
+    // Do not add type check predicates for concrete input types; e.g.  isImage,
+    // isRadio, isFile.  If you want to check the input type, you may use
+    // |input->type() == InputTypeNames::image|, etc.
 
     bool checked() const;
     void setChecked(bool, TextFieldEventBehavior = DispatchNoEvent);

@@ -28,6 +28,7 @@
 
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "core/HTMLNames.h"
+#include "core/InputTypeNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/FirstLetterPseudoElement.h"
 #include "core/dom/shadow/ShadowRoot.h"
@@ -658,7 +659,7 @@ bool TextIteratorAlgorithm<Strategy>::supportsAltText(Node* node)
     // FIXME: Add isSVGImageElement.
     if (isHTMLImageElement(element))
         return true;
-    if (isHTMLInputElement(toHTMLElement(*node)) && toHTMLInputElement(*node).isImage())
+    if (isHTMLInputElement(toHTMLElement(*node)) && toHTMLInputElement(*node).type() == InputTypeNames::image)
         return true;
     return false;
 }

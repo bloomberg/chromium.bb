@@ -182,11 +182,6 @@ bool ImageInputType::isEnumeratable()
     return false;
 }
 
-bool ImageInputType::isImage() const
-{
-    return true;
-}
-
 bool ImageInputType::shouldRespectHeightAndWidthAttributes()
 {
     return true;
