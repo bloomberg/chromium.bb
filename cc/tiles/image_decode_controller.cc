@@ -6,6 +6,8 @@
 
 #include <stdint.h>
 
+#include <functional>
+
 #include "base/macros.h"
 #include "base/memory/discardable_memory.h"
 #include "cc/debug/devtools_instrumentation.h"
@@ -78,11 +80,23 @@ typename std::deque<Type>::iterator FindImage(
 }
 
 SkSize GetScaleAdjustment(const ImageDecodeControllerKey& key) {
+  // If the requested filter quality did not require scale, then the adjustment
+  // is identity. Note that we still might have extracted a subrect, so
+  // can_use_original_decode is not a sufficient check.
+  if (key.filter_quality() == kLow_SkFilterQuality ||
+      key.filter_quality() == kNone_SkFilterQuality) {
+    return SkSize::Make(1.f, 1.f);
+  }
+
   float x_scale =
       key.target_size().width() / static_cast<float>(key.src_rect().width());
   float y_scale =
       key.target_size().height() / static_cast<float>(key.src_rect().height());
   return SkSize::Make(x_scale, y_scale);
+}
+
+SkFilterQuality GetDecodedFilterQuality(const ImageDecodeControllerKey& key) {
+  return std::min(key.filter_quality(), kLow_SkFilterQuality);
 }
 
 }  // namespace
@@ -143,7 +157,7 @@ bool ImageDecodeController::GetTaskForImageAndRef(
   // If we already have the image in cache, then we can return it.
   auto decoded_it = FindImage(&decoded_images_, key);
   bool new_image_fits_in_memory =
-      locked_images_budget_.AvailableMemoryBytes() >= key.target_bytes();
+      locked_images_budget_.AvailableMemoryBytes() >= key.locked_bytes();
   if (decoded_it != decoded_images_.end()) {
     if (decoded_it->second->is_locked() ||
         (new_image_fits_in_memory && decoded_it->second->Lock())) {
@@ -195,8 +209,8 @@ void ImageDecodeController::RefImage(const ImageKey& key) {
   lock_.AssertAcquired();
   int ref = ++decoded_images_ref_counts_[key];
   if (ref == 1) {
-    DCHECK_GE(locked_images_budget_.AvailableMemoryBytes(), key.target_bytes());
-    locked_images_budget_.AddUsage(key.target_bytes());
+    DCHECK_GE(locked_images_budget_.AvailableMemoryBytes(), key.locked_bytes());
+    locked_images_budget_.AddUsage(key.locked_bytes());
   }
 }
 
@@ -219,7 +233,7 @@ void ImageDecodeController::UnrefImage(const DrawImage& image) {
   --ref_count_it->second;
   if (ref_count_it->second == 0) {
     decoded_images_ref_counts_.erase(ref_count_it);
-    locked_images_budget_.SubtractUsage(key.target_bytes());
+    locked_images_budget_.SubtractUsage(key.locked_bytes());
 
     auto decoded_image_it = FindImage(&decoded_images_, key);
     // If we've never decoded the image before ref reached 0, then we wouldn't
@@ -266,7 +280,7 @@ void ImageDecodeController::DecodeImage(const ImageKey& key,
   scoped_refptr<DecodedImage> decoded_image;
   {
     base::AutoUnlock unlock(lock_);
-    decoded_image = DecodeImageInternal(key, image.image());
+    decoded_image = DecodeImageInternal(key, image);
   }
 
   // Erase the pending task from the queue, since the task won't be doing
@@ -306,45 +320,147 @@ void ImageDecodeController::DecodeImage(const ImageKey& key,
 
 scoped_refptr<ImageDecodeController::DecodedImage>
 ImageDecodeController::DecodeImageInternal(const ImageKey& key,
-                                           const SkImage* image) {
+                                           const DrawImage& draw_image) {
   TRACE_EVENT1("disabled-by-default-cc.debug",
                "ImageDecodeController::DecodeImageInternal", "key",
                key.ToString());
+  const SkImage* image = draw_image.image();
 
-  // Get the decoded image first (at the original scale).
-  SkImageInfo decoded_info = SkImageInfo::MakeN32Premul(
-      key.src_rect().width(), key.src_rect().height());
-  scoped_ptr<uint8_t[]> decoded_pixels;
-  {
-    TRACE_EVENT0(
-        "disabled-by-default-cc.debug",
-        "ImageDecodeController::DecodeImageInternal - allocate decoded pixels");
-    decoded_pixels.reset(
-        new uint8_t[decoded_info.minRowBytes() * decoded_info.height()]);
+  // If we can use the original decode, then we don't need to do scaling. We can
+  // just read pixels into the final memory.
+  if (key.can_use_original_decode()) {
+    SkImageInfo decoded_info =
+        SkImageInfo::MakeN32Premul(image->width(), image->height());
+    scoped_ptr<base::DiscardableMemory> decoded_pixels;
+    {
+      TRACE_EVENT0("disabled-by-default-cc.debug",
+                   "ImageDecodeController::DecodeImageInternal - allocate "
+                   "decoded pixels");
+      decoded_pixels =
+          base::DiscardableMemoryAllocator::GetInstance()
+              ->AllocateLockedDiscardableMemory(decoded_info.minRowBytes() *
+                                                decoded_info.height());
+    }
+    {
+      TRACE_EVENT0("disabled-by-default-cc.debug",
+                   "ImageDecodeController::DecodeImageInternal - read pixels");
+      bool result = image->readPixels(decoded_info, decoded_pixels->data(),
+                                      decoded_info.minRowBytes(), 0, 0,
+                                      SkImage::kDisallow_CachingHint);
+
+      if (!result) {
+        decoded_pixels->Unlock();
+        return nullptr;
+      }
+    }
+
+    return make_scoped_refptr(new DecodedImage(
+        decoded_info, std::move(decoded_pixels), SkSize::Make(0, 0)));
   }
-  {
-    TRACE_EVENT0("disabled-by-default-cc.debug",
-                 "ImageDecodeController::DecodeImageInternal - read pixels");
-    bool result = image->readPixels(
-        decoded_info, decoded_pixels.get(), decoded_info.minRowBytes(),
-        key.src_rect().x(), key.src_rect().y(), SkImage::kAllow_CachingHint);
 
-    if (!result)
-      return nullptr;
+  // If we get here, that means we couldn't use the original sized decode for
+  // whatever reason. However, in all cases we do need an original decode to
+  // either do a scale or to extract a subrect from the image. So, what we can
+  // do is construct a key that would require a full sized decode, then get that
+  // decode via GetDecodedImageForDrawInternal(), use it, and unref it. This
+  // ensures that if the original sized decode is already available in any of
+  // the caches, we reuse that. We also ensure that all the proper locking takes
+  // place. If, on the other hand, the decode was not available,
+  // GetDecodedImageForDrawInternal() would decode the image, and unreffing it
+  // later ensures that we will store the discardable memory unlocked in the
+  // cache to be used by future requests.
+  SkSize identity_scale = SkSize::Make(1.f, 1.f);
+  bool matrix_has_perspective = false;
+  bool matrix_is_decomposable = true;
+  gfx::Rect full_image_rect(image->width(), image->height());
+  DrawImage original_size_draw_image(
+      image, gfx::RectToSkIRect(full_image_rect), identity_scale,
+      kNone_SkFilterQuality, matrix_has_perspective, matrix_is_decomposable);
+  ImageKey original_size_key =
+      ImageKey::FromDrawImage(original_size_draw_image);
+  // Sanity checks.
+  DCHECK(original_size_key.can_use_original_decode());
+  DCHECK(full_image_rect.size() == original_size_key.target_size());
+
+  auto decoded_draw_image = GetDecodedImageForDrawInternal(
+      original_size_key, original_size_draw_image);
+  if (!decoded_draw_image.image()) {
+    DrawWithImageFinished(original_size_draw_image, decoded_draw_image);
+    return nullptr;
   }
 
-  SkPixmap decoded_pixmap(decoded_info, decoded_pixels.get(),
-                          decoded_info.minRowBytes());
+  scoped_ptr<uint8_t[]> decoded_subrect_pixels;
+  SkPixmap decoded_pixmap;
+  bool result;
+  if (key.src_rect() == full_image_rect) {
+    result = decoded_draw_image.image()->peekPixels(&decoded_pixmap);
+  } else if (key.filter_quality() != kNone_SkFilterQuality &&
+             key.filter_quality() != kLow_SkFilterQuality) {
+    SkImageInfo decoded_info = SkImageInfo::MakeN32Premul(
+        key.src_rect().width(), key.src_rect().height());
+    {
+      TRACE_EVENT0("disabled-by-default-cc.debug",
+                   "ImageDecodeController::DecodeImageInternal - allocate "
+                   "decoded pixels");
+      decoded_subrect_pixels.reset(
+          new uint8_t[decoded_info.minRowBytes() * decoded_info.height()]);
+    }
+    {
+      TRACE_EVENT0("disabled-by-default-cc.debug",
+                   "ImageDecodeController::DecodeImageInternal - read pixels");
+      result =
+          image->readPixels(decoded_info, decoded_subrect_pixels.get(),
+                            decoded_info.minRowBytes(), key.src_rect().x(),
+                            key.src_rect().y(), SkImage::kDisallow_CachingHint);
+    }
+    decoded_pixmap = SkPixmap(decoded_info, decoded_subrect_pixels.get(),
+                              decoded_info.minRowBytes());
+  } else {
+    // In a low and none filter quality cases if we need a subrect, we need to
+    // extract it but then we don't need to scale it.
+    SkImageInfo decoded_info = SkImageInfo::MakeN32Premul(
+        key.src_rect().width(), key.src_rect().height());
+    scoped_ptr<base::DiscardableMemory> discardable_subrect_pixels;
+    {
+      TRACE_EVENT0("disabled-by-default-cc.debug",
+                   "ImageDecodeController::DecodeImageInternal - allocate "
+                   "discardable subrect pixels");
+      discardable_subrect_pixels =
+          base::DiscardableMemoryAllocator::GetInstance()
+              ->AllocateLockedDiscardableMemory(decoded_info.minRowBytes() *
+                                                decoded_info.height());
+    }
+    {
+      TRACE_EVENT0(
+          "disabled-by-default-cc.debug",
+          "ImageDecodeController::DecodeImageInternal - read subrect pixels");
+      result =
+          image->readPixels(decoded_info, discardable_subrect_pixels->data(),
+                            decoded_info.minRowBytes(), key.src_rect().x(),
+                            key.src_rect().y(), SkImage::kDisallow_CachingHint);
+    }
+    DCHECK(result);
+    DrawWithImageFinished(original_size_draw_image, decoded_draw_image);
+    return make_scoped_refptr(new DecodedImage(
+        decoded_info, std::move(discardable_subrect_pixels),
+        SkSize::Make(-key.src_rect().x(), -key.src_rect().y())));
+  }
 
-  // Now scale the pixels into the destination size.
+  // Since the decoded_draw_image has locked memory, it should always succeed on
+  // both peekPixels and readPixels.
+  DCHECK(result);
+
+  // Now we have a decoded_pixmap which represents the src_rect at the
+  // original
+  // scale. All we need to do is scale it.
   DCHECK(!key.target_size().IsEmpty());
   SkImageInfo scaled_info = SkImageInfo::MakeN32Premul(
       key.target_size().width(), key.target_size().height());
   scoped_ptr<base::DiscardableMemory> scaled_pixels;
   {
-    TRACE_EVENT0(
-        "disabled-by-default-cc.debug",
-        "ImageDecodeController::DecodeImageInternal - allocate scaled pixels");
+    TRACE_EVENT0("disabled-by-default-cc.debug",
+                 "ImageDecodeController::DecodeImageInternal - allocate "
+                 "scaled pixels");
     scaled_pixels = base::DiscardableMemoryAllocator::GetInstance()
                         ->AllocateLockedDiscardableMemory(
                             scaled_info.minRowBytes() * scaled_info.height());
@@ -357,9 +473,15 @@ ImageDecodeController::DecodeImageInternal(const ImageKey& key,
     TRACE_EVENT0("disabled-by-default-cc.debug",
                  "ImageDecodeController::DecodeImageInternal - scale pixels");
     bool result =
-        decoded_pixmap.scalePixels(scaled_pixmap, kHigh_SkFilterQuality);
+        decoded_pixmap.scalePixels(scaled_pixmap, key.filter_quality());
     DCHECK(result);
   }
+
+  // Release the original sized decode. Any other intermediate result to release
+  // would be the subrect memory. However, that's in a scoped_ptr and will be
+  // deleted automatically when we return.
+  DrawWithImageFinished(original_size_draw_image, decoded_draw_image);
+
   return make_scoped_refptr(
       new DecodedImage(scaled_info, std::move(scaled_pixels),
                        SkSize::Make(-key.src_rect().x(), -key.src_rect().y())));
@@ -369,7 +491,7 @@ DecodedDrawImage ImageDecodeController::GetDecodedImageForDraw(
     const DrawImage& draw_image) {
   ImageKey key = ImageKey::FromDrawImage(draw_image);
   TRACE_EVENT1("disabled-by-default-cc.debug",
-               "ImageDecodeController::GetDecodedImageAndRef", "key",
+               "ImageDecodeController::GetDecodedImageForDraw", "key",
                key.ToString());
   // If the target size is empty, we can skip this image draw.
   if (key.target_size().IsEmpty())
@@ -378,6 +500,15 @@ DecodedDrawImage ImageDecodeController::GetDecodedImageForDraw(
   if (!CanHandleImage(key, draw_image))
     return DecodedDrawImage(draw_image.image(), draw_image.filter_quality());
 
+  return GetDecodedImageForDrawInternal(key, draw_image);
+}
+
+DecodedDrawImage ImageDecodeController::GetDecodedImageForDrawInternal(
+    const ImageKey& key,
+    const DrawImage& draw_image) {
+  TRACE_EVENT1("disabled-by-default-cc.debug",
+               "ImageDecodeController::GetDecodedImageForDrawInternal", "key",
+               key.ToString());
   base::AutoLock lock(lock_);
   auto decoded_images_it = FindImage(&decoded_images_, key);
   // If we found the image and it's locked, then return it. If it's not locked,
@@ -388,9 +519,9 @@ DecodedDrawImage ImageDecodeController::GetDecodedImageForDraw(
     if (decoded_image->is_locked()) {
       RefImage(key);
       SanityCheckState(__LINE__, true);
-      return DecodedDrawImage(decoded_image->image(),
-                              decoded_image->src_rect_offset(),
-                              GetScaleAdjustment(key), kLow_SkFilterQuality);
+      return DecodedDrawImage(
+          decoded_image->image(), decoded_image->src_rect_offset(),
+          GetScaleAdjustment(key), GetDecodedFilterQuality(key));
     } else {
       decoded_images_.erase(decoded_images_it);
     }
@@ -403,10 +534,12 @@ DecodedDrawImage ImageDecodeController::GetDecodedImageForDraw(
     DCHECK(at_raster_images_it->second->is_locked());
     RefAtRasterImage(key);
     SanityCheckState(__LINE__, true);
+    const scoped_refptr<DecodedImage>& at_raster_decoded_image =
+        at_raster_images_it->second;
     auto decoded_draw_image =
-        DecodedDrawImage(at_raster_images_it->second->image(),
-                         at_raster_images_it->second->src_rect_offset(),
-                         GetScaleAdjustment(key), kLow_SkFilterQuality);
+        DecodedDrawImage(at_raster_decoded_image->image(),
+                         at_raster_decoded_image->src_rect_offset(),
+                         GetScaleAdjustment(key), GetDecodedFilterQuality(key));
     decoded_draw_image.set_at_raster_decode(true);
     return decoded_draw_image;
   }
@@ -421,7 +554,7 @@ DecodedDrawImage ImageDecodeController::GetDecodedImageForDraw(
     // on the compositor thread. This means holding on to the lock might stall
     // the compositor thread for the duration of the decode!
     base::AutoUnlock unlock(lock_);
-    decoded_image = DecodeImageInternal(key, draw_image.image());
+    decoded_image = DecodeImageInternal(key, draw_image);
 
     // Skip the image if we couldn't decode it.
     if (!decoded_image)
@@ -457,7 +590,7 @@ DecodedDrawImage ImageDecodeController::GetDecodedImageForDraw(
   SanityCheckState(__LINE__, true);
   auto decoded_draw_image =
       DecodedDrawImage(decoded_image->image(), decoded_image->src_rect_offset(),
-                       GetScaleAdjustment(key), kLow_SkFilterQuality);
+                       GetScaleAdjustment(key), GetDecodedFilterQuality(key));
   decoded_draw_image.set_at_raster_decode(true);
   return decoded_draw_image;
 }
@@ -548,18 +681,9 @@ bool ImageDecodeController::CanHandleImage(const ImageKey& key,
 
 bool ImageDecodeController::CanHandleFilterQuality(
     SkFilterQuality filter_quality) {
-  // We don't need to handle low quality filters.
-  if (filter_quality == kLow_SkFilterQuality ||
-      filter_quality == kNone_SkFilterQuality) {
-    return false;
-  }
-
   // TODO(vmpstr): We need to start caching mipmaps for medium quality and
   // caching the interpolated values from those. For now, we don't have this.
-  if (filter_quality == kMedium_SkFilterQuality)
-    return false;
-  DCHECK(filter_quality == kHigh_SkFilterQuality);
-  return true;
+  return filter_quality != kMedium_SkFilterQuality;
 }
 
 void ImageDecodeController::ReduceCacheUsage() {
@@ -618,9 +742,16 @@ void ImageDecodeController::SanityCheckState(int line, bool lock_acquired) {
 
   MemoryBudget budget(kLockedMemoryLimitBytes);
   for (const auto& annotated_image : decoded_images_) {
-    auto ref_it = decoded_images_ref_counts_.find(annotated_image.first);
+    DCHECK_EQ(1, std::count_if(
+                     decoded_images_.begin(), decoded_images_.end(),
+                     [&annotated_image](const AnnotatedDecodedImage& image) {
+                       return image.first == annotated_image.first;
+                     }))
+        << line;
+    auto key = annotated_image.first;
+    auto ref_it = decoded_images_ref_counts_.find(key);
     if (annotated_image.second->is_locked()) {
-      budget.AddUsage(annotated_image.first.target_bytes());
+      budget.AddUsage(annotated_image.first.locked_bytes());
       DCHECK(ref_it != decoded_images_ref_counts_.end()) << line;
     } else {
       DCHECK(ref_it == decoded_images_ref_counts_.end() ||
@@ -687,26 +818,64 @@ ImageDecodeControllerKey ImageDecodeControllerKey::FromDrawImage(
     }
   }
 
+  gfx::Size full_image_size(image.image()->width(), image.image()->height());
+  gfx::Rect full_image_rect(full_image_size);
+  bool scale_needs_caching =
+      quality != kLow_SkFilterQuality && quality != kNone_SkFilterQuality;
+  bool is_full_image_rect = full_image_rect == src_rect;
+  bool scale_is_required = src_rect.width() != target_size.width() ||
+                           src_rect.height() != target_size.height();
+  bool can_use_original_decode =
+      !scale_needs_caching && (is_full_image_rect || !scale_is_required);
+  // If we're going to use the original decode, then the target size should be
+  // the full image size, since that will allow for proper memory accounting.
+  // Note we skip the decode if the target size is empty altogether, so don't
+  // update the target size in that case.
+  if (can_use_original_decode && !target_size.IsEmpty())
+    target_size = full_image_size;
+
   return ImageDecodeControllerKey(image.image()->uniqueID(), src_rect,
-                                  target_size, quality);
+                                  target_size, quality,
+                                  can_use_original_decode);
 }
 
 ImageDecodeControllerKey::ImageDecodeControllerKey(
     uint32_t image_id,
     const gfx::Rect& src_rect,
     const gfx::Size& target_size,
-    SkFilterQuality filter_quality)
+    SkFilterQuality filter_quality,
+    bool can_use_original_decode)
     : image_id_(image_id),
       src_rect_(src_rect),
       target_size_(target_size),
-      filter_quality_(filter_quality) {}
+      filter_quality_(filter_quality),
+      can_use_original_decode_(can_use_original_decode) {
+  if (can_use_original_decode_) {
+    hash_ = std::hash<uint32_t>()(image_id_);
+  } else {
+    // TODO(vmpstr): This is a mess. Maybe it's faster to just search the vector
+    // always (forwards or backwards to account for LRU).
+    uint64_t src_rect_hash = base::HashInts(
+        static_cast<uint64_t>(base::HashInts(src_rect_.x(), src_rect_.y())),
+        static_cast<uint64_t>(
+            base::HashInts(src_rect_.width(), src_rect_.height())));
+
+    uint64_t target_size_hash =
+        base::HashInts(target_size_.width(), target_size_.height());
+
+    hash_ = base::HashInts(base::HashInts(src_rect_hash, target_size_hash),
+                           base::HashInts(image_id_, filter_quality_));
+  }
+}
 
 std::string ImageDecodeControllerKey::ToString() const {
   std::ostringstream str;
   str << "id[" << image_id_ << "] src_rect[" << src_rect_.x() << ","
       << src_rect_.y() << " " << src_rect_.width() << "x" << src_rect_.height()
       << "] target_size[" << target_size_.width() << "x"
-      << target_size_.height() << "] filter_quality[" << filter_quality_ << "]";
+      << target_size_.height() << "] filter_quality[" << filter_quality_
+      << "] can_use_original_decode [" << can_use_original_decode_ << "] hash ["
+      << hash_ << "]";
   return str.str();
 }
 

@@ -33,9 +33,15 @@ class CC_EXPORT ImageDecodeControllerKey {
   static ImageDecodeControllerKey FromDrawImage(const DrawImage& image);
 
   bool operator==(const ImageDecodeControllerKey& other) const {
-    return image_id_ == other.image_id_ && src_rect_ == other.src_rect_ &&
-           target_size_ == other.target_size_ &&
-           filter_quality_ == other.filter_quality_;
+    // The image_id always has to be the same. However, after that all original
+    // decodes are the same, so if we can use the original decode, return true.
+    // If not, then we have to compare every field.
+    return image_id_ == other.image_id_ &&
+           can_use_original_decode_ == other.can_use_original_decode_ &&
+           (can_use_original_decode_ ||
+            (src_rect_ == other.src_rect_ &&
+             target_size_ == other.target_size_ &&
+             filter_quality_ == other.filter_quality_));
   }
 
   bool operator!=(const ImageDecodeControllerKey& other) const {
@@ -47,9 +53,12 @@ class CC_EXPORT ImageDecodeControllerKey {
   gfx::Rect src_rect() const { return src_rect_; }
   gfx::Size target_size() const { return target_size_; }
 
-  // Helper to figure out how much memory this decoded and scaled image would
-  // take.
-  size_t target_bytes() const {
+  bool can_use_original_decode() const { return can_use_original_decode_; }
+  size_t get_hash() const { return hash_; }
+
+  // Helper to figure out how much memory the locked image represented by this
+  // key would take.
+  size_t locked_bytes() const {
     // TODO(vmpstr): Handle formats other than RGBA.
     base::CheckedNumeric<size_t> result = 4;
     result *= target_size_.width();
@@ -63,30 +72,21 @@ class CC_EXPORT ImageDecodeControllerKey {
   ImageDecodeControllerKey(uint32_t image_id,
                            const gfx::Rect& src_rect,
                            const gfx::Size& size,
-                           SkFilterQuality filter_quality);
+                           SkFilterQuality filter_quality,
+                           bool can_use_original_decode);
 
   uint32_t image_id_;
   gfx::Rect src_rect_;
   gfx::Size target_size_;
   SkFilterQuality filter_quality_;
+  bool can_use_original_decode_;
+  size_t hash_;
 };
 
 // Hash function for the above ImageDecodeControllerKey.
 struct ImageDecodeControllerKeyHash {
   size_t operator()(const ImageDecodeControllerKey& key) const {
-    // TODO(vmpstr): This is a mess. Maybe it's faster to just search the vector
-    // always (forwards or backwards to account for LRU).
-    uint64_t src_rect_hash =
-        base::HashInts(static_cast<uint64_t>(base::HashInts(
-                           key.src_rect().x(), key.src_rect().y())),
-                       static_cast<uint64_t>(base::HashInts(
-                           key.src_rect().width(), key.src_rect().height())));
-
-    uint64_t target_size_hash =
-        base::HashInts(key.target_size().width(), key.target_size().height());
-
-    return base::HashInts(base::HashInts(src_rect_hash, target_size_hash),
-                          base::HashInts(key.image_id(), key.filter_quality()));
+    return key.get_hash();
   }
 };
 
@@ -218,7 +218,18 @@ class CC_EXPORT ImageDecodeController {
   // called with no lock acquired, since it can do a lot of work. Note that it
   // can also return nullptr to indicate the decode failed.
   scoped_refptr<DecodedImage> DecodeImageInternal(const ImageKey& key,
-                                                  const SkImage* image);
+                                                  const DrawImage& draw_image);
+
+  // Get the decoded draw image for the given key and draw_image. Note that this
+  // function has to be called with no lock acquired, since it will acquire its
+  // own locks and might call DecodeImageInternal above. Also note that this
+  // function will use the provided key, even if
+  // ImageKey::FromDrawImage(draw_image) would return a different key.
+  // Note that when used internally, we still require that
+  // DrawWithImageFinished() is called afterwards.
+  DecodedDrawImage GetDecodedImageForDrawInternal(const ImageKey& key,
+                                                  const DrawImage& draw_image);
+
   void SanityCheckState(int line, bool lock_acquired);
   void RefImage(const ImageKey& key);
   void RefAtRasterImage(const ImageKey& key);

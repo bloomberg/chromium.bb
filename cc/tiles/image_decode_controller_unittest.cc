@@ -30,9 +30,12 @@ TEST(ImageDecodeControllerTest, ImageKeyLowQuality) {
     auto key = ImageDecodeControllerKey::FromDrawImage(draw_image);
     EXPECT_EQ(image->uniqueID(), key.image_id());
     EXPECT_EQ(quality, key.filter_quality());
-    EXPECT_EQ(50, key.target_size().width());
-    EXPECT_EQ(150, key.target_size().height());
-    EXPECT_EQ(50u * 150u * 4u, key.target_bytes());
+    EXPECT_EQ(100, key.target_size().width());
+    EXPECT_EQ(100, key.target_size().height());
+    EXPECT_TRUE(key.can_use_original_decode());
+    // Since the original decode will be used, the locked_bytes is that of the
+    // original image.
+    EXPECT_EQ(100u * 100u * 4u, key.locked_bytes());
   }
 }
 
@@ -51,7 +54,8 @@ TEST(ImageDecodeControllerTest, ImageKeyMediumQuality) {
   EXPECT_EQ(quality, key.filter_quality());
   EXPECT_EQ(50, key.target_size().width());
   EXPECT_EQ(150, key.target_size().height());
-  EXPECT_EQ(50u * 150u * 4u, key.target_bytes());
+  EXPECT_FALSE(key.can_use_original_decode());
+  EXPECT_EQ(50u * 150u * 4u, key.locked_bytes());
 }
 
 TEST(ImageDecodeControllerTest, ImageKeyMediumQualityEvenWithPerspective) {
@@ -69,7 +73,8 @@ TEST(ImageDecodeControllerTest, ImageKeyMediumQualityEvenWithPerspective) {
   EXPECT_EQ(quality, key.filter_quality());
   EXPECT_EQ(50, key.target_size().width());
   EXPECT_EQ(150, key.target_size().height());
-  EXPECT_EQ(50u * 150u * 4u, key.target_bytes());
+  EXPECT_FALSE(key.can_use_original_decode());
+  EXPECT_EQ(50u * 150u * 4u, key.locked_bytes());
 }
 
 TEST(ImageDecodeControllerTest, ImageKeyMediumQualityDropToLowIfEnlarging) {
@@ -85,9 +90,10 @@ TEST(ImageDecodeControllerTest, ImageKeyMediumQualityDropToLowIfEnlarging) {
   auto key = ImageDecodeControllerKey::FromDrawImage(draw_image);
   EXPECT_EQ(image->uniqueID(), key.image_id());
   EXPECT_EQ(kLow_SkFilterQuality, key.filter_quality());
-  EXPECT_EQ(150, key.target_size().width());
-  EXPECT_EQ(150, key.target_size().height());
-  EXPECT_EQ(150u * 150u * 4u, key.target_bytes());
+  EXPECT_EQ(100, key.target_size().width());
+  EXPECT_EQ(100, key.target_size().height());
+  EXPECT_TRUE(key.can_use_original_decode());
+  EXPECT_EQ(100u * 100u * 4u, key.locked_bytes());
 }
 
 TEST(ImageDecodeControllerTest, ImageKeyMediumQualityDropToLowIfIdentity) {
@@ -105,7 +111,8 @@ TEST(ImageDecodeControllerTest, ImageKeyMediumQualityDropToLowIfIdentity) {
   EXPECT_EQ(kLow_SkFilterQuality, key.filter_quality());
   EXPECT_EQ(100, key.target_size().width());
   EXPECT_EQ(100, key.target_size().height());
-  EXPECT_EQ(100u * 100u * 4u, key.target_bytes());
+  EXPECT_TRUE(key.can_use_original_decode());
+  EXPECT_EQ(100u * 100u * 4u, key.locked_bytes());
 }
 
 TEST(ImageDecodeControllerTest,
@@ -124,7 +131,8 @@ TEST(ImageDecodeControllerTest,
   EXPECT_EQ(kLow_SkFilterQuality, key.filter_quality());
   EXPECT_EQ(100, key.target_size().width());
   EXPECT_EQ(100, key.target_size().height());
-  EXPECT_EQ(100u * 100u * 4u, key.target_bytes());
+  EXPECT_TRUE(key.can_use_original_decode());
+  EXPECT_EQ(100u * 100u * 4u, key.locked_bytes());
 }
 
 TEST(ImageDecodeControllerTest,
@@ -143,7 +151,8 @@ TEST(ImageDecodeControllerTest,
   EXPECT_EQ(kLow_SkFilterQuality, key.filter_quality());
   EXPECT_EQ(100, key.target_size().width());
   EXPECT_EQ(100, key.target_size().height());
-  EXPECT_EQ(100u * 100u * 4u, key.target_bytes());
+  EXPECT_TRUE(key.can_use_original_decode());
+  EXPECT_EQ(100u * 100u * 4u, key.locked_bytes());
 }
 
 TEST(ImageDecodeControllerTest,
@@ -160,9 +169,10 @@ TEST(ImageDecodeControllerTest,
   auto key = ImageDecodeControllerKey::FromDrawImage(draw_image);
   EXPECT_EQ(image->uniqueID(), key.image_id());
   EXPECT_EQ(kLow_SkFilterQuality, key.filter_quality());
-  EXPECT_EQ(50, key.target_size().width());
-  EXPECT_EQ(150, key.target_size().height());
-  EXPECT_EQ(50u * 150u * 4u, key.target_bytes());
+  EXPECT_EQ(100, key.target_size().width());
+  EXPECT_EQ(100, key.target_size().height());
+  EXPECT_TRUE(key.can_use_original_decode());
+  EXPECT_EQ(100u * 100u * 4u, key.locked_bytes());
 }
 
 TEST(ImageDecodeControllerTest, ImageKeyHighQuality) {
@@ -180,7 +190,8 @@ TEST(ImageDecodeControllerTest, ImageKeyHighQuality) {
   EXPECT_EQ(quality, key.filter_quality());
   EXPECT_EQ(50, key.target_size().width());
   EXPECT_EQ(150, key.target_size().height());
-  EXPECT_EQ(50u * 150u * 4u, key.target_bytes());
+  EXPECT_FALSE(key.can_use_original_decode());
+  EXPECT_EQ(50u * 150u * 4u, key.locked_bytes());
 }
 
 TEST(ImageDecodeControllerTest,
@@ -199,7 +210,8 @@ TEST(ImageDecodeControllerTest,
   EXPECT_EQ(kMedium_SkFilterQuality, key.filter_quality());
   EXPECT_EQ(50, key.target_size().width());
   EXPECT_EQ(150, key.target_size().height());
-  EXPECT_EQ(50u * 150u * 4u, key.target_bytes());
+  EXPECT_FALSE(key.can_use_original_decode());
+  EXPECT_EQ(50u * 150u * 4u, key.locked_bytes());
 }
 
 TEST(ImageDecodeControllerTest, ImageKeyHighQualityDropToMediumIfTooLarge) {
@@ -220,7 +232,8 @@ TEST(ImageDecodeControllerTest, ImageKeyHighQualityDropToMediumIfTooLarge) {
   EXPECT_EQ(kMedium_SkFilterQuality, key.filter_quality());
   EXPECT_EQ(4100, key.target_size().width());
   EXPECT_EQ(4096, key.target_size().height());
-  EXPECT_EQ(4100u * 4096u * 4u, key.target_bytes());
+  EXPECT_FALSE(key.can_use_original_decode());
+  EXPECT_EQ(4100u * 4096u * 4u, key.locked_bytes());
 }
 
 TEST(ImageDecodeControllerTest, ImageKeyHighQualityDropToLowIfNotDecomposable) {
@@ -236,9 +249,10 @@ TEST(ImageDecodeControllerTest, ImageKeyHighQualityDropToLowIfNotDecomposable) {
   auto key = ImageDecodeControllerKey::FromDrawImage(draw_image);
   EXPECT_EQ(image->uniqueID(), key.image_id());
   EXPECT_EQ(kLow_SkFilterQuality, key.filter_quality());
-  EXPECT_EQ(50, key.target_size().width());
-  EXPECT_EQ(150, key.target_size().height());
-  EXPECT_EQ(50u * 150u * 4u, key.target_bytes());
+  EXPECT_EQ(100, key.target_size().width());
+  EXPECT_EQ(100, key.target_size().height());
+  EXPECT_TRUE(key.can_use_original_decode());
+  EXPECT_EQ(100u * 100u * 4u, key.locked_bytes());
 }
 
 TEST(ImageDecodeControllerTest, ImageKeyHighQualityDropToLowIfIdentity) {
@@ -256,7 +270,8 @@ TEST(ImageDecodeControllerTest, ImageKeyHighQualityDropToLowIfIdentity) {
   EXPECT_EQ(kLow_SkFilterQuality, key.filter_quality());
   EXPECT_EQ(100, key.target_size().width());
   EXPECT_EQ(100, key.target_size().height());
-  EXPECT_EQ(100u * 100u * 4u, key.target_bytes());
+  EXPECT_TRUE(key.can_use_original_decode());
+  EXPECT_EQ(100u * 100u * 4u, key.locked_bytes());
 }
 
 TEST(ImageDecodeControllerTest, ImageKeyHighQualityDropToLowIfNearlyIdentity) {
@@ -274,7 +289,8 @@ TEST(ImageDecodeControllerTest, ImageKeyHighQualityDropToLowIfNearlyIdentity) {
   EXPECT_EQ(kLow_SkFilterQuality, key.filter_quality());
   EXPECT_EQ(100, key.target_size().width());
   EXPECT_EQ(100, key.target_size().height());
-  EXPECT_EQ(100u * 100u * 4u, key.target_bytes());
+  EXPECT_TRUE(key.can_use_original_decode());
+  EXPECT_EQ(100u * 100u * 4u, key.locked_bytes());
 }
 
 TEST(ImageDecodeControllerTest, ImageKeyHighQualityDropToLowIfNearlyIdentity2) {
@@ -292,7 +308,42 @@ TEST(ImageDecodeControllerTest, ImageKeyHighQualityDropToLowIfNearlyIdentity2) {
   EXPECT_EQ(kLow_SkFilterQuality, key.filter_quality());
   EXPECT_EQ(100, key.target_size().width());
   EXPECT_EQ(100, key.target_size().height());
-  EXPECT_EQ(100u * 100u * 4u, key.target_bytes());
+  EXPECT_TRUE(key.can_use_original_decode());
+  EXPECT_EQ(100u * 100u * 4u, key.locked_bytes());
+}
+
+TEST(ImageDecodeControllerTest, OriginalDecodesAreEqual) {
+  skia::RefPtr<SkImage> image = CreateImage(100, 100);
+  bool has_perspective = false;
+  bool is_decomposable = true;
+  SkFilterQuality quality = kLow_SkFilterQuality;
+
+  DrawImage draw_image(
+      image.get(), SkIRect::MakeWH(image->width(), image->height()),
+      SkSize::Make(0.5f, 0.5), quality, has_perspective, is_decomposable);
+
+  auto key = ImageDecodeControllerKey::FromDrawImage(draw_image);
+  EXPECT_EQ(image->uniqueID(), key.image_id());
+  EXPECT_EQ(kLow_SkFilterQuality, key.filter_quality());
+  EXPECT_EQ(100, key.target_size().width());
+  EXPECT_EQ(100, key.target_size().height());
+  EXPECT_TRUE(key.can_use_original_decode());
+  EXPECT_EQ(100u * 100u * 4u, key.locked_bytes());
+
+  DrawImage another_draw_image(
+      image.get(), SkIRect::MakeWH(image->width(), image->height()),
+      SkSize::Make(1.5f, 1.5), quality, has_perspective, is_decomposable);
+
+  auto another_key =
+      ImageDecodeControllerKey::FromDrawImage(another_draw_image);
+  EXPECT_EQ(image->uniqueID(), another_key.image_id());
+  EXPECT_EQ(kLow_SkFilterQuality, another_key.filter_quality());
+  EXPECT_EQ(100, another_key.target_size().width());
+  EXPECT_EQ(100, another_key.target_size().height());
+  EXPECT_TRUE(another_key.can_use_original_decode());
+  EXPECT_EQ(100u * 100u * 4u, another_key.locked_bytes());
+
+  EXPECT_TRUE(key == another_key);
 }
 
 TEST(ImageDecodeControllerTest, ImageRectDoesNotContainSrcRect) {
@@ -308,10 +359,10 @@ TEST(ImageDecodeControllerTest, ImageRectDoesNotContainSrcRect) {
   auto key = ImageDecodeControllerKey::FromDrawImage(draw_image);
   EXPECT_EQ(image->uniqueID(), key.image_id());
   EXPECT_EQ(kLow_SkFilterQuality, key.filter_quality());
-  EXPECT_EQ(75, key.target_size().width());
-  EXPECT_EQ(65, key.target_size().height());
+  EXPECT_EQ(100, key.target_size().width());
+  EXPECT_EQ(100, key.target_size().height());
   EXPECT_EQ(gfx::Rect(25, 35, 75, 65), key.src_rect());
-  EXPECT_EQ(75u * 65u * 4u, key.target_bytes());
+  EXPECT_EQ(100u * 100u * 4u, key.locked_bytes());
 }
 
 TEST(ImageDecodeControllerTest, ImageRectDoesNotContainSrcRectWithScale) {
@@ -330,7 +381,7 @@ TEST(ImageDecodeControllerTest, ImageRectDoesNotContainSrcRectWithScale) {
   EXPECT_EQ(40, key.target_size().width());
   EXPECT_EQ(35, key.target_size().height());
   EXPECT_EQ(gfx::Rect(20, 30, 80, 70), key.src_rect());
-  EXPECT_EQ(40u * 35u * 4u, key.target_bytes());
+  EXPECT_EQ(40u * 35u * 4u, key.locked_bytes());
 }
 
 TEST(ImageDecodeControllerTest, GetTaskForImageSameImage) {
@@ -401,14 +452,13 @@ TEST(ImageDecodeControllerTest, GetTaskForImageSameImageDifferentQuality) {
   scoped_refptr<ImageDecodeTask> low_quality_task;
   need_unref = controller.GetTaskForImageAndRef(
       low_quality_draw_image, prepare_tiles_id, &low_quality_task);
-  // Note that when we pin the original decode, we might ref low quality images
-  // too, but we don't support that right now.
-  EXPECT_FALSE(need_unref);
+  EXPECT_TRUE(need_unref);
   EXPECT_TRUE(low_quality_task);
   EXPECT_TRUE(high_quality_task.get() != low_quality_task.get());
   EXPECT_TRUE(medium_quality_task.get() != low_quality_task.get());
 
   controller.UnrefImage(high_quality_draw_image);
+  controller.UnrefImage(low_quality_draw_image);
 }
 
 TEST(ImageDecodeControllerTest, GetTaskForImageSameImageDifferentSize) {
@@ -526,8 +576,7 @@ TEST(ImageDecodeControllerTest, GetTaskForImageAlreadyPrerolled) {
   scoped_refptr<ImageDecodeTask> task;
   bool need_unref =
       controller.GetTaskForImageAndRef(draw_image, prepare_tiles_id, &task);
-  // We're not currently locking original scale or low quality images.
-  EXPECT_FALSE(need_unref);
+  EXPECT_TRUE(need_unref);
   EXPECT_TRUE(task);
 
   task->WillSchedule();
@@ -538,7 +587,7 @@ TEST(ImageDecodeControllerTest, GetTaskForImageAlreadyPrerolled) {
   scoped_refptr<ImageDecodeTask> another_task;
   need_unref = controller.GetTaskForImageAndRef(draw_image, prepare_tiles_id,
                                                 &another_task);
-  EXPECT_FALSE(need_unref);
+  EXPECT_TRUE(need_unref);
   EXPECT_FALSE(another_task);
 
   task->WillComplete();
@@ -548,8 +597,12 @@ TEST(ImageDecodeControllerTest, GetTaskForImageAlreadyPrerolled) {
   scoped_refptr<ImageDecodeTask> third_task;
   need_unref = controller.GetTaskForImageAndRef(draw_image, prepare_tiles_id,
                                                 &third_task);
-  EXPECT_FALSE(need_unref);
+  EXPECT_TRUE(need_unref);
   EXPECT_FALSE(third_task);
+
+  controller.UnrefImage(draw_image);
+  controller.UnrefImage(draw_image);
+  controller.UnrefImage(draw_image);
 }
 
 TEST(ImageDecodeControllerTest, GetTaskForImageCanceledGetsNewTask) {
@@ -948,5 +1001,95 @@ TEST(ImageDecodeControllerTest, NonOverlappingSrcRectImagesAreSkipped) {
   controller.DrawWithImageFinished(draw_image, decoded_draw_image);
 }
 
+TEST(ImageDecodeControllerTest, LowQualityFilterIsHandled) {
+  ImageDecodeController controller;
+  bool has_perspective = false;
+  bool is_decomposable = true;
+  uint64_t prepare_tiles_id = 1;
+  SkFilterQuality quality = kLow_SkFilterQuality;
+
+  skia::RefPtr<SkImage> image = CreateImage(100, 100);
+  DrawImage draw_image(
+      image.get(), SkIRect::MakeWH(image->width(), image->height()),
+      SkSize::Make(1.f, 1.f), quality, has_perspective, is_decomposable);
+
+  scoped_refptr<ImageDecodeTask> task;
+  bool need_unref =
+      controller.GetTaskForImageAndRef(draw_image, prepare_tiles_id, &task);
+  EXPECT_TRUE(task);
+  EXPECT_TRUE(need_unref);
+
+  DecodedDrawImage decoded_draw_image =
+      controller.GetDecodedImageForDraw(draw_image);
+  EXPECT_TRUE(decoded_draw_image.image());
+  // If we decoded the image and cached it, it would be stored in a different
+  // SkImage object.
+  EXPECT_TRUE(decoded_draw_image.image() != image.get());
+
+  controller.DrawWithImageFinished(draw_image, decoded_draw_image);
+  controller.UnrefImage(draw_image);
+}
+
+TEST(ImageDecodeControllerTest, LowQualityScaledSubrectIsHandled) {
+  ImageDecodeController controller;
+  bool has_perspective = false;
+  bool is_decomposable = true;
+  uint64_t prepare_tiles_id = 1;
+  SkFilterQuality quality = kLow_SkFilterQuality;
+
+  skia::RefPtr<SkImage> image = CreateImage(100, 100);
+  DrawImage draw_image(image.get(), SkIRect::MakeXYWH(10, 10, 80, 80),
+                       SkSize::Make(0.5f, 0.5f), quality, has_perspective,
+                       is_decomposable);
+
+  scoped_refptr<ImageDecodeTask> task;
+  bool need_unref =
+      controller.GetTaskForImageAndRef(draw_image, prepare_tiles_id, &task);
+  EXPECT_TRUE(task);
+  EXPECT_TRUE(need_unref);
+
+  DecodedDrawImage decoded_draw_image =
+      controller.GetDecodedImageForDraw(draw_image);
+  EXPECT_TRUE(decoded_draw_image.image());
+  // If we decoded the image and cached it, it would be stored in a different
+  // SkImage object.
+  EXPECT_TRUE(decoded_draw_image.image() != image.get());
+  EXPECT_EQ(kLow_SkFilterQuality, decoded_draw_image.filter_quality());
+  EXPECT_TRUE(decoded_draw_image.is_scale_adjustment_identity());
+
+  controller.DrawWithImageFinished(draw_image, decoded_draw_image);
+  controller.UnrefImage(draw_image);
+}
+
+TEST(ImageDecodeControllerTest, NoneQualityScaledSubrectIsHandled) {
+  ImageDecodeController controller;
+  bool has_perspective = false;
+  bool is_decomposable = true;
+  uint64_t prepare_tiles_id = 1;
+  SkFilterQuality quality = kNone_SkFilterQuality;
+
+  skia::RefPtr<SkImage> image = CreateImage(100, 100);
+  DrawImage draw_image(image.get(), SkIRect::MakeXYWH(10, 10, 80, 80),
+                       SkSize::Make(0.5f, 0.5f), quality, has_perspective,
+                       is_decomposable);
+
+  scoped_refptr<ImageDecodeTask> task;
+  bool need_unref =
+      controller.GetTaskForImageAndRef(draw_image, prepare_tiles_id, &task);
+  EXPECT_TRUE(task);
+  EXPECT_TRUE(need_unref);
+
+  DecodedDrawImage decoded_draw_image =
+      controller.GetDecodedImageForDraw(draw_image);
+  EXPECT_TRUE(decoded_draw_image.image());
+  // If we decoded the image and cached it, it would be stored in a different
+  // SkImage object.
+  EXPECT_TRUE(decoded_draw_image.image() != image.get());
+  EXPECT_EQ(kNone_SkFilterQuality, decoded_draw_image.filter_quality());
+  EXPECT_TRUE(decoded_draw_image.is_scale_adjustment_identity());
+
+  controller.DrawWithImageFinished(draw_image, decoded_draw_image);
+  controller.UnrefImage(draw_image);
+}
 }  // namespace
 }  // namespace cc
