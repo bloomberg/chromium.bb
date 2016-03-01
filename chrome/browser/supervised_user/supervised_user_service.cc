@@ -20,7 +20,8 @@
 #include "chrome/browser/component_updater/supervised_user_whitelist_installer.h"
 #include "chrome/browser/net/file_downloader.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_info_cache.h"
+#include "chrome/browser/profiles/profile_attributes_entry.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -359,7 +360,7 @@ void SupervisedUserService::RegisterAndInitSync(
 
   // Fetch the custodian's profile information, to store the name.
   // TODO(pamg): If --google-profile-info (flag: switches::kGoogleProfileInfo)
-  // is ever enabled, take the name from the ProfileInfoCache instead.
+  // is ever enabled, take the name from the ProfileAttributesStorage instead.
   CustodianProfileDownloaderService* profile_downloader_service =
       CustodianProfileDownloaderServiceFactory::GetForProfile(
           custodian_profile);
@@ -645,10 +646,12 @@ void SupervisedUserService::OnSupervisedUserRegistered(
         signin->GetAuthenticatedAccountInfo().email);
 
     // The supervised user profile is now ready for use.
-    ProfileManager* profile_manager = g_browser_process->profile_manager();
-    ProfileInfoCache& cache = profile_manager->GetProfileInfoCache();
-    size_t index = cache.GetIndexOfProfileWithPath(profile_->GetPath());
-    cache.SetIsOmittedProfileAtIndex(index, false);
+    ProfileAttributesEntry* entry = nullptr;
+    bool has_entry =
+        g_browser_process->profile_manager()->GetProfileAttributesStorage().
+            GetProfileAttributesWithPath(profile_->GetPath(), &entry);
+    DCHECK(has_entry);
+    entry->SetIsOmitted(false);
   } else {
     DCHECK_EQ(std::string(), token);
   }
@@ -1049,4 +1052,3 @@ void SupervisedUserService::OnSiteListUpdated() {
   FOR_EACH_OBSERVER(
       SupervisedUserServiceObserver, observer_list_, OnURLFilterChanged());
 }
-

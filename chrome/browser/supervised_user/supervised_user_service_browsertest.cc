@@ -10,7 +10,8 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_info_cache.h"
+#include "chrome/browser/profiles/profile_attributes_entry.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
 #include "chrome/browser/supervised_user/supervised_user_service.h"
@@ -53,12 +54,13 @@ typedef InProcessBrowserTest SupervisedUserServiceTest;
 IN_PROC_BROWSER_TEST_F(SupervisedUserServiceTest,
                        MAYBE_ClearOmitOnRegistration) {
   // Artificially mark the profile as omitted.
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
-  ProfileInfoCache& cache = profile_manager->GetProfileInfoCache();
   Profile* profile = browser()->profile();
-  size_t index = cache.GetIndexOfProfileWithPath(profile->GetPath());
-  cache.SetIsOmittedProfileAtIndex(index, true);
-  ASSERT_TRUE(cache.IsOmittedProfileAtIndex(index));
+  ProfileAttributesEntry* entry;
+  ASSERT_TRUE(g_browser_process->profile_manager()->
+                  GetProfileAttributesStorage().
+                  GetProfileAttributesWithPath(profile->GetPath(), &entry));
+  entry->SetIsOmitted(true);
+  ASSERT_TRUE(entry->IsOmitted());
 
   SupervisedUserService* supervised_user_service =
       SupervisedUserServiceFactory::GetForProfile(profile);
@@ -70,7 +72,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserServiceTest,
       profile,
       GoogleServiceAuthError(GoogleServiceAuthError::CONNECTION_FAILED),
       std::string());
-  ASSERT_TRUE(cache.IsOmittedProfileAtIndex(index));
+  ASSERT_TRUE(entry->IsOmitted());
 
   // Successfully completing registration clears the flag.
   supervised_user_service->OnSupervisedUserRegistered(
@@ -78,7 +80,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserServiceTest,
       profile,
       GoogleServiceAuthError(GoogleServiceAuthError::NONE),
       std::string("abcdef"));
-  EXPECT_FALSE(cache.IsOmittedProfileAtIndex(index));
+  EXPECT_FALSE(entry->IsOmitted());
 }
 
 IN_PROC_BROWSER_TEST_F(SupervisedUserServiceTest, LocalPolicies) {
@@ -97,11 +99,11 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserServiceTest, ProfileName) {
   EXPECT_TRUE(prefs->IsUserModifiablePreference(prefs::kProfileName));
 
   std::string original_name = prefs->GetString(prefs::kProfileName);
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
-  const ProfileInfoCache& cache = profile_manager->GetProfileInfoCache();
-  size_t profile_index = cache.GetIndexOfProfileWithPath(profile->GetPath());
-  EXPECT_EQ(original_name,
-            base::UTF16ToUTF8(cache.GetNameOfProfileAtIndex(profile_index)));
+  ProfileAttributesEntry* entry;
+  ASSERT_TRUE(g_browser_process->profile_manager()->
+                  GetProfileAttributesStorage().
+                  GetProfileAttributesWithPath(profile->GetPath(), &entry));
+  EXPECT_EQ(original_name, base::UTF16ToUTF8(entry->GetName()));
 }
 
 IN_PROC_BROWSER_TEST_F(SupervisedUserServiceTestSupervised, LocalPolicies) {
@@ -119,21 +121,24 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserServiceTestSupervised, ProfileName) {
   Profile* profile = browser()->profile();
   PrefService* prefs = profile->GetPrefs();
   std::string original_name = prefs->GetString(prefs::kProfileName);
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
-  const ProfileInfoCache& cache = profile_manager->GetProfileInfoCache();
 
   SupervisedUserSettingsService* settings =
       SupervisedUserSettingsServiceFactory::GetForProfile(profile);
 
+  // Change the name. Both the profile pref and the entry in
+  // ProfileAttributesStorage should be updated.
   std::string name = "Supervised User Test Name";
   settings->SetLocalSetting(
       supervised_users::kUserName,
       scoped_ptr<base::Value>(new base::StringValue(name)));
   EXPECT_FALSE(prefs->IsUserModifiablePreference(prefs::kProfileName));
   EXPECT_EQ(name, prefs->GetString(prefs::kProfileName));
-  size_t profile_index = cache.GetIndexOfProfileWithPath(profile->GetPath());
-  EXPECT_EQ(name,
-            base::UTF16ToUTF8(cache.GetNameOfProfileAtIndex(profile_index)));
+
+  ProfileAttributesEntry* entry;
+  ASSERT_TRUE(g_browser_process->profile_manager()->
+                  GetProfileAttributesStorage().
+                  GetProfileAttributesWithPath(profile->GetPath(), &entry));
+  EXPECT_EQ(name, base::UTF16ToUTF8(entry->GetName()));
 
   // Change the name once more.
   std::string new_name = "New Supervised User Test Name";
@@ -141,15 +146,11 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserServiceTestSupervised, ProfileName) {
       supervised_users::kUserName,
       scoped_ptr<base::Value>(new base::StringValue(new_name)));
   EXPECT_EQ(new_name, prefs->GetString(prefs::kProfileName));
-  profile_index = cache.GetIndexOfProfileWithPath(profile->GetPath());
-  EXPECT_EQ(new_name,
-            base::UTF16ToUTF8(cache.GetNameOfProfileAtIndex(profile_index)));
+  EXPECT_EQ(new_name, base::UTF16ToUTF8(entry->GetName()));
 
   // Remove the setting.
   settings->SetLocalSetting(supervised_users::kUserName,
                             scoped_ptr<base::Value>());
   EXPECT_EQ(original_name, prefs->GetString(prefs::kProfileName));
-  profile_index = cache.GetIndexOfProfileWithPath(profile->GetPath());
-  EXPECT_EQ(original_name,
-            base::UTF16ToUTF8(cache.GetNameOfProfileAtIndex(profile_index)));
+  EXPECT_EQ(original_name, base::UTF16ToUTF8(entry->GetName()));
 }
