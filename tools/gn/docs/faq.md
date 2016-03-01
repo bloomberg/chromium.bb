@@ -31,19 +31,11 @@ individuals manually setting GYP\_DEFINES on their local system.
 
 ## Will XCode/Visual Studio still be supported?
 
-They're not supported now.
+Visual Studio is supported. Visual Studio can be used as an IDE for code
+browsing or debugging but Ninja is used for building.
+Run `gn help gen` for more details.
 
-Long-term, if your use-case is to use Ninja for building but Visual
-Studio or XCode for debugging, there is desire to write a simple wrapper
-around Ninja that lists the files in Visual Studio or XCode format, and
-has a command to run ninja for when you press build. This setup should
-provide the type of interactive debugging experience people want (the
-iOS team currently uses a Ninja/XCode build like this with success).
-
-This project is not staffed. If you're interested, it probably isn't too
-hard. It won't get done unless somebody volunteers. There is a [spec for
-IDE
-integration](https://docs.google.com/document/d/1kwREU99u8GpRammLbbKwrfaDI6WV7nsMAaoF5dcuhOU/edit?usp=sharing).
+XCode is not supported yet. We need help!
 
 ## I'm weird. Will my uncommon build mode be supported?
 

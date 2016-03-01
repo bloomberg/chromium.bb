@@ -532,7 +532,7 @@
 ## **gn gen**: Generate ninja files.
 
 ```
-  gn gen [--ide=<ide_name>] <out_dir>
+  gn gen [<ide options>] <out_dir>
 
   Generates ninja files from the current tree and puts them in the given
   output directory.
@@ -542,11 +542,46 @@
   Or it can be a directory relative to the current directory such as:
       out/foo
 
-  --ide=<ide_name>
-    Also generate files for an IDE. Currently supported values:
-      'vs' - Visual Studio project/solution files.
-
   See "gn help switches" for the common command-line switches.
+
+```
+
+### **IDE options**
+
+```
+  GN optionally generates files for IDE. Possibilities for <ide options>
+
+  --ide=<ide_name>
+      Generate files for an IDE. Currently supported values:
+      "eclipse" - Eclipse CDT settings file.
+      "vs" - Visual Studio project/solution files.
+             (default Visual Studio version: 2015)
+      "vs2013" - Visual Studio 2013 project/solution files.
+      "vs2015" - Visual Studio 2015 project/solution files.
+
+  --sln=<file_name>
+      Override default sln file name ("all"). Solution file is written
+      to the root build directory. Only for Visual Studio.
+
+  --filters=<path_prefixes>
+      Semicolon-separated list of label patterns used to limit the set
+      of generated projects (see "gn help label_pattern"). Only
+      matching targets will be included to the solution. Only for Visual
+      Studio.
+
+```
+
+### **Eclipse IDE Support**
+
+```
+  GN DOES NOT generate Eclipse CDT projects. Instead, it generates a
+  settings file which can be imported into an Eclipse CDT project. The
+  XML file contains a list of include paths and defines. Because GN does
+  not generate a full .cproject definition, it is not possible to
+  properly define includes/defines for each file individually.
+  Instead, one set of includes/defines is generated for the entire
+  project. This works fairly well but may still result in a few indexer
+  issues here and there.
 
 
 ```
