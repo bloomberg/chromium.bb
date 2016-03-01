@@ -45,14 +45,14 @@ static const char workerInspectionEnabled[] = "workerInspectionEnabled";
 static const char autoconnectToWorkers[] = "autoconnectToWorkers";
 };
 
-PassOwnPtrWillBeRawPtr<InspectorWorkerAgent> InspectorWorkerAgent::create(PageConsoleAgent* consoleAgent)
+PassOwnPtrWillBeRawPtr<InspectorWorkerAgent> InspectorWorkerAgent::create()
 {
-    return adoptPtrWillBeNoop(new InspectorWorkerAgent(consoleAgent));
+    return adoptPtrWillBeNoop(new InspectorWorkerAgent());
 }
 
-InspectorWorkerAgent::InspectorWorkerAgent(PageConsoleAgent* consoleAgent)
+InspectorWorkerAgent::InspectorWorkerAgent()
     : InspectorBaseAgent<InspectorWorkerAgent, protocol::Frontend::Worker>("Worker")
-    , m_consoleAgent(consoleAgent)
+    , m_consoleAgent(nullptr)
 {
 }
 
@@ -126,6 +126,11 @@ void InspectorWorkerAgent::setTracingSessionId(const String& sessionId)
         return;
     for (auto& info : m_workerInfos)
         info.key->writeTimelineStartedEvent(sessionId, info.value.id);
+}
+
+void InspectorWorkerAgent::setPageConsoleAgent(PageConsoleAgent* consoleAgent)
+{
+    m_consoleAgent = consoleAgent;
 }
 
 bool InspectorWorkerAgent::shouldPauseDedicatedWorkerOnStart()
@@ -206,6 +211,7 @@ InspectorWorkerAgent::WorkerAgentClient::WorkerAgentClient(protocol::Frontend::W
 {
     ASSERT(!proxy->pageInspector());
 }
+
 InspectorWorkerAgent::WorkerAgentClient::~WorkerAgentClient()
 {
     ASSERT(!m_frontend);
@@ -236,6 +242,7 @@ void InspectorWorkerAgent::WorkerAgentClient::dispatchMessageFromWorker(const St
 {
     m_frontend->dispatchMessageFromWorker(m_id, message);
 }
+
 void InspectorWorkerAgent::WorkerAgentClient::workerConsoleAgentEnabled(WorkerGlobalScopeProxy* proxy)
 {
     m_consoleAgent->workerConsoleAgentEnabled(proxy);

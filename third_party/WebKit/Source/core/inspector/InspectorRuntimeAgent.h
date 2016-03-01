@@ -63,6 +63,7 @@ public:
 
         virtual void resumeStartup() { }
         virtual bool isRunRequired() { return false; }
+        virtual bool didCommitLoadFired() { return false; }
     };
 
     ~InspectorRuntimeAgent() override;

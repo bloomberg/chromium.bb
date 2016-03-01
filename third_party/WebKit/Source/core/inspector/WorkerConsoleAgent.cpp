@@ -38,8 +38,8 @@
 
 namespace blink {
 
-WorkerConsoleAgent::WorkerConsoleAgent(V8RuntimeAgent* runtimeAgent, WorkerGlobalScope* workerGlobalScope)
-    : InspectorConsoleAgent(runtimeAgent)
+WorkerConsoleAgent::WorkerConsoleAgent(V8RuntimeAgent* runtimeAgent, V8DebuggerAgent* debuggerAgent, WorkerGlobalScope* workerGlobalScope)
+    : InspectorConsoleAgent(runtimeAgent, debuggerAgent)
     , m_workerGlobalScope(workerGlobalScope)
 {
 }

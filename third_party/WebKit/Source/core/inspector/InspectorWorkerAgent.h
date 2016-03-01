@@ -47,7 +47,7 @@ using ErrorString = String;
 class CORE_EXPORT InspectorWorkerAgent final : public InspectorBaseAgent<InspectorWorkerAgent, protocol::Frontend::Worker>, public protocol::Dispatcher::WorkerCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorWorkerAgent);
 public:
-    static PassOwnPtrWillBeRawPtr<InspectorWorkerAgent> create(PageConsoleAgent*);
+    static PassOwnPtrWillBeRawPtr<InspectorWorkerAgent> create();
     ~InspectorWorkerAgent() override;
     DECLARE_VIRTUAL_TRACE();
 
@@ -68,6 +68,7 @@ public:
     void setAutoconnectToWorkers(ErrorString*, bool value) override;
 
     void setTracingSessionId(const String&);
+    void setPageConsoleAgent(PageConsoleAgent*);
 
     class WorkerAgentClient final : public WorkerInspectorProxy::PageInspector {
         USING_FAST_MALLOC_WILL_BE_REMOVED(InspectorWorkerAgent::WorkerAgentClient);
@@ -96,7 +97,7 @@ public:
     };
 
 private:
-    InspectorWorkerAgent(PageConsoleAgent*);
+    InspectorWorkerAgent();
     void createWorkerAgentClientsForExistingWorkers();
     void createWorkerAgentClient(WorkerInspectorProxy*, const String& url, const String& id);
     void destroyWorkerAgentClients();

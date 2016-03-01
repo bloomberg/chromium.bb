@@ -49,7 +49,6 @@ namespace blink {
 PageRuntimeAgent::PageRuntimeAgent(Client* client, V8Debugger* debugger, InspectedFrames* inspectedFrames)
     : InspectorRuntimeAgent(debugger, client)
     , m_inspectedFrames(inspectedFrames)
-    , m_mainWorldContextCreated(false)
 {
 }
 
@@ -66,23 +65,18 @@ DEFINE_TRACE(PageRuntimeAgent)
     InspectorRuntimeAgent::trace(visitor);
 }
 
-void PageRuntimeAgent::init()
-{
-    InspectorRuntimeAgent::init();
-    m_instrumentingAgents->setPageRuntimeAgent(this);
-}
-
 void PageRuntimeAgent::enable(ErrorString* errorString)
 {
     if (m_enabled)
         return;
 
     InspectorRuntimeAgent::enable(errorString);
+    m_instrumentingAgents->setPageRuntimeAgent(this);
 
     // Only report existing contexts if the page did commit load, otherwise we may
     // unintentionally initialize contexts in the frames which may trigger some listeners
     // that are expected to be triggered only after the load is committed, see http://crbug.com/131623
-    if (m_mainWorldContextCreated)
+    if (m_client->didCommitLoadFired())
         reportExecutionContextCreation();
 }
 
@@ -90,17 +84,13 @@ void PageRuntimeAgent::disable(ErrorString* errorString)
 {
     if (!m_enabled)
         return;
+    m_instrumentingAgents->setPageRuntimeAgent(nullptr);
     InspectorRuntimeAgent::disable(errorString);
 }
 
 void PageRuntimeAgent::didClearDocumentOfWindowObject(LocalFrame* frame)
 {
-    m_mainWorldContextCreated = true;
-
-    if (!m_enabled)
-        return;
     ASSERT(frontend());
-
     if (frame == m_inspectedFrames->root())
         m_v8RuntimeAgent->clearInspectedObjects();
     frame->script().initializeMainWorld();
@@ -108,8 +98,6 @@ void PageRuntimeAgent::didClearDocumentOfWindowObject(LocalFrame* frame)
 
 void PageRuntimeAgent::didCreateScriptContext(LocalFrame* frame, ScriptState* scriptState, SecurityOrigin* origin, int worldId)
 {
-    if (!m_enabled)
-        return;
     ASSERT(frontend());
     bool isMainWorld = worldId == MainWorldId;
     String originString = origin ? origin->toRawString() : "";

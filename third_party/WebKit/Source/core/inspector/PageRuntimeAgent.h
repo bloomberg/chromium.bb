@@ -49,7 +49,6 @@ public:
     }
     ~PageRuntimeAgent() override;
     DECLARE_VIRTUAL_TRACE();
-    void init() override;
     void enable(ErrorString*) override;
     void disable(ErrorString*) override;
 
@@ -67,7 +66,6 @@ private:
     void reportExecutionContext(ScriptState*, bool isPageContext, const String& origin, const String& frameId);
 
     RawPtrWillBeMember<InspectedFrames> m_inspectedFrames;
-    bool m_mainWorldContextCreated;
 };
 
 } // namespace blink
