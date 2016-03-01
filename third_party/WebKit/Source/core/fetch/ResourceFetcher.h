@@ -163,7 +163,8 @@ private:
     PassRefPtrWillBeRawPtr<Resource> createResourceForLoading(FetchRequest&, const String& charset, const ResourceFactory&);
     void storeResourceTimingInitiatorInformation(Resource*);
     bool scheduleArchiveLoad(Resource*, const ResourceRequest&);
-    void preCacheData(const FetchRequest&, const ResourceFactory&, const SubstituteData&);
+
+    PassRefPtrWillBeRawPtr<Resource> resourceForStaticData(const FetchRequest&, const ResourceFactory&, const SubstituteData&);
 
     // RevalidationPolicy enum values are used in UMAs https://crbug.com/579496.
     enum RevalidationPolicy { Use, Revalidate, Reload, Load };
