@@ -29,7 +29,7 @@ namespace ws {
 
 class ConnectionManager;
 class FocusController;
-class WindowTreeHostDelegate;
+class WindowTreeHostConnection;
 class WindowTreeImpl;
 
 // WindowTreeHostImpl is an implementation of the WindowTreeHost interface.
@@ -54,7 +54,7 @@ class WindowTreeHostImpl : public DisplayManagerDelegate,
   ~WindowTreeHostImpl() override;
 
   // Initializes state that depends on the existence of a WindowTreeHostImpl.
-  void Init(WindowTreeHostDelegate* delegate);
+  void Init(scoped_ptr<WindowTreeHostConnection> connection);
 
   uint32_t id() const { return id_; }
 
@@ -156,6 +156,9 @@ class WindowTreeHostImpl : public DisplayManagerDelegate,
     scoped_ptr<ProcessedEventTarget> processed_target;
   };
 
+  // Inits the necessary state once the display is ready.
+  void CallOnDisplayInitializedIfNecessary();
+
   void OnEventAckTimeout();
 
   // Schedules an event to be processed later.
@@ -210,7 +213,8 @@ class WindowTreeHostImpl : public DisplayManagerDelegate,
   void OnWindowDestroyed(ServerWindow* window) override;
 
   const uint32_t id_;
-  WindowTreeHostDelegate* delegate_;
+  scoped_ptr<WindowTreeHostConnection> window_tree_host_connection_;
+  WindowTreeImpl* window_tree_ = nullptr;
   ConnectionManager* const connection_manager_;
   EventDispatcher event_dispatcher_;
   scoped_ptr<ServerWindow> root_;

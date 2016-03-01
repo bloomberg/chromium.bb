@@ -232,10 +232,11 @@ void MandolineUIServicesApp::CreateWindowTreeHost(
   ws::WindowTreeHostImpl* host_impl = new ws::WindowTreeHostImpl(
       connection_manager_.get(), connector_, gpu_state_, surfaces_state_);
 
-  // WindowTreeHostConnection manages its own lifetime.
-  host_impl->Init(new ws::WindowTreeHostConnectionImpl(
-      std::move(host), make_scoped_ptr(host_impl), std::move(tree_client),
-      connection_manager_.get()));
+  scoped_ptr<ws::WindowTreeHostConnectionImpl> host_connection(
+      new ws::WindowTreeHostConnectionImpl(std::move(host), host_impl,
+                                           std::move(tree_client),
+                                           connection_manager_.get()));
+  host_impl->Init(std::move(host_connection));
 }
 
 }  // namespace mus

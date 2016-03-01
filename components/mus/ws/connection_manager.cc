@@ -38,25 +38,25 @@ ConnectionManager::ConnectionManager(
 ConnectionManager::~ConnectionManager() {
   in_destructor_ = true;
 
-  // Copy the HostConnectionMap because it will be mutated as the connections
-  // are closed.
-  HostConnectionMap host_connection_map(host_connection_map_);
-  for (auto& pair : host_connection_map)
-    pair.second->CloseConnection();
+  // DestroyHost() removes from |hosts_| and deletes the WindowTreeHostImpl.
+  while (!hosts_.empty())
+    DestroyHost(*hosts_.begin());
+  DCHECK(hosts_.empty());
 
   STLDeleteValues(&connection_map_);
   // All the connections should have been destroyed.
-  DCHECK(host_connection_map_.empty());
   DCHECK(connection_map_.empty());
 }
 
-void ConnectionManager::AddHost(WindowTreeHostConnection* host_connection) {
-  DCHECK_EQ(0u,
-            host_connection_map_.count(host_connection->window_tree_host()));
-  const bool is_first_connection = host_connection_map_.empty();
-  host_connection_map_[host_connection->window_tree_host()] = host_connection;
-  if (is_first_connection)
-    delegate_->OnFirstRootConnectionCreated();
+void ConnectionManager::AddHost(WindowTreeHostImpl* host) {
+  DCHECK_EQ(0u, pending_hosts_.count(host));
+  pending_hosts_.insert(host);
+}
+
+void ConnectionManager::DestroyHost(WindowTreeHostImpl* host) {
+  DCHECK(hosts_.count(host));
+  hosts_.erase(host);
+  delete host;
 }
 
 ServerWindow* ConnectionManager::CreateServerWindow(
@@ -121,31 +121,35 @@ ClientConnection* ConnectionManager::GetClientConnection(
   return connection_map_[window_tree->id()];
 }
 
-void ConnectionManager::OnHostConnectionClosed(
-    WindowTreeHostConnection* connection) {
-  auto it = host_connection_map_.find(connection->window_tree_host());
-  DCHECK(it != host_connection_map_.end());
+void ConnectionManager::OnHostConnectionClosed(WindowTreeHostImpl* host) {
+  if (pending_hosts_.count(host)) {
+    pending_hosts_.erase(host);
+    delete host;
+    return;
+  }
+  auto it = hosts_.find(host);
+  DCHECK(it != hosts_.end());
 
   // Get the ClientConnection by WindowTreeImpl ID.
   ConnectionMap::iterator service_connection_it =
-      connection_map_.find(it->first->GetWindowTree()->id());
+      connection_map_.find(host->GetWindowTree()->id());
   DCHECK(service_connection_it != connection_map_.end());
+
+  scoped_ptr<WindowTreeHostImpl> host_owner(*it);
+  hosts_.erase(it);
 
   // Tear down the associated WindowTree connection.
   // TODO(fsamuel): I don't think this is quite right, we should tear down all
   // connections within the root's viewport. We should probably employ an
   // observer pattern to do this. Each WindowTreeImpl should track its
   // parent's lifetime.
-  host_connection_map_.erase(it);
   OnConnectionError(service_connection_it->second);
 
-  for (auto& pair : connection_map_) {
-    pair.second->service()->OnWillDestroyWindowTreeHost(
-        connection->window_tree_host());
-  }
+  for (auto& pair : connection_map_)
+    pair.second->service()->OnWillDestroyWindowTreeHost(host);
 
   // If we have no more roots left, let the app know so it can terminate.
-  if (!host_connection_map_.size())
+  if (!hosts_.size() && !pending_hosts_.size())
     delegate_->OnNoMoreRootConnections();
 }
 
@@ -178,9 +182,9 @@ WindowTreeImpl* ConnectionManager::GetConnection(
 }
 
 ServerWindow* ConnectionManager::GetWindow(const WindowId& id) {
-  for (auto& pair : host_connection_map_) {
-    if (pair.first->root_window()->id() == id)
-      return pair.first->root_window();
+  for (WindowTreeHostImpl* host : hosts_) {
+    if (host->root_window()->id() == id)
+      return host->root_window();
   }
   WindowTreeImpl* service = GetConnection(id.connection_id);
   return service ? service->GetWindow(id) : nullptr;
@@ -188,8 +192,8 @@ ServerWindow* ConnectionManager::GetWindow(const WindowId& id) {
 
 bool ConnectionManager::IsWindowAttachedToRoot(
     const ServerWindow* window) const {
-  for (auto& pair : host_connection_map_) {
-    if (pair.first->IsWindowAttachedToRoot(window))
+  for (WindowTreeHostImpl* host : hosts_) {
+    if (host->IsWindowAttachedToRoot(window))
       return true;
   }
   return false;
@@ -197,10 +201,21 @@ bool ConnectionManager::IsWindowAttachedToRoot(
 
 void ConnectionManager::SchedulePaint(const ServerWindow* window,
                                       const gfx::Rect& bounds) {
-  for (auto& pair : host_connection_map_) {
-    if (pair.first->SchedulePaintIfInViewport(window, bounds))
+  for (WindowTreeHostImpl* host : hosts_) {
+    if (host->SchedulePaintIfInViewport(window, bounds))
       return;
   }
+}
+
+void ConnectionManager::OnWindowTreeHostDisplayAvailable(
+    WindowTreeHostImpl* host) {
+  DCHECK_NE(0u, pending_hosts_.count(host));
+  DCHECK_EQ(0u, hosts_.count(host));
+  const bool is_first_connection = hosts_.empty();
+  hosts_.insert(host);
+  pending_hosts_.erase(host);
+  if (is_first_connection)
+    delegate_->OnFirstRootConnectionCreated();
 }
 
 void ConnectionManager::OnConnectionMessagedClient(ConnectionSpecificId id) {
@@ -219,8 +234,8 @@ mojom::ViewportMetricsPtr ConnectionManager::GetViewportMetricsForWindow(
   if (host)
     return host->GetViewportMetrics().Clone();
 
-  if (!host_connection_map_.empty())
-    return host_connection_map_.begin()->first->GetViewportMetrics().Clone();
+  if (!hosts_.empty())
+    return (*hosts_.begin())->GetViewportMetrics().Clone();
 
   mojom::ViewportMetricsPtr metrics = mojom::ViewportMetrics::New();
   metrics->size_in_pixels = mojo::Size::New();
@@ -249,15 +264,16 @@ const WindowTreeHostImpl* ConnectionManager::GetWindowTreeHostByWindow(
     const ServerWindow* window) const {
   while (window && window->parent())
     window = window->parent();
-  for (auto& pair : host_connection_map_) {
-    if (window == pair.first->root_window())
-      return pair.first;
+  for (WindowTreeHostImpl* host : hosts_) {
+    if (window == host->root_window())
+      return host;
   }
   return nullptr;
 }
 
 WindowTreeHostImpl* ConnectionManager::GetActiveWindowTreeHost() {
-  return host_connection_map_.begin()->first;
+  // TODO(sky): this isn't active, but first. Make it active.
+  return hosts_.size() ? *hosts_.begin() : nullptr;
 }
 
 void ConnectionManager::AddDisplayManagerBinding(
@@ -472,11 +488,12 @@ void ConnectionManager::MaybeUpdateNativeCursor(ServerWindow* window) {
 
 void ConnectionManager::CallOnDisplays(
     mojom::DisplayManagerObserver* observer) {
-  mojo::Array<mojom::DisplayPtr> displays(host_connection_map_.size());
+  mojo::Array<mojom::DisplayPtr> displays(hosts_.size());
   {
     size_t i = 0;
-    for (auto& pair : host_connection_map_) {
-      displays[i] = DisplayForHost(pair.first);
+    // TODO(sky): need ordering!
+    for (WindowTreeHostImpl* host : hosts_) {
+      displays[i] = DisplayForHost(host);
       ++i;
     }
   }
@@ -497,9 +514,9 @@ void ConnectionManager::CallOnDisplayChanged(
 mojom::DisplayPtr ConnectionManager::DisplayForHost(WindowTreeHostImpl* host) {
   size_t i = 0;
   int next_x = 0;
-  for (auto& pair : host_connection_map_) {
+  for (WindowTreeHostImpl* host2 : hosts_) {
     const ServerWindow* root = host->root_window();
-    if (pair.first == host) {
+    if (host == host2) {
       mojom::DisplayPtr display = mojom::Display::New();
       display = mojom::Display::New();
       display->id = host->id();
@@ -544,9 +561,9 @@ const ServerWindow* ConnectionManager::GetRootWindow(
 }
 
 void ConnectionManager::ScheduleSurfaceDestruction(ServerWindow* window) {
-  for (auto& pair : host_connection_map_) {
-    if (pair.first->root_window()->Contains(window)) {
-      pair.first->ScheduleSurfaceDestruction(window);
+  for (WindowTreeHostImpl* host : hosts_) {
+    if (host->root_window()->Contains(window)) {
+      host->ScheduleSurfaceDestruction(window);
       break;
     }
   }

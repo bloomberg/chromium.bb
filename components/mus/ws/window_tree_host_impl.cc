@@ -11,7 +11,7 @@
 #include "components/mus/ws/connection_manager.h"
 #include "components/mus/ws/display_manager.h"
 #include "components/mus/ws/focus_controller.h"
-#include "components/mus/ws/window_tree_host_delegate.h"
+#include "components/mus/ws/window_tree_host_connection.h"
 #include "components/mus/ws/window_tree_impl.h"
 #include "mojo/common/common_type_converters.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
@@ -91,7 +91,6 @@ WindowTreeHostImpl::WindowTreeHostImpl(
     const scoped_refptr<GpuState>& gpu_state,
     const scoped_refptr<SurfacesState>& surfaces_state)
     : id_(next_id++),
-      delegate_(nullptr),
       connection_manager_(connection_manager),
       event_dispatcher_(this),
       display_manager_(
@@ -112,18 +111,18 @@ WindowTreeHostImpl::~WindowTreeHostImpl() {
     window->RemoveObserver(this);
 }
 
-void WindowTreeHostImpl::Init(WindowTreeHostDelegate* delegate) {
-  delegate_ = delegate;
-  if (delegate_ && root_)
-    delegate_->OnDisplayInitialized();
+void WindowTreeHostImpl::Init(scoped_ptr<WindowTreeHostConnection> connection) {
+  window_tree_host_connection_ = std::move(connection);
+  connection_manager_->AddHost(this);
+  CallOnDisplayInitializedIfNecessary();
 }
 
 const WindowTreeImpl* WindowTreeHostImpl::GetWindowTree() const {
-  return delegate_ ? delegate_->GetWindowTree() : nullptr;
+  return window_tree_;
 }
 
 WindowTreeImpl* WindowTreeHostImpl::GetWindowTree() {
-  return delegate_ ? delegate_->GetWindowTree() : nullptr;
+  return window_tree_;
 }
 
 void WindowTreeHostImpl::SetFrameDecorationValues(
@@ -255,6 +254,13 @@ void WindowTreeHostImpl::OnEventAck(mojom::WindowTree* tree) {
   ProcessNextEventFromQueue();
 }
 
+void WindowTreeHostImpl::CallOnDisplayInitializedIfNecessary() {
+  if (window_tree_host_connection_ && root_) {
+    connection_manager_->OnWindowTreeHostDisplayAvailable(this);
+    window_tree_ = window_tree_host_connection_->CreateWindowTree(root_.get());
+  }
+}
+
 void WindowTreeHostImpl::OnEventAckTimeout() {
   // TODO(sad): Figure out what we should do.
   NOTIMPLEMENTED() << "Event ACK timed out.";
@@ -356,8 +362,7 @@ void WindowTreeHostImpl::OnNativeCaptureLost() {
 }
 
 void WindowTreeHostImpl::OnDisplayClosed() {
-  if (delegate_)
-    delegate_->OnDisplayClosed();
+  connection_manager_->DestroyHost(this);
 }
 
 void WindowTreeHostImpl::OnViewportMetricsChanged(
@@ -371,8 +376,7 @@ void WindowTreeHostImpl::OnViewportMetricsChanged(
     root_->SetVisible(true);
     focus_controller_.reset(new FocusController(this, root_.get()));
     focus_controller_->AddObserver(this);
-    if (delegate_)
-      delegate_->OnDisplayInitialized();
+    CallOnDisplayInitializedIfNecessary();
     event_dispatcher_.set_root(root_.get());
   } else {
     root_->SetBounds(gfx::Rect(new_metrics.size_in_pixels.To<gfx::Size>()));
@@ -460,12 +464,11 @@ void WindowTreeHostImpl::OnFocusChanged(
   }
 
   // Ensure that we always notify the root connection of a focus change.
-  WindowTreeImpl* root_tree = GetWindowTree();
-  if (root_tree != owning_connection_old &&
-      root_tree != embedded_connection_old &&
-      root_tree != owning_connection_new &&
-      root_tree != embedded_connection_new) {
-    root_tree->ProcessFocusChanged(old_focused_window, new_focused_window);
+  if (window_tree_ != owning_connection_old &&
+      window_tree_ != embedded_connection_old &&
+      window_tree_ != owning_connection_new &&
+      window_tree_ != embedded_connection_new) {
+    window_tree_->ProcessFocusChanged(old_focused_window, new_focused_window);
   }
 
   UpdateTextInputState(new_focused_window,
@@ -474,7 +477,7 @@ void WindowTreeHostImpl::OnFocusChanged(
 
 void WindowTreeHostImpl::OnAccelerator(uint32_t accelerator_id,
                                        mojom::EventPtr event) {
-  GetWindowTree()->OnAccelerator(accelerator_id, std::move(event));
+  window_tree_->OnAccelerator(accelerator_id, std::move(event));
 }
 
 void WindowTreeHostImpl::SetFocusedWindowFromEventDispatcher(

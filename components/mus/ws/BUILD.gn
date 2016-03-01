@@ -56,7 +56,6 @@ source_set("lib") {
     "window_tree_factory.h",
     "window_tree_host_connection.cc",
     "window_tree_host_connection.h",
-    "window_tree_host_delegate.h",
     "window_tree_host_impl.cc",
     "window_tree_host_impl.h",
     "window_tree_impl.cc",

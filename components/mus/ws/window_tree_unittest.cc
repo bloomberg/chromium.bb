@@ -285,20 +285,22 @@ class TestConnectionManagerDelegate : public ConnectionManagerDelegate {
 
 class TestWindowTreeHostConnection : public WindowTreeHostConnection {
  public:
-  TestWindowTreeHostConnection(scoped_ptr<WindowTreeHostImpl> host_impl,
+  TestWindowTreeHostConnection(WindowTreeHostImpl* host_impl,
                                ConnectionManager* manager)
-      : WindowTreeHostConnection(std::move(host_impl), manager) {}
+      : host_(host_impl), connection_manager_(manager) {}
   ~TestWindowTreeHostConnection() override {}
 
  private:
-  // WindowTreeHostDelegate:
-  void OnDisplayInitialized() override {
-    connection_manager()->AddHost(this);
-    set_window_tree(connection_manager()->EmbedAtWindow(
-        window_tree_host()->root_window(),
-        mus::mojom::WindowTree::kAccessPolicyEmbedRoot,
-        mus::mojom::WindowTreeClientPtr()));
+  // WindowTreeHostConnection:
+  WindowTreeImpl* CreateWindowTree(ServerWindow* root) override {
+    return connection_manager_->EmbedAtWindow(
+        root, mus::mojom::WindowTree::kAccessPolicyEmbedRoot,
+        mus::mojom::WindowTreeClientPtr());
   }
+
+  WindowTreeHostImpl* host_;
+  ConnectionManager* connection_manager_;
+
   DISALLOW_COPY_AND_ASSIGN(TestWindowTreeHostConnection);
 };
 
@@ -442,7 +444,7 @@ class WindowTreeTest : public testing::Test {
   TestWindowTreeHostConnection* host_connection() { return host_connection_; }
 
   void DispatchEventWithoutAck(const ui::Event& event) {
-    host_connection()->window_tree_host()->OnEvent(event);
+    window_tree_host_->OnEvent(event);
   }
 
   void set_window_manager_internal(WindowTreeImpl* connection,
@@ -451,11 +453,8 @@ class WindowTreeTest : public testing::Test {
   }
 
   void AckPreviousEvent() {
-    while (host_connection()->window_tree_host()->tree_awaiting_input_ack_) {
-      host_connection()
-          ->window_tree_host()
-          ->tree_awaiting_input_ack_->OnWindowInputEventAck(0);
-    }
+    while (window_tree_host_->tree_awaiting_input_ack_)
+      window_tree_host_->tree_awaiting_input_ack_->OnWindowInputEventAck(0);
   }
 
   void DispatchEventAndAckImmediately(const ui::Event& event) {
@@ -476,24 +475,25 @@ class WindowTreeTest : public testing::Test {
     // TODO(fsamuel): This is probably broken. We need a root.
     connection_manager_.reset(
         new ConnectionManager(&delegate_, scoped_refptr<SurfacesState>()));
-    WindowTreeHostImpl* host = new WindowTreeHostImpl(
+    window_tree_host_ = new WindowTreeHostImpl(
         connection_manager_.get(), nullptr, scoped_refptr<GpuState>(),
         scoped_refptr<mus::SurfacesState>());
     // TODO(fsamuel): This is way too magical. We need to find a better way to
     // manage lifetime.
     host_connection_ = new TestWindowTreeHostConnection(
-        make_scoped_ptr(host), connection_manager_.get());
-    host->Init(host_connection_);
+        window_tree_host_, connection_manager_.get());
+    window_tree_host_->Init(make_scoped_ptr(host_connection_));
     wm_client_ = delegate_.last_client();
   }
 
- private:
+ protected:
   // TestWindowTreeClient that is used for the WM connection.
   TestWindowTreeClient* wm_client_;
   int32_t cursor_id_;
   TestDisplayManagerFactory display_manager_factory_;
   TestConnectionManagerDelegate delegate_;
   TestWindowTreeHostConnection* host_connection_;
+  WindowTreeHostImpl* window_tree_host_ = nullptr;
   scoped_ptr<ConnectionManager> connection_manager_;
   base::MessageLoop message_loop_;
 
@@ -514,8 +514,7 @@ void WindowTreeTest::SetupEventTargeting(
   EXPECT_TRUE(wm_connection()->SetWindowVisibility(embed_window_id, true));
   EXPECT_TRUE(wm_connection()->AddWindow(FirstRootId(wm_connection()),
                                          embed_window_id));
-  host_connection()->window_tree_host()->root_window()->SetBounds(
-      gfx::Rect(0, 0, 100, 100));
+  window_tree_host_->root_window()->SetBounds(gfx::Rect(0, 0, 100, 100));
   mojom::WindowTreeClientPtr client;
   mojo::InterfaceRequest<mojom::WindowTreeClient> client_request =
       GetProxy(&client);
@@ -567,8 +566,7 @@ TEST_F(WindowTreeTest, FocusOnPointer) {
   ASSERT_TRUE(FirstRoot(wm_connection()));
   const ClientWindowId wm_root_id = FirstRootId(wm_connection());
   EXPECT_TRUE(wm_connection()->AddWindow(wm_root_id, embed_window_id));
-  host_connection()->window_tree_host()->root_window()->SetBounds(
-      gfx::Rect(0, 0, 100, 100));
+  window_tree_host_->root_window()->SetBounds(gfx::Rect(0, 0, 100, 100));
   mojom::WindowTreeClientPtr client;
   mojo::InterfaceRequest<mojom::WindowTreeClient> client_request =
       GetProxy(&client);
@@ -628,7 +626,7 @@ TEST_F(WindowTreeTest, FocusOnPointer) {
   // Press outside of the embedded window. Note that root cannot be focused
   // (because it cannot be activated). So the focus would not move in this case.
   DispatchEventAndAckImmediately(CreatePointerDownEvent(61, 22));
-  EXPECT_EQ(child1, host_connection()->window_tree_host()->GetFocusedWindow());
+  EXPECT_EQ(child1, window_tree_host_->GetFocusedWindow());
 
   DispatchEventAndAckImmediately(CreatePointerUpEvent(21, 22));
   wm_client()->tracker()->changes()->clear();
@@ -637,7 +635,7 @@ TEST_F(WindowTreeTest, FocusOnPointer) {
   // Press in the same location. Should not get a focus change event (only input
   // event).
   DispatchEventAndAckImmediately(CreatePointerDownEvent(61, 22));
-  EXPECT_EQ(child1, host_connection()->window_tree_host()->GetFocusedWindow());
+  EXPECT_EQ(child1, window_tree_host_->GetFocusedWindow());
   ASSERT_EQ(wm_client()->tracker()->changes()->size(), 1u)
       << SingleChangeToDescription(*wm_client()->tracker()->changes());
   EXPECT_EQ("InputEvent window=0,2 event_action=4",
@@ -813,8 +811,7 @@ TEST_F(WindowTreeTest, EventAck) {
   ASSERT_TRUE(FirstRoot(wm_connection()));
   EXPECT_TRUE(wm_connection()->AddWindow(FirstRootId(wm_connection()),
                                          embed_window_id));
-  host_connection()->window_tree_host()->root_window()->SetBounds(
-      gfx::Rect(0, 0, 100, 100));
+  window_tree_host_->root_window()->SetBounds(gfx::Rect(0, 0, 100, 100));
 
   wm_client()->tracker()->changes()->clear();
   DispatchEventWithoutAck(CreateMouseMoveEvent(21, 22));

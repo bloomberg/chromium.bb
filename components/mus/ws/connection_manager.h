@@ -53,8 +53,10 @@ class ConnectionManager : public ServerWindowDelegate,
                     const scoped_refptr<mus::SurfacesState>& surfaces_state);
   ~ConnectionManager() override;
 
-  // Adds a WindowTreeHost.
-  void AddHost(WindowTreeHostConnection* connection);
+  // Adds/removes a WindowTreeHost. ConnectionManager owns the
+  // WindowTreeHostImpls.
+  void AddHost(WindowTreeHostImpl* host);
+  void DestroyHost(WindowTreeHostImpl* host);
 
   // Creates a new ServerWindow. The return value is owned by the caller, but
   // must be destroyed before ConnectionManager.
@@ -73,9 +75,7 @@ class ConnectionManager : public ServerWindowDelegate,
 
   ClientConnection* GetClientConnection(WindowTreeImpl* window_tree);
 
-  // Invoked when a WindowTreeHostConnection encounters an error or the
-  // associated Display window is closed.
-  void OnHostConnectionClosed(WindowTreeHostConnection* connection);
+  void OnHostConnectionClosed(WindowTreeHostImpl* host);
 
   // See description of WindowTree::Embed() for details. This assumes
   // |transport_window_id| is valid.
@@ -108,6 +108,9 @@ class ConnectionManager : public ServerWindowDelegate,
   // Invoked when the WindowTreeHostImpl's display is closed.
   void OnDisplayClosed();
 
+  // Called when the AcceleratedWidget is available for |host|.
+  void OnWindowTreeHostDisplayAvailable(WindowTreeHostImpl* host);
+
   // Invoked when a connection messages a client about the change. This is used
   // to avoid sending ServerChangeIdAdvanced() unnecessarily.
   void OnConnectionMessagedClient(ConnectionSpecificId id);
@@ -134,9 +137,7 @@ class ConnectionManager : public ServerWindowDelegate,
 
   WindowTreeHostImpl* GetActiveWindowTreeHost();
 
-  bool has_tree_host_connections() const {
-    return !host_connection_map_.empty();
-  }
+  bool has_tree_host_connections() const { return !hosts_.empty(); }
 
   void AddDisplayManagerBinding(
       mojo::InterfaceRequest<mojom::DisplayManager> request);
@@ -303,8 +304,11 @@ class ConnectionManager : public ServerWindowDelegate,
   // Set of WindowTreeImpls.
   ConnectionMap connection_map_;
 
-  // Set of WindowTreeHostImpls.
-  HostConnectionMap host_connection_map_;
+  // WindowTreeHostImpls are initially added to |pending_hosts_|. When the
+  // display is initialized it is moved to |hosts_|.
+  // ConnectionManager owns the WindowTreeHostImpls.
+  std::set<WindowTreeHostImpl*> pending_hosts_;
+  std::set<WindowTreeHostImpl*> hosts_;
 
   // If non-null then we're processing a client operation. The Operation is
   // not owned by us (it's created on the stack by WindowTreeImpl).
