@@ -10,6 +10,7 @@ include_rules = [
     "+base/strings/stringprintf.h",
     "+base/synchronization/waitable_event.h",
     "+base/sys_info.h",
+    "+base/test",
     "+base/thread_task_runner_handle.h",
     "+base/time",
     "+base/trace_event",

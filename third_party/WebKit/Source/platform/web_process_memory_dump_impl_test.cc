@@ -4,6 +4,8 @@
 
 #include "platform/web_process_memory_dump_impl.h"
 
+#include "base/memory/discardable_memory.h"
+#include "base/test/test_discardable_memory_allocator.h"
 #include "base/trace_event/memory_allocator_dump.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event_argument.h"
@@ -118,6 +120,18 @@ TEST(WebProcessMemoryDumpImplTest, IntegrationTest) {
   ASSERT_EQ(1u, allocator_dumps_edges.size());
   ASSERT_EQ(wmad4->guid(), allocator_dumps_edges[0].source.ToUint64());
   ASSERT_EQ(guid, allocator_dumps_edges[0].target.ToUint64());
+
+  // Check that createDumpAdapterForSkia() works.
+  auto skia_trace_memory_dump = wpmd1->createDumpAdapterForSkia("1/skia");
+  ASSERT_TRUE(skia_trace_memory_dump);
+
+  // Check that createDiscardableMemoryAllocatorDump() works.
+  base::TestDiscardableMemoryAllocator discardable_memory_allocator;
+  auto discardable_memory =
+      discardable_memory_allocator.AllocateLockedDiscardableMemory(1024);
+  wpmd1->createDiscardableMemoryAllocatorDump("1/discardable",
+                                              discardable_memory.get());
+  discardable_memory->Unlock();
 
   wpmd1.reset();
 }
