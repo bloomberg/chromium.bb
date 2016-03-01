@@ -171,6 +171,14 @@
             "group_name": "Disabled"
         }
     ],
+    "PreRead": [
+        {
+            "group_name": "NoPrefetchArgument",
+            "params": {
+                "NoPrefetchArgument": "true"
+            }
+        }
+    ],
     "QUIC": [
         {
             "group_name": "Enabled"
