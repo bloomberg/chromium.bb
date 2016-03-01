@@ -378,8 +378,6 @@ static PassRefPtrWillBeRawPtr<Node> cloneNodeAndAssociate(Node& toClone)
     SVGElement& svgElement = toSVGElement(toClone);
     ASSERT(!svgElement.correspondingElement());
     toSVGElement(clone.get())->setCorrespondingElement(&svgElement);
-    if (EventTargetData* data = toClone.eventTargetData())
-        data->eventListenerMap.copyEventListenersNotCreatedFromMarkupToTarget(clone.get());
     TrackExceptionState exceptionState;
     for (RefPtrWillBeRawPtr<Node> node = toClone.firstChild(); node && !exceptionState.hadException(); node = node->nextSibling())
         clone->appendChild(cloneNodeAndAssociate(*node), exceptionState);
@@ -414,8 +412,10 @@ void SVGUseElement::buildShadowAndInstanceTree(SVGElement* target)
     // Non-appearing <use> content is easier to debug, then half-appearing content.
     buildShadowTree(target, m_targetElementInstance.get(), false);
 
-    if (instanceTreeIsLoading(m_targetElementInstance.get()))
+    if (instanceTreeIsLoading(m_targetElementInstance.get())) {
+        cloneNonMarkupEventListeners();
         return;
+    }
 
     // Assure shadow tree building was successful.
     ASSERT(m_targetElementInstance);
@@ -435,6 +435,7 @@ void SVGUseElement::buildShadowAndInstanceTree(SVGElement* target)
 
     m_targetElementInstance = toSVGElement(shadowTreeRootElement->firstChild());
     transferUseWidthAndHeightIfNeeded(*this, m_targetElementInstance.get(), *m_targetElementInstance->correspondingElement());
+    cloneNonMarkupEventListeners();
 
     ASSERT(m_targetElementInstance->parentNode() == shadowTreeRootElement);
 
@@ -518,8 +519,6 @@ void SVGUseElement::buildShadowTree(SVGElement* target, SVGElement* targetInstan
     }
 
     targetInstance->setCorrespondingElement(target);
-    if (EventTargetData* data = target->eventTargetData())
-        data->eventListenerMap.copyEventListenersNotCreatedFromMarkupToTarget(targetInstance);
 
     for (RefPtrWillBeRawPtr<Node> child = target->firstChild(); child; child = child->nextSibling()) {
         // Skip any disallowed element.
@@ -532,6 +531,14 @@ void SVGUseElement::buildShadowTree(SVGElement* target, SVGElement* targetInstan
             // Enter recursion, appending new instance tree nodes to the "instance" object.
             buildShadowTree(toSVGElement(child), toSVGElement(newChild), foundUse);
         }
+    }
+}
+
+void SVGUseElement::cloneNonMarkupEventListeners()
+{
+    for (SVGElement& element : Traversal<SVGElement>::descendantsOf(*userAgentShadowRoot())) {
+        if (EventTargetData* data = element.correspondingElement()->eventTargetData())
+            data->eventListenerMap.copyEventListenersNotCreatedFromMarkupToTarget(&element);
     }
 }
 

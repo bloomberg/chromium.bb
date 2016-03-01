@@ -96,6 +96,7 @@ private:
     bool hasCycleUseReferencing(SVGUseElement*, ContainerNode* targetInstance, SVGElement*& newTarget);
     bool expandUseElementsInShadowTree(SVGElement*);
     void expandSymbolElementsInShadowTree(SVGElement*);
+    void cloneNonMarkupEventListeners();
 
     void transferUseAttributesToReplacedElement(SVGElement* from, SVGElement* to) const;
 
