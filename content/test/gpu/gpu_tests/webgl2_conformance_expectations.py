@@ -274,11 +274,12 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         '-with-canvas-rgba8-rgba-unsigned_byte.html',
         ['win', 'debug'], bug=542901)
 
-    # Win / AMD.
-    self.Flaky('deqp/functional/gles3/clipping.html',
-        ['win', 'amd'], bug=491419)
-    self.Flaky('deqp/functional/gles3/samplerobject.html',
-        ['win', 'amd'], bug=491419)
+    # Win / AMD flakiness seen on the FYI waterfall.
+    # It's unfortunate that this suppression needs to be so broad, but
+    # basically any test that uses readPixels is potentially flaky, and
+    # it's infeasible to suppress individual failures one by one.
+    self.Flaky('conformance2/*', ['win', ('amd', 0x6779)], bug=491419)
+    self.Flaky('deqp/*', ['win', ('amd', 0x6779)], bug=491419)
 
     # Mac only.
     self.Skip('deqp/data/gles3/shaders/qualification_order.html',
