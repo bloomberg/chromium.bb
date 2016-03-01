@@ -361,6 +361,7 @@ _arm_internal_release_boards = frozenset([
     'peach_pit',
     'purin',
     'smaug',
+    'smaug-cheets',
     'storm',
     'veyron_brain',
     'veyron_danger',
@@ -523,6 +524,7 @@ _cheets_boards = frozenset([
     'cyan-cheets',
     'glados-cheets',
     'samus-cheets',
+    'smaug-cheets',
     'veyron_minnie-cheets',
 ])
 
@@ -564,6 +566,7 @@ _no_vmtest_boards = _arm_boards | _brillo_boards | frozenset((
     'cyan-cheets',
     'glados-cheets',
     'samus-cheets',
+    'smaug-cheets',
 ))
 
 # This is a list of configs that should be included on the main waterfall, but
@@ -2400,6 +2403,11 @@ def GetConfig():
   site_config.Add(
       'samus-cheets-release', cheets_release,
       _base_configs['samus-cheets'],
+  )
+
+  site_config.Add(
+      'smaug-cheets-release', cheets_release,
+      _base_configs['smaug-cheets'],
   )
 
   site_config.Add(
