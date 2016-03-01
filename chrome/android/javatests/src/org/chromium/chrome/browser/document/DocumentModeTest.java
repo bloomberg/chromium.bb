@@ -10,6 +10,7 @@ import android.app.PendingIntent;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Environment;
 import android.test.FlakyTest;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.text.TextUtils;
@@ -17,6 +18,7 @@ import android.view.View;
 
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -26,16 +28,19 @@ import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel;
+import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModelSelector;
 import org.chromium.chrome.browser.tabmodel.document.OffTheRecordDocumentTabModel;
 import org.chromium.chrome.test.util.ActivityUtils;
 import org.chromium.chrome.test.util.ApplicationTestUtils;
+import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.DisableInTabbedMode;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.TouchCommon;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.net.test.EmbeddedTestServer;
 
 import java.lang.ref.WeakReference;
 import java.util.List;
@@ -648,6 +653,53 @@ public class DocumentModeTest extends DocumentModeTestBase {
                 "window.open page, opener set to null", true, "Page 4", false);
         assertEquals("Intent wasn't fired with about:blank",
                 "about:blank", IntentHandler.getUrlFromIntent(lastIntent));
+    }
+
+    /**
+     * Tests that a Weblite url from an external app uses the lite_url param when Data Reduction
+     * Proxy previews are being used.
+     */
+    @MediumTest
+    @CommandLineFlags.Add({"enable-spdy-proxy-auth", "data-reduction-proxy-lo-fi=always-on",
+            "enable-data-reduction-proxy-lo-fi-preview"})
+    public void testLaunchWebLiteURL() throws Exception {
+        EmbeddedTestServer testServer;
+        testServer = EmbeddedTestServer.createAndStartFileServer(
+                getInstrumentation().getContext(), Environment.getExternalStorageDirectory());
+
+        String url = testServer.getURL("/chrome/test/data/android/about.html");
+        Runnable viewIntentRunnable = getViewIntentRunnable(false,
+                "http://googleweblight.com/?lite_url=" + url);
+
+        // Wait for the Activity to start up.
+        final DocumentActivity newActivity = ActivityUtils.waitForActivity(
+                getInstrumentation(), DocumentActivity.class, viewIntentRunnable);
+        ChromeTabUtils.waitForTabPageLoaded(newActivity.getActivityTab(), (String) null);
+
+        TabModelSelector selector = ChromeApplication.getDocumentTabModelSelector();
+        assertEquals(1, selector.getTotalTabCount());
+        assertEquals(url, selector.getModel(false).getTabAt(0).getUrl());
+
+        testServer.stopAndDestroyServer();
+    }
+
+    /**
+     * Tests that a Weblite url from an external app does not use the lite_url param when Data
+     * Reduction Proxy previews are not being used.
+     */
+    @MediumTest
+    public void testLaunchWebLiteURLNoPreviews() throws Exception {
+        String url = "http://googleweblight.com/?lite_url=chrome/test/data/android/about.html";
+        Runnable viewIntentRunnable = getViewIntentRunnable(false, url);
+
+        // Wait for the Activity to start up.
+        final DocumentActivity newActivity = ActivityUtils.waitForActivity(
+                getInstrumentation(), DocumentActivity.class, viewIntentRunnable);
+        ChromeTabUtils.waitForTabPageLoaded(newActivity.getActivityTab(), (String) null);
+
+        TabModelSelector selector = ChromeApplication.getDocumentTabModelSelector();
+        assertEquals(1, selector.getTotalTabCount());
+        assertEquals(url, selector.getModel(false).getTabAt(0).getUrl());
     }
 
     private Intent performNewWindowTest(String url, String title, boolean checkWindowOpenSuccess,

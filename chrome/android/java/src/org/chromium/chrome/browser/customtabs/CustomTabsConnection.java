@@ -373,6 +373,17 @@ public class CustomTabsConnection extends ICustomTabsService.Stub {
     }
 
     /**
+     * Returns the url to which the custom tab should navigate.
+     *
+     * @param url The original url.
+     * @param session The Binder object identifying a session.
+     * @return The url to be used. May be overriden.
+     */
+    public String overrideUrlIfNecessary(String url, IBinder session) {
+        return url;
+    }
+
+    /**
      * @return a spare WebContents, or null.
      *
      * This WebContents has already navigated to "about:blank". You have to call

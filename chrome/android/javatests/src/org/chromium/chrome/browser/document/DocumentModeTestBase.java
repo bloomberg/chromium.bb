@@ -83,7 +83,13 @@ public class DocumentModeTestBase extends MultiActivityTestBase {
     protected int launchViaViewIntent(final boolean incognito, final String url,
             final String expectedTitle) throws Exception {
         // Fire the Intent and wait until Chrome is in the foreground.
-        Runnable runnable = new Runnable() {
+        return launchUrlViaRunnable(
+                incognito, getViewIntentRunnable(incognito, url), expectedTitle, false);
+    }
+
+    /** Creates a runnable that starts a DocumentActivity by using firing a VIEW Intent. */
+    protected Runnable getViewIntentRunnable(final boolean incognito, final String url) {
+        return new Runnable() {
             @Override
             public void run() {
                 Runnable runnable = new Runnable() {
@@ -105,7 +111,6 @@ public class DocumentModeTestBase extends MultiActivityTestBase {
                         runnable);
             }
         };
-        return launchUrlViaRunnable(incognito, runnable, expectedTitle, false);
     }
 
     /** Starts a DocumentActivity using {@ref ChromeLauncherActivity.launchDocumentInstance().} */

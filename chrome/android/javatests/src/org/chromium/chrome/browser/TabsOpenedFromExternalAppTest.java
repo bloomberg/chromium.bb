@@ -177,8 +177,8 @@ public class TabsOpenedFromExternalAppTest extends ChromeTabbedActivityTestBase 
      * Returns when the URL has been navigated to.
      * @throws InterruptedException
      */
-    private void launchUrlFromExternalApp(String url, String appId, boolean createNewTab,
-            Bundle extras) throws InterruptedException {
+    private void launchUrlFromExternalApp(String url, String expectedUrl, String appId,
+            boolean createNewTab, Bundle extras) throws InterruptedException {
         final Intent intent = new Intent(Intent.ACTION_VIEW);
         if (appId != null) {
             intent.putExtra(Browser.EXTRA_APPLICATION_ID, appId);
@@ -204,12 +204,12 @@ public class TabsOpenedFromExternalAppTest extends ChromeTabbedActivityTestBase 
                 }
             });
         }
-        ChromeTabUtils.waitForTabPageLoaded(getActivity().getActivityTab(), url);
+        ChromeTabUtils.waitForTabPageLoaded(getActivity().getActivityTab(), expectedUrl);
     }
 
     private void launchUrlFromExternalApp(String url, String appId, boolean createNewTab)
             throws InterruptedException {
-        launchUrlFromExternalApp(url, appId, createNewTab, null);
+        launchUrlFromExternalApp(url, url, appId, createNewTab, null);
     }
 
     /**
@@ -223,7 +223,7 @@ public class TabsOpenedFromExternalAppTest extends ChromeTabbedActivityTestBase 
         startMainActivityFromLauncher();
         Bundle extras = new Bundle();
         extras.putParcelable(Intent.EXTRA_REFERRER, Uri.parse(ANDROID_APP_REFERRER));
-        launchUrlFromExternalApp(url, EXTERNAL_APP_1_ID, true, extras);
+        launchUrlFromExternalApp(url, url, EXTERNAL_APP_1_ID, true, extras);
         CriteriaHelper.pollForCriteria(
                 new ReferrerCriteria(getActivity().getActivityTab(), ANDROID_APP_REFERRER), 2000,
                 200);
@@ -241,7 +241,7 @@ public class TabsOpenedFromExternalAppTest extends ChromeTabbedActivityTestBase 
         String referrer = "foobar://totally.legit.referrer";
         Bundle extras = new Bundle();
         extras.putParcelable(Intent.EXTRA_REFERRER, Uri.parse(referrer));
-        launchUrlFromExternalApp(url, EXTERNAL_APP_1_ID, true, extras);
+        launchUrlFromExternalApp(url, url, EXTERNAL_APP_1_ID, true, extras);
         CriteriaHelper.pollForCriteria(
                 new ReferrerCriteria(getActivity().getActivityTab(), ""), 2000, 200);
     }
@@ -631,5 +631,42 @@ public class TabsOpenedFromExternalAppTest extends ChromeTabbedActivityTestBase 
                 return getActivity().getTabModelSelector().getTotalTabCount() == 1;
             }
         });
+    }
+
+    /**
+     * Tests that a Weblite url from an external app uses the lite_url param when Data Reduction
+     * Proxy previews are being used.
+     */
+    @MediumTest
+    @CommandLineFlags.Add({"enable-spdy-proxy-auth", "data-reduction-proxy-lo-fi=always-on",
+            "enable-data-reduction-proxy-lo-fi-preview"})
+    public void testLaunchWebLiteURL() throws InterruptedException {
+        startMainActivityFromLauncher();
+
+        String url = mTestServer.getURL("/chrome/test/data/android/about.html");
+
+        // Launch a first URL from an app.
+        launchUrlFromExternalApp("http://googleweblight.com/?lite_url=" + url, url,
+                EXTERNAL_APP_1_ID, false, null);
+
+        assertEquals("Selected tab is not on the right URL.",
+                url, getActivity().getActivityTab().getUrl());
+    }
+
+    /**
+     * Tests that a Weblite url from an external app does not use the lite_url param when Data
+     * Reduction Proxy previews are not being used.
+     */
+    @MediumTest
+    public void testLaunchWebLiteURLNoPreviews() throws InterruptedException {
+        startMainActivityFromLauncher();
+
+        String url = "http://googleweblight.com/?lite_url=chrome/test/data/android/about.html";
+
+        // Launch a first URL from an app.
+        launchUrlFromExternalApp(url, url, EXTERNAL_APP_1_ID, false, null);
+
+        assertEquals("Selected tab is not on the right URL.",
+                url, getActivity().getActivityTab().getUrl());
     }
 }

@@ -17,6 +17,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_metrics.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_store.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "jni/DataReductionProxySettings_jni.h"
 #include "net/proxy/proxy_server.h"
@@ -152,6 +153,14 @@ jboolean DataReductionProxySettingsAndroid::IsDataReductionProxyUnreachable(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
   return Settings()->IsDataReductionProxyUnreachable();
+}
+
+jboolean DataReductionProxySettingsAndroid::AreLoFiPreviewsEnabled(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
+  return data_reduction_proxy::params::IsIncludedInLoFiPreviewFieldTrial() ||
+      (data_reduction_proxy::params::IsLoFiOnViaFlags() &&
+          data_reduction_proxy::params::AreLoFiPreviewsEnabledViaFlags());
 }
 
 // static

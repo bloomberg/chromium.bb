@@ -96,6 +96,11 @@ class DataReductionProxySettingsAndroid {
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
 
+  // Return if Lo-Fi previews are enabled via a field trial or the command line.
+  jboolean AreLoFiPreviewsEnabled(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+
   ScopedJavaLocalRef<jstring> GetTokenForAuthChallenge(JNIEnv* env,
                                                        jobject obj,
                                                        jstring host,

@@ -5,7 +5,10 @@
 package org.chromium.chrome.browser.net.spdyproxy;
 
 import android.content.Context;
+import android.net.Uri;
 import android.preference.PreferenceManager;
+import android.text.TextUtils;
+import android.webkit.URLUtil;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
@@ -54,6 +57,10 @@ public class DataReductionProxySettings {
     private static DataReductionProxySettings sSettings;
 
     private static final String DATA_REDUCTION_ENABLED_PREF = "BANDWIDTH_REDUCTION_PROXY_ENABLED";
+
+    private static final String WEBLITE_HOSTNAME = "googleweblight.com";
+
+    private static final String WEBLITE_QUERY_PARAM = "lite_url";
 
     /**
      * Returns whether the data reduction proxy is enabled.
@@ -269,6 +276,39 @@ public class DataReductionProxySettings {
         return map;
     }
 
+    /**
+     * If the given URL is a WebLite URL and should be overridden because the Data
+     * Reduction Proxy is on, the user is in the Lo-Fi previews experiment, and the scheme of the
+     * lite_url param is HTTP, returns the URL contained in the lite_url param. Otherwise returns
+     * the given URL.
+     *
+     * @param url The URL to evaluate.
+     * @return The URL to be used. Returns null if the URL param is null.
+     */
+    public String maybeRewriteWebliteUrl(String url) {
+        if (url == null || !URLUtil.isValidUrl(url) || !areLoFiPreviewsEnabled()
+                || !isDataReductionProxyEnabled()) {
+            return url;
+        }
+        String rewritten = extractUrlFromWebliteQueryParams(url);
+        if (rewritten == null
+                || !TextUtils.equals(Uri.parse(rewritten).getScheme(), "http")) {
+            return url;
+        }
+
+        return rewritten;
+    }
+
+    private String extractUrlFromWebliteQueryParams(String url) {
+        Uri uri = Uri.parse(url);
+        if (!TextUtils.equals(uri.getHost(), WEBLITE_HOSTNAME)) return null;
+        return uri.getQueryParameter(WEBLITE_QUERY_PARAM);
+    }
+
+    private boolean areLoFiPreviewsEnabled() {
+        return nativeAreLoFiPreviewsEnabled(mNativeDataReductionProxySettings);
+    }
+
     private native long nativeInit();
     private native boolean nativeIsDataReductionProxyAllowed(
             long nativeDataReductionProxySettingsAndroid);
@@ -303,6 +343,8 @@ public class DataReductionProxySettings {
     private native long[] nativeGetDailyReceivedContentLengths(
             long nativeDataReductionProxySettingsAndroid);
     private native boolean nativeIsDataReductionProxyUnreachable(
+            long nativeDataReductionProxySettingsAndroid);
+    private native boolean nativeAreLoFiPreviewsEnabled(
             long nativeDataReductionProxySettingsAndroid);
     private native String nativeGetHttpProxyList(long nativeDataReductionProxySettingsAndroid);
     private native String nativeGetHttpsProxyList(long nativeDataReductionProxySettingsAndroid);

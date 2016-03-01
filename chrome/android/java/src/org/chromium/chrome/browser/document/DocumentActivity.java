@@ -41,6 +41,7 @@ import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.metrics.StartupMetrics;
 import org.chromium.chrome.browser.metrics.UmaUtils;
+import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
@@ -584,6 +585,16 @@ public class DocumentActivity extends ChromeActivity {
         } else {
             mTab = createActivityTab(asyncParams);
         }
+
+        if (!isIncognito() && asyncParams != null) {
+            LoadUrlParams loadUrlParams = asyncParams.getLoadUrlParams();
+            if (loadUrlParams != null && loadUrlParams.getUrl() != null) {
+                loadUrlParams.setUrl(DataReductionProxySettings.getInstance()
+                        .maybeRewriteWebliteUrl(loadUrlParams.getUrl()));
+            }
+        }
+
+        mTab = createActivityTab(asyncParams);
 
         if (asyncParams != null && asyncParams.getWebContents() != null) {
             Intent parentIntent = IntentUtils.safeGetParcelableExtra(getIntent(),
