@@ -111,39 +111,6 @@ base::Closure CreatePrepareReceiver(bool* is_prepared) {
   return base::Bind(&ReceivePrepareResult, is_prepared);
 }
 
-// Contrary to the style guide, the output parameter of this function comes
-// before input parameters so Bind can be used on it to create a FetchCallback
-// to pass to DispatchFetchEvent.
-void ReceiveFetchResult(BrowserThread::ID run_quit_thread,
-                        const base::Closure& quit,
-                        ChromeBlobStorageContext* blob_context,
-                        FetchResult* out_result,
-                        ServiceWorkerStatusCode actual_status,
-                        ServiceWorkerFetchEventResult actual_result,
-                        const ServiceWorkerResponse& actual_response,
-                        const scoped_refptr<ServiceWorkerVersion>& worker) {
-  out_result->status = actual_status;
-  out_result->result = actual_result;
-  out_result->response = actual_response;
-  if (!actual_response.blob_uuid.empty()) {
-    out_result->blob_data_handle =
-        blob_context->context()->GetBlobDataFromUUID(
-            actual_response.blob_uuid);
-  }
-  if (!quit.is_null())
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, quit);
-}
-
-ServiceWorkerFetchDispatcher::FetchCallback CreateResponseReceiver(
-    BrowserThread::ID run_quit_thread,
-    const base::Closure& quit,
-    ChromeBlobStorageContext* blob_context,
-    FetchResult* result) {
-  return base::Bind(&ReceiveFetchResult, run_quit_thread, quit,
-                    make_scoped_refptr<ChromeBlobStorageContext>(blob_context),
-                    result);
-}
-
 void ReceiveFindRegistrationStatus(
     BrowserThread::ID run_quit_thread,
     const base::Closure& quit,
@@ -450,11 +417,9 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
                                        &fetch_result));
     fetch_run_loop.Run();
     ASSERT_TRUE(prepare_result);
-    ASSERT_TRUE(fetch_dispatcher_);
     *result = fetch_result.result;
     *response = fetch_result.response;
     *blob_data_handle = std::move(fetch_result.blob_data_handle);
-    fetch_dispatcher_.reset();
     ASSERT_EQ(SERVICE_WORKER_OK, fetch_result.status);
   }
 
@@ -665,9 +630,43 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
     fetch_dispatcher_.reset(new ServiceWorkerFetchDispatcher(
         std::move(request), version_.get(),
         CreatePrepareReceiver(prepare_result),
-        CreateResponseReceiver(BrowserThread::UI, done, blob_context_.get(),
-                               result)));
+        CreateResponseReceiver(done, blob_context_.get(), result)));
     fetch_dispatcher_->Run();
+  }
+
+  // Contrary to the style guide, the output parameter of this function comes
+  // before input parameters so Bind can be used on it to create a FetchCallback
+  // to pass to DispatchFetchEvent.
+  void ReceiveFetchResultOnIOThread(
+      const base::Closure& quit,
+      ChromeBlobStorageContext* blob_context,
+      FetchResult* out_result,
+      ServiceWorkerStatusCode actual_status,
+      ServiceWorkerFetchEventResult actual_result,
+      const ServiceWorkerResponse& actual_response,
+      const scoped_refptr<ServiceWorkerVersion>& worker) {
+    ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    ASSERT_TRUE(fetch_dispatcher_);
+    fetch_dispatcher_.reset();
+    out_result->status = actual_status;
+    out_result->result = actual_result;
+    out_result->response = actual_response;
+    if (!actual_response.blob_uuid.empty()) {
+      out_result->blob_data_handle =
+          blob_context->context()->GetBlobDataFromUUID(
+              actual_response.blob_uuid);
+    }
+    if (!quit.is_null())
+      BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, quit);
+  }
+
+  ServiceWorkerFetchDispatcher::FetchCallback CreateResponseReceiver(
+      const base::Closure& quit,
+      ChromeBlobStorageContext* blob_context,
+      FetchResult* result) {
+    return base::Bind(
+        &self::ReceiveFetchResultOnIOThread, this, quit,
+        make_scoped_refptr<ChromeBlobStorageContext>(blob_context), result);
   }
 
   void StopOnIOThread(const base::Closure& done,
