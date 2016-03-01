@@ -225,10 +225,6 @@ void MockVideoSource::Restart() {
   NOTIMPLEMENTED();
 }
 
-cricket::VideoRenderer* MockVideoSource::FrameInput() {
-  return &renderer_;
-}
-
 void MockVideoSource::RegisterObserver(webrtc::ObserverInterface* observer) {
   observers_.push_back(observer);
 }

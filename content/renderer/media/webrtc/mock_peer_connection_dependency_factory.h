@@ -45,7 +45,6 @@ class MockVideoSource : public webrtc::VideoSourceInterface {
   void AddSink(rtc::VideoSinkInterface<cricket::VideoFrame>* output) override;
   void RemoveSink(
       rtc::VideoSinkInterface<cricket::VideoFrame>* output) override;
-  cricket::VideoRenderer* FrameInput() override;
   const cricket::VideoOptions* options() const override;
   void Stop() override;
   void Restart() override;
