@@ -54,8 +54,6 @@ class ToolbarButton : public views::LabelButton,
   void OnGestureEvent(ui::GestureEvent* event) override;
   void GetAccessibleState(ui::AXViewState* state) override;
   scoped_ptr<views::LabelButtonBorder> CreateDefaultBorder() const override;
-  void AddInkDropLayer(ui::Layer* ink_drop_layer) override;
-  void RemoveInkDropLayer(ui::Layer* ink_drop_layer) override;
 
   // views::ContextMenuController:
   void ShowContextMenuForView(View* source,

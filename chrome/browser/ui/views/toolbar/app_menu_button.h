@@ -70,8 +70,6 @@ class AppMenuButton : public views::MenuButton,
 
  private:
   // views::MenuButton:
-  void AddInkDropLayer(ui::Layer* ink_drop_layer) override;
-  void RemoveInkDropLayer(ui::Layer* ink_drop_layer) override;
   gfx::Point GetInkDropCenter() const override;
 
   // views::MenuButton:

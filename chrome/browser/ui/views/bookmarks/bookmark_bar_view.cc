@@ -227,6 +227,11 @@ class BookmarkButtonBase : public views::LabelButton {
            event_utils::IsPossibleDispositionEvent(e);
   }
 
+  SkColor GetInkDropBaseColor() const override {
+    return GetThemeProvider()->GetColor(
+        ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
+  }
+
  private:
   scoped_ptr<gfx::SlideAnimation> show_animation_;
 
@@ -1696,7 +1701,6 @@ void BookmarkBarView::ConfigureButton(const BookmarkNode* node,
     SkColor color =
         GetThemeProvider()->GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT);
     button->SetEnabledTextColors(color);
-    button->set_ink_drop_base_color(color_utils::DeriveDefaultIconColor(color));
     if (node->is_folder()) {
       button->SetImage(views::Button::STATE_NORMAL,
                        chrome::GetBookmarkFolderIcon(color));

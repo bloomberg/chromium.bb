@@ -166,17 +166,6 @@ ToolbarButton::CreateDefaultBorder() const {
   return border;
 }
 
-void ToolbarButton::AddInkDropLayer(ui::Layer* ink_drop_layer) {
-  image()->SetPaintToLayer(true);
-  image()->SetFillsBoundsOpaquely(false);
-  views::LabelButton::AddInkDropLayer(ink_drop_layer);
-}
-
-void ToolbarButton::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
-  views::LabelButton::RemoveInkDropLayer(ink_drop_layer);
-  image()->SetPaintToLayer(false);
-}
-
 void ToolbarButton::ShowContextMenuForView(View* source,
                                            const gfx::Point& point,
                                            ui::MenuSourceType source_type) {

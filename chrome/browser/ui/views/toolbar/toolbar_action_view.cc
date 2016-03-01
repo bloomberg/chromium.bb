@@ -110,18 +110,12 @@ bool ToolbarActionView::IsTriggerableEvent(const ui::Event& event) {
              views::kMinimumMsBetweenButtonClicks;
 }
 
-void ToolbarActionView::AddInkDropLayer(ui::Layer* ink_drop_layer) {
-  image()->SetPaintToLayer(true);
-  image()->SetFillsBoundsOpaquely(false);
-  views::MenuButton::AddInkDropLayer(ink_drop_layer);
-}
-
-void ToolbarActionView::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
-  views::MenuButton::RemoveInkDropLayer(ink_drop_layer);
-  image()->SetPaintToLayer(false);
-}
-
 SkColor ToolbarActionView::GetInkDropBaseColor() const {
+  if (delegate_->ShownInsideMenu()) {
+    return GetNativeTheme()->GetSystemColor(
+        ui::NativeTheme::kColorId_HoverMenuItemBackgroundColor);
+  }
+
   return GetThemeProvider()->GetColor(
       ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
 }

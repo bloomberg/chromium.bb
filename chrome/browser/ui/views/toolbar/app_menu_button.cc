@@ -188,17 +188,6 @@ void AppMenuButton::SetTrailingMargin(int margin) {
   InvalidateLayout();
 }
 
-void AppMenuButton::AddInkDropLayer(ui::Layer* ink_drop_layer) {
-  image()->SetPaintToLayer(true);
-  image()->SetFillsBoundsOpaquely(false);
-  views::MenuButton::AddInkDropLayer(ink_drop_layer);
-}
-
-void AppMenuButton::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
-  views::MenuButton::RemoveInkDropLayer(ink_drop_layer);
-  image()->SetPaintToLayer(false);
-}
-
 gfx::Point AppMenuButton::GetInkDropCenter() const {
   // ToolbarView extends the bounds of the app button to the right in maximized
   // mode. So instead of using the center point of local bounds, we use the

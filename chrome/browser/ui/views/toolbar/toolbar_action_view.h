@@ -76,8 +76,6 @@ class ToolbarActionView : public views::MenuButton,
   scoped_ptr<views::LabelButtonBorder> CreateDefaultBorder() const override;
   void OnMouseEntered(const ui::MouseEvent& event) override;
   bool IsTriggerableEvent(const ui::Event& event) override;
-  void AddInkDropLayer(ui::Layer* ink_drop_layer) override;
-  void RemoveInkDropLayer(ui::Layer* ink_drop_layer) override;
   SkColor GetInkDropBaseColor() const override;
   bool ShouldShowInkDropHover() const override;
 
