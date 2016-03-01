@@ -5,6 +5,7 @@
 #include "core/paint/PaintPropertyTreeBuilder.h"
 
 #include "core/frame/FrameView.h"
+#include "core/layout/LayoutPart.h"
 #include "core/layout/LayoutView.h"
 #include "core/paint/ObjectPaintProperties.h"
 #include "core/paint/PaintLayer.h"
@@ -100,13 +101,6 @@ void PaintPropertyTreeBuilder::walk(FrameView& frameView, const PaintPropertyTre
 
     if (LayoutView* layoutView = frameView.layoutView())
         walk(*layoutView, localContext);
-
-    for (Frame* child = frameView.frame().tree().firstChild(); child; child = child->tree().nextSibling()) {
-        if (!child->isLocalFrame())
-            continue;
-        if (FrameView* childView = toLocalFrame(child)->view())
-            walk(*childView, localContext);
-    }
 }
 
 static void deriveBorderBoxFromContainerContext(const LayoutObject& object, PaintPropertyTreeBuilderContext& context)
@@ -358,6 +352,13 @@ void PaintPropertyTreeBuilder::walk(LayoutObject& object, const PaintPropertyTre
     for (LayoutObject* child = object.slowFirstChild(); child; child = child->nextSibling()) {
         if (child->isBoxModelObject() || child->isSVG())
             walk(*child, localContext);
+    }
+
+    if (object.isLayoutPart()) {
+        Widget* widget = toLayoutPart(object).widget();
+        if (widget && widget->isFrameView())
+            walk(*toFrameView(widget), localContext);
+        // TODO(pdr): Investigate RemoteFrameView (crbug.com/579281).
     }
 }
 

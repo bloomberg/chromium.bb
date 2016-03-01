@@ -312,7 +312,8 @@ bool LayoutPart::updateWidgetGeometryInternal()
     LayoutRect contentBox = contentBoxRect();
     LayoutRect absoluteContentBox(localToAbsoluteQuad(FloatQuad(FloatRect(contentBox))).boundingBox());
     if (widget->isFrameView()) {
-        contentBox.setLocation(absoluteContentBox.location());
+        if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+            contentBox.setLocation(absoluteContentBox.location());
         return setWidgetGeometry(contentBox);
     }
     // TODO(chrishtr): why are these widgets using an absolute rect for their frameRect?

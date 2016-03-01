@@ -564,7 +564,7 @@ TEST_F(PaintPropertyTreeBuilderTest, TransformNodesAcrossSubframes)
         "<div id='divWithTransform' style='transform: translate3d(1px, 2px, 3px);'>"
         "  <iframe id='frame' width='500' height='500'></iframe>"
         "</div>");
-    Document& frameDocument = setupChildIframe("frame", "<div id='transform' style='transform: translate3d(4px, 5px, 6px);'></div>");
+    Document& frameDocument = setupChildIframe("frame", "<style>body { margin: 0px; }</style><div id='transform' style='transform: translate3d(4px, 5px, 6px);'></div>");
     document().view()->updateAllLifecyclePhases();
 
     LayoutObject& divWithTransform = *document().getElementById("divWithTransform")->layoutObject();
@@ -573,7 +573,58 @@ TEST_F(PaintPropertyTreeBuilderTest, TransformNodesAcrossSubframes)
 
     LayoutObject* innerDivWithTransform = frameDocument.getElementById("transform")->layoutObject();
     ObjectPaintProperties* innerDivWithTransformProperties = innerDivWithTransform->objectPaintProperties();
-    EXPECT_EQ(TransformationMatrix().translate3d(4, 5, 6), innerDivWithTransformProperties->transform()->matrix());
+    auto* innerDivTransform = innerDivWithTransformProperties->transform();
+    EXPECT_EQ(TransformationMatrix().translate3d(4, 5, 6), innerDivTransform->matrix());
+
+    // Ensure that the inner div's transform is correctly rooted in the root frame's transform tree.
+    // This asserts that we have the following tree structure:
+    // ...
+    //   Transform transform=translation=1.000000,2.000000,3.000000
+    //     PreTranslation transform=translation=2.000000,2.000000,0.000000
+    //       ScrollTranslation transform=translation=0.000000,0.000000,0.000000
+    //         Transform transform=translation=4.000000,5.000000,6.000000
+    auto* innerDocumentScrollTranslation = innerDivTransform->parent();
+    EXPECT_EQ(TransformationMatrix().translate3d(0, 0, 0), innerDocumentScrollTranslation->matrix());
+    auto* iframePreTranslation = innerDocumentScrollTranslation->parent();
+    EXPECT_EQ(TransformationMatrix().translate3d(2, 2, 0), iframePreTranslation->matrix());
+    EXPECT_EQ(divWithTransformProperties->transform(), iframePreTranslation->parent());
+}
+
+TEST_F(PaintPropertyTreeBuilderTest, TransformNodesInTransformedSubframes)
+{
+    setBodyInnerHTML(
+        "<style>body { margin: 0; }</style>"
+        "<div id='divWithTransform' style='transform: translate3d(1px, 2px, 3px);'>"
+        "  <iframe id='frame' width='500' height='500' style='transform: translate3d(4px, 5px, 6px); border: 42px solid;'></iframe>"
+        "</div>");
+    Document& frameDocument = setupChildIframe("frame", "<style>body { margin: 31px; }</style><div id='transform' style='transform: translate3d(7px, 8px, 9px);'></div>");
+    document().view()->updateAllLifecyclePhases();
+
+    // Assert that we have the following tree structure:
+    // ...
+    //   Transform transform=translation=1.000000,2.000000,3.000000
+    //     Transform transform=translation=4.000000,5.000000,6.000000
+    //       PreTranslation transform=translation=42.000000,42.000000,0.000000
+    //         ScrollTranslation transform=translation=0.000000,0.000000,0.000000
+    //           PaintOffsetTranslation transform=translation=31.000000,31.000000,0.000000
+    //             Transform transform=translation=7.000000,8.000000,9.000000
+    LayoutObject* innerDivWithTransform = frameDocument.getElementById("transform")->layoutObject();
+    auto* innerDivTransform = innerDivWithTransform->objectPaintProperties()->transform();
+    EXPECT_EQ(TransformationMatrix().translate3d(7, 8, 9), innerDivTransform->matrix());
+
+    auto* innerDocumentPaintOffsetTranslation = innerDivTransform->parent();
+    EXPECT_EQ(TransformationMatrix().translate3d(31, 31, 0), innerDocumentPaintOffsetTranslation->matrix());
+    auto* innerDocumentScrollTranslation = innerDocumentPaintOffsetTranslation->parent();
+    EXPECT_EQ(TransformationMatrix().translate3d(0, 0, 0), innerDocumentScrollTranslation->matrix());
+    auto* iframePreTranslation = innerDocumentScrollTranslation->parent();
+    EXPECT_EQ(TransformationMatrix().translate3d(42, 42, 0), iframePreTranslation->matrix());
+    auto* iframeTransform = iframePreTranslation->parent();
+    EXPECT_EQ(TransformationMatrix().translate3d(4, 5, 6), iframeTransform->matrix());
+    auto* divWithTransformTransform = iframeTransform->parent();
+    EXPECT_EQ(TransformationMatrix().translate3d(1, 2, 3), divWithTransformTransform->matrix());
+
+    LayoutObject& divWithTransform = *document().getElementById("divWithTransform")->layoutObject();
+    EXPECT_EQ(divWithTransformTransform, divWithTransform.objectPaintProperties()->transform());
 }
 
 TEST_F(PaintPropertyTreeBuilderTest, TreeContextClipByNonStackingContext)

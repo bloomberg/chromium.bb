@@ -61,7 +61,8 @@ void RenderingTest::TearDown()
 
 Document& RenderingTest::setupChildIframe(const AtomicString& iframeElementId, const String& htmlContentOfIframe)
 {
-
+    // TODO(pdr): This should be refactored to share code with the actual setup
+    // instead of partially duplicating it here (e.g., LocalFrame::createView).
     HTMLIFrameElement& iframe = *toHTMLIFrameElement(document().getElementById(iframeElementId));
     m_childFrameLoaderClient = FrameLoaderClientWithParent::create(document().frame());
     m_subframe = LocalFrame::create(m_childFrameLoaderClient.get(), document().frame()->host(), &iframe);
@@ -69,6 +70,7 @@ Document& RenderingTest::setupChildIframe(const AtomicString& iframeElementId, c
     m_subframe->init();
     m_subframe->view()->setParentVisible(true);
     m_subframe->view()->setSelfVisible(true);
+    iframe.setWidget(m_subframe->view());
     static_cast<SingleChildFrameLoaderClient*>(document().frame()->client())->setChild(m_subframe.get());
     document().frame()->host()->incrementSubframeCount();
     Document& frameDocument = *iframe.contentDocument();
