@@ -14,7 +14,6 @@ import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 import org.chromium.android_webview.AwContents;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.parameter.ParameterizedTest;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 
@@ -104,7 +103,6 @@ public class AwContentsGarbageCollectionTest extends AwTestBase {
         gcAndCheckAllAwContentsDestroyed();
     }
 
-    @ParameterizedTest.Set  // crbug.com/590408
     @DisableHardwareAccelerationForTest
     @SmallTest
     @Feature({"AndroidWebView"})
@@ -126,7 +124,6 @@ public class AwContentsGarbageCollectionTest extends AwTestBase {
         gcAndCheckAllAwContentsDestroyed();
     }
 
-    @ParameterizedTest.Set  // crbug.com/590408
     @DisableHardwareAccelerationForTest
     @SmallTest
     @Feature({"AndroidWebView"})

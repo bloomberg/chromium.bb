@@ -1704,9 +1704,18 @@ bool RenderProcessHostImpl::FastShutdownIfPossible() {
 
 bool RenderProcessHostImpl::Send(IPC::Message* msg) {
   TRACE_EVENT0("renderer_host", "RenderProcessHostImpl::Send");
+#if !defined(OS_ANDROID)
+  DCHECK(!msg->is_sync());
+#endif
+
   if (!channel_) {
+#if defined(OS_ANDROID)
+    if (msg->is_sync()) {
+      delete msg;
+      return false;
+    }
+#endif
     if (!is_initialized_) {
-      DCHECK(!msg->is_sync());
       queued_messages_.push(msg);
       return true;
     } else {
@@ -1716,6 +1725,12 @@ bool RenderProcessHostImpl::Send(IPC::Message* msg) {
   }
 
   if (child_process_launcher_.get() && child_process_launcher_->IsStarting()) {
+#if defined(OS_ANDROID)
+    if (msg->is_sync()) {
+      delete msg;
+      return false;
+    }
+#endif
     queued_messages_.push(msg);
     return true;
   }
