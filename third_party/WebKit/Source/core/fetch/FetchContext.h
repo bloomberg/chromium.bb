@@ -112,6 +112,7 @@ public:
     virtual ResourceLoadPriority modifyPriorityForExperiments(ResourceLoadPriority priority, Resource::Type, const FetchRequest&, ResourcePriority::VisibilityStatus) { return priority; }
 
     virtual WebTaskRunner* loadingTaskRunner() const { return nullptr; }
+    virtual bool isInspectorAttached() const { return false; }
 
 protected:
     FetchContext() { }

@@ -113,6 +113,7 @@ public:
     void countClientHintsViewportWidth() override;
 
     WebTaskRunner* loadingTaskRunner() const override;
+    bool isInspectorAttached() const override;
 
     DECLARE_VIRTUAL_TRACE();
 
