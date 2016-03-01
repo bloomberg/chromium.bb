@@ -281,7 +281,7 @@ void SurfaceHitTestReadyNotifier::WaitForSurfaceReady() {
   root_surface_id_ = target_view_->FrameConnectorForTesting()
                          ->GetRootRenderWidgetHostViewForTesting()
                          ->SurfaceIdForTesting();
-  if (ContainsSurfaceId())
+  if (ContainsSurfaceId(root_surface_id_))
     return;
 
   while (true) {
@@ -294,17 +294,19 @@ void SurfaceHitTestReadyNotifier::WaitForSurfaceReady() {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
     run_loop.Run();
-    if (ContainsSurfaceId())
+    if (ContainsSurfaceId(root_surface_id_))
       break;
   }
 }
 
-bool SurfaceHitTestReadyNotifier::ContainsSurfaceId() {
-  if (root_surface_id_.is_null())
+bool SurfaceHitTestReadyNotifier::ContainsSurfaceId(
+    cc::SurfaceId container_surface_id) {
+  if (container_surface_id.is_null())
     return false;
-  for (cc::SurfaceId id : surface_manager_->GetSurfaceForId(root_surface_id_)
-                              ->referenced_surfaces()) {
-    if (id == target_view_->SurfaceIdForTesting())
+  for (cc::SurfaceId id :
+       surface_manager_->GetSurfaceForId(container_surface_id)
+           ->referenced_surfaces()) {
+    if (id == target_view_->SurfaceIdForTesting() || ContainsSurfaceId(id))
       return true;
   }
   return false;

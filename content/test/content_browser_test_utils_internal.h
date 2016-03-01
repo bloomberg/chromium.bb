@@ -115,7 +115,7 @@ class SurfaceHitTestReadyNotifier {
   void WaitForSurfaceReady();
 
  private:
-  bool ContainsSurfaceId();
+  bool ContainsSurfaceId(cc::SurfaceId container_surface_id);
 
   cc::SurfaceManager* surface_manager_;
   cc::SurfaceId root_surface_id_;

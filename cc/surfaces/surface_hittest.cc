@@ -104,9 +104,13 @@ bool SurfaceHittest::GetTargetSurfaceAtPointInternal(
       gfx::Transform transform_to_child_space;
       if (GetTargetSurfaceAtPointInternal(
               surface_quad->surface_id, RenderPassId(), point_in_quad_space,
-              referenced_passes, out_surface_id, &transform_to_child_space) ||
-          (delegate_ &&
-           delegate_->AcceptHitTarget(surface_quad, point_in_quad_space))) {
+              referenced_passes, out_surface_id, &transform_to_child_space)) {
+        *out_transform = transform_to_child_space * target_to_quad_transform *
+                         transform_from_root_target;
+        return true;
+      } else if (delegate_ &&
+                 delegate_->AcceptHitTarget(surface_quad,
+                                            point_in_quad_space)) {
         *out_surface_id = surface_quad->surface_id;
         *out_transform = transform_to_child_space * target_to_quad_transform *
                          transform_from_root_target;
