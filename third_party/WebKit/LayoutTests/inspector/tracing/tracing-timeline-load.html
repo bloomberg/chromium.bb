@@ -9,7 +9,9 @@ function test()
 {
     function runTestWithDataAndCheck(input, expectedOutput)
     {
+        InspectorTest.tracingModel().reset();
         var model = InspectorTest.tracingTimelineModel();
+        model.reset();
         var timeline = WebInspector.panels.timeline;
 
         function createFileReader(file, delegate)
@@ -98,9 +100,9 @@ function test()
 
         function testJSONObjectFormat(next)
         {
-            var json = "{\"traceEvents\":" + data + "}";
-            var input = JSON.stringify(json);
-            runTestWithDataAndCheck(input, json);
+            var json = JSON.stringify(data);
+            var input = "{\"traceEvents\":" + json + "}";
+            runTestWithDataAndCheck(input, data);
             next();
         },
 
