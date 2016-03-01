@@ -75,7 +75,8 @@ ChildWindowSurfaceWin::ChildWindowSurfaceWin(GpuChannelManager* manager,
     : gfx::NativeViewGLSurfaceEGL(0),
       parent_window_(parent_window),
       manager_(manager),
-      alpha_(true) {
+      alpha_(true),
+      first_swap_(true) {
   // Don't use EGL_ANGLE_window_fixed_size so that we can avoid recreating the
   // window surface, which can cause flicker on DirectComposition.
   enable_fixed_size_angle_ = false;
@@ -181,6 +182,13 @@ bool ChildWindowSurfaceWin::Resize(const gfx::Size& size,
 
 gfx::SwapResult ChildWindowSurfaceWin::SwapBuffers() {
   gfx::SwapResult result = NativeViewGLSurfaceEGL::SwapBuffers();
+  // Force the driver to finish drawing before clearing the contents to
+  // transparent, to reduce or eliminate the period of time where the contents
+  // have flashed black.
+  if (first_swap_) {
+    glFinish();
+    first_swap_ = false;
+  }
   ClearInvalidContents();
   return result;
 }

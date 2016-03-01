@@ -37,6 +37,7 @@ class ChildWindowSurfaceWin : public gfx::NativeViewGLSurfaceEGL {
   GpuChannelManager* manager_;
   gfx::Rect rect_to_clear_;
   bool alpha_;
+  bool first_swap_;
 
   DISALLOW_COPY_AND_ASSIGN(ChildWindowSurfaceWin);
 };
