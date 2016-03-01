@@ -5,12 +5,13 @@
 #include "components/rappor/rappor_parameters.h"
 
 #include "base/compiler_specific.h"
+#include "base/format_macros.h"
 #include "base/strings/stringprintf.h"
 
 namespace rappor {
 
 std::string RapporParameters::ToString() const {
-  return base::StringPrintf("{ %d, %d, %d, %d, %d }",
+  return base::StringPrintf("{ %d, %" PRIuS ", %d, %d, %d }",
       num_cohorts,
       bloom_filter_size_bytes,
       bloom_filter_hash_function_count,

@@ -11,7 +11,8 @@ namespace rappor {
 
 // Levels of noise added to a sample.
 enum NoiseLevel {
-  NORMAL_NOISE = 0,
+  NO_NOISE = 0,
+  NORMAL_NOISE,
   NUM_NOISE_LEVELS,
 };
 
@@ -28,9 +29,11 @@ enum RapporType {
 };
 
 enum Probability {
+  PROBABILITY_100,   // 100%
   PROBABILITY_75,    // 75%
   PROBABILITY_50,    // 50%
   PROBABILITY_25,    // 25%
+  PROBABILITY_0,     // 0%
 };
 
 
@@ -73,7 +76,7 @@ struct RapporParameters {
   int num_cohorts;
 
   // The number of bytes stored in the Bloom filter.
-  int bloom_filter_size_bytes;
+  size_t bloom_filter_size_bytes;
   // The number of hash functions used in the Bloom filter.
   int bloom_filter_hash_function_count;
 
@@ -87,6 +90,13 @@ struct RapporParameters {
 namespace internal {
 
 const NoiseParameters kNoiseParametersForLevel[NUM_NOISE_LEVELS] = {
+    // NO_NOISE
+    {
+     rappor::PROBABILITY_0 /* Fake data probability */,
+     rappor::PROBABILITY_0 /* Fake one probability */,
+     rappor::PROBABILITY_100 /* One coin probability */,
+     rappor::PROBABILITY_0 /* Zero coin probability */,
+    },
     // NORMAL_NOISE
     {
      rappor::PROBABILITY_50 /* Fake data probability */,

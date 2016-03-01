@@ -15,12 +15,36 @@ import presubmit_util
 # Model definitions for rappor.xml content
 _SUMMARY_TYPE = models.TextNodeType('summary')
 
+_NOISE_VALUES_TYPE = models.ObjectNodeType('noise-values',
+    float_attributes=[
+      'fake-prob',
+      'fake-one-prob',
+      'one-coin-prob',
+      'zero-coin-prob',
+    ])
+
+_NOISE_LEVEL_TYPE = models.ObjectNodeType('noise-level',
+    extra_newlines=(1, 1, 1),
+    string_attributes=['name'],
+    children=[
+      models.ChildType('summary', _SUMMARY_TYPE, False),
+      models.ChildType('values', _NOISE_VALUES_TYPE, False),
+    ])
+
+_NOISE_LEVELS_TYPE = models.ObjectNodeType('noise-levels',
+    extra_newlines=(1, 1, 1),
+    dont_indent=True,
+    children=[
+      models.ChildType('types', _NOISE_LEVEL_TYPE, True),
+    ])
+
 _PARAMETERS_TYPE = models.ObjectNodeType('parameters',
     int_attributes=[
       'num-cohorts',
       'bytes',
       'hash-functions',
     ],
+    # Remove probabilities once all parsers process noise levels.
     float_attributes=[
       'fake-prob',
       'fake-one-prob',
@@ -28,7 +52,8 @@ _PARAMETERS_TYPE = models.ObjectNodeType('parameters',
       'zero-coin-prob',
     ],
     string_attributes=[
-      'reporting-level'
+      'reporting-level',
+      'noise-level',
     ])
 
 _RAPPOR_PARAMETERS_TYPE = models.ObjectNodeType('rappor-parameters',
@@ -59,9 +84,16 @@ _FLAG_TYPE = models.TextNodeType('flag', single_line=True)
 
 _FLAGS_FIELD_TYPE = models.ObjectNodeType('flags-field',
     extra_newlines=(1, 1, 0),
-    string_attributes=['name'],
+    string_attributes=['name', 'noise-level'],
     children=[
       models.ChildType('flags', _FLAG_TYPE, True),
+      models.ChildType('summary', _SUMMARY_TYPE, False),
+    ])
+
+_UINT64_FIELD_TYPE = models.ObjectNodeType('uint64-field',
+    extra_newlines=(1, 1, 0),
+    string_attributes=['name', 'noise-level'],
+    children=[
       models.ChildType('summary', _SUMMARY_TYPE, False),
     ])
 
@@ -73,6 +105,7 @@ _RAPPOR_METRIC_TYPE = models.ObjectNodeType('rappor-metric',
       models.ChildType('summary', _SUMMARY_TYPE, False),
       models.ChildType('strings', _STRING_FIELD_TYPE, True),
       models.ChildType('flags', _FLAGS_FIELD_TYPE, True),
+      models.ChildType('uint64', _UINT64_FIELD_TYPE, True),
     ])
 
 _RAPPOR_METRICS_TYPE = models.ObjectNodeType('rappor-metrics',
@@ -86,6 +119,7 @@ _RAPPOR_CONFIGURATION_TYPE = models.ObjectNodeType('rappor-configuration',
     extra_newlines=(1, 1, 1),
     dont_indent=True,
     children=[
+      models.ChildType('noiseLevels', _NOISE_LEVELS_TYPE, False),
       models.ChildType('parameterTypes', _RAPPOR_PARAMETERS_TYPES_TYPE, False),
       models.ChildType('metrics', _RAPPOR_METRICS_TYPE, False),
     ])

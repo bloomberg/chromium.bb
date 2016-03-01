@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include "base/logging.h"
+#include "base/numerics/safe_conversions.h"
 #include "third_party/smhasher/src/City.h"
 
 namespace rappor {
@@ -21,7 +22,7 @@ uint32_t ComputeHash(const std::string& str, uint32_t seed) {
 
 }  // namespace
 
-BloomFilter::BloomFilter(uint32_t bytes_size,
+BloomFilter::BloomFilter(size_t bytes_size,
                          uint32_t hash_function_count,
                          uint32_t hash_seed_offset)
     : bytes_(bytes_size),
@@ -47,17 +48,18 @@ void BloomFilter::SetString(const std::string& str) {
 
 namespace internal {
 
-uint64_t GetBloomBits(uint32_t bytes_size,
+uint64_t GetBloomBits(size_t bytes_size,
                       uint32_t hash_function_count,
                       uint32_t hash_seed_offset,
                       const std::string& str) {
   // Make sure result fits in uint64_t.
   DCHECK_LE(bytes_size, 8u);
   uint64_t output = 0;
-  const uint32_t bits_size = bytes_size * 8;
+  const uint64_t bits_size = base::strict_cast<uint64_t>(bytes_size) * 8;
   for (size_t i = 0; i < hash_function_count; ++i) {
-    uint32_t index = ComputeHash(str, hash_seed_offset + i);
-    output |= 1ULL << uint64_t(index % bits_size);
+    uint64_t index = base::strict_cast<uint64_t>(
+        ComputeHash(str, hash_seed_offset + i));
+    output |= 1ULL << (index % bits_size);
   }
   return output;
 }
