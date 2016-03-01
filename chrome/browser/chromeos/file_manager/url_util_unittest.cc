@@ -20,7 +20,8 @@ namespace {
 // Pretty print the JSON escaped in the query string.
 std::string PrettyPrintEscapedJson(const std::string& query) {
   const std::string json = net::UnescapeURLComponent(
-      query, net::UnescapeRule::SPACES | net::UnescapeRule::URL_SPECIAL_CHARS);
+      query, net::UnescapeRule::SPACES | net::UnescapeRule::PATH_SEPARATORS |
+                 net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS);
   scoped_ptr<base::Value> value = base::JSONReader::Read(json);
   std::string pretty_json;
   base::JSONWriter::WriteWithOptions(
