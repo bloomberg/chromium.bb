@@ -729,7 +729,7 @@ void BluetoothDispatcher::OnGetCharacteristicsSuccess(
 
   request->callbacks->onSuccess(blink::adoptWebPtr(characteristics));
 
-  pending_characteristics_requests_.Lookup(request_id);
+  pending_characteristics_requests_.Remove(request_id);
 }
 
 void BluetoothDispatcher::OnGetCharacteristicsError(int thread_id,
