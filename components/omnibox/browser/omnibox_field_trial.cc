@@ -407,7 +407,7 @@ size_t OmniboxFieldTrial::HQPNumTitleWordsToAllow() {
           variations::GetVariationParamValue(kBundledExperimentFieldTrialName,
                                              kHQPNumTitleWordsRule),
           &num_title_words))
-    return 10;
+    return 20;
   return num_title_words;
 }
 

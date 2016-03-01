@@ -305,7 +305,7 @@ class OmniboxFieldTrial {
 
   // Returns the number of title words that are allowed to contribute
   // to the topicality score.  Words later in the title are ignored.
-  // Returns 10 as a default if the experiment isn't active.
+  // Returns 20 as a default if the experiment isn't active.
   static size_t HQPNumTitleWordsToAllow();
 
   // ---------------------------------------------------------
