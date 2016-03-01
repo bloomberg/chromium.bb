@@ -23,6 +23,9 @@ InterpolationValue CSSPositionAxisListInterpolationType::convertPositionAxisCSSV
         return result;
     }
 
+    if (!value.isPrimitiveValue())
+        return nullptr;
+
     const CSSPrimitiveValue& primitveValue = toCSSPrimitiveValue(value);
     if (!primitveValue.isValueID())
         return CSSLengthInterpolationType::maybeConvertCSSValue(value);
