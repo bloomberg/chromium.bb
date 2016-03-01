@@ -48,8 +48,7 @@ NameServerClassifier::NameServersType NameServerClassifier::GetNameServersType(
   for (std::vector<IPEndPoint>::const_iterator it = nameservers.begin();
        it != nameservers.end();
        ++it) {
-    type =
-        MergeNameServersTypes(type, GetNameServerType(it->address().bytes()));
+    type = MergeNameServersTypes(type, GetNameServerType(it->address()));
   }
   return type;
 }
@@ -71,7 +70,7 @@ void NameServerClassifier::AddRule(const char* pattern_string,
 }
 
 NameServerClassifier::NameServersType NameServerClassifier::GetNameServerType(
-    const IPAddressNumber& address) const {
+    const IPAddress& address) const {
   for (ScopedVector<NameServerTypeRule>::const_iterator it = rules_.begin();
        it != rules_.end();
        ++it) {

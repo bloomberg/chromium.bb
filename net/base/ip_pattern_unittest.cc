@@ -4,7 +4,7 @@
 
 #include "net/base/ip_pattern.h"
 
-#include "net/base/ip_address_number.h"
+#include "net/base/ip_address.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -17,17 +17,17 @@ bool IsValidPattern(const std::string& pattern_text) {
 }
 
 bool CheckForMatch(const IPPattern& pattern, const std::string& address_text) {
-  IPAddressNumber address;
-  EXPECT_TRUE(ParseIPLiteralToNumber(address_text, &address));
+  IPAddress address;
+  EXPECT_TRUE(address.AssignFromIPLiteral(address_text));
   return pattern.Match(address);
 }
 
 TEST(IPPatternTest, EmptyPattern) {
   IPPattern pattern;
-  IPAddressNumber ipv4_address1;
-  EXPECT_TRUE(ParseIPLiteralToNumber("1.2.3.4", &ipv4_address1));
-  IPAddressNumber ipv6_address1;
-  EXPECT_TRUE(ParseIPLiteralToNumber("1:2:3:4:5:6:7:8", &ipv6_address1));
+  IPAddress ipv4_address1;
+  EXPECT_TRUE(ipv4_address1.AssignFromIPLiteral("1.2.3.4"));
+  IPAddress ipv6_address1;
+  EXPECT_TRUE(ipv6_address1.AssignFromIPLiteral("1:2:3:4:5:6:7:8"));
 
   EXPECT_FALSE(pattern.Match(ipv4_address1));
   EXPECT_FALSE(pattern.Match(ipv6_address1));

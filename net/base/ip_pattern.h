@@ -13,10 +13,11 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"
-#include "net/base/ip_address_number.h"
 #include "net/base/net_export.h"
 
 namespace net {
+
+class IPAddress;
 
 // IPPatterns are used to match IP address resolutions for possible augmentation
 // by a MappedIPResolver, which uses IPMappingRules.
@@ -30,7 +31,7 @@ class NET_EXPORT IPPattern {
   bool ParsePattern(const std::string& ip_pattern);
   // Test to see if the current pattern in |this| matches the given |address|
   // and return true if it matches.
-  bool Match(const IPAddressNumber& address) const;
+  bool Match(const IPAddress& address) const;
 
   bool is_ipv4() const { return is_ipv4_; }
 

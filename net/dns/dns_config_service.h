@@ -28,6 +28,8 @@ class Value;
 
 namespace net {
 
+class IPAddress;
+
 // Always use 1 second timeout (followed by binary exponential backoff).
 // TODO(szym): Remove code which reads timeout from system.
 const unsigned kDnsTimeoutSeconds = 1;
@@ -56,7 +58,7 @@ class NET_EXPORT_PRIVATE NameServerClassifier {
   struct NameServerTypeRule;
 
   void AddRule(const char* pattern_string, NameServersType type);
-  NameServersType GetNameServerType(const IPAddressNumber& address) const;
+  NameServersType GetNameServerType(const IPAddress& address) const;
   static NameServersType MergeNameServersTypes(NameServersType a,
                                                NameServersType b);
 
