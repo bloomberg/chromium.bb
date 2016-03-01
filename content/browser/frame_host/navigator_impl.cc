@@ -457,6 +457,19 @@ void NavigatorImpl::DidNavigate(
 
   bool is_navigation_within_page = controller_->IsURLInPageNavigation(
       params.url, params.was_within_same_page, render_frame_host);
+
+  // If a frame claims it navigated within page, it must be the current frame,
+  // not a pending one.
+  if (is_navigation_within_page &&
+      render_frame_host !=
+          render_frame_host->frame_tree_node()
+              ->render_manager()
+              ->current_frame_host()) {
+    bad_message::ReceivedBadMessage(render_frame_host->GetProcess(),
+                                    bad_message::NC_IN_PAGE_NAVIGATION);
+    is_navigation_within_page = false;
+  }
+
   if (ui::PageTransitionIsMainFrame(params.transition)) {
     if (delegate_) {
       // When overscroll navigation gesture is enabled, a screenshot of the page

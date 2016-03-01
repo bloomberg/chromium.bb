@@ -1191,4 +1191,34 @@ TEST_F(NavigatorTestWithBrowserSideNavigation,
   }
 }
 
+namespace {
+void SetWithinPage(const GURL& url,
+                   FrameHostMsg_DidCommitProvisionalLoad_Params* params) {
+  params->was_within_same_page = true;
+  params->url = url;
+}
+}
+
+// A renderer process might try and claim that a cross site navigation was
+// within the same page by setting was_within_same_page = true for
+// FrameHostMsg_DidCommitProvisionalLoad. Such case should be detected on the
+// browser side and the renderer process should be killed.
+TEST_F(NavigatorTestWithBrowserSideNavigation, CrossSiteClaimWithinPage) {
+  const GURL kUrl1("http://www.chromium.org/");
+  const GURL kUrl2("http://www.google.com/");
+
+  contents()->NavigateAndCommit(kUrl1);
+  FrameTreeNode* node = main_test_rfh()->frame_tree_node();
+
+  // Navigate to a different site.
+  int entry_id = RequestNavigation(node, kUrl2);
+  main_test_rfh()->PrepareForCommit();
+
+  // Claim that the navigation was within same page.
+  int bad_msg_count = process()->bad_msg_count();
+  GetSpeculativeRenderFrameHost(node)->SendNavigateWithModificationCallback(
+      0, entry_id, true, kUrl2, base::Bind(SetWithinPage, kUrl1));
+  EXPECT_EQ(process()->bad_msg_count(), bad_msg_count + 1);
+}
+
 }  // namespace content

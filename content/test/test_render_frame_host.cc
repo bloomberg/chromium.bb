@@ -271,10 +271,12 @@ void TestRenderFrameHost::SendNavigateWithParameters(
     ui::PageTransition transition,
     int response_code,
     const ModificationCallback& callback) {
+  if (!IsBrowserSideNavigationEnabled())
+    OnDidStartLoading(true);
+
   // DidStartProvisionalLoad may delete the pending entry that holds |url|,
   // so we keep a copy of it to use below.
   GURL url_copy(url);
-  OnDidStartLoading(true);
   OnDidStartProvisionalLoad(url_copy, base::TimeTicks::Now());
 
   FrameHostMsg_DidCommitProvisionalLoad_Params params;
