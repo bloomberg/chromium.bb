@@ -127,10 +127,6 @@
   -webkit-transition: margin-bottom 200ms;
 }
 
-.animating-tile-page #notification-container {
-  -webkit-transition: margin 200ms, opacity 200ms;
-}
-
 @-webkit-keyframes bounce {
   0% {
     -webkit-transform: scale(0, 0);

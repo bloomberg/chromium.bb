@@ -20,12 +20,6 @@ cr.define('ntp', function() {
   var newTabView;
 
   /**
-   * The 'notification-container' element.
-   * @type {!Element|undefined}
-   */
-  var notificationContainer;
-
-  /**
    * If non-null, an info bubble for showing messages to the user. It points at
    * the Most Visited label, and is used to draw more attention to the
    * navigation dot UI.
@@ -127,10 +121,6 @@ cr.define('ntp', function() {
 
     newTabView = new NewTabView();
 
-    notificationContainer = getRequiredElement('notification-container');
-    notificationContainer.addEventListener(
-        'webkitTransitionEnd', onNotificationTransitionEnd);
-
     if (!loadTimeData.getBoolean('showWebStoreIcon')) {
       var webStoreIcon = $('chrome-web-store-link');
       // Not all versions of the NTP have a footer, so this may not exist.
@@ -204,30 +194,6 @@ cr.define('ntp', function() {
       // Mark the current page.
       newTabView.cardSlider.currentCardValue.navigationDot.classList.add(
           'selected');
-
-      if (loadTimeData.valueExists('notificationPromoText')) {
-        var promoText = loadTimeData.getString('notificationPromoText');
-        var tags = ['IMG'];
-        var attrs = {
-          src: function(node, value) {
-            return node.tagName == 'IMG' &&
-                   /^data\:image\/(?:png|gif|jpe?g)/.test(value);
-          },
-        };
-
-        var promo = parseHtmlSubset(promoText, tags, attrs);
-        var promoLink = promo.querySelector('a');
-        if (promoLink) {
-          promoLink.addEventListener('click', function(e) {
-            chrome.send('notificationPromoLinkClicked');
-          });
-        }
-
-        showNotification(promo, [], function() {
-          chrome.send('notificationPromoClosed');
-        }, 60000);
-        chrome.send('notificationPromoViewed');
-      }
 
       cr.dispatchSimpleEvent(document, 'ntpLoaded', true, true);
       document.documentElement.classList.remove('starting-up');
@@ -342,125 +308,6 @@ cr.define('ntp', function() {
 
   function setBookmarkBarAttached(attached) {
     document.documentElement.setAttribute('bookmarkbarattached', attached);
-  }
-
-  /**
-   * Timeout ID.
-   * @type {number}
-   */
-  var notificationTimeout = 0;
-
-  /**
-   * Shows the notification bubble.
-   * @param {string|Node} message The notification message or node to use as
-   *     message.
-   * @param {Array<{text: string, action: function()}>} links An array of
-   *     records describing the links in the notification. Each record should
-   *     have a 'text' attribute (the display string) and an 'action' attribute
-   *     (a function to run when the link is activated).
-   * @param {Function=} opt_closeHandler The callback invoked if the user
-   *     manually dismisses the notification.
-   * @param {number=} opt_timeout
-   */
-  function showNotification(message, links, opt_closeHandler, opt_timeout) {
-    window.clearTimeout(notificationTimeout);
-
-    var span = document.querySelector('#notification > span');
-    if (typeof message == 'string') {
-      span.textContent = message;
-    } else {
-      span.textContent = '';  // Remove all children.
-      span.appendChild(message);
-    }
-
-    var linksBin = $('notificationLinks');
-    linksBin.textContent = '';
-    for (var i = 0; i < links.length; i++) {
-      var link = new ActionLink;
-      link.textContent = links[i].text;
-      link.action = links[i].action;
-      link.onclick = function() {
-        this.action();
-        hideNotification();
-      };
-      linksBin.appendChild(link);
-    }
-
-    function closeFunc(e) {
-      if (opt_closeHandler)
-        opt_closeHandler();
-      hideNotification();
-    }
-
-    document.querySelector('#notification button').onclick = closeFunc;
-    document.addEventListener('dragstart', closeFunc);
-
-    notificationContainer.hidden = false;
-    showNotificationOnCurrentPage();
-
-    newTabView.cardSlider.frame.addEventListener(
-        'cardSlider:card_change_ended', onCardChangeEnded);
-
-    var timeout = opt_timeout || 10000;
-    notificationTimeout = window.setTimeout(hideNotification, timeout);
-  }
-
-  /**
-   * Hide the notification bubble.
-   */
-  function hideNotification() {
-    notificationContainer.classList.add('inactive');
-
-    newTabView.cardSlider.frame.removeEventListener(
-        'cardSlider:card_change_ended', onCardChangeEnded);
-  }
-
-  /**
-   * Happens when 1 or more consecutive card changes end.
-   * @param {Event} e The cardSlider:card_change_ended event.
-   */
-  function onCardChangeEnded(e) {
-    // If we ended on the same page as we started, ignore.
-    if (newTabView.cardSlider.currentCardValue.notification)
-      return;
-
-    // Hide the notification the old page.
-    notificationContainer.classList.add('card-changed');
-
-    showNotificationOnCurrentPage();
-  }
-
-  /**
-   * Move and show the notification on the current page.
-   */
-  function showNotificationOnCurrentPage() {
-    var page = newTabView.cardSlider.currentCardValue;
-    doWhenAllSectionsReady(function() {
-      if (page != newTabView.cardSlider.currentCardValue)
-        return;
-
-      // NOTE: This moves the notification to inside of the current page.
-      page.notification = notificationContainer;
-
-      // Reveal the notification and instruct it to hide itself if ignored.
-      notificationContainer.classList.remove('inactive');
-
-      // Gives the browser time to apply this rule before we remove it (causing
-      // a transition).
-      window.setTimeout(function() {
-        notificationContainer.classList.remove('card-changed');
-      }, 0);
-    });
-  }
-
-  /**
-   * When done fading out, set hidden to true so the notification can't be
-   * tabbed to or clicked.
-   * @param {Event} e The webkitTransitionEnd event.
-   */
-  function onNotificationTransitionEnd(e) {
-    if (notificationContainer.classList.contains('inactive'))
-      notificationContainer.hidden = true;
   }
 
   /**
@@ -649,7 +496,6 @@ cr.define('ntp', function() {
     setAppToBeHighlighted: setAppToBeHighlighted,
     setBookmarkBarAttached: setBookmarkBarAttached,
     setFaviconDominantColor: setFaviconDominantColor,
-    showNotification: showNotification,
     themeChanged: themeChanged,
     updateLogin: updateLogin
   };

@@ -24,57 +24,6 @@ body {
   display: none !important;
 }
 
-#notification-container {
-  -webkit-transition: opacity 200ms;
-  bottom: 31px;
-  display: block;
-  float: left;
-  position: relative;
-  text-align: start;
-  z-index: 15;
-}
-
-html[dir='rtl'] #notification-container {
-  float: right;
-}
-
-#notification-container.card-changed {
-  -webkit-transition: none;
-  opacity: 0;
-}
-
-#notification-container.inactive {
-  -webkit-transition: opacity 200ms;
-  opacity: 0;
-}
-
-#notification {
-  display: inline-block;
-  font-weight: bold;
-  white-space: nowrap;
-}
-
-#notification > * {
-  display: inline-block;
-  white-space: normal;
-}
-
-#notification > div > div,
-#notification > div {
-  display: inline-block;
-}
-
-/* NOTE: This is in the probable case that we start stuffing 16x16 data URI'd
- * icons in the promo notification responses. */
-#notification > span > img {
-  margin-bottom: -3px;
-}
-
-#notification .close-button {
-  -webkit-margin-start: 8px;  /* Matching value in TilePage#repositionTile_. */
-  vertical-align: top;
-}
-
 .close-button {
   background: no-repeat;
   background-color: transparent;
