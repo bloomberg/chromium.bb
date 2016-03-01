@@ -58830,7 +58830,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1" label="Device has changed"/>
   <int value="2" label="IO stopped abnormally"/>
   <int value="3" label="Hog mode"/>
-  <int value="4" label="Bufer frame size"/>
+  <int value="4" label="Buffer frame size"/>
   <int value="5" label="Buffer frame size range"/>
   <int value="6" label="Stream configuration"/>
   <int value="7" label="Actual sample rate"/>
@@ -58839,6 +58839,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="10" label="Device is running"/>
   <int value="11" label="Device is alive"/>
   <int value="12" label="Stream physical format"/>
+  <int value="13" label="Jack is connected"/>
+  <int value="14" label="Processor overload"/>
+  <int value="15" label="Data sources"/>
+  <int value="16" label="Data source"/>
+  <int value="17" label="Volume decibels"/>
+  <int value="18" label="Volume scalar"/>
+  <int value="19" label="Mute"/>
 </enum>
 
 <enum name="AudioFramesPerBuffer" type="int">

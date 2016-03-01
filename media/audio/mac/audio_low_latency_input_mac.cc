@@ -91,7 +91,14 @@ enum AudioDevicePropertyResult {
   PROPERTY_DEVICE_IS_RUNNING = 10,
   PROPERTY_DEVICE_IS_ALIVE = 11,
   PROPERTY_STREAM_PHYSICAL_FORMAT = 12,
-  PROPERTY_MAX = PROPERTY_STREAM_PHYSICAL_FORMAT
+  PROPERTY_JACK_IS_CONNECTED = 13,
+  PROPERTY_PROCESSOR_OVERLOAD = 14,
+  PROPERTY_DATA_SOURCES = 15,
+  PROPERTY_DATA_SOURCE = 16,
+  PROPERTY_VOLUME_DECIBELS = 17,
+  PROPERTY_VOLUME_SCALAR = 18,
+  PROPERTY_MUTE = 19,
+  PROPERTY_MAX = PROPERTY_MUTE
 };
 
 // Add the provided value in |result| to a UMA histogram.
@@ -1185,6 +1192,34 @@ void AUAudioInputStream::AddDevicePropertyChangesToUMA(bool startup_failed) {
       case kAudioStreamPropertyPhysicalFormat:
         uma_result = PROPERTY_STREAM_PHYSICAL_FORMAT;
         DVLOG(1) << "kAudioStreamPropertyPhysicalFormat";
+        break;
+      case kAudioDevicePropertyJackIsConnected:
+        uma_result = PROPERTY_JACK_IS_CONNECTED;
+        DVLOG(1) << "kAudioDevicePropertyJackIsConnected";
+        break;
+      case kAudioDeviceProcessorOverload:
+        uma_result = PROPERTY_PROCESSOR_OVERLOAD;
+        DVLOG(1) << "kAudioDeviceProcessorOverload";
+        break;
+      case kAudioDevicePropertyDataSources:
+        uma_result = PROPERTY_DATA_SOURCES;
+        DVLOG(1) << "kAudioDevicePropertyDataSources";
+        break;
+      case kAudioDevicePropertyDataSource:
+        uma_result = PROPERTY_DATA_SOURCE;
+        DVLOG(1) << "kAudioDevicePropertyDataSource";
+        break;
+      case kAudioDevicePropertyVolumeDecibels:
+        uma_result = PROPERTY_VOLUME_DECIBELS;
+        DVLOG(1) << "kAudioDevicePropertyVolumeDecibels";
+        break;
+      case kAudioDevicePropertyVolumeScalar:
+        uma_result = PROPERTY_VOLUME_SCALAR;
+        DVLOG(1) << "kAudioDevicePropertyVolumeScalar";
+        break;
+      case kAudioDevicePropertyMute:
+        uma_result = PROPERTY_MUTE;
+        DVLOG(1) << "kAudioDevicePropertyMute";
         break;
       default:
         uma_result = PROPERTY_OTHER;
