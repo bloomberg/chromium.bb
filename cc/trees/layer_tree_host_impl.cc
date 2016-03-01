@@ -2643,9 +2643,6 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBeginImpl(
   client_->RenewTreePriority();
   RecordCompositorSlowScrollMetric(type, CC_THREAD);
 
-  // TODO(lanwei): Will remove this metric in M50 when we have used the new
-  // metrics for one milestone, see https://crbug.com/557787.
-  UMA_HISTOGRAM_BOOLEAN("TryScroll.SlowScroll", false);
   return scroll_status;
 }
 
@@ -2702,9 +2699,6 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBegin(
   if (scroll_on_main_thread) {
     RecordCompositorSlowScrollMetric(type, MAIN_THREAD);
 
-    // TODO(lanwei): Will remove this metric in M50 when we have used the new
-    // metrics for one milestone, see https://crbug.com/557787.
-    UMA_HISTOGRAM_BOOLEAN("TryScroll.SlowScroll", true);
     scroll_status.thread = SCROLL_ON_MAIN_THREAD;
     return scroll_status;
   }

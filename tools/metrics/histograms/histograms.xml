@@ -53015,6 +53015,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="TryScroll.SlowScroll" enum="ScrollThread">
+  <obsolete>
+    Deprecated 02/2016 in Issue 1741103002, and replaced by
+    Renderer4.CompositorWheelScrollUpdateThread and
+    Renderer4.CompositorTouchScrollUpdateThread.
+  </obsolete>
   <owner>tdresser@chromium.org</owner>
   <summary>Whether a scroll is executed on main thread.</summary>
 </histogram>
