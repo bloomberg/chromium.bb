@@ -17,8 +17,8 @@
 #include "media/base/media_keys.h"
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_frame.h"
+#include "media/mojo/common/media_type_converters.h"
 #include "media/mojo/interfaces/demuxer_stream.mojom.h"
-#include "media/mojo/services/media_type_converters.h"
 
 namespace media {
 

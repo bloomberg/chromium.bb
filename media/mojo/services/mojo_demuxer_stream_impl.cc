@@ -12,7 +12,7 @@
 #include "media/base/audio_decoder_config.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/video_decoder_config.h"
-#include "media/mojo/services/media_type_converters.h"
+#include "media/mojo/common/media_type_converters.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 
 namespace media {

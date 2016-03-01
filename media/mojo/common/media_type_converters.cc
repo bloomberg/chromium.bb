@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/mojo/services/media_type_converters.h"
+#include "media/mojo/common/media_type_converters.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -439,8 +439,7 @@ TypeConverter<scoped_refptr<media::DecoderBuffer>,
 
   buffer->set_timestamp(
       base::TimeDelta::FromMicroseconds(input->timestamp_usec));
-  buffer->set_duration(
-      base::TimeDelta::FromMicroseconds(input->duration_usec));
+  buffer->set_duration(base::TimeDelta::FromMicroseconds(input->duration_usec));
 
   if (input->is_key_frame)
     buffer->set_is_key_frame(true);

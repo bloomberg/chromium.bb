@@ -8,7 +8,6 @@ import("//mojo/public/mojo_application.gni")
 import("//mojo/public/mojo_application_manifest.gni")
 
 # Target naming conventions:
-# - converters: C++/Mojo type converters.
 # - proxy: C++ implementations supported by mojo services.
 # - service: Mojo interface implementations.
 # - unittests: Unit tests for a particular class/file.
@@ -46,24 +45,6 @@ config("mojo_media_config") {
   }
 }
 
-source_set("converters") {
-  sources = [
-    "media_type_converters.cc",
-    "media_type_converters.h",
-  ]
-
-  deps = [
-    "//base",
-    "//media",
-    "//media/mojo/interfaces",
-    "//mojo/common",
-    "//mojo/converters/geometry",
-    "//mojo/environment:chromium",
-    "//mojo/public/c/system:for_component",
-    "//ui/mojo/geometry:interfaces",
-  ]
-}
-
 # Implementations of media C++ interfaces using corresponding mojo services.
 source_set("proxy") {
   sources = [
@@ -89,9 +70,9 @@ source_set("proxy") {
   public_configs = [ ":mojo_media_config" ]
 
   deps = [
-    ":converters",
     "//base",
     "//media",
+    "//media/mojo/common",
     "//media/mojo/interfaces",
     "//mojo/common",
     "//mojo/environment:chromium",
@@ -102,9 +83,9 @@ source_set("proxy") {
 
 source_set("cdm_service") {
   deps = [
-    ":converters",
     "//base",
     "//media",
+    "//media/mojo/common",
     "//media/mojo/interfaces",
     "//mojo/common",
     "//mojo/environment:chromium",
@@ -152,10 +133,10 @@ source_set("renderer_service") {
 
   deps = [
     ":cdm_service",
-    ":converters",
     "//base",
     "//media",
     "//media:shared_memory_support",
+    "//media/mojo/common",
     "//media/mojo/interfaces",
     "//mojo/common",
   ]
@@ -213,26 +194,6 @@ source_set("application_factory") {
       "default_mojo_media_client.h",
     ]
   }
-}
-
-test("media_mojo_unittests") {
-  sources = [
-    "media_type_converters_unittest.cc",
-  ]
-
-  deps = [
-    ":converters",
-    "//base",
-    "//base/test:test_support",
-    "//media",
-    "//media/base:test_support",
-    "//media/mojo/interfaces",
-    "//mojo/edk/system",
-    "//mojo/edk/test:run_all_unittests",
-    "//mojo/environment:chromium",
-    "//testing/gmock",
-    "//testing/gtest",
-  ]
 }
 
 mojo_native_application("media") {
@@ -307,7 +268,6 @@ group("tests") {
   testonly = true
   deps = [
     ":media_apptests",
-    ":media_mojo_unittests",
     ":media_pipeline_integration_apptests",
   ]
 }

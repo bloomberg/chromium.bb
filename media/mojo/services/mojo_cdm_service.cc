@@ -16,7 +16,7 @@
 #include "media/base/cdm_factory.h"
 #include "media/base/cdm_key_information.h"
 #include "media/base/key_systems.h"
-#include "media/mojo/services/media_type_converters.h"
+#include "media/mojo/common/media_type_converters.h"
 #include "media/mojo/services/mojo_cdm_service_context.h"
 #include "mojo/common/common_type_converters.h"
 #include "mojo/common/url_type_converters.h"

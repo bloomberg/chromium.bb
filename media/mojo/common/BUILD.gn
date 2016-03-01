@@ -1,0 +1,53 @@
+# Copyright 2016 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//testing/test.gni")
+
+# Target naming conventions:
+# - unittests: Unit tests for a particular class/file.
+
+source_set("common") {
+  sources = [
+    "media_type_converters.cc",
+    "media_type_converters.h",
+  ]
+
+  deps = [
+    "//base",
+    "//media",
+    "//media/mojo/interfaces",
+    "//mojo/common",
+    "//mojo/converters/geometry",
+    "//mojo/environment:chromium",
+    "//mojo/public/c/system:for_component",
+    "//ui/mojo/geometry:interfaces",
+  ]
+}
+
+test("media_mojo_unittests") {
+  sources = [
+    "media_type_converters_unittest.cc",
+  ]
+
+  deps = [
+    ":common",
+    "//base",
+    "//base/test:test_support",
+    "//media",
+    "//media/base:test_support",
+    "//media/mojo/interfaces",
+    "//mojo/edk/system",
+    "//mojo/edk/test:run_all_unittests",
+    "//mojo/environment:chromium",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+}
+
+group("tests") {
+  testonly = true
+  deps = [
+    ":media_mojo_unittests",
+  ]
+}

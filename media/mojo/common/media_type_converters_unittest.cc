@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/mojo/services/media_type_converters.h"
+#include "media/mojo/common/media_type_converters.h"
 
 #include <stddef.h>
 #include <stdint.h>
