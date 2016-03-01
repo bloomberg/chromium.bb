@@ -28,7 +28,13 @@ Element* IntersectionObservation::target() const
     return toElement(m_target.get());
 }
 
-void IntersectionObservation::initializeGeometry(IntersectionGeometry& geometry)
+void IntersectionObservation::applyRootMargin(LayoutRect& rect) const
+{
+    if (m_shouldReportRootBounds)
+        m_observer->applyRootMargin(rect);
+}
+
+void IntersectionObservation::initializeGeometry(IntersectionGeometry& geometry) const
 {
     ASSERT(m_target);
     LayoutObject* targetLayoutObject = target()->layoutObject();
@@ -43,7 +49,7 @@ void IntersectionObservation::initializeGeometry(IntersectionGeometry& geometry)
     geometry.intersectionRect = geometry.targetRect;
 }
 
-void IntersectionObservation::clipToRoot(LayoutRect& rect)
+void IntersectionObservation::clipToRoot(LayoutRect& rect) const
 {
     // Map and clip rect into root element coordinates.
     // TODO(szager): the writing mode flipping needs a test.
@@ -54,27 +60,27 @@ void IntersectionObservation::clipToRoot(LayoutRect& rect)
     if (rootLayoutObject->hasOverflowClip()) {
         LayoutBox* rootLayoutBox = toLayoutBox(rootLayoutObject);
         LayoutRect clipRect(LayoutPoint(), LayoutSize(rootLayoutBox->layer()->size()));
-        m_observer->applyRootMargin(clipRect);
+        applyRootMargin(clipRect);
         rootLayoutBox->flipForWritingMode(rect);
         rect.intersect(clipRect);
         rootLayoutBox->flipForWritingMode(rect);
     }
 }
 
-void IntersectionObservation::clipToFrameView(IntersectionGeometry& geometry)
+void IntersectionObservation::clipToFrameView(IntersectionGeometry& geometry) const
 {
     Node* rootNode = m_observer->rootNode();
     LayoutObject* rootLayoutObject = m_observer->rootLayoutObject();
     if (rootLayoutObject->isLayoutView()) {
         geometry.rootRect = LayoutRect(toLayoutView(rootLayoutObject)->frameView()->visibleContentRect());
-        m_observer->applyRootMargin(geometry.rootRect);
+        applyRootMargin(geometry.rootRect);
         geometry.intersectionRect.intersect(geometry.rootRect);
     } else {
         if (rootLayoutObject->isBox())
             geometry.rootRect = LayoutRect(toLayoutBox(rootLayoutObject)->absoluteContentBox());
         else
             geometry.rootRect = LayoutRect(rootLayoutObject->absoluteBoundingBoxRect());
-        m_observer->applyRootMargin(geometry.rootRect);
+        applyRootMargin(geometry.rootRect);
     }
 
     LayoutPoint scrollPosition(rootNode->document().view()->scrollPosition());
@@ -104,7 +110,7 @@ static bool isContainingBlockChainDescendant(LayoutObject* descendant, LayoutObj
     return descendant;
 }
 
-bool IntersectionObservation::computeGeometry(IntersectionGeometry& geometry)
+bool IntersectionObservation::computeGeometry(IntersectionGeometry& geometry) const
 {
     // Pre-oilpan, there will be a delay between the time when the target Element gets deleted
     // (because its ref count dropped to zero) and when this IntersectionObservation gets

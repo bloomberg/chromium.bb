@@ -26,9 +26,6 @@
 
   function step0() {
     setTimeout(function() {
-      shouldThrow("new IntersectionObserver(observer_callback, { rootMargin: '1' })");
-      shouldThrow("new IntersectionObserver(observer_callback, { rootMargin: '1em' })");
-      shouldThrow("new IntersectionObserver(observer_callback, { rootMargin: 'auto' })");
       shouldNotThrow("new IntersectionObserver(observer_callback, { rootMargin: '1.4px' })");
       shouldNotThrow("new IntersectionObserver(observer_callback, { rootMargin: '1.4px 2px' })");
       shouldNotThrow("new IntersectionObserver(observer_callback, { rootMargin: '1.4px 2px 3%' })");

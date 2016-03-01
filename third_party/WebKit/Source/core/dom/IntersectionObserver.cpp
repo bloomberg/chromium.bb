@@ -53,11 +53,11 @@ static void parseRootMargin(String rootMarginParameter, Vector<Length>& rootMarg
                 rootMargin.append(Length(token.numericValue(), Percent));
                 break;
             default:
-                exceptionState.throwTypeError("rootMargin must be specified in pixels or percent.");
+                exceptionState.throwDOMException(SyntaxError, "rootMargin must be specified in pixels or percent.");
             }
             break;
         default:
-            exceptionState.throwTypeError("rootMargin must be specified in pixels or percent.");
+            exceptionState.throwDOMException(SyntaxError, "rootMargin must be specified in pixels or percent.");
         }
     }
 }
@@ -73,7 +73,7 @@ static void parseThresholds(const DoubleOrDoubleArray& thresholdParameter, Vecto
 
     for (auto thresholdValue : thresholds) {
         if (thresholdValue < 0.0 || thresholdValue > 1.0) {
-            exceptionState.throwTypeError("Threshold values must be between 0 and 1");
+            exceptionState.throwRangeError("Threshold values must be between 0 and 1");
             break;
         }
     }
@@ -172,37 +172,21 @@ LayoutObject* IntersectionObserver::rootLayoutObject() const
     return toElement(node)->layoutObject();
 }
 
-void IntersectionObserver::observe(Element* target, ExceptionState& exceptionState)
+void IntersectionObserver::observe(Element* target)
 {
-    if (!m_root) {
-        exceptionState.throwDOMException(HierarchyRequestError, "Invalid observer: root element or containing document has been deleted.");
+    if (!m_root || !target || m_root.get() == target)
         return;
-    }
-    if (!target) {
-        exceptionState.throwTypeError("Observation target must be an element.");
-        return;
-    }
-    if (m_root.get() == target) {
-        exceptionState.throwDOMException(HierarchyRequestError, "Cannot use the same element for root and target.");
-        return;
-    }
-
-    // TODO(szager): Add a pointer to the spec that describes this policy.
-    bool shouldReportRootBounds = target->document().frame()->securityContext()->securityOrigin()->canAccess(rootNode()->document().frame()->securityContext()->securityOrigin());
-    if (!shouldReportRootBounds && hasPercentMargin()) {
-        exceptionState.throwDOMException(HierarchyRequestError, "Cannot observe a cross-origin target because the observer has a root margin value specified as a percent.");
-        return;
-    }
 
     if (target->ensureIntersectionObserverData().getObservationFor(*this))
         return;
 
+    bool shouldReportRootBounds = target->document().frame()->securityContext()->securityOrigin()->canAccess(rootNode()->document().frame()->securityContext()->securityOrigin());
     IntersectionObservation* observation = new IntersectionObservation(*this, *target, shouldReportRootBounds);
     target->ensureIntersectionObserverData().addObservation(*observation);
     m_observations.add(observation);
 }
 
-void IntersectionObserver::unobserve(Element* target, ExceptionState&)
+void IntersectionObserver::unobserve(Element* target)
 {
     if (!target || !target->intersectionObserverData())
         return;
@@ -248,9 +232,9 @@ HeapVector<Member<IntersectionObserverEntry>> IntersectionObserver::takeRecords(
 Element* IntersectionObserver::root() const
 {
     Node* node = rootNode();
-    if (node->isDocumentNode())
-        return nullptr;
-    return toElement(node);
+    if (node && !node->isDocumentNode())
+        return toElement(node);
+    return nullptr;
 }
 
 static void appendLength(StringBuilder& stringBuilder, const Length& length)
@@ -328,14 +312,6 @@ void IntersectionObserver::deliver()
     HeapVector<Member<IntersectionObserverEntry>> entries;
     entries.swap(m_entries);
     m_callback->handleEvent(entries, *this);
-}
-
-bool IntersectionObserver::hasPercentMargin() const
-{
-    return (m_topMargin.type() == Percent
-        || m_rightMargin.type() == Percent
-        || m_bottomMargin.type() == Percent
-        || m_leftMargin.type() == Percent);
 }
 
 DEFINE_TRACE(IntersectionObserver)

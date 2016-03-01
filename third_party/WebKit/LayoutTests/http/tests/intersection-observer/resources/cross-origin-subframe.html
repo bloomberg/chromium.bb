@@ -18,7 +18,9 @@ function observer_callback(changes) {
   for (var i in changes)
     entries.push(changes[i]);
 }
-var observer = new IntersectionObserver(observer_callback, {});
+
+// Use a rootMargin here, and verify it does NOT get applied for the cross-origin case.
+var observer = new IntersectionObserver(observer_callback, {rootMargin: "7px"});
 observer.observe(target);
 
 function step0() {

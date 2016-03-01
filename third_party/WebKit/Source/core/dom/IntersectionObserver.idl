@@ -13,8 +13,8 @@ callback IntersectionObserverCallback = void (sequence<IntersectionObserverEntry
     GarbageCollected,
     RuntimeEnabled=IntersectionObserver,
 ] interface IntersectionObserver {
-    [RaisesException] void observe(Element target);
-    [RaisesException] void unobserve(Element target);
+    void observe(Element target);
+    void unobserve(Element target);
     void disconnect();
     sequence<IntersectionObserverEntry> takeRecords();
     readonly attribute Element? root;

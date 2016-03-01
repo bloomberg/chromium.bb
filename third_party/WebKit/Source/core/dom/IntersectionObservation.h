@@ -38,10 +38,11 @@ public:
     DECLARE_TRACE();
 
 private:
-    void initializeGeometry(IntersectionGeometry&);
-    void clipToRoot(LayoutRect&);
-    void clipToFrameView(IntersectionGeometry&);
-    bool computeGeometry(IntersectionGeometry&);
+    void applyRootMargin(LayoutRect&) const;
+    void initializeGeometry(IntersectionGeometry&) const;
+    void clipToRoot(LayoutRect&) const;
+    void clipToFrameView(IntersectionGeometry&) const;
+    bool computeGeometry(IntersectionGeometry&) const;
 
     Member<IntersectionObserver> m_observer;
 

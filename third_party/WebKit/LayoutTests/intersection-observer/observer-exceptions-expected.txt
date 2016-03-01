@@ -1,0 +1,17 @@
+Test for observer exceptions.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS exc is an instance of RangeError
+PASS exc is an instance of DOMException
+PASS exc.code is DOMException.SYNTAX_ERR
+PASS exc is an instance of DOMException
+PASS exc.code is DOMException.SYNTAX_ERR
+PASS exc is an instance of DOMException
+PASS exc.code is DOMException.SYNTAX_ERR
+PASS exc is an instance of TypeError
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

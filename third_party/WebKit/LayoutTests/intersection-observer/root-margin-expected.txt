@@ -3,9 +3,6 @@ Intersection observer test with root margin and implicit root.
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS new IntersectionObserver(observer_callback, { rootMargin: '1' }) threw exception Error: rootMargin must be specified in pixels or percent..
-PASS new IntersectionObserver(observer_callback, { rootMargin: '1em' }) threw exception Error: rootMargin must be specified in pixels or percent..
-PASS new IntersectionObserver(observer_callback, { rootMargin: 'auto' }) threw exception Error: rootMargin must be specified in pixels or percent..
 PASS new IntersectionObserver(observer_callback, { rootMargin: '1.4px' }) did not throw exception.
 PASS new IntersectionObserver(observer_callback, { rootMargin: '1.4px 2px' }) did not throw exception.
 PASS new IntersectionObserver(observer_callback, { rootMargin: '1.4px 2px 3%' }) did not throw exception.

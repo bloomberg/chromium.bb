@@ -29,8 +29,9 @@ public:
     static void resumeSuspendedObservers();
 
     // API methods
-    void observe(Element*, ExceptionState&);
-    void unobserve(Element*, ExceptionState&);
+    void observe(Element*);
+    void unobserve(Element*);
+    void disconnect();
     HeapVector<Member<IntersectionObserverEntry>> takeRecords();
     Element* root() const;
     String rootMargin() const;
@@ -38,7 +39,6 @@ public:
 
     Node* rootNode() const { return m_root.get(); }
     LayoutObject* rootLayoutObject() const;
-    bool hasPercentMargin() const;
     const Length& topMargin() const { return m_topMargin; }
     const Length& rightMargin() const { return m_rightMargin; }
     const Length& bottomMargin() const { return m_bottomMargin; }
@@ -48,7 +48,6 @@ public:
     void applyRootMargin(LayoutRect&) const;
     unsigned firstThresholdGreaterThan(float ratio) const;
     void deliver();
-    void disconnect();
     void removeObservation(IntersectionObservation&);
     bool hasEntries() const { return m_entries.size(); }
     const HeapHashSet<WeakMember<IntersectionObservation>>& observations() const { return m_observations; }
