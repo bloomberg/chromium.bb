@@ -1,4 +1,3 @@
-CONSOLE WARNING: Elements using the 'border-image' CSS property with no 'border-style' set should have no border, but currently do. Setting 'border-style' will be required in M51, around May 2016. See https://www.chromestatus.com/features/5542503914668032 for more details.
 PASS - "border-image-source" property for "box" and "boxStatic" elements at 0.5s are close enough to each other
 PASS - "border-image" property for "boxShorthand" and "boxStatic" elements at 0.5s are close enough to each other
 

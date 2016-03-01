@@ -1,4 +1,3 @@
-CONSOLE WARNING: Elements using the 'border-image' CSS property with no 'border-style' set should have no border, but currently do. Setting 'border-style' will be required in M51, around May 2016. See https://www.chromestatus.com/features/5542503914668032 for more details.
 CONSOLE MESSAGE: line 10: iframe loaded
 Tests that injected user stylesheets are reflected in the Styles pane.
 
@@ -16,6 +15,14 @@ background-origin: padding-box;
     initial - #main inject-stylesheet.html:5 -> inject-stylesheet.html:5:3
 background-size: auto;
     initial - #main inject-stylesheet.html:5 -> inject-stylesheet.html:5:3
+border-bottom-style: solid;
+    solid - #main injected stylesheet
+border-left-style: solid;
+    solid - #main injected stylesheet
+border-right-style: solid;
+    solid - #main injected stylesheet
+border-top-style: solid;
+    solid - #main injected stylesheet
 color: rgb(255, 0, 0);
     red - #main injected stylesheet
 display: block;
@@ -43,6 +50,11 @@ element.style { ()
 #main { (injected stylesheet)
     color: red;
     -webkit-border-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAQAAAC1+jfqAAAAiElE…s+LS30CAhBN5nNxeT5hbJ1zwmji2k+aF6NENIPf/hs54f0sZFUVAMigAAAABJRU5ErkJggg==");
+    border-style: solid;
+        border-top-style: solid;
+        border-right-style: solid;
+        border-bottom-style: solid;
+        border-left-style: solid;
 
 [expanded] 
 div { (user agent stylesheet)
