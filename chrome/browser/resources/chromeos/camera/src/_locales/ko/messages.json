@@ -216,7 +216,11 @@
     "description": "Label for the OK button in the alert dialog."
   },
   "deleteConfirmationMsg": {
-    "message": "이 사진을 갤러리에서 삭제하시겠습니까?",
-    "description": "Confirmation message before removing a picture from the gallery."
+    "message": "이 항목을 삭제하시겠습니까?",
+    "description": "Confirmation message before removing a selected item from the gallery."
+  },
+  "deleteMultiConfirmationMsg": {
+    "message": "이 항목을 삭제하시겠습니까?",
+    "description": "Confirmation message before removing multiple selected items from the gallery."
   }
 }

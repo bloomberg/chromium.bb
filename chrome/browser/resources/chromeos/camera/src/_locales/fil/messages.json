@@ -216,7 +216,11 @@
     "description": "Label for the OK button in the alert dialog."
   },
   "deleteConfirmationMsg": {
-    "message": "Gusto mo ba talagang alisin ang larawang ito sa gallery?",
-    "description": "Confirmation message before removing a picture from the gallery."
+    "message": "Gusto mo ba talagang alisin ang item na ito?",
+    "description": "Confirmation message before removing a selected item from the gallery."
+  },
+  "deleteMultiConfirmationMsg": {
+    "message": "Gusto mo ba talagang alisin ang mga item na ito?",
+    "description": "Confirmation message before removing multiple selected items from the gallery."
   }
 }

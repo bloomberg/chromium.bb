@@ -132,7 +132,7 @@
     "description": "Label for the gallery button."
   },
   "filtersButton": {
-    "message": "ફિલ્ટર્સ ટોગલ કરો",
+    "message": "ફિલ્ટર્સ ટૉગલ કરો",
     "description": "Label for the toggle filters button."
   },
   "deleteButton": {
@@ -168,15 +168,15 @@
     "description": "Label for the red picture taking button."
   },
   "toggleTimerButton": {
-    "message": "ટાઇમરને ટોગલ કરો",
+    "message": "ટાઇમરને ટૉગલ કરો",
     "description": "Label for the button to toggle the countdown timer."
   },
   "toggleMultiButton": {
-    "message": "મલ્ટિ-શૉટને ટોગલ કરો",
+    "message": "મલ્ટિ-શૉટને ટૉગલ કરો",
     "description": "Label for the button to toggle the multi-shot feature."
   },
   "toggleMirrorButton": {
-    "message": "મિરરિંગને ટોગલ કરો",
+    "message": "મિરરિંગને ટૉગલ કરો",
     "description": "Label for the button to toggle the preview mirroring."
   },
   "toggleTimerActiveMessage": {
@@ -216,7 +216,11 @@
     "description": "Label for the OK button in the alert dialog."
   },
   "deleteConfirmationMsg": {
-    "message": "શું તમે ખરેખર ગૅલેરીમાંથી આ ચિત્ર દૂર કરવા માંગો છો?",
-    "description": "Confirmation message before removing a picture from the gallery."
+    "message": "શું તમે ખરેખર આ આઇટમને દૂર કરવા માંગો છો?",
+    "description": "Confirmation message before removing a selected item from the gallery."
+  },
+  "deleteMultiConfirmationMsg": {
+    "message": "શું તમે ખરેખર આ આઇટમ્સને દૂર કરવા માંગો છો?",
+    "description": "Confirmation message before removing multiple selected items from the gallery."
   }
 }

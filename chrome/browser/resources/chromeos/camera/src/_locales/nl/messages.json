@@ -4,7 +4,7 @@
     "description": "Name of the Camera App."
   },
   "description": {
-    "message": "Maak te gekke foto's met uw webcam.",
+    "message": "Maak te gekke foto's met je webcam.",
     "description": "Short description of the Camera App."
   },
   "andyEffect": {
@@ -92,11 +92,11 @@
     "description": "Vintage effect's name. Makes the image look vintage."
   },
   "ghostEffect": {
-    "message": "Mysterieus",
+    "message": "Spookbeeld",
     "description": "Ghost effect's name. Duplicates face when moving."
   },
   "errorMsgNoCamera": {
-    "message": "Uw camera is momenteel niet beschikbaar.",
+    "message": "Je camera is momenteel niet beschikbaar.",
     "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
   "errorMsgNoCameraHint": {
@@ -124,7 +124,7 @@
     "description": "Error message shown when WebGL is not available."
   },
   "errorMsgNoWebGLHint": {
-    "message": "Uw computer bevat misschien een niet-compatibele grafische kaart of verouderde stuurprogramma's.",
+    "message": "Je computer bevat misschien een niet-compatibele grafische kaart of verouderde stuurprogramma's.",
     "description": "Hint shown below the main error message, when WebGL is not detected."
   },
   "galleryButton": {
@@ -216,7 +216,11 @@
     "description": "Label for the OK button in the alert dialog."
   },
   "deleteConfirmationMsg": {
-    "message": "Wilt u deze foto uit de galerij verwijderen?",
-    "description": "Confirmation message before removing a picture from the gallery."
+    "message": "Weet je zeker dat je dit item wilt verwijderen?",
+    "description": "Confirmation message before removing a selected item from the gallery."
+  },
+  "deleteMultiConfirmationMsg": {
+    "message": "Weet je zeker dat je deze items wilt verwijderen?",
+    "description": "Confirmation message before removing multiple selected items from the gallery."
   }
 }

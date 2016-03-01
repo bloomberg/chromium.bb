@@ -216,7 +216,11 @@
     "description": "Label for the OK button in the alert dialog."
   },
   "deleteConfirmationMsg": {
-    "message": "Haluatko varmasti poistaa tämän kuvan galleriasta?",
-    "description": "Confirmation message before removing a picture from the gallery."
+    "message": "Haluatko varmasti poistaa tämän kohteen?",
+    "description": "Confirmation message before removing a selected item from the gallery."
+  },
+  "deleteMultiConfirmationMsg": {
+    "message": "Haluatko varmasti poistaa nämä kohteet?",
+    "description": "Confirmation message before removing multiple selected items from the gallery."
   }
 }

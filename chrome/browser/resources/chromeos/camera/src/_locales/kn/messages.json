@@ -124,7 +124,7 @@
     "description": "Error message shown when WebGL is not available."
   },
   "errorMsgNoWebGLHint": {
-    "message": "ನಿಮ್ಮ ಕಂಪ್ಯೂಟರ್ ಹೊಂದಾಣಿಕೆಯಾಗದ ಗ್ರಾಫಿಕ್ಸ್ ಕಾರ್ಡ್‌ ಅಥವಾ ಹಳೆಯ ಡ್ರೈವರ್‌ಗಳನ್ನು ಹೊಂದಿರಬಹುದು.",
+    "message": "ನಿಮ್ಮ ಕಂಪ್ಯೂಟರ್‌ನಲ್ಲಿ ಹೊಂದಾಣಿಕೆಯಾಗದ ಗ್ರಾಫಿಕ್ಸ್ ಕಾರ್ಡ್‌ ಅಥವಾ ಹಳೆಯ ಡ್ರೈವರ್‌ಗಳಿರಬಹುದು.",
     "description": "Hint shown below the main error message, when WebGL is not detected."
   },
   "galleryButton": {
@@ -216,7 +216,11 @@
     "description": "Label for the OK button in the alert dialog."
   },
   "deleteConfirmationMsg": {
-    "message": "ನೀವು ನಿಜವಾಗಿಯೂ ಗ್ಯಾಲರಿಯಿಂದ ಈ ಚಿತ್ರವನ್ನು ತೆಗೆದುಹಾಕಲು ಬಯಸುತ್ತೀರಾ?",
-    "description": "Confirmation message before removing a picture from the gallery."
+    "message": "ನೀವು ನಿಜವಾಗಿಯೂ ಈ ಐಟಂ ತೆಗೆದುಹಾಕಲು ಬಯಸುತ್ತೀರಾ?",
+    "description": "Confirmation message before removing a selected item from the gallery."
+  },
+  "deleteMultiConfirmationMsg": {
+    "message": "ನೀವು ನಿಜವಾಗಿಯೂ ಈ ಐಟಂಗಳನ್ನು ತೆಗೆದುಹಾಕಲು ಬಯಸುತ್ತೀರಾ?",
+    "description": "Confirmation message before removing multiple selected items from the gallery."
   }
 }

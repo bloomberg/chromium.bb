@@ -4,7 +4,7 @@
     "description": "Name of the Camera App."
   },
   "description": {
-    "message": "आपल्या वेब कॅमेर्‍यासह विलक्षण चित्रे घ्या.",
+    "message": "आपल्या वेब कॅमेऱ्यासह विलक्षण चित्रे घ्या.",
     "description": "Short description of the Camera App."
   },
   "andyEffect": {
@@ -88,7 +88,7 @@
     "description": "Cinema effect's name. Makes the image look like from a movie."
   },
   "vintageEffect": {
-    "message": "व्‍हिन्‍टेज",
+    "message": "व्हिन्टेज",
     "description": "Vintage effect's name. Makes the image look vintage."
   },
   "ghostEffect": {
@@ -124,7 +124,7 @@
     "description": "Error message shown when WebGL is not available."
   },
   "errorMsgNoWebGLHint": {
-    "message": "आपल्‍या संगणकाकडे विसंगत ग्राफिक्‍स कार्ड किंवा जुने ड्राइव्‍हर असू शकतात.",
+    "message": "आपल्या संगणकाकडे विसंगत ग्राफिक कार्ड किंवा जुने ड्राइव्हर असू शकतात.",
     "description": "Hint shown below the main error message, when WebGL is not detected."
   },
   "galleryButton": {
@@ -172,7 +172,7 @@
     "description": "Label for the button to toggle the countdown timer."
   },
   "toggleMultiButton": {
-    "message": "मल्‍टि-शॉट टॉगल करा",
+    "message": "मल्टि-शॉट टॉगल करा",
     "description": "Label for the button to toggle the multi-shot feature."
   },
   "toggleMirrorButton": {
@@ -188,11 +188,11 @@
     "description": "Message shown when inactivating the timer."
   },
   "toggleMultiActiveMessage": {
-    "message": "मल्टी-शॉट सक्रिय",
+    "message": "मल्टि-शॉट सक्रिय",
     "description": "Message shown when activating the multi-shot feature."
   },
   "toggleMultiInactiveMessage": {
-    "message": "मल्टी-शॉट निष्क्रिय",
+    "message": "मल्टि-शॉट निष्क्रिय",
     "description": "Message shown when inactivating the multi-shot feature."
   },
   "toggleMirrorActiveMessage": {
@@ -212,11 +212,15 @@
     "description": "Label for the dismissing button in the confirmation dialog."
   },
   "dialogOKButton": {
-    "message": "ठीक",
+    "message": "ठीक आहे",
     "description": "Label for the OK button in the alert dialog."
   },
   "deleteConfirmationMsg": {
-    "message": "आपण गॅलरीमधून हे चित्र खरोखर काढू इच्छिता?",
-    "description": "Confirmation message before removing a picture from the gallery."
+    "message": "आपण खरोखर हा आयटम काढू इच्छिता?",
+    "description": "Confirmation message before removing a selected item from the gallery."
+  },
+  "deleteMultiConfirmationMsg": {
+    "message": "आपण खरोखर हे आयटम काढू इच्छिता?",
+    "description": "Confirmation message before removing multiple selected items from the gallery."
   }
 }

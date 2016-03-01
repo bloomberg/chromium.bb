@@ -216,7 +216,11 @@
     "description": "Label for the OK button in the alert dialog."
   },
   "deleteConfirmationMsg": {
-    "message": "Είστε βέβαιοι ότι θέλετε να αφαιρέσετε αυτήν τη φωτογραφία από το gallery;",
-    "description": "Confirmation message before removing a picture from the gallery."
+    "message": "Είστε βέβαιοι ότι θέλετε να καταργήσετε αυτό το στοιχείο;",
+    "description": "Confirmation message before removing a selected item from the gallery."
+  },
+  "deleteMultiConfirmationMsg": {
+    "message": "Είστε βέβαιοι ότι θέλετε να καταργήσετε αυτά τα στοιχεία;",
+    "description": "Confirmation message before removing multiple selected items from the gallery."
   }
 }

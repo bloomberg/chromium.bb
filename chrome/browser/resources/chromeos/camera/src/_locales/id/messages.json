@@ -160,11 +160,11 @@
     "description": "Text to speech label for the close button."
   },
   "galleryImages": {
-    "message": "Gambar galeri",
+    "message": "Foto galeri",
     "description": "Text to speech label for the gallery list."
   },
   "takePictureButton": {
-    "message": "Ambil gambar",
+    "message": "Ambil foto",
     "description": "Label for the red picture taking button."
   },
   "toggleTimerButton": {
@@ -216,7 +216,11 @@
     "description": "Label for the OK button in the alert dialog."
   },
   "deleteConfirmationMsg": {
-    "message": "Yakin ingin menghapus gambar ini dari galeri?",
-    "description": "Confirmation message before removing a picture from the gallery."
+    "message": "Yakin ingin menghapus item ini?",
+    "description": "Confirmation message before removing a selected item from the gallery."
+  },
+  "deleteMultiConfirmationMsg": {
+    "message": "Yakin ingin menghapus item ini?",
+    "description": "Confirmation message before removing multiple selected items from the gallery."
   }
 }

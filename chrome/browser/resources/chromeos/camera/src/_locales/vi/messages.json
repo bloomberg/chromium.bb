@@ -212,11 +212,15 @@
     "description": "Label for the dismissing button in the confirmation dialog."
   },
   "dialogOKButton": {
-    "message": "OK",
+    "message": "Khá tốt",
     "description": "Label for the OK button in the alert dialog."
   },
   "deleteConfirmationMsg": {
-    "message": "Bạn có thực sự muốn xóa ảnh này khỏi thư viện không?",
-    "description": "Confirmation message before removing a picture from the gallery."
+    "message": "Bạn có thực sự muốn xóa mục này không?",
+    "description": "Confirmation message before removing a selected item from the gallery."
+  },
+  "deleteMultiConfirmationMsg": {
+    "message": "Bạn có thực sự muốn xóa các mục này không?",
+    "description": "Confirmation message before removing multiple selected items from the gallery."
   }
 }

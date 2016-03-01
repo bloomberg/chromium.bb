@@ -176,7 +176,7 @@
     "description": "Label for the button to toggle the multi-shot feature."
   },
   "toggleMirrorButton": {
-    "message": "Activar o desactivar duplicación",
+    "message": "Activar o desactivar reflejo",
     "description": "Label for the button to toggle the preview mirroring."
   },
   "toggleTimerActiveMessage": {
@@ -196,11 +196,11 @@
     "description": "Message shown when inactivating the multi-shot feature."
   },
   "toggleMirrorActiveMessage": {
-    "message": "Duplicación activa",
+    "message": "Reflejo activo",
     "description": "Message shown when activating the preview mirroring."
   },
   "toggleMirrorInactiveMessage": {
-    "message": "Duplicación inactiva",
+    "message": "Reflejo inactivo",
     "description": "Message shown when inactivating the preview mirroring."
   },
   "dialogYesButton": {
@@ -216,7 +216,11 @@
     "description": "Label for the OK button in the alert dialog."
   },
   "deleteConfirmationMsg": {
-    "message": "¿Realmente deseas quitar esta imagen de la galería?",
-    "description": "Confirmation message before removing a picture from the gallery."
+    "message": "¿Confirmas que deseas quitar este elemento?",
+    "description": "Confirmation message before removing a selected item from the gallery."
+  },
+  "deleteMultiConfirmationMsg": {
+    "message": "¿Confirmas que deseas quitar estos elementos?",
+    "description": "Confirmation message before removing multiple selected items from the gallery."
   }
 }

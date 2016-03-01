@@ -216,7 +216,11 @@
     "description": "Label for the OK button in the alert dialog."
   },
   "deleteConfirmationMsg": {
-    "message": "确定要从图库中删除该照片吗？",
-    "description": "Confirmation message before removing a picture from the gallery."
+    "message": "确定要移除这张照片吗？",
+    "description": "Confirmation message before removing a selected item from the gallery."
+  },
+  "deleteMultiConfirmationMsg": {
+    "message": "确定要移除这些照片吗？",
+    "description": "Confirmation message before removing multiple selected items from the gallery."
   }
 }

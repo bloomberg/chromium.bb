@@ -216,7 +216,11 @@
     "description": "Label for the OK button in the alert dialog."
   },
   "deleteConfirmationMsg": {
-    "message": "Наистина ли искате да премахнете тази снимка от галерията?",
-    "description": "Confirmation message before removing a picture from the gallery."
+    "message": "Наистина ли искате да премахнете този елемент?",
+    "description": "Confirmation message before removing a selected item from the gallery."
+  },
+  "deleteMultiConfirmationMsg": {
+    "message": "Наистина ли искате да премахнете тези елементи?",
+    "description": "Confirmation message before removing multiple selected items from the gallery."
   }
 }

@@ -216,7 +216,11 @@
     "description": "Label for the OK button in the alert dialog."
   },
   "deleteConfirmationMsg": {
-    "message": "Vai tiešām vēlaties noņemt šo attēlu no galerijas?",
-    "description": "Confirmation message before removing a picture from the gallery."
+    "message": "Vai tiešām vēlaties noņemt šo vienumu?",
+    "description": "Confirmation message before removing a selected item from the gallery."
+  },
+  "deleteMultiConfirmationMsg": {
+    "message": "Vai tiešām vēlaties noņemt šos vienumus?",
+    "description": "Confirmation message before removing multiple selected items from the gallery."
   }
 }

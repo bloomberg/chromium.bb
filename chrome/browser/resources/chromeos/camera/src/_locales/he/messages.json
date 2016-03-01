@@ -196,11 +196,11 @@
     "description": "Message shown when inactivating the multi-shot feature."
   },
   "toggleMirrorActiveMessage": {
-    "message": "שיקוף פועל",
+    "message": "השיקוף פועל",
     "description": "Message shown when activating the preview mirroring."
   },
   "toggleMirrorInactiveMessage": {
-    "message": "שיקוף הופסק",
+    "message": "השיקוף הופסק",
     "description": "Message shown when inactivating the preview mirroring."
   },
   "dialogYesButton": {
@@ -216,7 +216,11 @@
     "description": "Label for the OK button in the alert dialog."
   },
   "deleteConfirmationMsg": {
-    "message": "האם אתה בטוח שברצונך להסיר את התמונה הזו מהגלריה שלך?",
-    "description": "Confirmation message before removing a picture from the gallery."
+    "message": "האם אתה בטוח שברצונך להסיר את הפריט הזה?",
+    "description": "Confirmation message before removing a selected item from the gallery."
+  },
+  "deleteMultiConfirmationMsg": {
+    "message": "האם אתה בטוח שברצונך להסיר את הפריטים האלה?",
+    "description": "Confirmation message before removing multiple selected items from the gallery."
   }
 }

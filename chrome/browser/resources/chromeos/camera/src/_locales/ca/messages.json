@@ -168,7 +168,7 @@
     "description": "Label for the red picture taking button."
   },
   "toggleTimerButton": {
-    "message": "Activa o desactiva el cronòmetre",
+    "message": "Activa o desactiva el temporitzador",
     "description": "Label for the button to toggle the countdown timer."
   },
   "toggleMultiButton": {
@@ -180,11 +180,11 @@
     "description": "Label for the button to toggle the preview mirroring."
   },
   "toggleTimerActiveMessage": {
-    "message": "Cronòmetre actiu",
+    "message": "Temporitzador actiu",
     "description": "Message shown when activating the timer."
   },
   "toggleTimerInactiveMessage": {
-    "message": "Cronòmetre inactiu",
+    "message": "Temporitzador inactiu",
     "description": "Message shown when inactivating the timer."
   },
   "toggleMultiActiveMessage": {
@@ -216,7 +216,11 @@
     "description": "Label for the OK button in the alert dialog."
   },
   "deleteConfirmationMsg": {
-    "message": "Esteu segur que voleu suprimir aquesta foto de la galeria?",
-    "description": "Confirmation message before removing a picture from the gallery."
+    "message": "Confirmeu que voleu suprimir aquest element?",
+    "description": "Confirmation message before removing a selected item from the gallery."
+  },
+  "deleteMultiConfirmationMsg": {
+    "message": "Confirmeu que voleu suprimir aquests elements?",
+    "description": "Confirmation message before removing multiple selected items from the gallery."
   }
 }

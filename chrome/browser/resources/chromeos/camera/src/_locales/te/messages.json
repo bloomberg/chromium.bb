@@ -216,7 +216,11 @@
     "description": "Label for the OK button in the alert dialog."
   },
   "deleteConfirmationMsg": {
-    "message": "మీరు ఈ చిత్రాన్ని గ్యాలరీ నుండి ఖచ్చితంగా తీసివేయాలనుకుంటున్నారా?",
-    "description": "Confirmation message before removing a picture from the gallery."
+    "message": "మీరు ఈ అంశాన్ని ఖచ్చితంగా తీసివేయాలనుకుంటున్నారా?",
+    "description": "Confirmation message before removing a selected item from the gallery."
+  },
+  "deleteMultiConfirmationMsg": {
+    "message": "మీరు ఈ అంశాలను ఖచ్చితంగా తీసివేయాలనుకుంటున్నారా?",
+    "description": "Confirmation message before removing multiple selected items from the gallery."
   }
 }
