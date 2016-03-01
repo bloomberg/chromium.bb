@@ -10,6 +10,10 @@ from recipe_engine import recipe_api
 class GitApi(recipe_api.RecipeApi):
   _GIT_HASH_RE = re.compile('[0-9a-f]{40}', re.IGNORECASE)
 
+  def __init__(self, *args, **kwargs):
+    super(GitApi, self).__init__(*args, **kwargs)
+    self.initialized_win_git = False
+
   def __call__(self, *args, **kwargs):
     """Return a git command step."""
     name = kwargs.pop('name', 'git '+args[0])
@@ -18,7 +22,8 @@ class GitApi(recipe_api.RecipeApi):
       kwargs.setdefault('cwd', self.m.path['checkout'])
     git_cmd = ['git']
     if self.m.platform.is_win:
-      git_cmd = [self.m.path['depot_tools'].join('git.bat')]
+      self.ensure_win_git_tooling()
+      git_cmd = [self.package_resource('git.bat')]
     options = kwargs.pop('git_config_options', {})
     for k, v in sorted(options.iteritems()):
       git_cmd.extend(['-c', '%s=%s' % (k, v)])
@@ -31,6 +36,17 @@ class GitApi(recipe_api.RecipeApi):
         raise
       else:
         return f.result
+
+  def ensure_win_git_tooling(self):
+    """Ensures that depot_tools/git.bat actually exists."""
+    if not self.m.platform.is_win or self.initialized_win_git:
+      return
+    self.m.step(
+        'ensure git tooling on windows',
+        [self.package_resource('bootstrap', 'win', 'win_tools.bat')],
+        infra_step=True,
+        cwd=self.package_resource())
+    self.initialized_win_git = True
 
   def fetch_tags(self, remote_name=None, **kwargs):
     """Fetches all tags from the remote."""
@@ -172,8 +188,8 @@ class GitApi(recipe_api.RecipeApi):
       remote_name = 'origin'
 
     if self.m.platform.is_win:
-      git_setup_args += ['--git_cmd_path',
-                         self.m.path['depot_tools'].join('git.bat')]
+      self.ensure_win_git_tooling()
+      git_setup_args += ['--git_cmd_path', self.package_resource('git.bat')]
 
     step_suffix = '' if step_suffix is  None else ' (%s)' % step_suffix
     self.m.python(
