@@ -15,7 +15,7 @@
 
 namespace cc {
 
-class LayerTreeImpl;
+class LayerListImpl;
 
 // ScrollState is based on the proposal for scroll customization in blink, found
 // here: https://goo.gl/1ipTpP.
@@ -61,10 +61,10 @@ class CC_EXPORT ScrollState {
     data_.is_direct_manipulation = is_direct_manipulation;
   }
 
-  void set_scroll_chain_and_layer_tree(
+  void set_scroll_chain_and_layer_list(
       const std::list<const ScrollNode*>& scroll_chain,
-      LayerTreeImpl* layer_tree_impl) {
-    layer_tree_impl_ = layer_tree_impl;
+      LayerListImpl* layer_list_impl) {
+    layer_list_impl_ = layer_list_impl;
     scroll_chain_ = scroll_chain;
   }
 
@@ -97,7 +97,7 @@ class CC_EXPORT ScrollState {
 
  private:
   ScrollStateData data_;
-  LayerTreeImpl* layer_tree_impl_;
+  LayerListImpl* layer_list_impl_;
   std::list<const ScrollNode*> scroll_chain_;
 };
 

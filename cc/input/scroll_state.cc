@@ -6,11 +6,13 @@
 
 #include <utility>
 
-#include "cc/trees/layer_tree_impl.h"
+#include "cc/layers/layer_impl.h"
+#include "cc/layers/layer_list_impl.h"
 
 namespace cc {
 
-ScrollState::ScrollState(ScrollStateData data) : data_(data) {}
+ScrollState::ScrollState(ScrollStateData data)
+    : data_(data), layer_list_impl_(nullptr) {}
 
 ScrollState::ScrollState(const ScrollState& other) = default;
 
@@ -28,7 +30,7 @@ void ScrollState::DistributeToScrollChainDescendant() {
   if (!scroll_chain_.empty()) {
     const ScrollNode* next = scroll_chain_.front();
     scroll_chain_.pop_front();
-    layer_tree_impl_->list()->LayerById(next->owner_id)->DistributeScroll(this);
+    layer_list_impl_->LayerById(next->owner_id)->DistributeScroll(this);
   }
 }
 
