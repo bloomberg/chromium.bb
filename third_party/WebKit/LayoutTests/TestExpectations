@@ -1283,19 +1283,6 @@ crbug.com/531286 virtual/gpu/fast/canvas/yuv-video-on-accelerated-canvas.html [ 
 
 crbug.com/535478 [ Win ] virtual/threaded/inspector/tracing/decode-resize.html [ Pass Failure ]
 
-Bug(tkent) [ Mac Win ] printing/iframe-print.html [ NeedsRebaseline ]
-Bug(tkent) [ Mac Win ] svg/W3C-SVG-1.1/text-intro-03-b.svg [ NeedsRebaseline ]
-Bug(tkent) [ Mac Win ] virtual/threaded/printing/iframe-print.html [ NeedsRebaseline ]
-Bug(tkent) [ Mac ] fast/css/h1-in-section-elements.html [ NeedsRebaseline ]
-Bug(tkent) [ Mac ] fast/writing-mode/broken-ideograph-small-caps.html [ NeedsRebaseline ]
-Bug(tkent) [ Mac ] fast/writing-mode/broken-ideographic-font.html [ NeedsRebaseline ]
-Bug(tkent) [ Mac ] fast/writing-mode/vertical-font-fallback.html [ NeedsRebaseline ]
-Bug(tkent) [ Mac ] svg/batik/text/verticalText.svg [ NeedsRebaseline ]
-Bug(tkent) [ Mac ] svg/batik/text/verticalTextOnPath.svg [ NeedsRebaseline ]
-Bug(tkent) [ Mac ] svg/carto.net/tabgroup.svg [ NeedsRebaseline ]
-Bug(tkent) [ Mac ] svg/custom/text-dom-01-f.svg [ NeedsRebaseline ]
-Bug(tkent) [ Mac ] svg/text/text-selection-text-07-t.svg [ NeedsRebaseline ]
-
 crbug.com/524646 [ Mac10.10 ] fast/dom/shadow/shadowdom-for-button.html [ Failure ]
 crbug.com/590129 fast/dom/HTMLMeterElement/meter-boundary-values.html [ NeedsRebaseline ]
 crbug.com/590129 fast/dom/HTMLMeterElement/meter-element-repaint-on-update-value.html [ NeedsRebaseline ]
