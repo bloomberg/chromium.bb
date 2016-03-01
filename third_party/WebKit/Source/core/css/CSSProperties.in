@@ -461,12 +461,12 @@ border-width longhands=border-top-width;border-right-width;border-bottom-width;b
 flex longhands=flex-grow;flex-shrink;flex-basis
 flex-flow longhands=flex-direction;flex-wrap
 font longhands=font-style;font-variant;font-weight;font-stretch;font-size;line-height;font-family
-grid runtime_flag=CSSGridLayout, longhands=grid-template-columns;grid-template-rows;grid-template-areas;grid-auto-flow;grid-auto-columns;grid-auto-rows;grid-column-gap;grid-row-gap
+grid runtime_flag=CSSGridLayout, longhands=grid-template-rows;grid-template-columns;grid-template-areas;grid-auto-flow;grid-auto-rows;grid-auto-columns;grid-column-gap;grid-row-gap
 grid-area runtime_flag=CSSGridLayout, longhands=grid-row-start;grid-column-start;grid-row-end;grid-column-end
 grid-column runtime_flag=CSSGridLayout, longhands=grid-column-start;grid-column-end
 grid-gap runtime_flag=CSSGridLayout, longhands=grid-row-gap;grid-column-gap
 grid-row runtime_flag=CSSGridLayout, longhands=grid-row-start;grid-row-end
-grid-template runtime_flag=CSSGridLayout, longhands=grid-template-columns;grid-template-rows;grid-template-areas
+grid-template runtime_flag=CSSGridLayout, longhands=grid-template-rows;grid-template-columns;grid-template-areas
 list-style longhands=list-style-type;list-style-position;list-style-image
 margin longhands=margin-top;margin-right;margin-bottom;margin-left
 marker longhands=marker-start;marker-mid;marker-end
