@@ -192,7 +192,8 @@ void NodeController::MergePortIntoParent(const std::string& token,
 
 scoped_refptr<PlatformSharedBuffer> NodeController::CreateSharedBuffer(
     size_t num_bytes) {
-#if defined(OS_POSIX)
+  // TODO(amistry): Fix sync broker and re-enable on OSX.
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
   // Shared buffer creation failure is fatal, so always use the broker when we
   // have one. This does mean that a non-root process that has children will use
   // the broker for shared buffer creation even though that process is
