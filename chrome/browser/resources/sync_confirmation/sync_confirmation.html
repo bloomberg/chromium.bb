@@ -11,10 +11,31 @@
     <div class="container">
       <div class="top-title-bar" i18n-content="syncConfirmationTitle"></div>
       <div class="details">
-        <div class="picture-container">
-          <div class="picture">
-            <img id="profile-picture"></img>
-            <div class="checkmark-bubble"></div>
+        <div id="picture-container">
+          <div id="illustration">
+            <div id="icons">
+              <div id="icon-bookmarks" class="fade-top-left"></div>
+              <div id="icon-extensions" class="fade-top-left"></div>
+              <div id="icon-passwords" class="fade-bottom-left"></div>
+              <div id="icon-history" class="fade-top-right"></div>
+              <div id="icon-tabs" class="fade-middle-right"></div>
+              <div id="icon-themes" class="fade-bottom-right"></div>
+              <div id="icon-circle-open" class="fade-middle-left"></div>
+              <div id="icon-circle-1" class="icon-circle fade-middle-left"></div>
+              <div id="icon-circle-2" class="icon-circle fade-top-right"></div>
+              <div id="icon-circle-3" class="icon-circle fade-middle-right"></div>
+              <div id="icon-circle-4" class="icon-circle fade-top-right"></div>
+            </div>
+            <div class="picture">
+              <img id="profile-picture"></img>
+              <div id="checkmark-circle">
+                <svg id="checkmark-check" width="13" height="10" viewBox="0 0 13 10">
+                  <path id="checkmark-path" d="M1 5l3.5 3.5L12 1" stroke="#FFF"
+                        stroke-width="2" stroke-dasharray="16"
+                        stroke-dashoffset="16" fill="none"></path>
+                </svg>
+              </div>
+            </div>
           </div>
         </div>
         <div class="sync-message"

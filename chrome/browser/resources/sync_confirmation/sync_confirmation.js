@@ -21,11 +21,16 @@ cr.define('sync.confirmation', function() {
     $('confirmButton').addEventListener('click', onConfirm);
     $('undoButton').addEventListener('click', onUndo);
     $('settingsLink').addEventListener('click', onGoToSettings);
+    $('profile-picture').addEventListener('load', onPictureLoaded);
     chrome.send('initialized');
   }
 
   function setUserImageURL(url) {
     $('profile-picture').src = url;
+  }
+
+  function onPictureLoaded(e) {
+    $('picture-container').classList.add('loaded');
   }
 
   return {

@@ -329,7 +329,7 @@
         <include name="IDR_SITE_ENGAGEMENT_ENGAGEMENT_TABLE_JS" file="resources\engagement\engagement_table.js" type="BINDATA" />
       </if>
       <include name="IDR_SYNC_CONFIRMATION_CSS" file="resources\sync_confirmation\sync_confirmation.css" type="BINDATA" />
-      <include name="IDR_SYNC_CONFIRMATION_HTML" file="resources\sync_confirmation\sync_confirmation.html" allowexternalscript="true" type="BINDATA" />
+      <include name="IDR_SYNC_CONFIRMATION_HTML" file="resources\sync_confirmation\sync_confirmation.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_SYNC_CONFIRMATION_JS" file="resources\sync_confirmation\sync_confirmation.js" type="BINDATA" />
       <include name="IDR_UBER_HTML" file="resources\uber\uber.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_UBER_JS" file="resources\uber\uber.js" type="BINDATA" />
