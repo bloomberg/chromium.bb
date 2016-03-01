@@ -106,6 +106,17 @@ const inline std::string FourCCToString(FourCC fourcc) {
   buf[2] = (fourcc >> 8) & 0xff;
   buf[3] = (fourcc) & 0xff;
   buf[4] = 0;
+
+  // Return hex itself if characters can not be printed. Any character within
+  // the "C" locale is considered printable.
+  for (int i = 0; i < 4; ++i) {
+    if (!(buf[i] > 0x1f && buf[i] < 0x7f)) {
+      std::stringstream hex_string;
+      hex_string << "0x" << std::hex << fourcc;
+      return hex_string.str();
+    }
+  }
+
   return std::string(buf);
 }
 

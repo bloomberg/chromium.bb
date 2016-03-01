@@ -160,9 +160,12 @@ TEST_F(BoxReaderTest, WrongFourCCTest) {
   bool err;
 
   // Set an unrecognized top-level FourCC.
-  buf[5] = 1;
+  buf[4] = 0x44;
+  buf[5] = 0x41;
+  buf[6] = 0x4c;
+  buf[7] = 0x45;
 
-  EXPECT_MEDIA_LOG(HasSubstr("Unrecognized top-level box type s\\u0001ip"));
+  EXPECT_MEDIA_LOG(HasSubstr("Unrecognized top-level box type DALE"));
 
   scoped_ptr<BoxReader> reader(
       BoxReader::ReadTopLevelBox(&buf[0], buf.size(), media_log_, &err));

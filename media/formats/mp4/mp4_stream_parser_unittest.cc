@@ -21,6 +21,7 @@
 #include "media/base/text_track_config.h"
 #include "media/base/video_decoder_config.h"
 #include "media/formats/mp4/es_descriptor.h"
+#include "media/formats/mp4/fourccs.h"
 #include "media/formats/mp4/mp4_stream_parser.h"
 #include "media/media_features.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -387,6 +388,17 @@ TEST_F(MP4StreamParserTest, DemuxingEAC3) {
       ReadTestDataFile("bear-eac3-only-frag.mp4");
   EXPECT_EQ(expect_success,
             AppendDataInPieces(buffer->data(), buffer->data_size(), 512));
+}
+
+TEST_F(MP4StreamParserTest, FourCCToString) {
+  // A real FOURCC should print.
+  EXPECT_EQ("mvex", FourCCToString(FOURCC_MVEX));
+
+  // Invalid FOURCC should also print whenever ASCII values are printable.
+  EXPECT_EQ("fake", FourCCToString(static_cast<FourCC>(0x66616b65)));
+
+  // Invalid FORCC with non-printable values should not give error message.
+  EXPECT_EQ("0x66616b00", FourCCToString(static_cast<FourCC>(0x66616b00)));
 }
 
 }  // namespace mp4
