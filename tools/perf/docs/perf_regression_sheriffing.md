@@ -15,14 +15,22 @@ regression sheriff role is now entirely focused on performance.
 
 Open the perf dashboard [alerts page](https://chromeperf.appspot.com/alerts).
 
-In the upper right corner, **sign in with your Google account**. Signing in is
+In the upper right corner, **sign in with your Chromium account**. Signing in is
 important in order to be able to kick off bisect jobs, and see data from
 internal waterfalls.
 
-The page shows two lists; you are responsible for triaging
-**Performance Alerts**. The list can be sorted by clicking on the column header.
-When you click on the checkbox next to an alert, all the other alerts that
-occurred in the same revision range will be highlighted.
+Pick up **Chromium Perf Sheriff** from "Select an item ▼" drop down menu. There
+are two tables of alerts that may be shown:
+
+ * "Performance Alerts", which you should triage, and
+ * "Data Stoppage Alerts", which you can ignore.
+
+For either type of alert, if there are no currently pending alerts, then the
+table won't be shown.
+
+The list can be sorted by clicking on the column header. When you click on the
+checkbox next to an alert, all the other alerts that occurred in the same
+revision range will be highlighted.
 
 Check the boxes next to the alerts you want to take a look at, and click the
 "Graph" button. You'll be taken to a page with a table at the top listing all
