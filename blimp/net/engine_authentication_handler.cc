@@ -4,9 +4,12 @@
 
 #include "blimp/net/engine_authentication_handler.h"
 
+#include <string>
+
 #include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/timer/timer.h"
+#include "blimp/common/logging.h"
 #include "blimp/common/proto/blimp_message.pb.h"
 #include "blimp/net/blimp_connection.h"
 #include "blimp/net/blimp_message_processor.h"

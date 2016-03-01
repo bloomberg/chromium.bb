@@ -8,6 +8,7 @@
 
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "blimp/common/logging.h"
 #include "blimp/common/proto/blimp_message.pb.h"
 #include "net/base/net_errors.h"
 
@@ -59,7 +60,7 @@ int BlimpMessageOutputBuffer::GetUnacknowledgedMessageCountForTest() const {
 void BlimpMessageOutputBuffer::ProcessMessage(
     scoped_ptr<BlimpMessage> message,
     const net::CompletionCallback& callback) {
-  DVLOG(2) << "OutputBuffer::ProcessMessage " << message.get();
+  DVLOG(2) << "OutputBuffer::ProcessMessage " << *message;
 
   message->set_message_id(++prev_message_id_);
 

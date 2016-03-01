@@ -4,6 +4,7 @@
 
 #include "blimp/net/null_blimp_message_processor.h"
 
+#include "blimp/common/logging.h"
 #include "blimp/net/common.h"
 
 namespace blimp {

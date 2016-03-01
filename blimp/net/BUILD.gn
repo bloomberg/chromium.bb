@@ -105,6 +105,7 @@ source_set("unit_tests") {
     "//base",
     "//base/test:run_all_unittests",
     "//base/test:test_support",
+    "//blimp/common:blimp_common",
     "//blimp/common/proto",
     "//net:test_support",
     "//testing/gmock",

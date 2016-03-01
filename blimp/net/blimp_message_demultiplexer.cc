@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/strings/stringprintf.h"
+#include "blimp/common/logging.h"
 #include "blimp/net/common.h"
 #include "net/base/net_errors.h"
 

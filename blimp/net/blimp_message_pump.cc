@@ -5,6 +5,7 @@
 #include "blimp/net/blimp_message_pump.h"
 
 #include "base/macros.h"
+#include "blimp/common/logging.h"
 #include "blimp/common/proto/blimp_message.pb.h"
 #include "blimp/net/blimp_message_processor.h"
 #include "blimp/net/common.h"

@@ -15,6 +15,8 @@ component("blimp_common") {
     "compositor/webp_decoder.h",
     "create_blimp_message.cc",
     "create_blimp_message.h",
+    "logging.cc",
+    "logging.h",
     "protocol_version.h",
   ]
 
@@ -36,11 +38,13 @@ source_set("unit_tests") {
 
   sources = [
     "create_blimp_message_unittest.cc",
+    "logging_unittest.cc",
   ]
 
   deps = [
     ":blimp_common",
     "//blimp/common/proto",
+    "//testing/gmock",
     "//testing/gtest",
   ]
 }

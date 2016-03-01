@@ -63,6 +63,8 @@ message InputMessage {
 
     // This is a subset of WebGestureType events.  We only support a small set
     // of these with the existing protocol.
+    // TODO(dtrainor): Modify these enum values to be consistent with the rest
+    // of BlimpMessage subtype enums.
     Type_GestureScrollBegin = 1;
     Type_GestureScrollEnd = 2;
     Type_GestureScrollUpdate = 3;
