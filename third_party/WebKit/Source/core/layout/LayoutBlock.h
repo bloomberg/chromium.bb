@@ -338,9 +338,8 @@ protected:
     // descendant. If multiple calls are made to startDelayUpdateScrollInfo(),
     // finishDelayUpdateScrollInfo() will do nothing until finishDelayUpdateScrollInfo()
     // is called the same number of times.
-    // finishDelayUpdateScrollInfo returns true when it marked something for layout.
     static void startDelayUpdateScrollInfo();
-    static bool finishDelayUpdateScrollInfo(SubtreeLayoutScope*);
+    static void finishDelayUpdateScrollInfo();
 
     void updateScrollInfoAfterLayout();
 

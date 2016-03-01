@@ -7,8 +7,8 @@ PASS hbox.parentNode.clientHeight is hbox.parentNode.scrollHeight
 PASS hbox.clientHeight is hbox.scrollHeight
 PASS intrinsicHeightBox.clientHeight is intrinsicHeightBox.scrollHeight
 PASS scrollbarSize is not 0
-PASS inner.clientWidth is 100
-PASS inner.offsetWidth is 100 + scrollbarSize
+PASS inner.clientWidth is 100 - scrollbarSize
+PASS inner.offsetWidth is 100
 PASS vbox.clientWidth is 100
 PASS vbox.offsetWidth is 100 + scrollbarSize
 PASS successfullyParsed is true

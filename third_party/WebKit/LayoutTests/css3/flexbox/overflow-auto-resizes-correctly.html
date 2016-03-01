@@ -19,7 +19,6 @@
 }
 .vbox {
   overflow-y: auto;
-  max-height: 200px;
 }
 .intrinsic-height-box {
   min-height: -webkit-min-content;
@@ -77,9 +76,11 @@
   var scrollbarSize = measure.offsetWidth - measure.clientWidth;
   shouldNotBe("scrollbarSize", "0");
 
+  // TODO(cbiesinger): These should really be 100 and 100 + scrollbarSize, but
+  // we currently have a bug that makes it not so.
   var inner = document.getElementById('inner');
-  shouldBe("inner.clientWidth", "100");
-  shouldBe("inner.offsetWidth", "100 + scrollbarSize");
+  shouldBe("inner.clientWidth", "100 - scrollbarSize");
+  shouldBe("inner.offsetWidth", "100");
 
   var vbox = document.querySelector('.vbox');
   shouldBe("vbox.clientWidth", "100");
