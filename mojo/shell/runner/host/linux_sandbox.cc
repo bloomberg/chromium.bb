@@ -77,15 +77,18 @@ class SandboxPolicy : public sandbox::BaselinePolicy {
   sandbox::bpf_dsl::ResultExpr EvaluateSyscall(int sysno) const override {
     // This policy is only advisory/for noticing FS access for the moment.
     switch (sysno) {
+#if !defined(__aarch64__)
       case __NR_access:
       case __NR_open:
+#endif
       case __NR_faccessat:
       case __NR_openat:
         return sandbox::bpf_dsl::Trap(SandboxSIGSYSHandler, broker_process_);
       case __NR_sched_getaffinity:
         return sandbox::RestrictSchedTarget(policy_pid(), sysno);
       case __NR_ftruncate:
-#if defined(__i386__) || defined(__x86_64__) || defined(__mips__)
+#if defined(__i386__) || defined(__x86_64__) || defined(__mips__) || \
+    defined(__aarch64__)
       // Per #ifdefs in
       // content/common/sandbox_linux/bpf_renderer_policy_linux.cc
       case __NR_getrlimit:

@@ -414,6 +414,7 @@ bool SyscallSets::IsAllowedEpoll(int sysno) {
     case __NR_epoll_create:
     case __NR_epoll_wait:
 #endif
+    case __NR_epoll_pwait:
     case __NR_epoll_create1:
     case __NR_epoll_ctl:
       return true;
@@ -421,7 +422,6 @@ bool SyscallSets::IsAllowedEpoll(int sysno) {
 #if defined(__x86_64__)
     case __NR_epoll_ctl_old:
 #endif
-    case __NR_epoll_pwait:
 #if defined(__x86_64__)
     case __NR_epoll_wait_old:
 #endif

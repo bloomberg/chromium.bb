@@ -106,7 +106,8 @@ ResultExpr NaClBPFSandboxPolicy::EvaluateSyscall(int sysno) const {
     // NaCl uses custom signal stacks.
     case __NR_sigaltstack:
     // Below is fairly similar to the policy for a Chromium renderer.
-#if defined(__i386__) || defined(__x86_64__) || defined(__mips__)
+#if defined(__i386__) || defined(__x86_64__) || defined(__mips__) || \
+    defined(__aarch64__)
     case __NR_getrlimit:
 #endif
 #if defined(__i386__) || defined(__arm__)
