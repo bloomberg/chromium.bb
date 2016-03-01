@@ -104,6 +104,12 @@ class TestRunner(base_test_runner.BaseTestRunner):
         self.device.RunShellCommand('start')
         self.device.WaitUntilFullyBooted()
 
+    # Set the appropriate debug app if one exists
+    if self.package_info and self.package_info.package:
+      self.device.RunShellCommand(['am', 'set-debug-app', '--persistent',
+                                    self.package_info.package],
+                                  check_return=True)
+
     # We give different default value to launch HTTP server based on shard index
     # because it may have race condition when multiple processes are trying to
     # launch lighttpd with same port at same time.
@@ -123,6 +129,10 @@ class TestRunner(base_test_runner.BaseTestRunner):
     """Cleans up the test harness and saves outstanding data from test run."""
     if self.flags:
       self.flags.Restore()
+
+    # Remove package-specific configuration
+    self.device.RunShellCommand(['am', 'clear-debug-app'], check_return=True)
+
     super(TestRunner, self).TearDown()
 
   def TestSetup(self, test, flag_modifiers):

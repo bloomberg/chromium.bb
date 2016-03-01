@@ -91,6 +91,18 @@ class LocalDeviceInstrumentationTestRun(
         for apk in self._test_instance.additional_apks:
           dev.Install(apk)
 
+        # Set debug app in order to enable reading command line flags on user
+        # builds
+        if self._test_instance.flags:
+          if not self._test_instance.package_info:
+            logging.error("Couldn't set debug app: no package info")
+          elif not self._test_instance.package_info.package:
+            logging.error("Couldn't set debug app: no package defined")
+          else:
+            dev.RunShellCommand(['am', 'set-debug-app', '--persistent',
+                                  self._test_instance.package_info.package],
+                                check_return=True)
+
       def push_test_data():
         external_storage = dev.GetExternalStoragePath()
         host_device_tuples_substituted = [
@@ -131,6 +143,9 @@ class LocalDeviceInstrumentationTestRun(
     def individual_device_tear_down(dev):
       if str(dev) in self._flag_changers:
         self._flag_changers[str(dev)].Restore()
+
+      # Remove package-specific configuration
+      dev.RunShellCommand(['am', 'clear-debug-app'], check_return=True)
 
       valgrind_tools.SetChromeTimeoutScale(dev, None)
 
