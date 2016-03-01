@@ -68,6 +68,14 @@ void SandboxedDMGAnalyzer::StartAnalysis() {
   utility_process_host_->Send(new ChromeUtilityMsg_StartupPing);
 }
 
+void SandboxedDMGAnalyzer::OnProcessCrashed(int exit_code) {
+  OnAnalysisFinished(zip_analyzer::Results());
+}
+
+void SandboxedDMGAnalyzer::OnProcessLaunchFailed() {
+  OnAnalysisFinished(zip_analyzer::Results());
+}
+
 bool SandboxedDMGAnalyzer::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(SandboxedDMGAnalyzer, message)

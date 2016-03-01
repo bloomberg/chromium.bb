@@ -101,6 +101,14 @@ void SandboxedZipAnalyzer::AnalyzeInSandbox() {
       base::Bind(&SandboxedZipAnalyzer::StartProcessOnIOThread, this));
 }
 
+void SandboxedZipAnalyzer::OnProcessCrashed(int exit_code) {
+  OnAnalyzeZipFileFinished(zip_analyzer::Results());
+}
+
+void SandboxedZipAnalyzer::OnProcessLaunchFailed() {
+  OnAnalyzeZipFileFinished(zip_analyzer::Results());
+}
+
 bool SandboxedZipAnalyzer::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(SandboxedZipAnalyzer, message)

@@ -44,6 +44,8 @@ class SandboxedDMGAnalyzer : public content::UtilityProcessHostClient {
   void StartAnalysis();
 
   // content::UtilityProcessHostClient:
+  void OnProcessCrashed(int exit_code) override;
+  void OnProcessLaunchFailed() override;
   bool OnMessageReceived(const IPC::Message& message) override;
 
   // Message handler for reply ping when the utility process has started.
