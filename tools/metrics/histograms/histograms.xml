@@ -49122,6 +49122,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Startup.FirstWebContents.MainFrameLoad" units="ms">
+  <obsolete>
+    Deprecated with 3/2016 with M48.
+  </obsolete>
   <owner>erikchen@chromium.org</owner>
   <owner>gab@chromium.org</owner>
   <summary>
@@ -49162,6 +49165,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Startup.FirstWebContents.NonEmptyPaint" units="ms">
+  <obsolete>
+    Deprecated with 3/2016 with M48.
+  </obsolete>
   <owner>erikchen@chromium.org</owner>
   <owner>gab@chromium.org</owner>
   <summary>
