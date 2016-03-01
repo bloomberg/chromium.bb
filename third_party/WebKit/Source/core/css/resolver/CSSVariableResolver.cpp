@@ -146,14 +146,10 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSVariableResolver::resolveVariableReferences(
     Vector<CSSParserToken> tokens;
     if (!resolver.resolveTokenRange(value.variableDataValue()->tokens(), tokens))
         return cssValuePool().createUnsetValue();
-
-    CSSParserContext context(HTMLStandardMode, nullptr);
-    WillBeHeapVector<CSSProperty, 256> parsedProperties;
-    // TODO(timloh): This should be CSSParser::parseSingleValue and not need a vector.
-    if (!CSSPropertyParser::parseValue(id, false, CSSParserTokenRange(tokens), context, parsedProperties, StyleRule::RuleType::Style))
+    RefPtrWillBeRawPtr<CSSValue> result = CSSPropertyParser::parseSingleValue(id, tokens, strictCSSParserContext());
+    if (!result)
         return cssValuePool().createUnsetValue();
-    ASSERT(parsedProperties.size() == 1);
-    return parsedProperties[0].value();
+    return result.release();
 }
 
 void CSSVariableResolver::resolveAndApplyVariableReferences(StyleResolverState& state, CSSPropertyID id, const CSSVariableReferenceValue& value)
@@ -166,6 +162,7 @@ void CSSVariableResolver::resolveAndApplyVariableReferences(StyleResolverState& 
 
         WillBeHeapVector<CSSProperty, 256> parsedProperties;
 
+        // TODO: Non-shorthands should just call CSSPropertyParser::parseSingleValue
         if (CSSPropertyParser::parseValue(id, false, CSSParserTokenRange(tokens), context, parsedProperties, StyleRule::RuleType::Style)) {
             unsigned parsedPropertiesCount = parsedProperties.size();
             for (unsigned i = 0; i < parsedPropertiesCount; ++i)

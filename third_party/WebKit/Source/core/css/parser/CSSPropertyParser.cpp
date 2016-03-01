@@ -43,7 +43,7 @@
 namespace blink {
 
 CSSPropertyParser::CSSPropertyParser(const CSSParserTokenRange& range,
-    const CSSParserContext& context, WillBeHeapVector<CSSProperty, 256>& parsedProperties)
+    const CSSParserContext& context, WillBeHeapVector<CSSProperty, 256>* parsedProperties)
     : m_range(range)
     , m_context(context)
     , m_parsedProperties(parsedProperties)
@@ -73,7 +73,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
         return false;
     int parsedPropertiesSize = parsedProperties.size();
 
-    CSSPropertyParser parser(range, context, parsedProperties);
+    CSSPropertyParser parser(range, context, &parsedProperties);
     CSSPropertyID resolvedProperty = resolveCSSPropertyID(unresolvedProperty);
     bool parseSuccess;
 
@@ -94,6 +94,18 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
         parsedProperties.shrink(parsedPropertiesSize);
 
     return parseSuccess;
+}
+
+PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(
+    CSSPropertyID property, const CSSParserTokenRange& range, const CSSParserContext& context)
+{
+    if (hasInvalidNumericValues(range))
+        return nullptr;
+    CSSPropertyParser parser(range, context, nullptr);
+    RefPtrWillBeRawPtr<CSSValue> value = parser.parseSingleValue(property);
+    if (!value || !parser.m_range.atEnd())
+        return nullptr;
+    return value.release();
 }
 
 bool CSSPropertyParser::isValidNumericValue(double value)

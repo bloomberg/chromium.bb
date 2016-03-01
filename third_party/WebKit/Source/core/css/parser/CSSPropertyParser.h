@@ -78,6 +78,9 @@ public:
         const CSSParserTokenRange&, const CSSParserContext&,
         WillBeHeapVector<CSSProperty, 256>&, StyleRule::RuleType);
 
+    // Parses a non-shorthand CSS property
+    static PassRefPtrWillBeRawPtr<CSSValue> parseSingleValue(CSSPropertyID, const CSSParserTokenRange&, const CSSParserContext&);
+
     static bool isSystemColor(CSSValueID);
     static bool isColorKeyword(CSSValueID);
     static bool isValidNumericValue(double);
@@ -102,7 +105,7 @@ public:
 
 private:
     CSSPropertyParser(const CSSParserTokenRange&, const CSSParserContext&,
-        WillBeHeapVector<CSSProperty, 256>&);
+        WillBeHeapVector<CSSProperty, 256>*);
 
     // TODO(timloh): Rename once the CSSParserValue-based parseValue is removed
     bool parseValueStart(CSSPropertyID unresolvedProperty, bool important);
@@ -279,7 +282,7 @@ private:
     const CSSParserContext& m_context;
 
     // Outputs:
-    WillBeHeapVector<CSSProperty, 256>& m_parsedProperties;
+    WillBeHeapVector<CSSProperty, 256>* m_parsedProperties;
 
     // Locals during parsing:
     int m_inParseShorthand;

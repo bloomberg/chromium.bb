@@ -105,10 +105,8 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSParser::parseSingleValue(CSSPropertyID prope
         return nullptr;
     if (RefPtrWillBeRawPtr<CSSValue> value = CSSParserFastPaths::maybeParseValue(propertyID, string, context.mode()))
         return value;
-    RefPtrWillBeRawPtr<MutableStylePropertySet> stylePropertySet = MutableStylePropertySet::create(HTMLQuirksMode);
-    bool changed = parseValue(stylePropertySet.get(), propertyID, string, false, context);
-    ASSERT_UNUSED(changed, changed == stylePropertySet->hasProperty(propertyID));
-    return stylePropertySet->getPropertyCSSValue(propertyID);
+    CSSTokenizer::Scope scope(string);
+    return CSSPropertyParser::parseSingleValue(propertyID, scope.tokenRange(), context);
 }
 
 PassRefPtrWillBeRawPtr<ImmutableStylePropertySet> CSSParser::parseInlineStyleDeclaration(const String& styleString, Element* element)
