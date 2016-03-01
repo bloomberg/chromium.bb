@@ -416,6 +416,8 @@ class CC_EXPORT LayerTreeHostImpl
   const LayerListImpl* active_list() const;
   LayerListImpl* pending_list();
   const LayerListImpl* pending_list() const;
+  LayerListImpl* recycle_list();
+  const LayerListImpl* recycle_list() const;
 
   LayerTreeImpl* active_tree() { return active_tree_.get(); }
   const LayerTreeImpl* active_tree() const { return active_tree_.get(); }
