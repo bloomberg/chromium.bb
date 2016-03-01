@@ -191,7 +191,6 @@ StyleMatchedPropertiesCache status=stable
 // be shipped would be enabled. Instead, remove the flag from the shipping
 // interface.
 ExperimentalStream status=experimental
-ReferrerPolicyAttribute status=experimental
 Suborigins status=experimental
 ThreadedParserDataReceiver
 // Many websites disable mouse support when touch APIs are available.  We'd

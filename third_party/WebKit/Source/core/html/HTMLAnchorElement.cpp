@@ -35,7 +35,6 @@
 #include "core/loader/FrameLoaderClient.h"
 #include "core/loader/PingLoader.h"
 #include "core/page/ChromeClient.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/network/NetworkHints.h"
 #include "platform/weborigin/SecurityPolicy.h"
 
@@ -338,7 +337,7 @@ void HTMLAnchorElement::handleClick(Event* event)
     request.setInputPerfMetricReportPolicy(InputToLoadPerfMetricReportPolicy::ReportLink);
 
     ReferrerPolicy policy;
-    if (RuntimeEnabledFeatures::referrerPolicyAttributeEnabled() && hasAttribute(referrerpolicyAttr) && SecurityPolicy::referrerPolicyFromString(fastGetAttribute(referrerpolicyAttr), &policy) && !hasRel(RelationNoReferrer)) {
+    if (hasAttribute(referrerpolicyAttr) && SecurityPolicy::referrerPolicyFromString(fastGetAttribute(referrerpolicyAttr), &policy) && !hasRel(RelationNoReferrer)) {
         request.setHTTPReferrer(SecurityPolicy::generateReferrer(policy, completedURL, document().outgoingReferrer()));
     }
 

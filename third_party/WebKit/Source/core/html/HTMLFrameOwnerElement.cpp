@@ -34,7 +34,6 @@
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/plugins/PluginView.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/weborigin/SecurityOrigin.h"
 
 namespace blink {
@@ -297,11 +296,9 @@ bool HTMLFrameOwnerElement::loadOrRedirectSubframe(const KURL& url, const Atomic
 
     FrameLoadRequest frameLoadRequest(&document(), url, "_self", CheckContentSecurityPolicy);
 
-    if (RuntimeEnabledFeatures::referrerPolicyAttributeEnabled()) {
-        ReferrerPolicy policy = referrerPolicyAttribute();
-        if (policy != ReferrerPolicyDefault)
-            frameLoadRequest.resourceRequest().setHTTPReferrer(SecurityPolicy::generateReferrer(policy, url, document().outgoingReferrer()));
-    }
+    ReferrerPolicy policy = referrerPolicyAttribute();
+    if (policy != ReferrerPolicyDefault)
+        frameLoadRequest.resourceRequest().setHTTPReferrer(SecurityPolicy::generateReferrer(policy, url, document().outgoingReferrer()));
 
     return parentFrame->loader().client()->createFrame(frameLoadRequest, frameName, this);
 }

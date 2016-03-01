@@ -52,7 +52,6 @@
 #include "platform/ContentType.h"
 #include "platform/EventDispatchForbiddenScope.h"
 #include "platform/MIMETypeRegistry.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/weborigin/SecurityPolicy.h"
 
 namespace blink {
@@ -284,7 +283,7 @@ void HTMLImageElement::parseAttribute(const QualifiedName& name, const AtomicStr
         selectSourceURL(ImageLoader::UpdateIgnorePreviousError);
     } else if (name == usemapAttr) {
         setIsLink(!value.isNull());
-    } else if (RuntimeEnabledFeatures::referrerPolicyAttributeEnabled() && name == referrerpolicyAttr) {
+    } else if (name == referrerpolicyAttr) {
         m_referrerPolicy = ReferrerPolicyDefault;
         if (!value.isNull())
             SecurityPolicy::referrerPolicyFromString(value, &m_referrerPolicy);

@@ -103,7 +103,7 @@ void HTMLIFrameElement::parseAttribute(const QualifiedName& name, const AtomicSt
     } else if (name == sandboxAttr) {
         m_sandbox->setValue(value);
         UseCounter::count(document(), UseCounter::SandboxViaIFrame);
-    } else if (RuntimeEnabledFeatures::referrerPolicyAttributeEnabled() && name == referrerpolicyAttr) {
+    } else if (name == referrerpolicyAttr) {
         m_referrerPolicy = ReferrerPolicyDefault;
         if (!value.isNull())
             SecurityPolicy::referrerPolicyFromString(value, &m_referrerPolicy);

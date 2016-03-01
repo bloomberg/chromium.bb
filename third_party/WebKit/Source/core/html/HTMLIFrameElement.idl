@@ -32,7 +32,7 @@ interface HTMLIFrameElement : HTMLElement {
     [CheckSecurity=ReturnValue] readonly attribute Document? contentDocument;
     readonly attribute Window? contentWindow;
     [CheckSecurity=ReturnValue, RaisesException] Document? getSVGDocument();
-    [RuntimeEnabled=ReferrerPolicyAttribute, Reflect, ReflectOnly=("","no-referrer","origin","no-referrer-when-downgrade","origin-when-cross-origin","unsafe-url"), ReflectMissing="", ReflectInvalid=""] attribute DOMString referrerpolicy;
+    [Reflect, ReflectOnly=("","no-referrer","origin","no-referrer-when-downgrade","origin-when-cross-origin","unsafe-url"), ReflectMissing="", ReflectInvalid=""] attribute DOMString referrerpolicy;
 
 
     // obsolete members
