@@ -764,10 +764,17 @@ void LayerImpl::PushLayerPropertyChangedForSubtree() {
   // when its corresponsing property tree node changes.
   PropertyTrees* property_trees = layer_tree_impl()->property_trees();
   EffectTree effect_tree = property_trees->effect_tree;
+  TransformTree transform_tree = property_trees->transform_tree;
   for (int i = 1; i < static_cast<int>(effect_tree.size()); ++i) {
     EffectNode* node = effect_tree.Node(i);
     EffectNode* parent_node = effect_tree.parent(node);
-    property_trees->effect_tree.UpdateOpacityChanged(node, parent_node);
+    effect_tree.UpdateOpacityChanged(node, parent_node);
+  }
+  for (int i = 1; i < static_cast<int>(transform_tree.size()); ++i) {
+    TransformNode* node = transform_tree.Node(i);
+    TransformNode* parent_node = transform_tree.parent(node);
+    TransformNode* source_node = transform_tree.Node(node->data.source_node_id);
+    transform_tree.UpdateTransformChanged(node, parent_node, source_node);
   }
   PushLayerPropertyChangedForSubtreeInternal();
 }
@@ -837,6 +844,8 @@ void LayerImpl::UpdatePropertyTreeTransform() {
     if (node->data.local != transform_) {
       node->data.local = transform_;
       node->data.needs_local_transform_update = true;
+      node->data.transform_changed = true;
+      layer_tree_impl()->property_trees()->changed = true;
       transform_tree.set_needs_update(true);
       // TODO(ajuma): The current criteria for creating clip nodes means that
       // property trees may need to be rebuilt when the new transform isn't
@@ -946,9 +955,14 @@ void LayerImpl::OnOpacityAnimated(float opacity) {
 }
 
 void LayerImpl::OnTransformAnimated(const gfx::Transform& transform) {
+  gfx::Transform old_transform = transform_;
   SetTransform(transform);
   UpdatePropertyTreeTransform();
   was_ever_ready_since_last_transform_animation_ = false;
+  if (old_transform != transform) {
+    SetNeedsPushProperties();
+    layer_tree_impl()->set_needs_update_draw_properties();
+  }
 }
 
 void LayerImpl::OnScrollOffsetAnimated(const gfx::ScrollOffset& scroll_offset) {
@@ -1303,7 +1317,6 @@ void LayerImpl::SetTransform(const gfx::Transform& transform) {
 
   transform_ = transform;
   transform_is_invertible_ = transform_.IsInvertible();
-  NoteLayerPropertyChangedForSubtree();
 }
 
 void LayerImpl::SetTransformAndInvertibility(const gfx::Transform& transform,

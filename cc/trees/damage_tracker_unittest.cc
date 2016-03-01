@@ -427,6 +427,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForTransformedLayer) {
 
   scoped_ptr<LayerImpl> root = CreateAndSetUpTestTreeWithOneSurface();
   LayerImpl* child = root->children()[0].get();
+  child->SetForceRenderSurface(true);
 
   gfx::Transform rotation;
   rotation.Rotate(45.0);
@@ -448,8 +449,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForTransformedLayer) {
   // With the anchor on the layer's center, now we can test the rotation more
   // intuitively, since it applies about the layer's anchor.
   ClearDamageForAllSurfaces(root.get());
-  child->SetTransform(rotation);
-  root->layer_tree_impl()->property_trees()->needs_rebuild = true;
+  child->OnTransformAnimated(rotation);
   EmulateDrawingOneFrame(root.get());
 
   // Since the child layer is square, rotation by 45 degrees about the center

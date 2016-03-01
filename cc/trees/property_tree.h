@@ -405,6 +405,9 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
   void ResetChangeTracking();
   // Updates the parent, target, and screen space transforms and snapping.
   void UpdateTransforms(int id);
+  void UpdateTransformChanged(TransformNode* node,
+                              TransformNode* parent_node,
+                              TransformNode* source_node);
 
   // A TransformNode's source_to_parent value is used to account for the fact
   // that fixed-position layers are positioned by Blink wrt to their layer tree
@@ -492,9 +495,6 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
                                  TransformNode* parent_node);
   void UndoSnapping(TransformNode* node);
   void UpdateSnapping(TransformNode* node);
-  void UpdateTransformChanged(TransformNode* node,
-                              TransformNode* parent_node,
-                              TransformNode* source_node);
   void UpdateNodeAndAncestorsHaveIntegerTranslations(
       TransformNode* node,
       TransformNode* parent_node);

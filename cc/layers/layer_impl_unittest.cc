@@ -175,7 +175,8 @@ TEST(LayerImplTest, VerifyLayerChangesAreTrackedProperly) {
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->PushScrollOffsetFromMainThread(
       gfx::ScrollOffset(arbitrary_vector2d)));
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->OnOpacityAnimated(arbitrary_number));
-  EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetTransform(arbitrary_transform));
+  EXECUTE_AND_VERIFY_SUBTREE_CHANGED(
+      root->OnTransformAnimated(arbitrary_transform));
 
   // Changing these properties only affects the layer itself.
   EXECUTE_AND_VERIFY_ONLY_LAYER_CHANGED(root->SetDrawsContent(true));
@@ -360,7 +361,8 @@ TEST(LayerImplTest, VerifyNeedsUpdateDrawProperties) {
       layer->OnOpacityAnimated(arbitrary_number));
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetBlendMode(arbitrary_blend_mode);
                                       layer->NoteLayerPropertyChanged());
-  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetTransform(arbitrary_transform));
+  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(
+      layer->OnTransformAnimated(arbitrary_transform));
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetBounds(arbitrary_size);
                                       layer->NoteLayerPropertyChanged());
 

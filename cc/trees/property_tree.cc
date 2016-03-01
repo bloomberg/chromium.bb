@@ -1508,6 +1508,13 @@ void PropertyTrees::PushChangeTrackingTo(PropertyTrees* tree) {
       target_node->data.opacity_changed = true;
     }
   }
+  for (int id = 1; id < static_cast<int>(transform_tree.size()); ++id) {
+    TransformNode* node = transform_tree.Node(id);
+    if (node->data.transform_changed) {
+      TransformNode* target_node = tree->transform_tree.Node(node->id);
+      target_node->data.transform_changed = true;
+    }
+  }
 }
 
 }  // namespace cc

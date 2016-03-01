@@ -696,20 +696,39 @@ class LayerTreeHostTestPropertyTreesChangedSync : public LayerTreeHostTest {
     LayerTreeHostTest::SetupTree();
   }
 
+  enum Animations {
+    OPACITY,
+    TRANSFORM,
+    END,
+  };
+
   void BeginTest() override {
-    index_ = 0;
+    index_ = OPACITY;
     PostSetNeedsCommitToMainThread();
   }
 
   void CommitCompleteOnThread(LayerTreeHostImpl* impl) override {
-    switch (index_) {
-      case 0:
+    gfx::Transform transform;
+    switch (static_cast<Animations>(index_)) {
+      case OPACITY:
         index_++;
         impl->active_tree()->root_layer()->ResetAllChangeTrackingForSubtree();
         impl->active_tree()->root_layer()->OnOpacityAnimated(0.5f);
         PostSetNeedsCommitToMainThread();
         break;
-      case 1:
+      case TRANSFORM:
+        index_++;
+        EXPECT_TRUE(impl->active_tree()->root_layer()->LayerPropertyChanged());
+        impl->active_tree()->root_layer()->ResetAllChangeTrackingForSubtree();
+        impl->active_tree()
+            ->property_trees()
+            ->effect_tree.ResetChangeTracking();
+        EXPECT_FALSE(impl->active_tree()->root_layer()->LayerPropertyChanged());
+        transform.Translate(10, 10);
+        impl->active_tree()->root_layer()->OnTransformAnimated(transform);
+        PostSetNeedsCommitToMainThread();
+        break;
+      case END:
         EXPECT_TRUE(impl->active_tree()->root_layer()->LayerPropertyChanged());
         EndTest();
         break;
