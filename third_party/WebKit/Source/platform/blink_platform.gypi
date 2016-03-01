@@ -42,8 +42,6 @@
       'Histogram.cpp',
       'Histogram.h',
       'HostWindow.h',
-      'JSONParser.cpp',
-      'JSONParser.h',
       'JSONValues.cpp',
       'JSONValues.h',
       'JSONValuesForV8.cpp',
@@ -1107,7 +1105,6 @@
     'platform_test_files': [
       'DecimalTest.cpp',
       'DragImageTest.cpp',
-      'JSONParserTest.cpp',
       'LayoutUnitTest.cpp',
       'LifecycleContextTest.cpp',
       'PODArenaTest.cpp',
