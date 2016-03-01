@@ -2117,3 +2117,14 @@ content.dll!content::PPB_ImageData_Impl::Init
 content.dll!content::PepperGraphics2DHost::Init
 content.dll!content::PepperGraphics2DHost::Create
 content.dll!content::ContentRendererPepperHostFactory::CreateResourceHost
+
+UNINITIALIZED READ
+name=bug_591092
+webcore_shared.dll!std::_Equal<>
+webcore_shared.dll!WTF::operator==<>
+webcore_shared.dll!blink::CSSVariableData::operator==
+webcore_shared.dll!blink::dataEquivalent<>
+webcore_shared.dll!blink::dataEquivalent<>
+...
+webcore_shared.dll!blink::Document::updateStyle
+webcore_shared.dll!blink::Document::updateLayoutTree
