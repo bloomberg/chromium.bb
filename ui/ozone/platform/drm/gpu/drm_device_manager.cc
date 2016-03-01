@@ -101,6 +101,10 @@ scoped_refptr<DrmDevice> DrmDeviceManager::GetDrmDevice(
   return it->second;
 }
 
+scoped_refptr<DrmDevice> DrmDeviceManager::GetPrimaryDrmDevice() {
+  return primary_device_;
+}
+
 const DrmDeviceVector& DrmDeviceManager::GetDrmDevices() const {
   return devices_;
 }

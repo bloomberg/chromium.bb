@@ -48,6 +48,8 @@ class GbmSurfaceFactory : public SurfaceFactoryOzone {
       gfx::BufferFormat format,
       gfx::BufferUsage usage) override;
   scoped_refptr<NativePixmap> CreateNativePixmapFromHandle(
+      gfx::Size size,
+      gfx::BufferFormat format,
       const gfx::NativePixmapHandle& handle) override;
 
  private:

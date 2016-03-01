@@ -39,6 +39,19 @@ scoped_refptr<GbmBuffer> DrmThreadProxy::CreateBuffer(
   return buffer;
 }
 
+scoped_refptr<GbmBuffer> DrmThreadProxy::CreateBufferFromFD(
+    const gfx::Size& size,
+    gfx::BufferFormat format,
+    base::ScopedFD fd,
+    int stride) {
+  scoped_refptr<GbmBuffer> buffer;
+  PostSyncTask(
+      drm_thread_.task_runner(),
+      base::Bind(&DrmThread::CreateBufferFromFD, base::Unretained(&drm_thread_),
+                 size, format, base::Passed(&fd), stride, &buffer));
+  return buffer;
+}
+
 void DrmThreadProxy::GetScanoutFormats(
     gfx::AcceleratedWidget widget,
     std::vector<gfx::BufferFormat>* scanout_formats) {

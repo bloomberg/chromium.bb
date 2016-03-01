@@ -74,7 +74,8 @@ GpuMemoryBufferFactoryOzoneNativePixmap::CreateGpuMemoryBufferFromHandle(
   scoped_refptr<ui::NativePixmap> pixmap =
       ui::OzonePlatform::GetInstance()
           ->GetSurfaceFactoryOzone()
-          ->CreateNativePixmapFromHandle(handle.native_pixmap_handle);
+          ->CreateNativePixmapFromHandle(size, format,
+                                         handle.native_pixmap_handle);
   if (!pixmap.get()) {
     DLOG(ERROR) << "Failed to create pixmap from handle";
     return gfx::GpuMemoryBufferHandle();

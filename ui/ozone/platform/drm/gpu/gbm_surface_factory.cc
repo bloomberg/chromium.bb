@@ -106,16 +106,25 @@ scoped_refptr<ui::NativePixmap> GbmSurfaceFactory::CreateNativePixmap(
     return nullptr;
 
   scoped_refptr<GbmPixmap> pixmap(new GbmPixmap(this));
-  if (!pixmap->InitializeFromBuffer(buffer))
+  if (!pixmap->Initialize(buffer))
     return nullptr;
 
   return pixmap;
 }
 
 scoped_refptr<ui::NativePixmap> GbmSurfaceFactory::CreateNativePixmapFromHandle(
+    gfx::Size size,
+    gfx::BufferFormat format,
     const gfx::NativePixmapHandle& handle) {
+  scoped_refptr<GbmBuffer> buffer = drm_thread_->CreateBufferFromFD(
+      size, format, base::ScopedFD(handle.fd.fd), handle.stride);
+  if (!buffer)
+    return nullptr;
+
   scoped_refptr<GbmPixmap> pixmap(new GbmPixmap(this));
-  pixmap->Initialize(base::ScopedFD(handle.fd.fd), handle.stride);
+  if (!pixmap->Initialize(buffer))
+    return nullptr;
+
   return pixmap;
 }
 

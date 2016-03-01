@@ -47,6 +47,9 @@ class DrmDeviceManager {
   // returns |primary_device_|.
   scoped_refptr<DrmDevice> GetDrmDevice(gfx::AcceleratedWidget widget);
 
+  // Returns |primary_device_|.
+  scoped_refptr<DrmDevice> GetPrimaryDrmDevice();
+
   const DrmDeviceVector& GetDrmDevices() const;
 
  private:

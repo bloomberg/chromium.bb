@@ -54,6 +54,8 @@ scoped_refptr<ui::NativePixmap> SurfaceFactoryOzone::CreateNativePixmap(
 
 scoped_refptr<ui::NativePixmap>
 SurfaceFactoryOzone::CreateNativePixmapFromHandle(
+    gfx::Size size,
+    gfx::BufferFormat format,
     const gfx::NativePixmapHandle& handle) {
   return nullptr;
 }

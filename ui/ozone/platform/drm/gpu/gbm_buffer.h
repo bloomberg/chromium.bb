@@ -26,6 +26,12 @@ class GbmBuffer : public GbmBufferBase {
       gfx::BufferFormat format,
       const gfx::Size& size,
       gfx::BufferUsage usage);
+  static scoped_refptr<GbmBuffer> CreateBufferFromFD(
+      const scoped_refptr<GbmDevice>& gbm,
+      gfx::BufferFormat format,
+      const gfx::Size& size,
+      base::ScopedFD fd,
+      int stride);
   gfx::BufferFormat GetFormat() const { return format_; }
   gfx::BufferUsage GetUsage() const { return usage_; }
 
@@ -45,8 +51,7 @@ class GbmBuffer : public GbmBufferBase {
 class GbmPixmap : public NativePixmap {
  public:
   explicit GbmPixmap(GbmSurfaceFactory* surface_manager);
-  void Initialize(base::ScopedFD dma_buf, int dma_buf_pitch);
-  bool InitializeFromBuffer(const scoped_refptr<GbmBuffer>& buffer);
+  bool Initialize(const scoped_refptr<GbmBuffer>& buffer);
   void SetProcessingCallback(
       const ProcessingCallback& processing_callback) override;
 
@@ -72,7 +77,6 @@ class GbmPixmap : public NativePixmap {
 
   scoped_refptr<GbmBuffer> buffer_;
   base::ScopedFD dma_buf_;
-  int dma_buf_pitch_ = -1;
 
   GbmSurfaceFactory* surface_manager_;
 

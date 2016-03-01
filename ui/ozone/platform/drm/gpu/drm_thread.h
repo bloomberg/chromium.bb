@@ -58,6 +58,11 @@ class DrmThread : public base::Thread {
                     gfx::BufferFormat format,
                     gfx::BufferUsage usage,
                     scoped_refptr<GbmBuffer>* buffer);
+  void CreateBufferFromFD(const gfx::Size& size,
+                          gfx::BufferFormat format,
+                          base::ScopedFD fd,
+                          int stride,
+                          scoped_refptr<GbmBuffer>* buffer);
 
   void GetScanoutFormats(gfx::AcceleratedWidget widget,
                          std::vector<gfx::BufferFormat>* scanout_formats);
