@@ -24,9 +24,6 @@ struct AppendQuadsData {
   int64_t checkerboarded_no_recording_content_area = 0;
   // This is the area within interest rect.
   int64_t checkerboarded_needs_raster_content_area = 0;
-
-  int64_t num_missing_tiles_no_image_content = 0;
-  int64_t num_missing_tiles_some_image_content = 0;
 };
 
 }  // namespace cc

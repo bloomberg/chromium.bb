@@ -95,7 +95,6 @@ RTree::Branch RTree::BuildRecursive(std::vector<Branch>* branches, int level) {
 void RTree::Search(const gfx::Rect& query, std::vector<size_t>* results) const {
   if (num_data_elements_ > 0 && query.Intersects(root_.bounds))
     SearchRecursive(root_.subtree, query, results);
-  DCHECK(results->empty() || ContainsItemInRect(query));
 }
 
 void RTree::SearchRecursive(Node* node,
@@ -109,25 +108,6 @@ void RTree::SearchRecursive(Node* node,
         SearchRecursive(node->children[i].subtree, query, results);
     }
   }
-}
-
-bool RTree::ContainsItemInRect(const gfx::Rect& query) const {
-  if (num_data_elements_ == 0 || !query.Intersects(root_.bounds))
-    return false;
-  return ContainsItemInRectRecursive(root_.subtree, query);
-}
-
-bool RTree::ContainsItemInRectRecursive(Node* node,
-                                        const gfx::Rect& query) const {
-  for (uint16_t i = 0; i < node->num_children; ++i) {
-    if (!query.Intersects(node->children[i].bounds))
-      continue;
-    if (node->level == 0 ||
-        ContainsItemInRectRecursive(node->children[i].subtree, query)) {
-      return true;
-    }
-  }
-  return false;
 }
 
 gfx::Rect RTree::GetBounds() const {

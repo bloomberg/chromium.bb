@@ -8,9 +8,7 @@
 
 #include "base/synchronization/waitable_event.h"
 #include "cc/test/fake_display_list_recording_source.h"
-#include "cc/test/skia_common.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/skia/include/core/SkSurface.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace cc {
@@ -98,36 +96,6 @@ FakeDisplayListRasterSource::CreatePartiallyFilled(
   green_paint.setColor(SK_ColorGREEN);
   recording_source->add_draw_rect_with_paint(gfx::Rect(smaller_size),
                                              green_paint);
-
-  recording_source->Rerecord();
-  recording_source->SetRecordedViewport(recorded_viewport);
-
-  return make_scoped_refptr(
-      new FakeDisplayListRasterSource(recording_source.get(), false));
-}
-
-scoped_refptr<FakeDisplayListRasterSource>
-FakeDisplayListRasterSource::CreatePartiallyFilledWithImages(
-    const gfx::Size& size,
-    const gfx::Rect& recorded_viewport) {
-  DCHECK(recorded_viewport.IsEmpty() ||
-         gfx::Rect(size).Contains(recorded_viewport));
-  auto recording_source = FakeDisplayListRecordingSource::CreateRecordingSource(
-      recorded_viewport, size);
-  recording_source->SetGenerateDiscardableImagesMetadata(true);
-
-  SkPaint red_paint;
-  red_paint.setColor(SK_ColorRED);
-  recording_source->add_draw_rect_with_paint(gfx::Rect(size), red_paint);
-
-  gfx::Size smaller_size(size.width() - 10, size.height() - 10);
-  SkPaint green_paint;
-  green_paint.setColor(SK_ColorGREEN);
-  recording_source->add_draw_rect_with_paint(gfx::Rect(smaller_size),
-                                             green_paint);
-
-  skia::RefPtr<SkImage> image = CreateDiscardableImage(smaller_size);
-  recording_source->add_draw_image(image.get(), gfx::Point());
 
   recording_source->Rerecord();
   recording_source->SetRecordedViewport(recorded_viewport);

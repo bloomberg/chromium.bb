@@ -198,11 +198,6 @@ void DiscardableImageMap::GetDiscardableImagesInRect(
     images->push_back(all_images_[index].first.ApplyScale(raster_scale));
 }
 
-bool DiscardableImageMap::HasDiscardableImageInRect(
-    const gfx::Rect& rect) const {
-  return images_rtree_.ContainsItemInRect(rect);
-}
-
 DiscardableImageMap::ScopedMetadataGenerator::ScopedMetadataGenerator(
     DiscardableImageMap* image_map,
     const gfx::Size& bounds)

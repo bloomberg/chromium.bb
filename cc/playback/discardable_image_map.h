@@ -53,7 +53,6 @@ class CC_EXPORT DiscardableImageMap {
   void GetDiscardableImagesInRect(const gfx::Rect& rect,
                                   float raster_scale,
                                   std::vector<DrawImage>* images) const;
-  bool HasDiscardableImageInRect(const gfx::Rect& rect) const;
 
  private:
   friend class ScopedMetadataGenerator;

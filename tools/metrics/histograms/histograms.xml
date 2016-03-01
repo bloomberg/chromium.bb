@@ -5212,6 +5212,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram
     name="Compositing.Browser.RenderPass.AppendQuadData.NumMissingTilesNoImageContent">
+  <obsolete>
+    Deprecated 02/2016. We'd learned as much as we could from this metric and it
+    made no sense to keep it around.
+  </obsolete>
   <owner>vollick@chromium.org</owner>
   <summary>
     Tracks the number of missing tiles that had some image content in the
@@ -5221,6 +5225,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram
     name="Compositing.Browser.RenderPass.AppendQuadData.NumMissingTilesSomeImageContent">
+  <obsolete>
+    Deprecated 02/2016. We'd learned as much as we could from this metric and it
+    made no sense to keep it around.
+  </obsolete>
   <owner>vollick@chromium.org</owner>
   <summary>
     Tracks the number of missing tiles that did not have any image content in
@@ -5423,6 +5431,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram
     name="Compositing.Renderer.RenderPass.AppendQuadData.NumMissingTilesNoImageContent">
+  <obsolete>
+    Deprecated 02/2016. We'd learned as much as we could from this metric and it
+    made no sense to keep it around.
+  </obsolete>
   <owner>vollick@chromium.org</owner>
   <summary>
     Tracks the number of missing tiles that had some image content in the
@@ -5432,6 +5444,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram
     name="Compositing.Renderer.RenderPass.AppendQuadData.NumMissingTilesSomeImageContent">
+  <obsolete>
+    Deprecated 02/2016. We'd learned as much as we could from this metric and it
+    made no sense to keep it around.
+  </obsolete>
   <owner>vollick@chromium.org</owner>
   <summary>
     Tracks the number of missing tiles that did not have any image content in

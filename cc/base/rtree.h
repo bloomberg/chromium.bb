@@ -78,10 +78,6 @@ class CC_EXPORT RTree {
 
   void Search(const gfx::Rect& query, std::vector<size_t>* results) const;
 
-  // Equivalent, behaviorally, to checking if |Search| added anything to
-  // |results|. This is faster, however.
-  bool ContainsItemInRect(const gfx::Rect& query) const;
-
   gfx::Rect GetBounds() const;
 
  private:
@@ -111,8 +107,6 @@ class CC_EXPORT RTree {
   void SearchRecursive(Node* root,
                        const gfx::Rect& query,
                        std::vector<size_t>* results) const;
-
-  bool ContainsItemInRectRecursive(Node* node, const gfx::Rect& query) const;
 
   // Consumes the input array.
   Branch BuildRecursive(std::vector<Branch>* branches, int level);

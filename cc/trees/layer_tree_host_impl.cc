@@ -858,8 +858,6 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(
   const DrawMode draw_mode = GetDrawMode();
 
   int num_missing_tiles = 0;
-  int num_missing_tiles_no_image_content = 0;
-  int num_missing_tiles_some_image_content = 0;
   int num_incomplete_tiles = 0;
   int64_t checkerboarded_no_recording_content_area = 0;
   int64_t checkerboarded_needs_raster_content_area = 0;
@@ -930,10 +928,6 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(
         append_quads_data.checkerboarded_needs_raster_content_area);
 
     num_missing_tiles += append_quads_data.num_missing_tiles;
-    num_missing_tiles_no_image_content +=
-        append_quads_data.num_missing_tiles_no_image_content;
-    num_missing_tiles_some_image_content +=
-        append_quads_data.num_missing_tiles_some_image_content;
     num_incomplete_tiles += append_quads_data.num_incomplete_tiles;
     checkerboarded_no_recording_content_area +=
         append_quads_data.checkerboarded_no_recording_content_area;
@@ -1018,21 +1012,6 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(
         "Compositing.RenderPass.AppendQuadData."
         "CheckerboardedNeedRasterContentArea",
         checkerboarded_needs_raster_content_area);
-
-    if (settings_.image_decode_tasks_enabled && num_missing_tiles) {
-      if (const char* client_name = GetClientNameForMetrics()) {
-        UMA_HISTOGRAM_COUNTS_100(
-            base::StringPrintf("Compositing.%s.RenderPass.AppendQuadData."
-                               "NumMissingTilesSomeImageContent",
-                               client_name),
-            num_missing_tiles_some_image_content);
-        UMA_HISTOGRAM_COUNTS_100(
-            base::StringPrintf("Compositing.%s.RenderPass.AppendQuadData."
-                               "NumMissingTilesNoImageContent",
-                               client_name),
-            num_missing_tiles_no_image_content);
-      }
-    }
   }
 
   // Should only have one render pass in resourceless software mode.

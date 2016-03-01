@@ -459,11 +459,6 @@ void DisplayListRasterSource::GetDiscardableImagesInRect(
   display_list_->GetDiscardableImagesInRect(layer_rect, raster_scale, images);
 }
 
-bool DisplayListRasterSource::HasDiscardableImageInRect(
-    const gfx::Rect& layer_rect) const {
-  return display_list_ && display_list_->HasDiscardableImageInRect(layer_rect);
-}
-
 bool DisplayListRasterSource::CoversRect(const gfx::Rect& layer_rect) const {
   if (size_.IsEmpty())
     return false;

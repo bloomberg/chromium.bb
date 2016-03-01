@@ -14,7 +14,6 @@
 
 #include "base/time/time.h"
 #include "base/trace_event/trace_event_argument.h"
-#include "cc/base/histograms.h"
 #include "cc/base/math_util.h"
 #include "cc/debug/debug_colors.h"
 #include "cc/debug/micro_benchmark_impl.h"
@@ -354,14 +353,6 @@ void PictureLayerImpl::AppendQuads(RenderPass* render_pass,
       if (geometry_rect.Intersects(scaled_viewport_for_tile_priority)) {
         append_quads_data->num_missing_tiles++;
         ++missing_tile_count;
-        // We only keep track of discardable images if we're using raster tasks,
-        // so we only gather stats in this case.
-        if (layer_tree_impl()->settings().image_decode_tasks_enabled) {
-          if (raster_source_->HasDiscardableImageInRect(geometry_rect))
-            append_quads_data->num_missing_tiles_some_image_content++;
-          else
-            append_quads_data->num_missing_tiles_no_image_content++;
-        }
       }
       int64_t checkerboarded_area =
           visible_geometry_rect.width() * visible_geometry_rect.height();
