@@ -33,11 +33,13 @@ using printing::PrintSettings;
 
 namespace {
 
+#if defined(USE_CUPS)
 // CUPS Duplex attribute and values.
 const char kCUPSDuplex[] = "cups-Duplex";
 const char kDuplexNone[] = "None";
 const char kDuplexTumble[] = "DuplexTumble";
 const char kDuplexNoTumble[] = "DuplexNoTumble";
+#endif
 
 int kPaperSizeTresholdMicrons = 100;
 int kMicronsInMm = 1000;
