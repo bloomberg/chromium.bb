@@ -117,7 +117,8 @@ bool ContentSettingImageView::ShouldShowBackground() const {
 }
 
 double ContentSettingImageView::WidthMultiplier() const {
-  double state = slide_animator_.GetCurrentValue();
+  double state = pause_animation_ ? pause_animation_state_
+                                  : slide_animator_.GetCurrentValue();
   // The fraction of the animation we'll spend animating the string into view,
   // which is also the fraction we'll spend animating it closed; total
   // animation (slide out, show, then slide in) is 1.0.
