@@ -439,6 +439,7 @@ void Label::MaybeBuildRenderTextLines() {
     rect.Inset(kFocusBorderPadding, kFocusBorderPadding);
   if (rect.IsEmpty())
     return;
+  rect.Inset(-gfx::ShadowValue::GetMargin(shadows()));
 
   gfx::HorizontalAlignment alignment = horizontal_alignment();
   gfx::DirectionalityMode directionality = render_text_->directionality_mode();
