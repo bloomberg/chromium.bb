@@ -85,21 +85,27 @@ int ChildProcessHost::Join() {
     start_child_process_event_.Wait();
 
   controller_ = mojom::ChildControllerPtr();
-  DCHECK(child_process_.IsValid());
+  // This host may be hosting a child process whose lifetime is controlled
+  // elsewhere. In this case we have no known process handle to wait on.
+  if (child_process_.IsValid()) {
+    int rv = -1;
+    LOG_IF(ERROR, !child_process_.WaitForExit(&rv))
+        << "Failed to wait for child process";
 
-  int rv = -1;
-  LOG_IF(ERROR, !child_process_.WaitForExit(&rv))
-      << "Failed to wait for child process";
+    child_process_.Close();
+    return rv;
+  }
 
-  child_process_.Close();
-
-  return rv;
+  return 0;
 }
 
 void ChildProcessHost::StartApp(
     InterfaceRequest<mojom::ShellClient> request,
     const mojom::ChildController::StartAppCallback& on_app_complete) {
   DCHECK(controller_);
+
+  // In this case the process must have already been launched.
+  start_child_process_event_.Signal();
 
   on_app_complete_ = on_app_complete;
   controller_->StartApp(

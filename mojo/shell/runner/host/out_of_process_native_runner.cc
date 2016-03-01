@@ -67,7 +67,8 @@ void OutOfProcessNativeRunner::AppCompleted(int32_t result) {
   // This object may be deleted by this callback.
   base::Closure app_completed_callback = app_completed_callback_;
   app_completed_callback_.Reset();
-  app_completed_callback.Run();
+  if (!app_completed_callback.is_null())
+    app_completed_callback.Run();
 }
 
 void OutOfProcessNativeRunner::OnProcessLaunched(
