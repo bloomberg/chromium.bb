@@ -111,16 +111,9 @@ ServiceWorker* ServiceWorker::from(ExecutionContext* executionContext, PassOwnPt
 
 bool ServiceWorker::hasPendingActivity() const
 {
-    if (AbstractWorker::hasPendingActivity())
-        return true;
-    if (m_wasStopped)
+    if (!executionContext())
         return false;
     return m_handle->serviceWorker()->state() != WebServiceWorkerStateRedundant;
-}
-
-void ServiceWorker::stop()
-{
-    m_wasStopped = true;
 }
 
 ServiceWorker* ServiceWorker::getOrCreate(ExecutionContext* executionContext, PassOwnPtr<WebServiceWorker::Handle> handle)
@@ -134,15 +127,12 @@ ServiceWorker* ServiceWorker::getOrCreate(ExecutionContext* executionContext, Pa
         return existingWorker;
     }
 
-    ServiceWorker* newWorker = new ServiceWorker(executionContext, handle);
-    newWorker->suspendIfNeeded();
-    return newWorker;
+    return new ServiceWorker(executionContext, handle);
 }
 
 ServiceWorker::ServiceWorker(ExecutionContext* executionContext, PassOwnPtr<WebServiceWorker::Handle> handle)
     : AbstractWorker(executionContext)
     , m_handle(handle)
-    , m_wasStopped(false)
 {
     ASSERT(m_handle);
     m_handle->serviceWorker()->setProxy(this);

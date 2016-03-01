@@ -75,13 +75,11 @@ private:
     static ServiceWorker* getOrCreate(ExecutionContext*, PassOwnPtr<WebServiceWorker::Handle>);
     ServiceWorker(ExecutionContext*, PassOwnPtr<WebServiceWorker::Handle>);
 
-    // ActiveDOMObject overrides.
+    // Inherit from ContextLifecycleObserver.
     bool hasPendingActivity() const override;
-    void stop() override;
 
     // A handle to the service worker representation in the embedder.
     OwnPtr<WebServiceWorker::Handle> m_handle;
-    bool m_wasStopped;
 };
 
 } // namespace blink

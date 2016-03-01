@@ -32,7 +32,7 @@
 #define AbstractWorker_h
 
 #include "core/CoreExport.h"
-#include "core/dom/ActiveDOMObject.h"
+#include "core/dom/ContextLifecycleObserver.h"
 #include "core/events/EventListener.h"
 #include "core/events/EventTarget.h"
 #include "platform/heap/Handle.h"
@@ -45,12 +45,12 @@ class ExceptionState;
 class KURL;
 class ExecutionContext;
 
-class CORE_EXPORT AbstractWorker : public RefCountedGarbageCollectedEventTargetWithInlineData<AbstractWorker>, public ActiveDOMObject {
+class CORE_EXPORT AbstractWorker : public RefCountedGarbageCollectedEventTargetWithInlineData<AbstractWorker>, public ContextLifecycleObserver {
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(AbstractWorker);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(AbstractWorker);
 public:
     // EventTarget APIs
-    ExecutionContext* executionContext() const final { return ActiveDOMObject::executionContext(); }
+    ExecutionContext* executionContext() const final { return ContextLifecycleObserver::executionContext(); }
 
     DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(error);
 
