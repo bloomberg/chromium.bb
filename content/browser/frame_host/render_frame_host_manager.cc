@@ -892,6 +892,15 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
       // (Note that we don't care about on{before}unload handlers if the current
       // RFH isn't live.)
       CommitPending();
+
+      // Notify the WebUI of the creation of the RenderView if needed (the
+      // newly created WebUI has just been committed by CommitPending, so
+      // GetNavigatingWebUI() below will return false).
+      if (notify_webui_of_rv_creation && render_frame_host_->web_ui()) {
+        render_frame_host_->web_ui()->RenderViewCreated(
+            render_frame_host_->render_view_host());
+        notify_webui_of_rv_creation = false;
+      }
     }
   }
   DCHECK(navigation_rfh &&

@@ -16,4 +16,3 @@
 -SessionHistoryTest.FrameFormBackForward
 -WebContentsImplBrowserTest.LoadProgressAfterInterruptedNav
 -WebContentsImplBrowserTest.ClearNonVisiblePendingOnFail
--WebUIMojoTest.EndToEndPing
