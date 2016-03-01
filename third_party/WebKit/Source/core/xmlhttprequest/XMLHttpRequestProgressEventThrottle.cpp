@@ -36,6 +36,8 @@
 
 namespace blink {
 
+static const double kMinimumProgressEventDispatchingIntervalInSeconds = .05; // 50 ms per specification.
+
 XMLHttpRequestProgressEventThrottle::DeferredEvent::DeferredEvent()
 {
     clear();
@@ -68,8 +70,6 @@ PassRefPtrWillBeRawPtr<Event> XMLHttpRequestProgressEventThrottle::DeferredEvent
     return event.release();
 }
 
-const double XMLHttpRequestProgressEventThrottle::minimumProgressEventDispatchingIntervalInSeconds = .05; // 50 ms per specification.
-
 XMLHttpRequestProgressEventThrottle::XMLHttpRequestProgressEventThrottle(XMLHttpRequest* target)
     : m_target(target)
     , m_hasDispatchedProgressProgressEvent(false)
@@ -94,7 +94,7 @@ void XMLHttpRequestProgressEventThrottle::dispatchProgressEvent(const AtomicStri
         m_deferred.set(lengthComputable, loaded, total);
     } else {
         dispatchProgressProgressEvent(ProgressEvent::create(EventTypeNames::progress, lengthComputable, loaded, total));
-        startOneShot(minimumProgressEventDispatchingIntervalInSeconds, BLINK_FROM_HERE);
+        startOneShot(kMinimumProgressEventDispatchingIntervalInSeconds, BLINK_FROM_HERE);
     }
 }
 
@@ -150,7 +150,7 @@ void XMLHttpRequestProgressEventThrottle::fired()
     dispatchProgressProgressEvent(m_deferred.take());
 
     // Watch if another "progress" ProgressEvent arrives in the next 50ms.
-    startOneShot(minimumProgressEventDispatchingIntervalInSeconds, BLINK_FROM_HERE);
+    startOneShot(kMinimumProgressEventDispatchingIntervalInSeconds, BLINK_FROM_HERE);
 }
 
 void XMLHttpRequestProgressEventThrottle::suspend()

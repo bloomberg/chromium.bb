@@ -110,8 +110,6 @@ private:
         bool m_isSet;
     };
 
-    static const double minimumProgressEventDispatchingIntervalInSeconds;
-
     void fired() override;
 
     Member<XMLHttpRequest> m_target;
