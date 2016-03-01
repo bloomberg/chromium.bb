@@ -124,9 +124,9 @@ public:
         return toText()->width(from, len, font, xPos, textDirection, fallbackFonts, glyphBounds);
     }
 
-    float width(unsigned from, unsigned len, LayoutUnit xPos, TextDirection textDirection, bool firstLine) const
+    float width(unsigned from, unsigned len, LayoutUnit xPos, TextDirection textDirection, bool firstLine, HashSet<const SimpleFontData*>* fallbackFonts = nullptr, FloatRect* glyphBounds = nullptr) const
     {
-        return toText()->width(from, len, xPos, textDirection, firstLine);
+        return toText()->width(from, len, xPos, textDirection, firstLine, fallbackFonts, glyphBounds);
     }
 
     float hyphenWidth(const Font& font, TextDirection textDirection)
@@ -142,6 +142,11 @@ public:
     unsigned textStartOffset() const
     {
         return toText()->textStartOffset();
+    }
+
+    float minLogicalWidth() const
+    {
+        return toText()->minLogicalWidth();
     }
 
 private:

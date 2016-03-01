@@ -302,7 +302,7 @@ static bool isAncestorAndWithinBlock(LineLayoutItem ancestor, LineLayoutItem chi
     return false;
 }
 
-void InlineFlowBox::determineSpacingForFlowBoxes(bool lastLine, bool isLogicallyLastRunWrapped, LayoutObject* logicallyLastRunLayoutObject)
+void InlineFlowBox::determineSpacingForFlowBoxes(bool lastLine, bool isLogicallyLastRunWrapped, LineLayoutItem logicallyLastRunLayoutObject)
 {
     // All boxes start off open.  They will not apply any margins/border/padding on
     // any side.
@@ -327,7 +327,7 @@ void InlineFlowBox::determineSpacingForFlowBoxes(bool lastLine, bool isLogically
 
         if (!lineBoxList->lastLineBox()->isConstructed()) {
             LineLayoutInline inlineFlow = LineLayoutInline(getLineLayoutItem());
-            LineLayoutItem logicallyLastRunLayoutItem = LineLayoutItem(logicallyLastRunLayoutObject);
+            LineLayoutItem logicallyLastRunLayoutItem(logicallyLastRunLayoutObject);
             bool isLastObjectOnLine = !isAncestorAndWithinBlock(getLineLayoutItem(), logicallyLastRunLayoutItem) || (isLastChildForLayoutObject(getLineLayoutItem(), logicallyLastRunLayoutItem) && !isLogicallyLastRunWrapped);
 
             // We include the border under these conditions:

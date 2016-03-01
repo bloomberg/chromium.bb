@@ -559,7 +559,7 @@ protected:
 // line layout code is separated from LayoutBlock and LayoutBlockFlow.
 // START METHODS DEFINED IN LayoutBlockFlowLine
 private:
-    InlineFlowBox* createLineBoxes(LayoutObject*, const LineInfo&, InlineBox* childBox);
+    InlineFlowBox* createLineBoxes(LineLayoutItem, const LineInfo&, InlineBox* childBox);
     RootInlineBox* constructLine(BidiRunList<BidiRun>&, const LineInfo&);
     void setMarginsForRubyRun(BidiRun*, LayoutRubyRun*, LayoutObject*, const LineInfo&);
     void computeInlineDirectionPositionsForLine(RootInlineBox*, const LineInfo&, BidiRun* firstRun, BidiRun* trailingSpaceRun, bool reachedEnd, GlyphOverflowAndFallbackFontsMap&, VerticalPositionCache&, WordMeasurements&);

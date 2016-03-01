@@ -109,6 +109,11 @@ public:
         return toBox()->scrolledContentOffset();
     }
 
+    InlineBox* createInlineBox()
+    {
+        return toBox()->createInlineBox();
+    }
+
 private:
     LayoutBox* toBox()
     {

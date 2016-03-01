@@ -47,6 +47,7 @@
 #include "core/layout/LayoutTableCell.h"
 #include "core/layout/LayoutTableRow.h"
 #include "core/layout/LayoutView.h"
+#include "core/layout/api/LineLayoutAPIShim.h"
 #include "core/layout/line/AbstractInlineTextBox.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/FocusController.h"
@@ -1027,10 +1028,12 @@ void AXObjectCacheImpl::labelChanged(Element* element)
     textChanged(toHTMLLabelElement(element)->control());
 }
 
-void AXObjectCacheImpl::inlineTextBoxesUpdated(LayoutObject* layoutObject)
+void AXObjectCacheImpl::inlineTextBoxesUpdated(LineLayoutItem lineLayoutItem)
 {
     if (!inlineTextBoxAccessibilityEnabled())
         return;
+
+    LayoutObject* layoutObject = LineLayoutAPIShim::layoutObjectFrom(lineLayoutItem);
 
     // Only update if the accessibility object already exists and it's
     // not already marked as dirty.

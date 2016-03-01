@@ -203,6 +203,16 @@ public:
         return toBlockFlow()->blockBeforeWithinSelectionRoot(offset);
     }
 
+    InlineBox* createAndAppendRootInlineBox()
+    {
+        return toBlockFlow()->createAndAppendRootInlineBox();
+    }
+
+    InlineFlowBox* lastLineBox()
+    {
+        return toBlockFlow()->lastLineBox();
+    }
+
 private:
     LayoutBlockFlow* toBlockFlow() { return toLayoutBlockFlow(layoutObject()); };
     const LayoutBlockFlow* toBlockFlow() const { return toLayoutBlockFlow(layoutObject()); };

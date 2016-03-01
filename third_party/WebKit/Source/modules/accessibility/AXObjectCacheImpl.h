@@ -92,7 +92,7 @@ public:
 
     void setCanvasObjectBounds(Element*, const LayoutRect&) override;
 
-    void inlineTextBoxesUpdated(LayoutObject*) override;
+    void inlineTextBoxesUpdated(LineLayoutItem) override;
 
     // Called when the scroll offset changes.
     void handleScrollPositionChanged(FrameView*) override;

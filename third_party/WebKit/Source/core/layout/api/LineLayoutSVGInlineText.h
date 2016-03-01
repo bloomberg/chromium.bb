@@ -68,7 +68,7 @@ public:
     void advanceToTextStart(LineLayoutSVGInlineText textLineLayout, unsigned startCharacterOffset)
     {
         ASSERT(textLineLayout);
-        if (!m_textLineLayout || !m_textLineLayout.isEqual(textLineLayout)) {
+        if (!m_textLineLayout || m_textLineLayout != textLineLayout) {
             reset(textLineLayout);
             ASSERT(!metricsList().isEmpty());
         }

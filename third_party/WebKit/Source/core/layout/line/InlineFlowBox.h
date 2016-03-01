@@ -173,7 +173,7 @@ public:
     }
 
     // Helper functions used during line construction and placement.
-    void determineSpacingForFlowBoxes(bool lastLine, bool isLogicallyLastRunWrapped, LayoutObject* logicallyLastRunLayoutObject);
+    void determineSpacingForFlowBoxes(bool lastLine, bool isLogicallyLastRunWrapped, LineLayoutItem logicallyLastRunLayoutObject);
     LayoutUnit getFlowSpacingLogicalWidth();
     LayoutUnit placeBoxesInInlineDirection(LayoutUnit logicalLeft, bool& needsWordSpacing);
 

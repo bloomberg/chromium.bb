@@ -39,6 +39,7 @@ class FrameView;
 class HTMLOptionElement;
 class HTMLSelectElement;
 class LayoutMenuList;
+class LineLayoutItem;
 class Page;
 
 class CORE_EXPORT AXObjectCache : public GarbageCollectedFinalized<AXObjectCache> {
@@ -122,7 +123,7 @@ public:
 
     virtual void setCanvasObjectBounds(Element*, const LayoutRect&) = 0;
 
-    virtual void inlineTextBoxesUpdated(LayoutObject*) = 0;
+    virtual void inlineTextBoxesUpdated(LineLayoutItem) = 0;
 
     // Called when the scroll offset changes.
     virtual void handleScrollPositionChanged(FrameView*) = 0;

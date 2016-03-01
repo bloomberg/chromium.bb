@@ -102,6 +102,16 @@ public:
         return toInline()->continuation();
     }
 
+    InlineBox* createAndAppendInlineFlowBox()
+    {
+        return toInline()->createAndAppendInlineFlowBox();
+    }
+
+    InlineFlowBox* lastLineBox()
+    {
+        return toInline()->lastLineBox();
+    }
+
 protected:
     LayoutInline* toInline()
     {
