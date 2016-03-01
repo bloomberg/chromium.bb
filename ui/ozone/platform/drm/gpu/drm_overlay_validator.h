@@ -72,6 +72,7 @@ class DrmOverlayValidator {
   // List of all configurations which have been validated.
   base::MRUCacheBase<OverlayPlaneList,
                      OverlayHintsList,
+                     std::less<OverlayPlaneList>,
                      base::MRUCacheNullDeletor<OverlayHintsList>>
       overlay_hints_cache_;
 

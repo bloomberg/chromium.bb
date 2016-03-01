@@ -77,7 +77,9 @@ class WebserviceCache : public KeyedService,
    public:
     void operator()(const Payload& payload);
   };
-  typedef base::MRUCacheBase<std::string, Payload, CacheDeletor> Cache;
+  typedef base::
+      MRUCacheBase<std::string, Payload, std::less<std::string>, CacheDeletor>
+          Cache;
 
   // Callback for when the cache is loaded from the dictionary data store.
   void OnCacheLoaded(scoped_ptr<base::DictionaryValue>);

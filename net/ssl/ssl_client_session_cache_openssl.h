@@ -68,6 +68,7 @@ class NET_EXPORT SSLClientSessionCacheOpenSSL {
   using CacheEntryMap =
       base::MRUCacheBase<std::string,
                          CacheEntry*,
+                         std::hash<std::string>,
                          base::MRUCachePointerDeletor<CacheEntry*>,
                          base::MRUCacheHashMap>;
 

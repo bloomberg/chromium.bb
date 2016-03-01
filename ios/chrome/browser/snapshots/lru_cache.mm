@@ -43,22 +43,24 @@ struct NSObjectHash {
   }
 };
 
-template <class KeyType, class ValueType>
+template <class KeyType, class ValueType, class HashType>
 struct MRUCacheNSObjectHashMap {
-  typedef base::hash_map<KeyType, ValueType, NSObjectHash, NSObjectEqualTo>
-      Type;
+  typedef base::hash_map<KeyType, ValueType, HashType, NSObjectEqualTo> Type;
 };
 
 class NSObjectMRUCache
     : public base::MRUCacheBase<base::scoped_nsprotocol<id<NSObject>>,
                                 base::scoped_nsprotocol<id<NSObject>>,
+                                NSObjectHash,
                                 MRUCacheNSObjectDelegate,
                                 MRUCacheNSObjectHashMap> {
  private:
   typedef base::MRUCacheBase<base::scoped_nsprotocol<id<NSObject>>,
                              base::scoped_nsprotocol<id<NSObject>>,
+                             NSObjectHash,
                              MRUCacheNSObjectDelegate,
-                             MRUCacheNSObjectHashMap> ParentType;
+                             MRUCacheNSObjectHashMap>
+      ParentType;
 
  public:
   NSObjectMRUCache(typename ParentType::size_type max_size,

@@ -20,15 +20,11 @@
 
 class SkString;
 
-namespace BASE_HASH_NAMESPACE {
-template <>
-struct hash<SkFontConfigInterface::FontIdentity> {
-  std::size_t operator()(const SkFontConfigInterface::FontIdentity& sp) const;
-};
-}
-
 namespace content {
 
+struct SkFontConfigInterfaceFontIdentityHash {
+  std::size_t operator()(const SkFontConfigInterface::FontIdentity& sp) const;
+};
 
 // FontConfig implementation for Skia that proxies out of process to get out
 // of the sandbox. See https://chromium.googlesource.com/chromium/src/+/master/docs/linux_sandbox_ipc.md
@@ -74,7 +70,9 @@ class FontConfigIPC : public SkFontConfigInterface {
   // ttc-indices or styles but the same fontconfig interface id. Since the usage
   // frequency of ttc indices is very low, and style is not used by clients of
   // this API, this seems okay.
-  base::HashingMRUCache<FontIdentity, skia::RefPtr<SkTypeface>>
+  base::HashingMRUCache<FontIdentity,
+                        skia::RefPtr<SkTypeface>,
+                        SkFontConfigInterfaceFontIdentityHash>
       mapped_typefaces_;
 
   DISALLOW_COPY_AND_ASSIGN(FontConfigIPC);

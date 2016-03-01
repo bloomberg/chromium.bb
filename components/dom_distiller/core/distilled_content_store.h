@@ -77,7 +77,9 @@ class InMemoryContentStore : public DistilledContentStore {
 
   typedef base::MRUCacheBase<std::string,
                              DistilledArticleProto,
-                             InMemoryContentStore::CacheDeletor> ContentMap;
+                             std::less<std::string>,
+                             InMemoryContentStore::CacheDeletor>
+      ContentMap;
   typedef base::hash_map<std::string, std::string> UrlMap;
 
   ContentMap cache_;

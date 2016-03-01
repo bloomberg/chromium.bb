@@ -57,6 +57,7 @@ class DrmOverlayManager : public OverlayManagerOzone {
   // Value is set to true if we are waiting for validation results from GPU.
   base::MRUCacheBase<std::vector<OverlayCheck_Params>,
                      bool,
+                     std::less<std::vector<OverlayCheck_Params>>,
                      base::MRUCacheNullDeletor<bool>>
       cache_;
 

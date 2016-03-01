@@ -13,6 +13,8 @@
 #include <sys/uio.h>
 #include <unistd.h>
 
+#include <functional>
+
 #include "base/files/file_util.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/memory/ref_counted.h"
@@ -26,13 +28,12 @@
 #include "third_party/skia/include/core/SkStream.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 
+namespace content {
 
-namespace BASE_HASH_NAMESPACE {
-
-std::size_t hash<SkFontConfigInterface::FontIdentity>::operator()(
+std::size_t SkFontConfigInterfaceFontIdentityHash::operator()(
     const SkFontConfigInterface::FontIdentity& sp) const {
-  hash<std::string> stringhash;
-  hash<int> inthash;
+  std::hash<std::string> stringhash;
+  std::hash<int> inthash;
   size_t r = inthash(sp.fID);
   r = r * 41 + inthash(sp.fTTCIndex);
   r = r * 41 + stringhash(sp.fString.c_str());
@@ -41,10 +42,6 @@ std::size_t hash<SkFontConfigInterface::FontIdentity>::operator()(
   r = r * 41 + inthash(sp.fStyle.width());
   return r;
 }
-
-} // namespace BASE_HASH_NAMESPACE
-
-namespace content {
 
 // Wikpedia's main country selection page activates 21 fallback fonts,
 // doubling this we should be on the generous side as an upper bound,
