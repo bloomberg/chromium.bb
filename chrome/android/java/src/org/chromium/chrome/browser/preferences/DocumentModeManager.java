@@ -10,6 +10,7 @@ import android.os.Build;
 import android.preference.PreferenceManager;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.VisibleForTesting;
 
 import java.util.Locale;
 
@@ -19,13 +20,12 @@ import java.util.Locale;
 public class DocumentModeManager {
 
     public static final String OPT_OUT_STATE = "opt_out_state";
+    public static final int OPT_OUT_STATE_UNSET = -1;
+    public static final int OPT_IN_TO_DOCUMENT_MODE = 0;
     public static final int OPT_OUT_PROMO_DISMISSED = 1;
     public static final int OPTED_OUT_OF_DOCUMENT_MODE = 2;
     public static final String OPT_OUT_SHOWN_COUNT = "opt_out_shown_count";
     public static final String OPT_OUT_CLEAN_UP_PENDING = "opt_out_clean_up_pending";
-
-    private static final int OPT_OUT_STATE_UNSET = -1;
-    private static final int OPT_IN_TO_DOCUMENT_MODE = 0;
 
     // Taken from https://support.google.com/googleplay/answer/1727131?hl=en-GB
     private static final String[] DEFAULT_TABBED_MODE_DEVICES = {
@@ -268,5 +268,10 @@ public class DocumentModeManager {
             setOptedOutState(optOutState);
         }
         return optOutState;
+    }
+
+    @VisibleForTesting
+    public int getOptOutStateForTesting() {
+        return mSharedPreferences.getInt(OPT_OUT_STATE, OPT_OUT_STATE_UNSET);
     }
 }

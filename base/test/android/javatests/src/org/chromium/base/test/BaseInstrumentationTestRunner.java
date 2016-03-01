@@ -84,6 +84,9 @@ public class BaseInstrumentationTestRunner extends InstrumentationTestRunner {
             if (restrictions != null) {
                 for (String restriction : restrictions.value()) {
                     if (restrictionApplies(restriction)) {
+                        Log.i(TAG, "Test " + testCase.getClass().getName() + "#"
+                                + testCase.getName() + " skipped because of restriction "
+                                + restriction);
                         return true;
                     }
                 }
@@ -130,14 +133,23 @@ public class BaseInstrumentationTestRunner extends InstrumentationTestRunner {
         @Override
         public boolean shouldSkip(TestCase testCase) {
             Class<?> testClass = testCase.getClass();
+            Method testMethod = getTestMethod(testCase);
+
+            int minSdkLevel = 0;
             if (testClass.isAnnotationPresent(MinAndroidSdkLevel.class)) {
-                MinAndroidSdkLevel v = testClass.getAnnotation(MinAndroidSdkLevel.class);
-                if (Build.VERSION.SDK_INT < v.value()) {
-                    Log.i(TAG, "Test " + testClass.getName() + "#" + testCase.getName()
-                            + " is not enabled at SDK level " + Build.VERSION.SDK_INT
-                            + ".");
-                    return true;
-                }
+                minSdkLevel = Math.max(testClass.getAnnotation(MinAndroidSdkLevel.class).value(),
+                        minSdkLevel);
+            }
+            if (testMethod != null && testMethod.isAnnotationPresent(MinAndroidSdkLevel.class)) {
+                minSdkLevel = Math.max(testMethod.getAnnotation(MinAndroidSdkLevel.class).value(),
+                        minSdkLevel);
+            }
+
+            if (Build.VERSION.SDK_INT < minSdkLevel) {
+                Log.i(TAG, "Test " + testClass.getName() + "#" + testCase.getName()
+                        + " is not enabled at SDK level " + Build.VERSION.SDK_INT
+                        + ".");
+                return true;
             }
             return false;
         }

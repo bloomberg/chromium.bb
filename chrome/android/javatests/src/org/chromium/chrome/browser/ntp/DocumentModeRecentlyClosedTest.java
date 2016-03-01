@@ -23,7 +23,6 @@ import org.chromium.chrome.browser.tabmodel.document.DocumentTabModel.Entry;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModelSelector;
 import org.chromium.chrome.test.util.ActivityUtils;
 import org.chromium.chrome.test.util.ApplicationTestUtils;
-import org.chromium.chrome.test.util.DisableInTabbedMode;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.ui.WindowOpenDisposition;
@@ -35,7 +34,6 @@ import java.util.concurrent.Callable;
  * Tests that the "Recently closed" list of Tabs in the "Recent Tabs" menu is updated properly.
  */
 @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
-@DisableInTabbedMode
 public class DocumentModeRecentlyClosedTest extends DocumentModeTestBase {
 
     /** Used to report that a fake Task is sitting in Android's Overview menu. */

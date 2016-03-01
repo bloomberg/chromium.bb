@@ -12,12 +12,10 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.document.DocumentModeTest;
 import org.chromium.chrome.browser.document.IncognitoDocumentActivity;
-import org.chromium.chrome.test.util.DisableInTabbedMode;
 
 /**
  * Tests that IncognitoDocumentActivity is hardware accelerated only high-end devices.
  */
-@DisableInTabbedMode
 public class IncognitoDocumentActivityHWATest extends DocumentModeTest {
 
     @SmallTest

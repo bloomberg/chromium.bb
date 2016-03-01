@@ -594,8 +594,6 @@ public class DocumentActivity extends ChromeActivity {
             }
         }
 
-        mTab = createActivityTab(asyncParams);
-
         if (asyncParams != null && asyncParams.getWebContents() != null) {
             Intent parentIntent = IntentUtils.safeGetParcelableExtra(getIntent(),
                     IntentHandler.EXTRA_PARENT_INTENT);

@@ -35,7 +35,6 @@ import org.chromium.chrome.browser.tabmodel.document.OffTheRecordDocumentTabMode
 import org.chromium.chrome.test.util.ActivityUtils;
 import org.chromium.chrome.test.util.ApplicationTestUtils;
 import org.chromium.chrome.test.util.ChromeTabUtils;
-import org.chromium.chrome.test.util.DisableInTabbedMode;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.TouchCommon;
@@ -49,7 +48,6 @@ import java.util.List;
  * General tests for how Document mode Activities interact with each other.
  */
 @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
-@DisableInTabbedMode
 public class DocumentModeTest extends DocumentModeTestBase {
     /** Opens a new page with a huge URL via window.open(). */
     protected static final String HUGE_URL_PAGE = UrlUtils.encodeHtmlDataUri(

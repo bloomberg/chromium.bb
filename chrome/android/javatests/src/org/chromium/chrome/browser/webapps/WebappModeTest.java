@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.preference.PreferenceManager;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.view.View;
@@ -15,6 +16,7 @@ import android.view.View;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -27,7 +29,6 @@ import org.chromium.chrome.browser.tab.TabIdManager;
 import org.chromium.chrome.test.MultiActivityTestBase;
 import org.chromium.chrome.test.util.ActivityUtils;
 import org.chromium.chrome.test.util.ApplicationTestUtils;
-import org.chromium.chrome.test.util.DisableInTabbedMode;
 import org.chromium.chrome.test.util.browser.TabLoadObserver;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -219,7 +220,7 @@ public class WebappModeTest extends MultiActivityTestBase {
     /**
      * Tests that WebappActivities handle window.open() properly in document mode.
      */
-    @DisableInTabbedMode
+    @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
     @MediumTest
     public void testWebappHandlesWindowOpenInDocumentMode() throws Exception {
         triggerWindowOpenAndWaitForLoad(DocumentActivity.class, ONCLICK_LINK, true);
@@ -237,7 +238,7 @@ public class WebappModeTest extends MultiActivityTestBase {
     /**
      * Tests that WebappActivities handle suppressed window.open() properly in document mode.
      */
-    @DisableInTabbedMode
+    @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
     @MediumTest
     public void testWebappHandlesSuppressedWindowOpenInDocumentMode() throws Exception {
         triggerWindowOpenAndWaitForLoad(DocumentActivity.class, HREF_NO_REFERRER_LINK, false);

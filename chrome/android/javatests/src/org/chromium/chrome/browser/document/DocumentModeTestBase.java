@@ -19,6 +19,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.IntentHandler;
+import org.chromium.chrome.browser.preferences.DocumentModeManager;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel;
@@ -29,7 +30,6 @@ import org.chromium.chrome.test.MultiActivityTestBase;
 import org.chromium.chrome.test.util.ActivityUtils;
 import org.chromium.chrome.test.util.ApplicationTestUtils;
 import org.chromium.chrome.test.util.ChromeTabUtils;
-import org.chromium.chrome.test.util.DisableInTabbedMode;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.TouchCommon;
@@ -45,9 +45,10 @@ import java.util.concurrent.Callable;
  * tested using the DocumentActivityTestBase class.
  */
 @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
-@DisableInTabbedMode
 public class DocumentModeTestBase extends MultiActivityTestBase {
     protected static final String TAG = "document";
+
+    private boolean mPreviouslyOptedOut;
 
     private static class TestTabObserver extends EmptyTabObserver {
         private ContextMenu mContextMenu;
@@ -77,6 +78,20 @@ public class DocumentModeTestBase extends MultiActivityTestBase {
     @Override
     public void setUp() throws Exception {
         super.setUp();
+        DocumentModeManager documentModeManager = DocumentModeManager.getInstance(
+                getInstrumentation().getTargetContext());
+        mPreviouslyOptedOut = documentModeManager.isOptedOutOfDocumentMode();
+        documentModeManager.setOptedOutState(DocumentModeManager.OPT_OUT_PROMO_DISMISSED);
+    }
+
+    @Override
+    public void tearDown() throws Exception {
+        if (mPreviouslyOptedOut) {
+            DocumentModeManager documentModeManager = DocumentModeManager.getInstance(
+                    getInstrumentation().getTargetContext());
+            documentModeManager.setOptedOutState(DocumentModeManager.OPTED_OUT_OF_DOCUMENT_MODE);
+        }
+        super.tearDown();
     }
 
     /** Starts a DocumentActivity by using firing a VIEW Intent. */

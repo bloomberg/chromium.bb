@@ -18,7 +18,6 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModelSelector;
 import org.chromium.chrome.test.util.ApplicationTestUtils;
-import org.chromium.chrome.test.util.DisableInTabbedMode;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -27,7 +26,6 @@ import org.chromium.content_public.browser.LoadUrlParams;
  * Tests that Document mode handles referrers correctly.
  */
 @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
-@DisableInTabbedMode
 public class DocumentModeReferrerTest extends DocumentModeTestBase {
     private static final int ACTIVITY_START_TIMEOUT = 1000;
 

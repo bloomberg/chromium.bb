@@ -18,7 +18,6 @@ import org.chromium.chrome.browser.document.DocumentActivity;
 import org.chromium.chrome.browser.document.DocumentModeTestBase;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
-import org.chromium.chrome.test.util.DisableInTabbedMode;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -27,7 +26,6 @@ import org.chromium.content_public.browser.LoadUrlParams;
  * Tests the functionality of the AsyncDocumentLauncher.
  */
 @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
-@DisableInTabbedMode
 public class AsyncDocumentLauncherTest extends DocumentModeTestBase {
     // @MediumTest
     @DisabledTest
