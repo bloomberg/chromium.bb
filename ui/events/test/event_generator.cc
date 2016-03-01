@@ -134,9 +134,6 @@ EventGenerator::EventGenerator(EventGeneratorDelegate* delegate)
 }
 
 EventGenerator::~EventGenerator() {
-  for (std::list<ui::Event*>::iterator i = pending_events_.begin();
-      i != pending_events_.end(); ++i)
-    delete *i;
   pending_events_.clear();
   delegate()->SetContext(NULL, NULL, NULL);
 }
@@ -653,32 +650,17 @@ gfx::Point EventGenerator::CenterOfWindow(const EventTarget* window) const {
 
 void EventGenerator::DoDispatchEvent(ui::Event* event, bool async) {
   if (async) {
-    ui::Event* pending_event;
-    if (event->IsKeyEvent()) {
-      pending_event = new ui::KeyEvent(*static_cast<ui::KeyEvent*>(event));
-    } else if (event->IsMouseEvent()) {
-      pending_event = new ui::MouseEvent(*static_cast<ui::MouseEvent*>(event));
-    } else if (event->IsTouchEvent()) {
-      pending_event = new ui::TouchEvent(*static_cast<ui::TouchEvent*>(event));
-    } else if (event->IsScrollEvent()) {
-      pending_event =
-          new ui::ScrollEvent(*static_cast<ui::ScrollEvent*>(event));
-    } else {
-      NOTREACHED() << "Invalid event type";
-      return;
-    }
+    scoped_ptr<ui::Event> pending_event = ui::Event::Clone(*event);
     if (pending_events_.empty()) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
           base::Bind(&EventGenerator::DispatchNextPendingEvent,
                      base::Unretained(this)));
     }
-    pending_events_.push_back(pending_event);
+    pending_events_.push_back(std::move(pending_event));
   } else {
-    if (event->IsKeyEvent()) {
-      delegate()->DispatchKeyEventToIME(current_target_,
-                                        static_cast<ui::KeyEvent*>(event));
-    }
+    if (event->IsKeyEvent())
+      delegate()->DispatchKeyEventToIME(current_target_, event->AsKeyEvent());
     if (!event->handled()) {
       ui::EventSource* event_source =
           delegate()->GetEventSource(current_target_);
@@ -692,10 +674,9 @@ void EventGenerator::DoDispatchEvent(ui::Event* event, bool async) {
 
 void EventGenerator::DispatchNextPendingEvent() {
   DCHECK(!pending_events_.empty());
-  ui::Event* event = pending_events_.front();
+  ui::Event* event = pending_events_.front().get();
   DoDispatchEvent(event, false);
   pending_events_.pop_front();
-  delete event;
   if (!pending_events_.empty()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,

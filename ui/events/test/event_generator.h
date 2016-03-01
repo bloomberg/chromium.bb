@@ -402,7 +402,7 @@ class EventGenerator {
   EventTarget* current_target_;
   int flags_;
   bool grab_;
-  std::list<Event*> pending_events_;
+  std::list<scoped_ptr<Event>> pending_events_;
   // Set to true to cause events to be posted asynchronously.
   bool async_;
   bool targeting_application_;
