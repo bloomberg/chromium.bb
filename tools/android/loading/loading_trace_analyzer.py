@@ -21,10 +21,10 @@ def _ArgumentParser():
   # requests listing subcommand.
   requests_parser = subparsers.add_parser('requests',
       help='Lists all request from the loading trace.')
-  requests_parser.add_argument('loading_trace', type=file,
+  requests_parser.add_argument('loading_trace', type=str,
       help='Input loading trace to see the cache usage from.')
   requests_parser.add_argument('--output',
-      type=argparse.FileType(),
+      type=argparse.FileType('w'),
       default=sys.stdout,
       help='Output destination path if different from stdout.')
   requests_parser.add_argument('--output-format', type=str, default='{url}',
@@ -36,8 +36,20 @@ def _ArgumentParser():
   return parser
 
 
-def _RequestsSubcommand(args):
+def ListRequests(loading_trace_path,
+                 output_format='{url}',
+                 where_format='{url}',
+                 where_statement=None):
   """`loading_trace_analyzer.py requests` Command line tool entry point.
+
+  Args:
+    loading_trace_path: Path of the loading trace.
+    output_format: Output format of the generated strings.
+    where_format: String formated to be regex tested with <where_statement>
+    where_statement: Regex for selecting request event.
+
+  Yields:
+    Formated string of the selected request event.
 
   Example:
     Lists all request with timing:
@@ -46,28 +58,16 @@ def _RequestsSubcommand(args):
     Lists  HTTP/HTTPS requests that have used the cache:
       ... requests --where "{protocol} {from_disk_cache}" "https?\S* True"
   """
-  where_format = None
-  where_statement = None
-  if args.where_statement:
-    where_format = args.where_statement[0]
-    try:
-      where_statement = re.compile(args.where_statement[1])
-    except re.error as e:
-      sys.stderr.write("Invalid where statement REGEX: {}\n{}\n".format(
-          args.where_statement[1], str(e)))
-      return 1
-
-  loading_trace = LoadingTrace.FromJsonDict(json.load(args.loading_trace))
+  if where_statement:
+    where_statement = re.compile(where_statement)
+  loading_trace = LoadingTrace.FromJsonFile(loading_trace_path)
   for request_event in loading_trace.request_track.GetEvents():
     request_event_json = request_event.ToJsonDict()
-
     if where_statement != None:
       where_in = where_format.format(**request_event_json)
       if not where_statement.match(where_in):
         continue
-
-    args.output.write(args.output_format.format(**request_event_json) + '\n')
-  return 0
+    yield output_format.format(**request_event_json)
 
 
 def main(command_line_args):
@@ -75,7 +75,22 @@ def main(command_line_args):
   """
   args = _ArgumentParser().parse_args(command_line_args)
   if args.subcommand == 'requests':
-    return _RequestsSubcommand(args)
+    try:
+      where_format = None
+      where_statement = None
+      if args.where_statement:
+        where_format = args.where_statement[0]
+        where_statement = args.where_statement[1]
+      for output_line in ListRequests(loading_trace_path=args.loading_trace,
+                                      output_format=args.output_format,
+                                      where_format=where_format,
+                                      where_statement=where_statement):
+        args.output.write(output_line + '\n')
+      return 0
+    except re.error as e:
+      sys.stderr.write("Invalid where statement REGEX: {}\n{}\n".format(
+          where_statement[1], str(e)))
+    return 1
   assert False
 
 
