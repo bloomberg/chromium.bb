@@ -105,7 +105,9 @@ public class ReaderModeManager extends TabModelSelectorTabObserver
     /**
      * Clear the status map and references to other objects.
      */
+    @Override
     public void destroy() {
+        super.destroy();
         for (Map.Entry<Integer, ReaderModeTabInfo> e : mTabStatusMap.entrySet()) {
             if (e.getValue().getWebContentsObserver() != null) {
                 e.getValue().getWebContentsObserver().destroy();
