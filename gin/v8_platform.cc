@@ -75,6 +75,7 @@ const char* V8Platform::GetCategoryGroupName(
 uint64_t V8Platform::AddTraceEvent(char phase,
                                    const uint8_t* category_enabled_flag,
                                    const char* name,
+                                   const char* scope,
                                    uint64_t id,
                                    uint64_t bind_id,
                                    int32_t num_args,
@@ -84,9 +85,9 @@ uint64_t V8Platform::AddTraceEvent(char phase,
                                    unsigned int flags) {
   base::trace_event::TraceEventHandle handle =
       TRACE_EVENT_API_ADD_TRACE_EVENT_WITH_BIND_ID(
-          phase, category_enabled_flag, name,
-          trace_event_internal::kGlobalScope, id, bind_id, num_args, arg_names,
-          arg_types, (const long long unsigned int*)arg_values, NULL, flags);
+          phase, category_enabled_flag, name, scope, id, bind_id, num_args,
+          arg_names, arg_types, (const long long unsigned int*)arg_values, NULL,
+          flags);
   uint64_t result;
   memcpy(&result, &handle, sizeof(result));
   return result;
