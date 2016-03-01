@@ -7977,33 +7977,6 @@ TEST_P(DeviceEmulationTest, PointerAndHoverTypes)
     m_webViewHelper.webView()->disableDeviceEmulation();
 }
 
-class WebLocalFrameScope final {
-    WTF_MAKE_NONCOPYABLE(WebLocalFrameScope);
-public:
-    explicit WebLocalFrameScope(WebLocalFrame* localFrame)
-        : m_localFrame(localFrame)
-    {
-    }
-
-    operator WebLocalFrame*() const
-    {
-        return m_localFrame;
-    }
-
-    WebLocalFrame* operator->() const
-    {
-        return m_localFrame;
-    }
-
-    ~WebLocalFrameScope()
-    {
-        m_localFrame->close();
-    }
-private:
-    WebLocalFrame* m_localFrame;
-};
-
-
 TEST_P(ParameterizedWebFrameTest, CreateLocalChildWithPreviousSibling)
 {
     FrameTestHelpers::TestWebViewClient viewClient;
@@ -8012,10 +7985,10 @@ TEST_P(ParameterizedWebFrameTest, CreateLocalChildWithPreviousSibling)
     view->setMainFrame(remoteClient.frame());
     WebRemoteFrame* parent = view->mainFrame()->toWebRemoteFrame();
 
-    WebLocalFrameScope secondFrame(FrameTestHelpers::createLocalChild(parent, "name2"));
-    WebLocalFrameScope fourthFrame(FrameTestHelpers::createLocalChild(parent, "name4", nullptr, secondFrame));
-    WebLocalFrameScope thirdFrame(FrameTestHelpers::createLocalChild(parent, "name3", nullptr, secondFrame));
-    WebLocalFrameScope firstFrame(FrameTestHelpers::createLocalChild(parent, "name1"));
+    WebLocalFrame* secondFrame(FrameTestHelpers::createLocalChild(parent, "name2"));
+    WebLocalFrame* fourthFrame(FrameTestHelpers::createLocalChild(parent, "name4", nullptr, secondFrame));
+    WebLocalFrame* thirdFrame(FrameTestHelpers::createLocalChild(parent, "name3", nullptr, secondFrame));
+    WebLocalFrame* firstFrame(FrameTestHelpers::createLocalChild(parent, "name1"));
 
     EXPECT_EQ(firstFrame, parent->firstChild());
     EXPECT_EQ(nullptr, firstFrame->previousSibling());
