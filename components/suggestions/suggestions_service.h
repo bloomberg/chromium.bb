@@ -8,10 +8,8 @@
 #include <stdint.h>
 
 #include <string>
-#include <vector>
 
 #include "base/callback.h"
-#include "base/cancelable_callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -19,7 +17,6 @@
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/suggestions/image_manager.h"
 #include "components/suggestions/proto/suggestions.pb.h"
 #include "components/suggestions/suggestions_utils.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -35,10 +32,12 @@ class PrefRegistrySyncable;
 
 class OAuth2TokenService;
 class SigninManagerBase;
+class SkBitmap;
 
 namespace suggestions {
 
 class BlacklistStore;
+class ImageManager;
 class SuggestionsStore;
 
 // An interface to fetch server suggestions asynchronously.
@@ -47,8 +46,6 @@ class SuggestionsService : public KeyedService, public net::URLFetcherDelegate {
   using ResponseCallback = base::Callback<void(const SuggestionsProfile&)>;
   using BitmapCallback = base::Callback<void(const GURL&, const SkBitmap*)>;
 
-  // Class taking ownership of |suggestions_store|, |thumbnail_manager| and
-  // |blacklist_store|.
   SuggestionsService(
       const SigninManagerBase* signin_manager,
       OAuth2TokenService* token_service,
@@ -58,8 +55,9 @@ class SuggestionsService : public KeyedService, public net::URLFetcherDelegate {
       scoped_ptr<BlacklistStore> blacklist_store);
   ~SuggestionsService() override;
 
-  // Request suggestions data, which will be passed to |callback|. |sync_state|
-  // will influence the behavior of this function (see SyncState definition).
+  // Requests suggestions data. Passes the currently cached data to |callback|.
+  // |sync_state| influences the behavior of this function (see SyncState
+  // definition).
   //
   // |sync_state| must be specified based on the current state of the system
   // (see suggestions::GetSyncState). Callers should call this function again if
@@ -161,12 +159,9 @@ class SuggestionsService : public KeyedService, public net::URLFetcherDelegate {
   // KeyedService implementation.
   void Shutdown() override;
 
-  // Loads the cached suggestions (or empty suggestions if no cache) and serves
-  // the requestors with them.
-  void ServeFromCache();
-
-  // Applies the local blacklist to |suggestions|, then serves the requestors.
-  void FilterAndServe(SuggestionsProfile* suggestions);
+  // Loads the cached suggestions (or empty suggestions if no cache), applies
+  // the local blacklist, then calls the |callback|.
+  void ServeFromCache(const ResponseCallback& callback);
 
   // Schedules a blacklisting request if the local blacklist isn't empty.
   void ScheduleBlacklistUpload();
@@ -214,9 +209,6 @@ class SuggestionsService : public KeyedService, public net::URLFetcherDelegate {
   // The start time of the previous suggestions request. This is used to measure
   // the latency of requests. Initially zero.
   base::TimeTicks last_request_started_time_;
-
-  // Queue of callbacks. These are flushed when fetch request completes.
-  std::vector<ResponseCallback> waiting_requestors_;
 
   // For callbacks may be run after destruction.
   base::WeakPtrFactory<SuggestionsService> weak_ptr_factory_;

@@ -10,7 +10,6 @@
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -21,6 +20,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/signin/core/browser/signin_manager_base.h"
 #include "components/suggestions/blacklist_store.h"
+#include "components/suggestions/image_manager.h"
 #include "components/suggestions/suggestions_store.h"
 #include "components/variations/net/variations_http_headers.h"
 #include "google_apis/gaia/gaia_constants.h"
@@ -35,7 +35,6 @@
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
 
-using base::CancelableClosure;
 using base::TimeDelta;
 using base::TimeTicks;
 
@@ -55,19 +54,6 @@ enum SuggestionsResponseState {
 void LogResponseState(SuggestionsResponseState state) {
   UMA_HISTOGRAM_ENUMERATION("Suggestions.ResponseState", state,
                             RESPONSE_STATE_SIZE);
-}
-
-// Runs each callback in |requestors| on |suggestions|, then deallocates
-// |requestors|.
-void DispatchRequestsAndClear(
-    const SuggestionsProfile& suggestions,
-    std::vector<SuggestionsService::ResponseCallback>* requestors) {
-  std::vector<SuggestionsService::ResponseCallback> temp_requestors;
-  temp_requestors.swap(*requestors);
-  std::vector<SuggestionsService::ResponseCallback>::iterator it;
-  for (it = temp_requestors.begin(); it != temp_requestors.end(); ++it) {
-    if (!it->is_null()) it->Run(suggestions);
-  }
 }
 
 // Default delay used when scheduling a request.
@@ -199,13 +185,13 @@ void SuggestionsService::FetchSuggestionsData(
     SyncState sync_state,
     const ResponseCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  waiting_requestors_.push_back(callback);
   switch (sync_state) {
     case SYNC_OR_HISTORY_SYNC_DISABLED:
       // Cancel any ongoing request, to stop interacting with the server.
       pending_request_.reset(nullptr);
       suggestions_store_->ClearSuggestions();
-      DispatchRequestsAndClear(SuggestionsProfile(), &waiting_requestors_);
+      if (!callback.is_null())
+        callback.Run(SuggestionsProfile());
       break;
     case INITIALIZED_ENABLED_HISTORY:
     case NOT_INITIALIZED_ENABLED:
@@ -213,7 +199,7 @@ void SuggestionsService::FetchSuggestionsData(
       // request. Verify that that won't break anything.
       // Sync is enabled. Serve previously cached suggestions if available, else
       // an empty set of suggestions.
-      ServeFromCache();
+      ServeFromCache(callback);
 
       // Issue a network request to refresh the suggestions in the cache.
       IssueRequestIfNoneOngoing(BuildSuggestionsURL());
@@ -245,13 +231,11 @@ void SuggestionsService::BlacklistURL(const GURL& candidate_url,
     return;
   }
 
-  waiting_requestors_.push_back(callback);
-  ServeFromCache();
+  ServeFromCache(callback);
   // Blacklist uploads are scheduled on any request completion, so only schedule
   // an upload if there is no ongoing request.
-  if (!pending_request_.get()) {
+  if (!pending_request_.get())
     ScheduleBlacklistUpload();
-  }
 }
 
 void SuggestionsService::UndoBlacklistURL(const GURL& url,
@@ -264,8 +248,7 @@ void SuggestionsService::UndoBlacklistURL(const GURL& url,
       blacklist_store_->RemoveUrl(url)) {
     // The URL was not yet candidate for upload to the server and could be
     // removed from the blacklist.
-    waiting_requestors_.push_back(callback);
-    ServeFromCache();
+    ServeFromCache(callback);
     return;
   }
   if (!fail_callback.is_null())
@@ -276,8 +259,7 @@ void SuggestionsService::ClearBlacklist(const ResponseCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   blacklist_store_->ClearBlacklist();
   IssueRequestIfNoneOngoing(BuildSuggestionsBlacklistClearURL());
-  waiting_requestors_.push_back(callback);
-  ServeFromCache();
+  ServeFromCache(callback);
 }
 
 // static
@@ -497,22 +479,18 @@ void SuggestionsService::PopulateExtraData(SuggestionsProfile* suggestions) {
 }
 
 void SuggestionsService::Shutdown() {
-  // Cancel pending request, then serve existing requestors from cache.
+  // Cancel pending request.
   pending_request_.reset(nullptr);
-  ServeFromCache();
 }
 
-void SuggestionsService::ServeFromCache() {
+void SuggestionsService::ServeFromCache(const ResponseCallback& callback) {
   SuggestionsProfile suggestions;
   // In case of empty cache or error, |suggestions| stays empty.
   suggestions_store_->LoadSuggestions(&suggestions);
   thumbnail_manager_->Initialize(suggestions);
-  FilterAndServe(&suggestions);
-}
-
-void SuggestionsService::FilterAndServe(SuggestionsProfile* suggestions) {
-  blacklist_store_->FilterSuggestions(suggestions);
-  DispatchRequestsAndClear(*suggestions, &waiting_requestors_);
+  blacklist_store_->FilterSuggestions(&suggestions);
+  if (!callback.is_null())
+    callback.Run(suggestions);
 }
 
 void SuggestionsService::ScheduleBlacklistUpload() {
