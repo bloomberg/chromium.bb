@@ -491,9 +491,6 @@ crbug.com/552532 [ Win10 ] plugins/focus.html [ Pass Crash ]
 crbug.com/552532 [ Win10 ] plugins/plugin-initiate-popup-window.html [ Pass Crash ]
 crbug.com/552532 [ Win10 ] plugins/tabindex.html [ Pass Crash ]
 
-# Skia roll
-crbug.com/589617 virtual/gpu/fast/canvas/canvas-imageSmoothingQuality-pixel.html [ NeedsRebaseline ]
-
 crbug.com/505364 imported/web-platform-tests/shadow-dom/untriaged/shadow-trees/lower-boundary-encapsulation/test-004.html [ Failure ]
 crbug.com/505364 imported/web-platform-tests/shadow-dom/untriaged/shadow-trees/upper-boundary-encapsulation/dom-tree-accessors-001.html [ Failure ]
 crbug.com/505364 imported/web-platform-tests/shadow-dom/untriaged/shadow-trees/upper-boundary-encapsulation/dom-tree-accessors-002.html [ Failure ]
