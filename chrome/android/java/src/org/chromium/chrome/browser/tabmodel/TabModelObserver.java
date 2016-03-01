@@ -99,4 +99,11 @@ public interface TabModelObserver {
      * Called when an "all tabs" closure has been committed and can't be undone anymore.
      */
     void allTabsClosureCommitted();
+
+    /**
+     * Called when a tab is removed.
+     *
+     * @param tab The tab that has been removed.
+     */
+    void tabRemoved(Tab tab);
 }

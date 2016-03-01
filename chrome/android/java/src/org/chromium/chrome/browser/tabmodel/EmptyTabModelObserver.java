@@ -59,4 +59,7 @@ public class EmptyTabModelObserver implements TabModelObserver {
     public void allTabsClosureCommitted() {
     }
 
+    @Override
+    public void tabRemoved(Tab tab) {
+    }
 }

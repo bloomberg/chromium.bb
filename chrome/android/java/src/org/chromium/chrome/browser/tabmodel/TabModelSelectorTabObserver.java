@@ -43,6 +43,11 @@ public class TabModelSelectorTabObserver extends EmptyTabObserver {
             public void didCloseTab(Tab tab) {
                 tab.removeObserver(TabModelSelectorTabObserver.this);
             }
+
+            @Override
+            public void tabRemoved(Tab tab) {
+                tab.removeObserver(TabModelSelectorTabObserver.this);
+            }
         };
 
         List<TabModel> tabModels = selector.getModels();

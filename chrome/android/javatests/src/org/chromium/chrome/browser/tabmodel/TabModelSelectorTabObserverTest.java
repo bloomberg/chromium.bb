@@ -120,12 +120,23 @@ public class TabModelSelectorTabObserverTest extends NativeLibraryTestBase {
 
     @UiThreadTest
     @SmallTest
-    public void testRemovingTab() {
+    public void testClosingTab() {
         TestTabModelSelectorTabObserver observer = new TestTabModelSelectorTabObserver();
         Tab tab = createTestTab(false);
         mNormalTabModel.addTab(tab, 0, TabModel.TabLaunchType.FROM_LINK);
         assertTabHasObserver(tab, observer);
         mNormalTabModel.closeTab(tab);
+        assertTabDoesNotHaveObserver(tab, observer);
+    }
+
+    @UiThreadTest
+    @SmallTest
+    public void testRemovingTab() {
+        TestTabModelSelectorTabObserver observer = new TestTabModelSelectorTabObserver();
+        Tab tab = createTestTab(false);
+        mNormalTabModel.addTab(tab, 0, TabModel.TabLaunchType.FROM_LINK);
+        assertTabHasObserver(tab, observer);
+        mNormalTabModel.removeTab(tab);
         assertTabDoesNotHaveObserver(tab, observer);
     }
 
