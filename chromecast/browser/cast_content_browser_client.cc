@@ -381,7 +381,7 @@ void CastContentBrowserClient::RegisterInProcessMojoApplications(
     StaticMojoApplicationMap* apps) {
 #if defined(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
   apps->insert(std::make_pair(
-      GURL("mojo:media"),
+      "mojo:media",
       base::Bind(&CreateCastMojoMediaApplication, base::Unretained(this))));
 #endif
 }
