@@ -908,7 +908,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
         if (!mQueryInTheOmnibox
                 && FeatureUtilities.isDocumentMode(getContext())
                 && !TextUtils.isEmpty(mUrlBar.getText())) {
-            mUrlBar.setUrl(mToolbarDataProvider.getTab().getUrl(), null);
+            mUrlBar.setUrl(getOnlineUrlFromTab(), null);
         }
     }
 
@@ -931,7 +931,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
                 mUrlBar.setUrl("", null);
             } else {
                 mUrlBar.setUrl(
-                        mToolbarDataProvider.getText(), mToolbarDataProvider.getTab().getUrl());
+                        mToolbarDataProvider.getText(), getOnlineUrlFromTab());
             }
         }
     }
@@ -1989,7 +1989,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
         Profile profile = getCurrentTab().getProfile();
         if (profile != null) mOmniboxPrerender.clear(profile);
 
-        String url = getCurrentTab().getUrl().trim();
+        String url = getOnlineUrlFromTab();
         mOriginalUrl = url;
 
         if (NativePageFactory.isNativePageUrl(url, getCurrentTab().isIncognito())) {
@@ -2025,6 +2025,19 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
             updateNavigationButton();
         }
         updateCustomSelectionActionModeCallback();
+    }
+
+    /**
+     * Gets the URL of the web page in the tab. When displaying offline page it gets the URL of the
+     * original page.
+     */
+    private String getOnlineUrlFromTab() {
+        Tab currentTab = getCurrentTab();
+        if (currentTab == null) return "";
+        if (currentTab.isOfflinePage()) {
+            return currentTab.getOfflinePageOriginalUrl().trim();
+        }
+        return currentTab.getUrl().trim();
     }
 
     /**
