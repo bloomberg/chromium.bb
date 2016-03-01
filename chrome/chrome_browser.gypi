@@ -3801,7 +3801,6 @@
           'conditions': [
             ['android_java_ui==1', {
               'dependencies': [
-                '../components/components.gyp:data_reduction_proxy_content',
                 '../components/components.gyp:data_usage_android',
                 '../components/components.gyp:offline_pages',
                 '../components/components.gyp:precache_content',
@@ -3824,7 +3823,6 @@
                 '<@(chrome_browser_permissions_android_java_ui_sources)',
                 '<@(chrome_browser_history_android_java_ui_sources)',
                ],
-              'defines': [ 'ENABLE_DATA_REDUCTION_PROXY_DEBUGGING' ],
             }],
             ['use_seccomp_bpf==1', {
               'defines': ['USE_SECCOMP_BPF'],

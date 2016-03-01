@@ -795,8 +795,6 @@ source_set("browser") {
       "//components/toolbar",
       "//components/web_contents_delegate_android",
     ]
-
-    defines += [ "ENABLE_DATA_REDUCTION_PROXY_DEBUGGING" ]
   }
 
   if (is_android) {

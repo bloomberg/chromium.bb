@@ -1373,9 +1373,6 @@
         }],
         ['OS == "android"', {
           'sources': [
-            'data_reduction_proxy/content/browser/data_reduction_proxy_debug_blocking_page_unittest.cc',
-            'data_reduction_proxy/content/browser/data_reduction_proxy_debug_resource_throttle_unittest.cc',
-            'data_reduction_proxy/content/browser/data_reduction_proxy_debug_ui_manager_unittest.cc',
             'data_usage/android/traffic_stats_amortizer_unittest.cc',
             'invalidation/impl/invalidation_logger_unittest.cc',
             'invalidation/impl/invalidation_service_android_unittest.cc',
@@ -1394,7 +1391,6 @@
             'web_modal/web_contents_modal_dialog_manager_unittest.cc',
           ],
           'dependencies': [
-            'components.gyp:data_reduction_proxy_content',
             'components.gyp:data_usage_android',
             'components.gyp:safe_json_java',
             'components.gyp:variations_java',

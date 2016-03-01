@@ -124,32 +124,6 @@
     ['OS!="ios"', {
       'targets' : [
         {
-          # GN Version: //components/data_reduction_proxy/content
-          'target_name': 'data_reduction_proxy_content',
-          'type': 'static_library',
-          'dependencies': [
-            '../base/base.gyp:base',
-            '../content/content.gyp:content_browser',
-            '../ui/base/ui_base.gyp:ui_base',
-            'components_resources.gyp:components_resources',
-            'components_strings.gyp:components_strings',
-          ],
-          'include_dirs': [
-            '..',
-          ],
-          'sources': [
-            # Note: sources list duplicated in GN build.
-            'data_reduction_proxy/content/browser/content_data_reduction_proxy_debug_ui_service.cc',
-            'data_reduction_proxy/content/browser/content_data_reduction_proxy_debug_ui_service.h',
-            'data_reduction_proxy/content/browser/data_reduction_proxy_debug_blocking_page.cc',
-            'data_reduction_proxy/content/browser/data_reduction_proxy_debug_blocking_page.h',
-            'data_reduction_proxy/content/browser/data_reduction_proxy_debug_resource_throttle.cc',
-            'data_reduction_proxy/content/browser/data_reduction_proxy_debug_resource_throttle.h',
-            'data_reduction_proxy/content/browser/data_reduction_proxy_debug_ui_manager.cc',
-            'data_reduction_proxy/content/browser/data_reduction_proxy_debug_ui_manager.h',
-          ],
-        },
-        {
           # GN version: //components/data_reduction_proxy/content/common
           'target_name': 'data_reduction_proxy_content_common',
           'type': 'static_library',

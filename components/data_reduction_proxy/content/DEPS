@@ -5,9 +5,7 @@ include_rules = [
   "+components/user_prefs",
   "+content/public/browser",
   "+content/public/common",
-  "+grit",
   "+net/base",
-  "+ui/base",
 ]
 
 specific_include_rules = {

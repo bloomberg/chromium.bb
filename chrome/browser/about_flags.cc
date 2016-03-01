@@ -1484,13 +1484,6 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_DATA_REDUCTION_PROXY_CONFIG_CLIENT_DESCRIPTION, kOsAll,
      SINGLE_VALUE_TYPE(data_reduction_proxy::switches::
                            kEnableDataReductionProxyConfigClient)},
-#if defined(ENABLE_DATA_REDUCTION_PROXY_DEBUGGING)
-    {"enable-data-reduction-proxy-bypass-warnings",
-     IDS_FLAGS_DATA_REDUCTION_PROXY_BYPASS_WARNING_NAME,
-     IDS_FLAGS_DATA_REDUCTION_PROXY_BYPASS_WARNING_DESCRIPTION, kOsAndroid,
-     SINGLE_VALUE_TYPE(data_reduction_proxy::switches::
-                           kEnableDataReductionProxyBypassWarning)},
-#endif
     {"allow-insecure-localhost", IDS_ALLOW_INSECURE_LOCALHOST,
      IDS_ALLOW_INSECURE_LOCALHOST_DESCRIPTION, kOsAll,
      SINGLE_VALUE_TYPE(switches::kAllowInsecureLocalhost)},
@@ -1908,18 +1901,6 @@ bool SkipConditionalFeatureEntry(const FeatureEntry& entry) {
       channel != version_info::Channel::UNKNOWN) {
     return true;
   }
-
-#if defined(ENABLE_DATA_REDUCTION_PROXY_DEBUGGING)
-  // enable-data-reduction-proxy-bypass-warning is only available for Chromium
-  // builds and Canary/Dev channel.
-  if (!strcmp("enable-data-reduction-proxy-bypass-warnings",
-              entry.internal_name) &&
-      channel != version_info::Channel::UNKNOWN &&
-      channel != version_info::Channel::CANARY &&
-      channel != version_info::Channel::DEV) {
-    return true;
-  }
-#endif
 
   return false;
 }

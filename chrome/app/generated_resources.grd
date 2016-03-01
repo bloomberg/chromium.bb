@@ -6061,12 +6061,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_FLAGS_DATA_REDUCTION_PROXY_DEV_DESCRIPTION" desc="Describes an about:flags experiment to enable/disable the development version of the data reduction proxy" translateable="false">
          Enable or disable using the development version of the data reduction proxy.
         </message>
-        <message name="IDS_FLAGS_DATA_REDUCTION_PROXY_BYPASS_WARNING_NAME" desc="Name of the flag to enable using data reduction proxy warnings" translateable="false">
-          Data Saver proxy bypass warnings
-        </message>
-        <message name="IDS_FLAGS_DATA_REDUCTION_PROXY_BYPASS_WARNING_DESCRIPTION" desc="Description of the flag to enable using data reduction proxy warnings" translateable="false">
-          Use Data Saver with bypass warnings. The proxy must be enabled in settings for this flag to take effect.
-        </message>
       </if>
       <message name="IDS_FLAGS_DATA_REDUCTION_PROXY_LO_FI_NAME" desc="An about::flags experiment title to enable/disable Data Saver Lo-Fi" translateable="false">
          Data Saver Lo-Fi mode

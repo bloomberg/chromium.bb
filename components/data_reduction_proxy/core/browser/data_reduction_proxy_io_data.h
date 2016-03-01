@@ -14,7 +14,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_debug_ui_service.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_delegate.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_metrics.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_network_delegate.h"
@@ -159,15 +158,6 @@ class DataReductionProxyIOData : public DataReductionProxyEventStorageDelegate {
     return bypass_stats_.get();
   }
 
-  DataReductionProxyDebugUIService* debug_ui_service() const {
-    return debug_ui_service_.get();
-  }
-
-  void set_debug_ui_service(
-      scoped_ptr<DataReductionProxyDebugUIService> ui_service) const {
-    debug_ui_service_ = std::move(ui_service);
-  }
-
   LoFiDecider* lofi_decider() const { return lofi_decider_.get(); }
 
   void set_lofi_decider(scoped_ptr<LoFiDecider> lofi_decider) const {
@@ -213,10 +203,6 @@ class DataReductionProxyIOData : public DataReductionProxyEventStorageDelegate {
 
   // Parameters including DNS names and allowable configurations.
   scoped_ptr<DataReductionProxyConfig> config_;
-
-  // Holds the DataReductionProxyDebugUIManager for Data Reduction Proxy bypass
-  // interstitials.
-  mutable scoped_ptr<DataReductionProxyDebugUIService> debug_ui_service_;
 
   // Handles getting if a request is in Lo-Fi mode.
   mutable scoped_ptr<LoFiDecider> lofi_decider_;

@@ -100,10 +100,6 @@
 #include "components/navigation_interception/intercept_navigation_delegate.h"
 #endif
 
-#if defined(ENABLE_DATA_REDUCTION_PROXY_DEBUGGING)
-#include "components/data_reduction_proxy/content/browser/data_reduction_proxy_debug_resource_throttle.h"
-#endif
-
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/signin/merge_session_resource_throttle.h"
 #include "chrome/browser/chromeos/login/signin/merge_session_throttling_utils.h"
@@ -495,15 +491,6 @@ void ChromeResourceDispatcherHostDelegate::AppendStandardResourceThrottles(
 
   if (first_throttle)
     throttles->push_back(first_throttle);
-
-#if defined(ENABLE_DATA_REDUCTION_PROXY_DEBUGGING)
-  scoped_ptr<content::ResourceThrottle> data_reduction_proxy_throttle =
-      data_reduction_proxy::DataReductionProxyDebugResourceThrottle::
-          MaybeCreate(
-              request, resource_type, io_data->data_reduction_proxy_io_data());
-  if (data_reduction_proxy_throttle)
-    throttles->push_back(std::move(data_reduction_proxy_throttle));
-#endif
 
 #if defined(ENABLE_SUPERVISED_USERS)
   bool is_subresource_request =

@@ -24,12 +24,6 @@
 #include "chrome/browser/android/tab_android.h"
 #endif
 
-#if defined(ENABLE_DATA_REDUCTION_PROXY_DEBUGGING)
-#include "chrome/browser/browser_process.h"
-#include "components/data_reduction_proxy/content/browser/content_data_reduction_proxy_debug_ui_service.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
-#endif
-
 namespace content {
 class BrowserContext;
 }
@@ -93,20 +87,6 @@ CreateDataReductionProxyChromeIOData(
       make_scoped_ptr(new data_reduction_proxy::ContentLoFiUIService(
           ui_task_runner,
           base::Bind(&OnLoFiResponseReceivedOnUI))));
-
-#if defined(ENABLE_DATA_REDUCTION_PROXY_DEBUGGING)
-  scoped_ptr<data_reduction_proxy::ContentDataReductionProxyDebugUIService>
-      data_reduction_proxy_ui_service(
-          new data_reduction_proxy::ContentDataReductionProxyDebugUIService(
-              base::Bind(&data_reduction_proxy::DataReductionProxyConfigurator::
-                             GetProxyConfig,
-                         base::Unretained(
-                             data_reduction_proxy_io_data->configurator())),
-              ui_task_runner, io_task_runner,
-              g_browser_process->GetApplicationLocale()));
-  data_reduction_proxy_io_data->set_debug_ui_service(
-      std::move(data_reduction_proxy_ui_service));
-#endif
 
   return data_reduction_proxy_io_data;
 }
