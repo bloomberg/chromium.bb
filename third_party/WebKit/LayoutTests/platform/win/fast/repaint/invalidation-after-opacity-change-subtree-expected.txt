@@ -7,8 +7,12 @@
       "drawsContent": true,
       "repaintRects": [
         [8, 2197, 777, 106],
+        [8, 2197, 777, 106],
+        [8, 2197, 653, 106],
         [8, 2197, 653, 106],
         [8, 2047, 777, 106],
+        [8, 2047, 777, 106],
+        [8, 2047, 774, 106],
         [8, 2047, 774, 106],
         [8, 2000, 777, 350],
         [8, 2000, 777, 350]
@@ -25,7 +29,17 @@
         "InlineTextBox 'This text should be visible in the'",
         "InlineTextBox 'output.'",
         "LayoutBlockFlow DIV id='container'",
-        "LayoutBlockFlow (positioned) DIV id='absolute'"
+        "LayoutBlockFlow (positioned) DIV id='absolute'",
+        "LayoutBlockFlow P",
+        "RootInlineBox",
+        "LayoutText #text",
+        "InlineTextBox 'This test checks that switching opacity'",
+        "InlineTextBox 'invalidates the full subtree.'",
+        "LayoutBlockFlow P",
+        "RootInlineBox",
+        "LayoutText #text",
+        "InlineTextBox 'This text should be visible in the'",
+        "InlineTextBox 'output.'"
       ]
     }
   ]
