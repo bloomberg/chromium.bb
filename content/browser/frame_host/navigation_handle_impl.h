@@ -72,7 +72,8 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
       FrameTreeNode* frame_tree_node,
       bool is_synchronous,
       bool is_srcdoc,
-      const base::TimeTicks& navigation_start);
+      const base::TimeTicks& navigation_start,
+      int pending_nav_entry_id);
   ~NavigationHandleImpl() override;
 
   // NavigationHandle implementation:
@@ -119,6 +120,11 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // navigation is ready to commit. The headers returned should not be modified,
   // as modifications will not be reflected in the network stack.
   const net::HttpResponseHeaders* GetResponseHeaders();
+
+  // Get the unique id from the NavigationEntry associated with this
+  // NavigationHandle. Note that a synchronous, renderer-initiated navigation
+  // will not have a NavigationEntry associated with it, and this will return 0.
+  int pending_nav_entry_id() const { return pending_nav_entry_id_; }
 
   void set_net_error_code(net::Error net_error_code) {
     net_error_code_ = net_error_code;
@@ -222,7 +228,8 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
                        FrameTreeNode* frame_tree_node,
                        bool is_synchronous,
                        bool is_srcdoc,
-                       const base::TimeTicks& navigation_start);
+                       const base::TimeTicks& navigation_start,
+                       int pending_nav_entry_id);
 
   NavigationThrottle::ThrottleCheckResult CheckWillStartRequest();
   NavigationThrottle::ThrottleCheckResult CheckWillRedirectRequest();
@@ -268,6 +275,9 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
 
   // The time this navigation started.
   const base::TimeTicks navigation_start_;
+
+  // The unique id of the corresponding NavigationEntry.
+  const int pending_nav_entry_id_;
 
   // This callback will be run when all throttle checks have been performed.
   ThrottleChecksFinishedCallback complete_callback_;

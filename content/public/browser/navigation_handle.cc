@@ -29,7 +29,7 @@ scoped_ptr<NavigationHandle> NavigationHandle::CreateNavigationHandleForTesting(
       static_cast<RenderFrameHostImpl*>(render_frame_host)->frame_tree_node(),
       false,  // is_synchronous
       false,  // is_srcdoc
-      base::TimeTicks::Now());
+      base::TimeTicks::Now(), 0);
   return scoped_ptr<NavigationHandle>(std::move(handle_impl));
 }
 

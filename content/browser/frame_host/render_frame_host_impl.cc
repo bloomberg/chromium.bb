@@ -1022,8 +1022,30 @@ void RenderFrameHostImpl::OnDidCommitProvisionalLoad(const IPC::Message& msg) {
   // commit as a new navigation. This can happen if an ongoing slow
   // same-process navigation is interrupted by a synchronous renderer-initiated
   // navigation.
+  // TODO(csharrison): Data navigations loaded with LoadDataWithBaseURL get
+  // reset here, because the NavigationHandle tracks the URL but the
+  // validated_params.url tracks the data. The trick of saving the old entry ids
+  // for these navigations should go away when this is properly handled. See
+  // crbug.com/588317.
+  int entry_id_for_data_nav = 0;
   if (navigation_handle_ &&
-      navigation_handle_->GetURL() != validated_params.url) {
+      (navigation_handle_->GetURL() != validated_params.url)) {
+    // Make sure that the pending entry was really loaded via
+    // LoadDataWithBaseURL and that it matches this handle.
+    NavigationEntry* pending_entry =
+        frame_tree_node()->navigator()->GetController()->GetPendingEntry();
+    bool pending_entry_matches_handle =
+        pending_entry &&
+        pending_entry->GetUniqueID() ==
+            navigation_handle_->pending_nav_entry_id();
+    // TODO(csharrison): The pending entry's base url should equal
+    // |validated_params.base_url|. This is not the case for loads with invalid
+    // base urls.
+    if (navigation_handle_->GetURL() == validated_params.base_url &&
+        pending_entry_matches_handle &&
+        !pending_entry->GetBaseURLForDataURL().is_empty()) {
+      entry_id_for_data_nav = navigation_handle_->pending_nav_entry_id();
+    }
     navigation_handle_.reset();
   }
 
@@ -1031,11 +1053,14 @@ void RenderFrameHostImpl::OnDidCommitProvisionalLoad(const IPC::Message& msg) {
   // DidCommitProvisionalLoad IPC without a prior DidStartProvisionalLoad
   // message.
   if (!navigation_handle_) {
-    navigation_handle_ =
-        NavigationHandleImpl::Create(validated_params.url, frame_tree_node_,
-                                     true,   // is_synchronous
-                                     validated_params.is_srcdoc,
-                                     base::TimeTicks::Now());
+    // There is no pending NavigationEntry in these cases, so pass 0 as the
+    // nav_id. If the previous handle was a prematurely aborted navigation
+    // loaded via LoadDataWithBaseURL, propogate the entry id.
+    navigation_handle_ = NavigationHandleImpl::Create(
+        validated_params.url, frame_tree_node_,
+        true,  // is_synchronous
+        validated_params.is_srcdoc, base::TimeTicks::Now(),
+        entry_id_for_data_nav);
     // PlzNavigate
     if (IsBrowserSideNavigationEnabled()) {
       // PlzNavigate: synchronous loads happen in the renderer, and the browser

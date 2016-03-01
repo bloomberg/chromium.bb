@@ -151,11 +151,12 @@ void NavigatorImpl::DidStartProvisionalLoad(
     render_frame_host->SetNavigationHandle(scoped_ptr<NavigationHandleImpl>());
   }
 
+  NavigationEntry* pending_entry = controller_->GetPendingEntry();
   render_frame_host->SetNavigationHandle(NavigationHandleImpl::Create(
       validated_url, render_frame_host->frame_tree_node(),
       false,             // is_synchronous
       is_iframe_srcdoc,  // is_srcdoc
-      navigation_start));
+      navigation_start, pending_entry ? pending_entry->GetUniqueID() : 0));
 }
 
 void NavigatorImpl::DidFailProvisionalLoadWithError(
@@ -195,36 +196,50 @@ void NavigatorImpl::DidFailProvisionalLoadWithError(
 
     // We used to cancel the pending renderer here for cross-site downloads.
     // However, it's not safe to do that because the download logic repeatedly
-    // looks for this WebContents based on a render ID.  Instead, we just
+    // looks for this WebContents based on a render ID. Instead, we just
     // leave the pending renderer around until the next navigation event
     // (Navigate, DidNavigate, etc), which will clean it up properly.
     //
     // TODO(creis): Find a way to cancel any pending RFH here.
   }
 
-  // We usually clear the pending entry when it fails, so that an arbitrary URL
-  // isn't left visible above a committed page.  This must be enforced when
-  // the pending entry isn't visible (e.g., renderer-initiated navigations) to
-  // prevent URL spoofs for in-page navigations that don't go through
-  // DidStartProvisionalLoadForFrame.
-  //
-  // However, we do preserve the pending entry in some cases, such as on the
-  // initial navigation of an unmodified blank tab.  We also allow the delegate
-  // to say when it's safe to leave aborted URLs in the omnibox, to let the user
-  // edit the URL and try again.  This may be useful in cases that the committed
-  // page cannot be attacker-controlled.  In these cases, we still allow the
-  // view to clear the pending entry and typed URL if the user requests
-  // (e.g., hitting Escape with focus in the address bar).
-  //
-  // Note: don't touch the transient entry, since an interstitial may exist.
-  bool should_preserve_entry = controller_->IsUnmodifiedBlankTab() ||
-      delegate_->ShouldPreserveAbortedURLs();
-  if (controller_->GetPendingEntry() != controller_->GetVisibleEntry() ||
-      !should_preserve_entry) {
-    controller_->DiscardPendingEntry(true);
+  // Racy conditions can cause a fail message to arrive after its corresponding
+  // pending entry has been replaced by another navigation. If
+  // |DiscardPendingEntry| is called in this case, then the completely valid
+  // entry for the new navigation would be discarded. See crbug.com/513742. To
+  // catch this case, the current pending entry is compared against the current
+  // navigation handle's entry id, which should correspond to the failed load.
+  NavigationHandleImpl* handle = render_frame_host->navigation_handle();
+  NavigationEntry* pending_entry = controller_->GetPendingEntry();
+  bool pending_matches_fail_msg =
+      handle && pending_entry &&
+      handle->pending_nav_entry_id() == pending_entry->GetUniqueID();
+  if (pending_matches_fail_msg) {
+    // We usually clear the pending entry when it fails, so that an arbitrary
+    // URL isn't left visible above a committed page. This must be enforced
+    // when the pending entry isn't visible (e.g., renderer-initiated
+    // navigations) to prevent URL spoofs for in-page navigations that don't go
+    // through DidStartProvisionalLoadForFrame.
+    //
+    // However, we do preserve the pending entry in some cases, such as on the
+    // initial navigation of an unmodified blank tab. We also allow the
+    // delegate to say when it's safe to leave aborted URLs in the omnibox, to
+    // let the user edit the URL and try again. This may be useful in cases
+    // that the committed page cannot be attacker-controlled. In these cases,
+    // we still allow the view to clear the pending entry and typed URL if the
+    // user requests (e.g., hitting Escape with focus in the address bar).
+    //
+    // Note: don't touch the transient entry, since an interstitial may exist.
+    bool should_preserve_entry = controller_->IsUnmodifiedBlankTab() ||
+                                 delegate_->ShouldPreserveAbortedURLs();
+    if (pending_entry != controller_->GetVisibleEntry() ||
+        !should_preserve_entry) {
+      controller_->DiscardPendingEntry(true);
 
-    // Also force the UI to refresh.
-    controller_->delegate()->NotifyNavigationStateChanged(INVALIDATE_TYPE_URL);
+      // Also force the UI to refresh.
+      controller_->delegate()->NotifyNavigationStateChanged(
+          INVALIDATE_TYPE_URL);
+    }
   }
 
   if (delegate_)
@@ -823,8 +838,6 @@ void NavigatorImpl::OnBeginNavigation(
           controller_->GetLastCommittedEntryIndex(),
           controller_->GetEntryCount()));
   NavigationRequest* navigation_request = frame_tree_node->navigation_request();
-  navigation_request->CreateNavigationHandle();
-
   if (frame_tree_node->IsMainFrame()) {
     // Renderer-initiated main-frame navigations that need to swap processes
     // will go to the browser via a OpenURL call, and then be handled by the
@@ -839,6 +852,12 @@ void NavigatorImpl::OnBeginNavigation(
     navigation_data_.reset();
   }
 
+  // For main frames, NavigationHandle will be created after the call to
+  // |DidStartMainFrameNavigation|, so it receives the most up to date pending
+  // entry from the NavigationController.
+  NavigationEntry* pending_entry = controller_->GetPendingEntry();
+  navigation_request->CreateNavigationHandle(
+      pending_entry ? pending_entry->GetUniqueID() : 0);
   navigation_request->BeginNavigation();
 }
 
@@ -992,7 +1011,7 @@ void NavigatorImpl::RequestNavigation(
           navigation_type, lofi_state, is_same_document_history_load,
           navigation_start, controller_));
   NavigationRequest* navigation_request = frame_tree_node->navigation_request();
-  navigation_request->CreateNavigationHandle();
+  navigation_request->CreateNavigationHandle(entry.GetUniqueID());
 
   // Have the current renderer execute its beforeunload event if needed. If it
   // is not needed (when beforeunload dispatch is not needed or this navigation

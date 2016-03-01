@@ -383,6 +383,50 @@ TEST_F(NavigationControllerTest, GoToOffset) {
   }
 }
 
+// This test case was added to reproduce crbug.com/513742. The repro steps are
+// as follows:
+// 1. Pending entry for A is created.
+// 2. DidStartProvisionalLoad message for A arrives.
+// 3. Pending entry for B is created.
+// 4. DidFailProvisionalLoad message for A arrives. The logic here discards.
+// 5. DidStartProvisionalLoad message for B arrives.
+//
+// At step (4), the pending entry for B is discarded, when A is the one that
+// is being aborted. This caused the last committed entry to be displayed in
+// the omnibox, which is the entry before A was created.
+TEST_F(NavigationControllerTest, DontDiscardWrongPendingEntry) {
+  NavigationControllerImpl& controller = controller_impl();
+  GURL initial_url("http://www.google.com");
+  GURL url_1("http://foo.com");
+  GURL url_2("http://foo2.com");
+
+  // Navigate inititally. This is the url that could erroneously be the visible
+  // entry when url_1 fails.
+  NavigateAndCommit(initial_url);
+
+  // Set the pending entry as url_1 and receive the DidStartProvisionalLoad
+  // message, creating the NavigationHandle.
+  controller.LoadURL(url_1, Referrer(), ui::PAGE_TRANSITION_TYPED,
+                     std::string());
+  EXPECT_EQ(controller.GetVisibleEntry()->GetURL(), url_1);
+  main_test_rfh()->SimulateNavigationStart(url_1);
+  EXPECT_EQ(controller.GetVisibleEntry()->GetURL(), url_1);
+
+  // Navigate to url_2, aborting url_1 before the DidStartProvisionalLoad
+  // message is received for url_2. Do not discard the pending entry for url_2
+  // here.
+  controller.LoadURL(url_2, Referrer(), ui::PAGE_TRANSITION_TYPED,
+                     std::string());
+  EXPECT_EQ(controller.GetVisibleEntry()->GetURL(), url_2);
+  main_test_rfh()->SimulateNavigationError(url_1, net::ERR_ABORTED);
+  EXPECT_EQ(controller.GetVisibleEntry()->GetURL(), url_2);
+
+  // Get the DidStartProvisionalLoad message for url_2.
+  main_test_rfh()->SimulateNavigationStart(url_2);
+
+  EXPECT_EQ(controller.GetVisibleEntry()->GetURL(), url_2);
+}
+
 TEST_F(NavigationControllerTest, LoadURL) {
   NavigationControllerImpl& controller = controller_impl();
   TestNotificationTracker notifications;

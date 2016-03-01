@@ -57,6 +57,7 @@
 #include "content/browser/frame_host/interstitial_page_impl.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/frame_host/navigation_entry_screenshot_manager.h"
+#include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/frame_host/navigator.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"  // Temporary
 #include "content/browser/site_instance_impl.h"
@@ -1098,12 +1099,19 @@ void NavigationControllerImpl::RendererDidNavigateToNewPage(
   scoped_ptr<NavigationEntryImpl> new_entry;
   bool update_virtual_url;
   // Only make a copy of the pending entry if it is appropriate for the new page
-  // that was just loaded.  We verify this at a coarse grain by checking that
-  // the SiteInstance hasn't been assigned to something else, and by making sure
-  // that the pending entry was intended as a new entry (rather than being a
-  // history navigation that was interrupted by an unrelated, renderer-initiated
-  // navigation).
-  if (pending_entry_ && pending_entry_index_ == -1 &&
+  // that was just loaded. Verify this by checking if the entry corresponds
+  // to the current navigation handle. Note that in some tests the render frame
+  // host does not have a valid handle. Additionally, coarsely check that:
+  // 1. The SiteInstance hasn't been assigned to something else.
+  // 2. The pending entry was intended as a new entry, rather than being a
+  // history navigation that was interrupted by an unrelated,
+  // renderer-initiated navigation.
+  // TODO(csharrison): Investigate whether we can remove some of the coarser
+  // checks.
+  NavigationHandleImpl* handle = rfh->navigation_handle();
+  if (pending_entry_ && handle &&
+      handle->pending_nav_entry_id() == pending_entry_->GetUniqueID() &&
+      pending_entry_index_ == -1 &&
       (!pending_entry_->site_instance() ||
        pending_entry_->site_instance() == rfh->GetSiteInstance())) {
     new_entry = pending_entry_->Clone();

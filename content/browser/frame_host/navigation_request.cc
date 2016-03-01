@@ -227,14 +227,14 @@ void NavigationRequest::BeginNavigation() {
       frame_tree_node_, nullptr, scoped_ptr<StreamHandle>());
 }
 
-void NavigationRequest::CreateNavigationHandle() {
+void NavigationRequest::CreateNavigationHandle(int pending_nav_entry_id) {
   // TODO(nasko): Update the NavigationHandle creation to ensure that the
   // proper values are specified for is_synchronous and is_srcdoc.
-  navigation_handle_ =
-      NavigationHandleImpl::Create(common_params_.url, frame_tree_node_,
-                                   false,  // is_synchronous
-                                   false,  // is_srcdoc
-                                   common_params_.navigation_start);
+  navigation_handle_ = NavigationHandleImpl::Create(
+      common_params_.url, frame_tree_node_,
+      false,  // is_synchronous
+      false,  // is_srcdoc
+      common_params_.navigation_start, pending_nav_entry_id);
 }
 
 void NavigationRequest::TransferNavigationHandleOwnership(
