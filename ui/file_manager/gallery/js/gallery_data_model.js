@@ -141,18 +141,6 @@ GalleryDataModel.prototype.evictCache = function() {
         }
       }
     }
-    if (sorted[i].screenImage) {
-      if (++screenCacheCount > GalleryDataModel.MAX_SCREEN_IMAGE_CACHE_) {
-        if (sorted[i].screenImage.parentNode) {
-          console.error('The screen image has a parent node.');
-        } else {
-          // Force to free the buffer of the canvas by assigning zero size.
-          sorted[i].screenImage.width = 0;
-          sorted[i].screenImage.height = 0;
-          sorted[i].screenImage = null;
-        }
-      }
-    }
   }
 };
 

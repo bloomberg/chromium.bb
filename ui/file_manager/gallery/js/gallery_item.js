@@ -46,15 +46,6 @@ function GalleryItem(
   this.contentImage = null;
 
   /**
-   * We reuse previously generated screen-scale images so that going back to a
-   * recently loaded image looks instant even if the image is not in the content
-   * cache any more. Screen-scale images are small (~1Mpix) so we can afford to
-   * cache more of them.
-   * @type {HTMLCanvasElement}
-   */
-  this.screenImage = null;
-
-  /**
    * Last accessed date to be used for selecting items whose cache are evicted.
    * @type {number}
    * @private

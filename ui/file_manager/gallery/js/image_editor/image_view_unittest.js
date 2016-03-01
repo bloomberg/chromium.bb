@@ -13,14 +13,6 @@ function testImageView() {
       ImageView.LoadTarget.CACHED_MAIN_IMAGE,
       ImageView.getLoadTarget(itemWithFullCache, new ImageView.Effect.None()));
 
-  // Item has screen size cache.
-  var itemWithScreenCache = new GalleryItem(mockEntry, null, {}, null, false);
-  itemWithScreenCache.screenImage = document.createElement('canvas');
-  assertEquals(
-      ImageView.LoadTarget.CACHED_THUMBNAIL,
-      ImageView.getLoadTarget(
-          itemWithScreenCache, new ImageView.Effect.None()));
-
   // Item with content thumbnail.
   var itemWithContentThumbnail = new GalleryItem(
       mockEntry, null, {thumbnail: {url: 'url'}}, null, false);

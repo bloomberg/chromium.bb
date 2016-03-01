@@ -126,7 +126,6 @@ ImageView.LoadType = {
  */
 ImageView.LoadTarget = {
   CACHED_MAIN_IMAGE: 'cachedMainImage',
-  CACHED_THUMBNAIL: 'cachedThumbnail',
   THUMBNAIL: 'thumbnail',
   MAIN_IMAGE: 'mainImage'
 };
@@ -141,8 +140,6 @@ ImageView.LoadTarget = {
 ImageView.getLoadTarget = function(item, effect) {
   if (item.contentImage)
     return ImageView.LoadTarget.CACHED_MAIN_IMAGE;
-  if (item.screenImage)
-    return ImageView.LoadTarget.CACHED_THUMBNAIL;
 
   // Only show thumbnails if there is no effect or the effect is Slide or
   // ZoomToScreen.
@@ -376,14 +373,6 @@ ImageView.prototype.load =
           ImageView.LoadType.CACHED_FULL,
           false /* no preview */,
           assert(item.contentImage));
-      break;
-
-    case ImageView.LoadTarget.CACHED_THUMBNAIL:
-      // We have a cached screen-scale canvas, use it instead of a thumbnail.
-      displayThumbnail(ImageView.LoadType.CACHED_SCREEN, item.screenImage);
-      // As far as the user can tell the image is loaded. We still need to load
-      // the full res image to make editing possible, but we can report now.
-      ImageUtil.metrics.recordInterval(ImageUtil.getMetricName('DisplayTime'));
       break;
 
     case ImageView.LoadTarget.THUMBNAIL:
