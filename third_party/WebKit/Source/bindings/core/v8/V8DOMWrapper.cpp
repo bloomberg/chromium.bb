@@ -84,10 +84,7 @@ v8::Local<v8::Object> V8DOMWrapper::createWrapper(v8::Isolate* isolate, v8::Loca
     if (perContextData) {
         wrapper = perContextData->createWrapperFromCache(type);
     } else {
-        v8::Local<v8::Function> function;
-        if (!type->domTemplate(isolate)->GetFunction(isolate->GetCurrentContext()).ToLocal(&function))
-            return v8::Local<v8::Object>();
-        if (!V8ObjectConstructor::newInstance(isolate, function).ToLocal(&wrapper))
+        if (!type->domTemplate(isolate)->InstanceTemplate()->NewInstance(scope.context()).ToLocal(&wrapper))
             return v8::Local<v8::Object>();
     }
 
