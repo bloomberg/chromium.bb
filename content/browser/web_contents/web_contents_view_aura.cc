@@ -656,9 +656,7 @@ WebContentsViewAura::WebContentsViewAura(WebContentsImpl* web_contents,
       current_rvh_for_drag_(NULL),
       current_overscroll_gesture_(OVERSCROLL_NONE),
       completed_overscroll_gesture_(OVERSCROLL_NONE),
-      navigation_overlay_(nullptr),
-      is_or_was_visible_(false) {
-}
+      navigation_overlay_(nullptr) {}
 
 void WebContentsViewAura::SetDelegateForTesting(
     WebContentsViewDelegate* delegate) {
@@ -1294,30 +1292,7 @@ void WebContentsViewAura::OnWindowVisibilityChanged(aura::Window* window,
   if (window != window_.get() && window_->Contains(window))
     return;
 
-  UpdateWebContentsVisibility(visible);
-}
-
-void WebContentsViewAura::UpdateWebContentsVisibility(bool visible) {
-  if (!is_or_was_visible_) {
-    // We should not hide the web contents before it was shown the first time,
-    // since resources would immediately be destroyed and only re-created after
-    // content got loaded. In this state the window content is undefined and can
-    // show garbage.
-    // However - the page load mechanism requires an activation call through a
-    // visibility call to (re)load.
-    if (visible) {
-      is_or_was_visible_ = true;
-      web_contents_->WasShown();
-    }
-    return;
-  }
-  if (visible) {
-    if (!web_contents_->should_normally_be_visible())
-      web_contents_->WasShown();
-  } else {
-    if (web_contents_->should_normally_be_visible())
-      web_contents_->WasHidden();
-  }
+  web_contents_->UpdateWebContentsVisibility(visible);
 }
 
 }  // namespace content

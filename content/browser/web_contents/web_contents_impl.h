@@ -728,6 +728,9 @@ class CONTENT_EXPORT WebContentsImpl
     return media_web_contents_observer_.get();
   }
 
+  // Update the web contents visibility.
+  void UpdateWebContentsVisibility(bool visible);
+
  private:
   friend class WebContentsObserver;
   friend class WebContents;  // To implement factory methods.
@@ -1167,6 +1170,12 @@ class CONTENT_EXPORT WebContentsImpl
 
   // Tracks whether RWHV should be visible once capturer_count_ becomes zero.
   bool should_normally_be_visible_;
+
+  // Tracks whether this WebContents was ever set to be visible. Used to
+  // facilitate WebContents being loaded in the background by setting
+  // |should_normally_be_visible_|. Ensures WasShown() will trigger when first
+  // becoming visible to the user, and prevents premature unloading.
+  bool did_first_set_visible_;
 
   // See getter above.
   bool is_being_destroyed_;

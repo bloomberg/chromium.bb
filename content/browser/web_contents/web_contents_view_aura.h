@@ -160,9 +160,6 @@ class CONTENT_EXPORT WebContentsViewAura
   // Overridden from aura::WindowObserver:
   void OnWindowVisibilityChanged(aura::Window* window, bool visible) override;
 
-  // Update the web contents visiblity.
-  void UpdateWebContentsVisibility(bool visible);
-
   FRIEND_TEST_ALL_PREFIXES(WebContentsViewAuraTest, EnableDisableOverscroll);
 
   scoped_ptr<aura::Window> window_;
@@ -198,10 +195,6 @@ class CONTENT_EXPORT WebContentsViewAura
   scoped_ptr<OverscrollNavigationOverlay> navigation_overlay_;
 
   scoped_ptr<GestureNavSimple> gesture_nav_simple_;
-
-  // On Windows we can run into problems if resources get released within the
-  // initialization phase while the content (and its dimensions) are not known.
-  bool is_or_was_visible_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsViewAura);
 };

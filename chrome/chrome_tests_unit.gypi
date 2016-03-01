@@ -1341,6 +1341,7 @@
       'browser/ui/views/apps/app_info_dialog/app_info_dialog_views_unittest.cc',
       'browser/ui/views/apps/app_info_dialog/app_info_permissions_panel_unittest.cc',
       'browser/ui/views/website_settings/website_settings_popup_view_unittest.cc',
+      '../ui/views/controls/webview/webview_unittest.cc',
     ],
     # Views unit_tests for everywhere but ChromeOS.
     'chrome_unit_tests_views_non_chromeos_sources': [
@@ -2418,10 +2419,6 @@
           'dependencies': [
             '../ui/wm/wm.gyp:wm',
             '../ui/aura/aura.gyp:aura_test_support',
-            '../ui/views/views.gyp:views_test_support',
-          ],
-          'sources': [
-            '../ui/views/controls/webview/webview_unittest.cc',
           ],
         }],
         ['chromeos==0 and OS=="linux"', {

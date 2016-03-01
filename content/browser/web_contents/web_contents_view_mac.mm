@@ -67,6 +67,7 @@ STATIC_ASSERT_ENUM(NSDragOperationEvery, blink::WebDragOperationEvery);
 - (void)cancelDeferredClose;
 - (void)clearWebContentsView;
 - (void)closeTabAfterEvent;
+- (void)updateWebContentsVisibility;
 - (void)viewDidBecomeFirstResponder:(NSNotification*)notification;
 - (content::WebContentsImpl*)webContents;
 @end
@@ -611,6 +612,15 @@ void WebContentsViewMac::CloseTab() {
       FocusThroughTabTraversal(direction == NSSelectingPrevious);
 }
 
+- (void)updateWebContentsVisibility {
+  WebContentsImpl* webContents = [self webContents];
+  if (!webContents || webContents->IsBeingDestroyed())
+    return;
+
+  const bool viewVisible = [self window] && ![self isHiddenOrHasHiddenAncestor];
+  webContents->UpdateWebContentsVisibility(viewVisible);
+}
+
 // When the subviews require a layout, their size should be reset to the size
 // of this view. (It is possible for the size to get out of sync as an
 // optimization in preparation for an upcoming WebContentsView resize.
@@ -657,6 +667,18 @@ void WebContentsViewMac::CloseTab() {
       webContents->WasOccluded();
     }
   }
+}
+
+- (void)viewDidMoveToWindow {
+  [self updateWebContentsVisibility];
+}
+
+- (void)viewDidHide {
+  [self updateWebContentsVisibility];
+}
+
+- (void)viewDidUnhide {
+  [self updateWebContentsVisibility];
 }
 
 @end

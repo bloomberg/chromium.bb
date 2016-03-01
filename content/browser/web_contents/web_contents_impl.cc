@@ -338,6 +338,7 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
       did_first_visually_non_empty_paint_(false),
       capturer_count_(0),
       should_normally_be_visible_(true),
+      did_first_set_visible_(false),
       is_being_destroyed_(false),
       notify_disconnection_(false),
       dialog_manager_(NULL),
@@ -4790,6 +4791,29 @@ void WebContentsImpl::MediaStartedPlaying(
 void WebContentsImpl::MediaStoppedPlaying(
     const WebContentsObserver::MediaPlayerId& id) {
   FOR_EACH_OBSERVER(WebContentsObserver, observers_, MediaStoppedPlaying(id));
+}
+
+void WebContentsImpl::UpdateWebContentsVisibility(bool visible) {
+  if (!did_first_set_visible_) {
+    // If this WebContents has not yet been set to be visible for the first
+    // time, ignore any requests to make it hidden, since resources would
+    // immediately be destroyed and only re-created after content loaded. In
+    // this state the window content is undefined and can show garbage.
+    // However, the page load mechanism requires an activation call through a
+    // visibility call to (re)load.
+    if (visible) {
+      did_first_set_visible_ = true;
+      WasShown();
+    }
+    return;
+  }
+  if (visible == should_normally_be_visible_)
+    return;
+
+  if (visible)
+    WasShown();
+  else
+    WasHidden();
 }
 
 void WebContentsImpl::SetJavaScriptDialogManagerForTesting(

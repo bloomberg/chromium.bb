@@ -593,7 +593,10 @@ private:
     // ensureContentsVisible (see below) sets content size and autoresizing
     // properties.
     [newView setFrame:[oldView frame]];
-    [switchView_ replaceSubview:oldView with:newView];
+    // Remove the old view first, to ensure ConstrainedWindowSheets keyed to the
+    // old WebContents are removed before adding new ones.
+    [oldView removeFromSuperview];
+    [switchView_ addSubview:newView];
   } else {
     [newView setFrame:[switchView_ bounds]];
     [switchView_ addSubview:newView];
@@ -1295,7 +1298,6 @@ private:
       TabContentsController* oldController =
           [tabContentsArray_ objectAtIndex:oldIndex];
       [oldController willBecomeUnselectedTab];
-      oldContents->WasHidden();
     }
   }
 
@@ -1321,10 +1323,8 @@ private:
   // Swap in the contents for the new tab.
   [self swapInTabAtIndex:modelIndex];
 
-  if (newContents) {
-    newContents->WasShown();
+  if (newContents)
     newContents->RestoreFocus();
-  }
 }
 
 - (void)tabSelectionChanged {
