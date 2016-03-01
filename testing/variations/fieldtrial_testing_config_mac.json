@@ -226,6 +226,14 @@
             }
         }
     ],
+    "ViewsSimplifiedFullscreenUI": [
+        {
+            "enable_features": [
+                "ViewsSimplifiedFullscreenUI"
+            ],
+            "group_name": "Enabled"
+        }
+    ],
     "WebFontsIntervention": [
         {
             "group_name": "Enabled"
