@@ -183,8 +183,6 @@ class CONTENT_EXPORT GpuChannel
   base::ScopedPtrHashMap<int32_t, scoped_ptr<GpuCommandBufferStub>> stubs_;
 
  private:
-  void OnDestroy();
-
   bool OnControlMessageReceived(const IPC::Message& msg);
 
   void HandleMessage(const scoped_refptr<GpuChannelMessageQueue>& queue);
