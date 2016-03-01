@@ -1043,14 +1043,8 @@ bool ScrollAnimatorMac::setScrollbarsVisibleForTesting(bool show)
 
 void ScrollAnimatorMac::cancelAnimation()
 {
+    [m_scrollAnimationHelper.get() _stopRun];
     m_haveScrolledSincePageLoad = false;
-
-    if (ScrollbarThemeMacCommon::isOverlayAPIAvailable()) {
-        if (scrollbarPaintTimerIsActive())
-            stopScrollbarPaintTimer();
-        [m_horizontalScrollbarPainterDelegate.get() cancelAnimations];
-        [m_verticalScrollbarPainterDelegate.get() cancelAnimations];
-    }
 }
 
 void ScrollAnimatorMac::handleWheelEventPhase(PlatformWheelEventPhase phase)
