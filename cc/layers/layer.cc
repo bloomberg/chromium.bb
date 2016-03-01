@@ -1289,8 +1289,7 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
 
   LayerImpl* scroll_parent = nullptr;
   if (scroll_parent_) {
-    scroll_parent =
-        layer->layer_tree_impl()->list()->LayerById(scroll_parent_->id());
+    scroll_parent = layer->layer_tree_impl()->LayerById(scroll_parent_->id());
     DCHECK(scroll_parent);
   }
 
@@ -1302,7 +1301,7 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
          ++it) {
       DCHECK_EQ((*it)->scroll_parent(), this);
       LayerImpl* scroll_child =
-          layer->layer_tree_impl()->list()->LayerById((*it)->id());
+          layer->layer_tree_impl()->LayerById((*it)->id());
       DCHECK(scroll_child);
       scroll_children->insert(scroll_child);
     }
@@ -1314,7 +1313,7 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   LayerImpl* clip_parent = nullptr;
   if (clip_parent_) {
     clip_parent =
-        layer->layer_tree_impl()->list()->LayerById(clip_parent_->id());
+        layer->layer_tree_impl()->LayerById(clip_parent_->id());
     DCHECK(clip_parent);
   }
 
@@ -1324,8 +1323,7 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
     for (std::set<Layer*>::iterator it = clip_children_->begin();
         it != clip_children_->end(); ++it) {
       DCHECK_EQ((*it)->clip_parent(), this);
-      LayerImpl* clip_child =
-          layer->layer_tree_impl()->list()->LayerById((*it)->id());
+      LayerImpl* clip_child = layer->layer_tree_impl()->LayerById((*it)->id());
       DCHECK(clip_child);
       clip_children->insert(clip_child);
     }

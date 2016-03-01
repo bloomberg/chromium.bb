@@ -11,7 +11,7 @@
 #include <cstdint>
 
 namespace cc {
-class LayerListImpl;
+class LayerTreeImpl;
 } // namespace cc
 
 namespace blink {
@@ -23,12 +23,12 @@ struct CompositorMutations;
 // around per-element bits of this state.
 class PLATFORM_EXPORT CompositorMutableStateProvider {
 public:
-    CompositorMutableStateProvider(cc::LayerListImpl*, CompositorMutations*);
+    CompositorMutableStateProvider(cc::LayerTreeImpl*, CompositorMutations*);
     ~CompositorMutableStateProvider();
 
     PassOwnPtr<CompositorMutableState> getMutableStateFor(uint64_t elementId);
 private:
-    cc::LayerListImpl* m_state;
+    cc::LayerTreeImpl* m_state;
     CompositorMutations* m_mutations;
 };
 

@@ -69,8 +69,7 @@ bool ScrollbarLayerImplBase::SetCurrentPos(float current_pos) {
 }
 
 bool ScrollbarLayerImplBase::CanScrollOrientation() const {
-  LayerImpl* scroll_layer =
-      layer_tree_impl()->list()->LayerById(scroll_layer_id_);
+  LayerImpl* scroll_layer = layer_tree_impl()->LayerById(scroll_layer_id_);
   if (!scroll_layer)
     return false;
   return scroll_layer->user_scrollable(orientation()) &&

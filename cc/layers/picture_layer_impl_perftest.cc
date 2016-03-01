@@ -72,7 +72,7 @@ class PictureLayerImplPerfTest : public testing::Test {
     pending_tree->BuildPropertyTreesForTesting();
 
     pending_layer_ = static_cast<FakePictureLayerImpl*>(
-        host_impl_.pending_tree()->list()->LayerById(7));
+        host_impl_.pending_tree()->LayerById(7));
   }
 
   void RunRasterQueueConstructAndIterateTest(const std::string& test_name,

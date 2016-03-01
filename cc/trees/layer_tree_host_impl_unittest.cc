@@ -2743,8 +2743,7 @@ class LayerTreeHostImplTestScrollbarOpacity : public LayerTreeHostImplTest {
     host_impl_->pending_tree()->BuildPropertyTreesForTesting();
     host_impl_->ActivateSyncTree();
 
-    LayerImpl* scrollbar_layer =
-        host_impl_->active_tree()->list()->LayerById(400);
+    LayerImpl* scrollbar_layer = host_impl_->active_tree()->LayerById(400);
 
     EffectNode* active_tree_node =
         host_impl_->active_tree()->property_trees()->effect_tree.Node(
@@ -7740,12 +7739,12 @@ TEST_F(LayerTreeHostImplTest, ScrollUnknownNotOnAncestorChain) {
 
   int scroll_layer_id = 2;
   LayerImpl* scroll_layer =
-      host_impl_->active_tree()->list()->LayerById(scroll_layer_id);
+      host_impl_->active_tree()->LayerById(scroll_layer_id);
   scroll_layer->SetDrawsContent(true);
 
   int page_scale_layer_id = 5;
   LayerImpl* page_scale_layer =
-      host_impl_->active_tree()->list()->LayerById(page_scale_layer_id);
+      host_impl_->active_tree()->LayerById(page_scale_layer_id);
 
   int occluder_layer_id = 6;
   scoped_ptr<LayerImpl> occluder_layer =
@@ -7776,7 +7775,7 @@ TEST_F(LayerTreeHostImplTest, ScrollUnknownScrollAncestorMismatch) {
 
   int scroll_layer_id = 2;
   LayerImpl* scroll_layer =
-      host_impl_->active_tree()->list()->LayerById(scroll_layer_id);
+      host_impl_->active_tree()->LayerById(scroll_layer_id);
   scroll_layer->SetDrawsContent(true);
 
   int occluder_layer_id = 6;
@@ -7814,11 +7813,11 @@ TEST_F(LayerTreeHostImplTest, NotScrollInvisibleScroller) {
   gfx::Size content_size(100, 100);
   SetupScrollAndContentsLayers(content_size);
 
-  LayerImpl* root = host_impl_->active_tree()->list()->LayerById(1);
+  LayerImpl* root = host_impl_->active_tree()->LayerById(1);
 
   int scroll_layer_id = 2;
   LayerImpl* scroll_layer =
-      host_impl_->active_tree()->list()->LayerById(scroll_layer_id);
+      host_impl_->active_tree()->LayerById(scroll_layer_id);
 
   int child_scroll_layer_id = 7;
   scoped_ptr<LayerImpl> child_scroll =
@@ -7848,9 +7847,8 @@ TEST_F(LayerTreeHostImplTest, ScrollInvisibleScrollerWithVisibleDescendent) {
   gfx::Size content_size(100, 100);
   SetupScrollAndContentsLayers(content_size);
 
-  LayerImpl* root = host_impl_->active_tree()->list()->LayerById(1);
-  LayerImpl* root_scroll_layer =
-      host_impl_->active_tree()->list()->LayerById(2);
+  LayerImpl* root = host_impl_->active_tree()->LayerById(1);
+  LayerImpl* root_scroll_layer = host_impl_->active_tree()->LayerById(2);
 
   scoped_ptr<LayerImpl> invisible_scroll_layer =
       CreateScrollableLayer(7, content_size, root);
@@ -7892,11 +7890,11 @@ TEST_F(LayerTreeHostImplTest, ScrollInvisibleScrollerWithVisibleScrollChild) {
   gfx::Size content_size(100, 100);
   SetupScrollAndContentsLayers(content_size);
 
-  LayerImpl* root = host_impl_->active_tree()->list()->LayerById(1);
+  LayerImpl* root = host_impl_->active_tree()->LayerById(1);
 
   int scroll_layer_id = 2;
   LayerImpl* scroll_layer =
-      host_impl_->active_tree()->list()->LayerById(scroll_layer_id);
+      host_impl_->active_tree()->LayerById(scroll_layer_id);
 
   int scroll_child_id = 6;
   scoped_ptr<LayerImpl> scroll_child =
@@ -9272,7 +9270,7 @@ TEST_F(LayerTreeHostImplTest, ExternalTransformAffectsSublayerScaleFactor) {
                                  ->children()[0]
                                  .get();
   content_layer->AddChild(LayerImpl::Create(host_impl_->active_tree(), 100));
-  LayerImpl* test_layer = host_impl_->active_tree()->list()->LayerById(100);
+  LayerImpl* test_layer = host_impl_->active_tree()->LayerById(100);
   test_layer->SetForceRenderSurface(true);
   test_layer->SetDrawsContent(true);
   test_layer->SetBounds(layer_size);
@@ -10141,7 +10139,7 @@ TEST_F(LayerTreeHostImplTest, SubLayerScaleForNodeInSubtreeOfPageScaleLayer) {
   page_scale_layer->AddChild(LayerImpl::Create(host_impl_->active_tree(), 100));
 
   LayerImpl* in_subtree_of_page_scale_layer =
-      host_impl_->active_tree()->list()->LayerById(100);
+      host_impl_->active_tree()->LayerById(100);
   in_subtree_of_page_scale_layer->SetForceRenderSurface(true);
   SetNeedsRebuildPropertyTrees();
   RebuildPropertyTrees();
@@ -10153,8 +10151,7 @@ TEST_F(LayerTreeHostImplTest, SubLayerScaleForNodeInSubtreeOfPageScaleLayer) {
 
   host_impl_->active_tree()->SetPageScaleOnActiveTree(2.f);
   DrawFrame();
-  in_subtree_of_page_scale_layer =
-      host_impl_->active_tree()->list()->LayerById(100);
+  in_subtree_of_page_scale_layer = host_impl_->active_tree()->LayerById(100);
   node = host_impl_->active_tree()->property_trees()->transform_tree.Node(
       in_subtree_of_page_scale_layer->transform_tree_index());
   EXPECT_EQ(node->data.sublayer_scale, gfx::Vector2dF(2.f, 2.f));
@@ -10199,7 +10196,7 @@ TEST_F(LayerTreeHostImplTest, JitterTest) {
     pending_tree->BuildPropertyTreesForTesting();
     pending_tree->set_needs_update_draw_properties();
     pending_tree->UpdateDrawProperties(false);
-    LayerImpl* last_scrolled_layer = pending_tree->list()->LayerById(
+    LayerImpl* last_scrolled_layer = pending_tree->LayerById(
         host_impl_->active_tree()->LastScrolledLayerId());
     float jitter =
         LayerTreeHostCommon::CalculateFrameJitter(last_scrolled_layer);

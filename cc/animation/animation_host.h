@@ -57,8 +57,8 @@ class CC_EXPORT AnimationHost {
 
   void ClearTimelines();
 
-  void RegisterLayer(int layer_id, LayerListType list_type);
-  void UnregisterLayer(int layer_id, LayerListType list_type);
+  void RegisterLayer(int layer_id, LayerTreeType tree_type);
+  void UnregisterLayer(int layer_id, LayerTreeType tree_type);
 
   void RegisterPlayerForLayer(int layer_id, AnimationPlayer* player);
   void UnregisterPlayerForLayer(int layer_id, AnimationPlayer* player);
@@ -98,17 +98,17 @@ class CC_EXPORT AnimationHost {
 
   bool ScrollOffsetAnimationWasInterrupted(int layer_id) const;
 
-  bool IsAnimatingFilterProperty(int layer_id, LayerListType list_type) const;
-  bool IsAnimatingOpacityProperty(int layer_id, LayerListType list_type) const;
+  bool IsAnimatingFilterProperty(int layer_id, LayerTreeType tree_type) const;
+  bool IsAnimatingOpacityProperty(int layer_id, LayerTreeType tree_type) const;
   bool IsAnimatingTransformProperty(int layer_id,
-                                    LayerListType list_type) const;
+                                    LayerTreeType tree_type) const;
 
   bool HasPotentiallyRunningFilterAnimation(int layer_id,
-                                            LayerListType list_type) const;
+                                            LayerTreeType tree_type) const;
   bool HasPotentiallyRunningOpacityAnimation(int layer_id,
-                                             LayerListType list_type) const;
+                                             LayerTreeType tree_type) const;
   bool HasPotentiallyRunningTransformAnimation(int layer_id,
-                                               LayerListType list_type) const;
+                                               LayerTreeType tree_type) const;
 
   bool HasAnyAnimationTargetingProperty(int layer_id,
                                         TargetProperty::Type property) const;
@@ -130,14 +130,14 @@ class CC_EXPORT AnimationHost {
                                       gfx::BoxF* bounds) const;
 
   bool HasOnlyTranslationTransforms(int layer_id,
-                                    LayerListType list_type) const;
+                                    LayerTreeType tree_type) const;
   bool AnimationsPreserveAxisAlignment(int layer_id) const;
 
   bool MaximumTargetScale(int layer_id,
-                          LayerListType list_type,
+                          LayerTreeType tree_type,
                           float* max_scale) const;
   bool AnimationStartScale(int layer_id,
-                           LayerListType list_type,
+                           LayerTreeType tree_type,
                            float* start_scale) const;
 
   bool HasAnyAnimation(int layer_id) const;

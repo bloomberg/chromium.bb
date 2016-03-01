@@ -205,18 +205,18 @@ void AnimationHost::RemoveAnimationTimeline(
   }
 }
 
-void AnimationHost::RegisterLayer(int layer_id, LayerListType list_type) {
+void AnimationHost::RegisterLayer(int layer_id, LayerTreeType tree_type) {
   ElementAnimations* element_animations =
       GetElementAnimationsForLayerId(layer_id);
   if (element_animations)
-    element_animations->LayerRegistered(layer_id, list_type);
+    element_animations->LayerRegistered(layer_id, tree_type);
 }
 
-void AnimationHost::UnregisterLayer(int layer_id, LayerListType list_type) {
+void AnimationHost::UnregisterLayer(int layer_id, LayerTreeType tree_type) {
   ElementAnimations* element_animations =
       GetElementAnimationsForLayerId(layer_id);
   if (element_animations)
-    element_animations->LayerUnregistered(layer_id, list_type);
+    element_animations->LayerUnregistered(layer_id, tree_type);
 }
 
 void AnimationHost::RegisterPlayerForLayer(int layer_id,
@@ -386,69 +386,69 @@ bool AnimationHost::ScrollOffsetAnimationWasInterrupted(int layer_id) const {
 }
 
 static LayerAnimationController::ObserverType ObserverTypeFromTreeType(
-    LayerListType list_type) {
-  return list_type == LayerListType::ACTIVE
+    LayerTreeType tree_type) {
+  return tree_type == LayerTreeType::ACTIVE
              ? LayerAnimationController::ObserverType::ACTIVE
              : LayerAnimationController::ObserverType::PENDING;
 }
 
 bool AnimationHost::IsAnimatingFilterProperty(int layer_id,
-                                              LayerListType list_type) const {
+                                              LayerTreeType tree_type) const {
   LayerAnimationController* controller = GetControllerForLayerId(layer_id);
   return controller
              ? controller->IsCurrentlyAnimatingProperty(
-                   TargetProperty::FILTER, ObserverTypeFromTreeType(list_type))
+                   TargetProperty::FILTER, ObserverTypeFromTreeType(tree_type))
              : false;
 }
 
 bool AnimationHost::IsAnimatingOpacityProperty(int layer_id,
-                                               LayerListType list_type) const {
+                                               LayerTreeType tree_type) const {
   LayerAnimationController* controller = GetControllerForLayerId(layer_id);
   return controller
              ? controller->IsCurrentlyAnimatingProperty(
-                   TargetProperty::OPACITY, ObserverTypeFromTreeType(list_type))
+                   TargetProperty::OPACITY, ObserverTypeFromTreeType(tree_type))
              : false;
 }
 
 bool AnimationHost::IsAnimatingTransformProperty(
     int layer_id,
-    LayerListType list_type) const {
+    LayerTreeType tree_type) const {
   LayerAnimationController* controller = GetControllerForLayerId(layer_id);
   return controller
              ? controller->IsCurrentlyAnimatingProperty(
                    TargetProperty::TRANSFORM,
-                   ObserverTypeFromTreeType(list_type))
+                   ObserverTypeFromTreeType(tree_type))
              : false;
 }
 
 bool AnimationHost::HasPotentiallyRunningFilterAnimation(
     int layer_id,
-    LayerListType list_type) const {
+    LayerTreeType tree_type) const {
   LayerAnimationController* controller = GetControllerForLayerId(layer_id);
   return controller
              ? controller->IsPotentiallyAnimatingProperty(
-                   TargetProperty::FILTER, ObserverTypeFromTreeType(list_type))
+                   TargetProperty::FILTER, ObserverTypeFromTreeType(tree_type))
              : false;
 }
 
 bool AnimationHost::HasPotentiallyRunningOpacityAnimation(
     int layer_id,
-    LayerListType list_type) const {
+    LayerTreeType tree_type) const {
   LayerAnimationController* controller = GetControllerForLayerId(layer_id);
   return controller
              ? controller->IsPotentiallyAnimatingProperty(
-                   TargetProperty::OPACITY, ObserverTypeFromTreeType(list_type))
+                   TargetProperty::OPACITY, ObserverTypeFromTreeType(tree_type))
              : false;
 }
 
 bool AnimationHost::HasPotentiallyRunningTransformAnimation(
     int layer_id,
-    LayerListType list_type) const {
+    LayerTreeType tree_type) const {
   LayerAnimationController* controller = GetControllerForLayerId(layer_id);
   return controller
              ? controller->IsPotentiallyAnimatingProperty(
                    TargetProperty::TRANSFORM,
-                   ObserverTypeFromTreeType(list_type))
+                   ObserverTypeFromTreeType(tree_type))
              : false;
 }
 
@@ -536,11 +536,11 @@ bool AnimationHost::TransformAnimationBoundsForBox(int layer_id,
 
 bool AnimationHost::HasOnlyTranslationTransforms(
     int layer_id,
-    LayerListType list_type) const {
+    LayerTreeType tree_type) const {
   LayerAnimationController* controller = GetControllerForLayerId(layer_id);
   return controller
              ? controller->HasOnlyTranslationTransforms(
-                   ObserverTypeFromTreeType(list_type))
+                   ObserverTypeFromTreeType(tree_type))
              : true;
 }
 
@@ -550,24 +550,24 @@ bool AnimationHost::AnimationsPreserveAxisAlignment(int layer_id) const {
 }
 
 bool AnimationHost::MaximumTargetScale(int layer_id,
-                                       LayerListType list_type,
+                                       LayerTreeType tree_type,
                                        float* max_scale) const {
   *max_scale = 0.f;
   LayerAnimationController* controller = GetControllerForLayerId(layer_id);
   return controller
              ? controller->MaximumTargetScale(
-                   ObserverTypeFromTreeType(list_type), max_scale)
+                   ObserverTypeFromTreeType(tree_type), max_scale)
              : true;
 }
 
 bool AnimationHost::AnimationStartScale(int layer_id,
-                                        LayerListType list_type,
+                                        LayerTreeType tree_type,
                                         float* start_scale) const {
   *start_scale = 0.f;
   LayerAnimationController* controller = GetControllerForLayerId(layer_id);
   return controller
              ? controller->AnimationStartScale(
-                   ObserverTypeFromTreeType(list_type), start_scale)
+                   ObserverTypeFromTreeType(tree_type), start_scale)
              : true;
 }
 

@@ -79,8 +79,8 @@ TEST_F(AnimationHostTest, ImplOnlyTimeline) {
 }
 
 TEST_F(AnimationHostTest, ImplOnlyScrollAnimationUpdateTargetIfDetached) {
-  client_.RegisterLayer(layer_id_, LayerListType::ACTIVE);
-  client_impl_.RegisterLayer(layer_id_, LayerListType::PENDING);
+  client_.RegisterLayer(layer_id_, LayerTreeType::ACTIVE);
+  client_impl_.RegisterLayer(layer_id_, LayerTreeType::PENDING);
 
   gfx::ScrollOffset target_offset(0., 2.);
   gfx::ScrollOffset current_offset(0., 1.);

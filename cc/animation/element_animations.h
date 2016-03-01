@@ -26,7 +26,7 @@ class AnimationHost;
 class AnimationPlayer;
 class FilterOperations;
 class LayerAnimationController;
-enum class LayerListType;
+enum class LayerTreeType;
 
 // An ElementAnimations owns a list of all AnimationPlayers, attached to
 // the layer. Also, it owns LayerAnimationController instance (1:1
@@ -56,8 +56,8 @@ class CC_EXPORT ElementAnimations : public AnimationDelegate,
   void CreateLayerAnimationController(int layer_id);
   void DestroyLayerAnimationController();
 
-  void LayerRegistered(int layer_id, LayerListType list_type);
-  void LayerUnregistered(int layer_id, LayerListType list_type);
+  void LayerRegistered(int layer_id, LayerTreeType tree_type);
+  void LayerUnregistered(int layer_id, LayerTreeType tree_type);
 
   bool has_active_value_observer_for_testing() const {
     return !!active_value_observer_;
@@ -79,14 +79,14 @@ class CC_EXPORT ElementAnimations : public AnimationDelegate,
  private:
   explicit ElementAnimations(AnimationHost* host);
 
-  void SetFilterMutated(LayerListType list_type,
+  void SetFilterMutated(LayerTreeType tree_type,
                         const FilterOperations& filters);
-  void SetOpacityMutated(LayerListType list_type, float opacity);
-  void SetTransformMutated(LayerListType list_type,
+  void SetOpacityMutated(LayerTreeType tree_type, float opacity);
+  void SetTransformMutated(LayerTreeType tree_type,
                            const gfx::Transform& transform);
-  void SetScrollOffsetMutated(LayerListType list_type,
+  void SetScrollOffsetMutated(LayerTreeType tree_type,
                               const gfx::ScrollOffset& scroll_offset);
-  void SetTransformIsPotentiallyAnimatingChanged(LayerListType list_type,
+  void SetTransformIsPotentiallyAnimatingChanged(LayerTreeType tree_type,
                                                  bool is_animating);
 
   void CreateActiveValueObserver();

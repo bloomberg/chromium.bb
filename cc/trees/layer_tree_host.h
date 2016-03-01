@@ -365,24 +365,24 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   void RegisterLayer(Layer* layer);
   void UnregisterLayer(Layer* layer);
   // LayerTreeMutatorsClient implementation.
-  bool IsLayerInTree(int layer_id, LayerListType list_type) const override;
+  bool IsLayerInTree(int layer_id, LayerTreeType tree_type) const override;
   void SetMutatorsNeedCommit() override;
   void SetMutatorsNeedRebuildPropertyTrees() override;
   void SetLayerFilterMutated(int layer_id,
-                             LayerListType list_type,
+                             LayerTreeType tree_type,
                              const FilterOperations& filters) override;
   void SetLayerOpacityMutated(int layer_id,
-                              LayerListType list_type,
+                              LayerTreeType tree_type,
                               float opacity) override;
   void SetLayerTransformMutated(int layer_id,
-                                LayerListType list_type,
+                                LayerTreeType tree_type,
                                 const gfx::Transform& transform) override;
   void SetLayerScrollOffsetMutated(
       int layer_id,
-      LayerListType list_type,
+      LayerTreeType tree_type,
       const gfx::ScrollOffset& scroll_offset) override;
   void LayerTransformIsPotentiallyAnimatingChanged(int layer_id,
-                                                   LayerListType list_type,
+                                                   LayerTreeType tree_type,
                                                    bool is_animating) override;
   void ScrollOffsetAnimationFinished() override {}
   gfx::ScrollOffset GetScrollOffsetForAnimation(int layer_id) const override;

@@ -1099,7 +1099,7 @@ static float TranslationFromActiveTreeLayerScreenSpaceTransform(
   LayerTreeImpl* layer_tree_impl = pending_tree_layer->layer_tree_impl();
   if (layer_tree_impl) {
     LayerImpl* active_tree_layer =
-        layer_tree_impl->list()->FindActiveLayerById(pending_tree_layer->id());
+        layer_tree_impl->FindActiveTreeLayerById(pending_tree_layer->id());
     if (active_tree_layer) {
       gfx::Transform active_tree_screen_space_transform =
           active_tree_layer->draw_properties().screen_space_transform;
@@ -1606,11 +1606,10 @@ void LayerTreeHostCommon::CalculateDrawProperties(
     if (layer_tree_impl->IsPendingTree() &&
         layer_tree_impl->is_first_frame_after_commit()) {
       LayerImpl* active_tree_root =
-          layer_tree_impl->list()->FindActiveLayerById(
-              inputs->root_layer->id());
+          layer_tree_impl->FindActiveTreeLayerById(inputs->root_layer->id());
       float jitter = 0.f;
       if (active_tree_root) {
-        LayerImpl* last_scrolled_layer = layer_tree_impl->list()->LayerById(
+        LayerImpl* last_scrolled_layer = layer_tree_impl->LayerById(
             active_tree_root->layer_tree_impl()->LastScrolledLayerId());
         jitter = CalculateFrameJitter(last_scrolled_layer);
       }

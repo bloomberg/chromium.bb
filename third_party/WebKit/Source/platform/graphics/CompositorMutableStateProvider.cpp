@@ -5,14 +5,14 @@
 #include "platform/graphics/CompositorMutableStateProvider.h"
 
 #include "cc/layers/layer_impl.h"
-#include "cc/layers/layer_list_impl.h"
+#include "cc/trees/layer_tree_impl.h"
 #include "platform/graphics/CompositorMutableState.h"
 #include "platform/graphics/CompositorMutation.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace blink {
 
-CompositorMutableStateProvider::CompositorMutableStateProvider(cc::LayerListImpl* state, CompositorMutations* mutations)
+CompositorMutableStateProvider::CompositorMutableStateProvider(cc::LayerTreeImpl* state, CompositorMutations* mutations)
     : m_state(state)
     , m_mutations(mutations)
 {
@@ -23,7 +23,7 @@ CompositorMutableStateProvider::~CompositorMutableStateProvider() {}
 PassOwnPtr<CompositorMutableState>
 CompositorMutableStateProvider::getMutableStateFor(uint64_t element_id)
 {
-    cc::LayerListImpl::ElementLayers layers = m_state->GetMutableLayers(element_id);
+    cc::LayerTreeImpl::ElementLayers layers = m_state->GetMutableLayers(element_id);
 
     if (!layers.main && !layers.scroll)
         return nullptr;

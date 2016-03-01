@@ -1095,8 +1095,7 @@ TEST_F(LayerPositionConstraintTest,
   CommitAndUpdateImplPointers();
 
   LayerImpl* fixed_child_impl =
-      root_impl_->layer_tree_impl()->list()->FindActiveLayerById(
-          fixed_child->id());
+      root_impl_->layer_tree_impl()->FindActiveTreeLayerById(fixed_child->id());
 
   // Case 1: fixed-container size delta of 20, 20
   scroll_layer_impl_->SetScrollDelta(gfx::Vector2d(10, 10));
@@ -1117,8 +1116,8 @@ TEST_F(LayerPositionConstraintTest,
   // Case 2: Bottom-right fixed-position layer.
   fixed_child->SetPositionConstraint(fixed_to_bottom_right_);
   CommitAndUpdateImplPointers();
-  fixed_child_impl = root_impl_->layer_tree_impl()->list()->FindActiveLayerById(
-      fixed_child->id());
+  fixed_child_impl =
+      root_impl_->layer_tree_impl()->FindActiveTreeLayerById(fixed_child->id());
 
   scroll_layer_impl_->SetScrollDelta(gfx::Vector2d(10, 10));
   SetFixedContainerSizeDelta(scroll_layer_impl_, gfx::Vector2d(20, 20));

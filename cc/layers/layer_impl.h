@@ -27,7 +27,6 @@
 #include "cc/debug/frame_timing_request.h"
 #include "cc/input/input_handler.h"
 #include "cc/layers/draw_properties.h"
-#include "cc/layers/layer_list_impl.h"
 #include "cc/layers/layer_lists.h"
 #include "cc/layers/layer_position_constraint.h"
 #include "cc/layers/performance_properties.h"
@@ -750,7 +749,6 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   scoped_ptr<LayerImpl> replica_layer_;
   int layer_id_;
   LayerTreeImpl* layer_tree_impl_;
-  LayerListImpl* layer_list_impl_;
 
   // Properties dynamically changeable on active tree.
   scoped_refptr<SyncedScrollOffset> scroll_offset_;

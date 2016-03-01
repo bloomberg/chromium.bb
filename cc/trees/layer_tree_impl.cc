@@ -79,9 +79,7 @@ LayerTreeImpl::LayerTreeImpl(
       event_listener_properties_(),
       top_controls_shrink_blink_size_(false),
       top_controls_height_(0),
-      top_controls_shown_ratio_(top_controls_shown_ratio) {
-  layer_list_.reset(new LayerListImpl(layer_tree_host_impl_));
-}
+      top_controls_shown_ratio_(top_controls_shown_ratio) {}
 
 LayerTreeImpl::~LayerTreeImpl() {
   BreakSwapPromises(IsActiveTree() ? SwapPromise::SWAP_FAILS
@@ -166,8 +164,7 @@ void LayerTreeImpl::DidUpdateScrollState(int layer_id) {
       clip_layer_id = layer_id;
     } else {
       scroll_layer_id = layer_id;
-      clip_layer_id =
-          layer_list_->LayerById(scroll_layer_id)->scroll_clip_layer_id();
+      clip_layer_id = LayerById(scroll_layer_id)->scroll_clip_layer_id();
     }
   }
   UpdateScrollbars(scroll_layer_id, clip_layer_id);
@@ -176,8 +173,8 @@ void LayerTreeImpl::DidUpdateScrollState(int layer_id) {
 void LayerTreeImpl::UpdateScrollbars(int scroll_layer_id, int clip_layer_id) {
   DCHECK(IsActiveTree());
 
-  LayerImpl* clip_layer = layer_list_->LayerById(clip_layer_id);
-  LayerImpl* scroll_layer = layer_list_->LayerById(scroll_layer_id);
+  LayerImpl* clip_layer = LayerById(clip_layer_id);
+  LayerImpl* scroll_layer = LayerById(scroll_layer_id);
 
   if (!clip_layer || !scroll_layer)
     return;
@@ -238,11 +235,11 @@ void LayerTreeImpl::SetRootLayer(scoped_ptr<LayerImpl> layer) {
 }
 
 LayerImpl* LayerTreeImpl::InnerViewportScrollLayer() const {
-  return layer_list_->LayerById(inner_viewport_scroll_layer_id_);
+  return LayerById(inner_viewport_scroll_layer_id_);
 }
 
 LayerImpl* LayerTreeImpl::OuterViewportScrollLayer() const {
-  return layer_list_->LayerById(outer_viewport_scroll_layer_id_);
+  return LayerById(outer_viewport_scroll_layer_id_);
 }
 
 gfx::ScrollOffset LayerTreeImpl::TotalScrollOffset() const {
@@ -371,12 +368,56 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
 
   if (hud_layer())
     target_tree->set_hud_layer(static_cast<HeadsUpDisplayLayerImpl*>(
-        LayerTreeHostCommon::FindLayerInSubtree(target_tree->root_layer(),
-                                                hud_layer()->id())));
+        LayerTreeHostCommon::FindLayerInSubtree(
+            target_tree->root_layer(), hud_layer()->id())));
   else
     target_tree->set_hud_layer(NULL);
 
   target_tree->has_ever_been_drawn_ = false;
+}
+void LayerTreeImpl::AddToElementMap(LayerImpl* layer) {
+  if (!layer->element_id() || !layer->mutable_properties())
+    return;
+
+  TRACE_EVENT2(TRACE_DISABLED_BY_DEFAULT("compositor-worker"),
+               "LayerTreeImpl::AddToElementMap", "element_id",
+               layer->element_id(), "layer_id", layer->id());
+
+  ElementLayers& layers = element_layers_map_[layer->element_id()];
+  if ((!layers.main || layer->IsActive()) && !layer->scrollable()) {
+    layers.main = layer;
+  } else if ((!layers.scroll || layer->IsActive()) && layer->scrollable()) {
+    TRACE_EVENT2("compositor-worker", "LayerTreeImpl::AddToElementMap scroll",
+                 "element_id", layer->element_id(), "layer_id", layer->id());
+    layers.scroll = layer;
+  }
+}
+
+void LayerTreeImpl::RemoveFromElementMap(LayerImpl* layer) {
+  if (!layer->element_id())
+    return;
+
+  TRACE_EVENT2(TRACE_DISABLED_BY_DEFAULT("compositor-worker"),
+               "LayerTreeImpl::RemoveFromElementMap", "element_id",
+               layer->element_id(), "layer_id", layer->id());
+
+  ElementLayers& layers = element_layers_map_[layer->element_id()];
+  if (!layer->scrollable())
+    layers.main = nullptr;
+  if (layer->scrollable())
+    layers.scroll = nullptr;
+
+  if (!layers.main && !layers.scroll)
+    element_layers_map_.erase(layer->element_id());
+}
+
+LayerTreeImpl::ElementLayers LayerTreeImpl::GetMutableLayers(
+    uint64_t element_id) {
+  auto iter = element_layers_map_.find(element_id);
+  if (iter == element_layers_map_.end())
+    return ElementLayers();
+
+  return iter->second;
 }
 
 LayerImpl* LayerTreeImpl::InnerViewportContainerLayer() const {
@@ -395,8 +436,7 @@ LayerImpl* LayerTreeImpl::CurrentlyScrollingLayer() const {
   DCHECK(IsActiveTree());
   const ScrollNode* scroll_node =
       property_trees_.scroll_tree.CurrentlyScrollingNode();
-  return layer_list_->LayerById(scroll_node ? scroll_node->owner_id
-                                            : Layer::INVALID_ID);
+  return LayerById(scroll_node ? scroll_node->owner_id : Layer::INVALID_ID);
 }
 
 int LayerTreeImpl::LastScrolledLayerId() const {
@@ -652,13 +692,6 @@ void LayerTreeImpl::ClearViewportLayers() {
   outer_viewport_scroll_layer_id_ = Layer::INVALID_ID;
 }
 
-LayerImpl* LayerTreeImpl::OverscrollElasticityLayer() {
-  return layer_list_->LayerById(overscroll_elasticity_layer_id_);
-}
-LayerImpl* LayerTreeImpl::PageScaleLayer() {
-  return layer_list_->LayerById(page_scale_layer_id_);
-}
-
 #if DCHECK_IS_ON()
 int SanityCheckCopyRequestCounts(LayerImpl* layer) {
   int count = layer->HasCopyRequest() ? 1 : 0;
@@ -852,8 +885,8 @@ bool LayerTreeImpl::UpdateDrawProperties(bool update_lcd_text) {
                      "layers_updated_count", layers_updated_count);
   }
 
-  DCHECK(!needs_update_draw_properties_)
-      << "CalcDrawProperties should not set_needs_update_draw_properties()";
+  DCHECK(!needs_update_draw_properties_) <<
+      "CalcDrawProperties should not set_needs_update_draw_properties()";
   return true;
 }
 
@@ -899,6 +932,33 @@ gfx::SizeF LayerTreeImpl::ScrollableSize() const {
 
   content_size.SetToMax(viewport_size);
   return content_size;
+}
+
+LayerImpl* LayerTreeImpl::LayerById(int id) const {
+  LayerIdMap::const_iterator iter = layer_id_map_.find(id);
+  return iter != layer_id_map_.end() ? iter->second : NULL;
+}
+
+void LayerTreeImpl::RegisterLayer(LayerImpl* layer) {
+  DCHECK(!LayerById(layer->id()));
+  layer_id_map_[layer->id()] = layer;
+  if (layer_tree_host_impl_->animation_host())
+    layer_tree_host_impl_->animation_host()->RegisterLayer(
+        layer->id(),
+        IsActiveTree() ? LayerTreeType::ACTIVE : LayerTreeType::PENDING);
+}
+
+void LayerTreeImpl::UnregisterLayer(LayerImpl* layer) {
+  DCHECK(LayerById(layer->id()));
+  if (layer_tree_host_impl_->animation_host())
+    layer_tree_host_impl_->animation_host()->UnregisterLayer(
+        layer->id(),
+        IsActiveTree() ? LayerTreeType::ACTIVE : LayerTreeType::PENDING);
+  layer_id_map_.erase(layer->id());
+}
+
+size_t LayerTreeImpl::NumLayers() {
+  return layer_id_map_.size();
 }
 
 void LayerTreeImpl::DidBecomeActive() {
@@ -1004,6 +1064,20 @@ bool LayerTreeImpl::IsSyncTree() const {
   return layer_tree_host_impl_->sync_tree() == this;
 }
 
+LayerImpl* LayerTreeImpl::FindActiveTreeLayerById(int id) {
+  LayerTreeImpl* tree = layer_tree_host_impl_->active_tree();
+  if (!tree)
+    return NULL;
+  return tree->LayerById(id);
+}
+
+LayerImpl* LayerTreeImpl::FindPendingTreeLayerById(int id) {
+  LayerTreeImpl* tree = layer_tree_host_impl_->pending_tree();
+  if (!tree)
+    return NULL;
+  return tree->LayerById(id);
+}
+
 bool LayerTreeImpl::PinchGestureActive() const {
   return layer_tree_host_impl_->pinch_gesture_active();
 }
@@ -1074,6 +1148,10 @@ bool LayerTreeImpl::create_low_res_tiling() const {
 
 void LayerTreeImpl::SetNeedsRedraw() {
   layer_tree_host_impl_->SetNeedsRedraw();
+}
+
+AnimationRegistrar* LayerTreeImpl::GetAnimationRegistrar() const {
+  return layer_tree_host_impl_->animation_registrar();
 }
 
 void LayerTreeImpl::GetAllPrioritizedTilesForTracing(
@@ -1274,7 +1352,7 @@ ScrollbarSet LayerTreeImpl::ScrollbarsFor(int scroll_layer_id) const {
   ScrollbarSet scrollbars;
   auto scrollbar_range = scrollbar_map_.equal_range(scroll_layer_id);
   for (auto i = scrollbar_range.first; i != scrollbar_range.second; ++i)
-    scrollbars.insert(layer_list_->LayerById(i->second)->ToScrollbarLayer());
+    scrollbars.insert(LayerById(i->second)->ToScrollbarLayer());
   return scrollbars;
 }
 
@@ -1316,9 +1394,10 @@ void LayerTreeImpl::RemoveLayerWithCopyOutputRequest(LayerImpl* layer) {
   // they are aborted if not serviced during draw.
   DCHECK(IsActiveTree());
 
-  std::vector<LayerImpl*>::iterator it =
-      std::find(layers_with_copy_output_request_.begin(),
-                layers_with_copy_output_request_.end(), layer);
+  std::vector<LayerImpl*>::iterator it = std::find(
+      layers_with_copy_output_request_.begin(),
+      layers_with_copy_output_request_.end(),
+      layer);
   DCHECK(it != layers_with_copy_output_request_.end());
   layers_with_copy_output_request_.erase(it);
 
@@ -1351,8 +1430,8 @@ const std::vector<LayerImpl*>& LayerTreeImpl::LayersWithCopyOutputRequest()
   return layers_with_copy_output_request_;
 }
 
-template <typename LayerListType>
-static inline bool LayerClipsSubtree(LayerListType* layer) {
+template <typename LayerType>
+static inline bool LayerClipsSubtree(LayerType* layer) {
   return layer->masks_to_bounds() || layer->mask_layer();
 }
 
@@ -1466,7 +1545,7 @@ static bool PointIsClippedByAncestorClipNode(
         return true;
     }
     const LayerImpl* clip_node_owner =
-        layer->layer_tree_impl()->list()->LayerById(clip_node->owner_id);
+        layer->layer_tree_impl()->LayerById(clip_node->owner_id);
     if (clip_node_owner->render_surface() &&
         !PointHitsRect(
             screen_space_point,
@@ -1577,7 +1656,8 @@ static bool ScrollsAnyDrawnRenderSurfaceLayerListMember(LayerImpl* layer) {
     return false;
   for (std::set<LayerImpl*>::const_iterator it =
            layer->scroll_children()->begin();
-       it != layer->scroll_children()->end(); ++it) {
+       it != layer->scroll_children()->end();
+       ++it) {
     if ((*it)->layer_or_descendant_is_drawn())
       return true;
   }
@@ -1737,9 +1817,8 @@ void LayerTreeImpl::GetViewportSelection(ViewportSelection* selection) {
   DCHECK(selection);
 
   selection->start = ComputeViewportSelectionBound(
-      selection_.start, selection_.start.layer_id
-                            ? layer_list_->LayerById(selection_.start.layer_id)
-                            : NULL,
+      selection_.start,
+      selection_.start.layer_id ? LayerById(selection_.start.layer_id) : NULL,
       device_scale_factor(), property_trees_.transform_tree,
       property_trees_.clip_tree);
   selection->is_editable = selection_.is_editable;
@@ -1749,9 +1828,8 @@ void LayerTreeImpl::GetViewportSelection(ViewportSelection* selection) {
     selection->end = selection->start;
   } else {
     selection->end = ComputeViewportSelectionBound(
-        selection_.end, selection_.end.layer_id
-                            ? layer_list_->LayerById(selection_.end.layer_id)
-                            : NULL,
+        selection_.end,
+        selection_.end.layer_id ? LayerById(selection_.end.layer_id) : NULL,
         device_scale_factor(), property_trees_.transform_tree,
         property_trees_.clip_tree);
   }
@@ -1779,67 +1857,67 @@ void LayerTreeImpl::SetPendingPageScaleAnimation(
 }
 
 scoped_ptr<PendingPageScaleAnimation>
-LayerTreeImpl::TakePendingPageScaleAnimation() {
+    LayerTreeImpl::TakePendingPageScaleAnimation() {
   return std::move(pending_page_scale_animation_);
 }
 
 bool LayerTreeImpl::IsAnimatingFilterProperty(const LayerImpl* layer) const {
-  LayerListType list_type =
-      IsActiveTree() ? LayerListType::ACTIVE : LayerListType::PENDING;
+  LayerTreeType tree_type =
+      IsActiveTree() ? LayerTreeType::ACTIVE : LayerTreeType::PENDING;
   return layer_tree_host_impl_->animation_host()
              ? layer_tree_host_impl_->animation_host()
-                   ->IsAnimatingFilterProperty(layer->id(), list_type)
+                   ->IsAnimatingFilterProperty(layer->id(), tree_type)
              : false;
 }
 
 bool LayerTreeImpl::IsAnimatingOpacityProperty(const LayerImpl* layer) const {
-  LayerListType list_type =
-      IsActiveTree() ? LayerListType::ACTIVE : LayerListType::PENDING;
+  LayerTreeType tree_type =
+      IsActiveTree() ? LayerTreeType::ACTIVE : LayerTreeType::PENDING;
   return layer_tree_host_impl_->animation_host()
              ? layer_tree_host_impl_->animation_host()
-                   ->IsAnimatingOpacityProperty(layer->id(), list_type)
+                   ->IsAnimatingOpacityProperty(layer->id(), tree_type)
              : false;
 }
 
 bool LayerTreeImpl::IsAnimatingTransformProperty(const LayerImpl* layer) const {
-  LayerListType list_type =
-      IsActiveTree() ? LayerListType::ACTIVE : LayerListType::PENDING;
+  LayerTreeType tree_type =
+      IsActiveTree() ? LayerTreeType::ACTIVE : LayerTreeType::PENDING;
   return layer_tree_host_impl_->animation_host()
              ? layer_tree_host_impl_->animation_host()
-                   ->IsAnimatingTransformProperty(layer->id(), list_type)
+                   ->IsAnimatingTransformProperty(layer->id(), tree_type)
              : false;
 }
 
 bool LayerTreeImpl::HasPotentiallyRunningFilterAnimation(
     const LayerImpl* layer) const {
-  LayerListType list_type =
-      IsActiveTree() ? LayerListType::ACTIVE : LayerListType::PENDING;
+  LayerTreeType tree_type =
+      IsActiveTree() ? LayerTreeType::ACTIVE : LayerTreeType::PENDING;
   return layer_tree_host_impl_->animation_host()
              ? layer_tree_host_impl_->animation_host()
                    ->HasPotentiallyRunningFilterAnimation(layer->id(),
-                                                          list_type)
+                                                          tree_type)
              : false;
 }
 
 bool LayerTreeImpl::HasPotentiallyRunningOpacityAnimation(
     const LayerImpl* layer) const {
-  LayerListType list_type =
-      IsActiveTree() ? LayerListType::ACTIVE : LayerListType::PENDING;
+  LayerTreeType tree_type =
+      IsActiveTree() ? LayerTreeType::ACTIVE : LayerTreeType::PENDING;
   return layer_tree_host_impl_->animation_host()
              ? layer_tree_host_impl_->animation_host()
                    ->HasPotentiallyRunningOpacityAnimation(layer->id(),
-                                                           list_type)
+                                                           tree_type)
              : false;
 }
 
 bool LayerTreeImpl::HasPotentiallyRunningTransformAnimation(
     const LayerImpl* layer) const {
-  LayerListType list_type =
-      IsActiveTree() ? LayerListType::ACTIVE : LayerListType::PENDING;
+  LayerTreeType tree_type =
+      IsActiveTree() ? LayerTreeType::ACTIVE : LayerTreeType::PENDING;
   return layer_tree_host_impl_->animation_host()
              ? layer_tree_host_impl_->animation_host()
                    ->HasPotentiallyRunningTransformAnimation(layer->id(),
-                                                             list_type)
+                                                             tree_type)
              : false;
 }
 
@@ -1891,33 +1969,33 @@ bool LayerTreeImpl::AnimationsPreserveAxisAlignment(
 }
 
 bool LayerTreeImpl::HasOnlyTranslationTransforms(const LayerImpl* layer) const {
-  LayerListType list_type =
-      IsActiveTree() ? LayerListType::ACTIVE : LayerListType::PENDING;
+  LayerTreeType tree_type =
+      IsActiveTree() ? LayerTreeType::ACTIVE : LayerTreeType::PENDING;
   return layer_tree_host_impl_->animation_host()
              ? layer_tree_host_impl_->animation_host()
-                   ->HasOnlyTranslationTransforms(layer->id(), list_type)
+                   ->HasOnlyTranslationTransforms(layer->id(), tree_type)
              : true;
 }
 
 bool LayerTreeImpl::MaximumTargetScale(const LayerImpl* layer,
                                        float* max_scale) const {
   *max_scale = 0.f;
-  LayerListType list_type =
-      IsActiveTree() ? LayerListType::ACTIVE : LayerListType::PENDING;
+  LayerTreeType tree_type =
+      IsActiveTree() ? LayerTreeType::ACTIVE : LayerTreeType::PENDING;
   return layer_tree_host_impl_->animation_host()
              ? layer_tree_host_impl_->animation_host()->MaximumTargetScale(
-                   layer->id(), list_type, max_scale)
+                   layer->id(), tree_type, max_scale)
              : true;
 }
 
 bool LayerTreeImpl::AnimationStartScale(const LayerImpl* layer,
                                         float* start_scale) const {
   *start_scale = 0.f;
-  LayerListType list_type =
-      IsActiveTree() ? LayerListType::ACTIVE : LayerListType::PENDING;
+  LayerTreeType tree_type =
+      IsActiveTree() ? LayerTreeType::ACTIVE : LayerTreeType::PENDING;
   return layer_tree_host_impl_->animation_host()
              ? layer_tree_host_impl_->animation_host()->AnimationStartScale(
-                   layer->id(), list_type, start_scale)
+                   layer->id(), tree_type, start_scale)
              : true;
 }
 

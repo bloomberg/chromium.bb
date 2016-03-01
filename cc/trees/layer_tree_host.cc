@@ -1257,19 +1257,19 @@ void LayerTreeHost::RegisterLayer(Layer* layer) {
   DCHECK(!in_paint_layer_contents_);
   layer_id_map_[layer->id()] = layer;
   if (animation_host_)
-    animation_host_->RegisterLayer(layer->id(), LayerListType::ACTIVE);
+    animation_host_->RegisterLayer(layer->id(), LayerTreeType::ACTIVE);
 }
 
 void LayerTreeHost::UnregisterLayer(Layer* layer) {
   DCHECK(LayerById(layer->id()));
   DCHECK(!in_paint_layer_contents_);
   if (animation_host_)
-    animation_host_->UnregisterLayer(layer->id(), LayerListType::ACTIVE);
+    animation_host_->UnregisterLayer(layer->id(), LayerTreeType::ACTIVE);
   layer_id_map_.erase(layer->id());
 }
 
-bool LayerTreeHost::IsLayerInTree(int layer_id, LayerListType list_type) const {
-  return list_type == LayerListType::ACTIVE && LayerById(layer_id);
+bool LayerTreeHost::IsLayerInTree(int layer_id, LayerTreeType tree_type) const {
+  return tree_type == LayerTreeType::ACTIVE && LayerById(layer_id);
 }
 
 void LayerTreeHost::SetMutatorsNeedCommit() {
@@ -1281,7 +1281,7 @@ void LayerTreeHost::SetMutatorsNeedRebuildPropertyTrees() {
 }
 
 void LayerTreeHost::SetLayerFilterMutated(int layer_id,
-                                          LayerListType list_type,
+                                          LayerTreeType tree_type,
                                           const FilterOperations& filters) {
   LayerAnimationValueObserver* layer = LayerById(layer_id);
   DCHECK(layer);
@@ -1289,7 +1289,7 @@ void LayerTreeHost::SetLayerFilterMutated(int layer_id,
 }
 
 void LayerTreeHost::SetLayerOpacityMutated(int layer_id,
-                                           LayerListType list_type,
+                                           LayerTreeType tree_type,
                                            float opacity) {
   LayerAnimationValueObserver* layer = LayerById(layer_id);
   DCHECK(layer);
@@ -1297,7 +1297,7 @@ void LayerTreeHost::SetLayerOpacityMutated(int layer_id,
 }
 
 void LayerTreeHost::SetLayerTransformMutated(int layer_id,
-                                             LayerListType list_type,
+                                             LayerTreeType tree_type,
                                              const gfx::Transform& transform) {
   LayerAnimationValueObserver* layer = LayerById(layer_id);
   DCHECK(layer);
@@ -1306,7 +1306,7 @@ void LayerTreeHost::SetLayerTransformMutated(int layer_id,
 
 void LayerTreeHost::SetLayerScrollOffsetMutated(
     int layer_id,
-    LayerListType list_type,
+    LayerTreeType tree_type,
     const gfx::ScrollOffset& scroll_offset) {
   LayerAnimationValueObserver* layer = LayerById(layer_id);
   DCHECK(layer);
@@ -1315,7 +1315,7 @@ void LayerTreeHost::SetLayerScrollOffsetMutated(
 
 void LayerTreeHost::LayerTransformIsPotentiallyAnimatingChanged(
     int layer_id,
-    LayerListType list_type,
+    LayerTreeType tree_type,
     bool is_animating) {
   LayerAnimationValueObserver* layer = LayerById(layer_id);
   DCHECK(layer);
@@ -1339,21 +1339,21 @@ bool LayerTreeHost::ScrollOffsetAnimationWasInterrupted(
 bool LayerTreeHost::IsAnimatingFilterProperty(const Layer* layer) const {
   return animation_host_
              ? animation_host_->IsAnimatingFilterProperty(layer->id(),
-                                                          LayerListType::ACTIVE)
+                                                          LayerTreeType::ACTIVE)
              : false;
 }
 
 bool LayerTreeHost::IsAnimatingOpacityProperty(const Layer* layer) const {
   return animation_host_
              ? animation_host_->IsAnimatingOpacityProperty(
-                   layer->id(), LayerListType::ACTIVE)
+                   layer->id(), LayerTreeType::ACTIVE)
              : false;
 }
 
 bool LayerTreeHost::IsAnimatingTransformProperty(const Layer* layer) const {
   return animation_host_
              ? animation_host_->IsAnimatingTransformProperty(
-                   layer->id(), LayerListType::ACTIVE)
+                   layer->id(), LayerTreeType::ACTIVE)
              : false;
 }
 
@@ -1361,7 +1361,7 @@ bool LayerTreeHost::HasPotentiallyRunningFilterAnimation(
     const Layer* layer) const {
   return animation_host_
              ? animation_host_->HasPotentiallyRunningFilterAnimation(
-                   layer->id(), LayerListType::ACTIVE)
+                   layer->id(), LayerTreeType::ACTIVE)
              : false;
 }
 
@@ -1369,7 +1369,7 @@ bool LayerTreeHost::HasPotentiallyRunningOpacityAnimation(
     const Layer* layer) const {
   return animation_host_
              ? animation_host_->HasPotentiallyRunningOpacityAnimation(
-                   layer->id(), LayerListType::ACTIVE)
+                   layer->id(), LayerTreeType::ACTIVE)
              : false;
 }
 
@@ -1377,14 +1377,14 @@ bool LayerTreeHost::HasPotentiallyRunningTransformAnimation(
     const Layer* layer) const {
   return animation_host_
              ? animation_host_->HasPotentiallyRunningTransformAnimation(
-                   layer->id(), LayerListType::ACTIVE)
+                   layer->id(), LayerTreeType::ACTIVE)
              : false;
 }
 
 bool LayerTreeHost::HasOnlyTranslationTransforms(const Layer* layer) const {
   return animation_host_
              ? animation_host_->HasOnlyTranslationTransforms(
-                   layer->id(), LayerListType::ACTIVE)
+                   layer->id(), LayerTreeType::ACTIVE)
              : false;
 }
 
@@ -1392,7 +1392,7 @@ bool LayerTreeHost::MaximumTargetScale(const Layer* layer,
                                        float* max_scale) const {
   return animation_host_
              ? animation_host_->MaximumTargetScale(
-                   layer->id(), LayerListType::ACTIVE, max_scale)
+                   layer->id(), LayerTreeType::ACTIVE, max_scale)
              : false;
 }
 
@@ -1400,7 +1400,7 @@ bool LayerTreeHost::AnimationStartScale(const Layer* layer,
                                         float* start_scale) const {
   return animation_host_
              ? animation_host_->AnimationStartScale(
-                   layer->id(), LayerListType::ACTIVE, start_scale)
+                   layer->id(), LayerTreeType::ACTIVE, start_scale)
              : false;
 }
 

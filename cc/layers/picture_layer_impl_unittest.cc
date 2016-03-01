@@ -155,7 +155,7 @@ class PictureLayerImplTest : public testing::Test {
     old_pending_layer_ = pending_layer_;
     pending_layer_ = nullptr;
     active_layer_ = static_cast<FakePictureLayerImpl*>(
-        host_impl_.active_tree()->list()->LayerById(id_));
+        host_impl_.active_tree()->LayerById(id_));
 
     bool update_lcd_text = false;
     host_impl_.active_tree()->UpdateDrawProperties(update_lcd_text);
@@ -258,7 +258,7 @@ class PictureLayerImplTest : public testing::Test {
         Layer::INVALID_ID);
 
     pending_layer_ = static_cast<FakePictureLayerImpl*>(
-        host_impl_.pending_tree()->list()->LayerById(id_));
+        host_impl_.pending_tree()->LayerById(id_));
 
     // Add tilings/tiles for the layer.
     bool update_lcd_text = false;
@@ -2240,7 +2240,7 @@ TEST_F(PictureLayerImplTest, ActivateUninitializedLayer) {
   pending_tree->SetRootLayer(std::move(pending_layer));
 
   pending_layer_ = static_cast<FakePictureLayerImpl*>(
-      host_impl_.pending_tree()->list()->LayerById(id_));
+      host_impl_.pending_tree()->LayerById(id_));
 
   // Set some state on the pending layer, make sure it is not clobbered
   // by a sync from the active layer.  This could happen because if the
@@ -2252,7 +2252,7 @@ TEST_F(PictureLayerImplTest, ActivateUninitializedLayer) {
   host_impl_.ActivateSyncTree();
 
   active_layer_ = static_cast<FakePictureLayerImpl*>(
-      host_impl_.active_tree()->list()->LayerById(id_));
+      host_impl_.active_tree()->LayerById(id_));
 
   EXPECT_EQ(0u, active_layer_->num_tilings());
   EXPECT_EQ(raster_page_scale, active_layer_->raster_page_scale());

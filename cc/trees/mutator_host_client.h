@@ -15,31 +15,31 @@ namespace cc {
 class FilterOperations;
 class Layer;
 
-enum class LayerListType { ACTIVE, PENDING };
+enum class LayerTreeType { ACTIVE, PENDING };
 
 class MutatorHostClient {
  public:
-  virtual bool IsLayerInTree(int layer_id, LayerListType list_type) const = 0;
+  virtual bool IsLayerInTree(int layer_id, LayerTreeType tree_type) const = 0;
   virtual void SetMutatorsNeedCommit() = 0;
   virtual void SetMutatorsNeedRebuildPropertyTrees() = 0;
 
   virtual void SetLayerFilterMutated(int layer_id,
-                                     LayerListType list_type,
+                                     LayerTreeType tree_type,
                                      const FilterOperations& filters) = 0;
   virtual void SetLayerOpacityMutated(int layer_id,
-                                      LayerListType list_type,
+                                      LayerTreeType tree_type,
                                       float opacity) = 0;
   virtual void SetLayerTransformMutated(int layer_id,
-                                        LayerListType list_type,
+                                        LayerTreeType tree_type,
                                         const gfx::Transform& transform) = 0;
   virtual void SetLayerScrollOffsetMutated(
       int layer_id,
-      LayerListType list_type,
+      LayerTreeType tree_type,
       const gfx::ScrollOffset& scroll_offset) = 0;
 
   virtual void LayerTransformIsPotentiallyAnimatingChanged(
       int layer_id,
-      LayerListType list_type,
+      LayerTreeType tree_type,
       bool is_animating) = 0;
 
   virtual void ScrollOffsetAnimationFinished() = 0;

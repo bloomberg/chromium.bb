@@ -74,30 +74,30 @@ class TestHostClient : public MutatorHostClient {
 
   void ClearMutatedProperties();
 
-  bool IsLayerInTree(int layer_id, LayerListType list_type) const override;
+  bool IsLayerInTree(int layer_id, LayerTreeType tree_type) const override;
 
   void SetMutatorsNeedCommit() override;
   void SetMutatorsNeedRebuildPropertyTrees() override;
 
   void SetLayerFilterMutated(int layer_id,
-                             LayerListType list_type,
+                             LayerTreeType tree_type,
                              const FilterOperations& filters) override;
 
   void SetLayerOpacityMutated(int layer_id,
-                              LayerListType list_type,
+                              LayerTreeType tree_type,
                               float opacity) override;
 
   void SetLayerTransformMutated(int layer_id,
-                                LayerListType list_type,
+                                LayerTreeType tree_type,
                                 const gfx::Transform& transform) override;
 
   void SetLayerScrollOffsetMutated(
       int layer_id,
-      LayerListType list_type,
+      LayerTreeType tree_type,
       const gfx::ScrollOffset& scroll_offset) override;
 
   void LayerTransformIsPotentiallyAnimatingChanged(int layer_id,
-                                                   LayerListType list_type,
+                                                   LayerTreeType tree_type,
                                                    bool is_animating) override {
   }
 
@@ -107,8 +107,8 @@ class TestHostClient : public MutatorHostClient {
   bool mutators_need_commit() const { return mutators_need_commit_; }
   void set_mutators_need_commit(bool need) { mutators_need_commit_ = need; }
 
-  void RegisterLayer(int layer_id, LayerListType list_type);
-  void UnregisterLayer(int layer_id, LayerListType list_type);
+  void RegisterLayer(int layer_id, LayerTreeType tree_type);
+  void UnregisterLayer(int layer_id, LayerTreeType tree_type);
 
   AnimationHost* host() {
     DCHECK(host_);
@@ -116,21 +116,21 @@ class TestHostClient : public MutatorHostClient {
   }
 
   bool IsPropertyMutated(int layer_id,
-                         LayerListType list_type,
+                         LayerTreeType tree_type,
                          TargetProperty::Type property) const;
 
   void ExpectFilterPropertyMutated(int layer_id,
-                                   LayerListType list_type,
+                                   LayerTreeType tree_type,
                                    float brightness) const;
   void ExpectOpacityPropertyMutated(int layer_id,
-                                    LayerListType list_type,
+                                    LayerTreeType tree_type,
                                     float opacity) const;
   void ExpectTransformPropertyMutated(int layer_id,
-                                      LayerListType list_type,
+                                      LayerTreeType tree_type,
                                       int transform_x,
                                       int transform_y) const;
 
-  TestLayer* FindTestLayer(int layer_id, LayerListType list_type) const;
+  TestLayer* FindTestLayer(int layer_id, LayerTreeType tree_type) const;
 
  private:
   scoped_ptr<AnimationHost> host_;
