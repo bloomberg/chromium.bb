@@ -387,6 +387,19 @@ InspectorTest.FakeFileReader.prototype = {
     }
 };
 
+InspectorTest.loadTimeline = function(timelineData)
+{
+    var timeline = WebInspector.panels.timeline;
+
+    function createFileReader(file, delegate)
+    {
+        return new InspectorTest.FakeFileReader(timelineData, delegate, timeline._saveToFile.bind(timeline));
+    }
+
+    InspectorTest.override(WebInspector.TimelineLoader, "_createFileReader", createFileReader);
+    WebInspector.TimelineLoader.loadFromFile(InspectorTest.timelineModel(), {}, new WebInspector.Progress());
+}
+
 };
 
 function generateFrames(count, callback)
