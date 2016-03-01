@@ -10,13 +10,13 @@
   # bots all using the 'gn_release_bot' config).
   'configs': {
     'android_cast_gyp_debug_static_bot': ['android', 'cast', 'gyp', 'debug_static_bot'],
-    'android_clang_asan_gyp_debug_bot': ['android', 'clang', 'asan', 'gyp', 'debug_bot'],\
-    'android_gn_debug_bot': ['android', 'gn', 'debug_bot'],
-    'android_gn_debug_static_bot': ['android', 'gn', 'debug_static_bot'],
-    'android_gn_debug_static_bot_arm64': ['android', 'gn', 'debug_static_bot', 'arm64'],
-    'android_gn_debug_static_bot_mipsel': ['android', 'gn', 'debug_static_bot', 'mipsel'],
-    'android_gn_debug_static_bot_x64': ['android', 'gn', 'debug_static_bot', 'x64'],
-    'android_gn_debug_static_bot_x86': ['android', 'gn', 'debug_static_bot', 'x86'],
+    'android_clang_asan_gyp_debug_bot': ['android', 'clang', 'asan', 'gyp', 'debug_bot'],
+    'android_gn_debug_bot': ['android', 'chrome_with_codecs', 'gn', 'debug_bot'],
+    'android_gn_debug_static_bot': ['android', 'chrome_with_codecs', 'gn', 'debug_static_bot'],
+    'android_gn_debug_static_bot_arm64': ['android', 'chrome_with_codecs', 'gn', 'debug_static_bot', 'arm64'],
+    'android_gn_debug_static_bot_mipsel': ['android', 'chrome_with_codecs', 'gn', 'debug_static_bot', 'mipsel'],
+    'android_gn_debug_static_bot_x64': ['android', 'chrome_with_codecs', 'gn', 'debug_static_bot', 'x64'],
+    'android_gn_debug_static_bot_x86': ['android', 'chrome_with_codecs', 'gn', 'debug_static_bot', 'x86'],
     'android_gn_release_bot': ['android', 'gn', 'release_bot'],
     'android_gn_release_trybot': ['android', 'gn', 'release_trybot'],
     'android_gyp_debug_static_bot': ['android', 'gyp', 'debug_static_bot'],
@@ -90,7 +90,7 @@
     'noswarming_gyp_release_bot_mac_strip': ['noswarming', 'gyp', 'release_bot', 'mac_strip'],
     'noswarming_gyp_release_bot_x86': ['noswarming', 'gyp', 'release_bot', 'x86'],
 
-    'swarming_android_gn_release_bot_minimal_symbols': ['swarming', 'android', 'gn', 'release_bot_minimal_symbols'],
+    'swarming_android_gn_release_bot_minimal_symbols': ['swarming', 'android', 'chrome_with_codecs', 'gn', 'release_bot_minimal_symbols'],
     'swarming_asan_lsan_gyp_release_trybot': ['swarming', 'asan', 'lsan', 'release_trybot'],
     'swarming_msan_gyp_release_trybot': ['swarming', 'chromeos', 'msan', 'gyp', 'release_trybot'],
     'swarming_deterministic_gyp_release_bot': ['swarming', 'deterministic', 'gyp', 'release_bot'],
@@ -139,7 +139,6 @@
     'swarming_tsan_gyp_release_trybot': ['swarming', 'disable_nacl', 'tsan', 'gyp', 'release_trybot'],
 
     # Configurations that build with proprietary codecs enabled.
-    'android_gn_debug_bot_chrome_with_codecs': ['android', 'gn', 'debug_bot', 'chrome_with_codecs'],
     'android_gn_release_bot_chrome_with_codecs': ['android', 'gn', 'release_bot', 'chrome_with_codecs'],
     'gn_debug_bot_minimal_symbols_chrome_with_codecs': ['gn', 'debug_bot_minimal_symbols', 'chrome_with_codecs'],
     'gn_debug_static_bot_chrome_with_codecs': ['gn', 'debug_static_bot', 'chrome_with_codecs'],
@@ -670,7 +669,7 @@
     },
     'chromium.webrtc.fyi': {
       'Android GN': 'android_gn_release_bot_chrome_with_codecs',
-      'Android GN (dbg)': 'android_gn_debug_bot_chrome_with_codecs',
+      'Android GN (dbg)': 'android_gn_debug_bot',
       'Linux Builder': 'gn_release_bot_chrome_with_codecs',
       'Mac GN': 'gn_release_bot_chrome_with_codecs',
       'Mac GN (dbg)': 'gn_debug_static_bot_chrome_with_codecs',
