@@ -31,13 +31,14 @@ NTPSnippet::~NTPSnippet() {}
 scoped_ptr<NTPSnippet> NTPSnippet::CreateFromDictionary(
     const base::DictionaryValue& dict) {
   // Need at least the url.
-  std::string url;
-  if (!dict.GetString("url", &url))
+  std::string url_str;
+  if (!dict.GetString("url", &url_str))
+    return nullptr;
+  GURL url(url_str);
+  if (!url.is_valid())
     return nullptr;
 
-  // TODO(treib,noyau): Need to check that the URL is valid first, or remove
-  // the DCHECK in the constructor.
-  scoped_ptr<NTPSnippet> snippet(new NTPSnippet(GURL(url)));
+  scoped_ptr<NTPSnippet> snippet(new NTPSnippet(url));
 
   std::string site_title;
   if (dict.GetString(kSiteTitle, &site_title))
@@ -59,7 +60,11 @@ scoped_ptr<NTPSnippet> NTPSnippet::CreateFromDictionary(
     snippet->set_publish_date(base::Time::UnixEpoch() +
                               base::TimeDelta::FromSeconds(creation_timestamp));
   }
-  // TODO: Dates in json?
+  int expiry_timestamp;
+  if (dict.GetInteger(kExpiryDate, &expiry_timestamp)) {
+    snippet->set_expiry_date(base::Time::UnixEpoch() +
+                             base::TimeDelta::FromSeconds(expiry_timestamp));
+  }
 
   return snippet;
 }

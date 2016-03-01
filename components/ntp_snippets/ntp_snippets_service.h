@@ -14,6 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/sequenced_task_runner.h"
+#include "base/timer/timer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/ntp_snippets/inner_iterator.h"
 #include "components/ntp_snippets/ntp_snippet.h"
@@ -110,6 +111,8 @@ class NTPSnippetsService : public KeyedService, NTPSnippetsFetcher::Observer {
   void LoadFromPrefs();
   void StoreToPrefs();
 
+  void RemoveExpiredSnippets();
+
   PrefService* pref_service_;
 
   // True if the suggestions are loaded.
@@ -130,12 +133,15 @@ class NTPSnippetsService : public KeyedService, NTPSnippetsFetcher::Observer {
   // Scheduler for fetching snippets. Not owned.
   NTPSnippetsScheduler* scheduler_;
 
-  // The snippets fetcher
+  // The snippets fetcher.
   scoped_ptr<NTPSnippetsFetcher> snippets_fetcher_;
 
-  // The callback from the snippets fetcher
+  // The subscription to the snippets fetcher.
   scoped_ptr<NTPSnippetsFetcher::SnippetsAvailableCallbackList::Subscription>
       snippets_fetcher_callback_;
+
+  // Timer that calls us back when the next snippet expires.
+  base::OneShotTimer expiry_timer_;
 
   base::WeakPtrFactory<NTPSnippetsService> weak_ptr_factory_;
 

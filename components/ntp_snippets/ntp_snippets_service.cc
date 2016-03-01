@@ -148,6 +148,15 @@ bool NTPSnippetsService::LoadFromJSONList(const base::ListValue& list) {
     if (!snippet)
       return false;
 
+    // If the snippet has no publish/expiry dates, fill in defaults.
+    if (snippet->publish_date().is_null())
+      snippet->set_publish_date(base::Time::Now());
+    if (snippet->expiry_date().is_null()) {
+      snippet->set_expiry_date(
+          snippet->publish_date() +
+          base::TimeDelta::FromSeconds(2 * kDefaultFetchingIntervalSeconds));
+    }
+
     // Check if we already have a snippet with the same URL. If so, replace it
     // rather than adding a duplicate.
     const GURL& url = snippet->url();
@@ -162,8 +171,10 @@ bool NTPSnippetsService::LoadFromJSONList(const base::ListValue& list) {
   }
   loaded_ = true;
 
-  FOR_EACH_OBSERVER(NTPSnippetsServiceObserver, observers_,
-                    NTPSnippetsServiceLoaded(this));
+  // Immediately remove any already-expired snippets. This will also notify our
+  // observers and schedule the expiry timer.
+  RemoveExpiredSnippets();
+
   return true;
 }
 
@@ -186,6 +197,33 @@ void NTPSnippetsService::StoreToPrefs() {
     list.Append(std::move(dict));
   }
   pref_service_->Set(prefs::kSnippets, list);
+}
+
+void NTPSnippetsService::RemoveExpiredSnippets() {
+  base::Time expiry = base::Time::Now();
+  snippets_.erase(
+      std::remove_if(snippets_.begin(), snippets_.end(),
+                     [&expiry](const scoped_ptr<NTPSnippet>& snippet) {
+                       return snippet->expiry_date() <= expiry;
+                     }),
+      snippets_.end());
+
+  FOR_EACH_OBSERVER(NTPSnippetsServiceObserver, observers_,
+                    NTPSnippetsServiceLoaded(this));
+
+  // If there are any snippets left, schedule a timer for the next expiry.
+  if (snippets_.empty())
+    return;
+
+  base::Time next_expiry = base::Time::Max();
+  for (const auto& snippet : snippets_) {
+    if (snippet->expiry_date() < next_expiry)
+      next_expiry = snippet->expiry_date();
+  }
+  DCHECK_GT(next_expiry, expiry);
+  expiry_timer_.Start(FROM_HERE, next_expiry - expiry,
+                      base::Bind(&NTPSnippetsService::RemoveExpiredSnippets,
+                                 base::Unretained(this)));
 }
 
 }  // namespace ntp_snippets

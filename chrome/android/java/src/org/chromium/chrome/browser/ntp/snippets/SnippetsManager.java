@@ -105,6 +105,7 @@ public class SnippetsManager {
 
             @Override
             protected Drawable doInBackground(String... params) {
+                if (params[0].isEmpty()) return null;
                 InputStream is = null;
                 try {
                     is = (InputStream) new URL(params[0]).getContent();
