@@ -1,2 +1,5 @@
-ALERT: function testCallback() { [native code] }
+PASS msg.data is "loaded"
+PASS successfullyParsed is true
+
+TEST COMPLETE
 

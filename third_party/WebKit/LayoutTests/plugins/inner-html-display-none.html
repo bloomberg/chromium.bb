@@ -1,29 +1,25 @@
 <html>
 <head>
+<script src="../resources/js-test.js"></script>
 <script>
-   if (window.testRunner) {
-      testRunner.dumpAsText();
-      testRunner.waitUntilDone();
-   }
+var jsTestIsAsync = true;
+var msg;
 
-   function printResults()
-   {
-      alert(document.getElementById("plugin").testCallback);
-
-      if (window.testRunner)
-          testRunner.notifyDone();
-   }
-
-   function setPlugin()
-   {
-      var pluginDiv = document.getElementById("pluginDiv");
-      pluginDiv.style.display = 'inline';
-      pluginDiv.innerHTML = '<object id="plugin" width="300" height="300" type="application/x-webkit-test-netscape"/>';
-      setTimeout("printResults()", 1);
-   }
+function setPlugin()
+{
+  var pluginDiv = document.querySelector("#pluginDiv");
+  pluginDiv.style.display = 'inline';
+  pluginDiv.innerHTML = '<object id="plugin" width="300" height="300" type="application/x-blink-test-plugin"/>';
+  document.querySelector('object').addEventListener('message', function (message)
+  {
+    msg = message;
+    shouldBeEqualToString('msg.data', 'loaded');
+    finishJSTest();
+  });
+}
 </script>
 </head>
-<body onload="setPlugin();">
-   <div id="pluginDiv" style="display: none;"></div>
+<body onload="setPlugin()">
+<div id="pluginDiv" style="display: none;"></div>
 </body>
 </html>
