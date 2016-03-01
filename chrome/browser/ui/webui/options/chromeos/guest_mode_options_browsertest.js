@@ -41,8 +41,9 @@ GuestModeOptionsUIBrowserTest.prototype = {
 
 /**
  * Test sections that should be hidden in guest mode.
+ * TODO(michaelpg): Debug flakiness: crbug.com/591154.
  */
-TEST_F('GuestModeOptionsUIBrowserTest', 'testSections', function() {
+TEST_F('GuestModeOptionsUIBrowserTest', 'DISABLED_testSections', function() {
   this.expectHidden($('startup-section'));
   this.expectHidden($('appearance-section'));
   this.expectHidden($('andorid-apps-section'));
@@ -53,8 +54,9 @@ TEST_F('GuestModeOptionsUIBrowserTest', 'testSections', function() {
 
 /**
  * Test controls that should be disabled in guest mode.
+ * TODO(michaelpg): Debug flakiness: crbug.com/591154.
  */
-TEST_F('GuestModeOptionsUIBrowserTest', 'testControls', function() {
+TEST_F('GuestModeOptionsUIBrowserTest', 'DISABLED_testControls', function() {
   // Appearance section.
   var setWallpaper = $('set-wallpaper');
   expectTrue(setWallpaper.disabled);
