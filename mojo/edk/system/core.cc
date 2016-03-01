@@ -617,8 +617,8 @@ MojoResult Core::CreateSharedBuffer(
     return result;
 
   scoped_refptr<SharedBufferDispatcher> dispatcher;
-  result =
-      SharedBufferDispatcher::Create(validated_options, num_bytes, &dispatcher);
+  result = SharedBufferDispatcher::Create(
+      validated_options, GetNodeController(), num_bytes, &dispatcher);
   if (result != MOJO_RESULT_OK) {
     DCHECK(!dispatcher);
     return result;

@@ -20,6 +20,7 @@
 namespace mojo {
 
 namespace edk {
+class NodeController;
 class PlatformSupport;
 
 class MOJO_SYSTEM_IMPL_EXPORT SharedBufferDispatcher final : public Dispatcher {
@@ -44,6 +45,7 @@ class MOJO_SYSTEM_IMPL_EXPORT SharedBufferDispatcher final : public Dispatcher {
   // a MojoResult out parameter instead.
   static MojoResult Create(
       const MojoCreateSharedBufferOptions& validated_options,
+      NodeController* node_controller,
       uint64_t num_bytes,
       scoped_refptr<SharedBufferDispatcher>* result);
 

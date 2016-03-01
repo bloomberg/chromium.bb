@@ -14,6 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "mojo/edk/embedder/embedder_internal.h"
 #include "mojo/edk/system/configuration.h"
+#include "mojo/edk/system/node_controller.h"
 #include "mojo/edk/system/options_validation.h"
 #include "mojo/public/c/system/macros.h"
 
@@ -65,6 +66,7 @@ MojoResult SharedBufferDispatcher::ValidateCreateOptions(
 // static
 MojoResult SharedBufferDispatcher::Create(
     const MojoCreateSharedBufferOptions& /*validated_options*/,
+    NodeController* node_controller,
     uint64_t num_bytes,
     scoped_refptr<SharedBufferDispatcher>* result) {
   if (!num_bytes)
@@ -72,8 +74,14 @@ MojoResult SharedBufferDispatcher::Create(
   if (num_bytes > GetConfiguration().max_shared_memory_num_bytes)
     return MOJO_RESULT_RESOURCE_EXHAUSTED;
 
-  scoped_refptr<PlatformSharedBuffer> shared_buffer(
-      PlatformSharedBuffer::Create(static_cast<size_t>(num_bytes)));
+  scoped_refptr<PlatformSharedBuffer> shared_buffer;
+  if (node_controller) {
+    shared_buffer =
+        node_controller->CreateSharedBuffer(static_cast<size_t>(num_bytes));
+  } else {
+    shared_buffer =
+        PlatformSharedBuffer::Create(static_cast<size_t>(num_bytes));
+  }
   if (!shared_buffer)
     return MOJO_RESULT_RESOURCE_EXHAUSTED;
 
