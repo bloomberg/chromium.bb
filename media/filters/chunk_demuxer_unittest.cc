@@ -18,6 +18,7 @@
 #include "media/base/audio_decoder_config.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/decrypt_config.h"
+#include "media/base/media_tracks.h"
 #include "media/base/mock_demuxer_host.h"
 #include "media/base/mock_media_log.h"
 #include "media/base/test_data_util.h"
@@ -841,7 +842,7 @@ class ChunkDemuxerTest : public ::testing::Test {
     // it.
     if (stream_flags != 0) {
       ExpectInitMediaLogs(stream_flags);
-      EXPECT_CALL(*this, InitSegmentReceived());
+      EXPECT_CALL(*this, InitSegmentReceived(_));
     } else {
       // OnNewConfigs() requires at least one audio, video, or text track.
       EXPECT_MEDIA_LOG(StreamParsingFailed());
@@ -883,11 +884,11 @@ class ChunkDemuxerTest : public ::testing::Test {
     // incompatible with InSequence tests. Refactoring of the duration
     // set expectation to not be added during CreateInitDoneCB() could fix this.
     ExpectInitMediaLogs(audio_flags);
-    EXPECT_CALL(*this, InitSegmentReceived());
+    EXPECT_CALL(*this, InitSegmentReceived(_));
     AppendInitSegmentWithSourceId(audio_id, audio_flags);
 
     ExpectInitMediaLogs(video_flags);
-    EXPECT_CALL(*this, InitSegmentReceived());
+    EXPECT_CALL(*this, InitSegmentReceived(_));
     AppendInitSegmentWithSourceId(video_id, video_flags);
     return true;
   }
@@ -923,7 +924,7 @@ class ChunkDemuxerTest : public ::testing::Test {
     // Adding expectation prior to CreateInitDoneCB() here because InSequence
     // tests require init segment received before duration set.
     ExpectInitMediaLogs(HAS_AUDIO | HAS_VIDEO);
-    EXPECT_CALL(*this, InitSegmentReceived());
+    EXPECT_CALL(*this, InitSegmentReceived(_));
     demuxer_->Initialize(
         &host_, CreateInitDoneCB(base::TimeDelta::FromMilliseconds(2744),
                                  PIPELINE_OK), true);
@@ -949,7 +950,7 @@ class ChunkDemuxerTest : public ::testing::Test {
     // media/test/data/bear-320x240-manifest.js which were
     // generated from media/test/data/bear-640x360.webm and
     // media/test/data/bear-320x240.webm respectively.
-    EXPECT_CALL(*this, InitSegmentReceived());
+    EXPECT_CALL(*this, InitSegmentReceived(_));
     AppendData(bear2->data(), 4340);
 
     // Append a media segment that goes from [0.527000, 1.014000).
@@ -960,7 +961,7 @@ class ChunkDemuxerTest : public ::testing::Test {
 
     // Append initialization segment for bear1 & fill gap with [779-1197)
     // segment.
-    EXPECT_CALL(*this, InitSegmentReceived());
+    EXPECT_CALL(*this, InitSegmentReceived(_));
     AppendData(bear1->data(), 4370);
     EXPECT_MEDIA_LOG(WebMSimpleBlockDurationEstimated(23));
     EXPECT_MEDIA_LOG(GeneratedSplice(26000, 779000));
@@ -1308,7 +1309,7 @@ class ChunkDemuxerTest : public ::testing::Test {
 
     // Read a WebM file into memory and send the data to the demuxer.
     scoped_refptr<DecoderBuffer> buffer = ReadTestDataFile(filename);
-    EXPECT_CALL(*this, InitSegmentReceived());
+    EXPECT_CALL(*this, InitSegmentReceived(_));
     AppendDataInPieces(buffer->data(), buffer->data_size(), 512);
 
     // Verify that the timestamps on the first few packets match what we
@@ -1345,7 +1346,7 @@ class ChunkDemuxerTest : public ::testing::Test {
                void(EmeInitDataType init_data_type,
                     const std::vector<uint8_t>& init_data));
 
-  MOCK_METHOD0(InitSegmentReceived, void(void));
+  MOCK_METHOD1(InitSegmentReceived, void(const MediaTracks&));
 
   void Seek(base::TimeDelta seek_time) {
     demuxer_->StartWaitingForSeek(seek_time);
@@ -1547,7 +1548,7 @@ TEST_F(ChunkDemuxerTest, SingleTextTrackIdChange) {
   CreateInitSegmentWithAlternateTextTrackNum(HAS_TEXT | HAS_AUDIO | HAS_VIDEO,
                                              false, false,
                                              &info_tracks, &info_tracks_size);
-  EXPECT_CALL(*this, InitSegmentReceived());
+  EXPECT_CALL(*this, InitSegmentReceived(_));
   demuxer_->AppendData(kSourceId, info_tracks.get(), info_tracks_size,
                        append_window_start_for_next_append_,
                        append_window_end_for_next_append_,
@@ -1592,7 +1593,7 @@ TEST_F(ChunkDemuxerTest, InitSegmentSetsNeedRandomAccessPointFlag) {
       MuxedStreamInfo(kTextTrackNum, "25K 40K"));
   CheckExpectedRanges("{ [23,46) }");
 
-  EXPECT_CALL(*this, InitSegmentReceived());
+  EXPECT_CALL(*this, InitSegmentReceived(_));
   AppendInitSegment(HAS_TEXT | HAS_AUDIO | HAS_VIDEO);
   AppendMuxedCluster(MuxedStreamInfo(kAudioTrackNum, "46K 69K", 23),
                      MuxedStreamInfo(kVideoTrackNum, "60 90K", 30),
@@ -1616,7 +1617,7 @@ TEST_F(ChunkDemuxerTest, Shutdown_BeforeAllInitSegmentsAppended) {
   EXPECT_EQ(AddId("video", HAS_VIDEO), ChunkDemuxer::kOk);
 
   ExpectInitMediaLogs(HAS_AUDIO);
-  EXPECT_CALL(*this, InitSegmentReceived());
+  EXPECT_CALL(*this, InitSegmentReceived(_));
   AppendInitSegmentWithSourceId("audio", HAS_AUDIO);
 
   ShutdownDemuxer();
@@ -1635,7 +1636,7 @@ TEST_F(ChunkDemuxerTest, Shutdown_BeforeAllInitSegmentsAppendedText) {
       .Times(Exactly(1));
 
   ExpectInitMediaLogs(HAS_VIDEO);
-  EXPECT_CALL(*this, InitSegmentReceived());
+  EXPECT_CALL(*this, InitSegmentReceived(_));
   AppendInitSegmentWithSourceId("video_and_text", HAS_VIDEO | HAS_TEXT);
 
   ShutdownDemuxer();
@@ -2157,7 +2158,7 @@ TEST_F(ChunkDemuxerTest, AppendingInPieces) {
   dst += cluster_b->size();
 
   ExpectInitMediaLogs(HAS_AUDIO | HAS_VIDEO);
-  EXPECT_CALL(*this, InitSegmentReceived());
+  EXPECT_CALL(*this, InitSegmentReceived(_));
   AppendDataInPieces(buffer.get(), buffer_size);
 
   GenerateExpectedReads(0, 9);
@@ -2412,7 +2413,7 @@ TEST_F(ChunkDemuxerTest, MultipleHeaders) {
   AppendCluster(kDefaultFirstCluster());
 
   // Append another identical initialization segment.
-  EXPECT_CALL(*this, InitSegmentReceived());
+  EXPECT_CALL(*this, InitSegmentReceived(_));
   AppendInitSegment(HAS_AUDIO | HAS_VIDEO);
 
   AppendCluster(kDefaultSecondCluster());
@@ -2468,7 +2469,7 @@ TEST_F(ChunkDemuxerTest, AddIdFailures) {
   ASSERT_EQ(AddId(), ChunkDemuxer::kReachedIdLimit);
 
   ExpectInitMediaLogs(HAS_AUDIO);
-  EXPECT_CALL(*this, InitSegmentReceived());
+  EXPECT_CALL(*this, InitSegmentReceived(_));
   AppendInitSegmentWithSourceId(audio_id, HAS_AUDIO);
 
   // Adding an id after append should fail.
@@ -2712,7 +2713,7 @@ TEST_F(ChunkDemuxerTest, GetBufferedRanges_AudioIdOnly) {
 
   ASSERT_EQ(AddId(kSourceId, HAS_AUDIO), ChunkDemuxer::kOk);
   ExpectInitMediaLogs(HAS_AUDIO);
-  EXPECT_CALL(*this, InitSegmentReceived());
+  EXPECT_CALL(*this, InitSegmentReceived(_));
   AppendInitSegment(HAS_AUDIO);
 
   // Test a simple cluster.
@@ -2736,7 +2737,7 @@ TEST_F(ChunkDemuxerTest, GetBufferedRanges_VideoIdOnly) {
 
   ASSERT_EQ(AddId(kSourceId, HAS_VIDEO), ChunkDemuxer::kOk);
   ExpectInitMediaLogs(HAS_VIDEO);
-  EXPECT_CALL(*this, InitSegmentReceived());
+  EXPECT_CALL(*this, InitSegmentReceived(_));
   AppendInitSegment(HAS_VIDEO);
 
   // Test a simple cluster.
@@ -3406,7 +3407,7 @@ TEST_F(ChunkDemuxerTest, EmitBuffersDuringAbort) {
   //        PTS: 353788 (0x000565fc)  [= 90 kHz-Timestamp: 0:00:03.9309]
 
   scoped_refptr<DecoderBuffer> buffer = ReadTestDataFile("bear-1280x720.ts");
-  EXPECT_CALL(*this, InitSegmentReceived());
+  EXPECT_CALL(*this, InitSegmentReceived(_));
   AppendData(kSourceId, buffer->data(), buffer->data_size());
 
   // Confirm we're in the middle of parsing a media segment.
@@ -3454,7 +3455,7 @@ TEST_F(ChunkDemuxerTest, SeekCompleteDuringAbort) {
   //        PTS: 353788 (0x000565fc)  [= 90 kHz-Timestamp: 0:00:03.9309]
 
   scoped_refptr<DecoderBuffer> buffer = ReadTestDataFile("bear-1280x720.ts");
-  EXPECT_CALL(*this, InitSegmentReceived());
+  EXPECT_CALL(*this, InitSegmentReceived(_));
   AppendData(kSourceId, buffer->data(), buffer->data_size());
 
   // Confirm we're in the middle of parsing a media segment.
@@ -4065,7 +4066,7 @@ TEST_F(ChunkDemuxerTest, AppendWindow_WebMFile_AudioOnly) {
   scoped_refptr<DecoderBuffer> buffer =
       ReadTestDataFile("bear-320x240-audio-only.webm");
   ExpectInitMediaLogs(HAS_AUDIO);
-  EXPECT_CALL(*this, InitSegmentReceived());
+  EXPECT_CALL(*this, InitSegmentReceived(_));
   EXPECT_MEDIA_LOG(WebMSimpleBlockDurationEstimated(2));
   AppendDataInPieces(buffer->data(), buffer->data_size(), 128);
 
@@ -4092,7 +4093,7 @@ TEST_F(ChunkDemuxerTest, AppendWindow_AudioConfigUpdateRemovesPreroll) {
   scoped_refptr<DecoderBuffer> buffer =
       ReadTestDataFile("bear-320x240-audio-only.webm");
   ExpectInitMediaLogs(HAS_AUDIO);
-  EXPECT_CALL(*this, InitSegmentReceived());
+  EXPECT_CALL(*this, InitSegmentReceived(_));
   EXPECT_MEDIA_LOG(WebMSimpleBlockDurationEstimated(2));
   AppendDataInPieces(buffer->data(), buffer->data_size(), 512);
   CheckExpectedRanges("{ }");
@@ -4103,7 +4104,7 @@ TEST_F(ChunkDemuxerTest, AppendWindow_AudioConfigUpdateRemovesPreroll) {
   // Read a second WebM with a different config in and append the data.
   scoped_refptr<DecoderBuffer> buffer2 =
       ReadTestDataFile("bear-320x240-audio-only-48khz.webm");
-  EXPECT_CALL(*this, InitSegmentReceived());
+  EXPECT_CALL(*this, InitSegmentReceived(_));
   EXPECT_MEDIA_LOG(WebMSimpleBlockDurationEstimated(21));
   EXPECT_CALL(host_, SetDuration(_)).Times(AnyNumber());
   ASSERT_TRUE(SetTimestampOffset(kSourceId, duration_1));

@@ -28,7 +28,7 @@ class MEDIA_EXPORT MediaSourceState {
   typedef base::Callback<ChunkDemuxerStream*(DemuxerStream::Type)>
       CreateDemuxerStreamCB;
 
-  typedef base::Closure InitSegmentReceivedCB;
+  typedef base::Callback<void(const MediaTracks&)> InitSegmentReceivedCB;
 
   typedef base::Callback<void(ChunkDemuxerStream*, const TextTrackConfig&)>
       NewTextTrackCB;
@@ -124,8 +124,7 @@ class MEDIA_EXPORT MediaSourceState {
   // processing decoder configurations.
   bool OnNewConfigs(bool allow_audio,
                     bool allow_video,
-                    const AudioDecoderConfig& audio_config,
-                    const VideoDecoderConfig& video_config,
+                    scoped_ptr<MediaTracks> tracks,
                     const StreamParser::TextTrackConfigMap& text_configs);
 
   // Called by the |stream_parser_| at the beginning of a new media segment.
@@ -182,6 +181,8 @@ class MEDIA_EXPORT MediaSourceState {
 
   // The object used to parse appended data.
   scoped_ptr<StreamParser> stream_parser_;
+
+  scoped_ptr<MediaTracks> media_tracks_;
 
   ChunkDemuxerStream* audio_;  // Not owned by |this|.
   ChunkDemuxerStream* video_;  // Not owned by |this|.

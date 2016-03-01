@@ -21,6 +21,7 @@
 #include "media/base/media.h"
 #include "media/base/media_keys.h"
 #include "media/base/media_switches.h"
+#include "media/base/media_tracks.h"
 #include "media/base/test_data_util.h"
 #include "media/base/timestamp_constants.h"
 #include "media/cdm/aes_decryptor.h"
@@ -636,7 +637,7 @@ class MockMediaSource {
     return last_timestamp_offset_;
   }
 
-  MOCK_METHOD0(InitSegmentReceived, void(void));
+  MOCK_METHOD1(InitSegmentReceived, void(const MediaTracks&));
 
  private:
   scoped_refptr<DecoderBuffer> file_data_;
@@ -682,7 +683,7 @@ class PipelineIntegrationTestHost : public testing::Test,
 class PipelineIntegrationTest : public PipelineIntegrationTestHost {
  public:
   void StartPipelineWithMediaSource(MockMediaSource* source) {
-    EXPECT_CALL(*source, InitSegmentReceived()).Times(AtLeast(1));
+    EXPECT_CALL(*source, InitSegmentReceived(_)).Times(AtLeast(1));
     EXPECT_CALL(*this, OnMetadata(_))
         .Times(AtMost(1))
         .WillRepeatedly(SaveArg<0>(&metadata_));
@@ -726,7 +727,7 @@ class PipelineIntegrationTest : public PipelineIntegrationTestHost {
 
   void StartPipelineWithEncryptedMedia(MockMediaSource* source,
                                        FakeEncryptedMedia* encrypted_media) {
-    EXPECT_CALL(*source, InitSegmentReceived()).Times(AtLeast(1));
+    EXPECT_CALL(*source, InitSegmentReceived(_)).Times(AtLeast(1));
     EXPECT_CALL(*this, OnMetadata(_))
         .Times(AtMost(1))
         .WillRepeatedly(SaveArg<0>(&metadata_));

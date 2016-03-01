@@ -57,8 +57,7 @@ class StreamParserTestBase {
                           size_t length,
                           size_t piece_size);
   void OnInitDone(const StreamParser::InitParameters& params);
-  bool OnNewConfig(const AudioDecoderConfig& audio_config,
-                   const VideoDecoderConfig& video_config,
+  bool OnNewConfig(scoped_ptr<MediaTracks> tracks,
                    const StreamParser::TextTrackConfigMap& text_config);
   bool OnNewBuffers(const StreamParser::BufferQueue& audio_buffers,
                     const StreamParser::BufferQueue& video_buffers,

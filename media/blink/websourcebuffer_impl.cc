@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "media/base/media_tracks.h"
 #include "media/base/timestamp_constants.h"
 #include "media/filters/chunk_demuxer.h"
 #include "third_party/WebKit/public/platform/WebSourceBufferClient.h"
@@ -158,8 +159,10 @@ void WebSourceBufferImpl::removedFromMediaSource() {
   client_ = NULL;
 }
 
-void WebSourceBufferImpl::InitSegmentReceived() {
+void WebSourceBufferImpl::InitSegmentReceived(const MediaTracks& tracks) {
   DVLOG(1) << __FUNCTION__;
+  // TODO(servolk): Implement passing MediaTrack info to blink level.
+  // https://crbug.com/249428
   client_->initializationSegmentReceived();
 }
 

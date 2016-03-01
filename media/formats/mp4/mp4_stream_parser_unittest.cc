@@ -15,6 +15,8 @@
 #include "base/time/time.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/decoder_buffer.h"
+#include "media/base/media_track.h"
+#include "media/base/media_tracks.h"
 #include "media/base/mock_media_log.h"
 #include "media/base/stream_parser_buffer.h"
 #include "media/base/test_data_util.h"
@@ -97,14 +99,14 @@ class MP4StreamParserTest : public testing::Test {
     EXPECT_EQ(expected_liveness, params.liveness);
   }
 
-  bool NewConfigF(const AudioDecoderConfig& ac,
-                  const VideoDecoderConfig& vc,
+  bool NewConfigF(scoped_ptr<MediaTracks> tracks,
                   const StreamParser::TextTrackConfigMap& tc) {
-    DVLOG(1) << "NewConfigF: audio=" << ac.IsValidConfig()
-             << ", video=" << vc.IsValidConfig();
     configs_received_ = true;
-    audio_decoder_config_ = ac;
-    video_decoder_config_ = vc;
+    audio_decoder_config_ = tracks->getFirstAudioConfig();
+    video_decoder_config_ = tracks->getFirstVideoConfig();
+    DVLOG(1) << "NewConfigF: track count=" << tracks->tracks().size()
+             << " audio=" << audio_decoder_config_.IsValidConfig()
+             << " video=" << video_decoder_config_.IsValidConfig();
     return true;
   }
 

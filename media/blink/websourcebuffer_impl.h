@@ -16,6 +16,7 @@
 
 namespace media {
 class ChunkDemuxer;
+class MediaTracks;
 
 class WebSourceBufferImpl : public blink::WebSourceBuffer {
  public:
@@ -42,7 +43,7 @@ class WebSourceBufferImpl : public blink::WebSourceBuffer {
  private:
   // Demuxer callback handler to process an initialization segment received
   // during an append() call.
-  void InitSegmentReceived();
+  void InitSegmentReceived(const MediaTracks& tracks);
 
   std::string id_;
   ChunkDemuxer* demuxer_;  // Owned by WebMediaPlayerImpl.

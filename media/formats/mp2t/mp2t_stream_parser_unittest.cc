@@ -15,6 +15,8 @@
 #include "base/time/time.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/decoder_buffer.h"
+#include "media/base/media_track.h"
+#include "media/base/media_tracks.h"
 #include "media/base/stream_parser_buffer.h"
 #include "media/base/test_data_util.h"
 #include "media/base/text_track_config.h"
@@ -111,10 +113,12 @@ class Mp2tStreamParserTest : public testing::Test {
              << ", autoTimestampOffset=" << params.auto_update_timestamp_offset;
   }
 
-  bool OnNewConfig(const AudioDecoderConfig& ac,
-                   const VideoDecoderConfig& vc,
+  bool OnNewConfig(scoped_ptr<MediaTracks> tracks,
                    const StreamParser::TextTrackConfigMap& tc) {
-    DVLOG(1) << "OnNewConfig: audio=" << ac.IsValidConfig()
+    const AudioDecoderConfig& ac = tracks->getFirstAudioConfig();
+    const VideoDecoderConfig& vc = tracks->getFirstVideoConfig();
+    DVLOG(1) << "OnNewConfig: media tracks count=" << tracks->tracks().size()
+             << ", audio=" << ac.IsValidConfig()
              << ", video=" << vc.IsValidConfig();
     config_count_++;
     EXPECT_TRUE(ac.IsValidConfig());

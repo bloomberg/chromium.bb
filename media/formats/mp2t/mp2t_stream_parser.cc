@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/stl_util.h"
+#include "media/base/media_tracks.h"
 #include "media/base/stream_parser_buffer.h"
 #include "media/base/text_track_config.h"
 #include "media/base/timestamp_constants.h"
@@ -502,6 +503,21 @@ void Mp2tStreamParser::OnAudioConfigChanged(
   }
 }
 
+scoped_ptr<MediaTracks> GenerateMediaTrackInfo(
+    const AudioDecoderConfig& audio_config,
+    const VideoDecoderConfig& video_config) {
+  scoped_ptr<MediaTracks> media_tracks(new MediaTracks());
+  // TODO(servolk): Implement proper sourcing of media track info as described
+  // in crbug.com/590085
+  if (audio_config.IsValidConfig()) {
+    media_tracks->AddAudioTrack(audio_config, "audio", "main", "", "");
+  }
+  if (video_config.IsValidConfig()) {
+    media_tracks->AddVideoTrack(video_config, "video", "main", "", "");
+  }
+  return media_tracks;
+}
+
 bool Mp2tStreamParser::FinishInitializationIfNeeded() {
   // Nothing to be done if already initialized.
   if (is_initialized_)
@@ -521,9 +537,9 @@ bool Mp2tStreamParser::FinishInitializationIfNeeded() {
     return true;
 
   // Pass the config before invoking the initialization callback.
-  RCHECK(config_cb_.Run(queue_with_config.audio_config,
-                        queue_with_config.video_config,
-                        TextTrackConfigMap()));
+  scoped_ptr<MediaTracks> media_tracks = GenerateMediaTrackInfo(
+      queue_with_config.audio_config, queue_with_config.video_config);
+  RCHECK(config_cb_.Run(std::move(media_tracks), TextTrackConfigMap()));
   queue_with_config.is_config_sent = true;
 
   // For Mpeg2 TS, the duration is not known.
@@ -620,9 +636,9 @@ bool Mp2tStreamParser::EmitRemainingBuffers() {
     // Update the audio and video config if needed.
     BufferQueueWithConfig& queue_with_config = buffer_queue_chain_.front();
     if (!queue_with_config.is_config_sent) {
-      if (!config_cb_.Run(queue_with_config.audio_config,
-                          queue_with_config.video_config,
-                          TextTrackConfigMap()))
+      scoped_ptr<MediaTracks> media_tracks = GenerateMediaTrackInfo(
+          queue_with_config.audio_config, queue_with_config.video_config);
+      if (!config_cb_.Run(std::move(media_tracks), TextTrackConfigMap()))
         return false;
       queue_with_config.is_config_sent = true;
     }

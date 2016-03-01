@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/message_loop/message_loop.h"
+#include "media/base/media_tracks.h"
 #include "media/base/stream_parser_buffer.h"
 #include "media/base/text_track_config.h"
 #include "media/base/timestamp_constants.h"
@@ -220,8 +221,11 @@ int MPEGAudioStreamParserBase::ParseFrame(const uint8_t* data,
     timestamp_helper_.reset(new AudioTimestampHelper(sample_rate));
     timestamp_helper_->SetBaseTimestamp(base_timestamp);
 
-    VideoDecoderConfig video_config;
-    if (!config_cb_.Run(config_, video_config, TextTrackConfigMap()))
+    scoped_ptr<MediaTracks> media_tracks(new MediaTracks());
+    if (config_.IsValidConfig()) {
+      media_tracks->AddAudioTrack(config_, "audio", "", "", "");
+    }
+    if (!config_cb_.Run(std::move(media_tracks), TextTrackConfigMap()))
       return -1;
 
     if (!init_cb_.is_null()) {

@@ -25,10 +25,9 @@
 
 namespace media {
 
-class AudioDecoderConfig;
+class MediaTracks;
 class StreamParserBuffer;
 class TextTrackConfig;
-class VideoDecoderConfig;
 
 // Abstract interface for parsing media byte streams.
 class MEDIA_EXPORT StreamParser {
@@ -76,18 +75,17 @@ class MEDIA_EXPORT StreamParser {
   typedef base::Callback<void(const InitParameters& params)> InitCB;
 
   // Indicates when new stream configurations have been parsed.
-  // First parameter - The new audio configuration. If the config is not valid
-  //                   then it means that there isn't an audio stream.
-  // Second parameter - The new video configuration. If the config is not valid
-  //                    then it means that there isn't an audio stream.
-  // Third parameter - The new text tracks configuration.  If the map is empty,
-  //                   then no text tracks were parsed from the stream.
+  // First parameter - An object containing information about media tracks as
+  //                   well as audio/video decoder configs associated with each
+  //                   track.
+  // Second parameter - The new text tracks configuration.  If the map is empty,
+  //                    then no text tracks were parsed from the stream.
   // Return value - True if the new configurations are accepted.
   //                False if the new configurations are not supported
   //                and indicates that a parsing error should be signalled.
-  typedef base::Callback<bool(const AudioDecoderConfig&,
-                              const VideoDecoderConfig&,
-                              const TextTrackConfigMap&)> NewConfigCB;
+  typedef base::Callback<bool(scoped_ptr<MediaTracks>,
+                              const TextTrackConfigMap&)>
+      NewConfigCB;
 
   // New stream buffers have been parsed.
   // First parameter - A queue of newly parsed audio buffers.

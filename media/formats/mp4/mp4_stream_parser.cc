@@ -14,6 +14,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "media/base/audio_decoder_config.h"
+#include "media/base/media_tracks.h"
 #include "media/base/stream_parser_buffer.h"
 #include "media/base/text_track_config.h"
 #include "media/base/timestamp_constants.h"
@@ -353,7 +354,16 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
   if (!moov_->pssh.empty())
     OnEncryptedMediaInitData(moov_->pssh);
 
-  RCHECK(config_cb_.Run(audio_config, video_config, TextTrackConfigMap()));
+  scoped_ptr<MediaTracks> media_tracks(new MediaTracks());
+  // TODO(servolk): Implement proper sourcing of media track info as described
+  // in crbug.com/590085
+  if (audio_config.IsValidConfig()) {
+    media_tracks->AddAudioTrack(audio_config, "audio", "", "", "");
+  }
+  if (video_config.IsValidConfig()) {
+    media_tracks->AddVideoTrack(video_config, "video", "", "", "");
+  }
+  RCHECK(config_cb_.Run(std::move(media_tracks), TextTrackConfigMap()));
 
   StreamParser::InitParameters params(kInfiniteDuration());
   if (moov_->extends.header.fragment_duration > 0) {

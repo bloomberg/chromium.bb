@@ -6,6 +6,8 @@
 
 #include "base/callback_helpers.h"
 #include "base/stl_util.h"
+#include "media/base/media_track.h"
+#include "media/base/media_tracks.h"
 #include "media/filters/chunk_demuxer.h"
 #include "media/filters/frame_processor.h"
 #include "media/filters/source_buffer_stream.h"
@@ -468,9 +470,13 @@ bool MediaSourceState::IsSeekWaitingForData() const {
 bool MediaSourceState::OnNewConfigs(
     bool allow_audio,
     bool allow_video,
-    const AudioDecoderConfig& audio_config,
-    const VideoDecoderConfig& video_config,
+    scoped_ptr<MediaTracks> tracks,
     const StreamParser::TextTrackConfigMap& text_configs) {
+  DCHECK(tracks.get());
+  media_tracks_ = std::move(tracks);
+  const AudioDecoderConfig& audio_config = media_tracks_->getFirstAudioConfig();
+  const VideoDecoderConfig& video_config = media_tracks_->getFirstVideoConfig();
+
   DVLOG(1) << "OnNewConfigs(" << allow_audio << ", " << allow_video << ", "
            << audio_config.IsValidConfig() << ", "
            << video_config.IsValidConfig() << ")";
@@ -638,7 +644,7 @@ bool MediaSourceState::OnNewConfigs(
 
   DVLOG(1) << "OnNewConfigs() : " << (success ? "success" : "failed");
   if (success)
-    init_segment_received_cb_.Run();
+    init_segment_received_cb_.Run(*media_tracks_);
 
   return success;
 }
