@@ -68,6 +68,10 @@ class UserPolicySigninService : public UserPolicySigninServiceBase {
   static std::vector<std::string> GetScopes();
 #endif
 
+  // Overridden from UserPolicySigninServiceBase to cancel the pending delayed
+  // registration.
+  void ShutdownUserCloudPolicyManager() override;
+
  private:
   void RegisterForPolicyInternal(const std::string& username,
                                  const std::string& account_id,
@@ -82,10 +86,6 @@ class UserPolicySigninService : public UserPolicySigninServiceBase {
 
   // CloudPolicyService::Observer implementation:
   void OnInitializationCompleted(CloudPolicyService* service) override;
-
-  // Overridden from UserPolicySigninServiceBase to cancel the pending delayed
-  // registration.
-  void ShutdownUserCloudPolicyManager() override;
 
   // Registers for cloud policy for an already signed-in user.
   void RegisterCloudPolicyService();

@@ -20,6 +20,7 @@
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "chrome/browser/browsing_data/browsing_data_remover_factory.h"
+#include "chrome/browser/policy/cloud/user_policy_signin_service_mobile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/oauth2_token_service_delegate_android.h"
@@ -146,6 +147,16 @@ void SigninManagerAndroid::FetchPolicyBeforeSignIn(
   NOTREACHED();
   Java_SigninManager_onPolicyFetchedBeforeSignIn(env,
                                                  java_signin_manager_.obj());
+}
+
+void SigninManagerAndroid::AbortSignIn(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj) {
+#if defined(ENABLE_CONFIGURATION_POLICY)
+  policy::UserPolicySigninService* service =
+      policy::UserPolicySigninServiceFactory::GetForProfile(profile_);
+  service->ShutdownUserCloudPolicyManager();
+#endif
 }
 
 void SigninManagerAndroid::OnSignInCompleted(

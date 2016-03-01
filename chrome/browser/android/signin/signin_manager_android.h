@@ -44,6 +44,9 @@ class SigninManagerAndroid {
   void FetchPolicyBeforeSignIn(JNIEnv* env,
                                const base::android::JavaParamRef<jobject>& obj);
 
+  void AbortSignIn(JNIEnv* env,
+                   const base::android::JavaParamRef<jobject>& obj);
+
   // Indicates that the user has made the choice to sign-in. |username|
   // contains the email address of the account to use as primary.
   void OnSignInCompleted(JNIEnv* env,

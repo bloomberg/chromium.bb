@@ -81,6 +81,11 @@ std::vector<std::string> UserPolicySigninService::GetScopes() {
 }
 #endif
 
+void UserPolicySigninService::ShutdownUserCloudPolicyManager() {
+  CancelPendingRegistration();
+  UserPolicySigninServiceBase::ShutdownUserCloudPolicyManager();
+}
+
 void UserPolicySigninService::RegisterForPolicyInternal(
     const std::string& username,
     const std::string& account_id,
@@ -173,11 +178,6 @@ void UserPolicySigninService::OnInitializationCompleted(
       base::Bind(&UserPolicySigninService::RegisterCloudPolicyService,
                  weak_factory_.GetWeakPtr()),
       try_registration_delay);
-}
-
-void UserPolicySigninService::ShutdownUserCloudPolicyManager() {
-  CancelPendingRegistration();
-  UserPolicySigninServiceBase::ShutdownUserCloudPolicyManager();
 }
 
 void UserPolicySigninService::RegisterCloudPolicyService() {
