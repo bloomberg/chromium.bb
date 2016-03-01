@@ -449,6 +449,7 @@ void TouchEmulator::FillTouchEventAndPoint(const WebMouseEvent& mouse_event) {
   point.screenPosition.y = mouse_event.globalY;
   point.tiltX = 0;
   point.tiltY = 0;
+  point.pointerType = blink::WebPointerProperties::PointerType::Touch;
 }
 
 bool TouchEmulator::InPinchGestureMode() const {
