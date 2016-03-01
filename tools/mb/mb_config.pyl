@@ -725,6 +725,9 @@
       'android_chromium_gn_compile_dbg': 'android_gn_debug_bot',
       'android_chromium_gn_compile_rel': 'android_gn_release_trybot',
       'android_chromium_gn_rel': 'android_gn_release_trybot',
+      'android_compile_mips_dbg': 'android_gn_debug_static_bot_mipsel',
+      'android_compile_x64_dbg': 'android_gn_debug_static_bot_x64',
+      'android_compile_x86_dbg': 'android_gn_debug_static_bot_x86',
     },
     'tryserver.chromium.angle': {
       'linux_angle_rel_ng': 'swarming_gpu_fyi_tests_gn_release_trybot',
