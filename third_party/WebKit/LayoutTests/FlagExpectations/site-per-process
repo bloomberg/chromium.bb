@@ -92,6 +92,7 @@ http/tests/inspector/console-cd.html [ Failure ]
 http/tests/webfont/popup-menu-load-webfont-after-open.html [ Failure ]
 
 # https://crbug.com/582525 - testRunner.setAllowDisplayOfInsecureContent is not replicated to OOPIFs.
+http/tests/security/mixedContent/active-subresource-in-http-iframe-not-blocked.https.html [ Timeout ]
 http/tests/security/mixedContent/insecure-iframe-in-main-frame-allowed.html [ Failure ]
 http/tests/security/mixedContent/insecure-iframe-in-main-frame.html [ Failure Crash ]
 http/tests/security/mixedContent/insecure-image-in-main-frame-allowed.html [ Failure ]
@@ -116,7 +117,6 @@ http/tests/xmlhttprequest/origin-whitelisting-ip-addresses.html [ Failure ]
 http/tests/security/mixedContent/insecure-eventsource-in-main-frame.html [ Failure ]
 
 # Uninvestigated failures under http/tests/security:
-crbug.com/590773 http/tests/security/mixedContent/active-subresource-in-http-iframe-not-blocked.https.html [ Timeout ]
 http/tests/security/cookies/third-party-cookie-blocking.html [ Timeout ]
 http/tests/security/cookies/third-party-cookie-blocking-user-action.html [ Timeout ]
 http/tests/security/cookies/third-party-cookie-blocking-xslt.xml [ Timeout ]
