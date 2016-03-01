@@ -29,6 +29,7 @@
 #include "components/policy/core/browser/android/component_jni_registrar.h"
 #include "components/safe_json/android/component_jni_registrar.h"
 #include "components/signin/core/browser/android/component_jni_registrar.h"
+#include "components/web_restrictions/browser/mock_web_restrictions_client.h"
 #include "content/public/test/test_utils.h"
 #include "net/android/net_jni_registrar.h"
 #include "ui/base/android/ui_base_jni_registrar.h"
@@ -60,14 +61,15 @@ class ComponentsTestSuite : public base::TestSuite {
 #if defined(OS_ANDROID)
     // Register JNI bindings for android.
     JNIEnv* env = base::android::AttachCurrentThread();
+    ASSERT_TRUE(content::RegisterJniForTesting(env));
     ASSERT_TRUE(gfx::android::RegisterJni(env));
-    ASSERT_TRUE(ui::android::RegisterJni(env));
     ASSERT_TRUE(invalidation::android::RegisterInvalidationJni(env));
     ASSERT_TRUE(policy::android::RegisterPolicy(env));
     ASSERT_TRUE(safe_json::android::RegisterSafeJsonJni(env));
     ASSERT_TRUE(signin::android::RegisterSigninJni(env));
     ASSERT_TRUE(net::android::RegisterJni(env));
-    ASSERT_TRUE(content::RegisterJniForTesting(env));
+    ASSERT_TRUE(ui::android::RegisterJni(env));
+    ASSERT_TRUE(web_restrictions::MockWebRestrictionsClient::Register(env));
 #endif
 
     ui::RegisterPathProvider();

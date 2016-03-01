@@ -876,6 +876,10 @@
       'web_resource/promo_resource_service_unittest.cc',
       'web_resource/resource_request_allowed_notifier_unittest.cc',
     ],
+    'web_restrictions_unittest_sources' : [
+      'web_restrictions/browser/web_restrictions_client_unittest.cc',
+      'web_restrictions/browser/web_restrictions_resource_throttle_unittest.cc',
+    ],
     'webcrypto_unittest_sources': [
       'webcrypto/algorithms/aes_cbc_unittest.cc',
       'webcrypto/algorithms/aes_ctr_unittest.cc',
@@ -1271,7 +1275,12 @@
           ],
           'conditions': [
             ['OS=="android"', {
+              'sources' : [
+                '<@(web_restrictions_unittest_sources)',
+              ],
               'dependencies': [
+                'components.gyp:web_restrictions_browser',
+                'components.gyp:web_restrictions_test_support',
                 '../build/android/ndk.gyp:cpu_features',
               ],
             }],
@@ -1652,6 +1661,7 @@
             'components_unittests',
             'components.gyp:invalidation_java',
             'components.gyp:signin_core_browser_java',
+            'components.gyp:web_restrictions_test_support_java',
           ],
           'variables': {
             'test_suite_name': 'components_unittests',
@@ -1675,7 +1685,7 @@
             'src_paths': [
               'invalidation/impl/android/junit/',
               'policy/android/junit/',
-              'web_restrictions/junit/'
+              'web_restrictions/browser/junit/'
             ],
             'wrapper_script_name': 'helper/<(_target_name)',
           },

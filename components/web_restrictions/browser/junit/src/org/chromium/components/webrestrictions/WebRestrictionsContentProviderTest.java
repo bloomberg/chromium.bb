@@ -81,7 +81,8 @@ public class WebRestrictionsContentProviderTest {
     public void testQuery() {
         when(mContentProvider.contentProviderEnabled()).thenReturn(false);
         assertThat(mContentResolver.query(mUri.buildUpon().appendPath("authorized").build(), null,
-                "url = 'dummy'", null, null), is(nullValue()));
+                           "url = 'dummy'", null, null),
+                is(nullValue()));
         when(mContentProvider.contentProviderEnabled()).thenReturn(true);
         when(mContentProvider.shouldProceed(anyString()))
                 .thenReturn(new Pair<Boolean, String>(false, "Error Message"));

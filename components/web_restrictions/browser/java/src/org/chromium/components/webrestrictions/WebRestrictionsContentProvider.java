@@ -77,9 +77,7 @@ public abstract class WebRestrictionsContentProvider extends ContentProvider {
 
             @Override
             public String[] getColumnNames() {
-                return new String[] {
-                        "Should Proceed", "Error message"
-                };
+                return new String[] {"Should Proceed", "Error message"};
             }
 
             @Override
