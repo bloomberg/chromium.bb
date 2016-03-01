@@ -41,7 +41,7 @@
     'target_name': 'mojo_shell_unittests',
     'type': 'executable',
     'sources': [
-      'shell/tests/application_manager_unittest.cc',
+      'shell/tests/loader_unittest.cc',
       'shell/tests/capability_filter_unittest.cc',
     ],
     'dependencies': [

@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/shell/application_manager.h"
-
 #include <utility>
 
 #include "base/at_exit.h"
@@ -14,6 +12,7 @@
 #include "base/run_loop.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/services/package_manager/package_manager.h"
+#include "mojo/shell/application_manager.h"
 #include "mojo/shell/connect_util.h"
 #include "mojo/shell/loader.h"
 #include "mojo/shell/public/cpp/connector.h"
@@ -394,11 +393,10 @@ void OnConnect(base::RunLoop* loop, uint32_t instance_id) {
   loop->Quit();
 }
 
-class ApplicationManagerTest : public testing::Test {
+class LoaderTest : public testing::Test {
  public:
-  ApplicationManagerTest() : tester_context_(&loop_) {}
-
-  ~ApplicationManagerTest() override {}
+  LoaderTest() : tester_context_(&loop_) {}
+  ~LoaderTest() override {}
 
   void SetUp() override {
     application_manager_.reset(
@@ -452,16 +450,16 @@ class ApplicationManagerTest : public testing::Test {
   base::MessageLoop loop_;
   scoped_ptr<TestClient> test_client_;
   scoped_ptr<ApplicationManager> application_manager_;
-  DISALLOW_COPY_AND_ASSIGN(ApplicationManagerTest);
+  DISALLOW_COPY_AND_ASSIGN(LoaderTest);
 };
 
-TEST_F(ApplicationManagerTest, Basic) {
+TEST_F(LoaderTest, Basic) {
   test_client_->Test("test");
   loop_.Run();
   EXPECT_EQ(std::string("test"), context_.last_test_string);
 }
 
-TEST_F(ApplicationManagerTest, ClientError) {
+TEST_F(LoaderTest, ClientError) {
   test_client_->Test("test");
   EXPECT_TRUE(HasRunningInstanceForName(kTestURLString));
   loop_.Run();
@@ -472,7 +470,7 @@ TEST_F(ApplicationManagerTest, ClientError) {
   EXPECT_TRUE(HasRunningInstanceForName(kTestURLString));
 }
 
-TEST_F(ApplicationManagerTest, Deletes) {
+TEST_F(LoaderTest, Deletes) {
   {
     ApplicationManager am(nullptr, nullptr, nullptr);
     TestLoader* default_loader = new TestLoader(&context_);
@@ -486,7 +484,7 @@ TEST_F(ApplicationManagerTest, Deletes) {
 }
 
 // Test for SetLoaderForName() & set_default_loader().
-TEST_F(ApplicationManagerTest, SetLoaders) {
+TEST_F(LoaderTest, SetLoaders) {
   TestLoader* default_loader = new TestLoader(&context_);
   TestLoader* name_loader = new TestLoader(&context_);
   application_manager_->set_default_loader(scoped_ptr<Loader>(default_loader));
@@ -505,82 +503,7 @@ TEST_F(ApplicationManagerTest, SetLoaders) {
   EXPECT_EQ(1, default_loader->num_loads());
 }
 
-// Confirm that the name of a service is correctly passed to another service
-// that it loads.
-// TODO(beng): these tests are disabled due to the new async connect flow.
-//             they should be re-written as shell apptests.
-TEST_F(ApplicationManagerTest, DISABLED_ACallB) {
-  // Any name can load a.
-  AddLoaderForName(kTestAURLString, std::string());
-
-  // Only a can load b.
-  AddLoaderForName(kTestBURLString, kTestAURLString);
-
-  TestAPtr a;
-  ConnectToInterface(kTestAURLString, &a);
-  a->CallB();
-  loop_.Run();
-  EXPECT_EQ(1, tester_context_.num_b_calls());
-  EXPECT_TRUE(tester_context_.a_called_quit());
-}
-
-// A calls B which calls C.
-TEST_F(ApplicationManagerTest, DISABLED_BCallC) {
-  // Any name can load a.
-  AddLoaderForName(kTestAURLString, std::string());
-
-  // Only a can load b.
-  AddLoaderForName(kTestBURLString, kTestAURLString);
-
-  TestAPtr a;
-  ConnectToInterface(kTestAURLString, &a);
-  a->CallCFromB();
-  loop_.Run();
-
-  EXPECT_EQ(1, tester_context_.num_b_calls());
-  EXPECT_EQ(1, tester_context_.num_c_calls());
-  EXPECT_TRUE(tester_context_.a_called_quit());
-}
-
-// Confirm that a service impl will be deleted if the app that connected to
-// it goes away.
-TEST_F(ApplicationManagerTest, DISABLED_BDeleted) {
-  AddLoaderForName(kTestAURLString, std::string());
-  AddLoaderForName(kTestBURLString, std::string());
-
-  TestAPtr a;
-  ConnectToInterface(kTestAURLString, &a);
-
-  a->CallB();
-  loop_.Run();
-
-  // Kills the a app.
-  application_manager_->SetLoaderForName(scoped_ptr<Loader>(), kTestAURLString);
-  loop_.Run();
-
-  EXPECT_EQ(1, tester_context_.num_b_deletes());
-}
-
-// Confirm that the name of a service is correctly passed to another service
-// that it loads, and that it can be rejected.
-TEST_F(ApplicationManagerTest, DISABLED_ANoLoadB) {
-  // Any name can load a.
-  AddLoaderForName(kTestAURLString, std::string());
-
-  // Only c can load b, so this will fail.
-  AddLoaderForName(kTestBURLString, "test:TestC");
-
-  TestAPtr a;
-  ConnectToInterface(kTestAURLString, &a);
-  a->CallB();
-  loop_.Run();
-  EXPECT_EQ(0, tester_context_.num_b_calls());
-
-  EXPECT_FALSE(tester_context_.a_called_quit());
-  EXPECT_TRUE(tester_context_.tester_called_quit());
-}
-
-TEST_F(ApplicationManagerTest, NoServiceNoLoad) {
+TEST_F(LoaderTest, NoServiceNoLoad) {
   AddLoaderForName(kTestAURLString, std::string());
 
   // There is no TestC service implementation registered with
@@ -594,7 +517,7 @@ TEST_F(ApplicationManagerTest, NoServiceNoLoad) {
   EXPECT_TRUE(c.encountered_error());
 }
 
-TEST_F(ApplicationManagerTest, TestEndApplicationClosure) {
+TEST_F(LoaderTest, TestEndApplicationClosure) {
   ClosingLoader* loader = new ClosingLoader();
   application_manager_->SetLoaderForName(
       scoped_ptr<Loader>(loader), "test:test");
@@ -610,8 +533,8 @@ TEST_F(ApplicationManagerTest, TestEndApplicationClosure) {
   EXPECT_TRUE(called);
 }
 
-TEST_F(ApplicationManagerTest, SameIdentityShouldNotCauseDuplicateLoad) {
-  // 1 because ApplicationManagerTest connects once at startup.
+TEST_F(LoaderTest, SameIdentityShouldNotCauseDuplicateLoad) {
+  // 1 because LoaderTest connects once at startup.
   EXPECT_EQ(1, test_loader_->num_loads());
 
   TestServicePtr test_service;

@@ -35,8 +35,8 @@ source_set("test_support") {
 #             difficulty with the android _apk generator.
 test("mojo_shell_unittests") {
   sources = [
-    "application_manager_unittest.cc",
     "capability_filter_unittest.cc",
+    "loader_unittest.cc",
     "run_all_unittests.cc",
   ]
 
