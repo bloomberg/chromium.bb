@@ -25,6 +25,10 @@
 #include "third_party/webrtc_overrides/webrtc/base/diagnostic_logging.h"
 #include "third_party/webrtc_overrides/webrtc/base/logging.h"
 
+#if defined(WEBRTC_MAC)
+#include "base/mac/mac_logging.h"
+#endif
+
 // From this file we can't use VLOG since it expands into usage of the __FILE__
 // macro (for correct filtering). The actual logging call from DIAGNOSTIC_LOG in
 // ~DiagnosticLogMessage. Note that the second parameter to the LAZY_STREAM
@@ -148,11 +152,7 @@ static void LogExtra(std::ostringstream* print_stream,
       break;
 #elif defined(WEBRTC_MAC)
     case ERRCTX_OSSTATUS: {
-      (*print_stream) << " " << nonnull(GetMacOSStatusErrorString(err),
-                                        "Unknown error");
-      if (const char* desc = GetMacOSStatusCommentString(err)) {
-        (*print_stream) << ": " << desc;
-      }
+      (*print_stream) << " " << logging::DescriptionFromOSStatus(err);
       break;
     }
 #endif  // defined(WEBRTC_WIN)

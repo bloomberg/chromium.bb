@@ -16,6 +16,7 @@
 
 #include <fstream>
 
+#include "base/mac/mac_logging.h"
 #include "base/mac/scoped_launch_data.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/posix/eintr_wrapper.h"
@@ -521,7 +522,8 @@ std::string JsonHostConfig::GetSerializedData() const {
       &pid);
   if (status != errAuthorizationSuccess) {
     NSLog(@"AuthorizationExecuteWithPrivileges: %s (%d)",
-          GetMacOSStatusErrorString(status), static_cast<int>(status));
+          logging::DescriptionFromOSStatus(status).c_str(),
+          static_cast<int>(status));
     return NO;
   }
   if (pid == -1) {

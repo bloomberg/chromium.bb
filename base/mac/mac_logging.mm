@@ -3,15 +3,24 @@
 // found in the LICENSE file.
 
 #include "base/mac/mac_logging.h"
-#include "build/build_config.h"
+
+#import <Foundation/Foundation.h>
 
 #include <iomanip>
+
+#include "build/build_config.h"
 
 #if !defined(OS_IOS)
 #include <CoreServices/CoreServices.h>
 #endif
 
 namespace logging {
+
+std::string DescriptionFromOSStatus(OSStatus err) {
+  NSError* error =
+      [NSError errorWithDomain:NSOSStatusErrorDomain code:err userInfo:nil];
+  return error.description.UTF8String;
+}
 
 OSStatusLogMessage::OSStatusLogMessage(const char* file_path,
                                        int line,
@@ -28,7 +37,7 @@ OSStatusLogMessage::~OSStatusLogMessage() {
   stream() << ": " << status_;
 #else
   stream() << ": "
-           << GetMacOSStatusErrorString(status_)
+           << DescriptionFromOSStatus(status_)
            << " ("
            << status_
            << ")";

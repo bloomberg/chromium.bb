@@ -1031,8 +1031,8 @@ void AUAudioInputStream::HandleError(OSStatus err) {
   // carries one extra level of information.
   UMA_HISTOGRAM_SPARSE_SLOWLY("Media.InputErrorMac",
                               GetInputCallbackIsActive() ? err : (err * -1));
-  NOTREACHED() << "error " << GetMacOSStatusErrorString(err) << " (" << err
-               << ")";
+  NOTREACHED() << "error " << logging::DescriptionFromOSStatus(err) << " ("
+               << err << ")";
   if (sink_)
     sink_->OnError(this);
 }
