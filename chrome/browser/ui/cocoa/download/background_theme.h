@@ -24,6 +24,8 @@ class BackgroundTheme : public ui::ThemeProvider {
   bool HasCustomImage(int id) const override;
   base::RefCountedMemory* GetRawData(int id, ui::ScaleFactor scale_factor)
       const override;
+  bool InIncognitoMode() const override;
+  bool HasCustomColor(int id) const override;
   NSImage* GetNSImageNamed(int id) const override;
   NSColor* GetNSImageColorNamed(int id) const override;
   NSColor* GetNSColor(int id) const override;

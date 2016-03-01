@@ -6,6 +6,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "testing/gtest_mac.h"
+#include "ui/base/resource/resource_bundle.h"
 #import "ui/gfx/test/ui_cocoa_test_helper.h"
 #include "ui/resources/grit/ui_resources.h"
 
@@ -13,9 +14,14 @@ namespace ui {
 namespace test {
 
 TEST(ThreePartImageTest, GetRects) {
-  ThreePartImage image(IDR_BROWSER_ACTION_BADGE_LEFT,
-                       IDR_BROWSER_ACTION_BADGE_CENTER,
-                       IDR_BROWSER_ACTION_BADGE_RIGHT);
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  base::scoped_nsobject<NSImage> leftImage(
+      rb.GetNativeImageNamed(IDR_BROWSER_ACTION_BADGE_LEFT).CopyNSImage());
+  base::scoped_nsobject<NSImage> middleImage(
+      rb.GetNativeImageNamed(IDR_BROWSER_ACTION_BADGE_CENTER).CopyNSImage());
+  base::scoped_nsobject<NSImage> rightImage(
+      rb.GetNativeImageNamed(IDR_BROWSER_ACTION_BADGE_RIGHT).CopyNSImage());
+  ThreePartImage image(leftImage, middleImage, rightImage);
   NSRect bounds = NSMakeRect(0, 0, 20, 11);
   EXPECT_NSRECT_EQ(NSMakeRect(0, 0, 4, 11), image.GetLeftRect(bounds));
   EXPECT_NSRECT_EQ(NSMakeRect(4, 0, 12, 11), image.GetMiddleRect(bounds));
@@ -23,9 +29,12 @@ TEST(ThreePartImageTest, GetRects) {
 }
 
 TEST(ThreePartImageTest, GetRectsWithoutMiddle) {
-  ThreePartImage image(IDR_BROWSER_ACTION_BADGE_LEFT,
-                       0,
-                       IDR_BROWSER_ACTION_BADGE_RIGHT);
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  base::scoped_nsobject<NSImage> leftImage(
+      rb.GetNativeImageNamed(IDR_BROWSER_ACTION_BADGE_LEFT).CopyNSImage());
+  base::scoped_nsobject<NSImage> rightImage(
+      rb.GetNativeImageNamed(IDR_BROWSER_ACTION_BADGE_RIGHT).CopyNSImage());
+  ThreePartImage image(leftImage, nullptr, rightImage);
   NSRect bounds = NSMakeRect(0, 0, 20, 11);
   EXPECT_NSRECT_EQ(NSMakeRect(0, 0, 4, 11), image.GetLeftRect(bounds));
   EXPECT_NSRECT_EQ(NSMakeRect(4, 0, 12, 11), image.GetMiddleRect(bounds));
@@ -33,7 +42,12 @@ TEST(ThreePartImageTest, GetRectsWithoutMiddle) {
 }
 
 TEST(ThreePartImageTest, HitTest) {
-  ThreePartImage image(IDR_BACK_ARROW, 0, IDR_FORWARD_ARROW);
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  base::scoped_nsobject<NSImage> leftImage(
+      rb.GetNativeImageNamed(IDR_BACK_ARROW).CopyNSImage());
+  base::scoped_nsobject<NSImage> rightImage(
+      rb.GetNativeImageNamed(IDR_FORWARD_ARROW).CopyNSImage());
+  ThreePartImage image(leftImage, nullptr, rightImage);
   NSRect bounds = NSMakeRect(0, 0, 512, 128);
 
   // The middle of the arrows are hits.

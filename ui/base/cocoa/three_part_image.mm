@@ -9,17 +9,17 @@
 
 namespace ui {
 
-ThreePartImage::ThreePartImage(int left_id, int middle_id, int right_id) {
-  DCHECK(left_id);
-  DCHECK(right_id);
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  leftImage_.reset(rb.GetNativeImageNamed(left_id).CopyNSImage());
-  rightImage_.reset(rb.GetNativeImageNamed(right_id).CopyNSImage());
+ThreePartImage::ThreePartImage(NSImage* left, NSImage* middle, NSImage* right) {
+  DCHECK(left);
+  DCHECK(right);
+  leftImage_.reset([left retain]);
+  rightImage_.reset([right retain]);
   leftSize_ = [leftImage_ size];
   rightSize_ = [rightImage_ size];
 
-  if (middle_id)
-    middleImage_.reset(rb.GetNativeImageNamed(middle_id).CopyNSImage());
+  if (middle) {
+    middleImage_.reset([middle retain]);
+  }
 }
 
 ThreePartImage::~ThreePartImage() {

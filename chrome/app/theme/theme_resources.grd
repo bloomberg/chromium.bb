@@ -521,6 +521,7 @@
         </if>
       </if>
       <if expr="is_macosx or is_ios">
+        <!-- This image is not used in Mac Material Design and can be removed when that mode is default. -->
         <structure type="chrome_scaled_image" name="IDR_OTR_ICON" file="mac/otr_icon.png" />
       </if>
       <if expr="is_macosx">

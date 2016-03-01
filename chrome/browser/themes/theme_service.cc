@@ -757,15 +757,7 @@ ThemeSyncableService* ThemeService::GetThemeSyncableService() const {
 const ui::ThemeProvider& ThemeService::GetThemeProviderForProfile(
     Profile* profile) {
   ThemeService* service = ThemeServiceFactory::GetForProfile(profile);
-#if defined(OS_MACOSX)
-  // TODO(estade): this doesn't work for OSX yet; fall back to normal theming
-  // in incognito. Since the OSX version of ThemeService caches colors, and
-  // both ThemeProviders use the same ThemeService some code needs to be
-  // rearranged.
-  bool incognito = false;
-#else
   bool incognito = profile->GetProfileType() == Profile::INCOGNITO_PROFILE;
-#endif
   return incognito ? service->incognito_theme_provider_
                    : service->original_theme_provider_;
 }

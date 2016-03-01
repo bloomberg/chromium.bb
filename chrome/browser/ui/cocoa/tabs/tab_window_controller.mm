@@ -5,13 +5,16 @@
 #import "chrome/browser/ui/cocoa/tabs/tab_window_controller.h"
 
 #include "base/logging.h"
+#import "base/mac/sdk_forward_declarations.h"
 #import "chrome/browser/ui/cocoa/browser_window_layout.h"
 #import "chrome/browser/ui/cocoa/fast_resize_view.h"
 #import "chrome/browser/ui/cocoa/framed_browser_window.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_background_view.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_view.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
+#include "grit/theme_resources.h"
 #import "ui/base/cocoa/focus_tracker.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/theme_provider.h"
 
 @interface TabWindowController ()
@@ -330,9 +333,49 @@
 - (void)insertTabStripBackgroundViewIntoWindow:(NSWindow*)window {
   DCHECK(tabStripBackgroundView_);
   NSView* rootView = [[window contentView] superview];
-  [rootView addSubview:tabStripBackgroundView_
+
+  // In Material Design on 10.10 and higher, the top portion of the window is
+  // blurred using an NSVisualEffectView.
+  Class nsVisualEffectViewClass = NSClassFromString(@"NSVisualEffectView");
+  if (!ui::MaterialDesignController::IsModeMaterial() ||
+      !nsVisualEffectViewClass) {
+    [rootView addSubview:tabStripBackgroundView_
+              positioned:NSWindowBelow
+              relativeTo:nil];
+    return;
+  }
+
+  base::scoped_nsobject<NSVisualEffectView> visualEffectView(
+      [[nsVisualEffectViewClass alloc]
+          initWithFrame:[tabStripBackgroundView_ frame]]);
+  DCHECK(visualEffectView);
+
+  [visualEffectView setAutoresizingMask:
+      [tabStripBackgroundView_ autoresizingMask]];
+  [tabStripBackgroundView_
+      setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
+
+  // Set to a default appearance and material. If this is an Incognito window
+  // the material and vibrancy should be dark but this method gets called at
+  // the start of -[BrowserWindowController initWithBrowser:takeOwnership:],
+  // before the |browser_| ivar has been set. Without a browser object we
+  // can't check the window's theme. The final setup happens in
+  // -[TabStripView setController:], at which point we have access to the theme.
+  [visualEffectView setAppearance:
+      [NSAppearance appearanceNamed:NSAppearanceNameVibrantLight]];
+  [visualEffectView setMaterial:NSVisualEffectMaterialLight];
+  [visualEffectView setBlendingMode:NSVisualEffectBlendingModeBehindWindow];
+  [visualEffectView setState:NSVisualEffectStateFollowsWindowActiveState];
+
+  [window setTitlebarAppearsTransparent:YES];
+
+  [rootView addSubview:visualEffectView
             positioned:NSWindowBelow
             relativeTo:nil];
+
+  // Make the |tabStripBackgroundView_| a child of the NSVisualEffectView.
+  [tabStripBackgroundView_ setFrame:[visualEffectView bounds]];
+  [visualEffectView addSubview:tabStripBackgroundView_];
 }
 
 // Called when the size of the window content area has changed. Override to

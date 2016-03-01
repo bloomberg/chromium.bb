@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/mac/sdk_forward_declarations.h"
 #include "base/strings/sys_string_conversions.h"
+#include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
 #import "chrome/browser/ui/cocoa/tabs/media_indicator_button_cocoa.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_controller.h"
@@ -16,16 +17,16 @@
 #import "chrome/browser/ui/cocoa/view_id_util.h"
 #include "chrome/grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "skia/ext/skia_utils_mac.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMFadeTruncatingTextFieldCell.h"
 #import "ui/base/cocoa/nsgraphics_context_additions.h"
 #import "ui/base/cocoa/nsview_additions.h"
 #include "ui/base/cocoa/three_part_image.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
-
-const int kFillHeight = 25;  // Height of the "mask on" part of the mask bitmap.
 
 // The amount of time in seconds during which each type of glow increases, holds
 // steady, and decreases, respectively.
@@ -44,23 +45,82 @@ const NSTimeInterval kGlowUpdateInterval = 0.025;
 // has moved less than the threshold, we want to close the tab.
 const CGFloat kRapidCloseDist = 2.5;
 
+@interface TabView(MaterialDesign)
++ (void)drawTabLeftMaskImage;
++ (void)drawTabRightMaskImage;
++ (void)drawTabLeftEdgeImage;
++ (void)drawTabMiddleEdgeImage;
++ (void)drawTabRightEdgeImage;
+@end
+
 namespace {
+
+NSImage* imageForResourceID(int resource_id) {
+  if (!ui::MaterialDesignController::IsModeMaterial()) {
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+    return [rb.GetNativeImageNamed(resource_id).CopyNSImage() autorelease];
+  }
+
+  CGFloat imageWidth = resource_id == IDR_TAB_ACTIVE_CENTER ? 1 : 18;
+  SEL theSelector = 0;
+  switch (resource_id) {
+    case IDR_TAB_ACTIVE_LEFT:
+      theSelector = @selector(drawTabLeftEdgeImage);
+      break;
+
+    case IDR_TAB_ACTIVE_CENTER:
+      theSelector = @selector(drawTabMiddleEdgeImage);
+      break;
+
+    case IDR_TAB_ACTIVE_RIGHT:
+      theSelector = @selector(drawTabRightEdgeImage);
+      break;
+
+    case IDR_TAB_ALPHA_LEFT:
+      theSelector = @selector(drawTabLeftMaskImage);
+      break;
+
+    case IDR_TAB_ALPHA_RIGHT:
+      theSelector = @selector(drawTabRightMaskImage);
+      break;
+  }
+  DCHECK(theSelector);
+
+  base::scoped_nsobject<NSCustomImageRep> imageRep =
+      [[NSCustomImageRep alloc]
+          initWithDrawSelector:theSelector
+                      delegate:[TabView class]];
+
+  NSImage* newTabButtonImage =
+      [[[NSImage alloc] initWithSize:NSMakeSize(imageWidth, 29)] autorelease];
+  [newTabButtonImage setCacheMode:NSImageCacheAlways];
+  [newTabButtonImage addRepresentation:imageRep];
+
+  return newTabButtonImage;
+}
 
 ui::ThreePartImage& GetMaskImage() {
   CR_DEFINE_STATIC_LOCAL(ui::ThreePartImage, mask,
-                         (IDR_TAB_ALPHA_LEFT, 0, IDR_TAB_ALPHA_RIGHT));
+      (imageForResourceID(IDR_TAB_ALPHA_LEFT), nullptr,
+          imageForResourceID(IDR_TAB_ALPHA_RIGHT)));
+
   return mask;
 }
 
-ui::ThreePartImage& GetStrokeImage(bool active) {
+ui::ThreePartImage& GetStrokeImage() {
   CR_DEFINE_STATIC_LOCAL(
-      ui::ThreePartImage, activeStroke,
-      (IDR_TAB_ACTIVE_LEFT, IDR_TAB_ACTIVE_CENTER, IDR_TAB_ACTIVE_RIGHT));
-  CR_DEFINE_STATIC_LOCAL(
-      ui::ThreePartImage, inactiveStroke,
-      (IDR_TAB_INACTIVE_LEFT, IDR_TAB_INACTIVE_CENTER, IDR_TAB_INACTIVE_RIGHT));
+      ui::ThreePartImage, stroke,
+          (imageForResourceID(IDR_TAB_ACTIVE_LEFT),
+           imageForResourceID(IDR_TAB_ACTIVE_CENTER),
+           imageForResourceID(IDR_TAB_ACTIVE_RIGHT)));
 
-  return active ? activeStroke : inactiveStroke;
+  return stroke;
+}
+
+CGFloat LineWidthFromContext(CGContextRef context) {
+  CGRect unitRect = CGRectMake(0.0, 0.0, 1.0, 1.0);
+  CGRect deviceRect = CGContextConvertRectToDeviceSpace(context, unitRect);
+  return 1.0 / deviceRect.size.height;
 }
 
 }  // namespace
@@ -80,6 +140,11 @@ ui::ThreePartImage& GetStrokeImage(bool active) {
 @synthesize alertAlpha = alertAlpha_;
 @synthesize closing = closing_;
 
++ (CGFloat)maskImageFillHeight {
+  // Return the height of the "mask on" part of the mask bitmap.
+  return [TabController defaultTabHeight] - 1;
+}
+
 - (id)initWithFrame:(NSRect)frame
          controller:(TabController*)controller
         closeButton:(HoverCloseButton*)closeButton {
@@ -96,7 +161,11 @@ ui::ThreePartImage& GetStrokeImage(bool active) {
     base::scoped_nsobject<GTMFadeTruncatingTextFieldCell> labelCell(
         [[GTMFadeTruncatingTextFieldCell alloc] initTextCell:@"Label"]);
     [labelCell setControlSize:NSSmallControlSize];
-    CGFloat fontSize = [NSFont systemFontSizeForControlSize:NSSmallControlSize];
+    // Font size is 12, per Material Design spec.
+    CGFloat fontSize = 12;
+    if (!ui::MaterialDesignController::IsModeMaterial()) {
+      fontSize = [NSFont systemFontSizeForControlSize:NSSmallControlSize];
+    }
     [labelCell setFont:[NSFont systemFontOfSize:fontSize]];
     [titleView_ setCell:labelCell];
     titleViewCell_ = labelCell;
@@ -178,7 +247,7 @@ ui::ThreePartImage& GetStrokeImage(bool active) {
 
   NSPoint viewPoint = [self convertPoint:aPoint fromView:[self superview]];
   NSRect maskRect = [self bounds];
-  maskRect.size.height = kFillHeight;
+  maskRect.size.height = [TabView maskImageFillHeight];
   return GetMaskImage().HitTest(viewPoint, maskRect) ? self : nil;
 }
 
@@ -307,12 +376,16 @@ ui::ThreePartImage& GetStrokeImage(bool active) {
   NSRect bounds = [self bounds];
 
   NSRect clippingRect = bounds;
-  clippingRect.size.height = kFillHeight;
+  clippingRect.size.height = [TabView maskImageFillHeight];
   if (state_ != NSOnState) {
     // Background tabs should not paint over the tab strip separator, which is
-    // two pixels high in both lodpi and hidpi.
-    clippingRect.origin.y = 2 * [self cr_lineWidth];
-    clippingRect.size.height -= clippingRect.origin.y;
+    // two pixels high in both lodpi and hidpi, and one pixel high in MD.
+    CGFloat tabStripSeparatorLineWidth = [self cr_lineWidth];
+    if (!ui::MaterialDesignController::IsModeMaterial()) {
+      tabStripSeparatorLineWidth *= 2;
+    }
+    clippingRect.origin.y = tabStripSeparatorLineWidth;
+    clippingRect.size.height -= tabStripSeparatorLineWidth;
   }
   NSRectClip(clippingRect);
 
@@ -345,7 +418,7 @@ ui::ThreePartImage& GetStrokeImage(bool active) {
   if (hoverAlpha > 0 || alertAlpha > 0) {
     CGContextBeginTransparencyLayer(cgContext, 0);
 
-    // The alert glow overlay is like the selected state but at most at most 80%
+    // The alert glow overlay is like the selected state but at most 80%
     // opaque. The hover glow brings up the overlay's opacity at most 50%.
     CGFloat backgroundAlpha = 0.8 * alertAlpha;
     backgroundAlpha += (1 - backgroundAlpha) * 0.5 * hoverAlpha;
@@ -365,10 +438,16 @@ ui::ThreePartImage& GetStrokeImage(bool active) {
     // Draw a mouse hover gradient for the default themes.
     if (hoverAlpha > 0) {
       if (themeProvider && !hasCustomTheme) {
+        CGFloat whiteValue = 1;
+        // In MD Incognito mode, give the glow a darker value.
+        if (ui::MaterialDesignController::IsModeMaterial() && themeProvider
+            && themeProvider->InIncognitoMode()) {
+          whiteValue = 0.5;
+        }
         base::scoped_nsobject<NSGradient> glow([NSGradient alloc]);
-        [glow initWithStartingColor:[NSColor colorWithCalibratedWhite:1.0
+        [glow initWithStartingColor:[NSColor colorWithCalibratedWhite:whiteValue
                                         alpha:1.0 * hoverAlpha]
-                        endingColor:[NSColor colorWithCalibratedWhite:1.0
+                        endingColor:[NSColor colorWithCalibratedWhite:whiteValue
                                                                 alpha:0.0]];
         NSRect rect = [self bounds];
         NSPoint point = hoverPoint_;
@@ -388,8 +467,17 @@ ui::ThreePartImage& GetStrokeImage(bool active) {
 // Draws the tab outline.
 - (void)drawStroke:(NSRect)dirtyRect {
   CGFloat alpha = [[self window] isMainWindow] ? 1.0 : tabs::kImageNoFocusAlpha;
-  GetStrokeImage(state_ == NSOnState)
-      .DrawInRect([self bounds], NSCompositeSourceOver, alpha);
+  NSRect bounds = [self bounds];
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    // In Material Design the tab strip separator is always 1 pixel high -
+    // add a clip rect to avoid drawing the tab edge over it.
+    NSRect clipRect = bounds;
+    clipRect.origin.y += [self cr_lineWidth];
+    NSRectClip(clipRect);
+    // In MD, the tab stroke is always opaque.
+    alpha = 1;
+  }
+  GetStrokeImage().DrawInRect(bounds, NSCompositeSourceOver, alpha);
 }
 
 - (void)drawRect:(NSRect)dirtyRect {
@@ -433,6 +521,10 @@ ui::ThreePartImage& GetStrokeImage(bool active) {
     // tab dragging.
     [self windowDidChangeActive];
   }
+}
+
+- (BOOL)isActiveTab {
+  return [controller_ active];
 }
 
 - (NSString*)title {
@@ -711,3 +803,135 @@ ui::ThreePartImage& GetStrokeImage(bool active) {
 }
 
 @end  // @implementation TabView(Private)
+
+
+@implementation TabView(MaterialDesign)
+
++ (NSBezierPath*)tabLeftEdgeBezierPathForContext:(CGContextRef)context {
+  NSBezierPath* bezierPath = [NSBezierPath bezierPath];
+
+  [bezierPath moveToPoint:NSMakePoint(-2, 0)];
+  [bezierPath curveToPoint:NSMakePoint(2.5, 2)
+             controlPoint1:NSMakePoint(1.805, -0.38)
+             controlPoint2:NSMakePoint(2.17, 1.415)];
+
+  [bezierPath lineToPoint:NSMakePoint(14, 27)];
+  [bezierPath curveToPoint:NSMakePoint(16, 29)
+             controlPoint1:NSMakePoint(14.25, 27.25)
+             controlPoint2:NSMakePoint(14.747467, 29.118899)];
+
+  [bezierPath lineToPoint:NSMakePoint(18, 29)];
+
+  if (!context) {
+    return bezierPath;
+  }
+
+  // The line width is always 1px.
+  CGFloat lineWidth = LineWidthFromContext(context);
+  [bezierPath setLineWidth:lineWidth];
+
+  // Screen pixels lay between integral coordinates in user space. If you draw
+  // a line from (16, 29) to (18, 29), Core Graphics maps that line to the
+  // pixels that lay along y=28.5. In order to achieve a line that appears to
+  // along y=29, CG will perform dithering. To get a crisp line, you have to
+  // specify y=28.5. Translating the bezier path by the 1-pixel line width
+  // creates the crisp line we want.
+  // On a Retina display, there are pixels at y=28.25 and y=28.75, so
+  // translating the path down by one line width lights up the pixels at 28.75
+  // and leaves a gap along y=28.25. To fix this for the general case we'll
+  // translate up from 28 by one line width.
+  NSAffineTransform* translationTransform = [NSAffineTransform transform];
+  [translationTransform translateXBy:0 yBy:-1 + lineWidth / 2.];
+  [bezierPath transformUsingAffineTransform:translationTransform];
+
+  return bezierPath;
+}
+
++ (void)setTabEdgeStrokeColor {
+  static NSColor* strokeColor =
+      [skia::SkColorToCalibratedNSColor(SkColorSetARGB(76, 0, 0, 0)) retain];
+  [strokeColor set];
+}
+
++ (void)drawTabLeftEdgeImage {
+  CGContextRef context = static_cast<CGContextRef>(
+      [[NSGraphicsContext currentContext] graphicsPort]);
+
+  [TabView setTabEdgeStrokeColor];
+  [[self tabLeftEdgeBezierPathForContext:context] stroke];
+}
+
++ (void)drawTabMiddleEdgeImage {
+  NSBezierPath* middleEdgePath = [NSBezierPath bezierPath];
+  [middleEdgePath moveToPoint:NSMakePoint(0, 29)];
+  [middleEdgePath lineToPoint:NSMakePoint(1, 29)];
+  [middleEdgePath setLineCapStyle:NSSquareLineCapStyle];
+
+  CGContextRef context = static_cast<CGContextRef>(
+      [[NSGraphicsContext currentContext] graphicsPort]);
+  CGFloat lineWidth = LineWidthFromContext(context);
+
+  // Line width is always 1px.
+  [middleEdgePath setLineWidth:lineWidth];
+
+  // Align to device pixels.
+  NSAffineTransform* translationTransform = [NSAffineTransform transform];
+  [translationTransform translateXBy:0 yBy:-1 + lineWidth / 2.];
+  [middleEdgePath transformUsingAffineTransform:translationTransform];
+
+  [TabView setTabEdgeStrokeColor];
+  [middleEdgePath stroke];
+}
+
++ (void)drawTabRightEdgeImage {
+  CGContextRef context = static_cast<CGContextRef>(
+      [[NSGraphicsContext currentContext] graphicsPort]);
+
+  NSBezierPath* leftEdgePath = [self tabLeftEdgeBezierPathForContext:context];
+
+  // Draw the right edge path by flipping the left edge path vertically.
+  NSAffineTransform* transform = [NSAffineTransform transform];
+  [transform scaleXBy:-1 yBy:1];
+  [transform translateXBy:-18 yBy:0];
+  [leftEdgePath transformUsingAffineTransform:transform];
+
+  [TabView setTabEdgeStrokeColor];
+  [leftEdgePath stroke];
+}
+
++ (NSBezierPath*)tabLeftMaskBezierPath {
+  NSBezierPath* bezierPath = [self tabLeftEdgeBezierPathForContext:nullptr];
+
+  // Box in the open edges.
+  [bezierPath lineToPoint:NSMakePoint(18, 0)];
+  [bezierPath lineToPoint:NSMakePoint(0, 0)];
+
+  [bezierPath closePath];
+
+  return bezierPath;
+}
+
++ (void)drawTabLeftMaskImage {
+  NSBezierPath* bezierPath = [self tabLeftMaskBezierPath];
+  NSAffineTransform* translationTransform = [NSAffineTransform transform];
+  [translationTransform translateXBy:0.5 yBy:-0.25];
+  [bezierPath transformUsingAffineTransform:translationTransform];
+
+  [[NSColor whiteColor] set];
+  [bezierPath fill];
+}
+
++ (void)drawTabRightMaskImage {
+  // Create the right mask image by flipping the left mask path along the
+  // vettical axis.
+  NSBezierPath* bezierPath = [self tabLeftMaskBezierPath];
+  NSAffineTransform* transform = [NSAffineTransform transform];
+  [transform scaleXBy:-1 yBy:1];
+  [transform translateXBy:-17.5 yBy:-0.25];
+  [bezierPath transformUsingAffineTransform:transform];
+
+  [[NSColor whiteColor] set];
+  [bezierPath fill];
+}
+
+@end  // @implementation TabView(MaterialDesign)

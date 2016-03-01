@@ -14,9 +14,13 @@
 #include "chrome/grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util_mac.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_skia_util_mac.h"
+#include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
+#include "ui/gfx/vector_icons_public.h"
 
 @interface AvatarIconController (Private)
 - (void)setButtonEnabled:(BOOL)flag;
@@ -36,8 +40,13 @@
     [container setWantsLayer:YES];
     [self setView:container];
 
-    button_.reset([[NSButton alloc] initWithFrame:NSMakeRect(
-        0, 0, profiles::kAvatarIconWidth, profiles::kAvatarIconHeight)]);
+    bool isModeMaterial = ui::MaterialDesignController::IsModeMaterial();
+    NSRect frameRect = NSMakeRect(4, 5, profiles::kAvatarIconWidth,
+        profiles::kAvatarIconHeight);
+    if (!isModeMaterial) {
+      frameRect.origin = NSZeroPoint;
+    }
+    button_.reset([[NSButton alloc] initWithFrame:frameRect]);
     NSButtonCell* cell = [button_ cell];
     [button_ setButtonType:NSMomentaryLightButton];
 
@@ -71,9 +80,15 @@
         l10n_util::GetNSString(IDS_PROFILES_BUBBLE_ACCESSIBLE_DESCRIPTION)
                            forAttribute:NSAccessibilityDescriptionAttribute];
 
-    NSImage* icon = ResourceBundle::GetSharedInstance().GetNativeImageNamed(
-        IDR_OTR_ICON).ToNSImage();
-    [button_ setImage:[self compositeImageWithShadow:icon]];
+    if (isModeMaterial) {
+      NSImage* icon = NSImageFromImageSkia(gfx::CreateVectorIcon(
+          gfx::VectorIconId::INCOGNITO, 24, SK_ColorWHITE));
+      [button_ setImage:icon];
+    } else {
+      NSImage* icon = ResourceBundle::GetSharedInstance().GetNativeImageNamed(
+          IDR_OTR_ICON).ToNSImage();
+      [button_ setImage:[self compositeImageWithShadow:icon]];
+    }
     [button_ setEnabled:NO];
 
     [[self view] addSubview:button_];

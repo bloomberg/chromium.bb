@@ -4,19 +4,29 @@
 
 #import "chrome/browser/ui/cocoa/hover_close_button.h"
 
+#include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
+#include "chrome/browser/themes/theme_properties.h"
+#include "chrome/browser/themes/theme_service.h"
+#import "chrome/browser/ui/cocoa/browser_window_controller.h"
+#import "chrome/browser/ui/cocoa/tabs/tab_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "grit/components_strings.h"
 #include "grit/theme_resources.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMKeyValueAnimation.h"
 #include "ui/base/cocoa/animation_utils.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/image/image_skia_util_mac.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/vector_icons_public.h"
 #include "ui/resources/grit/ui_resources.h"
 
 namespace  {
 const CGFloat kFramesPerSecond = 16; // Determined experimentally to look good.
 const CGFloat kCloseAnimationDuration = 0.1;
+const int kTabCloseButtonSize = 16;
 
 // Strings that are used for all close buttons. Set up in +initialize.
 NSString* gBasicAccessibilityTitle = nil;
@@ -143,21 +153,73 @@ NSString* const kFadeOutValueKeyPath = @"fadeOutValue";
   [self setNeedsDisplay];
 }
 
+- (TabView *)tabView {
+  return base::mac::ObjCCast<TabView>([self superview]);
+}
+
 - (NSImage*)imageForHoverState:(HoverState)hoverState {
   int imageID = IDR_CLOSE_1;
+
+  if (!ui::MaterialDesignController::IsModeMaterial()) {
+    switch (hoverState) {
+      case kHoverStateNone:
+        imageID = IDR_CLOSE_1;
+        break;
+      case kHoverStateMouseOver:
+        imageID = IDR_CLOSE_1_H;
+        break;
+      case kHoverStateMouseDown:
+        imageID = IDR_CLOSE_1_P;
+        break;
+    }
+    ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
+    return bundle.GetNativeImageNamed(imageID).ToNSImage();
+  }
+
+  gfx::VectorIconId vectorIconID;
+  SkColor vectorIconColor;
+  const ui::ThemeProvider* themeProvider = nullptr;
+  TabView* tabView;
+
   switch (hoverState) {
     case kHoverStateNone:
-      imageID = IDR_CLOSE_1;
+      vectorIconID = gfx::VectorIconId::TAB_CLOSE_NORMAL;
+      // Determine the vector icon color, which for this icon is the color
+      // of the "x".
+      themeProvider = [[self window] themeProvider];
+      if (themeProvider) {
+        if (themeProvider->InIncognitoMode()) {
+          vectorIconColor = SkColorSetARGB(0xFF, 0xC4, 0xC4, 0xC4);
+        } else {
+          tabView = [self tabView];
+          bool use_active_tab_text_color = !tabView || [tabView isActiveTab];
+
+          const SkColor titleColor = use_active_tab_text_color ?
+              themeProvider->GetColor(ThemeProperties::COLOR_TAB_TEXT) :
+              themeProvider->GetColor(
+                  ThemeProperties::COLOR_BACKGROUND_TAB_TEXT);
+          vectorIconColor = SkColorSetA(titleColor, 0xA0);
+        }
+      } else {
+        // 0x000000 is the default COLOR_TAB_TEXT color.
+        vectorIconColor = SkColorSetARGB(0xA0, 0x00, 0x00, 0x00);
+      }
       break;
     case kHoverStateMouseOver:
-      imageID = IDR_CLOSE_1_H;
+      // For mouse over, the icon color is the fill color of the circle.
+      vectorIconID = gfx::VectorIconId::TAB_CLOSE_HOVERED_PRESSED;
+      vectorIconColor = SkColorSetARGB(0xFF, 0xDB, 0x44, 0x37);
       break;
     case kHoverStateMouseDown:
-      imageID = IDR_CLOSE_1_P;
+      // For mouse pressed, the icon color is the fill color of the circle.
+      vectorIconID = gfx::VectorIconId::TAB_CLOSE_HOVERED_PRESSED;
+      vectorIconColor = SkColorSetARGB(0xFF, 0xA8, 0x35, 0x2A);
       break;
   }
-  ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-  return bundle.GetNativeImageNamed(imageID).ToNSImage();
+
+  return NSImageFromImageSkia(
+      gfx::CreateVectorIcon(vectorIconID, kTabCloseButtonSize,
+          vectorIconColor));
 }
 
 - (void)setHoverState:(HoverState)state {

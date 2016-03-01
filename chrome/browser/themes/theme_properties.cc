@@ -30,8 +30,10 @@ const SkColor kDefaultColorFrame[] = {
 const SkColor kDefaultColorFrameInactive[] = {
     SkColorSetRGB(0xCD, 0xCD, 0xCE), SkColorSetRGB(220, 220, 220)};
 #elif defined(OS_MACOSX)
-const SkColor kDefaultColorFrame = SkColorSetRGB(224, 224, 224);
-const SkColor kDefaultColorFrameInactive = SkColorSetRGB(246, 246, 246);
+const SkColor kDefaultColorFrame[] = {
+    SkColorSetRGB(224, 224, 224), SkColorSetRGB(204, 204, 204)};
+const SkColor kDefaultColorFrameInactive[] = {
+    SkColorSetRGB(246, 246, 246), SkColorSetRGB(246, 246, 246)};
 #else
 const SkColor kDefaultColorFrame = SkColorSetRGB(66, 116, 201);
 const SkColor kDefaultColorFrameInactive = SkColorSetRGB(161, 182, 228);
@@ -44,6 +46,11 @@ const SkColor kDefaultColorFrameIncognito[] = {SkColorSetRGB(0xA0, 0xA0, 0xA4),
                                                SkColorSetRGB(0x28, 0x2B, 0x2D)};
 const SkColor kDefaultColorFrameIncognitoInactive[] = {
     SkColorSetRGB(0xAA, 0xAA, 0xAE), SkColorSetRGB(0x14, 0x17, 0x19)};
+#elif defined(OS_MACOSX)
+const SkColor kDefaultColorFrameIncognito[] = {
+    SkColorSetRGB(255, 0, 0), SkColorSetARGB(230, 20, 22, 24)};
+const SkColor kDefaultColorFrameIncognitoInactive[] = {
+    SkColorSetRGB(255, 0, 0), SkColorSetRGB(30, 30, 30)};
 #else
 const SkColor kDefaultColorFrameIncognito[] = {SkColorSetRGB(83, 106, 139),
                                                SkColorSetRGB(0x28, 0x2B, 0x2D)};
@@ -52,7 +59,10 @@ const SkColor kDefaultColorFrameIncognitoInactive[] = {
 #endif
 
 #if defined(OS_MACOSX)
-const SkColor kDefaultColorToolbar = SkColorSetRGB(230, 230, 230);
+const SkColor kDefaultColorToolbar[] = {
+    SkColorSetRGB(230, 230, 230), SkColorSetRGB(242, 242, 242)};
+const SkColor kDefaultColorToolbarIncognito[] = {
+    SkColorSetRGB(230, 230, 230), SkColorSetRGB(0x50, 0x50, 0x50)};
 #else
 const SkColor kDefaultColorToolbar[] = {
     SkColorSetRGB(223, 223, 223), SkColorSetRGB(242, 242, 242)};
@@ -68,7 +78,10 @@ const SkColor kDefaultColorTabText = SK_ColorBLACK;
 const SkColor kDefaultColorTabTextIncognito[] = {SK_ColorBLACK, SK_ColorWHITE};
 
 #if defined(OS_MACOSX)
-const SkColor kDefaultColorBackgroundTabText = SK_ColorBLACK;
+const SkColor kDefaultColorBackgroundTabText[] = {
+    SK_ColorBLACK, SK_ColorBLACK };
+const SkColor kDefaultColorBackgroundTabTextIncognito[] = {
+    SK_ColorBLACK, SK_ColorWHITE };
 #else
 const SkColor kDefaultColorBackgroundTabText[] = {
     SkColorSetRGB(64, 64, 64), SK_ColorBLACK };
@@ -109,7 +122,11 @@ const color_utils::HSL kDefaultTintFrame = {-1, -1, -1};
 const color_utils::HSL kDefaultTintFrameInactive = {-1, -1, 0.75};
 const color_utils::HSL kDefaultTintFrameIncognito = {-1, 0.2, 0.35};
 const color_utils::HSL kDefaultTintFrameIncognitoInactive = {-1, 0.3, 0.6};
-const color_utils::HSL kDefaultTintBackgroundTab = {-1, -1, 0.75};
+#if defined(OS_MACOSX)
+const color_utils::HSL kDefaultTintBackgroundTab = { -1, -1, 0.4496875 };
+#else
+  const color_utils::HSL kDefaultTintBackgroundTab = {-1, -1, 0.75};
+#endif  // OS_MACOSX
 
 // ----------------------------------------------------------------------------
 // Defaults for properties which are not stored in the browser theme pack.
@@ -122,14 +139,30 @@ const SkColor kDefaultDetachedBookmarkBarSeparatorIncognito[] = {
 const SkColor kDefaultToolbarTopSeparator = SkColorSetA(SK_ColorBLACK, 0x40);
 
 #if defined(OS_MACOSX)
+const SkColor kDefaultColorFrameVibrancyOverlay[] = {
+    SkColorSetARGB(25, 0, 0, 0), SkColorSetARGB(230, 20, 22, 24)};
+const SkColor kDefaultColorToolbarInactive[] = {
+    SkColorSetRGB(255, 0, 0), SkColorSetRGB(246, 246, 246)};
+const SkColor kDefaultColorToolbarInactiveIncognito[] = {
+    SkColorSetRGB(255, 0, 0), SkColorSetRGB(45, 45, 45)};
+const SkColor kDefaultColorTabBackgroundInactive[] = {
+    SkColorSetRGB(255, 0, 0), SkColorSetRGB(236, 236, 236)};
+const SkColor kDefaultColorTabBackgroundInactiveIncognito[] = {
+    SkColorSetRGB(255, 0, 0), SkColorSetRGB(40, 40, 40)};
 const SkColor kDefaultColorToolbarButtonStroke = SkColorSetARGB(75, 81, 81, 81);
 const SkColor kDefaultColorToolbarButtonStrokeInactive =
     SkColorSetARGB(75, 99, 99, 99);
 const SkColor kDefaultColorToolbarBezel = SkColorSetRGB(204, 204, 204);
-const SkColor kDefaultColorToolbarStroke = SkColorSetRGB(103, 103, 103);
+const SkColor kDefaultColorToolbarStroke[] = {
+    SkColorSetRGB(103, 103, 103), SkColorSetARGB(37, 0, 0, 0)};
 const SkColor kDefaultColorToolbarStrokeInactive = SkColorSetRGB(163, 163, 163);
+const SkColor kDefaultColorToolbarIncognitoStroke[] = {
+    SkColorSetRGB(255, 0, 0), SkColorSetARGB(63, 0, 0, 0)};
+const SkColor kDefaultColorToolbarStrokeTheme =
+    SkColorSetARGB(102, 255, 255, 255);
+const SkColor kDefaultColorToolbarStrokeThemeInactive =
+    SkColorSetARGB(102, 76, 76, 76);
 #endif  // OS_MACOSX
-
 // ----------------------------------------------------------------------------
 
 // Strings used in alignment properties.
@@ -277,37 +310,28 @@ SkColor ThemeProperties::GetDefaultColor(int id, bool otr) {
     case COLOR_FRAME:
       if (otr)
         return kDefaultColorFrameIncognito[mode];
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) || defined(OS_MACOSX)
       return kDefaultColorFrame[mode];
 #else
       return kDefaultColorFrame;
-#endif  // OS_CHROMEOS
+#endif  // OS_CHROMEOS || OS_MACOSX
     case COLOR_FRAME_INACTIVE:
       if (otr)
         return kDefaultColorFrameIncognitoInactive[mode];
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) || defined(OS_MACOSX)
       return kDefaultColorFrameInactive[mode];
 #else
       return kDefaultColorFrameInactive;
-#endif  // OS_CHROMEOS
-#if defined(OS_MACOSX)
-    case COLOR_TOOLBAR:
-      return kDefaultColorToolbar;
-#else
+#endif  // OS_CHROMEOS || OS_MACOSX
     case COLOR_TOOLBAR:
       return otr ? kDefaultColorToolbarIncognito[mode]
                  : kDefaultColorToolbar[mode];
-#endif  // OS_MACOSX
     case COLOR_TAB_TEXT:
       return otr ? kDefaultColorTabTextIncognito[mode]
                  : kDefaultColorTabText;
     case COLOR_BACKGROUND_TAB_TEXT:
-#if defined(OS_MACOSX)
-      return kDefaultColorBackgroundTabText;
-#else
       return otr ? kDefaultColorBackgroundTabTextIncognito[mode]
                  : kDefaultColorBackgroundTabText[mode];
-#endif  // OS_MACOSX
     case COLOR_BOOKMARK_TEXT:
       return otr ? kDefaultColorBookmarkTextIncognito[mode]
                  : kDefaultColorBookmarkText;
@@ -345,6 +369,14 @@ SkColor ThemeProperties::GetDefaultColor(int id, bool otr) {
     case COLOR_TOOLBAR_TOP_SEPARATOR:
       return kDefaultToolbarTopSeparator;
 #if defined(OS_MACOSX)
+    case COLOR_FRAME_VIBRANCY_OVERLAY:
+      return kDefaultColorFrameVibrancyOverlay[otr];
+    case COLOR_TOOLBAR_INACTIVE:
+      return otr ? kDefaultColorToolbarInactiveIncognito[mode]
+                 : kDefaultColorToolbarInactive[mode];
+    case COLOR_BACKGROUND_TAB_INACTIVE:
+      return otr ? kDefaultColorTabBackgroundInactiveIncognito[mode]
+                 : kDefaultColorTabBackgroundInactive[mode];
     case COLOR_TOOLBAR_BUTTON_STROKE:
       return kDefaultColorToolbarButtonStroke;
     case COLOR_TOOLBAR_BUTTON_STROKE_INACTIVE:
@@ -352,9 +384,14 @@ SkColor ThemeProperties::GetDefaultColor(int id, bool otr) {
     case COLOR_TOOLBAR_BEZEL:
       return kDefaultColorToolbarBezel;
     case COLOR_TOOLBAR_STROKE:
-      return kDefaultColorToolbarStroke;
+      return otr ? kDefaultColorToolbarIncognitoStroke[mode]
+                 : kDefaultColorToolbarStroke[mode];
     case COLOR_TOOLBAR_STROKE_INACTIVE:
       return kDefaultColorToolbarStrokeInactive;
+    case COLOR_TOOLBAR_STROKE_THEME:
+      return kDefaultColorToolbarStrokeTheme;
+    case COLOR_TOOLBAR_STROKE_THEME_INACTIVE:
+      return kDefaultColorToolbarStrokeThemeInactive;
 #endif
     case COLOR_FRAME_INCOGNITO:
     case COLOR_FRAME_INCOGNITO_INACTIVE:

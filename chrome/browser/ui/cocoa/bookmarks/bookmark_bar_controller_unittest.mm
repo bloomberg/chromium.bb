@@ -231,6 +231,8 @@ class FakeTheme : public ui::ThemeProvider {
       const override {
     return NULL;
   }
+  bool InIncognitoMode() const override { return false; }
+  bool HasCustomColor(int id) const override { return false; }
   NSImage* GetNSImageNamed(int id) const override { return nil; }
   NSColor* GetNSImageColorNamed(int id) const override { return nil; }
   NSColor* GetNSColor(int id) const override { return color_.get(); }

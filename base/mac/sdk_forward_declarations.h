@@ -276,6 +276,7 @@ BASE_EXPORT extern NSString* const CBAdvertisementDataIsConnectable;
     MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_10
 BASE_EXPORT extern NSString* const NSUserActivityTypeBrowsingWeb;
 BASE_EXPORT extern NSString* const NSAppearanceNameVibrantDark;
+BASE_EXPORT extern NSString* const NSAppearanceNameVibrantLight;
 #endif  // MAC_OS_X_VERSION_10_10
 }  // extern "C"
 
@@ -481,6 +482,7 @@ BASE_EXPORT extern "C" void NSAccessibilityPostNotificationWithUserInfo(
 
 @interface NSView (MavericksSDK)
 - (void)setCanDrawSubviewsIntoLayer:(BOOL)flag;
+- (void)setAppearance:(NSAppearance*)appearance;
 - (NSAppearance*)effectiveAppearance;
 @end
 
@@ -495,6 +497,12 @@ BASE_EXPORT extern "C" void NSAccessibilityPostNotificationWithUserInfo(
 @interface CBPeripheral (MavericksSDK)
 @property(readonly, nonatomic) NSUUID* identifier;
 @end
+
+@interface NSVisualEffectView (MavericksSDK)
+- (void)setState:(NSVisualEffectState)state;
+@end
+
+@class NSVisualEffectView;
 
 #endif  // MAC_OS_X_VERSION_10_9
 
@@ -521,6 +529,10 @@ BASE_EXPORT extern "C" void NSAccessibilityPostNotificationWithUserInfo(
 
 @interface NSViewController (YosemiteSDK)
 - (void)viewDidLoad;
+@end
+
+@interface NSWindow (YosemiteSDK)
+- (void)setTitlebarAppearsTransparent:(BOOL)flag;
 @end
 
 #endif  // MAC_OS_X_VERSION_10_10

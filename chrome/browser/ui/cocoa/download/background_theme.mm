@@ -31,6 +31,14 @@ bool BackgroundTheme::UsingSystemTheme() const {
   return true;
 }
 
+bool BackgroundTheme::InIncognitoMode() const {
+  return false;
+}
+
+bool BackgroundTheme::HasCustomColor(int id) const {
+  return false;
+}
+
 gfx::ImageSkia* BackgroundTheme::GetImageSkiaNamed(int id) const {
   return NULL;
 }
@@ -88,5 +96,3 @@ NSGradient* BackgroundTheme::GetNSGradient(int id) const {
       return provider_->GetNSGradient(id);
   }
 }
-
-

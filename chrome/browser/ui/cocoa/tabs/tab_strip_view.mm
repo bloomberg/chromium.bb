@@ -7,6 +7,10 @@
 #include <cmath>  // floor
 
 #include "base/logging.h"
+#include "base/mac/foundation_util.h"
+#include "base/mac/mac_util.h"
+#include "base/mac/sdk_forward_declarations.h"
+#include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/new_tab_button.h"
@@ -19,6 +23,7 @@
 #import "ui/base/cocoa/nsgraphics_context_additions.h"
 #import "ui/base/cocoa/nsview_additions.h"
 #include "ui/base/l10n/l10n_util_mac.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
 @implementation TabStripView
@@ -47,35 +52,97 @@
   return self;
 }
 
-// Draw bottom border bitmap. Each tab is responsible for mimicking this bottom
-// border, unless it's the selected tab.
-- (void)drawBorder:(NSRect)dirtyRect {
+// Draw the bottom edge of the tab strip. Each tab is responsible for mimicking
+// this bottom border, unless it's the selected tab.
+- (void)drawBottomEdge:(NSRect)dirtyRect {
   NSWindow* window = [self window];
   const ui::ThemeProvider* themeProvider = [window themeProvider];
   if (!themeProvider)
     return;
 
-  // First draw the toolbar bitmap, so that theme colors can shine through.
-  NSRect backgroundRect = [self bounds];
-  backgroundRect.size.height = 2 * [self cr_lineWidth];
-  if (NSIntersectsRect(backgroundRect, dirtyRect))
-    [self drawBackground:backgroundRect];
+  if (!ui::MaterialDesignController::IsModeMaterial()) {
+    // First draw the toolbar bitmap, so that theme colors can shine through.
+    NSRect backgroundRect = [self bounds];
+    backgroundRect.size.height = 2 * [self cr_lineWidth];
+    if (NSIntersectsRect(backgroundRect, dirtyRect))
+      [self drawBackground:backgroundRect];
 
-  // Draw the border bitmap, which is partially transparent.
-  NSImage* image = themeProvider->GetNSImageNamed(IDR_TOOLBAR_SHADE_TOP);
-  NSRect borderRect = backgroundRect;
-  borderRect.size.height = [image size].height;
-  if (NSIntersectsRect(borderRect, dirtyRect)) {
-    BOOL focused = [window isMainWindow];
-    NSDrawThreePartImage(borderRect, nil, image, nil, /*vertical=*/ NO,
-                         NSCompositeSourceOver,
-                         focused ?  1.0 : tabs::kImageNoFocusAlpha,
-                         /*flipped=*/ NO);
+    // Draw the border bitmap, which is partially transparent.
+    NSImage* image = themeProvider->GetNSImageNamed(IDR_TOOLBAR_SHADE_TOP);
+    NSRect borderRect = backgroundRect;
+    borderRect.size.height = [image size].height;
+    if (NSIntersectsRect(borderRect, dirtyRect)) {
+      BOOL focused = [window isMainWindow];
+      NSDrawThreePartImage(borderRect, nil, image, nil, /*vertical=*/ NO,
+                           NSCompositeSourceOver,
+                           focused ?  1.0 : tabs::kImageNoFocusAlpha,
+                           /*flipped=*/ NO);
+    }
+
+    return;
   }
+
+  if (themeProvider->HasCustomImage(IDR_THEME_TOOLBAR) ||
+      themeProvider->HasCustomColor(ThemeProperties::COLOR_TOOLBAR)) {
+    // First draw the toolbar bitmap, so that theme colors can shine through.
+    NSRect backgroundRect = [self bounds];
+    backgroundRect.size.height = [self cr_lineWidth];
+    if (NSIntersectsRect(backgroundRect, dirtyRect)) {
+      [self drawBackground:backgroundRect];
+    }
+
+    // Pre-MD the IDR_TOOLBAR_SHADE_TOP image would lay down a light highlight
+    // which helped dark toolbars stand out from dark frames. Lay down a thin
+    // highlight in MD also.
+    if ([window isMainWindow]) {
+      [themeProvider->GetNSColor(
+          ThemeProperties::COLOR_TOOLBAR_STROKE_THEME) set];
+    } else {
+      [themeProvider->GetNSColor(
+          ThemeProperties::COLOR_TOOLBAR_STROKE_THEME_INACTIVE) set];
+    }
+  } else {
+    [themeProvider->GetNSColor(ThemeProperties::COLOR_TOOLBAR_STROKE) set];
+  }
+  NSRect borderRect = NSMakeRect(0.0, 0.0, self.bounds.size.width,
+      [self cr_lineWidth]);
+  NSRectFillUsingOperation(NSIntersectionRect(dirtyRect, borderRect),
+                           NSCompositeSourceOver);
 }
 
 - (void)drawRect:(NSRect)dirtyRect {
-  [self drawBorder:dirtyRect];
+  const ui::ThemeProvider* themeProvider = [[self window] themeProvider];
+  bool hasCustomThemeImage = themeProvider &&
+      themeProvider->HasCustomImage(IDR_THEME_FRAME);
+  bool isModeMaterial = ui::MaterialDesignController::IsModeMaterial();
+  BOOL supportsVibrancy = [self visualEffectView] != nil;
+  BOOL isMainWindow = [[self window] isMainWindow];
+
+  if (themeProvider && !hasCustomThemeImage && isModeMaterial) {
+    NSColor* theColor = nil;
+    if (isMainWindow) {
+      // The vibrancy overlay makes the Incognito NSVisualEffectView
+      // somewhat darker, and the non-Incognito NSVisualEffectView much darker.
+      if (supportsVibrancy &&
+          !themeProvider->HasCustomColor(ThemeProperties::COLOR_FRAME)) {
+        theColor = themeProvider->GetNSColor(
+            ThemeProperties::COLOR_FRAME_VIBRANCY_OVERLAY);
+      } else {
+        theColor = themeProvider->GetNSColor(ThemeProperties::COLOR_FRAME);
+      }
+    } else {
+      // Inactive MD windows always draw a solid color.
+      theColor = themeProvider->GetNSColor(
+          ThemeProperties::COLOR_FRAME_INACTIVE);
+    }
+
+    if (theColor) {
+      [theColor set];
+      NSRectFillUsingOperation(dirtyRect, NSCompositeSourceOver);
+    }
+  }
+
+  [self drawBottomEdge:dirtyRect];
 
   // Draw drop-indicator arrow (if appropriate).
   // TODO(viettrungluu): this is all a stop-gap measure.
@@ -276,14 +343,72 @@
   newTabButton_.reset([button retain]);
 }
 
+- (NSVisualEffectView*)visualEffectView {
+  // NSVisualEffectView is only used in Material Design, and only available on
+  // OS X 10.10 and higher.
+  if (!ui::MaterialDesignController::IsModeMaterial() ||
+      !base::mac::IsOSYosemiteOrLater()) {
+    return nil;
+  }
+
+  NSView* rootView = [[[self window] contentView] superview];
+  Class nsVisualEffectViewClass = NSClassFromString(@"NSVisualEffectView");
+  DCHECK(nsVisualEffectViewClass);
+  for (NSView* view in [rootView subviews]) {
+    if ([view isKindOfClass:nsVisualEffectViewClass]) {
+      return base::mac::ObjCCast<NSVisualEffectView>(view);
+    }
+  }
+  return nil;
+}
+
 - (void)setController:(TabStripController*)controller {
   controller_ = controller;
+  // If tearing down the browser window, there's nothing more to do.
+  if (!controller_) {
+    return;
+  }
+
+  // Finish configuring the NSVisualEffectView so that it matches the window's
+  // theme.
+  NSVisualEffectView* visualEffectView = [self visualEffectView];
+  const ui::ThemeProvider* themeProvider = [[self window] themeProvider];
+  if (!visualEffectView || !themeProvider) {
+    return;
+  }
+
+  // Themes with custom frame images don't use vibrancy. Otherwise, if Incognito
+  // use Material Dark.
+  if (themeProvider->HasCustomImage(IDR_THEME_FRAME) ||
+      themeProvider->HasCustomColor(ThemeProperties::COLOR_FRAME)) {
+    [visualEffectView setState:NSVisualEffectStateInactive];
+  } else if (themeProvider->InIncognitoMode()) {
+    [visualEffectView setMaterial:NSVisualEffectMaterialDark];
+    [visualEffectView setAppearance:
+        [NSAppearance appearanceNamed:NSAppearanceNameVibrantDark]];
+  }
 }
 
 // ThemedWindowDrawing implementation.
 
 - (void)windowDidChangeTheme {
   [self setNeedsDisplay:YES];
+
+  // Configure the NSVisualEffectView so that it does nothing if the user has
+  // switched to a custom theme, or uses vibrancy if the user has switched back
+  // to the default theme.
+  NSVisualEffectView* visualEffectView = [self visualEffectView];
+  const ui::ThemeProvider* themeProvider = [[self window] themeProvider];
+  if (!visualEffectView || !themeProvider) {
+    return;
+  }
+
+  if (themeProvider->HasCustomImage(IDR_THEME_FRAME) ||
+      themeProvider->HasCustomColor(ThemeProperties::COLOR_FRAME)) {
+    [visualEffectView setState:NSVisualEffectStateInactive];
+  } else {
+    [visualEffectView setState:NSVisualEffectStateFollowsWindowActiveState];
+  }
 }
 
 - (void)windowDidChangeActive {

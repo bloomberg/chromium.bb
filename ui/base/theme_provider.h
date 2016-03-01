@@ -80,8 +80,14 @@ class UI_BASE_EXPORT ThemeProvider {
   // ThemeProvider, but it's used in many places on OSX.
   virtual bool UsingSystemTheme() const = 0;
 
+  // Returns whether or not theme is in Incognito mode.
+  virtual bool InIncognitoMode() const = 0;
+
   // Gets the NSImage with the specified |id|.
   virtual NSImage* GetNSImageNamed(int id) const = 0;
+
+  // Returns true if the theme has defined a custom color for color |id|.
+  virtual bool HasCustomColor(int id) const = 0;
 
   // Gets the NSImage that GetNSImageNamed (above) would return, but returns it
   // as a pattern color.

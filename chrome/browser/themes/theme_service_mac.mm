@@ -9,8 +9,10 @@
 #include "base/logging.h"
 #include "chrome/browser/themes/browser_theme_pack.h"
 #include "chrome/browser/themes/theme_properties.h"
+#include "grit/theme_resources.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMNSColor+Luminance.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/image/image.h"
@@ -19,6 +21,8 @@ NSString* const kBrowserThemeDidChangeNotification =
     @"BrowserThemeDidChangeNotification";
 
 typedef ThemeProperties Properties;
+
+const int kMaterialDesignIdOffset = 1000000;
 
 namespace {
 
@@ -34,8 +38,23 @@ void HSLToHSB(const color_utils::HSL& hsl, CGFloat* h, CGFloat* s, CGFloat* b) {
 
 }  // namespace
 
-NSImage* ThemeService::GetNSImageNamed(int id) const {
+NSImage* ThemeService::GetNSImageNamed(int id, bool incognito) const {
   DCHECK(CalledOnValidThread());
+
+  bool is_tab_or_toolbar_color =
+      id == IDR_THEME_TAB_BACKGROUND_INACTIVE ||
+      id == IDR_THEME_TOOLBAR_INACTIVE ||
+      id == IDR_THEME_TAB_BACKGROUND ||
+      id == IDR_THEME_TOOLBAR;
+  bool isModeMaterial = ui::MaterialDesignController::IsModeMaterial();
+
+  // In Material Design, Incognito mode draws tabs and the toolbar using colors
+  // that are different from non-Incognito mode. If in MD, offset these ids so
+  // that they don't conflict with the non-MD colors in the cache.
+  int original_id = id;
+  if (isModeMaterial && incognito && is_tab_or_toolbar_color) {
+    id += kMaterialDesignIdOffset;
+  }
 
   // Check to see if we already have the image in the cache.
   NSImageMap::const_iterator nsimage_iter = nsimage_cache_.find(id);
@@ -48,14 +67,50 @@ NSImage* ThemeService::GetNSImageNamed(int id) const {
   // - To get the generated tinted images.
   NSImage* nsimage = nil;
   if (theme_supplier_.get()) {
-    gfx::Image image = theme_supplier_->GetImageNamed(id);
+    gfx::Image image = theme_supplier_->GetImageNamed(original_id);
     if (!image.IsEmpty())
       nsimage = image.ToNSImage();
   }
 
-  // If the theme didn't override this image then load it from the resource
-  // bundle.
-  if (!nsimage) {
+  if (!nsimage && isModeMaterial && is_tab_or_toolbar_color) {
+    // If there's no custom image, fall back on the default color. On the
+    // surface it might seem that clients should call GetNSColor(id) directly.
+    // The problem is custom themes get a chance to provide their own versions
+    // of these resources, and they do so by supplying an image. So clients
+    // interested in these resources must call GetNSImageColorNamed(), which in
+    // turn calls GetNSImageNamed(). It also means we can't return a color
+    // directly but instead have to generate a color swatch.
+    NSColor* defaultColor = [NSColor redColor];
+    switch (original_id) {
+      case IDR_THEME_TOOLBAR:
+        defaultColor = GetNSColor(ThemeProperties::COLOR_TOOLBAR, incognito);
+        break;
+
+      case IDR_THEME_TAB_BACKGROUND:
+        defaultColor = GetNSColor(ThemeProperties::COLOR_BACKGROUND_TAB,
+                                  incognito);
+        break;
+
+      case IDR_THEME_TOOLBAR_INACTIVE:
+        defaultColor = GetNSColor(ThemeProperties::COLOR_TOOLBAR_INACTIVE,
+                                  incognito);
+        break;
+
+      case IDR_THEME_TAB_BACKGROUND_INACTIVE:
+        defaultColor = GetNSColor(
+            ThemeProperties::COLOR_BACKGROUND_TAB_INACTIVE, incognito);
+        break;
+    }
+
+    NSSize imageSize = NSMakeSize(200, 100);
+    nsimage = [[[NSImage alloc] initWithSize:imageSize] autorelease];
+    [nsimage lockFocus];
+    [defaultColor set];
+    NSRectFill(NSMakeRect(0, 0, imageSize.width, imageSize.height));
+    [nsimage unlockFocus];
+  } else if (!nsimage) {
+    // If the theme didn't override this image then load it from the resource
+    // bundle.
     nsimage = rb_.GetNativeImageNamed(id).ToNSImage();
   }
 
@@ -84,15 +139,30 @@ NSImage* ThemeService::GetNSImageNamed(int id) const {
   return empty_image;
 }
 
-NSColor* ThemeService::GetNSImageColorNamed(int id) const {
+NSColor* ThemeService::GetNSImageColorNamed(int id, bool incognito) const {
   DCHECK(CalledOnValidThread());
+
+  bool is_tab_or_toolbar_color =
+      id == IDR_THEME_TAB_BACKGROUND_INACTIVE ||
+      id == IDR_THEME_TOOLBAR_INACTIVE ||
+      id == IDR_THEME_TAB_BACKGROUND ||
+      id == IDR_THEME_TOOLBAR;
+  bool isModeMaterial = ui::MaterialDesignController::IsModeMaterial();
+
+  // In Material Design, Incognito mode draws tabs and the toolbar using colors
+  // that are different from non-Incognito mode. If in MD, offset these ids so
+  // that they don't clash with the non-MD colors in the cache.
+  int original_id = id;
+  if (isModeMaterial && incognito && is_tab_or_toolbar_color) {
+    id += kMaterialDesignIdOffset;
+  }
 
   // Check to see if we already have the color in the cache.
   NSColorMap::const_iterator nscolor_iter = nscolor_cache_.find(id);
   if (nscolor_iter != nscolor_cache_.end())
     return nscolor_iter->second;
 
-  NSImage* image = GetNSImageNamed(id);
+  NSImage* image = GetNSImageNamed(original_id, incognito);
   if (!image)
     return nil;
   NSColor* image_color = [NSColor colorWithPatternImage:image];
@@ -104,15 +174,25 @@ NSColor* ThemeService::GetNSImageColorNamed(int id) const {
   return image_color;
 }
 
-NSColor* ThemeService::GetNSColor(int id) const {
+bool ThemeService::HasCustomColor(int id) const {
+  SkColor color;
+  return theme_supplier_ && theme_supplier_->GetColor(id, &color);
+}
+
+NSColor* ThemeService::GetNSColor(int id, bool incognito) const {
   DCHECK(CalledOnValidThread());
+
+  int original_id = id;
+  if (ui::MaterialDesignController::IsModeMaterial() && incognito) {
+    id += kMaterialDesignIdOffset;
+  }
 
   // Check to see if we already have the color in the cache.
   NSColorMap::const_iterator nscolor_iter = nscolor_cache_.find(id);
   if (nscolor_iter != nscolor_cache_.end())
     return nscolor_iter->second;
 
-  SkColor sk_color = GetColor(id, false);
+  SkColor sk_color = GetColor(original_id, incognito);
   NSColor* color = skia::SkColorToCalibratedNSColor(sk_color);
 
   // We loaded successfully.  Cache the color.
@@ -287,21 +367,29 @@ void ThemeService::FreePlatformCaches() {
   nsgradient_cache_.clear();
 }
 
+bool ThemeService::BrowserThemeProvider::InIncognitoMode() const {
+  return incognito_;
+}
+
 bool ThemeService::BrowserThemeProvider::UsingSystemTheme() const {
   return theme_service_.UsingSystemTheme();
 }
 
+bool ThemeService::BrowserThemeProvider::HasCustomColor(int id) const {
+  return theme_service_.HasCustomColor(id);
+}
+
 NSImage* ThemeService::BrowserThemeProvider::GetNSImageNamed(int id) const {
-  return theme_service_.GetNSImageNamed(id);
+  return theme_service_.GetNSImageNamed(id, incognito_);
 }
 
 NSColor* ThemeService::BrowserThemeProvider::GetNSImageColorNamed(
     int id) const {
-  return theme_service_.GetNSImageColorNamed(id);
+  return theme_service_.GetNSImageColorNamed(id, incognito_);
 }
 
 NSColor* ThemeService::BrowserThemeProvider::GetNSColor(int id) const {
-  return theme_service_.GetNSColor(id);
+  return theme_service_.GetNSColor(id, incognito_);
 }
 
 NSColor* ThemeService::BrowserThemeProvider::GetNSColorTint(int id) const {

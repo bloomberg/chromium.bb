@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_COCOA_THREE_PART_IMAGE_H
-#define UI_BASE_COCOA_THREE_PART_IMAGE_H
+#ifndef UI_BASE_COCOA_THREE_PART_IMAGE_H_
+#define UI_BASE_COCOA_THREE_PART_IMAGE_H_
 
 #import <Cocoa/Cocoa.h>
 
@@ -18,9 +18,9 @@ namespace ui {
 // Vertical orientation is not currently supported.
 class UI_BASE_EXPORT ThreePartImage {
  public:
-  // |left_id|, |middle_id|, and |right_id| are ResourceBundle image
-  // identifiers. Specify 0 for |middle_id| if there is no middle image.
-  ThreePartImage(int left_id, int middle_id, int right_id);
+  // Create a ThreePartImage from existing NSImages. Specify nil for |middle| if
+  // there is no middle image.
+  ThreePartImage(NSImage* left, NSImage* middle, NSImage* right);
   ~ThreePartImage();
 
   // Returns the image rects if drawn in |bounds|.
@@ -51,4 +51,4 @@ class UI_BASE_EXPORT ThreePartImage {
 
 }  // namespace ui
 
-#endif  // UI_BASE_COCOA_THREE_PART_IMAGE_H
+#endif  // UI_BASE_COCOA_THREE_PART_IMAGE_H_

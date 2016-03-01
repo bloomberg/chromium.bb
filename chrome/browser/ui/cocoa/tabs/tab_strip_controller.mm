@@ -64,6 +64,7 @@
 #include "ui/base/cocoa/animation_utils.h"
 #import "ui/base/cocoa/tracking_area.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/models/list_selection_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
@@ -87,13 +88,15 @@ const CGFloat kUseFullAvailableWidth = -1.0;
 // the throbber is painted, the throbber's invalidation will also invalidate
 // parts of the tab to the left, and two tabs's backgrounds need to be painted
 // on each throbber frame instead of one.
-const CGFloat kTabOverlap = 19.0;
+const CGFloat kTabOverlap = 18.0;
+const CGFloat kTabOverlapNonMD = 19.0;
 
 // The amount by which pinned tabs are separated from normal tabs.
 const CGFloat kLastPinnedTabSpacing = 2.0;
 
 // The amount by which the new tab button is offset (from the tabs).
-const CGFloat kNewTabButtonOffset = 8.0;
+const CGFloat kNewTabButtonOffset = 10.0;
+const CGFloat kNewTabButtonOffsetNonMD = 8.0;
 
 // Time (in seconds) in which tabs animate to their final position.
 const NSTimeInterval kAnimationDuration = 0.125;
@@ -139,93 +142,6 @@ private:
   DISALLOW_COPY_AND_ASSIGN(ScopedNSAnimationContextGroup);
 };
 
-// Creates an NSImage with size |size| and bitmap image representations for both
-// 1x and 2x scale factors. |drawingHandler| is called once for every scale
-// factor.  This is similar to -[NSImage imageWithSize:flipped:drawingHandler:],
-// but this function always evaluates drawingHandler eagerly, and it works on
-// 10.6 and 10.7.
-NSImage* CreateImageWithSize(NSSize size,
-                             void (^drawingHandler)(NSSize)) {
-  base::scoped_nsobject<NSImage> result([[NSImage alloc] initWithSize:size]);
-  [NSGraphicsContext saveGraphicsState];
-  for (ui::ScaleFactor scale_factor : ui::GetSupportedScaleFactors()) {
-    float scale = GetScaleForScaleFactor(scale_factor);
-    NSBitmapImageRep *bmpImageRep = [[[NSBitmapImageRep alloc]
-        initWithBitmapDataPlanes:NULL
-                      pixelsWide:size.width * scale
-                      pixelsHigh:size.height * scale
-                   bitsPerSample:8
-                 samplesPerPixel:4
-                        hasAlpha:YES
-                        isPlanar:NO
-                  colorSpaceName:NSDeviceRGBColorSpace
-                     bytesPerRow:0
-                    bitsPerPixel:0] autorelease];
-    [bmpImageRep setSize:size];
-    [NSGraphicsContext setCurrentContext:
-        [NSGraphicsContext graphicsContextWithBitmapImageRep:bmpImageRep]];
-    drawingHandler(size);
-    [result addRepresentation:bmpImageRep];
-  }
-  [NSGraphicsContext restoreGraphicsState];
-
-  return result.release();
-}
-
-// Takes a normal bitmap and a mask image and returns an image the size of the
-// mask that has pixels from |image| but alpha information from |mask|.
-NSImage* ApplyMask(NSImage* image, NSImage* mask) {
-  return [CreateImageWithSize([mask size], ^(NSSize size) {
-      // Skip a few pixels from the top of the tab background gradient, because
-      // the new tab button is not drawn at the very top of the browser window.
-      const int kYOffset = 10;
-      CGFloat width = size.width;
-      CGFloat height = size.height;
-
-      // In some themes, the tab background image is narrower than the
-      // new tab button, so tile the background image.
-      CGFloat x = 0;
-      // The floor() is to make sure images with odd widths don't draw to the
-      // same pixel twice on retina displays. (Using NSDrawThreePartImage()
-      // caused a startup perf regression, so that cannot be used.)
-      CGFloat tileWidth = floor(std::min(width, [image size].width));
-      while (x < width) {
-        [image drawAtPoint:NSMakePoint(x, 0)
-                  fromRect:NSMakeRect(0,
-                                      [image size].height - height - kYOffset,
-                                      tileWidth,
-                                      height)
-                 operation:NSCompositeCopy
-                  fraction:1.0];
-        x += tileWidth;
-      }
-
-      [mask drawAtPoint:NSZeroPoint
-               fromRect:NSMakeRect(0, 0, width, height)
-              operation:NSCompositeDestinationIn
-               fraction:1.0];
-  }) autorelease];
-}
-
-// Paints |overlay| on top of |ground|.
-NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
-  DCHECK_EQ([ground size].width, [overlay size].width);
-  DCHECK_EQ([ground size].height, [overlay size].height);
-
-  return [CreateImageWithSize([ground size], ^(NSSize size) {
-      CGFloat width = size.width;
-      CGFloat height = size.height;
-      [ground drawAtPoint:NSZeroPoint
-                 fromRect:NSMakeRect(0, 0, width, height)
-                operation:NSCompositeCopy
-                 fraction:1.0];
-      [overlay drawAtPoint:NSZeroPoint
-                  fromRect:NSMakeRect(0, 0, width, height)
-                 operation:NSCompositeSourceOver
-                  fraction:alpha];
-  }) autorelease];
-}
-
 }  // namespace
 
 @interface TabStripController (Private)
@@ -252,7 +168,6 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
            disposition:(WindowOpenDisposition*)disposition;
 - (void)setNewTabButtonHoverState:(BOOL)showHover;
 - (void)themeDidChangeNotification:(NSNotification*)notification;
-- (void)setNewTabImages;
 - (BOOL)doesAnyOtherWebContents:(content::WebContents*)selected
                  haveMediaState:(TabMediaState)state;
 @end
@@ -513,7 +428,6 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
     [newTabButton_ setTarget:self];
     [newTabButton_ setAction:@selector(clickNewTabButton:)];
 
-    [self setNewTabImages];
     newTabButtonShowingHoverImage_ = NO;
     newTabTrackingArea_.reset(
         [[CrTrackingArea alloc] initWithRect:[newTabButton_ bounds]
@@ -1012,9 +926,14 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
     availableSpace = NSWidth([tabStripView_ frame]);
 
     // Account for the width of the new tab button.
-    availableSpace -=
-        NSWidth([newTabButton_ frame]) + kNewTabButtonOffset - kTabOverlap;
-
+    if (!ui::MaterialDesignController::IsModeMaterial()) {
+      availableSpace -=
+          NSWidth([newTabButton_ frame]) + kNewTabButtonOffsetNonMD -
+              kTabOverlapNonMD;
+    } else {
+      availableSpace -=
+          NSWidth([newTabButton_ frame]) + kNewTabButtonOffset - kTabOverlap;
+    }
     // Account for the right-side controls if not in rapid closure mode.
     // (In rapid closure mode, the available width is set based on the
     // position of the rightmost tab, not based on the width of the tab strip,
@@ -2372,45 +2291,7 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
 }
 
 - (void)themeDidChangeNotification:(NSNotification*)notification {
-  [self setNewTabImages];
-}
-
-- (void)setNewTabImages {
-  const ui::ThemeProvider* theme = [[tabStripView_ window] themeProvider];
-  if (!theme)
-    return;
-
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  NSImage* mask = rb.GetNativeImageNamed(IDR_NEWTAB_BUTTON_MASK).ToNSImage();
-  NSImage* normal = rb.GetNativeImageNamed(IDR_NEWTAB_BUTTON).ToNSImage();
-  NSImage* hover = rb.GetNativeImageNamed(IDR_NEWTAB_BUTTON_H).ToNSImage();
-  NSImage* pressed = rb.GetNativeImageNamed(IDR_NEWTAB_BUTTON_P).ToNSImage();
-
-  NSImage* foreground = ApplyMask(
-      theme->GetNSImageNamed(IDR_THEME_TAB_BACKGROUND), mask);
-
-  [[newTabButton_ cell] setImage:Overlay(foreground, normal, 1.0)
-                  forButtonState:image_button_cell::kDefaultState];
-  [[newTabButton_ cell] setImage:Overlay(foreground, hover, 1.0)
-                  forButtonState:image_button_cell::kHoverState];
-  [[newTabButton_ cell] setImage:Overlay(foreground, pressed, 1.0)
-                    forButtonState:image_button_cell::kPressedState];
-
-  // IDR_THEME_TAB_BACKGROUND_INACTIVE is only used with the default theme.
-  if (theme->UsingSystemTheme()) {
-    const CGFloat alpha = tabs::kImageNoFocusAlpha;
-    NSImage* background = ApplyMask(
-        theme->GetNSImageNamed(IDR_THEME_TAB_BACKGROUND_INACTIVE), mask);
-    [[newTabButton_ cell] setImage:Overlay(background, normal, alpha)
-                    forButtonState:image_button_cell::kDefaultStateBackground];
-    [[newTabButton_ cell] setImage:Overlay(background, hover, alpha)
-                    forButtonState:image_button_cell::kHoverStateBackground];
-  } else {
-    [[newTabButton_ cell] setImage:nil
-                    forButtonState:image_button_cell::kDefaultStateBackground];
-    [[newTabButton_ cell] setImage:nil
-                    forButtonState:image_button_cell::kHoverStateBackground];
-  }
+  [newTabButton_ setImages];
 }
 
 @end

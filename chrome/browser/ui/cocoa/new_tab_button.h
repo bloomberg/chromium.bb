@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_COCOA_NEW_TAB_BUTTON
-#define CHROME_BROWSER_UI_COCOA_NEW_TAB_BUTTON
+#ifndef CHROME_BROWSER_UI_COCOA_NEW_TAB_BUTTON_H_
+#define CHROME_BROWSER_UI_COCOA_NEW_TAB_BUTTON_H_
 
 #import <Cocoa/Cocoa.h>
 
@@ -19,6 +19,11 @@
 // Returns YES if the given point is over the button.  |point| is in the
 // superview's coordinate system.
 - (BOOL)pointIsOverButton:(NSPoint)point;
+
+// Sets the images shown by the NewTabButton's different states.
+- (void)setImages;
+
 @end
 
-#endif  // CHROME_BROWSER_UI_COCOA_NEW_TAB_BUTTON
+
+#endif  // CHROME_BROWSER_UI_COCOA_NEW_TAB_BUTTON_H_

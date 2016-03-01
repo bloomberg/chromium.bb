@@ -19,6 +19,7 @@
 #include "grit/theme_resources.h"
 #include "ui/base/cocoa/nsgraphics_context_additions.h"
 #import "ui/base/cocoa/nsview_additions.h"
+#include "ui/base/material_design/material_design_controller.h"
 
 // Implementer's note: Moving the window controls is tricky. When altering the
 // code, ensure that:
@@ -282,9 +283,10 @@ const CGFloat kWindowGradientHeight = 24.0;
       themeImageColor = themeProvider->GetNSImageColorNamed(themeImageID);
   }
 
-  // If no theme image, use a gradient if incognito.
+  // If not Material Design, use a gradient if Incognito and no theme image.
   NSGradient* gradient = nil;
-  if (!themeImageColor && incognito)
+  if (!ui::MaterialDesignController::IsModeMaterial() &&
+      !themeImageColor && incognito)
     gradient = themeProvider->GetNSGradient(
         active ? ThemeProperties::GRADIENT_FRAME_INCOGNITO :
                  ThemeProperties::GRADIENT_FRAME_INCOGNITO_INACTIVE);

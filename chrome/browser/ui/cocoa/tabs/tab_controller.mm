@@ -19,6 +19,7 @@
 #include "content/public/browser/user_metrics.h"
 #import "extensions/common/extension.h"
 #import "ui/base/cocoa/menu_controller.h"
+#include "ui/base/material_design/material_design_controller.h"
 
 @implementation TabController
 
@@ -63,7 +64,12 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
 
 }  // TabControllerInternal namespace
 
-+ (CGFloat)defaultTabHeight { return 26; }
++ (CGFloat)defaultTabHeight {
+  if (!ui::MaterialDesignController::IsModeMaterial()) {
+    return 26;
+  }
+  return 29;
+}
 
 // The min widths is the smallest number at which the right edge of the right
 // tab border image is not visibly clipped.  It is a bit smaller than the sum
@@ -71,7 +77,13 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
 // pixels on the side.  The selected tab width includes the close button width.
 + (CGFloat)minTabWidth { return 36; }
 + (CGFloat)minActiveTabWidth { return 52; }
-+ (CGFloat)maxTabWidth { return 214; }
++ (CGFloat)maxTabWidth {
+  if (!ui::MaterialDesignController::IsModeMaterial()) {
+    return 214;
+  }
+  return 246;
+}
+
 + (CGFloat)pinnedTabWidth { return 58; }
 
 - (TabView*)tabView {
@@ -81,10 +93,14 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
 
 - (id)init {
   if ((self = [super init])) {
+    bool isModeMaterial = ui::MaterialDesignController::IsModeMaterial();
     // Icon.
     // Remember the icon's frame, so that if the icon is ever removed, a new
     // one can later replace it in the proper location.
-    originalIconFrame_ = NSMakeRect(19, 5, 16, 16);
+    originalIconFrame_ = NSMakeRect(18, 6, 16, 16);
+    if (!isModeMaterial) {
+      originalIconFrame_ = NSMakeRect(19, 5, 16, 16);
+    }
     iconView_.reset([[SpriteView alloc] initWithFrame:originalIconFrame_]);
     [iconView_ setAutoresizingMask:NSViewMaxXMargin | NSViewMinYMargin];
 
@@ -94,11 +110,18 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
     // and contract the title frame under those conditions. We don't have to
     // explicilty save the offset between the title and the close button since
     // we can just get that value for the close button's frame.
-    NSRect titleFrame = NSMakeRect(35, 6, 92, 14);
+    NSRect titleFrame = NSMakeRect(35, 6, 92, 17);
+    if (!isModeMaterial) {
+      titleFrame.size.height = 14;
+    }
 
     // Close button.
+    NSRect closeButtonFrame = NSMakeRect(129, 6, 16, 16);
+    if (!isModeMaterial) {
+      closeButtonFrame = NSMakeRect(127, 4, 18, 18);
+    }
     closeButton_.reset([[HoverCloseButton alloc] initWithFrame:
-        NSMakeRect(127, 4, 18, 18)]);
+        closeButtonFrame]);
     [closeButton_ setAutoresizingMask:NSViewMinXMargin];
     [closeButton_ setTarget:self];
     [closeButton_ setAction:@selector(closeTab:)];
@@ -399,7 +422,11 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
   newTitleFrame.origin.y = oldTitleFrame.origin.y;
 
   if (newShowIcon) {
-    newTitleFrame.origin.x = NSMaxX([iconView_ frame]);
+    newTitleFrame.origin.x = NSMaxX([iconView_ frame]) + 4;
+
+    if (!ui::MaterialDesignController::IsModeMaterial()) {
+      newTitleFrame.origin.x -= 4;
+    }
   } else {
     newTitleFrame.origin.x = originalIconFrame_.origin.x;
   }

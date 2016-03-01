@@ -77,6 +77,7 @@ const CGFloat kImageNoFocusAlpha = 0.65;
   base::scoped_nsobject<NSString> toolTipText_;
 }
 
+@property(readonly, nonatomic) BOOL isActiveTab;
 @property(retain, nonatomic) NSString* title;
 @property(assign, nonatomic) NSRect titleFrame;
 @property(retain, nonatomic) NSColor* titleColor;
