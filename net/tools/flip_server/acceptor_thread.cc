@@ -12,11 +12,11 @@
 
 #include <string>
 
-#include "net/socket/tcp_socket.h"
 #include "net/tools/flip_server/constants.h"
 #include "net/tools/flip_server/flip_config.h"
 #include "net/tools/flip_server/sm_connection.h"
 #include "net/tools/flip_server/spdy_ssl.h"
+#include "net/tools/flip_server/tcp_socket_util.h"
 #include "openssl/err.h"
 #include "openssl/ssl.h"
 
@@ -83,7 +83,7 @@ void SMAcceptorThread::InitWorker() {
 void SMAcceptorThread::HandleConnection(int server_fd,
                                         struct sockaddr_in* remote_addr) {
   if (acceptor_->disable_nagle_) {
-    if (!SetTCPNoDelay(server_fd, /*no_delay=*/true)) {
+    if (!SetTCPNoDelay(server_fd)) {
       close(server_fd);
       LOG(FATAL) << "SetTCPNoDelay() failed on fd: " << server_fd;
       return;

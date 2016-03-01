@@ -17,7 +17,6 @@
 
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#include "net/socket/tcp_socket.h"
 
 namespace net {
 
@@ -61,6 +60,12 @@ bool CloseSocket(int* fd, int tries) {
 }
 
 }  // namespace
+
+bool SetTCPNoDelay(int fd) {
+  int on = 1;
+  return setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, reinterpret_cast<char*>(&on),
+                    sizeof(on)) == 0;
+}
 
 int CreateTCPServerSocket(const std::string& host,
                           const std::string& port,
@@ -170,7 +175,7 @@ int CreateTCPServerSocket(const std::string& host,
   }
 
   if (disable_nagle) {
-    if (!SetTCPNoDelay(sock, /*no_delay=*/true)) {
+    if (!SetTCPNoDelay(sock)) {
       close(sock);
       LOG(FATAL) << "SetTCPNoDelay() failed on fd: " << sock;
       return -1;
@@ -248,7 +253,7 @@ int CreateTCPClientSocket(const std::string& host,
   }
 
   if (disable_nagle) {
-    if (!SetTCPNoDelay(sock, /*no_delay=*/true)) {
+    if (!SetTCPNoDelay(sock)) {
       close(sock);
       LOG(FATAL) << "SetTCPNoDelay() failed on fd: " << sock;
       return -1;
