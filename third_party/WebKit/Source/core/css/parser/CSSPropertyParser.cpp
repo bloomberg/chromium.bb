@@ -4291,7 +4291,6 @@ bool CSSPropertyParser::consumeShorthandGreedily(const StylePropertyShorthand& s
 
 bool CSSPropertyParser::consumeFlex(bool important)
 {
-    ShorthandScope scope(this, CSSPropertyFlex);
     static const double unsetValue = -1;
     double flexGrow = unsetValue;
     double flexShrink = unsetValue;
