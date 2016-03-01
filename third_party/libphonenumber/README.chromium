@@ -1,8 +1,8 @@
 Name: International Phone Number Library
 Short Name: libphonenumber
-URL: http://libphonenumber.googlecode.com/svn/trunk/
+URL: https://github.com/googlei18n/libphonenumber/
 Version: unknown
-Revision: 584
+Revision: a9bd368debe74355364965c24bcc5a6bfb1dc546
 License: Apache 2.0
 License File: LICENSE
 Security Critical: yes
@@ -21,12 +21,12 @@ Additional files, not in the original library:
   LICENSE # Taken from https://github.com/googlei18n/libphonenumber/
   phonenumber_api.h
 
-The library is mapped through the DEPS file into src/ folder. To update:
-1. Get the latest version number from
-   http://code.google.com/p/libphonenumber/source/list
+The library is mapped through the DEPS file into dist/ folder. To update:
+1. Get the latest commit hash from
+   https://github.com/googlei18n/libphonenumber/
 2. Locally update this file and DEPS.
 3. run 'gclient sync'
-4. Adjust libphonenumber.gyp if necessary.
+4. Adjust libphonenumber.gyp/BUILD.gn if necessary.
 5. Verify that all compiles and all of the tests are successfull.
 
 WARNING: This library is only thread-safe on POSIX. This means that

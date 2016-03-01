@@ -5,8 +5,8 @@
 {
   'target_defaults': {
     'include_dirs': [
-      'src',
-      'src/test',
+      'dist/cpp/src',
+      'dist/cpp/test',
       # The libphonenumber source (and test code) expects the
       # generated protocol headers to be available with "phonenumbers" include
       # path, e.g. #include "phonenumbers/foo.pb.h".
@@ -44,27 +44,27 @@
       '../protobuf/protobuf.gyp:protobuf_lite',
     ],
     'sources': [
-      'src/phonenumbers/asyoutypeformatter.cc',
-      'src/phonenumbers/base/strings/string_piece.cc',
-      'src/phonenumbers/default_logger.cc',
-      'src/phonenumbers/logger.cc',
-      'src/phonenumbers/phonenumber.cc',
-      'src/phonenumbers/phonenumbermatch.cc',
-      'src/phonenumbers/phonenumbermatcher.cc',
-      'src/phonenumbers/phonenumberutil.cc',
-      'src/phonenumbers/regexp_adapter_icu.cc',
-      'src/phonenumbers/regexp_cache.cc',
-      'src/phonenumbers/string_byte_sink.cc',
-      'src/phonenumbers/stringutil.cc',
-      'src/phonenumbers/unicodestring.cc',
-      'src/phonenumbers/utf/rune.c',
-      'src/phonenumbers/utf/unicodetext.cc',
-      'src/phonenumbers/utf/unilib.cc',
-      'src/resources/phonemetadata.proto',
-      'src/resources/phonenumber.proto',
+      'dist/cpp/src/phonenumbers/asyoutypeformatter.cc',
+      'dist/cpp/src/phonenumbers/base/strings/string_piece.cc',
+      'dist/cpp/src/phonenumbers/default_logger.cc',
+      'dist/cpp/src/phonenumbers/logger.cc',
+      'dist/cpp/src/phonenumbers/phonenumber.cc',
+      'dist/cpp/src/phonenumbers/phonenumbermatch.cc',
+      'dist/cpp/src/phonenumbers/phonenumbermatcher.cc',
+      'dist/cpp/src/phonenumbers/phonenumberutil.cc',
+      'dist/cpp/src/phonenumbers/regexp_adapter_icu.cc',
+      'dist/cpp/src/phonenumbers/regexp_cache.cc',
+      'dist/cpp/src/phonenumbers/string_byte_sink.cc',
+      'dist/cpp/src/phonenumbers/stringutil.cc',
+      'dist/cpp/src/phonenumbers/unicodestring.cc',
+      'dist/cpp/src/phonenumbers/utf/rune.c',
+      'dist/cpp/src/phonenumbers/utf/unicodetext.cc',
+      'dist/cpp/src/phonenumbers/utf/unilib.cc',
+      'dist/resources/phonemetadata.proto',
+      'dist/resources/phonenumber.proto',
     ],
     'variables': {
-      'proto_in_dir': 'src/resources',
+      'proto_in_dir': 'dist/resources',
       'proto_out_dir': 'third_party/libphonenumber/phonenumbers',
       'clang_warning_flags': [
         # https://github.com/googlei18n/libphonenumber/pull/741
@@ -75,7 +75,7 @@
     'direct_dependent_settings': {
       'include_dirs': [
         '<(SHARED_INTERMEDIATE_DIR)/protoc_out/third_party/libphonenumber',
-        'src',
+        'dist/cpp/src',
       ],
       'defines': [
         'I18N_PHONENUMBERS_USE_ICU_REGEXP=1',
@@ -110,8 +110,8 @@
     'sources': [
       # Comment next line and uncomment the line after, if complete metadata
       # (with examples) is needed.
-      'src/phonenumbers/lite_metadata.cc',
-      #'src/phonenumbers/metadata.cc',
+      'dist/cpp/src/phonenumbers/lite_metadata.cc',
+      #'dist/cpp/src/phonenumbers/metadata.cc',
     ],
   },
   {
@@ -119,15 +119,15 @@
     'target_name': 'libphonenumber_unittests',
     'type': 'executable',
     'sources': [
-      'src/phonenumbers/test_metadata.cc',
-      'src/test/phonenumbers/asyoutypeformatter_test.cc',
-      'src/test/phonenumbers/phonenumbermatch_test.cc',
-      'src/test/phonenumbers/phonenumbermatcher_test.cc',
-      'src/test/phonenumbers/phonenumberutil_test.cc',
-      'src/test/phonenumbers/regexp_adapter_test.cc',
-      'src/test/phonenumbers/stringutil_test.cc',
-      'src/test/phonenumbers/test_util.cc',
-      'src/test/phonenumbers/unicodestring_test.cc',
+      'dist/cpp/src/phonenumbers/test_metadata.cc',
+      'dist/cpp/test/phonenumbers/asyoutypeformatter_test.cc',
+      'dist/cpp/test/phonenumbers/phonenumbermatch_test.cc',
+      'dist/cpp/test/phonenumbers/phonenumbermatcher_test.cc',
+      'dist/cpp/test/phonenumbers/phonenumberutil_test.cc',
+      'dist/cpp/test/phonenumbers/regexp_adapter_test.cc',
+      'dist/cpp/test/phonenumbers/stringutil_test.cc',
+      'dist/cpp/test/phonenumbers/test_util.cc',
+      'dist/cpp/test/phonenumbers/unicodestring_test.cc',
     ],
     'dependencies': [
       '../icu/icu.gyp:icui18n',
