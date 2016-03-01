@@ -8,6 +8,9 @@
 </head>
 <body>
     <script>
+        if (window.testRunner)
+            testRunner.overridePreference("WebKitAllowRunningInsecureContent", true);
+
         if (window.location.origin != get_host_info().AUTHENTICATED_ORIGIN) {
             window.location = get_host_info().AUTHENTICATED_ORIGIN +
                               window.location.pathname;
@@ -31,18 +34,12 @@
 
                 var i1 = document.createElement("iframe");
                 i1.src = get_host_info().UNAUTHENTICATED_ORIGIN + "/security/secureContexts/resources/post-securecontext-status.html";
-                // This will almost certainly be blocked by the mixed content checker, handle that case by incrementing the `messages` count.
-                i1.addEventListener("error", t.step_func(function (e) {
-                    messages++;
-                    if (messages >= 2)
-                        t.done();
-                }), false);
                 document.body.appendChild(i1);
 
                 var i2 = document.createElement("iframe");
                 i2.src = get_host_info().AUTHENTICATED_ORIGIN + "/security/secureContexts/resources/post-securecontext-status.html";
                 document.body.appendChild(i2);
-            }, "Frames are either secure or insecure (and blocked by mixed content).");
+            }, "Frames are either secure or insecure.");
         }
     </script>
 </body>

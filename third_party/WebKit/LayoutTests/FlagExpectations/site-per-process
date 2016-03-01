@@ -111,6 +111,9 @@ http/tests/navigation/success200-frames-loadsame.html [ Failure ]
 http/tests/xmlhttprequest/origin-whitelisting-all.html [ Failure ]
 http/tests/xmlhttprequest/origin-whitelisting-ip-addresses.html [ Failure ]
 
+# https://crbug.com/571079 - Document::isSecureContext() doesn't work with OOPIFs
+http/tests/security/secureContexts/unauthenticated.html [ Failure ]
+
 # TODO(alexmos,lukasza): Triage these failures and assign more specific bugs.
 
 # No repro (maybe flaky? maybe really fixed? maybe repros only in debug build?):
