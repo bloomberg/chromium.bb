@@ -7,7 +7,6 @@
 #include "base/debug/debugger.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/mus/common/types.h"
-#include "components/mus/public/interfaces/input_event_constants.mojom.h"
 #include "components/mus/ws/connection_manager.h"
 #include "components/mus/ws/display_manager.h"
 #include "components/mus/ws/focus_controller.h"
@@ -29,23 +28,21 @@ base::TimeDelta GetDefaultAckTimerDelay() {
 #endif
 }
 
-bool EventsCanBeCoalesced(const mojom::Event& one, const mojom::Event& two) {
-  if (one.action != two.action || one.flags != two.flags)
-    return false;
-  // TODO(sad): wheel events can also be merged.
-  if (one.action != mojom::EventType::POINTER_MOVE)
-    return false;
-  DCHECK(one.pointer_data);
-  DCHECK(two.pointer_data);
-  if (one.pointer_data->kind != two.pointer_data->kind ||
-      one.pointer_data->pointer_id != two.pointer_data->pointer_id)
+bool EventsCanBeCoalesced(const ui::Event& one, const ui::Event& two) {
+  if (one.type() != two.type() || one.flags() != two.flags())
     return false;
 
-  return true;
+  // TODO(sad): wheel events can also be merged.
+  if (one.type() != ui::ET_POINTER_MOVED)
+    return false;
+
+  return one.AsPointerEvent()->pointer_id() ==
+         two.AsPointerEvent()->pointer_id();
 }
 
-mojom::EventPtr CoalesceEvents(mojom::EventPtr first, mojom::EventPtr second) {
-  DCHECK_EQ(first->action, mojom::EventType::POINTER_MOVE)
+scoped_ptr<ui::Event> CoalesceEvents(scoped_ptr<ui::Event> first,
+                                     scoped_ptr<ui::Event> second) {
+  DCHECK(first->type() == ui::ET_POINTER_MOVED)
       << " Non-move events cannot be merged yet.";
   // For mouse moves, the new event just replaces the old event.
   return second;
@@ -268,10 +265,10 @@ void WindowTreeHostImpl::OnEventAckTimeout() {
 }
 
 void WindowTreeHostImpl::QueueEvent(
-    mojom::EventPtr event,
+    const ui::Event& event,
     scoped_ptr<ProcessedEventTarget> processed_event_target) {
   scoped_ptr<QueuedEvent> queued_event(new QueuedEvent);
-  queued_event->event = std::move(event);
+  queued_event->event = ui::Event::Clone(event);
   queued_event->processed_target = std::move(processed_event_target);
   event_queue_.push(std::move(queued_event));
 }
@@ -283,24 +280,24 @@ void WindowTreeHostImpl::ProcessNextEventFromQueue() {
     scoped_ptr<QueuedEvent> queued_event = std::move(event_queue_.front());
     event_queue_.pop();
     if (!queued_event->processed_target) {
-      event_dispatcher_.ProcessEvent(std::move(queued_event->event));
+      event_dispatcher_.ProcessEvent(*queued_event->event);
       return;
     }
     if (queued_event->processed_target->IsValid()) {
       DispatchInputEventToWindowImpl(
           queued_event->processed_target->window(),
           queued_event->processed_target->in_nonclient_area(),
-          std::move(queued_event->event));
+          *queued_event->event);
       return;
     }
   }
 }
 
-void WindowTreeHostImpl::DispatchInputEventToWindowImpl(ServerWindow* target,
-                                                        bool in_nonclient_area,
-                                                        mojom::EventPtr event) {
-  if (event->pointer_data &&
-      event->pointer_data->kind == mojom::PointerKind::MOUSE) {
+void WindowTreeHostImpl::DispatchInputEventToWindowImpl(
+    ServerWindow* target,
+    bool in_nonclient_area,
+    const ui::Event& event) {
+  if (event.IsMousePointerEvent()) {
     DCHECK(event_dispatcher_.mouse_cursor_source_window());
     UpdateNativeCursor(
         event_dispatcher_.mouse_cursor_source_window()->cursor());
@@ -326,7 +323,7 @@ void WindowTreeHostImpl::DispatchInputEventToWindowImpl(ServerWindow* target,
                          &WindowTreeHostImpl::OnEventAckTimeout);
 
   tree_awaiting_input_ack_ = connection;
-  connection->DispatchInputEvent(target, std::move(event));
+  connection->DispatchInputEvent(target, mojom::Event::From(event));
 }
 
 void WindowTreeHostImpl::UpdateNativeCursor(int32_t cursor_id) {
@@ -346,15 +343,15 @@ void WindowTreeHostImpl::OnEvent(const ui::Event& event) {
   // queue up the event to be dispatched once the ack is received.
   if (event_ack_timer_.IsRunning()) {
     if (!event_queue_.empty() && !event_queue_.back()->processed_target &&
-        EventsCanBeCoalesced(*event_queue_.back()->event, *mojo_event)) {
+        EventsCanBeCoalesced(*event_queue_.back()->event, event)) {
       event_queue_.back()->event = CoalesceEvents(
-          std::move(event_queue_.back()->event), std::move(mojo_event));
+          std::move(event_queue_.back()->event), ui::Event::Clone(event));
       return;
     }
-    QueueEvent(std::move(mojo_event), nullptr);
+    QueueEvent(event, nullptr);
     return;
   }
-  event_dispatcher_.ProcessEvent(std::move(mojo_event));
+  event_dispatcher_.ProcessEvent(event);
 }
 
 void WindowTreeHostImpl::OnNativeCaptureLost() {
@@ -476,8 +473,8 @@ void WindowTreeHostImpl::OnFocusChanged(
 }
 
 void WindowTreeHostImpl::OnAccelerator(uint32_t accelerator_id,
-                                       mojom::EventPtr event) {
-  window_tree_->OnAccelerator(accelerator_id, std::move(event));
+                                       const ui::Event& event) {
+  window_tree_->OnAccelerator(accelerator_id, mojom::Event::From(event));
 }
 
 void WindowTreeHostImpl::SetFocusedWindowFromEventDispatcher(
@@ -504,15 +501,15 @@ void WindowTreeHostImpl::OnServerWindowCaptureLost(ServerWindow* window) {
 
 void WindowTreeHostImpl::DispatchInputEventToWindow(ServerWindow* target,
                                                     bool in_nonclient_area,
-                                                    mojom::EventPtr event) {
+                                                    const ui::Event& event) {
   if (event_ack_timer_.IsRunning()) {
     scoped_ptr<ProcessedEventTarget> processed_event_target(
         new ProcessedEventTarget(target, in_nonclient_area));
-    QueueEvent(std::move(event), std::move(processed_event_target));
+    QueueEvent(event, std::move(processed_event_target));
     return;
   }
 
-  DispatchInputEventToWindowImpl(target, in_nonclient_area, std::move(event));
+  DispatchInputEventToWindowImpl(target, in_nonclient_area, event);
 }
 
 void WindowTreeHostImpl::OnWindowDestroyed(ServerWindow* window) {

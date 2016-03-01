@@ -7,7 +7,9 @@
 
 #include <stdint.h>
 
-#include "components/mus/public/interfaces/input_events.mojom.h"
+namespace ui {
+class Event;
+}
 
 namespace mus {
 namespace ws {
@@ -17,7 +19,7 @@ class ServerWindow;
 // Used by EventDispatcher for mocking in tests.
 class EventDispatcherDelegate {
  public:
-  virtual void OnAccelerator(uint32_t accelerator, mojom::EventPtr event) = 0;
+  virtual void OnAccelerator(uint32_t accelerator, const ui::Event& event) = 0;
 
   virtual void SetFocusedWindowFromEventDispatcher(ServerWindow* window) = 0;
   virtual ServerWindow* GetFocusedWindowForEventDispatcher() = 0;
@@ -35,7 +37,7 @@ class EventDispatcherDelegate {
   // |in_nonclient_area| is true if the event occurred in the non-client area.
   virtual void DispatchInputEventToWindow(ServerWindow* target,
                                           bool in_nonclient_area,
-                                          mojom::EventPtr event) = 0;
+                                          const ui::Event& event) = 0;
 
  protected:
   virtual ~EventDispatcherDelegate() {}

@@ -152,7 +152,7 @@ class WindowTreeHostImpl : public DisplayManagerDelegate,
     QueuedEvent();
     ~QueuedEvent();
 
-    mojom::EventPtr event;
+    scoped_ptr<ui::Event> event;
     scoped_ptr<ProcessedEventTarget> processed_target;
   };
 
@@ -162,7 +162,7 @@ class WindowTreeHostImpl : public DisplayManagerDelegate,
   void OnEventAckTimeout();
 
   // Schedules an event to be processed later.
-  void QueueEvent(mojom::EventPtr event,
+  void QueueEvent(const ui::Event& event,
                   scoped_ptr<ProcessedEventTarget> processed_event_target);
 
   // Processes the next valid event in |event_queue_|. If the event has already
@@ -173,7 +173,7 @@ class WindowTreeHostImpl : public DisplayManagerDelegate,
   // Dispatches the event to the appropriate client and starts the ack timer.
   void DispatchInputEventToWindowImpl(ServerWindow* target,
                                       bool in_nonclient_area,
-                                      mojom::EventPtr event);
+                                      const ui::Event& event);
 
   void UpdateNativeCursor(int32_t cursor_id);
 
@@ -199,7 +199,7 @@ class WindowTreeHostImpl : public DisplayManagerDelegate,
                       ServerWindow* new_focused_window) override;
 
   // EventDispatcherDelegate:
-  void OnAccelerator(uint32_t accelerator_id, mojom::EventPtr event) override;
+  void OnAccelerator(uint32_t accelerator_id, const ui::Event& event) override;
   void SetFocusedWindowFromEventDispatcher(ServerWindow* window) override;
   ServerWindow* GetFocusedWindowForEventDispatcher() override;
   void SetNativeCapture() override;
@@ -207,7 +207,7 @@ class WindowTreeHostImpl : public DisplayManagerDelegate,
   void OnServerWindowCaptureLost(ServerWindow* window) override;
   void DispatchInputEventToWindow(ServerWindow* target,
                                   bool in_nonclient_area,
-                                  mojom::EventPtr event) override;
+                                  const ui::Event& event) override;
 
   // ServerWindowObserver:
   void OnWindowDestroyed(ServerWindow* window) override;

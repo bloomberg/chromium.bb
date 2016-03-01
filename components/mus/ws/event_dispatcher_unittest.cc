@@ -15,7 +15,6 @@
 #include "components/mus/ws/server_window.h"
 #include "components/mus/ws/server_window_surface_manager_test_api.h"
 #include "components/mus/ws/test_server_window_delegate.h"
-#include "mojo/converters/input_events/input_events_type_converters.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event.h"
 
@@ -29,7 +28,7 @@ struct DispatchedEventDetails {
 
   ServerWindow* window;
   bool in_nonclient_area;
-  mojom::EventPtr event;
+  scoped_ptr<ui::Event> event;
 };
 
 class TestEventDispatcherDelegate : public EventDispatcherDelegate {
@@ -69,7 +68,7 @@ class TestEventDispatcherDelegate : public EventDispatcherDelegate {
 
  private:
   // EventDispatcherDelegate:
-  void OnAccelerator(uint32_t accelerator, mojom::EventPtr event) override {
+  void OnAccelerator(uint32_t accelerator, const ui::Event& event) override {
     EXPECT_EQ(0u, last_accelerator_);
     last_accelerator_ = accelerator;
   }
@@ -86,11 +85,11 @@ class TestEventDispatcherDelegate : public EventDispatcherDelegate {
   }
   void DispatchInputEventToWindow(ServerWindow* target,
                                   bool in_nonclient_area,
-                                  mojom::EventPtr event) override {
+                                  const ui::Event& event) override {
     scoped_ptr<DispatchedEventDetails> details(new DispatchedEventDetails);
     details->window = target;
     details->in_nonclient_area = in_nonclient_area;
-    details->event = std::move(event);
+    details->event = ui::Event::Clone(event);
     dispatched_event_queue_.push(std::move(details));
   }
 
@@ -128,13 +127,11 @@ void ExpectDispatchedEventDetailsMatches(const DispatchedEventDetails* details,
   }
 
   ASSERT_EQ(target, details->window);
-  scoped_ptr<ui::Event> dispatched_event(
-      details->event.To<scoped_ptr<ui::Event>>());
-  ASSERT_TRUE(dispatched_event);
-  ASSERT_TRUE(dispatched_event->IsMouseEvent());
+  ASSERT_TRUE(details->event);
+  ASSERT_TRUE(details->event->IsPointerEvent());
   ASSERT_FALSE(details->in_nonclient_area);
   ui::MouseEvent* dispatched_mouse_event =
-      static_cast<ui::MouseEvent*>(dispatched_event.get());
+      static_cast<ui::MouseEvent*>(details->event.get());
   ASSERT_EQ(root_location, dispatched_mouse_event->root_location());
   ASSERT_EQ(location, dispatched_mouse_event->location());
 }
@@ -147,8 +144,7 @@ void RunMouseEventTests(EventDispatcher* dispatcher,
     const MouseEventTest& test = tests[i];
     ASSERT_FALSE(dispatcher_delegate->has_queued_events())
         << " unexpected queued events before running " << i;
-    dispatcher->ProcessEvent(
-        mojom::Event::From(static_cast<const ui::Event&>(test.input_event)));
+    dispatcher->ProcessEvent(ui::PointerEvent(test.input_event));
 
     scoped_ptr<DispatchedEventDetails> details =
         dispatcher_delegate->GetAndAdvanceDispatchedEventDetails();
@@ -263,26 +259,22 @@ TEST_F(EventDispatcherTest, ProcessEvent) {
   child->SetBounds(gfx::Rect(10, 10, 20, 20));
 
   // Send event that is over child.
-  const ui::MouseEvent ui_event(
+  const ui::PointerEvent ui_event(ui::MouseEvent(
       ui::ET_MOUSE_PRESSED, gfx::Point(20, 25), gfx::Point(20, 25),
-      base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
-  event_dispatcher()->ProcessEvent(
-      mojom::Event::From(static_cast<const ui::Event&>(ui_event)));
+      base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
+  event_dispatcher()->ProcessEvent(ui_event);
 
   scoped_ptr<DispatchedEventDetails> details =
       test_event_dispatcher_delegate()->GetAndAdvanceDispatchedEventDetails();
   ASSERT_TRUE(details);
   ASSERT_EQ(child.get(), details->window);
 
-  scoped_ptr<ui::Event> dispatched_event(
-      details->event.To<scoped_ptr<ui::Event>>());
-  ASSERT_TRUE(dispatched_event);
-  ASSERT_TRUE(dispatched_event->IsMouseEvent());
+  ASSERT_TRUE(details->event);
+  ASSERT_TRUE(details->event->IsPointerEvent());
 
-  ui::MouseEvent* dispatched_mouse_event =
-      static_cast<ui::MouseEvent*>(dispatched_event.get());
-  EXPECT_EQ(gfx::Point(20, 25), dispatched_mouse_event->root_location());
-  EXPECT_EQ(gfx::Point(10, 15), dispatched_mouse_event->location());
+  ui::PointerEvent* dispatched_event = details->event->AsPointerEvent();
+  EXPECT_EQ(gfx::Point(20, 25), dispatched_event->root_location());
+  EXPECT_EQ(gfx::Point(10, 15), dispatched_event->location());
 }
 
 TEST_F(EventDispatcherTest, AcceleratorBasic) {
@@ -334,7 +326,7 @@ TEST_F(EventDispatcherTest, EventMatching) {
   dispatcher->AddAccelerator(accelerator_1, std::move(matcher));
 
   ui::KeyEvent key(ui::ET_KEY_PRESSED, ui::VKEY_W, ui::EF_CONTROL_DOWN);
-  dispatcher->ProcessEvent(mojom::Event::From(key));
+  dispatcher->ProcessEvent(key);
   EXPECT_EQ(accelerator_1,
             event_dispatcher_delegate->GetAndClearLastAccelerator());
 
@@ -342,24 +334,24 @@ TEST_F(EventDispatcherTest, EventMatching) {
   // ignoring.
   key = ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_W,
                      ui::EF_CONTROL_DOWN | ui::EF_NUM_LOCK_ON);
-  dispatcher->ProcessEvent(mojom::Event::From(key));
+  dispatcher->ProcessEvent(key);
   EXPECT_EQ(accelerator_1,
             event_dispatcher_delegate->GetAndClearLastAccelerator());
 
   key = ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_W, ui::EF_NONE);
-  dispatcher->ProcessEvent(mojom::Event::From(key));
+  dispatcher->ProcessEvent(key);
   EXPECT_EQ(0u, event_dispatcher_delegate->GetAndClearLastAccelerator());
 
   uint32_t accelerator_2 = 2;
   matcher = mus::CreateKeyMatcher(mus::mojom::KeyboardCode::W,
                                   mus::mojom::kEventFlagNone);
   dispatcher->AddAccelerator(accelerator_2, std::move(matcher));
-  dispatcher->ProcessEvent(mojom::Event::From(key));
+  dispatcher->ProcessEvent(key);
   EXPECT_EQ(accelerator_2,
             event_dispatcher_delegate->GetAndClearLastAccelerator());
 
   dispatcher->RemoveAccelerator(accelerator_2);
-  dispatcher->ProcessEvent(mojom::Event::From(key));
+  dispatcher->ProcessEvent(key);
   EXPECT_EQ(0u, event_dispatcher_delegate->GetAndClearLastAccelerator());
 }
 
@@ -462,11 +454,10 @@ TEST_F(EventDispatcherTest, ClientAreaGoesToOwner) {
   EventDispatcher* dispatcher = event_dispatcher();
 
   // Start move loop by sending mouse event over non-client area.
-  const ui::MouseEvent press_event(
+  const ui::PointerEvent press_event(ui::MouseEvent(
       ui::ET_MOUSE_PRESSED, gfx::Point(12, 12), gfx::Point(12, 12),
-      base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
-  dispatcher->ProcessEvent(
-      mojom::Event::From(static_cast<const ui::Event&>(press_event)));
+      base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
+  dispatcher->ProcessEvent(press_event);
 
   // Events should target child and be in the non-client area.
   scoped_ptr<DispatchedEventDetails> details =
@@ -477,11 +468,10 @@ TEST_F(EventDispatcherTest, ClientAreaGoesToOwner) {
   EXPECT_TRUE(details->in_nonclient_area);
 
   // Move the mouse 5,6 pixels and target is the same.
-  const ui::MouseEvent move_event(ui::ET_MOUSE_MOVED, gfx::Point(17, 18),
-                                  gfx::Point(17, 18), base::TimeDelta(),
-                                  ui::EF_LEFT_MOUSE_BUTTON, 0);
-  dispatcher->ProcessEvent(
-      mojom::Event::From(static_cast<const ui::Event&>(move_event)));
+  const ui::PointerEvent move_event(
+      ui::MouseEvent(ui::ET_MOUSE_MOVED, gfx::Point(17, 18), gfx::Point(17, 18),
+                     base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON, 0));
+  dispatcher->ProcessEvent(move_event);
 
   // Still same target.
   details = event_dispatcher_delegate->GetAndAdvanceDispatchedEventDetails();
@@ -490,11 +480,10 @@ TEST_F(EventDispatcherTest, ClientAreaGoesToOwner) {
   EXPECT_TRUE(details->in_nonclient_area);
 
   // Release the mouse.
-  const ui::MouseEvent release_event(
+  const ui::PointerEvent release_event(ui::MouseEvent(
       ui::ET_MOUSE_RELEASED, gfx::Point(17, 18), gfx::Point(17, 18),
-      base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
-  dispatcher->ProcessEvent(
-      mojom::Event::From(static_cast<const ui::Event&>(release_event)));
+      base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
+  dispatcher->ProcessEvent(release_event);
 
   // The event should not have been dispatched to the delegate.
   details = event_dispatcher_delegate->GetAndAdvanceDispatchedEventDetails();
@@ -504,22 +493,21 @@ TEST_F(EventDispatcherTest, ClientAreaGoesToOwner) {
 
   // Press in the client area and verify target/client area. The non-client area
   // should get an exit first.
-  const ui::MouseEvent press_event2(
+  const ui::PointerEvent press_event2(ui::MouseEvent(
       ui::ET_MOUSE_PRESSED, gfx::Point(21, 22), gfx::Point(21, 22),
-      base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
-  dispatcher->ProcessEvent(
-      mojom::Event::From(static_cast<const ui::Event&>(press_event2)));
+      base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
+  dispatcher->ProcessEvent(press_event2);
   details = event_dispatcher_delegate->GetAndAdvanceDispatchedEventDetails();
   EXPECT_TRUE(event_dispatcher_delegate->has_queued_events());
   ASSERT_EQ(child.get(), details->window);
   EXPECT_TRUE(details->in_nonclient_area);
-  EXPECT_EQ(mojom::EventType::MOUSE_EXIT, details->event->action);
+  EXPECT_EQ(ui::ET_POINTER_EXITED, details->event->type());
 
   details = event_dispatcher_delegate->GetAndAdvanceDispatchedEventDetails();
   EXPECT_FALSE(event_dispatcher_delegate->has_queued_events());
   ASSERT_EQ(child.get(), details->window);
   EXPECT_FALSE(details->in_nonclient_area);
-  EXPECT_EQ(mojom::EventType::POINTER_DOWN, details->event->action);
+  EXPECT_EQ(ui::ET_POINTER_DOWN, details->event->type());
 }
 
 TEST_F(EventDispatcherTest, AdditionalClientArea) {
@@ -535,11 +523,10 @@ TEST_F(EventDispatcherTest, AdditionalClientArea) {
   TestEventDispatcherDelegate* event_dispatcher_delegate =
       test_event_dispatcher_delegate();
   // Press in the additional client area, it should go to the child.
-  const ui::MouseEvent press_event(
+  const ui::PointerEvent press_event(ui::MouseEvent(
       ui::ET_MOUSE_PRESSED, gfx::Point(28, 11), gfx::Point(28, 11),
-      base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
-  event_dispatcher()->ProcessEvent(
-      mojom::Event::From(static_cast<const ui::Event&>(press_event)));
+      base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
+  event_dispatcher()->ProcessEvent(press_event);
 
   // Events should target child and be in the client area.
   scoped_ptr<DispatchedEventDetails> details =
@@ -562,11 +549,10 @@ TEST_F(EventDispatcherTest, DontFocusOnSecondDown) {
   EventDispatcher* dispatcher = event_dispatcher();
 
   // Press on child1. First press event should change focus.
-  const ui::MouseEvent press_event(
+  const ui::PointerEvent press_event(ui::MouseEvent(
       ui::ET_MOUSE_PRESSED, gfx::Point(12, 12), gfx::Point(12, 12),
-      base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
-  dispatcher->ProcessEvent(
-      mojom::Event::From(static_cast<const ui::Event&>(press_event)));
+      base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
+  dispatcher->ProcessEvent(press_event);
   scoped_ptr<DispatchedEventDetails> details =
       event_dispatcher_delegate->GetAndAdvanceDispatchedEventDetails();
   EXPECT_FALSE(event_dispatcher_delegate->has_queued_events());
@@ -576,10 +562,9 @@ TEST_F(EventDispatcherTest, DontFocusOnSecondDown) {
 
   // Press (with a different pointer id) on child2. Event should go to child2,
   // but focus should not change.
-  const ui::TouchEvent touch_event(ui::ET_TOUCH_PRESSED, gfx::Point(53, 54), 2,
-                                   base::TimeDelta());
-  dispatcher->ProcessEvent(
-      mojom::Event::From(static_cast<const ui::Event&>(touch_event)));
+  const ui::PointerEvent touch_event(ui::TouchEvent(
+      ui::ET_TOUCH_PRESSED, gfx::Point(53, 54), 2, base::TimeDelta()));
+  dispatcher->ProcessEvent(touch_event);
   details = event_dispatcher_delegate->GetAndAdvanceDispatchedEventDetails();
   EXPECT_FALSE(event_dispatcher_delegate->has_queued_events());
   EXPECT_EQ(child2.get(), details->window);
@@ -599,55 +584,48 @@ TEST_F(EventDispatcherTest, TwoPointersActive) {
   EventDispatcher* dispatcher = event_dispatcher();
 
   // Press on child1.
-  const ui::TouchEvent touch_event1(ui::ET_TOUCH_PRESSED, gfx::Point(12, 13), 1,
-                                    base::TimeDelta());
-  dispatcher->ProcessEvent(
-      mojom::Event::From(static_cast<const ui::Event&>(touch_event1)));
+  const ui::PointerEvent touch_event1(ui::TouchEvent(
+      ui::ET_TOUCH_PRESSED, gfx::Point(12, 13), 1, base::TimeDelta()));
+  dispatcher->ProcessEvent(touch_event1);
   scoped_ptr<DispatchedEventDetails> details =
       event_dispatcher_delegate->GetAndAdvanceDispatchedEventDetails();
   EXPECT_EQ(child1.get(), details->window);
 
   // Drag over child2, child1 should get the drag.
-  const ui::TouchEvent drag_event1(ui::ET_TOUCH_MOVED, gfx::Point(53, 54), 1,
-                                   base::TimeDelta());
-  dispatcher->ProcessEvent(
-      mojom::Event::From(static_cast<const ui::Event&>(drag_event1)));
+  const ui::PointerEvent drag_event1(ui::TouchEvent(
+      ui::ET_TOUCH_MOVED, gfx::Point(53, 54), 1, base::TimeDelta()));
+  dispatcher->ProcessEvent(drag_event1);
   details = event_dispatcher_delegate->GetAndAdvanceDispatchedEventDetails();
   EXPECT_EQ(child1.get(), details->window);
 
   // Press on child2 with a different touch id.
-  const ui::TouchEvent touch_event2(ui::ET_TOUCH_PRESSED, gfx::Point(54, 55), 2,
-                                    base::TimeDelta());
-  dispatcher->ProcessEvent(
-      mojom::Event::From(static_cast<const ui::Event&>(touch_event2)));
+  const ui::PointerEvent touch_event2(ui::TouchEvent(
+      ui::ET_TOUCH_PRESSED, gfx::Point(54, 55), 2, base::TimeDelta()));
+  dispatcher->ProcessEvent(touch_event2);
   details = event_dispatcher_delegate->GetAndAdvanceDispatchedEventDetails();
   EXPECT_EQ(child2.get(), details->window);
 
   // Drag over child1 with id 2, child2 should continue to get the drag.
-  const ui::TouchEvent drag_event2(ui::ET_TOUCH_MOVED, gfx::Point(13, 14), 2,
-                                   base::TimeDelta());
-  dispatcher->ProcessEvent(
-      mojom::Event::From(static_cast<const ui::Event&>(drag_event2)));
+  const ui::PointerEvent drag_event2(ui::TouchEvent(
+      ui::ET_TOUCH_MOVED, gfx::Point(13, 14), 2, base::TimeDelta()));
+  dispatcher->ProcessEvent(drag_event2);
   details = event_dispatcher_delegate->GetAndAdvanceDispatchedEventDetails();
   EXPECT_EQ(child2.get(), details->window);
 
   // Drag again with id 1, child1 should continue to get it.
-  dispatcher->ProcessEvent(
-      mojom::Event::From(static_cast<const ui::Event&>(drag_event1)));
+  dispatcher->ProcessEvent(drag_event1);
   details = event_dispatcher_delegate->GetAndAdvanceDispatchedEventDetails();
   EXPECT_EQ(child1.get(), details->window);
 
   // Release touch id 1, and click on 2. 2 should get it.
-  const ui::TouchEvent touch_release(ui::ET_TOUCH_RELEASED, gfx::Point(54, 55),
-                                     1, base::TimeDelta());
-  dispatcher->ProcessEvent(
-      mojom::Event::From(static_cast<const ui::Event&>(touch_release)));
+  const ui::PointerEvent touch_release(ui::TouchEvent(
+      ui::ET_TOUCH_RELEASED, gfx::Point(54, 55), 1, base::TimeDelta()));
+  dispatcher->ProcessEvent(touch_release);
   details = event_dispatcher_delegate->GetAndAdvanceDispatchedEventDetails();
   EXPECT_EQ(child1.get(), details->window);
-  const ui::TouchEvent touch_event3(ui::ET_TOUCH_PRESSED, gfx::Point(54, 55), 2,
-                                    base::TimeDelta());
-  dispatcher->ProcessEvent(
-      mojom::Event::From(static_cast<const ui::Event&>(touch_event3)));
+  const ui::PointerEvent touch_event3(ui::TouchEvent(
+      ui::ET_TOUCH_PRESSED, gfx::Point(54, 55), 2, base::TimeDelta()));
+  dispatcher->ProcessEvent(touch_event3);
   details = event_dispatcher_delegate->GetAndAdvanceDispatchedEventDetails();
   EXPECT_EQ(child2.get(), details->window);
 }
@@ -663,10 +641,9 @@ TEST_F(EventDispatcherTest, DestroyWindowWhileGettingEvents) {
   EventDispatcher* dispatcher = event_dispatcher();
 
   // Press on child.
-  const ui::TouchEvent touch_event1(ui::ET_TOUCH_PRESSED, gfx::Point(12, 13), 1,
-                                    base::TimeDelta());
-  dispatcher->ProcessEvent(
-      mojom::Event::From(static_cast<const ui::Event&>(touch_event1)));
+  const ui::PointerEvent touch_event1(ui::TouchEvent(
+      ui::ET_TOUCH_PRESSED, gfx::Point(12, 13), 1, base::TimeDelta()));
+  dispatcher->ProcessEvent(touch_event1);
   scoped_ptr<DispatchedEventDetails> details =
       event_dispatcher_delegate->GetAndAdvanceDispatchedEventDetails();
   EXPECT_FALSE(event_dispatcher_delegate->has_queued_events());
@@ -675,10 +652,9 @@ TEST_F(EventDispatcherTest, DestroyWindowWhileGettingEvents) {
   // Delete child, and continue the drag. Event should not be dispatched.
   child.reset();
 
-  const ui::TouchEvent drag_event1(ui::ET_TOUCH_MOVED, gfx::Point(53, 54), 1,
-                                   base::TimeDelta());
-  dispatcher->ProcessEvent(
-      mojom::Event::From(static_cast<const ui::Event&>(drag_event1)));
+  const ui::PointerEvent drag_event1(ui::TouchEvent(
+      ui::ET_TOUCH_MOVED, gfx::Point(53, 54), 1, base::TimeDelta()));
+  dispatcher->ProcessEvent(drag_event1);
   details = event_dispatcher_delegate->GetAndAdvanceDispatchedEventDetails();
   EXPECT_EQ(nullptr, details.get());
 }
@@ -695,21 +671,19 @@ TEST_F(EventDispatcherTest, MouseInExtendedHitTestRegion) {
   EventDispatcher* dispatcher = event_dispatcher();
 
   // Send event that is not over child.
-  const ui::MouseEvent ui_event(
+  const ui::PointerEvent ui_event(ui::MouseEvent(
       ui::ET_MOUSE_PRESSED, gfx::Point(8, 9), gfx::Point(8, 9),
-      base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
-  dispatcher->ProcessEvent(
-      mojom::Event::From(static_cast<const ui::Event&>(ui_event)));
+      base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
+  dispatcher->ProcessEvent(ui_event);
   scoped_ptr<DispatchedEventDetails> details =
       event_dispatcher_delegate->GetAndAdvanceDispatchedEventDetails();
   ASSERT_EQ(root, details->window);
 
   // Release the mouse.
-  const ui::MouseEvent release_event(
+  const ui::PointerEvent release_event(ui::MouseEvent(
       ui::ET_MOUSE_RELEASED, gfx::Point(8, 9), gfx::Point(8, 9),
-      base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
-  dispatcher->ProcessEvent(
-      mojom::Event::From(static_cast<const ui::Event&>(release_event)));
+      base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
+  dispatcher->ProcessEvent(release_event);
   details = event_dispatcher_delegate->GetAndAdvanceDispatchedEventDetails();
   EXPECT_FALSE(event_dispatcher_delegate->has_queued_events());
   ASSERT_EQ(root, details->window);
@@ -718,28 +692,25 @@ TEST_F(EventDispatcherTest, MouseInExtendedHitTestRegion) {
   // Change the extended hit test region and send event in extended hit test
   // region. Should result in exit for root, followed by press for child.
   child->set_extended_hit_test_region(gfx::Insets(5, 5, 5, 5));
-  dispatcher->ProcessEvent(
-      mojom::Event::From(static_cast<const ui::Event&>(ui_event)));
+  dispatcher->ProcessEvent(ui_event);
   details = event_dispatcher_delegate->GetAndAdvanceDispatchedEventDetails();
   EXPECT_EQ(root, details->window);
-  EXPECT_EQ(mojom::EventType::MOUSE_EXIT, details->event->action);
+  EXPECT_EQ(ui::ET_POINTER_EXITED, details->event->type());
   details = event_dispatcher_delegate->GetAndAdvanceDispatchedEventDetails();
   ASSERT_TRUE(details);
 
   EXPECT_FALSE(event_dispatcher_delegate->has_queued_events());
   EXPECT_TRUE(details->in_nonclient_area);
   ASSERT_EQ(child.get(), details->window);
-  EXPECT_EQ(mojom::EventType::POINTER_DOWN, details->event->action);
-  scoped_ptr<ui::Event> dispatched_event(
-      details->event.To<scoped_ptr<ui::Event>>());
-  ASSERT_TRUE(dispatched_event.get());
-  ASSERT_TRUE(dispatched_event->IsMouseEvent());
-  ui::MouseEvent* dispatched_mouse_event =
-      static_cast<ui::MouseEvent*>(dispatched_event.get());
-  EXPECT_EQ(gfx::Point(-2, -1), dispatched_mouse_event->location());
+  EXPECT_EQ(ui::ET_POINTER_DOWN, details->event->type());
+  ASSERT_TRUE(details->event.get());
+  ASSERT_TRUE(details->event->IsPointerEvent());
+  EXPECT_EQ(gfx::Point(-2, -1), details->event->AsPointerEvent()->location());
 }
 
-TEST_F(EventDispatcherTest, WheelWhileDown) {
+// TODO(moshayedi): crbug.com/590226. Enable this after we support wheel events
+// in mus event dispatcher.
+TEST_F(EventDispatcherTest, DISABLED_WheelWhileDown) {
   scoped_ptr<ServerWindow> child1(CreateChildWindow(WindowId(1, 3)));
   scoped_ptr<ServerWindow> child2(CreateChildWindow(WindowId(1, 4)));
 
@@ -785,11 +756,10 @@ TEST_F(EventDispatcherTest, SetExplicitCapture) {
 
     // The mouse press should go to the child even though its outside its
     // bounds.
-    const ui::MouseEvent left_press_event(
+    const ui::PointerEvent left_press_event(ui::MouseEvent(
         ui::ET_MOUSE_PRESSED, gfx::Point(5, 5), gfx::Point(5, 5),
-        base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
-    dispatcher->ProcessEvent(
-        mojom::Event::From(static_cast<const ui::Event&>(left_press_event)));
+        base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
+    dispatcher->ProcessEvent(left_press_event);
 
     // Events should target child.
     scoped_ptr<DispatchedEventDetails> details =
@@ -801,50 +771,45 @@ TEST_F(EventDispatcherTest, SetExplicitCapture) {
     EXPECT_TRUE(IsMouseButtonDown());
 
     // The mouse down state should update while capture is set.
-    const ui::MouseEvent right_press_event(
+    const ui::PointerEvent right_press_event(ui::MouseEvent(
         ui::ET_MOUSE_PRESSED, gfx::Point(5, 5), gfx::Point(5, 5),
         base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON | ui::EF_RIGHT_MOUSE_BUTTON,
-        ui::EF_RIGHT_MOUSE_BUTTON);
-    dispatcher->ProcessEvent(
-        mojom::Event::From(static_cast<const ui::Event&>(right_press_event)));
+        ui::EF_RIGHT_MOUSE_BUTTON));
+    dispatcher->ProcessEvent(right_press_event);
     details = event_dispatcher_delegate->GetAndAdvanceDispatchedEventDetails();
     EXPECT_TRUE(IsMouseButtonDown());
 
     // One button released should not clear mouse down
-    const ui::MouseEvent left_release_event(
+    const ui::PointerEvent left_release_event(ui::MouseEvent(
         ui::ET_MOUSE_RELEASED, gfx::Point(5, 5), gfx::Point(5, 5),
         base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON | ui::EF_RIGHT_MOUSE_BUTTON,
-        ui::EF_LEFT_MOUSE_BUTTON);
-    dispatcher->ProcessEvent(
-        mojom::Event::From(static_cast<const ui::Event&>(left_release_event)));
+        ui::EF_LEFT_MOUSE_BUTTON));
+    dispatcher->ProcessEvent(left_release_event);
     details = event_dispatcher_delegate->GetAndAdvanceDispatchedEventDetails();
     EXPECT_TRUE(IsMouseButtonDown());
 
     // Touch Event while mouse is down should not affect state.
-    const ui::TouchEvent touch_event(ui::ET_TOUCH_PRESSED, gfx::Point(15, 15),
-                                     2, base::TimeDelta());
-    dispatcher->ProcessEvent(
-        mojom::Event::From(static_cast<const ui::Event&>(touch_event)));
+    const ui::PointerEvent touch_event(ui::TouchEvent(
+        ui::ET_TOUCH_PRESSED, gfx::Point(15, 15), 2, base::TimeDelta()));
+    dispatcher->ProcessEvent(touch_event);
     details = event_dispatcher_delegate->GetAndAdvanceDispatchedEventDetails();
     EXPECT_TRUE(IsMouseButtonDown());
 
     // Move event should not affect down
-    const ui::MouseEvent move_event(ui::ET_MOUSE_MOVED, gfx::Point(15, 5),
-                                    gfx::Point(15, 5), base::TimeDelta(),
-                                    ui::EF_RIGHT_MOUSE_BUTTON,
-                                    ui::EF_RIGHT_MOUSE_BUTTON);
-    dispatcher->ProcessEvent(
-        mojom::Event::From(static_cast<const ui::Event&>(move_event)));
+    const ui::PointerEvent move_event(
+        ui::MouseEvent(ui::ET_MOUSE_MOVED, gfx::Point(15, 5), gfx::Point(15, 5),
+                       base::TimeDelta(), ui::EF_RIGHT_MOUSE_BUTTON,
+                       ui::EF_RIGHT_MOUSE_BUTTON));
+    dispatcher->ProcessEvent(move_event);
     details = event_dispatcher_delegate->GetAndAdvanceDispatchedEventDetails();
     EXPECT_TRUE(IsMouseButtonDown());
 
     // All mouse buttons up should clear mouse down.
-    const ui::MouseEvent right_release_event(
-        ui::ET_MOUSE_RELEASED, gfx::Point(5, 5), gfx::Point(5, 5),
-        base::TimeDelta(), ui::EF_RIGHT_MOUSE_BUTTON,
-        ui::EF_RIGHT_MOUSE_BUTTON);
-    dispatcher->ProcessEvent(
-        mojom::Event::From(static_cast<const ui::Event&>(right_release_event)));
+    const ui::PointerEvent right_release_event(
+        ui::MouseEvent(ui::ET_MOUSE_RELEASED, gfx::Point(5, 5),
+                       gfx::Point(5, 5), base::TimeDelta(),
+                       ui::EF_RIGHT_MOUSE_BUTTON, ui::EF_RIGHT_MOUSE_BUTTON));
+    dispatcher->ProcessEvent(right_release_event);
     details = event_dispatcher_delegate->GetAndAdvanceDispatchedEventDetails();
     EXPECT_FALSE(IsMouseButtonDown());
   }
@@ -852,11 +817,10 @@ TEST_F(EventDispatcherTest, SetExplicitCapture) {
   {
     // Releasing capture and sending the same event will go to the root.
     dispatcher->SetCaptureWindow(nullptr, false);
-    const ui::MouseEvent press_event(
+    const ui::PointerEvent press_event(ui::MouseEvent(
         ui::ET_MOUSE_PRESSED, gfx::Point(5, 5), gfx::Point(5, 5),
-        base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
-    dispatcher->ProcessEvent(
-        mojom::Event::From(static_cast<const ui::Event&>(press_event)));
+        base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
+    dispatcher->ProcessEvent(press_event);
 
     // Events should target the root.
     scoped_ptr<DispatchedEventDetails> details =
@@ -912,10 +876,9 @@ TEST_F(EventDispatcherTest, ExplicitCaptureOverridesImplicitCapture) {
 
   // Add a second pointer target to the child.
   {
-    const ui::TouchEvent touch_event(ui::ET_TOUCH_PRESSED, gfx::Point(12, 13),
-                                     1, base::TimeDelta());
-    dispatcher->ProcessEvent(
-        mojom::Event::From(static_cast<const ui::Event&>(touch_event)));
+    const ui::PointerEvent touch_event(ui::TouchEvent(
+        ui::ET_TOUCH_PRESSED, gfx::Point(12, 13), 1, base::TimeDelta()));
+    dispatcher->ProcessEvent(touch_event);
   }
 
   scoped_ptr<DispatchedEventDetails> details =
@@ -936,19 +899,18 @@ TEST_F(EventDispatcherTest, ExplicitCaptureOverridesImplicitCapture) {
   ASSERT_TRUE(details);
   EXPECT_TRUE(event_dispatcher_delegate->has_queued_events());
   EXPECT_EQ(child.get(), details->window);
-  EXPECT_EQ(mojom::EventType::POINTER_CANCEL, details->event->action);
+  EXPECT_EQ(ui::ET_POINTER_CANCELLED, details->event->type());
 
   details = event_dispatcher_delegate->GetAndAdvanceDispatchedEventDetails();
   ASSERT_TRUE(details);
   EXPECT_FALSE(event_dispatcher_delegate->has_queued_events());
   EXPECT_EQ(child.get(), details->window);
-  EXPECT_EQ(mojom::EventType::MOUSE_EXIT, details->event->action);
+  EXPECT_EQ(ui::ET_POINTER_EXITED, details->event->type());
 
-  const ui::MouseEvent press_event(
+  const ui::PointerEvent press_event(ui::MouseEvent(
       ui::ET_MOUSE_PRESSED, gfx::Point(15, 15), gfx::Point(15, 15),
-      base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
-  dispatcher->ProcessEvent(
-      mojom::Event::From(static_cast<const ui::Event&>(press_event)));
+      base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
+  dispatcher->ProcessEvent(press_event);
 
   // Events should target the root.
   details = event_dispatcher_delegate->GetAndAdvanceDispatchedEventDetails();
@@ -965,11 +927,10 @@ TEST_F(EventDispatcherTest, CaptureUpdatesActivePointerTargets) {
 
   EventDispatcher* dispatcher = event_dispatcher();
   {
-    const ui::MouseEvent press_event(
+    const ui::PointerEvent press_event(ui::MouseEvent(
         ui::ET_MOUSE_PRESSED, gfx::Point(5, 5), gfx::Point(5, 5),
-        base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
-    dispatcher->ProcessEvent(
-        mojom::Event::From(static_cast<const ui::Event&>(press_event)));
+        base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
+    dispatcher->ProcessEvent(press_event);
 
     scoped_ptr<DispatchedEventDetails> details =
         test_event_dispatcher_delegate()->GetAndAdvanceDispatchedEventDetails();
@@ -977,10 +938,9 @@ TEST_F(EventDispatcherTest, CaptureUpdatesActivePointerTargets) {
     ASSERT_EQ(root, details->window);
   }
   {
-    const ui::TouchEvent touch_event(ui::ET_TOUCH_PRESSED, gfx::Point(12, 13),
-                                     1, base::TimeDelta());
-    dispatcher->ProcessEvent(
-        mojom::Event::From(static_cast<const ui::Event&>(touch_event)));
+    const ui::PointerEvent touch_event(ui::TouchEvent(
+        ui::ET_TOUCH_PRESSED, gfx::Point(12, 13), 1, base::TimeDelta()));
+    dispatcher->ProcessEvent(touch_event);
   }
 
   ASSERT_TRUE(AreAnyPointersDown());
@@ -1048,11 +1008,10 @@ TEST_F(EventDispatcherTest, CaptureInNonClientAreaOverridesActualPoint) {
   TestEventDispatcherDelegate* event_dispatcher_delegate =
       test_event_dispatcher_delegate();
   // Press in the client area, it should be marked as non client.
-  const ui::MouseEvent press_event(
+  const ui::PointerEvent press_event(ui::MouseEvent(
       ui::ET_MOUSE_PRESSED, gfx::Point(6, 6), gfx::Point(6, 6),
-      base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
-  event_dispatcher()->ProcessEvent(
-      mojom::Event::From(static_cast<const ui::Event&>(press_event)));
+      base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
+  event_dispatcher()->ProcessEvent(press_event);
 
   // Events should target child and be in the client area.
   scoped_ptr<DispatchedEventDetails> details =
@@ -1072,22 +1031,19 @@ TEST_F(EventDispatcherTest, ProcessPointerEvents) {
     const ui::PointerEvent pointer_event(ui::MouseEvent(
         ui::ET_MOUSE_PRESSED, gfx::Point(20, 25), gfx::Point(20, 25),
         base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
-    event_dispatcher()->ProcessEvent(
-        mojom::Event::From(static_cast<const ui::Event&>(pointer_event)));
+    event_dispatcher()->ProcessEvent(pointer_event);
 
     scoped_ptr<DispatchedEventDetails> details =
         test_event_dispatcher_delegate()->GetAndAdvanceDispatchedEventDetails();
     ASSERT_TRUE(details);
     ASSERT_EQ(child.get(), details->window);
 
-    scoped_ptr<ui::Event> dispatched_event(
-        details->event.To<scoped_ptr<ui::Event>>());
-    ASSERT_TRUE(dispatched_event);
-    ASSERT_TRUE(dispatched_event->IsMouseEvent());
+    ASSERT_TRUE(details->event);
+    ASSERT_TRUE(details->event->IsPointerEvent());
 
-    ui::MouseEvent* dispatched_mouse_event = dispatched_event->AsMouseEvent();
-    EXPECT_EQ(gfx::Point(20, 25), dispatched_mouse_event->root_location());
-    EXPECT_EQ(gfx::Point(10, 15), dispatched_mouse_event->location());
+    ui::PointerEvent* dispatched_event = details->event->AsPointerEvent();
+    EXPECT_EQ(gfx::Point(20, 25), dispatched_event->root_location());
+    EXPECT_EQ(gfx::Point(10, 15), dispatched_event->location());
   }
 
   {
@@ -1095,23 +1051,20 @@ TEST_F(EventDispatcherTest, ProcessPointerEvents) {
     const ui::PointerEvent pointer_event(
         ui::TouchEvent(ui::ET_TOUCH_RELEASED, gfx::Point(25, 20), touch_id,
                        base::TimeDelta()));
-    event_dispatcher()->ProcessEvent(
-        mojom::Event::From(static_cast<const ui::Event&>(pointer_event)));
+    event_dispatcher()->ProcessEvent(pointer_event);
 
     scoped_ptr<DispatchedEventDetails> details =
         test_event_dispatcher_delegate()->GetAndAdvanceDispatchedEventDetails();
     ASSERT_TRUE(details);
     ASSERT_EQ(child.get(), details->window);
 
-    scoped_ptr<ui::Event> dispatched_event(
-        details->event.To<scoped_ptr<ui::Event>>());
-    ASSERT_TRUE(dispatched_event);
-    ASSERT_TRUE(dispatched_event->IsTouchEvent());
+    ASSERT_TRUE(details->event);
+    ASSERT_TRUE(details->event->IsPointerEvent());
 
-    ui::TouchEvent* dispatched_touch_event = dispatched_event->AsTouchEvent();
-    EXPECT_EQ(gfx::Point(25, 20), dispatched_touch_event->root_location());
-    EXPECT_EQ(gfx::Point(15, 10), dispatched_touch_event->location());
-    EXPECT_EQ(touch_id, dispatched_touch_event->touch_id());
+    ui::PointerEvent* dispatched_event = details->event->AsPointerEvent();
+    EXPECT_EQ(gfx::Point(25, 20), dispatched_event->root_location());
+    EXPECT_EQ(gfx::Point(15, 10), dispatched_event->location());
+    EXPECT_EQ(touch_id, dispatched_event->pointer_id());
   }
 }
 

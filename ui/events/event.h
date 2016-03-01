@@ -29,6 +29,7 @@ class Transform;
 
 namespace ui {
 class EventTarget;
+class KeyEvent;
 class MouseEvent;
 class PointerEvent;
 class TouchEvent;
@@ -125,6 +126,11 @@ class EVENTS_EXPORT Event {
            type_ == ET_POINTER_ENTERED || type_ == ET_POINTER_EXITED;
   }
 
+  // Convenience methods to check pointer type of |this|. Returns false if
+  // |this| is not a PointerEvent.
+  bool IsMousePointerEvent() const;
+  bool IsTouchPointerEvent() const;
+
   bool IsGestureEvent() const {
     switch (type_) {
       case ET_GESTURE_SCROLL_BEGIN:
@@ -208,6 +214,11 @@ class EVENTS_EXPORT Event {
   // must be true as a precondition to calling these methods.
   GestureEvent* AsGestureEvent();
   const GestureEvent* AsGestureEvent() const;
+
+  // Convenience methods to cast |this| to a KeyEvent. IsKeyEvent()
+  // must be true as a precondition to calling these methods.
+  KeyEvent* AsKeyEvent();
+  const KeyEvent* AsKeyEvent() const;
 
   // Convenience methods to cast |this| to a MouseEvent. IsMouseEvent()
   // must be true as a precondition to calling these methods.
@@ -666,9 +677,17 @@ class EVENTS_EXPORT PointerEvent : public LocatedEvent {
  public:
   static const int32_t kMousePointerId;
 
-  explicit PointerEvent(const PointerEvent& pointer_event);
+  PointerEvent(const PointerEvent& pointer_event);
   explicit PointerEvent(const MouseEvent& mouse_event);
   explicit PointerEvent(const TouchEvent& touch_event);
+
+  PointerEvent(EventType type,
+               EventPointerType pointer_type,
+               const gfx::Point& location,
+               const gfx::Point& root_location,
+               int flags,
+               int pointer_id,
+               base::TimeDelta time_stamp);
 
   int32_t pointer_id() const { return pointer_id_; }
   const PointerDetails& pointer_details() const { return details_; }

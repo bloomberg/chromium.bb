@@ -366,31 +366,34 @@ class TestDisplayManagerFactory : public DisplayManagerFactory {
   DISALLOW_COPY_AND_ASSIGN(TestDisplayManagerFactory);
 };
 
-ui::TouchEvent CreatePointerDownEvent(int x, int y) {
-  return ui::TouchEvent(ui::ET_TOUCH_PRESSED, gfx::Point(x, y), 1,
-                        ui::EventTimeForNow());
+ui::PointerEvent CreatePointerDownEvent(int x, int y) {
+  return ui::PointerEvent(ui::TouchEvent(ui::ET_TOUCH_PRESSED, gfx::Point(x, y),
+                                         1, ui::EventTimeForNow()));
 }
 
-ui::TouchEvent CreatePointerUpEvent(int x, int y) {
-  return ui::TouchEvent(ui::ET_TOUCH_RELEASED, gfx::Point(x, y), 1,
-                        ui::EventTimeForNow());
+ui::PointerEvent CreatePointerUpEvent(int x, int y) {
+  return ui::PointerEvent(ui::TouchEvent(
+      ui::ET_TOUCH_RELEASED, gfx::Point(x, y), 1, ui::EventTimeForNow()));
 }
 
-ui::MouseEvent CreateMouseMoveEvent(int x, int y) {
-  return ui::MouseEvent(ui::ET_MOUSE_MOVED, gfx::Point(x, y), gfx::Point(x, y),
-                        ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
+ui::PointerEvent CreateMouseMoveEvent(int x, int y) {
+  return ui::PointerEvent(
+      ui::MouseEvent(ui::ET_MOUSE_MOVED, gfx::Point(x, y), gfx::Point(x, y),
+                     ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE));
 }
 
-ui::MouseEvent CreateMouseDownEvent(int x, int y) {
-  return ui::MouseEvent(ui::ET_MOUSE_PRESSED, gfx::Point(x, y),
-                        gfx::Point(x, y), ui::EventTimeForNow(),
-                        ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
+ui::PointerEvent CreateMouseDownEvent(int x, int y) {
+  return ui::PointerEvent(
+      ui::MouseEvent(ui::ET_MOUSE_PRESSED, gfx::Point(x, y), gfx::Point(x, y),
+                     ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
+                     ui::EF_LEFT_MOUSE_BUTTON));
 }
 
-ui::MouseEvent CreateMouseUpEvent(int x, int y) {
-  return ui::MouseEvent(ui::ET_MOUSE_RELEASED, gfx::Point(x, y),
-                        gfx::Point(x, y), ui::EventTimeForNow(),
-                        ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
+ui::PointerEvent CreateMouseUpEvent(int x, int y) {
+  return ui::PointerEvent(
+      ui::MouseEvent(ui::ET_MOUSE_RELEASED, gfx::Point(x, y), gfx::Point(x, y),
+                     ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
+                     ui::EF_LEFT_MOUSE_BUTTON));
 }
 
 const ServerWindow* FirstRoot(WindowTreeImpl* connection) {

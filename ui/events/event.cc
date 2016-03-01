@@ -173,6 +173,18 @@ Event::~Event() {
     ReleaseCopiedNativeEvent(native_event_);
 }
 
+bool Event::IsMousePointerEvent() const {
+  return IsPointerEvent() &&
+         AsPointerEvent()->pointer_details().pointer_type ==
+             EventPointerType::POINTER_TYPE_MOUSE;
+}
+
+bool Event::IsTouchPointerEvent() const {
+  return IsPointerEvent() &&
+         AsPointerEvent()->pointer_details().pointer_type ==
+             EventPointerType::POINTER_TYPE_TOUCH;
+}
+
 GestureEvent* Event::AsGestureEvent() {
   CHECK(IsGestureEvent());
   return static_cast<GestureEvent*>(this);
@@ -181,6 +193,16 @@ GestureEvent* Event::AsGestureEvent() {
 const GestureEvent* Event::AsGestureEvent() const {
   CHECK(IsGestureEvent());
   return static_cast<const GestureEvent*>(this);
+}
+
+KeyEvent* Event::AsKeyEvent() {
+  CHECK(IsKeyEvent());
+  return static_cast<KeyEvent*>(this);
+}
+
+const KeyEvent* Event::AsKeyEvent() const {
+  CHECK(IsKeyEvent());
+  return static_cast<const KeyEvent*>(this);
 }
 
 MouseEvent* Event::AsMouseEvent() {
@@ -740,6 +762,21 @@ PointerEvent::PointerEvent(const TouchEvent& touch_event)
       NOTREACHED();
   }
 }
+
+PointerEvent::PointerEvent(EventType type,
+                           EventPointerType pointer_type,
+                           const gfx::Point& location,
+                           const gfx::Point& root_location,
+                           int flags,
+                           int pointer_id,
+                           base::TimeDelta time_stamp)
+    : LocatedEvent(type,
+                   gfx::PointF(location),
+                   gfx::PointF(location),
+                   time_stamp,
+                   flags),
+      pointer_id_(pointer_id),
+      details_(PointerDetails(pointer_type)) {}
 
 const int PointerEvent::kMousePointerId = std::numeric_limits<int32_t>::max();
 
