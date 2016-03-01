@@ -126,7 +126,7 @@ void HTMLEmbedElement::parametersForPlugin(Vector<String>& paramNames, Vector<St
 // moved down into HTMLPluginElement.cpp
 void HTMLEmbedElement::updateWidgetInternal()
 {
-    ASSERT(!layoutEmbeddedObject()->showsUnavailablePluginIndicator());
+    ASSERT(!layoutEmbeddedItem().showsUnavailablePluginIndicator());
     ASSERT(needsWidgetUpdate());
     setNeedsWidgetUpdate(false);
 

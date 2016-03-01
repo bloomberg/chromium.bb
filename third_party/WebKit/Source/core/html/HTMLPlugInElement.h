@@ -26,6 +26,8 @@
 #include "bindings/core/v8/SharedPersistent.h"
 #include "core/CoreExport.h"
 #include "core/html/HTMLFrameOwnerElement.h"
+#include "core/layout/api/LayoutEmbeddedItem.h"
+
 #include <v8.h>
 
 struct NPObject;
@@ -33,7 +35,6 @@ struct NPObject;
 namespace blink {
 
 class HTMLImageLoader;
-class LayoutEmbeddedObject;
 class LayoutPart;
 class Widget;
 
@@ -85,7 +86,7 @@ protected:
 
     bool isImageType();
     bool shouldPreferPlugInsForImages() const { return m_shouldPreferPlugInsForImages; }
-    LayoutEmbeddedObject* layoutEmbeddedObject() const;
+    LayoutEmbeddedItem layoutEmbeddedItem() const;
     bool allowedToLoadFrameURL(const String& url);
     bool requestObject(const String& url, const String& mimeType, const Vector<String>& paramNames, const Vector<String>& paramValues);
     bool shouldUsePlugin(const KURL&, const String& mimeType, bool hasFallback, bool& useFallback);

@@ -261,7 +261,7 @@ void HTMLObjectElement::reloadPluginOnAttributeChange(const QualifiedName& name)
 // moved down into HTMLPluginElement.cpp
 void HTMLObjectElement::updateWidgetInternal()
 {
-    ASSERT(!layoutEmbeddedObject()->showsUnavailablePluginIndicator());
+    ASSERT(!layoutEmbeddedItem().showsUnavailablePluginIndicator());
     ASSERT(needsWidgetUpdate());
     setNeedsWidgetUpdate(false);
     // TODO(schenney): crbug.com/572908 This should ASSERT isFinishedParsingChildren() instead.

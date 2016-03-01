@@ -40,7 +40,6 @@
 #include "core/input/EventHandler.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/layout/LayoutBlockFlow.h"
-#include "core/layout/LayoutEmbeddedObject.h"
 #include "core/layout/LayoutImage.h"
 #include "core/layout/LayoutPart.h"
 #include "core/loader/FrameLoaderClient.h"
@@ -155,8 +154,8 @@ void HTMLPlugInElement::attach(const AttachContext& context)
             m_imageLoader = HTMLImageLoader::create(this);
         m_imageLoader->updateFromElement();
     } else if (needsWidgetUpdate()
-        && layoutEmbeddedObject()
-        && !layoutEmbeddedObject()->showsUnavailablePluginIndicator()
+        && !layoutEmbeddedItem().isNull()
+        && !layoutEmbeddedItem().showsUnavailablePluginIndicator()
         && !wouldLoadAsNetscapePlugin(m_url, m_serviceType)
         && !m_isDelayingLoadEvent) {
         m_isDelayingLoadEvent = true;
@@ -363,7 +362,7 @@ void HTMLPlugInElement::defaultEventHandler(Event* event)
     if (!r || !r->isLayoutPart())
         return;
     if (r->isEmbeddedObject()) {
-        if (toLayoutEmbeddedObject(r)->showsUnavailablePluginIndicator())
+        if (LayoutEmbeddedItem(toLayoutEmbeddedObject(r)).showsUnavailablePluginIndicator())
             return;
     }
     RefPtrWillBeRawPtr<Widget> widget = toLayoutPart(r)->widget();
@@ -408,7 +407,7 @@ bool HTMLPlugInElement::layoutObjectIsFocusable() const
 
     if (useFallbackContent() || !HTMLFrameOwnerElement::layoutObjectIsFocusable())
         return false;
-    return layoutObject() && layoutObject()->isEmbeddedObject() && !toLayoutEmbeddedObject(layoutObject())->showsUnavailablePluginIndicator();
+    return layoutObject() && layoutObject()->isEmbeddedObject() && !layoutEmbeddedItem().showsUnavailablePluginIndicator();
 }
 
 NPObject* HTMLPlugInElement::getNPObject()
@@ -439,13 +438,13 @@ bool HTMLPlugInElement::isImageType()
     return Image::supportsType(m_serviceType);
 }
 
-LayoutEmbeddedObject* HTMLPlugInElement::layoutEmbeddedObject() const
+LayoutEmbeddedItem HTMLPlugInElement::layoutEmbeddedItem() const
 {
     // HTMLObjectElement and HTMLEmbedElement may return arbitrary layoutObjects
     // when using fallback content.
     if (!layoutObject() || !layoutObject()->isEmbeddedObject())
-        return nullptr;
-    return toLayoutEmbeddedObject(layoutObject());
+        return LayoutEmbeddedItem(nullptr);
+    return LayoutEmbeddedItem(toLayoutEmbeddedObject(layoutObject()));
 }
 
 // We don't use m_url, as it may not be the final URL that the object loads,
@@ -503,9 +502,9 @@ bool HTMLPlugInElement::loadPlugin(const KURL& url, const String& mimeType, cons
     if (!frame->loader().allowPlugins(AboutToInstantiatePlugin))
         return false;
 
-    LayoutEmbeddedObject* layoutObject = layoutEmbeddedObject();
+    LayoutEmbeddedItem layoutItem = layoutEmbeddedItem();
     // FIXME: This code should not depend on layoutObject!
-    if ((!layoutObject && requireLayoutObject) || useFallback)
+    if ((layoutItem.isNull() && requireLayoutObject) || useFallback)
         return false;
 
     WTF_LOG(Plugins, "%p Plugin URL: %s", this, m_url.utf8().data());
@@ -519,12 +518,12 @@ bool HTMLPlugInElement::loadPlugin(const KURL& url, const String& mimeType, cons
         FrameLoaderClient::DetachedPluginPolicy policy = requireLayoutObject ? FrameLoaderClient::FailOnDetachedPlugin : FrameLoaderClient::AllowDetachedPlugin;
         RefPtrWillBeRawPtr<Widget> widget = frame->loader().client()->createPlugin(this, url, paramNames, paramValues, mimeType, loadManually, policy);
         if (!widget) {
-            if (layoutObject && !layoutObject->showsUnavailablePluginIndicator())
-                layoutObject->setPluginUnavailabilityReason(LayoutEmbeddedObject::PluginMissing);
+            if (!layoutItem.isNull() && !layoutItem.showsUnavailablePluginIndicator())
+                layoutItem.setPluginUnavailabilityReason(LayoutEmbeddedObject::PluginMissing);
             return false;
         }
 
-        if (layoutObject)
+        if (!layoutItem.isNull())
             setWidget(widget);
         else
             setPersistedPluginWidget(widget.get());
@@ -594,7 +593,7 @@ bool HTMLPlugInElement::allowedToLoadObject(const KURL& url, const String& mimeT
         fastGetAttribute(HTMLNames::typeAttr);
     if (!document().contentSecurityPolicy()->allowObjectFromSource(url)
         || !document().contentSecurityPolicy()->allowPluginTypeForDocument(document(), mimeType, declaredMimeType, url)) {
-        layoutEmbeddedObject()->setPluginUnavailabilityReason(LayoutEmbeddedObject::PluginBlockedByContentSecurityPolicy);
+        layoutEmbeddedItem().setPluginUnavailabilityReason(LayoutEmbeddedObject::PluginBlockedByContentSecurityPolicy);
         return false;
     }
     // If the URL is empty, a plugin could still be instantiated if a MIME-type

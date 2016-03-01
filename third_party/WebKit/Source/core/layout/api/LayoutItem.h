@@ -74,6 +74,11 @@ public:
         return m_layoutObject->isLayoutPart();
     }
 
+    bool isEmbeddedObject() const
+    {
+        return m_layoutObject->isEmbeddedObject();
+    }
+
     bool needsLayout()
     {
         return m_layoutObject->needsLayout();
