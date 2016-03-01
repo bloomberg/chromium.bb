@@ -412,15 +412,12 @@ void SVGUseElement::buildShadowAndInstanceTree(SVGElement* target)
 
     // SVG specification does not say a word about <use> & cycles. My view on this is: just ignore it!
     // Non-appearing <use> content is easier to debug, then half-appearing content.
-    if (!buildShadowTree(target, m_targetElementInstance.get(), false)) {
-        clearShadowTree();
-        return;
-    }
+    buildShadowTree(target, m_targetElementInstance.get(), false);
 
     if (instanceTreeIsLoading(m_targetElementInstance.get()))
         return;
 
-    // Assure shadow tree building was successfull
+    // Assure shadow tree building was successful.
     ASSERT(m_targetElementInstance);
     ASSERT(m_targetElementInstance->correspondingUseElement() == this);
     ASSERT(m_targetElementInstance->correspondingElement() == target);
@@ -503,10 +500,11 @@ SVGGraphicsElement* SVGUseElement::targetGraphicsElementForClipping() const
     return &toSVGGraphicsElement(element);
 }
 
-bool SVGUseElement::buildShadowTree(SVGElement* target, SVGElement* targetInstance, bool foundUse)
+void SVGUseElement::buildShadowTree(SVGElement* target, SVGElement* targetInstance, bool foundUse)
 {
     ASSERT(target);
     ASSERT(targetInstance);
+    ASSERT(!isDisallowedElement(target));
 
     // Spec: If the referenced object is itself a 'use', or if there are 'use' subelements within the referenced
     // object, the instance tree will contain recursive expansion of the indirect references to form a complete tree.
@@ -517,8 +515,6 @@ bool SVGUseElement::buildShadowTree(SVGElement* target, SVGElement* targetInstan
             addReferenceTo(target);
             foundUse = true;
         }
-    } else if (isDisallowedElement(target)) {
-        return false;
     }
 
     targetInstance->setCorrespondingElement(target);
@@ -534,11 +530,9 @@ bool SVGUseElement::buildShadowTree(SVGElement* target, SVGElement* targetInstan
         targetInstance->appendChild(newChild.get());
         if (newChild->isSVGElement()) {
             // Enter recursion, appending new instance tree nodes to the "instance" object.
-            if (!buildShadowTree(toSVGElement(child), toSVGElement(newChild), foundUse))
-                return false;
+            buildShadowTree(toSVGElement(child), toSVGElement(newChild), foundUse);
         }
     }
-    return true;
 }
 
 bool SVGUseElement::hasCycleUseReferencing(SVGUseElement* use, ContainerNode* targetInstance, SVGElement*& newTarget)

@@ -91,7 +91,7 @@ private:
     // Instance tree handling
     void buildShadowAndInstanceTree(SVGElement* target);
     void clearInstanceRoot();
-    bool buildShadowTree(SVGElement* target, SVGElement* targetInstance, bool foundUse);
+    void buildShadowTree(SVGElement* target, SVGElement* targetInstance, bool foundUse);
     void clearShadowTree();
     bool hasCycleUseReferencing(SVGUseElement*, ContainerNode* targetInstance, SVGElement*& newTarget);
     bool expandUseElementsInShadowTree(SVGElement*);
