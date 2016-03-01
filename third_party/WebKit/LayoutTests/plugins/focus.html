@@ -9,11 +9,11 @@
 "Unable to focus on embedded plugins such as Flash via javascript focus()"</p>
 <p>This tests focusing Embeds and Objects. See LayoutTests/java for Applet elements.</p>
 <div id=embedOwner>
-<embed id="embedElem" type="application/x-webkit-test-netscape" width=100 height=100 shouldFocus=true></embed>
-<object id="objectElem" type="application/x-webkit-test-netscape" windowedPlugin="false" width=100 height=100 shouldFocus=true></object>
+<embed class="actualPlugin" id="embedElem" type="application/x-blink-test-plugin" width=100 height=100 shouldFocus=true></embed>
+<object class="actualPlugin" id="objectElem" type="application/x-blink-test-plugin" windowedPlugin="false" width=100 height=100 shouldFocus=true></object>
 
-<embed id="embedElemWithFallbackContents" type="application/x-webkit-test-netscape" width=100 height=100 shouldFocus=true>Fallback contents.</embed>
-<object id="objectElemWithFallbackContents" type="application/x-webkit-test-netscape" windowedPlugin="false" width=100 height=100 shouldFocus=true>Fallback contents.</object>
+<embed class="actualPlugin" id="embedElemWithFallbackContents" type="application/x-blink-test-plugin" width=100 height=100 shouldFocus=true>Fallback contents.</embed>
+<object class="actualPlugin" id="objectElemWithFallbackContents" type="application/x-blink-test-plugin" windowedPlugin="false" width=100 height=100 shouldFocus=true>Fallback contents.</object>
 
 <embed id="noPluginEmbedElem" type="application/x-no-such-plugin" windowedPlugin="false" width=100 height=100 shouldFocus=false></embed>
 <object id="noPluginObjectElem" type="application/x-no-such-plugin" windowedPlugin="false" width=100 height=100 shouldFocus=false></object>
@@ -28,10 +28,18 @@
 <object id="noPluginObjectElemWithContenteditable" type="application/x-no-such-plugin" windowedPlugin="false" width=100 height=100 contenteditable=true shouldFocus=true></object>
 </div>
 <script>
-
 description("Test for Embed and Object for bug 32292: Unable to focus on embedded plugins such as Flash via javascript focus().");
 
-function RunTest() {
+var jsTestIsAsync = true;
+var actualPlugins = document.querySelectorAll('.actualPlugin');
+for (var i = 0; i < actualPlugins.length; ++i) {
+    actualPlugins.item(i).addEventListener('message', maybeStartTest);
+}
+
+var pluginsLoaded = 0;
+function maybeStartTest() {
+    if (++pluginsLoaded < 4)
+        return;
     var owner = document.getElementById("embedOwner");
     for (var i = 0; i < owner.childNodes.length; ++i) {
         pluginElement = owner.childNodes[i];
@@ -42,10 +50,8 @@ function RunTest() {
             pluginElement.blur();
         }
     }
+    finishJSTest();
 }
-
-document.addEventListener("DOMContentLoaded", RunTest, false);
-
 </script>
 </body>
 </html>
