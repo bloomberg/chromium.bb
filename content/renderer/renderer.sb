@@ -34,9 +34,13 @@
 (allow file-read-metadata (regex #"^/(private/)?etc$"))
 
 ; https://crbug.com/508935
+; TODO(tkent): Remove this section when we drop 'results' attribute support.
+; https://crbug.com/590117
 (if (param-true? elcap-or-later)
   (allow file-read*
+    (literal "/usr/lib/libcrypto.0.9.8.dylib")
     (literal "/usr/lib/libcsfde.dylib")
     (literal "/usr/lib/libcurl.4.dylib")
     (literal "/usr/lib/libCoreStorage.dylib")
+    (literal "/usr/lib/libsasl2.2.dylib")
     (literal "/usr/lib/libutil.dylib")))
