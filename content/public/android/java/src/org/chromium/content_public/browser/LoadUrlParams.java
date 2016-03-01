@@ -426,10 +426,6 @@ public class LoadUrlParams {
     /**
      * @param shouldReplaceCurrentEntry Whether this navigation should replace
      * the current navigation entry.
-     *
-     * Don't use this. This is a temporary hack that will be removed.
-     * TODO(lizeb): Remove this and {@link getShouldReplaceCurrentEntry} once
-     * crbug.com/521729 is fixed.
      */
     public void setShouldReplaceCurrentEntry(boolean shouldReplaceCurrentEntry) {
         mShouldReplaceCurrentEntry = shouldReplaceCurrentEntry;

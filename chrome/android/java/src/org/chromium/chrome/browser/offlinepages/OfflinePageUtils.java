@@ -130,7 +130,10 @@ public class OfflinePageUtils {
         // If we are reloading an offline page, but are online, get the online version.
         if (newUrl.equals(tab.getUrl()) && isConnected()) {
             Log.i(TAG, "Refreshing to the online version of an offline page, since we are online");
-            tab.loadUrl(new LoadUrlParams(tab.getOfflinePageOriginalUrl(), PageTransition.RELOAD));
+            LoadUrlParams params =
+                    new LoadUrlParams(tab.getOfflinePageOriginalUrl(), PageTransition.RELOAD);
+            params.setShouldReplaceCurrentEntry(true);
+            tab.loadUrl(params);
         }
     }
 
@@ -218,8 +221,11 @@ public class OfflinePageUtils {
                 RecordUserAction.record("OfflinePages.ReloadButtonClicked");
                 Tab foundTab = activity.getTabModelSelector().getTabById(tabId);
                 if (foundTab == null) return;
-                foundTab.loadUrl(new LoadUrlParams(
-                        foundTab.getOfflinePageOriginalUrl(), PageTransition.RELOAD));
+
+                LoadUrlParams params = new LoadUrlParams(
+                        foundTab.getOfflinePageOriginalUrl(), PageTransition.RELOAD);
+                params.setShouldReplaceCurrentEntry(true);
+                foundTab.loadUrl(params);
             }
 
             @Override
