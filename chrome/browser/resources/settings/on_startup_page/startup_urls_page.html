@@ -46,9 +46,10 @@
             <div class="action-buttons">
               <paper-button class="cancel-button" on-tap="onCancelTap_"
                   id="cancel" i18n-content="cancel"></paper-button>
-              <paper-button class="action-button" id="addUrlButton"
-                  on-tap="onOkTap_" i18n-content="add">
-              </paper-button>
+              <!-- TODO(dbeam): this button should be [disabled] when |newUrl|
+                   is empty. -->
+              <paper-button class="action-button" on-tap="onOkTap_"
+                  id="addUrlButton" i18n-content="add"></paper-button>
             </div>
           </div>
         </div>

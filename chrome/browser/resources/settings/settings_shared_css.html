@@ -108,6 +108,16 @@
         text-align: end;
       }
 
+      .action-button {
+        background: var(--google-blue-500);
+        color: white;
+        font-weight: 500;
+      }
+
+      .action-button[disabled] {
+        opacity: .25;  /* TODO(dbeam): check this value with bettes. */
+      }
+
       .list-frame {
         @apply(--layout-center);
         -webkit-padding-end: 20px;

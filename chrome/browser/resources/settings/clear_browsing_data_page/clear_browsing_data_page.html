@@ -46,14 +46,15 @@
           pref="{{prefs.browser.clear_data.content_licenses}}"
           i18n-values="label:clearDeauthorizeContentLicenses">
       </settings-checkbox>
+    <!-- TODO(dbeam): <setting-box> is not a real thing. Fix this. -->
     </settings-box>
       <span i18n-content="warnAboutNonClearedData"></span>
       <span i18n-content="clearsSyncedData"></span>
     </settings-box>
     <settings-box>
-      <paper-button id="clearDataButton"
+      <paper-button id="clearDataButton" class="action-button"
           on-tap="onPerformClearBrowsingDataTap_"
-          raised i18n-content="clearBrowsingData">
+          i18n-content="clearBrowsingData">
       </paper-button>
     </div>
   </template>

@@ -43,16 +43,16 @@
           </div>
 <if expr="not chromeos">
           <template is="dom-if" if="[[!syncStatus.signedIn]]">
-            <paper-button class="secondary-button" on-tap="onSigninTap_"
+            <paper-button class="action-button" on-tap="onSigninTap_"
                 disabled="[[syncStatus.setupInProgress]]">
-                [[i18n('syncSignin')]]
+              [[i18n('syncSignin')]]
             </paper-button>
           </template>
           <template is="dom-if" if="[[syncStatus.signedIn]]">
             <span class="secondary-action">
-              <paper-button on-tap="onDisconnectTap_"
+              <paper-button class="secondary-button" on-tap="onDisconnectTap_"
                   disabled="[[syncStatus.setupInProgress]]">
-                  [[i18n('syncDisconnect')]]
+                [[i18n('syncDisconnect')]]
               </paper-button>
             </span>
           </template>
@@ -134,8 +134,8 @@
       <div class="button-strip">
         <paper-button dialog-dismiss i18n-content="cancel">
         </paper-button>
-        <paper-button dialog-confirm raised on-tap="onDisconnectConfirm_"
-            i18n-content="syncDisconnectConfirm">
+        <paper-button dialog-confirm class="action-button"
+            on-tap="onDisconnectConfirm_" i18n-content="syncDisconnectConfirm">
         </paper-button>
       </div>
     </paper-dialog>
