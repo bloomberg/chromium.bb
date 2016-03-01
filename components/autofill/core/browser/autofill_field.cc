@@ -72,22 +72,10 @@ bool SetSelectControlValue(const base::string16& value,
 // Like SetSelectControlValue, but searches within the field values and options
 // for |value|. For example, "NC - North Carolina" would match "north carolina".
 bool SetSelectControlValueSubstringMatch(const base::string16& value,
+                                         bool ignore_whitespace,
                                          FormFieldData* field) {
-  DCHECK_EQ(field->option_values.size(), field->option_contents.size());
-  int best_match = -1;
-
-  base::i18n::FixedPatternStringSearchIgnoringCaseAndAccents searcher(value);
-  for (size_t i = 0; i < field->option_values.size(); ++i) {
-    if (searcher.Search(field->option_values[i], nullptr, nullptr) ||
-        searcher.Search(field->option_contents[i], nullptr, nullptr)) {
-      // The best match is the shortest one.
-      if (best_match == -1 ||
-          field->option_values[best_match].size() >
-              field->option_values[i].size()) {
-        best_match = i;
-      }
-    }
-  }
+  int best_match = AutofillField::FindShortestSubstringMatchInSelect(
+      value, ignore_whitespace, field);
 
   if (best_match >= 0) {
     field->value = field->option_values[best_match];
@@ -165,7 +153,8 @@ bool FillStateSelectControl(const base::string16& value,
   }
 
   // Then try an inexact match of the full name.
-  if (!full.empty() && SetSelectControlValueSubstringMatch(full, field)) {
+  if (!full.empty() &&
+      SetSelectControlValueSubstringMatch(full, false, field)) {
     return true;
   }
 
@@ -296,19 +285,19 @@ bool FillYearSelectControl(const base::string16& value,
 }
 
 // Try to fill a credit card type |value| (Visa, MasterCard, etc.) into the
-// given |field|.
+// given |field|. We ignore whitespace when filling credit card types to
+// allow for cases such as "Master Card".
+
 bool FillCreditCardTypeSelectControl(const base::string16& value,
                                      FormFieldData* field) {
-  size_t idx;
-  if (AutofillField::FindValueInSelectControl(*field, value, &idx)) {
-    field->value = field->option_values[idx];
+  if (SetSelectControlValueSubstringMatch(value, /* ignore_whitespace= */ true,
+                                          field)) {
     return true;
+  } else if (value == l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_AMEX)) {
+    // For American Express, also try filling as "AmEx".
+    return SetSelectControlValueSubstringMatch(
+        ASCIIToUTF16("AmEx"), /* ignore_whitespace= */ true, field);
   }
-
-  // For American Express, also try filling as "AmEx".
-  if (value == l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_AMEX))
-    return FillCreditCardTypeSelectControl(ASCIIToUTF16("AmEx"), field);
-
   return false;
 }
 
@@ -625,29 +614,36 @@ base::string16 AutofillField::GetPhoneNumberValue(
 }
 
 // static
-bool AutofillField::FindValueInSelectControl(const FormFieldData& field,
-                                             const base::string16& value,
-                                             size_t* index) {
-  l10n::CaseInsensitiveCompare compare;
-  // Strip off spaces for all values in the comparisons.
-  const base::string16 value_stripped = RemoveWhitespace(value);
+int AutofillField::FindShortestSubstringMatchInSelect(
+    const base::string16& value,
+    bool ignore_whitespace,
+    const FormFieldData* field) {
+  DCHECK_EQ(field->option_values.size(), field->option_contents.size());
 
-  for (size_t i = 0; i < field.option_values.size(); ++i) {
-    base::string16 option_value = RemoveWhitespace(field.option_values[i]);
-    if (compare.StringsEqual(value_stripped, option_value)) {
-      if (index)
-        *index = i;
-      return true;
-    }
+  int best_match = -1;
 
-    base::string16 option_contents = RemoveWhitespace(field.option_contents[i]);
-    if (compare.StringsEqual(value_stripped, option_contents)) {
-      if (index)
-        *index = i;
-      return true;
+  base::string16 value_stripped =
+      ignore_whitespace ? RemoveWhitespace(value) : value;
+  base::i18n::FixedPatternStringSearchIgnoringCaseAndAccents searcher(
+      value_stripped);
+
+  for (size_t i = 0; i < field->option_values.size(); ++i) {
+    base::string16 option_value =
+        ignore_whitespace ? RemoveWhitespace(field->option_values[i])
+                          : field->option_values[i];
+    base::string16 option_content =
+        ignore_whitespace ? RemoveWhitespace(field->option_contents[i])
+                          : field->option_contents[i];
+    if (searcher.Search(option_value, nullptr, nullptr) ||
+        searcher.Search(option_content, nullptr, nullptr)) {
+      if (best_match == -1 ||
+          field->option_values[best_match].size() >
+              field->option_values[i].size()) {
+        best_match = i;
+      }
     }
   }
-  return false;
+  return best_match;
 }
 
 bool AutofillField::IsCreditCardPrediction() const {

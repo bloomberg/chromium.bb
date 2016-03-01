@@ -279,15 +279,19 @@ bool CreditCardField::LikelyCardTypeSelectField(AutofillScanner* scanner) {
     return false;
 
   AutofillField* field = scanner->Cursor();
+
   if (!MatchesFormControlType(field->form_control_type, MATCH_SELECT))
     return false;
 
-  return AutofillField::FindValueInSelectControl(
-             *field, l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_VISA),
-             nullptr) ||
-         AutofillField::FindValueInSelectControl(
-             *field, l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_MASTERCARD),
-             nullptr);
+  // We set |ignore_whitespace| to true on these calls because this is actually
+  // a pretty common mistake; e.g., "Master Card" instead of "MasterCard".
+  bool isSelect = (AutofillField::FindShortestSubstringMatchInSelect(
+                       l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_VISA), true,
+                       field) >= 0) ||
+                  (AutofillField::FindShortestSubstringMatchInSelect(
+                       l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_MASTERCARD),
+                       true, field) >= 0);
+  return isSelect;
 }
 
 // static

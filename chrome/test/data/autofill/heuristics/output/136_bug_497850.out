@@ -1,4 +1,4 @@
-UNKNOWN_TYPE | ctl01$ctl00$MainContentRegion$MainRegion$ctl00$ipcPayment$ddlCcType | Card type |  | ctl01$ctl00$MainContentRegion$MainRegion$ctl00$ipcPayment$ddlCcType_1-default
+CREDIT_CARD_TYPE | ctl01$ctl00$MainContentRegion$MainRegion$ctl00$ipcPayment$ddlCcType | Card type |  | ctl01$ctl00$MainContentRegion$MainRegion$ctl00$ipcPayment$ddlCcType_1-cc
 CREDIT_CARD_NUMBER | ctl01$ctl00$MainContentRegion$MainRegion$ctl00$ipcPayment$txtCcNumber | Card number |  | ctl01$ctl00$MainContentRegion$MainRegion$ctl00$ipcPayment$ddlCcType_1-cc
 CREDIT_CARD_NAME_FULL | ctl01$ctl00$MainContentRegion$MainRegion$ctl00$ipcPayment$txtCcHolder | Card holder name |  | ctl01$ctl00$MainContentRegion$MainRegion$ctl00$ipcPayment$ddlCcType_1-cc
 CREDIT_CARD_EXP_MONTH | ctl01$ctl00$MainContentRegion$MainRegion$ctl00$ipcPayment$ddlCcExpiryMonth | Expiry date | MM | ctl01$ctl00$MainContentRegion$MainRegion$ctl00$ipcPayment$ddlCcType_1-cc

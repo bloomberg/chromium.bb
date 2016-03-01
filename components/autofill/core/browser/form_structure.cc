@@ -56,7 +56,7 @@ const int kNumberOfMismatchesThreshold = 3;
 // which prepend prefixes such as "ctl01$ctl00$MainContentRegion$" on all
 // fields.
 const int kCommonNamePrefixRemovalFieldThreshold = 3;
-const int kMinCommonNamePrefixLength = 15;
+const int kMinCommonNamePrefixLength = 16;
 
 // Maximum number of characters in the field label to be encoded in a proto.
 const int kMaxFieldLabelNumChars = 200;

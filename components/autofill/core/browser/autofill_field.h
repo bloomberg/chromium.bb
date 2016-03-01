@@ -109,12 +109,11 @@ class AutofillField : public FormFieldData {
                                             const base::string16& number,
                                             const FormFieldData& field_data);
 
-  // Returns true if the select |field| contains an option that matches |value|.
-  // If the return value is true and |index| is non-NULL, write the index of the
-  // matching option into |index|.
-  static bool FindValueInSelectControl(const FormFieldData& field,
-                                       const base::string16& value,
-                                       size_t* index);
+  // Returns the index of the shortest entry in the given select field of which
+  // |value| is a substring. Returns -1 if no such entry exists.
+  static int FindShortestSubstringMatchInSelect(const base::string16& value,
+                                                bool ignore_whitespace,
+                                                const FormFieldData* field);
 
  private:
   // Whether the heuristics or server predict a credit card field.

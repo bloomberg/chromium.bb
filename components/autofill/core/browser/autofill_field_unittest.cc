@@ -837,56 +837,45 @@ TEST_F(AutofillFieldTest, FillCreditCardNumberWithUnequalSizeSplits) {
   EXPECT_EQ(ASCIIToUTF16(test.card_number_), cc_number_full.value);
 }
 
-TEST_F(AutofillFieldTest, FindValueInSelectControl) {
-  const size_t kBadIndex = 1000;
+TEST_F(AutofillFieldTest, FindShortestSubstringMatchInSelect) {
+  std::vector<const char*> kCountries = {"États-Unis", "Canada"};
+  FormFieldData field(
+      GenerateSelectFieldWithOptions(kCountries, kCountries.size()));
 
-  {
-    std::vector<const char*> kCountries = {"Albania", "Canada"};
-    FormFieldData field(
-        GenerateSelectFieldWithOptions(kCountries, kCountries.size()));
-    size_t index = kBadIndex;
-    bool ret = AutofillField::FindValueInSelectControl(
-        field, ASCIIToUTF16("Canada"), &index);
-    EXPECT_TRUE(ret);
-    EXPECT_EQ(1U, index);
+  // Case 1: Exact match
+  int ret = AutofillField::FindShortestSubstringMatchInSelect(
+      ASCIIToUTF16("Canada"), false, &field);
+  EXPECT_EQ(1, ret);
 
-    index = kBadIndex;
-    ret = AutofillField::FindValueInSelectControl(
-        field, ASCIIToUTF16("CANADA"), &index);
-    EXPECT_TRUE(ret);
-    EXPECT_EQ(1U, index);
+  // Case 2: Case-insensitive
+  ret = AutofillField::FindShortestSubstringMatchInSelect(
+      ASCIIToUTF16("CANADA"), false, &field);
+  EXPECT_EQ(1, ret);
 
-    index = kBadIndex;
-    ret = AutofillField::FindValueInSelectControl(
-        field, ASCIIToUTF16("Canadia"), &index);
-    EXPECT_FALSE(ret);
-    EXPECT_EQ(kBadIndex, index);
-  }
+  // Case 3: Proper substring
+  ret = AutofillField::FindShortestSubstringMatchInSelect(UTF8ToUTF16("États"),
+                                                          false, &field);
+  EXPECT_EQ(0, ret);
 
-  {
-    std::vector<const char*> kProvinces = {
-        "ALBERTA", "QUÉBEC", "NOVA SCOTIA",
-    };
-    FormFieldData field(
-        GenerateSelectFieldWithOptions(kProvinces, kProvinces.size()));
-    size_t index = kBadIndex;
-    bool ret = AutofillField::FindValueInSelectControl(
-        field, ASCIIToUTF16("alberta"), &index);
-    EXPECT_TRUE(ret);
-    EXPECT_EQ(0U, index);
+  // Case 4: Accent-insensitive
+  ret = AutofillField::FindShortestSubstringMatchInSelect(
+      UTF8ToUTF16("Etats-Unis"), false, &field);
+  EXPECT_EQ(0, ret);
 
-    index = kBadIndex;
-    ret = AutofillField::FindValueInSelectControl(
-        field, UTF8ToUTF16("québec"), &index);
-    EXPECT_TRUE(ret);
-    EXPECT_EQ(1U, index);
+  // Case 5: Whitespace-insensitive
+  ret = AutofillField::FindShortestSubstringMatchInSelect(
+      ASCIIToUTF16("Ca na da"), true, &field);
+  EXPECT_EQ(1, ret);
 
-    index = kBadIndex;
-    ret = AutofillField::FindValueInSelectControl(
-        field, UTF8ToUTF16("NoVaScOtIa"), &index);
-    EXPECT_TRUE(ret);
-    EXPECT_EQ(2U, index);
-  }
+  // Case 6: No match (whitespace-sensitive)
+  ret = AutofillField::FindShortestSubstringMatchInSelect(
+      ASCIIToUTF16("Ca Na Da"), false, &field);
+  EXPECT_EQ(-1, ret);
+
+  // Case 7: No match (not present)
+  ret = AutofillField::FindShortestSubstringMatchInSelect(
+      ASCIIToUTF16("Canadia"), true, &field);
+  EXPECT_EQ(-1, ret);
 }
 
 }  // namespace

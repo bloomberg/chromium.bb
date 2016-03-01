@@ -3552,10 +3552,10 @@ TEST_F(FormStructureTest, FindLongestCommonPrefix) {
   std::vector<base::string16> strings;
   strings.push_back(ASCIIToUTF16("1234567890123456789"));
   strings.push_back(ASCIIToUTF16("123456789012345678_foo"));
-  strings.push_back(ASCIIToUTF16("123456789012345"));
+  strings.push_back(ASCIIToUTF16("1234567890123456"));
   strings.push_back(ASCIIToUTF16("12345678901234567890"));
   base::string16 prefix = FormStructure::FindLongestCommonPrefix(strings);
-  EXPECT_EQ(ASCIIToUTF16("123456789012345"), prefix);
+  EXPECT_EQ(ASCIIToUTF16("1234567890123456"), prefix);
 
   // Handles no common prefix.
   strings.clear();
@@ -3577,9 +3577,9 @@ TEST_F(FormStructureTest, FindLongestCommonPrefix) {
 
   // Only one string.
   strings.clear();
-  strings.push_back(ASCIIToUTF16("123456789012345"));
+  strings.push_back(ASCIIToUTF16("1234567890123456"));
   prefix = FormStructure::FindLongestCommonPrefix(strings);
-  EXPECT_EQ(ASCIIToUTF16("123456789012345"), prefix);
+  EXPECT_EQ(ASCIIToUTF16("1234567890123456"), prefix);
 
   // Empty vector.
   strings.clear();
