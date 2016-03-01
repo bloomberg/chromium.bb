@@ -31,6 +31,7 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_local.h"
 #include "base/values.h"
+#include "crypto/auto_cbb.h"
 #include "crypto/ec_private_key.h"
 #include "crypto/openssl_util.h"
 #include "crypto/scoped_openssl_types.h"
@@ -115,18 +116,6 @@ bool EVP_MDToPrivateKeyHash(const EVP_MD* md, SSLPrivateKey::Hash* hash) {
       return false;
   }
 }
-
-class ScopedCBB {
- public:
-  ScopedCBB() { CBB_zero(&cbb_); }
-  ~ScopedCBB() { CBB_cleanup(&cbb_); }
-
-  CBB* get() { return &cbb_; }
-
- private:
-  CBB cbb_;
-  DISALLOW_COPY_AND_ASSIGN(ScopedCBB);
-};
 
 scoped_ptr<base::Value> NetLogPrivateKeyOperationCallback(
     SSLPrivateKey::Type type,
@@ -2255,7 +2244,7 @@ int SSLClientSocketOpenSSL::TokenBindingAdd(const uint8_t** out,
   if (ssl_config_.token_binding_params.empty()) {
     return 0;
   }
-  ScopedCBB output;
+  crypto::AutoCBB output;
   CBB parameters_list;
   if (!CBB_init(output.get(), 7) ||
       !CBB_add_u8(output.get(), kTbProtocolVersionMajor) ||

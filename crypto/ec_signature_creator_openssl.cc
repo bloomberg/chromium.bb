@@ -55,9 +55,8 @@ bool ECSignatureCreatorImpl::DecodeSignature(
     std::vector<uint8_t>* out_raw_sig) {
   OpenSSLErrStackTracer err_tracer(FROM_HERE);
   // Create ECDSA_SIG object from DER-encoded data.
-  const unsigned char* der_data = &der_sig.front();
   ScopedECDSA_SIG ecdsa_sig(
-      d2i_ECDSA_SIG(NULL, &der_data, static_cast<long>(der_sig.size())));
+      ECDSA_SIG_from_bytes(der_sig.data(), der_sig.size()));
   if (!ecdsa_sig.get())
     return false;
 

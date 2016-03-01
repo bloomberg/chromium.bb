@@ -4,8 +4,10 @@
 
 #include "crypto/ec_private_key.h"
 
+#include <openssl/bytestring.h>
 #include <openssl/ec.h>
 #include <openssl/evp.h>
+#include <openssl/mem.h>
 #include <openssl/pkcs12.h>
 #include <openssl/x509.h>
 #include <stddef.h>
@@ -13,6 +15,7 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "crypto/auto_cbb.h"
 #include "crypto/openssl_util.h"
 #include "crypto/scoped_openssl_types.h"
 
@@ -51,32 +54,6 @@ bool ExportKeyWithBio(const void* key,
     return false;
 
   output->assign(data, data + len);
-  return true;
-}
-
-// Function pointer definition, for injecting the required key export function
-// into ExportKey below. |key| is a pointer to the input key object,
-// and |data| is either NULL, or the address of an 'unsigned char*' pointer
-// that points to the start of the output buffer. The function must return
-// the number of bytes required to export the data, or -1 in case of error.
-typedef int (*ExportDataFunction)(const void* key, unsigned char** data);
-
-// Helper to export |key| into |output| via the specified export function.
-bool ExportKey(const void* key,
-               ExportDataFunction export_fn,
-               std::vector<uint8_t>* output) {
-  if (!key)
-    return false;
-
-  int data_len = export_fn(key, NULL);
-  if (data_len < 0)
-    return false;
-
-  output->resize(static_cast<size_t>(data_len));
-  unsigned char* data = &(*output)[0];
-  if (export_fn(key, &data) < 0)
-    return false;
-
   return true;
 }
 
@@ -192,44 +169,55 @@ bool ECPrivateKey::ExportEncryptedPrivateKey(const std::string& password,
 
 bool ECPrivateKey::ExportPublicKey(std::vector<uint8_t>* output) {
   OpenSSLErrStackTracer err_tracer(FROM_HERE);
-  return ExportKeyWithBio(
-      key_, reinterpret_cast<ExportBioFunction>(i2d_PUBKEY_bio), output);
-}
-
-bool ECPrivateKey::ExportRawPublicKey(std::string* output) {
-  // i2d_PublicKey will produce an ANSI X9.62 public key which, for a P-256
-  // key, is 0x04 (meaning uncompressed) followed by the x and y field
-  // elements as 32-byte, big-endian numbers.
-  static const int kExpectedKeyLength = 65;
-
-  int len = i2d_PublicKey(key_, NULL);
-  if (len != kExpectedKeyLength)
+  uint8_t *der;
+  size_t der_len;
+  AutoCBB cbb;
+  if (!CBB_init(cbb.get(), 0) ||
+      !EVP_marshal_public_key(cbb.get(), key_) ||
+      !CBB_finish(cbb.get(), &der, &der_len)) {
     return false;
-
-  uint8_t buf[kExpectedKeyLength];
-  uint8_t* derp = buf;
-  len = i2d_PublicKey(key_, &derp);
-  if (len != kExpectedKeyLength)
-    return false;
-
-  output->assign(reinterpret_cast<char*>(buf + 1), kExpectedKeyLength - 1);
+  }
+  output->assign(der, der + der_len);
+  OPENSSL_free(der);
   return true;
 }
 
-bool ECPrivateKey::ExportValue(std::vector<uint8_t>* output) {
+bool ECPrivateKey::ExportRawPublicKey(std::string* output) {
   OpenSSLErrStackTracer err_tracer(FROM_HERE);
-  ScopedEC_KEY ec_key(EVP_PKEY_get1_EC_KEY(key_));
-  return ExportKey(ec_key.get(),
-                   reinterpret_cast<ExportDataFunction>(i2d_ECPrivateKey),
-                   output);
+
+  // Export the x and y field elements as 32-byte, big-endian numbers. (This is
+  // the same as X9.62 uncompressed form without the leading 0x04 byte.)
+  EC_KEY* ec_key = EVP_PKEY_get0_EC_KEY(key_);
+  ScopedBIGNUM x(BN_new());
+  ScopedBIGNUM y(BN_new());
+  uint8_t buf[64];
+  if (!x || !y ||
+      !EC_POINT_get_affine_coordinates_GFp(EC_KEY_get0_group(ec_key),
+                                           EC_KEY_get0_public_key(ec_key),
+                                           x.get(), y.get(), nullptr) ||
+      !BN_bn2bin_padded(buf, 32, x.get()) ||
+      !BN_bn2bin_padded(buf + 32, 32, y.get())) {
+    return false;
+  }
+
+  output->assign(reinterpret_cast<const char*>(buf), sizeof(buf));
+  return true;
 }
 
-bool ECPrivateKey::ExportECParams(std::vector<uint8_t>* output) {
+bool ECPrivateKey::ExportValueForTesting(std::vector<uint8_t>* output) {
   OpenSSLErrStackTracer err_tracer(FROM_HERE);
-  ScopedEC_KEY ec_key(EVP_PKEY_get1_EC_KEY(key_));
-  return ExportKey(ec_key.get(),
-                   reinterpret_cast<ExportDataFunction>(i2d_ECParameters),
-                   output);
+  EC_KEY* ec_key = EVP_PKEY_get0_EC_KEY(key_);
+  uint8_t *der;
+  size_t der_len;
+  AutoCBB cbb;
+  if (!CBB_init(cbb.get(), 0) ||
+      !EC_KEY_marshal_private_key(cbb.get(), ec_key, 0 /* enc_flags */) ||
+      !CBB_finish(cbb.get(), &der, &der_len)) {
+    return false;
+  }
+  output->assign(der, der + der_len);
+  OPENSSL_free(der);
+  return true;
 }
 
 ECPrivateKey::ECPrivateKey() : key_(NULL) {}

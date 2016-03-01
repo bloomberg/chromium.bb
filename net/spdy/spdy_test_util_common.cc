@@ -292,7 +292,8 @@ bool MockECSignatureCreator::Sign(const uint8_t* data,
                                   int data_len,
                                   std::vector<uint8_t>* signature) {
   std::vector<uint8_t> private_key_value;
-  key_->ExportValue(&private_key_value);
+  if (!key_->ExportValueForTesting(&private_key_value))
+    return false;
   std::string head = "fakesignature";
   std::string tail = "/fakesignature";
 

@@ -4,6 +4,7 @@
 
 #include "crypto/signature_verifier.h"
 
+#include <openssl/bytestring.h>
 #include <openssl/evp.h>
 #include <openssl/x509.h>
 #include <stdint.h>
@@ -139,9 +140,10 @@ bool SignatureVerifier::CommonInit(const EVP_MD* digest,
 
   signature_.assign(signature, signature + signature_len);
 
-  const uint8_t* ptr = public_key_info;
-  ScopedEVP_PKEY public_key(d2i_PUBKEY(nullptr, &ptr, public_key_info_len));
-  if (!public_key.get() || ptr != public_key_info + public_key_info_len)
+  CBS cbs;
+  CBS_init(&cbs, public_key_info, public_key_info_len);
+  ScopedEVP_PKEY public_key(EVP_parse_public_key(&cbs));
+  if (!public_key || CBS_len(&cbs) != 0)
     return false;
 
   verify_context_->ctx.reset(EVP_MD_CTX_create());

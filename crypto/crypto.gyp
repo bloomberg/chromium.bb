@@ -128,6 +128,7 @@
             'sources!': [
               'aead_openssl.cc',
               'aead_openssl.h',
+              'auto_cbb.h',
               'curve25519_openssl.cc',
               'ec_private_key_openssl.cc',
               'ec_signature_creator_openssl.cc',

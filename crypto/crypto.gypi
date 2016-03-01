@@ -32,6 +32,7 @@
       'apple_keychain.h',
       'apple_keychain_ios.mm',
       'apple_keychain_mac.mm',
+      'auto_cbb.h',
       'capi_util.cc',
       'capi_util.h',
       'crypto_export.h',
