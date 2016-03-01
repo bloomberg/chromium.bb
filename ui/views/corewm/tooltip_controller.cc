@@ -232,6 +232,10 @@ void TooltipController::OnMouseEvent(ui::MouseEvent* event) {
       // Hide the tooltip for click, release, drag, wheel events.
       if (tooltip_->IsVisible())
         tooltip_->Hide();
+
+      // Don't reshow the tooltip during scroll.
+      if (tooltip_timer_.IsRunning())
+        tooltip_timer_.Reset();
       break;
     default:
       break;
