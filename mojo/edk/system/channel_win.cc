@@ -121,15 +121,17 @@ class ChannelWin : public Channel,
 
   ScopedPlatformHandleVectorPtr GetReadPlatformHandles(
       size_t num_handles,
-      const void* extra_header,
-      size_t extra_header_size) override {
+      void** payload,
+      size_t* payload_size) override {
     size_t handles_size = sizeof(PlatformHandle) * num_handles;
-    if (handles_size > extra_header_size)
+    if (handles_size > *payload_size)
       return nullptr;
 
+    *payload_size -= handles_size;
     ScopedPlatformHandleVectorPtr handles(
         new PlatformHandleVector(num_handles));
-    memcpy(handles->data(), extra_header, handles_size);
+    memcpy(handles->data(),
+           static_cast<const char*>(*payload) + *payload_size, handles_size);
     return handles;
   }
 
