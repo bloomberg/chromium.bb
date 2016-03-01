@@ -251,6 +251,36 @@ static bool borderOrPaddingLogicalDimensionChanged(const ComputedStyle& oldStyle
         || oldStyle.paddingBottom() != newStyle.paddingBottom();
 }
 
+static void addNextFloatingOrOutOfFlowSiblingsToBlock(LayoutBlock* block)
+{
+    if (!block->parent() || !block->parent()->isLayoutBlockFlow())
+        return;
+    if (block->beingDestroyed() || block->documentBeingDestroyed())
+        return;
+
+    LayoutObject* child = block->nextSibling();
+    while (child && child->isFloatingOrOutOfFlowPositioned()) {
+        LayoutObject* sibling = child->nextSibling();
+        toLayoutBlock(block->parent())->moveChildTo(block, child, nullptr, false);
+        child = sibling;
+    }
+}
+
+static void addPreviousFloatingOrOutOfFlowSiblingsToBlock(LayoutBlock* block)
+{
+    if (!block->parent() || !block->parent()->isLayoutBlockFlow())
+        return;
+    if (block->beingDestroyed() || block->documentBeingDestroyed())
+        return;
+
+    LayoutObject* child = block->previousSibling();
+    while (child && child->isFloatingOrOutOfFlowPositioned()) {
+        LayoutObject* sibling = child->previousSibling();
+        toLayoutBlock(block->parent())->moveChildTo(block, child, block->firstChild(), false);
+        child = sibling;
+    }
+}
+
 void LayoutBlock::styleDidChange(StyleDifference diff, const ComputedStyle* oldStyle)
 {
     LayoutBox::styleDidChange(diff, oldStyle);
@@ -258,10 +288,14 @@ void LayoutBlock::styleDidChange(StyleDifference diff, const ComputedStyle* oldS
     if (isFloatingOrOutOfFlowPositioned() && oldStyle && !oldStyle->isFloating() && !oldStyle->hasOutOfFlowPosition() && parent() && parent()->isLayoutBlockFlow()) {
         toLayoutBlock(parent())->makeChildrenInlineIfPossible();
         // Reparent to an adjacent anonymous block if one is available.
-        if (previousSibling() && previousSibling()->isAnonymousBlock())
-            toLayoutBlock(parent())->moveChildTo(toLayoutBlock(previousSibling()), this, nullptr, false);
-        else if (nextSibling() && nextSibling()->isAnonymousBlock())
+        if (previousSibling() && previousSibling()->isAnonymousBlock()) {
+            LayoutBlock* newParent = toLayoutBlock(previousSibling());
+            toLayoutBlock(parent())->moveChildTo(newParent, this, nullptr, false);
+            // The anonymous block we've moved to may now be adjacent to former siblings of ours that it can contain also.
+            addNextFloatingOrOutOfFlowSiblingsToBlock(newParent);
+        } else if (nextSibling() && nextSibling()->isAnonymousBlock()) {
             toLayoutBlock(parent())->moveChildTo(toLayoutBlock(nextSibling()), this, nextSibling()->slowFirstChild(), false);
+        }
     }
 
     const ComputedStyle& newStyle = styleRef();
@@ -451,19 +485,9 @@ void LayoutBlock::addChildIgnoringContinuation(LayoutObject* newChild, LayoutObj
             LayoutBlock* newBox = createAnonymousBlock();
             LayoutBox::addChild(newBox, beforeChild);
             // Reparent adjacent floating or out-of-flow siblings to the new box.
-            LayoutObject* child = newBox->previousSibling();
-            while (child && child->isFloatingOrOutOfFlowPositioned()) {
-                LayoutObject* sibling = child->previousSibling();
-                moveChildTo(newBox, child, newBox->firstChild(), false);
-                child = sibling;
-            }
+            addPreviousFloatingOrOutOfFlowSiblingsToBlock(newBox);
             newBox->addChild(newChild);
-            child = newBox->nextSibling();
-            while (child && child->isFloatingOrOutOfFlowPositioned()) {
-                LayoutObject* sibling = child->nextSibling();
-                moveChildTo(newBox, child, nullptr, false);
-                child = sibling;
-            }
+            addNextFloatingOrOutOfFlowSiblingsToBlock(newBox);
             return;
         }
     }
