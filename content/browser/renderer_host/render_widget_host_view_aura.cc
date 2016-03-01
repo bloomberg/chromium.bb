@@ -44,6 +44,7 @@
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/renderer_host/ui_events_helper.h"
 #include "content/browser/renderer_host/web_input_event_aura.h"
+#include "content/common/content_switches_internal.h"
 #include "content/common/gpu/client/gl_helper.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/site_isolation_policy.h"
@@ -1217,6 +1218,13 @@ void RenderWidgetHostViewAura::OnSwapCompositorFrame(
     return;
 
   cc::ViewportSelection selection = frame->metadata.selection;
+  if (IsUseZoomForDSFEnabled()) {
+    float viewportToDIPScale = 1.0f / current_device_scale_factor_;
+    selection.start.edge_top.Scale(viewportToDIPScale);
+    selection.start.edge_bottom.Scale(viewportToDIPScale);
+    selection.end.edge_top.Scale(viewportToDIPScale);
+    selection.end.edge_bottom.Scale(viewportToDIPScale);
+  }
 
   delegated_frame_host_->SwapDelegatedFrame(output_surface_id,
                                             std::move(frame));

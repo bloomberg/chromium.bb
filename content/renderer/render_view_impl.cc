@@ -1471,8 +1471,8 @@ void RenderViewImpl::OnMoveCaret(const gfx::Point& point) {
     return;
 
   Send(new InputHostMsg_MoveCaret_ACK(routing_id()));
-
-  webview()->focusedFrame()->moveCaretSelection(point);
+  webview()->focusedFrame()->moveCaretSelection(
+      ConvertWindowPointToViewport(point));
 }
 
 void RenderViewImpl::OnScrollFocusedEditableNodeIntoRect(
