@@ -21218,7 +21218,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Memory.Stats.Win.AvailPageFile" units="MB">
-  <owner>georgseak@chromium.org</owner>
+  <owner>georgesak@chromium.org</owner>
   <summary>
     Windows-only metric that represents the maximum amount of memory the current
     process can commit. This value is equal to or smaller than the system-wide
@@ -21227,7 +21227,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Memory.Stats.Win.AvailPhys" units="MB">
-  <owner>georgseak@chromium.org</owner>
+  <owner>georgesak@chromium.org</owner>
   <summary>
     Windows-only metric that represents the amount of physical memory currently
     available. This is the amount of physical memory that can be immediately
@@ -21237,7 +21237,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Memory.Stats.Win.AvailVirtual" units="MB">
-  <owner>georgseak@chromium.org</owner>
+  <owner>georgesak@chromium.org</owner>
   <summary>
     Windows-only metric that represents the amount of unreserved and uncommitted
     memory currently in the user-mode portion of the virtual address space of
@@ -21246,7 +21246,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Memory.Stats.Win.MemoryLoad" units="%">
-  <owner>georgseak@chromium.org</owner>
+  <owner>georgesak@chromium.org</owner>
   <summary>
     Windows-only metric that represents the approximate percentage of physical
     memory that was in use (0 indicates no memory use and 100 indicates full
@@ -21255,7 +21255,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Memory.Stats.Win.TotalPageFile" units="MB">
-  <owner>georgseak@chromium.org</owner>
+  <owner>georgesak@chromium.org</owner>
   <summary>
     Windows-only metric that represents the current committed memory limit for
     the system or the current process, whichever is smaller.
@@ -21263,14 +21263,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Memory.Stats.Win.TotalPhys" units="MB">
-  <owner>georgseak@chromium.org</owner>
+  <owner>georgesak@chromium.org</owner>
   <summary>
     Windows-only metric that represents the amount of actual physical memory.
   </summary>
 </histogram>
 
 <histogram name="Memory.Stats.Win.TotalVirtual" units="MB">
-  <owner>georgseak@chromium.org</owner>
+  <owner>georgesak@chromium.org</owner>
   <summary>
     Windows-only metric that represents the size of the user-mode portion of the
     virtual address space of the calling process. This value depends on the type
