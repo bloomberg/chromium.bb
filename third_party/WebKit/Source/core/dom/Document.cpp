@@ -2804,8 +2804,8 @@ void Document::dispatchUnloadEvents()
         return;
 
     // Don't remove event listeners from a transitional empty document (see https://bugs.webkit.org/show_bug.cgi?id=28716 for more information).
-    bool keepEventListeners = m_frame->loader().stateMachine()->isDisplayingInitialEmptyDocument() && m_frame->loader().provisionalDocumentLoader()
-        && isSecureTransitionTo(m_frame->loader().provisionalDocumentLoader()->url());
+    bool keepEventListeners = m_frame->loader().provisionalDocumentLoader()
+        && m_frame->shouldReuseDefaultView(m_frame->loader().provisionalDocumentLoader()->url());
     if (!keepEventListeners)
         removeAllEventListenersRecursively();
 }
@@ -4916,17 +4916,9 @@ bool Document::useSecureKeyboardEntryWhenActive() const
     return m_useSecureKeyboardEntryWhenActive;
 }
 
-void Document::initSecurityContext()
-{
-    initSecurityContext(DocumentInit(m_url, m_frame, contextDocument(), m_importsController));
-}
-
 void Document::initSecurityContext(const DocumentInit& initializer)
 {
-    if (haveInitializedSecurityOrigin()) {
-        ASSERT(securityOrigin());
-        return;
-    }
+    ASSERT(!securityOrigin());
 
     if (initializer.isHostedInReservedIPRange())
         setHostedInReservedIPRange();
@@ -4942,7 +4934,6 @@ void Document::initSecurityContext(const DocumentInit& initializer)
 
     // In the common case, create the security context from the currently
     // loading URL with a fresh content security policy.
-    m_cookieURL = m_url;
     enforceSandboxFlags(initializer.getSandboxFlags());
     if (initializer.shouldEnforceStrictMixedContentChecking())
         enforceStrictMixedContentChecking();
@@ -4951,7 +4942,25 @@ void Document::initSecurityContext(const DocumentInit& initializer)
         for (auto toUpgrade : *initializer.insecureNavigationsToUpgrade())
             addInsecureNavigationUpgrade(toUpgrade);
     }
-    setSecurityOrigin(isSandboxed(SandboxOrigin) ? SecurityOrigin::createUnique() : SecurityOrigin::create(m_url));
+
+    if (isSandboxed(SandboxOrigin)) {
+        m_cookieURL = m_url;
+        setSecurityOrigin(SecurityOrigin::createUnique());
+        // If we're supposed to inherit our security origin from our owner,
+        // but we're also sandboxed, the only thing we inherit is the ability
+        // to load local resources. This lets about:blank iframes in file://
+        // URL documents load images and other resources from the file system.
+        if (initializer.owner() && initializer.owner()->securityOrigin()->canLoadLocalResources())
+            securityOrigin()->grantLoadLocalResources();
+    } else if (initializer.owner()) {
+        m_cookieURL = initializer.owner()->cookieURL();
+        // We alias the SecurityOrigins to match Firefox, see Bug 15313
+        // https://bugs.webkit.org/show_bug.cgi?id=15313
+        setSecurityOrigin(initializer.owner()->securityOrigin());
+    } else {
+        m_cookieURL = m_url;
+        setSecurityOrigin(SecurityOrigin::create(m_url));
+    }
 
     if (importsController()) {
         // If this document is an HTML import, grab a reference to it's master document's Content
@@ -4983,32 +4992,6 @@ void Document::initSecurityContext(const DocumentInit& initializer)
         m_isSrcdocDocument = true;
         setBaseURLOverride(initializer.parentBaseURL());
     }
-
-    if (!shouldInheritSecurityOriginFromOwner(m_url))
-        return;
-
-    // If we do not obtain a meaningful origin from the URL, then we try to
-    // find one via the frame hierarchy.
-
-    if (!initializer.owner()) {
-        didFailToInitializeSecurityOrigin();
-        return;
-    }
-
-    if (isSandboxed(SandboxOrigin)) {
-        // If we're supposed to inherit our security origin from our owner,
-        // but we're also sandboxed, the only thing we inherit is the ability
-        // to load local resources. This lets about:blank iframes in file://
-        // URL documents load images and other resources from the file system.
-        if (initializer.owner()->securityOrigin()->canLoadLocalResources())
-            securityOrigin()->grantLoadLocalResources();
-        return;
-    }
-
-    m_cookieURL = initializer.owner()->cookieURL();
-    // We alias the SecurityOrigins to match Firefox, see Bug 15313
-    // https://bugs.webkit.org/show_bug.cgi?id=15313
-    setSecurityOrigin(initializer.owner()->securityOrigin());
 }
 
 void Document::initContentSecurityPolicy(PassRefPtrWillBeRawPtr<ContentSecurityPolicy> csp)
@@ -5025,6 +5008,12 @@ void Document::initContentSecurityPolicy(PassRefPtrWillBeRawPtr<ContentSecurityP
         }
     }
     contentSecurityPolicy()->bindToExecutionContext(this);
+}
+
+bool Document::isSecureTransitionTo(const KURL& url) const
+{
+    RefPtr<SecurityOrigin> other = SecurityOrigin::create(url);
+    return securityOrigin()->canAccess(other.get());
 }
 
 bool Document::allowInlineEventHandlers(Node* node, EventListener* listener, const String& contextURL, const WTF::OrdinalNumber& contextLine)

@@ -34,6 +34,7 @@ class DictionaryValue;
 
 namespace content {
 class BrowserContext;
+class RenderFrameHost;
 class WebContents;
 }
 
@@ -58,6 +59,7 @@ class AppWindowContents {
 
   // Called to initialize the WebContents, before the app window is created.
   virtual void Initialize(content::BrowserContext* context,
+                          content::RenderFrameHost* creator_frame,
                           const GURL& url) = 0;
 
   // Called to load the contents, after the app window is created.
@@ -219,6 +221,7 @@ class AppWindow : public content::WebContentsDelegate,
   // |app_window_contents| will become owned by AppWindow.
   void Init(const GURL& url,
             AppWindowContents* app_window_contents,
+            content::RenderFrameHost* creator_frame,
             const CreateParams& params);
 
   const std::string& window_key() const { return window_key_; }

@@ -47,17 +47,11 @@
 
 namespace blink {
 
-static Frame* createWindow(LocalFrame& openerFrame, LocalFrame& lookupFrame, const FrameLoadRequest& request, const WindowFeatures& features, NavigationPolicy policy, ShouldSetOpener shouldSetOpener, bool& created)
+static Frame* reuseExistingWindow(LocalFrame& openerFrame, LocalFrame& lookupFrame, const AtomicString& frameName, NavigationPolicy policy)
 {
-    created = false;
-
-    ASSERT(!features.dialog || request.frameName().isEmpty());
-    ASSERT(request.resourceRequest().requestorOrigin() || openerFrame.document()->url().isEmpty());
-    ASSERT(request.resourceRequest().frameType() == WebURLRequest::FrameTypeAuxiliary);
-
-    if (!request.frameName().isEmpty() && request.frameName() != "_blank" && policy == NavigationPolicyIgnore) {
-        if (Frame* frame = lookupFrame.findFrameForNavigation(request.frameName(), openerFrame)) {
-            if (request.frameName() != "_self") {
+    if (!frameName.isEmpty() && frameName != "_blank" && policy == NavigationPolicyIgnore) {
+        if (Frame* frame = lookupFrame.findFrameForNavigation(frameName, openerFrame)) {
+            if (frameName != "_self") {
                 if (FrameHost* host = frame->host()) {
                     if (host == openerFrame.host())
                         frame->page()->focusController().setFocusedFrame(frame);
@@ -68,17 +62,11 @@ static Frame* createWindow(LocalFrame& openerFrame, LocalFrame& lookupFrame, con
             return frame;
         }
     }
+    return nullptr;
+}
 
-    // Sandboxed frames cannot open new auxiliary browsing contexts.
-    if (openerFrame.document()->isSandboxed(SandboxPopups)) {
-        // FIXME: This message should be moved off the console once a solution to https://bugs.webkit.org/show_bug.cgi?id=103274 exists.
-        openerFrame.document()->addConsoleMessage(ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, "Blocked opening '" + request.resourceRequest().url().elidedString() + "' in a new window because the request was made in a sandboxed frame whose 'allow-popups' permission is not set."));
-        return nullptr;
-    }
-
-    if (openerFrame.settings() && !openerFrame.settings()->supportsMultipleWindows())
-        return openerFrame.tree().top();
-
+static Frame* createNewWindow(LocalFrame& openerFrame, const FrameLoadRequest& request, const WindowFeatures& features, NavigationPolicy policy, ShouldSetOpener shouldSetOpener, bool& created)
+{
     FrameHost* oldHost = openerFrame.host();
     if (!oldHost)
         return nullptr;
@@ -124,6 +112,37 @@ static Frame* createWindow(LocalFrame& openerFrame, LocalFrame& lookupFrame, con
     return &frame;
 }
 
+static Frame* createWindowHelper(LocalFrame& openerFrame, LocalFrame& lookupFrame, const FrameLoadRequest& request, const WindowFeatures& features, NavigationPolicy policy, ShouldSetOpener shouldSetOpener, bool& created)
+{
+    ASSERT(!features.dialog || request.frameName().isEmpty());
+    ASSERT(request.resourceRequest().requestorOrigin() || openerFrame.document()->url().isEmpty());
+    ASSERT(request.resourceRequest().frameType() == WebURLRequest::FrameTypeAuxiliary);
+
+    created = false;
+
+    Frame* window = reuseExistingWindow(openerFrame, lookupFrame, request.frameName(), policy);
+
+    if (!window) {
+        // Sandboxed frames cannot open new auxiliary browsing contexts.
+        if (openerFrame.document()->isSandboxed(SandboxPopups)) {
+            // FIXME: This message should be moved off the console once a solution to https://bugs.webkit.org/show_bug.cgi?id=103274 exists.
+            openerFrame.document()->addConsoleMessage(ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, "Blocked opening '" + request.resourceRequest().url().elidedString() + "' in a new window because the request was made in a sandboxed frame whose 'allow-popups' permission is not set."));
+            return nullptr;
+        }
+
+        if (openerFrame.settings() && !openerFrame.settings()->supportsMultipleWindows())
+            window = openerFrame.tree().top();
+    }
+
+    if (window) {
+        if (shouldSetOpener == MaybeSetOpener)
+            window->client()->setOpener(&openerFrame);
+        return window;
+    }
+
+    return createNewWindow(openerFrame, request, features, policy, shouldSetOpener, created);
+}
+
 DOMWindow* createWindow(const String& urlString, const AtomicString& frameName, const WindowFeatures& windowFeatures,
     LocalDOMWindow& callingWindow, LocalFrame& firstFrame, LocalFrame& openerFrame)
 {
@@ -156,12 +175,9 @@ DOMWindow* createWindow(const String& urlString, const AtomicString& frameName, 
     // the opener frame, and the name references a frame relative to the opener frame.
     bool created;
     ShouldSetOpener opener = windowFeatures.noopener ? NeverSetOpener : MaybeSetOpener;
-    Frame* newFrame = createWindow(*activeFrame, openerFrame, frameRequest, windowFeatures, NavigationPolicyIgnore, opener, created);
+    Frame* newFrame = createWindowHelper(*activeFrame, openerFrame, frameRequest, windowFeatures, NavigationPolicyIgnore, opener, created);
     if (!newFrame)
         return nullptr;
-
-    if (!windowFeatures.noopener)
-        newFrame->client()->setOpener(&openerFrame);
 
     if (!newFrame->domWindow()->isInsecureScriptAccess(callingWindow, completedURL)) {
         if (!urlString.isEmpty() || created)
@@ -188,11 +204,9 @@ void createWindowForRequest(const FrameLoadRequest& request, LocalFrame& openerF
 
     WindowFeatures features;
     bool created;
-    Frame* newFrame = createWindow(openerFrame, openerFrame, request, features, policy, shouldSetOpener, created);
+    Frame* newFrame = createWindowHelper(openerFrame, openerFrame, request, features, policy, shouldSetOpener, created);
     if (!newFrame)
         return;
-    if (shouldSetOpener == MaybeSetOpener)
-        newFrame->client()->setOpener(&openerFrame);
     if (shouldSendReferrer == MaybeSendReferrer) {
         // TODO(japhet): Does ReferrerPolicy need to be proagated for RemoteFrames?
         if (newFrame->isLocalFrame())

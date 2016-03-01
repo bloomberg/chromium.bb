@@ -20,12 +20,10 @@ window.onload = function()
 			location = "javascript:(" + function() {
 				a = document.createElement("a");
 				a.href = "about:blank";
-				e = document.createEvent("MouseEvent");
-				e.initMouseEvent("click");
-				a.dispatchEvent(e);
+				a.click();
 
 				return "<script>(" + function() {
-					opener.location = "javascript:alert(document.body.innerHTML)";
+					opener.location = "javascript:alert(location)";
 
 					if (window.testRunner)
 						setTimeout("testRunner.notifyDone()", 0);
@@ -37,6 +35,6 @@ window.onload = function()
 </script>
 </head>
 <body>
-This test passes if there's no alert dialog.
+<p>This test passes if the alerted location is the same origin as the main frame.
 </body>
 </html>

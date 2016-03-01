@@ -69,7 +69,7 @@ void LayoutTestContentRendererClient::RenderViewCreated(
   new ShellRenderViewObserver(render_view);
 
   BlinkTestRunner* test_runner = BlinkTestRunner::Get(render_view);
-  test_runner->Reset();
+  test_runner->Reset(false /* for_new_test */);
   render_view->GetWebView()->setSpellCheckClient(
       test_runner->proxy()->GetSpellCheckClient());
 

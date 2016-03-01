@@ -593,7 +593,8 @@ bool WindowsCreateFunction::RunSync() {
       AppWindow* app_window = new AppWindow(
           window_profile, new ChromeAppDelegate(true), extension());
       AshPanelContents* ash_panel_contents = new AshPanelContents(app_window);
-      app_window->Init(urls[0], ash_panel_contents, create_params);
+      app_window->Init(urls[0], ash_panel_contents, render_frame_host(),
+                       create_params);
       WindowController* window_controller =
           WindowControllerList::GetInstance()->FindWindowById(
               app_window->session_id().id());

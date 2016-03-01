@@ -48,7 +48,8 @@ class Settings;
 class CORE_EXPORT DocumentInit final {
     STACK_ALLOCATED();
 public:
-    explicit DocumentInit(const KURL& = KURL(), LocalFrame* = 0, WeakPtrWillBeRawPtr<Document> = nullptr, HTMLImportsController* = 0);
+    DocumentInit(const KURL& = KURL(), LocalFrame* = nullptr, WeakPtrWillBeRawPtr<Document> contextDocument = nullptr, HTMLImportsController* = nullptr);
+    DocumentInit(PassRefPtrWillBeRawPtr<Document> ownerDocument, const KURL&, LocalFrame*, WeakPtrWillBeRawPtr<Document> contextDocument = nullptr, HTMLImportsController* = nullptr);
     DocumentInit(const DocumentInit&);
     ~DocumentInit();
 

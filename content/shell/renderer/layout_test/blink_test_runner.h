@@ -157,7 +157,12 @@ class BlinkTestRunner : public RenderViewObserver,
   blink::WebPoint ConvertDIPToNative(
       const blink::WebPoint& point_in_dip) const override;
 
-  void Reset();
+  // Resets a RenderView to a known state for layout tests. It is used both when
+  // a RenderView is created and when reusing an existing RenderView for the
+  // next test case.
+  // When reusing an existing RenderView, |for_new_test| should be true, which
+  // also resets additional state, like the main frame's name and opener.
+  void Reset(bool for_new_test);
 
   void set_proxy(test_runner::WebTestProxyBase* proxy) { proxy_ = proxy; }
   test_runner::WebTestProxyBase* proxy() const { return proxy_; }

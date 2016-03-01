@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DOMWindowPagePopup_h
-#define DOMWindowPagePopup_h
+#ifndef PagePopupSupplement_h
+#define PagePopupSupplement_h
 
 #include "core/CoreExport.h"
-#include "core/frame/LocalDOMWindow.h"
+#include "core/frame/LocalFrame.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
 
@@ -42,19 +42,20 @@ class PagePopup;
 class PagePopupClient;
 class PagePopupController;
 
-class CORE_EXPORT DOMWindowPagePopup final : public NoBaseWillBeGarbageCollected<DOMWindowPagePopup>, public WillBeHeapSupplement<LocalDOMWindow> {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DOMWindowPagePopup);
-    USING_FAST_MALLOC_WILL_BE_REMOVED(DOMWindowPagePopup);
+class CORE_EXPORT PagePopupSupplement final : public NoBaseWillBeGarbageCollected<PagePopupSupplement>, public WillBeHeapSupplement<LocalFrame> {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(PagePopupSupplement);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(PagePopupSupplement);
+
 public:
-    static PagePopupController* pagePopupController(DOMWindow&);
-    static void install(LocalDOMWindow&, PagePopup&, PagePopupClient*);
-    static void uninstall(LocalDOMWindow&);
-    DECLARE_EMPTY_VIRTUAL_DESTRUCTOR_WILL_BE_REMOVED(DOMWindowPagePopup);
+    static PagePopupController* pagePopupController(LocalFrame&);
+    static void install(LocalFrame&, PagePopup&, PagePopupClient*);
+    static void uninstall(LocalFrame&);
+    DECLARE_EMPTY_VIRTUAL_DESTRUCTOR_WILL_BE_REMOVED(PagePopupSupplement);
 
     DECLARE_TRACE();
 
 private:
-    DOMWindowPagePopup(PagePopup&, PagePopupClient*);
+    PagePopupSupplement(PagePopup&, PagePopupClient*);
     static const char* supplementName();
 
     RefPtrWillBeMember<PagePopupController> m_controller;

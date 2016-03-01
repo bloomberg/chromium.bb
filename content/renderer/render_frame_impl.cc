@@ -814,14 +814,15 @@ RenderFrameImpl* RenderFrameImpl::CreateMainFrame(
     int32_t widget_routing_id,
     bool hidden,
     const blink::WebScreenInfo& screen_info,
-    CompositorDependencies* compositor_deps) {
+    CompositorDependencies* compositor_deps,
+    blink::WebFrame* opener) {
   // A main frame RenderFrame must have a RenderWidget.
   DCHECK_NE(MSG_ROUTING_NONE, widget_routing_id);
 
   RenderFrameImpl* render_frame =
       RenderFrameImpl::Create(render_view, routing_id);
-  WebLocalFrame* web_frame =
-      WebLocalFrame::create(blink::WebTreeScopeType::Document, render_frame);
+  WebLocalFrame* web_frame = WebLocalFrame::create(
+      blink::WebTreeScopeType::Document, render_frame, opener);
   render_frame->BindToWebFrame(web_frame);
   render_view->webview()->setMainFrame(web_frame);
   render_frame->render_widget_ = RenderWidget::CreateForFrame(
@@ -870,7 +871,8 @@ void RenderFrameImpl::CreateFrame(
         replicated_state.scope, WebString::fromUTF8(replicated_state.name),
         WebString::fromUTF8(replicated_state.unique_name),
         replicated_state.sandbox_flags, render_frame,
-        previous_sibling_web_frame, frame_owner_properties);
+        previous_sibling_web_frame, frame_owner_properties,
+        ResolveOpener(opener_routing_id, nullptr));
 
     // The RenderFrame is created and inserted into the frame tree in the above
     // call to createLocalChild.
@@ -893,9 +895,6 @@ void RenderFrameImpl::CreateFrame(
   }
   render_frame->BindToWebFrame(web_frame);
   CHECK(parent_routing_id != MSG_ROUTING_NONE || !web_frame->parent());
-
-  WebFrame* opener = ResolveOpener(opener_routing_id, nullptr);
-  web_frame->setOpener(opener);
 
   if (widget_params.routing_id != MSG_ROUTING_NONE) {
     CHECK(!web_frame->parent() ||

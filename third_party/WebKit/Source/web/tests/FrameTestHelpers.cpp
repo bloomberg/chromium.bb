@@ -102,6 +102,19 @@ TestWebViewClient* defaultWebViewClient()
     return &client;
 }
 
+// |uniqueName| is normally calculated in a somewhat complicated way by the
+// FrameTree class, but for test purposes the approximation below should be
+// close enough.
+String nameToUniqueName(const String& name)
+{
+    static int uniqueNameCounter = 0;
+    StringBuilder uniqueName;
+    uniqueName.append(name);
+    uniqueName.append(" ");
+    uniqueName.appendNumber(uniqueNameCounter++);
+    return uniqueName.toString();
+}
+
 } // namespace
 
 void loadFrame(WebFrame* frame, const std::string& url)
@@ -147,15 +160,12 @@ WebLocalFrame* createLocalChild(WebRemoteFrame* parent, const WebString& name, W
     if (!client)
         client = defaultWebFrameClient();
 
-    // |uniqueName| is normally calculated in a somewhat complicated way by the
-    // FrameTree class, but for test purposes the approximation below should be
-    // close enough.
-    static int uniqueNameCounter = 0;
-    StringBuilder uniqueName;
-    uniqueName.append(name);
-    uniqueName.appendNumber(uniqueNameCounter++);
+    return parent->createLocalChild(WebTreeScopeType::Document, name, nameToUniqueName(name), WebSandboxFlags::None, client, previousSibling, properties, nullptr);
+}
 
-    return parent->createLocalChild(WebTreeScopeType::Document, name, uniqueName.toString(), WebSandboxFlags::None, client, previousSibling, properties);
+WebRemoteFrame* createRemoteChild(WebRemoteFrame* parent, WebRemoteFrameClient* client, const WebString& name)
+{
+    return parent->createRemoteChild(WebTreeScopeType::Document, name, nameToUniqueName(name), WebSandboxFlags::None, client, nullptr);
 }
 
 WebViewHelper::WebViewHelper(SettingOverrider* settingOverrider)
@@ -170,7 +180,7 @@ WebViewHelper::~WebViewHelper()
     reset();
 }
 
-WebViewImpl* WebViewHelper::initialize(bool enableJavascript, TestWebFrameClient* webFrameClient, TestWebViewClient* webViewClient, void (*updateSettingsFunc)(WebSettings*))
+WebViewImpl* WebViewHelper::initializeWithOpener(WebFrame* opener, bool enableJavascript, TestWebFrameClient* webFrameClient, TestWebViewClient* webViewClient, void (*updateSettingsFunc)(WebSettings*))
 {
     reset();
 
@@ -195,7 +205,7 @@ WebViewImpl* WebViewHelper::initialize(bool enableJavascript, TestWebFrameClient
         m_settingOverrider->overrideSettings(m_webView->settings());
     m_webView->setDeviceScaleFactor(webViewClient->screenInfo().deviceScaleFactor);
     m_webView->setDefaultPageScaleLimits(1, 4);
-    WebLocalFrame* frame = WebLocalFrameImpl::create(WebTreeScopeType::Document, webFrameClient);
+    WebLocalFrame* frame = WebLocalFrameImpl::create(WebTreeScopeType::Document, webFrameClient, opener);
     m_webView->setMainFrame(frame);
     // TODO(dcheng): The main frame widget currently has a special case.
     // Eliminate this once WebView is no longer a WebWidget.
@@ -204,6 +214,11 @@ WebViewImpl* WebViewHelper::initialize(bool enableJavascript, TestWebFrameClient
     m_testWebViewClient = webViewClient;
 
     return m_webView;
+}
+
+WebViewImpl* WebViewHelper::initialize(bool enableJavascript, TestWebFrameClient* webFrameClient, TestWebViewClient* webViewClient, void (*updateSettingsFunc)(WebSettings*))
+{
+    return initializeWithOpener(nullptr, enableJavascript, webFrameClient, webViewClient, updateSettingsFunc);
 }
 
 WebViewImpl* WebViewHelper::initializeAndLoad(const std::string& url, bool enableJavascript, TestWebFrameClient* webFrameClient, TestWebViewClient* webViewClient, void (*updateSettingsFunc)(WebSettings*))
@@ -282,7 +297,7 @@ void TestWebFrameClient::waitForLoadToComplete()
 }
 
 TestWebRemoteFrameClient::TestWebRemoteFrameClient()
-    : m_frame(WebRemoteFrameImpl::create(WebTreeScopeType::Document, this))
+    : m_frame(WebRemoteFrameImpl::create(WebTreeScopeType::Document, this, nullptr))
 {
 }
 

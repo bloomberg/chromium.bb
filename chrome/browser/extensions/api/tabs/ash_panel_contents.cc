@@ -14,6 +14,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/app_window/native_app_window.h"
@@ -33,12 +35,15 @@ AshPanelContents::~AshPanelContents() {
 }
 
 void AshPanelContents::Initialize(content::BrowserContext* context,
+                                  content::RenderFrameHost* creator_frame,
                                   const GURL& url) {
   url_ = url;
 
-  web_contents_.reset(
-      content::WebContents::Create(content::WebContents::CreateParams(
-          context, content::SiteInstance::CreateForURL(context, url_))));
+  content::WebContents::CreateParams create_params(
+      context, creator_frame->GetSiteInstance());
+  create_params.opener_render_process_id = creator_frame->GetProcess()->GetID();
+  create_params.opener_render_frame_id = creator_frame->GetRoutingID();
+  web_contents_.reset(content::WebContents::Create(create_params));
 
   // Needed to give the web contents a Window ID. Extension APIs expect web
   // contents to have a Window ID. Also required for FaviconDriver to correctly

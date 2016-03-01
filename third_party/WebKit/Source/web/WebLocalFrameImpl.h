@@ -92,7 +92,6 @@ public:
     bool hasHorizontalScrollbar() const override;
     bool hasVerticalScrollbar() const override;
     WebView* view() const override;
-    void setOpener(WebFrame*) override;
     WebDocument document() const override;
     WebPerformance performance() const override;
     bool dispatchBeforeUnloadEvent() override;
@@ -261,7 +260,7 @@ public:
     void willBeDetached();
     void willDetachParent();
 
-    static WebLocalFrameImpl* create(WebTreeScopeType, WebFrameClient*);
+    static WebLocalFrameImpl* create(WebTreeScopeType, WebFrameClient*, WebFrame* opener);
     static WebLocalFrameImpl* createProvisional(WebFrameClient*, WebRemoteFrame*, WebSandboxFlags, const WebFrameOwnerProperties&);
     ~WebLocalFrameImpl() override;
 

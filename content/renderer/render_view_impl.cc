@@ -687,7 +687,7 @@ void RenderViewImpl::Initialize(const ViewMsg_New_Params& params,
   if (params.main_frame_routing_id != MSG_ROUTING_NONE) {
     main_render_frame_ = RenderFrameImpl::CreateMainFrame(
         this, params.main_frame_routing_id, params.main_frame_widget_routing_id,
-        params.hidden, screen_info(), compositor_deps_);
+        params.hidden, screen_info(), compositor_deps_, opener_frame);
   }
 
   if (params.proxy_routing_id != MSG_ROUTING_NONE) {
@@ -700,11 +700,9 @@ void RenderViewImpl::Initialize(const ViewMsg_New_Params& params,
       main_render_frame_->set_render_frame_proxy(proxy);
     } else {
       CHECK(SiteIsolationPolicy::IsSwappedOutStateForbidden());
-      // Pass MSG_ROUTING_NONE for opener, since actual opener (if any) will be
-      // set separately below.
-      RenderFrameProxy::CreateFrameProxy(params.proxy_routing_id, routing_id(),
-                                         MSG_ROUTING_NONE, MSG_ROUTING_NONE,
-                                         params.replicated_frame_state);
+      RenderFrameProxy::CreateFrameProxy(
+          params.proxy_routing_id, routing_id(), params.opener_frame_route_id,
+          MSG_ROUTING_NONE, params.replicated_frame_state);
     }
   }
 
@@ -806,18 +804,13 @@ void RenderViewImpl::Initialize(const ViewMsg_New_Params& params,
 
   GetContentClient()->renderer()->RenderViewCreated(this);
 
-  // If we have an opener_frame but we weren't created by a renderer, then it's
-  // the browser asking us to set our opener to another frame.
-  if (opener_frame && !was_created_by_renderer) {
-    webview()->mainFrame()->setOpener(opener_frame);
-
-    // Ensure that sandbox flags are inherited from an opener in a different
-    // process.  In that case, the browser process will set any inherited
-    // sandbox flags in |replicated_frame_state|, so apply them here.
-    if (webview()->mainFrame()->isWebLocalFrame()) {
-      webview()->mainFrame()->toWebLocalFrame()->forceSandboxFlags(
-          params.replicated_frame_state.sandbox_flags);
-    }
+  // Ensure that sandbox flags are inherited from an opener in a different
+  // process.  In that case, the browser process will set any inherited sandbox
+  // flags in |replicated_frame_state|, so apply them here.
+  if (opener_frame && !was_created_by_renderer &&
+      webview()->mainFrame()->isWebLocalFrame()) {
+    webview()->mainFrame()->toWebLocalFrame()->forceSandboxFlags(
+        params.replicated_frame_state.sandbox_flags);
   }
 
   // If we are initially swapped out, navigate to kSwappedOutURL.

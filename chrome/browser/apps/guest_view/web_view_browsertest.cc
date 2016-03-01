@@ -2047,7 +2047,7 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, MAYBE_TearDownTest) {
       LoadAndLaunchPlatformApp("web_view/simple", "WebViewTest.LAUNCHED");
   extensions::AppWindow* window = NULL;
   if (!GetAppWindowCount())
-    window = CreateAppWindow(extension);
+    window = CreateAppWindow(browser()->profile(), extension);
   else
     window = GetFirstAppWindow();
   CloseAppWindow(window);

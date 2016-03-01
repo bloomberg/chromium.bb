@@ -280,7 +280,7 @@ IN_PROC_BROWSER_TEST_P(AcceleratorCommandsPlatformAppFullscreenBrowserTest,
     extensions::AppWindow::CreateParams params;
     params.frame = extensions::AppWindow::FRAME_CHROME;
     extensions::AppWindow* app_window =
-        CreateAppWindowFromParams(extension, params);
+        CreateAppWindowFromParams(browser()->profile(), extension, params);
     extensions::NativeAppWindow* native_app_window =
         app_window->GetBaseWindow();
     SetToInitialShowState(app_window);
@@ -305,7 +305,7 @@ IN_PROC_BROWSER_TEST_P(AcceleratorCommandsPlatformAppFullscreenBrowserTest,
     extensions::AppWindow::CreateParams params;
     params.frame = extensions::AppWindow::FRAME_NONE;
     extensions::AppWindow* app_window =
-        CreateAppWindowFromParams(extension, params);
+        CreateAppWindowFromParams(browser()->profile(), extension, params);
     extensions::NativeAppWindow* native_app_window =
         app_window->GetBaseWindow();
     ASSERT_TRUE(app_window->GetBaseWindow()->IsActive());

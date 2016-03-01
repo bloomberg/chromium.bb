@@ -5541,8 +5541,7 @@ TEST_P(ParameterizedWebFrameTest, DidAccessInitialDocumentBody)
 
     // Create another window that will try to access it.
     FrameTestHelpers::WebViewHelper newWebViewHelper(this);
-    WebView* newView = newWebViewHelper.initialize(true);
-    newView->mainFrame()->setOpener(webViewHelper.webView()->mainFrame());
+    WebView* newView = newWebViewHelper.initializeWithOpener(webViewHelper.webView()->mainFrame(), true);
     runPendingTasks();
     EXPECT_FALSE(webFrameClient.m_didAccessInitialDocument);
 
@@ -5573,8 +5572,7 @@ TEST_P(ParameterizedWebFrameTest, DidAccessInitialDocumentNavigator)
 
     // Create another window that will try to access it.
     FrameTestHelpers::WebViewHelper newWebViewHelper(this);
-    WebView* newView = newWebViewHelper.initialize(true);
-    newView->mainFrame()->setOpener(webViewHelper.webView()->mainFrame());
+    WebView* newView = newWebViewHelper.initializeWithOpener(webViewHelper.webView()->mainFrame(), true);
     runPendingTasks();
     EXPECT_FALSE(webFrameClient.m_didAccessInitialDocument);
 
@@ -5617,8 +5615,7 @@ TEST_P(ParameterizedWebFrameTest, DidAccessInitialDocumentBodyBeforeModalDialog)
 
     // Create another window that will try to access it.
     FrameTestHelpers::WebViewHelper newWebViewHelper(this);
-    WebView* newView = newWebViewHelper.initialize(true);
-    newView->mainFrame()->setOpener(webViewHelper.webView()->mainFrame());
+    WebView* newView = newWebViewHelper.initializeWithOpener(webViewHelper.webView()->mainFrame(), true);
     runPendingTasks();
     EXPECT_FALSE(webFrameClient.m_didAccessInitialDocument);
 
@@ -5657,8 +5654,7 @@ TEST_P(ParameterizedWebFrameTest, DidWriteToInitialDocumentBeforeModalDialog)
 
     // Create another window that will try to access it.
     FrameTestHelpers::WebViewHelper newWebViewHelper(this);
-    WebView* newView = newWebViewHelper.initialize(true);
-    newView->mainFrame()->setOpener(webViewHelper.webView()->mainFrame());
+    WebView* newView = newWebViewHelper.initializeWithOpener(webViewHelper.webView()->mainFrame(), true);
     runPendingTasks();
     EXPECT_FALSE(webFrameClient.m_didAccessInitialDocument);
 
@@ -7276,7 +7272,7 @@ TEST_F(WebFrameSwapTest, SwapParentShouldDetachChildren)
 
     // Create child frames in the target frame before testing the swap.
     FrameTestHelpers::TestWebRemoteFrameClient remoteFrameClient2;
-    WebRemoteFrame* childRemoteFrame = remoteFrame->createRemoteChild(WebTreeScopeType::Document, "", "uniqueName0", WebSandboxFlags::None, &remoteFrameClient2);
+    WebRemoteFrame* childRemoteFrame = FrameTestHelpers::createRemoteChild(remoteFrame, &remoteFrameClient2);
 
     FrameTestHelpers::TestWebFrameClient client;
     WebLocalFrame* localFrame = WebLocalFrame::createProvisional(&client, remoteFrame, WebSandboxFlags::None, WebFrameOwnerProperties());
@@ -7859,7 +7855,7 @@ TEST_P(ParameterizedWebFrameTest, DetachRemoteFrame)
     WebView* view = WebView::create(&viewClient);
     view->setMainFrame(remoteClient.frame());
     FrameTestHelpers::TestWebRemoteFrameClient childFrameClient;
-    WebRemoteFrame* childFrame = view->mainFrame()->toWebRemoteFrame()->createRemoteChild(WebTreeScopeType::Document, "", "uniqueName1", WebSandboxFlags::None, &childFrameClient);
+    WebRemoteFrame* childFrame = FrameTestHelpers::createRemoteChild(view->mainFrame()->toWebRemoteFrame(), &childFrameClient);
     childFrame->detach();
     view->close();
     childFrame->close();

@@ -166,7 +166,8 @@ class CONTENT_EXPORT RenderFrameImpl
       int32_t widget_routing_id,
       bool hidden,
       const blink::WebScreenInfo& screen_info,
-      CompositorDependencies* compositor_deps);
+      CompositorDependencies* compositor_deps,
+      blink::WebFrame* opener);
 
   // Creates a new RenderFrame with |routing_id|.  If |proxy_routing_id| is
   // MSG_ROUTING_NONE, it creates the Blink WebLocalFrame and inserts it into

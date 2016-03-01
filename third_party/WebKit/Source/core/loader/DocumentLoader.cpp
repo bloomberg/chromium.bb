@@ -82,6 +82,19 @@ static bool isArchiveMIMEType(const String& mimeType)
     return equalIgnoringCase("multipart/related", mimeType);
 }
 
+static bool shouldInheritSecurityOriginFromOwner(const KURL& url)
+{
+    // https://html.spec.whatwg.org/multipage/browsers.html#origin
+    //
+    // If a Document is the initial "about:blank" document
+    //     The origin and effective script origin of the Document are those it
+    //     was assigned when its browsing context was created.
+    //
+    // Note: We generalize this to all "blank" URLs and invalid URLs because we
+    // treat all of these URLs as about:blank.
+    return url.isEmpty() || url.protocolIsAbout();
+}
+
 DocumentLoader::DocumentLoader(LocalFrame* frame, const ResourceRequest& req, const SubstituteData& substituteData)
     : m_frame(frame)
     , m_fetcher(FrameFetchContext::createContextAndFetcher(this))
@@ -458,7 +471,17 @@ void DocumentLoader::ensureWriter(const AtomicString& mimeType, const KURL& over
 
     // Prepare a DocumentInit before clearing the frame, because it may need to
     // inherit an aliased security context.
-    DocumentInit init(url(), m_frame);
+    Document* owner = nullptr;
+    // TODO(dcheng): This differs from the behavior of both IE and Firefox: the
+    // origin is inherited from the document that loaded the URL.
+    if (shouldInheritSecurityOriginFromOwner(url())) {
+        Frame* ownerFrame = m_frame->tree().parent();
+        if (!ownerFrame)
+            ownerFrame = m_frame->loader().opener();
+        if (ownerFrame && ownerFrame->isLocalFrame())
+            owner = toLocalFrame(ownerFrame)->document();
+    }
+    DocumentInit init(owner, url(), m_frame);
     init.withNewRegistrationContext();
     m_frame->loader().clear();
     ASSERT(m_frame->page());
@@ -467,7 +490,7 @@ void DocumentLoader::ensureWriter(const AtomicString& mimeType, const KURL& over
     if ((m_substituteData.isValid() && m_substituteData.forceSynchronousLoad()) || !Document::threadedParsingEnabledForTesting())
         parsingPolicy = ForceSynchronousParsing;
 
-    m_writer = createWriterFor(0, init, mimeType, encoding, false, parsingPolicy);
+    m_writer = createWriterFor(init, mimeType, encoding, false, parsingPolicy);
     m_writer->setDocumentWasLoadedAsPartOfNavigation();
 
     // This should be set before receivedFirstData().
@@ -732,7 +755,7 @@ void DocumentLoader::endWriting(DocumentWriter* writer)
     m_writer.clear();
 }
 
-PassRefPtrWillBeRawPtr<DocumentWriter> DocumentLoader::createWriterFor(const Document* ownerDocument, const DocumentInit& init, const AtomicString& mimeType, const AtomicString& encoding, bool dispatch, ParserSynchronizationPolicy parsingPolicy)
+PassRefPtrWillBeRawPtr<DocumentWriter> DocumentLoader::createWriterFor(const DocumentInit& init, const AtomicString& mimeType, const AtomicString& encoding, bool dispatch, ParserSynchronizationPolicy parsingPolicy)
 {
     LocalFrame* frame = init.frame();
 
@@ -743,10 +766,6 @@ PassRefPtrWillBeRawPtr<DocumentWriter> DocumentLoader::createWriterFor(const Doc
         frame->setDOMWindow(LocalDOMWindow::create(*frame));
 
     RefPtrWillBeRawPtr<Document> document = frame->localDOMWindow()->installNewDocument(mimeType, init);
-    if (ownerDocument) {
-        document->setCookieURL(ownerDocument->cookieURL());
-        document->updateSecurityOrigin(ownerDocument->securityOrigin());
-    }
 
     frame->loader().didBeginDocument(dispatch);
 
@@ -761,9 +780,9 @@ const AtomicString& DocumentLoader::mimeType() const
 }
 
 // This is only called by FrameLoader::replaceDocumentWhileExecutingJavaScriptURL()
-void DocumentLoader::replaceDocumentWhileExecutingJavaScriptURL(const DocumentInit& init, const String& source, Document* ownerDocument)
+void DocumentLoader::replaceDocumentWhileExecutingJavaScriptURL(const DocumentInit& init, const String& source)
 {
-    m_writer = createWriterFor(ownerDocument, init, mimeType(), m_writer ? m_writer->encoding() : emptyAtom, true, ForceSynchronousParsing);
+    m_writer = createWriterFor(init, mimeType(), m_writer ? m_writer->encoding() : emptyAtom, true, ForceSynchronousParsing);
     if (!source.isNull())
         m_writer->appendReplacingData(source);
     endWriting(m_writer.get());

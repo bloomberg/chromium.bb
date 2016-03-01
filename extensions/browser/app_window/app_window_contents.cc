@@ -27,12 +27,15 @@ AppWindowContentsImpl::AppWindowContentsImpl(AppWindow* host)
 AppWindowContentsImpl::~AppWindowContentsImpl() {}
 
 void AppWindowContentsImpl::Initialize(content::BrowserContext* context,
+                                       content::RenderFrameHost* creator_frame,
                                        const GURL& url) {
   url_ = url;
 
-  web_contents_.reset(
-      content::WebContents::Create(content::WebContents::CreateParams(
-          context, content::SiteInstance::CreateForURL(context, url_))));
+  content::WebContents::CreateParams create_params(
+      context, creator_frame->GetSiteInstance());
+  create_params.opener_render_process_id = creator_frame->GetProcess()->GetID();
+  create_params.opener_render_frame_id = creator_frame->GetRoutingID();
+  web_contents_.reset(content::WebContents::Create(create_params));
 
   Observe(web_contents_.get());
   web_contents_->GetMutableRendererPrefs()->

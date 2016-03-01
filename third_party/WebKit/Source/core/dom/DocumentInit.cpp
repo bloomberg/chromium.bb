@@ -49,25 +49,16 @@ static Document* parentDocument(LocalFrame* frame)
     return &ownerElement->document();
 }
 
-
-static Document* ownerDocument(LocalFrame* frame)
+DocumentInit::DocumentInit(const KURL& url, LocalFrame* frame, WeakPtrWillBeRawPtr<Document> contextDocument, HTMLImportsController* importsController)
+    : DocumentInit(nullptr, url, frame, contextDocument, importsController)
 {
-    if (!frame)
-        return 0;
-
-    Frame* ownerFrame = frame->tree().parent();
-    if (!ownerFrame)
-        ownerFrame = frame->loader().opener();
-    if (!ownerFrame || !ownerFrame->isLocalFrame())
-        return 0;
-    return toLocalFrame(ownerFrame)->document();
 }
 
-DocumentInit::DocumentInit(const KURL& url, LocalFrame* frame, WeakPtrWillBeRawPtr<Document> contextDocument, HTMLImportsController* importsController)
+DocumentInit::DocumentInit(PassRefPtrWillBeRawPtr<Document> ownerDocument, const KURL& url, LocalFrame* frame, WeakPtrWillBeRawPtr<Document> contextDocument, HTMLImportsController* importsController)
     : m_url(url)
     , m_frame(frame)
     , m_parent(parentDocument(frame))
-    , m_owner(ownerDocument(frame))
+    , m_owner(ownerDocument)
     , m_contextDocument(contextDocument)
     , m_importsController(importsController)
     , m_createNewRegistrationContext(false)

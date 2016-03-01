@@ -41,10 +41,10 @@
 #include "core/layout/LayoutView.h"
 #include "core/loader/EmptyClients.h"
 #include "core/loader/FrameLoadRequest.h"
-#include "core/page/DOMWindowPagePopup.h"
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
 #include "core/page/PagePopupClient.h"
+#include "core/page/PagePopupSupplement.h"
 #include "modules/accessibility/AXObject.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
 #include "platform/EventDispatchForbiddenScope.h"
@@ -294,7 +294,7 @@ bool WebPagePopupImpl::initializePage()
         cache->childrenChanged(&m_popupClient->ownerElement());
 
     ASSERT(frame->localDOMWindow());
-    DOMWindowPagePopup::install(*frame->localDOMWindow(), *this, m_popupClient);
+    PagePopupSupplement::install(*frame, *this, m_popupClient);
     ASSERT(m_popupClient->ownerElement().document().existingAXObjectCache() == frame->document()->existingAXObjectCache());
 
     RefPtr<SharedBuffer> data = SharedBuffer::create();
@@ -514,8 +514,7 @@ void WebPagePopupImpl::closePopup()
 
     if (m_page) {
         toLocalFrame(m_page->mainFrame())->loader().stopAllLoaders();
-        ASSERT(m_page->deprecatedLocalMainFrame()->localDOMWindow());
-        DOMWindowPagePopup::uninstall(*m_page->deprecatedLocalMainFrame()->localDOMWindow());
+        PagePopupSupplement::uninstall(*toLocalFrame(m_page->mainFrame()));
     }
     m_closing = true;
 

@@ -541,7 +541,7 @@ TEST_F(WebViewTest, SetBaseBackgroundColorBeforeMainFrame)
     // webView does not have a frame yet, but we should still be able to set the background color.
     webView->setBaseBackgroundColor(kBlue);
     EXPECT_EQ(kBlue, webView->backgroundColor());
-    WebLocalFrameImpl* frame = WebLocalFrameImpl::create(WebTreeScopeType::Document, nullptr);
+    WebLocalFrame* frame = WebLocalFrame::create(WebTreeScopeType::Document, nullptr);
     webView->setMainFrame(frame);
     webView->close();
     frame->close();
@@ -1910,9 +1910,9 @@ public:
     }
 
     // WebViewClient methods
-    WebView* createView(WebLocalFrame*, const WebURLRequest&, const WebWindowFeatures&, const WebString& name, WebNavigationPolicy, bool) override
+    WebView* createView(WebLocalFrame* opener, const WebURLRequest&, const WebWindowFeatures&, const WebString& name, WebNavigationPolicy, bool) override
     {
-        return m_webViewHelper.initialize(true, 0, 0);
+        return m_webViewHelper.initializeWithOpener(opener, true);
     }
 
     // WebWidgetClient methods

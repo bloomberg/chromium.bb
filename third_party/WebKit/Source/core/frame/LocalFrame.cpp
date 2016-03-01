@@ -757,7 +757,12 @@ bool LocalFrame::isURLAllowed(const KURL& url) const
 
 bool LocalFrame::shouldReuseDefaultView(const KURL& url) const
 {
-    return loader().stateMachine()->isDisplayingInitialEmptyDocument() && document()->isSecureTransitionTo(url);
+    // Secure transitions can only happen when navigating from the initial empty
+    // document.
+    if (!loader().stateMachine()->isDisplayingInitialEmptyDocument())
+        return false;
+
+    return document()->isSecureTransitionTo(url);
 }
 
 void LocalFrame::removeSpellingMarkersUnderWords(const Vector<String>& words)

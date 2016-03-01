@@ -842,7 +842,7 @@ void BlinkTestRunner::DidFailProvisionalLoad(WebLocalFrame* frame,
 
 // Public methods - -----------------------------------------------------------
 
-void BlinkTestRunner::Reset() {
+void BlinkTestRunner::Reset(bool for_new_test) {
   // The proxy_ is always non-NULL, it is set right after construction.
   proxy_->set_widget(render_view()->GetWebView());
   proxy_->Reset();
@@ -852,9 +852,11 @@ void BlinkTestRunner::Reset() {
   current_entry_indexes_.clear();
 
   render_view()->ClearEditCommands();
-  if (render_view()->GetWebView()->mainFrame()->isWebLocalFrame())
-    render_view()->GetWebView()->mainFrame()->setName(WebString());
-  render_view()->GetWebView()->mainFrame()->clearOpener();
+  if (for_new_test) {
+    if (render_view()->GetWebView()->mainFrame()->isWebLocalFrame())
+      render_view()->GetWebView()->mainFrame()->setName(WebString());
+    render_view()->GetWebView()->mainFrame()->clearOpener();
+  }
 
   // Resetting the internals object also overrides the WebPreferences, so we
   // have to sync them to WebKit again.
@@ -1002,7 +1004,7 @@ void BlinkTestRunner::OnSessionHistory(
 
 void BlinkTestRunner::OnReset() {
   LayoutTestRenderProcessObserver::GetInstance()->test_interfaces()->ResetAll();
-  Reset();
+  Reset(true /* for_new_test */);
   // Navigating to about:blank will make sure that no new loads are initiated
   // by the renderer.
   render_view()->GetWebView()->mainFrame()->loadRequest(

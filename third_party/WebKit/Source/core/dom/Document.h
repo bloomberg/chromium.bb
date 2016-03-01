@@ -858,9 +858,9 @@ public:
     const SVGDocumentExtensions* svgExtensions();
     SVGDocumentExtensions& accessSVGExtensions();
 
-    void initSecurityContext();
-    void initSecurityContext(const DocumentInit&);
     void initContentSecurityPolicy(PassRefPtrWillBeRawPtr<ContentSecurityPolicy> = nullptr);
+
+    bool isSecureTransitionTo(const KURL&) const;
 
     bool allowInlineEventHandlers(Node*, EventListener*, const String& contextURL, const WTF::OrdinalNumber& contextLine);
     bool allowExecutingScripts(Node*);
@@ -1089,6 +1089,7 @@ private:
 
     ScriptedAnimationController& ensureScriptedAnimationController();
     ScriptedIdleTaskController& ensureScriptedIdleTaskController();
+    void initSecurityContext(const DocumentInit&);
     SecurityContext& securityContext() final { return *this; }
     EventQueue* eventQueue() const final;
 

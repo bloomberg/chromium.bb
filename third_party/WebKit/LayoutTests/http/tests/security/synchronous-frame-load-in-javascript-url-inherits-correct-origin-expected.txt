@@ -1,0 +1,4 @@
+ALERT: http://127.0.0.1:8000/security/synchronous-frame-load-in-javascript-url-inherits-correct-origin.html
+This test passes if the alerted location is the same origin as the main frame.
+
+

@@ -159,13 +159,13 @@ void ChromeRenderViewObserver::OnSetVisuallyDeemphasized(bool deemphasized) {
 }
 #endif
 
-void ChromeRenderViewObserver::DidStartLoading() {
+void ChromeRenderViewObserver::DidCommitProvisionalLoad(
+    blink::WebLocalFrame* frame,
+    bool is_new_navigation) {
   if ((render_view()->GetEnabledBindings() & content::BINDINGS_POLICY_WEB_UI) &&
       !webui_javascript_.empty()) {
-    for (size_t i = 0; i < webui_javascript_.size(); ++i) {
-      render_view()->GetMainRenderFrame()->ExecuteJavaScript(
-          webui_javascript_[i]);
-    }
+    for (const auto& script : webui_javascript_)
+      render_view()->GetMainRenderFrame()->ExecuteJavaScript(script);
     webui_javascript_.clear();
   }
 }

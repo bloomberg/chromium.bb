@@ -330,7 +330,7 @@ void FrameLoader::replaceDocumentWhileExecutingJavaScriptURL(const String& sourc
 
     // Prepare a DocumentInit before clearing the frame, because it may need to
     // inherit an aliased security context.
-    DocumentInit init(m_frame->document()->url(), m_frame);
+    DocumentInit init(ownerDocument, m_frame->document()->url(), m_frame);
     init.withNewRegistrationContext();
 
     stopAllLoaders();
@@ -348,7 +348,7 @@ void FrameLoader::replaceDocumentWhileExecutingJavaScriptURL(const String& sourc
         return;
 
     client()->transitionToCommittedForNewPage();
-    documentLoader->replaceDocumentWhileExecutingJavaScriptURL(init, source, ownerDocument);
+    documentLoader->replaceDocumentWhileExecutingJavaScriptURL(init, source);
 }
 
 void FrameLoader::receivedMainResourceRedirect(const KURL& newURL)

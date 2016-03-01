@@ -59,8 +59,6 @@ public:
     SecurityOrigin* securityOrigin() const { return m_securityOrigin.get(); }
     ContentSecurityPolicy* contentSecurityPolicy() const { return m_contentSecurityPolicy.get(); }
 
-    bool isSecureTransitionTo(const KURL&) const;
-
     // Explicitly override the security origin for this security context.
     // Note: It is dangerous to change the security origin of a script context
     //       that already contains content.
@@ -89,11 +87,7 @@ protected:
 
     void setContentSecurityPolicy(PassRefPtrWillBeRawPtr<ContentSecurityPolicy>);
 
-    void didFailToInitializeSecurityOrigin() { m_haveInitializedSecurityOrigin = false; }
-    bool haveInitializedSecurityOrigin() const { return m_haveInitializedSecurityOrigin; }
-
 private:
-    bool m_haveInitializedSecurityOrigin;
     RefPtr<SecurityOrigin> m_securityOrigin;
     RefPtrWillBeMember<ContentSecurityPolicy> m_contentSecurityPolicy;
 

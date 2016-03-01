@@ -16,6 +16,7 @@ class CommandLine;
 }
 
 namespace content {
+class BrowserContext;
 class WebContents;
 }
 
@@ -90,9 +91,11 @@ class PlatformAppBrowserTest : public ExtensionApiTest {
   size_t GetAppWindowCountForApp(const std::string& app_id);
 
   // Creates an empty app window for |extension|.
-  AppWindow* CreateAppWindow(const Extension* extension);
+  AppWindow* CreateAppWindow(content::BrowserContext* context,
+                             const Extension* extension);
 
-  AppWindow* CreateAppWindowFromParams(const Extension* extension,
+  AppWindow* CreateAppWindowFromParams(content::BrowserContext* context,
+                                       const Extension* extension,
                                        const AppWindow::CreateParams& params);
 
   // Closes |window| and waits until it's gone.

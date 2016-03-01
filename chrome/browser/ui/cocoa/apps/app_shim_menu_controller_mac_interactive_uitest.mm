@@ -46,7 +46,7 @@ class AppShimMenuControllerUITest : public extensions::PlatformAppBrowserTest {
     // windows activate, because the test binary has a default activation policy
     // of "prohibited".
     app1_ = GetFirstAppWindow();
-    app2_ = CreateAppWindow(extension);
+    app2_ = CreateAppWindow(browser()->profile(), extension);
     browser1_ = browser()->window();
     browser2_ = (new Browser(Browser::CreateParams(profile())))->window();
     browser2_->Show();

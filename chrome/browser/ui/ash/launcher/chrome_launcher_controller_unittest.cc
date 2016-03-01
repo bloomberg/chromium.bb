@@ -72,6 +72,7 @@
 #include "components/user_manager/fake_user_manager.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/test_utils.h"
+#include "content/public/test/web_contents_tester.h"
 #include "extensions/browser/app_window/app_window_contents.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/app_window/native_app_window.h"
@@ -745,13 +746,21 @@ class V1App : public TestBrowserWindow {
 // Upon destruction it will properly close the application.
 class V2App {
  public:
-  V2App(Profile* profile, const extensions::Extension* extension) {
+  V2App(Profile* profile, const extensions::Extension* extension)
+      : creator_web_contents_(
+            content::WebContentsTester::CreateTestWebContents(profile,
+                                                              nullptr)) {
     window_ = new extensions::AppWindow(profile, new ChromeAppDelegate(true),
                                         extension);
     extensions::AppWindow::CreateParams params =
         extensions::AppWindow::CreateParams();
+    // Note: normally, the creator RFH is the background page of the
+    // app/extension
+    // calling chrome.app.window.create. For unit testing purposes, just passing
+    // in a random RenderFrameHost is Good Enough™.
     window_->Init(GURL(std::string()),
-                  new extensions::AppWindowContentsImpl(window_), params);
+                  new extensions::AppWindowContentsImpl(window_),
+                  creator_web_contents_->GetMainFrame(), params);
   }
 
   virtual ~V2App() {
@@ -763,6 +772,8 @@ class V2App {
   extensions::AppWindow* window() { return window_; }
 
  private:
+  scoped_ptr<content::WebContents> creator_web_contents_;
+
   // The app window which represents the application. Note that the window
   // deletes itself asynchronously after window_->GetBaseWindow()->Close() gets
   // called.

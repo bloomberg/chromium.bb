@@ -78,7 +78,8 @@ void pumpPendingRequestsDoNotUse(WebFrame*);
 // Calls WebRemoteFrame::createLocalChild, but with some arguments prefilled
 // with default test values (i.e. with a default |client| or |properties| and/or
 // with a precalculated |uniqueName|).
-WebLocalFrame* createLocalChild(WebRemoteFrame* parent, const WebString& name = WebString::fromUTF8("frameName"), WebFrameClient* = nullptr, WebFrame* previousSibling = nullptr, const WebFrameOwnerProperties& = WebFrameOwnerProperties());
+WebLocalFrame* createLocalChild(WebRemoteFrame* parent, const WebString& name = WebString(), WebFrameClient* = nullptr, WebFrame* previousSibling = nullptr, const WebFrameOwnerProperties& = WebFrameOwnerProperties());
+WebRemoteFrame* createRemoteChild(WebRemoteFrame* parent, WebRemoteFrameClient*, const WebString& name = WebString());
 
 class SettingOverrider {
 public:
@@ -135,9 +136,12 @@ public:
     WebViewHelper(SettingOverrider* = 0);
     ~WebViewHelper();
 
-    // Creates and initializes the WebView. Implicitly calls reset() first. IF a
-    // WebFrameClient or a WebViewClient are passed in, they must outlive the
+    // Creates and initializes the WebView. Implicitly calls reset() first. If
+    // a WebFrameClient or a WebViewClient are passed in, they must outlive the
     // WebViewHelper.
+    WebViewImpl* initializeWithOpener(WebFrame* opener, bool enableJavascript = false, TestWebFrameClient* = nullptr, TestWebViewClient* = nullptr, void (*updateSettingsFunc)(WebSettings*) = nullptr);
+
+    // Same as initializeWithOpener(), but always sets the opener to null.
     WebViewImpl* initialize(bool enableJavascript = false, TestWebFrameClient* = 0, TestWebViewClient* = 0, void (*updateSettingsFunc)(WebSettings*) = 0);
 
     // Same as initialize() but also performs the initial load of the url. Only

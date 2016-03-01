@@ -194,16 +194,24 @@ size_t PlatformAppBrowserTest::GetAppWindowCountForApp(
       .size();
 }
 
-AppWindow* PlatformAppBrowserTest::CreateAppWindow(const Extension* extension) {
-  return CreateAppWindowFromParams(extension, AppWindow::CreateParams());
+AppWindow* PlatformAppBrowserTest::CreateAppWindow(
+    content::BrowserContext* context,
+    const Extension* extension) {
+  return CreateAppWindowFromParams(context, extension,
+                                   AppWindow::CreateParams());
 }
 
 AppWindow* PlatformAppBrowserTest::CreateAppWindowFromParams(
+    content::BrowserContext* context,
     const Extension* extension,
     const AppWindow::CreateParams& params) {
   AppWindow* window = new AppWindow(browser()->profile(),
                                     new ChromeAppDelegate(true), extension);
-  window->Init(GURL(std::string()), new AppWindowContentsImpl(window), params);
+  ProcessManager* process_manager = ProcessManager::Get(context);
+  ExtensionHost* background_host =
+      process_manager->GetBackgroundHostForExtension(extension->id());
+  window->Init(GURL(std::string()), new AppWindowContentsImpl(window),
+               background_host->host_contents()->GetMainFrame(), params);
   return window;
 }
 

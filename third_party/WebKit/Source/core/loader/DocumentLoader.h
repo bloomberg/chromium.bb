@@ -73,7 +73,7 @@ public:
 
     unsigned long mainResourceIdentifier() const;
 
-    void replaceDocumentWhileExecutingJavaScriptURL(const DocumentInit&, const String& source, Document*);
+    void replaceDocumentWhileExecutingJavaScriptURL(const DocumentInit&, const String& source);
 
     const AtomicString& mimeType() const;
 
@@ -153,7 +153,7 @@ protected:
     Vector<KURL> m_redirectChain;
 
 private:
-    static PassRefPtrWillBeRawPtr<DocumentWriter> createWriterFor(const Document* ownerDocument, const DocumentInit&, const AtomicString& mimeType, const AtomicString& encoding, bool dispatch, ParserSynchronizationPolicy);
+    static PassRefPtrWillBeRawPtr<DocumentWriter> createWriterFor(const DocumentInit&, const AtomicString& mimeType, const AtomicString& encoding, bool dispatch, ParserSynchronizationPolicy);
 
     void ensureWriter(const AtomicString& mimeType, const KURL& overridingURL = KURL());
     void endWriting(DocumentWriter*);

@@ -89,6 +89,9 @@ RenderFrameProxy* RenderFrameProxy::CreateFrameProxy(
       return nullptr;
   }
 
+  blink::WebFrame* opener =
+      RenderFrameImpl::ResolveOpener(opener_routing_id, nullptr);
+
   scoped_ptr<RenderFrameProxy> proxy(
       new RenderFrameProxy(routing_id, MSG_ROUTING_NONE));
   RenderViewImpl* render_view = nullptr;
@@ -98,8 +101,8 @@ RenderFrameProxy* RenderFrameProxy::CreateFrameProxy(
   if (!parent) {
     // Create a top level WebRemoteFrame.
     render_view = RenderViewImpl::FromRoutingID(render_view_routing_id);
-    web_frame =
-        blink::WebRemoteFrame::create(replicated_state.scope, proxy.get());
+    web_frame = blink::WebRemoteFrame::create(replicated_state.scope,
+                                              proxy.get(), opener);
     render_view->webview()->setMainFrame(web_frame);
     render_widget = render_view->GetWidget();
   } else {
@@ -111,14 +114,10 @@ RenderFrameProxy* RenderFrameProxy::CreateFrameProxy(
         replicated_state.scope,
         blink::WebString::fromUTF8(replicated_state.name),
         blink::WebString::fromUTF8(replicated_state.unique_name),
-        replicated_state.sandbox_flags, proxy.get());
+        replicated_state.sandbox_flags, proxy.get(), opener);
     render_view = parent->render_view();
     render_widget = parent->render_widget();
   }
-
-  blink::WebFrame* opener =
-      RenderFrameImpl::ResolveOpener(opener_routing_id, nullptr);
-  web_frame->setOpener(opener);
 
   proxy->Init(web_frame, render_view, render_widget);
 

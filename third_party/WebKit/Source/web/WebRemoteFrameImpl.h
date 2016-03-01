@@ -23,7 +23,7 @@ class RemoteFrame;
 
 class WebRemoteFrameImpl final : public WebFrameImplBase, public WebRemoteFrame {
 public:
-    static WebRemoteFrameImpl* create(WebTreeScopeType, WebRemoteFrameClient*);
+    static WebRemoteFrameImpl* create(WebTreeScopeType, WebRemoteFrameClient*, WebFrame* opener);
     ~WebRemoteFrameImpl() override;
 
     // WebFrame methods:
@@ -152,8 +152,8 @@ public:
     static WebRemoteFrameImpl* fromFrame(RemoteFrame&);
 
     // WebRemoteFrame methods:
-    WebLocalFrame* createLocalChild(WebTreeScopeType, const WebString& name, const WebString& uniqueName, WebSandboxFlags, WebFrameClient*, WebFrame* previousSibling, const WebFrameOwnerProperties&) override;
-    WebRemoteFrame* createRemoteChild(WebTreeScopeType, const WebString& name, const WebString& uniqueName, WebSandboxFlags, WebRemoteFrameClient*) override;
+    WebLocalFrame* createLocalChild(WebTreeScopeType, const WebString& name, const WebString& uniqueName, WebSandboxFlags, WebFrameClient*, WebFrame* previousSibling, const WebFrameOwnerProperties&, WebFrame* opener) override;
+    WebRemoteFrame* createRemoteChild(WebTreeScopeType, const WebString& name, const WebString& uniqueName, WebSandboxFlags, WebRemoteFrameClient*, WebFrame* opener) override;
 
     void initializeFromFrame(WebLocalFrame*) const override;
 

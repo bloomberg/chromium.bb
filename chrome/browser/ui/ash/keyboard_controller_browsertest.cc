@@ -6,6 +6,7 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -162,13 +163,20 @@ IN_PROC_BROWSER_TEST_F(VirtualKeyboardAppWindowTest,
                            .Set("name", "test extension")
                            .Set("version", "1")
                            .Set("manifest_version", 2)
+                           .Set("background",
+                                extensions::DictionaryBuilder()
+                                    .Set("scripts", extensions::ListBuilder()
+                                                        .Append("background.js")
+                                                        .Build())
+                                    .Build())
                            .Build())
           .Build();
 
+  extension_service()->AddExtension(extension.get());
   extensions::AppWindow::CreateParams non_ime_params;
   non_ime_params.frame = extensions::AppWindow::FRAME_NONE;
-  extensions::AppWindow* non_ime_app_window =
-      CreateAppWindowFromParams(extension.get(), non_ime_params);
+  extensions::AppWindow* non_ime_app_window = CreateAppWindowFromParams(
+      browser()->profile(), extension.get(), non_ime_params);
   int non_ime_window_visible_height = non_ime_app_window->web_contents()
                                           ->GetRenderWidgetHostView()
                                           ->GetVisibleViewportSize()
@@ -177,8 +185,8 @@ IN_PROC_BROWSER_TEST_F(VirtualKeyboardAppWindowTest,
   extensions::AppWindow::CreateParams ime_params;
   ime_params.frame = extensions::AppWindow::FRAME_NONE;
   ime_params.is_ime_window = true;
-  extensions::AppWindow* ime_app_window =
-      CreateAppWindowFromParams(extension.get(), ime_params);
+  extensions::AppWindow* ime_app_window = CreateAppWindowFromParams(
+      browser()->profile(), extension.get(), ime_params);
   int ime_window_visible_height = ime_app_window->web_contents()
                                       ->GetRenderWidgetHostView()
                                       ->GetVisibleViewportSize()

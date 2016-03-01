@@ -28,49 +28,48 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/page/DOMWindowPagePopup.h"
+#include "core/page/PagePopupSupplement.h"
 
-#include "core/frame/LocalDOMWindow.h"
 #include "core/page/PagePopupController.h"
 
 namespace blink {
 
-DOMWindowPagePopup::DOMWindowPagePopup(PagePopup& popup, PagePopupClient* popupClient)
+PagePopupSupplement::PagePopupSupplement(PagePopup& popup, PagePopupClient* popupClient)
     : m_controller(PagePopupController::create(popup, popupClient))
 {
     ASSERT(popupClient);
 }
 
-DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(DOMWindowPagePopup);
+DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(PagePopupSupplement);
 
-const char* DOMWindowPagePopup::supplementName()
+const char* PagePopupSupplement::supplementName()
 {
-    return "DOMWindowPagePopup";
+    return "PagePopupSupplement";
 }
 
-PagePopupController* DOMWindowPagePopup::pagePopupController(DOMWindow& window)
+PagePopupController* PagePopupSupplement::pagePopupController(LocalFrame& frame)
 {
-    DOMWindowPagePopup* supplement = static_cast<DOMWindowPagePopup*>(from(&toLocalDOMWindow(window), supplementName()));
+    PagePopupSupplement* supplement = static_cast<PagePopupSupplement*>(from(&frame, supplementName()));
     ASSERT(supplement);
     return supplement->m_controller.get();
 }
 
-void DOMWindowPagePopup::install(LocalDOMWindow& window, PagePopup& popup, PagePopupClient* popupClient)
+void PagePopupSupplement::install(LocalFrame& frame, PagePopup& popup, PagePopupClient* popupClient)
 {
     ASSERT(popupClient);
-    provideTo(window, supplementName(), adoptPtrWillBeNoop(new DOMWindowPagePopup(popup, popupClient)));
+    provideTo(frame, supplementName(), adoptPtrWillBeNoop(new PagePopupSupplement(popup, popupClient)));
 }
 
-void DOMWindowPagePopup::uninstall(LocalDOMWindow& window)
+void PagePopupSupplement::uninstall(LocalFrame& frame)
 {
-    pagePopupController(window)->clearPagePopupClient();
-    window.removeSupplement(supplementName());
+    pagePopupController(frame)->clearPagePopupClient();
+    frame.removeSupplement(supplementName());
 }
 
-DEFINE_TRACE(DOMWindowPagePopup)
+DEFINE_TRACE(PagePopupSupplement)
 {
     visitor->trace(m_controller);
-    WillBeHeapSupplement<LocalDOMWindow>::trace(visitor);
+    WillBeHeapSupplement<LocalFrame>::trace(visitor);
 }
 
 } // namespace blink

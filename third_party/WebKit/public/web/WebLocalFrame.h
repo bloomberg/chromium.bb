@@ -31,7 +31,7 @@ class WebLocalFrame : public WebFrame {
 public:
     // Creates a WebFrame. Delete this WebFrame by calling WebFrame::close().
     // It is valid to pass a null client pointer.
-    BLINK_EXPORT static WebLocalFrame* create(WebTreeScopeType, WebFrameClient*);
+    BLINK_EXPORT static WebLocalFrame* create(WebTreeScopeType, WebFrameClient*, WebFrame* opener = nullptr);
 
     // Used to create a provisional local frame in prepration for replacing a
     // remote frame if the load commits. The returned frame is only partially

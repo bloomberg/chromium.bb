@@ -32,8 +32,7 @@
 namespace blink {
 
 SecurityContext::SecurityContext()
-    : m_haveInitializedSecurityOrigin(false)
-    , m_sandboxFlags(SandboxNone)
+    : m_sandboxFlags(SandboxNone)
     , m_hostedInReservedIPRange(false)
     , m_insecureRequestsPolicy(InsecureRequestsDoNotUpgrade)
     , m_enforceStrictMixedContentChecking(false)
@@ -52,24 +51,11 @@ DEFINE_TRACE(SecurityContext)
 void SecurityContext::setSecurityOrigin(PassRefPtr<SecurityOrigin> securityOrigin)
 {
     m_securityOrigin = securityOrigin;
-    m_haveInitializedSecurityOrigin = true;
 }
 
 void SecurityContext::setContentSecurityPolicy(PassRefPtrWillBeRawPtr<ContentSecurityPolicy> contentSecurityPolicy)
 {
     m_contentSecurityPolicy = contentSecurityPolicy;
-}
-
-bool SecurityContext::isSecureTransitionTo(const KURL& url) const
-{
-    // If we haven't initialized our security origin by now, this is probably
-    // a new window created via the API (i.e., that lacks an origin and lacks
-    // a place to inherit the origin from).
-    if (!haveInitializedSecurityOrigin())
-        return true;
-
-    RefPtr<SecurityOrigin> other = SecurityOrigin::create(url);
-    return securityOrigin()->canAccess(other.get());
 }
 
 void SecurityContext::enforceSandboxFlags(SandboxFlags mask)

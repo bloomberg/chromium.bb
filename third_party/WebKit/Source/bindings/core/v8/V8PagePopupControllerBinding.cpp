@@ -9,8 +9,8 @@
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/page/DOMWindowPagePopup.h"
 #include "core/page/PagePopupController.h"
+#include "core/page/PagePopupSupplement.h"
 #include "platform/TraceEvent.h"
 
 namespace blink {
@@ -21,7 +21,7 @@ void pagePopupControllerAttributeGetter(const v8::PropertyCallbackInfo<v8::Value
 {
     v8::Local<v8::Object> holder = info.Holder();
     DOMWindow* impl = V8Window::toImpl(holder);
-    RefPtrWillBeRawPtr<PagePopupController> cppValue(DOMWindowPagePopup::pagePopupController(*impl));
+    RefPtrWillBeRawPtr<PagePopupController> cppValue(PagePopupSupplement::pagePopupController(*toLocalDOMWindow(impl)->frame()));
     v8SetReturnValue(info, toV8(cppValue.get(), holder, info.GetIsolate()));
 }
 

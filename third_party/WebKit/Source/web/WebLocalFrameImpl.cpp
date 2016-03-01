@@ -680,16 +680,6 @@ WebView* WebLocalFrameImpl::view() const
     return viewImpl();
 }
 
-void WebLocalFrameImpl::setOpener(WebFrame* opener)
-{
-    WebFrame::setOpener(opener);
-
-    // TODO(alexmos,dcheng): This should ASSERT(m_frame) once we no longer have
-    // provisional local frames.
-    if (m_frame && m_frame->document())
-        m_frame->document()->initSecurityContext();
-}
-
 WebDocument WebLocalFrameImpl::document() const
 {
     if (!frame() || !frame()->document())
@@ -1419,9 +1409,9 @@ WebString WebLocalFrameImpl::layerTreeAsText(bool showDebugInfo) const
 
 // WebLocalFrameImpl public ---------------------------------------------------------
 
-WebLocalFrame* WebLocalFrame::create(WebTreeScopeType scope, WebFrameClient* client)
+WebLocalFrame* WebLocalFrame::create(WebTreeScopeType scope, WebFrameClient* client, WebFrame* opener)
 {
-    return WebLocalFrameImpl::create(scope, client);
+    return WebLocalFrameImpl::create(scope, client, opener);
 }
 
 WebLocalFrame* WebLocalFrame::createProvisional(WebFrameClient* client, WebRemoteFrame* oldWebFrame, WebSandboxFlags flags, const WebFrameOwnerProperties& frameOwnerProperties)
@@ -1429,9 +1419,10 @@ WebLocalFrame* WebLocalFrame::createProvisional(WebFrameClient* client, WebRemot
     return WebLocalFrameImpl::createProvisional(client, oldWebFrame, flags, frameOwnerProperties);
 }
 
-WebLocalFrameImpl* WebLocalFrameImpl::create(WebTreeScopeType scope, WebFrameClient* client)
+WebLocalFrameImpl* WebLocalFrameImpl::create(WebTreeScopeType scope, WebFrameClient* client, WebFrame* opener)
 {
     WebLocalFrameImpl* frame = new WebLocalFrameImpl(scope, client);
+    frame->setOpener(opener);
 #if ENABLE(OILPAN)
     return frame;
 #else

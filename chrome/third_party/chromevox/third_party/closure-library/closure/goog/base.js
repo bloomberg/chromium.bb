@@ -491,7 +491,7 @@ goog.global.CLOSURE_BASE_PATH;
  * Whether to write out Closure's deps file. By default, the deps are written.
  * @type {boolean|undefined}
  */
-goog.global.CLOSURE_NO_DEPS;
+goog.global.CLOSURE_NO_DEPS = true;
 
 
 /**
