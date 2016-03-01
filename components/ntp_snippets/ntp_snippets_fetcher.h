@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_NTP_SNIPPETS_NTP_SNIPPETS_FETCHER_H_
 #define COMPONENTS_NTP_SNIPPETS_NTP_SNIPPETS_FETCHER_H_
 
+#include <string>
+
 #include "base/callback.h"
 #include "base/callback_list.h"
 #include "base/files/file_path.h"
@@ -40,21 +42,17 @@ class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
                      const base::FilePath& base_download_path);
   ~NTPSnippetsFetcher() override;
 
-  // Fetches snippets from the server. |overwrite| is true if existing snippets
-  // should be overwritten.
-  void FetchSnippets(bool overwrite);
-
-  // Adds a callback that is called when a new set of snippets are downloaded
+  // Adds a callback that is called when a new set of snippets are downloaded.
   scoped_ptr<SnippetsAvailableCallbackList::Subscription> AddCallback(
       const SnippetsAvailableCallback& callback) WARN_UNUSED_RESULT;
 
+  // Fetches snippets from the server.
+  void FetchSnippets();
+
  private:
   void StartTokenRequest();
-  void NotifyObservers();
-  void OnDownloadSnippetsDone(bool success);
-  void OnFileExistsCheckDone(bool exists);
   void OnFileMoveDone(bool success);
-  void StartFetch();
+  void NotifyObservers();
 
   // OAuth2TokenService::Consumer overrides:
   void OnGetTokenSuccess(const OAuth2TokenService::Request* request,

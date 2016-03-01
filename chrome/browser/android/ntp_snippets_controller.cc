@@ -18,13 +18,12 @@ using base::android::JavaParamRef;
 
 static void FetchSnippets(JNIEnv* env,
                           const JavaParamRef<jobject>& obj,
-                          const JavaParamRef<jobject>& jprofile,
-                          jboolean overwrite) {
+                          const JavaParamRef<jobject>& jprofile) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
   if (profile) {
     ntp_snippets::NTPSnippetsService* ntp_snippets_service =
         NTPSnippetsServiceFactory::GetForProfile(profile);
-    ntp_snippets_service->FetchSnippets(overwrite);
+    ntp_snippets_service->FetchSnippets();
   }
 }
 

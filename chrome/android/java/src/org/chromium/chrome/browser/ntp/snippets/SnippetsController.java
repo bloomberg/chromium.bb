@@ -13,7 +13,7 @@ import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.signin.SigninManager.SignInStateObserver;
 
 /**
- * The main controller for calling into the native snippets component to fetch snippets
+ * The main controller for calling into the native snippets component to fetch snippets.
  */
 public class SnippetsController implements SignInStateObserver {
     private static SnippetsController sInstance;
@@ -28,13 +28,10 @@ public class SnippetsController implements SignInStateObserver {
     }
 
     /**
-     * Fetches new snippets
-     *
-     * @param overwrite true if an update to the current snippets should be forced, and false if
-     * snippets should be downloaded only if there are no existing ones.
+     * Fetches new snippets.
      */
-    public void fetchSnippets(boolean overwrite) {
-        nativeFetchSnippets(Profile.getLastUsedProfile(), overwrite);
+    public void fetchSnippets() {
+        nativeFetchSnippets(Profile.getLastUsedProfile());
     }
 
     /**
@@ -53,7 +50,7 @@ public class SnippetsController implements SignInStateObserver {
 
     @Override
     public void onSignedIn() {
-        fetchSnippets(true);
+        fetchSnippets();
     }
 
     @Override
@@ -64,5 +61,5 @@ public class SnippetsController implements SignInStateObserver {
         sInstance = instance;
     }
 
-    private native void nativeFetchSnippets(Profile profile, boolean overwrite);
+    private native void nativeFetchSnippets(Profile profile);
 }

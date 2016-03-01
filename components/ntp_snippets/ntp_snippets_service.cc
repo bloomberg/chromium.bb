@@ -67,7 +67,7 @@ void NTPSnippetsService::Init(bool enabled) {
 
     // If we don't have any snippets yet, start a fetch.
     if (snippets_.empty())
-      FetchSnippets(false);
+      FetchSnippets();
   }
 
   // The scheduler only exists on Android so far, it's null on other platforms.
@@ -86,8 +86,8 @@ void NTPSnippetsService::Shutdown() {
   loaded_ = false;
 }
 
-void NTPSnippetsService::FetchSnippets(bool overwrite) {
-  snippets_fetcher_->FetchSnippets(overwrite);
+void NTPSnippetsService::FetchSnippets() {
+  snippets_fetcher_->FetchSnippets();
 }
 
 void NTPSnippetsService::AddObserver(NTPSnippetsServiceObserver* observer) {

@@ -58,9 +58,8 @@ class NTPSnippetsService : public KeyedService, NTPSnippetsFetcher::Observer {
 
   void Init(bool enabled);
 
-  // Fetches snippets from the server. |overwrite| is true if existing snippets
-  // should be overwritten.
-  void FetchSnippets(bool overwrite);
+  // Fetches snippets from the server.
+  void FetchSnippets();
 
   // Inherited from KeyedService.
   void Shutdown() override;

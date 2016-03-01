@@ -56,7 +56,7 @@ public class ChromeBackgroundServiceTest extends InstrumentationTestCase {
         }
 
         @Override
-        public void fetchSnippets(boolean overwrite) {
+        public void fetchSnippets() {
             mDidFetchSnippets = true;
         }
 

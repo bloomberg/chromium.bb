@@ -71,7 +71,7 @@ public class ChromeBackgroundService extends GcmTaskService {
         if (!SnippetsLauncher.hasInstance()) {
             launchBrowser(context);
         }
-        SnippetsController.get(context).fetchSnippets(true);
+        SnippetsController.get(context).fetchSnippets();
     }
 
     @VisibleForTesting

@@ -66,27 +66,7 @@ NTPSnippetsFetcher::AddCallback(const SnippetsAvailableCallback& callback) {
   return callback_list_.Add(callback);
 }
 
-void NTPSnippetsFetcher::FetchSnippets(bool overwrite) {
-  if (overwrite) {
-    StartFetch();
-  } else {
-    base::PostTaskAndReplyWithResult(
-        file_task_runner_.get(), FROM_HERE,
-        base::Bind(&base::PathExists, download_path_),
-        base::Bind(&NTPSnippetsFetcher::OnFileExistsCheckDone,
-                   weak_ptr_factory_.GetWeakPtr()));
-  }
-}
-
-void NTPSnippetsFetcher::OnFileExistsCheckDone(bool exists) {
-  if (exists) {
-    NotifyObservers();
-  } else {
-    StartFetch();
-  }
-}
-
-void NTPSnippetsFetcher::StartFetch() {
+void NTPSnippetsFetcher::FetchSnippets() {
   if (signin_manager_->IsAuthenticated()) {
     StartTokenRequest();
   } else {
@@ -103,6 +83,16 @@ void NTPSnippetsFetcher::StartTokenRequest() {
   scopes.insert(kApiScope);
   oauth_request_ = token_service_->StartRequest(
       signin_manager_->GetAuthenticatedAccountId(), scopes, this);
+}
+
+void NTPSnippetsFetcher::OnFileMoveDone(bool success) {
+  if (!success) {
+    DLOG(WARNING) << "Could not move file to "
+                  << download_path_.LossyDisplayName();
+    return;
+  }
+
+  NotifyObservers();
 }
 
 void NTPSnippetsFetcher::NotifyObservers() {
@@ -176,16 +166,6 @@ void NTPSnippetsFetcher::OnURLFetchComplete(const URLFetcher* source) {
       base::Bind(&base::Move, response_path, download_path_),
       base::Bind(&NTPSnippetsFetcher::OnFileMoveDone,
                  weak_ptr_factory_.GetWeakPtr()));
-}
-
-void NTPSnippetsFetcher::OnFileMoveDone(bool success) {
-  if (!success) {
-    DLOG(WARNING) << "Could not move file to "
-                  << download_path_.LossyDisplayName();
-    return;
-  }
-
-  NotifyObservers();
 }
 
 }  // namespace ntp_snippets
