@@ -45,15 +45,6 @@ Polymer({
       value: function() { return []; },
     },
 
-    /**
-     * A single Preference object being tracked.
-     * @type {!chrome.settingsPrivate.PrefObject|undefined}
-     */
-    pref: {
-      type: Object,
-      notify: true,
-    },
-
     /** Whether the dropdown menu should be disabled. */
     disabled: {
       type: Boolean,
@@ -88,6 +79,7 @@ Polymer({
 
   behaviors: [
     I18nBehavior,
+    PrefControlBehavior,
   ],
 
   observers: [

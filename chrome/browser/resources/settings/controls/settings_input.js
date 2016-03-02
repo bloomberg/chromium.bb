@@ -12,16 +12,15 @@
 Polymer({
   is: 'settings-input',
 
-  behaviors: [CrPolicyPrefBehavior],
+  behaviors: [CrPolicyPrefBehavior, PrefControlBehavior],
 
   properties: {
     /**
      * The preference object to control.
      * @type {!chrome.settingsPrivate.PrefObject|undefined}
+     * @override
      */
     pref: {
-      type: Object,
-      notify: true,
       observer: 'prefChanged_'
     },
 

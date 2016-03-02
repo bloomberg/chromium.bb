@@ -3,14 +3,13 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_events/cr_events.html">
 <link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_pref_behavior.html">
 <link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_pref_indicator.html">
-<link rel="import" href="chrome://md-settings/pref_tracker/pref_tracker.html">
+<link rel="import" href="chrome://md-settings/controls/pref_control_behavior.html">
 
 <dom-module id="settings-input">
   <link rel="import" type="css" href="chrome://resources/cr_elements/shared.css">
   <link rel="import" type="css" href="settings_input.css">
   <template>
     <cr-events id="events"></cr-events>
-    <settings-pref-tracker pref="[[pref]]"></settings-pref-tracker>
 
     <div id="outerDiv" class="layout horizontal center">
       <paper-input id="input" auto-validate value="{{value}}"

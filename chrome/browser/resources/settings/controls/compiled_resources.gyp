@@ -11,6 +11,8 @@
           '../../../../../ui/webui/resources/cr_elements/policy/cr_policy_pref_behavior.js',
           '../../../../../ui/webui/resources/js/compiled_resources.gyp:assert',
           '../../../../../ui/webui/resources/js/compiled_resources.gyp:load_time_data',
+          '../prefs/prefs_types.js',
+          'pref_control_behavior.js',
         ],
         'externs': [
           '../../../../../third_party/closure_compiler/externs/settings_private.js'
@@ -27,6 +29,8 @@
           '../../../../../ui/webui/resources/js/compiled_resources.gyp:load_time_data',
           '../../../../../ui/webui/resources/js/i18n_behavior.js',
           '../prefs/pref_util.js',
+          '../prefs/prefs_types.js',
+          'pref_control_behavior.js',
         ],
         'externs': [
           '../../../../../third_party/closure_compiler/externs/settings_private.js'
@@ -42,6 +46,8 @@
           '../../../../../ui/webui/resources/cr_elements/policy/cr_policy_pref_behavior.js',
           '../../../../../ui/webui/resources/js/compiled_resources.gyp:assert',
           '../../../../../ui/webui/resources/js/compiled_resources.gyp:load_time_data',
+          '../prefs/prefs_types.js',
+          'pref_control_behavior.js',
         ],
         'externs': [
           '../../../../../third_party/closure_compiler/externs/settings_private.js'
@@ -56,9 +62,20 @@
           '../../../../../ui/webui/resources/js/compiled_resources.gyp:assert',
           '../../../../../ui/webui/resources/js/compiled_resources.gyp:cr',
           '../prefs/pref_util.js',
+          '../prefs/prefs_types.js',
+          'pref_control_behavior.js',
         ],
         'externs': [
           '../../../../../third_party/closure_compiler/externs/settings_private.js'
+        ],
+      },
+      'includes': ['../../../../../third_party/closure_compiler/compile_js.gypi'],
+    },
+    {
+      'target_name': 'pref_control_behavior',
+      'variables': {
+        'depends': [
+          '../prefs/prefs_types.js',
         ],
       },
       'includes': ['../../../../../third_party/closure_compiler/compile_js.gypi'],

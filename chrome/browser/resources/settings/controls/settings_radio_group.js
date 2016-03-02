@@ -17,16 +17,9 @@
 Polymer({
   is: 'settings-radio-group',
 
-  properties: {
-    /**
-     * The preference object to control.
-     * @type {!chrome.settingsPrivate.PrefObject|undefined}
-     */
-    pref: {
-      type: Object,
-      notify: true,
-    },
+  behaviors: [PrefControlBehavior],
 
+  properties: {
     /**
      * IronSelectableBehavior selected attribute.
      */

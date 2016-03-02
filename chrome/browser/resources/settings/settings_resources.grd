@@ -198,6 +198,12 @@
       <structure name="IDR_SETTINGS_CONTROLS_INPUT_CSS"
                  file="controls/settings_input.css"
                  type="chrome_html" />
+      <structure name="IDR_SETTINGS_CONTROLS_PREF_CONTROL_BEHAVIOR_HTML"
+                 file="controls/pref_control_behavior.html"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_CONTROLS_PREF_CONTROL_BEHAVIOR_JS"
+                 file="controls/pref_control_behavior.js"
+                 type="chrome_html" />
       <structure name="IDR_SETTINGS_CONTROLS_RADIO_GROUP_HTML"
                  file="controls/settings_radio_group.html"
                  type="chrome_html" />
@@ -408,12 +414,6 @@
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_PREFS_TYPES_JS"
                  file="prefs/prefs_types.js"
-                 type="chrome_html" />
-      <structure name="IDR_SETTINGS_PREF_TRACKER_HTML"
-                 file="pref_tracker/pref_tracker.html"
-                 type="chrome_html" />
-      <structure name="IDR_SETTINGS_PREF_TRACKER_JS"
-                 file="pref_tracker/pref_tracker.js"
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_PRIVACY_PAGE_CSS"
                  file="privacy_page/privacy_page.css"
