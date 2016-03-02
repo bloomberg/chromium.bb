@@ -985,6 +985,7 @@ RenderFrameImpl::RenderFrameImpl(const CreateParams& params)
       is_swapped_out_(false),
       render_frame_proxy_(NULL),
       is_detaching_(false),
+      is_in_browser_initiated_navigation_(false),
       proxy_routing_id_(MSG_ROUTING_NONE),
 #if defined(ENABLE_PLUGINS)
       plugin_power_saver_helper_(nullptr),
@@ -1074,6 +1075,11 @@ RenderFrameImpl::~RenderFrameImpl() {
   }
 
   render_view_->UnregisterRenderFrame(this);
+
+  // TODO(nasko): Remove once the root cause of https://crbug.com/571166 is
+  // found.
+  CHECK(!is_in_browser_initiated_navigation_);
+
   g_routing_id_frame_map.Get().erase(routing_id_);
   RenderThread::Get()->RemoveRoute(routing_id_);
 }
@@ -5307,6 +5313,11 @@ void RenderFrameImpl::NavigateInternal(
       common_params.url, request_params, &is_reload, &cache_policy);
 
   GetContentClient()->SetActiveURL(common_params.url);
+
+  // TODO(nasko): Remove once the root cause of https://crbug.com/571166 is
+  // found.
+  base::AutoReset<bool> cancelling_drag(
+        &is_in_browser_initiated_navigation_, true);
 
   // If this frame isn't in the same process as the main frame, it may naively
   // assume that this is the first navigation in the iframe, but this may not

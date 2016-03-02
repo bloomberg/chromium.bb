@@ -1020,6 +1020,10 @@ class CONTENT_EXPORT RenderFrameImpl
   RenderFrameProxy* render_frame_proxy_;
   bool is_detaching_;
 
+  // This is used to help diagnose https://crbug.com/571166. Set to true for the
+  // duration of processing browser-initiated navigation.
+  bool is_in_browser_initiated_navigation_;
+
   // If this frame was created to replace a proxy, this will store the routing
   // id of the proxy to replace at commit-time, at which time it will be
   // cleared.
