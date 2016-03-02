@@ -27,7 +27,7 @@
        <key>CrBundleIdentifier</key>
        <string>@APP_MODE_BROWSER_BUNDLE_ID@</string>
        <key>LSMinimumSystemVersion</key>
-       <string>${MACOSX_DEPLOYMENT_TARGET}.0</string>
+       <string>10.9.0</string>
        <key>NSAppleScriptEnabled</key>
        <true/>
 </dict>
