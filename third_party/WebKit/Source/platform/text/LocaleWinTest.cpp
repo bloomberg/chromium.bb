@@ -70,7 +70,7 @@ protected:
         Spanish = 0x040A, // es
     };
 
-    DateComponents dateComponents(int year, int month, int day)
+    DateComponents getDateComponents(int year, int month, int day)
     {
         DateComponents date;
         date.setMillisecondsSinceEpochForDate(msForDate(year, month, day));
@@ -85,7 +85,7 @@ protected:
     String formatDate(LCID lcid, int year, int month, int day)
     {
         OwnPtr<LocaleWin> locale = LocaleWin::create(lcid, true /* defaultsForLocale */);
-        return locale->formatDateTime(dateComponents(year, month, day));
+        return locale->formatDateTime(getDateComponents(year, month, day));
     }
 
     unsigned firstDayOfWeek(LCID lcid)

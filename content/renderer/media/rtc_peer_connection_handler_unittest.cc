@@ -522,14 +522,14 @@ TEST_F(RTCPeerConnectionHandlerTest, addStreamWithStoppedAudioAndVideoTrack) {
   local_stream.audioTracks(audio_tracks);
   MediaStreamAudioSource* native_audio_source =
       static_cast<MediaStreamAudioSource*>(
-          audio_tracks[0].source().extraData());
+          audio_tracks[0].source().getExtraData());
   native_audio_source->StopSource();
 
   blink::WebVector<blink::WebMediaStreamTrack> video_tracks;
   local_stream.videoTracks(video_tracks);
   MediaStreamVideoSource* native_video_source =
       static_cast<MediaStreamVideoSource*>(
-          video_tracks[0].source().extraData());
+          video_tracks[0].source().getExtraData());
   native_video_source->StopSource();
 
   EXPECT_TRUE(pc_handler_->addStream(local_stream, constraints));
@@ -805,24 +805,24 @@ TEST_F(RTCPeerConnectionHandlerTest, RemoteTrackState) {
   blink::WebVector<blink::WebMediaStreamTrack> audio_tracks;
   webkit_stream.audioTracks(audio_tracks);
   EXPECT_EQ(blink::WebMediaStreamSource::ReadyStateLive,
-            audio_tracks[0].source().readyState());
+            audio_tracks[0].source().getReadyState());
 
   blink::WebVector<blink::WebMediaStreamTrack> video_tracks;
   webkit_stream.videoTracks(video_tracks);
   EXPECT_EQ(blink::WebMediaStreamSource::ReadyStateLive,
-            video_tracks[0].source().readyState());
+            video_tracks[0].source().getReadyState());
 
   remote_stream->GetAudioTracks()[0]->set_state(
       webrtc::MediaStreamTrackInterface::kEnded);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(blink::WebMediaStreamSource::ReadyStateEnded,
-            audio_tracks[0].source().readyState());
+            audio_tracks[0].source().getReadyState());
 
   remote_stream->GetVideoTracks()[0]->set_state(
       webrtc::MediaStreamTrackInterface::kEnded);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(blink::WebMediaStreamSource::ReadyStateEnded,
-            video_tracks[0].source().readyState());
+            video_tracks[0].source().getReadyState());
 }
 
 TEST_F(RTCPeerConnectionHandlerTest, RemoveAndAddAudioTrackFromRemoteStream) {

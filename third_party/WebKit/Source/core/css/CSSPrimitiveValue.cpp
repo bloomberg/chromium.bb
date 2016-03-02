@@ -105,7 +105,7 @@ CSSPrimitiveValue::UnitType CSSPrimitiveValue::fromName(const String& unit)
     return unitTable().get(unit.lower());
 }
 
-CSSPrimitiveValue::UnitCategory CSSPrimitiveValue::unitCategory(UnitType type)
+CSSPrimitiveValue::UnitCategory CSSPrimitiveValue::unitTypeToUnitCategory(UnitType type)
 {
     switch (type) {
     case UnitType::Number:

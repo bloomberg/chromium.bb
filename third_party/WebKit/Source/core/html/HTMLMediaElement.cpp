@@ -640,7 +640,7 @@ void HTMLMediaElement::setSrc(const AtomicString& url)
     setAttribute(srcAttr, url);
 }
 
-HTMLMediaElement::NetworkState HTMLMediaElement::networkState() const
+HTMLMediaElement::NetworkState HTMLMediaElement::getNetworkState() const
 {
     return m_networkState;
 }
@@ -1840,7 +1840,7 @@ void HTMLMediaElement::setPlaybackRate(double rate)
     updatePlaybackRate();
 }
 
-HTMLMediaElement::DirectionOfPlayback HTMLMediaElement::directionOfPlayback() const
+HTMLMediaElement::DirectionOfPlayback HTMLMediaElement::getDirectionOfPlayback() const
 {
     return m_playbackRate >= 0 ? Forward : Backward;
 }
@@ -1859,7 +1859,7 @@ bool HTMLMediaElement::ended() const
     // 4.8.10.8 Playing the media resource
     // The ended attribute must return true if the media element has ended
     // playback and the direction of playback is forwards, and false otherwise.
-    return endedPlayback() && directionOfPlayback() == Forward;
+    return endedPlayback() && getDirectionOfPlayback() == Forward;
 }
 
 bool HTMLMediaElement::autoplay() const
@@ -2240,7 +2240,7 @@ void HTMLMediaElement::startPlaybackProgressTimer()
 
 void HTMLMediaElement::playbackProgressTimerFired(Timer<HTMLMediaElement>*)
 {
-    if (!std::isnan(m_fragmentEndTime) && currentTime() >= m_fragmentEndTime && directionOfPlayback() == Forward) {
+    if (!std::isnan(m_fragmentEndTime) && currentTime() >= m_fragmentEndTime && getDirectionOfPlayback() == Forward) {
         m_fragmentEndTime = std::numeric_limits<double>::quiet_NaN();
         if (!m_paused) {
             UseCounter::count(document(), UseCounter::HTMLMediaElementPauseAtFragmentEnd);
@@ -2706,7 +2706,7 @@ void HTMLMediaElement::sourceWasAdded(HTMLSourceElement* source)
     // 4.8.8 - If a source element is inserted as a child of a media element that has no src
     // attribute and whose networkState has the value NETWORK_EMPTY, the user agent must invoke
     // the media element's resource selection algorithm.
-    if (networkState() == HTMLMediaElement::NETWORK_EMPTY) {
+    if (getNetworkState() == HTMLMediaElement::NETWORK_EMPTY) {
         scheduleDelayedAction(LoadMediaResource);
         m_nextChildNodeToConsider = source;
         return;
@@ -2786,7 +2786,7 @@ void HTMLMediaElement::timeChanged()
 
     // When the current playback position reaches the end of the media resource when the direction of
     // playback is forwards, then the user agent must follow these steps:
-    if (!std::isnan(dur) && dur && now >= dur && directionOfPlayback() == Forward) {
+    if (!std::isnan(dur) && dur && now >= dur && getDirectionOfPlayback() == Forward) {
         // If the media element has a loop attribute specified
         if (loop()) {
             m_sentEndEvent = false;
@@ -2975,12 +2975,12 @@ bool HTMLMediaElement::endedPlayback(LoopCondition loopCondition) const
     // and the current playback position is the end of the media resource and the direction
     // of playback is forwards, Either the media element does not have a loop attribute specified,
     double now = currentTime();
-    if (directionOfPlayback() == Forward)
+    if (getDirectionOfPlayback() == Forward)
         return dur > 0 && now >= dur && (loopCondition == LoopCondition::Ignored || !loop());
 
     // or the current playback position is the earliest possible position and the direction
     // of playback is backwards
-    ASSERT(directionOfPlayback() == Backward);
+    ASSERT(getDirectionOfPlayback() == Backward);
     return now <= 0;
 }
 

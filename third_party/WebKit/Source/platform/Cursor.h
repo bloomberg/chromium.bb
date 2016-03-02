@@ -100,7 +100,7 @@ public:
     Cursor& operator=(const Cursor&);
 
     explicit Cursor(Type);
-    Type type() const
+    Type getType() const
     {
         ASSERT(m_type >= 0 && m_type <= Custom);
         return m_type;

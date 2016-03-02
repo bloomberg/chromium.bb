@@ -91,7 +91,7 @@ struct CacheControlHeader {
     }
 };
 
-PLATFORM_EXPORT ContentDispositionType contentDispositionType(const String&);
+PLATFORM_EXPORT ContentDispositionType getContentDispositionType(const String&);
 PLATFORM_EXPORT bool isValidHTTPHeaderValue(const String&);
 PLATFORM_EXPORT bool isValidHTTPFieldContentRFC7230(const String&);
 PLATFORM_EXPORT bool isValidHTTPToken(const String&);

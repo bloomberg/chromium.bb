@@ -232,12 +232,12 @@ bool WebURLRequest::reportRawHeaders() const
     return m_private->m_resourceRequest->reportRawHeaders();
 }
 
-WebURLRequest::RequestContext WebURLRequest::requestContext() const
+WebURLRequest::RequestContext WebURLRequest::getRequestContext() const
 {
     return m_private->m_resourceRequest->requestContext();
 }
 
-WebURLRequest::FrameType WebURLRequest::frameType() const
+WebURLRequest::FrameType WebURLRequest::getFrameType() const
 {
     return m_private->m_resourceRequest->frameType();
 }
@@ -342,7 +342,7 @@ void WebURLRequest::setShouldResetAppCache(bool setShouldResetAppCache)
     m_private->m_resourceRequest->setShouldResetAppCache(setShouldResetAppCache);
 }
 
-WebURLRequest::FetchRequestMode WebURLRequest::fetchRequestMode() const
+WebURLRequest::FetchRequestMode WebURLRequest::getFetchRequestMode() const
 {
     return m_private->m_resourceRequest->fetchRequestMode();
 }
@@ -352,7 +352,7 @@ void WebURLRequest::setFetchRequestMode(WebURLRequest::FetchRequestMode mode)
     return m_private->m_resourceRequest->setFetchRequestMode(mode);
 }
 
-WebURLRequest::FetchCredentialsMode WebURLRequest::fetchCredentialsMode() const
+WebURLRequest::FetchCredentialsMode WebURLRequest::getFetchCredentialsMode() const
 {
     return m_private->m_resourceRequest->fetchCredentialsMode();
 }
@@ -362,7 +362,7 @@ void WebURLRequest::setFetchCredentialsMode(WebURLRequest::FetchCredentialsMode 
     return m_private->m_resourceRequest->setFetchCredentialsMode(mode);
 }
 
-WebURLRequest::FetchRedirectMode WebURLRequest::fetchRedirectMode() const
+WebURLRequest::FetchRedirectMode WebURLRequest::getFetchRedirectMode() const
 {
     return m_private->m_resourceRequest->fetchRedirectMode();
 }
@@ -372,7 +372,7 @@ void WebURLRequest::setFetchRedirectMode(WebURLRequest::FetchRedirectMode redire
     return m_private->m_resourceRequest->setFetchRedirectMode(redirect);
 }
 
-WebURLRequest::LoFiState WebURLRequest::loFiState() const
+WebURLRequest::LoFiState WebURLRequest::getLoFiState() const
 {
     return m_private->m_resourceRequest->loFiState();
 }
@@ -403,7 +403,7 @@ ResourceRequest& WebURLRequest::toMutableResourceRequest()
     return *m_private->m_resourceRequest;
 }
 
-WebURLRequest::Priority WebURLRequest::priority() const
+WebURLRequest::Priority WebURLRequest::getPriority() const
 {
     return static_cast<WebURLRequest::Priority>(
         m_private->m_resourceRequest->priority());

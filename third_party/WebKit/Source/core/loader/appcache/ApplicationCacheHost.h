@@ -121,7 +121,7 @@ namespace blink {
 
         void willStartLoadingResource(ResourceRequest&);
 
-        Status status() const;
+        Status getStatus() const;
         bool update();
         bool swapCache();
         void abort();

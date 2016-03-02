@@ -188,7 +188,7 @@ void LayoutListMarker::updateContent()
     if (isImage())
         return;
 
-    switch (listStyleCategory()) {
+    switch (getListStyleCategory()) {
     case ListStyleCategory::None:
         break;
     case ListStyleCategory::Symbol:
@@ -230,7 +230,7 @@ void LayoutListMarker::computePreferredLogicalWidths()
     const Font& font = style()->font();
 
     LayoutUnit logicalWidth;
-    switch (listStyleCategory()) {
+    switch (getListStyleCategory()) {
     case ListStyleCategory::None:
         break;
     case ListStyleCategory::Symbol:
@@ -260,7 +260,7 @@ void LayoutListMarker::updateMargins()
         if (isImage()) {
             marginEnd = LayoutUnit(cMarkerPaddingPx);
         } else {
-            switch (listStyleCategory()) {
+            switch (getListStyleCategory()) {
             case ListStyleCategory::Symbol:
                 marginStart = LayoutUnit(-1);
                 marginEnd = fontMetrics.ascent() - minPreferredLogicalWidth() + 1;
@@ -275,7 +275,7 @@ void LayoutListMarker::updateMargins()
                 marginStart = -minPreferredLogicalWidth() - cMarkerPaddingPx;
             } else {
                 int offset = fontMetrics.ascent() * 2 / 3;
-                switch (listStyleCategory()) {
+                switch (getListStyleCategory()) {
                 case ListStyleCategory::None:
                     break;
                 case ListStyleCategory::Symbol:
@@ -291,7 +291,7 @@ void LayoutListMarker::updateMargins()
                 marginEnd = LayoutUnit(cMarkerPaddingPx);
             } else {
                 int offset = fontMetrics.ascent() * 2 / 3;
-                switch (listStyleCategory()) {
+                switch (getListStyleCategory()) {
                 case ListStyleCategory::None:
                     break;
                 case ListStyleCategory::Symbol:
@@ -325,7 +325,7 @@ int LayoutListMarker::baselinePosition(FontBaseline baselineType, bool firstLine
     return LayoutBox::baselinePosition(baselineType, firstLine, direction, linePositionMode);
 }
 
-LayoutListMarker::ListStyleCategory LayoutListMarker::listStyleCategory() const
+LayoutListMarker::ListStyleCategory LayoutListMarker::getListStyleCategory() const
 {
     switch (style()->listStyleType()) {
     case NoneListStyle:
@@ -406,7 +406,7 @@ IntRect LayoutListMarker::getRelativeMarkerRect() const
     }
 
     IntRect relativeRect;
-    switch (listStyleCategory()) {
+    switch (getListStyleCategory()) {
     case ListStyleCategory::None:
         return IntRect();
     case ListStyleCategory::Symbol: {

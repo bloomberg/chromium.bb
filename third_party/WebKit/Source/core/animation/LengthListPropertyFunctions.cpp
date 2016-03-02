@@ -91,7 +91,7 @@ struct FillLayerMethods {
 
 } // namespace
 
-ValueRange LengthListPropertyFunctions::valueRange(CSSPropertyID property)
+ValueRange LengthListPropertyFunctions::getValueRange(CSSPropertyID property)
 {
     switch (property) {
     case CSSPropertyBackgroundPositionX:

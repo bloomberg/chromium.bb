@@ -282,7 +282,7 @@ public:
         NotScrollableExplicitlyDisabled
     };
 
-    ScrollingReasons scrollingReasons();
+    ScrollingReasons getScrollingReasons();
     bool isScrollable() override;
     bool isProgrammaticallyScrollable() override;
 

@@ -174,7 +174,7 @@ public:
 
     BLINK_PLATFORM_EXPORT void setHasMajorCertificateErrors(bool);
 
-    BLINK_PLATFORM_EXPORT SecurityStyle securityStyle() const;
+    BLINK_PLATFORM_EXPORT SecurityStyle getSecurityStyle() const;
     BLINK_PLATFORM_EXPORT void setSecurityStyle(SecurityStyle);
 
     BLINK_PLATFORM_EXPORT void setSecurityDetails(const WebSecurityDetails&);

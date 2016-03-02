@@ -1296,7 +1296,7 @@ void RTCPeerConnectionHandler::getStats(
   blink::WebMediaStreamSource::Type track_type =
       blink::WebMediaStreamSource::TypeAudio;
   if (request->hasSelector()) {
-    track_type = request->component().source().type();
+    track_type = request->component().source().getType();
     track_id = request->component().id().utf8();
   }
 
@@ -1366,7 +1366,7 @@ blink::WebRTCDTMFSenderHandler* RTCPeerConnectionHandler::createDTMFSender(
 
   MediaStreamAudioTrack* native_track = MediaStreamAudioTrack::GetTrack(track);
   if (!native_track || !native_track->is_local_track() ||
-      track.source().type() != blink::WebMediaStreamSource::TypeAudio) {
+      track.source().getType() != blink::WebMediaStreamSource::TypeAudio) {
     DLOG(ERROR) << "The DTMF sender requires a local audio track.";
     return nullptr;
   }

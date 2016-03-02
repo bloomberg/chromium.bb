@@ -1404,9 +1404,9 @@ unsigned short Node::compareDocumentPosition(const Node* otherNode, ShadowTreesT
             // the same nodeType are inserted into or removed from the direct container. This would be the case, for example,
             // when comparing two attributes of the same element, and inserting or removing additional attributes might change
             // the order between existing attributes.
-            if (attr1->qualifiedName() == attr.name())
+            if (attr1->getQualifiedName() == attr.name())
                 return DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC | DOCUMENT_POSITION_FOLLOWING;
-            if (attr2->qualifiedName() == attr.name())
+            if (attr2->getQualifiedName() == attr.name())
                 return DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC | DOCUMENT_POSITION_PRECEDING;
         }
 
@@ -2334,7 +2334,7 @@ bool Node::isUserActionElementFocused() const
 
 void Node::setCustomElementState(CustomElementState newState)
 {
-    CustomElementState oldState = customElementState();
+    CustomElementState oldState = getCustomElementState();
 
     switch (newState) {
     case NotCustomElement:

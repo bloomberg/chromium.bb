@@ -97,7 +97,7 @@ public:
     virtual void didFinishLoadingMainResource(bool success) { }
 
     // Called on behalf of the scriptable interface.
-    virtual Status status() { return Uncached; }
+    virtual Status getStatus() { return Uncached; }
     virtual bool startUpdate() { return false; }
     virtual bool swapCache() { return false; }
     virtual void abort() { }

@@ -109,7 +109,7 @@ WebString WebMediaStreamSource::id() const
     return m_private.get()->id();
 }
 
-WebMediaStreamSource::Type WebMediaStreamSource::type() const
+WebMediaStreamSource::Type WebMediaStreamSource::getType() const
 {
     ASSERT(!m_private.isNull());
     return static_cast<Type>(m_private.get()->type());
@@ -133,13 +133,13 @@ void WebMediaStreamSource::setReadyState(ReadyState state)
     m_private->setReadyState(static_cast<MediaStreamSource::ReadyState>(state));
 }
 
-WebMediaStreamSource::ReadyState WebMediaStreamSource::readyState() const
+WebMediaStreamSource::ReadyState WebMediaStreamSource::getReadyState() const
 {
     ASSERT(!m_private.isNull());
     return static_cast<ReadyState>(m_private->getReadyState());
 }
 
-WebMediaStreamSource::ExtraData* WebMediaStreamSource::extraData() const
+WebMediaStreamSource::ExtraData* WebMediaStreamSource::getExtraData() const
 {
     ASSERT(!m_private.isNull());
     MediaStreamSource::ExtraData* data = m_private->extraData();

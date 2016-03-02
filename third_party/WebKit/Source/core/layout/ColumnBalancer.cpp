@@ -66,7 +66,7 @@ void ColumnBalancer::traverseSubtree(const LayoutBox& box)
         examineBoxAfterEntering(childBox);
         // Unless the child is unsplittable, or if the child establishes an inner multicol
         // container, we descend into its subtree for further examination.
-        if (childBox.paginationBreakability() != LayoutBox::ForbidBreaks
+        if (childBox.getPaginationBreakability() != LayoutBox::ForbidBreaks
             && (!childBox.isLayoutBlockFlow() || !toLayoutBlockFlow(childBox).multiColumnFlowThread()))
             traverseSubtree(childBox);
         examineBoxBeforeLeaving(childBox);
@@ -113,7 +113,7 @@ void InitialColumnHeightFinder::examineBoxAfterEntering(const LayoutBox& box)
             addContentRun(logicalBottomInFlowThread);
     }
 
-    if (box.paginationBreakability() != LayoutBox::AllowAnyBreaks) {
+    if (box.getPaginationBreakability() != LayoutBox::AllowAnyBreaks) {
         LayoutUnit unsplittableLogicalHeight = box.logicalHeight();
         if (box.isFloating())
             unsplittableLogicalHeight += box.marginBefore() + box.marginAfter();
@@ -243,7 +243,7 @@ MinimumSpaceShortageFinder::MinimumSpaceShortageFinder(const MultiColumnFragment
 
 void MinimumSpaceShortageFinder::examineBoxAfterEntering(const LayoutBox& box)
 {
-    LayoutBox::PaginationBreakability breakability = box.paginationBreakability();
+    LayoutBox::PaginationBreakability breakability = box.getPaginationBreakability();
 
     // Look for breaks before the child box.
     if (isLogicalTopWithinBounds(flowThreadOffset() - box.paginationStrut())) {
@@ -300,7 +300,7 @@ void MinimumSpaceShortageFinder::examineBoxAfterEntering(const LayoutBox& box)
 
 void MinimumSpaceShortageFinder::examineBoxBeforeLeaving(const LayoutBox& box)
 {
-    if (m_pendingStrut == LayoutUnit::min() || box.paginationBreakability() != LayoutBox::ForbidBreaks)
+    if (m_pendingStrut == LayoutUnit::min() || box.getPaginationBreakability() != LayoutBox::ForbidBreaks)
         return;
 
     // The previous break was before a breakable block. Here's the first piece of unbreakable

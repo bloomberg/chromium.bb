@@ -74,19 +74,19 @@ class HeaderFlattener : public blink::WebHTTPHeaderVisitor {
 }  // namespace
 
 ResourceType WebURLRequestToResourceType(const WebURLRequest& request) {
-  WebURLRequest::RequestContext requestContext = request.requestContext();
-  if (request.frameType() != WebURLRequest::FrameTypeNone) {
+  WebURLRequest::RequestContext requestContext = request.getRequestContext();
+  if (request.getFrameType() != WebURLRequest::FrameTypeNone) {
     DCHECK(requestContext == WebURLRequest::RequestContextForm ||
            requestContext == WebURLRequest::RequestContextFrame ||
            requestContext == WebURLRequest::RequestContextHyperlink ||
            requestContext == WebURLRequest::RequestContextIframe ||
            requestContext == WebURLRequest::RequestContextInternal ||
            requestContext == WebURLRequest::RequestContextLocation);
-    if (request.frameType() == WebURLRequest::FrameTypeTopLevel ||
-        request.frameType() == WebURLRequest::FrameTypeAuxiliary) {
+    if (request.getFrameType() == WebURLRequest::FrameTypeTopLevel ||
+        request.getFrameType() == WebURLRequest::FrameTypeAuxiliary) {
       return RESOURCE_TYPE_MAIN_FRAME;
     }
-    if (request.frameType() == WebURLRequest::FrameTypeNested)
+    if (request.getFrameType() == WebURLRequest::FrameTypeNested)
       return RESOURCE_TYPE_SUB_FRAME;
     NOTREACHED();
     return RESOURCE_TYPE_SUB_RESOURCE;
@@ -304,7 +304,7 @@ STATIC_ASSERT_ENUM(FETCH_REQUEST_MODE_NAVIGATE,
 
 FetchRequestMode GetFetchRequestModeForWebURLRequest(
     const blink::WebURLRequest& request) {
-  return static_cast<FetchRequestMode>(request.fetchRequestMode());
+  return static_cast<FetchRequestMode>(request.getFetchRequestMode());
 }
 
 STATIC_ASSERT_ENUM(FETCH_CREDENTIALS_MODE_OMIT,
@@ -316,7 +316,7 @@ STATIC_ASSERT_ENUM(FETCH_CREDENTIALS_MODE_INCLUDE,
 
 FetchCredentialsMode GetFetchCredentialsModeForWebURLRequest(
     const blink::WebURLRequest& request) {
-  return static_cast<FetchCredentialsMode>(request.fetchCredentialsMode());
+  return static_cast<FetchCredentialsMode>(request.getFetchCredentialsMode());
 }
 
 STATIC_ASSERT_ENUM(FetchRedirectMode::FOLLOW_MODE,
@@ -328,7 +328,7 @@ STATIC_ASSERT_ENUM(FetchRedirectMode::MANUAL_MODE,
 
 FetchRedirectMode GetFetchRedirectModeForWebURLRequest(
     const blink::WebURLRequest& request) {
-  return static_cast<FetchRedirectMode>(request.fetchRedirectMode());
+  return static_cast<FetchRedirectMode>(request.getFetchRedirectMode());
 }
 
 STATIC_ASSERT_ENUM(REQUEST_CONTEXT_FRAME_TYPE_AUXILIARY,
@@ -342,7 +342,7 @@ STATIC_ASSERT_ENUM(REQUEST_CONTEXT_FRAME_TYPE_TOP_LEVEL,
 
 RequestContextFrameType GetRequestContextFrameTypeForWebURLRequest(
     const blink::WebURLRequest& request) {
-  return static_cast<RequestContextFrameType>(request.frameType());
+  return static_cast<RequestContextFrameType>(request.getFrameType());
 }
 
 STATIC_ASSERT_ENUM(REQUEST_CONTEXT_TYPE_UNSPECIFIED,
@@ -416,7 +416,7 @@ STATIC_ASSERT_ENUM(REQUEST_CONTEXT_TYPE_XSLT,
 
 RequestContextType GetRequestContextTypeForWebURLRequest(
     const blink::WebURLRequest& request) {
-  return static_cast<RequestContextType>(request.requestContext());
+  return static_cast<RequestContextType>(request.getRequestContext());
 }
 
 blink::WebURLError CreateWebURLError(const blink::WebURL& unreachable_url,

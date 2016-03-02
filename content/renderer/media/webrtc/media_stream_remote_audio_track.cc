@@ -115,7 +115,7 @@ class MediaStreamRemoteAudioSource::AudioSink
 MediaStreamRemoteAudioTrack::MediaStreamRemoteAudioTrack(
     const blink::WebMediaStreamSource& source, bool enabled)
     : MediaStreamAudioTrack(false), source_(source), enabled_(enabled) {
-  DCHECK(source.extraData());  // Make sure the source has a native source.
+  DCHECK(source.getExtraData());  // Make sure the source has a native source.
 }
 
 MediaStreamRemoteAudioTrack::~MediaStreamRemoteAudioTrack() {
@@ -172,7 +172,7 @@ webrtc::AudioTrackInterface* MediaStreamRemoteAudioTrack::GetAudioAdapter() {
 }
 
 MediaStreamRemoteAudioSource* MediaStreamRemoteAudioTrack::source() const {
-  return static_cast<MediaStreamRemoteAudioSource*>(source_.extraData());
+  return static_cast<MediaStreamRemoteAudioSource*>(source_.getExtraData());
 }
 
 MediaStreamRemoteAudioSource::MediaStreamRemoteAudioSource(

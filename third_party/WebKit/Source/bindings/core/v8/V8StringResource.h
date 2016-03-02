@@ -99,7 +99,7 @@ public:
         return m_plainString;
     }
 
-    AtomicString atomicString()
+    AtomicString getAtomicString()
     {
 #if ENABLE(ASSERT)
         ASSERT(m_threadId == WTF::currentThread());

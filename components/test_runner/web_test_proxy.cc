@@ -1081,7 +1081,7 @@ void WebTestProxyBase::WillSendRequest(
     delegate_->PrintMessage(
         DescriptionSuitableForTestResult(request_url).c_str());
     delegate_->PrintMessage(" has priority ");
-    delegate_->PrintMessage(PriorityDescription(request.priority()));
+    delegate_->PrintMessage(PriorityDescription(request.getPriority()));
     delegate_->PrintMessage("\n");
   }
 

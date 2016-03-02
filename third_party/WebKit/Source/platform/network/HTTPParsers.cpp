@@ -157,7 +157,7 @@ bool isValidHTTPToken(const String& characters)
     return true;
 }
 
-ContentDispositionType contentDispositionType(const String& contentDisposition)
+ContentDispositionType getContentDispositionType(const String& contentDisposition)
 {
     if (contentDisposition.isEmpty())
         return ContentDispositionNone;

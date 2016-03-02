@@ -45,7 +45,7 @@ PassRefPtr<SVGDashArray> AnimatableStrokeDasharrayList::toSVGDashArray(float zoo
 {
     RefPtr<SVGDashArray> lengths = SVGDashArray::create();
     for (const auto& dashLength : m_values)
-        lengths->append(toAnimatableLength(dashLength.get())->length(zoom, ValueRangeNonNegative));
+        lengths->append(toAnimatableLength(dashLength.get())->getLength(zoom, ValueRangeNonNegative));
     return lengths.release();
 }
 

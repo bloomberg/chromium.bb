@@ -140,7 +140,7 @@ void HTMLMeterElement::setOptimum(double optimum)
     setFloatingPointAttribute(optimumAttr, optimum);
 }
 
-HTMLMeterElement::GaugeRegion HTMLMeterElement::gaugeRegion() const
+HTMLMeterElement::GaugeRegion HTMLMeterElement::getGaugeRegion() const
 {
     double lowValue = low();
     double highValue = high();
@@ -220,7 +220,7 @@ void HTMLMeterElement::updateValueAppearance(double percentage)
     DEFINE_STATIC_LOCAL(AtomicString, evenLessGoodPseudoId, ("-webkit-meter-even-less-good-value", AtomicString::ConstructFromLiteral));
 
     m_value->setInlineStyleProperty(CSSPropertyWidth, percentage, CSSPrimitiveValue::UnitType::Percentage);
-    switch (gaugeRegion()) {
+    switch (getGaugeRegion()) {
     case GaugeRegionOptimum:
         m_value->setShadowPseudoId(optimumPseudoId);
         break;

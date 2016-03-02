@@ -57,13 +57,13 @@ public:
     virtual double timeOffset() const;
     virtual void setTimeOffset(double monotonicTime);
 
-    virtual Direction direction() const;
+    virtual Direction getDirection() const;
     virtual void setDirection(Direction);
 
     virtual double playbackRate() const;
     virtual void setPlaybackRate(double);
 
-    virtual FillMode fillMode() const;
+    virtual FillMode getFillMode() const;
     virtual void setFillMode(FillMode);
 
     virtual double iterationStart() const;

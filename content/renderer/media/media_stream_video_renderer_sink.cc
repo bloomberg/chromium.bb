@@ -59,7 +59,7 @@ void MediaStreamVideoRendererSink::Start() {
       video_track_);
   state_ = STARTED;
 
-  if (video_track_.source().readyState() ==
+  if (video_track_.source().getReadyState() ==
           blink::WebMediaStreamSource::ReadyStateEnded ||
       !video_track_.isEnabled()) {
     RenderSignalingFrame();

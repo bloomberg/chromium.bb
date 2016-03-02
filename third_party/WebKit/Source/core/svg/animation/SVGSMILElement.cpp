@@ -708,7 +708,7 @@ bool SVGSMILElement::isFrozen() const
     return m_activeState == Frozen;
 }
 
-SVGSMILElement::Restart SVGSMILElement::restart() const
+SVGSMILElement::Restart SVGSMILElement::getRestart() const
 {
     DEFINE_STATIC_LOCAL(const AtomicString, never, ("never", AtomicString::ConstructFromLiteral));
     DEFINE_STATIC_LOCAL(const AtomicString, whenNotActive, ("whenNotActive", AtomicString::ConstructFromLiteral));
@@ -959,7 +959,7 @@ void SVGSMILElement::beginListChanged(SMILTime eventTime)
 {
     if (m_isWaitingForFirstInterval) {
         resolveFirstInterval();
-    } else if (this->restart() != RestartNever) {
+    } else if (this->getRestart() != RestartNever) {
         SMILTime newBegin = findInstanceTime(Begin, eventTime, true);
         if (newBegin.isFinite() && (m_interval.end <= eventTime || newBegin < m_interval.begin)) {
             // Begin time changed, re-resolve the interval.
@@ -1009,7 +1009,7 @@ SVGSMILElement::RestartedInterval SVGSMILElement::maybeRestartInterval(SMILTime 
     ASSERT(!m_isWaitingForFirstInterval);
     ASSERT(elapsed >= m_interval.begin);
 
-    Restart restart = this->restart();
+    Restart restart = this->getRestart();
     if (restart == RestartNever)
         return DidNotRestartInterval;
 

@@ -110,7 +110,7 @@ unsigned AbstractInlineTextBox::len() const
     return m_inlineTextBox->len();
 }
 
-AbstractInlineTextBox::Direction AbstractInlineTextBox::direction() const
+AbstractInlineTextBox::Direction AbstractInlineTextBox::getDirection() const
 {
     if (!m_inlineTextBox || !m_lineLayoutItem)
         return LeftToRight;

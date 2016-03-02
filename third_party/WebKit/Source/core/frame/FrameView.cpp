@@ -2213,7 +2213,7 @@ IntRect FrameView::scrollableAreaBoundingBox() const
 
 bool FrameView::isScrollable()
 {
-    return scrollingReasons() == Scrollable;
+    return getScrollingReasons() == Scrollable;
 }
 
 bool FrameView::isProgrammaticallyScrollable()
@@ -2221,7 +2221,7 @@ bool FrameView::isProgrammaticallyScrollable()
     return !m_inUpdateScrollbars;
 }
 
-FrameView::ScrollingReasons FrameView::scrollingReasons()
+FrameView::ScrollingReasons FrameView::getScrollingReasons()
 {
     // Check for:
     // 1) If there an actual overflow.

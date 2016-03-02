@@ -122,7 +122,7 @@ private:
         ASSERT(m_resolveType == Fulfilled || m_resolveType == Rejected);
         if (m_resolveType == Rejected) {
             m_observer->responseWasRejected(WebServiceWorkerResponseErrorPromiseRejected);
-            value = ScriptPromise::reject(value.scriptState(), value).scriptValue();
+            value = ScriptPromise::reject(value.scriptState(), value).getScriptValue();
         } else {
             m_observer->responseWasFulfilled(value);
         }

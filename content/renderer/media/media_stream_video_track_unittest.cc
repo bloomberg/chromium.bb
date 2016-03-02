@@ -207,7 +207,7 @@ TEST_F(MediaStreamVideoTrackTest, StopLastTrack) {
   EXPECT_EQ(blink::WebMediaStreamSource::ReadyStateLive, sink1.state());
 
   EXPECT_EQ(blink::WebMediaStreamSource::ReadyStateLive,
-            blink_source().readyState());
+            blink_source().getReadyState());
 
   MockMediaStreamVideoSink sink2;
   blink::WebMediaStreamTrack track2 = CreateTrack();
@@ -220,7 +220,7 @@ TEST_F(MediaStreamVideoTrackTest, StopLastTrack) {
   native_track1->Stop();
   EXPECT_EQ(blink::WebMediaStreamSource::ReadyStateEnded, sink1.state());
   EXPECT_EQ(blink::WebMediaStreamSource::ReadyStateLive,
-              blink_source().readyState());
+            blink_source().getReadyState());
   MediaStreamVideoSink::RemoveFromVideoTrack(&sink1, track1);
 
   MediaStreamVideoTrack* const native_track2 =
@@ -228,7 +228,7 @@ TEST_F(MediaStreamVideoTrackTest, StopLastTrack) {
   native_track2->Stop();
   EXPECT_EQ(blink::WebMediaStreamSource::ReadyStateEnded, sink2.state());
   EXPECT_EQ(blink::WebMediaStreamSource::ReadyStateEnded,
-            blink_source().readyState());
+            blink_source().getReadyState());
   MediaStreamVideoSink::RemoveFromVideoTrack(&sink2, track2);
 }
 

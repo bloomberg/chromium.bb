@@ -3693,7 +3693,7 @@ void RenderFrameImpl::willSendRequest(
   // requests). This value will be updated during redirects, consistent with
   // https://tools.ietf.org/html/draft-west-first-party-cookies-04#section-2.1.1
   if (request.firstPartyForCookies().isEmpty()) {
-    if (request.frameType() == blink::WebURLRequest::FrameTypeTopLevel) {
+    if (request.getFrameType() == blink::WebURLRequest::FrameTypeTopLevel) {
       request.setFirstPartyForCookies(request.url());
     } else {
       // TODO(nasko): When the top-level frame is remote, there is no document.
@@ -3773,8 +3773,8 @@ void RenderFrameImpl::willSendRequest(
 
   // Add the default accept header for frame request if it has not been set
   // already.
-  if ((request.frameType() == blink::WebURLRequest::FrameTypeTopLevel ||
-       request.frameType() == blink::WebURLRequest::FrameTypeNested) &&
+  if ((request.getFrameType() == blink::WebURLRequest::FrameTypeTopLevel ||
+       request.getFrameType() == blink::WebURLRequest::FrameTypeNested) &&
       request.httpHeaderField(WebString::fromUTF8(kAcceptHeader)).isEmpty()) {
     request.setHTTPHeaderField(WebString::fromUTF8(kAcceptHeader),
                                WebString::fromUTF8(kDefaultAcceptHeader));
@@ -3801,8 +3801,8 @@ void RenderFrameImpl::willSendRequest(
   }
 
   int provider_id = kInvalidServiceWorkerProviderId;
-  if (request.frameType() == blink::WebURLRequest::FrameTypeTopLevel ||
-      request.frameType() == blink::WebURLRequest::FrameTypeNested) {
+  if (request.getFrameType() == blink::WebURLRequest::FrameTypeTopLevel ||
+      request.getFrameType() == blink::WebURLRequest::FrameTypeNested) {
     // |provisionalDataSource| may be null in some content::ResourceFetcher
     // use cases, we don't hook those requests.
     if (frame->provisionalDataSource()) {
@@ -3847,8 +3847,8 @@ void RenderFrameImpl::willSendRequest(
       navigation_state->start_params().transferred_request_request_id);
   extra_data->set_service_worker_provider_id(provider_id);
   extra_data->set_stream_override(std::move(stream_override));
-  if (request.loFiState() != WebURLRequest::LoFiUnspecified)
-    extra_data->set_lofi_state(static_cast<LoFiState>(request.loFiState()));
+  if (request.getLoFiState() != WebURLRequest::LoFiUnspecified)
+    extra_data->set_lofi_state(static_cast<LoFiState>(request.getLoFiState()));
   else if (is_main_frame_ && !navigation_state->request_committed())
     extra_data->set_lofi_state(navigation_state->common_params().lofi_state);
   else
@@ -3863,7 +3863,7 @@ void RenderFrameImpl::willSendRequest(
     if (top_document_state) {
       // TODO(gavinp): separate out prefetching and prerender field trials
       // if the rel=prerender rel type is sticking around.
-      if (request.requestContext() == WebURLRequest::RequestContextPrefetch)
+      if (request.getRequestContext() == WebURLRequest::RequestContextPrefetch)
         top_document_state->set_was_prefetcher(true);
     }
   }

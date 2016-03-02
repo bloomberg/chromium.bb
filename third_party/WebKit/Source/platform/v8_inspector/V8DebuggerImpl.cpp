@@ -264,7 +264,7 @@ void V8DebuggerImpl::setBreakpointsActivated(bool activated)
     m_breakpointsActivated = activated;
 }
 
-V8DebuggerImpl::PauseOnExceptionsState V8DebuggerImpl::pauseOnExceptionsState()
+V8DebuggerImpl::PauseOnExceptionsState V8DebuggerImpl::getPauseOnExceptionsState()
 {
     ASSERT(enabled());
     v8::HandleScope scope(m_isolate);

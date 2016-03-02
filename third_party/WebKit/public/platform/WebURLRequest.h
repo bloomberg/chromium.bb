@@ -225,10 +225,10 @@ public:
     BLINK_PLATFORM_EXPORT bool reportRawHeaders() const;
     BLINK_PLATFORM_EXPORT void setReportRawHeaders(bool);
 
-    BLINK_PLATFORM_EXPORT RequestContext requestContext() const;
+    BLINK_PLATFORM_EXPORT RequestContext getRequestContext() const;
     BLINK_PLATFORM_EXPORT void setRequestContext(RequestContext);
 
-    BLINK_PLATFORM_EXPORT FrameType frameType() const;
+    BLINK_PLATFORM_EXPORT FrameType getFrameType() const;
     BLINK_PLATFORM_EXPORT void setFrameType(FrameType);
 
     BLINK_PLATFORM_EXPORT WebReferrerPolicy referrerPolicy() const;
@@ -273,19 +273,19 @@ public:
     BLINK_PLATFORM_EXPORT void setShouldResetAppCache(bool);
 
     // The request mode which will be passed to the ServiceWorker.
-    BLINK_PLATFORM_EXPORT FetchRequestMode fetchRequestMode() const;
+    BLINK_PLATFORM_EXPORT FetchRequestMode getFetchRequestMode() const;
     BLINK_PLATFORM_EXPORT void setFetchRequestMode(FetchRequestMode);
 
     // The credentials mode which will be passed to the ServiceWorker.
-    BLINK_PLATFORM_EXPORT FetchCredentialsMode fetchCredentialsMode() const;
+    BLINK_PLATFORM_EXPORT FetchCredentialsMode getFetchCredentialsMode() const;
     BLINK_PLATFORM_EXPORT void setFetchCredentialsMode(FetchCredentialsMode);
 
     // The redirect mode which is used in Fetch API.
-    BLINK_PLATFORM_EXPORT FetchRedirectMode fetchRedirectMode() const;
+    BLINK_PLATFORM_EXPORT FetchRedirectMode getFetchRedirectMode() const;
     BLINK_PLATFORM_EXPORT void setFetchRedirectMode(FetchRedirectMode);
 
     // The LoFi state which determines whether to request a Lo-Fi version of the resource.
-    BLINK_PLATFORM_EXPORT LoFiState loFiState() const;
+    BLINK_PLATFORM_EXPORT LoFiState getLoFiState() const;
     BLINK_PLATFORM_EXPORT void setLoFiState(LoFiState);
 
     // Extra data associated with the underlying resource request. Resource
@@ -297,7 +297,7 @@ public:
     BLINK_PLATFORM_EXPORT ExtraData* extraData() const;
     BLINK_PLATFORM_EXPORT void setExtraData(ExtraData*);
 
-    BLINK_PLATFORM_EXPORT Priority priority() const;
+    BLINK_PLATFORM_EXPORT Priority getPriority() const;
     BLINK_PLATFORM_EXPORT void setPriority(Priority);
 
     // PlzNavigate: whether the FrameLoader should try to send the request to

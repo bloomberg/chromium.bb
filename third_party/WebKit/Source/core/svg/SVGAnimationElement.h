@@ -84,14 +84,14 @@ public:
     AnimationMode getAnimationMode() const { return m_animationMode; }
     CalcMode getCalcMode() const { return m_calcMode; }
 
-    enum ShouldApplyAnimation {
+    enum ShouldApplyAnimationType {
         DontApplyAnimation,
         ApplyCSSAnimation,
         ApplyXMLAnimation,
         ApplyXMLandCSSAnimation
     };
 
-    ShouldApplyAnimation shouldApplyAnimation(SVGElement* targetElement, const QualifiedName& attributeName);
+    ShouldApplyAnimationType shouldApplyAnimation(SVGElement* targetElement, const QualifiedName& attributeName);
 
     AnimatedPropertyValueType fromPropertyValueType() const { return m_fromPropertyValueType; }
     AnimatedPropertyValueType toPropertyValueType() const { return m_toPropertyValueType; }

@@ -1699,12 +1699,12 @@ static const EditorInternalCommand* internalCommand(const String& commandName)
     return commandName.isEmpty() ? 0 : commandMap.get(commandName);
 }
 
-Editor::Command Editor::command(const String& commandName)
+Editor::Command Editor::createCommand(const String& commandName)
 {
     return Command(internalCommand(commandName), CommandFromMenuOrKeyBinding, m_frame);
 }
 
-Editor::Command Editor::command(const String& commandName, EditorCommandSource source)
+Editor::Command Editor::createCommand(const String& commandName, EditorCommandSource source)
 {
     return Command(internalCommand(commandName), source, m_frame);
 }
@@ -1719,9 +1719,9 @@ bool Editor::executeCommand(const String& commandName)
         return true;
     }
     if (commandName == "DeleteBackward")
-        return command(AtomicString("BackwardDelete")).execute();
+        return createCommand(AtomicString("BackwardDelete")).execute();
     if (commandName == "DeleteForward")
-        return command(AtomicString("ForwardDelete")).execute();
+        return createCommand(AtomicString("ForwardDelete")).execute();
     if (commandName == "AdvanceToNextMisspelling") {
         // Wee need to pass false here or else the currently selected word will never be skipped.
         spellChecker().advanceToNextMisspelling(false);
@@ -1731,7 +1731,7 @@ bool Editor::executeCommand(const String& commandName)
         spellChecker().showSpellingGuessPanel();
         return true;
     }
-    return command(commandName).execute();
+    return createCommand(commandName).execute();
 }
 
 bool Editor::executeCommand(const String& commandName, const String& value)
@@ -1748,7 +1748,7 @@ bool Editor::executeCommand(const String& commandName, const String& value)
         return true;
     }
 
-    return command(commandName).execute(value);
+    return createCommand(commandName).execute(value);
 }
 
 Editor::Command::Command()

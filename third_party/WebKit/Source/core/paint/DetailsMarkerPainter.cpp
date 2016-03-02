@@ -73,7 +73,7 @@ static Path createRightArrowPath()
 
 Path DetailsMarkerPainter::getCanonicalPath() const
 {
-    switch (m_layoutDetailsMarker.orientation()) {
+    switch (m_layoutDetailsMarker.getOrientation()) {
     case LayoutDetailsMarker::Left: return createLeftArrowPath();
     case LayoutDetailsMarker::Right: return createRightArrowPath();
     case LayoutDetailsMarker::Up: return createUpArrowPath();

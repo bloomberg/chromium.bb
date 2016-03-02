@@ -835,7 +835,7 @@ void LayoutBlockFlow::adjustLinePositionForPagination(RootInlineBox& lineBox, La
 
 LayoutUnit LayoutBlockFlow::adjustForUnsplittableChild(LayoutBox& child, LayoutUnit logicalOffset) const
 {
-    if (child.paginationBreakability() == AllowAnyBreaks)
+    if (child.getPaginationBreakability() == AllowAnyBreaks)
         return logicalOffset;
     LayoutUnit childLogicalHeight = logicalHeightForChild(child);
     // Floats' margins do not collapse with page or column boundaries.
@@ -2752,7 +2752,7 @@ bool LayoutBlockFlow::isPagedOverflow(const ComputedStyle& style)
     return style.isOverflowPaged() && node() != document().viewportDefiningElement();
 }
 
-LayoutBlockFlow::FlowThreadType LayoutBlockFlow::flowThreadType(const ComputedStyle& style)
+LayoutBlockFlow::FlowThreadType LayoutBlockFlow::getFlowThreadType(const ComputedStyle& style)
 {
     if (isPagedOverflow(style))
         return PagedFlowThread;
@@ -2781,11 +2781,11 @@ void LayoutBlockFlow::createOrDestroyMultiColumnFlowThreadIfNeeded(const Compute
     // both paged overflow and multicol on the same element, but then we need two flow
     // threads. Anyway, this is nothing to worry about until we can actually nest multicol properly
     // inside other fragmentation contexts.
-    FlowThreadType type = flowThreadType(styleRef());
+    FlowThreadType type = getFlowThreadType(styleRef());
 
     if (multiColumnFlowThread()) {
         ASSERT(oldStyle);
-        if (type != flowThreadType(*oldStyle)) {
+        if (type != getFlowThreadType(*oldStyle)) {
             // If we're no longer to be multicol/paged, destroy the flow thread. Also destroy it
             // when switching between multicol and paged, since that affects the column set
             // structure (multicol containers may have spanners, paged containers may not).

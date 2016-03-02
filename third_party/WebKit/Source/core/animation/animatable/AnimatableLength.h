@@ -43,7 +43,7 @@ public:
     {
         return adoptRef(new AnimatableLength(length, zoom));
     }
-    Length length(float zoom, ValueRange) const;
+    Length getLength(float zoom, ValueRange) const;
 
     bool hasSameUnits(const AnimatableLength* other) const
     {

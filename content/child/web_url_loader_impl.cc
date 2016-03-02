@@ -490,7 +490,7 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   // tests load HTML directly through a data url which will be handled by the
   // block above.
   DCHECK(!IsBrowserSideNavigationEnabled() || stream_override_.get() ||
-         request.frameType() == WebURLRequest::FrameTypeNone);
+         request.getFrameType() == WebURLRequest::FrameTypeNone);
 
   GURL referrer_url(
       request.httpHeaderField(WebString::fromUTF8("Referer")).latin1());
@@ -513,7 +513,8 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   request_info.load_flags = GetLoadFlagsForWebURLRequest(request);
   request_info.enable_load_timing = true;
   request_info.enable_upload_progress = request.reportUploadProgress();
-  if (request.requestContext() == WebURLRequest::RequestContextXMLHttpRequest &&
+  if (request.getRequestContext() ==
+          WebURLRequest::RequestContextXMLHttpRequest &&
       (url.has_username() || url.has_password())) {
     request_info.do_not_prompt_for_login = true;
   }
@@ -523,7 +524,7 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   request_info.requestor_pid = request.requestorProcessID();
   request_info.request_type = WebURLRequestToResourceType(request);
   request_info.priority =
-      ConvertWebKitPriorityToNetPriority(request.priority());
+      ConvertWebKitPriorityToNetPriority(request.getPriority());
   request_info.appcache_host_id = request.appCacheHostID();
   request_info.routing_id = request.requestorID();
   request_info.download_to_file = request.downloadToFile();
@@ -553,7 +554,7 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   if (stream_override_.get()) {
     CHECK(IsBrowserSideNavigationEnabled());
     DCHECK(!sync_load_response);
-    DCHECK_NE(WebURLRequest::FrameTypeNone, request.frameType());
+    DCHECK_NE(WebURLRequest::FrameTypeNone, request.getFrameType());
     request_info.resource_body_stream_url = stream_override_->stream_url;
   }
 
@@ -822,7 +823,7 @@ bool WebURLLoaderImpl::Context::CanHandleDataURLRequestLocally() const {
 
   // Data url requests from object tags may need to be intercepted as streams
   // and so need to be sent to the browser.
-  if (request_.requestContext() == WebURLRequest::RequestContextObject)
+  if (request_.getRequestContext() == WebURLRequest::RequestContextObject)
     return false;
 
   // Optimize for the case where we can handle a data URL locally.  We must
@@ -837,12 +838,12 @@ bool WebURLLoaderImpl::Context::CanHandleDataURLRequestLocally() const {
   // to the browser. In tests resource_dispatcher_ can be null, and test pages
   // need to be loaded locally.
   if (resource_dispatcher_ &&
-      request_.frameType() == WebURLRequest::FrameTypeTopLevel)
+      request_.getFrameType() == WebURLRequest::FrameTypeTopLevel)
     return false;
 #endif
 
-  if (request_.frameType() != WebURLRequest::FrameTypeTopLevel &&
-      request_.frameType() != WebURLRequest::FrameTypeNested)
+  if (request_.getFrameType() != WebURLRequest::FrameTypeTopLevel &&
+      request_.getFrameType() != WebURLRequest::FrameTypeNested)
     return true;
 
   std::string mime_type, unused_charset;
@@ -1083,12 +1084,12 @@ void WebURLLoaderImpl::PopulateURLRequestForRedirect(
       redirect_info.new_first_party_for_cookies);
   new_request->setDownloadToFile(request.downloadToFile());
   new_request->setUseStreamOnResponse(request.useStreamOnResponse());
-  new_request->setRequestContext(request.requestContext());
-  new_request->setFrameType(request.frameType());
+  new_request->setRequestContext(request.getRequestContext());
+  new_request->setFrameType(request.getFrameType());
   new_request->setSkipServiceWorker(skip_service_worker);
   new_request->setShouldResetAppCache(request.shouldResetAppCache());
-  new_request->setFetchRequestMode(request.fetchRequestMode());
-  new_request->setFetchCredentialsMode(request.fetchCredentialsMode());
+  new_request->setFetchRequestMode(request.getFetchRequestMode());
+  new_request->setFetchCredentialsMode(request.getFetchCredentialsMode());
 
   new_request->setHTTPReferrer(WebString::fromUTF8(redirect_info.new_referrer),
                               referrer_policy);

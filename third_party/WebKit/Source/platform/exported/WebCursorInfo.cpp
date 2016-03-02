@@ -35,7 +35,7 @@
 namespace blink {
 
 WebCursorInfo::WebCursorInfo(const Cursor& cursor)
-    : type(static_cast<Type>(cursor.type()))
+    : type(static_cast<Type>(cursor.getType()))
     , hotSpot(cursor.hotSpot())
     , imageScaleFactor(cursor.imageScaleFactor())
     , customImage(cursor.image())

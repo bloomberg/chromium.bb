@@ -41,7 +41,7 @@ bool Editor::handleEditingKeyboardEvent(KeyboardEvent* evt)
         return false;
 
     String commandName = behavior().interpretKeyEvent(*evt);
-    Command command = this->command(commandName);
+    Command command = this->createCommand(commandName);
 
     if (keyEvent->type() == PlatformEvent::RawKeyDown) {
         // WebKit doesn't have enough information about mode to decide how

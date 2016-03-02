@@ -20,33 +20,33 @@ PassRefPtr<AnimatableLength> create(const Length& length, double zoom = 1)
 
 TEST(AnimationAnimatableLengthTest, RoundTripConversion)
 {
-    EXPECT_EQ(Length(0, Fixed), create(Length(0, Fixed))->length(1, ValueRangeAll));
-    EXPECT_EQ(Length(0, Percent), create(Length(0, Percent))->length(1, ValueRangeAll));
-    EXPECT_EQ(Length(10, Fixed), create(Length(10, Fixed))->length(1, ValueRangeAll));
-    EXPECT_EQ(Length(10, Percent), create(Length(10, Percent))->length(1, ValueRangeAll));
-    EXPECT_EQ(Length(-10, Fixed), create(Length(-10, Fixed))->length(1, ValueRangeAll));
-    EXPECT_EQ(Length(-10, Percent), create(Length(-10, Percent))->length(1, ValueRangeAll));
+    EXPECT_EQ(Length(0, Fixed), create(Length(0, Fixed))->getLength(1, ValueRangeAll));
+    EXPECT_EQ(Length(0, Percent), create(Length(0, Percent))->getLength(1, ValueRangeAll));
+    EXPECT_EQ(Length(10, Fixed), create(Length(10, Fixed))->getLength(1, ValueRangeAll));
+    EXPECT_EQ(Length(10, Percent), create(Length(10, Percent))->getLength(1, ValueRangeAll));
+    EXPECT_EQ(Length(-10, Fixed), create(Length(-10, Fixed))->getLength(1, ValueRangeAll));
+    EXPECT_EQ(Length(-10, Percent), create(Length(-10, Percent))->getLength(1, ValueRangeAll));
     Length calc = Length(CalculationValue::create(PixelsAndPercent(5, 10), ValueRangeAll));
-    EXPECT_EQ(calc, create(calc)->length(1, ValueRangeAll));
+    EXPECT_EQ(calc, create(calc)->getLength(1, ValueRangeAll));
 }
 
 TEST(AnimationAnimatableLengthTest, ValueRangeNonNegative)
 {
-    EXPECT_EQ(Length(10, Fixed), create(Length(10, Fixed))->length(1, ValueRangeNonNegative));
-    EXPECT_EQ(Length(10, Percent), create(Length(10, Percent))->length(1, ValueRangeNonNegative));
-    EXPECT_EQ(Length(0, Fixed), create(Length(-10, Fixed))->length(1, ValueRangeNonNegative));
-    EXPECT_EQ(Length(0, Percent), create(Length(-10, Percent))->length(1, ValueRangeNonNegative));
+    EXPECT_EQ(Length(10, Fixed), create(Length(10, Fixed))->getLength(1, ValueRangeNonNegative));
+    EXPECT_EQ(Length(10, Percent), create(Length(10, Percent))->getLength(1, ValueRangeNonNegative));
+    EXPECT_EQ(Length(0, Fixed), create(Length(-10, Fixed))->getLength(1, ValueRangeNonNegative));
+    EXPECT_EQ(Length(0, Percent), create(Length(-10, Percent))->getLength(1, ValueRangeNonNegative));
     Length calc = Length(CalculationValue::create(PixelsAndPercent(-5, -10), ValueRangeNonNegative));
-    EXPECT_TRUE(calc == create(calc)->length(1, ValueRangeNonNegative));
+    EXPECT_TRUE(calc == create(calc)->getLength(1, ValueRangeNonNegative));
 }
 
 TEST(AnimationAnimatableLengthTest, Zoom)
 {
-    EXPECT_EQ(Length(4, Fixed), create(Length(10, Fixed), 5)->length(2, ValueRangeAll));
-    EXPECT_EQ(Length(10, Percent), create(Length(10, Percent), 5)->length(2, ValueRangeAll));
+    EXPECT_EQ(Length(4, Fixed), create(Length(10, Fixed), 5)->getLength(2, ValueRangeAll));
+    EXPECT_EQ(Length(10, Percent), create(Length(10, Percent), 5)->getLength(2, ValueRangeAll));
     Length calc = Length(CalculationValue::create(PixelsAndPercent(5, 10), ValueRangeAll));
     Length result = Length(CalculationValue::create(PixelsAndPercent(2, 10), ValueRangeAll));
-    EXPECT_TRUE(result == create(calc, 5)->length(2, ValueRangeAll));
+    EXPECT_TRUE(result == create(calc, 5)->getLength(2, ValueRangeAll));
 }
 
 TEST(AnimationAnimatableLengthTest, Equals)

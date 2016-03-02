@@ -102,7 +102,7 @@ void CustomElementRegistrationContext::resolveOrScheduleResolution(Element* elem
     ASSERT(!type.isNull());
 
     CustomElementDescriptor descriptor(type, element->namespaceURI(), element->localName());
-    ASSERT(element->customElementState() == Element::WaitingForUpgrade);
+    ASSERT(element->getCustomElementState() == Element::WaitingForUpgrade);
 
     CustomElementScheduler::resolveOrScheduleResolution(this, element, descriptor);
 }
@@ -113,7 +113,7 @@ void CustomElementRegistrationContext::resolve(Element* element, const CustomEle
     if (definition) {
         CustomElement::define(element, definition);
     } else {
-        ASSERT(element->customElementState() == Element::WaitingForUpgrade);
+        ASSERT(element->getCustomElementState() == Element::WaitingForUpgrade);
         m_candidates->add(descriptor, element);
     }
 }

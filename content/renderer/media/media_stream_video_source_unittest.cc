@@ -216,7 +216,7 @@ class MediaStreamVideoSourceTest : public ::testing::Test {
   void OnConstraintsApplied(MediaStreamSource* source,
                             MediaStreamRequestResult result,
                             const blink::WebString& result_name) {
-    ASSERT_EQ(source, webkit_source_.extraData());
+    ASSERT_EQ(source, webkit_source_.getExtraData());
 
     if (result == MEDIA_DEVICE_OK) {
       ++number_of_successful_constraints_applied_;
@@ -736,7 +736,7 @@ TEST_F(MediaStreamVideoSourceTest, Use0FpsSupportedFormat) {
   MediaStreamVideoSink::RemoveFromVideoTrack(&sink, track);
 }
 
-// Test that a source producing no frames change the source readyState to muted.
+// Test that a source producing no frames change the source ReadyState to muted.
 // that in a reasonable time frame the muted state turns to false.
 TEST_F(MediaStreamVideoSourceTest, MutedSource) {
   // Setup the source for support a frame rate of 999 fps in order to test
@@ -755,7 +755,7 @@ TEST_F(MediaStreamVideoSourceTest, MutedSource) {
                                 media::limits::kMaxFramesPerSecond - 1);
   MockMediaStreamVideoSink sink;
   MediaStreamVideoSink::AddToVideoTrack(&sink, sink.GetDeliverFrameCB(), track);
-  EXPECT_EQ(track.source().readyState(),
+  EXPECT_EQ(track.source().getReadyState(),
             blink::WebMediaStreamSource::ReadyStateLive);
 
   base::RunLoop run_loop;
@@ -766,7 +766,7 @@ TEST_F(MediaStreamVideoSourceTest, MutedSource) {
   run_loop.Run();
   EXPECT_EQ(muted_state, true);
 
-  EXPECT_EQ(track.source().readyState(),
+  EXPECT_EQ(track.source().getReadyState(),
             blink::WebMediaStreamSource::ReadyStateMuted);
 
   base::RunLoop run_loop2;
@@ -777,7 +777,7 @@ TEST_F(MediaStreamVideoSourceTest, MutedSource) {
   run_loop2.Run();
 
   EXPECT_EQ(muted_state, false);
-  EXPECT_EQ(track.source().readyState(),
+  EXPECT_EQ(track.source().getReadyState(),
             blink::WebMediaStreamSource::ReadyStateLive);
 
   MediaStreamVideoSink::RemoveFromVideoTrack(&sink, track);

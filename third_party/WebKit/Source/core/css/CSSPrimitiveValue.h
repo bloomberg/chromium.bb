@@ -148,7 +148,7 @@ public:
         UResolution,
         UOther
     };
-    static UnitCategory unitCategory(UnitType);
+    static UnitCategory unitTypeToUnitCategory(UnitType);
     static float clampToCSSLengthRange(double);
 
     static void initUnitTable();

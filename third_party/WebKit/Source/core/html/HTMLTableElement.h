@@ -89,7 +89,7 @@ private:
     enum TableRules { UnsetRules, NoneRules, GroupsRules, RowsRules, ColsRules, AllRules };
     enum CellBorders { NoBorders, SolidBorders, InsetBorders, SolidBordersColsOnly, SolidBordersRowsOnly };
 
-    CellBorders cellBorders() const;
+    CellBorders getCellBorders() const;
 
     PassRefPtrWillBeRawPtr<StylePropertySet> createSharedCellStyle();
 

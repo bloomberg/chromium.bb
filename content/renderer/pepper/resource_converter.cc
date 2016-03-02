@@ -170,7 +170,7 @@ bool DOMMediaStreamTrackToResource(
   const blink::WebMediaStreamTrack track = dom_media_stream_track.component();
   const std::string id = track.source().id().utf8();
 
-  if (track.source().type() == blink::WebMediaStreamSource::TypeVideo) {
+  if (track.source().getType() == blink::WebMediaStreamSource::TypeVideo) {
     *pending_renderer_id = host->GetPpapiHost()->AddPendingResourceHost(
         scoped_ptr<ppapi::host::ResourceHost>(
             new PepperMediaStreamVideoTrackHost(host, instance, 0, track)));
@@ -180,7 +180,8 @@ bool DOMMediaStreamTrackToResource(
     create_message->reset(
         new PpapiPluginMsg_MediaStreamVideoTrack_CreateFromPendingHost(id));
     return true;
-  } else if (track.source().type() == blink::WebMediaStreamSource::TypeAudio) {
+  } else if (track.source().getType() ==
+             blink::WebMediaStreamSource::TypeAudio) {
     *pending_renderer_id = host->GetPpapiHost()->AddPendingResourceHost(
         scoped_ptr<ppapi::host::ResourceHost>(
             new PepperMediaStreamAudioTrackHost(host, instance, 0, track)));

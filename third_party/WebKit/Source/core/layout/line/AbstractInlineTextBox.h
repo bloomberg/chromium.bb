@@ -80,7 +80,7 @@ public:
     PassRefPtr<AbstractInlineTextBox> nextInlineTextBox() const;
     LayoutRect bounds() const;
     unsigned len() const;
-    Direction direction() const;
+    Direction getDirection() const;
     void characterWidths(Vector<float>&) const;
     void wordBoundaries(Vector<WordBoundaries>&) const;
     String text() const;

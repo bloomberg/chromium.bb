@@ -1087,7 +1087,7 @@ bool WebLocalFrameImpl::executeCommand(const WebString& name, const WebString& v
 bool WebLocalFrameImpl::isCommandEnabled(const WebString& name) const
 {
     ASSERT(frame());
-    return frame()->editor().command(name).isEnabled();
+    return frame()->editor().createCommand(name).isEnabled();
 }
 
 void WebLocalFrameImpl::enableContinuousSpellChecking(bool enable)

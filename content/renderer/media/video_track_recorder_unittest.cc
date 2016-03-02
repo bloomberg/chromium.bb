@@ -64,7 +64,8 @@ class VideoTrackRecorderTest : public TestWithParam<bool> {
                    base::Unretained(this)),
         0 /* bits_per_second */));
     // Paranoia checks.
-    EXPECT_EQ(blink_track_.source().extraData(), blink_source_.extraData());
+    EXPECT_EQ(blink_track_.source().getExtraData(),
+              blink_source_.getExtraData());
     EXPECT_TRUE(message_loop_.IsCurrent());
   }
 

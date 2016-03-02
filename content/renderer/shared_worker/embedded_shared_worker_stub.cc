@@ -89,7 +89,7 @@ class WebServiceWorkerNetworkProviderImpl
     request.setExtraData(extra_data.release());
     // Explicitly set the SkipServiceWorker flag for subresources here if the
     // renderer process hasn't received SetControllerServiceWorker message.
-    if (request.requestContext() !=
+    if (request.getRequestContext() !=
             blink::WebURLRequest::RequestContextSharedWorker &&
         !provider->IsControlledByServiceWorker()) {
       request.setSkipServiceWorker(true);

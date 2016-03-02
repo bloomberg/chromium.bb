@@ -68,7 +68,7 @@ public:
         PauseOnAllExceptions,
         PauseOnUncaughtExceptions
     };
-    PauseOnExceptionsState pauseOnExceptionsState();
+    PauseOnExceptionsState getPauseOnExceptionsState();
     void setPauseOnExceptionsState(PauseOnExceptionsState);
     void setPauseOnNextStatement(bool);
     bool pausingOnNextStatement();

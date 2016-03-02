@@ -74,7 +74,7 @@ void InspectorApplicationCacheAgent::updateApplicationCacheStatus(LocalFrame* fr
         return;
 
     ApplicationCacheHost* host = documentLoader->applicationCacheHost();
-    ApplicationCacheHost::Status status = host->status();
+    ApplicationCacheHost::Status status = host->getStatus();
     ApplicationCacheHost::CacheInfo info = host->applicationCacheInfo();
 
     String manifestURL = info.m_manifest.string();
@@ -104,7 +104,7 @@ void InspectorApplicationCacheAgent::getFramesWithManifests(ErrorString*, OwnPtr
             OwnPtr<protocol::ApplicationCache::FrameWithManifest> value = protocol::ApplicationCache::FrameWithManifest::create()
                 .setFrameId(IdentifiersFactory::frameId(frame))
                 .setManifestURL(manifestURL)
-                .setStatus(static_cast<int>(host->status())).build();
+                .setStatus(static_cast<int>(host->getStatus())).build();
             (*result)->addItem(value.release());
         }
     }

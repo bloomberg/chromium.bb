@@ -178,7 +178,7 @@ protected:
         TokenHandler handler;
         if (!DateTimeFormat::parse(formatString, handler))
             return DateTimeFormat::FieldTypeInvalid;
-        return handler.fieldType(0);
+        return handler.getFieldType(0);
     }
 
 private:
@@ -186,7 +186,7 @@ private:
     public:
         ~TokenHandler() override { }
 
-        FieldType fieldType(int index) const
+        FieldType getFieldType(int index) const
         {
             return index >=0 && index < static_cast<int>(m_tokens.size()) ? m_tokens[index].fieldType : DateTimeFormat::FieldTypeInvalid;
         }

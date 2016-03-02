@@ -312,7 +312,7 @@ void Element::detachAttrNodeAtIndex(Attr* attr, size_t index)
     ASSERT(elementData());
 
     const Attribute& attribute = elementData()->attributes().at(index);
-    ASSERT(attribute.name() == attr->qualifiedName());
+    ASSERT(attribute.name() == attr->getQualifiedName());
     detachAttrNodeFromElementWithValue(attr, attribute.value());
     removeAttributeInternal(index, NotInSynchronizationOfLazyAttribute);
 }
@@ -2129,7 +2129,7 @@ void Element::removeAttrNodeList()
 
 PassRefPtrWillBeRawPtr<Attr> Element::setAttributeNode(Attr* attrNode, ExceptionState& exceptionState)
 {
-    RefPtrWillBeRawPtr<Attr> oldAttrNode = attrIfExists(attrNode->qualifiedName());
+    RefPtrWillBeRawPtr<Attr> oldAttrNode = attrIfExists(attrNode->getQualifiedName());
     if (oldAttrNode.get() == attrNode)
         return attrNode; // This Attr is already attached to the element.
 
@@ -2147,7 +2147,7 @@ PassRefPtrWillBeRawPtr<Attr> Element::setAttributeNode(Attr* attrNode, Exception
     const UniqueElementData& elementData = ensureUniqueElementData();
 
     AttributeCollection attributes = elementData.attributes();
-    size_t index = attributes.findIndex(attrNode->qualifiedName(), shouldIgnoreAttributeCase());
+    size_t index = attributes.findIndex(attrNode->getQualifiedName(), shouldIgnoreAttributeCase());
     AtomicString localName;
     if (index != kNotFound) {
         const Attribute& attr = attributes[index];
@@ -2156,7 +2156,7 @@ PassRefPtrWillBeRawPtr<Attr> Element::setAttributeNode(Attr* attrNode, Exception
         // (case-sensitively) match that of the Attr node, record it
         // on the Attr so that it can correctly resolve the value on
         // the Element.
-        if (!attr.name().matches(attrNode->qualifiedName()))
+        if (!attr.name().matches(attrNode->getQualifiedName()))
             localName = attr.localName();
 
         if (oldAttrNode) {
@@ -2166,11 +2166,11 @@ PassRefPtrWillBeRawPtr<Attr> Element::setAttributeNode(Attr* attrNode, Exception
             // Attribute's for the replaced Attr is compatible with
             // all but Gecko (and, arguably, the DOM Level1 spec text.)
             // Consider switching.
-            oldAttrNode = Attr::create(document(), attrNode->qualifiedName(), attr.value());
+            oldAttrNode = Attr::create(document(), attrNode->getQualifiedName(), attr.value());
         }
     }
 
-    setAttributeInternal(index, attrNode->qualifiedName(), attrNode->value(), NotInSynchronizationOfLazyAttribute);
+    setAttributeInternal(index, attrNode->getQualifiedName(), attrNode->value(), NotInSynchronizationOfLazyAttribute);
 
     attrNode->attachToElement(this, localName);
     treeScope().adoptIfNeeded(*attrNode);
@@ -2193,9 +2193,9 @@ PassRefPtrWillBeRawPtr<Attr> Element::removeAttributeNode(Attr* attr, ExceptionS
 
     ASSERT(document() == attr->document());
 
-    synchronizeAttribute(attr->qualifiedName());
+    synchronizeAttribute(attr->getQualifiedName());
 
-    size_t index = elementData()->attributes().findIndex(attr->qualifiedName());
+    size_t index = elementData()->attributes().findIndex(attr->getQualifiedName());
     if (index == kNotFound) {
         exceptionState.throwDOMException(NotFoundError, "The attribute was not found on this element.");
         return nullptr;
@@ -3256,7 +3256,7 @@ PassRefPtrWillBeRawPtr<Attr> Element::attrIfExists(const QualifiedName& name)
     if (AttrNodeList* attrNodeList = this->attrNodeList()) {
         bool shouldIgnoreCase = shouldIgnoreAttributeCase();
         for (const auto& attr : *attrNodeList) {
-            if (attr->qualifiedName().matchesPossiblyIgnoringCase(name, shouldIgnoreCase))
+            if (attr->getQualifiedName().matchesPossiblyIgnoringCase(name, shouldIgnoreCase))
                 return attr.get();
         }
     }

@@ -2103,7 +2103,7 @@ String Internals::getCurrentCursorInfo()
 
     StringBuilder result;
     result.appendLiteral("type=");
-    result.append(cursorTypeToString(cursor.type()));
+    result.append(cursorTypeToString(cursor.getType()));
     result.appendLiteral(" hotSpot=");
     result.appendNumber(cursor.hotSpot().x());
     result.append(',');

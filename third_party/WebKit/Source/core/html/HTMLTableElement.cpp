@@ -347,7 +347,7 @@ bool HTMLTableElement::isPresentationAttribute(const QualifiedName& name) const
 
 void HTMLTableElement::parseAttribute(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& value)
 {
-    CellBorders bordersBefore = cellBorders();
+    CellBorders bordersBefore = getCellBorders();
     unsigned short oldPadding = m_padding;
 
     if (name == borderAttr)  {
@@ -385,7 +385,7 @@ void HTMLTableElement::parseAttribute(const QualifiedName& name, const AtomicStr
         HTMLElement::parseAttribute(name, oldValue, value);
     }
 
-    if (bordersBefore != cellBorders() || oldPadding != m_padding) {
+    if (bordersBefore != getCellBorders() || oldPadding != m_padding) {
         m_sharedCellStyle = nullptr;
         setNeedsTableStyleRecalc();
     }
@@ -424,7 +424,7 @@ const StylePropertySet* HTMLTableElement::additionalPresentationAttributeStyle()
     return outsetBorderStyle;
 }
 
-HTMLTableElement::CellBorders HTMLTableElement::cellBorders() const
+HTMLTableElement::CellBorders HTMLTableElement::getCellBorders() const
 {
     switch (m_rulesAttr) {
     case NoneRules:
@@ -451,7 +451,7 @@ PassRefPtrWillBeRawPtr<StylePropertySet> HTMLTableElement::createSharedCellStyle
 {
     RefPtrWillBeRawPtr<MutableStylePropertySet> style = MutableStylePropertySet::create(HTMLQuirksMode);
 
-    switch (cellBorders()) {
+    switch (getCellBorders()) {
     case SolidBordersColsOnly:
         style->setProperty(CSSPropertyBorderLeftWidth, CSSValueThin);
         style->setProperty(CSSPropertyBorderRightWidth, CSSValueThin);

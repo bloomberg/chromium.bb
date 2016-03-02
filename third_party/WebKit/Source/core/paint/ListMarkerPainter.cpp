@@ -80,7 +80,7 @@ void ListMarkerPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& pai
         return;
     }
 
-    LayoutListMarker::ListStyleCategory styleCategory = m_layoutListMarker.listStyleCategory();
+    LayoutListMarker::ListStyleCategory styleCategory = m_layoutListMarker.getListStyleCategory();
     if (styleCategory == LayoutListMarker::ListStyleCategory::None)
         return;
 

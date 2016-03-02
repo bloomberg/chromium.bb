@@ -44,7 +44,7 @@ DEFINE_NON_INTERPOLABLE_VALUE_TYPE_CASTS(CSSLengthNonInterpolableValue);
 
 CSSLengthInterpolationType::CSSLengthInterpolationType(CSSPropertyID property)
     : CSSInterpolationType(property)
-    , m_valueRange(LengthPropertyFunctions::valueRange(property))
+    , m_valueRange(LengthPropertyFunctions::getValueRange(property))
 { }
 
 float CSSLengthInterpolationType::effectiveZoom(const ComputedStyle& style) const

@@ -230,7 +230,7 @@ float FontBuilder::getComputedSizeFromSpecifiedSize(FontDescription& fontDescrip
     return FontSize::getComputedSizeFromSpecifiedSize(m_document, zoomFactor, fontDescription.isAbsoluteSize(), specifiedSize);
 }
 
-static FontOrientation fontOrientation(const ComputedStyle& style)
+static FontOrientation computeFontOrientation(const ComputedStyle& style)
 {
     if (style.isHorizontalWritingMode())
         return FontOrientation::Horizontal;
@@ -250,7 +250,7 @@ static FontOrientation fontOrientation(const ComputedStyle& style)
 
 void FontBuilder::updateOrientation(FontDescription& description, const ComputedStyle& style)
 {
-    description.setOrientation(fontOrientation(style));
+    description.setOrientation(computeFontOrientation(style));
 }
 
 void FontBuilder::checkForGenericFamilyChange(const FontDescription& oldDescription, FontDescription& newDescription)
@@ -365,7 +365,7 @@ void FontBuilder::createFont(PassRefPtrWillBeRawPtr<FontSelector> fontSelector, 
     if (isSet(PropertySetFlag::Variant))
         description.setVariant(m_fontDescription.variant());
     if (isSet(PropertySetFlag::VariantLigatures))
-        description.setVariantLigatures(m_fontDescription.variantLigatures());
+        description.setVariantLigatures(m_fontDescription.getVariantLigatures());
     if (isSet(PropertySetFlag::TextRendering))
         description.setTextRendering(m_fontDescription.textRendering());
     if (isSet(PropertySetFlag::Kerning))

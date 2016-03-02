@@ -1272,7 +1272,7 @@ void LayoutBlock::layoutPositionedObjects(bool relayoutChildren, PositionedLayou
             positionedObject->setPreferredLogicalWidthsDirty(MarkOnlyThis);
 
         LayoutUnit logicalTopEstimate;
-        bool needsBlockDirectionLocationSetBeforeLayout = isPaginated && positionedObject->paginationBreakability() != ForbidBreaks;
+        bool needsBlockDirectionLocationSetBeforeLayout = isPaginated && positionedObject->getPaginationBreakability() != ForbidBreaks;
         if (needsBlockDirectionLocationSetBeforeLayout) {
             // Out-of-flow objects are normally positioned after layout (while in-flow objects are
             // positioned before layout). If the child object is paginated in the same context as

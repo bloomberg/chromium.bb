@@ -49,7 +49,7 @@ class WebApplicationCacheHostImpl
   void didReceiveResponseForMainResource(const blink::WebURLResponse&) override;
   void didReceiveDataForMainResource(const char* data, unsigned len) override;
   void didFinishLoadingMainResource(bool success) override;
-  blink::WebApplicationCacheHost::Status status() override;
+  blink::WebApplicationCacheHost::Status getStatus() override;
   bool startUpdate() override;
   bool swapCache() override;
   void getResourceList(blink::WebVector<ResourceInfo>* resources) override;

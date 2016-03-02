@@ -265,7 +265,7 @@ public:
         WaitingForUpgrade = 1 << 0,
         Upgraded          = 1 << 1
     };
-    CustomElementState customElementState() const
+    CustomElementState getCustomElementState() const
     {
         return isCustomElement()
             ? (getFlag(CustomElementUpgradedFlag) ? Upgraded : WaitingForUpgrade)

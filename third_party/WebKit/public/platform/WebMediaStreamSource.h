@@ -95,18 +95,18 @@ public:
     bool isNull() const { return m_private.isNull(); }
 
     BLINK_PLATFORM_EXPORT WebString id() const;
-    BLINK_PLATFORM_EXPORT Type type() const;
+    BLINK_PLATFORM_EXPORT Type getType() const;
     BLINK_PLATFORM_EXPORT WebString name() const;
     BLINK_PLATFORM_EXPORT bool remote() const;
 
     BLINK_PLATFORM_EXPORT void setReadyState(ReadyState);
-    BLINK_PLATFORM_EXPORT ReadyState readyState() const;
+    BLINK_PLATFORM_EXPORT ReadyState getReadyState() const;
 
     // Extra data associated with this object.
     // If non-null, the extra data pointer will be deleted when the object is destroyed.
     // Setting the extra data pointer will cause any existing non-null
     // extra data pointer to be deleted.
-    BLINK_PLATFORM_EXPORT ExtraData* extraData() const;
+    BLINK_PLATFORM_EXPORT ExtraData* getExtraData() const;
     BLINK_PLATFORM_EXPORT void setExtraData(ExtraData*);
 
     BLINK_PLATFORM_EXPORT WebMediaConstraints constraints();

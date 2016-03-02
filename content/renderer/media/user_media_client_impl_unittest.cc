@@ -274,8 +274,8 @@ TEST_F(UserMediaClientImplTest, GenerateTwoMediaStreamsWithSameSource) {
   EXPECT_EQ(desc1_video_tracks[0].source().id(),
             desc2_video_tracks[0].source().id());
 
-  EXPECT_EQ(desc1_video_tracks[0].source().extraData(),
-            desc2_video_tracks[0].source().extraData());
+  EXPECT_EQ(desc1_video_tracks[0].source().getExtraData(),
+            desc2_video_tracks[0].source().getExtraData());
 
   blink::WebVector<blink::WebMediaStreamTrack> desc1_audio_tracks;
   desc1.audioTracks(desc1_audio_tracks);
@@ -284,8 +284,8 @@ TEST_F(UserMediaClientImplTest, GenerateTwoMediaStreamsWithSameSource) {
   EXPECT_EQ(desc1_audio_tracks[0].source().id(),
             desc2_audio_tracks[0].source().id());
 
-  EXPECT_EQ(desc1_audio_tracks[0].source().extraData(),
-            desc2_audio_tracks[0].source().extraData());
+  EXPECT_EQ(desc1_audio_tracks[0].source().getExtraData(),
+            desc2_audio_tracks[0].source().getExtraData());
 }
 
 // Test that the same source object is not used if two MediaStreams are
@@ -304,8 +304,8 @@ TEST_F(UserMediaClientImplTest, GenerateTwoMediaStreamsWithDifferentSources) {
   EXPECT_NE(desc1_video_tracks[0].source().id(),
             desc2_video_tracks[0].source().id());
 
-  EXPECT_NE(desc1_video_tracks[0].source().extraData(),
-            desc2_video_tracks[0].source().extraData());
+  EXPECT_NE(desc1_video_tracks[0].source().getExtraData(),
+            desc2_video_tracks[0].source().getExtraData());
 
   blink::WebVector<blink::WebMediaStreamTrack> desc1_audio_tracks;
   desc1.audioTracks(desc1_audio_tracks);
@@ -314,8 +314,8 @@ TEST_F(UserMediaClientImplTest, GenerateTwoMediaStreamsWithDifferentSources) {
   EXPECT_NE(desc1_audio_tracks[0].source().id(),
             desc2_audio_tracks[0].source().id());
 
-  EXPECT_NE(desc1_audio_tracks[0].source().extraData(),
-            desc2_audio_tracks[0].source().extraData());
+  EXPECT_NE(desc1_audio_tracks[0].source().getExtraData(),
+            desc2_audio_tracks[0].source().getExtraData());
 }
 
 TEST_F(UserMediaClientImplTest, StopLocalTracks) {

@@ -928,7 +928,7 @@ void V8DebuggerAgentImpl::setPauseOnExceptions(ErrorString* errorString, const S
 void V8DebuggerAgentImpl::setPauseOnExceptionsImpl(ErrorString* errorString, int pauseState)
 {
     debugger().setPauseOnExceptionsState(static_cast<V8DebuggerImpl::PauseOnExceptionsState>(pauseState));
-    if (debugger().pauseOnExceptionsState() != pauseState)
+    if (debugger().getPauseOnExceptionsState() != pauseState)
         *errorString = "Internal error. Could not change pause on exceptions state";
     else
         m_state->setNumber(DebuggerAgentState::pauseOnExceptionsState, pauseState);
@@ -1607,7 +1607,7 @@ void V8DebuggerAgentImpl::breakProgram(const String& breakReason, PassOwnPtr<pro
 
 void V8DebuggerAgentImpl::breakProgramOnException(const String& breakReason, PassOwnPtr<protocol::DictionaryValue> data)
 {
-    if (m_debugger->pauseOnExceptionsState() == V8DebuggerImpl::DontPauseOnExceptions)
+    if (m_debugger->getPauseOnExceptionsState() == V8DebuggerImpl::DontPauseOnExceptions)
         return;
     breakProgram(breakReason, data);
 }

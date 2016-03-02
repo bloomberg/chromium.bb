@@ -69,7 +69,7 @@ namespace {
 Length animatableValueToLengthWithZoom(const AnimatableValue* value, float zoom, ValueRange range = ValueRangeAll)
 {
     if (value->isLength())
-        return toAnimatableLength(value)->length(zoom, range);
+        return toAnimatableLength(value)->getLength(zoom, range);
     ASSERT(toAnimatableUnknown(value)->toCSSValueID() == CSSValueAuto);
     return Length(Auto);
 }
@@ -87,7 +87,7 @@ UnzoomedLength animatableValueToUnzoomedLength(const AnimatableValue* value, con
 BorderImageLength animatableValueToBorderImageLength(const AnimatableValue* value, const StyleResolverState& state)
 {
     if (value->isLength())
-        return BorderImageLength(toAnimatableLength(value)->length(state.style()->effectiveZoom(), ValueRangeNonNegative));
+        return BorderImageLength(toAnimatableLength(value)->getLength(state.style()->effectiveZoom(), ValueRangeNonNegative));
     if (value->isDouble())
         return BorderImageLength(clampTo<double>(toAnimatableDouble(value)->toDouble(), 0));
     ASSERT(toAnimatableUnknown(value)->toCSSValueID() == CSSValueAuto);

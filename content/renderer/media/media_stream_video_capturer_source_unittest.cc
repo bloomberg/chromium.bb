@@ -348,7 +348,7 @@ TEST_F(MediaStreamVideoCapturerSourceTest, Ended) {
   OnStarted(true);
   message_loop_.RunUntilIdle();
   EXPECT_EQ(blink::WebMediaStreamSource::ReadyStateLive,
-            webkit_source_.readyState());
+            webkit_source_.getReadyState());
 
   EXPECT_FALSE(source_stopped_);
 
@@ -356,7 +356,7 @@ TEST_F(MediaStreamVideoCapturerSourceTest, Ended) {
   OnStarted(false);
   message_loop_.RunUntilIdle();
   EXPECT_EQ(blink::WebMediaStreamSource::ReadyStateEnded,
-            webkit_source_.readyState());
+            webkit_source_.getReadyState());
   // Verify that MediaStreamSource::SourceStoppedCallback has been triggered.
   EXPECT_TRUE(source_stopped_);
 }

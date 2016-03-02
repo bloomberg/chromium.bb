@@ -72,7 +72,7 @@ public:
         RestartNever
     };
 
-    Restart restart() const;
+    Restart getRestart() const;
 
     enum FillMode {
         FillRemove,

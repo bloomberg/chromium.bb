@@ -53,7 +53,7 @@ namespace blink {
 
 class PaintLayer;
 
-enum ShouldRespectOverflowClip {
+enum ShouldRespectOverflowClipType {
     IgnoreOverflowClip,
     RespectOverflowClip
 };
@@ -98,8 +98,8 @@ private:
 
     ClipRectsCacheSlot m_cacheSlot;
     LayoutSize subPixelAccumulation;
-    ShouldRespectOverflowClip respectOverflowClip;
-    ShouldRespectOverflowClip respectOverflowClipForViewport;
+    ShouldRespectOverflowClipType respectOverflowClip;
+    ShouldRespectOverflowClipType respectOverflowClipForViewport;
 };
 
 // PaintLayerClipper is responsible for computing and caching clip
@@ -167,7 +167,7 @@ public:
     void calculateRects(const ClipRectsContext&, const LayoutRect& paintDirtyRect, LayoutRect& layerBounds,
         ClipRect& backgroundRect, ClipRect& foregroundRect, const LayoutPoint* offsetFromRoot = 0) const;
 
-    ClipRects& paintingClipRects(const PaintLayer* rootLayer, ShouldRespectOverflowClip, const LayoutSize& subpixelAccumulation) const;
+    ClipRects& paintingClipRects(const PaintLayer* rootLayer, ShouldRespectOverflowClipType, const LayoutSize& subpixelAccumulation) const;
 
 private:
     ClipRects& getClipRects(const ClipRectsContext&) const;

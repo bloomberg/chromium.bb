@@ -120,11 +120,11 @@ class TestData {
 public:
     void setWebView(WebView* webView) { m_webView = toWebViewImpl(webView); }
     void setSize(const WebSize& newSize) { m_size = newSize; }
-    HorizontalScrollbarState horizontalScrollbarState() const
+    HorizontalScrollbarState getHorizontalScrollbarState() const
     {
         return m_webView->hasHorizontalScrollbar() ? VisibleHorizontalScrollbar: NoHorizontalScrollbar;
     }
-    VerticalScrollbarState verticalScrollbarState() const
+    VerticalScrollbarState getVerticalScrollbarState() const
     {
         return m_webView->hasVerticalScrollbar() ? VisibleVerticalScrollbar : NoVerticalScrollbar;
     }
@@ -758,8 +758,8 @@ void WebViewTest::testAutoResize(const WebSize& minAutoResize, const WebSize& ma
 
     // Android disables main frame scrollbars.
 #if !OS(ANDROID)
-    EXPECT_EQ(expectedHorizontalState, client.testData().horizontalScrollbarState());
-    EXPECT_EQ(expectedVerticalState, client.testData().verticalScrollbarState());
+    EXPECT_EQ(expectedHorizontalState, client.testData().getHorizontalScrollbarState());
+    EXPECT_EQ(expectedVerticalState, client.testData().getVerticalScrollbarState());
 #endif
 
     m_webViewHelper.reset(); // Explicitly reset to break dependency on locally scoped client.

@@ -115,7 +115,7 @@ void CompositorAnimation::setTimeOffset(double monotonicTime)
     m_animation->set_time_offset(base::TimeDelta::FromSecondsD(monotonicTime));
 }
 
-blink::CompositorAnimation::Direction CompositorAnimation::direction() const
+blink::CompositorAnimation::Direction CompositorAnimation::getDirection() const
 {
     switch (m_animation->direction()) {
     case cc::Animation::DIRECTION_NORMAL:
@@ -160,7 +160,7 @@ void CompositorAnimation::setPlaybackRate(double playbackRate)
     m_animation->set_playback_rate(playbackRate);
 }
 
-blink::CompositorAnimation::FillMode CompositorAnimation::fillMode() const
+blink::CompositorAnimation::FillMode CompositorAnimation::getFillMode() const
 {
     switch (m_animation->fill_mode()) {
     case cc::Animation::FILL_MODE_NONE:

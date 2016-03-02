@@ -880,7 +880,7 @@ const blink::WebMediaStreamSource* UserMediaClientImpl::FindLocalSource(
   for (LocalStreamSources::const_iterator it = local_sources_.begin();
        it != local_sources_.end(); ++it) {
     MediaStreamSource* const source =
-        static_cast<MediaStreamSource*>(it->extraData());
+        static_cast<MediaStreamSource*>(it->getExtraData());
     const StreamDeviceInfo& active_device = source->device_info();
     if (active_device.device.id == device.device.id &&
         active_device.device.type == device.device.type &&
@@ -1022,7 +1022,7 @@ void UserMediaClientImpl::OnLocalSourceStopped(
   CHECK(device_found);
 
   MediaStreamSource* source_impl =
-      static_cast<MediaStreamSource*>(source.extraData());
+      static_cast<MediaStreamSource*>(source.getExtraData());
   media_stream_dispatcher_->StopStreamDevice(source_impl->device_info());
 }
 
@@ -1030,7 +1030,7 @@ void UserMediaClientImpl::StopLocalSource(
     const blink::WebMediaStreamSource& source,
     bool notify_dispatcher) {
   MediaStreamSource* source_impl =
-      static_cast<MediaStreamSource*>(source.extraData());
+      static_cast<MediaStreamSource*>(source.getExtraData());
   DVLOG(1) << "UserMediaClientImpl::StopLocalSource("
            << "{device_id = " << source_impl->device_info().device.id << "})";
 
@@ -1061,9 +1061,9 @@ UserMediaClientImpl::UserMediaRequestInfo::~UserMediaRequestInfo() {
 void UserMediaClientImpl::UserMediaRequestInfo::StartAudioTrack(
     const blink::WebMediaStreamTrack& track,
     const blink::WebMediaConstraints& constraints) {
-  DCHECK(track.source().type() == blink::WebMediaStreamSource::TypeAudio);
+  DCHECK(track.source().getType() == blink::WebMediaStreamSource::TypeAudio);
   MediaStreamAudioSource* native_source =
-      static_cast <MediaStreamAudioSource*>(track.source().extraData());
+      static_cast<MediaStreamAudioSource*>(track.source().getExtraData());
   DCHECK(native_source);
 
   sources_.push_back(track.source());
@@ -1078,7 +1078,7 @@ blink::WebMediaStreamTrack
 UserMediaClientImpl::UserMediaRequestInfo::CreateAndStartVideoTrack(
     const blink::WebMediaStreamSource& source,
     const blink::WebMediaConstraints& constraints) {
-  DCHECK(source.type() == blink::WebMediaStreamSource::TypeVideo);
+  DCHECK(source.getType() == blink::WebMediaStreamSource::TypeVideo);
   MediaStreamVideoSource* native_source =
       MediaStreamVideoSource::GetVideoSource(source);
   DCHECK(native_source);

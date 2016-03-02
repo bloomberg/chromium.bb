@@ -310,7 +310,7 @@ void LayoutTreeAsText::writeLayoutObject(TextStream& ts, const LayoutObject& o, 
 
     if (o.isDetailsMarker()) {
         ts << ": ";
-        switch (toLayoutDetailsMarker(&o)->orientation()) {
+        switch (toLayoutDetailsMarker(&o)->getOrientation()) {
         case LayoutDetailsMarker::Left:
             ts << "left";
             break;

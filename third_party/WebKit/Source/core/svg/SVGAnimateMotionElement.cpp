@@ -98,7 +98,7 @@ void SVGAnimateMotionElement::parseAttribute(const QualifiedName& name, const At
     SVGAnimationElement::parseAttribute(name, oldValue, value);
 }
 
-SVGAnimateMotionElement::RotateMode SVGAnimateMotionElement::rotateMode() const
+SVGAnimateMotionElement::RotateMode SVGAnimateMotionElement::getRotateMode() const
 {
     DEFINE_STATIC_LOCAL(const AtomicString, autoVal, ("auto", AtomicString::ConstructFromLiteral));
     DEFINE_STATIC_LOCAL(const AtomicString, autoReverse, ("auto-reverse", AtomicString::ConstructFromLiteral));
@@ -261,7 +261,7 @@ void SVGAnimateMotionElement::calculateAnimatedValue(float percentage, unsigned 
     }
 
     transform->translate(position.x(), position.y());
-    RotateMode rotateMode = this->rotateMode();
+    RotateMode rotateMode = this->getRotateMode();
     if (rotateMode != RotateAuto && rotateMode != RotateAutoReverse)
         return;
     if (rotateMode == RotateAutoReverse)

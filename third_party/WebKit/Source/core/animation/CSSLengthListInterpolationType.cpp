@@ -16,7 +16,7 @@ namespace blink {
 
 CSSLengthListInterpolationType::CSSLengthListInterpolationType(CSSPropertyID property)
     : CSSInterpolationType(property)
-    , m_valueRange(LengthListPropertyFunctions::valueRange(property))
+    , m_valueRange(LengthListPropertyFunctions::getValueRange(property))
 {
 }
 

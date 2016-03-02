@@ -311,7 +311,7 @@ void WebURLResponse::setHasMajorCertificateErrors(bool value)
     m_private->m_resourceResponse->setHasMajorCertificateErrors(value);
 }
 
-WebURLResponse::SecurityStyle WebURLResponse::securityStyle() const
+WebURLResponse::SecurityStyle WebURLResponse::getSecurityStyle() const
 {
     return static_cast<SecurityStyle>(m_private->m_resourceResponse->getSecurityStyle());
 }

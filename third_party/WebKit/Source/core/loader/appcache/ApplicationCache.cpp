@@ -72,7 +72,7 @@ unsigned short ApplicationCache::status() const
     ApplicationCacheHost* cacheHost = applicationCacheHost();
     if (!cacheHost)
         return ApplicationCacheHost::UNCACHED;
-    return cacheHost->status();
+    return cacheHost->getStatus();
 }
 
 void ApplicationCache::update(ExceptionState& exceptionState)

@@ -255,7 +255,7 @@ public:
         , m_hasVerticalOffsets(buffer.hasVerticalOffsets())
         , m_index(0)
         , m_blobCount(0)
-        , m_rotation(buffer.isEmpty() ? NoRotation : blobRotation(buffer.fontDataAt(0)))
+        , m_rotation(buffer.isEmpty() ? NoRotation : computeBlobRotation(buffer.fontDataAt(0)))
     { }
 
     bool done() const { return m_index >= m_buffer.size(); }
@@ -270,7 +270,7 @@ public:
             const SimpleFontData* fontData = m_buffer.fontDataAt(m_index);
             ASSERT(fontData);
 
-            const BlobRotation newRotation = blobRotation(fontData);
+            const BlobRotation newRotation = computeBlobRotation(fontData);
             if (newRotation != m_rotation) {
                 // We're switching to an orientation which requires a different rotation
                 //   => emit the pending blob (and start a new one with the new rotation).
@@ -290,7 +290,7 @@ public:
     }
 
 private:
-    static BlobRotation blobRotation(const SimpleFontData* font)
+    static BlobRotation computeBlobRotation(const SimpleFontData* font)
     {
         // For vertical upright text we need to compensate the inherited 90deg CW rotation
         // (using a 90deg CCW rotation).

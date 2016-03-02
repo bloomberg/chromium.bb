@@ -161,7 +161,7 @@ public:
         return genericFamily() == MonospaceFamily && !family().next() && family().family() == FontFamilyNames::webkit_monospace;
     }
     Kerning getKerning() const { return static_cast<Kerning>(m_fields.m_kerning); }
-    VariantLigatures variantLigatures() const;
+    VariantLigatures getVariantLigatures() const;
     LigaturesState commonLigaturesState() const { return static_cast<LigaturesState>(m_fields.m_commonLigaturesState); }
     LigaturesState discretionaryLigaturesState() const { return static_cast<LigaturesState>(m_fields.m_discretionaryLigaturesState); }
     LigaturesState historicalLigaturesState() const { return static_cast<LigaturesState>(m_fields.m_historicalLigaturesState); }

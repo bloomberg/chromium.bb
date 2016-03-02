@@ -270,7 +270,7 @@ void WebApplicationCacheHostImpl::didFinishLoadingMainResource(bool success) {
   // TODO(michaeln): write me
 }
 
-WebApplicationCacheHost::Status WebApplicationCacheHostImpl::status() {
+WebApplicationCacheHost::Status WebApplicationCacheHostImpl::getStatus() {
   return static_cast<WebApplicationCacheHost::Status>(status_);
 }
 

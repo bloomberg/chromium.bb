@@ -58,7 +58,7 @@ public:
     void setOptimum(double);
 
     double valueRatio() const;
-    GaugeRegion gaugeRegion() const;
+    GaugeRegion getGaugeRegion() const;
 
     bool canContainRangeEndPoint() const override { return false; }
 

@@ -47,7 +47,7 @@ public:
     };
 
     // Returns the list's style as one of a reduced high level categorical set of styles.
-    ListStyleCategory listStyleCategory() const;
+    ListStyleCategory getListStyleCategory() const;
 
     bool isInside() const;
 

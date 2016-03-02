@@ -145,11 +145,11 @@ TEST_F(MediaStreamRemoteVideoSourceTest, RemoteTrackStop) {
   track->AddSink(&sink, sink.GetDeliverFrameCB());
   EXPECT_EQ(blink::WebMediaStreamSource::ReadyStateLive, sink.state());
   EXPECT_EQ(blink::WebMediaStreamSource::ReadyStateLive,
-            webkit_source().readyState());
+            webkit_source().getReadyState());
   StopWebRtcTrack();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(blink::WebMediaStreamSource::ReadyStateEnded,
-            webkit_source().readyState());
+            webkit_source().getReadyState());
   EXPECT_EQ(blink::WebMediaStreamSource::ReadyStateEnded, sink.state());
 
   track->RemoveSink(&sink);

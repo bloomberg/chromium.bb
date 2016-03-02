@@ -147,7 +147,8 @@ class RemoteVideoTrackAdapter
     DCHECK(main_thread_->BelongsToCurrentThread());
     if (initialized()) {
       static_cast<MediaStreamRemoteVideoSource*>(
-          webkit_track()->source().extraData())->OnSourceTerminated();
+          webkit_track()->source().getExtraData())
+          ->OnSourceTerminated();
     }
   }
 

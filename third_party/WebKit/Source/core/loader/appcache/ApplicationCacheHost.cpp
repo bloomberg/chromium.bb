@@ -254,9 +254,9 @@ void ApplicationCacheHost::dispatchDOMEvent(EventID id, int progressTotal, int p
     m_domApplicationCache->dispatchEvent(event);
 }
 
-ApplicationCacheHost::Status ApplicationCacheHost::status() const
+ApplicationCacheHost::Status ApplicationCacheHost::getStatus() const
 {
-    return m_host ? static_cast<Status>(m_host->status()) : UNCACHED;
+    return m_host ? static_cast<Status>(m_host->getStatus()) : UNCACHED;
 }
 
 bool ApplicationCacheHost::update()

@@ -19,7 +19,7 @@ TEST(WebCompositorAnimationTest, DefaultSettings)
     EXPECT_EQ(1, animation->iterations());
     EXPECT_EQ(0, animation->startTime());
     EXPECT_EQ(0, animation->timeOffset());
-    EXPECT_EQ(CompositorAnimation::DirectionNormal, animation->direction());
+    EXPECT_EQ(CompositorAnimation::DirectionNormal, animation->getDirection());
 }
 
 TEST(WebCompositorAnimationTest, ModifiedSettings)
@@ -35,7 +35,7 @@ TEST(WebCompositorAnimationTest, ModifiedSettings)
     EXPECT_EQ(2, animation->iterations());
     EXPECT_EQ(2, animation->startTime());
     EXPECT_EQ(2, animation->timeOffset());
-    EXPECT_EQ(CompositorAnimation::DirectionReverse, animation->direction());
+    EXPECT_EQ(CompositorAnimation::DirectionReverse, animation->getDirection());
 }
 
 } // namespace blink

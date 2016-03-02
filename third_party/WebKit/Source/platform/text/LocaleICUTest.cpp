@@ -79,7 +79,7 @@ public:
     };
 
 protected:
-    Labels labels(const String& element1, const String& element2)
+    Labels labelsFromTwoElements(const String& element1, const String& element2)
     {
         Vector<String> labels = Vector<String>();
         labels.append(element1);
@@ -230,12 +230,12 @@ TEST_F(LocaleICUTest, shortMonthLabels)
 
 TEST_F(LocaleICUTest, timeAMPMLabels)
 {
-    EXPECT_EQ(labels("AM", "PM"), timeAMPMLabels("en_US"));
-    EXPECT_EQ(labels("AM", "PM"), timeAMPMLabels("fr"));
+    EXPECT_EQ(labelsFromTwoElements("AM", "PM"), timeAMPMLabels("en_US"));
+    EXPECT_EQ(labelsFromTwoElements("AM", "PM"), timeAMPMLabels("fr"));
 
     UChar jaAM[3] = { 0x5348, 0x524d, 0 };
     UChar jaPM[3] = { 0x5348, 0x5F8C, 0 };
-    EXPECT_EQ(labels(String(jaAM), String(jaPM)), timeAMPMLabels("ja"));
+    EXPECT_EQ(labelsFromTwoElements(String(jaAM), String(jaPM)), timeAMPMLabels("ja"));
 }
 
 static String testDecimalSeparator(const AtomicString& localeIdentifier)

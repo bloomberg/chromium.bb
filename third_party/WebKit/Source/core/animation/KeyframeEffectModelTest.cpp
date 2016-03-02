@@ -78,7 +78,7 @@ void expectDoubleValue(double expectedValue, PassRefPtr<Interpolation> interpola
 
     double actualValue;
     if (value->isLength())
-        actualValue = toAnimatableLength(value.get())->length(1, ValueRangeAll).value();
+        actualValue = toAnimatableLength(value.get())->getLength(1, ValueRangeAll).value();
     else
         actualValue = toCSSPrimitiveValue(toAnimatableUnknown(value.get())->toCSSValue().get())->getDoubleValue();
 

@@ -6082,7 +6082,7 @@ public:
 
     virtual void willSendRequest(WebLocalFrame* frame, unsigned, WebURLRequest& request, const WebURLResponse&)
     {
-        if (request.requestContext() == WebURLRequest::RequestContextImage) {
+        if (request.getRequestContext() == WebURLRequest::RequestContextImage) {
             m_numOfImageRequests++;
             EXPECT_EQ(WebURLRequest::UseProtocolCachePolicy, request.getCachePolicy());
         }

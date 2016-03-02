@@ -27,7 +27,7 @@ private:
         ASSERT(m_debugger);
         if (!m_debugger->enabled())
             return newState;
-        V8DebuggerImpl::PauseOnExceptionsState presentState = m_debugger->pauseOnExceptionsState();
+        V8DebuggerImpl::PauseOnExceptionsState presentState = m_debugger->getPauseOnExceptionsState();
         if (presentState != newState)
             m_debugger->setPauseOnExceptionsState(newState);
         return presentState;

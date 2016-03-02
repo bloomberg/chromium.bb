@@ -470,7 +470,7 @@ LayoutUnit LayoutFlexibleBox::computeMainAxisExtentForChild(const LayoutBox& chi
     return child.computeLogicalWidthUsing(sizeType, size, contentLogicalWidth(), this) - borderAndPadding;
 }
 
-LayoutFlexibleBox::TransformedWritingMode LayoutFlexibleBox::transformedWritingMode() const
+LayoutFlexibleBox::TransformedWritingMode LayoutFlexibleBox::getTransformedWritingMode() const
 {
     WritingMode mode = style()->getWritingMode();
     if (!isColumnFlow()) {
@@ -508,7 +508,7 @@ LayoutUnit LayoutFlexibleBox::flowAwareBorderEnd() const
 
 LayoutUnit LayoutFlexibleBox::flowAwareBorderBefore() const
 {
-    switch (transformedWritingMode()) {
+    switch (getTransformedWritingMode()) {
     case TransformedWritingMode::TopToBottomWritingMode:
         return LayoutUnit(borderTop());
     case TransformedWritingMode::BottomToTopWritingMode:
@@ -524,7 +524,7 @@ LayoutUnit LayoutFlexibleBox::flowAwareBorderBefore() const
 
 LayoutUnit LayoutFlexibleBox::flowAwareBorderAfter() const
 {
-    switch (transformedWritingMode()) {
+    switch (getTransformedWritingMode()) {
     case TransformedWritingMode::TopToBottomWritingMode:
         return LayoutUnit(borderBottom());
     case TransformedWritingMode::BottomToTopWritingMode:
@@ -554,7 +554,7 @@ LayoutUnit LayoutFlexibleBox::flowAwarePaddingEnd() const
 
 LayoutUnit LayoutFlexibleBox::flowAwarePaddingBefore() const
 {
-    switch (transformedWritingMode()) {
+    switch (getTransformedWritingMode()) {
     case TransformedWritingMode::TopToBottomWritingMode:
         return paddingTop();
     case TransformedWritingMode::BottomToTopWritingMode:
@@ -570,7 +570,7 @@ LayoutUnit LayoutFlexibleBox::flowAwarePaddingBefore() const
 
 LayoutUnit LayoutFlexibleBox::flowAwarePaddingAfter() const
 {
-    switch (transformedWritingMode()) {
+    switch (getTransformedWritingMode()) {
     case TransformedWritingMode::TopToBottomWritingMode:
         return paddingBottom();
     case TransformedWritingMode::BottomToTopWritingMode:
@@ -600,7 +600,7 @@ LayoutUnit LayoutFlexibleBox::flowAwareMarginEndForChild(const LayoutBox& child)
 
 LayoutUnit LayoutFlexibleBox::flowAwareMarginBeforeForChild(const LayoutBox& child) const
 {
-    switch (transformedWritingMode()) {
+    switch (getTransformedWritingMode()) {
     case TransformedWritingMode::TopToBottomWritingMode:
         return child.marginTop();
     case TransformedWritingMode::BottomToTopWritingMode:

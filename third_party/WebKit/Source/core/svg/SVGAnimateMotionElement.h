@@ -56,7 +56,7 @@ private:
         RotateAuto,
         RotateAutoReverse
     };
-    RotateMode rotateMode() const;
+    RotateMode getRotateMode() const;
 
     bool m_hasToPointAtEndOfDuration;
 

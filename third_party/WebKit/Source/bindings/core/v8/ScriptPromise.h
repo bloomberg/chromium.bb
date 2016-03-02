@@ -80,7 +80,7 @@ public:
         return m_promise.isUndefined() || m_promise.isNull();
     }
 
-    ScriptValue scriptValue() const
+    ScriptValue getScriptValue() const
     {
         return m_promise;
     }

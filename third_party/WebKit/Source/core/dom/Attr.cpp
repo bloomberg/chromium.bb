@@ -66,7 +66,7 @@ Attr::~Attr()
 {
 }
 
-const QualifiedName Attr::qualifiedName() const
+const QualifiedName Attr::getQualifiedName() const
 {
     if (m_element && !m_standaloneValueOrAttachedLocalName.isNull()) {
         // In the unlikely case the Element attribute has a local name
@@ -82,14 +82,14 @@ const QualifiedName Attr::qualifiedName() const
 const AtomicString& Attr::value() const
 {
     if (m_element)
-        return m_element->getAttribute(qualifiedName());
+        return m_element->getAttribute(getQualifiedName());
     return m_standaloneValueOrAttachedLocalName;
 }
 
 void Attr::setValue(const AtomicString& value)
 {
     if (m_element)
-        m_element->setAttribute(qualifiedName(), value);
+        m_element->setAttribute(getQualifiedName(), value);
     else
         m_standaloneValueOrAttachedLocalName = value;
 }

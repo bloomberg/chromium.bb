@@ -10,7 +10,7 @@ namespace blink {
 
 // TODO(alancutter): Generate these functions.
 
-ValueRange LengthPropertyFunctions::valueRange(CSSPropertyID property)
+ValueRange LengthPropertyFunctions::getValueRange(CSSPropertyID property)
 {
     switch (property) {
     case CSSPropertyBorderBottomWidth:

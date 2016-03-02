@@ -59,14 +59,14 @@ protected:
         Saturday,
     };
 
-    DateComponents dateComponents(int year, int month, int day)
+    DateComponents getDateComponents(int year, int month, int day)
     {
         DateComponents date;
         date.setMillisecondsSinceEpochForDate(msForDate(year, month, day));
         return date;
     }
 
-    DateComponents timeComponents(int hour, int minute, int second, int millisecond)
+    DateComponents getTimeComponents(int hour, int minute, int second, int millisecond)
     {
         DateComponents date;
         date.setMillisecondsSinceMidnight(hour * msPerHour + minute * msPerMinute + second * msPerSecond + millisecond);
@@ -99,13 +99,13 @@ protected:
     String formatDate(const String& localeString, int year, int month, int day)
     {
         OwnPtr<LocaleMac> locale = LocaleMac::create(localeString);
-        return locale->formatDateTime(dateComponents(year, month, day));
+        return locale->formatDateTime(getDateComponents(year, month, day));
     }
 
     String formatTime(const String& localeString, int hour, int minute, int second, int millisecond, bool useShortFormat)
     {
         OwnPtr<LocaleMac> locale = LocaleMac::create(localeString);
-        return locale->formatDateTime(timeComponents(hour, minute, second, millisecond), (useShortFormat ? Locale::FormatTypeShort : Locale::FormatTypeMedium));
+        return locale->formatDateTime(getTimeComponents(hour, minute, second, millisecond), (useShortFormat ? Locale::FormatTypeShort : Locale::FormatTypeMedium));
     }
 
     unsigned firstDayOfWeek(const String& localeString)

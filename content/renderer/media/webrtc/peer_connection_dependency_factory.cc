@@ -533,10 +533,10 @@ PeerConnectionDependencyFactory::CreateLocalAudioSource(
 void PeerConnectionDependencyFactory::CreateLocalAudioTrack(
     const blink::WebMediaStreamTrack& track) {
   blink::WebMediaStreamSource source = track.source();
-  DCHECK_EQ(source.type(), blink::WebMediaStreamSource::TypeAudio);
+  DCHECK_EQ(source.getType(), blink::WebMediaStreamSource::TypeAudio);
   DCHECK(!source.remote());
   MediaStreamAudioSource* source_data =
-      static_cast<MediaStreamAudioSource*>(source.extraData());
+      static_cast<MediaStreamAudioSource*>(source.getExtraData());
 
   scoped_refptr<WebAudioCapturerSource> webaudio_source;
   if (!source_data) {
@@ -544,8 +544,7 @@ void PeerConnectionDependencyFactory::CreateLocalAudioTrack(
       // We're adding a WebAudio MediaStream.
       // Create a specific capturer for each WebAudio consumer.
       webaudio_source = CreateWebAudioSource(&source);
-      source_data =
-          static_cast<MediaStreamAudioSource*>(source.extraData());
+      source_data = static_cast<MediaStreamAudioSource*>(source.getExtraData());
     } else {
       NOTREACHED() << "Local track missing source extra data.";
       return;
@@ -575,9 +574,9 @@ void PeerConnectionDependencyFactory::CreateLocalAudioTrack(
 void PeerConnectionDependencyFactory::CreateRemoteAudioTrack(
     const blink::WebMediaStreamTrack& track) {
   blink::WebMediaStreamSource source = track.source();
-  DCHECK_EQ(source.type(), blink::WebMediaStreamSource::TypeAudio);
+  DCHECK_EQ(source.getType(), blink::WebMediaStreamSource::TypeAudio);
   DCHECK(source.remote());
-  DCHECK(source.extraData());
+  DCHECK(source.getExtraData());
 
   blink::WebMediaStreamTrack writable_track = track;
   writable_track.setExtraData(

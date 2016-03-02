@@ -14,7 +14,7 @@ namespace content {
 void MediaStreamAudioSink::AddToAudioTrack(
     MediaStreamAudioSink* sink,
     const blink::WebMediaStreamTrack& track) {
-  DCHECK(track.source().type() == blink::WebMediaStreamSource::TypeAudio);
+  DCHECK(track.source().getType() == blink::WebMediaStreamSource::TypeAudio);
   MediaStreamAudioTrack* native_track = MediaStreamAudioTrack::GetTrack(track);
   native_track->AddSink(sink);
 }

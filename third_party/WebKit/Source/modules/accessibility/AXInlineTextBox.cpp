@@ -138,7 +138,7 @@ AccessibilityTextDirection AXInlineTextBox::textDirection() const
     if (!m_inlineTextBox)
         return AXObject::textDirection();
 
-    switch (m_inlineTextBox->direction()) {
+    switch (m_inlineTextBox->getDirection()) {
     case AbstractInlineTextBox::LeftToRight:
         return AccessibilityTextDirectionLTR;
     case AbstractInlineTextBox::RightToLeft:

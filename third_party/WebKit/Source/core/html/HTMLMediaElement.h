@@ -110,7 +110,7 @@ public:
     const KURL& currentSrc() const { return m_currentSrc; }
 
     enum NetworkState { NETWORK_EMPTY, NETWORK_IDLE, NETWORK_LOADING, NETWORK_NO_SOURCE };
-    NetworkState networkState() const;
+    NetworkState getNetworkState() const;
 
     String preload() const;
     void setPreload(const AtomicString&);
@@ -428,7 +428,7 @@ private:
 
     // Returns the "direction of playback" value as specified in the HTML5 spec.
     enum DirectionOfPlayback { Backward, Forward };
-    DirectionOfPlayback directionOfPlayback() const;
+    DirectionOfPlayback getDirectionOfPlayback() const;
 
     // Creates placeholder AudioTrack and/or VideoTrack objects when WebMemediaPlayer objects
     // advertise they have audio and/or video, but don't explicitly signal them via

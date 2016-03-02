@@ -50,7 +50,7 @@ template<>
 struct StringTraits<AtomicString> {
     static AtomicString fromStringResource(WebCoreStringResourceBase* resource)
     {
-        return resource->atomicString();
+        return resource->getAtomicString();
     }
     template <typename V8StringTrait>
     static AtomicString fromV8String(v8::Local<v8::String>, int);

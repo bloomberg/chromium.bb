@@ -106,7 +106,7 @@ void CustomElement::define(Element* element, PassRefPtrWillBeRawPtr<CustomElemen
 {
     RefPtrWillBeRawPtr<CustomElementDefinition> definition(passDefinition);
 
-    switch (element->customElementState()) {
+    switch (element->getCustomElementState()) {
     case Element::NotCustomElement:
     case Element::Upgraded:
         ASSERT_NOT_REACHED();
@@ -121,13 +121,13 @@ void CustomElement::define(Element* element, PassRefPtrWillBeRawPtr<CustomElemen
 
 void CustomElement::attributeDidChange(Element* element, const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue)
 {
-    ASSERT(element->customElementState() == Element::Upgraded);
+    ASSERT(element->getCustomElementState() == Element::Upgraded);
     CustomElementScheduler::scheduleAttributeChangedCallback(element->customElementDefinition()->callbacks(), element, name, oldValue, newValue);
 }
 
 void CustomElement::didAttach(Element* element, const Document& document)
 {
-    ASSERT(element->customElementState() == Element::Upgraded);
+    ASSERT(element->getCustomElementState() == Element::Upgraded);
     if (!document.domWindow())
         return;
     CustomElementScheduler::scheduleCallback(element->customElementDefinition()->callbacks(), element, CustomElementLifecycleCallbacks::AttachedCallback);
@@ -135,7 +135,7 @@ void CustomElement::didAttach(Element* element, const Document& document)
 
 void CustomElement::didDetach(Element* element, const Document& document)
 {
-    ASSERT(element->customElementState() == Element::Upgraded);
+    ASSERT(element->getCustomElementState() == Element::Upgraded);
     if (!document.domWindow())
         return;
     CustomElementScheduler::scheduleCallback(element->customElementDefinition()->callbacks(), element, CustomElementLifecycleCallbacks::DetachedCallback);
@@ -143,7 +143,7 @@ void CustomElement::didDetach(Element* element, const Document& document)
 
 void CustomElement::wasDestroyed(Element* element)
 {
-    switch (element->customElementState()) {
+    switch (element->getCustomElementState()) {
     case Element::NotCustomElement:
         ASSERT_NOT_REACHED();
         break;

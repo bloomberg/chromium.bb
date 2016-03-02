@@ -177,7 +177,7 @@ void SVGAnimateElement::resetAnimatedType()
 
     m_animator.reset(targetElement);
 
-    ShouldApplyAnimation shouldApply = shouldApplyAnimation(targetElement, attributeName);
+    ShouldApplyAnimationType shouldApply = shouldApplyAnimation(targetElement, attributeName);
 
     if (shouldApply == DontApplyAnimation)
         return;
@@ -302,7 +302,7 @@ void SVGAnimateElement::clearAnimatedType()
         return;
     }
 
-    ShouldApplyAnimation shouldApply = shouldApplyAnimation(targetElement, attributeName());
+    ShouldApplyAnimationType shouldApply = shouldApplyAnimation(targetElement, attributeName());
     if (shouldApply == ApplyXMLandCSSAnimation) {
         removeCSSPropertyFromTargetAndInstances(targetElement, attributeName());
     } else if (m_animator.isAnimatingCSSProperty()) {
@@ -334,7 +334,7 @@ void SVGAnimateElement::applyResultsToTarget()
         return;
 
     // We do update the style and the animation property independent of each other.
-    ShouldApplyAnimation shouldApply = shouldApplyAnimation(targetElement(), attributeName());
+    ShouldApplyAnimationType shouldApply = shouldApplyAnimation(targetElement(), attributeName());
     if (shouldApply == ApplyXMLandCSSAnimation) {
         applyCSSPropertyToTargetAndInstances(targetElement(), attributeName(), m_animatedProperty->valueAsString());
     } else if (m_animator.isAnimatingCSSProperty()) {

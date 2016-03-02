@@ -624,7 +624,7 @@ void CastRtpStream::GetStats(
 }
 
 bool CastRtpStream::IsAudio() const {
-  return track_.source().type() == blink::WebMediaStreamSource::TypeAudio;
+  return track_.source().getType() == blink::WebMediaStreamSource::TypeAudio;
 }
 
 void CastRtpStream::DidEncounterError(const std::string& message) {

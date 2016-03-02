@@ -31,7 +31,7 @@ public:
 
     enum Orientation { Up, Down, Left, Right };
 
-    Orientation orientation() const;
+    Orientation getOrientation() const;
 
     const char* name() const override { return "LayoutDetailsMarker"; }
 

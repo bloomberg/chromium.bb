@@ -57,7 +57,7 @@ AnimatableLength::AnimatableLength(const Length& length, float zoom)
     m_hasPercent = !length.isFixed();
 }
 
-Length AnimatableLength::length(float zoom, ValueRange range) const
+Length AnimatableLength::getLength(float zoom, ValueRange range) const
 {
     if (!m_hasPercent)
         return Length(clampNumber(m_pixels, range) * zoom, Fixed);

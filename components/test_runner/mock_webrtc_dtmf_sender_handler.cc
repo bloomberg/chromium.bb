@@ -48,9 +48,10 @@ WebString MockWebRTCDTMFSenderHandler::currentToneBuffer() {
 
 bool MockWebRTCDTMFSenderHandler::canInsertDTMF() {
   DCHECK(client_ && !track_.isNull());
-  return track_.source().type() == WebMediaStreamSource::TypeAudio &&
+  return track_.source().getType() == WebMediaStreamSource::TypeAudio &&
          track_.isEnabled() &&
-         track_.source().readyState() == WebMediaStreamSource::ReadyStateLive;
+         track_.source().getReadyState() ==
+             WebMediaStreamSource::ReadyStateLive;
 }
 
 bool MockWebRTCDTMFSenderHandler::insertDTMF(const WebString& tones,

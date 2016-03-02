@@ -42,7 +42,7 @@ void CreateNativeAudioMediaStreamTrack(
     PeerConnectionDependencyFactory* factory) {
   DCHECK(!track.extraData());
   blink::WebMediaStreamSource source = track.source();
-  DCHECK_EQ(source.type(), blink::WebMediaStreamSource::TypeAudio);
+  DCHECK_EQ(source.getType(), blink::WebMediaStreamSource::TypeAudio);
   if (source.remote()) {
     factory->CreateRemoteAudioTrack(track);
   } else {
@@ -54,7 +54,7 @@ void CreateNativeVideoMediaStreamTrack(
     const blink::WebMediaStreamTrack& track) {
   DCHECK(track.extraData() == NULL);
   blink::WebMediaStreamSource source = track.source();
-  DCHECK_EQ(source.type(), blink::WebMediaStreamSource::TypeVideo);
+  DCHECK_EQ(source.getType(), blink::WebMediaStreamSource::TypeVideo);
   MediaStreamVideoSource* native_source =
       MediaStreamVideoSource::GetVideoSource(source);
   DCHECK(native_source);
@@ -78,7 +78,7 @@ void CreateNativeMediaStreamTrack(const blink::WebMediaStreamTrack& track,
   DCHECK(!track.isNull() && !track.extraData());
   DCHECK(!track.source().isNull());
 
-  switch (track.source().type()) {
+  switch (track.source().getType()) {
     case blink::WebMediaStreamSource::TypeAudio:
       CreateNativeAudioMediaStreamTrack(track, factory);
       break;
@@ -138,7 +138,7 @@ MediaStreamCenter::createWebAudioSourceFromMediaStreamTrack(
   }
 
   blink::WebMediaStreamSource source = track.source();
-  DCHECK_EQ(source.type(), blink::WebMediaStreamSource::TypeAudio);
+  DCHECK_EQ(source.getType(), blink::WebMediaStreamSource::TypeAudio);
 
   // TODO(tommi): Rename WebRtcLocalAudioSourceProvider to
   // WebRtcAudioSourceProvider since it's not specific to local.

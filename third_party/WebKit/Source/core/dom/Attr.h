@@ -48,7 +48,7 @@ public:
     const AtomicString& valueForBindings() const;
     void setValueForBindings(const AtomicString&);
 
-    const QualifiedName qualifiedName() const;
+    const QualifiedName getQualifiedName() const;
 
     void attachToElement(Element*, const AtomicString&);
     void detachFromElementWithValue(const AtomicString&);

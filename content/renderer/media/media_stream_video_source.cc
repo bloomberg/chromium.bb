@@ -298,7 +298,7 @@ media::VideoCaptureFormat GetBestCaptureFormat(
 // static
 MediaStreamVideoSource* MediaStreamVideoSource::GetVideoSource(
     const blink::WebMediaStreamSource& source) {
-  return static_cast<MediaStreamVideoSource*>(source.extraData());
+  return static_cast<MediaStreamVideoSource*>(source.getExtraData());
 }
 
 // static, deprecated

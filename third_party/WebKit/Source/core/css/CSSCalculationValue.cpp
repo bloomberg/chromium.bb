@@ -359,8 +359,8 @@ public:
                     CSSPrimitiveValue::UnitType rightType = rightSide->typeWithCalcResolved();
                     if (leftType == rightType)
                         return CSSCalcPrimitiveValue::create(evaluateOperator(leftSide->doubleValue(), rightSide->doubleValue(), op), leftType, isInteger);
-                    CSSPrimitiveValue::UnitCategory leftUnitCategory = CSSPrimitiveValue::unitCategory(leftType);
-                    if (leftUnitCategory != CSSPrimitiveValue::UOther && leftUnitCategory == CSSPrimitiveValue::unitCategory(rightType)) {
+                    CSSPrimitiveValue::UnitCategory leftUnitCategory = CSSPrimitiveValue::unitTypeToUnitCategory(leftType);
+                    if (leftUnitCategory != CSSPrimitiveValue::UOther && leftUnitCategory == CSSPrimitiveValue::unitTypeToUnitCategory(rightType)) {
                         CSSPrimitiveValue::UnitType canonicalType = CSSPrimitiveValue::canonicalUnitTypeForCategory(leftUnitCategory);
                         if (canonicalType != CSSPrimitiveValue::UnitType::Unknown) {
                             double leftValue = leftSide->doubleValue() * CSSPrimitiveValue::conversionToCanonicalUnitsScaleFactor(leftType);

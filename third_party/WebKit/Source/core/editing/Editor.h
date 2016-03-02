@@ -151,8 +151,8 @@ public:
         EditorCommandSource m_source;
         RefPtrWillBeMember<LocalFrame> m_frame;
     };
-    Command command(const String& commandName); // Command source is CommandFromMenuOrKeyBinding.
-    Command command(const String& commandName, EditorCommandSource);
+    Command createCommand(const String& commandName); // Command source is CommandFromMenuOrKeyBinding.
+    Command createCommand(const String& commandName, EditorCommandSource);
 
     // |Editor::executeCommand| is implementation of |WebFrame::executeCommand|
     // rather than |Document::execCommand|.

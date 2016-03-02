@@ -87,7 +87,7 @@ static inline bool canContainSpannerInParentFragmentationContext(const LayoutObj
         return false;
     const LayoutBlockFlow& blockFlow = toLayoutBlockFlow(object);
     return !blockFlow.createsNewFormattingContext()
-        && blockFlow.paginationBreakability() != LayoutBox::ForbidBreaks
+        && blockFlow.getPaginationBreakability() != LayoutBox::ForbidBreaks
         && !isMultiColumnContainer(blockFlow);
 }
 

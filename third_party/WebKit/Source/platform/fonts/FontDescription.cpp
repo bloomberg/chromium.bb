@@ -110,7 +110,7 @@ FontTraits FontDescription::traits() const
     return FontTraits(style(), variant(), weight(), stretch());
 }
 
-FontDescription::VariantLigatures FontDescription::variantLigatures() const
+FontDescription::VariantLigatures FontDescription::getVariantLigatures() const
 {
     VariantLigatures ligatures;
 

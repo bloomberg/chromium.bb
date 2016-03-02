@@ -363,7 +363,7 @@ private:
         PagedFlowThread
     };
 
-    FlowThreadType flowThreadType(const ComputedStyle&);
+    FlowThreadType getFlowThreadType(const ComputedStyle&);
 
     LayoutMultiColumnFlowThread* createMultiColumnFlowThread(FlowThreadType);
     void createOrDestroyMultiColumnFlowThreadIfNeeded(const ComputedStyle* oldStyle);
