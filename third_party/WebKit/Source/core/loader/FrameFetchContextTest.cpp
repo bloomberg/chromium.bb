@@ -580,4 +580,147 @@ TEST_F(FrameFetchContextDisplayedCertificateErrorsTest, MemoryCacheCertificateEr
     fetchContext->dispatchDidLoadResourceFromMemoryCache(resource.get(), WebURLRequest::FrameTypeNone, WebURLRequest::RequestContextImage);
 }
 
+TEST_F(FrameFetchContextTest, SetIsExternalRequestForPublicDocument)
+{
+    EXPECT_EQ(WebURLRequest::AddressSpacePublic, document->addressSpace());
+
+    struct TestCase {
+        const char* url;
+        bool isExternalExpectation;
+    } cases[] = {
+        { "data:text/html,whatever", false },
+        { "file:///etc/passwd", false },
+        { "blob:http://example.com/", false },
+
+        { "http://example.com/", false },
+        { "https://example.com/", false },
+
+        { "http://192.168.1.1:8000/", true },
+        { "http://10.1.1.1:8000/", true },
+
+        { "http://localhost/", true },
+        { "http://127.0.0.1/", true },
+        { "http://127.0.0.1:8000/", true }
+    };
+    RuntimeEnabledFeatures::setCorsRFC1918Enabled(false);
+    for (const auto& test : cases) {
+        SCOPED_TRACE(test.url);
+        ResourceRequest mainRequest(test.url);
+        fetchContext->addAdditionalRequestHeaders(mainRequest, FetchMainResource);
+        EXPECT_FALSE(mainRequest.isExternalRequest());
+
+        ResourceRequest subRequest(test.url);
+        fetchContext->addAdditionalRequestHeaders(subRequest, FetchSubresource);
+        EXPECT_FALSE(subRequest.isExternalRequest());
+    }
+
+    RuntimeEnabledFeatures::setCorsRFC1918Enabled(true);
+    for (const auto& test : cases) {
+        SCOPED_TRACE(test.url);
+        ResourceRequest mainRequest(test.url);
+        fetchContext->addAdditionalRequestHeaders(mainRequest, FetchMainResource);
+        EXPECT_EQ(mainRequest.isExternalRequest(), test.isExternalExpectation);
+
+        ResourceRequest subRequest(test.url);
+        fetchContext->addAdditionalRequestHeaders(subRequest, FetchSubresource);
+        EXPECT_EQ(subRequest.isExternalRequest(), test.isExternalExpectation);
+    }
+}
+
+TEST_F(FrameFetchContextTest, SetIsExternalRequestForPrivateDocument)
+{
+    document->setHostedInReservedIPRange(true);
+    EXPECT_EQ(WebURLRequest::AddressSpacePrivate, document->addressSpace());
+
+    struct TestCase {
+        const char* url;
+        bool isExternalExpectation;
+    } cases[] = {
+        { "data:text/html,whatever", false },
+        { "file:///etc/passwd", false },
+        { "blob:http://example.com/", false },
+
+        { "http://example.com/", false },
+        { "https://example.com/", false },
+
+        { "http://192.168.1.1:8000/", false },
+        { "http://10.1.1.1:8000/", false },
+
+        { "http://localhost/", true },
+        { "http://127.0.0.1/", true },
+        { "http://127.0.0.1:8000/", true }
+    };
+    RuntimeEnabledFeatures::setCorsRFC1918Enabled(false);
+    for (const auto& test : cases) {
+        SCOPED_TRACE(test.url);
+        ResourceRequest mainRequest(test.url);
+        fetchContext->addAdditionalRequestHeaders(mainRequest, FetchMainResource);
+        EXPECT_FALSE(mainRequest.isExternalRequest());
+
+        ResourceRequest subRequest(test.url);
+        fetchContext->addAdditionalRequestHeaders(subRequest, FetchSubresource);
+        EXPECT_FALSE(subRequest.isExternalRequest());
+    }
+
+    RuntimeEnabledFeatures::setCorsRFC1918Enabled(true);
+    for (const auto& test : cases) {
+        SCOPED_TRACE(test.url);
+        ResourceRequest mainRequest(test.url);
+        fetchContext->addAdditionalRequestHeaders(mainRequest, FetchMainResource);
+        EXPECT_EQ(mainRequest.isExternalRequest(), test.isExternalExpectation);
+
+        ResourceRequest subRequest(test.url);
+        fetchContext->addAdditionalRequestHeaders(subRequest, FetchSubresource);
+        EXPECT_EQ(subRequest.isExternalRequest(), test.isExternalExpectation);
+    }
+}
+
+TEST_F(FrameFetchContextTest, SetIsExternalRequestForLocalDocument)
+{
+    document->setSecurityOrigin(SecurityOrigin::create(KURL(KURL(), "http://localhost/")));
+    document->setHostedInReservedIPRange(true);
+    EXPECT_EQ(WebURLRequest::AddressSpaceLocal, document->addressSpace());
+
+    struct TestCase {
+        const char* url;
+        bool isExternalExpectation;
+    } cases[] = {
+        { "data:text/html,whatever", false },
+        { "file:///etc/passwd", false },
+        { "blob:http://example.com/", false },
+
+        { "http://example.com/", false },
+        { "https://example.com/", false },
+
+        { "http://192.168.1.1:8000/", false },
+        { "http://10.1.1.1:8000/", false },
+
+        { "http://localhost/", false },
+        { "http://127.0.0.1/", false },
+        { "http://127.0.0.1:8000/", false }
+    };
+
+    RuntimeEnabledFeatures::setCorsRFC1918Enabled(false);
+    for (const auto& test : cases) {
+        ResourceRequest mainRequest(test.url);
+        fetchContext->addAdditionalRequestHeaders(mainRequest, FetchMainResource);
+        EXPECT_FALSE(mainRequest.isExternalRequest());
+
+        ResourceRequest subRequest(test.url);
+        fetchContext->addAdditionalRequestHeaders(subRequest, FetchSubresource);
+        EXPECT_FALSE(subRequest.isExternalRequest());
+    }
+
+    RuntimeEnabledFeatures::setCorsRFC1918Enabled(true);
+    for (const auto& test : cases) {
+        ResourceRequest mainRequest(test.url);
+        fetchContext->addAdditionalRequestHeaders(mainRequest, FetchMainResource);
+        EXPECT_EQ(mainRequest.isExternalRequest(), test.isExternalExpectation);
+
+        ResourceRequest subRequest(test.url);
+        fetchContext->addAdditionalRequestHeaders(subRequest, FetchSubresource);
+        EXPECT_EQ(subRequest.isExternalRequest(), test.isExternalExpectation);
+    }
+}
+
 } // namespace blink

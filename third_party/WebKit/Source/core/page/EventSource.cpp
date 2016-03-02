@@ -121,6 +121,7 @@ void EventSource::connect()
     request.setHTTPHeaderField(HTTPNames::Accept, "text/event-stream");
     request.setHTTPHeaderField(HTTPNames::Cache_Control, "no-cache");
     request.setRequestContext(WebURLRequest::RequestContextEventSource);
+    request.setExternalRequestStateFromRequestorAddressSpace(executionContext.securityContext().addressSpace());
     if (m_parser && !m_parser->lastEventId().isEmpty()) {
         // HTTP headers are Latin-1 byte strings, but the Last-Event-ID header is encoded as UTF-8.
         // TODO(davidben): This should be captured in the type of setHTTPHeaderField's arguments.

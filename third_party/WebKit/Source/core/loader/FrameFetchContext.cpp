@@ -113,7 +113,7 @@ void FrameFetchContext::addAdditionalRequestHeaders(ResourceRequest& request, Fe
     }
 
     if (m_document)
-        request.setOriginatesFromReservedIPRange(m_document->isHostedInReservedIPRange());
+        request.setExternalRequestStateFromRequestorAddressSpace(m_document->addressSpace());
 
     // The remaining modifications are only necessary for HTTP and HTTPS.
     if (!request.url().isEmpty() && !request.url().protocolIsInHTTPFamily())

@@ -35,6 +35,7 @@ ColumnFill status=stable
 CompositedSelectionUpdate
 CompositorWorker status=experimental
 ContextMenu status=experimental
+CorsRFC1918 status=test
 CredentialManager status=stable
 CSS3Text status=experimental
 CSS3TextDecorations status=experimental

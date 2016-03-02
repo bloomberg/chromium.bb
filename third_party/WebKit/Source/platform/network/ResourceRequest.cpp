@@ -27,7 +27,9 @@
 #include "platform/network/ResourceRequest.h"
 
 #include "platform/HTTPNames.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "public/platform/Platform.h"
 #include "public/platform/WebURLRequest.h"
 
 namespace blink {
@@ -68,7 +70,7 @@ ResourceRequest::ResourceRequest(CrossThreadResourceRequestData* data)
     m_didSetHTTPReferrer = data->m_didSetHTTPReferrer;
     m_checkForBrowserSideNavigation = data->m_checkForBrowserSideNavigation;
     m_uiStartTime = data->m_uiStartTime;
-    m_originatesFromReservedIPRange = data->m_originatesFromReservedIPRange;
+    m_isExternalRequest = data->m_isExternalRequest;
     m_inputPerfMetricReportPolicy = data->m_inputPerfMetricReportPolicy;
     m_followedRedirect = data->m_followedRedirect;
 }
@@ -108,7 +110,7 @@ PassOwnPtr<CrossThreadResourceRequestData> ResourceRequest::copyData() const
     data->m_didSetHTTPReferrer = m_didSetHTTPReferrer;
     data->m_checkForBrowserSideNavigation = m_checkForBrowserSideNavigation;
     data->m_uiStartTime = m_uiStartTime;
-    data->m_originatesFromReservedIPRange = m_originatesFromReservedIPRange;
+    data->m_isExternalRequest = m_isExternalRequest;
     data->m_inputPerfMetricReportPolicy = m_inputPerfMetricReportPolicy;
     data->m_followedRedirect = m_followedRedirect;
     return data.release();
@@ -371,6 +373,28 @@ bool ResourceRequest::compare(const ResourceRequest& a, const ResourceRequest& b
     return true;
 }
 
+void ResourceRequest::setExternalRequestStateFromRequestorAddressSpace(WebURLRequest::AddressSpace requestorSpace)
+{
+    static_assert(WebURLRequest::AddressSpaceLocal < WebURLRequest::AddressSpacePrivate, "Local is inside Private");
+    static_assert(WebURLRequest::AddressSpaceLocal < WebURLRequest::AddressSpacePublic, "Local is inside Public");
+    static_assert(WebURLRequest::AddressSpacePrivate < WebURLRequest::AddressSpacePublic, "Private is inside Public");
+
+    // TODO(mkwst): This only checks explicit IP addresses. We'll have to move all this up to //net and //content in
+    // order to have any real impact on gateway attacks. That turns out to be a TON of work. https://crbug.com/378566
+    if (!RuntimeEnabledFeatures::corsRFC1918Enabled()) {
+        m_isExternalRequest = false;
+        return;
+    }
+
+    WebURLRequest::AddressSpace targetSpace = WebURLRequest::AddressSpacePublic;
+    if (Platform::current()->isReservedIPAddress(m_url.host()))
+        targetSpace = WebURLRequest::AddressSpacePrivate;
+    if (SecurityOrigin::create(m_url)->isLocalhost())
+        targetSpace = WebURLRequest::AddressSpaceLocal;
+
+    m_isExternalRequest = requestorSpace > targetSpace;
+}
+
 bool ResourceRequest::isConditional() const
 {
     return (m_httpHeaderFields.contains(HTTPNames::If_Match)
@@ -439,7 +463,7 @@ void ResourceRequest::initialize(const KURL& url)
     m_didSetHTTPReferrer = false;
     m_checkForBrowserSideNavigation = true;
     m_uiStartTime = 0;
-    m_originatesFromReservedIPRange = false;
+    m_isExternalRequest = false;
     m_inputPerfMetricReportPolicy = InputToLoadPerfMetricReportPolicy::NoReport;
     m_followedRedirect = false;
     m_requestorOrigin = SecurityOrigin::createUnique();

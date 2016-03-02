@@ -64,6 +64,14 @@ public:
         PriorityVeryHigh,
     };
 
+    // The ordering is important, as it's used to determine whether preflights are required,
+    // as per https://mikewest.github.io/cors-rfc1918/#framework
+    enum AddressSpace {
+        AddressSpaceLocal = 0, // loopback, link local
+        AddressSpacePrivate, // Reserved by RFC1918
+        AddressSpacePublic // Everything else
+    };
+
     // Corresponds to Fetch's "context": http://fetch.spec.whatwg.org/#concept-request-context
     enum RequestContext {
         RequestContextUnspecified = 0,
@@ -307,10 +315,8 @@ public:
     BLINK_PLATFORM_EXPORT WebURLRequest::InputToLoadPerfMetricReportPolicy inputPerfMetricReportPolicy() const;
     BLINK_PLATFORM_EXPORT void setInputPerfMetricReportPolicy(WebURLRequest::InputToLoadPerfMetricReportPolicy);
 
-    // Does the request originate from a SecurityContext hosted in a reserved
-    // (RFC1918) IP range?
-    BLINK_PLATFORM_EXPORT bool originatesFromReservedIPRange() const;
-    BLINK_PLATFORM_EXPORT void setOriginatesFromReservedIPRange(bool);
+    // https://mikewest.github.io/cors-rfc1918/#external-request
+    BLINK_PLATFORM_EXPORT bool isExternalRequest() const;
 
 #if INSIDE_BLINK
     BLINK_PLATFORM_EXPORT ResourceRequest& toMutableResourceRequest();

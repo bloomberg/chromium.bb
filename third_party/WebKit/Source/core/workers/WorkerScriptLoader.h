@@ -96,7 +96,7 @@ private:
     WorkerScriptLoader();
     ~WorkerScriptLoader() override;
 
-    ResourceRequest createResourceRequest();
+    ResourceRequest createResourceRequest(ExecutionContext&);
     void notifyError();
     void notifyFinished();
 

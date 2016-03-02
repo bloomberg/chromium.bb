@@ -96,6 +96,7 @@ public:
         ResourceRequest request(url);
         request.setRequestContext(WebURLRequest::RequestContextInternal);
         request.setUseStreamOnResponse(true);
+        // We intentionally skip 'setExternalRequestStateFromRequestorAddressSpace', as 'data:' can never be external.
         m_loader->start(request);
     }
 

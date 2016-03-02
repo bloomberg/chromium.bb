@@ -68,4 +68,12 @@ void SecurityContext::enforceSandboxFlags(SandboxFlags mask)
     }
 }
 
+WebURLRequest::AddressSpace SecurityContext::addressSpace() const
+{
+    if (m_hostedInReservedIPRange)
+        return securityOrigin()->isLocalhost() ? WebURLRequest::AddressSpaceLocal : WebURLRequest::AddressSpacePrivate;
+
+    return WebURLRequest::AddressSpacePublic;
+}
+
 } // namespace blink

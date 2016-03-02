@@ -30,6 +30,7 @@
 #include "core/CoreExport.h"
 #include "core/dom/SandboxFlags.h"
 #include "platform/heap/Handle.h"
+#include "public/platform/WebURLRequest.h"
 #include "wtf/HashSet.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/PassRefPtr.h"
@@ -69,8 +70,8 @@ public:
     bool isSandboxed(SandboxFlags mask) const { return m_sandboxFlags & mask; }
     void enforceSandboxFlags(SandboxFlags mask);
 
-    void setHostedInReservedIPRange() { m_hostedInReservedIPRange = true; }
-    bool isHostedInReservedIPRange() const { return m_hostedInReservedIPRange; }
+    void setHostedInReservedIPRange(bool value) { m_hostedInReservedIPRange = value; }
+    WebURLRequest::AddressSpace addressSpace() const;
 
     void setInsecureRequestsPolicy(InsecureRequestsPolicy policy) { m_insecureRequestsPolicy = policy; }
     InsecureRequestsPolicy getInsecureRequestsPolicy() const { return m_insecureRequestsPolicy; }

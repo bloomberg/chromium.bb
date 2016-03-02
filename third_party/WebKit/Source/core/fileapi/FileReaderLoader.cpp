@@ -98,6 +98,7 @@ void FileReaderLoader::startInternal(ExecutionContext& executionContext, const S
 
     // Construct and load the request.
     ResourceRequest request(m_urlForReading);
+    request.setExternalRequestStateFromRequestorAddressSpace(executionContext.securityContext().addressSpace());
 
     // FIXME: Should this really be 'internal'? Do we know anything about the actual request that generated this fetch?
     request.setRequestContext(WebURLRequest::RequestContextInternal);

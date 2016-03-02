@@ -66,7 +66,7 @@ void WorkerScriptLoader::loadSynchronously(ExecutionContext& executionContext, c
 {
     m_url = url;
 
-    ResourceRequest request(createResourceRequest());
+    ResourceRequest request(createResourceRequest(executionContext));
     ASSERT_WITH_SECURITY_IMPLICATION(executionContext.isWorkerGlobalScope());
 
     ThreadableLoaderOptions options;
@@ -87,7 +87,7 @@ void WorkerScriptLoader::loadAsynchronously(ExecutionContext& executionContext, 
     m_finishedCallback = finishedCallback;
     m_url = url;
 
-    ResourceRequest request(createResourceRequest());
+    ResourceRequest request(createResourceRequest(executionContext));
     ThreadableLoaderOptions options;
     options.crossOriginRequestPolicy = crossOriginRequestPolicy;
 
@@ -112,11 +112,12 @@ const KURL& WorkerScriptLoader::responseURL() const
     return m_responseURL;
 }
 
-ResourceRequest WorkerScriptLoader::createResourceRequest()
+ResourceRequest WorkerScriptLoader::createResourceRequest(ExecutionContext& executionContext)
 {
     ResourceRequest request(m_url);
     request.setHTTPMethod(HTTPNames::GET);
     request.setRequestContext(m_requestContext);
+    request.setExternalRequestStateFromRequestorAddressSpace(executionContext.securityContext().addressSpace());
     return request;
 }
 

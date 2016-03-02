@@ -539,6 +539,7 @@ void FetchManager::Loader::performHTTPFetch(bool corsFlag, bool corsPreflightFla
     }
     request.setFetchRedirectMode(m_request->redirect());
     request.setUseStreamOnResponse(true);
+    request.setExternalRequestStateFromRequestorAddressSpace(executionContext()->securityContext().addressSpace());
 
     // "2. Append `Referer`/empty byte sequence, if |HTTPRequest|'s |referrer|
     // is none, and `Referer`/|HTTPRequest|'s referrer, serialized and utf-8
@@ -634,6 +635,7 @@ void FetchManager::Loader::performDataFetch()
     request.setUseStreamOnResponse(true);
     request.setHTTPMethod(m_request->method());
     request.setFetchRedirectMode(WebURLRequest::FetchRedirectModeError);
+    // We intentionally skip 'setExternalRequestStateFromRequestorAddressSpace', as 'data:' can never be external.
 
     ResourceLoaderOptions resourceLoaderOptions;
     resourceLoaderOptions.dataBufferingPolicy = DoNotBufferData;

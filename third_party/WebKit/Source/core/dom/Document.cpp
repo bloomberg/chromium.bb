@@ -4918,8 +4918,7 @@ void Document::initSecurityContext(const DocumentInit& initializer)
 {
     ASSERT(!securityOrigin());
 
-    if (initializer.isHostedInReservedIPRange())
-        setHostedInReservedIPRange();
+    setHostedInReservedIPRange(initializer.isHostedInReservedIPRange());
 
     if (!initializer.hasSecurityContext()) {
         // No source for a security context.

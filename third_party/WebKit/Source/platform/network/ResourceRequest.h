@@ -238,8 +238,9 @@ public:
     double uiStartTime() const { return m_uiStartTime; }
     void setUIStartTime(double uiStartTime) { m_uiStartTime = uiStartTime; }
 
-    bool originatesFromReservedIPRange() const { return m_originatesFromReservedIPRange; }
-    void setOriginatesFromReservedIPRange(bool value) { m_originatesFromReservedIPRange = value; }
+    // https://mikewest.github.io/cors-rfc1918/#external-request
+    bool isExternalRequest() const { return m_isExternalRequest; }
+    void setExternalRequestStateFromRequestorAddressSpace(WebURLRequest::AddressSpace);
 
     InputToLoadPerfMetricReportPolicy inputPerfMetricReportPolicy() const { return m_inputPerfMetricReportPolicy; }
     void setInputPerfMetricReportPolicy(InputToLoadPerfMetricReportPolicy inputPerfMetricReportPolicy) { m_inputPerfMetricReportPolicy = inputPerfMetricReportPolicy; }
@@ -284,7 +285,7 @@ private:
     bool m_didSetHTTPReferrer;
     bool m_checkForBrowserSideNavigation;
     double m_uiStartTime;
-    bool m_originatesFromReservedIPRange;
+    bool m_isExternalRequest;
     InputToLoadPerfMetricReportPolicy m_inputPerfMetricReportPolicy;
 
     mutable CacheControlHeader m_cacheControlHeaderCache;
@@ -335,7 +336,7 @@ public:
     bool m_didSetHTTPReferrer;
     bool m_checkForBrowserSideNavigation;
     double m_uiStartTime;
-    bool m_originatesFromReservedIPRange;
+    bool m_isExternalRequest;
     InputToLoadPerfMetricReportPolicy m_inputPerfMetricReportPolicy;
     bool m_followedRedirect;
 };
