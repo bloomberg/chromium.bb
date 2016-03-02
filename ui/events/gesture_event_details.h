@@ -5,11 +5,17 @@
 #ifndef UI_EVENTS_GESTURE_DETECTION_GESTURE_EVENT_DETAILS_H_
 #define UI_EVENTS_GESTURE_DETECTION_GESTURE_EVENT_DETAILS_H_
 
+#include <string.h>
+
 #include "base/logging.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/events_base_export.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_conversions.h"
+
+namespace IPC {
+template <class P> struct ParamTraits;
+}
 
 namespace ui {
 
@@ -137,6 +143,14 @@ struct EVENTS_BASE_EXPORT GestureEventDetails {
     return data_.scroll_update.previous_update_in_sequence_prevented;
   }
 
+  // Supports comparison over internal structures for testing.
+  bool operator==(const GestureEventDetails& other) const {
+    return type_ == other.type_ &&
+           !memcmp(&data_, &other.data_, sizeof(Details)) &&
+           touch_points_ == other.touch_points_ &&
+           bounding_box_ == other.bounding_box_;
+  }
+
  private:
   EventType type_;
   union Details {
@@ -181,6 +195,10 @@ struct EVENTS_BASE_EXPORT GestureEventDetails {
     // ET_GESTURE_TAP_UNCONFIRMED, and ET_GESTURE_DOUBLE_TAP events.
     int tap_count;  // TAP repeat count.
   } data_;
+
+  // For mojo native implementation of (de)serialization.
+  friend struct IPC::ParamTraits<ui::GestureEventDetails>;
+  friend struct IPC::ParamTraits<ui::GestureEventDetails::Details>;
 
   int touch_points_;  // Number of active touch points in the gesture.
 

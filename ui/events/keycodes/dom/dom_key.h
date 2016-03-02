@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "base/logging.h"
+#include "ipc/ipc_param_traits.h"
 
 namespace ui {
 
@@ -147,6 +148,8 @@ class DomKey {
   };
 
  private:
+  friend struct IPC::ParamTraits<ui::DomKey>;
+
   Base value_;
 };
 

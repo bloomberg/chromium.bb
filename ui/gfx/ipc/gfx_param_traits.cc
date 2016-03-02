@@ -81,6 +81,12 @@ void ParamTraits<gfx::Point>::Log(const gfx::Point& p, std::string* l) {
   l->append(base::StringPrintf("(%d, %d)", p.x(), p.y()));
 }
 
+void ParamTraits<gfx::PointF>::GetSize(base::PickleSizer* s,
+                                       const gfx::PointF& p) {
+  GetParamSize(s, p.x());
+  GetParamSize(s, p.y());
+}
+
 void ParamTraits<gfx::PointF>::Write(base::Pickle* m, const gfx::PointF& p) {
   WriteParam(m, p.x());
   WriteParam(m, p.y());
@@ -170,6 +176,11 @@ void ParamTraits<gfx::SizeF>::Log(const gfx::SizeF& p, std::string* l) {
   l->append(base::StringPrintf("(%f, %f)", p.width(), p.height()));
 }
 
+void ParamTraits<gfx::Vector2d>::GetSize(base::PickleSizer* s,
+                                         const gfx::Vector2d& p) {
+  s->AddBytes(sizeof(int) * 2);
+}
+
 void ParamTraits<gfx::Vector2d>::Write(base::Pickle* m,
                                        const gfx::Vector2d& p) {
   int values[2] = { p.x(), p.y() };
@@ -235,6 +246,11 @@ bool ParamTraits<gfx::Rect>::Read(const base::Pickle* m,
 void ParamTraits<gfx::Rect>::Log(const gfx::Rect& p, std::string* l) {
   l->append(base::StringPrintf("(%d, %d, %d, %d)", p.x(), p.y(),
                                p.width(), p.height()));
+}
+
+void ParamTraits<gfx::RectF>::GetSize(base::PickleSizer* s,
+                                      const gfx::RectF& p) {
+  s->AddBytes(sizeof(float) * 4);
 }
 
 void ParamTraits<gfx::RectF>::Write(base::Pickle* m, const gfx::RectF& p) {
