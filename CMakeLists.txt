@@ -34,8 +34,10 @@ if (ENABLE_TESTS OR ENABLE_WEBMTS)
   endif ()
 endif ()
 
+# C++11 compile tests.
+# TODO(tomfinegan): Move the C++11 tests into a cmake include.
 if (MSVC OR HAVE_CXX11)
-  # C++11 compile tests.
+  # std::unique_ptr
   check_cxx_source_compiles("
       #include <memory>
       int main(int argc, const char* argv[]) {
@@ -44,12 +46,53 @@ if (MSVC OR HAVE_CXX11)
         return 0;
       }"
       HAVE_UNIQUE_PTR)
+
+  # default member values
+  check_cxx_source_compiles("
+      struct Foo {
+        int a = 0;
+      };
+      int main(int argc, const char* argv[]) {
+        Foo bar;
+        (void)bar;
+        return 0;
+      }"
+      HAVE_DEFAULT_MEMBER_VALUES)
+
+  # defaulted methods
+  check_cxx_source_compiles("
+      struct Foo {
+        Foo() = default;
+        ~Foo() = default;
+      };
+      int main(int argc, const char* argv[]) {
+        Foo bar;
+        (void)bar;
+        return 0;
+      }"
+      HAVE_DEFAULTED_MEMBER_FUNCTIONS)
+
+  # deleted methods
+  check_cxx_source_compiles("
+      struct Foo {
+        Foo() {}
+        Foo(const Foo&) = delete;
+      };
+      int main(int argc, const char* argv[]) {
+        Foo bar;
+        (void)bar;
+        return 0;
+      }"
+      HAVE_DELETED_MEMBER_FUNCTIONS)
 endif ()
 
-if (NOT HAVE_UNIQUE_PTR)
+if (NOT HAVE_UNIQUE_PTR
+    OR NOT HAVE_DEFAULT_MEMBER_VALUES
+    OR NOT HAVE_DEFAULTED_MEMBER_FUNCTIONS
+    OR NOT HAVE_DELETED_MEMBER_FUNCTIONS)
   set(ENABLE_TESTS OFF)
   set(ENABLE_WEBMTS OFF)
-  message(WARNING "std::unique_ptr not supported, tests and webmts disabled.")
+  message(WARNING "C++11 feature(s) not supported, tests and webmts disabled.")
 endif ()
 
 # Turn up the warning levels.
