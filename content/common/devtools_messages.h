@@ -43,7 +43,6 @@
 #include <string>
 
 #include "content/common/content_export.h"
-#include "content/public/common/common_param_traits.h"
 #include "content/public/common/console_message_level.h"
 #include "ipc/ipc_message_macros.h"
 

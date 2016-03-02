@@ -42,6 +42,7 @@
 #include "content/public/common/resource_response.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/net_errors.h"
+#include "url/url_constants.h"
 
 namespace content {
 
@@ -290,8 +291,8 @@ bool NavigatorImpl::NavigateToEntry(
 
   // The renderer will reject IPC messages with URLs longer than
   // this limit, so don't attempt to navigate with a longer URL.
-  if (dest_url.spec().size() > kMaxURLChars) {
-    LOG(WARNING) << "Refusing to load URL as it exceeds " << kMaxURLChars
+  if (dest_url.spec().size() > url::kMaxURLChars) {
+    LOG(WARNING) << "Refusing to load URL as it exceeds " << url::kMaxURLChars
                  << " characters.";
     return false;
   }

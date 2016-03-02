@@ -14,6 +14,7 @@
       '<(DEPTH)/content/content.gyp:content_common',
       '<(DEPTH)/ipc/ipc.gyp:ipc',
       '<(DEPTH)/url/url.gyp:url_lib',
+      '<(DEPTH)/url/ipc/url_ipc.gyp:url_ipc',
     ],
     'sources': [
       'pdf/common/pdf_message_generator.cc',

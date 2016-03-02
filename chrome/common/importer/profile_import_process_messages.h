@@ -18,9 +18,9 @@
 #include "components/autofill/content/common/autofill_param_traits_macros.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/favicon_base/favicon_usage_data.h"
-#include "content/public/common/common_param_traits.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_utils.h"
+#include "url/ipc/url_param_traits.h"
 
 // Force multiple inclusion of the param traits file to generate all methods.
 #undef CHROME_COMMON_IMPORTER_PROFILE_IMPORT_PROCESS_PARAM_TRAITS_MACROS_H_

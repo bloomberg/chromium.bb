@@ -7,9 +7,9 @@
 #include <vector>
 
 #include "components/network_hints/common/network_hints_common.h"
-#include "content/public/common/common_param_traits.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_utils.h"
+#include "url/ipc/url_param_traits.h"
 
 // Singly-included section for custom IPC traits.
 #ifndef COMPONENTS_NETWORK_HINTS_COMMON_NETWORK_HINTS_MESSAGES_H_

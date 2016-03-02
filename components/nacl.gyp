@@ -464,6 +464,7 @@
       ],
       'dependencies': [
         '../content/content.gyp:content_common',
+        '../url/ipc/url_ipc.gyp:url_ipc',
       ],
     },
   ]

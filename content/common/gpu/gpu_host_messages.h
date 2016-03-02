@@ -23,6 +23,7 @@
 #include "ui/gfx/ipc/gfx_param_traits.h"
 #include "ui/gfx/native_widget_types.h"
 #include "url/gurl.h"
+#include "url/ipc/url_param_traits.h"
 
 #if defined(OS_MACOSX)
 #include "content/common/gpu/accelerated_surface_buffers_swapped_params_mac.h"

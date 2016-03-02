@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include "content/common/appcache_interfaces.h"
+#include "url/ipc/url_param_traits.h"
 
 #define IPC_MESSAGE_START AppCacheMsgStart
 

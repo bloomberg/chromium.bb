@@ -7,6 +7,9 @@
     {
       # GN version: //components/network_hints/common
       'target_name': 'network_hints_common',
+
+      'defines': [ 'URL_PARAM_TRAITS_FIX' ],
+
       'type': 'static_library',
       'include_dirs': [
         '..',
@@ -14,6 +17,7 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../ui/accessibility/accessibility.gyp:accessibility',
+        '../url/ipc/url_ipc.gyp:url_ipc',
       ],
       'sources': [
         'network_hints/common/network_hints_common.cc',
