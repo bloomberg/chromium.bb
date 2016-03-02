@@ -8,10 +8,16 @@
 #include "base/strings/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/accessibility/ax_view_state.h"
+#include "ui/base/material_design/material_design_controller.h"
+#include "ui/base/test/material_design_controller_test_api.h"
+#include "ui/events/test/event_generator.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/text_utils.h"
+#include "ui/views/animation/button_ink_drop_delegate.h"
+#include "ui/views/test/views_test_base.h"
 #include "ui/views/test/widget_test.h"
 
 using base::ASCIIToUTF16;
@@ -299,6 +305,117 @@ TEST_F(LabelButtonTest, ButtonStyleIsDefaultSize) {
   button->SizeToPreferredSize();
   button->Layout();
   EXPECT_NE(non_default_size, button->label_->size());
+}
+
+// A ButtonInkDropDelegate that tracks the last hover state requested.
+class TestButtonInkDropDelegate : public ButtonInkDropDelegate {
+ public:
+  TestButtonInkDropDelegate(InkDropHost* ink_drop_host, View* view)
+      : ButtonInkDropDelegate(ink_drop_host, view) {}
+
+  ~TestButtonInkDropDelegate() override {}
+
+  bool is_hovered() const { return is_hovered_; }
+
+  // ButtonInkDropDelegate:
+  void SetHovered(bool is_hovered) override {
+    is_hovered_ = is_hovered;
+    ButtonInkDropDelegate::SetHovered(is_hovered);
+  }
+
+ private:
+  // The last |is_hover| value passed to SetHovered().
+  bool is_hovered_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestButtonInkDropDelegate);
+};
+
+// A generic LabelButton configured with an |InkDropDelegate|.
+class InkDropLabelButton : public LabelButton {
+ public:
+  InkDropLabelButton()
+      : LabelButton(nullptr, base::string16()),
+        test_ink_drop_delegate_(this, this) {
+    set_ink_drop_delegate(&test_ink_drop_delegate_);
+  }
+
+  ~InkDropLabelButton() override {}
+
+  TestButtonInkDropDelegate* test_ink_drop_delegate() {
+    return &test_ink_drop_delegate_;
+  }
+
+ private:
+  TestButtonInkDropDelegate test_ink_drop_delegate_;
+
+  DISALLOW_COPY_AND_ASSIGN(InkDropLabelButton);
+};
+
+// Test fixture for a LabelButton that has an ink drop configured.
+class InkDropLabelButtonTest : public ViewsTestBase {
+ public:
+  InkDropLabelButtonTest() {}
+
+  // ViewsTestBase:
+  void SetUp() override {
+    ui::test::MaterialDesignControllerTestAPI::SetMode(
+        ui::MaterialDesignController::MATERIAL_NORMAL);
+
+    ViewsTestBase::SetUp();
+
+    // Create a widget so that the CustomButton can query the hover state
+    // correctly.
+    widget_.reset(new Widget);
+    Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
+    params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+    params.bounds = gfx::Rect(0, 0, 20, 20);
+    widget_->Init(params);
+    widget_->Show();
+
+    button_ = new InkDropLabelButton();
+    widget_->SetContentsView(button_);
+  }
+
+  void TearDown() override {
+    widget_.reset();
+    ViewsTestBase::TearDown();
+    ui::test::MaterialDesignControllerTestAPI::UninitializeMode();
+  }
+
+ protected:
+  // Required to host the test target.
+  scoped_ptr<Widget> widget_;
+
+  // The test target.
+  InkDropLabelButton* button_ = nullptr;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(InkDropLabelButtonTest);
+};
+
+TEST_F(InkDropLabelButtonTest, HoverStateAfterMouseEnterAndExitEvents) {
+  ui::test::EventGenerator event_generator(GetContext(),
+                                           widget_->GetNativeWindow());
+  const gfx::Point out_of_bounds_point(button_->bounds().bottom_right() +
+                                       gfx::Vector2d(1, 1));
+  const gfx::Point in_bounds_point(button_->bounds().CenterPoint());
+
+  event_generator.MoveMouseTo(out_of_bounds_point);
+  EXPECT_FALSE(button_->test_ink_drop_delegate()->is_hovered());
+
+  event_generator.MoveMouseTo(in_bounds_point);
+  EXPECT_TRUE(button_->test_ink_drop_delegate()->is_hovered());
+
+  event_generator.MoveMouseTo(out_of_bounds_point);
+  EXPECT_FALSE(button_->test_ink_drop_delegate()->is_hovered());
+}
+
+// Verifies the target event handler View is the |LabelButton| and not any of
+// the child Views.
+TEST_F(InkDropLabelButtonTest, TargetEventHandler) {
+  View* target_view = widget_->GetRootView()->GetEventHandlerForPoint(
+      button_->bounds().CenterPoint());
+  EXPECT_EQ(button_, target_view);
 }
 
 }  // namespace views

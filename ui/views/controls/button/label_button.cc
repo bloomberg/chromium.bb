@@ -53,6 +53,21 @@ const gfx::FontList& GetDefaultBoldFontList() {
   return font_list.Get();
 }
 
+// Ink drop container view that does not capture any events.
+class InkDropContainerView : public views::View {
+ public:
+  InkDropContainerView() {}
+
+  // View:
+  bool CanProcessEventsWithinSubtree() const override {
+    // Ensure the container View is found as the EventTarget instead of this.
+    return false;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(InkDropContainerView);
+};
+
 }  // namespace
 
 namespace views {
@@ -66,7 +81,7 @@ LabelButton::LabelButton(ButtonListener* listener, const base::string16& text)
     : CustomButton(listener),
       image_(new ImageView()),
       label_(new Label()),
-      ink_drop_container_(new View()),
+      ink_drop_container_(new InkDropContainerView()),
       cached_normal_font_list_(GetDefaultNormalFontList()),
       cached_bold_font_list_(GetDefaultBoldFontList()),
       button_state_images_(),
