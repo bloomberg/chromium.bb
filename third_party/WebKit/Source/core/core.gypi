@@ -505,6 +505,7 @@
             'layout/api/LayoutBoxItem.h',
             'layout/api/LayoutBoxModel.h',
             'layout/api/LayoutEmbeddedItem.h',
+            'layout/api/LayoutFullScreenItem.h',
             'layout/api/LayoutItem.h',
             'layout/api/LayoutPartItem.h',
             'layout/api/LayoutTextControlItem.h',

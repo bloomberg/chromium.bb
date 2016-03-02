@@ -79,6 +79,11 @@ public:
         return m_layoutObject->isEmbeddedObject();
     }
 
+    bool isLayoutFullScreen() const
+    {
+        return m_layoutObject->isLayoutFullScreen();
+    }
+
     bool needsLayout()
     {
         return m_layoutObject->needsLayout();

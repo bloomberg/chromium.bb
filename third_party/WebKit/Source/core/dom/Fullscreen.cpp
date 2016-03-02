@@ -42,6 +42,7 @@
 #include "core/input/EventHandler.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/layout/LayoutFullScreen.h"
+#include "core/layout/api/LayoutFullScreenItem.h"
 #include "core/page/ChromeClient.h"
 #include "platform/UserGestureIndicator.h"
 
@@ -470,7 +471,7 @@ void Fullscreen::didExitFullScreenForElement(Element*)
     m_fullScreenElement->setContainsFullScreenElementOnAncestorsCrossingFrameBoundaries(false);
 
     if (m_fullScreenLayoutObject)
-        m_fullScreenLayoutObject->unwrapLayoutObject();
+        LayoutFullScreenItem(m_fullScreenLayoutObject).unwrapLayoutObject();
 
     m_fullScreenElement = nullptr;
     document()->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::FullScreen));
