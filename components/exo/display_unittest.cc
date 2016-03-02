@@ -66,7 +66,7 @@ TEST_F(DisplayTest, CreateLinuxDMABufBuffer) {
                                gfx::BufferFormat::RGBA_8888,
                                gfx::BufferUsage::GPU_READ);
   gfx::NativePixmapHandle native_pixmap_handle = pixmap->ExportHandle();
-  scoped_ptr<Buffer> buffer1 = display->CreatePrimeBuffer(
+  scoped_ptr<Buffer> buffer1 = display->CreateLinuxDMABufBuffer(
       base::ScopedFD(native_pixmap_handle.fd.fd), buffer_size,
       gfx::BufferFormat::RGBA_8888, native_pixmap_handle.stride);
   EXPECT_TRUE(buffer1);
