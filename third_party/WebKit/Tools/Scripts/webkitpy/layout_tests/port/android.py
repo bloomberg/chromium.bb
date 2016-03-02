@@ -633,8 +633,8 @@ class AndroidPort(base.Port):
     def _build_path(self, *comps):
         return self._host_port._build_path(*comps)
 
-    def _build_path_with_configuration(self, configuration, *comps):
-        return self._host_port._build_path_with_configuration(configuration, *comps)
+    def _build_path_with_target(self, target, *comps):
+        return self._host_port._build_path_with_target(target, *comps)
 
     def path_to_apache(self):
         return self._host_port.path_to_apache()
@@ -642,8 +642,8 @@ class AndroidPort(base.Port):
     def path_to_apache_config_file(self):
         return self._host_port.path_to_apache_config_file()
 
-    def _path_to_driver(self, configuration=None):
-        return self._build_path_with_configuration(configuration, self._driver_details.apk_name())
+    def _path_to_driver(self, target=None):
+        return self._build_path_with_target(target, self._driver_details.apk_name())
 
     def _path_to_helper(self):
         return None

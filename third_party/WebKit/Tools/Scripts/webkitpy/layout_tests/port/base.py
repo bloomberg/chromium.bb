@@ -132,13 +132,13 @@ class Port(object):
         return cls.FALLBACK_PATHS[cls.SUPPORTED_VERSIONS[-1]]
 
     @classmethod
-    def _static_build_path(cls, filesystem, build_directory, chromium_base, configuration, comps):
+    def _static_build_path(cls, filesystem, build_directory, chromium_base, target, comps):
         if build_directory:
-            return filesystem.join(build_directory, configuration, *comps)
+            return filesystem.join(build_directory, target, *comps)
 
         hits = []
         for directory in cls.DEFAULT_BUILD_DIRECTORIES:
-            base_dir = filesystem.join(chromium_base, directory, configuration)
+            base_dir = filesystem.join(chromium_base, directory, target)
             path = filesystem.join(base_dir, *comps)
             if filesystem.exists(path):
                 hits.append((filesystem.mtime(path), path))
@@ -209,6 +209,8 @@ class Port(object):
 
         if not hasattr(options, 'configuration') or not options.configuration:
             self.set_option_default('configuration', self.default_configuration())
+        if not hasattr(options, 'target') or not options.target:
+            self.set_option_default('target', self._options.configuration)
         self._test_configuration = None
         self._reftest_list = {}
         self._results_directory = None
@@ -1481,9 +1483,9 @@ class Port(object):
 
         return 'apache2-httpd-' + self._apache_version() + '.conf'
 
-    def _path_to_driver(self, configuration=None):
+    def _path_to_driver(self, target=None):
         """Returns the full path to the test driver."""
-        return self._build_path(self.driver_name())
+        return self._build_path(target, self.driver_name())
 
     def _path_to_webcore_library(self):
         """Returns the full path to a built copy of WebCore."""
@@ -1724,36 +1726,42 @@ class Port(object):
         return path
 
     def _build_path(self, *comps):
-        return self._build_path_with_configuration(None, *comps)
+        return self._build_path_with_target(self._options.target, *comps)
 
-    def _build_path_with_configuration(self, configuration, *comps):
+    def _build_path_with_target(self, target, *comps):
         # Note that we don't do the option caching that the
         # base class does, because finding the right directory is relatively
         # fast.
-        configuration = configuration or self.get_option('configuration')
+        target = target or self.get_option('target')
         return self._static_build_path(self._filesystem, self.get_option('build_directory'),
-            self.path_from_chromium_base(), configuration, comps)
+                                       self.path_from_chromium_base(), target, comps)
 
-    def _check_driver_build_up_to_date(self, configuration):
-        if configuration in ('Debug', 'Release'):
-            try:
-                debug_path = self._path_to_driver('Debug')
-                release_path = self._path_to_driver('Release')
+    def _check_driver_build_up_to_date(self, target):
+        # We should probably get rid of this check altogether as it has
+        # outlived its usefulness in a GN-based world, but for the moment
+        # we will just check things if they are using the standard
+        # Debug or Release target directories.
+        if target not in ('Debug', 'Release'):
+            return True
 
-                debug_mtime = self._filesystem.mtime(debug_path)
-                release_mtime = self._filesystem.mtime(release_path)
+        try:
+            debug_path = self._path_to_driver('Debug')
+            release_path = self._path_to_driver('Release')
 
-                if (debug_mtime > release_mtime and configuration == 'Release' or
-                    release_mtime > debug_mtime and configuration == 'Debug'):
-                    most_recent_binary = 'Release' if configuration == 'Debug' else 'Debug'
-                    _log.warning('You are running the %s binary. However the %s binary appears to be more recent. '
-                                 'Please pass --%s.', configuration, most_recent_binary, most_recent_binary.lower())
-                    _log.warning('')
-            # This will fail if we don't have both a debug and release binary.
-            # That's fine because, in this case, we must already be running the
-            # most up-to-date one.
-            except OSError:
-                pass
+            debug_mtime = self._filesystem.mtime(debug_path)
+            release_mtime = self._filesystem.mtime(release_path)
+
+            if (debug_mtime > release_mtime and target == 'Release' or
+                    release_mtime > debug_mtime and target == 'Debug'):
+                most_recent_binary = 'Release' if target == 'Debug' else 'Debug'
+                _log.warning('You are running the %s binary. However the %s binary appears to be more recent. '
+                             'Please pass --%s.', target, most_recent_binary, most_recent_binary.lower())
+                _log.warning('')
+        # This will fail if we don't have both a debug and release binary.
+        # That's fine because, in this case, we must already be running the
+        # most up-to-date one.
+        except OSError:
+            pass
         return True
 
     def _chromium_baseline_path(self, platform):

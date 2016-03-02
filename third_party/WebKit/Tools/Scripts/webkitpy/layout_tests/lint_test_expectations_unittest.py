@@ -150,6 +150,7 @@ class CheckVirtualSuiteTest(unittest.TestCase):
             res = lint_test_expectations.check_virtual_test_suites(host, options)
             self.assertTrue(res)
 
+            options = optparse.Values({'platform': 'test', 'debug_rwt_logging': False})
             host.filesystem.exists = lambda path: True
             res = lint_test_expectations.check_virtual_test_suites(host, options)
             self.assertFalse(res)

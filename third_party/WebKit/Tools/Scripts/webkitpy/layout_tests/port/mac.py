@@ -103,9 +103,8 @@ class MacPort(base.Port):
         config_file_name = 'apache2-httpd-' + self._apache_version() + '.conf'
         return self._filesystem.join(self.layout_tests_dir(), 'http', 'conf', config_file_name)
 
-    def _path_to_driver(self, configuration=None):
-        # FIXME: make |configuration| happy with case-sensitive file systems.
-        return self._build_path_with_configuration(configuration, self.driver_name() + '.app', 'Contents', 'MacOS', self.driver_name())
+    def _path_to_driver(self, target=None):
+        return self._build_path_with_target(target, self.driver_name() + '.app', 'Contents', 'MacOS', self.driver_name())
 
     def _path_to_helper(self):
         binary_name = 'layout_test_helper'

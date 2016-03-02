@@ -80,8 +80,8 @@ class BrowserTestLinuxPort(BrowserTestPortOverrides, linux.LinuxPort):
 
 
 class BrowserTestMacPort(BrowserTestPortOverrides, mac.MacPort):
-    def _path_to_driver(self, configuration=None):
-        return self._build_path_with_configuration(configuration, self.driver_name())
+    def _path_to_driver(self, target=None):
+        return self._build_path_with_target(target, self.driver_name())
 
     def default_timeout_ms(self):
         timeout_ms = 20 * 1000

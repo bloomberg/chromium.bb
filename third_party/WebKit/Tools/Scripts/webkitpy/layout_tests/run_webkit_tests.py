@@ -61,7 +61,7 @@ def main(argv, stdout, stderr):
 
     try:
         port = host.port_factory.get(options.platform, options)
-    except NotImplementedError, e:
+    except (NotImplementedError, ValueError) as e:
         # FIXME: is this the best way to handle unsupported port names?
         print >> stderr, str(e)
         return test_run_results.UNEXPECTED_ERROR_EXIT_STATUS

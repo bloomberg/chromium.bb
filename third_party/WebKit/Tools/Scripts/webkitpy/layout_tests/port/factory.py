@@ -32,6 +32,7 @@ import fnmatch
 import optparse
 import re
 
+from webkitpy.common.webkit_finder import WebKitFinder
 from webkitpy.layout_tests.port import builders
 
 
@@ -55,7 +56,7 @@ def configuration_options():
     return [
         optparse.make_option('--debug', action='store_const', const='Debug', dest="configuration",
             help='Set the configuration to Debug'),
-        optparse.make_option("-t", "--target", dest="configuration",
+        optparse.make_option("-t", "--target", dest="target",
                              help="specify the target configuration to use (Debug/Release)"),
         optparse.make_option('--release', action='store_const', const='Release', dest="configuration",
             help='Set the configuration to Release'),
@@ -67,7 +68,60 @@ def _builder_options(builder_name):
     configuration = "Debug" if re.search(r"[d|D](ebu|b)g", builder_name) else "Release"
     is_webkit2 = builder_name.find("WK2") != -1
     builder_name = builder_name
-    return optparse.Values({'builder_name': builder_name, 'configuration': configuration})
+    return optparse.Values({'builder_name': builder_name, 'configuration': configuration, 'target': None})
+
+
+def _check_configuration_and_target(host, options):
+    if not options or not getattr(options, 'target', None):
+        return
+
+    gn_configuration = _read_configuration_from_gn(host, options)
+    if gn_configuration:
+        if getattr(options, 'configuration') not in (None, gn_configuration):
+            raise ValueError('Configuration does not match the GN build args.')
+        options.configuration = gn_configuration
+        return
+
+    if options.target in ('Debug', 'Debug_x64'):
+        options.configuration = 'Debug'
+    elif options.target in ('Release', 'Release_x64'):
+        options.configuration = 'Release'
+    else:
+        raise ValueError('Could not determine build configuration type.\n'
+                         'Either switch to one of the default target directories,\n'
+                         'use args.gn, or specify --debug or --release explicitly.')
+
+
+def _read_configuration_from_gn(fs, options):
+    """Return the configuration to used based on args.gn, if possible."""
+
+    # We should really default to 'out' everywhere at this point, but
+    # that's a separate cleanup CL.
+    build_directory = getattr(options, 'build_directory', None) or 'out'
+
+    target = options.target
+    finder = WebKitFinder(fs)
+    path = fs.join(finder.chromium_base(), build_directory, target, 'args.gn')
+    if not fs.exists(path):
+        path = fs.join(finder.chromium_base(), build_directory, target, 'toolchain.ninja')
+        if not fs.exists(path):
+            # This does not appear to be a GN-based build directory, so we don't know
+            # how to interpret it.
+            return None
+
+        # toolchain.ninja exists, but args.gn does not; this can happen when
+        # `gn gen` is run with no --args.
+        return 'Debug'
+
+    args = fs.read_text_file(path)
+    for l in args.splitlines():
+        m = re.match('^\s*is_debug\s*=\s*false(\s*$|\s*#.*$)', l)
+        if m:
+            return 'Release'
+
+    # if is_debug is set to anything other than false, or if it
+    # does not exist at all, we should use the default value (True).
+    return 'Debug'
 
 
 class PortFactory(object):
@@ -98,6 +152,8 @@ class PortFactory(object):
         port_name is None, this routine attempts to guess at the most
         appropriate port on this platform."""
         port_name = port_name or self._default_port(options)
+
+        _check_configuration_and_target(self._host.filesystem, options)
 
         # FIXME(steveblock): There's no longer any need to pass '--platform
         # chromium' on the command line so we can remove this logic.

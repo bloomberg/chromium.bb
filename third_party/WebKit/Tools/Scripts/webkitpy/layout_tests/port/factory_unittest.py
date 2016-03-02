@@ -30,6 +30,7 @@ import unittest
 
 from webkitpy.tool.mocktool import MockOptions
 from webkitpy.common.system.systemhost_mock import MockSystemHost
+from webkitpy.common.webkit_finder import WebKitFinder
 
 from webkitpy.layout_tests.port import android
 from webkitpy.layout_tests.port import linux
@@ -78,3 +79,78 @@ class FactoryTest(unittest.TestCase):
     def test_get_from_builder_name(self):
         self.assertEqual(factory.PortFactory(MockSystemHost()).get_from_builder_name('WebKit Mac10.11').name(),
                           'mac-mac10.11')
+
+    def get_port(self, target=None, configuration=None, files=None):
+        host = MockSystemHost()
+        wkf = WebKitFinder(host.filesystem)
+        files = files or {}
+        for path, contents in files.items():
+            host.filesystem.write_text_file(wkf.path_from_chromium_base(path), contents)
+        options = MockOptions(target=target, configuration=configuration)
+        return factory.PortFactory(host).get(options=options)
+
+    def test_default_target_and_configuration(self):
+        port = self.get_port()
+        self.assertEqual(port._options.configuration, 'Release')
+        self.assertEqual(port._options.target, 'Release')
+
+    def test_debug_configuration(self):
+        port = self.get_port(configuration='Debug')
+        self.assertEqual(port._options.configuration, 'Debug')
+        self.assertEqual(port._options.target, 'Debug')
+
+    def test_release_configuration(self):
+        port = self.get_port(configuration='Release')
+        self.assertEqual(port._options.configuration, 'Release')
+        self.assertEqual(port._options.target, 'Release')
+
+    def test_debug_target(self):
+        port = self.get_port(target='Debug')
+        self.assertEqual(port._options.configuration, 'Debug')
+        self.assertEqual(port._options.target, 'Debug')
+
+    def test_debug_x64_target(self):
+        port = self.get_port(target='Debug_x64')
+        self.assertEqual(port._options.configuration, 'Debug')
+        self.assertEqual(port._options.target, 'Debug_x64')
+
+    def test_release_x64_target(self):
+        port = self.get_port(target='Release_x64')
+        self.assertEqual(port._options.configuration, 'Release')
+        self.assertEqual(port._options.target, 'Release_x64')
+
+    def test_release_args_gn(self):
+        port = self.get_port(target='foo', files={'out/foo/args.gn': 'is_debug = false'})
+        self.assertEqual(port._options.configuration, 'Release')
+        self.assertEqual(port._options.target, 'foo')
+
+        # Also test that we handle multi-line args files properly.
+        port = self.get_port(target='foo', files={'out/foo/args.gn': 'is_debug = false\nfoo = bar\n'})
+        self.assertEqual(port._options.configuration, 'Release')
+        self.assertEqual(port._options.target, 'foo')
+
+        port = self.get_port(target='foo', files={'out/foo/args.gn': 'foo=bar\nis_debug=false\n'})
+        self.assertEqual(port._options.configuration, 'Release')
+        self.assertEqual(port._options.target, 'foo')
+
+    def test_debug_args_gn(self):
+        port = self.get_port(target='foo', files={'out/foo/args.gn': 'is_debug = true'})
+        self.assertEqual(port._options.configuration, 'Debug')
+        self.assertEqual(port._options.target, 'foo')
+
+    def test_default_gn_build(self):
+        port = self.get_port(target='Default', files={'out/Default/toolchain.ninja': ''})
+        self.assertEqual(port._options.configuration, 'Debug')
+        self.assertEqual(port._options.target, 'Default')
+
+    def test_empty_args_gn(self):
+        port = self.get_port(target='foo', files={'out/foo/args.gn': ''})
+        self.assertEqual(port._options.configuration, 'Debug')
+        self.assertEqual(port._options.target, 'foo')
+
+    def test_unknown_dir(self):
+        self.assertRaises(ValueError, self.get_port, target='unknown')
+
+    def test_both_configuration_and_target_is_an_error(self):
+        self.assertRaises(ValueError, self.get_port, target='Debug', configuration='Release',
+                          files={'out/Debug/toolchain.ninja': ''})
