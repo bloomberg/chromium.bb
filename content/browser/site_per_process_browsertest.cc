@@ -722,9 +722,11 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CrossSiteIframe) {
 
 // Test that mouse events are being routed to the correct RenderWidgetHostView
 // based on coordinates.
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(THREAD_SANITIZER)
 // Browser process hit testing is not implemented on Android.
 // https://crbug.com/491334
+// The test times out often on TSAN bot.
+// https://crbug.com/591170.
 #define MAYBE_SurfaceHitTestTest DISABLED_SurfaceHitTestTest
 #else
 #define MAYBE_SurfaceHitTestTest SurfaceHitTestTest
