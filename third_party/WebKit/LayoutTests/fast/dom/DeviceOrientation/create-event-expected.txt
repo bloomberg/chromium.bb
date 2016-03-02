@@ -18,7 +18,7 @@ PASS typeof event.cancelable == 'boolean' is true
 PASS typeof event.alpha == 'object' is true
 PASS typeof event.beta == 'object' is true
 PASS typeof event.gamma == 'object' is true
-PASS typeof event.absolute == 'object' is true
+PASS typeof event.absolute == 'boolean' is true
 PASS newEvent.type is "deviceorientation"
 PASS newEvent.bubbles is false
 PASS newEvent.cancelable is false

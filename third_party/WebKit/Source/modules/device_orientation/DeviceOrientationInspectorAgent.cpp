@@ -53,7 +53,7 @@ void DeviceOrientationInspectorAgent::setDeviceOrientationOverride(ErrorString* 
     m_state->setNumber(DeviceOrientationInspectorAgentState::alpha, alpha);
     m_state->setNumber(DeviceOrientationInspectorAgentState::beta, beta);
     m_state->setNumber(DeviceOrientationInspectorAgentState::gamma, gamma);
-    controller().setOverride(DeviceOrientationData::create(alpha, beta, gamma));
+    controller().setOverride(DeviceOrientationData::create(alpha, beta, gamma, false));
 }
 
 void DeviceOrientationInspectorAgent::clearDeviceOrientationOverride(ErrorString* error)
@@ -77,7 +77,7 @@ void DeviceOrientationInspectorAgent::restore()
         m_state->getNumber(DeviceOrientationInspectorAgentState::beta, &beta);
         double gamma = 0;
         m_state->getNumber(DeviceOrientationInspectorAgentState::gamma, &gamma);
-        controller().setOverride(DeviceOrientationData::create(alpha, beta, gamma));
+        controller().setOverride(DeviceOrientationData::create(alpha, beta, gamma, false));
     }
 }
 

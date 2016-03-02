@@ -47,14 +47,14 @@ public:
         return adoptRefWillBeNoop(new DeviceOrientationEvent(eventType, orientation));
     }
 
-    void initDeviceOrientationEvent(const AtomicString& type, bool bubbles, bool cancelable, const Nullable<double>& alpha, const Nullable<double>& beta, const Nullable<double>& gamma, const Nullable<bool>& absolute);
+    void initDeviceOrientationEvent(const AtomicString& type, bool bubbles, bool cancelable, const Nullable<double>& alpha, const Nullable<double>& beta, const Nullable<double>& gamma, bool absolute);
 
     DeviceOrientationData* orientation() const { return m_orientation.get(); }
 
     double alpha(bool& isNull) const;
     double beta(bool& isNull) const;
     double gamma(bool& isNull) const;
-    bool absolute(bool& isNull) const;
+    bool absolute() const;
 
     const AtomicString& interfaceName() const override;
 

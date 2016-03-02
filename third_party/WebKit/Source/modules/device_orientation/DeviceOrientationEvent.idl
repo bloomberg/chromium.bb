@@ -30,8 +30,7 @@ interface DeviceOrientationEvent : Event {
     readonly attribute double? alpha;
     readonly attribute double? beta;
     readonly attribute double? gamma;
-    // TODO(philipj): absolute should not be nullable.
-    readonly attribute boolean? absolute;
+    readonly attribute boolean absolute;
 
     // TODO(philipj): The init*Event() methods are not in the spec:
     // https://github.com/w3c/deviceorientation/issues/18
@@ -41,5 +40,5 @@ interface DeviceOrientationEvent : Event {
                                               [Default=Undefined] optional double? alpha,
                                               [Default=Undefined] optional double? beta,
                                               [Default=Undefined] optional double? gamma,
-                                              [Default=Undefined] optional boolean? absolute);
+                                              [Default=Undefined] optional boolean absolute);
 };

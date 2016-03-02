@@ -129,8 +129,7 @@ class DataFetcherSharedMemory::SensorEventSinkOrientation
       buffer_->data.hasBeta = has_beta;
       buffer_->data.gamma = gamma;
       buffer_->data.hasGamma = has_gamma;
-      buffer_->data.absolute = true;
-      buffer_->data.hasAbsolute = has_alpha || has_beta || has_gamma;
+      buffer_->data.absolute = has_alpha || has_beta || has_gamma;
       buffer_->data.allAvailableSensorsAreActive = true;
       buffer_->seqlock.WriteEnd();
     }

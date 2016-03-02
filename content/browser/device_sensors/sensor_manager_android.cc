@@ -41,7 +41,6 @@ void SetOrientationBufferStatus(
     bool ready, bool absolute) {
   buffer->seqlock.WriteBegin();
   buffer->data.absolute = absolute;
-  buffer->data.hasAbsolute = ready;
   buffer->data.allAvailableSensorsAreActive = ready;
   buffer->seqlock.WriteEnd();
 }

@@ -7,11 +7,12 @@ event = document.createEvent('DeviceOrientationEvent')
 PASS event.alpha == null is true
 PASS event.beta == null is true
 PASS event.gamma == null is true
-PASS event.absolute == null is true
-event.initDeviceOrientationEvent('', false, false, 0, 1, 2)
+PASS event.absolute is false
+event.initDeviceOrientationEvent('', false, false, 0, 1, 2, false)
 PASS event.alpha == 0 is true
 PASS event.beta == 1 is true
 PASS event.gamma == 2 is true
+PASS event.absolute is false
 event.initDeviceOrientationEvent('', false, false, 0, 1, 2, true)
 PASS event.alpha == 0 is true
 PASS event.beta == 1 is true
@@ -21,22 +22,27 @@ event.initDeviceOrientationEvent()
 PASS event.alpha == null is true
 PASS event.beta == null is true
 PASS event.gamma == null is true
-event.initDeviceOrientationEvent('', false, false, [], [], [])
+PASS event.absolute is false
+event.initDeviceOrientationEvent('', false, false, [], [], [], [])
 PASS event.alpha == 0 is true
 PASS event.beta == 0 is true
 PASS event.gamma == 0 is true
-event.initDeviceOrientationEvent('', false, false, undefined, undefined, undefined)
+PASS event.absolute is true
+event.initDeviceOrientationEvent('', false, false, undefined, undefined, undefined, undefined)
 PASS event.alpha == null is true
 PASS event.beta == null is true
 PASS event.gamma == null is true
-event.initDeviceOrientationEvent('', false, false, '', '', '')
+PASS event.absolute is false
+event.initDeviceOrientationEvent('', false, false, '', '', '', '')
 PASS event.alpha == 0 is true
 PASS event.beta == 0 is true
 PASS event.gamma == 0 is true
-event.initDeviceOrientationEvent('', false, false, null, null, null)
+PASS event.absolute is false
+event.initDeviceOrientationEvent('', false, false, null, null, null, null)
 PASS event.alpha == null is true
 PASS event.beta == null is true
 PASS event.gamma == null is true
+PASS event.absolute is false
 PASS successfullyParsed is true
 
 TEST COMPLETE

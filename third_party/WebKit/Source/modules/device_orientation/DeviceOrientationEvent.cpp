@@ -44,7 +44,7 @@ DeviceOrientationEvent::DeviceOrientationEvent(const AtomicString& eventType, De
 {
 }
 
-void DeviceOrientationEvent::initDeviceOrientationEvent(const AtomicString& type, bool bubbles, bool cancelable, const Nullable<double>& alpha, const Nullable<double>& beta, const Nullable<double>& gamma, const Nullable<bool>& absolute)
+void DeviceOrientationEvent::initDeviceOrientationEvent(const AtomicString& type, bool bubbles, bool cancelable, const Nullable<double>& alpha, const Nullable<double>& beta, const Nullable<double>& gamma, bool absolute)
 {
     if (dispatched())
         return;
@@ -80,13 +80,9 @@ double DeviceOrientationEvent::gamma(bool& isNull) const
     return 0;
 }
 
-bool DeviceOrientationEvent::absolute(bool& isNull) const
+bool DeviceOrientationEvent::absolute() const
 {
-    if (m_orientation->canProvideAbsolute())
-        return m_orientation->absolute();
-
-    isNull = true;
-    return 0;
+    return m_orientation->absolute();
 }
 
 const AtomicString& DeviceOrientationEvent::interfaceName() const

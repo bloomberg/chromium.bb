@@ -36,7 +36,7 @@ class WebDeviceOrientationData;
 class DeviceOrientationData final : public GarbageCollected<DeviceOrientationData> {
 public:
     static DeviceOrientationData* create();
-    static DeviceOrientationData* create(const Nullable<double>& alpha, const Nullable<double>& beta, const Nullable<double>& gamma, const Nullable<bool>& absolute = false);
+    static DeviceOrientationData* create(const Nullable<double>& alpha, const Nullable<double>& beta, const Nullable<double>& gamma, bool absolute);
     static DeviceOrientationData* create(const WebDeviceOrientationData&);
     DEFINE_INLINE_TRACE() { }
 
@@ -47,18 +47,17 @@ public:
     bool canProvideAlpha() const;
     bool canProvideBeta() const;
     bool canProvideGamma() const;
-    bool canProvideAbsolute() const;
 
     bool canProvideEventData() const;
 
 private:
     DeviceOrientationData();
-    DeviceOrientationData(const Nullable<double>& alpha, const Nullable<double>& beta, const Nullable<double>& gamma, const Nullable<bool>& absolute);
+    DeviceOrientationData(const Nullable<double>& alpha, const Nullable<double>& beta, const Nullable<double>& gamma, bool absolute);
 
     Nullable<double> m_alpha;
     Nullable<double> m_beta;
     Nullable<double> m_gamma;
-    Nullable<bool> m_absolute;
+    bool m_absolute;
 };
 
 } // namespace blink

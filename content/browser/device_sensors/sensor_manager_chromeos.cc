@@ -69,7 +69,6 @@ void SensorManagerChromeOS::StartFetchingDeviceOrientationData(
   // No compass information, so we cannot provide absolute orientation.
   orientation_buffer_->seqlock.WriteBegin();
   orientation_buffer_->data.absolute = false;
-  orientation_buffer_->data.hasAbsolute = true;
   orientation_buffer_->seqlock.WriteEnd();
 
   if (!motion_buffer_)

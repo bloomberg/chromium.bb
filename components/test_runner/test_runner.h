@@ -304,7 +304,7 @@ class TestRunner : public WebTestRunner,
   void SetMockDeviceOrientation(bool has_alpha, double alpha,
                                 bool has_beta, double beta,
                                 bool has_gamma, double gamma,
-                                bool has_absolute, bool absolute);
+                                bool absolute);
 
   void SetMockScreenOrientation(const std::string& orientation);
   void DisableMockScreenOrientation();

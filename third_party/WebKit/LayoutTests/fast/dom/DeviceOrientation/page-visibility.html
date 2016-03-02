@@ -45,7 +45,7 @@ function deviceOrientationListener(event) {
 }
 
 if (window.testRunner)
-   testRunner.setMockDeviceOrientation(true, 1, true, 2, true, 3, true, true);
+   testRunner.setMockDeviceOrientation(true, 1, true, 2, true, 3, true);
 
 debug("* Page is visible");
 window.addEventListener('deviceorientation', deviceOrientationListener);

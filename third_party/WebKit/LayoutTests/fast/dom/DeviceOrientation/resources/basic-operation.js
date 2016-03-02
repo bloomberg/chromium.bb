@@ -8,7 +8,7 @@ function testBasicOperation(eventType) {
     mockBeta = 2.2;
     mockGamma = 3.3;
     mockAbsolute = true;
-    testRunner.setMockDeviceOrientation(true, mockAlpha, true, mockBeta, true, mockGamma, true, mockAbsolute);
+    testRunner.setMockDeviceOrientation(true, mockAlpha, true, mockBeta, true, mockGamma, mockAbsolute);
 
     window.addEventListener(eventType, function(e) {
         event = e;
@@ -19,4 +19,3 @@ function testBasicOperation(eventType) {
         finishJSTest();
     });
 }
-

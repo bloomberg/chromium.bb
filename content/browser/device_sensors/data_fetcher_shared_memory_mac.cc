@@ -194,7 +194,6 @@ bool DataFetcherSharedMemory::Start(ConsumerType consumer_type, void* buffer) {
         // On Mac we cannot provide absolute orientation.
         orientation_buffer_->seqlock.WriteBegin();
         orientation_buffer_->data.absolute = false;
-        orientation_buffer_->data.hasAbsolute = true;
         orientation_buffer_->seqlock.WriteEnd();
       } else {
         // No motion sensor available, fire an all-null event.

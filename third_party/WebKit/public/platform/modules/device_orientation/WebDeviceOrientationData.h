@@ -55,7 +55,6 @@ public:
     bool hasGamma : 1;
 
     bool absolute : 1;
-    bool hasAbsolute : 1;
 
     bool allAvailableSensorsAreActive : 1;
 };

@@ -988,7 +988,6 @@ void TestRunnerBindings::SetMockDeviceOrientation(gin::Arguments* args) {
   double beta = 0.0;
   bool has_gamma = false;
   double gamma = 0.0;
-  bool has_absolute = false;
   bool absolute = false;
 
   args->GetNext(&has_alpha);
@@ -997,13 +996,12 @@ void TestRunnerBindings::SetMockDeviceOrientation(gin::Arguments* args) {
   args->GetNext(&beta);
   args->GetNext(&has_gamma);
   args->GetNext(&gamma);
-  args->GetNext(&has_absolute);
   args->GetNext(&absolute);
 
   runner_->SetMockDeviceOrientation(has_alpha, alpha,
                                     has_beta, beta,
                                     has_gamma, gamma,
-                                    has_absolute, absolute);
+                                    absolute);
 }
 
 void TestRunnerBindings::SetMockScreenOrientation(
@@ -2488,7 +2486,7 @@ void TestRunner::SetMockDeviceMotion(
 void TestRunner::SetMockDeviceOrientation(bool has_alpha, double alpha,
                                           bool has_beta, double beta,
                                           bool has_gamma, double gamma,
-                                          bool has_absolute, bool absolute) {
+                                          bool absolute) {
   WebDeviceOrientationData orientation;
 
   // alpha
@@ -2504,7 +2502,6 @@ void TestRunner::SetMockDeviceOrientation(bool has_alpha, double alpha,
   orientation.gamma = gamma;
 
   // absolute
-  orientation.hasAbsolute = has_absolute;
   orientation.absolute = absolute;
 
   delegate_->SetDeviceOrientationData(orientation);

@@ -116,7 +116,6 @@ TEST_F(SensorManagerChromeOSTest, MotionBuffer) {
 // buffer.
 TEST_F(SensorManagerChromeOSTest, OrientationBuffer) {
   DeviceOrientationHardwareBuffer* buffer = orientation_buffer();
-  EXPECT_TRUE(buffer->data.hasAbsolute);
   EXPECT_FALSE(buffer->data.hasAlpha);
   EXPECT_FALSE(buffer->data.hasBeta);
   EXPECT_FALSE(buffer->data.hasGamma);

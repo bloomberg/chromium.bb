@@ -9,7 +9,7 @@ var mockEvent;
 function setMockOrientation(alpha, beta, gamma, absolute) {
     mockEvent = {alpha: alpha, beta: beta, gamma: gamma, absolute: absolute};
     if (window.testRunner)
-        testRunner.setMockDeviceOrientation(true, mockEvent.alpha, true, mockEvent.beta, true, mockEvent.gamma, true, mockEvent.absolute);
+        testRunner.setMockDeviceOrientation(true, mockEvent.alpha, true, mockEvent.beta, true, mockEvent.gamma, mockEvent.absolute);
     else
         debug('This test can not be run without the TestRunner');
 }
