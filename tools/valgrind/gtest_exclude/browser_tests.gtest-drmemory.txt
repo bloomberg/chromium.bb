@@ -123,3 +123,5 @@ PredictorBrowserTest.PreconnectCORSAndFetchNonCORS
 # https://crbug.com/587669
 ClipboardApiTest.ExtensionNoPermission
 
+# https://crbug.com/1310994
+MetricsServiceBrowserTest.CrashRenderers
