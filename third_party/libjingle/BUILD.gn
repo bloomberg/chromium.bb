@@ -402,8 +402,6 @@ if (enable_webrtc) {
       "../webrtc/media/base/videoframe.h",
       "../webrtc/media/base/videoframefactory.cc",
       "../webrtc/media/base/videoframefactory.h",
-      "../webrtc/media/devices/dummydevicemanager.cc",
-      "../webrtc/media/devices/dummydevicemanager.h",
       "../webrtc/media/engine/webrtccommon.h",
       "../webrtc/media/engine/webrtcvideoframe.cc",
       "../webrtc/media/engine/webrtcvideoframe.h",

@@ -7,7 +7,6 @@
     '../../build/win_precompile.gypi',
   ],
   'variables': {
-    'enabled_libjingle_device_manager%': 0,
     'libjingle_additional_deps%': [],
     'libjingle_peerconnection_additional_deps%': [],
     'libjingle_source%': "source",
@@ -364,8 +363,6 @@
             '<(DEPTH)/third_party/webrtc/media/base/videoframe.h',
             '<(DEPTH)/third_party/webrtc/media/base/videoframefactory.cc',
             '<(DEPTH)/third_party/webrtc/media/base/videoframefactory.h',
-            '<(DEPTH)/third_party/webrtc/media/devices/dummydevicemanager.cc',
-            '<(DEPTH)/third_party/webrtc/media/devices/dummydevicemanager.h',
             '<(DEPTH)/third_party/webrtc/media/engine/webrtccommon.h',
             '<(DEPTH)/third_party/webrtc/media/engine/webrtcvideoframe.cc',
             '<(DEPTH)/third_party/webrtc/media/engine/webrtcvideoframe.h',
@@ -407,51 +404,6 @@
               ],
               'dependencies': [
                 '<(DEPTH)/third_party/usrsctp/usrsctp.gyp:usrsctplib',
-              ],
-            }],
-            ['enabled_libjingle_device_manager==1', {
-              'sources!': [
-                '<(DEPTH)/third_party/webrtc/media/devices/dummydevicemanager.cc',
-                '<(DEPTH)/third_party/webrtc/media/devices/dummydevicemanager.h',
-              ],
-              'sources': [
-                '<(DEPTH)/third_party/webrtc/media/devices/devicemanager.cc',
-                '<(DEPTH)/third_party/webrtc/media/devices/devicemanager.h',
-              ],
-              'conditions': [
-                ['OS=="win"', {
-                  'sources': [
-                    '<(DEPTH)/third_party/webrtc/media/devices/win32deviceinfo.cc',
-                    '<(DEPTH)/third_party/webrtc/media/devices/win32devicemanager.cc',
-                    '<(DEPTH)/third_party/webrtc/media/devices/win32devicemanager.h',
-                  ],
-                }],
-                ['OS=="linux"', {
-                  'sources': [
-                    '<(DEPTH)/third_party/webrtc/media/devices/libudevsymboltable.cc',
-                    '<(DEPTH)/third_party/webrtc/media/devices/libudevsymboltable.h',
-                    '<(DEPTH)/third_party/webrtc/media/devices/linuxdeviceinfo.cc',
-                    '<(DEPTH)/third_party/webrtc/media/devices/linuxdevicemanager.cc',
-                    '<(DEPTH)/third_party/webrtc/media/devices/linuxdevicemanager.h',
-                    '<(DEPTH)/third_party/webrtc/media/devices/v4llookup.cc',
-                    '<(DEPTH)/third_party/webrtc/media/devices/v4llookup.h',
-                  ],
-                }],
-                ['OS=="mac"', {
-                  'sources': [
-                    '<(DEPTH)/third_party/webrtc/media/devices/macdeviceinfo.cc',
-                    '<(DEPTH)/third_party/webrtc/media/devices/macdevicemanager.cc',
-                    '<(DEPTH)/third_party/webrtc/media/devices/macdevicemanager.h',
-                    '<(DEPTH)/third_party/webrtc/media/devices/macdevicemanagermm.mm',
-                  ],
-                  'xcode_settings': {
-                    'WARNING_CFLAGS': [
-                      # Suppres warnings about using deprecated functions in
-                      # macdevicemanager.cc.
-                      '-Wno-deprecated-declarations',
-                    ],
-                  },
-                }],
               ],
             }],
           ],
