@@ -941,7 +941,11 @@ PasswordStoreChangeList LoginDatabase::UpdateLogin(const PasswordForm& form) {
   s.BindInt(11, form.type);
   s.BindString16(12, form.display_name);
   s.BindString(13, form.icon_url.spec());
-  s.BindString(14, form.federation_origin.Serialize());
+  // We serialize unique origins as "", in order to make other systems that
+  // read from the login database happy. https://crbug.com/591310
+  s.BindString(14, form.federation_origin.unique()
+                       ? std::string()
+                       : form.federation_origin.Serialize());
   s.BindInt(15, form.skip_zero_click);
   s.BindInt(16, form.generation_upload_status);
 

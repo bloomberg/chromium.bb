@@ -277,7 +277,11 @@ void SerializeValue(const std::vector<autofill::PasswordForm*>& forms,
     pickle->WriteInt64(form->date_synced.ToInternalValue());
     pickle->WriteString16(form->display_name);
     pickle->WriteString(form->icon_url.spec());
-    pickle->WriteString(form->federation_origin.Serialize());
+    // We serialize unique origins as "", in order to make other systems that
+    // read from the login database happy. https://crbug.com/591310
+    pickle->WriteString(form->federation_origin.unique()
+                            ? std::string()
+                            : form->federation_origin.Serialize());
     pickle->WriteBool(form->skip_zero_click);
     pickle->WriteInt(form->generation_upload_status);
   }

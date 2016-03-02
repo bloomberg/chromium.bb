@@ -495,7 +495,11 @@ bool NativeBackendLibsecret::RawAddLogin(const PasswordForm& form) {
       "date_synced", base::Int64ToString(date_synced).c_str(),
       "display_name", UTF16ToUTF8(form.display_name).c_str(),
       "avatar_url", form.icon_url.spec().c_str(),
-      "federation_url", form.federation_origin.Serialize().c_str(),
+      // We serialize unique origins as "", in order to make other systems that
+      // read from the login database happy. https://crbug.com/591310
+      "federation_url", form.federation_origin.unique()
+          ? ""
+          : form.federation_origin.Serialize().c_str(),
       "should_skip_zero_click", form.skip_zero_click,
       "generation_upload_status", form.generation_upload_status,
       "form_data", form_data.c_str(),
