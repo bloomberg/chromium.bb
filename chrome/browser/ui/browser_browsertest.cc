@@ -33,7 +33,7 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_info_cache.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/sessions/session_service_factory.h"
@@ -2324,9 +2324,10 @@ IN_PROC_BROWSER_TEST_F(LaunchBrowserWithNonAsciiUserDatadir,
   // Verify that the window is present.
   ASSERT_TRUE(browser());
   ASSERT_TRUE(browser()->profile());
-  // Verify that the profile has been added correctly to the ProfileInfoCache.
+  // Verify that the profile has been added correctly to the
+  // ProfileAttributesStorage.
   ASSERT_EQ(1u, g_browser_process->profile_manager()->
-      GetProfileInfoCache().GetNumberOfProfiles());
+      GetProfileAttributesStorage().GetNumberOfProfiles());
 }
 #endif  // defined(OS_WIN)
 
@@ -2354,9 +2355,10 @@ IN_PROC_BROWSER_TEST_F(LaunchBrowserWithTrailingSlashDatadir,
   // Verify that the window is present.
   ASSERT_TRUE(browser());
   ASSERT_TRUE(browser()->profile());
-  // Verify that the profile has been added correctly to the ProfileInfoCache.
+  // Verify that the profile has been added correctly to the
+  // ProfileAttributesStorage.
   ASSERT_EQ(1u, g_browser_process->profile_manager()->
-      GetProfileInfoCache().GetNumberOfProfiles());
+      GetProfileAttributesStorage().GetNumberOfProfiles());
 }
 #endif  // defined(OS_WIN)
 

@@ -25,10 +25,10 @@ class AppListServiceAsh : public AppListServiceImpl {
   // AppListService overrides:
   void Init(Profile* initial_profile) override;
 
-  // ProfileInfoCacheObserver overrides:
+  // ProfileAttributesStorage::Observer overrides:
   // On ChromeOS this should never happen. On other platforms, there is always a
   // Non-ash AppListService that is responsible for handling this.
-  // TODO(calamity): Ash shouldn't observe the ProfileInfoCache at all.
+  // TODO(calamity): Ash shouldn't observe the ProfileAttributesStorage at all.
   void OnProfileWillBeRemoved(const base::FilePath& profile_path) override;
 
  private:

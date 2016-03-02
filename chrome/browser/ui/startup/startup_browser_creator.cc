@@ -45,6 +45,8 @@
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_attributes_entry.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -269,13 +271,13 @@ bool ShowUserManagerOnStartupIfNeeded(
   // ChromeOS never shows the User Manager on startup.
   return false;
 #else
-  const ProfileInfoCache& profile_info =
-      g_browser_process->profile_manager()->GetProfileInfoCache();
-  size_t profile_index = profile_info.GetIndexOfProfileWithPath(
-      last_used_profile->GetPath());
+  ProfileAttributesEntry* entry = nullptr;
+  bool has_entry =
+      g_browser_process->profile_manager()
+          ->GetProfileAttributesStorage()
+          .GetProfileAttributesWithPath(last_used_profile->GetPath(), &entry);
 
-  if (profile_index == std::string::npos ||
-      !profile_info.ProfileIsSigninRequiredAtIndex(profile_index)) {
+  if (!has_entry || !entry->IsSigninRequired()) {
     // Signin is not required. However, guest, system or locked profiles cannot
     // be re-opened on startup. The only exception is if there's already a Guest
     // window open in a separate process (for example, launching a new browser
@@ -447,14 +449,14 @@ SessionStartupPref StartupBrowserCreator::GetSessionStartupPref(
 
   // A browser starting for a profile being unlocked should always restore.
   if (!profile->IsGuestSession()) {
-    ProfileInfoCache& info_cache =
-        g_browser_process->profile_manager()->GetProfileInfoCache();
-    size_t index = info_cache.GetIndexOfProfileWithPath(profile->GetPath());
+    ProfileAttributesEntry* entry = nullptr;
+    bool has_entry =
+        g_browser_process->profile_manager()
+            ->GetProfileAttributesStorage()
+            .GetProfileAttributesWithPath(profile->GetPath(), &entry);
 
-    if (index != std::string::npos &&
-        info_cache.ProfileIsSigninRequiredAtIndex(index)) {
+    if (has_entry && entry->IsSigninRequired())
       pref.type = SessionStartupPref::LAST;
-    }
   }
 
   if (pref.type == SessionStartupPref::LAST &&
