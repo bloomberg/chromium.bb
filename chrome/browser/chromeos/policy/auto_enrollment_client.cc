@@ -221,9 +221,8 @@ void AutoEnrollmentClient::ReportProgress(AutoEnrollmentState state) {
 }
 
 void AutoEnrollmentClient::NextStep() {
-  if (RetryStep()) {
+  if (RetryStep())
     return;
-  }
 
   // Protocol finished successfully, report result.
   const RestoreMode restore_mode = GetRestoreMode();
@@ -398,8 +397,7 @@ bool AutoEnrollmentClient::OnDeviceStateRequestCompletion(
                  new base::StringValue(
                      state_response.disabled_state().message()));
 
-      // This is part of normal operation.  Logging as "WARNING" nevertheless to
-      // make sure it's preserved in the logs.
+      // Logging as "WARNING" to make sure it's preserved in the logs.
       LOG(WARNING) << "Restore mode: " << restore_mode;
     }
     local_state_->CommitPendingWrite();
