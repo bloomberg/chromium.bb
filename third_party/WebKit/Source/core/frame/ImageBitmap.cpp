@@ -102,7 +102,7 @@ PassRefPtr<SkImage> ImageBitmap::getSkImageFromDecoder(PassOwnPtr<ImageDecoder> 
     return adoptRef(SkImage::NewFromBitmap(bitmap));
 }
 
-static PassRefPtr<StaticBitmapImage> cropImage(Image* image, const IntRect& cropRect, bool flipY, bool premultiplyAlpha, bool isBitmapPremultiplied = true)
+static PassRefPtr<StaticBitmapImage> cropImage(Image* image, const IntRect& cropRect, bool flipY, bool premultiplyAlpha, AlphaDisposition alphaOp = DontPremultiplyAlpha)
 {
     ASSERT(image);
 
@@ -119,7 +119,7 @@ static PassRefPtr<StaticBitmapImage> cropImage(Image* image, const IntRect& crop
 
     RefPtr<SkImage> skiaImage = image->imageForCurrentFrame();
     // Attempt to get raw unpremultiplied image data, executed only when skiaImage is premultiplied.
-    if (((!premultiplyAlpha && !skiaImage->isOpaque()) || !skiaImage) && image->data() && isBitmapPremultiplied) {
+    if (((!premultiplyAlpha && !skiaImage->isOpaque()) || !skiaImage) && image->data() && alphaOp == DontPremultiplyAlpha) {
         // TODO(xidachen): GammaAndColorProfileApplied needs to be changed when working on color-space conversion
         OwnPtr<ImageDecoder> decoder(ImageDecoder::create(
             *(image->data()), ImageDecoder::AlphaNotPremultiplied,
@@ -165,7 +165,7 @@ ImageBitmap::ImageBitmap(HTMLImageElement* image, const IntRect& cropRect, Docum
     bool flipY;
     parseOptions(options, flipY);
 
-    m_image = cropImage(image->cachedImage()->image(), cropRect, flipY, m_isPremultiplied);
+    m_image = cropImage(image->cachedImage()->image(), cropRect, flipY, m_isPremultiplied, PremultiplyAlpha);
     if (!m_image)
         return;
     m_image->setOriginClean(!image->wouldTaintOrigin(document->securityOrigin()));
@@ -297,7 +297,7 @@ ImageBitmap::ImageBitmap(ImageBitmap* bitmap, const IntRect& cropRect, const Ima
 {
     bool flipY;
     parseOptions(options, flipY);
-    m_image = cropImage(bitmap->bitmapImage(), cropRect, flipY, m_isPremultiplied, bitmap->isPremultiplied());
+    m_image = cropImage(bitmap->bitmapImage(), cropRect, flipY, m_isPremultiplied, bitmap->isPremultiplied() ? DontPremultiplyAlpha : PremultiplyAlpha);
     if (!m_image)
         return;
     m_image->setOriginClean(bitmap->originClean());
