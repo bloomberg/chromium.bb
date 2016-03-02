@@ -25,11 +25,16 @@ const String& KeywordValue::keywordValue() const
     return m_keywordValue;
 }
 
-PassRefPtrWillBeRawPtr<CSSValue> KeywordValue::toCSSValue() const
+CSSValueID KeywordValue::keywordValueID() const
 {
     CSSParserString cssKeywordString;
     cssKeywordString.init(m_keywordValue);
-    CSSValueID keywordID = cssValueKeywordID(cssKeywordString);
+    return cssValueKeywordID(cssKeywordString);
+}
+
+PassRefPtrWillBeRawPtr<CSSValue> KeywordValue::toCSSValue() const
+{
+    CSSValueID keywordID = keywordValueID();
     if (keywordID == CSSValueID::CSSValueInvalid) {
         return CSSCustomIdentValue::create(m_keywordValue);
     }

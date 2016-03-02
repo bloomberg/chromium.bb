@@ -7,10 +7,11 @@
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
-#include "core/css/cssom/LengthValue.h"
 #include "core/css/cssom/StyleValue.h"
 
 namespace blink {
+
+class LengthValue;
 
 class CORE_EXPORT PositionValue final : public StyleValue {
     WTF_MAKE_NONCOPYABLE(PositionValue);
@@ -25,7 +26,7 @@ public:
     LengthValue* x() const { return const_cast<LengthValue*>(m_x.get()); }
     LengthValue* y() const { return const_cast<LengthValue*>(m_y.get()); }
 
-    StyleValueType type() const override { return PositionValueType; }
+    StyleValueType type() const override { return PositionType; }
 
     PassRefPtrWillBeRawPtr<CSSValue> toCSSValue() const override;
 
@@ -37,8 +38,11 @@ public:
     }
 
 protected:
-    PositionValue(const LengthValue* x, const LengthValue* y) : m_x(x),
-        m_y(y) {}
+    PositionValue(const LengthValue* x, const LengthValue* y)
+        : m_x(x)
+        , m_y(y)
+    {
+    }
 
     Member<const LengthValue> m_x;
     Member<const LengthValue> m_y;

@@ -5,6 +5,7 @@
 #include "core/css/cssom/PositionValue.h"
 
 #include "core/css/CSSValuePair.h"
+#include "core/css/cssom/LengthValue.h"
 
 namespace blink {
 
