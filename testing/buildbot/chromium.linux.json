@@ -89,9 +89,6 @@
         "test": "mojo_runner_host_unittests"
       },
       {
-        "test": "mojo_shell_unittests"
-      },
-      {
         "test": "mojo_surfaces_lib_unittests"
       },
       {
