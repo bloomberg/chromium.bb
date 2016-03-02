@@ -172,7 +172,6 @@ public:
     // FIXME: once scroll customization is enabled everywhere
     // (crbug.com/416862), this should take a ScrollState object.
     ScrollResult applyScrollDelta(ScrollGranularity, const FloatSize& delta, bool isScrollBegin);
-    bool shouldScrollTopControls(const FloatSize& delta) const;
 
     // DisplayItemClient methods
     String debugName() const final { return "LocalFrame"; }
@@ -193,6 +192,8 @@ private:
     friend class FrameNavigationDisabler;
 
     LocalFrame(FrameLoaderClient*, FrameHost*, FrameOwner*);
+
+    bool shouldScrollTopControls(const FloatSize& delta) const;
 
     // Internal Frame helper overrides:
     WindowProxyManager* windowProxyManager() const override;

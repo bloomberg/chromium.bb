@@ -227,50 +227,76 @@ GraphicsLayer* RootFrameViewport::layerForVerticalScrollbar() const
     return layoutViewport().layerForVerticalScrollbar();
 }
 
-ScrollResultOneDimensional RootFrameViewport::userScroll(ScrollDirectionPhysical direction, ScrollGranularity granularity, float delta)
+ScrollResult RootFrameViewport::userScroll(ScrollGranularity granularity, const FloatSize& delta)
 {
+    // TODO(bokan/ymalik): Once smooth scrolling is permanently enabled we
+    // should be able to remove this method override and use the base class
+    // version: ScrollableArea::userScroll.
+
     updateScrollAnimator();
 
-    ScrollbarOrientation orientation = scrollbarOrientationFromDirection(direction);
+    // Distribute the scroll between the visual and layout viewport.
 
-    if (layoutViewport().userInputScrollable(orientation) && visualViewport().userInputScrollable(orientation)) {
-        // Distribute the scroll between the visual and layout viewport.
-        float step = scrollStep(granularity, orientation);
+    float stepX = scrollStep(granularity, HorizontalScrollbar);
+    float stepY = scrollStep(granularity, VerticalScrollbar);
 
-        if (direction == ScrollUp || direction == ScrollLeft)
-            delta = -delta;
+    FloatSize pixelDelta(delta);
+    pixelDelta.scale(stepX, stepY);
 
-        // This is the total amount we need to scroll. Instead of passing step
-        // to the scroll animator and letting it compute the total delta, we
-        // give it the delta it should scroll. This way we can apply the
-        // unused delta from the visual viewport to the layout viewport.
-        delta *= step;
+    // Precompute the amount of possible scrolling since, when animated,
+    // ScrollAnimator::userScroll will report having consumed the total given
+    // scroll delta, regardless of how much will actually scroll, but we need to
+    // know how much to leave for the layout viewport.
+    FloatSize visualConsumedDelta =
+        visualViewport().scrollAnimator().computeDeltaToConsume(pixelDelta);
 
-        cancelProgrammaticScrollAnimation();
+    // Split the remaining delta between scrollable and unscrollable axes of the
+    // layout viewport. We only pass a delta to the scrollable axes and remember
+    // how much was held back so we can add it to the unused delta in the
+    // result.
+    FloatSize layoutDelta = pixelDelta - visualConsumedDelta;
+    FloatSize scrollableAxisDelta(
+        layoutViewport().userInputScrollable(HorizontalScrollbar)
+            ? layoutDelta.width()
+            : 0,
+        layoutViewport().userInputScrollable(VerticalScrollbar)
+            ? layoutDelta.height()
+            : 0);
 
-        float visualUsedDelta = visualViewport().scrollAnimator().computeDeltaToConsume(orientation, delta);
-        ScrollResultOneDimensional visualResult = visualViewport().scrollAnimator().userScroll(
-            orientation, granularity, visualUsedDelta);
-
-        // Scroll the layout viewport if all of the scroll was not applied to the
-        // visual viewport.
-        if (visualUsedDelta == delta)
-            return visualResult;
-
-        ScrollResultOneDimensional layoutResult = layoutViewport().scrollAnimator().userScroll(
-            orientation, granularity, delta - visualUsedDelta);
-
-        return ScrollResultOneDimensional(visualResult.didScroll || layoutResult.didScroll,
-            layoutResult.unusedScrollDelta);
+    // If there won't be any scrolling, bail early so we don't produce any side
+    // effects like cancelling existing animations.
+    if (visualConsumedDelta.isZero() && scrollableAxisDelta.isZero()) {
+        return ScrollResult(
+            false,
+            false,
+            pixelDelta.width(),
+            pixelDelta.height());
     }
 
-    if (visualViewport().userInputScrollable(orientation))
-        return visualViewport().userScroll(direction, granularity, delta);
+    cancelProgrammaticScrollAnimation();
 
-    if (layoutViewport().userInputScrollable(orientation))
-        return layoutViewport().userScroll(direction, granularity, delta);
+    // TODO(bokan): Why do we call userScroll on the animators directly and
+    // not through the ScrollableAreas?
+    ScrollResult visualResult = visualViewport().scrollAnimator().userScroll(
+        granularity,
+        visualConsumedDelta);
 
-    return ScrollResultOneDimensional(false, delta);
+    if (visualConsumedDelta == pixelDelta)
+        return visualResult;
+
+    ScrollResult layoutResult = layoutViewport().scrollAnimator().userScroll(
+        granularity,
+        scrollableAxisDelta);
+
+    // Remember to add any delta not used because of !userInputScrollable to the
+    // unusedScrollDelta in the result.
+    FloatSize unscrollableAxisDelta = layoutDelta - scrollableAxisDelta;
+
+    return ScrollResult(
+        visualResult.didScrollX || layoutResult.didScrollX,
+        visualResult.didScrollY || layoutResult.didScrollY,
+        layoutResult.unusedScrollDeltaX + unscrollableAxisDelta.width(),
+        layoutResult.unusedScrollDeltaY + unscrollableAxisDelta.height());
 }
 
 bool RootFrameViewport::scrollAnimatorEnabled() const

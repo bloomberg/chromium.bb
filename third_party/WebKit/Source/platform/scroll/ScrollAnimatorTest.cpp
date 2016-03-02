@@ -125,7 +125,7 @@ TEST(ScrollAnimatorTest, MainThreadStates)
         ScrollAnimatorCompositorCoordinator::RunState::Idle);
 
     // WaitingToSendToCompositor
-    scrollAnimator->userScroll(HorizontalScrollbar, ScrollByLine, 10);
+    scrollAnimator->userScroll(ScrollByLine, FloatSize(10, 0));
     EXPECT_EQ(scrollAnimator->m_runState,
         ScrollAnimatorCompositorCoordinator::RunState::WaitingToSendToCompositor);
 
@@ -165,15 +165,15 @@ TEST(ScrollAnimatorTest, MainThreadEnabled)
 
     EXPECT_FALSE(scrollAnimator->hasAnimationThatRequiresService());
 
-    ScrollResultOneDimensional result = scrollAnimator->userScroll(HorizontalScrollbar, ScrollByLine, -100);
+    ScrollResult result = scrollAnimator->userScroll(ScrollByLine, FloatSize(-100, 0));
     EXPECT_FALSE(scrollAnimator->hasAnimationThatRequiresService());
-    EXPECT_FALSE(result.didScroll);
-    EXPECT_FLOAT_EQ(-100.0f, result.unusedScrollDelta);
+    EXPECT_FALSE(result.didScrollX);
+    EXPECT_FLOAT_EQ(-100.0f, result.unusedScrollDeltaX);
 
-    result = scrollAnimator->userScroll(HorizontalScrollbar, ScrollByLine, 100);
+    result = scrollAnimator->userScroll(ScrollByLine, FloatSize(100, 0));
     EXPECT_TRUE(scrollAnimator->hasAnimationThatRequiresService());
-    EXPECT_TRUE(result.didScroll);
-    EXPECT_FLOAT_EQ(0.0, result.unusedScrollDelta);
+    EXPECT_TRUE(result.didScrollX);
+    EXPECT_FLOAT_EQ(0.0, result.unusedScrollDeltaX);
 
     gMockedTime += 0.05;
     scrollAnimator->updateCompositorAnimations();
@@ -184,7 +184,7 @@ TEST(ScrollAnimatorTest, MainThreadEnabled)
     EXPECT_EQ(0, scrollAnimator->currentPosition().y());
     reset(*scrollAnimator);
 
-    scrollAnimator->userScroll(HorizontalScrollbar, ScrollByPage, 100);
+    scrollAnimator->userScroll(ScrollByPage, FloatSize(100, 0));
     EXPECT_TRUE(scrollAnimator->hasAnimationThatRequiresService());
 
     gMockedTime += 0.05;
@@ -196,7 +196,7 @@ TEST(ScrollAnimatorTest, MainThreadEnabled)
     EXPECT_EQ(0, scrollAnimator->currentPosition().y());
     reset(*scrollAnimator);
 
-    scrollAnimator->userScroll(HorizontalScrollbar, ScrollByPixel, 100);
+    scrollAnimator->userScroll(ScrollByPixel, FloatSize(100, 0));
     EXPECT_TRUE(scrollAnimator->hasAnimationThatRequiresService());
 
     gMockedTime += 0.05;
@@ -218,7 +218,7 @@ TEST(ScrollAnimatorTest, MainThreadEnabled)
 
     reset(*scrollAnimator);
 
-    scrollAnimator->userScroll(HorizontalScrollbar, ScrollByPrecisePixel, 100);
+    scrollAnimator->userScroll(ScrollByPrecisePixel, FloatSize(100, 0));
     EXPECT_FALSE(scrollAnimator->hasAnimationThatRequiresService());
 
     EXPECT_EQ(100, scrollAnimator->currentPosition().x());
@@ -248,11 +248,10 @@ TEST(ScrollAnimatorTest, AnimatedScrollAborted)
     EXPECT_FALSE(scrollAnimator->hasAnimationThatRequiresService());
 
     // Smooth scroll.
-    ScrollResultOneDimensional result = scrollAnimator->userScroll(
-        HorizontalScrollbar, ScrollByLine, 100);
+    ScrollResult result = scrollAnimator->userScroll(ScrollByLine, FloatSize(100, 0));
     EXPECT_TRUE(scrollAnimator->hasAnimationThatRequiresService());
-    EXPECT_TRUE(result.didScroll);
-    EXPECT_FLOAT_EQ(0.0, result.unusedScrollDelta);
+    EXPECT_TRUE(result.didScrollX);
+    EXPECT_FLOAT_EQ(0.0, result.unusedScrollDeltaX);
     EXPECT_TRUE(scrollAnimator->hasRunningAnimation());
 
     gMockedTime += 0.05;
@@ -266,9 +265,8 @@ TEST(ScrollAnimatorTest, AnimatedScrollAborted)
     float x = scrollAnimator->currentPosition().x();
 
     // Instant scroll.
-    result = scrollAnimator->userScroll(
-        HorizontalScrollbar, ScrollByPrecisePixel, 100);
-    EXPECT_TRUE(result.didScroll);
+    result = scrollAnimator->userScroll(ScrollByPrecisePixel, FloatSize(100, 0));
+    EXPECT_TRUE(result.didScrollX);
     gMockedTime += 0.05;
     scrollAnimator->updateCompositorAnimations();
     EXPECT_FALSE(scrollAnimator->hasRunningAnimation());
@@ -288,22 +286,22 @@ TEST(ScrollAnimatorTest, Disabled)
     EXPECT_CALL(*scrollableArea, setScrollOffset(_, _)).Times(8);
     EXPECT_CALL(*scrollableArea, registerForAnimation()).Times(0);
 
-    scrollAnimator->userScroll(HorizontalScrollbar, ScrollByLine, 100);
+    scrollAnimator->userScroll(ScrollByLine, FloatSize(100, 0));
     EXPECT_EQ(100, scrollAnimator->currentPosition().x());
     EXPECT_EQ(0, scrollAnimator->currentPosition().y());
     reset(*scrollAnimator);
 
-    scrollAnimator->userScroll(HorizontalScrollbar, ScrollByPage, 100);
+    scrollAnimator->userScroll(ScrollByPage, FloatSize(100, 0));
     EXPECT_EQ(100, scrollAnimator->currentPosition().x());
     EXPECT_EQ(0, scrollAnimator->currentPosition().y());
     reset(*scrollAnimator);
 
-    scrollAnimator->userScroll(HorizontalScrollbar, ScrollByDocument, 100);
+    scrollAnimator->userScroll(ScrollByDocument, FloatSize(100, 0));
     EXPECT_EQ(100, scrollAnimator->currentPosition().x());
     EXPECT_EQ(0, scrollAnimator->currentPosition().y());
     reset(*scrollAnimator);
 
-    scrollAnimator->userScroll(HorizontalScrollbar, ScrollByPixel, 100);
+    scrollAnimator->userScroll(ScrollByPixel, FloatSize(100, 0));
     EXPECT_EQ(100, scrollAnimator->currentPosition().x());
     EXPECT_EQ(0, scrollAnimator->currentPosition().y());
     reset(*scrollAnimator);

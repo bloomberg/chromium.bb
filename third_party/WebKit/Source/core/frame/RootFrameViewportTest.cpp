@@ -205,41 +205,16 @@ TEST_F(RootFrameViewportTest, UserInputScrollable)
 
     // Layout viewport shouldn't scroll since it's not horizontally scrollable,
     // but visual viewport should.
-    rootFrameViewport->userScroll(ScrollRight, ScrollByPixel, 300);
+    rootFrameViewport->userScroll(ScrollByPixel, FloatSize(300, 0));
     EXPECT_POINT_EQ(DoublePoint(0, 0), layoutViewport->scrollPositionDouble());
     EXPECT_POINT_EQ(DoublePoint(50, 0), visualViewport->scrollPositionDouble());
     EXPECT_POINT_EQ(DoublePoint(50, 0), rootFrameViewport->scrollPositionDouble());
 
-    // Disable just the visual viewport's horizontal scrolling, only the layout
-    // viewport should scroll.
-    rootFrameViewport->setScrollPosition(DoublePoint(), ProgrammaticScroll);
-    layoutViewport->setUserInputScrollable(true, true);
-    visualViewport->setUserInputScrollable(false, true);
-
-    rootFrameViewport->userScroll(ScrollRight, ScrollByPixel, 300);
-    EXPECT_POINT_EQ(DoublePoint(100, 0), layoutViewport->scrollPositionDouble());
-    EXPECT_POINT_EQ(DoublePoint(0, 0), visualViewport->scrollPositionDouble());
-    EXPECT_POINT_EQ(DoublePoint(100, 0), rootFrameViewport->scrollPositionDouble());
-
-    // Disable both viewports' horizontal scrolling, all horizontal scrolling
-    // should now be blocked.
-    rootFrameViewport->setScrollPosition(DoublePoint(), ProgrammaticScroll);
-    layoutViewport->setUserInputScrollable(false, true);
-    visualViewport->setUserInputScrollable(false, true);
-
-    rootFrameViewport->userScroll(ScrollRight, ScrollByPixel, 300);
-    EXPECT_POINT_EQ(DoublePoint(0, 0), layoutViewport->scrollPositionDouble());
-    EXPECT_POINT_EQ(DoublePoint(0, 0), visualViewport->scrollPositionDouble());
-    EXPECT_POINT_EQ(DoublePoint(0, 0), rootFrameViewport->scrollPositionDouble());
-
-    EXPECT_FALSE(rootFrameViewport->userInputScrollable(HorizontalScrollbar));
-    EXPECT_TRUE(rootFrameViewport->userInputScrollable(VerticalScrollbar));
-
     // Vertical scrolling should be unaffected.
-    rootFrameViewport->userScroll(ScrollDown, ScrollByPixel, 300);
+    rootFrameViewport->userScroll(ScrollByPixel, FloatSize(0, 300));
     EXPECT_POINT_EQ(DoublePoint(0, 150), layoutViewport->scrollPositionDouble());
-    EXPECT_POINT_EQ(DoublePoint(0, 75), visualViewport->scrollPositionDouble());
-    EXPECT_POINT_EQ(DoublePoint(0, 225), rootFrameViewport->scrollPositionDouble());
+    EXPECT_POINT_EQ(DoublePoint(50, 75), visualViewport->scrollPositionDouble());
+    EXPECT_POINT_EQ(DoublePoint(50, 225), rootFrameViewport->scrollPositionDouble());
 
     // Try the same checks as above but for the vertical direction.
     // ===============================================
@@ -256,41 +231,16 @@ TEST_F(RootFrameViewportTest, UserInputScrollable)
 
     // Layout viewport shouldn't scroll since it's not vertically scrollable,
     // but visual viewport should.
-    rootFrameViewport->userScroll(ScrollDown, ScrollByPixel, 300);
+    rootFrameViewport->userScroll(ScrollByPixel, FloatSize(0, 300));
     EXPECT_POINT_EQ(DoublePoint(0, 0), layoutViewport->scrollPositionDouble());
     EXPECT_POINT_EQ(DoublePoint(0, 75), visualViewport->scrollPositionDouble());
     EXPECT_POINT_EQ(DoublePoint(0, 75), rootFrameViewport->scrollPositionDouble());
 
-    // Disable just the visual viewport's vertical scrolling, only the layout
-    // viewport should scroll.
-    rootFrameViewport->setScrollPosition(DoublePoint(), ProgrammaticScroll);
-    layoutViewport->setUserInputScrollable(true, true);
-    visualViewport->setUserInputScrollable(true, false);
-
-    rootFrameViewport->userScroll(ScrollDown, ScrollByPixel, 300);
-    EXPECT_POINT_EQ(DoublePoint(0, 150), layoutViewport->scrollPositionDouble());
-    EXPECT_POINT_EQ(DoublePoint(0, 0), visualViewport->scrollPositionDouble());
-    EXPECT_POINT_EQ(DoublePoint(0, 150), rootFrameViewport->scrollPositionDouble());
-
-    // Disable both viewports' horizontal scrolling, all vertical scrolling
-    // should now be blocked.
-    rootFrameViewport->setScrollPosition(DoublePoint(), ProgrammaticScroll);
-    layoutViewport->setUserInputScrollable(true, false);
-    visualViewport->setUserInputScrollable(true, false);
-
-    rootFrameViewport->userScroll(ScrollDown, ScrollByPixel, 300);
-    EXPECT_POINT_EQ(DoublePoint(0, 0), layoutViewport->scrollPositionDouble());
-    EXPECT_POINT_EQ(DoublePoint(0, 0), visualViewport->scrollPositionDouble());
-    EXPECT_POINT_EQ(DoublePoint(0, 0), rootFrameViewport->scrollPositionDouble());
-
-    EXPECT_TRUE(rootFrameViewport->userInputScrollable(HorizontalScrollbar));
-    EXPECT_FALSE(rootFrameViewport->userInputScrollable(VerticalScrollbar));
-
     // Horizontal scrolling should be unaffected.
-    rootFrameViewport->userScroll(ScrollRight, ScrollByPixel, 300);
+    rootFrameViewport->userScroll(ScrollByPixel, FloatSize(300, 0));
     EXPECT_POINT_EQ(DoublePoint(100, 0), layoutViewport->scrollPositionDouble());
-    EXPECT_POINT_EQ(DoublePoint(50, 0), visualViewport->scrollPositionDouble());
-    EXPECT_POINT_EQ(DoublePoint(150, 0), rootFrameViewport->scrollPositionDouble());
+    EXPECT_POINT_EQ(DoublePoint(50, 75), visualViewport->scrollPositionDouble());
+    EXPECT_POINT_EQ(DoublePoint(150, 75), rootFrameViewport->scrollPositionDouble());
 }
 
 // Make sure scrolls using the scroll animator (scroll(), setScrollPosition())
@@ -319,7 +269,7 @@ TEST_F(RootFrameViewportTest, TestScrollAnimatorUpdatedBeforeScroll)
     visualViewport->setScrollPosition(DoublePoint(50, 75), ProgrammaticScroll);
     EXPECT_POINT_EQ(DoublePoint(50, 75), rootFrameViewport->scrollPositionDouble());
 
-    rootFrameViewport->userScroll(ScrollLeft, ScrollByPixel, 50);
+    rootFrameViewport->userScroll(ScrollByPixel, FloatSize(-50, 0));
     EXPECT_POINT_EQ(DoublePoint(0, 75), rootFrameViewport->scrollPositionDouble());
     EXPECT_POINT_EQ(DoublePoint(0, 75), visualViewport->scrollPositionDouble());
 
@@ -328,7 +278,7 @@ TEST_F(RootFrameViewportTest, TestScrollAnimatorUpdatedBeforeScroll)
     layoutViewport->setScrollPosition(DoublePoint(100, 150), ProgrammaticScroll);
     EXPECT_POINT_EQ(DoublePoint(100, 150), rootFrameViewport->scrollPositionDouble());
 
-    rootFrameViewport->userScroll(ScrollLeft, ScrollByPixel, 100);
+    rootFrameViewport->userScroll(ScrollByPixel, FloatSize(-100, 0));
     EXPECT_POINT_EQ(DoublePoint(0, 150), rootFrameViewport->scrollPositionDouble());
     EXPECT_POINT_EQ(DoublePoint(0, 150), layoutViewport->scrollPositionDouble());
 }

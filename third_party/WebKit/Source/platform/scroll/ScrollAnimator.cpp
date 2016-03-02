@@ -82,13 +82,11 @@ bool ScrollAnimator::hasRunningAnimation() const
     return (m_animationCurve || m_runState == RunState::WaitingToSendToCompositor);
 }
 
-float ScrollAnimator::computeDeltaToConsume(
-    ScrollbarOrientation orientation, float pixelDelta) const
+FloatSize ScrollAnimator::computeDeltaToConsume(const FloatSize& delta) const
 {
     FloatPoint pos = desiredTargetPosition();
-    float currentPos = (orientation == HorizontalScrollbar) ? pos.x() : pos.y();
-    float newPos = clampScrollPosition(orientation, currentPos + pixelDelta);
-    return (currentPos == newPos) ? 0.0f : (newPos - currentPos);
+    FloatPoint newPos = toFloatPoint(m_scrollableArea->clampScrollPosition(pos + delta));
+    return newPos - pos;
 }
 
 void ScrollAnimator::resetAnimationState()
@@ -99,11 +97,11 @@ void ScrollAnimator::resetAnimationState()
     m_startTime = 0.0;
 }
 
-ScrollResultOneDimensional ScrollAnimator::userScroll(
-    ScrollbarOrientation orientation, ScrollGranularity granularity, float delta)
+ScrollResult ScrollAnimator::userScroll(
+    ScrollGranularity granularity, const FloatSize& delta)
 {
     if (!m_scrollableArea->scrollAnimatorEnabled())
-        return ScrollAnimatorBase::userScroll(orientation, granularity, delta);
+        return ScrollAnimatorBase::userScroll(granularity, delta);
 
     TRACE_EVENT0("blink", "ScrollAnimator::scroll");
 
@@ -111,26 +109,26 @@ ScrollResultOneDimensional ScrollAnimator::userScroll(
         // Cancel scroll animation because asked to instant scroll.
         if (hasRunningAnimation())
             cancelAnimation();
-        return ScrollAnimatorBase::userScroll(orientation, granularity, delta);
+        return ScrollAnimatorBase::userScroll(granularity, delta);
     }
 
-    float usedDelta = computeDeltaToConsume(orientation, delta);
-    FloatPoint pixelDelta = (orientation == VerticalScrollbar
-        ? FloatPoint(0, usedDelta) : FloatPoint(usedDelta, 0));
+    FloatSize consumedDelta = computeDeltaToConsume(delta);
 
     FloatPoint targetPos = desiredTargetPosition();
-    targetPos.moveBy(pixelDelta);
+    targetPos.move(consumedDelta);
 
     if (willAnimateToOffset(targetPos)) {
         m_lastGranularity = granularity;
         // Report unused delta only if there is no animation running. See
         // comment below regarding scroll latching.
-        return ScrollResultOneDimensional(/* didScroll */ true, /* unusedScrollDelta */ 0);
+        // TODO(bokan): Need to standardize how ScrollAnimators report
+        // unusedDelta. This differs from ScrollAnimatorMac currently.
+        return ScrollResult(true, true, 0, 0);
     }
     // Report unused delta only if there is no animation and we are not
     // starting one. This ensures we latch for the duration of the
     // animation rather than animating multiple scrollers at the same time.
-    return ScrollResultOneDimensional(/* didScroll */ false, delta);
+    return ScrollResult(false, false, delta.width(), delta.height());
 }
 
 bool ScrollAnimator::willAnimateToOffset(const FloatPoint& targetPos)
@@ -174,8 +172,7 @@ bool ScrollAnimator::willAnimateToOffset(const FloatPoint& targetPos)
 
 void ScrollAnimator::scrollToOffsetWithoutAnimation(const FloatPoint& offset)
 {
-    m_currentPosX = offset.x();
-    m_currentPosY = offset.y();
+    m_currentPos = offset;
 
     resetAnimationState();
     notifyPositionChanged();
@@ -195,8 +192,7 @@ void ScrollAnimator::tickAnimation(double monotonicTime)
 
     offset = FloatPoint(m_scrollableArea->clampScrollPosition(offset));
 
-    m_currentPosX = offset.x();
-    m_currentPosY = offset.y();
+    m_currentPos = offset;
 
     if (isFinished)
         m_runState = RunState::PostAnimationCleanup;

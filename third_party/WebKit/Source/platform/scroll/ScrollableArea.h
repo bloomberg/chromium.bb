@@ -85,7 +85,7 @@ public:
     // host window in the window's coordinate space.
     virtual HostWindow* hostWindow() const { return 0; }
 
-    virtual ScrollResultOneDimensional userScroll(ScrollDirectionPhysical, ScrollGranularity, float delta = 1);
+    virtual ScrollResult userScroll(ScrollGranularity, const FloatSize&);
 
     virtual void setScrollPosition(const DoublePoint&, ScrollType, ScrollBehavior = ScrollBehaviorInstant);
     virtual void scrollBy(const DoubleSize&, ScrollType, ScrollBehavior = ScrollBehaviorInstant);

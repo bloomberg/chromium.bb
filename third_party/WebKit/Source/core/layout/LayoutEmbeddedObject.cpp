@@ -156,9 +156,9 @@ PaintInvalidationReason LayoutEmbeddedObject::invalidatePaintIfNeeded(
     return reason;
 }
 
-ScrollResultOneDimensional LayoutEmbeddedObject::scroll(ScrollDirectionPhysical direction, ScrollGranularity granularity, float)
+ScrollResult LayoutEmbeddedObject::scroll(ScrollGranularity granularity, const FloatSize&)
 {
-    return ScrollResultOneDimensional(false);
+    return ScrollResult();
 }
 
 CompositingReasons LayoutEmbeddedObject::additionalCompositingReasons() const

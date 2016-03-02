@@ -60,7 +60,7 @@ private:
 
     PaintLayerType layerTypeRequired() const final;
 
-    ScrollResultOneDimensional scroll(ScrollDirectionPhysical, ScrollGranularity, float multiplier) final;
+    ScrollResult scroll(ScrollGranularity, const FloatSize&) final;
 
     CompositingReasons additionalCompositingReasons() const override;
 

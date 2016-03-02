@@ -49,9 +49,9 @@ public:
     ~ScrollAnimator() override;
 
     bool hasRunningAnimation() const override;
-    float computeDeltaToConsume(ScrollbarOrientation, float pixelDelta) const override;
+    FloatSize computeDeltaToConsume(const FloatSize& delta) const override;
 
-    ScrollResultOneDimensional userScroll(ScrollbarOrientation, ScrollGranularity, float delta) override;
+    ScrollResult userScroll(ScrollGranularity, const FloatSize& delta) override;
     void scrollToOffsetWithoutAnimation(const FloatPoint&) override;
     FloatPoint desiredTargetPosition() const override;
 

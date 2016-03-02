@@ -770,13 +770,6 @@ void LocalFrame::removeSpellingMarkersUnderWords(const Vector<String>& words)
     spellChecker().removeSpellingMarkersUnderWords(words);
 }
 
-static ScrollResult scrollAreaOnBothAxes(ScrollGranularity granularity, const FloatSize& delta, ScrollableArea& view)
-{
-    ScrollResultOneDimensional scrolledHorizontal = view.userScroll(ScrollLeft, granularity, delta.width());
-    ScrollResultOneDimensional scrolledVertical = view.userScroll(ScrollUp, granularity, delta.height());
-    return ScrollResult(scrolledHorizontal.didScroll, scrolledVertical.didScroll, scrolledHorizontal.unusedScrollDelta, scrolledVertical.unusedScrollDelta);
-}
-
 // Returns true if a scroll occurred.
 ScrollResult LocalFrame::applyScrollDelta(ScrollGranularity granularity, const FloatSize& delta, bool isScrollBegin)
 {
@@ -795,7 +788,14 @@ ScrollResult LocalFrame::applyScrollDelta(ScrollGranularity granularity, const F
     if (remainingDelta.isZero())
         return ScrollResult(delta.width(), delta.height(), 0.0f, 0.0f);
 
-    ScrollResult result = scrollAreaOnBothAxes(granularity, remainingDelta, *view()->scrollableArea());
+    // TODO(bokan): The delta coming in here is the GestureEvent delta, which is
+    // positive if the user scrolls up or left. For scrolling, a positive delta
+    // implies downward or rightward scrolling. This negation should happen up
+    // in the call chain.
+    FloatSize normalizedDelta = remainingDelta.scaledBy(-1);
+
+    ScrollResult result = view()->scrollableArea()->userScroll(granularity, normalizedDelta);
+
     result.didScrollX = result.didScrollX || (remainingDelta.width() != delta.width());
     result.didScrollY = result.didScrollY || (remainingDelta.height() != delta.height());
 

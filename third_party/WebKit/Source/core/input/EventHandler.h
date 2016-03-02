@@ -135,8 +135,8 @@ public:
 
     IntPoint dragDataTransferLocationForTesting();
 
-    // Attempts to scroll the DOM tree. If that fails, scrolls the view.
-    // If the view can't be scrolled either, recursively bubble to the parent frame.
+    // Performs a logical scroll that chains, crossing frames, starting from
+    // the given node or a reasonable default (focus/last clicked).
     bool bubblingScroll(ScrollDirection, ScrollGranularity, Node* startingNode = nullptr);
 
     WebInputEventResult handleMouseMoveEvent(const PlatformMouseEvent&);
@@ -265,17 +265,30 @@ private:
 
     ScrollableArea* associatedScrollableArea(const PaintLayer*) const;
 
-    // Scrolls the elements of the DOM tree. Returns true if a node was scrolled.
-    // False if we reached the root and couldn't scroll anything.
-    // direction - The direction to scroll in. If this is a logical direction, it will be
-    //             converted to the physical direction based on a node's writing mode.
+    // Performs a chaining scroll, within a *single* frame, starting from a
+    // given node and optionally stopping on a given node. Does *not* attempt
+    // to scroll the layout view.
     // granularity - The units that the  scroll delta parameter is in.
-    // startNode - The node to start bubbling the scroll from. If a node can't scroll,
-    //             the scroll bubbles up to the containing block.
-    // stopNode - On input, if provided and non-null, the node at which we should stop bubbling on input.
-    //            On output, if provided and a node was scrolled stopNode will point to that node.
-    // delta - The delta to scroll by, in the units of the granularity parameter. (e.g. pixels, lines, pages, etc.)
-    ScrollResultOneDimensional scroll(ScrollDirection, ScrollGranularity, Node* startNode = nullptr, Node** stopNode = nullptr, float delta = 1.0f);
+    // delta - The delta to scroll by, in the units of the granularity param
+    //         (e.g. pixels, lines, pages, etc.). These are in a physical
+    //         direction. i.e. Positive is down and right.
+    // startNode - The node to start the scroll chaining from.
+    // stopNode - On input, if provided and non-null, the node at which we
+    //            should stop chaining. On output, if provided and a node was
+    //            scrolled, stopNode will point to that node.
+    ScrollResult physicalScroll(ScrollGranularity, const FloatSize& delta, Node* startNode, Node** stopNode = nullptr);
+
+    // Performs a chaining logical scroll, within a *single* frame, starting
+    // from either a provided starting node or a default based on the focused or
+    // most recently clicked node.
+    // Returns true if the scroll was consumed.
+    // direction - The logical direction to scroll in. This will be converted to
+    //             a physical direction for each LayoutBox we try to scroll
+    //             based on that box's writing mode.
+    // granularity - The units that the  scroll delta parameter is in.
+    // startNode - Optional. If provided, start chaining from the given node.
+    //             If not, use the current focus or last clicked node.
+    bool logicalScroll(ScrollDirection, ScrollGranularity, Node* startNode = nullptr);
 
     void resetOverscroll(bool didScrollX, bool didScrollY);
     void handleOverscroll(const ScrollResult&, const FloatPoint& position = FloatPoint(), const FloatSize& velocity = FloatSize());

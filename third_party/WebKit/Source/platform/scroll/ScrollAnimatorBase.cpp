@@ -40,8 +40,6 @@ namespace blink {
 
 ScrollAnimatorBase::ScrollAnimatorBase(ScrollableArea* scrollableArea)
     : m_scrollableArea(scrollableArea)
-    , m_currentPosX(0)
-    , m_currentPosY(0)
 {
 }
 
@@ -49,56 +47,49 @@ ScrollAnimatorBase::~ScrollAnimatorBase()
 {
 }
 
-float ScrollAnimatorBase::computeDeltaToConsume(ScrollbarOrientation orientation, float pixelDelta) const
+FloatSize ScrollAnimatorBase::computeDeltaToConsume(const FloatSize& delta) const
 {
-    float currentPos = (orientation == HorizontalScrollbar) ? m_currentPosX : m_currentPosY;
-    float newPos = clampScrollPosition(orientation, currentPos + pixelDelta);
-    return (currentPos == newPos) ? 0.0f : (newPos - currentPos);
+    FloatPoint newPos = toFloatPoint(m_scrollableArea->clampScrollPosition(m_currentPos + delta));
+    return newPos - m_currentPos;
 }
 
-ScrollResultOneDimensional ScrollAnimatorBase::userScroll(ScrollbarOrientation orientation, ScrollGranularity, float delta)
+ScrollResult ScrollAnimatorBase::userScroll(ScrollGranularity, const FloatSize& delta)
 {
-    float& currentPos = (orientation == HorizontalScrollbar) ? m_currentPosX : m_currentPosY;
-    float usedDelta = computeDeltaToConsume(orientation, delta);
-    float newPos = currentPos + usedDelta;
-    if (currentPos == newPos)
-        return ScrollResultOneDimensional(false, delta);
+    FloatSize consumedDelta = computeDeltaToConsume(delta);
+    FloatPoint newPos = m_currentPos + consumedDelta;
+    if (m_currentPos == newPos)
+        return ScrollResult(false, false, delta.width(), delta.height());
 
-    currentPos = newPos;
+    m_currentPos = newPos;
 
     notifyPositionChanged();
 
-    return ScrollResultOneDimensional(true, delta - usedDelta);
+    return ScrollResult(
+        consumedDelta.width(),
+        consumedDelta.height(),
+        delta.width() - consumedDelta.width(),
+        delta.height() - consumedDelta.height());
 }
 
 void ScrollAnimatorBase::scrollToOffsetWithoutAnimation(const FloatPoint& offset)
 {
-    m_currentPosX = offset.x();
-    m_currentPosY = offset.y();
+    m_currentPos = offset;
     notifyPositionChanged();
 }
 
 void ScrollAnimatorBase::setCurrentPosition(const FloatPoint& position)
 {
-    m_currentPosX = position.x();
-    m_currentPosY = position.y();
+    m_currentPos = position;
 }
 
 FloatPoint ScrollAnimatorBase::currentPosition() const
 {
-    return FloatPoint(m_currentPosX, m_currentPosY);
+    return m_currentPos;
 }
 
 void ScrollAnimatorBase::notifyPositionChanged()
 {
-    m_scrollableArea->scrollPositionChanged(DoublePoint(m_currentPosX, m_currentPosY), UserScroll);
-}
-
-float ScrollAnimatorBase::clampScrollPosition(ScrollbarOrientation orientation, float pos) const
-{
-    float maxScrollPos = m_scrollableArea->maximumScrollPosition(orientation);
-    float minScrollPos = m_scrollableArea->minimumScrollPosition(orientation);
-    return clampTo(pos, minScrollPos, maxScrollPos);
+    m_scrollableArea->scrollPositionChanged(m_currentPos, UserScroll);
 }
 
 DEFINE_TRACE(ScrollAnimatorBase)

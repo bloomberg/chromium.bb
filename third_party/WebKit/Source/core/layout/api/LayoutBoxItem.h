@@ -33,9 +33,9 @@ public:
         return LayoutBoxItem(toBox()->enclosingBox());
     }
 
-    ScrollResultOneDimensional scroll(ScrollDirectionPhysical direction, ScrollGranularity granularity, float delta = 1)
+    ScrollResult scroll(ScrollGranularity granularity, const FloatSize& delta)
     {
-        return toBox()->scroll(direction, granularity, delta);
+        return toBox()->scroll(granularity, delta);
     }
 
 private:

@@ -729,32 +729,40 @@ void ScrollAnimatorMac::dispose()
     m_sendContentAreaScrolledTaskFactory->cancel();
 }
 
-ScrollResultOneDimensional ScrollAnimatorMac::userScroll(ScrollbarOrientation orientation, ScrollGranularity granularity, float delta)
+ScrollResult ScrollAnimatorMac::userScroll(ScrollGranularity granularity, const FloatSize& delta)
 {
     m_haveScrolledSincePageLoad = true;
 
     if (!m_scrollableArea->scrollAnimatorEnabled())
-        return ScrollAnimatorBase::userScroll(orientation, granularity, delta);
+        return ScrollAnimatorBase::userScroll(granularity, delta);
 
     if (granularity == ScrollByPixel || granularity == ScrollByPrecisePixel)
-        return ScrollAnimatorBase::userScroll(orientation, granularity, delta);
+        return ScrollAnimatorBase::userScroll(granularity, delta);
 
-    float currentPos = orientation == HorizontalScrollbar ? m_currentPosX : m_currentPosY;
-    float usedDelta = computeDeltaToConsume(orientation, delta);
-    float newPos = currentPos + usedDelta;
-    if (currentPos == newPos)
-        return ScrollResultOneDimensional(false);
+    FloatSize consumedDelta = computeDeltaToConsume(delta);
+    FloatPoint newPos = m_currentPos + consumedDelta;
+    if (m_currentPos == newPos)
+        return ScrollResult();
 
-    NSPoint newPoint;
+    // Prevent clobbering an existing animation on an unscrolled axis.
     if ([m_scrollAnimationHelper.get() _isAnimating]) {
         NSPoint targetOrigin = [m_scrollAnimationHelper.get() targetOrigin];
-        newPoint = orientation == HorizontalScrollbar ? NSMakePoint(newPos, targetOrigin.y) : NSMakePoint(targetOrigin.x, newPos);
-    } else
-        newPoint = orientation == HorizontalScrollbar ? NSMakePoint(newPos, m_currentPosY) : NSMakePoint(m_currentPosX, newPos);
+        if (!delta.width())
+            newPos.setX(targetOrigin.x);
+        if (!delta.height())
+            newPos.setY(targetOrigin.y);
+    }
 
+    NSPoint newPoint = NSMakePoint(newPos.x(), newPos.y());
     [m_scrollAnimationHelper.get() scrollToPoint:newPoint];
 
-    return ScrollResultOneDimensional(true, delta - usedDelta);
+    // TODO(bokan): This has different semantics on ScrollResult than ScrollAnimator,
+    // which only returns unused delta if there's no animation and we don't start one.
+    return ScrollResult(
+        consumedDelta.width(),
+        consumedDelta.height(),
+        delta.width() - consumedDelta.width(),
+        delta.height() - consumedDelta.height());
 }
 
 void ScrollAnimatorMac::scrollToOffsetWithoutAnimation(const FloatPoint& offset)
@@ -778,14 +786,13 @@ void ScrollAnimatorMac::immediateScrollTo(const FloatPoint& newPosition)
 {
     FloatPoint adjustedPosition = adjustScrollPositionIfNecessary(newPosition);
 
-    bool positionChanged = adjustedPosition.x() != m_currentPosX || adjustedPosition.y() != m_currentPosY;
+    bool positionChanged = adjustedPosition != m_currentPos;
     if (!positionChanged && !scrollableArea()->scrollOriginChanged())
         return;
 
-    FloatSize delta = FloatSize(adjustedPosition.x() - m_currentPosX, adjustedPosition.y() - m_currentPosY);
+    FloatSize delta = adjustedPosition - m_currentPos;
 
-    m_currentPosX = adjustedPosition.x();
-    m_currentPosY = adjustedPosition.y();
+    m_currentPos = adjustedPosition;
     notifyContentAreaScrolled(delta);
     notifyPositionChanged();
 }

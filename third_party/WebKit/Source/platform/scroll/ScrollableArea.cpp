@@ -157,20 +157,37 @@ float ScrollableArea::scrollStep(ScrollGranularity granularity, ScrollbarOrienta
     }
 }
 
-ScrollResultOneDimensional ScrollableArea::userScroll(ScrollDirectionPhysical direction, ScrollGranularity granularity, float delta)
+ScrollResult ScrollableArea::userScroll(ScrollGranularity granularity, const FloatSize& delta)
 {
-    ScrollbarOrientation orientation = scrollbarOrientationFromDirection(direction);
-    if (!userInputScrollable(orientation))
-        return ScrollResultOneDimensional(false, delta);
+    float stepX = scrollStep(granularity, HorizontalScrollbar);
+    float stepY = scrollStep(granularity, VerticalScrollbar);
+
+    FloatSize pixelDelta(delta);
+    pixelDelta.scale(stepX, stepY);
+
+    FloatSize scrollableAxisDelta(
+        userInputScrollable(HorizontalScrollbar) ? pixelDelta.width() : 0,
+        userInputScrollable(VerticalScrollbar) ? pixelDelta.height() : 0);
+
+    if (scrollableAxisDelta.isZero()) {
+        return ScrollResult(
+            false,
+            false,
+            pixelDelta.width(),
+            pixelDelta.height());
+    }
 
     cancelProgrammaticScrollAnimation();
 
-    float step = scrollStep(granularity, orientation);
+    ScrollResult result = scrollAnimator().userScroll(granularity, pixelDelta);
 
-    if (direction == ScrollUp || direction == ScrollLeft)
-        delta = -delta;
+    // Delta that wasn't scrolled because the axis is !userInputScrollable
+    // should count as unusedScrollDelta.
+    FloatSize unscrollableAxisDelta = pixelDelta - scrollableAxisDelta;
+    result.unusedScrollDeltaX += unscrollableAxisDelta.width();
+    result.unusedScrollDeltaY += unscrollableAxisDelta.height();
 
-    return scrollAnimator().userScroll(orientation, granularity, step * delta);
+    return result;
 }
 
 void ScrollableArea::setScrollPosition(const DoublePoint& position, ScrollType scrollType, ScrollBehavior behavior)
