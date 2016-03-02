@@ -138,7 +138,7 @@ WARN_UNUSED_RESULT bool ParseGeneralName(
     const der::Input& input,
     ParseGeneralNameUnsupportedTypeBehavior unsupported_type_behavior,
     ParseGeneralNameIPAddressType ip_address_type,
-    NameConstraints::GeneralNames* subtrees) {
+    GeneralNames* subtrees) {
   der::Parser parser(input);
   der::Tag tag;
   der::Input value;
@@ -241,11 +241,12 @@ WARN_UNUSED_RESULT bool ParseGeneralName(
 // Parses a GeneralSubtrees |value| and store the contents in |subtrees|.
 // The individual values stored into |subtrees| are not validated by this
 // function.
-// NOTE: |subtrees| will be modified regardless of the return.
-WARN_UNUSED_RESULT bool ParseGeneralSubtrees(
-    const der::Input& value,
-    bool is_critical,
-    NameConstraints::GeneralNames* subtrees) {
+// NOTE: |subtrees| is not pre-initialized by the function(it is expected to be
+// a default initialized object), and it will be modified regardless of the
+// return value.
+WARN_UNUSED_RESULT bool ParseGeneralSubtrees(const der::Input& value,
+                                             bool is_critical,
+                                             GeneralNames* subtrees) {
   // GeneralSubtrees ::= SEQUENCE SIZE (1..MAX) OF GeneralSubtree
   //
   // GeneralSubtree ::= SEQUENCE {
@@ -293,9 +294,39 @@ WARN_UNUSED_RESULT bool ParseGeneralSubtrees(
 
 }  // namespace
 
-NameConstraints::GeneralNames::GeneralNames() {}
+GeneralNames::GeneralNames() {}
 
-NameConstraints::GeneralNames::~GeneralNames() {}
+GeneralNames::~GeneralNames() {}
+
+// static
+scoped_ptr<GeneralNames> GeneralNames::CreateFromDer(
+    const der::Input& general_names_tlv) {
+  // RFC 5280 section 4.2.1.6:
+  // GeneralNames ::= SEQUENCE SIZE (1..MAX) OF GeneralName
+  scoped_ptr<GeneralNames> general_names(new GeneralNames());
+  der::Parser parser(general_names_tlv);
+  der::Parser sequence_parser;
+  if (!parser.ReadSequence(&sequence_parser))
+    return nullptr;
+  // Should not have trailing data after GeneralNames sequence.
+  if (parser.HasMore())
+    return nullptr;
+  // The GeneralNames sequence should have at least 1 element.
+  if (!sequence_parser.HasMore())
+    return nullptr;
+
+  while (sequence_parser.HasMore()) {
+    der::Input raw_general_name;
+    if (!sequence_parser.ReadRawTLV(&raw_general_name))
+      return nullptr;
+
+    if (!ParseGeneralName(raw_general_name, RECORD_UNSUPPORTED, IP_ADDRESS_ONLY,
+                          general_names.get()))
+      return nullptr;
+  }
+
+  return general_names;
+}
 
 NameConstraints::~NameConstraints() {}
 
@@ -363,8 +394,7 @@ bool NameConstraints::Parse(const der::Input& extension_value,
 
 bool NameConstraints::IsPermittedCert(
     const der::Input& subject_rdn_sequence,
-    bool has_subject_alt_name,
-    const der::Input& subject_alt_name_tlv) const {
+    const GeneralNames* subject_alt_names) const {
   // Subject Alternative Name handling:
   //
   // RFC 5280 section 4.2.1.6:
@@ -374,29 +404,7 @@ bool NameConstraints::IsPermittedCert(
   //
   // GeneralNames ::= SEQUENCE SIZE (1..MAX) OF GeneralName
 
-  GeneralNames san_names;
-  if (has_subject_alt_name) {
-    der::Parser subject_alt_name_parser(subject_alt_name_tlv);
-    der::Parser san_sequence_parser;
-    if (!subject_alt_name_parser.ReadSequence(&san_sequence_parser))
-      return false;
-    // Should not have trailing data after subjectAltName sequence.
-    if (subject_alt_name_parser.HasMore())
-      return false;
-    // The subjectAltName sequence should have at least 1 element.
-    if (!san_sequence_parser.HasMore())
-      return false;
-
-    while (san_sequence_parser.HasMore()) {
-      der::Input raw_general_name;
-      if (!san_sequence_parser.ReadRawTLV(&raw_general_name))
-        return false;
-
-      if (!ParseGeneralName(raw_general_name, RECORD_UNSUPPORTED,
-                            IP_ADDRESS_ONLY, &san_names))
-        return false;
-    }
-
+  if (subject_alt_names) {
     // Check unsupported name types:
     // ConstrainedNameTypes for the unsupported types will only be true if that
     // type of name was present in a name constraint that was marked critical.
@@ -407,30 +415,28 @@ bool NameConstraints::IsPermittedCert(
     // that name form appears in the subject field or subjectAltName
     // extension of a subsequent certificate, then the application MUST
     // either process the constraint or reject the certificate.
-    if (ConstrainedNameTypes() & san_names.present_name_types &
+    if (ConstrainedNameTypes() & subject_alt_names->present_name_types &
         ~kSupportedNameTypes) {
       return false;
     }
 
     // Check supported name types:
-    for (const auto& dns_name : san_names.dns_names) {
+    for (const auto& dns_name : subject_alt_names->dns_names) {
       if (!IsPermittedDNSName(dns_name))
         return false;
     }
 
-    for (const auto& directory_name : san_names.directory_names) {
+    for (const auto& directory_name : subject_alt_names->directory_names) {
       if (!IsPermittedDirectoryName(
               der::Input(directory_name.data(), directory_name.size()))) {
         return false;
       }
     }
 
-    for (const auto& ip_address : san_names.ip_addresses) {
+    for (const auto& ip_address : subject_alt_names->ip_addresses) {
       if (!IsPermittedIP(ip_address))
         return false;
     }
-  } else {
-    DCHECK_EQ(0U, subject_alt_name_tlv.Length());
   }
 
   // Subject handling:
@@ -442,7 +448,7 @@ bool NameConstraints::IsPermittedCert(
   // form, but the certificate does not include a subject alternative name, the
   // rfc822Name constraint MUST be applied to the attribute of type emailAddress
   // in the subject distinguished name.
-  if (!has_subject_alt_name &&
+  if (!subject_alt_names &&
       (ConstrainedNameTypes() & GENERAL_NAME_RFC822_NAME)) {
     bool contained_email_address = false;
     if (!NameContainsEmailAddress(subject_rdn_sequence,
@@ -461,7 +467,7 @@ bool NameConstraints::IsPermittedCert(
   // This code assumes that criticality condition is checked by the caller, and
   // therefore only needs to avoid the IsPermittedDirectoryName check against an
   // empty subject in such a case.
-  if (has_subject_alt_name && subject_rdn_sequence.Length() == 0)
+  if (subject_alt_names && subject_rdn_sequence.Length() == 0)
     return true;
 
   return IsPermittedDirectoryName(subject_rdn_sequence);

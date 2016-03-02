@@ -5,6 +5,7 @@
 #include "net/cert/internal/verify_certificate_chain.h"
 
 #include "base/logging.h"
+#include "net/cert/internal/name_constraints.h"
 #include "net/cert/internal/parse_certificate.h"
 #include "net/cert/internal/signature_algorithm.h"
 #include "net/cert/internal/signature_policy.h"
@@ -34,6 +35,11 @@ struct FullyParsedCert {
 
   bool has_key_usage = false;
   der::BitString key_usage;
+
+  scoped_ptr<GeneralNames> subject_alt_names;
+
+  bool has_name_constraints = false;
+  ParsedExtension name_constraints_extension;
 
   // The remaining extensions (excludes the standard ones above).
   ExtensionsMap unconsumed_extensions;
@@ -65,6 +71,12 @@ WARN_UNUSED_RESULT bool VerifyNoUnconsumedCriticalExtensions(
   return true;
 }
 
+WARN_UNUSED_RESULT bool GetSequenceValue(const der::Input& tlv,
+                                         der::Input* value) {
+  der::Parser parser(tlv);
+  return parser.ReadTag(der::kSequence, value) && !parser.HasMore();
+}
+
 // Parses an X.509 Certificate fully (including the TBSCertificate and
 // standard extensions), saving all the properties to |out_|.
 WARN_UNUSED_RESULT bool FullyParseCertificate(const der::Input& cert_tlv,
@@ -91,6 +103,8 @@ WARN_UNUSED_RESULT bool FullyParseCertificate(const der::Input& cert_tlv,
   out->has_basic_constraints = false;
   out->has_key_usage = false;
   out->unconsumed_extensions.clear();
+  out->subject_alt_names.reset();
+  out->has_name_constraints = false;
 
   // Parse the standard X.509 extensions and remove them from
   // |unconsumed_extensions|.
@@ -117,15 +131,37 @@ WARN_UNUSED_RESULT bool FullyParseCertificate(const der::Input& cert_tlv,
       if (!ParseKeyUsage(extension.value, &out->key_usage))
         return false;
     }
+
+    // Subject alternative name.
+    if (ConsumeExtension(SubjectAltNameOid(), &out->unconsumed_extensions,
+                         &extension)) {
+      // RFC 5280 section 4.2.1.6:
+      // SubjectAltName ::= GeneralNames
+      out->subject_alt_names = GeneralNames::CreateFromDer(extension.value);
+      if (!out->subject_alt_names)
+        return false;
+      // RFC 5280 section 4.1.2.6:
+      // If subject naming information is present only in the subjectAltName
+      // extension (e.g., a key bound only to an email address or URI), then the
+      // subject name MUST be an empty sequence and the subjectAltName extension
+      // MUST be critical.
+      if (!extension.critical) {
+        der::Input subject_value;
+        if (!GetSequenceValue(out->tbs.subject_tlv, &subject_value))
+          return false;
+        if (subject_value.Length() == 0)
+          return false;
+      }
+    }
+
+    // Name constraints.
+    if (ConsumeExtension(NameConstraintsOid(), &out->unconsumed_extensions,
+                         &out->name_constraints_extension)) {
+      out->has_name_constraints = true;
+    }
   }
 
   return true;
-}
-
-WARN_UNUSED_RESULT bool GetSequenceValue(const der::Input& tlv,
-                                         der::Input* value) {
-  der::Parser parser(tlv);
-  return parser.ReadTag(der::kSequence, value) && !parser.HasMore();
 }
 
 // Returns true if |name1_tlv| matches |name2_tlv|. The two inputs must be
@@ -237,10 +273,12 @@ WARN_UNUSED_RESULT bool VerifySignatureAlgorithmsMatch(
 // Processing" procedure.
 WARN_UNUSED_RESULT bool BasicCertificateProcessing(
     const FullyParsedCert& cert,
+    bool is_target_cert,
     const SignaturePolicy* signature_policy,
     const der::GeneralizedTime& time,
     const der::Input& working_spki,
-    const der::Input& working_issuer_name) {
+    const der::Input& working_issuer_name,
+    const std::vector<scoped_ptr<NameConstraints>>& name_constraints_list) {
   // Check that the signature algorithms in Certificate vs TBSCertificate
   // match. This isn't part of RFC 5280 section 6.1.3, but is mandated by
   // sections 4.1.1.2 and 4.1.2.3.
@@ -268,7 +306,21 @@ WARN_UNUSED_RESULT bool BasicCertificateProcessing(
   if (!NameMatches(cert.tbs.issuer_tlv, working_issuer_name))
     return false;
 
-  // TODO(eroman): Steps b-f are omitted, as policy/name constraints are not yet
+  // Name constraints (RFC 5280 section 6.1.3 step b & c)
+  // If certificate i is self-issued and it is not the final certificate in the
+  // path, skip this step for certificate i.
+  if (!name_constraints_list.empty() &&
+      (!IsSelfIssued(cert) || is_target_cert)) {
+    der::Input subject_value;
+    if (!GetSequenceValue(cert.tbs.subject_tlv, &subject_value))
+      return false;
+    for (const auto& nc : name_constraints_list) {
+      if (!nc->IsPermittedCert(subject_value, cert.subject_alt_names.get()))
+        return false;
+    }
+  }
+
+  // TODO(eroman): Steps d-f are omitted, as policy constraints are not yet
   // implemented.
 
   return true;
@@ -280,8 +332,9 @@ WARN_UNUSED_RESULT bool PrepareForNextCertificate(
     const FullyParsedCert& cert,
     size_t* max_path_length_ptr,
     der::Input* working_spki,
-    der::Input* working_issuer_name) {
-  // TODO(eroman): Steps a-b are omitted, as policy/name constraints are not yet
+    der::Input* working_issuer_name,
+    std::vector<scoped_ptr<NameConstraints>>* name_constraints_list) {
+  // TODO(eroman): Steps a-b are omitted, as policy constraints are not yet
   // implemented.
 
   // From RFC 5280 section 6.1.4 step c:
@@ -298,7 +351,17 @@ WARN_UNUSED_RESULT bool PrepareForNextCertificate(
   // the assignment to |working_spki| above. See the definition
   // of |working_spki|.
 
-  // TODO(eroman): Steps g-j are omitted as policy/name constraints are not yet
+  // From RFC 5280 section 6.1.4 step g:
+  if (cert.has_name_constraints) {
+    scoped_ptr<NameConstraints> name_constraints(NameConstraints::CreateFromDer(
+        cert.name_constraints_extension.value,
+        cert.name_constraints_extension.critical));
+    if (!name_constraints)
+      return false;
+    name_constraints_list->push_back(std::move(name_constraints));
+  }
+
+  // TODO(eroman): Steps h-j are omitted as policy constraints are not yet
   // implemented.
 
   // From RFC 5280 section 6.1.4 step k:
@@ -404,7 +467,7 @@ WARN_UNUSED_RESULT bool VerifyTargetCertHasConsistentCaBits(
 // This function corresponds with RFC 5280 section 6.1.5's "Wrap-Up Procedure".
 // It does processing for the final certificate (the target cert).
 WARN_UNUSED_RESULT bool WrapUp(const FullyParsedCert& cert) {
-  // TODO(eroman): Steps a-c are omitted as policy/name constraints are not yet
+  // TODO(eroman): Steps a-b are omitted as policy constraints are not yet
   // implemented.
 
   // Note step c-e are omitted the verification function does
@@ -449,6 +512,11 @@ bool VerifyCertificateChain(const std::vector<der::Input>& certs_der,
   // An empty chain is necessarily invalid.
   if (certs_der.empty())
     return false;
+
+  // Will contain a NameConstraints for each previous cert in the chain which
+  // had nameConstraints. This corresponds to the permitted_subtrees and
+  // excluded_subtrees state variables from RFC 5280.
+  std::vector<scoped_ptr<NameConstraints>> name_constraints_list;
 
   // |working_spki| is an amalgamation of 3 separate variables from RFC 5280:
   //    * working_public_key
@@ -522,13 +590,15 @@ bool VerifyCertificateChain(const std::vector<der::Input>& certs_der,
     //  * If it is the last certificate in the path (target certificate)
     //     - Then run "Wrap up"
     //     - Otherwise run "Prepare for Next cert"
-    if (!BasicCertificateProcessing(cert, signature_policy, time, working_spki,
-                                    working_issuer_name)) {
+    if (!BasicCertificateProcessing(cert, is_target_cert, signature_policy,
+                                    time, working_spki, working_issuer_name,
+                                    name_constraints_list)) {
       return false;
     }
     if (!is_target_cert) {
       if (!PrepareForNextCertificate(cert, &max_path_length, &working_spki,
-                                     &working_issuer_name)) {
+                                     &working_issuer_name,
+                                     &name_constraints_list)) {
         return false;
       }
     } else {

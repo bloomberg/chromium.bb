@@ -35,42 +35,47 @@ enum GeneralNameTypes {
   GENERAL_NAME_REGISTERED_ID = 1 << 8,
 };
 
+// Represents a GeneralNames structure. When processing GeneralNames, it is
+// often necessary to know which types of names were present, and to check
+// all the names of a certain type. Therefore, a bitfield of all the name
+// types is kept, and the names are split into members for each type. Only
+// name types that are handled by this code are stored (though all types are
+// recorded in the bitfield.)
+// TODO(mattm): move this to some other file?
+struct NET_EXPORT GeneralNames {
+  GeneralNames();
+  ~GeneralNames();
+
+  // Create a GeneralNames object representing the DER-encoded
+  // |general_names_tlv|.
+  static scoped_ptr<GeneralNames> CreateFromDer(
+      const der::Input& general_names_tlv);
+
+  // ASCII hostnames.
+  std::vector<std::string> dns_names;
+
+  // DER-encoded Name values (not including the Sequence tag).
+  std::vector<std::vector<uint8_t>> directory_names;
+
+  // iPAddresses as sequences of octets in network byte order. This will be
+  // populated if the GeneralNames represents a Subject Alternative Name.
+  std::vector<std::vector<uint8_t>> ip_addresses;
+
+  // iPAddress ranges, as <IP, prefix length> pairs. This will be populated
+  // if the GeneralNames represents a Name Constraints.
+  std::vector<std::pair<std::vector<uint8_t>, unsigned>> ip_address_ranges;
+
+  // Which name types were present, as a bitfield of GeneralNameTypes.
+  // Includes both the supported and unsupported types (although unsupported
+  // ones may not be recorded depending on the context, like non-critical name
+  // constraints.)
+  int present_name_types = GENERAL_NAME_NONE;
+};
+
 // Parses a NameConstraints extension value and allows testing whether names are
 // allowed under those constraints as defined by RFC 5280 section 4.2.1.10.
 class NET_EXPORT NameConstraints {
  public:
-  // Represents a GeneralNames structure. When processing GeneralNames, it is
-  // often necessary to know which types of names were present, and to check
-  // all the names of a certain type. Therefore, a bitfield of all the name
-  // types is kept, and the names are split into members for each type. Only
-  // name types that are handled by this code are stored (though all types are
-  // recorded in the bitfield.)
-  // TODO(mattm): This may need to be split out into a public class, since
-  // GeneralNames is used other places in a certificate also...
-  struct GeneralNames {
-    GeneralNames();
-    ~GeneralNames();
-
-    // ASCII hostnames.
-    std::vector<std::string> dns_names;
-
-    // DER-encoded Name values (not including the Sequence tag).
-    std::vector<std::vector<uint8_t>> directory_names;
-
-    // iPAddresses as sequences of octets in network byte order. This will be
-    // populated if the GeneralNames represents a Subject Alternative Name.
-    std::vector<std::vector<uint8_t>> ip_addresses;
-
-    // iPAddress ranges, as <IP, prefix length> pairs. This will be populated
-    // if the GeneralNames represents a Name Constraints.
-    std::vector<std::pair<std::vector<uint8_t>, unsigned>> ip_address_ranges;
-
-    // Which name types were present, as a bitfield of GeneralNameTypes.
-    // Includes both the supported and unsupported types (although unsupported
-    // ones may not be recorded depending on the context, like non-critical name
-    // constraints.)
-    int present_name_types = GENERAL_NAME_NONE;
-  };
 
   ~NameConstraints();
 
@@ -86,15 +91,12 @@ class NET_EXPORT NameConstraints {
   // Tests if a certificate is allowed by the name constraints.
   // |subject_rdn_sequence| should be the DER-encoded value of the subject's
   // RDNSequence (not including Sequence tag), and may be an empty ASN.1
-  // sequence. |subject_alt_name_tlv| should be the extnValue of the
-  // subjectAltName extension (not including the OCTET STRING tag & length). If
-  // the cert did not have a subjectAltName extension, |has_subject_alt_name|
-  // should be false and |subject_alt_name_tlv| should be empty.
+  // sequence. |subject_alt_names| should be the parsed representation of the
+  // subjectAltName extension or nullptr if the extension was not present.
   // Note that this method does not check hostname or IP address in commonName,
   // which is deprecated (crbug.com/308330).
   bool IsPermittedCert(const der::Input& subject_rdn_sequence,
-                       bool has_subject_alt_name,
-                       const der::Input& subject_alt_name_tlv) const;
+                       const GeneralNames* subject_alt_names) const;
 
   // Returns true if the ASCII hostname |name| is permitted.
   // |name| may be a wildcard hostname (starts with "*."). Eg, "*.bar.com"
