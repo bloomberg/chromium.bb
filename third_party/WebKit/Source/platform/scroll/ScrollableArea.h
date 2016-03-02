@@ -29,6 +29,7 @@
 #include "platform/PlatformExport.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/geometry/DoublePoint.h"
+#include "platform/graphics/Color.h"
 #include "platform/heap/Handle.h"
 #include "platform/scroll/ScrollAnimatorBase.h"
 #include "platform/scroll/ScrollTypes.h"
@@ -122,6 +123,7 @@ public:
 
     bool hasOverlayScrollbars() const;
     void setScrollbarOverlayStyle(ScrollbarOverlayStyle);
+    void recalculateScrollbarOverlayStyle(Color);
     ScrollbarOverlayStyle getScrollbarOverlayStyle() const { return static_cast<ScrollbarOverlayStyle>(m_scrollbarOverlayStyle); }
 
     // This getter will create a ScrollAnimatorBase if it doesn't already exist.

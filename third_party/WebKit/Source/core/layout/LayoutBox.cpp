@@ -278,7 +278,7 @@ void LayoutBox::styleDidChange(StyleDifference diff, const ComputedStyle* oldSty
     }
 
     if (isDocumentElement() || isBody()) {
-        document().view()->recalculateScrollbarOverlayStyle();
+        document().view()->recalculateScrollbarOverlayStyle(document().view()->documentBackgroundColor());
         document().view()->recalculateCustomScrollbarStyle();
         if (LayoutView* layoutView = view()) {
             if (PaintLayerScrollableArea* scrollableArea = layoutView->scrollableArea()) {

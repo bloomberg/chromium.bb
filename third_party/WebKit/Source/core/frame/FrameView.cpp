@@ -361,24 +361,6 @@ void FrameView::invalidateAllCustomScrollbarsOnActiveChanged()
         recalculateCustomScrollbarStyle();
 }
 
-void FrameView::recalculateScrollbarOverlayStyle()
-{
-    ScrollbarOverlayStyle oldOverlayStyle = getScrollbarOverlayStyle();
-    ScrollbarOverlayStyle overlayStyle = ScrollbarOverlayStyleDefault;
-
-    Color backgroundColor = documentBackgroundColor();
-    // Reduce the background color from RGB to a lightness value
-    // and determine which scrollbar style to use based on a lightness
-    // heuristic.
-    double hue, saturation, lightness;
-    backgroundColor.getHSL(hue, saturation, lightness);
-    if (lightness <= .5)
-        overlayStyle = ScrollbarOverlayStyleLight;
-
-    if (oldOverlayStyle != overlayStyle)
-        setScrollbarOverlayStyle(overlayStyle);
-}
-
 void FrameView::clear()
 {
     reset();
@@ -1914,7 +1896,7 @@ void FrameView::setBaseBackgroundColor(const Color& backgroundColor)
         if (compositedLayerMapping->mainGraphicsLayer())
             compositedLayerMapping->mainGraphicsLayer()->setNeedsDisplay();
     }
-    recalculateScrollbarOverlayStyle();
+    recalculateScrollbarOverlayStyle(documentBackgroundColor());
 }
 
 void FrameView::updateBackgroundRecursively(const Color& backgroundColor, bool transparent)

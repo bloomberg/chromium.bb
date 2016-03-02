@@ -419,13 +419,30 @@ void ScrollableArea::setScrollbarOverlayStyle(ScrollbarOverlayStyle overlayStyle
 
     if (Scrollbar* scrollbar = horizontalScrollbar()) {
         ScrollbarTheme::theme().updateScrollbarOverlayStyle(*scrollbar);
-        setScrollbarNeedsPaintInvalidation(HorizontalScrollbar);
+        scrollbar->setNeedsPaintInvalidation(AllParts);
     }
 
     if (Scrollbar* scrollbar = verticalScrollbar()) {
         ScrollbarTheme::theme().updateScrollbarOverlayStyle(*scrollbar);
-        setScrollbarNeedsPaintInvalidation(VerticalScrollbar);
+        scrollbar->setNeedsPaintInvalidation(AllParts);
     }
+}
+
+void ScrollableArea::recalculateScrollbarOverlayStyle(Color backgroundColor)
+{
+    ScrollbarOverlayStyle oldOverlayStyle = getScrollbarOverlayStyle();
+    ScrollbarOverlayStyle overlayStyle = ScrollbarOverlayStyleDefault;
+
+    // Reduce the background color from RGB to a lightness value
+    // and determine which scrollbar style to use based on a lightness
+    // heuristic.
+    double hue, saturation, lightness;
+    backgroundColor.getHSL(hue, saturation, lightness);
+    if (lightness <= .5)
+        overlayStyle = ScrollbarOverlayStyleLight;
+
+    if (oldOverlayStyle != overlayStyle)
+        setScrollbarOverlayStyle(overlayStyle);
 }
 
 void ScrollableArea::setScrollbarNeedsPaintInvalidation(ScrollbarOrientation orientation)
