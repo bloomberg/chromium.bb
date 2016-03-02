@@ -9,10 +9,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
-#include "mojo/public/c/environment/async_waiter.h"
+#include "mojo/message_pump/handle_watcher.h"
 #include "mojo/public/cpp/bindings/callback.h"
 #include "mojo/public/cpp/bindings/message.h"
-#include "mojo/public/cpp/environment/environment.h"
 #include "mojo/public/cpp/system/core.h"
 
 namespace base {
@@ -42,10 +41,7 @@ class Connector : public MessageReceiver {
   };
 
   // The Connector takes ownership of |message_pipe|.
-  Connector(
-      ScopedMessagePipeHandle message_pipe,
-      ConnectorConfig config,
-      const MojoAsyncWaiter* waiter = Environment::GetDefaultAsyncWaiter());
+  Connector(ScopedMessagePipeHandle message_pipe, ConnectorConfig config);
   ~Connector() override;
 
   // Sets the receiver to handle messages read from the message pipe.  The
@@ -145,7 +141,9 @@ class Connector : public MessageReceiver {
   }
 
  private:
-  static void CallOnHandleReady(void* closure, MojoResult result);
+  // Callback of mojo::common::HandleWatcher.
+  void OnHandleWatcherHandleReady(MojoResult result);
+  // Callback of SyncHandleWatcher.
   void OnSyncHandleWatcherHandleReady(MojoResult result);
   void OnHandleReadyInternal(MojoResult result);
 
@@ -167,12 +165,12 @@ class Connector : public MessageReceiver {
   void CancelWait();
 
   Closure connection_error_handler_;
-  const MojoAsyncWaiter* waiter_;
 
   ScopedMessagePipeHandle message_pipe_;
   MessageReceiver* incoming_receiver_;
 
-  MojoAsyncWaitID async_wait_id_;
+  common::HandleWatcher handle_watcher_;
+
   bool error_;
   bool drop_writes_;
   bool enforce_errors_from_incoming_receiver_;

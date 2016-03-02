@@ -25,8 +25,6 @@
 #include "mojo/public/cpp/bindings/lib/router.h"
 #include "mojo/public/cpp/bindings/lib/scoped_interface_endpoint_handle.h"
 
-struct MojoAsyncWaiter;
-
 namespace mojo {
 namespace internal {
 
@@ -42,8 +40,7 @@ class InterfacePtrState<Interface, false> {
  public:
   using GenericInterface = typename Interface::GenericInterface;
 
-  InterfacePtrState()
-      : proxy_(nullptr), router_(nullptr), waiter_(nullptr), version_(0u) {}
+  InterfacePtrState() : proxy_(nullptr), router_(nullptr), version_(0u) {}
 
   ~InterfacePtrState() {
     // Destruction order matters here. We delete |proxy_| first, even though
@@ -94,21 +91,17 @@ class InterfacePtrState<Interface, false> {
     swap(other->proxy_, proxy_);
     swap(other->router_, router_);
     handle_.swap(other->handle_);
-    swap(other->waiter_, waiter_);
     swap(other->version_, version_);
   }
 
-  void Bind(InterfacePtrInfo<GenericInterface> info,
-            const MojoAsyncWaiter* waiter) {
+  void Bind(InterfacePtrInfo<GenericInterface> info) {
     DCHECK(!proxy_);
     DCHECK(!router_);
     DCHECK(!handle_.is_valid());
-    DCHECK(!waiter_);
     DCHECK_EQ(0u, version_);
     DCHECK(info.is_valid());
 
     handle_ = info.PassHandle();
-    waiter_ = waiter;
     version_ = info.version();
   }
 
@@ -163,18 +156,14 @@ class InterfacePtrState<Interface, false> {
       return;
     }
     // The object hasn't been bound.
-    if (!waiter_) {
-      DCHECK(!handle_.is_valid());
+    if (!handle_.is_valid())
       return;
-    }
 
     FilterChain filters;
     filters.Append<MessageHeaderValidator>();
     filters.Append<typename Interface::ResponseValidator_>();
 
-    router_ =
-        new Router(std::move(handle_), std::move(filters), false, waiter_);
-    waiter_ = nullptr;
+    router_ = new Router(std::move(handle_), std::move(filters), false);
 
     proxy_ = new Proxy(router_);
   }
@@ -183,10 +172,9 @@ class InterfacePtrState<Interface, false> {
   Router* router_;
 
   // |proxy_| and |router_| are not initialized until read/write with the
-  // message pipe handle is needed. |handle_| and |waiter_| are valid between
-  // the Bind() call and the initialization of |proxy_| and |router_|.
+  // message pipe handle is needed. |handle_| is valid between the Bind() call
+  // and the initialization of |proxy_| and |router_|.
   ScopedMessagePipeHandle handle_;
-  const MojoAsyncWaiter* waiter_;
 
   uint32_t version_;
 
@@ -200,7 +188,7 @@ class InterfacePtrState<Interface, true> {
  public:
   using GenericInterface = typename Interface::GenericInterface;
 
-  InterfacePtrState() : waiter_(nullptr), version_(0u) {}
+  InterfacePtrState() : version_(0u) {}
 
   ~InterfacePtrState() {
     endpoint_client_.reset();
@@ -252,22 +240,18 @@ class InterfacePtrState<Interface, true> {
     swap(other->endpoint_client_, endpoint_client_);
     swap(other->proxy_, proxy_);
     handle_.swap(other->handle_);
-    swap(other->waiter_, waiter_);
     swap(other->version_, version_);
   }
 
-  void Bind(InterfacePtrInfo<GenericInterface> info,
-            const MojoAsyncWaiter* waiter) {
+  void Bind(InterfacePtrInfo<GenericInterface> info) {
     DCHECK(!router_);
     DCHECK(!endpoint_client_);
     DCHECK(!proxy_);
     DCHECK(!handle_.is_valid());
-    DCHECK(!waiter_);
     DCHECK_EQ(0u, version_);
     DCHECK(info.is_valid());
 
     handle_ = info.PassHandle();
-    waiter_ = waiter;
     version_ = info.version();
   }
 
@@ -330,19 +314,15 @@ class InterfacePtrState<Interface, true> {
       return;
     }
     // The object hasn't been bound.
-    if (!waiter_) {
-      DCHECK(!handle_.is_valid());
+    if (!handle_.is_valid())
       return;
-    }
 
-    router_ = new MultiplexRouter(true, std::move(handle_), waiter_);
+    router_ = new MultiplexRouter(true, std::move(handle_));
     endpoint_client_.reset(new InterfaceEndpointClient(
         router_->CreateLocalEndpointHandle(kMasterInterfaceId), nullptr,
         make_scoped_ptr(new typename Interface::ResponseValidator_())));
     proxy_.reset(new Proxy(endpoint_client_.get()));
     proxy_->serialization_context()->router = endpoint_client_->router();
-
-    waiter_ = nullptr;
   }
 
   scoped_refptr<MultiplexRouter> router_;
@@ -351,10 +331,9 @@ class InterfacePtrState<Interface, true> {
   scoped_ptr<Proxy> proxy_;
 
   // |router_| (as well as other members above) is not initialized until
-  // read/write with the message pipe handle is needed. |handle_| and |waiter_|
-  // are valid between the Bind() call and the initialization of |router_|.
+  // read/write with the message pipe handle is needed. |handle_| is valid
+  // between the Bind() call and the initialization of |router_|.
   ScopedMessagePipeHandle handle_;
-  const MojoAsyncWaiter* waiter_;
 
   uint32_t version_;
 

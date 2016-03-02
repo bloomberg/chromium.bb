@@ -77,6 +77,7 @@ source_set("perftests") {
   ]
 
   deps = [
+    "//mojo/message_pump",
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/bindings:callback",
     "//mojo/public/cpp/environment:standalone",

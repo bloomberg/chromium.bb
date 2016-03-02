@@ -5,6 +5,8 @@
 #include <stddef.h>
 #include <utility>
 
+#include "base/message_loop/message_loop.h"
+#include "mojo/message_pump/message_pump_mojo.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/test_support/test_support.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
@@ -85,9 +87,11 @@ struct BoundPingService {
 };
 
 class MojoBindingsPerftest : public testing::Test {
+ public:
+  MojoBindingsPerftest() : loop_(common::MessagePumpMojo::Create()) {}
+
  protected:
-  Environment env_;
-  RunLoop run_loop_;
+  base::MessageLoop loop_;
 };
 
 TEST_F(MojoBindingsPerftest, InProcessPingPong) {

@@ -8,7 +8,6 @@
 #include <assert.h>
 #include <utility>
 
-#include "mojo/public/c/environment/async_waiter.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/callback.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
@@ -54,53 +53,38 @@ class StrongBinding {
  public:
   explicit StrongBinding(Interface* impl) : binding_(impl) {}
 
-  StrongBinding(
-      Interface* impl,
-      ScopedMessagePipeHandle handle,
-      const MojoAsyncWaiter* waiter = Environment::GetDefaultAsyncWaiter())
+  StrongBinding(Interface* impl, ScopedMessagePipeHandle handle)
       : StrongBinding(impl) {
-    Bind(std::move(handle), waiter);
+    Bind(std::move(handle));
   }
 
-  StrongBinding(
-      Interface* impl,
-      InterfacePtr<Interface>* ptr,
-      const MojoAsyncWaiter* waiter = Environment::GetDefaultAsyncWaiter())
+  StrongBinding(Interface* impl, InterfacePtr<Interface>* ptr)
       : StrongBinding(impl) {
-    Bind(ptr, waiter);
+    Bind(ptr);
   }
 
-  StrongBinding(
-      Interface* impl,
-      InterfaceRequest<Interface> request,
-      const MojoAsyncWaiter* waiter = Environment::GetDefaultAsyncWaiter())
+  StrongBinding(Interface* impl, InterfaceRequest<Interface> request)
       : StrongBinding(impl) {
-    Bind(std::move(request), waiter);
+    Bind(std::move(request));
   }
 
   ~StrongBinding() {}
 
-  void Bind(
-      ScopedMessagePipeHandle handle,
-      const MojoAsyncWaiter* waiter = Environment::GetDefaultAsyncWaiter()) {
+  void Bind(ScopedMessagePipeHandle handle) {
     assert(!binding_.is_bound());
-    binding_.Bind(std::move(handle), waiter);
+    binding_.Bind(std::move(handle));
     binding_.set_connection_error_handler([this]() { OnConnectionError(); });
   }
 
-  void Bind(
-      InterfacePtr<Interface>* ptr,
-      const MojoAsyncWaiter* waiter = Environment::GetDefaultAsyncWaiter()) {
+  void Bind(InterfacePtr<Interface>* ptr) {
     assert(!binding_.is_bound());
-    binding_.Bind(ptr, waiter);
+    binding_.Bind(ptr);
     binding_.set_connection_error_handler([this]() { OnConnectionError(); });
   }
 
-  void Bind(
-      InterfaceRequest<Interface> request,
-      const MojoAsyncWaiter* waiter = Environment::GetDefaultAsyncWaiter()) {
+  void Bind(InterfaceRequest<Interface> request) {
     assert(!binding_.is_bound());
-    binding_.Bind(std::move(request), waiter);
+    binding_.Bind(std::move(request));
     binding_.set_connection_error_handler([this]() { OnConnectionError(); });
   }
 

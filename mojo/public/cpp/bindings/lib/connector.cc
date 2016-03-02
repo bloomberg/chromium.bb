@@ -44,12 +44,9 @@ class MayAutoLock {
 // ----------------------------------------------------------------------------
 
 Connector::Connector(ScopedMessagePipeHandle message_pipe,
-                     ConnectorConfig config,
-                     const MojoAsyncWaiter* waiter)
-    : waiter_(waiter),
-      message_pipe_(std::move(message_pipe)),
+                     ConnectorConfig config)
+    : message_pipe_(std::move(message_pipe)),
       incoming_receiver_(nullptr),
-      async_wait_id_(0),
       error_(false),
       drop_writes_(false),
       enforce_errors_from_incoming_receiver_(true),
@@ -250,12 +247,8 @@ bool Connector::RunSyncHandleWatch(const bool* should_stop) {
   return SyncHandleWatcher::current()->WatchAllHandles(should_stop_array, 2);
 }
 
-// static
-void Connector::CallOnHandleReady(void* closure, MojoResult result) {
-  Connector* self = static_cast<Connector*>(closure);
-  CHECK(self->async_wait_id_ != 0);
-  self->async_wait_id_ = 0;
-  self->OnHandleReadyInternal(result);
+void Connector::OnHandleWatcherHandleReady(MojoResult result) {
+  OnHandleReadyInternal(result);
 }
 
 void Connector::OnSyncHandleWatcherHandleReady(MojoResult result) {
@@ -280,13 +273,12 @@ void Connector::OnHandleReadyInternal(MojoResult result) {
 }
 
 void Connector::WaitToReadMore() {
-  CHECK(!async_wait_id_);
+  CHECK(!handle_watcher_.is_watching());
   CHECK(!paused_);
-  async_wait_id_ = waiter_->AsyncWait(message_pipe_.get().value(),
-                                      MOJO_HANDLE_SIGNAL_READABLE,
-                                      MOJO_DEADLINE_INDEFINITE,
-                                      &Connector::CallOnHandleReady,
-                                      this);
+  handle_watcher_.Start(message_pipe_.get(), MOJO_HANDLE_SIGNAL_READABLE,
+                        MOJO_DEADLINE_INDEFINITE,
+                        base::Bind(&Connector::OnHandleWatcherHandleReady,
+                                   base::Unretained(this)));
 
   if (register_sync_handle_watch_count_ > 0 &&
       !registered_with_sync_handle_watcher_) {
@@ -315,7 +307,7 @@ bool Connector::ReadSingleMessage(MojoResult* read_result) {
     // Dispatching the message may spin in a nested message loop. To ensure we
     // continue dispatching messages when this happens start listening for
     // messagse now.
-    if (!async_wait_id_) {
+    if (!handle_watcher_.is_watching()) {
       // TODO: Need to evaluate the perf impact of this.
       WaitToReadMore();
     }
@@ -358,7 +350,7 @@ void Connector::ReadAllAvailableMessages() {
       // that the peer is closed immediately, while the new one is asynchronous
       // because of thread hops. In that case, there'll still be an async
       // waiter.
-      if (!async_wait_id_)
+      if (!handle_watcher_.is_watching())
         WaitToReadMore();
       break;
     }
@@ -366,10 +358,7 @@ void Connector::ReadAllAvailableMessages() {
 }
 
 void Connector::CancelWait() {
-  if (async_wait_id_) {
-    waiter_->CancelWait(async_wait_id_);
-    async_wait_id_ = 0;
-  }
+  handle_watcher_.Stop();
 
   if (registered_with_sync_handle_watcher_) {
     SyncHandleWatcher::current()->UnregisterHandle(message_pipe_.get());

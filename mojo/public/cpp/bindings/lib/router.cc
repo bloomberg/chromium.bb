@@ -85,13 +85,10 @@ bool Router::HandleIncomingMessageThunk::Accept(Message* message) {
 
 Router::Router(ScopedMessagePipeHandle message_pipe,
                FilterChain filters,
-               bool expects_sync_requests,
-               const MojoAsyncWaiter* waiter)
+               bool expects_sync_requests)
     : thunk_(this),
       filters_(std::move(filters)),
-      connector_(std::move(message_pipe),
-                 Connector::SINGLE_THREADED_SEND,
-                 waiter),
+      connector_(std::move(message_pipe), Connector::SINGLE_THREADED_SEND),
       incoming_receiver_(nullptr),
       next_request_id_(0),
       testing_mode_(false),

@@ -13,7 +13,6 @@
 #include "mojo/public/cpp/bindings/callback.h"
 #include "mojo/public/cpp/bindings/interface_ptr_info.h"
 #include "mojo/public/cpp/bindings/lib/interface_ptr_state.h"
-#include "mojo/public/cpp/environment/environment.h"
 
 namespace mojo {
 
@@ -66,20 +65,15 @@ class InterfacePtr {
   // Closes the bound message pipe (if any) on destruction.
   ~InterfacePtr() {}
 
-  // Binds the InterfacePtr to a remote implementation of Interface. The
-  // |waiter| is used for receiving notifications when there is data to read
-  // from the message pipe. For most callers, the default |waiter| will be
-  // sufficient.
+  // Binds the InterfacePtr to a remote implementation of Interface.
   //
   // Calling with an invalid |info| (containing an invalid message pipe handle)
   // has the same effect as reset(). In this case, the InterfacePtr is not
   // considered as bound.
-  void Bind(
-      InterfacePtrInfo<GenericInterface> info,
-      const MojoAsyncWaiter* waiter = Environment::GetDefaultAsyncWaiter()) {
+  void Bind(InterfacePtrInfo<GenericInterface> info) {
     reset();
     if (info.is_valid())
-      internal_state_.Bind(std::move(info), waiter);
+      internal_state_.Bind(std::move(info));
   }
 
   // Returns whether or not this InterfacePtr is bound to a message pipe.
@@ -214,15 +208,12 @@ class InterfacePtr {
 };
 
 // If |info| is valid (containing a valid message pipe handle), returns an
-// InterfacePtr bound to it. Otherwise, returns an unbound InterfacePtr. The
-// specified |waiter| will be used as in the InterfacePtr::Bind() method.
+// InterfacePtr bound to it. Otherwise, returns an unbound InterfacePtr.
 template <typename Interface>
-InterfacePtr<Interface> MakeProxy(
-    InterfacePtrInfo<Interface> info,
-    const MojoAsyncWaiter* waiter = Environment::GetDefaultAsyncWaiter()) {
+InterfacePtr<Interface> MakeProxy(InterfacePtrInfo<Interface> info) {
   InterfacePtr<Interface> ptr;
   if (info.is_valid())
-    ptr.Bind(std::move(info), waiter);
+    ptr.Bind(std::move(info));
   return std::move(ptr);
 }
 

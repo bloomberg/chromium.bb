@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "mojo/public/c/environment/async_waiter.h"
 #include "mojo/public/cpp/bindings/associated_group.h"
 #include "mojo/public/cpp/bindings/callback.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
@@ -50,14 +49,14 @@ class BindingState<Interface, false> {
       Close();
   }
 
-  void Bind(ScopedMessagePipeHandle handle, const MojoAsyncWaiter* waiter) {
+  void Bind(ScopedMessagePipeHandle handle) {
     DCHECK(!router_);
     internal::FilterChain filters;
     filters.Append<internal::MessageHeaderValidator>();
     filters.Append<typename Interface::RequestValidator_>();
 
     router_ = new internal::Router(std::move(handle), std::move(filters),
-                                   Interface::HasSyncMethods_, waiter);
+                                   Interface::HasSyncMethods_);
     router_->set_incoming_receiver(&stub_);
     router_->set_connection_error_handler(
         [this]() { connection_error_handler_.Run(); });
@@ -146,10 +145,10 @@ class BindingState<Interface, true> {
       Close();
   }
 
-  void Bind(ScopedMessagePipeHandle handle, const MojoAsyncWaiter* waiter) {
+  void Bind(ScopedMessagePipeHandle handle) {
     DCHECK(!router_);
 
-    router_ = new internal::MultiplexRouter(false, std::move(handle), waiter);
+    router_ = new internal::MultiplexRouter(false, std::move(handle));
     stub_.serialization_context()->router = router_;
 
     endpoint_client_.reset(new internal::InterfaceEndpointClient(

@@ -187,6 +187,7 @@
       ],
       'dependencies': [
         '../base/base.gyp:base',
+        'mojo_message_pump_lib',
         'mojo_interface_bindings_cpp_sources',
       ],
     },
