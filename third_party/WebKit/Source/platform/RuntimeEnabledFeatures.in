@@ -171,7 +171,7 @@ ScrollAnchoring
 ScrollTopLeftInterop status=experimental
 ServiceWorkerClientAttributes status=stable
 ServiceWorkerExtendableMessageEvent status=experimental
-ServiceWorkerClientsGetID status=experimental
+ServiceWorkerClientsGetID status=stable
 ServiceWorkerPerformanceTimeline status=stable
 ServiceWorkerWindowClientNavigate status=stable
 ShadowDOMV1 status=experimental

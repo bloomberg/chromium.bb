@@ -28,6 +28,7 @@ interface Client
 interface Clients
     method claim
     method constructor
+    method get
     method matchAll
     method openWindow
 interface CloseEvent : Event
