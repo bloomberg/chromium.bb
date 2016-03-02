@@ -797,7 +797,8 @@ public:
 
     Element* offsetParent() const;
 
-    void markContainerChainForLayout(bool scheduleRelayout = true, SubtreeLayoutScope* = nullptr);
+    void markContainerChainForLayout(bool scheduleRelayout = true);
+    void markContainerChainForLayout(SubtreeLayoutScope*);
     void setNeedsLayout(LayoutInvalidationReasonForTracing, MarkingBehavior = MarkContainerChain, SubtreeLayoutScope* = nullptr);
     void setNeedsLayoutAndFullPaintInvalidation(LayoutInvalidationReasonForTracing, MarkingBehavior = MarkContainerChain, SubtreeLayoutScope* = nullptr);
     void clearNeedsLayout();
@@ -1578,6 +1579,8 @@ private:
 
     void setNeedsOverflowRecalcAfterStyleChange();
 
+    void markContainerChainForLayout(bool scheduleRelayout, SubtreeLayoutScope*);
+
     // FIXME: This should be 'markContaingBoxChainForOverflowRecalc when we make LayoutBox
     // recomputeOverflow-capable. crbug.com/437012 and crbug.com/434700.
     inline void markContainingBlocksForOverflowRecalc();
@@ -1985,7 +1988,7 @@ inline void LayoutObject::setNeedsLayout(LayoutInvalidationReasonForTracing reas
             "data",
             InspectorLayoutInvalidationTrackingEvent::data(this, reason));
         if (markParents == MarkContainerChain && (!layouter || layouter->root() != this))
-            markContainerChainForLayout(true, layouter);
+            markContainerChainForLayout(layouter);
     }
 }
 
@@ -2022,7 +2025,7 @@ inline void LayoutObject::setChildNeedsLayout(MarkingBehavior markParents, Subtr
     setNormalChildNeedsLayout(true);
     // FIXME: Replace MarkOnlyThis with the SubtreeLayoutScope code path and remove the MarkingBehavior argument entirely.
     if (!alreadyNeededLayout && markParents == MarkContainerChain && (!layouter || layouter->root() != this))
-        markContainerChainForLayout(true, layouter);
+        markContainerChainForLayout(layouter);
 }
 
 inline void LayoutObject::setNeedsPositionedMovementLayout()

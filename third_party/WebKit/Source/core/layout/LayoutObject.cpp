@@ -761,10 +761,24 @@ static inline bool objectIsRelayoutBoundary(const LayoutObject* object)
     return true;
 }
 
+void LayoutObject::markContainerChainForLayout(bool scheduleRelayout)
+{
+    markContainerChainForLayout(scheduleRelayout, nullptr);
+}
+
+void LayoutObject::markContainerChainForLayout(SubtreeLayoutScope* layouter)
+{
+    // When we have a layouter, it means that we're in layout and we're marking
+    // a descendant as needing layout with the intention of visiting it during
+    // this layout. We shouldn't be scheduling it to be laid out later.
+    markContainerChainForLayout(!layouter, layouter);
+}
+
 void LayoutObject::markContainerChainForLayout(bool scheduleRelayout, SubtreeLayoutScope* layouter)
 {
     ASSERT(!isSetNeedsLayoutForbidden());
     ASSERT(!layouter || this != layouter->root());
+    ASSERT(!scheduleRelayout || !layouter);
 
     LayoutObject* object = container();
     LayoutObject* last = this;
