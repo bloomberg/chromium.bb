@@ -891,8 +891,10 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, ReloadEmbedder) {
 }
 
 IN_PROC_BROWSER_TEST_P(WebViewTest, AcceptTouchEvents) {
-  // TODO(lfg): Fix touch events for OOPIF-based webview.
-  // https://crbug.com/581892
+  // This test only makes sense for non-OOPIF WebView, since with
+  // UseCrossProcessFramesForGuests() events are routed directly to the
+  // guest, so the embedder does not need to know about the installation of
+  // touch handlers.
   if (content::BrowserPluginGuestMode::UseCrossProcessFramesForGuests())
     return;
 

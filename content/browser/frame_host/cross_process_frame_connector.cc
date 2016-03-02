@@ -149,11 +149,25 @@ gfx::Point CrossProcessFrameConnector::TransformPointToRootCoordSpace(
   return transformed_point;
 }
 
+void CrossProcessFrameConnector::ForwardProcessAckedTouchEvent(
+    const TouchEventWithLatencyInfo& touch,
+    InputEventAckState ack_result) {
+  auto main_view = GetRootRenderWidgetHostView();
+  if (main_view)
+    main_view->ProcessAckedTouchEvent(touch, ack_result);
+}
+
 bool CrossProcessFrameConnector::HasFocus() {
   RenderWidgetHostViewBase* root_view = GetRootRenderWidgetHostView();
   if (root_view)
     return root_view->HasFocus();
   return false;
+}
+
+void CrossProcessFrameConnector::FocusRootView() {
+  RenderWidgetHostViewBase* root_view = GetRootRenderWidgetHostView();
+  if (root_view)
+    root_view->Focus();
 }
 
 void CrossProcessFrameConnector::OnForwardInputEvent(
@@ -168,6 +182,10 @@ void CrossProcessFrameConnector::OnForwardInputEvent(
           ? manager->GetOuterRenderWidgetHostForKeyboardInput()
           : frame_proxy_in_parent_renderer_->GetRenderViewHost()->GetWidget();
 
+  // TODO(wjmaclean): We should remove these forwarding functions, since they
+  // are directly target using RenderWidgetHostInputEventRouter. But neither
+  // pathway is currently handling gesture events, so that needs to be fixed
+  // in a subsequent CL.
   if (blink::WebInputEvent::isKeyboardEventType(event->type)) {
     if (!parent_widget->GetLastKeyboardEvent())
       return;

@@ -8,7 +8,9 @@
 #include <stdint.h>
 
 #include "cc/output/compositor_frame.h"
+#include "content/browser/renderer_host/event_with_latency_info.h"
 #include "content/common/content_export.h"
+#include "content/common/input/input_event_ack_state.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace blink {
@@ -95,10 +97,15 @@ class CONTENT_EXPORT CrossProcessFrameConnector {
   void UpdateCursor(const WebCursor& cursor);
   gfx::Point TransformPointToRootCoordSpace(const gfx::Point& point,
                                             cc::SurfaceId surface_id);
+  // Pass acked touch events to the root view for gesture processing.
+  void ForwardProcessAckedTouchEvent(const TouchEventWithLatencyInfo& touch,
+                                     InputEventAckState ack_result);
 
   // Determines whether the root RenderWidgetHostView (and thus the current
   // page) has focus.
   bool HasFocus();
+  // Focuses the root RenderWidgetHostView.
+  void FocusRootView();
 
   // Returns the parent RenderWidgetHostView or nullptr it it doesn't have one.
   RenderWidgetHostViewBase* GetParentRenderWidgetHostView();

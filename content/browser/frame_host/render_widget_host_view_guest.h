@@ -104,8 +104,6 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
 #endif
   void ProcessTouchEvent(const blink::WebTouchEvent& event,
                          const ui::LatencyInfo& latency) override;
-  void RegisterSurfaceNamespaceId();
-  void UnregisterSurfaceNamespaceId();
 
   bool LockMouse() override;
   void UnlockMouse() override;

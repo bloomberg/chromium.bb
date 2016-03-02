@@ -49,7 +49,14 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "third_party/WebKit/public/web/WebSandboxFlags.h"
+#include "ui/events/event.h"
+#include "ui/events/event_utils.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/gfx/switches.h"
+
+#if defined(USE_AURA)
+#include "content/browser/renderer_host/render_widget_host_view_aura.h"
+#endif
 
 #if defined(OS_MACOSX)
 #include "ui/base/test/scoped_preferred_scroller_style_mac.h"
@@ -4521,6 +4528,53 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, OpenerSetLocation) {
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
   EXPECT_EQ(shell()->web_contents()->GetLastCommittedURL(), cross_url);
 }
+
+// Ensure that a cross-process subframe with a touch-handler can receive touch
+// events.
+#if defined(USE_AURA)
+// Browser process hit testing is not implemented on Android, and this test
+// requires Aura for RenderWidgetHostViewAura::OnTouchEvent().
+// https://crbug.com/491334
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       SubframeTouchEventRouting) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "/frame_tree/page_with_positioned_nested_frames.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  FrameTreeNode* root = web_contents->GetFrameTree()->root();
+  ASSERT_EQ(1U, root->child_count());
+
+  GURL frame_url(
+      embedded_test_server()->GetURL("b.com", "/page_with_touch_handler.html"));
+  NavigateFrameToURL(root->child_at(0), frame_url);
+  EXPECT_TRUE(WaitForRenderFrameReady(root->child_at(0)->current_frame_host()));
+
+  // Synchronize with the child and parent renderers to guarantee that the
+  // surface information required for event hit testing is ready.
+  RenderWidgetHostViewBase* child_rwhv = static_cast<RenderWidgetHostViewBase*>(
+      root->child_at(0)->current_frame_host()->GetView());
+  SurfaceHitTestReadyNotifier notifier(
+      static_cast<RenderWidgetHostViewChildFrame*>(child_rwhv));
+  notifier.WaitForSurfaceReady();
+
+  // Simulate touch event to sub-frame.
+  gfx::Point child_center(150, 150);
+  auto rwhv = static_cast<RenderWidgetHostViewAura*>(
+      web_contents->GetRenderWidgetHostView());
+  ui::TouchEvent touch_event(ui::ET_TOUCH_PRESSED, child_center, 0, 0,
+                             ui::EventTimeForNow(), 30.f, 30.f, 0.f, 0.f);
+  rwhv->OnTouchEvent(&touch_event);
+
+  // Verify touch handler in subframe was invoked
+  std::string result;
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      root->child_at(0)->current_frame_host(),
+      "window.domAutomationController.send(getLastTouchEvent());", &result));
+  EXPECT_EQ("touchstart", result);
+}
+#endif  // defined(USE_AURA)
 
 // Ensure that a cross-process subframe can receive keyboard events when in
 // focus.

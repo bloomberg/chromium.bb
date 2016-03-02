@@ -14,6 +14,7 @@
 #include "cc/surfaces/surface_id.h"
 #include "content/browser/renderer_host/render_widget_host_view_base_observer.h"
 #include "content/common/content_export.h"
+#include "ui/gfx/geometry/vector2d.h"
 
 struct FrameHostMsg_HittestData_Params;
 
@@ -97,6 +98,7 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
 
   SurfaceIdNamespaceOwnerMap owner_map_;
   RenderWidgetHostViewBase* current_touch_target_;
+  gfx::Vector2d touch_delta_;
   int active_touches_;
   std::unordered_map<cc::SurfaceId, HittestData, cc::SurfaceIdHash>
       hittest_data_;

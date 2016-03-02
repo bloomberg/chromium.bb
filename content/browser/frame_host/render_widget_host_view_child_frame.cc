@@ -43,10 +43,7 @@ RenderWidgetHostViewChildFrame::RenderWidgetHostViewChildFrame(
       frame_connector_(nullptr),
       weak_factory_(this) {
   id_allocator_ = CreateSurfaceIdAllocator();
-  if (host_->delegate() && host_->delegate()->GetInputEventRouter()) {
-    host_->delegate()->GetInputEventRouter()->AddSurfaceIdNamespaceOwner(
-        GetSurfaceIdNamespace(), this);
-  }
+  RegisterSurfaceNamespaceId();
 
   host_->SetView(this);
 }
@@ -253,6 +250,24 @@ void RenderWidgetHostViewChildFrame::UnlockCompositingSurface() {
   NOTIMPLEMENTED();
 }
 
+void RenderWidgetHostViewChildFrame::RegisterSurfaceNamespaceId() {
+  DCHECK(host_);
+  if (host_->delegate() && host_->delegate()->GetInputEventRouter()) {
+    RenderWidgetHostInputEventRouter* router =
+        host_->delegate()->GetInputEventRouter();
+    if (!router->is_registered(GetSurfaceIdNamespace()))
+      router->AddSurfaceIdNamespaceOwner(GetSurfaceIdNamespace(), this);
+  }
+}
+
+void RenderWidgetHostViewChildFrame::UnregisterSurfaceNamespaceId() {
+  DCHECK(host_);
+  if (host_->delegate() && host_->delegate()->GetInputEventRouter()) {
+    host_->delegate()->GetInputEventRouter()->RemoveSurfaceIdNamespaceOwner(
+        GetSurfaceIdNamespace());
+  }
+}
+
 void RenderWidgetHostViewChildFrame::SurfaceDrawn(uint32_t output_surface_id,
                                                   cc::SurfaceDrawStatus drawn) {
   cc::CompositorFrameAck ack;
@@ -364,12 +379,14 @@ gfx::Rect RenderWidgetHostViewChildFrame::GetBoundsInRootWindow() {
   return rect;
 }
 
-#if defined(USE_AURA)
 void RenderWidgetHostViewChildFrame::ProcessAckedTouchEvent(
     const TouchEventWithLatencyInfo& touch,
     InputEventAckState ack_result) {
+  if (!frame_connector_)
+    return;
+
+  frame_connector_->ForwardProcessAckedTouchEvent(touch, ack_result);
 }
-#endif  // defined(USE_AURA)
 
 bool RenderWidgetHostViewChildFrame::LockMouse() {
   return false;
@@ -396,6 +413,17 @@ void RenderWidgetHostViewChildFrame::ProcessMouseWheelEvent(
     const blink::WebMouseWheelEvent& event) {
   if (event.deltaX != 0 || event.deltaY != 0)
     host_->ForwardWheelEvent(event);
+}
+
+void RenderWidgetHostViewChildFrame::ProcessTouchEvent(
+    const blink::WebTouchEvent& event,
+    const ui::LatencyInfo& latency) {
+  if (event.type == blink::WebInputEvent::TouchStart &&
+   frame_connector_ && !frame_connector_->HasFocus()) {
+    frame_connector_->FocusRootView();
+  }
+
+  host_->ForwardTouchEventWithLatencyInfo(event, latency);
 }
 
 gfx::Point RenderWidgetHostViewChildFrame::TransformPointToRootCoordSpace(

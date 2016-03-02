@@ -52,8 +52,7 @@ RenderWidgetHostViewGuest::RenderWidgetHostViewGuest(
   host_->set_scale_input_to_viewport(false);
 }
 
-RenderWidgetHostViewGuest::~RenderWidgetHostViewGuest() {
-}
+RenderWidgetHostViewGuest::~RenderWidgetHostViewGuest() {}
 
 bool RenderWidgetHostViewGuest::OnMessageReceivedFromEmbedder(
     const IPC::Message& message,
@@ -152,24 +151,6 @@ void RenderWidgetHostViewGuest::ProcessTouchEvent(
   }
 
   host_->ForwardTouchEventWithLatencyInfo(event, latency);
-}
-
-void RenderWidgetHostViewGuest::RegisterSurfaceNamespaceId() {
-  DCHECK(host_);
-  if (host_->delegate() && host_->delegate()->GetInputEventRouter()) {
-    RenderWidgetHostInputEventRouter* router =
-        host_->delegate()->GetInputEventRouter();
-    if (!router->is_registered(GetSurfaceIdNamespace()))
-      router->AddSurfaceIdNamespaceOwner(GetSurfaceIdNamespace(), this);
-  }
-}
-
-void RenderWidgetHostViewGuest::UnregisterSurfaceNamespaceId() {
-  DCHECK(host_);
-  if (host_->delegate() && host_->delegate()->GetInputEventRouter()) {
-    host_->delegate()->GetInputEventRouter()->RemoveSurfaceIdNamespaceOwner(
-        GetSurfaceIdNamespace());
-  }
 }
 
 gfx::Rect RenderWidgetHostViewGuest::GetViewBounds() const {

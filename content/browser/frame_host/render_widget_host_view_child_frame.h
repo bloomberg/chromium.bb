@@ -19,8 +19,10 @@
 #include "cc/surfaces/surface_factory_client.h"
 #include "cc/surfaces/surface_id_allocator.h"
 #include "content/browser/compositor/image_transport_factory.h"
+#include "content/browser/renderer_host/event_with_latency_info.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/common/content_export.h"
+#include "content/common/input/input_event_ack_state.h"
 #include "content/public/browser/readback_types.h"
 #include "ui/compositor/compositor.h"
 #include "ui/gfx/geometry/rect.h"
@@ -129,16 +131,16 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   void GetScreenInfo(blink::WebScreenInfo* results) override;
   bool GetScreenColorProfile(std::vector<char>* color_profile) override;
   gfx::Rect GetBoundsInRootWindow() override;
-#if defined(USE_AURA)
   void ProcessAckedTouchEvent(const TouchEventWithLatencyInfo& touch,
                               InputEventAckState ack_result) override;
-#endif  // defined(USE_AURA)
   bool LockMouse() override;
   void UnlockMouse() override;
   uint32_t GetSurfaceIdNamespace() override;
   void ProcessKeyboardEvent(const NativeWebKeyboardEvent& event) override;
   void ProcessMouseEvent(const blink::WebMouseEvent& event) override;
   void ProcessMouseWheelEvent(const blink::WebMouseWheelEvent& event) override;
+  void ProcessTouchEvent(const blink::WebTouchEvent& event,
+                         const ui::LatencyInfo& latency) override;
   gfx::Point TransformPointToRootCoordSpace(const gfx::Point& point) override;
 
 #if defined(OS_MACOSX)
@@ -183,6 +185,9 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   CrossProcessFrameConnector* FrameConnectorForTesting() const {
     return frame_connector_;
   }
+
+  void RegisterSurfaceNamespaceId();
+  void UnregisterSurfaceNamespaceId();
 
  protected:
   friend class RenderWidgetHostView;

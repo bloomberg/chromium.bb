@@ -11,6 +11,18 @@
 #include "content/common/frame_messages.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 
+namespace {
+
+void TransformEventTouchPositions(blink::WebTouchEvent* event,
+                                  const gfx::Vector2d& delta) {
+  for (unsigned i = 0; i < event->touchesLength; ++i) {
+     event->touches[i].position.x += delta.x();
+     event->touches[i].position.y += delta.y();
+  }
+}
+
+}  // anonymous namespace
+
 namespace content {
 
 void RenderWidgetHostInputEventRouter::OnRenderWidgetHostViewBaseDestroyed(
@@ -149,15 +161,26 @@ void RenderWidgetHostInputEventRouter::RouteTouchEvent(
             FindEventTarget(root_view, original_point, &transformed_point);
         if (!current_touch_target_)
           return;
+
+        // TODO(wjmaclean): Instead of just computing a delta, we should extract
+        // the complete transform. We assume it doesn't change for the duration
+        // of the touch sequence, though this could be wrong; a better approach
+        // might be to always transform each point to the current_touch_target_
+        // for the duration of the sequence.
+        touch_delta_ = transformed_point - original_point;
       }
       ++active_touches_;
-      if (current_touch_target_)
+      if (current_touch_target_) {
+        TransformEventTouchPositions(event, touch_delta_);
         current_touch_target_->ProcessTouchEvent(*event, latency);
+      }
       break;
     }
     case blink::WebInputEvent::TouchMove:
-      if (current_touch_target_)
+      if (current_touch_target_) {
+        TransformEventTouchPositions(event, touch_delta_);
         current_touch_target_->ProcessTouchEvent(*event, latency);
+      }
       break;
     case blink::WebInputEvent::TouchEnd:
     case blink::WebInputEvent::TouchCancel:
@@ -165,10 +188,13 @@ void RenderWidgetHostInputEventRouter::RouteTouchEvent(
         break;
 
       DCHECK(active_touches_);
+      TransformEventTouchPositions(event, touch_delta_);
       current_touch_target_->ProcessTouchEvent(*event, latency);
       --active_touches_;
-      if (!active_touches_)
+      if (!active_touches_) {
         current_touch_target_ = nullptr;
+        touch_delta_ = gfx::Vector2d();
+      }
       break;
     default:
       NOTREACHED();

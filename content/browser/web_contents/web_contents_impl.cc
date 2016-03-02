@@ -1278,6 +1278,10 @@ void WebContentsImpl::AttachToOuterWebContentsFrame(
 
   GetRenderManager()->SetRWHViewForInnerContents(
       GetRenderManager()->GetRenderWidgetHostView());
+
+  static_cast<RenderWidgetHostViewChildFrame*>(
+      GetRenderManager()->GetRenderWidgetHostView())
+      ->RegisterSurfaceNamespaceId();
 }
 
 void WebContentsImpl::Stop() {
