@@ -41,10 +41,13 @@ source_set("browser") {
     "startup_task_runner_service.h",
   ]
 
+  public_deps = [
+    "//components/bookmarks/common",
+  ]
+
   deps = [
     "//base",
     "//base:i18n",
-    "//components/bookmarks/common",
     "//components/favicon_base",
     "//components/keyed_service/core",
     "//components/pref_registry",

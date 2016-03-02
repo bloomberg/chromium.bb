@@ -105,6 +105,7 @@ source_set("browser") {
   public_deps = [
     "//components/history/core/browser",
     "//components/metrics/proto",
+    "//components/omnibox/common",
   ]
   deps = [
     ":in_memory_url_index_cache_proto",
@@ -114,7 +115,6 @@ source_set("browser") {
     "//components/data_use_measurement/core",
     "//components/keyed_service/core",
     "//components/metrics",
-    "//components/omnibox/common",
     "//components/open_from_clipboard",
     "//components/pref_registry",
     "//components/prefs",

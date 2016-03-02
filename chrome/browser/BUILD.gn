@@ -82,6 +82,8 @@ source_set("browser") {
   libs = []
   ldflags = []
 
+  allow_circular_includes_from = [ "//chrome/browser/ui" ]
+
   # iOS/non-iOS shared deps. New dependencies should generally be added in the
   # non-iOS deps below.
   public_deps = [
