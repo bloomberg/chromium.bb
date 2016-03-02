@@ -7,6 +7,7 @@
 # Don't call this script yourself, instead use the build-all.sh script.
 
 set -e
+set -x
 
 if [ -z "$1" ]; then
  echo "Directory of binutils not given."
@@ -19,8 +20,19 @@ cd "$1"
 
 cd ../gperftools/
 ./autogen.sh
-./configure --disable-static --enable-minimal --disable-heap-checker \
-  --disable-heap-profiler --disable-cpu-profiler
+./configure \
+  --disable-cpu-profiler \
+  --disable-heap-checker \
+  --disable-heap-profiler \
+  --disable-static \
+  --enable-minimal
+
+echo
+echo "= gperftools src/config.h =========================================="
+cat src/config.h
+echo "===================================================================="
+echo
+
 make -j8
 
 cd "$1"
@@ -39,10 +51,20 @@ export LDFLAGS="-Wl,-rpath,$LIBSTDCPP_RPATH:$LIBTCMALLOC_RPATH \
                 -L$(pwd)/../gperftools/.libs/"
 export LIBS='-ltcmalloc_minimal'
 
-./configure --enable-gold=default --enable-threads --enable-plugins \
+./configure \
+  --enable-deterministic-archives \
+  --enable-gold=default \
+  --enable-plugins \
+  --enable-threads \
   --prefix=/build/output
 
+
 make -j8 all
+echo
+echo "= binutils/config.h ================================================"
+cat binutils/config.h
+echo "===================================================================="
+echo
 make install
 
 # Copy libtcmalloc_minimal library and symlinks to the install lib dir.
