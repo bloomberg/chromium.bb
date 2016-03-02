@@ -40,6 +40,7 @@
 #include "core/svg/SVGGElement.h"
 #include "core/svg/SVGLengthContext.h"
 #include "core/svg/SVGSVGElement.h"
+#include "core/svg/SVGSymbolElement.h"
 #include "core/xml/parser/XMLDocumentParser.h"
 #include "wtf/Vector.h"
 
@@ -424,14 +425,14 @@ void SVGUseElement::buildShadowAndInstanceTree(SVGElement* target)
 
     // Expand all <use> elements in the shadow tree.
     // Expand means: replace the actual <use> element by what it references.
-    if (!expandUseElementsInShadowTree(m_targetElementInstance.get())) {
+    if (!expandUseElementsInShadowTree()) {
         clearShadowTree();
         return;
     }
 
     // Expand all <symbol> elements in the shadow tree.
     // Expand means: replace the actual <symbol> element by the <svg> element.
-    expandSymbolElementsInShadowTree(toSVGElement(shadowTreeRootElement->firstChild()));
+    expandSymbolElementsInShadowTree();
 
     m_targetElementInstance = toSVGElement(shadowTreeRootElement->firstChild());
     transferUseWidthAndHeightIfNeeded(*this, m_targetElementInstance.get(), *m_targetElementInstance->correspondingElement());
@@ -585,9 +586,8 @@ static inline void removeDisallowedElementsFromSubtree(Element& subtree)
     }
 }
 
-bool SVGUseElement::expandUseElementsInShadowTree(SVGElement* element)
+bool SVGUseElement::expandUseElementsInShadowTree()
 {
-    ASSERT(element);
     // Why expand the <use> elements in the shadow tree here, and not just
     // do this directly in buildShadowTree, if we encounter a <use> element?
     //
@@ -595,12 +595,12 @@ bool SVGUseElement::expandUseElementsInShadowTree(SVGElement* element)
     // contains <use> tags, we'd miss them. So once we're done with setting up the
     // actual shadow tree (after the special case modification for svg/symbol) we have
     // to walk it completely and expand all <use> elements.
-    if (isSVGUseElement(*element)) {
-        SVGUseElement* use = toSVGUseElement(element);
+    ShadowRoot* shadowRoot = userAgentShadowRoot();
+    for (RefPtrWillBeRawPtr<SVGUseElement> use = Traversal<SVGUseElement>::firstWithin(*shadowRoot); use; ) {
         ASSERT(!use->resourceIsStillLoading());
 
         SVGElement* target = 0;
-        if (hasCycleUseReferencing(toSVGUseElement(use->correspondingElement()), use, target))
+        if (hasCycleUseReferencing(toSVGUseElement(use->correspondingElement()), use.get(), target))
             return false;
 
         if (target && isDisallowedElement(target))
@@ -619,7 +619,7 @@ bool SVGUseElement::expandUseElementsInShadowTree(SVGElement* element)
 
         // Spec: In the generated content, the 'use' will be replaced by 'g', where all attributes from the
         // 'use' element except for x, y, width, height and xlink:href are transferred to the generated 'g' element.
-        transferUseAttributesToReplacedElement(use, cloneParent.get());
+        transferUseAttributesToReplacedElement(use.get(), cloneParent.get());
 
         if (target) {
             RefPtrWillBeRawPtr<Node> newChild = cloneNodeAndAssociate(*target);
@@ -639,29 +639,17 @@ bool SVGUseElement::expandUseElementsInShadowTree(SVGElement* element)
         RefPtrWillBeRawPtr<SVGElement> replacingElement(cloneParent.get());
 
         // Replace <use> with referenced content.
-        ASSERT(use->parentNode());
         use->parentNode()->replaceChild(cloneParent.release(), use);
 
-        // Expand the siblings because the *element* is replaced and we will
-        // lose the sibling chain when we are back from recursion.
-        element = replacingElement.get();
-        for (RefPtrWillBeRawPtr<SVGElement> sibling = Traversal<SVGElement>::nextSibling(*element); sibling; sibling = Traversal<SVGElement>::nextSibling(*sibling)) {
-            if (!expandUseElementsInShadowTree(sibling.get()))
-                return false;
-        }
-    }
-
-    for (RefPtrWillBeRawPtr<SVGElement> child = Traversal<SVGElement>::firstChild(*element); child; child = Traversal<SVGElement>::nextSibling(*child)) {
-        if (!expandUseElementsInShadowTree(child.get()))
-            return false;
+        use = Traversal<SVGUseElement>::next(*replacingElement, shadowRoot);
     }
     return true;
 }
 
-void SVGUseElement::expandSymbolElementsInShadowTree(SVGElement* element)
+void SVGUseElement::expandSymbolElementsInShadowTree()
 {
-    ASSERT(element);
-    if (isSVGSymbolElement(*element)) {
+    ShadowRoot* shadowRoot = userAgentShadowRoot();
+    for (RefPtrWillBeRawPtr<SVGSymbolElement> symbol = Traversal<SVGSymbolElement>::firstWithin(*shadowRoot); symbol; ) {
         // Spec: The referenced 'symbol' and its contents are deep-cloned into the generated tree,
         // with the exception that the 'symbol' is replaced by an 'svg'. This generated 'svg' will
         // always have explicit values for attributes width and height. If attributes width and/or
@@ -671,11 +659,11 @@ void SVGUseElement::expandSymbolElementsInShadowTree(SVGElement* element)
         ASSERT(referencedScope());
         RefPtrWillBeRawPtr<SVGSVGElement> svgElement = SVGSVGElement::create(referencedScope()->document());
         // Transfer all data (attributes, etc.) from <symbol> to the new <svg> element.
-        svgElement->cloneDataFromElement(*element);
-        svgElement->setCorrespondingElement(element->correspondingElement());
+        svgElement->cloneDataFromElement(*symbol);
+        svgElement->setCorrespondingElement(symbol->correspondingElement());
 
         // Move already cloned elements to the new <svg> element
-        for (RefPtrWillBeRawPtr<Node> child = element->firstChild(); child; ) {
+        for (RefPtrWillBeRawPtr<Node> child = symbol->firstChild(); child; ) {
             RefPtrWillBeRawPtr<Node> nextChild = child->nextSibling();
             svgElement->appendChild(child);
             child = nextChild.release();
@@ -692,18 +680,10 @@ void SVGUseElement::expandSymbolElementsInShadowTree(SVGElement* element)
         RefPtrWillBeRawPtr<SVGElement> replacingElement(svgElement.get());
 
         // Replace <symbol> with <svg>.
-        ASSERT(element->parentNode());
-        element->parentNode()->replaceChild(svgElement.release(), element);
+        symbol->parentNode()->replaceChild(svgElement.release(), symbol);
 
-        // Expand the siblings because the *element* is replaced and we will
-        // lose the sibling chain when we are back from recursion.
-        element = replacingElement.get();
-        for (RefPtrWillBeRawPtr<SVGElement> sibling = Traversal<SVGElement>::nextSibling(*element); sibling; sibling = Traversal<SVGElement>::nextSibling(*sibling))
-            expandSymbolElementsInShadowTree(sibling.get());
+        symbol = Traversal<SVGSymbolElement>::next(*replacingElement, shadowRoot);
     }
-
-    for (RefPtrWillBeRawPtr<SVGElement> child = Traversal<SVGElement>::firstChild(*element); child; child = Traversal<SVGElement>::nextSibling(*child))
-        expandSymbolElementsInShadowTree(child.get());
 }
 
 void SVGUseElement::invalidateShadowTree()

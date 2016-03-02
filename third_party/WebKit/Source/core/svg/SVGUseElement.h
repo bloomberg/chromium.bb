@@ -94,8 +94,8 @@ private:
     void buildShadowTree(SVGElement* target, SVGElement* targetInstance, bool foundUse);
     void clearShadowTree();
     bool hasCycleUseReferencing(SVGUseElement*, ContainerNode* targetInstance, SVGElement*& newTarget);
-    bool expandUseElementsInShadowTree(SVGElement*);
-    void expandSymbolElementsInShadowTree(SVGElement*);
+    bool expandUseElementsInShadowTree();
+    void expandSymbolElementsInShadowTree();
     void cloneNonMarkupEventListeners();
 
     void transferUseAttributesToReplacedElement(SVGElement* from, SVGElement* to) const;
