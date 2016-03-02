@@ -32,6 +32,11 @@
 #include "net/cert/x509_certificate.h"
 #include "net/cert/x509_util_mac.h"
 
+// CSSM functions are deprecated as of OSX 10.7, but have no replacement.
+// https://bugs.chromium.org/p/chromium/issues/detail?id=590914#c1
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+
 // From 10.7.2 libsecurity_keychain-55035/lib/SecTrustPriv.h, for use with
 // SecTrustCopyExtendedResult.
 #ifndef kSecEVOrganizationName
@@ -835,3 +840,5 @@ int CertVerifyProcMac::VerifyInternal(
 }
 
 }  // namespace net
+
+#pragma clang diagnostic pop  // "-Wdeprecated-declarations"

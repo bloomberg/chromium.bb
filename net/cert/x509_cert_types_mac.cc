@@ -19,6 +19,11 @@ namespace net {
 
 namespace {
 
+// CSSM functions are deprecated as of OSX 10.7, but have no replacement.
+// https://bugs.chromium.org/p/chromium/issues/detail?id=590914#c1
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+
 // The BER encoding of 0.9.2342.19200300.100.1.25.
 // On 10.6 and later this is available as CSSMOID_DomainComponent, which is an
 // external symbol from Security.framework. However, it appears that Apple's
@@ -288,5 +293,7 @@ bool CertPrincipal::Matches(const CertPrincipal& against) const {
       match(organization_unit_names, against.organization_unit_names) &&
       match(domain_components, against.domain_components);
 }
+
+#pragma clang diagnostic pop  // "-Wdeprecated-declarations"
 
 }  // namespace net

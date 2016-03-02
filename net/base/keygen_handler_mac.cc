@@ -18,6 +18,11 @@
 #include "crypto/cssm_init.h"
 #include "crypto/mac_security_services_lock.h"
 
+// CSSM functions are deprecated as of OSX 10.7, but have no replacement.
+// https://bugs.chromium.org/p/chromium/issues/detail?id=590914#c1
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+
 // These are in Security.framework but not declared in a public header.
 extern const SecAsn1Template kSecAsn1AlgorithmIDTemplate[];
 extern const SecAsn1Template kSecAsn1SubjectPublicKeyInfoTemplate[];
@@ -323,3 +328,5 @@ static OSStatus SignData(CSSM_DATA data,
 }
 
 }  // namespace net
+
+#pragma clang diagnostic pop  // "-Wdeprecated-declarations"

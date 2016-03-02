@@ -19,6 +19,11 @@
 // - Apple Cryptographic Service Provider Functional Specification
 // - CryptoSample: http://developer.apple.com/SampleCode/CryptoSample/
 
+// CSSM functions are deprecated as of OSX 10.7, but have no replacement.
+// https://bugs.chromium.org/p/chromium/issues/detail?id=590914#c1
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+
 namespace {
 
 void* CSSMMalloc(CSSM_SIZE size, void* alloc_ref) {
@@ -203,3 +208,5 @@ ScopedCSSMData::~ScopedCSSMData() {
 }
 
 }  // namespace crypto
+
+#pragma clang diagnostic pop  // "-Wdeprecated-declarations"

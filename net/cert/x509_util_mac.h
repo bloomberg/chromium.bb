@@ -57,6 +57,11 @@ OSStatus NET_EXPORT CreateRevocationPolicies(bool enable_revocation_checking,
                                              bool enable_ev_checking,
                                              CFMutableArrayRef policies);
 
+// CSSM functions are deprecated as of OSX 10.7, but have no replacement.
+// https://bugs.chromium.org/p/chromium/issues/detail?id=590914#c1
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+
 // Wrapper for a CSSM_DATA_PTR that was obtained via one of the CSSM field
 // accessors (such as CSSM_CL_CertGet[First/Next]Value or
 // CSSM_CL_CertGet[First/Next]CachedValue).
@@ -131,6 +136,8 @@ class CSSMCachedCertificate {
   CSSM_CL_HANDLE cl_handle_;
   CSSM_HANDLE cached_cert_handle_;
 };
+
+#pragma clang diagnostic pop  // "-Wdeprecated-declarations"
 
 }  // namespace x509_util
 

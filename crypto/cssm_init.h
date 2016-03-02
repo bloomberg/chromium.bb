@@ -12,6 +12,11 @@
 
 namespace crypto {
 
+// CSSM functions are deprecated as of OSX 10.7, but have no replacement.
+// https://bugs.chromium.org/p/chromium/issues/detail?id=590914#c1
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+
 // Initialize CSSM if it isn't already initialized.  This must be called before
 // any other CSSM functions.  This function is thread-safe, and CSSM will only
 // ever be initialized once.  CSSM will be properly shut down on program exit.
@@ -54,6 +59,8 @@ class ScopedCSSMData {
 
   DISALLOW_COPY_AND_ASSIGN(ScopedCSSMData);
 };
+
+#pragma clang diagnostic pop  // "-Wdeprecated-declarations"
 
 }  // namespace crypto
 

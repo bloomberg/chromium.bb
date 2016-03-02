@@ -28,6 +28,11 @@ using base::ScopedCFTypeRef;
 
 namespace net {
 
+// CSSM functions are deprecated as of OSX 10.7, but have no replacement.
+// https://bugs.chromium.org/p/chromium/issues/detail?id=590914#c1
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+
 namespace {
 
 // Gets the issuer for a given cert, starting with the cert itself and
@@ -273,5 +278,7 @@ bool ClientCertStoreMac::SelectClientCertsGivenPreferredForTesting(
       preferred_cert, regular_certs, request, false, selected_certs);
   return true;
 }
+
+#pragma clang diagnostic pop  // "-Wdeprecated-declarations"
 
 }  // namespace net
