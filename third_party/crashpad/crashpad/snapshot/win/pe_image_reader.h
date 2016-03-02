@@ -43,7 +43,9 @@ struct CrashpadInfo {
   uint8_t system_crash_reporter_forwarding;  // TriState.
   uint8_t gather_indirectly_referenced_memory;  // TriState.
   uint8_t padding_0;
+  typename Traits::Pointer extra_address_ranges;
   typename Traits::Pointer simple_annotations;
+  typename Traits::Pointer user_data_minidump_stream_head;
 };
 
 }  // namespace process_types
