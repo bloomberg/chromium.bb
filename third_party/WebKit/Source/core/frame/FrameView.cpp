@@ -549,7 +549,16 @@ void FrameView::adjustViewSize()
 
     const IntRect rect = layoutView->documentRect();
     const IntSize& size = rect.size();
-    setScrollOrigin(IntPoint(-rect.x(), -rect.y()), !m_frame->document()->printing(), size == contentsSize());
+
+    const IntPoint origin(-rect.x(), -rect.y());
+    if (scrollOrigin() != origin) {
+        ScrollableArea::setScrollOrigin(origin);
+        // setContentSize (below) also calls updateScrollbars so we can avoid
+        // updating scrollbars twice by skipping the call here when the content
+        // size does not change.
+        if (!m_frame->document()->printing() && size == contentsSize())
+            updateScrollbars(scrollOffsetDouble());
+    }
 
     setContentsSize(size);
 }
@@ -3912,18 +3921,6 @@ void FrameView::hide()
     }
 
     Widget::hide();
-}
-
-void FrameView::setScrollOrigin(const IntPoint& origin, bool updatePositionAtAll, bool updatePositionSynchronously)
-{
-    if (scrollOrigin() == origin)
-        return;
-
-    ScrollableArea::setScrollOrigin(origin);
-
-    // Update if the scroll origin changes, since our position will be different if the content size did not change.
-    if (updatePositionAtAll && updatePositionSynchronously)
-        updateScrollbars(scrollOffsetDouble());
 }
 
 int FrameView::viewportWidth() const

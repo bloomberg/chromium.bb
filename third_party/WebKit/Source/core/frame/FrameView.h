@@ -611,8 +611,6 @@ protected:
 
     void scrollContentsIfNeeded();
 
-    void setScrollOrigin(const IntPoint&, bool updatePositionAtAll, bool updatePositionSynchronously);
-
     enum ComputeScrollbarExistenceOption {
         FirstPass,
         Incremental
