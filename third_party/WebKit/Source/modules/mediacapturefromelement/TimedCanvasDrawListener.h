@@ -6,6 +6,7 @@
 #define TimedCanvasDrawListener_h
 
 #include "core/html/canvas/CanvasDrawListener.h"
+#include "platform/Timer.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebCanvasCaptureHandler.h"
 
@@ -21,9 +22,11 @@ public:
     DEFINE_INLINE_TRACE() {}
 private:
     TimedCanvasDrawListener(const PassOwnPtr<WebCanvasCaptureHandler>&, double frameRate);
-    void postRequestFrameCaptureTask();
+    // Implementation of TimerFiredFunction.
+    void requestFrameTimerFired(Timer<TimedCanvasDrawListener>*);
 
     double m_frameInterval;
+    UnthrottledTimer<TimedCanvasDrawListener> m_requestFrameTimer;
 };
 
 } // namespace blink

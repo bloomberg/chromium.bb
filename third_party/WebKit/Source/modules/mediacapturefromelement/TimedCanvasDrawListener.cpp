@@ -4,16 +4,13 @@
 
 #include "modules/mediacapturefromelement/TimedCanvasDrawListener.h"
 
-#include "public/platform/Platform.h"
-#include "public/platform/WebTaskRunner.h"
-#include "public/platform/WebTraceLocation.h"
-
 namespace blink {
 
 TimedCanvasDrawListener::TimedCanvasDrawListener(const PassOwnPtr<WebCanvasCaptureHandler>& handler, double frameRate)
     : CanvasDrawListener(handler)
+    , m_frameInterval(1 / frameRate)
+    , m_requestFrameTimer(this, &TimedCanvasDrawListener::requestFrameTimerFired)
 {
-    m_frameInterval = 1000 / frameRate;
 }
 
 TimedCanvasDrawListener::~TimedCanvasDrawListener() {}
@@ -22,7 +19,7 @@ TimedCanvasDrawListener::~TimedCanvasDrawListener() {}
 TimedCanvasDrawListener* TimedCanvasDrawListener::create(const PassOwnPtr<WebCanvasCaptureHandler>& handler, double frameRate)
 {
     TimedCanvasDrawListener* listener = new TimedCanvasDrawListener(handler, frameRate);
-    listener->postRequestFrameCaptureTask();
+    listener->m_requestFrameTimer.startRepeating(listener->m_frameInterval, BLINK_FROM_HERE);
     return listener;
 }
 
@@ -32,10 +29,10 @@ void TimedCanvasDrawListener::sendNewFrame(const WTF::PassRefPtr<SkImage>& image
     CanvasDrawListener::sendNewFrame(image);
 }
 
-void TimedCanvasDrawListener::postRequestFrameCaptureTask()
+void TimedCanvasDrawListener::requestFrameTimerFired(Timer<TimedCanvasDrawListener>*)
 {
+    // TODO(emircan): Measure the jitter and log, see crbug.com/589974.
     m_frameCaptureRequested = true;
-    Platform::current()->currentThread()->taskRunner()->postDelayedTask(BLINK_FROM_HERE, bind(&TimedCanvasDrawListener::postRequestFrameCaptureTask, this), m_frameInterval);
 }
 
 } // namespace blink
