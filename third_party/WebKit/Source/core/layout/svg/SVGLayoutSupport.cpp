@@ -317,17 +317,26 @@ void SVGLayoutSupport::layoutChildren(LayoutObject* start, bool selfNeedsLayout)
             }
         }
 
-        SubtreeLayoutScope layoutScope(*child);
         // Resource containers are nasty: they can invalidate clients outside the current SubtreeLayoutScope.
         // Since they only care about viewport size changes (to resolve their relative lengths), we trigger
         // their invalidation directly from SVGSVGElement::svgAttributeChange() or at a higher
-        // SubtreeLayoutScope (in LayoutView::layout()).
-        if (forceLayout && !child->isSVGResourceContainer())
-            layoutScope.setNeedsLayout(child, LayoutInvalidationReason::SvgChanged);
+        // SubtreeLayoutScope (in LayoutView::layout()). We do not create a SubtreeLayoutScope for
+        // resources because their ability to reference each other leads to circular layout. We protect
+        // against that within the layout code for resources, but it causes assertions if we use a
+        // SubTreeLayoutScope for them.
+        if (child->isSVGResourceContainer()) {
+            // Lay out any referenced resources before the child.
+            layoutResourcesIfNeeded(child);
+            child->layoutIfNeeded();
+        } else {
+            SubtreeLayoutScope layoutScope(*child);
+            if (forceLayout)
+                layoutScope.setNeedsLayout(child, LayoutInvalidationReason::SvgChanged);
 
-        // Lay out any referenced resources before the child.
-        layoutResourcesIfNeeded(child);
-        child->layoutIfNeeded();
+            // Lay out any referenced resources before the child.
+            layoutResourcesIfNeeded(child);
+            child->layoutIfNeeded();
+        }
     }
 }
 

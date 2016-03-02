@@ -260,18 +260,16 @@ PassOwnPtr<SVGResources> SVGResources::buildResources(const LayoutObject* object
             bool hasPendingResource = false;
             AtomicString id;
             LayoutSVGResourcePaintServer* resource = paintingResourceFromSVGPaint(treeScope, style.fillPaintType(), style.fillPaintUri(), id, hasPendingResource);
-            if (!ensureResources(resources).setFill(resource) && hasPendingResource) {
+            if (!ensureResources(resources).setFill(resource) && hasPendingResource)
                 registerPendingResource(extensions, id, element);
-            }
         }
 
         if (style.hasStroke()) {
             bool hasPendingResource = false;
             AtomicString id;
             LayoutSVGResourcePaintServer* resource = paintingResourceFromSVGPaint(treeScope, style.strokePaintType(), style.strokePaintUri(), id, hasPendingResource);
-            if (!ensureResources(resources).setStroke(resource) && hasPendingResource) {
+            if (!ensureResources(resources).setStroke(resource) && hasPendingResource)
                 registerPendingResource(extensions, id, element);
-            }
         }
     }
 
