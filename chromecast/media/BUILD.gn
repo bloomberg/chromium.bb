@@ -68,3 +68,31 @@ test("cast_media_unittests") {
     deps += [ "//chromecast/media/base:libcast_media_1.0_default_core" ]
   }
 }
+
+test("cast_multizone_backend_unittests") {
+  sources = [
+    "cma/backend/multizone_backend_unittest.cc",
+    "cma/test/run_all_unittests.cc",
+  ]
+
+  deps = [
+    "//base",
+    "//base/test:test_support",
+    "//chromecast/base",
+    "//chromecast/base/metrics:test_support",
+    "//chromecast/media/base:libcast_media_1.0",
+    "//chromecast/media/cma/backend",
+    "//chromecast/media/cma/base",
+    "//chromecast/public",
+    "//media",
+    "//media/base:test_support",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+
+  if (chromecast_branding == "public") {
+    # Link default libcast_media_1.0 statically not to link dummy one
+    # dynamically for public unittests.
+    deps += [ "//chromecast/media/base:libcast_media_1.0_default_core" ]
+  }
+}

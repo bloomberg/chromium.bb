@@ -313,6 +313,33 @@
         }],
       ],
     },
+    {
+      'target_name': 'cast_multizone_backend_unittests',
+      'type': '<(gtest_target_type)',
+      'dependencies': [
+        'cast_media',
+        '../../base/base.gyp:base',
+        '../../base/base.gyp:test_support_base',
+        '../../chromecast/chromecast.gyp:cast_metrics_test_support',
+        '../../media/media.gyp:media_test_support',
+        '../../testing/gmock.gyp:gmock',
+        '../../testing/gtest.gyp:gtest',
+        '../../testing/gtest.gyp:gtest_main',
+      ],
+      'sources': [
+        'cma/backend/multizone_backend_unittest.cc',
+        'cma/test/run_all_unittests.cc',
+      ],
+      'conditions': [
+        ['chromecast_branding=="public"', {
+          'dependencies': [
+            # Link default libcast_media_1.0 statically not to link dummy one
+            # dynamically for public unittests.
+            'libcast_media_1.0_default_core',
+          ],
+        }],
+      ],
+    },
     { # Target for OEM partners to override media shared library, i.e.
       # libcast_media_1.0.so. This target is only used to build executables
       # with correct linkage information.
