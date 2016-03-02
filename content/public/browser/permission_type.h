@@ -22,6 +22,7 @@ enum class PermissionType {
   DURABLE_STORAGE = 7,
   AUDIO_CAPTURE = 8,
   VIDEO_CAPTURE = 9,
+  BACKGROUND_SYNC = 10,
 
   // Always keep this at the end.
   NUM,

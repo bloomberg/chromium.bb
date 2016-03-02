@@ -149,7 +149,10 @@ void RecordPermissionAction(PermissionType permission,
         UMA_HISTOGRAM_ENUMERATION("Permissions.Action.VideoCapture", action,
                                   PERMISSION_ACTION_NUM);
         break;
+    // The user is not prompted for these permissions, thus there is no
+    // permission action recorded for them.
     case PermissionType::MIDI:
+    case PermissionType::BACKGROUND_SYNC:
     case PermissionType::NUM:
       NOTREACHED() << "PERMISSION "
                    << PermissionUtil::GetPermissionString(permission)
@@ -245,7 +248,7 @@ void RecordPermissionRequest(PermissionType permission,
   }
 }
 
-} // namespace
+}  // anonymous namespace
 
 // Make sure you update histograms.xml permission histogram_suffix if you
 // add new permission

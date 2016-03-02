@@ -35,6 +35,7 @@
       'browser/autocomplete/search_provider_unittest.cc',
       'browser/autocomplete/shortcuts_provider_extension_unittest.cc',
       'browser/background_sync/background_sync_controller_impl_unittest.cc',
+      'browser/background_sync/background_sync_permission_context_unittest.cc',
       'browser/banners/app_banner_data_fetcher_unittest.cc',
       'browser/banners/app_banner_settings_helper_unittest.cc',
       'browser/bitmap_fetcher/bitmap_fetcher_service_unittest.cc',

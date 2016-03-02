@@ -33,6 +33,8 @@ std::string PermissionUtil::GetPermissionString(
       return "VideoCapture";
     case content::PermissionType::MIDI:
       return "Midi";
+    case content::PermissionType::BACKGROUND_SYNC:
+      return "BackgroundSync";
     case content::PermissionType::NUM:
       break;
   }
@@ -56,6 +58,8 @@ bool PermissionUtil::GetPermissionType(ContentSettingsType type,
     *out = PermissionType::VIDEO_CAPTURE;
   } else if (type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC) {
     *out = PermissionType::AUDIO_CAPTURE;
+  } else if (type == CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC) {
+    *out = PermissionType::BACKGROUND_SYNC;
 #if defined(OS_ANDROID) || defined(OS_CHROMEOS)
   } else if (type == CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER) {
     *out = PermissionType::PROTECTED_MEDIA_IDENTIFIER;

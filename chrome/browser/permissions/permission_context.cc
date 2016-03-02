@@ -5,6 +5,8 @@
 #include "chrome/browser/permissions/permission_context.h"
 
 #include "build/build_config.h"
+#include "chrome/browser/background_sync/background_sync_permission_context.h"
+#include "chrome/browser/background_sync/background_sync_permission_context_factory.h"
 #include "chrome/browser/geolocation/geolocation_permission_context.h"
 #include "chrome/browser/geolocation/geolocation_permission_context_factory.h"
 #include "chrome/browser/media/media_stream_camera_permission_context_factory.h"
@@ -57,6 +59,8 @@ PermissionContextBase* PermissionContext::Get(Profile* profile,
       return MediaStreamMicPermissionContextFactory::GetForProfile(profile);
     case PermissionType::VIDEO_CAPTURE:
       return MediaStreamCameraPermissionContextFactory::GetForProfile(profile);
+    case PermissionType::BACKGROUND_SYNC:
+      return BackgroundSyncPermissionContextFactory::GetForProfile(profile);
     default:
       NOTREACHED() << "No PermissionContext associated with "
                    << static_cast<int>(permission_type);
@@ -84,6 +88,7 @@ const std::list<KeyedServiceBaseFactory*>& PermissionContext::GetFactories() {
     factories.push_back(MediaStreamMicPermissionContextFactory::GetInstance());
     factories.push_back(
         MediaStreamCameraPermissionContextFactory::GetInstance());
+    factories.push_back(BackgroundSyncPermissionContextFactory::GetInstance());
   }
 
   return factories;
