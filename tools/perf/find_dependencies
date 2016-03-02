@@ -3,6 +3,21 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+
+# Temporary hack to remove stale pyc file (crbug.com/590762)
+import os
+_STALE_PYC_FILE = os.path.join(
+    os.path.dirname(__file__), '..', '..', 'third_party', 'catapult',
+    'tracing', '__init__.pyc')
+
+if os.path.exists(_STALE_PYC_FILE):
+  print 'Stale file %s exists, try removing it.' % _STALE_PYC_FILE
+  try:
+    os.remove(_STALE_PYC_FILE)
+  except OSError:
+    print 'Failed to remove %s' % _STALE_PYC_FILE
+    pass
+
 import sys
 
 from core import find_dependencies
