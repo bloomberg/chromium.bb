@@ -87,6 +87,13 @@ void LayoutSVGBlock::mapLocalToAncestor(const LayoutBoxModelObject* ancestor, Tr
     SVGLayoutSupport::mapLocalToAncestor(this, ancestor, transformState, wasFixed, paintInvalidationState);
 }
 
+void LayoutSVGBlock::mapAncestorToLocal(const LayoutBoxModelObject* ancestor, TransformState& transformState, MapCoordinatesFlags) const
+{
+    if (this == ancestor)
+        return;
+    SVGLayoutSupport::mapAncestorToLocal(*this, ancestor, transformState);
+}
+
 const LayoutObject* LayoutSVGBlock::pushMappingToContainer(const LayoutBoxModelObject* ancestorToStopAt, LayoutGeometryMap& geometryMap) const
 {
     return SVGLayoutSupport::pushMappingToContainer(this, ancestorToStopAt, geometryMap);

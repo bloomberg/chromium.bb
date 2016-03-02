@@ -116,22 +116,27 @@ LayoutRect SVGLayoutSupport::clippedOverflowRectForPaintInvalidation(const Layou
     return rect;
 }
 
-const LayoutSVGRoot& SVGLayoutSupport::mapRectToSVGRootForPaintInvalidation(const LayoutObject& object,
-    const FloatRect& localPaintInvalidationRect, LayoutRect& rect, float strokeWidthForHairlinePadding)
+static const LayoutSVGRoot& computeTransformToSVGRoot(const LayoutObject& object, AffineTransform& rootBorderBoxTransform)
 {
     ASSERT(object.isSVG() && !object.isSVGRoot());
 
     const LayoutObject* parent;
-    AffineTransform rootBorderBoxTransform;
     for (parent = &object; !parent->isSVGRoot(); parent = parent->parent())
         rootBorderBoxTransform.preMultiply(parent->localToParentTransform());
 
     const LayoutSVGRoot& svgRoot = toLayoutSVGRoot(*parent);
     rootBorderBoxTransform.preMultiply(svgRoot.localToBorderBoxTransform());
+    return svgRoot;
+}
+
+const LayoutSVGRoot& SVGLayoutSupport::mapRectToSVGRootForPaintInvalidation(const LayoutObject& object,
+    const FloatRect& localPaintInvalidationRect, LayoutRect& rect, float strokeWidthForHairlinePadding)
+{
+    AffineTransform rootBorderBoxTransform;
+    const LayoutSVGRoot& svgRoot = computeTransformToSVGRoot(object, rootBorderBoxTransform);
 
     rect = adjustedEnclosingIntRect(rootBorderBoxTransform.mapRect(localPaintInvalidationRect),
         rootBorderBoxTransform, strokeWidthForHairlinePadding);
-
     return svgRoot;
 }
 
@@ -156,6 +161,23 @@ void SVGLayoutSupport::mapLocalToAncestor(const LayoutObject* object, const Layo
 
     MapCoordinatesFlags mode = UseTransforms;
     parent->mapLocalToAncestor(ancestor, transformState, mode, wasFixed, paintInvalidationState);
+}
+
+void SVGLayoutSupport::mapAncestorToLocal(const LayoutObject& object, const LayoutBoxModelObject* ancestor, TransformState& transformState)
+{
+    // |object| is either a LayoutSVGModelObject or a LayoutSVGBlock here. In
+    // the former case, |object| can never be an ancestor while in the latter
+    // the caller is responsible for doing the ancestor check. Because of this,
+    // computing the transform to the SVG root is always what we want to do here.
+    ASSERT(ancestor != &object);
+    ASSERT(object.isSVGContainer() || object.isSVGShape() || object.isSVGImage() || object.isSVGText() || object.isSVGForeignObject());
+    AffineTransform localToSVGRoot;
+    const LayoutSVGRoot& svgRoot = computeTransformToSVGRoot(object, localToSVGRoot);
+
+    MapCoordinatesFlags mode = UseTransforms | ApplyContainerFlip;
+    svgRoot.mapAncestorToLocal(ancestor, transformState, mode);
+
+    transformState.applyTransform(localToSVGRoot);
 }
 
 const LayoutObject* SVGLayoutSupport::pushMappingToContainer(const LayoutObject* object, const LayoutBoxModelObject* ancestorToStopAt, LayoutGeometryMap& geometryMap)

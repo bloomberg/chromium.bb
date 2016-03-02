@@ -879,4 +879,107 @@ TEST_F(MapCoordinatesTest, Transforms)
     EXPECT_FLOAT_QUAD_EQ(initialQuad, mappedQuad);
 }
 
+TEST_F(MapCoordinatesTest, SVGShape)
+{
+    setBodyInnerHTML(
+        "<svg id='container'>"
+        "    <g transform='translate(100 200)'>"
+        "        <rect id='target' width='100' height='100'/>"
+        "    </g>"
+        "</svg>");
+
+    LayoutObject* target = getLayoutObjectByElementId("target");
+    LayoutBox* container = toLayoutBox(getLayoutObjectByElementId("container"));
+
+    FloatPoint mappedPoint = mapLocalToAncestor(target, container, FloatPoint());
+    EXPECT_EQ(FloatPoint(100, 200), mappedPoint);
+    mappedPoint = mapAncestorToLocal(target, container, mappedPoint);
+    EXPECT_EQ(FloatPoint(), mappedPoint);
+}
+
+TEST_F(MapCoordinatesTest, SVGShapeScale)
+{
+    setBodyInnerHTML(
+        "<svg id='container'>"
+        "    <g transform='scale(2) translate(50 40)'>"
+        "        <rect id='target' transform='translate(50 80)' x='66' y='77' width='100' height='100'/>"
+        "    </g>"
+        "</svg>");
+
+    LayoutObject* target = getLayoutObjectByElementId("target");
+    LayoutBox* container = toLayoutBox(getLayoutObjectByElementId("container"));
+
+    FloatPoint mappedPoint = mapLocalToAncestor(target, container, FloatPoint());
+    EXPECT_EQ(FloatPoint(200, 240), mappedPoint);
+    mappedPoint = mapAncestorToLocal(target, container, mappedPoint);
+    EXPECT_EQ(FloatPoint(), mappedPoint);
+}
+
+TEST_F(MapCoordinatesTest, SVGShapeWithViewBoxWithoutScale)
+{
+    setBodyInnerHTML(
+        "<svg id='container' viewBox='0 0 200 200' width='400' height='200'>"
+        "    <g transform='translate(100 50)'>"
+        "        <rect id='target' width='100' height='100'/>"
+        "    </g>"
+        "</svg>");
+
+    LayoutObject* target = getLayoutObjectByElementId("target");
+    LayoutBox* container = toLayoutBox(getLayoutObjectByElementId("container"));
+
+    FloatPoint mappedPoint = mapLocalToAncestor(target, container, FloatPoint());
+    EXPECT_EQ(FloatPoint(200, 50), mappedPoint);
+    mappedPoint = mapAncestorToLocal(target, container, mappedPoint);
+    EXPECT_EQ(FloatPoint(), mappedPoint);
+}
+
+TEST_F(MapCoordinatesTest, SVGShapeWithViewBoxWithScale)
+{
+    setBodyInnerHTML(
+        "<svg id='container' viewBox='0 0 100 100' width='400' height='200'>"
+        "    <g transform='translate(50 50)'>"
+        "        <rect id='target' width='100' height='100'/>"
+        "    </g>"
+        "</svg>");
+
+    LayoutObject* target = getLayoutObjectByElementId("target");
+    LayoutBox* container = toLayoutBox(getLayoutObjectByElementId("container"));
+
+    FloatPoint mappedPoint = mapLocalToAncestor(target, container, FloatPoint());
+    EXPECT_EQ(FloatPoint(200, 100), mappedPoint);
+    mappedPoint = mapAncestorToLocal(target, container, mappedPoint);
+    EXPECT_EQ(FloatPoint(), mappedPoint);
+}
+
+TEST_F(MapCoordinatesTest, SVGForeignObject)
+{
+    setBodyInnerHTML(
+        "<svg id='container' viewBox='0 0 100 100' width='400' height='200'>"
+        "    <g transform='translate(50 50)'>"
+        "        <foreignObject transform='translate(-25 -25)'>"
+        "            <div xmlns='http://www.w3.org/1999/xhtml' id='target' style='margin-left: 50px; border: 42px; padding: 84px; width: 50px; height: 50px'>"
+        "            </div>"
+        "        </foreignObject>"
+        "    </g>"
+        "</svg>");
+
+    LayoutObject* target = getLayoutObjectByElementId("target");
+    LayoutBox* container = toLayoutBox(getLayoutObjectByElementId("container"));
+
+    FloatPoint mappedPoint = mapLocalToAncestor(target, container, FloatPoint());
+    EXPECT_EQ(FloatPoint(250, 50), mappedPoint);
+    // <svg>
+    mappedPoint = mapAncestorToLocal(target->parent()->parent()->parent(), container, FloatPoint(250, 50));
+    EXPECT_EQ(FloatPoint(250, 50), mappedPoint);
+    // <g>
+    mappedPoint = mapAncestorToLocal(target->parent()->parent(), container, FloatPoint(250, 50));
+    EXPECT_EQ(FloatPoint(25, -25), mappedPoint);
+    // <foreignObject>
+    mappedPoint = mapAncestorToLocal(target->parent(), container, FloatPoint(250, 50));
+    EXPECT_EQ(FloatPoint(50, 0), mappedPoint);
+    // <div>
+    mappedPoint = mapAncestorToLocal(target, container, FloatPoint(250, 50));
+    EXPECT_EQ(FloatPoint(), mappedPoint);
+}
+
 } // namespace blink

@@ -81,6 +81,7 @@ public:
     static const LayoutSVGRoot& mapRectToSVGRootForPaintInvalidation(const LayoutObject&,
         const FloatRect& localPaintInvalidationRect, LayoutRect&, float strokeWidthForHairlinePadding = 0);
     static void mapLocalToAncestor(const LayoutObject*, const LayoutBoxModelObject* ancestor, TransformState&, bool* wasFixed = nullptr, const PaintInvalidationState* = nullptr);
+    static void mapAncestorToLocal(const LayoutObject&, const LayoutBoxModelObject* ancestor, TransformState&);
     static const LayoutObject* pushMappingToContainer(const LayoutObject*, const LayoutBoxModelObject* ancestorToStopAt, LayoutGeometryMap&);
 
     // Shared between SVG layoutObjects and resources.
