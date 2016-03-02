@@ -125,13 +125,8 @@ private:
 };
 
 class PLATFORM_EXPORT DictionaryValue : public Value {
-private:
-    typedef HashMap<String, OwnPtr<Value>> Dictionary;
-
 public:
-    typedef Dictionary::iterator iterator;
-    typedef Dictionary::const_iterator const_iterator;
-
+    using Entry = std::pair<String, Value*>;
     static PassOwnPtr<DictionaryValue> create()
     {
         return adoptPtr(new DictionaryValue());
@@ -152,7 +147,7 @@ public:
     void writeJSON(StringBuilder* output) const override;
     PassOwnPtr<Value> clone() const override;
 
-    int size() const { return m_data.size(); }
+    size_t size() const { return m_data.size(); }
 
     void setBoolean(const String& name, bool);
     void setNumber(const String& name, double);
@@ -174,20 +169,17 @@ public:
     DictionaryValue* getObject(const String& name) const;
     ListValue* getArray(const String& name) const;
     Value* get(const String& name) const;
+    Entry at(size_t index) const;
 
     bool booleanProperty(const String& name, bool defaultValue) const;
-
     void remove(const String& name);
 
-    iterator begin() { return m_data.begin(); }
-    iterator end() { return m_data.end(); }
-    const_iterator begin() const { return m_data.begin(); }
-    const_iterator end() const { return m_data.end(); }
     ~DictionaryValue() override;
 
 private:
     DictionaryValue();
 
+    using Dictionary = HashMap<String, OwnPtr<Value>>;
     Dictionary m_data;
     Vector<String> m_order;
 };
@@ -218,8 +210,8 @@ public:
 
     void pushValue(PassOwnPtr<Value>);
 
-    Value* get(size_t index);
-    unsigned length() const { return m_data.size(); }
+    Value* at(size_t index);
+    size_t size() const { return m_data.size(); }
 
 private:
     ListValue();

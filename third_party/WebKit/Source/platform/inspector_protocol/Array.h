@@ -32,9 +32,9 @@ public:
         }
         errors->push();
         OwnPtr<Array<T>> result = adoptPtr(new Array<T>());
-        for (size_t i = 0; i < array->length(); ++i) {
+        for (size_t i = 0; i < array->size(); ++i) {
             errors->setName("[" + String::number(i) + "]");
-            T item = FromValue<T>::parse(array->get(i), errors);
+            T item = FromValue<T>::parse(array->at(i), errors);
             result->m_vector.append(item);
         }
         errors->pop();
@@ -92,9 +92,9 @@ public:
         }
         OwnPtr<Array<T>> result = adoptPtr(new Array<T>());
         errors->push();
-        for (size_t i = 0; i < array->length(); ++i) {
+        for (size_t i = 0; i < array->size(); ++i) {
             errors->setName("[" + String::number(i) + "]");
-            OwnPtr<T> item = FromValue<T>::parse(array->get(i), errors);
+            OwnPtr<T> item = FromValue<T>::parse(array->at(i), errors);
             result->m_vector.append(item.release());
         }
         errors->pop();

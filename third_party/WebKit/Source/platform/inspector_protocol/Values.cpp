@@ -238,6 +238,12 @@ protocol::Value* DictionaryValue::get(const String& name) const
     return it->value.get();
 }
 
+DictionaryValue::Entry DictionaryValue::at(size_t index) const
+{
+    String key = m_order[index];
+    return std::make_pair(key, m_data.get(key));
+}
+
 bool DictionaryValue::booleanProperty(const String& name, bool defaultValue) const
 {
     bool result = defaultValue;
@@ -324,7 +330,7 @@ void ListValue::pushValue(PassOwnPtr<protocol::Value> value)
     m_data.append(value);
 }
 
-protocol::Value* ListValue::get(size_t index)
+protocol::Value* ListValue::at(size_t index)
 {
     ASSERT_WITH_SECURITY_IMPLICATION(index < m_data.size());
     return m_data[index].get();

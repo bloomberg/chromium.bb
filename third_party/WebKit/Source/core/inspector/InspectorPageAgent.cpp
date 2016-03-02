@@ -586,9 +586,10 @@ void InspectorPageAgent::didClearDocumentOfWindowObject(LocalFrame* frame)
 
     protocol::DictionaryValue* scripts = m_state->getObject(PageAgentState::pageAgentScriptsToEvaluateOnLoad);
     if (scripts) {
-        for (const auto& script : *scripts) {
+        for (size_t i = 0; i < scripts->size(); ++i) {
+            auto script = scripts->at(i);
             String scriptText;
-            if (script.value->asString(&scriptText))
+            if (script.second->asString(&scriptText))
                 frame->script().executeScriptInMainWorld(scriptText);
         }
     }

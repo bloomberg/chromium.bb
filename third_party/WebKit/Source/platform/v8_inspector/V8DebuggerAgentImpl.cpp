@@ -1483,8 +1483,9 @@ void V8DebuggerAgentImpl::didParseSource(const V8DebuggerParsedScript& parsedScr
     if (!breakpointsCookie)
         return;
 
-    for (auto& cookie : *breakpointsCookie) {
-        protocol::DictionaryValue* breakpointObject = protocol::DictionaryValue::cast(cookie.value.get());
+    for (size_t i = 0; i < breakpointsCookie->size(); ++i) {
+        auto cookie = breakpointsCookie->at(i);
+        protocol::DictionaryValue* breakpointObject = protocol::DictionaryValue::cast(cookie.second);
         bool isRegex;
         breakpointObject->getBoolean(DebuggerAgentState::isRegex, &isRegex);
         String url;
@@ -1495,9 +1496,9 @@ void V8DebuggerAgentImpl::didParseSource(const V8DebuggerParsedScript& parsedScr
         breakpointObject->getNumber(DebuggerAgentState::lineNumber, &breakpoint.lineNumber);
         breakpointObject->getNumber(DebuggerAgentState::columnNumber, &breakpoint.columnNumber);
         breakpointObject->getString(DebuggerAgentState::condition, &breakpoint.condition);
-        OwnPtr<protocol::Debugger::Location> location = resolveBreakpoint(cookie.key, parsedScript.scriptId, breakpoint, UserBreakpointSource);
+        OwnPtr<protocol::Debugger::Location> location = resolveBreakpoint(cookie.first, parsedScript.scriptId, breakpoint, UserBreakpointSource);
         if (location)
-            m_frontend->breakpointResolved(cookie.key, location.release());
+            m_frontend->breakpointResolved(cookie.first, location.release());
     }
 }
 

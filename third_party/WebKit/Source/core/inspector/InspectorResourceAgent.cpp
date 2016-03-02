@@ -442,8 +442,9 @@ bool InspectorResourceAgent::shouldBlockRequest(const ResourceRequest& request)
     if (!blockedURLs)
         return false;
     String url = request.url().string();
-    for (const auto& entry : *blockedURLs) {
-        if (matches(url, entry.key))
+    for (size_t i = 0; i < blockedURLs->size(); ++i) {
+        auto entry = blockedURLs->at(i);
+        if (matches(url, entry.first))
             return true;
     }
     return false;
@@ -503,10 +504,11 @@ void InspectorResourceAgent::willSendRequest(LocalFrame* frame, unsigned long id
 
     protocol::DictionaryValue* headers = m_state->getObject(ResourceAgentState::extraRequestHeaders);
     if (headers) {
-        for (const auto& header : *headers) {
+        for (size_t i = 0; i < headers->size(); ++i) {
+            auto header = headers->at(i);
             String value;
-            if (header.value->asString(&value))
-                request.setHTTPHeaderField(AtomicString(header.key), AtomicString(value));
+            if (header.second->asString(&value))
+                request.setHTTPHeaderField(AtomicString(header.first), AtomicString(value));
         }
     }
 

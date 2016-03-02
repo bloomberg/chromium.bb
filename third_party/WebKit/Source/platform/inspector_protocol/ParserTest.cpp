@@ -60,12 +60,12 @@ TEST(ParserTest, Reading)
     ASSERT_TRUE(root.get());
     protocol::ListValue* list = ListValue::cast(root.get());
     ASSERT_TRUE(list);
-    EXPECT_EQ(2u, list->length());
-    tmpValue = list->get(0);
+    EXPECT_EQ(2u, list->size());
+    tmpValue = list->at(0);
     ASSERT_TRUE(tmpValue);
     EXPECT_TRUE(tmpValue->asNumber(&intVal));
     EXPECT_EQ(1, intVal);
-    tmpValue = list->get(1);
+    tmpValue = list->at(1);
     ASSERT_TRUE(tmpValue);
     EXPECT_TRUE(tmpValue->asNumber(&intVal));
     EXPECT_EQ(3, intVal);
@@ -73,7 +73,7 @@ TEST(ParserTest, Reading)
     ASSERT_TRUE(root.get());
     list = ListValue::cast(root.get());
     ASSERT_TRUE(list);
-    EXPECT_EQ(3u, list->length());
+    EXPECT_EQ(3u, list->size());
     root = parseJSON("/* comment **/42");
     ASSERT_TRUE(root.get());
     EXPECT_EQ(Value::TypeNumber, root->type());
@@ -256,7 +256,7 @@ TEST(ParserTest, Reading)
     EXPECT_EQ(Value::TypeArray, root->type());
     list = ListValue::cast(root.get());
     ASSERT_TRUE(list);
-    EXPECT_EQ(3U, list->length());
+    EXPECT_EQ(3U, list->size());
 
     // Empty array
     root = parseJSON("[]");
@@ -264,7 +264,7 @@ TEST(ParserTest, Reading)
     EXPECT_EQ(Value::TypeArray, root->type());
     list = ListValue::cast(root.get());
     ASSERT_TRUE(list);
-    EXPECT_EQ(0U, list->length());
+    EXPECT_EQ(0U, list->size());
 
     // Nested arrays
     root = parseJSON("[[true], [], [false, [], [null]], null]");
@@ -272,7 +272,7 @@ TEST(ParserTest, Reading)
     EXPECT_EQ(Value::TypeArray, root->type());
     list = ListValue::cast(root.get());
     ASSERT_TRUE(list);
-    EXPECT_EQ(4U, list->length());
+    EXPECT_EQ(4U, list->size());
 
     // Invalid, missing close brace.
     root = parseJSON("[[true], [], [false, [], [null]], null");
@@ -295,8 +295,8 @@ TEST(ParserTest, Reading)
     EXPECT_EQ(Value::TypeArray, root->type());
     list = ListValue::cast(root.get());
     ASSERT_TRUE(list);
-    EXPECT_EQ(1U, list->length());
-    tmpValue = list->get(0);
+    EXPECT_EQ(1U, list->size());
+    tmpValue = list->at(0);
     ASSERT_TRUE(tmpValue);
     EXPECT_EQ(Value::TypeBoolean, tmpValue->type());
     bool boolValue = false;
@@ -361,7 +361,7 @@ TEST(ParserTest, Reading)
     ASSERT_TRUE(innerObject);
     protocol::ListValue* innerArray = innerObject->getArray("array");
     ASSERT_TRUE(innerArray);
-    EXPECT_EQ(1U, innerArray->length());
+    EXPECT_EQ(1U, innerArray->size());
     boolValue = true;
     EXPECT_TRUE(objectVal->getBoolean("false", &boolValue));
     EXPECT_FALSE(boolValue);
@@ -381,7 +381,7 @@ TEST(ParserTest, Reading)
     EXPECT_EQ(2, integerValue);
     innerObject = objectVal->getObject("d.e.f");
     ASSERT_TRUE(innerObject);
-    EXPECT_EQ(1, innerObject->size());
+    EXPECT_EQ(1U, innerObject->size());
     EXPECT_TRUE(innerObject->getNumber("g.h.i.j", &integerValue));
     EXPECT_EQ(1, integerValue);
 
@@ -449,7 +449,7 @@ TEST(ParserTest, Reading)
     EXPECT_EQ(Value::TypeArray, root->type());
     list = ListValue::cast(root.get());
     ASSERT_TRUE(list);
-    EXPECT_EQ(5001U, list->length());
+    EXPECT_EQ(5001U, list->size());
 
     // Test utf8 encoded input
     root = parseJSON("\"\\xe7\\xbd\\x91\\xe9\\xa1\\xb5\"");

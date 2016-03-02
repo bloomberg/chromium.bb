@@ -74,10 +74,10 @@ static PassOwnPtr<protocol::Runtime::ExceptionDetails> toExceptionDetails(protoc
     object->getNumber("scriptId", &originScriptId);
 
     protocol::ListValue* stackTrace = object->getArray("stackTrace");
-    if (stackTrace && stackTrace->length() > 0) {
+    if (stackTrace && stackTrace->size() > 0) {
         OwnPtr<protocol::Array<protocol::Runtime::CallFrame>> frames = protocol::Array<protocol::Runtime::CallFrame>::create();
-        for (unsigned i = 0; i < stackTrace->length(); ++i) {
-            protocol::DictionaryValue* stackFrame = protocol::DictionaryValue::cast(stackTrace->get(i));
+        for (unsigned i = 0; i < stackTrace->size(); ++i) {
+            protocol::DictionaryValue* stackFrame = protocol::DictionaryValue::cast(stackTrace->at(i));
             int lineNumber = 0;
             stackFrame->getNumber("lineNumber", &lineNumber);
             int column = 0;

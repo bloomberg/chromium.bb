@@ -658,9 +658,11 @@ void InspectorDOMDebuggerAgent::willSendXMLHttpRequest(const String& url)
     if (m_state->booleanProperty(DOMDebuggerAgentState::pauseOnAllXHRs, false))
         breakpointURL = "";
     else {
-        for (auto& breakpoint : *xhrBreakpoints()) {
-            if (url.contains(breakpoint.key)) {
-                breakpointURL = breakpoint.key;
+        protocol::DictionaryValue* breakpoints = xhrBreakpoints();
+        for (size_t i = 0; i < breakpoints->size(); ++i) {
+            auto breakpoint = breakpoints->at(i);
+            if (url.contains(breakpoint.first)) {
+                breakpointURL = breakpoint.first;
                 break;
             }
         }
@@ -684,18 +686,13 @@ void InspectorDOMDebuggerAgent::didAddBreakpoint()
     setEnabled(true);
 }
 
-static bool isEmpty(const protocol::DictionaryValue* object)
-{
-    return object->begin() == object->end();
-}
-
 void InspectorDOMDebuggerAgent::didRemoveBreakpoint()
 {
     if (!m_domBreakpoints.isEmpty())
         return;
-    if (!isEmpty(eventListenerBreakpoints()))
+    if (eventListenerBreakpoints()->size())
         return;
-    if (!isEmpty(xhrBreakpoints()))
+    if (xhrBreakpoints()->size())
         return;
     if (m_state->booleanProperty(DOMDebuggerAgentState::pauseOnAllXHRs, false))
         return;
