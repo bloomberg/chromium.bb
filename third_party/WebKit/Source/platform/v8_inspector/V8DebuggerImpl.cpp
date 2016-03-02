@@ -458,13 +458,10 @@ int V8DebuggerImpl::frameCount()
     return 0;
 }
 
-PassRefPtr<JavaScriptCallFrame> V8DebuggerImpl::wrapCallFrames(int maximumLimit, ScopeInfoDetails scopeDetails)
+PassRefPtr<JavaScriptCallFrame> V8DebuggerImpl::wrapCallFrames(int maximumLimit, bool includeScopes)
 {
-    const int scopeBits = 2;
-    static_assert(NoScopes < (1 << scopeBits), "there must be enough bits to encode ScopeInfoDetails");
-
     ASSERT(maximumLimit >= 0);
-    int data = (maximumLimit << scopeBits) | scopeDetails;
+    int data = (maximumLimit << 1) | (includeScopes ? 1 : 0);
     v8::Local<v8::Value> currentCallFrameV8;
     if (m_executionState.IsEmpty()) {
         v8::Local<v8::Function> currentCallFrameFunction = v8::Local<v8::Function>::Cast(m_debuggerScript.Get(m_isolate)->Get(v8InternalizedString("currentCallFrame")));
@@ -479,7 +476,7 @@ PassRefPtr<JavaScriptCallFrame> V8DebuggerImpl::wrapCallFrames(int maximumLimit,
     return JavaScriptCallFrame::create(m_client, debuggerContext(), v8::Local<v8::Object>::Cast(currentCallFrameV8));
 }
 
-v8::Local<v8::Object> V8DebuggerImpl::currentCallFramesInner(ScopeInfoDetails scopeDetails)
+v8::Local<v8::Object> V8DebuggerImpl::currentCallFramesInner(bool includeScopes)
 {
     if (!m_isolate->InContext())
         return v8::Local<v8::Object>();
@@ -489,7 +486,7 @@ v8::Local<v8::Object> V8DebuggerImpl::currentCallFramesInner(ScopeInfoDetails sc
     if (!stackTrace->GetFrameCount())
         return v8::Local<v8::Object>();
 
-    RefPtr<JavaScriptCallFrame> currentCallFrame = wrapCallFrames(0, scopeDetails);
+    RefPtr<JavaScriptCallFrame> currentCallFrame = wrapCallFrames(0, includeScopes);
     if (!currentCallFrame)
         return v8::Local<v8::Object>();
 
@@ -502,12 +499,12 @@ v8::Local<v8::Object> V8DebuggerImpl::currentCallFramesInner(ScopeInfoDetails sc
 
 v8::Local<v8::Object> V8DebuggerImpl::currentCallFrames()
 {
-    return currentCallFramesInner(AllScopes);
+    return currentCallFramesInner(true);
 }
 
 v8::Local<v8::Object> V8DebuggerImpl::currentCallFramesForAsyncStack()
 {
-    return currentCallFramesInner(FastAsyncScopes);
+    return currentCallFramesInner(false);
 }
 
 PassRefPtr<JavaScriptCallFrame> V8DebuggerImpl::callFrameNoScopes(int index)

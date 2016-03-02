@@ -128,13 +128,8 @@ private:
 
     v8::Local<v8::String> v8InternalizedString(const char*) const;
 
-    enum ScopeInfoDetails {
-        AllScopes,
-        FastAsyncScopes,
-        NoScopes // Should be the last option.
-    };
-    v8::Local<v8::Object> currentCallFramesInner(ScopeInfoDetails);
-    PassRefPtr<JavaScriptCallFrame> wrapCallFrames(int maximumLimit, ScopeInfoDetails);
+    v8::Local<v8::Object> currentCallFramesInner(bool includeScopes);
+    PassRefPtr<JavaScriptCallFrame> wrapCallFrames(int maximumLimit, bool includeScopes);
     void handleV8AsyncTaskEvent(V8DebuggerAgentImpl*, v8::Local<v8::Context>, v8::Local<v8::Object> executionState, v8::Local<v8::Object> eventData);
     void handleV8PromiseEvent(V8DebuggerAgentImpl*, v8::Local<v8::Context>, v8::Local<v8::Object> executionState, v8::Local<v8::Object> eventData);
 

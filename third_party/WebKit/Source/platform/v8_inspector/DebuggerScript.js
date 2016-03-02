@@ -39,12 +39,6 @@ DebuggerScript.PauseOnExceptionsState = {
     PauseOnUncaughtExceptions: 2
 };
 
-DebuggerScript.ScopeInfoDetails = {
-    AllScopes: 0,
-    FastAsyncScopes: 1,
-    NoScopes: 2
-};
-
 DebuggerScript._pauseOnExceptionsState = DebuggerScript.PauseOnExceptionsState.DontPauseOnExceptions;
 Debug.clearBreakOnException();
 Debug.clearBreakOnUncaughtException();
@@ -251,8 +245,8 @@ DebuggerScript.frameCount = function(execState)
 
 DebuggerScript.currentCallFrame = function(execState, data)
 {
-    var maximumLimit = data >> 2;
-    var scopeDetailsLevel = data & 3;
+    var maximumLimit = data >> 1;
+    var scopeDetailsLevel = data & 1;
 
     var frameCount = execState.frameCount();
     if (maximumLimit && maximumLimit < frameCount)
@@ -272,7 +266,7 @@ DebuggerScript.currentCallFrameByIndex = function(execState, index)
     var frameCount = execState.frameCount();
     if (index >= frameCount)
         return undefined;
-    return DebuggerScript._frameMirrorToJSCallFrame(execState.frame(index), undefined, DebuggerScript.ScopeInfoDetails.NoScopes);
+    return DebuggerScript._frameMirrorToJSCallFrame(execState.frame(index), undefined, false);
 }
 
 DebuggerScript.stepIntoStatement = function(execState)
@@ -384,7 +378,7 @@ DebuggerScript.isEvalCompilation = function(eventData)
 // NOTE: This function is performance critical, as it can be run on every
 // statement that generates an async event (like addEventListener) to support
 // asynchronous call stacks. Thus, when possible, initialize the data lazily.
-DebuggerScript._frameMirrorToJSCallFrame = function(frameMirror, callerFrame, scopeDetailsLevel)
+DebuggerScript._frameMirrorToJSCallFrame = function(frameMirror, callerFrame, includeScopes)
 {
     // Stuff that can not be initialized lazily (i.e. valid while paused with a valid break_id).
     // The frameMirror and scopeMirror can be accessed only while paused on the debugger.
@@ -397,7 +391,7 @@ DebuggerScript._frameMirrorToJSCallFrame = function(frameMirror, callerFrame, sc
     var isAtReturn = !!frameDetails.isAtReturn();
     var returnValue = isAtReturn ? frameDetails.returnValue() : undefined;
 
-    var scopeMirrors = (scopeDetailsLevel === DebuggerScript.ScopeInfoDetails.NoScopes ? [] : frameMirror.allScopes(scopeDetailsLevel === DebuggerScript.ScopeInfoDetails.FastAsyncScopes));
+    var scopeMirrors = includeScopes ? frameMirror.allScopes(false) : [];
     var scopeTypes = new Array(scopeMirrors.length);
     var scopeObjects = new Array(scopeMirrors.length);
     var scopeNames = new Array(scopeMirrors.length);

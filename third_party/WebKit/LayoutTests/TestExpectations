@@ -316,7 +316,6 @@ crbug.com/498539 [ Precise Win7 Mac10.10 ] inspector/sources/debugger-breakpoint
 crbug.com/498539 [ Precise Mac10.10 ] inspector/sources/debugger-breakpoints/set-breakpoint.html [ Pass Timeout ]
 crbug.com/498539 [ Trusty ] inspector/sources/debugger/mutation-observer-suspend-while-paused.html [ Pass Timeout ]
 crbug.com/498539 [ Win7 ] inspector/profiler/cpu-profiler-stopped-removed-race.html [ Crash Pass ]
-crbug.com/498539 [ Win7 ] inspector/sources/debugger-async/async-callstack-scopes.html [ Failure Pass ]
 crbug.com/498539 [ Win7 ] inspector/sources/debugger-breakpoints/set-conditional-breakpoint.html [ Pass Timeout ]
 crbug.com/498539 [ Win7 ] inspector/sources/debugger-pause/debugger-eval-on-call-frame-inside-iframe.html [ Failure Pass ]
 crbug.com/498539 [ Win7 ] inspector/sources/debugger-ui/source-frame-count.html [ Pass Timeout ]
