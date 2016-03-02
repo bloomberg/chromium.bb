@@ -122,11 +122,7 @@ const color_utils::HSL kDefaultTintFrame = {-1, -1, -1};
 const color_utils::HSL kDefaultTintFrameInactive = {-1, -1, 0.75};
 const color_utils::HSL kDefaultTintFrameIncognito = {-1, 0.2, 0.35};
 const color_utils::HSL kDefaultTintFrameIncognitoInactive = {-1, 0.3, 0.6};
-#if defined(OS_MACOSX)
-const color_utils::HSL kDefaultTintBackgroundTab = { -1, -1, 0.4496875 };
-#else
-  const color_utils::HSL kDefaultTintBackgroundTab = {-1, -1, 0.75};
-#endif  // OS_MACOSX
+const color_utils::HSL kDefaultTintBackgroundTab = {-1, -1, 0.75};
 
 // ----------------------------------------------------------------------------
 // Defaults for properties which are not stored in the browser theme pack.
