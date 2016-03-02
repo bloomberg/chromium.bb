@@ -42,6 +42,7 @@
       'layers/io_surface_layer_impl_unittest.cc',
       'layers/layer_impl_unittest.cc',
       'layers/layer_iterator_unittest.cc',
+      'layers/layer_list_iterator_unittest.cc',
       'layers/layer_position_constraint_unittest.cc',
       'layers/layer_proto_converter_unittest.cc',
       'layers/layer_unittest.cc',
