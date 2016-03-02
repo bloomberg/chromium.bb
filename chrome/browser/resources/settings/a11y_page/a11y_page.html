@@ -39,23 +39,20 @@
           pref="{{prefs.settings.a11y.autoclick}}">
       </settings-checkbox>
 
-      <div class="list-frame">
-        <div class="list-item">
-          <div i18n-content="delayBeforeClickLabel"></div>
-          <select
-              value="{{prefs.settings.a11y.autoclick_delay_ms::change}}">
-            <option value="200" i18n-content="delayBeforeClickExtremelyShort">
-            </option>
-            <option value="400" i18n-content="delayBeforeClickVeryShort">
-            </option>
-            <option value="600" i18n-content="delayBeforeClickShort">
-            </option>
-            <option value="800" i18n-content="delayBeforeClickLong">
-            </option>
-            <option value="1000" i18n-content="delayBeforeClickVeryLong">
-            </option>
-          </select>
-        </div>
+      <div class="list-item settings-checkbox-spacer">
+        <div i18n-content="delayBeforeClickLabel"></div>
+        <select value="{{prefs.settings.a11y.autoclick_delay_ms::change}}">
+          <option value="200" i18n-content="delayBeforeClickExtremelyShort">
+          </option>
+          <option value="400" i18n-content="delayBeforeClickVeryShort">
+          </option>
+          <option value="600" i18n-content="delayBeforeClickShort">
+          </option>
+          <option value="800" i18n-content="delayBeforeClickLong">
+          </option>
+          <option value="1000" i18n-content="delayBeforeClickVeryLong">
+          </option>
+        </select>
       </div>
 
       <settings-checkbox pref="{{prefs.settings.a11y.virtual_keyboard}}"

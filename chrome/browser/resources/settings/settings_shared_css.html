@@ -3,6 +3,9 @@
   <template>
     <style>
       :root {
+        --checkbox-margin-start: 2px;
+        --checkbox-size: 16px;
+        --checkbox-spacing: 18px;
         --settings-secondary: {
           color: var(--paper-grey-500);
           font-weight: 400;
@@ -119,11 +122,8 @@
         padding-top: 0;
       }
 
-      .list-frame select {
-        -webkit-margin-start: 4px;
-      }
-
-      .list-frame .secondary {
+      .list-frame .secondary,
+      .list-item .secondary {
         @apply(--settings-secondary);
       }
 
@@ -134,17 +134,14 @@
         padding: 0;
       }
 
-      /* This button has no ink ripple */
-      .list-item.list-button {
-        @apply(--layout-center);
-        color: var(--google-blue-500);
-        font-weight: 500;
-      }
-
       .list-item iron-icon {
         @apply(--layout-center);
         height: 20px;
         width: 20px;
+      }
+
+      .list-item select {
+        -webkit-margin-start: 4px;
       }
 
       .list-item > .middle {
@@ -238,6 +235,13 @@
 
       .vertical-list > div {
         border-top: 1px solid var(--paper-grey-300);
+      }
+
+      .settings-checkbox-spacer {
+        -webkit-margin-start: calc(
+            var(--checkbox-margin-start) +
+            var(--checkbox-size) +
+            var(--checkbox-spacing));
       }
     </style>
   </template>
