@@ -79,4 +79,9 @@ bool InspectedFrames::Iterator::operator!=(const Iterator& other)
     return !(*this == other);
 }
 
+DEFINE_TRACE(InspectedFrames)
+{
+    visitor->trace(m_root);
+}
+
 } // namespace blink

@@ -31,6 +31,7 @@
 #include "core/inspector/InspectorWorkerAgent.h"
 
 #include "core/inspector/IdentifiersFactory.h"
+#include "core/inspector/InspectedFrames.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/inspector/PageConsoleAgent.h"
 #include "platform/weborigin/KURL.h"
@@ -45,13 +46,14 @@ static const char workerInspectionEnabled[] = "workerInspectionEnabled";
 static const char autoconnectToWorkers[] = "autoconnectToWorkers";
 };
 
-PassOwnPtrWillBeRawPtr<InspectorWorkerAgent> InspectorWorkerAgent::create()
+PassOwnPtrWillBeRawPtr<InspectorWorkerAgent> InspectorWorkerAgent::create(InspectedFrames* inspectedFrames)
 {
-    return adoptPtrWillBeNoop(new InspectorWorkerAgent());
+    return adoptPtrWillBeNoop(new InspectorWorkerAgent(inspectedFrames));
 }
 
-InspectorWorkerAgent::InspectorWorkerAgent()
+InspectorWorkerAgent::InspectorWorkerAgent(InspectedFrames* inspectedFrames)
     : InspectorBaseAgent<InspectorWorkerAgent, protocol::Frontend::Worker>("Worker")
+    , m_inspectedFrames(inspectedFrames)
     , m_consoleAgent(nullptr)
 {
 }
@@ -76,8 +78,10 @@ void InspectorWorkerAgent::restore()
 
 void InspectorWorkerAgent::enable(ErrorString*)
 {
-    m_state->setBoolean(WorkerAgentState::workerInspectionEnabled, true);
-    createWorkerAgentClientsForExistingWorkers();
+    if (!m_state->booleanProperty(WorkerAgentState::workerInspectionEnabled, false)) {
+        m_state->setBoolean(WorkerAgentState::workerInspectionEnabled, true);
+        createWorkerAgentClientsForExistingWorkers();
+    }
 }
 
 void InspectorWorkerAgent::disable(ErrorString*)
@@ -174,6 +178,22 @@ void InspectorWorkerAgent::destroyWorkerAgentClients()
     m_idToClient.clear();
 }
 
+void InspectorWorkerAgent::didCommitLoadForLocalFrame(LocalFrame* frame)
+{
+    if (frame != m_inspectedFrames->root())
+        return;
+
+    // During navigation workers from old page may die after a while.
+    // Usually, it's fine to report them terminated later, but some tests
+    // expect strict set of workers, and we reuse renderer between tests.
+    for (auto& client : m_idToClient) {
+        frontend()->workerTerminated(client.key);
+        client.value->dispose();
+    }
+    m_idToClient.clear();
+    m_workerInfos.clear();
+}
+
 void InspectorWorkerAgent::createWorkerAgentClient(WorkerInspectorProxy* workerInspectorProxy, const String& url, const String& id)
 {
     OwnPtrWillBeRawPtr<WorkerAgentClient> client = WorkerAgentClient::create(frontend(), workerInspectorProxy, id, m_consoleAgent);
@@ -194,6 +214,7 @@ DEFINE_TRACE(InspectorWorkerAgent)
     visitor->trace(m_consoleAgent);
     visitor->trace(m_workerInfos);
 #endif
+    visitor->trace(m_inspectedFrames);
     InspectorBaseAgent<InspectorWorkerAgent, protocol::Frontend::Worker>::trace(visitor);
 }
 

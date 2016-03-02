@@ -92,8 +92,6 @@ WorkerGlobalScope::WorkerGlobalScope(const KURL& url, const String& userAgent, W
 
     if (m_workerClients)
         m_workerClients->reattachThread();
-
-    m_thread->setWorkerInspectorController(m_workerInspectorController.get());
 }
 
 WorkerGlobalScope::~WorkerGlobalScope()
@@ -195,7 +193,6 @@ void WorkerGlobalScope::clearScript()
 void WorkerGlobalScope::clearInspector()
 {
     ASSERT(m_workerInspectorController);
-    thread()->setWorkerInspectorController(nullptr);
     m_workerInspectorController->dispose();
     m_workerInspectorController.clear();
 }

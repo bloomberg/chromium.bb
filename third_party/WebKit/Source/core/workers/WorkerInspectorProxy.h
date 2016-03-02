@@ -51,8 +51,6 @@ public:
 private:
     WorkerInspectorProxy();
 
-    void addDebuggerTaskForWorker(const WebTraceLocation&, PassOwnPtr<Closure>);
-
     WorkerThread* m_workerThread;
     RawPtrWillBeMember<ExecutionContext> m_executionContext;
     RawPtrWillBeMember<WorkerInspectorProxy::PageInspector> m_pageInspector;

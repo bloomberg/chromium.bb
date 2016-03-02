@@ -45,10 +45,7 @@ public:
     Iterator begin();
     Iterator end();
 
-    DEFINE_INLINE_TRACE()
-    {
-        visitor->trace(m_root);
-    }
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     explicit InspectedFrames(LocalFrame*);

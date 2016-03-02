@@ -34,6 +34,7 @@
 #include "core/inspector/InspectorBaseAgent.h"
 #include "core/inspector/InspectorRuntimeAgent.h"
 #include "core/inspector/InspectorTaskRunner.h"
+#include "platform/inspector_protocol/FrontendChannel.h"
 #include "wtf/Allocator.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
@@ -46,7 +47,6 @@ class InstrumentingAgents;
 class WorkerDebuggerAgent;
 class WorkerGlobalScope;
 class WorkerRuntimeAgent;
-class WorkerThreadDebugger;
 
 namespace protocol {
 class Dispatcher;
@@ -54,7 +54,7 @@ class Frontend;
 class FrontendChannel;
 }
 
-class WorkerInspectorController final : public RefCountedWillBeGarbageCollectedFinalized<WorkerInspectorController>, public InspectorRuntimeAgent::Client {
+class WorkerInspectorController final : public RefCountedWillBeGarbageCollectedFinalized<WorkerInspectorController>, public InspectorRuntimeAgent::Client, public protocol::FrontendChannel {
     WTF_MAKE_NONCOPYABLE(WorkerInspectorController);
     USING_FAST_MALLOC_WILL_BE_REMOVED(WorkerInspectorController);
 public:
@@ -62,41 +62,30 @@ public:
     ~WorkerInspectorController();
     DECLARE_TRACE();
 
-    void registerModuleAgent(PassOwnPtrWillBeRawPtr<InspectorAgent>);
     void connectFrontend();
     void disconnectFrontend();
-    void restoreInspectorStateFromCookie(const String& inspectorCookie);
     void dispatchMessageFromFrontend(const String&);
     void dispose();
-    void interruptAndDispatchInspectorCommands();
-
-    void workerContextInitialized(bool pauseOnStart);
 
 private:
     friend InstrumentingAgents* instrumentationForWorkerGlobalScope(WorkerGlobalScope*);
 
     // InspectorRuntimeAgent::Client implementation.
-    void pauseOnStart();
     void resumeStartup() override;
     bool isRunRequired() override;
 
-    class PageInspectorProxy;
-    friend WTF::OwnedPtrDeleter<PageInspectorProxy>;
-
-    protocol::FrontendChannel* frontendChannel() const;
+    // protocol::FrontendChannel implementation.
+    void sendProtocolResponse(int sessionId, int callId, PassOwnPtr<protocol::DictionaryValue> message) override;
+    void sendProtocolNotification(PassOwnPtr<protocol::DictionaryValue> message) override;
+    void flush() override;
 
     RawPtrWillBeMember<WorkerGlobalScope> m_workerGlobalScope;
     RefPtrWillBeMember<InstrumentingAgents> m_instrumentingAgents;
-    WorkerThreadDebugger* m_workerThreadDebugger;
     InspectorAgentRegistry m_agents;
-    OwnPtrWillBeMember<PageInspectorProxy> m_pageInspectorProxy;
     OwnPtr<protocol::Frontend> m_frontend;
     OwnPtr<protocol::Dispatcher> m_backendDispatcher;
     RawPtrWillBeMember<WorkerDebuggerAgent> m_workerDebuggerAgent;
     RawPtrWillBeMember<WorkerRuntimeAgent> m_workerRuntimeAgent;
-    OwnPtr<InspectorTaskRunner> m_inspectorTaskRunner;
-    OwnPtr<InspectorTaskRunner::IgnoreInterruptsScope> m_beforeInitlizedScope;
-    bool m_paused;
 };
 
 } // namespace blink

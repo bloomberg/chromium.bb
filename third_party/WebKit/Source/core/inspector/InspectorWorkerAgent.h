@@ -38,6 +38,7 @@
 #include "wtf/HashMap.h"
 
 namespace blink {
+class InspectedFrames;
 class PageConsoleAgent;
 class KURL;
 class WorkerInspectorProxy;
@@ -47,13 +48,14 @@ using ErrorString = String;
 class CORE_EXPORT InspectorWorkerAgent final : public InspectorBaseAgent<InspectorWorkerAgent, protocol::Frontend::Worker>, public protocol::Dispatcher::WorkerCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorWorkerAgent);
 public:
-    static PassOwnPtrWillBeRawPtr<InspectorWorkerAgent> create();
+    static PassOwnPtrWillBeRawPtr<InspectorWorkerAgent> create(InspectedFrames*);
     ~InspectorWorkerAgent() override;
     DECLARE_VIRTUAL_TRACE();
 
     void init() override;
     void disable(ErrorString*) override;
     void restore() override;
+    void didCommitLoadForLocalFrame(LocalFrame*) override;
 
     // Called from InspectorInstrumentation
     bool shouldPauseDedicatedWorkerOnStart();
@@ -97,7 +99,7 @@ public:
     };
 
 private:
-    InspectorWorkerAgent();
+    explicit InspectorWorkerAgent(InspectedFrames*);
     void createWorkerAgentClientsForExistingWorkers();
     void createWorkerAgentClient(WorkerInspectorProxy*, const String& url, const String& id);
     void destroyWorkerAgentClients();
@@ -110,6 +112,7 @@ private:
         String id;
     };
 
+    RawPtrWillBeMember<InspectedFrames> m_inspectedFrames;
     using WorkerClients = WillBeHeapHashMap<String, OwnPtrWillBeMember<WorkerAgentClient>>;
     WorkerClients m_idToClient;
     using WorkerInfos = WillBeHeapHashMap<RawPtrWillBeMember<WorkerInspectorProxy>, WorkerInfo>;

@@ -45,89 +45,26 @@
 #include "core/workers/WorkerThread.h"
 #include "platform/inspector_protocol/Dispatcher.h"
 #include "platform/inspector_protocol/Frontend.h"
-#include "platform/inspector_protocol/FrontendChannel.h"
 #include "platform/v8_inspector/public/V8RuntimeAgent.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace blink {
 
-namespace {
-
-class RunInspectorCommandsTask final : public InspectorTaskRunner::Task {
-public:
-    explicit RunInspectorCommandsTask(WorkerThread* thread)
-        : m_thread(thread) { }
-    ~RunInspectorCommandsTask() override { }
-    void run() override
-    {
-        // Process all queued debugger commands. WorkerThread is certainly
-        // alive if this task is being executed.
-        m_thread->willRunDebuggerTasks();
-        while (WorkerThread::TaskReceived == m_thread->runDebuggerTask(WorkerThread::DontWaitForTask)) { }
-        m_thread->didRunDebuggerTasks();
-    }
-
-private:
-    WorkerThread* m_thread;
-};
-
-} // namespace
-
-class WorkerInspectorController::PageInspectorProxy final : public NoBaseWillBeGarbageCollectedFinalized<WorkerInspectorController::PageInspectorProxy>, public protocol::FrontendChannel {
-    USING_FAST_MALLOC_WILL_BE_REMOVED(PageInspectorProxy);
-public:
-    static PassOwnPtrWillBeRawPtr<PageInspectorProxy> create(WorkerGlobalScope* workerGlobalScope)
-    {
-        return adoptPtrWillBeNoop(new PageInspectorProxy(workerGlobalScope));
-    }
-    ~PageInspectorProxy() override { }
-
-    DEFINE_INLINE_TRACE()
-    {
-        visitor->trace(m_workerGlobalScope);
-    }
-
-private:
-    explicit PageInspectorProxy(WorkerGlobalScope* workerGlobalScope)
-        : m_workerGlobalScope(workerGlobalScope)
-    {
-    }
-
-    void sendProtocolResponse(int sessionId, int callId, PassOwnPtr<protocol::DictionaryValue> message) override
-    {
-        // Worker messages are wrapped, no need to handle callId.
-        m_workerGlobalScope->thread()->workerReportingProxy().postMessageToPageInspector(message->toJSONString());
-    }
-    void sendProtocolNotification(PassOwnPtr<protocol::DictionaryValue> message) override
-    {
-        m_workerGlobalScope->thread()->workerReportingProxy().postMessageToPageInspector(message->toJSONString());
-    }
-    void flush() override { }
-
-    RawPtrWillBeMember<WorkerGlobalScope> m_workerGlobalScope;
-};
-
 WorkerInspectorController::WorkerInspectorController(WorkerGlobalScope* workerGlobalScope)
     : m_workerGlobalScope(workerGlobalScope)
     , m_instrumentingAgents(InstrumentingAgents::create())
     , m_agents(m_instrumentingAgents.get())
-    , m_inspectorTaskRunner(adoptPtr(new InspectorTaskRunner(v8::Isolate::GetCurrent())))
-    , m_beforeInitlizedScope(adoptPtr(new InspectorTaskRunner::IgnoreInterruptsScope(m_inspectorTaskRunner.get())))
-    , m_paused(false)
 {
     v8::Isolate* isolate = workerGlobalScope->thread()->isolate();
     V8PerIsolateData* data = V8PerIsolateData::from(isolate);
-    ThreadDebugger* threadDebugger = data->threadDebugger();
-    if (threadDebugger) {
-        ASSERT(threadDebugger->isWorker());
-        m_workerThreadDebugger = static_cast<WorkerThreadDebugger*>(threadDebugger);
+
+    if (data->threadDebugger()) {
+        ASSERT(data->threadDebugger()->isWorker());
     } else {
-        OwnPtr<WorkerThreadDebugger> newDebugger = adoptPtr(new WorkerThreadDebugger(workerGlobalScope->thread()));
-        m_workerThreadDebugger = newDebugger.get();
-        data->setThreadDebugger(newDebugger.release());
+        data->setThreadDebugger(adoptPtr(new WorkerThreadDebugger(workerGlobalScope->thread(), isolate)));
     }
 
-    V8Debugger* debugger = m_workerThreadDebugger->debugger();
+    V8Debugger* debugger = data->threadDebugger()->debugger();
 
     OwnPtrWillBeRawPtr<WorkerRuntimeAgent> workerRuntimeAgent = WorkerRuntimeAgent::create(debugger, workerGlobalScope, this);
     m_workerRuntimeAgent = workerRuntimeAgent.get();
@@ -151,18 +88,12 @@ WorkerInspectorController::~WorkerInspectorController()
 {
 }
 
-void WorkerInspectorController::registerModuleAgent(PassOwnPtrWillBeRawPtr<InspectorAgent> agent)
-{
-    m_agents.append(agent);
-}
-
 void WorkerInspectorController::connectFrontend()
 {
     ASSERT(!m_frontend);
-    InspectorTaskRunner::IgnoreInterruptsScope scope(m_inspectorTaskRunner.get());
-    m_pageInspectorProxy = PageInspectorProxy::create(m_workerGlobalScope);
-    m_frontend = adoptPtr(new protocol::Frontend(frontendChannel()));
-    m_backendDispatcher = protocol::Dispatcher::create(frontendChannel());
+    InspectorTaskRunner::IgnoreInterruptsScope scope(m_workerGlobalScope->thread()->inspectorTaskRunner());
+    m_frontend = adoptPtr(new protocol::Frontend(this));
+    m_backendDispatcher = protocol::Dispatcher::create(this);
     m_agents.registerInDispatcher(m_backendDispatcher.get());
     m_agents.setFrontend(m_frontend.get());
     InspectorInstrumentation::frontendCreated();
@@ -172,25 +103,17 @@ void WorkerInspectorController::disconnectFrontend()
 {
     if (!m_frontend)
         return;
-    InspectorTaskRunner::IgnoreInterruptsScope scope(m_inspectorTaskRunner.get());
+    InspectorTaskRunner::IgnoreInterruptsScope scope(m_workerGlobalScope->thread()->inspectorTaskRunner());
     m_backendDispatcher->clearFrontend();
     m_backendDispatcher.clear();
     m_agents.clearFrontend();
     m_frontend.clear();
     InspectorInstrumentation::frontendDeleted();
-    m_pageInspectorProxy.clear();
-}
-
-void WorkerInspectorController::restoreInspectorStateFromCookie(const String& inspectorCookie)
-{
-    ASSERT(!m_frontend);
-    connectFrontend();
-    m_agents.restore(inspectorCookie);
 }
 
 void WorkerInspectorController::dispatchMessageFromFrontend(const String& message)
 {
-    InspectorTaskRunner::IgnoreInterruptsScope scope(m_inspectorTaskRunner.get());
+    InspectorTaskRunner::IgnoreInterruptsScope scope(m_workerGlobalScope->thread()->inspectorTaskRunner());
     if (m_backendDispatcher) {
         // sessionId will be overwritten by WebDevToolsAgent::sendProtocolNotifications call.
         m_backendDispatcher->dispatch(0, message);
@@ -203,39 +126,29 @@ void WorkerInspectorController::dispose()
     disconnectFrontend();
 }
 
-void WorkerInspectorController::interruptAndDispatchInspectorCommands()
-{
-    m_inspectorTaskRunner->interruptAndRun(adoptPtr(new RunInspectorCommandsTask(m_workerGlobalScope->thread())));
-}
-
 void WorkerInspectorController::resumeStartup()
 {
-    if (m_paused)
-        m_workerThreadDebugger->quitMessageLoopOnPause();
+    m_workerGlobalScope->thread()->stopRunningDebuggerTasksOnPause();
 }
 
 bool WorkerInspectorController::isRunRequired()
 {
-    return m_paused;
+    return m_workerGlobalScope->thread()->isRunningDebuggerTasksOnPause();
 }
 
-protocol::FrontendChannel* WorkerInspectorController::frontendChannel() const
+void WorkerInspectorController::sendProtocolResponse(int sessionId, int callId, PassOwnPtr<protocol::DictionaryValue> message)
 {
-    return static_cast<protocol::FrontendChannel*>(m_pageInspectorProxy.get());
+    // Worker messages are wrapped, no need to handle callId.
+    m_workerGlobalScope->thread()->workerReportingProxy().postMessageToPageInspector(message->toJSONString());
 }
 
-void WorkerInspectorController::workerContextInitialized(bool shouldPauseOnStart)
+void WorkerInspectorController::sendProtocolNotification(PassOwnPtr<protocol::DictionaryValue> message)
 {
-    m_beforeInitlizedScope.clear();
-    if (shouldPauseOnStart)
-        pauseOnStart();
+    m_workerGlobalScope->thread()->workerReportingProxy().postMessageToPageInspector(message->toJSONString());
 }
 
-void WorkerInspectorController::pauseOnStart()
+void WorkerInspectorController::flush()
 {
-    m_paused = true;
-    m_workerThreadDebugger->runMessageLoopOnPause(WorkerThreadDebugger::contextGroupId());
-    m_paused = false;
 }
 
 DEFINE_TRACE(WorkerInspectorController)
@@ -243,7 +156,6 @@ DEFINE_TRACE(WorkerInspectorController)
     visitor->trace(m_workerGlobalScope);
     visitor->trace(m_instrumentingAgents);
     visitor->trace(m_agents);
-    visitor->trace(m_pageInspectorProxy);
     visitor->trace(m_workerDebuggerAgent);
     visitor->trace(m_workerRuntimeAgent);
 }

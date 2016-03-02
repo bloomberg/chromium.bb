@@ -32,7 +32,7 @@
 #include "bindings/core/v8/V8Initializer.h"
 #include "core/dom/Microtask.h"
 #include "core/inspector/InspectorInstrumentation.h"
-#include "core/inspector/WorkerInspectorController.h"
+#include "core/inspector/InspectorTaskRunner.h"
 #include "core/workers/DedicatedWorkerGlobalScope.h"
 #include "core/workers/WorkerClients.h"
 #include "core/workers/WorkerReportingProxy.h"
@@ -194,10 +194,29 @@ private:
     bool m_killed = false;
 };
 
+class WorkerThread::RunInspectorCommandsTask : public InspectorTaskRunner::Task {
+    WTF_MAKE_NONCOPYABLE(RunInspectorCommandsTask);
+public:
+    explicit RunInspectorCommandsTask(WorkerThread* thread) : m_thread(thread) { }
+    ~RunInspectorCommandsTask() override { }
+    void run() override
+    {
+        // Process all queued debugger commands. WorkerThread is certainly
+        // alive if this task is being executed.
+        InspectorInstrumentation::willEnterNestedRunLoop(m_thread->workerGlobalScope());
+        while (WorkerThread::TaskReceived == m_thread->runDebuggerTask(WorkerThread::DontWaitForTask)) { }
+        InspectorInstrumentation::didLeaveNestedRunLoop(m_thread->workerGlobalScope());
+    }
+
+private:
+    WorkerThread* m_thread;
+};
+
 WorkerThread::WorkerThread(PassRefPtr<WorkerLoaderProxy> workerLoaderProxy, WorkerReportingProxy& workerReportingProxy)
     : m_started(false)
     , m_terminated(false)
     , m_shutdown(false)
+    , m_pausedInDebugger(false)
     , m_debuggerTaskQueue(adoptPtr(new DebuggerTaskQueue))
     , m_workerLoaderProxy(workerLoaderProxy)
     , m_workerReportingProxy(workerReportingProxy)
@@ -230,13 +249,6 @@ void WorkerThread::start(PassOwnPtr<WorkerThreadStartupData> startupData)
 
     m_started = true;
     backingThread().postTask(BLINK_FROM_HERE, threadSafeBind(&WorkerThread::initialize, AllowCrossThreadAccess(this), startupData));
-}
-
-void WorkerThread::interruptAndDispatchInspectorCommands()
-{
-    MutexLocker locker(m_workerInspectorControllerMutex);
-    if (m_workerInspectorController)
-        m_workerInspectorController->interruptAndDispatchInspectorCommands();
 }
 
 PlatformThreadId WorkerThread::platformThreadId()
@@ -275,6 +287,7 @@ void WorkerThread::initialize(PassOwnPtr<WorkerThreadStartupData> startupData)
         m_isolate = initializeIsolate();
         // Optimize for memory usage instead of latency for the worker isolate.
         m_isolate->IsolateInBackgroundNotification();
+        m_inspectorTaskRunner = adoptPtr(new InspectorTaskRunner(m_isolate));
         m_workerGlobalScope = createWorkerGlobalScope(startupData);
         m_workerGlobalScope->scriptLoaded(sourceCode.length(), cachedMetaData.get() ? cachedMetaData->size() : 0);
 
@@ -287,7 +300,9 @@ void WorkerThread::initialize(PassOwnPtr<WorkerThreadStartupData> startupData)
         if (!scriptController->isExecutionForbidden())
             scriptController->initializeContextIfNeeded();
     }
-    m_workerGlobalScope->workerInspectorController()->workerContextInitialized(startMode == PauseWorkerGlobalScopeOnStart);
+
+    if (startMode == PauseWorkerGlobalScopeOnStart)
+        startRunningDebuggerTasksOnPause();
 
     if (m_workerGlobalScope->scriptController()->isContextInitialized()) {
         m_workerReportingProxy.didInitializeWorkerContext();
@@ -366,6 +381,11 @@ WorkerGlobalScope* WorkerThread::workerGlobalScope()
 {
     ASSERT(isCurrentThread());
     return m_workerGlobalScope.get();
+}
+
+InspectorTaskRunner* WorkerThread::inspectorTaskRunner()
+{
+    return m_inspectorTaskRunner.get();
 }
 
 bool WorkerThread::terminated()
@@ -494,6 +514,11 @@ void WorkerThread::terminateV8Execution()
     m_isolate->TerminateExecution();
 }
 
+void WorkerThread::runDebuggerTaskDontWait()
+{
+    runDebuggerTask(WorkerThread::DontWaitForTask);
+}
+
 void WorkerThread::appendDebuggerTask(PassOwnPtr<Closure> task)
 {
     {
@@ -502,6 +527,9 @@ void WorkerThread::appendDebuggerTask(PassOwnPtr<Closure> task)
             return;
     }
     m_debuggerTaskQueue->append(task);
+    backingThread().postTask(BLINK_FROM_HERE, threadSafeBind(&WorkerThread::runDebuggerTaskDontWait, AllowCrossThreadAccess(this)));
+    if (m_inspectorTaskRunner)
+        m_inspectorTaskRunner->interruptAndRun(adoptPtr(new RunInspectorCommandsTask(this)));
 }
 
 WorkerThread::TaskQueueResult WorkerThread::runDebuggerTask(WaitMode waitMode)
@@ -526,20 +554,21 @@ WorkerThread::TaskQueueResult WorkerThread::runDebuggerTask(WaitMode waitMode)
     return result;
 }
 
-void WorkerThread::willRunDebuggerTasks()
+void WorkerThread::startRunningDebuggerTasksOnPause()
 {
+    m_pausedInDebugger = true;
+    WorkerThread::TaskQueueResult result;
     InspectorInstrumentation::willEnterNestedRunLoop(m_workerGlobalScope.get());
-}
-
-void WorkerThread::didRunDebuggerTasks()
-{
+    do {
+        result = runDebuggerTask(WorkerThread::WaitForTask);
+    // Keep waiting until execution is resumed.
+    } while (result == WorkerThread::TaskReceived && m_pausedInDebugger);
     InspectorInstrumentation::didLeaveNestedRunLoop(m_workerGlobalScope.get());
 }
 
-void WorkerThread::setWorkerInspectorController(WorkerInspectorController* workerInspectorController)
+void WorkerThread::stopRunningDebuggerTasksOnPause()
 {
-    MutexLocker locker(m_workerInspectorControllerMutex);
-    m_workerInspectorController = workerInspectorController;
+    m_pausedInDebugger = false;
 }
 
 } // namespace blink

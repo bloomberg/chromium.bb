@@ -59,7 +59,7 @@ void WorkerInspectorProxy::connectToInspector(WorkerInspectorProxy::PageInspecto
         return;
     ASSERT(!m_pageInspector);
     m_pageInspector = pageInspector;
-    addDebuggerTaskForWorker(BLINK_FROM_HERE, threadSafeBind(connectToWorkerGlobalScopeInspectorTask, AllowCrossThreadAccess(m_workerThread)));
+    m_workerThread->appendDebuggerTask(threadSafeBind(connectToWorkerGlobalScopeInspectorTask, AllowCrossThreadAccess(m_workerThread)));
 }
 
 static void disconnectFromWorkerGlobalScopeInspectorTask(WorkerThread* workerThread)
@@ -70,9 +70,8 @@ static void disconnectFromWorkerGlobalScopeInspectorTask(WorkerThread* workerThr
 void WorkerInspectorProxy::disconnectFromInspector()
 {
     m_pageInspector = nullptr;
-    if (!m_workerThread)
-        return;
-    addDebuggerTaskForWorker(BLINK_FROM_HERE, threadSafeBind(disconnectFromWorkerGlobalScopeInspectorTask, AllowCrossThreadAccess(m_workerThread)));
+    if (m_workerThread)
+        m_workerThread->appendDebuggerTask(threadSafeBind(disconnectFromWorkerGlobalScopeInspectorTask, AllowCrossThreadAccess(m_workerThread)));
 }
 
 static void dispatchOnInspectorBackendTask(const String& message, WorkerThread* workerThread)
@@ -82,10 +81,8 @@ static void dispatchOnInspectorBackendTask(const String& message, WorkerThread* 
 
 void WorkerInspectorProxy::sendMessageToInspector(const String& message)
 {
-    if (!m_workerThread)
-        return;
-    addDebuggerTaskForWorker(BLINK_FROM_HERE, threadSafeBind(dispatchOnInspectorBackendTask, message, AllowCrossThreadAccess(m_workerThread)));
-    m_workerThread->interruptAndDispatchInspectorCommands();
+    if (m_workerThread)
+        m_workerThread->appendDebuggerTask(threadSafeBind(dispatchOnInspectorBackendTask, message, AllowCrossThreadAccess(m_workerThread)));
 }
 
 void WorkerInspectorProxy::writeTimelineStartedEvent(const String& sessionId, const String& workerId)
@@ -93,17 +90,6 @@ void WorkerInspectorProxy::writeTimelineStartedEvent(const String& sessionId, co
     if (!m_workerThread)
         return;
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "TracingSessionIdForWorker", TRACE_EVENT_SCOPE_THREAD, "data", InspectorTracingSessionIdForWorkerEvent::data(sessionId, workerId, m_workerThread));
-}
-
-static void runDebuggerTaskForWorker(WorkerThread* workerThread)
-{
-    workerThread->runDebuggerTask(WorkerThread::DontWaitForTask);
-}
-
-void WorkerInspectorProxy::addDebuggerTaskForWorker(const WebTraceLocation& location, PassOwnPtr<Closure> task)
-{
-    m_workerThread->appendDebuggerTask(task);
-    m_workerThread->backingThread().postTask(location, threadSafeBind(&runDebuggerTaskForWorker, AllowCrossThreadAccess(m_workerThread)));
 }
 
 DEFINE_TRACE(WorkerInspectorProxy)

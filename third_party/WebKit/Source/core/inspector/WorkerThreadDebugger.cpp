@@ -39,10 +39,9 @@ namespace blink {
 
 static const int workerContextGroupId = 1;
 
-WorkerThreadDebugger::WorkerThreadDebugger(WorkerThread* workerThread)
-    : ThreadDebugger(v8::Isolate::GetCurrent())
+WorkerThreadDebugger::WorkerThreadDebugger(WorkerThread* workerThread, v8::Isolate* isolate)
+    : ThreadDebugger(isolate)
     , m_workerThread(workerThread)
-    , m_paused(false)
 {
 }
 
@@ -63,19 +62,12 @@ int WorkerThreadDebugger::contextGroupId()
 void WorkerThreadDebugger::runMessageLoopOnPause(int contextGroupId)
 {
     ASSERT(contextGroupId == workerContextGroupId);
-    m_paused = true;
-    WorkerThread::TaskQueueResult result;
-    m_workerThread->willRunDebuggerTasks();
-    do {
-        result = m_workerThread->runDebuggerTask();
-    // Keep waiting until execution is resumed.
-    } while (result == WorkerThread::TaskReceived && m_paused);
-    m_workerThread->didRunDebuggerTasks();
+    m_workerThread->startRunningDebuggerTasksOnPause();
 }
 
 void WorkerThreadDebugger::quitMessageLoopOnPause()
 {
-    m_paused = false;
+    m_workerThread->stopRunningDebuggerTasksOnPause();
 }
 
 bool WorkerThreadDebugger::callingContextCanAccessContext(v8::Local<v8::Context> calling, v8::Local<v8::Context> target)

@@ -40,7 +40,7 @@ class WorkerThread;
 class WorkerThreadDebugger final : public ThreadDebugger {
     WTF_MAKE_NONCOPYABLE(WorkerThreadDebugger);
 public:
-    explicit WorkerThreadDebugger(WorkerThread*);
+    explicit WorkerThreadDebugger(WorkerThread*, v8::Isolate*);
     ~WorkerThreadDebugger() override;
 
     static void setContextDebugData(v8::Local<v8::Context>);
@@ -53,7 +53,6 @@ public:
 
 private:
     WorkerThread* m_workerThread;
-    bool m_paused;
 };
 
 } // namespace blink

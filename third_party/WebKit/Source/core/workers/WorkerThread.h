@@ -43,6 +43,7 @@
 
 namespace blink {
 
+class InspectorTaskRunner;
 class WaitableEvent;
 class WorkerGlobalScope;
 class WorkerInspectorController;
@@ -98,21 +99,16 @@ public:
     void postTask(const WebTraceLocation&, PassOwnPtr<ExecutionContextTask>);
     void appendDebuggerTask(PassOwnPtr<Closure>);
 
-    enum WaitMode { WaitForTask, DontWaitForTask };
-    enum TaskQueueResult {
-        Terminated, // Queue was destroyed while waiting for a task.
-        Timeout, // Timeout was specified and it expired.
-        TaskReceived, // A task was successfully received and returned.
-    };
-    TaskQueueResult runDebuggerTask(WaitMode = WaitForTask);
-
-    // These methods should be called if the holder of the thread is
-    // going to call runDebuggerTask in a loop.
-    void willRunDebuggerTasks();
-    void didRunDebuggerTasks();
+    // Runs only debugger tasks while paused in debugger, called on worker thread.
+    void startRunningDebuggerTasksOnPause();
+    void stopRunningDebuggerTasksOnPause();
+    bool isRunningDebuggerTasksOnPause() const { return m_pausedInDebugger; }
 
     // Can be called only on the worker thread, WorkerGlobalScope is not thread safe.
     WorkerGlobalScope* workerGlobalScope();
+
+    // Can be called on any thread.
+    InspectorTaskRunner* inspectorTaskRunner();
 
     // Returns true once one of the terminate* methods is called.
     bool terminated();
@@ -121,9 +117,6 @@ public:
     static unsigned workerThreadCount();
 
     PlatformThreadId platformThreadId();
-
-    void interruptAndDispatchInspectorCommands();
-    void setWorkerInspectorController(WorkerInspectorController*);
 
 protected:
     WorkerThread(PassRefPtr<WorkerLoaderProxy>, WorkerReportingProxy&);
@@ -144,6 +137,7 @@ protected:
 
 private:
     class DebuggerTaskQueue;
+    class RunInspectorCommandsTask;
     friend class WorkerMicrotaskRunner;
 
     PassOwnPtr<Closure> createWorkerThreadTask(PassOwnPtr<ExecutionContextTask>, bool isInstrumented);
@@ -158,18 +152,26 @@ private:
     void performShutdownTask();
     void postDelayedTask(const WebTraceLocation&, PassOwnPtr<ExecutionContextTask>, long long delayMs);
 
+    enum WaitMode { WaitForTask, DontWaitForTask };
+    enum TaskQueueResult {
+        Terminated, // Queue was destroyed while waiting for a task.
+        Timeout, // Timeout was specified and it expired.
+        TaskReceived, // A task was successfully received and returned.
+    };
+    TaskQueueResult runDebuggerTask(WaitMode);
+    void runDebuggerTaskDontWait();
+
     bool m_started;
     bool m_terminated;
     bool m_shutdown;
+    bool m_pausedInDebugger;
     OwnPtr<DebuggerTaskQueue> m_debuggerTaskQueue;
+    OwnPtr<InspectorTaskRunner> m_inspectorTaskRunner;
     OwnPtr<WebThread::TaskObserver> m_microtaskRunner;
 
     RefPtr<WorkerLoaderProxy> m_workerLoaderProxy;
     WorkerReportingProxy& m_workerReportingProxy;
     RawPtr<WebScheduler> m_webScheduler; // Not owned.
-
-    RefPtrWillBePersistent<WorkerInspectorController> m_workerInspectorController;
-    Mutex m_workerInspectorControllerMutex;
 
     // This lock protects |m_workerGlobalScope|, |m_terminated|, |m_shutdown|, |m_isolate| and |m_microtaskRunner|.
     Mutex m_threadStateMutex;
