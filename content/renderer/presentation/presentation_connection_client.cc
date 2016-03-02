@@ -10,10 +10,9 @@
 namespace content {
 
 PresentationConnectionClient::PresentationConnectionClient(
-    presentation::PresentationSessionInfoPtr session_info)
+    mojom::PresentationSessionInfoPtr session_info)
     : url_(blink::WebString::fromUTF8(session_info->url)),
-      id_(blink::WebString::fromUTF8(session_info->id)) {
-}
+      id_(blink::WebString::fromUTF8(session_info->id)) {}
 
 PresentationConnectionClient::PresentationConnectionClient(
     const mojo::String& url,

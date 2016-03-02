@@ -18,7 +18,7 @@ class CONTENT_EXPORT PresentationConnectionClient
     : public NON_EXPORTED_BASE(blink::WebPresentationConnectionClient) {
  public:
   explicit PresentationConnectionClient(
-        presentation::PresentationSessionInfoPtr session_info);
+      mojom::PresentationSessionInfoPtr session_info);
   explicit PresentationConnectionClient(const mojo::String& url,
                                      const mojo::String& id);
   ~PresentationConnectionClient() override;

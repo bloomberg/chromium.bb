@@ -11,13 +11,13 @@
 
 namespace content {
 
-CONTENT_EXPORT presentation::PresentationErrorType PresentationErrorTypeToMojo(
+CONTENT_EXPORT mojom::PresentationErrorType PresentationErrorTypeToMojo(
     PresentationErrorType input);
 
-CONTENT_EXPORT presentation::PresentationConnectionState
+CONTENT_EXPORT mojom::PresentationConnectionState
 PresentationConnectionStateToMojo(PresentationConnectionState state);
 
-CONTENT_EXPORT presentation::PresentationConnectionCloseReason
+CONTENT_EXPORT mojom::PresentationConnectionCloseReason
 PresentationConnectionCloseReasonToMojo(
     PresentationConnectionCloseReason reason);
 }  // namespace content
@@ -25,12 +25,12 @@ PresentationConnectionCloseReasonToMojo(
 namespace mojo {
 
 template <>
-struct TypeConverter<presentation::PresentationSessionInfoPtr,
+struct TypeConverter<content::mojom::PresentationSessionInfoPtr,
                      content::PresentationSessionInfo> {
-  static presentation::PresentationSessionInfoPtr Convert(
+  static content::mojom::PresentationSessionInfoPtr Convert(
       const content::PresentationSessionInfo& input) {
-    presentation::PresentationSessionInfoPtr output(
-        presentation::PresentationSessionInfo::New());
+    content::mojom::PresentationSessionInfoPtr output(
+        content::mojom::PresentationSessionInfo::New());
     output->url = input.presentation_url;
     output->id = input.presentation_id;
     return output;
@@ -39,20 +39,20 @@ struct TypeConverter<presentation::PresentationSessionInfoPtr,
 
 template <>
 struct TypeConverter<content::PresentationSessionInfo,
-                     presentation::PresentationSessionInfoPtr> {
+                     content::mojom::PresentationSessionInfoPtr> {
   static content::PresentationSessionInfo Convert(
-      const presentation::PresentationSessionInfoPtr& input) {
+      const content::mojom::PresentationSessionInfoPtr& input) {
     return content::PresentationSessionInfo(input->url, input->id);
   }
 };
 
 template <>
-struct TypeConverter<presentation::PresentationErrorPtr,
+struct TypeConverter<content::mojom::PresentationErrorPtr,
                      content::PresentationError> {
-  static presentation::PresentationErrorPtr Convert(
+  static content::mojom::PresentationErrorPtr Convert(
       const content::PresentationError& input) {
-    presentation::PresentationErrorPtr output(
-        presentation::PresentationError::New());
+    content::mojom::PresentationErrorPtr output(
+        content::mojom::PresentationError::New());
     output->error_type = PresentationErrorTypeToMojo(input.error_type);
     output->message = input.message;
     return output;

@@ -1863,9 +1863,8 @@ void RenderFrameHostImpl::RegisterMojoServices() {
       base::Bind(&PermissionServiceContext::CreateService,
                  base::Unretained(permission_service_context_.get())));
 
-  GetServiceRegistry()->AddService<presentation::PresentationService>(
-      base::Bind(&PresentationServiceImpl::CreateMojoService,
-                 base::Unretained(this)));
+  GetServiceRegistry()->AddService(base::Bind(
+      &PresentationServiceImpl::CreateMojoService, base::Unretained(this)));
 
   if (!frame_mojo_shell_)
     frame_mojo_shell_.reset(new FrameMojoShell(this));
