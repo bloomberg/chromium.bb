@@ -85,6 +85,7 @@ void DisplayConfigurationController::SetMirrorMode(bool mirror,
       display_manager_->IsInMirrorMode() == mirror || IsLimited()) {
     return;
   }
+  SetThrottleTimeout(kCycleDisplayThrottleTimeoutMs);
   if (user_action && display_animator_) {
     display_animator_->StartFadeOutAnimation(
         base::Bind(&DisplayConfigurationController::SetMirrorModeImpl,
@@ -111,6 +112,7 @@ void DisplayConfigurationController::SetPrimaryDisplayId(int64_t display_id,
   if (display_manager_->GetNumDisplays() <= 1 || IsLimited())
     return;
 
+  SetThrottleTimeout(kSetPrimaryDisplayThrottleTimeoutMs);
   if (user_action && display_animator_) {
     display_animator_->StartFadeOutAnimation(
         base::Bind(&DisplayConfigurationController::SetPrimaryDisplayIdImpl,
@@ -122,8 +124,7 @@ void DisplayConfigurationController::SetPrimaryDisplayId(int64_t display_id,
 
 void DisplayConfigurationController::OnDisplayConfigurationChanged() {
   // TODO(oshima): Stop all animations.
-  if (limiter_)
-    limiter_->SetThrottleTimeout(kAfterDisplayChangeThrottleTimeoutMs);
+  SetThrottleTimeout(kAfterDisplayChangeThrottleTimeoutMs);
 }
 
 // Protected
@@ -135,6 +136,11 @@ void DisplayConfigurationController::ResetAnimatorForTest() {
 }
 
 // Private
+
+void DisplayConfigurationController::SetThrottleTimeout(int64_t throttle_ms) {
+  if (limiter_)
+    limiter_->SetThrottleTimeout(throttle_ms);
+}
 
 bool DisplayConfigurationController::IsLimited() {
   return limiter_ && limiter_->IsThrottled();
@@ -150,8 +156,6 @@ void DisplayConfigurationController::SetDisplayLayoutImpl(
 
 void DisplayConfigurationController::SetMirrorModeImpl(bool mirror) {
   display_manager_->SetMirrorMode(mirror);
-  if (limiter_)
-    limiter_->SetThrottleTimeout(kCycleDisplayThrottleTimeoutMs);
   if (display_animator_)
     display_animator_->StartFadeInAnimation();
 }
@@ -159,8 +163,6 @@ void DisplayConfigurationController::SetMirrorModeImpl(bool mirror) {
 void DisplayConfigurationController::SetPrimaryDisplayIdImpl(
     int64_t display_id) {
   window_tree_host_manager_->SetPrimaryDisplayId(display_id);
-  if (limiter_)
-    limiter_->SetThrottleTimeout(kSetPrimaryDisplayThrottleTimeoutMs);
   if (display_animator_)
     display_animator_->StartFadeInAnimation();
 }

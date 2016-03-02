@@ -65,6 +65,9 @@ class ASH_EXPORT DisplayConfigurationController
  private:
   class DisplayChangeLimiter;
 
+  // Sets the timeout for the DisplayChangeLimiter if it exists. Call this
+  // *before* starting any animations.
+  void SetThrottleTimeout(int64_t throttle_ms);
   bool IsLimited();
   void SetDisplayLayoutImpl(scoped_ptr<DisplayLayout> layout);
   void SetMirrorModeImpl(bool mirror);
