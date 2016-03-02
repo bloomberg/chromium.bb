@@ -347,12 +347,12 @@ void StepsTimingFunction::partition(Vector<PartitionRegion>& regions) const
 // Equals operators
 bool operator==(const LinearTimingFunction& lhs, const TimingFunction& rhs)
 {
-    return rhs.type() == TimingFunction::LinearFunction;
+    return rhs.type() == TimingFunction::kLinearFunction;
 }
 
 bool operator==(const CubicBezierTimingFunction& lhs, const TimingFunction& rhs)
 {
-    if (rhs.type() != TimingFunction::CubicBezierFunction)
+    if (rhs.type() != TimingFunction::kCubicBezierFunction)
         return false;
 
     const CubicBezierTimingFunction& ctf = toCubicBezierTimingFunction(rhs);
@@ -364,7 +364,7 @@ bool operator==(const CubicBezierTimingFunction& lhs, const TimingFunction& rhs)
 
 bool operator==(const StepsTimingFunction& lhs, const TimingFunction& rhs)
 {
-    if (rhs.type() != TimingFunction::StepsFunction)
+    if (rhs.type() != TimingFunction::kStepsFunction)
         return false;
 
     const StepsTimingFunction& stf = toStepsTimingFunction(rhs);
@@ -376,15 +376,15 @@ bool operator==(const StepsTimingFunction& lhs, const TimingFunction& rhs)
 bool operator==(const TimingFunction& lhs, const TimingFunction& rhs)
 {
     switch (lhs.type()) {
-    case TimingFunction::LinearFunction: {
+    case TimingFunction::kLinearFunction: {
         const LinearTimingFunction& linear = toLinearTimingFunction(lhs);
         return (linear == rhs);
     }
-    case TimingFunction::CubicBezierFunction: {
+    case TimingFunction::kCubicBezierFunction: {
         const CubicBezierTimingFunction& cubic = toCubicBezierTimingFunction(lhs);
         return (cubic == rhs);
     }
-    case TimingFunction::StepsFunction: {
+    case TimingFunction::kStepsFunction: {
         const StepsTimingFunction& step = toStepsTimingFunction(lhs);
         return (step == rhs);
     }

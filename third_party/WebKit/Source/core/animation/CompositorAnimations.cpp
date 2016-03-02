@@ -523,11 +523,11 @@ void addKeyframeWithTimingFunction(PlatformAnimationCurveType& curve, const Plat
     }
 
     switch (timingFunction->type()) {
-    case TimingFunction::LinearFunction:
+    case TimingFunction::kLinearFunction:
         curve.add(keyframe, CompositorAnimationCurve::TimingFunctionTypeLinear);
         break;
 
-    case TimingFunction::CubicBezierFunction: {
+    case TimingFunction::kCubicBezierFunction: {
         bool custom;
         CompositorAnimationCurve::TimingFunctionType easeSubType;
         double x1, y1;
@@ -541,7 +541,7 @@ void addKeyframeWithTimingFunction(PlatformAnimationCurveType& curve, const Plat
         break;
     }
 
-    case TimingFunction::StepsFunction: {
+    case TimingFunction::kStepsFunction: {
         int steps;
         float stepsStartOffset;
         getStepsTimingFunctionParameters(*timingFunction, steps, stepsStartOffset);
@@ -564,11 +564,11 @@ void setTimingFunctionOnCurve(PlatformAnimationCurveType& curve, TimingFunction*
     }
 
     switch (timingFunction->type()) {
-    case TimingFunction::LinearFunction:
+    case TimingFunction::kLinearFunction:
         curve.setLinearTimingFunction();
         break;
 
-    case TimingFunction::CubicBezierFunction: {
+    case TimingFunction::kCubicBezierFunction: {
         bool custom;
         CompositorAnimationCurve::TimingFunctionType easeSubType;
         double x1, y1;
@@ -582,7 +582,7 @@ void setTimingFunctionOnCurve(PlatformAnimationCurveType& curve, TimingFunction*
         break;
     }
 
-    case TimingFunction::StepsFunction: {
+    case TimingFunction::kStepsFunction: {
         int steps;
         float stepsStartOffset;
         getStepsTimingFunctionParameters(*timingFunction, steps, stepsStartOffset);

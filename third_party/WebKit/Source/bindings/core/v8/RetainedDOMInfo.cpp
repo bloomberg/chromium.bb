@@ -37,13 +37,13 @@
 
 namespace blink {
 
-v8::RetainedObjectInfo* RetainedDOMInfo::retainedDOMInfo(uint16_t classId, v8::Local<v8::Value> wrapper)
+v8::RetainedObjectInfo* RetainedDOMInfo::createRetainedDOMInfo(uint16_t classId, v8::Local<v8::Value> wrapper)
 {
     ASSERT(classId == WrapperTypeInfo::NodeClassId);
     if (!wrapper->IsObject())
         return 0;
     Node* node = V8Node::toImpl(wrapper.As<v8::Object>());
-    return node ? new RetainedDOMInfo(node) : 0;
+    return node ? new RetainedDOMInfo(node) : nullptr;
 }
 
 RetainedDOMInfo::RetainedDOMInfo(Node* root)

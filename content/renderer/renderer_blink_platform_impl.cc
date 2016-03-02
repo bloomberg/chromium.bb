@@ -219,9 +219,9 @@ class RendererBlinkPlatformImpl::SandboxSupport
       blink::WebUChar32 character,
       const char* preferred_locale,
       blink::WebFallbackFont* fallbackFont) override;
-  void getRenderStyleForStrike(const char* family,
-                               int sizeAndStyle,
-                               blink::WebFontRenderStyle* out) override;
+  void getWebFontRenderStyleForStrike(const char* family,
+                                      int sizeAndStyle,
+                                      blink::WebFontRenderStyle* out) override;
 
  private:
   // WebKit likes to ask us for the correct font family to use for a set of
@@ -565,7 +565,7 @@ void RendererBlinkPlatformImpl::SandboxSupport::getFallbackFontForCharacter(
   unicode_font_families_.insert(std::make_pair(character, *fallbackFont));
 }
 
-void RendererBlinkPlatformImpl::SandboxSupport::getRenderStyleForStrike(
+void RendererBlinkPlatformImpl::SandboxSupport::getWebFontRenderStyleForStrike(
     const char* family,
     int sizeAndStyle,
     blink::WebFontRenderStyle* out) {

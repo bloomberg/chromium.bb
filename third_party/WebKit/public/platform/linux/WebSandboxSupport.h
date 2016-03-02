@@ -65,7 +65,7 @@ public:
     //     I: italic flag
     //     B: bold flag
     // TODO(derat): Use separate parameters for the size and the style.
-    virtual void getRenderStyleForStrike(const char* family, int sizeAndStyle, WebFontRenderStyle*) = 0;
+    virtual void getWebFontRenderStyleForStrike(const char* family, int sizeAndStyle, WebFontRenderStyle*) = 0;
 };
 
 } // namespace blink

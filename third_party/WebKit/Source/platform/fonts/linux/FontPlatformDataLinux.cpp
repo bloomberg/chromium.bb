@@ -107,7 +107,7 @@ void FontPlatformData::querySystemForRenderStyle(bool useSkiaSubpixelPositioning
         style.setDefaults();
     } else {
         const int sizeAndStyle = (((int)m_textSize) << 2) | (m_typeface->style() & 3);
-        Platform::current()->sandboxSupport()->getRenderStyleForStrike(m_family.data(), sizeAndStyle, &style);
+        Platform::current()->sandboxSupport()->getWebFontRenderStyleForStrike(m_family.data(), sizeAndStyle, &style);
     }
 #endif
     style.toFontRenderStyle(&m_style);

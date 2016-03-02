@@ -797,7 +797,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> valueForAnimationPlayState(EAnimPlayStat
 static PassRefPtrWillBeRawPtr<CSSValue> createTimingFunctionValue(const TimingFunction* timingFunction)
 {
     switch (timingFunction->type()) {
-    case TimingFunction::CubicBezierFunction:
+    case TimingFunction::kCubicBezierFunction:
         {
             const CubicBezierTimingFunction* bezierTimingFunction = toCubicBezierTimingFunction(timingFunction);
             if (bezierTimingFunction->subType() != CubicBezierTimingFunction::Custom) {
@@ -824,7 +824,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> createTimingFunctionValue(const TimingFu
             return CSSCubicBezierTimingFunctionValue::create(bezierTimingFunction->x1(), bezierTimingFunction->y1(), bezierTimingFunction->x2(), bezierTimingFunction->y2());
         }
 
-    case TimingFunction::StepsFunction:
+    case TimingFunction::kStepsFunction:
         {
             const StepsTimingFunction* stepsTimingFunction = toStepsTimingFunction(timingFunction);
             StepsTimingFunction::StepAtPosition position = stepsTimingFunction->getStepAtPosition();

@@ -43,7 +43,7 @@ class PLATFORM_EXPORT TimingFunction : public RefCounted<TimingFunction> {
 public:
 
     enum FunctionType {
-        LinearFunction, CubicBezierFunction, StepsFunction
+        kLinearFunction, kCubicBezierFunction, kStepsFunction
     };
 
     virtual ~TimingFunction() { }
@@ -110,7 +110,7 @@ public:
     void partition(Vector<PartitionRegion>& regions) const override;
 private:
     LinearTimingFunction()
-        : TimingFunction(LinearFunction)
+        : TimingFunction(kLinearFunction)
     {
     }
 };
@@ -176,7 +176,7 @@ public:
 
 private:
     explicit CubicBezierTimingFunction(FunctionSubType subType, double x1, double y1, double x2, double y2)
-        : TimingFunction(CubicBezierFunction)
+        : TimingFunction(kCubicBezierFunction)
         , m_x1(x1)
         , m_y1(y1)
         , m_x2(x2)
@@ -243,7 +243,7 @@ public:
 
 private:
     StepsTimingFunction(int steps, StepAtPosition stepAtPosition)
-        : TimingFunction(StepsFunction)
+        : TimingFunction(kStepsFunction)
         , m_steps(steps)
         , m_stepAtPosition(stepAtPosition)
     {
@@ -263,8 +263,8 @@ PLATFORM_EXPORT bool operator!=(const TimingFunction&, const TimingFunction&);
 #define DEFINE_TIMING_FUNCTION_TYPE_CASTS(typeName) \
     DEFINE_TYPE_CASTS( \
         typeName##TimingFunction, TimingFunction, value, \
-        value->type() == TimingFunction::typeName##Function, \
-        value.type() == TimingFunction::typeName##Function)
+        value->type() == TimingFunction::k##typeName##Function, \
+        value.type() == TimingFunction::k##typeName##Function)
 
 DEFINE_TIMING_FUNCTION_TYPE_CASTS(Linear);
 DEFINE_TIMING_FUNCTION_TYPE_CASTS(CubicBezier);

@@ -30,8 +30,9 @@ void GetFallbackFontForCharacter(const int32_t character,
 // |size_and_style| stores the bold setting in its least-significant bit, the
 // italic setting in its second-least-significant bit, and holds the requested
 // size in pixels into its remaining bits.
-// TODO(derat): Update WebSandboxSupport's getRenderStyleForStrike() method to
-// pass the style and size separately instead of packing them into an int.
+// TODO(derat): Update WebSandboxSupport's getWebFontRenderStyleForStrike()
+// method to pass the style and size separately instead of packing them into an
+// int.
 void GetRenderStyleForStrike(const char* family,
                              int size_and_style,
                              blink::WebFontRenderStyle* out);
