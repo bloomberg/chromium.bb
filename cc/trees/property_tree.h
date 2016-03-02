@@ -258,9 +258,9 @@ struct CC_EXPORT EffectNodeData {
   bool has_background_filters;
   bool is_drawn;
   bool has_animated_opacity;
-  // We need to track changes to opacity on the compositor to compute damage
+  // We need to track changes to effects on the compositor to compute damage
   // rect.
-  bool opacity_changed;
+  bool effect_changed;
   int num_copy_requests_in_subtree;
   int transform_id;
   int clip_id;
@@ -528,7 +528,7 @@ class CC_EXPORT EffectTree final : public PropertyTree<EffectNode> {
 
   void UpdateEffects(int id);
 
-  void UpdateOpacityChanged(EffectNode* node, EffectNode* parent_node);
+  void UpdateEffectChanged(EffectNode* node, EffectNode* parent_node);
 
   void ClearCopyRequests();
 
@@ -587,12 +587,20 @@ class CC_EXPORT PropertyTrees final {
   // we did any change tracking so that we can skip copying the change status
   // between property trees when this bool is false.
   bool changed;
+  // We cache a global bool for full tree damages to avoid walking the entire
+  // tree.
+  // TODO(jaydasika): Changes to transform and effects that damage the entire
+  // tree should be tracked by this bool. Currently, they are tracked by the
+  // individual nodes.
+  bool full_tree_damaged;
   int sequence_number;
+  enum ResetFlags { EFFECT_TREE, TRANSFORM_TREE, ALL_TREES };
 
   void SetInnerViewportContainerBoundsDelta(gfx::Vector2dF bounds_delta);
   void SetOuterViewportContainerBoundsDelta(gfx::Vector2dF bounds_delta);
   void SetInnerViewportScrollBoundsDelta(gfx::Vector2dF bounds_delta);
   void PushChangeTrackingTo(PropertyTrees* tree);
+  void ResetAllChangeTracking(ResetFlags flag);
 
   gfx::Vector2dF inner_viewport_container_bounds_delta() const {
     return inner_viewport_container_bounds_delta_;

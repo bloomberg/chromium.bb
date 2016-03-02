@@ -496,13 +496,16 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
   sync_tree->UpdatePropertyTreeScrollingAndAnimationFromMainThread();
 
   micro_benchmark_controller_.ScheduleImplBenchmarks(host_impl);
-  property_trees_.transform_tree.ResetChangeTracking();
   // We don't track changes to effect tree on main thread. But, to preserve any
   // change tracking done on active tree's effect tree, we copy it to the main
   // thread's effect tree before we push the main thread property trees to
   // active tree.
   if (property_trees_changed_on_active_tree)
-    property_trees_.effect_tree.ResetChangeTracking();
+    property_trees_.ResetAllChangeTracking(
+        PropertyTrees::ResetFlags::ALL_TREES);
+  else
+    property_trees_.ResetAllChangeTracking(
+        PropertyTrees::ResetFlags::TRANSFORM_TREE);
 }
 
 void LayerTreeHost::WillCommit() {

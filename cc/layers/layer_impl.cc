@@ -708,7 +708,9 @@ base::DictionaryValue* LayerImpl::LayerTreeAsJson() const {
 }
 
 bool LayerImpl::LayerPropertyChanged() const {
-  if (layer_property_changed_)
+  if (layer_property_changed_ ||
+      (layer_tree_impl()->property_trees() &&
+       layer_tree_impl()->property_trees()->full_tree_damaged))
     return true;
   if (transform_tree_index() == -1)
     return false;
@@ -722,7 +724,7 @@ bool LayerImpl::LayerPropertyChanged() const {
   EffectNode* effect_node =
       layer_tree_impl()->property_trees()->effect_tree.Node(
           effect_tree_index());
-  if (effect_node && effect_node->data.opacity_changed)
+  if (effect_node && effect_node->data.effect_changed)
     return true;
   return false;
 }
@@ -730,27 +732,6 @@ bool LayerImpl::LayerPropertyChanged() const {
 void LayerImpl::NoteLayerPropertyChanged() {
   layer_property_changed_ = true;
   layer_tree_impl()->set_needs_update_draw_properties();
-  SetNeedsPushProperties();
-}
-
-void LayerImpl::NoteLayerPropertyChangedForSubtree() {
-  layer_property_changed_ = true;
-  layer_tree_impl()->set_needs_update_draw_properties();
-  for (size_t i = 0; i < children_.size(); ++i)
-    children_[i]->NoteLayerPropertyChangedForDescendantsInternal();
-  SetNeedsPushProperties();
-}
-
-void LayerImpl::NoteLayerPropertyChangedForDescendantsInternal() {
-  layer_property_changed_ = true;
-  for (size_t i = 0; i < children_.size(); ++i)
-    children_[i]->NoteLayerPropertyChangedForDescendantsInternal();
-}
-
-void LayerImpl::NoteLayerPropertyChangedForDescendants() {
-  layer_tree_impl()->set_needs_update_draw_properties();
-  for (size_t i = 0; i < children_.size(); ++i)
-    children_[i]->NoteLayerPropertyChangedForDescendantsInternal();
   SetNeedsPushProperties();
 }
 
@@ -770,7 +751,7 @@ void LayerImpl::PushLayerPropertyChangedForSubtree() {
   for (int i = 1; i < static_cast<int>(effect_tree.size()); ++i) {
     EffectNode* node = effect_tree.Node(i);
     EffectNode* parent_node = effect_tree.parent(node);
-    effect_tree.UpdateOpacityChanged(node, parent_node);
+    effect_tree.UpdateEffectChanged(node, parent_node);
   }
   for (int i = 1; i < static_cast<int>(transform_tree.size()); ++i) {
     TransformNode* node = transform_tree.Node(i);
@@ -917,7 +898,7 @@ void LayerImpl::UpdatePropertyTreeOpacity() {
     if (node->owner_id != id() || node->data.opacity == effective_opacity)
       return;
     node->data.opacity = effective_opacity;
-    node->data.opacity_changed = true;
+    node->data.effect_changed = true;
     layer_tree_impl()->property_trees()->changed = true;
     effect_tree.set_needs_update(true);
   }
@@ -942,7 +923,17 @@ gfx::ScrollOffset LayerImpl::ScrollOffsetForAnimation() const {
 }
 
 void LayerImpl::OnFilterAnimated(const FilterOperations& filters) {
-  SetFilters(filters);
+  if (filters_ != filters) {
+    SetFilters(filters);
+    SetNeedsPushProperties();
+    layer_tree_impl()->set_needs_update_draw_properties();
+    EffectTree& effect_tree = layer_tree_impl()->property_trees()->effect_tree;
+    EffectNode* node = effect_tree.Node(effect_tree_index_);
+    DCHECK_EQ(node->owner_id, id());
+    node->data.effect_changed = true;
+    layer_tree_impl()->property_trees()->changed = true;
+    effect_tree.set_needs_update(true);
+  }
 }
 
 void LayerImpl::OnOpacityAnimated(float opacity) {
@@ -1009,8 +1000,7 @@ void LayerImpl::SetBounds(const gfx::Size& bounds) {
 
   layer_tree_impl()->DidUpdateScrollState(id());
 
-  if (!masks_to_bounds())
-    NoteLayerPropertyChanged();
+  NoteLayerPropertyChanged();
 }
 
 void LayerImpl::SetBoundsDelta(const gfx::Vector2dF& bounds_delta) {
@@ -1039,8 +1029,8 @@ void LayerImpl::SetBoundsDelta(const gfx::Vector2dF& bounds_delta) {
           gfx::PointF() + offset_to_transform_parent(), gfx::SizeF(bounds()));
       property_trees->clip_tree.set_needs_update(true);
     }
-
-    NoteLayerPropertyChangedForSubtree();
+    property_trees->full_tree_damaged = true;
+    layer_tree_impl()->set_needs_update_draw_properties();
   } else {
     NoteLayerPropertyChanged();
   }
@@ -1145,7 +1135,6 @@ void LayerImpl::SetFilters(const FilterOperations& filters) {
     return;
 
   filters_ = filters;
-  NoteLayerPropertyChangedForSubtree();
 }
 
 bool LayerImpl::FilterIsAnimating() const {
@@ -1551,9 +1540,17 @@ void LayerImpl::DidUpdateScrollOffset() {
   DCHECK(scroll_offset_);
 
   layer_tree_impl()->DidUpdateScrollState(id());
-  NoteLayerPropertyChangedForSubtree();
 
-  UpdatePropertyTreeScrollOffset();
+  if (transform_tree_index_ != -1) {
+    UpdatePropertyTreeScrollOffset();
+    TransformTree& transform_tree =
+        layer_tree_impl()->property_trees()->transform_tree;
+    TransformNode* node = transform_tree.Node(transform_tree_index_);
+    node->data.transform_changed = true;
+    layer_tree_impl()->property_trees()->changed = true;
+    layer_tree_impl()->set_needs_update_draw_properties();
+    SetNeedsPushProperties();
+  }
 
   // Inform the pending twin that a property changed.
   if (layer_tree_impl()->IsActiveTree()) {

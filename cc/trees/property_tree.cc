@@ -435,7 +435,7 @@ EffectNodeData::EffectNodeData()
       has_background_filters(false),
       is_drawn(true),
       has_animated_opacity(false),
-      opacity_changed(false),
+      effect_changed(false),
       num_copy_requests_in_subtree(0),
       transform_id(0),
       clip_id(0) {}
@@ -450,7 +450,7 @@ bool EffectNodeData::operator==(const EffectNodeData& other) const {
          has_background_filters == other.has_background_filters &&
          is_drawn == other.is_drawn &&
          has_animated_opacity == other.has_animated_opacity &&
-         opacity_changed == other.opacity_changed &&
+         effect_changed == other.effect_changed &&
          num_copy_requests_in_subtree == other.num_copy_requests_in_subtree &&
          transform_id == other.transform_id && clip_id == other.clip_id;
 }
@@ -465,7 +465,7 @@ void EffectNodeData::ToProtobuf(proto::TreeNode* proto) const {
   data->set_has_background_filters(has_background_filters);
   data->set_is_drawn(is_drawn);
   data->set_has_animated_opacity(has_animated_opacity);
-  data->set_opacity_changed(opacity_changed);
+  data->set_effect_changed(effect_changed);
   data->set_num_copy_requests_in_subtree(num_copy_requests_in_subtree);
   data->set_transform_id(transform_id);
   data->set_clip_id(clip_id);
@@ -482,7 +482,7 @@ void EffectNodeData::FromProtobuf(const proto::TreeNode& proto) {
   has_background_filters = data.has_background_filters();
   is_drawn = data.is_drawn();
   has_animated_opacity = data.has_animated_opacity();
-  opacity_changed = data.opacity_changed();
+  effect_changed = data.effect_changed();
   num_copy_requests_in_subtree = data.num_copy_requests_in_subtree();
   transform_id = data.transform_id();
   clip_id = data.clip_id();
@@ -1178,10 +1178,10 @@ void EffectTree::UpdateIsDrawn(EffectNode* node, EffectNode* parent_node) {
     node->data.is_drawn = true;
 }
 
-void EffectTree::UpdateOpacityChanged(EffectNode* node,
-                                      EffectNode* parent_node) {
-  if (parent_node && parent_node->data.opacity_changed) {
-    node->data.opacity_changed = true;
+void EffectTree::UpdateEffectChanged(EffectNode* node,
+                                     EffectNode* parent_node) {
+  if (parent_node && parent_node->data.effect_changed) {
+    node->data.effect_changed = true;
   }
 }
 
@@ -1191,7 +1191,7 @@ void EffectTree::UpdateEffects(int id) {
 
   UpdateOpacities(node, parent_node);
   UpdateIsDrawn(node, parent_node);
-  UpdateOpacityChanged(node, parent_node);
+  UpdateEffectChanged(node, parent_node);
 }
 
 void EffectTree::ClearCopyRequests() {
@@ -1220,7 +1220,7 @@ bool EffectTree::ContributesToDrawnSurface(int id) {
 void EffectTree::ResetChangeTracking() {
   for (int id = 1; id < static_cast<int>(size()); ++id) {
     EffectNode* node = Node(id);
-    node->data.opacity_changed = false;
+    node->data.effect_changed = false;
   }
 }
 
@@ -1403,6 +1403,7 @@ PropertyTrees::PropertyTrees()
     : needs_rebuild(true),
       non_root_surfaces_enabled(true),
       changed(false),
+      full_tree_damaged(false),
       sequence_number(0) {
   transform_tree.SetPropertyTrees(this);
   effect_tree.SetPropertyTrees(this);
@@ -1417,6 +1418,7 @@ bool PropertyTrees::operator==(const PropertyTrees& other) const {
          effect_tree == other.effect_tree && clip_tree == other.clip_tree &&
          scroll_tree == other.scroll_tree &&
          needs_rebuild == other.needs_rebuild && changed == other.changed &&
+         full_tree_damaged == other.full_tree_damaged &&
          non_root_surfaces_enabled == other.non_root_surfaces_enabled &&
          sequence_number == other.sequence_number;
 }
@@ -1428,6 +1430,7 @@ PropertyTrees& PropertyTrees::operator=(const PropertyTrees& from) {
   scroll_tree = from.scroll_tree;
   needs_rebuild = from.needs_rebuild;
   changed = from.changed;
+  full_tree_damaged = from.full_tree_damaged;
   non_root_surfaces_enabled = from.non_root_surfaces_enabled;
   sequence_number = from.sequence_number;
   inner_viewport_container_bounds_delta_ =
@@ -1452,6 +1455,7 @@ void PropertyTrees::ToProtobuf(proto::PropertyTrees* proto) const {
   scroll_tree.ToProtobuf(proto->mutable_scroll_tree());
   proto->set_needs_rebuild(needs_rebuild);
   proto->set_changed(changed);
+  proto->set_full_tree_damaged(full_tree_damaged);
   proto->set_non_root_surfaces_enabled(non_root_surfaces_enabled);
 
   // TODO(khushalsagar): Consider using the sequence number to decide if
@@ -1468,6 +1472,7 @@ void PropertyTrees::FromProtobuf(const proto::PropertyTrees& proto) {
 
   needs_rebuild = proto.needs_rebuild();
   changed = proto.changed();
+  full_tree_damaged = proto.full_tree_damaged();
   non_root_surfaces_enabled = proto.non_root_surfaces_enabled();
   sequence_number = proto.sequence_number();
 
@@ -1503,9 +1508,9 @@ void PropertyTrees::SetInnerViewportScrollBoundsDelta(
 void PropertyTrees::PushChangeTrackingTo(PropertyTrees* tree) {
   for (int id = 1; id < static_cast<int>(effect_tree.size()); ++id) {
     EffectNode* node = effect_tree.Node(id);
-    if (node->data.opacity_changed) {
+    if (node->data.effect_changed) {
       EffectNode* target_node = tree->effect_tree.Node(node->id);
-      target_node->data.opacity_changed = true;
+      target_node->data.effect_changed = true;
     }
   }
   for (int id = 1; id < static_cast<int>(transform_tree.size()); ++id) {
@@ -1515,6 +1520,23 @@ void PropertyTrees::PushChangeTrackingTo(PropertyTrees* tree) {
       target_node->data.transform_changed = true;
     }
   }
+  tree->full_tree_damaged = full_tree_damaged;
+}
+
+void PropertyTrees::ResetAllChangeTracking(ResetFlags flag) {
+  switch (flag) {
+    case EFFECT_TREE:
+      effect_tree.ResetChangeTracking();
+      break;
+    case TRANSFORM_TREE:
+      transform_tree.ResetChangeTracking();
+      break;
+    case ALL_TREES:
+      transform_tree.ResetChangeTracking();
+      effect_tree.ResetChangeTracking();
+  }
+  changed = false;
+  full_tree_damaged = false;
 }
 
 }  // namespace cc

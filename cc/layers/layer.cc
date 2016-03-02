@@ -500,6 +500,7 @@ void Layer::SetFilters(const FilterOperations& filters) {
   if (filters_ == filters)
     return;
   filters_ = filters;
+  SetSubtreePropertyChanged();
   SetNeedsCommit();
 }
 

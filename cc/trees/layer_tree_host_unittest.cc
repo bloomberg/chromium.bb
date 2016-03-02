@@ -699,6 +699,7 @@ class LayerTreeHostTestPropertyTreesChangedSync : public LayerTreeHostTest {
   enum Animations {
     OPACITY,
     TRANSFORM,
+    FILTER,
     END,
   };
 
@@ -709,6 +710,7 @@ class LayerTreeHostTestPropertyTreesChangedSync : public LayerTreeHostTest {
 
   void CommitCompleteOnThread(LayerTreeHostImpl* impl) override {
     gfx::Transform transform;
+    FilterOperations filters;
     switch (static_cast<Animations>(index_)) {
       case OPACITY:
         index_++;
@@ -726,6 +728,18 @@ class LayerTreeHostTestPropertyTreesChangedSync : public LayerTreeHostTest {
         EXPECT_FALSE(impl->active_tree()->root_layer()->LayerPropertyChanged());
         transform.Translate(10, 10);
         impl->active_tree()->root_layer()->OnTransformAnimated(transform);
+        PostSetNeedsCommitToMainThread();
+        break;
+      case FILTER:
+        index_++;
+        EXPECT_TRUE(impl->active_tree()->root_layer()->LayerPropertyChanged());
+        impl->active_tree()->root_layer()->ResetAllChangeTrackingForSubtree();
+        impl->active_tree()
+            ->property_trees()
+            ->transform_tree.ResetChangeTracking();
+        EXPECT_FALSE(impl->active_tree()->root_layer()->LayerPropertyChanged());
+        filters.Append(FilterOperation::CreateOpacityFilter(0.5f));
+        impl->active_tree()->root_layer()->OnFilterAnimated(filters);
         PostSetNeedsCommitToMainThread();
         break;
       case END:

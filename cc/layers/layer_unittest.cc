@@ -1064,6 +1064,16 @@ TEST_F(LayerTest, LayerPropertyChangedForSubtree) {
       child2->PushPropertiesTo(child2_impl.get());
       grand_child->PushPropertiesTo(grand_child_impl.get()));
 
+  FilterOperations arbitrary_filters;
+  arbitrary_filters.Append(FilterOperation::CreateOpacityFilter(0.5f));
+  EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(1);
+  EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetFilters(arbitrary_filters));
+  EXECUTE_AND_VERIFY_SUBTREE_CHANGES_RESET(
+      root->PushPropertiesTo(root_impl.get());
+      child->PushPropertiesTo(child_impl.get());
+      child2->PushPropertiesTo(child2_impl.get());
+      grand_child->PushPropertiesTo(grand_child_impl.get()));
+
   gfx::PointF arbitrary_point_f = gfx::PointF(0.125f, 0.25f);
   EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(1);
   root->SetPosition(arbitrary_point_f);
@@ -1075,7 +1085,8 @@ TEST_F(LayerTest, LayerPropertyChangedForSubtree) {
       child->PushPropertiesTo(child_impl.get());
       child2->PushPropertiesTo(child2_impl.get());
       grand_child->PushPropertiesTo(grand_child_impl.get());
-      layer_tree_host_->property_trees()->transform_tree.ResetChangeTracking());
+      layer_tree_host_->property_trees()->ResetAllChangeTracking(
+          PropertyTrees::ResetFlags::ALL_TREES));
   EXPECT_FALSE(node->data.transform_changed);
 
   EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(1);
@@ -1093,7 +1104,8 @@ TEST_F(LayerTest, LayerPropertyChangedForSubtree) {
   EXECUTE_AND_VERIFY_SUBTREE_CHANGES_RESET(
       child->PushPropertiesTo(child_impl.get());
       grand_child->PushPropertiesTo(grand_child_impl.get());
-      layer_tree_host_->property_trees()->transform_tree.ResetChangeTracking());
+      layer_tree_host_->property_trees()->ResetAllChangeTracking(
+          PropertyTrees::ResetFlags::ALL_TREES));
   node = layer_tree_host_->property_trees()->transform_tree.Node(
       child->transform_tree_index());
   EXPECT_FALSE(node->data.transform_changed);
@@ -1109,7 +1121,8 @@ TEST_F(LayerTest, LayerPropertyChangedForSubtree) {
       child->PushPropertiesTo(child_impl.get());
       child2->PushPropertiesTo(child2_impl.get());
       grand_child->PushPropertiesTo(grand_child_impl.get());
-      layer_tree_host_->property_trees()->transform_tree.ResetChangeTracking());
+      layer_tree_host_->property_trees()->ResetAllChangeTracking(
+          PropertyTrees::ResetFlags::ALL_TREES));
 
   gfx::Transform arbitrary_transform;
   arbitrary_transform.Scale3d(0.1f, 0.2f, 0.3f);
@@ -1718,58 +1731,6 @@ TEST_F(LayerTest, PushPropertiesCausesLayerPropertyChangedForOpacity) {
   test_layer->PushPropertiesTo(impl_layer.get());
 
   EXPECT_TRUE(impl_layer->LayerPropertyChanged());
-}
-
-TEST_F(LayerTest,
-       PushPropsDoesntCauseLayerPropertyChangedDuringImplOnlyFilterAnim) {
-  scoped_refptr<Layer> test_layer = Layer::Create(layer_settings_);
-  scoped_ptr<LayerImpl> impl_layer =
-      LayerImpl::Create(host_impl_.active_tree(), 1);
-
-  EXPECT_SET_NEEDS_FULL_TREE_SYNC(1,
-                                  layer_tree_host_->SetRootLayer(test_layer));
-
-  scoped_ptr<AnimationRegistrar> registrar;
-  if (settings().use_compositor_animation_timelines) {
-    AddAnimatedFilterToLayerWithPlayer(impl_layer->id(), timeline_impl(), 1.0,
-                                       1.f, 2.f);
-  } else {
-    registrar = AnimationRegistrar::Create();
-    impl_layer->layer_animation_controller()->SetAnimationRegistrar(
-        registrar.get());
-
-    AddAnimatedFilterToController(impl_layer->layer_animation_controller(), 1.0,
-                                  1.f, 2.f);
-  }
-
-  FilterOperations filters;
-  filters.Append(FilterOperation::CreateBlurFilter(2.f));
-  EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetFilters(filters));
-
-  EXPECT_FALSE(impl_layer->LayerPropertyChanged());
-  test_layer->PushPropertiesTo(impl_layer.get());
-  EXPECT_TRUE(impl_layer->LayerPropertyChanged());
-
-  impl_layer->ResetAllChangeTrackingForSubtree();
-  if (settings().use_compositor_animation_timelines) {
-    int animation_id = AddAnimatedFilterToLayerWithPlayer(
-        impl_layer->id(), timeline_impl(), 1.0, 1.f, 2.f);
-    GetAnimationFromLayerWithExistingPlayer(impl_layer->id(), timeline_impl(),
-                                            animation_id)
-        ->set_is_impl_only(true);
-  } else {
-    AddAnimatedFilterToController(impl_layer->layer_animation_controller(), 1.0,
-                                  1.f, 2.f);
-    impl_layer->layer_animation_controller()
-        ->GetAnimation(TargetProperty::FILTER)
-        ->set_is_impl_only(true);
-  }
-  filters.Append(FilterOperation::CreateSepiaFilter(0.5f));
-  EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetFilters(filters));
-
-  EXPECT_FALSE(impl_layer->LayerPropertyChanged());
-  test_layer->PushPropertiesTo(impl_layer.get());
-  EXPECT_FALSE(impl_layer->LayerPropertyChanged());
 }
 
 TEST_F(LayerTest, MaskAndReplicaHasParent) {

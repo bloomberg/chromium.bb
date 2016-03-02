@@ -77,9 +77,8 @@ void EmulateDrawingOneFrame(LayerImpl* root) {
   }
 
   root->ResetAllChangeTrackingForSubtree();
-  root->layer_tree_impl()
-      ->property_trees()
-      ->transform_tree.ResetChangeTracking();
+  root->layer_tree_impl()->property_trees()->ResetAllChangeTracking(
+      PropertyTrees::ResetFlags::ALL_TREES);
   root->layer_tree_impl()->property_trees()->effect_tree.ResetChangeTracking();
 }
 

@@ -709,11 +709,6 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
                              SkColor color,
                              float width) const;
 
-  void NoteLayerPropertyChangedForSubtree();
-
-  // Note carefully this does not affect the current layer.
-  void NoteLayerPropertyChangedForDescendants();
-
   gfx::Rect GetScaledEnclosingRectInTargetSpace(float scale) const;
 
  private:

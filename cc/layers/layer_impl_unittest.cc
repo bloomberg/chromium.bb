@@ -26,20 +26,16 @@
 namespace cc {
 namespace {
 
-#define EXECUTE_AND_VERIFY_SUBTREE_CHANGED(code_to_test) \
-  root->ResetAllChangeTrackingForSubtree();              \
-  root->layer_tree_impl()                                \
-      ->property_trees()                                 \
-      ->transform_tree.ResetChangeTracking();            \
-  root->layer_tree_impl()                                \
-      ->property_trees()                                 \
-      ->effect_tree.ResetChangeTracking();               \
-  code_to_test;                                          \
-  EXPECT_TRUE(root->needs_push_properties());            \
-  EXPECT_FALSE(child->needs_push_properties());          \
-  EXPECT_FALSE(grand_child->needs_push_properties());    \
-  EXPECT_TRUE(root->LayerPropertyChanged());             \
-  EXPECT_TRUE(child->LayerPropertyChanged());            \
+#define EXECUTE_AND_VERIFY_SUBTREE_CHANGED(code_to_test)             \
+  root->ResetAllChangeTrackingForSubtree();                          \
+  root->layer_tree_impl()->property_trees()->ResetAllChangeTracking( \
+      PropertyTrees::ResetFlags::ALL_TREES);                         \
+  code_to_test;                                                      \
+  EXPECT_TRUE(root->needs_push_properties());                        \
+  EXPECT_FALSE(child->needs_push_properties());                      \
+  EXPECT_FALSE(grand_child->needs_push_properties());                \
+  EXPECT_TRUE(root->LayerPropertyChanged());                         \
+  EXPECT_TRUE(child->LayerPropertyChanged());                        \
   EXPECT_TRUE(grand_child->LayerPropertyChanged());
 
 #define EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(code_to_test)                \
@@ -63,14 +59,15 @@ namespace {
   EXPECT_FALSE(child->LayerPropertyChanged());                                 \
   EXPECT_FALSE(grand_child->LayerPropertyChanged());
 
-#define EXECUTE_AND_VERIFY_ONLY_LAYER_CHANGED(code_to_test)                    \
-  root->ResetAllChangeTrackingForSubtree();                                    \
-  code_to_test;                                                                \
-  EXPECT_TRUE(root->needs_push_properties());                                  \
-  EXPECT_FALSE(child->needs_push_properties());                                \
-  EXPECT_FALSE(grand_child->needs_push_properties());                          \
-  EXPECT_TRUE(root->LayerPropertyChanged());                                   \
-  EXPECT_FALSE(child->LayerPropertyChanged());                                 \
+#define EXECUTE_AND_VERIFY_ONLY_LAYER_CHANGED(code_to_test)             \
+  root->ResetAllChangeTrackingForSubtree();                             \
+  root->layer_tree_impl()->property_trees()->full_tree_damaged = false; \
+  code_to_test;                                                         \
+  EXPECT_TRUE(root->needs_push_properties());                           \
+  EXPECT_FALSE(child->needs_push_properties());                         \
+  EXPECT_FALSE(grand_child->needs_push_properties());                   \
+  EXPECT_TRUE(root->LayerPropertyChanged());                            \
+  EXPECT_FALSE(child->LayerPropertyChanged());                          \
   EXPECT_FALSE(grand_child->LayerPropertyChanged());
 
 #define VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(code_to_test)                \
@@ -168,8 +165,9 @@ TEST(LayerImplTest, VerifyLayerChangesAreTrackedProperly) {
   host_impl.active_tree()->BuildPropertyTreesForTesting();
 
   // Changing these properties affects the entire subtree of layers.
-  EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetFilters(arbitrary_filters));
-  EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetFilters(FilterOperations()));
+  EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->OnFilterAnimated(arbitrary_filters));
+  EXECUTE_AND_VERIFY_SUBTREE_CHANGED(
+      root->OnFilterAnimated(FilterOperations()));
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->ScrollBy(arbitrary_vector2d));
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetScrollDelta(gfx::Vector2d()));
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->PushScrollOffsetFromMainThread(
@@ -177,6 +175,11 @@ TEST(LayerImplTest, VerifyLayerChangesAreTrackedProperly) {
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->OnOpacityAnimated(arbitrary_number));
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(
       root->OnTransformAnimated(arbitrary_transform));
+  // SetBoundsDelta changes subtree only when masks_to_bounds is true and it
+  // doesn't set needs_push_properties as it is always called on active tree.
+  root->SetMasksToBounds(true);
+  EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetBoundsDelta(arbitrary_vector2d);
+                                     root->SetNeedsPushProperties());
 
   // Changing these properties only affects the layer itself.
   EXECUTE_AND_VERIFY_ONLY_LAYER_CHANGED(root->SetDrawsContent(true));
@@ -187,8 +190,9 @@ TEST(LayerImplTest, VerifyLayerChangesAreTrackedProperly) {
 
   // Special case: check that SetBounds changes behavior depending on
   // masksToBounds.
+  gfx::Size bounds_size(135, 246);
   root->SetMasksToBounds(false);
-  EXECUTE_AND_VERIFY_ONLY_LAYER_CHANGED(root->SetBounds(gfx::Size(135, 246)));
+  EXECUTE_AND_VERIFY_ONLY_LAYER_CHANGED(root->SetBounds(bounds_size));
   host_impl.active_tree()->property_trees()->needs_rebuild = true;
   host_impl.active_tree()->BuildPropertyTreesForTesting();
 
@@ -241,7 +245,7 @@ TEST(LayerImplTest, VerifyLayerChangesAreTrackedProperly) {
   EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(
       root->SetIsRootForIsolatedGroup(true));
   EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->SetDrawsContent(true));
-  EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->SetBounds(arbitrary_size));
+  EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->SetBounds(bounds_size));
   EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(
       root->SetScrollParent(scroll_parent.get()));
   EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(
@@ -311,10 +315,14 @@ TEST(LayerImplTest, VerifyNeedsUpdateDrawProperties) {
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetForceRenderSurface(false));
 
   // Related filter functions.
-  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetFilters(arbitrary_filters));
-  VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetFilters(arbitrary_filters));
-  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetFilters(FilterOperations()));
-  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetFilters(arbitrary_filters));
+  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(
+      root->OnFilterAnimated(arbitrary_filters));
+  VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(
+      root->OnFilterAnimated(arbitrary_filters));
+  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(
+      root->OnFilterAnimated(FilterOperations()));
+  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(
+      root->OnFilterAnimated(arbitrary_filters));
 
   // Related scrolling functions.
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetBounds(large_size));
