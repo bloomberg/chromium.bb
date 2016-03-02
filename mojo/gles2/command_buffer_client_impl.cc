@@ -68,7 +68,6 @@ void CommandBufferDelegate::ContextLost() {}
 CommandBufferClientImpl::CommandBufferClientImpl(
     CommandBufferDelegate* delegate,
     const std::vector<int32_t>& attribs,
-    const MojoAsyncWaiter* async_waiter,
     mojo::ScopedMessagePipeHandle command_buffer_handle)
     : delegate_(delegate),
       attribs_(attribs),
@@ -79,11 +78,9 @@ CommandBufferClientImpl::CommandBufferClientImpl(
       next_transfer_buffer_id_(0),
       next_image_id_(0),
       next_fence_sync_release_(1),
-      flushed_fence_sync_release_(0),
-      async_waiter_(async_waiter) {
+      flushed_fence_sync_release_(0) {
   command_buffer_.Bind(mojo::InterfacePtrInfo<mus::mojom::CommandBuffer>(
-                           std::move(command_buffer_handle), 0u),
-                       async_waiter);
+      std::move(command_buffer_handle), 0u));
   command_buffer_.set_connection_error_handler(
       [this]() { Destroyed(gpu::error::kUnknown, gpu::error::kLostContext); });
 }
@@ -104,7 +101,7 @@ bool CommandBufferClientImpl::Initialize() {
   shared_state()->Initialize();
 
   mus::mojom::CommandBufferClientPtr client_ptr;
-  client_binding_.Bind(GetProxy(&client_ptr), async_waiter_);
+  client_binding_.Bind(GetProxy(&client_ptr));
 
   mus::mojom::CommandBufferInitializeResultPtr initialize_result;
   command_buffer_->Initialize(

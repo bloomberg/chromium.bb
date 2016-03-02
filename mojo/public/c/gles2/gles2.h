@@ -10,7 +10,6 @@
 #include <GLES2/gl2.h>
 #include <stdint.h>
 
-#include "mojo/public/c/environment/async_waiter.h"
 #include "mojo/public/c/gles2/gles2_export.h"
 #include "mojo/public/c/gles2/gles2_types.h"
 #include "mojo/public/c/system/types.h"
@@ -20,11 +19,10 @@ extern "C" {
 #endif
 
 MOJO_GLES2_EXPORT MojoGLES2Context
-    MojoGLES2CreateContext(MojoHandle handle,
-                           const int32_t* attrib_list,
-                           MojoGLES2ContextLost lost_callback,
-                           void* closure,
-                           const MojoAsyncWaiter* async_waiter);
+MojoGLES2CreateContext(MojoHandle handle,
+                       const int32_t* attrib_list,
+                       MojoGLES2ContextLost lost_callback,
+                       void* closure);
 MOJO_GLES2_EXPORT void MojoGLES2DestroyContext(MojoGLES2Context context);
 MOJO_GLES2_EXPORT void MojoGLES2MakeCurrent(MojoGLES2Context context);
 MOJO_GLES2_EXPORT void MojoGLES2SwapBuffers(void);

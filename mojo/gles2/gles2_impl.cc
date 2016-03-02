@@ -31,8 +31,7 @@ extern "C" {
 MojoGLES2Context MojoGLES2CreateContext(MojoHandle handle,
                                         const int32_t* attrib_list,
                                         MojoGLES2ContextLost lost_callback,
-                                        void* closure,
-                                        const MojoAsyncWaiter* async_waiter) {
+                                        void* closure) {
   mojo::MessagePipeHandle mph(handle);
   mojo::ScopedMessagePipeHandle scoped_handle(mph);
   std::vector<int32_t> attribs;
@@ -44,7 +43,7 @@ MojoGLES2Context MojoGLES2CreateContext(MojoHandle handle,
   }
   attribs.push_back(kNone);
   scoped_ptr<GLES2Context> client(new GLES2Context(
-      attribs, async_waiter, std::move(scoped_handle), lost_callback, closure));
+      attribs, std::move(scoped_handle), lost_callback, closure));
   if (!client->Initialize())
     client.reset();
   return client.release();
