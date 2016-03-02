@@ -276,12 +276,12 @@ TEST_F(MapTest, ArrayOfMap) {
     Array<Map<int32_t, int8_t>> array(1);
     array[0].insert(1, 42);
 
-    size_t size = GetSerializedSize_(array);
+    size_t size = GetSerializedSize_(array, nullptr);
     FixedBufferForTesting buf(size);
     Array_Data<Map_Data<int32_t, int8_t>*>* data;
     ArrayValidateParams validate_params(
         0, false, new ArrayValidateParams(0, false, nullptr));
-    SerializeArray_(std::move(array), &buf, &data, &validate_params);
+    SerializeArray_(std::move(array), &buf, &data, &validate_params, nullptr);
 
     Array<Map<int32_t, int8_t>> deserialized_array;
     Deserialize_(data, &deserialized_array, nullptr);
@@ -298,13 +298,13 @@ TEST_F(MapTest, ArrayOfMap) {
     map_value[1] = true;
     array[0].insert("hello world", std::move(map_value));
 
-    size_t size = GetSerializedSize_(array);
+    size_t size = GetSerializedSize_(array, nullptr);
     FixedBufferForTesting buf(size);
     Array_Data<Map_Data<String_Data*, Array_Data<bool>*>*>* data;
     ArrayValidateParams validate_params(
         0, false, new ArrayValidateParams(
                       0, false, new ArrayValidateParams(0, false, nullptr)));
-    SerializeArray_(std::move(array), &buf, &data, &validate_params);
+    SerializeArray_(std::move(array), &buf, &data, &validate_params, nullptr);
 
     Array<Map<String, Array<bool>>> deserialized_array;
     Deserialize_(data, &deserialized_array, nullptr);

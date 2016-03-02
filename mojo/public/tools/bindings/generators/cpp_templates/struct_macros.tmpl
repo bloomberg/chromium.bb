@@ -5,28 +5,29 @@
     |input_field_pattern| should be a pattern that contains one string
     placeholder, for example, "input->%s", "p_%s". The placeholder will be
     substituted with struct field names to refer to the input fields.
+    |context| is the name of the serialization context.
     This macro is expanded to compute seriailized size for both:
     - user-defined structs: the input is an instance of the corresponding struct
       wrapper class.
     - method parameters/response parameters: the input is a list of
       arguments.
     It declares |size| of type size_t to store the resulting size. #}
-{%- macro get_serialized_size(struct, input_field_pattern) -%}
+{%- macro get_serialized_size(struct, input_field_pattern, context) -%}
   size_t size = sizeof(internal::{{struct.name}}_Data);
 {%-   for pf in struct.packed.packed_fields_in_ordinal_order if pf.field.kind|is_object_kind %}
 {%-     set name = pf.field.name -%}
 {%-     set kind = pf.field.kind -%}
 {%-     if kind|is_native_only_kind and kind|is_typemapped_kind %}
   size += mojo::internal::GetSerializedSizeNative_(
-      {{input_field_pattern|format(name)}});
+      {{input_field_pattern|format(name)}}, {{context}});
 {%-     elif kind|is_typemapped_kind %}
   size +=
       {{kind|get_name_for_kind}}_SerializerTraits_<{{kind|cpp_wrapper_type}}>
           ::GetSize({{input_field_pattern|format(name)}});
 {%-     elif kind|is_union_kind %}
-  size += GetSerializedSize_({{input_field_pattern|format(name)}}, true);
+  size += GetSerializedSize_({{input_field_pattern|format(name)}}, true, {{context}});
 {%-     else %}
-  size += GetSerializedSize_({{input_field_pattern|format(name)}});
+  size += GetSerializedSize_({{input_field_pattern|format(name)}}, {{context}});
 {%-     endif %}
 {%-   endfor %}
 {%- endmacro -%}
@@ -40,12 +41,14 @@
     substituted with struct field names to refer to the input fields.
     |output| is the name of the output struct instance.
     |buffer| is the name of the Buffer instance used.
+    |context| is the name of the serialization context.
     This macro is expanded to do serialization for both:
     - user-defined structs: the input is an instance of the corresponding struct
       wrapper class.
     - method parameters/response parameters: the input is a list of
       arguments. #}
-{%- macro serialize(struct, struct_display_name, input_field_pattern, output, buffer) -%}
+{%- macro serialize(struct, struct_display_name, input_field_pattern, output,
+                    buffer, context) -%}
   internal::{{struct.name}}_Data* {{output}} =
       internal::{{struct.name}}_Data::New({{buffer}});
 {%- for pf in struct.packed.packed_fields_in_ordinal_order %}
@@ -58,23 +61,25 @@
   const mojo::internal::ArrayValidateParams {{name}}_validate_params(
       {{kind|get_array_validate_params_ctor_args|indent(10)}});
   mojo::SerializeArray_(std::move({{input_field}}), {{buffer}},
-      &{{output}}->{{name}}.ptr, &{{name}}_validate_params);
+      &{{output}}->{{name}}.ptr, &{{name}}_validate_params, {{context}});
 {%-     elif kind|is_map_kind %}
   const mojo::internal::ArrayValidateParams {{name}}_validate_params(
       {{kind.value_kind|get_map_validate_params_ctor_args|indent(10)}});
   mojo::SerializeMap_(std::move({{input_field}}), {{buffer}},
-      &{{output}}->{{name}}.ptr, &{{name}}_validate_params);
+      &{{output}}->{{name}}.ptr, &{{name}}_validate_params, {{context}});
 {%-     elif kind|is_native_only_kind and kind|is_typemapped_kind %}
   mojo::internal::SerializeNative_(
-      {{input_field}}, {{buffer}}, &{{output}}->{{name}}.ptr);
+      {{input_field}}, {{buffer}}, &{{output}}->{{name}}.ptr, {{context}});
 {%-     elif kind|is_typemapped_kind %}
   {{kind|get_name_for_kind}}_SerializerTraits_<{{kind|cpp_wrapper_type}}>
       ::Serialize({{input_field}}, {{buffer}}, &{{output}}->{{name}}.ptr);
 {%-     elif kind|is_union_kind %}
   internal::{{kind.name}}_Data* {{name}}_ptr = &{{output}}->{{name}};
-  SerializeUnion_(std::move({{input_field}}), {{buffer}}, &{{name}}_ptr, true);
+  SerializeUnion_(std::move({{input_field}}), {{buffer}}, &{{name}}_ptr, true,
+                  {{context}});
 {%-     else %}
-  Serialize_(std::move({{input_field}}), {{buffer}}, &{{output}}->{{name}}.ptr);
+  Serialize_(std::move({{input_field}}), {{buffer}}, &{{output}}->{{name}}.ptr,
+             {{context}});
 {%-     endif %}
 {%-     if not kind|is_nullable_kind %}
   MOJO_INTERNAL_DLOG_SERIALIZATION_WARNING(
@@ -125,13 +130,13 @@
     |output_field_pattern| should be a pattern that contains one string
     placeholder, for example, "result->%s", "p_%s". The placeholder will be
     substituted with struct field names to refer to the output fields.
+    |context| is the name of the serialization context.
+    |success| is the name of a bool variable to track success of the operation.
     This macro is expanded to do deserialization for both:
     - user-defined structs: the output is an instance of the corresponding
       struct wrapper class.
     - method parameters/response parameters: the output is a list of
       arguments. #}
-    |context| is the name of the serialization context.
-    |success| is the name of a bool variable to track success of the operation.
 {%- macro deserialize(struct, input, output_field_pattern, context, success) -%}
   do {
     // NOTE: The memory backing |{{input}}| may has be smaller than

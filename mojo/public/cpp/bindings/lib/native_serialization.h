@@ -28,7 +28,7 @@ template <typename E>
 struct ShouldUseNativeSerializer { static const bool value = false; };
 
 template <typename T>
-size_t GetSerializedSizeNative_(const T& value) {
+size_t GetSerializedSizeNative_(const T& value, SerializationContext* context) {
   base::PickleSizer sizer;
   IPC::ParamTraits<T>::GetSize(&sizer, value);
   return Align(sizer.payload_size() + sizeof(ArrayHeader));
@@ -37,7 +37,8 @@ size_t GetSerializedSizeNative_(const T& value) {
 template <typename T>
 void SerializeNative_(const T& value,
                       Buffer* buffer,
-                      Array_Data<uint8_t>** out) {
+                      Array_Data<uint8_t>** out,
+                      SerializationContext* context) {
   PickleBuffer* pickler = buffer->AsPickleBuffer();
   DCHECK(pickler) << "Native types can only be used with PickleBuffers.";
 
@@ -63,7 +64,7 @@ void SerializeNative_(const T& value,
   DCHECK_GE(pickle->payload_size(), size_before_write);
   size_t bytes_written = pickle->payload_size() - size_before_write;
   DCHECK_EQ(Align(bytes_written + sizeof(ArrayHeader)),
-            GetSerializedSizeNative_(value));
+            GetSerializedSizeNative_(value, context));
 #endif
 
   // Fix up the ArrayHeader so that num_elements contains the length of the

@@ -12,10 +12,12 @@
 
 namespace mojo {
 
-size_t GetSerializedSize_(const String& input);
+size_t GetSerializedSize_(const String& input,
+                          internal::SerializationContext* context);
 void Serialize_(const String& input,
                 internal::Buffer* buffer,
-                internal::String_Data** output);
+                internal::String_Data** output,
+                internal::SerializationContext* context);
 bool Deserialize_(internal::String_Data* input,
                   String* output,
                   internal::SerializationContext* context);

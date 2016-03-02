@@ -1,6 +1,8 @@
-size_t GetSerializedSize_(const {{struct.name}}Ptr& input);
+size_t GetSerializedSize_(const {{struct.name}}Ptr& input,
+                          mojo::internal::SerializationContext* context);
 void Serialize_({{struct.name}}Ptr input, mojo::internal::Buffer* buffer,
-                internal::{{struct.name}}_Data** output);
+                internal::{{struct.name}}_Data** output,
+                mojo::internal::SerializationContext* context);
 bool Deserialize_(internal::{{struct.name}}_Data* input,
                   {{struct.name}}Ptr* output,
                   mojo::internal::SerializationContext* context);

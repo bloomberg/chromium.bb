@@ -55,12 +55,12 @@ bool ControlMessageHandler::Run(Message* message,
   response_params_ptr->query_version_result = QueryVersionResult::New();
   response_params_ptr->query_version_result->version = interface_version_;
 
-  size_t size = GetSerializedSize_(response_params_ptr);
+  size_t size = GetSerializedSize_(response_params_ptr, nullptr);
   ResponseMessageBuilder builder(kRunMessageId, size, message->request_id());
 
   RunResponseMessageParams_Data* response_params = nullptr;
-  Serialize_(std::move(response_params_ptr), builder.buffer(),
-             &response_params);
+  Serialize_(std::move(response_params_ptr), builder.buffer(), &response_params,
+             nullptr);
   response_params->EncodePointersAndHandles(
       builder.message()->mutable_handles());
   bool ok = responder->Accept(builder.message());

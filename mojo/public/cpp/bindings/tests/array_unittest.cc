@@ -153,13 +153,13 @@ TEST_F(ArrayTest, Serialization_ArrayOfPOD) {
   for (size_t i = 0; i < array.size(); ++i)
     array[i] = static_cast<int32_t>(i);
 
-  size_t size = GetSerializedSize_(array);
+  size_t size = GetSerializedSize_(array, nullptr);
   EXPECT_EQ(8U + 4 * 4U, size);
 
   FixedBufferForTesting buf(size);
   Array_Data<int32_t>* data;
   ArrayValidateParams validate_params(0, false, nullptr);
-  SerializeArray_(std::move(array), &buf, &data, &validate_params);
+  SerializeArray_(std::move(array), &buf, &data, &validate_params, nullptr);
 
   Array<int32_t> array2;
   Deserialize_(data, &array2, nullptr);
@@ -171,13 +171,13 @@ TEST_F(ArrayTest, Serialization_ArrayOfPOD) {
 
 TEST_F(ArrayTest, Serialization_EmptyArrayOfPOD) {
   Array<int32_t> array;
-  size_t size = GetSerializedSize_(array);
+  size_t size = GetSerializedSize_(array, nullptr);
   EXPECT_EQ(8U, size);
 
   FixedBufferForTesting buf(size);
   Array_Data<int32_t>* data;
   ArrayValidateParams validate_params(0, false, nullptr);
-  SerializeArray_(std::move(array), &buf, &data, &validate_params);
+  SerializeArray_(std::move(array), &buf, &data, &validate_params, nullptr);
 
   Array<int32_t> array2;
   Deserialize_(data, &array2, nullptr);
@@ -193,14 +193,14 @@ TEST_F(ArrayTest, Serialization_ArrayOfArrayOfPOD) {
     array[j] = std::move(inner);
   }
 
-  size_t size = GetSerializedSize_(array);
+  size_t size = GetSerializedSize_(array, nullptr);
   EXPECT_EQ(8U + 2 * 8U + 2 * (8U + 4 * 4U), size);
 
   FixedBufferForTesting buf(size);
   Array_Data<Array_Data<int32_t>*>* data;
   ArrayValidateParams validate_params(
       0, false, new ArrayValidateParams(0, false, nullptr));
-  SerializeArray_(std::move(array), &buf, &data, &validate_params);
+  SerializeArray_(std::move(array), &buf, &data, &validate_params, nullptr);
 
   Array<Array<int32_t>> array2;
   Deserialize_(data, &array2, nullptr);
@@ -219,13 +219,13 @@ TEST_F(ArrayTest, Serialization_ArrayOfBool) {
   for (size_t i = 0; i < array.size(); ++i)
     array[i] = i % 2 ? true : false;
 
-  size_t size = GetSerializedSize_(array);
+  size_t size = GetSerializedSize_(array, nullptr);
   EXPECT_EQ(8U + 8U, size);
 
   FixedBufferForTesting buf(size);
   Array_Data<bool>* data;
   ArrayValidateParams validate_params(0, false, nullptr);
-  SerializeArray_(std::move(array), &buf, &data, &validate_params);
+  SerializeArray_(std::move(array), &buf, &data, &validate_params, nullptr);
 
   Array<bool> array2;
   Deserialize_(data, &array2, nullptr);
@@ -242,7 +242,7 @@ TEST_F(ArrayTest, Serialization_ArrayOfString) {
     array[i] = String(&c, 1);
   }
 
-  size_t size = GetSerializedSize_(array);
+  size_t size = GetSerializedSize_(array, nullptr);
   EXPECT_EQ(8U +            // array header
                 10 * 8U +   // array payload (10 pointers)
                 10 * (8U +  // string header
@@ -253,7 +253,7 @@ TEST_F(ArrayTest, Serialization_ArrayOfString) {
   Array_Data<String_Data*>* data;
   ArrayValidateParams validate_params(
       0, false, new ArrayValidateParams(0, false, nullptr));
-  SerializeArray_(std::move(array), &buf, &data, &validate_params);
+  SerializeArray_(std::move(array), &buf, &data, &validate_params, nullptr);
 
   Array<String> array2;
   Deserialize_(data, &array2, nullptr);

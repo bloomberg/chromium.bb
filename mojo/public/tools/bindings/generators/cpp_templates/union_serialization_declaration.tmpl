@@ -1,6 +1,11 @@
-size_t GetSerializedSize_(const {{union.name}}Ptr& input, bool inlined);
-void SerializeUnion_({{union.name}}Ptr input, mojo::internal::Buffer* buffer,
-                     internal::{{union.name}}_Data** output, bool inlined);
+size_t GetSerializedSize_(const {{union.name}}Ptr& input,
+                          bool inlined,
+                          mojo::internal::SerializationContext* context);
+void SerializeUnion_({{union.name}}Ptr input,
+                     mojo::internal::Buffer* buffer,
+                     internal::{{union.name}}_Data** output,
+                     bool inlined,
+                     mojo::internal::SerializationContext* context);
 bool Deserialize_(internal::{{union.name}}_Data* input,
                   {{union.name}}Ptr* output,
                   mojo::internal::SerializationContext* context);

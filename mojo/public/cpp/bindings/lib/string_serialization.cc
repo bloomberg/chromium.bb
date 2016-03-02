@@ -9,7 +9,8 @@
 
 namespace mojo {
 
-size_t GetSerializedSize_(const String& input) {
+size_t GetSerializedSize_(const String& input,
+                          internal::SerializationContext* context) {
   if (!input)
     return 0;
   return internal::Align(sizeof(internal::String_Data) + input.size());
@@ -17,7 +18,8 @@ size_t GetSerializedSize_(const String& input) {
 
 void Serialize_(const String& input,
                 internal::Buffer* buf,
-                internal::String_Data** output) {
+                internal::String_Data** output,
+                internal::SerializationContext* context) {
   if (input) {
     internal::String_Data* result =
         internal::String_Data::New(input.size(), buf);

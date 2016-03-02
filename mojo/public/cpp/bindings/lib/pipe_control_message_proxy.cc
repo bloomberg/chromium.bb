@@ -22,11 +22,11 @@ void SendRunOrClosePipeMessage(MessageReceiver* receiver,
       pipe_control::RunOrClosePipeMessageParams::New());
   params_ptr->input = std::move(input);
 
-  size_t size = GetSerializedSize_(params_ptr);
+  size_t size = GetSerializedSize_(params_ptr, nullptr);
   MessageBuilder builder(pipe_control::kRunOrClosePipeMessageId, size);
 
   pipe_control::internal::RunOrClosePipeMessageParams_Data* params = nullptr;
-  Serialize_(std::move(params_ptr), builder.buffer(), &params);
+  Serialize_(std::move(params_ptr), builder.buffer(), &params, nullptr);
   params->EncodePointersAndHandles(builder.message()->mutable_handles());
   builder.message()->set_interface_id(kInvalidInterfaceId);
   bool ok = receiver->Accept(builder.message());

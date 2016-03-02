@@ -33,14 +33,16 @@ struct ArraySerializer;
 template <typename ArrayType, typename E, typename F>
 struct ArraySerializer<ArrayType, E, F, false> {
   static_assert(sizeof(E) == sizeof(F), "Incorrect array serializer");
-  static size_t GetSerializedSize(const ArrayType& input) {
+  static size_t GetSerializedSize(const ArrayType& input,
+                                  SerializationContext* context) {
     return sizeof(Array_Data<F>) + Align(input.size() * sizeof(E));
   }
 
   static void SerializeElements(ArrayType input,
                                 Buffer* buf,
                                 Array_Data<F>* output,
-                                const ArrayValidateParams* validate_params) {
+                                const ArrayValidateParams* validate_params,
+                                SerializationContext* context) {
     DCHECK(!validate_params->element_is_nullable)
         << "Primitive type should be non-nullable";
     DCHECK(!validate_params->element_validate_params)
@@ -63,14 +65,16 @@ struct ArraySerializer<ArrayType, E, F, false> {
 // Serializes and deserializes arrays of bools.
 template <typename ArrayType>
 struct ArraySerializer<ArrayType, bool, bool, false> {
-  static size_t GetSerializedSize(const ArrayType& input) {
+  static size_t GetSerializedSize(const ArrayType& input,
+                                  SerializationContext* context) {
     return sizeof(Array_Data<bool>) + Align((input.size() + 7) / 8);
   }
 
   static void SerializeElements(ArrayType input,
                                 Buffer* buf,
                                 Array_Data<bool>* output,
-                                const ArrayValidateParams* validate_params) {
+                                const ArrayValidateParams* validate_params,
+                                SerializationContext* context) {
     DCHECK(!validate_params->element_is_nullable)
         << "Primitive type should be non-nullable";
     DCHECK(!validate_params->element_validate_params)
@@ -95,14 +99,16 @@ struct ArraySerializer<ArrayType, bool, bool, false> {
 // Serializes and deserializes arrays of handles.
 template <typename ArrayType, typename H>
 struct ArraySerializer<ArrayType, ScopedHandleBase<H>, H, false> {
-  static size_t GetSerializedSize(const ArrayType& input) {
+  static size_t GetSerializedSize(const ArrayType& input,
+                                  SerializationContext* context) {
     return sizeof(Array_Data<H>) + Align(input.size() * sizeof(H));
   }
 
   static void SerializeElements(ArrayType input,
                                 Buffer* buf,
                                 Array_Data<H>* output,
-                                const ArrayValidateParams* validate_params) {
+                                const ArrayValidateParams* validate_params,
+                                SerializationContext* context) {
     DCHECK(!validate_params->element_validate_params)
         << "Handle type should not have array validate params";
 
@@ -139,22 +145,25 @@ struct ArraySerializer<
     false> {
   typedef
       typename RemovePointer<typename WrapperTraits<S>::DataType>::type S_Data;
-  static size_t GetSerializedSize(const ArrayType& input) {
+  static size_t GetSerializedSize(const ArrayType& input,
+                                  SerializationContext* context) {
     size_t size = sizeof(Array_Data<S_Data*>) +
                   input.size() * sizeof(StructPointer<S_Data>);
     for (size_t i = 0; i < input.size(); ++i)
-      size += GetSerializedSize_(input[i]);
+      size += GetSerializedSize_(input[i], context);
     return size;
   }
 
   static void SerializeElements(ArrayType input,
                                 Buffer* buf,
                                 Array_Data<S_Data*>* output,
-                                const ArrayValidateParams* validate_params) {
+                                const ArrayValidateParams* validate_params,
+                                SerializationContext* context) {
     for (size_t i = 0; i < input.size(); ++i) {
       S_Data* element;
       SerializeCaller<S>::Run(std::move(input[i]), buf, &element,
-                              validate_params->element_validate_params);
+                              validate_params->element_validate_params,
+                              context);
       output->at(i) = element;
       MOJO_INTERNAL_DLOG_SERIALIZATION_WARNING(
           !validate_params->element_is_nullable && !element,
@@ -187,11 +196,12 @@ struct ArraySerializer<
     static void Run(T input,
                     Buffer* buf,
                     typename WrapperTraits<T>::DataType* output,
-                    const ArrayValidateParams* validate_params) {
+                    const ArrayValidateParams* validate_params,
+                    SerializationContext* context) {
       DCHECK(!validate_params)
           << "Struct type should not have array validate params";
 
-      Serialize_(std::move(input), buf, output);
+      Serialize_(std::move(input), buf, output, context);
     }
   };
 
@@ -200,8 +210,9 @@ struct ArraySerializer<
     static void Run(T input,
                     Buffer* buf,
                     typename T::Data_** output,
-                    const ArrayValidateParams* validate_params) {
-      SerializeArray_(std::move(input), buf, output, validate_params);
+                    const ArrayValidateParams* validate_params,
+                    SerializationContext* context) {
+      SerializeArray_(std::move(input), buf, output, validate_params, context);
     }
   };
 
@@ -210,8 +221,9 @@ struct ArraySerializer<
     static void Run(Map<T, U> input,
                     Buffer* buf,
                     typename Map<T, U>::Data_** output,
-                    const ArrayValidateParams* validate_params) {
-      SerializeMap_(std::move(input), buf, output, validate_params);
+                    const ArrayValidateParams* validate_params,
+                    SerializationContext* context) {
+      SerializeMap_(std::move(input), buf, output, validate_params, context);
     }
   };
 
@@ -220,13 +232,14 @@ struct ArraySerializer<
     static void Run(const T& input,
                     Buffer* buf,
                     String_Data** output,
-                    const ArrayValidateParams* validate_params) {
+                    const ArrayValidateParams* validate_params,
+                    SerializationContext* context) {
       DCHECK(validate_params && !validate_params->element_validate_params &&
              !validate_params->element_is_nullable &&
              validate_params->expected_num_elements == 0)
           << "String type has unexpected array validate params";
 
-      Serialize_(input, buf, output);
+      Serialize_(input, buf, output, context);
     }
   };
 };
@@ -234,12 +247,13 @@ struct ArraySerializer<
 // Handles serialization and deserialization of arrays of unions.
 template <typename ArrayType, typename U, typename U_Data>
 struct ArraySerializer<ArrayType, U, U_Data, true> {
-  static size_t GetSerializedSize(const ArrayType& input) {
+  static size_t GetSerializedSize(const ArrayType& input,
+                                  SerializationContext* context) {
     size_t size = sizeof(Array_Data<U_Data>);
     for (size_t i = 0; i < input.size(); ++i) {
       // GetSerializedSize_ will account for both the data in the union and the
       // space in the array used to hold the union.
-      size += GetSerializedSize_(input[i], false);
+      size += GetSerializedSize_(input[i], false, context);
     }
     return size;
   }
@@ -247,10 +261,11 @@ struct ArraySerializer<ArrayType, U, U_Data, true> {
   static void SerializeElements(ArrayType input,
                                 Buffer* buf,
                                 Array_Data<U_Data>* output,
-                                const ArrayValidateParams* validate_params) {
+                                const ArrayValidateParams* validate_params,
+                                SerializationContext* context) {
     for (size_t i = 0; i < input.size(); ++i) {
       U_Data* result = output->storage() + i;
-      SerializeUnion_(std::move(input[i]), buf, &result, true);
+      SerializeUnion_(std::move(input[i]), buf, &result, true, context);
       MOJO_INTERNAL_DLOG_SERIALIZATION_WARNING(
           !validate_params->element_is_nullable && output->at(i).is_null(),
           VALIDATION_ERROR_UNEXPECTED_NULL_POINTER,
@@ -291,22 +306,25 @@ struct ArraySerializationStrategy<ArrayType, false> {
   using Serializer =
       ArraySerializer<ArrayType, typename ArrayType::ElementType, DataType>;
 
-  static size_t GetSerializedSize(const ArrayType& input) {
+  static size_t GetSerializedSize(const ArrayType& input,
+                                  SerializationContext* context) {
     DCHECK(input);
     return Serializer<typename WrapperTraits<
-        typename ArrayType::ElementType>::DataType>::GetSerializedSize(input);
+        typename ArrayType::ElementType>::DataType>::GetSerializedSize(input,
+                                                                       context);
   }
 
   template <typename F>
   static void Serialize(ArrayType input,
                         Buffer* buf,
                         Array_Data<F>** output,
-                        const ArrayValidateParams* validate_params) {
+                        const ArrayValidateParams* validate_params,
+                        SerializationContext* context) {
     DCHECK(input);
     Array_Data<F>* result = Array_Data<F>::New(input.size(), buf);
     if (result) {
       Serializer<F>::SerializeElements(std::move(input), buf, result,
-                                       validate_params);
+                                       validate_params, context);
     }
     *output = result;
   }
@@ -324,13 +342,14 @@ struct ArraySerializationStrategy<ArrayType, false> {
 // as arrays of uint8_t arrays.
 template <typename ArrayType>
 struct ArraySerializationStrategy<ArrayType, true> {
-  static size_t GetSerializedSize(const ArrayType& input) {
+  static size_t GetSerializedSize(const ArrayType& input,
+                                  SerializationContext* context) {
     DCHECK(input);
     DCHECK_LE(input.size(), std::numeric_limits<uint32_t>::max());
     size_t size = ArrayDataTraits<Array_Data<uint8_t>*>::GetStorageSize(
         static_cast<uint32_t>(input.size()));
     for (size_t i = 0; i < input.size(); ++i) {
-      size_t element_size = GetSerializedSizeNative_(input[i]);
+      size_t element_size = GetSerializedSizeNative_(input[i], context);
       DCHECK_LT(element_size, std::numeric_limits<uint32_t>::max());
       size += ArrayDataTraits<uint8_t>::GetStorageSize(
           static_cast<uint32_t>(element_size));
@@ -342,7 +361,8 @@ struct ArraySerializationStrategy<ArrayType, true> {
   static void Serialize(ArrayType input,
                         Buffer* buf,
                         Array_Data<F>** output,
-                        const ArrayValidateParams* validate_params) {
+                        const ArrayValidateParams* validate_params,
+                        SerializationContext* context) {
     static_assert(
         std::is_same<F, Array_Data<uint8_t>*>::value,
         "Native-only type array must serialize to array of byte arrays.");
@@ -354,7 +374,7 @@ struct ArraySerializationStrategy<ArrayType, true> {
     Array_Data<Array_Data<uint8_t>*>* result =
         Array_Data<Array_Data<uint8_t>*>::New(input.size(), buf);
     for (size_t i = 0; i < input.size(); ++i)
-      SerializeNative_(input[i], buf, &result->at(i));
+      SerializeNative_(input[i], buf, &result->at(i), context);
     *output = result;
   }
 
@@ -384,17 +404,19 @@ template <typename ArrayType>
 struct ArraySerializationImpl {
   using Strategy = ArraySerializationStrategy<ArrayType>;
 
-  static size_t GetSerializedSize(const ArrayType& input) {
+  static size_t GetSerializedSize(const ArrayType& input,
+                                  SerializationContext* context) {
     if (!input)
       return 0;
-    return Strategy::GetSerializedSize(input);
+    return Strategy::GetSerializedSize(input, context);
   }
 
   template <typename F>
   static void Serialize(ArrayType input,
                         internal::Buffer* buf,
                         internal::Array_Data<F>** output,
-                        const internal::ArrayValidateParams* validate_params) {
+                        const internal::ArrayValidateParams* validate_params,
+                        SerializationContext* context) {
     if (input) {
       MOJO_INTERNAL_DLOG_SERIALIZATION_WARNING(
           validate_params->expected_num_elements != 0 &&
@@ -404,7 +426,7 @@ struct ArraySerializationImpl {
               "fixed-size array has wrong number of elements", input.size(),
               validate_params->expected_num_elements));
       Strategy::template Serialize<F>(std::move(input), buf, output,
-                                      validate_params);
+                                      validate_params, context);
     } else {
       *output = nullptr;
     }

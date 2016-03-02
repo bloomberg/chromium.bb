@@ -42,12 +42,13 @@ struct ShouldUseNativeSerializer;
 // Forward declaration for native types.
 
 template <typename T>
-size_t GetSerializedSizeNative_(const T& value);
+size_t GetSerializedSizeNative_(const T& value, SerializationContext* context);
 
 template <typename T>
 void SerializeNative_(const T& value,
                       Buffer* buffer,
-                      Array_Data<uint8_t>** out);
+                      Array_Data<uint8_t>** out,
+                      SerializationContext* context);
 
 template <typename T>
 bool DeserializeNative_(Array_Data<uint8_t>* data,
@@ -60,14 +61,16 @@ bool DeserializeNative_(Array_Data<uint8_t>* data,
 // Forward declaration for Array.
 
 template <typename E>
-inline size_t GetSerializedSize_(const Array<E>& input);
+inline size_t GetSerializedSize_(const Array<E>& input,
+                                 internal::SerializationContext* context);
 
 template <typename E, typename F>
 inline void SerializeArray_(
     Array<E> input,
     internal::Buffer* buf,
     internal::Array_Data<F>** output,
-    const internal::ArrayValidateParams* validate_params);
+    const internal::ArrayValidateParams* validate_params,
+    internal::SerializationContext* context);
 
 template <typename E, typename F>
 inline bool Deserialize_(internal::Array_Data<F>* input,
@@ -78,7 +81,8 @@ inline bool Deserialize_(internal::Array_Data<F>* input,
 // Forward declaration for Map.
 
 template <typename MapKey, typename MapValue>
-inline size_t GetSerializedSize_(const Map<MapKey, MapValue>& input);
+inline size_t GetSerializedSize_(const Map<MapKey, MapValue>& input,
+                                 internal::SerializationContext* context);
 
 template <typename MapKey,
           typename MapValue,
@@ -88,7 +92,8 @@ inline void SerializeMap_(
     Map<MapKey, MapValue> input,
     internal::Buffer* buf,
     internal::Map_Data<DataKey, DataValue>** output,
-    const internal::ArrayValidateParams* value_validate_params);
+    const internal::ArrayValidateParams* value_validate_params,
+    internal::SerializationContext* context);
 
 template <typename MapKey,
           typename MapValue,

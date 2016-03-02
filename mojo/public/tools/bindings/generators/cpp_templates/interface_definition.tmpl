@@ -26,8 +26,11 @@ p_{{param.name}}
 {%-   endfor %}
 {%- endmacro %}
 
-{%- macro build_message(struct, input_pattern, struct_display_name) -%}
-  {{struct_macros.serialize(struct, struct_display_name, input_pattern, "params", "builder.buffer()")}}
+{%- macro build_message(struct, input_pattern, struct_display_name,
+                        serialization_context) -%}
+  {{struct_macros.serialize(struct, struct_display_name, input_pattern,
+                            "params", "builder.buffer()",
+                            serialization_context)}}
   params->EncodePointersAndHandles(builder.message()->mutable_handles());
 {%- endmacro %}
 
@@ -135,12 +138,14 @@ bool {{class_name}}_{{method.name}}_ForwardToCallback::Accept(
 {%-   if method.sync %}
 bool {{proxy_name}}::{{method.name}}(
     {{interface_macros.declare_sync_method_params("param_", method)}}) {
-  {{struct_macros.get_serialized_size(params_struct, "param_%s")}}
+  {{struct_macros.get_serialized_size(params_struct, "param_%s",
+                                      "&serialization_context_")}}
 
   mojo::internal::RequestMessageBuilder builder({{message_name}}, size,
                                                 mojo::internal::kMessageIsSync);
 
-  {{build_message(params_struct, "param_%s", params_description)}}
+  {{build_message(params_struct, "param_%s", params_description,
+                  "&serialization_context_")}}
 
   bool result = false;
   mojo::MessageReceiver* responder =
@@ -157,7 +162,8 @@ bool {{proxy_name}}::{{method.name}}(
 
 void {{proxy_name}}::{{method.name}}(
     {{interface_macros.declare_request_params("in_", method)}}) {
-  {{struct_macros.get_serialized_size(params_struct, "in_%s")}}
+  {{struct_macros.get_serialized_size(params_struct, "in_%s",
+                                      "&serialization_context_")}}
 
 {%- if method.response_parameters != None %}
   mojo::internal::RequestMessageBuilder builder({{message_name}}, size);
@@ -165,7 +171,8 @@ void {{proxy_name}}::{{method.name}}(
   mojo::internal::MessageBuilder builder({{message_name}}, size);
 {%- endif %}
 
-  {{build_message(params_struct, "in_%s", params_description)}}
+  {{build_message(params_struct, "in_%s", params_description,
+                  "&serialization_context_")}}
 
 {%- if method.response_parameters != None %}
   mojo::MessageReceiver* responder =
@@ -207,10 +214,12 @@ class {{class_name}}_{{method.name}}_ProxyToResponder
   {{class_name}}_{{method.name}}_ProxyToResponder(
       uint64_t request_id,
       bool is_sync,
-      mojo::MessageReceiverWithStatus* responder)
+      mojo::MessageReceiverWithStatus* responder,
+      scoped_refptr<mojo::internal::MultiplexRouter> router)
       : request_id_(request_id),
         is_sync_(is_sync),
-        responder_(responder) {
+        responder_(responder),
+        serialization_context_(std::move(router)) {
   }
 
   void Run({{interface_macros.declare_params("in_", method.response_parameters)}}) const override;
@@ -219,15 +228,19 @@ class {{class_name}}_{{method.name}}_ProxyToResponder
   uint64_t request_id_;
   bool is_sync_;
   mutable mojo::MessageReceiverWithStatus* responder_;
+  // TODO(yzshen): maybe I should use a ref to the original one?
+  mutable mojo::internal::SerializationContext serialization_context_;
   DISALLOW_COPY_AND_ASSIGN({{class_name}}_{{method.name}}_ProxyToResponder);
 };
 void {{class_name}}_{{method.name}}_ProxyToResponder::Run(
     {{interface_macros.declare_params("in_", method.response_parameters)}}) const {
-  {{struct_macros.get_serialized_size(response_params_struct, "in_%s")}}
+  {{struct_macros.get_serialized_size(response_params_struct, "in_%s",
+                                      "&serialization_context_")}}
   mojo::internal::ResponseMessageBuilder builder(
       {{message_name}}, size, request_id_,
       is_sync_ ? mojo::internal::kMessageIsSync : 0);
-  {{build_message(response_params_struct, "in_%s", params_description)}}
+  {{build_message(response_params_struct, "in_%s", params_description,
+                  "&serialization_context_")}}
   bool ok = responder_->Accept(builder.message());
   MOJO_ALLOW_UNUSED_LOCAL(ok);
   // TODO(darin): !ok returned here indicates a malformed message, and that may
@@ -296,7 +309,8 @@ bool {{class_name}}Stub::AcceptWithResponder(
           new {{class_name}}_{{method.name}}_ProxyToResponder(
               message->request_id(),
               message->has_flag(mojo::internal::kMessageIsSync),
-              responder);
+              responder,
+              serialization_context_.router);
       {{class_name}}::{{method.name}}Callback callback(runnable);
       // A null |sink_| means no implementation was bound.
       assert(sink_);

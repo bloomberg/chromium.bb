@@ -29,7 +29,10 @@ struct MapSerializer<MapType, DataType, false, false> {
   static size_t GetBaseArraySize(size_t count) {
     return Align(count * sizeof(DataType));
   }
-  static size_t GetItemSize(const MapType& item) { return 0; }
+  static size_t GetItemSize(const MapType& item,
+                            SerializationContext* context) {
+    return 0;
+  }
 };
 
 template <>
@@ -37,7 +40,9 @@ struct MapSerializer<bool, bool, false, false> {
   static size_t GetBaseArraySize(size_t count) {
     return Align((count + 7) / 8);
   }
-  static size_t GetItemSize(bool item) { return 0; }
+  static size_t GetItemSize(bool item, SerializationContext* context) {
+    return 0;
+  }
 };
 
 template <typename H>
@@ -45,7 +50,10 @@ struct MapSerializer<ScopedHandleBase<H>, H, true, false> {
   static size_t GetBaseArraySize(size_t count) {
     return Align(count * sizeof(H));
   }
-  static size_t GetItemSize(const ScopedHandleBase<H>& item) { return 0; }
+  static size_t GetItemSize(const ScopedHandleBase<H>& item,
+                            SerializationContext* context) {
+    return 0;
+  }
 };
 
 // This template must only apply to pointer mojo entity (structs and arrays).
@@ -62,7 +70,9 @@ struct MapSerializer<
   static size_t GetBaseArraySize(size_t count) {
     return count * sizeof(StructPointer<S_Data>);
   }
-  static size_t GetItemSize(const S& item) { return GetSerializedSize_(item); }
+  static size_t GetItemSize(const S& item, SerializationContext* context) {
+    return GetSerializedSize_(item, context);
+  }
 };
 
 template <typename U, typename U_Data>
@@ -70,8 +80,8 @@ struct MapSerializer<U, U_Data*, true, true> {
   static size_t GetBaseArraySize(size_t count) {
     return count * sizeof(U_Data);
   }
-  static size_t GetItemSize(const U& item) {
-    return GetSerializedSize_(item, true);
+  static size_t GetItemSize(const U& item, SerializationContext* context) {
+    return GetSerializedSize_(item, true, context);
   }
 };
 
@@ -80,8 +90,8 @@ struct MapSerializer<String, String_Data*, false, false> {
   static size_t GetBaseArraySize(size_t count) {
     return count * sizeof(StringPointer);
   }
-  static size_t GetItemSize(const String& item) {
-    return GetSerializedSize_(item);
+  static size_t GetItemSize(const String& item, SerializationContext* context) {
+    return GetSerializedSize_(item, context);
   }
 };
 
@@ -90,7 +100,8 @@ struct MapSerializer<String, String_Data*, false, false> {
 // TODO(erg): This can't go away yet. We still need to calculate out the size
 // of a struct header, and two arrays.
 template <typename MapKey, typename MapValue>
-inline size_t GetSerializedSize_(const Map<MapKey, MapValue>& input) {
+inline size_t GetSerializedSize_(const Map<MapKey, MapValue>& input,
+                                 internal::SerializationContext* context) {
   if (!input)
     return 0;
   typedef typename internal::WrapperTraits<MapKey>::DataType DataKey;
@@ -108,10 +119,11 @@ inline size_t GetSerializedSize_(const Map<MapKey, MapValue>& input) {
   size_t key_data_size = 0;
   size_t value_data_size = 0;
   for (auto it = input.begin(); it != input.end(); ++it) {
-    key_data_size +=
-        internal::MapSerializer<MapKey, DataKey>::GetItemSize(it->first);
+    key_data_size += internal::MapSerializer<MapKey, DataKey>::GetItemSize(
+        it->first, context);
     value_data_size +=
-        internal::MapSerializer<MapValue, DataValue>::GetItemSize(it->second);
+        internal::MapSerializer<MapValue, DataValue>::GetItemSize(it->second,
+                                                                  context);
   }
 
   return struct_overhead + key_base_size + key_data_size + value_base_size +
@@ -129,7 +141,8 @@ inline void SerializeMap_(
     Map<MapKey, MapValue> input,
     internal::Buffer* buf,
     internal::Map_Data<DataKey, DataValue>** output,
-    const internal::ArrayValidateParams* value_validate_params) {
+    const internal::ArrayValidateParams* value_validate_params,
+    internal::SerializationContext* context) {
   if (input) {
     internal::Map_Data<DataKey, DataValue>* result =
         internal::Map_Data<DataKey, DataValue>::New(buf);
@@ -140,9 +153,9 @@ inline void SerializeMap_(
       const internal::ArrayValidateParams* key_validate_params =
           internal::MapKeyValidateParamsFactory<DataKey>::Get();
       SerializeArray_(std::move(keys), buf, &result->keys.ptr,
-                      key_validate_params);
+                      key_validate_params, context);
       SerializeArray_(std::move(values), buf, &result->values.ptr,
-                      value_validate_params);
+                      value_validate_params, context);
     }
     *output = result;
   } else {
