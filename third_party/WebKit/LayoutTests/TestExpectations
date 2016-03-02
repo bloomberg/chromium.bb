@@ -1401,3 +1401,10 @@ crbug.com/590992 inspector/sources/debugger-step/debugger-step-into-document-wri
 crbug.com/590992 inspector/sources/debugger-step/debugger-step-into-inlined-scripts.html [ Pass Failure ]
 crbug.com/590992 inspector/sources/debugger-step/debugger-step-over-document-write.html [ Pass Failure ]
 crbug.com/590992 inspector/sources/debugger-step/debugger-step-over-inlined-scripts.html [ Pass Failure Timeout ]
+
+crbug.com/257405 fast/js/invalid-syntax-for-function.html [ NeedsManualRebaseline ]
+crbug.com/257405 fast/js/kde/string-1-n.html [ NeedsManualRebaseline ]
+crbug.com/257405 fast/js/kde/string-2-n.html [ NeedsManualRebaseline ]
+crbug.com/257405 fast/regex/non-pattern-characters.html [ NeedsManualRebaseline ]
+crbug.com/257405 http/tests/websocket/bad-sub-protocol-control-chars.html [ NeedsManualRebaseline ]
+crbug.com/257405 inspector/console/console-control-characters.html [ NeedsManualRebaseline ]
