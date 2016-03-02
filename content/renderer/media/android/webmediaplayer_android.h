@@ -26,6 +26,7 @@
 #include "media/base/android/media_player_android.h"
 #include "media/base/cdm_context.h"
 #include "media/base/demuxer_stream.h"
+#include "media/base/eme_constants.h"
 #include "media/base/media_keys.h"
 #include "media/base/time_delta_interpolator.h"
 #include "media/blink/webmediaplayer_delegate.h"
