@@ -52,6 +52,7 @@ test("mojo_shell_unittests") {
     "//mojo/shell/background:main",
     "//mojo/shell/background/tests:unittests",
     "//mojo/shell/public/cpp",
+    "//mojo/shell/tests/connect",
     "//mojo/util:filename_util",
     "//testing/gtest",
     "//url",
@@ -71,9 +72,5 @@ mojo_native_application("apptests") {
 
   deps = [
     "//mojo/shell/tests/application_manager",
-  ]
-
-  data_deps = [
-    "//mojo/shell/tests/connect",
   ]
 }

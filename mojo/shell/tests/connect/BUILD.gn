@@ -7,22 +7,19 @@ import("//mojo/public/mojo_application_manifest.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//testing/test.gni")
 
-mojo_native_application("connect") {
-  output_name = "connect_apptests"
+source_set("connect") {
   testonly = true
   sources = [
-    "connect_apptest.cc",
+    "connect_unittest.cc",
   ]
   deps = [
     ":interfaces",
     ":manifest",
     "//base",
-    "//base/test:test_config",
-    "//mojo/common:common_base",
+    "//base/test:test_support",
+    "//mojo/shell/public/cpp:shell_test_support",
     "//mojo/shell/public/cpp:sources",
-    "//mojo/shell/public/cpp:test_support",
     "//mojo/shell/public/interfaces",
-    "//mojo/shell/tests/application_manager",
   ]
 
   data_deps = [
@@ -38,8 +35,8 @@ mojom("interfaces") {
 }
 
 mojo_application_manifest("manifest") {
-  application_name = "connect_apptests"
-  source = "connect_apptest_manifest.json"
+  application_name = "connect_unittests"
+  source = "connect_unittests_manifest.json"
 }
 
 mojo_application_manifest("connect_test_a_manifest") {

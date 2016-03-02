@@ -1,0 +1,85 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef MOJO_SHELL_PUBLIC_CPP_SHELL_TEST_H_
+#define MOJO_SHELL_PUBLIC_CPP_SHELL_TEST_H_
+
+#include "base/memory/scoped_ptr.h"
+#include "mojo/public/cpp/bindings/array.h"
+#include "mojo/public/cpp/bindings/string.h"
+#include "mojo/public/cpp/system/macros.h"
+#include "mojo/shell/public/cpp/connector.h"
+#include "mojo/shell/public/cpp/shell_connection.h"
+#include "mojo/shell/public/interfaces/shell_client.mojom.h"
+#include "testing/gtest/include/gtest/gtest.h"
+
+namespace base {
+class MessageLoop;
+}
+
+namespace mojo {
+namespace shell {
+class BackgroundShell;
+}
+namespace test {
+
+class ShellTest : public testing::Test {
+ public:
+  ShellTest();
+  // Initialize passing the name to use as the identity for the test itself.
+  // Once set via this constructor, it cannot be changed later by calling
+  // InitTestName(). The test executable must provide a manifest in the
+  // appropriate location that specifies this name also.
+  explicit ShellTest(const std::string& test_name);
+  ~ShellTest() override;
+
+ protected:
+  // See constructor. Can only be called once.
+  void InitTestName(const std::string& test_name);
+
+  Connector* connector() { return connector_; }
+
+  // Instance information received from the Shell during Initialize().
+  const std::string& test_name() const { return initialize_name_; }
+  uint32_t test_instance_id() const { return initialize_instance_id_; }
+  uint32_t test_userid() const { return initialize_userid_; }
+
+  // By default, creates a simple ShellClient that captures the metadata sent
+  // via Initialize(). Override to customize, but custom implementations must
+  // call InitializeCalled() to forward the metadata so test_name() etc all
+  // work.
+  virtual scoped_ptr<ShellClient> CreateShellClient();
+
+  // Call to set Initialize() metadata when GetShellClient() is overridden.
+  void InitializeCalled(const std::string& name, uint32_t id, uint32_t userid);
+
+  // testing::Test:
+  void SetUp() override;
+  void TearDown() override;
+
+ private:
+  class DefaultShellClient;
+
+  scoped_ptr<ShellClient> shell_client_;
+
+  scoped_ptr<base::MessageLoop> message_loop_;
+  scoped_ptr<shell::BackgroundShell> background_shell_;
+  scoped_ptr<ShellConnection> shell_connection_;
+
+  // See constructor.
+  std::string test_name_;
+
+  Connector* connector_ = nullptr;
+  std::string initialize_name_;
+  uint32_t initialize_instance_id_ =
+      shell::mojom::Connector::kInvalidApplicationID;
+  uint32_t initialize_userid_ = shell::mojom::Connector::kUserInherit;
+
+  DISALLOW_COPY_AND_ASSIGN(ShellTest);
+};
+
+}  // namespace test
+}  // namespace mojo
+
+#endif  // MOJO_SHELL_PUBLIC_CPP_SHELL_TEST_H_

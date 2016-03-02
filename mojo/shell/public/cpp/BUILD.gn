@@ -92,3 +92,29 @@ source_set("test_support") {
 
   data_deps = []
 }
+
+source_set("shell_test_support") {
+  testonly = true
+  sources = [
+    "lib/shell_test.cc",
+    "shell_test.h",
+  ]
+
+  public_deps = [
+    ":cpp",
+    "//testing/gtest",
+  ]
+
+  deps = [
+    "//base",
+    "//base/test:test_support",
+    "//mojo/logging",
+    "//mojo/public/cpp/bindings",
+    "//mojo/public/cpp/environment",
+    "//mojo/public/cpp/system",
+    "//mojo/shell/background:lib",
+    "//mojo/shell/public/interfaces:interfaces_cpp_sources",
+  ]
+
+  data_deps = []
+}

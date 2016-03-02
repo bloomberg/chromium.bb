@@ -10,8 +10,9 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/test/test_suite.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "mojo/shell/public/cpp/application_test_base.h"
+#include "mojo/shell/public/cpp/shell_test.h"
 #include "mojo/shell/public/interfaces/application_manager.mojom.h"
 #include "mojo/shell/tests/connect/connect_test.mojom.h"
 
@@ -40,12 +41,12 @@ void QuitLoop(base::RunLoop* loop) {
 
 }  // namespace
 
-class ConnectApptest : public mojo::test::ApplicationTestBase,
-                       public InterfaceFactory<test::mojom::ExposedInterface>,
-                       public test::mojom::ExposedInterface {
+class ConnectTest : public mojo::test::ShellTest,
+                    public InterfaceFactory<test::mojom::ExposedInterface>,
+                    public test::mojom::ExposedInterface {
  public:
-  ConnectApptest() {}
-  ~ConnectApptest() override {}
+  ConnectTest() : ShellTest("mojo:connect_unittests") {}
+  ~ConnectTest() override {}
 
  protected:
   void set_ping_callback(const base::Closure& callback) {
@@ -72,9 +73,9 @@ class ConnectApptest : public mojo::test::ApplicationTestBase,
   }
 
  private:
-  // mojo::test::ApplicationTestBase:
+  // mojo::test::ShellTest:
   void SetUp() override {
-    mojo::test::ApplicationTestBase::SetUp();
+    mojo::test::ShellTest::SetUp();
     // We need to connect to the package first to force the shell to read the
     // package app's manifest and register aliases for the applications it
     // provides.
@@ -102,12 +103,12 @@ class ConnectApptest : public mojo::test::ApplicationTestBase,
 
   BindingSet<test::mojom::ExposedInterface> bindings_;
 
-  DISALLOW_COPY_AND_ASSIGN(ConnectApptest);
+  DISALLOW_COPY_AND_ASSIGN(ConnectTest);
 };
 
 // Ensure the connection was properly established and that a round trip
 // method call/response is completed.
-TEST_F(ConnectApptest, Connect) {
+TEST_F(ConnectTest, Connect) {
   scoped_ptr<Connection> connection = connector()->Connect(kTestAppName);
   test::mojom::ConnectTestServicePtr service;
   connection->GetInterface(&service);
@@ -124,7 +125,7 @@ TEST_F(ConnectApptest, Connect) {
 
 // BlockedInterface should not be exposed to this application because it is not
 // in our CapabilityFilter whitelist.
-TEST_F(ConnectApptest, BlockedInterface) {
+TEST_F(ConnectTest, BlockedInterface) {
   scoped_ptr<Connection> connection = connector()->Connect(kTestAppName);
   base::RunLoop run_loop;
   test::mojom::BlockedInterfacePtr blocked;
@@ -137,7 +138,7 @@ TEST_F(ConnectApptest, BlockedInterface) {
 }
 
 // Connects to an app provided by a package.
-TEST_F(ConnectApptest, PackagedApp) {
+TEST_F(ConnectTest, PackagedApp) {
   scoped_ptr<Connection> connection = connector()->Connect(kTestAppAName);
   test::mojom::ConnectTestServicePtr service_a;
   connection->GetInterface(&service_a);
@@ -156,7 +157,7 @@ TEST_F(ConnectApptest, PackagedApp) {
 // provided by a package whose id is permitted by the primary target's
 // CapabilityFilter but whose package is not. The connection should be
 // blocked and the returned title should be "uninitialized".
-TEST_F(ConnectApptest, BlockedPackage) {
+TEST_F(ConnectTest, BlockedPackage) {
   scoped_ptr<Connection> connection = connector()->Connect(kTestAppName);
   test::mojom::StandaloneAppPtr standalone_app;
   connection->GetInterface(&standalone_app);
@@ -170,7 +171,7 @@ TEST_F(ConnectApptest, BlockedPackage) {
 
 // BlockedInterface should not be exposed to this application because it is not
 // in our CapabilityFilter whitelist.
-TEST_F(ConnectApptest, PackagedApp_BlockedInterface) {
+TEST_F(ConnectTest, PackagedApp_BlockedInterface) {
   scoped_ptr<Connection> connection = connector()->Connect(kTestAppAName);
   base::RunLoop run_loop;
   test::mojom::BlockedInterfacePtr blocked;
@@ -181,7 +182,7 @@ TEST_F(ConnectApptest, PackagedApp_BlockedInterface) {
 
 // Connection to another application provided by the same package, blocked
 // because it's not in the capability filter whitelist.
-TEST_F(ConnectApptest, BlockedPackagedApplication) {
+TEST_F(ConnectTest, BlockedPackagedApplication) {
   scoped_ptr<Connection> connection = connector()->Connect(kTestAppBName);
   test::mojom::ConnectTestServicePtr service_b;
   connection->GetInterface(&service_b);
@@ -197,7 +198,7 @@ TEST_F(ConnectApptest, BlockedPackagedApplication) {
 // Tests that we can expose an interface to targets on outbound connections.
 // TODO(beng): Currently all interfaces on outbound connections are exposed.
 //             See ConnectorImpl::Connect().
-TEST_F(ConnectApptest, LocalInterface) {
+TEST_F(ConnectTest, LocalInterface) {
   // Connect to a standalone application.
   {
     test::mojom::ConnectTestServicePtr service;
