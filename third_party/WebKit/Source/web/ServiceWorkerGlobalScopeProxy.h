@@ -121,7 +121,6 @@ private:
     // as part of its finalization.
     WebEmbeddedWorkerImpl* m_embeddedWorker;
     RawPtrWillBeMember<Document> m_document;
-    KURL m_documentURL;
 
     WebServiceWorkerContextClient* m_client;
 

@@ -420,11 +420,7 @@ void ServiceWorkerContextClient::didEvaluateWorkerScript(bool success) {
 }
 
 void ServiceWorkerContextClient::didInitializeWorkerContext(
-    v8::Local<v8::Context> context,
-    const blink::WebURL& url) {
-  // TODO(annekao): Remove WebURL parameter from Blink, it's at best redundant
-  // given |script_url_|, and may be empty in the future.
-  // Also remove m_documentURL from ServiceWorkerGlobalScopeProxy.
+    v8::Local<v8::Context> context) {
   GetContentClient()
       ->renderer()
       ->DidInitializeServiceWorkerContextOnWorkerThread(context, script_url_);

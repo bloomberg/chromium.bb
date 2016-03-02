@@ -111,8 +111,7 @@ class ServiceWorkerContextClient
   void workerContextStarted(
       blink::WebServiceWorkerContextProxy* proxy) override;
   void didEvaluateWorkerScript(bool success) override;
-  void didInitializeWorkerContext(v8::Local<v8::Context> context,
-                                  const blink::WebURL& url) override;
+  void didInitializeWorkerContext(v8::Local<v8::Context> context) override;
   void willDestroyWorkerContext(v8::Local<v8::Context> context) override;
   void workerContextDestroyed() override;
   void reportException(const blink::WebString& error_message,

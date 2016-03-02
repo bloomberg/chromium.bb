@@ -94,7 +94,7 @@ public:
     virtual void didEvaluateWorkerScript(bool success) { }
 
     // Called when the worker context is initialized.
-    virtual void didInitializeWorkerContext(v8::Local<v8::Context> context, const blink::WebURL& url) { }
+    virtual void didInitializeWorkerContext(v8::Local<v8::Context> context) { }
 
     // Called when the WorkerGlobalScope had an error or an exception.
     virtual void reportException(const WebString& errorMessage, int lineNumber, int columnNumber, const WebString& sourceURL) { }

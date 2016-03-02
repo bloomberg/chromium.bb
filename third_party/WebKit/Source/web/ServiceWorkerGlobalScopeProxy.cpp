@@ -231,7 +231,7 @@ void ServiceWorkerGlobalScopeProxy::didEvaluateWorkerScript(bool success)
 void ServiceWorkerGlobalScopeProxy::didInitializeWorkerContext()
 {
     ScriptState::Scope scope(workerGlobalScope()->scriptController()->scriptState());
-    client().didInitializeWorkerContext(workerGlobalScope()->scriptController()->context(), WebURL(m_documentURL));
+    client().didInitializeWorkerContext(workerGlobalScope()->scriptController()->context());
 }
 
 void ServiceWorkerGlobalScopeProxy::workerGlobalScopeStarted(WorkerGlobalScope* workerGlobalScope)
@@ -262,7 +262,6 @@ void ServiceWorkerGlobalScopeProxy::workerThreadTerminated()
 ServiceWorkerGlobalScopeProxy::ServiceWorkerGlobalScopeProxy(WebEmbeddedWorkerImpl& embeddedWorker, Document& document, WebServiceWorkerContextClient& client)
     : m_embeddedWorker(&embeddedWorker)
     , m_document(&document)
-    , m_documentURL(document.url().copy())
     , m_client(&client)
     , m_workerGlobalScope(nullptr)
 {
