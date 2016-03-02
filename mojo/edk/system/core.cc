@@ -31,6 +31,7 @@
 #include "mojo/edk/system/platform_handle_dispatcher.h"
 #include "mojo/edk/system/ports/node.h"
 #include "mojo/edk/system/remote_message_pipe_bootstrap.h"
+#include "mojo/edk/system/request_context.h"
 #include "mojo/edk/system/shared_buffer_dispatcher.h"
 #include "mojo/edk/system/wait_set_dispatcher.h"
 #include "mojo/edk/system/waiter.h"
@@ -46,6 +47,14 @@ const uint32_t kMaxHandlesPerMessage = 1024 * 1024;
 // TODO: Maybe we could negotiate a debugging pipe ID for cross-process pipes
 // too; for now we just use a constant. This only affects bootstrap pipes.
 const uint64_t kUnknownPipeIdForDebug = 0x7f7f7f7f7f7f7f7fUL;
+
+void CallWatchCallback(MojoWatchCallback callback,
+                       uintptr_t context,
+                       MojoResult result,
+                       const HandleSignalsState& signals_state) {
+  callback(context, result,
+           static_cast<MojoHandleSignalsState>(signals_state));
+}
 
 }  // namespace
 
@@ -268,6 +277,7 @@ MojoTimeTicks Core::GetTimeTicksNow() {
 }
 
 MojoResult Core::Close(MojoHandle handle) {
+  RequestContext request_context;
   scoped_refptr<Dispatcher> dispatcher;
   {
     base::AutoLock lock(handles_lock_);
@@ -283,6 +293,7 @@ MojoResult Core::Wait(MojoHandle handle,
                       MojoHandleSignals signals,
                       MojoDeadline deadline,
                       MojoHandleSignalsState* signals_state) {
+  RequestContext request_context;
   uint32_t unused = static_cast<uint32_t>(-1);
   HandleSignalsState hss;
   MojoResult rv = WaitManyInternal(&handle, &signals, 1, deadline, &unused,
@@ -298,6 +309,7 @@ MojoResult Core::WaitMany(const MojoHandle* handles,
                           MojoDeadline deadline,
                           uint32_t* result_index,
                           MojoHandleSignalsState* signals_state) {
+  RequestContext request_context;
   if (num_handles < 1)
     return MOJO_RESULT_INVALID_ARGUMENT;
   if (num_handles > GetConfiguration().max_wait_many_num_handles)
@@ -319,7 +331,28 @@ MojoResult Core::WaitMany(const MojoHandle* handles,
   return rv;
 }
 
+MojoResult Core::Watch(MojoHandle handle,
+                       MojoHandleSignals signals,
+                       MojoWatchCallback callback,
+                       uintptr_t context) {
+  RequestContext request_context;
+  scoped_refptr<Dispatcher> dispatcher = GetDispatcher(handle);
+  if (!dispatcher)
+    return MOJO_RESULT_INVALID_ARGUMENT;
+  return dispatcher->Watch(
+      signals, base::Bind(&CallWatchCallback, callback, context), context);
+}
+
+MojoResult Core::CancelWatch(MojoHandle handle, uintptr_t context) {
+  RequestContext request_context;
+  scoped_refptr<Dispatcher> dispatcher = GetDispatcher(handle);
+  if (!dispatcher)
+    return MOJO_RESULT_INVALID_ARGUMENT;
+  return dispatcher->CancelWatch(context);
+}
+
 MojoResult Core::CreateWaitSet(MojoHandle* wait_set_handle) {
+  RequestContext request_context;
   if (!wait_set_handle)
     return MOJO_RESULT_INVALID_ARGUMENT;
 
@@ -338,6 +371,7 @@ MojoResult Core::CreateWaitSet(MojoHandle* wait_set_handle) {
 MojoResult Core::AddHandle(MojoHandle wait_set_handle,
                            MojoHandle handle,
                            MojoHandleSignals signals) {
+  RequestContext request_context;
   scoped_refptr<Dispatcher> wait_set_dispatcher(GetDispatcher(wait_set_handle));
   if (!wait_set_dispatcher)
     return MOJO_RESULT_INVALID_ARGUMENT;
@@ -351,6 +385,7 @@ MojoResult Core::AddHandle(MojoHandle wait_set_handle,
 
 MojoResult Core::RemoveHandle(MojoHandle wait_set_handle,
                               MojoHandle handle) {
+  RequestContext request_context;
   scoped_refptr<Dispatcher> wait_set_dispatcher(GetDispatcher(wait_set_handle));
   if (!wait_set_dispatcher)
     return MOJO_RESULT_INVALID_ARGUMENT;
@@ -367,6 +402,7 @@ MojoResult Core::GetReadyHandles(MojoHandle wait_set_handle,
                                  MojoHandle* handles,
                                  MojoResult* results,
                                  MojoHandleSignalsState* signals_states) {
+  RequestContext request_context;
   if (!handles || !count || !(*count) || !results)
     return MOJO_RESULT_INVALID_ARGUMENT;
 
@@ -396,6 +432,7 @@ MojoResult Core::CreateMessagePipe(
     const MojoCreateMessagePipeOptions* options,
     MojoHandle* message_pipe_handle0,
     MojoHandle* message_pipe_handle1) {
+  RequestContext request_context;
   ports::PortRef port0, port1;
   GetNodeController()->node()->CreatePortPair(&port0, &port1);
 
@@ -427,6 +464,7 @@ MojoResult Core::WriteMessage(MojoHandle message_pipe_handle,
                               const MojoHandle* handles,
                               uint32_t num_handles,
                               MojoWriteMessageFlags flags) {
+  RequestContext request_context;
   auto dispatcher = GetDispatcher(message_pipe_handle);
   if (!dispatcher)
     return MOJO_RESULT_INVALID_ARGUMENT;
@@ -476,6 +514,7 @@ MojoResult Core::ReadMessage(MojoHandle message_pipe_handle,
                              MojoHandle* handles,
                              uint32_t* num_handles,
                              MojoReadMessageFlags flags) {
+  RequestContext request_context;
   CHECK((!num_handles || !*num_handles || handles) &&
         (!num_bytes || !*num_bytes || bytes));
   auto dispatcher = GetDispatcher(message_pipe_handle);
@@ -488,6 +527,7 @@ MojoResult Core::CreateDataPipe(
     const MojoCreateDataPipeOptions* options,
     MojoHandle* data_pipe_producer_handle,
     MojoHandle* data_pipe_consumer_handle) {
+  RequestContext request_context;
   if (options && options->struct_size != sizeof(MojoCreateDataPipeOptions))
     return MOJO_RESULT_INVALID_ARGUMENT;
 
@@ -542,6 +582,7 @@ MojoResult Core::WriteData(MojoHandle data_pipe_producer_handle,
                            const void* elements,
                            uint32_t* num_bytes,
                            MojoWriteDataFlags flags) {
+  RequestContext request_context;
   scoped_refptr<Dispatcher> dispatcher(
       GetDispatcher(data_pipe_producer_handle));
   if (!dispatcher)
@@ -554,6 +595,7 @@ MojoResult Core::BeginWriteData(MojoHandle data_pipe_producer_handle,
                                 void** buffer,
                                 uint32_t* buffer_num_bytes,
                                 MojoWriteDataFlags flags) {
+  RequestContext request_context;
   scoped_refptr<Dispatcher> dispatcher(
       GetDispatcher(data_pipe_producer_handle));
   if (!dispatcher)
@@ -564,6 +606,7 @@ MojoResult Core::BeginWriteData(MojoHandle data_pipe_producer_handle,
 
 MojoResult Core::EndWriteData(MojoHandle data_pipe_producer_handle,
                               uint32_t num_bytes_written) {
+  RequestContext request_context;
   scoped_refptr<Dispatcher> dispatcher(
       GetDispatcher(data_pipe_producer_handle));
   if (!dispatcher)
@@ -576,6 +619,7 @@ MojoResult Core::ReadData(MojoHandle data_pipe_consumer_handle,
                           void* elements,
                           uint32_t* num_bytes,
                           MojoReadDataFlags flags) {
+  RequestContext request_context;
   scoped_refptr<Dispatcher> dispatcher(
       GetDispatcher(data_pipe_consumer_handle));
   if (!dispatcher)
@@ -588,6 +632,7 @@ MojoResult Core::BeginReadData(MojoHandle data_pipe_consumer_handle,
                                const void** buffer,
                                uint32_t* buffer_num_bytes,
                                MojoReadDataFlags flags) {
+  RequestContext request_context;
   scoped_refptr<Dispatcher> dispatcher(
       GetDispatcher(data_pipe_consumer_handle));
   if (!dispatcher)
@@ -598,6 +643,7 @@ MojoResult Core::BeginReadData(MojoHandle data_pipe_consumer_handle,
 
 MojoResult Core::EndReadData(MojoHandle data_pipe_consumer_handle,
                              uint32_t num_bytes_read) {
+  RequestContext request_context;
   scoped_refptr<Dispatcher> dispatcher(
       GetDispatcher(data_pipe_consumer_handle));
   if (!dispatcher)
@@ -610,6 +656,7 @@ MojoResult Core::CreateSharedBuffer(
     const MojoCreateSharedBufferOptions* options,
     uint64_t num_bytes,
     MojoHandle* shared_buffer_handle) {
+  RequestContext request_context;
   MojoCreateSharedBufferOptions validated_options = {};
   MojoResult result = SharedBufferDispatcher::ValidateCreateOptions(
       options, &validated_options);
@@ -638,6 +685,7 @@ MojoResult Core::DuplicateBufferHandle(
     MojoHandle buffer_handle,
     const MojoDuplicateBufferHandleOptions* options,
     MojoHandle* new_buffer_handle) {
+  RequestContext request_context;
   scoped_refptr<Dispatcher> dispatcher(GetDispatcher(buffer_handle));
   if (!dispatcher)
     return MOJO_RESULT_INVALID_ARGUMENT;
@@ -664,6 +712,7 @@ MojoResult Core::MapBuffer(MojoHandle buffer_handle,
                            uint64_t num_bytes,
                            void** buffer,
                            MojoMapBufferFlags flags) {
+  RequestContext request_context;
   scoped_refptr<Dispatcher> dispatcher(GetDispatcher(buffer_handle));
   if (!dispatcher)
     return MOJO_RESULT_INVALID_ARGUMENT;
@@ -687,6 +736,7 @@ MojoResult Core::MapBuffer(MojoHandle buffer_handle,
 }
 
 MojoResult Core::UnmapBuffer(void* buffer) {
+  RequestContext request_context;
   base::AutoLock lock(mapping_table_lock_);
   return mapping_table_.RemoveMapping(buffer);
 }

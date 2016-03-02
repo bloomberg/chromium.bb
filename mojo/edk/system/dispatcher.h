@@ -20,6 +20,7 @@
 #include "mojo/edk/system/handle_signals_state.h"
 #include "mojo/edk/system/ports/name.h"
 #include "mojo/edk/system/system_impl_export.h"
+#include "mojo/edk/system/watcher.h"
 #include "mojo/public/c/system/buffer.h"
 #include "mojo/public/c/system/data_pipe.h"
 #include "mojo/public/c/system/message_pipe.h"
@@ -64,6 +65,14 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher
 
   virtual Type GetType() const = 0;
   virtual MojoResult Close() = 0;
+
+  ///////////// Watch API ////////////////////
+
+  virtual MojoResult Watch(MojoHandleSignals signals,
+                           const Watcher::WatchCallback& callback,
+                           uintptr_t context);
+
+  virtual MojoResult CancelWatch(uintptr_t context);
 
   ///////////// Message pipe API /////////////
 

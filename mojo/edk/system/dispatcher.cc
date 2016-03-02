@@ -22,6 +22,16 @@ Dispatcher::DispatcherInTransit::DispatcherInTransit(
 
 Dispatcher::DispatcherInTransit::~DispatcherInTransit() {}
 
+MojoResult Dispatcher::Watch(MojoHandleSignals signals,
+                             const Watcher::WatchCallback& callback,
+                             uintptr_t context) {
+  return MOJO_RESULT_INVALID_ARGUMENT;
+}
+
+MojoResult Dispatcher::CancelWatch(uintptr_t context) {
+  return MOJO_RESULT_INVALID_ARGUMENT;
+}
+
 MojoResult Dispatcher::WriteMessage(const void* bytes,
                                     uint32_t num_bytes,
                                     const DispatcherInTransit* dispatchers,

@@ -112,12 +112,18 @@
         'edk/system/ports_message.h',
         'edk/system/remote_message_pipe_bootstrap.cc',
         'edk/system/remote_message_pipe_bootstrap.h',
+        'edk/system/request_context.cc',
+        'edk/system/request_context.h',
         'edk/system/shared_buffer_dispatcher.cc',
         'edk/system/shared_buffer_dispatcher.h',
         'edk/system/wait_set_dispatcher.cc',
         'edk/system/wait_set_dispatcher.h',
         'edk/system/waiter.cc',
         'edk/system/waiter.h',
+        'edk/system/watcher.cc',
+        'edk/system/watcher.h',
+        'edk/system/watcher_set.cc',
+        'edk/system/watcher_set.h',
         # Test-only code:
         # TODO(vtl): It's a little unfortunate that these end up in the same
         # component as non-test-only code. In the static build, this code

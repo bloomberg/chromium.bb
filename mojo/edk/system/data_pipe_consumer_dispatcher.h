@@ -43,6 +43,10 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipeConsumerDispatcher final
   // Dispatcher:
   Type GetType() const override;
   MojoResult Close() override;
+  MojoResult Watch(MojoHandleSignals signals,
+                   const Watcher::WatchCallback& callback,
+                   uintptr_t context) override;
+  MojoResult CancelWatch(uintptr_t context) override;
   MojoResult ReadData(void* elements,
                       uint32_t* num_bytes,
                       MojoReadDataFlags flags) override;

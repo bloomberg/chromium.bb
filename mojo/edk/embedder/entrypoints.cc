@@ -42,6 +42,17 @@ MojoResult MojoWaitMany(const MojoHandle* handles,
                           signals_states);
 }
 
+MojoResult MojoWatch(MojoHandle handle,
+                     MojoHandleSignals signals,
+                     MojoWatchCallback callback,
+                     uintptr_t context) {
+  return g_core->Watch(handle, signals, callback, context);
+}
+
+MojoResult MojoCancelWatch(MojoHandle handle, uintptr_t context) {
+  return g_core->CancelWatch(handle, context);
+}
+
 MojoResult MojoCreateWaitSet(MojoHandle* wait_set_handle) {
   return g_core->CreateWaitSet(wait_set_handle);
 }

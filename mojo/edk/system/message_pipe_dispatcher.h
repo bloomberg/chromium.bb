@@ -42,6 +42,10 @@ class MessagePipeDispatcher : public Dispatcher {
   // Dispatcher:
   Type GetType() const override;
   MojoResult Close() override;
+  MojoResult Watch(MojoHandleSignals signals,
+                   const Watcher::WatchCallback& callback,
+                   uintptr_t context) override;
+  MojoResult CancelWatch(uintptr_t context) override;
   MojoResult WriteMessage(const void* bytes,
                           uint32_t num_bytes,
                           const DispatcherInTransit* dispatchers,

@@ -14,10 +14,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
-#include "base/run_loop.h"
-#include "base/task_runner.h"
-#include "base/thread_task_runner_handle.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/test/multiprocess_test_helper.h"
 #include "mojo/public/c/system/types.h"
@@ -131,10 +127,22 @@ class MojoTestBase : public testing::Test {
                                    size_t offset,
                                    const base::StringPiece& s);
 
+  //////// Data pipe test utilities /////////
+
+  // Creates a new data pipe.
+  static void CreateDataPipe(MojoHandle* producer,
+                             MojoHandle* consumer,
+                             size_t capacity);
+
+  // Writes data to a data pipe.
+  static void WriteData(MojoHandle producer, const std::string& data);
+
+  // Reads data from a data pipe.
+  static std::string ReadData(MojoHandle consumer, size_t size);
+
  private:
   friend class ClientController;
 
-  base::MessageLoop message_loop_;
   std::vector<scoped_ptr<ClientController>> clients_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoTestBase);

@@ -9,6 +9,7 @@
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/system/handle_signals_state.h"
 #include "mojo/public/c/system/buffer.h"
+#include "mojo/public/c/system/data_pipe.h"
 #include "mojo/public/c/system/functions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -219,6 +220,48 @@ void MojoTestBase::ExpectBufferContents(MojoHandle h,
                           MOJO_MAP_BUFFER_FLAG_NONE));
   EXPECT_EQ(s, base::StringPiece(data, s.size()));
   EXPECT_EQ(MOJO_RESULT_OK, MojoUnmapBuffer(static_cast<void*>(data)));
+}
+
+// static
+void MojoTestBase::CreateDataPipe(MojoHandle *p0,
+                                  MojoHandle* p1,
+                                  size_t capacity) {
+  MojoCreateDataPipeOptions options;
+  options.struct_size = static_cast<uint32_t>(sizeof(options));
+  options.flags = MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE;
+  options.element_num_bytes = 1;
+  options.capacity_num_bytes = static_cast<uint32_t>(capacity);
+
+  MojoCreateDataPipe(&options, p0, p1);
+  CHECK_NE(*p0, MOJO_HANDLE_INVALID);
+  CHECK_NE(*p1, MOJO_HANDLE_INVALID);
+}
+
+// static
+void MojoTestBase::WriteData(MojoHandle producer, const std::string& data) {
+  CHECK_EQ(MojoWait(producer, MOJO_HANDLE_SIGNAL_WRITABLE,
+                    MOJO_DEADLINE_INDEFINITE, nullptr),
+           MOJO_RESULT_OK);
+  uint32_t num_bytes = static_cast<uint32_t>(data.size());
+  CHECK_EQ(MojoWriteData(producer, data.data(), &num_bytes,
+                         MOJO_WRITE_DATA_FLAG_ALL_OR_NONE),
+           MOJO_RESULT_OK);
+  CHECK_EQ(num_bytes, static_cast<uint32_t>(data.size()));
+}
+
+// static
+std::string MojoTestBase::ReadData(MojoHandle consumer, size_t size) {
+  CHECK_EQ(MojoWait(consumer, MOJO_HANDLE_SIGNAL_READABLE,
+                    MOJO_DEADLINE_INDEFINITE, nullptr),
+           MOJO_RESULT_OK);
+  std::vector<char> buffer(size);
+  uint32_t num_bytes = static_cast<uint32_t>(size);
+  CHECK_EQ(MojoReadData(consumer, buffer.data(), &num_bytes,
+                         MOJO_WRITE_DATA_FLAG_ALL_OR_NONE),
+           MOJO_RESULT_OK);
+  CHECK_EQ(num_bytes, static_cast<uint32_t>(size));
+
+  return std::string(buffer.data(), buffer.size());
 }
 
 }  // namespace test

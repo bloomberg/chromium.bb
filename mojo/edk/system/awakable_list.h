@@ -5,11 +5,14 @@
 #ifndef MOJO_EDK_SYSTEM_AWAKABLE_LIST_H_
 #define MOJO_EDK_SYSTEM_AWAKABLE_LIST_H_
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include <vector>
 
 #include "mojo/edk/system/system_impl_export.h"
+#include "mojo/edk/system/watcher.h"
+#include "mojo/edk/system/watcher_set.h"
 #include "mojo/public/c/system/types.h"
 #include "mojo/public/cpp/system/macros.h"
 
@@ -36,6 +39,13 @@ class MOJO_SYSTEM_IMPL_EXPORT AwakableList {
   void Add(Awakable* awakable, MojoHandleSignals signals, uintptr_t context);
   void Remove(Awakable* awakable);
 
+  // Add and remove Watchers to this AwakableList.
+  MojoResult AddWatcher(MojoHandleSignals signals,
+                        const Watcher::WatchCallback& callback,
+                        uintptr_t context,
+                        const HandleSignalsState& current_state);
+  MojoResult RemoveWatcher(uintptr_t context);
+
  private:
   struct AwakeInfo {
     AwakeInfo(Awakable* awakable, MojoHandleSignals signals, uintptr_t context)
@@ -48,6 +58,10 @@ class MOJO_SYSTEM_IMPL_EXPORT AwakableList {
   using AwakeInfoList = std::vector<AwakeInfo>;
 
   AwakeInfoList awakables_;
+
+  // TODO: Remove AwakableList and instead use WatcherSet directly in
+  // dispatchers.
+  WatcherSet watchers_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(AwakableList);
 };

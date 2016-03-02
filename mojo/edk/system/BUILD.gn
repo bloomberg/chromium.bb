@@ -64,12 +64,18 @@ component("system") {
     "ports_message.h",
     "remote_message_pipe_bootstrap.cc",
     "remote_message_pipe_bootstrap.h",
+    "request_context.cc",
+    "request_context.h",
     "shared_buffer_dispatcher.cc",
     "shared_buffer_dispatcher.h",
     "wait_set_dispatcher.cc",
     "wait_set_dispatcher.h",
     "waiter.cc",
     "waiter.h",
+    "watcher.cc",
+    "watcher.h",
+    "watcher_set.cc",
+    "watcher_set.h",
   ]
 
   defines = [
@@ -147,6 +153,7 @@ test("mojo_system_unittests") {
     "waiter_test_utils.cc",
     "waiter_test_utils.h",
     "waiter_unittest.cc",
+    "watch_unittest.cc",
   ]
 
   if (!is_ios) {

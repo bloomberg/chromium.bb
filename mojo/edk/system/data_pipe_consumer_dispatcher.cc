@@ -21,6 +21,7 @@
 #include "mojo/edk/system/data_pipe_control_message.h"
 #include "mojo/edk/system/node_controller.h"
 #include "mojo/edk/system/ports_message.h"
+#include "mojo/edk/system/request_context.h"
 #include "mojo/public/c/system/data_pipe.h"
 
 namespace mojo {
@@ -84,6 +85,29 @@ MojoResult DataPipeConsumerDispatcher::Close() {
   base::AutoLock lock(lock_);
   DVLOG(1) << "Closing data pipe consumer " << pipe_id_;
   return CloseNoLock();
+}
+
+
+MojoResult DataPipeConsumerDispatcher::Watch(
+    MojoHandleSignals signals,
+    const Watcher::WatchCallback& callback,
+    uintptr_t context) {
+  base::AutoLock lock(lock_);
+
+  if (is_closed_ || in_transit_)
+    return MOJO_RESULT_INVALID_ARGUMENT;
+
+  return awakable_list_.AddWatcher(
+      signals, callback, context, GetHandleSignalsStateNoLock());
+}
+
+MojoResult DataPipeConsumerDispatcher::CancelWatch(uintptr_t context) {
+  base::AutoLock lock(lock_);
+
+  if (is_closed_ || in_transit_)
+    return MOJO_RESULT_INVALID_ARGUMENT;
+
+  return awakable_list_.RemoveWatcher(context);
 }
 
 MojoResult DataPipeConsumerDispatcher::ReadData(void* elements,
@@ -474,6 +498,8 @@ void DataPipeConsumerDispatcher::OnPortStatusChanged() {
 }
 
 void DataPipeConsumerDispatcher::UpdateSignalsStateNoLock() {
+  RequestContext request_context;
+
   lock_.AssertAcquired();
 
   bool was_peer_closed = peer_closed_;

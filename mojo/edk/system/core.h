@@ -132,6 +132,11 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
                       MojoDeadline deadline,
                       uint32_t* result_index,
                       MojoHandleSignalsState* signals_states);
+  MojoResult Watch(MojoHandle handle,
+                   MojoHandleSignals signals,
+                   MojoWatchCallback callback,
+                   uintptr_t context);
+  MojoResult CancelWatch(MojoHandle handle, uintptr_t context);
 
   // These methods correspond to the API functions defined in
   // "mojo/public/c/system/wait_set.h":

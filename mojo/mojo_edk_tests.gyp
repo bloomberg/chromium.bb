@@ -227,6 +227,7 @@
         'edk/system/waiter_test_utils.cc',
         'edk/system/waiter_test_utils.h',
         'edk/system/waiter_unittest.cc',
+        'edk/system/watch_unittest.cc',
       ],
       'conditions': [
         ['OS=="ios"', {

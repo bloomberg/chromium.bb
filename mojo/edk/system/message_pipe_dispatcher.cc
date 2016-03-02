@@ -13,6 +13,7 @@
 #include "mojo/edk/system/core.h"
 #include "mojo/edk/system/node_controller.h"
 #include "mojo/edk/system/ports_message.h"
+#include "mojo/edk/system/request_context.h"
 #include "mojo/public/c/system/macros.h"
 
 namespace mojo {
@@ -95,6 +96,27 @@ MojoResult MessagePipeDispatcher::Close() {
   DVLOG(1) << "Closing message pipe " << pipe_id_ << " endpoint " << endpoint_
            << " [port=" << port_.name() << "]";
   return CloseNoLock();
+}
+
+MojoResult MessagePipeDispatcher::Watch(MojoHandleSignals signals,
+                                        const Watcher::WatchCallback& callback,
+                                        uintptr_t context) {
+  base::AutoLock lock(signal_lock_);
+
+  if (port_closed_ || in_transit_)
+    return MOJO_RESULT_INVALID_ARGUMENT;
+
+  return awakables_.AddWatcher(
+      signals, callback, context, GetHandleSignalsStateNoLock());
+}
+
+MojoResult MessagePipeDispatcher::CancelWatch(uintptr_t context) {
+  base::AutoLock lock(signal_lock_);
+
+  if (port_closed_ || in_transit_)
+    return MOJO_RESULT_INVALID_ARGUMENT;
+
+  return awakables_.RemoveWatcher(context);
 }
 
 MojoResult MessagePipeDispatcher::WriteMessage(
@@ -579,6 +601,8 @@ HandleSignalsState MessagePipeDispatcher::GetHandleSignalsStateNoLock() const {
 }
 
 void MessagePipeDispatcher::OnPortStatusChanged() {
+  RequestContext request_context;
+
   base::AutoLock lock(signal_lock_);
 
   // We stop observing our port as soon as it's transferred, but this can race
