@@ -1742,6 +1742,8 @@ executable("net_perftests") {
   }
 }
 
+# Fuzzers
+
 fuzzer_test("parse_proxy_list_pac_fuzzer") {
   sources = [
     "proxy/parse_proxy_list_pac_fuzzer.cc",
@@ -1823,6 +1825,75 @@ fuzzer_test("parse_cookie_line_fuzzer") {
     "cookies/parse_cookie_line_fuzzer.cc",
   ]
   deps = [
+    "//net",
+  ]
+}
+
+fuzzer_test("dns_record_fuzzer") {
+  sources = [
+    "dns/dns_record_fuzzer.cc",
+  ]
+  deps = [
+    "//base",
+    "//net",
+  ]
+}
+
+fuzzer_test("ftp_ctrl_response_fuzzer") {
+  sources = [
+    "ftp/ftp_ctrl_response_fuzzer.cc",
+  ]
+  deps = [
+    "//base",
+    "//net",
+  ]
+}
+
+fuzzer_test("ftp_directory_listing_fuzzer") {
+  sources = [
+    "ftp/ftp_directory_listing_fuzzer.cc",
+  ]
+  deps = [
+    "//base",
+    "//base:i18n",
+    "//net",
+  ]
+}
+
+fuzzer_test("unescape_url_component_fuzzer") {
+  sources = [
+    "base/unescape_url_component_fuzzer.cc",
+  ]
+  deps = [
+    "//base",
+    "//net",
+  ]
+}
+
+fuzzer_test("websocket_frame_parser_fuzzer") {
+  sources = [
+    "websockets/websocket_frame_parser_fuzzer.cc",
+  ]
+  deps = [
+    "//net",
+  ]
+}
+
+fuzzer_test("http_chunked_decoder_fuzzer") {
+  sources = [
+    "http/http_chunked_decoder_fuzzer.cc",
+  ]
+  deps = [
+    "//net",
+  ]
+}
+
+fuzzer_test("quic_crypto_framer_parse_message_fuzzer") {
+  sources = [
+    "quic/quic_crypto_framer_parse_message_fuzzer.cc",
+  ]
+  deps = [
+    "//base",
     "//net",
   ]
 }

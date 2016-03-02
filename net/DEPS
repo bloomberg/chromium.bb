@@ -64,6 +64,10 @@ specific_include_rules = {
   "get_domain_and_registry_fuzzer.cc": [
     "+base/i18n",
   ],
+
+  "ftp_directory_listing_fuzzer.cc": [
+    "+base/i18n",
+  ],
 }
 
 skip_child_includes = [

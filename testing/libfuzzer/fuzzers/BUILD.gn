@@ -40,37 +40,6 @@ fuzzer_test("courgette_fuzzer") {
   additional_configs = [ "//testing/libfuzzer:no_clusterfuzz" ]
 }
 
-fuzzer_test("dns_record_fuzzer") {
-  sources = [
-    "dns_record_fuzzer.cc",
-  ]
-  deps = [
-    "//base",
-    "//net",
-  ]
-}
-
-fuzzer_test("ftp_ctrl_response_fuzzer") {
-  sources = [
-    "ftp_ctrl_response_fuzzer.cc",
-  ]
-  deps = [
-    "//base",
-    "//net",
-  ]
-}
-
-fuzzer_test("ftp_directory_listing_fuzzer") {
-  sources = [
-    "ftp_directory_listing_fuzzer.cc",
-  ]
-  deps = [
-    "//base",
-    "//base:i18n",
-    "//net",
-  ]
-}
-
 fuzzer_test("language_detection_fuzzer") {
   sources = [
     "language_detection_fuzzer.cc",
@@ -149,16 +118,6 @@ fuzzer_test("string_to_int_fuzzer") {
   ]
   deps = [
     "//base",
-  ]
-}
-
-fuzzer_test("unescape_url_component_fuzzer") {
-  sources = [
-    "unescape_url_component_fuzzer.cc",
-  ]
-  deps = [
-    "//base",
-    "//net",
   ]
 }
 
@@ -243,34 +202,6 @@ if (pdf_enable_xfa) {
     ]
     dict = "dicts/pdf_xml.dict"
   }
-}
-
-fuzzer_test("websocket_frame_parser_fuzzer") {
-  sources = [
-    "websocket_frame_parser_fuzzer.cc",
-  ]
-  deps = [
-    "//net",
-  ]
-}
-
-fuzzer_test("http_chunked_decoder_fuzzer") {
-  sources = [
-    "http_chunked_decoder_fuzzer.cc",
-  ]
-  deps = [
-    "//net",
-  ]
-}
-
-fuzzer_test("quic_crypto_framer_parse_message_fuzzer") {
-  sources = [
-    "quic_crypto_framer_parse_message_fuzzer.cc",
-  ]
-  deps = [
-    "//base",
-    "//net",
-  ]
 }
 
 fuzzer_test("sqlite3_prepare_v2_fuzzer") {
