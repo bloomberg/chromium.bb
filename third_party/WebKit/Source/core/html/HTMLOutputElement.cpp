@@ -61,6 +61,11 @@ const AtomicString& HTMLOutputElement::formControlType() const
     return output;
 }
 
+bool HTMLOutputElement::isDisabledFormControl() const
+{
+    return false;
+}
+
 bool HTMLOutputElement::supportsFocus() const
 {
     return HTMLElement::supportsFocus();
