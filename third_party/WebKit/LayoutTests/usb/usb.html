@@ -49,25 +49,35 @@ usb_test(usb => {
 usb_test(usb => {
   let promise = new Promise((resolve, reject) => {
     navigator.usb.addEventListener('connect', e => {
-      usb.assertDeviceInfoEquals(e.device, usb.fakeDevices[0]);
-      resolve();
+      assert_true(e instanceof USBConnectionEvent);
+      resolve(e.device);
     });
   });
 
   usb.mockDeviceManager.addMockDevice(usb.fakeDevices[0]);
-  return promise;
+  return promise.then(device => {
+    usb.assertDeviceInfoEquals(device, usb.fakeDevices[0]);
+    return device.open().then(() => device.close());
+  });
 }, 'onconnect event is trigged by adding a device');
 
 usb_test(usb => {
   let promise = new Promise((resolve, reject) => {
     navigator.usb.addEventListener('disconnect', e => {
-      usb.assertDeviceInfoEquals(e.device, usb.fakeDevices[0]);
-      resolve();
+      assert_true(e instanceof USBConnectionEvent);
+      resolve(e.device);
     });
   });
 
   usb.mockDeviceManager.addMockDevice(usb.fakeDevices[0]);
   usb.mockDeviceManager.removeMockDevice(usb.fakeDevices[0]);
-  return promise;
+  return promise.then(device => {
+    usb.assertDeviceInfoEquals(device, usb.fakeDevices[0]);
+    return device.open().then(() => {
+      assert_unreachable('should not be able to open a disconnected device');
+    }, error => {
+      assert_equals(error.code, DOMException.NOT_FOUND_ERR);
+    });
+  });
 }, 'ondisconnect event is triggered by removing a device');
 </script>

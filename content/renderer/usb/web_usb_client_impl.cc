@@ -161,11 +161,8 @@ void WebUSBClientImpl::OnDeviceChangeNotification(
   for (size_t i = 0; i < notification->devices_removed.size(); ++i) {
     const device::usb::DeviceInfoPtr& device_info =
         notification->devices_removed[i];
-    device::usb::DevicePtr device;
-    device_manager_->GetDevice(device_info->guid, mojo::GetProxy(&device));
     observer_->onDeviceDisconnected(blink::adoptWebPtr(new WebUSBDeviceImpl(
-        std::move(device),
-        mojo::ConvertTo<blink::WebUSBDeviceInfo>(device_info))));
+        nullptr, mojo::ConvertTo<blink::WebUSBDeviceInfo>(device_info))));
   }
 }
 

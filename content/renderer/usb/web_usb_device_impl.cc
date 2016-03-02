@@ -235,7 +235,8 @@ WebUSBDeviceImpl::WebUSBDeviceImpl(device::usb::DevicePtr device,
     : device_(std::move(device)),
       device_info_(device_info),
       weak_factory_(this) {
-  device_.set_connection_error_handler([this]() { device_.reset(); });
+  if (device_)
+    device_.set_connection_error_handler([this]() { device_.reset(); });
 }
 
 WebUSBDeviceImpl::~WebUSBDeviceImpl() {}
