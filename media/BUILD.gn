@@ -312,7 +312,7 @@ component("media") {
       "filters/vpx_video_decoder.cc",
       "filters/vpx_video_decoder.h",
     ]
-    deps += [ "//third_party/libvpx_new" ]
+    deps += [ "//third_party/libvpx" ]
   }
 
   if (is_android) {

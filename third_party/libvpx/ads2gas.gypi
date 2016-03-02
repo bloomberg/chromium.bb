@@ -17,7 +17,7 @@
 {
   'variables': {
     # Location of the intermediate output.
-    'shared_generated_dir': '<(SHARED_INTERMEDIATE_DIR)/third_party/libvpx_new',
+    'shared_generated_dir': '<(SHARED_INTERMEDIATE_DIR)/third_party/libvpx',
     'variables': {
       'libvpx_source%': 'source/libvpx',
       'conditions': [

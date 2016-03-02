@@ -121,7 +121,7 @@ function write_gni {
   echo "$2 = [" >> "$3"
   for f in $file_list
   do
-    echo "  \"//third_party/libvpx_new/source/libvpx/$f\"," >> "$3"
+    echo "  \"//third_party/libvpx/source/libvpx/$f\"," >> "$3"
   done
   echo "]" >> "$3"
 }

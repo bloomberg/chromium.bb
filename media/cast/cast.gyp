@@ -97,7 +97,7 @@
         '<(DEPTH)/media/media.gyp:media',
         '<(DEPTH)/media/media.gyp:shared_memory_support',
         '<(DEPTH)/third_party/opus/opus.gyp:opus',
-        '<(DEPTH)/third_party/libvpx_new/libvpx.gyp:libvpx_new',
+        '<(DEPTH)/third_party/libvpx/libvpx.gyp:libvpx',
         '<(DEPTH)/third_party/libyuv/libyuv.gyp:libyuv',
         '<(DEPTH)/ui/gfx/gfx.gyp:gfx_geometry',
       ],
@@ -127,7 +127,7 @@
           'dependencies!': [
             '<(DEPTH)/media/media.gyp:media',
             '<(DEPTH)/third_party/opus/opus.gyp:opus',
-            '<(DEPTH)/third_party/libvpx_new/libvpx.gyp:libvpx_new',
+            '<(DEPTH)/third_party/libvpx/libvpx.gyp:libvpx',
           ],
         }], # OS=="ios"
       ], # conditions
@@ -145,7 +145,7 @@
         '<(DEPTH)/media/media.gyp:media',
         '<(DEPTH)/media/media.gyp:shared_memory_support',
         '<(DEPTH)/third_party/opus/opus.gyp:opus',
-        '<(DEPTH)/third_party/libvpx_new/libvpx.gyp:libvpx_new',
+        '<(DEPTH)/third_party/libvpx/libvpx.gyp:libvpx',
         '<(DEPTH)/ui/gfx/gfx.gyp:gfx_geometry',
       ], # dependencies
       'sources': [
@@ -190,7 +190,7 @@
           'dependencies!': [
             '<(DEPTH)/media/media.gyp:media',
             '<(DEPTH)/third_party/opus/opus.gyp:opus',
-            '<(DEPTH)/third_party/libvpx_new/libvpx.gyp:libvpx_new',
+            '<(DEPTH)/third_party/libvpx/libvpx.gyp:libvpx',
           ],
           'sources!': [
             'sender/external_video_encoder.cc',

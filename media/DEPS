@@ -8,7 +8,7 @@ include_rules = [
   "+jni",
   "+skia/ext",
   "+third_party/ffmpeg",
-  "+third_party/libvpx_new",
+  "+third_party/libvpx",
   "+third_party/libyuv",
   "+third_party/opus",
   "+third_party/skia",

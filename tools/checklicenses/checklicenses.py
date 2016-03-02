@@ -405,7 +405,7 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
         'UNKNOWN',
     ],
 
-    'third_party/libvpx_new/source': [  # http://crbug.com/98319
+    'third_party/libvpx/source': [  # http://crbug.com/98319
         'UNKNOWN',
     ],
     'third_party/libxml': [

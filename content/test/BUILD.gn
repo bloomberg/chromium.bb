@@ -159,7 +159,7 @@ source_set("test_support") {
 
   if (use_aura || is_mac) {
     deps += [
-      "//third_party/libvpx_new",
+      "//third_party/libvpx",
       "//ui/compositor",
     ]
 
@@ -760,7 +760,7 @@ test("content_unittests") {
     defines += [ "APPCACHE_USE_SIMPLE_CACHE" ]
   }
   if (!is_android && !is_ios) {
-    deps += [ "//third_party/libvpx_new" ]
+    deps += [ "//third_party/libvpx" ]
   }
 
   if (use_aura) {

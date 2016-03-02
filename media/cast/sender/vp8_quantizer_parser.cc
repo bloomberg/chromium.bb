@@ -13,7 +13,7 @@ namespace {
 // Vp8BitReader is a re-implementation of a subset of the VP8 entropy decoder.
 // It is used to decompress the VP8 bitstream for the purposes of quickly
 // parsing the VP8 frame headers.  It is mostly the exact same implementation
-// found in third_party/libvpx_new/.../vp8/decoder/dboolhuff.h except that only
+// found in third_party/libvpx/.../vp8/decoder/dboolhuff.h except that only
 // the portion of the implementation needed to parse the frame headers is
 // present. As of this writing, the implementation in libvpx could not be
 // re-used because of the way that the code is structured, and lack of the

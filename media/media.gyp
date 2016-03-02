@@ -670,7 +670,7 @@
         }],
         ['media_use_libvpx==1', {
           'dependencies': [
-            '<(DEPTH)/third_party/libvpx_new/libvpx.gyp:libvpx_new',
+            '<(DEPTH)/third_party/libvpx/libvpx.gyp:libvpx',
           ],
         }, {  # media_use_libvpx==0
           'defines': [

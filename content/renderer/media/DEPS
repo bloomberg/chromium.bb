@@ -1,5 +1,5 @@
 include_rules = [
-  "+third_party/libvpx_new",
+  "+third_party/libvpx",
   # For video copying, cropping and scaling.
   # TODO(wuchengli): remove this when RTCVideoEncoder supports zero copy.
   "+third_party/libyuv",

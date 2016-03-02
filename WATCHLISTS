@@ -458,7 +458,7 @@
       'filepath': 'third_party/libwebp'
     },
     'libvpx': {
-      'filepath': 'third_party/libvpx_new'
+      'filepath': 'third_party/libvpx'
     },
     'linux_fonts': {
       'filepath': 'ui/gfx/font_render_params_.*|'\

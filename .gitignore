@@ -358,7 +358,7 @@ vs-chromium-project.txt
 /third_party/libphonenumber/dist
 /third_party/libsrtp
 /third_party/libupnp
-/third_party/libvpx_new/source/libvpx
+/third_party/libvpx/source/libvpx
 /third_party/libwebm/source
 /third_party/libyuv
 /third_party/lighttpd

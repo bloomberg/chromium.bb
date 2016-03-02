@@ -2,7 +2,7 @@ Name: libvpx
 URL: http://www.webmproject.org
 Version: v1.4.0
 License: BSD
-License File: LICENSE
+License File: source/libvpx/LICENSE
 Security Critical: yes
 
 Date: Tuesday February 16 2016
@@ -24,13 +24,13 @@ Please follow these steps to update libvpx source code:
        -r <libvpx OWNER> \
        --log-limit 20 \
        --roll-to <libvpx hash> \
-       src/third_party/libvpx_new/source/libvpx
+       src/third_party/libvpx/source/libvpx
 
    Use the generated commit message for the roll.
 
 2. Generate .gypi, .gni and config files.
 
-   cd third_party/libvpx_new
+   cd third_party/libvpx
    ./generate_gypi.sh
 
 3. Update README.chromium with Date, Branch, and Commit.
