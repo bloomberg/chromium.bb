@@ -1,6 +1,6 @@
 <?php
 if ($_GET["suborigin"]) {
-    header("Content-Security-Policy: suborigin ". $_GET["suborigin"]);
+    header("Suborigin: ". $_GET["suborigin"]);
 }
 ?>
 <!DOCTYPE html>

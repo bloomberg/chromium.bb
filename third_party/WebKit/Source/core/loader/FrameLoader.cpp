@@ -448,6 +448,8 @@ void FrameLoader::didBeginDocument(bool dispatch)
         dispatchDidClearDocumentOfWindowObject();
 
     m_frame->document()->initContentSecurityPolicy(m_documentLoader ? m_documentLoader->releaseContentSecurityPolicy() : ContentSecurityPolicy::create());
+    if (m_documentLoader && !m_documentLoader->suboriginName().isNull())
+        m_frame->document()->enforceSuborigin(m_documentLoader->suboriginName());
     if (m_documentLoader) {
         m_frame->document()->clientHintsPreferences().updateFrom(m_documentLoader->clientHintsPreferences());
         LinkLoader::loadLinkFromHeader(m_documentLoader->response().httpHeaderField(HTTPNames::Link), m_documentLoader->response().url(),

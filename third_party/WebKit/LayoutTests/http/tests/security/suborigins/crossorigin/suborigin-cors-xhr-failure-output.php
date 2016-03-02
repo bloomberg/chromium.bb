@@ -1,5 +1,5 @@
 <?php
-header("Content-Security-Policy: suborigin foobar");
+header("Suborigin: foobar");
 ?>
 <!DOCTYPE html>
 <html>

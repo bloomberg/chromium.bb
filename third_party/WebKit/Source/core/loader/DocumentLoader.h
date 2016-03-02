@@ -144,6 +144,8 @@ public:
     void setWasBlockedAfterXFrameOptionsOrCSP() { m_wasBlockedAfterXFrameOptionsOrCSP = true; }
     bool wasBlockedAfterXFrameOptionsOrCSP() { return m_wasBlockedAfterXFrameOptionsOrCSP; }
 
+    String suboriginName() const { return m_suboriginName; }
+
     bool loadingMultipartContent() const;
 
     Resource* startPreload(Resource::Type, FetchRequest&);
@@ -223,6 +225,7 @@ private:
     RefPtrWillBeMember<ContentSecurityPolicy> m_contentSecurityPolicy;
     ClientHintsPreferences m_clientHintsPreferences;
     InitialScrollState m_initialScrollState;
+    String m_suboriginName;
 
     bool m_wasBlockedAfterXFrameOptionsOrCSP;
 

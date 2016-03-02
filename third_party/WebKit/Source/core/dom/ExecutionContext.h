@@ -141,10 +141,6 @@ public:
     virtual EventTarget* errorEventTarget() = 0;
     virtual EventQueue* eventQueue() const = 0;
 
-    void enforceSuborigin(const String& name);
-    bool hasSuborigin();
-    String suboriginName();
-
     // Methods related to window interaction. It should be used to manage window
     // focusing and window creation permission for an ExecutionContext.
     void allowWindowInteraction();

@@ -4926,6 +4926,7 @@ void Document::initSecurityContext(const DocumentInit& initializer)
         m_cookieURL = KURL(ParsedURLString, emptyString());
         setSecurityOrigin(SecurityOrigin::createUnique());
         initContentSecurityPolicy();
+        // Unique security origins cannot have a suborigin
         return;
     }
 
@@ -4969,6 +4970,9 @@ void Document::initSecurityContext(const DocumentInit& initializer)
         initContentSecurityPolicy();
     }
 
+    if (securityOrigin()->hasSuborigin())
+        enforceSuborigin(securityOrigin()->suboriginName());
+
     if (Settings* settings = initializer.settings()) {
         if (!settings->webSecurityEnabled()) {
             // Web security is turned off. We should let this document access every other document. This is used primary by testing
@@ -4989,6 +4993,9 @@ void Document::initSecurityContext(const DocumentInit& initializer)
         m_isSrcdocDocument = true;
         setBaseURLOverride(initializer.parentBaseURL());
     }
+
+    if (securityOrigin()->hasSuborigin())
+        enforceSuborigin(securityOrigin()->suboriginName());
 }
 
 void Document::initContentSecurityPolicy(PassRefPtrWillBeRawPtr<ContentSecurityPolicy> csp)

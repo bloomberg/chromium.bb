@@ -89,10 +89,8 @@ private:
     void parsePluginTypes(const String& name, const String& value);
     void parseReflectedXSS(const String& name, const String& value);
     void parseReferrer(const String& name, const String& value);
-    String parseSuboriginName(const String& policy);
     void addDirective(const String& name, const String& value);
     void applySandboxPolicy(const String& name, const String& sandboxPolicy);
-    void applySuboriginPolicy(const String& name, const String& suboriginPolicy);
     void enforceStrictMixedContentChecking(const String& name, const String& value);
     void enableInsecureRequestsUpgrade(const String& name, const String& value);
     void treatAsPublicAddress(const String& name, const String& value);
@@ -136,7 +134,6 @@ private:
 
     bool m_reportOnly;
     bool m_hasSandboxPolicy;
-    bool m_hasSuboriginPolicy;
     ReflectedXSSDisposition m_reflectedXSSDisposition;
 
     bool m_didSetReferrerPolicy;

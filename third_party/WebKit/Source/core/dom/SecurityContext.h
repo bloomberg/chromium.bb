@@ -82,6 +82,10 @@ public:
     void setShouldEnforceStrictMixedContentChecking(bool shouldEnforce) { m_enforceStrictMixedContentChecking = shouldEnforce; }
     bool shouldEnforceStrictMixedContentChecking() { return m_enforceStrictMixedContentChecking; }
 
+    void enforceSuborigin(const String& name);
+    bool hasSuborigin();
+    String suboriginName();
+
 protected:
     SecurityContext();
     virtual ~SecurityContext();

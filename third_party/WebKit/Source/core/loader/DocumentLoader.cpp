@@ -31,6 +31,7 @@
 
 #include "core/dom/Document.h"
 #include "core/dom/DocumentParser.h"
+#include "core/dom/Suborigin.h"
 #include "core/dom/WeakIdentifierMap.h"
 #include "core/events/Event.h"
 #include "core/fetch/CSSStyleSheetResource.h"
@@ -442,6 +443,9 @@ void DocumentLoader::responseReceived(Resource* resource, const ResourceResponse
             }
         }
     }
+    HTTPHeaderMap::const_iterator it = response.httpHeaderFields().find(HTTPNames::Suborigin);
+    if (it != response.httpHeaderFields().end())
+        m_suboriginName = SuboriginPolicy::parseSuboriginName(*frame()->document(), it->value);
 
     ASSERT(!mainResourceLoader() || !mainResourceLoader()->defersLoading());
 

@@ -1,5 +1,5 @@
 <?php
-header("Content-Security-Policy: suborigin foo; suborigin bar");
+header("Suborigin: foo, bar");
 ?>
 <!DOCTYPE html>
 <html>

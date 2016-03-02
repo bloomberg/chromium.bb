@@ -38,7 +38,6 @@
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerThread.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "wtf/MainThread.h"
 
 namespace blink {
@@ -233,16 +232,6 @@ KURL ExecutionContext::completeURL(const String& url) const
     return virtualCompleteURL(url);
 }
 
-bool ExecutionContext::hasSuborigin()
-{
-    return securityContext().securityOrigin()->hasSuborigin();
-}
-
-String ExecutionContext::suboriginName()
-{
-    return securityContext().securityOrigin()->suboriginName();
-}
-
 void ExecutionContext::allowWindowInteraction()
 {
     ++m_windowInteractionTokens;
@@ -279,20 +268,6 @@ void ExecutionContext::setReferrerPolicy(ReferrerPolicy referrerPolicy)
 void ExecutionContext::removeURLFromMemoryCache(const KURL& url)
 {
     memoryCache()->removeURLFromCache(url);
-}
-
-// |name| should be non-empty, and this should be enforced by parsing.
-void ExecutionContext::enforceSuborigin(const String& name)
-{
-    if (name.isNull())
-        return;
-    ASSERT(!name.isEmpty());
-    ASSERT(RuntimeEnabledFeatures::suboriginsEnabled());
-    SecurityOrigin* origin = securityContext().securityOrigin();
-    ASSERT(origin);
-    ASSERT(!origin->hasSuborigin() || origin->suboriginName() == name);
-    origin->addSuborigin(name);
-    securityContext().didUpdateSecurityOrigin();
 }
 
 DEFINE_TRACE(ExecutionContext)
