@@ -1,6 +1,6 @@
 ### Build Instructions (iOS)
 
-**Note:** Upstreaming of iOS code is still a work in progress. In particular, 
+**Note:** Upstreaming of iOS code is still a work in progress. In particular,
 note that **it is not currently possible to build an actual Chromium app.**
 Currently, the buildable binaries are ios\_web\_shell (a minimal wrapper around
 the web layer), and various unit tests.
@@ -20,15 +20,28 @@ Setting Up
 
 In the directory where you are going to check out the code, create a
 `chromium.gyp_env` to set the build to use iOS targets (and to use
-hybrid builds; see Building below):
+hybrid builds; see [Building](#Building) below):
 
-`echo "{ 'GYP_DEFINES': 'OS=ios','GYP_GENERATORS':
-'ninja,xcode-ninja', }" > chromium.gyp_env`
+```shell
+cat > chromium.gyp_env <<EOF
+{
+  "GYP_DEFINES": "OS=ios",
+  "GYP_GENERATORS": "ninja,xcode-ninja",
+}
+EOF
+```
 
 If you aren't set up to sign iOS build products via a developer account,
 you should instead use:
 
-`echo "{ 'GYP_DEFINES': 'OS=ios chromium_ios_signing=0', 'GYP_GENERATORS': 'ninja,xcode-ninja', }" > chromium.gyp_env`
+```shell
+cat > chromium.gyp_env <<EOF
+{
+  "GYP_DEFINES": "OS=ios chromium_ios_signing=0",
+  "GYP_GENERATORS": "ninja,xcode-ninja",
+}
+EOF
+```
 
 Also, you should [install API
 keys](https://www.chromium.org/developers/how-tos/api-keys).
@@ -37,9 +50,11 @@ Getting the Code
 ----------------
 
 Next, [check out the
-code](https://www.chromium.org/developers/how-tos/get-the-code), with
+code](https://www.chromium.org/developers/how-tos/get-the-code), with:
 
-`fetch ios`
+```shell
+fetch ios
+```
 
 Building
 --------
@@ -53,52 +68,60 @@ settings from within Xcode; this mode avoids generating a large tree of
 Xcode projects, which leads to performance issues in Xcode). To build
 with ninja (simulator and device, respectively):
 
-`ninja -C out/Debug-iphonesimulator All`
+```shell
+ninja -C out/Debug-iphonesimulator All
+ninja -C out/Debug-iphoneos All
+```
 
-`ninja -C out/Debug-iphoneos All`
-
-To build with Xcode, open build/all.ninja.xcworkspace, and choose the
+To build with Xcode, open `build/all.ninja.xcworkspace`, and choose the
 target you want to build.
 
-You should always be able to build all:All, since targets are added
-there for iOS only when they compile.
+You should always be able to build All, since targets are added there for iOS
+only when they compile.
 
 Running
 -------
 
-Any target that is built and runs on the bots (see below) should run
-successfully in a local build. As of the time of writing, this is only
-ios\_web\_shell and unit test targets—see the note at the top of this
-page. Check the bots periodically for updates; more targets (new
-components) will come on line over time.
+Any target that is built and runs on the bots (see [below](#Troubleshooting))
+should run successfully in a local build. As of the time of writing, this is
+only ios\_web\_shell and unit test targets—see the note at the top of this
+page. Check the bots periodically for updates; more targets (new components)
+will come on line over time.
 
 To run in the simulator from the command line, you can use `iossim`. For
-example, to run a debug build of web\_shell:
+example, to run a debug build of ios\_web\_shell:
 
-`out/Debug-iphonesimulator/iossim out/Debug-iphonesimulator/ios_web_shell.app`
+```shell
+out/Debug-iphonesimulator/iossim out/Debug-iphonesimulator/ios_web_shell.app
+```
 
-**Converting an existing Mac checkout into an iOS checkout**
+Converting an existing Mac checkout into an iOS checkout
+--------------------------------------------------------
 
 If you want to convert your Mac checkout into an iOS checkout, you can
-follow the next steps:
+follow those steps:
 
-1- Add 'target\_os = [ "ios" ]' to the bottom of your chromium/.gclient
+1. Add `target_os = [ "ios" ]` to the bottom of your `chromium/.gclient`
 file.
 
-2- Make sure you have the following in your chromium/chromium.gyp\_env
+2. Make sure you have the following in your `chromium/chromium.gyp_env`
 file (removing the `chromium_ios_signing=0` if you want to make
 developer-signed builds):
 
-`{
-"GYP\_DEFINES" : "OS=ios chromium\_ios\_signing=0",
-"GYP\_GENERATORS" : "ninja,xcode-ninja",
-}`
+```json
+{
+  "GYP_DEFINES" : "OS=ios chromium_ios_signing=0",
+  "GYP_GENERATORS" : "ninja,xcode-ninja",
+}
+```
 
-Then make sure you sync again to get all the new files like the
-following. At the end it will run gyp\_chromium which will regenerate
-all the build files according to the new settings.
+Then make sure you sync again to get all the new files like the following. At
+the end it will run `build/gyp_chromium` which will regenerate all the build
+files according to the new settings.
 
-`gclient sync`
+```shell
+gclient sync
+```
 
 Troubleshooting
 ---------------
