@@ -5,6 +5,7 @@
 #include "chrome/installer/setup/setup_util_unittest.h"
 
 #include <windows.h>
+#include <shlobj.h>
 
 #include <string>
 
@@ -143,6 +144,12 @@ TEST(SetupUtilTest, DeleteFileFromTempProcess) {
 TEST(SetupUtilTest, ScopedTokenPrivilegeBasic) {
   ASSERT_FALSE(CurrentProcessHasPrivilege(kTestedPrivilege));
 
+  if (!::IsUserAnAdmin()) {
+    LOG(WARNING) << "Skipping SetupUtilTest.ScopedTokenPrivilegeBasic due to "
+                    "not running as admin.";
+    return;
+  }
+
   {
     installer::ScopedTokenPrivilege test_scoped_privilege(kTestedPrivilege);
     ASSERT_TRUE(test_scoped_privilege.is_enabled());
@@ -156,6 +163,12 @@ TEST(SetupUtilTest, ScopedTokenPrivilegeBasic) {
 // at medium integrity).
 TEST(SetupUtilTest, ScopedTokenPrivilegeAlreadyEnabled) {
   ASSERT_FALSE(CurrentProcessHasPrivilege(kTestedPrivilege));
+
+  if (!::IsUserAnAdmin()) {
+    LOG(WARNING) << "Skipping SetupUtilTest.ScopedTokenPrivilegeAlreadyEnabled "
+                    "due to not running as admin.";
+    return;
+  }
 
   {
     installer::ScopedTokenPrivilege test_scoped_privilege(kTestedPrivilege);
