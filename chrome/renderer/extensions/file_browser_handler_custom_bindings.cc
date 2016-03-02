@@ -9,10 +9,10 @@
 #include "base/logging.h"
 #include "build/build_config.h"
 #include "extensions/renderer/script_context.h"
+#include "extensions/renderer/v8_helpers.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebDOMFileSystem.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
-#include "third_party/WebKit/public/web/WebScriptBindings.h"
 
 namespace extensions {
 
@@ -71,8 +71,8 @@ void FileBrowserHandlerCustomBindings::GetEntryURL(
   CHECK(args[0]->IsObject());
   const blink::WebURL& url =
       blink::WebDOMFileSystem::createFileSystemURL(args[0]);
-  args.GetReturnValue().Set(
-      blink::WebScriptBindings::toV8String(url.string(), args.GetIsolate()));
+  args.GetReturnValue().Set(v8_helpers::ToV8StringUnsafe(
+      args.GetIsolate(), url.string().utf8().c_str()));
 }
 
 }  // namespace extensions

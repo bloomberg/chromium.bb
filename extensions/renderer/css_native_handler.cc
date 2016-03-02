@@ -5,8 +5,8 @@
 #include "extensions/renderer/css_native_handler.h"
 
 #include "extensions/renderer/script_context.h"
+#include "extensions/renderer/v8_helpers.h"
 #include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/public/web/WebScriptBindings.h"
 #include "third_party/WebKit/public/web/WebSelector.h"
 
 namespace extensions {
@@ -24,12 +24,13 @@ void CssNativeHandler::CanonicalizeCompoundSelector(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
   CHECK_EQ(args.Length(), 1);
   CHECK(args[0]->IsString());
-  WebString input_selector =
-      blink::WebScriptBindings::toWebString(args[0].As<v8::String>());
+  std::string input_selector = *v8::String::Utf8Value(args[0]);
+  // TODO(esprehn): This API shouldn't exist, the extension code should be
+  // moved into blink.
   WebString output_selector = blink::canonicalizeSelector(
-      input_selector, blink::WebSelectorTypeCompound);
-  args.GetReturnValue().Set(blink::WebScriptBindings::toV8String(
-      output_selector, context()->v8_context()->GetIsolate()));
+      WebString::fromUTF8(input_selector), blink::WebSelectorTypeCompound);
+  args.GetReturnValue().Set(v8_helpers::ToV8StringUnsafe(
+      args.GetIsolate(), output_selector.utf8().c_str()));
 }
 
 }  // namespace extensions

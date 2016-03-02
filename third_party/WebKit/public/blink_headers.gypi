@@ -443,7 +443,6 @@
       "web/WebScopedMicrotaskSuppression.h",
       "web/WebScopedUserGesture.h",
       "web/WebScopedWindowFocusAllowedIndicator.h",
-      "web/WebScriptBindings.h",
       "web/WebScriptController.h",
       "web/WebScriptExecutionCallback.h",
       "web/WebScriptSource.h",
