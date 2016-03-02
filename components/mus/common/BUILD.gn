@@ -2,16 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//testing/test.gni")
-
 source_set("common") {
   sources = [
     "args.cc",
     "args.h",
-    "event_param_traits.cc",
-    "event_param_traits.h",
-    "event_param_traits_macros.h",
-    "mus_ipc_export.h",
     "transient_window_utils.h",
     "types.h",
     "util.h",
@@ -19,26 +13,5 @@ source_set("common") {
   ]
   deps = [
     "//components/mus/public/interfaces",
-    "//ipc:ipc",
-    "//ui/events:events",
-    "//ui/gfx/ipc",
-  ]
-}
-
-test("mus_common_unittests") {
-  sources = [
-    "event_param_traits_unittest.cc",
-  ]
-  deps = [
-    ":common",
-    "//base",
-    "//base/test:run_all_unittests",
-    "//base/test:test_config",
-    "//ipc:ipc",
-    "//mojo/edk/test:test_support",
-    "//testing/gtest",
-    "//ui/events:events",
-    "//ui/gfx:test_support",
-    "//ui/gfx/ipc",
   ]
 }
