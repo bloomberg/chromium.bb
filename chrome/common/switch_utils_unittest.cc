@@ -11,7 +11,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 TEST(SwitchUtilsTest, RemoveSwitches) {
-  const base::CommandLine::CharType* argv[] = {
+  static const base::CommandLine::CharType* argv[] = {
       FILE_PATH_LITERAL("program"),
       FILE_PATH_LITERAL("--app=http://www.google.com/"),
       FILE_PATH_LITERAL("--force-first-run"),
@@ -47,6 +47,45 @@ TEST(SwitchUtilsTest, RemoveSwitchesFromString) {
   std::map<std::string, base::CommandLine::StringType> switches =
       cmd_line.GetSwitches();
   EXPECT_EQ(5U, switches.size());
+
+  switches::RemoveSwitchesForAutostart(&switches);
+  EXPECT_EQ(2U, switches.size());
+  EXPECT_TRUE(cmd_line.HasSwitch("foo"));
+  EXPECT_TRUE(cmd_line.HasSwitch("bar"));
+}
+
+TEST(SwitchUtilsTest, RemovePrefetchSwitch) {
+  static const base::CommandLine::CharType* argv[] = {
+      FILE_PATH_LITERAL("program"),
+      FILE_PATH_LITERAL("--foo"),
+      FILE_PATH_LITERAL("/prefetch:1"),
+      FILE_PATH_LITERAL("--bar")};
+  base::CommandLine cmd_line(arraysize(argv), argv);
+  EXPECT_FALSE(cmd_line.GetCommandLineString().empty());
+
+  std::map<std::string, base::CommandLine::StringType> switches =
+      cmd_line.GetSwitches();
+  EXPECT_EQ(3U, switches.size());
+
+  switches::RemoveSwitchesForAutostart(&switches);
+  EXPECT_EQ(2U, switches.size());
+  EXPECT_TRUE(cmd_line.HasSwitch("foo"));
+  EXPECT_TRUE(cmd_line.HasSwitch("bar"));
+}
+
+TEST(SwitchUtilsTest, RemovePrefetchSwitchAndNormalSwitch) {
+  static const base::CommandLine::CharType* argv[] = {
+      FILE_PATH_LITERAL("program"),
+      FILE_PATH_LITERAL("--foo"),
+      FILE_PATH_LITERAL("/prefetch:1"),
+      FILE_PATH_LITERAL("--force-first-run"),
+      FILE_PATH_LITERAL("--bar")};
+  base::CommandLine cmd_line(arraysize(argv), argv);
+  EXPECT_FALSE(cmd_line.GetCommandLineString().empty());
+
+  std::map<std::string, base::CommandLine::StringType> switches =
+      cmd_line.GetSwitches();
+  EXPECT_EQ(4U, switches.size());
 
   switches::RemoveSwitchesForAutostart(&switches);
   EXPECT_EQ(2U, switches.size());
