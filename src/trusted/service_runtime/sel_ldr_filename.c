@@ -93,7 +93,7 @@ static int IsSymbolicLink(const char *path) {
  */
 static uint32_t ValidatePath(const char *path) {
   if (strstr(path, "..")) {
-    NaClLog(LOG_ERROR, "Pathname contains ..: %s\n", path);
+    NaClLog(LOG_WARNING, "Pathname contains ..: %s\n", path);
     return -NACL_ABI_EACCES;
   }
 
