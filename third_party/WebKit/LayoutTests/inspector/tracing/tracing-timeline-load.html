@@ -7,7 +7,7 @@
 
 function test()
 {
-    function runTestWithDataAndCheck(input, expectedOutput)
+    function runTestWithDataAndCheck(input, expectedOutput, callback)
     {
         InspectorTest.tracingModel().reset();
         var model = InspectorTest.tracingTimelineModel();
@@ -16,27 +16,31 @@ function test()
 
         function createFileReader(file, delegate)
         {
-            var stream = new InspectorTest.StringOutputStream(checkSaveData);
-            var saver = new WebInspector.TracingTimelineSaver(stream);
-            var storage = timeline._tracingModelBackingStorage;
-            return new InspectorTest.FakeFileReader(input, delegate, stream.open.bind(stream, "", storage.writeToStream.bind(storage, stream, saver)));
+            return new InspectorTest.FakeFileReader(input, delegate, () => {});
         }
 
         function checkSaveData(output)
         {
             var saveData = JSON.parse(output);
-            InspectorTest.assertEquals(JSON.stringify(expectedOutput), JSON.stringify(saveData), "saved data is not equal to restored");
+            InspectorTest.addResult("Saved data is equal to restored data: " + (JSON.stringify(expectedOutput) === JSON.stringify(saveData)));
+            callback();
         }
 
         InspectorTest.override(WebInspector.TimelineLoader, "_createFileReader", createFileReader);
         WebInspector.TimelineLoader.loadFromFile(model, {}, new WebInspector.Progress());
+
+        var stream = new InspectorTest.StringOutputStream(InspectorTest.safeWrap(checkSaveData));
+        var saver = new WebInspector.TracingTimelineSaver(stream);
+        var storage = timeline._tracingModelBackingStorage;
+        stream.open("", storage.writeToStream.bind(storage, stream, saver));
     }
 
-    function runTestOnMalformedInput(input)
+    function runTestOnMalformedInput(input, callback)
     {
         InspectorTest.tracingModel().reset();
         var model = InspectorTest.tracingTimelineModel();
         model.reset();
+
         function createFileReader(file, delegate)
         {
             return new InspectorTest.FakeFileReader(input, delegate, checkLoadedData);
@@ -44,7 +48,8 @@ function test()
 
         function checkLoadedData(data)
         {
-            InspectorTest.assertTrue(model.isEmpty());
+            InspectorTest.addResult("Model is empty: " + model.isEmpty());
+            callback();
         }
 
         InspectorTest.override(WebInspector.TimelineLoader, "_createFileReader", createFileReader);
@@ -94,29 +99,25 @@ function test()
         function testNormal(next)
         {
             var input = JSON.stringify(data);
-            runTestWithDataAndCheck(input, data);
-            next();
+            runTestWithDataAndCheck(input, data, next);
         },
 
         function testJSONObjectFormat(next)
         {
             var json = JSON.stringify(data);
             var input = "{\"traceEvents\":" + json + "}";
-            runTestWithDataAndCheck(input, data);
-            next();
+            runTestWithDataAndCheck(input, data, next);
         },
 
         function testBroken(next)
         {
             var data = [{"args":{"number":32},"cat":"__metadata","name":"num_cpus","ph":"M","pid":32127,"tid":0,"ts":0,"t\"y}p}e\\":"UnknownRecordType"}];
-            runTestOnMalformedInput(JSON.stringify(data));
-            next();
+            runTestOnMalformedInput(JSON.stringify(data), next);
         },
 
         function testMalformedJSON(next)
         {
-            runTestOnMalformedInput("]");
-            next();
+            runTestOnMalformedInput("]", next);
         }
     ]);
 }

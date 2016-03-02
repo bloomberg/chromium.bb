@@ -844,7 +844,7 @@ InspectorTest.TempFileMock.prototype = {
      * @param {!WebInspector.OutputStream} outputStream
      * @param {!WebInspector.OutputStreamDelegate} delegate
      */
-    writeToOutputSteam: function(outputStream, delegate)
+    copyToOutputStream: function(outputStream, delegate)
     {
         var name = this._name;
         var text = this._chunks.join("");

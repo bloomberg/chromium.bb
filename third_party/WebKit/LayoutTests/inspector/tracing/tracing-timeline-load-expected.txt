@@ -2,14 +2,18 @@ Tests tracing based Timeline save/load functionality.
 
 
 Running: testNormal
+Saved data is equal to restored data: true
 
 Running: testJSONObjectFormat
+Saved data is equal to restored data: true
 
 Running: testBroken
 error: TracingStartedInPage event not found.
+Model is empty: true
 
 Running: testMalformedJSON
 error: TracingStartedInPage event not found.
 error: TracingStartedInPage event not found.
 error: TracingStartedInPage event not found.
+Model is empty: true
 
