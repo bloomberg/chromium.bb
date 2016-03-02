@@ -1,3 +1,4 @@
+CONSOLE MESSAGE: Blink Test Plugin: initializing
 CONSOLE MESSAGE: Blink Test Plugin: DidChangeFocus(true)
 CONSOLE MESSAGE: Blink Test Plugin: MouseDown at (52,52)
 CONSOLE MESSAGE: Blink Test Plugin: MouseUp at (52,52)
@@ -15,5 +16,5 @@ layer at (8,8) size 100x100
   LayoutEmbeddedObject {EMBED} at (0,0) size 100x100
 layer at (11,111) size 125x13
   LayoutBlockFlow {DIV} at (3,3) size 125x13
-    LayoutText {#text} at (0,0) size 24x13
-      text run at (0,0) width 24: "hello"
+    LayoutText {#text} at (0,0) size 25x13
+      text run at (0,0) width 25: "hello"
