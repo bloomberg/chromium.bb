@@ -28,7 +28,6 @@
 enum CanPlayTypeResult { "" /* empty string */, "maybe", "probably" };
 [
     DependentLifetime,
-    RuntimeEnabled=Media,
 ] interface HTMLMediaElement : HTMLElement {
 
     // error state

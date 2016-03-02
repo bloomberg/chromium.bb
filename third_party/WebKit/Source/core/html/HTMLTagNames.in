@@ -12,7 +12,7 @@ applet interfaceName=HTMLUnknownElement
 area
 article interfaceName=HTMLElement
 aside interfaceName=HTMLElement
-audio runtimeEnabled=media
+audio
 b interfaceName=HTMLElement
 base
 basefont interfaceName=HTMLElement
@@ -116,7 +116,7 @@ section interfaceName=HTMLElement
 select constructorNeedsFormElement
 slot interfaceName=HTMLSlotElement, runtimeEnabled=shadowDOMV1
 small interfaceName=HTMLElement
-source runtimeEnabled=media
+source
 span
 strike interfaceName=HTMLElement
 strong interfaceName=HTMLElement
@@ -139,7 +139,7 @@ tt interfaceName=HTMLElement
 u interfaceName=HTMLElement
 ul interfaceName=HTMLUListElement
 var interfaceName=HTMLElement
-video runtimeEnabled=media
+video
 wbr interfaceName=HTMLWBRElement, JSInterfaceName=HTMLElement
 xmp interfaceName=HTMLPreElement
 noscript interfaceName=HTMLNoScriptElement, JSInterfaceName=HTMLElement

@@ -25,9 +25,7 @@
 
 // https://html.spec.whatwg.org/#the-video-element
 
-[
-    RuntimeEnabled=Media
-] interface HTMLVideoElement : HTMLMediaElement {
+interface HTMLVideoElement : HTMLMediaElement {
     [Reflect] attribute unsigned long width;
     [Reflect] attribute unsigned long height;
     readonly attribute unsigned long videoWidth;

@@ -25,9 +25,7 @@
 
 // https://html.spec.whatwg.org/#the-source-element
 
-[
-    RuntimeEnabled=Media
-] interface HTMLSourceElement : HTMLElement {
+interface HTMLSourceElement : HTMLElement {
     [Reflect, URL] attribute DOMString src;
     attribute DOMString type;
 

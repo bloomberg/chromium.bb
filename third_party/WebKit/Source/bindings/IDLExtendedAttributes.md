@@ -1176,8 +1176,8 @@ Usage: `[RuntimeEnabled=FeatureName]`. FeatureName must be included in [RuntimeE
 
 ```webidl
 [
-    RuntimeEnabled=Media,
-] interface HTMLAudioElement : HTMLMediaElement {};
+    RuntimeEnabled=MediaSession
+] interface MediaSession { ... };
 ```
 
 Only when the feature is enabled at runtime (using a command line flag, for example, or when it is enabled only in certain platforms), the binding would be exposed to the web.

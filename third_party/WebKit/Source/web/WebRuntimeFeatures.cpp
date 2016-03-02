@@ -140,11 +140,6 @@ void WebRuntimeFeatures::enableImageColorProfiles(bool enable)
     RuntimeEnabledFeatures::setImageColorProfilesEnabled(enable);
 }
 
-void WebRuntimeFeatures::enableMediaPlayer(bool enable)
-{
-    RuntimeEnabledFeatures::setMediaEnabled(enable);
-}
-
 void WebRuntimeFeatures::enableMediaCapture(bool enable)
 {
     RuntimeEnabledFeatures::setMediaCaptureEnabled(enable);

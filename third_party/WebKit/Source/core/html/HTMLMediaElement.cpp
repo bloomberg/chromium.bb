@@ -263,9 +263,6 @@ WebMimeRegistry::SupportsType HTMLMediaElement::supportsType(const ContentType& 
 {
     DEFINE_STATIC_LOCAL(const String, codecs, ("codecs"));
 
-    if (!RuntimeEnabledFeatures::mediaEnabled())
-        return WebMimeRegistry::IsNotSupported;
-
     String type = contentType.type().lower();
     // The codecs string is not lower-cased because MP4 values are case sensitive
     // per http://tools.ietf.org/html/rfc4281#page-7.
@@ -355,7 +352,6 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document& docum
 #if ENABLE(OILPAN)
     ThreadState::current()->registerPreFinalizer(this);
 #endif
-    ASSERT(RuntimeEnabledFeatures::mediaEnabled());
 
     WTF_LOG(Media, "HTMLMediaElement::HTMLMediaElement(%p)", this);
 

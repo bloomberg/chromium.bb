@@ -84,8 +84,6 @@ public:
 
     BLINK_EXPORT static void enableImageColorProfiles(bool);
 
-    BLINK_EXPORT static void enableMediaPlayer(bool);
-
     BLINK_EXPORT static void enableSubpixelFontScaling(bool);
 
     BLINK_EXPORT static void enableMediaCapture(bool);

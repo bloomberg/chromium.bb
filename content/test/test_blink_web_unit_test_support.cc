@@ -131,9 +131,8 @@ TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport() {
       blink::WebConnectionType::WebConnectionTypeUnknown,
       std::numeric_limits<double>::infinity());
 
-  // Initialize libraries for media and enable the media player.
+  // Initialize libraries for media.
   media::InitializeMediaLibrary();
-  blink::WebRuntimeFeatures::enableMediaPlayer(true);
 
   file_utilities_.set_sandbox_enabled(false);
 

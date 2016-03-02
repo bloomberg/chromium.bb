@@ -26,7 +26,7 @@ AppBanner status=stable
 AlwaysUseComplexText status=stable
 ApplicationCache status=stable
 AudioOutputDevices status=stable
-AudioVideoTracks depends_on=Media, status=experimental
+AudioVideoTracks status=experimental
 AuthorShadowDOMForAnyElement
 BackgroundSync status=stable
 CacheIgnoreSearchOption status=experimental
@@ -110,7 +110,6 @@ LinkPreconnect status=stable
 LinkPreload status=stable
 LinkHeader status=stable
 FractionalScrollOffsets status=experimental
-Media status=stable
 MediaCapture
 MediaCaptureFromCanvas status=experimental
 MediaCaptureFromVideo status=test
@@ -208,7 +207,7 @@ WebGLDraftExtensions status=experimental
 WebGLImageChromium
 WebUSB status=experimental
 WebVR depends_on=GeometryInterfaces, status=test
-WebVTTRegions depends_on=Media, status=experimental
+WebVTTRegions status=experimental
 V8IdleTasks
 XSLT status=stable
 smil status=stable

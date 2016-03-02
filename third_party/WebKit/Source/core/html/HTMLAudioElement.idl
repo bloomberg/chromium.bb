@@ -26,7 +26,6 @@
 // https://html.spec.whatwg.org/#the-audio-element
 
 [
-    RuntimeEnabled=Media,
     // FIXME: The src argument should have no default value.
     NamedConstructor=Audio(optional DOMString src = null),
     ConstructorCallWith=Document
