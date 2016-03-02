@@ -4,7 +4,6 @@
 
 #include "chrome/browser/supervised_user/supervised_user_theme.h"
 
-#include "build/build_config.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -22,20 +21,11 @@ const SkColor kDefaultColorSupervisedUserLabelBackground =
 int MapToSupervisedUserResourceIds(int id) {
   switch (id) {
     case IDR_THEME_FRAME:
-#if defined(USE_ASH) && !defined(OS_CHROMEOS)
-    case IDR_THEME_FRAME_DESKTOP:
-#endif
       return IDR_SUPERVISED_USER_THEME_FRAME;
     case IDR_THEME_FRAME_INACTIVE:
-#if defined(USE_ASH) && !defined(OS_CHROMEOS)
-    case IDR_THEME_FRAME_INACTIVE_DESKTOP:
-#endif
       return IDR_SUPERVISED_USER_THEME_FRAME_INACTIVE;
     case IDR_THEME_TAB_BACKGROUND:
     case IDR_THEME_TAB_BACKGROUND_V:
-#if defined(USE_ASH) && !defined(OS_CHROMEOS)
-    case IDR_THEME_TAB_BACKGROUND_DESKTOP:
-#endif
       return IDR_SUPERVISED_USER_THEME_TAB_BACKGROUND;
   }
   return id;

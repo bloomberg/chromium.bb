@@ -505,11 +505,6 @@ TEST_F(BrowserThemePackTest, CanParsePaths) {
   ParseImageNamesJSON(path_json, &out_file_paths);
 
   size_t expected_file_paths = 2u;
-#if defined(USE_ASH) && !defined(OS_CHROMEOS)
-  // On desktop builds with ash, additional theme paths are generated to map to
-  // the special resource ids like IDR_THEME_FRAME_DESKTOP, etc
-  expected_file_paths = 3u;
-#endif
   EXPECT_EQ(expected_file_paths, out_file_paths.size());
   // "12" and "5" are internal constants to BrowserThemePack and are
   // PRS_THEME_BUTTON_BACKGROUND and PRS_THEME_TOOLBAR, but they are

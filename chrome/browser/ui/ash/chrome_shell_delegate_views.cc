@@ -211,11 +211,8 @@ void ChromeShellDelegate::Observe(int type,
             base::FilePath(),
             dummy,
             chrome::startup::IS_NOT_FIRST_RUN);
-        startup_impl.Launch(
-            ProfileManager::GetActiveUserProfile(),
-            std::vector<GURL>(),
-            true,
-            chrome::HOST_DESKTOP_TYPE_ASH);
+        startup_impl.Launch(ProfileManager::GetActiveUserProfile(),
+                            std::vector<GURL>(), true);
       } else {
         Browser* browser =
             chrome::FindBrowserWithWindow(ash::wm::GetActiveWindow());
