@@ -301,6 +301,11 @@ bool ProxyBypassRules::AddRuleFromStringInternal(
   std::string host;
   int port;
   if (ParseHostAndPort(raw, &host, &port)) {
+    // TODO(eroman): HostForURL() below DCHECKs() when |host| contains an
+    // embedded NULL.
+    if (host.find('\0') != std::string::npos)
+      return false;
+
     // Note that HostPortPair is used to merely to convert any IPv6 literals to
     // a URL-safe format that can be used by canonicalization below.
     std::string bracketed_host = HostPortPair(host, 80).HostForURL();

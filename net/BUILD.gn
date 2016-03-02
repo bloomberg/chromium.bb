@@ -9,6 +9,7 @@ import("//build/config/crypto.gni")
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//build_overrides/v8.gni")
+import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
 import("//third_party/icu/config.gni")
 import("//third_party/protobuf/proto_library.gni")
@@ -1739,6 +1740,91 @@ executable("net_perftests") {
   } else {
     sources -= [ "proxy/proxy_resolver_perftest.cc" ]
   }
+}
+
+fuzzer_test("parse_proxy_list_pac_fuzzer") {
+  sources = [
+    "proxy/parse_proxy_list_pac_fuzzer.cc",
+  ]
+  deps = [
+    "//net",
+  ]
+}
+
+fuzzer_test("parse_proxy_list_fuzzer") {
+  sources = [
+    "proxy/parse_proxy_list_fuzzer.cc",
+  ]
+  deps = [
+    "//net",
+  ]
+}
+
+fuzzer_test("parse_proxy_bypass_rules_fuzzer") {
+  sources = [
+    "proxy/parse_proxy_bypass_rules_fuzzer.cc",
+  ]
+  deps = [
+    "//net",
+  ]
+}
+
+fuzzer_test("parse_proxy_rules_fuzzer") {
+  sources = [
+    "proxy/parse_proxy_rules_fuzzer.cc",
+  ]
+  deps = [
+    "//net",
+  ]
+}
+
+fuzzer_test("parse_data_url_fuzzer") {
+  sources = [
+    "base/parse_data_url_fuzzer.cc",
+  ]
+  deps = [
+    "//base",
+    "//net",
+  ]
+}
+
+fuzzer_test("sniff_mime_type_fuzzer") {
+  sources = [
+    "base/sniff_mime_type_fuzzer.cc",
+  ]
+  deps = [
+    "//base",
+    "//net",
+  ]
+}
+
+fuzzer_test("parse_ip_pattern_fuzzer") {
+  sources = [
+    "base/parse_ip_pattern_fuzzer.cc",
+  ]
+  deps = [
+    "//net",
+  ]
+}
+
+fuzzer_test("get_domain_and_registry_fuzzer") {
+  sources = [
+    "base/registry_controlled_domains/get_domain_and_registry_fuzzer.cc",
+  ]
+  deps = [
+    "//base",
+    "//base:i18n",
+    "//net",
+  ]
+}
+
+fuzzer_test("parse_cookie_line_fuzzer") {
+  sources = [
+    "cookies/parse_cookie_line_fuzzer.cc",
+  ]
+  deps = [
+    "//net",
+  ]
 }
 
 buildflag_header("features") {
