@@ -41,6 +41,12 @@
 
 namespace blink {
 
+// Android special locale for retrieving the color emoji font
+// based on the proposed changes in UTR #51 for introducing
+// an Emoji script code:
+// http://www.unicode.org/reports/tr51/proposed.html#Emoji_Script
+static const char* kAndroidColorEmojiLocale = "und-Zsye";
+
 // SkFontMgr requires script-based locale names, like "zh-Hant" and "zh-Hans",
 // instead of "zh-CN" and "zh-TW".
 static CString toSkFontMgrLocale(const String& locale)
@@ -58,11 +64,16 @@ static CString toSkFontMgrLocale(const String& locale)
     }
 }
 
-static AtomicString getFamilyNameForCharacter(UChar32 c, const FontDescription& fontDescription)
+static AtomicString getFamilyNameForCharacter(UChar32 c, const FontDescription& fontDescription, FontFallbackPriority fallbackPriority)
 {
+    const size_t kMaxLocales = 4;
     RefPtr<SkFontMgr> fm = adoptRef(SkFontMgr::RefDefault());
-    const char* bcp47Locales[3];
-    int localeCount = 0;
+    const char* bcp47Locales[kMaxLocales];
+    size_t localeCount = 0;
+
+    if (fallbackPriority == FontFallbackPriority::EmojiEmoji) {
+        bcp47Locales[localeCount++] = kAndroidColorEmojiLocale;
+    }
     if (const char* hanLocale = AcceptLanguagesResolver::preferredHanSkFontMgrLocale())
         bcp47Locales[localeCount++] = hanLocale;
     CString defaultLocale = toSkFontMgrLocale(defaultLanguage());
@@ -72,6 +83,7 @@ static AtomicString getFamilyNameForCharacter(UChar32 c, const FontDescription& 
         fontLocale = toSkFontMgrLocale(fontDescription.locale());
         bcp47Locales[localeCount++] = fontLocale.data();
     }
+    ASSERT_WITH_SECURITY_IMPLICATION(localeCount < kMaxLocales);
     RefPtr<SkTypeface> typeface = adoptRef(fm->matchFamilyStyleCharacter(0, SkFontStyle(), bcp47Locales, localeCount, c));
     if (!typeface)
         return emptyAtom;
@@ -81,9 +93,9 @@ static AtomicString getFamilyNameForCharacter(UChar32 c, const FontDescription& 
     return skiaFamilyName.c_str();
 }
 
-PassRefPtr<SimpleFontData> FontCache::fallbackFontForCharacter(const FontDescription& fontDescription, UChar32 c, const SimpleFontData*)
+PassRefPtr<SimpleFontData> FontCache::fallbackFontForCharacter(const FontDescription& fontDescription, UChar32 c, const SimpleFontData*, FontFallbackPriority fallbackPriority)
 {
-    AtomicString familyName = getFamilyNameForCharacter(c, fontDescription);
+    AtomicString familyName = getFamilyNameForCharacter(c, fontDescription, fallbackPriority);
     if (familyName.isEmpty())
         return getLastResortFallbackFont(fontDescription, DoNotRetain);
     return fontDataFromFontPlatformData(getFontPlatformData(fontDescription, FontFaceCreationParams(familyName)), DoNotRetain);
@@ -109,7 +121,7 @@ AtomicString FontCache::getGenericFamilyNameForScript(const AtomicString& family
         return familyName;
     }
 
-    return getFamilyNameForCharacter(examplerChar, fontDescription);
+    return getFamilyNameForCharacter(examplerChar, fontDescription, FontFallbackPriority::Text);
 }
 
 } // namespace blink

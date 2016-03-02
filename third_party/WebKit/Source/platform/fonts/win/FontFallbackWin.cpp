@@ -386,7 +386,7 @@ UScriptCode getScript(int ucs4)
     return script;
 }
 
-const UChar* getFontBasedOnUnicodeBlock(int ucs4, SkFontMgr* fontManager)
+const UChar* getFontBasedOnUnicodeBlock(UBlockCode blockCode, SkFontMgr* fontManager)
 {
     static const UChar* emojiFonts[] = {L"Segoe UI Emoji", L"Segoe UI Symbol"};
     static const UChar* mathFonts[] = {L"Cambria Math", L"Segoe UI Symbol", L"Code2000"};
@@ -410,8 +410,7 @@ const UChar* getFontBasedOnUnicodeBlock(int ucs4, SkFontMgr* fontManager)
         initialized = true;
     }
 
-    UBlockCode block = ublock_getCode(ucs4);
-    switch (block) {
+    switch (blockCode) {
     case UBLOCK_EMOTICONS:
     case UBLOCK_ENCLOSED_ALPHANUMERIC_SUPPLEMENT:
         return emojiFont;
@@ -493,11 +492,14 @@ const UChar* getFallbackFamily(UChar32 character,
     UScriptCode contentScript,
     const AtomicString& contentLocale,
     UScriptCode* scriptChecked,
+    FontFallbackPriority fallbackPriority,
     SkFontMgr* fontManager)
 {
     ASSERT(character);
     ASSERT(fontManager);
-    const UChar* family = getFontBasedOnUnicodeBlock(character, fontManager);
+    UBlockCode block = fallbackPriority == FontFallbackPriority::EmojiEmoji ?
+        UBLOCK_EMOTICONS : ublock_getCode(character);
+    const UChar* family = getFontBasedOnUnicodeBlock(block, fontManager);
     if (family) {
         if (scriptChecked)
             *scriptChecked = USCRIPT_INVALID_CODE;

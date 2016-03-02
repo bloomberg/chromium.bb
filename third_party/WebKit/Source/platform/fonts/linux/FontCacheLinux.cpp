@@ -50,11 +50,24 @@ void FontCache::getFontForCharacter(UChar32 c, const char* preferredLocale, Font
 }
 
 #if !OS(ANDROID)
-PassRefPtr<SimpleFontData> FontCache::fallbackFontForCharacter(const FontDescription& fontDescription, UChar32 c, const SimpleFontData*)
+PassRefPtr<SimpleFontData> FontCache::fallbackFontForCharacter(
+    const FontDescription& fontDescription,
+    UChar32 c,
+    const SimpleFontData*,
+    FontFallbackPriority fallbackPriority)
 {
+    if (fallbackPriority == FontFallbackPriority::EmojiEmoji) {
+        // FIXME crbug.com/591346: We're overriding the fallback character here
+        // with the FAMILY emoji in the hope to find a suitable emoji font.
+        // This should be improved by supporting fallback for character
+        // sequences like DIGIT ONE + COMBINING keycap etc.
+        c = familyCharacter;
+    }
+
     // First try the specified font with standard style & weight.
-    if (fontDescription.style() == FontStyleItalic
-        || fontDescription.weight() >= FontWeight600) {
+    if (fallbackPriority != FontFallbackPriority::EmojiEmoji
+        && (fontDescription.style() == FontStyleItalic
+        || fontDescription.weight() >= FontWeight600)) {
         RefPtr<SimpleFontData> fontData = fallbackOnStandardFontStyle(
             fontDescription, c);
         if (fontData)

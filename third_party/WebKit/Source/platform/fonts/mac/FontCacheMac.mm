@@ -53,6 +53,8 @@
 
 namespace blink {
 
+const char* kColorEmojiFontMac = "Apple Color Emoji";
+
 static void invalidateFontCache()
 {
     if (!isMainThread()) {
@@ -87,8 +89,19 @@ static inline bool isAppKitFontWeightBold(NSInteger appKitFontWeight)
     return appKitFontWeight >= 7;
 }
 
-PassRefPtr<SimpleFontData> FontCache::fallbackFontForCharacter(const FontDescription& fontDescription, UChar32 character, const SimpleFontData* fontDataToSubstitute)
+PassRefPtr<SimpleFontData> FontCache::fallbackFontForCharacter(
+    const FontDescription& fontDescription,
+    UChar32 character,
+    const SimpleFontData* fontDataToSubstitute,
+    FontFallbackPriority fallbackPriority)
 {
+
+    if (fallbackPriority == FontFallbackPriority::EmojiEmoji) {
+        RefPtr<SimpleFontData> emojiFont = getFontData(fontDescription, AtomicString(kColorEmojiFontMac));
+        if (emojiFont)
+            return emojiFont;
+    }
+
     // FIXME: We should fix getFallbackFamily to take a UChar32
     // and remove this split-to-UChar16 code.
     UChar codeUnits[2];

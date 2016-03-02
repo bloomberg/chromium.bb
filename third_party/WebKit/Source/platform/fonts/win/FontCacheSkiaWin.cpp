@@ -115,11 +115,13 @@ FontCache::FontCache()
 // font that can be used to render the given range of characters.
 PassRefPtr<SimpleFontData> FontCache::fallbackFontForCharacter(
     const FontDescription& fontDescription, UChar32 character,
-    const SimpleFontData* originalFontData)
+    const SimpleFontData* originalFontData,
+    FontFallbackPriority fallbackPriority)
 {
     // First try the specified font with standard style & weight.
-    if (fontDescription.style() == FontStyleItalic
-        || fontDescription.weight() >= FontWeightBold) {
+    if (fallbackPriority != FontFallbackPriority::EmojiEmoji
+        && (fontDescription.style() == FontStyleItalic
+        || fontDescription.weight() >= FontWeightBold)) {
         RefPtr<SimpleFontData> fontData = fallbackOnStandardFontStyle(
             fontDescription, character);
         if (fontData)
@@ -132,6 +134,7 @@ PassRefPtr<SimpleFontData> FontCache::fallbackFontForCharacter(
         fontDescription.script(),
         fontDescription.locale(),
         &script,
+        fallbackPriority,
         m_fontManager.get());
     FontPlatformData* data = 0;
     if (family) {

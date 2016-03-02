@@ -34,6 +34,7 @@
 #include "platform/fonts/FallbackListCompositeKey.h"
 #include "platform/fonts/FontCacheKey.h"
 #include "platform/fonts/FontFaceCreationParams.h"
+#include "platform/fonts/FontFallbackPriority.h"
 #include "wtf/Allocator.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
@@ -75,7 +76,10 @@ public:
 
     // This method is implemented by the plaform and used by
     // FontFastPath to lookup the font for a given character.
-    PassRefPtr<SimpleFontData> fallbackFontForCharacter(const FontDescription&, UChar32, const SimpleFontData* fontDataToSubstitute);
+    PassRefPtr<SimpleFontData> fallbackFontForCharacter(const FontDescription&,
+        UChar32,
+        const SimpleFontData* fontDataToSubstitute,
+        FontFallbackPriority = FontFallbackPriority::Text);
 
     // Also implemented by the platform.
     void platformInit();

@@ -33,6 +33,7 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/fonts/FontDescription.h"
+#include "platform/fonts/FontFallbackPriority.h"
 #include <unicode/locid.h>
 #include <unicode/uscript.h>
 #include <usp10.h>
@@ -52,6 +53,7 @@ PLATFORM_EXPORT const UChar* getFallbackFamily(UChar32 character,
     UScriptCode contentScript,
     const AtomicString& contentLocale,
     UScriptCode* scriptChecked,
+    FontFallbackPriority,
     SkFontMgr* fontManager);
 
 } // namespace blink
