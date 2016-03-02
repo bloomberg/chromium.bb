@@ -168,7 +168,8 @@ cr.define('help', function() {
         };
 
         $('controlled-feature-icon').onclick = function(e) {
-          var content = document.createElement('div');
+          var content = /** @type {HTMLElement} */(
+              document.createElement('div'));
           content.textContent =
               loadTimeData.getString('updateDisabledByPolicy');
           var bubble = new cr.ui.AutoCloseBubble;
