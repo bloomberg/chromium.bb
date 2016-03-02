@@ -10,6 +10,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/devtools_frontend_host.h"
 #include "content/public/browser/navigation_entry.h"
+#include "headless/grit/headless_lib_resources.h"
 #include "headless/lib/browser/headless_browser_context.h"
 #include "net/base/net_errors.h"
 #include "net/socket/tcp_server_socket.h"
@@ -68,7 +69,8 @@ HeadlessDevToolsDelegate::HeadlessDevToolsDelegate() {}
 HeadlessDevToolsDelegate::~HeadlessDevToolsDelegate() {}
 
 std::string HeadlessDevToolsDelegate::GetDiscoveryPageHTML() {
-  return std::string();
+  return ResourceBundle::GetSharedInstance().GetRawDataResource(
+      IDR_HEADLESS_LIB_DEVTOOLS_DISCOVERY_PAGE).as_string();
 }
 
 std::string HeadlessDevToolsDelegate::GetFrontendResource(

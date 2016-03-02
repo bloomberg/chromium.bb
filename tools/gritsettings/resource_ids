@@ -302,6 +302,9 @@
   "chrome/browser/resources/settings/settings_resources.grd": {
     "structures": [30920],
   },
+  "headless/lib/resources/headless_lib_resources.grd": {
+    "includes": [30940],
+  },
 
   # Resource ids starting at 31000 are reserved for projects built on Chromium.
 }
