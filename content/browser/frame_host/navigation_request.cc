@@ -125,7 +125,6 @@ scoped_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
   // TODO(clamy): See if the navigation start time should be measured in the
   // renderer and sent to the browser instead of being measured here.
   // TODO(clamy): The pending history list offset should be properly set.
-  // TODO(clamy): Set has_committed_real_load.
   RequestNavigationParams request_params(
       false,                   // is_overriding_user_agent
       std::vector<GURL>(),     // redirects
@@ -135,7 +134,7 @@ scoped_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
       -1,                      // page_id
       0,                       // nav_entry_id
       false,                   // is_same_document_history_load
-      false,                   // has_committed_real_load
+      frame_tree_node->has_committed_real_load(),
       false,                   // intended_as_new_entry
       -1,                      // pending_history_list_offset
       current_history_list_offset, current_history_list_length,

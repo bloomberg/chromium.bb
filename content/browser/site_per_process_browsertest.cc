@@ -1441,11 +1441,30 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ProcessTransferAfterError) {
   NavigateIframeToURL(shell()->web_contents(), "child-0", url_b);
   EXPECT_TRUE(observer.last_navigation_succeeded());
   EXPECT_EQ(url_b, observer.last_navigation_url());
+  EXPECT_EQ(2, shell()->web_contents()->GetController().GetEntryCount());
+
+  // PlzNavigate: Ensure that we have created a new process for the subframe.
+  if (IsBrowserSideNavigationEnabled()) {
+    EXPECT_EQ(
+        " Site A ------------ proxies for B\n"
+        "   +--Site B ------- proxies for A\n"
+        "Where A = http://a.com/\n"
+        "      B = http://b.com/",
+        DepictFrameTree(root));
+    EXPECT_NE(shell()->web_contents()->GetSiteInstance(),
+              child->current_frame_host()->GetSiteInstance());
+  }
 
   // The FrameTreeNode should update its URL (so that we don't affect other uses
   // of the API), but the frame's last_successful_url shouldn't change and the
   // origin should be empty.
-  EXPECT_EQ(url_a, child->current_frame_host()->last_successful_url());
+  // PlzNavigate: We have switched RenderFrameHosts for the subframe, so the
+  // last succesful url should be empty (since the frame only loaded an error
+  // page).
+  if (IsBrowserSideNavigationEnabled())
+    EXPECT_EQ(GURL(), child->current_frame_host()->last_successful_url());
+  else
+    EXPECT_EQ(url_a, child->current_frame_host()->last_successful_url());
   EXPECT_EQ(url_b, child->current_url());
   EXPECT_EQ("null", child->current_origin().Serialize());
 
@@ -1462,6 +1481,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ProcessTransferAfterError) {
             child->current_origin().Serialize() + '/');
 
   // Ensure that we have created a new process for the subframe.
+  // PlzNavigate: the subframe should still be in its separate process.
   EXPECT_EQ(
       " Site A ------------ proxies for B\n"
       "   +--Site B ------- proxies for A\n"

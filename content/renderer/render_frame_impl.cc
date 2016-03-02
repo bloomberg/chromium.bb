@@ -4705,6 +4705,13 @@ void RenderFrameImpl::OnFailedNavigation(
 
   GetContentClient()->SetActiveURL(common_params.url);
 
+  // If this frame isn't in the same process as the main frame, it may naively
+  // assume that this is the first navigation in the iframe, but this may not
+  // actually be the case. Inform the frame's state machine if this frame has
+  // already committed other loads.
+  if (request_params.has_committed_real_load && frame_->parent())
+    frame_->setCommittedFirstRealLoad();
+
   pending_navigation_params_.reset(new NavigationParams(
       common_params, StartNavigationParams(), request_params));
 
