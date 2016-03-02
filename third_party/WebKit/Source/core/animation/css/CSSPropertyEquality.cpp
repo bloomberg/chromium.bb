@@ -314,7 +314,7 @@ bool CSSPropertyEquality::propertiesEqual(CSSPropertyID prop, const ComputedStyl
     case CSSPropertyWordSpacing:
         return a.wordSpacing() == b.wordSpacing();
     case CSSPropertyD:
-        return a.svgStyle().d()->equals(*b.svgStyle().d());
+        return dataEquivalent(a.svgStyle().d(), b.svgStyle().d());
     case CSSPropertyCx:
         return a.svgStyle().cx() == b.svgStyle().cx();
     case CSSPropertyCy:

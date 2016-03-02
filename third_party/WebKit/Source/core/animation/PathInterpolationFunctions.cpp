@@ -72,6 +72,15 @@ InterpolationValue PathInterpolationFunctions::convertValue(const SVGPathByteStr
     return InterpolationValue(result.release(), SVGPathNonInterpolableValue::create(pathSegTypes));
 }
 
+InterpolationValue PathInterpolationFunctions::convertValue(const StylePath* stylePath)
+{
+    if (stylePath)
+        return convertValue(stylePath->byteStream());
+
+    OwnPtr<SVGPathByteStream> emptyPath = SVGPathByteStream::create();
+    return convertValue(*emptyPath);
+}
+
 class UnderlyingPathSegTypesChecker : public InterpolationType::ConversionChecker {
 public:
     ~UnderlyingPathSegTypesChecker() final {}

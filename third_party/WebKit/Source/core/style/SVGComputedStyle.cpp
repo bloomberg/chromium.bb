@@ -186,17 +186,8 @@ bool SVGComputedStyle::diffNeedsLayoutAndPaintInvalidation(const SVGComputedStyl
     }
 
     // The StyleLayoutData properties require a re-layout.
-    if (layout.get() != other->layout.get()) {
-        if (layout->x != other->layout->x
-            || layout->y != other->layout->y
-            || layout->r != other->layout->r
-            || layout->rx != other->layout->rx
-            || layout->ry != other->layout->ry
-            || layout->cx != other->layout->cx
-            || layout->cy != other->layout->cy
-            || !layout->d->equals(*other->layout->d))
-            return true;
-    }
+    if (layout.get() != other->layout.get() && *layout != *other->layout)
+        return true;
 
     return false;
 }

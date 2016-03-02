@@ -107,7 +107,6 @@ public:
     static PassRefPtr<RotateTransformOperation> convertRotate(StyleResolverState&, const CSSValue&);
     static PassRefPtr<ScaleTransformOperation> convertScale(StyleResolverState&, const CSSValue&);
     static RespectImageOrientationEnum convertImageOrientation(StyleResolverState&, const CSSValue&);
-    static PassRefPtr<StylePath> convertPath(StyleResolverState&, const CSSValue&);
     static PassRefPtr<StylePath> convertPathOrNone(StyleResolverState&, const CSSValue&);
     static StyleMotionRotation convertMotionRotation(const CSSValue&);
     template <CSSValueID cssValueFor0, CSSValueID cssValueFor100> static Length convertPositionLength(StyleResolverState&, const CSSValue&);

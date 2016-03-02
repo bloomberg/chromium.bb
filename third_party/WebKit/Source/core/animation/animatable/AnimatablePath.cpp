@@ -4,6 +4,7 @@
 
 #include "core/animation/animatable/AnimatablePath.h"
 
+#include "core/style/DataEquivalency.h"
 #include "core/svg/SVGPathBlender.h"
 #include "core/svg/SVGPathByteStreamBuilder.h"
 #include "core/svg/SVGPathByteStreamSource.h"
@@ -15,8 +16,11 @@ bool AnimatablePath::usesDefaultInterpolationWith(const AnimatableValue* value) 
     // Default interpolation is used if the paths have different lengths,
     // or the paths have a segment with different types (ignoring "relativeness").
 
+    const StylePath* toPath = toAnimatablePath(value)->path();
+    if (!m_path || !toPath)
+        return true;
     SVGPathByteStreamSource fromSource(path()->byteStream());
-    SVGPathByteStreamSource toSource(toAnimatablePath(value)->path()->byteStream());
+    SVGPathByteStreamSource toSource(toPath->byteStream());
 
     while (fromSource.hasMoreData()) {
         if (!toSource.hasMoreData())
@@ -51,14 +55,9 @@ PassRefPtr<AnimatableValue> AnimatablePath::interpolateTo(const AnimatableValue*
     return AnimatablePath::create(StylePath::create(byteStream.release()));
 }
 
-StylePath* AnimatablePath::path() const
-{
-    return m_path.get();
-}
-
 bool AnimatablePath::equalTo(const AnimatableValue* value) const
 {
-    return m_path->equals(*toAnimatablePath(value)->path());
+    return dataEquivalent(m_path.get(), toAnimatablePath(value)->path());
 }
 
 } // namespace blink

@@ -54,6 +54,7 @@ public:
     ~SVGPath() override;
 
     const SVGPathByteStream& byteStream() const { return m_pathValue->byteStream(); }
+    StylePath* stylePath() const { return m_pathValue->stylePath(); }
     CSSPathValue* pathValue() const { return m_pathValue.get(); }
 
     // SVGPropertyBase:

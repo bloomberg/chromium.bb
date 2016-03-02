@@ -26,10 +26,6 @@ CSSPathValue::CSSPathValue(PassRefPtr<StylePath> stylePath)
     ASSERT(m_stylePath);
 }
 
-CSSPathValue::~CSSPathValue()
-{
-}
-
 namespace {
 
 PassRefPtrWillBeRawPtr<CSSPathValue> createPathValue()
@@ -49,14 +45,9 @@ CSSPathValue* CSSPathValue::emptyPathValue()
     return empty.get();
 }
 
-StylePath* CSSPathValue::stylePath() const
-{
-    return m_stylePath.get();
-}
-
 String CSSPathValue::customCSSText() const
 {
-    return "path('" + pathString() + "')";
+    return "path('" + buildStringFromByteStream(byteStream()) + "')";
 }
 
 bool CSSPathValue::equals(const CSSPathValue& other) const
@@ -67,11 +58,6 @@ bool CSSPathValue::equals(const CSSPathValue& other) const
 DEFINE_TRACE_AFTER_DISPATCH(CSSPathValue)
 {
     CSSValue::traceAfterDispatch(visitor);
-}
-
-String CSSPathValue::pathString() const
-{
-    return buildStringFromByteStream(byteStream());
 }
 
 } // namespace blink

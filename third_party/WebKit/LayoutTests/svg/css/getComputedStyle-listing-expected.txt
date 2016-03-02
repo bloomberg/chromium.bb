@@ -137,7 +137,7 @@ content:
 cursor: auto
 cx: 0px
 cy: 0px
-d: path('')
+d: none
 direction: ltr
 display: inline
 dominant-baseline: auto

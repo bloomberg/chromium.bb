@@ -27,6 +27,7 @@
 
 #include "core/style/SVGComputedStyleDefs.h"
 
+#include "core/style/DataEquivalency.h"
 #include "core/style/SVGComputedStyle.h"
 
 namespace blink {
@@ -238,7 +239,7 @@ bool StyleLayoutData::operator==(const StyleLayoutData& other) const
         && ry == other.ry
         && cx == other.cx
         && cy == other.cy
-        && d->equals(*other.d);
+        && dataEquivalent(d, other.d);
 }
 
 } // namespace blink

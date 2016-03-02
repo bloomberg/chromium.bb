@@ -19,7 +19,7 @@ public:
         return adoptRef(new AnimatablePath(path));
     }
 
-    StylePath* path() const;
+    StylePath* path() const { return m_path.get(); }
 
 protected:
     PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const override;
@@ -29,7 +29,6 @@ private:
     explicit AnimatablePath(PassRefPtr<StylePath> path)
         : m_path(path)
     {
-        ASSERT(m_path);
     }
     AnimatableType type() const override { return TypePath; }
     bool equalTo(const AnimatableValue*) const override;

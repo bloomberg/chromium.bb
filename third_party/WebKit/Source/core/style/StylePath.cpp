@@ -54,17 +54,12 @@ bool StylePath::isClosed() const
     return path().isClosed();
 }
 
-const SVGPathByteStream& StylePath::byteStream() const
-{
-    return *m_byteStream;
-}
-
 PassRefPtrWillBeRawPtr<CSSValue> StylePath::computedCSSValue() const
 {
     return CSSPathValue::create(const_cast<StylePath*>(this));
 }
 
-bool StylePath::equals(const StylePath& other) const
+bool StylePath::operator==(const StylePath& other) const
 {
     return *m_byteStream == *other.m_byteStream;
 }

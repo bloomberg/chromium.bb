@@ -956,15 +956,10 @@ RespectImageOrientationEnum StyleBuilderConverter::convertImageOrientation(Style
     return primitiveValue.getValueID() == CSSValueFromImage ? RespectImageOrientation : DoNotRespectImageOrientation;
 }
 
-PassRefPtr<StylePath> StyleBuilderConverter::convertPath(StyleResolverState&, const CSSValue& value)
-{
-    return toCSSPathValue(value).stylePath();
-}
-
 PassRefPtr<StylePath> StyleBuilderConverter::convertPathOrNone(StyleResolverState& state, const CSSValue& value)
 {
     if (value.isPathValue())
-        return convertPath(state, value);
+        return toCSSPathValue(value).stylePath();
     ASSERT(value.isPrimitiveValue() && toCSSPrimitiveValue(value).getValueID() == CSSValueNone);
     return nullptr;
 }

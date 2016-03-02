@@ -29,6 +29,12 @@ assertNoInterpolation({
   to: "path('m 0 0 h 3')"
 });
 
+assertNoInterpolation({
+  property: 'd',
+  from: "path('M 1 2 L 3 4 Z')",
+  to: "none"
+});
+
 // Distinct segment types
 assertNoInterpolation({
   property: 'd',

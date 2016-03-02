@@ -28,11 +28,11 @@ public:
     float length() const;
     bool isClosed() const;
 
-    const SVGPathByteStream& byteStream() const;
+    const SVGPathByteStream& byteStream() const { return *m_byteStream; }
 
     PassRefPtrWillBeRawPtr<CSSValue> computedCSSValue() const;
 
-    bool equals(const StylePath&) const;
+    bool operator==(const StylePath&) const;
 
 private:
     explicit StylePath(PassOwnPtr<SVGPathByteStream>);

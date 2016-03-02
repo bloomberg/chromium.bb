@@ -45,8 +45,7 @@ public:
     SVGAnimatedPath* path() const { return m_path.get(); }
     SVGAnimatedNumber* pathLength() const { return m_pathLength.get(); }
     float pathLengthScaleFactor() const;
-
-    const SVGPathByteStream& pathByteStream() const;
+    const SVGPathByteStream& pathByteStream() const { return stylePath()->byteStream(); }
 
     bool isPresentationAttribute(const QualifiedName&) const override;
     bool isPresentationAttributeWithSVGDOM(const QualifiedName&) const override;

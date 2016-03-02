@@ -19,11 +19,10 @@ class CSSPathValue : public CSSValue {
 public:
     static PassRefPtrWillBeRawPtr<CSSPathValue> create(PassRefPtr<StylePath>);
     static PassRefPtrWillBeRawPtr<CSSPathValue> create(PassOwnPtr<SVGPathByteStream>);
-    ~CSSPathValue();
 
     static CSSPathValue* emptyPathValue();
 
-    StylePath* stylePath() const;
+    StylePath* stylePath() const { return m_stylePath.get(); }
     String customCSSText() const;
 
     bool equals(const CSSPathValue&) const;
@@ -31,7 +30,6 @@ public:
     DECLARE_TRACE_AFTER_DISPATCH();
 
     const SVGPathByteStream& byteStream() const { return m_stylePath->byteStream(); }
-    String pathString() const;
 
 private:
     CSSPathValue(PassRefPtr<StylePath>);

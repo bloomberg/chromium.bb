@@ -29,4 +29,21 @@ assertSVGResponsive({
     ],
   }],
 });
+
+assertSVGResponsive({
+  targetTag: 'path',
+  property: 'd',
+  getter(target) {
+    return target.getAttribute('d');
+  },
+  from: '',
+  to: neutralKeyframe,
+  configurations: [{
+    state: {underlying: 'm 10 10 h 100'},
+    expect: [
+      {at: 0.25, is: ''},
+      {at: 0.75, is: 'm 10 10 h 100'},
+    ],
+  }],
+});
 </script>

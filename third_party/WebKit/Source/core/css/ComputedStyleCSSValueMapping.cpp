@@ -2642,7 +2642,9 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
         // the above properties are not yet implemented in the engine
         return nullptr;
     case CSSPropertyD:
-        return svgStyle.d()->computedCSSValue();
+        if (const StylePath* stylePath = svgStyle.d())
+            return stylePath->computedCSSValue();
+        return cssValuePool().createIdentifierValue(CSSValueNone);
     case CSSPropertyCx:
         return zoomAdjustedPixelValueForLength(svgStyle.cx(), style);
     case CSSPropertyCy:

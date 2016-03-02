@@ -1960,7 +1960,6 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumePath(CSSParserTokenRange& range)
     if (range.peek().functionId() != CSSValuePath)
         return nullptr;
 
-    // FIXME: Add support for <fill-rule>.
     CSSParserTokenRange functionRange = range;
     CSSParserTokenRange functionArgs = consumeFunction(functionRange);
 
@@ -1974,6 +1973,8 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumePath(CSSParserTokenRange& range)
         return nullptr;
 
     range = functionRange;
+    if (byteStream->isEmpty())
+        return cssValuePool().createIdentifierValue(CSSValueNone);
     return CSSPathValue::create(byteStream.release());
 }
 
@@ -3737,7 +3738,6 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
     case CSSPropertyTextDecorationLine:
         return consumeTextDecorationLine(m_range);
     case CSSPropertyD:
-        return consumePath(m_range);
     case CSSPropertyMotionPath:
         return consumePathOrNone(m_range);
     case CSSPropertyMotionOffset:

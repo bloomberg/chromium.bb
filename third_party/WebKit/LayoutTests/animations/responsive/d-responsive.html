@@ -18,6 +18,12 @@ assertCSSResponsive({
       {at: 0.25, is: "path('M 7 5 H 60')"},
       {at: 0.75, is: "path('M 9 15 H 40')"},
     ],
+  }, {
+    state: {inherited: "none"},
+    expect: [
+      {at: 0.25, is: "none"},
+      {at: 0.75, is: "path('M 10 20 H 30')"},
+    ],
   }],
 });
 </script>
