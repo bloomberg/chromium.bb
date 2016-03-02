@@ -144,6 +144,16 @@ assertInterpolation({
 
 assertNoInterpolation({
   property: 'border-image-width',
+  from: '10px auto auto 20',
+  to: '110px auto auto 120'
+});
+assertNoInterpolation({
+  property: 'border-image-width',
+  from: '10px auto auto 20',
+  to: '110px auto 120 auto'
+});
+assertNoInterpolation({
+  property: 'border-image-width',
   from: '10px',
   to: '20'
 });
@@ -158,8 +168,8 @@ assertNoInterpolation({
   to: '20'
 });
 assertNoInterpolation({
-  property: 'border-image-width'
- , from: '10',
+  property: 'border-image-width',
+  from: '10',
   to: '20%'
 });
 </script>

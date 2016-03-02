@@ -100,5 +100,18 @@ assertInterpolation({
   {at: 1, is: '1'},
   {at: 1.5, is: '1.5'},
 ]);
+
+assertInterpolation({
+  property: 'border-image-outset',
+  from: '1 2 3px 4px',
+  to: '101 102 103px 104px',
+}, [
+  {at: -0.3, is: '0 0 0px 0px'}, // Non-negative
+  {at: 0, is: '1 2 3px 4px'},
+  {at: 0.3, is: '31 32 33px 34px'},
+  {at: 0.6, is: '61 62 63px 64px'},
+  {at: 1, is: '101 102 103px 104px'},
+  {at: 1.5, is: '151 152 153px 154px'},
+]);
 </script>
 </body>
