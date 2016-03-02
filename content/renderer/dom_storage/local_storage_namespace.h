@@ -9,13 +9,13 @@
 #include "third_party/WebKit/public/platform/WebStorageNamespace.h"
 
 namespace content {
-class StoragePartitionService;
+class LocalStorageCachedAreas;
 
-// An in-process implementation of LocalStorage using a LevelDB Mojo service.
 class LocalStorageNamespace : public blink::WebStorageNamespace {
  public:
+  // |local_storage_cached_areas| is guaranteed to outlive this object.
   explicit LocalStorageNamespace(
-      StoragePartitionService* storage_partition_service);
+      LocalStorageCachedAreas* local_storage_cached_areas);
   ~LocalStorageNamespace() override;
 
   // blink::WebStorageNamespace:
@@ -24,7 +24,7 @@ class LocalStorageNamespace : public blink::WebStorageNamespace {
   bool isSameNamespace(const WebStorageNamespace&) const override;
 
  private:
-  StoragePartitionService* const storage_partition_service_;
+  LocalStorageCachedAreas* const local_storage_cached_areas_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalStorageNamespace);
 };

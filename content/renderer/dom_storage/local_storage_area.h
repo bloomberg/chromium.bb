@@ -6,26 +6,21 @@
 #define CONTENT_RENDERER_DOM_STORAGE_LOCAL_STORAGE_AREA_H_
 
 #include "base/macros.h"
-#include "content/common/leveldb_wrapper.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "base/memory/ref_counted.h"
+#include "content/renderer/dom_storage/local_storage_cached_area.h"
 #include "third_party/WebKit/public/platform/WebStorageArea.h"
-#include "url/origin.h"
 
 namespace content {
-class StoragePartitionService;
 
-// Maintains a complete cache of the origin's Map of key/value pairs for fast
-// access. The cache is primed on first access and changes are written to the
-// backend through the level db interface pointer. Mutations originating in
-// other processes are applied to the cache via the ApplyMutation method.
-class LocalStorageArea : public blink::WebStorageArea,
-                         public LevelDBObserver {
+// There could be n instances of this class for the same origin in a renderer
+// process. It delegates to the one LocalStorageCachedArea instance in a process
+// for a given origin.
+class LocalStorageArea : public blink::WebStorageArea {
  public:
-  LocalStorageArea(const url::Origin& origin,
-                   StoragePartitionService* storage_partition_service);
+  explicit LocalStorageArea(scoped_refptr<LocalStorageCachedArea> cached_area);
   ~LocalStorageArea() override;
 
-  // blink::WebStorageArea.h:
+  // blink::WebStorageArea:
   unsigned length() override;
   blink::WebString key(unsigned index) override;
   blink::WebString getItem(const blink::WebString& key) override;
@@ -37,19 +32,8 @@ class LocalStorageArea : public blink::WebStorageArea,
                   const blink::WebURL& page_url) override;
   void clear(const blink::WebURL& url) override;
 
-  // LevelDBObserver:
-  void KeyChanged(mojo::Array<uint8_t> key,
-                  mojo::Array<uint8_t> new_value,
-                  mojo::Array<uint8_t> old_value,
-                  const mojo::String& source) override;
-  void KeyDeleted(mojo::Array<uint8_t> key,
-                  const mojo::String& source) override;
-  void AllDeleted(const mojo::String& source) override;
-
  private:
-  url::Origin origin_;
-  LevelDBWrapperPtr leveldb_;
-  mojo::Binding<LevelDBObserver> binding_;
+  scoped_refptr<LocalStorageCachedArea> cached_area_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalStorageArea);
 };

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/level_db_wrapper_impl.h"
+#include "content/browser/leveldb_wrapper_impl.h"
 
 #include "base/bind.h"
 
@@ -15,14 +15,11 @@ LevelDBWrapperImpl::LevelDBWrapperImpl(
       &LevelDBWrapperImpl::OnConnectionError, base::Unretained(this)));
 }
 
-void LevelDBWrapperImpl::Bind(mojo::InterfaceRequest<LevelDBWrapper> request,
-                              LevelDBObserverPtr observer) {
-  // TODO(jam): store observer and call it when changes occur.
+void LevelDBWrapperImpl::Bind(mojo::InterfaceRequest<LevelDBWrapper> request) {
   bindings_.AddBinding(this, std::move(request));
 }
 
 LevelDBWrapperImpl::~LevelDBWrapperImpl() {
-  no_bindings_callback_.Run();
 }
 
 void LevelDBWrapperImpl::Put(mojo::Array<uint8_t> key,
@@ -36,15 +33,19 @@ void LevelDBWrapperImpl::Delete(mojo::Array<uint8_t> key,
                                 const DeleteCallback& callback) {
 }
 
-void LevelDBWrapperImpl::DeleteAll(const mojo::String& source,
+void LevelDBWrapperImpl::DeleteAll(LevelDBObserverPtr observer,
+                                   const mojo::String& source,
                                    const DeleteAllCallback& callback) {
+  // TODO(jam): store observer and call it when changes occur.
 }
 
 void LevelDBWrapperImpl::Get(mojo::Array<uint8_t> key,
                              const GetCallback& callback) {
 }
 
-void LevelDBWrapperImpl::GetAll(const GetAllCallback& callback) {
+void LevelDBWrapperImpl::GetAll(LevelDBObserverPtr observer,
+                                const GetAllCallback& callback) {
+  // TODO(jam): store observer and call it when changes occur.
 }
 
 void LevelDBWrapperImpl::OnConnectionError() {

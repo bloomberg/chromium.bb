@@ -8,6 +8,5 @@ import "content/common/leveldb_wrapper.mojom";
 
 // Returns services related to the current storage partition.
 interface StoragePartitionService {
-  OpenLocalStorage(string origin, LevelDBObserver observer,
-                   LevelDBWrapper& database);
+  OpenLocalStorage(string origin, LevelDBWrapper& database);
 };

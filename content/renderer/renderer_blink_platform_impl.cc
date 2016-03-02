@@ -57,6 +57,7 @@
 #include "content/renderer/device_sensors/device_motion_event_pump.h"
 #include "content/renderer/device_sensors/device_orientation_absolute_event_pump.h"
 #include "content/renderer/device_sensors/device_orientation_event_pump.h"
+#include "content/renderer/dom_storage/local_storage_cached_areas.h"
 #include "content/renderer/dom_storage/local_storage_namespace.h"
 #include "content/renderer/dom_storage/webstoragenamespace_impl.h"
 #include "content/renderer/gamepad_shared_memory_reader.h"
@@ -414,9 +415,13 @@ void RendererBlinkPlatformImpl::suddenTerminationChanged(bool enabled) {
 WebStorageNamespace* RendererBlinkPlatformImpl::createLocalStorageNamespace() {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kMojoLocalStorage)) {
-    return new LocalStorageNamespace(
-        RenderThreadImpl::current()->GetStoragePartitionService());
+    if (!local_storage_cached_areas_) {
+      local_storage_cached_areas_.reset(new LocalStorageCachedAreas(
+          RenderThreadImpl::current()->GetStoragePartitionService()));
+    }
+    return new LocalStorageNamespace(local_storage_cached_areas_.get());
   }
+
   return new WebStorageNamespaceImpl();
 }
 

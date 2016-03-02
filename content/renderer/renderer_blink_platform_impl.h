@@ -52,6 +52,7 @@ namespace content {
 class DeviceLightEventPump;
 class DeviceMotionEventPump;
 class DeviceOrientationEventPump;
+class LocalStorageCachedAreas;
 class PlatformEventObserverBase;
 class QuotaMessageFilter;
 class RendererClipboardDelegate;
@@ -294,6 +295,8 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   scheduler::RendererScheduler* renderer_scheduler_;  // NOT OWNED
 
   TrialTokenValidator trial_token_validator_;
+
+  scoped_ptr<LocalStorageCachedAreas> local_storage_cached_areas_;
 
   DISALLOW_COPY_AND_ASSIGN(RendererBlinkPlatformImpl);
 };

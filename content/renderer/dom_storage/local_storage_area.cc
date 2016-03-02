@@ -4,7 +4,7 @@
 
 #include "content/renderer/dom_storage/local_storage_area.h"
 
-#include "content/common/storage_partition_service.mojom.h"
+#include "third_party/WebKit/public/platform/WebURL.h"
 
 using blink::WebString;
 using blink::WebURL;
@@ -12,52 +12,40 @@ using blink::WebURL;
 namespace content {
 
 LocalStorageArea::LocalStorageArea(
-    const url::Origin& origin,
-    StoragePartitionService* storage_partition_service)
-    : origin_(origin), binding_(this) {
-  storage_partition_service->OpenLocalStorage(
-      origin_.Serialize(), binding_.CreateInterfacePtrAndBind(),
-      mojo::GetProxy(&leveldb_));
+    scoped_refptr<LocalStorageCachedArea> cached_area)
+    : cached_area_(std::move(cached_area)) {
 }
 
 LocalStorageArea::~LocalStorageArea() {
 }
 
 unsigned LocalStorageArea::length() {
-  return 0u;
+  return cached_area_->GetLength();
 }
 
 WebString LocalStorageArea::key(unsigned index) {
-  return WebString();
+  return cached_area_->GetKey(index);
 }
 
 WebString LocalStorageArea::getItem(const WebString& key) {
-  return WebString();
+  return cached_area_->GetItem(key);
 }
 
 void LocalStorageArea::setItem(
     const WebString& key, const WebString& value, const WebURL& page_url,
     WebStorageArea::Result& result) {
+  if (!cached_area_->SetItem(key, value, page_url))
+    result = ResultBlockedByQuota;
+  else
+    result = ResultOK;
 }
 
 void LocalStorageArea::removeItem(
     const WebString& key, const WebURL& page_url) {
+  cached_area_->RemoveItem(key, page_url);
 }
 
 void LocalStorageArea::clear(const WebURL& page_url) {
-}
-
-void LocalStorageArea::KeyChanged(mojo::Array<uint8_t> key,
-                                  mojo::Array<uint8_t> new_value,
-                                  mojo::Array<uint8_t> old_value,
-                                  const mojo::String& source) {
-}
-
-void LocalStorageArea::KeyDeleted(mojo::Array<uint8_t> key,
-                                  const mojo::String& source) {
-}
-
-void LocalStorageArea::AllDeleted(const mojo::String& source) {
 }
 
 }  // namespace content

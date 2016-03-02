@@ -64,7 +64,6 @@ class CONTENT_EXPORT DOMStorageContextWrapper :
   // See StoragePartitionService interface.
   void OpenLocalStorage(
       const mojo::String& origin,
-      LevelDBObserverPtr observer,
       mojo::InterfaceRequest<LevelDBWrapper> request);
 
  private:

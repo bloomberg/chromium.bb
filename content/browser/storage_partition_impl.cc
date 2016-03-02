@@ -593,10 +593,8 @@ BackgroundSyncContextImpl* StoragePartitionImpl::GetBackgroundSyncContext() {
 
 void StoragePartitionImpl::OpenLocalStorage(
     const mojo::String& origin,
-    LevelDBObserverPtr observer,
     mojo::InterfaceRequest<LevelDBWrapper> request) {
-  dom_storage_context_->OpenLocalStorage(origin, std::move(observer),
-                                         std::move(request));
+  dom_storage_context_->OpenLocalStorage(origin, std::move(request));
 }
 
 void StoragePartitionImpl::ClearDataImpl(

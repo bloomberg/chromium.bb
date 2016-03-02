@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_LEVEL_DB_WRAPPER_IMPL_H_
-#define CONTENT_BROWSER_LEVEL_DB_WRAPPER_IMPL_H_
+#ifndef CONTENT_BROWSER_LEVELDB_WRAPPER_IMPL_H_
+#define CONTENT_BROWSER_LEVELDB_WRAPPER_IMPL_H_
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -28,8 +28,7 @@ class LevelDBWrapperImpl : public LevelDBWrapper {
                      const base::Closure& no_bindings_callback);
   ~LevelDBWrapperImpl() override;
 
-  void Bind(mojo::InterfaceRequest<LevelDBWrapper> request,
-            LevelDBObserverPtr observer);
+  void Bind(mojo::InterfaceRequest<LevelDBWrapper> request);
 
  private:
   // LevelDBWrapperImpl:
@@ -40,10 +39,12 @@ class LevelDBWrapperImpl : public LevelDBWrapper {
   void Delete(mojo::Array<uint8_t> key,
               const mojo::String& source,
               const DeleteCallback& callback) override;
-  void DeleteAll(const mojo::String& source,
+  void DeleteAll(LevelDBObserverPtr observer,
+                 const mojo::String& source,
                  const DeleteAllCallback& callback) override;
   void Get(mojo::Array<uint8_t> key, const GetCallback& callback) override;
-  void GetAll(const GetAllCallback& callback) override;
+  void GetAll(LevelDBObserverPtr observer,
+              const GetAllCallback& callback) override;
 
   void OnConnectionError();
 
@@ -56,4 +57,4 @@ class LevelDBWrapperImpl : public LevelDBWrapper {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_LEVEL_DB_WRAPPER_IMPL_H_
+#endif  // CONTENT_BROWSER_LEVELDB_WRAPPER_IMPL_H_

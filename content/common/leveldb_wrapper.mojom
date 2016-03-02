@@ -6,6 +6,18 @@ module content;
 
 import "components/leveldb/public/interfaces/leveldb.mojom";
 
+// Gives information about changes to a LevelDB database.
+// The reason this is a parameter to DeleteAll and GetAll below, instead of
+// being specified when opening a LevelDBWrapper, is to avoid the client getting
+// callbacks for changes that have already been applied to its database that
+// it's fetching via GetAll or it's clearing via DeleteAll.
+interface LevelDBObserver {
+  KeyChanged(array<uint8> key, array<uint8> new_value, array<uint8> old_value,
+             string source);
+  KeyDeleted(array<uint8> key, string source);
+  AllDeleted(string source);
+};
+
 struct KeyValue {
   array<uint8> key;
   array<uint8> value;
@@ -24,19 +36,14 @@ interface LevelDBWrapper {
   Delete(array<uint8> key, string source) => (leveldb.DatabaseError status);
 
   // Removes all the entries.
-  DeleteAll(string source) => (leveldb.DatabaseError status);
+  DeleteAll(LevelDBObserver observer, string source)
+    => (leveldb.DatabaseError status);
 
   // Returns the value of the given key.
   Get(array<uint8> key) => (leveldb.DatabaseError status, array<uint8> value);
 
   // Only used with small databases. Returns all key/value pairs.
-  GetAll() => (leveldb.DatabaseError status, array<KeyValue> data);
-};
-
-// Gives information about changes to a LevelDB database.
-interface LevelDBObserver {
-  KeyChanged(array<uint8> key, array<uint8> new_value, array<uint8> old_value,
-             string source);
-  KeyDeleted(array<uint8> key, string source);
-  AllDeleted(string source);
+  [Sync]
+  GetAll(LevelDBObserver observer)
+    => (leveldb.DatabaseError status, array<KeyValue> data);
 };
