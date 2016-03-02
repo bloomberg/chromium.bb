@@ -14,6 +14,7 @@
 
 import fnmatch
 import logging
+import multiprocessing
 import os
 import shutil
 import subprocess
@@ -95,8 +96,12 @@ CHROME_CLANG_DIR = os.path.join(os.path.dirname(NACL_DIR), 'third_party',
 CHROME_CLANG = os.path.join(CHROME_CLANG_DIR, 'clang')
 CHROME_CLANGXX = os.path.join(CHROME_CLANG_DIR, 'clang++')
 
-# Use an arbitrary, large enough constant
-GOMA_JOBS = 100
+try:
+  # goma documentation recommends using (10 * cpu count)
+  GOMA_JOBS = 10 * multiprocessing.cpu_count()
+except NotImplementedError:
+  # Use an arbitrary, large enough constant
+  GOMA_JOBS = 100
 
 # Required SDK version and target version for Mac builds.
 # See MAC_SDK_FLAGS, below.
