@@ -26,8 +26,16 @@ public class ContextualSearchPanelMetrics {
     private boolean mWasActivatedByTap;
     private boolean mIsSearchPanelFullyPreloaded;
     private boolean mWasIconSpriteAnimated;
-    private long mSearchStartTimeNs;
-    private long mSearchViewStartTimeNs;
+    // Time when the panel peeks into view (not reset by a chained search).
+    // Used to log total time the panel is showing (not closed).
+    private long mFirstPeekTimeNs;
+    // Time when the panel contents come into view (when the panel is opened).
+    // Used to log preload effectiveness info -- additional time needed to fully render the
+    // content in the overlay.
+    private long mContentFirstViewTimeNs;
+    // Time when a search request was started.  Reset by chained searches.
+    // Used to log the time it takes for a Search Result to become available.
+    private long mSearchRequestStartTimeNs;
 
     /**
      * Log information when the panel's state has changed.
@@ -57,7 +65,7 @@ public class ContextualSearchPanelMetrics {
         if (isEndingSearch) {
             if (!mDidSearchInvolvePromo) {
                 // Measure duration only when the promo is not involved.
-                long durationMs = (System.nanoTime() - mSearchStartTimeNs) / 1000000;
+                long durationMs = (System.nanoTime() - mFirstPeekTimeNs) / 1000000;
                 ContextualSearchUma.logDuration(mWasSearchContentViewSeen, isChained, durationMs);
             }
             if (mIsPromoActive) {
@@ -71,8 +79,8 @@ public class ContextualSearchPanelMetrics {
                     mWasSearchContentViewSeen, mWasActivatedByTap);
         }
         if (isStartingSearch) {
-            mSearchStartTimeNs = System.nanoTime();
-            mSearchViewStartTimeNs = 0;
+            mFirstPeekTimeNs = System.nanoTime();
+            mContentFirstViewTimeNs = 0;
             mIsSearchPanelFullyPreloaded = false;
             mWasActivatedByTap = reason == StateChangeReason.TEXT_SELECT_TAP;
         }
@@ -165,10 +173,18 @@ public class ContextualSearchPanelMetrics {
     }
 
     /**
-     * Gets whether the promo is active.
+     * Called to record the time when a search request started, for resolve and prefetch timing.
      */
-    private boolean getIsPromoActive() {
-        return mIsPromoActive;
+    public void onSearchRequestStarted() {
+        mSearchRequestStartTimeNs = System.nanoTime();
+    }
+
+    /**
+     * Called when a Search Term has been resolved.
+     */
+    public void onSearchTermResolved() {
+        long durationMs = (System.nanoTime() - mSearchRequestStartTimeNs) / 1000000;
+        ContextualSearchUma.logSearchTermResolutionDuration(durationMs);
     }
 
     /**
@@ -178,13 +194,22 @@ public class ContextualSearchPanelMetrics {
     public void onSearchResultsLoaded(boolean wasPrefetch) {
         if (mHasExpanded || mHasMaximized) {
             // Already opened, log how long it took.
-            assert mSearchViewStartTimeNs != 0;
-            long durationMs = (System.nanoTime() - mSearchViewStartTimeNs) / 1000000;
+            assert mContentFirstViewTimeNs != 0;
+            long durationMs = (System.nanoTime() - mContentFirstViewTimeNs) / 1000000;
             logSearchPanelLoadDuration(wasPrefetch, durationMs);
         }
 
         // Not yet opened, wait till an open to log.
         mIsSearchPanelFullyPreloaded = true;
+    }
+
+    /**
+     * Called after the panel has navigated to prefetched Search Results.
+     * This is the point where the search result starts to render in the panel.
+     */
+    public void onPanelNavigatedToPrefetchedSearch(boolean didResolve) {
+        long durationMs = (System.nanoTime() - mSearchRequestStartTimeNs) / 1000000;
+        ContextualSearchUma.logPrefetchedSearchNavigatedDuration(durationMs, didResolve);
     }
 
     /**
@@ -196,7 +221,7 @@ public class ContextualSearchPanelMetrics {
             logSearchPanelLoadDuration(true, 0);
         } else {
             // Start a loading timer.
-            mSearchViewStartTimeNs = System.nanoTime();
+            mContentFirstViewTimeNs = System.nanoTime();
         }
     }
 

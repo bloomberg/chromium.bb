@@ -706,6 +706,28 @@ public class ContextualSearchUma {
     }
 
     /**
+     * Logs the duration from starting a search until the Search Term is resolved.
+     * @param durationMs The duration to record.
+     */
+    public static void logSearchTermResolutionDuration(long durationMs) {
+        RecordHistogram.recordMediumTimesHistogram(
+                "Search.ContextualSearchResolutionDuration", durationMs, TimeUnit.MILLISECONDS);
+    }
+
+    /**
+     * Logs the duration from starting a prefetched search until the panel navigates to the results
+     * and they start becoming viewable. Should be called only for searches that are prefetched.
+     * @param durationMs The duration to record.
+     * @param didResolve Whether a Search Term resolution was required as part of the loading.
+     */
+    public static void logPrefetchedSearchNavigatedDuration(long durationMs, boolean didResolve) {
+        String histogramName = didResolve ? "Search.ContextualSearchResolvedSearchDuration"
+                                          : "Search.ContextualSearchLiteralSearchDuration";
+        RecordHistogram.recordMediumTimesHistogram(
+                histogramName, durationMs, TimeUnit.MILLISECONDS);
+    }
+
+    /**
      * Logs whether the promo was seen.
      * Logs multiple histograms, with and without the original triggering gesture.
      * @param wasPanelSeen Whether the panel was seen.

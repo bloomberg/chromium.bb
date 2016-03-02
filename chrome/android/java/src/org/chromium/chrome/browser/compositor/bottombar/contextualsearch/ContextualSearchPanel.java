@@ -383,6 +383,17 @@ public class ContextualSearchPanel extends OverlayPanel {
     }
 
     /**
+     * Called after the panel has navigated to prefetched Search Results.
+     * If the user has the panel open then they will see the prefetched result starting to load.
+     * Currently this just logs the time between the start of the search until the results start to
+     * render in the Panel.
+     * @param didResolve Whether the search required the Search Term to be resolved.
+     */
+    public void onPanelNavigatedToPrefetchedSearch(boolean didResolve) {
+        mPanelMetrics.onPanelNavigatedToPrefetchedSearch(didResolve);
+    }
+
+    /**
      * Maximizes the Contextual Search Panel, then promotes it to a regular Tab.
      * @param reason The {@code StateChangeReason} behind the maximization and promotion to tab.
      */
@@ -453,6 +464,7 @@ public class ContextualSearchPanel extends OverlayPanel {
         cancelSearchTermResolutionAnimation();
         getSearchBarControl().setSearchTerm(searchTerm);
         resetSearchBarTermOpacity();
+        mPanelMetrics.onSearchRequestStarted();
     }
 
     /**
@@ -464,13 +476,15 @@ public class ContextualSearchPanel extends OverlayPanel {
         cancelSearchTermResolutionAnimation();
         getSearchBarControl().setSearchContext(selection, end);
         resetSearchBarContextOpacity();
+        mPanelMetrics.onSearchRequestStarted();
     }
 
     /**
      * Handles showing the resolved search term in the SearchBar.
      * @param searchTerm The string that represents the search term.
      */
-    public void onSearchTermResolutionResponse(String searchTerm) {
+    public void onSearchTermResolved(String searchTerm) {
+        mPanelMetrics.onSearchTermResolved();
         getSearchBarControl().setSearchTerm(searchTerm);
         animateSearchTermResolution();
     }

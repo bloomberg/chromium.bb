@@ -713,7 +713,7 @@ public class ContextualSearchManager extends ContextualSearchObservable
                     R.string.contextual_search_error, responseCode);
             doLiteralSearch = true;
         }
-        mSearchPanel.onSearchTermResolutionResponse(message);
+        mSearchPanel.onSearchTermResolved(message);
 
         // If there was an error, fall back onto a literal search for the selection.
         // Since we're showing the panel, there must be a selection.
@@ -844,6 +844,13 @@ public class ContextualSearchManager extends ContextualSearchObservable
             if (!isExternalUrl) {
                 // Could be just prefetching, check if that failed.
                 onContextualSearchRequestNavigation(isFailure);
+
+                // Record metrics for when the prefetched results became viewable.
+                if (mSearchRequest != null && mSearchRequest.wasPrefetch()) {
+                    boolean didResolve =
+                            mPolicy.shouldPreviousTapResolve(mNetworkCommunicator.getBasePageUrl());
+                    mSearchPanel.onPanelNavigatedToPrefetchedSearch(didResolve);
+                }
             }
         }
 
@@ -1095,7 +1102,7 @@ public class ContextualSearchManager extends ContextualSearchObservable
                 && mSearchPanel.getContentViewCore().getWebContents() != null) {
             String url = getContentViewUrl(mSearchPanel.getContentViewCore());
 
-            // If it's a search URL, formats it so the SearchBox becomes visible.
+            // If it's a search URL, format it so the SearchBox becomes visible.
             if (mSearchRequest.isContextualSearchUrl(url)) {
                 url = mSearchRequest.getSearchUrlForPromotion();
             }

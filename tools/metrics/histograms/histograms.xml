@@ -44851,6 +44851,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Search.ContextualSearchLiteralSearchDuration" units="ms">
+  <owner>donnd@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    The time from starting a literal search until the results in the SERP start
+    to become viewable. Applies only to prefetched requests. Implemented for
+    Android.
+  </summary>
+</histogram>
+
 <histogram name="Search.ContextualSearchLowPrioritySearchRequestStatus"
     enum="ContextualSearchSearchRequestStatus">
   <owner>donnd@chromium.org</owner>
@@ -44997,6 +45007,25 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     The number of remaining taps that can trigger the promo for this user.
     Implemented for Android.
+  </summary>
+</histogram>
+
+<histogram name="Search.ContextualSearchResolutionDuration" units="ms">
+  <owner>donnd@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    The time from starting a resolving search until the Search Term Resolves.
+    Implemented for Android.
+  </summary>
+</histogram>
+
+<histogram name="Search.ContextualSearchResolvedSearchDuration" units="ms">
+  <owner>donnd@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    The time from starting a resolving search until the results in the SERP
+    start to become viewable. Applies only to prefetched requests. Implemented
+    for Android.
   </summary>
 </histogram>
 
