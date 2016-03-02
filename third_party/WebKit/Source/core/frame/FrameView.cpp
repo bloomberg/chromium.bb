@@ -2595,6 +2595,8 @@ void FrameView::updateStyleAndLayoutIfNeededRecursive()
     if (needsLayout())
         layout();
 
+    RELEASE_ASSERT(!needsLayout());
+
     // WebView plugins need to update regardless of whether the LayoutEmbeddedObject
     // that owns them needed layout.
     // TODO(leviw): This currently runs the entire lifecycle on plugin WebViews. We
@@ -2605,6 +2607,8 @@ void FrameView::updateStyleAndLayoutIfNeededRecursive()
         if ((*child).isPluginContainer())
             toPluginView(child.get())->layoutIfNeeded();
     }
+
+    RELEASE_ASSERT(!needsLayout());
 
     // FIXME: Calling layout() shouldn't trigger script execution or have any
     // observable effects on the frame tree but we're not quite there yet.
@@ -2618,6 +2622,8 @@ void FrameView::updateStyleAndLayoutIfNeededRecursive()
 
     for (const auto& frameView : frameViews)
         frameView->updateStyleAndLayoutIfNeededRecursive();
+
+    RELEASE_ASSERT(!needsLayout());
 
     // When SVG filters are invalidated using Document::scheduleSVGFilterLayerUpdateHack() they may trigger an
     // extra style recalc. See PaintLayer::filterNeedsPaintInvalidation().
