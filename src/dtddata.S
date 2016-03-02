@@ -20,6 +20,14 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+/*
+ * Avoid executable stack.
+ * from: https://wiki.gentoo.org/wiki/Hardened/GNU_stack_quickstart
+ */
+#if defined(__linux__) && defined(__ELF__)
+.section .note.GNU-stack,"",%progbits
+#endif
+
 /* from: http://www.linuxjournal.com/content/embedding-file-executable-aka-hello-world-version-5967#comment-348129 */
 
 .macro binfile name file
