@@ -13,20 +13,17 @@
 namespace views {
 
 FrameBackground::FrameBackground()
-  : frame_color_(0),
-    theme_image_(NULL),
-    theme_overlay_image_(NULL),
-    top_area_height_(0),
-    left_edge_(NULL),
-    top_edge_(NULL),
-    right_edge_(NULL),
-    bottom_edge_(NULL),
-    top_left_corner_(NULL),
-    top_right_corner_(NULL),
-    bottom_left_corner_(NULL),
-    bottom_right_corner_(NULL),
-    maximized_top_inset_(0) {
-}
+    : frame_color_(0),
+      top_area_height_(0),
+      left_edge_(nullptr),
+      top_edge_(nullptr),
+      right_edge_(nullptr),
+      bottom_edge_(nullptr),
+      top_left_corner_(nullptr),
+      top_right_corner_(nullptr),
+      bottom_left_corner_(nullptr),
+      bottom_right_corner_(nullptr),
+      maximized_top_inset_(0) {}
 
 FrameBackground::~FrameBackground() {
 }
@@ -57,13 +54,13 @@ void FrameBackground::PaintRestored(gfx::Canvas* canvas,
   // areas not covered by the theme image.
   PaintFrameColor(canvas, view);
 
-  // Draw the theme frame.
-  canvas->TileImageInt(*theme_image_,
-                       0, 0, view->width(), theme_image_->height());
-
-  // Draw the theme frame overlay, if available.
-  if (theme_overlay_image_)
-    canvas->DrawImageInt(*theme_overlay_image_, 0, 0);
+  // Draw the theme frame and overlay, if available.
+  if (!theme_image_.isNull()) {
+    canvas->TileImageInt(theme_image_, 0, 0, view->width(),
+                         theme_image_.height());
+  }
+  if (!theme_overlay_image_.isNull())
+    canvas->DrawImageInt(theme_overlay_image_, 0, 0);
 
   // Draw the top corners and edge, scaling the corner images down if they
   // are too big and relative to the vertical space available.
@@ -123,24 +120,24 @@ void FrameBackground::PaintRestored(gfx::Canvas* canvas,
 void FrameBackground::PaintMaximized(gfx::Canvas* canvas,
                                      const View* view) const {
   // We will be painting from -|maximized_top_inset_| to
-  // -|maximized_top_inset_| + |theme_image_|->height(). If this is less than
+  // -|maximized_top_inset_| + |theme_image_|.height(). If this is less than
   // |top_area_height_|, we need to paint the frame color to fill in the area
   // beneath the image.
-  int theme_frame_bottom = -maximized_top_inset_ + theme_image_->height();
+  int theme_frame_bottom = -maximized_top_inset_ +
+                           (theme_image_.isNull() ? 0 : theme_image_.height());
   if (top_area_height_ > theme_frame_bottom) {
     canvas->FillRect(gfx::Rect(0, 0, view->width(), top_area_height_),
                      frame_color_);
   }
 
   // Draw the theme frame.
-  canvas->TileImageInt(*theme_image_,
-                       0,
-                       -maximized_top_inset_,
-                       view->width(),
-                       theme_image_->height());
+  if (!theme_image_.isNull()) {
+    canvas->TileImageInt(theme_image_, 0, -maximized_top_inset_, view->width(),
+                         theme_image_.height());
+  }
   // Draw the theme frame overlay, if available.
-  if (theme_overlay_image_)
-    canvas->DrawImageInt(*theme_overlay_image_, 0, -maximized_top_inset_);
+  if (!theme_overlay_image_.isNull())
+    canvas->DrawImageInt(theme_overlay_image_, 0, -maximized_top_inset_);
 }
 
 void FrameBackground::PaintFrameColor(gfx::Canvas* canvas,

@@ -11,6 +11,7 @@
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
+#include "chrome/browser/ui/views/frame/browser_non_client_frame_view_ash.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "grit/ash_resources.h"
 #include "grit/theme_resources.h"
@@ -135,7 +136,7 @@ BrowserHeaderPainterAsh::~BrowserHeaderPainterAsh() {
 void BrowserHeaderPainterAsh::Init(
     views::Widget* frame,
     BrowserView* browser_view,
-    views::View* header_view,
+    BrowserNonClientFrameViewAsh* header_view,
     views::View* window_icon,
     ash::FrameCaptionButtonContainerView* caption_button_container) {
   DCHECK(frame);
@@ -184,45 +185,8 @@ void BrowserHeaderPainterAsh::PaintHeader(gfx::Canvas* canvas, Mode mode) {
     initial_paint_ = false;
   }
 
-  int corner_radius = (frame_->IsMaximized() || frame_->IsFullscreen()) ?
-      0 : ash::HeaderPainterUtil::GetTopCornerRadiusWhenRestored();
-
-  int active_alpha = activation_animation_->CurrentValueBetween(0, 255);
-  int inactive_alpha = 255 - active_alpha;
-
-  SkPaint paint;
-  if (inactive_alpha > 0) {
-    if (active_alpha > 0)
-      paint.setXfermodeMode(SkXfermode::kPlus_Mode);
-
-    gfx::ImageSkia inactive_frame_image = GetFrameImage(MODE_INACTIVE);
-    gfx::ImageSkia inactive_frame_overlay_image =
-        GetFrameOverlayImage(MODE_INACTIVE);
-
-    paint.setAlpha(inactive_alpha);
-    paint.setColor(SkColorSetA(GetFrameColor(MODE_INACTIVE), inactive_alpha));
-    PaintFrameImagesInRoundRect(
-        canvas, inactive_frame_image, inactive_frame_overlay_image, paint,
-        GetPaintedBounds(), corner_radius,
-        ash::HeaderPainterUtil::GetThemeBackgroundXInset());
-  }
-
-  if (active_alpha > 0) {
-    gfx::ImageSkia active_frame_image = GetFrameImage(MODE_ACTIVE);
-    gfx::ImageSkia active_frame_overlay_image =
-        GetFrameOverlayImage(MODE_ACTIVE);
-
-    paint.setAlpha(active_alpha);
-    paint.setColor(SkColorSetA(GetFrameColor(MODE_ACTIVE), active_alpha));
-    PaintFrameImagesInRoundRect(
-        canvas,
-        active_frame_image,
-        active_frame_overlay_image,
-        paint,
-        GetPaintedBounds(),
-        corner_radius,
-        ash::HeaderPainterUtil::GetThemeBackgroundXInset());
-  }
+  PaintFrameImages(canvas, false);
+  PaintFrameImages(canvas, true);
 
   if (!ui::MaterialDesignController::IsModeMaterial() &&
       !frame_->IsMaximized() &&
@@ -293,6 +257,32 @@ void BrowserHeaderPainterAsh::AnimationProgressed(
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserHeaderPainterAsh, private:
 
+void BrowserHeaderPainterAsh::PaintFrameImages(gfx::Canvas* canvas,
+                                               bool active) {
+  int alpha = activation_animation_->CurrentValueBetween(0, 0xFF);
+  if (!active)
+    alpha = 0xFF - alpha;
+
+  if (alpha == 0)
+    return;
+
+  int corner_radius =
+      (frame_->IsMaximized() || frame_->IsFullscreen())
+          ? 0
+          : ash::HeaderPainterUtil::GetTopCornerRadiusWhenRestored();
+
+  gfx::ImageSkia frame_image = view_->GetFrameImage(active);
+  gfx::ImageSkia frame_overlay_image = view_->GetFrameOverlayImage(active);
+
+  SkPaint paint;
+  paint.setXfermodeMode(SkXfermode::kPlus_Mode);
+  paint.setAlpha(alpha);
+  paint.setColor(SkColorSetA(view_->GetFrameColor(active), alpha));
+  PaintFrameImagesInRoundRect(
+      canvas, frame_image, frame_overlay_image, paint, GetPaintedBounds(),
+      corner_radius, ash::HeaderPainterUtil::GetThemeBackgroundXInset());
+}
+
 void BrowserHeaderPainterAsh::PaintHighlightForRestoredWindow(
     gfx::Canvas* canvas) {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
@@ -346,43 +336,6 @@ void BrowserHeaderPainterAsh::PaintTitleBar(gfx::Canvas* canvas) {
                                   kWindowTitleTextColor,
                                   title_bounds,
                                   gfx::Canvas::NO_SUBPIXEL_RENDERING);
-}
-
-gfx::ImageSkia BrowserHeaderPainterAsh::GetFrameImage(Mode mode) const {
-  if (!is_tabbed_)
-    return gfx::ImageSkia();
-
-  const ui::ThemeProvider* tp = frame_->GetThemeProvider();
-  int frame_image_id =
-      (mode == MODE_ACTIVE) ? IDR_THEME_FRAME : IDR_THEME_FRAME_INACTIVE;
-
-  // Even if there's no explicit custom image for IDR_THEME_FRAME_INACTIVE, one
-  // will be generated for it based on IDR_THEME_FRAME.
-  return tp->HasCustomImage(frame_image_id) ||
-                 tp->HasCustomImage(IDR_THEME_FRAME)
-             ? *tp->GetImageSkiaNamed(frame_image_id)
-             : gfx::ImageSkia();
-}
-
-gfx::ImageSkia BrowserHeaderPainterAsh::GetFrameOverlayImage(Mode mode) const {
-  if (is_incognito_ || !is_tabbed_)
-    return gfx::ImageSkia();
-
-  const ui::ThemeProvider* tp = frame_->GetThemeProvider();
-  int frame_overlay_image_id = (mode == MODE_ACTIVE)
-                                   ? IDR_THEME_FRAME_OVERLAY
-                                   : IDR_THEME_FRAME_OVERLAY_INACTIVE;
-  return tp->HasCustomImage(frame_overlay_image_id)
-             ? *tp->GetImageSkiaNamed(frame_overlay_image_id)
-             : gfx::ImageSkia();
-}
-
-SkColor BrowserHeaderPainterAsh::GetFrameColor(Mode mode) const {
-  int color = (mode == MODE_ACTIVE) ? ThemeProperties::COLOR_FRAME
-                                    : ThemeProperties::COLOR_FRAME_INACTIVE;
-  // We only theme tabbed windows; fall back to default for non-tabbed.
-  return is_tabbed_ ? frame_->GetThemeProvider()->GetColor(color)
-                    : ThemeProperties::GetDefaultColor(color, is_incognito_);
 }
 
 void BrowserHeaderPainterAsh::UpdateCaptionButtons() {

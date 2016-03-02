@@ -8,13 +8,10 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/window/frame_buttons.h"
 #include "ui/views/window/non_client_view.h"
-
-namespace gfx {
-class ImageSkia;
-}
 
 namespace views {
 
@@ -105,7 +102,7 @@ class VIEWS_EXPORT CustomFrameView : public NonClientFrameView,
 
   // Compute aspects of the frame needed to paint the frame background.
   SkColor GetFrameColor() const;
-  const gfx::ImageSkia* GetFrameImage() const;
+  gfx::ImageSkia GetFrameImage() const;
 
   // Performs the layout for the window control buttons based on the
   // configuration specified in WindowButtonOrderProvider. The sizing and

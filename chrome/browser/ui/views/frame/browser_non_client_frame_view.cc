@@ -20,6 +20,7 @@
 #include "components/signin/core/common/profile_management_switches.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/image/image.h"
@@ -90,58 +91,56 @@ bool BrowserNonClientFrameView::ShouldPaintAsThemed() const {
   return browser_view_->IsBrowserTypeNormal();
 }
 
-#if !defined(OS_CHROMEOS)
-SkColor BrowserNonClientFrameView::GetFrameColor() const {
+SkColor BrowserNonClientFrameView::GetFrameColor(bool active) const {
   ThemeProperties::OverwritableByUserThemeProperty color_id =
-      ShouldPaintAsActive() ? ThemeProperties::COLOR_FRAME
-                            : ThemeProperties::COLOR_FRAME_INACTIVE;
+      active ? ThemeProperties::COLOR_FRAME
+             : ThemeProperties::COLOR_FRAME_INACTIVE;
   return ShouldPaintAsThemed() ? GetThemeProvider()->GetColor(color_id)
                                : ThemeProperties::GetDefaultColor(
                                      color_id, browser_view_->IsOffTheRecord());
 }
 
-gfx::ImageSkia* BrowserNonClientFrameView::GetFrameImage() const {
-  const bool incognito = browser_view_->IsOffTheRecord();
-  int resource_id;
-  if (browser_view_->IsBrowserTypeNormal()) {
-    if (ShouldPaintAsActive()) {
-      resource_id = incognito ? IDR_THEME_FRAME_INCOGNITO : IDR_THEME_FRAME;
-    } else {
-      resource_id = incognito ? IDR_THEME_FRAME_INCOGNITO_INACTIVE
-                              : IDR_THEME_FRAME_INACTIVE;
-    }
-    return GetThemeProvider()->GetImageSkiaNamed(resource_id);
+gfx::ImageSkia BrowserNonClientFrameView::GetFrameImage(bool active) const {
+  const ui::ThemeProvider* tp = frame_->GetThemeProvider();
+  int frame_image_id = active ? IDR_THEME_FRAME : IDR_THEME_FRAME_INACTIVE;
+
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    return ShouldPaintAsThemed() && (tp->HasCustomImage(frame_image_id) ||
+                                     tp->HasCustomImage(IDR_THEME_FRAME))
+               ? *tp->GetImageSkiaNamed(frame_image_id)
+               : gfx::ImageSkia();
   }
 
-  if (ShouldPaintAsActive()) {
-    resource_id = incognito ? IDR_THEME_FRAME_INCOGNITO : IDR_FRAME;
-  } else {
-    resource_id = incognito ? IDR_THEME_FRAME_INCOGNITO_INACTIVE
-                            : IDR_THEME_FRAME_INACTIVE;
-  }
-
-  if (ShouldPaintAsThemed()) {
-    // On Linux, we want to use theme images provided by the system theme when
-    // enabled, even if we are an app or popup window.
-    return GetThemeProvider()->GetImageSkiaNamed(resource_id);
-  }
-
-  // Otherwise, never theme app and popup windows.
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  return rb.GetImageSkiaNamed(resource_id);
+  return ShouldPaintAsThemed()
+             ? *tp->GetImageSkiaNamed(frame_image_id)
+             : *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+                   frame_image_id);
 }
 
-gfx::ImageSkia* BrowserNonClientFrameView::GetFrameOverlayImage() const {
-  const ui::ThemeProvider* tp = GetThemeProvider();
-  if (tp->HasCustomImage(IDR_THEME_FRAME_OVERLAY) &&
-      browser_view_->IsBrowserTypeNormal() &&
-      !browser_view_->IsOffTheRecord()) {
-    return tp->GetImageSkiaNamed(ShouldPaintAsActive() ?
-        IDR_THEME_FRAME_OVERLAY : IDR_THEME_FRAME_OVERLAY_INACTIVE);
-  }
-  return nullptr;
+gfx::ImageSkia BrowserNonClientFrameView::GetFrameOverlayImage(
+    bool active) const {
+  if (browser_view_->IsOffTheRecord() || !browser_view_->IsBrowserTypeNormal())
+    return gfx::ImageSkia();
+
+  const ui::ThemeProvider* tp = frame_->GetThemeProvider();
+  int frame_overlay_image_id =
+      active ? IDR_THEME_FRAME_OVERLAY : IDR_THEME_FRAME_OVERLAY_INACTIVE;
+  return tp->HasCustomImage(frame_overlay_image_id)
+             ? *tp->GetImageSkiaNamed(frame_overlay_image_id)
+             : gfx::ImageSkia();
 }
-#endif  // !defined(OS_CHROMEOS)
+
+SkColor BrowserNonClientFrameView::GetFrameColor() const {
+  return GetFrameColor(ShouldPaintAsActive());
+}
+
+gfx::ImageSkia BrowserNonClientFrameView::GetFrameImage() const {
+  return GetFrameImage(ShouldPaintAsActive());
+}
+
+gfx::ImageSkia BrowserNonClientFrameView::GetFrameOverlayImage() const {
+  return GetFrameOverlayImage(ShouldPaintAsActive());
+}
 
 void BrowserNonClientFrameView::UpdateOldAvatarButton() {
   if (browser_view_->ShouldShowAvatar()) {

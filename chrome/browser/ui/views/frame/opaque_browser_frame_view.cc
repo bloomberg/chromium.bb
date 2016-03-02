@@ -573,8 +573,11 @@ bool OpaqueBrowserFrameView::ShouldShowWindowTitleBar() const {
 }
 
 int OpaqueBrowserFrameView::GetTopAreaHeight() const {
-  const gfx::ImageSkia* const frame_image = GetFrameImage();
-  int top_area_height = frame_image->height();
+  // The top area height in dp (only used when there's no frame image).
+  // TODO(pkasting): investigate removing this constant. See crbug.com/590301
+  const int kHeight = 64;
+  const gfx::ImageSkia frame_image = GetFrameImage();
+  int top_area_height = frame_image.isNull() ? kHeight : frame_image.height();
   if (browser_view()->IsTabStripVisible()) {
     top_area_height =
         std::max(top_area_height,

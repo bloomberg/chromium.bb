@@ -85,6 +85,7 @@ class BrowserNonClientFrameViewAsh : public BrowserNonClientFrameView,
                            ToggleMaximizeModeRelayout);
   FRIEND_TEST_ALL_PREFIXES(WebAppLeftHeaderViewTest, BackButton);
   FRIEND_TEST_ALL_PREFIXES(WebAppLeftHeaderViewTest, LocationIcon);
+  friend class BrowserHeaderPainterAsh;
 
   // views::NonClientFrameView:
   bool DoesIntersectRect(const views::View* target,

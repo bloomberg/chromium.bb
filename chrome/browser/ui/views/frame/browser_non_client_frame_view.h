@@ -64,12 +64,16 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   // not.
   virtual bool ShouldPaintAsThemed() const;
 
-#if !defined(OS_CHROMEOS)
   // Compute aspects of the frame needed to paint the frame background.
+  SkColor GetFrameColor(bool active) const;
+  gfx::ImageSkia GetFrameImage(bool active) const;
+  gfx::ImageSkia GetFrameOverlayImage(bool active) const;
+
+  // Convenience versions of the above which use ShouldPaintAsActive() for
+  // |active|.
   SkColor GetFrameColor() const;
-  gfx::ImageSkia* GetFrameImage() const;
-  gfx::ImageSkia* GetFrameOverlayImage() const;
-#endif
+  gfx::ImageSkia GetFrameImage() const;
+  gfx::ImageSkia GetFrameOverlayImage() const;
 
   // Update the profile switcher button if one should exist. Otherwise, update
   // the incognito avatar, or profile avatar for teleported frames in ChromeOS.

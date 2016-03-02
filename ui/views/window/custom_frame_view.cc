@@ -352,9 +352,9 @@ bool CustomFrameView::ShouldShowClientEdge() const {
 
 void CustomFrameView::PaintRestoredFrameBorder(gfx::Canvas* canvas) {
   frame_background_->set_frame_color(GetFrameColor());
-  const gfx::ImageSkia* frame_image = GetFrameImage();
+  const gfx::ImageSkia frame_image = GetFrameImage();
   frame_background_->set_theme_image(frame_image);
-  frame_background_->set_top_area_height(frame_image->height());
+  frame_background_->set_top_area_height(frame_image.height());
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
@@ -373,9 +373,9 @@ void CustomFrameView::PaintRestoredFrameBorder(gfx::Canvas* canvas) {
 }
 
 void CustomFrameView::PaintMaximizedFrameBorder(gfx::Canvas* canvas) {
-  const gfx::ImageSkia* frame_image = GetFrameImage();
+  const gfx::ImageSkia frame_image = GetFrameImage();
   frame_background_->set_theme_image(frame_image);
-  frame_background_->set_top_area_height(frame_image->height());
+  frame_background_->set_top_area_height(frame_image.height());
   frame_background_->PaintMaximized(canvas, this);
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
@@ -475,9 +475,11 @@ SkColor CustomFrameView::GetFrameColor() const {
   return frame_->IsActive() ? kDefaultColorFrame : kDefaultColorFrameInactive;
 }
 
-const gfx::ImageSkia* CustomFrameView::GetFrameImage() const {
-  return ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-      frame_->IsActive() ? IDR_FRAME : IDR_FRAME_INACTIVE).ToImageSkia();
+gfx::ImageSkia CustomFrameView::GetFrameImage() const {
+  return *ui::ResourceBundle::GetSharedInstance()
+              .GetImageNamed(frame_->IsActive() ? IDR_FRAME
+                                                : IDR_FRAME_INACTIVE)
+              .ToImageSkia();
 }
 
 void CustomFrameView::LayoutWindowControls() {
