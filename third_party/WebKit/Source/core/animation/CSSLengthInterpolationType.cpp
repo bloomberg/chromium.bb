@@ -220,7 +220,7 @@ InterpolationValue CSSLengthInterpolationType::maybeConvertUnderlyingValue(const
     return maybeConvertLength(underlyingLength, effectiveZoom(*environment.state().style()));
 }
 
-void CSSLengthInterpolationType::composite(UnderlyingValueOwner& underlyingValueOwner, double underlyingFraction, const InterpolationValue& value) const
+void CSSLengthInterpolationType::composite(UnderlyingValueOwner& underlyingValueOwner, double underlyingFraction, const InterpolationValue& value, double interpolationFraction) const
 {
     InterpolationValue& underlying = underlyingValueOwner.mutableValue();
     composite(underlying.interpolableValue, underlying.nonInterpolableValue,

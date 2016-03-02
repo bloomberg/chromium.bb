@@ -156,7 +156,7 @@ PairwiseInterpolationValue CSSVisibilityInterpolationType::mergeSingleConversion
             toCSSVisibilityNonInterpolableValue(*end.nonInterpolableValue).visibility()));
 }
 
-void CSSVisibilityInterpolationType::composite(UnderlyingValueOwner& underlyingValueOwner, double underlyingFraction, const InterpolationValue& value) const
+void CSSVisibilityInterpolationType::composite(UnderlyingValueOwner& underlyingValueOwner, double underlyingFraction, const InterpolationValue& value, double interpolationFraction) const
 {
     underlyingValueOwner.set(*this, value);
 }

@@ -16,7 +16,7 @@ public:
     CSSLengthListInterpolationType(CSSPropertyID);
 
     InterpolationValue maybeConvertUnderlyingValue(const InterpolationEnvironment&) const final;
-    void composite(UnderlyingValueOwner&, double underlyingFraction, const InterpolationValue&) const final;
+    void composite(UnderlyingValueOwner&, double underlyingFraction, const InterpolationValue&, double interpolationFraction) const final;
     void apply(const InterpolableValue&, const NonInterpolableValue*, InterpolationEnvironment&) const final;
 
 private:

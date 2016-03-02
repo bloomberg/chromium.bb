@@ -20,6 +20,7 @@
 #include "core/animation/CSSPathInterpolationType.h"
 #include "core/animation/CSSPositionAxisListInterpolationType.h"
 #include "core/animation/CSSPositionInterpolationType.h"
+#include "core/animation/CSSScaleInterpolationType.h"
 #include "core/animation/CSSShadowListInterpolationType.h"
 #include "core/animation/CSSSizeListInterpolationType.h"
 #include "core/animation/CSSTransformOriginInterpolationType.h"
@@ -212,6 +213,9 @@ const InterpolationTypes* PropertyInterpolationTypesMapping::get(const PropertyH
         case CSSPropertyWebkitMaskBoxImageOutset:
         case CSSPropertyWebkitMaskBoxImageWidth:
             applicableTypes->append(adoptPtr(new CSSBorderImageLengthBoxInterpolationType(cssProperty)));
+            break;
+        case CSSPropertyScale:
+            applicableTypes->append(adoptPtr(new CSSScaleInterpolationType(cssProperty)));
             break;
         default:
             // TODO(alancutter): Support all interpolable CSS properties here so we can stop falling back to the old StyleInterpolation implementation.

@@ -236,7 +236,7 @@ PairwiseInterpolationValue CSSBorderImageLengthBoxInterpolationType::mergeSingle
     return PairwiseInterpolationValue(start.interpolableValue.release(), end.interpolableValue.release(), start.nonInterpolableValue.release());
 }
 
-void CSSBorderImageLengthBoxInterpolationType::composite(UnderlyingValueOwner& underlyingValueOwner, double underlyingFraction, const InterpolationValue& value) const
+void CSSBorderImageLengthBoxInterpolationType::composite(UnderlyingValueOwner& underlyingValueOwner, double underlyingFraction, const InterpolationValue& value, double interpolationFraction) const
 {
     const SideNumbers& underlyingSideNumbers = toCSSBorderImageLengthBoxNonInterpolableValue(*underlyingValueOwner.value().nonInterpolableValue).sideNumbers();
     const auto& nonInterpolableValue = toCSSBorderImageLengthBoxNonInterpolableValue(*value.nonInterpolableValue);

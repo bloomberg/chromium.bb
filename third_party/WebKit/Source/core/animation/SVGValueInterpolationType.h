@@ -35,7 +35,7 @@ private:
         return nullptr;
     }
 
-    void composite(UnderlyingValueOwner& underlyingValueOwner, double underlyingFraction, const InterpolationValue& value) const final
+    void composite(UnderlyingValueOwner& underlyingValueOwner, double underlyingFraction, const InterpolationValue& value, double interpolationFraction) const final
     {
         underlyingValueOwner.set(*this, value);
     }

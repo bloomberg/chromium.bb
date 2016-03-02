@@ -132,7 +132,7 @@ InterpolationValue CSSImageListInterpolationType::maybeConvertUnderlyingValue(co
     return maybeConvertStyleImageList(underlyingImageList);
 }
 
-void CSSImageListInterpolationType::composite(UnderlyingValueOwner& underlyingValueOwner, double underlyingFraction, const InterpolationValue& value) const
+void CSSImageListInterpolationType::composite(UnderlyingValueOwner& underlyingValueOwner, double underlyingFraction, const InterpolationValue& value, double interpolationFraction) const
 {
     underlyingValueOwner.set(*this, value);
 }

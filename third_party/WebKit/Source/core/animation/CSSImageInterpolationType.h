@@ -18,7 +18,7 @@ public:
     { }
 
     InterpolationValue maybeConvertUnderlyingValue(const InterpolationEnvironment&) const final;
-    void composite(UnderlyingValueOwner&, double underlyingFraction, const InterpolationValue&) const final;
+    void composite(UnderlyingValueOwner&, double underlyingFraction, const InterpolationValue&, double interpolationFraction) const final;
     void apply(const InterpolableValue&, const NonInterpolableValue*, InterpolationEnvironment&) const final;
 
     static InterpolationValue maybeConvertCSSValue(const CSSValue&, bool acceptGradients);

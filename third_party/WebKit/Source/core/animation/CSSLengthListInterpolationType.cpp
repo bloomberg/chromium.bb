@@ -111,7 +111,7 @@ InterpolationValue CSSLengthListInterpolationType::maybeConvertUnderlyingValue(c
     return maybeConvertLengthList(underlyingLengthList, environment.state().style()->effectiveZoom());
 }
 
-void CSSLengthListInterpolationType::composite(UnderlyingValueOwner& underlyingValueOwner, double underlyingFraction, const InterpolationValue& value) const
+void CSSLengthListInterpolationType::composite(UnderlyingValueOwner& underlyingValueOwner, double underlyingFraction, const InterpolationValue& value, double interpolationFraction) const
 {
     ListInterpolationFunctions::composite(underlyingValueOwner, underlyingFraction, *this, value,
         CSSLengthInterpolationType::nonInterpolableValuesAreCompatible,

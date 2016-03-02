@@ -125,7 +125,7 @@ InterpolationValue CSSMotionRotationInterpolationType::maybeConvertUnderlyingVal
     return convertMotionRotation(environment.state().style()->motionRotation());
 }
 
-void CSSMotionRotationInterpolationType::composite(UnderlyingValueOwner& underlyingValueOwner, double underlyingFraction, const InterpolationValue& value) const
+void CSSMotionRotationInterpolationType::composite(UnderlyingValueOwner& underlyingValueOwner, double underlyingFraction, const InterpolationValue& value, double interpolationFraction) const
 {
     const MotionRotationType& underlyingType = toCSSMotionRotationNonInterpolableValue(*underlyingValueOwner.value().nonInterpolableValue).rotationType();
     const MotionRotationType& rotationType = toCSSMotionRotationNonInterpolableValue(*value.nonInterpolableValue).rotationType();

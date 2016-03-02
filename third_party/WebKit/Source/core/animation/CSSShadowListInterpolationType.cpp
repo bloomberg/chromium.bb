@@ -101,7 +101,7 @@ InterpolationValue CSSShadowListInterpolationType::maybeConvertUnderlyingValue(c
     return convertShadowList(ShadowListPropertyFunctions::getShadowList(cssProperty(), *environment.state().style()), environment.state().style()->effectiveZoom());
 }
 
-void CSSShadowListInterpolationType::composite(UnderlyingValueOwner& underlyingValueOwner, double underlyingFraction, const InterpolationValue& value) const
+void CSSShadowListInterpolationType::composite(UnderlyingValueOwner& underlyingValueOwner, double underlyingFraction, const InterpolationValue& value, double interpolationFraction) const
 {
     ListInterpolationFunctions::composite(underlyingValueOwner, underlyingFraction, *this, value,
         ShadowInterpolationFunctions::nonInterpolableValuesAreCompatible,

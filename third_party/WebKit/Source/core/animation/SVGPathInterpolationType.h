@@ -19,7 +19,7 @@ private:
     InterpolationValue maybeConvertSVGValue(const SVGPropertyBase& svgValue) const final;
     InterpolationValue maybeConvertNeutral(const InterpolationValue& underlying, ConversionCheckers&) const final;
     PairwiseInterpolationValue mergeSingleConversions(InterpolationValue& start, InterpolationValue& end) const final;
-    void composite(UnderlyingValueOwner&, double underlyingFraction, const InterpolationValue&) const final;
+    void composite(UnderlyingValueOwner&, double underlyingFraction, const InterpolationValue&, double interpolationFraction) const final;
     PassRefPtrWillBeRawPtr<SVGPropertyBase> appliedSVGValue(const InterpolableValue&, const NonInterpolableValue*) const final;
 };
 

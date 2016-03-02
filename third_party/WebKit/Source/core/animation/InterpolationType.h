@@ -63,7 +63,7 @@ public:
 
     virtual InterpolationValue maybeConvertUnderlyingValue(const InterpolationEnvironment&) const = 0;
 
-    virtual void composite(UnderlyingValueOwner& underlyingValueOwner, double underlyingFraction, const InterpolationValue& value) const
+    virtual void composite(UnderlyingValueOwner& underlyingValueOwner, double underlyingFraction, const InterpolationValue& value, double interpolationFraction) const
     {
         ASSERT(!underlyingValueOwner.value().nonInterpolableValue);
         ASSERT(!value.nonInterpolableValue);

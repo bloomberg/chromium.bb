@@ -48,13 +48,13 @@ PairwiseInterpolationValue SVGLengthListInterpolationType::mergeSingleConversion
     return InterpolationType::mergeSingleConversions(start, end);
 }
 
-void SVGLengthListInterpolationType::composite(UnderlyingValueOwner& underlyingValueOwner, double underlyingFraction, const InterpolationValue& value) const
+void SVGLengthListInterpolationType::composite(UnderlyingValueOwner& underlyingValueOwner, double underlyingFraction, const InterpolationValue& value, double interpolationFraction) const
 {
     size_t startLength = toInterpolableList(*underlyingValueOwner.value().interpolableValue).length();
     size_t endLength = toInterpolableList(*value.interpolableValue).length();
 
     if (startLength == endLength)
-        InterpolationType::composite(underlyingValueOwner, underlyingFraction, value);
+        InterpolationType::composite(underlyingValueOwner, underlyingFraction, value, interpolationFraction);
     else
         underlyingValueOwner.set(*this, value);
 }

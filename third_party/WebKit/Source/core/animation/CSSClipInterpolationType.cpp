@@ -235,7 +235,7 @@ PairwiseInterpolationValue CSSClipInterpolationType::mergeSingleConversions(Inte
     return PairwiseInterpolationValue(start.interpolableValue.release(), end.interpolableValue.release(), start.nonInterpolableValue.release());
 }
 
-void CSSClipInterpolationType::composite(UnderlyingValueOwner& underlyingValueOwner, double underlyingFraction, const InterpolationValue& value) const
+void CSSClipInterpolationType::composite(UnderlyingValueOwner& underlyingValueOwner, double underlyingFraction, const InterpolationValue& value, double interpolationFraction) const
 {
     const ClipAutos& underlyingAutos = toCSSClipNonInterpolableValue(*underlyingValueOwner.value().nonInterpolableValue).clipAutos();
     const ClipAutos& autos = toCSSClipNonInterpolableValue(*value.nonInterpolableValue).clipAutos();

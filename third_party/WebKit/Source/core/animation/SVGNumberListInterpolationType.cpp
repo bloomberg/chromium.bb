@@ -61,7 +61,7 @@ static void padWithZeroes(OwnPtr<InterpolableValue>& listPointer, size_t paddedL
     listPointer = result.release();
 }
 
-void SVGNumberListInterpolationType::composite(UnderlyingValueOwner& underlyingValueOwner, double underlyingFraction, const InterpolationValue& value) const
+void SVGNumberListInterpolationType::composite(UnderlyingValueOwner& underlyingValueOwner, double underlyingFraction, const InterpolationValue& value, double interpolationFraction) const
 {
     const InterpolableList& list = toInterpolableList(*value.interpolableValue);
 

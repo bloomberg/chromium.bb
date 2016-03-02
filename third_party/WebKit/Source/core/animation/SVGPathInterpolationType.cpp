@@ -28,7 +28,7 @@ PairwiseInterpolationValue SVGPathInterpolationType::mergeSingleConversions(Inte
     return PathInterpolationFunctions::mergeSingleConversions(start, end);
 }
 
-void SVGPathInterpolationType::composite(UnderlyingValueOwner& underlyingValueOwner, double underlyingFraction, const InterpolationValue& value) const
+void SVGPathInterpolationType::composite(UnderlyingValueOwner& underlyingValueOwner, double underlyingFraction, const InterpolationValue& value, double interpolationFraction) const
 {
     PathInterpolationFunctions::composite(underlyingValueOwner, underlyingFraction, *this, value);
 }

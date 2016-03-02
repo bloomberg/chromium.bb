@@ -216,16 +216,6 @@ PassRefPtr<Interpolation> StringKeyframe::CSSPropertySpecificKeyframe::maybeCrea
         break;
     }
 
-    case CSSPropertyScale: {
-        RefPtr<Interpolation> interpolation = ListStyleInterpolation<DoubleStyleInterpolation>::maybeCreateFromList(*fromCSSValue, *toCSSValue, property, range);
-        if (interpolation)
-            return interpolation.release();
-
-        // TODO(soonm): Legacy mode is used when from and to cssvaluelist length does not match.
-        return createLegacyStyleInterpolation(property, end, element, baseStyle);
-        break;
-    }
-
     default:
         // Fall back to LegacyStyleInterpolation.
         return createLegacyStyleInterpolation(property, end, element, baseStyle);

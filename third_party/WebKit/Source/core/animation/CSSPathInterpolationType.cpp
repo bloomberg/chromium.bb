@@ -16,7 +16,7 @@ void CSSPathInterpolationType::apply(const InterpolableValue& interpolableValue,
     environment.state().style()->setD(StylePath::create(PathInterpolationFunctions::appliedValue(interpolableValue, nonInterpolableValue)));
 }
 
-void CSSPathInterpolationType::composite(UnderlyingValueOwner& underlyingValueOwner, double underlyingFraction, const InterpolationValue& value) const
+void CSSPathInterpolationType::composite(UnderlyingValueOwner& underlyingValueOwner, double underlyingFraction, const InterpolationValue& value, double interpolationFraction) const
 {
     PathInterpolationFunctions::composite(underlyingValueOwner, underlyingFraction, *this, value);
 }
