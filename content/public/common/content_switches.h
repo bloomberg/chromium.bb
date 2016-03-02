@@ -183,6 +183,7 @@ extern const char kMaxUntiledLayerHeight[];
 extern const char kMaxUntiledLayerWidth[];
 extern const char kMemoryMetrics[];
 extern const char kMojoLocalStorage[];
+CONTENT_EXPORT extern const char kMojoPrimordialPipeToken[];
 CONTENT_EXPORT extern const char kMuteAudio[];
 CONTENT_EXPORT extern const char kNoReferrers[];
 CONTENT_EXPORT extern const char kNoSandbox[];

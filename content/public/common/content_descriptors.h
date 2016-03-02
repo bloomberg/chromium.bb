@@ -13,6 +13,7 @@
 enum {
   kCrashDumpSignal = kIPCDescriptorMax,
   kSandboxIPCChannel,  // https://chromium.googlesource.com/chromium/src/+/master/docs/linux_sandbox_ipc.md
+  kMojoIPCChannel,
 
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
 #if defined(OS_ANDROID)

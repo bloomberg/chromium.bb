@@ -466,6 +466,8 @@ class ContentMainRunnerImpl : public ContentMainRunner {
     SetupSignalHandlers();
     g_fds->Set(kPrimaryIPCChannel,
                kPrimaryIPCChannel + base::GlobalDescriptors::kBaseDescriptor);
+    g_fds->Set(kMojoIPCChannel,
+               kMojoIPCChannel + base::GlobalDescriptors::kBaseDescriptor);
 #endif  // !OS_ANDROID && !OS_IOS
 
 #if defined(OS_LINUX) || defined(OS_OPENBSD)

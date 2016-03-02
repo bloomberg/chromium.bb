@@ -357,6 +357,10 @@ class CONTENT_EXPORT RenderProcessHostImpl
   base::FilePath GetEventLogFilePathWithExtensions(const base::FilePath& file);
 #endif
 
+  // The token to be passed to the child process and exchanged for a message
+  // pipe to the shell.
+  std::string shell_pipe_token_;
+
   scoped_ptr<MojoApplicationHost> mojo_application_host_;
 
   // The registered IPC listener objects. When this list is empty, we should

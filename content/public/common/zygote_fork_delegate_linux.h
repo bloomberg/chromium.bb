@@ -56,6 +56,7 @@ class ZygoteForkDelegate {
     // The child process is required to write to the socket after
     // successfully forking.
     kPIDOracleFDIndex,
+    kMojoParentFDIndex,
     kNumPassedFDs  // Number of FDs in the vector passed to Fork().
   };
 
