@@ -439,6 +439,8 @@ public class ReaderModeManager extends TabModelSelectorTabObserver
      * @param reason The reason the panel is requesting to be shown.
      */
     protected void requestReaderPanelShow(StateChangeReason reason) {
+        if (mTabModelSelector == null) return;
+
         int currentTabId = mTabModelSelector.getCurrentTabId();
         if (currentTabId == Tab.INVALID_TAB_ID) return;
 
@@ -508,6 +510,8 @@ public class ReaderModeManager extends TabModelSelectorTabObserver
                 new DistillablePageUtils.PageDistillableDelegate() {
                     @Override
                     public void onIsPageDistillableResult(boolean isDistillable, boolean isLast) {
+                        if (mTabModelSelector == null) return;
+
                         ReaderModeTabInfo tabInfo = mTabStatusMap.get(readerTabId);
                         Tab readerTab = mTabModelSelector.getTabById(readerTabId);
 
