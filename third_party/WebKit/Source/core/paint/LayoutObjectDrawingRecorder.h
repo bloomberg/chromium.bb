@@ -22,40 +22,37 @@ class GraphicsContext;
 class LayoutObjectDrawingRecorder final {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
-    static bool useCachedDrawingIfPossible(GraphicsContext& context, const LayoutObject& layoutObject, DisplayItem::Type displayItemType, const LayoutPoint& paintOffset)
+    static bool useCachedDrawingIfPossible(GraphicsContext& context, const LayoutObject& layoutObject, DisplayItem::Type displayItemType)
     {
-        if (RuntimeEnabledFeatures::slimmingPaintOffsetCachingEnabled() && layoutObject.paintOffsetChanged(paintOffset))
-            return false;
         if (layoutObject.fullPaintInvalidationReason() == PaintInvalidationDelayedFull)
             return false;
         return DrawingRecorder::useCachedDrawingIfPossible(context, layoutObject, displayItemType);
     }
 
-    static bool useCachedDrawingIfPossible(GraphicsContext& context, const LayoutObject& layoutObject, PaintPhase phase, const LayoutPoint& paintOffset)
+    static bool useCachedDrawingIfPossible(GraphicsContext& context, const LayoutObject& layoutObject, PaintPhase phase)
     {
-        return useCachedDrawingIfPossible(context, layoutObject, DisplayItem::paintPhaseToDrawingType(phase), paintOffset);
+        return useCachedDrawingIfPossible(context, layoutObject, DisplayItem::paintPhaseToDrawingType(phase));
     }
 
-    LayoutObjectDrawingRecorder(GraphicsContext& context, const LayoutObject& layoutObject, DisplayItem::Type displayItemType, const FloatRect& clip, const LayoutPoint& paintOffset)
+    LayoutObjectDrawingRecorder(GraphicsContext& context, const LayoutObject& layoutObject, DisplayItem::Type displayItemType, const FloatRect& clip)
     {
-        updatePaintOffsetIfNeeded(context.paintController(), layoutObject, paintOffset);
         // We may paint a delayed-invalidation object before it's actually invalidated.
         if (layoutObject.fullPaintInvalidationReason() == PaintInvalidationDelayedFull)
             m_cacheSkipper.emplace(context);
         m_drawingRecorder.emplace(context, layoutObject, displayItemType, clip);
     }
 
-    LayoutObjectDrawingRecorder(GraphicsContext& context, const LayoutObject& layoutObject, DisplayItem::Type displayItemType, const LayoutRect& clip, const LayoutPoint& paintOffset)
-        : LayoutObjectDrawingRecorder(context, layoutObject, displayItemType, FloatRect(clip), paintOffset) { }
+    LayoutObjectDrawingRecorder(GraphicsContext& context, const LayoutObject& layoutObject, DisplayItem::Type displayItemType, const LayoutRect& clip)
+        : LayoutObjectDrawingRecorder(context, layoutObject, displayItemType, FloatRect(clip)) { }
 
-    LayoutObjectDrawingRecorder(GraphicsContext& context, const LayoutObject& layoutObject, PaintPhase phase, const FloatRect& clip, const LayoutPoint& paintOffset)
-        : LayoutObjectDrawingRecorder(context, layoutObject, DisplayItem::paintPhaseToDrawingType(phase), clip, paintOffset) { }
+    LayoutObjectDrawingRecorder(GraphicsContext& context, const LayoutObject& layoutObject, PaintPhase phase, const FloatRect& clip)
+        : LayoutObjectDrawingRecorder(context, layoutObject, DisplayItem::paintPhaseToDrawingType(phase), clip) { }
 
-    LayoutObjectDrawingRecorder(GraphicsContext& context, const LayoutObject& layoutObject, PaintPhase phase, const LayoutRect& clip, const LayoutPoint& paintOffset)
-        : LayoutObjectDrawingRecorder(context, layoutObject, DisplayItem::paintPhaseToDrawingType(phase), FloatRect(clip), paintOffset) { }
+    LayoutObjectDrawingRecorder(GraphicsContext& context, const LayoutObject& layoutObject, PaintPhase phase, const LayoutRect& clip)
+        : LayoutObjectDrawingRecorder(context, layoutObject, DisplayItem::paintPhaseToDrawingType(phase), FloatRect(clip)) { }
 
-    LayoutObjectDrawingRecorder(GraphicsContext& context, const LayoutObject& layoutObject, PaintPhase phase, const IntRect& clip, const LayoutPoint& paintOffset)
-        : LayoutObjectDrawingRecorder(context, layoutObject, DisplayItem::paintPhaseToDrawingType(phase), FloatRect(clip), paintOffset) { }
+    LayoutObjectDrawingRecorder(GraphicsContext& context, const LayoutObject& layoutObject, PaintPhase phase, const IntRect& clip)
+        : LayoutObjectDrawingRecorder(context, layoutObject, DisplayItem::paintPhaseToDrawingType(phase), FloatRect(clip)) { }
 
     void setKnownToBeOpaque() { ASSERT(RuntimeEnabledFeatures::slimmingPaintV2Enabled()); m_drawingRecorder->setKnownToBeOpaque(); }
 
@@ -64,19 +61,6 @@ public:
 #endif
 
 private:
-    static void updatePaintOffsetIfNeeded(PaintController& paintController, const LayoutObject& layoutObject, const LayoutPoint& paintOffset)
-    {
-        if (!RuntimeEnabledFeatures::slimmingPaintOffsetCachingEnabled() || paintController.skippingCache())
-            return;
-
-        if (layoutObject.paintOffsetChanged(paintOffset))
-            paintController.invalidatePaintOffset(layoutObject);
-        else
-            ASSERT(!paintController.paintOffsetWasInvalidated(layoutObject) || !paintController.clientCacheIsValid(layoutObject));
-
-        layoutObject.getMutableForPainting().setPreviousPaintOffset(paintOffset);
-    }
-
     Optional<DisplayItemCacheSkipper> m_cacheSkipper;
     Optional<DrawingRecorder> m_drawingRecorder;
 };

@@ -203,7 +203,7 @@ void ObjectPainter::paintOutline(const PaintInfo& paintInfo, const LayoutPoint& 
     if (outlineRects.isEmpty())
         return;
 
-    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(paintInfo.context, m_layoutObject, paintInfo.phase, paintOffset))
+    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(paintInfo.context, m_layoutObject, paintInfo.phase))
         return;
 
     // The result rects are in coordinates of m_layoutObject's border box.
@@ -224,7 +224,7 @@ void ObjectPainter::paintOutline(const PaintInfo& paintInfo, const LayoutPoint& 
     IntRect unitedOutlineRect = unionRectEvenIfEmpty(pixelSnappedOutlineRects);
     IntRect bounds = unitedOutlineRect;
     bounds.inflate(m_layoutObject.styleRef().outlineOutsetExtent());
-    LayoutObjectDrawingRecorder recorder(paintInfo.context, m_layoutObject, paintInfo.phase, bounds, paintOffset);
+    LayoutObjectDrawingRecorder recorder(paintInfo.context, m_layoutObject, paintInfo.phase, bounds);
 
     Color color = m_layoutObject.resolveColor(styleToUse, CSSPropertyOutlineColor);
     if (styleToUse.outlineStyleIsAuto()) {
@@ -266,10 +266,10 @@ void ObjectPainter::addPDFURLRectIfNeeded(const PaintInfo& paintInfo, const Layo
     if (rect.isEmpty())
         return;
 
-    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(paintInfo.context, m_layoutObject, DisplayItem::PrintedContentPDFURLRect, paintOffset))
+    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(paintInfo.context, m_layoutObject, DisplayItem::PrintedContentPDFURLRect))
         return;
 
-    LayoutObjectDrawingRecorder recorder(paintInfo.context, m_layoutObject, DisplayItem::PrintedContentPDFURLRect, rect, paintOffset);
+    LayoutObjectDrawingRecorder recorder(paintInfo.context, m_layoutObject, DisplayItem::PrintedContentPDFURLRect, rect);
     if (url.hasFragmentIdentifier() && equalIgnoringFragmentIdentifier(url, m_layoutObject.document().baseURL())) {
         String fragmentName = url.fragmentIdentifier();
         if (m_layoutObject.document().findAnchor(fragmentName))

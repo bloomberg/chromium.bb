@@ -34,10 +34,10 @@ void ScrollableAreaPainter::paintResizer(GraphicsContext& context, const IntPoin
         return;
     }
 
-    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(context, scrollableArea().box(), DisplayItem::Resizer, paintOffset))
+    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(context, scrollableArea().box(), DisplayItem::Resizer))
         return;
 
-    LayoutObjectDrawingRecorder recorder(context, scrollableArea().box(), DisplayItem::Resizer, absRect, paintOffset);
+    LayoutObjectDrawingRecorder recorder(context, scrollableArea().box(), DisplayItem::Resizer, absRect);
 
     drawPlatformResizerImage(context, absRect);
 
@@ -184,10 +184,10 @@ void ScrollableAreaPainter::paintScrollCorner(GraphicsContext& context, const In
     if (scrollableArea().hasOverlayScrollbars())
         return;
 
-    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(context, scrollableArea().box(), DisplayItem::ScrollbarCorner, paintOffset))
+    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(context, scrollableArea().box(), DisplayItem::ScrollbarCorner))
         return;
 
-    LayoutObjectDrawingRecorder recorder(context, scrollableArea().box(), DisplayItem::ScrollbarCorner, absRect, paintOffset);
+    LayoutObjectDrawingRecorder recorder(context, scrollableArea().box(), DisplayItem::ScrollbarCorner, absRect);
     context.fillRect(absRect, Color::white);
 }
 

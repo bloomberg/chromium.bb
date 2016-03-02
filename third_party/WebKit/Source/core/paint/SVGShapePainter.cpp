@@ -56,8 +56,8 @@ void SVGShapePainter::paint(const PaintInfo& paintInfo)
     TransformRecorder transformRecorder(paintInfoBeforeFiltering.context, m_layoutSVGShape, m_layoutSVGShape.localTransform());
     {
         SVGPaintContext paintContext(m_layoutSVGShape, paintInfoBeforeFiltering);
-        if (paintContext.applyClipMaskAndFilterIfNecessary() && !LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(paintContext.paintInfo().context, m_layoutSVGShape, paintContext.paintInfo().phase, LayoutPoint())) {
-            LayoutObjectDrawingRecorder recorder(paintContext.paintInfo().context, m_layoutSVGShape, paintContext.paintInfo().phase, boundingBox, LayoutPoint());
+        if (paintContext.applyClipMaskAndFilterIfNecessary() && !LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(paintContext.paintInfo().context, m_layoutSVGShape, paintContext.paintInfo().phase)) {
+            LayoutObjectDrawingRecorder recorder(paintContext.paintInfo().context, m_layoutSVGShape, paintContext.paintInfo().phase, boundingBox);
             const SVGComputedStyle& svgStyle = m_layoutSVGShape.style()->svgStyle();
 
             bool shouldAntiAlias = svgStyle.shapeRendering() != SR_CRISPEDGES;

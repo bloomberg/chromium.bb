@@ -20,7 +20,7 @@ void FieldsetPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo, c
     if (!legend)
         return BoxPainter(m_layoutFieldset).paintBoxDecorationBackground(paintInfo, paintOffset);
 
-    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(paintInfo.context, m_layoutFieldset, paintInfo.phase, paintOffset))
+    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(paintInfo.context, m_layoutFieldset, paintInfo.phase))
         return;
 
     // FIXME: We need to work with "rl" and "bt" block flow directions.  In those
@@ -36,7 +36,7 @@ void FieldsetPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo, c
         paintRect.setX(paintRect.x() + xOff);
     }
 
-    LayoutObjectDrawingRecorder recorder(paintInfo.context, m_layoutFieldset, paintInfo.phase, paintRect, paintOffset);
+    LayoutObjectDrawingRecorder recorder(paintInfo.context, m_layoutFieldset, paintInfo.phase, paintRect);
     BoxDecorationData boxDecorationData(m_layoutFieldset);
 
     if (boxDecorationData.bleedAvoidance == BackgroundBleedNone)
@@ -77,7 +77,7 @@ void FieldsetPainter::paintMask(const PaintInfo& paintInfo, const LayoutPoint& p
     if (!legend)
         return BoxPainter(m_layoutFieldset).paintMask(paintInfo, paintOffset);
 
-    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(paintInfo.context, m_layoutFieldset, paintInfo.phase, paintOffset))
+    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(paintInfo.context, m_layoutFieldset, paintInfo.phase))
         return;
 
     // FIXME: We need to work with "rl" and "bt" block flow directions.  In those
@@ -93,7 +93,7 @@ void FieldsetPainter::paintMask(const PaintInfo& paintInfo, const LayoutPoint& p
         paintRect.move(xOff, LayoutUnit());
     }
 
-    LayoutObjectDrawingRecorder recorder(paintInfo.context, m_layoutFieldset, paintInfo.phase, paintRect, paintOffset);
+    LayoutObjectDrawingRecorder recorder(paintInfo.context, m_layoutFieldset, paintInfo.phase, paintRect);
     BoxPainter(m_layoutFieldset).paintMaskImages(paintInfo, paintRect);
 }
 

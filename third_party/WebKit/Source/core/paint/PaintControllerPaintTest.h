@@ -18,7 +18,7 @@ namespace blink {
 class PaintControllerPaintTestBase : public RenderingTest {
 public:
     PaintControllerPaintTestBase(bool enableSlimmingPaintV2)
-        : m_originalSlimmingPaintOffsetCachingEnabled(RuntimeEnabledFeatures::slimmingPaintOffsetCachingEnabled())
+        : m_originalSlimmingPaintInvalidationEnabled(RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
         , m_originalSlimmingPaintV2Enabled(RuntimeEnabledFeatures::slimmingPaintV2Enabled())
         , m_enableSlimmingPaintV2(enableSlimmingPaintV2)
     { }
@@ -36,7 +36,7 @@ protected:
     }
     void TearDown() override
     {
-        RuntimeEnabledFeatures::setSlimmingPaintOffsetCachingEnabled(m_originalSlimmingPaintOffsetCachingEnabled);
+        RuntimeEnabledFeatures::setSlimmingPaintInvalidationEnabled(m_originalSlimmingPaintInvalidationEnabled);
         RuntimeEnabledFeatures::setSlimmingPaintV2Enabled(m_originalSlimmingPaintV2Enabled);
         GraphicsLayer::setDrawDebugRedFillForTesting(true);
     }
@@ -93,7 +93,7 @@ protected:
     }
 
 private:
-    bool m_originalSlimmingPaintOffsetCachingEnabled;
+    bool m_originalSlimmingPaintInvalidationEnabled;
     bool m_originalSlimmingPaintV2Enabled;
     bool m_enableSlimmingPaintV2;
 };

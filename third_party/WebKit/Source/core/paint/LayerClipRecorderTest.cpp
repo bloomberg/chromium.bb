@@ -51,8 +51,8 @@ void drawRectInClip(GraphicsContext& context, LayoutView& layoutView, PaintPhase
     IntRect rect(1, 1, 9, 9);
     ClipRect clipRect((LayoutRect(rect)));
     LayerClipRecorder LayerClipRecorder(context, *layoutView.compositor()->rootLayer()->layoutObject(), DisplayItem::ClipLayerForeground, clipRect, 0, LayoutPoint(), PaintLayerFlags());
-    if (!LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(context, layoutView, phase, LayoutPoint())) {
-        LayoutObjectDrawingRecorder drawingRecorder(context, layoutView, phase, bound, LayoutPoint());
+    if (!LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(context, layoutView, phase)) {
+        LayoutObjectDrawingRecorder drawingRecorder(context, layoutView, phase, bound);
         context.drawRect(rect);
     }
 }

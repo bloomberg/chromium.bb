@@ -49,7 +49,7 @@ void ListMarkerPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& pai
     if (m_layoutListMarker.style()->visibility() != VISIBLE)
         return;
 
-    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(paintInfo.context, m_layoutListMarker, paintInfo.phase, paintOffset))
+    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(paintInfo.context, m_layoutListMarker, paintInfo.phase))
         return;
 
     LayoutPoint boxOrigin(paintOffset + m_layoutListMarker.location());
@@ -60,7 +60,7 @@ void ListMarkerPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& pai
     if (!paintInfo.cullRect().intersectsCullRect(overflowRect))
         return;
 
-    LayoutObjectDrawingRecorder recorder(paintInfo.context, m_layoutListMarker, paintInfo.phase, pixelSnappedOverflowRect, paintOffset);
+    LayoutObjectDrawingRecorder recorder(paintInfo.context, m_layoutListMarker, paintInfo.phase, pixelSnappedOverflowRect);
 
     LayoutRect box(boxOrigin, m_layoutListMarker.size());
 

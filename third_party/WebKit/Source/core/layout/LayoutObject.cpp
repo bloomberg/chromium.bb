@@ -257,7 +257,7 @@ LayoutObject::LayoutObject(Node* node)
     , m_bitfields(node)
 {
     // TODO(wangxianzhu): Move this into initialization list when we enable the feature by default.
-    if (RuntimeEnabledFeatures::slimmingPaintOffsetCachingEnabled())
+    if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
         m_previousPositionFromPaintInvalidationBacking = uninitializedPaintOffset();
 
 #ifndef NDEBUG
@@ -1436,9 +1436,9 @@ PaintInvalidationReason LayoutObject::invalidatePaintIfNeeded(PaintInvalidationS
         return PaintInvalidationNone; // Don't invalidate paints if we're printing.
 
     const LayoutRect oldBounds = previousPaintInvalidationRect();
-    const LayoutPoint oldLocation = RuntimeEnabledFeatures::slimmingPaintOffsetCachingEnabled() ? LayoutPoint() : previousPositionFromPaintInvalidationBacking();
+    const LayoutPoint oldLocation = RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled() ? LayoutPoint() : previousPositionFromPaintInvalidationBacking();
     LayoutRect newBounds = boundsRectForPaintInvalidation(paintInvalidationContainer, &paintInvalidationState);
-    LayoutPoint newLocation = RuntimeEnabledFeatures::slimmingPaintOffsetCachingEnabled() ? LayoutPoint() : PaintLayer::positionFromPaintInvalidationBacking(this, &paintInvalidationContainer, &paintInvalidationState);
+    LayoutPoint newLocation = RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled() ? LayoutPoint() : PaintLayer::positionFromPaintInvalidationBacking(this, &paintInvalidationContainer, &paintInvalidationState);
 
     // Composited scrolling should not be included in the bounds and position tracking, because the graphics layer backing the scroller
     // does not move on scroll.
@@ -1449,7 +1449,7 @@ PaintInvalidationReason LayoutObject::invalidatePaintIfNeeded(PaintInvalidationS
     }
 
     setPreviousPaintInvalidationRect(newBounds);
-    if (!RuntimeEnabledFeatures::slimmingPaintOffsetCachingEnabled())
+    if (!RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
         setPreviousPositionFromPaintInvalidationBacking(newLocation);
 
     if (!shouldCheckForPaintInvalidationRegardlessOfPaintInvalidationState() && !paintInvalidationState.forcedSubtreeInvalidationWithinContainer()) {
@@ -1478,7 +1478,7 @@ PaintInvalidationReason LayoutObject::invalidatePaintIfNeeded(PaintInvalidationS
         // mutation, but incurs no pixel difference (i.e. bounds stay the same) so no rect-based
         // invalidation is issued. See crbug.com/508383 and crbug.com/515977.
         // This is a workaround to force display items to update paint offset.
-        if (!RuntimeEnabledFeatures::slimmingPaintOffsetCachingEnabled() && paintInvalidationState.forcedSubtreeInvalidationWithinContainer())
+        if (!RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled() && paintInvalidationState.forcedSubtreeInvalidationWithinContainer())
             invalidateDisplayItemClientsWithPaintInvalidationState(paintInvalidationContainer, paintInvalidationState, invalidationReason);
 
         return invalidationReason;

@@ -1292,23 +1292,23 @@ public:
     // The previous position of the top-left corner of the object in its previous paint backing.
     const LayoutPoint& previousPositionFromPaintInvalidationBacking() const
     {
-        ASSERT(!RuntimeEnabledFeatures::slimmingPaintOffsetCachingEnabled());
+        ASSERT(!RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled());
         return m_previousPositionFromPaintInvalidationBacking;
     }
     void setPreviousPositionFromPaintInvalidationBacking(const LayoutPoint& positionFromPaintInvalidationBacking)
     {
-        ASSERT(!RuntimeEnabledFeatures::slimmingPaintOffsetCachingEnabled());
+        ASSERT(!RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled());
         m_previousPositionFromPaintInvalidationBacking = positionFromPaintInvalidationBacking;
     }
 
     bool paintOffsetChanged(const LayoutPoint& newPaintOffset) const
     {
-        ASSERT(RuntimeEnabledFeatures::slimmingPaintOffsetCachingEnabled());
+        ASSERT(RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled());
         return m_previousPositionFromPaintInvalidationBacking != uninitializedPaintOffset() && m_previousPositionFromPaintInvalidationBacking != newPaintOffset;
     }
     void setPreviousPaintOffset(const LayoutPoint& paintOffset)
     {
-        ASSERT(RuntimeEnabledFeatures::slimmingPaintOffsetCachingEnabled());
+        ASSERT(RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled());
         m_previousPositionFromPaintInvalidationBacking = paintOffset;
     }
 
@@ -1911,8 +1911,8 @@ private:
     // This stores the position in the paint invalidation backing's coordinate.
     // It is used to detect layoutObject shifts that forces a full invalidation.
     // This point does *not* account for composited scrolling. See adjustInvalidationRectForCompositedScrolling().
-    // For slimmingPaintOffsetCaching, this stores the previous paint offset.
-    // TODO(wangxianzhu): Rename this to m_previousPaintOffset when we enable slimmingPaintOffsetCaching.
+    // For slimmingPaintInvalidation, this stores the previous paint offset.
+    // TODO(wangxianzhu): Rename this to m_previousPaintOffset when we enable slimmingPaintInvalidation.
     LayoutPoint m_previousPositionFromPaintInvalidationBacking;
 };
 

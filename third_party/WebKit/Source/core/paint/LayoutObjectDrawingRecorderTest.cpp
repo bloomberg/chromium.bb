@@ -22,17 +22,17 @@ namespace {
 
 void drawNothing(GraphicsContext& context, const LayoutView& layoutView, PaintPhase phase, const LayoutRect& bound)
 {
-    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(context, layoutView, phase, LayoutPoint()))
+    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(context, layoutView, phase))
         return;
 
-    LayoutObjectDrawingRecorder drawingRecorder(context, layoutView, phase, bound, LayoutPoint());
+    LayoutObjectDrawingRecorder drawingRecorder(context, layoutView, phase, bound);
 }
 
 void drawRect(GraphicsContext& context, LayoutView& layoutView, PaintPhase phase, const LayoutRect& bound)
 {
-    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(context, layoutView, phase, LayoutPoint()))
+    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(context, layoutView, phase))
         return;
-    LayoutObjectDrawingRecorder drawingRecorder(context, layoutView, phase, bound, LayoutPoint());
+    LayoutObjectDrawingRecorder drawingRecorder(context, layoutView, phase, bound);
     IntRect rect(0, 0, 10, 10);
     context.drawRect(rect);
 }
@@ -94,8 +94,7 @@ FloatRect drawAndGetCullRect(PaintController& controller, const LayoutObject& la
     {
         // Draw some things which will produce a non-null picture.
         GraphicsContext context(controller);
-        LayoutObjectDrawingRecorder recorder(
-            context, layoutObject, DisplayItem::BoxDecorationBackground, bounds, LayoutPoint());
+        LayoutObjectDrawingRecorder recorder(context, layoutObject, DisplayItem::BoxDecorationBackground, bounds);
         context.drawRect(enclosedIntRect(FloatRect(bounds)));
     }
     controller.commitNewDisplayItems();
@@ -118,6 +117,7 @@ TEST_F(LayoutObjectDrawingRecorderTest, CullRectMatchesProvidedClip)
     EXPECT_EQ(rect, drawAndGetCullRect(rootPaintController(), layoutView(), LayoutRect(rect)));
 }
 
+#if 0 // TODO(wangxianzhu): Rewrite this test for slimmingPaintInvalidation.
 TEST_F(LayoutObjectDrawingRecorderTest, PaintOffsetCache)
 {
     RuntimeEnabledFeatures::setSlimmingPaintOffsetCachingEnabled(true);
@@ -127,9 +127,9 @@ TEST_F(LayoutObjectDrawingRecorderTest, PaintOffsetCache)
     LayoutPoint paintOffset(1, 2);
 
     rootPaintController().invalidateAll();
-    EXPECT_FALSE(LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(context, layoutView(), PaintPhaseForeground, paintOffset));
+    EXPECT_FALSE(LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(context, layoutView(), PaintPhaseForeground));
     {
-        LayoutObjectDrawingRecorder drawingRecorder(context, layoutView(), PaintPhaseForeground, bounds, paintOffset);
+        LayoutObjectDrawingRecorder drawingRecorder(context, layoutView(), PaintPhaseForeground, bounds);
         IntRect rect(0, 0, 10, 10);
         context.drawRect(rect);
     }
@@ -140,11 +140,11 @@ TEST_F(LayoutObjectDrawingRecorderTest, PaintOffsetCache)
 
     // Ensure we cannot use the cache with a new paint offset.
     LayoutPoint newPaintOffset(2, 3);
-    EXPECT_FALSE(LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(context, layoutView(), PaintPhaseForeground, newPaintOffset));
+    EXPECT_FALSE(LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(context, layoutView(), PaintPhaseForeground));
 
     // Test that a new paint offset is recorded.
     {
-        LayoutObjectDrawingRecorder drawingRecorder(context, layoutView(), PaintPhaseForeground, bounds, newPaintOffset);
+        LayoutObjectDrawingRecorder drawingRecorder(context, layoutView(), PaintPhaseForeground, bounds);
         IntRect rect(0, 0, 10, 10);
         context.drawRect(rect);
     }
@@ -154,14 +154,15 @@ TEST_F(LayoutObjectDrawingRecorderTest, PaintOffsetCache)
         TestDisplayItem(layoutView(), DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)));
 
     // Ensure the old paint offset cannot be used.
-    EXPECT_FALSE(LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(context, layoutView(), PaintPhaseForeground, paintOffset));
+    EXPECT_FALSE(LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(context, layoutView(), PaintPhaseForeground));
 
     // Ensure the new paint offset can be used.
-    EXPECT_TRUE(LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(context, layoutView(), PaintPhaseForeground, newPaintOffset));
+    EXPECT_TRUE(LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(context, layoutView(), PaintPhaseForeground));
     rootPaintController().commitNewDisplayItems();
     EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 1,
         TestDisplayItem(layoutView(), DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)));
 }
+#endif
 
 } // namespace
 } // namespace blink

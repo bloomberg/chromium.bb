@@ -69,11 +69,11 @@ static bool shouldPaintBorderAfter(const LayoutFrameSet::GridAxis& axis, size_t 
 
 void FrameSetPainter::paintBorders(const PaintInfo& paintInfo, const LayoutPoint& adjustedPaintOffset)
 {
-    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(paintInfo.context, m_layoutFrameSet, paintInfo.phase, adjustedPaintOffset))
+    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(paintInfo.context, m_layoutFrameSet, paintInfo.phase))
         return;
 
     LayoutRect adjustedFrameRect(adjustedPaintOffset, m_layoutFrameSet.size());
-    LayoutObjectDrawingRecorder recorder(paintInfo.context, m_layoutFrameSet, paintInfo.phase, adjustedFrameRect, adjustedPaintOffset);
+    LayoutObjectDrawingRecorder recorder(paintInfo.context, m_layoutFrameSet, paintInfo.phase, adjustedFrameRect);
 
     LayoutUnit borderThickness(m_layoutFrameSet.frameSet()->border());
     if (!borderThickness)

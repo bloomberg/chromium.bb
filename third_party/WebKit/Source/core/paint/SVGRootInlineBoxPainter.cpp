@@ -24,10 +24,8 @@ void SVGRootInlineBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoin
     bool hasSelection = !paintInfo.isPrinting() && m_svgRootInlineBox.getSelectionState() != SelectionNone;
 
     PaintInfo paintInfoBeforeFiltering(paintInfo);
-    if (hasSelection && !LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(paintInfoBeforeFiltering.context, *LineLayoutAPIShim::constLayoutObjectFrom(m_svgRootInlineBox.getLineLayoutItem()),
-        paintInfoBeforeFiltering.phase, paintOffset)) {
-        LayoutObjectDrawingRecorder recorder(paintInfoBeforeFiltering.context, *LineLayoutAPIShim::constLayoutObjectFrom(m_svgRootInlineBox.getLineLayoutItem()), paintInfoBeforeFiltering.phase,
-            paintInfoBeforeFiltering.cullRect().m_rect, paintOffset);
+    if (hasSelection && !LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(paintInfoBeforeFiltering.context, *LineLayoutAPIShim::constLayoutObjectFrom(m_svgRootInlineBox.getLineLayoutItem()), paintInfoBeforeFiltering.phase)) {
+        LayoutObjectDrawingRecorder recorder(paintInfoBeforeFiltering.context, *LineLayoutAPIShim::constLayoutObjectFrom(m_svgRootInlineBox.getLineLayoutItem()), paintInfoBeforeFiltering.phase, paintInfoBeforeFiltering.cullRect().m_rect);
         for (InlineBox* child = m_svgRootInlineBox.firstChild(); child; child = child->nextOnLine()) {
             if (child->isSVGInlineTextBox())
                 SVGInlineTextBoxPainter(*toSVGInlineTextBox(child)).paintSelectionBackground(paintInfoBeforeFiltering);

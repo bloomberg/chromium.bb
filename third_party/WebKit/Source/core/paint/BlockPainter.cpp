@@ -128,17 +128,6 @@ void BlockPainter::paintInlineBox(const InlineBox& inlineBox, const PaintInfo& p
 
 void BlockPainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    if (RuntimeEnabledFeatures::slimmingPaintOffsetCachingEnabled() && m_layoutBlock.childrenInline() && !paintInfo.context.paintController().skippingCache()) {
-        if (m_layoutBlock.paintOffsetChanged(paintOffset)) {
-            LineBoxListPainter(m_layoutBlock.lineBoxes()).invalidateLineBoxPaintOffsets(paintInfo);
-            paintInfo.context.paintController().invalidatePaintOffset(m_layoutBlock);
-        }
-        // Set previousPaintOffset here in case that m_layoutBlock paints nothing and no
-        // LayoutObjectDrawingRecorder updates its previousPaintOffset.
-        // TODO(wangxianzhu): Integrate paint offset checking into new paint invalidation.
-        m_layoutBlock.getMutableForPainting().setPreviousPaintOffset(paintOffset);
-    }
-
     const PaintPhase paintPhase = paintInfo.phase;
 
     if (shouldPaintSelfBlockBackground(paintPhase)) {
@@ -195,10 +184,10 @@ void BlockPainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& pa
 
     // If the caret's node's layout object's containing block is this block, and the paint action is PaintPhaseForeground,
     // then paint the caret.
-    if (paintPhase == PaintPhaseForeground && m_layoutBlock.hasCaret() && !LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(paintInfo.context, m_layoutBlock, DisplayItem::Caret, paintOffset)) {
+    if (paintPhase == PaintPhaseForeground && m_layoutBlock.hasCaret() && !LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(paintInfo.context, m_layoutBlock, DisplayItem::Caret)) {
         LayoutRect bounds = m_layoutBlock.visualOverflowRect();
         bounds.moveBy(paintOffset);
-        LayoutObjectDrawingRecorder recorder(paintInfo.context, m_layoutBlock, DisplayItem::Caret, bounds, paintOffset);
+        LayoutObjectDrawingRecorder recorder(paintInfo.context, m_layoutBlock, DisplayItem::Caret, bounds);
         paintCarets(paintInfo, paintOffset);
     }
 }

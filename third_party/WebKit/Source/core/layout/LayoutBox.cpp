@@ -3812,7 +3812,7 @@ PaintInvalidationReason LayoutBox::paintInvalidationReason(const LayoutBoxModelO
 
     // LayoutBox::incrementallyInvalidatePaint() depends on positionFromPaintInvalidationBacking
     // which is not available when slimmingPaintOffsetCachingEnabled.
-    if (RuntimeEnabledFeatures::slimmingPaintOffsetCachingEnabled() && (style()->hasBoxDecorations() || style()->hasBackground()))
+    if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled() && (style()->hasBoxDecorations() || style()->hasBackground()))
         return PaintInvalidationBorderBoxChange;
 
     // TODO(wangxianzhu): Remove incremental invalidation when we remove rect-based paint invalidation.

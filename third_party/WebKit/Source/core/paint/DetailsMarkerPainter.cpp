@@ -20,7 +20,7 @@ void DetailsMarkerPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& 
         return;
     }
 
-    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(paintInfo.context, m_layoutDetailsMarker, paintInfo.phase, paintOffset))
+    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(paintInfo.context, m_layoutDetailsMarker, paintInfo.phase))
         return;
 
     LayoutPoint boxOrigin(paintOffset + m_layoutDetailsMarker.location());
@@ -30,7 +30,7 @@ void DetailsMarkerPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& 
     if (!paintInfo.cullRect().intersectsCullRect(overflowRect))
         return;
 
-    LayoutObjectDrawingRecorder layoutDrawingRecorder(paintInfo.context, m_layoutDetailsMarker, paintInfo.phase, overflowRect, paintOffset);
+    LayoutObjectDrawingRecorder layoutDrawingRecorder(paintInfo.context, m_layoutDetailsMarker, paintInfo.phase, overflowRect);
     const Color color(m_layoutDetailsMarker.resolveColor(CSSPropertyColor));
     paintInfo.context.setFillColor(color);
 

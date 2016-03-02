@@ -60,11 +60,11 @@ void ImagePainter::paintAreaElementFocusRing(const PaintInfo& paintInfo, const L
     if (!outlineWidth)
         return;
 
-    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(paintInfo.context, m_layoutImage, paintInfo.phase, paintOffset))
+    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(paintInfo.context, m_layoutImage, paintInfo.phase))
         return;
 
     IntRect focusRect = m_layoutImage.absoluteContentBox();
-    LayoutObjectDrawingRecorder drawingRecorder(paintInfo.context, m_layoutImage, paintInfo.phase, focusRect, paintOffset);
+    LayoutObjectDrawingRecorder drawingRecorder(paintInfo.context, m_layoutImage, paintInfo.phase, focusRect);
 
     // FIXME: Clip path instead of context when Skia pathops is ready.
     // https://crbug.com/251206
@@ -88,11 +88,11 @@ void ImagePainter::paintReplaced(const PaintInfo& paintInfo, const LayoutPoint& 
         if (paintInfo.phase == PaintPhaseSelection)
             return;
         if (cWidth > 2 && cHeight > 2) {
-            if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(context, m_layoutImage, paintInfo.phase, paintOffset))
+            if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(context, m_layoutImage, paintInfo.phase))
                 return;
             // Draw an outline rect where the image should be.
             IntRect paintRect = pixelSnappedIntRect(LayoutRect(paintOffset.x() + m_layoutImage.borderLeft() + m_layoutImage.paddingLeft(), paintOffset.y() + m_layoutImage.borderTop() + m_layoutImage.paddingTop(), cWidth, cHeight));
-            LayoutObjectDrawingRecorder drawingRecorder(context, m_layoutImage, paintInfo.phase, paintRect, paintOffset);
+            LayoutObjectDrawingRecorder drawingRecorder(context, m_layoutImage, paintInfo.phase, paintRect);
             context.setStrokeStyle(SolidStroke);
             context.setStrokeColor(Color::lightGray);
             context.setFillColor(Color::transparent);
@@ -110,10 +110,10 @@ void ImagePainter::paintReplaced(const PaintInfo& paintInfo, const LayoutPoint& 
             clipRecorder.emplace(context, m_layoutImage, paintInfo.displayItemTypeForClipping(), contentRect);
         }
 
-        if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(context, m_layoutImage, paintInfo.phase, paintOffset))
+        if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(context, m_layoutImage, paintInfo.phase))
             return;
 
-        LayoutObjectDrawingRecorder drawingRecorder(context, m_layoutImage, paintInfo.phase, contentRect, paintOffset);
+        LayoutObjectDrawingRecorder drawingRecorder(context, m_layoutImage, paintInfo.phase, contentRect);
         paintIntoRect(context, paintRect);
     }
 }

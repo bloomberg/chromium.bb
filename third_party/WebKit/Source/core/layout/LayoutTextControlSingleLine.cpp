@@ -73,7 +73,7 @@ void LayoutTextControlSingleLine::paint(const PaintInfo& paintInfo, const Layout
     LayoutTextControl::paint(paintInfo, paintOffset);
 
     if (shouldPaintSelfBlockBackground(paintInfo.phase) && m_shouldDrawCapsLockIndicator) {
-        if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(paintInfo.context, *this, paintInfo.phase, paintOffset))
+        if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(paintInfo.context, *this, paintInfo.phase))
             return;
 
         LayoutRect contentsRect = contentBoxRect();
@@ -87,7 +87,7 @@ void LayoutTextControlSingleLine::paint(const PaintInfo& paintInfo, const Layout
         // Convert the rect into the coords used for painting the content
         contentsRect.moveBy(paintOffset + location());
         IntRect snappedRect = pixelSnappedIntRect(contentsRect);
-        LayoutObjectDrawingRecorder recorder(paintInfo.context, *this, paintInfo.phase, snappedRect, paintOffset);
+        LayoutObjectDrawingRecorder recorder(paintInfo.context, *this, paintInfo.phase, snappedRect);
         LayoutTheme::theme().painter().paintCapsLockIndicator(*this, paintInfo, snappedRect);
     }
 }

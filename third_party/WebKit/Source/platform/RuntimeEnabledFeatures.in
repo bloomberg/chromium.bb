@@ -178,8 +178,8 @@ ShadowDOMV1 status=experimental
 ShadowRootDelegatesFocus status=experimental
 SharedArrayBuffer
 SharedWorker status=stable
+SlimmingPaintInvalidation
 SlimmingPaintV2
-SlimmingPaintOffsetCaching implied_by=SlimmingPaintV2
 SlimmingPaintStrictCullRectClipping
 SlimmingPaintUnderInvalidationChecking
 StackedCSSPropertyAnimations status=experimental

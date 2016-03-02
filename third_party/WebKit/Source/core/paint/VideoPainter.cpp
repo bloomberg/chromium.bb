@@ -37,10 +37,10 @@ void VideoPainter::paintReplaced(const PaintInfo& paintInfo, const LayoutPoint& 
         clipRecorder.emplace(context, m_layoutVideo, paintInfo.displayItemTypeForClipping(), contentRect);
     }
 
-    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(context, m_layoutVideo, paintInfo.phase, paintOffset))
+    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(context, m_layoutVideo, paintInfo.phase))
         return;
 
-    LayoutObjectDrawingRecorder drawingRecorder(context, m_layoutVideo, paintInfo.phase, contentRect, paintOffset);
+    LayoutObjectDrawingRecorder drawingRecorder(context, m_layoutVideo, paintInfo.phase, contentRect);
 
     // Video frames are only painted in software for printing or capturing node images via web APIs.
     bool forceSoftwareVideoPaint = paintInfo.getGlobalPaintFlags() & GlobalPaintFlattenCompositingLayers;

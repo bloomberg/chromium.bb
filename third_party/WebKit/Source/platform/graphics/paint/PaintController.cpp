@@ -166,7 +166,7 @@ bool PaintController::clientCacheIsValid(const DisplayItemClient& client) const
 
 void PaintController::invalidatePaintOffset(const DisplayItemClient& client)
 {
-    ASSERT(RuntimeEnabledFeatures::slimmingPaintOffsetCachingEnabled());
+    ASSERT(RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled());
     invalidate(client);
 
 #if ENABLE(ASSERT)
@@ -178,7 +178,7 @@ void PaintController::invalidatePaintOffset(const DisplayItemClient& client)
 #if ENABLE(ASSERT)
 bool PaintController::paintOffsetWasInvalidated(const DisplayItemClient& client) const
 {
-    ASSERT(RuntimeEnabledFeatures::slimmingPaintOffsetCachingEnabled());
+    ASSERT(RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled());
     return m_clientsWithPaintOffsetInvalidations.contains(&client);
 }
 #endif
@@ -348,7 +348,7 @@ void PaintController::commitNewDisplayItemsInternal(const LayoutSize& offsetFrom
 
         if (newDisplayItemHasCachedType) {
             ASSERT(newDisplayItem.isCached());
-            ASSERT(clientCacheIsValid(newDisplayItem.client()) || (RuntimeEnabledFeatures::slimmingPaintOffsetCachingEnabled() && !paintOffsetWasInvalidated(newDisplayItem.client())));
+            ASSERT(clientCacheIsValid(newDisplayItem.client()) || (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled() && !paintOffsetWasInvalidated(newDisplayItem.client())));
             if (!isSynchronized) {
                 currentIt = findOutOfOrderCachedItem(newDisplayItemId, outOfOrderIndexContext);
 
@@ -382,7 +382,7 @@ void PaintController::commitNewDisplayItemsInternal(const LayoutSize& offsetFrom
             ASSERT(!newDisplayItem.isDrawing()
                 || newDisplayItem.skippedCache()
                 || !clientCacheIsValid(newDisplayItem.client())
-                || (RuntimeEnabledFeatures::slimmingPaintOffsetCachingEnabled() && paintOffsetWasInvalidated(newDisplayItem.client())));
+                || (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled() && paintOffsetWasInvalidated(newDisplayItem.client())));
 
             updatedList.appendByMoving(*newIt, visualRectForDisplayItem(*newIt, offsetFromLayoutObject));
 
