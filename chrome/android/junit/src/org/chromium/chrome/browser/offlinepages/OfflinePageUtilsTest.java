@@ -66,6 +66,27 @@ public class OfflinePageUtilsTest {
         assertTrue(OfflinePageUtils.isStorageAlmostFull());
     }
 
+    @Test
+    @Feature({"OfflinePages"})
+    public void testStripSchemeFromOnlineUrl() {
+        // Only scheme gets stripped.
+        assertEquals("cs.chromium.org",
+                OfflinePageUtils.stripSchemeFromOnlineUrl("https://cs.chromium.org"));
+        assertEquals("cs.chromium.org",
+                OfflinePageUtils.stripSchemeFromOnlineUrl("http://cs.chromium.org"));
+        // If there is no scheme, nothing changes.
+        assertEquals("cs.chromium.org",
+                OfflinePageUtils.stripSchemeFromOnlineUrl("cs.chromium.org"));
+        // Path is not touched/changed.
+        String urlWithPath = "code.google.com/p/chromium/codesearch#search"
+                + "/&q=offlinepageutils&sq=package:chromium&type=cs";
+        assertEquals(urlWithPath,
+                OfflinePageUtils.stripSchemeFromOnlineUrl("https://" + urlWithPath));
+        // Beginning and ending spaces get trimmed.
+        assertEquals("cs.chromium.org",
+                OfflinePageUtils.stripSchemeFromOnlineUrl("  https://cs.chromium.org  "));
+    }
+
     /** A shadow/wrapper of android.os.Environment that allows injecting a test directory. */
     @Implements(Environment.class)
     public static class WrappedEnvironment {

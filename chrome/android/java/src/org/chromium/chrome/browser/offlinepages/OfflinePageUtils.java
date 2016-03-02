@@ -143,6 +143,7 @@ public class OfflinePageUtils {
      * @return onlineUrl without the scheme
      */
     public static String stripSchemeFromOnlineUrl(String onlineUrl) {
+        onlineUrl = onlineUrl.trim();
         // Offline pages are only saved for https:// and http:// schemes.
         if (onlineUrl.startsWith("https://")) {
             return onlineUrl.substring(8);
