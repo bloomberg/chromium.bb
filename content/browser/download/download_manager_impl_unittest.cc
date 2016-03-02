@@ -399,7 +399,9 @@ class MockDownloadFileFactory
 
 class MockBrowserContext : public BrowserContext {
  public:
-  MockBrowserContext() {}
+  MockBrowserContext() {
+    content::BrowserContext::Initialize(this, base::FilePath());
+  }
   ~MockBrowserContext() {}
 
   MOCK_CONST_METHOD0(GetPath, base::FilePath());

@@ -1,0 +1,17 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module profile;
+
+import "components/filesystem/public/interfaces/directory.mojom";
+
+// An encapsulation around the per-profile storage.
+//
+// TODO(erg): A Profile should be strongly bound to a User; eventually, during
+// startup of the Profile process, we sandbox the process so the only directory
+// it has access to is the User's profile.
+interface ProfileService {
+  // Returns the user profile directory.
+  GetDirectory(filesystem.Directory& dir);
+};

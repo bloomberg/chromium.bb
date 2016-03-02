@@ -272,6 +272,46 @@
         'shell/public/cpp/tests/interface_registry_unittest.cc',
       ],
     },
+    {
+      # Technically, these should be in the mojo_services.gyp, but this causes
+      # a cycle since the ios generator can't have gyp files refer to each
+      # other, even if the targets don't form a cycle.
+      #
+      # GN version: //mojo/services/tracing:lib
+      'target_name': 'tracing_service',
+      'type': 'static_library',
+      'dependencies': [
+        'mojo_services.gyp:tracing_service_bindings_lib',
+        'mojo_base.gyp:mojo_application_bindings',
+        'mojo_edk.gyp:mojo_system_impl',
+      ],
+      'sources': [
+        'services/tracing/trace_data_sink.cc',
+        'services/tracing/trace_data_sink.h',
+        'services/tracing/trace_recorder_impl.cc',
+        'services/tracing/trace_recorder_impl.h',
+        'services/tracing/tracing_app.cc',
+        'services/tracing/tracing_app.h',
+      ],
+    },
+    {
+      # GN version: //mojo/services/public/cpp
+      'target_name': 'tracing_service_lib',
+      'type': 'static_library',
+      'dependencies': [
+        'mojo_services.gyp:tracing_service_bindings_lib',
+        'mojo_base.gyp:mojo_application_bindings',
+        'mojo_edk.gyp:mojo_system_impl',
+      ],
+      'sources': [
+        'services/tracing/public/cpp/switches.cc',
+        'services/tracing/public/cpp/switches.h',
+        'services/tracing/public/cpp/tracing_impl.cc',
+        'services/tracing/public/cpp/tracing_impl.h',
+        'services/tracing/public/cpp/trace_provider_impl.cc',
+        'services/tracing/public/cpp/trace_provider_impl.h',
+      ],
+    },
   ],
   'conditions': [
     ['OS=="android"', {

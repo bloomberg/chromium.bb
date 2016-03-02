@@ -399,6 +399,8 @@ void TestingProfile::Init() {
 
   set_is_guest_profile(guest_session_);
 
+  BrowserContext::Initialize(this, profile_path_);
+
 #if defined(OS_ANDROID)
   // Make sure token service knows its running in tests.
   OAuth2TokenServiceDelegateAndroid::set_is_testing_profile();

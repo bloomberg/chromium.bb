@@ -128,6 +128,15 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   static void SetDownloadManagerForTesting(BrowserContext* browser_context,
                                            DownloadManager* download_manager);
 
+  // Makes mojo aware of this BrowserContext, and assigns a user ID number to
+  // it. Should be called for each BrowserContext created.
+  static void Initialize(BrowserContext* browser_context,
+                         const base::FilePath& path);
+
+  // Returns a randomized user ID number associated with this
+  // BrowserContext. This ID is not persistent across runs.
+  static uint32_t GetMojoUserIdFor(BrowserContext* browser_context);
+
   ~BrowserContext() override;
 
   // Creates a delegate to initialize a HostZoomMap and persist its information.

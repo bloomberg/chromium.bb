@@ -5,6 +5,7 @@ include_rules = [
   "+components/mime_util",
   "+components/mus/public/interfaces",
   "+components/mus/public",
+  "+components/profile_service",
   "+components/scheduler/common",
   "+components/tracing",
   "+components/url_formatter",

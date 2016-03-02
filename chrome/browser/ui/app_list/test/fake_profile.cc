@@ -7,11 +7,13 @@
 
 FakeProfile::FakeProfile(const std::string& name)
     : name_(name) {
+  BrowserContext::Initialize(this, base::FilePath());
 }
 
 FakeProfile::FakeProfile(const std::string& name, const base::FilePath& path)
     : name_(name),
       path_(path) {
+  BrowserContext::Initialize(this, path_);
 }
 
 std::string FakeProfile::GetProfileUserName() const {

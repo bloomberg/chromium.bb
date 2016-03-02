@@ -460,6 +460,8 @@ ProfileImpl::ProfileImpl(
         safe_browsing_service->CreatePreferenceValidationDelegate(this);
   }
 
+  content::BrowserContext::Initialize(this, path_);
+
   {
     prefs_ = chrome_prefs::CreateProfilePrefs(
         path_, sequenced_task_runner, pref_validation_delegate_.get(),

@@ -11,6 +11,7 @@
 #include "base/path_service.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
+#include "components/profile_service/profile_app.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/common/gpu/gpu_process_launch_causes.h"
 #include "content/common/mojo/mojo_shell_connection_impl.h"
@@ -249,6 +250,11 @@ MojoShellContext::MojoShellContext() {
   application_manager_->SetLoaderForName(make_scoped_ptr(new GpuProcessLoader),
                                          "mojo:media");
 #endif
+
+  base::Callback<scoped_ptr<mojo::ShellClient>()> profile_callback =
+      base::Bind(&profile::CreateProfileApp);
+  application_manager_->SetLoaderForName(
+      make_scoped_ptr(new StaticLoader(profile_callback)), "mojo:profile");
 
   if (!IsRunningInMojoShell()) {
     MojoShellConnectionImpl::Create(

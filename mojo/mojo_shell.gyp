@@ -35,6 +35,7 @@
       '<(DEPTH)/mojo/mojo_base.gyp:mojo_common_lib',
       '<(DEPTH)/mojo/mojo_base.gyp:mojo_environment_chromium',
       '<(DEPTH)/mojo/mojo_base.gyp:mojo_url_type_converters',
+      '<(DEPTH)/net/net.gyp:net',
       '<(DEPTH)/url/url.gyp:url_lib',
     ],
   }, {

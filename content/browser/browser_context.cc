@@ -6,11 +6,16 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <algorithm>
+#include <limits>
 #include <utility>
 
+#include "base/lazy_instance.h"
+#include "base/rand_util.h"
 #include "build/build_config.h"
 
 #if !defined(OS_IOS)
+#include "components/profile_service/profile_app.h"
 #include "content/browser/download/download_manager_impl.h"
 #include "content/browser/fileapi/chrome_blob_storage_context.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
@@ -39,9 +44,16 @@ namespace content {
 #if !defined(OS_IOS)
 namespace {
 
+base::LazyInstance<std::set<uint32_t>> g_used_user_ids =
+    LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<std::vector<std::pair<BrowserContext*, uint32_t>>>
+g_context_to_user_id = LAZY_INSTANCE_INITIALIZER;
+
 // Key names on BrowserContext.
 const char kDownloadManagerKeyName[] = "download_manager";
 const char kStoragePartitionMapKeyName[] = "content_storage_partition_map";
+
+const char kMojoWasInitialized[] = "mojo-was-initialized";
 
 #if defined(OS_CHROMEOS)
 const char kMountPointsKey[] = "mount_points";
@@ -321,9 +333,46 @@ void BrowserContext::SetDownloadManagerForTesting(
   SetDownloadManager(browser_context, download_manager);
 }
 
+void BrowserContext::Initialize(
+    BrowserContext* browser_context,
+    const base::FilePath& path) {
+  // Associate a random unsigned 32 bit number with |browser_context|. This
+  // becomes the mojo user id for this BrowserContext.
+  uint32_t new_id = static_cast<uint32_t>(base::RandGenerator(UINT32_MAX));
+  while ((new_id == 0) ||
+         (g_used_user_ids.Get().find(new_id) != g_used_user_ids.Get().end())) {
+    new_id = static_cast<uint32_t>(base::RandGenerator(UINT32_MAX));
+  }
+
+  g_used_user_ids.Get().insert(new_id);
+  g_context_to_user_id.Get().push_back(std::make_pair(browser_context, new_id));
+
+  profile::ProfileApp::AssociateMojoUserIDWithProfileDir(new_id, path);
+  browser_context->SetUserData(kMojoWasInitialized,
+                               new base::SupportsUserData::Data);
+}
+
+uint32_t BrowserContext::GetMojoUserIdFor(BrowserContext* browser_context) {
+  CHECK(browser_context->GetUserData(kMojoWasInitialized))
+      << "Attempting to get the mojo user id for a BrowserContext that was "
+      << "never Initialize()ed.";
+
+  auto it = std::find_if(
+      g_context_to_user_id.Get().begin(),
+      g_context_to_user_id.Get().end(),
+      [&browser_context](const std::pair<BrowserContext*, uint32_t>& p) {
+        return p.first == browser_context; });
+  CHECK(it != g_context_to_user_id.Get().end());
+  return it->second;
+}
+
 #endif  // !OS_IOS
 
 BrowserContext::~BrowserContext() {
+  CHECK(GetUserData(kMojoWasInitialized))
+      << "Attempting to destroy a BrowserContext that never called "
+      << "Initialize()";
+
 #if !defined(OS_IOS)
   if (GetUserData(kDownloadManagerKeyName))
     GetDownloadManager(this)->Shutdown();

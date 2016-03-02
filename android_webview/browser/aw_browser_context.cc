@@ -129,6 +129,7 @@ AwBrowserContext::AwBrowserContext(
       native_factory_(native_factory) {
   DCHECK(!g_browser_context);
   g_browser_context = this;
+  BrowserContext::Initialize(this, path);
 
   // This constructor is entered during the creation of ContentBrowserClient,
   // before browser threads are created. Therefore any checks to enforce

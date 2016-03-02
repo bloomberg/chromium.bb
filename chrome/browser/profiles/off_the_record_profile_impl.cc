@@ -118,6 +118,7 @@ OffTheRecordProfileImpl::OffTheRecordProfileImpl(Profile* real_profile)
     : profile_(real_profile),
       prefs_(PrefServiceSyncableIncognitoFromProfile(real_profile)),
       start_time_(Time::Now()) {
+  BrowserContext::Initialize(this, profile_->GetPath());
   // Register on BrowserContext.
   user_prefs::UserPrefs::Set(this, prefs_);
 }

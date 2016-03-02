@@ -77,6 +77,7 @@ void CastBrowserContext::InitWhileIOAllowed() {
   // shared in a single location as defined here.
   CHECK(PathService::Get(DIR_CAST_HOME, &path_));
 #endif  // defined(OS_ANDROID)
+  BrowserContext::Initialize(this, path_);
 }
 
 scoped_ptr<content::ZoomLevelDelegate>

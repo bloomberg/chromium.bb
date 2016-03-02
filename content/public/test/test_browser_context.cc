@@ -45,6 +45,7 @@ namespace content {
 
 TestBrowserContext::TestBrowserContext() {
   EXPECT_TRUE(browser_context_dir_.CreateUniqueTempDir());
+  BrowserContext::Initialize(this, browser_context_dir_.path());
 }
 
 TestBrowserContext::~TestBrowserContext() {

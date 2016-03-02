@@ -113,6 +113,7 @@ source_set("browser") {
       "//cc",
       "//cc/surfaces",
       "//components/leveldb:lib",
+      "//components/profile_service:lib",
       "//components/scheduler:common",
       "//content/app/resources",
       "//content/app/strings",

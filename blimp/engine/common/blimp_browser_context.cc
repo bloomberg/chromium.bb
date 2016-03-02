@@ -76,6 +76,7 @@ void BlimpBrowserContext::InitWhileIOAllowed() {
   path_ = config_dir.Append("blimp_engine");
   if (!base::PathExists(path_))
     base::CreateDirectory(path_);
+  BrowserContext::Initialize(this, path_);
 }
 
 scoped_ptr<content::ZoomLevelDelegate>
