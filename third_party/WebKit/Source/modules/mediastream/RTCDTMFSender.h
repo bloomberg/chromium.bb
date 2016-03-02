@@ -26,7 +26,7 @@
 #ifndef RTCDTMFSender_h
 #define RTCDTMFSender_h
 
-#include "core/dom/ContextLifecycleObserver.h"
+#include "core/dom/ActiveDOMObject.h"
 #include "modules/EventTargetModules.h"
 #include "platform/Timer.h"
 #include "public/platform/WebRTCDTMFSenderHandlerClient.h"
@@ -41,7 +41,7 @@ class WebRTCPeerConnectionHandler;
 class RTCDTMFSender final
     : public RefCountedGarbageCollectedEventTargetWithInlineData<RTCDTMFSender>
     , public WebRTCDTMFSenderHandlerClient
-    , public ContextLifecycleObserver {
+    , public ActiveDOMObject {
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(RTCDTMFSender);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(RTCDTMFSender);
     DEFINE_WRAPPERTYPEINFO();
@@ -65,7 +65,8 @@ public:
     const AtomicString& interfaceName() const override;
     ExecutionContext* executionContext() const override;
 
-    void contextDestroyed() override;
+    // ActiveDOMObject
+    void stop() override;
 
     // Oilpan: need to eagerly finalize m_handler
     EAGERLY_FINALIZE();
@@ -85,6 +86,8 @@ private:
     int m_interToneGap;
 
     OwnPtr<WebRTCDTMFSenderHandler> m_handler;
+
+    bool m_stopped;
 
     Timer<RTCDTMFSender> m_scheduledEventTimer;
     WillBeHeapVector<RefPtrWillBeMember<Event>> m_scheduledEvents;

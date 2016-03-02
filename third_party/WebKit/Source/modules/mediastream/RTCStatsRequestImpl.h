@@ -25,7 +25,7 @@
 #ifndef RTCStatsRequestImpl_h
 #define RTCStatsRequestImpl_h
 
-#include "core/dom/ContextLifecycleObserver.h"
+#include "core/dom/ActiveDOMObject.h"
 #include "modules/mediastream/RTCStatsResponse.h"
 #include "platform/heap/Handle.h"
 #include "platform/mediastream/RTCStatsRequest.h"
@@ -38,7 +38,7 @@ class MediaStreamTrack;
 class RTCPeerConnection;
 class RTCStatsCallback;
 
-class RTCStatsRequestImpl final : public RTCStatsRequest, public ContextLifecycleObserver {
+class RTCStatsRequestImpl final : public RTCStatsRequest, public ActiveDOMObject {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(RTCStatsRequestImpl);
 public:
     static RTCStatsRequestImpl* create(ExecutionContext*, RTCPeerConnection*, RTCStatsCallback*, MediaStreamTrack*);
@@ -50,7 +50,8 @@ public:
 
     void requestSucceeded(RTCStatsResponseBase*) override;
 
-    void contextDestroyed() override;
+    // ActiveDOMObject
+    void stop() override;
 
     DECLARE_VIRTUAL_TRACE();
 

@@ -43,11 +43,13 @@ namespace blink {
 
 RTCSessionDescriptionRequestImpl* RTCSessionDescriptionRequestImpl::create(ExecutionContext* context, RTCPeerConnection* requester, RTCSessionDescriptionCallback* successCallback, RTCPeerConnectionErrorCallback* errorCallback)
 {
-    return new RTCSessionDescriptionRequestImpl(context, requester, successCallback, errorCallback);
+    RTCSessionDescriptionRequestImpl* request = new RTCSessionDescriptionRequestImpl(context, requester, successCallback, errorCallback);
+    request->suspendIfNeeded();
+    return request;
 }
 
 RTCSessionDescriptionRequestImpl::RTCSessionDescriptionRequestImpl(ExecutionContext* context, RTCPeerConnection* requester, RTCSessionDescriptionCallback* successCallback, RTCPeerConnectionErrorCallback* errorCallback)
-    : ContextLifecycleObserver(context)
+    : ActiveDOMObject(context)
     , m_successCallback(successCallback)
     , m_errorCallback(errorCallback)
     , m_requester(requester)
@@ -76,7 +78,7 @@ void RTCSessionDescriptionRequestImpl::requestFailed(const String& error)
     clear();
 }
 
-void RTCSessionDescriptionRequestImpl::contextDestroyed()
+void RTCSessionDescriptionRequestImpl::stop()
 {
     clear();
 }
@@ -94,7 +96,7 @@ DEFINE_TRACE(RTCSessionDescriptionRequestImpl)
     visitor->trace(m_errorCallback);
     visitor->trace(m_requester);
     RTCSessionDescriptionRequest::trace(visitor);
-    ContextLifecycleObserver::trace(visitor);
+    ActiveDOMObject::trace(visitor);
 }
 
 } // namespace blink

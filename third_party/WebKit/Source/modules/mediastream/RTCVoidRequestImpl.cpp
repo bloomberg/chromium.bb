@@ -40,11 +40,13 @@ namespace blink {
 
 RTCVoidRequestImpl* RTCVoidRequestImpl::create(ExecutionContext* context, RTCPeerConnection* requester, VoidCallback* successCallback, RTCPeerConnectionErrorCallback* errorCallback)
 {
-    return new RTCVoidRequestImpl(context, requester, successCallback, errorCallback);
+    RTCVoidRequestImpl* request = new RTCVoidRequestImpl(context, requester, successCallback, errorCallback);
+    request->suspendIfNeeded();
+    return request;
 }
 
 RTCVoidRequestImpl::RTCVoidRequestImpl(ExecutionContext* context, RTCPeerConnection* requester, VoidCallback* successCallback, RTCPeerConnectionErrorCallback* errorCallback)
-    : ContextLifecycleObserver(context)
+    : ActiveDOMObject(context)
     , m_successCallback(successCallback)
     , m_errorCallback(errorCallback)
     , m_requester(requester)
@@ -76,7 +78,7 @@ void RTCVoidRequestImpl::requestFailed(const String& error)
     clear();
 }
 
-void RTCVoidRequestImpl::contextDestroyed()
+void RTCVoidRequestImpl::stop()
 {
     clear();
 }
@@ -94,7 +96,7 @@ DEFINE_TRACE(RTCVoidRequestImpl)
     visitor->trace(m_errorCallback);
     visitor->trace(m_requester);
     RTCVoidRequest::trace(visitor);
-    ContextLifecycleObserver::trace(visitor);
+    ActiveDOMObject::trace(visitor);
 }
 
 } // namespace blink

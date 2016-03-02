@@ -26,7 +26,7 @@
 #ifndef MediaStreamTrack_h
 #define MediaStreamTrack_h
 
-#include "core/dom/ContextLifecycleObserver.h"
+#include "core/dom/ActiveDOMObject.h"
 #include "modules/EventTargetModules.h"
 #include "modules/ModulesExport.h"
 #include "modules/mediastream/SourceInfo.h"
@@ -43,7 +43,7 @@ class MediaStreamTrackSourcesCallback;
 
 class MODULES_EXPORT MediaStreamTrack
     : public RefCountedGarbageCollectedEventTargetWithInlineData<MediaStreamTrack>
-    , public ContextLifecycleObserver
+    , public ActiveDOMObject
     , public MediaStreamSource::Observer {
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(MediaStreamTrack);
     USING_GARBAGE_COLLECTED_MIXIN(MediaStreamTrack);
@@ -83,7 +83,9 @@ public:
     const AtomicString& interfaceName() const override;
     ExecutionContext* executionContext() const override;
 
+    // ActiveDOMObject
     bool hasPendingActivity() const override;
+    void stop() override;
 
     PassOwnPtr<AudioSourceProvider> createWebAudioSource();
 
@@ -102,6 +104,7 @@ private:
     MediaStreamSource::ReadyState m_readyState;
     HeapHashSet<Member<MediaStream>> m_registeredMediaStreams;
     bool m_isIteratingRegisteredMediaStreams;
+    bool m_stopped;
     Member<MediaStreamComponent> m_component;
 };
 

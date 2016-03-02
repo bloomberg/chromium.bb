@@ -36,13 +36,19 @@ namespace blink {
 
 MediaDevicesRequest* MediaDevicesRequest::create(ScriptState* state, UserMediaController* controller)
 {
-    return new MediaDevicesRequest(state, controller);
+    MediaDevicesRequest* request = new MediaDevicesRequest(state, controller);
+    request->suspendIfNeeded();
+    return request;
 }
 
 MediaDevicesRequest::MediaDevicesRequest(ScriptState* state, UserMediaController* controller)
-    : ContextLifecycleObserver(state->executionContext())
+    : ActiveDOMObject(state->executionContext())
     , m_controller(controller)
     , m_resolver(ScriptPromiseResolver::create(state))
+{
+}
+
+MediaDevicesRequest::~MediaDevicesRequest()
 {
 }
 
@@ -71,7 +77,7 @@ void MediaDevicesRequest::succeed(const MediaDeviceInfoVector& mediaDevices)
     m_resolver->resolve(mediaDevices);
 }
 
-void MediaDevicesRequest::contextDestroyed()
+void MediaDevicesRequest::stop()
 {
     m_controller.clear();
     m_resolver.clear();
@@ -81,7 +87,7 @@ DEFINE_TRACE(MediaDevicesRequest)
 {
     visitor->trace(m_controller);
     visitor->trace(m_resolver);
-    ContextLifecycleObserver::trace(visitor);
+    ActiveDOMObject::trace(visitor);
 }
 
 } // namespace blink

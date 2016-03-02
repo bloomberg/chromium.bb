@@ -32,11 +32,13 @@ namespace blink {
 
 RTCStatsRequestImpl* RTCStatsRequestImpl::create(ExecutionContext* context, RTCPeerConnection* requester, RTCStatsCallback* callback, MediaStreamTrack* selector)
 {
-    return new RTCStatsRequestImpl(context, requester, callback, selector);
+    RTCStatsRequestImpl* request = new RTCStatsRequestImpl(context, requester, callback, selector);
+    request->suspendIfNeeded();
+    return request;
 }
 
 RTCStatsRequestImpl::RTCStatsRequestImpl(ExecutionContext* context, RTCPeerConnection* requester, RTCStatsCallback* callback, MediaStreamTrack* selector)
-    : ContextLifecycleObserver(context)
+    : ActiveDOMObject(context)
     , m_successCallback(callback)
     , m_component(selector ? selector->component() : 0)
     , m_requester(requester)
@@ -71,7 +73,7 @@ void RTCStatsRequestImpl::requestSucceeded(RTCStatsResponseBase* response)
     clear();
 }
 
-void RTCStatsRequestImpl::contextDestroyed()
+void RTCStatsRequestImpl::stop()
 {
     clear();
 }
@@ -88,7 +90,7 @@ DEFINE_TRACE(RTCStatsRequestImpl)
     visitor->trace(m_component);
     visitor->trace(m_requester);
     RTCStatsRequest::trace(visitor);
-    ContextLifecycleObserver::trace(visitor);
+    ActiveDOMObject::trace(visitor);
 }
 
 } // namespace blink

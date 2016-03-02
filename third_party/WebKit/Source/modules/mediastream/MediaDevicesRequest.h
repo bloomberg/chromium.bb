@@ -27,7 +27,7 @@
 #define MediaDevicesRequest_h
 
 #include "bindings/core/v8/ScriptPromise.h"
-#include "core/dom/ContextLifecycleObserver.h"
+#include "core/dom/ActiveDOMObject.h"
 #include "modules/ModulesExport.h"
 #include "modules/mediastream/MediaDeviceInfo.h"
 #include "platform/heap/Handle.h"
@@ -41,11 +41,11 @@ class UserMediaController;
 class ScriptState;
 class ScriptPromiseResolver;
 
-// TODO(haraken): Make this GarbageCollected once the WillBe type is removed.
-class MODULES_EXPORT MediaDevicesRequest final : public GarbageCollectedFinalized<MediaDevicesRequest>, public ContextLifecycleObserver {
+class MODULES_EXPORT MediaDevicesRequest final : public GarbageCollectedFinalized<MediaDevicesRequest>, public ActiveDOMObject {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MediaDevicesRequest);
 public:
     static MediaDevicesRequest* create(ScriptState*, UserMediaController*);
+    ~MediaDevicesRequest() override;
 
     Document* ownerDocument();
 
@@ -53,7 +53,8 @@ public:
 
     void succeed(const MediaDeviceInfoVector&);
 
-    void contextDestroyed() override;
+    // ActiveDOMObject
+    void stop() override;
 
     DECLARE_VIRTUAL_TRACE();
 
