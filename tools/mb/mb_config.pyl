@@ -37,9 +37,7 @@
     # This is the "deployment" config for the blimp builds. Currently
     # we want them to be debug, non-optimized builds (and we don't need any
     # chrome branding), so we don't use the "official" mixin.
-    # We need chromeos and ozone to eliminate any dependencies on X11. We
-    # dont need aura as it is implied by chromeos and ozone.
-    'gn_blimp_debug': ['gn', 'chromeos', 'ozone', 'debug'],
+    'gn_blimp_debug': ['gn', 'blimp', 'debug'],
 
     'gn_cfi_release_bot': ['gn', 'cfi', 'release_bot'],
     'gn_cfi_release_trybot': ['gn', 'cfi', 'release_trybot'],
@@ -212,6 +210,12 @@
     'asan': {
       'gn_args': 'is_asan=true',
       'gyp_defines': 'asan=1',
+    },
+
+    # Removes dependencies on X11 and audio libraries for a containerized build.
+    'blimp': {
+      'gn_args': "use_aura=true use_ozone=true use_alsa=false use_pulseaudio=false use_cups=false use_glib=false",
+      'gyp_defines': 'use_aura=1 use_ozone=1 use_alsa=0 use_pulseaudio=0 use_cups=0 use_glib=0',
     },
 
     'cast': {
