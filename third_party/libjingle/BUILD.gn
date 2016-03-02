@@ -127,11 +127,11 @@ static_library("libjingle") {
     "$p2p_dir/base/basicpacketsocketfactory.h",
     "$p2p_dir/base/candidate.h",
     "$p2p_dir/base/common.h",
-    "$p2p_dir/base/constants.cc",
-    "$p2p_dir/base/constants.h",
     "$p2p_dir/base/dtlstransport.h",
     "$p2p_dir/base/dtlstransportchannel.cc",
     "$p2p_dir/base/dtlstransportchannel.h",
+    "$p2p_dir/base/p2pconstants.cc",
+    "$p2p_dir/base/p2pconstants.h",
     "$p2p_dir/base/p2ptransport.cc",
     "$p2p_dir/base/p2ptransport.h",
     "$p2p_dir/base/p2ptransportchannel.cc",
@@ -220,11 +220,6 @@ static_library("libjingle") {
     "$xmpp_dir/xmpptask.cc",
     "$xmpp_dir/xmpptask.h",
   ]
-  sources -= [
-    # Compiled as part of libjingle_p2p_constants.
-    "$p2p_dir/base/constants.cc",
-    "$p2p_dir/base/constants.h",
-  ]
 
   # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
@@ -233,7 +228,6 @@ static_library("libjingle") {
     ":jingle_deps",
   ]
   deps = [
-    ":libjingle_p2p_constants",
     "//third_party/webrtc/base:rtc_base",
   ]
 
@@ -253,28 +247,6 @@ static_library("libjingle") {
     sources += [ "overrides/field_trial.cc" ]
   }
 
-  configs += [ ":jingle_unexported_configs" ]
-  public_configs = [ ":jingle_public_configs" ]
-}
-
-# This has to be is a separate project due to a bug in MSVS 2008 and the
-# current toolset on android.  The problem is that we have two files named
-# "constants.cc" and MSVS/android doesn't handle this properly.
-# GYP currently has guards to catch this, so if you want to remove it,
-# run GYP and if GYP has removed the validation check, then we can assume
-# that the toolchains have been fixed (we currently use VS2010 and later,
-# so VS2008 isn't a concern anymore).
-#
-# GYP version: third_party/libjingle.gyp:libjingle_p2p_constants
-static_library("libjingle_p2p_constants") {
-  p2p_dir = "../webrtc/p2p"
-  sources = [
-    "$p2p_dir/base/constants.cc",
-    "$p2p_dir/base/constants.h",
-  ]
-  public_deps = [
-    ":jingle_deps",
-  ]
   configs += [ ":jingle_unexported_configs" ]
   public_configs = [ ":jingle_public_configs" ]
 }
@@ -373,11 +345,11 @@ if (enable_webrtc) {
       "../webrtc/media/base/capturerenderadapter.h",
       "../webrtc/media/base/codec.cc",
       "../webrtc/media/base/codec.h",
-      "../webrtc/media/base/constants.cc",
-      "../webrtc/media/base/constants.h",
       "../webrtc/media/base/cryptoparams.h",
       "../webrtc/media/base/hybriddataengine.h",
       "../webrtc/media/base/mediachannel.h",
+      "../webrtc/media/base/mediaconstants.cc",
+      "../webrtc/media/base/mediaconstants.h",
       "../webrtc/media/base/mediaengine.cc",
       "../webrtc/media/base/mediaengine.h",
       "../webrtc/media/base/rtpdataengine.cc",

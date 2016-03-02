@@ -29,7 +29,6 @@
         '<(DEPTH)/native_client_sdk/native_client_sdk_untrusted.gyp:nacl_io_untrusted',
         '<(DEPTH)/third_party/expat/expat_nacl.gyp:expat_nacl',
         '<(DEPTH)/third_party/boringssl/boringssl_nacl.gyp:boringssl_nacl',
-        'libjingle_p2p_constants_nacl',
       ],
       'defines': [
         'EXPAT_RELATIVE_PATH',
@@ -253,9 +252,6 @@
         '<(webrtc_system_wrappers)/source/field_trial_default.cc',
       ],
       'sources!': [
-        # Compiled as part of libjingle_p2p_constants_nacl.
-        '<(webrtc_p2p)/base/constants.cc',
-        '<(webrtc_p2p)/base/constants.h',
         # For NACL, we have the field_trial_default and don't need the
         # field_trail.cc.
         'overrides/field_trial.cc',
@@ -295,25 +291,5 @@
         '<(DEPTH)/native_client_sdk/native_client_sdk_untrusted.gyp:nacl_io_untrusted',
       ],
     },  # end of target 'libjingle_nacl'
-
-    {
-      'target_name': 'libjingle_p2p_constants_nacl',
-      'type': 'none',
-      'variables': {
-        'nlib_target': 'libjingle_p2p_constants_nacl.a',
-        'nacl_untrusted_build': 1,
-        'build_glibc': 0,
-        'build_newlib': 1,
-        'build_pnacl_newlib': 1,
-      },
-      'include_dirs': [
-        './<(libjingle_source)',
-        '../'
-      ],
-      'sources': [
-        '<(webrtc_p2p)/base/constants.cc',
-        '<(webrtc_p2p)/base/constants.h',
-      ],
-    },  # end of target 'libjingle_p2p_constants_nacl'
   ],
 }

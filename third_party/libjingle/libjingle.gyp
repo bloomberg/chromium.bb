@@ -10,7 +10,6 @@
     'libjingle_additional_deps%': [],
     'libjingle_peerconnection_additional_deps%': [],
     'libjingle_source%': "source",
-    'webrtc_p2p': "../webrtc/p2p",
     'webrtc_xmpp': "../webrtc/libjingle/xmpp",
   },
   # Most of these settings have been split according to their scope into
@@ -217,35 +216,12 @@
       'target_name': 'libjingle',
       'type': 'static_library',
       'includes': [ 'libjingle_common.gypi' ],
-      'sources!' : [
-        # Compiled as part of libjingle_p2p_constants.
-        '<(webrtc_p2p)/base/constants.cc',
-        '<(webrtc_p2p)/base/constants.h',
-      ],
       'dependencies': [
         '<(DEPTH)/third_party/webrtc/base/base.gyp:rtc_base',
         '<(DEPTH)/third_party/webrtc/libjingle/xmllite/xmllite.gyp:rtc_xmllite',
-        'libjingle_p2p_constants',
         '<@(libjingle_additional_deps)',
       ],
     },  # target libjingle
-    # This has to be is a separate project due to a bug in MSVS 2008 and the
-    # current toolset on android.  The problem is that we have two files named
-    # "constants.cc" and MSVS/android doesn't handle this properly.
-    # GYP currently has guards to catch this, so if you want to remove it,
-    # run GYP and if GYP has removed the validation check, then we can assume
-    # that the toolchains have been fixed (we currently use VS2010 and later,
-    # so VS2008 isn't a concern anymore).
-    #
-    # GN version: //third_party/libjingle:libjingle_p2p_constants
-    {
-      'target_name': 'libjingle_p2p_constants',
-      'type': 'static_library',
-      'sources': [
-        '<(webrtc_p2p)/base/constants.cc',
-        '<(webrtc_p2p)/base/constants.h',
-      ],
-    },  # target libjingle_p2p_constants
   ],
   'conditions': [
     ['enable_webrtc==1', {
@@ -334,11 +310,11 @@
             '<(DEPTH)/third_party/webrtc/media/base/capturerenderadapter.h',
             '<(DEPTH)/third_party/webrtc/media/base/codec.cc',
             '<(DEPTH)/third_party/webrtc/media/base/codec.h',
-            '<(DEPTH)/third_party/webrtc/media/base/constants.cc',
-            '<(DEPTH)/third_party/webrtc/media/base/constants.h',
             '<(DEPTH)/third_party/webrtc/media/base/cryptoparams.h',
             '<(DEPTH)/third_party/webrtc/media/base/hybriddataengine.h',
             '<(DEPTH)/third_party/webrtc/media/base/mediachannel.h',
+            '<(DEPTH)/third_party/webrtc/media/base/mediaconstants.cc',
+            '<(DEPTH)/third_party/webrtc/media/base/mediaconstants.h',
             '<(DEPTH)/third_party/webrtc/media/base/mediaengine.cc',
             '<(DEPTH)/third_party/webrtc/media/base/mediaengine.h',
             '<(DEPTH)/third_party/webrtc/media/base/rtpdataengine.cc',
