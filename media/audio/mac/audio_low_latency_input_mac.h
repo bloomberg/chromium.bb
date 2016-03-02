@@ -164,6 +164,13 @@ class MEDIA_EXPORT AUAudioInputStream
   // filters out some that make sense to add to UMA stats.
   void AddDevicePropertyChangesToUMA(bool startup_failed);
 
+  // Updates capture timestamp, current lost frames, and total lost frames and
+  // glitches.
+  void UpdateCaptureTimestamp(const AudioTimeStamp* timestamp);
+
+  // Called from the dtor and when the stream is reset.
+  void ReportAndResetStats();
+
   // Verifies that Open(), Start(), Stop() and Close() are all called on the
   // creating thread which is the main browser thread (CrBrowserMain) on Mac.
   base::ThreadChecker thread_checker_;
@@ -173,6 +180,11 @@ class MEDIA_EXPORT AUAudioInputStream
 
   // Contains the desired number of audio frames in each callback.
   const size_t number_of_frames_;
+
+  // Stores the number of frames that we actually get callbacks for.
+  // This may be different from what we ask for, so we use this for stats in
+  // order to understand how often this happens and what are the typical values.
+  size_t number_of_frames_provided_;
 
   // The actual I/O buffer size for the input device connected to the active
   // AUHAL audio unit.
@@ -253,6 +265,20 @@ class MEDIA_EXPORT AUAudioInputStream
   // Set to true when we are listening for changes in device properties.
   // Only touched on the creating thread.
   bool device_listener_is_active_;
+
+  // Stores the timestamp of the previous audio buffer provided by the OS.
+  // We use this in combination with |last_number_of_frames_| to detect when
+  // the OS has decided to skip providing frames (i.e. a glitch).
+  // This can happen in case of high CPU load or excessive blocking on the
+  // callback audio thread.
+  // These variables are only touched on the callback thread and then read
+  // in the dtor (when no longer receiving callbacks).
+  // NOTE: Float64 and UInt32 types are used for native API compatibility.
+  Float64 last_sample_time_;
+  UInt32 last_number_of_frames_;
+  UInt32 total_lost_frames_;
+  UInt32 largest_glitch_frames_;
+  int glitches_detected_;
 
   DISALLOW_COPY_AND_ASSIGN(AUAudioInputStream);
 };

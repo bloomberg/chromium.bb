@@ -182,6 +182,7 @@ AUAudioInputStream::AUAudioInputStream(AudioManagerMac* manager,
                                        AudioDeviceID audio_device_id)
     : manager_(manager),
       number_of_frames_(input_params.frames_per_buffer()),
+      number_of_frames_provided_(0),
       io_buffer_frame_size_(0),
       sink_(nullptr),
       audio_unit_(0),
@@ -195,7 +196,12 @@ AUAudioInputStream::AUAudioInputStream(AudioManagerMac* manager,
       start_was_deferred_(false),
       buffer_size_was_changed_(false),
       audio_unit_render_has_worked_(false),
-      device_listener_is_active_(false) {
+      device_listener_is_active_(false),
+      last_sample_time_(0.0),
+      last_number_of_frames_(0),
+      total_lost_frames_(0),
+      largest_glitch_frames_(0),
+      glitches_detected_(0) {
   DCHECK(manager_);
 
   // Set up the desired (output) format specified by the client.
@@ -238,6 +244,7 @@ AUAudioInputStream::AUAudioInputStream(AudioManagerMac* manager,
 AUAudioInputStream::~AUAudioInputStream() {
   DVLOG(1) << "~dtor";
   DCHECK(!device_listener_is_active_);
+  ReportAndResetStats();
 }
 
 // Obtain and open the AUHAL AudioOutputUnit for recording.
@@ -518,6 +525,7 @@ void AUAudioInputStream::Stop() {
   DCHECK_EQ(result, noErr);
 
   SetInputCallbackIsActive(false);
+  ReportAndResetStats();
   sink_ = nullptr;
   fifo_.Clear();
   io_buffer_frame_size_ = 0;
@@ -815,6 +823,15 @@ OSStatus AUAudioInputStream::OnDataIsAvailable(
 OSStatus AUAudioInputStream::Provide(UInt32 number_of_frames,
                                      AudioBufferList* io_data,
                                      const AudioTimeStamp* time_stamp) {
+  UpdateCaptureTimestamp(time_stamp);
+  last_number_of_frames_ = number_of_frames;
+
+  // TODO(grunell): We'll only care about the first buffer size change, any
+  // further changes will be ignored. This is in line with output side stats.
+  // It would be nice to have all changes reflected in UMA stats.
+  if (number_of_frames != number_of_frames_ && number_of_frames_provided_ == 0)
+    number_of_frames_provided_ = number_of_frames;
+
   // Update the capture latency.
   double capture_latency_frames = GetCaptureLatency(time_stamp);
 
@@ -1232,6 +1249,66 @@ void AUAudioInputStream::AddDevicePropertyChangesToUMA(bool startup_failed) {
     LogDevicePropertyChange(startup_failed, uma_result);
   }
   device_property_changes_map_.clear();
+}
+
+void AUAudioInputStream::UpdateCaptureTimestamp(
+    const AudioTimeStamp* timestamp) {
+  if ((timestamp->mFlags & kAudioTimeStampSampleTimeValid) == 0)
+    return;
+
+  if (last_sample_time_) {
+    DCHECK_NE(0U, last_number_of_frames_);
+    UInt32 diff =
+        static_cast<UInt32>(timestamp->mSampleTime - last_sample_time_);
+    if (diff != last_number_of_frames_) {
+      DCHECK_GT(diff, last_number_of_frames_);
+      // We were given samples post what we expected. Update the glitch count
+      // etc. and keep a record of the largest glitch.
+      auto lost_frames = diff - last_number_of_frames_;
+      total_lost_frames_ += lost_frames;
+      if (lost_frames > largest_glitch_frames_)
+        largest_glitch_frames_ = lost_frames;
+      ++glitches_detected_;
+    }
+  }
+
+  // Store the last sample time for use next time we get called back.
+  last_sample_time_ = timestamp->mSampleTime;
+}
+
+void AUAudioInputStream::ReportAndResetStats() {
+  if (last_sample_time_ == 0)
+    return;  // No stats gathered to report.
+
+  // A value of 0 indicates that we got the buffer size we asked for.
+  UMA_HISTOGRAM_COUNTS_10000("Media.Audio.Capture.FramesProvided",
+                             number_of_frames_provided_);
+  // Even if there aren't any glitches, we want to record it to get a feel for
+  // how often we get no glitches vs the alternative.
+  UMA_HISTOGRAM_COUNTS("Media.Audio.Capture.Glitches", glitches_detected_);
+
+  if (glitches_detected_ != 0) {
+    auto lost_frames_ms = (total_lost_frames_ * 1000) / format_.mSampleRate;
+    UMA_HISTOGRAM_LONG_TIMES("Media.Audio.Capture.LostFramesInMs",
+                             base::TimeDelta::FromMilliseconds(lost_frames_ms));
+    auto largest_glitch_ms =
+        (largest_glitch_frames_ * 1000) / format_.mSampleRate;
+    UMA_HISTOGRAM_CUSTOM_TIMES(
+        "Media.Audio.Capture.LargestGlitchMs",
+        base::TimeDelta::FromMilliseconds(largest_glitch_ms),
+        base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromMinutes(1),
+        50);
+    DLOG(WARNING) << "Total glitches=" << glitches_detected_
+                  << ". Total frames lost=" << total_lost_frames_ << " ("
+                  << lost_frames_ms;
+  }
+
+  number_of_frames_provided_ = 0;
+  glitches_detected_ = 0;
+  last_sample_time_ = 0;
+  last_number_of_frames_ = 0;
+  total_lost_frames_ = 0;
+  largest_glitch_frames_ = 0;
 }
 
 }  // namespace media

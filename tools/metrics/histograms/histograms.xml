@@ -19034,6 +19034,51 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Media.Audio.Capture.FramesProvided" units="frames">
+  <owner>grunell@chromium.org</owner>
+  <summary>
+    The number of captured audio frames that is provided by the operating system
+    in each callback. Typically, Chrome will want to use a 10 ms buffer (e.g.
+    480 frames for a sample rate of 48 kHz), but the OS may decide to capture
+    e.g. 256 frames of audio at a time. If the desired frame size is used, the
+    emitted value is special-cased to be 0. This histogram then shows how
+    frequent it is that the desired number of frames is used and if not, the
+    number of frames used in practice. The number of frames per callback is
+    normally constant or very rarely changed throughout the lifetime of the
+    audio stream. The first value that differs from the desired value is stored
+    and logged when an audio input stream is closed. Any further differences
+    during the lifetime will be ignored.
+  </summary>
+</histogram>
+
+<histogram name="Media.Audio.Capture.Glitches" units="glitches">
+  <owner>grunell@chromium.org</owner>
+  <summary>
+    The number of glitches that were detected at the OS level while an audio
+    stream was active. A glitch is detected if the OS has to skip providing a
+    set of frames. This value is logged when an audio input stream is closed.
+  </summary>
+</histogram>
+
+<histogram name="Media.Audio.Capture.LargestGlitchMs" units="ms">
+  <owner>grunell@chromium.org</owner>
+  <summary>
+    The length in milliseconds of the largest audio glitch that was detected at
+    the OS level. This value is logged when an audio input stream that has
+    suffered glitches is closed.
+  </summary>
+</histogram>
+
+<histogram name="Media.Audio.Capture.LostFramesInMs" units="ms">
+  <owner>grunell@chromium.org</owner>
+  <summary>
+    The combined length in milliseconds of audio glitches that was detected at
+    the OS level. This is useful to know in particular for audio processing such
+    as echo cancellation. This value is logged when an audio input stream that
+    has suffered glitches is closed.
+  </summary>
+</histogram>
+
 <histogram name="Media.Audio.InputBufferSizeWasChangedMac"
     enum="BooleanSuccess">
   <owner>henrika@chromium.org</owner>

@@ -213,6 +213,9 @@ OSStatus AUHALStream::Render(
   if (number_of_frames != number_of_frames_) {
     // Create a FIFO on the fly to handle any discrepancies in callback rates.
     if (!audio_fifo_) {
+      // TODO(grunell): We'll only care about the first buffer size change,
+      // any further changes will be ignored. It would be nice to have all
+      // changes reflected in UMA stats.
       number_of_frames_requested_ = number_of_frames;
       DVLOG(1) << "Audio frame size changed from " << number_of_frames_
                << " to " << number_of_frames
