@@ -74,26 +74,33 @@ AST_MATCHER_P(clang::FunctionTemplateDecl,
   return InnerMatcher.matches(*Node.getTemplatedDecl(), Finder, Builder);
 }
 
+bool IsDeclContextInBlinkOrWTF(const clang::DeclContext* decl_context,
+                               bool blink,
+                               bool wtf) {
+  assert(blink || wtf);  // Else, what's the point?
+  auto* namespace_decl = clang::dyn_cast_or_null<clang::NamespaceDecl>(
+      decl_context->getEnclosingNamespaceContext());
+  return namespace_decl && namespace_decl->getParent()->isTranslationUnit() &&
+         ((blink && namespace_decl->getName() == "blink") ||
+          (wtf && namespace_decl->getName() == "WTF"));
+}
+
 // A method is from Blink if it is from the Blink namespace or overrides a
 // method from the Blink namespace.
-bool IsBlinkMethod(const clang::CXXMethodDecl& decl) {
-  auto* namespace_decl = clang::dyn_cast_or_null<clang::NamespaceDecl>(
-      decl.getParent()->getEnclosingNamespaceContext());
-  if (namespace_decl && namespace_decl->getParent()->isTranslationUnit() &&
-      (namespace_decl->getName() == "blink" ||
-       namespace_decl->getName() == "WTF"))
+bool IsBlinkOrWTFMethod(const clang::CXXMethodDecl& decl) {
+  if (IsDeclContextInBlinkOrWTF(decl.getDeclContext(), true, true))
     return true;
 
   for (auto it = decl.begin_overridden_methods();
        it != decl.end_overridden_methods(); ++it) {
-    if (IsBlinkMethod(**it))
+    if (IsBlinkOrWTFMethod(**it))
       return true;
   }
   return false;
 }
 
-AST_MATCHER(clang::CXXMethodDecl, isBlinkMethod) {
-  return IsBlinkMethod(Node);
+AST_MATCHER(clang::CXXMethodDecl, isBlinkOrWTFMethod) {
+  return IsBlinkOrWTFMethod(Node);
 }
 
 // Helper to convert from a camelCaseName to camel_case_name. It uses some
@@ -220,9 +227,21 @@ bool GetNameForDecl(const clang::CXXMethodDecl& decl,
   StringRef original_name = decl.getName();
 
   if (!decl.isStatic()) {
+    std::string ret_type = decl.getReturnType().getAsString();
+    if (ret_type.find("iterator") != std::string::npos ||
+        ret_type.find("Iterator") != std::string::npos) {
+      // Iterator methods shouldn't be renamed to work with stl and range-for
+      // loops.
+      static const char* kIteratorBlacklist[] = {"begin", "end", "rbegin",
+                                                 "rend"};
+      for (const auto& b : kIteratorBlacklist) {
+        if (original_name == b)
+          return false;
+      }
+    }
+
     // Some methods shouldn't be renamed because reasons.
-    static const char* kBlacklist[] = {"begin", "end",  "rbegin", "rend",
-                                       "trace", "lock", "unlock", "try_lock"};
+    static const char* kBlacklist[] = {"trace", "lock", "unlock", "try_lock"};
     for (const auto& b : kBlacklist) {
       if (original_name == b)
         return false;
@@ -276,6 +295,16 @@ bool GetNameForDecl(const clang::VarDecl& decl,
     if (original_name.size() >= 2 && original_name[0] == 'k' &&
         clang::isUppercase(original_name[1]))
       return false;
+
+    // Struct consts in WTF do not become kFoo cuz stuff like type traits
+    // should stay as lowercase.
+    const clang::DeclContext* decl_context = decl.getDeclContext();
+    bool is_in_wtf = IsDeclContextInBlinkOrWTF(decl_context, false, true);
+    const clang::CXXRecordDecl* parent =
+        clang::dyn_cast_or_null<clang::CXXRecordDecl>(decl_context);
+    if (is_in_wtf && parent && parent->isStruct())
+      return false;
+
     name = 'k';
     name.append(original_name.data(), original_name.size());
     name[1] = clang::toUppercase(name[1]);
@@ -553,7 +582,7 @@ int main(int argc, const char* argv[]) {
   // matches |g|.
   auto method_decl_matcher =
       id("decl",
-         cxxMethodDecl(isBlinkMethod(),
+         cxxMethodDecl(isBlinkOrWTFMethod(),
                        unless(anyOf(is_generated,
                                     // Overloaded operators have special names
                                     // and should never be renamed.

@@ -4,6 +4,9 @@
 
 namespace blink {
 
+class MyIterator {};
+using my_iterator = char*;
+
 class Task {
  public:
   // Already style-compliant methods shouldn't change.
@@ -32,10 +35,10 @@ class Task {
 
   // These are special functions that we don't rename so that range-based
   // for loops and STL things work.
-  void begin() {}
-  void end() {}
-  void rbegin() {}
-  void rend() {}
+  MyIterator begin() {}
+  my_iterator end() {}
+  my_iterator rbegin() {}
+  MyIterator rend() {}
   // The trace() method is used by Oilpan, we shouldn't rename it.
   void trace() {}
   // These are used by std::unique_lock and std::lock_guard.
@@ -46,10 +49,18 @@ class Task {
 
 class Other {
   // Static begin/end/trace don't count, and should be renamed.
-  static void begin() {}
-  static void end() {}
+  static MyIterator begin() {}
+  static my_iterator end() {}
   static void trace() {}
   static void lock() {}
+};
+
+class NonIterators {
+  // begin()/end() and friends are renamed if they don't return an iterator.
+  void begin() {}
+  int end() { return 0; }
+  void rbegin() {}
+  int rend() { return 0; }
 };
 
 // Test that the actual method definition is also updated.
@@ -83,4 +94,29 @@ void F() {
   void (blink::Task::*p2)() = &BovineTask::doTheWork;
   void (blink::Task::*p3)() = &blink::Task::reallyDoTheWork;
   void (BovineTask::*p4)() = &BovineTask::reallyDoTheWork;
+}
+
+namespace blink {
+
+struct StructInBlink {
+  // Structs in blink should rename their methods to capitals.
+  bool function() { return true; }
+};
+
+}  // namespace blink
+
+namespace WTF {
+
+struct StructInWTF {
+  // Structs in WTF should rename their methods to capitals.
+  bool function() { return true; }
+};
+
+}  // namespace WTF
+
+void F2() {
+  blink::StructInBlink b;
+  b.function();
+  WTF::StructInWTF w;
+  w.function();
 }

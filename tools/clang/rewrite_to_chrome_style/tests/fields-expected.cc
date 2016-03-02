@@ -57,6 +57,16 @@ union U {
 
 }  // namespace blink
 
+namespace WTF {
+
+struct TypeTrait {
+  // WTF has structs for things like type traits, which we don't want to
+  // capitalize.
+  static const bool value = true;
+};
+
+};  // namespace WTF
+
 void F() {
   // Test that references to a static field are correctly rewritten.
   blink::C::instance_count_++;
@@ -64,4 +74,6 @@ void F() {
   // initializers for synthesized functions don't cause weird rewrites.
   blink::C c;
   blink::C c2 = c;
+
+  bool b = WTF::TypeTrait::value;
 }

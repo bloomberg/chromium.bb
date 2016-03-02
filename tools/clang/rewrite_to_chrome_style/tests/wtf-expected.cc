@@ -9,9 +9,10 @@ int making_globals_great_again = 0;
 
 void RunTheThing(int chicken) {}
 
-struct XmlHTTPRequest {
+class XmlHTTPRequest {
   void SendSync();
 
+  static const bool kFoo = true;
   int ready_state_;
 };
 
