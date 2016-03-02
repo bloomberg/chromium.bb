@@ -81,6 +81,10 @@ class ChildProcessHost {
 
   void AppCompleted(int32_t result);
 
+  // If |true|, the hosted process is neither launched nor owned by this
+  // ChildProcessHost.
+  bool external_process_ = false;
+
   scoped_refptr<base::TaskRunner> launch_process_runner_;
   NativeRunnerDelegate* delegate_;
   bool start_sandboxed_;

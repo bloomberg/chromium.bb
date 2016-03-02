@@ -55,7 +55,8 @@ ChildProcessHost::ChildProcessHost(base::TaskRunner* launch_process_runner,
 }
 
 ChildProcessHost::ChildProcessHost(ScopedHandle channel)
-    : launch_process_runner_(nullptr),
+    : external_process_(true),
+      launch_process_runner_(nullptr),
       delegate_(nullptr),
       start_sandboxed_(false),
       start_child_process_event_(false, false),
@@ -72,6 +73,7 @@ ChildProcessHost::~ChildProcessHost() {
 }
 
 void ChildProcessHost::Start(const ProcessReadyCallback& callback) {
+  DCHECK(!external_process_);
   DCHECK(!child_process_.IsValid());
   launch_process_runner_->PostTaskAndReply(
       FROM_HERE,
@@ -81,10 +83,11 @@ void ChildProcessHost::Start(const ProcessReadyCallback& callback) {
 }
 
 int ChildProcessHost::Join() {
-  if (controller_)  // We use this as a signal that Start was called.
+  if (controller_ && !external_process_)
     start_child_process_event_.Wait();
 
   controller_ = mojom::ChildControllerPtr();
+
   // This host may be hosting a child process whose lifetime is controlled
   // elsewhere. In this case we have no known process handle to wait on.
   if (child_process_.IsValid()) {
@@ -103,10 +106,6 @@ void ChildProcessHost::StartApp(
     InterfaceRequest<mojom::ShellClient> request,
     const mojom::ChildController::StartAppCallback& on_app_complete) {
   DCHECK(controller_);
-
-  // In this case the process must have already been launched.
-  start_child_process_event_.Signal();
-
   on_app_complete_ = on_app_complete;
   controller_->StartApp(
       std::move(request),
@@ -131,6 +130,8 @@ void ChildProcessHost::DidStart(const ProcessReadyCallback& callback) {
 }
 
 void ChildProcessHost::DoLaunch() {
+  DCHECK(!external_process_);
+
   const base::CommandLine* parent_command_line =
       base::CommandLine::ForCurrentProcess();
   base::FilePath target_path = parent_command_line->GetProgram();
