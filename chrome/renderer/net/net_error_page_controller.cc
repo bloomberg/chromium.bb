@@ -47,10 +47,6 @@ bool NetErrorPageController::ShowOfflinePagesButtonClick() {
   return ButtonClick(error_page::NetErrorHelperCore::SHOW_OFFLINE_PAGES_BUTTON);
 }
 
-bool NetErrorPageController::ShowOfflineCopyButtonClick() {
-  return ButtonClick(error_page::NetErrorHelperCore::SHOW_OFFLINE_COPY_BUTTON);
-}
-
 bool NetErrorPageController::ReloadButtonClick() {
   return ButtonClick(error_page::NetErrorHelperCore::RELOAD_BUTTON);
 }
@@ -102,8 +98,6 @@ gin::ObjectTemplateBuilder NetErrorPageController::GetObjectTemplateBuilder(
                  &NetErrorPageController::ShowSavedCopyButtonClick)
       .SetMethod("showOfflinePagesButtonClick",
                  &NetErrorPageController::ShowOfflinePagesButtonClick)
-      .SetMethod("showOfflineCopyButtonClick",
-                 &NetErrorPageController::ShowOfflineCopyButtonClick)
       .SetMethod("reloadButtonClick",
                  &NetErrorPageController::ReloadButtonClick)
       .SetMethod("detailsButtonClick",

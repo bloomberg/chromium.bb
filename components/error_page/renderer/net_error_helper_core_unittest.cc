@@ -165,7 +165,6 @@ class NetErrorHelperCoreTest : public testing::Test,
         show_saved_copy_count_(0),
         diagnose_error_count_(0),
         show_offline_pages_count_(0),
-        load_offline_copy_count_(0),
         enable_page_helper_functions_count_(0),
         default_url_(GURL(kFailedUrl)),
         error_url_(GURL(content::kUnreachableWebDataURL)),
@@ -225,8 +224,6 @@ class NetErrorHelperCoreTest : public testing::Test,
 
   int show_offline_pages_count() const { return show_offline_pages_count_; }
 
-  int load_offline_copy_count() const { return load_offline_copy_count_; }
-
   const GURL& default_url() const {
     return default_url_;
   }
@@ -249,8 +246,8 @@ class NetErrorHelperCoreTest : public testing::Test,
     return last_can_show_network_diagnostics_dialog_;
   }
 
-  OfflinePageStatus last_offline_page_status() const {
-    return last_offline_page_status_;
+  bool last_has_offline_pages() const {
+    return last_has_offline_pages_;
   }
 
   const ErrorPageParams* last_error_page_params() const {
@@ -358,23 +355,21 @@ class NetErrorHelperCoreTest : public testing::Test,
   void GenerateLocalizedErrorPage(const WebURLError& error,
                                   bool is_failed_post,
                                   bool can_show_network_diagnostics_dialog,
-                                  OfflinePageStatus offline_page_status,
+                                  bool has_offline_pages,
                                   scoped_ptr<ErrorPageParams> params,
                                   bool* reload_button_shown,
                                   bool* show_saved_copy_button_shown,
                                   bool* show_cached_copy_button_shown,
                                   bool* show_offline_pages_button_shown,
-                                  bool* show_offline_copy_button_shown,
                                   std::string* html) const override {
     last_can_show_network_diagnostics_dialog_ =
         can_show_network_diagnostics_dialog;
-    last_offline_page_status_ = offline_page_status;
+    last_has_offline_pages_ = has_offline_pages;
     last_error_page_params_.reset(params.release());
     *reload_button_shown = false;
     *show_saved_copy_button_shown = false;
     *show_cached_copy_button_shown = false;
     *show_offline_pages_button_shown = false;
-    *show_offline_copy_button_shown = false;
     *html = ErrorToString(error, is_failed_post);
   }
 
@@ -390,11 +385,11 @@ class NetErrorHelperCoreTest : public testing::Test,
   void UpdateErrorPage(const WebURLError& error,
                        bool is_failed_post,
                        bool can_show_network_diagnostics_dialog,
-                       OfflinePageStatus offline_page_status) override {
+                       bool has_offline_pages) override {
     update_count_++;
     last_can_show_network_diagnostics_dialog_ =
         can_show_network_diagnostics_dialog;
-    last_offline_page_status_ = offline_page_status;
+    last_has_offline_pages_ = has_offline_pages;
     last_error_page_params_.reset(nullptr);
     last_error_html_ = ErrorToString(error, is_failed_post);
   }
@@ -447,10 +442,6 @@ class NetErrorHelperCoreTest : public testing::Test,
 
   void ShowOfflinePages() override { show_offline_pages_count_++; }
 
-  void LoadOfflineCopy(const GURL& page_url) override {
-    load_offline_copy_count_++;
-  }
-
   void SendTrackingRequest(const GURL& tracking_url,
                            const std::string& tracking_request_body) override {
     last_tracking_url_ = tracking_url;
@@ -493,7 +484,7 @@ class NetErrorHelperCoreTest : public testing::Test,
   // Values passed in to the last call of GenerateLocalizedErrorPage or
   // UpdateErrorPage.  Mutable because GenerateLocalizedErrorPage is const.
   mutable bool last_can_show_network_diagnostics_dialog_;
-  mutable OfflinePageStatus last_offline_page_status_;
+  mutable bool last_has_offline_pages_;
   mutable scoped_ptr<ErrorPageParams> last_error_page_params_;
 
   int reload_count_;
@@ -503,7 +494,6 @@ class NetErrorHelperCoreTest : public testing::Test,
   int diagnose_error_count_;
   GURL diagnose_error_url_;
   int show_offline_pages_count_;
-  int load_offline_copy_count_;
 
   int enable_page_helper_functions_count_;
 
@@ -2587,25 +2577,12 @@ TEST_F(NetErrorHelperCoreTest, CanShowNetworkDiagnostics) {
 
 #if defined(OS_ANDROID)
 TEST_F(NetErrorHelperCoreTest, ShowOfflinePages) {
-  core()->OnSetOfflinePageInfo(OfflinePageStatus::HAS_OTHER_OFFLINE_PAGES);
+  core()->OnSetHasOfflinePages(true);
   DoErrorLoad(net::ERR_INTERNET_DISCONNECTED);
-  EXPECT_EQ(OfflinePageStatus::HAS_OTHER_OFFLINE_PAGES,
-            last_offline_page_status());
+  EXPECT_TRUE(last_has_offline_pages());
   EXPECT_EQ(0, show_offline_pages_count());
-  EXPECT_EQ(0, load_offline_copy_count());
   core()->ExecuteButtonPress(NetErrorHelperCore::SHOW_OFFLINE_PAGES_BUTTON);
   EXPECT_EQ(1, show_offline_pages_count());
-}
-
-TEST_F(NetErrorHelperCoreTest, LoadOfflineCopy) {
-  core()->OnSetOfflinePageInfo(OfflinePageStatus::HAS_OFFLINE_PAGE);
-  DoErrorLoad(net::ERR_INTERNET_DISCONNECTED);
-  EXPECT_EQ(OfflinePageStatus::HAS_OFFLINE_PAGE, last_offline_page_status());
-  EXPECT_EQ(0, show_offline_pages_count());
-  EXPECT_EQ(0, load_offline_copy_count());
-  core()->ExecuteButtonPress(NetErrorHelperCore::SHOW_OFFLINE_COPY_BUTTON);
-  EXPECT_EQ(0, show_offline_pages_count());
-  EXPECT_EQ(1, load_offline_copy_count());
 }
 #endif  // defined(OS_ANDROID)
 

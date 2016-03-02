@@ -120,12 +120,6 @@ function showOfflinePagesButtonClick() {
   }
 }
 
-function showOfflineCopyButtonClick() {
-  if (window.errorPageController) {
-    errorPageController.showOfflineCopyButtonClick();
-  }
-}
-
 function detailsButtonClick() {
   if (window.errorPageController)
     errorPageController.detailsButtonClick();
@@ -164,8 +158,6 @@ function onDocumentLoad() {
   var showSavedCopyButton = document.getElementById('show-saved-copy-button');
   var showOfflinePagesButton =
       document.getElementById('show-offline-pages-button');
-  var showOfflineCopyButton =
-      document.getElementById('show-offline-copy-button');
 
   var reloadButtonVisible = loadTimeData.valueExists('reloadButton') &&
       loadTimeData.getValue('reloadButton').msg;
@@ -175,9 +167,6 @@ function onDocumentLoad() {
   var showOfflinePagesButtonVisible =
       loadTimeData.valueExists('showOfflinePagesButton') &&
       loadTimeData.getValue('showOfflinePagesButton').msg;
-  var showOfflineCopyButtonVisible =
-      loadTimeData.valueExists('showOfflineCopyButton') &&
-      loadTimeData.getValue('showOfflineCopyButton').msg;
 
   var primaryButton, secondaryButton;
   if (showSavedCopyButton.primary) {
@@ -204,19 +193,17 @@ function onDocumentLoad() {
 
   if (reloadButton.style.display == 'none' &&
       showSavedCopyButton.style.display == 'none' &&
-      showOfflinePagesButton.style.display == 'none' &&
-      showOfflineCopyButton.style.display == 'none') {
+      showOfflinePagesButton.style.display == 'none') {
     detailsButton.classList.add('singular');
   }
 
   // Show control buttons.
   if (reloadButtonVisible || showSavedCopyButtonVisible ||
-      showOfflinePagesButtonVisible || showOfflineCopyButton) {
+      showOfflinePagesButtonVisible) {
     controlButtonDiv.hidden = false;
 
     // Set the secondary button state in the cases of two call to actions.
-    if ((reloadButtonVisible || showOfflinePagesButtonVisible ||
-         showOfflineCopyButton) &&
+    if ((reloadButtonVisible || showOfflinePagesButtonVisible) &&
         showSavedCopyButtonVisible) {
       secondaryButton.classList.add('secondary-button');
     }

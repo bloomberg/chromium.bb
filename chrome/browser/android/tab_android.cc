@@ -753,10 +753,6 @@ void TabAndroid::LoadOriginalImage(JNIEnv* env,
 jlong TabAndroid::GetBookmarkId(JNIEnv* env,
                                 const JavaParamRef<jobject>& obj,
                                 jboolean only_editable) {
-  return GetBookmarkIdHelper(only_editable);
-}
-
-int64_t TabAndroid::GetBookmarkIdHelper(bool only_editable) const {
   GURL url = dom_distiller::url_utils::GetOriginalUrlFromDistillerUrl(
       web_contents()->GetURL());
   Profile* profile = GetProfile();
@@ -800,16 +796,6 @@ bool TabAndroid::HasOfflinePages() const {
 void TabAndroid::ShowOfflinePages() {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_Tab_showOfflinePages(env, weak_java_tab_.get(env).obj());
-}
-
-void TabAndroid::LoadOfflineCopy(const GURL& url) {
-  GURL offline_url = offline_pages::OfflinePageUtils::GetOfflineURLForOnlineURL(
-      GetProfile(), url);
-  if (!offline_url.is_valid())
-    return;
-
-  content::NavigationController::LoadURLParams load_params(offline_url);
-  web_contents()->GetController().LoadURLWithParams(load_params);
 }
 
 void TabAndroid::OnLoFiResponseReceived(bool is_preview) {

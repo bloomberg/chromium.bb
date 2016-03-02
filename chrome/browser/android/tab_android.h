@@ -122,7 +122,6 @@ class TabAndroid : public CoreTabHelperDelegate,
 
   bool HasOfflinePages() const;
   void ShowOfflinePages();
-  void LoadOfflineCopy(const GURL& url);
 
   // Notifies this TabAndroid that a Lo-Fi response has been received. The
   // TabAndroid then handles showing Lo-Fi UI if this is the first Lo-Fi
@@ -266,8 +265,6 @@ class TabAndroid : public CoreTabHelperDelegate,
 
  private:
   prerender::PrerenderManager* GetPrerenderManager() const;
-
-  int64_t GetBookmarkIdHelper(bool only_editable) const;
 
   JavaObjectWeakGlobalRef weak_java_tab_;
 

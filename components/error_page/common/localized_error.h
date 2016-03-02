@@ -10,7 +10,6 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
-#include "components/error_page/common/offline_page_types.h"
 #include "url/gurl.h"
 
 namespace base {
@@ -31,7 +30,7 @@ class LocalizedError {
                          bool is_post,
                          bool stale_copy_in_cache,
                          bool can_show_network_diagnostics_dialog,
-                         error_page::OfflinePageStatus offline_page_status,
+                         bool has_offline_pages,
                          const std::string& locale,
                          const std::string& accept_languages,
                          scoped_ptr<error_page::ErrorPageParams> params,

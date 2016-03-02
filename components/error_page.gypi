@@ -30,7 +30,6 @@
         'error_page/common/localized_error.h',
         'error_page/common/net_error_info.cc',
         'error_page/common/net_error_info.h',
-        'error_page/common/offline_page_types.h',
       ],
     },
   ],
