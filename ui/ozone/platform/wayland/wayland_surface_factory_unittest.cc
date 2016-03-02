@@ -6,61 +6,25 @@
 #include "third_party/skia/include/core/SkSurface.h"
 #include "ui/ozone/platform/wayland/fake_server.h"
 #include "ui/ozone/platform/wayland/mock_platform_window_delegate.h"
-#include "ui/ozone/platform/wayland/wayland_display.h"
 #include "ui/ozone/platform/wayland/wayland_surface_factory.h"
+#include "ui/ozone/platform/wayland/wayland_test.h"
 #include "ui/ozone/platform/wayland/wayland_window.h"
 #include "ui/ozone/public/surface_ozone_canvas.h"
 
 using ::testing::Expectation;
-using ::testing::Mock;
 using ::testing::SaveArg;
 using ::testing::_;
 
 namespace ui {
 
-class WaylandSurfaceFactoryTest : public testing::Test {
+class WaylandSurfaceFactoryTest : public WaylandTest {
  public:
-  WaylandSurfaceFactoryTest()
-      : surface_factory(&display),
-        window(&delegate, &display, gfx::Rect(0, 0, 80, 60)) {}
+  WaylandSurfaceFactoryTest() : surface_factory(&display) {}
 
   ~WaylandSurfaceFactoryTest() override {}
 
-  void SetUp() override {
-    ASSERT_TRUE(server.Start());
-    ASSERT_TRUE(display.Initialize());
-    ASSERT_TRUE(window.Initialize());
-    wl_display_roundtrip(display.display());
-
-    server.Pause();
-
-    surface = server.GetObject<wl::MockSurface>(window.GetWidget());
-    ASSERT_TRUE(surface);
-    initialized = true;
-  }
-
-  void TearDown() override {
-    server.Resume();
-    if (initialized)
-      wl_display_roundtrip(display.display());
-  }
-
-  void Sync() {
-    server.Resume();
-    wl_display_roundtrip(display.display());
-    server.Pause();
-  }
-
- private:
-  wl::FakeServer server;
-  bool initialized = false;
-
  protected:
-  WaylandDisplay display;
   WaylandSurfaceFactory surface_factory;
-  MockPlatformWindowDelegate delegate;
-  WaylandWindow window;
-  wl::MockSurface* surface;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WaylandSurfaceFactoryTest);
@@ -84,8 +48,8 @@ TEST_F(WaylandSurfaceFactoryTest, Canvas) {
   ASSERT_TRUE(buffer_resource);
   wl_shm_buffer* buffer = wl_shm_buffer_get(buffer_resource);
   ASSERT_TRUE(buffer);
-  EXPECT_EQ(wl_shm_buffer_get_width(buffer), 80);
-  EXPECT_EQ(wl_shm_buffer_get_height(buffer), 60);
+  EXPECT_EQ(wl_shm_buffer_get_width(buffer), 800);
+  EXPECT_EQ(wl_shm_buffer_get_height(buffer), 600);
 
   // TODO(forney): We could check that the contents match something drawn to the
   // SkSurface above.

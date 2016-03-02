@@ -70,6 +70,8 @@
           'mock_platform_window_delegate.cc',
           'wayland_display_unittest.cc',
           'wayland_surface_factory_unittest.cc',
+          'wayland_test.cc',
+          'wayland_test.h',
           'wayland_window_unittest.cc',
         ],
       },

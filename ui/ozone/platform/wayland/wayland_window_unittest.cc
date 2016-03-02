@@ -10,7 +10,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/ozone/platform/wayland/fake_server.h"
 #include "ui/ozone/platform/wayland/mock_platform_window_delegate.h"
-#include "ui/ozone/platform/wayland/wayland_display.h"
+#include "ui/ozone/platform/wayland/wayland_test.h"
 #include "ui/ozone/platform/wayland/wayland_window.h"
 
 using ::testing::Eq;
@@ -21,68 +21,18 @@ using ::testing::_;
 
 namespace ui {
 
-TEST(WaylandWindowInitializeTest, Initialize) {
-  wl::FakeServer server;
-  ASSERT_TRUE(server.Start());
-  WaylandDisplay display;
-  ASSERT_TRUE(display.Initialize());
-  MockPlatformWindowDelegate delegate;
-  gfx::AcceleratedWidget widget = gfx::kNullAcceleratedWidget;
-  EXPECT_CALL(delegate, OnAcceleratedWidgetAvailable(_, _))
-      .WillOnce(SaveArg<0>(&widget));
-  WaylandWindow window(&delegate, &display, gfx::Rect(0, 0, 800, 600));
-  ASSERT_TRUE(window.Initialize());
-  EXPECT_EQ(widget, window.GetWidget());
-  wl_display_roundtrip(display.display());
-
-  server.Pause();
-
-  EXPECT_TRUE(server.GetObject<wl::MockSurface>(window.GetWidget()));
-  server.Resume();
-}
-
-class WaylandWindowTest : public testing::Test {
+class WaylandWindowTest : public WaylandTest {
  public:
-  WaylandWindowTest()
-      : window(&delegate, &display, gfx::Rect(0, 0, 800, 600)) {}
+  WaylandWindowTest() {}
 
   void SetUp() override {
-    ASSERT_TRUE(server.Start());
-    ASSERT_TRUE(display.Initialize());
-    ASSERT_TRUE(window.Initialize());
-    wl_display_roundtrip(display.display());
+    WaylandTest::SetUp();
 
-    server.Pause();
-
-    auto surface = server.GetObject<wl::MockSurface>(window.GetWidget());
-    ASSERT_TRUE(surface);
     xdg_surface = surface->xdg_surface.get();
     ASSERT_TRUE(xdg_surface);
-    initialized = true;
   }
-
-  void TearDown() override {
-    server.Resume();
-    if (initialized)
-      wl_display_roundtrip(display.display());
-  }
-
-  void Sync() {
-    server.Resume();
-    wl_display_roundtrip(display.display());
-    server.Pause();
-  }
-
- private:
-  wl::FakeServer server;
-  bool initialized = false;
 
  protected:
-  WaylandDisplay display;
-
-  MockPlatformWindowDelegate delegate;
-  WaylandWindow window;
-
   wl::MockXdgSurface* xdg_surface;
 
  private:
