@@ -127,7 +127,7 @@ void ApplicationCacheHost::selectCacheWithManifest(const KURL& manifestURL)
         UseCounter::countCrossOriginIframe(*document, UseCounter::ApplicationCacheManifestSelectSecureOrigin);
     } else {
         Deprecation::countDeprecation(document, UseCounter::ApplicationCacheManifestSelectInsecureOrigin);
-        UseCounter::countCrossOriginIframe(*document, UseCounter::ApplicationCacheManifestSelectInsecureOrigin);
+        Deprecation::countDeprecationCrossOriginIframe(*document, UseCounter::ApplicationCacheManifestSelectInsecureOrigin);
         OriginsUsingFeatures::countAnyWorld(*document, OriginsUsingFeatures::Feature::ApplicationCacheManifestSelectInsecureOrigin);
     }
     if (m_host && !m_host->selectCacheWithManifest(manifestURL)) {

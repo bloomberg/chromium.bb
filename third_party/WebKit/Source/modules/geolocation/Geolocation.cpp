@@ -160,7 +160,7 @@ void Geolocation::recordOriginTypeAccess() const
         UseCounter::countCrossOriginIframe(*document, UseCounter::GeolocationSecureOriginIframe);
     } else {
         Deprecation::countDeprecation(document, UseCounter::GeolocationInsecureOrigin);
-        UseCounter::countCrossOriginIframe(*document, UseCounter::GeolocationInsecureOriginIframe);
+        Deprecation::countDeprecationCrossOriginIframe(*document, UseCounter::GeolocationInsecureOriginIframe);
         OriginsUsingFeatures::countAnyWorld(*document, OriginsUsingFeatures::Feature::GeolocationInsecureOrigin);
     }
 }

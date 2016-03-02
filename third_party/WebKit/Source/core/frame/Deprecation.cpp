@@ -148,6 +148,18 @@ void Deprecation::countDeprecationIfNotPrivateScript(v8::Isolate* isolate, Execu
     Deprecation::countDeprecation(context, feature);
 }
 
+void Deprecation::countDeprecationCrossOriginIframe(const Document& document, UseCounter::Feature feature)
+{
+    LocalFrame* frame = document.frame();
+    if (!frame)
+        return;
+    // Check to see if the frame can script into the top level document.
+    SecurityOrigin* securityOrigin = frame->securityContext()->securityOrigin();
+    Frame* top = frame->tree().top();
+    if (top && !securityOrigin->canAccess(top->securityContext()->securityOrigin()))
+        countDeprecation(frame, feature);
+}
+
 String Deprecation::deprecationMessage(UseCounter::Feature feature)
 {
     switch (feature) {
@@ -274,6 +286,7 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature)
         return "The deviceorientationabsolute event is deprecated on insecure origins, and support will be removed in the future. You should consider switching your application to a secure origin, such as HTTPS. See https://goo.gl/rStTGz for more details.";
 
     case UseCounter::GeolocationInsecureOrigin:
+    case UseCounter::GeolocationInsecureOriginIframe:
         // TODO(jww): This message should be made less ambigous after WebView
         // is fixed so geolocation can be removed there. After that, this
         // should be updated to read similarly to GetUserMediaInsecureOrigin's
@@ -281,6 +294,7 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature)
         return "getCurrentPosition() and watchPosition() are deprecated on insecure origins. To use this feature, you should consider switching your application to a secure origin, such as HTTPS. See https://goo.gl/rStTGz for more details.";
 
     case UseCounter::GetUserMediaInsecureOrigin:
+    case UseCounter::GetUserMediaInsecureOriginIframe:
         return "getUserMedia() no longer works on insecure origins. To use this feature, you should consider switching your application to a secure origin, such as HTTPS. See https://goo.gl/rStTGz for more details.";
 
     case UseCounter::EncryptedMediaInsecureOrigin:

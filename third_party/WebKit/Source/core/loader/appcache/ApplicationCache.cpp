@@ -146,10 +146,8 @@ void ApplicationCache::recordAPIUseType() const
 
     if (document->isSecureContext()) {
         UseCounter::count(document, UseCounter::ApplicationCacheAPISecureOrigin);
-        UseCounter::countCrossOriginIframe(*document, UseCounter::ApplicationCacheAPISecureOrigin);
     } else {
         Deprecation::countDeprecation(document, UseCounter::ApplicationCacheAPIInsecureOrigin);
-        UseCounter::countCrossOriginIframe(*document, UseCounter::ApplicationCacheAPIInsecureOrigin);
         OriginsUsingFeatures::countAnyWorld(*document, OriginsUsingFeatures::Feature::ApplicationCacheAPIInsecureOrigin);
     }
 }
