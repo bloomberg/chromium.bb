@@ -534,7 +534,7 @@
             '../base/base.gyp:base',
             '../base/base.gyp:test_support_base',
             '../third_party/angle/src/tests/tests.gyp:angle_deqp_gtest_support',
-            '../third_party/angle/src/tests/tests.gyp:angle_deqp_libgles2',
+            '../third_party/angle/src/tests/tests.gyp:angle_deqp_libgles3',
           ],
           'includes': [
             '../third_party/angle/build/common_defines.gypi',
