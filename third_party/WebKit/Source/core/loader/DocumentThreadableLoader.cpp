@@ -293,6 +293,8 @@ void DocumentThreadableLoader::makeCrossOriginAccessRequest(const ResourceReques
 
 DocumentThreadableLoader::~DocumentThreadableLoader()
 {
+    m_client = nullptr;
+
     // TODO(oilpan): Remove this once DocumentThreadableLoader is once again a ResourceOwner.
     clearResource();
 }
@@ -358,7 +360,7 @@ void DocumentThreadableLoader::setDefersLoading(bool value)
 
 void DocumentThreadableLoader::clear()
 {
-    m_client = 0;
+    m_client = nullptr;
 
     if (!m_async)
         return;
@@ -718,7 +720,7 @@ void DocumentThreadableLoader::handleSuccessfulFinish(unsigned long identifier, 
     }
 
     ThreadableLoaderClient* client = m_client;
-    m_client = 0;
+    m_client = nullptr;
     // Don't clear the resource as the client may need to access the downloaded
     // file which will be released when the resource is destoryed.
     if (m_async) {
