@@ -225,11 +225,10 @@ TEST_F(ShelfViewIconObserverTest, MAYBE_AddRemoveWithMultipleDisplays) {
 
 TEST_F(ShelfViewIconObserverTest, BoundsChanged) {
   ShelfWidget* widget = Shell::GetPrimaryRootWindowController()->shelf();
-  Shelf* shelf = Shelf::ForPrimaryDisplay();
-  gfx::Size shelf_size = widget->GetWindowBoundsInScreen().size();
-  shelf_size.set_width(shelf_size.width() / 2);
-  ASSERT_GT(shelf_size.width(), 0);
-  shelf->SetShelfViewBounds(gfx::Rect(shelf_size));
+  gfx::Rect shelf_bounds = widget->GetWindowBoundsInScreen();
+  shelf_bounds.set_width(shelf_bounds.width() / 2);
+  ASSERT_GT(shelf_bounds.width(), 0);
+  widget->SetBounds(shelf_bounds);
   // No animation happens for ShelfView bounds change.
   EXPECT_TRUE(observer()->change_notified());
   observer()->Reset();

@@ -124,10 +124,6 @@ class ASH_EXPORT Shelf {
     return shelf_widget_->shelf_layout_manager();
   }
 
-  // Set the bounds of the shelf view.
-  void SetShelfViewBounds(gfx::Rect bounds);
-  gfx::Rect GetShelfViewBounds() const;
-
   // Returns rectangle bounding all visible shelf items. Used screen coordinate
   // system.
   gfx::Rect GetVisibleItemsBoundsInScreen() const;

@@ -1473,25 +1473,20 @@ TEST_F(ShelfLayoutManagerTest, DualDisplayOpenAppListWithShelfAutoHideState) {
       GetRootWindowController(root_windows[1])->GetShelfLayoutManager();
   EXPECT_NE(shelf_1, shelf_2);
   EXPECT_NE(shelf_1->shelf_widget()->GetNativeWindow()->GetRootWindow(),
-            shelf_2->shelf_widget()->GetNativeWindow()->
-            GetRootWindow());
+            shelf_2->shelf_widget()->GetNativeWindow()->GetRootWindow());
   shelf_1->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
   shelf_1->LayoutShelf();
   shelf_2->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
   shelf_2->LayoutShelf();
 
   // Create a window in each display and show them in maximized state.
-  aura::Window* window_1 =
-      CreateTestWindowInParent(root_windows[0]);
+  aura::Window* window_1 = CreateTestWindowInParent(root_windows[0]);
   window_1->SetBounds(gfx::Rect(0, 0, 100, 100));
-  window_1->SetProperty(aura::client::kShowStateKey,
-                              ui::SHOW_STATE_MAXIMIZED);
+  window_1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
   window_1->Show();
-  aura::Window* window_2 =
-      CreateTestWindowInParent(root_windows[1]);
+  aura::Window* window_2 = CreateTestWindowInParent(root_windows[1]);
   window_2->SetBounds(gfx::Rect(201, 0, 100, 100));
-  window_2->SetProperty(aura::client::kShowStateKey,
-                                ui::SHOW_STATE_MAXIMIZED);
+  window_2->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
   window_2->Show();
 
   EXPECT_EQ(shelf_1->shelf_widget()->GetNativeWindow()->GetRootWindow(),

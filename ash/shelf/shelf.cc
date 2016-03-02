@@ -177,14 +177,6 @@ void Shelf::LaunchAppIndexAt(int item_index) {
   }
 }
 
-void Shelf::SetShelfViewBounds(gfx::Rect bounds) {
-  shelf_view_->SetBoundsRect(bounds);
-}
-
-gfx::Rect Shelf::GetShelfViewBounds() const {
-  return shelf_view_->bounds();
-}
-
 gfx::Rect Shelf::GetVisibleItemsBoundsInScreen() const {
   return shelf_view_->GetVisibleItemsBoundsInScreen();
 }

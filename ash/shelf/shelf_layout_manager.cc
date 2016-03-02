@@ -48,6 +48,7 @@
 #include "ui/events/event_handler.h"
 #include "ui/gfx/screen.h"
 #include "ui/keyboard/keyboard_util.h"
+#include "ui/views/border.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/public/activation_client.h"
 
@@ -286,13 +287,6 @@ void ShelfLayoutManager::LayoutShelf() {
   UpdateBoundsAndOpacity(target_bounds, false, NULL);
 
   if (shelf_->shelf()) {
-    // This is not part of UpdateBoundsAndOpacity() because
-    // SetShelfViewBounds() sets the bounds immediately and does not animate.
-    // The height of the ShelfView for a horizontal shelf and the width of
-    // the ShelfView for a vertical shelf are set when |shelf_|'s bounds
-    // are changed via UpdateBoundsAndOpacity(). This sets the origin and the
-    // dimension in the other direction.
-    shelf_->shelf()->SetShelfViewBounds(target_bounds.shelf_bounds_in_shelf);
     // Update insets in ShelfWindowTargeter when shelf bounds change.
     FOR_EACH_OBSERVER(ShelfLayoutManagerObserver, observers_,
                       WillChangeVisibilityState(visibility_state()));
@@ -413,11 +407,9 @@ void ShelfLayoutManager::StartGestureDrag(const ui::GestureEvent& gesture) {
   UpdateShelfBackground(BACKGROUND_CHANGE_ANIMATE);
 }
 
-void ShelfLayoutManager::UpdateGestureDrag(
-    const ui::GestureEvent& gesture) {
-  bool horizontal = IsHorizontalAlignment();
-  gesture_drag_amount_ += horizontal ? gesture.details().scroll_y() :
-                                       gesture.details().scroll_x();
+void ShelfLayoutManager::UpdateGestureDrag(const ui::GestureEvent& gesture) {
+  gesture_drag_amount_ += PrimaryAxisValue(gesture.details().scroll_y(),
+                                           gesture.details().scroll_x());
   LayoutShelf();
 }
 
@@ -431,7 +423,7 @@ void ShelfLayoutManager::CompleteGestureDrag(const ui::GestureEvent& gesture) {
     const float kDragHideThreshold = 0.4f;
     gfx::Rect bounds = GetIdealBounds();
     float drag_ratio = fabs(gesture_drag_amount_) /
-                       (horizontal ?  bounds.height() : bounds.width());
+                       (horizontal ? bounds.height() : bounds.width());
     if (gesture_drag_auto_hide_state_ == SHELF_AUTO_HIDE_SHOWN) {
       should_change = drag_ratio > kDragHideThreshold;
     } else {
@@ -695,10 +687,7 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(
     // TODO(harrym): Once status area widget is a child view of shelf
     // this can be simplified.
     gfx::Rect status_bounds = target_bounds.status_bounds_in_shelf;
-    status_bounds.set_x(status_bounds.x() +
-                        target_bounds.shelf_bounds_in_root.x());
-    status_bounds.set_y(status_bounds.y() +
-                        target_bounds.shelf_bounds_in_root.y());
+    status_bounds.Offset(target_bounds.shelf_bounds_in_root.OffsetFromOrigin());
     // mash::wm::ShelfLayout manages window bounds when running mash_shell.
     if (!aura::GetMusWindow(shelf_->GetNativeWindow())) {
       shelf_->status_area_widget()->SetBounds(
@@ -711,12 +700,18 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(
       // If user session is blocked (login to new user session or add user to
       // the existing session - multi-profile) then give 100% of work area only
       // if keyboard is not shown.
-      if (!state_.is_adding_user_screen || !keyboard_bounds_.IsEmpty()) {
+      if (!state_.is_adding_user_screen || !keyboard_bounds_.IsEmpty())
         insets = target_bounds.work_area_insets;
-      }
       Shell::GetInstance()->SetDisplayWorkAreaInsets(root_window_, insets);
     }
   }
+
+  // Set an empty border to avoid the shelf view and status area overlapping.
+  // TODO(msw): Avoid setting bounds of views within the shelf widget here.
+  gfx::Rect shelf_bounds = gfx::Rect(target_bounds.shelf_bounds_in_root.size());
+  shelf_->GetContentsView()->SetBorder(views::Border::CreateEmptyBorder(
+      shelf_bounds.InsetsFrom(target_bounds.shelf_bounds_in_shelf)));
+  shelf_->GetContentsView()->Layout();
 
   // Setting visibility during an animation causes the visibility property to
   // animate. Set the visibility property without an animation.
@@ -731,63 +726,53 @@ void ShelfLayoutManager::StopAnimating() {
 
 void ShelfLayoutManager::CalculateTargetBounds(const State& state,
                                                TargetBounds* target_bounds) {
-  gfx::Rect available_bounds =
-      ScreenUtil::GetShelfDisplayBoundsInRoot(root_window_);
-  gfx::Rect status_size(
-      shelf_->status_area_widget()->GetWindowBoundsInScreen().size());
-  int shelf_width = PrimaryAxisValue(available_bounds.width(), kShelfSize);
-  int shelf_height = PrimaryAxisValue(kShelfSize, available_bounds.height());
-
+  int shelf_size = kShelfSize;
   if (state.visibility_state == SHELF_AUTO_HIDE &&
       state.auto_hide_state == SHELF_AUTO_HIDE_HIDDEN) {
     // Auto-hidden shelf always starts with the default size. If a gesture-drag
     // is in progress, then the call to UpdateTargetBoundsForGesture() below
     // takes care of setting the height properly.
-    if (IsHorizontalAlignment())
-      shelf_height = kAutoHideSize;
-    else
-      shelf_width = kAutoHideSize;
+    shelf_size = kAutoHideSize;
   } else if (state.visibility_state == SHELF_HIDDEN ||
-      (!keyboard_bounds_.IsEmpty() && !keyboard::IsKeyboardOverscrollEnabled()))
-  {
-    if (IsHorizontalAlignment())
-      shelf_height = 0;
-    else
-      shelf_width = 0;
+             (!keyboard_bounds_.IsEmpty() &&
+              !keyboard::IsKeyboardOverscrollEnabled())) {
+    shelf_size = 0;
   }
 
+  gfx::Rect available_bounds =
+      ScreenUtil::GetShelfDisplayBoundsInRoot(root_window_);
+  int shelf_width = PrimaryAxisValue(available_bounds.width(), shelf_size);
+  int shelf_height = PrimaryAxisValue(shelf_size, available_bounds.height());
   int bottom_shelf_vertical_offset = available_bounds.bottom();
   if (keyboard_bounds_.IsEmpty())
     bottom_shelf_vertical_offset -= shelf_height;
   else
     bottom_shelf_vertical_offset -= keyboard_bounds_.height();
 
-  target_bounds->shelf_bounds_in_root = SelectValueForShelfAlignment(
-      gfx::Rect(available_bounds.x(), bottom_shelf_vertical_offset,
-                    available_bounds.width(), shelf_height),
-      gfx::Rect(available_bounds.x(), available_bounds.y(),
-                    shelf_width, available_bounds.height()),
-      gfx::Rect(available_bounds.right() - shelf_width, available_bounds.y(),
-                    shelf_width, available_bounds.height()),
-      gfx::Rect(available_bounds.x(), available_bounds.y(),
-                    available_bounds.width(), shelf_height));
+  gfx::Point shelf_origin = SelectValueForShelfAlignment(
+      gfx::Point(available_bounds.x(), bottom_shelf_vertical_offset),
+      gfx::Point(available_bounds.x(), available_bounds.y()),
+      gfx::Point(available_bounds.right() - shelf_width, available_bounds.y()),
+      gfx::Point(available_bounds.x(), available_bounds.y()));
+  target_bounds->shelf_bounds_in_root =
+      gfx::Rect(shelf_origin.x(), shelf_origin.y(), shelf_width, shelf_height);
 
+  gfx::Size status_size(
+      shelf_->status_area_widget()->GetWindowBoundsInScreen().size());
   if (IsHorizontalAlignment())
     status_size.set_height(kShelfSize);
   else
     status_size.set_width(kShelfSize);
 
-  target_bounds->status_bounds_in_shelf = SelectValueForShelfAlignment(
-      gfx::Rect(base::i18n::IsRTL() ? 0 : shelf_width - status_size.width(),
-                    0, status_size.width(), status_size.height()),
-      gfx::Rect(shelf_width - status_size.width(),
-                    shelf_height - status_size.height(), status_size.width(),
-                    status_size.height()),
-      gfx::Rect(0, shelf_height - status_size.height(),
-                    status_size.width(), status_size.height()),
-      gfx::Rect(base::i18n::IsRTL() ? 0 : shelf_width - status_size.width(),
-                    shelf_height - status_size.height(),
-                    status_size.width(), status_size.height()));
+  gfx::Point status_origin = SelectValueForShelfAlignment(
+      gfx::Point(0, 0),
+      gfx::Point(shelf_width - status_size.width(),
+                 shelf_height - status_size.height()),
+      gfx::Point(0, shelf_height - status_size.height()),
+      gfx::Point(0, shelf_height - status_size.height()));
+  if (IsHorizontalAlignment() && !base::i18n::IsRTL())
+    status_origin.set_x(shelf_width - status_size.width());
+  target_bounds->status_bounds_in_shelf = gfx::Rect(status_origin, status_size);
 
   target_bounds->work_area_insets = SelectValueForShelfAlignment(
       gfx::Insets(0, 0, GetWorkAreaSize(state, shelf_height), 0),
@@ -856,7 +841,8 @@ void ShelfLayoutManager::UpdateTargetBoundsForGesture(
     TargetBounds* target_bounds) const {
   CHECK_EQ(GESTURE_DRAG_IN_PROGRESS, gesture_drag_status_);
   bool horizontal = IsHorizontalAlignment();
-  const gfx::Rect& available_bounds(root_window_->bounds());
+  gfx::Rect available_bounds =
+      ScreenUtil::GetShelfDisplayBoundsInRoot(root_window_);
   int resistance_free_region = 0;
 
   if (gesture_drag_auto_hide_state_ == SHELF_AUTO_HIDE_HIDDEN &&

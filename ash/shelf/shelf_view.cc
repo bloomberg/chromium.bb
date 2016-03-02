@@ -1414,8 +1414,7 @@ gfx::Size ShelfView::GetPreferredSize() const {
   if (shelf_->IsHorizontalAlignment())
     return gfx::Size(last_button_bounds.right() + leading_inset_, kShelfSize);
 
-  return gfx::Size(kShelfSize,
-                   last_button_bounds.bottom() + leading_inset_);
+  return gfx::Size(kShelfSize, last_button_bounds.bottom() + leading_inset_);
 }
 
 void ShelfView::OnBoundsChanged(const gfx::Rect& previous_bounds) {

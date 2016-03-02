@@ -34,6 +34,7 @@
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/skbitmap_operations.h"
 #include "ui/views/accessible_pane_view.h"
+#include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/wm/core/coordinate_conversion.h"
@@ -343,7 +344,6 @@ class ShelfWidget::DelegateView : public views::WidgetDelegate,
   const views::Widget* GetWidget() const override { return View::GetWidget(); }
 
   bool CanActivate() const override;
-  void Layout() override;
   void ReorderChildLayers(ui::Layer* parent_layer) override;
   // This will be called when the parent local bounds change.
   void OnBoundsChanged(const gfx::Rect& old_bounds) override;
@@ -406,6 +406,7 @@ ShelfWidget::DelegateView::DelegateView(ShelfWidget* shelf)
       opaque_foreground_(ui::LAYER_SOLID_COLOR),
       dimmer_view_(NULL),
       disable_dimming_animations_for_test_(false) {
+  SetLayoutManager(new views::FillLayout());
   set_allow_deactivate_on_esc(true);
   opaque_background_.SetColor(SK_ColorBLACK);
   opaque_background_.SetBounds(GetLocalBounds());
@@ -548,18 +549,6 @@ bool ShelfWidget::DelegateView::CanActivate() const {
     return true;
   // Disallow activating in other cases, especially when using mouse.
   return false;
-}
-
-void ShelfWidget::DelegateView::Layout() {
-  for(int i = 0; i < child_count(); ++i) {
-    if (shelf_->shelf_layout_manager()->IsHorizontalAlignment()) {
-      child_at(i)->SetBounds(child_at(i)->x(), child_at(i)->y(),
-                             child_at(i)->width(), height());
-    } else {
-      child_at(i)->SetBounds(child_at(i)->x(), child_at(i)->y(),
-                             width(), child_at(i)->height());
-    }
-  }
 }
 
 void ShelfWidget::DelegateView::ReorderChildLayers(ui::Layer* parent_layer) {
