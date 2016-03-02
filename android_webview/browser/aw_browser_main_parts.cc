@@ -9,6 +9,7 @@
 #include "android_webview/browser/aw_media_client_android.h"
 #include "android_webview/browser/aw_result_codes.h"
 #include "android_webview/browser/deferred_gpu_command_service.h"
+#include "android_webview/browser/net/aw_network_change_notifier_factory.h"
 #include "android_webview/common/aw_resource.h"
 #include "android_webview/common/aw_switches.h"
 #include "base/android/apk_assets.h"
@@ -46,8 +47,7 @@ AwBrowserMainParts::~AwBrowserMainParts() {
 }
 
 void AwBrowserMainParts::PreEarlyInitialization() {
-  net::NetworkChangeNotifier::SetFactory(
-      new net::NetworkChangeNotifierFactoryAndroid());
+  net::NetworkChangeNotifier::SetFactory(new AwNetworkChangeNotifierFactory());
 
   // Android WebView does not use default MessageLoop. It has its own
   // Android specific MessageLoop. Also see MainMessageLoopRun.
