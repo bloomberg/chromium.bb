@@ -46,6 +46,7 @@ class CommitAnnouncer(SingleServerIRCBot):
         self.git = Git(cwd=tool.scm().checkout_root, filesystem=tool.filesystem, executive=tool.executive)
         self.commands = {
             'help': self.help,
+            'ping': self.ping,
             'quit': self.stop,
         }
 
@@ -80,6 +81,9 @@ class CommitAnnouncer(SingleServerIRCBot):
 
     def help(self):
         self._post('Commands available: %s' % ' '.join(self.commands.keys()))
+
+    def ping(self):
+        self._post('Pong.')
 
     def stop(self, message=""):
         self.connection.execute_delayed(0, lambda: self.die(message))
