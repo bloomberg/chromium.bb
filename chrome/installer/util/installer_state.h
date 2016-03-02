@@ -7,7 +7,6 @@
 
 #include <stdint.h>
 
-#include <set>
 #include <string>
 #include <vector>
 
@@ -178,13 +177,6 @@ class InstallerState {
   // (for example <target_path>\Google\Chrome\Application\<Version>\Installer)
   base::FilePath GetInstallerDirectory(const base::Version& version) const;
 
-  // Try to delete all directories under |temp_path| whose versions are less
-  // than |new_version| and not equal to |existing_version|. |existing_version|
-  // may be NULL.
-  void RemoveOldVersionDirectories(const base::Version& new_version,
-                                   base::Version* existing_version,
-                                   const base::FilePath& temp_path) const;
-
   // Adds to |com_dll_list| the list of COM DLLs that are to be registered
   // and/or unregistered. The list may be empty.
   void AddComDllList(std::vector<base::FilePath>* com_dll_list) const;
@@ -242,11 +234,6 @@ class InstallerState {
       const InstallationState& machine_state);
   bool IsMultiInstallUpdate(const MasterPreferences& prefs,
                             const InstallationState& machine_state);
-
-  // Enumerates all files named one of
-  // [chrome.exe, old_chrome.exe, new_chrome.exe] in target_path_ and
-  // returns their version numbers in a set.
-  void GetExistingExeVersions(std::set<std::string>* existing_versions) const;
 
   // Sets this object's level and updates the root_key_ accordingly.
   void set_level(Level level);

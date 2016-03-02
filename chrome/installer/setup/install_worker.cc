@@ -40,6 +40,7 @@
 #include "chrome/installer/util/callback_work_item.h"
 #include "chrome/installer/util/conditional_work_item_list.h"
 #include "chrome/installer/util/create_reg_key_work_item.h"
+#include "chrome/installer/util/delete_old_versions.h"
 #include "chrome/installer/util/firewall_manager_win.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/helper.h"
@@ -1007,6 +1008,12 @@ bool AppendPostInstallTasks(const InstallerState& installer_state,
 
     post_install_task_list->AddWorkItem(regular_update_work_items.release());
   }
+
+  // If this is a regular update (chrome.exe not in use), this step will try to
+  // delete files from all versions except the one that was just installed.
+  // Otherwise, it will try to delete files from all versions except the one
+  // that is in use and the one that was just installed.
+  AddDeleteOldVersionsWorkItem(installer_state, post_install_task_list);
 
   AddRegisterComDllWorkItemsForPackage(installer_state, current_version,
                                        new_version, post_install_task_list);

@@ -53,6 +53,7 @@
 #include "chrome/installer/setup/uninstall.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/delete_after_reboot_helper.h"
+#include "chrome/installer/util/delete_old_versions.h"
 #include "chrome/installer/util/delete_tree_work_item.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/google_update_settings.h"
@@ -340,11 +341,11 @@ void AddExistingMultiInstalls(const InstallationState& original_state,
 
 // This function is called when --rename-chrome-exe option is specified on
 // setup.exe command line. This function assumes an in-use update has happened
-// for Chrome so there should be a file called new_chrome.exe on the file
-// system and a key called 'opv' in the registry. This function will move
+// for Chrome so there should be a file called new_chrome.exe on the file system
+// and a key called 'opv' in the registry. This function will move
 // new_chrome.exe to chrome.exe and delete 'opv' key in one atomic operation.
-// This function also deletes elevation policies associated with the old version
-// if they exist.
+// This function also takes care of deleting files and elevation policies that
+// belong to old versions of Chrome.
 installer::InstallStatus RenameChromeExecutables(
     const InstallationState& original_state,
     InstallerState* installer_state) {
@@ -404,6 +405,10 @@ installer::InstallStatus RenameChromeExecutables(
                                             KEY_WOW64_32KEY,
                                             google_update::kRegRenameCmdField);
   }
+
+  // Delete old versions.
+  AddDeleteOldVersionsWorkItem(*installer_state, install_list.get());
+
   installer::InstallStatus ret = installer::RENAME_SUCCESSFUL;
   if (!install_list->Do()) {
     LOG(ERROR) << "Renaming of executables failed. Rolling back any changes.";
