@@ -63,6 +63,6 @@ public class DataReductionProxyFirstRunFragment extends FirstRunPage {
     @Override
     public void onStart() {
         super.onStart();
-        DataReductionPromoScreen.setDisplayedDataReductionPromo(getActivity(), true);
+        DataReductionPromoScreen.saveDataReductionPromoDisplayed(getActivity());
     }
 }
