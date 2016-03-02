@@ -44,7 +44,10 @@ SingleSource/Regression/C++/EH/throw_rethrow_test
 # TODO(stichnot)
 # New failures in updated LLVM test suite, still to be triaged
 ############################################################################
-# exec failures on ARM
+# timeouts on ARM
+SingleSource/Benchmarks/CoyoteBench/almabench arm
+SingleSource/Benchmarks/SmallPT/smallpt arm
+MultiSource/Benchmarks/mafft/pairlocalalign arm
 MultiSource/Benchmarks/SciMark2-C/scimark2 arm
 
 # New as of LLVM 3.5 update, followed by updating test-suite to master.
