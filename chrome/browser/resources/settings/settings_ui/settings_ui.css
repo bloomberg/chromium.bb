@@ -5,7 +5,6 @@
 :host {
   @apply(--layout-vertical);
   @apply(--layout-fit);
-  @apply(--paper-font-body1);
   -webkit-user-select: none;
   background-color: var(--paper-blue-grey-50);
 }
