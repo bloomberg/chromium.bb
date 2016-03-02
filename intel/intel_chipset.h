@@ -213,6 +213,8 @@
 #define PCI_CHIP_BROXTON_0		0x0A84
 #define PCI_CHIP_BROXTON_1		0x1A84
 #define PCI_CHIP_BROXTON_2		0x5A84
+#define PCI_CHIP_BROXTON_3		0x1A85
+#define PCI_CHIP_BROXTON_4		0x5A85
 
 #define IS_MOBILE(devid)	((devid) == PCI_CHIP_I855_GM || \
 				 (devid) == PCI_CHIP_I915_GM || \
@@ -436,7 +438,9 @@
 
 #define IS_BROXTON(devid)	((devid) == PCI_CHIP_BROXTON_0	|| \
 				 (devid) == PCI_CHIP_BROXTON_1	|| \
-				 (devid) == PCI_CHIP_BROXTON_2)
+				 (devid) == PCI_CHIP_BROXTON_2	|| \
+				 (devid) == PCI_CHIP_BROXTON_3	|| \
+				 (devid) == PCI_CHIP_BROXTON_4)
 
 #define IS_GEN9(devid)		(IS_SKYLAKE(devid) || \
 				 IS_BROXTON(devid) || \
