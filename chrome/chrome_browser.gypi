@@ -3499,6 +3499,7 @@
             'sync_file_system_drive_proto',
             '../components/components.gyp:cryptauth',
             '../components/components.gyp:drive',
+            '../gpu/gpu.gyp:gpu',
             '../media/cast/cast.gyp:cast_net',
           ],
           'sources': [ '<@(chrome_browser_extensions_sources)' ],
@@ -3515,6 +3516,7 @@
         }],
         ['enable_task_manager==1', {
           'sources': [ '<@(chrome_browser_task_manager_sources)' ],
+          'dependencies': [ '../gpu/gpu.gyp:gpu' ],
           'conditions': [
             ['chromeos==1', {
               'sources': [ '<@(chrome_browser_task_manager_chromeos_sources)' ],

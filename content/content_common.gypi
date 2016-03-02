@@ -16,7 +16,7 @@
     # TODO: the dependency on gl_in_process_context should be decoupled from
     # content and moved to android_webview. See crbug.com/365797.
     '../gpu/gpu.gyp:gl_in_process_context',
-    '../gpu/gpu.gyp:gpu_ipc',
+    '../gpu/gpu.gyp:gpu',
     '../gpu/skia_bindings/skia_bindings.gyp:gpu_skia_bindings',
     '../ipc/ipc.gyp:ipc',
     '../ipc/mojo/ipc_mojo.gyp:ipc_mojo',
@@ -132,8 +132,6 @@
       'public/common/frame_navigate_params.h',
       'public/common/geoposition.cc',
       'public/common/geoposition.h',
-      'public/common/gpu_memory_stats.cc',
-      'public/common/gpu_memory_stats.h',
       'public/common/injection_test_mac.h',
       'public/common/injection_test_win.h',
       'public/common/javascript_message_type.h',

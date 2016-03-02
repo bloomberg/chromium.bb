@@ -20,6 +20,7 @@
     '../device/vibration/vibration.gyp:device_vibration_mojo_bindings',
     '../gin/gin.gyp:gin',
     '../google_apis/google_apis.gyp:google_apis',
+    '../gpu/gpu.gyp:gpu',
     '../mojo/mojo_base.gyp:mojo_application_base',
     '../mojo/mojo_base.gyp:mojo_geometry_lib',
     '../mojo/mojo_base.gyp:mojo_url_type_converters',

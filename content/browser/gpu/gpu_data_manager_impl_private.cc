@@ -33,6 +33,7 @@
 #include "gpu/config/gpu_info_collector.h"
 #include "gpu/config/gpu_switches.h"
 #include "gpu/config/gpu_util.h"
+#include "gpu/ipc/common/memory_stats.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_switches.h"
@@ -643,7 +644,7 @@ void GpuDataManagerImplPrivate::UpdateGpuInfo(const gpu::GPUInfo& gpu_info) {
 }
 
 void GpuDataManagerImplPrivate::UpdateVideoMemoryUsageStats(
-    const GPUVideoMemoryUsageStats& video_memory_usage_stats) {
+    const gpu::VideoMemoryUsageStats& video_memory_usage_stats) {
   GpuDataManagerImpl::UnlockedSession session(owner_);
   observer_list_->Notify(FROM_HERE,
                          &GpuDataManagerObserver::OnVideoMemoryUsageStatsUpdate,

@@ -18,7 +18,6 @@
 #include "content/common/gpu/gpu_process_launch_causes.h"
 #include "content/common/gpu/gpu_stream_constants.h"
 #include "content/public/common/common_param_traits.h"
-#include "content/public/common/gpu_memory_stats.h"
 #include "gpu/command_buffer/common/capabilities.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "gpu/command_buffer/common/constants.h"
@@ -338,4 +337,3 @@ IPC_SYNC_MESSAGE_ROUTED2_1(GpuCommandBufferMsg_CreateStreamTexture,
                            uint32_t, /* client_texture_id */
                            int32_t,  /* stream_id */
                            bool /* succeeded */)
-

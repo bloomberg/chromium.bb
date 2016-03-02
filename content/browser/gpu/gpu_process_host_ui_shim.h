@@ -21,8 +21,8 @@
 #include "base/threading/non_thread_safe.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
-#include "content/public/common/gpu_memory_stats.h"
 #include "gpu/config/gpu_info.h"
+#include "gpu/ipc/common/memory_stats.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 #include "ipc/message_router.h"
@@ -37,6 +37,10 @@ class Size;
 
 namespace IPC {
 class Message;
+}
+
+namespace gpu {
+struct VideoMemoryUsageStats;
 }
 
 namespace content {
@@ -100,7 +104,7 @@ class GpuProcessHostUIShim : public IPC::Listener,
       const AcceleratedSurfaceBuffersSwappedParams& params);
 #endif
   void OnVideoMemoryUsageStatsReceived(
-      const GPUVideoMemoryUsageStats& video_memory_usage_stats);
+      const gpu::VideoMemoryUsageStats& video_memory_usage_stats);
   void OnAddSubscription(int32_t process_id, unsigned int target);
   void OnRemoveSubscription(int32_t process_id, unsigned int target);
 

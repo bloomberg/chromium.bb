@@ -21,7 +21,6 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "content/public/browser/gpu_data_manager.h"
-#include "content/public/common/gpu_memory_stats.h"
 #include "content/public/common/three_d_api_types.h"
 #include "gpu/config/gpu_info.h"
 
@@ -29,6 +28,10 @@ class GURL;
 
 namespace base {
 class CommandLine;
+}
+
+namespace gpu {
+struct VideoMemoryUsageStats;
 }
 
 namespace content {
@@ -103,7 +106,7 @@ class CONTENT_EXPORT GpuDataManagerImpl
   void UpdateGpuInfo(const gpu::GPUInfo& gpu_info);
 
   void UpdateVideoMemoryUsageStats(
-      const GPUVideoMemoryUsageStats& video_memory_usage_stats);
+      const gpu::VideoMemoryUsageStats& video_memory_usage_stats);
 
   // Insert disable-feature switches corresponding to preliminary gpu feature
   // flags into the renderer process command line.

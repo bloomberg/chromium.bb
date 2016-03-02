@@ -18,6 +18,7 @@
 #include "content/common/gpu/gpu_memory_uma_stats.h"
 #include "gpu/command_buffer/common/gpu_memory_allocation.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
+#include "gpu/ipc/common/memory_stats.h"
 
 using gpu::MemoryAllocation;
 
@@ -91,7 +92,7 @@ void GpuMemoryManager::OnDestroyTrackingGroup(
 }
 
 void GpuMemoryManager::GetVideoMemoryUsageStats(
-    GPUVideoMemoryUsageStats* video_memory_usage_stats) const {
+    gpu::VideoMemoryUsageStats* video_memory_usage_stats) const {
   // For each context group, assign its memory usage to its PID
   video_memory_usage_stats->process_map.clear();
   for (TrackingGroupMap::const_iterator i =

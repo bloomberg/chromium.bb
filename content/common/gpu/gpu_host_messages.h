@@ -12,10 +12,10 @@
 #include "content/common/gpu/gpu_memory_uma_stats.h"
 #include "content/common/gpu/gpu_process_launch_causes.h"
 #include "content/public/common/common_param_traits.h"
-#include "content/public/common/gpu_memory_stats.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/command_buffer/common/value_state.h"
 #include "gpu/config/gpu_info.h"
+#include "gpu/ipc/common/memory_stats.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_start.h"
@@ -44,13 +44,13 @@ IPC_STRUCT_TRAITS_BEGIN(content::GPUMemoryUmaStats)
   IPC_STRUCT_TRAITS_MEMBER(bytes_allocated_max)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(content::GPUVideoMemoryUsageStats)
+IPC_STRUCT_TRAITS_BEGIN(gpu::VideoMemoryUsageStats)
   IPC_STRUCT_TRAITS_MEMBER(process_map)
   IPC_STRUCT_TRAITS_MEMBER(bytes_allocated)
   IPC_STRUCT_TRAITS_MEMBER(bytes_allocated_historical_max)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(content::GPUVideoMemoryUsageStats::ProcessStats)
+IPC_STRUCT_TRAITS_BEGIN(gpu::VideoMemoryUsageStats::ProcessStats)
   IPC_STRUCT_TRAITS_MEMBER(video_memory)
   IPC_STRUCT_TRAITS_MEMBER(has_duplicates)
 IPC_STRUCT_TRAITS_END()
@@ -229,7 +229,7 @@ IPC_MESSAGE_CONTROL1(GpuHostMsg_GraphicsInfoCollected,
 
 // Response from GPU to a GpuMsg_GetVideoMemory.
 IPC_MESSAGE_CONTROL1(GpuHostMsg_VideoMemoryUsageStats,
-                     content::GPUVideoMemoryUsageStats /* GPU memory stats */)
+                     gpu::VideoMemoryUsageStats /* GPU memory stats */)
 
 #if defined(OS_MACOSX)
 // Tells the browser that an accelerated surface has swapped.

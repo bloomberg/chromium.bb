@@ -2435,6 +2435,7 @@
         }],
         ['enable_task_manager==1', {
           'sources': [ '<@(chrome_unit_tests_task_manager_sources)' ],
+          'dependencies': [ '../gpu/gpu.gyp:gpu' ],
         }],
         ['enable_mdns==1', {
           'sources': [ '<@(chrome_unit_tests_mdns_sources)' ],

@@ -20,6 +20,7 @@
 #include "chrome/browser/task_management/sampling/task_manager_io_thread_helper.h"
 #include "chrome/browser/task_management/task_manager_interface.h"
 #include "content/public/browser/gpu_data_manager_observer.h"
+#include "gpu/ipc/common/memory_stats.h"
 
 namespace task_management {
 
@@ -77,7 +78,7 @@ class TaskManagerImpl :
 
   // content::GpuDataManagerObserver:
   void OnVideoMemoryUsageStatsUpdate(
-      const content::GPUVideoMemoryUsageStats& gpu_memory_stats) override;
+      const gpu::VideoMemoryUsageStats& gpu_memory_stats) override;
 
   // The notification method on the UI thread when multiple bytes are read
   // from URLRequests. This will be called by the |io_thread_helper_|
@@ -126,7 +127,7 @@ class TaskManagerImpl :
 
   // The current GPU memory usage stats that was last received from the
   // GpuDataManager.
-  content::GPUVideoMemoryUsageStats gpu_memory_stats_;
+  gpu::VideoMemoryUsageStats gpu_memory_stats_;
 
   // The specific blocking pool SequencedTaskRunner that will be used to make
   // sure TaskGroupSampler posts their refreshes serially.

@@ -16,9 +16,12 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
-#include "content/public/common/gpu_memory_stats.h"
 #include "gpu/command_buffer/common/gpu_memory_allocation.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
+
+namespace gpu {
+struct VideoMemoryUsageStats;
+}
 
 namespace content {
 
@@ -33,7 +36,7 @@ class CONTENT_EXPORT GpuMemoryManager :
 
   // Retrieve GPU Resource consumption statistics for the task manager
   void GetVideoMemoryUsageStats(
-      content::GPUVideoMemoryUsageStats* video_memory_usage_stats) const;
+      gpu::VideoMemoryUsageStats* video_memory_usage_stats) const;
 
   GpuMemoryTrackingGroup* CreateTrackingGroup(
       base::ProcessId pid, gpu::gles2::MemoryTracker* memory_tracker);

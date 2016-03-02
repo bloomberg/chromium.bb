@@ -21,7 +21,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/task_manager/resource_provider.h"
 #include "chrome/browser/ui/host_desktop.h"
-#include "content/public/common/gpu_memory_stats.h"
+#include "gpu/ipc/common/memory_stats.h"
 #include "third_party/WebKit/public/web/WebCache.h"
 
 class PrefRegistrySimple;
@@ -298,7 +298,7 @@ class TaskManagerModel : public base::RefCountedThreadSafe<TaskManagerModel> {
   void RefreshPhysicalMemoryFromWorkingSetSnapshot();
 
   void NotifyVideoMemoryUsageStats(
-      const content::GPUVideoMemoryUsageStats& video_memory_usage_stats);
+      const gpu::VideoMemoryUsageStats& video_memory_usage_stats);
 
   void NotifyBytesRead(const net::URLRequest& request, int64_t bytes_read);
 
@@ -511,7 +511,7 @@ class TaskManagerModel : public base::RefCountedThreadSafe<TaskManagerModel> {
   ResourceValueMap current_byte_count_map_;
 
   // A map that contains the video memory usage for a process
-  content::GPUVideoMemoryUsageStats video_memory_usage_stats_;
+  gpu::VideoMemoryUsageStats video_memory_usage_stats_;
 
   // Set to true when we've requested video stats and false once we get them.
   bool pending_video_memory_usage_stats_update_;
