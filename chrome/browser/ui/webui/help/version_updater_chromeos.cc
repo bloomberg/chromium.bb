@@ -79,7 +79,7 @@ bool IsAutoUpdateDisabled() {
 // the appropriate status.
 bool EnsureCanUpdate(const VersionUpdater::StatusCallback& callback) {
   if (IsAutoUpdateDisabled()) {
-    callback.Run(VersionUpdater::FAILED, 0,
+    callback.Run(VersionUpdater::DISABLED_BY_ADMIN, 0,
                  l10n_util::GetStringUTF16(IDS_UPGRADE_DISABLED_BY_POLICY));
     return false;
   }

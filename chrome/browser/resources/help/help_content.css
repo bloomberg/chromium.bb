@@ -91,6 +91,11 @@
   background-size: 18px;
 }
 
+#controlled-feature-icon {
+  background-image: url(../../../../ui/webui/resources/images/business.svg);
+  background-size: 18px;
+}
+
 #update-status-message-container {
   display: inline-block;
   vertical-align: middle;

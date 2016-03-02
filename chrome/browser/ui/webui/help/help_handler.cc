@@ -36,6 +36,7 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/google/core/browser/google_util.h"
+#include "components/policy/core/common/policy_namespace.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -45,6 +46,8 @@
 #include "grit/components_chromium_strings.h"
 #include "grit/components_google_chrome_strings.h"
 #include "grit/components_strings.h"
+#include "grit/generated_resources.h"
+#include "policy/policy_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "v8/include/v8.h"
 
@@ -204,7 +207,10 @@ std::string ReadRegulatoryLabelText(const base::FilePath& path) {
 }  // namespace
 
 HelpHandler::HelpHandler()
-    : weak_factory_(this) {
+    : policy_registrar_(
+        g_browser_process->policy_service(),
+        policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME, std::string())),
+      weak_factory_(this) {
 }
 
 HelpHandler::~HelpHandler() {
@@ -232,6 +238,9 @@ void HelpHandler::GetLocalizedValues(base::DictionaryValue* localized_strings) {
     {"updateCheckStarted", IDS_UPGRADE_CHECK_STARTED},
     {"upToDate", IDS_UPGRADE_UP_TO_DATE},
     {"updating", IDS_UPGRADE_UPDATING},
+#if defined(OS_CHROMEOS) || defined(OS_WIN)
+    {"updateDisabledByPolicy", IDS_UPGRADE_DISABLED_BY_POLICY},
+#endif  // defined(OS_CHROMEOS) || defined(OS_WIN)
 #if defined(OS_CHROMEOS)
     {"updateButton", IDS_UPGRADE_BUTTON},
     {"updatingChannelSwitch", IDS_UPGRADE_UPDATING_CHANNEL_SWITCH},
@@ -358,6 +367,10 @@ void HelpHandler::RegisterMessages() {
   version_updater_.reset(VersionUpdater::Create(web_ui()->GetWebContents()));
   registrar_.Add(this, chrome::NOTIFICATION_UPGRADE_RECOMMENDED,
                  content::NotificationService::AllSources());
+  policy_registrar_.Observe(
+      policy::key::kDeviceAutoUpdateDisabled,
+      base::Bind(&HelpHandler::OnDeviceAutoUpdatePolicyChanged,
+                 base::Unretained(this)));
 
   web_ui()->RegisterMessageCallback("onPageLoaded",
       base::Bind(&HelpHandler::OnPageLoaded, base::Unretained(this)));
@@ -416,6 +429,33 @@ base::string16 HelpHandler::BuildBrowserVersionString() {
   return base::UTF8ToUTF16(version);
 }
 
+void HelpHandler::OnDeviceAutoUpdatePolicyChanged(
+    const base::Value* previous_policy,
+    const base::Value* current_policy) {
+  bool previous_auto_update_disabled = false;
+  if (previous_policy)
+    CHECK(previous_policy->GetAsBoolean(&previous_auto_update_disabled));
+
+  bool current_auto_update_disabled = false;
+  if (current_policy)
+    CHECK(current_policy->GetAsBoolean(&current_auto_update_disabled));
+
+  if (current_auto_update_disabled != previous_auto_update_disabled) {
+    // Refresh the update status to refresh the status of the UI.
+    RefreshUpdateStatus();
+  }
+}
+
+void HelpHandler::RefreshUpdateStatus() {
+  // On Chrome OS, do not check for an update automatically.
+#if defined(OS_CHROMEOS)
+  static_cast<VersionUpdaterCros*>(version_updater_.get())->GetUpdateStatus(
+      base::Bind(&HelpHandler::SetUpdateStatus, base::Unretained(this)));
+#else
+  RequestUpdate(NULL);
+#endif
+}
+
 void HelpHandler::OnPageLoaded(const base::ListValue* args) {
 #if defined(OS_CHROMEOS)
   base::PostTaskAndReplyWithResult(
@@ -442,13 +482,7 @@ void HelpHandler::OnPageLoaded(const base::ListValue* args) {
                                    base::StringValue(build_date));
 #endif  // defined(OS_CHROMEOS)
 
-  // On Chrome OS, do not check for an update automatically.
-#if defined(OS_CHROMEOS)
-  static_cast<VersionUpdaterCros*>(version_updater_.get())->GetUpdateStatus(
-      base::Bind(&HelpHandler::SetUpdateStatus, base::Unretained(this)));
-#else
-  RequestUpdate(NULL);
-#endif
+  RefreshUpdateStatus();
 
   web_ui()->CallJavascriptFunction(
       "help.HelpPage.setObsoleteSystem",

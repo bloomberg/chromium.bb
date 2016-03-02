@@ -13,6 +13,7 @@
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/webui/help/version_updater.h"
+#include "components/policy/core/common/policy_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_ui_message_handler.h"
@@ -50,6 +51,13 @@ class HelpHandler : public content::WebUIMessageHandler,
   static base::string16 BuildBrowserVersionString();
 
  private:
+  void OnDeviceAutoUpdatePolicyChanged(const base::Value* previous_policy,
+                                       const base::Value* current_policy);
+
+  // On ChromeOS, this gets the current update status. On other platforms, it
+  // will request and perform an update (if one is available).
+  void RefreshUpdateStatus();
+
   // Initializes querying values for the page.
   void OnPageLoaded(const base::ListValue* args);
 
@@ -111,6 +119,9 @@ class HelpHandler : public content::WebUIMessageHandler,
 
   // Used to observe notifications.
   content::NotificationRegistrar registrar_;
+
+  // Used to observe changes in the |kDeviceAutoUpdateDisabled| policy.
+  policy::PolicyChangeRegistrar policy_registrar_;
 
   // Used for callbacks.
   base::WeakPtrFactory<HelpHandler> weak_factory_;

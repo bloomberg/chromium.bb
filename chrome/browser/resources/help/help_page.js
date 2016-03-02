@@ -56,7 +56,13 @@ cr.define('help', function() {
      * True if user is allowed to change channels, false otherwise.
      * @private
      */
-    can_change_channel_: false,
+    canChangeChannel_: false,
+
+    /**
+     * True if we have never checked for available updates.
+     * @private
+     */
+    haveNeverCheckedForUpdates_: true,
 
     /** @override */
     initializePage: function() {
@@ -159,6 +165,19 @@ cr.define('help', function() {
         // Unhide the regulatory label if/when the image loads.
         $('regulatory-label').onload = function() {
           $('regulatory-label-container').hidden = false;
+        };
+
+        $('controlled-feature-icon').onclick = function(e) {
+          var content = document.createElement('div');
+          content.textContent =
+              loadTimeData.getString('updateDisabledByPolicy');
+          var bubble = new cr.ui.AutoCloseBubble;
+          bubble.id = 'controlled-feature-bubble';
+          bubble.anchorNode = $('controlled-feature-icon');
+          bubble.domSibling = $('controlled-feature-icon');
+          bubble.arrowLocation = cr.ui.ArrowLocation.TOP_END;
+          bubble.content = content;
+          bubble.show();
         };
       }
 
@@ -269,7 +288,17 @@ cr.define('help', function() {
      * @private
      */
     setUpdateStatus_: function(status, message) {
+      var oldStatus = this.status_;
       this.status_ = status;
+
+      if (oldStatus != status && oldStatus == 'disabled_by_admin') {
+        // If the auto update policy was recently re-enabled, then we'll
+        // re-enable the 'request-update' button.
+        this.haveNeverCheckedForUpdates_ = true;
+      }
+
+      if (status == 'checking')
+        this.haveNeverCheckedForUpdates_ = false;
       this.message_ = message;
 
       this.updateUI_();
@@ -333,14 +362,15 @@ cr.define('help', function() {
         this.setUpdateImage_('failed');
         $('update-status-message').innerHTML = message;
       } else if (status == 'disabled_by_admin') {
+        // This is the general behavior for non-chromeos.
         this.setUpdateImage_('disabled-by-admin');
         $('update-status-message').innerHTML = message;
       }
 
       if (cr.isChromeOS) {
-        $('change-channel').disabled = !this.can_change_channel_ ||
+        $('change-channel').disabled = !this.canChangeChannel_ ||
             status == 'nearly_updated';
-        $('channel-change-disallowed-icon').hidden = this.can_change_channel_;
+        $('channel-change-disallowed-icon').hidden = this.canChangeChannel_;
       }
 
       // Following invariant must be established at the end of this function:
@@ -356,13 +386,19 @@ cr.define('help', function() {
       }
 
       if (cr.isChromeOS) {
-        // Only enable the update button if it hasn't been used yet or the
-        // status isn't 'updated'.
-        if (!$('request-update').disabled || status != 'updated') {
-          // Disable the button if an update is already in progress.
-          $('request-update').disabled =
-            ['checking', 'updating', 'nearly_updated'].indexOf(status) > -1;
-        }
+        // Re-enable the update button if we are in a stale 'updated' status or
+        // update has failed, and disable it if there's an update in progress or
+        // updates are disabled by policy.
+        $('request-update').disabled =
+            !((this.haveNeverCheckedForUpdates_ && status == 'updated') ||
+                   status == 'failed');
+        // If updates are disabled by policy, unhide the
+        // controlled-feature-icon.
+        $('controlled-feature-icon').hidden = (status != 'disabled_by_admin');
+        // If updates are no longer disabled by policy and the tooltip bubble
+        // is present, we hide it.
+        if (status != 'disabled_by_admin' && $('controlled-feature-bubble'))
+          $('controlled-feature-bubble').hide();
       }
 
       var container = $('update-status-container');
@@ -373,8 +409,10 @@ cr.define('help', function() {
 
         if (cr.isChromeOS) {
           // Assume the "updated" status is stale if we haven't checked yet.
-          if (status == 'updated' && !$('request-update').disabled)
+          if (status == 'updated' && this.haveNeverCheckedForUpdates_ ||
+              status == 'disabled_by_admin') {
             container.hidden = true;
+          }
 
           // Hide the request update button if auto-updating is disabled or
           // a relaunch button is showing.
@@ -522,7 +560,7 @@ cr.define('help', function() {
      */
     updateEnableReleaseChannel_: function(enabled) {
       this.updateChannelChangerContainerVisibility_(enabled);
-      this.can_change_channel_ = enabled;
+      this.canChangeChannel_ = enabled;
       this.updateUI_();
     },
 

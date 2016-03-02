@@ -79,35 +79,48 @@ GEN('#if defined(OS_CHROMEOS)');
 TEST_F('HelpPageWebUITest', 'testRequestUpdate', function() {
   var container = $('update-status-container');
   var update = $('request-update');
+  var policyIcon = $('controlled-feature-icon');
 
   help.HelpPage.setUpdateStatus('updated', '');
   expectTrue(container.hidden);
   expectTrue(!update.hidden && !update.disabled);
+  expectTrue(policyIcon.hidden);
 
   update.click();
   expectTrue(!update.hidden && update.disabled);
   expectFalse(container.hidden);
+  expectTrue(policyIcon.hidden);
 
   help.HelpPage.setUpdateStatus('checking', '');
   expectFalse(container.hidden);
   expectTrue(!update.hidden && update.disabled);
+  expectTrue(policyIcon.hidden);
 
   help.HelpPage.setUpdateStatus('failed', 'Error');
   expectFalse(container.hidden);
   expectTrue(!update.hidden && !update.disabled);
+  expectTrue(policyIcon.hidden);
 
   update.click();
   help.HelpPage.setUpdateStatus('checking', '');
   expectFalse(container.hidden);
   expectTrue(!update.hidden && update.disabled);
+  expectTrue(policyIcon.hidden);
 
   help.HelpPage.setUpdateStatus('nearly_updated', '');
   expectFalse(container.hidden);
   expectTrue(update.hidden);
+  expectTrue(policyIcon.hidden);
 
   help.HelpPage.setUpdateStatus('updated', '');
   expectFalse(container.hidden);
   expectTrue(!update.hidden && update.disabled);
+  expectTrue(policyIcon.hidden);
+
+  help.HelpPage.setUpdateStatus('disabled_by_admin', '');
+  expectTrue(container.hidden);
+  expectTrue(!update.hidden && update.disabled);
+  expectFalse(policyIcon.hidden);
 });
 
 GEN('#endif');
