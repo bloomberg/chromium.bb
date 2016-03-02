@@ -155,8 +155,8 @@ struct FuzzTraits<unsigned short> {
 };
 
 template <>
-struct FuzzTraits<char> {
-  static bool Fuzz(char* p, Fuzzer* fuzzer) {
+struct FuzzTraits<signed char> {
+  static bool Fuzz(signed char* p, Fuzzer* fuzzer) {
     fuzzer->FuzzUChar(reinterpret_cast<unsigned char*>(p));
     return true;
   }
@@ -1425,6 +1425,20 @@ struct FuzzTraits<media::AudioParameters> {
     params.set_channels_for_discrete(channels);
     params.set_effects(effects);
     *p = params;
+    return true;
+  }
+};
+
+template <>
+struct FuzzTraits<media::cast::RtpTimeTicks> {
+  static bool Fuzz(media::cast::RtpTimeTicks* p, Fuzzer* fuzzer) {
+    base::TimeDelta delta;
+    int base;
+    if (!FuzzParam(&delta, fuzzer))
+      return false;
+    if (!FuzzParam(&base, fuzzer))
+      return false;
+    *p = media::cast::RtpTimeTicks::FromTimeDelta(delta, base);
     return true;
   }
 };
