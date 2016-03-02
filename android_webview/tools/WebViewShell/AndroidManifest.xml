@@ -34,6 +34,7 @@
         android:theme="@android:style/Theme.Light" >
         <activity
             android:name="org.chromium.webview_shell.TelemetryActivity"
+            android:launchMode="singleTask"
             android:label="@string/title_activity_telemetry"
             android:exported="true">
         </activity>
