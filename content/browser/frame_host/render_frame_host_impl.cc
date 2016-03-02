@@ -1074,10 +1074,6 @@ void RenderFrameHostImpl::OnDidCommitProvisionalLoad(const IPC::Message& msg) {
     }
   }
 
-  // TODO(clamy): Remove this when enough info has been gathered for
-  // crbug.com/589365.
-  CHECK_EQ(navigation_handle_->GetURL(), validated_params.url);
-
   accessibility_reset_count_ = 0;
   frame_tree_node()->navigator()->DidNavigate(this, validated_params);
 
