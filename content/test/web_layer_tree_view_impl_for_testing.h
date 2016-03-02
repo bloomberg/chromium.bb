@@ -56,7 +56,6 @@ class WebLayerTreeViewImplForTesting
   void setNeedsAnimate() override;
   void didStopFlinging() override;
   void setDeferCommits(bool defer_commits) override;
-  void registerForAnimations(blink::WebLayer* layer) override;
   void registerViewportLayers(
       const blink::WebLayer* overscrollElasticityLayer,
       const blink::WebLayer* pageScaleLayerLayer,

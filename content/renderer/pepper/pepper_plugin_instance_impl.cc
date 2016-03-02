@@ -23,6 +23,7 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "cc/blink/web_layer_impl.h"
+#include "cc/layers/layer_settings.h"
 #include "cc/layers/texture_layer.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/frame_messages.h"
@@ -2039,14 +2040,14 @@ void PepperPluginInstanceImpl::UpdateLayer(bool force_creation) {
     if (want_3d_layer) {
       DCHECK(bound_graphics_3d_.get());
       texture_layer_ = cc::TextureLayer::CreateForMailbox(
-          cc_blink::WebLayerImpl::LayerSettings(), NULL);
+          cc::LayerSettings(), NULL);
       opaque = bound_graphics_3d_->IsOpaque();
       texture_layer_->SetTextureMailboxWithoutReleaseCallback(
           cc::TextureMailbox(mailbox, sync_token, GL_TEXTURE_2D));
     } else {
       DCHECK(bound_graphics_2d_platform_);
       texture_layer_ = cc::TextureLayer::CreateForMailbox(
-          cc_blink::WebLayerImpl::LayerSettings(), this);
+          cc::LayerSettings(), this);
       bound_graphics_2d_platform_->AttachedToNewLayer();
       opaque = bound_graphics_2d_platform_->IsAlwaysOpaque();
       texture_layer_->SetFlipped(false);

@@ -130,10 +130,6 @@ public:
     // Prevents updates to layer tree from becoming visible.
     virtual void setDeferCommits(bool deferCommits) { }
 
-    // Take responsiblity for this layer's animations, even if this layer hasn't yet
-    // been added to the tree.
-    virtual void registerForAnimations(WebLayer* layer) { }
-
     // Identify key layers to the compositor when using the pinch virtual viewport.
     virtual void registerViewportLayers(
         const WebLayer* overscrollElasticityLayer,

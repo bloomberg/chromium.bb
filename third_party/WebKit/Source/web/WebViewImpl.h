@@ -438,7 +438,6 @@ public:
     void setRootGraphicsLayer(GraphicsLayer*);
     GraphicsLayerFactory* graphicsLayerFactory() const;
     PaintLayerCompositor* compositor() const;
-    void registerForAnimations(WebLayer*);
     void scheduleAnimation();
     void attachCompositorAnimationTimeline(CompositorAnimationTimeline*);
     void detachCompositorAnimationTimeline(CompositorAnimationTimeline*);

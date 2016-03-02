@@ -7,6 +7,7 @@
 #include "cc/blink/scrollbar_impl.h"
 #include "cc/blink/web_layer_impl.h"
 #include "cc/layers/layer.h"
+#include "cc/layers/layer_settings.h"
 #include "cc/layers/painted_scrollbar_layer.h"
 #include "cc/layers/scrollbar_layer_interface.h"
 #include "cc/layers/solid_color_scrollbar_layer.h"
@@ -31,7 +32,7 @@ WebScrollbarLayerImpl::WebScrollbarLayerImpl(
     blink::WebScrollbarThemePainter painter,
     blink::WebScrollbarThemeGeometry* geometry)
     : layer_(new WebLayerImpl(PaintedScrollbarLayer::Create(
-          WebLayerImpl::LayerSettings(),
+          cc::LayerSettings(),
           scoped_ptr<cc::Scrollbar>(
               new ScrollbarImpl(make_scoped_ptr(scrollbar),
                                 painter,
@@ -44,13 +45,12 @@ WebScrollbarLayerImpl::WebScrollbarLayerImpl(
     int track_start,
     bool is_left_side_vertical_scrollbar)
     : layer_(new WebLayerImpl(
-          SolidColorScrollbarLayer::Create(WebLayerImpl::LayerSettings(),
+          SolidColorScrollbarLayer::Create(cc::LayerSettings(),
                                            ConvertOrientation(orientation),
                                            thumb_thickness,
                                            track_start,
                                            is_left_side_vertical_scrollbar,
-                                           0))) {
-}
+                                           0))) {}
 
 WebScrollbarLayerImpl::~WebScrollbarLayerImpl() {
 }

@@ -218,9 +218,6 @@ public:
     virtual void registerForAnimation() { }
     virtual void deregisterForAnimation() { }
 
-    void notifyCompositorAnimationFinished(int groupId);
-    void notifyCompositorAnimationAborted(int groupId);
-
     virtual bool usesCompositedScrolling() const { return false; }
     virtual bool shouldScrollOnMainThread() const;
 

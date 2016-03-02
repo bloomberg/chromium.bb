@@ -71,10 +71,6 @@ public:
 
     scoped_ptr<cc::Animation> passAnimation();
 
-    // Removes ownership over cc animation. Identical to PassAnimation.
-    // TODO(loyso): Erase this method. crbug.com/575041
-    cc::Animation* releaseCCAnimation();
-
 protected:
     CompositorAnimation();
 

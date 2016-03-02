@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "cc/base/cc_export.h"
 #include "cc/layers/layer.h"
+#include "cc/layers/layer_settings.h"
 #include "media/base/video_rotation.h"
 
 namespace media { class VideoFrame; }

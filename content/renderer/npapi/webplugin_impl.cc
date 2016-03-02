@@ -19,6 +19,7 @@
 #include "build/build_config.h"
 #include "cc/blink/web_layer_impl.h"
 #include "cc/layers/io_surface_layer.h"
+#include "cc/layers/layer_settings.h"
 #include "content/child/appcache/web_application_cache_host_impl.h"
 #include "content/child/multipart_response_delegate.h"
 #include "content/child/npapi/plugin_host.h"
@@ -577,7 +578,7 @@ void WebPluginImpl::AcceleratedPluginSwappedIOSurface() {
     if (next_io_surface_id_) {
       if (!io_surface_layer_.get()) {
         io_surface_layer_ =
-            cc::IOSurfaceLayer::Create(cc_blink::WebLayerImpl::LayerSettings());
+            cc::IOSurfaceLayer::Create(cc::LayerSettings());
         web_layer_.reset(new cc_blink::WebLayerImpl(io_surface_layer_));
         container_->setWebLayer(web_layer_.get());
       }

@@ -251,12 +251,7 @@ void RenderWidgetCompositor::Initialize(float device_scale_factor) {
       !cmd->HasSwitch(cc::switches::kDisableMainFrameBeforeActivation);
   settings.accelerated_animation_enabled =
       compositor_deps_->IsThreadedAnimationEnabled();
-
-  settings.use_compositor_animation_timelines =
-      !cmd->HasSwitch(switches::kDisableCompositorAnimationTimelines);
-  blink::WebRuntimeFeatures::enableCompositorAnimationTimelines(
-      settings.use_compositor_animation_timelines);
-
+  settings.use_compositor_animation_timelines = true;
   settings.use_mouse_wheel_gestures = UseGestureBasedWheelScrolling();
 
   settings.default_tile_size = CalculateDefaultTileSize(device_scale_factor);
@@ -691,11 +686,6 @@ void RenderWidgetCompositor::setNeedsCompositorUpdate() {
 
 void RenderWidgetCompositor::didStopFlinging() {
   layer_tree_host_->DidStopFlinging();
-}
-
-void RenderWidgetCompositor::registerForAnimations(blink::WebLayer* layer) {
-  cc::Layer* cc_layer = static_cast<cc_blink::WebLayerImpl*>(layer)->layer();
-  cc_layer->RegisterForAnimations(layer_tree_host_->animation_registrar());
 }
 
 void RenderWidgetCompositor::registerViewportLayers(

@@ -50,11 +50,6 @@ void WebRuntimeFeatures::enableFeatureFromString(const std::string& name, bool e
     RuntimeEnabledFeatures::setFeatureEnabledFromString(name, enable);
 }
 
-void WebRuntimeFeatures::enableCompositorAnimationTimelines(bool enable)
-{
-    RuntimeEnabledFeatures::setCompositorAnimationTimelinesEnabled(enable);
-}
-
 void WebRuntimeFeatures::enableTestOnlyFeatures(bool enable)
 {
     RuntimeEnabledFeatures::setTestFeaturesEnabled(enable);

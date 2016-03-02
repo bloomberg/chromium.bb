@@ -109,18 +109,16 @@ protected:
         m_keyframeVector5 = createCompositableFloatKeyframeVector(5);
         m_keyframeAnimationEffect5 = AnimatableValueKeyframeEffectModel::create(*m_keyframeVector5);
 
-        if (RuntimeEnabledFeatures::compositorAnimationTimelinesEnabled()) {
-            EXPECT_CALL(*m_mockCompositorFactory, createAnimationTimeline())
-                .WillOnce(Return(new WebCompositorAnimationTimelineMock()));
-        }
+        EXPECT_CALL(*m_mockCompositorFactory, createAnimationTimeline())
+            .WillOnce(Return(new WebCompositorAnimationTimelineMock()));
+
         m_pageHolder = DummyPageHolder::create();
         m_document = &m_pageHolder->document();
         m_document->animationClock().resetTimeForTesting();
 
-        if (RuntimeEnabledFeatures::compositorAnimationTimelinesEnabled()) {
-            EXPECT_CALL(*m_mockCompositorFactory, createAnimationTimeline())
-                .WillOnce(Return(new WebCompositorAnimationTimelineMock()));
-        }
+        EXPECT_CALL(*m_mockCompositorFactory, createAnimationTimeline())
+            .WillOnce(Return(new WebCompositorAnimationTimelineMock()));
+
         m_timeline = AnimationTimeline::create(m_document.get());
         m_timeline->resetForTesting();
         m_element = m_document->createElement("test", ASSERT_NO_EXCEPTION);

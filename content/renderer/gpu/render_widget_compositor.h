@@ -126,7 +126,6 @@ class CONTENT_EXPORT RenderWidgetCompositor
   void compositeAndReadbackAsync(
       blink::WebCompositeAndReadbackAsyncCallback* callback) override;
   void setDeferCommits(bool defer_commits) override;
-  void registerForAnimations(blink::WebLayer* layer) override;
   void registerViewportLayers(
       const blink::WebLayer* overscrollElasticityLayer,
       const blink::WebLayer* pageScaleLayer,

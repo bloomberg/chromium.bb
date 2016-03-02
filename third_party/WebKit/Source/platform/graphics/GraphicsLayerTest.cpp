@@ -118,69 +118,47 @@ public:
 
 TEST_F(GraphicsLayerTest, updateLayerShouldFlattenTransformWithAnimations)
 {
-    ASSERT_FALSE(m_platformLayer->hasActiveAnimation());
+    ASSERT_FALSE(m_platformLayer->hasActiveAnimationForTesting());
 
     OwnPtr<CompositorFloatAnimationCurve> curve = adoptPtr(CompositorFactory::current().createFloatAnimationCurve());
     curve->add(CompositorFloatKeyframe(0.0, 0.0));
     OwnPtr<CompositorAnimation> floatAnimation(adoptPtr(CompositorFactory::current().createAnimation(*curve, CompositorTargetProperty::OPACITY)));
     int animationId = floatAnimation->id();
 
-    if (RuntimeEnabledFeatures::compositorAnimationTimelinesEnabled()) {
-        OwnPtr<CompositorAnimationTimeline> compositorTimeline = adoptPtr(CompositorFactory::current().createAnimationTimeline());
-        AnimationPlayerForTesting player;
+    OwnPtr<CompositorAnimationTimeline> compositorTimeline = adoptPtr(CompositorFactory::current().createAnimationTimeline());
+    AnimationPlayerForTesting player;
 
-        layerTreeView()->attachCompositorAnimationTimeline(compositorTimeline->animationTimeline());
-        compositorTimeline->playerAttached(player);
+    layerTreeView()->attachCompositorAnimationTimeline(compositorTimeline->animationTimeline());
+    compositorTimeline->playerAttached(player);
 
-        player.compositorPlayer()->attachLayer(m_platformLayer);
-        ASSERT_TRUE(player.compositorPlayer()->isLayerAttached());
+    player.compositorPlayer()->attachLayer(m_platformLayer);
+    ASSERT_TRUE(player.compositorPlayer()->isLayerAttached());
 
-        player.compositorPlayer()->addAnimation(floatAnimation.leakPtr());
+    player.compositorPlayer()->addAnimation(floatAnimation.leakPtr());
 
-        ASSERT_TRUE(m_platformLayer->hasActiveAnimation());
+    ASSERT_TRUE(m_platformLayer->hasActiveAnimationForTesting());
 
-        m_graphicsLayer->setShouldFlattenTransform(false);
+    m_graphicsLayer->setShouldFlattenTransform(false);
 
-        m_platformLayer = m_graphicsLayer->platformLayer();
-        ASSERT_TRUE(m_platformLayer);
+    m_platformLayer = m_graphicsLayer->platformLayer();
+    ASSERT_TRUE(m_platformLayer);
 
-        ASSERT_TRUE(m_platformLayer->hasActiveAnimation());
-        player.compositorPlayer()->removeAnimation(animationId);
-        ASSERT_FALSE(m_platformLayer->hasActiveAnimation());
+    ASSERT_TRUE(m_platformLayer->hasActiveAnimationForTesting());
+    player.compositorPlayer()->removeAnimation(animationId);
+    ASSERT_FALSE(m_platformLayer->hasActiveAnimationForTesting());
 
-        m_graphicsLayer->setShouldFlattenTransform(true);
+    m_graphicsLayer->setShouldFlattenTransform(true);
 
-        m_platformLayer = m_graphicsLayer->platformLayer();
-        ASSERT_TRUE(m_platformLayer);
+    m_platformLayer = m_graphicsLayer->platformLayer();
+    ASSERT_TRUE(m_platformLayer);
 
-        ASSERT_FALSE(m_platformLayer->hasActiveAnimation());
+    ASSERT_FALSE(m_platformLayer->hasActiveAnimationForTesting());
 
-        player.compositorPlayer()->detachLayer();
-        ASSERT_FALSE(player.compositorPlayer()->isLayerAttached());
+    player.compositorPlayer()->detachLayer();
+    ASSERT_FALSE(player.compositorPlayer()->isLayerAttached());
 
-        compositorTimeline->playerDestroyed(player);
-        layerTreeView()->detachCompositorAnimationTimeline(compositorTimeline->animationTimeline());
-    } else {
-        ASSERT_TRUE(m_platformLayer->addAnimation(floatAnimation->releaseCCAnimation()));
-
-        ASSERT_TRUE(m_platformLayer->hasActiveAnimation());
-
-        m_graphicsLayer->setShouldFlattenTransform(false);
-
-        m_platformLayer = m_graphicsLayer->platformLayer();
-        ASSERT_TRUE(m_platformLayer);
-
-        ASSERT_TRUE(m_platformLayer->hasActiveAnimation());
-        m_platformLayer->removeAnimation(animationId);
-        ASSERT_FALSE(m_platformLayer->hasActiveAnimation());
-
-        m_graphicsLayer->setShouldFlattenTransform(true);
-
-        m_platformLayer = m_graphicsLayer->platformLayer();
-        ASSERT_TRUE(m_platformLayer);
-
-        ASSERT_FALSE(m_platformLayer->hasActiveAnimation());
-    }
+    compositorTimeline->playerDestroyed(player);
+    layerTreeView()->detachCompositorAnimationTimeline(compositorTimeline->animationTimeline());
 }
 
 class FakeScrollableArea : public NoBaseWillBeGarbageCollectedFinalized<FakeScrollableArea>, public ScrollableArea {

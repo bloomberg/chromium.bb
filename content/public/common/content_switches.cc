@@ -96,10 +96,6 @@ const char kDisableBackingStoreLimit[]      = "disable-backing-store-limit";
 // features.
 const char kDisableBlinkFeatures[]          = "disable-blink-features";
 
-// Disables new cc/animation system (Project Heaviside). crbug.com/394772
-const char kDisableCompositorAnimationTimelines[] =
-    "disable-compositor-animation-timelines";
-
 // Disables HTML5 DB support.
 const char kDisableDatabases[]              = "disable-databases";
 

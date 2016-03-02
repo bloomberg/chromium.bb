@@ -32,7 +32,6 @@
 #include "platform/DragImage.h"
 #include "platform/JSONValues.h"
 #include "platform/TraceEvent.h"
-#include "platform/animation/CompositorAnimation.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/BitmapImage.h"
@@ -1122,28 +1121,6 @@ void GraphicsLayer::setContentsToImage(Image* image, RespectImageOrientationEnum
     setContentsTo(m_imageLayer ? m_imageLayer->layer() : 0);
 }
 
-bool GraphicsLayer::addAnimation(PassOwnPtr<CompositorAnimation> animation)
-{
-    ASSERT(animation);
-    platformLayer()->setAnimationDelegate(this);
-    return platformLayer()->addAnimation(animation->releaseCCAnimation());
-}
-
-void GraphicsLayer::pauseAnimation(int animationId, double timeOffset)
-{
-    platformLayer()->pauseAnimation(animationId, timeOffset);
-}
-
-void GraphicsLayer::removeAnimation(int animationId)
-{
-    platformLayer()->removeAnimation(animationId);
-}
-
-void GraphicsLayer::abortAnimation(int animationId)
-{
-    platformLayer()->abortAnimation(animationId);
-}
-
 WebLayer* GraphicsLayer::platformLayer() const
 {
     return m_layer->layer();
@@ -1206,24 +1183,6 @@ void GraphicsLayer::setScrollableArea(ScrollableArea* scrollableArea, bool isVie
         m_layer->layer()->setScrollClient(0);
     else
         m_layer->layer()->setScrollClient(this);
-}
-
-void GraphicsLayer::notifyAnimationStarted(double monotonicTime, int group)
-{
-    if (m_client)
-        m_client->notifyAnimationStarted(this, monotonicTime, group);
-}
-
-void GraphicsLayer::notifyAnimationFinished(double, int group)
-{
-    if (m_scrollableArea)
-        m_scrollableArea->notifyCompositorAnimationFinished(group);
-}
-
-void GraphicsLayer::notifyAnimationAborted(double, int group)
-{
-    if (m_scrollableArea)
-        m_scrollableArea->notifyCompositorAnimationAborted(group);
 }
 
 void GraphicsLayer::didScroll()

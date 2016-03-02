@@ -736,10 +736,6 @@ void RenderThreadImpl::Init() {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
 
-  cc::LayerSettings layer_settings;
-  layer_settings.use_compositor_animation_timelines =
-      !command_line.HasSwitch(switches::kDisableCompositorAnimationTimelines);
-  cc_blink::WebLayerImpl::SetLayerSettings(layer_settings);
   cc::SetClientNameForMetrics("Renderer");
 
   is_threaded_animation_enabled_ =

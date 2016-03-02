@@ -347,25 +347,14 @@ bool CompositorAnimations::startAnimationOnCompositor(const Element& element, in
 
     const KeyframeEffectModelBase& keyframeEffect = toKeyframeEffectModelBase(effect);
 
-    PaintLayer* layer = toLayoutBoxModelObject(element.layoutObject())->layer();
-    ASSERT(layer);
-
     Vector<OwnPtr<CompositorAnimation>> animations;
     CompositorAnimationsImpl::getAnimationOnCompositor(timing, group, startTime, timeOffset, keyframeEffect, animations, animationPlaybackRate);
     ASSERT(!animations.isEmpty());
     for (auto& compositorAnimation : animations) {
         int id = compositorAnimation->id();
-        if (RuntimeEnabledFeatures::compositorAnimationTimelinesEnabled()) {
-            CompositorAnimationPlayer* compositorPlayer = animation.compositorPlayer();
-            ASSERT(compositorPlayer);
-            compositorPlayer->addAnimation(compositorAnimation.leakPtr());
-        } else if (!layer->compositedLayerMapping()->mainGraphicsLayer()->addAnimation(compositorAnimation.release())) {
-            // FIXME: We should know ahead of time whether these animations can be started.
-            for (int startedAnimationId : startedAnimationIds)
-                cancelAnimationOnCompositor(element, animation, startedAnimationId);
-            startedAnimationIds.clear();
-            return false;
-        }
+        CompositorAnimationPlayer* compositorPlayer = animation.compositorPlayer();
+        ASSERT(compositorPlayer);
+        compositorPlayer->addAnimation(compositorAnimation.leakPtr());
         startedAnimationIds.append(id);
     }
     ASSERT(!startedAnimationIds.isEmpty());
@@ -382,13 +371,9 @@ void CompositorAnimations::cancelAnimationOnCompositor(const Element& element, c
         // compositing update.
         return;
     }
-    if (RuntimeEnabledFeatures::compositorAnimationTimelinesEnabled()) {
-        CompositorAnimationPlayer* compositorPlayer = animation.compositorPlayer();
-        if (compositorPlayer)
-            compositorPlayer->removeAnimation(id);
-    } else {
-        toLayoutBoxModelObject(element.layoutObject())->layer()->compositedLayerMapping()->mainGraphicsLayer()->removeAnimation(id);
-    }
+    CompositorAnimationPlayer* compositorPlayer = animation.compositorPlayer();
+    if (compositorPlayer)
+        compositorPlayer->removeAnimation(id);
 }
 
 void CompositorAnimations::pauseAnimationForTestingOnCompositor(const Element& element, const Animation& animation, int id, double pauseTime)
@@ -401,20 +386,13 @@ void CompositorAnimations::pauseAnimationForTestingOnCompositor(const Element& e
         ASSERT_NOT_REACHED();
         return;
     }
-    if (RuntimeEnabledFeatures::compositorAnimationTimelinesEnabled()) {
-        CompositorAnimationPlayer* compositorPlayer = animation.compositorPlayer();
-        ASSERT(compositorPlayer);
-        compositorPlayer->pauseAnimation(id, pauseTime);
-    } else {
-        toLayoutBoxModelObject(element.layoutObject())->layer()->compositedLayerMapping()->mainGraphicsLayer()->pauseAnimation(id, pauseTime);
-    }
+    CompositorAnimationPlayer* compositorPlayer = animation.compositorPlayer();
+    ASSERT(compositorPlayer);
+    compositorPlayer->pauseAnimation(id, pauseTime);
 }
 
 bool CompositorAnimations::canAttachCompositedLayers(const Element& element, const Animation& animation)
 {
-    if (!RuntimeEnabledFeatures::compositorAnimationTimelinesEnabled())
-        return false;
-
     if (!animation.compositorPlayer())
         return false;
 

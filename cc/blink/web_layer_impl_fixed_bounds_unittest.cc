@@ -91,7 +91,7 @@ void CompareFixedBoundsLayerAndNormalLayer(const WebFloatPoint& anchor_point,
   scoped_ptr<WebLayerImplFixedBounds> root_layer(new WebLayerImplFixedBounds());
 
   WebLayerImplFixedBounds* fixed_bounds_layer = new WebLayerImplFixedBounds(
-      cc::PictureImageLayer::Create(WebLayerImpl::LayerSettings()));
+      cc::PictureImageLayer::Create(cc::LayerSettings()));
   fixed_bounds_layer->setBounds(bounds);
   fixed_bounds_layer->SetFixedBounds(fixed_bounds);
   fixed_bounds_layer->setTransform(transform.matrix());

@@ -25,12 +25,9 @@ ScrollAnimatorCompositorCoordinator::ScrollAnimatorCompositorCoordinator()
 #if ENABLE(OILPAN)
     ThreadState::current()->registerPreFinalizer(this);
 #endif
-    if (RuntimeEnabledFeatures::compositorAnimationTimelinesEnabled()) {
-        ASSERT(Platform::current()->compositorSupport());
-        m_compositorPlayer = adoptPtr(CompositorFactory::current().createAnimationPlayer());
-        ASSERT(m_compositorPlayer);
-        m_compositorPlayer->setAnimationDelegate(this);
-    }
+    m_compositorPlayer = adoptPtr(CompositorFactory::current().createAnimationPlayer());
+    ASSERT(m_compositorPlayer);
+    m_compositorPlayer->setAnimationDelegate(this);
 }
 
 ScrollAnimatorCompositorCoordinator::~ScrollAnimatorCompositorCoordinator()
@@ -42,10 +39,8 @@ ScrollAnimatorCompositorCoordinator::~ScrollAnimatorCompositorCoordinator()
 
 void ScrollAnimatorCompositorCoordinator::dispose()
 {
-    if (m_compositorPlayer) {
-        m_compositorPlayer->setAnimationDelegate(nullptr);
-        m_compositorPlayer.clear();
-    }
+    m_compositorPlayer->setAnimationDelegate(nullptr);
+    m_compositorPlayer.clear();
 }
 
 void ScrollAnimatorCompositorCoordinator::resetAnimationState()
@@ -75,37 +70,23 @@ bool ScrollAnimatorCompositorCoordinator::hasAnimationThatRequiresService() cons
 bool ScrollAnimatorCompositorCoordinator::addAnimation(
     PassOwnPtr<CompositorAnimation> animation)
 {
-    if (m_compositorPlayer) {
-        if (m_compositorPlayer->isLayerAttached()) {
-            m_compositorPlayer->addAnimation(animation.leakPtr());
-            return true;
-        }
-    } else {
-        return scrollableArea()->layerForScrolling()->addAnimation(animation);
+    if (m_compositorPlayer->isLayerAttached()) {
+        m_compositorPlayer->addAnimation(animation.leakPtr());
+        return true;
     }
     return false;
 }
 
 void ScrollAnimatorCompositorCoordinator::removeAnimation()
 {
-    if (m_compositorPlayer) {
-        if (m_compositorPlayer->isLayerAttached())
-            m_compositorPlayer->removeAnimation(m_compositorAnimationId);
-    } else {
-        if (GraphicsLayer* layer = scrollableArea()->layerForScrolling())
-            layer->removeAnimation(m_compositorAnimationId);
-    }
+    if (m_compositorPlayer->isLayerAttached())
+        m_compositorPlayer->removeAnimation(m_compositorAnimationId);
 }
 
 void ScrollAnimatorCompositorCoordinator::abortAnimation()
 {
-    if (m_compositorPlayer) {
-        if (m_compositorPlayer->isLayerAttached())
-            m_compositorPlayer->abortAnimation(m_compositorAnimationId);
-    } else {
-        if (GraphicsLayer* layer = scrollableArea()->layerForScrolling())
-            layer->abortAnimation(m_compositorAnimationId);
-    }
+    if (m_compositorPlayer->isLayerAttached())
+        m_compositorPlayer->abortAnimation(m_compositorAnimationId);
 }
 
 void ScrollAnimatorCompositorCoordinator::cancelAnimation()

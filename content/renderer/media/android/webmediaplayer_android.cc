@@ -958,7 +958,7 @@ void WebMediaPlayerAndroid::OnVideoSizeChanged(int width, int height) {
   // Lazily allocate compositing layer.
   if (!video_weblayer_) {
     video_weblayer_.reset(new cc_blink::WebLayerImpl(
-        cc::VideoLayer::Create(cc_blink::WebLayerImpl::LayerSettings(), this,
+        cc::VideoLayer::Create(cc::LayerSettings(), this,
                                media::VIDEO_ROTATION_0)));
     client_->setWebLayer(video_weblayer_.get());
   }

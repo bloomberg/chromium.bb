@@ -79,7 +79,7 @@ AnimationTimeline::AnimationTimeline(Document* document, PlatformTiming* timing)
     else
         m_timing = timing;
 
-    if (RuntimeEnabledFeatures::compositorAnimationTimelinesEnabled() && Platform::current()->isThreadedAnimationEnabled())
+    if (Platform::current()->isThreadedAnimationEnabled())
         m_compositorTimeline = adoptPtr(CompositorFactory::current().createAnimationTimeline());
 
     ASSERT(document);

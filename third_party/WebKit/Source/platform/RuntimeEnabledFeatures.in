@@ -34,8 +34,6 @@ ClientHints status=stable
 ColumnFill status=stable
 CompositedSelectionUpdate
 CompositorWorker status=experimental
-// Unified Chrome Compositor and Blink Animations engine (Project Heaviside). crbug.com/394772
-CompositorAnimationTimelines
 ContextMenu status=experimental
 CredentialManager status=stable
 CSS3Text status=experimental

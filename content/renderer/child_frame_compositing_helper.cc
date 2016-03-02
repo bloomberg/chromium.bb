@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "cc/blink/web_layer_impl.h"
+#include "cc/layers/layer_settings.h"
 #include "cc/layers/solid_color_layer.h"
 #include "cc/layers/surface_layer.h"
 #include "cc/output/context_provider.h"
@@ -112,7 +113,7 @@ void ChildFrameCompositingHelper::OnContainerDestroy() {
 
 void ChildFrameCompositingHelper::ChildFrameGone() {
   scoped_refptr<cc::SolidColorLayer> crashed_layer =
-      cc::SolidColorLayer::Create(cc_blink::WebLayerImpl::LayerSettings());
+      cc::SolidColorLayer::Create(cc::LayerSettings());
   crashed_layer->SetMasksToBounds(true);
   crashed_layer->SetBackgroundColor(SkColorSetARGBInline(255, 0, 128, 0));
   blink::WebLayer* layer = new cc_blink::WebLayerImpl(crashed_layer);
@@ -184,7 +185,7 @@ void ChildFrameCompositingHelper::OnSetSurface(
                 sender, host_routing_id_,
                 browser_plugin_->browser_plugin_instance_id());
   scoped_refptr<cc::SurfaceLayer> surface_layer =
-      cc::SurfaceLayer::Create(cc_blink::WebLayerImpl::LayerSettings(),
+      cc::SurfaceLayer::Create(cc::LayerSettings(),
                                satisfy_callback, require_callback);
   // TODO(oshima): This is a stopgap fix so that the compositor does not
   // scaledown the content when 2x frame data is added to 1x parent frame data.

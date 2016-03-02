@@ -13,6 +13,7 @@
 #include "base/memory/shared_memory.h"
 #include "base/strings/stringprintf.h"
 #include "cc/blink/web_layer_impl.h"
+#include "cc/layers/layer_settings.h"
 #include "cc/layers/texture_layer.h"
 #include "cc/resources/shared_bitmap_manager.h"
 #include "components/test_runner/web_test_delegate.h"
@@ -208,7 +209,7 @@ bool TestPlugin::initialize(blink::WebPluginContainer* container) {
     return false;
 
   layer_ = cc::TextureLayer::CreateForMailbox(
-      cc_blink::WebLayerImpl::LayerSettings(), this);
+      cc::LayerSettings(), this);
   web_layer_ = make_scoped_ptr(new cc_blink::WebLayerImpl(layer_));
   container_ = container;
   container_->setWebLayer(web_layer_.get());

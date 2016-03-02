@@ -14,6 +14,7 @@
 #include "build/build_config.h"
 #include "cc/blink/context_provider_web_context.h"
 #include "cc/blink/web_layer_impl.h"
+#include "cc/layers/layer_settings.h"
 #include "cc/layers/video_frame_provider_client_impl.h"
 #include "cc/layers/video_layer.h"
 #include "content/public/renderer/media_stream_audio_renderer.h"
@@ -492,7 +493,7 @@ void WebMediaPlayerMS::OnFrameAvailable(
 
     if (video_frame_provider_.get()) {
       video_weblayer_.reset(new cc_blink::WebLayerImpl(
-          cc::VideoLayer::Create(cc_blink::WebLayerImpl::LayerSettings(),
+          cc::VideoLayer::Create(cc::LayerSettings(),
                                  compositor_.get(), media::VIDEO_ROTATION_0)));
       video_weblayer_->layer()->SetContentsOpaque(true);
       video_weblayer_->SetContentsOpaqueIsFixed(true);

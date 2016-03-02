@@ -431,7 +431,7 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     , m_layerTreeView(nullptr)
     , m_rootLayer(nullptr)
     , m_rootGraphicsLayer(nullptr)
-    , m_graphicsLayerFactory(adoptPtr(new GraphicsLayerFactoryChromium(this)))
+    , m_graphicsLayerFactory(adoptPtr(new GraphicsLayerFactoryChromium()))
     , m_matchesHeuristicsForGpuRasterization(false)
     , m_flingModifier(0)
     , m_flingSourceDevice(WebGestureDeviceUninitialized)
@@ -4273,12 +4273,6 @@ PaintLayerCompositor* WebViewImpl::compositor() const
     return document->layoutView()->compositor();
 }
 
-void WebViewImpl::registerForAnimations(WebLayer* layer)
-{
-    if (m_layerTreeView)
-        m_layerTreeView->registerForAnimations(layer);
-}
-
 GraphicsLayer* WebViewImpl::rootGraphicsLayer()
 {
     return m_rootGraphicsLayer;
@@ -4324,7 +4318,7 @@ void WebViewImpl::initializeLayerTreeView()
     // make this assert necessary. We should make them not hit this code and then delete allowsBrokenNullLayerTreeView.
     ASSERT(m_layerTreeView || !m_client || m_client->allowsBrokenNullLayerTreeView());
 
-    if (RuntimeEnabledFeatures::compositorAnimationTimelinesEnabled() && Platform::current()->isThreadedAnimationEnabled() && m_layerTreeView) {
+    if (Platform::current()->isThreadedAnimationEnabled() && m_layerTreeView) {
         m_linkHighlightsTimeline = adoptPtr(CompositorFactory::current().createAnimationTimeline());
         attachCompositorAnimationTimeline(m_linkHighlightsTimeline.get());
     }

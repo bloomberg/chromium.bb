@@ -11,15 +11,12 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/lazy_instance.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_checker.h"
 #include "base/trace_event/trace_event_impl.h"
-#include "cc/animation/animation.h"
 #include "cc/base/region.h"
 #include "cc/base/switches.h"
 #include "cc/blink/web_blend_mode.h"
-#include "cc/blink/web_to_cc_animation_delegate_adapter.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_position_constraint.h"
 #include "cc/layers/layer_settings.h"
@@ -43,35 +40,17 @@ using blink::WebSize;
 using blink::WebColor;
 
 namespace cc_blink {
-namespace {
-
-base::LazyInstance<cc::LayerSettings> g_layer_settings =
-    LAZY_INSTANCE_INITIALIZER;
-
-}  // namespace
 
 WebLayerImpl::WebLayerImpl()
-    : layer_(Layer::Create(LayerSettings())), contents_opaque_is_fixed_(false) {
-}
+    : layer_(Layer::Create(cc::LayerSettings())),
+      contents_opaque_is_fixed_(false) {}
 
 WebLayerImpl::WebLayerImpl(scoped_refptr<Layer> layer)
     : layer_(layer), contents_opaque_is_fixed_(false) {
 }
 
 WebLayerImpl::~WebLayerImpl() {
-  if (animation_delegate_adapter_.get())
-    layer_->set_layer_animation_delegate(nullptr);
   layer_->SetLayerClient(nullptr);
-}
-
-// static
-void WebLayerImpl::SetLayerSettings(const cc::LayerSettings& settings) {
-  g_layer_settings.Get() = settings;
-}
-
-// static
-const cc::LayerSettings& WebLayerImpl::LayerSettings() {
-  return g_layer_settings.Get();
 }
 
 int WebLayerImpl::id() const {
@@ -235,35 +214,7 @@ void WebLayerImpl::setBackgroundFilters(const cc::FilterOperations& filters) {
   layer_->SetBackgroundFilters(filters);
 }
 
-void WebLayerImpl::setAnimationDelegate(
-    blink::WebCompositorAnimationDelegate* delegate) {
-  if (!delegate) {
-    animation_delegate_adapter_.reset();
-    layer_->set_layer_animation_delegate(nullptr);
-    return;
-  }
-  animation_delegate_adapter_.reset(
-      new WebToCCAnimationDelegateAdapter(delegate));
-  layer_->set_layer_animation_delegate(animation_delegate_adapter_.get());
-}
-
-bool WebLayerImpl::addAnimation(cc::Animation* animation) {
-  return layer_->AddAnimation(make_scoped_ptr(animation));
-}
-
-void WebLayerImpl::removeAnimation(int animation_id) {
-  layer_->RemoveAnimation(animation_id);
-}
-
-void WebLayerImpl::pauseAnimation(int animation_id, double time_offset) {
-  layer_->PauseAnimation(animation_id, time_offset);
-}
-
-void WebLayerImpl::abortAnimation(int animation_id) {
-  layer_->AbortAnimation(animation_id);
-}
-
-bool WebLayerImpl::hasActiveAnimation() {
+bool WebLayerImpl::hasActiveAnimationForTesting() {
   return layer_->HasActiveAnimation();
 }
 

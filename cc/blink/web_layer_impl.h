@@ -39,7 +39,6 @@ class ConvertableToTraceFormat;
 }
 
 namespace cc {
-class Animation;
 class FilterOperations;
 class Layer;
 class LayerSettings;
@@ -47,17 +46,11 @@ class LayerSettings;
 
 namespace cc_blink {
 
-class WebToCCAnimationDelegateAdapter;
-
 class WebLayerImpl : public blink::WebLayer {
  public:
   CC_BLINK_EXPORT WebLayerImpl();
   CC_BLINK_EXPORT explicit WebLayerImpl(scoped_refptr<cc::Layer>);
   ~WebLayerImpl() override;
-
-  CC_BLINK_EXPORT static void SetLayerSettings(
-      const cc::LayerSettings& settings);
-  CC_BLINK_EXPORT static const cc::LayerSettings& LayerSettings();
 
   CC_BLINK_EXPORT cc::Layer* layer() const;
 
@@ -106,13 +99,7 @@ class WebLayerImpl : public blink::WebLayer {
   blink::WebColor backgroundColor() const override;
   void setFilters(const cc::FilterOperations& filters) override;
   void setBackgroundFilters(const cc::FilterOperations& filters) override;
-  void setAnimationDelegate(
-      blink::WebCompositorAnimationDelegate* delegate) override;
-  bool addAnimation(cc::Animation* animation) override;
-  void removeAnimation(int animation_id) override;
-  void pauseAnimation(int animation_id, double time_offset) override;
-  void abortAnimation(int animation_id) override;
-  bool hasActiveAnimation() override;
+  bool hasActiveAnimationForTesting() override;
   void setForceRenderSurface(bool force) override;
   void setScrollPositionDouble(blink::WebDoublePoint position) override;
   blink::WebDoublePoint scrollPositionDouble() const override;
@@ -162,8 +149,6 @@ class WebLayerImpl : public blink::WebLayer {
   bool contents_opaque_is_fixed_;
 
  private:
-  scoped_ptr<WebToCCAnimationDelegateAdapter> animation_delegate_adapter_;
-
   DISALLOW_COPY_AND_ASSIGN(WebLayerImpl);
 };
 

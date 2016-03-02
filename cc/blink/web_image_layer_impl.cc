@@ -6,6 +6,7 @@
 
 #include "cc/blink/web_layer_impl.h"
 #include "cc/blink/web_layer_impl_fixed_bounds.h"
+#include "cc/layers/layer_settings.h"
 #include "cc/layers/picture_image_layer.h"
 #include "third_party/skia/include/core/SkImage.h"
 
@@ -13,7 +14,7 @@ namespace cc_blink {
 
 WebImageLayerImpl::WebImageLayerImpl() {
   layer_.reset(new WebLayerImplFixedBounds(
-      cc::PictureImageLayer::Create(WebLayerImpl::LayerSettings())));
+      cc::PictureImageLayer::Create(cc::LayerSettings())));
 }
 
 WebImageLayerImpl::~WebImageLayerImpl() {

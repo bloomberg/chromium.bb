@@ -701,7 +701,7 @@ void ScrollingCoordinator::setShouldUpdateScrollLayerPositionOnMainThread(MainTh
 
 void ScrollingCoordinator::layerTreeViewInitialized(WebLayerTreeView& layerTreeView)
 {
-    if (RuntimeEnabledFeatures::compositorAnimationTimelinesEnabled() && Platform::current()->isThreadedAnimationEnabled()) {
+    if (Platform::current()->isThreadedAnimationEnabled()) {
         m_programmaticScrollAnimatorTimeline = adoptPtr(CompositorFactory::current().createAnimationTimeline());
         layerTreeView.attachCompositorAnimationTimeline(m_programmaticScrollAnimatorTimeline->animationTimeline());
     }

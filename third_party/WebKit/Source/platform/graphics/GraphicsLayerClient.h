@@ -63,9 +63,6 @@ class PLATFORM_EXPORT GraphicsLayerClient {
 public:
     virtual ~GraphicsLayerClient() {}
 
-    // Callback for when compositor animation started.
-    virtual void notifyAnimationStarted(const GraphicsLayer*, double monotonicTime, int group) { }
-
     virtual void notifyFirstPaint() { }
     virtual void notifyFirstTextPaint() { }
     virtual void notifyFirstImagePaint() { }

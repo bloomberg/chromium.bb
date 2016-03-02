@@ -2394,11 +2394,6 @@ void CompositedLayerMapping::verifyNotPainting()
 }
 #endif
 
-void CompositedLayerMapping::notifyAnimationStarted(const GraphicsLayer*, double monotonicTime, int group)
-{
-    layoutObject()->node()->document().compositorPendingAnimations().notifyCompositorAnimationStarted(monotonicTime, group);
-}
-
 void CompositedLayerMapping::notifyFirstPaint()
 {
     if (PaintTiming* timing = m_owningLayer.paintTiming())

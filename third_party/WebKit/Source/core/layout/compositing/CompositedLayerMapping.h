@@ -152,7 +152,6 @@ public:
     void updateElementIdAndCompositorMutableProperties();
 
     // GraphicsLayerClient interface
-    void notifyAnimationStarted(const GraphicsLayer*, double monotonicTime, int group) override;
     void notifyFirstPaint() override;
     void notifyFirstTextPaint() override;
     void notifyFirstImagePaint() override;

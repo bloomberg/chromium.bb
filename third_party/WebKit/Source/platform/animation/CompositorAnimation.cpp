@@ -201,10 +201,4 @@ scoped_ptr<cc::Animation> CompositorAnimation::passAnimation()
     return std::move(m_animation);
 }
 
-cc::Animation* CompositorAnimation::releaseCCAnimation()
-{
-    m_animation->set_needs_synchronized_start_time(true);
-    return m_animation.release();
-}
-
 } // namespace blink

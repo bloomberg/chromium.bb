@@ -131,12 +131,6 @@ TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport() {
       blink::WebConnectionType::WebConnectionTypeUnknown,
       std::numeric_limits<double>::infinity());
 
-  // External cc::AnimationHost is enabled for unit tests.
-  cc::LayerSettings layer_settings;
-  layer_settings.use_compositor_animation_timelines = true;
-  cc_blink::WebLayerImpl::SetLayerSettings(layer_settings);
-  blink::WebRuntimeFeatures::enableCompositorAnimationTimelines(true);
-
   // Initialize libraries for media and enable the media player.
   media::InitializeMediaLibrary();
   blink::WebRuntimeFeatures::enableMediaPlayer(true);

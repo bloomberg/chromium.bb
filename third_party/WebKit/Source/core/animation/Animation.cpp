@@ -901,7 +901,7 @@ void Animation::endUpdatingState()
 
 void Animation::createCompositorPlayer()
 {
-    if (RuntimeEnabledFeatures::compositorAnimationTimelinesEnabled() && Platform::current()->isThreadedAnimationEnabled() && !m_compositorPlayer) {
+    if (Platform::current()->isThreadedAnimationEnabled() && !m_compositorPlayer) {
         ASSERT(Platform::current()->compositorSupport());
         m_compositorPlayer = adoptPtr(CompositorFactory::current().createAnimationPlayer());
         ASSERT(m_compositorPlayer);
@@ -943,7 +943,7 @@ void Animation::detachCompositorTimeline()
 
 void Animation::attachCompositedLayers()
 {
-    if (!RuntimeEnabledFeatures::compositorAnimationTimelinesEnabled() || !m_compositorPlayer)
+    if (!m_compositorPlayer)
         return;
 
     ASSERT(m_content);
@@ -961,7 +961,6 @@ void Animation::detachCompositedLayers()
 
 void Animation::notifyAnimationStarted(double monotonicTime, int group)
 {
-    ASSERT(RuntimeEnabledFeatures::compositorAnimationTimelinesEnabled());
     timeline()->document()->compositorPendingAnimations().notifyCompositorAnimationStarted(monotonicTime, group);
 }
 
