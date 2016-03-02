@@ -13,5 +13,4 @@
 -RenderViewImplTest.TestBackForward
 -SessionHistoryTest.FrameBackForward
 -SessionHistoryTest.FrameFormBackForward
--WebContentsImplBrowserTest.LoadProgressAfterInterruptedNav
 -WebContentsImplBrowserTest.ClearNonVisiblePendingOnFail

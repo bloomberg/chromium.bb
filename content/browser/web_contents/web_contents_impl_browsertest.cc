@@ -18,6 +18,7 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
+#include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/url_constants.h"
@@ -27,6 +28,7 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
+#include "content/test/content_browser_test_utils_internal.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -597,19 +599,21 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html"));
 
   // Simulate a navigation that has not completed.
+  const GURL kURL2 = embedded_test_server()->GetURL("/title2.html");
+  NavigationStallDelegate stall_delegate(kURL2);
+  ResourceDispatcherHost::Get()->SetDelegate(&stall_delegate);
   scoped_ptr<LoadProgressDelegateAndObserver> delegate(
       new LoadProgressDelegateAndObserver(shell()));
-  RenderFrameHost* main_frame = shell()->web_contents()->GetMainFrame();
-  FrameHostMsg_DidStartLoading start_msg(main_frame->GetRoutingID(), true);
-  static_cast<RenderFrameHostImpl*>(main_frame)->OnMessageReceived(start_msg);
+  shell()->LoadURL(kURL2);
   EXPECT_TRUE(delegate->did_start_loading);
   EXPECT_FALSE(delegate->did_stop_loading);
 
   // Also simulate a DidChangeLoadProgress, but not a DidStopLoading.
+  RenderFrameHostImpl* main_frame = static_cast<RenderFrameHostImpl*>(
+      shell()->web_contents()->GetMainFrame());
   FrameHostMsg_DidChangeLoadProgress progress_msg(main_frame->GetRoutingID(),
                                                   1.0);
-  static_cast<RenderFrameHostImpl*>(main_frame)->OnMessageReceived(
-      progress_msg);
+  main_frame->OnMessageReceived(progress_msg);
   EXPECT_TRUE(delegate->did_start_loading);
   EXPECT_FALSE(delegate->did_stop_loading);
 
@@ -622,6 +626,8 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
 
   // We should have gotten to DidStopLoading.
   EXPECT_TRUE(delegate->did_stop_loading);
+
+  ResourceDispatcherHost::Get()->SetDelegate(nullptr);
 }
 
 struct FirstVisuallyNonEmptyPaintObserver : public WebContentsObserver {
