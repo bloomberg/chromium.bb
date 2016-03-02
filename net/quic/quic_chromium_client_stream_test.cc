@@ -292,6 +292,42 @@ TEST_P(QuicChromiumClientStreamTest, OnError) {
   EXPECT_FALSE(stream_->GetDelegate());
 }
 
+TEST_P(QuicChromiumClientStreamTest, OnTrailers) {
+  InitializeHeaders();
+  std::string uncompressed_headers =
+      SpdyUtils::SerializeUncompressedHeaders(headers_);
+  stream_->OnStreamHeaders(uncompressed_headers);
+  stream_->OnStreamHeadersComplete(false, uncompressed_headers.length());
+
+  EXPECT_CALL(delegate_,
+              OnHeadersAvailable(headers_, uncompressed_headers.length()));
+  base::MessageLoop::current()->RunUntilIdle();
+  EXPECT_TRUE(stream_->decompressed_headers().empty());
+
+  const char data[] = "hello world!";
+  stream_->OnStreamFrame(QuicStreamFrame(kTestStreamId, /*fin=*/false,
+                                         /*offset=*/0, data));
+
+  EXPECT_CALL(delegate_, OnDataAvailable())
+      .WillOnce(testing::Invoke(CreateFunctor(
+          &QuicChromiumClientStreamTest::ReadData, base::Unretained(this),
+          StringPiece(data, arraysize(data) - 1))));
+
+  SpdyHeaderBlock trailers;
+  trailers["bar"] = "foo";
+  std::string uncompressed_trailers =
+      SpdyUtils::SerializeUncompressedHeaders(trailers);
+
+  stream_->OnStreamHeaders(uncompressed_trailers);
+  stream_->OnStreamHeadersComplete(true, uncompressed_trailers.length());
+
+  EXPECT_CALL(delegate_,
+              OnHeadersAvailable(trailers, uncompressed_trailers.length()));
+
+  base::MessageLoop::current()->RunUntilIdle();
+  EXPECT_CALL(delegate_, OnClose(QUIC_NO_ERROR));
+}
+
 TEST_P(QuicChromiumClientStreamTest, WriteStreamData) {
   EXPECT_CALL(delegate_, OnClose(QUIC_NO_ERROR));
 

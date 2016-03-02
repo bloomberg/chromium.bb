@@ -216,6 +216,8 @@ void QuicSpdyStream::OnTrailingHeadersComplete(bool fin, size_t /*frame_len*/) {
         QUIC_INVALID_HEADERS_STREAM_DATA, "Fin missing from trailers");
     return;
   }
+
+  OnStreamFrame(QuicStreamFrame(id(), fin, stream_bytes_read(), StringPiece()));
   trailers_decompressed_ = true;
 }
 

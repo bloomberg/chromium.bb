@@ -75,7 +75,8 @@ scoped_ptr<QuicEncryptedPacket> QuicTestPacketMaker::MakeAckAndRstPacket(
     QuicStreamId stream_id,
     QuicRstStreamErrorCode error_code,
     QuicPacketNumber largest_received,
-    QuicPacketNumber least_unacked,
+    QuicPacketNumber ack_least_unacked,
+    QuicPacketNumber stop_least_unacked,
     bool send_feedback) {
   QuicPacketHeader header;
   header.public_header.connection_id = connection_id_;
@@ -89,18 +90,21 @@ scoped_ptr<QuicEncryptedPacket> QuicTestPacketMaker::MakeAckAndRstPacket(
 
   QuicAckFrame ack(MakeAckFrame(largest_received));
   ack.ack_delay_time = QuicTime::Delta::Zero();
-  for (QuicPacketNumber i = least_unacked; i <= largest_received; ++i) {
+  for (QuicPacketNumber i = ack_least_unacked; i <= largest_received; ++i) {
     ack.received_packet_times.push_back(make_pair(i, clock_->Now()));
   }
   QuicFrames frames;
   frames.push_back(QuicFrame(&ack));
+  DVLOG(1) << "Adding frame: " << frames[0];
 
   QuicStopWaitingFrame stop_waiting;
-  stop_waiting.least_unacked = least_unacked;
+  stop_waiting.least_unacked = stop_least_unacked;
   frames.push_back(QuicFrame(&stop_waiting));
+  DVLOG(1) << "Adding frame: " << frames[1];
 
   QuicRstStreamFrame rst(stream_id, error_code, 0);
   frames.push_back(QuicFrame(&rst));
+  DVLOG(1) << "Adding frame: " << frames[2];
 
   QuicFramer framer(SupportedVersions(version_), clock_->Now(),
                     Perspective::IS_CLIENT);

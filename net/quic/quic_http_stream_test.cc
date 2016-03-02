@@ -344,6 +344,27 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
                                                spdy_headers_frame_length);
   }
 
+  scoped_ptr<QuicEncryptedPacket> ConstructResponseHeadersPacketWithOffset(
+      QuicPacketNumber packet_number,
+      bool fin,
+      size_t* spdy_headers_frame_length,
+      QuicStreamOffset* offset) {
+    return maker_.MakeResponseHeadersPacket(
+        packet_number, stream_id_, !kIncludeVersion, fin, response_headers_,
+        spdy_headers_frame_length, offset);
+  }
+
+  scoped_ptr<QuicEncryptedPacket> ConstructResponseTrailersPacket(
+      QuicPacketNumber packet_number,
+      bool fin,
+      const SpdyHeaderBlock& trailers,
+      size_t* spdy_headers_frame_length,
+      QuicStreamOffset* offset) {
+    return maker_.MakeResponseHeadersPacket(packet_number, stream_id_,
+                                            !kIncludeVersion, fin, trailers,
+                                            spdy_headers_frame_length, offset);
+  }
+
   scoped_ptr<QuicEncryptedPacket> ConstructRstStreamPacket(
       QuicPacketNumber packet_number) {
     return maker_.MakeRstPacket(
@@ -364,10 +385,19 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
   }
 
   scoped_ptr<QuicEncryptedPacket> ConstructAckAndRstStreamPacket(
+      QuicPacketNumber packet_number,
+      QuicPacketNumber largest_received,
+      QuicPacketNumber ack_least_unacked,
+      QuicPacketNumber stop_least_unacked) {
+    return maker_.MakeAckAndRstPacket(
+        packet_number, !kIncludeVersion, stream_id_, QUIC_STREAM_CANCELLED,
+        largest_received, ack_least_unacked, stop_least_unacked,
+        !kIncludeCongestionFeedback);
+  }
+
+  scoped_ptr<QuicEncryptedPacket> ConstructAckAndRstStreamPacket(
       QuicPacketNumber packet_number) {
-    return maker_.MakeAckAndRstPacket(packet_number, !kIncludeVersion,
-                                      stream_id_, QUIC_STREAM_CANCELLED, 2, 1,
-                                      !kIncludeCongestionFeedback);
+    return ConstructAckAndRstStreamPacket(packet_number, 2, 1, 1);
   }
 
   scoped_ptr<QuicEncryptedPacket> ConstructAckPacket(
@@ -492,6 +522,80 @@ TEST_P(QuicHttpStreamTest, GetRequest) {
             stream_->GetTotalSentBytes());
   EXPECT_EQ(static_cast<int64_t>(spdy_response_header_frame_length),
             stream_->GetTotalReceivedBytes());
+}
+
+// QuicHttpStream does not currently support trailers. It should ignore
+// trailers upon receiving them.
+TEST_P(QuicHttpStreamTest, GetRequestWithTrailers) {
+  SetRequest("GET", "/", DEFAULT_PRIORITY);
+  size_t spdy_request_header_frame_length;
+  AddWrite(ConstructRequestHeadersPacket(1, kFin, DEFAULT_PRIORITY,
+                                         &spdy_request_header_frame_length));
+  AddWrite(ConstructAckPacket(2, 3, 1));  // Ack the data packet.
+
+  Initialize();
+
+  request_.method = "GET";
+  request_.url = GURL("http://www.example.org/");
+
+  EXPECT_EQ(OK, stream_->InitializeStream(&request_, DEFAULT_PRIORITY, net_log_,
+                                          callback_.callback()));
+  EXPECT_EQ(OK,
+            stream_->SendRequest(headers_, &response_, callback_.callback()));
+
+  // Ack the request.
+  ProcessPacket(ConstructAckPacket(1, 0, 0));
+
+  EXPECT_EQ(ERR_IO_PENDING, stream_->ReadResponseHeaders(callback_.callback()));
+
+  SetResponse("200 OK", std::string());
+
+  // Send the response headers.
+  size_t spdy_response_header_frame_length;
+  QuicStreamOffset offset = 0;
+  ProcessPacket(ConstructResponseHeadersPacketWithOffset(
+      2, !kFin, &spdy_response_header_frame_length, &offset));
+  // Now that the headers have been processed, the callback will return.
+  EXPECT_EQ(OK, callback_.WaitForResult());
+  ASSERT_TRUE(response_.headers.get());
+  EXPECT_EQ(200, response_.headers->response_code());
+  EXPECT_TRUE(response_.headers->HasHeaderValue("Content-Type", "text/plain"));
+  EXPECT_FALSE(response_.response_time.is_null());
+  EXPECT_FALSE(response_.request_time.is_null());
+
+  // Send the response body.
+  const char kResponseBody[] = "Hello world!";
+  ProcessPacket(
+      ConstructDataPacket(3, false, !kFin, /*offset=*/0, kResponseBody));
+  SpdyHeaderBlock trailers;
+  size_t spdy_trailers_frame_length;
+  trailers["foo"] = "bar";
+  ProcessPacket(ConstructResponseTrailersPacket(
+      4, kFin, trailers, &spdy_trailers_frame_length, &offset));
+
+  // Make sure trailers are processed.
+  base::MessageLoop::current()->RunUntilIdle();
+
+  EXPECT_EQ(static_cast<int>(strlen(kResponseBody)),
+            stream_->ReadResponseBody(read_buffer_.get(), read_buffer_->size(),
+                                      callback_.callback()));
+  EXPECT_TRUE(stream_->IsResponseBodyComplete());
+
+  EXPECT_EQ(OK,
+            stream_->ReadResponseBody(read_buffer_.get(), read_buffer_->size(),
+                                      callback_.callback()));
+
+  EXPECT_TRUE(stream_->IsResponseBodyComplete());
+  EXPECT_TRUE(AtEof());
+
+  // QuicHttpStream::GetTotalSent/ReceivedBytes currently only includes the
+  // headers and payload.
+  EXPECT_EQ(static_cast<int64_t>(spdy_request_header_frame_length),
+            stream_->GetTotalSentBytes());
+  EXPECT_EQ(
+      static_cast<int64_t>(spdy_response_header_frame_length +
+                           strlen(kResponseBody) + +spdy_trailers_frame_length),
+      stream_->GetTotalReceivedBytes());
 }
 
 // Regression test for http://crbug.com/288128

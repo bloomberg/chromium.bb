@@ -35,17 +35,33 @@ QuicChromiumClientStream::~QuicChromiumClientStream() {
 void QuicChromiumClientStream::OnStreamHeadersComplete(bool fin,
                                                        size_t frame_len) {
   QuicSpdyStream::OnStreamHeadersComplete(fin, frame_len);
-  size_t headers_len = decompressed_headers().length();
   SpdyHeaderBlock headers;
   SpdyFramer framer(HTTP2);
-  if (!framer.ParseHeaderBlockInBuffer(decompressed_headers().data(),
-                                       headers_len, &headers)) {
+
+  size_t headers_len;
+  const char* header_data;
+  if (decompressed_headers().empty() && !decompressed_trailers().empty()) {
+    DCHECK(trailers_decompressed());
+    headers_len = decompressed_trailers().length();
+    header_data = decompressed_trailers().data();
+  } else {
+    DCHECK(!headers_delivered_);
+    headers_len = decompressed_headers().length();
+    header_data = decompressed_headers().data();
+  }
+  if (!framer.ParseHeaderBlockInBuffer(header_data, headers_len, &headers)) {
     DLOG(WARNING) << "Invalid headers";
     Reset(QUIC_BAD_APPLICATION_PAYLOAD);
     return;
   }
-  MarkHeadersConsumed(headers_len);
-  session_->OnInitialHeadersComplete(id(), headers);
+
+  if (!headers_delivered_) {
+    MarkHeadersConsumed(headers_len);
+    session_->OnInitialHeadersComplete(id(), headers);
+  } else {
+    MarkTrailersConsumed(headers_len);
+  }
+
   // The delegate will read the headers via a posted task.
   NotifyDelegateOfHeadersCompleteLater(headers, frame_len);
 }

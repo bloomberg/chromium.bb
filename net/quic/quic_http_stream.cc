@@ -440,6 +440,16 @@ void QuicHttpStream::OnHeadersAvailable(const SpdyHeaderBlock& headers,
                                         size_t frame_len) {
   headers_bytes_received_ += frame_len;
 
+  // QuicHttpStream ignores trailers.
+  if (response_headers_received_) {
+    if (stream_->IsDoneReading()) {
+      // Close the read side. If the write side has been closed, this will
+      // invoke QuicHttpStream::OnClose to reset the stream.
+      stream_->OnFinRead();
+    }
+    return;
+  }
+
   int rv = ProcessResponseHeaders(headers);
   if (rv != ERR_IO_PENDING && !callback_.is_null()) {
     DoCallback(rv);

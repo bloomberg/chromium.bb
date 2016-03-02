@@ -43,7 +43,8 @@ class QuicTestPacketMaker {
       QuicStreamId stream_id,
       QuicRstStreamErrorCode error_code,
       QuicPacketNumber largest_received,
-      QuicPacketNumber least_unacked,
+      QuicPacketNumber ack_least_unacked,
+      QuicPacketNumber stop_least_unacked,
       bool send_feedback);
   scoped_ptr<QuicEncryptedPacket> MakeAckAndConnectionClosePacket(
       QuicPacketNumber num,

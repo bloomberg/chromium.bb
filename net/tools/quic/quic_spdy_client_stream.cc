@@ -72,8 +72,6 @@ void QuicSpdyClientStream::OnInitialHeadersComplete(bool fin,
 
 void QuicSpdyClientStream::OnTrailingHeadersComplete(bool fin,
                                                      size_t frame_len) {
-  QuicSpdyStream::OnTrailingHeadersComplete(fin, frame_len);
-
   size_t final_byte_offset = 0;
   if (!SpdyUtils::ParseTrailers(decompressed_trailers().data(),
                                 decompressed_trailers().length(),
