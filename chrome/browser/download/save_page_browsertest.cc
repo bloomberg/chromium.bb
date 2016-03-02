@@ -48,6 +48,8 @@
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
@@ -64,6 +66,8 @@ using content::BrowserContext;
 using content::BrowserThread;
 using content::DownloadItem;
 using content::DownloadManager;
+using content::RenderFrameHost;
+using content::RenderProcessHost;
 using content::WebContents;
 using net::URLRequestMockHTTPJob;
 using testing::ContainsRegex;
@@ -915,6 +919,41 @@ IN_PROC_BROWSER_TEST_F(SavePageSitePerProcessBrowserTest, SaveAsMHTML) {
     pos++;
   }
   EXPECT_EQ(1, count) << "Verify number of image/png parts in the mhtml output";
+}
+
+// Test for crbug.com/541342 - handling of dead renderer processes.
+IN_PROC_BROWSER_TEST_F(SavePageSitePerProcessBrowserTest,
+                       CompleteHtmlWhenRendererIsDead) {
+  GURL url(
+      embedded_test_server()->GetURL("a.com", "/save_page/frames-xsite.htm"));
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  // Kill one of renderer processes (this is the essence of this test).
+  WebContents* web_contents = GetCurrentTab(browser());
+  bool did_kill_a_process = false;
+  for (RenderFrameHost* frame : web_contents->GetAllFrames()) {
+    if (frame->GetLastCommittedURL().host() == "bar.com") {
+      RenderProcessHost* process_to_kill = frame->GetProcess();
+      EXPECT_NE(
+          web_contents->GetMainFrame()->GetProcess()->GetID(),
+          process_to_kill->GetID())
+          << "a.com and bar.com should be in different processes.";
+
+      EXPECT_TRUE(process_to_kill->FastShutdownIfPossible());
+      EXPECT_FALSE(process_to_kill->HasConnection());
+      did_kill_a_process = true;
+      break;
+    }
+  }
+  EXPECT_TRUE(did_kill_a_process);
+
+  // Main verification is that we don't hang and time out when saving.
+  base::FilePath full_file_name, dir;
+  SaveCurrentTab(url, content::SAVE_PAGE_TYPE_AS_COMPLETE_HTML,
+                 "frames-xsite-complete-html", 5, &dir, &full_file_name);
+  ASSERT_FALSE(HasFailure());
+  EXPECT_TRUE(base::DirectoryExists(dir));
+  EXPECT_TRUE(base::PathExists(full_file_name));
 }
 
 // Test suite that verifies that the frame tree "looks" the same before

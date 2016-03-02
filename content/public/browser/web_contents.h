@@ -233,9 +233,8 @@ class WebContents : public PageNavigator,
   // breadth-first traversal order.
   virtual std::vector<RenderFrameHost*> GetAllFrames() = 0;
 
-  // Sends the given IPC to all frames in the currently active view and returns
-  // the number of sent messages (i.e. the number of processed frames). This is
-  // a convenience method instead of calling ForEach.
+  // Sends the given IPC to all live frames in this WebContents and returns the
+  // number of sent messages (i.e. the number of processed frames).
   virtual int SendToAllFrames(IPC::Message* message) = 0;
 
   // Gets the current RenderViewHost for this tab.

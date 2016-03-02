@@ -969,18 +969,28 @@ void SavePackage::GetSerializedHtmlWithLocalLinks() {
   if (successful_started_items_count != in_process_count())
     return;
 
-  // Ask all frames for their serialized data.
+  // Try to serialize all the frames gathered during GetSavableResourceLinks.
   DCHECK_EQ(0, number_of_frames_pending_response_);
   FrameTree* frame_tree =
       static_cast<RenderFrameHostImpl*>(web_contents()->GetMainFrame())
           ->frame_tree_node()->frame_tree();
   for (const auto& item : frame_tree_node_id_to_save_item_) {
-    DCHECK(item.second);  // SaveItem* != nullptr.
     int frame_tree_node_id = item.first;
+    SaveItem* save_item = item.second;
+    DCHECK(save_item);
+
     FrameTreeNode* frame_tree_node = frame_tree->FindByID(frame_tree_node_id);
-    if (frame_tree_node) {
+    if (frame_tree_node &&
+        frame_tree_node->current_frame_host()->IsRenderFrameLive()) {
+      // Ask the frame for HTML to be written to the associated SaveItem.
       GetSerializedHtmlWithLocalLinksForFrame(frame_tree_node);
       number_of_frames_pending_response_++;
+    } else {
+      // Notify SaveFileManager about the failure to save this SaveItem.
+      BrowserThread::PostTask(
+          BrowserThread::FILE, FROM_HERE,
+          base::Bind(&SaveFileManager::SaveFinished, file_manager_,
+                     save_item->id(), id(), false));
     }
   }
   if (number_of_frames_pending_response_ == 0) {
