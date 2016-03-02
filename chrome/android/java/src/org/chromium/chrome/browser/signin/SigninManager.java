@@ -553,8 +553,10 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
         boolean wipeData = getManagementDomain() != null;
         Log.d(TAG, "Signing out, wipe data? " + wipeData);
 
-        ChromeSigninController.get(mContext).setSignedInAccountName(null);
+        // Native signout must happen before resetting the account so data is deleted correctly.
+        // http://crbug.com/589028
         nativeSignOut(mNativeSigninManagerAndroid);
+        ChromeSigninController.get(mContext).setSignedInAccountName(null);
 
         if (wipeData) {
             wipeProfileData(wipeDataHooks);
