@@ -39,6 +39,7 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkShader.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/display.h"
@@ -901,20 +902,25 @@ void Gtk2UI::LoadGtkValues() {
   GetSelectedEntryForegroundHSL(&selected_entry_tint_);
   SkColor frame_color = BuildFrameColors();
 
-  // The inactive frame color never occurs naturally in the theme, as it is a
-  // tinted version of |frame_color|. We generate another color based on the
-  // background tab color, with the lightness and saturation moved in the
-  // opposite direction. (We don't touch the hue, since there should be subtle
-  // hints of the color in the text.)
-  color_utils::HSL inactive_tab_text_hsl;
-  color_utils::SkColorToHSL(
-      theme->GetSystemColor(ui::NativeTheme::kColorId_WindowBackground),
-      &inactive_tab_text_hsl);
-  inactive_tab_text_hsl.s = kInactiveLuminance;
-  inactive_tab_text_hsl.l = kInactiveSaturation;
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    colors_[ThemeProperties::COLOR_BACKGROUND_TAB_TEXT] =
+        color_utils::BlendTowardOppositeLuminance(label_color, 50);
+  } else {
+    // The inactive frame color never occurs naturally in the theme, as it is a
+    // tinted version of |frame_color|. We generate another color based on the
+    // background tab color, with the lightness and saturation moved in the
+    // opposite direction. (We don't touch the hue, since there should be subtle
+    // hints of the color in the text.)
+    color_utils::HSL inactive_tab_text_hsl;
+    color_utils::SkColorToHSL(
+        theme->GetSystemColor(ui::NativeTheme::kColorId_WindowBackground),
+        &inactive_tab_text_hsl);
+    inactive_tab_text_hsl.s = kInactiveLuminance;
+    inactive_tab_text_hsl.l = kInactiveSaturation;
 
-  colors_[ThemeProperties::COLOR_BACKGROUND_TAB_TEXT] =
-      color_utils::HSLToSkColor(inactive_tab_text_hsl, 255);
+    colors_[ThemeProperties::COLOR_BACKGROUND_TAB_TEXT] =
+        color_utils::HSLToSkColor(inactive_tab_text_hsl, 255);
+  }
 
   // We pick the text and background colors for the NTP out of the colors for a
   // GtkEntry. We do this because GtkEntries background color is never the same
@@ -1097,9 +1103,13 @@ gfx::Image Gtk2UI::GenerateGtkThemeImage(int id) const {
 
   return gfx::Image();
 }
+
 SkBitmap Gtk2UI::GenerateGtkThemeBitmap(int id) const {
   switch (id) {
     case IDR_THEME_TOOLBAR: {
+      if (ui::MaterialDesignController::IsModeMaterial())
+        break;
+
       SkBitmap bitmap;
       bitmap.allocN32Pixels(kToolbarImageWidth, kToolbarImageHeight);
       bitmap.eraseColor(
@@ -1160,6 +1170,9 @@ SkBitmap Gtk2UI::GenerateFrameImage(
     int color_id,
     const char* gradient_name) const {
 #if GTK_MAJOR_VERSION == 2
+  if (ui::MaterialDesignController::IsModeMaterial())
+    return SkBitmap();
+
   ColorMap::const_iterator it = colors_.find(color_id);
   DCHECK(it != colors_.end());
   SkColor base = it->second;
@@ -1194,14 +1207,12 @@ SkBitmap Gtk2UI::GenerateFrameImage(
   canvas.FillRect(gfx::Rect(0, gradient_size, kToolbarImageWidth,
                             kToolbarImageHeight - gradient_size), base);
   return canvas.ExtractImageRep().sk_bitmap();
-
 #else
   // Render a GtkHeaderBar as our title bar, cropping out any curved edges on
   // the left and right sides. Also remove the bottom border for good measure.
   SkBitmap bitmap;
   bitmap.allocN32Pixels(kToolbarImageWidth, 40);
   bitmap.eraseColor(0);
-
 
   static GtkWidget* title = NULL;
   if (!title) {
@@ -1242,6 +1253,9 @@ SkBitmap Gtk2UI::GenerateFrameImage(
 }
 
 SkBitmap Gtk2UI::GenerateTabImage(int base_id) const {
+  if (ui::MaterialDesignController::IsModeMaterial())
+    return SkBitmap();
+
   const SkBitmap* base_image = GetThemeImageNamed(base_id).ToSkBitmap();
   SkBitmap bg_tint = SkBitmapOperations::CreateHSLShiftedBitmap(
       *base_image, kDefaultTintBackgroundTab);

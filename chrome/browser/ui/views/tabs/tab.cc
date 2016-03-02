@@ -1747,6 +1747,8 @@ void Tab::InitTabResources() {
 
 // static
 void Tab::LoadTabImages() {
+  image_cache_->clear();
+
   // We're not letting people override tab images just yet.
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
