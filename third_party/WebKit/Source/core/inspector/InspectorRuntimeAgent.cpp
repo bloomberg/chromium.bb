@@ -46,7 +46,7 @@ static const char runtimeEnabled[] = "runtimeEnabled";
 InspectorRuntimeAgent::InspectorRuntimeAgent(V8Debugger* debugger, Client* client)
     : InspectorBaseAgent<InspectorRuntimeAgent, protocol::Frontend::Runtime>("Runtime")
     , m_enabled(false)
-    , m_v8RuntimeAgent(V8RuntimeAgent::create(debugger))
+    , m_v8RuntimeAgent(V8RuntimeAgent::create(debugger, this))
     , m_client(client)
 {
 }

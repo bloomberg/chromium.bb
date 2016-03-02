@@ -25,7 +25,12 @@ public:
         virtual ~Inspectable() { }
     };
 
-    static PassOwnPtr<V8RuntimeAgent> create(V8Debugger*);
+    class Client {
+    public:
+        virtual void reportExecutionContexts() = 0;
+    };
+
+    static PassOwnPtr<V8RuntimeAgent> create(V8Debugger*, Client*);
     virtual ~V8RuntimeAgent() { }
 
     // Embedder notification API.

@@ -33,6 +33,7 @@
 
 #include "core/CoreExport.h"
 #include "core/inspector/InspectorBaseAgent.h"
+#include "platform/v8_inspector/public/V8RuntimeAgent.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
 
@@ -42,7 +43,6 @@ class InjectedScript;
 class InjectedScriptManager;
 class ScriptState;
 class V8Debugger;
-class V8RuntimeAgent;
 
 namespace protocol {
 class ListValue;
@@ -54,7 +54,8 @@ using protocol::Maybe;
 
 class CORE_EXPORT InspectorRuntimeAgent
     : public InspectorBaseAgent<InspectorRuntimeAgent, protocol::Frontend::Runtime>
-    , public protocol::Dispatcher::RuntimeCommandHandler {
+    , public protocol::Dispatcher::RuntimeCommandHandler
+    , public V8RuntimeAgent::Client {
     WTF_MAKE_NONCOPYABLE(InspectorRuntimeAgent);
 public:
     class Client {
@@ -67,6 +68,9 @@ public:
     };
 
     ~InspectorRuntimeAgent() override;
+
+    // V8RuntimeAgent::Client.
+    void reportExecutionContexts() override { }
 
     // InspectorBaseAgent overrides.
     void setState(protocol::DictionaryValue*) override;

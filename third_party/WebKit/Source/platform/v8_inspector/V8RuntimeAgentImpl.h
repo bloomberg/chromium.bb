@@ -52,7 +52,7 @@ using protocol::Maybe;
 class V8RuntimeAgentImpl : public V8RuntimeAgent {
     WTF_MAKE_NONCOPYABLE(V8RuntimeAgentImpl);
 public:
-    V8RuntimeAgentImpl(V8DebuggerImpl*);
+    V8RuntimeAgentImpl(V8DebuggerImpl*, Client*);
     ~V8RuntimeAgentImpl() override;
 
     // State management methods.
@@ -131,6 +131,7 @@ private:
     void reportExecutionContextDestroyed(v8::Local<v8::Context>) override;
     PassOwnPtr<protocol::Runtime::ExceptionDetails> createExceptionDetails(v8::Isolate*, v8::Local<v8::Message>);
 
+    Client* m_client;
     protocol::DictionaryValue* m_state;
     protocol::Frontend::Runtime* m_frontend;
     OwnPtr<InjectedScriptManager> m_injectedScriptManager;

@@ -51,7 +51,6 @@ public:
     DECLARE_VIRTUAL_TRACE();
     void enable(ErrorString*) override;
     void disable(ErrorString*) override;
-
     void didClearDocumentOfWindowObject(LocalFrame*);
     void didCreateScriptContext(LocalFrame*, ScriptState*, SecurityOrigin*, int worldId);
     void willReleaseScriptContext(LocalFrame*, ScriptState*);
@@ -59,10 +58,12 @@ public:
 private:
     PageRuntimeAgent(Client*, V8Debugger*, InspectedFrames*);
 
+    // V8RuntimeAgent::Client.
+    void reportExecutionContexts() override;
+
     ScriptState* defaultScriptState() override;
     void muteConsole() override;
     void unmuteConsole() override;
-    void reportExecutionContextCreation();
     void reportExecutionContext(ScriptState*, bool isPageContext, const String& origin, const String& frameId);
 
     RawPtrWillBeMember<InspectedFrames> m_inspectedFrames;

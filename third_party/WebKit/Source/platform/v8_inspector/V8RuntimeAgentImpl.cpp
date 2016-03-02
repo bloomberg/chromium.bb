@@ -51,13 +51,14 @@ static const char customObjectFormatterEnabled[] = "customObjectFormatterEnabled
 using protocol::Runtime::ExceptionDetails;
 using protocol::Runtime::RemoteObject;
 
-PassOwnPtr<V8RuntimeAgent> V8RuntimeAgent::create(V8Debugger* debugger)
+PassOwnPtr<V8RuntimeAgent> V8RuntimeAgent::create(V8Debugger* debugger, Client* client)
 {
-    return adoptPtr(new V8RuntimeAgentImpl(static_cast<V8DebuggerImpl*>(debugger)));
+    return adoptPtr(new V8RuntimeAgentImpl(static_cast<V8DebuggerImpl*>(debugger), client));
 }
 
-V8RuntimeAgentImpl::V8RuntimeAgentImpl(V8DebuggerImpl* debugger)
-    : m_state(nullptr)
+V8RuntimeAgentImpl::V8RuntimeAgentImpl(V8DebuggerImpl* debugger, Client* client)
+    : m_client(client)
+    , m_state(nullptr)
     , m_frontend(nullptr)
     , m_injectedScriptManager(InjectedScriptManager::create(debugger))
     , m_debugger(debugger)
@@ -331,6 +332,7 @@ void V8RuntimeAgentImpl::restore()
 void V8RuntimeAgentImpl::enable(ErrorString* errorString)
 {
     m_enabled = true;
+    m_client->reportExecutionContexts();
 }
 
 void V8RuntimeAgentImpl::disable(ErrorString* errorString)

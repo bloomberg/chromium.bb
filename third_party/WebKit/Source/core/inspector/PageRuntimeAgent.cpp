@@ -72,12 +72,6 @@ void PageRuntimeAgent::enable(ErrorString* errorString)
 
     InspectorRuntimeAgent::enable(errorString);
     m_instrumentingAgents->setPageRuntimeAgent(this);
-
-    // Only report existing contexts if the page did commit load, otherwise we may
-    // unintentionally initialize contexts in the frames which may trigger some listeners
-    // that are expected to be triggered only after the load is committed, see http://crbug.com/131623
-    if (m_client->didCommitLoadFired())
-        reportExecutionContextCreation();
 }
 
 void PageRuntimeAgent::disable(ErrorString* errorString)
@@ -127,8 +121,14 @@ void PageRuntimeAgent::unmuteConsole()
     FrameConsole::unmute();
 }
 
-void PageRuntimeAgent::reportExecutionContextCreation()
+void PageRuntimeAgent::reportExecutionContexts()
 {
+    // Only report existing contexts if the page did commit load, otherwise we may
+    // unintentionally initialize contexts in the frames which may trigger some listeners
+    // that are expected to be triggered only after the load is committed, see http://crbug.com/131623
+    if (!m_client->didCommitLoadFired())
+        return;
+
     Vector<std::pair<ScriptState*, SecurityOrigin*>> isolatedContexts;
     for (LocalFrame* frame : *m_inspectedFrames) {
         if (!frame->script().canExecuteScripts(NotAboutToExecuteScript))
