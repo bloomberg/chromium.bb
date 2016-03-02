@@ -183,5 +183,30 @@ IN_PROC_BROWSER_TEST_F(ExtensionBindingsApiTest, HandlerFunctionTypeChecking) {
   EXPECT_EQ("success", result);
 }
 
+IN_PROC_BROWSER_TEST_F(ExtensionBindingsApiTest,
+                       MoreNativeFunctionInterceptionTests) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // We need to create runtime bindings in the web page. An extension that's
+  // externally connectable will do that for us.
+  ASSERT_TRUE(
+      LoadExtension(test_data_dir_.AppendASCII("bindings")
+                        .AppendASCII("externally_connectable_everywhere")));
+
+  ui_test_utils::NavigateToURL(
+      browser(),
+      embedded_test_server()->GetURL(
+          "/extensions/api_test/bindings/function_interceptions.html"));
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_FALSE(web_contents->IsCrashed());
+  // See function_interceptions.html.
+  std::string result;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+      web_contents, "window.domAutomationController.send(window.testStatus);",
+      &result));
+  EXPECT_EQ("success", result);
+}
+
 }  // namespace
 }  // namespace extensions

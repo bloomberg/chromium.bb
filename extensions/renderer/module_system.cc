@@ -251,12 +251,12 @@ v8::Local<v8::Value> ModuleSystem::RequireForJsInner(
 
   v8::Local<v8::Object> modules(v8::Local<v8::Object>::Cast(modules_value));
   v8::Local<v8::Value> exports;
-  if (!GetProperty(v8_context, modules, module_name, &exports) ||
+  if (!GetPrivateProperty(v8_context, modules, module_name, &exports) ||
       !exports->IsUndefined())
     return handle_scope.Escape(exports);
 
   exports = LoadModule(*v8::String::Utf8Value(module_name));
-  SetProperty(v8_context, modules, module_name, exports);
+  SetPrivateProperty(v8_context, modules, module_name, exports);
   return handle_scope.Escape(exports);
 }
 

@@ -60,6 +60,9 @@ inline bool IsEmptyOrUndefied(v8::Local<v8::Value> value) {
 
 // SetProperty() family wraps V8::Object::DefineOwnProperty().
 // Returns true on success.
+// NOTE: Think about whether you want this or SetPrivateProperty() below.
+// TODO(devlin): Sort through more of the callers of this and see if we can
+// convert more to be private.
 inline bool SetProperty(v8::Local<v8::Context> context,
                         v8::Local<v8::Object> object,
                         v8::Local<v8::String> key,
@@ -84,8 +87,29 @@ inline bool SetProperty(v8::Local<v8::Context> context,
   return SetProperty(context, object, base::UintToString(index).c_str(), value);
 }
 
+// Wraps v8::Object::SetPrivate(). When possible, prefer this to SetProperty().
+inline bool SetPrivateProperty(v8::Local<v8::Context> context,
+                               v8::Local<v8::Object> object,
+                               v8::Local<v8::String> key,
+                               v8::Local<v8::Value> value) {
+  return IsTrue(object->SetPrivate(
+      context, v8::Private::ForApi(context->GetIsolate(), key), value));
+}
+
+inline bool SetPrivateProperty(v8::Local<v8::Context> context,
+                               v8::Local<v8::Object> object,
+                               const char* key,
+                               v8::Local<v8::Value> value) {
+  v8::Local<v8::String> v8_key;
+  return ToV8String(context->GetIsolate(), key, &v8_key) &&
+         IsTrue(object->SetPrivate(
+             context, v8::Private::ForApi(context->GetIsolate(), v8_key),
+             value));
+}
+
 // GetProperty() family calls V8::Object::Get() and extracts a value from
 // returned MaybeLocal. Returns true on success.
+// NOTE: Think about whether you want this or GetPrivateProperty() below.
 template <typename Key>
 inline bool GetProperty(v8::Local<v8::Context> context,
                         v8::Local<v8::Object> object,
@@ -102,6 +126,25 @@ inline bool GetProperty(v8::Local<v8::Context> context,
   if (!ToV8String(context->GetIsolate(), key, &v8_key))
     return false;
   return GetProperty(context, object, v8_key, out);
+}
+
+// Wraps v8::Object::GetPrivate(). When possible, prefer this to GetProperty().
+inline bool GetPrivateProperty(v8::Local<v8::Context> context,
+                               v8::Local<v8::Object> object,
+                               v8::Local<v8::String> key,
+                               v8::Local<v8::Value>* out) {
+  return object
+      ->GetPrivate(context, v8::Private::ForApi(context->GetIsolate(), key))
+      .ToLocal(out);
+}
+
+inline bool GetPrivateProperty(v8::Local<v8::Context> context,
+                               v8::Local<v8::Object> object,
+                               const char* key,
+                               v8::Local<v8::Value>* out) {
+  v8::Local<v8::String> v8_key;
+  return ToV8String(context->GetIsolate(), key, &v8_key) &&
+         GetPrivateProperty(context, object, v8_key, out);
 }
 
 // GetPropertyUnsafe() family wraps v8::Object::Get(). They crash when an
