@@ -79,14 +79,14 @@ void runServeAsyncRequestsTask(TestWebFrameClient* client)
 {
     Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
     if (client->isLoading())
-        Platform::current()->currentThread()->taskRunner()->postTask(BLINK_FROM_HERE, bind(&runServeAsyncRequestsTask, client));
+        Platform::current()->currentThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, bind(&runServeAsyncRequestsTask, client));
     else
         testing::exitRunLoop();
 }
 
 void pumpPendingRequests(WebFrame* frame)
 {
-    Platform::current()->currentThread()->taskRunner()->postTask(BLINK_FROM_HERE, bind(&runServeAsyncRequestsTask, testClientForFrame(frame)));
+    Platform::current()->currentThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, bind(&runServeAsyncRequestsTask, testClientForFrame(frame)));
     testing::enterRunLoop();
 }
 

@@ -35,12 +35,12 @@ public:
 
     void postTask(const WebTraceLocation& location, PassOwnPtr<Closure> task)
     {
-        m_thread->taskRunner()->postTask(location, task);
+        m_thread->getWebTaskRunner()->postTask(location, task);
     }
 
     void postDelayedTask(const WebTraceLocation& location, PassOwnPtr<Closure> task, long long delayMs)
     {
-        m_thread->taskRunner()->postDelayedTask(location, task, delayMs);
+        m_thread->getWebTaskRunner()->postDelayedTask(location, task, delayMs);
     }
 
     bool isCurrentThread() const

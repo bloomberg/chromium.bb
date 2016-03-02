@@ -214,7 +214,7 @@ public:
         return 0;
     }
 
-    WebTaskRunner* taskRunner() override
+    WebTaskRunner* getWebTaskRunner() override
     {
         ASSERT_NOT_REACHED();
         return nullptr;

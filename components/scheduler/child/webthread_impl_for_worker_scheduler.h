@@ -39,11 +39,11 @@ class SCHEDULER_EXPORT WebThreadImplForWorkerScheduler
   // blink::WebThread implementation.
   blink::WebScheduler* scheduler() const override;
   blink::PlatformThreadId threadId() const override;
-  blink::WebTaskRunner* taskRunner() override;
+  blink::WebTaskRunner* getWebTaskRunner() override;
 
   // WebThreadBase implementation.
-  base::SingleThreadTaskRunner* TaskRunner() const override;
-  scheduler::SingleThreadIdleTaskRunner* IdleTaskRunner() const override;
+  base::SingleThreadTaskRunner* GetTaskRunner() const override;
+  scheduler::SingleThreadIdleTaskRunner* GetIdleTaskRunner() const override;
 
   // base::MessageLoop::DestructionObserver implementation.
   void WillDestroyCurrentMessageLoop() override;

@@ -83,7 +83,7 @@ void WebThreadBase::postIdleTask(const blink::WebTraceLocation& web_location,
                                  IdleTask* idle_task) {
   tracked_objects::Location location(web_location.functionName(),
                                      web_location.fileName(), -1, nullptr);
-  IdleTaskRunner()->PostIdleTask(
+  GetIdleTaskRunner()->PostIdleTask(
       location, base::Bind(&WebThreadBase::RunWebThreadIdleTask,
                            base::Passed(make_scoped_ptr(idle_task))));
 }
@@ -93,13 +93,13 @@ void WebThreadBase::postIdleTaskAfterWakeup(
     IdleTask* idle_task) {
   tracked_objects::Location location(web_location.functionName(),
                                      web_location.fileName(), -1, nullptr);
-  IdleTaskRunner()->PostIdleTaskAfterWakeup(
+  GetIdleTaskRunner()->PostIdleTaskAfterWakeup(
       location, base::Bind(&WebThreadBase::RunWebThreadIdleTask,
                            base::Passed(make_scoped_ptr(idle_task))));
 }
 
 bool WebThreadBase::isCurrentThread() const {
-  return TaskRunner()->BelongsToCurrentThread();
+  return GetTaskRunner()->BelongsToCurrentThread();
 }
 
 }  // namespace scheduler

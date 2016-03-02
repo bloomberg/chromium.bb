@@ -39,7 +39,7 @@ class RenderWidgetFullscreenPepper : public RenderWidgetFullscreen,
   void InvalidateRect(const blink::WebRect& rect) override;
   void ScrollRect(int dx, int dy, const blink::WebRect& rect) override;
   void Destroy() override;
-  void DidChangeCursor(const blink::WebCursorInfo& cursor) override;
+  void PepperDidChangeCursor(const blink::WebCursorInfo& cursor) override;
   void SetLayer(blink::WebLayer* layer) override;
 
   // IPC::Listener implementation. This overrides the implementation

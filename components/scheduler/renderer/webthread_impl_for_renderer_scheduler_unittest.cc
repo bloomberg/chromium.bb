@@ -80,7 +80,8 @@ TEST_F(WebThreadImplForRendererSchedulerTest, TestTaskObserver) {
     EXPECT_CALL(observer, didProcessTask());
   }
 
-  thread_->taskRunner()->postTask(blink::WebTraceLocation(), task.release());
+  thread_->getWebTaskRunner()->postTask(blink::WebTraceLocation(),
+                                        task.release());
   message_loop_.RunUntilIdle();
   thread_->removeTaskObserver(&observer);
 }
@@ -98,7 +99,8 @@ TEST_F(WebThreadImplForRendererSchedulerTest, TestWorkBatchWithOneTask) {
     EXPECT_CALL(observer, didProcessTask());
   }
 
-  thread_->taskRunner()->postTask(blink::WebTraceLocation(), task.release());
+  thread_->getWebTaskRunner()->postTask(blink::WebTraceLocation(),
+                                        task.release());
   message_loop_.RunUntilIdle();
   thread_->removeTaskObserver(&observer);
 }
@@ -121,8 +123,10 @@ TEST_F(WebThreadImplForRendererSchedulerTest, TestWorkBatchWithTwoTasks) {
     EXPECT_CALL(observer, didProcessTask());
   }
 
-  thread_->taskRunner()->postTask(blink::WebTraceLocation(), task1.release());
-  thread_->taskRunner()->postTask(blink::WebTraceLocation(), task2.release());
+  thread_->getWebTaskRunner()->postTask(blink::WebTraceLocation(),
+                                        task1.release());
+  thread_->getWebTaskRunner()->postTask(blink::WebTraceLocation(),
+                                        task2.release());
   message_loop_.RunUntilIdle();
   thread_->removeTaskObserver(&observer);
 }
@@ -150,9 +154,12 @@ TEST_F(WebThreadImplForRendererSchedulerTest, TestWorkBatchWithThreeTasks) {
     EXPECT_CALL(observer, didProcessTask());
   }
 
-  thread_->taskRunner()->postTask(blink::WebTraceLocation(), task1.release());
-  thread_->taskRunner()->postTask(blink::WebTraceLocation(), task2.release());
-  thread_->taskRunner()->postTask(blink::WebTraceLocation(), task3.release());
+  thread_->getWebTaskRunner()->postTask(blink::WebTraceLocation(),
+                                        task1.release());
+  thread_->getWebTaskRunner()->postTask(blink::WebTraceLocation(),
+                                        task2.release());
+  thread_->getWebTaskRunner()->postTask(blink::WebTraceLocation(),
+                                        task3.release());
   message_loop_.RunUntilIdle();
   thread_->removeTaskObserver(&observer);
 }
@@ -171,8 +178,8 @@ void EnterRunLoop(base::MessageLoop* message_loop, blink::WebThread* thread) {
   // Note: WebThreads do not support nested run loops, which is why we use a
   // run loop directly.
   base::RunLoop run_loop;
-  thread->taskRunner()->postTask(blink::WebTraceLocation(),
-                                 new ExitRunLoopTask(&run_loop));
+  thread->getWebTaskRunner()->postTask(blink::WebTraceLocation(),
+                                       new ExitRunLoopTask(&run_loop));
   message_loop->SetNestableTasksAllowed(true);
   run_loop.Run();
 }

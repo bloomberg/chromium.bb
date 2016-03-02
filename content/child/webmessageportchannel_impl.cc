@@ -189,14 +189,14 @@ void WebMessagePortChannelImpl::postMessage(
   }
   if (!main_thread_task_runner_->BelongsToCurrentThread()) {
     main_thread_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&WebMessagePortChannelImpl::PostMessage, this,
+        FROM_HERE, base::Bind(&WebMessagePortChannelImpl::SendPostMessage, this,
                               message, base::Passed(std::move(channels))));
   } else {
-    PostMessage(message, std::move(channels));
+    SendPostMessage(message, std::move(channels));
   }
 }
 
-void WebMessagePortChannelImpl::PostMessage(
+void WebMessagePortChannelImpl::SendPostMessage(
     const MessagePortMessage& message,
     scoped_ptr<WebMessagePortChannelArray> channels) {
   IPC::Message* msg = new MessagePortHostMsg_PostMessage(

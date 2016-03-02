@@ -239,8 +239,8 @@ static void TestLiveResourceEvictionAtEndOfTask(Resource* cachedDeadResource, Re
     MockImageResourceClient client(cachedLiveResource);
     cachedLiveResource->appendData(data, 4u);
 
-    Platform::current()->currentThread()->taskRunner()->postTask(BLINK_FROM_HERE, bind(&runTask1, PassRefPtrWillBeRawPtr<Resource>(cachedLiveResource), PassRefPtrWillBeRawPtr<Resource>(cachedDeadResource)));
-    Platform::current()->currentThread()->taskRunner()->postTask(BLINK_FROM_HERE, bind(&runTask2, cachedLiveResource->encodedSize() + cachedLiveResource->overheadSize()));
+    Platform::current()->currentThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, bind(&runTask1, PassRefPtrWillBeRawPtr<Resource>(cachedLiveResource), PassRefPtrWillBeRawPtr<Resource>(cachedDeadResource)));
+    Platform::current()->currentThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, bind(&runTask2, cachedLiveResource->encodedSize() + cachedLiveResource->overheadSize()));
     testing::runPendingTasks();
 }
 

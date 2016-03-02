@@ -407,7 +407,7 @@ class LayerTreeHostClientForTesting : public LayerTreeHostClient,
 
   void DidPostSwapBuffers() override {}
   void DidAbortSwapBuffers() override {}
-  void ScheduleComposite() override { test_hooks_->ScheduleComposite(); }
+  void RequestScheduleComposite() override { test_hooks_->ScheduleComposite(); }
   void DidCompletePageScaleAnimation() override {}
   void BeginMainFrameNotExpectedSoon() override {}
 

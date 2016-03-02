@@ -128,36 +128,10 @@ void printInternal(PrintStream& out, const T& value)
 void dumpCharacter(PrintStream&, char);
 MAKE_PRINT_ADAPTOR(CharacterDump, char, dumpCharacter);
 
-template <typename T>
-class PointerDump final {
-    STACK_ALLOCATED();
-public:
-    PointerDump(const T* ptr)
-        : m_ptr(ptr)
-    {
-    }
-
-    void dump(PrintStream& out) const
-    {
-        if (m_ptr)
-            printInternal(out, *m_ptr);
-        else
-            out.print("(null)");
-    }
-
-private:
-    const T* m_ptr;
-};
-
-template <typename T>
-PointerDump<T> pointerDump(const T* ptr) { return PointerDump<T>(ptr); }
-
 } // namespace WTF
 
 using WTF::CharacterDump;
-using WTF::PointerDump;
 using WTF::PrintStream;
-using WTF::pointerDump;
 
 #endif // PrintStream_h
 

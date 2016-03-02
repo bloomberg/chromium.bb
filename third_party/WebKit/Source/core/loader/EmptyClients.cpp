@@ -78,12 +78,12 @@ public:
 
 WebTaskRunner* EmptyFrameScheduler::loadingTaskRunner()
 {
-    return Platform::current()->currentThread()->taskRunner();
+    return Platform::current()->currentThread()->getWebTaskRunner();
 }
 
 WebTaskRunner* EmptyFrameScheduler::timerTaskRunner()
 {
-    return Platform::current()->currentThread()->taskRunner();
+    return Platform::current()->currentThread()->getWebTaskRunner();
 }
 
 PassRefPtrWillBeRawPtr<PopupMenu> EmptyChromeClient::openPopupMenu(LocalFrame&, HTMLSelectElement&)

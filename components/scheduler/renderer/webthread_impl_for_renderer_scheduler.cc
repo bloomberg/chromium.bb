@@ -32,17 +32,17 @@ blink::WebScheduler* WebThreadImplForRendererScheduler::scheduler() const {
   return web_scheduler_.get();
 }
 
-base::SingleThreadTaskRunner* WebThreadImplForRendererScheduler::TaskRunner()
+base::SingleThreadTaskRunner* WebThreadImplForRendererScheduler::GetTaskRunner()
     const {
   return task_runner_.get();
 }
 
-SingleThreadIdleTaskRunner* WebThreadImplForRendererScheduler::IdleTaskRunner()
-    const {
+SingleThreadIdleTaskRunner*
+WebThreadImplForRendererScheduler::GetIdleTaskRunner() const {
   return idle_task_runner_.get();
 }
 
-blink::WebTaskRunner* WebThreadImplForRendererScheduler::taskRunner() {
+blink::WebTaskRunner* WebThreadImplForRendererScheduler::getWebTaskRunner() {
   return web_task_runner_.get();
 }
 

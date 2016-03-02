@@ -102,7 +102,7 @@ bool HTMLParserThread::isRunning()
 
 void HTMLParserThread::postTask(PassOwnPtr<Closure> closure)
 {
-    platformThread().taskRunner()->postTask(BLINK_FROM_HERE, closure);
+    platformThread().getWebTaskRunner()->postTask(BLINK_FROM_HERE, closure);
 }
 
 } // namespace blink

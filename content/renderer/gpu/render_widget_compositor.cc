@@ -1007,8 +1007,8 @@ void RenderWidgetCompositor::DidCompletePageScaleAnimation() {
   delegate_->DidCompletePageScaleAnimation();
 }
 
-void RenderWidgetCompositor::ScheduleAnimation() {
-  delegate_->ScheduleAnimation();
+void RenderWidgetCompositor::RequestScheduleAnimation() {
+  delegate_->RequestScheduleAnimation();
 }
 
 void RenderWidgetCompositor::DidPostSwapBuffers() {

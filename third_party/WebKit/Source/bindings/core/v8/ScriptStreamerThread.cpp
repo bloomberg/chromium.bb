@@ -59,7 +59,7 @@ void ScriptStreamerThread::postTask(PassOwnPtr<Closure> task)
     MutexLocker locker(m_mutex);
     ASSERT(!m_runningTask);
     m_runningTask = true;
-    platformThread().taskRunner()->postTask(BLINK_FROM_HERE, task);
+    platformThread().getWebTaskRunner()->postTask(BLINK_FROM_HERE, task);
 }
 
 void ScriptStreamerThread::taskDone()

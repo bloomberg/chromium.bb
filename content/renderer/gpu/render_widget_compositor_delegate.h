@@ -83,7 +83,7 @@ class CONTENT_EXPORT RenderWidgetCompositorDelegate {
 
   // Requests that the client schedule a composite now, and calculate
   // appropriate delay for potential future frame.
-  virtual void ScheduleAnimation() = 0;
+  virtual void RequestScheduleAnimation() = 0;
 
   // Requests a visual frame-based update to the state of the delegate if there
   // an update available.

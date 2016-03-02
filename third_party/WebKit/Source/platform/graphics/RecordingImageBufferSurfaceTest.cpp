@@ -287,7 +287,7 @@ private:
             EXPECT_EQ((WebTaskRunner::Task*)0, m_taskRunner.m_task);
         }
 
-        WebTaskRunner* taskRunner() override
+        WebTaskRunner* getWebTaskRunner() override
         {
             return &m_taskRunner;
         }
@@ -344,7 +344,7 @@ private:
 #define CALL_TEST_TASK_WRAPPER(TEST_METHOD)                                                               \
     {                                                                                                     \
         CurrentThreadPlatformMock ctpm;                                                                   \
-        Platform::current()->currentThread()->taskRunner()->postTask(BLINK_FROM_HERE, bind(&RecordingImageBufferSurfaceTest::TEST_METHOD, this)); \
+        Platform::current()->currentThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, bind(&RecordingImageBufferSurfaceTest::TEST_METHOD, this)); \
         ctpm.enterRunLoop();                                      \
     }
 

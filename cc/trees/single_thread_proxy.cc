@@ -181,7 +181,7 @@ const RendererCapabilities& SingleThreadProxy::GetRendererCapabilities() const {
 void SingleThreadProxy::SetNeedsAnimate() {
   TRACE_EVENT0("cc", "SingleThreadProxy::SetNeedsAnimate");
   DCHECK(task_runner_provider_->IsMainThread());
-  client_->ScheduleAnimation();
+  client_->RequestScheduleAnimation();
   if (animate_requested_)
     return;
   animate_requested_ = true;
@@ -286,7 +286,7 @@ void SingleThreadProxy::CommitComplete() {
 
 void SingleThreadProxy::SetNeedsCommit() {
   DCHECK(task_runner_provider_->IsMainThread());
-  client_->ScheduleComposite();
+  client_->RequestScheduleComposite();
   if (commit_requested_)
     return;
   commit_requested_ = true;
@@ -299,7 +299,7 @@ void SingleThreadProxy::SetNeedsRedraw(const gfx::Rect& damage_rect) {
   TRACE_EVENT0("cc", "SingleThreadProxy::SetNeedsRedraw");
   DCHECK(task_runner_provider_->IsMainThread());
   DebugScopedSetImplThread impl(task_runner_provider_);
-  client_->ScheduleComposite();
+  client_->RequestScheduleComposite();
   SetNeedsRedrawRectOnImplThread(damage_rect);
 }
 
@@ -377,7 +377,7 @@ void SingleThreadProxy::NotifyReadyToDraw() {
 }
 
 void SingleThreadProxy::SetNeedsRedrawOnImplThread() {
-  client_->ScheduleComposite();
+  client_->RequestScheduleComposite();
   if (scheduler_on_impl_thread_)
     scheduler_on_impl_thread_->SetNeedsRedraw();
 }
@@ -385,7 +385,7 @@ void SingleThreadProxy::SetNeedsRedrawOnImplThread() {
 void SingleThreadProxy::SetNeedsOneBeginImplFrameOnImplThread() {
   TRACE_EVENT0("cc",
                "SingleThreadProxy::SetNeedsOneBeginImplFrameOnImplThread");
-  client_->ScheduleComposite();
+  client_->RequestScheduleComposite();
   if (scheduler_on_impl_thread_)
     scheduler_on_impl_thread_->SetNeedsOneBeginImplFrame();
 }
@@ -403,7 +403,7 @@ void SingleThreadProxy::SetNeedsRedrawRectOnImplThread(
 }
 
 void SingleThreadProxy::SetNeedsCommitOnImplThread() {
-  client_->ScheduleComposite();
+  client_->RequestScheduleComposite();
   if (scheduler_on_impl_thread_)
     scheduler_on_impl_thread_->SetNeedsBeginMainFrame();
 }

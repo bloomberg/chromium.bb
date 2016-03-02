@@ -37,11 +37,11 @@ class SCHEDULER_EXPORT WebThreadBase : public blink::WebThread {
 
   // Returns the base::Bind-compatible task runner for posting tasks to this
   // thread. Can be called from any thread.
-  virtual base::SingleThreadTaskRunner* TaskRunner() const = 0;
+  virtual base::SingleThreadTaskRunner* GetTaskRunner() const = 0;
 
   // Returns the base::Bind-compatible task runner for posting idle tasks to
   // this thread. Can be called from any thread.
-  virtual scheduler::SingleThreadIdleTaskRunner* IdleTaskRunner() const = 0;
+  virtual scheduler::SingleThreadIdleTaskRunner* GetIdleTaskRunner() const = 0;
 
  protected:
   class TaskObserverAdapter;

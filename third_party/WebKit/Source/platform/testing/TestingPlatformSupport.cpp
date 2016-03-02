@@ -201,7 +201,7 @@ public:
     TestingPlatformMockWebThread() : m_mockWebScheduler(adoptPtr(new TestingPlatformMockScheduler)) { }
     ~TestingPlatformMockWebThread() override { }
 
-    WebTaskRunner* taskRunner() override
+    WebTaskRunner* getWebTaskRunner() override
     {
         return m_mockWebScheduler->timerTaskRunner();
     }

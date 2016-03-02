@@ -198,7 +198,7 @@ TEST_F(ImageFrameGeneratorTest, incompleteDecodeBecomesCompleteMultiThreaded)
     data = m_generator->refEncodedData();
     EXPECT_EQ(nullptr, data);
     OwnPtr<WebThread> thread = adoptPtr(Platform::current()->createThread("DecodeThread"));
-    thread->taskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&decodeThreadMain, AllowCrossThreadAccess(m_generator.get())));
+    thread->getWebTaskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&decodeThreadMain, AllowCrossThreadAccess(m_generator.get())));
     thread.clear();
     EXPECT_EQ(2, m_decodeRequestCount);
     EXPECT_EQ(1, m_decodersDestroyed);
@@ -215,7 +215,7 @@ TEST_F(ImageFrameGeneratorTest, incompleteDecodeBecomesCompleteMultiThreaded)
 
     // Thread will also ref and unref the data.
     thread = adoptPtr(Platform::current()->createThread("RefEncodedDataThread"));
-    thread->taskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&decodeThreadWithRefEncodedMain, AllowCrossThreadAccess(m_generator.get())));
+    thread->getWebTaskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&decodeThreadWithRefEncodedMain, AllowCrossThreadAccess(m_generator.get())));
     thread.clear();
     EXPECT_EQ(4, m_decodeRequestCount);
 

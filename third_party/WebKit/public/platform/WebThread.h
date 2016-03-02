@@ -59,7 +59,7 @@ public:
 
 
     // Returns a WebTaskRunner bound to the underlying scheduler's default task queue.
-    virtual WebTaskRunner* taskRunner() { return nullptr; }
+    virtual WebTaskRunner* getWebTaskRunner() { return nullptr; }
 
     virtual bool isCurrentThread() const = 0;
     virtual PlatformThreadId threadId() const { return 0; }

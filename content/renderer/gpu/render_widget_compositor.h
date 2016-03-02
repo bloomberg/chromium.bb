@@ -178,7 +178,7 @@ class CONTENT_EXPORT RenderWidgetCompositor
       override;
 
   // cc::LayerTreeHostSingleThreadClient implementation.
-  void ScheduleAnimation() override;
+  void RequestScheduleAnimation() override;
   void DidPostSwapBuffers() override;
   void DidAbortSwapBuffers() override;
 

@@ -49,7 +49,9 @@ class CurrentThreadMock : public blink::WebThread {
     scheduler_->Shutdown();
   }
 
-  blink::WebTaskRunner* taskRunner() override { return web_task_runner_.get(); }
+  blink::WebTaskRunner* getWebTaskRunner() override {
+    return web_task_runner_.get();
+  }
 
   bool isCurrentThread() const override { return true; }
 

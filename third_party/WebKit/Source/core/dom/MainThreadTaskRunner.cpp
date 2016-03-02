@@ -56,7 +56,7 @@ DEFINE_TRACE(MainThreadTaskRunner)
 
 void MainThreadTaskRunner::postTaskInternal(const WebTraceLocation& location, PassOwnPtr<ExecutionContextTask> task, bool isInspectorTask)
 {
-    Platform::current()->mainThread()->taskRunner()->postTask(location, threadSafeBind(
+    Platform::current()->mainThread()->getWebTaskRunner()->postTask(location, threadSafeBind(
         &MainThreadTaskRunner::perform,
 #if ENABLE(OILPAN)
         CrossThreadWeakPersistentThisPointer<MainThreadTaskRunner>(this),

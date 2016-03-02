@@ -25,13 +25,13 @@ blink::PlatformThreadId WebThreadImplForUtilityThread::threadId() const {
   return thread_id_;
 }
 
-base::SingleThreadTaskRunner* WebThreadImplForUtilityThread::TaskRunner()
+base::SingleThreadTaskRunner* WebThreadImplForUtilityThread::GetTaskRunner()
     const {
   return task_runner_.get();
 }
 
 scheduler::SingleThreadIdleTaskRunner*
-WebThreadImplForUtilityThread::IdleTaskRunner() const {
+WebThreadImplForUtilityThread::GetIdleTaskRunner() const {
   NOTIMPLEMENTED();
   return nullptr;
 }

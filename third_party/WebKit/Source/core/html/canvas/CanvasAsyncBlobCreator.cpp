@@ -71,7 +71,7 @@ void CanvasAsyncBlobCreator::scheduleAsyncBlobCreation(bool canUseIdlePeriodSche
         ASSERT(m_mimeType == "image/png");
         Platform::current()->mainThread()->scheduler()->postIdleTask(BLINK_FROM_HERE, bind<double>(&CanvasAsyncBlobCreator::initiatePngEncoding, this));
     } else if (m_mimeType == "image/jpeg") {
-        Platform::current()->mainThread()->taskRunner()->postTask(BLINK_FROM_HERE, bind(&CanvasAsyncBlobCreator::initiateJpegEncoding, this, quality));
+        Platform::current()->mainThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, bind(&CanvasAsyncBlobCreator::initiateJpegEncoding, this, quality));
     } else {
         BackgroundTaskRunner::TaskSize taskSize = (m_size.height() * m_size.width() >= LongTaskImageSizeThreshold) ? BackgroundTaskRunner::TaskSizeLongRunningTask : BackgroundTaskRunner::TaskSizeShortRunningTask;
         BackgroundTaskRunner::postOnBackgroundThread(BLINK_FROM_HERE, threadSafeBind(&CanvasAsyncBlobCreator::encodeImageOnEncoderThread, AllowCrossThreadAccess(this), quality), taskSize);
@@ -82,7 +82,7 @@ void CanvasAsyncBlobCreator::initiateJpegEncoding(const double& quality)
 {
     m_jpegEncoderState = JPEGImageEncoderState::create(m_size, quality, m_encodedImage.get());
     if (!m_jpegEncoderState) {
-        Platform::current()->mainThread()->taskRunner()->postTask(BLINK_FROM_HERE, bind(&BlobCallback::handleEvent, m_callback, nullptr));
+        Platform::current()->mainThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, bind(&BlobCallback::handleEvent, m_callback, nullptr));
         m_selfRef.clear();
         return;
     }
@@ -95,7 +95,7 @@ void CanvasAsyncBlobCreator::initiatePngEncoding(double deadlineSeconds)
     ASSERT(isMainThread());
     m_pngEncoderState = PNGImageEncoderState::create(m_size, m_encodedImage.get());
     if (!m_pngEncoderState) {
-        Platform::current()->mainThread()->taskRunner()->postTask(BLINK_FROM_HERE, bind(&BlobCallback::handleEvent, m_callback, nullptr));
+        Platform::current()->mainThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, bind(&BlobCallback::handleEvent, m_callback, nullptr));
         m_selfRef.clear();
         return;
     }
@@ -126,7 +126,7 @@ void CanvasAsyncBlobCreator::idleEncodeRowsPng(double deadlineSeconds)
     PNGImageEncoder::finalizePng(m_pngEncoderState.get());
 
     if (isDeadlineNearOrPassed(deadlineSeconds)) {
-        Platform::current()->mainThread()->taskRunner()->postTask(BLINK_FROM_HERE, bind(&CanvasAsyncBlobCreator::createBlobAndCall, this));
+        Platform::current()->mainThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, bind(&CanvasAsyncBlobCreator::createBlobAndCall, this));
     } else {
         this->createBlobAndCall();
     }
@@ -136,7 +136,7 @@ void CanvasAsyncBlobCreator::createBlobAndCall()
 {
     ASSERT(isMainThread());
     Blob* resultBlob = Blob::create(m_encodedImage->data(), m_encodedImage->size(), m_mimeType);
-    Platform::current()->mainThread()->taskRunner()->postTask(BLINK_FROM_HERE, bind(&BlobCallback::handleEvent, m_callback, resultBlob));
+    Platform::current()->mainThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, bind(&BlobCallback::handleEvent, m_callback, resultBlob));
     clearSelfReference(); // self-destruct once job is done.
 }
 
@@ -165,14 +165,14 @@ void CanvasAsyncBlobCreator::clearSelfReference()
 void CanvasAsyncBlobCreator::scheduleCreateBlobAndCallOnMainThread()
 {
     ASSERT(!isMainThread());
-    Platform::current()->mainThread()->taskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&CanvasAsyncBlobCreator::createBlobAndCall, AllowCrossThreadAccess(this)));
+    Platform::current()->mainThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&CanvasAsyncBlobCreator::createBlobAndCall, AllowCrossThreadAccess(this)));
 }
 
 void CanvasAsyncBlobCreator::scheduleCreateNullptrAndCallOnMainThread()
 {
     ASSERT(!isMainThread());
-    Platform::current()->mainThread()->taskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&BlobCallback::handleEvent, m_callback.get(), nullptr));
-    Platform::current()->mainThread()->taskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&CanvasAsyncBlobCreator::clearSelfReference, AllowCrossThreadAccess(this)));
+    Platform::current()->mainThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&BlobCallback::handleEvent, m_callback.get(), nullptr));
+    Platform::current()->mainThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&CanvasAsyncBlobCreator::clearSelfReference, AllowCrossThreadAccess(this)));
 }
 
 } // namespace blink

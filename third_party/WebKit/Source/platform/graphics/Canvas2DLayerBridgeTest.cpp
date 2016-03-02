@@ -391,7 +391,7 @@ void runCreateBridgeTask(Canvas2DLayerBridgePtr* bridgePtr, MockCanvasContext* m
 void postAndWaitCreateBridgeTask(const WebTraceLocation& location, WebThread* testThread, Canvas2DLayerBridgePtr* bridgePtr, MockCanvasContext* mockCanvasContext, Canvas2DLayerBridgeTest* testHost)
 {
     OwnPtr<WaitableEvent> bridgeCreatedEvent = adoptPtr(new WaitableEvent());
-    testThread->taskRunner()->postTask(
+    testThread->getWebTaskRunner()->postTask(
         location,
         threadSafeBind(&runCreateBridgeTask,
             AllowCrossThreadAccess(bridgePtr),
@@ -410,7 +410,7 @@ void runDestroyBridgeTask(Canvas2DLayerBridgePtr* bridgePtr, WaitableEvent* done
 
 void postDestroyBridgeTask(const WebTraceLocation& location, WebThread* testThread, Canvas2DLayerBridgePtr* bridgePtr)
 {
-    testThread->taskRunner()->postTask(
+    testThread->getWebTaskRunner()->postTask(
         location,
         threadSafeBind(&runDestroyBridgeTask,
             AllowCrossThreadAccess(bridgePtr),
@@ -420,7 +420,7 @@ void postDestroyBridgeTask(const WebTraceLocation& location, WebThread* testThre
 void postAndWaitDestroyBridgeTask(const WebTraceLocation& location, WebThread* testThread, Canvas2DLayerBridgePtr* bridgePtr)
 {
     OwnPtr<WaitableEvent> bridgeDestroyedEvent = adoptPtr(new WaitableEvent());
-    testThread->taskRunner()->postTask(
+    testThread->getWebTaskRunner()->postTask(
         location,
         threadSafeBind(&runDestroyBridgeTask,
             AllowCrossThreadAccess(bridgePtr),
@@ -437,7 +437,7 @@ void runSetIsHiddenTask(Canvas2DLayerBridge* bridge, bool value, WaitableEvent* 
 
 void postSetIsHiddenTask(const WebTraceLocation& location, WebThread* testThread, Canvas2DLayerBridge* bridge, bool value, WaitableEvent* doneEvent = nullptr)
 {
-    testThread->taskRunner()->postTask(
+    testThread->getWebTaskRunner()->postTask(
         location,
         threadSafeBind(&runSetIsHiddenTask,
             AllowCrossThreadAccess(bridge),
@@ -612,7 +612,7 @@ void runRenderingTask(Canvas2DLayerBridge* bridge, WaitableEvent* doneEvent)
 void postAndWaitRenderingTask(const WebTraceLocation& location, WebThread* testThread, Canvas2DLayerBridge* bridge)
 {
     OwnPtr<WaitableEvent> doneEvent = adoptPtr(new WaitableEvent());
-    testThread->taskRunner()->postTask(
+    testThread->getWebTaskRunner()->postTask(
         location,
         threadSafeBind(&runRenderingTask,
             AllowCrossThreadAccess(bridge),
@@ -892,7 +892,7 @@ TEST_F(Canvas2DLayerBridgeTest, HibernationAbortedDueToPendingTeardown)
     EXPECT_CALL(*mockLoggerPtr, reportHibernationEvent(Canvas2DLayerBridge::HibernationAbortedDueToPendingDestruction))
         .WillOnce(testing::InvokeWithoutArgs(hibernationAbortedEvent.get(), &WaitableEvent::signal));
     postSetIsHiddenTask(BLINK_FROM_HERE, testThread.get(), bridge.get(), true);
-    testThread->taskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&Canvas2DLayerBridge::beginDestruction, AllowCrossThreadAccess(bridge.get())));
+    testThread->getWebTaskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&Canvas2DLayerBridge::beginDestruction, AllowCrossThreadAccess(bridge.get())));
     hibernationAbortedEvent->wait();
 
     ::testing::Mock::VerifyAndClearExpectations(mockLoggerPtr);

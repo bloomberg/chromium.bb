@@ -195,7 +195,7 @@ class CONTENT_EXPORT RenderWidget
       scoped_ptr<cc::FrameTimingTracker::CompositeTimingSet> composite_events,
       scoped_ptr<cc::FrameTimingTracker::MainFrameTimingSet> main_frame_events)
       override;
-  void ScheduleAnimation() override;
+  void RequestScheduleAnimation() override;
   void UpdateVisualState() override;
   void WillBeginCompositorFrame() override;
 

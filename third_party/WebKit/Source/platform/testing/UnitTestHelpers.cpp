@@ -44,7 +44,7 @@ namespace testing {
 
 void runPendingTasks()
 {
-    Platform::current()->currentThread()->taskRunner()->postTask(BLINK_FROM_HERE, bind(&exitRunLoop));
+    Platform::current()->currentThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, bind(&exitRunLoop));
     enterRunLoop();
 }
 

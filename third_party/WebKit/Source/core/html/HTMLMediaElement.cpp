@@ -3657,7 +3657,7 @@ void HTMLMediaElement::scheduleResolvePlayPromises()
     if (m_playPromiseResolveTask->isPending())
         return;
 
-    Platform::current()->currentThread()->taskRunner()->postTask(BLINK_FROM_HERE, m_playPromiseResolveTask->cancelAndCreate());
+    Platform::current()->currentThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, m_playPromiseResolveTask->cancelAndCreate());
 }
 
 void HTMLMediaElement::scheduleRejectPlayPromises(ExceptionCode code)
@@ -3672,7 +3672,7 @@ void HTMLMediaElement::scheduleRejectPlayPromises(ExceptionCode code)
     // TODO(mlamouri): because cancellable tasks can't take parameters, the
     // error code needs to be saved.
     m_playPromiseErrorCode = code;
-    Platform::current()->currentThread()->taskRunner()->postTask(BLINK_FROM_HERE, m_playPromiseRejectTask->cancelAndCreate());
+    Platform::current()->currentThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, m_playPromiseRejectTask->cancelAndCreate());
 }
 
 void HTMLMediaElement::scheduleNotifyPlaying()

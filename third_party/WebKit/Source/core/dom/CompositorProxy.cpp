@@ -134,7 +134,7 @@ CompositorProxy::CompositorProxy(uint64_t elementId, uint32_t compositorMutableP
 {
     ASSERT(isControlThread());
     ASSERT(sanityCheckMutableProperties(m_compositorMutableProperties));
-    Platform::current()->mainThread()->taskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&incrementCompositorProxiedPropertiesForElement, m_elementId, m_compositorMutableProperties));
+    Platform::current()->mainThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&incrementCompositorProxiedPropertiesForElement, m_elementId, m_compositorMutableProperties));
 }
 
 CompositorProxy::~CompositorProxy()
@@ -239,7 +239,7 @@ void CompositorProxy::disconnect()
     if (isMainThread())
         decrementCompositorProxiedPropertiesForElement(m_elementId, m_compositorMutableProperties);
     else
-        Platform::current()->mainThread()->taskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&decrementCompositorProxiedPropertiesForElement, m_elementId, m_compositorMutableProperties));
+        Platform::current()->mainThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&decrementCompositorProxiedPropertiesForElement, m_elementId, m_compositorMutableProperties));
 }
 
 } // namespace blink

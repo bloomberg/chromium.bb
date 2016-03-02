@@ -93,8 +93,8 @@ class WebMessagePortChannelImpl
   void Init();
   void Entangle(scoped_refptr<WebMessagePortChannelImpl> channel);
   void Send(IPC::Message* message);
-  void PostMessage(const MessagePortMessage& message,
-                   scoped_ptr<blink::WebMessagePortChannelArray> channels);
+  void SendPostMessage(const MessagePortMessage& message,
+                       scoped_ptr<blink::WebMessagePortChannelArray> channels);
 
   // IPC::Listener implementation.
   bool OnMessageReceived(const IPC::Message& message) override;

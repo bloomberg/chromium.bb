@@ -393,7 +393,7 @@ void BlinkPlatformImpl::InternalInit() {
 void BlinkPlatformImpl::WaitUntilWebThreadTLSUpdate(
     scheduler::WebThreadBase* thread) {
   base::WaitableEvent event(false, false);
-  thread->TaskRunner()->PostTask(
+  thread->GetTaskRunner()->PostTask(
       FROM_HERE,
       base::Bind(&BlinkPlatformImpl::UpdateWebThreadTLS, base::Unretained(this),
                  base::Unretained(thread), base::Unretained(&event)));
@@ -416,7 +416,7 @@ WebURLLoader* BlinkPlatformImpl::createURLLoader() {
   // data URLs to bypass the ResourceDispatcher.
   return new WebURLLoaderImpl(
       child_thread ? child_thread->resource_dispatcher() : NULL,
-      make_scoped_ptr(currentThread()->taskRunner()->clone()));
+      make_scoped_ptr(currentThread()->getWebTaskRunner()->clone()));
 }
 
 blink::WebSocketHandle* BlinkPlatformImpl::createWebSocketHandle() {

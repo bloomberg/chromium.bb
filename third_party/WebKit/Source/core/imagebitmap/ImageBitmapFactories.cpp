@@ -210,7 +210,7 @@ void ImageBitmapFactories::ImageBitmapLoader::scheduleAsyncImageBitmapDecoding()
     // current model of Linux desktop.
     const int longTaskByteLengthThreshold = 2000000;
     BackgroundTaskRunner::TaskSize taskSize = (m_loader.arrayBufferResult()->byteLength() >= longTaskByteLengthThreshold) ? BackgroundTaskRunner::TaskSizeLongRunningTask : BackgroundTaskRunner::TaskSizeShortRunningTask;
-    WebTaskRunner* taskRunner = Platform::current()->currentThread()->taskRunner();
+    WebTaskRunner* taskRunner = Platform::current()->currentThread()->getWebTaskRunner();
     BackgroundTaskRunner::postOnBackgroundThread(BLINK_FROM_HERE, threadSafeBind(&ImageBitmapFactories::ImageBitmapLoader::decodeImageOnDecoderThread, AllowCrossThreadAccess(this), AllowCrossThreadAccess(taskRunner)), taskSize);
 }
 

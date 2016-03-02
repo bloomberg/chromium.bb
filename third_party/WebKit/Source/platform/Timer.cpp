@@ -143,7 +143,7 @@ bool TimerBase::Comparator::operator()(const TimerBase* a, const TimerBase* b) c
 // static
 WebTaskRunner* TimerBase::UnthrottledWebTaskRunner()
 {
-    return Platform::current()->currentThread()->taskRunner();
+    return Platform::current()->currentThread()->getWebTaskRunner();
 }
 
 double TimerBase::timerMonotonicallyIncreasingTime() const

@@ -239,7 +239,7 @@ void TestPlugin::destroy() {
   container_ = 0;
   frame_ = 0;
 
-  blink::Platform::current()->mainThread()->taskRunner()->postTask(
+  blink::Platform::current()->mainThread()->getWebTaskRunner()->postTask(
       blink::WebTraceLocation(__FUNCTION__, __FILE__),
       new DeferredDeleteTask(make_scoped_ptr(this)));
 }

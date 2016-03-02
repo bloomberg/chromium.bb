@@ -313,14 +313,14 @@ void BlinkTestRunner::PrintMessage(const std::string& message) {
 }
 
 void BlinkTestRunner::PostTask(test_runner::WebTask* task) {
-  Platform::current()->currentThread()->taskRunner()->postTask(
+  Platform::current()->currentThread()->getWebTaskRunner()->postTask(
       WebTraceLocation(__FUNCTION__, __FILE__),
       new InvokeTaskHelper(make_scoped_ptr(task)));
 }
 
 void BlinkTestRunner::PostDelayedTask(test_runner::WebTask* task,
                                       long long ms) {
-  Platform::current()->currentThread()->taskRunner()->postDelayedTask(
+  Platform::current()->currentThread()->getWebTaskRunner()->postDelayedTask(
       WebTraceLocation(__FUNCTION__, __FILE__),
       new InvokeTaskHelper(make_scoped_ptr(task)), ms);
 }

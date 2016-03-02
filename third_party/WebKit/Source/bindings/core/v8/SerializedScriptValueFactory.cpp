@@ -127,7 +127,7 @@ v8::Local<v8::Value> SerializedScriptValueFactory::deserialize(SerializedScriptV
     // deserialize() can run arbitrary script (e.g., setters), which could result in |this| being destroyed.
     // Holding a RefPtr ensures we are alive (along with our internal data) throughout the operation.
     RefPtr<SerializedScriptValue> protect(value);
-    return deserialize(value->data(), value->blobDataHandles(), value->arrayBufferContentsArray(), value->imageBitmapContentsArray(), isolate, messagePorts, blobInfo);
+    return deserialize(value->data(), value->blobDataHandles(), value->getArrayBufferContentsArray(), value->getImageBitmapContentsArray(), isolate, messagePorts, blobInfo);
 }
 
 v8::Local<v8::Value> SerializedScriptValueFactory::deserialize(String& data, BlobDataHandleMap& blobDataHandles, ArrayBufferContentsArray* arrayBufferContentsArray, ImageBitmapContentsArray* imageBitmapContentsArray, v8::Isolate* isolate, MessagePortArray* messagePorts, const WebBlobInfoArray* blobInfo)

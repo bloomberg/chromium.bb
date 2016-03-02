@@ -225,7 +225,7 @@ TEST_F(DeferredImageDecoderTest, decodeOnOtherThread)
 
     // Create a thread to rasterize SkPicture.
     OwnPtr<WebThread> thread = adoptPtr(Platform::current()->createThread("RasterThread"));
-    thread->taskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&rasterizeMain, AllowCrossThreadAccess(m_surface->getCanvas()), AllowCrossThreadAccess(picture.get())));
+    thread->getWebTaskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&rasterizeMain, AllowCrossThreadAccess(m_surface->getCanvas()), AllowCrossThreadAccess(picture.get())));
     thread.clear();
     EXPECT_EQ(0, m_decodeRequestCount);
 

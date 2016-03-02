@@ -72,7 +72,7 @@ public:
         --m_workerCount;
         if (m_workerCount == 0) {
             m_thread->shutdown();
-            Platform::current()->mainThread()->taskRunner()->postTask(
+            Platform::current()->mainThread()->getWebTaskRunner()->postTask(
                 BLINK_FROM_HERE, threadSafeBind(destroyThread, AllowCrossThreadAccess(m_thread.leakPtr())));
         }
     }

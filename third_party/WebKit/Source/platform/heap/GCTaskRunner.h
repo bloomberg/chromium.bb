@@ -104,7 +104,7 @@ public:
         , m_thread(thread)
     {
         m_thread->addTaskObserver(m_gcTaskObserver.get());
-        ThreadState::current()->addInterruptor(adoptPtr(new MessageLoopInterruptor(thread->taskRunner())));
+        ThreadState::current()->addInterruptor(adoptPtr(new MessageLoopInterruptor(thread->getWebTaskRunner())));
     }
 
     ~GCTaskRunner()

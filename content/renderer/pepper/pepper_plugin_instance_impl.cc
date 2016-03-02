@@ -3040,7 +3040,7 @@ void PepperPluginInstanceImpl::SetAlwaysOnTop(bool on_top) {
 void PepperPluginInstanceImpl::DoSetCursor(WebCursorInfo* cursor) {
   cursor_.reset(cursor);
   if (fullscreen_container_) {
-    fullscreen_container_->DidChangeCursor(*cursor);
+    fullscreen_container_->PepperDidChangeCursor(*cursor);
   } else if (render_frame_) {
     render_frame_->PepperDidChangeCursor(this, *cursor);
   }

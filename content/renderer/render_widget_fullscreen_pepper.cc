@@ -315,7 +315,7 @@ void RenderWidgetFullscreenPepper::Destroy() {
   Release();
 }
 
-void RenderWidgetFullscreenPepper::DidChangeCursor(
+void RenderWidgetFullscreenPepper::PepperDidChangeCursor(
     const blink::WebCursorInfo& cursor) {
   didChangeCursor(cursor);
 }

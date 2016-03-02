@@ -31,7 +31,7 @@ class FullscreenContainer {
   virtual void Destroy() = 0;
 
   // Notifies the container that the mouse cursor has changed.
-  virtual void DidChangeCursor(const blink::WebCursorInfo& cursor) = 0;
+  virtual void PepperDidChangeCursor(const blink::WebCursorInfo& cursor) = 0;
 
   virtual void SetLayer(blink::WebLayer* layer) = 0;
 

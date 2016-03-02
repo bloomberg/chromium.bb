@@ -26,11 +26,11 @@ class SCHEDULER_EXPORT WebThreadImplForRendererScheduler
   // blink::WebThread implementation.
   blink::WebScheduler* scheduler() const override;
   blink::PlatformThreadId threadId() const override;
-  blink::WebTaskRunner* taskRunner() override;
+  blink::WebTaskRunner* getWebTaskRunner() override;
 
   // WebThreadBase implementation.
-  base::SingleThreadTaskRunner* TaskRunner() const override;
-  SingleThreadIdleTaskRunner* IdleTaskRunner() const override;
+  base::SingleThreadTaskRunner* GetTaskRunner() const override;
+  SingleThreadIdleTaskRunner* GetIdleTaskRunner() const override;
 
  private:
   void AddTaskObserverInternal(

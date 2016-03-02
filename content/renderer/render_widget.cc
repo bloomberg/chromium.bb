@@ -897,7 +897,7 @@ void RenderWidget::RecordFrameTimingEvents(
   }
 }
 
-void RenderWidget::ScheduleAnimation() {
+void RenderWidget::RequestScheduleAnimation() {
   scheduleAnimation();
 }
 

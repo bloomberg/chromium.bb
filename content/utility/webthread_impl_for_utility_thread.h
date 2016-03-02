@@ -21,8 +21,8 @@ class WebThreadImplForUtilityThread : public scheduler::WebThreadBase {
   blink::PlatformThreadId threadId() const override;
 
   // WebThreadBase implementation.
-  base::SingleThreadTaskRunner* TaskRunner() const override;
-  scheduler::SingleThreadIdleTaskRunner* IdleTaskRunner() const override;
+  base::SingleThreadTaskRunner* GetTaskRunner() const override;
+  scheduler::SingleThreadIdleTaskRunner* GetIdleTaskRunner() const override;
 
  private:
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
