@@ -356,3 +356,17 @@ fuzzer_test("v8_regexp_parser_fuzzer") {
   ]
   dict = "dicts/regexp.dict"
 }
+
+fuzzer_test("v8_wasm_fuzzer") {
+  sources = []
+  deps = [
+    "//v8:wasm_fuzzer",
+  ]
+}
+
+fuzzer_test("v8_wasm_asmjs_fuzzer") {
+  sources = []
+  deps = [
+    "//v8:wasm_asmjs_fuzzer",
+  ]
+}
