@@ -282,8 +282,8 @@ private:
 
 class CountingVisitor : public Visitor {
 public:
-    CountingVisitor()
-        : Visitor(Visitor::ThreadLocalMarking)
+    explicit CountingVisitor(ThreadState* state)
+        : Visitor(state, Visitor::ThreadLocalMarking)
         , m_count(0)
     {
     }
@@ -1033,8 +1033,9 @@ int RefCountedAndGarbageCollected2::s_destructorCalls = 0;
 
 class RefCountedGarbageCollectedVisitor : public CountingVisitor {
 public:
-    RefCountedGarbageCollectedVisitor(int expected, void** objects)
-        : m_count(0)
+    RefCountedGarbageCollectedVisitor(ThreadState* state, int expected, void** objects)
+        : CountingVisitor(state)
+        , m_count(0)
         , m_expectedCount(expected)
         , m_expectedObjects(objects)
     {
@@ -3596,37 +3597,38 @@ TEST(HeapTest, RefCountedGarbageCollectedWithStackPointers)
             pointer1 = object1.get();
             pointer2 = object2.get();
             void* objects[2] = { object1.get(), object2.get() };
-            RefCountedGarbageCollectedVisitor visitor(2, objects);
+            RefCountedGarbageCollectedVisitor visitor(ThreadState::current(), 2, objects);
             ThreadState::current()->visitPersistents(&visitor);
             EXPECT_TRUE(visitor.validate());
-
-            conservativelyCollectGarbage();
-            EXPECT_EQ(0, RefCountedAndGarbageCollected::s_destructorCalls);
-            EXPECT_EQ(0, RefCountedAndGarbageCollected2::s_destructorCalls);
         }
         conservativelyCollectGarbage();
         EXPECT_EQ(0, RefCountedAndGarbageCollected::s_destructorCalls);
         EXPECT_EQ(0, RefCountedAndGarbageCollected2::s_destructorCalls);
 
-        // At this point, the reference counts of object1 and object2 are 0.
-        // Only pointer1 and pointer2 keep references to object1 and object2.
-        void* objects[] = { 0 };
-        RefCountedGarbageCollectedVisitor visitor(0, objects);
-        ThreadState::current()->visitPersistents(&visitor);
-        EXPECT_TRUE(visitor.validate());
+        conservativelyCollectGarbage();
+        EXPECT_EQ(0, RefCountedAndGarbageCollected::s_destructorCalls);
+        EXPECT_EQ(0, RefCountedAndGarbageCollected2::s_destructorCalls);
+
+        {
+            // At this point, the reference counts of object1 and object2 are 0.
+            // Only pointer1 and pointer2 keep references to object1 and object2.
+            void* objects[] = { 0 };
+            RefCountedGarbageCollectedVisitor visitor(ThreadState::current(), 0, objects);
+            ThreadState::current()->visitPersistents(&visitor);
+            EXPECT_TRUE(visitor.validate());
+        }
 
         {
             Persistent<RefCountedAndGarbageCollected> object1(pointer1);
             Persistent<RefCountedAndGarbageCollected2> object2(pointer2);
             void* objects[2] = { object1.get(), object2.get() };
-            RefCountedGarbageCollectedVisitor visitor(2, objects);
+            RefCountedGarbageCollectedVisitor visitor(ThreadState::current(), 2, objects);
             ThreadState::current()->visitPersistents(&visitor);
             EXPECT_TRUE(visitor.validate());
-
-            conservativelyCollectGarbage();
-            EXPECT_EQ(0, RefCountedAndGarbageCollected::s_destructorCalls);
-            EXPECT_EQ(0, RefCountedAndGarbageCollected2::s_destructorCalls);
         }
+        conservativelyCollectGarbage();
+        EXPECT_EQ(0, RefCountedAndGarbageCollected::s_destructorCalls);
+        EXPECT_EQ(0, RefCountedAndGarbageCollected2::s_destructorCalls);
 
         conservativelyCollectGarbage();
         EXPECT_EQ(0, RefCountedAndGarbageCollected::s_destructorCalls);
@@ -3769,7 +3771,6 @@ TEST(HeapTest, CheckAndMarkPointer)
     Vector<Address> endAddresses;
     Address largeObjectAddress;
     Address largeObjectEndAddress;
-    CountingVisitor visitor;
     for (int i = 0; i < 10; i++) {
         SimpleObject* object = SimpleObject::create();
         Address objectAddress = reinterpret_cast<Address>(object);
@@ -3789,6 +3790,7 @@ TEST(HeapTest, CheckAndMarkPointer)
     // checkAndMarkPointer tests.
     {
         TestGCScope scope(BlinkGC::HeapPointersOnStack);
+        CountingVisitor visitor(ThreadState::current());
         EXPECT_TRUE(scope.allThreadsParked()); // Fail the test if we could not park all threads.
         Heap::flushHeapDoesNotContainCache();
         for (size_t i = 0; i < objectAddresses.size(); i++) {
@@ -3808,6 +3810,7 @@ TEST(HeapTest, CheckAndMarkPointer)
     clearOutOldGarbage();
     {
         TestGCScope scope(BlinkGC::HeapPointersOnStack);
+        CountingVisitor visitor(ThreadState::current());
         EXPECT_TRUE(scope.allThreadsParked());
         Heap::flushHeapDoesNotContainCache();
         for (size_t i = 0; i < objectAddresses.size(); i++) {
@@ -5820,7 +5823,7 @@ private:
 
 TEST(HeapTest, TraceIfNeeded)
 {
-    CountingVisitor visitor;
+    CountingVisitor visitor(ThreadState::current());
 
     {
         TraceIfNeededTester<RefPtr<OffHeapInt>>* m_offHeap = TraceIfNeededTester<RefPtr<OffHeapInt>>::create(OffHeapInt::create(42));

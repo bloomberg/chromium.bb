@@ -15,8 +15,8 @@ public:
     using Impl = MarkingVisitorImpl<MarkingVisitor<Mode>>;
     friend class MarkingVisitorImpl<MarkingVisitor<Mode>>;
 
-    MarkingVisitor()
-        : Visitor(Mode)
+    explicit MarkingVisitor(ThreadState* state)
+        : Visitor(state, Mode)
     {
     }
 

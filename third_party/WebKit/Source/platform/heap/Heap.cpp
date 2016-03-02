@@ -357,7 +357,7 @@ void Heap::collectGarbage(BlinkGC::StackState stackState, BlinkGC::GCType gcType
     RELEASE_ASSERT(!state->isGCForbidden());
     state->completeSweep();
 
-    VisitorScope visitorScope(state, gcType);
+    OwnPtr<Visitor> visitor = Visitor::create(state, gcType);
 
     SafePointScope safePointScope(stackState, state);
 
@@ -392,17 +392,17 @@ void Heap::collectGarbage(BlinkGC::StackState stackState, BlinkGC::GCType gcType
         Heap::resetHeapCounters();
 
     // 1. Trace persistent roots.
-    ThreadState::visitPersistentRoots(visitorScope.visitor());
+    ThreadState::visitPersistentRoots(visitor.get());
 
     // 2. Trace objects reachable from the stack.  We do this independent of the
     // given stackState since other threads might have a different stack state.
-    ThreadState::visitStackRoots(visitorScope.visitor());
+    ThreadState::visitStackRoots(visitor.get());
 
     // 3. Transitive closure to trace objects including ephemerons.
-    processMarkingStack(visitorScope.visitor());
+    processMarkingStack(visitor.get());
 
-    postMarkingProcessing(visitorScope.visitor());
-    globalWeakProcessing(visitorScope.visitor());
+    postMarkingProcessing(visitor.get());
+    globalWeakProcessing(visitor.get());
 
     // Now we can delete all orphaned pages because there are no dangling
     // pointers to the orphaned pages.  (If we have such dangling pointers,
@@ -446,7 +446,7 @@ void Heap::collectGarbageForTerminatingThread(ThreadState* state)
         // ahead while it is running, hence the termination GC does not enter a
         // safepoint. VisitorScope will not enter also a safepoint scope for
         // ThreadTerminationGC.
-        VisitorScope visitorScope(state, BlinkGC::ThreadTerminationGC);
+        OwnPtr<Visitor> visitor = Visitor::create(state, BlinkGC::ThreadTerminationGC);
 
         ThreadState::NoAllocationScope noAllocationScope(state);
 
@@ -462,14 +462,14 @@ void Heap::collectGarbageForTerminatingThread(ThreadState* state)
         // global GC finds a "pointer" on the stack or due to a programming
         // error where an object has a dangling cross-thread pointer to an
         // object on this heap.
-        state->visitPersistents(visitorScope.visitor());
+        state->visitPersistents(visitor.get());
 
         // 2. Trace objects reachable from the thread's persistent roots
         // including ephemerons.
-        processMarkingStack(visitorScope.visitor());
+        processMarkingStack(visitor.get());
 
-        postMarkingProcessing(visitorScope.visitor());
-        globalWeakProcessing(visitorScope.visitor());
+        postMarkingProcessing(visitor.get());
+        globalWeakProcessing(visitor.get());
 
         state->postGC(BlinkGC::GCWithSweep);
         Heap::decommitCallbackStacks();

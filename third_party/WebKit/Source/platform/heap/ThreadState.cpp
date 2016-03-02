@@ -489,10 +489,10 @@ void ThreadState::threadLocalWeakProcessing()
     // Due to the complexity, we just forbid allocations.
     NoAllocationScope noAllocationScope(this);
 
-    VisitorScope visitorScope(this, BlinkGC::ThreadLocalWeakProcessing);
+    OwnPtr<Visitor> visitor = Visitor::create(this, BlinkGC::ThreadLocalWeakProcessing);
 
     // Perform thread-specific weak processing.
-    while (popAndInvokeThreadLocalWeakCallback(visitorScope.visitor())) { }
+    while (popAndInvokeThreadLocalWeakCallback(visitor.get())) { }
 
     m_threadLocalWeakCallbackStack->decommit();
 
