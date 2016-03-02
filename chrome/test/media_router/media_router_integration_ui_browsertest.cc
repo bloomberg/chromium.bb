@@ -127,8 +127,9 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
   EXPECT_LE(elapsed - expected_timeout, base::TimeDelta::FromSeconds(5));
 
   std::string issue_title = GetIssueTitle();
-  ASSERT_EQ(l10n_util::GetStringUTF8(
-                IDS_MEDIA_ROUTER_ISSUE_CREATE_ROUTE_TIMEOUT_FOR_TAB),
+  // TODO(imcheng): Fix host name for file schemes (crbug.com/560576).
+  ASSERT_EQ(l10n_util::GetStringFUTF8(
+                IDS_MEDIA_ROUTER_ISSUE_CREATE_ROUTE_TIMEOUT, base::string16()),
             issue_title);
 
   // Route will still get created, it just takes longer than usual.
