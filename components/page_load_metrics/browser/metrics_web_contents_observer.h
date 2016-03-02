@@ -36,7 +36,7 @@ extern const char kErrorEvents[];
 extern const char kAbortChainSizeReload[];
 extern const char kAbortChainSizeForwardBack[];
 extern const char kAbortChainSizeNewNavigation[];
-
+extern const char kAbortChainSizeSameURL[];
 
 }  // namespace internal
 
@@ -109,7 +109,8 @@ class PageLoadTracker {
   PageLoadTracker(bool in_foreground,
                   PageLoadMetricsEmbedderInterface* embedder_interface,
                   content::NavigationHandle* navigation_handle,
-                  int abort_chain_size);
+                  int aborted_chain_size,
+                  int aborted_chain_size_same_url);
   ~PageLoadTracker();
   void Redirect(content::NavigationHandle* navigation_handle);
   void Commit(content::NavigationHandle* navigation_handle);
@@ -125,6 +126,9 @@ class PageLoadTracker {
   bool renderer_tracked() const { return renderer_tracked_; }
 
   int aborted_chain_size() const { return aborted_chain_size_; }
+  int aborted_chain_size_same_url() const {
+    return aborted_chain_size_same_url_;
+  }
 
   UserAbortType abort_type() const { return abort_type_; }
   base::TimeTicks abort_time() const { return abort_time_; }
@@ -144,6 +148,8 @@ class PageLoadTracker {
   // and is simpler than other feasible methods. See https://goo.gl/WKRG98.
   bool IsLikelyProvisionalAbort(base::TimeTicks abort_cause_time);
 
+  bool MatchesOriginalNavigation(content::NavigationHandle* navigation_handle);
+
  private:
   PageLoadExtraInfo GetPageLoadMetricsInfo();
   // Only valid to call post-commit.
@@ -159,10 +165,13 @@ class PageLoadTracker {
   // The navigation start in TimeTicks, not the wall time reported by Blink.
   const base::TimeTicks navigation_start_;
 
-  // URL and time this page load was committed. If this page load hasn't
-  // committed, |committed_url_| will be empty, and |commit_time_| will be zero.
-  GURL committed_url_;
+  // Time this page load was committed. If this page load hasn't committed,
+  // |commit_time_| will be zero.
   base::TimeTicks commit_time_;
+
+  // The URL of this page load. This is the provisional url before commit
+  // (before redirects), and the committed url after commit.
+  GURL url_;
 
   // Will be ABORT_NONE if we have not aborted this load yet. Otherwise will
   // be the first abort action the user performed.
@@ -185,6 +194,10 @@ class PageLoadTracker {
   // what the last load's transition type is. i.e. holding down F-5 to spam
   // reload will produce a long chain with the RELOAD transition.
   const int aborted_chain_size_;
+
+  // This member counts consecutive provisional aborts that share a url. It will
+  // always be less than or equal to |aborted_chain_size_|.
+  const int aborted_chain_size_same_url_;
 
   // Interface to chrome features. Must outlive the class.
   PageLoadMetricsEmbedderInterface* const embedder_interface_;
@@ -234,9 +247,9 @@ class MetricsWebContentsObserver
                                         base::TimeTicks timestamp);
   // Notify aborted provisional loads that a new navigation occurred. This is
   // used for more consistent attribution tracking for aborted provisional
-  // loads. This method returns the provisional load abort chain size, to
-  // instantiate the new PageLoadTracker.
-  int NotifyAbortedProvisionalLoadsNewNavigation(
+  // loads. This method returns the provisional load that was likely aborted by
+  // this navigation, to help instantiate the new PageLoadTracker.
+  scoped_ptr<PageLoadTracker> NotifyAbortedProvisionalLoadsNewNavigation(
       content::NavigationHandle* new_navigation);
 
   void OnTimingUpdated(content::RenderFrameHost*, const PageLoadTiming& timing);

@@ -33461,6 +33461,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PageLoad.Internal.ProvisionalAbortChainSize.SameURL"
+    units="length">
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    This histogram counts the number of consecutive provisional loads aborted by
+    other navigations with the same url (before redirects). It's logged when a
+    provisional abort does not share a URL, or when a load finally commits. Note
+    that we don't log chains of length 0.
+  </summary>
+</histogram>
+
 <histogram name="PageLoad.Timing.NavigationToDOMContentLoadedEventFired"
     units="ms">
   <owner>bmcquade@chromium.org</owner>
@@ -70795,6 +70806,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="3" label="IPC received from a bad URL scheme"/>
   <int value="4" label="No IPCs received for this navigation"/>
   <int value="5" label="Abort reported before navigation start"/>
+  <int value="6"
+      label="Multiple aborted provisional loads at navigation start"/>
 </enum>
 
 <enum name="InterruptReason" type="int">

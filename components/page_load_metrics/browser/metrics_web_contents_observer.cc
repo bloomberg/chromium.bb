@@ -31,6 +31,20 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(
 
 namespace page_load_metrics {
 
+namespace internal {
+
+const char kErrorEvents[] = "PageLoad.Events.InternalError";
+const char kAbortChainSizeReload[] =
+    "PageLoad.Internal.ProvisionalAbortChainSize.Reload";
+const char kAbortChainSizeForwardBack[] =
+    "PageLoad.Internal.ProvisionalAbortChainSize.ForwardBack";
+const char kAbortChainSizeNewNavigation[] =
+    "PageLoad.Internal.ProvisionalAbortChainSize.NewNavigation";
+const char kAbortChainSizeSameURL[] =
+    "PageLoad.Internal.ProvisionalAbortChainSize.SameURL";
+
+}  // namespace internal
+
 namespace {
 
 // The url we see from the renderer side is not always the same as what
@@ -147,31 +161,29 @@ UserAbortType AbortTypeForPageTransition(ui::PageTransition transition) {
   return ABORT_OTHER;
 }
 
+void LogAbortChainSameURLHistogram(int aborted_chain_size_same_url) {
+  DCHECK_GT(aborted_chain_size_same_url, 0);
+  UMA_HISTOGRAM_COUNTS(internal::kAbortChainSizeSameURL,
+                       aborted_chain_size_same_url);
+}
+
 }  // namespace
-
-namespace internal {
-
-const char kErrorEvents[] = "PageLoad.Events.InternalError";
-const char kAbortChainSizeReload[] =
-    "PageLoad.Internal.ProvisionalAbortChainSize.Reload";
-const char kAbortChainSizeForwardBack[] =
-    "PageLoad.Internal.ProvisionalAbortChainSize.ForwardBack";
-const char kAbortChainSizeNewNavigation[] =
-    "PageLoad.Internal.ProvisionalAbortChainSize.NewNavigation";
-
-}  // namespace internal
 
 PageLoadTracker::PageLoadTracker(
     bool in_foreground,
     PageLoadMetricsEmbedderInterface* embedder_interface,
     content::NavigationHandle* navigation_handle,
-    int abort_chain_size)
+    int aborted_chain_size,
+    int aborted_chain_size_same_url)
     : renderer_tracked_(false),
       navigation_start_(navigation_handle->NavigationStart()),
+      url_(navigation_handle->GetURL()),
       abort_type_(ABORT_NONE),
       started_in_foreground_(in_foreground),
-      aborted_chain_size_(abort_chain_size),
+      aborted_chain_size_(aborted_chain_size),
+      aborted_chain_size_same_url_(aborted_chain_size_same_url),
       embedder_interface_(embedder_interface) {
+  DCHECK(!navigation_handle->HasCommitted());
   embedder_interface_->RegisterObservers(this);
   for (const auto& observer : observers_) {
     observer->OnStart(navigation_handle);
@@ -240,11 +252,15 @@ void PageLoadTracker::Commit(content::NavigationHandle* navigation_handle) {
   // TODO(bmcquade): To improve accuracy, consider adding commit time to
   // NavigationHandle. Taking a timestamp here should be close enough for now.
   commit_time_ = base::TimeTicks::Now();
-  committed_url_ = navigation_handle->GetURL();
+  url_ = navigation_handle->GetURL();
   for (const auto& observer : observers_) {
     observer->OnCommit(navigation_handle);
   }
   LogAbortChainHistograms(navigation_handle->GetPageTransition());
+  // Note that histograms could be separated out by this commit's transition
+  // type, but for simplicity they will all be bucketed together.
+  if (aborted_chain_size_same_url_ > 0)
+    LogAbortChainSameURLHistogram(aborted_chain_size_same_url_);
 }
 
 void PageLoadTracker::FailedProvisionalLoad(
@@ -303,14 +319,16 @@ PageLoadExtraInfo PageLoadTracker::GetPageLoadMetricsInfo() {
   } else {
     DCHECK(abort_time_.is_null());
   }
-  if (!committed_url_.is_empty()) {
+
+  if (!commit_time_.is_null()) {
     DCHECK_GT(commit_time_, navigation_start_);
     time_to_commit = commit_time_ - navigation_start_;
   } else {
     DCHECK(commit_time_.is_null());
   }
   return PageLoadExtraInfo(first_background_time, first_foreground_time,
-                           started_in_foreground_, committed_url_,
+                           started_in_foreground_,
+                           commit_time_.is_null() ? GURL() : url_,
                            time_to_commit, abort_type_, time_to_abort);
 }
 
@@ -341,6 +359,14 @@ bool PageLoadTracker::IsLikelyProvisionalAbort(
   // Note that |abort_cause_time - abort_time| can be negative.
   return abort_type_ == ABORT_OTHER &&
          (abort_cause_time - abort_time_).InMilliseconds() < 100;
+}
+
+bool PageLoadTracker::MatchesOriginalNavigation(
+    content::NavigationHandle* navigation_handle) {
+  // Neither navigation should have committed.
+  DCHECK(!navigation_handle->HasCommitted());
+  DCHECK(commit_time_.is_null());
+  return navigation_handle->GetURL() == url_;
 }
 
 void PageLoadTracker::UpdateAbortInternal(UserAbortType abort_type,
@@ -410,8 +436,20 @@ void MetricsWebContentsObserver::DidStartNavigation(
   if (embedder_interface_->IsPrerendering(web_contents()))
     return;
 
-  int abort_chain_size =
+  scoped_ptr<PageLoadTracker> last_aborted =
       NotifyAbortedProvisionalLoadsNewNavigation(navigation_handle);
+
+  int chain_size_same_url = 0;
+  int chain_size = 0;
+  if (last_aborted) {
+    if (last_aborted->MatchesOriginalNavigation(navigation_handle)) {
+      chain_size_same_url = last_aborted->aborted_chain_size_same_url() + 1;
+    } else if (last_aborted->aborted_chain_size_same_url() > 0) {
+      LogAbortChainSameURLHistogram(
+          last_aborted->aborted_chain_size_same_url());
+    }
+    chain_size = last_aborted->aborted_chain_size() + 1;
+  }
 
   // We can have two provisional loads in some cases. E.g. a same-site
   // navigation can have a concurrent cross-process navigation started
@@ -420,10 +458,11 @@ void MetricsWebContentsObserver::DidStartNavigation(
   // Passing raw pointers to observers_ and embedder_interface_ is safe because
   // the MetricsWebContentsObserver owns them both list and they are torn down
   // after the PageLoadTracker.
-  provisional_loads_.insert(std::make_pair(
-      navigation_handle, make_scoped_ptr(new PageLoadTracker(
-                             in_foreground_, embedder_interface_.get(),
-                             navigation_handle, abort_chain_size))));
+  provisional_loads_.insert(
+      std::make_pair(navigation_handle,
+                     make_scoped_ptr(new PageLoadTracker(
+                         in_foreground_, embedder_interface_.get(),
+                         navigation_handle, chain_size, chain_size_same_url))));
 }
 
 void MetricsWebContentsObserver::DidFinishNavigation(
@@ -567,13 +606,14 @@ void MetricsWebContentsObserver::NotifyAbortAllLoadsWithTimestamp(
   aborted_provisional_loads_.clear();
 }
 
-int MetricsWebContentsObserver::NotifyAbortedProvisionalLoadsNewNavigation(
+scoped_ptr<PageLoadTracker>
+MetricsWebContentsObserver::NotifyAbortedProvisionalLoadsNewNavigation(
     content::NavigationHandle* new_navigation) {
   // If there are multiple aborted loads that can be attributed to this one,
   // just count the latest one for simplicity. Other loads will fall into the
   // OTHER bucket, though there shouldn't be very many.
   if (aborted_provisional_loads_.size() == 0)
-    return 0;
+    return nullptr;
   if (aborted_provisional_loads_.size() > 1)
     RecordInternalError(ERR_NAVIGATION_SIGNALS_MULIPLE_ABORTED_LOADS);
 
@@ -582,14 +622,11 @@ int MetricsWebContentsObserver::NotifyAbortedProvisionalLoadsNewNavigation(
   aborted_provisional_loads_.pop_back();
 
   base::TimeTicks timestamp = new_navigation->NavigationStart();
-  int chain_size = 0;
-  if (last_aborted_load->IsLikelyProvisionalAbort(timestamp)) {
+  if (last_aborted_load->IsLikelyProvisionalAbort(timestamp))
     last_aborted_load->UpdateAbort(ABORT_UNKNOWN_NAVIGATION, timestamp);
-    chain_size = last_aborted_load->aborted_chain_size() + 1;
-  }
 
   aborted_provisional_loads_.clear();
-  return chain_size;
+  return last_aborted_load;
 }
 
 void MetricsWebContentsObserver::OnTimingUpdated(
