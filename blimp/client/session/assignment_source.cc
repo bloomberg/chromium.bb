@@ -7,19 +7,22 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/files/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/location.h"
+#include "base/memory/ref_counted.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/task_runner_util.h"
 #include "base/values.h"
 #include "blimp/client/app/blimp_client_switches.h"
 #include "blimp/common/protocol_version.h"
+#include "components/safe_json/safe_json_parser.h"
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
-#include "net/base/url_util.h"
 #include "net/http/http_status_code.h"
 #include "net/proxy/proxy_config_service.h"
 #include "net/proxy/proxy_service.h"
@@ -40,55 +43,11 @@ const char kProtocolVersionKey[] = "protocol_version";
 const char kClientTokenKey[] = "clientToken";
 const char kHostKey[] = "host";
 const char kPortKey[] = "port";
-const char kCertificateFingerprintKey[] = "certificateFingerprint";
 const char kCertificateKey[] = "certificate";
 
-// URL scheme constants for custom assignments.  See the '--blimplet-endpoint'
-// documentation in blimp_client_switches.cc for details.
-const char kCustomSSLScheme[] = "ssl";
-const char kCustomTCPScheme[] = "tcp";
-const char kCustomQUICScheme[] = "quic";
-
-Assignment GetCustomBlimpletAssignment() {
-  GURL url(base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-      switches::kBlimpletEndpoint));
-
-  std::string host;
-  int port;
-  if (url.is_empty() || !url.is_valid() || !url.has_scheme() ||
-      !net::ParseHostAndPort(url.path(), &host, &port)) {
-    return Assignment();
-  }
-
-  net::IPAddress ip_address;
-  if (!ip_address.AssignFromIPLiteral(host)) {
-    CHECK(false) << "Invalid BlimpletAssignment host " << host;
-  }
-
-  if (!base::IsValueInRangeForNumericType<uint16_t>(port)) {
-    CHECK(false) << "Invalid BlimpletAssignment port " << port;
-  }
-
-  Assignment::TransportProtocol protocol =
-      Assignment::TransportProtocol::UNKNOWN;
-  if (url.has_scheme()) {
-    if (url.SchemeIs(kCustomSSLScheme)) {
-      protocol = Assignment::TransportProtocol::SSL;
-    } else if (url.SchemeIs(kCustomTCPScheme)) {
-      protocol = Assignment::TransportProtocol::TCP;
-    } else if (url.SchemeIs(kCustomQUICScheme)) {
-      protocol = Assignment::TransportProtocol::QUIC;
-    } else {
-      CHECK(false) << "Invalid BlimpletAssignment scheme " << url.scheme();
-    }
-  }
-
-  Assignment assignment;
-  assignment.transport_protocol = protocol;
-  assignment.ip_endpoint = net::IPEndPoint(ip_address, port);
-  assignment.client_token = kDummyClientToken;
-  return assignment;
-}
+// Possible arguments for the "--engine-transport" command line parameter.
+const char kSSLTransportValue[] = "ssl";
+const char kTCPTransportValue[] = "tcp";
 
 GURL GetBlimpAssignerURL() {
   // TODO(dtrainor): Add a way to specify another assigner.
@@ -98,8 +57,8 @@ GURL GetBlimpAssignerURL() {
 class SimpleURLRequestContextGetter : public net::URLRequestContextGetter {
  public:
   SimpleURLRequestContextGetter(
-      const scoped_refptr<base::SingleThreadTaskRunner>& io_loop_task_runner)
-      : io_loop_task_runner_(io_loop_task_runner),
+      scoped_refptr<base::SingleThreadTaskRunner> io_loop_task_runner)
+      : io_loop_task_runner_(std::move(io_loop_task_runner)),
         proxy_config_service_(net::ProxyService::CreateSystemProxyConfigService(
             io_loop_task_runner_,
             io_loop_task_runner_)) {}
@@ -136,45 +95,142 @@ class SimpleURLRequestContextGetter : public net::URLRequestContextGetter {
   DISALLOW_COPY_AND_ASSIGN(SimpleURLRequestContextGetter);
 };
 
+bool IsValidIpPortNumber(unsigned port) {
+  return port > 0 && port <= 65535;
+}
+
+// Populates an Assignment using command-line parameters, if provided.
+// Returns a null Assignment if no parameters were set.
+// Must be called on a thread suitable for file IO.
+Assignment GetAssignmentFromCommandLine() {
+  Assignment assignment;
+  assignment.client_token = kDummyClientToken;
+
+  unsigned port_parsed = 0;
+  if (!base::StringToUint(
+          base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+              switches::kEnginePort),
+          &port_parsed) ||
+      !IsValidIpPortNumber(port_parsed)) {
+    DLOG(FATAL) << "--engine-port must be a value between 1 and 65535.";
+    return Assignment();
+  }
+
+  net::IPAddress ip_address;
+  std::string ip_str =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kEngineIP);
+  if (!ip_address.AssignFromIPLiteral(ip_str)) {
+    DLOG(FATAL) << "Invalid engine IP " << ip_str;
+    return Assignment();
+  }
+  assignment.engine_endpoint =
+      net::IPEndPoint(ip_address, base::checked_cast<uint16_t>(port_parsed));
+
+  std::string transport_str =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kEngineTransport);
+  if (transport_str == kSSLTransportValue) {
+    assignment.transport_protocol = Assignment::TransportProtocol::SSL;
+  } else if (transport_str == kTCPTransportValue) {
+    assignment.transport_protocol = Assignment::TransportProtocol::TCP;
+  } else {
+    DLOG(FATAL) << "Invalid engine transport " << transport_str;
+    return Assignment();
+  }
+
+  scoped_refptr<net::X509Certificate> cert;
+  if (assignment.transport_protocol == Assignment::TransportProtocol::SSL) {
+    base::FilePath cert_path =
+        base::CommandLine::ForCurrentProcess()->GetSwitchValuePath(
+            switches::kEngineCertPath);
+    if (cert_path.empty()) {
+      DLOG(FATAL) << "Missing required parameter --"
+                  << switches::kEngineCertPath << ".";
+      return Assignment();
+    }
+    std::string cert_str;
+    if (!base::ReadFileToString(cert_path, &cert_str)) {
+      DLOG(FATAL) << "Couldn't read from file: "
+                  << cert_path.LossyDisplayName();
+      return Assignment();
+    }
+    net::CertificateList cert_list =
+        net::X509Certificate::CreateCertificateListFromBytes(
+            cert_str.data(), cert_str.size(),
+            net::X509Certificate::FORMAT_PEM_CERT_SEQUENCE);
+    DLOG_IF(FATAL, (cert_list.size() != 1u))
+        << "Only one cert is allowed in PEM cert list.";
+    assignment.cert = std::move(cert_list[0]);
+  }
+
+  if (!assignment.IsValid()) {
+    DLOG(FATAL) << "Invalid command-line assignment.";
+    return Assignment();
+  }
+
+  return assignment;
+}
+
 }  // namespace
 
 Assignment::Assignment() : transport_protocol(TransportProtocol::UNKNOWN) {}
 
 Assignment::~Assignment() {}
 
-bool Assignment::is_null() const {
-  return ip_endpoint.address().empty() || ip_endpoint.port() == 0 ||
-         transport_protocol == TransportProtocol::UNKNOWN;
+bool Assignment::IsValid() const {
+  if (engine_endpoint.address().empty() || engine_endpoint.port() == 0 ||
+      transport_protocol == TransportProtocol::UNKNOWN) {
+    return false;
+  }
+  if (transport_protocol == TransportProtocol::SSL && !cert) {
+    return false;
+  }
+  return true;
 }
 
 AssignmentSource::AssignmentSource(
-    const scoped_refptr<base::SingleThreadTaskRunner>& main_task_runner,
-    const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner)
-    : main_task_runner_(main_task_runner),
-      url_request_context_(new SimpleURLRequestContextGetter(io_task_runner)) {}
+    const scoped_refptr<base::SingleThreadTaskRunner>& network_task_runner,
+    const scoped_refptr<base::SingleThreadTaskRunner>& file_task_runner)
+    : file_task_runner_(std::move(file_task_runner)),
+      url_request_context_(
+          new SimpleURLRequestContextGetter(network_task_runner)),
+      weak_factory_(this) {}
 
 AssignmentSource::~AssignmentSource() {}
 
 void AssignmentSource::GetAssignment(const std::string& client_auth_token,
                                      const AssignmentCallback& callback) {
-  DCHECK(main_task_runner_->BelongsToCurrentThread());
-
-  // Cancel any outstanding callback.
-  if (!callback_.is_null()) {
-    base::ResetAndReturn(&callback_)
-        .Run(AssignmentSource::Result::RESULT_SERVER_INTERRUPTED, Assignment());
-  }
+  DCHECK(callback_.is_null());
   callback_ = AssignmentCallback(callback);
 
-  Assignment assignment = GetCustomBlimpletAssignment();
-  if (!assignment.is_null()) {
-    // Post the result so that the behavior of this function is consistent.
-    main_task_runner_->PostTask(
-        FROM_HERE, base::Bind(base::ResetAndReturn(&callback_),
-                              AssignmentSource::Result::RESULT_OK, assignment));
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kEngineIP)) {
+    base::PostTaskAndReplyWithResult(
+        file_task_runner_.get(), FROM_HERE,
+        base::Bind(&GetAssignmentFromCommandLine),
+        base::Bind(&AssignmentSource::OnGetAssignmentFromCommandLineDone,
+                   weak_factory_.GetWeakPtr(), client_auth_token));
+  } else {
+    QueryAssigner(client_auth_token);
+  }
+}
+
+void AssignmentSource::OnGetAssignmentFromCommandLineDone(
+    const std::string& client_auth_token,
+    Assignment parsed_assignment) {
+  // If GetAssignmentFromCommandLine succeeded, then return its output.
+  if (parsed_assignment.IsValid()) {
+    base::ResetAndReturn(&callback_)
+        .Run(AssignmentSource::RESULT_OK, parsed_assignment);
     return;
   }
 
+  // If no assignment was passed via the command line, then fall back on
+  // querying the Assigner service.
+  QueryAssigner(client_auth_token);
+}
+
+void AssignmentSource::QueryAssigner(const std::string& client_auth_token) {
   // Call out to the network for a real assignment.  Build the network request
   // to hit the assigner.
   url_fetcher_ = net::URLFetcher::Create(GetBlimpAssignerURL(),
@@ -191,12 +247,10 @@ void AssignmentSource::GetAssignment(const std::string& client_auth_token,
   std::string json;
   base::JSONWriter::Write(dictionary, &json);
   url_fetcher_->SetUploadData("application/json", json);
-
   url_fetcher_->Start();
 }
 
 void AssignmentSource::OnURLFetchComplete(const net::URLFetcher* source) {
-  DCHECK(main_task_runner_->BelongsToCurrentThread());
   DCHECK(!callback_.is_null());
   DCHECK_EQ(url_fetcher_.get(), source);
 
@@ -253,14 +307,14 @@ void AssignmentSource::ParseAssignerResponse() {
     return;
   }
 
-  // Attempt to interpret the response as JSON and treat it as a dictionary.
-  scoped_ptr<base::Value> json = base::JSONReader::Read(response);
-  if (!json) {
-    base::ResetAndReturn(&callback_)
-        .Run(AssignmentSource::Result::RESULT_BAD_RESPONSE, Assignment());
-    return;
-  }
+  safe_json::SafeJsonParser::Parse(
+      response,
+      base::Bind(&AssignmentSource::OnJsonParsed, weak_factory_.GetWeakPtr()),
+      base::Bind(&AssignmentSource::OnJsonParseError,
+                 weak_factory_.GetWeakPtr()));
+}
 
+void AssignmentSource::OnJsonParsed(scoped_ptr<base::Value> json) {
   const base::DictionaryValue* dict;
   if (!json->GetAsDictionary(&dict)) {
     base::ResetAndReturn(&callback_)
@@ -272,12 +326,10 @@ void AssignmentSource::ParseAssignerResponse() {
   std::string client_token;
   std::string host;
   int port;
-  std::string cert_fingerprint;
-  std::string cert;
+  std::string cert_str;
   if (!(dict->GetString(kClientTokenKey, &client_token) &&
         dict->GetString(kHostKey, &host) && dict->GetInteger(kPortKey, &port) &&
-        dict->GetString(kCertificateFingerprintKey, &cert_fingerprint) &&
-        dict->GetString(kCertificateKey, &cert))) {
+        dict->GetString(kCertificateKey, &cert_str))) {
     base::ResetAndReturn(&callback_)
         .Run(AssignmentSource::Result::RESULT_BAD_RESPONSE, Assignment());
     return;
@@ -296,17 +348,32 @@ void AssignmentSource::ParseAssignerResponse() {
     return;
   }
 
-  Assignment assignment;
+  net::CertificateList cert_list =
+      net::X509Certificate::CreateCertificateListFromBytes(
+          cert_str.data(), cert_str.size(),
+          net::X509Certificate::FORMAT_PEM_CERT_SEQUENCE);
+  if (cert_list.size() != 1) {
+    base::ResetAndReturn(&callback_)
+        .Run(AssignmentSource::Result::RESULT_INVALID_CERT, Assignment());
+    return;
+  }
+
   // The assigner assumes SSL-only and all engines it assigns only communicate
   // over SSL.
+  Assignment assignment;
   assignment.transport_protocol = Assignment::TransportProtocol::SSL;
-  assignment.ip_endpoint = net::IPEndPoint(ip_address, port);
+  assignment.engine_endpoint = net::IPEndPoint(ip_address, port);
   assignment.client_token = client_token;
-  assignment.certificate = cert;
-  assignment.certificate_fingerprint = cert_fingerprint;
+  assignment.cert = std::move(cert_list[0]);
 
   base::ResetAndReturn(&callback_)
       .Run(AssignmentSource::Result::RESULT_OK, assignment);
+}
+
+void AssignmentSource::OnJsonParseError(const std::string& error) {
+  DLOG(ERROR) << "Error while parsing assigner JSON: " << error;
+  base::ResetAndReturn(&callback_)
+      .Run(AssignmentSource::Result::RESULT_BAD_RESPONSE, Assignment());
 }
 
 }  // namespace client

@@ -10,7 +10,25 @@
 namespace blimp {
 namespace switches {
 
-extern const char kBlimpletEndpoint[];
+// The path to the engine's PEM-encoded X509 certificate.
+// If specified, SSL connected Engines must supply this certificate
+// for the connection to be valid.
+// e.g.:
+// --engine-cert-path=/home/blimp/certs/cert.pem
+extern const char kEngineCertPath[];
+
+// Specifies the engine's IP address. Must be used in conjunction with
+// --engine-port and --engine-transport.
+extern const char kEngineIP[];
+
+// Specifies the engine's listening port (1-65535).
+// Must be used in conjunction with --engine-ip and --engine-transport.
+extern const char kEnginePort[];
+
+// Specifies the transport used to communicate with the engine.
+// Can be "tcp" or "ssl".
+// Must be used in conjunction with --engine-ip and --engine-port.
+extern const char kEngineTransport[];
 
 }  // namespace switches
 }  // namespace blimp

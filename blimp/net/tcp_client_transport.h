@@ -5,6 +5,8 @@
 #ifndef BLIMP_NET_TCP_CLIENT_TRANSPORT_H_
 #define BLIMP_NET_TCP_CLIENT_TRANSPORT_H_
 
+#include <string>
+
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -14,6 +16,7 @@
 #include "net/base/net_errors.h"
 
 namespace net {
+class ClientSocketFactory;
 class NetLog;
 class StreamSocket;
 }  // namespace net
@@ -26,21 +29,38 @@ class BlimpConnection;
 // |addresses| on each call to Connect().
 class BLIMP_NET_EXPORT TCPClientTransport : public BlimpTransport {
  public:
-  TCPClientTransport(const net::AddressList& addresses, net::NetLog* net_log);
+  TCPClientTransport(const net::IPEndPoint& ip_endpoint, net::NetLog* net_log);
   ~TCPClientTransport() override;
+
+  void SetClientSocketFactoryForTest(net::ClientSocketFactory* factory);
 
   // BlimpTransport implementation.
   void Connect(const net::CompletionCallback& callback) override;
   scoped_ptr<BlimpConnection> TakeConnection() override;
-  const std::string GetName() const override;
+  const char* GetName() const override;
+
+ protected:
+  // Called when the TCP connection completed.
+  virtual void OnTCPConnectComplete(int result);
+
+  // Called when the connection attempt completed or failed.
+  // Resets |socket_| if |result| indicates a failure (!= net::OK).
+  void OnConnectComplete(int result);
+
+  // Methods for taking and setting |socket_|. Can be used by subclasses to
+  // swap out a socket for an upgraded one, e.g. adding SSL encryption.
+  scoped_ptr<net::StreamSocket> TakeSocket();
+  void SetSocket(scoped_ptr<net::StreamSocket> socket);
+
+  // Gets the socket factory instance.
+  net::ClientSocketFactory* socket_factory() const;
 
  private:
-  void OnTCPConnectComplete(int result);
-
-  net::AddressList addresses_;
+  net::IPEndPoint ip_endpoint_;
   net::NetLog* net_log_;
-  scoped_ptr<net::StreamSocket> socket_;
   net::CompletionCallback connect_callback_;
+  net::ClientSocketFactory* socket_factory_ = nullptr;
+  scoped_ptr<net::StreamSocket> socket_;
 
   DISALLOW_COPY_AND_ASSIGN(TCPClientTransport);
 };

@@ -137,7 +137,7 @@ class MockTransport : public BlimpTransport {
   MOCK_METHOD0(TakeConnectionPtr, BlimpConnection*());
 
   scoped_ptr<BlimpConnection> TakeConnection() override;
-  const std::string GetName() const override;
+  const char* GetName() const override;
 };
 
 class MockConnectionHandler : public ConnectionHandler {

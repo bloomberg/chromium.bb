@@ -1,6 +1,5 @@
 include_rules = [
-  "+net/base",
-  "+net/socket",
+  "+net",
   "+third_party/WebKit/public/platform/WebGestureDevice.h",
   "+third_party/WebKit/public/web/WebInputEvent.h",
 ]
