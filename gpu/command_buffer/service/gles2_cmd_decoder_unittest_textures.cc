@@ -749,6 +749,66 @@ TEST_P(GLES3DecoderTest, CompressedTexImage3DBucket) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
+TEST_P(GLES3DecoderTest, CompressedTexImage3DBucketBucketSizeIsZero) {
+  const uint32_t kBucketId = 123;
+  const uint32_t kBadBucketId = 99;
+  const GLenum kTarget = GL_TEXTURE_2D_ARRAY;
+  const GLint kLevel = 0;
+  const GLenum kInternalFormat = GL_COMPRESSED_R11_EAC;
+  const GLsizei kWidth = 4;
+  const GLsizei kHeight = 4;
+  const GLsizei kDepth = 4;
+  const GLint kBorder = 0;
+  CommonDecoder::Bucket* bucket = decoder_->CreateBucket(kBucketId);
+  ASSERT_TRUE(bucket != NULL);
+  const GLsizei kImageSize = 0;
+  bucket->SetSize(kImageSize);
+
+  DoBindTexture(kTarget, client_texture_id_, kServiceTextureId);
+
+  // Bad bucket
+  CompressedTexImage3DBucket cmd;
+  cmd.Init(kTarget,
+           kLevel,
+           kInternalFormat,
+           0,
+           kHeight,
+           kDepth,
+           kBadBucketId);
+  EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
+
+  // Bucket size is zero. Height or width or depth is zero too.
+  cmd.Init(kTarget,
+           kLevel,
+           kInternalFormat,
+           0,
+           kHeight,
+           kDepth,
+           kBucketId);
+  EXPECT_CALL(*gl_,
+              CompressedTexImage3D(kTarget, kLevel, kInternalFormat, 0,
+                                   kHeight, kDepth, kBorder, kImageSize, _))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, GetError())
+      .WillOnce(Return(GL_NO_ERROR))
+      .WillOnce(Return(GL_NO_ERROR))
+      .RetiresOnSaturation();
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+
+  // Bucket size is zero. But height, width and depth are not zero.
+  cmd.Init(kTarget,
+           kLevel,
+           kInternalFormat,
+           kWidth,
+           kHeight,
+           kDepth,
+           kBucketId);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+}
+
 TEST_P(GLES2DecoderTest, CompressedTexImage3DFailsOnES2) {
   const uint32_t kBucketId = 123;
   const GLenum kTarget = GL_TEXTURE_2D_ARRAY;
@@ -968,6 +1028,62 @@ TEST_P(GLES3DecoderTest, CompressedTexSubImage3DFails) {
            kBadBucketId);
   bucket->SetSize(kSubImageSize);
   EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
+}
+
+TEST_P(GLES3DecoderTest, CompressedTexImage2DBucketBucketSizeIsZero) {
+  const uint32_t kBucketId = 123;
+  const uint32_t kBadBucketId = 99;
+  const GLenum kTarget = GL_TEXTURE_2D;
+  const GLint kLevel = 0;
+  const GLenum kInternalFormat = GL_COMPRESSED_R11_EAC;
+  const GLsizei kWidth = 4;
+  const GLsizei kHeight = 4;
+  const GLint kBorder = 0;
+  CommonDecoder::Bucket* bucket = decoder_->CreateBucket(kBucketId);
+  ASSERT_TRUE(bucket != NULL);
+  const GLsizei kImageSize = 0;
+  bucket->SetSize(kImageSize);
+
+  DoBindTexture(kTarget, client_texture_id_, kServiceTextureId);
+
+  // Bad bucket
+  CompressedTexImage2DBucket cmd;
+  cmd.Init(kTarget,
+           kLevel,
+           kInternalFormat,
+           0,
+           kHeight,
+           kBadBucketId);
+  EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
+
+  // Bucket size is zero. Height or width is zero too.
+  cmd.Init(kTarget,
+           kLevel,
+           kInternalFormat,
+           0,
+           kHeight,
+           kBucketId);
+  EXPECT_CALL(*gl_,
+              CompressedTexImage2D(kTarget, kLevel, kInternalFormat, 0,
+                                   kHeight, kBorder, kImageSize, _))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, GetError())
+      .WillOnce(Return(GL_NO_ERROR))
+      .WillOnce(Return(GL_NO_ERROR))
+      .RetiresOnSaturation();
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+
+  // Bucket size is zero. But height and width are not zero.
+  cmd.Init(kTarget,
+           kLevel,
+           kInternalFormat,
+           kWidth,
+           kHeight,
+           kBucketId);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
 }
 
 TEST_P(GLES2DecoderManualInitTest, CompressedTexImage2DBucketBadBucket) {

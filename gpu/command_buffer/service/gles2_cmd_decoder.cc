@@ -10890,7 +10890,11 @@ error::Error GLES2DecoderImpl::HandleCompressedTexImage2DBucket(
   GLsizei imageSize = data_size;
   const void* data = bucket->GetData(0, data_size);
   if (!data) {
-    return error::kInvalidArguments;
+    if (width && height) {
+      LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCompressedTexImage2D",
+          "buffer size is not correct for dimensions");
+      return error::kNoError;
+    }
   }
   return DoCompressedTexImage2D(
       target, level, internal_format, width, height, border,
@@ -10917,7 +10921,11 @@ error::Error GLES2DecoderImpl::HandleCompressedTexSubImage2DBucket(
   GLsizei imageSize = data_size;
   const void* data = bucket->GetData(0, data_size);
   if (!data) {
-    return error::kInvalidArguments;
+    if (width && height) {
+      LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCompressedTexSubImage2D",
+          "buffer size is not correct for dimensions");
+      return error::kNoError;
+    }
   }
   if (!validators_->texture_target.IsValid(target)) {
     LOCAL_SET_GL_ERROR(
@@ -11085,7 +11093,11 @@ error::Error GLES2DecoderImpl::HandleCompressedTexImage3DBucket(
   GLsizei imageSize = data_size;
   const void* data = bucket->GetData(0, data_size);
   if (!data) {
-    return error::kInvalidArguments;
+    if (width && height && depth) {
+      LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCompressedTexImage3D",
+          "buffer size is not correct for dimensions");
+      return error::kNoError;
+    }
   }
   return DoCompressedTexImage3D(target, level, internal_format, width, height,
                                 depth, border, imageSize, data);
@@ -11187,7 +11199,11 @@ error::Error GLES2DecoderImpl::HandleCompressedTexSubImage3DBucket(
   GLsizei image_size = data_size;
   const void* data = bucket->GetData(0, data_size);
   if (!data) {
-    return error::kInvalidArguments;
+    if (width && height && depth) {
+      LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCompressedTexImage3D",
+          "buffer size is not correct for dimensions");
+      return error::kNoError;
+    }
   }
   DoCompressedTexSubImage3D(
       target, level, xoffset, yoffset, zoffset, width, height, depth, format,
