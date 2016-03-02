@@ -387,11 +387,21 @@ Gallery.prototype.loadInternal_ = function(entries, selectedEntries) {
     return;
   }
 
+  // Sort the selected image first
+  var containsInSelection = function(galleryItem) {
+    return selectedEntries.indexOf(galleryItem.getEntry()) >= 0;
+  };
+  var notContainsInSelection = function(galleryItem) {
+    return !containsInSelection(galleryItem);
+  };
+  items = items.filter(containsInSelection)
+      .concat(items.filter(notContainsInSelection));
+
   // Load entries.
   // Use the self variable capture-by-closure because it is faster than bind.
   var self = this;
   var thumbnailModel = new ThumbnailModel(this.metadataModel_);
-  var loadChunk = function(firstChunk) {
+  var loadChunk = function() {
     // Extract chunk.
     var chunk = items.splice(0, maxChunkSize);
     if (!chunk.length)
@@ -416,36 +426,35 @@ Gallery.prototype.loadInternal_ = function(entries, selectedEntries) {
         self.dataModel_.dispatchEvent(event);
       });
 
-      // Init modes after the first chunk is loaded.
-      if (firstChunk && !self.initialized_) {
-        // Determine the initial mode.
-        var shouldShowThumbnail = selectedEntries.length > 1 ||
-            (self.context_.pageState &&
-             self.context_.pageState.gallery === 'thumbnail');
-        self.setCurrentMode_(
-            shouldShowThumbnail ? self.thumbnailMode_ : self.slideMode_);
-
-        // Do the initialization for each mode.
-        if (shouldShowThumbnail) {
-          self.thumbnailMode_.show();
-          self.thumbnailMode_.focus();
-        } else {
-          self.slideMode_.enter(
-              null,
-              function() {
-                // Flash the toolbar briefly to show it is there.
-                self.dimmableUIController_.kick(Gallery.FIRST_FADE_TIMEOUT);
-              },
-              function() {});
-        }
-        self.initialized_ = true;
-      }
-
       // Continue to load chunks.
-      return loadChunk(/* firstChunk */ false);
+      return loadChunk();
     });
   };
-  loadChunk(/* firstChunk */ true).catch(function(error) {
+  // init modes before loading images.
+  if (!this.initialized_) {
+    // Determine the initial mode.
+    var shouldShowThumbnail = selectedEntries.length > 1 ||
+        (this.context_.pageState &&
+         this.context_.pageState.gallery === 'thumbnail');
+    this.setCurrentMode_(
+        shouldShowThumbnail ? this.thumbnailMode_ : this.slideMode_);
+
+    // Do the initialization for each mode.
+    if (shouldShowThumbnail) {
+      this.thumbnailMode_.show();
+      this.thumbnailMode_.focus();
+    } else {
+      this.slideMode_.enter(
+          null,
+          function() {
+            // Flash the toolbar briefly to show it is there.
+            self.dimmableUIController_.kick(Gallery.FIRST_FADE_TIMEOUT);
+          },
+          function() {});
+    }
+    this.initialized_ = true;
+  }
+  loadChunk().catch(function(error) {
     console.error(error.stack || error);
   });
 };
