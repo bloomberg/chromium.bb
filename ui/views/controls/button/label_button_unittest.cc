@@ -311,7 +311,7 @@ TEST_F(LabelButtonTest, ButtonStyleIsDefaultSize) {
 class TestButtonInkDropDelegate : public ButtonInkDropDelegate {
  public:
   TestButtonInkDropDelegate(InkDropHost* ink_drop_host, View* view)
-      : ButtonInkDropDelegate(ink_drop_host, view) {}
+      : ButtonInkDropDelegate(ink_drop_host, view), is_hovered_(false) {}
 
   ~TestButtonInkDropDelegate() override {}
 
