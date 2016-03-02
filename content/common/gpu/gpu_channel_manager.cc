@@ -166,15 +166,6 @@ IPC::ChannelHandle GpuChannelManager::EstablishChannel(
   return channel_handle;
 }
 
-void GpuChannelManager::CloseChannel(const IPC::ChannelHandle& channel_handle) {
-  for (auto it = gpu_channels_.begin(); it != gpu_channels_.end(); ++it) {
-    if (it->second->channel_id() == channel_handle.name) {
-      gpu_channels_.erase(it);
-      return;
-    }
-  }
-}
-
 void GpuChannelManager::InternalDestroyGpuMemoryBuffer(
     gfx::GpuMemoryBufferId id,
     int client_id) {

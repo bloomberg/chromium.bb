@@ -382,6 +382,11 @@ void GpuProcessHost::SendOnIO(GpuProcessKind kind,
 
 GpuMainThreadFactoryFunction g_gpu_main_thread_factory = NULL;
 
+GpuProcessHost::EstablishChannelRequest::EstablishChannelRequest()
+    : client_id(0) {}
+
+GpuProcessHost::EstablishChannelRequest::~EstablishChannelRequest() {}
+
 void GpuProcessHost::RegisterGpuMainThreadFactory(
     GpuMainThreadFactoryFunction create) {
   g_gpu_main_thread_factory = create;
@@ -694,7 +699,10 @@ void GpuProcessHost::EstablishGpuChannel(
   params.allow_view_command_buffers = allow_view_command_buffers;
   params.allow_real_time_streams = allow_real_time_streams;
   if (Send(new GpuMsg_EstablishChannel(params))) {
-    channel_requests_.push(callback);
+    EstablishChannelRequest request;
+    request.client_id = client_id;
+    request.callback = callback;
+    channel_requests_.push(request);
   } else {
     DVLOG(1) << "Failed to send GpuMsg_EstablishChannel.";
     callback.Run(IPC::ChannelHandle(), gpu::GPUInfo());
@@ -789,22 +797,22 @@ void GpuProcessHost::OnChannelEstablished(
         "Received a ChannelEstablished message but no requests in queue."));
     return;
   }
-  EstablishChannelCallback callback = channel_requests_.front();
+  EstablishChannelRequest request = channel_requests_.front();
   channel_requests_.pop();
 
   // Currently if any of the GPU features are blacklisted, we don't establish a
   // GPU channel.
   if (!channel_handle.name.empty() &&
       !GpuDataManagerImpl::GetInstance()->GpuAccessAllowed(NULL)) {
-    Send(new GpuMsg_CloseChannel(channel_handle));
-    callback.Run(IPC::ChannelHandle(), gpu::GPUInfo());
+    Send(new GpuMsg_CloseChannel(request.client_id));
+    request.callback.Run(IPC::ChannelHandle(), gpu::GPUInfo());
     RouteOnUIThread(
         GpuHostMsg_OnLogMessage(logging::LOG_WARNING, "WARNING",
                                 "Hardware acceleration is unavailable."));
     return;
   }
 
-  callback.Run(channel_handle, gpu_info_);
+  request.callback.Run(channel_handle, gpu_info_);
 }
 
 void GpuProcessHost::OnGpuMemoryBufferCreated(
@@ -1012,9 +1020,9 @@ void GpuProcessHost::SendOutstandingReplies() {
   valid_ = false;
   // First send empty channel handles for all EstablishChannel requests.
   while (!channel_requests_.empty()) {
-    EstablishChannelCallback callback = channel_requests_.front();
+    EstablishChannelRequest request = channel_requests_.front();
     channel_requests_.pop();
-    callback.Run(IPC::ChannelHandle(), gpu::GPUInfo());
+    request.callback.Run(IPC::ChannelHandle(), gpu::GPUInfo());
   }
 
   while (!create_gpu_memory_buffer_requests_.empty()) {

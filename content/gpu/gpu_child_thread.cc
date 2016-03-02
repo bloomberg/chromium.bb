@@ -567,9 +567,9 @@ void GpuChildThread::OnEstablishChannel(const EstablishChannelParams& params) {
   Send(new GpuHostMsg_ChannelEstablished(channel_handle));
 }
 
-void GpuChildThread::OnCloseChannel(const IPC::ChannelHandle& channel_handle) {
+void GpuChildThread::OnCloseChannel(int32_t client_id) {
   if (gpu_channel_manager_)
-    gpu_channel_manager_->CloseChannel(channel_handle);
+    gpu_channel_manager_->RemoveChannel(client_id);
 }
 
 void GpuChildThread::OnLoadedShader(const std::string& shader) {

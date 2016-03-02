@@ -83,7 +83,6 @@ class CONTENT_EXPORT GpuChannelManager {
   GpuChannelManagerDelegate* delegate() const { return delegate_; }
 
   IPC::ChannelHandle EstablishChannel(const EstablishChannelParams& params);
-  void CloseChannel(const IPC::ChannelHandle& channel_handle);
   void PopulateShaderCache(const std::string& shader);
   void DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
                               int client_id,

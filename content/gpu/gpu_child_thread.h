@@ -118,7 +118,7 @@ class GpuChildThread : public ChildThreadImpl,
   void OnBufferPresented(const BufferPresentedParams& params);
 #endif
   void OnEstablishChannel(const EstablishChannelParams& params);
-  void OnCloseChannel(const IPC::ChannelHandle& channel_handle);
+  void OnCloseChannel(int32_t client_id);
   void OnLoadedShader(const std::string& shader);
   void OnDestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
                                 int client_id,
