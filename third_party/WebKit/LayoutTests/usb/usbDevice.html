@@ -7,6 +7,23 @@
 <script>
 'use strict';
 
+function assertRejectsWithNotFoundError(promise) {
+  return promise.then(() => {
+    assert_unreached('promise should reject');
+  }, error => {
+    assert_equals(error.code, DOMException.NOT_FOUND_ERR);
+  });
+}
+
+usb_test(usb => {
+  usb.mockDeviceManager.addMockDevice(usb.fakeDevices[0]);
+  return navigator.usb.getDevices().then(devices => {
+    assert_equals(1, devices.length);
+    usb.mockDeviceManager.removeMockDevice(usb.fakeDevices[0]);
+    return assertRejectsWithNotFoundError(devices[0].open());
+  });
+}, 'open rejects when called on a disconnected device');
+
 usb_test(usb => {
   usb.mockDeviceManager.addMockDevice(usb.fakeDevices[0]);
   return navigator.usb.getDevices().then(devices => {
@@ -15,6 +32,31 @@ usb_test(usb => {
     return device.open().then(() => device.close());
   });
 }, 'a device can be opened and closed');
+
+usb_test(usb => {
+  usb.mockDeviceManager.addMockDevice(usb.fakeDevices[0]);
+  return navigator.usb.getDevices().then(devices => {
+    assert_equals(1, devices.length);
+    let device = devices[0];
+    return device.open().then(() => {
+      usb.mockDeviceManager.removeMockDevice(usb.fakeDevices[0]);
+      return assertRejectsWithNotFoundError(device.close());
+    });
+  });
+}, 'close rejects when called on a disconnected device');
+
+usb_test(usb => {
+  usb.mockDeviceManager.addMockDevice(usb.fakeDevices[0]);
+  return navigator.usb.getDevices().then(devices => {
+    assert_equals(1, devices.length);
+    var device = devices[0];
+    return device.open()
+      .then(() => {
+        usb.mockDeviceManager.removeMockDevice(usb.fakeDevices[0]);
+        return assertRejectsWithNotFoundError(device.setConfiguration(1));
+      });
+  });
+}, 'setConfiguration rejects when called on a disconnected device');
 
 usb_test(usb => {
   usb.mockDeviceManager.addMockDevice(usb.fakeDevices[0]);
@@ -31,6 +73,23 @@ usb_test(usb => {
       .then(() => device.close());
   });
 }, 'device configuration can be set and queried');
+
+usb_test(usb => {
+  usb.mockDeviceManager.addMockDevice(usb.fakeDevices[0]);
+  return navigator.usb.getDevices().then(devices => {
+    assert_equals(1, devices.length);
+    var device = devices[0];
+    return device.open()
+      .then(() => device.setConfiguration(1))
+      .then(() => device.getConfiguration())
+      .then(config => {
+        usb.assertConfigurationInfoEquals(
+            config, usb.fakeDevices[0].configurations[0]);
+        usb.mockDeviceManager.removeMockDevice(usb.fakeDevices[0]);
+        return assertRejectsWithNotFoundError(device.getConfiguration());
+      });
+  });
+}, 'getConfiguration rejects when called on a disconnected device');
 
 usb_test(usb => {
   usb.mockDeviceManager.addMockDevice(usb.fakeDevices[0]);
@@ -86,6 +145,35 @@ usb_test(usb => {
   usb.mockDeviceManager.addMockDevice(usb.fakeDevices[0]);
   return navigator.usb.getDevices().then(devices => {
     assert_equals(1, devices.length);
+    var device = devices[0];
+    return device.open()
+      .then(() => device.setConfiguration(1))
+      .then(() => {
+        usb.mockDeviceManager.removeMockDevice(usb.fakeDevices[0]);
+        return assertRejectsWithNotFoundError(device.claimInterface(0));
+      });
+  });
+}, 'claimInterface rejects when called on a disconnected device');
+
+usb_test(usb => {
+  usb.mockDeviceManager.addMockDevice(usb.fakeDevices[0]);
+  return navigator.usb.getDevices().then(devices => {
+    assert_equals(1, devices.length);
+    var device = devices[0];
+    return device.open()
+      .then(() => device.setConfiguration(1))
+      .then(() => device.claimInterface(0))
+      .then(() => {
+        usb.mockDeviceManager.removeMockDevice(usb.fakeDevices[0]);
+        return assertRejectsWithNotFoundError(device.releaseInterface(0));
+      });
+  });
+}, 'releaseInterface rejects when called on a disconnected device');
+
+usb_test(usb => {
+  usb.mockDeviceManager.addMockDevice(usb.fakeDevices[0]);
+  return navigator.usb.getDevices().then(devices => {
+    assert_equals(1, devices.length);
     let device = devices[0];
     return device.open()
       .then(() => device.setConfiguration(2))
@@ -94,6 +182,21 @@ usb_test(usb => {
       .then(() => device.close());
   });
 }, 'can select an alternate interface');
+
+usb_test(usb => {
+  usb.mockDeviceManager.addMockDevice(usb.fakeDevices[0]);
+  return navigator.usb.getDevices().then(devices => {
+    assert_equals(1, devices.length);
+    var device = devices[0];
+    return device.open()
+      .then(() => device.setConfiguration(2))
+      .then(() => device.claimInterface(0))
+      .then(() => {
+        usb.mockDeviceManager.removeMockDevice(usb.fakeDevices[0]);
+        return assertRejectsWithNotFoundError(device.setInterface(0, 1));
+      });
+  });
+}, 'setInterface rejects when called on a disconnected device');
 
 usb_test(usb => {
   usb.mockDeviceManager.addMockDevice(usb.fakeDevices[0]);
@@ -127,6 +230,25 @@ usb_test(usb => {
     assert_equals(1, devices.length);
     let device = devices[0];
     return device.open()
+      .then(() => {
+        usb.mockDeviceManager.removeMockDevice(usb.fakeDevices[0]);
+        return assertRejectsWithNotFoundError(device.controlTransferIn({
+          requestType: 'vendor',
+          recipient: 'device',
+          request: 0x42,
+          value: 0x1234,
+          index: 0x5678
+        }, 7));
+      });
+  });
+}, 'controlTransferIn rejects when called on a disconnected device');
+
+usb_test(usb => {
+  usb.mockDeviceManager.addMockDevice(usb.fakeDevices[0]);
+  return navigator.usb.getDevices().then(devices => {
+    assert_equals(1, devices.length);
+    let device = devices[0];
+    return device.open()
       .then(() => device.controlTransferOut({
         requestType: 'vendor',
         recipient: 'device',
@@ -146,6 +268,25 @@ usb_test(usb => {
 usb_test(usb => {
   usb.mockDeviceManager.addMockDevice(usb.fakeDevices[0]);
   return navigator.usb.getDevices().then(devices => {
+    assert_equals(1, devices.length);
+    let device = devices[0];
+    return device.open()
+      .then(() => {
+        usb.mockDeviceManager.removeMockDevice(usb.fakeDevices[0]);
+        return assertRejectsWithNotFoundError(device.controlTransferOut({
+          requestType: 'vendor',
+          recipient: 'device',
+          request: 0x42,
+          value: 0x1234,
+          index: 0x5678
+        }, new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8])));
+      });
+  });
+}, 'controlTransferOut rejects when called on a disconnected device');
+
+usb_test(usb => {
+  usb.mockDeviceManager.addMockDevice(usb.fakeDevices[0]);
+  return navigator.usb.getDevices().then(devices => {
     assert_equals(devices.length, 1);
     let device = devices[0];
     return device.open()
@@ -155,6 +296,21 @@ usb_test(usb => {
       .then(() => device.close());
   });
 }, 'can clear a halt condition');
+
+usb_test(usb => {
+  usb.mockDeviceManager.addMockDevice(usb.fakeDevices[0]);
+  return navigator.usb.getDevices().then(devices => {
+    assert_equals(devices.length, 1);
+    let device = devices[0];
+    return device.open()
+      .then(() => device.setConfiguration(1))
+      .then(() => device.claimInterface(0))
+      .then(() => {
+        usb.mockDeviceManager.removeMockDevice(usb.fakeDevices[0]);
+        return assertRejectsWithNotFoundError(device.clearHalt(1));
+      });
+  });
+}, 'clearHalt rejects when called on a disconnected device');
 
 usb_test(usb => {
   usb.mockDeviceManager.addMockDevice(usb.fakeDevices[0]);
@@ -206,6 +362,21 @@ usb_test(usb => {
       .then(() => device.setConfiguration(1))
       .then(() => device.claimInterface(1))
       .then(() => {
+        usb.mockDeviceManager.removeMockDevice(usb.fakeDevices[0]);
+        return assertRejectsWithNotFoundError(device.transferIn(2, 1024));
+      });
+  });
+}, 'transferIn rejects if called on a disconnected device');
+
+usb_test(usb => {
+  usb.mockDeviceManager.addMockDevice(usb.fakeDevices[0]);
+  return navigator.usb.getDevices().then(devices => {
+    assert_equals(devices.length, 1);
+    let device = devices[0];
+    return device.open()
+      .then(() => device.setConfiguration(1))
+      .then(() => device.claimInterface(1))
+      .then(() => {
         let data = new DataView(new ArrayBuffer(1024));
         for (let i = 0; i < 1024; ++i)
           data.setUint8(i, i & 0xff);
@@ -219,6 +390,24 @@ usb_test(usb => {
       });
   });
 }, 'can issue OUT bulk transfer');
+
+usb_test(usb => {
+  usb.mockDeviceManager.addMockDevice(usb.fakeDevices[0]);
+  return navigator.usb.getDevices().then(devices => {
+    assert_equals(devices.length, 1);
+    let device = devices[0];
+    return device.open()
+      .then(() => device.setConfiguration(1))
+      .then(() => device.claimInterface(1))
+      .then(() => {
+        let data = new DataView(new ArrayBuffer(1024));
+        for (let i = 0; i < 1024; ++i)
+          data.setUint8(i, i & 0xff);
+        usb.mockDeviceManager.removeMockDevice(usb.fakeDevices[0]);
+        return assertRejectsWithNotFoundError(device.transferOut(2, data));
+      });
+  });
+}, 'transferOut rejects if called on a disconnected device');
 
 usb_test(usb => {
   usb.mockDeviceManager.addMockDevice(usb.fakeDevices[0]);
@@ -263,6 +452,23 @@ usb_test(usb => {
       .then(() => device.claimInterface(0))
       .then(() => device.setInterface(0, 1))
       .then(() => {
+        usb.mockDeviceManager.removeMockDevice(usb.fakeDevices[0]);
+        return assertRejectsWithNotFoundError(device.isochronousTransferIn(
+            1, [64, 64, 64, 64, 64, 64, 64, 64]));
+      });
+  });
+}, 'isochronousTransferIn rejects when called on a disconnected device');
+
+usb_test(usb => {
+  usb.mockDeviceManager.addMockDevice(usb.fakeDevices[0]);
+  return navigator.usb.getDevices().then(devices => {
+    assert_equals(devices.length, 1);
+    let device = devices[0];
+    return device.open()
+      .then(() => device.setConfiguration(2))
+      .then(() => device.claimInterface(0))
+      .then(() => device.setInterface(0, 1))
+      .then(() => {
         let data = new DataView(new ArrayBuffer(64 * 8));
         for (let i = 0; i < 8; ++i) {
           for (let j = 0; j < 64; ++j)
@@ -289,9 +495,43 @@ usb_test(usb => {
 usb_test(usb => {
   usb.mockDeviceManager.addMockDevice(usb.fakeDevices[0]);
   return navigator.usb.getDevices().then(devices => {
+    assert_equals(devices.length, 1);
+    let device = devices[0];
+    return device.open()
+      .then(() => device.setConfiguration(2))
+      .then(() => device.claimInterface(0))
+      .then(() => device.setInterface(0, 1))
+      .then(() => {
+        let data = new DataView(new ArrayBuffer(64 * 8));
+        for (let i = 0; i < 8; ++i) {
+          for (let j = 0; j < 64; ++j)
+            data.setUint8(i * j, j & 0xff);
+        }
+        usb.mockDeviceManager.removeMockDevice(usb.fakeDevices[0]);
+        return assertRejectsWithNotFoundError(device.isochronousTransferOut(
+            1, data, [64, 64, 64, 64, 64, 64, 64, 64]));
+      });
+  });
+}, 'isochronousTransferOut rejects when called on a disconnected device');
+
+usb_test(usb => {
+  usb.mockDeviceManager.addMockDevice(usb.fakeDevices[0]);
+  return navigator.usb.getDevices().then(devices => {
     assert_equals(1, devices.length);
     let device = devices[0];
     return device.open().then(() => device.reset()).then(() => device.close());
   });
 }, 'can reset the device');
+
+usb_test(usb => {
+  usb.mockDeviceManager.addMockDevice(usb.fakeDevices[0]);
+  return navigator.usb.getDevices().then(devices => {
+    assert_equals(1, devices.length);
+    let device = devices[0];
+    return device.open().then(() => {
+      usb.mockDeviceManager.removeMockDevice(usb.fakeDevices[0]);
+      return assertRejectsWithNotFoundError(device.reset());
+    });
+  });
+}, 'resetDevice rejects when called on a disconnected device');
 </script>

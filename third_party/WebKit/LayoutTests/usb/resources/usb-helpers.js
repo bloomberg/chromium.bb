@@ -371,7 +371,9 @@ function usbMocks(mojo) {
 
       getDevice(guid, pipe) {
         let device = this.mockDevices_.get(guid);
-        if (device !== undefined) {
+        if (device === undefined) {
+          mojo.core.close(pipe);
+        } else {
           var mock = new MockDevice(device.info, pipe);
           device.handles.push(mock);
         }

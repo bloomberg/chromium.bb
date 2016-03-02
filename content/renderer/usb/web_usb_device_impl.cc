@@ -234,7 +234,9 @@ WebUSBDeviceImpl::WebUSBDeviceImpl(device::usb::DevicePtr device,
                                    const blink::WebUSBDeviceInfo& device_info)
     : device_(std::move(device)),
       device_info_(device_info),
-      weak_factory_(this) {}
+      weak_factory_(this) {
+  device_.set_connection_error_handler([this]() { device_.reset(); });
+}
 
 WebUSBDeviceImpl::~WebUSBDeviceImpl() {}
 
@@ -244,49 +246,56 @@ const blink::WebUSBDeviceInfo& WebUSBDeviceImpl::info() const {
 
 void WebUSBDeviceImpl::open(blink::WebUSBDeviceOpenCallbacks* callbacks) {
   auto scoped_callbacks = MakeScopedUSBCallbacks(callbacks);
-  device_->Open(base::Bind(&OnOpenDevice, base::Passed(&scoped_callbacks)));
+  if (device_)
+    device_->Open(base::Bind(&OnOpenDevice, base::Passed(&scoped_callbacks)));
 }
 
 void WebUSBDeviceImpl::close(blink::WebUSBDeviceCloseCallbacks* callbacks) {
   auto scoped_callbacks = MakeScopedUSBCallbacks(callbacks);
-  device_->Close(base::Bind(&OnDeviceClosed, base::Passed(&scoped_callbacks)));
+  if (device_)
+    device_->Close(
+        base::Bind(&OnDeviceClosed, base::Passed(&scoped_callbacks)));
 }
 
 void WebUSBDeviceImpl::getConfiguration(
     blink::WebUSBDeviceGetConfigurationCallbacks* callbacks) {
   auto scoped_callbacks = MakeScopedUSBCallbacks(callbacks);
-  device_->GetConfiguration(
-      base::Bind(&OnGetConfiguration, base::Passed(&scoped_callbacks)));
+  if (device_)
+    device_->GetConfiguration(
+        base::Bind(&OnGetConfiguration, base::Passed(&scoped_callbacks)));
 }
 
 void WebUSBDeviceImpl::setConfiguration(
     uint8_t configuration_value,
     blink::WebUSBDeviceSetConfigurationCallbacks* callbacks) {
   auto scoped_callbacks = MakeScopedUSBCallbacks(callbacks);
-  device_->SetConfiguration(
-      configuration_value,
-      base::Bind(&HandlePassFailDeviceOperation,
-                 base::Passed(&scoped_callbacks), kSetConfigurationFailed));
+  if (device_)
+    device_->SetConfiguration(
+        configuration_value,
+        base::Bind(&HandlePassFailDeviceOperation,
+                   base::Passed(&scoped_callbacks), kSetConfigurationFailed));
 }
 
 void WebUSBDeviceImpl::claimInterface(
     uint8_t interface_number,
     blink::WebUSBDeviceClaimInterfaceCallbacks* callbacks) {
   auto scoped_callbacks = MakeScopedUSBCallbacks(callbacks);
-  device_->ClaimInterface(
-      interface_number,
-      base::Bind(&HandlePassFailDeviceOperation,
-                 base::Passed(&scoped_callbacks), kClaimInterfaceFailed));
+  if (device_)
+    device_->ClaimInterface(
+        interface_number,
+        base::Bind(&HandlePassFailDeviceOperation,
+                   base::Passed(&scoped_callbacks), kClaimInterfaceFailed));
 }
 
 void WebUSBDeviceImpl::releaseInterface(
     uint8_t interface_number,
     blink::WebUSBDeviceReleaseInterfaceCallbacks* callbacks) {
   auto scoped_callbacks = MakeScopedUSBCallbacks(callbacks);
-  device_->ReleaseInterface(
-      interface_number,
-      base::Bind(&HandlePassFailDeviceOperation,
-                 base::Passed(&scoped_callbacks), kReleaseInterfaceFailed));
+  if (device_)
+    device_->ReleaseInterface(
+        interface_number,
+        base::Bind(&HandlePassFailDeviceOperation,
+                   base::Passed(&scoped_callbacks), kReleaseInterfaceFailed));
 }
 
 void WebUSBDeviceImpl::setInterface(
@@ -294,20 +303,22 @@ void WebUSBDeviceImpl::setInterface(
     uint8_t alternate_setting,
     blink::WebUSBDeviceSetInterfaceAlternateSettingCallbacks* callbacks) {
   auto scoped_callbacks = MakeScopedUSBCallbacks(callbacks);
-  device_->SetInterfaceAlternateSetting(
-      interface_number, alternate_setting,
-      base::Bind(&HandlePassFailDeviceOperation,
-                 base::Passed(&scoped_callbacks), kSetInterfaceFailed));
+  if (device_)
+    device_->SetInterfaceAlternateSetting(
+        interface_number, alternate_setting,
+        base::Bind(&HandlePassFailDeviceOperation,
+                   base::Passed(&scoped_callbacks), kSetInterfaceFailed));
 }
 
 void WebUSBDeviceImpl::clearHalt(
     uint8_t endpoint_number,
     blink::WebUSBDeviceClearHaltCallbacks* callbacks) {
   auto scoped_callbacks = MakeScopedUSBCallbacks(callbacks);
-  device_->ClearHalt(
-      endpoint_number,
-      base::Bind(&HandlePassFailDeviceOperation,
-                 base::Passed(&scoped_callbacks), kClearHaltFailed));
+  if (device_)
+    device_->ClearHalt(
+        endpoint_number,
+        base::Bind(&HandlePassFailDeviceOperation,
+                   base::Passed(&scoped_callbacks), kClearHaltFailed));
 }
 
 void WebUSBDeviceImpl::controlTransfer(
@@ -317,6 +328,9 @@ void WebUSBDeviceImpl::controlTransfer(
     unsigned int timeout,
     blink::WebUSBDeviceTransferCallbacks* callbacks) {
   auto scoped_callbacks = MakeScopedUSBCallbacks(callbacks);
+  if (!device_)
+    return;
+
   device::usb::ControlTransferParamsPtr params =
       device::usb::ControlTransferParams::From(parameters);
   switch (parameters.direction) {
@@ -350,6 +364,9 @@ void WebUSBDeviceImpl::transfer(
     unsigned int timeout,
     blink::WebUSBDeviceTransferCallbacks* callbacks) {
   auto scoped_callbacks = MakeScopedUSBCallbacks(callbacks);
+  if (!device_)
+    return;
+
   switch (direction) {
     case WebUSBDevice::TransferDirection::In:
       device_->GenericTransferIn(
@@ -382,6 +399,9 @@ void WebUSBDeviceImpl::isochronousTransfer(
     unsigned int timeout,
     blink::WebUSBDeviceTransferCallbacks* callbacks) {
   auto scoped_callbacks = MakeScopedUSBCallbacks(callbacks);
+  if (!device_)
+    return;
+
   switch (direction) {
     case WebUSBDevice::TransferDirection::In:
       device_->IsochronousTransferIn(
@@ -409,9 +429,10 @@ void WebUSBDeviceImpl::isochronousTransfer(
 
 void WebUSBDeviceImpl::reset(blink::WebUSBDeviceResetCallbacks* callbacks) {
   auto scoped_callbacks = MakeScopedUSBCallbacks(callbacks);
-  device_->Reset(base::Bind(&HandlePassFailDeviceOperation,
-                            base::Passed(&scoped_callbacks),
-                            kDeviceResetFailed));
+  if (device_)
+    device_->Reset(base::Bind(&HandlePassFailDeviceOperation,
+                              base::Passed(&scoped_callbacks),
+                              kDeviceResetFailed));
 }
 
 }  // namespace content

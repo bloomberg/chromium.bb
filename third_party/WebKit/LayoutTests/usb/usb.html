@@ -17,13 +17,22 @@ usb_test(usb => {
 }, 'getDevices returns devices exposed by the DeviceManager service.');
 
 usb_test(usb => {
+  return navigator.usb.requestDevice({ filters: [] })
+    .then(device => {
+      assert_unreachable('requestDevice should reject without a user gesture');
+    })
+    .catch(error => {
+      assert_equals(error.code, DOMException.SECURITY_ERR);
+    });
+}, 'requestDevice rejects when called without a user gesture');
+
+usb_test(usb => {
   return callWithKeyDown(() => navigator.usb.requestDevice({ filters: [] })
     .then(device => {
       assert_unreachable('requestDevice should reject when no device selected');
     })
     .catch(error => {
       assert_equals(error.code, DOMException.NOT_FOUND_ERR);
-      return Promise.resolve();
     })
   );
 }, 'requestDevice rejects when no device is chosen');
