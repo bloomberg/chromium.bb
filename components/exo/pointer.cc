@@ -92,6 +92,7 @@ void Pointer::OnMouseEvent(ui::MouseEvent* event) {
       focus_ = target;
       focus_->AddSurfaceObserver(this);
     }
+    delegate_->OnPointerFrame();
   }
 
   switch (event->type()) {
@@ -101,6 +102,7 @@ void Pointer::OnMouseEvent(ui::MouseEvent* event) {
         delegate_->OnPointerButton(event->time_stamp(),
                                    event->changed_button_flags(),
                                    event->type() == ui::ET_MOUSE_PRESSED);
+        delegate_->OnPointerFrame();
       }
       break;
     case ui::ET_MOUSE_MOVED:
@@ -111,29 +113,43 @@ void Pointer::OnMouseEvent(ui::MouseEvent* event) {
       // OnPointerEnter was called.
       if (focus_ && event->location() != location_) {
         delegate_->OnPointerMotion(event->time_stamp(), event->location());
+        delegate_->OnPointerFrame();
         location_ = event->location();
       }
       break;
     case ui::ET_SCROLL:
       if (focus_) {
         ui::ScrollEvent* scroll_event = static_cast<ui::ScrollEvent*>(event);
-        delegate_->OnPointerWheel(
+        delegate_->OnPointerScroll(
             event->time_stamp(),
-            gfx::Vector2d(scroll_event->x_offset(), scroll_event->y_offset()));
+            gfx::Vector2dF(scroll_event->x_offset(), scroll_event->y_offset()),
+            false);
+        delegate_->OnPointerFrame();
       }
       break;
     case ui::ET_MOUSEWHEEL:
       if (focus_) {
-        delegate_->OnPointerWheel(
+        delegate_->OnPointerScroll(
             event->time_stamp(),
-            static_cast<ui::MouseWheelEvent*>(event)->offset());
+            static_cast<ui::MouseWheelEvent*>(event)->offset(), true);
+        delegate_->OnPointerFrame();
+      }
+      break;
+    case ui::ET_SCROLL_FLING_START:
+      if (focus_) {
+        delegate_->OnPointerScrollStop(event->time_stamp());
+        delegate_->OnPointerFrame();
+      }
+      break;
+    case ui::ET_SCROLL_FLING_CANCEL:
+      if (focus_) {
+        delegate_->OnPointerScrollCancel(event->time_stamp());
+        delegate_->OnPointerFrame();
       }
       break;
     case ui::ET_MOUSE_ENTERED:
     case ui::ET_MOUSE_EXITED:
     case ui::ET_MOUSE_CAPTURE_CHANGED:
-    case ui::ET_SCROLL_FLING_START:
-    case ui::ET_SCROLL_FLING_CANCEL:
       break;
     default:
       NOTREACHED();

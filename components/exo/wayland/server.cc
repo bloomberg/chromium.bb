@@ -1239,20 +1239,17 @@ class WaylandPointerDelegate : public PointerDelegate {
     wl_pointer_send_enter(pointer_resource_, next_serial(), surface_resource,
                           wl_fixed_from_int(location.x()),
                           wl_fixed_from_int(location.y()));
-    wl_client_flush(client());
   }
   void OnPointerLeave(Surface* surface) override {
     wl_resource* surface_resource = surface->GetProperty(kSurfaceResourceKey);
     DCHECK(surface_resource);
     wl_pointer_send_leave(pointer_resource_, next_serial(), surface_resource);
-    wl_client_flush(client());
   }
   void OnPointerMotion(base::TimeDelta time_stamp,
                        const gfx::Point& location) override {
     wl_pointer_send_motion(pointer_resource_, time_stamp.InMilliseconds(),
                            wl_fixed_from_int(location.x()),
                            wl_fixed_from_int(location.y()));
-    wl_client_flush(client());
   }
   void OnPointerButton(base::TimeDelta time_stamp,
                        int button_flags,
@@ -1276,24 +1273,53 @@ class WaylandPointerDelegate : public PointerDelegate {
                                        : WL_POINTER_BUTTON_STATE_RELEASED);
       }
     }
-    wl_client_flush(client());
   }
-  void OnPointerWheel(base::TimeDelta time_stamp,
-                      const gfx::Vector2d& offset) override {
+
+  void OnPointerScroll(base::TimeDelta time_stamp,
+                       const gfx::Vector2dF& offset,
+                       bool discrete) override {
     // Same as Weston, the reference compositor.
     const double kAxisStepDistance = 10.0 / ui::MouseWheelEvent::kWheelDelta;
 
-    double x_value = offset.x() * kAxisStepDistance;
-    if (x_value) {
-      wl_pointer_send_axis(pointer_resource_, time_stamp.InMilliseconds(),
-                           WL_POINTER_AXIS_HORIZONTAL_SCROLL,
-                           wl_fixed_from_double(-x_value));
+    if (wl_resource_get_version(pointer_resource_) >=
+        WL_POINTER_AXIS_SOURCE_SINCE_VERSION) {
+      int32_t axis_source = discrete ? WL_POINTER_AXIS_SOURCE_WHEEL
+                                     : WL_POINTER_AXIS_SOURCE_FINGER;
+      wl_pointer_send_axis_source(pointer_resource_, axis_source);
     }
+
+    double x_value = offset.x() * kAxisStepDistance;
+    wl_pointer_send_axis(pointer_resource_, time_stamp.InMilliseconds(),
+                         WL_POINTER_AXIS_HORIZONTAL_SCROLL,
+                         wl_fixed_from_double(-x_value));
+
     double y_value = offset.y() * kAxisStepDistance;
-    if (y_value) {
-      wl_pointer_send_axis(pointer_resource_, time_stamp.InMilliseconds(),
-                           WL_POINTER_AXIS_VERTICAL_SCROLL,
-                           wl_fixed_from_double(-y_value));
+    wl_pointer_send_axis(pointer_resource_, time_stamp.InMilliseconds(),
+                         WL_POINTER_AXIS_VERTICAL_SCROLL,
+                         wl_fixed_from_double(-y_value));
+  }
+
+  void OnPointerScrollCancel(base::TimeDelta time_stamp) override {
+    // Wayland doesn't know the concept of a canceling kinetic scrolling.
+    // But we can send a 0 distance scroll to emulate this behavior.
+    OnPointerScroll(time_stamp, gfx::Vector2dF(0, 0), false);
+    OnPointerScrollStop(time_stamp);
+  }
+
+  void OnPointerScrollStop(base::TimeDelta time_stamp) override {
+    if (wl_resource_get_version(pointer_resource_) >=
+        WL_POINTER_AXIS_STOP_SINCE_VERSION) {
+      wl_pointer_send_axis_stop(pointer_resource_, time_stamp.InMilliseconds(),
+                                WL_POINTER_AXIS_HORIZONTAL_SCROLL);
+      wl_pointer_send_axis_stop(pointer_resource_, time_stamp.InMilliseconds(),
+                                WL_POINTER_AXIS_VERTICAL_SCROLL);
+    }
+  }
+
+  void OnPointerFrame() override {
+    if (wl_resource_get_version(pointer_resource_) >=
+        WL_POINTER_FRAME_SINCE_VERSION) {
+      wl_pointer_send_frame(pointer_resource_);
     }
     wl_client_flush(client());
   }
@@ -1594,10 +1620,14 @@ void seat_get_touch(wl_client* client, wl_resource* resource, uint32_t id) {
       make_scoped_ptr(new Touch(new WaylandTouchDelegate(touch_resource))));
 }
 
-const struct wl_seat_interface seat_implementation = {
-    seat_get_pointer, seat_get_keyboard, seat_get_touch};
+void seat_release(wl_client* client, wl_resource* resource) {
+  wl_resource_destroy(resource);
+}
 
-const uint32_t seat_version = 4;
+const struct wl_seat_interface seat_implementation = {
+    seat_get_pointer, seat_get_keyboard, seat_get_touch, seat_release};
+
+const uint32_t seat_version = 5;
 
 void bind_seat(wl_client* client, void* data, uint32_t version, uint32_t id) {
   wl_resource* resource = wl_resource_create(

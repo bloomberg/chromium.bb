@@ -30,7 +30,11 @@ class MockPointerDelegate : public PointerDelegate {
   MOCK_METHOD1(OnPointerLeave, void(Surface*));
   MOCK_METHOD2(OnPointerMotion, void(base::TimeDelta, const gfx::Point&));
   MOCK_METHOD3(OnPointerButton, void(base::TimeDelta, int, bool));
-  MOCK_METHOD2(OnPointerWheel, void(base::TimeDelta, const gfx::Vector2d&));
+  MOCK_METHOD3(OnPointerScroll,
+               void(base::TimeDelta, const gfx::Vector2dF&, bool));
+  MOCK_METHOD1(OnPointerScrollCancel, void(base::TimeDelta));
+  MOCK_METHOD1(OnPointerScrollStop, void(base::TimeDelta));
+  MOCK_METHOD0(OnPointerFrame, void());
 };
 
 TEST_F(PointerTest, SetCursor) {
@@ -48,6 +52,7 @@ TEST_F(PointerTest, SetCursor) {
 
   EXPECT_CALL(delegate, CanAcceptPointerEventsForSurface(surface.get()))
       .WillRepeatedly(testing::Return(true));
+  EXPECT_CALL(delegate, OnPointerFrame()).Times(1);
   EXPECT_CALL(delegate, OnPointerEnter(surface.get(), gfx::Point(), 0));
   generator.MoveMouseTo(surface->GetBoundsInScreen().origin());
 
@@ -85,6 +90,7 @@ TEST_F(PointerTest, OnPointerEnter) {
 
   EXPECT_CALL(delegate, CanAcceptPointerEventsForSurface(surface.get()))
       .WillRepeatedly(testing::Return(true));
+  EXPECT_CALL(delegate, OnPointerFrame()).Times(1);
   EXPECT_CALL(delegate, OnPointerEnter(surface.get(), gfx::Point(), 0));
   generator.MoveMouseTo(surface->GetBoundsInScreen().origin());
 
@@ -107,6 +113,7 @@ TEST_F(PointerTest, OnPointerLeave) {
 
   EXPECT_CALL(delegate, CanAcceptPointerEventsForSurface(surface.get()))
       .WillRepeatedly(testing::Return(true));
+  EXPECT_CALL(delegate, OnPointerFrame()).Times(2);
   EXPECT_CALL(delegate, OnPointerEnter(surface.get(), gfx::Point(), 0));
   generator.MoveMouseTo(surface->GetBoundsInScreen().origin());
 
@@ -132,6 +139,8 @@ TEST_F(PointerTest, OnPointerMotion) {
 
   EXPECT_CALL(delegate, CanAcceptPointerEventsForSurface(surface.get()))
       .WillRepeatedly(testing::Return(true));
+  EXPECT_CALL(delegate, OnPointerFrame()).Times(4);
+
   EXPECT_CALL(delegate, OnPointerEnter(surface.get(), gfx::Point(), 0));
   generator.MoveMouseTo(surface->GetBoundsInScreen().origin());
 
@@ -151,6 +160,7 @@ TEST_F(PointerTest, OnPointerMotion) {
 
   EXPECT_CALL(delegate, CanAcceptPointerEventsForSurface(sub_surface.get()))
       .WillRepeatedly(testing::Return(true));
+
   EXPECT_CALL(delegate, OnPointerLeave(surface.get()));
   EXPECT_CALL(delegate, OnPointerEnter(sub_surface.get(), gfx::Point(), 0));
   generator.MoveMouseTo(sub_surface->GetBoundsInScreen().origin());
@@ -178,6 +188,8 @@ TEST_F(PointerTest, OnPointerButton) {
 
   EXPECT_CALL(delegate, CanAcceptPointerEventsForSurface(surface.get()))
       .WillRepeatedly(testing::Return(true));
+  EXPECT_CALL(delegate, OnPointerFrame()).Times(3);
+
   EXPECT_CALL(delegate, OnPointerEnter(surface.get(), gfx::Point(), 0));
   generator.MoveMouseTo(surface->GetBoundsInScreen().origin());
 
@@ -186,31 +198,6 @@ TEST_F(PointerTest, OnPointerButton) {
   EXPECT_CALL(delegate,
               OnPointerButton(testing::_, ui::EF_LEFT_MOUSE_BUTTON, false));
   generator.ClickLeftButton();
-
-  EXPECT_CALL(delegate, OnPointerDestroying(pointer.get()));
-  pointer.reset();
-}
-
-TEST_F(PointerTest, OnPointerWheel) {
-  scoped_ptr<Surface> surface(new Surface);
-  scoped_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
-  gfx::Size buffer_size(10, 10);
-  scoped_ptr<Buffer> buffer(
-      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
-  surface->Attach(buffer.get());
-  surface->Commit();
-
-  MockPointerDelegate delegate;
-  scoped_ptr<Pointer> pointer(new Pointer(&delegate));
-  ui::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow());
-
-  EXPECT_CALL(delegate, CanAcceptPointerEventsForSurface(surface.get()))
-      .WillRepeatedly(testing::Return(true));
-  EXPECT_CALL(delegate, OnPointerEnter(surface.get(), gfx::Point(), 0));
-  generator.MoveMouseTo(surface->GetBoundsInScreen().origin());
-
-  EXPECT_CALL(delegate, OnPointerWheel(testing::_, gfx::Vector2d(1, 1)));
-  generator.MoveMouseWheel(1, 1);
 
   EXPECT_CALL(delegate, OnPointerDestroying(pointer.get()));
   pointer.reset();
@@ -232,11 +219,49 @@ TEST_F(PointerTest, OnPointerScroll) {
 
   EXPECT_CALL(delegate, CanAcceptPointerEventsForSurface(surface.get()))
       .WillRepeatedly(testing::Return(true));
+  EXPECT_CALL(delegate, OnPointerFrame()).Times(4);
+
   EXPECT_CALL(delegate, OnPointerEnter(surface.get(), gfx::Point(), 0));
   generator.MoveMouseTo(location);
 
-  EXPECT_CALL(delegate, OnPointerWheel(testing::_, gfx::Vector2d(1, 1)));
+  {
+    // Expect fling stop followed by scroll and scroll stop.
+    testing::InSequence sequence;
+
+    EXPECT_CALL(delegate, OnPointerScrollCancel(testing::_));
+    EXPECT_CALL(delegate,
+                OnPointerScroll(testing::_, gfx::Vector2dF(1.2, 1.2), false));
+    EXPECT_CALL(delegate, OnPointerScrollStop(testing::_));
+  }
   generator.ScrollSequence(location, base::TimeDelta(), 1, 1, 1, 1);
+
+  EXPECT_CALL(delegate, OnPointerDestroying(pointer.get()));
+  pointer.reset();
+}
+
+TEST_F(PointerTest, OnPointerScrollDiscrete) {
+  scoped_ptr<Surface> surface(new Surface);
+  scoped_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
+  gfx::Size buffer_size(10, 10);
+  scoped_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  surface->Attach(buffer.get());
+  surface->Commit();
+
+  MockPointerDelegate delegate;
+  scoped_ptr<Pointer> pointer(new Pointer(&delegate));
+  ui::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow());
+
+  EXPECT_CALL(delegate, CanAcceptPointerEventsForSurface(surface.get()))
+      .WillRepeatedly(testing::Return(true));
+  EXPECT_CALL(delegate, OnPointerFrame()).Times(2);
+
+  EXPECT_CALL(delegate, OnPointerEnter(surface.get(), gfx::Point(), 0));
+  generator.MoveMouseTo(surface->GetBoundsInScreen().origin());
+
+  EXPECT_CALL(delegate,
+              OnPointerScroll(testing::_, gfx::Vector2dF(1, 1), true));
+  generator.MoveMouseWheel(1, 1);
 
   EXPECT_CALL(delegate, OnPointerDestroying(pointer.get()));
   pointer.reset();

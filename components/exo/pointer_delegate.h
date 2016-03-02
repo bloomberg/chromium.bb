@@ -10,7 +10,7 @@
 
 namespace gfx {
 class Point;
-class Vector2d;
+class Vector2dF;
 }
 
 namespace exo {
@@ -49,10 +49,24 @@ class PointerDelegate {
                                int changed_button_flags,
                                bool pressed) = 0;
 
-  // Called when pointer wheel changed. |offset| contains the direction and
-  // distance of the change.
-  virtual void OnPointerWheel(base::TimeDelta time_stamp,
-                              const gfx::Vector2d& offset) = 0;
+  // Called when pointer is scrolling. |offset| contains the direction and
+  // distance of the change. |discrete| is true if the scrolling is caused
+  // by a discrete device such as a scroll wheel.
+  virtual void OnPointerScroll(base::TimeDelta time_stamp,
+                               const gfx::Vector2dF& offset,
+                               bool discrete) = 0;
+
+  // Called when a current kinetic scroll should be canceled.
+  virtual void OnPointerScrollCancel(base::TimeDelta time_stamp) = 0;
+
+  // Called when pointer scroll has stopped and a fling is happening (e.g.
+  // lifting the fingers from the touchpad after scrolling quickly)
+  virtual void OnPointerScrollStop(base::TimeDelta time_stamp) = 0;
+
+  // Called after all pointer information of this frame has been set and the
+  // client should evaluate the updated state. No events are being sent before
+  // this method is called.
+  virtual void OnPointerFrame() = 0;
 
  protected:
   virtual ~PointerDelegate() {}
