@@ -501,12 +501,12 @@ Each value changes the signature of the Blink methods by adding an additional pa
 
 Multiple values can be specified e.g. `[CallWith=ScriptState|ScriptArguments]`. The order of the values in the IDL file doesn't matter: the generated parameter list is always in a fixed order (specifically `&state`, `scriptContext`, `scriptArguments.release()`, if present, corresponding to `ScriptState`, `ScriptExecutionContext`, `ScriptArguments`, respectively).
 
-There are also three rarely used values: `ActiveWindow`, `FirstWindow`, `ThisValue`.
+There are also three rarely used values: `CurrentWindow`, `EnteredWindow`, `ThisValue`.
 
-`[SetterCallWith]` applies to attributes, and only affects the signature of the setter; this is only used in Location.idl, with `ActiveWindow&FirstWindow`.
+`[SetterCallWith]` applies to attributes, and only affects the signature of the setter; this is only used in Location.idl, with `CurrentWindow&EnteredWindow`.
 
 Syntax:
-`CallWith=ScriptState|ScriptExecutionContext|ScriptArguments|ActiveWindow|FirstWindow|ThisValue`
+`CallWith=ScriptState|ScriptExecutionContext|ScriptArguments|CurrentWindow|EnteredWindow|ThisValue`
 
 #### [CallWith=ScriptState] _(m, a*)_
 `[CallWith=ScriptState]` is used in a number of places for methods.
@@ -567,9 +567,9 @@ String Example::func(ScriptArguments* arguments, bool a, bool b);
 
 _(rare CallWith values)_
 
-#### [CallWith=ActiveWindow&FirstWindow] _(m, a)_
+#### [CallWith=CurrentWindow&EnteredWindow] _(m, a)_
 
-`FirstWindow` is the `Window` object that corresponds to the responsible document of the entry settings object.
+`EnteredWindow` is the `Window` object that corresponds to the responsible document of the entry settings object.
 
 #### [CallWith=ThisValue] _(m)_
 

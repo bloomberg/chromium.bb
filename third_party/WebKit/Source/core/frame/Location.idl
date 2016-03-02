@@ -38,9 +38,9 @@
     // property of an *existing* document at a different origin.
     // However, *reading* |href|, or accessing any component, is a security
     // problem, since that allows tracking navigation.
-    [CallWith=(ActiveWindow,FirstWindow), DoNotCheckSecurity] void assign(DOMString url);
-    [CallWith=(ActiveWindow,FirstWindow), DoNotCheckSecurity] void replace(DOMString url);
-    [CallWith=ActiveWindow] void reload();
+    [CallWith=(CurrentWindow,EnteredWindow), DoNotCheckSecurity] void assign(DOMString url);
+    [CallWith=(CurrentWindow,EnteredWindow), DoNotCheckSecurity] void replace(DOMString url);
+    [CallWith=CurrentWindow] void reload();
 
     // TODO(philipj): ancestorOrigins should have [SameObject] and be of type
     // DOMString[], i.e. it should return the same array every time.
@@ -49,17 +49,17 @@
     // TODO(philipj): Per spec, Location implements URLUtils. The below is
     // mostly like the URLUtils interface, but with some members missing and
     // using DOMString instead of USVString.
-    [SetterCallWith=(ActiveWindow,FirstWindow), DoNotCheckSecurity=Setter] attribute DOMString href;
+    [SetterCallWith=(CurrentWindow,EnteredWindow), DoNotCheckSecurity=Setter] attribute DOMString href;
     [NotEnumerable, ImplementedAs=href] DOMString toString();
     readonly attribute DOMString origin;
 
-    [SetterCallWith=(ActiveWindow,FirstWindow), RaisesException=Setter] attribute DOMString protocol;
-    [SetterCallWith=(ActiveWindow,FirstWindow)] attribute DOMString host;
-    [SetterCallWith=(ActiveWindow,FirstWindow)] attribute DOMString hostname;
-    [SetterCallWith=(ActiveWindow,FirstWindow)] attribute DOMString port;
-    [SetterCallWith=(ActiveWindow,FirstWindow)] attribute DOMString pathname;
-    [SetterCallWith=(ActiveWindow,FirstWindow)] attribute DOMString search;
-    [SetterCallWith=(ActiveWindow,FirstWindow)] attribute DOMString hash;
+    [SetterCallWith=(CurrentWindow,EnteredWindow), RaisesException=Setter] attribute DOMString protocol;
+    [SetterCallWith=(CurrentWindow,EnteredWindow)] attribute DOMString host;
+    [SetterCallWith=(CurrentWindow,EnteredWindow)] attribute DOMString hostname;
+    [SetterCallWith=(CurrentWindow,EnteredWindow)] attribute DOMString port;
+    [SetterCallWith=(CurrentWindow,EnteredWindow)] attribute DOMString pathname;
+    [SetterCallWith=(CurrentWindow,EnteredWindow)] attribute DOMString search;
+    [SetterCallWith=(CurrentWindow,EnteredWindow)] attribute DOMString hash;
 
     // TODO(philipj): Location does not have a valueOf() override in the spec.
     // See the comment in Location.h for the purpose of this.

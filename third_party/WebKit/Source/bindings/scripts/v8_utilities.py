@@ -186,8 +186,8 @@ CALL_WITH_ARGUMENTS = {
     'ScriptState': 'scriptState',
     'ExecutionContext': 'executionContext',
     'ScriptArguments': 'scriptArguments.release()',
-    'ActiveWindow': 'currentDOMWindow(info.GetIsolate())',
-    'FirstWindow': 'enteredDOMWindow(info.GetIsolate())',
+    'CurrentWindow': 'currentDOMWindow(info.GetIsolate())',
+    'EnteredWindow': 'enteredDOMWindow(info.GetIsolate())',
     'Document': 'document',
     'ThisValue': 'ScriptValue(scriptState, info.This())',
 }
@@ -196,8 +196,8 @@ CALL_WITH_VALUES = [
     'ScriptState',
     'ExecutionContext',
     'ScriptArguments',
-    'ActiveWindow',
-    'FirstWindow',
+    'CurrentWindow',
+    'EnteredWindow',
     'Document',
     'ThisValue',
 ]
