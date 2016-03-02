@@ -72,6 +72,19 @@ shared_library("power_saver_test_plugin") {
   ]
 }
 
+loadable_module("blink_deprecated_test_plugin") {
+  sources = [
+    "tests/blink_deprecated_test_plugin.cc",
+  ]
+
+  deps = [
+    "//base",
+    "//build/config/sanitizers:deps",
+    "//ppapi/cpp",
+    "//ppapi/shared_impl",
+  ]
+}
+
 loadable_module("blink_test_plugin") {
   sources = [
     "tests/blink_test_plugin.cc",

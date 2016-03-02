@@ -249,6 +249,7 @@ static_library("content_shell_lib") {
   if (enable_plugins) {
     deps += [
       "//content/ppapi_plugin",
+      "//ppapi:blink_deprecated_test_plugin",
       "//ppapi:blink_test_plugin",
     ]
   }

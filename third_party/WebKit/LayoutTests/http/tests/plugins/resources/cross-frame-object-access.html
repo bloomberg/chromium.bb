@@ -1,7 +1,8 @@
 <html>
 <head>
 <script>
-function debug(str) {
+function debug(str)
+{
     var li = document.createElement('li');
     li.appendChild(document.createTextNode(str));
     document.getElementById('console').appendChild(li)
@@ -25,31 +26,41 @@ function checkLocationObject(l)
     return true;
 }
 
-function runTest() {
+function getPlugin()
+{
+    return document.querySelector('embed');
+}
+
+function runTest()
+{
     var numErrors = 0;
 
     // Try accessing childFrame.location using NPN_Evaluate
-    var l = document.plugin.testEvaluate('top.location')
+    var l = getPlugin().testExecuteScript('top.location')
     if (!checkLocationObject(l))
         numErrors++;
 
     // Try getting childFrame.location.href using NPN_Evaluate
     try {
-        var href = document.plugin.testEvaluate('top.location.href');
-    } catch (e) {}
+        var href = getPlugin().testExecuteScript('top.location.href');
+    } catch (e) {
+        debug(e);
+    }
     if (href) {
         debug("could access top.location.href")
         numErrors++;
     }
 
     // Try accessing childFrame.location using NPN_GetProperty
-    var l = document.plugin.testGetProperty('top', 'location');
+    var l = getPlugin().testGetProperty('top', 'location');
     if (!checkLocationObject(l))
         numErrors++;
 
     try {
-        var href = document.plugin.testGetProperty('top', 'location', 'href');
-    } catch (e) {}
+        var href = getPlugin().testGetProperty('top', 'location', 'href');
+    } catch (e) {
+        debug(e);
+    }
     if (href) {
         debug("could access top.location.href")
         numErrors++;
@@ -57,8 +68,10 @@ function runTest() {
 
     // Try accessing top.document using NPN_EVALUATE
     try {
-        var documentViaTestEvaluate = document.plugin.testEvaluate('top.document')
-    } catch (e) {};
+        var documentViaTestEvaluate = getPlugin().testExecuteScript('top.document')
+    } catch (e) {
+        debug(e);
+    };
     if (documentViaTestEvaluate) {
         debug('could access top.document');
         numErrors++;
@@ -66,8 +79,10 @@ function runTest() {
 
     // Try accessing top.document using NPN_GetProperty
     try {
-        var documentViaTestGetProperty = document.plugin.testGetProperty('top', 'document')
-    } catch (e) {};
+        var documentViaTestGetProperty = getPlugin().testGetProperty('top', 'document')
+    } catch (e) {
+        debug(e);
+    };
     if (documentViaTestGetProperty) {
         debug('could access top.document');
         numErrors++;
@@ -76,11 +91,10 @@ function runTest() {
     if (numErrors == 0)
         document.getElementById('result').innerHTML = 'SUCCESS';
 }
-
 </script>
 </head>
 <body onload="runTest()">
-<embed name="plugin" type="application/x-webkit-test-netscape"></embed>
+<embed type="application/x-blink-deprecated-test-plugin"></embed>
 <div>This tests that plugins can access objects in other frames as allowed by the security model enforced in WebCore.</div>
 <ul id="console">
 </ul>

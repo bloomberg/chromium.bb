@@ -21,6 +21,7 @@ bool ShellPluginServiceFilter::IsPluginAvailable(
     const GURL& policy_url,
     WebPluginInfo* plugin) {
   return plugin->name == base::ASCIIToUTF16("Blink Test Plugin") ||
+         plugin->name == base::ASCIIToUTF16("Blink Deprecated Test Plugin") ||
          plugin->name == base::ASCIIToUTF16("WebKit Test PlugIn");
 }
 

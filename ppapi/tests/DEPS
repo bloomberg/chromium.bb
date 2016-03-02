@@ -24,6 +24,11 @@ skip_child_includes = [
    "clang",
 ]
 specific_include_rules = {
+  # The Blink test plugins use //base.
+  "blink_deprecated_test_plugin\.cc": [
+    "+base",
+  ],
+
   # extensions/packaged_app/test_packaged_app.cc uses kMaxDescriptorsPerMessage
   # defined in ipc/ipc_message_attachment_set.h.
   "test_packaged_app\.cc": [

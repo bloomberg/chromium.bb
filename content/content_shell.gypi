@@ -55,6 +55,7 @@
         '../media/media.gyp:media',
         '../net/net.gyp:net',
         '../net/net.gyp:net_resources',
+        '../ppapi/ppapi_internal.gyp:blink_deprecated_test_plugin',
         '../ppapi/ppapi_internal.gyp:blink_test_plugin',
         '../skia/skia.gyp:skia',
         '../storage/storage_browser.gyp:storage',
@@ -704,6 +705,7 @@
               # that corresponds to Content Shell Framework.framework.
               'destination': '<(PRODUCT_DIR)/$(CONTENTS_FOLDER_PATH)',
               'files': [
+                '<(PRODUCT_DIR)/blink_deprecated_test_plugin.plugin',
                 '<(PRODUCT_DIR)/blink_test_plugin.plugin',
               ],
             },

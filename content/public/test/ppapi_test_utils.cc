@@ -4,6 +4,8 @@
 
 #include "content/public/test/ppapi_test_utils.h"
 
+#include <vector>
+
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
@@ -12,30 +14,46 @@
 #include "content/public/common/content_switches.h"
 #include "ppapi/shared_impl/ppapi_constants.h"
 
+using CharType = base::FilePath::CharType;
+using StringType = base::FilePath::StringType;
+
 namespace ppapi {
 
 namespace {
 
-bool RegisterPlugin(
-    base::CommandLine* command_line,
-    const base::FilePath::StringType& library_name,
-    const base::FilePath::StringType& extra_registration_parameters,
-    const base::FilePath::StringType& mime_type) {
+struct PluginInfo {
+  PluginInfo(const StringType& library_name,
+             const StringType& extra_params,
+             const StringType& mime_type)
+      : library_name(library_name),
+        extra_params(extra_params),
+        mime_type(mime_type) {}
+
+  StringType library_name;
+  // Typically a string of the form #name#description#version
+  StringType extra_params;
+  StringType mime_type;
+};
+
+bool RegisterPlugins(base::CommandLine* command_line,
+                     const std::vector<PluginInfo>& plugins) {
   base::FilePath plugin_dir;
   if (!PathService::Get(base::DIR_MODULE, &plugin_dir))
     return false;
 
-  base::FilePath plugin_path = plugin_dir.Append(library_name);
-
-  // Append the switch to register the pepper plugin.
-  if (!base::PathExists(plugin_path))
-    return false;
-  base::FilePath::StringType pepper_plugin = plugin_path.value();
-  pepper_plugin.append(extra_registration_parameters);
-  pepper_plugin.append(FILE_PATH_LITERAL(";"));
-  pepper_plugin.append(mime_type);
-  command_line->AppendSwitchNative(switches::kRegisterPepperPlugins,
-                                   pepper_plugin);
+  StringType args;
+  for (const auto& plugin : plugins) {
+    if (!args.empty())
+      args += FILE_PATH_LITERAL(",");
+    base::FilePath plugin_path = plugin_dir.Append(plugin.library_name);
+    if (!base::PathExists(plugin_path))
+      return false;
+    args += plugin_path.value();
+    args += plugin.extra_params;
+    args += FILE_PATH_LITERAL(";");
+    args += plugin.mime_type;
+  }
+  command_line->AppendSwitchNative(switches::kRegisterPepperPlugins, args);
   return true;
 }
 
@@ -43,9 +61,10 @@ bool RegisterPluginWithDefaultMimeType(
     base::CommandLine* command_line,
     const base::FilePath::StringType& library_name,
     const base::FilePath::StringType& extra_registration_parameters) {
-  return RegisterPlugin(command_line, library_name,
-                        extra_registration_parameters,
-                        FILE_PATH_LITERAL("application/x-ppapi-tests"));
+  std::vector<PluginInfo> plugins;
+  plugins.push_back(PluginInfo(library_name, extra_registration_parameters,
+                               FILE_PATH_LITERAL("application/x-ppapi-tests")));
+  return RegisterPlugins(command_line, plugins);
 }
 
 }  // namespace
@@ -78,19 +97,31 @@ bool RegisterPowerSaverTestPlugin(base::CommandLine* command_line) {
 
 bool RegisterBlinkTestPlugin(base::CommandLine* command_line) {
 #if defined(OS_WIN)
-  static const base::FilePath::CharType kPluginLibrary[] =
-      L"blink_test_plugin.dll";
+  static const CharType kPluginLibrary[] = L"blink_test_plugin.dll";
+  static const CharType kDeprecatedPluginLibrary[] =
+      L"blink_deprecated_test_plugin.dll";
 #elif defined(OS_MACOSX)
-  static const base::FilePath::CharType kPluginLibrary[] =
-      "blink_test_plugin.plugin";
+  static const CharType kPluginLibrary[] = "blink_test_plugin.plugin";
+  static const CharType kDeprecatedPluginLibrary[] =
+      "blink_deprecated_test_plugin.plugin";
 #elif defined(OS_POSIX)
-  static const base::FilePath::CharType kPluginLibrary[] =
-      "libblink_test_plugin.so";
+  static const CharType kPluginLibrary[] = "libblink_test_plugin.so";
+  static const CharType kDeprecatedPluginLibrary[] =
+      "libblink_deprecated_test_plugin.so";
 #endif
-  // #name#description#version
-  static const base::FilePath::CharType kExtraParameters[] =
+  static const CharType kExtraParameters[] =
       FILE_PATH_LITERAL("#Blink Test Plugin#Interesting description.#0.8");
-  return RegisterPlugin(command_line, kPluginLibrary, kExtraParameters,
-                        FILE_PATH_LITERAL("application/x-blink-test-plugin"));
+  static const CharType kDeprecatedExtraParameters[] =
+      FILE_PATH_LITERAL("#Blink Deprecated Test Plugin#Description#0.1");
+
+  std::vector<PluginInfo> plugins;
+  plugins.push_back(
+      PluginInfo(kPluginLibrary, kExtraParameters,
+                 FILE_PATH_LITERAL("application/x-blink-test-plugin")));
+  plugins.push_back(PluginInfo(
+      kDeprecatedPluginLibrary, kDeprecatedExtraParameters,
+      FILE_PATH_LITERAL("application/x-blink-deprecated-test-plugin")));
+  return RegisterPlugins(command_line, plugins);
 }
+
 }  // namespace ppapi
