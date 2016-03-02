@@ -23,7 +23,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattDescriptorWin
       BluetoothRemoteGattCharacteristicWin* parent_characteristic,
       BTH_LE_GATT_DESCRIPTOR* descriptor_info,
       scoped_refptr<base::SequencedTaskRunner>& ui_task_runner);
-  ~BluetoothRemoteGattDescriptorWin();
+  ~BluetoothRemoteGattDescriptorWin() override;
 
   // Override BluetoothGattDescriptor interfaces.
   std::string GetIdentifier() const override;
