@@ -54,10 +54,10 @@ public:
     // Called from the front-end.
     void enable(ErrorString*) override;
     void disable(ErrorString*) override;
-    void requestDatabaseNames(ErrorString*, const String& securityOrigin, PassRefPtr<RequestDatabaseNamesCallback>) override;
-    void requestDatabase(ErrorString*, const String& securityOrigin, const String& databaseName, PassRefPtr<RequestDatabaseCallback>) override;
-    void requestData(ErrorString*, const String& securityOrigin, const String& databaseName, const String& objectStoreName, const String& indexName, int skipCount, int pageSize, const Maybe<protocol::IndexedDB::KeyRange>&, PassRefPtr<RequestDataCallback>) override;
-    void clearObjectStore(ErrorString*, const String& securityOrigin, const String& databaseName, const String& objectStoreName, PassRefPtr<ClearObjectStoreCallback>) override;
+    void requestDatabaseNames(ErrorString*, const String& securityOrigin, PassOwnPtr<RequestDatabaseNamesCallback>) override;
+    void requestDatabase(ErrorString*, const String& securityOrigin, const String& databaseName, PassOwnPtr<RequestDatabaseCallback>) override;
+    void requestData(ErrorString*, const String& securityOrigin, const String& databaseName, const String& objectStoreName, const String& indexName, int skipCount, int pageSize, const Maybe<protocol::IndexedDB::KeyRange>&, PassOwnPtr<RequestDataCallback>) override;
+    void clearObjectStore(ErrorString*, const String& securityOrigin, const String& databaseName, const String& objectStoreName, PassOwnPtr<ClearObjectStoreCallback>) override;
 
 private:
     explicit InspectorIndexedDBAgent(InspectedFrames*);

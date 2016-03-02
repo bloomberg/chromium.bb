@@ -48,7 +48,7 @@ void InspectorTracingAgent::start(ErrorString*,
     const Maybe<String>& options,
     const Maybe<double>& bufferUsageReportingInterval,
     const Maybe<String>& transferMode,
-    PassRefPtr<StartCallback> callback)
+    PassOwnPtr<StartCallback> callback)
 {
     ASSERT(sessionId().isEmpty());
     m_state->setString(TracingAgentState::sessionId, IdentifiersFactory::createIdentifier());
@@ -57,7 +57,7 @@ void InspectorTracingAgent::start(ErrorString*,
     callback->sendSuccess();
 }
 
-void InspectorTracingAgent::end(ErrorString* errorString, PassRefPtr<EndCallback> callback)
+void InspectorTracingAgent::end(ErrorString* errorString, PassOwnPtr<EndCallback> callback)
 {
     m_client->disableTracing();
     resetSessionId();

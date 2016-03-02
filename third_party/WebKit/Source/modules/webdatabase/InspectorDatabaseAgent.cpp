@@ -58,17 +58,28 @@ static const char databaseAgentEnabled[] = "databaseAgentEnabled";
 
 namespace {
 
-void reportTransactionFailed(ExecuteSQLCallback* requestCallback, SQLError* error)
-{
-    OwnPtr<protocol::Database::Error> errorObject = protocol::Database::Error::create()
-        .setMessage(error->message())
-        .setCode(error->code()).build();
-    requestCallback->sendSuccess(Maybe<protocol::Array<String>>(), Maybe<protocol::Array<protocol::Value>>(), errorObject.release());
-}
+class ExecuteSQLCallbackWrapper : public RefCounted<ExecuteSQLCallbackWrapper> {
+public:
+    static PassRefPtr<ExecuteSQLCallbackWrapper> create(PassOwnPtr<ExecuteSQLCallback> callback) { return adoptRef(new ExecuteSQLCallbackWrapper(callback)); }
+    ~ExecuteSQLCallbackWrapper() { }
+    ExecuteSQLCallback* get() { return m_callback.get(); }
+
+    void reportTransactionFailed(SQLError* error)
+    {
+        OwnPtr<protocol::Database::Error> errorObject = protocol::Database::Error::create()
+            .setMessage(error->message())
+            .setCode(error->code()).build();
+        m_callback->sendSuccess(Maybe<protocol::Array<String>>(), Maybe<protocol::Array<protocol::Value>>(), errorObject.release());
+    }
+
+private:
+    explicit ExecuteSQLCallbackWrapper(PassOwnPtr<ExecuteSQLCallback> callback) : m_callback(callback) { }
+    OwnPtr<ExecuteSQLCallback> m_callback;
+};
 
 class StatementCallback final : public SQLStatementCallback {
 public:
-    static StatementCallback* create(PassRefPtr<ExecuteSQLCallback> requestCallback)
+    static StatementCallback* create(PassRefPtr<ExecuteSQLCallbackWrapper> requestCallback)
     {
         return new StatementCallback(requestCallback);
     }
@@ -99,19 +110,18 @@ public:
             case SQLValue::NullValue: values->addItem(protocol::Value::null()); break;
             }
         }
-        m_requestCallback->sendSuccess(columnNames.release(), values.release(), Maybe<protocol::Database::Error>());
+        m_requestCallback->get()->sendSuccess(columnNames.release(), values.release(), Maybe<protocol::Database::Error>());
         return true;
     }
 
 private:
-    StatementCallback(PassRefPtr<ExecuteSQLCallback> requestCallback)
-        : m_requestCallback(requestCallback) { }
-    RefPtr<ExecuteSQLCallback> m_requestCallback;
+    StatementCallback(PassRefPtr<ExecuteSQLCallbackWrapper> requestCallback) : m_requestCallback(requestCallback) { }
+    RefPtr<ExecuteSQLCallbackWrapper> m_requestCallback;
 };
 
 class StatementErrorCallback final : public SQLStatementErrorCallback {
 public:
-    static StatementErrorCallback* create(PassRefPtr<ExecuteSQLCallback> requestCallback)
+    static StatementErrorCallback* create(PassRefPtr<ExecuteSQLCallbackWrapper> requestCallback)
     {
         return new StatementErrorCallback(requestCallback);
     }
@@ -125,19 +135,18 @@ public:
 
     bool handleEvent(SQLTransaction*, SQLError* error) override
     {
-        reportTransactionFailed(m_requestCallback.get(), error);
+        m_requestCallback->reportTransactionFailed(error);
         return true;
     }
 
 private:
-    StatementErrorCallback(PassRefPtr<ExecuteSQLCallback> requestCallback)
-        : m_requestCallback(requestCallback) { }
-    RefPtr<ExecuteSQLCallback> m_requestCallback;
+    StatementErrorCallback(PassRefPtr<ExecuteSQLCallbackWrapper> requestCallback) : m_requestCallback(requestCallback) { }
+    RefPtr<ExecuteSQLCallbackWrapper> m_requestCallback;
 };
 
 class TransactionCallback final : public SQLTransactionCallback {
 public:
-    static TransactionCallback* create(const String& sqlStatement, PassRefPtr<ExecuteSQLCallback> requestCallback)
+    static TransactionCallback* create(const String& sqlStatement, PassRefPtr<ExecuteSQLCallbackWrapper> requestCallback)
     {
         return new TransactionCallback(sqlStatement, requestCallback);
     }
@@ -151,26 +160,23 @@ public:
 
     bool handleEvent(SQLTransaction* transaction) override
     {
-        if (!m_requestCallback->isActive())
-            return true;
-
         Vector<SQLValue> sqlValues;
-        SQLStatementCallback* callback = StatementCallback::create(m_requestCallback.get());
-        SQLStatementErrorCallback* errorCallback = StatementErrorCallback::create(m_requestCallback.get());
+        SQLStatementCallback* callback = StatementCallback::create(m_requestCallback);
+        SQLStatementErrorCallback* errorCallback = StatementErrorCallback::create(m_requestCallback);
         transaction->executeSQL(m_sqlStatement, sqlValues, callback, errorCallback, IGNORE_EXCEPTION);
         return true;
     }
 private:
-    TransactionCallback(const String& sqlStatement, PassRefPtr<ExecuteSQLCallback> requestCallback)
+    TransactionCallback(const String& sqlStatement, PassRefPtr<ExecuteSQLCallbackWrapper> requestCallback)
         : m_sqlStatement(sqlStatement)
         , m_requestCallback(requestCallback) { }
     String m_sqlStatement;
-    RefPtr<ExecuteSQLCallback> m_requestCallback;
+    RefPtr<ExecuteSQLCallbackWrapper> m_requestCallback;
 };
 
 class TransactionErrorCallback final : public SQLTransactionErrorCallback {
 public:
-    static TransactionErrorCallback* create(PassRefPtr<ExecuteSQLCallback> requestCallback)
+    static TransactionErrorCallback* create(PassRefPtr<ExecuteSQLCallbackWrapper> requestCallback)
     {
         return new TransactionErrorCallback(requestCallback);
     }
@@ -184,13 +190,13 @@ public:
 
     bool handleEvent(SQLError* error) override
     {
-        reportTransactionFailed(m_requestCallback.get(), error);
+        m_requestCallback->reportTransactionFailed(error);
         return true;
     }
 private:
-    TransactionErrorCallback(PassRefPtr<ExecuteSQLCallback> requestCallback)
+    TransactionErrorCallback(PassRefPtr<ExecuteSQLCallbackWrapper> requestCallback)
         : m_requestCallback(requestCallback) { }
-    RefPtr<ExecuteSQLCallback> m_requestCallback;
+    RefPtr<ExecuteSQLCallbackWrapper> m_requestCallback;
 };
 
 class TransactionSuccessCallback final : public VoidCallback {
@@ -288,9 +294,9 @@ void InspectorDatabaseAgent::getDatabaseTableNames(ErrorString* error, const Str
     }
 }
 
-void InspectorDatabaseAgent::executeSQL(ErrorString*, const String& databaseId, const String& query, PassRefPtr<ExecuteSQLCallback> prpRequestCallback)
+void InspectorDatabaseAgent::executeSQL(ErrorString*, const String& databaseId, const String& query, PassOwnPtr<ExecuteSQLCallback> prpRequestCallback)
 {
-    RefPtr<ExecuteSQLCallback> requestCallback = prpRequestCallback;
+    OwnPtr<ExecuteSQLCallback> requestCallback = prpRequestCallback;
 
     if (!m_enabled) {
         requestCallback->sendFailure("Database agent is not enabled");
@@ -303,8 +309,9 @@ void InspectorDatabaseAgent::executeSQL(ErrorString*, const String& databaseId, 
         return;
     }
 
-    SQLTransactionCallback* callback = TransactionCallback::create(query, requestCallback.get());
-    SQLTransactionErrorCallback* errorCallback = TransactionErrorCallback::create(requestCallback.get());
+    RefPtr<ExecuteSQLCallbackWrapper> wrapper = ExecuteSQLCallbackWrapper::create(requestCallback.release());
+    SQLTransactionCallback* callback = TransactionCallback::create(query, wrapper);
+    SQLTransactionErrorCallback* errorCallback = TransactionErrorCallback::create(wrapper);
     VoidCallback* successCallback = TransactionSuccessCallback::create();
     database->transaction(callback, errorCallback, successCallback);
 }

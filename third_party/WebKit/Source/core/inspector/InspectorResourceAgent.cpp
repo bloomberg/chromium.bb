@@ -121,7 +121,7 @@ static PassOwnPtr<protocol::Network::Headers> buildObjectForHeaders(const HTTPHe
 class InspectorFileReaderLoaderClient final : public FileReaderLoaderClient {
     WTF_MAKE_NONCOPYABLE(InspectorFileReaderLoaderClient);
 public:
-    InspectorFileReaderLoaderClient(PassRefPtr<BlobDataHandle> blob, PassOwnPtr<TextResourceDecoder> decoder, PassRefPtr<GetResponseBodyCallback> callback)
+    InspectorFileReaderLoaderClient(PassRefPtr<BlobDataHandle> blob, PassOwnPtr<TextResourceDecoder> decoder, PassOwnPtr<GetResponseBodyCallback> callback)
         : m_blob(blob)
         , m_decoder(decoder)
         , m_callback(callback)
@@ -182,7 +182,7 @@ private:
 
     RefPtr<BlobDataHandle> m_blob;
     OwnPtr<TextResourceDecoder> m_decoder;
-    RefPtr<GetResponseBodyCallback> m_callback;
+    OwnPtr<GetResponseBodyCallback> m_callback;
     OwnPtr<FileReaderLoader> m_loader;
     OwnPtr<ArrayBufferBuilder> m_rawData;
 };
@@ -900,27 +900,29 @@ void InspectorResourceAgent::setExtraHTTPHeaders(ErrorString*, const PassOwnPtr<
     m_state->setObject(ResourceAgentState::extraRequestHeaders, headers->serialize());
 }
 
-bool InspectorResourceAgent::getResponseBodyBlob(const String& requestId, PassRefPtr<GetResponseBodyCallback> callback)
+bool InspectorResourceAgent::canGetResponseBodyBlob(const String& requestId)
 {
     NetworkResourcesData::ResourceData const* resourceData = m_resourcesData->data(requestId);
-    if (!resourceData)
+    BlobDataHandle* blob = resourceData ? resourceData->downloadedFileBlob() : nullptr;
+    if (!blob)
         return false;
-    if (BlobDataHandle* blob = resourceData->downloadedFileBlob()) {
-        if (LocalFrame* frame = IdentifiersFactory::frameById(m_inspectedFrames, resourceData->frameId())) {
-            if (Document* document = frame->document()) {
-                InspectorFileReaderLoaderClient* client = new InspectorFileReaderLoaderClient(blob, InspectorPageAgent::createResourceTextDecoder(resourceData->mimeType(), resourceData->textEncodingName()), callback);
-                client->start(document);
-                return true;
-            }
-        }
-    }
-    return false;
+    LocalFrame* frame = IdentifiersFactory::frameById(m_inspectedFrames, resourceData->frameId());
+    return frame && frame->document();
 }
 
-
-void InspectorResourceAgent::getResponseBody(ErrorString* errorString, const String& requestId, PassRefPtr<GetResponseBodyCallback> passCallback)
+void InspectorResourceAgent::getResponseBodyBlob(const String& requestId, PassOwnPtr<GetResponseBodyCallback> callback)
 {
-    RefPtr<GetResponseBodyCallback> callback = passCallback;
+    NetworkResourcesData::ResourceData const* resourceData = m_resourcesData->data(requestId);
+    BlobDataHandle* blob = resourceData->downloadedFileBlob();
+    LocalFrame* frame = IdentifiersFactory::frameById(m_inspectedFrames, resourceData->frameId());
+    Document* document = frame->document();
+    InspectorFileReaderLoaderClient* client = new InspectorFileReaderLoaderClient(blob, InspectorPageAgent::createResourceTextDecoder(resourceData->mimeType(), resourceData->textEncodingName()), callback);
+    client->start(document);
+}
+
+void InspectorResourceAgent::getResponseBody(ErrorString* errorString, const String& requestId, PassOwnPtr<GetResponseBodyCallback> passCallback)
+{
+    OwnPtr<GetResponseBodyCallback> callback = passCallback;
     NetworkResourcesData::ResourceData const* resourceData = m_resourcesData->data(requestId);
     if (!resourceData) {
         callback->sendFailure("No resource with given identifier found");
@@ -928,8 +930,10 @@ void InspectorResourceAgent::getResponseBody(ErrorString* errorString, const Str
     }
 
     // XHR with ResponseTypeBlob should be returned as blob.
-    if (resourceData->xhrReplayData() && getResponseBodyBlob(requestId, callback))
+    if (resourceData->xhrReplayData() && canGetResponseBodyBlob(requestId)) {
+        getResponseBodyBlob(requestId, callback.release());
         return;
+    }
 
     if (resourceData->hasContent()) {
         callback->sendSuccess(resourceData->content(), resourceData->base64Encoded());
@@ -958,8 +962,10 @@ void InspectorResourceAgent::getResponseBody(ErrorString* errorString, const Str
         }
     }
 
-    if (getResponseBodyBlob(requestId, callback))
+    if (canGetResponseBodyBlob(requestId)) {
+        getResponseBodyBlob(requestId, callback.release());
         return;
+    }
 
     callback->sendFailure("No data found for resource with given identifier");
 }

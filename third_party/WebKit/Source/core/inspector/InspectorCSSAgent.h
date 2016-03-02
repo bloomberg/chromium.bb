@@ -126,7 +126,7 @@ public:
     void addEditedStyleElement(int backendNodeId, const String& content);
     bool getEditedStyleElement(int backendNodeId, String* content);
 
-    void enable(ErrorString*, PassRefPtr<EnableCallback>) override;
+    void enable(ErrorString*, PassOwnPtr<EnableCallback>) override;
     void disable(ErrorString*) override;
     void getMatchedStylesForNode(ErrorString*, int nodeId, Maybe<protocol::CSS::CSSStyle>* inlineStyle, Maybe<protocol::CSS::CSSStyle>* attributesStyle, Maybe<protocol::Array<protocol::CSS::RuleMatch>>* matchedCSSRules, Maybe<protocol::Array<protocol::CSS::PseudoElementMatches>>*, Maybe<protocol::Array<protocol::CSS::InheritedStyleEntry>>*, Maybe<protocol::Array<protocol::CSS::CSSKeyframesRule>>*) override;
     void getInlineStylesForNode(ErrorString*, int nodeId, Maybe<protocol::CSS::CSSStyle>* inlineStyle, Maybe<protocol::CSS::CSSStyle>* attributesStyle) override;
@@ -172,7 +172,7 @@ private:
     typedef WillBeHeapHashMap<RawPtrWillBeMember<Node>, RefPtrWillBeMember<InspectorStyleSheetForInlineStyle>> NodeToInspectorStyleSheet; // bogus "stylesheets" with elements' inline styles
     typedef HashMap<int, unsigned> NodeIdToForcedPseudoState;
 
-    void resourceContentLoaded(PassRefPtr<EnableCallback>);
+    void resourceContentLoaded(PassOwnPtr<EnableCallback>);
     void wasEnabled();
     void resetNonPersistentData();
     InspectorStyleSheetForInlineStyle* asInspectorStyleSheet(Element* element);

@@ -168,7 +168,7 @@ private:
     int m_layerTreeId;
     bool m_inspectedFrameDidCommitLoad;
 
-    RefPtr<protocol::Dispatcher> m_inspectorBackendDispatcher;
+    OwnPtr<protocol::Dispatcher> m_inspectorBackendDispatcher;
     OwnPtr<protocol::Frontend> m_inspectorFrontend;
     InspectorAgentRegistry m_agents;
     bool m_deferredAgentsInitialized;

@@ -506,11 +506,8 @@ void InspectorPageAgent::finishReload()
     m_debuggerAgent->setSkipAllPauses(&unused, false);
 }
 
-void InspectorPageAgent::getResourceContentAfterResourcesContentLoaded(const String& frameId, const String& url, PassRefPtr<GetResourceContentCallback> callback)
+void InspectorPageAgent::getResourceContentAfterResourcesContentLoaded(const String& frameId, const String& url, PassOwnPtr<GetResourceContentCallback> callback)
 {
-    if (!callback->isActive())
-        return;
-
     LocalFrame* frame = IdentifiersFactory::frameById(m_inspectedFrames, frameId);
     if (!frame) {
         callback->sendFailure("No frame for given id found");
@@ -527,7 +524,7 @@ void InspectorPageAgent::getResourceContentAfterResourcesContentLoaded(const Str
     callback->sendSuccess(content, base64Encoded);
 }
 
-void InspectorPageAgent::getResourceContent(ErrorString* errorString, const String& frameId, const String& url, PassRefPtr<GetResourceContentCallback> callback)
+void InspectorPageAgent::getResourceContent(ErrorString* errorString, const String& frameId, const String& url, PassOwnPtr<GetResourceContentCallback> callback)
 {
     if (!m_enabled) {
         callback->sendFailure("Agent is not enabled.");
@@ -536,11 +533,8 @@ void InspectorPageAgent::getResourceContent(ErrorString* errorString, const Stri
     m_inspectorResourceContentLoader->ensureResourcesContentLoaded(bind(&InspectorPageAgent::getResourceContentAfterResourcesContentLoaded, this, frameId, url, callback));
 }
 
-void InspectorPageAgent::searchContentAfterResourcesContentLoaded(const String& frameId, const String& url, const String& query, bool caseSensitive, bool isRegex, PassRefPtr<SearchInResourceCallback> callback)
+void InspectorPageAgent::searchContentAfterResourcesContentLoaded(const String& frameId, const String& url, const String& query, bool caseSensitive, bool isRegex, PassOwnPtr<SearchInResourceCallback> callback)
 {
-    if (!callback->isActive())
-        return;
-
     LocalFrame* frame = IdentifiersFactory::frameById(m_inspectedFrames, frameId);
     if (!frame) {
         callback->sendFailure("No frame for given id found");
@@ -560,7 +554,7 @@ void InspectorPageAgent::searchContentAfterResourcesContentLoaded(const String& 
     callback->sendSuccess(results.release());
 }
 
-void InspectorPageAgent::searchInResource(ErrorString*, const String& frameId, const String& url, const String& query, const Maybe<bool>& optionalCaseSensitive, const Maybe<bool>& optionalIsRegex, PassRefPtr<SearchInResourceCallback> callback)
+void InspectorPageAgent::searchInResource(ErrorString*, const String& frameId, const String& url, const String& query, const Maybe<bool>& optionalCaseSensitive, const Maybe<bool>& optionalIsRegex, PassOwnPtr<SearchInResourceCallback> callback)
 {
     if (!m_enabled) {
         callback->sendFailure("Agent is not enabled.");

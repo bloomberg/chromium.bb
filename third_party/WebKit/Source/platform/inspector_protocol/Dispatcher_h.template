@@ -13,33 +13,28 @@ namespace blink {
 namespace protocol {
 
 class FrontendChannel;
-class DispatcherImpl;
+class DispatcherImplWeakPtr;
 using ErrorString = String;
 
-class PLATFORM_EXPORT Dispatcher: public RefCounted<Dispatcher> {
+class PLATFORM_EXPORT Dispatcher {
 public:
-    static PassRefPtr<Dispatcher> create(FrontendChannel* frontendChannel);
+    static PassOwnPtr<Dispatcher> create(FrontendChannel* frontendChannel);
     virtual ~Dispatcher() { }
 
-    class PLATFORM_EXPORT CallbackBase: public RefCounted<CallbackBase> {
+    class PLATFORM_EXPORT CallbackBase {
     public:
-        CallbackBase(PassRefPtr<DispatcherImpl> backendImpl, int sessionId, int id);
+        CallbackBase(PassOwnPtr<DispatcherImplWeakPtr> backendImpl, int sessionId, int id);
         virtual ~CallbackBase();
         void sendFailure(const ErrorString&);
-        bool isActive();
+        void dispose();
 
     protected:
         void sendIfActive(PassOwnPtr<protocol::DictionaryValue> partialMessage, const ErrorString& invocationError);
 
     private:
-        void disable() { m_alreadySent = true; }
-
-        RefPtr<DispatcherImpl> m_backendImpl;
+        OwnPtr<DispatcherImplWeakPtr> m_backendImpl;
         int m_sessionId;
         int m_id;
-        bool m_alreadySent;
-
-        friend class DispatcherImpl;
     };
 
 {% for domain in api.domains %}
@@ -51,7 +46,7 @@ public:
     {% if "async" in command %}
         class PLATFORM_EXPORT {{command.name | to_title_case}}Callback : public CallbackBase {
         public:
-            {{command.name | to_title_case}}Callback(PassRefPtr<DispatcherImpl>, int sessionId, int id);
+            {{command.name | to_title_case}}Callback(PassOwnPtr<DispatcherImplWeakPtr>, int sessionId, int id);
             void sendSuccess(
             {%- for parameter in command.returns -%}
               {%- if "optional" in parameter -%}
@@ -73,7 +68,7 @@ public:
         {%- endif -%}
     {%- endfor -%}
     {%- if "async" in command -%}
-            , PassRefPtr<{{command.name | to_title_case}}Callback> callback
+            , PassOwnPtr<{{command.name | to_title_case}}Callback> callback
     {%- else -%}
       {%- for parameter in command.returns -%}
         {%- if "optional" in parameter -%}
