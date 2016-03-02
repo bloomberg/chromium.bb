@@ -7,33 +7,94 @@
 #include <string>
 #include <vector>
 
-
 #include "base/command_line.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
 #include "base/strings/string_split.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-using testing::EndsWith;
-using testing::StartsWith;
 
-TEST(FuzzerLauncherTest, Dict) {
+
+TEST(FuzzerConfigTest, DictOnly) {
+  // Test of automatically generated .options file for fuzzer with dict option.
   base::FilePath exe_path;
   PathService::Get(base::FILE_EXE, &exe_path);
   std::string launcher_path =
-    exe_path.DirName().Append("test_dict_launcher.sh").value();
+    exe_path.DirName().Append("check_fuzzer_config.py").value();
 
   std::string output;
-  base::CommandLine cmd({{launcher_path, "-custom_option"}});
+  base::CommandLine cmd({{launcher_path, "test_dict_only.options"}});
   bool success = base::GetAppOutputAndError(cmd, &output);
   EXPECT_TRUE(success);
   std::vector<std::string> fuzzer_args = base::SplitString(
-      output, "\n\r", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+      output, "\n", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+
+  EXPECT_EQ(1UL, fuzzer_args.size());
+
+  EXPECT_EQ(fuzzer_args[0], "dict=test_dict_only.dict");
+}
+
+
+TEST(FuzzerConfigTest, ConfigOnly) {
+  // Test of .options file for fuzzer with libfuzzer_options and without dict.
+  base::FilePath exe_path;
+  PathService::Get(base::FILE_EXE, &exe_path);
+  std::string launcher_path =
+    exe_path.DirName().Append("check_fuzzer_config.py").value();
+
+  std::string output;
+  base::CommandLine cmd({{launcher_path, "test_config_only.options"}});
+  bool success = base::GetAppOutputAndError(cmd, &output);
+  EXPECT_TRUE(success);
+  std::vector<std::string> fuzzer_args = base::SplitString(
+      output, "\n", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
 
   EXPECT_EQ(3UL, fuzzer_args.size());
 
-  EXPECT_THAT(fuzzer_args[0], EndsWith("print_args.py"));
-  EXPECT_THAT(fuzzer_args[1], StartsWith("-dict"));
-  EXPECT_THAT(fuzzer_args[1], EndsWith("test_dict"));
-  EXPECT_EQ("-custom_option", fuzzer_args[2]);
+  EXPECT_EQ(fuzzer_args[0], "max_len=random(1337, 31337)");
+  EXPECT_EQ(fuzzer_args[1], "timeout=666");
+  EXPECT_EQ(fuzzer_args[2], "use_traces=1");
+}
+
+
+TEST(FuzzerConfigTest, ConfigAndDict) {
+  // Test of .options file for fuzzer with options file and dictionary.
+  base::FilePath exe_path;
+  PathService::Get(base::FILE_EXE, &exe_path);
+  std::string launcher_path =
+    exe_path.DirName().Append("check_fuzzer_config.py").value();
+
+  std::string output;
+  base::CommandLine cmd({{launcher_path, "test_config_and_dict.options"}});
+  bool success = base::GetAppOutputAndError(cmd, &output);
+  EXPECT_TRUE(success);
+  std::vector<std::string> fuzzer_args = base::SplitString(
+      output, "\n", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+
+  EXPECT_EQ(4UL, fuzzer_args.size());
+
+  EXPECT_EQ(fuzzer_args[0], "max_len=random(1337, 31337)");
+  EXPECT_EQ(fuzzer_args[1], "timeout=666");
+  EXPECT_EQ(fuzzer_args[2], "use_traces=1");
+  EXPECT_EQ(fuzzer_args[3], "dict=test_config_and_dict.dict");
+}
+
+
+TEST(FuzzerConfigTest, DictSubdir) {
+  // Test of auto-generated .options file for fuzzer with dict in sub-directory.
+  base::FilePath exe_path;
+  PathService::Get(base::FILE_EXE, &exe_path);
+  std::string launcher_path =
+    exe_path.DirName().Append("check_fuzzer_config.py").value();
+
+  std::string output;
+  base::CommandLine cmd({{launcher_path, "test_dict_from_subdir.options"}});
+  bool success = base::GetAppOutputAndError(cmd, &output);
+  EXPECT_TRUE(success);
+  std::vector<std::string> fuzzer_args = base::SplitString(
+      output, "\n", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+
+  EXPECT_EQ(1UL, fuzzer_args.size());
+
+  EXPECT_EQ(fuzzer_args[0], "dict=test_dict_from_subdir.dict");
 }

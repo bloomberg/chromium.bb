@@ -1,0 +1,17 @@
+# Config for test of .options file for test fuzzer.
+
+
+
+
+# Random empty lines and comments to ensure that parser is stable.
+
+#######
+
+[libfuzzer]
+
+max_len=random(1337, 31337)
+timeout   =   666
+
+
+# Assume here is a comment before one of options.
+use_traces=1

@@ -12,27 +12,54 @@ test("libfuzzer_tests") {
     "fuzzer_launcher_test.cc",
   ]
   deps = [
-    ":test_dict_launcher.sh",
+    ":test_config_and_dict",
+    ":test_config_only",
+    ":test_dict_from_subdir",
+    ":test_dict_only",
     "//base",
     "//testing/gmock",
     "//testing/gtest",
     "//testing/gtest:gtest_main",
   ]
   data_deps = [
-    ":print_args",
+    ":check_fuzzer_config",
   ]
 }
 
-fuzzer_test_launcher("test_dict_launcher.sh") {
-  fuzzer_name = "print_args.py"
-  dict = "test_dict"
+fuzzer_test("test_dict_only") {
+  sources = [
+    "../fuzzers/empty_fuzzer.cc",
+  ]
+  dict = "test.dict"
 }
 
-copy("print_args") {
+fuzzer_test("test_config_only") {
   sources = [
-    "print_args.py",
+    "../fuzzers/empty_fuzzer.cc",
+  ]
+  libfuzzer_options = "fuzzer_config_only_test.options"
+}
+
+fuzzer_test("test_config_and_dict") {
+  sources = [
+    "../fuzzers/empty_fuzzer.cc",
+  ]
+  dict = "test.dict"
+  libfuzzer_options = "fuzzer_config_and_dict_test.options"
+}
+
+fuzzer_test("test_dict_from_subdir") {
+  sources = [
+    "../fuzzers/empty_fuzzer.cc",
+  ]
+  dict = "dicts_subdir/test_subdir.dict"
+}
+
+copy("check_fuzzer_config") {
+  sources = [
+    "check_fuzzer_config.py",
   ]
   outputs = [
-    "$root_build_dir/print_args.py",
+    "$root_build_dir/check_fuzzer_config.py",
   ]
 }

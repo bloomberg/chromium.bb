@@ -8,45 +8,22 @@ import("//build/config/features.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 import("//testing/test.gni")
 
-# visible for testing only.
-template("fuzzer_test_launcher") {
-  assert(defined(invoker.fuzzer_name), "need fuzzer_name in $target_name.")
-  assert(defined(invoker.dict), "need dict in $target_name.")
-
-  generated_script = "$root_build_dir/$target_name"
-
-  action(target_name) {
-    script = "//testing/libfuzzer/gen_fuzzer_runner.py"
-    args = [
-      "--fuzzer",
-      invoker.fuzzer_name,
-      "--launcher",
-      rebase_path(generated_script, root_build_dir),
-      "--dict",
-      rebase_path("$root_build_dir/" + invoker.dict, root_build_dir),
-    ]
-    outputs = [
-      generated_script,
-    ]
-  }
-}
-
 # fuzzer_test is used to define individual libfuzzer tests.
 #
 # Supported attributes:
 # - (required) sources - fuzzer test source files
-# - data - test data files.
 # - deps - test dependencies
 # - additional_configs - additional configs to be used for compilation
 # - dict - a dictionary file for the fuzzer.
+# - libfuzzer_options - options for the fuzzer (e.g. -max_len or -timeout).
 #
 # If use_libfuzzer gn flag is defined, then proper fuzzer would be build.
 # Without use_libfuzzer a unit-test style binary would be built on linux
 # and the whole target is a no-op otherwise.
 #
 # The template wraps test() target with appropriate dependencies.
-# If any test run-time options are present (dict), then a launcher
-# file would be generated with <fuzzer_name>.sh name in root output
+# If any test run-time options are present (dict or libfuzzer_options), then a
+# config (.options file) file would be generated or modified in root output
 # dir (next to test).
 template("fuzzer_test") {
   if (!disable_libfuzzer && (use_libfuzzer || use_drfuzz || is_linux)) {
@@ -58,37 +35,55 @@ template("fuzzer_test") {
       test_deps += invoker.deps
     }
 
-    test_data = []
-    if (defined(invoker.data)) {
-      test_data += invoker.data
+    if (defined(invoker.libfuzzer_options) && !defined(invoker.dict)) {
+      # Copy libfuzzer_options to output if dict is not provided.
+      copy(target_name + "_libfuzzer_options_copy") {
+        sources = [
+          invoker.libfuzzer_options,
+        ]
+        outputs = [
+          "$root_build_dir/" + target_name + ".options",
+        ]
+      }
+
+      test_deps += [ ":" + target_name + "_libfuzzer_options_copy" ]
     }
 
     if (defined(invoker.dict)) {
-      fuzzer_name = target_name
-      launcher_name = target_name + ".sh"
-
-      # Copy dictionary to output
+      # Copy dictionary to output.
       copy(target_name + "_dict_copy") {
         sources = [
           invoker.dict,
         ]
         outputs = [
-          "$root_build_dir/" + invoker.dict,
+          "$root_build_dir/" + target_name + ".dict",
         ]
       }
 
-      fuzzer_test_launcher(launcher_name) {
-        dict = invoker.dict
-      }
+      test_deps += [ ":" + target_name + "_dict_copy" ]
 
-      test_deps += [
-        ":$launcher_name",
-        ":" + fuzzer_name + "_dict_copy",
-      ]
-      test_data += [
-        invoker.dict,
-        ":$launcher_name",
-      ]
+      # Generate new .options file or update an existing one.
+      config_name = target_name + ".options"
+      action(config_name) {
+        script = "//testing/libfuzzer/gen_fuzzer_config.py"
+        args = [
+          "--config",
+          rebase_path("$root_build_dir/" + config_name),
+          "--dict",
+          rebase_path("$root_build_dir/" + invoker.target_name + ".dict"),
+        ]
+
+        if (defined(invoker.libfuzzer_options)) {
+          args += [
+            "--libfuzzer_options",
+            rebase_path(invoker.libfuzzer_options),
+          ]
+        }
+        outputs = [
+          "$root_build_dir/$config_name",
+        ]
+      }
+      test_deps += [ ":" + config_name ]
     }
 
     test(target_name) {
@@ -98,7 +93,6 @@ template("fuzzer_test") {
                                "include_dirs",
                              ])
       deps = test_deps
-      data = test_data
 
       if (defined(invoker.additional_configs)) {
         configs += invoker.additional_configs
@@ -117,6 +111,9 @@ template("fuzzer_test") {
     }
     if (defined(invoker.dict)) {
       assert(invoker.dict == [] || invoker.dict != [])
+    }
+    if (defined(invoker.libfuzzer_options)) {
+      assert(invoker.libfuzzer_options == [] || invoker.libfuzzer_options != [])
     }
 
     group(target_name) {
