@@ -47,17 +47,26 @@ void AudioDevicesPrefHandlerStub::SetMuteValue(const AudioDevice& device,
   audio_device_mute_map_[device.stable_device_id] = mute_on;
 }
 
-AudioDeviceState AudioDevicesPrefHandlerStub::GetDeviceState(
-    const AudioDevice& device) {
-  if (audio_device_state_map_.find(device.stable_device_id) ==
-      audio_device_state_map_.end())
-    return AUDIO_STATE_NOT_AVAILABLE;
-  return audio_device_state_map_[device.stable_device_id];
+void AudioDevicesPrefHandlerStub::SetDeviceActive(const AudioDevice& device,
+                                                  bool active,
+                                                  bool activate_by_user) {
+  DeviceState state;
+  state.active = active;
+  state.activate_by_user = activate_by_user;
+  audio_device_state_map_[device.stable_device_id] = state;
 }
 
-void AudioDevicesPrefHandlerStub::SetDeviceState(const AudioDevice& device,
-                                                 AudioDeviceState state) {
-  audio_device_state_map_[device.stable_device_id] = state;
+bool AudioDevicesPrefHandlerStub::GetDeviceActive(const AudioDevice& device,
+                                                  bool* active,
+                                                  bool* activate_by_user) {
+  if (audio_device_state_map_.find(device.stable_device_id) ==
+      audio_device_state_map_.end()) {
+    return false;
+  }
+  *active = audio_device_state_map_[device.stable_device_id].active;
+  *activate_by_user =
+      audio_device_state_map_[device.stable_device_id].activate_by_user;
+  return true;
 }
 
 bool AudioDevicesPrefHandlerStub::GetAudioOutputAllowedValue() {

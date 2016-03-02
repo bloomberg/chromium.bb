@@ -40,6 +40,8 @@ class CHROMEOS_EXPORT FakeCrasAudioClient : public CrasAudioClient {
   void AddActiveOutputNode(uint64_t node_id) override;
   void RemoveActiveOutputNode(uint64_t node_id) override;
   void SwapLeftRight(uint64_t node_id, bool swap) override;
+  void WaitForServiceToBeAvailable(
+      const WaitForServiceToBeAvailableCallback& callback) override;
 
   // Modifies an AudioNode from |node_list_| based on |audio_node.id|.
   // if the |audio_node.id| cannot be found in list, Add an

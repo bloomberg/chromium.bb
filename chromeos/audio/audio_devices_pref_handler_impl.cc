@@ -85,24 +85,43 @@ void AudioDevicesPrefHandlerImpl::SetMuteValue(const AudioDevice& device,
   SaveDevicesMutePref();
 }
 
-AudioDeviceState AudioDevicesPrefHandlerImpl::GetDeviceState(
-    const AudioDevice& device) {
-  std::string device_id_str = GetDeviceIdString(device);
-  if (!device_state_settings_->HasKey(device_id_str)) {
-    device_state_settings_->SetInteger(
-        device_id_str, static_cast<int>(AUDIO_STATE_NOT_AVAILABLE));
-    SaveDevicesStatePref();
-  }
-  int state = static_cast<int>(AUDIO_STATE_NOT_AVAILABLE);
-  device_state_settings_->GetInteger(device_id_str, &state);
-  return (AudioDeviceState)state;
+void AudioDevicesPrefHandlerImpl::SetDeviceActive(const AudioDevice& device,
+                                                  bool active,
+                                                  bool activate_by_user) {
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  dict->SetBoolean("active", active);
+  if (active)
+    dict->SetBoolean("activate_by_user", activate_by_user);
+
+  device_state_settings_->Set(GetDeviceIdString(device), std::move(dict));
+  SaveDevicesStatePref();
 }
 
-void AudioDevicesPrefHandlerImpl::SetDeviceState(const AudioDevice& device,
-                                                 AudioDeviceState state) {
-  device_state_settings_->SetInteger(GetDeviceIdString(device),
-                                     static_cast<int>(state));
-  SaveDevicesStatePref();
+bool AudioDevicesPrefHandlerImpl::GetDeviceActive(const AudioDevice& device,
+                                                  bool* active,
+                                                  bool* activate_by_user) {
+  const std::string device_id_str = GetDeviceIdString(device);
+  if (!device_state_settings_->HasKey(device_id_str))
+    return false;
+
+  base::DictionaryValue* dict = NULL;
+  if (!device_state_settings_->GetDictionary(device_id_str, &dict)) {
+    LOG(ERROR) << "Could not get device state for device:" << device.ToString();
+    return false;
+  }
+  if (!dict->GetBoolean("active", active)) {
+    LOG(ERROR) << "Could not get active value for device:" << device.ToString();
+    return false;
+  }
+
+  if (*active && !dict->GetBoolean("activate_by_user", activate_by_user)) {
+    LOG(ERROR) << "Could not get activate_by_user value for previously "
+                  "active device:"
+               << device.ToString();
+    return false;
+  }
+
+  return true;
 }
 
 bool AudioDevicesPrefHandlerImpl::GetAudioOutputAllowedValue() {

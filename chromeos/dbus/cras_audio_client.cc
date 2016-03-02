@@ -186,6 +186,11 @@ class CrasAudioClientImpl : public CrasAudioClient {
                             dbus::ObjectProxy::EmptyResponseCallback());
   }
 
+  void WaitForServiceToBeAvailable(
+      const WaitForServiceToBeAvailableCallback& callback) override {
+    cras_proxy_->WaitForServiceToBeAvailable(callback);
+  }
+
  protected:
   void Init(dbus::Bus* bus) override {
     cras_proxy_ = bus->GetObjectProxy(cras::kCrasServiceName,

@@ -209,7 +209,8 @@ IN_PROC_BROWSER_TEST_F(AudioApiTest, OnInputMuteChanged) {
 
   // Set the jabra mic to be the active input device.
   AudioDevice jabra_mic(kJabraMic1);
-  cras_audio_handler_->SwitchToDevice(jabra_mic, true);
+  cras_audio_handler_->SwitchToDevice(
+      jabra_mic, true, chromeos::CrasAudioHandler::ACTIVATE_BY_USER);
   EXPECT_EQ(kJabraMic1.id, cras_audio_handler_->GetPrimaryActiveInputNode());
 
   // Un-mute the input.

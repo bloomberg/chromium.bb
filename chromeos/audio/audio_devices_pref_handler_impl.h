@@ -35,9 +35,12 @@ class CHROMEOS_EXPORT AudioDevicesPrefHandlerImpl
   bool GetMuteValue(const AudioDevice& device) override;
   void SetMuteValue(const AudioDevice& device, bool mute_on) override;
 
-  AudioDeviceState GetDeviceState(const AudioDevice& device) override;
-  void SetDeviceState(const AudioDevice& device,
-                      AudioDeviceState state) override;
+  void SetDeviceActive(const AudioDevice& device,
+                       bool active,
+                       bool activate_by_user) override;
+  bool GetDeviceActive(const AudioDevice& device,
+                       bool* active,
+                       bool* activate_by_user) override;
 
   bool GetAudioOutputAllowedValue() override;
 

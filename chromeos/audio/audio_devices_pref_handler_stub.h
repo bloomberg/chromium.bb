@@ -18,9 +18,14 @@ namespace chromeos {
 class CHROMEOS_EXPORT AudioDevicesPrefHandlerStub
     : public AudioDevicesPrefHandler {
  public:
+  struct DeviceState {
+    bool active;
+    bool activate_by_user;
+  };
+
   using AudioDeviceMute = std::map<uint64_t, bool>;
   using AudioDeviceVolumeGain = std::map<uint64_t, int>;
-  using AudioDeviceLastState = std::map<uint64_t, AudioDeviceState>;
+  using AudioDeviceStateMap = std::map<uint64_t, DeviceState>;
 
   AudioDevicesPrefHandlerStub();
 
@@ -30,9 +35,12 @@ class CHROMEOS_EXPORT AudioDevicesPrefHandlerStub
   void SetVolumeGainValue(const AudioDevice& device, double value) override;
   bool GetMuteValue(const AudioDevice& device) override;
   void SetMuteValue(const AudioDevice& device, bool mute_on) override;
-  AudioDeviceState GetDeviceState(const AudioDevice& device) override;
-  void SetDeviceState(const AudioDevice& device,
-                      AudioDeviceState state) override;
+  void SetDeviceActive(const AudioDevice& device,
+                       bool active,
+                       bool activate_by_user) override;
+  bool GetDeviceActive(const AudioDevice& device,
+                       bool* active,
+                       bool* activate_by_user) override;
   bool GetAudioOutputAllowedValue() override;
   void AddAudioPrefObserver(AudioPrefObserver* observer) override;
   void RemoveAudioPrefObserver(AudioPrefObserver* observer) override;
@@ -43,7 +51,7 @@ class CHROMEOS_EXPORT AudioDevicesPrefHandlerStub
  private:
   AudioDeviceMute audio_device_mute_map_;
   AudioDeviceVolumeGain audio_device_volume_gain_map_;
-  AudioDeviceLastState audio_device_state_map_;
+  AudioDeviceStateMap audio_device_state_map_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioDevicesPrefHandlerStub);
 };

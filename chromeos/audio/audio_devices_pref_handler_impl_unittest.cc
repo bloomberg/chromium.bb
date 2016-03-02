@@ -97,12 +97,13 @@ TEST_F(AudioDevicesPrefHandlerTest, TestDefaultValues) {
   EXPECT_EQ(75.0, audio_pref_handler_->GetInputGainValue(&kInternalMic));
   EXPECT_EQ(75.0, audio_pref_handler_->GetOutputVolumeValue(&kHeadphone));
   EXPECT_EQ(75.0, audio_pref_handler_->GetOutputVolumeValue(&kHDMIOutput));
-  EXPECT_EQ(AUDIO_STATE_NOT_AVAILABLE,
-            audio_pref_handler_->GetDeviceState(kInternalMic));
-  EXPECT_EQ(AUDIO_STATE_NOT_AVAILABLE,
-            audio_pref_handler_->GetDeviceState(kHeadphone));
-  EXPECT_EQ(AUDIO_STATE_NOT_AVAILABLE,
-            audio_pref_handler_->GetDeviceState(kHDMIOutput));
+  bool active, activate_by_user;
+  EXPECT_FALSE(audio_pref_handler_->GetDeviceActive(kInternalMic, &active,
+                                                    &activate_by_user));
+  EXPECT_FALSE(audio_pref_handler_->GetDeviceActive(kHeadphone, &active,
+                                                    &activate_by_user));
+  EXPECT_FALSE(audio_pref_handler_->GetDeviceActive(kHDMIOutput, &active,
+                                                    &activate_by_user));
 }
 
 TEST_F(AudioDevicesPrefHandlerTest, PrefsRegistered) {
@@ -135,15 +136,24 @@ TEST_F(AudioDevicesPrefHandlerTest, TestSpecialCharactersInDeviceNames) {
 }
 
 TEST_F(AudioDevicesPrefHandlerTest, TestDeviceStates) {
-  audio_pref_handler_->SetDeviceState(kInternalMic, AUDIO_STATE_NOT_AVAILABLE);
-  EXPECT_EQ(AUDIO_STATE_NOT_AVAILABLE,
-            audio_pref_handler_->GetDeviceState(kInternalMic));
-  audio_pref_handler_->SetDeviceState(kHeadphone, AUDIO_STATE_ACTIVE);
-  EXPECT_EQ(AUDIO_STATE_ACTIVE,
-            audio_pref_handler_->GetDeviceState(kHeadphone));
-  audio_pref_handler_->SetDeviceState(kHDMIOutput, AUDIO_STATE_INACTIVE);
-  EXPECT_EQ(AUDIO_STATE_INACTIVE,
-            audio_pref_handler_->GetDeviceState(kHDMIOutput));
+  audio_pref_handler_->SetDeviceActive(kInternalMic, true, true);
+  bool active = false;
+  bool activate_by_user = false;
+  EXPECT_TRUE(audio_pref_handler_->GetDeviceActive(kInternalMic, &active,
+                                                   &activate_by_user));
+  EXPECT_TRUE(active);
+  EXPECT_TRUE(activate_by_user);
+
+  audio_pref_handler_->SetDeviceActive(kHeadphone, true, false);
+  EXPECT_TRUE(audio_pref_handler_->GetDeviceActive(kHeadphone, &active,
+                                                   &activate_by_user));
+  EXPECT_TRUE(active);
+  EXPECT_FALSE(activate_by_user);
+
+  audio_pref_handler_->SetDeviceActive(kHDMIOutput, false, false);
+  EXPECT_TRUE(audio_pref_handler_->GetDeviceActive(kHDMIOutput, &active,
+                                                   &activate_by_user));
+  EXPECT_FALSE(active);
 }
 
 }  // namespace chromeos

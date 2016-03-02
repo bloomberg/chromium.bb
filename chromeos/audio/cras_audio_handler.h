@@ -15,6 +15,7 @@
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
 #include "chromeos/audio/audio_device.h"
+#include "chromeos/audio/audio_devices_pref_handler.h"
 #include "chromeos/audio/audio_pref_observer.h"
 #include "chromeos/dbus/audio_node.h"
 #include "chromeos/dbus/cras_audio_client.h"
@@ -69,6 +70,12 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
     AudioObserver();
     virtual ~AudioObserver();
     DISALLOW_COPY_AND_ASSIGN(AudioObserver);
+  };
+
+  enum DeviceActivateType {
+    ACTIVATE_BY_PRIORITY = 0,
+    ACTIVATE_BY_USER,
+    ACTIVATE_BY_RESTORE_PREVIOUS_STATE,
   };
 
   // Sets the global instance. Must be called before any calls to Get().
@@ -167,8 +174,12 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
   // Mutes or unmutes audio input device.
   virtual void SetInputMute(bool mute_on);
 
-  // Switches active audio device to |device|.
-  virtual void SwitchToDevice(const AudioDevice& device, bool notify);
+  // Switches active audio device to |device|. |activate_by| indicates why
+  // the device is switched to active: by user's manual choice, by priority,
+  // or by restoring to its previous active state.
+  virtual void SwitchToDevice(const AudioDevice& device,
+                              bool notify,
+                              DeviceActivateType activate_by);
 
   // Sets volume/gain level for a device.
   virtual void SetVolumeGainPercentForDevice(uint64_t device_id, int value);
@@ -227,10 +238,19 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
   // SessionManagerClient::Observer overrides.
   void EmitLoginPromptVisibleCalled() override;
 
-  // Sets the active audio output/input node to the node with |node_id|.
+  // Sets the |active_device| to be active.
   // If |notify|, notifies Active*NodeChange.
-  void SetActiveOutputNode(uint64_t node_id, bool notify);
-  void SetActiveInputNode(uint64_t node_id, bool notify);
+  // Saves device active states in prefs. |activate_by| indicates how
+  // the device was activated.
+  void SetActiveDevice(const AudioDevice& active_device,
+                       bool notify,
+                       DeviceActivateType activate_by);
+
+  // Saves |device|'s state in pref. If |active| is true, |activate_by|
+  // indicates how |device| is activated.
+  void SaveDeviceState(const AudioDevice& device,
+                       bool active,
+                       DeviceActivateType activate_by);
 
   // Sets up the audio device state based on audio policy and audio settings
   // saved in prefs.
@@ -241,11 +261,15 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
   void SetupAdditionalActiveAudioNodeState(uint64_t node_id);
 
   const AudioDevice* GetDeviceFromId(uint64_t device_id) const;
+  const AudioDevice* GetDeviceFromStableDeviceId(
+      uint64_t stable_device_id) const;
   const AudioDevice* GetKeyboardMic() const;
 
   // Initializes audio state, which should only be called when CrasAudioHandler
   // is created or cras audio client is restarted.
   void InitializeAudioState();
+
+  void InitializeAudioAfterCrasServiceAvailable(bool service_is_available);
 
   // Applies the audio muting policies whenever the user logs in or policy
   // change notification is received.
@@ -275,23 +299,21 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
   // if needed.
   void UpdateDevicesAndSwitchActive(const AudioNodeList& nodes);
 
-  // Returns true if *|current_active_node_id| device is changed to
+  // Returns true if the current active device is changed to
   // |new_active_device|.
-  bool ChangeActiveDevice(const AudioDevice& new_active_device,
-                          uint64_t* current_active_node_id);
+  bool ChangeActiveDevice(const AudioDevice& new_active_device);
 
-  // Returns true if the audio nodes change is caused by some non-active
-  // audio nodes unplugged.
-  bool NonActiveDeviceUnplugged(size_t old_devices_size,
-                                size_t new_device_size,
-                                uint64_t current_active_node);
-
-  // Returns true if there is any device change for for input or output,
-  // specified by |is_input|.
-  // The new discovered nodes are returned in |new_discovered|.
+  // Returns true if there are any device changes for input or output
+  // specified by |is_input|, by comparing |audio_devices_| with |new_nodes|.
+  // Passes the new nodes discovered in *|new_discovered|.
+  // *|device_removed| indicates if any devices have been removed.
+  // *|active_device_removed| indicates if the current active device has been
+  // removed.
   bool HasDeviceChange(const AudioNodeList& new_nodes,
                        bool is_input,
-                       AudioDevicePriorityQueue* new_discovered);
+                       AudioDevicePriorityQueue* new_discovered,
+                       bool* device_removed,
+                       bool* active_device_removed);
 
   // Handles dbus callback for GetNodes.
   void HandleGetNodes(const chromeos::AudioNodeList& node_list, bool success);
@@ -334,6 +356,37 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
 
   void NotifyActiveNodeChanged(bool is_input);
 
+  // Returns true if it retrieves an active audio device from user preference
+  // among the current |audio_devices_|.
+  bool GetActiveDeviceFromUserPref(bool is_input, AudioDevice* device);
+
+  // Handles either input or output device changes, specified by |is_input|.
+  void HandleAudioDeviceChange(bool is_input,
+                               const AudioDevicePriorityQueue& devices_pq,
+                               const AudioDevicePriorityQueue& hotplug_nodes,
+                               bool has_device_change,
+                               bool has_device_removed,
+                               bool active_device_removed);
+
+  // Handles non-hotplug nodes change cases.
+  void HandleNonHotplugNodesChange(
+      bool is_input,
+      const AudioDevicePriorityQueue& hotplug_nodes,
+      bool has_device_change,
+      bool has_device_removed,
+      bool active_device_removed);
+
+  // Handles the regular user hotplug case.
+  void HandleHotPlugDevice(
+      const AudioDevice& hotplug_device,
+      const AudioDevicePriorityQueue& device_priority_queue);
+
+  void SwitchToTopPriorityDevice(bool is_input);
+
+  // Switch to previous active device if it is found, otherwise, switch
+  // to the top priority device.
+  void SwitchToPreviousActiveDeviceIfAvailable(bool is_input);
+
   scoped_refptr<AudioDevicesPrefHandler> audio_pref_handler_;
   base::ObserverList<AudioObserver> observers_;
 
@@ -361,6 +414,8 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
   base::OneShotTimer hdmi_rediscover_timer_;
   int hdmi_rediscover_grace_period_duration_in_ms_;
   bool hdmi_rediscovering_;
+
+  bool cras_service_available_ = false;
 
   base::WeakPtrFactory<CrasAudioHandler> weak_ptr_factory_;
 

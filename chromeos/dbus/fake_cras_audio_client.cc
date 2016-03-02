@@ -174,6 +174,11 @@ void FakeCrasAudioClient::AddActiveOutputNode(uint64_t node_id) {
   }
 }
 
+void FakeCrasAudioClient::WaitForServiceToBeAvailable(
+    const WaitForServiceToBeAvailableCallback& callback) {
+  callback.Run(true);
+}
+
 void FakeCrasAudioClient::RemoveActiveOutputNode(uint64_t node_id) {
   for (size_t i = 0; i < node_list_.size(); ++i) {
     if (node_list_[i].id == node_id)
