@@ -107,6 +107,7 @@ DocumentLoader::DocumentLoader(LocalFrame* frame, const ResourceRequest& req, co
     , m_documentLoadTiming(*this)
     , m_timeOfLastDataReceived(0.0)
     , m_applicationCacheHost(ApplicationCacheHost::create(this))
+    , m_wasBlockedAfterXFrameOptionsOrCSP(false)
     , m_state(NotStarted)
     , m_inDataReceived(false)
     , m_dataBuffer(SharedBuffer::create())
@@ -392,13 +393,13 @@ void DocumentLoader::cancelLoadAfterXFrameOptionsOrCSPDenied(const ResourceRespo
 {
     InspectorInstrumentation::continueAfterXFrameOptionsDenied(m_frame, this, mainResourceIdentifier(), response);
 
-    frame()->document()->enforceSandboxFlags(SandboxOrigin);
-    if (FrameOwner* owner = frame()->owner())
-        owner->dispatchLoad();
+    setWasBlockedAfterXFrameOptionsOrCSP();
 
-    // The load event might have detached this frame. In that case, the load will already have been cancelled during detach.
-    if (frameLoader())
-        cancelMainResourceLoad(ResourceError::cancelledError(m_request.url()));
+    // Pretend that this was an empty HTTP 200 response.
+    clearMainResourceHandle();
+    m_response = ResourceResponse(blankURL(), "text/html", 0, nullAtom, String());
+    finishedLoading(monotonicallyIncreasingTime());
+
     return;
 }
 

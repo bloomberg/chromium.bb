@@ -75,15 +75,6 @@ http/tests/security/mixedContent/insecure-iframe-in-iframe.html [ Failure ]
 http/tests/security/powerfulFeatureRestrictions/geolocation-on-sandboxed-insecure-origin.html [ Failure ]
 http/tests/security/powerfulFeatureRestrictions/geolocation-on-secure-origin-in-insecure-origin.html [ Failure ]
 
-# https://crbug.com/584845 - bad message - RFH_NO_PROXY_TO_PARENT from OnDispatchLoad.
-http/tests/security/contentSecurityPolicy/1.1/frame-ancestors/frame-ancestors-nested-cross-in-same-none-block.html [ Crash ]
-http/tests/security/contentSecurityPolicy/1.1/frame-ancestors/frame-ancestors-nested-cross-in-same-self-block.html [ Crash ]
-http/tests/security/contentSecurityPolicy/1.1/frame-ancestors/frame-ancestors-nested-cross-in-same-url-block.html [ Crash ]
-http/tests/security/contentSecurityPolicy/1.1/frame-ancestors/frame-ancestors-self-block.html [ Crash ]
-http/tests/security/contentSecurityPolicy/1.1/frame-ancestors/frame-ancestors-url-block.html [ Crash ]
-http/tests/security/XFrameOptions/x-frame-options-multiple-headers-sameorigin-deny.html [ Crash ]
-http/tests/security/XFrameOptions/x-frame-options-parent-same-origin-deny.html [ Crash ]
-
 # https://crbug.com/582176 - InspectorTest.changeExecutionContext doesn't like OOPIFs.
 http/tests/inspector/console-cd-completions.html [ Failure ]
 http/tests/inspector/console-cd.html [ Failure ]

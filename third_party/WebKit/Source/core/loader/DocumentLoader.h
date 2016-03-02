@@ -141,6 +141,9 @@ public:
     };
     InitialScrollState& initialScrollState() { return m_initialScrollState; }
 
+    void setWasBlockedAfterXFrameOptionsOrCSP() { m_wasBlockedAfterXFrameOptionsOrCSP = true; }
+    bool wasBlockedAfterXFrameOptionsOrCSP() { return m_wasBlockedAfterXFrameOptionsOrCSP; }
+
     bool loadingMultipartContent() const;
 
     Resource* startPreload(Resource::Type, FetchRequest&);
@@ -220,6 +223,8 @@ private:
     RefPtrWillBeMember<ContentSecurityPolicy> m_contentSecurityPolicy;
     ClientHintsPreferences m_clientHintsPreferences;
     InitialScrollState m_initialScrollState;
+
+    bool m_wasBlockedAfterXFrameOptionsOrCSP;
 
     enum State {
         NotStarted,

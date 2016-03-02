@@ -95,7 +95,17 @@ LocalFrame* DocumentInit::frameForSecurityContext() const
 SandboxFlags DocumentInit::getSandboxFlags() const
 {
     ASSERT(frameForSecurityContext());
-    return frameForSecurityContext()->loader().effectiveSandboxFlags();
+    FrameLoader* loader = &frameForSecurityContext()->loader();
+    SandboxFlags flags = loader->effectiveSandboxFlags();
+
+    // If the load was blocked by X-Frame-Options or CSP, force the Document's
+    // origin to be unique, so that the blocked document appears to be a normal
+    // cross-origin document's load per CSP spec:
+    // https://www.w3.org/TR/CSP2/#directive-frame-ancestors
+    if (loader->documentLoader() && loader->documentLoader()->wasBlockedAfterXFrameOptionsOrCSP())
+        flags |= SandboxOrigin;
+
+    return flags;
 }
 
 bool DocumentInit::shouldEnforceStrictMixedContentChecking() const
