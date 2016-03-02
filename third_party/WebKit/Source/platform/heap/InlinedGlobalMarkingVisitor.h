@@ -19,7 +19,7 @@ public:
     explicit InlinedGlobalMarkingVisitor(Visitor* visitor)
         : m_visitor(visitor)
     {
-        ASSERT(visitor->markingMode() == Visitor::GlobalMarking);
+        ASSERT(visitor->getMarkingMode() == Visitor::GlobalMarking);
     }
 
     // Hack to unify interface to visitor->trace().
@@ -58,9 +58,9 @@ protected:
         return true;
     }
 
-    inline Visitor::MarkingMode markingMode() const
+    inline Visitor::MarkingMode getMarkingMode() const
     {
-        return m_visitor->markingMode();
+        return m_visitor->getMarkingMode();
     }
 
 private:

@@ -418,9 +418,9 @@ PassRefPtr<TimingFunction> CSSToStyleMap::mapAnimationTimingFunction(const CSSVa
         return CSSTimingData::initialTimingFunction();
 
     const CSSStepsTimingFunctionValue& stepsTimingFunction = toCSSStepsTimingFunctionValue(value);
-    if (stepsTimingFunction.stepAtPosition() == StepsTimingFunction::Middle && !allowStepMiddle)
+    if (stepsTimingFunction.getStepAtPosition() == StepsTimingFunction::Middle && !allowStepMiddle)
         return CSSTimingData::initialTimingFunction();
-    return StepsTimingFunction::create(stepsTimingFunction.numberOfSteps(), stepsTimingFunction.stepAtPosition());
+    return StepsTimingFunction::create(stepsTimingFunction.numberOfSteps(), stepsTimingFunction.getStepAtPosition());
 }
 
 void CSSToStyleMap::mapNinePieceImage(StyleResolverState& state, CSSPropertyID property, const CSSValue& value, NinePieceImage& image)

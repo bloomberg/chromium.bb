@@ -57,7 +57,7 @@ public:
     virtual void invalidate() = 0;
     virtual void invalidateRect(const IntRect&) = 0;
 
-    virtual ScrollbarOverlayStyle scrollbarOverlayStyle() const = 0;
+    virtual ScrollbarOverlayStyle getScrollbarOverlayStyle() const = 0;
     virtual void getTickmarks(Vector<IntRect>&) const = 0;
     virtual bool isScrollableAreaActive() const = 0;
 

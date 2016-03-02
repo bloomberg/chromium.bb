@@ -134,7 +134,7 @@ ImageFrame* ImageDecoder::frameBufferAtIndex(size_t index)
         return 0;
 
     ImageFrame* frame = &m_frameBufferCache[index];
-    if (frame->status() != ImageFrame::FrameComplete) {
+    if (frame->getStatus() != ImageFrame::FrameComplete) {
         PlatformInstrumentation::willDecodeImage(filenameExtension());
         decode(index);
         PlatformInstrumentation::didDecodeImage();
@@ -152,12 +152,12 @@ bool ImageDecoder::frameHasAlphaAtIndex(size_t index) const
 bool ImageDecoder::frameIsCompleteAtIndex(size_t index) const
 {
     return (index < m_frameBufferCache.size()) &&
-        (m_frameBufferCache[index].status() == ImageFrame::FrameComplete);
+        (m_frameBufferCache[index].getStatus() == ImageFrame::FrameComplete);
 }
 
 size_t ImageDecoder::frameBytesAtIndex(size_t index) const
 {
-    if (index >= m_frameBufferCache.size() || m_frameBufferCache[index].status() == ImageFrame::FrameEmpty)
+    if (index >= m_frameBufferCache.size() || m_frameBufferCache[index].getStatus() == ImageFrame::FrameEmpty)
         return 0;
 
     struct ImageSize {
@@ -208,7 +208,7 @@ size_t ImageDecoder::findRequiredPreviousFrame(size_t frameIndex, bool frameRect
     }
 
     const ImageFrame* currBuffer = &m_frameBufferCache[frameIndex];
-    if ((frameRectIsOpaque || currBuffer->alphaBlendSource() == ImageFrame::BlendAtopBgcolor)
+    if ((frameRectIsOpaque || currBuffer->getAlphaBlendSource() == ImageFrame::BlendAtopBgcolor)
         && currBuffer->originalFrameRect().contains(IntRect(IntPoint(), size())))
         return kNotFound;
 
@@ -217,7 +217,7 @@ size_t ImageDecoder::findRequiredPreviousFrame(size_t frameIndex, bool frameRect
     size_t prevFrame = frameIndex - 1;
     const ImageFrame* prevBuffer = &m_frameBufferCache[prevFrame];
 
-    switch (prevBuffer->disposalMethod()) {
+    switch (prevBuffer->getDisposalMethod()) {
     case ImageFrame::DisposeNotSpecified:
     case ImageFrame::DisposeKeep:
         // prevFrame will be used as the starting state for this frame.

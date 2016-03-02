@@ -100,7 +100,7 @@ static String valueToDateTimeString(double value, AtomicString type)
         components.setMillisecondsSinceEpochForWeek(value);
     else
         ASSERT_NOT_REACHED();
-    return components.type() == DateComponents::Invalid ? String() : components.toString();
+    return components.getType() == DateComponents::Invalid ? String() : components.toString();
 }
 
 void DateTimeChooserImpl::writeDocument(SharedBuffer* data)

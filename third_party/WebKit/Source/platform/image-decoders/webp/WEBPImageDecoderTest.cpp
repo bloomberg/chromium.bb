@@ -130,7 +130,7 @@ void testDecodeAfterReallocatingData(const char* webpFile)
 
     for (size_t i = 0; i < frameCount; ++i) {
         const ImageFrame* const frame = decoder->frameBufferAtIndex(i);
-        EXPECT_EQ(ImageFrame::FrameComplete, frame->status());
+        EXPECT_EQ(ImageFrame::FrameComplete, frame->getStatus());
     }
 }
 
@@ -194,7 +194,7 @@ void testInvalidImage(const char* webpFile, bool parseErrorExpected)
         EXPECT_GT(decoder->frameCount(), 0u);
         ImageFrame* frame = decoder->frameBufferAtIndex(0);
         ASSERT_TRUE(frame);
-        EXPECT_EQ(ImageFrame::FramePartial, frame->status());
+        EXPECT_EQ(ImageFrame::FramePartial, frame->getStatus());
     }
     EXPECT_EQ(cAnimationLoopOnce, decoder->repetitionCount());
     EXPECT_TRUE(decoder->failed());
@@ -298,15 +298,15 @@ TEST(AnimatedWebPTests, verifyAnimationParametersTransparentImage)
 
     for (size_t i = 0; i < WTF_ARRAY_LENGTH(frameParameters); ++i) {
         const ImageFrame* const frame = decoder->frameBufferAtIndex(i);
-        EXPECT_EQ(ImageFrame::FrameComplete, frame->status());
+        EXPECT_EQ(ImageFrame::FrameComplete, frame->getStatus());
         EXPECT_EQ(canvasWidth, frame->getSkBitmap().width());
         EXPECT_EQ(canvasHeight, frame->getSkBitmap().height());
         EXPECT_EQ(frameParameters[i].xOffset, frame->originalFrameRect().x());
         EXPECT_EQ(frameParameters[i].yOffset, frame->originalFrameRect().y());
         EXPECT_EQ(frameParameters[i].width, frame->originalFrameRect().width());
         EXPECT_EQ(frameParameters[i].height, frame->originalFrameRect().height());
-        EXPECT_EQ(frameParameters[i].disposalMethod, frame->disposalMethod());
-        EXPECT_EQ(frameParameters[i].alphaBlendSource, frame->alphaBlendSource());
+        EXPECT_EQ(frameParameters[i].disposalMethod, frame->getDisposalMethod());
+        EXPECT_EQ(frameParameters[i].alphaBlendSource, frame->getAlphaBlendSource());
         EXPECT_EQ(frameParameters[i].duration, frame->duration());
         EXPECT_EQ(frameParameters[i].hasAlpha, frame->hasAlpha());
     }
@@ -341,15 +341,15 @@ TEST(AnimatedWebPTests, verifyAnimationParametersOpaqueFramesTransparentBackgrou
 
     for (size_t i = 0; i < WTF_ARRAY_LENGTH(frameParameters); ++i) {
         const ImageFrame* const frame = decoder->frameBufferAtIndex(i);
-        EXPECT_EQ(ImageFrame::FrameComplete, frame->status());
+        EXPECT_EQ(ImageFrame::FrameComplete, frame->getStatus());
         EXPECT_EQ(canvasWidth, frame->getSkBitmap().width());
         EXPECT_EQ(canvasHeight, frame->getSkBitmap().height());
         EXPECT_EQ(frameParameters[i].xOffset, frame->originalFrameRect().x());
         EXPECT_EQ(frameParameters[i].yOffset, frame->originalFrameRect().y());
         EXPECT_EQ(frameParameters[i].width, frame->originalFrameRect().width());
         EXPECT_EQ(frameParameters[i].height, frame->originalFrameRect().height());
-        EXPECT_EQ(frameParameters[i].disposalMethod, frame->disposalMethod());
-        EXPECT_EQ(frameParameters[i].alphaBlendSource, frame->alphaBlendSource());
+        EXPECT_EQ(frameParameters[i].disposalMethod, frame->getDisposalMethod());
+        EXPECT_EQ(frameParameters[i].alphaBlendSource, frame->getAlphaBlendSource());
         EXPECT_EQ(frameParameters[i].duration, frame->duration());
         EXPECT_EQ(frameParameters[i].hasAlpha, frame->hasAlpha());
     }
@@ -384,15 +384,15 @@ TEST(AnimatedWebPTests, verifyAnimationParametersBlendOverwrite)
 
     for (size_t i = 0; i < WTF_ARRAY_LENGTH(frameParameters); ++i) {
         const ImageFrame* const frame = decoder->frameBufferAtIndex(i);
-        EXPECT_EQ(ImageFrame::FrameComplete, frame->status());
+        EXPECT_EQ(ImageFrame::FrameComplete, frame->getStatus());
         EXPECT_EQ(canvasWidth, frame->getSkBitmap().width());
         EXPECT_EQ(canvasHeight, frame->getSkBitmap().height());
         EXPECT_EQ(frameParameters[i].xOffset, frame->originalFrameRect().x());
         EXPECT_EQ(frameParameters[i].yOffset, frame->originalFrameRect().y());
         EXPECT_EQ(frameParameters[i].width, frame->originalFrameRect().width());
         EXPECT_EQ(frameParameters[i].height, frame->originalFrameRect().height());
-        EXPECT_EQ(frameParameters[i].disposalMethod, frame->disposalMethod());
-        EXPECT_EQ(frameParameters[i].alphaBlendSource, frame->alphaBlendSource());
+        EXPECT_EQ(frameParameters[i].disposalMethod, frame->getDisposalMethod());
+        EXPECT_EQ(frameParameters[i].alphaBlendSource, frame->getAlphaBlendSource());
         EXPECT_EQ(frameParameters[i].duration, frame->duration());
         EXPECT_EQ(frameParameters[i].hasAlpha, frame->hasAlpha());
     }
@@ -427,15 +427,15 @@ TEST(AnimatedWebPTests, truncatedLastFrame)
     EXPECT_EQ(frameCount, decoder->frameCount());
     ImageFrame* frame = decoder->frameBufferAtIndex(0);
     ASSERT_TRUE(frame);
-    EXPECT_EQ(ImageFrame::FrameComplete, frame->status());
+    EXPECT_EQ(ImageFrame::FrameComplete, frame->getStatus());
     EXPECT_FALSE(decoder->failed());
     frame = decoder->frameBufferAtIndex(frameCount - 1);
     ASSERT_TRUE(frame);
-    EXPECT_EQ(ImageFrame::FramePartial, frame->status());
+    EXPECT_EQ(ImageFrame::FramePartial, frame->getStatus());
     EXPECT_TRUE(decoder->failed());
     frame = decoder->frameBufferAtIndex(0);
     ASSERT_TRUE(frame);
-    EXPECT_EQ(ImageFrame::FrameComplete, frame->status());
+    EXPECT_EQ(ImageFrame::FrameComplete, frame->getStatus());
 }
 
 TEST(AnimatedWebPTests, truncatedInBetweenFrame)
@@ -449,10 +449,10 @@ TEST(AnimatedWebPTests, truncatedInBetweenFrame)
 
     ImageFrame* frame = decoder->frameBufferAtIndex(1);
     ASSERT_TRUE(frame);
-    EXPECT_EQ(ImageFrame::FrameComplete, frame->status());
+    EXPECT_EQ(ImageFrame::FrameComplete, frame->getStatus());
     frame = decoder->frameBufferAtIndex(2);
     ASSERT_TRUE(frame);
-    EXPECT_EQ(ImageFrame::FramePartial, frame->status());
+    EXPECT_EQ(ImageFrame::FramePartial, frame->getStatus());
     EXPECT_TRUE(decoder->failed());
 }
 
@@ -472,7 +472,7 @@ TEST(AnimatedWebPTests, reproCrash)
     EXPECT_EQ(1u, decoder->frameCount());
     ImageFrame* frame = decoder->frameBufferAtIndex(0);
     ASSERT_TRUE(frame);
-    EXPECT_EQ(ImageFrame::FramePartial, frame->status());
+    EXPECT_EQ(ImageFrame::FramePartial, frame->getStatus());
     EXPECT_FALSE(decoder->failed());
 
     // Parse full data now. The error in bitstream should now be detected.
@@ -480,7 +480,7 @@ TEST(AnimatedWebPTests, reproCrash)
     EXPECT_EQ(1u, decoder->frameCount());
     frame = decoder->frameBufferAtIndex(0);
     ASSERT_TRUE(frame);
-    EXPECT_EQ(ImageFrame::FramePartial, frame->status());
+    EXPECT_EQ(ImageFrame::FramePartial, frame->getStatus());
     EXPECT_EQ(cAnimationLoopOnce, decoder->repetitionCount());
     EXPECT_TRUE(decoder->failed());
 }
@@ -576,7 +576,7 @@ TEST(AnimatedWebPTests, updateRequiredPreviousFrameAfterFirstDecode)
         RefPtr<SharedBuffer> data = SharedBuffer::create(fullData->data(), partialSize);
         decoder->setData(data.get(), false);
         ++partialSize;
-    } while (!decoder->frameCount() || decoder->frameBufferAtIndex(0)->status() == ImageFrame::FrameEmpty);
+    } while (!decoder->frameCount() || decoder->frameBufferAtIndex(0)->getStatus() == ImageFrame::FrameEmpty);
 
     EXPECT_EQ(kNotFound, decoder->frameBufferAtIndex(0)->requiredPreviousFrameIndex());
     size_t frameCount = decoder->frameCount();
@@ -620,7 +620,7 @@ TEST(AnimatedWebPTests, DISABLED_resumePartialDecodeAfterClearFrameBufferCache)
         RefPtr<SharedBuffer> data = SharedBuffer::create(fullData->data(), partialSize);
         decoder->setData(data.get(), false);
         ++partialSize;
-    } while (!decoder->frameCount() || decoder->frameBufferAtIndex(0)->status() == ImageFrame::FrameEmpty);
+    } while (!decoder->frameCount() || decoder->frameBufferAtIndex(0)->getStatus() == ImageFrame::FrameEmpty);
 
     // Skip to the last frame and clear.
     decoder->setData(fullData.get(), true);
@@ -631,7 +631,7 @@ TEST(AnimatedWebPTests, DISABLED_resumePartialDecodeAfterClearFrameBufferCache)
 
     // Resume decoding of the first frame.
     ImageFrame* firstFrame = decoder->frameBufferAtIndex(0);
-    EXPECT_EQ(ImageFrame::FrameComplete, firstFrame->status());
+    EXPECT_EQ(ImageFrame::FrameComplete, firstFrame->getStatus());
     EXPECT_EQ(baselineHashes[0], hashBitmap(firstFrame->getSkBitmap()));
 }
 

@@ -76,7 +76,7 @@ public:
         bool isNaN() const { return m_formatClass == ClassNaN; }
         bool isSpecial() const { return m_formatClass == ClassInfinity || m_formatClass == ClassNaN; }
         bool isZero() const { return m_formatClass == ClassZero; }
-        Sign sign() const { return m_sign; }
+        Sign getSign() const { return m_sign; }
         void setSign(Sign sign) { m_sign = sign; }
 
     private:
@@ -88,7 +88,7 @@ public:
         };
 
         EncodedData(Sign, FormatClass);
-        FormatClass formatClass() const { return m_formatClass; }
+        FormatClass getFormatClass() const { return m_formatClass; }
 
         uint64_t m_coefficient;
         int16_t m_exponent;
@@ -129,8 +129,8 @@ public:
     bool isFinite() const { return m_data.isFinite(); }
     bool isInfinity() const { return m_data.isInfinity(); }
     bool isNaN() const { return m_data.isNaN(); }
-    bool isNegative() const { return sign() == Negative; }
-    bool isPositive() const { return sign() == Positive; }
+    bool isNegative() const { return getSign() == Negative; }
+    bool isPositive() const { return getSign() == Positive; }
     bool isSpecial() const { return m_data.isSpecial(); }
     bool isZero() const { return m_data.isZero(); }
 
@@ -174,7 +174,7 @@ private:
     static AlignedOperands alignOperands(const Decimal& lhs, const Decimal& rhs);
     static inline Sign invertSign(Sign sign) { return sign == Negative ? Positive : Negative; }
 
-    Sign sign() const { return m_data.sign(); }
+    Sign getSign() const { return m_data.getSign(); }
 
     EncodedData m_data;
 };

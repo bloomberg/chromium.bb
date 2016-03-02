@@ -224,7 +224,7 @@ FontDescription::Size StyleBuilderConverter::convertFontSize(StyleResolverState&
 
     // FIXME: Find out when parentStyle could be 0?
     if (state.parentStyle())
-        parentSize = state.parentFontDescription().size();
+        parentSize = state.parentFontDescription().getSize();
 
     if (CSSValueID valueID = primitiveValue.getValueID()) {
         switch (valueID) {

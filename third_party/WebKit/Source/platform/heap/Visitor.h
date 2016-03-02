@@ -371,7 +371,7 @@ public:
 
     virtual bool ensureMarked(const void*) = 0;
 
-    inline MarkingMode markingMode() const { return m_markingMode; }
+    inline MarkingMode getMarkingMode() const { return m_markingMode; }
 
 protected:
     explicit Visitor(MarkingMode markingMode)

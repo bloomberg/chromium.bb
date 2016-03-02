@@ -76,7 +76,7 @@ public:
     }
 
     int numberOfSteps() const { return m_steps; }
-    StepsTimingFunction::StepAtPosition stepAtPosition() const { return m_stepAtPosition; }
+    StepsTimingFunction::StepAtPosition getStepAtPosition() const { return m_stepAtPosition; }
 
     String customCSSText() const;
 

@@ -940,7 +940,7 @@ TEST(WebInputEventConversionTest, PlatformWheelEventBuilder)
         EXPECT_EQ(5, platformWheelBuilder.position().y());
         EXPECT_EQ(10, platformWheelBuilder.deltaX());
         EXPECT_EQ(15, platformWheelBuilder.deltaY());
-        EXPECT_EQ(PlatformEvent::CtrlKey, platformWheelBuilder.modifiers());
+        EXPECT_EQ(PlatformEvent::CtrlKey, platformWheelBuilder.getModifiers());
         EXPECT_TRUE(platformWheelBuilder.hasPreciseScrollingDeltas());
         EXPECT_TRUE(platformWheelBuilder.canScroll());
         EXPECT_EQ(platformWheelBuilder.getRailsMode(), PlatformEvent::RailsModeHorizontal);
@@ -963,7 +963,7 @@ TEST(WebInputEventConversionTest, PlatformWheelEventBuilder)
         EXPECT_EQ(0, platformWheelBuilder.position().y());
         EXPECT_EQ(15, platformWheelBuilder.deltaX());
         EXPECT_EQ(10, platformWheelBuilder.deltaY());
-        EXPECT_EQ(PlatformEvent::ShiftKey, platformWheelBuilder.modifiers());
+        EXPECT_EQ(PlatformEvent::ShiftKey, platformWheelBuilder.getModifiers());
         EXPECT_FALSE(platformWheelBuilder.hasPreciseScrollingDeltas());
         EXPECT_FALSE(platformWheelBuilder.canScroll());
         EXPECT_EQ(platformWheelBuilder.getRailsMode(), PlatformEvent::RailsModeFree);
@@ -986,7 +986,7 @@ TEST(WebInputEventConversionTest, PlatformWheelEventBuilder)
         EXPECT_EQ(0, platformWheelBuilder.position().y());
         EXPECT_EQ(15, platformWheelBuilder.deltaX());
         EXPECT_EQ(10, platformWheelBuilder.deltaY());
-        EXPECT_EQ(PlatformEvent::AltKey, platformWheelBuilder.modifiers());
+        EXPECT_EQ(PlatformEvent::AltKey, platformWheelBuilder.getModifiers());
         EXPECT_TRUE(platformWheelBuilder.hasPreciseScrollingDeltas());
         EXPECT_FALSE(platformWheelBuilder.canScroll());
         EXPECT_EQ(platformWheelBuilder.getRailsMode(), PlatformEvent::RailsModeVertical);

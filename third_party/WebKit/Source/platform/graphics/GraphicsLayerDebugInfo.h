@@ -60,7 +60,7 @@ public:
     CompositingReasons getCompositingReasons() const { return m_compositingReasons; }
     void setCompositingReasons(CompositingReasons reasons) { m_compositingReasons = reasons; }
 
-    SquashingDisallowedReasons squashingDisallowedReasons() const { return m_squashingDisallowedReasons; }
+    SquashingDisallowedReasons getSquashingDisallowedReasons() const { return m_squashingDisallowedReasons; }
     void setSquashingDisallowedReasons(SquashingDisallowedReasons reasons) { m_squashingDisallowedReasons = reasons; }
     void setOwnerNodeId(int id) { m_ownerNodeId = id; }
 

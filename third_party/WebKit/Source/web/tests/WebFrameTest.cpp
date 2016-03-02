@@ -1562,7 +1562,7 @@ TEST_F(WebFrameTest, SetForceZeroLayoutHeightWorksWithRelayoutsWhenHeightChanged
     ASSERT_NE(nullptr, element);
     EXPECT_EQ(String("oldValue"), element->innerText());
 
-    PlatformGestureEvent gestureEvent(PlatformEvent::Type::GestureTap, hitPoint, hitPoint, IntSize(0, 0), 0, PlatformEvent::NoModifiers, PlatformGestureSourceTouchscreen);
+    PlatformGestureEvent gestureEvent(PlatformEvent::EventType::GestureTap, hitPoint, hitPoint, IntSize(0, 0), 0, PlatformEvent::NoModifiers, PlatformGestureSourceTouchscreen);
     webViewHelper.webViewImpl()->mainFrameImpl()->frame()->eventHandler().handleGestureEvent(gestureEvent);
     // when pressed, the button changes its own text to "updatedValue"
     EXPECT_EQ(String("updatedValue"), element->innerText());

@@ -253,7 +253,7 @@ void CubicBezierTimingFunction::partition(Vector<PartitionRegion>& regions) cons
 String StepsTimingFunction::toString() const
 {
     const char* positionString = nullptr;
-    switch (stepAtPosition()) {
+    switch (getStepAtPosition()) {
     case Start:
         positionString = "start";
         break;
@@ -368,7 +368,7 @@ bool operator==(const StepsTimingFunction& lhs, const TimingFunction& rhs)
         return false;
 
     const StepsTimingFunction& stf = toStepsTimingFunction(rhs);
-    return (lhs.numberOfSteps() == stf.numberOfSteps()) && (lhs.stepAtPosition() == stf.stepAtPosition());
+    return (lhs.numberOfSteps() == stf.numberOfSteps()) && (lhs.getStepAtPosition() == stf.getStepAtPosition());
 }
 
 // The generic operator== *must* come after the

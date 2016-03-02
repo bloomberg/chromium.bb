@@ -109,9 +109,9 @@ void Scrollbar::setFrameRect(const IntRect& frameRect)
     setNeedsPaintInvalidation(AllParts);
 }
 
-ScrollbarOverlayStyle Scrollbar::scrollbarOverlayStyle() const
+ScrollbarOverlayStyle Scrollbar::getScrollbarOverlayStyle() const
 {
-    return m_scrollableArea ? m_scrollableArea->scrollbarOverlayStyle() : ScrollbarOverlayStyleDefault;
+    return m_scrollableArea ? m_scrollableArea->getScrollbarOverlayStyle() : ScrollbarOverlayStyleDefault;
 }
 
 void Scrollbar::getTickmarks(Vector<IntRect>& tickmarks) const

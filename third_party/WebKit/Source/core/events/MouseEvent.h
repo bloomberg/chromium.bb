@@ -74,7 +74,7 @@ public:
     bool buttonDown() const { return m_button != -1; }
     EventTarget* relatedTarget() const { return m_relatedTarget.get(); }
     void setRelatedTarget(PassRefPtrWillBeRawPtr<EventTarget> relatedTarget) { m_relatedTarget = relatedTarget; }
-    PlatformMouseEvent::SyntheticEventType syntheticEventType() const { return m_syntheticEventType; }
+    PlatformMouseEvent::SyntheticEventType getSyntheticEventType() const { return m_syntheticEventType; }
 
     Node* toElement() const;
     Node* fromElement() const;

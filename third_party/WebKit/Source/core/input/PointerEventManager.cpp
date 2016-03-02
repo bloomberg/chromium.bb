@@ -12,7 +12,7 @@ namespace blink {
 
 namespace {
 
-const AtomicString& pointerEventNameForTouchPointState(PlatformTouchPoint::State state)
+const AtomicString& pointerEventNameForTouchPointState(PlatformTouchPoint::TouchState state)
 {
     switch (state) {
     case PlatformTouchPoint::TouchReleased:

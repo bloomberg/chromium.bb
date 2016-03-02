@@ -129,7 +129,7 @@ public:
 
     bool didSetHTTPReferrer() const { return m_didSetHTTPReferrer; }
     const AtomicString& httpReferrer() const { return httpHeaderField(HTTPNames::Referer); }
-    ReferrerPolicy referrerPolicy() const { return m_referrerPolicy; }
+    ReferrerPolicy getReferrerPolicy() const { return m_referrerPolicy; }
     void setHTTPReferrer(const Referrer&);
     void clearHTTPReferrer();
 

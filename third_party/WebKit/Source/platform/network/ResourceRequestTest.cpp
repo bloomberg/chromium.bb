@@ -72,7 +72,7 @@ TEST(ResourceRequestTest, CrossThreadResourceRequestData)
     EXPECT_EQ(WebURLRequest::RequestContextAudio, original.requestContext());
     EXPECT_EQ(WebURLRequest::FrameTypeNested, original.frameType());
     EXPECT_STREQ("http://www.example.com/referrer.htm", original.httpReferrer().utf8().data());
-    EXPECT_EQ(ReferrerPolicyDefault, original.referrerPolicy());
+    EXPECT_EQ(ReferrerPolicyDefault, original.getReferrerPolicy());
 
     OwnPtr<CrossThreadResourceRequestData> data1(original.copyData());
     ResourceRequest copy1(data1.get());
@@ -99,7 +99,7 @@ TEST(ResourceRequestTest, CrossThreadResourceRequestData)
     EXPECT_EQ(WebURLRequest::RequestContextAudio, copy1.requestContext());
     EXPECT_EQ(WebURLRequest::FrameTypeNested, copy1.frameType());
     EXPECT_STREQ("http://www.example.com/referrer.htm", copy1.httpReferrer().utf8().data());
-    EXPECT_EQ(ReferrerPolicyDefault, copy1.referrerPolicy());
+    EXPECT_EQ(ReferrerPolicyDefault, copy1.getReferrerPolicy());
 
     copy1.setAllowStoredCredentials(true);
     copy1.setReportUploadProgress(true);

@@ -105,7 +105,7 @@ void FrameFetchContext::addAdditionalRequestHeaders(ResourceRequest& request, Fe
             outgoingOrigin = m_document->securityOrigin();
             request.setHTTPReferrer(SecurityPolicy::generateReferrer(m_document->getReferrerPolicy(), request.url(), m_document->outgoingReferrer()));
         } else {
-            RELEASE_ASSERT(SecurityPolicy::generateReferrer(request.referrerPolicy(), request.url(), request.httpReferrer()).referrer == request.httpReferrer());
+            RELEASE_ASSERT(SecurityPolicy::generateReferrer(request.getReferrerPolicy(), request.url(), request.httpReferrer()).referrer == request.httpReferrer());
             outgoingOrigin = SecurityOrigin::createFromString(request.httpReferrer());
         }
 

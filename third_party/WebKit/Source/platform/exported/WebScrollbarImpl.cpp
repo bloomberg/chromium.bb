@@ -103,7 +103,7 @@ WebScrollbar::ScrollbarPart WebScrollbarImpl::hoveredPart() const
 
 WebScrollbar::ScrollbarOverlayStyle WebScrollbarImpl::scrollbarOverlayStyle() const
 {
-    return static_cast<WebScrollbar::ScrollbarOverlayStyle>(m_scrollbar->scrollbarOverlayStyle());
+    return static_cast<WebScrollbar::ScrollbarOverlayStyle>(m_scrollbar->getScrollbarOverlayStyle());
 }
 
 WebScrollbar::Orientation WebScrollbarImpl::orientation() const

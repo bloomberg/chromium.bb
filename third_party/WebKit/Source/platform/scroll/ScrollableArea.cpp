@@ -370,7 +370,7 @@ void ScrollableArea::didAddScrollbar(Scrollbar& scrollbar, ScrollbarOrientation 
         scrollAnimator().didAddHorizontalScrollbar(scrollbar);
 
     // <rdar://problem/9797253> AppKit resets the scrollbar's style when you attach a scrollbar
-    setScrollbarOverlayStyle(scrollbarOverlayStyle());
+    setScrollbarOverlayStyle(getScrollbarOverlayStyle());
 }
 
 void ScrollableArea::willRemoveScrollbar(Scrollbar& scrollbar, ScrollbarOrientation orientation)

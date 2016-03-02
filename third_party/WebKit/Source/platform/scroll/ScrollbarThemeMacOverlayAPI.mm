@@ -220,7 +220,7 @@ bool ScrollbarThemeMacOverlayAPI::usesOverlayScrollbars() const
 void ScrollbarThemeMacOverlayAPI::updateScrollbarOverlayStyle(const ScrollbarThemeClient& scrollbar)
 {
     ScrollbarPainter painter = painterForScrollbar(scrollbar);
-    switch (scrollbar.scrollbarOverlayStyle()) {
+    switch (scrollbar.getScrollbarOverlayStyle()) {
     case ScrollbarOverlayStyleDefault:
         [painter setKnobStyle:NSScrollerKnobStyleDefault];
         break;

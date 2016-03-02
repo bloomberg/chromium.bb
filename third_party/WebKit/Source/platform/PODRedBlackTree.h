@@ -245,7 +245,7 @@ public:
     }
 #endif
 
-    enum Color {
+    enum NodeColor {
         Red = 1,
         Black
     };
@@ -269,8 +269,8 @@ public:
 
         virtual ~Node() { }
 
-        Color color() const { return m_color; }
-        void setColor(Color color) { m_color = color; }
+        NodeColor color() const { return m_color; }
+        void setColor(NodeColor color) { m_color = color; }
 
         // Fetches the user data.
         T& data() { return m_data; }
@@ -296,7 +296,7 @@ public:
         Node* m_left;
         Node* m_right;
         Node* m_parent;
-        Color m_color;
+        NodeColor m_color;
         T m_data;
     };
 

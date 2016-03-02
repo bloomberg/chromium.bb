@@ -110,7 +110,7 @@ bool hasTouchHandlers(const EventHandlerRegistry& registry)
         || registry.hasEventHandlers(EventHandlerRegistry::TouchEventPassive);
 }
 
-const AtomicString& touchEventNameForTouchPointState(PlatformTouchPoint::State state)
+const AtomicString& touchEventNameForTouchPointState(PlatformTouchPoint::TouchState state)
 {
     switch (state) {
     case PlatformTouchPoint::TouchReleased:
@@ -1045,7 +1045,7 @@ WebInputEventResult EventHandler::handleMousePressEvent(const PlatformMouseEvent
     // the same behavior and it's more compatible with other browsers.
     selectionController().initializeSelectionState();
     HitTestResult hitTestResult = hitTestResultInFrame(m_frame, documentPoint, HitTestRequest::ReadOnly);
-    InputDeviceCapabilities* sourceCapabilities = mouseEvent.syntheticEventType() == PlatformMouseEvent::FromTouch ? InputDeviceCapabilities::firesTouchEventsSourceCapabilities() :
+    InputDeviceCapabilities* sourceCapabilities = mouseEvent.getSyntheticEventType() == PlatformMouseEvent::FromTouch ? InputDeviceCapabilities::firesTouchEventsSourceCapabilities() :
         InputDeviceCapabilities::doesntFireTouchEventsSourceCapabilities();
     if (eventResult == WebInputEventResult::NotHandled)
         eventResult = handleMouseFocus(MouseEventWithHitTestResults(mouseEvent, hitTestResult), sourceCapabilities);
@@ -1117,7 +1117,7 @@ WebInputEventResult EventHandler::handleMouseMoveEvent(const PlatformMouseEvent&
     TRACE_EVENT0("blink", "EventHandler::handleMouseMoveEvent");
 
     m_pointerEventManager.conditionallyEnableMouseEventForPointerTypeMouse(
-        event.modifiers());
+        event.getModifiers());
 
     RefPtrWillBeRawPtr<FrameView> protector(m_frame->view());
 
@@ -1147,7 +1147,7 @@ void EventHandler::handleMouseLeaveEvent(const PlatformMouseEvent& event)
     TRACE_EVENT0("blink", "EventHandler::handleMouseLeaveEvent");
 
     m_pointerEventManager.conditionallyEnableMouseEventForPointerTypeMouse(
-        event.modifiers());
+        event.getModifiers());
 
     RefPtrWillBeRawPtr<FrameView> protector(m_frame->view());
     handleMouseMoveOrLeaveEvent(event, 0, false, true);
@@ -1332,12 +1332,12 @@ WebInputEventResult EventHandler::handleMouseReleaseEvent(const PlatformMouseEve
 
     // TODO(crbug/545647): This state should reset with pointercancel too.
     m_pointerEventManager.conditionallyEnableMouseEventForPointerTypeMouse(
-        mouseEvent.modifiers());
+        mouseEvent.getModifiers());
 
     bool contextMenuEvent = mouseEvent.button() == RightButton;
 #if OS(MACOSX)
     // FIXME: The Mac port achieves the same behavior by checking whether the context menu is currently open in WebPage::mouseEvent(). Consider merging the implementations.
-    if (mouseEvent.button() == LeftButton && mouseEvent.modifiers() & PlatformEvent::CtrlKey)
+    if (mouseEvent.button() == LeftButton && mouseEvent.getModifiers() & PlatformEvent::CtrlKey)
         contextMenuEvent = true;
 #endif
 
@@ -1386,8 +1386,8 @@ WebInputEventResult EventHandler::dispatchDragEvent(const AtomicString& eventTyp
         true, true, m_frame->document()->domWindow(),
         0, event.globalPosition().x(), event.globalPosition().y(), event.position().x(), event.position().y(),
         event.movementDelta().x(), event.movementDelta().y(),
-        event.modifiers(),
-        0, MouseEvent::platformModifiersToButtons(event.modifiers()), nullptr, event.timestamp(), dataTransfer, event.syntheticEventType());
+        event.getModifiers(),
+        0, MouseEvent::platformModifiersToButtons(event.getModifiers()), nullptr, event.timestamp(), dataTransfer, event.getSyntheticEventType());
 
     return toWebInputEventResult(dragTarget->dispatchEvent(me.get()));
 }
@@ -2064,7 +2064,7 @@ WebInputEventResult EventHandler::handleGestureTap(const GestureEventWithHitTest
     // co-ordinates outside the target's bounds.
     IntPoint adjustedPoint = frameView->rootFrameToContents(gestureEvent.position());
 
-    unsigned modifiers = gestureEvent.modifiers();
+    unsigned modifiers = gestureEvent.getModifiers();
     PlatformMouseEvent fakeMouseMove(gestureEvent.position(), gestureEvent.globalPosition(),
         NoButton, PlatformEvent::MouseMoved, /* clickCount */ 0,
         static_cast<PlatformEvent::Modifiers>(modifiers),
@@ -2160,7 +2160,7 @@ WebInputEventResult EventHandler::handleGestureLongPress(const GestureEventWithH
     const PlatformGestureEvent& gestureEvent = targetedEvent.event();
     IntPoint adjustedPoint = gestureEvent.position();
 
-    unsigned modifiers = gestureEvent.modifiers();
+    unsigned modifiers = gestureEvent.getModifiers();
 
     // FIXME: Ideally we should try to remove the extra mouse-specific hit-tests here (re-using the
     // supplied HitTestResult), but that will require some overhaul of the touch drag-and-drop code
@@ -2630,7 +2630,7 @@ void EventHandler::updateGestureTargetNodeForMouseEvent(const GestureEventWithHi
     }
 
     const PlatformGestureEvent& gestureEvent = targetedEvent.event();
-    unsigned modifiers = gestureEvent.modifiers();
+    unsigned modifiers = gestureEvent.getModifiers();
     PlatformMouseEvent fakeMouseMove(gestureEvent.position(), gestureEvent.globalPosition(),
         NoButton, PlatformEvent::MouseMoved, /* clickCount */ 0,
         static_cast<PlatformEvent::Modifiers>(modifiers),
@@ -2727,7 +2727,7 @@ GestureEventWithHitTestResults EventHandler::hitTestResultForGestureEvent(const 
     return GestureEventWithHitTestResults(adjustedEvent, hitTestResult);
 }
 
-HitTestRequest::HitTestRequestType EventHandler::getHitTypeForGestureType(PlatformEvent::Type type)
+HitTestRequest::HitTestRequestType EventHandler::getHitTypeForGestureType(PlatformEvent::EventType type)
 {
     HitTestRequest::HitTestRequestType hitType = HitTestRequest::TouchEvent;
     switch (type) {
@@ -2861,7 +2861,7 @@ WebInputEventResult EventHandler::sendContextMenuEventForKey(Element* overrideTa
 
     // The contextmenu event is a mouse event even when invoked using the keyboard.
     // This is required for web compatibility.
-    PlatformEvent::Type eventType = PlatformEvent::MousePressed;
+    PlatformEvent::EventType eventType = PlatformEvent::MousePressed;
     if (m_frame->settings() && m_frame->settings()->showContextMenuOnMouseUp())
         eventType = PlatformEvent::MouseReleased;
 
@@ -2876,7 +2876,7 @@ WebInputEventResult EventHandler::sendContextMenuEventForKey(Element* overrideTa
 WebInputEventResult EventHandler::sendContextMenuEventForGesture(const GestureEventWithHitTestResults& targetedEvent)
 {
     const PlatformGestureEvent& gestureEvent = targetedEvent.event();
-    unsigned modifiers = gestureEvent.modifiers();
+    unsigned modifiers = gestureEvent.getModifiers();
 
     // Send MouseMoved event prior to handling (https://crbug.com/485290).
     PlatformMouseEvent fakeMouseMove(gestureEvent.position(), gestureEvent.globalPosition(),
@@ -2885,7 +2885,7 @@ WebInputEventResult EventHandler::sendContextMenuEventForGesture(const GestureEv
         PlatformMouseEvent::FromTouch, gestureEvent.timestamp(), WebPointerProperties::PointerType::Mouse);
     dispatchMouseEvent(EventTypeNames::mousemove, targetedEvent.hitTestResult().innerNode(), 0, fakeMouseMove);
 
-    PlatformEvent::Type eventType = PlatformEvent::MousePressed;
+    PlatformEvent::EventType eventType = PlatformEvent::MousePressed;
 
     if (m_frame->settings() && m_frame->settings()->showContextMenuOnMouseUp())
         eventType = PlatformEvent::MouseReleased;
@@ -3053,7 +3053,7 @@ bool EventHandler::handleAccessKey(const PlatformKeyboardEvent& evt)
     // lower case variants are present in a document, the correct element is matched based on Shift key state.
     // Firefox only matches an access key if Shift is not pressed, and does that case-insensitively.
     ASSERT(!(accessKeyModifiers() & PlatformEvent::ShiftKey));
-    if ((evt.modifiers() & (PlatformEvent::KeyModifiers & ~PlatformEvent::ShiftKey)) != accessKeyModifiers())
+    if ((evt.getModifiers() & (PlatformEvent::KeyModifiers & ~PlatformEvent::ShiftKey)) != accessKeyModifiers())
         return false;
     String key = evt.unmodifiedText();
     Element* elem = m_frame->document()->getElementByAccessKey(key.lower());
@@ -3573,7 +3573,7 @@ void EventHandler::dispatchPointerEvents(const PlatformTouchEvent& event,
 
         WebInputEventResult result =
             m_pointerEventManager.sendTouchPointerEvent(
-            touchInfo.touchTarget, touchPoint, event.modifiers(),
+            touchInfo.touchTarget, touchPoint, event.getModifiers(),
             touchInfo.adjustedRadius.width(), touchInfo.adjustedRadius.height(),
             touchInfo.adjustedPagePoint.x(), touchInfo.adjustedPagePoint.y());
         touchInfo.consumed = result != WebInputEventResult::NotHandled;
@@ -3588,7 +3588,7 @@ void EventHandler::sendPointerCancels(WillBeHeapVector<TouchInfo>& touchInfos)
     for (unsigned i = 0; i < touchInfos.size(); ++i) {
         TouchInfo& touchInfo = touchInfos[i];
         const PlatformTouchPoint& point = touchInfo.point;
-        const PlatformTouchPoint::State pointState = point.state();
+        const PlatformTouchPoint::TouchState pointState = point.state();
 
         if (pointState == PlatformTouchPoint::TouchReleased
             || pointState == PlatformTouchPoint::TouchCancelled)
@@ -3645,7 +3645,7 @@ WebInputEventResult EventHandler::dispatchTouchEvents(const PlatformTouchEvent& 
     for (unsigned i = 0; i < touchInfos.size(); ++i) {
         const TouchInfo& touchInfo = touchInfos[i];
         const PlatformTouchPoint& point = touchInfo.point;
-        PlatformTouchPoint::State pointState = point.state();
+        PlatformTouchPoint::TouchState pointState = point.state();
 
         if (touchInfo.consumed)
             continue;
@@ -3703,13 +3703,13 @@ WebInputEventResult EventHandler::dispatchTouchEvents(const PlatformTouchEvent& 
         if (!changedTouches[state].m_touches)
             continue;
 
-        const AtomicString& eventName(touchEventNameForTouchPointState(static_cast<PlatformTouchPoint::State>(state)));
+        const AtomicString& eventName(touchEventNameForTouchPointState(static_cast<PlatformTouchPoint::TouchState>(state)));
         for (const auto& eventTarget : changedTouches[state].m_targets) {
             EventTarget* touchEventTarget = eventTarget.get();
             RefPtrWillBeRawPtr<TouchEvent> touchEvent = TouchEvent::create(
                 touches.get(), touchesByTarget.get(touchEventTarget), changedTouches[state].m_touches.get(),
                 eventName, touchEventTarget->toNode()->document().domWindow(),
-                event.modifiers(), event.cancelable(), event.causesScrollingIfUncanceled(), event.timestamp());
+                event.getModifiers(), event.cancelable(), event.causesScrollingIfUncanceled(), event.timestamp());
 
             eventResult = mergeEventResult(eventResult, toWebInputEventResult(touchEventTarget->dispatchEvent(touchEvent.get())));
         }
@@ -3828,7 +3828,7 @@ WebInputEventResult EventHandler::handleTouchEvent(const PlatformTouchEvent& eve
 
     for (unsigned i = 0; i < points.size(); ++i) {
         const PlatformTouchPoint& point = points[i];
-        PlatformTouchPoint::State pointState = point.state();
+        PlatformTouchPoint::TouchState pointState = point.state();
         RefPtrWillBeRawPtr<EventTarget> touchTarget = nullptr;
 
         if (pointState == PlatformTouchPoint::TouchReleased || pointState == PlatformTouchPoint::TouchCancelled) {

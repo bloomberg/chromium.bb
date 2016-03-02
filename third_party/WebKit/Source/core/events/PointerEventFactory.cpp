@@ -81,7 +81,7 @@ PassRefPtrWillBeRawPtr<PointerEvent> PointerEventFactory::create(
     PassRefPtrWillBeRawPtr<AbstractView> view)
 {
     AtomicString pointerEventName = pointerEventNameForMouseEventName(mouseEventName);
-    unsigned buttons = MouseEvent::platformModifiersToButtons(mouseEvent.modifiers());
+    unsigned buttons = MouseEvent::platformModifiersToButtons(mouseEvent.getModifiers());
     PointerEventInit pointerEventInit;
 
     setIdTypeButtons(pointerEventInit, mouseEvent.pointerProperties(), buttons);
@@ -101,7 +101,7 @@ PassRefPtrWillBeRawPtr<PointerEvent> PointerEventFactory::create(
     pointerEventInit.setPressure(getPointerEventPressure(
         mouseEvent.pointerProperties().force, pointerEventInit.buttons()));
 
-    UIEventWithKeyState::setFromPlatformModifiers(pointerEventInit, mouseEvent.modifiers());
+    UIEventWithKeyState::setFromPlatformModifiers(pointerEventInit, mouseEvent.getModifiers());
 
     // Make sure chorded buttons fire pointermove instead of pointerup/down.
     if ((pointerEventName == EventTypeNames::pointerdown
@@ -129,7 +129,7 @@ PassRefPtrWillBeRawPtr<PointerEvent> PointerEventFactory::create(const AtomicStr
     const double width, const double height,
     const double clientX, const double clientY)
 {
-    const PlatformTouchPoint::State pointState = touchPoint.state();
+    const PlatformTouchPoint::TouchState pointState = touchPoint.state();
 
     bool pointerReleasedOrCancelled =
         pointState == PlatformTouchPoint::TouchReleased

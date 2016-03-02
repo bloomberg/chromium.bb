@@ -34,16 +34,16 @@ public:
         return adoptPtr(new Value());
     }
 
-    typedef enum {
+    enum ValueType {
         TypeNull = 0,
         TypeBoolean,
         TypeNumber,
         TypeString,
         TypeObject,
         TypeArray
-    } Type;
+    };
 
-    Type type() const { return m_type; }
+    ValueType type() const { return m_type; }
 
     bool isNull() const { return m_type == TypeNull; }
 
@@ -58,13 +58,13 @@ public:
 
 protected:
     Value() : m_type(TypeNull) { }
-    explicit Value(Type type) : m_type(type) { }
+    explicit Value(ValueType type) : m_type(type) { }
 
 private:
     friend class DictionaryValue;
     friend class ListValue;
 
-    Type m_type;
+    ValueType m_type;
 };
 
 class PLATFORM_EXPORT FundamentalValue : public Value {

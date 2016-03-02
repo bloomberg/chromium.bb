@@ -120,10 +120,10 @@ public:
 
     bool hasAlpha() const;
     const IntRect& originalFrameRect() const { return m_originalFrameRect; }
-    Status status() const { return m_status; }
+    Status getStatus() const { return m_status; }
     unsigned duration() const { return m_duration; }
-    DisposalMethod disposalMethod() const { return m_disposalMethod; }
-    AlphaBlendSource alphaBlendSource() const { return m_alphaBlendSource; }
+    DisposalMethod getDisposalMethod() const { return m_disposalMethod; }
+    AlphaBlendSource getAlphaBlendSource() const { return m_alphaBlendSource; }
     bool premultiplyAlpha() const { return m_premultiplyAlpha; }
     SkBitmap::Allocator* allocator() const { return m_allocator; }
     const SkBitmap& getSkBitmap() const { return m_bitmap; }

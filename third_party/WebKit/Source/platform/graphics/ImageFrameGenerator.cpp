@@ -363,13 +363,13 @@ bool ImageFrameGenerator::decode(size_t index, ImageDecoder** decoder, SkBitmap*
     (*decoder)->clearCacheExceptFrame(index);
     (*decoder)->setMemoryAllocator(0);
 
-    if (!frame || frame->status() == ImageFrame::FrameEmpty)
+    if (!frame || frame->getStatus() == ImageFrame::FrameEmpty)
         return false;
 
     // A cache object is considered complete if we can decode a complete frame.
     // Or we have received all data. The image might not be fully decoded in
     // the latter case.
-    const bool isDecodeComplete = frame->status() == ImageFrame::FrameComplete || allDataReceived;
+    const bool isDecodeComplete = frame->getStatus() == ImageFrame::FrameComplete || allDataReceived;
 
     SkBitmap fullSizeBitmap = frame->getSkBitmap();
     if (!fullSizeBitmap.isNull()) {

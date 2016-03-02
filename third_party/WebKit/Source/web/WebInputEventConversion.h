@@ -74,7 +74,7 @@ public:
 class PlatformKeyboardEventBuilder : public PlatformKeyboardEvent {
 public:
     PlatformKeyboardEventBuilder(const WebKeyboardEvent&);
-    void setKeyType(Type);
+    void setKeyType(EventType);
     bool isCharacterKey() const;
 };
 

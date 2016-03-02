@@ -172,7 +172,7 @@ public:
     bool hasMajorCertificateErrors() const { return m_hasMajorCertificateErrors; }
     void setHasMajorCertificateErrors(bool hasMajorCertificateErrors) { m_hasMajorCertificateErrors = hasMajorCertificateErrors; }
 
-    SecurityStyle securityStyle() const { return m_securityStyle; }
+    SecurityStyle getSecurityStyle() const { return m_securityStyle; }
     void setSecurityStyle(SecurityStyle securityStyle) { m_securityStyle = securityStyle; }
 
     const SecurityDetails* securityDetails() const { return &m_securityDetails; }

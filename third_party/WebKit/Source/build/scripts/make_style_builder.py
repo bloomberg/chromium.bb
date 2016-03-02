@@ -55,8 +55,9 @@ class StyleBuilderWriter(css_properties.CSSProperties):
             upper_camel = property['upper_camel_name']
             set_if_none(property, 'name_for_methods', upper_camel.replace('Webkit', ''))
             name = property['name_for_methods']
+            simple_type_name = str(property['type_name']).split('::')[-1]
             set_if_none(property, 'type_name', 'E' + name)
-            set_if_none(property, 'getter', lower_first(name) if property['type_name'] != name else 'get' + name)
+            set_if_none(property, 'getter', lower_first(name) if simple_type_name != name else 'get' + name)
             set_if_none(property, 'setter', 'set' + name)
             set_if_none(property, 'initial', 'initial' + name)
             if property['custom_all']:

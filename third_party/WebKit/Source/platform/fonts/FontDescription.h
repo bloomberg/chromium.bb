@@ -135,9 +135,9 @@ public:
     };
 
     const FontFamily& family() const { return m_familyList; }
-    FamilyDescription familyDescription() const { return FamilyDescription(genericFamily(), family()); }
+    FamilyDescription getFamilyDescription() const { return FamilyDescription(genericFamily(), family()); }
     FontFamily& firstFamily() { return m_familyList; }
-    Size size() const { return Size(keywordSize(), specifiedSize(), isAbsoluteSize()); }
+    Size getSize() const { return Size(keywordSize(), specifiedSize(), isAbsoluteSize()); }
     float specifiedSize() const { return m_specifiedSize; }
     float computedSize() const { return m_computedSize; }
     float adjustedSize() const { return m_adjustedSize; }
@@ -160,7 +160,7 @@ public:
     {
         return genericFamily() == MonospaceFamily && !family().next() && family().family() == FontFamilyNames::webkit_monospace;
     }
-    Kerning kerning() const { return static_cast<Kerning>(m_fields.m_kerning); }
+    Kerning getKerning() const { return static_cast<Kerning>(m_fields.m_kerning); }
     VariantLigatures variantLigatures() const;
     LigaturesState commonLigaturesState() const { return static_cast<LigaturesState>(m_fields.m_commonLigaturesState); }
     LigaturesState discretionaryLigaturesState() const { return static_cast<LigaturesState>(m_fields.m_discretionaryLigaturesState); }
@@ -219,7 +219,7 @@ public:
     void setWordSpacing(float s) { m_wordSpacing = s; }
     void setLetterSpacing(float s) { m_letterSpacing = s; updateTypesettingFeatures(); }
 
-    TypesettingFeatures typesettingFeatures() const { return static_cast<TypesettingFeatures>(m_fields.m_typesettingFeatures); }
+    TypesettingFeatures getTypesettingFeatures() const { return static_cast<TypesettingFeatures>(m_fields.m_typesettingFeatures); }
 
     static void setSubpixelPositioning(bool b) { s_useSubpixelTextPositioning = b; }
     static bool subpixelPositioning() { return s_useSubpixelTextPositioning; }

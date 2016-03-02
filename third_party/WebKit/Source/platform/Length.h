@@ -172,9 +172,9 @@ public:
         return getFloatValue();
     }
 
-    PixelsAndPercent pixelsAndPercent() const;
+    PixelsAndPercent getPixelsAndPercent() const;
 
-    CalculationValue& calculationValue() const;
+    CalculationValue& getCalculationValue() const;
 
     LengthType type() const { return static_cast<LengthType>(m_type); }
     bool quirk() const { return m_quirk; }

@@ -170,7 +170,7 @@ template<typename T>
 void TraceTrait<T>::trace(Visitor* visitor, void* self)
 {
     static_assert(WTF::NeedsTracing<T>::value || WTF::IsWeak<T>::value, "T should be traced");
-    if (visitor->markingMode() == Visitor::GlobalMarking) {
+    if (visitor->getMarkingMode() == Visitor::GlobalMarking) {
         // Switch to inlined global marking dispatch.
         static_cast<T*>(self)->trace(InlinedGlobalMarkingVisitor(visitor));
     } else {

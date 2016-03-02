@@ -786,7 +786,7 @@ PassRefPtr<JSONObject> GraphicsLayer::layerTreeAsJSON(LayerTreeFlags flags, Rend
 
         RefPtr<JSONArray> squashingDisallowedReasonsJSON = JSONArray::create();
         for (size_t i = 0; i < kNumberOfSquashingDisallowedReasons; ++i) {
-            if (m_debugInfo.squashingDisallowedReasons() & kSquashingDisallowedReasonStringMap[i].reason)
+            if (m_debugInfo.getSquashingDisallowedReasons() & kSquashingDisallowedReasonStringMap[i].reason)
                 squashingDisallowedReasonsJSON->pushString(debug ? kSquashingDisallowedReasonStringMap[i].description : kSquashingDisallowedReasonStringMap[i].shortName);
         }
         json->setArray("squashingDisallowedReasons", squashingDisallowedReasonsJSON);

@@ -178,7 +178,7 @@ void HarfBuzzShaper::setFontFeatures()
 
     static hb_feature_t noKern = createFeature('k', 'e', 'r', 'n');
     static hb_feature_t noVkrn = createFeature('v', 'k', 'r', 'n');
-    switch (description.kerning()) {
+    switch (description.getKerning()) {
     case FontDescription::NormalKerning:
         // kern/vkrn are enabled by default
         break;

@@ -42,13 +42,13 @@ namespace blink {
 class PLATFORM_EXPORT TimingFunction : public RefCounted<TimingFunction> {
 public:
 
-    enum Type {
+    enum FunctionType {
         LinearFunction, CubicBezierFunction, StepsFunction
     };
 
     virtual ~TimingFunction() { }
 
-    Type type() const { return m_type; }
+    FunctionType type() const { return m_type; }
 
     virtual String toString() const = 0;
 
@@ -84,13 +84,13 @@ public:
     virtual void partition(Vector<PartitionRegion>& regions) const = 0;
 
 protected:
-    TimingFunction(Type type)
+    TimingFunction(FunctionType type)
         : m_type(type)
     {
     }
 
 private:
-    Type m_type;
+    FunctionType m_type;
 };
 
 class PLATFORM_EXPORT LinearTimingFunction final : public TimingFunction {
@@ -117,7 +117,7 @@ private:
 
 class PLATFORM_EXPORT CubicBezierTimingFunction final : public TimingFunction {
 public:
-    enum SubType {
+    enum FunctionSubType {
         Ease,
         EaseIn,
         EaseOut,
@@ -130,7 +130,7 @@ public:
         return adoptRef(new CubicBezierTimingFunction(Custom, x1, y1, x2, y2));
     }
 
-    static CubicBezierTimingFunction* preset(SubType subType)
+    static CubicBezierTimingFunction* preset(FunctionSubType subType)
     {
         switch (subType) {
         case Ease:
@@ -172,10 +172,10 @@ public:
     double x2() const { return m_x2; }
     double y2() const { return m_y2; }
 
-    SubType subType() const { return m_subType; }
+    FunctionSubType subType() const { return m_subType; }
 
 private:
-    explicit CubicBezierTimingFunction(SubType subType, double x1, double y1, double x2, double y2)
+    explicit CubicBezierTimingFunction(FunctionSubType subType, double x1, double y1, double x2, double y2)
         : TimingFunction(CubicBezierFunction)
         , m_x1(x1)
         , m_y1(y1)
@@ -194,7 +194,7 @@ private:
     double m_y1;
     double m_x2;
     double m_y2;
-    SubType m_subType;
+    FunctionSubType m_subType;
     mutable OwnPtr<UnitBezier> m_bezier;
 };
 
@@ -239,7 +239,7 @@ public:
     void partition(Vector<PartitionRegion>& regions) const override;
 
     int numberOfSteps() const { return m_steps; }
-    StepAtPosition stepAtPosition() const { return m_stepAtPosition; }
+    StepAtPosition getStepAtPosition() const { return m_stepAtPosition; }
 
 private:
     StepsTimingFunction(int steps, StepAtPosition stepAtPosition)

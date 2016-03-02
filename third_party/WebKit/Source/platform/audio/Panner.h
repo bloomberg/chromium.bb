@@ -57,8 +57,6 @@ public:
 
     virtual ~Panner() { };
 
-    PanningModel panningModel() const { return m_panningModel; }
-
     virtual void pan(double azimuth, double elevation, const AudioBus* inputBus, AudioBus* outputBus, size_t framesToProcess) = 0;
 
     virtual void reset() = 0;

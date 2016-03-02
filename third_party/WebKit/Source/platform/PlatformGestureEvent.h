@@ -51,7 +51,7 @@ public:
         memset(&m_data, 0, sizeof(m_data));
     }
 
-    PlatformGestureEvent(Type type, const IntPoint& position,
+    PlatformGestureEvent(EventType type, const IntPoint& position,
         const IntPoint& globalPosition, const IntSize& area, double timestamp,
         PlatformEvent::Modifiers modifiers, PlatformGestureSource source)
         : PlatformEvent(type, modifiers, timestamp)

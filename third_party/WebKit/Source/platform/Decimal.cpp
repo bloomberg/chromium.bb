@@ -87,8 +87,8 @@ SpecialValueHandler::HandleResult SpecialValueHandler::handle()
     if (m_lhs.isFinite() && m_rhs.isFinite())
         return BothFinite;
 
-    const Decimal::EncodedData::FormatClass lhsClass = m_lhs.value().formatClass();
-    const Decimal::EncodedData::FormatClass rhsClass = m_rhs.value().formatClass();
+    const Decimal::EncodedData::FormatClass lhsClass = m_lhs.value().getFormatClass();
+    const Decimal::EncodedData::FormatClass rhsClass = m_rhs.value().getFormatClass();
     if (lhsClass == Decimal::EncodedData::ClassNaN) {
         m_result = ResultIsLHS;
         return EitherNaN;
@@ -332,15 +332,15 @@ Decimal Decimal::operator-() const
         return *this;
 
     Decimal result(*this);
-    result.m_data.setSign(invertSign(m_data.sign()));
+    result.m_data.setSign(invertSign(m_data.getSign()));
     return result;
 }
 
 Decimal Decimal::operator+(const Decimal& rhs) const
 {
     const Decimal& lhs = *this;
-    const Sign lhsSign = lhs.sign();
-    const Sign rhsSign = rhs.sign();
+    const Sign lhsSign = lhs.getSign();
+    const Sign rhsSign = rhs.getSign();
 
     SpecialValueHandler handler(lhs, rhs);
     switch (handler.handle()) {
@@ -377,8 +377,8 @@ Decimal Decimal::operator+(const Decimal& rhs) const
 Decimal Decimal::operator-(const Decimal& rhs) const
 {
     const Decimal& lhs = *this;
-    const Sign lhsSign = lhs.sign();
-    const Sign rhsSign = rhs.sign();
+    const Sign lhsSign = lhs.getSign();
+    const Sign rhsSign = rhs.getSign();
 
     SpecialValueHandler handler(lhs, rhs);
     switch (handler.handle()) {
@@ -415,8 +415,8 @@ Decimal Decimal::operator-(const Decimal& rhs) const
 Decimal Decimal::operator*(const Decimal& rhs) const
 {
     const Decimal& lhs = *this;
-    const Sign lhsSign = lhs.sign();
-    const Sign rhsSign = rhs.sign();
+    const Sign lhsSign = lhs.getSign();
+    const Sign rhsSign = rhs.getSign();
     const Sign resultSign = lhsSign == rhsSign ? Positive : Negative;
 
     SpecialValueHandler handler(lhs, rhs);
@@ -453,8 +453,8 @@ Decimal Decimal::operator*(const Decimal& rhs) const
 Decimal Decimal::operator/(const Decimal& rhs) const
 {
     const Decimal& lhs = *this;
-    const Sign lhsSign = lhs.sign();
-    const Sign rhsSign = rhs.sign();
+    const Sign lhsSign = lhs.getSign();
+    const Sign rhsSign = rhs.getSign();
     const Sign resultSign = lhsSign == rhsSign ? Positive : Negative;
 
     SpecialValueHandler handler(lhs, rhs);
@@ -640,13 +640,13 @@ Decimal Decimal::ceil() const
     result = scaleDown(result, numberOfDropDigits);
     if (isPositive() && !isMultiplePowersOfTen(m_data.coefficient(), numberOfDropDigits))
         ++result;
-    return Decimal(sign(), 0, result);
+    return Decimal(getSign(), 0, result);
 }
 
 Decimal Decimal::compareTo(const Decimal& rhs) const
 {
     const Decimal result(*this - rhs);
-    switch (result.m_data.formatClass()) {
+    switch (result.m_data.getFormatClass()) {
     case EncodedData::ClassInfinity:
         return result.isNegative() ? Decimal(-1) : Decimal(1);
 
@@ -681,7 +681,7 @@ Decimal Decimal::floor() const
     result = scaleDown(result, numberOfDropDigits);
     if (isNegative() && !isMultiplePowersOfTen(m_data.coefficient(), numberOfDropDigits))
         ++result;
-    return Decimal(sign(), 0, result);
+    return Decimal(getSign(), 0, result);
 }
 
 Decimal Decimal::fromDouble(double doubleValue)
@@ -921,7 +921,7 @@ Decimal Decimal::round() const
     if (result % 10 >= 5)
         result += 10;
     result /= 10;
-    return Decimal(sign(), 0, result);
+    return Decimal(getSign(), 0, result);
 }
 
 double Decimal::toDouble() const
@@ -940,9 +940,9 @@ double Decimal::toDouble() const
 
 String Decimal::toString() const
 {
-    switch (m_data.formatClass()) {
+    switch (m_data.getFormatClass()) {
     case EncodedData::ClassInfinity:
-        return sign() ? "-Infinity" : "Infinity";
+        return getSign() ? "-Infinity" : "Infinity";
 
     case EncodedData::ClassNaN:
         return "NaN";
@@ -957,7 +957,7 @@ String Decimal::toString() const
     }
 
     StringBuilder builder;
-    if (sign())
+    if (getSign())
         builder.append('-');
 
     int originalExponent = exponent();

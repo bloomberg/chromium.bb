@@ -55,10 +55,10 @@ ImageFrame& ImageFrame::operator=(const ImageFrame& other)
     m_pixelsChanged = other.m_pixelsChanged;
     setMemoryAllocator(other.allocator());
     setOriginalFrameRect(other.originalFrameRect());
-    setStatus(other.status());
+    setStatus(other.getStatus());
     setDuration(other.duration());
-    setDisposalMethod(other.disposalMethod());
-    setAlphaBlendSource(other.alphaBlendSource());
+    setDisposalMethod(other.getDisposalMethod());
+    setAlphaBlendSource(other.getAlphaBlendSource());
     setPremultiplyAlpha(other.premultiplyAlpha());
     // Be sure that this is called after we've called setStatus(), since we
     // look at our status to know what to do with the alpha value.

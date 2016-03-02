@@ -401,7 +401,7 @@ int Font::offsetForPosition(const TextRun& run, float x, bool includePartialGlyp
 {
     FontCachePurgePreventer purgePreventer;
 
-    if (codePath(TextRunPaintInfo(run)) != ComplexPath && !fontDescription().typesettingFeatures())
+    if (codePath(TextRunPaintInfo(run)) != ComplexPath && !fontDescription().getTypesettingFeatures())
         return offsetForPositionForSimpleText(run, x, includePartialGlyphs);
 
     return offsetForPositionForComplexText(run, x, includePartialGlyphs);
@@ -420,7 +420,7 @@ CodePath Font::codePath(const TextRunPaintInfo& runInfo) const
 
     const TextRun& run = runInfo.run;
 
-    if (fontDescription().typesettingFeatures() && (runInfo.from || runInfo.to != run.length()))
+    if (fontDescription().getTypesettingFeatures() && (runInfo.from || runInfo.to != run.length()))
         return ComplexPath;
 
     if (m_fontDescription.featureSettings() && m_fontDescription.featureSettings()->size() > 0)
@@ -432,7 +432,7 @@ CodePath Font::codePath(const TextRunPaintInfo& runInfo) const
     if (m_fontDescription.widthVariant() != RegularWidth)
         return ComplexPath;
 
-    if (run.length() > 1 && fontDescription().typesettingFeatures())
+    if (run.length() > 1 && fontDescription().getTypesettingFeatures())
         return ComplexPath;
 
     // FIXME: This really shouldn't be needed but for some reason the
@@ -459,11 +459,11 @@ bool Font::canShapeWordByWord() const
 
 bool Font::computeCanShapeWordByWord() const
 {
-    if (!fontDescription().typesettingFeatures())
+    if (!fontDescription().getTypesettingFeatures())
         return true;
 
     const FontPlatformData& platformData = primaryFont()->platformData();
-    TypesettingFeatures features = fontDescription().typesettingFeatures();
+    TypesettingFeatures features = fontDescription().getTypesettingFeatures();
     return !platformData.hasSpaceInLigaturesOrKerning(features);
 };
 

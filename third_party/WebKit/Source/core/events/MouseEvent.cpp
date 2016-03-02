@@ -49,9 +49,9 @@ PassRefPtrWillBeRawPtr<MouseEvent> MouseEvent::create(const AtomicString& eventT
         eventType, isBubbling, isCancelable, view,
         detail, event.globalPosition().x(), event.globalPosition().y(), event.position().x(), event.position().y(),
         event.movementDelta().x(), event.movementDelta().y(),
-        event.modifiers(), event.button(),
-        platformModifiersToButtons(event.modifiers()),
-        relatedTarget, event.timestamp(), event.syntheticEventType());
+        event.getModifiers(), event.button(),
+        platformModifiersToButtons(event.getModifiers()),
+        relatedTarget, event.timestamp(), event.getSyntheticEventType());
 }
 
 PassRefPtrWillBeRawPtr<MouseEvent> MouseEvent::create(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<AbstractView> view,

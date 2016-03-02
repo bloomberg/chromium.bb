@@ -384,7 +384,7 @@ bool NormalPageHeap::isConsistentForGC()
     // contain a freelist block or the current allocation point.
     for (size_t i = 0; i < blinkPageSizeLog2; ++i) {
         for (FreeListEntry* freeListEntry = m_freeList.m_freeLists[i]; freeListEntry; freeListEntry = freeListEntry->next()) {
-            if (pagesToBeSweptContains(freeListEntry->address()))
+            if (pagesToBeSweptContains(freeListEntry->getAddress()))
                 return false;
         }
     }
@@ -767,7 +767,7 @@ Address NormalPageHeap::allocateFromFreeList(size_t allocationSize, size_t gcInf
         }
         if (entry) {
             entry->unlink(&m_freeList.m_freeLists[index]);
-            setAllocationPoint(entry->address(), entry->size());
+            setAllocationPoint(entry->getAddress(), entry->size());
             ASSERT(hasCurrentAllocationArea());
             ASSERT(remainingAllocationSize() >= allocationSize);
             m_freeList.m_biggestFreeListIndex = index;
@@ -832,7 +832,7 @@ Address LargeObjectHeap::doAllocateLargeObjectPage(size_t allocationSize, size_t
 
     // Poison the object header and allocationGranularity bytes after the object
     ASAN_POISON_MEMORY_REGION(header, sizeof(*header));
-    ASAN_POISON_MEMORY_REGION(largeObject->address() + largeObject->size(), allocationGranularity);
+    ASAN_POISON_MEMORY_REGION(largeObject->getAddress() + largeObject->size(), allocationGranularity);
 
     largeObject->link(&m_firstPage);
 
@@ -850,7 +850,7 @@ void LargeObjectHeap::freeLargeObjectPage(LargeObjectPage* object)
     // Unpoison the object header and allocationGranularity bytes after the
     // object before freeing.
     ASAN_UNPOISON_MEMORY_REGION(object->heapObjectHeader(), sizeof(HeapObjectHeader));
-    ASAN_UNPOISON_MEMORY_REGION(object->address() + object->size(), allocationGranularity);
+    ASAN_UNPOISON_MEMORY_REGION(object->getAddress() + object->size(), allocationGranularity);
 
     if (object->terminating()) {
         ASSERT(ThreadState::current()->isTerminating());
@@ -1427,8 +1427,8 @@ void NormalPage::takeSnapshot(WebMemoryAllocatorDump* pageDump, ThreadState::GCS
 #if ENABLE(ASSERT)
 bool NormalPage::contains(Address addr)
 {
-    Address blinkPageStart = roundToBlinkPageStart(address());
-    ASSERT(blinkPageStart == address() - blinkGuardPageSize); // Page is at aligned address plus guard page size.
+    Address blinkPageStart = roundToBlinkPageStart(getAddress());
+    ASSERT(blinkPageStart == getAddress() - blinkGuardPageSize); // Page is at aligned address plus guard page size.
     return blinkPageStart <= addr && addr < blinkPageStart + blinkPageSize;
 }
 #endif
@@ -1546,7 +1546,7 @@ void LargeObjectPage::takeSnapshot(WebMemoryAllocatorDump* pageDump, ThreadState
 #if ENABLE(ASSERT)
 bool LargeObjectPage::contains(Address object)
 {
-    return roundToBlinkPageStart(address()) <= object && object < roundToBlinkPageEnd(address() + size());
+    return roundToBlinkPageStart(getAddress()) <= object && object < roundToBlinkPageEnd(getAddress() + size());
 }
 #endif
 

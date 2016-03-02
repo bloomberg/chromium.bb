@@ -359,7 +359,7 @@ void PNGImageDecoder::rowAvailable(unsigned char* rowBuffer, unsigned rowIndex, 
 
     // Initialize the framebuffer if needed.
     ImageFrame& buffer = m_frameBufferCache[0];
-    if (buffer.status() == ImageFrame::FrameEmpty) {
+    if (buffer.getStatus() == ImageFrame::FrameEmpty) {
         png_structp png = m_reader->pngPtr();
         if (!buffer.setSize(size().width(), size().height())) {
             longjmp(JMPBUF(png), 1);

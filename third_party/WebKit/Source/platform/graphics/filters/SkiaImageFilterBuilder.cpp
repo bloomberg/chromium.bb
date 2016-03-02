@@ -157,7 +157,7 @@ void SkiaImageFilterBuilder::buildFilterOperations(const FilterOperations& opera
         }
         case FilterOperation::DROP_SHADOW: {
             const DropShadowFilterOperation& drop = toDropShadowFilterOperation(op);
-            filters->appendDropShadowFilter(drop.location(), drop.stdDeviation(), drop.color());
+            filters->appendDropShadowFilter(drop.location(), drop.stdDeviation(), drop.getColor());
             break;
         }
         case FilterOperation::NONE:

@@ -143,7 +143,7 @@ PassRefPtrWillBeRawPtr<FilterOperation> DropShadowFilterOperation::blend(const F
     return DropShadowFilterOperation::create(
         blink::blend(fromOp->location(), m_location, progress),
         blink::blend(fromOp->stdDeviation(), m_stdDeviation, progress),
-        blink::blend(fromOp->color(), m_color, progress));
+        blink::blend(fromOp->getColor(), m_color, progress));
 }
 
 } // namespace blink

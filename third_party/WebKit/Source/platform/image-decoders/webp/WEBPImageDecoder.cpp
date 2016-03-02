@@ -250,7 +250,7 @@ bool WEBPImageDecoder::updateDemuxer()
 bool WEBPImageDecoder::initFrameBuffer(size_t frameIndex)
 {
     ImageFrame& buffer = m_frameBufferCache[frameIndex];
-    if (buffer.status() != ImageFrame::FrameEmpty) // Already initialized.
+    if (buffer.getStatus() != ImageFrame::FrameEmpty) // Already initialized.
         return true;
 
     const size_t requiredPreviousFrameIndex = buffer.requiredPreviousFrameIndex();
@@ -261,13 +261,13 @@ bool WEBPImageDecoder::initFrameBuffer(size_t frameIndex)
         m_frameBackgroundHasAlpha = !buffer.originalFrameRect().contains(IntRect(IntPoint(), size()));
     } else {
         const ImageFrame& prevBuffer = m_frameBufferCache[requiredPreviousFrameIndex];
-        ASSERT(prevBuffer.status() == ImageFrame::FrameComplete);
+        ASSERT(prevBuffer.getStatus() == ImageFrame::FrameComplete);
 
         // Preserve the last frame as the starting state for this frame.
         if (!buffer.copyBitmapData(prevBuffer))
             return setFailed();
 
-        if (prevBuffer.disposalMethod() == ImageFrame::DisposeOverwriteBgcolor) {
+        if (prevBuffer.getDisposalMethod() == ImageFrame::DisposeOverwriteBgcolor) {
             // We want to clear the previous frame to transparent, without
             // affecting pixels in the image outside of the frame.
             const IntRect& prevRect = prevBuffer.originalFrameRect();
@@ -275,7 +275,7 @@ bool WEBPImageDecoder::initFrameBuffer(size_t frameIndex)
             buffer.zeroFillFrameRect(prevRect);
         }
 
-        m_frameBackgroundHasAlpha = prevBuffer.hasAlpha() || (prevBuffer.disposalMethod() == ImageFrame::DisposeOverwriteBgcolor);
+        m_frameBackgroundHasAlpha = prevBuffer.hasAlpha() || (prevBuffer.getDisposalMethod() == ImageFrame::DisposeOverwriteBgcolor);
     }
 
     buffer.setStatus(ImageFrame::FramePartial);
@@ -291,7 +291,7 @@ size_t WEBPImageDecoder::clearCacheExceptFrame(size_t clearExceptFrame)
     // Otherwise, we preserve a previous frame with status FrameComplete whose data is required
     // to decode |clearExceptFrame|, either in initFrameBuffer() or ApplyPostProcessing().
     // All other frames can be cleared.
-    while ((clearExceptFrame < m_frameBufferCache.size()) && (m_frameBufferCache[clearExceptFrame].status() != ImageFrame::FrameComplete))
+    while ((clearExceptFrame < m_frameBufferCache.size()) && (m_frameBufferCache[clearExceptFrame].getStatus() != ImageFrame::FrameComplete))
         clearExceptFrame = m_frameBufferCache[clearExceptFrame].requiredPreviousFrameIndex();
 
     return ImageDecoder::clearCacheExceptFrame(clearExceptFrame);
@@ -299,7 +299,7 @@ size_t WEBPImageDecoder::clearCacheExceptFrame(size_t clearExceptFrame)
 
 void WEBPImageDecoder::clearFrameBuffer(size_t frameIndex)
 {
-    if (m_demux && m_demuxState >= WEBP_DEMUX_PARSED_HEADER && m_frameBufferCache[frameIndex].status() == ImageFrame::FramePartial) {
+    if (m_demux && m_demuxState >= WEBP_DEMUX_PARSED_HEADER && m_frameBufferCache[frameIndex].getStatus() == ImageFrame::FramePartial) {
         // Clear the decoder state so that this partial frame can be decoded again when requested.
         clearDecoder();
     }
@@ -408,10 +408,10 @@ void WEBPImageDecoder::applyPostProcessing(size_t frameIndex)
     // pixels based on disposal method of the previous frame and the previous frame buffer.
     // FIXME: This could be avoided if libwebp decoder had an API that used the previous required frame
     // to do the alpha-blending by itself.
-    if ((m_formatFlags & ANIMATION_FLAG) && frameIndex && buffer.alphaBlendSource() == ImageFrame::BlendAtopPreviousFrame && buffer.requiredPreviousFrameIndex() != kNotFound) {
+    if ((m_formatFlags & ANIMATION_FLAG) && frameIndex && buffer.getAlphaBlendSource() == ImageFrame::BlendAtopPreviousFrame && buffer.requiredPreviousFrameIndex() != kNotFound) {
         ImageFrame& prevBuffer = m_frameBufferCache[frameIndex - 1];
-        ASSERT(prevBuffer.status() == ImageFrame::FrameComplete);
-        ImageFrame::DisposalMethod prevDisposalMethod = prevBuffer.disposalMethod();
+        ASSERT(prevBuffer.getStatus() == ImageFrame::FrameComplete);
+        ImageFrame::DisposalMethod prevDisposalMethod = prevBuffer.getDisposalMethod();
         if (prevDisposalMethod == ImageFrame::DisposeKeep) { // Blend transparent pixels with pixels in previous canvas.
             for (int y = m_decodedHeight; y < decodedHeight; ++y) {
                 m_blendFunction(buffer, prevBuffer, top + y, left, width);
@@ -474,7 +474,7 @@ void WEBPImageDecoder::decode(size_t index)
     do {
         framesToDecode.append(frameToDecode);
         frameToDecode = m_frameBufferCache[frameToDecode].requiredPreviousFrameIndex();
-    } while (frameToDecode != kNotFound && m_frameBufferCache[frameToDecode].status() != ImageFrame::FrameComplete);
+    } while (frameToDecode != kNotFound && m_frameBufferCache[frameToDecode].getStatus() != ImageFrame::FrameComplete);
 
     ASSERT(m_demux);
     for (auto i = framesToDecode.rbegin(); i != framesToDecode.rend(); ++i) {
@@ -491,7 +491,7 @@ void WEBPImageDecoder::decode(size_t index)
             return;
 
         // We need more data to continue decoding.
-        if (m_frameBufferCache[*i].status() != ImageFrame::FrameComplete)
+        if (m_frameBufferCache[*i].getStatus() != ImageFrame::FrameComplete)
             break;
     }
 
@@ -510,9 +510,9 @@ bool WEBPImageDecoder::decodeSingleFrame(const uint8_t* dataBytes, size_t dataSi
 
     ASSERT(m_frameBufferCache.size() > frameIndex);
     ImageFrame& buffer = m_frameBufferCache[frameIndex];
-    ASSERT(buffer.status() != ImageFrame::FrameComplete);
+    ASSERT(buffer.getStatus() != ImageFrame::FrameComplete);
 
-    if (buffer.status() == ImageFrame::FrameEmpty) {
+    if (buffer.getStatus() == ImageFrame::FrameEmpty) {
         if (!buffer.setSize(size().width(), size().height()))
             return setFailed();
         buffer.setStatus(ImageFrame::FramePartial);

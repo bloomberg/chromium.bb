@@ -343,7 +343,7 @@ bool equalIgnoringHeaderFields(const ResourceRequest& a, const ResourceRequest& 
     if (a.priority() != b.priority())
         return false;
 
-    if (a.referrerPolicy() != b.referrerPolicy())
+    if (a.getReferrerPolicy() != b.getReferrerPolicy())
         return false;
 
     EncodedFormData* formDataA = a.httpBody();

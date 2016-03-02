@@ -33,12 +33,12 @@
 
 namespace blink {
 
-MediaStreamSource* MediaStreamSource::create(const String& id, Type type, const String& name, bool remote, bool readonly, ReadyState readyState, bool requiresConsumer)
+MediaStreamSource* MediaStreamSource::create(const String& id, StreamType type, const String& name, bool remote, bool readonly, ReadyState readyState, bool requiresConsumer)
 {
     return new MediaStreamSource(id, type, name, remote, readonly, readyState, requiresConsumer);
 }
 
-MediaStreamSource::MediaStreamSource(const String& id, Type type, const String& name, bool remote, bool readonly, ReadyState readyState, bool requiresConsumer)
+MediaStreamSource::MediaStreamSource(const String& id, StreamType type, const String& name, bool remote, bool readonly, ReadyState readyState, bool requiresConsumer)
     : m_id(id)
     , m_type(type)
     , m_name(name)

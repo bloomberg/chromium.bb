@@ -72,7 +72,7 @@ public:
         TypeArray
     } Type;
 
-    Type type() const { return m_type; }
+    Type getType() const { return m_type; }
 
     bool isNull() const { return m_type == TypeNull; }
 
@@ -179,7 +179,7 @@ public:
 
     static PassRefPtr<JSONObject> cast(PassRefPtr<JSONValue> value)
     {
-        if (!value || value->type() != TypeObject)
+        if (!value || value->getType() != TypeObject)
             return nullptr;
         return adoptRef(static_cast<JSONObject*>(value.leakRef()));
     }
@@ -242,7 +242,7 @@ public:
 
     static PassRefPtr<JSONArray> cast(PassRefPtr<JSONValue> value)
     {
-        if (!value || value->type() != TypeArray)
+        if (!value || value->getType() != TypeArray)
             return nullptr;
         return adoptRef(static_cast<JSONArray*>(value.leakRef()));
     }

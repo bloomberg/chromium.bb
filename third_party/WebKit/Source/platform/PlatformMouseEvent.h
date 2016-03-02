@@ -56,7 +56,7 @@ public:
     {
     }
 
-    PlatformMouseEvent(const IntPoint& position, const IntPoint& globalPosition, MouseButton button, PlatformEvent::Type type, int clickCount, Modifiers modifiers, double timestamp)
+    PlatformMouseEvent(const IntPoint& position, const IntPoint& globalPosition, MouseButton button, EventType type, int clickCount, Modifiers modifiers, double timestamp)
         : PlatformEvent(type, modifiers, timestamp)
         , m_position(position)
         , m_globalPosition(globalPosition)
@@ -66,7 +66,7 @@ public:
     {
     }
 
-    PlatformMouseEvent(const IntPoint& position, const IntPoint& globalPosition, MouseButton button, PlatformEvent::Type type, int clickCount, Modifiers modifiers, SyntheticEventType synthesized, double timestamp, WebPointerProperties::PointerType pointerType = WebPointerProperties::PointerType::Unknown)
+    PlatformMouseEvent(const IntPoint& position, const IntPoint& globalPosition, MouseButton button, EventType type, int clickCount, Modifiers modifiers, SyntheticEventType synthesized, double timestamp, WebPointerProperties::PointerType pointerType = WebPointerProperties::PointerType::Unknown)
         : PlatformEvent(type, modifiers, timestamp)
         , m_position(position)
         , m_globalPosition(globalPosition)
@@ -85,7 +85,7 @@ public:
     MouseButton button() const { return m_button; }
     int clickCount() const { return m_clickCount; }
     bool fromTouch() const { return m_synthesized == FromTouch; }
-    SyntheticEventType syntheticEventType() const { return m_synthesized; }
+    SyntheticEventType getSyntheticEventType() const { return m_synthesized; }
 
 protected:
     WebPointerProperties m_pointerProperties;

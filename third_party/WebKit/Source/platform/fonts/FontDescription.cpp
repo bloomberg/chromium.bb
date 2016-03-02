@@ -203,7 +203,7 @@ void FontDescription::updateTypesettingFeatures()
         break;
     }
 
-    switch (kerning()) {
+    switch (getKerning()) {
     case FontDescription::NoneKerning:
         m_fields.m_typesettingFeatures &= ~blink::Kerning;
         break;

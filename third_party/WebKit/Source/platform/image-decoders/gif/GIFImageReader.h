@@ -229,7 +229,7 @@ public:
     unsigned height() const { return m_height; }
     size_t transparentPixel() const { return m_transparentPixel; }
     void setTransparentPixel(size_t pixel) { m_transparentPixel = pixel; }
-    blink::ImageFrame::DisposalMethod disposalMethod() const { return m_disposalMethod; }
+    blink::ImageFrame::DisposalMethod getDisposalMethod() const { return m_disposalMethod; }
     void setDisposalMethod(blink::ImageFrame::DisposalMethod disposalMethod) { m_disposalMethod = disposalMethod; }
     unsigned delayTime() const { return m_delayTime; }
     void setDelayTime(unsigned delay) { m_delayTime = delay; }

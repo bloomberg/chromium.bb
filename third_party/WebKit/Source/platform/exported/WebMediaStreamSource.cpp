@@ -95,12 +95,12 @@ WebMediaStreamSource::operator MediaStreamSource*() const
 
 void WebMediaStreamSource::initialize(const WebString& id, Type type, const WebString& name)
 {
-    m_private = MediaStreamSource::create(id, static_cast<MediaStreamSource::Type>(type), name, false, true);
+    m_private = MediaStreamSource::create(id, static_cast<MediaStreamSource::StreamType>(type), name, false, true);
 }
 
 void WebMediaStreamSource::initialize(const WebString& id, Type type, const WebString& name, bool remote, bool readonly)
 {
-    m_private = MediaStreamSource::create(id, static_cast<MediaStreamSource::Type>(type), name, remote, readonly);
+    m_private = MediaStreamSource::create(id, static_cast<MediaStreamSource::StreamType>(type), name, remote, readonly);
 }
 
 WebString WebMediaStreamSource::id() const
@@ -136,7 +136,7 @@ void WebMediaStreamSource::setReadyState(ReadyState state)
 WebMediaStreamSource::ReadyState WebMediaStreamSource::readyState() const
 {
     ASSERT(!m_private.isNull());
-    return static_cast<ReadyState>(m_private->readyState());
+    return static_cast<ReadyState>(m_private->getReadyState());
 }
 
 WebMediaStreamSource::ExtraData* WebMediaStreamSource::extraData() const

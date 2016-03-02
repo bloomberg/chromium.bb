@@ -94,7 +94,7 @@ PassRefPtr<SkImage> ImageBitmap::getSkImageFromDecoder(PassOwnPtr<ImageDecoder> 
     if (!decoder->frameCount())
         return nullptr;
     ImageFrame* frame = decoder->frameBufferAtIndex(0);
-    if (!frame || frame->status() != ImageFrame::FrameComplete)
+    if (!frame || frame->getStatus() != ImageFrame::FrameComplete)
         return nullptr;
     SkBitmap bitmap = frame->bitmap();
     if (!frameIsValid(bitmap))

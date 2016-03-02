@@ -283,7 +283,7 @@ public:
     int y() const { return m_location.y(); }
     IntPoint location() const { return m_location; }
     int stdDeviation() const { return m_stdDeviation; }
-    Color color() const { return m_color; }
+    Color getColor() const { return m_color; }
 
     bool affectsOpacity() const override { return true; }
     bool movesPixels() const override { return true; }

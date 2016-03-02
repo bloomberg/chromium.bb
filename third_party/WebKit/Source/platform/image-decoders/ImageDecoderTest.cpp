@@ -225,7 +225,7 @@ TEST(ImageDecoderTest, clearCacheExceptFrameAll)
 
     for (size_t i = 0; i < numFrames; ++i) {
         SCOPED_TRACE(testing::Message() << i);
-        EXPECT_EQ(ImageFrame::FrameEmpty, frameBuffers[i].status());
+        EXPECT_EQ(ImageFrame::FrameEmpty, frameBuffers[i].getStatus());
     }
 }
 
@@ -243,9 +243,9 @@ TEST(ImageDecoderTest, clearCacheExceptFramePreverveClearExceptFrame)
     for (size_t i = 0; i < numFrames; ++i) {
         SCOPED_TRACE(testing::Message() << i);
         if (i == 5)
-            EXPECT_EQ(ImageFrame::FrameComplete, frameBuffers[i].status());
+            EXPECT_EQ(ImageFrame::FrameComplete, frameBuffers[i].getStatus());
         else
-            EXPECT_EQ(ImageFrame::FrameEmpty, frameBuffers[i].status());
+            EXPECT_EQ(ImageFrame::FrameEmpty, frameBuffers[i].getStatus());
     }
 }
 

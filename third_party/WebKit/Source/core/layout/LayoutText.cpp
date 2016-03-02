@@ -1006,7 +1006,7 @@ void LayoutText::computePreferredLogicalWidths(float leadWidth, HashSet<const Si
             // Non-zero only when kerning is enabled, in which case we measure words with their trailing
             // space, then subtract its width.
             float wordTrailingSpaceWidth = 0;
-            if (isSpace && (f.fontDescription().typesettingFeatures() & Kerning)) {
+            if (isSpace && (f.fontDescription().getTypesettingFeatures() & Kerning)) {
                 ASSERT(textDirection >=0 && textDirection <= 1);
                 if (!cachedWordTrailingSpaceWidth[textDirection])
                     cachedWordTrailingSpaceWidth[textDirection] = f.width(constructTextRun(f, &spaceCharacter, 1, styleToUse, textDirection)) + wordSpacing;

@@ -424,11 +424,11 @@ String Locale::localizedDecimalSeparator()
 
 String Locale::formatDateTime(const DateComponents& date, FormatType formatType)
 {
-    if (date.type() == DateComponents::Invalid)
+    if (date.getType() == DateComponents::Invalid)
         return String();
 
     DateTimeStringBuilder builder(*this, date);
-    switch (date.type()) {
+    switch (date.getType()) {
     case DateComponents::Time:
         builder.build(formatType == FormatTypeShort ? shortTimeFormat() : timeFormat());
         break;

@@ -102,14 +102,14 @@ Length Length::blendMixedTypes(const Length& from, double progress, ValueRange r
 {
     ASSERT(from.isSpecified());
     ASSERT(isSpecified());
-    PixelsAndPercent fromPixelsAndPercent = from.pixelsAndPercent();
-    PixelsAndPercent toPixelsAndPercent = pixelsAndPercent();
+    PixelsAndPercent fromPixelsAndPercent = from.getPixelsAndPercent();
+    PixelsAndPercent toPixelsAndPercent = getPixelsAndPercent();
     const float pixels = blink::blend(fromPixelsAndPercent.pixels, toPixelsAndPercent.pixels, progress);
     const float percent = blink::blend(fromPixelsAndPercent.percent, toPixelsAndPercent.percent, progress);
     return Length(CalculationValue::create(PixelsAndPercent(pixels, percent), range));
 }
 
-PixelsAndPercent Length::pixelsAndPercent() const
+PixelsAndPercent Length::getPixelsAndPercent() const
 {
     switch (type()) {
     case Fixed:
@@ -117,7 +117,7 @@ PixelsAndPercent Length::pixelsAndPercent() const
     case Percent:
         return PixelsAndPercent(0, value());
     case Calculated:
-        return calculationValue().pixelsAndPercent();
+        return getCalculationValue().getPixelsAndPercent();
     default:
         ASSERT_NOT_REACHED();
         return PixelsAndPercent(0, 0);
@@ -126,7 +126,7 @@ PixelsAndPercent Length::pixelsAndPercent() const
 
 Length Length::subtractFromOneHundredPercent() const
 {
-    PixelsAndPercent result = pixelsAndPercent();
+    PixelsAndPercent result = getPixelsAndPercent();
     result.pixels = -result.pixels;
     result.percent = 100 - result.percent;
     if (result.pixels && result.percent)
@@ -142,16 +142,16 @@ Length Length::zoom(double factor) const
     case Fixed:
         return Length(getFloatValue() * factor, Fixed);
     case Calculated: {
-        PixelsAndPercent result = pixelsAndPercent();
+        PixelsAndPercent result = getPixelsAndPercent();
         result.pixels *= factor;
-        return Length(CalculationValue::create(result, calculationValue().valueRange()));
+        return Length(CalculationValue::create(result, getCalculationValue().getValueRange()));
     }
     default:
         return *this;
     }
 }
 
-CalculationValue& Length::calculationValue() const
+CalculationValue& Length::getCalculationValue() const
 {
     ASSERT(isCalculated());
     return calcHandles().get(calculationHandle());
@@ -160,7 +160,7 @@ CalculationValue& Length::calculationValue() const
 void Length::incrementCalculatedRef() const
 {
     ASSERT(isCalculated());
-    calculationValue().ref();
+    getCalculationValue().ref();
 }
 
 void Length::decrementCalculatedRef() const
@@ -172,7 +172,7 @@ void Length::decrementCalculatedRef() const
 float Length::nonNanCalculatedValue(LayoutUnit maxValue) const
 {
     ASSERT(isCalculated());
-    float result = calculationValue().evaluate(maxValue.toFloat());
+    float result = getCalculationValue().evaluate(maxValue.toFloat());
     if (std::isnan(result))
         return 0;
     return result;
@@ -180,7 +180,7 @@ float Length::nonNanCalculatedValue(LayoutUnit maxValue) const
 
 bool Length::isCalculatedEqual(const Length& o) const
 {
-    return isCalculated() && (&calculationValue() == &o.calculationValue() || calculationValue() == o.calculationValue());
+    return isCalculated() && (&getCalculationValue() == &o.getCalculationValue() || getCalculationValue() == o.getCalculationValue());
 }
 
 struct SameSizeAsLength {

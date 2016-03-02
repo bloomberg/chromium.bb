@@ -258,11 +258,11 @@ CSSPrimitiveValue::CSSPrimitiveValue(const Length& length, float zoom)
         m_value.num = length.value() / zoom;
         break;
     case Calculated: {
-        const CalculationValue& calc = length.calculationValue();
+        const CalculationValue& calc = length.getCalculationValue();
         if (calc.pixels() && calc.percent()) {
             init(CSSCalcValue::create(
                 CSSCalcValue::createExpressionNode(calc.pixels() / zoom, calc.percent()),
-                calc.valueRange()));
+                calc.getValueRange()));
             break;
         }
         if (calc.percent()) {

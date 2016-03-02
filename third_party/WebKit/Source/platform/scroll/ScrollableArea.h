@@ -122,7 +122,7 @@ public:
 
     bool hasOverlayScrollbars() const;
     void setScrollbarOverlayStyle(ScrollbarOverlayStyle);
-    ScrollbarOverlayStyle scrollbarOverlayStyle() const { return static_cast<ScrollbarOverlayStyle>(m_scrollbarOverlayStyle); }
+    ScrollbarOverlayStyle getScrollbarOverlayStyle() const { return static_cast<ScrollbarOverlayStyle>(m_scrollbarOverlayStyle); }
 
     // This getter will create a ScrollAnimatorBase if it doesn't already exist.
     ScrollAnimatorBase& scrollAnimator() const;

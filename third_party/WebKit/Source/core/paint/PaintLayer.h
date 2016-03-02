@@ -596,7 +596,7 @@ public:
     CompositingReasons getCompositingReasons() const { ASSERT(isAllowedToQueryCompositingState()); return m_rareData ? m_rareData->compositingReasons : CompositingReasonNone; }
     void setCompositingReasons(CompositingReasons, CompositingReasons mask = CompositingReasonAll);
 
-    SquashingDisallowedReasons squashingDisallowedReasons() const { ASSERT(isAllowedToQueryCompositingState()); return m_rareData ? m_rareData->squashingDisallowedReasons : SquashingDisallowedReasonsNone; }
+    SquashingDisallowedReasons getSquashingDisallowedReasons() const { ASSERT(isAllowedToQueryCompositingState()); return m_rareData ? m_rareData->squashingDisallowedReasons : SquashingDisallowedReasonsNone; }
     void setSquashingDisallowedReasons(SquashingDisallowedReasons);
 
     bool hasCompositingDescendant() const { ASSERT(isAllowedToQueryCompositingState()); return m_hasCompositingDescendant; }

@@ -107,7 +107,7 @@ void WebScrollbarThemeClientImpl::invalidateRect(const IntRect&)
     ASSERT_NOT_REACHED();
 }
 
-ScrollbarOverlayStyle WebScrollbarThemeClientImpl::scrollbarOverlayStyle() const
+ScrollbarOverlayStyle WebScrollbarThemeClientImpl::getScrollbarOverlayStyle() const
 {
     return static_cast<ScrollbarOverlayStyle>(m_scrollbar.scrollbarOverlayStyle());
 }

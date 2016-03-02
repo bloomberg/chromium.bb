@@ -519,7 +519,7 @@ void getStepsTimingFunctionParameters(const TimingFunction& timingFunction, int&
     const StepsTimingFunction& steps = toStepsTimingFunction(timingFunction);
 
     outSteps = steps.numberOfSteps();
-    switch (steps.stepAtPosition()) {
+    switch (steps.getStepAtPosition()) {
     case StepsTimingFunction::Start:
         outStepsStartOffset = 1;
         break;

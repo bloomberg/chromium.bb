@@ -90,7 +90,7 @@ void PrintTo(const AnimatableStrokeDasharrayList& animValue, ::std::ostream* os)
     size_t length = list->size();
     for (size_t i = 0; i < length; ++i) {
         const Length& dashLength = list->at(i);
-        PixelsAndPercent pixelsAndPercent = dashLength.pixelsAndPercent();
+        PixelsAndPercent pixelsAndPercent = dashLength.getPixelsAndPercent();
         *os << pixelsAndPercent.pixels << '+';
         *os << pixelsAndPercent.percent << '%';
 

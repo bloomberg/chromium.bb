@@ -80,7 +80,7 @@ public:
     int month() const { return m_month; }
     int fullYear() const { return m_year; }
     int week() const { return m_week; }
-    Type type() const { return m_type; }
+    Type getType() const { return m_type; }
 
     enum SecondFormat {
         None, // Suppress the second part and the millisecond part if they are 0.

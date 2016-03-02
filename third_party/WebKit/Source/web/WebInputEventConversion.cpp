@@ -288,7 +288,7 @@ PlatformGestureEventBuilder::PlatformGestureEventBuilder(Widget* widget, const W
 
 // MakePlatformKeyboardEvent --------------------------------------------------
 
-inline PlatformEvent::Type toPlatformKeyboardEventType(WebInputEvent::Type type)
+inline PlatformEvent::EventType toPlatformKeyboardEventType(WebInputEvent::Type type)
 {
     switch (type) {
     case WebInputEvent::KeyUp:
@@ -322,7 +322,7 @@ PlatformKeyboardEventBuilder::PlatformKeyboardEventBuilder(const WebKeyboardEven
     m_windowsVirtualKeyCode = e.windowsKeyCode;
 }
 
-void PlatformKeyboardEventBuilder::setKeyType(Type type)
+void PlatformKeyboardEventBuilder::setKeyType(EventType type)
 {
     // According to the behavior of Webkit in Windows platform,
     // we need to convert KeyDown to RawKeydown and Char events
@@ -353,7 +353,7 @@ bool PlatformKeyboardEventBuilder::isCharacterKey() const
     return true;
 }
 
-inline PlatformEvent::Type toPlatformTouchEventType(const WebInputEvent::Type type)
+inline PlatformEvent::EventType toPlatformTouchEventType(const WebInputEvent::Type type)
 {
     switch (type) {
     case WebInputEvent::TouchStart:
@@ -370,7 +370,7 @@ inline PlatformEvent::Type toPlatformTouchEventType(const WebInputEvent::Type ty
     return PlatformEvent::TouchStart;
 }
 
-inline PlatformTouchPoint::State toPlatformTouchPointState(const WebTouchPoint::State state)
+inline PlatformTouchPoint::TouchState toPlatformTouchPointState(const WebTouchPoint::State state)
 {
     switch (state) {
     case WebTouchPoint::StateReleased:
@@ -607,7 +607,7 @@ WebKeyboardEventBuilder::WebKeyboardEventBuilder(const KeyboardEvent& event)
     memcpy(keyIdentifier, event.keyIdentifier().ascii().data(), event.keyIdentifier().length());
 }
 
-WebInputEvent::Type toWebKeyboardEventType(PlatformEvent::Type type)
+WebInputEvent::Type toWebKeyboardEventType(PlatformEvent::EventType type)
 {
     switch (type) {
     case PlatformEvent::KeyUp:

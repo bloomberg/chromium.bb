@@ -48,7 +48,7 @@ public:
     // E.g., sending in the enter key gives back "InsertNewline".
     const char* interpretKeyEvent(
         const WebKeyboardEvent& webKeyboardEvent,
-        PlatformEvent::Type keyType)
+        PlatformEvent::EventType keyType)
     {
         PlatformKeyboardEventBuilder evt(webKeyboardEvent);
         evt.setKeyType(keyType);

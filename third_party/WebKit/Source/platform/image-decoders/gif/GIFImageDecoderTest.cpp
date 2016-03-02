@@ -122,13 +122,13 @@ TEST(GIFImageDecoderTest, decodeTwoFrames)
 
     ImageFrame* frame = decoder->frameBufferAtIndex(0);
     uint32_t generationID0 = frame->getSkBitmap().getGenerationID();
-    EXPECT_EQ(ImageFrame::FrameComplete, frame->status());
+    EXPECT_EQ(ImageFrame::FrameComplete, frame->getStatus());
     EXPECT_EQ(16, frame->getSkBitmap().width());
     EXPECT_EQ(16, frame->getSkBitmap().height());
 
     frame = decoder->frameBufferAtIndex(1);
     uint32_t generationID1 = frame->getSkBitmap().getGenerationID();
-    EXPECT_EQ(ImageFrame::FrameComplete, frame->status());
+    EXPECT_EQ(ImageFrame::FrameComplete, frame->getStatus());
     EXPECT_EQ(16, frame->getSkBitmap().width());
     EXPECT_EQ(16, frame->getSkBitmap().height());
     EXPECT_TRUE(generationID0 != generationID1);
@@ -150,12 +150,12 @@ TEST(GIFImageDecoderTest, parseAndDecode)
     EXPECT_EQ(2u, decoder->frameCount());
 
     ImageFrame* frame = decoder->frameBufferAtIndex(0);
-    EXPECT_EQ(ImageFrame::FrameComplete, frame->status());
+    EXPECT_EQ(ImageFrame::FrameComplete, frame->getStatus());
     EXPECT_EQ(16, frame->getSkBitmap().width());
     EXPECT_EQ(16, frame->getSkBitmap().height());
 
     frame = decoder->frameBufferAtIndex(1);
-    EXPECT_EQ(ImageFrame::FrameComplete, frame->status());
+    EXPECT_EQ(ImageFrame::FrameComplete, frame->getStatus());
     EXPECT_EQ(16, frame->getSkBitmap().width());
     EXPECT_EQ(16, frame->getSkBitmap().height());
     EXPECT_EQ(cAnimationLoopInfinite, decoder->repetitionCount());
@@ -205,7 +205,7 @@ TEST(GIFImageDecoderTest, parseAndDecodeByteByByte)
         frameCount = decoder->frameCount();
 
         ImageFrame* frame = decoder->frameBufferAtIndex(frameCount - 1);
-        if (frame && frame->status() == ImageFrame::FrameComplete && framesDecoded < frameCount)
+        if (frame && frame->getStatus() == ImageFrame::FrameComplete && framesDecoded < frameCount)
             ++framesDecoded;
     }
 
@@ -372,7 +372,7 @@ TEST(GIFImageDecoderTest, updateRequiredPreviousFrameAfterFirstDecode)
         RefPtr<SharedBuffer> data = SharedBuffer::create(fullData->data(), partialSize);
         decoder->setData(data.get(), false);
         ++partialSize;
-    } while (!decoder->frameCount() || decoder->frameBufferAtIndex(0)->status() == ImageFrame::FrameEmpty);
+    } while (!decoder->frameCount() || decoder->frameBufferAtIndex(0)->getStatus() == ImageFrame::FrameEmpty);
 
     EXPECT_EQ(kNotFound, decoder->frameBufferAtIndex(0)->requiredPreviousFrameIndex());
     unsigned frameCount = decoder->frameCount();
@@ -418,7 +418,7 @@ TEST(GIFImageDecoderTest, resumePartialDecodeAfterClearFrameBufferCache)
         RefPtr<SharedBuffer> data = SharedBuffer::create(fullData->data(), partialSize);
         decoder->setData(data.get(), false);
         ++partialSize;
-    } while (!decoder->frameCount() || decoder->frameBufferAtIndex(0)->status() == ImageFrame::FrameEmpty);
+    } while (!decoder->frameCount() || decoder->frameBufferAtIndex(0)->getStatus() == ImageFrame::FrameEmpty);
 
     // Skip to the last frame and clear.
     decoder->setData(fullData.get(), true);
@@ -429,7 +429,7 @@ TEST(GIFImageDecoderTest, resumePartialDecodeAfterClearFrameBufferCache)
 
     // Resume decoding of the first frame.
     ImageFrame* firstFrame = decoder->frameBufferAtIndex(0);
-    EXPECT_EQ(ImageFrame::FrameComplete, firstFrame->status());
+    EXPECT_EQ(ImageFrame::FrameComplete, firstFrame->getStatus());
     EXPECT_EQ(baselineHashes[0], hashBitmap(firstFrame->getSkBitmap()));
 }
 
@@ -471,9 +471,9 @@ TEST(GIFImageDecoderTest, invalidDisposalMethod)
 
     EXPECT_EQ(2u, decoder->frameCount());
     // Disposal method 4 is converted to ImageFrame::DisposeOverwritePrevious.
-    EXPECT_EQ(ImageFrame::DisposeOverwritePrevious, decoder->frameBufferAtIndex(0)->disposalMethod());
+    EXPECT_EQ(ImageFrame::DisposeOverwritePrevious, decoder->frameBufferAtIndex(0)->getDisposalMethod());
     // Disposal method 5 is ignored.
-    EXPECT_EQ(ImageFrame::DisposeNotSpecified, decoder->frameBufferAtIndex(1)->disposalMethod());
+    EXPECT_EQ(ImageFrame::DisposeNotSpecified, decoder->frameBufferAtIndex(1)->getDisposalMethod());
 }
 
 TEST(GIFImageDecoderTest, firstFrameHasGreaterSizeThanScreenSize)

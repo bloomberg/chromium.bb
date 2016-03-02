@@ -176,7 +176,7 @@ void MediaStreamTrack::sourceChangedState()
     if (ended())
         return;
 
-    m_readyState = m_component->source()->readyState();
+    m_readyState = m_component->source()->getReadyState();
     switch (m_readyState) {
     case MediaStreamSource::ReadyStateLive:
         m_component->setMuted(false);

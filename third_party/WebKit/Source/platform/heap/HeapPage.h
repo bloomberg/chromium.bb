@@ -267,7 +267,7 @@ public:
 #endif
     }
 
-    Address address() { return reinterpret_cast<Address>(this); }
+    Address getAddress() { return reinterpret_cast<Address>(this); }
 
     NO_SANITIZE_ADDRESS
     void unlink(FreeListEntry** prevNext)
@@ -406,7 +406,7 @@ public:
     virtual size_t size() = 0;
     virtual bool isLargeObjectPage() { return false; }
 
-    Address address() { return reinterpret_cast<Address>(this); }
+    Address getAddress() { return reinterpret_cast<Address>(this); }
     PageMemory* storage() const { return m_storage; }
     BaseHeap* heap() const { return m_heap; }
     bool orphaned() { return !m_heap; }
@@ -450,7 +450,7 @@ public:
 
     Address payload()
     {
-        return address() + pageHeaderSize();
+        return getAddress() + pageHeaderSize();
     }
     size_t payloadSize()
     {
@@ -554,7 +554,7 @@ public:
 
     HeapObjectHeader* heapObjectHeader()
     {
-        Address headerAddress = address() + pageHeaderSize();
+        Address headerAddress = getAddress() + pageHeaderSize();
         return reinterpret_cast<HeapObjectHeader*>(headerAddress);
     }
 

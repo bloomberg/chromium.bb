@@ -169,7 +169,7 @@ void JSONValue::prettyWriteJSONInternal(StringBuilder* output, int depth) const
 
 bool JSONBasicValue::asBoolean(bool* output) const
 {
-    if (type() != TypeBoolean)
+    if (getType() != TypeBoolean)
         return false;
     *output = m_boolValue;
     return true;
@@ -177,7 +177,7 @@ bool JSONBasicValue::asBoolean(bool* output) const
 
 bool JSONBasicValue::asNumber(double* output) const
 {
-    if (type() != TypeNumber)
+    if (getType() != TypeNumber)
         return false;
     *output = m_doubleValue;
     return true;
@@ -185,7 +185,7 @@ bool JSONBasicValue::asNumber(double* output) const
 
 bool JSONBasicValue::asNumber(long* output) const
 {
-    if (type() != TypeNumber)
+    if (getType() != TypeNumber)
         return false;
     *output = static_cast<long>(m_doubleValue);
     return true;
@@ -193,7 +193,7 @@ bool JSONBasicValue::asNumber(long* output) const
 
 bool JSONBasicValue::asNumber(int* output) const
 {
-    if (type() != TypeNumber)
+    if (getType() != TypeNumber)
         return false;
     *output = static_cast<int>(m_doubleValue);
     return true;
@@ -201,7 +201,7 @@ bool JSONBasicValue::asNumber(int* output) const
 
 bool JSONBasicValue::asNumber(unsigned long* output) const
 {
-    if (type() != TypeNumber)
+    if (getType() != TypeNumber)
         return false;
     *output = static_cast<unsigned long>(m_doubleValue);
     return true;
@@ -209,7 +209,7 @@ bool JSONBasicValue::asNumber(unsigned long* output) const
 
 bool JSONBasicValue::asNumber(unsigned* output) const
 {
-    if (type() != TypeNumber)
+    if (getType() != TypeNumber)
         return false;
     *output = static_cast<unsigned>(m_doubleValue);
     return true;
@@ -217,13 +217,13 @@ bool JSONBasicValue::asNumber(unsigned* output) const
 
 void JSONBasicValue::writeJSON(StringBuilder* output) const
 {
-    ASSERT(type() == TypeBoolean || type() == TypeNumber);
-    if (type() == TypeBoolean) {
+    ASSERT(getType() == TypeBoolean || getType() == TypeNumber);
+    if (getType() == TypeBoolean) {
         if (m_boolValue)
             output->append(trueString, 4);
         else
             output->append(falseString, 5);
-    } else if (type() == TypeNumber) {
+    } else if (getType() == TypeNumber) {
         if (!std::isfinite(m_doubleValue)) {
             output->append(nullString, 4);
             return;
@@ -240,7 +240,7 @@ bool JSONString::asString(String* output) const
 
 void JSONString::writeJSON(StringBuilder* output) const
 {
-    ASSERT(type() == TypeString);
+    ASSERT(getType() == TypeString);
     doubleQuoteStringForJSON(m_stringValue, output);
 }
 
@@ -406,7 +406,7 @@ void JSONArray::prettyWriteJSONInternal(StringBuilder* output, int depth) const
     output->append('[');
     bool lastInsertedNewLine = false;
     for (Vector<RefPtr<JSONValue>>::const_iterator it = m_data.begin(); it != m_data.end(); ++it) {
-        bool insertNewLine = (*it)->type() == JSONValue::TypeObject || (*it)->type() == JSONValue::TypeArray || (*it)->type() == JSONValue::TypeString;
+        bool insertNewLine = (*it)->getType() == JSONValue::TypeObject || (*it)->getType() == JSONValue::TypeArray || (*it)->getType() == JSONValue::TypeString;
         if (it == m_data.begin()) {
             if (insertNewLine) {
                 output->append('\n');

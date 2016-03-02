@@ -2149,7 +2149,7 @@ void WebGLImageConversion::ImageExtractor::extractImage(bool premultiplyAlpha, b
         if (!decoder->frameCount())
             return;
         ImageFrame* frame = decoder->frameBufferAtIndex(0);
-        if (!frame || frame->status() != ImageFrame::FrameComplete)
+        if (!frame || frame->getStatus() != ImageFrame::FrameComplete)
             return;
         hasAlpha = frame->hasAlpha();
         SkBitmap bitmap = frame->bitmap();

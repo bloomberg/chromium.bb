@@ -18,11 +18,11 @@ protected:
     PassRefPtrWillBeRawPtr<PointerEvent> createAndCheckTouchCancel(
         WebPointerProperties::PointerType, int rawId,
         int uniqueId, bool isPrimary,
-        PlatformTouchPoint::State = PlatformTouchPoint::TouchReleased);
+        PlatformTouchPoint::TouchState = PlatformTouchPoint::TouchReleased);
     PassRefPtrWillBeRawPtr<PointerEvent> createAndCheckTouchEvent(
         WebPointerProperties::PointerType, int rawId,
         int uniqueId, bool isPrimary,
-        PlatformTouchPoint::State = PlatformTouchPoint::TouchPressed);
+        PlatformTouchPoint::TouchState = PlatformTouchPoint::TouchPressed);
     PassRefPtrWillBeRawPtr<PointerEvent> createAndCheckMouseEvent(
         WebPointerProperties::PointerType, int rawId,
         int uniqueId, bool isPrimary,
@@ -38,7 +38,7 @@ protected:
     class PlatformTouchPointBuilder : public PlatformTouchPoint {
     public:
         PlatformTouchPointBuilder(WebPointerProperties::PointerType, int,
-            PlatformTouchPoint::State);
+            PlatformTouchPoint::TouchState);
     };
 
     class PlatformMouseEventBuilder : public PlatformMouseEvent {
@@ -56,7 +56,7 @@ void PointerEventFactoryTest::SetUp()
 
 PointerEventFactoryTest::PlatformTouchPointBuilder::PlatformTouchPointBuilder(
     WebPointerProperties::PointerType pointerType, int id,
-    PlatformTouchPoint::State state)
+    PlatformTouchPoint::TouchState state)
 {
     m_pointerProperties.id = id;
     m_pointerProperties.pointerType = pointerType;
@@ -76,7 +76,7 @@ PointerEventFactoryTest::PlatformMouseEventBuilder::PlatformMouseEventBuilder(
 PassRefPtrWillBeRawPtr<PointerEvent> PointerEventFactoryTest::createAndCheckTouchCancel(
     WebPointerProperties::PointerType pointerType, int rawId,
     int uniqueId, bool isPrimary,
-    PlatformTouchPoint::State state)
+    PlatformTouchPoint::TouchState state)
 {
     RefPtrWillBeRawPtr<PointerEvent> pointerEvent = m_pointerEventFactory.createPointerCancel(
         PointerEventFactoryTest::PlatformTouchPointBuilder(pointerType, rawId, state));
@@ -101,7 +101,7 @@ void PointerEventFactoryTest::cloneAndCheckPointerEvent(
 PassRefPtrWillBeRawPtr<PointerEvent> PointerEventFactoryTest::createAndCheckTouchEvent(
     WebPointerProperties::PointerType pointerType,
     int rawId, int uniqueId, bool isPrimary,
-    PlatformTouchPoint::State state)
+    PlatformTouchPoint::TouchState state)
 {
     RefPtrWillBeRawPtr<PointerEvent> pointerEvent = m_pointerEventFactory.create(
         EventTypeNames::pointerdown, PointerEventFactoryTest::PlatformTouchPointBuilder(pointerType, rawId, state), PlatformEvent::NoModifiers, 0, 0, 0, 0);

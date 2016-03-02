@@ -244,7 +244,7 @@ WebURLRequest::FrameType WebURLRequest::frameType() const
 
 WebReferrerPolicy WebURLRequest::referrerPolicy() const
 {
-    return static_cast<WebReferrerPolicy>(m_private->m_resourceRequest->referrerPolicy());
+    return static_cast<WebReferrerPolicy>(m_private->m_resourceRequest->getReferrerPolicy());
 }
 
 void WebURLRequest::addHTTPOriginIfNeeded(const WebString& origin)

@@ -309,7 +309,7 @@ static PassOwnPtr<protocol::Network::Response> buildObjectForResourceResponse(co
     int64_t encodedDataLength = response.resourceLoadInfo() ? response.resourceLoadInfo()->encodedDataLength : -1;
 
     String securityState = protocol::Security::SecurityStateEnum::Unknown;
-    switch (response.securityStyle()) {
+    switch (response.getSecurityStyle()) {
     case ResourceResponse::SecurityStyleUnknown:
         securityState = protocol::Security::SecurityStateEnum::Unknown;
         break;
@@ -386,8 +386,8 @@ static PassOwnPtr<protocol::Network::Response> buildObjectForResourceResponse(co
     }
     responseObject->setProtocol(protocol);
 
-    if (response.securityStyle() != ResourceResponse::SecurityStyleUnknown
-        && response.securityStyle() != ResourceResponse::SecurityStyleUnauthenticated) {
+    if (response.getSecurityStyle() != ResourceResponse::SecurityStyleUnknown
+        && response.getSecurityStyle() != ResourceResponse::SecurityStyleUnauthenticated) {
 
         const ResourceResponse::SecurityDetails* responseSecurityDetails = response.securityDetails();
 

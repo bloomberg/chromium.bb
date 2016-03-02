@@ -87,7 +87,7 @@ PassRefPtrWillBeRawPtr<GestureEvent> GestureEvent::create(PassRefPtrWillBeRawPtr
     default:
         return nullptr;
     }
-    return adoptRefWillBeNoop(new GestureEvent(eventType, view, event.globalPosition().x(), event.globalPosition().y(), event.position().x(), event.position().y(), event.modifiers(), deltaX, deltaY, velocityX, velocityY, inertial, event.timestamp(), event.resendingPluginId(), source));
+    return adoptRefWillBeNoop(new GestureEvent(eventType, view, event.globalPosition().x(), event.globalPosition().y(), event.position().x(), event.position().y(), event.getModifiers(), deltaX, deltaY, velocityX, velocityY, inertial, event.timestamp(), event.resendingPluginId(), source));
 }
 
 const AtomicString& GestureEvent::interfaceName() const

@@ -69,7 +69,7 @@ public:
     void setFrameRect(const IntRect&) override;
     IntRect frameRect() const override { return Widget::frameRect(); }
 
-    ScrollbarOverlayStyle scrollbarOverlayStyle() const override;
+    ScrollbarOverlayStyle getScrollbarOverlayStyle() const override;
     void getTickmarks(Vector<IntRect>&) const override;
     bool isScrollableAreaActive() const override;
 

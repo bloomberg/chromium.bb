@@ -87,7 +87,7 @@ void testByteByByteDecode(DecoderCreator createDecoder, const char* file, size_t
             continue;
 
         ImageFrame* frame = decoder->frameBufferAtIndex(frameCount - 1);
-        if (frame && frame->status() == ImageFrame::FrameComplete && framesDecoded < frameCount)
+        if (frame && frame->getStatus() == ImageFrame::FrameComplete && framesDecoded < frameCount)
             ++framesDecoded;
     }
 
@@ -134,7 +134,7 @@ void testMergeBuffer(DecoderCreator createDecoder, const char* file)
 
     ImageFrame* frame = decoder->frameBufferAtIndex(0);
     ASSERT_FALSE(decoder->failed());
-    EXPECT_EQ(frame->status(), ImageFrame::FrameComplete);
+    EXPECT_EQ(frame->getStatus(), ImageFrame::FrameComplete);
     EXPECT_EQ(hashBitmap(frame->bitmap()), hash);
 }
 

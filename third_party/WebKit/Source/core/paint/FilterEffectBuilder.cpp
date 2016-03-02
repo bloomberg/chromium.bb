@@ -225,7 +225,7 @@ bool FilterEffectBuilder::build(Element* element, const FilterOperations& operat
             float stdDeviation = dropShadowOperation->stdDeviation();
             float x = dropShadowOperation->x();
             float y = dropShadowOperation->y();
-            effect = FEDropShadow::create(parentFilter.get(), stdDeviation, stdDeviation, x, y, dropShadowOperation->color(), 1);
+            effect = FEDropShadow::create(parentFilter.get(), stdDeviation, stdDeviation, x, y, dropShadowOperation->getColor(), 1);
             break;
         }
         default:

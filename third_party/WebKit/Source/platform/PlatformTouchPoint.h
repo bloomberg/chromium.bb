@@ -27,7 +27,7 @@ namespace blink {
 
 class PlatformTouchPoint {
 public:
-    enum State {
+    enum TouchState {
         TouchReleased,
         TouchPressed,
         TouchMoved,
@@ -44,7 +44,7 @@ public:
 
     const WebPointerProperties& pointerProperties() const { return m_pointerProperties; }
     int id() const { return pointerProperties().id; }
-    State state() const { return m_state; }
+    TouchState state() const { return m_state; }
     FloatPoint screenPos() const { return m_screenPos; }
     FloatPoint pos() const { return m_pos; }
     FloatSize radius() const { return m_radius; }
@@ -54,7 +54,7 @@ public:
 protected:
     WebPointerProperties m_pointerProperties;
 
-    State m_state;
+    TouchState m_state;
     FloatPoint m_screenPos;
     FloatPoint m_pos;
     FloatSize m_radius;

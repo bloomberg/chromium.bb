@@ -602,7 +602,7 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
 
     // Non-zero only when kerning is enabled, in which case we measure
     // words with their trailing space, then subtract its width.
-    float wordTrailingSpaceWidth = (font.fontDescription().typesettingFeatures() & Kerning) ?
+    float wordTrailingSpaceWidth = (font.fontDescription().getTypesettingFeatures() & Kerning) ?
         font.width(constructTextRun(font, &spaceCharacter, 1, style, style.direction())) + wordSpacing
         : 0;
 

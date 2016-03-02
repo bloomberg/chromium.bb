@@ -71,7 +71,7 @@ InterpolationValue CSSLengthInterpolationType::maybeConvertLength(const Length& 
     if (!length.isSpecified())
         return nullptr;
 
-    PixelsAndPercent pixelsAndPercent = length.pixelsAndPercent();
+    PixelsAndPercent pixelsAndPercent = length.getPixelsAndPercent();
     OwnPtr<InterpolableList> values = createNeutralInterpolableValue();
     values->set(CSSPrimitiveValue::UnitTypePixels, InterpolableNumber::create(pixelsAndPercent.pixels / zoom));
     values->set(CSSPrimitiveValue::UnitTypePercentage, InterpolableNumber::create(pixelsAndPercent.percent));

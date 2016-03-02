@@ -369,7 +369,7 @@ void FontBuilder::createFont(PassRefPtrWillBeRawPtr<FontSelector> fontSelector, 
     if (isSet(PropertySetFlag::TextRendering))
         description.setTextRendering(m_fontDescription.textRendering());
     if (isSet(PropertySetFlag::Kerning))
-        description.setKerning(m_fontDescription.kerning());
+        description.setKerning(m_fontDescription.getKerning());
     if (isSet(PropertySetFlag::FontSmoothing))
         description.setFontSmoothing(m_fontDescription.fontSmoothing());
     if (isSet(PropertySetFlag::TextOrientation) || isSet(PropertySetFlag::WritingMode))

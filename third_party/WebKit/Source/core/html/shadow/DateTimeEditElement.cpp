@@ -92,9 +92,9 @@ DateTimeEditBuilder::DateTimeEditBuilder(DateTimeEditElement& element, const Dat
     , m_secondRange(0, 59)
     , m_millisecondRange(0, 999)
 {
-    if (m_dateValue.type() == DateComponents::Date || m_dateValue.type() == DateComponents::DateTimeLocal) {
-        if (m_parameters.minimum.type() != DateComponents::Invalid
-            && m_parameters.maximum.type() != DateComponents::Invalid
+    if (m_dateValue.getType() == DateComponents::Date || m_dateValue.getType() == DateComponents::DateTimeLocal) {
+        if (m_parameters.minimum.getType() != DateComponents::Invalid
+            && m_parameters.maximum.getType() != DateComponents::Invalid
             && m_parameters.minimum.fullYear() == m_parameters.maximum.fullYear()
             && m_parameters.minimum.month() == m_parameters.maximum.month()
             && m_parameters.minimum.monthDay() <= m_parameters.maximum.monthDay()) {
@@ -103,9 +103,9 @@ DateTimeEditBuilder::DateTimeEditBuilder(DateTimeEditElement& element, const Dat
         }
     }
 
-    if (m_dateValue.type() == DateComponents::Time || m_dayRange.isSingleton()) {
-        if (m_parameters.minimum.type() != DateComponents::Invalid
-            && m_parameters.maximum.type() != DateComponents::Invalid
+    if (m_dateValue.getType() == DateComponents::Time || m_dayRange.isSingleton()) {
+        if (m_parameters.minimum.getType() != DateComponents::Invalid
+            && m_parameters.maximum.getType() != DateComponents::Invalid
             && m_parameters.minimum.hour() <= m_parameters.maximum.hour()) {
             m_hour23Range.minimum = m_parameters.minimum.hour();
             m_hour23Range.maximum = m_parameters.maximum.hour();
@@ -215,8 +215,8 @@ void DateTimeEditBuilder::visitField(DateTimeFormat::FieldType fieldType, int co
     case DateTimeFormat::FieldTypeMonth: // Fallthrough.
     case DateTimeFormat::FieldTypeMonthStandAlone: {
         int minMonth = 0, maxMonth = 11;
-        if (m_parameters.minimum.type() != DateComponents::Invalid
-            && m_parameters.maximum.type() != DateComponents::Invalid
+        if (m_parameters.minimum.getType() != DateComponents::Invalid
+            && m_parameters.maximum.getType() != DateComponents::Invalid
             && m_parameters.minimum.fullYear() == m_parameters.maximum.fullYear()
             && m_parameters.minimum.month() <= m_parameters.maximum.month()) {
             minMonth = m_parameters.minimum.month();
@@ -236,7 +236,7 @@ void DateTimeEditBuilder::visitField(DateTimeFormat::FieldType fieldType, int co
             break;
         }
         editElement().addField(field);
-        if (minMonth == maxMonth && minMonth == m_dateValue.month() && m_dateValue.type() != DateComponents::Month) {
+        if (minMonth == maxMonth && minMonth == m_dateValue.month() && m_dateValue.getType() != DateComponents::Month) {
             field->setValueAsDate(m_dateValue);
             field->setDisabled();
         }
@@ -282,8 +282,8 @@ void DateTimeEditBuilder::visitField(DateTimeFormat::FieldType fieldType, int co
 
     case DateTimeFormat::FieldTypeWeekOfYear: {
         DateTimeNumericFieldElement::Range range(DateComponents::minimumWeekNumber, DateComponents::maximumWeekNumber);
-        if (m_parameters.minimum.type() != DateComponents::Invalid
-            && m_parameters.maximum.type() != DateComponents::Invalid
+        if (m_parameters.minimum.getType() != DateComponents::Invalid
+            && m_parameters.maximum.getType() != DateComponents::Invalid
             && m_parameters.minimum.fullYear() == m_parameters.maximum.fullYear()
             && m_parameters.minimum.week() <= m_parameters.maximum.week()) {
             range.minimum = m_parameters.minimum.week();
@@ -295,14 +295,14 @@ void DateTimeEditBuilder::visitField(DateTimeFormat::FieldType fieldType, int co
 
     case DateTimeFormat::FieldTypeYear: {
         DateTimeYearFieldElement::Parameters yearParams;
-        if (m_parameters.minimum.type() == DateComponents::Invalid) {
+        if (m_parameters.minimum.getType() == DateComponents::Invalid) {
             yearParams.minimumYear = DateComponents::minimumYear();
             yearParams.minIsSpecified = false;
         } else {
             yearParams.minimumYear = m_parameters.minimum.fullYear();
             yearParams.minIsSpecified = true;
         }
-        if (m_parameters.maximum.type() == DateComponents::Invalid) {
+        if (m_parameters.maximum.getType() == DateComponents::Invalid) {
             yearParams.maximumYear = DateComponents::maximumYear();
             yearParams.maxIsSpecified = false;
         } else {
@@ -337,7 +337,7 @@ bool DateTimeEditBuilder::shouldAMPMFieldDisabled() const
 
 bool DateTimeEditBuilder::shouldDayOfMonthFieldDisabled() const
 {
-    return m_dayRange.isSingleton() && m_dayRange.minimum == m_dateValue.monthDay() && m_dateValue.type() != DateComponents::Date;
+    return m_dayRange.isSingleton() && m_dayRange.minimum == m_dateValue.monthDay() && m_dateValue.getType() != DateComponents::Date;
 }
 
 bool DateTimeEditBuilder::shouldHourFieldDisabled() const
@@ -346,9 +346,9 @@ bool DateTimeEditBuilder::shouldHourFieldDisabled() const
         && !(shouldMinuteFieldDisabled() && shouldSecondFieldDisabled() && shouldMillisecondFieldDisabled()))
         return true;
 
-    if (m_dateValue.type() == DateComponents::Time)
+    if (m_dateValue.getType() == DateComponents::Time)
         return false;
-    ASSERT(m_dateValue.type() == DateComponents::DateTimeLocal);
+    ASSERT(m_dateValue.getType() == DateComponents::DateTimeLocal);
 
     if (shouldDayOfMonthFieldDisabled()) {
         ASSERT(m_parameters.minimum.fullYear() == m_parameters.maximum.fullYear());
@@ -392,8 +392,8 @@ bool DateTimeEditBuilder::shouldSecondFieldDisabled() const
 
 bool DateTimeEditBuilder::shouldYearFieldDisabled() const
 {
-    return m_parameters.minimum.type() != DateComponents::Invalid
-        && m_parameters.maximum.type() != DateComponents::Invalid
+    return m_parameters.minimum.getType() != DateComponents::Invalid
+        && m_parameters.maximum.getType() != DateComponents::Invalid
         && m_parameters.minimum.fullYear() == m_parameters.maximum.fullYear()
         && m_parameters.minimum.fullYear() == m_dateValue.fullYear();
 }
@@ -771,7 +771,7 @@ bool DateTimeEditElement::hasFocusedField()
 
 void DateTimeEditElement::setOnlyYearMonthDay(const DateComponents& date)
 {
-    ASSERT(date.type() == DateComponents::Date);
+    ASSERT(date.getType() == DateComponents::Date);
 
     if (!m_editControlOwner)
         return;

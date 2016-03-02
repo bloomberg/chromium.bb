@@ -102,7 +102,7 @@ PassRefPtr<SkImage> DeferredImageDecoder::createFrameAtIndex(size_t index)
         return nullptr;
 
     ImageFrame* frame = m_actualDecoder->frameBufferAtIndex(index);
-    if (!frame || frame->status() == ImageFrame::FrameEmpty)
+    if (!frame || frame->getStatus() == ImageFrame::FrameEmpty)
         return nullptr;
 
     return adoptRef(SkImage::NewFromBitmap(frame->bitmap()));

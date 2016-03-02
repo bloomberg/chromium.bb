@@ -827,7 +827,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> createTimingFunctionValue(const TimingFu
     case TimingFunction::StepsFunction:
         {
             const StepsTimingFunction* stepsTimingFunction = toStepsTimingFunction(timingFunction);
-            StepsTimingFunction::StepAtPosition position = stepsTimingFunction->stepAtPosition();
+            StepsTimingFunction::StepAtPosition position = stepsTimingFunction->getStepAtPosition();
             int steps = stepsTimingFunction->numberOfSteps();
             ASSERT(position == StepsTimingFunction::Start || position == StepsTimingFunction::End);
 
@@ -1255,7 +1255,7 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::valueForFilter(co
             DropShadowFilterOperation* dropShadowOperation = toDropShadowFilterOperation(filterOperation);
             filterValue = CSSFunctionValue::create(CSSValueDropShadow);
             // We want our computed style to look like that of a text shadow (has neither spread nor inset style).
-            ShadowData shadow(dropShadowOperation->location(), dropShadowOperation->stdDeviation(), 0, Normal, StyleColor(dropShadowOperation->color()));
+            ShadowData shadow(dropShadowOperation->location(), dropShadowOperation->stdDeviation(), 0, Normal, StyleColor(dropShadowOperation->getColor()));
             filterValue->append(valueForShadowData(shadow, style, false));
             break;
         }
@@ -2087,7 +2087,7 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
     case CSSPropertyResize:
         return cssValuePool().createValue(style.resize());
     case CSSPropertyFontKerning:
-        return cssValuePool().createValue(style.fontDescription().kerning());
+        return cssValuePool().createValue(style.fontDescription().getKerning());
     case CSSPropertyWebkitFontSmoothing:
         return cssValuePool().createValue(style.fontDescription().fontSmoothing());
     case CSSPropertyFontVariantLigatures: {

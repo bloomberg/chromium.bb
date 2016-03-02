@@ -38,8 +38,8 @@ PassRefPtrWillBeRawPtr<WheelEvent> WheelEvent::create(const PlatformWheelEvent& 
 {
     return adoptRefWillBeNoop(new WheelEvent(FloatPoint(event.wheelTicksX(), event.wheelTicksY()), FloatPoint(event.deltaX(), event.deltaY()),
         convertDeltaMode(event), view, event.globalPosition(), event.position(),
-        event.modifiers(),
-        MouseEvent::platformModifiersToButtons(event.modifiers()), event.timestamp(),
+        event.getModifiers(),
+        MouseEvent::platformModifiersToButtons(event.getModifiers()), event.timestamp(),
         event.canScroll(), event.resendingPluginId(), event.hasPreciseScrollingDeltas(),
         static_cast<Event::RailsMode>(event.getRailsMode())));
 }

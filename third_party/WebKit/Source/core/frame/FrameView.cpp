@@ -363,7 +363,7 @@ void FrameView::invalidateAllCustomScrollbarsOnActiveChanged()
 
 void FrameView::recalculateScrollbarOverlayStyle()
 {
-    ScrollbarOverlayStyle oldOverlayStyle = scrollbarOverlayStyle();
+    ScrollbarOverlayStyle oldOverlayStyle = getScrollbarOverlayStyle();
     ScrollbarOverlayStyle overlayStyle = ScrollbarOverlayStyleDefault;
 
     Color backgroundColor = documentBackgroundColor();

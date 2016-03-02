@@ -71,7 +71,7 @@ unsigned GetEventModifiers(int modifiers)
 
 class SyntheticInspectorTouchPoint : public blink::PlatformTouchPoint {
 public:
-    SyntheticInspectorTouchPoint(int id, State state, const blink::IntPoint& screenPos, const blink::IntPoint& pos, int radiusX, int radiusY, double rotationAngle, double force)
+    SyntheticInspectorTouchPoint(int id, TouchState state, const blink::IntPoint& screenPos, const blink::IntPoint& pos, int radiusX, int radiusY, double rotationAngle, double force)
     {
         m_pointerProperties.id = id;
         m_screenPos = screenPos;
@@ -85,7 +85,7 @@ public:
 
 class SyntheticInspectorTouchEvent : public blink::PlatformTouchEvent {
 public:
-    SyntheticInspectorTouchEvent(const blink::PlatformEvent::Type type, unsigned modifiers, double timestamp)
+    SyntheticInspectorTouchEvent(const blink::PlatformEvent::EventType type, unsigned modifiers, double timestamp)
     {
         m_type = type;
         m_modifiers = modifiers;
@@ -120,7 +120,7 @@ InspectorInputAgent::~InspectorInputAgent()
 
 void InspectorInputAgent::dispatchTouchEvent(ErrorString* error, const String& type, PassOwnPtr<protocol::Array<protocol::Input::TouchPoint>> touchPoints, const protocol::Maybe<int>& modifiers, const protocol::Maybe<double>& timestamp)
 {
-    PlatformEvent::Type convertedType;
+    PlatformEvent::EventType convertedType;
     if (type == "touchStart") {
         convertedType = PlatformEvent::TouchStart;
     } else if (type == "touchEnd") {
@@ -158,7 +158,7 @@ void InspectorInputAgent::dispatchTouchEvent(ErrorString* error, const String& t
             return;
         }
 
-        PlatformTouchPoint::State convertedState;
+        PlatformTouchPoint::TouchState convertedState;
         String state = point->getState();
         if (state == "touchPressed") {
             convertedState = PlatformTouchPoint::TouchPressed;

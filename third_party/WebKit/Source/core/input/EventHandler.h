@@ -238,7 +238,7 @@ private:
     WebInputEventResult handleMouseDraggedEvent(const MouseEventWithHitTestResults&);
     WebInputEventResult handleMouseReleaseEvent(const MouseEventWithHitTestResults&);
 
-    HitTestRequest::HitTestRequestType getHitTypeForGestureType(PlatformEvent::Type);
+    HitTestRequest::HitTestRequestType getHitTypeForGestureType(PlatformEvent::EventType);
     void applyTouchAdjustment(PlatformGestureEvent*, HitTestResult*);
     WebInputEventResult handleGestureTap(const GestureEventWithHitTestResults&);
     WebInputEventResult handleGestureLongPress(const GestureEventWithHitTestResults&);

@@ -43,7 +43,7 @@ static const unsigned short HIGHBITMASKSHORT = 0x8000;
 PlatformKeyboardEvent::OverrideCapsLockState PlatformKeyboardEvent::s_overrideCapsLockState =
     PlatformKeyboardEvent::OverrideCapsLockState::Default;
 
-void PlatformKeyboardEvent::disambiguateKeyDownEvent(Type type)
+void PlatformKeyboardEvent::disambiguateKeyDownEvent(EventType type)
 {
 #if OS(WIN)
     // No KeyDown events on Windows to disambiguate.
