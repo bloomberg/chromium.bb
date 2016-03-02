@@ -280,6 +280,9 @@ char kTSanDefaultSuppressions[] =
 // http://crbug.com/582274
 "race:usrsctp_close\n"
 
+// http://crbug.com/591217
+"race:blink::FreePagePool::addFreePage\n"
+
 // End of suppressions.
 ;  // Please keep this semicolon.
 
