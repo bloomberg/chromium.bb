@@ -1,12 +1,11 @@
-### Build Instructions (iOS)
+# iOS Build Instructions
 
 **Note:** Upstreaming of iOS code is still a work in progress. In particular,
 note that **it is not currently possible to build an actual Chromium app.**
 Currently, the buildable binaries are ios\_web\_shell (a minimal wrapper around
 the web layer), and various unit tests.
 
-Prerequisites
--------------
+## Prerequisites
 
 -   A Mac with a version of OS X capable of running the latest version
     of Xcode.
@@ -15,8 +14,7 @@ Prerequisites
 -   The current version of the JDK (required for the closure compiler).
 -   [depot\_tools](http://dev.chromium.org/developers/how-tos/install-depot-tools).
 
-Setting Up
-----------
+## Setting Up
 
 In the directory where you are going to check out the code, create a
 `chromium.gyp_env` to set the build to use iOS targets (and to use
@@ -46,8 +44,7 @@ EOF
 Also, you should [install API
 keys](https://www.chromium.org/developers/how-tos/api-keys).
 
-Getting the Code
-----------------
+## Getting the Code
 
 Next, [check out the
 code](https://www.chromium.org/developers/how-tos/get-the-code), with:
@@ -56,8 +53,7 @@ code](https://www.chromium.org/developers/how-tos/get-the-code), with:
 fetch ios
 ```
 
-Building
---------
+## Building
 
 Build the target you are interested in. The instructions above select
 the ninja/Xcode hybrid mode, which uses ninja to do the actual build,
@@ -79,8 +75,7 @@ target you want to build.
 You should always be able to build All, since targets are added there for iOS
 only when they compile.
 
-Running
--------
+## Running
 
 Any target that is built and runs on the bots (see [below](#Troubleshooting))
 should run successfully in a local build. As of the time of writing, this is
@@ -95,8 +90,7 @@ example, to run a debug build of ios\_web\_shell:
 out/Debug-iphonesimulator/iossim out/Debug-iphonesimulator/ios_web_shell.app
 ```
 
-Converting an existing Mac checkout into an iOS checkout
---------------------------------------------------------
+## Converting an existing Mac checkout into an iOS checkout
 
 If you want to convert your Mac checkout into an iOS checkout, you can
 follow those steps:
@@ -123,8 +117,7 @@ files according to the new settings.
 gclient sync
 ```
 
-Troubleshooting
----------------
+## Troubleshooting
 
 If your build fails, check the iOS columns of [the Mac
 waterfall](http://build.chromium.org/p/chromium.mac/console) (the last
