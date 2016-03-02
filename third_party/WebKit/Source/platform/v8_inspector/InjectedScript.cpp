@@ -155,12 +155,11 @@ void InjectedScript::callFunctionOn(ErrorString* errorString, const String& obje
     *result = makeEvalCall(errorString, function, wasThrown);
 }
 
-void InjectedScript::evaluateOnCallFrame(ErrorString* errorString, v8::Local<v8::Object> callFrames, bool isAsyncCallStack, const String& callFrameId, const String& expression, const String& objectGroup, bool includeCommandLineAPI, bool returnByValue, bool generatePreview, OwnPtr<RemoteObject>* result, Maybe<bool>* wasThrown, Maybe<protocol::Runtime::ExceptionDetails>* exceptionDetails)
+void InjectedScript::evaluateOnCallFrame(ErrorString* errorString, v8::Local<v8::Object> callFrames, const String& callFrameId, const String& expression, const String& objectGroup, bool includeCommandLineAPI, bool returnByValue, bool generatePreview, OwnPtr<RemoteObject>* result, Maybe<bool>* wasThrown, Maybe<protocol::Runtime::ExceptionDetails>* exceptionDetails)
 {
     v8::HandleScope handles(m_isolate);
     V8FunctionCall function(m_client, context(), v8Value(), "evaluateOnCallFrame");
     function.appendArgument(callFrames);
-    function.appendArgument(isAsyncCallStack);
     function.appendArgument(callFrameId);
     function.appendArgument(expression);
     function.appendArgument(objectGroup);

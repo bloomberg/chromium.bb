@@ -934,24 +934,6 @@ void V8DebuggerAgentImpl::setPauseOnExceptionsImpl(ErrorString* errorString, int
         m_state->setNumber(DebuggerAgentState::pauseOnExceptionsState, pauseState);
 }
 
-bool V8DebuggerAgentImpl::callStackForId(ErrorString* errorString, const RemoteCallFrameId& callFrameId, v8::Local<v8::Object>* callStack, bool* isAsync)
-{
-    unsigned asyncOrdinal = callFrameId.asyncStackOrdinal(); // 0 is current call stack
-    if (!asyncOrdinal) {
-        *callStack = m_currentCallStack.Get(m_isolate);
-        *isAsync = false;
-        return true;
-    }
-    if (!m_currentAsyncCallChain || asyncOrdinal < 1 || asyncOrdinal > m_currentAsyncCallChain->callStacks().size()) {
-        *errorString = "Async call stack not found";
-        return false;
-    }
-    RefPtr<AsyncCallStack> asyncStack = m_currentAsyncCallChain->callStacks()[asyncOrdinal - 1];
-    *callStack = asyncStack->callFrames(m_isolate);
-    *isAsync = true;
-    return true;
-}
-
 void V8DebuggerAgentImpl::evaluateOnCallFrame(ErrorString* errorString,
     const String& callFrameId,
     const String& expression,
@@ -979,18 +961,19 @@ void V8DebuggerAgentImpl::evaluateOnCallFrame(ErrorString* errorString,
         return;
     }
 
-    v8::HandleScope scope(m_isolate);
-    bool isAsync = false;
-    v8::Local<v8::Object> callStack;
-    if (!callStackForId(errorString, *remoteId, &callStack, &isAsync))
+    if (remoteId->asyncStackOrdinal()) {
+        *errorString = "Can't evaluate on async callframe";
         return;
-    ASSERT(!callStack.IsEmpty());
+    }
+
+    v8::HandleScope scope(m_isolate);
+    v8::Local<v8::Object> callStack = m_currentCallStack.Get(m_isolate);
 
     Optional<IgnoreExceptionsScope> ignoreExceptionsScope;
     if (doNotPauseOnExceptionsAndMuteConsole.fromMaybe(false))
         ignoreExceptionsScope.emplace(m_debugger);
 
-    injectedScript->evaluateOnCallFrame(errorString, callStack, isAsync, callFrameId, expression, objectGroup.fromMaybe(""), includeCommandLineAPI.fromMaybe(false), returnByValue.fromMaybe(false), generatePreview.fromMaybe(false), result, wasThrown, exceptionDetails);
+    injectedScript->evaluateOnCallFrame(errorString, callStack, callFrameId, expression, objectGroup.fromMaybe(""), includeCommandLineAPI.fromMaybe(false), returnByValue.fromMaybe(false), generatePreview.fromMaybe(false), result, wasThrown, exceptionDetails);
 }
 
 void V8DebuggerAgentImpl::setVariableValue(ErrorString* errorString,

@@ -803,12 +803,11 @@ InjectedScript.prototype = {
      * @param {boolean} injectCommandLineAPI
      * @param {boolean} returnByValue
      * @param {boolean} generatePreview
-     * @param {!Array.<!Object>=} scopeChain
      * @return {!Object}
      */
-    _evaluateAndWrap: function(callFrame, expression, objectGroup, injectCommandLineAPI, returnByValue, generatePreview, scopeChain)
+    _evaluateAndWrap: function(callFrame, expression, objectGroup, injectCommandLineAPI, returnByValue, generatePreview)
     {
-        var wrappedResult = this._evaluateOn(callFrame, objectGroup, expression, injectCommandLineAPI, scopeChain);
+        var wrappedResult = this._evaluateOn(callFrame, objectGroup, expression, injectCommandLineAPI);
         if (!wrappedResult.exceptionDetails) {
             return { wasThrown: false,
                      result: this._wrapObject(wrappedResult.result, objectGroup, returnByValue, generatePreview),
@@ -840,46 +839,20 @@ InjectedScript.prototype = {
      * @param {string} objectGroup
      * @param {string} expression
      * @param {boolean} injectCommandLineAPI
-     * @param {!Array.<!Object>=} scopeChain
      * @return {*}
      */
-    _evaluateOn: function(callFrame, objectGroup, expression, injectCommandLineAPI, scopeChain)
+    _evaluateOn: function(callFrame, objectGroup, expression, injectCommandLineAPI)
     {
         // Only install command line api object for the time of evaluation.
         // Surround the expression in with statements to inject our command line API so that
         // the window object properties still take more precedent than our API functions.
 
         var scopeExtensionForEval = (callFrame && injectCommandLineAPI) ? new CommandLineAPI(this._commandLineAPIImpl, callFrame) : undefined;
-        var injectScopeChain = scopeChain && scopeChain.length && !("__scopeChainForEval" in inspectedGlobalObject);
+        var wrappedResult = callFrame ? callFrame.evaluateWithExceptionDetails(expression, scopeExtensionForEval) : InjectedScriptHost.evaluateWithExceptionDetails(expression, injectCommandLineAPI ? new CommandLineAPI(this._commandLineAPIImpl, callFrame) : undefined);
+        if (objectGroup === "console" && !wrappedResult.exceptionDetails)
+            this._lastResult = wrappedResult.result;
+        return wrappedResult;
 
-        try {
-            var prefix = "";
-            var suffix = "";
-            if (injectScopeChain) {
-                InjectedScriptHost.setNonEnumProperty(inspectedGlobalObject, "__scopeChainForEval", scopeChain);
-                for (var i = 0; i < scopeChain.length; ++i) {
-                    prefix = "with (typeof __scopeChainForEval !== 'undefined' ? __scopeChainForEval[" + i + "] : { __proto__: null }) {" + (suffix ? " " : "") + prefix;
-                    if (suffix)
-                        suffix += " }";
-                    else
-                        suffix = "}";
-                }
-            }
-
-            if (prefix)
-                expression = prefix + "\n" + expression + "\n" + suffix;
-            var wrappedResult = callFrame ? callFrame.evaluateWithExceptionDetails(expression, scopeExtensionForEval) : InjectedScriptHost.evaluateWithExceptionDetails(expression, injectCommandLineAPI ? new CommandLineAPI(this._commandLineAPIImpl, callFrame) : undefined);
-            if (objectGroup === "console" && !wrappedResult.exceptionDetails)
-                this._lastResult = wrappedResult.result;
-            return wrappedResult;
-        } finally {
-            if (injectScopeChain) {
-                try {
-                    delete inspectedGlobalObject["__scopeChainForEval"];
-                } catch(e) {
-                }
-            }
-        }
     },
 
     /**
@@ -904,7 +877,6 @@ InjectedScript.prototype = {
 
     /**
      * @param {!JavaScriptCallFrame} topCallFrame
-     * @param {boolean} isAsyncStack
      * @param {string} callFrameId
      * @param {string} expression
      * @param {string} objectGroup
@@ -913,13 +885,11 @@ InjectedScript.prototype = {
      * @param {boolean} generatePreview
      * @return {*}
      */
-    evaluateOnCallFrame: function(topCallFrame, isAsyncStack, callFrameId, expression, objectGroup, injectCommandLineAPI, returnByValue, generatePreview)
+    evaluateOnCallFrame: function(topCallFrame, callFrameId, expression, objectGroup, injectCommandLineAPI, returnByValue, generatePreview)
     {
         var callFrame = this._callFrameForId(topCallFrame, callFrameId);
         if (!callFrame)
             return "Could not find call frame with given id";
-        if (isAsyncStack)
-            return this._evaluateAndWrap(null, expression, objectGroup, injectCommandLineAPI, returnByValue, generatePreview, callFrame.scopeChain);
         return this._evaluateAndWrap(callFrame, expression, objectGroup, injectCommandLineAPI, returnByValue, generatePreview);
     },
 

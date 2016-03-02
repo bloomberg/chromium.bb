@@ -213,7 +213,6 @@ private:
 
     PassOwnPtr<protocol::Array<protocol::Debugger::CallFrame>> currentCallFrames();
     PassOwnPtr<protocol::Debugger::StackTrace> currentAsyncStackTrace();
-    bool callStackForId(ErrorString*, const RemoteCallFrameId&, v8::Local<v8::Object>* callStack, bool* isAsync);
 
     void clearCurrentAsyncOperation();
     void resetAsyncCallTracker();

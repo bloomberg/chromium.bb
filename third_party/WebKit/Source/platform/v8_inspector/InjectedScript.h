@@ -80,7 +80,6 @@ public:
     void evaluateOnCallFrame(
         ErrorString*,
         v8::Local<v8::Object> callFrames,
-        bool isAsyncCallStack,
         const String& callFrameId,
         const String& expression,
         const String& objectGroup,
