@@ -653,6 +653,10 @@ void FrameView::recalcOverflowAfterStyleChange()
     if (needsLayout())
         return;
 
+    // TODO(pdr): This should be refactored to just block scrollbar updates as
+    // we are not in a scrollbar update here and m_inUpdateScrollbars has other
+    // side effects. This scope is only for preventing a synchronous layout from
+    // scroll origin changes which would not be allowed during style recalc.
     InUpdateScrollbarsScope inUpdateScrollbarsScope(this);
 
     bool shouldHaveHorizontalScrollbar = false;
@@ -669,6 +673,9 @@ void FrameView::recalcOverflowAfterStyleChange()
 
     adjustViewSize();
     updateScrollbarGeometry();
+
+    if (scrollOriginChanged())
+        setNeedsLayout();
 }
 
 bool FrameView::usesCompositedScrolling() const
@@ -1021,7 +1028,7 @@ void FrameView::layout()
                 setScrollbarModes(hMode, vMode);
             }
 
-            if (needsScrollbarReconstruction())
+            if (needsScrollbarReconstruction() || scrollOriginChanged())
                 updateScrollbars(scrollOffsetDouble());
 
             LayoutSize oldSize = m_size;
