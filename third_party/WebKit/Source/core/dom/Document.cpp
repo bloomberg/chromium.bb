@@ -1860,8 +1860,6 @@ void Document::updateStyle()
 
     clearChildNeedsStyleRecalc();
 
-    // Pseudo element removal and similar may only work with these flags still set. Reset them after the style recalc.
-    styleEngine().resetCSSFeatureFlags(resolver.ensureUpdatedRuleFeatureSet());
     resolver.clearStyleSharingList();
 
     m_wasPrinting = m_printing;
