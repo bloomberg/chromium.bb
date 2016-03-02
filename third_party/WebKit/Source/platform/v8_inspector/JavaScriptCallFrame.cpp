@@ -149,6 +149,24 @@ v8::Local<v8::String> JavaScriptCallFrame::scopeName(int scopeIndex) const
     return scopeType->Get(scopeIndex)->ToString();
 }
 
+v8::Local<v8::Value> JavaScriptCallFrame::scopeStartLocation(int scopeIndex) const
+{
+    return callScopeLocationFunction("scopeStartLocation", scopeIndex);
+}
+
+v8::Local<v8::Value> JavaScriptCallFrame::scopeEndLocation(int scopeIndex) const
+{
+    return callScopeLocationFunction("scopeEndLocation", scopeIndex);
+}
+
+v8::Local<v8::Value> JavaScriptCallFrame::callScopeLocationFunction(const char* name, int scopeIndex) const
+{
+    v8::Local<v8::Object> callFrame = v8::Local<v8::Object>::New(m_isolate, m_callFrame);
+    v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(callFrame->Get(toV8StringInternalized(m_isolate, name)));
+    v8::Local<v8::Array> locations = v8::Local<v8::Array>::Cast(m_client->callInternalFunction(func, callFrame, 0, nullptr).ToLocalChecked());
+    return locations->Get(scopeIndex);
+}
+
 v8::Local<v8::Value> JavaScriptCallFrame::thisObject() const
 {
     return v8::Local<v8::Object>::New(m_isolate, m_callFrame)->Get(toV8StringInternalized(m_isolate, "thisObject"));

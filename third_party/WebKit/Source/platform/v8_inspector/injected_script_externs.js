@@ -225,6 +225,19 @@ JavaScriptCallFrame.prototype.scopeType = function(scopeIndex) {}
  */
 JavaScriptCallFrame.prototype.scopeName = function(scopeIndex) {}
 
+/**
+ * @param {number} scopeIndex
+ * @return {?DebuggerAgent.Location}
+ */
+JavaScriptCallFrame.prototype.scopeStartLocation = function(scopeIndex) {}
+
+/**
+ * @param {number} scopeIndex
+ * @return {?DebuggerAgent.Location}
+ */
+JavaScriptCallFrame.prototype.scopeEndLocation = function(scopeIndex) {}
+
+
 /** @type {!Window} */
 var inspectedGlobalObject;
 /** @type {number} */

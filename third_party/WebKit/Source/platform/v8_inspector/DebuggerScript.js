@@ -395,34 +395,68 @@ DebuggerScript._frameMirrorToJSCallFrame = function(frameMirror, callerFrame, in
     var scopeTypes = new Array(scopeMirrors.length);
     var scopeObjects = new Array(scopeMirrors.length);
     var scopeNames = new Array(scopeMirrors.length);
+    var scopeStartPositions = new Array(scopeMirrors.length);
+    var scopeEndPositions = new Array(scopeMirrors.length);
+    var scopeFunctions = new Array(scopeMirrors.length);
     for (var i = 0; i < scopeMirrors.length; ++i) {
         var scopeDetails = scopeMirrors[i].details();
         scopeTypes[i] = scopeDetails.type();
         scopeObjects[i] = scopeDetails.object();
         scopeNames[i] = scopeDetails.name();
+        scopeStartPositions[i] = scopeDetails.startPosition();
+        scopeEndPositions[i] = scopeDetails.endPosition();
+        scopeFunctions[i] = scopeDetails.func();
     }
 
     // Calculated lazily.
     var scopeChain;
     var funcMirror;
     var location;
+    var scopeStartLocations;
+    var scopeEndLocations;
+
+    function createLocation(script, pos)
+    {
+        if (!script)
+            return null;
+
+        location = script.locationFromPosition(pos, true);
+        return {
+            "lineNumber": location.line,
+            "columnNumber": location.column,
+            "scriptId": String(script.id())
+        }
+    }
 
     function lazyScopeChain()
     {
         if (!scopeChain) {
             scopeChain = [];
+            scopeStartLocations = [];
+            scopeEndLocations = [];
             for (var i = 0, j = 0; i < scopeObjects.length; ++i) {
-                var scopeObject = DebuggerScript._buildScopeObject(scopeTypes[i], scopeObjects[i], scopeNames[i]);
+                var scopeObject = DebuggerScript._buildScopeObject(scopeTypes[i], scopeObjects[i]);
                 if (scopeObject) {
                     scopeTypes[j] = scopeTypes[i];
                     scopeNames[j] = scopeNames[i];
                     scopeChain[j] = scopeObject;
+
+                    var funcMirror = MakeMirror(scopeFunctions[i]);
+                    if (!funcMirror.isFunction())
+                        funcMirror = new UnresolvedFunctionMirror(funcObject);
+
+                    var script = funcMirror.script();
+                    scopeStartLocations[j] = createLocation(script, scopeStartPositions[i]);
+                    scopeEndLocations[j] = createLocation(script, scopeEndPositions[i]);
                     ++j;
                 }
             }
             scopeTypes.length = scopeChain.length;
             scopeNames.length = scopeChain.length;
             scopeObjects = null; // Free for GC.
+            scopeFunctions = null;
+            scopeStartPositions = null;
+            scopeEndPositions = null;
         }
         return scopeChain;
     }
@@ -439,6 +473,22 @@ DebuggerScript._frameMirrorToJSCallFrame = function(frameMirror, callerFrame, in
         if (!scopeChain)
             lazyScopeChain();
         return scopeNames;
+    }
+
+    function lazyScopeStartLocations()
+    {
+        if (!scopeChain)
+            lazyScopeChain();
+
+        return scopeStartLocations;
+    }
+
+    function lazyScopeEndLocations()
+    {
+        if (!scopeChain)
+            lazyScopeChain();
+
+        return scopeEndLocations;
     }
 
     function ensureFuncMirror()
@@ -551,6 +601,8 @@ DebuggerScript._frameMirrorToJSCallFrame = function(frameMirror, callerFrame, in
         "scopeChain": lazyScopeChain,
         "scopeType": lazyScopeTypes,
         "scopeName": lazyScopeNames,
+        "scopeStartLocation": lazyScopeStartLocations,
+        "scopeEndLocation": lazyScopeEndLocations,
         "evaluate": evaluate,
         "caller": callerFrame,
         "restart": restart,

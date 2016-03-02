@@ -60,6 +60,8 @@ public:
     v8::Local<v8::Value> scopeChain() const;
     int scopeType(int scopeIndex) const;
     v8::Local<v8::String> scopeName(int scopeIndex) const;
+    v8::Local<v8::Value> scopeStartLocation(int scopeIndex) const;
+    v8::Local<v8::Value> scopeEndLocation(int scopeIndex) const;
     v8::Local<v8::Value> thisObject() const;
     String stepInPositions() const;
     bool isAtReturn() const;
@@ -82,6 +84,7 @@ private:
 
     int callV8FunctionReturnInt(const char* name) const;
     String callV8FunctionReturnString(const char* name) const;
+    v8::Local<v8::Value> callScopeLocationFunction(const char* name, int scopeIndex) const;
 
     V8DebuggerClient* m_client;
     v8::Isolate* m_isolate;

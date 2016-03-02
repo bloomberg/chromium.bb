@@ -1,0 +1,14 @@
+Tests resolving variable names via source maps.
+
+Set timer for test function.
+Script execution paused.
+
+Scope variables sidebar pane:
+Local
+    longMap: Map
+    longObject: Object
+    this: Window
+WindowGlobal
+    <section collapsed>
+Script execution resumed.
+
