@@ -64823,6 +64823,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="393" label="INPUT_IME_ON_COMPOSITION_BOUNDS_CHANGED"/>
   <int value="394" label="INPUT_METHOD_PRIVATE_ON_IME_MENU_ACTIVATION_CHANGED"/>
   <int value="395" label="INPUT_METHOD_PRIVATE_ON_IME_MENU_LIST_CHANGED"/>
+  <int value="396" label="INPUT_METHOD_PRIVATE_ON_IME_MENU_ITEMS_CHANGED"/>
 </enum>
 
 <enum name="ExtensionFileWriteResult" type="int">
@@ -65979,6 +65980,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1107" label="INPUT_IME_DEACTIVATE"/>
   <int value="1108" label="ENTERPRISE_PLATFORMKEYS_CHALLENGEMACHINEKEY"/>
   <int value="1109" label="ENTERPRISE_PLATFORMKEYS_CHALLENGEUSERKEY"/>
+  <int value="1110" label="INPUTMETHODPRIVATE_NOTIFYIMEMENUITEMACTIVATED"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

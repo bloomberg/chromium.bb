@@ -26,7 +26,6 @@
 #include "ui/base/ime/chromeos/component_extension_ime_manager.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
 #include "ui/base/ime/chromeos/ime_keymap.h"
-#include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/base/ime/composition_text.h"
 #include "ui/base/ime/ime_bridge.h"
 #include "ui/base/ime/text_input_flags.h"
@@ -54,10 +53,6 @@ const char kCandidateNotFound[] = "Candidate not found";
 const int kDefaultPageSize = 9;
 
 }  // namespace
-
-InputMethodEngine::MenuItem::MenuItem() {}
-
-InputMethodEngine::MenuItem::~MenuItem() {}
 
 InputMethodEngine::Candidate::Candidate() {}
 
@@ -236,17 +231,19 @@ bool InputMethodEngine::SetCursorPosition(int context_id,
   return true;
 }
 
-bool InputMethodEngine::SetMenuItems(const std::vector<MenuItem>& items) {
+bool InputMethodEngine::SetMenuItems(
+    const std::vector<input_method::InputMethodManager::MenuItem>& items) {
   return UpdateMenuItems(items);
 }
 
 bool InputMethodEngine::UpdateMenuItems(
-    const std::vector<MenuItem>& items) {
+    const std::vector<input_method::InputMethodManager::MenuItem>& items) {
   if (!IsActive())
     return false;
 
   ui::ime::InputMethodMenuItemList menu_item_list;
-  for (std::vector<MenuItem>::const_iterator item = items.begin();
+  for (std::vector<input_method::InputMethodManager::MenuItem>::const_iterator
+           item = items.begin();
        item != items.end(); ++item) {
     ui::ime::InputMethodMenuItem property;
     MenuItemToProperty(*item, &property);
@@ -255,6 +252,9 @@ bool InputMethodEngine::UpdateMenuItems(
 
   ui::ime::InputMethodMenuManager::GetInstance()
       ->SetCurrentInputMethodMenuItemList(menu_item_list);
+
+  input_method::InputMethodManager::Get()->NotifyImeMenuItemsChanged(
+      active_component_id_, items);
   return true;
 }
 
@@ -304,7 +304,7 @@ void InputMethodEngine::CandidateClicked(uint32_t index) {
 
 // TODO(uekawa): rename this method to a more reasonable name.
 void InputMethodEngine::MenuItemToProperty(
-    const MenuItem& item,
+    const input_method::InputMethodManager::MenuItem& item,
     ui::ime::InputMethodMenuItem* property) {
   property->key = item.id;
 
@@ -325,16 +325,16 @@ void InputMethodEngine::MenuItemToProperty(
       // TODO(nona): Implement it.
     } else {
       switch (item.style) {
-        case MENU_ITEM_STYLE_NONE:
+        case input_method::InputMethodManager::MENU_ITEM_STYLE_NONE:
           NOTREACHED();
           break;
-        case MENU_ITEM_STYLE_CHECK:
+        case input_method::InputMethodManager::MENU_ITEM_STYLE_CHECK:
           // TODO(nona): Implement it.
           break;
-        case MENU_ITEM_STYLE_RADIO:
+        case input_method::InputMethodManager::MENU_ITEM_STYLE_RADIO:
           property->is_selection_item = true;
           break;
-        case MENU_ITEM_STYLE_SEPARATOR:
+        case input_method::InputMethodManager::MENU_ITEM_STYLE_SEPARATOR:
           // TODO(nona): Implement it.
           break;
       }

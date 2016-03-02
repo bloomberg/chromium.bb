@@ -249,5 +249,8 @@ void MockInputMethodManager::SetCurrentInputMethodId(
 
 void MockInputMethodManager::ImeMenuActivationChanged(bool is_active) {}
 
+void MockInputMethodManager::NotifyImeMenuItemsChanged(
+    const std::string& engine_id,
+    const std::vector<InputMethodManager::MenuItem>& items) {}
 }  // namespace input_method
 }  // namespace chromeos

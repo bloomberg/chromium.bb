@@ -14,6 +14,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/ui/input_method/input_method_engine_base.h"
 #include "ui/base/ime/chromeos/input_method_descriptor.h"
+#include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/base/ime/ime_engine_handler_interface.h"
 #include "url/gurl.h"
 
@@ -47,31 +48,9 @@ class InputMethodEngine : public ::input_method::InputMethodEngineBase {
     MENU_ITEM_MODIFIED_ICON = 0x0020,
   };
 
-  enum MenuItemStyle {
-    MENU_ITEM_STYLE_NONE,
-    MENU_ITEM_STYLE_CHECK,
-    MENU_ITEM_STYLE_RADIO,
-    MENU_ITEM_STYLE_SEPARATOR,
-  };
-
   enum CandidateWindowPosition {
     WINDOW_POS_CURSOR,
     WINDOW_POS_COMPOSITTION,
-  };
-
-  struct MenuItem {
-    MenuItem();
-    virtual ~MenuItem();
-
-    std::string id;
-    std::string label;
-    MenuItemStyle style;
-    bool visible;
-    bool enabled;
-    bool checked;
-
-    unsigned int modified;
-    std::vector<MenuItem> children;
   };
 
   struct UsageEntry {
@@ -138,15 +117,18 @@ class InputMethodEngine : public ::input_method::InputMethodEngineBase {
 
   // Set the list of items that appears in the language menu when this IME is
   // active.
-  bool SetMenuItems(const std::vector<MenuItem>& items);
+  bool SetMenuItems(
+      const std::vector<input_method::InputMethodManager::MenuItem>& items);
 
   // Update the state of the menu items.
-  bool UpdateMenuItems(const std::vector<MenuItem>& items);
+  bool UpdateMenuItems(
+      const std::vector<input_method::InputMethodManager::MenuItem>& items);
 
  private:
   // Converts MenuItem to InputMethodMenuItem.
-  void MenuItemToProperty(const MenuItem& item,
-                          ui::ime::InputMethodMenuItem* property);
+  void MenuItemToProperty(
+      const input_method::InputMethodManager::MenuItem& item,
+      ui::ime::InputMethodMenuItem* property);
 
   // Enables overriding input view page to Virtual Keyboard window.
   void EnableInputView();

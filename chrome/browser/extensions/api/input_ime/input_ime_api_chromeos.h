@@ -127,6 +127,24 @@ class InputImeHideInputViewFunction : public AsyncExtensionFunction {
   bool RunAsync() override;
 };
 
+class InputMethodPrivateNotifyImeMenuItemActivatedFunction
+    : public UIThreadExtensionFunction {
+ public:
+  InputMethodPrivateNotifyImeMenuItemActivatedFunction() {}
+
+ protected:
+  ~InputMethodPrivateNotifyImeMenuItemActivatedFunction() override {}
+
+  // UIThreadExtensionFunction:
+  ResponseAction Run() override;
+
+ private:
+  DECLARE_EXTENSION_FUNCTION("inputMethodPrivate.notifyImeMenuItemActivated",
+                             INPUTMETHODPRIVATE_NOTIFYIMEMENUITEMACTIVATED)
+  DISALLOW_COPY_AND_ASSIGN(
+      InputMethodPrivateNotifyImeMenuItemActivatedFunction);
+};
+
 class InputImeEventRouter : public InputImeEventRouterBase {
  public:
   explicit InputImeEventRouter(Profile* profile);

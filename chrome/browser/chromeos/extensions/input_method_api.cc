@@ -49,6 +49,8 @@ namespace OnImeMenuActivationChanged =
     extensions::api::input_method_private::OnImeMenuActivationChanged;
 namespace OnImeMenuListChanged =
     extensions::api::input_method_private::OnImeMenuListChanged;
+namespace OnImeMenuItemsChanged =
+    extensions::api::input_method_private::OnImeMenuItemsChanged;
 
 namespace {
 
@@ -236,6 +238,8 @@ InputMethodAPI::InputMethodAPI(content::BrowserContext* context)
       ->RegisterObserver(this, OnImeMenuActivationChanged::kEventName);
   EventRouter::Get(context_)
       ->RegisterObserver(this, OnImeMenuListChanged::kEventName);
+  EventRouter::Get(context_)
+      ->RegisterObserver(this, OnImeMenuItemsChanged::kEventName);
   ExtensionFunctionRegistry* registry =
       ExtensionFunctionRegistry::GetInstance();
   registry->RegisterFunction<InputMethodPrivateGetInputMethodConfigFunction>();
@@ -246,6 +250,8 @@ InputMethodAPI::InputMethodAPI(content::BrowserContext* context)
       ->RegisterFunction<InputMethodPrivateFetchAllDictionaryWordsFunction>();
   registry->RegisterFunction<InputMethodPrivateAddWordToDictionaryFunction>();
   registry->RegisterFunction<InputMethodPrivateGetEncryptSyncEnabledFunction>();
+  registry->RegisterFunction<
+      InputMethodPrivateNotifyImeMenuItemActivatedFunction>();
 }
 
 InputMethodAPI::~InputMethodAPI() {
@@ -280,7 +286,8 @@ void InputMethodAPI::OnListenerAdded(
       dictionary_event_router_->DispatchLoadedEventIfLoaded();
     }
   } else if ((details.event_name == OnImeMenuActivationChanged::kEventName ||
-              details.event_name == OnImeMenuListChanged::kEventName) &&
+              details.event_name == OnImeMenuListChanged::kEventName ||
+              details.event_name == OnImeMenuItemsChanged::kEventName) &&
              !ime_menu_event_router_.get()) {
     ime_menu_event_router_.reset(
         new chromeos::ExtensionImeMenuEventRouter(context_));

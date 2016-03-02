@@ -164,6 +164,9 @@ class InputMethodManagerImpl : public InputMethodManager,
   void ActivateInputMethodMenuItem(const std::string& key) override;
   bool IsISOLevel5ShiftUsedByCurrentInputMethod() const override;
   bool IsAltGrUsedByCurrentInputMethod() const override;
+  void NotifyImeMenuItemsChanged(
+      const std::string& engine_id,
+      const std::vector<InputMethodManager::MenuItem>& items) override;
 
   ImeKeyboard* GetImeKeyboard() override;
   InputMethodUtil* GetInputMethodUtil() override;

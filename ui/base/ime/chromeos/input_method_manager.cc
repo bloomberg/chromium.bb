@@ -16,6 +16,10 @@ InputMethodManager* g_input_method_manager = NULL;
 InputMethodManager::State::~State() {
 }
 
+InputMethodManager::MenuItem::MenuItem() {}
+
+InputMethodManager::MenuItem::~MenuItem() {}
+
 // static
 InputMethodManager* InputMethodManager::Get() {
   return g_input_method_manager;

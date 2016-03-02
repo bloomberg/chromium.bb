@@ -26,6 +26,10 @@ class ExtensionImeMenuEventRouter
   // input_method::InputMethodManager::ImeMenuObserver:
   void ImeMenuActivationChanged(bool activation) override;
   void ImeMenuListChanged() override;
+  void ImeMenuItemsChanged(
+      const std::string& engine_id,
+      const std::vector<input_method::InputMethodManager::MenuItem>& items)
+      override;
 
  private:
   content::BrowserContext* context_;

@@ -45,6 +45,28 @@ class UI_BASE_IME_EXPORT InputMethodManager {
     STATE_TERMINATING,
   };
 
+  enum MenuItemStyle {
+    MENU_ITEM_STYLE_NONE,
+    MENU_ITEM_STYLE_CHECK,
+    MENU_ITEM_STYLE_RADIO,
+    MENU_ITEM_STYLE_SEPARATOR,
+  };
+
+  struct MenuItem {
+    MenuItem();
+    virtual ~MenuItem();
+
+    std::string id;
+    std::string label;
+    MenuItemStyle style;
+    bool visible;
+    bool enabled;
+    bool checked;
+
+    unsigned int modified;
+    std::vector<MenuItem> children;
+  };
+
   class Observer {
    public:
     virtual ~Observer() {}
@@ -80,6 +102,10 @@ class UI_BASE_IME_EXPORT InputMethodManager {
     // Called when the current input method or the list of active input method
     // IDs is changed.
     virtual void ImeMenuListChanged() = 0;
+    // Called when the input.ime.setMenuItems or input.ime.updateMenuItems API
+    // is called.
+    virtual void ImeMenuItemsChanged(const std::string& engine_id,
+                                     const std::vector<MenuItem>& items) = 0;
 
     DISALLOW_ASSIGN(ImeMenuObserver);
   };
@@ -265,6 +291,12 @@ class UI_BASE_IME_EXPORT InputMethodManager {
 
   // Activates or deactivates the IME Menu.
   virtual void ImeMenuActivationChanged(bool is_active) = 0;
+
+  // Notifies the input.ime.setMenuItems or input.ime.updateMenuItems API is
+  // called to update the IME menu items.
+  virtual void NotifyImeMenuItemsChanged(
+      const std::string& engine_id,
+      const std::vector<MenuItem>& items) = 0;
 };
 
 }  // namespace input_method

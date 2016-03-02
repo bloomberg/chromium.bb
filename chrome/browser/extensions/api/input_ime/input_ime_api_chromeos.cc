@@ -38,6 +38,8 @@ namespace SetCandidateWindowProperties =
 namespace ClearComposition = extensions::api::input_ime::ClearComposition;
 namespace OnCompositionBoundsChanged =
     extensions::api::input_method_private::OnCompositionBoundsChanged;
+namespace NotifyImeMenuItemActivated =
+    extensions::api::input_method_private::NotifyImeMenuItemActivated;
 using ui::IMEEngineHandlerInterface;
 using input_method::InputMethodEngineBase;
 using chromeos::InputMethodEngine;
@@ -46,9 +48,11 @@ namespace {
 const char kErrorEngineNotAvailable[] = "Engine is not available";
 const char kErrorSetMenuItemsFail[] = "Could not create menu Items";
 const char kErrorUpdateMenuItemsFail[] = "Could not update menu Items";
+const char kErrorEngineNotActive[] = "The engine is not active.";
 
-void SetMenuItemToMenu(const input_ime::MenuItem& input,
-                       InputMethodEngine::MenuItem* out) {
+void SetMenuItemToMenu(
+    const input_ime::MenuItem& input,
+    chromeos::input_method::InputMethodManager::MenuItem* out) {
   out->modified = 0;
   out->id = input.id;
   if (input.label) {
@@ -58,7 +62,9 @@ void SetMenuItemToMenu(const input_ime::MenuItem& input,
 
   if (input.style != input_ime::MENU_ITEM_STYLE_NONE) {
     out->modified |= InputMethodEngine::MENU_ITEM_MODIFIED_STYLE;
-    out->style = static_cast<InputMethodEngine::MenuItemStyle>(input.style);
+    out->style =
+        static_cast<chromeos::input_method::InputMethodManager::MenuItemStyle>(
+            input.style);
   }
 
   if (input.visible)
@@ -553,10 +559,10 @@ bool InputImeSetMenuItemsFunction::RunSync() {
   }
 
   const std::vector<linked_ptr<input_ime::MenuItem> >& items = params.items;
-  std::vector<InputMethodEngine::MenuItem> items_out;
+  std::vector<chromeos::input_method::InputMethodManager::MenuItem> items_out;
 
   for (size_t i = 0; i < items.size(); ++i) {
-    items_out.push_back(InputMethodEngine::MenuItem());
+    items_out.push_back(chromeos::input_method::InputMethodManager::MenuItem());
     SetMenuItemToMenu(*items[i], &items_out.back());
   }
 
@@ -582,10 +588,10 @@ bool InputImeUpdateMenuItemsFunction::RunSync() {
   }
 
   const std::vector<linked_ptr<input_ime::MenuItem> >& items = params.items;
-  std::vector<InputMethodEngine::MenuItem> items_out;
+  std::vector<chromeos::input_method::InputMethodManager::MenuItem> items_out;
 
   for (size_t i = 0; i < items.size(); ++i) {
-    items_out.push_back(InputMethodEngine::MenuItem());
+    items_out.push_back(chromeos::input_method::InputMethodManager::MenuItem());
     SetMenuItemToMenu(*items[i], &items_out.back());
   }
 
@@ -613,6 +619,21 @@ bool InputImeDeleteSurroundingTextFunction::RunSync() {
   engine->DeleteSurroundingText(params.context_id, params.offset, params.length,
                                 &error_);
   return true;
+}
+
+ExtensionFunction::ResponseAction
+InputMethodPrivateNotifyImeMenuItemActivatedFunction::Run() {
+  InputMethodEngine* engine = GetActiveEngine(
+      Profile::FromBrowserContext(browser_context()), extension_id());
+  if (!engine)
+    return RespondNow(Error(kErrorEngineNotAvailable));
+
+  scoped_ptr<NotifyImeMenuItemActivated::Params> params(
+      NotifyImeMenuItemActivated::Params::Create(*args_));
+  if (params->engine_id != engine->GetActiveComponentId())
+    return RespondNow(Error(kErrorEngineNotActive));
+  engine->PropertyActivate(params->name);
+  return RespondNow(NoArguments());
 }
 
 void InputImeAPI::OnExtensionLoaded(content::BrowserContext* browser_context,

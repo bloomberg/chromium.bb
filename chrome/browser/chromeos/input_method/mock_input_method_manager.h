@@ -100,6 +100,9 @@ class MockInputMethodManager : public InputMethodManager {
   scoped_refptr<InputMethodManager::State> GetActiveIMEState() override;
   void SetState(scoped_refptr<InputMethodManager::State> state) override;
   void ImeMenuActivationChanged(bool is_active) override;
+  void NotifyImeMenuItemsChanged(
+      const std::string& engine_id,
+      const std::vector<InputMethodManager::MenuItem>& items) override;
 
   // Sets an input method ID which will be returned by GetCurrentInputMethod().
   void SetCurrentInputMethodId(const std::string& input_method_id);

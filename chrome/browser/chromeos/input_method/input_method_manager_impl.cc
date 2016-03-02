@@ -1186,5 +1186,12 @@ void InputMethodManagerImpl::MaybeInitializeCandidateWindowController() {
   candidate_window_controller_->AddObserver(this);
 }
 
+void InputMethodManagerImpl::NotifyImeMenuItemsChanged(
+    const std::string& engine_id,
+    const std::vector<InputMethodManager::MenuItem>& items) {
+  FOR_EACH_OBSERVER(InputMethodManager::ImeMenuObserver, ime_menu_observers_,
+                    ImeMenuItemsChanged(engine_id, items));
+}
+
 }  // namespace input_method
 }  // namespace chromeos
