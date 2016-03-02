@@ -348,7 +348,7 @@ TEST_F(TopControlsTest, MAYBE(FloatingPointSlippage))
     // This will result in a 20px scroll to the top controls so the show ratio
     // will be 30/50 == 0.6 which is not representible in a float. Make sure
     // that scroll still consumes the whole delta.
-    FloatSize remainingDelta = webView->topControls().scrollBy(FloatSize(0, -10));
+    FloatSize remainingDelta = webView->topControls().scrollBy(FloatSize(0, 10));
     EXPECT_EQ(0, remainingDelta.height());
 }
 

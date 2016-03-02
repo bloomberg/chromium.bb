@@ -67,7 +67,7 @@ internals.settings.setScrollAnimatorEnabled(false);
 
 var originalApplyScrolls = [];
 var originalDistributeScrolls = [];
-var deltas = [-85, -75, -65, -55, -45];
+var deltas = [85, 75, 65, 55, 45];
 
 var elements = [
   document.getElementById("d"),
@@ -109,7 +109,7 @@ function reset() {
 
 function applyDelta(d) {
   eventSender.gestureScrollBegin(10, 10);
-  eventSender.gestureScrollUpdate(0, d);
+  eventSender.gestureScrollUpdate(0, -d);
   eventSender.gestureScrollEnd(0, 0);
 }
 
@@ -136,13 +136,13 @@ if ('ScrollState' in window) {
     // Scroll five times, with five elements.
     var unapplied = [
       // d, the innermost element, never applies any scroll.
-      [-85, -75, -65, -55, -45],
+      [85, 75, 65, 55, 45],
       // c applies the first two scrolls, and then hits its scroll extents.
-      [0, 0, -65, -55, -45],
+      [0, 0, 65, 55, 45],
       // b doesn't scroll, and so leaves the same deltas unapplied as c.
-      [-65, -55, -45],
+      [65, 55, 45],
       // a hits its scroll extent on the second last step.
-      [0, 0, -45],
+      [0, 0, 45],
       // The scrollingElement performs the frame scroll.
       [0]];
 
@@ -158,10 +158,10 @@ if ('ScrollState' in window) {
 
     // Ensure that the document leaves scroll unapplied when appropriate.
     var documentUnapplied = document.scrollingElement.unappliedDeltaY;
-    applyDelta(-4000);
+    applyDelta(4000);
     assert_equals(documentUnapplied[documentUnapplied.length - 1], 0);
-    applyDelta(-4000);
-    assert_equals(documentUnapplied[documentUnapplied.length - 1], -4000);
+    applyDelta(4000);
+    assert_equals(documentUnapplied[documentUnapplied.length - 1], 4000);
   }, "Correct amount of delta is consumed.");
 
   test(function() {

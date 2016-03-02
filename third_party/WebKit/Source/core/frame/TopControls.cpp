@@ -38,7 +38,7 @@ void TopControls::scrollBegin()
 
 FloatSize TopControls::scrollBy(FloatSize pendingDelta)
 {
-    if ((m_permittedState == WebTopControlsShown && pendingDelta.height() < 0) || (m_permittedState == WebTopControlsHidden && pendingDelta.height() > 0))
+    if ((m_permittedState == WebTopControlsShown && pendingDelta.height() > 0) || (m_permittedState == WebTopControlsHidden && pendingDelta.height() < 0))
         return pendingDelta;
 
     if (m_height == 0)
@@ -51,7 +51,7 @@ FloatSize TopControls::scrollBy(FloatSize pendingDelta)
     // Compute scroll delta in viewport space by applying page scale
     m_accumulatedScrollDelta += pendingDelta.height() * pageScale;
 
-    float newContentOffset = m_baselineContentOffset + m_accumulatedScrollDelta;
+    float newContentOffset = m_baselineContentOffset - m_accumulatedScrollDelta;
 
     setShownRatio(newContentOffset / m_height);
 
@@ -64,7 +64,9 @@ FloatSize TopControls::scrollBy(FloatSize pendingDelta)
     newContentOffset = std::min(newContentOffset, m_height);
     newContentOffset = std::max(newContentOffset, 0.f);
 
-    FloatSize appliedDelta(0, (newContentOffset - oldOffset) / pageScale);
+    // We negate the difference because scrolling down (positive delta) causes
+    // top controls to hide (negative offset difference).
+    FloatSize appliedDelta(0, (oldOffset - newContentOffset) / pageScale);
     return pendingDelta - appliedDelta;
 }
 

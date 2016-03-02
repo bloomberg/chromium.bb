@@ -770,7 +770,6 @@ void LocalFrame::removeSpellingMarkersUnderWords(const Vector<String>& words)
     spellChecker().removeSpellingMarkersUnderWords(words);
 }
 
-// Returns true if a scroll occurred.
 ScrollResult LocalFrame::applyScrollDelta(ScrollGranularity granularity, const FloatSize& delta, bool isScrollBegin)
 {
     if (isScrollBegin)
@@ -788,14 +787,7 @@ ScrollResult LocalFrame::applyScrollDelta(ScrollGranularity granularity, const F
     if (remainingDelta.isZero())
         return ScrollResult(delta.width(), delta.height(), 0.0f, 0.0f);
 
-    // TODO(bokan): The delta coming in here is the GestureEvent delta, which is
-    // positive if the user scrolls up or left. For scrolling, a positive delta
-    // implies downward or rightward scrolling. This negation should happen up
-    // in the call chain.
-    FloatSize normalizedDelta = remainingDelta.scaledBy(-1);
-
-    ScrollResult result = view()->scrollableArea()->userScroll(granularity, normalizedDelta);
-
+    ScrollResult result = view()->scrollableArea()->userScroll(granularity, remainingDelta);
     result.didScrollX = result.didScrollX || (remainingDelta.width() != delta.width());
     result.didScrollY = result.didScrollY || (remainingDelta.height() != delta.height());
 
@@ -816,7 +808,7 @@ bool LocalFrame::shouldScrollTopControls(const FloatSize& delta) const
         toDoubleSize(view()->maximumScrollPositionDouble());
     DoublePoint scrollPosition = host()->visualViewport()
         .visibleRectInDocument().location();
-    return delta.height() > 0 || scrollPosition.y() < maximumScrollPosition.y();
+    return delta.height() < 0 || scrollPosition.y() < maximumScrollPosition.y();
 }
 
 String LocalFrame::localLayerTreeAsText(unsigned flags) const

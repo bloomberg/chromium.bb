@@ -2380,10 +2380,12 @@ WebInputEventResult EventHandler::handleGestureScrollUpdate(const PlatformGestur
 {
     ASSERT(gestureEvent.type() == PlatformEvent::GestureScrollUpdate);
 
-    // TODO(bokan): This delta is specific to the event which is positive up and
-    // to the left. Since we're passing it into a bunch of scrolling code below,
-    // it should probably be inverted here.
-    FloatSize delta(gestureEvent.deltaX(), gestureEvent.deltaY());
+    // Negate the deltas since the gesture event stores finger movement and
+    // scrolling occurs in the direction opposite the finger's movement
+    // direction. e.g. Finger moving up has negative event delta but causes the
+    // page to scroll down causing positive scroll delta.
+    FloatSize delta(-gestureEvent.deltaX(), -gestureEvent.deltaY());
+    FloatSize velocity(-gestureEvent.velocityX(), -gestureEvent.velocityY());
     if (delta.isZero())
         return WebInputEventResult::NotHandled;
 
@@ -2417,10 +2419,10 @@ WebInputEventResult EventHandler::handleGestureScrollUpdate(const PlatformGestur
         bool scrolled = false;
         if (handleScrollCustomization) {
             OwnPtr<ScrollStateData> scrollStateData = adoptPtr(new ScrollStateData());
-            scrollStateData->delta_x = gestureEvent.deltaX();
-            scrollStateData->delta_y = gestureEvent.deltaY();
-            scrollStateData->velocity_x = gestureEvent.velocityX();
-            scrollStateData->velocity_y = gestureEvent.velocityY();
+            scrollStateData->delta_x = delta.width();
+            scrollStateData->delta_y = delta.height();
+            scrollStateData->velocity_x = velocity.width();
+            scrollStateData->velocity_y = velocity.height();
             scrollStateData->should_propagate = !gestureEvent.preventPropagation();
             scrollStateData->is_in_inertial_phase = gestureEvent.inertial();
             scrollStateData->from_user_input = true;
@@ -2437,15 +2439,14 @@ WebInputEventResult EventHandler::handleGestureScrollUpdate(const PlatformGestur
             customizedScroll(*node, *scrollState);
             m_previousGestureScrolledNode = scrollState->currentNativeScrollingElement();
             m_deltaConsumedForScrollSequence = scrollState->deltaConsumedForScrollSequence();
-            scrolled = scrollState->deltaX() != gestureEvent.deltaX()
-                || scrollState->deltaY() != gestureEvent.deltaY();
+            scrolled = scrollState->deltaX() != delta.width()
+                || scrollState->deltaY() != delta.height();
         } else {
             Node* stopNode = nullptr;
             if (gestureEvent.preventPropagation())
                 stopNode = m_previousGestureScrolledNode.get();
 
-            // Scale by -1 because the delta is the GestureEvent delta (see TODO at top of function).
-            ScrollResult result = physicalScroll(granularity, delta.scaledBy(-1), node, &stopNode);
+            ScrollResult result = physicalScroll(granularity, delta, node, &stopNode);
 
             scrolled = result.didScroll();
 
@@ -2467,7 +2468,6 @@ WebInputEventResult EventHandler::handleGestureScrollUpdate(const PlatformGestur
     ScrollResult scrollResult = m_frame->applyScrollDelta(granularity, delta, false);
     if (m_frame->isMainFrame()) {
         FloatPoint position = FloatPoint(gestureEvent.position().x(), gestureEvent.position().y());
-        FloatSize velocity = FloatSize(gestureEvent.velocityX(), gestureEvent.velocityY());
         handleOverscroll(scrollResult, position, velocity);
     }
     if (scrollResult.didScroll()) {

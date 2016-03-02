@@ -569,14 +569,12 @@ void Element::nativeApplyScroll(ScrollState& scrollState)
         LayoutBoxItem curBox = LayoutBoxItem(toLayoutBox(layoutObject())).enclosingBox();
         // FIXME: Native scrollers should only consume the scroll they
         // apply. See crbug.com/457765.
-        // TODO(bokan): The deltas here are the screen-space touchpoint deltas
-        // which are inverted relative to scrolling deltas.
-        if (deltaX && curBox.scroll(ScrollByPrecisePixel, FloatSize(-deltaX, 0)).didScrollX) {
+        if (deltaX && curBox.scroll(ScrollByPrecisePixel, FloatSize(deltaX, 0)).didScrollX) {
             scrollState.consumeDeltaNative(scrollState.deltaX(), 0);
             scrolled = true;
         }
 
-        if (deltaY && curBox.scroll(ScrollByPrecisePixel, FloatSize(0, -deltaY)).didScrollY) {
+        if (deltaY && curBox.scroll(ScrollByPrecisePixel, FloatSize(0, deltaY)).didScrollY) {
             scrollState.consumeDeltaNative(0, scrollState.deltaY());
             scrolled = true;
         }
