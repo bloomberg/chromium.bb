@@ -10,6 +10,19 @@ function test()
     var formattedStyle;
     var unformattedStyle;
 
+
+    InspectorTest.cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetChanged, onStyleSheetChanged, this);
+
+    function onStyleSheetChanged(event)
+    {
+        if (!event.data || !event.data.edit)
+            return;
+        if (formattedStyle)
+            formattedStyle.rebase(event.data.edit);
+        if (unformattedStyle)
+            unformattedStyle.rebase(event.data.edit);
+    }
+
     InspectorTest.runTestSuite([
         function initFormattedStyle(next)
         {

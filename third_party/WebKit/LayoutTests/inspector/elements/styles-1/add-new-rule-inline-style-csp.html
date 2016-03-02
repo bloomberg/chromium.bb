@@ -11,7 +11,6 @@ function test()
     var rule;
     var matchedStyles;
 
-
     InspectorTest.runTestSuite([
         function testSetUp(next) {
             InspectorTest.selectNodeAndWaitForStyles("inspected", next);
@@ -80,6 +79,12 @@ function test()
         {
             var inlineStyle;
             InspectorTest.cssModel.inlineStylesPromise(nodeId).then(stylesCallback);
+            InspectorTest.cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetChanged, onStyleSheetChanged);
+            function onStyleSheetChanged(event)
+            {
+                if (event.data && event.data.edit)
+                    inlineStyle.rebase(event.data.edit);
+            }
 
             function stylesCallback(inlineStyleResult)
             {

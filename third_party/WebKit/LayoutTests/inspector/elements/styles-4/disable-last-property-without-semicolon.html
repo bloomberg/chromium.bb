@@ -9,6 +9,15 @@ function test()
 {
     var formattedStyle;
 
+    InspectorTest.cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetChanged, onStyleSheetChanged, this);
+
+    function onStyleSheetChanged(event)
+    {
+        if (!event.data || !event.data.edit)
+            return;
+        formattedStyle.rebase(event.data.edit);
+    }
+
     InspectorTest.runTestSuite([
         function initFormattedStyle(next)
         {

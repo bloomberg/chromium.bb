@@ -12,6 +12,20 @@ function test()
     var rule;
     var matchedStyleResult;
 
+    InspectorTest.cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetChanged, onStyleSheetChanged, this);
+
+    function onStyleSheetChanged(event)
+    {
+        if (!event.data || !event.data.edit)
+            return;
+        for (var style of matchedStyleResult.nodeStyles()) {
+            if (style.parentRule)
+                style.parentRule.rebase(event.data.edit);
+            else
+                style.rebase(event.data.edit);
+        }
+    }
+
     InspectorTest.runTestSuite([
         function testSetUp(next) {
             InspectorTest.selectNodeAndWaitForStyles("inspected", selectCallback);
@@ -32,7 +46,8 @@ function test()
                     return;
                 }
 
-                InspectorTest.cssModel.matchedStylesPromise(nodeId, false, false).then(callback);
+                InspectorTest.cssModel.matchedStylesPromise(nodeId, false, false)
+                    .then(callback);
             }
 
             function callback(matchedResult)
