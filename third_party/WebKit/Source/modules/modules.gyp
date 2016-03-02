@@ -97,7 +97,6 @@
     'target_name': 'modules_testing',
     'type': 'static_library',
     'dependencies': [
-      'modules',
       '../config.gyp:config',
     ],
     'defines': [

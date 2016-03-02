@@ -33,15 +33,13 @@
 
 #include "platform/heap/Handle.h"
 #include "public/web/WebSettings.h"
-#include "web/WebExport.h"
-#include "wtf/Compiler.h"
 
 namespace blink {
 
 class DevToolsEmulator;
 class Settings;
 
-class WEB_EXPORT WebSettingsImpl final : WTF_NON_EXPORTED_BASE(public WebSettings) {
+class WebSettingsImpl final : public WebSettings {
 public:
     WebSettingsImpl(Settings*, DevToolsEmulator*);
     virtual ~WebSettingsImpl() { }

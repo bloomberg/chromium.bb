@@ -48,7 +48,6 @@
             'dependencies': [
                 '../../public/blink.gyp:blink',
                 '../config.gyp:unittest_config',
-                '../modules/modules.gyp:modules',
                 '../platform/blink_platform_tests.gyp:blink_platform_test_support',
                 '../wtf/wtf.gyp:wtf',
                 '../wtf/wtf_tests.gyp:wtf_unittest_helpers',
@@ -66,29 +65,27 @@
             ],
             'sources': [
                 '../web/tests/RunAllTests.cpp',
-                '<@(bindings_unittest_files)',
-                '<@(core_unittest_files)',
-                '<@(modules_unittest_files)',
-                '<@(platform_web_unittest_files)',
-                '<@(web_unittest_files)',
             ],
             'include_dirs': [
                 '../../public/web',
                 '../web',
                 'src',
             ],
-            'defines': [
-                'BLINK_IMPLEMENTATION=1',
-                'INSIDE_BLINK',
-            ],
             'conditions': [
                 ['component!="shared_library"', {
                     'dependencies': [
                         '../core/core.gyp:webcore',
                     ],
-                }, {
-                    'dependencies': [
-                        '../core/core.gyp:webcore_shared',
+                    'defines': [
+                        'BLINK_IMPLEMENTATION=1',
+                        'INSIDE_BLINK',
+                    ],
+                    'sources': [
+                        '<@(bindings_unittest_files)',
+                        '<@(core_unittest_files)',
+                        '<@(modules_unittest_files)',
+                        '<@(platform_web_unittest_files)',
+                        '<@(web_unittest_files)',
                     ],
                 }],
                 ['OS=="win" and component!="shared_library"', {

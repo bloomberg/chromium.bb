@@ -65,10 +65,18 @@
         #define BLINK_PLATFORM_EXPORT __attribute__((visibility("default")))
         #define BLINK_COMMON_EXPORT __attribute__((visibility("default")))
     #endif
+
+    #if BLINK_IMPLEMENTATION && !BLINK_CORE_IMPLEMENTATION && !BLINK_MODULES_IMPLEMENTATION
+        #define BLINK_WEB_IMPLEMENTATION 1
+    #else
+        #define BLINK_WEB_IMPLEMENTATION 0
+    #endif
 #else // defined(COMPONENT_BUILD)
     #define BLINK_EXPORT
     #define BLINK_PLATFORM_EXPORT
     #define BLINK_COMMON_EXPORT
+
+    #define BLINK_WEB_IMPLEMENTATION 0
 #endif
 
 

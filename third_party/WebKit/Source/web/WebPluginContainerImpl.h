@@ -36,8 +36,7 @@
 #include "core/plugins/PluginView.h"
 #include "platform/Widget.h"
 #include "public/web/WebPluginContainer.h"
-#include "web/WebExport.h"
-#include "wtf/Compiler.h"
+
 #include "wtf/OwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/Vector.h"
@@ -61,7 +60,7 @@ class Widget;
 struct WebPrintParams;
 struct WebPrintPresetOptions;
 
-class WEB_EXPORT WebPluginContainerImpl final : public PluginView, WTF_NON_EXPORTED_BASE(public WebPluginContainer), public LocalFrameLifecycleObserver {
+class WebPluginContainerImpl final : public PluginView, public WebPluginContainer, public LocalFrameLifecycleObserver {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(WebPluginContainerImpl);
     WILL_BE_USING_PRE_FINALIZER(WebPluginContainerImpl, dispose);
 public:

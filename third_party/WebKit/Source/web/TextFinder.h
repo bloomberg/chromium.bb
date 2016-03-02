@@ -38,7 +38,6 @@
 #include "public/platform/WebFloatRect.h"
 #include "public/platform/WebRect.h"
 #include "public/web/WebFindOptions.h"
-#include "web/WebExport.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/Vector.h"
@@ -51,7 +50,7 @@ class WebLocalFrameImpl;
 
 template <typename T> class WebVector;
 
-class WEB_EXPORT TextFinder final : public NoBaseWillBeGarbageCollectedFinalized<TextFinder> {
+class TextFinder final : public NoBaseWillBeGarbageCollectedFinalized<TextFinder> {
 public:
     static PassOwnPtrWillBeRawPtr<TextFinder> create(WebLocalFrameImpl& ownerFrame);
 

@@ -38,7 +38,6 @@
 #include "public/web/WebLocalFrame.h"
 #include "web/FrameLoaderClientImpl.h"
 #include "web/UserMediaClientImpl.h"
-#include "web/WebExport.h"
 #include "web/WebFrameImplBase.h"
 #include "wtf/Compiler.h"
 #include "wtf/OwnPtr.h"
@@ -74,7 +73,7 @@ struct WebPrintParams;
 template <typename T> class WebVector;
 
 // Implementation of WebFrame, note that this is a reference counted object.
-class WEB_EXPORT WebLocalFrameImpl final : public WebFrameImplBase, WTF_NON_EXPORTED_BASE(public WebLocalFrame) {
+class WebLocalFrameImpl final : public WebFrameImplBase, public WebLocalFrame {
 public:
     // WebFrame methods:
     void close() override;

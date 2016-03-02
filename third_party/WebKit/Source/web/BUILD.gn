@@ -39,12 +39,33 @@ component("web") {
     "//third_party/WebKit/Source:non_test_config",
   ]
 
-  defines = [ "BLINK_WEB_IMPLEMENTATION=1" ]
-
   sources = web_gypi.web_files
 
   if (!use_default_render_theme) {
     sources -= [ "default/WebRenderTheme.cpp" ]
+  }
+
+  if (is_component_build) {
+    deps += [
+      "//base/test:test_support",
+      "//testing/gmock",
+      "//testing/gtest",
+      "//third_party/WebKit/Source/core:testing",
+      "//third_party/WebKit/Source/modules:modules_testing",
+      "//third_party/WebKit/Source/platform:test_support",
+      "//third_party/WebKit/Source/wtf:test_support",
+    ]
+
+    configs -= [ "//third_party/WebKit/Source:non_test_config" ]
+
+    sources += web_unittest_files
+    sources += bindings_unittest_files
+    sources += core_unittest_files
+    sources += modules_unittest_files
+    sources += platform_web_unittest_files
+
+    sources += [ "WebTestingSupport.cpp" ]
+    include_dirs += [ "$root_gen_dir/blink" ]
   }
 
   if (is_android) {
@@ -61,21 +82,23 @@ component("web") {
 
 # GYP version: WebKit/Source/web/web.gyp:blink_web_test_support
 source_set("test_support") {
-  deps = [
-    "//skia",
-    "//third_party/WebKit/Source/core:testing",
-    "//third_party/WebKit/Source/modules:modules_testing",
-    "//third_party/WebKit/Source/wtf",
-    "//v8",
-  ]
+  if (!is_component_build) {
+    deps = [
+      "//skia",
+      "//third_party/WebKit/Source/core:testing",
+      "//third_party/WebKit/Source/modules:modules_testing",
+      "//third_party/WebKit/Source/wtf",
+      "//v8",
+    ]
 
-  sources = [
-    "WebTestingSupport.cpp",
-  ]
+    sources = [
+      "WebTestingSupport.cpp",
+    ]
 
-  configs += [ "//third_party/WebKit/Source:config" ]
+    configs += [ "//third_party/WebKit/Source:config" ]
 
-  include_dirs = [ "$root_gen_dir/blink" ]
+    include_dirs = [ "$root_gen_dir/blink" ]
+  }
 }
 
 group("webkit_unit_tests_data") {
@@ -106,8 +129,6 @@ test("webkit_unit_tests") {
     "//content/test:test_support",
     "//testing/gmock",
     "//testing/gtest",
-    "//third_party/WebKit/Source/core",
-    "//third_party/WebKit/Source/modules",
     "//third_party/WebKit/Source/platform:test_support",
     "//third_party/WebKit/Source/wtf",
     "//third_party/WebKit/Source/wtf:test_support",
@@ -125,16 +146,20 @@ test("webkit_unit_tests") {
   sources = [
     "tests/RunAllTests.cpp",
   ]
-  sources += web_unittest_files
-  sources += bindings_unittest_files
-  sources += core_unittest_files
-  sources += modules_unittest_files
-  sources += platform_web_unittest_files
 
-  configs += [
-    "//third_party/WebKit/Source:config",
-    "//third_party/WebKit/Source:inside_blink",
-  ]
+  configs += [ "//third_party/WebKit/Source:config" ]
+
+  if (!is_component_build) {
+    deps += [ "//third_party/WebKit/Source/core" ]
+
+    configs += [ "//third_party/WebKit/Source:inside_blink" ]
+
+    sources += web_unittest_files
+    sources += bindings_unittest_files
+    sources += core_unittest_files
+    sources += modules_unittest_files
+    sources += platform_web_unittest_files
+  }
 
   if (is_android) {
     deps += [

@@ -37,8 +37,6 @@
 #include "platform/PlatformTouchEvent.h"
 #include "platform/PlatformWheelEvent.h"
 #include "public/web/WebInputEvent.h"
-#include "web/WebExport.h"
-#include "wtf/Compiler.h"
 
 namespace blink {
 
@@ -58,22 +56,22 @@ class Widget;
 // These classes are used to convert from WebInputEvent subclasses to
 // corresponding WebCore events.
 
-class WEB_EXPORT PlatformMouseEventBuilder : WTF_NON_EXPORTED_BASE(public PlatformMouseEvent) {
+class PlatformMouseEventBuilder : public PlatformMouseEvent {
 public:
     PlatformMouseEventBuilder(Widget*, const WebMouseEvent&);
 };
 
-class WEB_EXPORT PlatformWheelEventBuilder : WTF_NON_EXPORTED_BASE(public PlatformWheelEvent) {
+class PlatformWheelEventBuilder : public PlatformWheelEvent {
 public:
     PlatformWheelEventBuilder(Widget*, const WebMouseWheelEvent&);
 };
 
-class WEB_EXPORT PlatformGestureEventBuilder : WTF_NON_EXPORTED_BASE(public PlatformGestureEvent) {
+class PlatformGestureEventBuilder : public PlatformGestureEvent {
 public:
     PlatformGestureEventBuilder(Widget*, const WebGestureEvent&);
 };
 
-class WEB_EXPORT PlatformKeyboardEventBuilder : WTF_NON_EXPORTED_BASE(public PlatformKeyboardEvent) {
+class PlatformKeyboardEventBuilder : public PlatformKeyboardEvent {
 public:
     PlatformKeyboardEventBuilder(const WebKeyboardEvent&);
     void setKeyType(EventType);
@@ -81,18 +79,18 @@ public:
 };
 
 // Converts a WebTouchPoint to a PlatformTouchPoint.
-class WEB_EXPORT PlatformTouchPointBuilder : WTF_NON_EXPORTED_BASE(public PlatformTouchPoint) {
+class PlatformTouchPointBuilder : public PlatformTouchPoint {
 public:
     PlatformTouchPointBuilder(Widget*, const WebTouchPoint&);
 };
 
 // Converts a WebTouchEvent to a PlatformTouchEvent.
-class WEB_EXPORT PlatformTouchEventBuilder : WTF_NON_EXPORTED_BASE(public PlatformTouchEvent) {
+class PlatformTouchEventBuilder : public PlatformTouchEvent {
 public:
     PlatformTouchEventBuilder(Widget*, const WebTouchEvent&);
 };
 
-class WEB_EXPORT WebMouseEventBuilder : WTF_NON_EXPORTED_BASE(public WebMouseEvent) {
+class WebMouseEventBuilder : public WebMouseEvent {
 public:
     // Converts a MouseEvent to a corresponding WebMouseEvent.
     // NOTE: This is only implemented for mousemove, mouseover, mouseout,
@@ -104,7 +102,7 @@ public:
 
 // Converts a WheelEvent to a corresponding WebMouseWheelEvent.
 // If the event mapping fails, the event type will be set to Undefined.
-class WEB_EXPORT WebMouseWheelEventBuilder : WTF_NON_EXPORTED_BASE(public WebMouseWheelEvent) {
+class WebMouseWheelEventBuilder : public WebMouseWheelEvent {
 public:
     WebMouseWheelEventBuilder(const Widget*, const LayoutObject*, const WheelEvent&);
 };
@@ -114,7 +112,7 @@ public:
 // NOTE: For KeyboardEvent, this is only implemented for keydown,
 // keyup, and keypress. If the event mapping fails, the event type will be set
 // to Undefined.
-class WEB_EXPORT WebKeyboardEventBuilder : WTF_NON_EXPORTED_BASE(public WebKeyboardEvent) {
+class WebKeyboardEventBuilder : public WebKeyboardEvent {
 public:
     WebKeyboardEventBuilder(const KeyboardEvent&);
 };
@@ -122,14 +120,14 @@ public:
 // Converts a TouchEvent to a corresponding WebTouchEvent.
 // NOTE: WebTouchEvents have a cap on the number of WebTouchPoints. Any points
 // exceeding that cap will be dropped.
-class WEB_EXPORT WebTouchEventBuilder : WTF_NON_EXPORTED_BASE(public WebTouchEvent) {
+class WebTouchEventBuilder : public WebTouchEvent {
 public:
     WebTouchEventBuilder(const LayoutObject*, const TouchEvent&);
 };
 
 // Converts GestureEvent to a corresponding WebGestureEvent.
 // NOTE: If event mapping fails, the type will be set to Undefined.
-class WEB_EXPORT WebGestureEventBuilder : WTF_NON_EXPORTED_BASE(public WebGestureEvent) {
+class WebGestureEventBuilder : public WebGestureEvent {
 public:
     WebGestureEventBuilder(const LayoutObject*, const GestureEvent&);
 };

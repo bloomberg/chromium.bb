@@ -57,7 +57,6 @@
                 '../config.gyp:config',
                 '../platform/blink_platform.gyp:blink_common',
                 '../modules/modules.gyp:modules',
-                '<(DEPTH)/base/base.gyp:base',
                 '<(DEPTH)/cc/cc.gyp:cc',
                 '<(DEPTH)/skia/skia.gyp:skia',
                 '<(angle_path)/src/angle.gyp:translator',
@@ -77,7 +76,6 @@
                 '<(DEPTH)/third_party/skia/include/utils',
             ],
             'defines': [
-                'BLINK_WEB_IMPLEMENTATION=1',
                 'BLINK_IMPLEMENTATION=1',
                 'INSIDE_BLINK',
             ],
@@ -88,10 +86,16 @@
                 ['component=="shared_library"', {
                     'dependencies': [
                         '../core/core.gyp:webcore_shared',
+                        '../core/core.gyp:webcore_testing',
+                        '../modules/modules.gyp:modules_testing',
                         '../platform/blink_platform.gyp:blink_common',
                         '../platform/blink_platform.gyp:blink_platform',
+                        '../platform/blink_platform_tests.gyp:blink_platform_test_support',
                         '../wtf/wtf.gyp:wtf',
                         '../wtf/wtf_tests.gyp:wtf_unittest_helpers',
+                        '<(DEPTH)/base/base.gyp:test_support_base',
+                        '<(DEPTH)/testing/gmock.gyp:gmock',
+                        '<(DEPTH)/testing/gtest.gyp:gtest',
                         '<(DEPTH)/third_party/icu/icu.gyp:icuuc',
                         '<(DEPTH)/third_party/icu/icu.gyp:icui18n',
                         '<(DEPTH)/third_party/libpng/libpng.gyp:libpng',
@@ -106,6 +110,25 @@
                     'export_dependent_settings': [
                         '<(DEPTH)/url/url.gyp:url_lib',
                         '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
+                    ],
+                    'variables': {
+                      'clang_warning_flags_unset': [
+                        # FIXME: It would be nice to enable this in shared builds too,
+                        # but the test files have global constructors from the GTEST macro
+                        # and we pull in the test files into the blink_web target in the
+                        # shared build.
+                        '-Wglobal-constructors',
+                      ],
+                    },
+                    'sources': [
+                        # Compile Blink unittest files into blink_web.dll in component build mode
+                        '<@(bindings_unittest_files)',
+                        '<@(core_unittest_files)',
+                        '<@(modules_unittest_files)',
+                        # FIXME: the next line should not be needed. We prefer to run these unit tests outside blink_web.dll.
+                        '<@(platform_web_unittest_files)',
+                        '<@(web_unittest_files)',
+                        'WebTestingSupport.cpp',
                     ],
                     'msvs_settings': {
                       'VCLinkerTool': {
@@ -174,31 +197,26 @@
         {
             # GN version: //third_party/WebKit/Source/web:test_support
             'target_name': 'blink_web_test_support',
-            'type': 'static_library',
-            'dependencies': [
-                '../config.gyp:config',
-                '../core/core.gyp:webcore_testing',
-                '../modules/modules.gyp:modules_testing',
-                '../wtf/wtf.gyp:wtf',
-                '<(DEPTH)/skia/skia.gyp:skia',
-                '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
-            ],
-            'include_dirs': [
-                '../../',
-                '<(SHARED_INTERMEDIATE_DIR)/blink',  # gen/blink
-            ],
-            'sources': [
-                'WebTestingSupport.cpp',
-            ],
             'conditions': [
-                ['component!="shared_library"', {
-                    'dependencies': [
-                        '../core/core.gyp:webcore',
-                        '../core/core.gyp:webcore_generated',
-                    ],
+                ['component=="shared_library"', {
+                    'type': 'none',
                 }, {
+                    'type': 'static_library',
                     'dependencies': [
-                        '../core/core.gyp:webcore_shared',
+                        '../config.gyp:config',
+                        '../core/core.gyp:webcore_generated',
+                        '../core/core.gyp:webcore_testing',
+                        '../modules/modules.gyp:modules_testing',
+                        '../wtf/wtf.gyp:wtf',
+                        '<(DEPTH)/skia/skia.gyp:skia',
+                        '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
+                    ],
+                    'include_dirs': [
+                        '../../',
+                        '<(SHARED_INTERMEDIATE_DIR)/blink',  # gen/blink
+                    ],
+                    'sources': [
+                        'WebTestingSupport.cpp',
                     ],
                 }],
             ],

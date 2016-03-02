@@ -83,7 +83,6 @@ source_set("modules_testing") {
 
   deps = [
     "//third_party/WebKit/Source/core",
-    "//third_party/WebKit/Source/modules",
   ]
 }
 

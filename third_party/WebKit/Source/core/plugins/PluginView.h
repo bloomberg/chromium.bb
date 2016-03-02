@@ -27,7 +27,6 @@
 #ifndef PluginView_h
 #define PluginView_h
 
-#include "core/CoreExport.h"
 #include "platform/Widget.h"
 #include "platform/scroll/ScrollTypes.h"
 #include "wtf/text/WTFString.h"
@@ -40,7 +39,7 @@ namespace blink {
 class ResourceError;
 class ResourceResponse;
 
-class CORE_EXPORT PluginView : public Widget {
+class PluginView : public Widget {
 public:
     bool isPluginView() const final { return true; }
 
