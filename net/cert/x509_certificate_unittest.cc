@@ -17,6 +17,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/test_data_directory.h"
 #include "net/cert/asn1_util.h"
+#include "net/cert/x509_util_nss.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_certificate_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -506,6 +507,29 @@ TEST(X509CertificateTest, ParseSubjectAltNames) {
   // the subject commonName.
   EXPECT_EQ("127.0.0.1", san_cert->subject().common_name);
 }
+
+#if defined(USE_NSS_CERTS)
+TEST(X509CertificateTest, ParseClientSubjectAltNames) {
+  base::FilePath certs_dir = GetTestCertsDirectory();
+
+  // This cert contains one rfc822Name field, and one Microsoft UPN
+  // otherName field.
+  scoped_refptr<X509Certificate> san_cert =
+      ImportCertFromFile(certs_dir, "client_3.pem");
+  ASSERT_NE(static_cast<X509Certificate*>(NULL), san_cert.get());
+
+  std::vector<std::string> rfc822_names;
+  net::x509_util::GetRFC822SubjectAltNames(san_cert->os_cert_handle(),
+                                           &rfc822_names);
+  ASSERT_EQ(1U, rfc822_names.size());
+  EXPECT_EQ("santest@example.com", rfc822_names[0]);
+
+  std::vector<std::string> upn_names;
+  net::x509_util::GetUPNSubjectAltNames(san_cert->os_cert_handle(), &upn_names);
+  ASSERT_EQ(1U, upn_names.size());
+  EXPECT_EQ("santest@ad.corp.example.com", upn_names[0]);
+}
+#endif  // defined(USE_NSS_CERTS)
 
 TEST(X509CertificateTest, ExtractSPKIFromDERCert) {
   base::FilePath certs_dir = GetTestCertsDirectory();
