@@ -9,8 +9,6 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "base/posix/eintr_wrapper.h"
-#include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/base/sockaddr_storage.h"
 #include "net/socket/socket_posix.h"
@@ -34,8 +32,10 @@ UnixDomainClientSocket::~UnixDomainClientSocket() {
 bool UnixDomainClientSocket::FillAddress(const std::string& socket_path,
                                          bool use_abstract_namespace,
                                          SockaddrStorage* address) {
-  struct sockaddr_un* socket_addr =
-      reinterpret_cast<struct sockaddr_un*>(address->addr);
+  // Caller should provide a non-empty path for the socket address.
+  if (socket_path.empty())
+    return false;
+
   size_t path_max = address->addr_len - offsetof(struct sockaddr_un, sun_path);
   // Non abstract namespace pathname should be null-terminated. Abstract
   // namespace pathname must start with '\0'. So, the size is always greater
@@ -44,6 +44,8 @@ bool UnixDomainClientSocket::FillAddress(const std::string& socket_path,
   if (path_size > path_max)
     return false;
 
+  struct sockaddr_un* socket_addr =
+      reinterpret_cast<struct sockaddr_un*>(address->addr);
   memset(socket_addr, 0, address->addr_len);
   socket_addr->sun_family = AF_UNIX;
   address->addr_len = path_size + offsetof(struct sockaddr_un, sun_path);
@@ -67,9 +69,6 @@ bool UnixDomainClientSocket::FillAddress(const std::string& socket_path,
 
 int UnixDomainClientSocket::Connect(const CompletionCallback& callback) {
   DCHECK(!socket_);
-
-  if (socket_path_.empty())
-    return ERR_ADDRESS_INVALID;
 
   SockaddrStorage address;
   if (!FillAddress(socket_path_, use_abstract_namespace_, &address))
