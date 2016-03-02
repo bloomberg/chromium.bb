@@ -38,10 +38,11 @@ ShelfLayout::~ShelfLayout() {}
 
 void ShelfLayout::LayoutWindow(mus::Window* window) {
   // TODO(msw): Support additional shelf alignments and RTL UI.
-  const gfx::Size size = GetWindowPreferredSize(window);
+  gfx::Size size = GetWindowPreferredSize(window);
   const int y = owner()->bounds().height() - size.height();
   const mojom::AshWindowType ash_window_type = GetAshWindowType(window);
   if (ash_window_type == mojom::AshWindowType::SHELF) {
+    size.set_width(owner()->bounds().width());
     window->SetBounds(gfx::Rect(0, y, size.width(), size.height()));
   } else if (ash_window_type == mojom::AshWindowType::STATUS_AREA) {
     window->SetBounds(gfx::Rect(owner()->bounds().width() - size.width(), y,
