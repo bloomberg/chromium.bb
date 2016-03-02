@@ -61,14 +61,12 @@ class MediaGalleriesPermissionController
   base::string16 GetHeader() const override;
   base::string16 GetSubtext() const override;
   bool IsAcceptAllowed() const override;
-  bool ShouldShowFolderViewer(const Entry& entry) const override;
   std::vector<base::string16> GetSectionHeaders() const override;
   Entries GetSectionEntries(size_t index) const override;
   // Auxiliary button for this dialog is the 'Add Folder' button.
   base::string16 GetAuxiliaryButtonText() const override;
   void DidClickAuxiliaryButton() override;
   void DidToggleEntry(GalleryDialogId gallery_id, bool selected) override;
-  void DidClickOpenFolderViewer(GalleryDialogId gallery_id) override;
   void DidForgetEntry(GalleryDialogId gallery_id) override;
   base::string16 GetAcceptButtonText() const override;
   void DialogFinished(bool accepted) override;

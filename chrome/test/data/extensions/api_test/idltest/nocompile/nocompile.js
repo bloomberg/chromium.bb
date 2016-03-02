@@ -4,7 +4,7 @@
 
 chrome.test.runTests([
 
-  function functionDefinition() {
+  function nocompileFunc() {
     chrome.test.assertEq("function", typeof(chrome.idltest.nocompileFunc));
     chrome.test.succeed();
   }

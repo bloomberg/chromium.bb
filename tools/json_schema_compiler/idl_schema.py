@@ -149,6 +149,8 @@ class Dictionary(object):
     result = {'id': self.node.GetName(),
               'properties': properties,
               'type': 'object'}
+    if self.node.GetProperty('nodefine'):
+      result['nodefine'] = True
     if self.node.GetProperty('nodoc'):
       result['nodoc'] = True
     elif self.node.GetProperty('inline_doc'):
@@ -175,7 +177,8 @@ class Member(object):
       properties['deprecated'] = self.node.GetProperty('deprecated')
     if self.node.GetProperty('allowAmbiguousOptionalArguments'):
       properties['allowAmbiguousOptionalArguments'] = True
-    for property_name in ('OPTIONAL', 'nodoc', 'nocompile', 'nodart'):
+    for property_name in ('OPTIONAL', 'nodoc', 'nocompile', 'nodart',
+                          'nodefine'):
       if self.node.GetProperty(property_name):
         properties[property_name.lower()] = True
     for option_name, sanitizer in [
@@ -357,8 +360,8 @@ class Enum(object):
               'description': self.description,
               'type': 'string',
               'enum': enum}
-    for property_name in (
-        'inline_doc', 'noinline_doc', 'nodoc', 'cpp_enum_prefix_override',):
+    for property_name in ('cpp_enum_prefix_override', 'inline_doc',
+                          'noinline_doc', 'nodefine', 'nodoc',):
       if self.node.GetProperty(property_name):
         result[property_name] = self.node.GetProperty(property_name)
     if self.node.GetProperty('deprecated'):

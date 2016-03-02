@@ -480,22 +480,6 @@ bool PathProvider(int key, base::FilePath* result) {
       break;
     }
 #endif
-#if defined(OS_MACOSX)
-    case chrome::DIR_USER_LIBRARY: {
-      if (!GetUserLibraryDirectory(&cur))
-        return false;
-      if (!base::PathExists(cur))  // We don't want to create this.
-        return false;
-      break;
-    }
-    case chrome::DIR_USER_APPLICATIONS: {
-      if (!GetUserApplicationsDirectory(&cur))
-        return false;
-      if (!base::PathExists(cur))  // We don't want to create this.
-        return false;
-      break;
-    }
-#endif
 #if defined(OS_CHROMEOS) || (defined(OS_LINUX) && defined(CHROMIUM_BUILD)) || \
     defined(OS_MACOSX)
     case chrome::DIR_USER_EXTERNAL_EXTENSIONS: {

@@ -65422,9 +65422,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="660" label="DELETED_READINGLISTPRIVATE_ADDENTRY"/>
   <int value="661" label="DELETED_READINGLISTPRIVATE_REMOVEENTRY"/>
   <int value="662" label="DELETED_READINGLISTPRIVATE_GETENTRIES"/>
-  <int value="663" label="MEDIAGALLERIES_STARTMEDIASCAN"/>
-  <int value="664" label="MEDIAGALLERIES_CANCELMEDIASCAN"/>
-  <int value="665" label="MEDIAGALLERIES_ADDSCANRESULTS"/>
+  <int value="663" label="DELETED_MEDIAGALLERIES_STARTMEDIASCAN"/>
+  <int value="664" label="DELETED_MEDIAGALLERIES_CANCELMEDIASCAN"/>
+  <int value="665" label="DELETED_MEDIAGALLERIES_ADDSCANRESULTS"/>
   <int value="666" label="LOGPRIVATE_STARTNETINTERNALSWATCH"/>
   <int value="667" label="LOGPRIVATE_STOPNETINTERNALSWATCH"/>
   <int value="668" label="FILEMANAGERPRIVATE_GETPROFILES"/>
@@ -73410,13 +73410,14 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="11" label="GetAllMediaFileSystemMetadata API invocations"/>
   <int value="12" label="GetMetadata API invocations"/>
   <int value="13" label="AddUserSelectedFolder API invocations"/>
-  <int value="14" label="StartMediaScan API invocations"/>
-  <int value="15" label="CancelMediaScan API invocations"/>
-  <int value="16" label="AddScanResults API invocations"/>
-  <int value="17" label="A media scan completed"/>
-  <int value="18" label="AddScanResults dialog cancelled"/>
-  <int value="19" label="AddScanResults dialog accepted"/>
-  <int value="20" label="Gallery removed from AddScanResults dialog"/>
+  <int value="14" label="StartMediaScan API invocations (obsolete)"/>
+  <int value="15" label="CancelMediaScan API invocations (obsolete)"/>
+  <int value="16" label="AddScanResults API invocations (obsolete)"/>
+  <int value="17" label="A media scan completed (obsolete)"/>
+  <int value="18" label="AddScanResults dialog cancelled (obsolete)"/>
+  <int value="19" label="AddScanResults dialog accepted (obsolete)"/>
+  <int value="20"
+      label="Gallery removed from AddScanResults dialog (obsolete)"/>
   <int value="21" label="Gallery removed from permission dialog"/>
   <int value="22" label="DropPermissionForMediaFileSystem API invocations"/>
   <int value="23" label="GetAllGalleryWatch API invocations"/>

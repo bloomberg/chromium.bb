@@ -39,7 +39,6 @@ bool MediaGalleriesPermissionData::FromValue(const base::Value* value) {
   base::TrimWhitespaceASCII(raw_permission, base::TRIM_ALL, &permission);
 
   if (permission == MediaGalleriesPermission::kAllAutoDetectedPermission ||
-      permission == MediaGalleriesPermission::kScanPermission ||
       permission == MediaGalleriesPermission::kReadPermission ||
       permission == MediaGalleriesPermission::kCopyToPermission ||
       permission == MediaGalleriesPermission::kDeletePermission) {

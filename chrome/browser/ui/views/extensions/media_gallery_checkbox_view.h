@@ -16,17 +16,15 @@ namespace views {
 class ButtonListener;
 class Checkbox;
 class ContextMenuController;
-class ImageButton;
 class Label;
 }  // namespace views
 
 // A view composed of a checkbox, optional folder icon button, and secondary
-// text that will elide to its parent's width; used by MediaGalleriesDialogViews
-// and MediaGalleriesScanResultDialogViews.
+// text that will elide to its parent's width. Used by
+// MediaGalleriesDialogViews.
 class MediaGalleryCheckboxView : public views::View {
  public:
   MediaGalleryCheckboxView(const MediaGalleryPrefInfo& pref_info,
-                           bool show_button,
                            int trailing_vertical_space,
                            views::ButtonListener* button_listener,
                            views::ContextMenuController* menu_controller);
@@ -36,13 +34,11 @@ class MediaGalleryCheckboxView : public views::View {
   void Layout() override;
 
   views::Checkbox* checkbox() { return checkbox_; }
-  views::ImageButton* folder_viewer_button() { return folder_viewer_button_; }
   views::Label* secondary_text() { return secondary_text_; }
 
  private:
   // Owned by the parent class (views::View).
   views::Checkbox* checkbox_;
-  views::ImageButton* folder_viewer_button_;
   views::Label* secondary_text_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaGalleryCheckboxView);

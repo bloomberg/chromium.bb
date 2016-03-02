@@ -50,7 +50,6 @@ class MediaGalleriesDialogCocoa : public ConstrainedWindowMacDelegate,
 
   // MediaGalleryListEntryController implementation.
   void OnCheckboxToggled(MediaGalleryPrefId pref_id, bool checked) override;
-  void OnFolderViewerClicked(MediaGalleryPrefId prefId) override;
   ui::MenuModel* GetContextMenu(MediaGalleryPrefId pref_id) override;
 
  private:

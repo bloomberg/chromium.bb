@@ -29,15 +29,13 @@ class MediaGalleryListEntryController {
   MediaGalleryPrefId prefId_;
 
   base::scoped_nsobject<MediaGalleryButton> checkbox_;
-  base::scoped_nsobject<MediaGalleryButton> folderViewer_;
   base::scoped_nsobject<NSTextField> details_;
 }
 
 // Does size to fit if frameRect is empty.
 - (id)initWithFrame:(NSRect)frameRect
          controller:(MediaGalleryListEntryController*)controller_
-           prefInfo:(const MediaGalleryPrefInfo&)prefInfo
-   showFolderViewer:(bool)showFolderViewer;
+           prefInfo:(const MediaGalleryPrefInfo&)prefInfo;
 
 - (void)setState:(bool)selected;
 

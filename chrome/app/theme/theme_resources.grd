@@ -257,7 +257,6 @@
       <if expr="chromeos">
         <structure type="chrome_scaled_image" name="IDR_FATAL_ERROR" file="cros/fatal_error.png" />
       </if>
-      <structure type="chrome_scaled_image" name="IDR_FILE_FOLDER" file="common/folder.png" />
       <if expr="chromeos">
         <structure type="chrome_scaled_image" name="IDR_FILETYPE_AUDIO" file="cros/file_types/audio.png" />
         <structure type="chrome_scaled_image" name="IDR_FILETYPE_GENERIC" file="cros/file_types/generic.png" />

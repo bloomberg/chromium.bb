@@ -270,11 +270,6 @@ class MediaGalleriesPreferences
 
   const MediaGalleriesPrefInfoMap& known_galleries() const;
 
-  // These keep track of when we last successfully completed a media scan.
-  // This is used to provide cached results when appropriate.
-  base::Time GetLastScanCompletionTime() const;
-  void SetLastScanCompletionTime(const base::Time& time);
-
   // KeyedService implementation:
   void Shutdown() override;
 

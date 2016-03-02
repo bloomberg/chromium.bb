@@ -31,8 +31,6 @@
 #include "chrome/browser/media_galleries/media_galleries_histograms.h"
 #include "chrome/browser/media_galleries/media_galleries_permission_controller.h"
 #include "chrome/browser/media_galleries/media_galleries_preferences.h"
-#include "chrome/browser/media_galleries/media_galleries_scan_result_controller.h"
-#include "chrome/browser/media_galleries/media_scan_manager.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
@@ -82,7 +80,6 @@ const char kFailedToSetGalleryPermission[] =
 const char kInvalidGalleryIdMsg[] = "Invalid gallery id.";
 const char kMissingEventListener[] = "Missing event listener registration.";
 const char kNonExistentGalleryId[] = "Non-existent gallery id.";
-const char kNoScanPermission[] = "No permission to scan.";
 
 const char kDeviceIdKey[] = "deviceId";
 const char kGalleryIdKey[] = "galleryId";
@@ -105,10 +102,6 @@ MediaFileSystemRegistry* media_file_system_registry() {
 
 GalleryWatchManager* gallery_watch_manager() {
   return media_file_system_registry()->gallery_watch_manager();
-}
-
-MediaScanManager* media_scan_manager() {
-  return media_file_system_registry()->media_scan_manager();
 }
 
 // Checks whether the MediaGalleries API is currently accessible (it may be
@@ -217,20 +210,6 @@ base::ListValue* ConstructFileSystemList(
   return list.release();
 }
 
-bool CheckScanPermission(const extensions::Extension* extension,
-                         std::string* error) {
-  DCHECK(extension);
-  DCHECK(error);
-  MediaGalleriesPermission::CheckParam scan_param(
-      MediaGalleriesPermission::kScanPermission);
-  bool has_scan_permission =
-      extension->permissions_data()->CheckAPIPermissionWithParam(
-          APIPermission::kMediaGalleries, &scan_param);
-  if (!has_scan_permission)
-    *error = kNoScanPermission;
-  return has_scan_permission;
-}
-
 class SelectDirectoryDialog : public ui::SelectFileDialog::Listener,
                               public base::RefCounted<SelectDirectoryDialog> {
  public:
@@ -298,7 +277,6 @@ MediaGalleriesEventRouter::MediaGalleriesEventRouter(
       this, MediaGalleries::OnGalleryChanged::kEventName);
 
   gallery_watch_manager()->AddObserver(profile_, this);
-  media_scan_manager()->AddObserver(profile_, this);
 }
 
 MediaGalleriesEventRouter::~MediaGalleriesEventRouter() {
@@ -311,8 +289,6 @@ void MediaGalleriesEventRouter::Shutdown() {
   EventRouter::Get(profile_)->UnregisterObserver(this);
 
   gallery_watch_manager()->RemoveObserver(profile_);
-  media_scan_manager()->RemoveObserver(profile_);
-  media_scan_manager()->CancelScansForProfile(profile_);
 }
 
 static base::LazyInstance<
@@ -338,57 +314,6 @@ bool MediaGalleriesEventRouter::ExtensionHasGalleryChangeListener(
     const std::string& extension_id) const {
   return EventRouter::Get(profile_)->ExtensionHasEventListener(
       extension_id, MediaGalleries::OnGalleryChanged::kEventName);
-}
-
-bool MediaGalleriesEventRouter::ExtensionHasScanProgressListener(
-    const std::string& extension_id) const {
-  return EventRouter::Get(profile_)->ExtensionHasEventListener(
-      extension_id, MediaGalleries::OnScanProgress::kEventName);
-}
-
-void MediaGalleriesEventRouter::OnScanStarted(const std::string& extension_id) {
-  MediaGalleries::ScanProgressDetails details;
-  details.type = MediaGalleries::SCAN_PROGRESS_TYPE_START;
-  DispatchEventToExtension(extension_id,
-                           events::MEDIA_GALLERIES_ON_SCAN_PROGRESS,
-                           MediaGalleries::OnScanProgress::kEventName,
-                           MediaGalleries::OnScanProgress::Create(details));
-}
-
-void MediaGalleriesEventRouter::OnScanCancelled(
-    const std::string& extension_id) {
-  MediaGalleries::ScanProgressDetails details;
-  details.type = MediaGalleries::SCAN_PROGRESS_TYPE_CANCEL;
-  DispatchEventToExtension(extension_id,
-                           events::MEDIA_GALLERIES_ON_SCAN_PROGRESS,
-                           MediaGalleries::OnScanProgress::kEventName,
-                           MediaGalleries::OnScanProgress::Create(details));
-}
-
-void MediaGalleriesEventRouter::OnScanFinished(
-    const std::string& extension_id, int gallery_count,
-    const MediaGalleryScanResult& file_counts) {
-  media_galleries::UsageCount(media_galleries::SCAN_FINISHED);
-  MediaGalleries::ScanProgressDetails details;
-  details.type = MediaGalleries::SCAN_PROGRESS_TYPE_FINISH;
-  details.gallery_count.reset(new int(gallery_count));
-  details.audio_count.reset(new int(file_counts.audio_count));
-  details.image_count.reset(new int(file_counts.image_count));
-  details.video_count.reset(new int(file_counts.video_count));
-  DispatchEventToExtension(extension_id,
-                           events::MEDIA_GALLERIES_ON_SCAN_PROGRESS,
-                           MediaGalleries::OnScanProgress::kEventName,
-                           MediaGalleries::OnScanProgress::Create(details));
-}
-
-void MediaGalleriesEventRouter::OnScanError(
-    const std::string& extension_id) {
-  MediaGalleries::ScanProgressDetails details;
-  details.type = MediaGalleries::SCAN_PROGRESS_TYPE_ERROR;
-  DispatchEventToExtension(extension_id,
-                           events::MEDIA_GALLERIES_ON_SCAN_PROGRESS,
-                           MediaGalleries::OnScanProgress::kEventName,
-                           MediaGalleries::OnScanProgress::Create(details));
 }
 
 void MediaGalleriesEventRouter::DispatchEventToExtension(
@@ -762,135 +687,6 @@ void MediaGalleriesDropPermissionForMediaFileSystemFunction::OnPreferencesInit(
   else
     error_ = kFailedToSetGalleryPermission;
   SendResponse(dropped);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-//                 MediaGalleriesStartMediaScanFunction                      //
-///////////////////////////////////////////////////////////////////////////////
-MediaGalleriesStartMediaScanFunction::~MediaGalleriesStartMediaScanFunction() {}
-
-bool MediaGalleriesStartMediaScanFunction::RunAsync() {
-  media_galleries::UsageCount(media_galleries::START_MEDIA_SCAN);
-  if (!CheckScanPermission(extension(), &error_)) {
-    MediaGalleriesEventRouter::Get(GetProfile())
-        ->OnScanError(extension()->id());
-    return false;
-  }
-  return Setup(GetProfile(), &error_, base::Bind(
-      &MediaGalleriesStartMediaScanFunction::OnPreferencesInit, this));
-}
-
-void MediaGalleriesStartMediaScanFunction::OnPreferencesInit() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  MediaGalleriesEventRouter* api = MediaGalleriesEventRouter::Get(GetProfile());
-  if (!api->ExtensionHasScanProgressListener(extension()->id())) {
-    error_ = kMissingEventListener;
-    SendResponse(false);
-    return;
-  }
-
-  media_scan_manager()->StartScan(GetProfile(), extension(), user_gesture());
-  SendResponse(true);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-//                MediaGalleriesCancelMediaScanFunction                      //
-///////////////////////////////////////////////////////////////////////////////
-MediaGalleriesCancelMediaScanFunction::
-    ~MediaGalleriesCancelMediaScanFunction() {
-}
-
-bool MediaGalleriesCancelMediaScanFunction::RunAsync() {
-  media_galleries::UsageCount(media_galleries::CANCEL_MEDIA_SCAN);
-  if (!CheckScanPermission(extension(), &error_)) {
-    MediaGalleriesEventRouter::Get(GetProfile())
-        ->OnScanError(extension()->id());
-    return false;
-  }
-  return Setup(GetProfile(), &error_, base::Bind(
-      &MediaGalleriesCancelMediaScanFunction::OnPreferencesInit, this));
-}
-
-void MediaGalleriesCancelMediaScanFunction::OnPreferencesInit() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  media_scan_manager()->CancelScan(GetProfile(), extension());
-  SendResponse(true);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-//                MediaGalleriesAddScanResultsFunction                       //
-///////////////////////////////////////////////////////////////////////////////
-MediaGalleriesAddScanResultsFunction::~MediaGalleriesAddScanResultsFunction() {}
-
-bool MediaGalleriesAddScanResultsFunction::RunAsync() {
-  media_galleries::UsageCount(media_galleries::ADD_SCAN_RESULTS);
-  if (!CheckScanPermission(extension(), &error_)) {
-    // We don't fire a scan progress error here, as it would be unintuitive.
-    return false;
-  }
-  if (!user_gesture())
-    return false;
-
-  return Setup(GetProfile(), &error_, base::Bind(
-      &MediaGalleriesAddScanResultsFunction::OnPreferencesInit, this));
-}
-
-MediaGalleriesScanResultController*
-MediaGalleriesAddScanResultsFunction::MakeDialog(
-    content::WebContents* web_contents,
-    const extensions::Extension& extension,
-    const base::Closure& on_finish) {
-  // Controller will delete itself.
-  return new MediaGalleriesScanResultController(web_contents, extension,
-                                                on_finish);
-}
-
-void MediaGalleriesAddScanResultsFunction::OnPreferencesInit() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  MediaGalleriesPreferences* preferences =
-      media_file_system_registry()->GetPreferences(GetProfile());
-  if (MediaGalleriesScanResultController::ScanResultCountForExtension(
-          preferences, extension()) == 0) {
-    GetAndReturnGalleries();
-    return;
-  }
-
-  WebContents* contents =
-      ChromeExtensionFunctionDetails(this).GetOriginWebContents();
-  if (!contents) {
-    SendResponse(false);
-    return;
-  }
-
-  base::Closure cb = base::Bind(
-      &MediaGalleriesAddScanResultsFunction::GetAndReturnGalleries, this);
-  MakeDialog(contents, *extension(), cb);
-}
-
-void MediaGalleriesAddScanResultsFunction::GetAndReturnGalleries() {
-  if (!render_frame_host()) {
-    ReturnGalleries(std::vector<MediaFileSystemInfo>());
-    return;
-  }
-  MediaFileSystemRegistry* registry = media_file_system_registry();
-  DCHECK(registry->GetPreferences(GetProfile())->IsInitialized());
-  registry->GetMediaFileSystemsForExtension(
-      GetSenderWebContents(), extension(),
-      base::Bind(&MediaGalleriesAddScanResultsFunction::ReturnGalleries, this));
-}
-
-void MediaGalleriesAddScanResultsFunction::ReturnGalleries(
-    const std::vector<MediaFileSystemInfo>& filesystems) {
-  scoped_ptr<base::ListValue> list(
-      ConstructFileSystemList(render_frame_host(), extension(), filesystems));
-  if (!list.get()) {
-    SendResponse(false);
-    return;
-  }
-
-  // The custom JS binding will use this list to create DOMFileSystem objects.
-  SetResult(list.release());
-  SendResponse(true);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -45,8 +45,6 @@ void SetLastChooseEntryDirectory(ExtensionPrefs* prefs,
                                  const std::string& extension_id,
                                  const base::FilePath& path);
 
-std::vector<base::FilePath> GetGrayListedDirectories();
-
 #if defined(OS_CHROMEOS)
 // Dispatches an event about a mounted on unmounted volume in the system to
 // each extension which can request it.

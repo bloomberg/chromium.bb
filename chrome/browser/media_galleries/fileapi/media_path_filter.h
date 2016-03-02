@@ -14,7 +14,13 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/sequence_checker.h"
-#include "chrome/browser/media_galleries/media_scan_types.h"
+
+enum MediaGalleryFileType {
+  MEDIA_GALLERY_FILE_TYPE_UNKNOWN = 0,
+  MEDIA_GALLERY_FILE_TYPE_AUDIO = 1 << 0,
+  MEDIA_GALLERY_FILE_TYPE_IMAGE = 1 << 1,
+  MEDIA_GALLERY_FILE_TYPE_VIDEO = 1 << 2,
+};
 
 // This class holds the list of file path extensions that we should expose on
 // media filesystem.
@@ -30,29 +36,29 @@ class MediaPathFilter {
   // Returns true if |path| is a media file.
   bool Match(const base::FilePath& path);
 
-  // Returns the type of |path| or MEDIA_GALLERY_SCAN_FILE_TYPE_UNKNOWN if it
+  // Returns the type of |path| or MEDIA_GALLERY_FILE_TYPE_UNKNOWN if it
   // is not a media file.
-  MediaGalleryScanFileType GetType(const base::FilePath& path);
+  MediaGalleryFileType GetType(const base::FilePath& path);
 
  private:
   typedef std::vector<base::FilePath::StringType> MediaFileExtensionList;
 
   // Key: .extension
-  // Value: MediaGalleryScanFileType, but stored as an int to allow "|="
+  // Value: MediaGalleryFileType, but stored as an int to allow "|="
   typedef base::hash_map<base::FilePath::StringType, int> MediaFileExtensionMap;
 
   void EnsureInitialized();
 
   void AddExtensionsToMediaFileExtensionMap(
       const MediaFileExtensionList& extensions_list,
-      MediaGalleryScanFileType type);
+      MediaGalleryFileType type);
   void AddAdditionalExtensionsToMediaFileExtensionMap(
       const base::FilePath::CharType* const* extensions_list,
       size_t extensions_list_size,
-      MediaGalleryScanFileType type);
+      MediaGalleryFileType type);
   void AddExtensionToMediaFileExtensionMap(
       const base::FilePath::CharType* extension,
-      MediaGalleryScanFileType type);
+      MediaGalleryFileType type);
 
   // Checks |initialized_| is only accessed on one sequence.
   base::SequenceChecker sequence_checker_;

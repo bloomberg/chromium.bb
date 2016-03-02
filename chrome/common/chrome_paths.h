@@ -46,10 +46,6 @@ enum {
                                 // to set policies for chrome. This directory
                                 // contains subdirectories.
 #endif
-#if defined(OS_MACOSX)
-  DIR_USER_APPLICATIONS,        // ~/Applications
-  DIR_USER_LIBRARY,             // ~/Library
-#endif
 #if defined(OS_CHROMEOS) || (defined(OS_LINUX) && defined(CHROMIUM_BUILD)) || \
     defined(OS_MACOSX)
   DIR_USER_EXTERNAL_EXTENSIONS,  // Directory for per-user external extensions

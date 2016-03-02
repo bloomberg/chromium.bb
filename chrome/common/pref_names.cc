@@ -1967,9 +1967,6 @@ const char kMediaGalleriesUniqueId[] = "media_galleries.gallery_id";
 // gallery.
 const char kMediaGalleriesRememberedGalleries[] =
     "media_galleries.remembered_galleries";
-
-// The last time a media scan completed.
-const char kMediaGalleriesLastScanTime[] = "media_galleries.last_scan_time";
 #endif  // !defined(OS_ANDROID)
 
 #if defined(USE_ASH)

@@ -63,15 +63,5 @@ chrome.test.getConfig(function(config) {
     function invalidFileCopyToShouldFail() {
       runCopyToTest(invalidWEBPImageCase, false /* expect failure */);
     },
-    function MediaScanWithoutPermission() {
-      var startListener = function(details) {
-        chrome.test.assertEq('error', details.type);
-        mediaGalleries.onScanProgress.removeListener(startListener);
-        chrome.test.succeed();
-      }
-      mediaGalleries.onScanProgress.addListener(startListener);
-
-      mediaGalleries.startMediaScan();
-    }
   ]);
 })

@@ -303,6 +303,7 @@ class Function(object):
     self.optional = json.get('optional', False)
     self.parent = parent
     self.nocompile = json.get('nocompile')
+    self.nodefine = json.get('nodefine')
     options = json.get('options', {})
     self.conditions = options.get('conditions', [])
     self.actions = options.get('actions', [])

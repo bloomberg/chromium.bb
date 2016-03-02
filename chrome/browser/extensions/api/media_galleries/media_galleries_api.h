@@ -20,7 +20,6 @@
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/media_galleries/gallery_watch_manager_observer.h"
 #include "chrome/browser/media_galleries/media_file_system_registry.h"
-#include "chrome/browser/media_galleries/media_scan_manager_observer.h"
 #include "chrome/common/extensions/api/media_galleries.h"
 #include "chrome/common/media_galleries/metadata_types.h"
 #include "components/storage_monitor/media_storage_util.h"
@@ -29,8 +28,6 @@
 #include "extensions/browser/extension_event_histogram_value.h"
 
 namespace MediaGalleries = extensions::api::media_galleries;
-
-class MediaGalleriesScanResultController;
 
 namespace content {
 class BlobHandle;
@@ -49,7 +46,6 @@ class Extension;
 // Created at the same time as the Profile. This is also the event router.
 class MediaGalleriesEventRouter : public BrowserContextKeyedAPI,
                                   public GalleryWatchManagerObserver,
-                                  public MediaScanManagerObserver,
                                   public extensions::EventRouter::Observer {
  public:
   // KeyedService implementation.
@@ -63,15 +59,6 @@ class MediaGalleriesEventRouter : public BrowserContextKeyedAPI,
   static MediaGalleriesEventRouter* Get(content::BrowserContext* context);
 
   bool ExtensionHasGalleryChangeListener(const std::string& extension_id) const;
-  bool ExtensionHasScanProgressListener(const std::string& extension_id) const;
-
-  // MediaScanManagerObserver implementation.
-  void OnScanStarted(const std::string& extension_id) override;
-  void OnScanCancelled(const std::string& extension_id) override;
-  void OnScanFinished(const std::string& extension_id,
-                      int gallery_count,
-                      const MediaGalleryScanResult& file_counts) override;
-  void OnScanError(const std::string& extension_id) override;
 
  private:
   friend class BrowserContextKeyedAPIFactory<MediaGalleriesEventRouter>;
@@ -212,64 +199,6 @@ class MediaGalleriesDropPermissionForMediaFileSystemFunction
  private:
   // Bottom half for RunAsync, invoked after the preferences is initialized.
   void OnPreferencesInit(MediaGalleryPrefId pref_id);
-};
-
-class MediaGalleriesStartMediaScanFunction
-    : public ChromeAsyncExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("mediaGalleries.startMediaScan",
-                             MEDIAGALLERIES_STARTMEDIASCAN)
-
- protected:
-  ~MediaGalleriesStartMediaScanFunction() override;
-  bool RunAsync() override;
-
- private:
-  // Bottom half for RunAsync, invoked after the preferences is initialized.
-  void OnPreferencesInit();
-};
-
-class MediaGalleriesCancelMediaScanFunction
-    : public ChromeAsyncExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("mediaGalleries.cancelMediaScan",
-                             MEDIAGALLERIES_CANCELMEDIASCAN)
-
- protected:
-  ~MediaGalleriesCancelMediaScanFunction() override;
-  bool RunAsync() override;
-
- private:
-  // Bottom half for RunAsync, invoked after the preferences is initialized.
-  void OnPreferencesInit();
-};
-
-class MediaGalleriesAddScanResultsFunction
-    : public ChromeAsyncExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("mediaGalleries.addScanResults",
-                             MEDIAGALLERIES_ADDSCANRESULTS)
-
- protected:
-  ~MediaGalleriesAddScanResultsFunction() override;
-  bool RunAsync() override;
-
-  // Pulled out for testing.
-  virtual MediaGalleriesScanResultController* MakeDialog(
-      content::WebContents* web_contents,
-      const extensions::Extension& extension,
-      const base::Closure& on_finish);
-
- private:
-  // Bottom half for RunAsync, invoked after the preferences is initialized.
-  void OnPreferencesInit();
-
-  // Grabs galleries from the media file system registry and passes them to
-  // ReturnGalleries().
-  void GetAndReturnGalleries();
-
-  // Returns galleries to the caller.
-  void ReturnGalleries(const std::vector<MediaFileSystemInfo>& filesystems);
 };
 
 class MediaGalleriesGetMetadataFunction : public ChromeAsyncExtensionFunction {

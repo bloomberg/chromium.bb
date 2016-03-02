@@ -160,11 +160,6 @@ bool MediaGalleriesPermissionController::IsAcceptAllowed() const {
   return false;
 }
 
-bool MediaGalleriesPermissionController::ShouldShowFolderViewer(
-    const Entry& entry) const {
-  return false;
-}
-
 std::vector<base::string16>
 MediaGalleriesPermissionController::GetSectionHeaders() const {
   std::vector<base::string16> result;
@@ -245,11 +240,6 @@ void MediaGalleriesPermissionController::DidToggleEntry(
   // Don't sort -- the dialog is open, and we don't want to adjust any
   // positions for future updates to the dialog contents until they are
   // redrawn.
-}
-
-void MediaGalleriesPermissionController::DidClickOpenFolderViewer(
-    GalleryDialogId gallery_id) {
-  NOTREACHED();
 }
 
 void MediaGalleriesPermissionController::DidForgetEntry(

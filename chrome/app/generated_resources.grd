@@ -13198,21 +13198,6 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
         <message name="IDS_MEDIA_GALLERIES_PERMISSION_SUGGESTIONS" desc="Header in media gallery permission dialog for locations that the app does not have permission for.">
           Suggestions
         </message>
-        <message name="IDS_MEDIA_GALLERIES_SCAN_RESULT_DIALOG_HEADER" desc="Header for media gallery scan result dialog.">
-          Add folders to "<ph name="EXTENSION">$1<ex>Photo Editor</ex></ph>"?
-        </message>
-        <message name="IDS_MEDIA_GALLERIES_SCAN_RESULT_DIALOG_SUBTEXT_READ_WRITE" desc="Explanatory text for the media gallery scan result dialog. Indicates that the specified (by name) extension will have read and write access to the selected folders.">
-          "<ph name="EXTENSION">$1<ex>PhotoEditor</ex></ph>" will be able to read and write images, video, and sound files in the checked folders.
-        </message>
-        <message name="IDS_MEDIA_GALLERIES_SCAN_RESULT_DIALOG_SUBTEXT_READ_DELETE" desc="Explanatory text for the media gallery scan result dialog. Indicates that the specified (by name) extension will have read and delete access to the selected folders.">
-          "<ph name="EXTENSION">$1<ex>PhotoEditor</ex></ph>" will be able to read and delete images, video, and sound files in the checked folders.
-        </message>
-        <message name="IDS_MEDIA_GALLERIES_SCAN_RESULT_DIALOG_SUBTEXT_READ_ONLY" desc="Explanatory text for the media gallery scan result dialog. Indicates that the specified (by name) extension will have read-only access to the selected folders.">
-          "<ph name="EXTENSION">$1<ex>PhotoEditor</ex></ph>" will be able to read images, video, and sound files in the checked folders.
-        </message>
-        <message name="IDS_MEDIA_GALLERIES_SCAN_RESULT_OPEN_FOLDER_VIEW_ACCESSIBILITY_NAME" desc="Accessibility name for an icon that opens the folder view of a gallery from the media galleries scan result dialog.">
-          Show in folder
-        </message>
         <message name="IDS_MEDIA_GALLERIES_LAST_ATTACHED" desc="Explanatory text indicating to the user when a particular location was last attached, i.e. a removable device that isn't plugged in. The date presented will be a day in a localized format providing year, month, and day.">
           last attached on <ph name="DATE">$1<ex>1/22/11</ex></ph>
         </message>

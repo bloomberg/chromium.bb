@@ -694,7 +694,6 @@ extern const char kAttemptedToEnableAutoupdate[];
 
 extern const char kMediaGalleriesUniqueId[];
 extern const char kMediaGalleriesRememberedGalleries[];
-extern const char kMediaGalleriesLastScanTime[];
 #endif  // !defined(OS_ANDROID)
 
 #if defined(USE_ASH)
