@@ -834,7 +834,7 @@ willPositionSheet:(NSWindow*)sheet
   fullscreen_mac::SlidingStyle style;
   if ([self isFullscreenForTabContent]) {
     style = fullscreen_mac::OMNIBOX_TABS_NONE;
-  } else if (enteringPresentationMode_ || [self shouldHideFullscreenToolbar]) {
+  } else if (enteringPresentationMode_ || ![self shouldShowFullscreenToolbar]) {
     style = fullscreen_mac::OMNIBOX_TABS_HIDDEN;
   } else {
     style = fullscreen_mac::OMNIBOX_TABS_PRESENT;

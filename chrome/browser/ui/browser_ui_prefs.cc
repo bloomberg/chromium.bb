@@ -135,6 +135,10 @@ void RegisterBrowserUserPrefs(user_prefs::PrefRegistrySyncable* registry) {
   // that use this preference.
   registry->RegisterBooleanPref(prefs::kShowUpdatePromotionInfoBar, true);
   registry->RegisterBooleanPref(
+      prefs::kShowFullscreenToolbar,
+      true,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterBooleanPref(
       prefs::kHideFullscreenToolbar,
       false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);

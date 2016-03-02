@@ -18,7 +18,7 @@ void ExclusiveAccessContext::UpdateFullscreenWithToolbar(bool with_toolbar) {
   NOTIMPLEMENTED();
 }
 
-void ExclusiveAccessContext::ToggleFullscreenToolbar() {
+void ExclusiveAccessContext::UpdateFullscreenToolbar() {
   NOTIMPLEMENTED();
 }
 

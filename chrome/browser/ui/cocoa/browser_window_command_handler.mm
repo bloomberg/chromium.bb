@@ -55,7 +55,7 @@ void UpdateToggleStateWithTag(NSInteger tag, id item, NSWindow* window) {
 
   if (tag == IDC_TOGGLE_FULLSCREEN_TOOLBAR) {
     PrefService* prefs = browser->profile()->GetPrefs();
-    SetToggleState(prefs->GetBoolean(prefs::kHideFullscreenToolbar), item);
+    SetToggleState(prefs->GetBoolean(prefs::kShowFullscreenToolbar), item);
     return;
   }
 

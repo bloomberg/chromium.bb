@@ -4,19 +4,19 @@
 
 #include "chrome/browser/ui/browser_commands_mac.h"
 
-#include "base/command_line.h"
 #include "chrome/browser/fullscreen.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
-#include "chrome/browser/ui/exclusive_access/exclusive_access_context.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
-#include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
+#include "components/prefs/pref_service.h"
 
 namespace chrome {
 
 void ToggleFullscreenWithToolbarOrFallback(Browser* browser) {
   DCHECK(browser);
-  if (chrome::mac::SupportsSystemFullscreen())
+  if (mac::SupportsSystemFullscreen())
     browser->exclusive_access_manager()
         ->fullscreen_controller()
         ->ToggleBrowserFullscreenWithToolbar();
@@ -26,7 +26,11 @@ void ToggleFullscreenWithToolbarOrFallback(Browser* browser) {
 
 void ToggleFullscreenToolbar(Browser* browser) {
   DCHECK(browser);
-  browser->exclusive_access_manager()->context()->ToggleFullscreenToolbar();
+
+  // Toggle the value of the preference.
+  PrefService* prefs = browser->profile()->GetPrefs();
+  bool show_toolbar = prefs->GetBoolean(prefs::kShowFullscreenToolbar);
+  prefs->SetBoolean(prefs::kShowFullscreenToolbar, !show_toolbar);
 }
 
 }  // namespace chrome

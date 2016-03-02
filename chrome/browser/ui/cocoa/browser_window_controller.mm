@@ -438,9 +438,8 @@ void SetUpBrowserWindowCommandHandler(NSWindow* window) {
             windowShim_.get()));
 
     PrefService* prefs = browser_->profile()->GetPrefs();
-    shouldHideFullscreenToolbar_ =
-        prefs->GetBoolean(prefs::kHideFullscreenToolbar);
-
+    shouldShowFullscreenToolbar_ =
+        prefs->GetBoolean(prefs::kShowFullscreenToolbar);
     blockLayoutSubviews_ = NO;
 
     // We are done initializing now.
@@ -1944,14 +1943,14 @@ willAnimateFromState:(BookmarkBar::State)oldState
   return NO;
 }
 
-- (void)setFullscreenToolbarHidden:(BOOL)shouldHide {
-  if (shouldHideFullscreenToolbar_ == shouldHide)
+- (void)setFullscreenToolbarVisible:(BOOL)visible {
+  if (shouldShowFullscreenToolbar_ == visible)
     return;
 
   [presentationModeController_ setToolbarFraction:0.0];
-  shouldHideFullscreenToolbar_ = shouldHide;
+  shouldShowFullscreenToolbar_ = visible;
   if ([self isInAppKitFullscreen])
-    [self updateFullscreenWithToolbar:!shouldHideFullscreenToolbar_];
+    [self updateFullscreenWithToolbar:shouldShowFullscreenToolbar_];
 }
 
 - (BOOL)isInAnyFullscreenMode {
@@ -2014,8 +2013,8 @@ willAnimateFromState:(BookmarkBar::State)oldState
              fullscreen_mac::OMNIBOX_TABS_HIDDEN;
 }
 
-- (BOOL)shouldHideFullscreenToolbar {
-  return shouldHideFullscreenToolbar_;
+- (BOOL)shouldShowFullscreenToolbar {
+  return shouldShowFullscreenToolbar_;
 }
 
 - (void)resizeFullscreenWindow {

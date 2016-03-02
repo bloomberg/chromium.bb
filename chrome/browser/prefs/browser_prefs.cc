@@ -627,6 +627,20 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
   profile_prefs->ClearPref(kShownAutoLaunchInfobarDeprecated);
 #endif
 
+#if defined(OS_MACOSX)
+  // Migrate the value of kHideFullscreenToolbar to kShowFullscreenToolbar if
+  // it was set by the user. See crbug.com/590827.
+  // Added 03/2016.
+  const PrefService::Preference* hide_pref =
+      profile_prefs->FindPreference(prefs::kHideFullscreenToolbar);
+  if (!hide_pref->IsDefaultValue()) {
+    bool hide_pref_value =
+        profile_prefs->GetBoolean(prefs::kHideFullscreenToolbar);
+    profile_prefs->SetBoolean(prefs::kShowFullscreenToolbar, !hide_pref_value);
+    profile_prefs->ClearPref(prefs::kHideFullscreenToolbar);
+  }
+#endif
+
   // Added 12/1015.
   profile_prefs->ClearPref(kURLsToRestoreOnStartupOld);
   profile_prefs->ClearPref(kRestoreStartupURLsMigrationTime);

@@ -385,8 +385,12 @@ const char kContextualSearchEnabled[] = "search.contextual_search_enabled";
 // window when the user is attempting to quit. Mac only.
 const char kConfirmToQuitEnabled[] = "browser.confirm_to_quit";
 
-// Boolean that indicates whether the browser should hide the toolbar when it's
+// Boolean that indicates whether the browser should show the toolbar when it's
 // in fullscreen. Mac only.
+const char kShowFullscreenToolbar[] = "browser.show_fullscreen_toolbar";
+
+// TODO(spqchan): Remove this, see crbug.com/590827.
+// This is being migrated to kShowFullscreenToolbar.
 const char kHideFullscreenToolbar[] = "browser.hide_fullscreen_toolbar";
 #endif
 

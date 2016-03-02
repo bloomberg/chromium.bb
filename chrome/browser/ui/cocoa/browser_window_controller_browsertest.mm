@@ -697,9 +697,9 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest,
   if (!chrome::mac::SupportsSystemFullscreen())
     return;
 
-  // Tests that the preference is set to false by default.
+  // Tests that the preference is set to true by default.
   PrefService* prefs = browser()->profile()->GetPrefs();
-  EXPECT_FALSE(prefs->GetBoolean(prefs::kHideFullscreenToolbar));
+  EXPECT_TRUE(prefs->GetBoolean(prefs::kShowFullscreenToolbar));
 
   // Toggle fullscreen and check if the toolbar is shown.
   ToggleFullscreenAndWaitForNotification();
@@ -709,7 +709,7 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest,
   // is hidden and the preference is correctly updated.
   [[controller() presentationModeController] setToolbarFraction:0.0];
   chrome::ExecuteCommand(browser(), IDC_TOGGLE_FULLSCREEN_TOOLBAR);
-  EXPECT_TRUE(prefs->GetBoolean(prefs::kHideFullscreenToolbar));
+  EXPECT_FALSE(prefs->GetBoolean(prefs::kShowFullscreenToolbar));
   VerifyFullscreenToolbarVisibility(fullscreen_mac::OMNIBOX_TABS_HIDDEN);
 
   // Toggle out and back into fullscreen and verify that the toolbar is still
@@ -719,5 +719,5 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest,
   VerifyFullscreenToolbarVisibility(fullscreen_mac::OMNIBOX_TABS_HIDDEN);
 
   chrome::ExecuteCommand(browser(), IDC_TOGGLE_FULLSCREEN_TOOLBAR);
-  EXPECT_FALSE(prefs->GetBoolean(prefs::kHideFullscreenToolbar));
+  EXPECT_TRUE(prefs->GetBoolean(prefs::kShowFullscreenToolbar));
 }

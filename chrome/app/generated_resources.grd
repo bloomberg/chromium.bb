@@ -11824,7 +11824,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
           Exit Presentation Mode
         </message>
         <message name="IDS_TOGGLE_FULLSCREEN_TOOLBAR_MAC" desc="The Mac menu checkbox item to show/hide the toolbar in full screen.">
-          Hide Toolbar in Full Screen
+          Always Show Toolbar in Full Screen
         </message>
         <message name="IDS_TEXT_BIGGER_MAC" desc="The Mac menu item to zoom in on the page in the view menu.">
           Zoom In
