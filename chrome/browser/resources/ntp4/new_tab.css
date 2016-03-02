@@ -132,15 +132,6 @@ html[dir='rtl'] #attribution {
   position: relative;
 }
 
-#promo-bubble-anchor {
-  height: 1px;
-  left: 0;
-  position: absolute;
-  top: 4px;
-  visibility: hidden;
-  width: 32px;
-}
-
 .starting-up * {
   -webkit-transition: none !important;
 }

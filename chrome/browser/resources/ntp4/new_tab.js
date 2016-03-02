@@ -20,14 +20,6 @@ cr.define('ntp', function() {
   var newTabView;
 
   /**
-   * If non-null, an info bubble for showing messages to the user. It points at
-   * the Most Visited label, and is used to draw more attention to the
-   * navigation dot UI.
-   * @type {!cr.ui.Bubble|undefined}
-   */
-  var promoBubble;
-
-  /**
    * If non-null, an bubble confirming that the user has signed into sync. It
    * points at the login status at the top of the page.
    * @type {!cr.ui.Bubble|undefined}
@@ -88,17 +80,9 @@ cr.define('ntp', function() {
                     pageSwitcherStart, pageSwitcherEnd);
   }
 
-  NewTabView.prototype = {
-    __proto__: ntp.PageListView.prototype,
-
-    /** @override */
-    appendTilePage: function(page, title, titleIsEditable, opt_refNode) {
-      ntp.PageListView.prototype.appendTilePage.apply(this, arguments);
-
-      if (promoBubble)
-        window.setTimeout(promoBubble.reposition.bind(promoBubble), 0);
-    }
-  };
+  // TODO(dbeam): NewTabView is now the only extender of PageListView; these
+  // classes should be merged.
+  NewTabView.prototype = {__proto__: ntp.PageListView.prototype};
 
   /**
    * Invoked at startup once the DOM is available to initialize the app.
@@ -158,30 +142,6 @@ cr.define('ntp', function() {
       // The anchor node won't be updated until updateLogin is called so don't
       // show the bubble yet.
       shouldShowLoginBubble = true;
-    }
-
-    if (loadTimeData.valueExists('bubblePromoText')) {
-      promoBubble = new cr.ui.Bubble;
-      promoBubble.anchorNode = getRequiredElement('promo-bubble-anchor');
-      promoBubble.arrowLocation = cr.ui.ArrowLocation.BOTTOM_START;
-      promoBubble.bubbleAlignment = cr.ui.BubbleAlignment.ENTIRELY_VISIBLE;
-      promoBubble.deactivateToDismissDelay = 2000;
-      promoBubble.content = parseHtmlSubset(
-          loadTimeData.getString('bubblePromoText'), ['BR']);
-
-      var bubbleLink = promoBubble.querySelector('a');
-      if (bubbleLink) {
-        bubbleLink.addEventListener('click', function(e) {
-          chrome.send('bubblePromoLinkClicked');
-        });
-      }
-
-      promoBubble.handleCloseEvent = function() {
-        promoBubble.hide();
-        chrome.send('bubblePromoClosed');
-      };
-      promoBubble.show();
-      chrome.send('bubblePromoViewed');
     }
 
     $('login-container').addEventListener('click', showSyncLoginUI);
