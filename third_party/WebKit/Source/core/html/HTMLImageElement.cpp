@@ -46,6 +46,7 @@
 #include "core/inspector/ConsoleMessage.h"
 #include "core/layout/LayoutBlockFlow.h"
 #include "core/layout/LayoutImage.h"
+#include "core/layout/api/LayoutImageItem.h"
 #include "core/page/Page.h"
 #include "core/style/ContentData.h"
 #include "core/svg/graphics/SVGImageForContainer.h"
@@ -258,7 +259,7 @@ void HTMLImageElement::setBestFitURLAndDPRFromImageCandidate(const ImageCandidat
         UseCounter::count(document(), UseCounter::SrcsetXDescriptor);
     }
     if (layoutObject() && layoutObject()->isImage())
-        toLayoutImage(layoutObject())->setImageDevicePixelRatio(m_imageDevicePixelRatio);
+        LayoutImageItem(toLayoutImage(layoutObject())).setImageDevicePixelRatio(m_imageDevicePixelRatio);
 
     if (intrinsicSizingViewportDependant) {
         if (!m_listener)
