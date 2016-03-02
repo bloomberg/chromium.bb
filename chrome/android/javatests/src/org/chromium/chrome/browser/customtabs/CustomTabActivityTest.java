@@ -117,7 +117,7 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
         mTestPage = mTestServer.getURL(TEST_PAGE);
         mTestPage2 = mTestServer.getURL(TEST_PAGE_2);
         LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER)
-                .ensureInitialized(getInstrumentation().getContext());
+                .ensureInitialized(getInstrumentation().getTargetContext().getApplicationContext());
     }
 
     @Override
