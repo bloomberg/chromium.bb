@@ -70,26 +70,43 @@ void scaleHorizontallyAndTranslate(GraphicsContext& context, float scaleX, float
     context.concatCTM(AffineTransform(scaleX, 0, 0, 1, centerX * (1.0f - scaleX) + offsetX * scaleX, offsetY));
 }
 
-void LayoutTextCombine::transformToInlineCoordinates(GraphicsContext& context, const LayoutRect& boxRect) const
+void LayoutTextCombine::transformToInlineCoordinates(GraphicsContext& context, const LayoutRect& boxRect, bool clip) const
 {
     ASSERT(!m_needsFontUpdate);
     ASSERT(m_isCombined);
+
+    // On input, the |boxRect| is:
+    // 1. Horizontal flow, rotated from the main vertical flow coordinate using
+    //    TextPainter::rotation().
+    // 2. height() is cell-height, which includes internal leading. This equals
+    //    to A+D, and to em+internal leading.
+    // 3. width() is the same as m_combinedTextWidth.
+    // 4. Left is (right-edge - height()).
+    // 5. Top is where char-top (not include internal leading) should be.
+    // See https://support.microsoft.com/en-us/kb/32667.
+    // We move it so that it comes to the center of em excluding internal
+    // leading.
+
+    float cellHeight = boxRect.height();
+    float internalLeading = styleRef().font().primaryFont()->internalLeading();
+    float offsetY = -internalLeading / 2;
+    float width;
     if (m_scaleX >= 1.0f) {
         // Fast path, more than 90% of cases
         ASSERT(m_scaleX == 1.0f);
-        context.concatCTM(AffineTransform::translation(offsetXNoScale(boxRect), 0));
-        return;
+        float offsetX = (cellHeight - m_combinedTextWidth) / 2;
+        context.concatCTM(AffineTransform::translation(offsetX, offsetY));
+        width = boxRect.width();
+    } else {
+        ASSERT(m_scaleX > 0.0f);
+        float centerX = boxRect.x() + cellHeight / 2;
+        width = m_combinedTextWidth / m_scaleX;
+        float offsetX = (cellHeight - width) / 2;
+        scaleHorizontallyAndTranslate(context, m_scaleX, centerX, offsetX, offsetY);
     }
-    ASSERT(m_scaleX > 0.0f);
-    float centerX = boxRect.x() + boxRect.width().toFloat() / 2;
-    scaleHorizontallyAndTranslate(context, m_scaleX, centerX, offsetX(boxRect), 0);
-}
 
-void LayoutTextCombine::transformLayoutRect(LayoutRect& boxRect) const
-{
-    ASSERT(!m_needsFontUpdate);
-    ASSERT(m_isCombined);
-    boxRect.move(offsetXNoScale(boxRect), 0);
+    if (clip)
+        context.clip(FloatRect(boxRect.x(), boxRect.y(), width, cellHeight));
 }
 
 void LayoutTextCombine::updateIsCombined()

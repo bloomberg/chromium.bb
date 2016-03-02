@@ -37,8 +37,7 @@ public:
     bool isCombined() const { return m_isCombined; }
     float combinedTextWidth(const Font& font) const { return font.fontDescription().computedSize(); }
     const Font& originalFont() const { return parent()->style()->font(); }
-    void transformToInlineCoordinates(GraphicsContext&, const LayoutRect& boxRect) const;
-    void transformLayoutRect(LayoutRect& boxRect) const;
+    void transformToInlineCoordinates(GraphicsContext&, const LayoutRect& boxRect, bool clip = false) const;
     LayoutUnit inlineWidthForLayout() const;
 
     const char* name() const override { return "LayoutTextCombine"; }
@@ -49,9 +48,6 @@ private:
     void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
     void setTextInternal(PassRefPtr<StringImpl>) override;
     void updateIsCombined();
-
-    float offsetX(const LayoutRect& boxRect) const;
-    float offsetXNoScale(const LayoutRect& boxRect) const;
 
     float m_combinedTextWidth;
     float m_scaleX;
@@ -66,19 +62,6 @@ inline LayoutUnit LayoutTextCombine::inlineWidthForLayout() const
     ASSERT(!m_needsFontUpdate);
     return LayoutUnit::fromFloatCeil(m_combinedTextWidth);
 }
-
-inline float LayoutTextCombine::offsetX(const LayoutRect& boxRect) const
-{
-    ASSERT(!m_needsFontUpdate);
-    return (boxRect.height() - m_combinedTextWidth / m_scaleX) / 2;
-}
-
-inline float LayoutTextCombine::offsetXNoScale(const LayoutRect& boxRect) const
-{
-    ASSERT(!m_needsFontUpdate);
-    return (boxRect.height() - m_combinedTextWidth) / 2;
-}
-
 
 } // namespace blink
 

@@ -472,10 +472,7 @@ void InlineTextBoxPainter::paintSelection(GraphicsContext& context, const Layout
     if (options == InlineTextBoxPainter::PaintOptions::CombinedText) {
         ASSERT(combinedText);
         // We can't use the height of m_inlineTextBox because LayoutTextCombine's inlineTextBox is horizontal within vertical flow
-        LayoutRect clipRect(boxRect);
-        combinedText->transformLayoutRect(clipRect);
-        context.clip(FloatRect(clipRect));
-        combinedText->transformToInlineCoordinates(context, boxRect);
+        combinedText->transformToInlineCoordinates(context, boxRect, true);
         context.drawHighlightForText(font, textRun, FloatPoint(boxRect.location()), boxRect.height(), c, sPos, ePos);
         return;
     }

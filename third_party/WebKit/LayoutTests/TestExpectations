@@ -529,6 +529,12 @@ crbug.com/404597 fast/forms/long-text-in-input.html [ Failure ]
 crbug.com/404597 fast/css/text-overflow-ellipsis-button.html [ Pass Failure ]
 crbug.com/404597 [ Win ] fast/selectors/007a.html [ Pass Failure ]
 
+crbug.com/474038 fast/dynamic/text-combine.html [ NeedsRebaseline ]
+crbug.com/474038 [ Linux Mac ] fast/text/decorations-with-text-combine.html [ NeedsRebaseline ]
+crbug.com/474038 [ Linux ] fast/text/emphasis-combined-text.html [ NeedsRebaseline ]
+crbug.com/474038 [ Linux Mac ] fast/text/international/text-combine-image-test.html [ NeedsRebaseline ]
+crbug.com/474038 fast/writing-mode/text-combine-various-fonts.html [ NeedsRebaseline ]
+
 crbug.com/505364 imported/web-platform-tests/custom-elements/instantiating-custom-elements/extensions-to-document-interface/create-element-interface-type-is-a-type-extension.html [ Failure ]
 
 crbug.com/517840 imported/web-platform-tests/webrtc/rtcpeerconnection/rtcpeerconnection-idl.html [ Failure Timeout ]
@@ -1190,7 +1196,6 @@ crbug.com/521730 [ Win10 ] virtual/threaded/printing/simultaneous-position-float
 crbug.com/521730 [ Win10 ] virtual/threaded/printing/standards-percentage-heights.html [ Failure ]
 crbug.com/521730 [ Win10 ] virtual/threaded/printing/subframes-percentage-height.html [ Failure ]
 crbug.com/521730 [ Win10 ] virtual/threaded/printing/webgl-repeated-printing-preservedrawingbuffer.html [ Failure ]
-crbug.com/521730 [ Win10 ] fast/dynamic/text-combine.html [ Failure ]
 crbug.com/521730 [ Win10 ] fast/ruby/base-shorter-than-text.html [ Failure ]
 crbug.com/521730 [ Win10 ] fast/text/emphasis-combined-text.html [ Failure ]
 crbug.com/521730 [ Win10 ] fast/text/font-weight-variant.html [ Failure ]
