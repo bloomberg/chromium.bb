@@ -1029,8 +1029,14 @@ def CreatePackagableRoot(target, output_dir, ldpaths, root='/'):
   # Link in all the package's files, any ELF dependencies, and wrap any
   # executable ELFs with helper scripts.
   def MoveUsrBinToBin(path):
-    """Move /usr/bin to /bin so people can just use that toplevel dir"""
-    return path[4:] if path.startswith('/usr/bin/') else path
+    """Move /usr/bin to /bin so people can just use that toplevel dir
+
+    Note we do not apply this to clang - there is correlation between clang's
+    search path for libraries / inclusion and its installation path.
+    """
+    if path.startswith('/usr/bin/') and path.find('clang') == -1:
+      return path[4:]
+    return path
   _BuildInitialPackageRoot(output_dir, paths, elfs, ldpaths,
                            path_rewrite_func=MoveUsrBinToBin, root=root)
 
