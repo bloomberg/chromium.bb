@@ -671,7 +671,7 @@ void MagnificationControllerImpl::OnScrollEvent(ui::ScrollEvent* event) {
     }
 
     if (event->type() == ui::ET_SCROLL) {
-      ui::ScrollEvent* scroll_event = static_cast<ui::ScrollEvent*>(event);
+      ui::ScrollEvent* scroll_event = event->AsScrollEvent();
       float scale = GetScale();
       scale += scroll_event->y_offset() * kScrollScaleChangeFactor;
       SetScale(scale, true);

@@ -31,7 +31,9 @@ namespace ui {
 class EventTarget;
 class KeyEvent;
 class MouseEvent;
+class MouseWheelEvent;
 class PointerEvent;
+class ScrollEvent;
 class TouchEvent;
 enum class DomCode;
 
@@ -225,10 +227,21 @@ class EVENTS_EXPORT Event {
   MouseEvent* AsMouseEvent();
   const MouseEvent* AsMouseEvent() const;
 
+  // Convenience methods to cast |this| to a MouseWheelEvent.
+  // IsMouseWheelEvent() must be true as a precondition to calling these
+  // methods.
+  MouseWheelEvent* AsMouseWheelEvent();
+  const MouseWheelEvent* AsMouseWheelEvent() const;
+
   // Convenience methods to cast |this| to a PointerEvent. IsPointerEvent()
   // must be true as a precondition to calling these methods.
   PointerEvent* AsPointerEvent();
   const PointerEvent* AsPointerEvent() const;
+
+  // Convenience methods to cast |this| to a ScrollEvent. IsScrollEvent()
+  // must be true as a precondition to calling these methods.
+  ScrollEvent* AsScrollEvent();
+  const ScrollEvent* AsScrollEvent() const;
 
   // Convenience methods to cast |this| to a TouchEvent. IsTouchEvent()
   // must be true as a precondition to calling these methods.

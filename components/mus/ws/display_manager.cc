@@ -380,7 +380,7 @@ void DefaultDisplayManager::DispatchEvent(ui::Event* event) {
   // This is equivalent to what we're doing in the current Linux port, but
   // done once instead of done multiple times in different places.
   if (event->type() == ui::ET_KEY_PRESSED) {
-    ui::KeyEvent* key_press_event = static_cast<ui::KeyEvent*>(event);
+    ui::KeyEvent* key_press_event = event->AsKeyEvent();
     ui::KeyEvent char_event(key_press_event->GetCharacter(),
                             key_press_event->key_code(),
                             key_press_event->flags());

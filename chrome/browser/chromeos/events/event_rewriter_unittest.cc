@@ -81,8 +81,7 @@ std::string GetRewrittenEventAsString(chromeos::EventRewriter* rewriter,
   scoped_ptr<ui::Event> new_event;
   rewriter->RewriteEvent(event, &new_event);
   if (new_event)
-    return GetKeyEventAsString(
-        static_cast<const ui::KeyEvent&>(*new_event.get()));
+    return GetKeyEventAsString(*new_event->AsKeyEvent());
   return GetKeyEventAsString(event);
 }
 
@@ -149,8 +148,7 @@ class EventRewriterTest : public ash::test::AshTestBase {
       const ui::MouseEvent& event,
       scoped_ptr<ui::Event>* new_event) {
     rewriter->RewriteMouseButtonEventForTesting(event, new_event);
-    return *new_event ? static_cast<const ui::MouseEvent*>(new_event->get())
-                      : &event;
+    return *new_event ? new_event->get()->AsMouseEvent() : &event;
   }
 
   user_manager::FakeUserManager* fake_user_manager_;  // Not owned.
@@ -1892,15 +1890,7 @@ class EventBuffer : public ui::test::TestEventProcessor {
  private:
   // ui::EventProcessor overrides:
   ui::EventDispatchDetails OnEventFromSource(ui::Event* event) override {
-    if (event->IsKeyEvent()) {
-      events_.push_back(new ui::KeyEvent(*static_cast<ui::KeyEvent*>(event)));
-    } else if (event->IsMouseWheelEvent()) {
-      events_.push_back(
-          new ui::MouseWheelEvent(*static_cast<ui::MouseWheelEvent*>(event)));
-    } else if (event->IsMouseEvent()) {
-      events_.push_back(
-          new ui::MouseEvent(*static_cast<ui::MouseEvent*>(event)));
-    }
+    events_.push_back(ui::Event::Clone(*event));
     return ui::EventDispatchDetails();
   }
 

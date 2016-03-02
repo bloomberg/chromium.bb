@@ -107,14 +107,11 @@ void WindowEventDispatcher::RepostEvent(const ui::LocatedEvent* event) {
   // We allow for only one outstanding repostable event. This is used
   // in exiting context menus.  A dropped repost request is allowed.
   if (event->type() == ui::ET_MOUSE_PRESSED) {
-    held_repostable_event_.reset(
-        new ui::MouseEvent(
-            static_cast<const ui::MouseEvent&>(*event),
-            static_cast<aura::Window*>(event->target()),
-            window()));
+    held_repostable_event_.reset(new ui::MouseEvent(
+        *event->AsMouseEvent(), static_cast<aura::Window*>(event->target()),
+        window()));
   } else if (event->type() == ui::ET_TOUCH_PRESSED) {
-    held_repostable_event_.reset(
-        new ui::TouchEvent(static_cast<const ui::TouchEvent&>(*event)));
+    held_repostable_event_.reset(new ui::TouchEvent(*event->AsTouchEvent()));
   } else {
     DCHECK(event->type() == ui::ET_GESTURE_TAP_DOWN);
     held_repostable_event_.reset();
@@ -474,14 +471,11 @@ ui::EventDispatchDetails WindowEventDispatcher::PreDispatchEvent(
 
   DispatchDetails details;
   if (event->IsMouseEvent()) {
-    details = PreDispatchMouseEvent(target_window,
-                                    static_cast<ui::MouseEvent*>(event));
+    details = PreDispatchMouseEvent(target_window, event->AsMouseEvent());
   } else if (event->IsScrollEvent()) {
-    details = PreDispatchLocatedEvent(target_window,
-                                      static_cast<ui::ScrollEvent*>(event));
+    details = PreDispatchLocatedEvent(target_window, event->AsScrollEvent());
   } else if (event->IsTouchEvent()) {
-    details = PreDispatchTouchEvent(target_window,
-                                    static_cast<ui::TouchEvent*>(event));
+    details = PreDispatchTouchEvent(target_window, event->AsTouchEvent());
   }
   if (details.dispatcher_destroyed || details.target_destroyed)
     return details;
@@ -508,8 +502,7 @@ ui::EventDispatchDetails WindowEventDispatcher::PostDispatchEvent(
     // being dispatched.
     if (is_dispatched_held_event(event) || !held_move_event_ ||
         !held_move_event_->IsTouchEvent()) {
-      const ui::TouchEvent& touchevent =
-          static_cast<const ui::TouchEvent&>(event);
+      const ui::TouchEvent& touchevent = *event.AsTouchEvent();
 
       if (!touchevent.synchronous_handling_disabled()) {
         scoped_ptr<ui::GestureRecognizer::Gestures> gestures;

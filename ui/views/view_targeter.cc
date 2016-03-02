@@ -32,12 +32,10 @@ ui::EventTarget* ViewTargeter::FindTargetForEvent(ui::EventTarget* root,
   View* view = static_cast<View*>(root);
 
   if (event->IsKeyEvent())
-    return FindTargetForKeyEvent(view, *static_cast<ui::KeyEvent*>(event));
+    return FindTargetForKeyEvent(view, *event->AsKeyEvent());
 
-  if (event->IsScrollEvent()) {
-    return FindTargetForScrollEvent(view,
-                                    *static_cast<ui::ScrollEvent*>(event));
-  }
+  if (event->IsScrollEvent())
+    return FindTargetForScrollEvent(view, *event->AsScrollEvent());
 
   if (event->IsGestureEvent()) {
     ui::GestureEvent* gesture = event->AsGestureEvent();

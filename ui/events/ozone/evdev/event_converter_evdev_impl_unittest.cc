@@ -124,13 +124,13 @@ class EventConverterEvdevImplTest : public testing::Test {
     DCHECK_GT(dispatched_events_.size(), index);
     ui::Event* ev = dispatched_events_[index].get();
     DCHECK(ev->IsKeyEvent());
-    return static_cast<ui::KeyEvent*>(ev);
+    return ev->AsKeyEvent();
   }
   ui::MouseEvent* dispatched_mouse_event(unsigned index) {
     DCHECK_GT(dispatched_events_.size(), index);
     ui::Event* ev = dispatched_events_[index].get();
     DCHECK(ev->IsMouseEvent());
-    return static_cast<ui::MouseEvent*>(ev);
+    return ev->AsMouseEvent();
   }
 
   void ClearDispatchedEvents() {

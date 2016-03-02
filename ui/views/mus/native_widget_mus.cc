@@ -844,7 +844,7 @@ void NativeWidgetMus::OnScrollEvent(ui::ScrollEvent* event) {
       return;
 
     // Convert unprocessed scroll events into wheel events.
-    ui::MouseWheelEvent mwe(*static_cast<ui::ScrollEvent*>(event));
+    ui::MouseWheelEvent mwe(*event->AsScrollEvent());
     native_widget_delegate_->OnMouseEvent(&mwe);
     if (mwe.handled())
       event->SetHandled();

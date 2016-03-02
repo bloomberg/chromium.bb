@@ -1026,7 +1026,7 @@ void View::OnMouseEvent(ui::MouseEvent* event) {
       return;
 
     case ui::ET_MOUSEWHEEL:
-      if (OnMouseWheel(*static_cast<ui::MouseWheelEvent*>(event)))
+      if (OnMouseWheel(*event->AsMouseWheelEvent()))
         event->SetHandled();
       break;
 

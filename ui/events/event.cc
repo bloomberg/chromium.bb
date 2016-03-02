@@ -215,6 +215,16 @@ const MouseEvent* Event::AsMouseEvent() const {
   return static_cast<const MouseEvent*>(this);
 }
 
+MouseWheelEvent* Event::AsMouseWheelEvent() {
+  CHECK(IsMouseWheelEvent());
+  return static_cast<MouseWheelEvent*>(this);
+}
+
+const MouseWheelEvent* Event::AsMouseWheelEvent() const {
+  CHECK(IsMouseWheelEvent());
+  return static_cast<const MouseWheelEvent*>(this);
+}
+
 PointerEvent* Event::AsPointerEvent() {
   CHECK(IsPointerEvent());
   return static_cast<PointerEvent*>(this);
@@ -223,6 +233,16 @@ PointerEvent* Event::AsPointerEvent() {
 const PointerEvent* Event::AsPointerEvent() const {
   CHECK(IsPointerEvent());
   return static_cast<const PointerEvent*>(this);
+}
+
+ScrollEvent* Event::AsScrollEvent() {
+  CHECK(IsScrollEvent());
+  return static_cast<ScrollEvent*>(this);
+}
+
+const ScrollEvent* Event::AsScrollEvent() const {
+  CHECK(IsScrollEvent());
+  return static_cast<const ScrollEvent*>(this);
 }
 
 TouchEvent* Event::AsTouchEvent() {

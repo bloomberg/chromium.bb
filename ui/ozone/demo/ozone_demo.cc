@@ -145,8 +145,7 @@ class DemoWindow : public ui::PlatformWindowDelegate {
   void OnBoundsChanged(const gfx::Rect& new_bounds) override {}
   void OnDamageRect(const gfx::Rect& damaged_region) override {}
   void DispatchEvent(ui::Event* event) override {
-    if (event->IsKeyEvent() &&
-        static_cast<ui::KeyEvent*>(event)->code() == ui::DomCode::US_Q)
+    if (event->IsKeyEvent() && event->AsKeyEvent()->code() == ui::DomCode::US_Q)
       Quit();
   }
   void OnCloseRequest() override { Quit(); }

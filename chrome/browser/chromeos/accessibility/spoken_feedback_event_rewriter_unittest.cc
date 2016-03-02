@@ -24,7 +24,7 @@ class EventCapturer : public ui::EventHandler {
 
   void OnEvent(ui::Event* event) override {
     if (event->IsKeyEvent())
-      events_.push_back(new ui::KeyEvent(static_cast<ui::KeyEvent&>(*event)));
+      events_.push_back(new ui::KeyEvent(*event->AsKeyEvent()));
   }
 
   const ScopedVector<ui::KeyEvent>& captured_events() const { return events_; }

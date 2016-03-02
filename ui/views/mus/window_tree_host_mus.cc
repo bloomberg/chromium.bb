@@ -46,7 +46,7 @@ PlatformWindowMus* WindowTreeHostMus::platform_window() {
 
 void WindowTreeHostMus::DispatchEvent(ui::Event* event) {
   if (event->IsKeyEvent() && GetInputMethod()) {
-    GetInputMethod()->DispatchKeyEvent(static_cast<ui::KeyEvent*>(event));
+    GetInputMethod()->DispatchKeyEvent(event->AsKeyEvent());
     event->StopPropagation();
     return;
   }
