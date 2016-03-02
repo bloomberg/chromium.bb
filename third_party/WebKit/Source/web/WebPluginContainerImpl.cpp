@@ -111,7 +111,9 @@ void WebPluginContainerImpl::setFrameRect(const IntRect& frameRect)
 
 void WebPluginContainerImpl::layoutIfNeeded()
 {
-    RELEASE_ASSERT(m_webPlugin);
+    if (!m_webPlugin)
+        return;
+
     m_webPlugin->layoutIfNeeded();
 }
 
