@@ -96,6 +96,7 @@ nyan_freon-paladin
 nyan_freon-release
 oak-paladin
 [oak-release-group]
+  elm-release
   oak-release
 panther-paladin
 panther_embedded-minimal-release

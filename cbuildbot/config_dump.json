@@ -6027,6 +6027,173 @@
             "-chrome_internal"
         ]
     },
+    "elm-chrome-pfq": {
+        "_template": "chrome-pfq",
+        "boards": [
+            "elm"
+        ],
+        "important": false,
+        "manifest": "official.xml",
+        "vm_tests": []
+    },
+    "elm-chromium-pfq": {
+        "_template": "chromium-pfq",
+        "boards": [
+            "elm"
+        ],
+        "description": "Preflight Chromium Uprev & Build (internal)",
+        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
+        "important": false,
+        "internal": true,
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "prebuilts": "public",
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "elm-compile-only-pre-cq": {
+        "_template": "compile-only-pre-cq",
+        "boards": [
+            "elm"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ]
+    },
+    "elm-full": {
+        "_template": "full",
+        "boards": [
+            "elm"
+        ],
+        "prebuilts": "public",
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "elm-no-vmtest-pre-cq": {
+        "_template": "no-vmtest-pre-cq",
+        "boards": [
+            "elm"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ]
+    },
+    "elm-paladin": {
+        "_template": "paladin",
+        "boards": [
+            "elm"
+        ],
+        "description": "Commit Queue (internal)",
+        "important": false,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "prebuilts": "private",
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [],
+        "vm_tests_override": null
+    },
+    "elm-payloads": {
+        "_template": "payloads",
+        "boards": [
+            "elm"
+        ]
+    },
+    "elm-pre-cq": {
+        "_template": "pre-cq",
+        "boards": [
+            "elm"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "elm-release": {
+        "_template": "release",
+        "boards": [
+            "elm"
+        ],
+        "vm_tests": []
+    },
+    "elm-release-afdo": {
+        "_template": "release-afdo-generate",
+        "boards": [
+            "elm"
+        ],
+        "child_configs": [
+            {
+                "_template": "release-afdo-generate",
+                "boards": [
+                    "elm"
+                ],
+                "grouped": true,
+                "name": "elm-release-afdo-generate",
+                "vm_tests": []
+            },
+            {
+                "_template": "release-afdo-use",
+                "boards": [
+                    "elm"
+                ],
+                "grouped": true,
+                "name": "elm-release-afdo-use",
+                "vm_tests": []
+            }
+        ],
+        "vm_tests": []
+    },
+    "elm-release-afdo-generate": {
+        "_template": "release-afdo-generate",
+        "boards": [
+            "elm"
+        ],
+        "vm_tests": []
+    },
+    "elm-release-afdo-use": {
+        "_template": "release-afdo-use",
+        "boards": [
+            "elm"
+        ],
+        "vm_tests": []
+    },
+    "elm-tot-chrome-pfq-informational": {
+        "_template": "chrome-pfq-informational",
+        "boards": [
+            "elm"
+        ],
+        "manifest": "official.xml",
+        "vm_tests": []
+    },
+    "elm-tot-chromium-pfq-informational": {
+        "_template": "chromium-pfq-informational",
+        "boards": [
+            "elm"
+        ],
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
+    },
     "enguarde-chrome-pfq": {
         "_template": "chrome-pfq",
         "boards": [
@@ -12898,9 +13065,25 @@
                     "-chrome_internal"
                 ],
                 "vm_tests": []
+            },
+            {
+                "_template": "full",
+                "boards": [
+                    "elm"
+                ],
+                "build_packages_in_background": true,
+                "chrome_sdk_build_chrome": false,
+                "grouped": true,
+                "name": "elm-full",
+                "prebuilts": "public",
+                "unittests": null,
+                "useflags": [
+                    "-chrome_internal"
+                ],
+                "vm_tests": []
             }
         ],
-        "description": "Full Builds; Group config (boards: oak)",
+        "description": "Full Builds; Group config (boards: oak, elm)",
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
@@ -13021,10 +13204,21 @@
                 "grouped": true,
                 "name": "oak-release",
                 "vm_tests": []
+            },
+            {
+                "_template": "release",
+                "boards": [
+                    "elm"
+                ],
+                "build_packages_in_background": true,
+                "chrome_sdk_build_chrome": false,
+                "grouped": true,
+                "name": "elm-release",
+                "unittests": null,
+                "vm_tests": []
             }
         ],
-        "description": "Release Builds (canary) (internal); Group config (boards: oak)",
-        "important": true,
+        "description": "Release Builds (canary) (internal); Group config (boards: oak, elm)",
         "vm_tests": []
     },
     "oak-tot-chrome-pfq-informational": {

@@ -350,6 +350,7 @@ _arm_internal_release_boards = frozenset([
     'daisy',
     'daisy_skate',
     'daisy_spring',
+    'elm',
     'kayle',
     'nyan',
     'nyan_big',
@@ -604,6 +605,7 @@ _waterfall_config_map = {
 
         # Experimental Canaries (Group)
         'glados-release-group',
+        'oak-release-group',
         'storm-release-group',
 
         # Experimental Canaries
@@ -2740,7 +2742,9 @@ def GetConfig():
   # oak-based boards
   _AddGroupConfig(
       'oak', 'oak', (
-      )
+          'elm',
+      ),
+      important=False,
   )
 
   # glados-based boards
