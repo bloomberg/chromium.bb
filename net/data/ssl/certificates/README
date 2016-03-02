@@ -207,6 +207,10 @@ unit tests.
 - client_2.key
 - client_2.pk8
 - client_2_ca.pem
+- client_3.pem
+- client_3.key
+- client_3.pk8
+- client_3_ca.pem
      This is a set of files used to unit test SSL client certificate
      authentication.
      - client_1_ca.pem and client_2_ca.pem are the certificates of
@@ -217,6 +221,10 @@ unit tests.
        private key for a second certificate signed by client_2_ca.pem.
      - each .pk8 file contains the same key as the corresponding .key file
        as PKCS#8 PrivateKeyInfo in DER encoding.
+     - client_3.pem is nearly identical to client_2.pem, except it is used
+       to test wifi EAP-TLS authentication so it uses a different set
+       of X509v3 extensions.  Specifically it includes two Subject
+       Alternative Name fields recognized by Chrome OS.
 
 ===== From net/data/ssl/scripts/generate-android-test-key.sh
 - android-test-key-rsa.pem

@@ -42,6 +42,9 @@ distinguished_name = req_env_dn
 basicConstraints = critical, CA:false
 extendedKeyUsage = serverAuth,clientAuth
 
+[san_user_cert]
+subjectAltName = email:santest@example.com,otherName:msUPN;UTF8:santest@ad.corp.example.com
+
 [ca_cert]
 # Extensions to add when signing a request for an intermediate/CA cert
 basicConstraints = critical, CA:true

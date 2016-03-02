@@ -37,7 +37,7 @@ do
 done
 
 echo Generate the keys.
-for i in A B C D E
+for i in A B C D E F
 do
   try openssl genrsa -out out/$i.key 2048
 done
@@ -104,7 +104,7 @@ COMMON_NAME="C CA" \
     -config client-certs.cnf
 
 echo Generate the leaf certs
-for id in A D
+for id in A D F
 do
   COMMON_NAME="Client Cert $id" \
   ID=$id \
@@ -143,10 +143,22 @@ COMMON_NAME="E CA" \
     -out out/D.pem \
     -config client-certs.cnf
 
+echo E signs F
+COMMON_NAME="E CA" \
+  CA_DIR=out \
+  ID=E \
+  try openssl ca \
+    -batch \
+    -extensions san_user_cert \
+    -in out/F.csr \
+    -out out/F.pem \
+    -config client-certs.cnf
+
 echo Package the client certs and private keys into PKCS12 files
 # This is done for easily importing all of the certs needed for clients.
 try /bin/sh -c "cat out/A.pem out/A.key out/B.pem out/C.pem > out/A-chain.pem"
 try /bin/sh -c "cat out/D.pem out/D.key out/E.pem out/C.pem > out/D-chain.pem"
+try /bin/sh -c "cat out/F.pem out/F.key out/E.pem out/C.pem > out/F-chain.pem"
 
 try openssl pkcs12 \
   -in out/A-chain.pem \
@@ -160,6 +172,12 @@ try openssl pkcs12 \
   -export \
   -passout pass:chrome
 
+try openssl pkcs12 \
+  -in out/F-chain.pem \
+  -out client_3.p12 \
+  -export \
+  -passout pass:chrome
+
 echo Package the client certs for unit tests
 try cp out/A.pem ../certificates/client_1.pem
 try cp out/A.key ../certificates/client_1.key
@@ -170,3 +188,8 @@ try cp out/D.pem ../certificates/client_2.pem
 try cp out/D.key ../certificates/client_2.key
 try cp out/D.pk8 ../certificates/client_2.pk8
 try cp out/E.pem ../certificates/client_2_ca.pem
+
+try cp out/F.pem ../certificates/client_3.pem
+try cp out/F.key ../certificates/client_3.key
+try cp out/F.pk8 ../certificates/client_3.pk8
+try cp out/E.pem ../certificates/client_3_ca.pem
