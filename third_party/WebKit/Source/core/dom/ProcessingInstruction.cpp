@@ -42,7 +42,6 @@ inline ProcessingInstruction::ProcessingInstruction(Document& document, const St
     , m_target(target)
     , m_loading(false)
     , m_alternate(false)
-    , m_createdByParser(false)
     , m_isCSS(false)
     , m_isXSL(false)
     , m_listenerForXSLT(nullptr)
@@ -267,7 +266,7 @@ Node::InsertionNotificationRequest ProcessingInstruction::insertedInto(Container
     String charset;
     bool isValid = checkStyleSheet(href, charset);
     if (!DocumentXSLT::processingInstructionInsertedIntoDocument(document(), this))
-        document().styleEngine().addStyleSheetCandidateNode(this, m_createdByParser);
+        document().styleEngine().addStyleSheetCandidateNode(this);
     if (isValid)
         process(href, charset);
     return InsertionDone;

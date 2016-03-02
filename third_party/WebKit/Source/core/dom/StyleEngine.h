@@ -86,7 +86,7 @@ public:
     const WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet>> activeStyleSheetsForInspector() const;
 
     void modifiedStyleSheet(StyleSheet*);
-    void addStyleSheetCandidateNode(Node*, bool createdByParser);
+    void addStyleSheetCandidateNode(Node*);
     void removeStyleSheetCandidateNode(Node*);
     void removeStyleSheetCandidateNode(Node*, TreeScope&);
     void modifiedStyleSheetCandidateNode(Node*);

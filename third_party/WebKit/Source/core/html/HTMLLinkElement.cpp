@@ -284,7 +284,7 @@ Node::InsertionNotificationRequest HTMLLinkElement::insertedInto(ContainerNode* 
         return InsertionDone;
     }
 
-    document().styleEngine().addStyleSheetCandidateNode(this, m_createdByParser);
+    document().styleEngine().addStyleSheetCandidateNode(this);
 
     process();
 

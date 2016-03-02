@@ -42,9 +42,6 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
     const String& target() const { return m_target; }
-
-    void setCreatedByParser(bool createdByParser) { m_createdByParser = createdByParser; }
-
     const String& localHref() const { return m_localHref; }
     StyleSheet* sheet() const { return m_sheet.get(); }
 
@@ -108,7 +105,6 @@ private:
     RefPtrWillBeMember<StyleSheet> m_sheet;
     bool m_loading;
     bool m_alternate;
-    bool m_createdByParser;
     bool m_isCSS;
     bool m_isXSL;
 

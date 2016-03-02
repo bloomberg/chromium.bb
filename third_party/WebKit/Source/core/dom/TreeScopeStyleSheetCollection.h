@@ -47,7 +47,7 @@ class StyleRuleFontFace;
 
 class CORE_EXPORT TreeScopeStyleSheetCollection : public StyleSheetCollection {
 public:
-    void addStyleSheetCandidateNode(Node*, bool createdByParser);
+    void addStyleSheetCandidateNode(Node*);
     void removeStyleSheetCandidateNode(Node* node) { m_styleSheetCandidateNodes.remove(node); }
     bool hasStyleSheetCandidateNodes() const { return !m_styleSheetCandidateNodes.isEmpty(); }
 

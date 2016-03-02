@@ -199,7 +199,7 @@ void StyleEngine::modifiedStyleSheet(StyleSheet* sheet)
     markTreeScopeDirty(treeScope);
 }
 
-void StyleEngine::addStyleSheetCandidateNode(Node* node, bool createdByParser)
+void StyleEngine::addStyleSheetCandidateNode(Node* node)
 {
     if (!node->inDocument() || document().isDetached())
         return;
@@ -209,7 +209,7 @@ void StyleEngine::addStyleSheetCandidateNode(Node* node, bool createdByParser)
     ASSERT(!isXSLStyleSheet(*node));
     TreeScopeStyleSheetCollection* collection = ensureStyleSheetCollectionFor(treeScope);
     ASSERT(collection);
-    collection->addStyleSheetCandidateNode(node, createdByParser);
+    collection->addStyleSheetCandidateNode(node);
 
     markTreeScopeDirty(treeScope);
     if (treeScope != m_document)

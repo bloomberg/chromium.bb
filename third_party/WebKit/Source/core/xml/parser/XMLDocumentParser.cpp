@@ -1210,11 +1210,7 @@ void XMLDocumentParser::processingInstruction(const String& target, const String
     if (exceptionState.hadException())
         return;
 
-    pi->setCreatedByParser(true);
-
     m_currentNode->parserAppendChild(pi.get());
-
-    pi->setCreatedByParser(false);
 
     if (pi->isCSS())
         m_sawCSS = true;

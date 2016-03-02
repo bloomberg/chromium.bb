@@ -68,7 +68,7 @@ StyleElement::ProcessingResult StyleElement::processStyleSheet(Document& documen
     ASSERT(element->inDocument());
 
     m_registeredAsCandidate = true;
-    document.styleEngine().addStyleSheetCandidateNode(element, m_createdByParser);
+    document.styleEngine().addStyleSheetCandidateNode(element);
     if (m_createdByParser)
         return ProcessingSuccessful;
 

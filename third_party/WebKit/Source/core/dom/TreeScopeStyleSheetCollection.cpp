@@ -44,7 +44,7 @@ TreeScopeStyleSheetCollection::TreeScopeStyleSheetCollection(TreeScope& treeScop
 {
 }
 
-void TreeScopeStyleSheetCollection::addStyleSheetCandidateNode(Node* node, bool createdByParser)
+void TreeScopeStyleSheetCollection::addStyleSheetCandidateNode(Node* node)
 {
     if (!node->inDocument())
         return;
