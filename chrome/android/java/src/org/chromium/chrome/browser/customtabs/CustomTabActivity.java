@@ -777,6 +777,7 @@ public class CustomTabActivity extends ChromeActivity {
      * Lets the original Activity know how this {@link CustomTabActivity} was finished.
      */
     private void createHerbResultIntent(int result) {
+        if (getActivityTab() == null) return;
         Intent resultIntent = new Intent();
 
         switch (result) {
