@@ -223,23 +223,12 @@ bool HungRendererDialogView::IsFrameActive(WebContents* contents) {
   return platform_util::IsWindowActive(window);
 }
 
-// static
-void HungRendererDialogView::KillRendererProcess(
-    content::RenderProcessHost* rph) {
-#if defined(OS_WIN)
-  // Try to generate a crash report for the hung process.
-  CrashDumpAndTerminateHungChildProcess(rph->GetHandle());
-#else
-  rph->Shutdown(content::RESULT_CODE_HUNG, false);
-#endif
-}
-
-
 HungRendererDialogView::HungRendererDialogView()
     : info_label_(nullptr),
       hung_pages_table_(nullptr),
       kill_button_(nullptr),
-      initialized_(false) {
+      initialized_(false),
+      kill_button_clicked_(false) {
   InitClass();
 }
 
@@ -332,20 +321,13 @@ void HungRendererDialogView::WindowClosing() {
 }
 
 int HungRendererDialogView::GetDialogButtons() const {
-  // We specifically don't want a CANCEL button here because that code path is
-  // also called when the window is closed by the user clicking the X button in
-  // the window's titlebar, and also if we call Window::Close. Rather, we want
-  // the OK button to wait for responsiveness (and close the dialog) and our
-  // additional button (which we create) to kill the process (which will result
-  // in the dialog being destroyed).
-  return ui::DIALOG_BUTTON_OK;
+  return ui::DIALOG_BUTTON_CANCEL;
 }
 
 base::string16 HungRendererDialogView::GetDialogButtonLabel(
     ui::DialogButton button) const {
-  if (button == ui::DIALOG_BUTTON_OK)
-    return l10n_util::GetStringUTF16(IDS_BROWSER_HANGMONITOR_RENDERER_WAIT);
-  return views::DialogDelegateView::GetDialogButtonLabel(button);
+  DCHECK_EQ(ui::DIALOG_BUTTON_CANCEL, button);
+  return l10n_util::GetStringUTF16(IDS_BROWSER_HANGMONITOR_RENDERER_WAIT);
 }
 
 views::View* HungRendererDialogView::CreateExtraView() {
@@ -356,21 +338,16 @@ views::View* HungRendererDialogView::CreateExtraView() {
   return kill_button_;
 }
 
-bool HungRendererDialogView::Accept(bool window_closing) {
-  // Don't do anything if we're being called only because the dialog is being
-  // destroyed and we don't supply a Cancel function...
-  if (window_closing)
-    return true;
-
+bool HungRendererDialogView::Cancel() {
   // Start waiting again for responsiveness.
-  if (hung_pages_table_model_->GetRenderViewHost()) {
+  if (!kill_button_clicked_ &&
+      hung_pages_table_model_->GetRenderViewHost()) {
     hung_pages_table_model_->GetRenderViewHost()
         ->GetWidget()
         ->RestartHangMonitorTimeout();
   }
   return true;
 }
-
 
 bool HungRendererDialogView::UseNewStyleForThisDialog() const {
 #if defined(OS_WIN)
@@ -387,10 +364,18 @@ bool HungRendererDialogView::UseNewStyleForThisDialog() const {
 
 void HungRendererDialogView::ButtonPressed(
     views::Button* sender, const ui::Event& event) {
-  if (sender == kill_button_ &&
-      hung_pages_table_model_->GetRenderProcessHost()) {
-    KillRendererProcess(hung_pages_table_model_->GetRenderProcessHost());
-  }
+  DCHECK_EQ(kill_button_, sender);
+  kill_button_clicked_ = true;
+  content::RenderProcessHost* rph =
+      hung_pages_table_model_->GetRenderProcessHost();
+  if (!rph)
+    return;
+#if defined(OS_WIN)
+  // Try to generate a crash report for the hung process.
+  CrashDumpAndTerminateHungChildProcess(rph->GetHandle());
+#else
+  rph->Shutdown(content::RESULT_CODE_HUNG, false);
+#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////

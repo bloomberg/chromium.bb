@@ -110,10 +110,6 @@ class HungRendererDialogView : public views::DialogDelegateView,
   static void Show(content::WebContents* contents);
   static void Hide(content::WebContents* contents);
 
-  // Platform specific function to kill the renderer process identified by the
-  // render process host passed in.
-  static void KillRendererProcess(content::RenderProcessHost* rph);
-
   // Returns true if the frame is in the foreground.
   static bool IsFrameActive(content::WebContents* contents);
 
@@ -126,7 +122,7 @@ class HungRendererDialogView : public views::DialogDelegateView,
   int GetDialogButtons() const override;
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
   views::View* CreateExtraView() override;
-  bool Accept(bool window_closing) override;
+  bool Cancel() override;
   bool UseNewStyleForThisDialog() const override;
 
   // views::ButtonListener overrides:
@@ -169,6 +165,8 @@ class HungRendererDialogView : public views::DialogDelegateView,
 
   // Whether or not we've created controls for ourself.
   bool initialized_;
+
+  bool kill_button_clicked_;
 
   DISALLOW_COPY_AND_ASSIGN(HungRendererDialogView);
 };

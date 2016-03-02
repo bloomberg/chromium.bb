@@ -68,7 +68,7 @@ DialogClientView::~DialogClientView() {
 
 void DialogClientView::AcceptWindow() {
   // Only notify the delegate once. See |delegate_allowed_close_|'s comment.
-  if (!delegate_allowed_close_ && GetDialogDelegate()->Accept(false)) {
+  if (!delegate_allowed_close_ && GetDialogDelegate()->Accept()) {
     delegate_allowed_close_ = true;
     GetWidget()->Close();
   }

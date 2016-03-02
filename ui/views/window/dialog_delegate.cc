@@ -102,10 +102,6 @@ bool DialogDelegate::Cancel() {
   return true;
 }
 
-bool DialogDelegate::Accept(bool window_closing) {
-  return Accept();
-}
-
 bool DialogDelegate::Accept() {
   return true;
 }
@@ -116,7 +112,7 @@ bool DialogDelegate::Close() {
       (buttons == ui::DIALOG_BUTTON_NONE)) {
     return Cancel();
   }
-  return Accept(true);
+  return Accept();
 }
 
 base::string16 DialogDelegate::GetDialogTitle() const {

@@ -71,10 +71,6 @@ class VIEWS_EXPORT DialogDelegate : public ui::DialogModel,
   // or the Enter key. It can also be called on a close action if |Close|
   // has not been overridden. This function should return true if the window
   // can be closed after it returns, or false if it must remain open.
-  // If |window_closing| is true, it means that this handler is
-  // being called because the window is being closed (e.g.  by Window::Close)
-  // and there is no Cancel handler, so Accept is being called instead.
-  virtual bool Accept(bool window_closing);
   virtual bool Accept();
 
   // Called when the user closes the window without selecting an option,
