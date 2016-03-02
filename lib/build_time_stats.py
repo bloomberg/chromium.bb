@@ -219,12 +219,16 @@ def CalculateBuildStats(builds_timings):
     builds_timings: List of BuildTiming objects.
 
   Returns:
-    Success rate of builds, as a float.
+    Successful build count as int.
+    Timeout build count as int.
+    Total build count as int.
     TimeDeltaStats object,or None if no valid builds.
   """
-  successful = [b for b in builds_timings if b.success]
-  success_rate = len(successful) / float(len(builds_timings))
-  return success_rate, CalculateTimeStats([b.duration for b in successful])
+  timeout_count = sum(1 for b in builds_timings if b.finish is None)
+  successful = [b.duration for b in builds_timings if b.success]
+  time_stats = CalculateTimeStats(successful)
+
+  return len(successful), timeout_count, len(builds_timings), time_stats
 
 
 def CalculateStageStats(builds_timings):
@@ -298,7 +302,7 @@ def FindAndSortStageStats(focus_build, builds_timings):
   return stage_names, focus_stages, stats_stages
 
 
-def BreakBuildsByMonths(timings):
+def GroupBuildsByMonths(timings):
   """Break a list into distinct months.
 
   Args:
@@ -322,6 +326,43 @@ def BreakBuildsByMonths(timings):
   return all_months
 
 
+def GroupBuildsByConfig(builds_timings):
+  """Turn a list of BuildTiming objects into a map based on config name.
+
+  This is useful when looking at waterfall groups (cq, canary, etc), if you
+  want stats per builder in that group.
+
+  Args:
+    builds_timings: List of BuildTiming objects to display stats for.
+
+  Returns:
+    A dictionary of the form {config_name: [BuildTiming, ...]}
+  """
+  config_map = {}
+  for b in builds_timings:
+    config_map.setdefault(b.build_config, []).append(b)
+
+  return config_map
+
+
+def Percent(numerator, denominator):
+  """Convert two integers into a display friendly percentage string.
+
+  Percent(5, 10) -> ' 50%'
+  Percent(5, 5) -> '100%'
+  Percent(1, 100) -> '  1%'
+  Percent(1, 1000) -> '  0%'
+
+  Args:
+    numerator: Integer.
+    denominator: Integer.
+
+  Returns:
+    string formatted result.
+  """
+  return '%3d%%' % int(100 * (numerator / float(denominator)))
+
+
 def Report(output, description, focus_build, builds_timings,
            stages=True, trending=False, csv=False):
   """Generate a report describing our stats.
@@ -334,9 +375,6 @@ def Report(output, description, focus_build, builds_timings,
     stages: Include a per-stage break down in the report.
     trending: Display the listed builds as broken down by month.
     csv: Output data in CSV format for spreadsheet import.
-
-  Returns:
-    The generated report as a multi-line string.
   """
   builds_timings.sort(key=lambda b: b.id)
 
@@ -352,10 +390,11 @@ def Report(output, description, focus_build, builds_timings,
                   builds_timings[0].id,
                   builds_timings[-1].id))
 
-    success_rate, build_stats = CalculateBuildStats(builds_timings)
-    output.write(' %s success %.2f %s\n' % (
+    success, timeouts, total, build_stats = CalculateBuildStats(builds_timings)
+    output.write(' %s success %s timeouts %s %s\n' % (
         focus_build.duration if focus_build else '',
-        success_rate,
+        Percent(success, total),
+        Percent(timeouts, total),
         build_stats,
     ))
 
@@ -376,16 +415,20 @@ def Report(output, description, focus_build, builds_timings,
                                             s.finish if s else ''))
 
   if trending:
-    all_months = BreakBuildsByMonths(builds_timings)
+    all_months = GroupBuildsByMonths(builds_timings)
     output.write('\n')
 
     # Report stats per month.
     for month_timings in all_months:
-      success_rate, month_stats = CalculateBuildStats(month_timings)
+      success, timeouts, total, build_stats = CalculateBuildStats(month_timings)
+
       prefix = '%s-%s:' % (month_timings[0].start.year,
                            month_timings[0].start.month)
-      output.write('%s success %.2f %s\n' % (
-          prefix.ljust(9), success_rate, month_stats
+      output.write('%s success %s timeouts %s %s\n' % (
+          prefix.ljust(9),
+          Percent(success, total),
+          Percent(timeouts, total),
+          build_stats,
       ))
 
       if stages:
@@ -410,9 +453,6 @@ def ReportCsv(output, description, focus_build, builds_timings, stages=True):
     focus_build: A BuildTiming object for a build to compare against stats.
     builds_timings: List of BuildTiming objects to display stats for.
     stages: Include a per-stage break down in the report.
-
-  Returns:
-    The generated report as a multi-line string.
   """
   builds_timings.sort(key=lambda b: b.id)
 
@@ -451,8 +491,10 @@ def ReportCsv(output, description, focus_build, builds_timings, stages=True):
         row.extend(['', s.duration, '', '', ''])
 
   # All builds row.
-  success_rate, build_stats = CalculateBuildStats(builds_timings)
-  row = ['ALL', success_rate, build_stats.median, build_stats.mean,
+  successes, _, total, build_stats = CalculateBuildStats(builds_timings)
+  row = ['ALL',
+         Percent(successes, total),
+         build_stats.median, build_stats.mean,
          build_stats.min, build_stats.max]
 
   if stages:
@@ -465,11 +507,13 @@ def ReportCsv(output, description, focus_build, builds_timings, stages=True):
   rows.append(row)
 
   # Report stats per month.
-  for month_timings in BreakBuildsByMonths(builds_timings):
-    success_rate, month_stats = CalculateBuildStats(month_timings)
+  for month_timings in GroupBuildsByMonths(builds_timings):
+    successes, _, total, month_stats = CalculateBuildStats(month_timings)
     prefix = '%s-%s' % (month_timings[0].start.year,
                         month_timings[0].start.month)
-    row = [prefix, success_rate, month_stats.median, month_stats.mean,
+    row = [prefix,
+           Percent(successes, total),
+           month_stats.median, month_stats.mean,
            month_stats.min, month_stats.max]
 
     if stages:
@@ -499,3 +543,43 @@ def ReportCsv(output, description, focus_build, builds_timings, stages=True):
   output.write(ColumnsToCsvText(subheaders))
   for row in rows:
     output.write(ColumnsToCsvText(row))
+
+
+def StabilityReport(output, description, builds_timings):
+  """Generate a report describing general health of our builds.
+
+  Args:
+    output: A file object to write the report too.
+    description: A user friendly string description what the report covers.
+    builds_timings: List of BuildTiming objects to display stats for.
+  """
+  assert builds_timings
+
+  builds_timings.sort(key=lambda b: b.id, reverse=True)
+
+  output.write('%s\n' % description)
+
+  timeout_map = GroupBuildsByConfig(builds_timings)
+
+  # Get a list of all build_configs present.
+  build_configs = timeout_map.keys()
+
+  stats_map = {name: CalculateBuildStats(timeout_map[name])
+               for name in build_configs}
+
+  # Sort lowest success rate to the highest.
+  # TODO: Make this sorting configurable.
+  build_configs.sort(key=lambda n: stats_map[n][0] / float(stats_map[n][2]))
+
+  max_name_len = max(len(name) for name in build_configs)
+
+  for name in build_configs:
+    successes, timeouts, total, _ = stats_map[name]
+
+    justified_name = ('%s:' % name).ljust(max_name_len + 1)
+
+    output.write('%s %s successes %s timeouts %d builds.\n' %
+                 (justified_name,
+                  Percent(successes, total),
+                  Percent(timeouts, total),
+                  total))

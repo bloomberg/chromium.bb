@@ -78,6 +78,11 @@ def GetParser():
   parser.add_argument('--nostages', dest='stages', action='store_false',
                       help='Do not show stats for all stages run.')
 
+  report_group = parser.add_mutually_exclusive_group()
+  report_group.add_argument('--report', default='standard',
+                            choices=['standard', 'stability'],
+                            help='What type of report to generate?')
+
   return parser
 
 
@@ -144,11 +149,17 @@ def main(argv):
     return 1
 
   # Report results.
-  build_time_stats.Report(
-      sys.stdout,
-      description,
-      focus_build,
-      builds_timings,
-      options.stages,
-      options.trending,
-      options.csv)
+  if options.report == 'standard':
+    build_time_stats.Report(
+        sys.stdout,
+        description,
+        focus_build,
+        builds_timings,
+        options.stages,
+        options.trending,
+        options.csv)
+  elif options.report == 'stability':
+    build_time_stats.StabilityReport(
+        sys.stdout,
+        description,
+        builds_timings)

@@ -268,6 +268,26 @@ class BuildTimeStatsReportTest(cros_test_lib.TestCase):
                     duration=datetime.timedelta(hours=2))
             ]
         ),
+        build_time_stats.BuildTiming(
+            id=5,
+            build_config='timeout_config',
+            success=False,
+            start=start3,
+            finish=None,
+            duration=datetime.timedelta(hours=6),
+            stages=[
+                build_time_stats.StageTiming(
+                    name='start',
+                    start=datetime.timedelta(0),
+                    finish=datetime.timedelta(hours=2),
+                    duration=datetime.timedelta(hours=2)),
+                build_time_stats.StageTiming(
+                    name='build',
+                    start=datetime.timedelta(hours=2),
+                    finish=datetime.timedelta(hours=4),
+                    duration=datetime.timedelta(hours=2))
+            ]
+        ),
     ]
 
   def testReportNoFocusNoStagesNoTrend(self):
@@ -281,8 +301,8 @@ class BuildTimeStatsReportTest(cros_test_lib.TestCase):
         trending=False)
 
     expected = '''description
-Averages for 4 Builds: 1 - 4
-  success 0.75 median 6:00:00 mean 6:40:00 min 6:00:00 max 8:00:00
+Averages for 5 Builds: 1 - 5
+  success  60% timeouts  20% median 6:00:00 mean 6:40:00 min 6:00:00 max 8:00:00
 '''
     self.assertMultiLineEqual(expected, result.getvalue())
 
@@ -297,8 +317,8 @@ Averages for 4 Builds: 1 - 4
         trending=False)
 
     expected = '''description
-Averages for 4 Builds: 1 - 4
- 12:00:00 success 0.75 median 6:00:00 mean 6:40:00 min 6:00:00 max 8:00:00
+Averages for 5 Builds: 1 - 5
+ 12:00:00 success  60% timeouts  20% median 6:00:00 mean 6:40:00 min 6:00:00 max 8:00:00
 '''
     self.assertMultiLineEqual(expected, result.getvalue())
 
@@ -313,8 +333,8 @@ Averages for 4 Builds: 1 - 4
         trending=False)
 
     expected = '''description
-Averages for 4 Builds: 1 - 4
-  success 0.75 median 6:00:00 mean 6:40:00 min 6:00:00 max 8:00:00
+Averages for 5 Builds: 1 - 5
+  success  60% timeouts  20% median 6:00:00 mean 6:40:00 min 6:00:00 max 8:00:00
 
 start:
   start:     median 0:00:00 mean 0:00:00 min 0:00:00 max 0:00:00
@@ -338,8 +358,8 @@ build:
         trending=False)
 
     expected = '''description
-Averages for 4 Builds: 1 - 4
- 12:00:00 success 0.75 median 6:00:00 mean 6:40:00 min 6:00:00 max 8:00:00
+Averages for 5 Builds: 1 - 5
+ 12:00:00 success  60% timeouts  20% median 6:00:00 mean 6:40:00 min 6:00:00 max 8:00:00
 
 start:
   start:    0:00:00 median 0:00:00 mean 0:00:00 min 0:00:00 max 0:00:00
@@ -363,11 +383,11 @@ build:
         trending=True,)
 
     expected = '''description
-Averages for 4 Builds: 1 - 4
-  success 0.75 median 6:00:00 mean 6:40:00 min 6:00:00 max 8:00:00
+Averages for 5 Builds: 1 - 5
+  success  60% timeouts  20% median 6:00:00 mean 6:40:00 min 6:00:00 max 8:00:00
 
-2014-11:  success 1.00 median 8:00:00 mean 7:00:00 min 6:00:00 max 8:00:00
-2014-12:  success 0.50 median 6:00:00 mean 6:00:00 min 6:00:00 max 6:00:00
+2014-11:  success 100% timeouts   0% median 8:00:00 mean 7:00:00 min 6:00:00 max 8:00:00
+2014-12:  success  33% timeouts  33% median 6:00:00 mean 6:00:00 min 6:00:00 max 6:00:00
 '''
     self.assertMultiLineEqual(expected, result.getvalue())
 
@@ -382,8 +402,8 @@ Averages for 4 Builds: 1 - 4
         trending=True,)
 
     expected = '''description
-Averages for 4 Builds: 1 - 4
- 12:00:00 success 0.75 median 6:00:00 mean 6:40:00 min 6:00:00 max 8:00:00
+Averages for 5 Builds: 1 - 5
+ 12:00:00 success  60% timeouts  20% median 6:00:00 mean 6:40:00 min 6:00:00 max 8:00:00
 
 start:
   start:    0:00:00 median 0:00:00 mean 0:00:00 min 0:00:00 max 0:00:00
@@ -394,7 +414,7 @@ build:
   duration: 6:00:00 median 2:00:00 mean 2:40:00 min 2:00:00 max 4:00:00
   finish:   12:00:00 median 4:00:00 mean 5:20:00 min 4:00:00 max 8:00:00
 
-2014-11:  success 1.00 median 8:00:00 mean 7:00:00 min 6:00:00 max 8:00:00
+2014-11:  success 100% timeouts   0% median 8:00:00 mean 7:00:00 min 6:00:00 max 8:00:00
   start:
     start:    median 0:00:00 mean 0:00:00 min 0:00:00 max 0:00:00
     duration: median 4:00:00 mean 3:00:00 min 2:00:00 max 4:00:00
@@ -403,7 +423,7 @@ build:
     start:    median 4:00:00 mean 3:00:00 min 2:00:00 max 4:00:00
     duration: median 4:00:00 mean 3:00:00 min 2:00:00 max 4:00:00
     finish:   median 8:00:00 mean 6:00:00 min 4:00:00 max 8:00:00
-2014-12:  success 0.50 median 6:00:00 mean 6:00:00 min 6:00:00 max 6:00:00
+2014-12:  success  33% timeouts  33% median 6:00:00 mean 6:00:00 min 6:00:00 max 6:00:00
   start:
     start:    median 0:00:00 mean 0:00:00 min 0:00:00 max 0:00:00
     duration: median 2:00:00 mean 2:00:00 min 2:00:00 max 2:00:00
@@ -426,12 +446,12 @@ build:
         trending=True,
         csv=True)
 
-    expected = '''"description", "Averages for 4 Builds: 1 - 4"
+    expected = '''"description", "Averages for 5 Builds: 1 - 5"
 "", "Build", "", "", "", ""
 "", "success", "median", "mean", "min", "max"
-"ALL", "0.75", "6:00:00", "6:40:00", "6:00:00", "8:00:00"
-"2014-11", "1.0", "8:00:00", "7:00:00", "6:00:00", "8:00:00"
-"2014-12", "0.5", "6:00:00", "6:00:00", "6:00:00", "6:00:00"
+"ALL", " 60%", "6:00:00", "6:40:00", "6:00:00", "8:00:00"
+"2014-11", "100%", "8:00:00", "7:00:00", "6:00:00", "8:00:00"
+"2014-12", " 33%", "6:00:00", "6:00:00", "6:00:00", "6:00:00"
 '''
     self.assertMultiLineEqual(expected, result.getvalue())
 
@@ -447,12 +467,12 @@ build:
         csv=True)
 
     # pylint: disable=line-too-long
-    expected = '''"description", "Averages for 4 Builds: 1 - 4"
+    expected = '''"description", "Averages for 5 Builds: 1 - 5"
 "", "Build", "", "", "", "", "start", "", "", "", "", "build", "", "", "", ""
 "", "success", "median", "mean", "min", "max", "success", "median", "mean", "min", "max", "success", "median", "mean", "min", "max"
-"ALL", "0.75", "6:00:00", "6:40:00", "6:00:00", "8:00:00", "", "2:00:00", "2:40:00", "2:00:00", "4:00:00", "", "2:00:00", "2:40:00", "2:00:00", "4:00:00"
-"2014-11", "1.0", "8:00:00", "7:00:00", "6:00:00", "8:00:00", "", "4:00:00", "3:00:00", "2:00:00", "4:00:00", "", "4:00:00", "3:00:00", "2:00:00", "4:00:00"
-"2014-12", "0.5", "6:00:00", "6:00:00", "6:00:00", "6:00:00", "", "2:00:00", "2:00:00", "2:00:00", "2:00:00", "", "2:00:00", "2:00:00", "2:00:00", "2:00:00"
+"ALL", " 60%", "6:00:00", "6:40:00", "6:00:00", "8:00:00", "", "2:00:00", "2:40:00", "2:00:00", "4:00:00", "", "2:00:00", "2:40:00", "2:00:00", "4:00:00"
+"2014-11", "100%", "8:00:00", "7:00:00", "6:00:00", "8:00:00", "", "4:00:00", "3:00:00", "2:00:00", "4:00:00", "", "4:00:00", "3:00:00", "2:00:00", "4:00:00"
+"2014-12", " 33%", "6:00:00", "6:00:00", "6:00:00", "6:00:00", "", "2:00:00", "2:00:00", "2:00:00", "2:00:00", "", "2:00:00", "2:00:00", "2:00:00", "2:00:00"
 '''
     self.assertMultiLineEqual(expected, result.getvalue())
 
@@ -467,13 +487,13 @@ build:
         trending=True,
         csv=True)
 
-    expected = '''"description", "Averages for 4 Builds: 1 - 4"
+    expected = '''"description", "Averages for 5 Builds: 1 - 5"
 "", "Build", "", "", "", ""
 "", "success", "median", "mean", "min", "max"
 "Focus", "True", "12:00:00", "", "", ""
-"ALL", "0.75", "6:00:00", "6:40:00", "6:00:00", "8:00:00"
-"2014-11", "1.0", "8:00:00", "7:00:00", "6:00:00", "8:00:00"
-"2014-12", "0.5", "6:00:00", "6:00:00", "6:00:00", "6:00:00"
+"ALL", " 60%", "6:00:00", "6:40:00", "6:00:00", "8:00:00"
+"2014-11", "100%", "8:00:00", "7:00:00", "6:00:00", "8:00:00"
+"2014-12", " 33%", "6:00:00", "6:00:00", "6:00:00", "6:00:00"
 '''
     self.assertMultiLineEqual(expected, result.getvalue())
 
@@ -490,12 +510,25 @@ build:
         csv=True)
 
     # pylint: disable=line-too-long
-    expected = '''"description", "Averages for 4 Builds: 1 - 4"
+    expected = '''"description", "Averages for 5 Builds: 1 - 5"
 "", "Build", "", "", "", "", "start", "", "", "", "", "build", "", "", "", ""
 "", "success", "median", "mean", "min", "max", "success", "median", "mean", "min", "max", "success", "median", "mean", "min", "max"
 "Focus", "True", "12:00:00", "", "", "", "", "8:00:00", "", "", "", "", "6:00:00", "", "", ""
-"ALL", "0.75", "6:00:00", "6:40:00", "6:00:00", "8:00:00", "", "2:00:00", "2:40:00", "2:00:00", "4:00:00", "", "2:00:00", "2:40:00", "2:00:00", "4:00:00"
-"2014-11", "1.0", "8:00:00", "7:00:00", "6:00:00", "8:00:00", "", "4:00:00", "3:00:00", "2:00:00", "4:00:00", "", "4:00:00", "3:00:00", "2:00:00", "4:00:00"
-"2014-12", "0.5", "6:00:00", "6:00:00", "6:00:00", "6:00:00", "", "2:00:00", "2:00:00", "2:00:00", "2:00:00", "", "2:00:00", "2:00:00", "2:00:00", "2:00:00"
+"ALL", " 60%", "6:00:00", "6:40:00", "6:00:00", "8:00:00", "", "2:00:00", "2:40:00", "2:00:00", "4:00:00", "", "2:00:00", "2:40:00", "2:00:00", "4:00:00"
+"2014-11", "100%", "8:00:00", "7:00:00", "6:00:00", "8:00:00", "", "4:00:00", "3:00:00", "2:00:00", "4:00:00", "", "4:00:00", "3:00:00", "2:00:00", "4:00:00"
+"2014-12", " 33%", "6:00:00", "6:00:00", "6:00:00", "6:00:00", "", "2:00:00", "2:00:00", "2:00:00", "2:00:00", "", "2:00:00", "2:00:00", "2:00:00", "2:00:00"
+'''
+    self.assertMultiLineEqual(expected, result.getvalue())
+
+  def testStabilityReport(self):
+    result = StringIO.StringIO()
+    build_time_stats.StabilityReport(
+        result,
+        'description',
+        self.builds_timings)
+
+    expected = '''description
+timeout_config:   0% successes 100% timeouts 1 builds.
+test_config:     75% successes   0% timeouts 4 builds.
 '''
     self.assertMultiLineEqual(expected, result.getvalue())
