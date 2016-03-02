@@ -2,6 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 {
+  'variables': {
+    'files': [
+      # Required by some font tests.
+      'testing/data/',
+    ],
+  },
   'conditions': [
     ['OS=="linux" or OS=="mac" or OS=="win"', {
       'variables': {
@@ -23,5 +29,7 @@
   ],
   'includes': [
     '../../../../base/base.isolate',
+    # Required on Android to copy icudtl.dat to a device.
+    '../../../icu/icu.isolate',
   ],
 }
