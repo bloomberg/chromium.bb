@@ -25,6 +25,8 @@
       'capture/content/video_capture_oracle.h',
       'capture/device_monitor_mac.h',
       'capture/device_monitor_mac.mm',
+      'capture/system_message_window_win.cc',
+      'capture/system_message_window_win.h',
       'capture/video/android/video_capture_device_android.cc',
       'capture/video/android/video_capture_device_android.h',
       'capture/video/android/video_capture_device_factory_android.cc',
@@ -89,22 +91,18 @@
       'capture/content/smooth_event_sampler_unittest.cc',
       'capture/content/video_capture_oracle_unittest.cc',
       'capture/video/fake_video_capture_device_unittest.cc',
+      'capture/video/mac/video_capture_device_factory_mac_unittest.mm',
+      'capture/system_message_window_win_unittest.cc',
       'capture/video/video_capture_device_unittest.cc'
     ],
 
-    # The following files lack the correct platform suffixes.
+    # The following files lack appropriate platform suffixes.
     'conditions': [
       ['OS=="linux" and use_udev==1', {
         'capture_sources': [
           'capture/device_monitor_udev.cc',
           'capture/device_monitor_udev.h',
         ],
-      }],
-
-      ['OS=="mac"', {
-        'capture_unittests_sources': [
-          'capture/video/mac/video_capture_device_factory_mac_unittest.mm',
-        ]
       }],
     ],
   },

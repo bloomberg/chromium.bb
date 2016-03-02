@@ -33,7 +33,9 @@ class ScopedIPCSupport;
 
 namespace media {
 class AudioManager;
-#if defined(OS_LINUX) && defined(USE_UDEV)
+#if defined(OS_WIN)
+class SystemMessageWindowWin;
+#elif defined(OS_LINUX) && defined(USE_UDEV)
 class DeviceMonitorLinux;
 #endif
 class UserInputMonitor;
@@ -69,8 +71,6 @@ struct MainFunctionParams;
 
 #if defined(OS_ANDROID)
 class ScreenOrientationDelegate;
-#elif defined(OS_WIN)
-class SystemMessageWindowWin;
 #endif
 
 // Implements the main browser loop stages called from BrowserMainRunner.
@@ -199,10 +199,6 @@ class CONTENT_EXPORT BrowserMainLoop {
   scoped_ptr<base::trace_event::TraceEventSystemStatsMonitor>
       system_stats_monitor_;
 
-#if defined(OS_WIN)
-  scoped_ptr<SystemMessageWindowWin> system_message_window_;
-#endif
-
 #if defined(OS_ANDROID)
   // Android implementation of ScreenOrientationDelegate
   scoped_ptr<ScreenOrientationDelegate> screen_orientation_delegate_;
@@ -251,7 +247,9 @@ class CONTENT_EXPORT BrowserMainLoop {
 
   scoped_ptr<media::midi::MidiManager> midi_manager_;
 
-#if defined(OS_LINUX) && defined(USE_UDEV)
+#if defined(OS_WIN)
+  scoped_ptr<media::SystemMessageWindowWin> system_message_window_;
+#elif defined(OS_LINUX) && defined(USE_UDEV)
   scoped_ptr<media::DeviceMonitorLinux> device_monitor_linux_;
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
   scoped_ptr<media::DeviceMonitorMac> device_monitor_mac_;

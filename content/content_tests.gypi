@@ -610,7 +610,6 @@
       'browser/storage_partition_impl_unittest.cc',
       'browser/streams/stream_unittest.cc',
       'browser/streams/stream_url_request_job_unittest.cc',
-      'browser/system_message_window_win_unittest.cc',
       'browser/tracing/background_tracing_config_unittest.cc',
       'browser/wake_lock/wake_lock_service_context_unittest.cc',
       'browser/web_contents/aura/overscroll_navigation_overlay_unittest.cc',

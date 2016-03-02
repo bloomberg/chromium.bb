@@ -800,11 +800,6 @@
               'dependencies': [
                 '<(DEPTH)/device/udev_linux/udev.gyp:udev_linux',
               ],
-
-              'capture_sources': [
-                'capture/device_monitor_udev.cc',
-                'capture/device_monitor_udev.h',
-              ],
             }],
           ],
         }],

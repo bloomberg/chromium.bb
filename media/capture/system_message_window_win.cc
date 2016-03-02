@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/system_message_window_win.h"
+#include "media/capture/system_message_window_win.h"
 
 #include <dbt.h>
 #include <stddef.h>
@@ -13,7 +13,7 @@
 #include "base/win/wrapped_window_proc.h"
 #include "media/audio/win/core_audio_util_win.h"
 
-namespace content {
+namespace media {
 
 namespace {
 const wchar_t kWindowClassName[] = L"Chrome_SystemMessageWindow";
@@ -23,21 +23,17 @@ struct {
   const GUID device_category;
   const base::SystemMonitor::DeviceType device_type;
 } const kDeviceCategoryMap[] = {
-  { KSCATEGORY_AUDIO, base::SystemMonitor::DEVTYPE_AUDIO_CAPTURE },
-  { KSCATEGORY_VIDEO, base::SystemMonitor::DEVTYPE_VIDEO_CAPTURE },
+    {KSCATEGORY_AUDIO, base::SystemMonitor::DEVTYPE_AUDIO_CAPTURE},
+    {KSCATEGORY_VIDEO, base::SystemMonitor::DEVTYPE_VIDEO_CAPTURE},
 };
 }  // namespace
 
 // Manages the device notification handles for SystemMessageWindowWin.
 class SystemMessageWindowWin::DeviceNotifications {
  public:
-  explicit DeviceNotifications(HWND hwnd) : notifications_() {
-    Register(hwnd);
-  }
+  explicit DeviceNotifications(HWND hwnd) : notifications_() { Register(hwnd); }
 
-  ~DeviceNotifications() {
-    Unregister();
-  }
+  ~DeviceNotifications() { Unregister(); }
 
   void Register(HWND hwnd) {
     // Request to receive device notifications.  All applications receive basic
@@ -79,20 +75,18 @@ class SystemMessageWindowWin::DeviceNotifications {
   DISALLOW_IMPLICIT_CONSTRUCTORS(DeviceNotifications);
 };
 
-
 SystemMessageWindowWin::SystemMessageWindowWin() {
   WNDCLASSEX window_class;
   base::win::InitializeWindowClass(
       kWindowClassName,
-      &base::win::WrappedWindowProc<SystemMessageWindowWin::WndProcThunk>,
-      0, 0, 0, NULL, NULL, NULL, NULL, NULL,
-      &window_class);
+      &base::win::WrappedWindowProc<SystemMessageWindowWin::WndProcThunk>, 0, 0,
+      0, NULL, NULL, NULL, NULL, NULL, &window_class);
   instance_ = window_class.hInstance;
   ATOM clazz = RegisterClassEx(&window_class);
   DCHECK(clazz);
 
-  window_ = CreateWindow(kWindowClassName,
-                         0, 0, 0, 0, 0, 0, 0, 0, instance_, 0);
+  window_ =
+      CreateWindow(kWindowClassName, 0, 0, 0, 0, 0, 0, 0, 0, instance_, 0);
   SetWindowLongPtr(window_, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this));
   device_notifications_.reset(new DeviceNotifications(window_));
 }
@@ -124,10 +118,9 @@ LRESULT SystemMessageWindowWin::OnDeviceChange(UINT event_type, LPARAM data) {
           reinterpret_cast<DEV_BROADCAST_DEVICEINTERFACE*>(data);
       if (device_interface->dbcc_devicetype != DBT_DEVTYP_DEVICEINTERFACE)
         return TRUE;
-      for (size_t i = 0; i < arraysize(kDeviceCategoryMap); ++i) {
-        if (kDeviceCategoryMap[i].device_category ==
-            device_interface->dbcc_classguid) {
-          device_type = kDeviceCategoryMap[i].device_type;
+      for (const auto& map_entry : kDeviceCategoryMap) {
+        if (map_entry.device_category == device_interface->dbcc_classguid) {
+          device_type = map_entry.device_type;
           break;
         }
       }
@@ -149,8 +142,10 @@ LRESULT SystemMessageWindowWin::OnDeviceChange(UINT event_type, LPARAM data) {
   return TRUE;
 }
 
-LRESULT CALLBACK SystemMessageWindowWin::WndProc(HWND hwnd, UINT message,
-                                                 WPARAM wparam, LPARAM lparam) {
+LRESULT CALLBACK SystemMessageWindowWin::WndProc(HWND hwnd,
+                                                 UINT message,
+                                                 WPARAM wparam,
+                                                 LPARAM lparam) {
   switch (message) {
     case WM_DEVICECHANGE:
       return OnDeviceChange(static_cast<UINT>(wparam), lparam);
@@ -161,4 +156,4 @@ LRESULT CALLBACK SystemMessageWindowWin::WndProc(HWND hwnd, UINT message,
   return ::DefWindowProc(hwnd, message, wparam, lparam);
 }
 
-}  // namespace content
+}  // namespace media

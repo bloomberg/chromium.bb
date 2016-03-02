@@ -1530,8 +1530,6 @@
       'browser/streams/stream_url_request_job.cc',
       'browser/streams/stream_url_request_job.h',
       'browser/streams/stream_write_observer.h',
-      'browser/system_message_window_win.cc',
-      'browser/system_message_window_win.h',
       'browser/theme_helper_mac.h',
       'browser/theme_helper_mac.mm',
       'browser/time_zone_monitor.cc',

@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_SYSTEM_MESSAGE_WINDOW_WIN_H_
-#define CONTENT_BROWSER_SYSTEM_MESSAGE_WINDOW_WIN_H_
+#ifndef MEDIA_CAPTURE_SYSTEM_MESSAGE_WINDOW_WIN_H_
+#define MEDIA_CAPTURE_SYSTEM_MESSAGE_WINDOW_WIN_H_
 
 #include <windows.h>
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "content/common/content_export.h"
+#include "media/base/media_export.h"
 
-namespace content {
+namespace media {
 
-class CONTENT_EXPORT SystemMessageWindowWin {
+class MEDIA_EXPORT SystemMessageWindowWin {
  public:
   SystemMessageWindowWin();
 
@@ -24,8 +24,10 @@ class CONTENT_EXPORT SystemMessageWindowWin {
  private:
   void Init();
 
-  LRESULT CALLBACK WndProc(HWND hwnd, UINT message,
-                           WPARAM wparam, LPARAM lparam);
+  LRESULT CALLBACK WndProc(HWND hwnd,
+                           UINT message,
+                           WPARAM wparam,
+                           LPARAM lparam);
 
   static LRESULT CALLBACK WndProcThunk(HWND hwnd,
                                        UINT message,
@@ -46,6 +48,6 @@ class CONTENT_EXPORT SystemMessageWindowWin {
   DISALLOW_COPY_AND_ASSIGN(SystemMessageWindowWin);
 };
 
-}  // namespace content
+}  // namespace media
 
-#endif  // CONTENT_BROWSER_SYSTEM_MESSAGE_WINDOW_WIN_H_
+#endif  // MEDIA_CAPTURE_SYSTEM_MESSAGE_WINDOW_WIN_H_

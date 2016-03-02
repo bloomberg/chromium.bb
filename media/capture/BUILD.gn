@@ -24,6 +24,8 @@ source_set("capture") {
     "content/video_capture_oracle.h",
     "device_monitor_mac.h",
     "device_monitor_mac.mm",
+    "system_message_window_win.cc",
+    "system_message_window_win.h",
     "video/android/video_capture_device_android.cc",
     "video/android/video_capture_device_android.h",
     "video/android/video_capture_device_factory_android.cc",
@@ -140,7 +142,9 @@ source_set("unittests") {
     "content/feedback_signal_accumulator_unittest.cc",
     "content/smooth_event_sampler_unittest.cc",
     "content/video_capture_oracle_unittest.cc",
+    "system_message_window_win_unittest.cc",
     "video/fake_video_capture_device_unittest.cc",
+    "video/mac/video_capture_device_factory_mac_unittest.mm",
     "video/video_capture_device_unittest.cc",
   ]
 
@@ -152,8 +156,4 @@ source_set("unittests") {
 
   # TODO(mcasas): Fix size_t to int truncation warning-treated-as-errors.
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
-
-  if (is_mac) {
-    sources += [ "video/mac/video_capture_device_factory_mac_unittest.mm" ]
-  }
 }

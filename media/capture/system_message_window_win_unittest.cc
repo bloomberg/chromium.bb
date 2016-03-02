@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/system_message_window_win.h"
+#include "media/capture/system_message_window_win.h"
 
 #include <dbt.h>
 #include <string>
@@ -14,7 +14,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace content {
+namespace media {
 
 class SystemMessageWindowWinTest : public testing::Test {
  public:
@@ -42,4 +42,4 @@ TEST_F(SystemMessageWindowWinTest, RandomMessage) {
   message_loop_.RunUntilIdle();
 }
 
-}  // namespace content
+}  // namespace media

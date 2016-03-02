@@ -131,7 +131,6 @@
 #include <shellapi.h>
 
 #include "base/memory/memory_pressure_monitor_win.h"
-#include "content/browser/system_message_window_win.h"
 #include "content/common/sandbox_win.h"
 #include "net/base/winsock_init.h"
 #include "ui/base/l10n/l10n_util_win.h"
@@ -146,7 +145,9 @@
 #include <glib-object.h>
 #endif
 
-#if defined(OS_LINUX) && defined(USE_UDEV)
+#if defined(OS_WIN)
+#include "media/capture/system_message_window_win.h"
+#elif defined(OS_LINUX) && defined(USE_UDEV)
 #include "media/capture/device_monitor_udev.h"
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
 #include "media/capture/device_monitor_mac.h"
@@ -591,10 +592,6 @@ void BrowserMainLoop::PostMainMessageLoopStart() {
             base::ThreadTaskRunnerHandle::Get()));
   }
 #endif  // !defined(OS_IOS)
-
-#if defined(OS_WIN)
-  system_message_window_.reset(new SystemMessageWindowWin);
-#endif
 
   // TODO(boliu): kSingleProcess check is a temporary workaround for
   // in-process Android WebView. crbug.com/503724 tracks proper fix.
@@ -1253,7 +1250,9 @@ int BrowserMainLoop::BrowserThreadsStarted() {
     midi_manager_.reset(media::midi::MidiManager::Create());
   }
 
-#if defined(OS_LINUX) && defined(USE_UDEV)
+#if defined(OS_WIN)
+  system_message_window_.reset(new media::SystemMessageWindowWin);
+#elif defined(OS_LINUX) && defined(USE_UDEV)
   device_monitor_linux_.reset(
       new media::DeviceMonitorLinux(io_thread_->task_runner()));
 #elif defined(OS_MACOSX)
