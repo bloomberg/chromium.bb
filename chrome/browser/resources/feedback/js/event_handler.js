@@ -13,7 +13,43 @@ var FEEDBACK_WIDTH = 500;
  */
 var FEEDBACK_HEIGHT = 585;
 
+/**
+ * @type {string}
+ * @const
+ */
+var FEEDBACK_DEFAULT_WINDOW_ID = 'default_window';
+
+/**
+ * The feedback info received initially when the feedback UI was first requested
+ * to start.
+ * @type {Object}
+ */
 var initialFeedbackInfo = null;
+
+/**
+ * The feedbak info that is ready to be sent later when the system information
+ * becomes available.
+ * @type {Object}
+ */
+var finalFeedbackInfo = null;
+
+/**
+ * The system information received from the C++ side.
+ * @type {Object}
+ */
+var systemInfo = null;
+
+/**
+ * True if the system information has been received, false otherwise.
+ * @type {boolean}
+ */
+var isSystemInfoReady = false;
+
+/**
+ * A callback to be invoked when the system information is ready.
+ * @type {function(sysInfo)}
+ */
+var onSystemInfoReadyCallback = null;
 
 // To generate a hashed extension ID, use a sha-256 hash, all in lower case.
 // Example:
@@ -128,24 +164,97 @@ function requestFeedbackHandler(request, sender, sendResponse) {
 }
 
 /**
+ * Called when the system information is sent from the C++ side.
+ * @param {Object} sysInfo The received system information.
+ */
+
+function getSystemInformationCallback(sysInfo) {
+  systemInfo = sysInfo;
+  isSystemInfoReady = true;
+  if (onSystemInfoReadyCallback != null)
+    onSystemInfoReadyCallback(sysInfo);
+}
+
+/**
+ * If the user requested to send the report before the system information was
+ * received, this callback will be invoked once the system information is ready
+ * to send the report then.
+ * @param {Object} sysInfo The received system information.
+ */
+
+function onSysInfoReadyForSend(sysInfo) {
+  // Combine the newly received system information with whatever system
+  // information we have in the final feedback info (if any).
+  if (finalFeedbackInfo.systemInformation) {
+    finalFeedbackInfo.systemInformation =
+        finalFeedbackInfo.systemInformation.concat(sysInfo);
+  } else {
+    finalFeedbackInfo.systemInformation = sysInfo;
+  }
+
+  chrome.feedbackPrivate.sendFeedback(finalFeedbackInfo, function(result) {});
+}
+
+/**
  * Callback which starts up the feedback UI.
  * @param {Object} feedbackInfo Object containing any initial feedback info.
  */
 function startFeedbackUI(feedbackInfo) {
   initialFeedbackInfo = feedbackInfo;
-  var win = chrome.app.window.get('default_window');
+  finalFeedbackInfo = null;
+  systemInfo = null;
+  isSystemInfoReady = false;
+  onSystemInfoReadyCallback = null;
+
+  chrome.feedbackPrivate.getSystemInformation(getSystemInformationCallback);
+
+  var win = chrome.app.window.get(FEEDBACK_DEFAULT_WINDOW_ID);
   if (win) {
     win.show();
     return;
   }
   chrome.app.window.create('html/default.html', {
       frame: 'none',
-      id: 'default_window',
+      id: FEEDBACK_DEFAULT_WINDOW_ID,
       width: FEEDBACK_WIDTH,
       height: FEEDBACK_HEIGHT,
       hidden: true,
       resizable: false },
-      function(appWindow) {});
+      function(appWindow) {
+        // Define some functions for the new window so that it can call back
+        // into here.
+
+        // Define a function for the new window to get the system information.
+        // Returns null if the system information is not ready yet.
+        appWindow.contentWindow.getSystemInformation = function() {
+          return systemInfo;
+        };
+
+        // Define a function to be called by the new window when the report is
+        // not ready yet, and has to be sent later when the system information
+        // is received.
+        appWindow.contentWindow.sendReportLater = function(feedbackInfo) {
+          finalFeedbackInfo = feedbackInfo;
+          if (!isSystemInfoReady) {
+            onSystemInfoReadyCallback = onSysInfoReadyForSend;
+            return;
+          }
+
+          onSysInfoReadyForSend(systemInfo);
+        };
+
+        // Returns whether the system information has been received or not.
+        appWindow.contentWindow.isSystemInfoReady = function() {
+          return isSystemInfoReady;
+        };
+
+        // Registers a callback that will be invoked when the system information
+        // is received.
+        appWindow.contentWindow.setOnSystemInfoReadyCallback =
+            function(callback) {
+              onSystemInfoReadyCallback = callback;
+            };
+      });
 }
 
 chrome.runtime.onMessage.addListener(feedbackReadyHandler);
