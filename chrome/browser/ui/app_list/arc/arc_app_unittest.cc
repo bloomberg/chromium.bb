@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_model_builder.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/app_list/test/test_app_list_controller_delegate.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/arc/test/fake_app_instance.h"
@@ -326,8 +327,7 @@ TEST_F(ArcAppModelBuilderTest, LaunchApps) {
 
 TEST_F(ArcAppModelBuilderTest, RequestIcons) {
   // Make sure we are on UI thread.
-  ASSERT_EQ(true,
-            content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  ASSERT_TRUE(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   bridge_service()->SetReady();
   app_instance()->RefreshAppList();
@@ -387,8 +387,7 @@ TEST_F(ArcAppModelBuilderTest, RequestIcons) {
 
 TEST_F(ArcAppModelBuilderTest, InstallIcon) {
   // Make sure we are on UI thread.
-  ASSERT_EQ(true,
-            content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  ASSERT_TRUE(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   bridge_service()->SetReady();
   app_instance()->RefreshAppList();
@@ -439,8 +438,7 @@ TEST_F(ArcAppModelBuilderTest, InstallIcon) {
 
 TEST_F(ArcAppModelBuilderTest, RemoveAppCleanUpFolder) {
   // Make sure we are on UI thread.
-  ASSERT_EQ(true,
-            content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  ASSERT_TRUE(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   bridge_service()->SetReady();
   app_instance()->RefreshAppList();
@@ -474,4 +472,48 @@ TEST_F(ArcAppModelBuilderTest, RemoveAppCleanUpFolder) {
   content::BrowserThread::GetBlockingPool()->FlushForTesting();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(true, !base::PathExists(app_path));
+}
+
+TEST_F(ArcAppModelBuilderTest, LastLaunchTime) {
+  // Make sure we are on UI thread.
+  ASSERT_TRUE(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  bridge_service()->SetReady();
+  app_instance()->RefreshAppList();
+  app_instance()->SendRefreshAppList(
+      std::vector<arc::AppInfo>(fake_apps().begin(), fake_apps().begin() + 2));
+  const arc::AppInfo& app1 = fake_apps()[0];
+  const arc::AppInfo& app2 = fake_apps()[1];
+  const std::string id1 = ArcAppTest::GetAppId(app1);
+  const std::string id2 = ArcAppTest::GetAppId(app2);
+
+  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_.get());
+  ASSERT_NE(nullptr, prefs);
+
+  scoped_ptr<ArcAppListPrefs::AppInfo> app_info = prefs->GetApp(id1);
+  ASSERT_NE(nullptr, app_info.get());
+
+  EXPECT_EQ(base::Time(), app_info->last_launch_time);
+
+  // Test direct setting last launch time.
+  base::Time now_time = base::Time::Now();
+  prefs->SetLastLaunchTime(id1, now_time);
+
+  app_info = prefs->GetApp(id1);
+  ASSERT_NE(nullptr, app_info.get());
+  EXPECT_EQ(now_time, app_info->last_launch_time);
+
+  // Test setting last launch time via LaunchApp.
+  app_info = prefs->GetApp(id2);
+  ASSERT_NE(nullptr, app_info.get());
+  EXPECT_EQ(base::Time(), app_info->last_launch_time);
+
+  base::Time time_before = base::Time::Now();
+  arc::LaunchApp(profile(), id2);
+  base::Time time_after = base::Time::Now();
+
+  app_info = prefs->GetApp(id2);
+  ASSERT_NE(nullptr, app_info.get());
+  ASSERT_LE(time_before, app_info->last_launch_time);
+  ASSERT_GE(time_after, app_info->last_launch_time);
 }

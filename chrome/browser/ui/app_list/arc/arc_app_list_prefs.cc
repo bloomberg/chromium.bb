@@ -10,8 +10,8 @@
 
 #include "base/files/file_util.h"
 #include "base/macros.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/task_runner_util.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs_factory.h"
 #include "chrome/common/pref_names.h"
 #include "components/crx_file/id_util.h"
@@ -24,6 +24,7 @@ namespace {
 const char kName[] = "name";
 const char kPackageName[] = "package_name";
 const char kActivity[] = "activity";
+const char kLastLaunchTime[] = "lastlaunchtime";
 
 // Provider of write access to a dictionary storing ARC app prefs.
 class ScopedArcAppListPrefUpdate : public DictionaryPrefUpdate {
@@ -236,9 +237,23 @@ scoped_ptr<ArcAppListPrefs::AppInfo> ArcAppListPrefs::GetApp(
   app->GetString(kName, &name);
   app->GetString(kPackageName, &package_name);
   app->GetString(kActivity, &activity);
-  scoped_ptr<AppInfo> app_info(
-      new AppInfo(name, package_name, activity, ready_apps_.count(app_id) > 0));
 
+  base::Time last_launch_time;
+  std::string last_launch_time_str;
+  if (app->GetString(kLastLaunchTime, &last_launch_time_str)) {
+    int64_t last_launch_time_i64 = 0;
+    if (base::StringToInt64(last_launch_time_str, &last_launch_time_i64)) {
+      last_launch_time = base::Time::FromInternalValue(last_launch_time_i64);
+    } else {
+      NOTREACHED();
+    }
+  }
+
+  scoped_ptr<AppInfo> app_info(new AppInfo(name,
+                                           package_name,
+                                           activity,
+                                           last_launch_time,
+                                           ready_apps_.count(app_id) > 0));
   return app_info;
 }
 
@@ -249,6 +264,19 @@ bool ArcAppListPrefs::IsRegistered(const std::string& app_id) const {
     return false;
 
   return true;
+}
+
+void ArcAppListPrefs::SetLastLaunchTime(const std::string& app_id,
+                                        const base::Time& time) {
+  if (!IsRegistered(app_id)) {
+    NOTREACHED();
+    return;
+  }
+
+  ScopedArcAppListPrefUpdate update(prefs_, app_id);
+  base::DictionaryValue* app_dict = update.Get();
+  const std::string string_value = base::Int64ToString(time.ToInternalValue());
+  app_dict->SetString(kLastLaunchTime, string_value);
 }
 
 void ArcAppListPrefs::DisableAllApps() {
@@ -314,7 +342,11 @@ void ArcAppListPrefs::AddApp(const arc::AppInfo& app) {
                       observer_list_,
                       OnAppReadyChanged(app_id, true));
   } else {
-    AppInfo app_info(app.name, app.package_name, app.activity, true);
+    AppInfo app_info(app.name,
+                     app.package_name,
+                     app.activity,
+                     base::Time(),
+                     true);
     FOR_EACH_OBSERVER(Observer,
                       observer_list_,
                       OnAppRegistered(app_id, app_info));
@@ -335,15 +367,16 @@ void ArcAppListPrefs::AddApp(const arc::AppInfo& app) {
 void ArcAppListPrefs::RemoveApp(const std::string& app_id) {
   // From now, app is not available.
   ready_apps_.erase(app_id);
-  FOR_EACH_OBSERVER(Observer,
-                    observer_list_,
-                    OnAppRemoved(app_id));
 
   // Remove from prefs.
   DictionaryPrefUpdate update(prefs_, prefs::kArcApps);
   base::DictionaryValue* apps = update.Get();
   const bool removed = apps->Remove(app_id, nullptr);
   DCHECK(removed);
+
+  FOR_EACH_OBSERVER(Observer,
+                    observer_list_,
+                    OnAppRemoved(app_id));
 
   // Remove local data on file system.
   const base::FilePath app_path = GetAppPath(app_id);
@@ -447,8 +480,10 @@ void ArcAppListPrefs::OnIconInstalled(const std::string& app_id,
 ArcAppListPrefs::AppInfo::AppInfo(const std::string& name,
                                   const std::string& package_name,
                                   const std::string& activity,
+                                  const base::Time& last_launch_time,
                                   bool ready)
     : name(name),
       package_name(package_name),
       activity(activity),
+      last_launch_time(last_launch_time),
       ready(ready) {}

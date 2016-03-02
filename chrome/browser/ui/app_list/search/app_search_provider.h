@@ -5,11 +5,12 @@
 #ifndef CHROME_BROWSER_UI_APP_LIST_SEARCH_APP_SEARCH_PROVIDER_H_
 #define CHROME_BROWSER_UI_APP_LIST_SEARCH_APP_SEARCH_PROVIDER_H_
 
+#include <vector>
+
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
-#include "extensions/browser/extension_registry_observer.h"
 #include "ui/app_list/search_provider.h"
 
 class AppListControllerDelegate;
@@ -17,11 +18,6 @@ class Profile;
 
 namespace base {
 class Clock;
-}
-
-namespace extensions {
-class ExtensionRegistry;
-class ExtensionSet;
 }
 
 namespace app_list {
@@ -32,9 +28,12 @@ namespace test {
 class AppSearchProviderTest;
 }
 
-class AppSearchProvider : public SearchProvider,
-                          public extensions::ExtensionRegistryObserver {
+class AppSearchProvider : public SearchProvider {
  public:
+  class App;
+  class DataSource;
+  typedef std::vector<scoped_ptr<App>> Apps;
+
   AppSearchProvider(Profile* profile,
                     AppListControllerDelegate* list_controller,
                     scoped_ptr<base::Clock> clock,
@@ -45,37 +44,23 @@ class AppSearchProvider : public SearchProvider,
   void Start(bool is_voice_query, const base::string16& query) override;
   void Stop() override;
 
+  // Refresh indexed app data and update search results. When |force_inline| is
+  // set to true, search results is updated before returning from the function.
+  // Otherwise, search results would be grouped, i.e. multiple calls would only
+  // update search results once.
+  void RefreshAppsAndUpdateResults(bool force_inline);
+
  private:
-  class App;
-  typedef ScopedVector<App> Apps;
-
-  void UpdateResults();
-
-  // Adds extensions to apps container if they should be displayed.
-  void AddApps(const extensions::ExtensionSet& extensions);
   void RefreshApps();
-
-  // extensions::ExtensionRegistryObserver overrides:
-  void OnExtensionLoaded(content::BrowserContext* browser_context,
-                         const extensions::Extension* extension) override;
-  void OnExtensionUninstalled(content::BrowserContext* browser_context,
-                              const extensions::Extension* extension,
-                              extensions::UninstallReason reason) override;
+  void UpdateResults();
 
   Profile* profile_;
   AppListControllerDelegate* list_controller_;
-
   base::string16 query_;
-
-  ScopedObserver<extensions::ExtensionRegistry,
-                 extensions::ExtensionRegistryObserver>
-      extension_registry_observer_;
-
   Apps apps_;
-
   AppListItemList* top_level_item_list_;
-
   scoped_ptr<base::Clock> clock_;
+  std::vector<scoped_ptr<DataSource>> data_sources_;
   base::WeakPtrFactory<AppSearchProvider> update_results_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AppSearchProvider);

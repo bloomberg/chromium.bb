@@ -17,6 +17,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/time/time.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -48,11 +49,13 @@ class ArcAppListPrefs : public KeyedService,
     AppInfo(const std::string& name,
             const std::string& package_name,
             const std::string& activity,
+            const base::Time& last_launch_time,
             bool ready);
 
     std::string name;
     std::string package_name;
     std::string activity;
+    base::Time last_launch_time;
     bool ready;
   };
 
@@ -105,6 +108,9 @@ class ArcAppListPrefs : public KeyedService,
   // Constructs path to app icon for specific scale factor.
   base::FilePath GetIconPath(const std::string& app_id,
                              ui::ScaleFactor scale_factor) const;
+
+  // Sets last launched time for the requested app.
+  void SetLastLaunchTime(const std::string& app_id, const base::Time& time);
 
   // Requests to load an app icon for specific scale factor. If the app or Arc
   // bridge service is not ready, then defer this request until the app gets

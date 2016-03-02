@@ -722,6 +722,10 @@
       'browser/ui/app_list/arc/arc_app_list_prefs_factory.h',
       'browser/ui/app_list/arc/arc_app_model_builder.cc',
       'browser/ui/app_list/arc/arc_app_model_builder.h',
+      'browser/ui/app_list/arc/arc_app_utils.cc',
+      'browser/ui/app_list/arc/arc_app_utils.h',
+      'browser/ui/app_list/search/arc_app_result.cc',
+      'browser/ui/app_list/search/arc_app_result.h',
     ],
     # ChromeOS sources that should not be included in the official build.
     'chrome_browser_ui_chromeos_non_official_sources': [
@@ -2649,6 +2653,8 @@
       'browser/ui/app_list/search/common/webservice_cache_factory.h',
       'browser/ui/app_list/search/common/webservice_search_provider.cc',
       'browser/ui/app_list/search/common/webservice_search_provider.h',
+      'browser/ui/app_list/search/extension_app_result.cc',
+      'browser/ui/app_list/search/extension_app_result.h',
       'browser/ui/app_list/search/history_factory.cc',
       'browser/ui/app_list/search/history_factory.h',
       'browser/ui/app_list/search/omnibox_provider.cc',

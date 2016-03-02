@@ -29,6 +29,13 @@
 #include "ui/app_list/app_list_model.h"
 #include "ui/app_list/search_result.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/ui/app_list/arc/arc_app_item.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_test.h"
+#include "components/arc/test/fake_app_instance.h"
+#include "components/arc/test/fake_arc_bridge_service.h"
+#endif
+
 namespace app_list {
 namespace test {
 
@@ -47,12 +54,15 @@ class AppSearchProviderTest : public AppListTestBase {
   void SetUp() override {
     AppListTestBase::SetUp();
 
-    scoped_ptr<base::SimpleTestClock> clock(new base::SimpleTestClock());
-    clock->SetNow(kTestCurrentTime);
     model_.reset(new app_list::AppListModel);
     controller_.reset(new ::test::TestAppListControllerDelegate);
     builder_.reset(new ExtensionAppModelBuilder(controller_.get()));
     builder_->InitializeWithProfile(profile_.get(), model_.get());
+  }
+
+  void CreateSearch() {
+    scoped_ptr<base::SimpleTestClock> clock(new base::SimpleTestClock());
+    clock->SetNow(kTestCurrentTime);
     app_search_.reset(new AppSearchProvider(profile_.get(), nullptr,
                                             std::move(clock),
                                             model_->top_level_item_list()));
@@ -91,23 +101,46 @@ class AppSearchProviderTest : public AppListTestBase {
 };
 
 TEST_F(AppSearchProviderTest, Basic) {
+#if defined(OS_CHROMEOS)
+  ArcAppTest arc_test;
+  arc_test.SetUp(profile());
+  arc_test.bridge_service()->SetReady();
+  arc_test.app_instance()->RefreshAppList();
+  std::vector<arc::AppInfo> arc_apps(arc_test.fake_apps().begin(),
+                                     arc_test.fake_apps().begin() + 2);
+  arc_test.app_instance()->SendRefreshAppList(arc_apps);
+#endif
+
+  CreateSearch();
+
   EXPECT_EQ("", RunQuery("!@#$-,-_"));
   EXPECT_EQ("", RunQuery("unmatched query"));
 
   // Search for "pa" should return both packaged app. The order is undefined
   // because the test only considers textual relevance and the two apps end
   // up having the same score.
-  const std::string result = RunQuery("pa");
+  std::string result = RunQuery("pa");
   EXPECT_TRUE(result == "Packaged App 1,Packaged App 2" ||
               result == "Packaged App 2,Packaged App 1");
 
   EXPECT_EQ("Packaged App 1", RunQuery("pa1"));
   EXPECT_EQ("Packaged App 2", RunQuery("pa2"));
-  EXPECT_EQ("Packaged App 1", RunQuery("app1"));
+  EXPECT_EQ("Packaged App 1", RunQuery("papp1"));
   EXPECT_EQ("Hosted App", RunQuery("host"));
+
+#if defined(OS_CHROMEOS)
+  result = RunQuery("fake");
+  EXPECT_TRUE(result == "Fake App 0,Fake App 1" ||
+              result == "Fake App 1,Fake App 0");
+  result = RunQuery("app1");
+  EXPECT_TRUE(result == "Packaged App 1,Fake App 1" ||
+              result == "Fake App 1,Packaged App 1");
+#endif
 }
 
 TEST_F(AppSearchProviderTest, DisableAndEnable) {
+  CreateSearch();
+
   EXPECT_EQ("Hosted App", RunQuery("host"));
 
   service_->DisableExtension(kHostedAppId,
@@ -118,7 +151,9 @@ TEST_F(AppSearchProviderTest, DisableAndEnable) {
   EXPECT_EQ("Hosted App", RunQuery("host"));
 }
 
-TEST_F(AppSearchProviderTest, Uninstall) {
+TEST_F(AppSearchProviderTest, UninstallExtension) {
+  CreateSearch();
+
   EXPECT_EQ("Packaged App 1", RunQuery("pa1"));
   EXPECT_FALSE(results().empty());
   service_->UninstallExtension(kPackagedApp1Id,
@@ -140,7 +175,48 @@ TEST_F(AppSearchProviderTest, Uninstall) {
   base::RunLoop().RunUntilIdle();
 }
 
+#if defined(OS_CHROMEOS)
+TEST_F(AppSearchProviderTest, InstallUninstallArc) {
+  ArcAppTest arc_test;
+  arc_test.SetUp(profile());
+  arc_test.bridge_service()->SetReady();
+  std::vector<arc::AppInfo> arc_apps;
+  arc_test.app_instance()->RefreshAppList();
+  arc_test.app_instance()->SendRefreshAppList(arc_apps);
+
+  CreateSearch();
+
+  EXPECT_TRUE(results().empty());
+  EXPECT_EQ("", RunQuery("fapp0"));
+
+  arc_apps.push_back(arc_test.fake_apps()[0]);
+  arc_test.app_instance()->RefreshAppList();
+  arc_test.app_instance()->SendRefreshAppList(arc_apps);
+
+  // Allow async AppSearchProvider::UpdateResults to run.
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ("Fake App 0", RunQuery("fapp0"));
+  EXPECT_FALSE(results().empty());
+
+  arc_apps.clear();
+  arc_test.app_instance()->RefreshAppList();
+  arc_test.app_instance()->SendRefreshAppList(arc_apps);
+
+  // Allow async AppSearchProvider::UpdateResults to run.
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(results().empty());
+  EXPECT_EQ("", RunQuery("fapp0"));
+
+  // Let uninstall code to clean up.
+  base::RunLoop().RunUntilIdle();
+}
+#endif
+
 TEST_F(AppSearchProviderTest, FetchRecommendations) {
+  CreateSearch();
+
   extensions::ExtensionPrefs* prefs =
       extensions::ExtensionPrefs::Get(profile_.get());
 
@@ -163,6 +239,8 @@ TEST_F(AppSearchProviderTest, FetchRecommendations) {
 }
 
 TEST_F(AppSearchProviderTest, FetchUnlaunchedRecommendations) {
+  CreateSearch();
+
   const char kFolderId[] = "folder1";
   extensions::ExtensionPrefs* prefs =
       extensions::ExtensionPrefs::Get(profile_.get());

@@ -7,7 +7,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_context_menu.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "components/arc/arc_bridge_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/app_sorting.h"
@@ -48,32 +48,8 @@ const char* ArcAppItem::GetItemType() const {
 }
 
 void ArcAppItem::Activate(int event_flags) {
-  if (!ready()) {
-    VLOG(2) << "Cannot launch not-ready app:" << id() << ".";
+  if (!arc::LaunchApp(profile(), id()))
     return;
-  }
-
-  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile());
-  scoped_ptr<ArcAppListPrefs::AppInfo> app_info = prefs->GetApp(id());
-  if (!app_info) {
-    VLOG(2) << "Cannot launch unavailable app:" << id() << ".";
-    return;
-  }
-
-  arc::ArcBridgeService* bridge_service = arc::ArcBridgeService::Get();
-  if (!bridge_service) {
-    VLOG(2) << "Request to launch app when bridge service is not ready: "
-            << id() << ".";
-    return;
-  }
-  arc::AppInstance* app_instance = bridge_service->app_instance();
-  if (!app_instance) {
-    VLOG(2) << "Request to launch app when bridge service is not ready: "
-            << id() << ".";
-    return;
-  }
-
-  app_instance->LaunchApp(app_info->package_name, app_info->activity);
 
   // Manually close app_list view because focus is not changed on ARC app start,
   // and current view remains active.
