@@ -30,8 +30,6 @@
 // http://w3c.github.io/selection-api/#idl-def-Selection
 
 // TODO(yoichio): All long types should be unsigned long. crbug.com/391673
-// TODO(philipj): No arguments are optional in the spec, but some should be:
-// https://github.com/w3c/selection-api/issues/30
 [
     ImplementedAs=DOMSelection,
     WillBeGarbageCollected,
