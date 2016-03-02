@@ -2085,8 +2085,13 @@ void LayoutBox::computeLogicalWidth(LogicalExtentComputedValues& computedValues)
         computedValues.m_extent = constrainLogicalWidthByMinMax(minPreferredLogicalWidth(), containerLogicalWidth, cb);
     } else {
         LayoutUnit containerWidthInInlineDirection = containerLogicalWidth;
-        if (hasPerpendicularContainingBlock)
+        if (hasPerpendicularContainingBlock) {
             containerWidthInInlineDirection = perpendicularContainingBlockLogicalHeight();
+        } else if (cb->isFlexItem() && styleToUse.logicalWidth().hasPercent() && !isOutOfFlowPositioned()) {
+            LayoutUnit stretchedWidth = toLayoutFlexibleBox(cb->parent())->childLogicalWidthForPercentageResolution(*cb);
+            if (stretchedWidth != LayoutUnit(-1))
+                containerWidthInInlineDirection = stretchedWidth;
+        }
         LayoutUnit preferredWidth = computeLogicalWidthUsing(MainOrPreferredSize, styleToUse.logicalWidth(), containerWidthInInlineDirection, cb);
         computedValues.m_extent = constrainLogicalWidthByMinMax(preferredWidth, containerWidthInInlineDirection, cb);
     }
@@ -2586,8 +2591,14 @@ LayoutUnit LayoutBox::computePercentageLogicalHeight(const Length& height) const
 
     bool includeBorderPadding = isTable();
 
+    LayoutUnit stretchedFlexHeight(-1);
+    if (cb->isFlexItem())
+        stretchedFlexHeight = toLayoutFlexibleBox(cb->parent())->childLogicalHeightForPercentageResolution(*cb);
+
     if (isHorizontalWritingMode() != cb->isHorizontalWritingMode()) {
         availableHeight = containingBlockChild->containingBlockLogicalWidthForContent();
+    } else if (stretchedFlexHeight != LayoutUnit(-1)) {
+        availableHeight = stretchedFlexHeight;
     } else if (hasOverrideContainingBlockLogicalHeight()) {
         availableHeight = overrideContainingBlockContentLogicalHeight();
     } else if (cb->isTableCell()) {

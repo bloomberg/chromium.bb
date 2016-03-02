@@ -1025,6 +1025,61 @@ LayoutUnit LayoutFlexibleBox::adjustChildSizeForMinAndMax(const LayoutBox& child
     return std::max(childSize, minExtent);
 }
 
+LayoutUnit LayoutFlexibleBox::crossSizeForPercentageResolution(const LayoutBox& child)
+{
+    // This function implements section 9.8. Definite and Indefinite Sizes, case
+    // 1) of the flexbox spec.
+    // We need to check for multiline and a definite cross size of the flexbox
+    // per https://drafts.csswg.org/css-flexbox/#definite-sizes, and for
+    // stretch, auto margins, and an indefinite cross size of the flex item per
+    // https://drafts.csswg.org/css-flexbox/#stretched (linked from that
+    // section)
+    if (isMultiline() || alignmentForChild(child) != ItemPositionStretch || hasAutoMarginsInCrossAxis(child))
+        return LayoutUnit(-1);
+
+    const Length& childCrossLength = isHorizontalFlow() ? child.styleRef().height() : child.styleRef().width();
+    if (crossAxisLengthIsDefinite(child, childCrossLength))
+        return LayoutUnit(-1);
+
+    LayoutUnit childCrossSize;
+
+    LogicalExtentComputedValues computedValues;
+    if (isColumnFlow()) {
+        const Length& widthLength = styleRef().logicalWidth();
+        if (widthLength.isAuto() || (widthLength.hasPercent() && !hasDefiniteLogicalWidth()))
+            return LayoutUnit(-1);
+
+        computeLogicalWidth(computedValues);
+        if (computedValues.m_extent == LayoutUnit(-1))
+            return LayoutUnit(-1);
+        childCrossSize = computedValues.m_extent - borderAndPaddingLogicalWidth() - scrollbarLogicalWidth();
+        childCrossSize = child.constrainLogicalWidthByMinMax(childCrossSize, childCrossSize, this) - child.scrollbarLogicalWidth() - child.borderAndPaddingLogicalWidth();
+    } else {
+        const Length& heightLength = styleRef().logicalHeight();
+        if (heightLength.isAuto() || (heightLength.hasPercent() && computePercentageLogicalHeight(heightLength) == -1))
+            return LayoutUnit(-1);
+
+        computeLogicalHeight(LayoutUnit(-1), LayoutUnit(), computedValues);
+        childCrossSize = computedValues.m_extent - borderAndPaddingLogicalHeight() - scrollbarLogicalHeight();
+        childCrossSize = child.constrainLogicalHeightByMinMax(childCrossSize, LayoutUnit(-1)) - child.scrollbarLogicalHeight() - child.borderAndPaddingLogicalHeight();
+    }
+    return childCrossSize;
+}
+
+LayoutUnit LayoutFlexibleBox::childLogicalHeightForPercentageResolution(const LayoutBox& child)
+{
+    if (!hasOrthogonalFlow(child))
+        return crossSizeForPercentageResolution(child);
+    return LayoutUnit(-1);
+}
+
+LayoutUnit LayoutFlexibleBox::childLogicalWidthForPercentageResolution(const LayoutBox& child)
+{
+    if (hasOrthogonalFlow(child))
+        return crossSizeForPercentageResolution(child);
+    return LayoutUnit(-1);
+}
+
 LayoutUnit LayoutFlexibleBox::adjustChildSizeForAspectRatioCrossAxisMinAndMax(const LayoutBox& child, LayoutUnit childSize)
 {
     Length crossMin = isHorizontalFlow() ? child.style()->minHeight() : child.style()->minWidth();

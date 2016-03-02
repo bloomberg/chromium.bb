@@ -60,6 +60,10 @@ public:
 
     const OrderIterator& orderIterator() const { return m_orderIterator; }
 
+    LayoutUnit crossSizeForPercentageResolution(const LayoutBox& child);
+    LayoutUnit childLogicalHeightForPercentageResolution(const LayoutBox& child);
+    LayoutUnit childLogicalWidthForPercentageResolution(const LayoutBox& child);
+
     void clearCachedMainSizeForChild(const LayoutBox& child);
 protected:
     void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const override;

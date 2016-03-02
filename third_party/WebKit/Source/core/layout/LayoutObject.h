@@ -98,6 +98,11 @@ enum MapCoordinatesMode {
 };
 typedef unsigned MapCoordinatesFlags;
 
+enum ScheduleRelayoutBehavior {
+    ScheduleRelayout,
+    DontScheduleRelayout
+};
+
 const LayoutUnit& caretWidth();
 
 struct AnnotatedRegionValue {
