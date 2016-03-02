@@ -29,6 +29,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/compositor/compositor_observer.h"
 #include "ui/compositor/dip_util.h"
+#include "ui/compositor/layer_animation_element.h"
+#include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/paint_context.h"
@@ -1718,6 +1720,59 @@ TEST_F(LayerWithDelegateTest, DestroyingLayerRemovesTheAnimatorFromCollection) {
   EXPECT_TRUE(compositor()->layer_animator_collection()->HasActiveAnimators());
 
   child.reset();
+  EXPECT_FALSE(compositor()->layer_animator_collection()->HasActiveAnimators());
+}
+
+// A LayerAnimationObserver that removes a child layer from a parent when an
+// animation completes.
+class LayerRemovingLayerAnimationObserver : public LayerAnimationObserver {
+ public:
+  LayerRemovingLayerAnimationObserver(Layer* root, Layer* child)
+      : root_(root), child_(child) {}
+
+  // LayerAnimationObserver:
+  void OnLayerAnimationEnded(LayerAnimationSequence* sequence) override {
+    root_->Remove(child_);
+  }
+
+  void OnLayerAnimationAborted(LayerAnimationSequence* sequence) override {
+    root_->Remove(child_);
+  }
+
+  void OnLayerAnimationScheduled(LayerAnimationSequence* sequence) override {}
+
+ private:
+  Layer* root_;
+  Layer* child_;
+
+  DISALLOW_COPY_AND_ASSIGN(LayerRemovingLayerAnimationObserver);
+};
+
+// Verifies that empty LayerAnimators are not left behind when removing child
+// Layers that own an empty LayerAnimator. See http://crbug.com/552037.
+TEST_F(LayerWithDelegateTest, NonAnimatingAnimatorsAreRemovedFromCollection) {
+  scoped_ptr<Layer> root(CreateLayer(LAYER_TEXTURED));
+  scoped_ptr<Layer> parent(CreateLayer(LAYER_TEXTURED));
+  scoped_ptr<Layer> child(CreateLayer(LAYER_TEXTURED));
+  root->Add(parent.get());
+  parent->Add(child.get());
+  compositor()->SetRootLayer(root.get());
+
+  child->SetAnimator(LayerAnimator::CreateDefaultAnimator());
+
+  LayerRemovingLayerAnimationObserver observer(root.get(), parent.get());
+  child->GetAnimator()->AddObserver(&observer);
+
+  LayerAnimationElement* element =
+      ui::LayerAnimationElement::CreateOpacityElement(
+          0.5f, base::TimeDelta::FromSeconds(1));
+  LayerAnimationSequence* sequence = new LayerAnimationSequence(element);
+
+  child->GetAnimator()->StartAnimation(sequence);
+  EXPECT_TRUE(compositor()->layer_animator_collection()->HasActiveAnimators());
+
+  child->GetAnimator()->StopAnimating();
+  EXPECT_FALSE(root->Contains(parent.get()));
   EXPECT_FALSE(compositor()->layer_animator_collection()->HasActiveAnimators());
 }
 

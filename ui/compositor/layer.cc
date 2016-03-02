@@ -1096,8 +1096,7 @@ void Layer::ResetCompositorForAnimatorsInTree(Compositor* compositor) {
 
   if (animator_) {
     animator_->ResetCompositor(compositor);
-    if (animator_->is_animating())
-      animator_->RemoveFromCollection(collection);
+    animator_->RemoveFromCollection(collection);
   }
 
   for (auto* child : children_)

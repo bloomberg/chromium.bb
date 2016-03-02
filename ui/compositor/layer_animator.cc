@@ -446,7 +446,7 @@ void LayerAnimator::AddToCollection(LayerAnimatorCollection* collection) {
 }
 
 void LayerAnimator::RemoveFromCollection(LayerAnimatorCollection* collection) {
-  if (is_animating() && is_started_) {
+  if (is_started_) {
     collection->StopAnimator(this);
     is_started_ = false;
   }
