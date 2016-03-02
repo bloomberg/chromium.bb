@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
+#include <algorithm>
 #include <utility>
 
 #include "base/callback.h"
@@ -19,13 +21,13 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/api/processes/processes_api_constants.h"
 #include "chrome/browser/extensions/api/tabs/tabs_constants.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/task_manager/resource_provider.h"
 #include "chrome/browser/task_manager/task_manager.h"
+#include "chrome/common/extensions/api/processes.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
@@ -44,76 +46,76 @@
 
 namespace extensions {
 
-namespace keys = processes_api_constants;
-namespace errors = processes_api_constants;
+namespace errors {
+const char kNotAllowedToTerminate[] = "Not allowed to terminate process: *.";
+const char kProcessNotFound[] = "Process not found: *.";
+const char kInavlidArgument[] = "Invalid argument: *.";
+}  // namespace errors
 
 namespace {
 
 #if defined(ENABLE_TASK_MANAGER)
 
-base::DictionaryValue* CreateCacheData(
+scoped_ptr<api::processes::Cache> CreateCacheData(
     const blink::WebCache::ResourceTypeStat& stat) {
-
-  base::DictionaryValue* cache = new base::DictionaryValue();
-  cache->SetDouble(keys::kCacheSize, static_cast<double>(stat.size));
-  cache->SetDouble(keys::kCacheLiveSize, static_cast<double>(stat.liveSize));
+  scoped_ptr<api::processes::Cache> cache(new api::processes::Cache());
+  cache->size = static_cast<double>(stat.size);
+  cache->live_size = static_cast<double>(stat.liveSize);
   return cache;
 }
 
-void SetProcessType(base::DictionaryValue* result,
-                    TaskManagerModel* model,
-                    int index) {
+api::processes::ProcessType GetProcessType(TaskManagerModel* model,
+                                           int index) {
   // Determine process type.
-  std::string type = keys::kProcessTypeOther;
   task_manager::Resource::Type resource_type = model->GetResourceType(index);
   switch (resource_type) {
     case task_manager::Resource::BROWSER:
-      type = keys::kProcessTypeBrowser;
-      break;
+      return api::processes::PROCESS_TYPE_BROWSER;
+
     case task_manager::Resource::RENDERER:
-      type = keys::kProcessTypeRenderer;
-      break;
+      return api::processes::PROCESS_TYPE_RENDERER;
+
     case task_manager::Resource::EXTENSION:
-      type = keys::kProcessTypeExtension;
-      break;
+    case task_manager::Resource::GUEST:
+      return api::processes::PROCESS_TYPE_EXTENSION;
+
     case task_manager::Resource::NOTIFICATION:
-      type = keys::kProcessTypeNotification;
-      break;
+      return api::processes::PROCESS_TYPE_NOTIFICATION;
+
     case task_manager::Resource::PLUGIN:
-      type = keys::kProcessTypePlugin;
-      break;
+      return api::processes::PROCESS_TYPE_PLUGIN;
+
     case task_manager::Resource::WORKER:
-      type = keys::kProcessTypeWorker;
-      break;
+      return api::processes::PROCESS_TYPE_WORKER;
+
     case task_manager::Resource::NACL:
-      type = keys::kProcessTypeNacl;
-      break;
+      return api::processes::PROCESS_TYPE_NACL;
+
     case task_manager::Resource::UTILITY:
-      type = keys::kProcessTypeUtility;
-      break;
+      return api::processes::PROCESS_TYPE_UTILITY;
+
     case task_manager::Resource::GPU:
-      type = keys::kProcessTypeGPU;
-      break;
+      return api::processes::PROCESS_TYPE_GPU;
+
     case task_manager::Resource::ZYGOTE:
     case task_manager::Resource::SANDBOX_HELPER:
     case task_manager::Resource::UNKNOWN:
-      type = keys::kProcessTypeOther;
-      break;
-    default:
-      NOTREACHED() << "Unknown resource type.";
+      return api::processes::PROCESS_TYPE_OTHER;
   }
-  result->SetString(keys::kTypeKey, type);
+
+  NOTREACHED() << "Unknown resource type.";
+  return api::processes::PROCESS_TYPE_NONE;
 }
 
-base::ListValue* GetTabsForProcess(int process_id) {
-  base::ListValue* tabs_list = new base::ListValue();
+void FillTabsForProcess(int process_id, api::processes::Process* out_process) {
+  DCHECK(out_process);
 
   // The tabs list only makes sense for render processes, so if we don't find
   // one, just return the empty list.
   content::RenderProcessHost* rph =
       content::RenderProcessHost::FromID(process_id);
-  if (rph == NULL)
-    return tabs_list;
+  if (!rph)
+    return;
 
   int tab_id = -1;
   // We need to loop through all the RVHs to ensure we collect the set of all
@@ -130,60 +132,54 @@ base::ListValue* GetTabsForProcess(int process_id) {
     if (contents) {
       tab_id = ExtensionTabUtil::GetTabId(contents);
       if (tab_id != -1)
-        tabs_list->Append(new base::FundamentalValue(tab_id));
+        out_process->tabs.push_back(tab_id);
     }
   }
-
-  return tabs_list;
 }
 
-// This function creates a Process object to be returned to the extensions
-// using these APIs. For memory details, which are not added by this function,
+// This function fills |out_process| with the data of the process with
+// |process_id|. For memory details, which are not added by this function,
 // the callers need to use AddMemoryDetails.
-base::DictionaryValue* CreateProcessFromModel(int process_id,
-                                              TaskManagerModel* model,
-                                              int index,
-                                              bool include_optional) {
-  base::DictionaryValue* result = new base::DictionaryValue();
-  size_t mem;
+void FillProcessData(int process_id,
+                     TaskManagerModel* model,
+                     int index,
+                     bool include_optional,
+                     api::processes::Process* out_process) {
+  DCHECK(out_process);
 
-  result->SetInteger(keys::kIdKey, process_id);
-  result->SetInteger(keys::kOsProcessIdKey, model->GetProcessId(index));
-  SetProcessType(result, model, index);
-  result->SetString(keys::kTitleKey, model->GetResourceTitle(index));
-  result->SetString(keys::kProfileKey,
-      model->GetResourceProfileName(index));
-  result->SetInteger(keys::kNaClDebugPortKey,
-                     model->GetNaClDebugStubPort(index));
+  out_process->id = process_id;
+  out_process->os_process_id = model->GetProcessId(index);
+  out_process->type = GetProcessType(model, index);
+  out_process->title = base::UTF16ToUTF8(model->GetResourceTitle(index));
+  out_process->profile =
+      base::UTF16ToUTF8(model->GetResourceProfileName(index));
+  out_process->nacl_debug_port = model->GetNaClDebugStubPort(index);
 
-  result->Set(keys::kTabsListKey, GetTabsForProcess(process_id));
+  FillTabsForProcess(process_id, out_process);
 
   // If we don't need to include the optional properties, just return now.
   if (!include_optional)
-    return result;
+    return;
 
-  result->SetDouble(keys::kCpuKey, model->GetCPUUsage(index));
+  out_process->cpu.reset(new double(model->GetCPUUsage(index)));
 
-  if (model->GetV8Memory(index, &mem))
-    result->SetDouble(keys::kJsMemoryAllocatedKey,
-        static_cast<double>(mem));
+  size_t mem = 0;
+  if (model->GetV8Memory(index, &mem)) {
+    out_process->js_memory_allocated.reset(new double(static_cast<double>(
+        mem)));
+  }
 
   if (model->GetV8MemoryUsed(index, &mem))
-    result->SetDouble(keys::kJsMemoryUsedKey,
-        static_cast<double>(mem));
+    out_process->js_memory_used.reset(new double(static_cast<double>(mem)));
 
   if (model->GetSqliteMemoryUsedBytes(index, &mem))
-    result->SetDouble(keys::kSqliteMemoryKey,
-        static_cast<double>(mem));
+    out_process->sqlite_memory.reset(new double(static_cast<double>(mem)));
 
   blink::WebCache::ResourceTypeStats cache_stats;
   if (model->GetWebCoreCacheStats(index, &cache_stats)) {
-    result->Set(keys::kImageCacheKey,
-                CreateCacheData(cache_stats.images));
-    result->Set(keys::kScriptCacheKey,
-                CreateCacheData(cache_stats.scripts));
-    result->Set(keys::kCssCacheKey,
-                CreateCacheData(cache_stats.cssStyleSheets));
+    out_process->image_cache = CreateCacheData(cache_stats.images);
+    out_process->script_cache = CreateCacheData(cache_stats.scripts);
+    out_process->css_cache = CreateCacheData(cache_stats.cssStyleSheets);
   }
 
   // Network is reported by the TaskManager per resource (tab), not per
@@ -193,21 +189,21 @@ base::DictionaryValue* CreateProcessFromModel(int process_id,
   int length = model->GetGroupRangeForResource(index).second;
   for (int i = 0; i < length; ++i)
     net += model->GetNetworkUsage(index + i);
-  result->SetDouble(keys::kNetworkKey, static_cast<double>(net));
-
-  return result;
+  out_process->network.reset(new double(static_cast<double>(net)));
 }
 
 // Since memory details are expensive to gather, we don't do it by default.
 // This function is a helper to add memory details data to an existing
-// Process object representation.
-void AddMemoryDetails(base::DictionaryValue* result,
-                      TaskManagerModel* model,
-                      int index) {
+// Process object |out_process|.
+void AddMemoryDetails(TaskManagerModel* model,
+                      int index,
+                      api::processes::Process* out_process) {
+  DCHECK(out_process);
+
   size_t mem;
   int64_t pr_mem =
       model->GetPrivateMemory(index, &mem) ? static_cast<int64_t>(mem) : -1;
-  result->SetDouble(keys::kPrivateMemoryKey, static_cast<double>(pr_mem));
+  out_process->private_memory.reset(new double(static_cast<double>(pr_mem)));
 }
 
 #endif  // defined(ENABLE_TASK_MANAGER)
@@ -294,30 +290,20 @@ void ProcessesEventRouter::Observe(
 void ProcessesEventRouter::OnItemsAdded(int start, int length) {
 #if defined(ENABLE_TASK_MANAGER)
   DCHECK_EQ(length, 1);
-  int index = start;
-
-  std::string event(keys::kOnCreated);
-  if (!HasEventListeners(event))
+  if (!HasEventListeners(api::processes::OnCreated::kEventName))
     return;
 
   // If the item being added is not the first one in the group, find the base
   // index and use it for retrieving the process data.
-  if (!model_->IsResourceFirstInGroup(start)) {
-    index = model_->GetGroupIndexForResource(start);
-  }
+  if (!model_->IsResourceFirstInGroup(start))
+    start = model_->GetGroupIndexForResource(start);
 
-  scoped_ptr<base::ListValue> args(new base::ListValue());
-  base::DictionaryValue* process = CreateProcessFromModel(
-      model_->GetUniqueChildProcessId(index), model_, index, false);
-  DCHECK(process != NULL);
-
-  if (process == NULL)
-    return;
-
-  args->Append(process);
-
-  DispatchEvent(events::PROCESSES_ON_CREATED, keys::kOnCreated,
-                std::move(args));
+  api::processes::Process process;
+  FillProcessData(model_->GetUniqueChildProcessId(start), model_, start,
+                  false /* include_optional */, &process);
+  DispatchEvent(events::PROCESSES_ON_CREATED,
+                api::processes::OnCreated::kEventName,
+                api::processes::OnCreated::Create(process));
 #endif  // defined(ENABLE_TASK_MANAGER)
 }
 
@@ -332,68 +318,50 @@ void ProcessesEventRouter::OnItemsChanged(int start, int length) {
 
   // We need to know which type of onUpdated events to fire and whether to
   // collect memory or not.
-  std::string updated_event(keys::kOnUpdated);
-  std::string updated_event_memory(keys::kOnUpdatedWithMemory);
-  bool updated = HasEventListeners(updated_event);
-  bool updated_memory = HasEventListeners(updated_event_memory);
+  bool updated = HasEventListeners(api::processes::OnUpdated::kEventName);
+  bool updated_memory =
+      HasEventListeners(api::processes::OnUpdatedWithMemory::kEventName);
+  if (!updated && !updated_memory)
+    return;
 
-  DCHECK(updated || updated_memory);
-
-  IDMap<base::DictionaryValue> processes_map;
-  for (int i = start; i < start + length; i++) {
+  base::DictionaryValue processes_dictionary;
+  for (int i = start; i < start + length; ++i) {
     if (model_->IsResourceFirstInGroup(i)) {
       int id = model_->GetUniqueChildProcessId(i);
-      base::DictionaryValue* process = CreateProcessFromModel(id, model_, i,
-                                                              true);
-      processes_map.AddWithID(process, i);
+      api::processes::Process process;
+      FillProcessData(id, model_, i, true /* include_optional */, &process);
+      if (updated_memory)
+        AddMemoryDetails(model_, i, &process);
+      processes_dictionary.Set(base::IntToString(id), process.ToValue());
     }
   }
 
-  int id;
-  std::string idkey(keys::kIdKey);
-  base::DictionaryValue* processes = new base::DictionaryValue();
-
   if (updated) {
-    IDMap<base::DictionaryValue>::iterator it(&processes_map);
-    for (; !it.IsAtEnd(); it.Advance()) {
-      if (!it.GetCurrentValue()->GetInteger(idkey, &id))
-        continue;
-
-      // Store each process indexed by the string version of its id.
-      processes->Set(base::IntToString(id), it.GetCurrentValue());
-    }
-
-    scoped_ptr<base::ListValue> args(new base::ListValue());
-    args->Append(processes);
-    DispatchEvent(events::PROCESSES_ON_UPDATED, keys::kOnUpdated,
-                  std::move(args));
+    api::processes::OnUpdated::Processes processes;
+    processes.additional_properties.MergeDictionary(&processes_dictionary);
+    // NOTE: If there are listeners to the updates with memory as well,
+    // listeners to onUpdated (without memory) will also get the memory info
+    // of processes as an added bonus.
+    DispatchEvent(events::PROCESSES_ON_UPDATED,
+                  api::processes::OnUpdated::kEventName,
+                  api::processes::OnUpdated::Create(processes));
   }
 
   if (updated_memory) {
-    IDMap<base::DictionaryValue>::iterator it(&processes_map);
-    for (; !it.IsAtEnd(); it.Advance()) {
-      if (!it.GetCurrentValue()->GetInteger(idkey, &id))
-        continue;
-
-      AddMemoryDetails(it.GetCurrentValue(), model_, it.GetCurrentKey());
-
-      // Store each process indexed by the string version of its id if we didn't
-      // already insert it as part of the onUpdated processing above.
-      if (!updated)
-        processes->Set(base::IntToString(id), it.GetCurrentValue());
-    }
-
-    scoped_ptr<base::ListValue> args(new base::ListValue());
-    args->Append(processes);
+    api::processes::OnUpdatedWithMemory::Processes processes;
+    processes.additional_properties.MergeDictionary(&processes_dictionary);
     DispatchEvent(events::PROCESSES_ON_UPDATED_WITH_MEMORY,
-                  keys::kOnUpdatedWithMemory, std::move(args));
-  }
+                  api::processes::OnUpdatedWithMemory::kEventName,
+                  api::processes::OnUpdatedWithMemory::Create(processes));}
 #endif  // defined(ENABLE_TASK_MANAGER)
 }
 
 void ProcessesEventRouter::OnItemsToBeRemoved(int start, int length) {
 #if defined(ENABLE_TASK_MANAGER)
   DCHECK_EQ(length, 1);
+
+  if (!HasEventListeners(api::processes::OnExited::kEventName))
+    return;
 
   // Process exit for renderer processes has the data about exit code and
   // termination status, therefore we will rely on notifications and not on
@@ -402,50 +370,35 @@ void ProcessesEventRouter::OnItemsToBeRemoved(int start, int length) {
   if (model_->GetResourceType(start) == task_manager::Resource::RENDERER)
     return;
 
-  // The callback function parameters.
-  scoped_ptr<base::ListValue> args(new base::ListValue());
-
-  // First arg: The id of the process that was closed.
-  args->Append(new base::FundamentalValue(
-      model_->GetUniqueChildProcessId(start)));
-
-  // Second arg: The exit type for the process.
-  args->Append(new base::FundamentalValue(0));
-
-  // Third arg: The exit code for the process.
-  args->Append(new base::FundamentalValue(0));
-
-  DispatchEvent(events::PROCESSES_ON_EXITED, keys::kOnExited, std::move(args));
+  DispatchEvent(events::PROCESSES_ON_EXITED,
+                api::processes::OnExited::kEventName,
+                api::processes::OnExited::Create(
+                    model_->GetUniqueChildProcessId(start),
+                    0 /* exit_type */,
+                    0 /* exit_code */));
 #endif  // defined(ENABLE_TASK_MANAGER)
 }
 
 void ProcessesEventRouter::ProcessHangEvent(content::RenderWidgetHost* widget) {
 #if defined(ENABLE_TASK_MANAGER)
-  std::string event(keys::kOnUnresponsive);
-  if (!HasEventListeners(event))
+  if (!HasEventListeners(api::processes::OnUnresponsive::kEventName))
     return;
 
-  base::DictionaryValue* process = NULL;
   int count = model_->ResourceCount();
   int id = widget->GetProcess()->GetID();
 
   for (int i = 0; i < count; ++i) {
     if (model_->IsResourceFirstInGroup(i)) {
       if (id == model_->GetUniqueChildProcessId(i)) {
-        process = CreateProcessFromModel(id, model_, i, false);
-        break;
+        api::processes::Process process;
+        FillProcessData(id, model_, i, false /* include_optional */, &process);
+        DispatchEvent(events::PROCESSES_ON_UNRESPONSIVE,
+                      api::processes::OnUnresponsive::kEventName,
+                      api::processes::OnUnresponsive::Create(process));
+        return;
       }
     }
   }
-
-  if (process == NULL)
-    return;
-
-  scoped_ptr<base::ListValue> args(new base::ListValue());
-  args->Append(process);
-
-  DispatchEvent(events::PROCESSES_ON_UNRESPONSIVE, keys::kOnUnresponsive,
-                std::move(args));
 #endif  // defined(ENABLE_TASK_MANAGER)
 }
 
@@ -453,19 +406,14 @@ void ProcessesEventRouter::ProcessClosedEvent(
     content::RenderProcessHost* rph,
     content::RenderProcessHost::RendererClosedDetails* details) {
 #if defined(ENABLE_TASK_MANAGER)
-  // The callback function parameters.
-  scoped_ptr<base::ListValue> args(new base::ListValue());
+  if (!HasEventListeners(api::processes::OnExited::kEventName))
+    return;
 
-  // First arg: The id of the process that was closed.
-  args->Append(new base::FundamentalValue(rph->GetID()));
-
-  // Second arg: The exit type for the process.
-  args->Append(new base::FundamentalValue(details->status));
-
-  // Third arg: The exit code for the process.
-  args->Append(new base::FundamentalValue(details->exit_code));
-
-  DispatchEvent(events::PROCESSES_ON_EXITED, keys::kOnExited, std::move(args));
+  DispatchEvent(events::PROCESSES_ON_EXITED,
+                api::processes::OnExited::kEventName,
+                api::processes::OnExited::Create(rph->GetID(),
+                                                 details->status,
+                                                 details->exit_code));
 #endif  // defined(ENABLE_TASK_MANAGER)
 }
 
@@ -489,14 +437,15 @@ bool ProcessesEventRouter::HasEventListeners(const std::string& event_name) {
 ProcessesAPI::ProcessesAPI(content::BrowserContext* context)
     : browser_context_(context) {
   EventRouter* event_router = EventRouter::Get(browser_context_);
-  event_router->RegisterObserver(this, processes_api_constants::kOnUpdated);
+  // Monitor when the following events are being listened to in order to know
+  // when to start the task manager.
+  event_router->RegisterObserver(this, api::processes::OnUpdated::kEventName);
+  event_router->RegisterObserver(
+      this, api::processes::OnUpdatedWithMemory::kEventName);
+  event_router->RegisterObserver(this, api::processes::OnCreated::kEventName);
   event_router->RegisterObserver(this,
-                                 processes_api_constants::kOnUpdatedWithMemory);
-  ExtensionFunctionRegistry* registry =
-      ExtensionFunctionRegistry::GetInstance();
-  registry->RegisterFunction<GetProcessIdForTabFunction>();
-  registry->RegisterFunction<TerminateFunction>();
-  registry->RegisterFunction<GetProcessInfoFunction>();
+                                 api::processes::OnUnresponsive::kEventName);
+  event_router->RegisterObserver(this, api::processes::OnExited::kEventName);
 }
 
 ProcessesAPI::~ProcessesAPI() {
@@ -539,12 +488,25 @@ void ProcessesAPI::OnListenerRemoved(const EventListenerInfo& details) {
   processes_event_router()->ListenerRemoved();
 }
 
-GetProcessIdForTabFunction::GetProcessIdForTabFunction() : tab_id_(-1) {
+////////////////////////////////////////////////////////////////////////////////
+// ProcessesGetProcessIdForTabFunction:
+////////////////////////////////////////////////////////////////////////////////
+
+ProcessesGetProcessIdForTabFunction::ProcessesGetProcessIdForTabFunction()
+    : tab_id_(-1) {
 }
 
-bool GetProcessIdForTabFunction::RunAsync() {
+ExtensionFunction::ResponseAction ProcessesGetProcessIdForTabFunction::Run() {
 #if defined(ENABLE_TASK_MANAGER)
-  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &tab_id_));
+  scoped_ptr<api::processes::GetProcessIdForTab::Params> params(
+  api::processes::GetProcessIdForTab::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+  tab_id_ = params->tab_id;
+
+  if (tab_id_ < 0) {
+    return RespondNow(Error(errors::kInavlidArgument,
+                            base::IntToString(tab_id_)));
+  }
 
   // Add a reference, which is balanced in GetProcessIdForTab to keep the object
   // around and allow for the callback to be invoked.
@@ -554,58 +516,65 @@ bool GetProcessIdForTabFunction::RunAsync() {
   // which will invoke the callback once we have returned from this function.
   // Otherwise, wait for the notification that the task manager is done with
   // the data gathering.
-  if (ProcessesAPI::Get(GetProfile())
+  if (ProcessesAPI::Get(Profile::FromBrowserContext(browser_context()))
           ->processes_event_router()
           ->is_task_manager_listening()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(&GetProcessIdForTabFunction::GetProcessIdForTab, this));
+        base::Bind(&ProcessesGetProcessIdForTabFunction::GetProcessIdForTab,
+                   this));
   } else {
     TaskManager::GetInstance()->model()->RegisterOnDataReadyCallback(
-        base::Bind(&GetProcessIdForTabFunction::GetProcessIdForTab, this));
+        base::Bind(&ProcessesGetProcessIdForTabFunction::GetProcessIdForTab,
+                   this));
 
-    ProcessesAPI::Get(GetProfile())
+    ProcessesAPI::Get(Profile::FromBrowserContext(browser_context()))
         ->processes_event_router()
         ->StartTaskManagerListening();
   }
 
-  return true;
+  return RespondLater();
 #else
-  error_ = errors::kExtensionNotSupported;
-  return false;
+  return RespondNow(Error(errors::kExtensionNotSupported));
 #endif  // defined(ENABLE_TASK_MANAGER)
 }
 
-void GetProcessIdForTabFunction::GetProcessIdForTab() {
+void ProcessesGetProcessIdForTabFunction::GetProcessIdForTab() {
   content::WebContents* contents = NULL;
   int tab_index = -1;
-  if (!ExtensionTabUtil::GetTabById(tab_id_,
-                                    GetProfile(),
-                                    include_incognito(),
-                                    NULL,
-                                    NULL,
-                                    &contents,
-                                    &tab_index)) {
-    error_ = ErrorUtils::FormatErrorMessage(tabs_constants::kTabNotFoundError,
-                                            base::IntToString(tab_id_));
-    SetResult(new base::FundamentalValue(-1));
-    SendResponse(false);
+  if (!ExtensionTabUtil::GetTabById(
+          tab_id_,
+          Profile::FromBrowserContext(browser_context()),
+          include_incognito(),
+          nullptr,
+          nullptr,
+          &contents,
+          &tab_index)) {
+    Respond(Error(tabs_constants::kTabNotFoundError,
+                  base::IntToString(tab_id_)));
   } else {
     int process_id = contents->GetRenderProcessHost()->GetID();
-    SetResult(new base::FundamentalValue(process_id));
-    SendResponse(true);
+    Respond(ArgumentList(
+        api::processes::GetProcessIdForTab::Results::Create(process_id)));
   }
 
-  // Balance the AddRef in the RunAsync.
+  // Balance the AddRef in the Run.
   Release();
 }
 
-TerminateFunction::TerminateFunction() : process_id_(-1) {
+////////////////////////////////////////////////////////////////////////////////
+// ProcessesTerminateFunction
+////////////////////////////////////////////////////////////////////////////////
+
+ProcessesTerminateFunction::ProcessesTerminateFunction() : process_id_(-1) {
 }
 
-bool TerminateFunction::RunAsync() {
+ExtensionFunction::ResponseAction ProcessesTerminateFunction::Run() {
 #if defined(ENABLE_TASK_MANAGER)
-  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &process_id_));
+  scoped_ptr<api::processes::Terminate::Params> params(
+      api::processes::Terminate::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+  process_id_ = params->process_id;
 
   // Add a reference, which is balanced in TerminateProcess to keep the object
   // around and allow for the callback to be invoked.
@@ -615,87 +584,87 @@ bool TerminateFunction::RunAsync() {
   // which will invoke the callback once we have returned from this function.
   // Otherwise, wait for the notification that the task manager is done with
   // the data gathering.
-  if (ProcessesAPI::Get(GetProfile())
+  if (ProcessesAPI::Get(Profile::FromBrowserContext(browser_context()))
           ->processes_event_router()
           ->is_task_manager_listening()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&TerminateFunction::TerminateProcess, this));
+        FROM_HERE, base::Bind(&ProcessesTerminateFunction::TerminateProcess,
+                              this));
   } else {
     TaskManager::GetInstance()->model()->RegisterOnDataReadyCallback(
-        base::Bind(&TerminateFunction::TerminateProcess, this));
+        base::Bind(&ProcessesTerminateFunction::TerminateProcess, this));
 
-    ProcessesAPI::Get(GetProfile())
+    ProcessesAPI::Get(Profile::FromBrowserContext(browser_context()))
         ->processes_event_router()
         ->StartTaskManagerListening();
   }
 
-  return true;
+  return RespondLater();
 #else
-  error_ = errors::kExtensionNotSupported;
-  return false;
+  return RespondNow(Error(errors::kExtensionNotSupported));
 #endif  // defined(ENABLE_TASK_MANAGER)
 }
 
-
-void TerminateFunction::TerminateProcess() {
+void ProcessesTerminateFunction::TerminateProcess() {
 #if defined(ENABLE_TASK_MANAGER)
   TaskManagerModel* model = TaskManager::GetInstance()->model();
 
   bool found = false;
   for (int i = 0, count = model->ResourceCount(); i < count; ++i) {
-    if (!model->IsResourceFirstInGroup(i) ||
-        process_id_ != model->GetUniqueChildProcessId(i)) {
-      continue;
+    if (model->IsResourceFirstInGroup(i) &&
+        process_id_ == model->GetUniqueChildProcessId(i)) {
+      base::ProcessHandle process_handle = model->GetProcess(i);
+      if (process_handle == base::GetCurrentProcessHandle()) {
+        // Cannot kill the browser process.
+        // TODO(kalman): Are there other sensitive processes?
+        Respond(Error(errors::kNotAllowedToTerminate,
+                      base::IntToString(process_id_)));
+      } else {
+        base::Process process =
+            base::Process::DeprecatedGetProcessFromHandle(process_handle);
+        bool did_terminate =
+            process.Terminate(content::RESULT_CODE_KILLED, true);
+        if (did_terminate)
+          UMA_HISTOGRAM_COUNTS("ChildProcess.KilledByExtensionAPI", 1);
+
+        Respond(ArgumentList(
+            api::processes::Terminate::Results::Create(did_terminate)));
+      }
+      found = true;
+      break;
     }
-    base::ProcessHandle process_handle = model->GetProcess(i);
-    if (process_handle == base::GetCurrentProcessHandle()) {
-      // Cannot kill the browser process.
-      // TODO(kalman): Are there other sensitive processes?
-      error_ = ErrorUtils::FormatErrorMessage(errors::kNotAllowedToTerminate,
-                                              base::IntToString(process_id_));
-    } else {
-      base::Process process =
-          base::Process::DeprecatedGetProcessFromHandle(process_handle);
-      bool did_terminate = process.Terminate(content::RESULT_CODE_KILLED, true);
-      if (did_terminate)
-        UMA_HISTOGRAM_COUNTS("ChildProcess.KilledByExtensionAPI", 1);
-      SetResult(new base::FundamentalValue(did_terminate));
-    }
-    found = true;
-    break;
-  }
-  if (!found) {
-    error_ = ErrorUtils::FormatErrorMessage(errors::kProcessNotFound,
-                                            base::IntToString(process_id_));
   }
 
-  SendResponse(error_.empty());
+  if (!found)
+    Respond(Error(errors::kProcessNotFound, base::IntToString(process_id_)));
 
-  // Balance the AddRef in the RunAsync.
+  // Balance the AddRef in the Run.
   Release();
-#else
-  error_ = errors::kExtensionNotSupported;
-  SendResponse(false);
 #endif  // defined(ENABLE_TASK_MANAGER)
 }
 
-GetProcessInfoFunction::GetProcessInfoFunction()
+////////////////////////////////////////////////////////////////////////////////
+// ProcessesGetProcessInfoFunction
+////////////////////////////////////////////////////////////////////////////////
+
+ProcessesGetProcessInfoFunction::ProcessesGetProcessInfoFunction()
 #if defined(ENABLE_TASK_MANAGER)
   : memory_(false)
 #endif
     {
 }
 
-GetProcessInfoFunction::~GetProcessInfoFunction() {
-}
-
-bool GetProcessInfoFunction::RunAsync() {
+ExtensionFunction::ResponseAction ProcessesGetProcessInfoFunction::Run() {
 #if defined(ENABLE_TASK_MANAGER)
-  base::Value* processes = NULL;
+  scoped_ptr<api::processes::GetProcessInfo::Params> params(
+      api::processes::GetProcessInfo::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+  if (params->process_ids.as_integer)
+    process_ids_.push_back(*params->process_ids.as_integer);
+  else
+    process_ids_.swap(*params->process_ids.as_integers);
 
-  EXTENSION_FUNCTION_VALIDATE(args_->Get(0, &processes));
-  EXTENSION_FUNCTION_VALIDATE(args_->GetBoolean(1, &memory_));
-  EXTENSION_FUNCTION_VALIDATE(ReadOneOrMoreIntegers(processes, &process_ids_));
+  memory_ = params->include_memory;
 
   // Add a reference, which is balanced in GatherProcessInfo to keep the object
   // around and allow for the callback to be invoked.
@@ -705,32 +674,34 @@ bool GetProcessInfoFunction::RunAsync() {
   // which will invoke the callback once we have returned from this function.
   // Otherwise, wait for the notification that the task manager is done with
   // the data gathering.
-  if (ProcessesAPI::Get(GetProfile())
+  if (ProcessesAPI::Get(Profile::FromBrowserContext(browser_context()))
           ->processes_event_router()
           ->is_task_manager_listening()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(&GetProcessInfoFunction::GatherProcessInfo, this));
+        base::Bind(&ProcessesGetProcessInfoFunction::GatherProcessInfo, this));
   } else {
     TaskManager::GetInstance()->model()->RegisterOnDataReadyCallback(
-        base::Bind(&GetProcessInfoFunction::GatherProcessInfo, this));
+        base::Bind(&ProcessesGetProcessInfoFunction::GatherProcessInfo, this));
 
-    ProcessesAPI::Get(GetProfile())
+    ProcessesAPI::Get(Profile::FromBrowserContext(browser_context()))
         ->processes_event_router()
         ->StartTaskManagerListening();
   }
-  return true;
 
+  return RespondLater();
 #else
-  error_ = errors::kExtensionNotSupported;
-  return false;
+  return RespondNow(Error(errors::kExtensionNotSupported));
 #endif  // defined(ENABLE_TASK_MANAGER)
 }
 
-void GetProcessInfoFunction::GatherProcessInfo() {
+ProcessesGetProcessInfoFunction::~ProcessesGetProcessInfoFunction() {
+}
+
+void ProcessesGetProcessInfoFunction::GatherProcessInfo() {
 #if defined(ENABLE_TASK_MANAGER)
   TaskManagerModel* model = TaskManager::GetInstance()->model();
-  base::DictionaryValue* processes = new base::DictionaryValue();
+  api::processes::GetProcessInfo::Results::Processes processes;
 
   // If there are no process IDs specified, it means we need to return all of
   // the ones we know of.
@@ -739,10 +710,12 @@ void GetProcessInfoFunction::GatherProcessInfo() {
     for (int i = 0; i < resources; ++i) {
       if (model->IsResourceFirstInGroup(i)) {
         int id = model->GetUniqueChildProcessId(i);
-        base::DictionaryValue* d = CreateProcessFromModel(id, model, i, false);
+        api::processes::Process process;
+        FillProcessData(id, model, i, false, &process);
         if (memory_)
-          AddMemoryDetails(d, model, i);
-        processes->Set(base::IntToString(id), d);
+          AddMemoryDetails(model, i, &process);
+        processes.additional_properties.Set(base::IntToString(id),
+                                            process.ToValue());
       }
     }
   } else {
@@ -753,11 +726,12 @@ void GetProcessInfoFunction::GatherProcessInfo() {
         std::vector<int>::iterator proc_id = std::find(process_ids_.begin(),
                                                        process_ids_.end(), id);
         if (proc_id != process_ids_.end()) {
-          base::DictionaryValue* d =
-              CreateProcessFromModel(id, model, i, false);
+          api::processes::Process process;
+          FillProcessData(id, model, i, false, &process);
           if (memory_)
-            AddMemoryDetails(d, model, i);
-          processes->Set(base::IntToString(id), d);
+            AddMemoryDetails(model, i, &process);
+          processes.additional_properties.Set(base::IntToString(id),
+                                              process.ToValue());
 
           process_ids_.erase(proc_id);
           if (process_ids_.size() == 0)
@@ -774,10 +748,11 @@ void GetProcessInfoFunction::GatherProcessInfo() {
     }
   }
 
-  SetResult(processes);
-  SendResponse(true);
+  // Send the response.
+  Respond(ArgumentList(
+      api::processes::GetProcessInfo::Results::Create(processes)));
 
-  // Balance the AddRef in the RunAsync.
+  // Balance the AddRef in the Run.
   Release();
 #endif  // defined(ENABLE_TASK_MANAGER)
 }

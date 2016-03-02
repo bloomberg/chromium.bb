@@ -134,15 +134,18 @@ class ProcessesAPI : public BrowserContextKeyedAPI,
   scoped_ptr<ProcessesEventRouter> processes_event_router_;
 };
 
+////////////////////////////////////////////////////////////////////////////////
 // This extension function returns the Process object for the renderer process
 // currently in use by the specified Tab.
-class GetProcessIdForTabFunction : public ChromeAsyncExtensionFunction {
+class ProcessesGetProcessIdForTabFunction : public UIThreadExtensionFunction {
  public:
-  GetProcessIdForTabFunction();
+  ProcessesGetProcessIdForTabFunction();
+
+  // UIThreadExtensionFunction:
+  ExtensionFunction::ResponseAction Run() override;
 
  private:
-  ~GetProcessIdForTabFunction() override {}
-  bool RunAsync() override;
+  ~ProcessesGetProcessIdForTabFunction() override {}
 
   void GetProcessIdForTab();
 
@@ -153,18 +156,21 @@ class GetProcessIdForTabFunction : public ChromeAsyncExtensionFunction {
                              PROCESSES_GETPROCESSIDFORTAB)
 };
 
+////////////////////////////////////////////////////////////////////////////////
 // Extension function that allows terminating Chrome subprocesses, by supplying
 // the unique ID for the process coming from the ChildProcess ID pool.
 // Using unique IDs instead of OS process IDs allows two advantages:
-// * guaranteed uniqueness, since OS process IDs can be reused
-// * guards against killing non-Chrome processes
-class TerminateFunction : public ChromeAsyncExtensionFunction {
+// * guaranteed uniqueness, since OS process IDs can be reused.
+// * guards against killing non-Chrome processes.
+class ProcessesTerminateFunction : public UIThreadExtensionFunction {
  public:
-  TerminateFunction();
+  ProcessesTerminateFunction();
+
+  // UIThreadExtensionFunction:
+  ExtensionFunction::ResponseAction Run() override;
 
  private:
-  ~TerminateFunction() override {}
-  bool RunAsync() override;
+  ~ProcessesTerminateFunction() override {}
 
   void TerminateProcess();
 
@@ -175,15 +181,18 @@ class TerminateFunction : public ChromeAsyncExtensionFunction {
                              PROCESSES_TERMINATE)
 };
 
+////////////////////////////////////////////////////////////////////////////////
 // Extension function which returns a set of Process objects, containing the
 // details corresponding to the process IDs supplied as input.
-class GetProcessInfoFunction : public ChromeAsyncExtensionFunction {
+class ProcessesGetProcessInfoFunction : public UIThreadExtensionFunction {
  public:
-  GetProcessInfoFunction();
+  ProcessesGetProcessInfoFunction();
+
+  // UIThreadExtensionFunction:
+  ExtensionFunction::ResponseAction Run() override;
 
  private:
-  ~GetProcessInfoFunction() override;
-  bool RunAsync() override;
+  ~ProcessesGetProcessInfoFunction() override;
 
   void GatherProcessInfo();
 

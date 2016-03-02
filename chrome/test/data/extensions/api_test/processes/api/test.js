@@ -40,7 +40,6 @@ function dumpProcess(process) {
   console.log("jsMemAlloc  " + process.jsMemoryAllocated);
   console.log("jsMemUsed   " + process.jsMemoryUsed);
   console.log("sqliteMem   " + process.sqliteMemory);
-  console.log("fps         " + process.fps);
   console.log("naclDebugPort " + process.naclDebugPort);
   if ("imageCache" in process) {
     console.log("imageCache.size      " + process.imageCache.size);
@@ -69,7 +68,6 @@ function validateProcessProperties(process, updating, memory_included) {
   // Present if onUpdate(WithMemory) listener is registered.
   assertEq(("cpu" in process), updating);
   assertEq(("network" in process), updating);
-  assertEq(("fps" in process), updating);
 
   // Present if memory details are requested.
   assertEq(("privateMemory" in process), memory_included);

@@ -12,12 +12,13 @@
 #include "extensions/common/switches.h"
 #include "extensions/test/extension_test_message_listener.h"
 
-// Test is flaky: http://crbug.com/346990
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_Processes) {
+using ProcessesApiTest = ExtensionApiTest;
+
+IN_PROC_BROWSER_TEST_F(ProcessesApiTest, Processes) {
   ASSERT_TRUE(RunExtensionTest("processes/api")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ProcessesVsTaskManager) {
+IN_PROC_BROWSER_TEST_F(ProcessesApiTest, ProcessesVsTaskManager) {
   // This test is for the old implementation of the task manager. We must
   // explicitly disable the new one.
   task_manager::browsertest_util::EnableOldTaskManager();
@@ -48,7 +49,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ProcessesVsTaskManager) {
   EXPECT_EQ(1, model->update_requests_);
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, CannotTerminateBrowserProcess) {
+IN_PROC_BROWSER_TEST_F(ProcessesApiTest, CannotTerminateBrowserProcess) {
   ASSERT_TRUE(RunExtensionTest("processes/terminate-browser-process"))
       << message_;
 }

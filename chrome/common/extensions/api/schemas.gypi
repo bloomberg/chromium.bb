@@ -66,6 +66,7 @@
       'passwords_private.idl',
       'permissions.json',
       'preferences_private.json',
+      'processes.idl',
       'resources_private.idl',
       'screenlock_private.idl',
       'sessions.json',
