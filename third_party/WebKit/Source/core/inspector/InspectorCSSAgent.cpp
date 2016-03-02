@@ -1254,6 +1254,7 @@ void InspectorCSSAgent::setStyleTexts(ErrorString* errorString, PassOwnPtr<proto
     TrackExceptionState exceptionState;
 
     int n = actions.size();
+    OwnPtr<protocol::Array<protocol::CSS::CSSStyle>> serializedStyles = protocol::Array<protocol::CSS::CSSStyle>::create();
     for (int i = 0; i < n; ++i) {
         RefPtrWillBeMember<StyleSheetAction> action = actions.at(i);
         bool success = action->perform(exceptionState);
@@ -1267,14 +1268,14 @@ void InspectorCSSAgent::setStyleTexts(ErrorString* errorString, PassOwnPtr<proto
             *errorString = String::format("Failed applying edit #%d: %s", i, InspectorDOMAgent::toErrorString(exceptionState).utf8().data());
             return;
         }
+        serializedStyles->addItem(action->takeSerializedStyle());
     }
 
-    *result = protocol::Array<protocol::CSS::CSSStyle>::create();
-    for (size_t i = 0; i < actions.size(); ++i) {
+    for (int i = 0; i < n; ++i) {
         RefPtrWillBeMember<StyleSheetAction> action = actions.at(i);
-        (*result)->addItem(action->takeSerializedStyle());
         m_domAgent->history()->appendPerformedAction(action);
     }
+    *result = serializedStyles.release();
 }
 
 CSSStyleDeclaration* InspectorCSSAgent::setStyleText(ErrorString* errorString, InspectorStyleSheetBase* inspectorStyleSheet, const SourceRange& range, const String& text)
