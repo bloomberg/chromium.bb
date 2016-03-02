@@ -41,6 +41,7 @@
 #include "third_party/angle/include/EGL/eglext.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
+#include "ui/gl/gl_fence.h"
 #include "ui/gl/gl_surface_egl.h"
 #include "ui/gl/gl_switches.h"
 
@@ -162,6 +163,9 @@ enum {
   kFlushDecoderSurfaceTimeoutMs = 1,
   // Maximum iterations where we try to flush the d3d device.
   kMaxIterationsForD3DFlush = 4,
+  // Maximum iterations where we try to flush the ANGLE device before reusing
+  // the texture.
+  kMaxIterationsForANGLEReuseFlush = 16,
   // We only request 5 picture buffers from the client which are used to hold
   // the decoded samples. These buffers are then reused when the client tells
   // us that it is done with the buffer.
@@ -345,6 +349,7 @@ struct DXVAVideoDecodeAccelerator::DXVAPictureBuffer {
                          bool use_rgb);
 
   bool ReusePictureBuffer();
+  void ResetReuseFence();
   // Copies the output sample data to the picture buffer provided by the
   // client.
   // The dest_surface parameter contains the decoded bits.
@@ -370,6 +375,10 @@ struct DXVAVideoDecodeAccelerator::DXVAPictureBuffer {
     return picture_buffer_.size();
   }
 
+  bool waiting_to_reuse() const { return waiting_to_reuse_; }
+
+  gfx::GLFence* reuse_fence() { return reuse_fence_.get(); }
+
   // Called when the source surface |src_surface| is copied to the destination
   // |dest_surface|
   bool CopySurfaceComplete(IDirect3DSurface9* src_surface,
@@ -379,8 +388,13 @@ struct DXVAVideoDecodeAccelerator::DXVAPictureBuffer {
   explicit DXVAPictureBuffer(const media::PictureBuffer& buffer);
 
   bool available_;
+
+  // This is true if the decoder is currently waiting on the fence before
+  // reusing the buffer.
+  bool waiting_to_reuse_;
   media::PictureBuffer picture_buffer_;
   EGLSurface decoding_surface_;
+  scoped_ptr<gfx::GLFence> reuse_fence_;
 
   HANDLE texture_share_handle_;
   base::win::ScopedComPtr<IDirect3DTexture9> decoding_texture_;
@@ -508,6 +522,7 @@ bool DXVAVideoDecodeAccelerator::DXVAPictureBuffer::InitializeTexture(
 DXVAVideoDecodeAccelerator::DXVAPictureBuffer::DXVAPictureBuffer(
     const media::PictureBuffer& buffer)
     : available_(true),
+      waiting_to_reuse_(false),
       picture_buffer_(buffer),
       decoding_surface_(NULL),
       texture_share_handle_(nullptr),
@@ -540,12 +555,21 @@ bool DXVAVideoDecodeAccelerator::DXVAPictureBuffer::ReusePictureBuffer() {
   decoder_surface_.Release();
   target_surface_.Release();
   decoder_dx11_texture_.Release();
+  waiting_to_reuse_ = false;
   set_available(true);
   if (egl_keyed_mutex_) {
     HRESULT hr = egl_keyed_mutex_->ReleaseSync(++keyed_mutex_value_);
     RETURN_ON_FAILURE(hr == S_OK, "Could not release sync mutex", false);
   }
   return true;
+}
+
+void DXVAVideoDecodeAccelerator::DXVAPictureBuffer::ResetReuseFence() {
+  if (!reuse_fence_ || !reuse_fence_->ResetSupported())
+    reuse_fence_.reset(gfx::GLFence::Create());
+  else
+    reuse_fence_->ResetState();
+  waiting_to_reuse_ = true;
 }
 
 bool DXVAVideoDecodeAccelerator::DXVAPictureBuffer::
@@ -738,6 +762,10 @@ bool DXVAVideoDecodeAccelerator::Initialize(const Config& config,
       "EGL_ANGLE_surface_d3d_texture_2d_share_handle unavailable",
       PLATFORM_FAILURE,
       false);
+
+  RETURN_AND_NOTIFY_ON_FAILURE(gfx::GLFence::IsSupported(),
+                               "GL fences are unsupported", PLATFORM_FAILURE,
+                               false);
 
   State state = GetState();
   RETURN_AND_NOTIFY_ON_FAILURE((state == kUninitialized),
@@ -1023,7 +1051,55 @@ void DXVAVideoDecodeAccelerator::ReusePictureBuffer(int32_t picture_buffer_id) {
     return;
   }
 
-  RETURN_AND_NOTIFY_ON_FAILURE(it->second->ReusePictureBuffer(),
+  if (it->second->available() || it->second->waiting_to_reuse())
+    return;
+
+  if (use_keyed_mutex_ || using_angle_device_) {
+    RETURN_AND_NOTIFY_ON_FAILURE(it->second->ReusePictureBuffer(),
+                                 "Failed to reuse picture buffer",
+                                 PLATFORM_FAILURE, );
+
+    ProcessPendingSamples();
+    if (pending_flush_) {
+      decoder_thread_task_runner_->PostTask(
+          FROM_HERE, base::Bind(&DXVAVideoDecodeAccelerator::FlushInternal,
+                                base::Unretained(this)));
+    }
+  } else {
+    RETURN_AND_NOTIFY_ON_FAILURE(make_context_current_.Run(),
+                                 "Failed to make context current",
+                                 PLATFORM_FAILURE, );
+    it->second->ResetReuseFence();
+
+    WaitForOutputBuffer(picture_buffer_id, 0);
+  }
+}
+
+void DXVAVideoDecodeAccelerator::WaitForOutputBuffer(int32_t picture_buffer_id,
+                                                     int count) {
+  DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
+  OutputBuffers::iterator it = output_picture_buffers_.find(picture_buffer_id);
+  if (it == output_picture_buffers_.end())
+    return;
+
+  DXVAPictureBuffer* picture_buffer = it->second.get();
+
+  DCHECK(!picture_buffer->available());
+  DCHECK(picture_buffer->waiting_to_reuse());
+
+  gfx::GLFence* fence = picture_buffer->reuse_fence();
+  RETURN_AND_NOTIFY_ON_FAILURE(make_context_current_.Run(),
+                               "Failed to make context current",
+                               PLATFORM_FAILURE, );
+  if (count <= kMaxIterationsForANGLEReuseFlush && !fence->HasCompleted()) {
+    main_thread_task_runner_->PostDelayedTask(
+        FROM_HERE, base::Bind(&DXVAVideoDecodeAccelerator::WaitForOutputBuffer,
+                              weak_this_factory_.GetWeakPtr(),
+                              picture_buffer_id, count + 1),
+        base::TimeDelta::FromMilliseconds(kFlushDecoderSurfaceTimeoutMs));
+    return;
+  }
+  RETURN_AND_NOTIFY_ON_FAILURE(picture_buffer->ReusePictureBuffer(),
                                "Failed to reuse picture buffer",
                                PLATFORM_FAILURE, );
 

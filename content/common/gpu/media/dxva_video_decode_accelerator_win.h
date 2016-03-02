@@ -237,6 +237,10 @@ class CONTENT_EXPORT DXVAVideoDecodeAccelerator
                     int picture_buffer_id,
                     int input_buffer_id);
 
+  // Polls to wait for GPU commands to be finished on the picture buffer
+  // before reusing it.
+  void WaitForOutputBuffer(int32_t picture_buffer_id, int count);
+
   // Initializes the DX11 Video format converter media types.
   // Returns true on success.
   bool InitializeDX11VideoFormatConverterMediaType(int width, int height);
