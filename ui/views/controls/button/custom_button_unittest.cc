@@ -8,6 +8,7 @@
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/layout.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/screen.h"
@@ -120,6 +121,8 @@ class TestButtonWithInkDrop : public TestCustomButton {
   DISALLOW_COPY_AND_ASSIGN(TestButtonWithInkDrop);
 };
 
+}  // namespace
+
 class CustomButtonTest : public ViewsTestBase {
  public:
   CustomButtonTest() {}
@@ -159,6 +162,9 @@ class CustomButtonTest : public ViewsTestBase {
   TestCustomButton* button() { return button_; }
   bool ink_shown() const { return ink_shown_; }
   bool ink_hidden() const { return ink_hidden_; }
+  void SetDraggedView(View* dragged_view) {
+    widget_->dragged_view_ = dragged_view;
+  }
 
  private:
   scoped_ptr<Widget> widget_;
@@ -168,8 +174,6 @@ class CustomButtonTest : public ViewsTestBase {
 
   DISALLOW_COPY_AND_ASSIGN(CustomButtonTest);
 };
-
-}  // namespace
 
 // Tests that hover state changes correctly when visiblity/enableness changes.
 TEST_F(CustomButtonTest, HoverStateOnVisibilityChange) {
@@ -392,6 +396,7 @@ TEST_F(CustomButtonTest, ButtonClickTogglesInkDrop) {
 }
 
 // Tests that pressing a button shows and releasing capture hides ink drop.
+// Releasing capture should also reset PRESSED button state to NORMAL.
 TEST_F(CustomButtonTest, CaptureLossHidesInkDrop) {
   gfx::Point old_cursor = gfx::Screen::GetScreen()->GetCursorScreenPoint();
   CreateButtonWithInkDrop();
@@ -402,9 +407,16 @@ TEST_F(CustomButtonTest, CaptureLossHidesInkDrop) {
   EXPECT_TRUE(ink_shown());
   EXPECT_FALSE(ink_hidden());
 
+  EXPECT_EQ(Button::ButtonState::STATE_PRESSED, button()->state());
+  SetDraggedView(button());
   widget()->SetCapture(button());
   widget()->ReleaseCapture();
+  SetDraggedView(nullptr);
   EXPECT_TRUE(ink_hidden());
+  EXPECT_EQ(ui::MaterialDesignController::IsModeMaterial()
+                ? Button::ButtonState::STATE_NORMAL
+                : Button::ButtonState::STATE_PRESSED,
+            button()->state());
 }
 
 }  // namespace views

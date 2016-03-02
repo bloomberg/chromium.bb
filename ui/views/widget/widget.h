@@ -840,6 +840,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
 
  private:
   friend class ComboboxTest;
+  friend class CustomButtonTest;
   friend class TextfieldTest;
 
   // Sets the value of |disable_inactive_rendering_|. If the value changes,

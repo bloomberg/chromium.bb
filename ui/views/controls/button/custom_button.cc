@@ -5,6 +5,7 @@
 #include "ui/views/controls/button/custom_button.h"
 
 #include "ui/accessibility/ax_view_state.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_codes.h"
@@ -185,8 +186,12 @@ void CustomButton::OnMouseReleased(const ui::MouseEvent& event) {
 }
 
 void CustomButton::OnMouseCaptureLost() {
-  // Starting a drag results in a MouseCaptureLost, we need to ignore it.
-  if (state_ != STATE_DISABLED && !InDrag())
+  // Starting a drag results in a MouseCaptureLost. Reset button state.
+  // TODO(varkha) While in drag only reset the state with Material Design.
+  // The same logic may applies everywhere so gather any feedback and update.
+  bool reset_button_state =
+      !InDrag() || ui::MaterialDesignController::IsModeMaterial();
+  if (state_ != STATE_DISABLED && reset_button_state)
     SetState(STATE_NORMAL);
   if (ink_drop_delegate_)
     ink_drop_delegate_->OnAction(views::InkDropState::HIDDEN);
