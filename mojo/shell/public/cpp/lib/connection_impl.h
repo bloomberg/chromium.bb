@@ -52,7 +52,8 @@ class ConnectionImpl : public Connection {
   InterfaceRegistry* GetLocalRegistry() override;
   base::WeakPtr<Connection> GetWeakPtr() override;
 
-  void OnGotInstanceID(uint32_t target_application_id);
+  void OnGotInstanceID(uint32_t target_application_id,
+                       uint32_t target_user_id);
 
   const std::string connection_name_;
   const std::string remote_name_;

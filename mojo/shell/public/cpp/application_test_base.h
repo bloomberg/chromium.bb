@@ -35,6 +35,8 @@ class TestHelper {
 
   Connector* connector() { return shell_connection_->connector(); }
   std::string test_name() { return name_; }
+  uint32_t test_instance_id() { return instance_id_; }
+  uint32_t test_userid() { return userid_; }
 
  private:
   // The application delegate used if GetShellClient is not overridden.
@@ -44,6 +46,8 @@ class TestHelper {
   scoped_ptr<ShellConnection> shell_connection_;
 
   std::string name_;
+  uint32_t instance_id_;
+  uint32_t userid_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(TestHelper);
 };
@@ -60,6 +64,14 @@ class ApplicationTestBase : public testing::Test {
   }
   std::string test_name() const {
     return test_helper_ ? test_helper_->test_name() : std::string();
+  }
+  uint32_t test_instance_id() const {
+    return test_helper_ ? test_helper_->test_instance_id() :
+        shell::mojom::Connector::kInvalidApplicationID;
+  }
+  uint32_t test_userid() const {
+    return test_helper_ ? test_helper_->test_userid() :
+        shell::mojom::Connector::kUserInherit;
   }
 
   // Get the ShellClient for the application to be tested.

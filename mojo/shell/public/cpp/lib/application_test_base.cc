@@ -118,7 +118,9 @@ TestHelper::TestHelper(ShellClient* client)
     : shell_connection_(new ShellConnection(
           client == nullptr ? &default_shell_client_ : client,
           std::move(g_shell_client_request))),
-      name_(g_name) {
+      name_(g_name),
+      instance_id_(g_id),
+      userid_(g_user_id) {
   // Fake ShellClient initialization.
   shell::mojom::ShellClient* shell_client = shell_connection_.get();
   shell_client->Initialize(std::move(g_connector), g_name, g_id, g_user_id);

@@ -69,14 +69,22 @@ interface Connector {
   //    InterfaceProvider are filtered by the security policy described by the
   //    source and target application manifests.
   //
-  //  Response: (application_id)
-  //    The shell responds with a unique identifier for the instance that was
-  //    connected to.
+  // Response parameters:
+  //
+  //  application_id
+  //    A unique identifier for the instance that was connected to.
+  //
+  //  user_id
+  //    The user id the shell ran the target application as. Typically a client
+  //    passes kUserInherit to Connect(), which is an invalid user id, so this
+  //    value in the response is guaranteed to be a valid user id, either the
+  //    id connected to, or kUserRoot if no user-specific instance was located.
   //
   Connect(string name,
           uint32 user_id,
           InterfaceProvider&? remote_interfaces,
-          InterfaceProvider? local_interfaces) => (uint32 application_id);
+          InterfaceProvider? local_interfaces) => (uint32 application_id,
+                                                   uint32 user_id);
 
   // Clones this Connector so it can be passed to another thread.
   Clone(Connector& request);

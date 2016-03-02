@@ -77,7 +77,10 @@ class Connection {
   // Returns the name identifying the remote application on this connection.
   virtual const std::string& GetRemoteApplicationName() = 0;
 
-  // Returns the User ID for the remote application.
+  // Returns the User ID for the remote application. Prior to the Connect()
+  // callback being fired, this will return the value passed via Connect().
+  // After the Connect() callback (call AddRemoteIDCallback to register one)
+  // this will return the actual user id the shell ran the target as.
   virtual uint32_t GetRemoteUserID() const = 0;
 
   // Register a handler to receive an error notification on the pipe to the

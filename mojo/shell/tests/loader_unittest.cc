@@ -389,7 +389,7 @@ class Tester : public ShellClient,
   ScopedVector<TestAImpl> a_bindings_;
 };
 
-void OnConnect(base::RunLoop* loop, uint32_t instance_id) {
+void OnConnect(base::RunLoop* loop, uint32_t instance_id, uint32_t user_id) {
   loop->Quit();
 }
 

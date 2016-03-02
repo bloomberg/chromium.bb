@@ -30,7 +30,8 @@ ConnectionImpl::ConnectionImpl(
     : connection_name_(connection_name),
       remote_name_(remote_name),
       remote_id_(remote_id),
-      remote_ids_valid_(false),
+      remote_ids_valid_(
+          remote_id != shell::mojom::Connector::kInvalidApplicationID),
       remote_user_id_(remote_user_id),
       local_registry_(std::move(local_interfaces), this),
       remote_interfaces_(std::move(remote_interfaces)),
@@ -108,11 +109,13 @@ base::WeakPtr<Connection> ConnectionImpl::GetWeakPtr() {
 ////////////////////////////////////////////////////////////////////////////////
 // ConnectionImpl, private:
 
-void ConnectionImpl::OnGotInstanceID(uint32_t target_application_id) {
+void ConnectionImpl::OnGotInstanceID(uint32_t target_application_id,
+                                     uint32_t target_user_id) {
   DCHECK(!remote_ids_valid_);
   remote_ids_valid_ = true;
 
   remote_id_ = target_application_id;
+  remote_user_id_= target_user_id;
   std::vector<Closure> callbacks;
   callbacks.swap(remote_id_callbacks_);
   for (auto callback : callbacks)

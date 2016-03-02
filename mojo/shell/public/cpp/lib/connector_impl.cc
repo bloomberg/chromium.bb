@@ -44,8 +44,9 @@ scoped_ptr<Connection> ConnectorImpl::Connect(ConnectParams* params) {
   std::string application_name = params->name();
   // We allow all interfaces on outgoing connections since we are presumably in
   // a position to know who we're talking to.
-  // TODO(beng): is this a valid assumption or do we need to figure some way to
-  //             filter here too?
+  // TODO(beng): We should filter outgoing interfaces also. The shell must pass
+  //             the manifest CapabilityFilter to the ShellConnection via
+  //             Initialize(), it can be used here.
   std::set<std::string> allowed;
   allowed.insert("*");
   shell::mojom::InterfaceProviderPtr local_interfaces;

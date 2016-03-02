@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/location.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/platform_thread.h"
@@ -51,6 +52,9 @@ void InProcessNativeRunner::Start(
 
   DCHECK(!thread_);
   std::string thread_name = "mojo:app_thread";
+#if defined(OS_WIN)
+  thread_name = base::WideToUTF8(app_path_.BaseName().value());
+#endif
   thread_.reset(new base::DelegateSimpleThread(this, thread_name));
   thread_->Start();
   pid_available_callback.Run(base::kNullProcessId);

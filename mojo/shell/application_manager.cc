@@ -76,7 +76,7 @@ class ApplicationManager::Instance : public mojom::Connector,
   }
 
   void ConnectToClient(scoped_ptr<ConnectParams> params) {
-    params->connect_callback().Run(id_);
+    params->connect_callback().Run(id_, identity_.user_id());
     AllowedInterfaces interfaces;
     interfaces.insert("*");
     if (!params->source().is_null())
@@ -85,7 +85,7 @@ class ApplicationManager::Instance : public mojom::Connector,
     Instance* source = manager_->GetExistingInstance(params->source());
     uint32_t source_id = source ? source->id() : kInvalidApplicationID;
     shell_client_->AcceptConnection(
-        params->source().name(), params->source().user_id(), source_id,
+        params->source().name(), source_id, params->source().user_id(),
         params->TakeRemoteInterfaces(), params->TakeLocalInterfaces(),
         Array<String>::From(interfaces), params->target().name());
   }
@@ -139,7 +139,7 @@ class ApplicationManager::Instance : public mojom::Connector,
                const ConnectCallback& callback) override {
     if (!IsValidName(app_name)) {
       LOG(ERROR) << "Error: invalid Name: " << app_name;
-      callback.Run(kInvalidApplicationID);
+      callback.Run(kInvalidApplicationID, kUserInherit);
       return;
     }
     if (allow_any_application_ ||
@@ -155,7 +155,7 @@ class ApplicationManager::Instance : public mojom::Connector,
     else {
       LOG(WARNING) << "CapabilityFilter prevented connection from: " <<
           identity_.name() << " to: " << app_name;
-      callback.Run(kInvalidApplicationID);
+      callback.Run(kInvalidApplicationID, kUserInherit);
     }
   }
   void Clone(mojom::ConnectorRequest request) override {

@@ -71,6 +71,9 @@ mojo_native_application("apptests") {
 
   deps = [
     "//mojo/shell/tests/application_manager",
+  ]
+
+  data_deps = [
     "//mojo/shell/tests/connect",
   ]
 }

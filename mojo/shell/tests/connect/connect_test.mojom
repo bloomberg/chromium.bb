@@ -5,5 +5,31 @@
 module mojo.shell.test.mojom;
 
 interface ConnectTestService {
-  GetName() => (string name);
+  GetTitle() => (string title);
+};
+
+// Interface implemented by a standalone (non-package) app.
+interface StandaloneApp {
+  // Attempts to connect to an application whose name is explicitly allowed by
+  // the standalone app's CapabilityFilter, but whose enclosing package is not.
+  // The connection should be blocked and title should be "uninitialized".
+  ConnectToAllowedAppInBlockedPackage() => (string title);
+};
+
+struct ConnectionState {
+  string connection_local_name;
+  string connection_remote_name;
+  uint32 connection_remote_userid;
+  uint32 connection_remote_id;
+  string initialize_local_name;
+  uint32 initialize_id;
+  uint32 initialize_userid;
+};
+
+interface ExposedInterface {
+  ConnectionAccepted(ConnectionState state);
+};
+
+interface BlockedInterface {
+  GetTitleBlocked() => (string blocked_title);
 };
