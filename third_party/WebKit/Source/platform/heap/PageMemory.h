@@ -68,13 +68,13 @@ public:
 
     void markPageUsed(Address page)
     {
-        ASSERT(!(m_inUseBitmap & index(page)));
-        m_inUseBitmap |= index(page);
+        ASSERT(!m_inUse[index(page)]);
+        m_inUse[index(page)] = true;
     }
 
     void markPageUnused(Address page)
     {
-        m_inUseBitmap &= ~index(page);
+        m_inUse[index(page)] = false;
     }
 
     static PageMemoryRegion* allocateLargePage(size_t size)
@@ -90,7 +90,7 @@ public:
     BasePage* pageFromAddress(Address address)
     {
         ASSERT(contains(address));
-        if (!(m_inUseBitmap & index(address)))
+        if (!m_inUse[index(address)])
             return nullptr;
         if (m_isLargePage)
             return pageFromObject(base());
@@ -100,22 +100,20 @@ public:
 private:
     PageMemoryRegion(Address base, size_t, unsigned numPages);
 
-    // Returns word with the bit set which corresponds to the |address|'
-    // page within a region.
-    unsigned index(Address address) const
+    unsigned index(Address address)
     {
         ASSERT(contains(address));
         if (m_isLargePage)
-            return 0x1;
+            return 0;
         size_t offset = blinkPageAddress(address) - base();
         ASSERT(offset % blinkPageSize == 0);
-        return 0x1 << (offset / blinkPageSize);
+        return offset / blinkPageSize;
     }
 
     static PageMemoryRegion* allocate(size_t, unsigned numPages);
 
     bool m_isLargePage;
-    unsigned m_inUseBitmap;
+    bool m_inUse[blinkPagesPerRegion];
     unsigned m_numPages;
 };
 

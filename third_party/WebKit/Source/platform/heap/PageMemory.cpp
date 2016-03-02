@@ -31,11 +31,11 @@ void MemoryRegion::decommit()
 PageMemoryRegion::PageMemoryRegion(Address base, size_t size, unsigned numPages)
     : MemoryRegion(base, size)
     , m_isLargePage(numPages == 1)
-    , m_inUseBitmap(0)
     , m_numPages(numPages)
 {
-    static_assert(blinkPagesPerRegion < 8 * sizeof(unsigned), "PageMemoryRegion's in-use bitmap must fit within a word.");
     Heap::addPageMemoryRegion(this);
+    for (size_t i = 0; i < blinkPagesPerRegion; ++i)
+        m_inUse[i] = false;
 }
 
 PageMemoryRegion::~PageMemoryRegion()
