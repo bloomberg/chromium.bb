@@ -232,6 +232,11 @@ crbug.com/548226 [ Win ] fast/events/pointerevents/mouse-pointer-event-propertie
 crbug.com/548226 [ Win ] virtual/pointerevent/fast/events/pointerevents/mouse-pointer-event-properties.html [ Failure Pass ]
 crbug.com/548226 [ Win ] virtual/trustedeventsdefaultaction/fast/events/pointerevents/mouse-pointer-event-properties.html [ Failure Pass ]
 
+crbug.com/590971 printing/iframe-print.html [ NeedsRebaseline ]
+crbug.com/590971 virtual/threaded/printing/iframe-print.html [ NeedsRebaseline ]
+crbug.com/590971 printing/ellipsis-printing-style.html [ NeedsRebaseline ]
+crbug.com/590971 virtual/threaded/printing/ellipsis-printing-style.html [ NeedsRebaseline ]
+
 crbug.com/432129 fast/html/marquee-scroll.html [ Failure Pass ]
 crbug.com/518929 [ Precise Debug ] http/tests/appcache/obsolete-error-events.html [ Failure Pass Timeout ]
 crbug.com/518929 [ Precise Debug ] http/tests/appcache/remove-cache.html [ Failure Pass ]
@@ -1245,8 +1250,9 @@ crbug.com/521730 [ Win10 ] svg/as-image/svg-canvas-xhtml-tainted.html [ Failure 
 crbug.com/521730 [ Win10 ] svg/css/text-shadow-multiple.xhtml [ Failure ]
 crbug.com/521730 [ Win10 ] svg/custom/textPath-change-id2-pattern.svg [ Failure ]
 
-crbug.com/390040 [ Win10 ] virtual/threaded/printing/ellipsis-printing-style.html [ Skip ]
-crbug.com/390040 [ Win10 ] printing/ellipsis-printing-style.html [ Skip ]
+# TODO(chrishtr): re-enable these after crbug.com/590971 is fixed.
+# crbug.com/390040 [ Win10 ] virtual/threaded/printing/ellipsis-printing-style.html [ Skip ]
+# crbug.com/390040 [ Win10 ] printing/ellipsis-printing-style.html [ Skip ]
 
 crbug.com/571233 compositing/background-color/background-color-outside-document.html [ Skip ]
 
