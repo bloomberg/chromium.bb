@@ -32,6 +32,15 @@ const int kMaxErrorTimeoutInSeconds = 1;
 // if input callbacks have started, and false otherwise.
 const int kInputCallbackStartTimeoutInSeconds = 5;
 
+// Replaces AudioManagerMac::kStartDelayInSecsForPowerEvents to allow for a
+// longer delay when calling Start() in conjunction to a power resume event.
+// If it is detected that Start() should be deferred, we wait this amount of
+// time before trying Start() again. The default value in AudioManagerMac is
+// 2 seconds.
+// TODO(henrika): investigate if an increase results in a lower frequency of
+// detecting no input callbacks at startup.
+const int kStartDelayInSecsForPowerEvents = 4;
+
 // Returns true if the format flags in |format_flags| has the "non-interleaved"
 // flag (kAudioFormatFlagIsNonInterleaved) cleared (set to 0).
 static bool FormatIsInterleaved(UInt32 format_flags) {
@@ -468,16 +477,15 @@ void AUAudioInputStream::Start(AudioInputCallback* callback) {
 
   // Check if we should defer Start() for http://crbug.com/160920.
   if (manager_->ShouldDeferStreamStart()) {
+    LOG(WARNING) << "Start of input audio is deferred";
     start_was_deferred_ = true;
     // Use a cancellable closure so that if Stop() is called before Start()
     // actually runs, we can cancel the pending start.
     deferred_start_cb_.Reset(base::Bind(
         &AUAudioInputStream::Start, base::Unretained(this), callback));
     manager_->GetTaskRunner()->PostDelayedTask(
-        FROM_HERE,
-        deferred_start_cb_.callback(),
-        base::TimeDelta::FromSeconds(
-            AudioManagerMac::kStartDelayInSecsForPowerEvents));
+        FROM_HERE, deferred_start_cb_.callback(),
+        base::TimeDelta::FromSeconds(kStartDelayInSecsForPowerEvents));
     return;
   }
 
@@ -545,10 +553,15 @@ void AUAudioInputStream::Close() {
   CloseAudioUnit();
   // Disable the listener for device property changes.
   DeRegisterDeviceChangeListener();
-  // Check if any device property changes are added by filtering out a selected
-  // set of the |device_property_changes_map_| map. Add UMA stats if valuable
-  // data is found.
-  AddDevicePropertyChangesToUMA(false);
+  // Add more UMA stats but only if AGC was activated, i.e. for e.g. WebRTC
+  // audio input streams.
+  if (GetAutomaticGainControl()) {
+    // Check if any device property changes are added by filtering out a
+    // selected set of the |device_property_changes_map_| map. Add UMA stats
+    // if valuable data is found.
+    AddDevicePropertyChangesToUMA(false);
+    // TODO(henrika): possibly add more values here...
+  }
   // Inform the audio manager that we have been closed. This will cause our
   // destruction.
   manager_->ReleaseInputStream(this);
