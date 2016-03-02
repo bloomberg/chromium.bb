@@ -292,8 +292,6 @@ if (enable_webrtc) {
     ]
   }
 
-  # Note: this does not support the shared library build of libpeerconnection
-  # as is supported in the GYP build. It's not clear what this is used for.
   source_set("libjingle_webrtc_common") {
     sources = [
       "../webrtc/api/audiotrack.cc",
@@ -461,8 +459,6 @@ if (enable_webrtc) {
     }
   }
 
-  # Note: this does not support the shared library build of libpeerconnection
-  # as is supported in the GYP build. It's not clear what this is used for.
   source_set("libpeerconnection") {
     sources = [
       "../webrtc/media/engine/simulcast.cc",

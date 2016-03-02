@@ -497,11 +497,6 @@
             '<@(libjingle_peerconnection_additional_deps)',
             'libjingle_webrtc_common',
           ],
-          'conditions': [
-            ['OS=="android"', {
-              'standalone_static_library': 1,
-            }],
-          ],
         },  # target libpeerconnection
       ],
     }],
