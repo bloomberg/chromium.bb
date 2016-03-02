@@ -71,9 +71,11 @@ bool WindowManagerAccessPolicy::CanEmbed(const ServerWindow* window,
 
 bool WindowManagerAccessPolicy::CanChangeWindowVisibility(
     const ServerWindow* window) const {
-  // The WindowManager can change the visibility of the root too.
-  return window->id().connection_id == connection_id_ ||
-         (window->GetRoot() == window);
+  if (window->id().connection_id == connection_id_)
+    return true;
+  // The WindowManager can change the visibility of the WindowManager root.
+  const ServerWindow* root = window->GetRoot();
+  return root && window->parent() == root;
 }
 
 bool WindowManagerAccessPolicy::CanSetWindowSurface(

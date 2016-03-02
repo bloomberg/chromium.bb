@@ -35,8 +35,6 @@ class WindowManagerApplication;
 class RootWindowController : public mus::WindowObserver,
                              public mus::WindowTreeDelegate {
  public:
-  static RootWindowController* CreateUsingWindowTreeHost(
-      WindowManagerApplication* app);
   static RootWindowController* CreateFromDisplay(
       WindowManagerApplication* app,
       mus::mojom::DisplayPtr display,
@@ -89,8 +87,6 @@ class RootWindowController : public mus::WindowObserver,
   std::map<mus::Window*, scoped_ptr<LayoutManager>> layout_manager_;
 
   scoped_ptr<ShadowController> shadow_controller_;
-
-  mus::mojom::WindowTreeHostPtr window_tree_host_;
 
   mus::mojom::DisplayPtr display_;
 

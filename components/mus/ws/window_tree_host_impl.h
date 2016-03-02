@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <map>
 #include <queue>
 
 #include "base/macros.h"
@@ -29,6 +30,7 @@ namespace ws {
 
 class ConnectionManager;
 class FocusController;
+class WindowManagerState;
 class WindowTreeHostConnection;
 class WindowTreeImpl;
 
@@ -37,6 +39,15 @@ class WindowTreeImpl;
 // ConnectionManager. If the connection to the client breaks or if the user
 // closes the associated window, then this object and related state will be
 // deleted.
+//
+// WindowTreeHost has a single root window whose children are the roots for
+// a per-user WindowManager. WindowTreeHost is configured in two distinct
+// ways:
+// . with a WindowTreeHostConnection. In this mode there is only ever one
+//   WindowManager for the host, which comes from the client that created
+//   the WindowTreeHost.
+// . without a WindowTreeHostConnection. In this mode a WindowManager is
+//   automatically created per user.
 class WindowTreeHostImpl : public DisplayManagerDelegate,
                            public mojom::WindowTreeHost,
                            public FocusControllerObserver,
@@ -58,21 +69,14 @@ class WindowTreeHostImpl : public DisplayManagerDelegate,
 
   uint32_t id() const { return id_; }
 
-  const WindowTreeImpl* GetWindowTree() const;
-  WindowTreeImpl* GetWindowTree();
-
+  // TODO(sky): move to WMM.
   void SetFrameDecorationValues(mojom::FrameDecorationValuesPtr values);
   const mojom::FrameDecorationValues& frame_decoration_values() const {
     return *frame_decoration_values_;
   }
 
-  // Returns whether |window| is a descendant of this root but not itself a
-  // root window.
-  bool IsWindowAttachedToRoot(const ServerWindow* window) const;
-
   // Schedules a paint for the specified region in the coordinates of |window|
-  // if
-  // the |window| is in this viewport. Returns whether |window| is in the
+  // if the |window| is in this viewport. Returns whether |window| is in the
   // viewport.
   bool SchedulePaintIfInViewport(const ServerWindow* window,
                                  const gfx::Rect& bounds);
@@ -91,9 +95,16 @@ class WindowTreeHostImpl : public DisplayManagerDelegate,
 
   EventDispatcher* event_dispatcher() { return &event_dispatcher_; }
 
-  // Returns the root ServerWindow of this viewport.
+  // Returns the root of the WindowTreeHost. The root's children are the roots
+  // of the corresponding WindowManagers.
   ServerWindow* root_window() { return root_.get(); }
   const ServerWindow* root_window() const { return root_.get(); }
+
+  ServerWindow* GetRootWithId(const WindowId& id);
+
+  WindowManagerState* GetWindowManagerStateWithRoot(const ServerWindow* window);
+  // TODO(sky): this is wrong, plumb through user_id.
+  WindowManagerState* GetFirstWindowManagerState();
 
   void SetCapture(ServerWindow* window, bool in_nonclient_area);
 
@@ -139,6 +150,8 @@ class WindowTreeHostImpl : public DisplayManagerDelegate,
  private:
   class ProcessedEventTarget;
   friend class WindowTreeTest;
+  using WindowManagerStateMap =
+      std::map<uint32_t, scoped_ptr<WindowManagerState>>;
 
   // There are two types of events that may be queued, both occur only when
   // waiting for an ack from a client.
@@ -157,7 +170,7 @@ class WindowTreeHostImpl : public DisplayManagerDelegate,
   };
 
   // Inits the necessary state once the display is ready.
-  void CallOnDisplayInitializedIfNecessary();
+  void InitWindowManagersIfNecessary();
 
   void OnEventAckTimeout();
 
@@ -174,6 +187,10 @@ class WindowTreeHostImpl : public DisplayManagerDelegate,
   void DispatchInputEventToWindowImpl(ServerWindow* target,
                                       bool in_nonclient_area,
                                       const ui::Event& event);
+
+  // Creates the set of WindowManagerStates from the
+  // WindowManagerFactoryRegistry.
+  void CreateWindowManagerStatesFromRegistry();
 
   void UpdateNativeCursor(int32_t cursor_id);
 
@@ -214,7 +231,8 @@ class WindowTreeHostImpl : public DisplayManagerDelegate,
 
   const uint32_t id_;
   scoped_ptr<WindowTreeHostConnection> window_tree_host_connection_;
-  WindowTreeImpl* window_tree_ = nullptr;
+  // Set once Init() has been called.
+  bool init_called_ = false;
   ConnectionManager* const connection_manager_;
   EventDispatcher event_dispatcher_;
   scoped_ptr<ServerWindow> root_;
@@ -233,6 +251,8 @@ class WindowTreeHostImpl : public DisplayManagerDelegate,
 
   std::queue<scoped_ptr<QueuedEvent>> event_queue_;
   base::OneShotTimer event_ack_timer_;
+
+  WindowManagerStateMap window_manager_state_map_;
 
   mojom::FrameDecorationValuesPtr frame_decoration_values_;
 

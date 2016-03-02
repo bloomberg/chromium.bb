@@ -14,12 +14,17 @@ namespace mus {
 namespace ws {
 
 class ServerWindow;
+class WindowManagerFactoryRegistry;
 
 class WindowManagerFactoryService : public mojom::WindowManagerFactoryService {
  public:
-  explicit WindowManagerFactoryService(
+  WindowManagerFactoryService(
+      WindowManagerFactoryRegistry* registry,
+      uint32_t user_id,
       mojo::InterfaceRequest<mojom::WindowManagerFactoryService> request);
   ~WindowManagerFactoryService() override;
+
+  uint32_t user_id() const { return user_id_; }
 
   mojom::WindowManagerFactory* window_manager_factory() {
     return window_manager_factory_.get();
@@ -29,6 +34,10 @@ class WindowManagerFactoryService : public mojom::WindowManagerFactoryService {
   void SetWindowManagerFactory(mojom::WindowManagerFactoryPtr factory) override;
 
  private:
+  void OnConnectionLost();
+
+  WindowManagerFactoryRegistry* registry_;
+  const uint32_t user_id_;
   mojo::Binding<mojom::WindowManagerFactoryService> binding_;
   mojom::WindowManagerFactoryPtr window_manager_factory_;
 

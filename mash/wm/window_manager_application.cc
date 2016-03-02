@@ -116,9 +116,6 @@ void WindowManagerApplication::Initialize(mojo::Connector* connector,
       window_manager_factory_binding_.CreateInterfacePtrAndBind());
 
   user_window_controller_.reset(new UserWindowControllerImpl());
-
-  root_controllers_.insert(
-      RootWindowController::CreateUsingWindowTreeHost(this));
 }
 
 bool WindowManagerApplication::AcceptConnection(mojo::Connection* connection) {

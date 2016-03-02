@@ -23,6 +23,7 @@
 #include "components/mus/ws/operation.h"
 #include "components/mus/ws/server_window_delegate.h"
 #include "components/mus/ws/server_window_observer.h"
+#include "components/mus/ws/window_manager_factory_registry.h"
 #include "components/mus/ws/window_tree_host_impl.h"
 #include "mojo/converters/surfaces/custom_surface_converter.h"
 #include "mojo/public/cpp/bindings/array.h"
@@ -36,9 +37,24 @@ namespace ws {
 class ClientConnection;
 class ConnectionManagerDelegate;
 class ServerWindow;
-class WindowManagerFactoryService;
+class WindowManagerState;
 class WindowTreeHostConnection;
 class WindowTreeImpl;
+
+struct WindowManagerAndHost {
+  WindowManagerAndHost()
+      : window_manager_state(nullptr), window_tree_host(nullptr) {}
+
+  WindowManagerState* window_manager_state;
+  WindowTreeHostImpl* window_tree_host;
+};
+
+struct WindowManagerAndHostConst {
+  WindowManagerAndHostConst()
+      : window_manager_state(nullptr), window_tree_host(nullptr) {}
+  const WindowManagerState* window_manager_state;
+  const WindowTreeHostImpl* window_tree_host;
+};
 
 // ConnectionManager manages the set of connections to the window server (all
 // the WindowTreeImpls) as well as providing the root of the hierarchy.
@@ -52,6 +68,8 @@ class ConnectionManager : public ServerWindowDelegate,
   ConnectionManager(ConnectionManagerDelegate* delegate,
                     const scoped_refptr<mus::SurfacesState>& surfaces_state);
   ~ConnectionManager() override;
+
+  ConnectionManagerDelegate* delegate() { return delegate_; }
 
   // Adds/removes a WindowTreeHost. ConnectionManager owns the
   // WindowTreeHostImpls.
@@ -75,8 +93,6 @@ class ConnectionManager : public ServerWindowDelegate,
 
   ClientConnection* GetClientConnection(WindowTreeImpl* window_tree);
 
-  void OnHostConnectionClosed(WindowTreeHostImpl* host);
-
   // See description of WindowTree::Embed() for details. This assumes
   // |transport_window_id| is valid.
   WindowTreeImpl* EmbedAtWindow(ServerWindow* root,
@@ -92,10 +108,6 @@ class ConnectionManager : public ServerWindowDelegate,
 
   // Returns the Window identified by |id|.
   ServerWindow* GetWindow(const WindowId& id);
-
-  // Returns whether |window| is a descendant of some root window but not itself
-  // a root window.
-  bool IsWindowAttachedToRoot(const ServerWindow* window) const;
 
   // Schedules a paint for the specified region in the coordinates of |window|.
   void SchedulePaint(const ServerWindow* window, const gfx::Rect& bounds);
@@ -135,6 +147,10 @@ class ConnectionManager : public ServerWindowDelegate,
   const WindowTreeHostImpl* GetWindowTreeHostByWindow(
       const ServerWindow* window) const;
 
+  WindowManagerAndHostConst GetWindowManagerAndHost(
+      const ServerWindow* window) const;
+  WindowManagerAndHost GetWindowManagerAndHost(const ServerWindow* window);
+
   WindowTreeHostImpl* GetActiveWindowTreeHost();
 
   bool has_tree_host_connections() const { return !hosts_.empty(); }
@@ -143,7 +159,13 @@ class ConnectionManager : public ServerWindowDelegate,
       mojo::InterfaceRequest<mojom::DisplayManager> request);
 
   void CreateWindowManagerFactoryService(
+      const uint32_t user_id,
       mojo::InterfaceRequest<mojom::WindowManagerFactoryService> request);
+  void OnWindowManagerFactorySet();
+
+  WindowManagerFactoryRegistry* window_manager_factory_registry() {
+    return &window_manager_factory_registry_;
+  }
 
   // Returns a change id for the window manager that is associated with
   // |source| and |client_change_id|. When the window manager replies
@@ -165,9 +187,11 @@ class ConnectionManager : public ServerWindowDelegate,
   // TODO(sky): decide what we want to do here.
   void WindowManagerSentBogusMessage() {}
 
+  // Returns the Display for |host|.
+  mojom::DisplayPtr DisplayForHost(WindowTreeHostImpl* host);
+
   // These functions trivially delegate to all WindowTreeImpls, which in
   // term notify their clients.
-  void ProcessWindowDestroyed(ServerWindow* window);
   void ProcessWindowBoundsChanged(const ServerWindow* window,
                                   const gfx::Rect& old_bounds,
                                   const gfx::Rect& new_bounds);
@@ -241,9 +265,6 @@ class ConnectionManager : public ServerWindowDelegate,
   // Calls observer->OnDisplaysChanged() with the display for |host|.
   void CallOnDisplayChanged(mojom::DisplayManagerObserver* observer,
                             WindowTreeHostImpl* host);
-
-  // Returns the Display for |host|.
-  mojom::DisplayPtr DisplayForHost(WindowTreeHostImpl* host);
 
   // Overridden from ServerWindowDelegate:
   mus::SurfacesState* GetSurfacesState() override;
@@ -331,7 +352,7 @@ class ConnectionManager : public ServerWindowDelegate,
 
   bool got_valid_frame_decorations_;
 
-  scoped_ptr<WindowManagerFactoryService> window_manager_factory_service_;
+  WindowManagerFactoryRegistry window_manager_factory_registry_;
 
   DISALLOW_COPY_AND_ASSIGN(ConnectionManager);
 };

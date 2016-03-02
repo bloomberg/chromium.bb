@@ -36,16 +36,6 @@ void AssertTrue(bool success) {
 }  // namespace
 
 // static
-RootWindowController* RootWindowController::CreateUsingWindowTreeHost(
-    WindowManagerApplication* app) {
-  RootWindowController* controller = new RootWindowController(app);
-  mus::CreateWindowTreeHost(app->connector(), controller,
-                            &controller->window_tree_host_,
-                            controller->window_manager_.get());
-  return controller;
-}
-
-// static
 RootWindowController* RootWindowController::CreateFromDisplay(
     WindowManagerApplication* app,
     mus::mojom::DisplayPtr display,
@@ -140,7 +130,6 @@ void RootWindowController::OnEmbed(mus::Window* root) {
   mus::Window* window = GetWindowForContainer(mojom::Container::USER_WINDOWS);
   layout_manager_[window].reset(new WindowLayout(window));
   window_manager_client()->AddActivationParent(window);
-  window_tree_host_->SetTitle("Mash");
 
   AddAccelerators();
 

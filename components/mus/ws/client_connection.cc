@@ -19,7 +19,7 @@ ClientConnection::~ClientConnection() {}
 DefaultClientConnection::DefaultClientConnection(
     scoped_ptr<WindowTreeImpl> service_impl,
     ConnectionManager* connection_manager,
-    mojo::InterfaceRequest<mojom::WindowTree> service_request,
+    mojom::WindowTreeRequest service_request,
     mojom::WindowTreeClientPtr client)
     : ClientConnection(std::move(service_impl), client.get()),
       connection_manager_(connection_manager),
@@ -29,6 +29,15 @@ DefaultClientConnection::DefaultClientConnection(
       [this]() { connection_manager_->OnConnectionError(this); });
 }
 
+DefaultClientConnection::DefaultClientConnection(
+    scoped_ptr<WindowTreeImpl> service_impl,
+    ConnectionManager* connection_manager,
+    mojom::WindowTreeClientPtr client)
+    : ClientConnection(std::move(service_impl), client.get()),
+      connection_manager_(connection_manager),
+      binding_(service()),
+      client_(std::move(client)) {}
+
 DefaultClientConnection::~DefaultClientConnection() {}
 
 void DefaultClientConnection::SetIncomingMethodCallProcessingPaused(
@@ -37,6 +46,11 @@ void DefaultClientConnection::SetIncomingMethodCallProcessingPaused(
     binding_.PauseIncomingMethodCallProcessing();
   else
     binding_.ResumeIncomingMethodCallProcessing();
+}
+
+mojom::WindowTreePtr DefaultClientConnection::CreateInterfacePtrAndBind() {
+  DCHECK(!binding_.is_bound());
+  return binding_.CreateInterfacePtrAndBind();
 }
 
 mojom::WindowManager* DefaultClientConnection::GetWindowManager() {

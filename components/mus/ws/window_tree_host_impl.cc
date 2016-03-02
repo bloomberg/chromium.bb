@@ -7,9 +7,14 @@
 #include "base/debug/debugger.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/mus/common/types.h"
+// #include "components/mus/public/interfaces/input_event_constants.mojom.h"
+#include "components/mus/ws/client_connection.h"
 #include "components/mus/ws/connection_manager.h"
+#include "components/mus/ws/connection_manager_delegate.h"
 #include "components/mus/ws/display_manager.h"
 #include "components/mus/ws/focus_controller.h"
+#include "components/mus/ws/window_manager_factory_service.h"
+#include "components/mus/ws/window_manager_state.h"
 #include "components/mus/ws/window_tree_host_connection.h"
 #include "components/mus/ws/window_tree_impl.h"
 #include "mojo/common/common_type_converters.h"
@@ -106,31 +111,25 @@ WindowTreeHostImpl::~WindowTreeHostImpl() {
   DestroyFocusController();
   for (ServerWindow* window : windows_needing_frame_destruction_)
     window->RemoveObserver(this);
+
+  // TODO(sky): this may leave the WindowTreeImpls associated with the
+  // WindowManagerStates still alive. The shutdown ordering is a bit iffy,
+  // figure out what it should be. ConnectionManager::OnConnectionError()
+  // has a check that effects this too.
 }
 
 void WindowTreeHostImpl::Init(scoped_ptr<WindowTreeHostConnection> connection) {
+  init_called_ = true;
   window_tree_host_connection_ = std::move(connection);
   connection_manager_->AddHost(this);
-  CallOnDisplayInitializedIfNecessary();
-}
-
-const WindowTreeImpl* WindowTreeHostImpl::GetWindowTree() const {
-  return window_tree_;
-}
-
-WindowTreeImpl* WindowTreeHostImpl::GetWindowTree() {
-  return window_tree_;
+  InitWindowManagersIfNecessary();
 }
 
 void WindowTreeHostImpl::SetFrameDecorationValues(
     mojom::FrameDecorationValuesPtr values) {
+  // TODO(sky): this needs to be moved to WindowManagerState.
   frame_decoration_values_ = values.Clone();
   connection_manager_->ProcessFrameDecorationValuesChanged(this);
-}
-
-bool WindowTreeHostImpl::IsWindowAttachedToRoot(
-    const ServerWindow* window) const {
-  return root_->Contains(window) && window != root_.get();
 }
 
 bool WindowTreeHostImpl::SchedulePaintIfInViewport(const ServerWindow* window,
@@ -155,6 +154,31 @@ void WindowTreeHostImpl::ScheduleSurfaceDestruction(ServerWindow* window) {
 
 const mojom::ViewportMetrics& WindowTreeHostImpl::GetViewportMetrics() const {
   return display_manager_->GetViewportMetrics();
+}
+
+ServerWindow* WindowTreeHostImpl::GetRootWithId(const WindowId& id) {
+  if (id == root_->id())
+    return root_.get();
+  for (auto& pair : window_manager_state_map_) {
+    if (pair.second->root()->id() == id)
+      return pair.second->root();
+  }
+  return nullptr;
+}
+
+WindowManagerState* WindowTreeHostImpl::GetWindowManagerStateWithRoot(
+    const ServerWindow* window) {
+  for (auto& pair : window_manager_state_map_) {
+    if (pair.second->root() == window)
+      return pair.second.get();
+  }
+  return nullptr;
+}
+
+WindowManagerState* WindowTreeHostImpl::GetFirstWindowManagerState() {
+  return window_manager_state_map_.empty()
+             ? nullptr
+             : window_manager_state_map_.begin()->second.get();
 }
 
 void WindowTreeHostImpl::SetCapture(ServerWindow* window,
@@ -213,6 +237,14 @@ void WindowTreeHostImpl::SetImeVisibility(ServerWindow* window, bool visible) {
 }
 
 void WindowTreeHostImpl::OnWindowTreeConnectionError(WindowTreeImpl* tree) {
+  for (auto it = window_manager_state_map_.begin();
+       it != window_manager_state_map_.end(); ++it) {
+    if (it->second->tree() == tree) {
+      window_manager_state_map_.erase(it);
+      break;
+    }
+  }
+
   if (tree_awaiting_input_ack_ != tree)
     return;
   // The WindowTree is dying. So it's not going to ack the event.
@@ -251,10 +283,20 @@ void WindowTreeHostImpl::OnEventAck(mojom::WindowTree* tree) {
   ProcessNextEventFromQueue();
 }
 
-void WindowTreeHostImpl::CallOnDisplayInitializedIfNecessary() {
-  if (window_tree_host_connection_ && root_) {
-    connection_manager_->OnWindowTreeHostDisplayAvailable(this);
-    window_tree_ = window_tree_host_connection_->CreateWindowTree(root_.get());
+void WindowTreeHostImpl::InitWindowManagersIfNecessary() {
+  if (!init_called_ || !root_)
+    return;
+
+  connection_manager_->OnWindowTreeHostDisplayAvailable(this);
+  if (window_tree_host_connection_) {
+    scoped_ptr<WindowManagerState> wms_ptr(new WindowManagerState(this));
+    WindowManagerState* wms = wms_ptr.get();
+    // For this case we never create additional WindowManagerStates, so any
+    // id works.
+    window_manager_state_map_[0u] = std::move(wms_ptr);
+    wms->tree_ = window_tree_host_connection_->CreateWindowTree(wms->root());
+  } else {
+    CreateWindowManagerStatesFromRegistry();
   }
 }
 
@@ -297,6 +339,10 @@ void WindowTreeHostImpl::DispatchInputEventToWindowImpl(
     ServerWindow* target,
     bool in_nonclient_area,
     const ui::Event& event) {
+  if (target == root_.get()) {
+    // TODO(sky): use active windowmanager here.
+    target = GetFirstWindowManagerState()->root();
+  }
   if (event.IsMousePointerEvent()) {
     DCHECK(event_dispatcher_.mouse_cursor_source_window());
     UpdateNativeCursor(
@@ -324,6 +370,24 @@ void WindowTreeHostImpl::DispatchInputEventToWindowImpl(
 
   tree_awaiting_input_ack_ = connection;
   connection->DispatchInputEvent(target, mojom::Event::From(event));
+}
+
+void WindowTreeHostImpl::CreateWindowManagerStatesFromRegistry() {
+  std::vector<WindowManagerFactoryService*> services =
+      connection_manager_->window_manager_factory_registry()->GetServices();
+  mojom::DisplayPtr display = connection_manager_->DisplayForHost(this);
+  for (WindowManagerFactoryService* service : services) {
+    scoped_ptr<WindowManagerState> wms_ptr(
+        new WindowManagerState(this, service->user_id()));
+    WindowManagerState* wms = wms_ptr.get();
+    window_manager_state_map_[service->user_id()] = std::move(wms_ptr);
+    ClientConnection* client_connection =
+        connection_manager_->delegate()->CreateClientConnectionForWindowManager(
+            this, wms->root(), *display, service->user_id(),
+            service->window_manager_factory());
+    client_connection->service()->ConfigureWindowManager();
+    wms->tree_ = client_connection->service();
+  }
 }
 
 void WindowTreeHostImpl::UpdateNativeCursor(int32_t cursor_id) {
@@ -373,10 +437,13 @@ void WindowTreeHostImpl::OnViewportMetricsChanged(
     root_->SetVisible(true);
     focus_controller_.reset(new FocusController(this, root_.get()));
     focus_controller_->AddObserver(this);
-    CallOnDisplayInitializedIfNecessary();
+    InitWindowManagersIfNecessary();
     event_dispatcher_.set_root(root_.get());
   } else {
     root_->SetBounds(gfx::Rect(new_metrics.size_in_pixels.To<gfx::Size>()));
+    const gfx::Rect wm_bounds(root_->bounds().size());
+    for (auto& pair : window_manager_state_map_)
+      pair.second->root()->SetBounds(wm_bounds);
   }
   connection_manager_->ProcessViewportMetricsChanged(this, old_metrics,
                                                      new_metrics);
@@ -413,6 +480,8 @@ void WindowTreeHostImpl::OnFocusChanged(
     FocusControllerChangeSource change_source,
     ServerWindow* old_focused_window,
     ServerWindow* new_focused_window) {
+  // TODO(sky): focus is global, not per windowtreehost. Move.
+
   // There are up to four connections that need to be notified:
   // . the connection containing |old_focused_window|.
   // . the connection with |old_focused_window| as its root.
@@ -460,12 +529,34 @@ void WindowTreeHostImpl::OnFocusChanged(
     }
   }
 
-  // Ensure that we always notify the root connection of a focus change.
-  if (window_tree_ != owning_connection_old &&
-      window_tree_ != embedded_connection_old &&
-      window_tree_ != owning_connection_new &&
-      window_tree_ != embedded_connection_new) {
-    window_tree_->ProcessFocusChanged(old_focused_window, new_focused_window);
+  // WindowManagers are always notified of focus changes.
+  WindowTreeImpl* wms_tree_with_old_focused_window = nullptr;
+  if (old_focused_window) {
+    WindowManagerState* wms =
+        connection_manager_->GetWindowManagerAndHost(old_focused_window)
+            .window_manager_state;
+    wms_tree_with_old_focused_window = wms ? wms->tree() : nullptr;
+    if (wms_tree_with_old_focused_window &&
+        wms_tree_with_old_focused_window != owning_connection_old &&
+        wms_tree_with_old_focused_window != embedded_connection_old &&
+        wms_tree_with_old_focused_window != owning_connection_new &&
+        wms_tree_with_old_focused_window != embedded_connection_new) {
+      wms_tree_with_old_focused_window->ProcessFocusChanged(old_focused_window,
+                                                            new_focused_window);
+    }
+  }
+  if (new_focused_window) {
+    WindowManagerState* wms =
+        connection_manager_->GetWindowManagerAndHost(new_focused_window)
+            .window_manager_state;
+    WindowTreeImpl* wms_tree = wms ? wms->tree() : nullptr;
+    if (wms_tree && wms_tree != wms_tree_with_old_focused_window &&
+        wms_tree != owning_connection_old &&
+        wms_tree != embedded_connection_old &&
+        wms_tree != owning_connection_new &&
+        wms_tree != embedded_connection_new) {
+      wms_tree->ProcessFocusChanged(old_focused_window, new_focused_window);
+    }
   }
 
   UpdateTextInputState(new_focused_window,
@@ -474,7 +565,10 @@ void WindowTreeHostImpl::OnFocusChanged(
 
 void WindowTreeHostImpl::OnAccelerator(uint32_t accelerator_id,
                                        const ui::Event& event) {
-  window_tree_->OnAccelerator(accelerator_id, mojom::Event::From(event));
+  // TODO(sky): accelerators need to be maintained per windowmanager and pushed
+  // to the eventdispatcher when the active userid changes.
+  GetFirstWindowManagerState()->tree()->OnAccelerator(
+      accelerator_id, mojom::Event::From(event));
 }
 
 void WindowTreeHostImpl::SetFocusedWindowFromEventDispatcher(

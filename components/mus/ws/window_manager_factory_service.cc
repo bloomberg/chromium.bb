@@ -11,14 +11,25 @@ namespace mus {
 namespace ws {
 
 WindowManagerFactoryService::WindowManagerFactoryService(
+    WindowManagerFactoryRegistry* registry,
+    uint32_t user_id,
     mojo::InterfaceRequest<mojom::WindowManagerFactoryService> request)
-    : binding_(this, std::move(request)) {}
+    : registry_(registry),
+      user_id_(user_id),
+      binding_(this, std::move(request)) {}
 
 WindowManagerFactoryService::~WindowManagerFactoryService() {}
 
 void WindowManagerFactoryService::SetWindowManagerFactory(
     mojom::WindowManagerFactoryPtr factory) {
   window_manager_factory_ = std::move(factory);
+  registry_->OnWindowManagerFactorySet();
+  binding_.set_connection_error_handler(base::Bind(
+      &WindowManagerFactoryService::OnConnectionLost, base::Unretained(this)));
+}
+
+void WindowManagerFactoryService::OnConnectionLost() {
+  registry_->OnWindowManagerFactoryConnectionLost(this);
 }
 
 }  // namespace ws

@@ -15,11 +15,18 @@
 
 namespace mus {
 
+namespace mojom {
+class Display;
+class WindowManagerFactory;
+class WindowTree;
+}
+
 namespace ws {
 
 class ClientConnection;
 class ConnectionManager;
 class ServerWindow;
+class WindowTreeHostImpl;
 
 class ConnectionManagerDelegate {
  public:
@@ -31,17 +38,27 @@ class ConnectionManagerDelegate {
   // ConnectionManager.
   virtual ClientConnection* CreateClientConnectionForEmbedAtWindow(
       ConnectionManager* connection_manager,
-      mojo::InterfaceRequest<mojom::WindowTree> tree_request,
+      mojom::WindowTreeRequest tree_request,
       ServerWindow* root,
       uint32_t policy_bitmask,
       mojom::WindowTreeClientPtr client) = 0;
+
+  virtual ClientConnection* CreateClientConnectionForWindowManager(
+      WindowTreeHostImpl* tree_host,
+      ServerWindow* window,
+      const mojom::Display& display,
+      uint32_t user_id,
+      mojom::WindowManagerFactory* factory) = 0;
+
+  // Called if no WindowTreeHosts have been created, but a
+  // WindowManagerFactory has been set.
+  virtual void CreateDefaultWindowTreeHosts() = 0;
 
  protected:
   virtual ~ConnectionManagerDelegate() {}
 };
 
 }  // namespace ws
-
 }  // namespace mus
 
 #endif  // COMPONENTS_MUS_WS_CONNECTION_MANAGER_DELEGATE_H_

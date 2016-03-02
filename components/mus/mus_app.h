@@ -72,36 +72,39 @@ class MandolineUIServicesApp
   void OnNoMoreRootConnections() override;
   ws::ClientConnection* CreateClientConnectionForEmbedAtWindow(
       ws::ConnectionManager* connection_manager,
-      mojo::InterfaceRequest<mojom::WindowTree> tree_request,
+      mojom::WindowTreeRequest tree_request,
       ws::ServerWindow* root,
       uint32_t policy_bitmask,
       mojom::WindowTreeClientPtr client) override;
+  ws::ClientConnection* CreateClientConnectionForWindowManager(
+      ws::WindowTreeHostImpl* tree_host,
+      ws::ServerWindow* root,
+      const mojom::Display& display,
+      uint32_t user_id,
+      mojom::WindowManagerFactory* factory) override;
+  void CreateDefaultWindowTreeHosts() override;
 
   // mojo::InterfaceFactory<mojom::DisplayManager> implementation.
   void Create(mojo::Connection* connection,
-              mojo::InterfaceRequest<mojom::DisplayManager> request) override;
+              mojom::DisplayManagerRequest request) override;
 
   // mojo::InterfaceFactory<mojom::WindowManagerFactoryService> implementation.
   void Create(mojo::Connection* connection,
-              mojo::InterfaceRequest<mojom::WindowManagerFactoryService>
-                  request) override;
+              mojom::WindowManagerFactoryServiceRequest request) override;
 
   // mojo::InterfaceFactory<mojom::WindowTreeFactory>:
-  void Create(
-      mojo::Connection* connection,
-      mojo::InterfaceRequest<mojom::WindowTreeFactory> request) override;
+  void Create(mojo::Connection* connection,
+              mojom::WindowTreeFactoryRequest request) override;
 
   // mojo::InterfaceFactory<mojom::WindowTreeHostFactory>:
-  void Create(
-      mojo::Connection* connection,
-      mojo::InterfaceRequest<mojom::WindowTreeHostFactory> request) override;
+  void Create(mojo::Connection* connection,
+              mojom::WindowTreeHostFactoryRequest request) override;
 
   // mojo::InterfaceFactory<mojom::Gpu> implementation.
-  void Create(mojo::Connection* connection,
-              mojo::InterfaceRequest<mojom::Gpu> request) override;
+  void Create(mojo::Connection* connection, mojom::GpuRequest request) override;
 
   // mojom::WindowTreeHostFactory implementation.
-  void CreateWindowTreeHost(mojo::InterfaceRequest<mojom::WindowTreeHost> host,
+  void CreateWindowTreeHost(mojom::WindowTreeHostRequest host,
                             mojom::WindowTreeClientPtr tree_client) override;
 
   mojo::BindingSet<mojom::WindowTreeHostFactory> factory_bindings_;

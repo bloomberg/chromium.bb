@@ -19,6 +19,7 @@
 #include "components/mus/ws/server_window.h"
 #include "components/mus/ws/server_window_observer.h"
 #include "components/mus/ws/window_manager_access_policy.h"
+#include "components/mus/ws/window_manager_state.h"
 #include "components/mus/ws/window_tree_host_impl.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/converters/ime/ime_type_converters.h"
@@ -76,7 +77,8 @@ WindowTreeImpl::WindowTreeImpl(ConnectionManager* connection_manager,
       window_manager_internal_(nullptr) {
   if (root)
     roots_.insert(root);
-  if (root && root->GetRoot() == root) {
+  // TODO(sky): pass in type rather than inferring it.
+  if (root && root->id().connection_id == kInvalidConnectionId) {
     access_policy_.reset(new WindowManagerAccessPolicy(id_, this));
     is_embed_root_ = true;
   } else {
@@ -410,8 +412,8 @@ void WindowTreeImpl::ProcessWindowHierarchyChanged(
     const ServerWindow* new_parent,
     const ServerWindow* old_parent,
     bool originated_change) {
-  if (originated_change && !IsWindowKnown(window) && new_parent &&
-      IsWindowKnown(new_parent)) {
+  const bool knows_new = new_parent && IsWindowKnown(new_parent);
+  if (originated_change && !IsWindowKnown(window) && knows_new) {
     std::vector<const ServerWindow*> unused;
     GetUnknownWindowsFrom(window, &unused);
   }
@@ -431,10 +433,14 @@ void WindowTreeImpl::ProcessWindowHierarchyChanged(
   std::vector<const ServerWindow*> to_send;
   if (!IsWindowKnown(window))
     GetUnknownWindowsFrom(window, &to_send);
+  const bool knows_old = old_parent && IsWindowKnown(old_parent);
+  if (!knows_old && !knows_new)
+    return;
+
   const ClientWindowId new_parent_client_window_id =
-      new_parent ? ClientWindowIdForWindow(new_parent) : ClientWindowId();
+      knows_new ? ClientWindowIdForWindow(new_parent) : ClientWindowId();
   const ClientWindowId old_parent_client_window_id =
-      old_parent ? ClientWindowIdForWindow(old_parent) : ClientWindowId();
+      knows_old ? ClientWindowIdForWindow(old_parent) : ClientWindowId();
   const ClientWindowId client_window_id =
       window ? ClientWindowIdForWindow(window) : ClientWindowId();
   client_->OnWindowHierarchyChanged(
@@ -577,8 +583,11 @@ WindowTreeHostImpl* WindowTreeImpl::GetHostForWindowManager() {
   DCHECK(window_manager_internal_);
 
   WindowTreeHostImpl* host = GetHost(*roots_.begin());
-  CHECK(host);
-  DCHECK_EQ(this, host->GetWindowTree());
+  WindowManagerAndHost wm_and_host =
+      connection_manager_->GetWindowManagerAndHost(*roots_.begin());
+  CHECK(wm_and_host.window_tree_host);
+  CHECK(wm_and_host.window_manager_state);
+  DCHECK_EQ(this, wm_and_host.window_manager_state->tree());
   return host;
 }
 
@@ -596,14 +605,13 @@ bool WindowTreeImpl::ShouldRouteToWindowManager(
 
   // The WindowManager is attached to the root of the WindowTreeHost, if there
   // isn't a WindowManager attached no need to route to it.
-  const WindowTreeHostImpl* host = GetHost(window);
-  if (!host || !host->GetWindowTree() ||
-      !host->GetWindowTree()->window_manager_internal_) {
+  const WindowManagerState* wms =
+      connection_manager_->GetWindowManagerAndHost(window).window_manager_state;
+  if (!wms || !wms->tree()->window_manager_internal_)
     return false;
-  }
 
   // Requests coming from the WM should not be routed through the WM again.
-  const bool is_wm = host->GetWindowTree() == this;
+  const bool is_wm = wms->tree() == this;
   return is_wm ? false : true;
 }
 
@@ -898,11 +906,12 @@ void WindowTreeImpl::NewTopLevelWindow(
     mojo::Map<mojo::String, mojo::Array<uint8_t>> transport_properties) {
   DCHECK(!waiting_for_top_level_window_info_);
   const ClientWindowId client_window_id(transport_window_id);
-  // TODO(sky): need a way for client to provide context.
   WindowTreeHostImpl* tree_host =
       connection_manager_->GetActiveWindowTreeHost();
-  if (!tree_host || tree_host->GetWindowTree() == this ||
-      !IsValidIdForNewWindow(client_window_id)) {
+  // TODO(sky): need a way for client to provide context.
+  WindowManagerState* wms =
+      tree_host ? tree_host->GetFirstWindowManagerState() : nullptr;
+  if (!wms || wms->tree() == this || !IsValidIdForNewWindow(client_window_id)) {
     client_->OnChangeCompleted(change_id, false);
     return;
   }
@@ -920,7 +929,7 @@ void WindowTreeImpl::NewTopLevelWindow(
   waiting_for_top_level_window_info_.reset(
       new WaitingForTopLevelWindowInfo(client_window_id, wm_change_id));
 
-  tree_host->GetWindowTree()->window_manager_internal_->WmCreateTopLevelWindow(
+  wms->tree()->window_manager_internal_->WmCreateTopLevelWindow(
       wm_change_id, std::move(transport_properties));
 }
 
@@ -1047,9 +1056,11 @@ void WindowTreeImpl::SetWindowBounds(uint32_t change_id,
         connection_manager_->GenerateWindowManagerChangeId(this, change_id);
     // |window_id| may be a client id, use the id from the window to ensure
     // the windowmanager doesn't get an id it doesn't know about.
-    WindowTreeImpl* wm_window_tree = GetHost(window)->GetWindowTree();
-    wm_window_tree->window_manager_internal_->WmSetBounds(
-        wm_change_id, wm_window_tree->ClientWindowIdForWindow(window).id,
+    WindowManagerState* wms =
+        connection_manager_->GetWindowManagerAndHost(window)
+            .window_manager_state;
+    wms->tree()->window_manager_internal_->WmSetBounds(
+        wm_change_id, wms->tree()->ClientWindowIdForWindow(window).id,
         std::move(bounds));
     return;
   }
@@ -1080,9 +1091,11 @@ void WindowTreeImpl::SetWindowProperty(uint32_t change_id,
   if (window && ShouldRouteToWindowManager(window)) {
     const uint32_t wm_change_id =
         connection_manager_->GenerateWindowManagerChangeId(this, change_id);
-    WindowTreeImpl* wm_window_tree = GetHost(window)->GetWindowTree();
-    wm_window_tree->window_manager_internal_->WmSetProperty(
-        wm_change_id, wm_window_tree->ClientWindowIdForWindow(window).id, name,
+    WindowManagerState* wms =
+        connection_manager_->GetWindowManagerAndHost(window)
+            .window_manager_state;
+    wms->tree()->window_manager_internal_->WmSetProperty(
+        wm_change_id, wms->tree()->ClientWindowIdForWindow(window).id, name,
         std::move(value));
     return;
   }
@@ -1316,9 +1329,10 @@ void WindowTreeImpl::WmRequestClose(Id transport_window_id) {
       GetWindowByClientId(ClientWindowId(transport_window_id));
   WindowTreeImpl* connection =
       connection_manager_->GetConnectionWithRoot(window);
-  if (connection && connection != host->GetWindowTree())
+  if (connection && connection != this) {
     connection->client_->RequestClose(
         connection->ClientWindowIdForWindow(window).id);
+  }
   // TODO(sky): think about what else case means.
 }
 

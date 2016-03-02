@@ -261,19 +261,27 @@ class TestConnectionManagerDelegate : public ConnectionManagerDelegate {
  private:
   // ConnectionManagerDelegate:
   void OnNoMoreRootConnections() override {}
-
   ClientConnection* CreateClientConnectionForEmbedAtWindow(
       ConnectionManager* connection_manager,
       mojo::InterfaceRequest<mus::mojom::WindowTree> service_request,
       ServerWindow* root,
       uint32_t policy_bitmask,
       mus::mojom::WindowTreeClientPtr client) override {
-    // Used by ConnectionManager::AddRoot.
     scoped_ptr<WindowTreeImpl> service(
         new WindowTreeImpl(connection_manager, root, policy_bitmask));
     last_connection_ = new TestClientConnection(std::move(service));
     return last_connection_;
   }
+  ClientConnection* CreateClientConnectionForWindowManager(
+      WindowTreeHostImpl* tree_host,
+      ServerWindow* window,
+      const mojom::Display& display,
+      uint32_t user_id,
+      mojom::WindowManagerFactory* factory) override {
+    NOTREACHED();
+    return nullptr;
+  }
+  void CreateDefaultWindowTreeHosts() override { NOTREACHED(); }
 
   TestClientConnection* last_connection_;
   WindowTreeHostImpl* window_tree_host_;
@@ -641,7 +649,7 @@ TEST_F(WindowTreeTest, FocusOnPointer) {
   EXPECT_EQ(child1, window_tree_host_->GetFocusedWindow());
   ASSERT_EQ(wm_client()->tracker()->changes()->size(), 1u)
       << SingleChangeToDescription(*wm_client()->tracker()->changes());
-  EXPECT_EQ("InputEvent window=0,2 event_action=4",
+  EXPECT_EQ("InputEvent window=0,3 event_action=4",
             ChangesToDescription1(*wm_client()->tracker()->changes())[0]);
   EXPECT_TRUE(connection1_client->tracker()->changes()->empty());
 }
@@ -819,7 +827,7 @@ TEST_F(WindowTreeTest, EventAck) {
   wm_client()->tracker()->changes()->clear();
   DispatchEventWithoutAck(CreateMouseMoveEvent(21, 22));
   ASSERT_EQ(1u, wm_client()->tracker()->changes()->size());
-  EXPECT_EQ("InputEvent window=0,2 event_action=5",
+  EXPECT_EQ("InputEvent window=0,3 event_action=5",
             ChangesToDescription1(*wm_client()->tracker()->changes())[0]);
   wm_client()->tracker()->changes()->clear();
 
@@ -830,7 +838,7 @@ TEST_F(WindowTreeTest, EventAck) {
   // Ack the first event. That should trigger the dispatch of the second event.
   AckPreviousEvent();
   ASSERT_EQ(1u, wm_client()->tracker()->changes()->size());
-  EXPECT_EQ("InputEvent window=0,2 event_action=5",
+  EXPECT_EQ("InputEvent window=0,3 event_action=5",
             ChangesToDescription1(*wm_client()->tracker()->changes())[0]);
 }
 

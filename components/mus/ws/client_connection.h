@@ -43,12 +43,18 @@ class ClientConnection {
 // Bindings implementation of ClientConnection.
 class DefaultClientConnection : public ClientConnection {
  public:
-  DefaultClientConnection(
-      scoped_ptr<WindowTreeImpl> service_impl,
-      ConnectionManager* connection_manager,
-      mojo::InterfaceRequest<mojom::WindowTree> service_request,
-      mojom::WindowTreeClientPtr client);
+  DefaultClientConnection(scoped_ptr<WindowTreeImpl> service_impl,
+                          ConnectionManager* connection_manager,
+                          mojom::WindowTreeRequest service_request,
+                          mojom::WindowTreeClientPtr client);
+  DefaultClientConnection(scoped_ptr<WindowTreeImpl> service_impl,
+                          ConnectionManager* connection_manager,
+                          mojom::WindowTreeClientPtr client);
   ~DefaultClientConnection() override;
+
+  // Use when created with the constructor that does not take a
+  // WindowTreeRequest.
+  mojom::WindowTreePtr CreateInterfacePtrAndBind();
 
   // ClientConnection:
   mojom::WindowManager* GetWindowManager() override;
