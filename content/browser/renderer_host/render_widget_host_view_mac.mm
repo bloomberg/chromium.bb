@@ -178,6 +178,8 @@ static BOOL SupportsBackingPropertiesChangedNotification() {
 - (void)keyEvent:(NSEvent*)theEvent wasKeyEquivalent:(BOOL)equiv;
 - (void)windowDidChangeBackingProperties:(NSNotification*)notification;
 - (void)windowChangedGlobalFrame:(NSNotification*)notification;
+- (void)windowDidBecomeKey:(NSNotification*)notification;
+- (void)windowDidResignKey:(NSNotification*)notification;
 - (void)checkForPluginImeCancellation;
 - (void)updateScreenProperties;
 - (void)setResponderDelegate:
@@ -2564,6 +2566,14 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
         removeObserver:self
                   name:NSWindowDidEndLiveResizeNotification
                 object:oldWindow];
+    [notificationCenter
+        removeObserver:self
+                  name:NSWindowDidBecomeKeyNotification
+                object:oldWindow];
+    [notificationCenter
+        removeObserver:self
+                  name:NSWindowDidResignKeyNotification
+                object:oldWindow];
   }
   if (newWindow) {
     if (supportsBackingPropertiesNotification) {
@@ -2583,6 +2593,14 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
            selector:@selector(windowChangedGlobalFrame:)
                name:NSWindowDidEndLiveResizeNotification
              object:newWindow];
+    [notificationCenter addObserver:self
+                           selector:@selector(windowDidBecomeKey:)
+                               name:NSWindowDidBecomeKeyNotification
+                             object:newWindow];
+    [notificationCenter addObserver:self
+                           selector:@selector(windowDidResignKey:)
+                               name:NSWindowDidResignKeyNotification
+                             object:newWindow];
   }
 }
 
@@ -2647,6 +2665,28 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
     return NO;
 
   return canBeKeyView_;
+}
+
+- (void)windowDidBecomeKey:(NSNotification*)notification {
+  DCHECK([self window]);
+  DCHECK_EQ([self window], [notification object]);
+  if ([[self window] firstResponder] == self)
+    renderWidgetHostView_->SetActive(true);
+}
+
+- (void)windowDidResignKey:(NSNotification*)notification {
+  DCHECK([self window]);
+  DCHECK_EQ([self window], [notification object]);
+
+  // If our app is still active and we're still the key window, ignore this
+  // message, since it just means that a menu extra (on the "system status bar")
+  // was activated; we'll get another |-windowDidResignKey| if we ever really
+  // lose key window status.
+  if ([NSApp isActive] && ([NSApp keyWindow] == [self window]))
+    return;
+
+  if ([[self window] firstResponder] == self)
+    renderWidgetHostView_->SetActive(false);
 }
 
 - (BOOL)becomeFirstResponder {

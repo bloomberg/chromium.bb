@@ -18,7 +18,6 @@
 #include "chrome/browser/ui/cocoa/extensions/extension_view_mac.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/native_web_keyboard_event.h"
-#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/common/extension.h"
 #include "skia/ext/skia_utils_mac.h"
@@ -735,10 +734,6 @@ void NativeAppWindowCocoa::WindowWillClose() {
 }
 
 void NativeAppWindowCocoa::WindowDidBecomeKey() {
-  content::RenderWidgetHostView* rwhv =
-      WebContents()->GetRenderWidgetHostView();
-  if (rwhv)
-    rwhv->SetActive(true);
   app_window_->OnNativeWindowActivated();
 
   WebContents()->RestoreFocus();
@@ -753,11 +748,6 @@ void NativeAppWindowCocoa::WindowDidResignKey() {
     return;
 
   WebContents()->StoreFocus();
-
-  content::RenderWidgetHostView* rwhv =
-      WebContents()->GetRenderWidgetHostView();
-  if (rwhv)
-    rwhv->SetActive(false);
 }
 
 void NativeAppWindowCocoa::WindowDidFinishResize() {
