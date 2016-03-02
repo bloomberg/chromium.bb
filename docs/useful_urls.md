@@ -37,8 +37,7 @@ This page aims to be a repository of useful links that people may find useful.
 |:------------------------|:------------|
 | http://cs.chromium.org/ | Code Search |
 | http://cs.chromium.org/SEARCH_TERM | Code Search for a specific SEARCH\_TERM |
-| http://src.chromium.org/viewvc/chrome/ | ViewVC History Viewer |
-| http://git.chromium.org/gitweb/?p=chromium.git;a=summary | Gitweb History Viewer |
+| https://chromium.googlesource.com/chromium/src/ | Gitiles Source Code Browser |
 | https://chromium.googlesource.com/chromium/src/+log/b6cfa6a..9a2e0a8?pretty=fuller | Git changes in revision range (also works for build numbers) |
 | http://build.chromium.org/f/chromium/perf/dashboard/ui/changelog.html?url=/trunk/src&mode=html&range=SUCCESS_REV:FAILURE_REV | SVN changes in revision range |
 | http://build.chromium.org/f/chromium/perf/dashboard/ui/changelog_blink.html?url=/trunk&mode=html&range=SUCCESS_REV:FAILURE_REV | Blink changes in revision range |
