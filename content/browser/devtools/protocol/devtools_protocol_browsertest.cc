@@ -344,7 +344,9 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, NavigationPreservesMessages) {
   scoped_ptr<base::DictionaryValue> params(new base::DictionaryValue());
   test_url = GetTestUrl("devtools", "navigation.html");
   params->SetString("url", test_url.spec());
+  TestNavigationObserver navigation_observer(shell()->web_contents());
   SendCommand("Page.navigate", std::move(params), true);
+  navigation_observer.Wait();
 
   bool enough_results = result_ids_.size() >= 2u;
   EXPECT_TRUE(enough_results);

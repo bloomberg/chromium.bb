@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "content/browser/devtools/render_frame_devtools_agent_host.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
@@ -203,6 +204,7 @@ void NavigationRequest::BeginNavigation() {
   DCHECK(!loader_);
   DCHECK(state_ == NOT_STARTED || state_ == WAITING_FOR_RENDERER_RESPONSE);
   state_ = STARTED;
+  RenderFrameDevToolsAgentHost::OnBeforeNavigation(navigation_handle_.get());
 
   if (ShouldMakeNetworkRequestForURL(common_params_.url)) {
     // It's safe to use base::Unretained because this NavigationRequest owns

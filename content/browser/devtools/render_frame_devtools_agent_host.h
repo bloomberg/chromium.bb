@@ -55,11 +55,14 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
                                         RenderFrameHost* current);
   static void OnBeforeNavigation(RenderFrameHost* current,
                                  RenderFrameHost* pending);
+  static void OnBeforeNavigation(NavigationHandle* navigation_handle);
 
   void SynchronousSwapCompositorFrame(
       const cc::CompositorFrameMetadata& frame_metadata);
 
   bool HasRenderFrameHost(RenderFrameHost* host);
+
+  FrameTreeNode* frame_tree_node() { return frame_tree_node_; }
 
   // DevTooolsAgentHost overrides.
   void DisconnectWebContents() override;
@@ -90,7 +93,6 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   void InspectElement(int x, int y) override;
 
   // WebContentsObserver overrides.
-  void DidStartNavigation(NavigationHandle* navigation_handle) override;
   void ReadyToCommitNavigation(NavigationHandle* navigation_handle) override;
   void DidFinishNavigation(NavigationHandle* navigation_handle) override;
   void RenderFrameHostChanged(RenderFrameHost* old_host,
@@ -116,6 +118,7 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
 
   void AboutToNavigateRenderFrame(RenderFrameHost* old_host,
                                   RenderFrameHost* new_host);
+  void AboutToNavigate(NavigationHandle* navigation_handle);
 
   void DispatchBufferedProtocolMessagesIfNecessary();
 
@@ -136,8 +139,6 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
       const DevToolsMessageChunk& message);
   void OnRequestNewWindow(RenderFrameHost* sender, int new_routing_id);
   void DestroyOnRenderFrameGone();
-
-  bool MatchesMyTreeNode(NavigationHandle* navigation_handle);
 
   class FrameHostHolder;
 
@@ -170,9 +171,8 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   // Handle that caused the setting of pending_.
   NavigationHandle* pending_handle_;
 
-  // Navigation counter and queue for buffering protocol messages during a
-  // navigation.
-  int in_navigation_;
+  // List of handles currently navigating.
+  std::set<NavigationHandle*> navigating_handles_;
 
   // <call_id> -> <session_id, message>
   std::map<int, std::pair<int, std::string>>
