@@ -65,60 +65,64 @@
     <include src="chromeos/kiosk_app_disable_bailout_confirm.html">
 </if>
   <div id="drop-target-overlay" class="page">
-    <div i18n-content="extensionSettingsInstallDropTarget"></div>
+    <div>$i18n{extensionSettingsInstallDropTarget}</div>
   </div>
 </div>
 
 <div class="page" id="extension-settings">
   <header id="page-header">
-    <h1 i18n-content="extensionSettings"></h1>
+    <h1>$i18n{extensionSettings}</h1>
     <div id="header-controls" class="header-extras">
       <div id="dev-toggle" class="checkbox">
         <label>
           <input id="toggle-dev-on" type="checkbox">
-          <span i18n-content="extensionSettingsDeveloperMode"></span>
+          <span>$i18n{extensionSettingsDeveloperMode}</span>
         </label>
       </div>
     </div>
     <div class="page-banner profile-is-supervised-banner">
       <div class="page-banner-gradient">
-        <span class="page-banner-text"
-            i18n-content="extensionSettingsSupervisedUser"></span>
+        <span class="page-banner-text">
+          $i18n{extensionSettingsSupervisedUser}
+        </span>
       </div>
     </div>
   </header>
   <div id="loading-spinner">
     <div class="inline-spinner"></div>
-    <span i18n-content="loading"></span>
+    <span>$i18n{loading}</span>
   </div>
   <div id="dev-controls" hidden>
     <div class="button-container">
-      <button id="load-unpacked"
-          i18n-content="extensionSettingsLoadUnpackedButton"></button>
-      <button id="pack-extension"
-          i18n-content="extensionSettingsPackButton"></button>
+      <button id="load-unpacked">
+        $i18n{extensionSettingsLoadUnpackedButton}
+      </button>
+      <button id="pack-extension">
+        $i18n{extensionSettingsPackButton}
+      </button>
 <if expr="chromeos">
-      <button id="add-kiosk-app"
-          i18n-content="addKioskAppButton" hidden></button>
+      <button id="add-kiosk-app" hidden>$i18n{addKioskAppButton}</button>
 </if>
       <div id="dev-controls-spacer"></div>
-      <button id="update-extensions-now"
-          i18n-content="extensionSettingsUpdateButton"></button>
+      <button id="update-extensions-now">
+        $i18n{extensionSettingsUpdateButton}
+      </button>
     </div>
   </div>
   <include src="extension_load_error.html">
   <div id="extension-list-wrapper" hidden>
     <div id="footer-section">
       <a target="_blank" class="more-extensions-link"
-          i18n-values="href:extensionSettingsGetMoreExtensionsUrl"
-          i18n-content="extensionSettingsGetMoreExtensions"></a>
-      <a is="action-link" class="extension-commands-config"
-          i18n-content="extensionSettingsCommandsLink" hidden></a>
+          i18n-values="href:extensionSettingsGetMoreExtensionsUrl">
+        $i18n{extensionSettingsGetMoreExtensions}
+      </a>
+      <a is="action-link" class="extension-commands-config" hidden>
+        $i18n{extensionSettingsCommandsLink}
+      </a>
     </div>
   </div>
   <div id="no-extensions" hidden>
-    <span id="no-extensions-message"
-        i18n-content="extensionSettingsNoExtensions"></span>
+    <span id="no-extensions-message">$i18n{extensionSettingsNoExtensions}</span>
     <span id="suggest-gallery" class="more-extensions-link"
         i18n-values=".innerHTML:extensionSettingsSuggestGallery">
     </span>
@@ -137,93 +141,94 @@
           <span class="extension-version"></span>
         </div>
         <p class="corrupt-install-message"
-           i18n-content="extensionSettingsCorruptInstall" hidden></p>
+           hidden>$i18n{extensionSettingsCorruptInstall}</p>
         <p class="extension-description"></p>
         <div class="action-links">
-          <a is="action-link" class="permissions-link"
-              i18n-content="extensionSettingsPermissions"></a>
-          <a is="action-link" class="options-button"
-              i18n-content="extensionSettingsOptions" hidden></a>
-          <a class="options-link"
-              i18n-content="extensionSettingsOptions" hidden></a>
+          <a is="action-link" class="permissions-link">
+            $i18n{extensionSettingsPermissions}
+          </a>
+          <a is="action-link" class="options-button" hidden>
+            $i18n{extensionSettingsOptions}
+          </a>
+          <a class="options-link" hidden>$i18n{extensionSettingsOptions}</a>
           <a class="site-link" target="_parent" hidden></a>
-          <a is="action-link" class="launch-link"
-              i18n-content="extensionSettingsLaunch" hidden></a>
-          <a is="action-link" role="button" class="reload-link"
-              i18n-content="extensionSettingsReloadUnpacked" hidden></a>
+          <a is="action-link" class="launch-link" hidden>
+            $i18n{extensionSettingsLaunch}
+          </a>
+          <a is="action-link" role="button" class="reload-link" hidden>
+            $i18n{extensionSettingsReloadUnpacked}
+          </a>
           <a is="action-link" role="button" class="errors-link">
             <img class="extension-error-icon"></img>
-            <span i18n-content="extensionErrorHeading"></span>
+            <span>$i18n{extensionErrorHeading}</span>
           </a>
         </div>
         <div class="permanent-warnings">
           <div class="extension-warnings" hidden>
-            <span i18n-content="extensionSettingsWarningsTitle"></span>
+            <span>$i18n{extensionSettingsWarningsTitle}</span>
             <ul></ul>
           </div>
           <div class="suspicious-install-message" hidden>
-            <span i18n-content="extensionSettingsSuspiciousInstall"></span>
-            <a target="_blank" class="learn-more-link"
-                i18n-values="href:extensionSettingsSuspiciousInstallHelpUrl"
-                i18n-content="extensionSettingsLearnMore"
-                href="#">
+            <span>$i18n{extensionSettingsSuspiciousInstall}</span>
+            <a target="_blank" class="learn-more-link" href="#"
+                i18n-values="href:extensionSettingsSuspiciousInstallHelpUrl">
+              $i18n{extensionSettingsLearnMore}
             </a>
           </div>
         </div>
         <div class="dependent-extensions-message" hidden>
-          <span i18n-content="extensionSettingsDependentExtensions"></span>
+          <span>$i18n{extensionSettingsDependentExtensions}</span>
           <ul></ul>
         </div>
         <div class="developer-extras">
           <div>
-            <span i18n-content="extensionSettingsExtensionId"></span>
+            <span>$i18n{extensionSettingsExtensionId}</span>
             <span class="extension-id"></span>
           </div>
           <div class="load-path" hidden>
-            <span i18n-content="extensionSettingsExtensionPath"></span>
+            <span>$i18n{extensionSettingsExtensionPath}</span>
             <a is="action-link"></a>
           </div>
-          <div class="managed-message"
-              i18n-content="extensionSettingsPolicyControlled" hidden>
+          <div class="managed-message" hidden>
+            $i18n{extensionSettingsPolicyControlled}
           </div>
-          <div class="update-required-message"
-              i18n-content="extensionSettingsUpdateRequiredBePolicy" hidden>
+          <div class="update-required-message" hidden>
+            $i18n{extensionSettingsUpdateRequiredBePolicy}
           </div>
           <div class="active-views" hidden>
-            <span i18n-content="extensionSettingsInspectViews"></span>
+            <span>$i18n{extensionSettingsInspectViews}</span>
             <a is="action-link"></a>
           </div>
           <div class="install-warnings" hidden>
-            <span i18n-content="extensionSettingsInstallWarnings"></span>
+            <span>$i18n{extensionSettingsInstallWarnings}</span>
             <ul></ul>
           </div>
         </div>
         <div class="optional-controls">
           <button class="show-button"
-              i18n-content="extensionSettingsShowButton" hidden></button>
+              hidden>$i18n{extensionSettingsShowButton}</button>
           <div class="checkbox">
             <label class="incognito-control">
               <input type="checkbox">
-              <span i18n-content="extensionSettingsEnableIncognito"></span>
+              <span>$i18n{extensionSettingsEnableIncognito}</span>
             </label>
           </div>
           <div class="checkbox error-collection-control" hidden>
             <label>
               <input type="checkbox">
-              <span i18n-content="extensionSettingsEnableErrorCollection">
-              </span>
+              <span>$i18n{extensionSettingsEnableErrorCollection}</span>
             </label>
           </div>
           <div class="checkbox all-urls-control" hidden>
             <label>
               <input type="checkbox">
-              <span i18n-content="extensionSettingsAllowOnAllUrls"></span>
+              <span>$i18n{extensionSettingsAllowOnAllUrls}</span>
             </label>
           </div>
           <div class="checkbox file-access-control" hidden>
             <label>
               <input type="checkbox">
-              <span i18n-content="extensionSettingsAllowFileAccess"></span>
+              <span>$i18n{extensionSettingsAllowFileAccess}</span>
             </label>
           </div>
         </div>
@@ -232,17 +237,18 @@
         </div>
       </div>
       <div class="enable-controls">
-        <a is="action-link" role="button" class="terminated-reload-link"
-            i18n-content="extensionSettingsReloadTerminated" hidden></a>
+        <a is="action-link" role="button" class="terminated-reload-link" hidden>
+          $i18n{extensionSettingsReloadTerminated}
+        </a>
         <a is="action-link" role="button" class="corrupted-repair-button"
-            i18n-content="extensionSettingsRepairCorrupted" hidden></a>
+            hidden>
+          $i18n{extensionSettingsRepairCorrupted}
+        </a>
         <div class="checkbox enable-checkbox" hidden><label>
           <input type="checkbox">
           <span class="enable-checkbox-text">
-            <span class="enabled-text" i18n-content="extensionSettingsEnabled">
-            </span>
-            <span class="enable-text" i18n-content="extensionSettingsEnable">
-            </span>
+            <span class="enabled-text">$i18n{extensionSettingsEnabled}</span>
+            <span class="enable-text">$i18n{extensionSettingsEnable}</span>
           </span>
         </label>
         <span class="location-text"></span>
@@ -255,7 +261,7 @@
     <span class="dep-extension-title"></span>
     <ul>
       <li>
-        <span i18n-content="extensionSettingsExtensionId"></span>
+        <span>$i18n{extensionSettingsExtensionId}</span>
         <span class="dep-extension-id"></span>
       </li>
     </ul>

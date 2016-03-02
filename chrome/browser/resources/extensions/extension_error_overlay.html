@@ -7,11 +7,11 @@ in the LICENSE file.
 <div id="template-collection-extension-error-overlay" hidden>
   <div class="extension-error-overlay-runtime-content">
     <div class="extension-error-overlay-context">
-      <span i18n-content="extensionErrorOverlayContextUrl"></span>
+      <span>$i18n{extensionErrorOverlayContextUrl}</span>
       <span class="extension-error-overlay-context-url"></span>
     </div>
     <details class="extension-error-overlay-stack-trace">
-      <summary i18n-content="extensionErrorOverlayStackTrace"></summary>
+      <summary>$i18n{extensionErrorOverlayStackTrace}</summary>
       <ul class="extension-error-overlay-stack-trace-list"></ul>
     </details>
   </div>
@@ -27,11 +27,11 @@ in the LICENSE file.
   <div class="action-area">
     <div class="action-area-right">
       <div class="button-strip">
-        <button id="extension-error-overlay-dismiss"
-                i18n-content="extensionErrorOverlayDone">
+        <button id="extension-error-overlay-dismiss">
+          $i18n{extensionErrorOverlayDone}
         </button>
-        <button id="extension-error-overlay-devtools-button"
-                i18n-content="extensionErrorOverlayLaunchDevtools" hidden>
+        <button id="extension-error-overlay-devtools-button" hidden>
+          $i18n{extensionErrorOverlayLaunchDevtools}
         </button>
       </div>
     </div>
