@@ -1355,8 +1355,9 @@ def CMDreproduce(parser, args):
     return 1
 
   workdir = unicode(os.path.abspath('work'))
-  if not fs.isdir(workdir):
-    fs.mkdir(workdir)
+  if fs.isdir(workdir):
+    parser.error('Please delete the directory \'work\' first')
+  fs.mkdir(workdir)
 
   properties = request['properties']
   env = None
