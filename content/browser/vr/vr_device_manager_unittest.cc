@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
@@ -38,7 +40,7 @@ VRDeviceManagerTest::~VRDeviceManagerTest() {
 void VRDeviceManagerTest::SetUp() {
   scoped_ptr<FakeVRDeviceProvider> provider(new FakeVRDeviceProvider());
   provider_ = provider.get();
-  device_manager_.reset(new VRDeviceManager(provider.Pass()));
+  device_manager_.reset(new VRDeviceManager(std::move(provider)));
 }
 
 TEST_F(VRDeviceManagerTest, InitializationTest) {

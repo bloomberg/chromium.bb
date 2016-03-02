@@ -5,6 +5,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <utility>
+
 #include "base/strings/sys_string_conversions.h"
 #include "device/bluetooth/bluetooth_low_energy_win.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -59,7 +61,7 @@ TEST_F(BluetoothLowEnergyWinTest, DeviceRegistryPropertyValueAsString) {
   memcpy(buffer.get(), wide_value.c_str(), buffer_size);
   scoped_ptr<device::win::DeviceRegistryPropertyValue> value =
       device::win::DeviceRegistryPropertyValue::Create(
-          REG_SZ, buffer.Pass(), buffer_size).Pass();
+          REG_SZ, std::move(buffer), buffer_size);
   EXPECT_EQ(test_value, value->AsString());
 }
 
@@ -70,7 +72,7 @@ TEST_F(BluetoothLowEnergyWinTest, DeviceRegistryPropertyValueAsDWORD) {
   memcpy(buffer.get(), &test_value, buffer_size);
   scoped_ptr<device::win::DeviceRegistryPropertyValue> value =
       device::win::DeviceRegistryPropertyValue::Create(
-          REG_DWORD, buffer.Pass(), buffer_size).Pass();
+          REG_DWORD, std::move(buffer), buffer_size);
   EXPECT_EQ(test_value, value->AsDWORD());
 }
 
@@ -80,8 +82,8 @@ TEST_F(BluetoothLowEnergyWinTest, DevicePropertyValueAsUint32) {
   scoped_ptr<uint8_t[]> buffer(new uint8_t[buffer_size]);
   memcpy(buffer.get(), &test_value, buffer_size);
   scoped_ptr<device::win::DevicePropertyValue> value(
-      new device::win::DevicePropertyValue(
-          DEVPROP_TYPE_UINT32, buffer.Pass(), buffer_size));
+      new device::win::DevicePropertyValue(DEVPROP_TYPE_UINT32,
+                                           std::move(buffer), buffer_size));
   EXPECT_EQ(test_value, value->AsUint32());
 }
 

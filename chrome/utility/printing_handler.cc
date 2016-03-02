@@ -76,7 +76,7 @@ void PrintingHandler::OnRenderPDFPagesToMetafile(
     const PdfRenderSettings& settings) {
   pdf_rendering_settings_ = settings;
   base::File pdf_file = IPC::PlatformFileForTransitToFile(pdf_transit);
-  int page_count = LoadPDF(pdf_file.Pass());
+  int page_count = LoadPDF(std::move(pdf_file));
   Send(
       new ChromeUtilityHostMsg_RenderPDFPagesToMetafiles_PageCount(page_count));
 }
@@ -87,7 +87,7 @@ void PrintingHandler::OnRenderPDFPagesToMetafileGetPage(
   base::File emf_file = IPC::PlatformFileForTransitToFile(output_file);
   float scale_factor = 1.0f;
   bool success =
-      RenderPdfPageToMetafile(page_number, emf_file.Pass(), &scale_factor);
+      RenderPdfPageToMetafile(page_number, std::move(emf_file), &scale_factor);
   Send(new ChromeUtilityHostMsg_RenderPDFPagesToMetafiles_PageDone(
       success, scale_factor));
 }

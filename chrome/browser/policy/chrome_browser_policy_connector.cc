@@ -97,7 +97,7 @@ ConfigurationPolicyProvider*
   scoped_ptr<AsyncPolicyLoader> loader(PolicyLoaderWin::Create(
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
       kRegistryChromePolicyKey));
-  return new AsyncPolicyProvider(GetSchemaRegistry(), loader.Pass());
+  return new AsyncPolicyProvider(GetSchemaRegistry(), std::move(loader));
 #elif defined(OS_MACOSX)
   scoped_ptr<AsyncPolicyLoader> loader(new PolicyLoaderMac(
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),

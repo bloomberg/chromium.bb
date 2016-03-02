@@ -8,6 +8,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/win/scoped_variant.h"
@@ -287,10 +289,8 @@ class DocumentBinding {
       LOG(ERROR) << "ITfDocumentMgr::Push failed. hr = " << hr;
       return scoped_ptr<DocumentBinding>();
     }
-    return scoped_ptr<DocumentBinding>(
-        new DocumentBinding(text_store,
-                            document_manager,
-                            text_edit_sink.Pass()));
+    return scoped_ptr<DocumentBinding>(new DocumentBinding(
+        text_store, document_manager, std::move(text_edit_sink)));
   }
 
   ITfDocumentMgr* document_manager() const { return document_manager_.get(); }
@@ -305,7 +305,7 @@ class DocumentBinding {
                   scoped_ptr<EventSink> text_edit_sink)
       : text_store_(text_store),
         document_manager_(document_manager),
-        text_edit_sink_(text_edit_sink.Pass()) {}
+        text_edit_sink_(std::move(text_edit_sink)) {}
 
   scoped_refptr<TextStore> text_store_;
   base::win::ScopedComPtr<ITfDocumentMgr> document_manager_;

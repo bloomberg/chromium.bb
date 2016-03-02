@@ -107,7 +107,7 @@ base::ScopedFILE FILEFromPlatformHandle(ScopedPlatformHandle h,
       _open_osfhandle(reinterpret_cast<intptr_t>(h.release().handle), flags),
       mode));
   PCHECK(rv) << "_fdopen";
-  return rv.Pass();
+  return rv;
 }
 
 }  // namespace test

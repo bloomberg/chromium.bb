@@ -9,6 +9,8 @@
 
 #include "chrome/installer/util/browser_distribution.h"
 
+#include <utility>
+
 #include "base/atomicops.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
@@ -57,9 +59,9 @@ BrowserDistribution::BrowserDistribution()
 }
 
 BrowserDistribution::BrowserDistribution(
-    Type type, scoped_ptr<AppRegistrationData> app_reg_data)
-    : type_(type), app_reg_data_(app_reg_data.Pass()) {
-}
+    Type type,
+    scoped_ptr<AppRegistrationData> app_reg_data)
+    : type_(type), app_reg_data_(std::move(app_reg_data)) {}
 
 BrowserDistribution::~BrowserDistribution() {}
 

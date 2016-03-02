@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/frame/glass_browser_frame_view.h"
 
+#include <utility>
+
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/windows_version.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -608,18 +610,14 @@ void GlassBrowserFrameView::StopThrobber() {
       gfx::ImageSkia icon = browser_view()->GetWindowIcon();
       if (!icon.isNull()) {
         // Keep previous icons alive as long as they are referenced by the HWND.
-        previous_small_icon = small_window_icon_.Pass();
-        previous_big_icon = big_window_icon_.Pass();
+        previous_small_icon = std::move(small_window_icon_);
+        previous_big_icon = std::move(big_window_icon_);
 
         // Take responsibility for eventually destroying the created icons.
-        small_window_icon_ =
-            CreateHICONFromSkBitmapSizedTo(icon, GetSystemMetrics(SM_CXSMICON),
-                                           GetSystemMetrics(SM_CYSMICON))
-                .Pass();
-        big_window_icon_ =
-            CreateHICONFromSkBitmapSizedTo(icon, GetSystemMetrics(SM_CXICON),
-                                           GetSystemMetrics(SM_CYICON))
-                .Pass();
+        small_window_icon_ = CreateHICONFromSkBitmapSizedTo(
+            icon, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON));
+        big_window_icon_ = CreateHICONFromSkBitmapSizedTo(
+            icon, GetSystemMetrics(SM_CXICON), GetSystemMetrics(SM_CYICON));
 
         small_icon = small_window_icon_.get();
         big_icon = big_window_icon_.get();

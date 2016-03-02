@@ -128,7 +128,7 @@ scoped_ptr<IP_ADAPTER_ADDRESSES, base::FreeDeleter> ReadIpHelper(ULONG flags) {
   }
   if (rv != NO_ERROR)
     out.reset();
-  return out.Pass();
+  return out;
 }
 
 // Converts a base::string16 domain name to ASCII, possibly using punycode.

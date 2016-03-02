@@ -58,7 +58,7 @@ void SetOverlayIcon(HWND hwnd, scoped_ptr<SkBitmap> bitmap) {
     SkCanvas offscreen_canvas(offscreen_bitmap);
     offscreen_canvas.clear(SK_ColorTRANSPARENT);
     offscreen_canvas.drawBitmap(sk_icon, 0, kOverlayIconSize - resized_height);
-    icon = IconUtil::CreateHICONFromSkBitmap(offscreen_bitmap).Pass();
+    icon = IconUtil::CreateHICONFromSkBitmap(offscreen_bitmap);
     if (!icon.is_valid())
       return;
   }

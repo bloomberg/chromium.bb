@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -115,7 +116,7 @@ void RegisterCAPSComponent(ComponentUpdateService* cus) {
   scoped_ptr<ComponentInstallerTraits> traits(
       new CAPSInstallerTraits());
   DefaultComponentInstaller* installer =
-      new DefaultComponentInstaller(traits.Pass());
+      new DefaultComponentInstaller(std::move(traits));
   installer->Register(cus, base::Closure());
 }
 

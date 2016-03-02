@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -242,7 +243,7 @@ base::DictionaryValue* GpuInfoAsDictionaryValue() {
   scoped_ptr<base::Value> dx_info = base::Value::CreateNullValue();
   if (gpu_info.dx_diagnostics.children.size())
     dx_info.reset(DxDiagNodeToList(gpu_info.dx_diagnostics));
-  info->Set("diagnostics", dx_info.Pass());
+  info->Set("diagnostics", std::move(dx_info));
 #endif
 
   return info;

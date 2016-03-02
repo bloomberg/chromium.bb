@@ -4,6 +4,8 @@
 
 #include "device/bluetooth/bluetooth_low_energy_win.h"
 
+#include <utility>
+
 #include "base/files/file.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -203,7 +205,7 @@ bool CollectBluetoothLowEnergyDeviceProperty(
   }
 
   (*value) = scoped_ptr<DevicePropertyValue>(
-      new DevicePropertyValue(prop_type, prop_value.Pass(), actual_length));
+      new DevicePropertyValue(prop_type, std::move(prop_value), actual_length));
   return true;
 }
 
@@ -242,7 +244,7 @@ bool CollectBluetoothLowEnergyDeviceRegistryProperty(
   }
 
   (*value) = DeviceRegistryPropertyValue::Create(
-                 property_type, property_value.Pass(), actual_length).Pass();
+      property_type, std::move(property_value), actual_length);
   return true;
 }
 
@@ -479,7 +481,7 @@ bool CollectBluetoothLowEnergyDeviceInfo(
           device_info_handle, &device_info_data, result, error)) {
     return false;
   }
-  (*device_info) = result.Pass();
+  (*device_info) = std::move(result);
   return true;
 }
 
@@ -530,7 +532,7 @@ HRESULT OpenBluetoothLowEnergyDevices(GUID device_interface_guid,
     return HRESULT_FROM_WIN32(::GetLastError());
   }
 
-  (*handle) = result.Pass();
+  (*handle) = std::move(result);
   return S_OK;
 }
 
@@ -591,8 +593,8 @@ scoped_ptr<DeviceRegistryPropertyValue> DeviceRegistryPropertyValue::Create(
       break;
     }
   }
-  return scoped_ptr<DeviceRegistryPropertyValue>(
-      new DeviceRegistryPropertyValue(property_type, value.Pass(), value_size));
+  return make_scoped_ptr(new DeviceRegistryPropertyValue(
+      property_type, std::move(value), value_size));
 }
 
 DeviceRegistryPropertyValue::DeviceRegistryPropertyValue(
@@ -600,9 +602,8 @@ DeviceRegistryPropertyValue::DeviceRegistryPropertyValue(
     scoped_ptr<uint8_t[]> value,
     size_t value_size)
     : property_type_(property_type),
-      value_(value.Pass()),
-      value_size_(value_size) {
-}
+      value_(std::move(value)),
+      value_size_(value_size) {}
 
 DeviceRegistryPropertyValue::~DeviceRegistryPropertyValue() {
 }
@@ -623,9 +624,8 @@ DevicePropertyValue::DevicePropertyValue(DEVPROPTYPE property_type,
                                          scoped_ptr<uint8_t[]> value,
                                          size_t value_size)
     : property_type_(property_type),
-      value_(value.Pass()),
-      value_size_(value_size) {
-}
+      value_(std::move(value)),
+      value_size_(value_size) {}
 
 DevicePropertyValue::~DevicePropertyValue() {
 }

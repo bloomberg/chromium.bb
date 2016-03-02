@@ -154,9 +154,9 @@ scoped_ptr<base::DictionaryValue> Load(Profile* profile) {
   UMA_HISTOGRAM_ENUMERATION(
       "SBIRS.PSSLoadResult", static_cast<uint32_t>(result),
       static_cast<uint32_t>(PlatformStateStoreLoadResult::NUM_RESULTS));
-  return value_dict.Pass();
+  return value_dict;
 #else
-  return scoped_ptr<base::DictionaryValue>();
+  return nullptr;
 #endif
 }
 

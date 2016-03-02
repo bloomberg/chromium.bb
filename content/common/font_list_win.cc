@@ -50,7 +50,7 @@ scoped_ptr<base::ListValue> GetFontList_SlowBlocking() {
     font_item->Append(new base::StringValue(*iter));
     font_list->Append(font_item);
   }
-  return font_list.Pass();
+  return font_list;
 }
 
 }  // namespace content

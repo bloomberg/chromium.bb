@@ -10,6 +10,8 @@
 #include <tchar.h>
 #include <tpcshrd.h>
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/debug/alias.h"
@@ -813,15 +815,14 @@ void HWNDMessageHandler::FrameTypeChanged() {
 void HWNDMessageHandler::SetWindowIcons(const gfx::ImageSkia& window_icon,
                                         const gfx::ImageSkia& app_icon) {
   if (!window_icon.isNull()) {
-    base::win::ScopedHICON previous_icon = window_icon_.Pass();
-    window_icon_ =
-        IconUtil::CreateHICONFromSkBitmap(*window_icon.bitmap()).Pass();
+    base::win::ScopedHICON previous_icon = std::move(window_icon_);
+    window_icon_ = IconUtil::CreateHICONFromSkBitmap(*window_icon.bitmap());
     SendMessage(hwnd(), WM_SETICON, ICON_SMALL,
                 reinterpret_cast<LPARAM>(window_icon_.get()));
   }
   if (!app_icon.isNull()) {
-    base::win::ScopedHICON previous_icon = app_icon_.Pass();
-    app_icon_ = IconUtil::CreateHICONFromSkBitmap(*app_icon.bitmap()).Pass();
+    base::win::ScopedHICON previous_icon = std::move(app_icon_);
+    app_icon_ = IconUtil::CreateHICONFromSkBitmap(*app_icon.bitmap());
     SendMessage(hwnd(), WM_SETICON, ICON_BIG,
                 reinterpret_cast<LPARAM>(app_icon_.get()));
   }

@@ -8,6 +8,8 @@
 #include <io.h>
 #include <stdint.h>
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
@@ -58,7 +60,8 @@ class TimerExpiredTask : public win::ObjectWatcher::Delegate {
   DISALLOW_COPY_AND_ASSIGN(TimerExpiredTask);
 };
 
-TimerExpiredTask::TimerExpiredTask(Process process) : process_(process.Pass()) {
+TimerExpiredTask::TimerExpiredTask(Process process)
+    : process_(std::move(process)) {
   watcher_.StartWatchingOnce(process_.Handle(), this);
 }
 
@@ -191,9 +194,8 @@ void EnsureProcessTerminated(Process process) {
   }
 
   MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      Bind(&TimerExpiredTask::TimedOut,
-           Owned(new TimerExpiredTask(process.Pass()))),
+      FROM_HERE, Bind(&TimerExpiredTask::TimedOut,
+                      Owned(new TimerExpiredTask(std::move(process)))),
       TimeDelta::FromMilliseconds(kWaitInterval));
 }
 

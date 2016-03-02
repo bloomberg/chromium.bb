@@ -11,6 +11,8 @@
 #include <stddef.h>
 #include <winioctl.h>
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/files/file.h"
 #include "base/location.h"
@@ -68,7 +70,7 @@ void HidServiceWin::Connect(const HidDeviceId& device_id,
 
   task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(callback, new HidConnectionWin(device_info, file.Pass())));
+      base::Bind(callback, new HidConnectionWin(device_info, std::move(file))));
 }
 
 // static
@@ -295,7 +297,7 @@ base::win::ScopedHandle HidServiceWin::OpenDevice(
     file.Set(CreateFileA(device_path.c_str(), GENERIC_READ, FILE_SHARE_READ,
                          NULL, OPEN_EXISTING, FILE_FLAG_OVERLAPPED, NULL));
   }
-  return file.Pass();
+  return file;
 }
 
 }  // namespace device

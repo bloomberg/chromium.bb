@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <functional>
 #include <iterator>
+#include <utility>
 #include <vector>
 
 #include "base/files/file_path.h"
@@ -184,7 +185,7 @@ void HandleRecord(const base::string16& key_name,
                         base::CompareCase::SENSITIVE)) {
     scoped_ptr<base::Value> value;
     if (DecodePRegValue(type, data, &value))
-      dict->SetValue(value_name, value.Pass());
+      dict->SetValue(value_name, std::move(value));
     return;
   }
 

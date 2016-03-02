@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include <queue>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -94,7 +95,7 @@ class ServiceUtilityProcessHost::PdfToEmfState {
     if (!temp_dir_.CreateUniqueTempDir())
       return false;
     return host_->Send(new ChromeUtilityMsg_RenderPDFPagesToMetafiles(
-        IPC::TakeFileHandleForProcess(pdf_file.Pass(), host_->handle()),
+        IPC::TakeFileHandleForProcess(std::move(pdf_file), host_->handle()),
         conversion_settings));
   }
 
@@ -126,9 +127,9 @@ class ServiceUtilityProcessHost::PdfToEmfState {
     DCHECK(!emf_files_.empty());
     base::File file;
     if (!emf_files_.empty())
-      file = emf_files_.front().Pass();
+      file = std::move(emf_files_.front());
     emf_files_.pop();
-    return file.Pass();
+    return file;
   }
 
   void set_page_count(int page_count) { page_count_ = page_count; }
@@ -187,7 +188,7 @@ bool ServiceUtilityProcessHost::StartRenderPDFPagesToMetafile(
   waiting_for_reply_ = true;
 
   pdf_to_emf_state_.reset(new PdfToEmfState(this));
-  return pdf_to_emf_state_->Start(pdf_file.Pass(), render_settings);
+  return pdf_to_emf_state_->Start(std::move(pdf_file), render_settings);
 }
 
 bool ServiceUtilityProcessHost::StartGetPrinterCapsAndDefaults(

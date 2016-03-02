@@ -9,6 +9,7 @@
 
 #include <algorithm>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include <openssl/bn.h>
@@ -358,7 +359,7 @@ scoped_refptr<SSLPrivateKey> FetchClientCertPrivateKey(
     delegate.reset(new SSLPlatformKeyCAPI(prov_or_key, key_spec, max_length));
   }
   return make_scoped_refptr(new ThreadedSSLPrivateKey(
-      delegate.Pass(), GetSSLPlatformKeyTaskRunner()));
+      std::move(delegate), GetSSLPlatformKeyTaskRunner()));
 }
 
 }  // namespace net

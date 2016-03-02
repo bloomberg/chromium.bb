@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/pdf/pdf_unsupported_feature.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -327,7 +329,7 @@ void MaybeShowOpenPDFInReaderPrompt(WebContents* web_contents,
       new PDFUnsupportedFeaturePromptClient(web_contents, reader_info));
   pdf::PDFWebContentsHelper* pdf_tab_helper =
       pdf::PDFWebContentsHelper::FromWebContents(web_contents);
-  pdf_tab_helper->ShowOpenInReaderPrompt(prompt.Pass());
+  pdf_tab_helper->ShowOpenInReaderPrompt(std::move(prompt));
 }
 
 void GotPluginsCallback(int process_id,

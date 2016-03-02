@@ -36,7 +36,7 @@ scoped_ptr<BYTE[]> GetTokenInfo(const base::win::ScopedHandle& token,
   }
 
   *error = ERROR_SUCCESS;
-  return buffer.Pass();
+  return buffer;
 }
 
 }  // namespace

@@ -4,6 +4,8 @@
 
 #include "base/win/scoped_handle.h"
 
+#include <utility>
+
 #include "testing/gtest/include/gtest/gtest.h"
 
 TEST(ScopedHandleTest, ScopedHandle) {
@@ -27,6 +29,6 @@ TEST(ScopedHandleTest, ScopedHandle) {
   handle = ::CreateMutex(nullptr, FALSE, nullptr);
   base::win::ScopedHandle handle_source(handle);
   ::SetLastError(magic_error);
-  handle_holder = handle_source.Pass();
+  handle_holder = std::move(handle_source);
   EXPECT_EQ(magic_error, ::GetLastError());
 }

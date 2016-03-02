@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 #include "components/browser_watcher/window_hang_monitor_win.h"
 
+#include <utility>
+
 #include "base/callback.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
@@ -72,7 +74,7 @@ WindowHangMonitor::~WindowHangMonitor() {
 }
 
 void WindowHangMonitor::Initialize(base::Process process) {
-  window_process_ = process.Pass();
+  window_process_ = std::move(process);
   timer_.SetTaskRunner(base::MessageLoop::current()->task_runner());
 
   ScheduleFindWindow();

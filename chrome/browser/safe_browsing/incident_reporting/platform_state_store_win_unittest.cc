@@ -4,6 +4,8 @@
 
 #include "chrome/browser/safe_browsing/incident_reporting/platform_state_store.h"
 
+#include <utility>
+
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_reg_util_win.h"
@@ -66,7 +68,7 @@ class PlatformStateStoreWinTest : public ::testing::Test {
             new user_prefs::PrefRegistrySyncable(), new PrefNotifierImpl()));
     chrome::RegisterUserProfilePrefs(prefs->registry());
     profile_ = profile_manager_.CreateTestingProfile(
-        kProfileName_, prefs.Pass(), base::UTF8ToUTF16(kProfileName_), 0,
+        kProfileName_, std::move(prefs), base::UTF8ToUTF16(kProfileName_), 0,
         std::string(), TestingProfile::TestingFactories());
     if (new_profile)
       ASSERT_TRUE(profile_->IsNewProfile());

@@ -695,7 +695,7 @@ base::Process StartSandboxedProcess(
 
     // TODO(rvargas) crbug.com/417532: Don't share a raw handle.
     g_broker_services->AddTargetPeer(process.Handle());
-    return process.Pass();
+    return process;
   }
 
   sandbox::TargetPolicy* policy = g_broker_services->CreatePolicy();

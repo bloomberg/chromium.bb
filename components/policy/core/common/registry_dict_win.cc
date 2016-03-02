@@ -4,6 +4,8 @@
 
 #include "components/policy/core/common/registry_dict_win.h"
 
+#include <utility>
+
 #include "base/json/json_reader.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -27,7 +29,7 @@ namespace {
 scoped_ptr<base::Value> ConvertValue(const base::Value& value,
                                      const Schema& schema) {
   if (!schema.valid())
-    return make_scoped_ptr(value.DeepCopy()).Pass();
+    return value.CreateDeepCopy();
 
   // If the type is good already, go with it.
   if (value.IsType(schema.type())) {
@@ -43,7 +45,7 @@ scoped_ptr<base::Value> ConvertValue(const base::Value& value,
         if (converted)
           result->SetWithoutPathExpansion(entry.key(), converted.release());
       }
-      return result.Pass();
+      return std::move(result);
     } else if (value.GetAsList(&list)) {
       scoped_ptr<base::ListValue> result(new base::ListValue());
       for (base::ListValue::const_iterator entry(list->begin());
@@ -53,9 +55,9 @@ scoped_ptr<base::Value> ConvertValue(const base::Value& value,
         if (converted)
           result->Append(converted.release());
       }
-      return result.Pass();
+      return std::move(result);
     }
-    return make_scoped_ptr(value.DeepCopy());
+    return value.CreateDeepCopy();
   }
 
   // Else, do some conversions to map windows registry data types to JSON types.
@@ -108,7 +110,7 @@ scoped_ptr<base::Value> ConvertValue(const base::Value& value,
           if (converted)
             result->Append(converted.release());
         }
-        return result.Pass();
+        return std::move(result);
       }
       // Fall through in order to accept lists encoded as JSON strings.
     }
@@ -117,7 +119,7 @@ scoped_ptr<base::Value> ConvertValue(const base::Value& value,
       if (value.GetAsString(&string_value)) {
         scoped_ptr<base::Value> result = base::JSONReader::Read(string_value);
         if (result && result->IsType(schema.type()))
-          return result.Pass();
+          return result;
       }
       break;
     }
@@ -175,7 +177,7 @@ scoped_ptr<RegistryDict> RegistryDict::RemoveKey(const std::string& name) {
     result.reset(entry->second);
     keys_.erase(entry);
   }
-  return result.Pass();
+  return result;
 }
 
 void RegistryDict::ClearKeys() {
@@ -211,7 +213,7 @@ scoped_ptr<base::Value> RegistryDict::RemoveValue(const std::string& name) {
     result.reset(entry->second);
     values_.erase(entry);
   }
-  return result.Pass();
+  return result;
 }
 
 void RegistryDict::ClearValues() {
@@ -229,7 +231,7 @@ void RegistryDict::Merge(const RegistryDict& other) {
 
   for (ValueMap::const_iterator entry(other.values_.begin());
        entry != other.values_.end(); ++entry) {
-    SetValue(entry->first, make_scoped_ptr(entry->second->DeepCopy()).Pass());
+    SetValue(entry->first, entry->second->CreateDeepCopy());
   }
 }
 
@@ -286,7 +288,7 @@ void RegistryDict::ReadRegistry(HKEY hive, const base::string16& root) {
     std::string name(base::UTF16ToUTF8(it.Name()));
     scoped_ptr<RegistryDict> subdict(new RegistryDict());
     subdict->ReadRegistry(hive, root + L"\\" + it.Name());
-    SetKey(name, subdict.Pass());
+    SetKey(name, std::move(subdict));
   }
 }
 
@@ -315,7 +317,7 @@ scoped_ptr<base::Value> RegistryDict::ConvertToJSON(
         if (converted)
           result->SetWithoutPathExpansion(entry->first, converted.release());
       }
-      return result.Pass();
+      return std::move(result);
     }
     case base::Value::TYPE_LIST: {
       scoped_ptr<base::ListValue> result(new base::ListValue());
@@ -338,7 +340,7 @@ scoped_ptr<base::Value> RegistryDict::ConvertToJSON(
         }
         break;
       }
-      return result.Pass();
+      return std::move(result);
     }
     default:
       LOG(WARNING) << "Can't convert registry key to schema type " << type;

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/safe_browsing/incident_reporting/blacklist_load_analyzer.h"
 
+#include <utility>
+
 #include "base/file_version_info.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
@@ -101,8 +103,8 @@ void VerifyBlacklistLoadState(scoped_ptr<IncidentReceiver> incident_receiver) {
       }
 
       // Send the report.
-      incident_receiver->AddIncidentForProcess(
-          make_scoped_ptr(new BlacklistLoadIncident(blacklist_load.Pass())));
+      incident_receiver->AddIncidentForProcess(make_scoped_ptr(
+          new BlacklistLoadIncident(std::move(blacklist_load))));
     }
   }
 }

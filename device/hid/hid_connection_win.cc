@@ -5,6 +5,7 @@
 #include "device/hid/hid_connection_win.h"
 
 #include <cstring>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/files/file.h"
@@ -102,7 +103,7 @@ void PendingHidTransfer::WillDestroyCurrentMessageLoop() {
 HidConnectionWin::HidConnectionWin(scoped_refptr<HidDeviceInfo> device_info,
                                    base::win::ScopedHandle file)
     : HidConnection(device_info) {
-  file_ = file.Pass();
+  file_ = std::move(file);
 }
 
 HidConnectionWin::~HidConnectionWin() {

@@ -5,6 +5,8 @@
 #include <windows.h>
 #include <sddl.h>
 
+#include <utility>
+
 #include "base/at_exit.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -117,7 +119,7 @@ bool BrowserMonitor::StartWatching(
     const base::char16* registry_path,
     base::Process process,
     base::win::ScopedHandle on_initialized_event) {
-  if (!exit_code_watcher_.Initialize(process.Pass()))
+  if (!exit_code_watcher_.Initialize(std::move(process)))
     return false;
 
   if (!background_thread_.StartWithOptions(
@@ -127,7 +129,7 @@ bool BrowserMonitor::StartWatching(
 
   if (!background_thread_.task_runner()->PostTask(
           FROM_HERE, base::Bind(&BrowserMonitor::Watch, base::Unretained(this),
-                                base::Passed(on_initialized_event.Pass())))) {
+                                base::Passed(&on_initialized_event)))) {
     background_thread_.Stop();
     return false;
   }
@@ -414,7 +416,7 @@ extern "C" int WatcherMain(const base::char16* registry_path,
   base::RunLoop run_loop;
   BrowserMonitor monitor(&run_loop, registry_path);
   if (!monitor.StartWatching(registry_path, process.Duplicate(),
-                             on_initialized_event.Pass())) {
+                             std::move(on_initialized_event))) {
     return 1;
   }
 

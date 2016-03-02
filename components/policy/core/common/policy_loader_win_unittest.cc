@@ -13,6 +13,7 @@
 #include <cstring>
 #include <functional>
 #include <iterator>
+#include <utility>
 #include <vector>
 
 #include "base/base_paths.h"
@@ -352,7 +353,7 @@ ConfigurationPolicyProvider* RegistryTestHarness::CreateProvider(
   base::win::SetDomainStateForTesting(true);
   scoped_ptr<AsyncPolicyLoader> loader(
       new PolicyLoaderWin(task_runner, kTestPolicyKey, this));
-  return new AsyncPolicyProvider(registry, loader.Pass());
+  return new AsyncPolicyProvider(registry, std::move(loader));
 }
 
 void RegistryTestHarness::InstallEmptyPolicy() {}
@@ -485,7 +486,7 @@ ConfigurationPolicyProvider* PRegTestHarness::CreateProvider(
     scoped_refptr<base::SequencedTaskRunner> task_runner) {
   scoped_ptr<AsyncPolicyLoader> loader(
       new PolicyLoaderWin(task_runner, kTestPolicyKey, this));
-  return new AsyncPolicyProvider(registry, loader.Pass());
+  return new AsyncPolicyProvider(registry, std::move(loader));
 }
 
 void PRegTestHarness::InstallEmptyPolicy() {}

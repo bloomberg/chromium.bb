@@ -162,7 +162,7 @@ PasswordStoreFactory::BuildServiceInstanceFor(
   scoped_refptr<PasswordStore> ps;
 #if defined(OS_WIN)
   ps = new PasswordStoreWin(main_thread_runner, db_thread_runner,
-                            login_db.Pass(),
+                            std::move(login_db),
                             WebDataServiceFactory::GetPasswordWebDataForProfile(
                                 profile, ServiceAccessType::EXPLICIT_ACCESS));
 #elif defined(OS_MACOSX)

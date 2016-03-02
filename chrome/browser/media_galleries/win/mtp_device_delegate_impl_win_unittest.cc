@@ -4,6 +4,7 @@
 
 #include <stddef.h>
 
+#include <utility>
 #include <vector>
 
 #include "base/command_line.h"
@@ -90,7 +91,7 @@ void MTPDeviceDelegateImplWinTest::SetUp() {
   TestingBrowserProcess* browser_process = TestingBrowserProcess::GetGlobal();
   DCHECK(browser_process);
   monitor_ = monitor.get();
-  StorageMonitor::SetStorageMonitorForTesting(monitor.Pass());
+  StorageMonitor::SetStorageMonitorForTesting(std::move(monitor));
 
   base::RunLoop runloop;
   browser_process->media_file_system_registry()->GetPreferences(profile())->

@@ -152,7 +152,7 @@ scoped_ptr<PolicyBundle> PolicyLoaderIOS::Load() {
   size_t count = bundle->Get(chrome_ns).size();
   UMA_HISTOGRAM_COUNTS_100("Enterprise.IOSPolicies", count);
 
-  return bundle.Pass();
+  return bundle;
 }
 
 base::Time PolicyLoaderIOS::LastModificationTime() {

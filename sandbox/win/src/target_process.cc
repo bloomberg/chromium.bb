@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <utility>
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -75,9 +76,9 @@ TargetProcess::TargetProcess(base::win::ScopedHandle initial_token,
     // This object owns everything initialized here except thread_pool and
     // the job_ handle. The Job handle is closed by BrokerServices and results
     // eventually in a call to our dtor.
-    : lockdown_token_(lockdown_token.Pass()),
-      initial_token_(initial_token.Pass()),
-      lowbox_token_(lowbox_token.Pass()),
+    : lockdown_token_(std::move(lockdown_token)),
+      initial_token_(std::move(initial_token)),
+      lowbox_token_(std::move(lowbox_token)),
       job_(job),
       thread_pool_(thread_pool),
       base_address_(NULL) {}

@@ -104,12 +104,12 @@ scoped_ptr<BrowserWindowPropertyManager>
         BrowserView* view, HWND hwnd) {
   if (base::win::GetVersion() < base::win::VERSION_WIN7 ||
       view->browser()->host_desktop_type() == chrome::HOST_DESKTOP_TYPE_ASH)
-    return scoped_ptr<BrowserWindowPropertyManager>();
+    return nullptr;
 
   scoped_ptr<BrowserWindowPropertyManager> browser_window_property_manager(
       new BrowserWindowPropertyManager(view, hwnd));
   browser_window_property_manager->UpdateWindowProperties();
-  return browser_window_property_manager.Pass();
+  return browser_window_property_manager;
 }
 
 void BrowserWindowPropertyManager::OnProfileIconVersionChange() {

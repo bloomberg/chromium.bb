@@ -5,6 +5,7 @@
 #include "components/nacl/loader/nacl_helper_win_64.h"
 
 #include <string>
+#include <utility>
 
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -37,7 +38,7 @@ int NaClBrokerMain(const content::MainFunctionParams& parameters) {
 
   scoped_ptr<base::PowerMonitorSource> power_monitor_source(
       new base::PowerMonitorDeviceSource());
-  base::PowerMonitor power_monitor(power_monitor_source.Pass());
+  base::PowerMonitor power_monitor(std::move(power_monitor_source));
   base::HighResolutionTimerManager hi_res_timer_manager;
 
   NaClBrokerListener listener;

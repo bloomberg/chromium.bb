@@ -24,12 +24,12 @@ scoped_ptr<DEVMODE, base::FreeDeleter> CjtToDevMode(
 
   cloud_devices::CloudDeviceDescription description;
   if (!description.InitFromString(print_ticket))
-    return dev_mode.Pass();
+    return dev_mode;
 
   using namespace cloud_devices::printer;
   printing::ScopedPrinterHandle printer;
   if (!printer.OpenPrinter(printer_name.c_str()))
-    return dev_mode.Pass();
+    return dev_mode;
 
   {
     ColorTicketItem color;
@@ -43,7 +43,7 @@ scoped_ptr<DEVMODE, base::FreeDeleter> CjtToDevMode(
   }
 
   if (!dev_mode)
-    return dev_mode.Pass();
+    return dev_mode;
 
   ColorTicketItem color;
   DuplexTicketItem duplex;

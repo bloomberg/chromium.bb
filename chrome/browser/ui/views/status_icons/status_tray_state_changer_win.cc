@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/status_icons/status_tray_state_changer_win.h"
 
+#include <utility>
+
 namespace {
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -78,7 +80,7 @@ void StatusTrayStateChangerWin::EnsureTrayIconVisible() {
 
   notify_item->preference = PREFERENCE_SHOW_ALWAYS;
 
-  SendNotifyItemUpdate(notify_item.Pass());
+  SendNotifyItemUpdate(std::move(notify_item));
 }
 
 STDMETHODIMP_(ULONG) StatusTrayStateChangerWin::AddRef() {
@@ -168,10 +170,7 @@ scoped_ptr<NOTIFYITEM> StatusTrayStateChangerWin::RegisterCallback() {
       NOTREACHED();
   }
 
-  // Adding an intermediate scoped pointer here so that |notify_item_| is reset
-  // to NULL.
-  scoped_ptr<NOTIFYITEM> rv(notify_item_.release());
-  return rv.Pass();
+  return std::move(notify_item_);
 }
 
 bool StatusTrayStateChangerWin::RegisterCallbackWin8() {

@@ -395,17 +395,17 @@ scoped_ptr<DEVMODE, base::FreeDeleter> XpsTicketToDevMode(
   printing::ScopedXPSInitializer xps_initializer;
   if (!xps_initializer.initialized()) {
     // TODO(sanjeevr): Handle legacy proxy case (with no prntvpt.dll)
-    return dev_mode.Pass();
+    return dev_mode;
   }
 
   printing::ScopedPrinterHandle printer;
   if (!printer.OpenPrinter(printer_name.c_str()))
-    return dev_mode.Pass();
+    return dev_mode;
 
   base::win::ScopedComPtr<IStream> pt_stream;
   HRESULT hr = StreamFromPrintTicket(print_ticket, pt_stream.Receive());
   if (FAILED(hr))
-    return dev_mode.Pass();
+    return dev_mode;
 
   HPTPROVIDER provider = NULL;
   hr = printing::XPSModule::OpenProvider(printer_name, 1, &provider);
@@ -424,7 +424,7 @@ scoped_ptr<DEVMODE, base::FreeDeleter> XpsTicketToDevMode(
     }
     printing::XPSModule::CloseProvider(provider);
   }
-  return dev_mode.Pass();
+  return dev_mode;
 }
 
 scoped_ptr<DEVMODE, base::FreeDeleter> CreateDevModeWithColor(
@@ -434,11 +434,11 @@ scoped_ptr<DEVMODE, base::FreeDeleter> CreateDevModeWithColor(
   scoped_ptr<DEVMODE, base::FreeDeleter> default_ticket =
       CreateDevMode(printer, NULL);
   if (!default_ticket)
-    return default_ticket.Pass();
+    return default_ticket;
 
   if ((default_ticket->dmFields & DM_COLOR) &&
       ((default_ticket->dmColor == DMCOLOR_COLOR) == color)) {
-    return default_ticket.Pass();
+    return default_ticket;
   }
 
   default_ticket->dmFields |= DM_COLOR;
@@ -446,27 +446,27 @@ scoped_ptr<DEVMODE, base::FreeDeleter> CreateDevModeWithColor(
 
   DriverInfo6 info_6;
   if (!info_6.Init(printer))
-    return default_ticket.Pass();
+    return default_ticket;
 
   const DRIVER_INFO_6* p = info_6.get();
 
   // Only HP known to have issues.
   if (!p->pszMfgName || wcscmp(p->pszMfgName, L"HP") != 0)
-    return default_ticket.Pass();
+    return default_ticket;
 
   // Need XPS for this workaround.
   printing::ScopedXPSInitializer xps_initializer;
   if (!xps_initializer.initialized())
-    return default_ticket.Pass();
+    return default_ticket;
 
   const char* xps_color = color ? kXpsTicketColor : kXpsTicketMonochrome;
   std::string xps_ticket = base::StringPrintf(kXpsTicketTemplate, xps_color);
   scoped_ptr<DEVMODE, base::FreeDeleter> ticket =
       printing::XpsTicketToDevMode(printer_name, xps_ticket);
   if (!ticket)
-    return default_ticket.Pass();
+    return default_ticket;
 
-  return ticket.Pass();
+  return ticket;
 }
 
 scoped_ptr<DEVMODE, base::FreeDeleter> CreateDevMode(HANDLE printer,
@@ -491,7 +491,7 @@ scoped_ptr<DEVMODE, base::FreeDeleter> CreateDevMode(HANDLE printer,
   int size = out->dmSize;
   int extra_size = out->dmDriverExtra;
   CHECK_GE(buffer_size, size + extra_size);
-  return out.Pass();
+  return out;
 }
 
 scoped_ptr<DEVMODE, base::FreeDeleter> PromptDevMode(
@@ -530,7 +530,7 @@ scoped_ptr<DEVMODE, base::FreeDeleter> PromptDevMode(
   int size = out->dmSize;
   int extra_size = out->dmDriverExtra;
   CHECK_GE(buffer_size, size + extra_size);
-  return out.Pass();
+  return out;
 }
 
 }  // namespace printing

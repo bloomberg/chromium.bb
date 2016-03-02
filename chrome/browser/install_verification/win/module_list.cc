@@ -39,7 +39,7 @@ scoped_ptr<ModuleList> ModuleList::FromLoadedModuleSnapshot(
     }
   }
 
-  return instance.Pass();
+  return instance;
 }
 
 void ModuleList::GetModuleInfoSet(std::set<ModuleInfo>* module_info_set) {

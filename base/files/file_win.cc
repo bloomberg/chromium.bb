@@ -270,7 +270,7 @@ File File::Duplicate() {
   File other(other_handle);
   if (async())
     other.async_ = true;
-  return other.Pass();
+  return other;
 }
 
 // Static.

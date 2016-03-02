@@ -7,6 +7,8 @@
 #include <windows.h>
 #include <stddef.h>
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/threading/thread_restrictions.h"
@@ -22,7 +24,7 @@ WaitableEvent::WaitableEvent(bool manual_reset, bool signaled)
 }
 
 WaitableEvent::WaitableEvent(win::ScopedHandle handle)
-    : handle_(handle.Pass()) {
+    : handle_(std::move(handle)) {
   CHECK(handle_.IsValid()) << "Tried to create WaitableEvent from NULL handle";
 }
 

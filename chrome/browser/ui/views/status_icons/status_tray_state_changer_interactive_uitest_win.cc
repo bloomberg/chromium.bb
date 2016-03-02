@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/status_icons/status_tray_state_changer_win.h"
 
+#include <utility>
+
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/win/scoped_com_initializer.h"
@@ -57,7 +59,7 @@ class StatusTrayStateChangerWinTest : public testing::Test {
     DCHECK_EQ(notify_item->hwnd, icon_window());
     DCHECK_EQ(notify_item->id, icon_id());
 
-    return notify_item.Pass();
+    return notify_item;
   }
 
   bool CallCreateTrayNotify() { return tray_watcher_->CreateTrayNotify(); }
@@ -68,7 +70,7 @@ class StatusTrayStateChangerWinTest : public testing::Test {
   }
 
   void SendNotifyItemUpdate(scoped_ptr<NOTIFYITEM> notify_item) {
-    tray_watcher_->SendNotifyItemUpdate(notify_item.Pass());
+    tray_watcher_->SendNotifyItemUpdate(std::move(notify_item));
   }
 
   scoped_ptr<NOTIFYITEM> GetNotifyItem() {
@@ -108,18 +110,18 @@ TEST_F(StatusTrayStateChangerWinTest, DISABLED_ComApiTest) {
   if (notify_item->preference != PREFERENCE_SHOW_WHEN_ACTIVE) {
     scoped_ptr<NOTIFYITEM> notify_item_copy(new NOTIFYITEM(*notify_item));
     notify_item_copy->preference = PREFERENCE_SHOW_WHEN_ACTIVE;
-    SendNotifyItemUpdate(notify_item_copy.Pass());
+    SendNotifyItemUpdate(std::move(notify_item_copy));
   }
 
   // Run the interesting code.
   tray_watcher_->EnsureTrayIconVisible();
 
   EXPECT_EQ(PREFERENCE_SHOW_ALWAYS, GetNotifyItem()->preference);
-  SendNotifyItemUpdate(notify_item.Pass());
+  SendNotifyItemUpdate(std::move(notify_item));
   notify_item = GetNotifyItem();
 
   EXPECT_EQ(notify_item->preference, current_preference);
-};
+}
 
 // Test is disabled due to multiple COM initialization errors.  See
 // http//crbug.com/367199 for details.
@@ -161,7 +163,7 @@ TEST_F(StatusTrayStateChangerWinTest, DISABLED_TraySizeApiTest) {
 
   EXPECT_GT(new_width, width);
 
-  SendNotifyItemUpdate(notify_item.Pass());
+  SendNotifyItemUpdate(std::move(notify_item));
   ::GetWindowRect(tray_notify_hwnd, &new_tray_notify_rect);
   new_width = new_tray_notify_rect.right - new_tray_notify_rect.left;
   EXPECT_EQ(width, new_width);

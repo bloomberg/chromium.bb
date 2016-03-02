@@ -37,7 +37,7 @@ scoped_ptr<CdmVideoDecoder> CreateVideoDecoder(
     if (!video_decoder->Initialize(config))
       video_decoder.reset();
 
-    return video_decoder.Pass();
+    return video_decoder;
   }
 #endif
 

@@ -78,8 +78,7 @@ class StartupBrowserCreatorTriggeredResetTest : public InProcessBrowserTest {
             ->RegisterWillCreateBrowserContextServicesCallbackForTesting(
                 base::Bind(&StartupBrowserCreatorTriggeredResetTest::
                                OnWillCreateBrowserContextServices,
-                           base::Unretained(this)))
-            .Pass();
+                           base::Unretained(this)));
   }
 
  private:

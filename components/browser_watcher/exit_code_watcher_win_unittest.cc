@@ -6,6 +6,8 @@
 
 #include <stdint.h>
 
+#include <utility>
+
 #include "base/command_line.h"
 #include "base/process/process.h"
 #include "base/strings/string16.h"
@@ -123,7 +125,7 @@ TEST_F(ExitCodeWatcherTest, ExitCodeWatcherInvalidHandleFailsInit) {
   base::Process event(::CreateEvent(NULL, false, false, NULL));
 
   // A non-process handle should fail.
-  EXPECT_FALSE(watcher.Initialize(event.Pass()));
+  EXPECT_FALSE(watcher.Initialize(std::move(event)));
 }
 
 TEST_F(ExitCodeWatcherTest, ExitCodeWatcherNoAccessHandleFailsInit) {
@@ -134,7 +136,7 @@ TEST_F(ExitCodeWatcherTest, ExitCodeWatcherNoAccessHandleFailsInit) {
   ASSERT_TRUE(self.IsValid());
 
   // A process handle with insufficient access should fail.
-  EXPECT_FALSE(watcher.Initialize(self.Pass()));
+  EXPECT_FALSE(watcher.Initialize(std::move(self)));
 }
 
 TEST_F(ExitCodeWatcherTest, ExitCodeWatcherSucceedsInit) {
@@ -146,7 +148,7 @@ TEST_F(ExitCodeWatcherTest, ExitCodeWatcherSucceedsInit) {
   ASSERT_TRUE(self.IsValid());
 
   // A process handle with sufficient access should succeed init.
-  EXPECT_TRUE(watcher.Initialize(self.Pass()));
+  EXPECT_TRUE(watcher.Initialize(std::move(self)));
 }
 
 TEST_F(ExitCodeWatcherTest, ExitCodeWatcherOnExitedProcess) {

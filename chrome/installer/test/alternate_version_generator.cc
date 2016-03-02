@@ -211,7 +211,7 @@ bool MappedFile::Initialize(base::File file) {
   } else {
     PLOG(DFATAL) << "file.GetInfo failed";
   }
-  file_ = file.Pass();
+  file_ = std::move(file);
   return result;
 }
 
@@ -391,7 +391,7 @@ bool UpdateVersionIfMatch(const base::FilePath& image_file,
 
   if (file.IsValid()) {
     MappedFile image_mapping;
-    if (image_mapping.Initialize(file.Pass())) {
+    if (image_mapping.Initialize(std::move(file))) {
       base::win::PEImageAsData image(
           reinterpret_cast<HMODULE>(image_mapping.data()));
       // PEImage class does not support other-architecture images.

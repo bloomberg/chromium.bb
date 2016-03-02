@@ -569,7 +569,7 @@ scoped_ptr<Emf> Emf::RasterizeMetafile(int raster_area_in_pixels) const {
   result->FinishPage();
   result->FinishDocument();
 
-  return result.Pass();
+  return result;
 }
 
 scoped_ptr<Emf> Emf::RasterizeAlphaBlend() const {
@@ -602,7 +602,7 @@ scoped_ptr<Emf> Emf::RasterizeAlphaBlend() const {
 
   result->FinishDocument();
 
-  return result.Pass();
+  return result;
 }
 
 

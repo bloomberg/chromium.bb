@@ -4,6 +4,8 @@
 
 #include "components/browser_watcher/exit_code_watcher_win.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/process/kill.h"
 #include "base/strings/stringprintf.h"
@@ -50,7 +52,7 @@ bool ExitCodeWatcher::Initialize(base::Process process) {
   }
 
   // Success, take ownership of the process.
-  process_ = process.Pass();
+  process_ = std::move(process);
   process_creation_time_ = base::Time::FromFileTime(creation_time);
 
   // Start by writing the value STILL_ACTIVE to registry, to allow detection

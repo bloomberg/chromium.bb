@@ -170,7 +170,7 @@ bool NativeProcessLauncher::LaunchNativeProcess(
     return false;
   }
 
-  *process = cmd_process.Pass();
+  *process = std::move(cmd_process);
   *read_file = base::File::CreateForAsyncHandle(stdout_pipe.Take());
   *write_file = base::File::CreateForAsyncHandle(stdin_pipe.Take());
 

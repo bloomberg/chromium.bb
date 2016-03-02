@@ -6,6 +6,8 @@
 
 #include <stdint.h>
 
+#include <utility>
+
 #include "base/macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/stringprintf.h"
@@ -68,8 +70,8 @@ BrowserPolicyConnectorIOS::BrowserPolicyConnectorIOS(
   scoped_ptr<AsyncPolicyLoader> loader(
       new PolicyLoaderIOS(background_task_runner));
   scoped_ptr<ConfigurationPolicyProvider> provider(
-      new AsyncPolicyProvider(GetSchemaRegistry(), loader.Pass()));
-  SetPlatformPolicyProvider(provider.Pass());
+      new AsyncPolicyProvider(GetSchemaRegistry(), std::move(loader)));
+  SetPlatformPolicyProvider(std::move(provider));
 }
 
 BrowserPolicyConnectorIOS::~BrowserPolicyConnectorIOS() {}
@@ -80,14 +82,14 @@ void BrowserPolicyConnectorIOS::Init(
   scoped_ptr<DeviceManagementService::Configuration> configuration(
       new DeviceManagementServiceConfiguration(user_agent_));
   scoped_ptr<DeviceManagementService> device_management_service(
-      new DeviceManagementService(configuration.Pass()));
+      new DeviceManagementService(std::move(configuration)));
 
   // Delay initialization of the cloud policy requests by 5 seconds.
   const int64_t kServiceInitializationStartupDelay = 5000;
   device_management_service->ScheduleInitialization(
       kServiceInitializationStartupDelay);
 
-  InitInternal(local_state, device_management_service.Pass());
+  InitInternal(local_state, std::move(device_management_service));
 }
 
 }  // namespace policy

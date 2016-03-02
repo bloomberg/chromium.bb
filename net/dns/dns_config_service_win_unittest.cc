@@ -107,7 +107,7 @@ scoped_ptr<IP_ADAPTER_ADDRESSES, base::FreeDeleter> CreateAdapterAddresses(
     }
   }
 
-  return heap.Pass();
+  return heap;
 }
 
 TEST(DnsConfigServiceWinTest, ConvertAdapterAddresses) {

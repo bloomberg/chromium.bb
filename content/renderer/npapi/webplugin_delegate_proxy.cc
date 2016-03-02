@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <utility>
 
 #include "base/auto_reset.h"
 #include "base/command_line.h"
@@ -751,7 +752,7 @@ void WebPluginDelegateProxy::OnSetWindowlessData(
     return;
 
   modal_loop_pump_messages_event_.reset(
-      new base::WaitableEvent(modal_loop_pump_messages_event.Pass()));
+      new base::WaitableEvent(std::move(modal_loop_pump_messages_event)));
 }
 
 void WebPluginDelegateProxy::OnNotifyIMEStatus(int input_type,

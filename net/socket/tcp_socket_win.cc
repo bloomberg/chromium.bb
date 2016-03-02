@@ -8,6 +8,8 @@
 #include <errno.h>
 #include <mstcpip.h>
 
+#include <utility>
+
 #include "base/callback_helpers.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
@@ -704,7 +706,7 @@ int TCPSocketWin::AcceptInternal(scoped_ptr<TCPSocketWin>* socket,
     net_log_.EndEventWithNetErrorCode(NetLog::TYPE_TCP_ACCEPT, adopt_result);
     return adopt_result;
   }
-  *socket = tcp_socket.Pass();
+  *socket = std::move(tcp_socket);
   *address = ip_end_point;
   net_log_.EndEvent(NetLog::TYPE_TCP_ACCEPT,
                     CreateNetLogIPEndPointCallback(&ip_end_point));

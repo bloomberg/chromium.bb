@@ -100,7 +100,7 @@ void StatusIconWin::SetImage(const gfx::ImageSkia& image) {
   NOTIFYICONDATA icon_data;
   InitIconData(&icon_data);
   icon_data.uFlags = NIF_ICON;
-  icon_ = IconUtil::CreateHICONFromSkBitmap(*image.bitmap()).Pass();
+  icon_ = IconUtil::CreateHICONFromSkBitmap(*image.bitmap());
   icon_data.hIcon = icon_.get();
   BOOL result = Shell_NotifyIcon(NIM_MODIFY, &icon_data);
   if (!result)
@@ -133,7 +133,7 @@ void StatusIconWin::DisplayBalloon(
 
   base::win::Version win_version = base::win::GetVersion();
   if (!icon.isNull() && win_version != base::win::VERSION_PRE_XP) {
-    balloon_icon_ = IconUtil::CreateHICONFromSkBitmap(*icon.bitmap()).Pass();
+    balloon_icon_ = IconUtil::CreateHICONFromSkBitmap(*icon.bitmap());
     if (win_version >= base::win::VERSION_VISTA) {
       icon_data.hBalloonIcon = balloon_icon_.get();
       icon_data.dwInfoFlags = NIIF_USER | NIIF_LARGE_ICON;

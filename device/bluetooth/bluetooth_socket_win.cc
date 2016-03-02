@@ -7,6 +7,7 @@
 #include <objbase.h>
 
 #include <string>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
@@ -225,7 +226,7 @@ void BluetoothSocketWin::DoConnect(
     return;
   }
 
-  SetTCPSocket(scoped_socket.Pass());
+  SetTCPSocket(std::move(scoped_socket));
   success_callback.Run();
 }
 
@@ -325,8 +326,8 @@ void BluetoothSocketWin::DoListen(
     return;
   }
 
-  SetTCPSocket(scoped_socket.Pass());
-  service_reg_data_ = reg_data.Pass();
+  SetTCPSocket(std::move(scoped_socket));
+  service_reg_data_ = std::move(reg_data);
 
   PostSuccess(success_callback);
 }
@@ -388,7 +389,7 @@ void BluetoothSocketWin::OnAcceptOnUI(
 
   scoped_refptr<BluetoothSocketWin> peer_socket =
       CreateBluetoothSocket(ui_task_runner(), socket_thread());
-  peer_socket->SetTCPSocket(accept_socket.Pass());
+  peer_socket->SetTCPSocket(std::move(accept_socket));
   success_callback.Run(peer_device, peer_socket);
 }
 

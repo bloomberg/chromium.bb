@@ -6,6 +6,7 @@
 
 #include <AclAPI.h>
 #include <stddef.h>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/macros.h"
@@ -59,8 +60,7 @@ enum {
 // with a job object and with a policy.
 struct JobTracker {
   JobTracker(base::win::ScopedHandle job, sandbox::PolicyBase* policy)
-      : job(job.Pass()), policy(policy) {
-  }
+      : job(std::move(job)), policy(policy) {}
   ~JobTracker() {
     FreeResources();
   }
@@ -437,8 +437,8 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
   // Brokerservices does not own the target object. It is owned by the Policy.
   base::win::ScopedProcessInformation process_info;
   TargetProcess* target =
-      new TargetProcess(initial_token.Pass(), lockdown_token.Pass(),
-                        lowbox_token.Pass(), job.Get(), thread_pool_);
+      new TargetProcess(std::move(initial_token), std::move(lockdown_token),
+                        std::move(lowbox_token), job.Get(), thread_pool_);
 
   DWORD win_result = target->Create(exe_path, command_line, inherit_handles,
                                     startup_info, &process_info);
@@ -457,7 +457,7 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
   // the job object generates notifications using the completion port.
   policy_base->AddRef();
   if (job.IsValid()) {
-    scoped_ptr<JobTracker> tracker(new JobTracker(job.Pass(), policy_base));
+    scoped_ptr<JobTracker> tracker(new JobTracker(std::move(job), policy_base));
 
     // There is no obvious recovery after failure here. Previous version with
     // SpawnCleanup() caused deletion of TargetProcess twice. crbug.com/480639

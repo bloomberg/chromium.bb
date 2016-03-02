@@ -7,6 +7,8 @@
 #include <commctrl.h>
 #include <stddef.h>
 
+#include <utility>
+
 #include "base/macros.h"
 #include "chrome/browser/status_icons/status_icon_menu_model.h"
 #include "chrome/browser/status_icons/status_icon_observer.h"
@@ -76,7 +78,7 @@ TEST(StatusTrayWinTest, CreateIconAndMenu) {
   StatusIcon* icon = CreateStatusIcon(&tray);
   scoped_ptr<StatusIconMenuModel> menu(new StatusIconMenuModel(NULL));
   menu->AddItem(0, L"foo");
-  icon->SetContextMenu(menu.Pass());
+  icon->SetContextMenu(std::move(menu));
 }
 
 #if !defined(USE_AURA)  // http://crbug.com/156370

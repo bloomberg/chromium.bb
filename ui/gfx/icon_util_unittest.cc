@@ -176,14 +176,14 @@ TEST_F(IconUtilTest, TestBitmapToIconInvalidParameters) {
   bitmap.reset(new SkBitmap);
   ASSERT_NE(bitmap.get(), static_cast<SkBitmap*>(NULL));
   bitmap->setInfo(SkImageInfo::MakeA8(kSmallIconWidth, kSmallIconHeight));
-  icon = IconUtil::CreateHICONFromSkBitmap(*bitmap).Pass();
+  icon = IconUtil::CreateHICONFromSkBitmap(*bitmap);
   EXPECT_FALSE(icon.is_valid());
 
   // Invalid bitmap size.
   bitmap.reset(new SkBitmap);
   ASSERT_NE(bitmap.get(), static_cast<SkBitmap*>(NULL));
   bitmap->setInfo(SkImageInfo::MakeN32Premul(0, 0));
-  icon = IconUtil::CreateHICONFromSkBitmap(*bitmap).Pass();
+  icon = IconUtil::CreateHICONFromSkBitmap(*bitmap);
   EXPECT_FALSE(icon.is_valid());
 
   // Valid bitmap configuration but no pixels allocated.
@@ -191,7 +191,7 @@ TEST_F(IconUtilTest, TestBitmapToIconInvalidParameters) {
   ASSERT_NE(bitmap.get(), static_cast<SkBitmap*>(NULL));
   bitmap->setInfo(SkImageInfo::MakeN32Premul(kSmallIconWidth,
                                              kSmallIconHeight));
-  icon = IconUtil::CreateHICONFromSkBitmap(*bitmap).Pass();
+  icon = IconUtil::CreateHICONFromSkBitmap(*bitmap);
   EXPECT_FALSE(icon.is_valid());
 }
 

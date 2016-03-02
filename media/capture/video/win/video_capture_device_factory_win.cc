@@ -403,7 +403,7 @@ scoped_ptr<VideoCaptureDevice> VideoCaptureDeviceFactoryWin::Create(
     if (!static_cast<VideoCaptureDeviceWin*>(device.get())->Init())
       device.reset();
   }
-  return device.Pass();
+  return device;
 }
 
 void VideoCaptureDeviceFactoryWin::GetDeviceNames(Names* device_names) {

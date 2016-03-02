@@ -8,6 +8,7 @@
 
 #include <map>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/base_paths.h"
@@ -238,7 +239,7 @@ void RegisterSwReporterComponent(ComponentUpdateService* cus) {
   scoped_ptr<ComponentInstallerTraits> traits(new SwReporterInstallerTraits());
   // |cus| will take ownership of |installer| during installer->Register(cus).
   DefaultComponentInstaller* installer =
-      new DefaultComponentInstaller(traits.Pass());
+      new DefaultComponentInstaller(std::move(traits));
   installer->Register(cus, base::Closure());
 }
 

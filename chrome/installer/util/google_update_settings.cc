@@ -334,7 +334,7 @@ scoped_ptr<metrics::ClientInfo> GoogleUpdateSettings::LoadMetricsClientInfo() {
                         &client_info->reporting_enabled_date);
   }
 
-  return client_info.Pass();
+  return client_info;
 }
 
 void GoogleUpdateSettings::StoreMetricsClientInfo(

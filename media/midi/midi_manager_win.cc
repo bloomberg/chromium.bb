@@ -101,7 +101,7 @@ ScopedMIDIHDR CreateMIDIHDR(size_t size) {
   ZeroMemory(header.get(), sizeof(*header));
   header->lpData = new char[size];
   header->dwBufferLength = static_cast<DWORD>(size);
-  return header.Pass();
+  return header;
 }
 
 void SendShortMidiMessageInternal(HMIDIOUT midi_out_handle,

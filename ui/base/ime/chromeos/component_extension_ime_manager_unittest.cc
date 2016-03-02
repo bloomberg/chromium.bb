@@ -114,9 +114,7 @@ class ComponentExtensionIMEManagerTest : public testing::Test {
     mock_delegate_ = new MockComponentExtIMEManagerDelegate();
     mock_delegate_->set_ime_list(ime_list_);
     component_ext_mgr_.reset(new ComponentExtensionIMEManager());
-    component_ext_mgr_->Initialize(
-        scoped_ptr<ComponentExtensionIMEManagerDelegate>(
-            mock_delegate_).Pass());
+    component_ext_mgr_->Initialize(make_scoped_ptr(mock_delegate_));
   }
 
   virtual void TearDown() {

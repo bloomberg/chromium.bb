@@ -46,7 +46,7 @@ Process& Process::operator=(Process&& other) {
 Process Process::Current() {
   Process process;
   process.is_current_process_ = true;
-  return process.Pass();
+  return process;
 }
 
 // static

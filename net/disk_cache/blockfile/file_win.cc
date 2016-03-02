@@ -5,6 +5,7 @@
 #include "net/disk_cache/blockfile/file.h"
 
 #include <limits.h>
+#include <utility>
 
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
@@ -73,10 +74,7 @@ MyOverlapped::MyOverlapped(disk_cache::File* file, size_t offset,
 namespace disk_cache {
 
 File::File(base::File file)
-    : init_(true),
-      mixed_(true),
-      sync_base_file_(file.Pass()) {
-}
+    : init_(true), mixed_(true), sync_base_file_(std::move(file)) {}
 
 bool File::Init(const base::FilePath& name) {
   DCHECK(!init_);

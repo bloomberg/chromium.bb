@@ -4,6 +4,8 @@
 
 #include "chrome/browser/safe_browsing/incident_reporting/binary_integrity_analyzer_win.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -108,7 +110,7 @@ TEST_F(BinaryIntegrityAnalyzerWinTest, VerifyBinaryIntegrity) {
   EXPECT_CALL(*mock_receiver, DoClearIncidentForProcess(_))
       .WillOnce(TakeIncident(&incident_to_clear));
 
-  VerifyBinaryIntegrity(mock_receiver.Pass());
+  VerifyBinaryIntegrity(std::move(mock_receiver));
 
   ASSERT_TRUE(incident_to_clear);
   ASSERT_EQ(IncidentType::BINARY_INTEGRITY, incident_to_clear->GetType());
@@ -121,7 +123,7 @@ TEST_F(BinaryIntegrityAnalyzerWinTest, VerifyBinaryIntegrity) {
   EXPECT_CALL(*mock_receiver, DoAddIncidentForProcess(_))
       .WillOnce(TakeIncident(&incident));
 
-  VerifyBinaryIntegrity(mock_receiver.Pass());
+  VerifyBinaryIntegrity(std::move(mock_receiver));
 
   // Verify that the cleared and reported incidents have the same key.
   ASSERT_EQ(incident->GetKey(), incident_to_clear->GetKey());

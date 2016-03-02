@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <map>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -138,7 +139,7 @@ ScopedVector<autofill::PasswordForm> PasswordStoreWin::DBHandler::GetIE7Results(
       }
     }
   }
-  return matched_forms.Pass();
+  return matched_forms;
 }
 
 void PasswordStoreWin::DBHandler::OnWebDataServiceRequestDone(
@@ -177,7 +178,7 @@ PasswordStoreWin::PasswordStoreWin(
     const scoped_refptr<PasswordWebDataService>& web_data_service)
     : PasswordStoreDefault(main_thread_runner,
                            db_thread_runner,
-                           login_db.Pass()) {
+                           std::move(login_db)) {
   db_handler_.reset(new DBHandler(web_data_service, this));
 }
 
@@ -213,6 +214,6 @@ void PasswordStoreWin::GetLoginsImpl(const PasswordForm& form,
         form, base::Bind(&GetLoginsRequest::NotifyConsumerWithResults,
                          base::Owned(request.release())));
   } else {
-    request->NotifyConsumerWithResults(matched_forms.Pass());
+    request->NotifyConsumerWithResults(std::move(matched_forms));
   }
 }

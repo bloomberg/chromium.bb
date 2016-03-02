@@ -492,7 +492,7 @@ scoped_ptr<PolicyBundle> PolicyLoaderWin::Load() {
       Load3rdPartyPolicy(third_party_dict.get(), scope, bundle.get());
   }
 
-  return bundle.Pass();
+  return bundle;
 }
 
 bool PolicyLoaderWin::ReadPRegFile(const base::FilePath& preg_file,

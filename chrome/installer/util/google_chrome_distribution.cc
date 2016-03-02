@@ -11,6 +11,8 @@
 #include <msi.h>
 #include <shellapi.h>
 
+#include <utility>
+
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
@@ -101,8 +103,7 @@ GoogleChromeDistribution::GoogleChromeDistribution()
 
 GoogleChromeDistribution::GoogleChromeDistribution(
     scoped_ptr<AppRegistrationData> app_reg_data)
-    : BrowserDistribution(CHROME_BROWSER, app_reg_data.Pass()) {
-}
+    : BrowserDistribution(CHROME_BROWSER, std::move(app_reg_data)) {}
 
 void GoogleChromeDistribution::DoPostUninstallOperations(
     const Version& version,

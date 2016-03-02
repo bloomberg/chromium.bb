@@ -6,6 +6,8 @@
 
 #include "chrome/installer/util/google_chrome_binaries_distribution.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "chrome/installer/util/app_registration_data.h"
 #include "chrome/installer/util/non_updating_app_registration_data.h"
@@ -27,10 +29,9 @@ ChromiumBinariesDistribution::ChromiumBinariesDistribution()
 
 ChromiumBinariesDistribution::ChromiumBinariesDistribution(
     scoped_ptr<AppRegistrationData> app_reg_data)
-    : BrowserDistribution(CHROME_BINARIES, app_reg_data.Pass()),
+    : BrowserDistribution(CHROME_BINARIES, std::move(app_reg_data)),
       browser_distribution_(
-          BrowserDistribution::GetSpecificDistribution(CHROME_BROWSER)) {
-}
+          BrowserDistribution::GetSpecificDistribution(CHROME_BROWSER)) {}
 
 base::string16 ChromiumBinariesDistribution::GetBaseAppName() {
   NOTREACHED();

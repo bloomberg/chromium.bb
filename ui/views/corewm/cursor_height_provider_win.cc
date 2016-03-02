@@ -35,7 +35,7 @@ PixelData GetBitmapData(HBITMAP handle, const BITMAPINFO& info, HDC hdc) {
   // Masks are monochromatic.
   DCHECK_EQ(info.bmiHeader.biBitCount, 1);
   if (info.bmiHeader.biBitCount != 1)
-    return data.Pass();
+    return data;
 
   // When getting pixel data palette is appended to memory pointed by
   // BITMAPINFO passed so allocate additional memory to store additional data.
@@ -55,7 +55,7 @@ PixelData GetBitmapData(HBITMAP handle, const BITMAPINFO& info, HDC hdc) {
   if (result == 0)
     data.reset();
 
-  return data.Pass();
+  return data;
 }
 
 // Checks if the specifed row is transparent in provided bitmap.

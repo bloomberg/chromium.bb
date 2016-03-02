@@ -8,6 +8,8 @@
 #include <mferror.h>
 #include <stddef.h>
 
+#include <utility>
+
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/stringprintf.h"
@@ -234,7 +236,7 @@ void VideoCaptureDeviceMFWin::AllocateAndStart(
 
   base::AutoLock lock(lock_);
 
-  client_ = client.Pass();
+  client_ = std::move(client);
   DCHECK_EQ(capture_, false);
 
   CapabilityList capabilities;

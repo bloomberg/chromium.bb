@@ -213,7 +213,7 @@ TEST_F(NativeMessagingTest, SingleSendMessageWrite) {
                   FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OVERLAPPED, NULL));
   ASSERT_TRUE(read_handle.IsValid());
 
-  read_file = read_handle.Pass();
+  read_file = std::move(read_handle);
 #else  // defined(OS_WIN)
   base::PlatformFile pipe_handles[2];
   ASSERT_EQ(0, pipe(pipe_handles));

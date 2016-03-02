@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <utility>
+
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
@@ -79,7 +81,7 @@ void VerifyBinaryIntegrity(scoped_ptr<IncidentReceiver> incident_receiver) {
 
       // Send the report.
       incident_receiver->AddIncidentForProcess(
-          make_scoped_ptr(new BinaryIntegrityIncident(incident.Pass())));
+          make_scoped_ptr(new BinaryIntegrityIncident(std::move(incident))));
     } else {
       // The binary is integral, remove previous report so that next incidents
       // for the binary will be reported.

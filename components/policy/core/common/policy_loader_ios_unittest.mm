@@ -86,8 +86,9 @@ void TestHarness::SetUp() {
 ConfigurationPolicyProvider* TestHarness::CreateProvider(
     SchemaRegistry* registry,
     scoped_refptr<base::SequencedTaskRunner> task_runner) {
-  scoped_ptr<AsyncPolicyLoader> loader(new PolicyLoaderIOS(task_runner));
-  return new AsyncPolicyProvider(registry, loader.Pass());
+  scoped_ptr<AsyncPolicyLoader> loader();
+  return new AsyncPolicyProvider(
+      registry, make_scoped_ptr(new PolicyLoaderIOS(task_runner)));
 }
 
 void TestHarness::InstallEmptyPolicy() {
