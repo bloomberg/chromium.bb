@@ -30,6 +30,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/webui/settings/chromeos/change_picture_handler.h"
+#include "chrome/browser/ui/webui/settings/chromeos/easy_unlock_settings_handler.h"
 #else  // !defined(OS_CHROMEOS)
 #include "chrome/browser/ui/webui/settings/settings_default_browser_handler.h"
 #include "chrome/browser/ui/webui/settings/settings_manage_profile_handler.h"
@@ -72,6 +73,14 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
 
   content::WebUIDataSource* html_source =
       content::WebUIDataSource::Create(chrome::kChromeUIMdSettingsHost);
+
+#if defined(OS_CHROMEOS)
+  chromeos::settings::EasyUnlockSettingsHandler* easy_unlock_handler =
+      chromeos::settings::EasyUnlockSettingsHandler::Create(html_source,
+                                                            profile);
+  if (easy_unlock_handler)
+    AddSettingsPageUIHandler(easy_unlock_handler);
+#endif
 
   AddSettingsPageUIHandler(ResetSettingsHandler::Create(html_source, profile));
 

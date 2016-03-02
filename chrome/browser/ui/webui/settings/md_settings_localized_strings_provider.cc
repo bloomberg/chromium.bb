@@ -26,6 +26,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/signin/easy_unlock_service.h"
 #include "chrome/browser/ui/webui/chromeos/ui_account_tweaks.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
@@ -377,6 +378,44 @@ void AddDateTimeStrings(content::WebUIDataSource* html_source) {
 }
 
 #if defined(OS_CHROMEOS)
+void AddEasyUnlockStrings(content::WebUIDataSource* html_source) {
+  html_source->AddLocalizedString("easyUnlockSectionTitle",
+                                  IDS_SETTINGS_EASY_UNLOCK_SECTION_TITLE);
+  html_source->AddLocalizedString("easyUnlockDescription",
+                                  IDS_SETTINGS_EASY_UNLOCK_DESCRIPTION);
+  html_source->AddLocalizedString(
+      "easyUnlockRequireProximityLabel",
+      IDS_SETTINGS_EASY_UNLOCK_REQUIRE_PROXIMITY_LABEL);
+  html_source->AddLocalizedString("easyUnlockSetupButton",
+                                  IDS_SETTINGS_EASY_UNLOCK_SETUP_BUTTON);
+  html_source->AddLocalizedString("easyUnlockSetupIntro",
+                                  IDS_SETTINGS_EASY_UNLOCK_SETUP_INTRO);
+
+  // Easy Unlock turn-off dialog.
+  html_source->AddLocalizedString("easyUnlockTurnOffButton",
+                                  IDS_SETTINGS_EASY_UNLOCK_TURN_OFF_BUTTON);
+  html_source->AddLocalizedString("easyUnlockTurnOffTitle",
+                                  IDS_SETTINGS_EASY_UNLOCK_TURN_OFF_TITLE);
+  html_source->AddLocalizedString(
+      "easyUnlockTurnOffDescription",
+      IDS_SETTINGS_EASY_UNLOCK_TURN_OFF_DESCRIPTION);
+  html_source->AddLocalizedString(
+      "easyUnlockTurnOffOfflineTitle",
+      IDS_SETTINGS_EASY_UNLOCK_TURN_OFF_OFFLINE_TITLE);
+  html_source->AddLocalizedString(
+      "easyUnlockTurnOffOfflineMessage",
+      IDS_SETTINGS_EASY_UNLOCK_TURN_OFF_OFFLINE_MESSAGE);
+  html_source->AddLocalizedString(
+      "easyUnlockTurnOffErrorTitle",
+      IDS_SETTINGS_EASY_UNLOCK_TURN_OFF_ERROR_TITLE);
+  html_source->AddLocalizedString(
+      "easyUnlockTurnOffErrorMessage",
+      IDS_SETTINGS_EASY_UNLOCK_TURN_OFF_ERROR_MESSAGE);
+  html_source->AddLocalizedString(
+      "easyUnlockTurnOffRetryButton",
+      IDS_SETTINGS_EASY_UNLOCK_TURN_OFF_RETRY_BUTTON);
+}
+
 void AddInternetStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString(
       "internetPageTitle", IDS_SETTINGS_INTERNET);
@@ -942,7 +981,10 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source,
   AddDeviceStrings(html_source);
 #endif
   AddDownloadsStrings(html_source);
+
 #if defined(OS_CHROMEOS)
+  if (EasyUnlockService::Get(profile)->IsAllowed())
+    AddEasyUnlockStrings(html_source);
   AddInternetStrings(html_source);
 #endif
   AddLanguagesStrings(html_source);

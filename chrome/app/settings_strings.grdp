@@ -315,6 +315,49 @@
   </message>
 
   <if expr="chromeos">
+    <!-- Easy Unlock Page -->
+    <message name="IDS_SETTINGS_EASY_UNLOCK_SECTION_TITLE" desc="The title of the Easy Unlock section on the settings page.">
+      Smart Lock (beta)
+    </message>
+    <message name="IDS_SETTINGS_EASY_UNLOCK_SETUP_INTRO" desc="The text to show in Easy Unlock section to introduce the feature.">
+      Keep your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> unlocked when your Android phone is unlocked and nearby—no need to type your password.
+    </message>
+    <message name="IDS_SETTINGS_EASY_UNLOCK_SETUP_BUTTON" desc="The label of the button to set up Easy Unlock section on the settings page.">
+      Set up
+    </message>
+    <message name="IDS_SETTINGS_EASY_UNLOCK_DESCRIPTION" desc="The text that describes what Easy Unlock does.">
+      Your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> will be unlocked when your Android phone is unlocked and nearby.
+    </message>
+    <message name="IDS_SETTINGS_EASY_UNLOCK_REQUIRE_PROXIMITY_LABEL" desc="The text label that describes the checkbox that controls whether the user's Android phone must be in close proximity to the Chromebook in order to unlock it..">
+      Only unlock this <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> when your phone is within arm’s reach.
+    </message>
+    <message name="IDS_SETTINGS_EASY_UNLOCK_TURN_OFF_BUTTON" desc="The label of the button to disable Easy unlock on the settings page and the turn off Easy unlock dialog.">
+      Turn off
+    </message>
+    <message name="IDS_SETTINGS_EASY_UNLOCK_TURN_OFF_TITLE" desc="The title of the Easy unlock turn off dialog.">
+      Turn off Smart Lock for <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>?
+    </message>
+    <message name="IDS_SETTINGS_EASY_UNLOCK_TURN_OFF_DESCRIPTION" desc="The description text of the Easy unlock turn off dialog.">
+      If you turn off Smart Lock for <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>, you won’t be able to unlock your Chrome devices using your phone. You'll need to type your password.
+    </message>
+    <message name="IDS_SETTINGS_EASY_UNLOCK_TURN_OFF_OFFLINE_TITLE" desc="The title text on the Easy unlock turn off dialog when Easy unlock could not be turned off because the device is offline.">
+      Please connect to a network
+    </message>
+    <message name="IDS_SETTINGS_EASY_UNLOCK_TURN_OFF_OFFLINE_MESSAGE" desc="The text on the Easy unlock turn off dialog when Easy unlock could not be turned off because the device is offline.">
+      You must be online to turn off Smart Lock because this setting is synced to your phone and other devices. Please connect to a network first.
+    </message>
+    <message name="IDS_SETTINGS_EASY_UNLOCK_TURN_OFF_ERROR_TITLE" desc="The title text on the Easy unlock turn off dialog when Easy unlock could not be turned off because there is a server error.">
+      Smart Lock is unavailable
+    </message>
+    <message name="IDS_SETTINGS_EASY_UNLOCK_TURN_OFF_ERROR_MESSAGE" desc="The text on the Easy unlock turn off dialog when Easy unlock could not be turned off because there is a server error.">
+      Smart Lock is currently unavailable. Please try again later.
+    </message>
+    <message name="IDS_SETTINGS_EASY_UNLOCK_TURN_OFF_RETRY_BUTTON" desc="The label text of the retry button on the Easy unlock turn off dialog when Easy unlock could not be turned off because there is a server error.">
+      Retry
+    </message>
+  </if>
+
+  <if expr="chromeos">
     <!-- Internet Page -->
     <message name="IDS_SETTINGS_INTERNET" desc="Name of the settings page which displays internet preferences.">
       Internet Connection
