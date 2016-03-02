@@ -13,10 +13,10 @@
 #include "base/memory/shared_memory.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "content/common/gpu/gpu_channel.h"
-#include "content/common/gpu/gpu_messages.h"
 #include "content/common/gpu/media_messages.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/message_filter.h"
@@ -153,13 +153,12 @@ class GpuJpegDecodeAccelerator::MessageFilter : public IPC::MessageFilter {
 
   void AddClientOnIOThread(int32_t route_id,
                            Client* client,
-                           IPC::Message* reply_msg) {
+                           base::Callback<void(bool)> response) {
     DCHECK(io_task_runner_->BelongsToCurrentThread());
     DCHECK(client_map_.count(route_id) == 0);
 
     client_map_[route_id] = client;
-    GpuChannelMsg_CreateJpegDecoder::WriteReplyParams(reply_msg, true);
-    SendOnIOThread(reply_msg);
+    response.Run(true);
   }
 
   void OnDestroyOnIOThread(const int32_t* route_id) {
@@ -309,7 +308,7 @@ GpuJpegDecodeAccelerator::~GpuJpegDecodeAccelerator() {
 }
 
 void GpuJpegDecodeAccelerator::AddClient(int32_t route_id,
-                                         IPC::Message* reply_msg) {
+                                         base::Callback<void(bool)> response) {
   DCHECK(CalledOnValidThread());
 
   // When adding non-chromeos platforms, VideoCaptureGpuJpegDecoder::Initialize
@@ -334,8 +333,7 @@ void GpuJpegDecodeAccelerator::AddClient(int32_t route_id,
 
   if (!accelerator) {
     DLOG(ERROR) << "JPEG accelerator Initialize failed";
-    GpuChannelMsg_CreateJpegDecoder::WriteReplyParams(reply_msg, false);
-    Send(reply_msg);
+    response.Run(false);
     return;
   }
   client->set_accelerator(std::move(accelerator));
@@ -356,7 +354,7 @@ void GpuJpegDecodeAccelerator::AddClient(int32_t route_id,
   // here instead of making the code unnecessary complicated.
   io_task_runner_->PostTask(
       FROM_HERE, base::Bind(&MessageFilter::AddClientOnIOThread, filter_,
-                            route_id, client.release(), reply_msg));
+                            route_id, client.release(), response));
 }
 
 void GpuJpegDecodeAccelerator::NotifyDecodeStatus(

@@ -328,12 +328,12 @@ class GpuChannelMessageFilter : public IPC::MessageFilter {
                 const scoped_refptr<GpuChannelMessageQueue>& queue);
   void RemoveRoute(int32_t route_id);
 
+  bool Send(IPC::Message* message);
+
  protected:
   ~GpuChannelMessageFilter() override;
 
  private:
-  bool Send(IPC::Message* message);
-
   scoped_refptr<GpuChannelMessageQueue> LookupStreamByRoute(int32_t route_id);
 
   bool MessageErrorHandler(const IPC::Message& message, const char* error_msg);

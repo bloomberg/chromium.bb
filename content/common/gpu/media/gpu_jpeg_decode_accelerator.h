@@ -34,7 +34,7 @@ class GpuJpegDecodeAccelerator
       const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner);
   ~GpuJpegDecodeAccelerator() override;
 
-  void AddClient(int32_t route_id, IPC::Message* reply_msg);
+  void AddClient(int32_t route_id, base::Callback<void(bool)> response);
 
   void NotifyDecodeStatus(int32_t route_id,
                           int32_t bitstream_buffer_id,

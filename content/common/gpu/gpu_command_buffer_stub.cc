@@ -880,7 +880,10 @@ void GpuCommandBufferStub::OnCreateVideoDecoder(
   TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnCreateVideoDecoder");
   GpuVideoDecodeAccelerator* decoder = new GpuVideoDecodeAccelerator(
       decoder_route_id, this, channel_->io_task_runner());
-  decoder->Initialize(config, reply_message);
+  bool succeeded = decoder->Initialize(config);
+  GpuCommandBufferMsg_CreateVideoDecoder::WriteReplyParams(reply_message,
+                                                           succeeded);
+  Send(reply_message);
   // decoder is registered as a DestructionObserver of this stub and will
   // self-delete during destruction of this stub.
 }
@@ -895,11 +898,12 @@ void GpuCommandBufferStub::OnCreateVideoEncoder(
   TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnCreateVideoEncoder");
   GpuVideoEncodeAccelerator* encoder =
       new GpuVideoEncodeAccelerator(encoder_route_id, this);
-  encoder->Initialize(input_format,
-                      input_visible_size,
-                      output_profile,
-                      initial_bitrate,
-                      reply_message);
+  bool succeeded = encoder->Initialize(input_format, input_visible_size,
+                                       output_profile, initial_bitrate);
+  GpuCommandBufferMsg_CreateVideoEncoder::WriteReplyParams(reply_message,
+                                                           succeeded);
+  Send(reply_message);
+
   // encoder is registered as a DestructionObserver of this stub and will
   // self-delete during destruction of this stub.
 }

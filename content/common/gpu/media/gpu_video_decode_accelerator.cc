@@ -327,22 +327,20 @@ bool GpuVideoDecodeAccelerator::Send(IPC::Message* message) {
   return stub_->channel()->Send(message);
 }
 
-void GpuVideoDecodeAccelerator::Initialize(
-    const media::VideoDecodeAccelerator::Config& config,
-    IPC::Message* init_done_msg) {
+bool GpuVideoDecodeAccelerator::Initialize(
+    const media::VideoDecodeAccelerator::Config& config) {
   DCHECK(!video_decode_accelerator_);
 
   if (!stub_->channel()->AddRoute(host_route_id_, stub_->stream_id(), this)) {
     DLOG(ERROR) << "Initialize(): failed to add route";
-    SendCreateDecoderReply(init_done_msg, false);
+    return false;
   }
 
 #if !defined(OS_WIN)
   // Ensure we will be able to get a GL context at all before initializing
   // non-Windows VDAs.
   if (!make_context_current_.Run()) {
-    SendCreateDecoderReply(init_done_msg, false);
-    return;
+    return false;
   }
 #endif
 
@@ -368,13 +366,12 @@ void GpuVideoDecodeAccelerator::Initialize(
       filter_ = new MessageFilter(this, host_route_id_);
       stub_->channel()->AddFilter(filter_.get());
     }
-    SendCreateDecoderReply(init_done_msg, true);
-    return;
+    return true;
   }
   video_decode_accelerator_.reset();
   LOG(ERROR) << "HW video decode not available for profile " << config.profile
              << (config.is_encrypted ? " with encryption" : "");
-  SendCreateDecoderReply(init_done_msg, false);
+  return false;
 }
 
 scoped_ptr<media::VideoDecodeAccelerator>
@@ -612,12 +609,6 @@ void GpuVideoDecodeAccelerator::SetTextureCleared(
   DCHECK(!texture_ref->texture()->IsLevelCleared(target, 0));
   texture_manager->SetLevelCleared(texture_ref.get(), target, 0, true);
   uncleared_textures_.erase(it);
-}
-
-void GpuVideoDecodeAccelerator::SendCreateDecoderReply(IPC::Message* message,
-                                                       bool succeeded) {
-  GpuCommandBufferMsg_CreateVideoDecoder::WriteReplyParams(message, succeeded);
-  Send(message);
 }
 
 }  // namespace content

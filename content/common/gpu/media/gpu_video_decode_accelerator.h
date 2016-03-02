@@ -69,8 +69,7 @@ class GpuVideoDecodeAccelerator
   // one of them succeeds for given |config|. Send the |init_done_msg| when
   // done. filter_ is passed to GpuCommandBufferStub channel only if the chosen
   // VDA can decode on IO thread.
-  void Initialize(const media::VideoDecodeAccelerator::Config& config,
-                  IPC::Message* init_done_msg);
+  bool Initialize(const media::VideoDecodeAccelerator::Config& config);
 
  private:
   typedef scoped_ptr<media::VideoDecodeAccelerator>(
@@ -104,9 +103,6 @@ class GpuVideoDecodeAccelerator
 
   // Sets the texture to cleared.
   void SetTextureCleared(const media::Picture& picture);
-
-  // Helper for replying to the creation request.
-  void SendCreateDecoderReply(IPC::Message* message, bool succeeded);
 
   // Helper to bind |image| to the texture specified by |client_texture_id|.
   void BindImage(uint32_t client_texture_id,

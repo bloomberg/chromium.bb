@@ -75,12 +75,11 @@ GpuVideoEncodeAccelerator::~GpuVideoEncodeAccelerator() {
   DCHECK(!encoder_);
 }
 
-void GpuVideoEncodeAccelerator::Initialize(
+bool GpuVideoEncodeAccelerator::Initialize(
     media::VideoPixelFormat input_format,
     const gfx::Size& input_visible_size,
     media::VideoCodecProfile output_profile,
-    uint32_t initial_bitrate,
-    IPC::Message* init_done_msg) {
+    uint32_t initial_bitrate) {
   DVLOG(2) << "GpuVideoEncodeAccelerator::Initialize(): "
               "input_format=" << input_format
            << ", input_visible_size=" << input_visible_size.ToString()
@@ -91,8 +90,7 @@ void GpuVideoEncodeAccelerator::Initialize(
   if (!stub_->channel()->AddRoute(host_route_id_, stub_->stream_id(), this)) {
     DLOG(ERROR) << "GpuVideoEncodeAccelerator::Initialize(): "
                    "failed to add route";
-    SendCreateEncoderReply(init_done_msg, false);
-    return;
+    return false;
   }
 
   if (input_visible_size.width() > media::limits::kMaxDimension ||
@@ -101,8 +99,7 @@ void GpuVideoEncodeAccelerator::Initialize(
     DLOG(ERROR) << "GpuVideoEncodeAccelerator::Initialize(): "
                    "input_visible_size " << input_visible_size.ToString()
                 << " too large";
-    SendCreateEncoderReply(init_done_msg, false);
-    return;
+    return false;
   }
 
   std::vector<GpuVideoEncodeAccelerator::CreateVEAFp>
@@ -117,14 +114,13 @@ void GpuVideoEncodeAccelerator::Initialize(
                                          this)) {
       input_format_ = input_format;
       input_visible_size_ = input_visible_size;
-      SendCreateEncoderReply(init_done_msg, true);
-      return;
+      return true;
     }
   }
   encoder_.reset();
   DLOG(ERROR)
       << "GpuVideoEncodeAccelerator::Initialize(): VEA initialization failed";
-  SendCreateEncoderReply(init_done_msg, false);
+  return false;
 }
 
 bool GpuVideoEncodeAccelerator::OnMessageReceived(const IPC::Message& message) {
@@ -452,12 +448,6 @@ void GpuVideoEncodeAccelerator::EncodeFrameFinished2(
 
 void GpuVideoEncodeAccelerator::Send(IPC::Message* message) {
   stub_->channel()->Send(message);
-}
-
-void GpuVideoEncodeAccelerator::SendCreateEncoderReply(IPC::Message* message,
-                                                       bool succeeded) {
-  GpuCommandBufferMsg_CreateVideoEncoder::WriteReplyParams(message, succeeded);
-  Send(message);
 }
 
 }  // namespace content

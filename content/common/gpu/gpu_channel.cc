@@ -73,6 +73,21 @@ const int64_t kMaxPreemptTimeMs = kVsyncIntervalMs;
 // below this threshold.
 const int64_t kStopPreemptThresholdMs = kVsyncIntervalMs;
 
+void SendCreateJpegDecoderResult(
+    scoped_ptr<IPC::Message> reply_message,
+    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+    base::WeakPtr<GpuChannel> channel,
+    scoped_refptr<GpuChannelMessageFilter> filter,
+    bool result) {
+  GpuChannelMsg_CreateJpegDecoder::WriteReplyParams(reply_message.get(),
+                                                    result);
+  if (io_task_runner->BelongsToCurrentThread()) {
+    filter->Send(reply_message.release());
+  } else {
+    channel->Send(reply_message.release());
+  }
+}
+
 }  // anonymous namespace
 
 scoped_refptr<GpuChannelMessageQueue> GpuChannelMessageQueue::Create(
@@ -986,10 +1001,14 @@ void GpuChannel::OnDestroyCommandBuffer(int32_t route_id) {
 
 void GpuChannel::OnCreateJpegDecoder(int32_t route_id,
                                      IPC::Message* reply_msg) {
+  scoped_ptr<IPC::Message> msg(reply_msg);
   if (!jpeg_decoder_) {
     jpeg_decoder_.reset(new GpuJpegDecodeAccelerator(this, io_task_runner_));
   }
-  jpeg_decoder_->AddClient(route_id, reply_msg);
+  jpeg_decoder_->AddClient(
+      route_id,
+      base::Bind(&SendCreateJpegDecoderResult, base::Passed(&msg),
+                 io_task_runner_, weak_factory_.GetWeakPtr(), filter_));
 }
 
 void GpuChannel::CacheShader(const std::string& key,

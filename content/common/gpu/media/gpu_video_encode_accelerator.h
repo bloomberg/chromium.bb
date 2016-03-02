@@ -41,11 +41,10 @@ class GpuVideoEncodeAccelerator
 
   // Initialize this accelerator with the given parameters and send
   // |init_done_msg| when complete.
-  void Initialize(media::VideoPixelFormat input_format,
+  bool Initialize(media::VideoPixelFormat input_format,
                   const gfx::Size& input_visible_size,
                   media::VideoCodecProfile output_profile,
-                  uint32_t initial_bitrate,
-                  IPC::Message* init_done_msg);
+                  uint32_t initial_bitrate);
 
   // IPC::Listener implementation
   bool OnMessageReceived(const IPC::Message& message) override;
@@ -93,8 +92,6 @@ class GpuVideoEncodeAccelerator
   void EncodeFrameFinished2(int32_t frame_id,
                             ScopedVector<gfx::GpuMemoryBuffer> buffers);
   void Send(IPC::Message* message);
-  // Helper for replying to the creation request.
-  void SendCreateEncoderReply(IPC::Message* message, bool succeeded);
 
   // Route ID to communicate with the host.
   const uint32_t host_route_id_;
