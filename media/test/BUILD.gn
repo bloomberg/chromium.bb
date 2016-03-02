@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//media/media_options.gni")
+import("//testing/libfuzzer/fuzzer_test.gni")
 
 source_set("pipeline_integration_test_base") {
   testonly = true
@@ -112,4 +113,21 @@ source_set("mojo_pipeline_integration_tests") {
       "//testing/gmock",
     ]
   }
+}
+
+fuzzer_test("pipeline_integration_fuzzertest") {
+  sources = [
+    "pipeline_integration_fuzzertest.cc",
+  ]
+  deps = [
+    "//base",
+    "//media",
+    "//media/test:pipeline_integration_test_base",
+
+    # TODO(dalecurtis): Required since the gmock header is included in the
+    # header for pipeline_integration_test_base.h.  This should be
+    # moved into the .cc file to avoid the extra dependency here.
+    "//testing/gmock",
+    "//ui/gfx:test_support",
+  ]
 }
