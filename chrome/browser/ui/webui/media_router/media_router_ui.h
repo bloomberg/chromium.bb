@@ -200,12 +200,17 @@ class MediaRouterUI : public ConstrainedWebDialogUI,
 
   // Callback passed to MediaRouter to receive response to route creation
   // requests.
-  void OnRouteResponseReceived(int route_request_id,
-                               const MediaSink::Id& sink_id,
-                               const RouteRequestResult& result);
+  void OnRouteResponseReceived(
+      int route_request_id,
+      const MediaSink::Id& sink_id,
+      MediaCastMode cast_mode,
+      const base::string16& presentation_request_source_name,
+      const RouteRequestResult& result);
 
   // Creates and sends an issue if route creation timed out.
-  void SendIssueForRouteTimeout();
+  void SendIssueForRouteTimeout(
+      MediaCastMode cast_mode,
+      const base::string16& presentation_request_source_name);
 
   // Initializes the dialog with mirroring sources derived from |initiator|.
   void InitCommon(content::WebContents* initiator);

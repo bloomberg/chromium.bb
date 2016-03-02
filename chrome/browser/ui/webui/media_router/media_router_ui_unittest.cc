@@ -3,11 +3,14 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/media/router/media_route.h"
 #include "chrome/browser/media/router/mock_media_router.h"
 #include "chrome/browser/media/router/route_request_result.h"
+#include "chrome/browser/media/router/test_helper.h"
 #include "chrome/browser/ui/webui/media_router/media_router_ui.h"
 #include "chrome/browser/ui/webui/media_router/media_router_webui_message_handler.h"
+#include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_web_ui.h"
@@ -18,6 +21,7 @@
 #include "extensions/common/value_builder.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/l10n/l10n_util.h"
 
 using testing::_;
 using testing::AnyNumber;
@@ -71,46 +75,63 @@ class MediaRouterUITest : public ::testing::Test {
   scoped_ptr<MediaRouterWebUIMessageHandler> message_handler_;
 };
 
-TEST_F(MediaRouterUITest, RouteRequestTimedOut) {
+TEST_F(MediaRouterUITest, RouteCreationTimeoutForTab) {
   CreateMediaRouterUI(&profile_);
   std::vector<MediaRouteResponseCallback> callbacks;
-  EXPECT_CALL(mock_router_, CreateRoute(_, _, _, _, _, _, _))
+  EXPECT_CALL(
+      mock_router_,
+      CreateRoute(_, _, _, _, _, base::TimeDelta::FromSeconds(60), false))
       .WillOnce(SaveArg<4>(&callbacks));
   media_router_ui_->CreateRoute("sinkId", MediaCastMode::TAB_MIRROR);
 
-  EXPECT_CALL(mock_router_, AddIssue(_));
+  std::string expected_title = l10n_util::GetStringUTF8(
+      IDS_MEDIA_ROUTER_ISSUE_CREATE_ROUTE_TIMEOUT_FOR_TAB);
+  EXPECT_CALL(mock_router_, AddIssue(IssueTitleEquals(expected_title)));
   scoped_ptr<RouteRequestResult> result =
       RouteRequestResult::FromError("Timed out", RouteRequestResult::TIMED_OUT);
   for (const auto& callback : callbacks)
     callback.Run(*result);
 }
 
-TEST_F(MediaRouterUITest, RouteCreationTimeoutForTab) {
-  CreateMediaRouterUI(&profile_);
-  EXPECT_CALL(
-      mock_router_,
-      CreateRoute(_, _, _, _, _, base::TimeDelta::FromSeconds(60), false));
-  media_router_ui_->CreateRoute("sinkId", MediaCastMode::TAB_MIRROR);
-}
-
 TEST_F(MediaRouterUITest, RouteCreationTimeoutForDesktop) {
   CreateMediaRouterUI(&profile_);
+  std::vector<MediaRouteResponseCallback> callbacks;
   EXPECT_CALL(
       mock_router_,
-      CreateRoute(_, _, _, _, _, base::TimeDelta::FromSeconds(120), false));
+      CreateRoute(_, _, _, _, _, base::TimeDelta::FromSeconds(120), false))
+      .WillOnce(SaveArg<4>(&callbacks));
   media_router_ui_->CreateRoute("sinkId", MediaCastMode::DESKTOP_MIRROR);
+
+  std::string expected_title = l10n_util::GetStringUTF8(
+      IDS_MEDIA_ROUTER_ISSUE_CREATE_ROUTE_TIMEOUT_FOR_DESKTOP);
+  EXPECT_CALL(mock_router_, AddIssue(IssueTitleEquals(expected_title)));
+  scoped_ptr<RouteRequestResult> result =
+      RouteRequestResult::FromError("Timed out", RouteRequestResult::TIMED_OUT);
+  for (const auto& callback : callbacks)
+    callback.Run(*result);
 }
 
 TEST_F(MediaRouterUITest, RouteCreationTimeoutForPresentation) {
   CreateMediaRouterUI(&profile_);
-  PresentationRequest presentation_request(
-      RenderFrameHostId(0, 0), "https://fooUrl", GURL("https://frameUrl"));
+  PresentationRequest presentation_request(RenderFrameHostId(0, 0),
+                                           "https://presentationurl.fakeurl",
+                                           GURL("https://frameurl.fakeurl"));
   media_router_ui_->OnDefaultPresentationChanged(presentation_request);
-
+  std::vector<MediaRouteResponseCallback> callbacks;
   EXPECT_CALL(
       mock_router_,
-      CreateRoute(_, _, _, _, _, base::TimeDelta::FromSeconds(20), false));
+      CreateRoute(_, _, _, _, _, base::TimeDelta::FromSeconds(20), false))
+      .WillOnce(SaveArg<4>(&callbacks));
   media_router_ui_->CreateRoute("sinkId", MediaCastMode::DEFAULT);
+
+  std::string expected_title =
+      l10n_util::GetStringFUTF8(IDS_MEDIA_ROUTER_ISSUE_CREATE_ROUTE_TIMEOUT,
+                                base::UTF8ToUTF16("frameurl.fakeurl"));
+  EXPECT_CALL(mock_router_, AddIssue(IssueTitleEquals(expected_title)));
+  scoped_ptr<RouteRequestResult> result =
+      RouteRequestResult::FromError("Timed out", RouteRequestResult::TIMED_OUT);
+  for (const auto& callback : callbacks)
+    callback.Run(*result);
 }
 
 TEST_F(MediaRouterUITest, RouteRequestFromIncognito) {

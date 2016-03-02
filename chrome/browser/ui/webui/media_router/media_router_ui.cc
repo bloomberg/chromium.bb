@@ -389,7 +389,8 @@ bool MediaRouterUI::CreateOrConnectRoute(const MediaSink::Id& sink_id,
   std::vector<MediaRouteResponseCallback> route_response_callbacks;
   route_response_callbacks.push_back(base::Bind(
       &MediaRouterUI::OnRouteResponseReceived, weak_factory_.GetWeakPtr(),
-      current_route_request_id_, sink_id));
+      current_route_request_id_, sink_id, cast_mode,
+      base::UTF8ToUTF16(GetTruncatedPresentationRequestSourceName())));
   if (for_default_source) {
     if (create_session_request_) {
       // |create_session_request_| will be nullptr after this call, as the
@@ -473,9 +474,12 @@ void MediaRouterUI::OnRoutesUpdated(
   if (ui_initialized_) handler_->UpdateRoutes(routes_, joinable_route_ids_);
 }
 
-void MediaRouterUI::OnRouteResponseReceived(int route_request_id,
-                                            const MediaSink::Id& sink_id,
-                                            const RouteRequestResult& result) {
+void MediaRouterUI::OnRouteResponseReceived(
+    int route_request_id,
+    const MediaSink::Id& sink_id,
+    MediaCastMode cast_mode,
+    const base::string16& presentation_request_source_name,
+    const RouteRequestResult& result) {
   DVLOG(1) << "OnRouteResponseReceived";
   // If we receive a new route that we aren't expecting, do nothing.
   if (route_request_id != current_route_request_id_) return;
@@ -490,20 +494,32 @@ void MediaRouterUI::OnRouteResponseReceived(int route_request_id,
   current_route_request_id_ = -1;
 
   if (result.result_code() == RouteRequestResult::TIMED_OUT)
-    SendIssueForRouteTimeout();
+    SendIssueForRouteTimeout(cast_mode, presentation_request_source_name);
 }
 
-void MediaRouterUI::SendIssueForRouteTimeout() {
-  base::string16 host =
-      base::UTF8ToUTF16(GetTruncatedPresentationRequestSourceName());
-
-  // TODO(apacible): Update error messages based on current cast mode
-  // (e.g. desktop).
-  std::string issue_title =
-      host.empty() ? l10n_util::GetStringUTF8(
-                         IDS_MEDIA_ROUTER_ISSUE_CREATE_ROUTE_TIMEOUT_FOR_TAB)
-                   : l10n_util::GetStringFUTF8(
-                         IDS_MEDIA_ROUTER_ISSUE_CREATE_ROUTE_TIMEOUT, host);
+void MediaRouterUI::SendIssueForRouteTimeout(
+    MediaCastMode cast_mode,
+    const base::string16& presentation_request_source_name) {
+  std::string issue_title;
+  switch (cast_mode) {
+    case DEFAULT:
+      DLOG_IF(ERROR, presentation_request_source_name.empty())
+          << "Empty presentation request source name.";
+      issue_title =
+          l10n_util::GetStringFUTF8(IDS_MEDIA_ROUTER_ISSUE_CREATE_ROUTE_TIMEOUT,
+                                    presentation_request_source_name);
+      break;
+    case TAB_MIRROR:
+      issue_title = l10n_util::GetStringUTF8(
+          IDS_MEDIA_ROUTER_ISSUE_CREATE_ROUTE_TIMEOUT_FOR_TAB);
+      break;
+    case DESKTOP_MIRROR:
+      issue_title = l10n_util::GetStringUTF8(
+          IDS_MEDIA_ROUTER_ISSUE_CREATE_ROUTE_TIMEOUT_FOR_DESKTOP);
+      break;
+    default:
+      NOTREACHED();
+  }
 
   Issue issue(issue_title, std::string(),
               IssueAction(IssueAction::TYPE_DISMISS),
