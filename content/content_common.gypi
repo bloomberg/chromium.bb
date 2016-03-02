@@ -46,7 +46,6 @@
     '../ui/gl/gl.gyp:gl',
     '../ui/shell_dialogs/shell_dialogs.gyp:shell_dialogs',
     '../url/url.gyp:url_lib',
-    '../url/ipc/url_ipc.gyp:url_ipc',
     'content.gyp:common_features',
     'content_common_mojo_bindings.gyp:content_common_mojo_bindings',
   ],

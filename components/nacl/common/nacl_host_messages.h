@@ -13,11 +13,11 @@
 #include "components/nacl/common/nacl_types.h"
 #include "components/nacl/common/nacl_types_param_traits.h"
 #include "components/nacl/common/pnacl_types.h"
+#include "content/public/common/common_param_traits.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_platform_file.h"
 #include "url/gurl.h"
-#include "url/ipc/url_param_traits.h"
 
 #define IPC_MESSAGE_START NaClHostMsgStart
 

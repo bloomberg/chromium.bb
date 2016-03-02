@@ -259,7 +259,6 @@
             '../content/content.gyp:content_common',
             '../ipc/ipc.gyp:ipc',
             '../third_party/WebKit/public/blink.gyp:blink_minimal',
-            '../url/ipc/url_ipc.gyp:url_ipc',
             'password_manager_core_common',
           ],
           'include_dirs': [
@@ -282,7 +281,6 @@
             '../content/content.gyp:content_common',
             '../ipc/ipc.gyp:ipc',
             '../third_party/WebKit/public/blink.gyp:blink',
-            '../url/ipc/url_ipc.gyp:url_ipc',
             'password_manager_core_common',
             'password_manager_content_common',
           ],

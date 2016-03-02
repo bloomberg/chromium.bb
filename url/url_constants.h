@@ -5,8 +5,6 @@
 #ifndef URL_URL_CONSTANTS_H_
 #define URL_URL_CONSTANTS_H_
 
-#include <stddef.h>
-
 #include "url/url_export.h"
 
 namespace url {
@@ -31,8 +29,6 @@ URL_EXPORT extern const char kWssScheme[];
 
 // Used to separate a standard scheme and the hostname: "://".
 URL_EXPORT extern const char kStandardSchemeSeparator[];
-
-URL_EXPORT extern const size_t kMaxURLChars;
 
 }  // namespace url
 

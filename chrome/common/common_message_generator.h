@@ -6,14 +6,11 @@
 
 #include "chrome/common/benchmarking_messages.h"
 #include "chrome/common/chrome_utility_messages.h"
-#include "chrome/common/common_param_traits_macros.h"
 #include "chrome/common/mac/app_shim_messages.h"
 #include "chrome/common/prerender_messages.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/safe_browsing/safebrowsing_messages.h"
 #include "chrome/common/tts_messages.h"
-#include "content/public/common/common_param_traits.h"
-#include "content/public/common/common_param_traits_macros.h"
 
 #if defined(ENABLE_EXTENSIONS)
 #include "chrome/common/cast_messages.h"
@@ -36,3 +33,4 @@
 #if defined(ENABLE_WEBRTC)
 #include "chrome/common/media/webrtc_logging_messages.h"
 #endif
+

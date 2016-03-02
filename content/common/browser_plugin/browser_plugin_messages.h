@@ -12,6 +12,7 @@
 #include "content/common/content_param_traits.h"
 #include "content/common/cursors/webcursor.h"
 #include "content/common/edit_command.h"
+#include "content/public/common/common_param_traits.h"
 #include "content/public/common/drop_data.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_macros.h"
@@ -25,6 +26,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/ipc/gfx_param_traits.h"
+#include "url/gurl.h"
 
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT

@@ -36,3 +36,4 @@ namespace IPC {
 namespace IPC {
 #include "chrome/common/common_message_generator.h"
 }  // namespace IPC
+

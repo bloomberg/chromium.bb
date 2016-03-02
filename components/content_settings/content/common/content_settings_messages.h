@@ -5,9 +5,10 @@
 // Multiply-included file, no traditional include guard.
 #include "base/strings/string16.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "content/public/common/common_param_traits.h"
+#include "content/public/common/common_param_traits_macros.h"
 #include "ipc/ipc_message_macros.h"
 #include "url/gurl.h"
-#include "url/ipc/url_param_traits.h"
 
 #define IPC_MESSAGE_START ContentSettingsMsgStart
 

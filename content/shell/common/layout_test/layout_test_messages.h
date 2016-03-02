@@ -6,11 +6,11 @@
 #include <string>
 #include <vector>
 
+#include "content/public/common/common_param_traits.h"
 #include "content/public/common/permission_status.mojom.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_platform_file.h"
 #include "url/gurl.h"
-#include "url/ipc/url_param_traits.h"
 
 #define IPC_MESSAGE_START LayoutTestMsgStart
 

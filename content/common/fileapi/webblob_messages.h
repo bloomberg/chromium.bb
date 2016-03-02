@@ -8,9 +8,9 @@
 #include <stddef.h>
 
 #include "content/common/content_export.h"
+#include "content/public/common/common_param_traits.h"
 #include "ipc/ipc_message_macros.h"
 #include "storage/common/data_element.h"
-#include "url/ipc/url_param_traits.h"
 
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT

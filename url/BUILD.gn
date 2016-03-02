@@ -132,7 +132,6 @@ if (!is_android) {
 
     deps = [
       ":url",
-      "ipc:url_ipc",
       "//base",
       "//base/test:run_all_unittests",
       "//testing/gtest",

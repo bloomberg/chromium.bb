@@ -8,6 +8,7 @@
 #include "content/common/ax_content_node_data.h"
 #include "content/common/content_export.h"
 #include "content/common/view_message_enums.h"
+#include "content/public/common/common_param_traits.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_utils.h"
 #include "ipc/ipc_param_traits.h"

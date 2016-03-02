@@ -180,7 +180,6 @@
 #include "third_party/WebKit/public/web/WebSurroundingText.h"
 #include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
 #include "third_party/WebKit/public/web/WebView.h"
-#include "url/url_constants.h"
 #include "url/url_util.h"
 
 #if defined(ENABLE_PLUGINS)
@@ -3661,7 +3660,7 @@ void RenderFrameImpl::showContextMenu(const blink::WebContextMenuData& data) {
   // in the context menu.
   // TODO(jcivelli): http://crbug.com/45160 This prevents us from saving large
   //                 data encoded images.  We should have a way to save them.
-  if (params.src_url.spec().size() > url::kMaxURLChars)
+  if (params.src_url.spec().size() > kMaxURLChars)
     params.src_url = GURL();
   context_menu_node_ = data.node;
 

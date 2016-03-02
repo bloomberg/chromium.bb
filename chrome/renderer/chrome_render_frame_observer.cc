@@ -12,7 +12,6 @@
 
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/common/chrome_isolated_world_ids.h"
@@ -23,7 +22,6 @@
 #include "chrome/renderer/prerender/prerender_helper.h"
 #include "chrome/renderer/safe_browsing/phishing_classifier_delegate.h"
 #include "components/translate/content/renderer/translate_helper.h"
-#include "content/public/common/ssl_status.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
 #include "extensions/common/constants.h"

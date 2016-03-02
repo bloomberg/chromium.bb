@@ -175,7 +175,6 @@
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/native_widget_types.h"
-#include "url/url_constants.h"
 #include "v8/include/v8.h"
 
 #if defined(OS_ANDROID)
@@ -1897,7 +1896,7 @@ void RenderViewImpl::UpdateTargetURL(const GURL& url,
   } else {
     // URLs larger than |kMaxURLChars| cannot be sent through IPC -
     // see |ParamTraits<GURL>|.
-    if (latest_url.possibly_invalid_spec().size() > url::kMaxURLChars)
+    if (latest_url.possibly_invalid_spec().size() > kMaxURLChars)
       latest_url = GURL();
     Send(new ViewHostMsg_UpdateTargetURL(routing_id(), latest_url));
     target_url_ = latest_url;

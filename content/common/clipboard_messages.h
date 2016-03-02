@@ -10,16 +10,13 @@
 #include <string>
 #include <vector>
 
-#include "build/build_config.h"
 #include "base/memory/shared_memory.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "content/common/clipboard_format.h"
-#include "content/common/content_export.h"
+#include "content/public/common/common_param_traits.h"
 #include "ipc/ipc_message_macros.h"
-#include "ipc/param_traits_macros.h"
 #include "ui/base/clipboard/clipboard.h"
-#include "url/ipc/url_param_traits.h"
 
 // Singly-included section for types and/or struct declarations.
 #ifndef CONTENT_COMMON_CLIPBOARD_MESSAGES_H_

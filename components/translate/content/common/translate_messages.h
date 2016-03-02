@@ -6,9 +6,9 @@
 
 #include "components/translate/core/common/language_detection_details.h"
 #include "components/translate/core/common/translate_errors.h"
+#include "content/public/common/common_param_traits.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_utils.h"
-#include "url/ipc/url_param_traits.h"
 
 #define IPC_MESSAGE_START TranslateMsgStart
 

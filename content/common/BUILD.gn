@@ -170,7 +170,6 @@ source_set("common") {
     "//ui/gfx/ipc",
     "//ui/shell_dialogs",
     "//url",
-    "//url/ipc:url_ipc",
   ]
 
   if (!is_ios) {

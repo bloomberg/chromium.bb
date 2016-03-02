@@ -262,7 +262,6 @@
         '../ui/events/events.gyp:gesture_detection',
         '../ui/gl/gl.gyp:gl',
         '../ui/shell_dialogs/shell_dialogs.gyp:shell_dialogs',
-        '../url/ipc/url_ipc.gyp:url_ipc',
         '../v8/tools/gyp/v8.gyp:v8',
         'android_webview_pak',
         'android_webview_version',

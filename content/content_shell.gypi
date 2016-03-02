@@ -71,7 +71,6 @@
         '../ui/gfx/ipc/gfx_ipc.gyp:gfx_ipc',
         '../ui/gl/gl.gyp:gl',
         '../url/url.gyp:url_lib',
-        '../url/ipc/url_ipc.gyp:url_ipc',
         '../v8/tools/gyp/v8.gyp:v8',
       ],
       'include_dirs': [

@@ -68,7 +68,6 @@
         '../url/url.gyp:url_lib',
         '../third_party/boringssl/boringssl.gyp:boringssl',
         '../third_party/libxml/libxml.gyp:libxml',
-        '../url/ipc/url_ipc.gyp:url_ipc',
         'common/api/api.gyp:extensions_api',
         'extensions_resources.gyp:extensions_resources',
         'extensions_strings.gyp:extensions_strings',
@@ -200,13 +199,9 @@
       # GN version: //extensions/renderer
       'target_name': 'extensions_renderer',
       'type': 'static_library',
-
-      'defines': [ 'URL_PARAM_TRAITS_FIX' ],
-
       'dependencies': [
         'extensions_resources.gyp:extensions_resources',
         '../components/components.gyp:guest_view_renderer',
-        '../content/content.gyp:content_common',
         '../content/content.gyp:content_resources',
         '../gin/gin.gyp:gin',
         '../mojo/mojo_public.gyp:mojo_js_bindings',

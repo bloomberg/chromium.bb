@@ -51,7 +51,6 @@
 #include "net/test/cert_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "url/url_constants.h"
 
 namespace content {
 namespace {
@@ -489,7 +488,7 @@ TEST_F(WebContentsImplTest, SimpleNavigation) {
 TEST_F(WebContentsImplTest, NavigateToExcessivelyLongURL) {
   // Construct a URL that's kMaxURLChars + 1 long of all 'a's.
   const GURL url(std::string("http://example.org/").append(
-      url::kMaxURLChars + 1, 'a'));
+      kMaxURLChars + 1, 'a'));
 
   controller().LoadURL(
       url, Referrer(), ui::PAGE_TRANSITION_GENERATED, std::string());

@@ -325,7 +325,6 @@
             '../ui/gfx/gfx.gyp:gfx',
             '../ui/gfx/ipc/gfx_ipc.gyp:gfx_ipc',
             '../url/url.gyp:url_lib',
-            '../url/ipc/url_ipc.gyp:url_ipc',
           ],
           'include_dirs': [
             '..',

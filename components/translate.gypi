@@ -172,8 +172,8 @@
             'translate_core_common',
             'translate_core_language_detection',
             '../base/base.gyp:base',
+            '../content/content.gyp:content_common',
             '../ipc/ipc.gyp:ipc',
-            '../url/ipc/url_ipc.gyp:url_ipc',
           ],
           'include_dirs': [
             '..',

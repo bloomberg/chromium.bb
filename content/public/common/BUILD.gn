@@ -88,7 +88,6 @@ source_set("common_sources") {
   public_deps = [
     "//content/common",
     "//mojo/public/cpp/bindings",
-    "//url/ipc:url_ipc",
   ]
   deps = [
     "//net",

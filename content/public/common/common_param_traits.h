@@ -25,7 +25,7 @@
 #include "ipc/ipc_message_utils.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/surface/transport_dib.h"
-#include "url/ipc/url_param_traits.h"
+#include "url/gurl.h"
 #include "url/origin.h"
 
 #if defined(OS_WIN)
@@ -43,6 +43,16 @@ class IPEndPoint;
 }
 
 namespace IPC {
+
+template <>
+struct CONTENT_EXPORT ParamTraits<GURL> {
+  typedef GURL param_type;
+  static void Write(base::Pickle* m, const param_type& p);
+  static bool Read(const base::Pickle* m,
+                   base::PickleIterator* iter,
+                   param_type* p);
+  static void Log(const param_type& p, std::string* l);
+};
 
 template <>
 struct CONTENT_EXPORT ParamTraits<url::Origin> {
