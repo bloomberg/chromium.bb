@@ -33,6 +33,7 @@
     'remoting_client.gypi',
     'remoting_host.gypi',
     'remoting_host_srcs.gypi',
+    'remoting_ios.gypi',
     'remoting_key_tester.gypi',
     'remoting_locales.gypi',
     'remoting_options.gypi',
