@@ -50,8 +50,9 @@ TEST_F('MediaRouterElementsBrowserTest', 'MediaRouterElementsTestIssueBanner',
   mocha.run();
 });
 
+// See bugs.chromium.org issue 591227
 TEST_F('MediaRouterElementsBrowserTest',
-    'MediaRouterElementsTestMediaRouterContainer',
+    'DISABLED_MediaRouterElementsTestMediaRouterContainer',
     function() {
   // Register mocha tests for the container.
   media_router_container.registerTests();
