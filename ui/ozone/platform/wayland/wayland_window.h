@@ -23,8 +23,7 @@ class WaylandWindow : public PlatformWindow {
 
   bool Initialize();
 
-  wl_surface* GetSurface();
-  gfx::AcceleratedWidget GetWidget();
+  wl_surface* surface() { return surface_.get(); }
 
   // Apply the bounds specified in the most recent configure event. This should
   // be called after processing all pending events in the wayland connection.

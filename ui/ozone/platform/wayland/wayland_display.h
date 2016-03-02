@@ -33,8 +33,8 @@ class WaylandDisplay : public PlatformEventSource,
   xdg_shell* shell() { return shell_.get(); }
 
   WaylandWindow* GetWindow(gfx::AcceleratedWidget widget);
-  void AddWindow(WaylandWindow* window);
-  void RemoveWindow(WaylandWindow* window);
+  void AddWindow(gfx::AcceleratedWidget widget, WaylandWindow* window);
+  void RemoveWindow(gfx::AcceleratedWidget widget);
 
  private:
   // PlatformEventSource

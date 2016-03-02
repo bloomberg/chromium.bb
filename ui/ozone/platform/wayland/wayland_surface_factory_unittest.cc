@@ -23,17 +23,21 @@ class WaylandSurfaceFactoryTest : public WaylandTest {
 
   ~WaylandSurfaceFactoryTest() override {}
 
+  void SetUp() override {
+    WaylandTest::SetUp();
+    canvas = surface_factory.CreateCanvasForWidget(widget);
+    ASSERT_TRUE(canvas);
+  }
+
  protected:
   WaylandSurfaceFactory surface_factory;
+  scoped_ptr<SurfaceOzoneCanvas> canvas;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WaylandSurfaceFactoryTest);
 };
 
 TEST_F(WaylandSurfaceFactoryTest, Canvas) {
-  auto canvas = surface_factory.CreateCanvasForWidget(window.GetWidget());
-  ASSERT_TRUE(canvas);
-
   canvas->GetSurface();
   canvas->PresentCanvas(gfx::Rect(5, 10, 20, 15));
 
@@ -56,9 +60,6 @@ TEST_F(WaylandSurfaceFactoryTest, Canvas) {
 }
 
 TEST_F(WaylandSurfaceFactoryTest, CanvasResize) {
-  auto canvas = surface_factory.CreateCanvasForWidget(window.GetWidget());
-  ASSERT_TRUE(canvas);
-
   canvas->GetSurface();
   canvas->ResizeCanvas(gfx::Size(100, 50));
   canvas->GetSurface();

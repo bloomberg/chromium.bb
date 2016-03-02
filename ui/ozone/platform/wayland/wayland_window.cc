@@ -19,7 +19,7 @@ WaylandWindow::WaylandWindow(PlatformWindowDelegate* delegate,
 
 WaylandWindow::~WaylandWindow() {
   if (xdg_surface_) {
-    display_->RemoveWindow(this);
+    display_->RemoveWindow(surface_.id());
   }
 }
 
@@ -42,20 +42,10 @@ bool WaylandWindow::Initialize() {
   }
   xdg_surface_add_listener(xdg_surface_.get(), &xdg_surface_listener, this);
 
-  display_->AddWindow(this);
+  display_->AddWindow(surface_.id(), this);
   delegate_->OnAcceleratedWidgetAvailable(surface_.id(), 1.f);
 
   return true;
-}
-
-wl_surface* WaylandWindow::GetSurface() {
-  DCHECK(surface_);
-  return surface_.get();
-}
-
-gfx::AcceleratedWidget WaylandWindow::GetWidget() {
-  DCHECK(surface_);
-  return surface_.id();
 }
 
 void WaylandWindow::ApplyPendingBounds() {

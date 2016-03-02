@@ -70,12 +70,13 @@ WaylandWindow* WaylandDisplay::GetWindow(gfx::AcceleratedWidget widget) {
   return it == window_map_.end() ? nullptr : it->second;
 }
 
-void WaylandDisplay::AddWindow(WaylandWindow* window) {
-  window_map_[window->GetWidget()] = window;
+void WaylandDisplay::AddWindow(gfx::AcceleratedWidget widget,
+                               WaylandWindow* window) {
+  window_map_[widget] = window;
 }
 
-void WaylandDisplay::RemoveWindow(WaylandWindow* window) {
-  window_map_.erase(window->GetWidget());
+void WaylandDisplay::RemoveWindow(gfx::AcceleratedWidget widget) {
+  window_map_.erase(widget);
 }
 
 void WaylandDisplay::OnDispatcherListChanged() {

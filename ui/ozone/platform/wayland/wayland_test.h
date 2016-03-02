@@ -35,6 +35,7 @@ class WaylandTest : public testing::Test {
   WaylandDisplay display;
   MockPlatformWindowDelegate delegate;
   WaylandWindow window;
+  gfx::AcceleratedWidget widget = gfx::kNullAcceleratedWidget;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WaylandTest);

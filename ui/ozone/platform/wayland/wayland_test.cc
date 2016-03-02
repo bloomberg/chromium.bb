@@ -4,6 +4,9 @@
 
 #include "ui/ozone/platform/wayland/wayland_test.h"
 
+using ::testing::SaveArg;
+using ::testing::_;
+
 namespace ui {
 
 WaylandTest::WaylandTest()
@@ -14,12 +17,15 @@ WaylandTest::~WaylandTest() {}
 void WaylandTest::SetUp() {
   ASSERT_TRUE(server.Start());
   ASSERT_TRUE(display.Initialize());
+  EXPECT_CALL(delegate, OnAcceleratedWidgetAvailable(_, _))
+      .WillOnce(SaveArg<0>(&widget));
   ASSERT_TRUE(window.Initialize());
+  ASSERT_NE(widget, gfx::kNullAcceleratedWidget);
   wl_display_roundtrip(display.display());
 
   server.Pause();
 
-  surface = server.GetObject<wl::MockSurface>(window.GetWidget());
+  surface = server.GetObject<wl::MockSurface>(widget);
   ASSERT_TRUE(surface);
   initialized = true;
 }
