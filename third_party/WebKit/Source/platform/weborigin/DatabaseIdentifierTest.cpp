@@ -57,6 +57,9 @@ TEST(DatabaseIdentifierTest, CreateIdentifierFromSecurityOrigin)
         {"data", "", 0, "__0"},
         {"about", "blank", 0, "__0"},
         {"non-standard", "foobar.com", 0, "non-standard__0"},
+        {"http", "[::1]", 0, "http_[__1]_0"},
+        {"http", "[3ffe:2a00:100:7031::1]", 0, "http_[3ffe_2a00_100_7031__1]_0"},
+        {"http", "[::ffff:8190:3426]", 0, "http_[__ffff_8190_3426]_0"},
     };
 
     for (size_t i = 0; i < WTF_ARRAY_LENGTH(cases); ++i) {

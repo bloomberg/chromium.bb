@@ -40,6 +40,36 @@
 
 namespace blink {
 
+namespace {
+
+String escapeIPv6Hostname(const String& hostname)
+{
+    // Shortest IPv6 hostname would be "[::1]".
+    if (hostname.length() < 5 || hostname[0] != '[' || hostname[hostname.length() - 1] != ']')
+        return hostname;
+
+    // Should be canonicalized before it gets this far.
+    // i.e. "[::ffff:8190:3426]" not "[::FFFF:129.144.52.38]"
+    ASSERT(!hostname.contains('.'));
+    ASSERT(hostname == hostname.lower());
+
+    String copy = hostname;
+    copy.replace(':', '_');
+    return copy;
+}
+
+String unescapeIPv6Hostname(const String& hostname)
+{
+    if (hostname.length() < 5 || hostname[0] != '[' || hostname[hostname.length() - 1] != ']')
+        return hostname;
+
+    String copy = hostname;
+    copy.replace('_', ':');
+    return copy;
+}
+
+} // namespace
+
 const int maxAllowedPort = 65535;
 
 static const char separatorCharacter = '_';
@@ -48,6 +78,16 @@ PassRefPtr<SecurityOrigin> createSecurityOriginFromDatabaseIdentifier(const Stri
 {
     if (!databaseIdentifier.containsOnlyASCII())
         return SecurityOrigin::createUnique();
+
+    // Match restrictions in storage/common/database/database_identifier.cc
+    // TODO(jsbell): Eliminate duplicate implementations.
+    if (databaseIdentifier.contains(".."))
+        return SecurityOrigin::createUnique();
+    char forbidden[] = {'\\', '/', ':', '\0'};
+    for (auto c : forbidden) {
+        if (databaseIdentifier.contains(c))
+            return SecurityOrigin::createUnique();
+    }
 
     // Make sure there's a first separator
     size_t separator1 = databaseIdentifier.find(separatorCharacter);
@@ -76,7 +116,7 @@ PassRefPtr<SecurityOrigin> createSecurityOriginFromDatabaseIdentifier(const Stri
 
     // Split out the 3 sections of data
     String protocol = databaseIdentifier.substring(0, separator1);
-    String host = databaseIdentifier.substring(separator1 + 1, separator2 - separator1 - 1);
+    String host = unescapeIPv6Hostname(databaseIdentifier.substring(separator1 + 1, separator2 - separator1 - 1));
 
     // Make sure the components match their canonical representation so we are sure we're round tripping correctly.
     KURL url(KURL(), protocol + "://" + host + ":" + String::number(port) + "/");
@@ -89,7 +129,7 @@ PassRefPtr<SecurityOrigin> createSecurityOriginFromDatabaseIdentifier(const Stri
 String createDatabaseIdentifierFromSecurityOrigin(const SecurityOrigin* securityOrigin)
 {
     String separatorString(&separatorCharacter, 1);
-    return securityOrigin->protocol() + separatorString + securityOrigin->host() + separatorString + String::number(securityOrigin->port());
+    return securityOrigin->protocol() + separatorString + escapeIPv6Hostname(securityOrigin->host()) + separatorString + String::number(securityOrigin->port());
 }
 
 } // namespace blink

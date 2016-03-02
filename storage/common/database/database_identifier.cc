@@ -13,6 +13,38 @@
 
 namespace storage {
 
+namespace {
+
+
+// If the passed string is of the form "[1::2:3]", returns "[1__2_3]".
+std::string EscapeIPv6Hostname(const std::string& hostname) {
+  // Shortest IPv6 hostname would be "[::1]".
+  if (hostname.length() < 5 || hostname.front() != '[' ||
+      hostname.back() != ']')
+    return hostname;
+
+  // Should be canonicalized before it gets this far.
+  // i.e. "[::ffff:8190:3426]" not "[::FFFF:129.144.52.38]"
+  DCHECK(base::ContainsOnlyChars(hostname, "[]:0123456789abcdef"));
+
+  std::string copy = hostname;
+  base::ReplaceChars(hostname, ":", "_", &copy);
+  return copy;
+}
+
+// If the passed string is of the form "[1__2_3]", returns "[1::2:3]".
+std::string UnescapeIPv6Hostname(const std::string& hostname) {
+  if (hostname.length() < 5 || hostname.front() != '[' ||
+      hostname.back() != ']')
+    return hostname;
+
+  std::string copy = hostname;
+  base::ReplaceChars(hostname, "_", ":", &copy);
+  return copy;
+}
+
+}  // namespace
+
 // static
 std::string GetIdentifierFromOrigin(const GURL& origin) {
   return DatabaseIdentifier::CreateFromOrigin(origin).ToString();
@@ -93,8 +125,10 @@ DatabaseIdentifier DatabaseIdentifier::Parse(const std::string& identifier) {
   if (!base::StringToInt(port_str, &port) || port < 0 || port >= 1 << 16)
     return DatabaseIdentifier();
 
-  std::string hostname(identifier.data() + first_underscore + 1,
-                       last_underscore - first_underscore - 1);
+  std::string hostname =
+      UnescapeIPv6Hostname(std::string(identifier.data() + first_underscore + 1,
+                                       last_underscore - first_underscore - 1));
+
   GURL url(scheme + "://" + hostname + "/");
 
   if (!url.IsStandard())
@@ -132,7 +166,8 @@ std::string DatabaseIdentifier::ToString() const {
     return "file__0";
   if (is_unique_)
     return "__0";
-  return scheme_ + "_" + hostname_ + "_" + base::IntToString(port_);
+  return scheme_ + "_" + EscapeIPv6Hostname(hostname_) + "_" +
+         base::IntToString(port_);
 }
 
 GURL DatabaseIdentifier::ToOrigin() const {
