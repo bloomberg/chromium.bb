@@ -10,7 +10,6 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
 class PrefRegistrySimple;
@@ -40,24 +39,6 @@ class NewTabPageHandler : public content::WebUIMessageHandler,
   // WebUIMessageHandler implementation.
   void RegisterMessages() override;
 
-  // Callback for "notificationPromoClosed". No arguments.
-  void HandleNotificationPromoClosed(const base::ListValue* args);
-
-  // Callback for "notificationPromoViewed". No arguments.
-  void HandleNotificationPromoViewed(const base::ListValue* args);
-
-  // Callback for "notificationPromoLinkClicked". No arguments.
-  void HandleNotificationPromoLinkClicked(const base::ListValue* args);
-
-  // Callback for "bubblePromoClosed". No arguments.
-  void HandleBubblePromoClosed(const base::ListValue* args);
-
-  // Callback for "bubblePromoViewed". No arguments.
-  void HandleBubblePromoViewed(const base::ListValue* args);
-
-  // Callback for "bubblePromoLinkClicked". No arguments.
-  void HandleBubblePromoLinkClicked(const base::ListValue* args);
-
   // Callback for "pageSelected".
   void HandlePageSelected(const base::ListValue* args);
 
@@ -76,9 +57,6 @@ class NewTabPageHandler : public content::WebUIMessageHandler,
   };
   static const int kHistogramEnumerationMax =
       (LAST_PAGE_ID >> kPageIdOffset) + 1;
-
-  // Helper to send out promo resource change notification.
-  void Notify(chrome::NotificationType notification_type);
 
   DISALLOW_COPY_AND_ASSIGN(NewTabPageHandler);
 };

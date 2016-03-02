@@ -36,7 +36,6 @@
 #include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/signin_manager.h"
-#include "components/web_resource/promo_resource_service.h"
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"

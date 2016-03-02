@@ -11,7 +11,6 @@
 #include "base/strings/string16.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_change_registrar.h"
-#include "components/web_resource/promo_resource_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -92,8 +91,6 @@ class NTPResourceCache : public content::NotificationObserver,
   content::NotificationRegistrar registrar_;
   PrefChangeRegistrar profile_pref_change_registrar_;
   PrefChangeRegistrar local_state_pref_change_registrar_;
-  scoped_ptr<web_resource::PromoResourceService::StateChangedSubscription>
-      promo_resource_subscription_;
 
   // Set based on platform_util::IsSwipeTrackingFromScrollEventsEnabled.
   bool is_swipe_tracking_from_scroll_events_enabled_;
