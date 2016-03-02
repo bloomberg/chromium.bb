@@ -3333,8 +3333,7 @@
    Memcheck:Leak
    fun:malloc
    fun:_ZN3WTF10Partitions10fastMallocEmPKc
-   fun:_ZN5blink21ContextFeaturesClientnwEm
-   fun:_ZN5blink21ContextFeaturesClient5emptyEv
+   ...
    fun:_ZN5blink15ContextFeatures13defaultSwitchEv
    fun:_ZN5blink8DocumentC2ERKNS_12DocumentInitEh
    fun:_ZN5blink12HTMLDocumentC1ERKNS_12DocumentInitEh
