@@ -139,9 +139,12 @@ void ResourceRequestDetector::OnResourceRequest(
 
   const content::ResourceRequestInfo* request_info =
       content::ResourceRequestInfo::ForRequest(request);
-  if (request_info->GetResourceType() != content::RESOURCE_TYPE_MAIN_FRAME) {
-    int render_process_id;
-    int render_frame_id;
+  content::ResourceType resource_type = request_info->GetResourceType();
+  if (resource_type == content::RESOURCE_TYPE_SUB_FRAME ||
+      resource_type == content::RESOURCE_TYPE_SCRIPT ||
+      resource_type == content::RESOURCE_TYPE_OBJECT) {
+    int render_process_id = 0;
+    int render_frame_id = 0;
     content::ResourceRequestInfo::GetRenderFrameForRequest(
         request, &render_process_id, &render_frame_id);
     new ResourceRequestDetectorClient(

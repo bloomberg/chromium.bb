@@ -47,8 +47,6 @@ class ResourceRequestDetector {
 
   scoped_ptr<IncidentReceiver> incident_receiver_;
   scoped_refptr<SafeBrowsingDatabaseManager> database_manager_;
-  base::hash_set<std::string> script_set_;
-  base::hash_set<std::string> domain_set_;
   bool allow_null_profile_for_testing_;
 
   base::WeakPtrFactory<ResourceRequestDetector> weak_ptr_factory_;

@@ -211,8 +211,9 @@ TEST_F(ResourceRequestDetectorTest, EventAddedForSupportedSchemes) {
 
 TEST_F(ResourceRequestDetectorTest, EventAddedForSupportedResourceTypes) {
   content::ResourceType supported_types[] = {
-    content::RESOURCE_TYPE_IMAGE, content::RESOURCE_TYPE_SCRIPT,
+    content::RESOURCE_TYPE_SCRIPT,
     content::RESOURCE_TYPE_SUB_FRAME,
+    content::RESOURCE_TYPE_OBJECT,
   };
   const std::string url = "http://www.example.com/";
   const std::string digest = "dummydigest";
