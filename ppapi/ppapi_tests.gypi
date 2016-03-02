@@ -128,6 +128,7 @@
         'tests/blink_test_plugin.cc',
       ],
       'dependencies': [
+        '../base/base.gyp:base',
         'ppapi.gyp:ppapi_cpp',
         'ppapi_internal.gyp:ppapi_shared',
       ],

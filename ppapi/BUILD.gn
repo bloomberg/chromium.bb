@@ -91,6 +91,7 @@ loadable_module("blink_test_plugin") {
   ]
 
   deps = [
+    "//base",
     "//build/config/sanitizers:deps",
     "//ppapi/cpp",
     "//ppapi/shared_impl",

@@ -25,7 +25,7 @@ skip_child_includes = [
 ]
 specific_include_rules = {
   # The Blink test plugins use //base.
-  "blink_deprecated_test_plugin\.cc": [
+  "blink_(deprecated_)?test_plugin\.cc": [
     "+base",
   ],
 

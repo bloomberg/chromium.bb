@@ -1,19 +1,22 @@
 <html>
+<head>
+<script src="../resources/js-test.js"></script>
 <script>
-if (window.testRunner) {
-    testRunner.waitUntilDone();
-    testRunner.dumpAsText();
+var jsTestIsAsync = true;
+var state = "initial";
+
+function startTest() {
+    // Wait for after the load event so the frame gets a new history when navigated.
+    setTimeout(continueTest, 0);
 }
 
-state = "initial";
-
-function next() {
+function continueTest() {
     switch (state) {
     case "initial":
         state = "loading-plugin";
-        var frame = document.getElementsByTagName("iframe")[0]
-        frame.addEventListener("load", next, false);
-        frame.src = "data:application/x-webkit-test-netscape,alertwhenloaded";
+        var frame = document.querySelector("iframe");
+        frame.addEventListener("load", continueTest);
+        frame.src = "data:application/x-blink-test-plugin,";
         break;
     case "loading-plugin":
         state = "moving-backward";
@@ -25,19 +28,16 @@ function next() {
         break;
     case "moving-forward":
         state = "done";
-        testRunner.notifyDone();
+        finishJSTest();
         break;
     default:
         alert('FAIL');
         break;
     }
 }
-
-window.onload = function() {
-    // We need to wait for after the load event so that we get a new history
-    // entry when navigating the frame.
-    setTimeout(next, 0);
-}
 </script>
+</head>
+<body onload="startTest()">
 <iframe src="data:text/html,Waiting..."></iframe>
+</body>
 </html>

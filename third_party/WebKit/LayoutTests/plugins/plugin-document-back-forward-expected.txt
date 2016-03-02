@@ -1,3 +1,6 @@
-ALERT: Plugin Loaded!
-ALERT: Plugin Loaded!
+CONSOLE MESSAGE: Blink Test Plugin: initializing
+CONSOLE MESSAGE: Blink Test Plugin: initializing
+PASS successfullyParsed is true
+
+TEST COMPLETE
 

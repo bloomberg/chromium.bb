@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdarg.h>
 #include <stdint.h>
 #include <string.h>
 
 #include <sstream>
 #include <utility>
 
+#include "base/strings/stringprintf.h"
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/graphics_2d.h"
 #include "ppapi/cpp/image_data.h"
@@ -37,13 +39,19 @@ class BlinkTestInstance : public pp::Instance {
   ~BlinkTestInstance() override {}
 
   bool Init(uint32_t argc, const char* argn[], const char* argv[]) {
+    // It's hard / impossible for some layout tests to listen for a message from
+    // the plugin. For example, a plugin in PluginDocuments is unreachable from
+    // a cross-origin parent frame, since the actual plugin element is in a
+    // different Document. To help with this case, the plugin logs a message
+    // that can be captured indirectly in test expectations.
+    LogMessage("initializing");
     // Used by layout tests that want to inspect the args the plugin is
     // instantiated with.
     for (uint32_t i = 0; i < argc; ++i) {
       if (!strcmp(argn[i], "logargs")) {
         LogMessage("plugin args:");
         for (uint32_t j = 0; j < argc; ++j)
-          LogMessage("  name = ", argn[j], ", value = ", argv[j]);
+          LogMessage("  name = %s, value = %s", argn[j], argv[j]);
       }
     }
     return RequestFilteringInputEvents(PP_INPUTEVENT_CLASS_MOUSE |
@@ -62,7 +70,7 @@ class BlinkTestInstance : public pp::Instance {
   }
 
   void DidChangeFocus(bool has_focus) override {
-    LogMessage("DidChangeFocus(", has_focus, ")");
+    LogMessage("DidChangeFocus(%s)", has_focus ? "true" : "false");
   }
 
   bool HandleInputEvent(const pp::InputEvent& event) override {
@@ -87,7 +95,7 @@ class BlinkTestInstance : public pp::Instance {
         // Just swallow these events without any logging.
         return true;
       default:
-        LogMessage("Unexpected input event with type = ", event.GetType());
+        LogMessage("Unexpected input event with type = %d", event.GetType());
         return false;
     }
     return true;
@@ -130,39 +138,24 @@ class BlinkTestInstance : public pp::Instance {
     }
   }
 
-  void LogMouseEvent(const std::string& type, const pp::InputEvent& event) {
+  void LogMouseEvent(const char* type, const pp::InputEvent& event) {
     pp::MouseInputEvent mouse_event(event);
     pp::Point mouse_position = mouse_event.GetPosition();
-    LogMessage("Mouse", type, " at (", mouse_position.x(), ",",
-               mouse_position.y(), ")");
+    LogMessage("Mouse%s at (%d,%d)", type, mouse_position.x(),
+               mouse_position.y());
   }
 
-  void LogKeyboardEvent(const std::string& type, const pp::InputEvent& event) {
+  void LogKeyboardEvent(const char* type, const pp::InputEvent& event) {
     pp::KeyboardInputEvent keyboard_event(event);
-    LogMessage("Key", type, " '", keyboard_event.GetCode().AsString(), "'");
+    LogMessage("Key%s '%s'", type, keyboard_event.GetCode().AsString().c_str());
   }
 
-  // Template magic to cover the lack of base::StringPrintf.
-  template <typename... Args>
-  void LogMessage(const Args&... args) {
-    std::ostringstream ss;
-    ss << std::boolalpha;
-    LogMessageHelper(&ss, args...);
-  }
-
-  template <typename Arg, typename... Args>
-  void LogMessageHelper(std::ostringstream* os,
-                        const Arg& arg,
-                        const Args&... args) {
-    *os << arg;
-    LogMessageHelper(os, args...);
-  }
-
-  template <typename Arg>
-  void LogMessageHelper(std::ostringstream* os, const Arg& arg) {
-    *os << arg;
+  void LogMessage(const char* format...) {
+    va_list args;
+    va_start(args, format);
     LogToConsoleWithSource(PP_LOGLEVEL_LOG, pp::Var("Blink Test Plugin"),
-                           pp::Var(os->str()));
+                           pp::Var(base::StringPrintV(format, args)));
+    va_end(args);
   }
 
   bool first_paint_;
