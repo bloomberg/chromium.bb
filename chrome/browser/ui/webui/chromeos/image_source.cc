@@ -38,8 +38,8 @@ void ImageLoaded(
     const user_manager::UserImage& user_image) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  if (user_image.has_raw_image())
-    got_data_callback.Run(new base::RefCountedBytes(user_image.raw_image()));
+  if (user_image.has_image_bytes())
+    got_data_callback.Run(new base::RefCountedBytes(user_image.image_bytes()));
   else
     got_data_callback.Run(NULL);
 }

@@ -16,7 +16,7 @@ namespace {
 const int kDefaultEncodingQuality = 90;
 
 bool EncodeImageSkia(const gfx::ImageSkia& image,
-                     std::vector<unsigned char>* output) {
+                     UserImage::Bytes* output) {
   TRACE_EVENT2("oobe", "EncodeImageSkia",
                "width", image.width(), "height", image.height());
   if (image.isNull())
@@ -36,9 +36,9 @@ bool EncodeImageSkia(const gfx::ImageSkia& image,
 
 // static
 UserImage UserImage::CreateAndEncode(const gfx::ImageSkia& image) {
-  RawImage raw_image;
-  if (EncodeImageSkia(image, &raw_image)) {
-    UserImage result(image, raw_image);
+  Bytes image_bytes;
+  if (EncodeImageSkia(image, &image_bytes)) {
+    UserImage result(image, image_bytes);
     result.MarkAsSafe();
     return result;
   }
@@ -46,30 +46,26 @@ UserImage UserImage::CreateAndEncode(const gfx::ImageSkia& image) {
 }
 
 UserImage::UserImage()
-    : has_raw_image_(false),
+    : has_image_bytes_(false),
       is_safe_format_(false) {
 }
 
 UserImage::UserImage(const gfx::ImageSkia& image)
     : image_(image),
-      has_raw_image_(false),
+      has_image_bytes_(false),
       is_safe_format_(false) {
 }
 
 UserImage::UserImage(const gfx::ImageSkia& image,
-                     const RawImage& raw_image)
+                     const Bytes& image_bytes)
     : image_(image),
-      has_raw_image_(false),
+      has_image_bytes_(false),
       is_safe_format_(false) {
-  has_raw_image_ = true;
-  raw_image_ = raw_image;
+  has_image_bytes_ = true;
+  image_bytes_ = image_bytes;
 }
 
 UserImage::~UserImage() {}
-
-void UserImage::DiscardRawImage() {
-  RawImage().swap(raw_image_);  // Clear |raw_image_|.
-}
 
 void UserImage::MarkAsSafe() {
   is_safe_format_ = true;

@@ -238,7 +238,7 @@ void User::SetImage(const UserImage& user_image, int image_index) {
   image_index_ = image_index;
   image_is_stub_ = false;
   image_is_loading_ = false;
-  DCHECK(HasDefaultImage() || user_image.has_raw_image());
+  DCHECK(HasDefaultImage() || user_image.has_image_bytes());
 }
 
 void User::SetImageURL(const GURL& image_url) {

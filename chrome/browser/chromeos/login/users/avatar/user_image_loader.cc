@@ -90,7 +90,7 @@ class UserImageRequest : public ImageDecoder::ImageRequest {
 
  private:
   const ImageInfo image_info_;
-  std::vector<unsigned char> image_data_;
+  const user_manager::UserImage::Bytes image_data_;
   scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
 
   // This should be the last member.

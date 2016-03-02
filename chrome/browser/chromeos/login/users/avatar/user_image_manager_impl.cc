@@ -165,15 +165,15 @@ int ImageIndexToHistogramIndex(int image_index) {
 bool SaveImage(const user_manager::UserImage& user_image,
                const base::FilePath& image_path) {
   user_manager::UserImage safe_image;
-  const user_manager::UserImage::RawImage* encoded_image = NULL;
+  const user_manager::UserImage::Bytes* encoded_image = NULL;
   if (!user_image.is_safe_format()) {
     safe_image = user_manager::UserImage::CreateAndEncode(user_image.image());
-    encoded_image = &safe_image.raw_image();
+    encoded_image = &safe_image.image_bytes();
     UMA_HISTOGRAM_MEMORY_KB("UserImage.RecodedJpegSize", encoded_image->size());
-  } else if (user_image.has_raw_image()) {
-    encoded_image = &user_image.raw_image();
+  } else if (user_image.has_image_bytes()) {
+    encoded_image = &user_image.image_bytes();
   } else {
-    NOTREACHED() << "Raw image missing.";
+    NOTREACHED() << "image data bytes missing.";
     return false;
   }
 

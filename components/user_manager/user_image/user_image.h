@@ -15,43 +15,45 @@
 
 namespace user_manager {
 
-// Wrapper class storing a still image and it's raw representation.  Could be
-// used for storing profile images and user wallpapers.
+// Wrapper class storing a still image and its bytes representation for
+// WebUI in a web-compatible format such as JPEG. Could be used for storing
+// profile images and user wallpapers.
 class USER_MANAGER_EXPORT UserImage {
  public:
+  // Used to store bytes representation for WebUI.
   // TODO(ivankr): replace with RefCountedMemory to prevent copying.
-  typedef std::vector<unsigned char> RawImage;
+  typedef std::vector<unsigned char> Bytes;
 
-  // Creates a new instance from a given still frame and tries to encode raw
-  // representation for it.
+  // Creates a new instance from a given still frame and tries to encode it
+  // to bytes representation for WebUI.
   // TODO(ivankr): remove eventually.
   static UserImage CreateAndEncode(const gfx::ImageSkia& image);
 
-  // Create instance with an empty still frame and no raw data.
+  // Create instance with an empty still frame and no bytes
+  // representation for WebUI.
   UserImage();
 
-  // Creates a new instance from a given still frame without any raw data.
+  // Creates a new instance from a given still frame without any bytes
+  // representation for WebUI.
   explicit UserImage(const gfx::ImageSkia& image);
 
-  // Creates a new instance from a given still frame and raw representation.
-  UserImage(const gfx::ImageSkia& image, const RawImage& raw_image);
+  // Creates a new instance from a given still frame and bytes
+  // representation for WebUI.
+  UserImage(const gfx::ImageSkia& image, const Bytes& image_bytes);
 
   virtual ~UserImage();
 
   const gfx::ImageSkia& image() const { return image_; }
 
-  // Optional raw representation of the still image.
-  bool has_raw_image() const { return has_raw_image_; }
-  const RawImage& raw_image() const { return raw_image_; }
-
-  // Discards the stored raw image, freeing used memory.
-  void DiscardRawImage();
+  // Optional bytes representation of the still image for WebUI.
+  bool has_image_bytes() const { return has_image_bytes_; }
+  const Bytes& image_bytes() const { return image_bytes_; }
 
   // URL from which this image was originally downloaded, if any.
   void set_url(const GURL& url) { url_ = url; }
   GURL url() const { return url_; }
 
-  // Whether |raw_image| contains data in format that is considered safe to
+  // Whether |image_bytes| contains data in format that is considered safe to
   // decode in sensitive environment (on Login screen).
   bool is_safe_format() const { return is_safe_format_; }
   void MarkAsSafe();
@@ -63,8 +65,8 @@ class USER_MANAGER_EXPORT UserImage {
 
  private:
   gfx::ImageSkia image_;
-  bool has_raw_image_;
-  RawImage raw_image_;
+  bool has_image_bytes_;
+  Bytes image_bytes_;
   GURL url_;
 
   // If image was loaded from the local file, file path is stored here.

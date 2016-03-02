@@ -52,8 +52,8 @@ base::RefCountedMemory* GetUserImageInternal(const AccountId& account_id) {
   // for device scale factors up to 4. We do not use SCALE_FACTOR_NONE, as we
   // specifically want 100% scale images to not transmit more data than needed.
   if (user) {
-    if (user->has_raw_image()) {
-      return new base::RefCountedBytes(user->raw_image());
+    if (user->has_image_bytes()) {
+      return new base::RefCountedBytes(user->image_bytes());
     } else if (user->image_is_stub()) {
       return ResourceBundle::GetSharedInstance().LoadDataResourceBytesForScale(
           IDR_PROFILE_PICTURE_LOADING, ui::SCALE_FACTOR_100P);
@@ -63,7 +63,7 @@ base::RefCountedMemory* GetUserImageInternal(const AccountId& account_id) {
               [user->image_index()],
           ui::SCALE_FACTOR_100P);
     } else {
-      NOTREACHED() << "User with custom image missing raw data";
+      NOTREACHED() << "User with custom image missing data bytes";
     }
   }
   return ResourceBundle::GetSharedInstance().LoadDataResourceBytesForScale(

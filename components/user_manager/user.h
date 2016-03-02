@@ -127,13 +127,13 @@ class USER_MANAGER_EXPORT User : public UserInfo {
   bool HasDefaultImage() const;
 
   int image_index() const { return image_index_; }
-  bool has_raw_image() const { return user_image_.has_raw_image(); }
-  // Returns raw representation of static user image.
-  const UserImage::RawImage& raw_image() const {
-    return user_image_.raw_image();
+  bool has_image_bytes() const { return user_image_.has_image_bytes(); }
+  // Returns bytes representation of static user image for WebUI.
+  const UserImage::Bytes& image_bytes() const {
+    return user_image_.image_bytes();
   }
 
-  // Whether |raw_image| contains data in format that is considered safe to
+  // Whether |user_image_| contains data in format that is considered safe to
   // decode in sensitive environment (on Login screen).
   bool image_is_safe_format() const { return user_image_.is_safe_format(); }
 

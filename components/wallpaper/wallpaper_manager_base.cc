@@ -914,10 +914,10 @@ void WallpaperManagerBase::OnCustomizedDefaultWallpaperDecoded(
   scoped_ptr<gfx::ImageSkia> small_wallpaper_image(new gfx::ImageSkia);
   scoped_ptr<gfx::ImageSkia> large_wallpaper_image(new gfx::ImageSkia);
 
-  // TODO(bshe): This may break if RawImage becomes RefCountedMemory.
+  // TODO(bshe): This may break if Bytes becomes RefCountedMemory.
   base::Closure resize_closure = base::Bind(
       &WallpaperManagerBase::ResizeCustomizedDefaultWallpaper,
-      base::Passed(&deep_copy), wallpaper.raw_image(),
+      base::Passed(&deep_copy), wallpaper.image_bytes(),
       base::Unretained(rescaled_files.get()), base::Unretained(success.get()),
       base::Unretained(small_wallpaper_image.get()),
       base::Unretained(large_wallpaper_image.get()));
@@ -936,7 +936,7 @@ void WallpaperManagerBase::OnCustomizedDefaultWallpaperDecoded(
 
 void WallpaperManagerBase::ResizeCustomizedDefaultWallpaper(
     scoped_ptr<gfx::ImageSkia> image,
-    const user_manager::UserImage::RawImage& raw_image,
+    const user_manager::UserImage::Bytes& image_bytes,
     const CustomizedWallpaperRescaledFiles* rescaled_files,
     bool* success,
     gfx::ImageSkia* small_wallpaper_image,
