@@ -836,6 +836,7 @@ hooks = [
         'src/infra',
         'src/ppapi',
         'src/printing',
+        'src/third_party/catapult',
         'src/third_party/closure_compiler/build',
         'src/tools',
     ],
