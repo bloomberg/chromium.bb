@@ -11,6 +11,7 @@
 #include "platform/network/ResourceRequest.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "public/platform/WebURLRequest.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -55,6 +56,28 @@ TEST_F(ContentSecurityPolicyTest, ParseMonitorInsecureRequestsEnabled)
     csp->bindToExecutionContext(document.get());
     EXPECT_EQ(SecurityContext::InsecureRequestsDoNotUpgrade, document->getInsecureRequestsPolicy());
     EXPECT_FALSE(document->insecureNavigationsToUpgrade()->contains(secureOrigin->host().impl()->hash()));
+}
+
+TEST_F(ContentSecurityPolicyTest, ParseEnforceTreatAsPublicAddressDisabled)
+{
+    RuntimeEnabledFeatures::setCorsRFC1918Enabled(false);
+    document->setHostedInReservedIPRange(true);
+    EXPECT_EQ(WebURLRequest::AddressSpacePrivate, document->addressSpace());
+
+    csp->didReceiveHeader("treat-as-public-address", ContentSecurityPolicyHeaderTypeEnforce, ContentSecurityPolicyHeaderSourceHTTP);
+    csp->bindToExecutionContext(document.get());
+    EXPECT_EQ(WebURLRequest::AddressSpacePrivate, document->addressSpace());
+}
+
+TEST_F(ContentSecurityPolicyTest, ParseEnforceTreatAsPublicAddressEnabled)
+{
+    RuntimeEnabledFeatures::setCorsRFC1918Enabled(true);
+    document->setHostedInReservedIPRange(true);
+    EXPECT_EQ(WebURLRequest::AddressSpacePrivate, document->addressSpace());
+
+    csp->didReceiveHeader("treat-as-public-address", ContentSecurityPolicyHeaderTypeEnforce, ContentSecurityPolicyHeaderSourceHTTP);
+    csp->bindToExecutionContext(document.get());
+    EXPECT_EQ(WebURLRequest::AddressSpacePublic, document->addressSpace());
 }
 
 TEST_F(ContentSecurityPolicyTest, CopyStateFrom)

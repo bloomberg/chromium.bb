@@ -100,6 +100,9 @@ const char ContentSecurityPolicy::UpgradeInsecureRequests[] = "upgrade-insecure-
 // https://metromoxie.github.io/webappsec/specs/suborigins/index.html
 const char ContentSecurityPolicy::Suborigin[] = "suborigin";
 
+// https://mikewest.github.io/cors-rfc1918/#csp
+const char ContentSecurityPolicy::TreatAsPublicAddress[] = "treat-as-public-address";
+
 bool ContentSecurityPolicy::isDirectiveName(const String& name)
 {
     return (equalIgnoringCase(name, ConnectSrc)
@@ -123,7 +126,8 @@ bool ContentSecurityPolicy::isDirectiveName(const String& name)
         || equalIgnoringCase(name, Referrer)
         || equalIgnoringCase(name, ManifestSrc)
         || equalIgnoringCase(name, BlockAllMixedContent)
-        || equalIgnoringCase(name, UpgradeInsecureRequests));
+        || equalIgnoringCase(name, UpgradeInsecureRequests)
+        || equalIgnoringCase(name, TreatAsPublicAddress));
 }
 
 static UseCounter::Feature getUseCounterType(ContentSecurityPolicyHeaderType type)
@@ -147,6 +151,7 @@ ContentSecurityPolicy::ContentSecurityPolicy()
     , m_suboriginName(String())
     , m_enforceStrictMixedContentChecking(false)
     , m_referrerPolicy(ReferrerPolicyDefault)
+    , m_treatAsPublicAddress(false)
     , m_insecureRequestsPolicy(SecurityContext::InsecureRequestsDoNotUpgrade)
 {
 }
@@ -177,6 +182,8 @@ void ContentSecurityPolicy::applyPolicySideEffectsToExecutionContext()
         }
         if (m_enforceStrictMixedContentChecking)
             document->enforceStrictMixedContentChecking();
+        if (m_treatAsPublicAddress)
+            document->setHostedInReservedIPRange(false);
         if (RuntimeEnabledFeatures::suboriginsEnabled()) {
             document->enforceSuborigin(m_suboriginName);
         }
@@ -727,6 +734,13 @@ void ContentSecurityPolicy::enforceSandboxFlags(SandboxFlags mask)
 void ContentSecurityPolicy::enforceStrictMixedContentChecking()
 {
     m_enforceStrictMixedContentChecking = true;
+}
+
+void ContentSecurityPolicy::treatAsPublicAddress()
+{
+    if (!RuntimeEnabledFeatures::corsRFC1918Enabled())
+        return;
+    m_treatAsPublicAddress = true;
 }
 
 void ContentSecurityPolicy::setInsecureRequestsPolicy(SecurityContext::InsecureRequestsPolicy policy)

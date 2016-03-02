@@ -106,6 +106,9 @@ public:
     // https://metromoxie.github.io/webappsec/specs/suborigins/index.html
     static const char Suborigin[];
 
+    // https://mikewest.github.io/cors-rfc1918/#csp
+    static const char TreatAsPublicAddress[];
+
     enum ReportingStatus {
         SendReport,
         SuppressReport
@@ -247,6 +250,7 @@ public:
     void enforceSandboxFlags(SandboxFlags);
     void enforceSuborigin(const String&);
     void enforceStrictMixedContentChecking();
+    void treatAsPublicAddress();
     String evalDisabledErrorMessage() const;
 
     void setInsecureRequestsPolicy(SecurityContext::InsecureRequestsPolicy);
@@ -307,6 +311,7 @@ private:
     String m_suboriginName;
     bool m_enforceStrictMixedContentChecking;
     ReferrerPolicy m_referrerPolicy;
+    bool m_treatAsPublicAddress;
     String m_disableEvalErrorMessage;
     SecurityContext::InsecureRequestsPolicy m_insecureRequestsPolicy;
 

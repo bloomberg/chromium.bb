@@ -95,6 +95,7 @@ private:
     void applySuboriginPolicy(const String& name, const String& suboriginPolicy);
     void enforceStrictMixedContentChecking(const String& name, const String& value);
     void enableInsecureRequestsUpgrade(const String& name, const String& value);
+    void treatAsPublicAddress(const String& name, const String& value);
 
     template <class CSPDirectiveType>
     void setCSPDirective(const String& name, const String& value, OwnPtr<CSPDirectiveType>&);
@@ -144,6 +145,7 @@ private:
     bool m_strictMixedContentCheckingEnforced;
 
     bool m_upgradeInsecureRequests;
+    bool m_treatAsPublicAddress;
 
     OwnPtr<MediaListDirective> m_pluginTypes;
     OwnPtr<SourceListDirective> m_baseURI;

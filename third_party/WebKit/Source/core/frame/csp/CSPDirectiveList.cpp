@@ -53,6 +53,7 @@ CSPDirectiveList::CSPDirectiveList(ContentSecurityPolicy* policy, ContentSecurit
     , m_referrerPolicy(ReferrerPolicyDefault)
     , m_strictMixedContentCheckingEnforced(false)
     , m_upgradeInsecureRequests(false)
+    , m_treatAsPublicAddress(false)
 {
     m_reportOnly = type == ContentSecurityPolicyHeaderTypeReport;
 }
@@ -589,6 +590,22 @@ void CSPDirectiveList::applySandboxPolicy(const String& name, const String& sand
         m_policy->reportInvalidSandboxFlags(invalidTokens);
 }
 
+void CSPDirectiveList::treatAsPublicAddress(const String& name, const String& value)
+{
+    if (m_reportOnly) {
+        m_policy->reportInvalidInReportOnly(name);
+        return;
+    }
+    if (m_treatAsPublicAddress) {
+        m_policy->reportDuplicateDirective(name);
+        return;
+    }
+    m_treatAsPublicAddress = true;
+    m_policy->treatAsPublicAddress();
+    if (!value.isEmpty())
+        m_policy->reportValueForEmptyDirective(name, value);
+}
+
 void CSPDirectiveList::enforceStrictMixedContentChecking(const String& name, const String& value)
 {
     if (m_reportOnly) {
@@ -821,6 +838,8 @@ void CSPDirectiveList::addDirective(const String& name, const String& value)
         setCSPDirective<SourceListDirective>(name, value, m_manifestSrc);
     } else if (RuntimeEnabledFeatures::suboriginsEnabled() && equalIgnoringCase(name, ContentSecurityPolicy::Suborigin)) {
         applySuboriginPolicy(name, value);
+    } else if (equalIgnoringCase(name, ContentSecurityPolicy::TreatAsPublicAddress)) {
+        treatAsPublicAddress(name, value);
     } else {
         m_policy->reportUnsupportedDirective(name);
     }
