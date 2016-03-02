@@ -311,7 +311,8 @@ AwURLRequestContextGetter::CreateAuthHandlerFactory(
 
   // In Chrome this is configurable via the AuthSchemes policy. For WebView
   // there is no interest to have it available so far.
-  std::vector<std::string> supported_schemes = {"basic", "digest", "negotiate"};
+  std::vector<std::string> supported_schemes = {"basic", "digest", "ntlm",
+                                                "negotiate"};
   http_auth_preferences_.reset(new net::HttpAuthPreferences(supported_schemes));
 
   UpdateServerWhitelist();
