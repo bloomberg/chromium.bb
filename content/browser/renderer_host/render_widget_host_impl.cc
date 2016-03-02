@@ -1460,8 +1460,10 @@ void RenderWidgetHostImpl::Destroy(bool also_delete) {
   if (delegate_)
     delegate_->RenderWidgetDeleted(this);
 
-  if (also_delete)
+  if (also_delete) {
+    CHECK(!owner_delegate_);
     delete this;
+  }
 }
 
 void RenderWidgetHostImpl::RendererIsUnresponsive() {
