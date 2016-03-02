@@ -744,7 +744,9 @@ private:
     void updateReflectionInfo(const ComputedStyle*);
     FilterEffectBuilder* updateFilterEffectBuilder() const;
 
-    bool requiresScrollableArea() const { return m_layoutObject->hasOverflowClip() || m_layoutObject->isLayoutView() || m_layoutObject->styleRef().resize() != RESIZE_NONE; }
+    // FIXME: We could lazily allocate our ScrollableArea based on style properties ('overflow', ...)
+    // but for now, we are always allocating it for LayoutBox as it's safer. crbug.com/467721.
+    bool requiresScrollableArea() const { return layoutBox(); }
     void updateScrollableArea();
 
     void dirtyAncestorChainVisibleDescendantStatus();
