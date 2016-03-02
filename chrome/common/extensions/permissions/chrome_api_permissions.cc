@@ -88,8 +88,6 @@ std::vector<APIPermissionInfo*> ChromeAPIPermissions::GetAllPermissions()
       {APIPermission::kHistory, "history"},
       {APIPermission::kIdltest, "idltest"},
       {APIPermission::kInput, "input"},
-      {APIPermission::kLocation, "location",
-       APIPermissionInfo::kFlagCannotBeOptional},
       {APIPermission::kManagement, "management"},
       {APIPermission::kMDns, "mdns", APIPermissionInfo::kFlagCannotBeOptional},
       {APIPermission::kNativeMessaging, "nativeMessaging"},

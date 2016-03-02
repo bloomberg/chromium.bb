@@ -26,7 +26,6 @@
 #include "chrome/browser/extensions/api/hotword_private/hotword_private_api.h"
 #include "chrome/browser/extensions/api/identity/identity_api.h"
 #include "chrome/browser/extensions/api/language_settings_private/language_settings_private_delegate_factory.h"
-#include "chrome/browser/extensions/api/location/location_manager.h"
 #include "chrome/browser/extensions/api/mdns/mdns_api.h"
 #include "chrome/browser/extensions/api/omnibox/omnibox_api.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_event_router_factory.h"
@@ -109,7 +108,6 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   extensions::InputImeAPI::GetFactoryInstance();
 #endif
   extensions::LanguageSettingsPrivateDelegateFactory::GetInstance();
-  extensions::LocationManager::GetFactoryInstance();
 #if defined(OS_CHROMEOS)
   extensions::LogPrivateAPI::GetFactoryInstance();
 #endif

@@ -56,7 +56,6 @@
       'instance_id.json',
       'language_settings_private.idl',
       'launcher_page.idl',
-      'location.idl',
       'manifest_types.json',
       'media_galleries.idl',
       'metrics_private.json',

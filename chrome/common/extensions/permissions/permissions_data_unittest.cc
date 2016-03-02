@@ -315,16 +315,6 @@ TEST(PermissionsDataTest, GetPermissionMessages_ManyHostsPermissions) {
       "Read and change your data on a number of websites", submessages));
 }
 
-TEST(PermissionsDataTest, GetPermissionMessages_LocationApiPermission) {
-  scoped_refptr<Extension> extension;
-  extension = LoadManifest("permissions",
-                           "location-api.json",
-                           Manifest::COMPONENT,
-                           Extension::NO_FLAGS);
-  EXPECT_TRUE(VerifyOnePermissionMessage(extension->permissions_data(),
-                                         "Detect your physical location"));
-}
-
 TEST(PermissionsDataTest, GetPermissionMessages_ManyHosts) {
   scoped_refptr<Extension> extension;
   extension = LoadManifest("permissions", "many-hosts.json");

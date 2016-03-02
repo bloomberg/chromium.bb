@@ -555,21 +555,6 @@
       "A948368FC53BE437A55FEB414106E207925482F5"  // File Manager
     ]
   },
-  "location": [
-    {
-      "channel": "dev",
-      "extension_types": [
-        "extension", "legacy_packaged_app", "platform_app"
-      ]
-    },
-    {
-      "channel": "stable",
-      "extension_types": [
-        "extension", "legacy_packaged_app", "hosted_app", "platform_app"
-      ],
-      "location": "component"
-    }
-  ],
   "logPrivate": {
     "channel": "stable",
     "extension_types": ["extension", "platform_app"],
