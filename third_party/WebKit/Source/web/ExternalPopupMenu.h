@@ -36,6 +36,8 @@
 #include "public/platform/WebCanvas.h"
 #include "public/platform/WebScrollbar.h"
 #include "public/web/WebExternalPopupMenuClient.h"
+#include "web/WebExport.h"
+#include "wtf/Compiler.h"
 
 namespace blink {
 
@@ -48,7 +50,7 @@ struct WebPopupMenuInfo;
 
 // The ExternalPopupMenu connects the actual implementation of the popup menu
 // to the WebCore popup menu.
-class ExternalPopupMenu final : public PopupMenu, public WebExternalPopupMenuClient {
+class WEB_EXPORT ExternalPopupMenu final : WTF_NON_EXPORTED_BASE(public PopupMenu), public WebExternalPopupMenuClient {
 public:
     ExternalPopupMenu(LocalFrame&, HTMLSelectElement&, WebViewImpl&);
     ~ExternalPopupMenu() override;

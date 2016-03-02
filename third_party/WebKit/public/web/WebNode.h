@@ -115,9 +115,9 @@ public:
     template<typename T> const T toConst() const;
 
 #if BLINK_IMPLEMENTATION
-    WebNode(const PassRefPtrWillBeRawPtr<Node>&);
-    WebNode& operator=(const PassRefPtrWillBeRawPtr<Node>&);
-    operator PassRefPtrWillBeRawPtr<Node>() const;
+    BLINK_EXPORT WebNode(const PassRefPtrWillBeRawPtr<Node>&);
+    BLINK_EXPORT WebNode& operator=(const PassRefPtrWillBeRawPtr<Node>&);
+    BLINK_EXPORT operator PassRefPtrWillBeRawPtr<Node>() const;
 
     template<typename T> T* unwrap()
     {

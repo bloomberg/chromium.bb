@@ -10,7 +10,9 @@
 #include "public/web/WebRemoteFrame.h"
 #include "public/web/WebRemoteFrameClient.h"
 #include "web/RemoteFrameClientImpl.h"
+#include "web/WebExport.h"
 #include "web/WebFrameImplBase.h"
+#include "wtf/Compiler.h"
 #include "wtf/HashMap.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/RefCounted.h"
@@ -21,7 +23,7 @@ class FrameHost;
 class FrameOwner;
 class RemoteFrame;
 
-class WebRemoteFrameImpl final : public WebFrameImplBase, public WebRemoteFrame {
+class WEB_EXPORT WebRemoteFrameImpl final : public WebFrameImplBase, WTF_NON_EXPORTED_BASE(public WebRemoteFrame) {
 public:
     static WebRemoteFrameImpl* create(WebTreeScopeType, WebRemoteFrameClient*, WebFrame* opener);
     ~WebRemoteFrameImpl() override;

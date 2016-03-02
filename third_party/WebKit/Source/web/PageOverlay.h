@@ -32,6 +32,7 @@
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/GraphicsLayerClient.h"
 #include "platform/graphics/paint/DisplayItemClient.h"
+#include "web/WebExport.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
@@ -47,7 +48,7 @@ class WebViewImpl;
 //
 // With Slimming Paint, internal clients can extract a GraphicsContext to add
 // to the PaintController owned by the GraphicsLayer
-class PageOverlay : public GraphicsLayerClient, public DisplayItemClient {
+class WEB_EXPORT PageOverlay : public GraphicsLayerClient, public DisplayItemClient {
 public:
     class Delegate : public GarbageCollectedFinalized<Delegate> {
     public:

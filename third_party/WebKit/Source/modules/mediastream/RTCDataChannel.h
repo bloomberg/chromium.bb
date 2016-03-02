@@ -31,6 +31,7 @@
 #include "platform/heap/Handle.h"
 #include "public/platform/WebRTCDataChannelHandler.h"
 #include "public/platform/WebRTCDataChannelHandlerClient.h"
+#include "wtf/Compiler.h"
 
 namespace blink {
 
@@ -45,7 +46,7 @@ struct WebRTCDataChannelInit;
 
 class MODULES_EXPORT RTCDataChannel final
     : public RefCountedGarbageCollectedEventTargetWithInlineData<RTCDataChannel>
-    , public WebRTCDataChannelHandlerClient {
+    , WTF_NON_EXPORTED_BASE(public WebRTCDataChannelHandlerClient) {
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(RTCDataChannel);
     DEFINE_WRAPPERTYPEINFO();
 public:

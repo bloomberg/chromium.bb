@@ -138,6 +138,7 @@
       'WebEmbeddedWorkerImpl.h',
       'WebEntities.cpp',
       'WebEntities.h',
+      'WebExport.h',
       'WebFileChooserCompletionImpl.cpp',
       'WebFileChooserCompletionImpl.h',
       'WebFontDescription.cpp',
