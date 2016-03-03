@@ -30,7 +30,7 @@ class CONTENT_EXPORT GeolocationProviderImpl
   // GeolocationProvider implementation:
   scoped_ptr<GeolocationProvider::Subscription> AddLocationUpdateCallback(
       const LocationUpdateCallback& callback,
-      bool use_high_accuracy) override;
+      bool enable_high_accuracy) override;
   void UserDidOptIntoLocationServices() override;
   void OverrideLocationForTesting(const Geoposition& position) override;
 
@@ -68,7 +68,7 @@ class CONTENT_EXPORT GeolocationProviderImpl
 
   // Starts the geolocation providers or updates their options (delegates to
   // arbitrator).
-  void StartProviders(bool use_high_accuracy);
+  void StartProviders(bool enable_high_accuracy);
 
   // Updates the providers on the geolocation thread, which must be running.
   void InformProvidersPermissionGranted();

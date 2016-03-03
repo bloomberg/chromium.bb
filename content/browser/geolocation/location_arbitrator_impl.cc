@@ -51,7 +51,7 @@ void LocationArbitratorImpl::OnPermissionGranted() {
     provider->OnPermissionGranted();
 }
 
-void LocationArbitratorImpl::StartProviders(bool use_high_accuracy) {
+void LocationArbitratorImpl::StartProviders(bool enable_high_accuracy) {
   // GetAccessTokenStore() will return NULL for embedders not implementing
   // the AccessTokenStore class, so we report an error to avoid JavaScript
   // requests of location to wait eternally for a reply.
@@ -65,7 +65,7 @@ void LocationArbitratorImpl::StartProviders(bool use_high_accuracy) {
 
   // Stash options as OnAccessTokenStoresLoaded has not yet been called.
   is_running_ = true;
-  use_high_accuracy_ = use_high_accuracy;
+  enable_high_accuracy_ = enable_high_accuracy;
   if (providers_.empty()) {
     DCHECK(DefaultNetworkProviderURL().is_valid());
     access_token_store->LoadAccessTokens(
@@ -78,7 +78,7 @@ void LocationArbitratorImpl::StartProviders(bool use_high_accuracy) {
 
 void LocationArbitratorImpl::DoStartProviders() {
   for (const auto& provider : providers_)
-    provider->StartProvider(use_high_accuracy_);
+    provider->StartProvider(enable_high_accuracy_);
 }
 
 void LocationArbitratorImpl::StopProviders() {

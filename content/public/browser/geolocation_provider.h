@@ -30,11 +30,12 @@ class GeolocationProvider {
   typedef base::CallbackList<void(const Geoposition&)>::Subscription
       Subscription;
 
-  // |use_high_accuracy| is used as a 'hint' for the provider preferences for
+  // |enable_high_accuracy| is used as a 'hint' for the provider preferences for
   // this particular observer, however the observer could receive updates for
   // best available locations from any active provider whilst it is registered.
   virtual scoped_ptr<Subscription> AddLocationUpdateCallback(
-      const LocationUpdateCallback& callback, bool use_high_accuracy) = 0;
+      const LocationUpdateCallback& callback,
+      bool enable_high_accuracy) = 0;
 
   // Calling this method indicates the user has opted into using location
   // services, including sending network requests to [Google servers to] resolve

@@ -28,7 +28,7 @@ public class LocationProviderFactory {
      * LocationProviderFactory.get() returns an instance of this interface.
      */
     public interface LocationProvider {
-        public void start(boolean gpsEnabled);
+        public void start(boolean enableHighAccuracy);
         public void stop();
         public boolean isRunning();
     }
@@ -70,12 +70,12 @@ public class LocationProviderFactory {
 
         /**
          * Start listening for location updates.
-         * @param gpsEnabled Whether or not we're interested in high accuracy GPS.
+         * @param enableHighAccuracy Whether or not to enable high accuracy location providers.
          */
         @Override
-        public void start(boolean gpsEnabled) {
+        public void start(boolean enableHighAccuracy) {
             unregisterFromLocationUpdates();
-            registerForLocationUpdates(gpsEnabled);
+            registerForLocationUpdates(enableHighAccuracy);
         }
 
         /**
@@ -138,7 +138,7 @@ public class LocationProviderFactory {
         /**
          * Registers this object with the location service.
          */
-        private void registerForLocationUpdates(boolean isGpsEnabled) {
+        private void registerForLocationUpdates(boolean enableHighAccuracy) {
             ensureLocationManagerCreated();
             if (usePassiveOneShotLocation()) return;
 
@@ -149,7 +149,7 @@ public class LocationProviderFactory {
             // bounce notifications to the Geolocation thread as they arrive in the mainLooper.
             try {
                 Criteria criteria = new Criteria();
-                if (isGpsEnabled) criteria.setAccuracy(Criteria.ACCURACY_FINE);
+                if (enableHighAccuracy) criteria.setAccuracy(Criteria.ACCURACY_FINE);
                 mLocationManager.requestLocationUpdates(0, 0, criteria, this,
                         ThreadUtils.getUiThreadLooper());
             } catch (SecurityException e) {

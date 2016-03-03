@@ -22,10 +22,11 @@ GeolocationProvider* GeolocationProvider::GetInstance() {
 
 scoped_ptr<GeolocationProvider::Subscription>
 GeolocationProviderImpl::AddLocationUpdateCallback(
-    const LocationUpdateCallback& callback, bool use_high_accuracy) {
+    const LocationUpdateCallback& callback,
+    bool enable_high_accuracy) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   scoped_ptr<GeolocationProvider::Subscription> subscription;
-  if (use_high_accuracy) {
+  if (enable_high_accuracy) {
     subscription = high_accuracy_callbacks_.Add(callback);
   } else {
     subscription = low_accuracy_callbacks_.Add(callback);
@@ -113,12 +114,11 @@ void GeolocationProviderImpl::OnClientsChanged() {
         InformProvidersPermissionGranted();
     }
     // Determine a set of options that satisfies all clients.
-    bool use_high_accuracy = !high_accuracy_callbacks_.empty();
+    bool enable_high_accuracy = !high_accuracy_callbacks_.empty();
 
     // Send the current options to the providers as they may have changed.
     task = base::Bind(&GeolocationProviderImpl::StartProviders,
-                      base::Unretained(this),
-                      use_high_accuracy);
+                      base::Unretained(this), enable_high_accuracy);
   }
 
   task_runner()->PostTask(FROM_HERE, task);
@@ -130,10 +130,10 @@ void GeolocationProviderImpl::StopProviders() {
   arbitrator_->StopProviders();
 }
 
-void GeolocationProviderImpl::StartProviders(bool use_high_accuracy) {
+void GeolocationProviderImpl::StartProviders(bool enable_high_accuracy) {
   DCHECK(OnGeolocationThread());
   DCHECK(arbitrator_);
-  arbitrator_->StartProviders(use_high_accuracy);
+  arbitrator_->StartProviders(enable_high_accuracy);
 }
 
 void GeolocationProviderImpl::InformProvidersPermissionGranted() {

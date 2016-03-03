@@ -17,7 +17,7 @@ public:
   virtual ~LocationArbitrator() {};
 
   // See more details in geolocation_provider.
-  virtual void StartProviders(bool use_high_accuracy) = 0;
+  virtual void StartProviders(bool enable_high_accuracy) = 0;
   virtual void StopProviders() = 0;
 
   // Called everytime permission is granted to a page for using geolocation.

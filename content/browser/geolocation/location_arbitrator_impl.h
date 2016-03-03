@@ -45,7 +45,7 @@ class CONTENT_EXPORT LocationArbitratorImpl : public LocationArbitrator {
   static GURL DefaultNetworkProviderURL();
 
   // LocationArbitrator
-  void StartProviders(bool use_high_accuracy) override;
+  void StartProviders(bool enable_high_accuracy) override;
   void StopProviders() override;
   void OnPermissionGranted() override;
   bool HasPermissionBeenGranted() const override;
@@ -88,7 +88,7 @@ class CONTENT_EXPORT LocationArbitratorImpl : public LocationArbitrator {
   LocationUpdateCallback arbitrator_update_callback_;
   LocationProvider::LocationProviderUpdateCallback provider_update_callback_;
   ScopedVector<LocationProvider> providers_;
-  bool use_high_accuracy_;
+  bool enable_high_accuracy_;
   // The provider which supplied the current |position_|
   const LocationProvider* position_provider_;
   bool is_permission_granted_;

@@ -34,7 +34,7 @@ public class MockLocationProvider implements LocationProviderFactory.LocationPro
     }
 
     @Override
-    public void start(boolean gpsEnabled) {
+    public void start(boolean enableHighAccuracy) {
         if (mIsRunning) return;
 
         if (mHandlerThread == null) {
