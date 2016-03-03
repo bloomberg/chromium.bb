@@ -88,88 +88,13 @@ class TestHelperMethods(cros_test_lib.TestCase):
 
 class TestBucketSearches(gs_unittest.AbstractGSContextTest):
   """Test GS interactions in purge_lib."""
+  def setUp(self):
+    self.maxDiff = None
+
   def mockResult(self, url):
     return gs.GSListResult(url, None, None, None, None)
 
-  def testLocateChromeosReleasesProtectedPrefixes(self):
-    """Test locateChromeosReleasesProtectedPrefixes."""
-    protected_versions = ('6301', '7000.2')
-
-    listResults = {
-        'gs://chromeos-releases/canary-channel/': [
-            self.mockResult(
-                'gs://chromeos-releases/canary-channel/arkham/'),
-            self.mockResult(
-                'gs://chromeos-releases/canary-channel/x86-alex/'),
-        ],
-        'gs://chromeos-releases/canary-channel/arkham/': [
-            self.mockResult(
-                'gs://chromeos-releases/canary-channel/arkham/6301.1.0/'),
-            self.mockResult(
-                'gs://chromeos-releases/canary-channel/arkham/7023.0.0/'),
-        ],
-        'gs://chromeos-releases/canary-channel/x86-alex/': [
-            self.mockResult(
-                'gs://chromeos-releases/canary-channel/x86-alex/1.2.3/'),
-            self.mockResult(
-                'gs://chromeos-releases/canary-channel/x86-alex/1.2.4/'),
-        ],
-    }
-
-    self.PatchObject(purge_lib, 'SafeList',
-                     side_effect=lambda _, url: listResults[url])
-
-    result = purge_lib.LocateChromeosReleasesProtectedPrefixes(
-        self.ctx, protected_versions)
-
-    self.assertEqual(result, [
-        'gs://chromeos-releases/Attic',
-        'gs://chromeos-releases/stable-channel',
-        'gs://chromeos-releases/beta-channel',
-        'gs://chromeos-releases/dev-channel',
-        'gs://chromeos-releases/logs',
-        'gs://chromeos-releases/tobesigned',
-        'gs://chromeos-releases/canary-channel/arkham/6301.1.0/',
-    ])
-
-  def testLocateChromeosImageArchiveProtectedPrefixes(self):
-    listResults = {
-        'gs://chromeos-image-archive/': [
-            self.mockResult(
-                'gs://chromeos-image-archive/foo-paladin/'),
-            self.mockResult(
-                'gs://chromeos-image-archive/trybot-foo-paladin/'),
-            self.mockResult(
-                'gs://chromeos-image-archive/foo-factory/'),
-            self.mockResult(
-                'gs://chromeos-image-archive/trybot-foo-factory/'),
-            self.mockResult(
-                'gs://chromeos-image-archive/foo-firmware/'),
-            self.mockResult(
-                'gs://chromeos-image-archive/trybot-foo-firmware/'),
-            self.mockResult(
-                'gs://chromeos-image-archive/bar-firmware/'),
-        ],
-    }
-
-    self.PatchObject(purge_lib, 'SafeList',
-                     side_effect=lambda _, url: listResults[url])
-
-    result = purge_lib.LocateChromeosImageArchiveProtectedPrefixes(self.ctx)
-
-    self.assertEqual(result, [
-        'gs://chromeos-image-archive/foo-firmware/',
-        'gs://chromeos-image-archive/bar-firmware/',
-    ])
-
-  def testProduceFilteredCandidatesArchive(self):
-    self.maxDiff = None
-
-    protected_prefixes = (
-        'gs://chromeos-image-archive/foo-firmware',
-        'gs://chromeos-image-archive/bar-firmware',
-    )
-
+  def patchSafeList(self):
     listResults = {
         'gs://chromeos-image-archive/': [
             self.mockResult(
@@ -209,37 +134,6 @@ class TestBucketSearches(gs_unittest.AbstractGSContextTest):
         ],
         'gs://chromeos-image-archive/trybot-foo-firmware/': [
         ],
-    }
-
-    self.PatchObject(purge_lib, 'SafeList',
-                     side_effect=lambda _, url: listResults[url])
-
-    result = purge_lib.ProduceFilteredCandidates(
-        self.ctx, 'gs://chromeos-image-archive/', protected_prefixes, 2)
-
-    self.assertEqual(list(result), [
-        self.mockResult(
-            'gs://chromeos-image-archive/foo-paladin/plain_file'),
-        self.mockResult(
-            'gs://chromeos-image-archive/foo-paladin/1.2.3/a'),
-        self.mockResult(
-            'gs://chromeos-image-archive/foo-paladin/1.2.3/b'),
-        self.mockResult(
-            'gs://chromeos-image-archive/foo-paladin/1.2.3/nested/c'),
-    ])
-
-  def testProduceFilteredCandidatesReleases(self):
-    self.maxDiff = None
-
-    protected_prefixes = (
-        'gs://chromeos-releases/stable-channel',
-        'gs://chromeos-releases/beta-channel',
-        'gs://chromeos-releases/dev-channel',
-        'gs://chromeos-releases/logs',
-        'gs://chromeos-releases/canary-channel/auron/6301.18.0/',
-    )
-
-    listResults = {
         'gs://chromeos-releases/': [
             self.mockResult(
                 'gs://chromeos-releases/stable-channel/'),
@@ -256,53 +150,163 @@ class TestBucketSearches(gs_unittest.AbstractGSContextTest):
         ],
         'gs://chromeos-releases/canary-channel/': [
             self.mockResult(
+                'gs://chromeos-releases/canary-channel/arkham/'),
+            self.mockResult(
                 'gs://chromeos-releases/canary-channel/plain_file'),
             self.mockResult(
-                'gs://chromeos-releases/canary-channel/foo-board/'),
-            self.mockResult(
-                'gs://chromeos-releases/canary-channel/auron/'),
+                'gs://chromeos-releases/canary-channel/x86-alex/'),
         ],
-        'gs://chromeos-releases/canary-channel/foo-board/': [
+        'gs://chromeos-releases/canary-channel/plain_file': [
             self.mockResult(
-                'gs://chromeos-releases/canary-channel/foo-board/6301.18.0/'),
+                'gs://chromeos-releases/canary-channel/plain_file'),
         ],
-        'gs://chromeos-releases/canary-channel/foo-board/6301.18.0/**': [
+        'gs://chromeos-releases/canary-channel/arkham/': [
             self.mockResult(
-                'gs://chromeos-releases/canary-channel/foo-board/6301.18.0/a'),
+                'gs://chromeos-releases/canary-channel/arkham/6301.0.0/'),
             self.mockResult(
-                'gs://chromeos-releases/canary-channel/foo-board/6301.18.0/b'),
+                'gs://chromeos-releases/canary-channel/arkham/6301.1.0/'),
+            self.mockResult(
+                'gs://chromeos-releases/canary-channel/arkham/7023.0.0/'),
+            self.mockResult(
+                'gs://chromeos-releases/canary-channel/arkham/noparse/'),
         ],
-        'gs://chromeos-releases/canary-channel/auron/': [
+        'gs://chromeos-releases/canary-channel/arkham/6301.0.0/**': [
             self.mockResult(
-                'gs://chromeos-releases/canary-channel/auron/6301.18.0/'),
+                'gs://chromeos-releases/canary-channel/arkham/6301.0.0/a'),
             self.mockResult(
-                'gs://chromeos-releases/canary-channel/auron/7301.18.0/'),
+                'gs://chromeos-releases/canary-channel/arkham/6301.0.0/b'),
         ],
-        'gs://chromeos-releases/canary-channel/auron/7301.18.0/**': [
+        'gs://chromeos-releases/canary-channel/arkham/7023.0.0/**': [
             self.mockResult(
-                'gs://chromeos-releases/canary-channel/auron/7301.18.0/a'),
+                'gs://chromeos-releases/canary-channel/arkham/7023.0.0/a'),
             self.mockResult(
-                'gs://chromeos-releases/canary-channel/auron/7301.18.0/b'),
+                'gs://chromeos-releases/canary-channel/arkham/7023.0.0/b'),
+        ],
+        'gs://chromeos-releases/canary-channel/arkham/noparse/**': [
+            self.mockResult(
+                'gs://chromeos-releases/canary-channel/arkham/noparse/a'),
+            self.mockResult(
+                'gs://chromeos-releases/canary-channel/arkham/noparse/b'),
+        ],
+        'gs://chromeos-releases/canary-channel/x86-alex/': [
+            self.mockResult(
+                'gs://chromeos-releases/canary-channel/x86-alex/1.2.3/'),
+            self.mockResult(
+                'gs://chromeos-releases/canary-channel/x86-alex/1.2.4/'),
+        ],
+        'gs://chromeos-releases/canary-channel/x86-alex/1.2.3/**': [
+            self.mockResult(
+                'gs://chromeos-releases/canary-channel/x86-alex/1.2.3/a'),
+            self.mockResult(
+                'gs://chromeos-releases/canary-channel/x86-alex/1.2.3/b'),
+            self.mockResult(
+                'gs://chromeos-releases/canary-channel/x86-alex/1.2.3/nested/deep'),
+        ],
+        'gs://chromeos-releases/canary-channel/x86-alex/1.2.4/**': [
+            self.mockResult(
+                'gs://chromeos-releases/canary-channel/x86-alex/1.2.4/a'),
+            self.mockResult(
+                'gs://chromeos-releases/canary-channel/x86-alex/1.2.4/b'),
         ],
     }
-
     self.PatchObject(purge_lib, 'SafeList',
                      side_effect=lambda _, url: listResults[url])
+
+
+  def testLocateChromeosReleasesProtectedPrefixes(self):
+    """Test locateChromeosReleasesProtectedPrefixes."""
+    protected_versions = ('6301', '7000.2')
+
+    self.patchSafeList()
+
+    result = purge_lib.LocateChromeosReleasesProtectedPrefixes(
+        self.ctx, protected_versions)
+
+    self.assertEqual(result, [
+        'gs://chromeos-releases/Attic',
+        'gs://chromeos-releases/stable-channel',
+        'gs://chromeos-releases/beta-channel',
+        'gs://chromeos-releases/dev-channel',
+        'gs://chromeos-releases/logs',
+        'gs://chromeos-releases/tobesigned',
+        'gs://chromeos-releases/canary-channel/arkham/6301.1.0/',
+    ])
+
+  def testLocateChromeosImageArchiveProtectedPrefixes(self):
+    self.patchSafeList()
+
+    result = purge_lib.LocateChromeosImageArchiveProtectedPrefixes(self.ctx)
+
+    self.assertEqual(result, [
+        'gs://chromeos-image-archive/foo-firmware/',
+        'gs://chromeos-image-archive/bar-firmware/',
+    ])
+
+  def testProduceFilteredCandidatesArchive(self):
+    protected_prefixes = (
+        'gs://chromeos-image-archive/foo-firmware',
+        'gs://chromeos-image-archive/bar-firmware',
+    )
+
+    self.patchSafeList()
+
+    result = purge_lib.ProduceFilteredCandidates(
+        self.ctx, 'gs://chromeos-image-archive/', protected_prefixes, 2)
+
+    self.assertEqual(list(result), [
+        self.mockResult(
+            'gs://chromeos-image-archive/foo-paladin/plain_file'),
+        self.mockResult(
+            'gs://chromeos-image-archive/foo-paladin/1.2.3/a'),
+        self.mockResult(
+            'gs://chromeos-image-archive/foo-paladin/1.2.3/b'),
+        self.mockResult(
+            'gs://chromeos-image-archive/foo-paladin/1.2.3/nested/c'),
+    ])
+
+
+  def testProduceFilteredCandidatesReleases(self):
+    protected_prefixes = (
+        'gs://chromeos-releases/Attic',
+        'gs://chromeos-releases/stable-channel',
+        'gs://chromeos-releases/beta-channel',
+        'gs://chromeos-releases/dev-channel',
+        'gs://chromeos-releases/logs',
+        'gs://chromeos-releases/tobesigned',
+        'gs://chromeos-releases/canary-channel/arkham/6301.1.0/',
+        'gs://chromeos-releases/canary-channel/auron/6301.18.0/',
+    )
+
+    self.patchSafeList()
 
     result = purge_lib.ProduceFilteredCandidates(
         self.ctx, 'gs://chromeos-releases/', protected_prefixes, 3)
 
     self.assertEqual(list(result), [
         self.mockResult(
+            'gs://chromeos-releases/canary-channel/arkham/6301.0.0/a'),
+        self.mockResult(
+            'gs://chromeos-releases/canary-channel/arkham/6301.0.0/b'),
+        self.mockResult(
+            'gs://chromeos-releases/canary-channel/arkham/7023.0.0/a'),
+        self.mockResult(
+            'gs://chromeos-releases/canary-channel/arkham/7023.0.0/b'),
+        self.mockResult(
+            'gs://chromeos-releases/canary-channel/arkham/noparse/a'),
+        self.mockResult(
+            'gs://chromeos-releases/canary-channel/arkham/noparse/b'),
+        self.mockResult(
             'gs://chromeos-releases/canary-channel/plain_file'),
         self.mockResult(
-            'gs://chromeos-releases/canary-channel/foo-board/6301.18.0/a'),
+            'gs://chromeos-releases/canary-channel/x86-alex/1.2.3/a'),
         self.mockResult(
-            'gs://chromeos-releases/canary-channel/foo-board/6301.18.0/b'),
+            'gs://chromeos-releases/canary-channel/x86-alex/1.2.3/b'),
         self.mockResult(
-            'gs://chromeos-releases/canary-channel/auron/7301.18.0/a'),
+            'gs://chromeos-releases/canary-channel/x86-alex/1.2.3/nested/deep'),
         self.mockResult(
-            'gs://chromeos-releases/canary-channel/auron/7301.18.0/b'),
+            'gs://chromeos-releases/canary-channel/x86-alex/1.2.4/a'),
+        self.mockResult(
+            'gs://chromeos-releases/canary-channel/x86-alex/1.2.4/b'),
         self.mockResult(
             'gs://chromeos-releases/top-level-file'),
     ])

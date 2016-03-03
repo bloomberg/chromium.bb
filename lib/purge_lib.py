@@ -229,7 +229,6 @@ def LocateChromeosReleasesProtectedPrefixes(ctx, protected_branches):
       except ParseException:
         # Files we don't understand are purge candidates.
         logging.info('Found unexpected: "%s"', build.url)
-        result.append(build.url)
 
   return result
 
