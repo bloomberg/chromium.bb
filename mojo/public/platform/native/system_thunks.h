@@ -114,6 +114,11 @@ struct MojoSystemThunks {
                                 MojoHandle* handles,
                                 MojoResult* results,
                                 struct MojoHandleSignalsState* signals_states);
+  MojoResult (*Watch)(MojoHandle handle,
+                      MojoHandleSignals signals,
+                      MojoWatchCallback callback,
+                      uintptr_t context);
+  MojoResult (*CancelWatch)(MojoHandle handle, uintptr_t context);
 };
 #pragma pack(pop)
 
@@ -144,7 +149,9 @@ inline MojoSystemThunks MojoMakeSystemThunks() {
                                     MojoCreateWaitSet,
                                     MojoAddHandle,
                                     MojoRemoveHandle,
-                                    MojoGetReadyHandles};
+                                    MojoGetReadyHandles,
+                                    MojoWatch,
+                                    MojoCancelWatch};
   return system_thunks;
 }
 #endif

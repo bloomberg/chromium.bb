@@ -187,6 +187,19 @@ MojoResult MojoGetReadyHandles(MojoHandle wait_set,
                                   signals_states);
 }
 
+MojoResult MojoWatch(MojoHandle handle,
+                     MojoHandleSignals signals,
+                     MojoWatchCallback callback,
+                     uintptr_t context) {
+  assert(g_thunks.Watch);
+  return g_thunks.Watch(handle, signals, callback, context);
+}
+
+MojoResult MojoCancelWatch(MojoHandle handle, uintptr_t context) {
+  assert(g_thunks.CancelWatch);
+  return g_thunks.CancelWatch(handle, context);
+}
+
 extern "C" THUNK_EXPORT size_t MojoSetSystemThunks(
     const MojoSystemThunks* system_thunks) {
   if (system_thunks->size >= sizeof(g_thunks))
