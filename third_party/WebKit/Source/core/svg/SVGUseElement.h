@@ -106,7 +106,6 @@ private:
     bool instanceTreeIsLoading(const SVGElement*);
     void notifyFinished(Resource*) override;
     String debugName() const override { return "SVGUseElement"; }
-    TreeScope* referencedScope() const;
     void setDocumentResource(PassRefPtrWillBeRawPtr<DocumentResource>);
 
     RefPtrWillBeMember<SVGAnimatedLength> m_x;

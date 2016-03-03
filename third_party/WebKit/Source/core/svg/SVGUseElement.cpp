@@ -139,13 +139,6 @@ void SVGUseElement::removedFrom(ContainerNode* rootParent)
     }
 }
 
-TreeScope* SVGUseElement::referencedScope() const
-{
-    if (isStructurallyExternal())
-        return externalDocument();
-    return &treeScope();
-}
-
 Document* SVGUseElement::externalDocument() const
 {
     // Gracefully handle error condition.
@@ -330,20 +323,23 @@ void SVGUseElement::buildPendingResource()
         return;
     clearShadowTree();
     cancelShadowTreeRecreation();
-    if (!referencedScope() || !inDocument())
+    if (!inDocument())
+        return;
+    Document* externalDocument = this->externalDocument();
+    if (isStructurallyExternal() && !externalDocument)
         return;
 
     AtomicString id;
-    Element* target = SVGURIReference::targetElementFromIRIString(hrefString(), treeScope(), &id, externalDocument());
+    Element* target = targetElementFromIRIString(hrefString(), treeScope(), &id, externalDocument);
     if (!target || !target->inDocument()) {
         // If we can't find the target of an external element, just give up.
         // We can't observe if the target somewhen enters the external document, nor should we do it.
-        if (externalDocument())
+        if (externalDocument)
             return;
         if (id.isEmpty())
             return;
 
-        referencedScope()->document().accessSVGExtensions().addPendingResource(id, this);
+        document().accessSVGExtensions().addPendingResource(id, this);
         ASSERT(hasPendingResources());
         return;
     }
@@ -525,8 +521,7 @@ void SVGUseElement::cloneNonMarkupEventListeners()
 
 bool SVGUseElement::hasCycleUseReferencing(const SVGUseElement& use, const ContainerNode& targetInstance, SVGElement*& newTarget) const
 {
-    ASSERT(referencedScope());
-    Element* targetElement = SVGURIReference::targetElementFromIRIString(use.hrefString(), *referencedScope());
+    Element* targetElement = targetElementFromIRIString(use.hrefString(), use.treeScope());
     newTarget = 0;
     if (targetElement && targetElement->isSVGElement())
         newTarget = toSVGElement(targetElement);
@@ -607,18 +602,19 @@ bool SVGUseElement::expandUseElementsInShadowTree()
     for (RefPtrWillBeRawPtr<SVGUseElement> use = Traversal<SVGUseElement>::firstWithin(*shadowRoot); use; ) {
         ASSERT(!use->resourceIsStillLoading());
 
-        SVGElement* target = 0;
-        if (hasCycleUseReferencing(toSVGUseElement(*use->correspondingElement()), *use, target))
+        SVGUseElement& originalUse = toSVGUseElement(*use->correspondingElement());
+        SVGElement* target = nullptr;
+        if (hasCycleUseReferencing(originalUse, *use, target))
             return false;
 
         if (target && isDisallowedElement(*target))
             return false;
         // Don't ASSERT(target) here, it may be "pending", too.
         // Setup sub-shadow tree root node
-        RefPtrWillBeRawPtr<SVGGElement> cloneParent = SVGGElement::create(referencedScope()->document());
+        RefPtrWillBeRawPtr<SVGGElement> cloneParent = SVGGElement::create(originalUse.document());
         // Transfer all data (attributes, etc.) from <use> to the new <g> element.
         cloneParent->cloneDataFromElement(*use);
-        cloneParent->setCorrespondingElement(use->correspondingElement());
+        cloneParent->setCorrespondingElement(&originalUse);
 
         removeAttributesFromReplacementElement(*cloneParent);
 
@@ -654,11 +650,11 @@ void SVGUseElement::expandSymbolElementsInShadowTree()
         // height are provided on the 'use' element, then these attributes will be transferred to
         // the generated 'svg'. If attributes width and/or height are not specified, the generated
         // 'svg' element will use values of 100% for these attributes.
-        ASSERT(referencedScope());
-        RefPtrWillBeRawPtr<SVGSVGElement> svgElement = SVGSVGElement::create(referencedScope()->document());
+        SVGElement& originalSymbol = *symbol->correspondingElement();
+        RefPtrWillBeRawPtr<SVGSVGElement> svgElement = SVGSVGElement::create(originalSymbol.document());
         // Transfer all data (attributes, etc.) from <symbol> to the new <svg> element.
         svgElement->cloneDataFromElement(*symbol);
-        svgElement->setCorrespondingElement(symbol->correspondingElement());
+        svgElement->setCorrespondingElement(&originalSymbol);
 
         // Move already cloned elements to the new <svg> element.
         moveChildrenToReplacementElement(*symbol, *svgElement);
