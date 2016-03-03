@@ -14,9 +14,6 @@
     </div>
 </div>
 <script>
-if (window.internals)
-   internals.settings.setAuthorShadowDOMForAnyElementEnabled(true);
-
 var host = document.getElementById("host");
 var shadow1 = host.createShadowRoot();
 shadow1.innerHTML = "<div><shadow></shadow><div></div></div>";

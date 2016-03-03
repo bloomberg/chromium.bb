@@ -61,7 +61,6 @@ public:
         explicit Backup(Settings*);
         void restoreTo(Settings*);
 
-        bool m_originalAuthorShadowDOMForAnyElementEnabled;
         bool m_originalCSP;
         bool m_originalCSSStickyPositionEnabled;
         bool m_originalOverlayScrollbarsEnabled;
@@ -122,7 +121,6 @@ public:
     // FIXME: The following are RuntimeEnabledFeatures and likely
     // cannot be changed after process start. These setters should
     // be removed or moved onto internals.runtimeFlags:
-    void setAuthorShadowDOMForAnyElementEnabled(bool);
     void setCSSStickyPositionEnabled(bool);
     void setLangAttributeAwareFormControlUIEnabled(bool);
     void setOverlayScrollbarsEnabled(bool);

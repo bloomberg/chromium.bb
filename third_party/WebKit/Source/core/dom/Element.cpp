@@ -1973,9 +1973,8 @@ PassRefPtrWillBeRawPtr<ShadowRoot> Element::createShadowRootInternal(ShadowRootT
         ensureUserAgentShadowRoot();
 
     // Some elements make assumptions about what kind of layoutObjects they allow
-    // as children so we can't allow author shadows on them for now. An override
-    // flag is provided for testing how author shadows interact on these elements.
-    if (!areAuthorShadowsAllowed() && !RuntimeEnabledFeatures::authorShadowDOMForAnyElementEnabled()) {
+    // as children so we can't allow author shadows on them for now.
+    if (!areAuthorShadowsAllowed()) {
         exceptionState.throwDOMException(HierarchyRequestError, "Author-created shadow roots are disabled for this element.");
         return nullptr;
     }

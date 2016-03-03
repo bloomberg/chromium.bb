@@ -207,12 +207,6 @@ void HTMLMeterElement::didAddUserAgentShadowRoot(ShadowRoot& root)
     inner->appendChild(bar);
 }
 
-void HTMLMeterElement::willAddFirstAuthorShadowRoot()
-{
-    ASSERT(RuntimeEnabledFeatures::authorShadowDOMForAnyElementEnabled());
-    lazyReattachIfAttached();
-}
-
 void HTMLMeterElement::updateValueAppearance(double percentage)
 {
     DEFINE_STATIC_LOCAL(AtomicString, optimumPseudoId, ("-webkit-meter-optimum-value", AtomicString::ConstructFromLiteral));

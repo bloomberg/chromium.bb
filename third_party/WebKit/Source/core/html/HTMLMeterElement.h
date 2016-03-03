@@ -69,7 +69,6 @@ private:
     ~HTMLMeterElement() override;
 
     bool areAuthorShadowsAllowed() const override { return false; }
-    void willAddFirstAuthorShadowRoot() override;
 
     bool supportLabels() const override { return true; }
 

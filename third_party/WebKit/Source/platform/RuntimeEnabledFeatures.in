@@ -27,7 +27,6 @@ AlwaysUseComplexText status=stable
 ApplicationCache status=stable
 AudioOutputDevices status=stable
 AudioVideoTracks status=experimental
-AuthorShadowDOMForAnyElement
 BackgroundSync status=stable
 CacheIgnoreSearchOption status=experimental
 ClientHints status=stable
