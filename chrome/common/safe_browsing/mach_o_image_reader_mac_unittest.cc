@@ -483,5 +483,33 @@ TEST_F(MachOImageReaderTest, CmdsizeSmallerThanLoadCommand) {
   EXPECT_EQ(static_cast<uint32_t>(LC_SEGMENT), load_commands[2].cmd());
 }
 
+// https://crbug.com/591194
+TEST_F(MachOImageReaderTest, RecurseFatHeader) {
+#pragma pack(push, 1)
+  struct TestImage {
+    fat_header header;
+    fat_arch arch1;
+    fat_arch arch2;
+    mach_header_64 macho64;
+    mach_header macho;
+  };
+#pragma pack(pop)
+
+  TestImage test_image = {};
+  test_image.header.magic = FAT_MAGIC;
+  test_image.header.nfat_arch = 2;
+  test_image.arch1.offset = offsetof(TestImage, macho64);
+  test_image.arch1.size = sizeof(mach_header_64);
+  test_image.arch2.offset = 0;  // Cannot point back at the fat_header.
+  test_image.arch2.size = sizeof(test_image);
+
+  test_image.macho64.magic = MH_MAGIC_64;
+  test_image.macho.magic = MH_MAGIC;
+
+  MachOImageReader reader;
+  EXPECT_FALSE(reader.Initialize(reinterpret_cast<const uint8_t*>(&test_image),
+                                 sizeof(test_image)));
+}
+
 }  // namespace
 }  // namespace safe_browsing
