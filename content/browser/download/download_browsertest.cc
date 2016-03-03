@@ -1481,11 +1481,9 @@ IN_PROC_BROWSER_TEST_P(DownloadResumptionContentTest,
       DownloadManagerForShell(initiator_shell_for_resumption())));
 
   const TestFileErrorInjector::FileErrorInfo err = {
-      request_handler.url().spec(),
       TestFileErrorInjector::FILE_OPERATION_INITIALIZE, 0,
       DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE};
-  injector->AddError(err);
-  injector->InjectErrors();
+  injector->InjectError(err);
 
   // Start and watch for interrupt.
   DownloadItem* download(StartDownloadAndReturnItem(
@@ -1506,8 +1504,7 @@ IN_PROC_BROWSER_TEST_P(DownloadResumptionContentTest,
   RunAllPendingInMessageLoop();
 
   // Clear the old errors list.
-  injector->ClearErrors();
-  injector->InjectErrors();
+  injector->ClearError();
 
   // Resume and watch completion.
   PrepareToResume();
@@ -1526,11 +1523,9 @@ IN_PROC_BROWSER_TEST_P(DownloadResumptionContentTest,
       DownloadManagerForShell(initiator_shell_for_resumption())));
 
   const TestFileErrorInjector::FileErrorInfo err = {
-      request_handler.url().spec(),
       TestFileErrorInjector::FILE_OPERATION_RENAME_UNIQUIFY, 0,
       DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE};
-  injector->AddError(err);
-  injector->InjectErrors();
+  injector->InjectError(err);
 
   // Start and watch for interrupt.
   DownloadItem* download(StartDownloadAndReturnItem(
@@ -1553,8 +1548,7 @@ IN_PROC_BROWSER_TEST_P(DownloadResumptionContentTest,
   RunAllPendingInMessageLoop();
 
   // Clear the old errors list.
-  injector->ClearErrors();
-  injector->InjectErrors();
+  injector->ClearError();
 
   PrepareToResume();
   download->Resume();
@@ -1574,11 +1568,9 @@ IN_PROC_BROWSER_TEST_P(DownloadResumptionContentTest,
   DownloadManagerForShell(initiator_shell_for_resumption())
       ->RemoveAllDownloads();
   TestFileErrorInjector::FileErrorInfo err = {
-      request_handler.url().spec(),
       TestFileErrorInjector::FILE_OPERATION_RENAME_ANNOTATE, 0,
       DOWNLOAD_INTERRUPT_REASON_FILE_FAILED};
-  injector->AddError(err);
-  injector->InjectErrors();
+  injector->InjectError(err);
 
   // Start and watch for interrupt.
   DownloadItem* download(StartDownloadAndReturnItem(
@@ -1598,8 +1590,7 @@ IN_PROC_BROWSER_TEST_P(DownloadResumptionContentTest,
   RunAllPendingInMessageLoop();
 
   // Clear the old errors list.
-  injector->ClearErrors();
-  injector->InjectErrors();
+  injector->ClearError();
 
   PrepareToResume();
   download->Resume();

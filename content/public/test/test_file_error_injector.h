@@ -7,8 +7,6 @@
 
 #include <stddef.h>
 
-#include <map>
-#include <set>
 #include <string>
 
 #include "base/macros.h"
@@ -21,36 +19,34 @@
 namespace content {
 
 class DownloadId;
-class DownloadFileWithErrorsFactory;
+class DownloadFileWithErrorFactory;
 class DownloadManager;
 class DownloadManagerImpl;
 
-// Test helper for injecting errors into download file operations.
-// All errors for a download must be injected before it starts.
-// This class needs to be |RefCountedThreadSafe| because the implementation
-// is referenced by other classes that live past the time when the user is
-// nominally done with it.  These classes are internal to content/.
+// Test helper for injecting errors into download file operations.  All errors
+// for a download must be injected before it starts.  This class needs to be
+// |RefCountedThreadSafe| because the implementation is referenced by other
+// classes that live past the time when the user is nominally done with it.
 //
-// NOTE: No more than one download with the same URL can be in progress at
-// the same time.  You can have multiple simultaneous downloads as long as the
-// URLs are different, as the URLs are used as keys to get information about
-// the download.
+// Once created, an error injected via InjectError() will cause any
+// DownloadFiles created to fail with that error. Call ClearError() to stop
+// injecting errors.
 //
 // Example:
 //
-// FileErrorInfo a = { url1, ... };
-// FileErrorInfo b = { url2, ... };
+// FileErrorInfo a = { ... };
 //
 // scoped_refptr<TestFileErrorInjector> injector =
 //     TestFileErrorInjector::Create(download_manager);
 //
-// injector->AddError(a);
-// injector->AddError(b);
-// injector->InjectErrors();
+// injector->InjectError(a);
 //
-// download_manager->DownloadUrl(url1, ...);
-// download_manager->DownloadUrl(url2, ...);
-// ... wait for downloads to finish or get an injected error ...
+// download_manager->DownloadUrl(url1, ...); // Will be interrupted due to |a|.
+// download_manager->DownloadUrl(url2, ...); // Will be interrupted due to |a|.
+//
+// injector->ClearError();
+//
+// download_manager->DownloadUrl(url3, ...); // Won't be interrupted due to |a|.
 class TestFileErrorInjector
     : public base::RefCountedThreadSafe<TestFileErrorInjector> {
  public:
@@ -63,13 +59,10 @@ class TestFileErrorInjector
 
   // Structure that encapsulates the information needed to inject a file error.
   struct FileErrorInfo {
-    std::string url;  // Full URL of the download.  Identifies the download.
     FileOperationCode code;  // Operation to affect.
     int operation_instance;  // 0-based count of operation calls, for each code.
     DownloadInterruptReason error;  // Error to inject.
   };
-
-  typedef std::map<std::string, FileErrorInfo> ErrorMap;
 
   // Creates an instance.  May only be called once.
   // Lives until all callbacks (in the implementation) are complete and the
@@ -78,41 +71,31 @@ class TestFileErrorInjector
   static scoped_refptr<TestFileErrorInjector> Create(
       DownloadManager* download_manager);
 
-  // Adds an error.
-  // Must be called before |InjectErrors()| for a particular download file.
-  // It is an error to call |AddError()| more than once for the same file
-  // (URL), unless you call |ClearErrors()| in between them.
-  bool AddError(const FileErrorInfo& error_info);
-
-  // Clears all errors.
-  // Only affects files created after the next call to InjectErrors().
-  void ClearErrors();
-
   // Injects the errors such that new download files will be affected.
   // The download system must already be initialized before calling this.
   // Multiple calls are allowed, but only useful if the errors have changed.
   // Replaces the injected error list.
-  bool InjectErrors();
+  bool InjectError(const FileErrorInfo& error_to_inject);
+
+  // Clears all errors.
+  // Only affects files created after the next call to InjectErrors().
+  void ClearError();
 
   // Tells how many files are currently open.
   size_t CurrentFileCount() const;
 
   // Tells how many files have ever been open (since construction or the
-  // last call to |ClearFoundFiles()|).
+  // last call to |ClearTotalFileCount()|).
   size_t TotalFileCount() const;
 
-  // Returns whether or not a file matching |url| has been created.
-  bool HadFile(const GURL& url) const;
-
-  // Resets the found file list.
-  void ClearFoundFiles();
+  // Resets the total file count. Doesn't affect what's returned by
+  // CurrentFileCount().
+  void ClearTotalFileCount();
 
   static std::string DebugString(FileOperationCode code);
 
  private:
   friend class base::RefCountedThreadSafe<TestFileErrorInjector>;
-
-  typedef std::set<GURL> FileSet;
 
   explicit TestFileErrorInjector(DownloadManager* download_manager);
 
@@ -120,28 +103,25 @@ class TestFileErrorInjector
 
   // Callbacks from the download file, to record lifetimes.
   // These may be called on any thread.
-  void RecordDownloadFileConstruction(const GURL& url);
-  void RecordDownloadFileDestruction(const GURL& url);
+  void RecordDownloadFileConstruction();
+  void RecordDownloadFileDestruction();
 
   // These run on the UI thread.
-  void DownloadFileCreated(GURL url);
-  void DestroyingDownloadFile(GURL url);
+  void DownloadFileCreated();
+  void DestroyingDownloadFile();
 
   // All the data is used on the UI thread.
-  // Our injected error list, mapped by URL.  One per file.
-  ErrorMap injected_errors_;
-
   // Keep track of active DownloadFiles.
-  FileSet files_;
+  size_t active_file_count_ = 0;
 
   // Keep track of found DownloadFiles.
-  FileSet found_files_;
+  size_t total_file_count_ = 0;
 
-  // The factory we created.  May outlive this class.
-  DownloadFileWithErrorsFactory* created_factory_;
+  // The factory we created. May outlive this class.
+  DownloadFileWithErrorFactory* created_factory_ = nullptr;
 
   // The download manager we set the factory on.
-  DownloadManagerImpl* download_manager_;
+  DownloadManagerImpl* download_manager_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(TestFileErrorInjector);
 };

@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "content/browser/download/download_file_factory.h"
@@ -23,12 +24,9 @@ class ByteStreamReader;
 namespace {
 
 // A class that performs file operations and injects errors.
-class DownloadFileWithErrors: public DownloadFileImpl {
+class DownloadFileWithError: public DownloadFileImpl {
  public:
-  typedef base::Callback<void(const GURL& url)> ConstructionCallback;
-  typedef base::Callback<void(const GURL& url)> DestructionCallback;
-
-  DownloadFileWithErrors(const DownloadSaveInfo& save_info,
+  DownloadFileWithError(const DownloadSaveInfo& save_info,
                          const base::FilePath& default_download_directory,
                          const GURL& url,
                          const GURL& referrer_url,
@@ -38,10 +36,10 @@ class DownloadFileWithErrors: public DownloadFileImpl {
                          const net::BoundNetLog& bound_net_log,
                          base::WeakPtr<DownloadDestinationObserver> observer,
                          const TestFileErrorInjector::FileErrorInfo& error_info,
-                         const ConstructionCallback& ctor_callback,
-                         const DestructionCallback& dtor_callback);
+                         const base::Closure& ctor_callback,
+                         const base::Closure& dtor_callback);
 
-  ~DownloadFileWithErrors() override;
+  ~DownloadFileWithError() override;
 
   void Initialize(const InitializeCallback& callback) override;
 
@@ -69,9 +67,6 @@ class DownloadFileWithErrors: public DownloadFileImpl {
     TestFileErrorInjector::FileOperationCode code,
     DownloadInterruptReason* output_error);
 
-  // Source URL for the file being downloaded.
-  GURL source_url_;
-
   // Our injected error.  Only one per file.
   TestFileErrorInjector::FileErrorInfo error_info_;
 
@@ -79,7 +74,7 @@ class DownloadFileWithErrors: public DownloadFileImpl {
   std::map<TestFileErrorInjector::FileOperationCode, int> operation_counter_;
 
   // Callback for destruction.
-  DestructionCallback destruction_callback_;
+  base::Closure destruction_callback_;
 };
 
 static void InitializeErrorCallback(
@@ -100,7 +95,7 @@ static void RenameErrorCallback(
       path_result : base::FilePath());
 }
 
-DownloadFileWithErrors::DownloadFileWithErrors(
+DownloadFileWithError::DownloadFileWithError(
     const DownloadSaveInfo& save_info,
     const base::FilePath& default_download_directory,
     const GURL& url,
@@ -111,8 +106,8 @@ DownloadFileWithErrors::DownloadFileWithErrors(
     const net::BoundNetLog& bound_net_log,
     base::WeakPtr<DownloadDestinationObserver> observer,
     const TestFileErrorInjector::FileErrorInfo& error_info,
-    const ConstructionCallback& ctor_callback,
-    const DestructionCallback& dtor_callback)
+    const base::Closure& ctor_callback,
+    const base::Closure& dtor_callback)
     : DownloadFileImpl(save_info,
                        default_download_directory,
                        url,
@@ -122,7 +117,6 @@ DownloadFileWithErrors::DownloadFileWithErrors(
                        std::move(byte_stream),
                        bound_net_log,
                        observer),
-      source_url_(url),
       error_info_(error_info),
       destruction_callback_(dtor_callback) {
   // DownloadFiles are created on the UI thread and are destroyed on the FILE
@@ -131,18 +125,15 @@ DownloadFileWithErrors::DownloadFileWithErrors(
   // one (as happens during download resumption), then the DestructionCallback
   // for the old DownloadFile is run before the ConstructionCallback for the
   // next DownloadFile.
-  BrowserThread::PostTask(
-      BrowserThread::FILE,
-      FROM_HERE,
-      base::Bind(ctor_callback, source_url_));
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE, ctor_callback);
 }
 
-DownloadFileWithErrors::~DownloadFileWithErrors() {
+DownloadFileWithError::~DownloadFileWithError() {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-  destruction_callback_.Run(source_url_);
+  destruction_callback_.Run();
 }
 
-void DownloadFileWithErrors::Initialize(
+void DownloadFileWithError::Initialize(
     const InitializeCallback& callback) {
   DownloadInterruptReason error_to_return = DOWNLOAD_INTERRUPT_REASON_NONE;
   InitializeCallback callback_to_use = callback;
@@ -168,14 +159,14 @@ void DownloadFileWithErrors::Initialize(
   DownloadFileImpl::Initialize(callback_to_use);
 }
 
-DownloadInterruptReason DownloadFileWithErrors::AppendDataToFile(
+DownloadInterruptReason DownloadFileWithError::AppendDataToFile(
     const char* data, size_t data_len) {
   return ShouldReturnError(
       TestFileErrorInjector::FILE_OPERATION_WRITE,
       DownloadFileImpl::AppendDataToFile(data, data_len));
 }
 
-void DownloadFileWithErrors::RenameAndUniquify(
+void DownloadFileWithError::RenameAndUniquify(
     const base::FilePath& full_path,
     const RenameCompletionCallback& callback) {
   DownloadInterruptReason error_to_return = DOWNLOAD_INTERRUPT_REASON_NONE;
@@ -202,7 +193,7 @@ void DownloadFileWithErrors::RenameAndUniquify(
   DownloadFileImpl::RenameAndUniquify(full_path, callback_to_use);
 }
 
-void DownloadFileWithErrors::RenameAndAnnotate(
+void DownloadFileWithError::RenameAndAnnotate(
     const base::FilePath& full_path,
     const RenameCompletionCallback& callback) {
   DownloadInterruptReason error_to_return = DOWNLOAD_INTERRUPT_REASON_NONE;
@@ -229,7 +220,7 @@ void DownloadFileWithErrors::RenameAndAnnotate(
   DownloadFileImpl::RenameAndAnnotate(full_path, callback_to_use);
 }
 
-bool DownloadFileWithErrors::OverwriteError(
+bool DownloadFileWithError::OverwriteError(
     TestFileErrorInjector::FileOperationCode code,
     DownloadInterruptReason* output_error) {
   int counter = operation_counter_[code]++;
@@ -244,7 +235,7 @@ bool DownloadFileWithErrors::OverwriteError(
   return true;
 }
 
-DownloadInterruptReason DownloadFileWithErrors::ShouldReturnError(
+DownloadInterruptReason DownloadFileWithError::ShouldReturnError(
     TestFileErrorInjector::FileOperationCode code,
     DownloadInterruptReason original_error) {
   DownloadInterruptReason output_error = original_error;
@@ -255,12 +246,11 @@ DownloadInterruptReason DownloadFileWithErrors::ShouldReturnError(
 }  // namespace
 
 // A factory for constructing DownloadFiles that inject errors.
-class DownloadFileWithErrorsFactory : public DownloadFileFactory {
+class DownloadFileWithErrorFactory : public DownloadFileFactory {
  public:
-  DownloadFileWithErrorsFactory(
-      const DownloadFileWithErrors::ConstructionCallback& ctor_callback,
-      const DownloadFileWithErrors::DestructionCallback& dtor_callback);
-  ~DownloadFileWithErrorsFactory() override;
+  DownloadFileWithErrorFactory(const base::Closure& ctor_callback,
+                                const base::Closure& dtor_callback);
+  ~DownloadFileWithErrorFactory() override;
 
   // DownloadFileFactory interface.
   DownloadFile* CreateFile(
@@ -274,31 +264,31 @@ class DownloadFileWithErrorsFactory : public DownloadFileFactory {
       const net::BoundNetLog& bound_net_log,
       base::WeakPtr<DownloadDestinationObserver> observer) override;
 
-  bool AddError(
-      const TestFileErrorInjector::FileErrorInfo& error_info);
-
-  void ClearErrors();
+  void ClearError();
+  bool SetError(TestFileErrorInjector::FileErrorInfo error);
 
  private:
-  // Our injected error list, mapped by URL.  One per file.
-   TestFileErrorInjector::ErrorMap injected_errors_;
+  // Our injected error.
+  TestFileErrorInjector::FileErrorInfo injected_error_;
 
   // Callback for creation and destruction.
-  DownloadFileWithErrors::ConstructionCallback construction_callback_;
-  DownloadFileWithErrors::DestructionCallback destruction_callback_;
+  base::Closure construction_callback_;
+  base::Closure destruction_callback_;
 };
 
-DownloadFileWithErrorsFactory::DownloadFileWithErrorsFactory(
-    const DownloadFileWithErrors::ConstructionCallback& ctor_callback,
-    const DownloadFileWithErrors::DestructionCallback& dtor_callback)
-        : construction_callback_(ctor_callback),
-          destruction_callback_(dtor_callback) {
+DownloadFileWithErrorFactory::DownloadFileWithErrorFactory(
+    const base::Closure& ctor_callback,
+    const base::Closure& dtor_callback)
+    : construction_callback_(ctor_callback),
+      destruction_callback_(dtor_callback) {
+  injected_error_.code = TestFileErrorInjector::FILE_OPERATION_INITIALIZE;
+  injected_error_.error = DOWNLOAD_INTERRUPT_REASON_NONE;
+  injected_error_.operation_instance = -1;
 }
 
-DownloadFileWithErrorsFactory::~DownloadFileWithErrorsFactory() {
-}
+DownloadFileWithErrorFactory::~DownloadFileWithErrorFactory() {}
 
-DownloadFile* DownloadFileWithErrorsFactory::CreateFile(
+DownloadFile* DownloadFileWithErrorFactory::CreateFile(
     const DownloadSaveInfo& save_info,
     const base::FilePath& default_download_directory,
     const GURL& url,
@@ -308,45 +298,25 @@ DownloadFile* DownloadFileWithErrorsFactory::CreateFile(
     scoped_ptr<ByteStreamReader> byte_stream,
     const net::BoundNetLog& bound_net_log,
     base::WeakPtr<DownloadDestinationObserver> observer) {
-  if (injected_errors_.find(url.spec()) == injected_errors_.end()) {
-    // Have to create entry, because FileErrorInfo is not a POD type.
-    TestFileErrorInjector::FileErrorInfo err_info = {
-      url.spec(),
-      TestFileErrorInjector::FILE_OPERATION_INITIALIZE,
-      -1,
-      DOWNLOAD_INTERRUPT_REASON_NONE
-    };
-    injected_errors_[url.spec()] = err_info;
-  }
-
-  return new DownloadFileWithErrors(
+  return new DownloadFileWithError(
       save_info, default_download_directory, url, referrer_url, calculate_hash,
       std::move(file), std::move(byte_stream), bound_net_log, observer,
-      injected_errors_[url.spec()], construction_callback_,
-      destruction_callback_);
+      injected_error_, construction_callback_, destruction_callback_);
 }
 
-bool DownloadFileWithErrorsFactory::AddError(
-    const TestFileErrorInjector::FileErrorInfo& error_info) {
-  // Creates an empty entry if necessary.  Duplicate entries overwrite.
-  injected_errors_[error_info.url] = error_info;
-
+bool DownloadFileWithErrorFactory::SetError(
+    TestFileErrorInjector::FileErrorInfo error) {
+  injected_error_ = std::move(error);
   return true;
 }
 
-void DownloadFileWithErrorsFactory::ClearErrors() {
-  injected_errors_.clear();
-}
-
-TestFileErrorInjector::TestFileErrorInjector(
-    DownloadManager* download_manager)
-    : created_factory_(NULL),
-      // This code is only used for browser_tests, so a
+TestFileErrorInjector::TestFileErrorInjector(DownloadManager* download_manager)
+    :  // This code is only used for browser_tests, so a
       // DownloadManager is always a DownloadManagerImpl.
       download_manager_(static_cast<DownloadManagerImpl*>(download_manager)) {
   // Record the value of the pointer, for later validation.
   created_factory_ =
-      new DownloadFileWithErrorsFactory(
+      new DownloadFileWithErrorFactory(
           base::Bind(&TestFileErrorInjector::RecordDownloadFileConstruction,
                      this),
           base::Bind(&TestFileErrorInjector::RecordDownloadFileDestruction,
@@ -363,85 +333,59 @@ TestFileErrorInjector::TestFileErrorInjector(
 TestFileErrorInjector::~TestFileErrorInjector() {
 }
 
-bool TestFileErrorInjector::AddError(const FileErrorInfo& error_info) {
+void TestFileErrorInjector::ClearError() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK_LE(0, error_info.operation_instance);
-  DCHECK(injected_errors_.find(error_info.url) == injected_errors_.end());
-
-  // Creates an empty entry if necessary.
-  injected_errors_[error_info.url] = error_info;
-
-  return true;
+  // An error with an index of -1, which will never be reached.
+  static const TestFileErrorInjector::FileErrorInfo kNoOpErrorInfo = {
+      TestFileErrorInjector::FILE_OPERATION_INITIALIZE, -1,
+      DOWNLOAD_INTERRUPT_REASON_NONE};
+  InjectError(kNoOpErrorInfo);
 }
 
-void TestFileErrorInjector::ClearErrors() {
+bool TestFileErrorInjector::InjectError(const FileErrorInfo& error_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  injected_errors_.clear();
-}
-
-bool TestFileErrorInjector::InjectErrors() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  ClearFoundFiles();
-
+  ClearTotalFileCount();
   DCHECK_EQ(static_cast<DownloadFileFactory*>(created_factory_),
             download_manager_->GetDownloadFileFactoryForTesting());
-
-  created_factory_->ClearErrors();
-
-  for (ErrorMap::const_iterator it = injected_errors_.begin();
-       it != injected_errors_.end(); ++it)
-    created_factory_->AddError(it->second);
-
+  created_factory_->SetError(error_info);
   return true;
 }
 
 size_t TestFileErrorInjector::CurrentFileCount() const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return files_.size();
+  return active_file_count_;
 }
 
 size_t TestFileErrorInjector::TotalFileCount() const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return found_files_.size();
+  return total_file_count_;
 }
 
+void TestFileErrorInjector::ClearTotalFileCount() {
+  total_file_count_ = 0;
+}
 
-bool TestFileErrorInjector::HadFile(const GURL& url) const {
+void TestFileErrorInjector::DownloadFileCreated() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  return (found_files_.find(url) != found_files_.end());
+  ++active_file_count_;
+  ++total_file_count_;
 }
 
-void TestFileErrorInjector::ClearFoundFiles() {
-  found_files_.clear();
-}
-
-void TestFileErrorInjector::DownloadFileCreated(GURL url) {
+void TestFileErrorInjector::DestroyingDownloadFile() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(files_.find(url) == files_.end());
-
-  files_.insert(url);
-  found_files_.insert(url);
+  --active_file_count_;
 }
 
-void TestFileErrorInjector::DestroyingDownloadFile(GURL url) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(files_.find(url) != files_.end());
-
-  files_.erase(url);
-}
-
-void TestFileErrorInjector::RecordDownloadFileConstruction(const GURL& url) {
+void TestFileErrorInjector::RecordDownloadFileConstruction() {
   BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&TestFileErrorInjector::DownloadFileCreated, this, url));
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&TestFileErrorInjector::DownloadFileCreated, this));
 }
 
-void TestFileErrorInjector::RecordDownloadFileDestruction(const GURL& url) {
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-      base::Bind(&TestFileErrorInjector::DestroyingDownloadFile, this, url));
+void TestFileErrorInjector::RecordDownloadFileDestruction() {
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&TestFileErrorInjector::DestroyingDownloadFile, this));
 }
 
 // static

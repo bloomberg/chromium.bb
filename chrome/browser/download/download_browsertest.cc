@@ -972,29 +972,21 @@ class DownloadTest : public InProcessBrowserTest {
       scoped_refptr<content::TestFileErrorInjector> injector,
       const FileErrorInjectInfo& info,
       size_t i) {
-    std::stringstream s;
-    s << " " << __FUNCTION__ << "()"
-      << " index = " << i
-      << " url = " << info.error_info.url
-      << " operation code = "
-      << content::TestFileErrorInjector::DebugString(info.error_info.code)
-      << " instance = " << info.error_info.operation_instance
-      << " error = "
-      << content::DownloadInterruptReasonToString(info.error_info.error);
+    SCOPED_TRACE(
+        ::testing::Message()
+        << " " << __FUNCTION__ << "()"
+        << " index = " << i << " operation code = "
+        << content::TestFileErrorInjector::DebugString(info.error_info.code)
+        << " instance = " << info.error_info.operation_instance << " error = "
+        << content::DownloadInterruptReasonToString(info.error_info.error));
 
-    injector->ClearErrors();
-    injector->AddError(info.error_info);
-
-    injector->InjectErrors();
+    injector->InjectError(info.error_info);
 
     DownloadFilesCheckErrorsLoopBody(info.download_info, i);
 
     size_t expected_successes = info.download_info.show_download_item ? 1u : 0u;
-    EXPECT_EQ(expected_successes, injector->TotalFileCount()) << s.str();
-    EXPECT_EQ(0u, injector->CurrentFileCount()) << s.str();
-
-    if (info.download_info.show_download_item)
-      EXPECT_TRUE(injector->HadFile(GURL(info.error_info.url))) << s.str();
+    EXPECT_EQ(expected_successes, injector->TotalFileCount());
+    EXPECT_EQ(0u, injector->CurrentFileCount());
   }
 
   void DownloadInsertFilesErrorCheckErrors(size_t count,
@@ -1007,12 +999,6 @@ class DownloadTest : public InProcessBrowserTest {
             DownloadManagerForBrowser(browser())));
 
     for (size_t i = 0; i < count; ++i) {
-      // Set up the full URL, for download file tracking.
-      std::string server_path = "/downloads/";
-      server_path += info[i].download_info.starting_url;
-      GURL url = embedded_test_server()->GetURL(server_path);
-      info[i].error_info.url = url.spec();
-
       DownloadInsertFilesErrorCheckErrorsLoopBody(injector, info[i], i);
     }
   }
@@ -1045,20 +1031,17 @@ class DownloadTest : public InProcessBrowserTest {
   DownloadItem* StartMockDownloadAndInjectError(
       content::TestFileErrorInjector* error_injector,
       content::DownloadInterruptReason error) {
-    GURL url = URLRequestMockHTTPJob::GetMockUrl(kDownloadTest1Path);
-
     content::TestFileErrorInjector::FileErrorInfo error_info;
-    error_info.url = url.spec();
     error_info.code = content::TestFileErrorInjector::FILE_OPERATION_WRITE;
     error_info.operation_instance = 0;
     error_info.error = error;
-    error_injector->ClearErrors();
-    error_injector->AddError(error_info);
-    error_injector->InjectErrors();
+    error_injector->InjectError(error_info);
 
     scoped_ptr<content::DownloadTestObserver> observer(
         new DownloadTestObserverResumable(
             DownloadManagerForBrowser(browser()), 1));
+
+    GURL url = URLRequestMockHTTPJob::GetMockUrl(kDownloadTest1Path);
     ui_test_utils::NavigateToURL(browser(), url);
     observer->WaitForFinished();
 
@@ -1069,8 +1052,7 @@ class DownloadTest : public InProcessBrowserTest {
     if (downloads.size() != 1)
       return NULL;
 
-    error_injector->ClearErrors();
-    error_injector->InjectErrors();
+    error_injector->ClearError();
     DownloadItem* download = downloads[0];
     EXPECT_EQ(DownloadItem::INTERRUPTED, download->GetState());
     EXPECT_EQ(error, download->GetLastReason());
@@ -2344,56 +2326,56 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadErrorsFile) {
        {"a_zip_file.zip", "a_zip_file.zip", DOWNLOAD_NAVIGATE,
         content::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE, true, false},
        {
-           "", content::TestFileErrorInjector::FILE_OPERATION_INITIALIZE, 0,
+           content::TestFileErrorInjector::FILE_OPERATION_INITIALIZE, 0,
            content::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE,
        }},
       {// Direct download with injected "Disk full" error in Initialize().
        {"a_zip_file.zip", "a_zip_file.zip", DOWNLOAD_DIRECT,
         content::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE, true, false},
        {
-           "", content::TestFileErrorInjector::FILE_OPERATION_INITIALIZE, 0,
+           content::TestFileErrorInjector::FILE_OPERATION_INITIALIZE, 0,
            content::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE,
        }},
       {// Navigated download with injected "Disk full" error in Write().
        {"a_zip_file.zip", "a_zip_file.zip", DOWNLOAD_NAVIGATE,
         content::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE, true, false},
        {
-           "", content::TestFileErrorInjector::FILE_OPERATION_WRITE, 0,
+           content::TestFileErrorInjector::FILE_OPERATION_WRITE, 0,
            content::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE,
        }},
       {// Direct download with injected "Disk full" error in Write().
        {"a_zip_file.zip", "a_zip_file.zip", DOWNLOAD_DIRECT,
         content::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE, true, false},
        {
-           "", content::TestFileErrorInjector::FILE_OPERATION_WRITE, 0,
+           content::TestFileErrorInjector::FILE_OPERATION_WRITE, 0,
            content::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE,
        }},
       {// Navigated download with injected "Failed" error in Initialize().
        {"a_zip_file.zip", "a_zip_file.zip", DOWNLOAD_NAVIGATE,
         content::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED, true, false},
        {
-           "", content::TestFileErrorInjector::FILE_OPERATION_INITIALIZE, 0,
+           content::TestFileErrorInjector::FILE_OPERATION_INITIALIZE, 0,
            content::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED,
        }},
       {// Direct download with injected "Failed" error in Initialize().
        {"a_zip_file.zip", "a_zip_file.zip", DOWNLOAD_DIRECT,
         content::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED, true, false},
        {
-           "", content::TestFileErrorInjector::FILE_OPERATION_INITIALIZE, 0,
+           content::TestFileErrorInjector::FILE_OPERATION_INITIALIZE, 0,
            content::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED,
        }},
       {// Navigated download with injected "Failed" error in Write().
        {"a_zip_file.zip", "a_zip_file.zip", DOWNLOAD_NAVIGATE,
         content::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED, true, false},
        {
-           "", content::TestFileErrorInjector::FILE_OPERATION_WRITE, 0,
+           content::TestFileErrorInjector::FILE_OPERATION_WRITE, 0,
            content::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED,
        }},
       {// Direct download with injected "Failed" error in Write().
        {"a_zip_file.zip", "a_zip_file.zip", DOWNLOAD_DIRECT,
         content::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED, true, false},
        {
-           "", content::TestFileErrorInjector::FILE_OPERATION_WRITE, 0,
+           content::TestFileErrorInjector::FILE_OPERATION_WRITE, 0,
            content::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED,
        }},
       {// Navigated download with injected "Name too long" error in
@@ -2401,35 +2383,35 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadErrorsFile) {
        {"a_zip_file.zip", "a_zip_file.zip", DOWNLOAD_NAVIGATE,
         content::DOWNLOAD_INTERRUPT_REASON_FILE_NAME_TOO_LONG, true, false},
        {
-           "", content::TestFileErrorInjector::FILE_OPERATION_INITIALIZE, 0,
+           content::TestFileErrorInjector::FILE_OPERATION_INITIALIZE, 0,
            content::DOWNLOAD_INTERRUPT_REASON_FILE_NAME_TOO_LONG,
        }},
       {// Direct download with injected "Name too long" error in Initialize().
        {"a_zip_file.zip", "a_zip_file.zip", DOWNLOAD_DIRECT,
         content::DOWNLOAD_INTERRUPT_REASON_FILE_NAME_TOO_LONG, true, false},
        {
-           "", content::TestFileErrorInjector::FILE_OPERATION_INITIALIZE, 0,
+           content::TestFileErrorInjector::FILE_OPERATION_INITIALIZE, 0,
            content::DOWNLOAD_INTERRUPT_REASON_FILE_NAME_TOO_LONG,
        }},
       {// Navigated download with injected "Name too long" error in Write().
        {"a_zip_file.zip", "a_zip_file.zip", DOWNLOAD_NAVIGATE,
         content::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED, true, false},
        {
-           "", content::TestFileErrorInjector::FILE_OPERATION_WRITE, 0,
+           content::TestFileErrorInjector::FILE_OPERATION_WRITE, 0,
            content::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED,
        }},
       {// Direct download with injected "Name too long" error in Write().
        {"a_zip_file.zip", "a_zip_file.zip", DOWNLOAD_DIRECT,
         content::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED, true, false},
        {
-           "", content::TestFileErrorInjector::FILE_OPERATION_WRITE, 0,
+           content::TestFileErrorInjector::FILE_OPERATION_WRITE, 0,
            content::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED,
        }},
       {// Direct download with injected "Disk full" error in 2nd Write().
        {"06bESSE21Evolution.ppt", "06bESSE21Evolution.ppt", DOWNLOAD_DIRECT,
         content::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE, true, false},
        {
-           "", content::TestFileErrorInjector::FILE_OPERATION_WRITE, 1,
+           content::TestFileErrorInjector::FILE_OPERATION_WRITE, 1,
            content::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE,
        }}};
 
@@ -3064,12 +3046,10 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, Resumption_MultipleAttempts) {
   ASSERT_TRUE(download);
 
   content::TestFileErrorInjector::FileErrorInfo error_info;
-  error_info.url = download->GetOriginalUrl().spec();
   error_info.code = content::TestFileErrorInjector::FILE_OPERATION_WRITE;
   error_info.operation_instance = 0;
   error_info.error = content::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED;
-  error_injector->AddError(error_info);
-  error_injector->InjectErrors();
+  error_injector->InjectError(error_info);
 
   // Resuming should cause the download to be interrupted again due to the
   // errors we are injecting.
@@ -3079,8 +3059,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, Resumption_MultipleAttempts) {
   ASSERT_EQ(content::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED,
             download->GetLastReason());
 
-  error_injector->ClearErrors();
-  error_injector->InjectErrors();
+  error_injector->ClearError();
 
   // No errors this time. The download should complete successfully.
   EXPECT_FALSE(completion_observer->IsFinished());
