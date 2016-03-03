@@ -89,6 +89,11 @@ public:
         return m_layoutObject->isLayoutFullScreen();
     }
 
+    bool isListItem() const
+    {
+        return m_layoutObject->isListItem();
+    }
+
     bool needsLayout()
     {
         return m_layoutObject->needsLayout();

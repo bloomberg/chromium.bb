@@ -27,6 +27,7 @@
 #include "core/HTMLNames.h"
 #include "core/dom/LayoutTreeBuilderTraversal.h"
 #include "core/layout/LayoutListItem.h"
+#include "core/layout/api/LayoutLIItem.h"
 
 namespace blink {
 
@@ -95,7 +96,7 @@ void HTMLLIElement::attach(const AttachContext& context)
     HTMLElement::attach(context);
 
     if (layoutObject() && layoutObject()->isListItem()) {
-        LayoutListItem* listItemLayoutObject = toLayoutListItem(layoutObject());
+        LayoutLIItem liLayoutItem = LayoutLIItem(toLayoutListItem(layoutObject()));
 
         ASSERT(!document().childNeedsDistributionRecalc());
 
@@ -113,7 +114,7 @@ void HTMLLIElement::attach(const AttachContext& context)
         // If we are not in a list, tell the layoutObject so it can position us inside.
         // We don't want to change our style to say "inside" since that would affect nested nodes.
         if (!listNode)
-            listItemLayoutObject->setNotInList(true);
+            liLayoutItem.setNotInList(true);
 
         parseValue(fastGetAttribute(valueAttr));
     }

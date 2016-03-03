@@ -508,6 +508,7 @@
             'layout/api/LayoutFullScreenItem.h',
             'layout/api/LayoutImageItem.h',
             'layout/api/LayoutItem.h',
+            'layout/api/LayoutLIItem.h',
             'layout/api/LayoutPartItem.h',
             'layout/api/LayoutTextControlItem.h',
             'layout/api/LayoutTextFragmentItem.h',
