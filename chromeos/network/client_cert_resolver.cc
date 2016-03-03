@@ -14,6 +14,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
+#include "base/strings/string_util.h"
 #include "base/task_runner.h"
 #include "base/threading/worker_pool.h"
 #include "base/time/clock.h"
@@ -25,6 +26,8 @@
 #include "dbus/object_path.h"
 #include "net/cert/scoped_nss_types.h"
 #include "net/cert/x509_certificate.h"
+#include "net/cert/x509_util_nss.h"
+#include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
 
@@ -34,11 +37,13 @@ struct ClientCertResolver::NetworkAndMatchingCert {
   NetworkAndMatchingCert(const std::string& network_path,
                          client_cert::ConfigType config_type,
                          const std::string& cert_id,
-                         int slot_id)
+                         int slot_id,
+                         const std::string& configured_identity)
       : service_path(network_path),
         cert_config_type(config_type),
         pkcs11_id(cert_id),
-        key_slot_id(slot_id) {}
+        key_slot_id(slot_id),
+        identity(configured_identity) {}
 
   std::string service_path;
   client_cert::ConfigType cert_config_type;
@@ -48,6 +53,12 @@ struct ClientCertResolver::NetworkAndMatchingCert {
 
   // The id of the slot containing the certificate and the private key.
   int key_slot_id;
+
+  // The ONC WiFi.EAP.Identity field can contain variables like
+  // ${CERT_SAN_EMAIL} which are expanded by ClientCertResolver.
+  // |identity| stores a copy of this string after the substitution
+  // has been done.
+  std::string identity;
 };
 
 typedef std::vector<ClientCertResolver::NetworkAndMatchingCert>
@@ -197,6 +208,8 @@ void FindCertificateMatches(const net::CertificateList& certs,
                      MatchCertWithPattern(it->cert_config.pattern));
     std::string pkcs11_id;
     int slot_id = -1;
+    std::string identity;
+
     if (cert_it == client_certs.end()) {
       VLOG(1) << "Couldn't find a matching client cert for network "
               << it->service_path;
@@ -211,9 +224,38 @@ void FindCertificateMatches(const net::CertificateList& certs,
         // the worst case the user can remove the problematic cert.
         continue;
       }
+
+      // If the policy specifies an identity containing ${CERT_SAN_xxx},
+      // see if the cert contains a suitable subjectAltName that can be
+      // stuffed into the shill properties.
+      identity = it->cert_config.policy_identity;
+      std::vector<std::string> names;
+
+      size_t offset = identity.find(onc::substitutes::kCertSANEmail, 0);
+      if (offset != std::string::npos) {
+        std::vector<std::string> names;
+        net::x509_util::GetRFC822SubjectAltNames(
+            cert_it->cert->os_cert_handle(), &names);
+        if (!names.empty()) {
+          base::ReplaceSubstringsAfterOffset(
+              &identity, offset, onc::substitutes::kCertSANEmail, names[0]);
+        }
+      }
+
+      offset = identity.find(onc::substitutes::kCertSANUPN, 0);
+      if (offset != std::string::npos) {
+        std::vector<std::string> names;
+        net::x509_util::GetUPNSubjectAltNames(cert_it->cert->os_cert_handle(),
+                                              &names);
+        if (!names.empty()) {
+          base::ReplaceSubstringsAfterOffset(
+              &identity, offset, onc::substitutes::kCertSANUPN, names[0]);
+        }
+      }
     }
     matches->push_back(ClientCertResolver::NetworkAndMatchingCert(
-        it->service_path, it->cert_config.location, pkcs11_id, slot_id));
+        it->service_path, it->cert_config.location, pkcs11_id, slot_id,
+        identity));
   }
 }
 
@@ -502,6 +544,10 @@ void ClientCertResolver::ConfigureCertificates(NetworkCertMatches* matches) {
                                       it->key_slot_id,
                                       it->pkcs11_id,
                                       &shill_properties);
+      if (!it->identity.empty()) {
+        shill_properties.SetStringWithoutPathExpansion(
+            shill::kEapIdentityProperty, it->identity);
+      }
     }
     network_properties_changed_ = true;
     DBusThreadManager::Get()->GetShillServiceClient()->

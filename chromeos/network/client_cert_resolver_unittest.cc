@@ -108,10 +108,10 @@ class ClientCertResolverTest : public testing::Test,
   // Imports a client certificate. Its PKCS#11 ID is stored in |test_cert_id_|.
   // If |import_issuer| is true, also imports the CA cert (stored as PEM in
   // test_ca_cert_pem_) that issued the client certificate.
-  void SetupTestCerts(bool import_issuer) {
+  void SetupTestCerts(const std::string& prefix, bool import_issuer) {
     // Load a CA cert.
     net::CertificateList ca_cert_list = net::CreateCertificateListFromFile(
-        net::GetTestCertsDirectory(), "client_1_ca.pem",
+        net::GetTestCertsDirectory(), prefix + "_ca.pem",
         net::X509Certificate::FORMAT_AUTO);
     ASSERT_TRUE(!ca_cert_list.empty());
     net::X509Certificate::GetPEMEncoded(ca_cert_list[0]->os_cert_handle(),
@@ -127,11 +127,9 @@ class ClientCertResolverTest : public testing::Test,
     }
 
     // Import a client cert signed by that CA.
-    test_client_cert_ =
-        net::ImportClientCertAndKeyFromFile(net::GetTestCertsDirectory(),
-                                            "client_1.pem",
-                                            "client_1.pk8",
-                                            test_nssdb_.slot());
+    test_client_cert_ = net::ImportClientCertAndKeyFromFile(
+        net::GetTestCertsDirectory(), prefix + ".pem", prefix + ".pk8",
+        test_nssdb_.slot());
     ASSERT_TRUE(test_client_cert_.get());
   }
 
@@ -220,7 +218,7 @@ class ClientCertResolverTest : public testing::Test,
   // Sets up a policy with a certificate pattern that matches any client cert
   // that is signed by the test CA cert (stored in |test_ca_cert_pem_|). In
   // particular it will match the test client cert.
-  void SetupPolicyMatchingIssuerPEM() {
+  void SetupPolicyMatchingIssuerPEM(const std::string& identity) {
     const char* kTestPolicyTemplate =
         "[ { \"GUID\": \"wifi_stub\","
         "    \"Name\": \"wifi_stub\","
@@ -229,6 +227,7 @@ class ClientCertResolverTest : public testing::Test,
         "      \"Security\": \"WPA-EAP\","
         "      \"SSID\": \"wifi_ssid\","
         "      \"EAP\": {"
+        "        \"Identity\": \"%s\","
         "        \"Outer\": \"EAP-TLS\","
         "        \"ClientCertType\": \"Pattern\","
         "        \"ClientCertPattern\": {"
@@ -237,8 +236,8 @@ class ClientCertResolverTest : public testing::Test,
         "      }"
         "    }"
         "} ]";
-    std::string policy_json =
-        base::StringPrintf(kTestPolicyTemplate, test_ca_cert_pem_.c_str());
+    std::string policy_json = base::StringPrintf(
+        kTestPolicyTemplate, identity.c_str(), test_ca_cert_pem_.c_str());
 
     std::string error;
     scoped_ptr<base::Value> policy_value = base::JSONReader::ReadAndReturnError(
@@ -260,14 +259,14 @@ class ClientCertResolverTest : public testing::Test,
         kWifiStub, shill::kStateProperty, base::StringValue(state)));
   }
 
-  void GetClientCertProperties(std::string* pkcs11_id) {
-    pkcs11_id->clear();
+  void GetServiceProperty(const std::string& prop_name,
+                          std::string* prop_value) {
+    prop_value->clear();
     const base::DictionaryValue* properties =
         service_test_->GetServiceProperties(kWifiStub);
     if (!properties)
       return;
-    properties->GetStringWithoutPathExpansion(shill::kEapCertIdProperty,
-                                              pkcs11_id);
+    properties->GetStringWithoutPathExpansion(prop_name, prop_value);
   }
 
   int network_properties_changed_count_;
@@ -299,25 +298,25 @@ class ClientCertResolverTest : public testing::Test,
 };
 
 TEST_F(ClientCertResolverTest, NoMatchingCertificates) {
-  SetupTestCerts(false /* do not import the issuer */);
+  SetupTestCerts("client_1", false /* do not import the issuer */);
   StartCertLoader();
   SetupWifi();
   base::RunLoop().RunUntilIdle();
   network_properties_changed_count_ = 0;
   SetupNetworkHandlers();
-  SetupPolicyMatchingIssuerPEM();
+  SetupPolicyMatchingIssuerPEM("");
   base::RunLoop().RunUntilIdle();
 
   // Verify that no client certificate was configured.
   std::string pkcs11_id;
-  GetClientCertProperties(&pkcs11_id);
+  GetServiceProperty(shill::kEapCertIdProperty, &pkcs11_id);
   EXPECT_EQ(std::string(), pkcs11_id);
   EXPECT_EQ(1, network_properties_changed_count_);
   EXPECT_FALSE(client_cert_resolver_->IsAnyResolveTaskRunning());
 }
 
 TEST_F(ClientCertResolverTest, MatchIssuerCNWithoutIssuerInstalled) {
-  SetupTestCerts(false /* do not import the issuer */);
+  SetupTestCerts("client_1", false /* do not import the issuer */);
   SetupWifi();
   base::RunLoop().RunUntilIdle();
 
@@ -332,18 +331,18 @@ TEST_F(ClientCertResolverTest, MatchIssuerCNWithoutIssuerInstalled) {
   // Verify that the resolver positively matched the pattern in the policy with
   // the test client cert and configured the network.
   std::string pkcs11_id;
-  GetClientCertProperties(&pkcs11_id);
+  GetServiceProperty(shill::kEapCertIdProperty, &pkcs11_id);
   EXPECT_EQ(test_cert_id_, pkcs11_id);
   EXPECT_EQ(1, network_properties_changed_count_);
 }
 
 TEST_F(ClientCertResolverTest, ResolveOnCertificatesLoaded) {
-  SetupTestCerts(true /* import issuer */);
+  SetupTestCerts("client_1", true /* import issuer */);
   SetupWifi();
   base::RunLoop().RunUntilIdle();
 
   SetupNetworkHandlers();
-  SetupPolicyMatchingIssuerPEM();
+  SetupPolicyMatchingIssuerPEM("");
   base::RunLoop().RunUntilIdle();
 
   network_properties_changed_count_ = 0;
@@ -353,13 +352,13 @@ TEST_F(ClientCertResolverTest, ResolveOnCertificatesLoaded) {
   // Verify that the resolver positively matched the pattern in the policy with
   // the test client cert and configured the network.
   std::string pkcs11_id;
-  GetClientCertProperties(&pkcs11_id);
+  GetServiceProperty(shill::kEapCertIdProperty, &pkcs11_id);
   EXPECT_EQ(test_cert_id_, pkcs11_id);
   EXPECT_EQ(1, network_properties_changed_count_);
 }
 
 TEST_F(ClientCertResolverTest, ResolveAfterPolicyApplication) {
-  SetupTestCerts(true /* import issuer */);
+  SetupTestCerts("client_1", true /* import issuer */);
   SetupWifi();
   base::RunLoop().RunUntilIdle();
   StartCertLoader();
@@ -368,24 +367,24 @@ TEST_F(ClientCertResolverTest, ResolveAfterPolicyApplication) {
 
   // Policy application will trigger the ClientCertResolver.
   network_properties_changed_count_ = 0;
-  SetupPolicyMatchingIssuerPEM();
+  SetupPolicyMatchingIssuerPEM("");
   base::RunLoop().RunUntilIdle();
 
   // Verify that the resolver positively matched the pattern in the policy with
   // the test client cert and configured the network.
   std::string pkcs11_id;
-  GetClientCertProperties(&pkcs11_id);
+  GetServiceProperty(shill::kEapCertIdProperty, &pkcs11_id);
   EXPECT_EQ(test_cert_id_, pkcs11_id);
   EXPECT_EQ(1, network_properties_changed_count_);
 }
 
 TEST_F(ClientCertResolverTest, ExpiringCertificate) {
-  SetupTestCerts(true /* import issuer */);
+  SetupTestCerts("client_1", true /* import issuer */);
   SetupWifi();
   base::RunLoop().RunUntilIdle();
 
   SetupNetworkHandlers();
-  SetupPolicyMatchingIssuerPEM();
+  SetupPolicyMatchingIssuerPEM("");
   base::RunLoop().RunUntilIdle();
 
   StartCertLoader();
@@ -397,7 +396,7 @@ TEST_F(ClientCertResolverTest, ExpiringCertificate) {
   // Verify that the resolver positively matched the pattern in the policy with
   // the test client cert and configured the network.
   std::string pkcs11_id;
-  GetClientCertProperties(&pkcs11_id);
+  GetServiceProperty(shill::kEapCertIdProperty, &pkcs11_id);
   EXPECT_EQ(test_cert_id_, pkcs11_id);
 
   // Verify that, after the certificate expired and the network disconnection
@@ -405,8 +404,39 @@ TEST_F(ClientCertResolverTest, ExpiringCertificate) {
   test_clock_->SetNow(base::Time::Max());
   SetWifiState(shill::kStateOffline);
   base::RunLoop().RunUntilIdle();
-  GetClientCertProperties(&pkcs11_id);
+  GetServiceProperty(shill::kEapCertIdProperty, &pkcs11_id);
   EXPECT_EQ(std::string(), pkcs11_id);
+}
+
+TEST_F(ClientCertResolverTest, PopulateIdentityFromCert) {
+  SetupTestCerts("client_3", true /* import issuer */);
+  SetupWifi();
+  base::RunLoop().RunUntilIdle();
+
+  SetupNetworkHandlers();
+  SetupPolicyMatchingIssuerPEM("${CERT_SAN_EMAIL}");
+  base::RunLoop().RunUntilIdle();
+
+  network_properties_changed_count_ = 0;
+  StartCertLoader();
+  base::RunLoop().RunUntilIdle();
+
+  // Verify that the resolver read the subjectAltName email field from the
+  // cert, and wrote it into the shill service entry.
+  std::string identity;
+  GetServiceProperty(shill::kEapIdentityProperty, &identity);
+  EXPECT_EQ("santest@example.com", identity);
+  EXPECT_EQ(1, network_properties_changed_count_);
+
+  // Verify that after changing the ONC policy to request a variant of the
+  // Microsoft Universal Principal Name field instead, the correct value is
+  // substituted into the shill service entry.
+  SetupPolicyMatchingIssuerPEM("upn-${CERT_SAN_UPN}-suffix");
+  base::RunLoop().RunUntilIdle();
+
+  GetServiceProperty(shill::kEapIdentityProperty, &identity);
+  EXPECT_EQ("upn-santest@ad.corp.example.com-suffix", identity);
+  EXPECT_EQ(2, network_properties_changed_count_);
 }
 
 }  // namespace chromeos

@@ -41,6 +41,9 @@ std::string GetStringFromDictionary(const base::DictionaryValue& dict,
 void GetClientCertTypeAndPattern(
     const base::DictionaryValue& dict_with_client_cert,
     ClientCertConfig* cert_config) {
+  dict_with_client_cert.GetStringWithoutPathExpansion(
+      ::onc::eap::kIdentity, &cert_config->policy_identity);
+
   using namespace ::onc::client_cert;
   dict_with_client_cert.GetStringWithoutPathExpansion(
       kClientCertType, &cert_config->client_cert_type);
