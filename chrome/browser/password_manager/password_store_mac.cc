@@ -1135,8 +1135,8 @@ PasswordStoreChangeList PasswordStoreMac::RemoveLoginImpl(
   return changes;
 }
 
-PasswordStoreChangeList PasswordStoreMac::RemoveLoginsByOriginAndTimeImpl(
-    const url::Origin& origin,
+PasswordStoreChangeList PasswordStoreMac::RemoveLoginsByURLAndTimeImpl(
+    const base::Callback<bool(const GURL&)>& url_filter,
     base::Time delete_begin,
     base::Time delete_end) {
   PasswordStoreChangeList changes;
@@ -1145,14 +1145,13 @@ PasswordStoreChangeList PasswordStoreMac::RemoveLoginsByOriginAndTimeImpl(
   if (login_metadata_db_ &&
       login_metadata_db_->GetLoginsCreatedBetween(delete_begin, delete_end,
                                                   &forms_to_consider)) {
-    MoveAllFormsOut(
-        &forms_to_consider,
-        [this, &origin, &forms_to_remove](
-            scoped_ptr<autofill::PasswordForm> form_to_consider) {
-          if (origin.IsSameOriginWith(url::Origin(form_to_consider->origin)) &&
-              login_metadata_db_->RemoveLogin(*form_to_consider))
-            forms_to_remove.push_back(std::move(form_to_consider));
-        });
+    MoveAllFormsOut(&forms_to_consider,
+                    [this, &url_filter, &forms_to_remove](
+                        scoped_ptr<autofill::PasswordForm> form_to_consider) {
+                      if (url_filter.Run(form_to_consider->origin) &&
+                          login_metadata_db_->RemoveLogin(*form_to_consider))
+                        forms_to_remove.push_back(std::move(form_to_consider));
+                    });
     if (!forms_to_remove.empty()) {
       RemoveKeychainForms(forms_to_remove.get());
       CleanOrphanedForms(&forms_to_remove);  // Add the orphaned forms.

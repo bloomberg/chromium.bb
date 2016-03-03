@@ -48,8 +48,8 @@ class PasswordStoreDefault : public PasswordStore {
       const autofill::PasswordForm& form) override;
   PasswordStoreChangeList RemoveLoginImpl(
       const autofill::PasswordForm& form) override;
-  PasswordStoreChangeList RemoveLoginsByOriginAndTimeImpl(
-      const url::Origin& origin,
+  PasswordStoreChangeList RemoveLoginsByURLAndTimeImpl(
+      const base::Callback<bool(const GURL&)>& url_filter,
       base::Time delete_begin,
       base::Time delete_end) override;
   PasswordStoreChangeList RemoveLoginsCreatedBetweenImpl(

@@ -19,7 +19,6 @@
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
-#include "url/origin.h"
 
 using autofill::PasswordForm;
 using content::BrowserThread;
@@ -37,9 +36,9 @@ bool AddLoginToBackend(const scoped_ptr<PasswordStoreX::NativeBackend>& backend,
           changes->back().type() == PasswordStoreChange::ADD);
 }
 
-bool RemoveLoginsByOriginAndTimeFromBackend(
+bool RemoveLoginsByURLAndTimeFromBackend(
     PasswordStoreX::NativeBackend* backend,
-    const url::Origin& origin,
+    const base::Callback<bool(const GURL&)>& url_filter,
     base::Time delete_begin,
     base::Time delete_end,
     PasswordStoreChangeList* changes) {
@@ -48,8 +47,7 @@ bool RemoveLoginsByOriginAndTimeFromBackend(
     return false;
 
   for (const autofill::PasswordForm* form : forms) {
-    if (origin.IsSameOriginWith(url::Origin(form->origin)) &&
-        form->date_created >= delete_begin &&
+    if (url_filter.Run(form->origin) && form->date_created >= delete_begin &&
         (delete_end.is_null() || form->date_created < delete_end) &&
         !backend->RemoveLogin(*form, changes))
       return false;
@@ -109,21 +107,21 @@ PasswordStoreChangeList PasswordStoreX::RemoveLoginImpl(
   return changes;
 }
 
-PasswordStoreChangeList PasswordStoreX::RemoveLoginsByOriginAndTimeImpl(
-    const url::Origin& origin,
+PasswordStoreChangeList PasswordStoreX::RemoveLoginsByURLAndTimeImpl(
+    const base::Callback<bool(const GURL&)>& url_filter,
     base::Time delete_begin,
     base::Time delete_end) {
   CheckMigration();
   PasswordStoreChangeList changes;
 
   if (use_native_backend() &&
-      RemoveLoginsByOriginAndTimeFromBackend(
-          backend_.get(), origin, delete_begin, delete_end, &changes)) {
+      RemoveLoginsByURLAndTimeFromBackend(backend_.get(), url_filter,
+                                          delete_begin, delete_end, &changes)) {
     LogStatsForBulkDeletion(changes.size());
     allow_fallback_ = false;
   } else if (allow_default_store()) {
-    changes = PasswordStoreDefault::RemoveLoginsByOriginAndTimeImpl(
-        origin, delete_begin, delete_end);
+    changes = PasswordStoreDefault::RemoveLoginsByURLAndTimeImpl(
+        url_filter, delete_begin, delete_end);
   }
 
   return changes;

@@ -169,12 +169,12 @@ PasswordStoreChangeList PasswordStoreProxyMac::RemoveLoginImpl(
   return GetBackend()->RemoveLoginImpl(form);
 }
 
-PasswordStoreChangeList PasswordStoreProxyMac::RemoveLoginsByOriginAndTimeImpl(
-    const url::Origin& origin,
+PasswordStoreChangeList PasswordStoreProxyMac::RemoveLoginsByURLAndTimeImpl(
+    const base::Callback<bool(const GURL&)>& url_filter,
     base::Time delete_begin,
     base::Time delete_end) {
-  return GetBackend()->RemoveLoginsByOriginAndTimeImpl(origin, delete_begin,
-                                                       delete_end);
+  return GetBackend()->RemoveLoginsByURLAndTimeImpl(url_filter, delete_begin,
+                                                    delete_end);
 }
 
 PasswordStoreChangeList PasswordStoreProxyMac::RemoveLoginsCreatedBetweenImpl(

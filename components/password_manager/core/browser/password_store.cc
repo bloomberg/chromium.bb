@@ -19,7 +19,6 @@
 #include "components/password_manager/core/browser/password_store_consumer.h"
 #include "components/password_manager/core/browser/password_syncable_service.h"
 #include "components/password_manager/core/browser/statistics_table.h"
-#include "url/origin.h"
 
 using autofill::PasswordForm;
 
@@ -116,13 +115,14 @@ void PasswordStore::RemoveLogin(const PasswordForm& form) {
   ScheduleTask(base::Bind(&PasswordStore::RemoveLoginInternal, this, form));
 }
 
-void PasswordStore::RemoveLoginsByOriginAndTime(
-    const url::Origin& origin,
+void PasswordStore::RemoveLoginsByURLAndTime(
+    const base::Callback<bool(const GURL&)>& url_filter,
     base::Time delete_begin,
     base::Time delete_end,
     const base::Closure& completion) {
-  ScheduleTask(base::Bind(&PasswordStore::RemoveLoginsByOriginAndTimeInternal,
-                          this, origin, delete_begin, delete_end, completion));
+  ScheduleTask(base::Bind(&PasswordStore::RemoveLoginsByURLAndTimeInternal,
+                          this, url_filter, delete_begin, delete_end,
+                          completion));
 }
 
 void PasswordStore::RemoveLoginsCreatedBetween(
@@ -361,13 +361,13 @@ void PasswordStore::UpdateLoginWithPrimaryKeyInternal(
   NotifyLoginsChanged(all_changes);
 }
 
-void PasswordStore::RemoveLoginsByOriginAndTimeInternal(
-    const url::Origin& origin,
+void PasswordStore::RemoveLoginsByURLAndTimeInternal(
+    const base::Callback<bool(const GURL&)>& url_filter,
     base::Time delete_begin,
     base::Time delete_end,
     const base::Closure& completion) {
   PasswordStoreChangeList changes =
-      RemoveLoginsByOriginAndTimeImpl(origin, delete_begin, delete_end);
+      RemoveLoginsByURLAndTimeImpl(url_filter, delete_begin, delete_end);
   NotifyLoginsChanged(changes);
   if (!completion.is_null())
     main_thread_runner_->PostTask(FROM_HERE, completion);

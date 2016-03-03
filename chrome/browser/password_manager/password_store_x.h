@@ -106,8 +106,8 @@ class PasswordStoreX : public password_manager::PasswordStoreDefault {
       const autofill::PasswordForm& form) override;
   password_manager::PasswordStoreChangeList RemoveLoginImpl(
       const autofill::PasswordForm& form) override;
-  password_manager::PasswordStoreChangeList RemoveLoginsByOriginAndTimeImpl(
-      const url::Origin& origin,
+  password_manager::PasswordStoreChangeList RemoveLoginsByURLAndTimeImpl(
+      const base::Callback<bool(const GURL&)>& url_filter,
       base::Time delete_begin,
       base::Time delete_end) override;
   password_manager::PasswordStoreChangeList RemoveLoginsCreatedBetweenImpl(

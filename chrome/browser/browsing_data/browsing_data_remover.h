@@ -25,7 +25,6 @@
 #include "components/search_engines/template_url_service.h"
 #include "storage/common/quota/quota_types.h"
 #include "url/gurl.h"
-#include "url/origin.h"
 
 #if defined(ENABLE_PLUGINS)
 #include "chrome/browser/pepper_flash_settings_manager.h"

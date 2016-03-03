@@ -21,10 +21,6 @@
 #include "components/password_manager/core/browser/password_store_sync.h"
 #include "sync/api/syncable_service.h"
 
-namespace url {
-class Origin;
-}
-
 namespace autofill {
 struct PasswordForm;
 }
@@ -110,14 +106,16 @@ class PasswordStore : protected PasswordStoreSync,
   // Removes the matching PasswordForm from the secure password store (async).
   virtual void RemoveLogin(const autofill::PasswordForm& form);
 
-  // Remove all logins which are same-origin with the given origin and created
+  // Remove all logins whose origins match the given filter and that were
+  // created
   // in the given date range. |completion| will be posted to the
   // |main_thread_runner_| after deletions have been completed and notification
   // have been sent out.
-  void RemoveLoginsByOriginAndTime(const url::Origin& origin,
-                                   base::Time delete_begin,
-                                   base::Time delete_end,
-                                   const base::Closure& completion);
+  void RemoveLoginsByURLAndTime(
+      const base::Callback<bool(const GURL&)>& url_filter,
+      base::Time delete_begin,
+      base::Time delete_end,
+      const base::Closure& completion);
 
   // Removes all logins created in the given date range. If |completion| is not
   // null, it will be posted to the |main_thread_runner_| after deletions have
@@ -241,8 +239,8 @@ class PasswordStore : protected PasswordStoreSync,
                                  bool custom_passphrase_sync_enabled) = 0;
 
   // Synchronous implementation to remove the given logins.
-  virtual PasswordStoreChangeList RemoveLoginsByOriginAndTimeImpl(
-      const url::Origin& origin,
+  virtual PasswordStoreChangeList RemoveLoginsByURLAndTimeImpl(
+      const base::Callback<bool(const GURL&)>& url_filter,
       base::Time delete_begin,
       base::Time delete_end) = 0;
 
@@ -350,10 +348,11 @@ class PasswordStore : protected PasswordStoreSync,
   void UpdateLoginWithPrimaryKeyInternal(
       const autofill::PasswordForm& new_form,
       const autofill::PasswordForm& old_primary_key);
-  void RemoveLoginsByOriginAndTimeInternal(const url::Origin& origin,
-                                           base::Time delete_begin,
-                                           base::Time delete_end,
-                                           const base::Closure& completion);
+  void RemoveLoginsByURLAndTimeInternal(
+      const base::Callback<bool(const GURL&)>& url_filter,
+      base::Time delete_begin,
+      base::Time delete_end,
+      const base::Closure& completion);
   void RemoveLoginsCreatedBetweenInternal(base::Time delete_begin,
                                           base::Time delete_end,
                                           const base::Closure& completion);

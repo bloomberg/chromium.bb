@@ -714,13 +714,8 @@ void BrowsingDataRemover::RemoveImpl(const TimeRange& time_range,
       auto on_cleared_passwords =
           base::Bind(&BrowsingDataRemover::OnClearedPasswords,
                      weak_ptr_factory_.GetWeakPtr());
-      if (remove_url.is_empty()) {
-        password_store->RemoveLoginsCreatedBetween(delete_begin_, delete_end_,
-                                                   on_cleared_passwords);
-      } else {
-        password_store->RemoveLoginsByOriginAndTime(
-            remove_origin, delete_begin_, delete_end_, on_cleared_passwords);
-      }
+      password_store->RemoveLoginsByURLAndTime(
+          same_origin_filter, delete_begin_, delete_end_, on_cleared_passwords);
     }
   }
 

@@ -260,39 +260,6 @@ class TestStoragePartition : public StoragePartition {
   DISALLOW_COPY_AND_ASSIGN(TestStoragePartition);
 };
 
-// Custom matcher to verify is-same-origin relationship to given reference
-// origin.
-// (We cannot use equality-based matching because operator== is not defined for
-// Origin, and we in fact want to rely on IsSameOrigin for matching purposes.)
-// TODO(msramek): This is only used for backends that take url::Origin instead
-// of an url filter predicate to match URLs. Remove this when we fully switch
-// to url filter predicates.
-class SameOriginMatcher : public MatcherInterface<const url::Origin&> {
- public:
-  explicit SameOriginMatcher(const url::Origin& reference)
-      : reference_(reference) {}
-
-  virtual bool MatchAndExplain(const url::Origin& origin,
-                               MatchResultListener* listener) const {
-    return reference_.IsSameOriginWith(origin);
-  }
-
-  virtual void DescribeTo(::std::ostream* os) const {
-    *os << "is same origin with " << reference_;
-  }
-
-  virtual void DescribeNegationTo(::std::ostream* os) const {
-    *os << "is not same origin with " << reference_;
-  }
-
- private:
-  const url::Origin& reference_;
-};
-
-inline Matcher<const url::Origin&> SameOrigin(const url::Origin& reference) {
-  return MakeMatcher(new SameOriginMatcher(reference));
-}
-
 // Custom matcher to test the equivalence of two URL filters. Since those are
 // blackbox predicates, we can only approximate the equivalence by testing
 // whether the filter give the same answer for several URLs. This is currently
@@ -2260,8 +2227,11 @@ TEST_F(BrowsingDataRemoverTest, RemovePasswordStatistics) {
 
 TEST_F(BrowsingDataRemoverTest, RemovePasswordsByTimeOnly) {
   RemovePasswordsTester tester(GetProfile());
+  base::Callback<bool(const GURL&)> filter =
+      OriginFilterBuilder::BuildNoopFilter();
 
-  EXPECT_CALL(*tester.store(), RemoveLoginsCreatedBetweenImpl(_, _))
+  EXPECT_CALL(*tester.store(),
+              RemoveLoginsByURLAndTimeImpl(ProbablySameFilter(filter), _, _))
       .WillOnce(Return(password_manager::PasswordStoreChangeList()));
   BlockUntilBrowsingDataRemoved(BrowsingDataRemover::EVERYTHING,
                                 BrowsingDataRemover::REMOVE_PASSWORDS, false);
@@ -2269,10 +2239,12 @@ TEST_F(BrowsingDataRemoverTest, RemovePasswordsByTimeOnly) {
 
 TEST_F(BrowsingDataRemoverTest, RemovePasswordsByOrigin) {
   RemovePasswordsTester tester(GetProfile());
-  const url::Origin expectedOrigin(kOrigin1);
+  OriginFilterBuilder builder(OriginFilterBuilder::WHITELIST);
+  builder.AddOrigin(url::Origin(kOrigin1));
+  base::Callback<bool(const GURL&)> filter = builder.BuildSameOriginFilter();
 
   EXPECT_CALL(*tester.store(),
-              RemoveLoginsByOriginAndTimeImpl(SameOrigin(expectedOrigin), _, _))
+              RemoveLoginsByURLAndTimeImpl(ProbablySameFilter(filter), _, _))
       .WillOnce(Return(password_manager::PasswordStoreChangeList()));
   BlockUntilOriginDataRemoved(BrowsingDataRemover::EVERYTHING,
                               BrowsingDataRemover::REMOVE_PASSWORDS, kOrigin1);
@@ -2291,7 +2263,7 @@ TEST_F(BrowsingDataRemoverTest, DisableAutoSignIn) {
 TEST_F(BrowsingDataRemoverTest, DisableAutoSignInAfterRemovingPasswords) {
   RemovePasswordsTester tester(GetProfile());
 
-  EXPECT_CALL(*tester.store(), RemoveLoginsCreatedBetweenImpl(_, _))
+  EXPECT_CALL(*tester.store(), RemoveLoginsByURLAndTimeImpl(_, _, _))
       .WillOnce(Return(password_manager::PasswordStoreChangeList()));
   EXPECT_CALL(*tester.store(), DisableAutoSignInForAllLoginsImpl())
       .WillOnce(Return(password_manager::PasswordStoreChangeList()));

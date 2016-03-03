@@ -24,7 +24,6 @@
 #include "components/prefs/pref_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "url/origin.h"
 
 using autofill::PasswordForm;
 using testing::ElementsAre;
