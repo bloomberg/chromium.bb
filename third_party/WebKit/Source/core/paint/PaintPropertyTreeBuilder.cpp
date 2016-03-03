@@ -76,10 +76,7 @@ void PaintPropertyTreeBuilder::walk(FrameView& frameView, const PaintPropertyTre
     // TODO(pdr): Make this conditional on the rootLayerScrolls setting.
 
     TransformationMatrix frameTranslate;
-    frameTranslate.translate(frameView.x(), frameView.y());
-    // The frame owner applies paint offset already.
-    // This assumption may change in the future.
-    ASSERT(context.paintOffset == LayoutPoint());
+    frameTranslate.translate(frameView.x() + context.paintOffset.x(), frameView.y() + context.paintOffset.y());
     RefPtr<TransformPaintPropertyNode> newTransformNodeForPreTranslation = TransformPaintPropertyNode::create(frameTranslate, FloatPoint3D(), context.currentTransform);
     localContext.transformForFixedPositioned = newTransformNodeForPreTranslation.get();
     localContext.paintOffsetForFixedPositioned = LayoutPoint();
