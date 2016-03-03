@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Canvas Capture FPS Test</title>
+</head>
+<body>
+  <div> Canvas capture FPS test.</div>
+  <video id='local-video' muted='true' hidden loop autoplay>
+    <source src='bear-640x360.webm' type='video/webm'>
+  </video>
+  <br></br>
+  <label>Canvas</label>
+  <canvas id='canvas' width=640 height=360></canvas>
+  <br></br>
+  <label>Captured canvas stream</label>
+  <video id='captured-video' autoplay></video>
+<script>
+
+'use strict';
+
+var DEFAULT_FRAME_RATE = 10;
+var TOLERANCE_PERCENT = 15 / 100;
+
+// Define video event listener when window is loaded.
+window.onload = function() {
+    var video = document.getElementById('local-video');
+    var canvas = document.getElementById('canvas');
+    var context = canvas.getContext('2d');
+    video.addEventListener('play', function() {
+        draw(this, context, canvas.clientWidth, canvas.clientHeight);
+    }, false);
+  };
+
+// This function draws the video frame on the canvas.
+function draw(video, context, width, height) {
+    window.requestAnimationFrame(draw.bind(null, video, context, width,
+        height));
+    if (video.paused || video.ended) return false;
+    context.drawImage(video, 0, 0, width, height);
+}
+
+// Test class that measures the frame rate of a stream originated from
+// canvas capture.
+function CanvasFpsTest() {
+  this.theCanvasStream = null;
+  this.decodedFrames = 0;
+  this.droppedFrames = 0;
+  this.decodedFPS = [];
+  this.droppedFPS = [];
+  this.startTime = {};
+  this.interval = {};
+  this.targetFPS = 0;
+}
+
+// This function starts the canvas capture of the local video stream.
+CanvasFpsTest.prototype.startCanvasCapture = function(frameRate) {
+  var test = this;
+  test.targetFPS = frameRate ? frameRate : DEFAULT_FRAME_RATE;
+  test.theCanvasStream = document.getElementById('canvas').captureStream(
+      test.targetFPS);
+  var testVideo = document.getElementById('captured-video');
+  testVideo.addEventListener('play', function(event) {
+      test.startTime = new Date().getTime();
+      test.interval = setInterval(test.calculateStats.bind(test, testVideo),
+          1000);
+    });
+  testVideo.src = URL.createObjectURL(test.theCanvasStream);
+};
+
+// This function calculates the FPS for decoded frames and dropped frames.
+CanvasFpsTest.prototype.calculateStats = function(video) {
+  // We calculate stats on 6 seconds worth of video, that should be
+  // reasonable.
+  if (this.decodedFPS.length == 6) {
+    clearInterval(this.interval);
+    return this.validateResults();
+  }
+  if (video.readyState <= HTMLMediaElement.HAVE_CURRENT_DATA ||
+      video.paused || video.ended)
+    return;
+  var currentTime = new Date().getTime();
+  var deltaTime = (currentTime - this.startTime) / 1000;
+
+  this.startTime = currentTime;
+
+  // Calculate decoded frames per second.
+  var fps = (video.webkitDecodedFrameCount - this.decodedFrames) / deltaTime;
+  this.decodedFrames = video.webkitDecodedFrameCount;
+  this.decodedFPS.push(fps);
+
+  // Calculate dropped frames per second.
+  fps = (video.webkitDroppedFrameCount - this.droppedFrames) / deltaTime;
+  this.droppedFrames = video.webkitDroppedFrameCount;
+  this.droppedFPS.push(fps);
+};
+
+// This function validates the frame rate against accepted error tolerance.
+CanvasFpsTest.prototype.validateResults = function() {
+  // Pop out the first value as it could be a bit off.
+  this.decodedFPS.shift;
+  this.droppedFPS.shift;
+  var averageFPS = average(this.decodedFPS);
+  var averageDroppedFPS = average(this.droppedFPS);
+  var errorFPS = Math.abs(averageFPS - this.targetFPS) / this.targetFPS;
+  var minFPS = this.targetFPS * (1 - TOLERANCE_PERCENT);
+  var maxFPS = this.targetFPS * (1 + TOLERANCE_PERCENT);
+  console.log('Average dropped FPS:', averageDroppedFPS);
+  if (errorFPS > TOLERANCE_PERCENT) {
+    reportResult('ERROR: Expected FPS between ' + minFPS + ' and ' + maxFPS +
+        ' (' + 100 * TOLERANCE_PERCENT + '% tolerance) but got ' + averageFPS +
+        ' instead');
+  } else {
+    reportResult('OK');
+  }
+};
+
+// This function calculates average of array values.
+function average(array) {
+  var count = array.length;
+  var total = 0;
+  for (var i = 0; i < count; i++) {
+    total += parseInt(array[i]);
+  }
+  return Math.floor(total / count);
+}
+
+// This function logs and reports result to Test Environment.
+function reportResult(message) {
+  console.log(message);
+  if (!window.domAutomationController)
+    throw 'Expected to run in an automated context.';
+  window.domAutomationController.send(message);
+}
+
+// Tests that canvas capture will approximately honor the given frame rate.
+function testFrameRateOfCanvasCapture(frameRate) {
+  var fpsTest = new CanvasFpsTest();
+  fpsTest.startCanvasCapture(frameRate);
+}
+
+</script>
+</body>
+</html>

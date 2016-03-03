@@ -321,6 +321,7 @@
       'browser/media/chrome_webrtc_apprtc_browsertest.cc',
       'browser/media/chrome_webrtc_audio_quality_browsertest.cc',
       'browser/media/chrome_webrtc_browsertest.cc',
+      'browser/media/chrome_webrtc_canvas_capture_browsertest.cc',
       'browser/media/chrome_webrtc_disable_encryption_flag_browsertest.cc',
       'browser/media/chrome_webrtc_getmediadevices_browsertest.cc',
       'browser/media/chrome_webrtc_perf_browsertest.cc',
