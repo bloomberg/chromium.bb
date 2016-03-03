@@ -24,6 +24,10 @@ declare_args() {
   # If true, doesn't compile debug symbols into webcore reducing the
   # size of the binary and increasing the speed of gdb.
   remove_webcore_debug_symbols = false
+
+  # If true, enables blink logging macros (WTF_LOG and friends) unconditionally.
+  # When false, blink logging macros are enabled only if assertions are enabled.
+  blink_logging_always_on = false
 }
 
 # Whether Android build uses OpenMAX DL FFT. Currently supported only on
@@ -84,6 +88,9 @@ if (enable_oilpan) {
 }
 if (blink_asserts_off_in_release && !is_debug) {
   feature_defines_list += [ "ENABLE_ASSERT=0" ]
+}
+if (blink_logging_always_on) {
+  feature_defines_list += [ "LOG_DISABLED=0" ]
 }
 
 # feature_defines_string -------------------------------------------------------
