@@ -2017,7 +2017,6 @@ void Document::updateLayoutTreeIgnorePendingStylesheets()
             // pending, some nodes may not have had their real style calculated yet. Normally this
             // gets cleaned when style sheets arrive but here we need up-to-date style immediately.
             setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::CleanupPlaceholderStyles));
-            updateLayoutTree();
         }
     }
     updateLayoutTree();
