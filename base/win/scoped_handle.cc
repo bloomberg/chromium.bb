@@ -9,6 +9,7 @@
 #include <unordered_map>
 
 #include "base/debug/alias.h"
+#include "base/debug/stack_trace.h"
 #include "base/hash.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
@@ -34,6 +35,7 @@ struct Info {
   const void* owner;
   const void* pc1;
   const void* pc2;
+  base::debug::StackTrace stack;
   DWORD thread_id;
 };
 typedef std::unordered_map<HANDLE, Info, HandleHash> HandleMap;
@@ -44,7 +46,7 @@ base::LazyInstance<NativeLock>::Leaky g_lock = LAZY_INSTANCE_INITIALIZER;
 
 bool CloseHandleWrapper(HANDLE handle) {
   if (!::CloseHandle(handle))
-    CHECK(false);
+    LOG(FATAL) << "CloseHandle failed.";
   return true;
 }
 
@@ -160,13 +162,13 @@ void ActiveVerifier::StartTracking(HANDLE handle, const void* owner,
 
   AutoNativeLock lock(*lock_);
 
-  Info handle_info = { owner, pc1, pc2, thread_id };
+  Info handle_info = { owner, pc1, pc2, base::debug::StackTrace(), thread_id };
   std::pair<HANDLE, Info> item(handle, handle_info);
   std::pair<HandleMap::iterator, bool> result = map_.insert(item);
   if (!result.second) {
     Info other = result.first->second;
     base::debug::Alias(&other);
-    CHECK(false);
+    LOG(FATAL) << "Attempt to start tracking already tracked handle.";
   }
 }
 
@@ -178,12 +180,12 @@ void ActiveVerifier::StopTracking(HANDLE handle, const void* owner,
   AutoNativeLock lock(*lock_);
   HandleMap::iterator i = map_.find(handle);
   if (i == map_.end())
-    CHECK(false);
+    LOG(FATAL) << "Attempting to close an untracked handle.";
 
   Info other = i->second;
   if (other.owner != owner) {
     base::debug::Alias(&other);
-    CHECK(false);
+    LOG(FATAL) << "Attempting to close a handle not owned by opener.";
   }
 
   map_.erase(i);
@@ -207,7 +209,7 @@ void ActiveVerifier::OnHandleBeingClosed(HANDLE handle) {
 
   Info other = i->second;
   base::debug::Alias(&other);
-  CHECK(false);
+  LOG(FATAL) << "CloseHandle called on tracked handle.";
 }
 
 }  // namespace
