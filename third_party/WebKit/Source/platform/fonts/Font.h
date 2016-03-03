@@ -29,6 +29,7 @@
 #include "platform/PlatformExport.h"
 #include "platform/fonts/FontDescription.h"
 #include "platform/fonts/FontFallbackList.h"
+#include "platform/fonts/FontFallbackPriority.h"
 #include "platform/fonts/SimpleFontData.h"
 #include "platform/text/TabSize.h"
 #include "platform/text/TextDirection.h"
@@ -139,7 +140,8 @@ private:
 
 public:
     FontSelector* fontSelector() const;
-    PassRefPtr<FontFallbackIterator> createFontFallbackIterator() const;
+    PassRefPtr<FontFallbackIterator> createFontFallbackIterator(
+        FontFallbackPriority) const;
 
     void willUseFontData(UChar32) const;
 
