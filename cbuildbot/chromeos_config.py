@@ -2239,6 +2239,13 @@ def GetConfig():
       important=True,
   )
 
+  site_config.Add(
+      'rambi-release', _release,
+      _base_configs['rambi'],
+      important=True,
+      buildslave_type=constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
+  )
+
   ### Arm release configs.
 
   site_config.Add(
@@ -2590,8 +2597,7 @@ def GetConfig():
 
   # rambi-based boards
   _AddGroupConfig(
-      'rambi-a', 'rambi', (
-          'clapper',
+      'rambi-a', 'clapper', (
           'enguarde',
           'expresso',
       )

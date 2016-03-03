@@ -118,7 +118,6 @@ pre-cq-launcher
   clapper-release
   enguarde-release
   expresso-release
-  rambi-release
 [rambi-b-release-group]
   glimmer-release
   gnawty-release
@@ -137,6 +136,7 @@ pre-cq-launcher
   heli-release
   orco-release
 rambi-paladin
+rambi-release
 samus-cheets-android-pfq
 samus-paladin
 samus-release
