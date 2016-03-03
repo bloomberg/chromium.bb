@@ -796,10 +796,9 @@ bool Editor::insertTextWithoutSendingTextEvent(const String& text, bool selectIn
     if (!selection.isContentEditable())
         return false;
 
-    spellChecker().updateMarkersForWordsAffectedByEditing(isSpaceOrNewline(text[0]));
-
+    frame().selection().setSelection(selection);
     // Insert the text
-    TypingCommand::insertText(*selection.start().document(), text, selection,
+    TypingCommand::insertText(*selection.start().document(), text,
         selectInsertedText ? TypingCommand::SelectInsertedText : 0,
         triggeringEvent && triggeringEvent->isComposition() ? TypingCommand::TextCompositionConfirm : TypingCommand::TextCompositionNone);
 

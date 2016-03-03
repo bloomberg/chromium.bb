@@ -40,7 +40,6 @@ public:
 
 protected:
     explicit TextInsertionBaseCommand(Document&);
-    static void applyTextInsertionCommand(LocalFrame*, PassRefPtrWillBeRawPtr<TextInsertionBaseCommand>, const VisibleSelection& selectionForInsertion, const VisibleSelection& endingSelection);
 };
 
 String dispatchBeforeTextInsertedEvent(const String& text, const VisibleSelection& selectionForInsertion, bool insertionIsForUpdatingComposition);

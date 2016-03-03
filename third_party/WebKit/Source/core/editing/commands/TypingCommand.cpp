@@ -165,7 +165,7 @@ void TypingCommand::updateSelectionIfDifferentFromCurrentSelection(TypingCommand
     typingCommand->setEndingSelection(currentSelection);
 }
 
-void TypingCommand::insertText(Document& document, const String& text, Options options, TextCompositionType composition)
+void TypingCommand::insertText(Document& document, const String& text, Options options, TextCompositionType compositionType)
 {
     LocalFrame* frame = document.frame();
     ASSERT(frame);
@@ -173,26 +173,17 @@ void TypingCommand::insertText(Document& document, const String& text, Options o
     if (!text.isEmpty())
         document.frame()->spellChecker().updateMarkersForWordsAffectedByEditing(isSpaceOrNewline(text[0]));
 
-    insertText(document, text, frame->selection().selection(), options, composition);
-}
+    const VisibleSelection& currentSelection = frame->selection().selection();
 
-// FIXME: We shouldn't need to take selectionForInsertion. It should be identical to FrameSelection's current selection.
-void TypingCommand::insertText(Document& document, const String& text, const VisibleSelection& selectionForInsertion, Options options, TextCompositionType compositionType)
-{
-    RefPtrWillBeRawPtr<LocalFrame> frame = document.frame();
-    ASSERT(frame);
-
-    VisibleSelection currentSelection = frame->selection().selection();
-
-    String newText = dispatchBeforeTextInsertedEvent(text, selectionForInsertion, compositionType == TextCompositionUpdate);
+    String newText = dispatchBeforeTextInsertedEvent(text, currentSelection, compositionType == TextCompositionUpdate);
 
     // Set the starting and ending selection appropriately if we are using a selection
     // that is different from the current selection.  In the future, we should change EditCommand
     // to deal with custom selections in a general way that can be used by all of the commands.
-    if (RefPtrWillBeRawPtr<TypingCommand> lastTypingCommand = lastTypingCommandIfStillOpenForTyping(frame.get())) {
-        if (!equalSelectionsInDOMTree(lastTypingCommand->endingSelection(), selectionForInsertion)) {
-            lastTypingCommand->setStartingSelection(selectionForInsertion);
-            lastTypingCommand->setEndingSelection(selectionForInsertion);
+    if (RefPtrWillBeRawPtr<TypingCommand> lastTypingCommand = lastTypingCommandIfStillOpenForTyping(frame)) {
+        if (!equalSelectionsInDOMTree(lastTypingCommand->endingSelection(), currentSelection)) {
+            lastTypingCommand->setStartingSelection(currentSelection);
+            lastTypingCommand->setEndingSelection(currentSelection);
         }
 
         lastTypingCommand->setCompositionType(compositionType);
@@ -205,7 +196,7 @@ void TypingCommand::insertText(Document& document, const String& text, const Vis
     }
 
     RefPtrWillBeRawPtr<TypingCommand> cmd = TypingCommand::create(document, InsertText, newText, options, compositionType);
-    applyTextInsertionCommand(frame.get(), cmd, selectionForInsertion, currentSelection);
+    cmd->apply();
 }
 
 bool TypingCommand::insertLineBreak(Document& document)
