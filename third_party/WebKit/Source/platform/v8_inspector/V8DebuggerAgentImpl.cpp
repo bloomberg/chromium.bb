@@ -516,10 +516,10 @@ bool V8DebuggerAgentImpl::isCallStackEmptyOrBlackboxed()
 {
     ASSERT(enabled());
     for (int index = 0; ; ++index) {
-        RefPtr<JavaScriptCallFrame> frame = debugger().callFrameNoScopes(index);
+        OwnPtr<JavaScriptCallFrame> frame = debugger().callFrameNoScopes(index);
         if (!frame)
             break;
-        if (!isCallFrameWithUnknownScriptOrBlackboxed(frame.release()))
+        if (!isCallFrameWithUnknownScriptOrBlackboxed(frame.get()))
             return false;
     }
     return true;
@@ -528,12 +528,11 @@ bool V8DebuggerAgentImpl::isCallStackEmptyOrBlackboxed()
 bool V8DebuggerAgentImpl::isTopCallFrameBlackboxed()
 {
     ASSERT(enabled());
-    return isCallFrameWithUnknownScriptOrBlackboxed(debugger().callFrameNoScopes(0));
+    return isCallFrameWithUnknownScriptOrBlackboxed(debugger().callFrameNoScopes(0).get());
 }
 
-bool V8DebuggerAgentImpl::isCallFrameWithUnknownScriptOrBlackboxed(PassRefPtr<JavaScriptCallFrame> pFrame)
+bool V8DebuggerAgentImpl::isCallFrameWithUnknownScriptOrBlackboxed(JavaScriptCallFrame* frame)
 {
-    RefPtr<JavaScriptCallFrame> frame = pFrame;
     if (!frame)
         return true;
     ScriptsMap::iterator it = m_scripts.find(String::number(frame->sourceID()));
@@ -565,7 +564,7 @@ bool V8DebuggerAgentImpl::isMuteBreakpointInstalled()
 {
     if (!m_muteBreakpoints.size())
         return false;
-    RefPtr<JavaScriptCallFrame> frame = debugger().callFrameNoScopes(0);
+    OwnPtr<JavaScriptCallFrame> frame = debugger().callFrameNoScopes(0);
     if (!frame)
         return false;
     String sourceID = String::number(frame->sourceID());
@@ -849,7 +848,7 @@ void V8DebuggerAgentImpl::stepOver(ErrorString* errorString)
     if (!assertPaused(errorString))
         return;
     // StepOver at function return point should fallback to StepInto.
-    RefPtr<JavaScriptCallFrame> frame = debugger().callFrameNoScopes(0);
+    OwnPtr<JavaScriptCallFrame> frame = debugger().callFrameNoScopes(0);
     if (frame && frame->isAtReturn()) {
         stepInto(errorString);
         return;
@@ -1178,7 +1177,6 @@ void V8DebuggerAgentImpl::flushAsyncOperationEvents(ErrorString*)
     for (int operationId : m_asyncOperationNotifications) {
         V8StackTraceImpl* chain = m_asyncOperations.get(operationId);
         ASSERT(chain);
-
         if (!chain->isEmpty()) {
             OwnPtr<AsyncOperation> operation = AsyncOperation::create()
                 .setId(operationId)

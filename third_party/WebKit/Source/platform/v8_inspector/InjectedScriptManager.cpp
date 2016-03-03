@@ -128,7 +128,7 @@ InjectedScript* InjectedScriptManager::injectedScriptFor(v8::Local<v8::Context> 
     if (!callingContext.IsEmpty() && !m_client->callingContextCanAccessContext(callingContext, context))
         return nullptr;
 
-    RefPtr<InjectedScriptNative> injectedScriptNative = adoptRef(new InjectedScriptNative(context->GetIsolate()));
+    OwnPtr<InjectedScriptNative> injectedScriptNative = adoptPtr(new InjectedScriptNative(context->GetIsolate()));
     String injectedScriptSource(reinterpret_cast<const char*>(InjectedScriptSource_js), sizeof(InjectedScriptSource_js));
 
     v8::Local<v8::Object> object = createInjectedScript(injectedScriptSource, context, contextId, injectedScriptNative.get());
@@ -151,7 +151,7 @@ v8::Local<v8::Object> InjectedScriptManager::createInjectedScript(const String& 
         m_injectedScriptHost->setWrapperTemplate(wrapperTemplate, isolate);
     }
 
-    v8::Local<v8::Object> scriptHostWrapper = V8InjectedScriptHost::wrap(m_client, wrapperTemplate, context, m_injectedScriptHost);
+    v8::Local<v8::Object> scriptHostWrapper = V8InjectedScriptHost::wrap(m_client, wrapperTemplate, context, m_injectedScriptHost.get());
     if (scriptHostWrapper.IsEmpty())
         return v8::Local<v8::Object>();
 

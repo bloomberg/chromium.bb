@@ -31,7 +31,7 @@
 #ifndef JavaScriptCallFrame_h
 #define JavaScriptCallFrame_h
 
-#include "wtf/RefCounted.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
 #include <v8.h>
 
@@ -39,15 +39,15 @@ namespace blink {
 
 class V8DebuggerClient;
 
-class JavaScriptCallFrame : public RefCounted<JavaScriptCallFrame> {
+class JavaScriptCallFrame {
 public:
-    static PassRefPtr<JavaScriptCallFrame> create(V8DebuggerClient* client, v8::Local<v8::Context> debuggerContext, v8::Local<v8::Object> callFrame)
+    static PassOwnPtr<JavaScriptCallFrame> create(V8DebuggerClient* client, v8::Local<v8::Context> debuggerContext, v8::Local<v8::Object> callFrame)
     {
-        return adoptRef(new JavaScriptCallFrame(client, debuggerContext, callFrame));
+        return adoptPtr(new JavaScriptCallFrame(client, debuggerContext, callFrame));
     }
     ~JavaScriptCallFrame();
 
-    JavaScriptCallFrame* caller();
+    PassOwnPtr<JavaScriptCallFrame> caller();
 
     int sourceID() const;
     int line() const;
@@ -88,7 +88,7 @@ private:
 
     V8DebuggerClient* m_client;
     v8::Isolate* m_isolate;
-    RefPtr<JavaScriptCallFrame> m_caller;
+    OwnPtr<JavaScriptCallFrame> m_caller;
     v8::Global<v8::Context> m_debuggerContext;
     v8::Global<v8::Object> m_callFrame;
     v8::Global<v8::FunctionTemplate> m_wrapperTemplate;

@@ -68,7 +68,7 @@ private:
 
     typedef HashMap<int, OwnPtr<InjectedScript>> IdToInjectedScriptMap;
     IdToInjectedScriptMap m_idToInjectedScript;
-    RefPtr<InjectedScriptHost> m_injectedScriptHost;
+    OwnPtr<InjectedScriptHost> m_injectedScriptHost;
     bool m_customObjectFormatterEnabled;
     V8DebuggerClient* m_client;
 };

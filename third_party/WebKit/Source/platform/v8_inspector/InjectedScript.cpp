@@ -115,7 +115,7 @@ static void weakCallback(const v8::WeakCallbackInfo<InjectedScript>& data)
     data.GetParameter()->dispose();
 }
 
-InjectedScript::InjectedScript(InjectedScriptManager* manager, v8::Local<v8::Context> context, v8::Local<v8::Object> object, V8DebuggerClient* client, PassRefPtr<InjectedScriptNative> injectedScriptNative, int contextId)
+InjectedScript::InjectedScript(InjectedScriptManager* manager, v8::Local<v8::Context> context, v8::Local<v8::Object> object, V8DebuggerClient* client, PassOwnPtr<InjectedScriptNative> injectedScriptNative, int contextId)
     : m_manager(manager)
     , m_isolate(context->GetIsolate())
     , m_context(m_isolate, context)

@@ -7,7 +7,6 @@
 
 #include "platform/v8_inspector/public/V8StackTrace.h"
 #include "wtf/PassOwnPtr.h"
-#include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
 
 namespace blink {

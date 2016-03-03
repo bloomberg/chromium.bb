@@ -15,8 +15,6 @@
 #include "platform/v8_inspector/public/V8EventListenerInfo.h"
 #include "platform/v8_inspector/public/V8ToProtocolValue.h"
 #include "wtf/HashSet.h"
-#include "wtf/NonCopyingSort.h"
-#include "wtf/RefPtr.h"
 #include "wtf/text/WTFString.h"
 #include <algorithm>
 
@@ -254,7 +252,7 @@ void V8InjectedScriptHost::getEventListenersCallback(const v8::FunctionCallbackI
     Vector<String> types;
     for (auto& it : listenerInfo)
         types.append(it.key);
-    nonCopyingSort(types.begin(), types.end(), WTF::codePointCompareLessThan);
+    std::sort(types.begin(), types.end(), WTF::codePointCompareLessThan);
     for (const String& type : types) {
         v8::Local<v8::Array> listeners = wrapListenerFunctions(info.GetIsolate(), *listenerInfo.get(type));
         if (!listeners->Length())
@@ -601,7 +599,7 @@ v8::Local<v8::FunctionTemplate> V8InjectedScriptHost::createWrapperTemplate(v8::
     return InjectedScriptHostWrapper::createWrapperTemplate(isolate, methods, attributes);
 }
 
-v8::Local<v8::Object> V8InjectedScriptHost::wrap(V8DebuggerClient* client, v8::Local<v8::FunctionTemplate> constructorTemplate, v8::Local<v8::Context> context, PassRefPtr<InjectedScriptHost> host)
+v8::Local<v8::Object> V8InjectedScriptHost::wrap(V8DebuggerClient* client, v8::Local<v8::FunctionTemplate> constructorTemplate, v8::Local<v8::Context> context, InjectedScriptHost* host)
 {
     return InjectedScriptHostWrapper::wrap(client, constructorTemplate, context, host);
 }

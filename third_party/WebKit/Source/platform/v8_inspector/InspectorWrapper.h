@@ -5,8 +5,7 @@
 #ifndef InspectorWrapper_h
 #define InspectorWrapper_h
 
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefPtr.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
 #include <v8.h>
 
@@ -40,14 +39,23 @@ class InspectorWrapper final : public InspectorWrapperBase {
 public:
     class WeakCallbackData final {
     public:
-        WeakCallbackData(v8::Isolate* isolate, PassRefPtr<T> impl, v8::Local<v8::Object> wrapper)
+        WeakCallbackData(v8::Isolate* isolate, T* impl, v8::Local<v8::Object> wrapper)
             : m_impl(impl)
             , m_persistent(isolate, wrapper)
         {
             m_persistent.SetWeak(this, &WeakCallbackData::weakCallback, v8::WeakCallbackType::kParameter);
         }
 
-        RefPtr<T> m_impl;
+        WeakCallbackData(v8::Isolate* isolate, PassOwnPtr<T> impl, v8::Local<v8::Object> wrapper)
+            : m_impl(impl.get())
+            , m_implOwn(impl)
+            , m_persistent(isolate, wrapper)
+        {
+            m_persistent.SetWeak(this, &WeakCallbackData::weakCallback, v8::WeakCallbackType::kParameter);
+        }
+
+        T* m_impl;
+        OwnPtr<T> m_implOwn;
 
     private:
         static void weakCallback(const v8::WeakCallbackInfo<WeakCallbackData>& info)
@@ -63,26 +71,40 @@ public:
         return InspectorWrapperBase::createWrapperTemplate(isolate, className, methods, attributes);
     }
 
-    static v8::Local<v8::Object> wrap(V8DebuggerClient* client, v8::Local<v8::FunctionTemplate> constructorTemplate, v8::Local<v8::Context> context, PassRefPtr<T> object)
+    static v8::Local<v8::Object> wrap(V8DebuggerClient* client, v8::Local<v8::FunctionTemplate> constructorTemplate, v8::Local<v8::Context> context, T* object)
     {
         v8::Context::Scope contextScope(context);
         v8::Local<v8::Object> result = InspectorWrapperBase::createWrapper(client, constructorTemplate, context);
         if (result.IsEmpty())
             return v8::Local<v8::Object>();
-        RefPtr<T> impl(object);
         v8::Isolate* isolate = context->GetIsolate();
-        v8::Local<v8::External> objectReference = v8::External::New(isolate, new WeakCallbackData(isolate, impl, result));
+        v8::Local<v8::External> objectReference = v8::External::New(isolate, new WeakCallbackData(isolate, object, result));
 
         v8::Local<v8::Private> privateKey = v8::Private::ForApi(isolate, v8::String::NewFromUtf8(isolate, hiddenPropertyName, v8::NewStringType::kInternalized).ToLocalChecked());
         result->SetPrivate(context, privateKey, objectReference);
         return result;
     }
+
+    static v8::Local<v8::Object> wrap(V8DebuggerClient* client, v8::Local<v8::FunctionTemplate> constructorTemplate, v8::Local<v8::Context> context, PassOwnPtr<T> object)
+    {
+        v8::Context::Scope contextScope(context);
+        v8::Local<v8::Object> result = InspectorWrapperBase::createWrapper(client, constructorTemplate, context);
+        if (result.IsEmpty())
+            return v8::Local<v8::Object>();
+        v8::Isolate* isolate = context->GetIsolate();
+        v8::Local<v8::External> objectReference = v8::External::New(isolate, new WeakCallbackData(isolate, object, result));
+
+        v8::Local<v8::Private> privateKey = v8::Private::ForApi(isolate, v8::String::NewFromUtf8(isolate, hiddenPropertyName, v8::NewStringType::kInternalized).ToLocalChecked());
+        result->SetPrivate(context, privateKey, objectReference);
+        return result;
+    }
+
     static T* unwrap(v8::Local<v8::Context> context, v8::Local<v8::Object> object)
     {
         void* data = InspectorWrapperBase::unwrap(context, object, hiddenPropertyName);
         if (!data)
             return nullptr;
-        return reinterpret_cast<WeakCallbackData*>(data)->m_impl.get();
+        return reinterpret_cast<WeakCallbackData*>(data)->m_impl;
     }
 };
 

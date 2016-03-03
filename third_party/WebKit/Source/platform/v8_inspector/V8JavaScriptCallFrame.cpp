@@ -7,7 +7,7 @@
 #include "platform/v8_inspector/InspectorWrapper.h"
 #include "platform/v8_inspector/JavaScriptCallFrame.h"
 #include "platform/v8_inspector/V8StringUtil.h"
-#include "wtf/RefPtr.h"
+#include "wtf/PassOwnPtr.h"
 #include <algorithm>
 
 namespace blink {
@@ -17,14 +17,14 @@ namespace {
 void callerAttributeGetterCallback(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     JavaScriptCallFrame* impl = V8JavaScriptCallFrame::unwrap(info.GetIsolate()->GetCurrentContext(), info.Holder());
-    JavaScriptCallFrame* caller = impl->caller();
+    OwnPtr<JavaScriptCallFrame> caller = impl->caller();
     if (!caller)
         return;
     v8::Isolate* isolate = info.GetIsolate();
     v8::Local<v8::FunctionTemplate> wrapperTemplate = impl->wrapperTemplate(isolate);
     if (wrapperTemplate.IsEmpty())
         return;
-    info.GetReturnValue().Set(V8JavaScriptCallFrame::wrap(impl->client(), wrapperTemplate, isolate->GetCurrentContext(), caller));
+    info.GetReturnValue().Set(V8JavaScriptCallFrame::wrap(impl->client(), wrapperTemplate, isolate->GetCurrentContext(), caller.release()));
 }
 
 void sourceIDAttributeGetterCallback(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -203,7 +203,7 @@ v8::Local<v8::FunctionTemplate> V8JavaScriptCallFrame::createWrapperTemplate(v8:
     return JavaScriptCallFrameWrapper::createWrapperTemplate(isolate, methods, attributes);
 }
 
-v8::Local<v8::Object> V8JavaScriptCallFrame::wrap(V8DebuggerClient* client, v8::Local<v8::FunctionTemplate> constructorTemplate, v8::Local<v8::Context> context, PassRefPtr<JavaScriptCallFrame> frame)
+v8::Local<v8::Object> V8JavaScriptCallFrame::wrap(V8DebuggerClient* client, v8::Local<v8::FunctionTemplate> constructorTemplate, v8::Local<v8::Context> context, PassOwnPtr<JavaScriptCallFrame> frame)
 {
     // Store template for .caller callback
     frame->setWrapperTemplate(constructorTemplate, context->GetIsolate());

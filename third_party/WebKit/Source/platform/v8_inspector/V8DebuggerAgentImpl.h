@@ -13,7 +13,6 @@
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
 #include "wtf/ListHashSet.h"
-#include "wtf/PassRefPtr.h"
 #include "wtf/Vector.h"
 #include "wtf/text/StringHash.h"
 
@@ -225,7 +224,7 @@ private:
 
     bool isCallStackEmptyOrBlackboxed();
     bool isTopCallFrameBlackboxed();
-    bool isCallFrameWithUnknownScriptOrBlackboxed(PassRefPtr<JavaScriptCallFrame>);
+    bool isCallFrameWithUnknownScriptOrBlackboxed(JavaScriptCallFrame*);
 
     void internalSetAsyncCallStackDepth(int);
     void increaseCachedSkipStackGeneration();

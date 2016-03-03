@@ -116,7 +116,7 @@ public:
 
 private:
     friend InjectedScript* InjectedScriptManager::injectedScriptFor(v8::Local<v8::Context>);
-    InjectedScript(InjectedScriptManager*, v8::Local<v8::Context>, v8::Local<v8::Object>, V8DebuggerClient*, PassRefPtr<InjectedScriptNative>, int contextId);
+    InjectedScript(InjectedScriptManager*, v8::Local<v8::Context>, v8::Local<v8::Object>, V8DebuggerClient*, PassOwnPtr<InjectedScriptNative>, int contextId);
 
     bool canAccessInspectedWindow() const;
     v8::Local<v8::Value> v8Value() const;
@@ -130,7 +130,7 @@ private:
     v8::Global<v8::Context> m_context;
     v8::Global<v8::Value> m_value;
     V8DebuggerClient* m_client;
-    RefPtr<InjectedScriptNative> m_native;
+    OwnPtr<InjectedScriptNative> m_native;
     int m_contextId;
     String m_origin;
 };

@@ -6,8 +6,6 @@
 
 #include "platform/v8_inspector/public/V8DebuggerClient.h"
 
-#include "wtf/RefPtr.h"
-
 #include <v8-debug.h>
 
 namespace blink {

@@ -34,14 +34,13 @@
 #include "platform/v8_inspector/V8DebuggerAgentImpl.h"
 #include "platform/v8_inspector/public/V8Debugger.h"
 
-#include "wtf/RefPtr.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace blink {
 
-PassRefPtr<InjectedScriptHost> InjectedScriptHost::create(V8DebuggerImpl* debugger)
+PassOwnPtr<InjectedScriptHost> InjectedScriptHost::create(V8DebuggerImpl* debugger)
 {
-    return adoptRef(new InjectedScriptHost(debugger));
+    return adoptPtr(new InjectedScriptHost(debugger));
 }
 
 InjectedScriptHost::InjectedScriptHost(V8DebuggerImpl* debugger)

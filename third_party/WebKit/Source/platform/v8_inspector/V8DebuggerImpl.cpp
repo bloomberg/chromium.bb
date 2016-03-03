@@ -457,7 +457,7 @@ int V8DebuggerImpl::frameCount()
     return 0;
 }
 
-PassRefPtr<JavaScriptCallFrame> V8DebuggerImpl::wrapCallFrames()
+PassOwnPtr<JavaScriptCallFrame> V8DebuggerImpl::wrapCallFrames()
 {
     v8::Local<v8::Value> currentCallFrameV8;
     if (m_executionState.IsEmpty()) {
@@ -483,7 +483,7 @@ v8::Local<v8::Object> V8DebuggerImpl::currentCallFrames()
     if (!stackTrace->GetFrameCount())
         return v8::Local<v8::Object>();
 
-    RefPtr<JavaScriptCallFrame> currentCallFrame = wrapCallFrames();
+    OwnPtr<JavaScriptCallFrame> currentCallFrame = wrapCallFrames();
     if (!currentCallFrame)
         return v8::Local<v8::Object>();
 
@@ -494,7 +494,7 @@ v8::Local<v8::Object> V8DebuggerImpl::currentCallFrames()
     return wrapper;
 }
 
-PassRefPtr<JavaScriptCallFrame> V8DebuggerImpl::callFrameNoScopes(int index)
+PassOwnPtr<JavaScriptCallFrame> V8DebuggerImpl::callFrameNoScopes(int index)
 {
     if (!m_isolate->InContext())
         return nullptr;

@@ -32,7 +32,6 @@
 
 #include "platform/v8_inspector/public/V8RuntimeAgent.h"
 #include "wtf/PassOwnPtr.h"
-#include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 #include <v8.h>
@@ -52,9 +51,9 @@ class DictionaryValue;
 // InjectedScriptHost must never implemment methods that have more power over the page than the
 // page already has itself (e.g. origin restriction bypasses).
 
-class InjectedScriptHost : public RefCounted<InjectedScriptHost> {
+class InjectedScriptHost {
 public:
-    static PassRefPtr<InjectedScriptHost> create(V8DebuggerImpl*);
+    static PassOwnPtr<InjectedScriptHost> create(V8DebuggerImpl*);
     ~InjectedScriptHost();
 
     void setClearConsoleCallback(PassOwnPtr<V8RuntimeAgent::ClearConsoleCallback>);

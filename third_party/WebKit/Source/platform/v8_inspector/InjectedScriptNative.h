@@ -7,14 +7,13 @@
 
 #include "wtf/HashMap.h"
 #include "wtf/PassOwnPtr.h"
-#include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 #include <v8.h>
 
 namespace blink {
 
-class InjectedScriptNative final : public RefCounted<InjectedScriptNative> {
+class InjectedScriptNative final {
 public:
     explicit InjectedScriptNative(v8::Isolate*);
     ~InjectedScriptNative();
