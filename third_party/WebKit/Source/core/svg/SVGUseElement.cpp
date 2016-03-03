@@ -586,6 +586,28 @@ static inline void removeDisallowedElementsFromSubtree(Element& subtree)
     }
 }
 
+static void moveChildrenToReplacementElement(ContainerNode& sourceRoot, ContainerNode& destinationRoot)
+{
+    for (RefPtrWillBeRawPtr<Node> child = sourceRoot.firstChild(); child; ) {
+        RefPtrWillBeRawPtr<Node> nextChild = child->nextSibling();
+        destinationRoot.appendChild(child);
+        child = nextChild.release();
+    }
+}
+
+// Spec: In the generated content, the 'use' will be replaced by 'g', where all
+// attributes from the 'use' element except for x, y, width, height and
+// xlink:href are transferred to the generated 'g' element.
+static void removeAttributesFromReplacementElement(SVGElement& replacementElement)
+{
+    replacementElement.removeAttribute(SVGNames::xAttr);
+    replacementElement.removeAttribute(SVGNames::yAttr);
+    replacementElement.removeAttribute(SVGNames::widthAttr);
+    replacementElement.removeAttribute(SVGNames::heightAttr);
+    replacementElement.removeAttribute(SVGNames::hrefAttr);
+    replacementElement.removeAttribute(XLinkNames::hrefAttr);
+}
+
 bool SVGUseElement::expandUseElementsInShadowTree()
 {
     // Why expand the <use> elements in the shadow tree here, and not just
@@ -608,18 +630,14 @@ bool SVGUseElement::expandUseElementsInShadowTree()
         // Don't ASSERT(target) here, it may be "pending", too.
         // Setup sub-shadow tree root node
         RefPtrWillBeRawPtr<SVGGElement> cloneParent = SVGGElement::create(referencedScope()->document());
+        // Transfer all data (attributes, etc.) from <use> to the new <g> element.
+        cloneParent->cloneDataFromElement(*use);
         cloneParent->setCorrespondingElement(use->correspondingElement());
 
-        // Move already cloned elements to the new <g> element
-        for (RefPtrWillBeRawPtr<Node> child = use->firstChild(); child; ) {
-            RefPtrWillBeRawPtr<Node> nextChild = child->nextSibling();
-            cloneParent->appendChild(child);
-            child = nextChild.release();
-        }
+        removeAttributesFromReplacementElement(*cloneParent);
 
-        // Spec: In the generated content, the 'use' will be replaced by 'g', where all attributes from the
-        // 'use' element except for x, y, width, height and xlink:href are transferred to the generated 'g' element.
-        transferUseAttributesToReplacedElement(use.get(), cloneParent.get());
+        // Move already cloned elements to the new <g> element.
+        moveChildrenToReplacementElement(*use, *cloneParent);
 
         if (target) {
             RefPtrWillBeRawPtr<Node> newChild = cloneNodeAndAssociate(*target);
@@ -662,12 +680,8 @@ void SVGUseElement::expandSymbolElementsInShadowTree()
         svgElement->cloneDataFromElement(*symbol);
         svgElement->setCorrespondingElement(symbol->correspondingElement());
 
-        // Move already cloned elements to the new <svg> element
-        for (RefPtrWillBeRawPtr<Node> child = symbol->firstChild(); child; ) {
-            RefPtrWillBeRawPtr<Node> nextChild = child->nextSibling();
-            svgElement->appendChild(child);
-            child = nextChild.release();
-        }
+        // Move already cloned elements to the new <svg> element.
+        moveChildrenToReplacementElement(*symbol, *svgElement);
 
         // We don't walk the target tree element-by-element, and clone each element,
         // but instead use cloneNode(deep=true). This is an optimization for the common
@@ -707,21 +721,6 @@ void SVGUseElement::invalidateDependentShadowTrees()
             element->invalidateShadowTree();
         }
     }
-}
-
-void SVGUseElement::transferUseAttributesToReplacedElement(SVGElement* from, SVGElement* to) const
-{
-    ASSERT(from);
-    ASSERT(to);
-
-    to->cloneDataFromElement(*from);
-
-    to->removeAttribute(SVGNames::xAttr);
-    to->removeAttribute(SVGNames::yAttr);
-    to->removeAttribute(SVGNames::widthAttr);
-    to->removeAttribute(SVGNames::heightAttr);
-    to->removeAttribute(SVGNames::hrefAttr);
-    to->removeAttribute(XLinkNames::hrefAttr);
 }
 
 bool SVGUseElement::selfHasRelativeLengths() const

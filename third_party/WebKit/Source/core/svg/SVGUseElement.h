@@ -98,8 +98,6 @@ private:
     void expandSymbolElementsInShadowTree();
     void cloneNonMarkupEventListeners();
 
-    void transferUseAttributesToReplacedElement(SVGElement* from, SVGElement* to) const;
-
     void invalidateDependentShadowTrees();
 
     bool resourceIsStillLoading() const;
