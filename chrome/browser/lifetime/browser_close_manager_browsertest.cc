@@ -1002,7 +1002,7 @@ IN_PROC_BROWSER_TEST_P(BrowserCloseManagerWithBackgroundModeBrowserTest,
 // Check that closing the last browser window individually does not affect
 // background mode.
 IN_PROC_BROWSER_TEST_P(BrowserCloseManagerWithBackgroundModeBrowserTest,
-                       CloseSingleBrowserWithBackgroundMode) {
+                       DISABLED_CloseSingleBrowserWithBackgroundMode) {
   RepeatedNotificationObserver close_observer(
       chrome::NOTIFICATION_BROWSER_CLOSED, 1);
   EXPECT_FALSE(IsBackgroundModeSuspended());
