@@ -6,6 +6,7 @@
 #define FetchManager_h
 
 #include "bindings/core/v8/ScriptPromise.h"
+#include "core/dom/ContextLifecycleObserver.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
@@ -14,15 +15,14 @@ class ExecutionContext;
 class FetchRequestData;
 class ScriptState;
 
-class FetchManager final : public GarbageCollectedFinalized<FetchManager> {
+class FetchManager final : public GarbageCollectedFinalized<FetchManager>, public ContextLifecycleObserver {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(FetchManager);
 public:
-    static FetchManager* create(ExecutionContext* executionContext)
-    {
-        return new FetchManager(executionContext);
-    }
+    static FetchManager* create(ExecutionContext*);
+    explicit FetchManager(ExecutionContext*);
     ~FetchManager();
     ScriptPromise fetch(ScriptState*, FetchRequestData*);
-    void stop();
+    void contextDestroyed() override;
     bool isStopped() const { return m_isStopped; }
 
     DECLARE_TRACE();
@@ -30,11 +30,9 @@ public:
 private:
     class Loader;
 
-    explicit FetchManager(ExecutionContext*);
     // Removes loader from |m_loaders|.
     void onLoaderFinished(Loader*);
 
-    RawPtrWillBeMember<ExecutionContext> m_executionContext;
     HeapHashSet<Member<Loader>> m_loaders;
     bool m_isStopped;
 };

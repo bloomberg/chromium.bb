@@ -4,7 +4,6 @@
 
 #include "modules/fetch/GlobalFetch.h"
 
-#include "core/dom/ActiveDOMObject.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/UseCounter.h"
 #include "core/workers/WorkerGlobalScope.h"
@@ -55,42 +54,13 @@ public:
     DEFINE_INLINE_VIRTUAL_TRACE()
     {
         visitor->trace(m_fetchManager);
-        visitor->trace(m_stopDetector);
         ScopedFetcher::trace(visitor);
         WillBeHeapSupplement<T>::trace(visitor);
     }
 
 private:
-    class StopDetector final : public GarbageCollectedFinalized<StopDetector>, public ActiveDOMObject {
-        WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(StopDetector);
-    public:
-        static StopDetector* create(ExecutionContext* executionContext, FetchManager* fetchManager)
-        {
-            return new StopDetector(executionContext, fetchManager);
-        }
-
-        void stop() override { m_fetchManager->stop(); }
-
-        DEFINE_INLINE_TRACE()
-        {
-            visitor->trace(m_fetchManager);
-            ActiveDOMObject::trace(visitor);
-        }
-
-    private:
-        StopDetector(ExecutionContext* executionContext, FetchManager* fetchManager)
-            : ActiveDOMObject(executionContext)
-            , m_fetchManager(fetchManager)
-        {
-            suspendIfNeeded();
-        }
-
-        Member<FetchManager> m_fetchManager;
-    };
-
     explicit GlobalFetchImpl(ExecutionContext* executionContext)
         : m_fetchManager(FetchManager::create(executionContext))
-        , m_stopDetector(StopDetector::create(executionContext, m_fetchManager.get()))
 #if !ENABLE(OILPAN)
         , m_weakFactory(this)
 #endif
@@ -99,7 +69,6 @@ private:
     static const char* supplementName() { return "GlobalFetch"; }
 
     PersistentWillBeMember<FetchManager> m_fetchManager;
-    PersistentWillBeMember<StopDetector> m_stopDetector;
 #if !ENABLE(OILPAN)
     WeakPtrFactory<ScopedFetcher> m_weakFactory;
 #endif

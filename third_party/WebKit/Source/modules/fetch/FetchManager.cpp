@@ -53,8 +53,8 @@ bool IsRedirectStatusCode(int statusCode)
 
 } // namespace
 
-class FetchManager::Loader final : public GarbageCollectedFinalized<FetchManager::Loader>, public ThreadableLoaderClient, public ContextLifecycleObserver {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(FetchManager::Loader);
+class FetchManager::Loader final : public GarbageCollectedFinalized<FetchManager::Loader>, public ThreadableLoaderClient {
+    USING_PRE_FINALIZER(FetchManager::Loader, dispose);
 public:
     static Loader* create(ExecutionContext* executionContext, FetchManager* fetchManager, ScriptPromiseResolver* resolver, FetchRequestData* request, bool isIsolatedWorld)
     {
@@ -74,6 +74,8 @@ public:
     void dispose();
 
     class SRIVerifier final : public GarbageCollectedFinalized<SRIVerifier>, public WebDataConsumerHandle::Client {
+        // Promptly clear m_handle and m_reader.
+        EAGERLY_FINALIZE();
     public:
         // SRIVerifier takes ownership of |handle| and |response|.
         // |updater| must be garbage collected. The other arguments
@@ -172,11 +174,11 @@ private:
     Member<SRIVerifier> m_integrityVerifier;
     bool m_didFinishLoading;
     bool m_isIsolatedWorld;
+    RawPtrWillBeMember<ExecutionContext> m_executionContext;
 };
 
 FetchManager::Loader::Loader(ExecutionContext* executionContext, FetchManager* fetchManager, ScriptPromiseResolver* resolver, FetchRequestData* request, bool isIsolatedWorld)
-    : ContextLifecycleObserver(executionContext)
-    , m_fetchManager(fetchManager)
+    : m_fetchManager(fetchManager)
     , m_resolver(resolver)
     , m_request(request)
     , m_failed(false)
@@ -185,7 +187,9 @@ FetchManager::Loader::Loader(ExecutionContext* executionContext, FetchManager* f
     , m_integrityVerifier(nullptr)
     , m_didFinishLoading(false)
     , m_isIsolatedWorld(isIsolatedWorld)
+    , m_executionContext(executionContext)
 {
+    ThreadState::current()->registerPreFinalizer(this);
 }
 
 FetchManager::Loader::~Loader()
@@ -199,7 +203,7 @@ DEFINE_TRACE(FetchManager::Loader)
     visitor->trace(m_resolver);
     visitor->trace(m_request);
     visitor->trace(m_integrityVerifier);
-    ContextLifecycleObserver::trace(visitor);
+    visitor->trace(m_executionContext);
 }
 
 void FetchManager::Loader::didReceiveResponse(unsigned long, const ResourceResponse& response, PassOwnPtr<WebDataConsumerHandle> handle)
@@ -368,8 +372,8 @@ void FetchManager::Loader::didFailRedirectCheck()
 
 Document* FetchManager::Loader::document() const
 {
-    if (executionContext()->isDocument()) {
-        return toDocument(executionContext());
+    if (m_executionContext->isDocument()) {
+        return toDocument(m_executionContext);
     }
     return nullptr;
 }
@@ -384,7 +388,7 @@ void FetchManager::Loader::loadSucceeded()
         && m_responseHttpStatusCode >= 200 && m_responseHttpStatusCode < 300) {
         document()->frame()->page()->chromeClient().ajaxSucceeded(document()->frame());
     }
-    InspectorInstrumentation::didFinishFetch(executionContext(), this, m_request->method(), m_request->url().string());
+    InspectorInstrumentation::didFinishFetch(m_executionContext, this, m_request->method(), m_request->url().string());
     notifyFinished();
 }
 
@@ -412,7 +416,7 @@ void FetchManager::Loader::start()
 
     // "- should fetching |request| be blocked as content security returns
     //    blocked"
-    if (!ContentSecurityPolicy::shouldBypassMainWorld(executionContext()) && !executionContext()->contentSecurityPolicy()->allowConnectToSource(m_request->url())) {
+    if (!ContentSecurityPolicy::shouldBypassMainWorld(m_executionContext) && !m_executionContext->contentSecurityPolicy()->allowConnectToSource(m_request->url())) {
         // "A network error."
         performNetworkError("Refused to connect to '" + m_request->url().elidedString() + "' because it violates the document's Content Security Policy.");
         return;
@@ -491,6 +495,7 @@ void FetchManager::Loader::dispose()
         m_loader->cancel();
         m_loader.clear();
     }
+    m_executionContext = nullptr;
 }
 
 void FetchManager::Loader::performBasicFetch()
@@ -539,7 +544,7 @@ void FetchManager::Loader::performHTTPFetch(bool corsFlag, bool corsPreflightFla
     }
     request.setFetchRedirectMode(m_request->redirect());
     request.setUseStreamOnResponse(true);
-    request.setExternalRequestStateFromRequestorAddressSpace(executionContext()->securityContext().addressSpace());
+    request.setExternalRequestStateFromRequestorAddressSpace(m_executionContext->securityContext().addressSpace());
 
     // "2. Append `Referer`/empty byte sequence, if |HTTPRequest|'s |referrer|
     // is none, and `Referer`/|HTTPRequest|'s referrer, serialized and utf-8
@@ -550,14 +555,14 @@ void FetchManager::Loader::performHTTPFetch(bool corsFlag, bool corsPreflightFla
     ASSERT(m_request->getReferrerPolicy() == ReferrerPolicyDefault);
     // Request's referrer policy is always default, so use the client's one.
     // TODO(yhirano): Fix here when we introduce requet's referrer policy.
-    ReferrerPolicy policy = executionContext()->getReferrerPolicy();
+    ReferrerPolicy policy = m_executionContext->getReferrerPolicy();
     if (m_request->referrerString() == FetchRequestData::clientReferrerString()) {
         String referrerURL;
-        if (executionContext()->isDocument()) {
-            Document* document = toDocument(executionContext());
+        if (m_executionContext->isDocument()) {
+            Document* document = toDocument(m_executionContext);
             referrerURL = document->outgoingReferrer();
-        } else if (executionContext()->isWorkerGlobalScope()) {
-            referrerURL = executionContext()->url().strippedForUseAsReferrer();
+        } else if (m_executionContext->isWorkerGlobalScope()) {
+            referrerURL = m_executionContext->url().strippedForUseAsReferrer();
         }
         request.setHTTPReferrer(SecurityPolicy::generateReferrer(policy, m_request->url(), referrerURL));
     } else {
@@ -590,7 +595,7 @@ void FetchManager::Loader::performHTTPFetch(bool corsFlag, bool corsPreflightFla
     resourceLoaderOptions.securityOrigin = m_request->origin().get();
 
     ThreadableLoaderOptions threadableLoaderOptions;
-    threadableLoaderOptions.contentSecurityPolicyEnforcement = ContentSecurityPolicy::shouldBypassMainWorld(executionContext()) ? DoNotEnforceContentSecurityPolicy : EnforceContentSecurityPolicy;
+    threadableLoaderOptions.contentSecurityPolicyEnforcement = ContentSecurityPolicy::shouldBypassMainWorld(m_executionContext) ? DoNotEnforceContentSecurityPolicy : EnforceContentSecurityPolicy;
     if (corsPreflightFlag)
         threadableLoaderOptions.preflightPolicy = ForcePreflight;
     switch (m_request->mode()) {
@@ -610,8 +615,8 @@ void FetchManager::Loader::performHTTPFetch(bool corsFlag, bool corsPreflightFla
         threadableLoaderOptions.crossOriginRequestPolicy = DenyCrossOriginRequests;
         break;
     }
-    InspectorInstrumentation::willStartFetch(executionContext(), this);
-    m_loader = ThreadableLoader::create(*executionContext(), this, threadableLoaderOptions, resourceLoaderOptions);
+    InspectorInstrumentation::willStartFetch(m_executionContext, this);
+    m_loader = ThreadableLoader::create(*m_executionContext, this, threadableLoaderOptions, resourceLoaderOptions);
     m_loader->start(request);
 }
 
@@ -642,11 +647,11 @@ void FetchManager::Loader::performDataFetch()
     resourceLoaderOptions.securityOrigin = m_request->origin().get();
 
     ThreadableLoaderOptions threadableLoaderOptions;
-    threadableLoaderOptions.contentSecurityPolicyEnforcement = ContentSecurityPolicy::shouldBypassMainWorld(executionContext()) ? DoNotEnforceContentSecurityPolicy : EnforceContentSecurityPolicy;
+    threadableLoaderOptions.contentSecurityPolicyEnforcement = ContentSecurityPolicy::shouldBypassMainWorld(m_executionContext) ? DoNotEnforceContentSecurityPolicy : EnforceContentSecurityPolicy;
     threadableLoaderOptions.crossOriginRequestPolicy = AllowCrossOriginRequests;
 
-    InspectorInstrumentation::willStartFetch(executionContext(), this);
-    m_loader = ThreadableLoader::create(*executionContext(), this, threadableLoaderOptions, resourceLoaderOptions);
+    InspectorInstrumentation::willStartFetch(m_executionContext, this);
+    m_loader = ThreadableLoader::create(*m_executionContext, this, threadableLoaderOptions, resourceLoaderOptions);
     m_loader->start(request);
 }
 
@@ -656,7 +661,7 @@ void FetchManager::Loader::failed(const String& message)
         return;
     m_failed = true;
     if (!message.isEmpty())
-        executionContext()->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, message));
+        m_executionContext->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, message));
     if (m_resolver) {
         if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
             return;
@@ -664,7 +669,7 @@ void FetchManager::Loader::failed(const String& message)
         ScriptState::Scope scope(state);
         m_resolver->reject(V8ThrowException::createTypeError(state->isolate(), "Failed to fetch"));
     }
-    InspectorInstrumentation::didFailFetch(executionContext(), this);
+    InspectorInstrumentation::didFailFetch(m_executionContext, this);
     notifyFinished();
 }
 
@@ -674,18 +679,19 @@ void FetchManager::Loader::notifyFinished()
         m_fetchManager->onLoaderFinished(this);
 }
 
+FetchManager* FetchManager::create(ExecutionContext* executionContext)
+{
+    return new FetchManager(executionContext);
+}
+
 FetchManager::FetchManager(ExecutionContext* executionContext)
-    : m_executionContext(executionContext)
+    : ContextLifecycleObserver(executionContext)
     , m_isStopped(false)
 {
 }
 
 FetchManager::~FetchManager()
 {
-#if !ENABLE(OILPAN)
-    if (!m_isStopped)
-        stop();
-#endif
 }
 
 ScriptPromise FetchManager::fetch(ScriptState* scriptState, FetchRequestData* request)
@@ -695,13 +701,13 @@ ScriptPromise FetchManager::fetch(ScriptState* scriptState, FetchRequestData* re
 
     request->setContext(WebURLRequest::RequestContextFetch);
 
-    Loader* loader = Loader::create(m_executionContext, this, resolver, request, scriptState->world().isIsolatedWorld());
+    Loader* loader = Loader::create(executionContext(), this, resolver, request, scriptState->world().isIsolatedWorld());
     m_loaders.add(loader);
     loader->start();
     return promise;
 }
 
-void FetchManager::stop()
+void FetchManager::contextDestroyed()
 {
     ASSERT(!m_isStopped);
     m_isStopped = true;
@@ -717,8 +723,8 @@ void FetchManager::onLoaderFinished(Loader* loader)
 
 DEFINE_TRACE(FetchManager)
 {
-    visitor->trace(m_executionContext);
     visitor->trace(m_loaders);
+    ContextLifecycleObserver::trace(visitor);
 }
 
 } // namespace blink
