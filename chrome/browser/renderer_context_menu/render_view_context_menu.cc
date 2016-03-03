@@ -940,7 +940,7 @@ void RenderViewContextMenu::AppendLinkItems() {
                                        entry->GetName()));
         AddIconToLastMenuItem(entry->GetAvatarIcon(), &menu_model_);
       } else if (target_profiles_entries.size() > 1u) {
-        for (ProfileAttributesEntry* entry : entries) {
+        for (ProfileAttributesEntry* entry : target_profiles_entries) {
           int menu_index = static_cast<int>(profile_link_paths_.size());
           // In extreme cases, we might have more profiles than available
           // command ids. In that case, just stop creating new entries - the

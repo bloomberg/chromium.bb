@@ -61,7 +61,8 @@ class TestRenderViewContextMenu : public RenderViewContextMenu {
                                 ui::MenuModel** found_model,
                                 int* found_index);
 
-  size_t GetItemIndexByProfilePath(const base::FilePath& path);
+  // Returns the command id of the menu item with the specified |path|.
+  int GetCommandIDByProfilePath(const base::FilePath& path);
 
 #if defined(ENABLE_EXTENSIONS)
   extensions::ContextMenuMatcher& extension_items() { return extension_items_; }

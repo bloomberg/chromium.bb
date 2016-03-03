@@ -54,6 +54,7 @@
 #include "net/url_request/url_request_interceptor.h"
 #include "third_party/WebKit/public/web/WebContextMenuData.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
+#include "ui/base/models/menu_model.h"
 
 using content::WebContents;
 
@@ -453,8 +454,7 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, OpenLinkInProfileEntryPresent) {
     // With two profiles (the current and another profile), no submenu is
     // created. Instead, a single item is added to the main context menu.
     ASSERT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKINPROFILE));
-    ASSERT_TRUE(menu->IsItemInRangePresent(IDC_OPEN_LINK_IN_PROFILE_FIRST,
-                                           IDC_OPEN_LINK_IN_PROFILE_LAST));
+    ASSERT_TRUE(menu->IsItemPresent(IDC_OPEN_LINK_IN_PROFILE_FIRST));
   }
 
   CreateSecondaryProfile(2);
@@ -468,7 +468,11 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, OpenLinkInProfileEntryPresent) {
     ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_COPYLINKLOCATION));
     // As soon as at least three profiles exist, we show all profiles in a
     // submenu.
-    ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKINPROFILE));
+    ui::MenuModel* model = NULL;
+    int index = -1;
+    ASSERT_TRUE(menu->GetMenuModelAndItemIndex(IDC_OPEN_LINK_IN_PROFILE_FIRST,
+                                               &model, &index));
+    ASSERT_EQ(2, model->GetItemCount());
     ASSERT_FALSE(menu->IsItemInRangePresent(IDC_OPEN_LINK_IN_PROFILE_FIRST,
                                             IDC_OPEN_LINK_IN_PROFILE_LAST));
   }
@@ -478,9 +482,11 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, OpenLinkInProfile) {
   // Create |num_profiles| extra profiles for testing.
   const int num_profiles = 8;
   // The following are the profile numbers that are omitted and need signin.
-  // These profiles are not added to the menu.
-  const std::vector<int> profiles_omit{1, 4};
-  const std::vector<int> profiles_signin_required{3, 6};
+  // These profiles are not added to the menu. Omitted profiles refers to
+  // supervised profiles in the process of creation. Adding more than one
+  // omitted profile may result in DCHECK errors.
+  int profile_omit = 4;
+  const std::vector<int> profiles_signin_required{1, 3, 6};
 
   // Create the profiles.
   ProfileAttributesStorage& storage =
@@ -493,7 +499,7 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, OpenLinkInProfile) {
                                                      &entry));
     // Open a browser window for the profile if and only if the profile is not
     // omitted nor needing signin.
-    if (std::binary_search(profiles_omit.begin(), profiles_omit.end(), i)) {
+    if (i == profile_omit) {
       entry->SetIsOmitted(true);
     } else if (std::binary_search(profiles_signin_required.begin(),
                                   profiles_signin_required.end(), i)) {
@@ -515,14 +521,19 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, OpenLinkInProfile) {
   scoped_ptr<TestRenderViewContextMenu> menu(
       CreateContextMenuMediaTypeNone(url, url));
 
+  // Verify that the size of the menu is correct.
+  ui::MenuModel* model = NULL;
+  int index = -1;
+  ASSERT_TRUE(menu->GetMenuModelAndItemIndex(IDC_OPEN_LINK_IN_PROFILE_FIRST,
+                                             &model, &index));
+  ASSERT_EQ(static_cast<int>(profiles_in_menu.size()), model->GetItemCount());
+
   // Open the menu items. They should match their corresponding profiles in
   // |profiles_in_menu|.
   for (Profile* profile : profiles_in_menu) {
-    size_t menu_index =
-        menu->GetItemIndexByProfilePath(profile->GetPath());
-    ASSERT_NE(std::string::npos, menu_index);
-    menu->ExecuteCommand(
-        IDC_OPEN_LINK_IN_PROFILE_FIRST + static_cast<int>(menu_index), 0);
+    int command_id = menu->GetCommandIDByProfilePath(profile->GetPath());
+    ASSERT_NE(-1, command_id);
+    menu->ExecuteCommand(command_id, 0);
 
     tab_observer.Wait();
     content::WebContents* tab = tab_observer.GetTab();
