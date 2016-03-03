@@ -269,6 +269,13 @@ void URLRequestContextBuilder::SetFileTaskRunner(
   file_task_runner_ = task_runner;
 }
 
+void URLRequestContextBuilder::SetProtocolHandler(
+    const std::string& scheme,
+    scoped_ptr<URLRequestJobFactory::ProtocolHandler> protocol_handler) {
+  DCHECK(protocol_handler);
+  protocol_handlers_[scheme] = std::move(protocol_handler);
+}
+
 void URLRequestContextBuilder::SetHttpAuthHandlerFactory(
     scoped_ptr<HttpAuthHandlerFactory> factory) {
   http_auth_handler_factory_ = std::move(factory);
@@ -457,6 +464,14 @@ scoped_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
   storage->set_http_transaction_factory(std::move(http_transaction_factory));
 
   URLRequestJobFactoryImpl* job_factory = new URLRequestJobFactoryImpl;
+  // Adds caller-provided protocol handlers first so that these handlers are
+  // used over data/file/ftp handlers below.
+  for (auto& scheme_handler : protocol_handlers_) {
+    job_factory->SetProtocolHandler(scheme_handler.first,
+                                    std::move(scheme_handler.second));
+  }
+  protocol_handlers_.clear();
+
   if (data_enabled_)
     job_factory->SetProtocolHandler("data",
                                     make_scoped_ptr(new DataProtocolHandler));

@@ -15,9 +15,11 @@
 #define NET_URL_REQUEST_URL_REQUEST_CONTEXT_BUILDER_H_
 
 #include <stdint.h>
+#include <map>
 #include <string>
 #include <unordered_map>
 #include <utility>
+#include <vector>
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
@@ -33,6 +35,7 @@
 #include "net/proxy/proxy_service.h"
 #include "net/quic/quic_protocol.h"
 #include "net/socket/next_proto.h"
+#include "net/url_request/url_request_job_factory.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -153,6 +156,12 @@ class NET_EXPORT URLRequestContextBuilder {
     ftp_enabled_ = enable;
   }
 #endif
+
+  // Sets a valid ProtocolHandler for a scheme.
+  // A ProtocolHandler already exists for |scheme| will be overwritten.
+  void SetProtocolHandler(
+      const std::string& scheme,
+      scoped_ptr<URLRequestJobFactory::ProtocolHandler> protocol_handler);
 
   // Unlike the other setters, the builder does not take ownership of the
   // NetLog.
@@ -345,6 +354,8 @@ class NET_EXPORT URLRequestContextBuilder {
   scoped_ptr<CertVerifier> cert_verifier_;
   std::vector<scoped_ptr<URLRequestInterceptor>> url_request_interceptors_;
   scoped_ptr<HttpServerProperties> http_server_properties_;
+  std::map<std::string, scoped_ptr<URLRequestJobFactory::ProtocolHandler>>
+      protocol_handlers_;
 
   DISALLOW_COPY_AND_ASSIGN(URLRequestContextBuilder);
 };

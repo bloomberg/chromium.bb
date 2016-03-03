@@ -22,7 +22,6 @@ class NetworkDelegate;
 class NetLog;
 class ProxyConfigService;
 class ProxyService;
-class URLRequestContextStorage;
 }
 
 namespace blimp {
@@ -47,16 +46,9 @@ class BlimpURLRequestContextGetter : public net::URLRequestContextGetter {
 
   net::HostResolver* host_resolver();
 
- protected:
+ private:
   ~BlimpURLRequestContextGetter() override;
 
-  // Used by subclasses to create their own implementation of NetworkDelegate
-  // and net::ProxyService.
-  virtual scoped_ptr<net::NetworkDelegate> CreateNetworkDelegate();
-  virtual scoped_ptr<net::ProxyConfigService> GetProxyConfigService();
-  virtual scoped_ptr<net::ProxyService> GetProxyService();
-
- private:
   bool ignore_certificate_errors_;
   base::FilePath base_path_;
   scoped_refptr<base::SingleThreadTaskRunner> io_loop_task_runner_;
@@ -64,8 +56,6 @@ class BlimpURLRequestContextGetter : public net::URLRequestContextGetter {
   net::NetLog* net_log_;
 
   scoped_ptr<net::ProxyConfigService> proxy_config_service_;
-  scoped_ptr<net::NetworkDelegate> network_delegate_;
-  scoped_ptr<net::URLRequestContextStorage> storage_;
   scoped_ptr<net::URLRequestContext> url_request_context_;
   content::ProtocolHandlerMap protocol_handlers_;
   content::URLRequestInterceptorScopedVector request_interceptors_;
