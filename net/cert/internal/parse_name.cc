@@ -5,6 +5,7 @@
 #include "net/cert/internal/parse_name.h"
 
 #include "base/strings/string16.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversion_utils.h"
 #include "base/strings/utf_string_conversions.h"
@@ -60,6 +61,39 @@ bool ConvertUniversalStringValue(const der::Input& in, std::string* out) {
     base::WriteUnicodeCharacter(codepoint, out);
   }
   return true;
+}
+
+std::string OidToString(const uint8_t* data, size_t len) {
+  std::string out;
+  size_t index = 0;
+  while (index < len) {
+    uint64_t value = 0;
+    while ((data[index] & 0x80) == 0x80 && index < len) {
+      value = value << 7 | (data[index] & 0x7F);
+      index += 1;
+    }
+    if (index >= len)
+      return std::string();
+    value = value << 7 | (data[index] & 0x7F);
+    index += 1;
+
+    if (out.empty()) {
+      uint8_t first = 0;
+      if (value < 40) {
+        first = 0;
+      } else if (value < 80) {
+        first = 1;
+        value -= 40;
+      } else {
+        first = 2;
+        value -= 80;
+      }
+      out = base::UintToString(first);
+    }
+    out += "." + base::UintToString(value);
+  }
+
+  return out;
 }
 
 }  // namespace
@@ -160,7 +194,71 @@ bool X509NameAttribute::ValueAsStringUnsafe(std::string* out) const {
   }
 }
 
-bool ReadRdn(der::Parser* parser, std::vector<X509NameAttribute>* out) {
+bool X509NameAttribute::AsRFC2253String(std::string* out) const {
+  std::string type_string;
+  std::string value_string;
+  if (type == TypeCommonNameOid()) {
+    type_string = "CN";
+  } else if (type == TypeSurnameOid()) {
+    type_string = "SN";
+  } else if (type == TypeCountryNameOid()) {
+    type_string = "C";
+  } else if (type == TypeLocalityNameOid()) {
+    type_string = "L";
+  } else if (type == TypeStateOrProvinceNameOid()) {
+    type_string = "ST";
+  } else if (type == TypeOrganizationNameOid()) {
+    type_string = "O";
+  } else if (type == TypeOrganizationUnitNameOid()) {
+    type_string = "OU";
+  } else if (type == TypeGivenNameOid()) {
+    type_string = "GN";
+  } else {
+    type_string = OidToString(type.UnsafeData(), type.Length());
+    if (type_string.empty())
+      return false;
+    value_string = "#" + base::HexEncode(value.UnsafeData(), value.Length());
+  }
+
+  if (value_string.empty()) {
+    std::string unescaped;
+    if (!ValueAsStringUnsafe(&unescaped))
+      return false;
+
+    bool nonprintable = false;
+    for (unsigned int i = 0; i < unescaped.length(); ++i) {
+      unsigned char c = static_cast<unsigned char>(unescaped[i]);
+      if (i == 0 && c == '#') {
+        value_string += "\\#";
+      } else if (i == 0 && c == ' ') {
+        value_string += "\\ ";
+      } else if (i == unescaped.length() - 1 && c == ' ') {
+        value_string += "\\ ";
+      } else if (c == ',' || c == '+' || c == '"' || c == '\\' || c == '<' ||
+                 c == '>' || c == ';') {
+        value_string += "\\";
+        value_string += c;
+      } else if (c < 32 || c > 126) {
+        nonprintable = true;
+        std::string h;
+        h += c;
+        value_string += "\\" + base::HexEncode(h.data(), h.length());
+      } else {
+        value_string += c;
+      }
+    }
+
+    // If we have non-printable characters in a TeletexString, we hex encode
+    // since we don't handle Teletex control codes.
+    if (nonprintable && value_tag == der::kTeletexString)
+      value_string = "#" + base::HexEncode(value.UnsafeData(), value.Length());
+  }
+
+  *out = type_string + "=" + value_string;
+  return true;
+}
+
+bool ReadRdn(der::Parser* parser, RelativeDistinguishedName* out) {
   while (parser->HasMore()) {
     der::Parser attr_type_and_value;
     if (!parser->ReadSequence(&attr_type_and_value))
@@ -189,8 +287,7 @@ bool ReadRdn(der::Parser* parser, std::vector<X509NameAttribute>* out) {
   return out->size() != 0;
 }
 
-bool ParseName(const der::Input& name_tlv,
-               std::vector<X509NameAttribute>* out) {
+bool ParseName(const der::Input& name_tlv, RDNSequence* out) {
   der::Parser name_parser(name_tlv);
   der::Parser rdn_sequence_parser;
   if (!name_parser.ReadSequence(&rdn_sequence_parser))
@@ -200,14 +297,35 @@ bool ParseName(const der::Input& name_tlv,
     der::Parser rdn_parser;
     if (!rdn_sequence_parser.ReadConstructed(der::kSet, &rdn_parser))
       return false;
-    std::vector<X509NameAttribute> type_and_values;
+    RelativeDistinguishedName type_and_values;
     if (!ReadRdn(&rdn_parser, &type_and_values))
       return false;
-    for (const auto& type_and_value : type_and_values) {
-      out->push_back(type_and_value);
-    }
+    out->push_back(type_and_values);
   }
 
+  return true;
+}
+
+bool ConvertToRFC2253(const RDNSequence& rdn_sequence, std::string* out) {
+  std::string rdns_string;
+  size_t size = rdn_sequence.size();
+  for (size_t i = 0; i < size; ++i) {
+    RelativeDistinguishedName rdn = rdn_sequence[size - i - 1];
+    std::string rdn_string;
+    for (const auto& atv : rdn) {
+      if (!rdn_string.empty())
+        rdn_string += "+";
+      std::string atv_string;
+      if (!atv.AsRFC2253String(&atv_string))
+        return false;
+      rdn_string += atv_string;
+    }
+    if (!rdns_string.empty())
+      rdns_string += ",";
+    rdns_string += rdn_string;
+  }
+
+  *out = rdns_string;
   return true;
 }
 

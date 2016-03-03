@@ -50,10 +50,17 @@ struct NET_EXPORT X509NameAttribute {
   // ASN.1 definition of the value type.
   bool ValueAsStringUnsafe(std::string* out) const WARN_UNUSED_RESULT;
 
+  // Formats the NameAttribute per RFC2253 into an ASCII string and stores
+  // the result in |out|, returning whether the conversion was successful.
+  bool AsRFC2253String(std::string* out) const WARN_UNUSED_RESULT;
+
   der::Input type;
   der::Tag value_tag;
   der::Input value;
 };
+
+typedef std::vector<X509NameAttribute> RelativeDistinguishedName;
+typedef std::vector<RelativeDistinguishedName> RDNSequence;
 
 // Parses all the ASN.1 AttributeTypeAndValue elements in |parser| and stores
 // each as an AttributeTypeAndValue object in |out|.
@@ -78,14 +85,18 @@ struct NET_EXPORT X509NameAttribute {
 // The type of the component AttributeValue is determined by the AttributeType;
 // in general it will be a DirectoryString.
 NET_EXPORT bool ReadRdn(der::Parser* parser,
-                        std::vector<X509NameAttribute>* out) WARN_UNUSED_RESULT;
+                        RelativeDistinguishedName* out) WARN_UNUSED_RESULT;
 
 // Parses a DER-encoded "Name" as specified by 5280. Returns true on success
 // and sets the results in |out|.
 NET_EXPORT bool ParseName(const der::Input& name_tlv,
-                          std::vector<X509NameAttribute>* out)
-    WARN_UNUSED_RESULT;
+                          RDNSequence* out) WARN_UNUSED_RESULT;
 
+// Formats a RDNSequence |rdn_sequence| per RFC2253 as an ASCII string and
+// stores the result into |out|, and returns whether the conversion was
+// successful.
+NET_EXPORT bool ConvertToRFC2253(const RDNSequence& rdn_sequence,
+                                 std::string* out) WARN_UNUSED_RESULT;
 }  // namespace net
 
 #endif  // NET_CERT_INTERNAL_PARSE_NAME_H_

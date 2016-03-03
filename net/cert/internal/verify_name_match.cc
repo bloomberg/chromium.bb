@@ -177,7 +177,7 @@ bool VerifyValueMatch(X509NameAttribute a, X509NameAttribute b) {
 // AttributeTypeAndValue in |a_parser| has a matching AttributeTypeAndValue in
 // |b_parser|.
 bool VerifyRdnMatch(der::Parser* a_parser, der::Parser* b_parser) {
-  std::vector<X509NameAttribute> a_type_and_values, b_type_and_values;
+  RelativeDistinguishedName a_type_and_values, b_type_and_values;
   if (!ReadRdn(a_parser, &a_type_and_values) ||
       !ReadRdn(b_parser, &b_type_and_values))
     return false;
@@ -194,7 +194,7 @@ bool VerifyRdnMatch(der::Parser* a_parser, der::Parser* b_parser) {
   // small, a naive linear search for each element should be fine. (Hostile
   // certificates already have ways to provoke pathological behavior.)
   for (const auto& a : a_type_and_values) {
-    std::vector<X509NameAttribute>::iterator b_iter = b_type_and_values.begin();
+    RelativeDistinguishedName::iterator b_iter = b_type_and_values.begin();
     for (; b_iter != b_type_and_values.end(); ++b_iter) {
       const auto& b = *b_iter;
       if (a.type == b.type && VerifyValueMatch(a, b)) {
@@ -302,7 +302,7 @@ bool NameContainsEmailAddress(const der::Input& name_rdn_sequence,
     if (!rdn_sequence_parser.ReadConstructed(der::kSet, &rdn_parser))
       return false;
 
-    std::vector<X509NameAttribute> type_and_values;
+    RelativeDistinguishedName type_and_values;
     if (!ReadRdn(&rdn_parser, &type_and_values))
       return false;
 
