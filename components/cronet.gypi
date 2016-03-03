@@ -243,6 +243,18 @@
             '../base/base.gyp:base',
             '../net/net.gyp:net_small',
           ],
+          'ldflags': [
+            '-Wl,--version-script=<!(cd <(DEPTH) && pwd -P)/components/cronet/android/only_jni_exports.lst',
+          ],
+          'variables': {
+            # libcronet doesn't really use native JNI exports, but it does use
+            # its own linker version script. The ARM64 linker appears to not
+            # work with multiple version scripts with anonymous version tags,
+            # so enable use_native_jni_exports which avoids adding another
+            # version sript (android_no_jni_exports.lst) so we don't run afoul
+            # of this ARM64 linker limitation.
+            'use_native_jni_exports': 1,
+          },
         },
         { # cronet_api.jar defines Cronet API and provides implementation of
           # legacy api using HttpUrlConnection (not the Chromium stack).
@@ -408,6 +420,18 @@
             '../third_party/icu/icu.gyp:icui18n',
             '../third_party/icu/icu.gyp:icuuc',
           ],
+          'ldflags': [
+            '-Wl,--version-script=<!(cd <(DEPTH) && pwd -P)/components/cronet/android/only_jni_exports.lst',
+          ],
+          'variables': {
+            # libcronet doesn't really use native JNI exports, but it does use
+            # its own linker version script. The ARM64 linker appears to not
+            # work with multiple version scripts with anonymous version tags,
+            # so enable use_native_jni_exports which avoids adding another
+            # version sript (android_no_jni_exports.lst) so we don't run afoul
+            # of this ARM64 linker limitation.
+            'use_native_jni_exports': 1,
+          },
           'conditions': [
             ['enable_data_reduction_proxy_support==1',
               {
