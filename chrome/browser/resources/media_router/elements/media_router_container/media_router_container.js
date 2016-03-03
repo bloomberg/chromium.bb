@@ -1522,13 +1522,14 @@ Polymer({
       var issueHeight = this.$$('#issue-banner') &&
           this.$$('#issue-banner').style.display != 'none' ?
               this.$$('#issue-banner').offsetHeight : 0;
+      var searchHeight = this.$$('#sink-search').offsetHeight;
 
       this.$['container-header'].style.marginTop = firstRunFlowHeight + 'px';
       this.$['sink-list-view'].style.marginTop =
           firstRunFlowHeight + headerHeight + 'px';
       this.$['sink-list'].style.maxHeight =
           this.dialogHeight_ - headerHeight - firstRunFlowHeight -
-              issueHeight + 'px';
+              issueHeight - searchHeight + 'px';
     });
   },
 
