@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -13,6 +14,7 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/offline_pages/offline_page_item.h"
 #include "components/offline_pages/offline_page_model.h"
+#include "components/offline_pages/offline_page_switches.h"
 #include "components/offline_pages/offline_page_test_archiver.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
@@ -91,6 +93,10 @@ void OfflinePageTabHelperTest::SetUp() {
   OfflinePageTabHelper::CreateForWebContents(web_contents());
   offline_page_tab_helper_ =
       OfflinePageTabHelper::FromWebContents(web_contents());
+
+  // Enables offline pages feature.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableOfflinePages);
 
   // Sets up the factory for testing.
   OfflinePageModelFactory::GetInstance()->SetTestingFactoryAndUse(
