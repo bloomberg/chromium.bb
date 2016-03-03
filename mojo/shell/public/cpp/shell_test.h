@@ -6,12 +6,10 @@
 #define MOJO_SHELL_PUBLIC_CPP_SHELL_TEST_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "mojo/public/cpp/bindings/array.h"
-#include "mojo/public/cpp/bindings/string.h"
 #include "mojo/public/cpp/system/macros.h"
 #include "mojo/shell/public/cpp/connector.h"
+#include "mojo/shell/public/cpp/shell_client.h"
 #include "mojo/shell/public/cpp/shell_connection.h"
-#include "mojo/shell/public/interfaces/shell_client.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -23,6 +21,29 @@ namespace shell {
 class BackgroundShell;
 }
 namespace test {
+
+class ShellTest;
+
+// A default implementation of ShellClient for use in ShellTests. Tests wishing
+// to customize this should subclass this class instead of ShellClient,
+// otherwise they will have to call ShellTest::InitializeCalled() to forward
+// metadata from Initialize() to the test.
+class ShellTestClient : public mojo::ShellClient {
+ public:
+  explicit ShellTestClient(ShellTest* test);
+  ~ShellTestClient() override;
+
+ protected:
+  void Initialize(Connector* connector,
+                  const std::string& name,
+                  uint32_t id,
+                  uint32_t user_id) override;
+
+ private:
+  ShellTest* test_;
+
+  DISALLOW_COPY_AND_ASSIGN(ShellTestClient);
+};
 
 class ShellTest : public testing::Test {
  public:
@@ -52,14 +73,17 @@ class ShellTest : public testing::Test {
   virtual scoped_ptr<ShellClient> CreateShellClient();
 
   // Call to set Initialize() metadata when GetShellClient() is overridden.
-  void InitializeCalled(const std::string& name, uint32_t id, uint32_t userid);
+  void InitializeCalled(Connector* connector,
+                        const std::string& name,
+                        uint32_t id,
+                        uint32_t userid);
 
   // testing::Test:
   void SetUp() override;
   void TearDown() override;
 
  private:
-  class DefaultShellClient;
+  friend ShellTestClient;
 
   scoped_ptr<ShellClient> shell_client_;
 

@@ -43,7 +43,6 @@
     'type': 'executable',
     'sources': [
       'shell/tests/loader_unittest.cc',
-      'shell/tests/capability_filter_unittest.cc',
     ],
     'dependencies': [
       'mojo_shell_lib',
@@ -63,7 +62,6 @@
     'type': 'static_library',
     'variables': {
       'mojom_files': [
-        'shell/tests/capability_filter_unittest.mojom',
         'shell/tests/test.mojom',
       ],
     },

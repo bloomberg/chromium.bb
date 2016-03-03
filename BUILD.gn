@@ -596,7 +596,6 @@ group("mojo_apptests") {
       "//mash/wm:tests",
       "//media/mojo/services:tests",
       "//mojo/services/network:apptests",
-      "//mojo/shell/tests:apptests",
       "//ui/views/mus:tests",
     ]
   }

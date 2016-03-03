@@ -10,27 +10,28 @@
 #include "mojo/shell/public/cpp/shell_client.h"
 #include "mojo/shell/runner/child/test_native_main.h"
 #include "mojo/shell/runner/init.h"
-#include "mojo/shell/tests/application_manager/application_manager_apptests.mojom.h"
+#include "mojo/shell/tests/application_manager/application_manager_unittest.mojom.h"
 
 using mojo::shell::test::mojom::CreateInstanceForHandleTestPtr;
 
 namespace {
 
-class TargetApplicationDelegate : public mojo::ShellClient {
+class Target : public mojo::ShellClient {
  public:
-  TargetApplicationDelegate() {}
-  ~TargetApplicationDelegate() override {}
+  Target() {}
+  ~Target() override {}
 
  private:
   // mojo::ShellClient:
   void Initialize(mojo::Connector* connector, const std::string& name,
                   uint32_t id, uint32_t user_id) override {
     CreateInstanceForHandleTestPtr service;
-    connector->ConnectToInterface("mojo:mojo_shell_apptests", &service);
+    connector->ConnectToInterface("mojo:application_manager_unittest",
+                                  &service);
     service->SetTargetID(id);
   }
 
-  DISALLOW_COPY_AND_ASSIGN(TargetApplicationDelegate);
+  DISALLOW_COPY_AND_ASSIGN(Target);
 };
 
 }  // namespace
@@ -41,6 +42,6 @@ int main(int argc, char** argv) {
 
   mojo::shell::InitializeLogging();
 
-  TargetApplicationDelegate delegate;
-  return mojo::shell::TestNativeMain(&delegate);
+  Target target;
+  return mojo::shell::TestNativeMain(&target);
 }

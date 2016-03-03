@@ -10,22 +10,14 @@
 
 namespace mojo {
 namespace test {
-class ShellTest::DefaultShellClient : public ShellClient {
- public:
-  explicit DefaultShellClient(ShellTest* test) : test_(test) {}
-  ~DefaultShellClient() override {}
 
- private:
-  void Initialize(Connector* connector, const std::string& name,
-                  uint32_t id, uint32_t user_id /* = 0 */) override {
-    test_->connector_ = connector;
-    test_->InitializeCalled(name, id, user_id);
-  }
+ShellTestClient::ShellTestClient(ShellTest* test) : test_(test) {}
+ShellTestClient::~ShellTestClient() {}
 
-  ShellTest* test_;
-
-  DISALLOW_COPY_AND_ASSIGN(DefaultShellClient);
-};
+void ShellTestClient::Initialize(Connector* connector, const std::string& name,
+                                 uint32_t id, uint32_t user_id) {
+  test_->InitializeCalled(connector, name, id, user_id);
+}
 
 ShellTest::ShellTest() {}
 ShellTest::ShellTest(const std::string& test_name) : test_name_(test_name) {}
@@ -37,11 +29,14 @@ void ShellTest::InitTestName(const std::string& test_name) {
 }
 
 scoped_ptr<ShellClient> ShellTest::CreateShellClient() {
-  return make_scoped_ptr(new DefaultShellClient(this));
+  return make_scoped_ptr(new ShellTestClient(this));
 }
 
-void ShellTest::InitializeCalled(const std::string& name, uint32_t id,
+void ShellTest::InitializeCalled(Connector* connector,
+                                 const std::string& name,
+                                 uint32_t id,
                                  uint32_t userid) {
+  connector_ = connector;
   initialize_name_ = name;
   initialize_instance_id_ = id;
   initialize_userid_ = userid;

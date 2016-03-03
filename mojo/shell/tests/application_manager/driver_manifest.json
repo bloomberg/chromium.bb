@@ -1,0 +1,5 @@
+{
+  "name": "exe:application_manager_unittest_driver",
+  "display_name": "Application Manager Unittest: Driver",
+  "capabilities": { "*": [ "*" ] }
+}

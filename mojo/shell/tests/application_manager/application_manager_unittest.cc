@@ -12,44 +12,44 @@
 #include "base/message_loop/message_loop.h"
 #include "base/process/process_handle.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "mojo/shell/public/cpp/application_test_base.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
 #include "mojo/shell/public/cpp/shell_client.h"
+#include "mojo/shell/public/cpp/shell_test.h"
 #include "mojo/shell/public/interfaces/application_manager.mojom.h"
-#include "mojo/shell/tests/application_manager/application_manager_apptests.mojom.h"
-
-using mojo::shell::test::mojom::CreateInstanceForHandleTest;
+#include "mojo/shell/tests/application_manager/application_manager_unittest.mojom.h"
 
 namespace mojo {
 namespace shell {
 namespace {
 
-class ApplicationManagerAppTestDelegate
-    : public ShellClient,
-      public InterfaceFactory<CreateInstanceForHandleTest>,
-      public CreateInstanceForHandleTest {
+class ApplicationManagerTestClient
+    : public mojo::test::ShellTestClient,
+      public InterfaceFactory<test::mojom::CreateInstanceForHandleTest>,
+      public test::mojom::CreateInstanceForHandleTest {
  public:
-  ApplicationManagerAppTestDelegate()
-      : target_id_(mojom::Connector::kInvalidApplicationID),
+  explicit ApplicationManagerTestClient(mojo::test::ShellTest* test)
+      : ShellTestClient(test),
+        target_id_(mojom::Connector::kInvalidApplicationID),
         binding_(this) {}
-  ~ApplicationManagerAppTestDelegate() override {}
+  ~ApplicationManagerTestClient() override {}
 
   uint32_t target_id() const { return target_id_; }
 
  private:
   // mojo::ShellClient:
   bool AcceptConnection(Connection* connection) override {
-    connection->AddInterface<CreateInstanceForHandleTest>(this);
+    connection->AddInterface<test::mojom::CreateInstanceForHandleTest>(this);
     return true;
   }
 
-  // InterfaceFactory<CreateInstanceForHandleTest>:
-  void Create(Connection* connection,
-              InterfaceRequest<CreateInstanceForHandleTest> request) override {
+  // InterfaceFactory<test::mojom::CreateInstanceForHandleTest>:
+  void Create(
+      Connection* connection,
+      test::mojom::CreateInstanceForHandleTestRequest request) override {
     binding_.Bind(std::move(request));
   }
 
-  // CreateInstanceForHandleTest:
+  // test::mojom::CreateInstanceForHandleTest:
   void SetTargetID(uint32_t target_id) override {
     target_id_ = target_id;
     base::MessageLoop::current()->QuitWhenIdle();
@@ -57,18 +57,21 @@ class ApplicationManagerAppTestDelegate
 
   uint32_t target_id_;
 
-  Binding<CreateInstanceForHandleTest> binding_;
+  Binding<test::mojom::CreateInstanceForHandleTest> binding_;
 
-  DISALLOW_COPY_AND_ASSIGN(ApplicationManagerAppTestDelegate);
+  DISALLOW_COPY_AND_ASSIGN(ApplicationManagerTestClient);
 };
 
 }  // namespace
 
-class ApplicationManagerAppTest : public mojo::test::ApplicationTestBase,
-                                  public mojom::InstanceListener {
+class ApplicationManagerTest : public mojo::test::ShellTest,
+                               public mojom::InstanceListener {
  public:
-  ApplicationManagerAppTest() : delegate_(nullptr), binding_(this) {}
-  ~ApplicationManagerAppTest() override {}
+  ApplicationManagerTest()
+      : ShellTest("mojo:application_manager_unittest"),
+        shell_client_(nullptr),
+        binding_(this) {}
+  ~ApplicationManagerTest() override {}
 
   void OnDriverQuit() {
     base::MessageLoop::current()->QuitNow();
@@ -106,21 +109,19 @@ class ApplicationManagerAppTest : public mojo::test::ApplicationTestBase,
   }
 
   uint32_t target_id() const {
-    DCHECK(delegate_);
-    return delegate_->target_id();
+    DCHECK(shell_client_);
+    return shell_client_->target_id();
   }
 
   const std::vector<InstanceInfo>& instances() const {
     return instances_;
   }
 
-  ApplicationManagerAppTestDelegate* delegate() { return delegate_; }
-
  private:
-  // test::ApplicationTestBase:
-  ShellClient* GetShellClient() override {
-    delegate_ = new ApplicationManagerAppTestDelegate;
-    return delegate_;
+  // test::ShellTest:
+  scoped_ptr<ShellClient> CreateShellClient() override {
+    shell_client_ = new ApplicationManagerTestClient(this);
+    return make_scoped_ptr(shell_client_);
   }
 
   // mojom::InstanceListener:
@@ -151,26 +152,26 @@ class ApplicationManagerAppTest : public mojo::test::ApplicationTestBase,
     }
   }
 
-  ApplicationManagerAppTestDelegate* delegate_;
+  ApplicationManagerTestClient* shell_client_;
   Binding<mojom::InstanceListener> binding_;
   std::vector<InstanceInfo> instances_;
   std::vector<InstanceInfo> initial_instances_;
 
-  DISALLOW_COPY_AND_ASSIGN(ApplicationManagerAppTest);
+  DISALLOW_COPY_AND_ASSIGN(ApplicationManagerTest);
 };
 
-TEST_F(ApplicationManagerAppTest, CreateInstanceForHandle) {
+TEST_F(ApplicationManagerTest, CreateInstanceForHandle) {
   AddListenerAndWaitForApplications();
 
   // 1. Launch a process. (Actually, have the runner launch a process that
-  //    launches a process. #becauselinkerrors).
+  //    launches a process.)
   mojo::shell::test::mojom::DriverPtr driver;
   scoped_ptr<Connection> connection =
-      connector()->Connect("exe:application_manager_apptest_driver");
+      connector()->Connect("exe:application_manager_unittest_driver");
   connection->GetInterface(&driver);
 
   // 2. Wait for the target to connect to us. (via
-  //    mojo:application_manager_apptests)
+  //    mojo:application_manager_unittest)
   base::MessageLoop::current()->Run();
 
   uint32_t remote_id = mojom::Connector::kInvalidApplicationID;
@@ -179,7 +180,7 @@ TEST_F(ApplicationManagerAppTest, CreateInstanceForHandle) {
 
   // 3. Validate that this test suite's name was received from the application
   //    manager.
-  EXPECT_TRUE(ContainsInstanceWithName("mojo:mojo_shell_apptests"));
+  EXPECT_TRUE(ContainsInstanceWithName("mojo:application_manager_unittest"));
 
   // 4. Validate that the right applications/processes were created.
   //    Note that the target process will be created even if the tests are
@@ -188,19 +189,19 @@ TEST_F(ApplicationManagerAppTest, CreateInstanceForHandle) {
   {
     auto& instance = instances().front();
     EXPECT_EQ(remote_id, instance.id);
-    EXPECT_EQ("exe:application_manager_apptest_driver", instance.name);
+    EXPECT_EQ("exe:application_manager_unittest_driver", instance.name);
     EXPECT_NE(base::kNullProcessId, instance.pid);
   }
   {
     auto& instance = instances().back();
     // We learn about the target process id via a ping from it.
     EXPECT_EQ(target_id(), instance.id);
-    EXPECT_EQ("exe:application_manager_apptest_target", instance.name);
+    EXPECT_EQ("exe:application_manager_unittest_target", instance.name);
     EXPECT_NE(base::kNullProcessId, instance.pid);
   }
 
   driver.set_connection_error_handler(
-      base::Bind(&ApplicationManagerAppTest::OnDriverQuit,
+      base::Bind(&ApplicationManagerTest::OnDriverQuit,
                  base::Unretained(this)));
   driver->QuitDriver();
   base::MessageLoop::current()->Run();

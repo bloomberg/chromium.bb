@@ -15,10 +15,6 @@ group("host") {
   ]
 }
 
-config("native_application_support_with_gles2") {
-  defines = [ "NATIVE_APPLICATION_USE_GLES2_IMPL" ]
-}
-
 source_set("native_application_support") {
   sources = [
     "native_application_support.cc",
@@ -30,11 +26,6 @@ source_set("native_application_support") {
     "//mojo/platform_handle:platform_handle_impl",
     "//mojo/shell",
   ]
-
-  if (!is_mac) {
-    configs += [ ":native_application_support_with_gles2" ]
-    deps += [ "//mojo/gles2" ]
-  }
 
   # This target has to include the public thunk headers, which generally
   # shouldn't be included without picking an implementation. We are providing

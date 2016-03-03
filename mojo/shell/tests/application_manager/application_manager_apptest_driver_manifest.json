@@ -1,5 +1,0 @@
-{
-  "name": "exe:application_manager_apptest_driver",
-  "display_name": "Application Manager Apptests: Driver",
-  "capabilities": { "*": [ "*" ] }
-}

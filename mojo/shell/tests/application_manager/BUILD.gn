@@ -10,7 +10,7 @@ import("//testing/test.gni")
 source_set("application_manager") {
   testonly = true
   sources = [
-    "application_manager_apptest.cc",
+    "application_manager_unittest.cc",
   ]
 
   deps = [
@@ -19,41 +19,39 @@ source_set("application_manager") {
     "//base",
     "//base/test:test_config",
     "//mojo/common:common_base",
+    "//mojo/shell/public/cpp:shell_test_support",
     "//mojo/shell/public/cpp:sources",
-    "//mojo/shell/public/cpp:test_support",
     "//mojo/shell/public/interfaces",
   ]
 
   data_deps = [
-    ":application_manager_apptest_driver",
-    ":application_manager_apptest_target",
+    ":application_manager_unittest_driver",
+    ":application_manager_unittest_target",
   ]
 }
 
 mojom("interfaces") {
   sources = [
-    "application_manager_apptests.mojom",
+    "application_manager_unittest.mojom",
   ]
 }
 
 mojo_application_manifest("manifest") {
-  application_name = "mojo_shell_apptests"
-  source = "application_manager_apptest_manifest.json"
+  application_name = "application_manager_unittest"
+  source = "application_manager_unittest_manifest.json"
 }
 
-executable("application_manager_apptest_driver") {
+executable("application_manager_unittest_driver") {
   testonly = true
 
   sources = [
-    "application_manager_apptest_driver.cc",
+    "driver.cc",
   ]
 
   deps = [
+    ":driver_manifest",
     ":interfaces",
     "//base",
-    "//base:base_static",
-    "//build/config/sanitizers:deps",
-    "//mojo/common:common_base",
     "//mojo/edk/system",
     "//mojo/shell/public/cpp",
     "//mojo/shell/public/interfaces",
@@ -63,18 +61,22 @@ executable("application_manager_apptest_driver") {
   ]
 }
 
-executable("application_manager_apptest_target") {
+mojo_application_manifest("driver_manifest") {
+  type = "exe"
+  application_name = "application_manager_unittest_driver"
+  source = "driver_manifest.json"
+}
+
+executable("application_manager_unittest_target") {
   testonly = true
 
   sources = [
-    "application_manager_apptest_target.cc",
+    "target.cc",
   ]
 
   deps = [
     ":interfaces",
     "//base",
-    "//build/config/sanitizers:deps",
-    "//mojo/common:common_base",
     "//mojo/shell/public/cpp",
     "//mojo/shell/runner/child:test_native_main",
   ]

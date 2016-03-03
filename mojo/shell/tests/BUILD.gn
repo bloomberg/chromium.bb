@@ -10,39 +10,18 @@ import("//testing/test.gni")
 group("tests") {
   testonly = true
   deps = [
-    ":apptests",
     ":mojo_shell_unittests",
   ]
 }
 
-source_set("test_support") {
-  testonly = true
-  sources = [
-    "capability_filter_test.cc",
-    "capability_filter_test.h",
-  ]
-
-  deps = [
-    ":interfaces",
-    "//mojo/shell",
-    "//mojo/shell/public/cpp",
-    "//mojo/shell/public/interfaces",
-    "//testing/gtest",
-  ]
-}
-
-# TODO(beng): this target should just be called "unittests" but I am having
-#             difficulty with the android _apk generator.
 test("mojo_shell_unittests") {
   sources = [
-    "capability_filter_unittest.cc",
     "loader_unittest.cc",
-    "run_all_unittests.cc",
+    "mojo_shell_unittests.cc",
   ]
 
   deps = [
     ":interfaces",
-    ":test_support",
     "//base",
     "//base/test:test_support",
     "//mojo/edk/system",
@@ -52,25 +31,15 @@ test("mojo_shell_unittests") {
     "//mojo/shell/background:main",
     "//mojo/shell/background/tests:unittests",
     "//mojo/shell/public/cpp",
+    "//mojo/shell/tests/application_manager",
     "//mojo/shell/tests/connect",
     "//mojo/util:filename_util",
     "//testing/gtest",
-    "//url",
   ]
 }
 
 mojom("interfaces") {
   sources = [
-    "capability_filter_unittest.mojom",
     "test.mojom",
-  ]
-}
-
-mojo_native_application("apptests") {
-  output_name = "mojo_shell_apptests"
-  testonly = true
-
-  deps = [
-    "//mojo/shell/tests/application_manager",
   ]
 }

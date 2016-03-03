@@ -30,19 +30,16 @@
 #include "mojo/shell/runner/child/test_native_main.h"
 #include "mojo/shell/runner/common/switches.h"
 #include "mojo/shell/runner/init.h"
-#include "mojo/shell/tests/application_manager/application_manager_apptests.mojom.h"
-
-using mojo::shell::test::mojom::CreateInstanceForHandleTestPtr;
-using mojo::shell::test::mojom::Driver;
+#include "mojo/shell/tests/application_manager/application_manager_unittest.mojom.h"
 
 namespace {
 
-class TargetApplicationDelegate : public mojo::ShellClient,
-                                  public mojo::InterfaceFactory<Driver>,
-                                  public Driver {
+class Driver : public mojo::ShellClient,
+               public mojo::InterfaceFactory<mojo::shell::test::mojom::Driver>,
+               public mojo::shell::test::mojom::Driver {
  public:
-  TargetApplicationDelegate() : weak_factory_(this) {}
-  ~TargetApplicationDelegate() override {}
+  Driver() : weak_factory_(this) {}
+  ~Driver() override {}
 
  private:
   // mojo::ShellClient:
@@ -52,10 +49,10 @@ class TargetApplicationDelegate : public mojo::ShellClient,
     CHECK(base::PathService::Get(base::DIR_EXE, &target_path));
   #if defined(OS_WIN)
     target_path = target_path.Append(
-        FILE_PATH_LITERAL("application_manager_apptest_target.exe"));
+        FILE_PATH_LITERAL("application_manager_unittest_target.exe"));
   #else
     target_path = target_path.Append(
-        FILE_PATH_LITERAL("application_manager_apptest_target"));
+        FILE_PATH_LITERAL("application_manager_unittest_target"));
   #endif
 
     base::CommandLine child_command_line(target_path);
@@ -92,14 +89,14 @@ class TargetApplicationDelegate : public mojo::ShellClient,
     mojo::Array<mojo::String> test_interfaces;
     test_interfaces.push_back(
         mojo::shell::test::mojom::CreateInstanceForHandleTest::Name_);
-    filter->filter.insert("mojo:mojo_shell_apptests",
+    filter->filter.insert("mojo:application_manager_unittest",
                           std::move(test_interfaces));
 
     mojo::shell::mojom::ApplicationManagerPtr application_manager;
     connector->ConnectToInterface("mojo:shell", &application_manager);
     application_manager->CreateInstanceForHandle(
         mojo::ScopedHandle(mojo::Handle(pipe.release().value())),
-        "exe:application_manager_apptest_target", std::move(filter),
+        "exe:application_manager_unittest_target", std::move(filter),
         std::move(request));
 
     base::LaunchOptions options;
@@ -116,13 +113,13 @@ class TargetApplicationDelegate : public mojo::ShellClient,
   }
 
   bool AcceptConnection(mojo::Connection* connection) override {
-    connection->AddInterface<Driver>(this);
+    connection->AddInterface<mojo::shell::test::mojom::Driver>(this);
     return true;
   }
 
   // mojo::InterfaceFactory<Driver>:
   void Create(mojo::Connection* connection,
-              mojo::InterfaceRequest<Driver> request) override {
+              mojo::shell::test::mojom::DriverRequest request) override {
     bindings_.AddBinding(this, std::move(request));
   }
 
@@ -133,10 +130,10 @@ class TargetApplicationDelegate : public mojo::ShellClient,
   }
 
   base::Process target_;
-  mojo::BindingSet<Driver> bindings_;
-  base::WeakPtrFactory<TargetApplicationDelegate> weak_factory_;
+  mojo::BindingSet<mojo::shell::test::mojom::Driver> bindings_;
+  base::WeakPtrFactory<Driver> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(TargetApplicationDelegate);
+  DISALLOW_COPY_AND_ASSIGN(Driver);
 };
 
 }  // namespace
@@ -147,6 +144,6 @@ int main(int argc, char** argv) {
 
   mojo::shell::InitializeLogging();
 
-  TargetApplicationDelegate delegate;
-  return mojo::shell::TestNativeMain(&delegate);
+  Driver driver;
+  return mojo::shell::TestNativeMain(&driver);
 }
