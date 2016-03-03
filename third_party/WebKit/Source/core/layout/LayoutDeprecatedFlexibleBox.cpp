@@ -532,7 +532,7 @@ void LayoutDeprecatedFlexibleBox::layoutHorizontalBox(bool relayoutChildren)
         }
     } while (haveFlex);
 
-    LayoutBlock::finishDelayUpdateScrollInfo();
+    LayoutBlock::finishDelayUpdateScrollInfo(nullptr);
 
     if (remainingSpace > 0 && ((style()->isLeftToRightDirection() && style()->boxPack() != Start)
         || (!style()->isLeftToRightDirection() && style()->boxPack() != End))) {
@@ -783,7 +783,7 @@ void LayoutDeprecatedFlexibleBox::layoutVerticalBox(bool relayoutChildren)
         }
     } while (haveFlex);
 
-    LayoutBlock::finishDelayUpdateScrollInfo();
+    LayoutBlock::finishDelayUpdateScrollInfo(nullptr);
 
     if (style()->boxPack() != Start && remainingSpace > 0) {
         // Children must be repositioned.

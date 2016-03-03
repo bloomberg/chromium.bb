@@ -253,7 +253,9 @@ public:
         scrollToOffset(toDoubleSize(position), ScrollOffsetClamped, scrollBehavior, scrollType);
     }
 
-    void updateAfterLayout();
+    // Returns true if a layout object was marked for layout. In such a case, the layout scope's root
+    // should be laid out again.
+    bool updateAfterLayout(SubtreeLayoutScope* = nullptr);
     void updateAfterStyleChange(const ComputedStyle*);
     void updateAfterOverflowRecalc();
 

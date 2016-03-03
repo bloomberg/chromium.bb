@@ -881,8 +881,10 @@ void LayoutBlock::startDelayUpdateScrollInfo()
     ++gDelayUpdateScrollInfo;
 }
 
-void LayoutBlock::finishDelayUpdateScrollInfo()
+bool LayoutBlock::finishDelayUpdateScrollInfo(SubtreeLayoutScope* layoutScope)
 {
+    bool childrenMarkedForRelayout = false;
+
     --gDelayUpdateScrollInfo;
     ASSERT(gDelayUpdateScrollInfo >= 0);
     if (gDelayUpdateScrollInfo == 0) {
@@ -893,10 +895,11 @@ void LayoutBlock::finishDelayUpdateScrollInfo()
 
         for (auto* block : *infoSet) {
             if (block->hasOverflowClip()) {
-                block->layer()->scrollableArea()->updateAfterLayout();
+                childrenMarkedForRelayout |= block->layer()->scrollableArea()->updateAfterLayout(layoutScope);
             }
         }
     }
+    return childrenMarkedForRelayout;
 }
 
 void LayoutBlock::updateScrollInfoAfterLayout()
