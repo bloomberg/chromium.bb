@@ -886,9 +886,8 @@ QuotaManager::QuotaManager(
       is_getting_eviction_origin_(false),
       temporary_quota_initialized_(false),
       temporary_quota_override_(-1),
-      desired_available_space_(-1),
       special_storage_policy_(special_storage_policy),
-      get_disk_space_fn_(&QuotaManager::CallSystemGetAmountOfFreeDiskSpace),
+      get_volume_info_fn_(&QuotaManager::GetVolumeInfo),
       storage_monitor_(new StorageMonitor(this)),
       weak_factory_(this) {}
 
@@ -922,7 +921,6 @@ void QuotaManager::GetUsageAndQuotaForWebApps(
   UsageAndQuotaCallbackDispatcher* dispatcher =
       new UsageAndQuotaCallbackDispatcher(this);
 
-  UsageAndQuota usage_and_quota;
   if (unlimited) {
     dispatcher->set_quota(kNoLimit);
   } else {
@@ -1036,11 +1034,13 @@ void QuotaManager::GetAvailableSpace(const AvailableSpaceCallback& callback) {
   // crbug.com/349708
   TRACE_EVENT0("io", "QuotaManager::GetAvailableSpace");
 
-  PostTaskAndReplyWithResult(db_thread_.get(),
-                             FROM_HERE,
-                             base::Bind(get_disk_space_fn_, profile_path_),
-                             base::Bind(&QuotaManager::DidGetAvailableSpace,
-                                        weak_factory_.GetWeakPtr()));
+  PostTaskAndReplyWithResult(
+      db_thread_.get(),
+      FROM_HERE,
+      base::Bind(&QuotaManager::CallGetAmountOfFreeDiskSpace,
+                 get_volume_info_fn_, profile_path_),
+      base::Bind(&QuotaManager::DidGetAvailableSpace,
+                 weak_factory_.GetWeakPtr()));
 }
 
 void QuotaManager::GetTemporaryGlobalQuota(const QuotaCallback& callback) {
@@ -1626,6 +1626,32 @@ void QuotaManager::GetUsageAndQuotaForEviction(
   dispatcher->WaitForResults(callback);
 }
 
+void QuotaManager::AsyncGetVolumeInfo(
+    const VolumeInfoCallback& callback) {
+  DCHECK(io_thread_->BelongsToCurrentThread());
+  uint64_t* available_space = new uint64_t(0);
+  uint64_t* total_space = new uint64_t(0);
+  PostTaskAndReplyWithResult(
+      db_thread_.get(),
+      FROM_HERE,
+      base::Bind(get_volume_info_fn_,
+                 profile_path_,
+                 base::Unretained(available_space),
+                 base::Unretained(total_space)),
+      base::Bind(&QuotaManager::DidGetVolumeInfo,
+                 weak_factory_.GetWeakPtr(),
+                 callback,
+                 base::Owned(available_space),
+                 base::Owned(total_space)));
+}
+
+void QuotaManager::DidGetVolumeInfo(
+    const VolumeInfoCallback& callback,
+    uint64_t* available_space, uint64_t* total_space, bool success) {
+  DCHECK(io_thread_->BelongsToCurrentThread());
+  callback.Run(success, *available_space, *total_space);
+}
+
 void QuotaManager::GetLRUOrigin(StorageType type,
                                 const GetOriginCallback& callback) {
   LazyInitialize();
@@ -1769,8 +1795,9 @@ void QuotaManager::PostTaskAndReplyWithResultForDBThread(
       reply);
 }
 
-//static
-int64_t QuotaManager::CallSystemGetAmountOfFreeDiskSpace(
+// static
+int64_t QuotaManager::CallGetAmountOfFreeDiskSpace(
+    GetVolumeInfoFn get_volume_info_fn,
     const base::FilePath& profile_path) {
   // crbug.com/349708
   TRACE_EVENT0("io", "CallSystemGetAmountOfFreeDiskSpace");
@@ -1779,7 +1806,7 @@ int64_t QuotaManager::CallSystemGetAmountOfFreeDiskSpace(
     return 0;
   }
   uint64_t available, total;
-  if (!QuotaManager::GetVolumeInfo(profile_path, &available, &total)) {
+  if (!get_volume_info_fn(profile_path, &available, &total)) {
     return 0;
   }
   UMA_HISTOGRAM_MBYTES("Quota.AvailableDiskSpace", available);

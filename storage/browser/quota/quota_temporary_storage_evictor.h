@@ -78,15 +78,12 @@ class STORAGE_EXPORT QuotaTemporaryStorageEvictor : public base::NonThreadSafe {
   void ReportPerHourHistogram();
   void Start();
 
-  int64_t min_available_disk_space_to_start_eviction() {
-    return min_available_disk_space_to_start_eviction_;
-  }
   void reset_min_available_disk_space_to_start_eviction() {
-    min_available_disk_space_to_start_eviction_ =
-        kMinAvailableDiskSpaceToStartEvictionNotSpecified;
+    min_available_to_start_eviction_ =
+        kMinAvailableToStartEvictionNotSpecified;
   }
   void set_min_available_disk_space_to_start_eviction(int64_t value) {
-    min_available_disk_space_to_start_eviction_ = value;
+    min_available_to_start_eviction_ = value;
   }
 
  private:
@@ -94,7 +91,11 @@ class STORAGE_EXPORT QuotaTemporaryStorageEvictor : public base::NonThreadSafe {
 
   void StartEvictionTimerWithDelay(int delay_ms);
   void ConsiderEviction();
+  void OnGotVolumeInfo(bool success,
+                       uint64_t available_space,
+                       uint64_t total_size);
   void OnGotUsageAndQuotaForEviction(
+      int64_t must_remain_available_space,
       QuotaStatusCode status,
       const UsageAndQuota& quota_and_usage);
   void OnGotEvictionOrigin(const GURL& origin);
@@ -108,9 +109,9 @@ class STORAGE_EXPORT QuotaTemporaryStorageEvictor : public base::NonThreadSafe {
     repeated_eviction_ = repeated_eviction;
   }
 
-  static const int kMinAvailableDiskSpaceToStartEvictionNotSpecified;
+  static const int kMinAvailableToStartEvictionNotSpecified;
 
-  int64_t min_available_disk_space_to_start_eviction_;
+  int64_t min_available_to_start_eviction_;
 
   // Not owned; quota_eviction_handler owns us.
   QuotaEvictionHandler* quota_eviction_handler_;

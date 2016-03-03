@@ -29,12 +29,15 @@ const int64_t kMBytes = 1024 * 1024;
 const double kUsageRatioToStartEviction = 0.7;
 const int kThresholdOfErrorsToStopEviction = 5;
 const int kHistogramReportIntervalMinutes = 60;
+const double kMustRemainAvailableRatio = 0.1;
+const int64_t kDefaultMustRemainAvailableSpace = 1024 * kMBytes;
+const double kDiskSpaceShortageAllowanceRatio = 0.5;
 }
 
 namespace storage {
 
 const int QuotaTemporaryStorageEvictor::
-    kMinAvailableDiskSpaceToStartEvictionNotSpecified = -1;
+    kMinAvailableToStartEvictionNotSpecified = -1;
 
 QuotaTemporaryStorageEvictor::EvictionRoundStatistics::EvictionRoundStatistics()
     : in_round(false),
@@ -49,8 +52,8 @@ QuotaTemporaryStorageEvictor::EvictionRoundStatistics::EvictionRoundStatistics()
 QuotaTemporaryStorageEvictor::QuotaTemporaryStorageEvictor(
     QuotaEvictionHandler* quota_eviction_handler,
     int64_t interval_ms)
-    : min_available_disk_space_to_start_eviction_(
-          kMinAvailableDiskSpaceToStartEvictionNotSpecified),
+    : min_available_to_start_eviction_(
+          kMinAvailableToStartEvictionNotSpecified),
       quota_eviction_handler_(quota_eviction_handler),
       interval_ms_(interval_ms),
       repeated_eviction_(true),
@@ -159,13 +162,33 @@ void QuotaTemporaryStorageEvictor::StartEvictionTimerWithDelay(int delay_ms) {
 void QuotaTemporaryStorageEvictor::ConsiderEviction() {
   OnEvictionRoundStarted();
 
-  // Get usage and disk space, then continue.
+  if (min_available_to_start_eviction_ ==
+      kMinAvailableToStartEvictionNotSpecified) {
+    quota_eviction_handler_->AsyncGetVolumeInfo(
+        base::Bind(&QuotaTemporaryStorageEvictor::OnGotVolumeInfo,
+                   weak_factory_.GetWeakPtr()));
+  } else {
+    quota_eviction_handler_->GetUsageAndQuotaForEviction(
+        base::Bind(&QuotaTemporaryStorageEvictor::OnGotUsageAndQuotaForEviction,
+                   weak_factory_.GetWeakPtr(),
+                   min_available_to_start_eviction_));
+  }
+}
+
+void QuotaTemporaryStorageEvictor::OnGotVolumeInfo(
+    bool success, uint64_t available_space, uint64_t total_size) {
+  // Compute how much to keep free as a function of total disk size.
+  int64_t must_remain_available_space = success ?
+      static_cast<int64_t>(total_size * kMustRemainAvailableRatio) :
+      kDefaultMustRemainAvailableSpace;
+
   quota_eviction_handler_->GetUsageAndQuotaForEviction(
       base::Bind(&QuotaTemporaryStorageEvictor::OnGotUsageAndQuotaForEviction,
-                 weak_factory_.GetWeakPtr()));
+                 weak_factory_.GetWeakPtr(), must_remain_available_space));
 }
 
 void QuotaTemporaryStorageEvictor::OnGotUsageAndQuotaForEviction(
+    int64_t must_remain_available_space,
     QuotaStatusCode status,
     const UsageAndQuota& qau) {
   DCHECK(CalledOnValidThread());
@@ -180,11 +203,16 @@ void QuotaTemporaryStorageEvictor::OnGotUsageAndQuotaForEviction(
       static_cast<int64_t>(0),
       usage - static_cast<int64_t>(qau.quota * kUsageRatioToStartEviction));
 
-  // min_available_disk_space_to_start_eviction_ might be < 0 if no value
-  // is explicitly configured yet.
   int64_t diskspace_shortage = std::max(
       static_cast<int64_t>(0),
-      min_available_disk_space_to_start_eviction_ - qau.available_disk_space);
+      must_remain_available_space - qau.available_disk_space);
+
+  // If we're using so little that freeing all of it wouldn't help,
+  // don't let the low space condition cause us to delete it all.
+  if (usage < static_cast<int64_t>(diskspace_shortage *
+                                   kDiskSpaceShortageAllowanceRatio)) {
+    diskspace_shortage = 0;
+  }
 
   if (!round_statistics_.is_initialized) {
     round_statistics_.usage_overage_at_round = usage_overage;

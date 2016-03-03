@@ -50,6 +50,12 @@ class MockQuotaEvictionHandler : public storage::QuotaEvictionHandler {
     callback.Run(storage::kQuotaStatusOk);
   }
 
+  void AsyncGetVolumeInfo(const VolumeInfoCallback& callback) override {
+    uint64_t available = static_cast<uint64_t>(available_space_);
+    uint64_t total = (1024 * 1024 * 1024) + (2 * available);  // 1G plus some.
+    callback.Run(true, available, total);
+  }
+
   void GetUsageAndQuotaForEviction(
       const UsageAndQuotaCallback& callback) override {
     if (error_on_get_usage_and_quota_) {

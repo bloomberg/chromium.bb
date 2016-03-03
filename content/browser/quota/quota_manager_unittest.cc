@@ -67,8 +67,15 @@ const int kPerHostTemporaryPortion = QuotaManager::kPerHostTemporaryPortion;
 const GURL kTestEvictionOrigin = GURL("http://test.eviction.policy/result");
 
 // Returns a deterministic value for the amount of available disk space.
-int64_t GetAvailableDiskSpaceForTest(const base::FilePath&) {
+int64_t GetAvailableDiskSpaceForTest() {
   return kAvailableSpaceForApp + kMinimumPreserveForSystem;
+}
+
+bool GetVolumeInfoForTests(const base::FilePath&,
+                           uint64_t* available, uint64_t* total) {
+  *available = static_cast<uint64_t>(GetAvailableDiskSpaceForTest());
+  *total = *available * 2;
+  return true;
 }
 
 class TestEvictionPolicy : public storage::QuotaEvictionPolicy {
@@ -122,7 +129,7 @@ class QuotaManagerTest : public testing::Test {
     // Don't (automatically) start the eviction for testing.
     quota_manager_->eviction_disabled_ = true;
     // Don't query the hard disk for remaining capacity.
-    quota_manager_->get_disk_space_fn_ = &GetAvailableDiskSpaceForTest;
+    quota_manager_->get_volume_info_fn_= &GetVolumeInfoForTests;
     additional_callback_count_ = 0;
   }
 
@@ -670,7 +677,7 @@ TEST_F(QuotaManagerTest, GetUsage_MultipleClients) {
       QuotaClient::kDatabase));
 
   const int64_t kTempQuotaBase =
-      GetAvailableDiskSpaceForTest(base::FilePath()) / kPerHostTemporaryPortion;
+      GetAvailableDiskSpaceForTest() / kPerHostTemporaryPortion;
 
   GetUsageAndQuotaForWebApps(GURL("http://foo.com/"), kTemp);
   base::RunLoop().RunUntilIdle();
