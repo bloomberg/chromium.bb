@@ -14,10 +14,13 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_info.h"
+#include "base/trace_event/memory_dump_manager.h"
+#include "base/trace_event/process_memory_dump.h"
 #include "build/build_config.h"
 #include "content/browser/indexed_db/indexed_db_class_factory.h"
 #include "content/browser/indexed_db/indexed_db_tracing.h"
@@ -89,6 +92,8 @@ LevelDBSnapshot::~LevelDBSnapshot() { db_->ReleaseSnapshot(snapshot_); }
 LevelDBDatabase::LevelDBDatabase() {}
 
 LevelDBDatabase::~LevelDBDatabase() {
+  base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
+      this);
   // db_'s destructor uses comparator_adapter_; order of deletion is important.
   CloseDatabase();
   comparator_adapter_.reset();
@@ -311,6 +316,7 @@ leveldb::Status LevelDBDatabase::Open(const base::FilePath& file_name,
   (*result)->comparator_adapter_ = std::move(comparator_adapter);
   (*result)->comparator_ = comparator;
   (*result)->filter_policy_ = std::move(filter_policy);
+  (*result)->file_name_for_tracing = file_name.BaseName().AsUTF8Unsafe();
 
   return s;
 }
@@ -340,6 +346,7 @@ scoped_ptr<LevelDBDatabase> LevelDBDatabase::OpenInMemory(
   result->comparator_adapter_ = std::move(comparator_adapter);
   result->comparator_ = comparator;
   result->filter_policy_ = std::move(filter_policy);
+  result->file_name_for_tracing = "in-memory-database";
 
   return result;
 }
@@ -437,5 +444,30 @@ void LevelDBDatabase::Compact(const base::StringPiece& start,
 }
 
 void LevelDBDatabase::CompactAll() { db_->CompactRange(NULL, NULL); }
+
+bool LevelDBDatabase::OnMemoryDump(
+    const base::trace_event::MemoryDumpArgs& args,
+    base::trace_event::ProcessMemoryDump* pmd) {
+  if (!db_)
+    return false;
+
+  std::string value;
+  uint64_t size;
+  bool res = db_->GetProperty("leveldb.approximate-memory-usage", &value);
+  DCHECK(res);
+  base::StringToUint64(value, &size);
+
+  auto dump = pmd->CreateAllocatorDump(
+      base::StringPrintf("leveldb/index_db/%p", db_.get()));
+  dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
+                  base::trace_event::MemoryAllocatorDump::kUnitsBytes, size);
+  dump->AddString("file_name", "", file_name_for_tracing);
+
+  // Memory is allocated from system allocator (malloc).
+  pmd->AddSuballocation(dump->guid(),
+                        base::trace_event::MemoryDumpManager::GetInstance()
+                            ->system_allocator_pool_name());
+  return true;
+}
 
 }  // namespace content

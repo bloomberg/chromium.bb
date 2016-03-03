@@ -18,6 +18,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/trace_event/memory_dump_manager.h"
 #include "build/build_config.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/indexed_db/indexed_db_blob_info.h"
@@ -1106,6 +1107,11 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
                         origin_url);
   }
 
+  base::trace_event::MemoryDumpManager::GetInstance()
+      ->RegisterDumpProviderWithSequencedTaskRunner(
+          db.get(), "IndexedDBBackingStore", task_runner,
+          base::trace_event::MemoryDumpProvider::Options());
+
   scoped_refptr<IndexedDBBackingStore> backing_store =
       Create(indexed_db_factory, origin_url, blob_path, request_context,
              std::move(db), std::move(comparator), task_runner, status);
@@ -1150,6 +1156,10 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::OpenInMemory(
     return scoped_refptr<IndexedDBBackingStore>();
   }
   HistogramOpenStatus(INDEXED_DB_BACKING_STORE_OPEN_MEMORY_SUCCESS, origin_url);
+  base::trace_event::MemoryDumpManager::GetInstance()
+      ->RegisterDumpProviderWithSequencedTaskRunner(
+          db.get(), "IndexedDBBackingStore", task_runner,
+          base::trace_event::MemoryDumpProvider::Options());
 
   return Create(NULL /* indexed_db_factory */, origin_url, base::FilePath(),
                 NULL /* request_context */, std::move(db),

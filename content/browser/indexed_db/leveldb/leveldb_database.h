@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
+#include "base/trace_event/memory_dump_provider.h"
 #include "content/common/content_export.h"
 #include "third_party/leveldatabase/src/include/leveldb/comparator.h"
 #include "third_party/leveldatabase/src/include/leveldb/status.h"
@@ -54,7 +55,8 @@ class CONTENT_EXPORT LevelDBLock {
   DISALLOW_COPY_AND_ASSIGN(LevelDBLock);
 };
 
-class CONTENT_EXPORT LevelDBDatabase {
+class CONTENT_EXPORT LevelDBDatabase
+    : public base::trace_event::MemoryDumpProvider {
  public:
   class ComparatorAdapter : public leveldb::Comparator {
    public:
@@ -82,7 +84,7 @@ class CONTENT_EXPORT LevelDBDatabase {
   static leveldb::Status Destroy(const base::FilePath& file_name);
   static scoped_ptr<LevelDBLock> LockForTesting(
       const base::FilePath& file_name);
-  virtual ~LevelDBDatabase();
+  ~LevelDBDatabase() override;
 
   leveldb::Status Put(const base::StringPiece& key, std::string* value);
   leveldb::Status Remove(const base::StringPiece& key);
@@ -95,6 +97,10 @@ class CONTENT_EXPORT LevelDBDatabase {
   const LevelDBComparator* Comparator() const;
   void Compact(const base::StringPiece& start, const base::StringPiece& stop);
   void CompactAll();
+
+  // base::trace_event::MemoryDumpProvider implementation.
+  bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
+                    base::trace_event::ProcessMemoryDump* pmd) override;
 
  protected:
   LevelDBDatabase();
@@ -109,6 +115,7 @@ class CONTENT_EXPORT LevelDBDatabase {
   scoped_ptr<leveldb::DB> db_;
   scoped_ptr<const leveldb::FilterPolicy> filter_policy_;
   const LevelDBComparator* comparator_;
+  std::string file_name_for_tracing;
 };
 
 }  // namespace content
