@@ -55,6 +55,9 @@ class TrybotCommandTest(unittest.TestCase):
     counter = [-1]
 
     def side_effect(args, **kwargs):
+      if not expected_args_list:
+        self.fail(
+            'Not expect any Popen() call but got a Popen call with %s\n' % args)
       del kwargs  # unused
       counter[0] += 1
       expected_args, expected_responses = expected_args_list[counter[0]]
@@ -486,6 +489,24 @@ class TrybotCommandTest(unittest.TestCase):
     self.assertRaises(
         trybot_command.TrybotError, command._UpdateConfigAndRunTryjob,
         'android', cfg_filename, [])
+
+  def testUpdateConfigSkipTryjob(self):
+    self._MockTryserverJson({'win_perf_bisect': 'stuff'})
+    command = trybot_command.Trybot()
+    command._InitializeBuilderNames('win-x64')
+    self._ExpectProcesses(())
+    cfg_filename = 'tools/run-perf-test.cfg'
+    cfg_data = '''config = {
+  "command": "python tools\\\\perf\\\\run_benchmark --browser=release_x64",
+  "max_time_minutes": "120",
+  "repeat_count": "1",
+  "target_arch": "x64",
+  "truncate_percent": "0"
+}'''
+    self._stubs.open.files = {cfg_filename: cfg_data}
+    self.assertEquals((trybot_command.NO_CHANGES, ''),
+                      command._UpdateConfigAndRunTryjob(
+                          'win-x64', cfg_filename, []))
 
   def testUpdateConfigGitTry(self):
     self._MockTryserverJson({'android_nexus4_perf_bisect': 'stuff'})

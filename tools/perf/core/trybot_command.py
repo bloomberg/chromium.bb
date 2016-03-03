@@ -244,14 +244,19 @@ class Trybot(command_line.ArgParseCommand):
           url if success, otherwise throws TrybotError exception.
     """
     config = self._GetPerfConfig(bot_platform, arguments)
+    config_to_write = 'config = %s' % json.dumps(
+        config, sort_keys=True, indent=2, separators=(',', ': '))
+
     try:
-      config_file = open(cfg_file_path, 'w')
+      with open(cfg_file_path, 'r') as config_file:
+        if config_to_write == config_file.read():
+          return NO_CHANGES, ''
     except IOError:
       msg = 'Cannot find %s. Please run from src dir.' % cfg_file_path
       return (ERROR, msg)
-    config_file.write('config = %s' % json.dumps(
-        config, sort_keys=True, indent=2, separators=(',', ': ')))
-    config_file.close()
+
+    with open(cfg_file_path, 'w') as config_file:
+      config_file.write(config_to_write)
     # Commit the config changes locally.
     returncode, out, err = _RunProcess(
         ['git', 'commit', '-a', '-m', 'bisect config: %s' % bot_platform])
@@ -394,8 +399,12 @@ class Trybot(command_line.ArgParseCommand):
           if results == ERROR:
             logging.error(output)
             return ERROR
-          print ('Uploaded %s try job to rietveld for %s platform. '
-                 'View progress at %s' % (source_repo, bot_platform, output))
+          elif results == NO_CHANGES:
+            print ('Skip the try job run on %s because it has been tried in '
+                   'previous try job run. ' % bot_platform)
+          else:
+            print ('Uploaded %s try job to rietveld for %s platform. '
+                   'View progress at %s' % (source_repo, bot_platform, output))
         except TrybotError, err:
           print err
           logging.error(err)
