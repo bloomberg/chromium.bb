@@ -719,6 +719,8 @@ void AudioVideoPipelineDeviceTest::RunStoppedChecks() {
 }
 
 void AudioVideoPipelineDeviceTest::RunPlaybackChecks() {
+  if (sync_type_ != MediaPipelineDeviceParams::kModeSyncPts)
+    return;
   RunStoppedChecks();
 
   EXPECT_TRUE(backend_->SetPlaybackRate(1.0f));
@@ -760,25 +762,29 @@ void AudioVideoPipelineDeviceTest::MonitorLoop() {
 
   int64_t pts = backend_->GetCurrentPts();
   base::TimeDelta media_time = base::TimeDelta::FromMicroseconds(pts);
-
-  // Check that the current PTS is no more than 100ms past the last pushed PTS.
-  if (audio_feeder_ &&
-      audio_feeder_->last_pushed_pts() != std::numeric_limits<int64_t>::min()) {
-    EXPECT_LE(pts, audio_feeder_->last_pushed_pts() + 100 * 1000);
+  if (sync_type_ == MediaPipelineDeviceParams::kModeSyncPts) {
+    // Check that the current PTS is no more than 100ms past the last pushed
+    // PTS.
+    if (audio_feeder_ &&
+        audio_feeder_->last_pushed_pts() !=
+            std::numeric_limits<int64_t>::min()) {
+      EXPECT_LE(pts, audio_feeder_->last_pushed_pts() + 100 * 1000);
+    }
+    if (video_feeder_ &&
+        video_feeder_->last_pushed_pts() !=
+            std::numeric_limits<int64_t>::min()) {
+      EXPECT_LE(pts, video_feeder_->last_pushed_pts() + 100 * 1000);
+    }
+    // PTS is allowed to move backwards once to allow for updates when the first
+    // buffers are pushed.
+    if (!backwards_pts_change_) {
+      if (pts < last_pts_)
+        backwards_pts_change_ = true;
+    } else {
+      EXPECT_GE(pts, last_pts_);
+    }
+    last_pts_ = pts;
   }
-  if (video_feeder_ &&
-      video_feeder_->last_pushed_pts() != std::numeric_limits<int64_t>::min()) {
-    EXPECT_LE(pts, video_feeder_->last_pushed_pts() + 100 * 1000);
-  }
-  // PTS is allowed to move backwards once to allow for updates when the first
-  // buffers are pushed.
-  if (!backwards_pts_change_) {
-    if (pts < last_pts_)
-      backwards_pts_change_ = true;
-  } else {
-    EXPECT_GE(pts, last_pts_);
-  }
-  last_pts_ = pts;
 
   if (!pause_pattern_.empty() &&
       pause_pattern_[pause_pattern_idx_].delay >= base::TimeDelta() &&
@@ -840,6 +846,10 @@ void AudioVideoPipelineDeviceTest::TestBackendStates() {
   RunPlaybackChecks();
 
   ASSERT_TRUE(backend()->Pause());
+  base::MessageLoop::current()->RunUntilIdle();
+  RunPlaybackChecks();
+
+  ASSERT_TRUE(backend()->Resume());
   base::MessageLoop::current()->RunUntilIdle();
   RunPlaybackChecks();
 
@@ -991,11 +1001,11 @@ TEST_F(AudioVideoPipelineDeviceTest, AudioBackendStates) {
 TEST_F(AudioVideoPipelineDeviceTest, AudioEffectsBackendStates) {
   scoped_ptr<base::MessageLoop> message_loop(new base::MessageLoop());
   set_audio_type(MediaPipelineDeviceParams::kAudioStreamSoundEffects);
+  set_sync_type(MediaPipelineDeviceParams::kModeIgnorePts);
   Initialize();
   MediaPipelineBackend::AudioDecoder* audio_decoder =
       backend()->CreateAudioDecoder();
 
-  // Test setting config before Initialize().
   scoped_ptr<BufferFeeder> feeder(new BufferFeeder(base::Bind(&IgnoreEos)));
   feeder->Initialize(backend(), audio_decoder, BufferList());
   feeder->SetAudioConfig(DefaultAudioConfig());
