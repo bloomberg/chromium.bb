@@ -22,6 +22,7 @@ declare_args() {
   # Default to warnings as errors for default workflow, where we catch
   # warnings with known toolchains. Allow overriding this e.g. for Chromium
   # builds on Linux that could use a different version of the compiler.
+  # With GCC, warnings in no-Chromium code are always not treated as errors.
   treat_warnings_as_errors = true
 
   # Normally, Android builds are lightly optimized, even for debug builds, to
@@ -807,10 +808,6 @@ config("default_warnings") {
       ]
     }
   } else {
-    if (treat_warnings_as_errors) {
-      cflags += [ "-Werror" ]
-    }
-
     if (is_mac && !is_nacl) {
       # When compiling Objective-C, warns if a method is used whose
       # availability is newer than the deployment target. This is not
@@ -907,6 +904,9 @@ config("chromium_code") {
     cflags = [ "/W4" ]  # Warning level 4.
   } else {
     cflags = [ "-Wall" ]
+    if (treat_warnings_as_errors) {
+      cflags += [ "-Werror" ]
+    }
     if (is_clang) {
       # Enable -Wextra for chromium_code when we control the compiler.
       cflags += [ "-Wextra" ]
@@ -952,10 +952,17 @@ config("no_chromium_code") {
       "_CRT_NONSTDC_NO_WARNINGS",
       "_CRT_NONSTDC_NO_DEPRECATE",
     ]
-  } else if (is_clang && !is_nacl) {
-    # TODO(thakis): Remove !is_nacl once
-    # https://codereview.webrtc.org/1552863002/ made its way into chromium.
-    cflags += [ "-Wall" ]
+  } else {
+    # GCC may emit unsuppressible warnings so don't add -Werror for no chromium
+    # code. crbug.com/589724
+    if (treat_warnings_as_errors && is_clang) {
+      cflags += [ "-Werror" ]
+    }
+    if (is_clang && !is_nacl) {
+      # TODO(thakis): Remove !is_nacl once
+      # https://codereview.webrtc.org/1552863002/ made its way into chromium.
+      cflags += [ "-Wall" ]
+    }
   }
 
   if (is_clang) {
