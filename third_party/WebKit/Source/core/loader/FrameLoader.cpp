@@ -1046,13 +1046,14 @@ bool FrameLoader::prepareForCommit()
     RefPtrWillBeRawPtr<DocumentLoader> pdl = m_provisionalDocumentLoader;
 
     if (m_frame->document()) {
-        unsigned totalNodeCount = InstanceCounters::counterValue(InstanceCounters::NodeCounter);
-        int nodeCount = static_cast<int>(totalNodeCount);
-        for (Document* document : Document::liveDocumentSet()) {
-            if (document != m_frame->document())
-                nodeCount -= document->nodeCount();
+        unsigned nodeCount = 0;
+        for (Frame* frame = m_frame; frame; frame = frame->tree().traverseNext()) {
+            if (frame->isLocalFrame()) {
+                LocalFrame* localFrame = toLocalFrame(frame);
+                nodeCount += localFrame->document()->nodeCount();
+            }
         }
-        ASSERT(nodeCount >= 0);
+        unsigned totalNodeCount = InstanceCounters::counterValue(InstanceCounters::NodeCounter);
         float ratio = static_cast<float>(nodeCount) / totalNodeCount;
         ThreadState::current()->schedulePageNavigationGCIfNeeded(ratio);
     }

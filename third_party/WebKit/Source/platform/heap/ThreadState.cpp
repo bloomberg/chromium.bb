@@ -575,7 +575,10 @@ bool ThreadState::shouldScheduleV8FollowupGC()
 
 bool ThreadState::shouldSchedulePageNavigationGC(float estimatedRemovalRatio)
 {
-    return judgeGCThreshold(1024 * 1024, 1.5 * (1 - estimatedRemovalRatio));
+    // If estimatedRemovalRatio is low we should let IdleGC handle this.
+    if (estimatedRemovalRatio < 0.01)
+        return false;
+    return judgeGCThreshold(32 * 1024 * 1024, 1.5 * (1 - estimatedRemovalRatio));
 }
 
 bool ThreadState::shouldForceConservativeGC()
@@ -672,7 +675,6 @@ void ThreadState::schedulePageNavigationGCIfNeeded(float estimatedRemovalRatio)
         dataLogF("Scheduled PageNavigationGC\n");
 #endif
         schedulePageNavigationGC();
-        return;
     }
 }
 
