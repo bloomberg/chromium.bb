@@ -72,8 +72,7 @@ ResourceLoader::ResourceLoader(ResourceFetcher* fetcher, Resource* resource, con
     , m_loadingMultipartContent(false)
     , m_options(options)
     , m_resource(resource)
-    , m_state(Initialized)
-    , m_connectionState(ConnectionStateNew)
+    , m_state(ConnectionStateNew)
 {
     ASSERT(m_resource);
     ASSERT(m_fetcher);
@@ -81,7 +80,7 @@ ResourceLoader::ResourceLoader(ResourceFetcher* fetcher, Resource* resource, con
 
 ResourceLoader::~ResourceLoader()
 {
-    ASSERT(m_state == Terminated);
+    ASSERT(m_state == ConnectionStateReleased);
 }
 
 DEFINE_TRACE(ResourceLoader)
@@ -92,17 +91,16 @@ DEFINE_TRACE(ResourceLoader)
 
 void ResourceLoader::releaseResources()
 {
-    ASSERT(m_state != Terminated);
+    ASSERT(m_state != ConnectionStateReleased);
     ASSERT(m_notifiedLoadComplete);
     m_fetcher->didLoadResource(m_resource.get());
-    if (m_state == Terminated)
+    if (m_state == ConnectionStateReleased)
         return;
     m_resource->clearLoader();
     m_resource = nullptr;
 
-    ASSERT(m_state != Terminated);
-
-    m_state = Terminated;
+    ASSERT(m_state != ConnectionStateReleased);
+    m_state = ConnectionStateReleased;
     if (m_loader) {
         m_loader->cancel();
         m_loader.clear();
@@ -113,14 +111,10 @@ void ResourceLoader::releaseResources()
 
 void ResourceLoader::init(const ResourceRequest& passedRequest)
 {
-    ASSERT(m_state != Terminated);
     ResourceRequest request(passedRequest);
     m_fetcher->willSendRequest(m_resource->identifier(), request, ResourceResponse(), m_options.initiatorInfo);
-    ASSERT(m_state != Terminated);
-    ASSERT(!request.isNull());
     m_originalRequest = m_request = applyOptions(request);
     m_resource->updateRequest(request);
-    ASSERT(m_state != Terminated);
     m_fetcher->didInitializeResourceLoader(this);
 }
 
@@ -132,21 +126,18 @@ void ResourceLoader::start()
 
     m_fetcher->willStartLoadingResource(m_resource.get(), m_request);
 
-    if (m_options.synchronousPolicy == RequestSynchronously) {
-        requestSynchronously();
-        return;
-    }
-
     if (m_defersLoading) {
         m_deferredRequest = m_request;
         return;
     }
 
-    if (m_state == Terminated)
+    if (m_options.synchronousPolicy == RequestSynchronously) {
+        requestSynchronously();
         return;
+    }
 
-    RELEASE_ASSERT(m_connectionState == ConnectionStateNew);
-    m_connectionState = ConnectionStateStarted;
+    RELEASE_ASSERT(m_state == ConnectionStateNew);
+    m_state = ConnectionStateStarted;
 
     m_loader = adoptPtr(Platform::current()->createURLLoader());
     ASSERT(m_loader);
@@ -162,7 +153,7 @@ void ResourceLoader::changeToSynchronous()
     m_loader->cancel();
     m_loader.clear();
     m_request.setPriority(ResourceLoadPriorityHighest);
-    m_connectionState = ConnectionStateNew;
+    m_state = ConnectionStateNew;
     requestSynchronously();
 }
 
@@ -192,10 +183,9 @@ void ResourceLoader::attachThreadedDataReceiver(PassRefPtrWillBeRawPtr<ThreadedD
 
 void ResourceLoader::didDownloadData(WebURLLoader*, int length, int encodedDataLength)
 {
-    ASSERT(m_state != Terminated);
-    RELEASE_ASSERT(m_connectionState == ConnectionStateReceivedResponse);
+    RELEASE_ASSERT(m_state == ConnectionStateReceivedResponse);
     m_fetcher->didDownloadData(m_resource.get(), length, encodedDataLength);
-    if (m_state == Terminated)
+    if (m_state == ConnectionStateReleased)
         return;
     m_resource->didDownloadData(length);
 }
@@ -204,7 +194,7 @@ void ResourceLoader::didFinishLoadingOnePart(double finishTime, int64_t encodedD
 {
     // If load has been cancelled after finishing (which could happen with a
     // JavaScript that changes the window location), do nothing.
-    if (m_state == Terminated)
+    if (m_state == ConnectionStateReleased)
         return;
 
     if (m_notifiedLoadComplete)
@@ -215,14 +205,14 @@ void ResourceLoader::didFinishLoadingOnePart(double finishTime, int64_t encodedD
 
 void ResourceLoader::didChangePriority(ResourceLoadPriority loadPriority, int intraPriorityValue)
 {
-    ASSERT(m_state != Terminated);
+    ASSERT(m_state != ConnectionStateReleased);
     if (m_loader)
         m_loader->didChangePriority(static_cast<WebURLRequest::Priority>(loadPriority), intraPriorityValue);
 }
 
 void ResourceLoader::cancelIfNotFinishing()
 {
-    if (m_state != Initialized)
+    if (isFinishing())
         return;
     cancel();
 }
@@ -235,9 +225,9 @@ void ResourceLoader::cancel()
 void ResourceLoader::cancel(const ResourceError& error)
 {
     // If the load has already completed - succeeded, failed, or previously cancelled - do nothing.
-    if (m_state == Terminated)
+    if (m_state == ConnectionStateReleased)
         return;
-    if (m_state == Finishing) {
+    if (isFinishing()) {
         releaseResources();
         return;
     }
@@ -245,30 +235,23 @@ void ResourceLoader::cancel(const ResourceError& error)
     ResourceError nonNullError = error.isNull() ? ResourceError::cancelledError(m_request.url()) : error;
 
     WTF_LOG(ResourceLoading, "Cancelled load of '%s'.\n", m_resource->url().string().latin1().data());
-    if (m_state == Initialized)
-        m_state = Finishing;
+    m_state = ConnectionStateCanceled;
     m_resource->setResourceError(nonNullError);
-
-    if (m_loader) {
-        m_connectionState = ConnectionStateCanceled;
-        m_loader->cancel();
-        m_loader.clear();
-    }
 
     if (!m_notifiedLoadComplete) {
         m_notifiedLoadComplete = true;
         m_fetcher->didFailLoading(m_resource.get(), nonNullError);
     }
 
-    if (m_state == Finishing)
+    if (m_state != ConnectionStateReleased)
         m_resource->error(Resource::LoadError);
-    if (m_state != Terminated)
+    if (m_state != ConnectionStateReleased)
         releaseResources();
 }
 
 void ResourceLoader::willFollowRedirect(WebURLLoader*, WebURLRequest& passedNewRequest, const WebURLResponse& passedRedirectResponse)
 {
-    ASSERT(m_state != Terminated);
+    ASSERT(m_state != ConnectionStateReleased);
 
     ResourceRequest& newRequest(applyOptions(passedNewRequest.toMutableResourceRequest()));
 
@@ -280,17 +263,17 @@ void ResourceLoader::willFollowRedirect(WebURLLoader*, WebURLRequest& passedNewR
         cancel(ResourceError::cancelledDueToAccessCheckError(newRequest.url()));
         return;
     }
-    ASSERT(m_state != Terminated);
+    ASSERT(m_state != ConnectionStateReleased);
 
     applyOptions(newRequest); // canAccessRedirect() can modify m_options so we should re-apply it.
     m_fetcher->redirectReceived(m_resource.get(), redirectResponse);
-    ASSERT(m_state != Terminated);
+    ASSERT(m_state != ConnectionStateReleased);
     m_resource->willFollowRedirect(newRequest, redirectResponse);
-    if (newRequest.isNull() || m_state == Terminated)
+    if (newRequest.isNull() || m_state == ConnectionStateReleased)
         return;
 
     m_fetcher->willSendRequest(m_resource->identifier(), newRequest, redirectResponse, m_options.initiatorInfo);
-    ASSERT(m_state != Terminated);
+    ASSERT(m_state != ConnectionStateReleased);
     ASSERT(!newRequest.isNull());
     m_resource->updateRequest(newRequest);
     m_request = newRequest;
@@ -298,14 +281,12 @@ void ResourceLoader::willFollowRedirect(WebURLLoader*, WebURLRequest& passedNewR
 
 void ResourceLoader::didReceiveCachedMetadata(WebURLLoader*, const char* data, int length)
 {
-    RELEASE_ASSERT(m_connectionState == ConnectionStateReceivedResponse || m_connectionState == ConnectionStateReceivingData);
-    ASSERT(m_state == Initialized);
+    RELEASE_ASSERT(m_state == ConnectionStateReceivedResponse || m_state == ConnectionStateReceivingData);
     m_resource->setSerializedCachedMetadata(data, length);
 }
 
 void ResourceLoader::didSendData(WebURLLoader*, unsigned long long bytesSent, unsigned long long totalBytesToBeSent)
 {
-    ASSERT(m_state == Initialized);
     m_resource->didSendData(bytesSent, totalBytesToBeSent);
 }
 
@@ -318,15 +299,14 @@ bool ResourceLoader::responseNeedsAccessControlCheck() const
 void ResourceLoader::didReceiveResponse(WebURLLoader*, const WebURLResponse& response, WebDataConsumerHandle* rawHandle)
 {
     ASSERT(!response.isNull());
-    ASSERT(m_state == Initialized);
     // |rawHandle|'s ownership is transferred to the callee.
     OwnPtr<WebDataConsumerHandle> handle = adoptPtr(rawHandle);
 
     bool isMultipartPayload = response.isMultipartPayload();
-    bool isValidStateTransition = (m_connectionState == ConnectionStateStarted || m_connectionState == ConnectionStateReceivedResponse);
+    bool isValidStateTransition = (m_state == ConnectionStateStarted || m_state == ConnectionStateReceivedResponse);
     // In the case of multipart loads, calls to didReceiveData & didReceiveResponse can be interleaved.
     RELEASE_ASSERT(isMultipartPayload || isValidStateTransition);
-    m_connectionState = ConnectionStateReceivedResponse;
+    m_state = ConnectionStateReceivedResponse;
 
     const ResourceResponse& resourceResponse = response.toResourceResponse();
 
@@ -335,7 +315,7 @@ void ResourceLoader::didReceiveResponse(WebURLLoader*, const WebURLResponse& res
             if (response.wasFallbackRequiredByServiceWorker()) {
                 m_loader->cancel();
                 m_loader.clear();
-                m_connectionState = ConnectionStateStarted;
+                m_state = ConnectionStateStarted;
                 m_loader = adoptPtr(Platform::current()->createURLLoader());
                 ASSERT(m_loader);
                 ASSERT(!m_request.skipServiceWorker());
@@ -356,11 +336,11 @@ void ResourceLoader::didReceiveResponse(WebURLLoader*, const WebURLResponse& res
     }
 
     m_resource->responseReceived(resourceResponse, handle.release());
-    if (m_state == Terminated)
+    if (m_state == ConnectionStateReleased)
         return;
 
     m_fetcher->didReceiveResponse(m_resource.get(), resourceResponse);
-    if (m_state == Terminated)
+    if (m_state == ConnectionStateReleased)
         return;
 
     if (response.toResourceResponse().isMultipart()) {
@@ -377,19 +357,18 @@ void ResourceLoader::didReceiveResponse(WebURLLoader*, const WebURLResponse& res
         m_fetcher->subresourceLoaderFinishedLoadingOnePart(this);
         didFinishLoadingOnePart(0, WebURLLoaderClient::kUnknownEncodedDataLength);
     }
-    if (m_state == Terminated)
+    if (m_state == ConnectionStateReleased)
         return;
 
     if (m_resource->response().httpStatusCode() < 400 || m_resource->shouldIgnoreHTTPStatusCodeErrors())
         return;
-    m_state = Finishing;
 
     if (!m_notifiedLoadComplete) {
         m_notifiedLoadComplete = true;
         m_fetcher->didFailLoading(m_resource.get(), ResourceError::cancelledError(m_request.url()));
     }
 
-    ASSERT(m_state != Terminated);
+    ASSERT(m_state != ConnectionStateReleased);
     m_resource->error(Resource::LoadError);
     cancel();
 }
@@ -401,21 +380,19 @@ void ResourceLoader::didReceiveResponse(WebURLLoader* loader, const WebURLRespon
 
 void ResourceLoader::didReceiveData(WebURLLoader*, const char* data, int length, int encodedDataLength)
 {
-    ASSERT(m_state != Terminated);
-    RELEASE_ASSERT(m_connectionState == ConnectionStateReceivedResponse || m_connectionState == ConnectionStateReceivingData);
-    m_connectionState = ConnectionStateReceivingData;
+    RELEASE_ASSERT(m_state == ConnectionStateReceivedResponse || m_state == ConnectionStateReceivingData);
+    m_state = ConnectionStateReceivingData;
 
     // It is possible to receive data on uninitialized resources if it had an error status code, and we are running a nested message
     // loop. When this occurs, ignoring the data is the correct action.
     if (m_resource->response().httpStatusCode() >= 400 && !m_resource->shouldIgnoreHTTPStatusCodeErrors())
         return;
-    ASSERT(m_state == Initialized);
 
     // FIXME: If we get a resource with more than 2B bytes, this code won't do the right thing.
     // However, with today's computers and networking speeds, this won't happen in practice.
     // Could be an issue with a giant local file.
     m_fetcher->didReceiveData(m_resource.get(), data, length, encodedDataLength);
-    if (m_state == Terminated)
+    if (m_state == ConnectionStateReleased)
         return;
     RELEASE_ASSERT(length >= 0);
     m_resource->appendData(data, length);
@@ -423,48 +400,43 @@ void ResourceLoader::didReceiveData(WebURLLoader*, const char* data, int length,
 
 void ResourceLoader::didFinishLoading(WebURLLoader*, double finishTime, int64_t encodedDataLength)
 {
-    RELEASE_ASSERT(m_connectionState == ConnectionStateReceivedResponse || m_connectionState == ConnectionStateReceivingData);
-    m_connectionState = ConnectionStateFinishedLoading;
-    if (m_state != Initialized)
-        return;
-    ASSERT(m_state != Terminated);
+    RELEASE_ASSERT(m_state == ConnectionStateReceivedResponse || m_state == ConnectionStateReceivingData);
+    m_state = ConnectionStateFinishedLoading;
     WTF_LOG(ResourceLoading, "Received '%s'.", m_resource->url().string().latin1().data());
 
     RefPtrWillBeRawPtr<Resource> protectResource(m_resource.get());
-    m_state = Finishing;
     m_resource->setLoadFinishTime(finishTime);
     didFinishLoadingOnePart(finishTime, encodedDataLength);
-    if (m_state == Terminated)
+    if (m_state == ConnectionStateReleased)
         return;
     m_resource->finish();
 
     // If the load has been cancelled by a delegate in response to didFinishLoad(), do not release
     // the resources a second time, they have been released by cancel.
-    if (m_state == Terminated)
+    if (m_state == ConnectionStateReleased)
         return;
     releaseResources();
 }
 
 void ResourceLoader::didFail(WebURLLoader*, const WebURLError& error)
 {
-    m_connectionState = ConnectionStateFailed;
-    ASSERT(m_state != Terminated);
+    ASSERT(m_state != ConnectionStateReleased);
+    m_state = ConnectionStateFailed;
     WTF_LOG(ResourceLoading, "Failed to load '%s'.\n", m_resource->url().string().latin1().data());
 
     RefPtrWillBeRawPtr<Resource> protectResource(m_resource.get());
-    m_state = Finishing;
     m_resource->setResourceError(error);
 
     if (!m_notifiedLoadComplete) {
         m_notifiedLoadComplete = true;
         m_fetcher->didFailLoading(m_resource.get(), error);
     }
-    if (m_state == Terminated)
+    if (m_state == ConnectionStateReleased)
         return;
 
     m_resource->error(Resource::LoadError);
 
-    if (m_state == Terminated)
+    if (m_state == ConnectionStateReleased)
         return;
 
     releaseResources();
@@ -485,8 +457,8 @@ void ResourceLoader::requestSynchronously()
 
     RefPtrWillBeRawPtr<Resource> protectResource(m_resource.get());
 
-    RELEASE_ASSERT(m_connectionState == ConnectionStateNew);
-    m_connectionState = ConnectionStateStarted;
+    RELEASE_ASSERT(m_state == ConnectionStateNew);
+    m_state = ConnectionStateStarted;
 
     WrappedResourceRequest requestIn(m_request);
     WebURLResponse responseOut;
@@ -495,7 +467,7 @@ void ResourceLoader::requestSynchronously()
     WebData dataOut;
     loader->loadSynchronously(requestIn, responseOut, errorOut, dataOut);
     if (errorOut.reason) {
-        if (m_state == Terminated) {
+        if (m_state == ConnectionStateReleased) {
             // A message dispatched while synchronously fetching the resource
             // can bring about the cancellation of this load.
             ASSERT(!m_resource);
@@ -505,7 +477,7 @@ void ResourceLoader::requestSynchronously()
         return;
     }
     didReceiveResponse(0, responseOut);
-    if (m_state == Terminated)
+    if (m_state == ConnectionStateReleased)
         return;
     RefPtr<ResourceLoadInfo> resourceLoadInfo = responseOut.toResourceResponse().resourceLoadInfo();
     int64_t encodedDataLength = resourceLoadInfo ? resourceLoadInfo->encodedDataLength : WebURLLoaderClient::kUnknownEncodedDataLength;

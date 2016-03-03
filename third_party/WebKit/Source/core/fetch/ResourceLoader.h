@@ -87,7 +87,6 @@ public:
     const KURL& url() const { return m_request.url(); }
     bool isLoadedBy(ResourceFetcher*) const;
 
-    bool reachedTerminalState() const { return m_state == Terminated; }
     const ResourceRequest& request() const { return m_request; }
 
     bool loadingMultipartContent() const { return m_loadingMultipartContent; }
@@ -118,12 +117,6 @@ private:
     ResourceRequest m_deferredRequest;
     ResourceLoaderOptions m_options;
 
-    enum ResourceLoaderState {
-        Initialized,
-        Finishing,
-        Terminated
-    };
-
     enum ConnectionState {
         ConnectionStateNew,
         ConnectionStateStarted,
@@ -132,14 +125,15 @@ private:
         ConnectionStateFinishedLoading,
         ConnectionStateCanceled,
         ConnectionStateFailed,
+        ConnectionStateReleased
     };
+    bool isFinishing() { return m_state >= ConnectionStateFinishedLoading && m_state <= ConnectionStateFailed; }
 
     RefPtrWillBeMember<Resource> m_resource;
-    ResourceLoaderState m_state;
 
     // Used for sanity checking to make sure we don't experience illegal state
     // transitions.
-    ConnectionState m_connectionState;
+    ConnectionState m_state;
 };
 
 } // namespace blink
