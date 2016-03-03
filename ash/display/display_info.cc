@@ -240,6 +240,7 @@ void DisplayInfo::SetUse125DSFForUIScalingForTest(bool enable) {
 DisplayInfo::DisplayInfo()
     : id_(gfx::Display::kInvalidDisplayID),
       has_overscan_(false),
+      active_rotation_source_(gfx::Display::ROTATION_SOURCE_UNKNOWN),
       touch_support_(gfx::Display::TOUCH_SUPPORT_UNKNOWN),
       device_scale_factor_(1.0f),
       device_dpi_(kDpi96),
@@ -254,6 +255,7 @@ DisplayInfo::DisplayInfo(int64_t id, const std::string& name, bool has_overscan)
     : id_(id),
       name_(name),
       has_overscan_(has_overscan),
+      active_rotation_source_(gfx::Display::ROTATION_SOURCE_UNKNOWN),
       touch_support_(gfx::Display::TOUCH_SUPPORT_UNKNOWN),
       device_scale_factor_(1.0f),
       device_dpi_(kDpi96),
@@ -273,6 +275,7 @@ void DisplayInfo::SetRotation(gfx::Display::Rotation rotation,
                               gfx::Display::RotationSource source) {
   rotations_[source] = rotation;
   rotations_[gfx::Display::ROTATION_SOURCE_ACTIVE] = rotation;
+  active_rotation_source_ = source;
 }
 
 gfx::Display::Rotation DisplayInfo::GetActiveRotation() const {
@@ -291,6 +294,7 @@ void DisplayInfo::Copy(const DisplayInfo& native_info) {
   name_ = native_info.name_;
   has_overscan_ = native_info.has_overscan_;
 
+  active_rotation_source_ = native_info.active_rotation_source_;
   touch_support_ = native_info.touch_support_;
   input_devices_ = native_info.input_devices_;
   device_scale_factor_ = native_info.device_scale_factor_;

@@ -26,6 +26,7 @@
 #include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/display.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notification_delegate.h"
@@ -265,9 +266,14 @@ class DisplayView : public ActionableView {
 
  private:
   bool ShouldShowFirstDisplayInfo() const {
-    const DisplayInfo& display_info = GetDisplayManager()->GetDisplayInfo(
-        GetDisplayManager()->first_display_id());
-    return display_info.GetActiveRotation() != gfx::Display::ROTATE_0 ||
+    const int64_t first_display_id = GetDisplayManager()->first_display_id();
+
+    const DisplayInfo& display_info =
+        GetDisplayManager()->GetDisplayInfo(first_display_id);
+    return (display_info.GetActiveRotation() != gfx::Display::ROTATE_0 &&
+            (display_info.active_rotation_source() !=
+                 gfx::Display::ROTATION_SOURCE_ACCELEROMETER ||
+             !gfx::Display::IsInternalDisplayId(first_display_id))) ||
            display_info.configured_ui_scale() != 1.0f ||
            !display_info.overscan_insets_in_dip().IsEmpty() ||
            display_info.has_overscan();

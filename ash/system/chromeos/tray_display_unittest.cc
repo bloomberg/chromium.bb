@@ -595,4 +595,39 @@ TEST_F(TrayDisplayTest, UpdateAfterSuppressDisplayNotification) {
             GetDisplayNotificationAdditionalText());
 }
 
+// Tests that when the only change is rotation, that it is only displayed when
+// caused by user changes, and not by accelerometers.
+TEST_F(TrayDisplayTest, RotationOnInternalDisplay) {
+  UpdateDisplay("400x400");
+  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
+  const int64_t display_id = display_manager->first_display_id();
+  gfx::Display::SetInternalDisplayId(display_id);
+
+  GetTray()->ShowDefaultView(BUBBLE_USE_EXISTING);
+  EXPECT_FALSE(IsDisplayVisibleInTray());
+
+  // Accelerometer change does not display.
+  display_manager->SetDisplayRotation(
+      display_id, gfx::Display::ROTATE_90,
+      gfx::Display::ROTATION_SOURCE_ACCELEROMETER);
+  EXPECT_FALSE(IsDisplayVisibleInTray());
+
+  // User change does.
+  display_manager->SetDisplayRotation(display_id, gfx::Display::ROTATE_180,
+                                      gfx::Display::ROTATION_SOURCE_USER);
+  EXPECT_TRUE(IsDisplayVisibleInTray());
+
+  // If a user setting matches the accelerometer, do not display if caused by
+  // the accelerometer.
+  display_manager->SetDisplayRotation(
+      display_id, gfx::Display::ROTATE_180,
+      gfx::Display::ROTATION_SOURCE_ACCELEROMETER);
+  EXPECT_FALSE(IsDisplayVisibleInTray());
+
+  // If a non-rotation setting is changed, display regardless of the source of
+  // rotation so that the full message is shown.
+  UpdateDisplay("400x400@1.5");
+  EXPECT_TRUE(IsDisplayVisibleInTray());
+}
+
 }  // namespace ash

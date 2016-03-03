@@ -38,11 +38,13 @@ class GFX_EXPORT Display final {
   // RotationSource allows for the tracking of a Rotation per source of the
   // change. ROTATION_SOURCE_ACTIVE is the current rotation of the display.
   // Rotation changes not due to an accelerometer, nor the user, are to use this
-  // source directly.
+  // source directly. ROTATION_SOURCE_UNKNOWN is when no rotation source has
+  // been provided.
   enum RotationSource {
     ROTATION_SOURCE_ACCELEROMETER = 0,
     ROTATION_SOURCE_ACTIVE,
     ROTATION_SOURCE_USER,
+    ROTATION_SOURCE_UNKNOWN,
   };
 
   // Touch support for the display.

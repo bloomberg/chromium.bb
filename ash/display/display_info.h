@@ -162,6 +162,11 @@ class ASH_EXPORT DisplayInfo {
   // Returns the currently active rotation for this display.
   gfx::Display::Rotation GetActiveRotation() const;
 
+  // Returns the source which set the active rotation for this display.
+  gfx::Display::RotationSource active_rotation_source() const {
+    return active_rotation_source_;
+  }
+
   // Returns the rotation set by a given |source|.
   gfx::Display::Rotation GetRotation(gfx::Display::RotationSource source) const;
 
@@ -259,6 +264,7 @@ class ASH_EXPORT DisplayInfo {
   base::FilePath sys_path_;
   bool has_overscan_;
   std::map<gfx::Display::RotationSource, gfx::Display::Rotation> rotations_;
+  gfx::Display::RotationSource active_rotation_source_;
   gfx::Display::TouchSupport touch_support_;
 
   // The set of input devices associated with this display.
