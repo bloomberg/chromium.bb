@@ -1249,4 +1249,33 @@ TEST_F(MultibufferDataSourceTest, SeekPastEOF) {
   Stop();
 }
 
+TEST_F(MultibufferDataSourceTest, Http_RetryThenRedirect) {
+  InitializeWith206Response();
+
+  // Read to advance our position.
+  EXPECT_CALL(*this, ReadCallback(kDataSize));
+  ReadAt(0);
+
+  // Issue a pending read but trigger an error to force a retry.
+  EXPECT_CALL(*this, ReadCallback(kDataSize - 10));
+  EXPECT_CALL(host_, AddBufferedByteRange(0, kDataSize * 2));
+  ReadAt(kDataSize + 10, kDataSize - 10);
+  base::RunLoop run_loop;
+  data_provider()->didFail(url_loader(), response_generator_->GenerateError());
+  data_provider()->RunOnStart(run_loop.QuitClosure());
+  run_loop.Run();
+
+  // Server responds with a redirect.
+  blink::WebURLRequest request((GURL(kHttpDifferentPathUrl)));
+  blink::WebURLResponse response((GURL(kHttpUrl)));
+  response.setHTTPStatusCode(307);
+  data_provider()->willFollowRedirect(url_loader(), request, response);
+  Respond(response_generator_->Generate206(kDataSize));
+  ReceiveData(kDataSize);
+  EXPECT_CALL(host_, AddBufferedByteRange(0, kDataSize * 3));
+  FinishLoading();
+  EXPECT_FALSE(loading());
+  Stop();
+}
+
 }  // namespace media

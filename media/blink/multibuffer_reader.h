@@ -101,6 +101,9 @@ class MEDIA_BLINK_EXPORT MultiBufferReader
     return block(byte_pos + (1LL << multibuffer_->block_size_shift()) - 1);
   }
 
+  // Unpin previous range, then pin the new range.
+  void PinRange(MultiBuffer::BlockId begin, MultiBuffer::BlockId end);
+
   // Check if wait operation can complete now.
   void CheckWait();
 
@@ -132,6 +135,9 @@ class MEDIA_BLINK_EXPORT MultiBufferReader
   // Pin this much data in the cache from the current position.
   int64_t max_buffer_forward_;
   int64_t max_buffer_backward_;
+
+  // Currently pinned range.
+  Interval<MultiBuffer::BlockId> pinned_range_;
 
   // Current position in bytes.
   int64_t pos_;

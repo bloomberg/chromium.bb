@@ -24,6 +24,7 @@ MultiBufferReader::MultiBufferReader(
       preload_low_(0),
       max_buffer_forward_(0),
       max_buffer_backward_(0),
+      pinned_range_(0, 0),
       pos_(start),
       preload_pos_(-1),
       loading_(true),
@@ -35,11 +36,10 @@ MultiBufferReader::MultiBufferReader(
 }
 
 MultiBufferReader::~MultiBufferReader() {
+  PinRange(0, 0);
   multibuffer_->RemoveReader(preload_pos_, this);
   multibuffer_->IncrementMaxSize(
       -block_ceil(max_buffer_forward_ + max_buffer_backward_));
-  multibuffer_->PinRange(block(pos_ - max_buffer_backward_),
-                         block_ceil(pos_ + max_buffer_forward_), -1);
   multibuffer_->CleanupWriters(preload_pos_);
 }
 
@@ -47,14 +47,8 @@ void MultiBufferReader::Seek(int64_t pos) {
   DCHECK_GE(pos, 0);
   if (pos == pos_)
     return;
-  // Use a rangemap to compute the diff in pinning.
-  IntervalMap<MultiBuffer::BlockId, int32_t> tmp;
-  tmp.IncrementInterval(block(pos_ - max_buffer_backward_),
-                        block_ceil(pos_ + max_buffer_forward_), -1);
-  tmp.IncrementInterval(block(pos - max_buffer_backward_),
-                        block_ceil(pos + max_buffer_forward_), 1);
-
-  multibuffer_->PinRanges(tmp);
+  PinRange(block(pos - max_buffer_backward_),
+           block_ceil(pos + max_buffer_forward_));
 
   multibuffer_->RemoveReader(preload_pos_, this);
   MultiBufferBlockId old_preload_pos = preload_pos_;
@@ -68,15 +62,10 @@ void MultiBufferReader::SetMaxBuffer(int64_t backward, int64_t forward) {
   // Safe, because we know this doesn't actually prune the cache right away.
   multibuffer_->IncrementMaxSize(
       -block_ceil(max_buffer_forward_ + max_buffer_backward_));
-  // Use a rangemap to compute the diff in pinning.
-  IntervalMap<MultiBuffer::BlockId, int32_t> tmp;
-  tmp.IncrementInterval(block(pos_ - max_buffer_backward_),
-                        block_ceil(pos_ + max_buffer_forward_), -1);
   max_buffer_backward_ = backward;
   max_buffer_forward_ = forward;
-  tmp.IncrementInterval(block(pos_ - max_buffer_backward_),
-                        block_ceil(pos_ + max_buffer_forward_), 1);
-  multibuffer_->PinRanges(tmp);
+  PinRange(block(pos_ - max_buffer_backward_),
+           block_ceil(pos_ + max_buffer_forward_));
 
   multibuffer_->IncrementMaxSize(
       block_ceil(max_buffer_forward_ + max_buffer_backward_));
@@ -241,6 +230,17 @@ void MultiBufferReader::UpdateInternalState() {
     }
   }
   CheckWait();
+}
+
+void MultiBufferReader::PinRange(MultiBuffer::BlockId begin,
+                                 MultiBuffer::BlockId end) {
+  // Use a rangemap to compute the diff in pinning.
+  IntervalMap<MultiBuffer::BlockId, int32_t> tmp;
+  tmp.IncrementInterval(pinned_range_.begin, pinned_range_.end, -1);
+  tmp.IncrementInterval(begin, end, 1);
+  multibuffer_->PinRanges(tmp);
+  pinned_range_.begin = begin;
+  pinned_range_.end = end;
 }
 
 }  // namespace media

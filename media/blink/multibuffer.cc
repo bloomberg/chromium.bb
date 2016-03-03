@@ -115,6 +115,8 @@ MultiBuffer::MultiBuffer(int32_t block_size_shift,
     : max_size_(0), block_size_shift_(block_size_shift), lru_(global_lru) {}
 
 MultiBuffer::~MultiBuffer() {
+  CHECK(pinned_.empty());
+  DCHECK_EQ(max_size_, 0);
   // Remove all blocks from the LRU.
   for (const auto& i : data_) {
     lru_->Remove(this, i.first);
@@ -379,6 +381,7 @@ void MultiBuffer::OnDataProviderEvent(DataProvider* provider_tmp) {
 
 void MultiBuffer::MergeFrom(MultiBuffer* other) {
   // Import data and update LRU.
+  size_t data_size = data_.size();
   for (const auto& data : other->data_) {
     if (data_.insert(std::make_pair(data.first, data.second)).second) {
       if (!pinned_[data.first]) {
@@ -386,6 +389,7 @@ void MultiBuffer::MergeFrom(MultiBuffer* other) {
       }
     }
   }
+  lru_->IncrementDataSize(static_cast<int64_t>(data_.size() - data_size));
   // Update present_
   for (const auto& r : other->present_) {
     if (r.second) {
@@ -424,6 +428,7 @@ void MultiBuffer::PinRange(const BlockId& from,
 
   auto range = pinned_.find(to - 1);
   while (1) {
+    DCHECK_GE(range.value(), 0);
     if (range.value() == 0 || range.value() == how_much) {
       bool pin = range.value() == how_much;
       Interval<BlockId> transition_range =
