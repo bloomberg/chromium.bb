@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,13 +9,13 @@
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/webui/profile_helper.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 
-namespace options {
-namespace helper {
+namespace webui {
 
 void OpenNewWindowForProfile(Profile* profile, Profile::CreateStatus status) {
   if (status != Profile::CREATE_STATUS_INITIALIZED)
@@ -38,5 +38,4 @@ void DeleteProfileAtPath(base::FilePath file_path, content::WebUI* web_ui) {
       file_path, base::Bind(&OpenNewWindowForProfile));
 }
 
-}  // namespace helper
-}  // namespace options
+}  // namespace webui

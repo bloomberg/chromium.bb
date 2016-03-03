@@ -39,6 +39,7 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/user_manager.h"
+#include "chrome/browser/ui/webui/profile_helper.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
@@ -100,16 +101,6 @@ const size_t kAvatarIconSize = 180;
 const int kMaxOAuthRetries = 3;
 
 void HandleAndDoNothing(const base::ListValue* args) {
-}
-
-// This callback is run if the only profile has been deleted, and a new
-// profile has been created to replace it.
-void OpenNewWindowForProfile(Profile* profile, Profile::CreateStatus status) {
-  if (status != Profile::CREATE_STATUS_INITIALIZED)
-    return;
-  profiles::FindOrCreateNewWindowForProfile(
-      profile, chrome::startup::IS_PROCESS_STARTUP,
-      chrome::startup::IS_FIRST_RUN, false);
 }
 
 std::string GetAvatarImage(const ProfileAttributesEntry* entry) {
@@ -475,8 +466,10 @@ void UserManagerScreenHandler::HandleRemoveUser(const base::ListValue* args) {
     return;
   }
 
+  // The callback is run if the only profile has been deleted, and a new
+  // profile has been created to replace it.
   g_browser_process->profile_manager()->ScheduleProfileForDeletion(
-      profile_path, base::Bind(&OpenNewWindowForProfile));
+      profile_path, base::Bind(&webui::OpenNewWindowForProfile));
   ProfileMetrics::LogProfileDeleteUser(
       ProfileMetrics::DELETE_PROFILE_USER_MANAGER);
 }

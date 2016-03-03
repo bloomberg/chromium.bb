@@ -33,7 +33,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/user_manager.h"
-#include "chrome/browser/ui/webui/options/options_handlers_helper.h"
+#include "chrome/browser/ui/webui/profile_helper.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/common/chrome_switches.h"
@@ -645,7 +645,7 @@ void PeopleHandler::HandleStopSyncing(const base::ListValue* args) {
 
   if (delete_profile) {
     // Do as BrowserOptionsHandler::DeleteProfile().
-    options::helper::DeleteProfileAtPath(profile_->GetPath(), web_ui());
+    webui::DeleteProfileAtPath(profile_->GetPath(), web_ui());
   }
 }
 #endif

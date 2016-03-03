@@ -45,6 +45,7 @@
 #include "chrome/browser/ui/webui/predictors/predictors_ui.h"
 #include "chrome/browser/ui/webui/profiler_ui.h"
 #include "chrome/browser/ui/webui/settings/md_settings_ui.h"
+#include "chrome/browser/ui/webui/signin/md_user_manager_ui.h"
 #include "chrome/browser/ui/webui/signin/profile_signin_confirmation_ui.h"
 #include "chrome/browser/ui/webui/signin_internals_ui.h"
 #include "chrome/browser/ui/webui/supervised_user_internals_ui.h"
@@ -507,6 +508,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<InlineLoginUI>;
   if (url.host() == chrome::kChromeUIUserManagerHost)
     return &NewWebUI<UserManagerUI>;
+  if (url.host() == chrome::kChromeUIMdUserManagerHost)
+    return &NewWebUI<MDUserManagerUI>;
   if (url.host() == chrome::kChromeUISyncConfirmationHost)
     return &NewWebUI<SyncConfirmationUI>;
   if (url.host() == chrome::kChromeUIProfileSigninConfirmationHost)

@@ -60,7 +60,7 @@
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils_desktop.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
-#include "chrome/browser/ui/webui/options/options_handlers_helper.h"
+#include "chrome/browser/ui/webui/profile_helper.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -1357,7 +1357,7 @@ void BrowserOptionsHandler::DeleteProfile(const base::ListValue* args) {
     return;
   }
 
-  helper::DeleteProfileAtPath(file_path, web_ui());
+  webui::DeleteProfileAtPath(file_path, web_ui());
 }
 
 void BrowserOptionsHandler::ObserveThemeChanged() {

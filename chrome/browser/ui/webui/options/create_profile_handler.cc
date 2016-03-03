@@ -22,7 +22,7 @@
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "chrome/browser/ui/webui/options/options_handlers_helper.h"
+#include "chrome/browser/ui/webui/profile_helper.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
@@ -217,8 +217,7 @@ void CreateProfileHandler::CreateShortcutAndShowSuccess(bool create_shortcut,
   if (should_open_new_window) {
     // Opening the new window must be the last action, after all callbacks
     // have been run, to give them a chance to initialize the profile.
-    helper::OpenNewWindowForProfile(profile,
-                                    Profile::CREATE_STATUS_INITIALIZED);
+    webui::OpenNewWindowForProfile(profile, Profile::CREATE_STATUS_INITIALIZED);
   }
   profile_creation_type_ = NO_CREATION_IN_PROGRESS;
 }
@@ -234,7 +233,7 @@ void CreateProfileHandler::ShowProfileCreationError(
       base::StringValue(error));
   // The ProfileManager calls us back with a NULL profile in some cases.
   if (profile)
-    helper::DeleteProfileAtPath(profile->GetPath(), web_ui());
+    webui::DeleteProfileAtPath(profile->GetPath(), web_ui());
 }
 
 void CreateProfileHandler::RecordProfileCreationMetrics(
@@ -375,7 +374,7 @@ void CreateProfileHandler::CancelProfileRegistration(bool user_initiated) {
   // Cancelling registration means the callback passed into
   // RegisterAndInitSync() won't be called, so the cleanup must be done here.
   profile_path_being_created_.clear();
-  helper::DeleteProfileAtPath(new_profile->GetPath(), web_ui());
+  webui::DeleteProfileAtPath(new_profile->GetPath(), web_ui());
 }
 
 void CreateProfileHandler::RegisterSupervisedUser(
