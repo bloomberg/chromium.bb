@@ -34,13 +34,11 @@
 #include "core/fetch/ResourceFetcher.h"
 #include "platform/Logging.h"
 #include "platform/SharedBuffer.h"
-#include "platform/ThreadedDataReceiver.h"
 #include "platform/exported/WrappedResourceRequest.h"
 #include "platform/exported/WrappedResourceResponse.h"
 #include "platform/network/ResourceError.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebData.h"
-#include "public/platform/WebThreadedDataReceiver.h"
 #include "public/platform/WebURLError.h"
 #include "public/platform/WebURLRequest.h"
 #include "public/platform/WebURLResponse.h"
@@ -166,18 +164,6 @@ void ResourceLoader::setDefersLoading(bool defers)
         m_request = applyOptions(m_deferredRequest);
         m_deferredRequest = ResourceRequest();
         start();
-    }
-}
-
-void ResourceLoader::attachThreadedDataReceiver(PassRefPtrWillBeRawPtr<ThreadedDataReceiver> threadedDataReceiver)
-{
-    if (m_loader) {
-        // The implementor of the WebURLLoader assumes ownership of the
-        // threaded data receiver if it signals that it got successfully
-        // attached.
-        WebThreadedDataReceiver* webDataReceiver = new WebThreadedDataReceiver(threadedDataReceiver);
-        if (!m_loader->attachThreadedDataReceiver(webDataReceiver))
-            delete webDataReceiver;
     }
 }
 

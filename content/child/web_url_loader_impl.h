@@ -66,8 +66,6 @@ class CONTENT_EXPORT WebURLLoaderImpl
   void setDefersLoading(bool value) override;
   void didChangePriority(blink::WebURLRequest::Priority new_priority,
                          int intra_priority_value) override;
-  bool attachThreadedDataReceiver(
-      blink::WebThreadedDataReceiver* threaded_data_receiver) override;
   void setLoadingTaskRunner(blink::WebTaskRunner* loading_task_runner) override;
 
  private:

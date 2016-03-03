@@ -43,7 +43,6 @@ class Resource;
 class KURL;
 class ResourceError;
 class ResourceFetcher;
-class ThreadedDataReceiver;
 
 class CORE_EXPORT ResourceLoader final : public GarbageCollectedFinalized<ResourceLoader>, protected WebURLLoaderClient {
 public:
@@ -66,8 +65,6 @@ public:
 
     void setDefersLoading(bool);
     bool defersLoading() const { return m_defersLoading; }
-
-    void attachThreadedDataReceiver(PassRefPtrWillBeRawPtr<ThreadedDataReceiver>);
 
     void releaseResources();
 

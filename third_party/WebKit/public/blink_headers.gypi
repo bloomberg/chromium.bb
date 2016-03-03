@@ -206,7 +206,6 @@
       "platform/WebThemeEngine.h",
       "platform/WebThread.h",
       "platform/WebThreadSafeData.h",
-      "platform/WebThreadedDataReceiver.h",
       "platform/WebTimeRange.h",
       "platform/WebTopControlsState.h",
       "platform/WebTraceLocation.h",

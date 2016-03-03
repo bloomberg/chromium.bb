@@ -297,8 +297,6 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context> {
   void SetDefersLoading(bool value);
   void DidChangePriority(WebURLRequest::Priority new_priority,
                          int intra_priority_value);
-  bool AttachThreadedDataReceiver(
-      blink::WebThreadedDataReceiver* threaded_data_receiver);
   void Start(const WebURLRequest& request,
              SyncLoadResponse* sync_load_response);
   void SetWebTaskRunner(scoped_ptr<blink::WebTaskRunner> task_runner);
@@ -444,16 +442,6 @@ void WebURLLoaderImpl::Context::DidChangePriority(
         ConvertWebKitPriorityToNetPriority(new_priority),
         intra_priority_value);
   }
-}
-
-bool WebURLLoaderImpl::Context::AttachThreadedDataReceiver(
-    blink::WebThreadedDataReceiver* threaded_data_receiver) {
-  if (request_id_ != -1) {
-    return resource_dispatcher_->AttachThreadedDataReceiver(
-        request_id_, threaded_data_receiver);
-  }
-
-  return false;
 }
 
 void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
@@ -1146,11 +1134,6 @@ void WebURLLoaderImpl::setDefersLoading(bool value) {
 void WebURLLoaderImpl::didChangePriority(WebURLRequest::Priority new_priority,
                                          int intra_priority_value) {
   context_->DidChangePriority(new_priority, intra_priority_value);
-}
-
-bool WebURLLoaderImpl::attachThreadedDataReceiver(
-    blink::WebThreadedDataReceiver* threaded_data_receiver) {
-  return context_->AttachThreadedDataReceiver(threaded_data_receiver);
 }
 
 void WebURLLoaderImpl::setLoadingTaskRunner(

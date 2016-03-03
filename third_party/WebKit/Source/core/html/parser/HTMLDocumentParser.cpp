@@ -46,7 +46,6 @@
 #include "core/loader/NavigationScheduler.h"
 #include "platform/SharedBuffer.h"
 #include "platform/ThreadSafeFunctional.h"
-#include "platform/ThreadedDataReceiver.h"
 #include "platform/TraceEvent.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/Platform.h"
@@ -85,41 +84,12 @@ static HTMLTokenizer::State tokenizerStateForContextElement(Element* contextElem
     return HTMLTokenizer::DataState;
 }
 
-class ParserDataReceiver final : public RefCountedWillBeGarbageCollectedFinalized<ParserDataReceiver>, public ThreadedDataReceiver, public DocumentLifecycleObserver {
+class ParserDataReceiver final : public RefCountedWillBeGarbageCollectedFinalized<ParserDataReceiver>, public DocumentLifecycleObserver {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ParserDataReceiver);
 public:
     static PassRefPtrWillBeRawPtr<ParserDataReceiver> create(WeakPtr<BackgroundHTMLParser> backgroundParser, Document* document)
     {
         return adoptRefWillBeNoop(new ParserDataReceiver(backgroundParser, document));
-    }
-
-#if !ENABLE(OILPAN)
-    void ref() override { RefCounted<ParserDataReceiver>::ref(); }
-    void deref() override { RefCounted<ParserDataReceiver>::deref(); }
-#endif
-
-    // ThreadedDataReceiver
-    void acceptData(const char* data, int dataLength) override
-    {
-        ASSERT(backgroundThread() && backgroundThread()->isCurrentThread());
-        if (m_backgroundParser.get())
-            m_backgroundParser.get()->appendRawBytesFromParserThread(data, dataLength);
-    }
-
-    WebThread* backgroundThread() override
-    {
-        if (HTMLParserThread::shared())
-            return &HTMLParserThread::shared()->platformThread();
-
-        return nullptr;
-    }
-
-    bool needsMainthreadDataCopy() override { return InspectorInstrumentation::hasFrontends(); }
-    void acceptMainthreadDataNotification(const char* data, int dataLength, int encodedDataLength) override
-    {
-        ASSERT(!data || needsMainthreadDataCopy());
-        if (lifecycleContext())
-            lifecycleContext()->loader()->acceptDataFromThreadedReceiver(data, dataLength, encodedDataLength);
     }
 
     DEFINE_INLINE_VIRTUAL_TRACE()
@@ -801,12 +771,6 @@ void HTMLDocumentParser::startBackgroundParser()
 
     RefPtr<WeakReference<BackgroundHTMLParser>> reference = WeakReference<BackgroundHTMLParser>::createUnbound();
     m_backgroundParser = WeakPtr<BackgroundHTMLParser>(reference);
-
-    // FIXME(oysteine): Disabled due to crbug.com/398076 until a full fix can be implemented.
-    if (RuntimeEnabledFeatures::threadedParserDataReceiverEnabled()) {
-        if (DocumentLoader* loader = document()->loader())
-            loader->attachThreadedDataReceiver(ParserDataReceiver::create(m_backgroundParser, document()->contextDocument().get()));
-    }
 
     OwnPtr<BackgroundHTMLParser::Configuration> config = adoptPtr(new BackgroundHTMLParser::Configuration);
     config->options = m_options;

@@ -63,7 +63,6 @@
 #include "core/page/Page.h"
 #include "platform/HTTPNames.h"
 #include "platform/Logging.h"
-#include "platform/ThreadedDataReceiver.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/mhtml/ArchiveResource.h"
 #include "platform/network/ContentSecurityPolicyResponseHeaders.h"
@@ -740,17 +739,6 @@ void DocumentLoader::cancelMainResourceLoad(const ResourceError& resourceError)
         mainResourceLoader()->cancel(error);
 
     mainReceivedError(error);
-}
-
-void DocumentLoader::attachThreadedDataReceiver(PassRefPtrWillBeRawPtr<ThreadedDataReceiver> threadedDataReceiver)
-{
-    if (mainResourceLoader())
-        mainResourceLoader()->attachThreadedDataReceiver(threadedDataReceiver);
-}
-
-void DocumentLoader::acceptDataFromThreadedReceiver(const char* data, int dataLength, int encodedDataLength)
-{
-    m_fetcher->acceptDataFromThreadedReceiver(mainResourceIdentifier(), data, dataLength, encodedDataLength);
 }
 
 void DocumentLoader::endWriting(DocumentWriter* writer)

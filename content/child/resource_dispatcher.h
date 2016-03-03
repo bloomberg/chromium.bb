@@ -31,10 +31,6 @@
 struct ResourceHostMsg_Request;
 struct ResourceMsg_RequestCompleteData;
 
-namespace blink {
-class WebThreadedDataReceiver;
-}
-
 namespace net {
 struct RedirectInfo;
 }
@@ -44,7 +40,6 @@ class RequestPeer;
 class ResourceDispatcherDelegate;
 class ResourceRequestBody;
 class ResourceSchedulingFilter;
-class ThreadedDataProvider;
 struct ResourceResponseInfo;
 struct RequestInfo;
 struct ResourceResponseHead;
@@ -99,19 +94,6 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
                          net::RequestPriority new_priority,
                          int intra_priority_value);
 
-  // The provided data receiver will receive incoming resource data rather
-  // than the resource bridge.
-  bool AttachThreadedDataReceiver(
-      int request_id, blink::WebThreadedDataReceiver* threaded_data_receiver);
-
-  // If we have a ThreadedDataProvider attached, an OnRequestComplete message
-  // will get bounced via the background thread and then passed to this function
-  // to resume processing.
-  void CompletedRequestAfterBackgroundThreadFlush(
-      int request_id,
-      const ResourceMsg_RequestCompleteData& request_complete_data,
-      const base::TimeTicks& renderer_completion_time);
-
   void set_message_sender(IPC::Sender* sender) {
     DCHECK(sender);
     DCHECK(pending_requests_.empty());
@@ -153,7 +135,6 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
     ~PendingRequestInfo();
 
     scoped_ptr<RequestPeer> peer;
-    ThreadedDataProvider* threaded_data_provider = nullptr;
     ResourceType resource_type;
     // The PID of the original process which issued this request. This gets
     // non-zero only for a request proxied by another renderer, particularly
