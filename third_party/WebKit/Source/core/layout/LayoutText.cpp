@@ -1277,7 +1277,7 @@ void LayoutText::setTextWithOffset(PassRefPtr<StringImpl> text, unsigned offset,
         dirtiedLines = true;
     }
     for (RootInlineBox* curr = firstRootBox; curr && curr != lastRootBox; curr = curr->nextRootBox()) {
-        if (curr->lineBreakObj() == this && curr->lineBreakPos() > end)
+        if (curr->lineBreakObj().isEqual(this) && curr->lineBreakPos() > end)
             curr->setLineBreakPos(clampTo<int>(curr->lineBreakPos() + delta));
     }
 
