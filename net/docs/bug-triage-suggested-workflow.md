@@ -231,7 +231,7 @@ the action you've taken and why, including issue link if an issue was filed.
       Otherwise, go ahead and mark the issue WontFix due to lack of response
       and suggest the user file a new bug if the issue is still present. [Use
       this issue tracker query for old Needs-Feedback
-      issues](https://code.google.com/p/chromium/issues/list?can=2&q=Cr%3AInternals-Network%20Needs=Feedback+modified-before%3Atoday-30&sort=-modified).
+      issues](https://code.google.com/p/chromium/issues/list?can=2&q=component%3AInternals>Network%20Needs=Feedback+modified-before%3Atoday-30&sort=-modified).
 
     * If a bug is over 2 months old, and the underlying problem was never
       reproduced or really understood:
