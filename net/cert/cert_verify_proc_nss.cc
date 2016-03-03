@@ -279,7 +279,7 @@ enum CRLSetResult {
 //       that some EV sites would otherwise take the hit of an OCSP lookup for
 //       no reason.
 //   kCRLSetOk: otherwise.
-CRLSetResult CheckRevocationWithCRLSet(CERTCertList* cert_list,
+CRLSetResult CheckRevocationWithCRLSet(const CERTCertList* cert_list,
                                        CERTCertificate* root,
                                        CRLSet* crl_set) {
   std::vector<CERTCertificate*> certs;
@@ -350,6 +350,50 @@ CRLSetResult CheckRevocationWithCRLSet(CERTCertList* cert_list,
   if (error || !last_covered || crl_set->IsExpired())
     return kCRLSetUnknown;
   return kCRLSetOk;
+}
+
+// Arguments for CheckChainRevocationWithCRLSet that are curried within the
+// CERTChainVerifyCallback's isChainValidArg.
+struct CheckChainRevocationArgs {
+  // The CRLSet to evaluate against.
+  CRLSet* crl_set = nullptr;
+
+  // The next callback to invoke, if the CRLSet does not report any errors.
+  CERTChainVerifyCallback* next_callback = nullptr;
+
+  // Indicates that the application callback failure was due to a CRLSet
+  // revocation, rather than due to |next_callback| rejecting it. This is
+  // used to map the error back to the proper caller-visible error code.
+  bool was_revoked = false;
+};
+
+SECStatus CheckChainRevocationWithCRLSet(void* is_chain_valid_arg,
+                                         const CERTCertList* current_chain,
+                                         PRBool* chain_ok) {
+  CHECK(is_chain_valid_arg);
+
+  CheckChainRevocationArgs* args =
+      static_cast<CheckChainRevocationArgs*>(is_chain_valid_arg);
+
+  CRLSetResult crlset_result = kCRLSetUnknown;
+  if (args->crl_set) {
+    crlset_result =
+        CheckRevocationWithCRLSet(current_chain, nullptr, args->crl_set);
+  }
+
+  if (crlset_result == kCRLSetRevoked) {
+    args->was_revoked = true;
+    *chain_ok = PR_FALSE;
+    return SECSuccess;
+  }
+  args->was_revoked = false;
+
+  *chain_ok = PR_TRUE;
+  if (!args->next_callback || !args->next_callback->isChainValid)
+    return SECSuccess;
+
+  return (*args->next_callback->isChainValid)(
+      args->next_callback->isChainValidArg, current_chain, chain_ok);
 }
 
 // Forward declarations.
@@ -825,6 +869,22 @@ int CertVerifyProcNSS::VerifyInternalImpl(
     verify_result->cert_status |= CERT_STATUS_COMMON_NAME_INVALID;
   }
 
+  // Setup a callback to call into CheckChainRevocationWithCRLSet with the
+  // current CRLSet. If the CRLSet revokes a given chain, |was_revoked|
+  // will be set to true.
+  // The same callback and args are used for every invocation of
+  // PKIXVerifyCert, as CheckChainRevocationWithCRLSet handles resetting
+  // |was_revoked| as necessary.
+  CheckChainRevocationArgs check_chain_revocation_args;
+  check_chain_revocation_args.crl_set = crl_set;
+  check_chain_revocation_args.next_callback = chain_verify_callback;
+
+  CERTChainVerifyCallback crlset_callback;
+  memset(&crlset_callback, 0, sizeof(crlset_callback));
+  crlset_callback.isChainValid = &CheckChainRevocationWithCRLSet;
+  crlset_callback.isChainValidArg =
+      static_cast<void*>(&check_chain_revocation_args);
+
   // Make sure that the cert is valid now.
   SECCertTimeValidity validity = CERT_CheckCertValidTimes(
       cert_handle, PR_Now(), PR_TRUE);
@@ -862,15 +922,9 @@ int CertVerifyProcNSS::VerifyInternalImpl(
         CertificateListToCERTCertList(additional_trust_anchors));
   }
 
-  SECStatus status = PKIXVerifyCert(cert_handle,
-                                    check_revocation,
-                                    false,
-                                    cert_io_enabled,
-                                    NULL,
-                                    0,
-                                    trust_anchors.get(),
-                                    chain_verify_callback,
-                                    cvout);
+  SECStatus status =
+      PKIXVerifyCert(cert_handle, check_revocation, false, cert_io_enabled,
+                     NULL, 0, trust_anchors.get(), &crlset_callback, cvout);
 
   if (status == SECSuccess &&
       (flags & CertVerifier::VERIFY_REV_CHECKING_REQUIRED_LOCAL_ANCHORS) &&
@@ -880,15 +934,8 @@ int CertVerifyProcNSS::VerifyInternalImpl(
     // NSS tests for that feature.
     scoped_cvout.Clear();
     verify_result->cert_status |= CERT_STATUS_REV_CHECKING_ENABLED;
-    status = PKIXVerifyCert(cert_handle,
-                            true,
-                            true,
-                            cert_io_enabled,
-                            NULL,
-                            0,
-                            trust_anchors.get(),
-                            chain_verify_callback,
-                            cvout);
+    status = PKIXVerifyCert(cert_handle, true, true, cert_io_enabled, NULL, 0,
+                            trust_anchors.get(), &crlset_callback, cvout);
   }
 
   if (status == SECSuccess) {
@@ -910,13 +957,25 @@ int CertVerifyProcNSS::VerifyInternalImpl(
 
   CRLSetResult crl_set_result = kCRLSetUnknown;
   if (crl_set) {
-    crl_set_result = CheckRevocationWithCRLSet(
-        cvout[cvout_cert_list_index].value.pointer.chain,
-        cvout[cvout_trust_anchor_index].value.pointer.cert,
-        crl_set);
-    if (crl_set_result == kCRLSetRevoked) {
+    if (status == SECSuccess) {
+      // Reverify the returned chain; NSS should have already called
+      // CheckChainRevocationWithCRLSet prior to returning, but given the
+      // edge cases (self-signed certs that are trusted; cached chains;
+      // unreadable code), this is more about defense in depth than
+      // functional necessity.
+      crl_set_result = CheckRevocationWithCRLSet(
+          cvout[cvout_cert_list_index].value.pointer.chain,
+          cvout[cvout_trust_anchor_index].value.pointer.cert, crl_set);
+      if (crl_set_result == kCRLSetRevoked) {
+        PORT_SetError(SEC_ERROR_REVOKED_CERTIFICATE);
+        status = SECFailure;
+      }
+    } else if (PORT_GetError() == SEC_ERROR_APPLICATION_CALLBACK_ERROR &&
+               check_chain_revocation_args.was_revoked) {
+      // If a CRLSet was supplied, and the error was an application callback
+      // error, then it was directed through the CRLSet code and that
+      // particular chain was revoked.
       PORT_SetError(SEC_ERROR_REVOKED_CERTIFICATE);
-      status = SECFailure;
     }
   }
 
@@ -949,14 +1008,8 @@ int CertVerifyProcNSS::VerifyInternalImpl(
     if (check_revocation)
       verify_result->cert_status |= CERT_STATUS_REV_CHECKING_ENABLED;
 
-    if (VerifyEV(cert_handle,
-                 flags,
-                 crl_set,
-                 check_revocation,
-                 metadata,
-                 ev_policy_oid,
-                 trust_anchors.get(),
-                 chain_verify_callback)) {
+    if (VerifyEV(cert_handle, flags, crl_set, check_revocation, metadata,
+                 ev_policy_oid, trust_anchors.get(), &crlset_callback)) {
       verify_result->cert_status |= CERT_STATUS_IS_EV;
     }
   }
