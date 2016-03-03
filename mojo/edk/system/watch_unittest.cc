@@ -369,6 +369,38 @@ TEST_F(WatchTest, WatchDataPipeProducer) {
   CloseHandle(b);
 }
 
+TEST_F(WatchTest, WakeUpSelfWithinWatchCallback) {
+  MojoHandle a, b;
+  CreateMessagePipe(&a, &b);
+
+  int expected_notifications = 2;
+  base::RunLoop loop;
+  WatchHelper b_watcher;
+  b_watcher.Watch(
+      b, MOJO_HANDLE_SIGNAL_READABLE,
+      [&] (MojoResult result, MojoHandleSignalsState state) {
+        EXPECT_EQ(MOJO_RESULT_OK, result);
+        EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE,
+                  state.satisfied_signals & MOJO_HANDLE_SIGNAL_READABLE);
+        EXPECT_TRUE(b_watcher.is_watching());
+        if (--expected_notifications == 0) {
+          loop.Quit();
+        } else {
+          // Trigger b's watch again from within this callback. This should be
+          // safe to do.
+          WriteMessage(a, "hey");
+        }
+      });
+
+  WriteMessage(a, "hey hey hey");
+  loop.Run();
+
+  b_watcher.Cancel();
+
+  CloseHandle(a);
+  CloseHandle(b);
+}
+
 }  // namespace
 }  // namespace edk
 }  // namespace mojo

@@ -32,8 +32,13 @@ RequestContext::~RequestContext() {
   if (IsCurrent())
     g_current_context.Pointer()->Set(nullptr);
 
-  for (const WatchNotifyFinalizer& watch : watch_notify_finalizers_.container())
+  for (const WatchNotifyFinalizer& watch :
+      watch_notify_finalizers_.container()) {
+    // Establish a new request context for the extent of each callback to ensure
+    // that they don't themselves invoke callbacks while holding a watcher lock.
+    RequestContext request_context;
     watch.watcher->MaybeInvokeCallback(watch.result, watch.state);
+  }
 
   for (const scoped_refptr<Watcher>& watcher :
           watch_cancel_finalizers_.container())
