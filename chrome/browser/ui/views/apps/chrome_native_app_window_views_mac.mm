@@ -17,19 +17,21 @@
 - (void)setMouseDownCanMoveWindow:(BOOL)can_move;
 @end
 
-// This observer is used to get NSWindowWillStartLiveResizeNotification. We need
-// a single hook when animated/user resize begins to save the current bounds.
-@interface StartResizeNotificationObserver : NSObject {
+// This observer is used to get NSWindow notifications. We need to monitor
+// zoom and full screen events to store the correct bounds to Restore() to.
+@interface ResizeNotificationObserver : NSObject {
  @private
   // Weak. Owns us.
   ChromeNativeAppWindowViewsMac* nativeAppWindow_;
 }
 - (id)initForNativeAppWindow:(ChromeNativeAppWindowViewsMac*)nativeAppWindow;
 - (void)onWindowWillStartLiveResize:(NSNotification*)notification;
+- (void)onWindowWillExitFullScreen:(NSNotification*)notification;
+- (void)onWindowDidExitFullScreen:(NSNotification*)notification;
 - (void)stopObserving;
 @end
 
-@implementation StartResizeNotificationObserver
+@implementation ResizeNotificationObserver
 
 - (id)initForNativeAppWindow:(ChromeNativeAppWindowViewsMac*)nativeAppWindow {
   if ((self = [super init])) {
@@ -40,12 +42,32 @@
                name:NSWindowWillStartLiveResizeNotification
              object:static_cast<ui::BaseWindow*>(nativeAppWindow)
                         ->GetNativeWindow()];
+    [[NSNotificationCenter defaultCenter]
+        addObserver:self
+           selector:@selector(onWindowWillExitFullScreen:)
+               name:NSWindowWillExitFullScreenNotification
+             object:static_cast<ui::BaseWindow*>(nativeAppWindow)
+                        ->GetNativeWindow()];
+    [[NSNotificationCenter defaultCenter]
+        addObserver:self
+           selector:@selector(onWindowDidExitFullScreen:)
+               name:NSWindowDidExitFullScreenNotification
+             object:static_cast<ui::BaseWindow*>(nativeAppWindow)
+                        ->GetNativeWindow()];
   }
   return self;
 }
 
 - (void)onWindowWillStartLiveResize:(NSNotification*)notification {
   nativeAppWindow_->OnWindowWillStartLiveResize();
+}
+
+- (void)onWindowWillExitFullScreen:(NSNotification*)notification {
+  nativeAppWindow_->OnWindowWillExitFullScreen();
+}
+
+- (void)onWindowDidExitFullScreen:(NSNotification*)notification {
+  nativeAppWindow_->OnWindowDidExitFullScreen();
 }
 
 - (void)stopObserving {
@@ -70,18 +92,23 @@ bool NSWindowIsMaximized(NSWindow* window) {
 
 }  // namespace
 
-ChromeNativeAppWindowViewsMac::ChromeNativeAppWindowViewsMac()
-    : is_hidden_with_app_(false) {
-}
+ChromeNativeAppWindowViewsMac::ChromeNativeAppWindowViewsMac() {}
 
 ChromeNativeAppWindowViewsMac::~ChromeNativeAppWindowViewsMac() {
   [nswindow_observer_ stopObserving];
 }
 
 void ChromeNativeAppWindowViewsMac::OnWindowWillStartLiveResize() {
-  if (!NSWindowIsMaximized(GetNativeWindow())) {
+  if (!NSWindowIsMaximized(GetNativeWindow()) && !in_fullscreen_transition_)
     bounds_before_maximize_ = [GetNativeWindow() frame];
-  }
+}
+
+void ChromeNativeAppWindowViewsMac::OnWindowWillExitFullScreen() {
+  in_fullscreen_transition_ = true;
+}
+
+void ChromeNativeAppWindowViewsMac::OnWindowDidExitFullScreen() {
+  in_fullscreen_transition_ = false;
 }
 
 void ChromeNativeAppWindowViewsMac::OnBeforeWidgetInit(
@@ -106,7 +133,8 @@ ChromeNativeAppWindowViewsMac::CreateNonStandardAppFrame() {
 }
 
 bool ChromeNativeAppWindowViewsMac::IsMaximized() const {
-  return !IsMinimized() && NSWindowIsMaximized(GetNativeWindow());
+  return !IsMinimized() && !IsFullscreen() &&
+         NSWindowIsMaximized(GetNativeWindow());
 }
 
 gfx::Rect ChromeNativeAppWindowViewsMac::GetRestoredBounds() const {
@@ -161,7 +189,7 @@ void ChromeNativeAppWindowViewsMac::FlashFrame(bool flash) {
 
 void ChromeNativeAppWindowViewsMac::OnWidgetCreated(views::Widget* widget) {
   nswindow_observer_.reset(
-      [[StartResizeNotificationObserver alloc] initForNativeAppWindow:this]);
+      [[ResizeNotificationObserver alloc] initForNativeAppWindow:this]);
 }
 
 void ChromeNativeAppWindowViewsMac::UpdateDraggableRegions(

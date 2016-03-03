@@ -8,6 +8,7 @@
 #import "base/mac/scoped_nsobject.h"
 #import "base/mac/sdk_forward_declarations.h"
 #include "base/message_loop/message_loop.h"
+#import "testing/gtest_mac.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "ui/base/test/windowed_nsnotification_observer.h"
 #import "ui/gfx/mac/nswindow_frame_controls.h"
@@ -93,7 +94,7 @@ TEST(ScopedFakeNSWindowFullscreenTest, TestOrdering) {
   [window toggleFullScreen:nil];
   EXPECT_EQ(1, [will_enter notificationCount]);
   EXPECT_EQ(0, [did_enter notificationCount]);
-  EXPECT_TRUE(NSEqualRects(initial_frame, [window frame]));
+  EXPECT_NSEQ(initial_frame, [window frame]);
   EXPECT_FALSE([window styleMask] & NSFullScreenWindowMask);
 
   // Changes and DidEnter happen asynchronously.
@@ -112,7 +113,7 @@ TEST(ScopedFakeNSWindowFullscreenTest, TestOrdering) {
 
   // Changes and DidExit happen asynchronously.
   EXPECT_TRUE([did_exit wait]);
-  EXPECT_TRUE(NSEqualRects(initial_frame, [window frame]));
+  EXPECT_NSEQ(initial_frame, [window frame]);
   EXPECT_FALSE([window styleMask] & NSFullScreenWindowMask);
 
   // Go back into fullscreen.
@@ -120,12 +121,17 @@ TEST(ScopedFakeNSWindowFullscreenTest, TestOrdering) {
   EXPECT_TRUE([did_enter waitForCount:2]);
 
   // On the way out, call -[NSWindow setFrame:]. It should stay at those bounds.
-  [window toggleFullScreen:nil];
   NSRect new_frame = NSMakeRect(90, 90, 90, 90);
+
+  // -[NSWindow frameRectForContentRect:] uses some internal state that isn't
+  // faked, so grab the expected final size before starting the transition. Then
+  // set the new frame during the transition and, once the transition completes,
+  // ensure the expected size wasn't clobbered by the faker,
+  NSRect frame_outside_fullscreen = [window frameRectForContentRect:new_frame];
+  [window toggleFullScreen:nil];
   [window setFrame:new_frame display:YES animate:NO];
   EXPECT_TRUE([did_exit waitForCount:2]);
-  NSRect frame_outside_fullscreen = [window frameRectForContentRect:new_frame];
-  EXPECT_TRUE(NSEqualRects(frame_outside_fullscreen, [window frame]));
+  EXPECT_NSEQ(frame_outside_fullscreen, [window frame]);
 
   [window close];
 }

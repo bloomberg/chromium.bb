@@ -388,7 +388,13 @@ void NativeAppWindowCocoa::SetFullscreen(int fullscreen_types) {
   bool fullscreen = (fullscreen_types != AppWindow::FULLSCREEN_TYPE_NONE);
   if (fullscreen == is_fullscreen_)
     return;
-  is_fullscreen_ = fullscreen;
+
+  // 10.11 posts an _endLiveResize event just before exiting fullscreen, so
+  // ensure the window reports as fullscreen while the window is transitioning
+  // to ensure the window bounds are not incorrectly captured as the last known
+  // restored bounds.
+  if (fullscreen)
+    is_fullscreen_ = true;
 
   if (base::mac::IsOSLionOrLater()) {
     // If going fullscreen, but the window is constrained (fullscreen UI control
@@ -397,6 +403,7 @@ void NativeAppWindowCocoa::SetFullscreen(int fullscreen_types) {
     if (fullscreen && !shows_fullscreen_controls_)
       gfx::SetNSWindowCanFullscreen(window(), true);
     [window() toggleFullScreen:nil];
+    is_fullscreen_ = fullscreen;
     return;
   }
 
@@ -439,6 +446,7 @@ void NativeAppWindowCocoa::SetFullscreen(int fullscreen_types) {
         kCGDisplayBlendNormal, 0.0, 0.0, 0.0, /*synchronous=*/false);
     CGReleaseDisplayFadeReservation(token);
   }
+  is_fullscreen_ = fullscreen;
 }
 
 bool NativeAppWindowCocoa::IsFullscreenOrPending() const {

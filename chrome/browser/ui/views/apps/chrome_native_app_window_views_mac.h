@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "chrome/browser/ui/views/apps/chrome_native_app_window_views.h"
 
-@class StartResizeNotificationObserver;
+@class ResizeNotificationObserver;
 
 // Mac-specific parts of ChromeNativeAppWindowViews.
 class ChromeNativeAppWindowViewsMac : public ChromeNativeAppWindowViews {
@@ -19,8 +19,10 @@ class ChromeNativeAppWindowViewsMac : public ChromeNativeAppWindowViews {
   ChromeNativeAppWindowViewsMac();
   ~ChromeNativeAppWindowViewsMac() override;
 
-  // Called by |nswindow_observer_| when the window is about to resize.
+  // Called by |nswindow_observer_| for window resize events.
   void OnWindowWillStartLiveResize();
+  void OnWindowWillExitFullScreen();
+  void OnWindowDidExitFullScreen();
 
  protected:
   // ChromeNativeAppWindowViews implementation.
@@ -58,14 +60,18 @@ class ChromeNativeAppWindowViewsMac : public ChromeNativeAppWindowViews {
   void UnhideWithoutActivation();
 
   // Used to notify us about certain NSWindow events.
-  base::scoped_nsobject<StartResizeNotificationObserver> nswindow_observer_;
+  base::scoped_nsobject<ResizeNotificationObserver> nswindow_observer_;
 
   // The bounds of the window just before it was last maximized.
   NSRect bounds_before_maximize_;
 
   // Whether this window last became hidden due to a request to hide the entire
   // app, e.g. via the dock menu or Cmd+H. This is set by Hide/ShowWithApp.
-  bool is_hidden_with_app_;
+  bool is_hidden_with_app_ = false;
+
+  // Set true during an exit fullscreen transition, so that the live resize
+  // event AppKit sends can be distinguished from a zoom-triggered live resize.
+  bool in_fullscreen_transition_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeNativeAppWindowViewsMac);
 };
