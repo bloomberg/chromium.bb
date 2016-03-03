@@ -80,9 +80,9 @@ public:
     BLINK_EXPORT WebImage imageContents();
 
 #if BLINK_IMPLEMENTATION
-    WebElement(const PassRefPtrWillBeRawPtr<Element>&);
-    WebElement& operator=(const PassRefPtrWillBeRawPtr<Element>&);
-    operator PassRefPtrWillBeRawPtr<Element>() const;
+    BLINK_EXPORT WebElement(const PassRefPtrWillBeRawPtr<Element>&);
+    BLINK_EXPORT WebElement& operator=(const PassRefPtrWillBeRawPtr<Element>&);
+    BLINK_EXPORT operator PassRefPtrWillBeRawPtr<Element>() const;
 #endif
 };
 

@@ -31,7 +31,7 @@
 
 namespace blink {
 
-class BLINK_EXPORT WebRTCDataChannelHandlerClient {
+class WebRTCDataChannelHandlerClient {
 public:
     enum ReadyState {
         ReadyStateConnecting = 0,

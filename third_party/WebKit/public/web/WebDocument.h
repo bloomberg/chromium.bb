@@ -142,9 +142,9 @@ public:
     BLINK_EXPORT WebDistillabilityFeatures distillabilityFeatures();
 
 #if BLINK_IMPLEMENTATION
-    WebDocument(const PassRefPtrWillBeRawPtr<Document>&);
-    WebDocument& operator=(const PassRefPtrWillBeRawPtr<Document>&);
-    operator PassRefPtrWillBeRawPtr<Document>() const;
+    BLINK_EXPORT WebDocument(const PassRefPtrWillBeRawPtr<Document>&);
+    BLINK_EXPORT WebDocument& operator=(const PassRefPtrWillBeRawPtr<Document>&);
+    BLINK_EXPORT operator PassRefPtrWillBeRawPtr<Document>() const;
 #endif
 };
 

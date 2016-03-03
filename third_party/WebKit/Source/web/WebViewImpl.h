@@ -61,6 +61,8 @@
 #include "web/PageWidgetDelegate.h"
 #include "web/SpellCheckerClientImpl.h"
 #include "web/StorageClientImpl.h"
+#include "web/WebExport.h"
+#include "wtf/Compiler.h"
 #include "wtf/HashSet.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/RefCounted.h"
@@ -93,9 +95,9 @@ class WebSelection;
 class WebSettingsImpl;
 class WebViewScheduler;
 
-class WebViewImpl final : public WebView
+class WEB_EXPORT WebViewImpl final : WTF_NON_EXPORTED_BASE(public WebView)
     , public RefCounted<WebViewImpl>
-    , public WebGestureCurveTarget
+    , WTF_NON_EXPORTED_BASE(public WebGestureCurveTarget)
     , public PageWidgetEventHandler {
 public:
     static WebViewImpl* create(WebViewClient*);

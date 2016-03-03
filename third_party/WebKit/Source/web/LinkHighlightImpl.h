@@ -34,6 +34,7 @@
 #include "platform/heap/Handle.h"
 #include "public/platform/WebContentLayer.h"
 #include "public/platform/WebContentLayerClient.h"
+#include "web/WebExport.h"
 #include "wtf/Forward.h"
 #include "wtf/OwnPtr.h"
 
@@ -46,7 +47,7 @@ class WebContentLayer;
 class WebLayer;
 class WebViewImpl;
 
-class LinkHighlightImpl final : public LinkHighlight
+class WEB_EXPORT LinkHighlightImpl final : public LinkHighlight
     , public WebContentLayerClient
     , public CompositorAnimationDelegate
     , public CompositorAnimationPlayerClient {

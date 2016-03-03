@@ -35,6 +35,7 @@
 #include "core/page/ChromeClient.h"
 #include "core/page/WindowFeatures.h"
 #include "public/web/WebNavigationPolicy.h"
+#include "web/WebExport.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace blink {
@@ -45,7 +46,7 @@ class WebViewImpl;
 struct WebCursorInfo;
 
 // Handles window-level notifications from core on behalf of a WebView.
-class ChromeClientImpl final : public ChromeClient {
+class WEB_EXPORT ChromeClientImpl final : public ChromeClient {
 public:
     static PassOwnPtrWillBeRawPtr<ChromeClientImpl> create(WebViewImpl*);
     ~ChromeClientImpl() override;
