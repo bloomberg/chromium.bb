@@ -6,8 +6,8 @@
 
 #include "platform/Decimal.h"
 #include "platform/inspector_protocol/Parser.h"
-#include "wtf/MathExtras.h"
 #include "wtf/text/StringBuilder.h"
+#include <cmath>
 
 namespace blink {
 namespace protocol {

@@ -5,7 +5,7 @@
 #ifndef V8InjectedScriptHost_h
 #define V8InjectedScriptHost_h
 
-#include "wtf/Forward.h"
+#include "wtf/PassRefPtr.h"
 #include <v8.h>
 
 namespace blink {

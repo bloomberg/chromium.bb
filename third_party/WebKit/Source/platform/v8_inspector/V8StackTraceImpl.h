@@ -6,7 +6,6 @@
 #define V8StackTraceImpl_h
 
 #include "platform/v8_inspector/public/V8StackTrace.h"
-#include "wtf/Forward.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
@@ -17,11 +16,9 @@ class TracedValue;
 class V8DebuggerAgentImpl;
 
 class V8StackTraceImpl final : public V8StackTrace {
-    WTF_MAKE_NONCOPYABLE(V8StackTraceImpl);
-    USING_FAST_MALLOC(V8StackTraceImpl);
+    PROTOCOL_DISALLOW_COPY(V8StackTraceImpl);
 public:
     class Frame  {
-        DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
     public:
         Frame();
         Frame(const String& functionName, const String& scriptId, const String& scriptName, int lineNumber, int column = 0);

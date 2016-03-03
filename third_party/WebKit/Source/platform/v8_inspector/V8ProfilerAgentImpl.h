@@ -5,10 +5,9 @@
 #ifndef V8ProfilerAgentImpl_h
 #define V8ProfilerAgentImpl_h
 
+#include "platform/inspector_protocol/Allocator.h"
 #include "platform/inspector_protocol/Frontend.h"
 #include "platform/v8_inspector/public/V8ProfilerAgent.h"
-#include "wtf/Forward.h"
-#include "wtf/Noncopyable.h"
 #include "wtf/text/WTFString.h"
 
 namespace v8 {
@@ -20,7 +19,7 @@ namespace blink {
 class V8DebuggerImpl;
 
 class V8ProfilerAgentImpl : public V8ProfilerAgent {
-    WTF_MAKE_NONCOPYABLE(V8ProfilerAgentImpl);
+    PROTOCOL_DISALLOW_COPY(V8ProfilerAgentImpl);
 public:
     explicit V8ProfilerAgentImpl(V8Debugger*);
     ~V8ProfilerAgentImpl() override;

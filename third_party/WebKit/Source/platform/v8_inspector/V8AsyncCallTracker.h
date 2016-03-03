@@ -5,18 +5,16 @@
 #ifndef V8AsyncCallTracker_h
 #define V8AsyncCallTracker_h
 
+#include "platform/inspector_protocol/Allocator.h"
 #include "platform/v8_inspector/V8DebuggerAgentImpl.h"
-#include "wtf/Forward.h"
 #include "wtf/HashMap.h"
-#include "wtf/Noncopyable.h"
 
 #include <v8.h>
 
 namespace blink {
 
 class V8AsyncCallTracker final {
-    WTF_MAKE_NONCOPYABLE(V8AsyncCallTracker);
-    USING_FAST_MALLOC(V8AsyncCallTracker);
+    PROTOCOL_DISALLOW_COPY(V8AsyncCallTracker);
 public:
     static PassOwnPtr<V8AsyncCallTracker> create(V8DebuggerAgentImpl* debuggerAgent)
     {

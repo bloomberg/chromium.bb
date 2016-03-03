@@ -5,7 +5,6 @@
 #ifndef InjectedScriptNative_h
 #define InjectedScriptNative_h
 
-#include "wtf/Forward.h"
 #include "wtf/HashMap.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefCounted.h"

@@ -6,8 +6,7 @@
 #define Values_h
 
 #include "platform/PlatformExport.h"
-#include "wtf/Allocator.h"
-#include "wtf/Forward.h"
+#include "platform/inspector_protocol/Allocator.h"
 #include "wtf/HashMap.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/TypeTraits.h"
@@ -23,7 +22,7 @@ class DictionaryValue;
 class Value;
 
 class PLATFORM_EXPORT Value {
-    WTF_MAKE_NONCOPYABLE(Value);
+    PROTOCOL_DISALLOW_COPY(Value);
 public:
     static const int maxDepth = 1000;
 

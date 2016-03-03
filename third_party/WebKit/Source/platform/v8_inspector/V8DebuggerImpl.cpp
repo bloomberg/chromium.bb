@@ -31,6 +31,7 @@
 #include "platform/v8_inspector/V8DebuggerImpl.h"
 
 #include "platform/inspector_protocol/Values.h"
+#include "platform/v8_inspector/Atomics.h"
 #include "platform/v8_inspector/DebuggerScript.h"
 #include "platform/v8_inspector/JavaScriptCallFrame.h"
 #include "platform/v8_inspector/ScriptBreakpoint.h"
@@ -39,9 +40,7 @@
 #include "platform/v8_inspector/V8StackTraceImpl.h"
 #include "platform/v8_inspector/V8StringUtil.h"
 #include "platform/v8_inspector/public/V8DebuggerClient.h"
-#include "wtf/Atomics.h"
 #include "wtf/Vector.h"
-#include "wtf/text/CString.h"
 
 namespace blink {
 

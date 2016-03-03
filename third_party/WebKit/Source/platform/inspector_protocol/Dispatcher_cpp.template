@@ -9,7 +9,6 @@
 #include "platform/inspector_protocol/FrontendChannel.h"
 #include "platform/inspector_protocol/Parser.h"
 #include "wtf/HashSet.h"
-#include "wtf/text/CString.h"
 
 namespace blink {
 namespace protocol {

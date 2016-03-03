@@ -21,8 +21,6 @@
 #include "platform/v8_inspector/public/V8ContentSearchUtil.h"
 #include "platform/v8_inspector/public/V8Debugger.h"
 #include "platform/v8_inspector/public/V8DebuggerClient.h"
-#include "wtf/HexNumber.h"
-#include "wtf/Optional.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/WTFString.h"
 
@@ -88,6 +86,19 @@ static bool positionComparator(const std::pair<int, int>& a, const std::pair<int
     if (a.first != b.first)
         return a.first < b.first;
     return a.second < b.second;
+}
+
+static const LChar hexDigits[17] = "0123456789ABCDEF";
+
+static void appendUnsignedAsHex(unsigned number, String& destination)
+{
+    Vector<LChar, 8> result;
+    do {
+        result.prepend(hexDigits[number % 16]);
+        number >>= 4;
+    } while (number > 0);
+
+    destination.append(result.data(), result.size());
 }
 
 // Hash algorithm for substrings is described in "Über die Komplexität der Multiplikation in
@@ -941,10 +952,7 @@ void V8DebuggerAgentImpl::evaluateOnCallFrame(ErrorString* errorString,
     v8::HandleScope scope(m_isolate);
     v8::Local<v8::Object> callStack = m_currentCallStack.Get(m_isolate);
 
-    Optional<IgnoreExceptionsScope> ignoreExceptionsScope;
-    if (doNotPauseOnExceptionsAndMuteConsole.fromMaybe(false))
-        ignoreExceptionsScope.emplace(m_debugger);
-
+    IgnoreExceptionsScope ignoreExceptionsScope(doNotPauseOnExceptionsAndMuteConsole.fromMaybe(false) ? m_debugger : nullptr);
     injectedScript->evaluateOnCallFrame(errorString, callStack, callFrameId, expression, objectGroup.fromMaybe(""), includeCommandLineAPI.fromMaybe(false), returnByValue.fromMaybe(false), generatePreview.fromMaybe(false), result, wasThrown, exceptionDetails);
 }
 

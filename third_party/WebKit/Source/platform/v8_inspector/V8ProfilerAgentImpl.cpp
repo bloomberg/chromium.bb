@@ -4,10 +4,10 @@
 
 #include "platform/v8_inspector/V8ProfilerAgentImpl.h"
 
+#include "platform/v8_inspector/Atomics.h"
 #include "platform/v8_inspector/V8DebuggerImpl.h"
 #include "platform/v8_inspector/V8StackTraceImpl.h"
 #include "platform/v8_inspector/V8StringUtil.h"
-#include "wtf/Atomics.h"
 #include <v8-profiler.h>
 
 namespace blink {

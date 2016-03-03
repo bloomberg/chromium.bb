@@ -6,7 +6,6 @@
 #define V8StackTrace_h
 
 #include "platform/inspector_protocol/TypeBuilder.h"
-#include "wtf/Forward.h"
 #include "wtf/PassOwnPtr.h"
 
 #include <v8.h>
@@ -23,7 +22,6 @@ const v8::StackTrace::StackTraceOptions stackTraceOptions = static_cast<v8::Stac
     v8::StackTrace::kFunctionName);
 
 class V8StackTrace {
-    USING_FAST_MALLOC(V8StackTrace);
 public:
     static const size_t maxCallStackSizeToCapture = 200;
 

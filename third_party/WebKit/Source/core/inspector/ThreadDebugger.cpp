@@ -15,6 +15,7 @@
 #include "bindings/core/v8/V8ScriptRunner.h"
 #include "core/dom/Microtask.h"
 #include "core/inspector/InspectorDOMDebuggerAgent.h"
+#include "wtf/CurrentTime.h"
 
 namespace blink {
 
@@ -82,5 +83,11 @@ bool ThreadDebugger::hasRecursionLevel()
 {
     return !!V8RecursionScope::recursionLevel(m_isolate);
 }
+
+double ThreadDebugger::currentTimeMS()
+{
+    return WTF::currentTimeMS();
+}
+
 
 } // namespace blink

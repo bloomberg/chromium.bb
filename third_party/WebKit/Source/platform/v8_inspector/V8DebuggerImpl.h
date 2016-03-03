@@ -34,7 +34,6 @@
 #include "platform/inspector_protocol/TypeBuilder.h"
 #include "platform/v8_inspector/V8DebuggerScript.h"
 #include "platform/v8_inspector/public/V8Debugger.h"
-#include "wtf/Forward.h"
 #include "wtf/PassOwnPtr.h"
 
 #include <v8-debug.h>
@@ -49,7 +48,7 @@ struct ScriptBreakpoint;
 class V8DebuggerAgentImpl;
 
 class V8DebuggerImpl : public V8Debugger {
-    WTF_MAKE_NONCOPYABLE(V8DebuggerImpl);
+    PROTOCOL_DISALLOW_COPY(V8DebuggerImpl);
 public:
     V8DebuggerImpl(v8::Isolate*, V8DebuggerClient*);
     ~V8DebuggerImpl() override;

@@ -5,20 +5,19 @@
 #ifndef V8HeapProfilerAgentImpl_h
 #define V8HeapProfilerAgentImpl_h
 
+#include "platform/inspector_protocol/Allocator.h"
 #include "platform/v8_inspector/public/V8HeapProfilerAgent.h"
-#include "wtf/Forward.h"
-#include "wtf/Noncopyable.h"
 
 namespace blink {
 
-class V8RuntimeAgent;
+class V8RuntimeAgentImpl;
 
 typedef String ErrorString;
 
 using protocol::Maybe;
 
 class V8HeapProfilerAgentImpl : public V8HeapProfilerAgent {
-    WTF_MAKE_NONCOPYABLE(V8HeapProfilerAgentImpl);
+    PROTOCOL_DISALLOW_COPY(V8HeapProfilerAgentImpl);
 public:
     explicit V8HeapProfilerAgentImpl(v8::Isolate*, V8RuntimeAgent*);
     ~V8HeapProfilerAgentImpl() override;
@@ -52,7 +51,7 @@ private:
     void stopTrackingHeapObjectsInternal();
 
     v8::Isolate* m_isolate;
-    V8RuntimeAgent* m_runtimeAgent;
+    V8RuntimeAgentImpl* m_runtimeAgent;
     protocol::Frontend::HeapProfiler* m_frontend;
     protocol::DictionaryValue* m_state;
 };

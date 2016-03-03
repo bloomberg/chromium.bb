@@ -6,9 +6,10 @@
 
 #include "platform/v8_inspector/InjectedScript.h"
 #include "platform/v8_inspector/InjectedScriptManager.h"
+#include "platform/v8_inspector/V8DebuggerImpl.h"
 #include "platform/v8_inspector/V8RuntimeAgentImpl.h"
 #include "platform/v8_inspector/V8StringUtil.h"
-#include "wtf/CurrentTime.h"
+#include "platform/v8_inspector/public/V8DebuggerClient.h"
 #include <v8-profiler.h>
 
 namespace blink {
@@ -137,7 +138,7 @@ PassOwnPtr<V8HeapProfilerAgent> V8HeapProfilerAgent::create(v8::Isolate* isolate
 
 V8HeapProfilerAgentImpl::V8HeapProfilerAgentImpl(v8::Isolate* isolate, V8RuntimeAgent* runtimeAgent)
     : m_isolate(isolate)
-    , m_runtimeAgent(runtimeAgent)
+    , m_runtimeAgent(static_cast<V8RuntimeAgentImpl*>(runtimeAgent))
 {
 }
 
@@ -213,7 +214,7 @@ void V8HeapProfilerAgentImpl::takeHeapSnapshot(ErrorString* errorString, const p
     if (reportProgress.fromMaybe(false))
         progress = adoptPtr(new HeapSnapshotProgress(m_frontend));
 
-    GlobalObjectNameResolver resolver(static_cast<V8RuntimeAgentImpl*>(m_runtimeAgent));
+    GlobalObjectNameResolver resolver(m_runtimeAgent);
     const v8::HeapSnapshot* snapshot = profiler->TakeHeapSnapshot(progress.get(), &resolver);
     if (!snapshot) {
         *errorString = "Failed to take heap snapshot";
@@ -274,7 +275,7 @@ void V8HeapProfilerAgentImpl::requestHeapStatsUpdate()
         return;
     HeapStatsStream stream(m_frontend);
     v8::SnapshotObjectId lastSeenObjectId = m_isolate->GetHeapProfiler()->GetHeapStats(&stream);
-    m_frontend->lastSeenObjectId(lastSeenObjectId, WTF::currentTimeMS());
+    m_frontend->lastSeenObjectId(lastSeenObjectId, m_runtimeAgent->debugger()->client()->currentTimeMS());
 }
 
 void V8HeapProfilerAgentImpl::startTrackingHeapObjectsInternal(bool trackAllocations)

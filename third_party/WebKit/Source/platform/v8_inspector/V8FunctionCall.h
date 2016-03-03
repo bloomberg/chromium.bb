@@ -40,7 +40,6 @@ namespace blink {
 class V8DebuggerClient;
 
 class V8FunctionCall {
-    STACK_ALLOCATED();
 public:
     V8FunctionCall(V8DebuggerClient*, v8::Local<v8::Context>, v8::Local<v8::Value>, const String& name);
 

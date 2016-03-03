@@ -34,8 +34,6 @@
 #include "platform/inspector_protocol/TypeBuilder.h"
 #include "platform/v8_inspector/InjectedScriptManager.h"
 #include "platform/v8_inspector/InjectedScriptNative.h"
-#include "wtf/Allocator.h"
-#include "wtf/Forward.h"
 #include <v8.h>
 
 namespace blink {
@@ -54,7 +52,6 @@ typedef String ErrorString;
 using protocol::Maybe;
 
 class InjectedScript final {
-    USING_FAST_MALLOC(InjectedScript);
 public:
     ~InjectedScript();
 

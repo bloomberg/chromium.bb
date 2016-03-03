@@ -5,8 +5,8 @@
 #ifndef RemoteObjectId_h
 #define RemoteObjectId_h
 
-#include "wtf/Allocator.h"
-#include "wtf/Forward.h"
+#include "wtf/PassOwnPtr.h"
+#include "wtf/text/WTFString.h"
 
 namespace blink {
 
@@ -15,7 +15,6 @@ class DictionaryValue;
 }
 
 class RemoteObjectIdBase {
-    USING_FAST_MALLOC(RemoteObjectIdBase);
 public:
     int contextId() const { return m_injectedScriptId; }
 

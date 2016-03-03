@@ -7,7 +7,6 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/inspector_protocol/Frontend.h"
-#include "wtf/Forward.h"
 #include "wtf/PassOwnPtr.h"
 
 #include <v8.h>
@@ -22,7 +21,6 @@ class DictionaryValue;
 }
 
 class PLATFORM_EXPORT V8Debugger {
-    USING_FAST_MALLOC(V8Debugger);
 public:
     template <typename T>
     class Agent {

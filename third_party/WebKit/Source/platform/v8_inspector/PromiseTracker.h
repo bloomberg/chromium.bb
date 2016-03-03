@@ -5,14 +5,13 @@
 #ifndef PromiseTracker_h
 #define PromiseTracker_h
 
+#include "platform/inspector_protocol/Allocator.h"
 #include "platform/inspector_protocol/Frontend.h"
 #include "platform/inspector_protocol/TypeBuilder.h"
 #include "wtf/HashMap.h"
-#include "wtf/Noncopyable.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
-#include "wtf/WeakPtr.h"
 #include <v8.h>
 
 namespace blink {
@@ -20,8 +19,7 @@ namespace blink {
 class V8DebuggerAgentImpl;
 
 class PromiseTracker final {
-    WTF_MAKE_NONCOPYABLE(PromiseTracker);
-    USING_FAST_MALLOC(PromiseTracker);
+    PROTOCOL_DISALLOW_COPY(PromiseTracker);
 public:
     static PassOwnPtr<PromiseTracker> create(V8DebuggerAgentImpl* agent, v8::Isolate* isolate)
     {

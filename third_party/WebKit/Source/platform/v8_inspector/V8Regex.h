@@ -5,7 +5,7 @@
 #ifndef V8Regex_h
 #define V8Regex_h
 
-#include "wtf/Noncopyable.h"
+#include "platform/inspector_protocol/Allocator.h"
 #include "wtf/text/WTFString.h"
 #include <v8.h>
 
@@ -19,8 +19,7 @@ enum MultilineMode {
 };
 
 class V8Regex {
-    USING_FAST_MALLOC(V8Regex);
-    WTF_MAKE_NONCOPYABLE(V8Regex);
+    PROTOCOL_DISALLOW_COPY(V8Regex);
 public:
     V8Regex(V8DebuggerImpl*, const String&, TextCaseSensitivity, MultilineMode = MultilineDisabled);
     int match(const String&, int startFrom = 0, int* matchLength = 0) const;

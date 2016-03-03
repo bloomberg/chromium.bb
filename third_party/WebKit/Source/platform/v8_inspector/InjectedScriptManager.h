@@ -30,7 +30,7 @@
 #ifndef InjectedScriptManager_h
 #define InjectedScriptManager_h
 
-#include "wtf/Forward.h"
+#include "platform/inspector_protocol/Allocator.h"
 #include "wtf/HashMap.h"
 #include "wtf/text/WTFString.h"
 #include <v8.h>
@@ -45,8 +45,7 @@ class V8DebuggerClient;
 class V8DebuggerImpl;
 
 class InjectedScriptManager {
-    WTF_MAKE_NONCOPYABLE(InjectedScriptManager);
-    USING_FAST_MALLOC(InjectedScriptManager);
+    PROTOCOL_DISALLOW_COPY(InjectedScriptManager);
 public:
     static PassOwnPtr<InjectedScriptManager> create(V8DebuggerImpl*);
     ~InjectedScriptManager();

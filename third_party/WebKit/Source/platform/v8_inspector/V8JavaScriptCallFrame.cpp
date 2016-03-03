@@ -8,7 +8,6 @@
 #include "platform/v8_inspector/JavaScriptCallFrame.h"
 #include "platform/v8_inspector/V8StringUtil.h"
 #include "wtf/RefPtr.h"
-#include "wtf/StdLibExtras.h"
 #include <algorithm>
 
 namespace blink {

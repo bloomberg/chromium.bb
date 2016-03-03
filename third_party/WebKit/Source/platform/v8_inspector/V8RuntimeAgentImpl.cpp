@@ -40,7 +40,6 @@
 #include "platform/v8_inspector/V8StackTraceImpl.h"
 #include "platform/v8_inspector/V8StringUtil.h"
 #include "platform/v8_inspector/public/V8DebuggerClient.h"
-#include "wtf/Optional.h"
 
 namespace blink {
 
@@ -92,9 +91,7 @@ void V8RuntimeAgentImpl::evaluate(
         *errorString = "Cannot find execution context with given id";
         return;
     }
-    Optional<IgnoreExceptionsScope> ignoreExceptionsScope;
-    if (doNotPauseOnExceptionsAndMuteConsole.fromMaybe(false))
-        ignoreExceptionsScope.emplace(m_debugger);
+    IgnoreExceptionsScope ignoreExceptionsScope(doNotPauseOnExceptionsAndMuteConsole.fromMaybe(false) ? m_debugger : nullptr);
     injectedScript->evaluate(errorString, expression, objectGroup.fromMaybe(""), includeCommandLineAPI.fromMaybe(false), returnByValue.fromMaybe(false), generatePreview.fromMaybe(false), result, wasThrown, exceptionDetails);
 }
 
@@ -122,9 +119,7 @@ void V8RuntimeAgentImpl::callFunctionOn(ErrorString* errorString,
     if (optionalArguments.isJust())
         arguments = protocol::toValue(optionalArguments.fromJust())->toJSONString();
 
-    Optional<IgnoreExceptionsScope> ignoreExceptionsScope;
-    if (doNotPauseOnExceptionsAndMuteConsole.fromMaybe(false))
-        ignoreExceptionsScope.emplace(m_debugger);
+    IgnoreExceptionsScope ignoreExceptionsScope(doNotPauseOnExceptionsAndMuteConsole.fromMaybe(false) ? m_debugger : nullptr);
     injectedScript->callFunctionOn(errorString, objectId, expression, arguments, returnByValue.fromMaybe(false), generatePreview.fromMaybe(false), result, wasThrown);
 }
 
@@ -261,9 +256,7 @@ void V8RuntimeAgentImpl::runScript(ErrorString* errorString,
         return;
     }
 
-    Optional<IgnoreExceptionsScope> ignoreExceptionsScope;
-    if (doNotPauseOnExceptionsAndMuteConsole.fromMaybe(false))
-        ignoreExceptionsScope.emplace(m_debugger);
+    IgnoreExceptionsScope ignoreExceptionsScope(doNotPauseOnExceptionsAndMuteConsole.fromMaybe(false) ? m_debugger : nullptr);
 
     if (!m_compiledScripts.contains(scriptId)) {
         *errorString = "Script execution failed";

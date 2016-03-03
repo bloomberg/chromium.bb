@@ -30,8 +30,7 @@
 #ifndef V8DebuggerScript_h
 #define V8DebuggerScript_h
 
-#include "wtf/Allocator.h"
-#include "wtf/Forward.h"
+#include "platform/inspector_protocol/Allocator.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 #include <v8.h>
@@ -39,7 +38,7 @@
 namespace blink {
 
 class V8DebuggerScript {
-    DISALLOW_NEW();
+    PROTOCOL_DISALLOW_NEW();
 public:
     V8DebuggerScript();
 
@@ -89,7 +88,6 @@ private:
 };
 
 struct V8DebuggerParsedScript {
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
     String scriptId;
     V8DebuggerScript script;
     bool success;

@@ -10,7 +10,6 @@
 #include "platform/v8_inspector/ScriptBreakpoint.h"
 #include "platform/v8_inspector/V8DebuggerImpl.h"
 #include "platform/v8_inspector/public/V8DebuggerAgent.h"
-#include "wtf/Forward.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
 #include "wtf/ListHashSet.h"
@@ -39,8 +38,7 @@ typedef String ErrorString;
 using protocol::Maybe;
 
 class V8DebuggerAgentImpl : public V8DebuggerAgent {
-    WTF_MAKE_NONCOPYABLE(V8DebuggerAgentImpl);
-    USING_FAST_MALLOC(V8DebuggerAgentImpl);
+    PROTOCOL_DISALLOW_COPY(V8DebuggerAgentImpl);
 public:
     enum SkipPauseRequest {
         RequestNoSkip,

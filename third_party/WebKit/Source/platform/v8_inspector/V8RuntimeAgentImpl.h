@@ -31,10 +31,9 @@
 #ifndef V8RuntimeAgentImpl_h
 #define V8RuntimeAgentImpl_h
 
+#include "platform/inspector_protocol/Allocator.h"
 #include "platform/inspector_protocol/Frontend.h"
 #include "platform/v8_inspector/public/V8RuntimeAgent.h"
-#include "wtf/Forward.h"
-#include "wtf/Noncopyable.h"
 
 namespace blink {
 
@@ -50,7 +49,7 @@ typedef String ErrorString;
 using protocol::Maybe;
 
 class V8RuntimeAgentImpl : public V8RuntimeAgent {
-    WTF_MAKE_NONCOPYABLE(V8RuntimeAgentImpl);
+    PROTOCOL_DISALLOW_COPY(V8RuntimeAgentImpl);
 public:
     V8RuntimeAgentImpl(V8DebuggerImpl*, Client*);
     ~V8RuntimeAgentImpl() override;
@@ -116,7 +115,6 @@ public:
     V8DebuggerImpl* debugger() { return m_debugger; }
     InjectedScriptManager* injectedScriptManager() { return m_injectedScriptManager.get(); }
 
-private:
     void setClearConsoleCallback(PassOwnPtr<ClearConsoleCallback>) override;
     void setInspectObjectCallback(PassOwnPtr<InspectCallback>) override;
     int ensureDefaultContextAvailable(v8::Local<v8::Context>) override;
@@ -127,6 +125,7 @@ private:
     void addInspectedObject(PassOwnPtr<Inspectable>) override;
     void clearInspectedObjects() override;
 
+private:
     void reportExecutionContextCreated(v8::Local<v8::Context>, const String& type, const String& origin, const String& humanReadableName, const String& frameId) override;
     void reportExecutionContextDestroyed(v8::Local<v8::Context>) override;
     PassOwnPtr<protocol::Runtime::ExceptionDetails> createExceptionDetails(v8::Isolate*, v8::Local<v8::Message>);

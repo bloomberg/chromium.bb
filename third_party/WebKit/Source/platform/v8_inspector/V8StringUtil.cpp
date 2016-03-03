@@ -8,7 +8,6 @@
 #include "platform/v8_inspector/V8Regex.h"
 #include "platform/v8_inspector/public/V8ContentSearchUtil.h"
 #include "wtf/text/StringBuilder.h"
-#include "wtf/text/TextPosition.h"
 
 namespace blink {
 
@@ -92,6 +91,24 @@ String createSearchRegexSource(const String& text)
     }
 
     return result.toString();
+}
+
+PassOwnPtr<Vector<unsigned>> lineEndings(const String& text)
+{
+    OwnPtr<Vector<unsigned>> result(adoptPtr(new Vector<unsigned>()));
+
+    unsigned start = 0;
+    while (start < text.length()) {
+        size_t lineEnd = text.find('\n', start);
+        if (lineEnd == kNotFound)
+            break;
+
+        result->append(static_cast<unsigned>(lineEnd));
+        start = lineEnd + 1;
+    }
+    result->append(text.length());
+
+    return result.release();
 }
 
 Vector<std::pair<int, String>> scriptRegexpMatchesByLines(const V8Regex& regex, const String& text)

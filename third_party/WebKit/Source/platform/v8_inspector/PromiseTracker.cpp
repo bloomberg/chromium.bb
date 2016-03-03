@@ -6,7 +6,7 @@
 
 #include "platform/v8_inspector/V8DebuggerAgentImpl.h"
 #include "platform/v8_inspector/V8StackTraceImpl.h"
-#include "wtf/CurrentTime.h"
+#include "platform/v8_inspector/public/V8DebuggerClient.h"
 #include "wtf/PassOwnPtr.h"
 
 using namespace blink::protocol;
@@ -131,13 +131,13 @@ void PromiseTracker::didReceiveV8PromiseEvent(v8::Local<v8::Context> context, v8
     } else {
         if (!status) {
             if (isNewPromise) {
-                promiseDetails->setCreationTime(currentTimeMS());
+                promiseDetails->setCreationTime(m_agent->debugger().client()->currentTimeMS());
                 OwnPtr<V8StackTraceImpl> stack = V8StackTraceImpl::capture(m_agent, m_captureStacks ? V8StackTraceImpl::maxCallStackSizeToCapture : 1);
                 if (stack)
                     promiseDetails->setCreationStack(stack->buildInspectorObject());
             }
         } else {
-            promiseDetails->setSettlementTime(currentTimeMS());
+            promiseDetails->setSettlementTime(m_agent->debugger().client()->currentTimeMS());
             if (m_captureStacks) {
                 OwnPtr<V8StackTraceImpl> stack = V8StackTraceImpl::capture(m_agent, V8StackTrace::maxCallStackSizeToCapture);
                 if (stack)

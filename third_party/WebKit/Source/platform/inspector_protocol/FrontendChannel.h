@@ -27,7 +27,6 @@
 #define FrontendChannel_h
 
 #include "platform/inspector_protocol/Values.h"
-#include "wtf/Forward.h"
 
 namespace blink {
 namespace protocol {
