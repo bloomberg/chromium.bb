@@ -27,10 +27,11 @@ void WindowTreeFactory::CreateWindowTree(
   scoped_ptr<ws::WindowTreeImpl> service(new ws::WindowTreeImpl(
       connection_manager_, nullptr, mojom::WindowTree::kAccessPolicyDefault));
   scoped_ptr<ws::DefaultClientConnection> client_connection(
-      new ws::DefaultClientConnection(std::move(service), connection_manager_,
+      new ws::DefaultClientConnection(service.get(), connection_manager_,
                                       std::move(tree_request),
                                       std::move(client)));
-  connection_manager_->AddConnection(std::move(client_connection), nullptr);
+  connection_manager_->AddTree(std::move(service), std::move(client_connection),
+                               nullptr);
 }
 
 }  // namespace ws

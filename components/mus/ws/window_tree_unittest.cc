@@ -218,9 +218,8 @@ class TestWindowTreeClient : public mus::mojom::WindowTreeClient {
 // ClientConnection implementation that vends TestWindowTreeClient.
 class TestClientConnection : public ClientConnection {
  public:
-  explicit TestClientConnection(scoped_ptr<WindowTreeImpl> service_impl)
-      : ClientConnection(std::move(service_impl), &client_),
-        is_paused_(false) {}
+  TestClientConnection() : ClientConnection(&client_), is_paused_(false) {}
+  ~TestClientConnection() override {}
 
   TestWindowTreeClient* client() { return &client_; }
 
@@ -236,8 +235,6 @@ class TestClientConnection : public ClientConnection {
   }
 
  private:
-  ~TestClientConnection() override {}
-
   TestWindowTreeClient client_;
   bool is_paused_;
 
@@ -261,25 +258,14 @@ class TestConnectionManagerDelegate : public ConnectionManagerDelegate {
  private:
   // ConnectionManagerDelegate:
   void OnNoMoreRootConnections() override {}
-  ClientConnection* CreateClientConnectionForEmbedAtWindow(
-      ConnectionManager* connection_manager,
-      mojo::InterfaceRequest<mus::mojom::WindowTree> service_request,
-      ServerWindow* root,
-      uint32_t policy_bitmask,
-      mus::mojom::WindowTreeClientPtr client) override {
-    scoped_ptr<WindowTreeImpl> service(
-        new WindowTreeImpl(connection_manager, root, policy_bitmask));
-    last_connection_ = new TestClientConnection(std::move(service));
-    return last_connection_;
-  }
-  ClientConnection* CreateClientConnectionForWindowManager(
-      WindowTreeHostImpl* tree_host,
-      ServerWindow* window,
-      const mojom::Display& display,
-      uint32_t user_id,
-      mojom::WindowManagerFactory* factory) override {
-    NOTREACHED();
-    return nullptr;
+  scoped_ptr<ClientConnection> CreateClientConnectionForEmbedAtWindow(
+      ws::ConnectionManager* connection_manager,
+      ws::WindowTreeImpl* tree,
+      mojom::WindowTreeRequest tree_request,
+      mojom::WindowTreeClientPtr client) override {
+    scoped_ptr<TestClientConnection> connection(new TestClientConnection);
+    last_connection_ = connection.get();
+    return std::move(connection);
   }
   void CreateDefaultWindowTreeHosts() override { NOTREACHED(); }
 

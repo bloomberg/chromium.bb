@@ -7,7 +7,6 @@
 #include "base/debug/debugger.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/mus/common/types.h"
-// #include "components/mus/public/interfaces/input_event_constants.mojom.h"
 #include "components/mus/ws/client_connection.h"
 #include "components/mus/ws/connection_manager.h"
 #include "components/mus/ws/connection_manager_delegate.h"
@@ -375,18 +374,13 @@ void WindowTreeHostImpl::DispatchInputEventToWindowImpl(
 void WindowTreeHostImpl::CreateWindowManagerStatesFromRegistry() {
   std::vector<WindowManagerFactoryService*> services =
       connection_manager_->window_manager_factory_registry()->GetServices();
-  mojom::DisplayPtr display = connection_manager_->DisplayForHost(this);
   for (WindowManagerFactoryService* service : services) {
     scoped_ptr<WindowManagerState> wms_ptr(
         new WindowManagerState(this, service->user_id()));
     WindowManagerState* wms = wms_ptr.get();
     window_manager_state_map_[service->user_id()] = std::move(wms_ptr);
-    ClientConnection* client_connection =
-        connection_manager_->delegate()->CreateClientConnectionForWindowManager(
-            this, wms->root(), *display, service->user_id(),
-            service->window_manager_factory());
-    client_connection->service()->ConfigureWindowManager();
-    wms->tree_ = client_connection->service();
+    wms->tree_ = connection_manager_->CreateTreeForWindowManager(
+        this, service->window_manager_factory(), wms->root());
   }
 }
 

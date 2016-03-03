@@ -49,9 +49,7 @@ ConnectionManager::~ConnectionManager() {
     DestroyHost(*hosts_.begin());
   DCHECK(hosts_.empty());
 
-  STLDeleteValues(&connection_map_);
-  // All the connections should have been destroyed.
-  DCHECK(connection_map_.empty());
+  tree_map_.clear();
 }
 
 void ConnectionManager::AddHost(WindowTreeHostImpl* host) {
@@ -60,8 +58,8 @@ void ConnectionManager::AddHost(WindowTreeHostImpl* host) {
 }
 
 void ConnectionManager::DestroyHost(WindowTreeHostImpl* host) {
-  for (auto& pair : connection_map_)
-    pair.second->service()->OnWillDestroyWindowTreeHost(host);
+  for (auto& pair : tree_map_)
+    pair.second->OnWillDestroyWindowTreeHost(host);
 
   if (pending_hosts_.count(host)) {
     pending_hosts_.erase(host);
@@ -96,28 +94,76 @@ uint16_t ConnectionManager::GetAndAdvanceNextHostId() {
   return id;
 }
 
-void ConnectionManager::OnConnectionError(ClientConnection* connection) {
-  for (auto* root : connection->service()->roots()) {
-    // If the WindowTree root is a viewport root, then we'll wait until
-    // the root connection goes away to cleanup.
-    if (GetRootWindow(root) == root)
-      return;
+WindowTreeImpl* ConnectionManager::EmbedAtWindow(
+    ServerWindow* root,
+    uint32_t policy_bitmask,
+    mojom::WindowTreeClientPtr client) {
+  scoped_ptr<WindowTreeImpl> tree_ptr(
+      new ws::WindowTreeImpl(this, root, policy_bitmask));
+  WindowTreeImpl* tree = tree_ptr.get();
+
+  mojom::WindowTreePtr window_tree_ptr;
+  scoped_ptr<ClientConnection> client_connection =
+      delegate_->CreateClientConnectionForEmbedAtWindow(
+          this, tree, GetProxy(&window_tree_ptr), std::move(client));
+
+  AddTree(std::move(tree_ptr), std::move(client_connection),
+          std::move(window_tree_ptr));
+  OnConnectionMessagedClient(tree->id());
+  return tree;
+}
+
+WindowTreeImpl* ConnectionManager::AddTree(
+    scoped_ptr<WindowTreeImpl> tree_impl_ptr,
+    scoped_ptr<ClientConnection> connection,
+    mojom::WindowTreePtr tree_ptr) {
+  CHECK_EQ(0u, tree_map_.count(tree_impl_ptr->id()));
+  WindowTreeImpl* tree = tree_impl_ptr.get();
+  tree_map_[tree->id()] = std::move(tree_impl_ptr);
+  tree->Init(std::move(connection), std::move(tree_ptr));
+  return tree;
+}
+
+WindowTreeImpl* ConnectionManager::CreateTreeForWindowManager(
+    WindowTreeHostImpl* host,
+    mojom::WindowManagerFactory* factory,
+    ServerWindow* root) {
+  mojom::DisplayPtr display = DisplayForHost(host);
+  mojom::WindowTreeClientPtr tree_client;
+  factory->CreateWindowManager(std::move(display), GetProxy(&tree_client));
+  scoped_ptr<ws::WindowTreeImpl> tree_ptr(new ws::WindowTreeImpl(
+      this, root, mojom::WindowTree::kAccessPolicyEmbedRoot));
+  ws::WindowTreeImpl* tree = tree_ptr.get();
+  scoped_ptr<ws::DefaultClientConnection> connection(
+      new ws::DefaultClientConnection(tree_ptr.get(), this,
+                                      std::move(tree_client)));
+  mojom::WindowTreePtr window_tree_ptr =
+      connection->CreateInterfacePtrAndBind();
+  AddTree(std::move(tree_ptr), std::move(connection),
+          std::move(window_tree_ptr));
+  tree->ConfigureWindowManager();
+  return tree;
+}
+
+void ConnectionManager::DestroyTree(WindowTreeImpl* tree) {
+  scoped_ptr<WindowTreeImpl> tree_ptr;
+  {
+    auto iter = tree_map_.find(tree->id());
+    DCHECK(iter != tree_map_.end());
+    tree_ptr = std::move(iter->second);
+    tree_map_.erase(iter);
   }
 
-  scoped_ptr<ClientConnection> connection_owner(connection);
-
-  connection_map_.erase(connection->service()->id());
-
   // Notify remaining connections so that they can cleanup.
-  for (auto& pair : connection_map_)
-    pair.second->service()->OnWindowDestroyingTreeImpl(connection->service());
+  for (auto& pair : tree_map_)
+    pair.second->OnWindowDestroyingTreeImpl(tree);
 
   // Notify the hosts, taking care to only notify each host once.
   std::set<WindowTreeHostImpl*> hosts_notified;
-  for (auto* root : connection->service()->roots()) {
+  for (auto* root : tree->roots()) {
     WindowTreeHostImpl* host = GetWindowTreeHostByWindow(root);
     if (host && hosts_notified.count(host) == 0) {
-      host->OnWindowTreeConnectionError(connection->service());
+      host->OnWindowTreeConnectionError(tree);
       hosts_notified.insert(host);
     }
   }
@@ -126,44 +172,17 @@ void ConnectionManager::OnConnectionError(ClientConnection* connection) {
   // manager and we haven't gotten a response back yet.
   std::set<uint32_t> to_remove;
   for (auto& pair : in_flight_wm_change_map_) {
-    if (pair.second.connection_id == connection->service()->id())
+    if (pair.second.connection_id == tree->id())
       to_remove.insert(pair.first);
   }
   for (uint32_t id : to_remove)
     in_flight_wm_change_map_.erase(id);
 }
 
-ClientConnection* ConnectionManager::GetClientConnection(
-    WindowTreeImpl* window_tree) {
-  return connection_map_[window_tree->id()];
-}
-
-WindowTreeImpl* ConnectionManager::EmbedAtWindow(
-    ServerWindow* root,
-    uint32_t policy_bitmask,
-    mojom::WindowTreeClientPtr client) {
-  mojom::WindowTreePtr tree_ptr;
-  ClientConnection* client_connection =
-      delegate_->CreateClientConnectionForEmbedAtWindow(
-          this, GetProxy(&tree_ptr), root, policy_bitmask, std::move(client));
-  AddConnection(make_scoped_ptr(client_connection), std::move(tree_ptr));
-  OnConnectionMessagedClient(client_connection->service()->id());
-  return client_connection->service();
-}
-
-void ConnectionManager::AddConnection(
-    scoped_ptr<ClientConnection> owned_connection,
-    mojom::WindowTreePtr tree_ptr) {
-  ClientConnection* connection = owned_connection.release();
-  CHECK_EQ(0u, connection_map_.count(connection->service()->id()));
-  connection_map_[connection->service()->id()] = connection;
-  connection->service()->Init(connection->client(), std::move(tree_ptr));
-}
-
 WindowTreeImpl* ConnectionManager::GetConnection(
     ConnectionSpecificId connection_id) {
-  ConnectionMap::iterator i = connection_map_.find(connection_id);
-  return i == connection_map_.end() ? nullptr : i->second->service();
+  auto iter = tree_map_.find(connection_id);
+  return iter == tree_map_.end() ? nullptr : iter->second.get();
 }
 
 ServerWindow* ConnectionManager::GetWindow(const WindowId& id) {
@@ -227,9 +246,9 @@ const WindowTreeImpl* ConnectionManager::GetConnectionWithRoot(
     const ServerWindow* window) const {
   if (!window)
     return nullptr;
-  for (auto& pair : connection_map_) {
-    if (pair.second->service()->HasRoot(window))
-      return pair.second->service();
+  for (auto& pair : tree_map_) {
+    if (pair.second->HasRoot(window))
+      return pair.second.get();
   }
   return nullptr;
 }
@@ -396,9 +415,9 @@ void ConnectionManager::ProcessWindowBoundsChanged(
     const ServerWindow* window,
     const gfx::Rect& old_bounds,
     const gfx::Rect& new_bounds) {
-  for (auto& pair : connection_map_) {
-    pair.second->service()->ProcessWindowBoundsChanged(
-        window, old_bounds, new_bounds, IsOperationSource(pair.first));
+  for (auto& pair : tree_map_) {
+    pair.second->ProcessWindowBoundsChanged(window, old_bounds, new_bounds,
+                                            IsOperationSource(pair.first));
   }
 }
 
@@ -406,17 +425,16 @@ void ConnectionManager::ProcessClientAreaChanged(
     const ServerWindow* window,
     const gfx::Insets& new_client_area,
     const std::vector<gfx::Rect>& new_additional_client_areas) {
-  for (auto& pair : connection_map_) {
-    pair.second->service()->ProcessClientAreaChanged(
-        window, new_client_area, new_additional_client_areas,
-        IsOperationSource(pair.first));
+  for (auto& pair : tree_map_) {
+    pair.second->ProcessClientAreaChanged(window, new_client_area,
+                                          new_additional_client_areas,
+                                          IsOperationSource(pair.first));
   }
 }
 
 void ConnectionManager::ProcessLostCapture(const ServerWindow* window) {
-  for (auto& pair : connection_map_) {
-    pair.second->service()->ProcessLostCapture(window,
-                                               IsOperationSource(pair.first));
+  for (auto& pair : tree_map_) {
+    pair.second->ProcessLostCapture(window, IsOperationSource(pair.first));
   }
 }
 
@@ -424,8 +442,8 @@ void ConnectionManager::ProcessWillChangeWindowHierarchy(
     const ServerWindow* window,
     const ServerWindow* new_parent,
     const ServerWindow* old_parent) {
-  for (auto& pair : connection_map_) {
-    pair.second->service()->ProcessWillChangeWindowHierarchy(
+  for (auto& pair : tree_map_) {
+    pair.second->ProcessWillChangeWindowHierarchy(
         window, new_parent, old_parent, IsOperationSource(pair.first));
   }
 }
@@ -434,9 +452,9 @@ void ConnectionManager::ProcessWindowHierarchyChanged(
     const ServerWindow* window,
     const ServerWindow* new_parent,
     const ServerWindow* old_parent) {
-  for (auto& pair : connection_map_) {
-    pair.second->service()->ProcessWindowHierarchyChanged(
-        window, new_parent, old_parent, IsOperationSource(pair.first));
+  for (auto& pair : tree_map_) {
+    pair.second->ProcessWindowHierarchyChanged(window, new_parent, old_parent,
+                                               IsOperationSource(pair.first));
   }
 }
 
@@ -450,25 +468,24 @@ void ConnectionManager::ProcessWindowReorder(
        OperationType::REMOVE_TRANSIENT_WINDOW_FROM_PARENT)) {
     return;
   }
-  for (auto& pair : connection_map_) {
-    pair.second->service()->ProcessWindowReorder(
-        window, relative_window, direction, IsOperationSource(pair.first));
+  for (auto& pair : tree_map_) {
+    pair.second->ProcessWindowReorder(window, relative_window, direction,
+                                      IsOperationSource(pair.first));
   }
 }
 
 void ConnectionManager::ProcessWindowDeleted(const ServerWindow* window) {
-  for (auto& pair : connection_map_) {
-    pair.second->service()->ProcessWindowDeleted(window,
-                                                 IsOperationSource(pair.first));
+  for (auto& pair : tree_map_) {
+    pair.second->ProcessWindowDeleted(window, IsOperationSource(pair.first));
   }
 }
 
 void ConnectionManager::ProcessWillChangeWindowPredefinedCursor(
     ServerWindow* window,
     int32_t cursor_id) {
-  for (auto& pair : connection_map_) {
-    pair.second->service()->ProcessCursorChanged(window, cursor_id,
-                                                 IsOperationSource(pair.first));
+  for (auto& pair : tree_map_) {
+    pair.second->ProcessCursorChanged(window, cursor_id,
+                                      IsOperationSource(pair.first));
   }
 
   // Pass the cursor change to the native window.
@@ -481,9 +498,9 @@ void ConnectionManager::ProcessViewportMetricsChanged(
     WindowTreeHostImpl* host,
     const mojom::ViewportMetrics& old_metrics,
     const mojom::ViewportMetrics& new_metrics) {
-  for (auto& pair : connection_map_) {
-    pair.second->service()->ProcessViewportMetricsChanged(
-        host, old_metrics, new_metrics, IsOperationSource(pair.first));
+  for (auto& pair : tree_map_) {
+    pair.second->ProcessViewportMetricsChanged(host, old_metrics, new_metrics,
+                                               IsOperationSource(pair.first));
   }
 
   if (!got_valid_frame_decorations_)
@@ -692,8 +709,8 @@ void ConnectionManager::OnWillChangeWindowVisibility(ServerWindow* window) {
     SchedulePaint(window->parent(), window->bounds());
   }
 
-  for (auto& pair : connection_map_) {
-    pair.second->service()->ProcessWillChangeWindowVisibility(
+  for (auto& pair : tree_map_) {
+    pair.second->ProcessWillChangeWindowVisibility(
         window, IsOperationSource(pair.first));
   }
 }
@@ -710,9 +727,9 @@ void ConnectionManager::OnWindowSharedPropertyChanged(
     ServerWindow* window,
     const std::string& name,
     const std::vector<uint8_t>* new_data) {
-  for (auto& pair : connection_map_) {
-    pair.second->service()->ProcessWindowPropertyChanged(
-        window, name, new_data, IsOperationSource(pair.first));
+  for (auto& pair : tree_map_) {
+    pair.second->ProcessWindowPropertyChanged(window, name, new_data,
+                                              IsOperationSource(pair.first));
   }
 }
 
@@ -725,9 +742,9 @@ void ConnectionManager::OnWindowTextInputStateChanged(
 
 void ConnectionManager::OnTransientWindowAdded(ServerWindow* window,
                                                ServerWindow* transient_child) {
-  for (auto& pair : connection_map_) {
-    pair.second->service()->ProcessTransientWindowAdded(
-        window, transient_child, IsOperationSource(pair.first));
+  for (auto& pair : tree_map_) {
+    pair.second->ProcessTransientWindowAdded(window, transient_child,
+                                             IsOperationSource(pair.first));
   }
 }
 
@@ -737,9 +754,9 @@ void ConnectionManager::OnTransientWindowRemoved(
   // If we're deleting a window, then this is a superfluous message.
   if (current_operation_type() == OperationType::DELETE_WINDOW)
     return;
-  for (auto& pair : connection_map_) {
-    pair.second->service()->ProcessTransientWindowRemoved(
-        window, transient_child, IsOperationSource(pair.first));
+  for (auto& pair : tree_map_) {
+    pair.second->ProcessTransientWindowRemoved(window, transient_child,
+                                               IsOperationSource(pair.first));
   }
 }
 

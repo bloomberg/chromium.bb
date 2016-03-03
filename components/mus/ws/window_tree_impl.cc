@@ -70,7 +70,6 @@ WindowTreeImpl::WindowTreeImpl(ConnectionManager* connection_manager,
     : connection_manager_(connection_manager),
       id_(connection_manager_->GetAndAdvanceNextConnectionId()),
       next_window_id_(1),
-      client_(nullptr),
       event_ack_id_(0),
       event_source_host_(nullptr),
       is_embed_root_(false),
@@ -91,10 +90,10 @@ WindowTreeImpl::~WindowTreeImpl() {
   DestroyWindows();
 }
 
-void WindowTreeImpl::Init(mojom::WindowTreeClient* client,
+void WindowTreeImpl::Init(scoped_ptr<ClientConnection> client_connection,
                           mojom::WindowTreePtr tree) {
-  DCHECK(!client_);
-  client_ = client;
+  DCHECK(!client_connection_);
+  client_connection_ = std::move(client_connection);
 
   if (roots_.empty())
     return;
@@ -112,16 +111,15 @@ void WindowTreeImpl::Init(mojom::WindowTreeClient* client,
   if (focused_window)
     IsWindowKnown(focused_window, &focused_window_id);
 
-  client->OnEmbed(id_, WindowToWindowData(to_send.front()), std::move(tree),
-                  focused_window_id.id,
-                  is_embed_root_ ? WindowTree::kAccessPolicyEmbedRoot
-                                 : WindowTree::kAccessPolicyDefault);
+  client()->OnEmbed(id_, WindowToWindowData(to_send.front()), std::move(tree),
+                    focused_window_id.id,
+                    is_embed_root_ ? WindowTree::kAccessPolicyEmbedRoot
+                                   : WindowTree::kAccessPolicyDefault);
 }
 
 void WindowTreeImpl::ConfigureWindowManager() {
   DCHECK(!window_manager_internal_);
-  window_manager_internal_ =
-      connection_manager_->GetClientConnection(this)->GetWindowManager();
+  window_manager_internal_ = client_connection_->GetWindowManager();
 }
 
 const ServerWindow* WindowTreeImpl::GetWindow(const WindowId& id) const {
@@ -168,7 +166,7 @@ void WindowTreeImpl::OnWindowDestroyingTreeImpl(WindowTreeImpl* connection) {
         connection_root->id().connection_id == id_;
     if (owns_connection_root ||
         (is_embed_root_ && IsWindowKnown(connection_root))) {
-      client_->OnEmbeddedAppDisconnected(
+      client()->OnEmbeddedAppDisconnected(
           ClientWindowIdForWindow(connection_root).id);
     }
   }
@@ -183,7 +181,7 @@ void WindowTreeImpl::OnWillDestroyWindowTreeHost(
 void WindowTreeImpl::NotifyChangeCompleted(
     uint32_t change_id,
     mojom::WindowManagerErrorCode error_code) {
-  client_->OnChangeCompleted(
+  client()->OnChangeCompleted(
       change_id, error_code == mojom::WindowManagerErrorCode::SUCCESS);
 }
 
@@ -302,8 +300,7 @@ void WindowTreeImpl::OnWindowManagerCreatedTopLevelWindow(
   DCHECK(IsWaitingForNewTopLevelWindow(wm_change_id));
   scoped_ptr<WaitingForTopLevelWindowInfo> waiting_for_top_level_window_info(
       std::move(waiting_for_top_level_window_info_));
-  connection_manager_->GetClientConnection(this)
-      ->SetIncomingMethodCallProcessingPaused(false);
+  client_connection_->SetIncomingMethodCallProcessingPaused(false);
   // We were paused, so the id should still be valid.
   DCHECK(IsValidIdForNewWindow(
       waiting_for_top_level_window_info->client_window_id));
@@ -312,11 +309,11 @@ void WindowTreeImpl::OnWindowManagerCreatedTopLevelWindow(
   window_id_to_client_id_map_[window->id()] =
       waiting_for_top_level_window_info->client_window_id;
   roots_.insert(window);
-  client_->OnTopLevelCreated(client_change_id, WindowToWindowData(window));
+  client()->OnTopLevelCreated(client_change_id, WindowToWindowData(window));
 }
 
 void WindowTreeImpl::OnChangeCompleted(uint32_t change_id, bool success) {
-  client_->OnChangeCompleted(change_id, success);
+  client()->OnChangeCompleted(change_id, success);
 }
 
 void WindowTreeImpl::OnAccelerator(uint32_t accelerator_id,
@@ -332,8 +329,8 @@ void WindowTreeImpl::ProcessWindowBoundsChanged(const ServerWindow* window,
   ClientWindowId client_window_id;
   if (originated_change || !IsWindowKnown(window, &client_window_id))
     return;
-  client_->OnWindowBoundsChanged(client_window_id.id, Rect::From(old_bounds),
-                                 Rect::From(new_bounds));
+  client()->OnWindowBoundsChanged(client_window_id.id, Rect::From(old_bounds),
+                                  Rect::From(new_bounds));
 }
 
 void WindowTreeImpl::ProcessClientAreaChanged(
@@ -344,7 +341,7 @@ void WindowTreeImpl::ProcessClientAreaChanged(
   ClientWindowId client_window_id;
   if (originated_change || !IsWindowKnown(window, &client_window_id))
     return;
-  client_->OnClientAreaChanged(
+  client()->OnClientAreaChanged(
       client_window_id.id, mojo::Insets::From(new_client_area),
       mojo::Array<mojo::RectPtr>::From(new_additional_client_areas));
 }
@@ -366,7 +363,7 @@ void WindowTreeImpl::ProcessViewportMetricsChanged(
   if (window_ids.size() == 0u)
     return;
 
-  client_->OnWindowViewportMetricsChanged(
+  client()->OnWindowViewportMetricsChanged(
       std::move(window_ids), old_metrics.Clone(), new_metrics.Clone());
 }
 
@@ -403,8 +400,8 @@ void WindowTreeImpl::ProcessWindowPropertyChanged(
   if (new_data)
     data = Array<uint8_t>::From(*new_data);
 
-  client_->OnWindowSharedPropertyChanged(client_window_id.id, String(name),
-                                         std::move(data));
+  client()->OnWindowSharedPropertyChanged(client_window_id.id, String(name),
+                                          std::move(data));
 }
 
 void WindowTreeImpl::ProcessWindowHierarchyChanged(
@@ -443,7 +440,7 @@ void WindowTreeImpl::ProcessWindowHierarchyChanged(
       knows_old ? ClientWindowIdForWindow(old_parent) : ClientWindowId();
   const ClientWindowId client_window_id =
       window ? ClientWindowIdForWindow(window) : ClientWindowId();
-  client_->OnWindowHierarchyChanged(
+  client()->OnWindowHierarchyChanged(
       client_window_id.id, new_parent_client_window_id.id,
       old_parent_client_window_id.id, WindowsToWindowDatas(to_send));
   connection_manager_->OnConnectionMessagedClient(id_);
@@ -466,8 +463,8 @@ void WindowTreeImpl::ProcessWindowReorder(const ServerWindow* window,
   if (HasRoot(window) || HasRoot(relative_window))
     return;
 
-  client_->OnWindowReordered(client_window_id.id, relative_client_window_id.id,
-                             direction);
+  client()->OnWindowReordered(client_window_id.id, relative_client_window_id.id,
+                              direction);
   connection_manager_->OnConnectionMessagedClient(id_);
 }
 
@@ -488,7 +485,7 @@ void WindowTreeImpl::ProcessWindowDeleted(const ServerWindow* window,
   if (originated_change)
     return;
 
-  client_->OnWindowDeleted(client_window_id.id);
+  client()->OnWindowDeleted(client_window_id.id);
   connection_manager_->OnConnectionMessagedClient(id_);
 }
 
@@ -500,7 +497,8 @@ void WindowTreeImpl::ProcessWillChangeWindowVisibility(
 
   ClientWindowId client_window_id;
   if (IsWindowKnown(window, &client_window_id)) {
-    client_->OnWindowVisibilityChanged(client_window_id.id, !window->visible());
+    client()->OnWindowVisibilityChanged(client_window_id.id,
+                                        !window->visible());
     return;
   }
 
@@ -525,8 +523,8 @@ void WindowTreeImpl::ProcessCursorChanged(const ServerWindow* window,
   if (!IsWindowKnown(window, &client_window_id))
     return;
 
-  client_->OnWindowPredefinedCursorChanged(client_window_id.id,
-                                           mojom::Cursor(cursor_id));
+  client()->OnWindowPredefinedCursorChanged(client_window_id.id,
+                                            mojom::Cursor(cursor_id));
 }
 
 void WindowTreeImpl::ProcessFocusChanged(
@@ -541,7 +539,7 @@ void WindowTreeImpl::ProcessFocusChanged(
   IsWindowKnown(window, &client_window_id);
   // TODO(sky): this should only notify if this results in a change of focus
   // for the client.
-  client_->OnWindowFocused(client_window_id.id);
+  client()->OnWindowFocused(client_window_id.id);
 }
 
 void WindowTreeImpl::ProcessTransientWindowAdded(
@@ -556,8 +554,8 @@ void WindowTreeImpl::ProcessTransientWindowAdded(
       !IsWindowKnown(transient_window, &transient_client_window_id)) {
     return;
   }
-  client_->OnTransientWindowAdded(client_window_id.id,
-                                  transient_client_window_id.id);
+  client()->OnTransientWindowAdded(client_window_id.id,
+                                   transient_client_window_id.id);
 }
 
 void WindowTreeImpl::ProcessTransientWindowRemoved(
@@ -571,8 +569,8 @@ void WindowTreeImpl::ProcessTransientWindowRemoved(
       !IsWindowKnown(transient_window, &transient_client_window_id)) {
     return;
   }
-  client_->OnTransientWindowRemoved(client_window_id.id,
-                                    transient_client_window_id.id);
+  client()->OnTransientWindowRemoved(client_window_id.id,
+                                     transient_client_window_id.id);
 }
 
 WindowTreeHostImpl* WindowTreeImpl::GetHostForWindowManager() {
@@ -746,8 +744,8 @@ void WindowTreeImpl::RemoveRoot(const ServerWindow* window,
     return;
 
   if (reason == RemoveRootReason::EMBED) {
-    client_->OnUnembed(client_window_id.id);
-    client_->OnWindowDeleted(client_window_id.id);
+    client()->OnUnembed(client_window_id.id);
+    client()->OnWindowDeleted(client_window_id.id);
     connection_manager_->OnConnectionMessagedClient(id_);
   }
 
@@ -817,8 +815,8 @@ void WindowTreeImpl::NotifyDrawnStateChanged(const ServerWindow* window,
 
   for (auto* root : roots_) {
     if (window->Contains(root) && (new_drawn_value != root->IsDrawn())) {
-      client_->OnWindowDrawnStateChanged(ClientWindowIdForWindow(root).id,
-                                         new_drawn_value);
+      client()->OnWindowDrawnStateChanged(ClientWindowIdForWindow(root).id,
+                                          new_drawn_value);
     }
   }
 }
@@ -883,8 +881,8 @@ void WindowTreeImpl::DispatchInputEventImpl(ServerWindow* target,
   event_source_host_ = GetHost(target);
   // Should only get events from windows attached to a host.
   DCHECK(event_source_host_);
-  client_->OnWindowInputEvent(event_ack_id_, ClientWindowIdForWindow(target).id,
-                              std::move(event));
+  client()->OnWindowInputEvent(
+      event_ack_id_, ClientWindowIdForWindow(target).id, std::move(event));
 }
 
 void WindowTreeImpl::NewWindow(
@@ -896,7 +894,7 @@ void WindowTreeImpl::NewWindow(
     properties =
         transport_properties.To<std::map<std::string, std::vector<uint8_t>>>();
   }
-  client_->OnChangeCompleted(
+  client()->OnChangeCompleted(
       change_id, NewWindow(ClientWindowId(transport_window_id), properties));
 }
 
@@ -912,7 +910,7 @@ void WindowTreeImpl::NewTopLevelWindow(
   WindowManagerState* wms =
       tree_host ? tree_host->GetFirstWindowManagerState() : nullptr;
   if (!wms || wms->tree() == this || !IsValidIdForNewWindow(client_window_id)) {
-    client_->OnChangeCompleted(change_id, false);
+    client()->OnChangeCompleted(change_id, false);
     return;
   }
 
@@ -920,8 +918,7 @@ void WindowTreeImpl::NewTopLevelWindow(
   // may try to alter the window. Pause incoming messages so that we know we
   // can't get a message for a window before the window is created. Once the
   // window is created we'll resume processing.
-  connection_manager_->GetClientConnection(this)
-      ->SetIncomingMethodCallProcessingPaused(true);
+  client_connection_->SetIncomingMethodCallProcessingPaused(true);
 
   const uint32_t wm_change_id =
       connection_manager_->GenerateWindowManagerChangeId(this, change_id);
@@ -944,12 +941,12 @@ void WindowTreeImpl::DeleteWindow(uint32_t change_id, Id transport_window_id) {
         connection_manager_->GetConnection(window->id().connection_id);
     success = connection && connection->DeleteWindowImpl(this, window);
   }
-  client_->OnChangeCompleted(change_id, success);
+  client()->OnChangeCompleted(change_id, success);
 }
 
 void WindowTreeImpl::AddWindow(uint32_t change_id, Id parent_id, Id child_id) {
-  client_->OnChangeCompleted(change_id, AddWindow(ClientWindowId(parent_id),
-                                                  ClientWindowId(child_id)));
+  client()->OnChangeCompleted(change_id, AddWindow(ClientWindowId(parent_id),
+                                                   ClientWindowId(child_id)));
 }
 
 void WindowTreeImpl::RemoveWindowFromParent(uint32_t change_id, Id window_id) {
@@ -962,13 +959,13 @@ void WindowTreeImpl::RemoveWindowFromParent(uint32_t change_id, Id window_id) {
                  OperationType::REMOVE_WINDOW_FROM_PARENT);
     window->parent()->Remove(window);
   }
-  client_->OnChangeCompleted(change_id, success);
+  client()->OnChangeCompleted(change_id, success);
 }
 
 void WindowTreeImpl::AddTransientWindow(uint32_t change_id,
                                         Id window,
                                         Id transient_window) {
-  client_->OnChangeCompleted(
+  client()->OnChangeCompleted(
       change_id, AddTransientWindow(ClientWindowId(window),
                                     ClientWindowId(transient_window)));
 }
@@ -986,7 +983,7 @@ void WindowTreeImpl::RemoveTransientWindowFromParent(uint32_t change_id,
     transient_window->transient_parent()->RemoveTransientWindow(
         transient_window);
   }
-  client_->OnChangeCompleted(change_id, success);
+  client()->OnChangeCompleted(change_id, success);
 }
 
 void WindowTreeImpl::ReorderWindow(uint32_t change_id,
@@ -1004,7 +1001,7 @@ void WindowTreeImpl::ReorderWindow(uint32_t change_id,
     connection_manager_->ProcessWindowReorder(window, relative_window,
                                               direction);
   }
-  client_->OnChangeCompleted(change_id, success);
+  client()->OnChangeCompleted(change_id, success);
 }
 
 void WindowTreeImpl::GetWindowTree(
@@ -1028,7 +1025,7 @@ void WindowTreeImpl::SetCapture(uint32_t change_id, Id window_id) {
     Operation op(this, connection_manager_, OperationType::SET_CAPTURE);
     host->SetCapture(window, !HasRoot(window));
   }
-  client_->OnChangeCompleted(change_id, success);
+  client()->OnChangeCompleted(change_id, success);
 }
 
 void WindowTreeImpl::ReleaseCapture(uint32_t change_id, Id window_id) {
@@ -1044,7 +1041,7 @@ void WindowTreeImpl::ReleaseCapture(uint32_t change_id, Id window_id) {
     Operation op(this, connection_manager_, OperationType::RELEASE_CAPTURE);
     host->SetCapture(nullptr, false);
   }
-  client_->OnChangeCompleted(change_id, success);
+  client()->OnChangeCompleted(change_id, success);
 }
 
 void WindowTreeImpl::SetWindowBounds(uint32_t change_id,
@@ -1071,13 +1068,13 @@ void WindowTreeImpl::SetWindowBounds(uint32_t change_id,
     Operation op(this, connection_manager_, OperationType::SET_WINDOW_BOUNDS);
     window->SetBounds(bounds.To<gfx::Rect>());
   }
-  client_->OnChangeCompleted(change_id, success);
+  client()->OnChangeCompleted(change_id, success);
 }
 
 void WindowTreeImpl::SetWindowVisibility(uint32_t change_id,
                                          Id transport_window_id,
                                          bool visible) {
-  client_->OnChangeCompleted(
+  client()->OnChangeCompleted(
       change_id,
       SetWindowVisibility(ClientWindowId(transport_window_id), visible));
 }
@@ -1109,7 +1106,7 @@ void WindowTreeImpl::SetWindowProperty(uint32_t change_id,
       window->SetProperty(name, &data);
     }
   }
-  client_->OnChangeCompleted(change_id, success);
+  client()->OnChangeCompleted(change_id, success);
 }
 
 void WindowTreeImpl::AttachSurface(
@@ -1217,7 +1214,7 @@ void WindowTreeImpl::SetFocus(uint32_t change_id, Id transport_window_id) {
     Operation op(this, connection_manager_, OperationType::SET_FOCUS);
     host->SetFocusedWindow(window);
   }
-  client_->OnChangeCompleted(change_id, success);
+  client()->OnChangeCompleted(change_id, success);
 }
 
 void WindowTreeImpl::SetCanFocus(Id transport_window_id, bool can_focus) {
@@ -1242,7 +1239,7 @@ void WindowTreeImpl::SetPredefinedCursor(uint32_t change_id,
                  OperationType::SET_WINDOW_PREDEFINED_CURSOR);
     window->SetPredefinedCursor(cursor_id);
   }
-  client_->OnChangeCompleted(change_id, success);
+  client()->OnChangeCompleted(change_id, success);
 }
 
 void WindowTreeImpl::GetWindowManagerClient(
@@ -1330,7 +1327,7 @@ void WindowTreeImpl::WmRequestClose(Id transport_window_id) {
   WindowTreeImpl* connection =
       connection_manager_->GetConnectionWithRoot(window);
   if (connection && connection != this) {
-    connection->client_->RequestClose(
+    connection->client()->RequestClose(
         connection->ClientWindowIdForWindow(window).id);
   }
   // TODO(sky): think about what else case means.

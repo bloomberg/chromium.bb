@@ -88,20 +88,23 @@ class ConnectionManager : public ServerWindowDelegate,
   // Returns the id for the next WindowTreeHostImpl.
   uint16_t GetAndAdvanceNextHostId();
 
-  // Invoked when a WindowTreeImpl's connection encounters an error.
-  void OnConnectionError(ClientConnection* connection);
-
-  ClientConnection* GetClientConnection(WindowTreeImpl* window_tree);
-
   // See description of WindowTree::Embed() for details. This assumes
   // |transport_window_id| is valid.
   WindowTreeImpl* EmbedAtWindow(ServerWindow* root,
                                 uint32_t policy_bitmask,
                                 mojom::WindowTreeClientPtr client);
 
-  // Adds |connection| to internal maps.
-  void AddConnection(scoped_ptr<ClientConnection> owned_connection,
-                     mojom::WindowTreePtr tree_ptr);
+  // Adds |tree_impl_ptr| to the set of known trees. Use DestroyTree() to
+  // destroy the tree.
+  WindowTreeImpl* AddTree(scoped_ptr<WindowTreeImpl> tree_impl_ptr,
+                          scoped_ptr<ClientConnection> connection,
+                          mojom::WindowTreePtr tree_ptr);
+  WindowTreeImpl* CreateTreeForWindowManager(
+      WindowTreeHostImpl* host,
+      mojom::WindowManagerFactory* factory,
+      ServerWindow* root);
+  // Invoked when a WindowTreeImpl's connection encounters an error.
+  void DestroyTree(WindowTreeImpl* tree);
 
   // Returns the connection by id.
   WindowTreeImpl* GetConnection(ConnectionSpecificId connection_id);
@@ -220,7 +223,8 @@ class ConnectionManager : public ServerWindowDelegate,
  private:
   friend class Operation;
 
-  using ConnectionMap = std::map<ConnectionSpecificId, ClientConnection*>;
+  using WindowTreeMap =
+      std::map<ConnectionSpecificId, scoped_ptr<WindowTreeImpl>>;
   using HostConnectionMap =
       std::map<WindowTreeHostImpl*, WindowTreeHostConnection*>;
 
@@ -323,7 +327,7 @@ class ConnectionManager : public ServerWindowDelegate,
   uint16_t next_host_id_;
 
   // Set of WindowTreeImpls.
-  ConnectionMap connection_map_;
+  WindowTreeMap tree_map_;
 
   // WindowTreeHostImpls are initially added to |pending_hosts_|. When the
   // display is initialized it is moved to |hosts_|.

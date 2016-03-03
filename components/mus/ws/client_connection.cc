@@ -4,38 +4,40 @@
 
 #include "components/mus/ws/client_connection.h"
 
+#include "base/bind.h"
 #include "components/mus/ws/connection_manager.h"
 #include "components/mus/ws/window_tree_impl.h"
 
 namespace mus {
 namespace ws {
 
-ClientConnection::ClientConnection(scoped_ptr<WindowTreeImpl> service,
-                                   mojom::WindowTreeClient* client)
-    : service_(std::move(service)), client_(client) {}
+ClientConnection::ClientConnection(mojom::WindowTreeClient* client)
+    : client_(client) {}
 
 ClientConnection::~ClientConnection() {}
 
 DefaultClientConnection::DefaultClientConnection(
-    scoped_ptr<WindowTreeImpl> service_impl,
+    WindowTreeImpl* tree,
     ConnectionManager* connection_manager,
     mojom::WindowTreeRequest service_request,
     mojom::WindowTreeClientPtr client)
-    : ClientConnection(std::move(service_impl), client.get()),
+    : ClientConnection(client.get()),
       connection_manager_(connection_manager),
-      binding_(service(), std::move(service_request)),
+      binding_(tree, std::move(service_request)),
       client_(std::move(client)) {
+  // Both |connection_manager| and |tree| outlive us.
   binding_.set_connection_error_handler(
-      [this]() { connection_manager_->OnConnectionError(this); });
+      base::Bind(&ConnectionManager::DestroyTree,
+                 base::Unretained(connection_manager), base::Unretained(tree)));
 }
 
 DefaultClientConnection::DefaultClientConnection(
-    scoped_ptr<WindowTreeImpl> service_impl,
+    WindowTreeImpl* tree,
     ConnectionManager* connection_manager,
     mojom::WindowTreeClientPtr client)
-    : ClientConnection(std::move(service_impl), client.get()),
+    : ClientConnection(client.get()),
       connection_manager_(connection_manager),
-      binding_(service()),
+      binding_(tree),
       client_(std::move(client)) {}
 
 DefaultClientConnection::~DefaultClientConnection() {}

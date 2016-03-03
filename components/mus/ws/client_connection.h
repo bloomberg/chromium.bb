@@ -17,24 +17,21 @@ class ConnectionManager;
 class WindowTreeImpl;
 
 // ClientConnection encapsulates the state needed for a single client connected
-// to the window manager.
+// to the window manager. ClientConnection is owned by the WindowTreeImpl the
+// ClientConnection is associated with.
 class ClientConnection {
  public:
-  ClientConnection(scoped_ptr<WindowTreeImpl> service,
-                   mojom::WindowTreeClient* client);
+  explicit ClientConnection(mojom::WindowTreeClient* client);
   virtual ~ClientConnection();
-
-  WindowTreeImpl* service() { return service_.get(); }
-  const WindowTreeImpl* service() const { return service_.get(); }
 
   mojom::WindowTreeClient* client() { return client_; }
 
+  // Obtains a new WindowManager. This should only be called once.
   virtual mojom::WindowManager* GetWindowManager() = 0;
 
   virtual void SetIncomingMethodCallProcessingPaused(bool paused) = 0;
 
  private:
-  scoped_ptr<WindowTreeImpl> service_;
   mojom::WindowTreeClient* client_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientConnection);
@@ -43,11 +40,11 @@ class ClientConnection {
 // Bindings implementation of ClientConnection.
 class DefaultClientConnection : public ClientConnection {
  public:
-  DefaultClientConnection(scoped_ptr<WindowTreeImpl> service_impl,
+  DefaultClientConnection(WindowTreeImpl* tree,
                           ConnectionManager* connection_manager,
                           mojom::WindowTreeRequest service_request,
                           mojom::WindowTreeClientPtr client);
-  DefaultClientConnection(scoped_ptr<WindowTreeImpl> service_impl,
+  DefaultClientConnection(WindowTreeImpl* tree,
                           ConnectionManager* connection_manager,
                           mojom::WindowTreeClientPtr client);
   ~DefaultClientConnection() override;

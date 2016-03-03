@@ -160,42 +160,14 @@ void MandolineUIServicesApp::OnNoMoreRootConnections() {
   base::MessageLoop::current()->QuitWhenIdle();
 }
 
-ws::ClientConnection*
+scoped_ptr<ws::ClientConnection>
 MandolineUIServicesApp::CreateClientConnectionForEmbedAtWindow(
     ws::ConnectionManager* connection_manager,
+    ws::WindowTreeImpl* tree,
     mojom::WindowTreeRequest tree_request,
-    ws::ServerWindow* root,
-    uint32_t policy_bitmask,
     mojom::WindowTreeClientPtr client) {
-  scoped_ptr<ws::WindowTreeImpl> service(
-      new ws::WindowTreeImpl(connection_manager, root, policy_bitmask));
-  return new ws::DefaultClientConnection(std::move(service), connection_manager,
-                                         std::move(tree_request),
-                                         std::move(client));
-}
-
-ws::ClientConnection*
-MandolineUIServicesApp::CreateClientConnectionForWindowManager(
-    ws::WindowTreeHostImpl* tree_host,
-    ws::ServerWindow* window,
-    const mojom::Display& display,
-    uint32_t user_id,
-    mojom::WindowManagerFactory* factory) {
-  // TODO(sky): figure out a better way to factor this. Having the delegate
-  // have to add to the ConnectionManager is ick!
-  mojom::WindowTreeClientPtr tree_client;
-  factory->CreateWindowManager(display.Clone(), GetProxy(&tree_client));
-  scoped_ptr<ws::WindowTreeImpl> service(
-      new ws::WindowTreeImpl(connection_manager_.get(), window,
-                             mojom::WindowTree::kAccessPolicyEmbedRoot));
-  scoped_ptr<ws::DefaultClientConnection> connection(
-      new ws::DefaultClientConnection(std::move(service),
-                                      connection_manager_.get(),
-                                      std::move(tree_client)));
-  mojom::WindowTreePtr tree = connection->CreateInterfacePtrAndBind();
-  ws::DefaultClientConnection* raw_connection = connection.get();
-  connection_manager_->AddConnection(std::move(connection), std::move(tree));
-  return raw_connection;
+  return make_scoped_ptr(new ws::DefaultClientConnection(
+      tree, connection_manager, std::move(tree_request), std::move(client)));
 }
 
 void MandolineUIServicesApp::CreateDefaultWindowTreeHosts() {

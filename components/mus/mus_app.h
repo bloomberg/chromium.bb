@@ -70,18 +70,11 @@ class MandolineUIServicesApp
   // ConnectionManagerDelegate:
   void OnFirstRootConnectionCreated() override;
   void OnNoMoreRootConnections() override;
-  ws::ClientConnection* CreateClientConnectionForEmbedAtWindow(
+  scoped_ptr<ws::ClientConnection> CreateClientConnectionForEmbedAtWindow(
       ws::ConnectionManager* connection_manager,
+      ws::WindowTreeImpl* tree,
       mojom::WindowTreeRequest tree_request,
-      ws::ServerWindow* root,
-      uint32_t policy_bitmask,
       mojom::WindowTreeClientPtr client) override;
-  ws::ClientConnection* CreateClientConnectionForWindowManager(
-      ws::WindowTreeHostImpl* tree_host,
-      ws::ServerWindow* root,
-      const mojom::Display& display,
-      uint32_t user_id,
-      mojom::WindowManagerFactory* factory) override;
   void CreateDefaultWindowTreeHosts() override;
 
   // mojo::InterfaceFactory<mojom::DisplayManager> implementation.

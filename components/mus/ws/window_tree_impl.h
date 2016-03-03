@@ -20,6 +20,7 @@
 #include "components/mus/public/interfaces/surface_id.mojom.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "components/mus/ws/access_policy_delegate.h"
+#include "components/mus/ws/client_connection.h"
 #include "components/mus/ws/ids.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 
@@ -51,7 +52,8 @@ class WindowTreeImpl : public mojom::WindowTree,
                  uint32_t policy_bitmask);
   ~WindowTreeImpl() override;
 
-  void Init(mojom::WindowTreeClient* client, mojom::WindowTreePtr tree);
+  void Init(scoped_ptr<ClientConnection> client_connection,
+            mojom::WindowTreePtr tree);
 
   // Called if this WindowTreeImpl hosts the WindowManager. This happens if
   // this WindowTreeImpl serves as the root of a WindowTreeHost.
@@ -59,7 +61,7 @@ class WindowTreeImpl : public mojom::WindowTree,
 
   ConnectionSpecificId id() const { return id_; }
 
-  mojom::WindowTreeClient* client() { return client_; }
+  mojom::WindowTreeClient* client() { return client_connection_->client(); }
 
   // Returns the Window with the specified id.
   ServerWindow* GetWindow(const WindowId& id) {
@@ -371,7 +373,7 @@ class WindowTreeImpl : public mojom::WindowTree,
 
   ConnectionSpecificId next_window_id_;
 
-  mojom::WindowTreeClient* client_;
+  scoped_ptr<ClientConnection> client_connection_;
 
   scoped_ptr<mus::ws::AccessPolicy> access_policy_;
 
