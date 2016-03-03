@@ -12,6 +12,7 @@
 
 #include "base/macros.h"
 #include "ui/aura/client/focus_change_observer.h"
+#include "ui/aura/window_observer.h"
 #include "ui/views/views_export.h"
 
 namespace base {
@@ -32,7 +33,8 @@ class Widget;
 
 // A cache responsible for assigning id's to a set of interesting Aura views.
 class VIEWS_EXPORT AXAuraObjCache
-    : public aura::client::FocusChangeObserver {
+    : public aura::client::FocusChangeObserver,
+      public aura::WindowObserver {
  public:
   // Get the single instance of this class.
   static AXAuraObjCache* GetInstance();
@@ -85,6 +87,9 @@ class VIEWS_EXPORT AXAuraObjCache
   // aura::client::FocusChangeObserver override.
   void OnWindowFocused(aura::Window* gained_focus,
                        aura::Window* lost_focus) override;
+
+  // aura::WindowObserver override.
+  void OnWindowDestroying(aura::Window* window) override;
 
   template <typename AuraViewWrapper, typename AuraView>
   AXAuraObjWrapper* CreateInternal(

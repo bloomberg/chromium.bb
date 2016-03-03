@@ -35,6 +35,7 @@ AXAuraObjWrapper* AXAuraObjCache::GetOrCreate(aura::Window* window) {
     aura::Window* root_window = window->GetRootWindow();
     if (root_window) {
       focus_client_ = aura::client::GetFocusClient(root_window);
+      root_window->AddObserver(this);
       if (focus_client_)
         focus_client_->AddObserver(this);
     }
@@ -157,6 +158,10 @@ void AXAuraObjCache::OnWindowFocused(aura::Window* gained_focus,
   View* view = GetFocusedView();
   if (view)
     view->NotifyAccessibilityEvent(ui::AX_EVENT_FOCUS, true);
+}
+
+void AXAuraObjCache::OnWindowDestroying(aura::Window* window) {
+  focus_client_ = nullptr;
 }
 
 template <typename AuraViewWrapper, typename AuraView>
