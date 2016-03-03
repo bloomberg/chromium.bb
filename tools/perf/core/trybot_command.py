@@ -300,6 +300,10 @@ class Trybot(command_line.ArgParseCommand):
     # To make sure that we don't mutate the original args
     arguments = arguments[:]
 
+    # Always set verbose logging for later debugging
+    if '-v' not in arguments and '--verbose' not in arguments:
+        arguments.append('--verbose')
+
     # Generate the command line for the perf trybots
     target_arch = 'ia32'
     if any(arg == '--chrome-root' or arg.startswith('--chrome-root=') for arg
