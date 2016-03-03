@@ -54,7 +54,7 @@ double parseToDoubleForNumberType(const String&, double fallbackValue = std::num
 bool parseHTMLInteger(const String&, int&);
 
 // http://www.whatwg.org/specs/web-apps/current-work/#rules-for-parsing-non-negative-integers
-bool parseHTMLNonNegativeInteger(const String&, unsigned&);
+CORE_EXPORT bool parseHTMLNonNegativeInteger(const String&, unsigned&);
 
 // https://html.spec.whatwg.org/multipage/infrastructure.html#rules-for-parsing-a-list-of-floating-point-numbers
 CORE_EXPORT Vector<double> parseHTMLListOfFloatingPointNumbers(const String&);

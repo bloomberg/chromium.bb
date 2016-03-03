@@ -214,32 +214,47 @@ bool parseHTMLInteger(const String& input, int& value)
 template <typename CharacterType>
 static bool parseHTMLNonNegativeIntegerInternal(const CharacterType* position, const CharacterType* end, unsigned& value)
 {
-    // Step 3
+    // This function is an implementation of the following algorithm:
+    // https://html.spec.whatwg.org/multipage/infrastructure.html#rules-for-parsing-non-negative-integers
+    // However, in order to support integers >= 2^31, we fold [1] into this.
+    // 'Step N' in the following comments refers to [1].
+    //
+    // [1] https://html.spec.whatwg.org/multipage/infrastructure.html#rules-for-parsing-integers
+
+    // Step 3: Let sign have the value "positive".
+    int sign = 1;
+
+    // Step 4: Skip whitespace.
     while (position < end) {
         if (!isHTMLSpace<CharacterType>(*position))
             break;
         ++position;
     }
 
-    // Step 4
+    // Step 5: If position is past the end of input, return an error.
     if (position == end)
         return false;
     ASSERT(position < end);
 
-    // Step 5
-    if (*position == '+')
+    // Step 6: If the character indicated by position (the first character) is a
+    // U+002D HYPHEN-MINUS character (-), ...
+    if (*position == '-') {
+        sign = -1;
         ++position;
+    } else if (*position == '+') {
+        ++position;
+    }
 
-    // Step 6
     if (position == end)
         return false;
     ASSERT(position < end);
 
-    // Step 7
+    // Step 7: If the character indicated by position is not an ASCII digit,
+    // then return an error.
     if (!isASCIIDigit(*position))
         return false;
 
-    // Step 8
+    // Step 8: Collect a sequence of characters ...
     StringBuilder digits;
     while (position < end) {
         if (!isASCIIDigit(*position))
@@ -247,21 +262,23 @@ static bool parseHTMLNonNegativeIntegerInternal(const CharacterType* position, c
         digits.append(*position++);
     }
 
-    // Step 9
     bool ok;
+    unsigned digitsValue;
     if (digits.is8Bit())
-        value = charactersToUIntStrict(digits.characters8(), digits.length(), &ok);
+        digitsValue = charactersToUIntStrict(digits.characters8(), digits.length(), &ok);
     else
-        value = charactersToUIntStrict(digits.characters16(), digits.length(), &ok);
-    return ok;
+        digitsValue = charactersToUIntStrict(digits.characters16(), digits.length(), &ok);
+    if (!ok)
+        return false;
+    if (sign < 0 && digitsValue != 0)
+        return false;
+    value = digitsValue;
+    return true;
 }
 
-
-// http://www.whatwg.org/specs/web-apps/current-work/#rules-for-parsing-non-negative-integers
+// https://html.spec.whatwg.org/multipage/infrastructure.html#rules-for-parsing-non-negative-integers
 bool parseHTMLNonNegativeInteger(const String& input, unsigned& value)
 {
-    // Step 1
-    // Step 2
     unsigned length = input.length();
     if (length && input.is8Bit()) {
         const LChar* start = input.characters8();
