@@ -31,7 +31,7 @@ InterpolationValue CSSPathInterpolationType::maybeConvertNeutral(const Interpola
     return PathInterpolationFunctions::maybeConvertNeutral(underlying, conversionCheckers);
 }
 
-InterpolationValue CSSPathInterpolationType::maybeConvertInitial() const
+InterpolationValue CSSPathInterpolationType::maybeConvertInitial(const StyleResolverState&) const
 {
     return PathInterpolationFunctions::convertValue(nullptr);
 }

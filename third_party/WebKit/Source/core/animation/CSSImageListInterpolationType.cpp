@@ -41,7 +41,7 @@ InterpolationValue CSSImageListInterpolationType::maybeConvertNeutral(const Inte
     return underlying.clone();
 }
 
-InterpolationValue CSSImageListInterpolationType::maybeConvertInitial() const
+InterpolationValue CSSImageListInterpolationType::maybeConvertInitial(const StyleResolverState&) const
 {
     StyleImageList initialImageList;
     ImageListPropertyFunctions::getInitialImageList(cssProperty(), initialImageList);

@@ -26,7 +26,7 @@ private:
     InterpolationValue createNeutralValue() const;
 
     InterpolationValue maybeConvertNeutral(const InterpolationValue& underlying, ConversionCheckers&) const final;
-    InterpolationValue maybeConvertInitial() const final;
+    InterpolationValue maybeConvertInitial(const StyleResolverState&) const final;
     InterpolationValue maybeConvertInherit(const StyleResolverState&, ConversionCheckers&) const final;
     InterpolationValue maybeConvertValue(const CSSValue&, const StyleResolverState&, ConversionCheckers&) const final;
     PairwiseInterpolationValue mergeSingleConversions(InterpolationValue& start, InterpolationValue& end) const final;

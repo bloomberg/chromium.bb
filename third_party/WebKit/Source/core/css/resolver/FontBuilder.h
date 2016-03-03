@@ -52,6 +52,8 @@ public:
     AtomicString standardFontFamilyName() const;
     AtomicString genericFontFamilyName(FontDescription::GenericFamilyType) const;
 
+    float fontSizeForKeyword(unsigned keyword, bool isMonospace) const;
+
     void setWeight(FontWeight);
     void setSize(const FontDescription::Size&);
     void setSizeAdjust(const float aspectValue);

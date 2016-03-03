@@ -177,7 +177,7 @@ InterpolationValue CSSBorderImageLengthBoxInterpolationType::maybeConvertNeutral
     return convertBorderImageLengthBox(zeroBox, 1);
 }
 
-InterpolationValue CSSBorderImageLengthBoxInterpolationType::maybeConvertInitial() const
+InterpolationValue CSSBorderImageLengthBoxInterpolationType::maybeConvertInitial(const StyleResolverState&) const
 {
     return convertBorderImageLengthBox(BorderImageLengthBoxPropertyFunctions::getInitialBorderImageLengthBox(cssProperty()), 1);
 }

@@ -105,6 +105,11 @@ AtomicString FontBuilder::genericFontFamilyName(FontDescription::GenericFamilyTy
     }
 }
 
+float FontBuilder::fontSizeForKeyword(unsigned keyword, bool isMonospace) const
+{
+    return FontSize::fontSizeForKeyword(m_document, keyword, isMonospace);
+}
+
 void FontBuilder::setFamilyDescription(const FontDescription::FamilyDescription& familyDescription)
 {
     setFamilyDescription(m_fontDescription, familyDescription);
@@ -272,7 +277,7 @@ void FontBuilder::checkForGenericFamilyChange(const FontDescription& oldDescript
     // multiplying by our scale factor.
     float size;
     if (newDescription.keywordSize()) {
-        size = FontSize::fontSizeForKeyword(m_document, newDescription.keywordSize(), newDescription.isMonospace());
+        size = fontSizeForKeyword(newDescription.keywordSize(), newDescription.isMonospace());
     } else {
         Settings* settings = m_document->settings();
         float fixedScaleFactor = (settings && settings->defaultFixedFontSize() && settings->defaultFontSize())
@@ -291,7 +296,7 @@ void FontBuilder::updateSpecifiedSize(FontDescription& fontDescription, const Co
     float specifiedSize = fontDescription.specifiedSize();
 
     if (!specifiedSize && fontDescription.keywordSize())
-        specifiedSize = FontSize::fontSizeForKeyword(m_document, fontDescription.keywordSize(), fontDescription.isMonospace());
+        specifiedSize = fontSizeForKeyword(fontDescription.keywordSize(), fontDescription.isMonospace());
 
     fontDescription.setSpecifiedSize(specifiedSize);
 

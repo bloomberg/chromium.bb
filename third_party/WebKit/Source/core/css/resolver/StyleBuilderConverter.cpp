@@ -201,16 +201,10 @@ PassRefPtr<FontFeatureSettings> StyleBuilderConverter::convertFontFeatureSetting
 
 static float computeFontSize(StyleResolverState& state, const CSSPrimitiveValue& primitiveValue, const FontDescription::Size& parentSize)
 {
-    float em = state.parentStyle()->specifiedFontSize();
-    float rem = state.rootElementStyle() ? state.rootElementStyle()->specifiedFontSize() : 1.0f;
-    CSSToLengthConversionData::FontSizes fontSizes(em, rem, &state.parentStyle()->font());
-    CSSToLengthConversionData::ViewportSize viewportSize(state.document().layoutView());
-
-    CSSToLengthConversionData conversionData(state.style(), fontSizes, viewportSize, 1.0f);
     if (primitiveValue.isLength())
-        return primitiveValue.computeLength<float>(conversionData);
+        return primitiveValue.computeLength<float>(state.fontSizeConversionData());
     if (primitiveValue.isCalculatedPercentageWithLength())
-        return primitiveValue.cssCalcValue()->toCalcValue(conversionData)->evaluate(parentSize.value);
+        return primitiveValue.cssCalcValue()->toCalcValue(state.fontSizeConversionData())->evaluate(parentSize.value);
 
     ASSERT_NOT_REACHED();
     return 0;
@@ -227,24 +221,14 @@ FontDescription::Size StyleBuilderConverter::convertFontSize(StyleResolverState&
         parentSize = state.parentFontDescription().getSize();
 
     if (CSSValueID valueID = primitiveValue.getValueID()) {
-        switch (valueID) {
-        case CSSValueXxSmall:
-        case CSSValueXSmall:
-        case CSSValueSmall:
-        case CSSValueMedium:
-        case CSSValueLarge:
-        case CSSValueXLarge:
-        case CSSValueXxLarge:
-        case CSSValueWebkitXxxLarge:
+        if (FontSize::isValidValueID(valueID))
             return FontDescription::Size(FontSize::keywordSize(valueID), 0.0f, false);
-        case CSSValueLarger:
-            return FontDescription::largerSize(parentSize);
-        case CSSValueSmaller:
+        if (valueID == CSSValueSmaller)
             return FontDescription::smallerSize(parentSize);
-        default:
-            ASSERT_NOT_REACHED();
-            return FontBuilder::initialSize();
-        }
+        if (valueID == CSSValueLarger)
+            return FontDescription::largerSize(parentSize);
+        ASSERT_NOT_REACHED();
+        return FontBuilder::initialSize();
     }
 
     bool parentIsAbsoluteSize = state.parentFontDescription().isAbsoluteSize();

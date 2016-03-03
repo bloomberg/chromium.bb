@@ -91,7 +91,7 @@ InterpolationValue CSSMotionRotationInterpolationType::maybeConvertNeutral(const
     return convertMotionRotation(StyleMotionRotation(0, underlyingRotationType));
 }
 
-InterpolationValue CSSMotionRotationInterpolationType::maybeConvertInitial() const
+InterpolationValue CSSMotionRotationInterpolationType::maybeConvertInitial(const StyleResolverState&) const
 {
     return convertMotionRotation(StyleMotionRotation(0, MotionRotationAuto));
 }

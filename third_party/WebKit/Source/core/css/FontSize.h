@@ -40,11 +40,17 @@ public:
     // values from '1' to '8'.
     static unsigned keywordSize(CSSValueID valueID)
     {
-        ASSERT(valueID >= CSSValueXxSmall && valueID <= CSSValueWebkitXxxLarge);
+        ASSERT(isValidValueID(valueID));
         return valueID - CSSValueXxSmall + 1;
     }
 
-    static unsigned initialKeywordSize() { return 4; } // CSSValueMedium
+    static bool isValidValueID(CSSValueID valueID)
+    {
+        return valueID >= CSSValueXxSmall && valueID <= CSSValueWebkitXxxLarge;
+    }
+
+    static CSSValueID initialValueID() { return CSSValueMedium; }
+    static unsigned initialKeywordSize() { return keywordSize(initialValueID()); }
 
     // Given a keyword size in the range (1 to 8), this function will return
     // the correct font size scaled relative to the user's default (4).

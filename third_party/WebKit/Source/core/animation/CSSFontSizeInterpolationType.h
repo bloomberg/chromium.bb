@@ -2,24 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CSSClipInterpolationType_h
-#define CSSClipInterpolationType_h
+#ifndef CSSFontSizeInterpolationType_h
+#define CSSFontSizeInterpolationType_h
 
 #include "core/animation/CSSInterpolationType.h"
 
 namespace blink {
 
-class CSSClipInterpolationType : public CSSInterpolationType {
+class CSSFontSizeInterpolationType : public CSSInterpolationType {
 public:
-    CSSClipInterpolationType(CSSPropertyID property)
+    CSSFontSizeInterpolationType(CSSPropertyID property)
         : CSSInterpolationType(property)
     {
-        ASSERT(property == CSSPropertyClip);
+        ASSERT(property == CSSPropertyFontSize);
     }
 
     InterpolationValue maybeConvertUnderlyingValue(const InterpolationEnvironment&) const final;
-    PairwiseInterpolationValue mergeSingleConversions(InterpolationValue& start, InterpolationValue& end) const final;
-    void composite(UnderlyingValueOwner&, double underlyingFraction, const InterpolationValue&, double interpolationFraction) const final;
     void apply(const InterpolableValue&, const NonInterpolableValue*, InterpolationEnvironment&) const final;
 
 private:
@@ -31,4 +29,4 @@ private:
 
 } // namespace blink
 
-#endif // CSSClipInterpolationType_h
+#endif // CSSFontSizeInterpolationType_h

@@ -160,20 +160,6 @@ PassRefPtr<Interpolation> StringKeyframe::CSSPropertySpecificKeyframe::maybeCrea
         return createLegacyStyleInterpolation(property, end, element, baseStyle);
 
     switch (property) {
-    case CSSPropertyFontSize:
-        if (LengthStyleInterpolation::canCreateFrom(*fromCSSValue) && LengthStyleInterpolation::canCreateFrom(*toCSSValue))
-            return LengthStyleInterpolation::create(*fromCSSValue, *toCSSValue, property, RangeNonNegative);
-
-        // FIXME: Handle keywords e.g. 'smaller', 'larger'.
-        if (property == CSSPropertyFontSize)
-            return createLegacyStyleInterpolation(property, end, element, baseStyle);
-
-        // FIXME: Handle keywords e.g. 'baseline', 'sub'.
-        if (property == CSSPropertyBaselineShift)
-            return createLegacyStyleInterpolation(property, end, element, baseStyle);
-
-        break;
-
     case CSSPropertyTransformOrigin: {
         RefPtr<Interpolation> interpolation = ListStyleInterpolation<LengthStyleInterpolation>::maybeCreateFromList(*fromCSSValue, *toCSSValue, property, range);
         if (interpolation)

@@ -142,7 +142,7 @@ InterpolationValue CSSImageInterpolationType::maybeConvertNeutral(const Interpol
     return InterpolationValue(underlying.clone());
 }
 
-InterpolationValue CSSImageInterpolationType::maybeConvertInitial() const
+InterpolationValue CSSImageInterpolationType::maybeConvertInitial(const StyleResolverState&) const
 {
     return maybeConvertStyleImage(ImagePropertyFunctions::getInitialStyleImage(cssProperty()), true);
 }

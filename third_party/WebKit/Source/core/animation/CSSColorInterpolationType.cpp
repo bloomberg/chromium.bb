@@ -160,7 +160,7 @@ InterpolationValue CSSColorInterpolationType::maybeConvertNeutral(const Interpol
     return convertStyleColorPair(StyleColor(Color::transparent), StyleColor(Color::transparent));
 }
 
-InterpolationValue CSSColorInterpolationType::maybeConvertInitial() const
+InterpolationValue CSSColorInterpolationType::maybeConvertInitial(const StyleResolverState&) const
 {
     const StyleColor initialColor = ColorPropertyFunctions::getInitialColor(cssProperty());
     return convertStyleColorPair(initialColor, initialColor);

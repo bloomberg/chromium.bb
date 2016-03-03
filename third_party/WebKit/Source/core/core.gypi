@@ -866,6 +866,8 @@
             'animation/CSSColorInterpolationType.h',
             'animation/CSSFontWeightInterpolationType.cpp',
             'animation/CSSFontWeightInterpolationType.h',
+            'animation/CSSFontSizeInterpolationType.cpp',
+            'animation/CSSFontSizeInterpolationType.h',
             'animation/CSSImageInterpolationType.cpp',
             'animation/CSSImageInterpolationType.h',
             'animation/CSSImageListInterpolationType.cpp',

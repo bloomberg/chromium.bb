@@ -15,7 +15,7 @@ InterpolationValue CSSPaintInterpolationType::maybeConvertNeutral(const Interpol
     return InterpolationValue(CSSColorInterpolationType::createInterpolableColor(Color::transparent));
 }
 
-InterpolationValue CSSPaintInterpolationType::maybeConvertInitial() const
+InterpolationValue CSSPaintInterpolationType::maybeConvertInitial(const StyleResolverState&) const
 {
     StyleColor initialColor;
     if (!PaintPropertyFunctions::getInitialColor(cssProperty(), initialColor))

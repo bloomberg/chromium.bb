@@ -43,7 +43,7 @@ static InterpolationValue maybeConvertLengthList(const Vector<Length>& lengthLis
     });
 }
 
-InterpolationValue CSSLengthListInterpolationType::maybeConvertInitial() const
+InterpolationValue CSSLengthListInterpolationType::maybeConvertInitial(const StyleResolverState&) const
 {
     Vector<Length> initialLengthList;
     if (!LengthListPropertyFunctions::getInitialLengthList(cssProperty(), initialLengthList))

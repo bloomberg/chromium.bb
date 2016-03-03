@@ -75,6 +75,7 @@ public:
     const ComputedStyle& styleRef() const { return mutableStyleRef(); }
 
     const CSSToLengthConversionData& cssToLengthConversionData() const { return m_cssToLengthConversionData; }
+    CSSToLengthConversionData fontSizeConversionData() const;
 
     void setConversionFontSizes(const CSSToLengthConversionData::FontSizes& fontSizes) { m_cssToLengthConversionData.setFontSizes(fontSizes); }
     void setConversionZoom(float zoom) { m_cssToLengthConversionData.setZoom(zoom); }
@@ -121,12 +122,13 @@ public:
     }
 
     FontBuilder& fontBuilder() { return m_fontBuilder; }
+    const FontBuilder& fontBuilder() const { return m_fontBuilder; }
     // FIXME: These exist as a primitive way to track mutations to font-related properties
     // on a ComputedStyle. As designed, these are very error-prone, as some callers
     // set these directly on the ComputedStyle w/o telling us. Presumably we'll
     // want to design a better wrapper around ComputedStyle for tracking these mutations
     // and separate it from StyleResolverState.
-    const FontDescription& parentFontDescription() { return m_parentStyle->fontDescription(); }
+    const FontDescription& parentFontDescription() const { return m_parentStyle->fontDescription(); }
 
     void setZoom(float f)
     {
