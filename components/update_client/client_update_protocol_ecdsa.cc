@@ -19,22 +19,6 @@ namespace update_client {
 
 namespace {
 
-// This is the algorithm ID for ECDSA with SHA-256. Parameters are ABSENT.
-// RFC 5758:
-//   ecdsa-with-SHA256 OBJECT IDENTIFIER ::= { iso(1) member-body(2)
-//        us(840) ansi-X9-62(10045) signatures(4) ecdsa-with-SHA2(3) 2 }
-//   ...
-//   When the ecdsa-with-SHA224, ecdsa-with-SHA256, ecdsa-with-SHA384, or
-//   ecdsa-with-SHA512 algorithm identifier appears in the algorithm field
-//   as an AlgorithmIdentifier, the encoding MUST omit the parameters
-//   field.  That is, the AlgorithmIdentifier SHALL be a SEQUENCE of one
-//   component, the OID ecdsa-with-SHA224, ecdsa-with-SHA256, ecdsa-with-
-//   SHA384, or ecdsa-with-SHA512.
-// See also RFC 5480, Appendix A.
-static const uint8_t kECDSAWithSHA256AlgorithmID[] = {
-    0x30, 0x0a, 0x06, 0x08, 0x2a, 0x86, 0x48, 0xce, 0x3d, 0x04, 0x03, 0x02,
-};
-
 std::vector<uint8_t> SHA256HashStr(const base::StringPiece& str) {
   std::vector<uint8_t> result(crypto::kSHA256Length);
   crypto::SHA256HashString(str, &result.front(), result.size());
@@ -189,9 +173,9 @@ bool ClientUpdateProtocolEcdsa::ValidateResponse(
   // Initialize the signature verifier.
   crypto::SignatureVerifier verifier;
   if (!verifier.VerifyInit(
-          kECDSAWithSHA256AlgorithmID, sizeof(kECDSAWithSHA256AlgorithmID),
-          &signature.front(), static_cast<int>(signature.size()),
-          &public_key_.front(), static_cast<int>(public_key_.size()))) {
+          crypto::SignatureVerifier::ECDSA_SHA256, &signature.front(),
+          static_cast<int>(signature.size()), &public_key_.front(),
+          static_cast<int>(public_key_.size()))) {
     DVLOG(1) << "Couldn't init SignatureVerifier.";
     return false;
   }

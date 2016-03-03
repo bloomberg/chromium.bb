@@ -21,7 +21,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
-#include "components/crx_file/constants.h"
 #include "components/crx_file/crx_file.h"
 #include "components/update_client/component_patcher.h"
 #include "components/update_client/component_patcher_operation.h"

@@ -13,7 +13,6 @@
 #include "base/numerics/safe_math.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "components/crx_file/constants.h"
 #include "components/crx_file/id_util.h"
 #include "crypto/secure_hash.h"
 #include "crypto/sha2.h"
@@ -160,10 +159,9 @@ CrxFile::ValidateError CrxFile::ValidateSignature(
     return ValidateError::CRX_SIGNATURE_INVALID;
 
   crypto::SignatureVerifier verifier;
-  if (!verifier.VerifyInit(
-          crx_file::kSignatureAlgorithm, sizeof(crx_file::kSignatureAlgorithm),
-          &signature.front(), static_cast<int>(signature.size()), &key.front(),
-          static_cast<int>(key.size()))) {
+  if (!verifier.VerifyInit(crypto::SignatureVerifier::RSA_PKCS1_SHA1,
+                           signature.data(), static_cast<int>(signature.size()),
+                           key.data(), static_cast<int>(key.size()))) {
     // Signature verification initialization failed. This is most likely
     // caused by a public key in the wrong format (should encode algorithm).
     return ValidateError::CRX_SIGNATURE_VERIFICATION_INITIALIZATION_FAILED;

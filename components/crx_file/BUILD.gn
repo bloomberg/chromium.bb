@@ -4,7 +4,6 @@
 
 source_set("crx_file") {
   sources = [
-    "constants.h",
     "crx_file.cc",
     "crx_file.h",
     "id_util.cc",

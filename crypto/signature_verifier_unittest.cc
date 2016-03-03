@@ -14,9 +14,9 @@
 TEST(SignatureVerifierTest, BasicTest) {
   // The input data in this test comes from real certificates.
   //
-  // tbs_certificate ("to-be-signed certificate", the part of a certificate
-  // that is signed), signature_algorithm, and algorithm come from the
-  // certificate of bugs.webkit.org.
+  // tbs_certificate ("to-be-signed certificate", the part of a certificate that
+  // is signed), signature, and algorithm come from the certificate of
+  // bugs.webkit.org.
   //
   // public_key_info comes from the certificate of the issuer, Go Daddy Secure
   // Certification Authority.
@@ -116,19 +116,6 @@ TEST(SignatureVerifierTest, BasicTest) {
       0x74, 0x2e, 0x6f, 0x72, 0x67, 0x82, 0x0a, 0x77, 0x65, 0x62, 0x6b, 0x69,
       0x74, 0x2e, 0x6f, 0x72, 0x67};
 
-  // The signature algorithm is specified as the following ASN.1 structure:
-  //    AlgorithmIdentifier  ::=  SEQUENCE  {
-  //        algorithm               OBJECT IDENTIFIER,
-  //        parameters              ANY DEFINED BY algorithm OPTIONAL  }
-  //
-  const uint8_t signature_algorithm[15] = {
-      0x30, 0x0d,  // a SEQUENCE of length 13 (0xd)
-      0x06, 0x09,  // an OBJECT IDENTIFIER of length 9
-      // 1.2.840.113549.1.1.5 - sha1WithRSAEncryption
-      0x2a, 0x86, 0x48, 0x86, 0xf7, 0x0d, 0x01, 0x01, 0x05, 0x05,
-      0x00,  // a NULL of length 0
-  };
-
   // RSA signature, a big integer in the big-endian byte order.
   const uint8_t signature[256] = {
       0x1e, 0x6a, 0xe7, 0xe0, 0x4f, 0xe7, 0x4d, 0xd0, 0x69, 0x7c, 0xf8, 0x8f,
@@ -202,12 +189,11 @@ TEST(SignatureVerifierTest, BasicTest) {
   crypto::SignatureVerifier verifier;
   bool ok;
 
-  // Test 1: feed all of the data to the verifier at once (a single
+  // Test  1: feed all of the data to the verifier at once (a single
   // VerifyUpdate call).
-  ok = verifier.VerifyInit(signature_algorithm,
-                           sizeof(signature_algorithm),
-                           signature, sizeof(signature),
-                           public_key_info, sizeof(public_key_info));
+  ok = verifier.VerifyInit(crypto::SignatureVerifier::RSA_PKCS1_SHA1, signature,
+                           sizeof(signature), public_key_info,
+                           sizeof(public_key_info));
   EXPECT_TRUE(ok);
   verifier.VerifyUpdate(tbs_certificate, sizeof(tbs_certificate));
   ok = verifier.VerifyFinal();
@@ -215,12 +201,11 @@ TEST(SignatureVerifierTest, BasicTest) {
 
   // Test 2: feed the data to the verifier in three parts (three VerifyUpdate
   // calls).
-  ok = verifier.VerifyInit(signature_algorithm,
-                           sizeof(signature_algorithm),
-                           signature, sizeof(signature),
-                           public_key_info, sizeof(public_key_info));
+  ok = verifier.VerifyInit(crypto::SignatureVerifier::RSA_PKCS1_SHA1, signature,
+                           sizeof(signature), public_key_info,
+                           sizeof(public_key_info));
   EXPECT_TRUE(ok);
-  verifier.VerifyUpdate(tbs_certificate,       256);
+  verifier.VerifyUpdate(tbs_certificate, 256);
   verifier.VerifyUpdate(tbs_certificate + 256, 256);
   verifier.VerifyUpdate(tbs_certificate + 512, sizeof(tbs_certificate) - 512);
   ok = verifier.VerifyFinal();
@@ -230,10 +215,9 @@ TEST(SignatureVerifierTest, BasicTest) {
   uint8_t bad_tbs_certificate[sizeof(tbs_certificate)];
   memcpy(bad_tbs_certificate, tbs_certificate, sizeof(tbs_certificate));
   bad_tbs_certificate[10] += 1;  // Corrupt one byte of the data.
-  ok = verifier.VerifyInit(signature_algorithm,
-                           sizeof(signature_algorithm),
-                           signature, sizeof(signature),
-                           public_key_info, sizeof(public_key_info));
+  ok = verifier.VerifyInit(crypto::SignatureVerifier::RSA_PKCS1_SHA1, signature,
+                           sizeof(signature), public_key_info,
+                           sizeof(public_key_info));
   EXPECT_TRUE(ok);
   verifier.VerifyUpdate(bad_tbs_certificate, sizeof(bad_tbs_certificate));
   ok = verifier.VerifyFinal();
@@ -243,8 +227,7 @@ TEST(SignatureVerifierTest, BasicTest) {
   uint8_t bad_signature[sizeof(signature)];
   memcpy(bad_signature, signature, sizeof(signature));
   bad_signature[10] += 1;  // Corrupt one byte of the signature.
-  ok = verifier.VerifyInit(signature_algorithm,
-                           sizeof(signature_algorithm),
+  ok = verifier.VerifyInit(crypto::SignatureVerifier::RSA_PKCS1_SHA1,
                            bad_signature, sizeof(bad_signature),
                            public_key_info, sizeof(public_key_info));
 
@@ -260,20 +243,18 @@ TEST(SignatureVerifierTest, BasicTest) {
   uint8_t bad_public_key_info[sizeof(public_key_info)];
   memcpy(bad_public_key_info, public_key_info, sizeof(public_key_info));
   bad_public_key_info[0] += 1;  // Corrupt part of the SPKI syntax.
-  ok = verifier.VerifyInit(signature_algorithm,
-                           sizeof(signature_algorithm),
-                           signature, sizeof(signature),
-                           bad_public_key_info, sizeof(bad_public_key_info));
+  ok = verifier.VerifyInit(crypto::SignatureVerifier::RSA_PKCS1_SHA1, signature,
+                           sizeof(signature), bad_public_key_info,
+                           sizeof(bad_public_key_info));
   EXPECT_FALSE(ok);
 
   // Test 6: import a key with extra data.
   uint8_t long_public_key_info[sizeof(public_key_info) + 5];
   memset(long_public_key_info, 0, sizeof(long_public_key_info));
   memcpy(long_public_key_info, public_key_info, sizeof(public_key_info));
-  ok = verifier.VerifyInit(signature_algorithm,
-                           sizeof(signature_algorithm),
-                           signature, sizeof(signature),
-                           long_public_key_info, sizeof(long_public_key_info));
+  ok = verifier.VerifyInit(crypto::SignatureVerifier::RSA_PKCS1_SHA1, signature,
+                           sizeof(signature), long_public_key_info,
+                           sizeof(long_public_key_info));
   EXPECT_FALSE(ok);
 }
 
@@ -1022,7 +1003,7 @@ static bool EncodeRSAPublicKey(const std::vector<uint8_t>& modulus_n,
   //       algorithm            AlgorithmIdentifier,
   //       subjectPublicKey     BIT STRING  }
   //
-  // The signature algorithm is specified as the following ASN.1 structure:
+  // The algorithm is specified as the following ASN.1 structure:
   //    AlgorithmIdentifier  ::=  SEQUENCE  {
   //        algorithm               OBJECT IDENTIFIER,
   //        parameters              ANY DEFINED BY algorithm OPTIONAL  }

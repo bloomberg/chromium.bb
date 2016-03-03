@@ -30,24 +30,6 @@ namespace {
 // Grace interval for policy-from-the-future timestamp checks.
 const int kTimestampGraceIntervalHours = 2;
 
-// DER-encoded ASN.1 object identifier for the SHA1-RSA signature algorithm.
-const uint8_t kSHA1SignatureAlgorithm[] = {0x30, 0x0d, 0x06, 0x09, 0x2a,
-                                           0x86, 0x48, 0x86, 0xf7, 0x0d,
-                                           0x01, 0x01, 0x05, 0x05, 0x00};
-
-// DER-encoded ASN.1 object identifier for the SHA256-RSA signature algorithm
-// (source: http://tools.ietf.org/html/rfc5754 section 3.2).
-const uint8_t kSHA256SignatureAlgorithm[] = {0x30, 0x0d, 0x06, 0x09, 0x2a,
-                                             0x86, 0x48, 0x86, 0xf7, 0x0d,
-                                             0x01, 0x01, 0x0b, 0x05, 0x00};
-
-static_assert(sizeof(kSHA256SignatureAlgorithm) ==
-              sizeof(kSHA1SignatureAlgorithm),
-              "kSHA256SignatureAlgorithm must be the same size as "
-              "kSHA1SignatureAlgorithm");
-
-const int kSignatureAlgorithmSize = sizeof(kSHA1SignatureAlgorithm);
-
 const char kMetricPolicyKeyVerification[] = "Enterprise.PolicyKeyVerification";
 
 enum MetricPolicyKeyVerification {
@@ -526,13 +508,13 @@ bool CloudPolicyValidatorBase::VerifySignature(const std::string& data,
                                                const std::string& signature,
                                                SignatureType signature_type) {
   crypto::SignatureVerifier verifier;
-  const uint8_t* algorithm = NULL;
+  crypto::SignatureVerifier::SignatureAlgorithm algorithm;
   switch (signature_type) {
     case SHA1:
-      algorithm = kSHA1SignatureAlgorithm;
+      algorithm = crypto::SignatureVerifier::RSA_PKCS1_SHA1;
       break;
     case SHA256:
-      algorithm = kSHA256SignatureAlgorithm;
+      algorithm = crypto::SignatureVerifier::RSA_PKCS1_SHA256;
       break;
     default:
       NOTREACHED() << "Invalid signature type: " << signature_type;
@@ -540,9 +522,9 @@ bool CloudPolicyValidatorBase::VerifySignature(const std::string& data,
   }
 
   if (!verifier.VerifyInit(
-          algorithm, kSignatureAlgorithmSize,
-          reinterpret_cast<const uint8_t*>(signature.c_str()), signature.size(),
-          reinterpret_cast<const uint8_t*>(key.c_str()), key.size())) {
+          algorithm, reinterpret_cast<const uint8_t*>(signature.c_str()),
+          signature.size(), reinterpret_cast<const uint8_t*>(key.c_str()),
+          key.size())) {
     DLOG(ERROR) << "Invalid verification signature/key format";
     return false;
   }

@@ -27,7 +27,6 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/common/chrome_switches.h"
-#include "components/crx_file/constants.h"
 #include "crypto/random.h"
 #include "crypto/secure_hash.h"
 #include "crypto/sha2.h"
@@ -261,7 +260,7 @@ bool InstallSigner::VerifySignature(const InstallSignature& signature) {
 
   crypto::SignatureVerifier verifier;
   if (!verifier.VerifyInit(
-          crx_file::kSignatureAlgorithm, sizeof(crx_file::kSignatureAlgorithm),
+          crypto::SignatureVerifier::RSA_PKCS1_SHA1,
           reinterpret_cast<const uint8_t*>(signature.signature.data()),
           signature.signature.size(),
           reinterpret_cast<const uint8_t*>(public_key.data()),

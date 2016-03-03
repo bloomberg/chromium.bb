@@ -39,22 +39,6 @@ bool SignatureVerificationEnabled() {
 #endif
 }
 
-// This is the algorithm ID for ECDSA with SHA-256. Parameters are ABSENT.
-// RFC 5758:
-//   ecdsa-with-SHA256 OBJECT IDENTIFIER ::= { iso(1) member-body(2)
-//        us(840) ansi-X9-62(10045) signatures(4) ecdsa-with-SHA2(3) 2 }
-//   ...
-//   When the ecdsa-with-SHA224, ecdsa-with-SHA256, ecdsa-with-SHA384, or
-//   ecdsa-with-SHA512 algorithm identifier appears in the algorithm field
-//   as an AlgorithmIdentifier, the encoding MUST omit the parameters
-//   field.  That is, the AlgorithmIdentifier SHALL be a SEQUENCE of one
-//   component, the OID ecdsa-with-SHA224, ecdsa-with-SHA256, ecdsa-with-
-//   SHA384, or ecdsa-with-SHA512.
-// See also RFC 5480, Appendix A.
-const uint8_t kECDSAWithSHA256AlgorithmID[] = {
-    0x30, 0x0a, 0x06, 0x08, 0x2a, 0x86, 0x48, 0xce, 0x3d, 0x04, 0x03, 0x02,
-};
-
 // The ECDSA public key of the variations server for verifying variations seed
 // signatures.
 const uint8_t kPublicKey[] = {
@@ -341,10 +325,10 @@ VariationsSeedStore::VerifySeedSignature(
     return VARIATIONS_SEED_SIGNATURE_DECODE_FAILED;
 
   crypto::SignatureVerifier verifier;
-  if (!verifier.VerifyInit(
-          kECDSAWithSHA256AlgorithmID, sizeof(kECDSAWithSHA256AlgorithmID),
-          reinterpret_cast<const uint8_t*>(signature.data()), signature.size(),
-          kPublicKey, arraysize(kPublicKey))) {
+  if (!verifier.VerifyInit(crypto::SignatureVerifier::ECDSA_SHA256,
+                           reinterpret_cast<const uint8_t*>(signature.data()),
+                           signature.size(), kPublicKey,
+                           arraysize(kPublicKey))) {
     return VARIATIONS_SEED_SIGNATURE_INVALID_SIGNATURE;
   }
 

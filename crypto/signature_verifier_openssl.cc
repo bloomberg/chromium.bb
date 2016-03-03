@@ -5,8 +5,8 @@
 #include "crypto/signature_verifier.h"
 
 #include <openssl/bytestring.h>
+#include <openssl/digest.h>
 #include <openssl/evp.h>
-#include <openssl/x509.h>
 #include <stdint.h>
 
 #include <vector>
@@ -44,33 +44,32 @@ SignatureVerifier::~SignatureVerifier() {
   Reset();
 }
 
-bool SignatureVerifier::VerifyInit(const uint8_t* signature_algorithm,
-                                   int signature_algorithm_len,
+bool SignatureVerifier::VerifyInit(SignatureAlgorithm signature_algorithm,
                                    const uint8_t* signature,
                                    int signature_len,
                                    const uint8_t* public_key_info,
                                    int public_key_info_len) {
-  OpenSSLErrStackTracer err_tracer(FROM_HERE);
-  ScopedOpenSSL<X509_ALGOR, X509_ALGOR_free> algorithm(
-      d2i_X509_ALGOR(NULL, &signature_algorithm, signature_algorithm_len));
-  if (!algorithm.get())
-    return false;
-  int nid = OBJ_obj2nid(algorithm.get()->algorithm);
-  const EVP_MD* digest;
-  if (nid == NID_ecdsa_with_SHA1) {
-    digest = EVP_sha1();
-  } else if (nid == NID_ecdsa_with_SHA256) {
-    digest = EVP_sha256();
-  } else {
-    // This works for PKCS #1 v1.5 RSA signatures, but not for ECDSA
-    // signatures.
-    digest = EVP_get_digestbyobj(algorithm.get()->algorithm);
+  int pkey_type = EVP_PKEY_NONE;
+  const EVP_MD* digest = nullptr;
+  switch (signature_algorithm) {
+    case RSA_PKCS1_SHA1:
+      pkey_type = EVP_PKEY_RSA;
+      digest = EVP_sha1();
+      break;
+    case RSA_PKCS1_SHA256:
+      pkey_type = EVP_PKEY_RSA;
+      digest = EVP_sha256();
+      break;
+    case ECDSA_SHA256:
+      pkey_type = EVP_PKEY_EC;
+      digest = EVP_sha256();
+      break;
   }
-  if (!digest)
-    return false;
+  DCHECK_NE(EVP_PKEY_NONE, pkey_type);
+  DCHECK(digest);
 
-  return CommonInit(digest, signature, signature_len, public_key_info,
-                    public_key_info_len, NULL);
+  return CommonInit(pkey_type, digest, signature, signature_len,
+                    public_key_info, public_key_info_len, nullptr);
 }
 
 bool SignatureVerifier::VerifyInitRSAPSS(HashAlgorithm hash_alg,
@@ -88,8 +87,8 @@ bool SignatureVerifier::VerifyInitRSAPSS(HashAlgorithm hash_alg,
   }
 
   EVP_PKEY_CTX* pkey_ctx;
-  if (!CommonInit(digest, signature, signature_len, public_key_info,
-                  public_key_info_len, &pkey_ctx)) {
+  if (!CommonInit(EVP_PKEY_RSA, digest, signature, signature_len,
+                  public_key_info, public_key_info_len, &pkey_ctx)) {
     return false;
   }
 
@@ -101,11 +100,8 @@ bool SignatureVerifier::VerifyInitRSAPSS(HashAlgorithm hash_alg,
   if (!mgf_digest) {
     return false;
   }
-  rv = EVP_PKEY_CTX_set_rsa_mgf1_md(pkey_ctx, mgf_digest);
-  if (rv != 1)
-    return false;
-  rv = EVP_PKEY_CTX_set_rsa_pss_saltlen(pkey_ctx, salt_len);
-  return rv == 1;
+  return EVP_PKEY_CTX_set_rsa_mgf1_md(pkey_ctx, mgf_digest) &&
+         EVP_PKEY_CTX_set_rsa_pss_saltlen(pkey_ctx, salt_len);
 }
 
 void SignatureVerifier::VerifyUpdate(const uint8_t* data_part,
@@ -127,7 +123,8 @@ bool SignatureVerifier::VerifyFinal() {
   return rv == 1;
 }
 
-bool SignatureVerifier::CommonInit(const EVP_MD* digest,
+bool SignatureVerifier::CommonInit(int pkey_type,
+                                   const EVP_MD* digest,
                                    const uint8_t* signature,
                                    int signature_len,
                                    const uint8_t* public_key_info,
@@ -143,8 +140,10 @@ bool SignatureVerifier::CommonInit(const EVP_MD* digest,
   CBS cbs;
   CBS_init(&cbs, public_key_info, public_key_info_len);
   ScopedEVP_PKEY public_key(EVP_parse_public_key(&cbs));
-  if (!public_key || CBS_len(&cbs) != 0)
+  if (!public_key || CBS_len(&cbs) != 0 ||
+      EVP_PKEY_id(public_key.get()) != pkey_type) {
     return false;
+  }
 
   verify_context_->ctx.reset(EVP_MD_CTX_create());
   int rv = EVP_DigestVerifyInit(verify_context_->ctx.get(), pkey_ctx,

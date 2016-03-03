@@ -30,6 +30,18 @@ HASH_HashType ToNSSHashType(SignatureVerifier::HashAlgorithm hash_alg) {
   return HASH_AlgNULL;
 }
 
+SECOidTag ToNSSSignatureType(SignatureVerifier::SignatureAlgorithm sig_alg) {
+  switch (sig_alg) {
+    case SignatureVerifier::RSA_PKCS1_SHA1:
+      return SEC_OID_PKCS1_SHA1_WITH_RSA_ENCRYPTION;
+    case SignatureVerifier::RSA_PKCS1_SHA256:
+      return SEC_OID_PKCS1_SHA256_WITH_RSA_ENCRYPTION;
+    case SignatureVerifier::ECDSA_SHA256:
+      return SEC_OID_ANSIX962_ECDSA_SHA256_SIGNATURE;
+  }
+  return SEC_OID_UNKNOWN;
+}
+
 SECStatus VerifyRSAPSS_End(SECKEYPublicKey* public_key,
                            HASHContext* hash_context,
                            HASH_HashType mask_hash_alg,
@@ -74,8 +86,7 @@ SignatureVerifier::~SignatureVerifier() {
   Reset();
 }
 
-bool SignatureVerifier::VerifyInit(const uint8_t* signature_algorithm,
-                                   int signature_algorithm_len,
+bool SignatureVerifier::VerifyInit(SignatureAlgorithm signature_algorithm,
                                    const uint8_t* signature,
                                    int signature_len,
                                    const uint8_t* public_key_info,
@@ -90,37 +101,13 @@ bool SignatureVerifier::VerifyInit(const uint8_t* signature_algorithm,
   if (!public_key)
     return false;
 
-  PLArenaPool* arena = PORT_NewArena(DER_DEFAULT_CHUNKSIZE);
-  if (!arena) {
-    SECKEY_DestroyPublicKey(public_key);
-    return false;
-  }
-
-  SECItem sig_alg_der;
-  sig_alg_der.type = siBuffer;
-  sig_alg_der.data = const_cast<uint8_t*>(signature_algorithm);
-  sig_alg_der.len = signature_algorithm_len;
-  SECAlgorithmID sig_alg_id;
-  SECStatus rv;
-  rv = SEC_QuickDERDecodeItem(arena, &sig_alg_id,
-                              SEC_ASN1_GET(SECOID_AlgorithmIDTemplate),
-                              &sig_alg_der);
-  if (rv != SECSuccess) {
-    SECKEY_DestroyPublicKey(public_key);
-    PORT_FreeArena(arena, PR_TRUE);
-    return false;
-  }
-
   SECItem sig;
   sig.type = siBuffer;
   sig.data = const_cast<uint8_t*>(signature);
   sig.len = signature_len;
-  SECOidTag hash_alg_tag;
-  vfy_context_ = VFY_CreateContextWithAlgorithmID(public_key, &sig,
-                                                  &sig_alg_id, &hash_alg_tag,
-                                                  NULL);
+  vfy_context_ = VFY_CreateContext(
+      public_key, &sig, ToNSSSignatureType(signature_algorithm), nullptr);
   SECKEY_DestroyPublicKey(public_key);  // Done with public_key.
-  PORT_FreeArena(arena, PR_TRUE);  // Done with sig_alg_id.
   if (!vfy_context_) {
     // A corrupted RSA signature could be detected without the data, so
     // VFY_CreateContextWithAlgorithmID may fail with SEC_ERROR_BAD_SIGNATURE
@@ -128,8 +115,7 @@ bool SignatureVerifier::VerifyInit(const uint8_t* signature_algorithm,
     return false;
   }
 
-  rv = VFY_Begin(vfy_context_);
-  if (rv != SECSuccess) {
+  if (VFY_Begin(vfy_context_) != SECSuccess) {
     NOTREACHED();
     return false;
   }

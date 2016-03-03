@@ -21,14 +21,6 @@ using base::Value;
 
 namespace {
 
-// Note: this structure is an ASN.1 which encodes the algorithm used with its
-// parameters.  The signature algorithm is "RSA256" aka "RSASSA-PKCS-v1_5 using
-// SHA-256 hash algorithm". This is defined in PKCS #1 (RFC 3447).
-// It is encoding: { OID sha256WithRSAEncryption      PARAMETERS NULL }
-const uint8_t kSignatureAlgorithm[15] = {0x30, 0x0d, 0x06, 0x09, 0x2a,
-                                         0x86, 0x48, 0x86, 0xf7, 0x0d,
-                                         0x01, 0x01, 0x0b, 0x05, 0x00};
-
 const char kBlockSizeKey[] = "block_size";
 const char kContentHashesKey[] = "content_hashes";
 const char kDescriptionKey[] = "description";
@@ -308,7 +300,7 @@ bool VerifiedContents::VerifySignature(const std::string& protected_value,
                                        const std::string& signature_bytes) {
   crypto::SignatureVerifier signature_verifier;
   if (!signature_verifier.VerifyInit(
-          kSignatureAlgorithm, sizeof(kSignatureAlgorithm),
+          crypto::SignatureVerifier::RSA_PKCS1_SHA256,
           reinterpret_cast<const uint8_t*>(signature_bytes.data()),
           signature_bytes.size(), public_key_, public_key_size_)) {
     VLOG(1) << "Could not verify signature - VerifyInit failure";
