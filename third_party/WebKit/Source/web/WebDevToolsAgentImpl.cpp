@@ -343,8 +343,6 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
     , m_tracingAgent(nullptr)
     , m_pageRuntimeAgent(nullptr)
     , m_pageConsoleAgent(nullptr)
-    , m_layerTreeId(0)
-    , m_inspectedFrameDidCommitLoad(false)
     , m_agents(m_instrumentingAgents.get())
     , m_deferredAgentsInitialized(false)
     , m_sessionId(0)
@@ -358,14 +356,36 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
     IdentifiersFactory::setProcessId(processId);
 
     ClientMessageLoopAdapter::ensureMainThreadDebuggerCreated(m_client);
+    MainThreadDebugger* mainThreadDebugger = MainThreadDebugger::instance();
 
     OwnPtrWillBeRawPtr<InspectorInspectorAgent> inspectorAgentPtr(InspectorInspectorAgent::create());
     m_inspectorAgent = inspectorAgentPtr.get();
     m_agents.append(inspectorAgentPtr.release());
 
-    OwnPtrWillBeRawPtr<InspectorWorkerAgent> workerAgentPtr = InspectorWorkerAgent::create(m_inspectedFrames.get());
-    m_workerAgent = workerAgentPtr.get();
+    OwnPtrWillBeRawPtr<PageRuntimeAgent> pageRuntimeAgentPtr(PageRuntimeAgent::create(this, mainThreadDebugger->debugger(), m_inspectedFrames.get()));
+    m_pageRuntimeAgent = pageRuntimeAgentPtr.get();
+    m_agents.append(pageRuntimeAgentPtr.release());
+
+    v8::Isolate* isolate = V8PerIsolateData::mainThreadIsolate();
+    OwnPtrWillBeRawPtr<InspectorDOMAgent> domAgentPtr(InspectorDOMAgent::create(isolate, m_inspectedFrames.get(), m_pageRuntimeAgent->v8Agent(), m_overlay.get()));
+    m_domAgent = domAgentPtr.get();
+    m_agents.append(domAgentPtr.release());
+
+    OwnPtrWillBeRawPtr<InspectorLayerTreeAgent> layerTreeAgentPtr(InspectorLayerTreeAgent::create(m_inspectedFrames.get()));
+    m_layerTreeAgent = layerTreeAgentPtr.get();
+    m_agents.append(layerTreeAgentPtr.release());
+
+    OwnPtrWillBeRawPtr<PageConsoleAgent> pageConsoleAgentPtr = PageConsoleAgent::create(m_pageRuntimeAgent->v8Agent(), m_domAgent, m_inspectedFrames.get());
+    m_pageConsoleAgent = pageConsoleAgentPtr.get();
+
+    OwnPtrWillBeRawPtr<InspectorWorkerAgent> workerAgentPtr = InspectorWorkerAgent::create(m_inspectedFrames.get(), pageConsoleAgentPtr.get());
+
+    OwnPtrWillBeRawPtr<InspectorTracingAgent> tracingAgentPtr = InspectorTracingAgent::create(this, workerAgentPtr.get(), m_inspectedFrames.get());
+    m_tracingAgent = tracingAgentPtr.get();
+    m_agents.append(tracingAgentPtr.release());
+
     m_agents.append(workerAgentPtr.release());
+    m_agents.append(pageConsoleAgentPtr.release());
 }
 
 WebDevToolsAgentImpl::~WebDevToolsAgentImpl()
@@ -410,7 +430,6 @@ DEFINE_TRACE(WebDevToolsAgentImpl)
     visitor->trace(m_resourceAgent);
     visitor->trace(m_layerTreeAgent);
     visitor->trace(m_tracingAgent);
-    visitor->trace(m_workerAgent);
     visitor->trace(m_pageRuntimeAgent);
     visitor->trace(m_pageConsoleAgent);
     visitor->trace(m_agents);
@@ -433,20 +452,9 @@ void WebDevToolsAgentImpl::initializeDeferredAgents()
         return;
     m_deferredAgentsInitialized = true;
 
-    v8::Isolate* isolate = V8PerIsolateData::mainThreadIsolate();
-    MainThreadDebugger* mainThreadDebugger = MainThreadDebugger::instance();
-
-    OwnPtrWillBeRawPtr<PageRuntimeAgent> pageRuntimeAgentPtr(PageRuntimeAgent::create(this, mainThreadDebugger->debugger(), m_inspectedFrames.get()));
-    m_pageRuntimeAgent = pageRuntimeAgentPtr.get();
-    m_agents.append(pageRuntimeAgentPtr.release());
-
     OwnPtrWillBeRawPtr<InspectorResourceAgent> resourceAgentPtr(InspectorResourceAgent::create(m_inspectedFrames.get()));
     m_resourceAgent = resourceAgentPtr.get();
     m_agents.append(resourceAgentPtr.release());
-
-    OwnPtrWillBeRawPtr<InspectorDOMAgent> domAgentPtr(InspectorDOMAgent::create(isolate, m_inspectedFrames.get(), m_pageRuntimeAgent->v8Agent(), m_overlay.get()));
-    m_domAgent = domAgentPtr.get();
-    m_agents.append(domAgentPtr.release());
 
     OwnPtrWillBeRawPtr<InspectorCSSAgent> cssAgentPtr(InspectorCSSAgent::create(m_domAgent, m_inspectedFrames.get(), m_resourceAgent, m_resourceContentLoader.get()));
     InspectorCSSAgent* cssAgent = cssAgentPtr.get();
@@ -463,29 +471,19 @@ void WebDevToolsAgentImpl::initializeDeferredAgents()
     InspectorDebuggerAgent* debuggerAgent = debuggerAgentPtr.get();
     m_agents.append(debuggerAgentPtr.release());
 
+    v8::Isolate* isolate = V8PerIsolateData::mainThreadIsolate();
+
     m_agents.append(InspectorDOMDebuggerAgent::create(isolate, m_domAgent, m_pageRuntimeAgent->v8Agent(), debuggerAgent->v8Agent()));
     m_agents.append(InspectorInputAgent::create(m_inspectedFrames.get()));
     m_agents.append(InspectorProfilerAgent::create(MainThreadDebugger::instance()->debugger(), m_overlay.get()));
     m_agents.append(InspectorHeapProfilerAgent::create(isolate, m_pageRuntimeAgent->v8Agent()));
 
-    OwnPtrWillBeRawPtr<InspectorTracingAgent> tracingAgentPtr = InspectorTracingAgent::create(this, m_workerAgent.get(), m_inspectedFrames.get());
-    m_tracingAgent = tracingAgentPtr.get();
-    m_tracingAgent->setLayerTreeId(m_layerTreeId);
-    m_agents.append(tracingAgentPtr.release());
-
-    OwnPtrWillBeRawPtr<InspectorLayerTreeAgent> layerTreeAgentPtr(InspectorLayerTreeAgent::create(m_inspectedFrames.get()));
-    m_layerTreeAgent = layerTreeAgentPtr.get();
-    m_agents.append(layerTreeAgentPtr.release());
-
     OwnPtrWillBeRawPtr<InspectorPageAgent> pageAgentPtr(InspectorPageAgent::create(m_inspectedFrames.get(), this, m_resourceContentLoader.get(), debuggerAgent));
     m_pageAgent = pageAgentPtr.get();
     m_agents.append(pageAgentPtr.release());
 
-    OwnPtrWillBeRawPtr<PageConsoleAgent> pageConsoleAgentPtr = PageConsoleAgent::create(m_pageRuntimeAgent->v8Agent(), debuggerAgent->v8Agent(), m_domAgent, m_inspectedFrames.get());
-    m_pageConsoleAgent = pageConsoleAgentPtr.get();
-    m_agents.append(pageConsoleAgentPtr.release());
+    m_pageConsoleAgent->setDebuggerAgent(debuggerAgent->v8Agent());
 
-    m_workerAgent->setPageConsoleAgent(m_pageConsoleAgent);
     m_pageRuntimeAgent->v8Agent()->setClearConsoleCallback(bind<>(&InspectorConsoleAgent::clearAllMessages, m_pageConsoleAgent.get()));
     m_pageRuntimeAgent->v8Agent()->setInspectObjectCallback(bind<PassOwnPtr<protocol::Runtime::RemoteObject>, PassOwnPtr<protocol::DictionaryValue>>(&InspectorInspectorAgent::inspect, m_inspectorAgent.get()));
 
@@ -566,8 +564,6 @@ void WebDevToolsAgentImpl::continueProgram()
 
 void WebDevToolsAgentImpl::didCommitLoadForLocalFrame(LocalFrame* frame)
 {
-    if (frame == m_inspectedFrames->root())
-        m_inspectedFrameDidCommitLoad = true;
     m_resourceContentLoader->didCommitLoadForLocalFrame(frame);
     m_agents.didCommitLoadForLocalFrame(frame);
 }
@@ -579,21 +575,17 @@ bool WebDevToolsAgentImpl::screencastEnabled()
 
 void WebDevToolsAgentImpl::willAddPageOverlay(const GraphicsLayer* layer)
 {
-    if (m_layerTreeAgent)
-        m_layerTreeAgent->willAddPageOverlay(layer);
+    m_layerTreeAgent->willAddPageOverlay(layer);
 }
 
 void WebDevToolsAgentImpl::didRemovePageOverlay(const GraphicsLayer* layer)
 {
-    if (m_layerTreeAgent)
-        m_layerTreeAgent->didRemovePageOverlay(layer);
+    m_layerTreeAgent->didRemovePageOverlay(layer);
 }
 
 void WebDevToolsAgentImpl::layerTreeViewChanged(WebLayerTreeView* layerTreeView)
 {
-    m_layerTreeId = layerTreeView ? layerTreeView->layerTreeId() : 0;
-    if (m_tracingAgent)
-        m_tracingAgent->setLayerTreeId(m_layerTreeId);
+    m_tracingAgent->setLayerTreeId(layerTreeView ? layerTreeView->layerTreeId() : 0);
 }
 
 void WebDevToolsAgentImpl::enableTracing(const String& categoryFilter)
@@ -686,11 +678,6 @@ void WebDevToolsAgentImpl::resumeStartup()
         return;
     // Otherwise, pass to the client (embedded workers do it differently).
     m_client->resumeStartup();
-}
-
-bool WebDevToolsAgentImpl::didCommitLoadFired()
-{
-    return m_inspectedFrameDidCommitLoad;
 }
 
 void WebDevToolsAgentImpl::pageLayoutInvalidated(bool resized)

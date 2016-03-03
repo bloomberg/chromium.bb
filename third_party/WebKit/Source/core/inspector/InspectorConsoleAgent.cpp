@@ -43,10 +43,10 @@ namespace ConsoleAgentState {
 static const char consoleMessagesEnabled[] = "consoleMessagesEnabled";
 }
 
-InspectorConsoleAgent::InspectorConsoleAgent(V8RuntimeAgent* runtimeAgent, V8DebuggerAgent* debuggerAgent)
+InspectorConsoleAgent::InspectorConsoleAgent(V8RuntimeAgent* runtimeAgent)
     : InspectorBaseAgent<InspectorConsoleAgent, protocol::Frontend::Console>("Console")
     , m_runtimeAgent(runtimeAgent)
-    , m_debuggerAgent(debuggerAgent)
+    , m_debuggerAgent(nullptr)
     , m_enabled(false)
 {
 }

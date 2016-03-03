@@ -125,7 +125,6 @@ private:
 
     // InspectorRuntimeAgent::Client implementation.
     void resumeStartup() override;
-    bool didCommitLoadFired() override;
 
     // InspectorPageAgent::Client implementation.
     void pageLayoutInvalidated(bool resized) override;
@@ -161,12 +160,8 @@ private:
     RawPtrWillBeMember<InspectorResourceAgent> m_resourceAgent;
     RawPtrWillBeMember<InspectorLayerTreeAgent> m_layerTreeAgent;
     RawPtrWillBeMember<InspectorTracingAgent> m_tracingAgent;
-    RawPtrWillBeMember<InspectorWorkerAgent> m_workerAgent;
     RawPtrWillBeMember<PageRuntimeAgent> m_pageRuntimeAgent;
     RawPtrWillBeMember<PageConsoleAgent> m_pageConsoleAgent;
-
-    int m_layerTreeId;
-    bool m_inspectedFrameDidCommitLoad;
 
     OwnPtr<protocol::Dispatcher> m_inspectorBackendDispatcher;
     OwnPtr<protocol::Frontend> m_inspectorFrontend;
