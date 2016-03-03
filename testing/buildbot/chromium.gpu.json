@@ -22,7 +22,8 @@
             }
           ]
         },
-        "test": "angle_unittests"
+        "test": "angle_unittests",
+        "use_xvfb": false
       },
       {
         "args": [
@@ -37,7 +38,8 @@
             }
           ]
         },
-        "test": "content_gl_tests"
+        "test": "content_gl_tests",
+        "use_xvfb": false
       },
       {
         "args": [
@@ -52,7 +54,8 @@
             }
           ]
         },
-        "test": "gl_tests"
+        "test": "gl_tests",
+        "use_xvfb": false
       },
       {
         "args": [
@@ -67,7 +70,8 @@
             }
           ]
         },
-        "test": "gl_unittests"
+        "test": "gl_unittests",
+        "use_xvfb": false
       }
     ],
     "isolated_scripts": [
@@ -332,7 +336,8 @@
             }
           ]
         },
-        "test": "angle_unittests"
+        "test": "angle_unittests",
+        "use_xvfb": false
       },
       {
         "args": [
@@ -347,7 +352,8 @@
             }
           ]
         },
-        "test": "content_gl_tests"
+        "test": "content_gl_tests",
+        "use_xvfb": false
       },
       {
         "args": [
@@ -362,7 +368,8 @@
             }
           ]
         },
-        "test": "gl_tests"
+        "test": "gl_tests",
+        "use_xvfb": false
       },
       {
         "args": [
@@ -377,7 +384,8 @@
             }
           ]
         },
-        "test": "gl_unittests"
+        "test": "gl_unittests",
+        "use_xvfb": false
       },
       {
         "override_compile_targets": [
@@ -392,7 +400,8 @@
             }
           ]
         },
-        "test": "tab_capture_end2end_tests"
+        "test": "tab_capture_end2end_tests",
+        "use_xvfb": false
       }
     ],
     "isolated_scripts": [
@@ -657,7 +666,8 @@
             }
           ]
         },
-        "test": "angle_unittests"
+        "test": "angle_unittests",
+        "use_xvfb": false
       },
       {
         "args": [
@@ -672,7 +682,8 @@
             }
           ]
         },
-        "test": "content_gl_tests"
+        "test": "content_gl_tests",
+        "use_xvfb": false
       },
       {
         "args": [
@@ -687,7 +698,8 @@
             }
           ]
         },
-        "test": "gl_tests"
+        "test": "gl_tests",
+        "use_xvfb": false
       },
       {
         "args": [
@@ -702,7 +714,8 @@
             }
           ]
         },
-        "test": "gl_unittests"
+        "test": "gl_unittests",
+        "use_xvfb": false
       }
     ],
     "isolated_scripts": [
@@ -967,7 +980,8 @@
             }
           ]
         },
-        "test": "angle_unittests"
+        "test": "angle_unittests",
+        "use_xvfb": false
       },
       {
         "args": [
@@ -982,7 +996,8 @@
             }
           ]
         },
-        "test": "content_gl_tests"
+        "test": "content_gl_tests",
+        "use_xvfb": false
       },
       {
         "args": [
@@ -997,7 +1012,8 @@
             }
           ]
         },
-        "test": "gl_tests"
+        "test": "gl_tests",
+        "use_xvfb": false
       },
       {
         "args": [
@@ -1012,7 +1028,8 @@
             }
           ]
         },
-        "test": "gl_unittests"
+        "test": "gl_unittests",
+        "use_xvfb": false
       },
       {
         "override_compile_targets": [
@@ -1027,7 +1044,8 @@
             }
           ]
         },
-        "test": "tab_capture_end2end_tests"
+        "test": "tab_capture_end2end_tests",
+        "use_xvfb": false
       }
     ],
     "isolated_scripts": [
@@ -1293,7 +1311,8 @@
             }
           ]
         },
-        "test": "angle_unittests"
+        "test": "angle_unittests",
+        "use_xvfb": false
       },
       {
         "args": [
@@ -1309,7 +1328,8 @@
             }
           ]
         },
-        "test": "content_gl_tests"
+        "test": "content_gl_tests",
+        "use_xvfb": false
       },
       {
         "args": [
@@ -1325,7 +1345,8 @@
             }
           ]
         },
-        "test": "gl_tests"
+        "test": "gl_tests",
+        "use_xvfb": false
       },
       {
         "args": [
@@ -1341,7 +1362,8 @@
             }
           ]
         },
-        "test": "gl_unittests"
+        "test": "gl_unittests",
+        "use_xvfb": false
       }
     ],
     "isolated_scripts": [
@@ -1617,7 +1639,8 @@
             }
           ]
         },
-        "test": "angle_unittests"
+        "test": "angle_unittests",
+        "use_xvfb": false
       },
       {
         "args": [
@@ -1633,7 +1656,8 @@
             }
           ]
         },
-        "test": "content_gl_tests"
+        "test": "content_gl_tests",
+        "use_xvfb": false
       },
       {
         "args": [
@@ -1649,7 +1673,8 @@
             }
           ]
         },
-        "test": "gl_tests"
+        "test": "gl_tests",
+        "use_xvfb": false
       },
       {
         "args": [
@@ -1665,7 +1690,8 @@
             }
           ]
         },
-        "test": "gl_unittests"
+        "test": "gl_unittests",
+        "use_xvfb": false
       },
       {
         "override_compile_targets": [
@@ -1681,7 +1707,8 @@
             }
           ]
         },
-        "test": "tab_capture_end2end_tests"
+        "test": "tab_capture_end2end_tests",
+        "use_xvfb": false
       }
     ],
     "isolated_scripts": [
@@ -1957,7 +1984,8 @@
             }
           ]
         },
-        "test": "angle_unittests"
+        "test": "angle_unittests",
+        "use_xvfb": false
       },
       {
         "args": [
@@ -1973,7 +2001,8 @@
             }
           ]
         },
-        "test": "content_gl_tests"
+        "test": "content_gl_tests",
+        "use_xvfb": false
       },
       {
         "args": [
@@ -1989,7 +2018,8 @@
             }
           ]
         },
-        "test": "gl_tests"
+        "test": "gl_tests",
+        "use_xvfb": false
       },
       {
         "args": [
@@ -2005,7 +2035,8 @@
             }
           ]
         },
-        "test": "gl_unittests"
+        "test": "gl_unittests",
+        "use_xvfb": false
       }
     ],
     "isolated_scripts": [
@@ -2281,7 +2312,8 @@
             }
           ]
         },
-        "test": "angle_unittests"
+        "test": "angle_unittests",
+        "use_xvfb": false
       },
       {
         "args": [
@@ -2297,7 +2329,8 @@
             }
           ]
         },
-        "test": "content_gl_tests"
+        "test": "content_gl_tests",
+        "use_xvfb": false
       },
       {
         "args": [
@@ -2313,7 +2346,8 @@
             }
           ]
         },
-        "test": "gl_tests"
+        "test": "gl_tests",
+        "use_xvfb": false
       },
       {
         "args": [
@@ -2329,7 +2363,8 @@
             }
           ]
         },
-        "test": "gl_unittests"
+        "test": "gl_unittests",
+        "use_xvfb": false
       },
       {
         "override_compile_targets": [
@@ -2345,7 +2380,8 @@
             }
           ]
         },
-        "test": "tab_capture_end2end_tests"
+        "test": "tab_capture_end2end_tests",
+        "use_xvfb": false
       }
     ],
     "isolated_scripts": [
@@ -2620,7 +2656,8 @@
             }
           ]
         },
-        "test": "angle_unittests"
+        "test": "angle_unittests",
+        "use_xvfb": false
       },
       {
         "args": [
@@ -2635,7 +2672,8 @@
             }
           ]
         },
-        "test": "content_gl_tests"
+        "test": "content_gl_tests",
+        "use_xvfb": false
       },
       {
         "args": [
@@ -2650,7 +2688,8 @@
             }
           ]
         },
-        "test": "gl_tests"
+        "test": "gl_tests",
+        "use_xvfb": false
       },
       {
         "args": [
@@ -2665,7 +2704,8 @@
             }
           ]
         },
-        "test": "gl_unittests"
+        "test": "gl_unittests",
+        "use_xvfb": false
       }
     ],
     "isolated_scripts": [
@@ -2930,7 +2970,8 @@
             }
           ]
         },
-        "test": "angle_unittests"
+        "test": "angle_unittests",
+        "use_xvfb": false
       },
       {
         "args": [
@@ -2945,7 +2986,8 @@
             }
           ]
         },
-        "test": "content_gl_tests"
+        "test": "content_gl_tests",
+        "use_xvfb": false
       },
       {
         "args": [
@@ -2960,7 +3002,8 @@
             }
           ]
         },
-        "test": "gl_tests"
+        "test": "gl_tests",
+        "use_xvfb": false
       },
       {
         "args": [
@@ -2975,7 +3018,8 @@
             }
           ]
         },
-        "test": "gl_unittests"
+        "test": "gl_unittests",
+        "use_xvfb": false
       },
       {
         "override_compile_targets": [
@@ -2990,7 +3034,8 @@
             }
           ]
         },
-        "test": "tab_capture_end2end_tests"
+        "test": "tab_capture_end2end_tests",
+        "use_xvfb": false
       }
     ],
     "isolated_scripts": [
@@ -3255,7 +3300,8 @@
             }
           ]
         },
-        "test": "angle_unittests"
+        "test": "angle_unittests",
+        "use_xvfb": false
       },
       {
         "args": [
@@ -3270,7 +3316,8 @@
             }
           ]
         },
-        "test": "content_gl_tests"
+        "test": "content_gl_tests",
+        "use_xvfb": false
       },
       {
         "args": [
@@ -3285,7 +3332,8 @@
             }
           ]
         },
-        "test": "gl_tests"
+        "test": "gl_tests",
+        "use_xvfb": false
       },
       {
         "args": [
@@ -3300,7 +3348,8 @@
             }
           ]
         },
-        "test": "gl_unittests"
+        "test": "gl_unittests",
+        "use_xvfb": false
       },
       {
         "override_compile_targets": [
@@ -3315,7 +3364,8 @@
             }
           ]
         },
-        "test": "tab_capture_end2end_tests"
+        "test": "tab_capture_end2end_tests",
+        "use_xvfb": false
       }
     ],
     "isolated_scripts": [

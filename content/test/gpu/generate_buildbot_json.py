@@ -755,6 +755,11 @@ def generate_gtest(tester_name, tester_config, test, test_config, is_fyi):
     if result.get('swarming_shards'):
       result['swarming']['shards'] = result['swarming_shards']
       result.pop('swarming_shards')
+  # This flag only has an effect on the Linux bots that run tests
+  # locally (as opposed to via Swarming), which are only those couple
+  # on the chromium.gpu.fyi waterfall. Still, there is no harm in
+  # specifying it everywhere.
+  result['use_xvfb'] = False
   return result
 
 def generate_telemetry_test(tester_name, tester_config,
@@ -800,7 +805,7 @@ def generate_telemetry_test(tester_name, tester_config,
       'dimension_sets': [
         tester_config['swarming_dimensions']
       ]
-    }
+    },
   }
   if 'non_precommit_args' in test_config:
     result['non_precommit_args'] = test_config['non_precommit_args']
