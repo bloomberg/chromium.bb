@@ -249,6 +249,8 @@
         'web_state/js/crw_js_window_id_manager.mm',
         'web_state/js/page_script_util.h',
         'web_state/js/page_script_util.mm',
+        'web_state/page_viewport_state.h',
+        'web_state/page_viewport_state.mm',
         'web_state/ui/crw_context_menu_provider.h',
         'web_state/ui/crw_context_menu_provider.mm',
         'web_state/ui/crw_debug_web_view.h',

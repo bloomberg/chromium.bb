@@ -70,6 +70,7 @@
 #import "ios/web/web_state/crw_web_view_proxy_impl.h"
 #import "ios/web/web_state/error_translation_util.h"
 #include "ios/web/web_state/frame_info.h"
+#import "ios/web/web_state/page_viewport_state.h"
 #import "ios/web/web_state/js/crw_js_early_script_manager.h"
 #import "ios/web/web_state/js/crw_js_plugin_placeholder_manager.h"
 #import "ios/web/web_state/js/crw_js_window_id_manager.h"
@@ -334,6 +335,11 @@ void CancelTouches(UIGestureRecognizer* gesture_recognizer) {
 - (void)setPushedOrReplacedURL:(const GURL&)URL
                    stateObject:(NSString*)stateObject;
 - (BOOL)isLoaded;
+// Extracts the current page's viewport tag information and calls |completion|.
+// If the page has changed before the viewport tag is successfully extracted,
+// |completion| is called with nullptr.
+typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
+- (void)extractViewportTagWithCompletion:(ViewportStateCompletion)completion;
 // Called by NSNotificationCenter upon orientation changes.
 - (void)orientationDidChange;
 // Queries the web view for the user-scalable meta tag and calls
@@ -352,9 +358,6 @@ void CancelTouches(UIGestureRecognizer* gesture_recognizer) {
 // Sets scroll offset value for webview scroll view from |scrollState|.
 - (void)applyWebViewScrollOffsetFromScrollState:
     (const web::PageScrollState&)scrollState;
-// Asynchronously determines whether option |user-scalable| is on in the
-// viewport meta of the current web page.
-- (void)queryUserScalableProperty:(void (^)(BOOL))responseHandler;
 // Asynchronously fetches full width of the rendered web page.
 - (void)fetchWebPageWidthWithCompletionHandler:(void (^)(CGFloat))handler;
 // Asynchronously fetches information about DOM element for the given point (in
@@ -507,38 +510,6 @@ GURL URLEscapedForHistory(const GURL& url) {
   // TODO(stuartmorgan): This is a very large hammer; see if limited unicode
   // escaping would be sufficient.
   return net::GURLWithNSURL(net::NSURLWithGURL(url));
-}
-
-// Parses a viewport tag content and returns the value of an attribute with
-// the given |name|, or nil if the attribute is not present in the tag.
-NSString* GetAttributeValueFromViewPortContent(NSString* attributeName,
-                                               NSString* viewPortContent) {
-  NSArray* contentItems = [viewPortContent componentsSeparatedByString:@","];
-  for (NSString* item in contentItems) {
-    NSArray* components = [item componentsSeparatedByString:@"="];
-    if ([components count] == 2) {
-      NSCharacterSet* spaceAndNewline =
-          [NSCharacterSet whitespaceAndNewlineCharacterSet];
-      NSString* currentAttributeName =
-          [components[0] stringByTrimmingCharactersInSet:spaceAndNewline];
-      if ([currentAttributeName isEqualToString:attributeName]) {
-        return [components[1] stringByTrimmingCharactersInSet:spaceAndNewline];
-      }
-    }
-  }
-  return nil;
-}
-
-// Parses a viewport tag content and returns the value of the user-scalable
-// attribute or nil.
-BOOL GetUserScalablePropertyFromViewPortContent(NSString* viewPortContent) {
-  NSString* value =
-      GetAttributeValueFromViewPortContent(@"user-scalable", viewPortContent);
-  if (!value) {
-    return YES;
-  }
-  return !([value isEqualToString:@"0"] ||
-           [value caseInsensitiveCompare:@"no"] == NSOrderedSame);
 }
 
 // Leave snapshot overlay up unless page loads.
@@ -3408,6 +3379,30 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   }
 }
 
+- (void)extractViewportTagWithCompletion:(ViewportStateCompletion)completion {
+  DCHECK(completion);
+  web::NavigationItem* currentItem = [self currentNavItem];
+  if (!currentItem) {
+    completion(nullptr);
+    return;
+  }
+  NSString* const kViewportContentQuery =
+      @"var viewport = document.querySelector('meta[name=\"viewport\"]');"
+       "viewport ? viewport.content : '';";
+  base::WeakNSObject<CRWWebController> weakSelf(self);
+  int itemID = currentItem->GetUniqueID();
+  [self evaluateJavaScript:kViewportContentQuery
+       stringResultHandler:^(NSString* viewportContent, NSError*) {
+         web::NavigationItem* item = [weakSelf currentNavItem];
+         if (item && item->GetUniqueID() == itemID) {
+           web::PageViewportState viewportState(viewportContent);
+           completion(&viewportState);
+         } else {
+           completion(nullptr);
+         }
+       }];
+}
+
 - (void)orientationDidChange {
   // When rotating, the available zoom scale range may change, zoomScale's
   // percentage into this range should remain constant.  However, there are
@@ -3444,10 +3439,12 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     return;
   base::WeakNSObject<CRWWebController> weakSelf(self);
   web::PageDisplayState displayStateCopy = displayState;
-  [self queryUserScalableProperty:^(BOOL isUserScalable) {
-    base::scoped_nsobject<CRWWebController> strongSelf([weakSelf retain]);
-    [strongSelf applyPageDisplayState:displayStateCopy
-                         userScalable:isUserScalable];
+  [self extractViewportTagWithCompletion:^(
+            const web::PageViewportState* viewportState) {
+    if (viewportState) {
+      [weakSelf applyPageDisplayState:displayStateCopy
+                         userScalable:viewportState->user_scalable()];
+    }
   }];
 }
 
@@ -3529,18 +3526,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
 #pragma mark -
 #pragma mark Web Page Features
-
-// TODO(eugenebut): move JS parsing code to a separate file.
-- (void)queryUserScalableProperty:(void (^)(BOOL))responseHandler {
-  NSString* const kViewPortContentQuery =
-      @"var viewport = document.querySelector('meta[name=\"viewport\"]');"
-       "viewport ? viewport.content : '';";
-  [self evaluateJavaScript:kViewPortContentQuery
-       stringResultHandler:^(NSString* viewPortContent, NSError* error) {
-         responseHandler(
-             GetUserScalablePropertyFromViewPortContent(viewPortContent));
-       }];
-}
 
 - (void)fetchWebPageWidthWithCompletionHandler:(void (^)(CGFloat))handler {
   if (!self.webView) {
