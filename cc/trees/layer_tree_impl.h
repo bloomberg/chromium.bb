@@ -17,6 +17,7 @@
 #include "cc/input/event_listener_properties.h"
 #include "cc/input/layer_selection_bound.h"
 #include "cc/layers/layer_impl.h"
+#include "cc/layers/layer_list_iterator.h"
 #include "cc/output/begin_frame_args.h"
 #include "cc/output/renderer.h"
 #include "cc/output/swap_promise.h"
@@ -143,6 +144,11 @@ class CC_EXPORT LayerTreeImpl {
   void UpdatePropertyTreesForBoundsDelta();
 
   void PushPropertiesTo(LayerTreeImpl* tree_impl);
+
+  LayerListIterator begin();
+  LayerListIterator end();
+  LayerListReverseIterator rbegin();
+  LayerListReverseIterator rend();
 
   // TODO(thakis): Consider marking this CC_EXPORT once we understand
   // http://crbug.com/575700 better.

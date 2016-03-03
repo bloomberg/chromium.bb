@@ -4,12 +4,14 @@
 
 #include "cc/layers/layer_list_iterator.h"
 
+#include "base/containers/adapters.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/test/fake_impl_task_runner_provider.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_task_graph_runner.h"
+#include "cc/trees/layer_tree_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {
@@ -52,11 +54,11 @@ TEST(LayerListIteratorTest, VerifyTraversalOrder) {
   layer1->AddChild(std::move(layer2));
   layer1->AddChild(std::move(layer5));
 
+  host_impl.active_tree()->SetRootLayer(std::move(layer1));
+
   int i = 1;
-  LayerListIterator it(layer1.get());
-  LayerListIterator end(nullptr);
-  for (; it != end; ++it, ++i) {
-    EXPECT_EQ(i, it->id());
+  for (auto* layer : *host_impl.active_tree()) {
+    EXPECT_EQ(i++, layer->id());
   }
   EXPECT_EQ(8, i);
 }
@@ -74,11 +76,11 @@ TEST(LayerListIteratorTest, VerifySingleLayer) {
 
   // This test constructs a tree consisting of a single layer.
   scoped_ptr<LayerImpl> layer1 = LayerImpl::Create(host_impl.active_tree(), 1);
+  host_impl.active_tree()->SetRootLayer(std::move(layer1));
+
   int i = 1;
-  LayerListIterator it(layer1.get());
-  LayerListIterator end(nullptr);
-  for (; it != end; ++it, ++i) {
-    EXPECT_EQ(i, it->id());
+  for (auto* layer : *host_impl.active_tree()) {
+    EXPECT_EQ(i++, layer->id());
   }
   EXPECT_EQ(2, i);
 }
@@ -132,12 +134,14 @@ TEST(LayerListReverseIteratorTest, VerifyTraversalOrder) {
   layer1->AddChild(std::move(layer2));
   layer1->AddChild(std::move(layer5));
 
+  host_impl.active_tree()->SetRootLayer(std::move(layer1));
+
   int i = 7;
-  LayerListReverseIterator it(layer1.get());
-  LayerListReverseIterator end(nullptr);
-  for (; it != end; ++it, --i) {
-    EXPECT_EQ(i, it->id());
+
+  for (auto* layer : base::Reversed(*host_impl.active_tree())) {
+    EXPECT_EQ(i--, layer->id());
   }
+
   EXPECT_EQ(0, i);
 }
 
@@ -154,11 +158,11 @@ TEST(LayerListReverseIteratorTest, VerifySingleLayer) {
 
   // This test constructs a tree consisting of a single layer.
   scoped_ptr<LayerImpl> layer1 = LayerImpl::Create(host_impl.active_tree(), 1);
+  host_impl.active_tree()->SetRootLayer(std::move(layer1));
+
   int i = 1;
-  LayerListReverseIterator it(layer1.get());
-  LayerListReverseIterator end(nullptr);
-  for (; it != end; ++it, --i) {
-    EXPECT_EQ(i, it->id());
+  for (auto* layer : base::Reversed(*host_impl.active_tree())) {
+    EXPECT_EQ(i--, layer->id());
   }
   EXPECT_EQ(0, i);
 }

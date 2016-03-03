@@ -375,6 +375,23 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
 
   target_tree->has_ever_been_drawn_ = false;
 }
+
+LayerListIterator LayerTreeImpl::begin() {
+  return LayerListIterator(root_layer_.get());
+}
+
+LayerListIterator LayerTreeImpl::end() {
+  return LayerListIterator(nullptr);
+}
+
+LayerListReverseIterator LayerTreeImpl::rbegin() {
+  return LayerListReverseIterator(root_layer_.get());
+}
+
+LayerListReverseIterator LayerTreeImpl::rend() {
+  return LayerListReverseIterator(nullptr);
+}
+
 void LayerTreeImpl::AddToElementMap(LayerImpl* layer) {
   if (!layer->element_id() || !layer->mutable_properties())
     return;
