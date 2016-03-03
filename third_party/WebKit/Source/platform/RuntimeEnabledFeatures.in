@@ -141,6 +141,7 @@ PagePopup status=stable
 PassiveEventListeners status=experimental
 PassPaintVisualRectToCompositor
 PathOpsSVGClipping status=stable
+PaymentRequest status=experimental
 PerformanceObserver status=experimental
 Permissions status=stable
 PermissionsRequestRevoke status=experimental

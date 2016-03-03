@@ -44,8 +44,6 @@
       'HostWindow.h',
       'JSONValues.cpp',
       'JSONValues.h',
-      'JSONValuesForV8.cpp',
-      'JSONValuesForV8.h',
       'KeyboardCodes.h',
       'KillRing.h',
       'KillRingNone.cpp',

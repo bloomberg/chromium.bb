@@ -199,6 +199,8 @@ seeking
 select
 selectionchange
 selectstart
+shippingaddresschange
+shippingoptionchange
 show
 signalingstatechange
 slotchange

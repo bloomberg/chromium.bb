@@ -24,6 +24,7 @@ modules/mediastream/RTCPeerConnection
 modules/navigatorconnect/ServicePortCollection
 modules/netinfo/NetworkInformation
 modules/notifications/Notification
+modules/payments/PaymentRequest
 modules/permissions/PermissionStatus
 modules/presentation/PresentationAvailability
 modules/presentation/PresentationConnection

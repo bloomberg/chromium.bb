@@ -3733,6 +3733,21 @@ interface Path2D
     method moveTo
     method quadraticCurveTo
     method rect
+interface PaymentRequest : EventTarget
+    getter onshippingaddresschange
+    getter onshippingoptionchange
+    getter shippingAddress
+    getter shippingOption
+    method abort
+    method constructor
+    method show
+    setter onshippingaddresschange
+    setter onshippingoptionchange
+interface PaymentResponse
+    getter details
+    getter methodName
+    method complete
+    method constructor
 interface Performance : EventTarget
     getter memory
     getter navigation
@@ -5196,6 +5211,18 @@ interface SharedWorker : EventTarget
     getter workerStart
     method constructor
     setter onerror
+interface ShippingAddress
+    getter addressLine
+    getter administrativeArea
+    getter dependentLocality
+    getter languageCode
+    getter locality
+    getter organization
+    getter postalCode
+    getter recipient
+    getter regionCode
+    getter sortingCode
+    method constructor
 interface SimpleLength : LengthValue
     getter type
     getter value

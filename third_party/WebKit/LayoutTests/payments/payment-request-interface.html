@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>Tests for PaymentRequest interface</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script>
+test(function() {
+    new PaymentRequest([], {}, {}, {});
+}, 'Creating a PaymentRequest with empty parameters should not throw or crash.');
+
+test(function() {
+    new PaymentRequest([], {}, {}, {}, '');
+}, 'Creating a PaymentRequest with extra parameters should not throw or crash.');
+
+test(function() {
+    new PaymentRequest([], {});
+}, 'Creating a PaymentRequest with omitted optional parameters should not throw or crash.');
+
+test(function() {
+    new PaymentRequest([], {}, undefined, undefined);
+}, 'Creating a PaymentRequest with undefined optional parameters should not throw or crash.');
+
+test(function() {
+    new PaymentRequest([], {}, null, null);
+}, 'Creating a PaymentRequest with null optional parameters should not throw or crash.');
+
+generate_tests(assert_throws, [
+    ['PaymentRequest constructor should throw for incorrect parameter types.', null, function() {
+        new PaymentRequest('', '', '', '')
+    }],
+    ['PaymentRequest constructor should throw for undefined required parameters.', null, function() {
+        new PaymentRequest(undefined, undefined)
+    }],
+    ['PaymentRequest constructor should throw for null required parameter.', null, function() {
+        new PaymentRequest(null, null)
+    }]
+]);
+
+test(function() {
+    var request = new PaymentRequest([], {});
+    assert_readonly(request, "shippingAddress", 'PaymentRequest should have a readonly shippingAddress property.');
+    assert_readonly(request, "shippingOption", 'PaymentRequest should have a readonly shippingOption property.');
+}, 'PaymentRequest should have readonly shippingAddress and shippingOption properties.');
+
+test(function() {
+    var request = new PaymentRequest([], {});
+    assert_not_equals(request.onshippingaddresschange, undefined, 'PaymentRequest should have onShippingAddressChange event.');
+    assert_not_equals(request.onshippingoptionchange, undefined, 'PaymentRequest should have onShippingOptionChange event.');
+}, 'PaymentRequest should have onShippingAddressChange and onShippingOptionChange events.');
+
+
+test(function() {
+    var request = new PaymentRequest([], {});
+    assert_not_equals(request.abort, undefined, 'PaymentRequest should have abort() method.');
+    assert_not_equals(request.show, undefined, 'PaymentRequest should have show() method.');
+}, 'PaymentRequest should have methods abort() and show().');
+
+test(function() {
+    var request = new PaymentRequest([], {});
+    request.abort();
+    request.show();
+}, 'PaymentRequest.abort() and PaymentRequest.show() should take no parameters.');
+</script>

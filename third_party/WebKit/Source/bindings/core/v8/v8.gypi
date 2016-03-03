@@ -39,6 +39,8 @@
             'ExceptionStatePlaceholder.cpp',
             'ExceptionStatePlaceholder.h',
             'Iterable.h',
+            'JSONValuesForV8.cpp',
+            'JSONValuesForV8.h',
             'Maplike.h',
             'NativeValueTraits.h',
             'NPV8Object.cpp',
