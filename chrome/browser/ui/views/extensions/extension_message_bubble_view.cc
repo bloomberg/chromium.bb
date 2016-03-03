@@ -203,11 +203,12 @@ void ExtensionMessageBubbleView::Init() {
 
 void ExtensionMessageBubbleView::ButtonPressed(views::Button* sender,
                                                const ui::Event& event) {
+  action_taken_ = true;
   if (sender == action_button_) {
-    action_taken_ = true;
     controller_->OnBubbleAction();
   } else {
     DCHECK_EQ(dismiss_button_, sender);
+    controller_->OnBubbleDismiss(false /* not closed by deactivation */ );
   }
   GetWidget()->Close();
 }
