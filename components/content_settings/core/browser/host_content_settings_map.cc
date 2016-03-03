@@ -34,6 +34,8 @@
 #include "net/base/static_cookie_policy.h"
 #include "url/gurl.h"
 
+using content_settings::WebsiteSettingsInfo;
+
 namespace {
 
 typedef std::vector<content_settings::Rule> Rules;
@@ -104,6 +106,31 @@ scoped_ptr<base::Value> ProcessIncognitoInheritanceBehavior(
   }
 
   return value;
+}
+
+content_settings::PatternPair GetPatternsFromScopingType(
+    WebsiteSettingsInfo::ScopingType scoping_type,
+    const GURL& primary_url,
+    const GURL& secondary_url) {
+  content_settings::PatternPair patterns;
+
+  switch (scoping_type) {
+    case WebsiteSettingsInfo::TOP_LEVEL_DOMAIN_ONLY_SCOPE:
+    case WebsiteSettingsInfo::REQUESTING_DOMAIN_ONLY_SCOPE:
+      patterns.first = ContentSettingsPattern::FromURL(primary_url);
+      patterns.second = ContentSettingsPattern::Wildcard();
+      break;
+    case WebsiteSettingsInfo::REQUESTING_ORIGIN_ONLY_SCOPE:
+      patterns.first = ContentSettingsPattern::FromURLNoWildcard(primary_url);
+      patterns.second = ContentSettingsPattern::Wildcard();
+      break;
+    case WebsiteSettingsInfo::REQUESTING_ORIGIN_AND_TOP_LEVEL_ORIGIN_SCOPE:
+      patterns.first = ContentSettingsPattern::FromURLNoWildcard(primary_url);
+      patterns.second =
+          ContentSettingsPattern::FromURLNoWildcard(secondary_url);
+      break;
+  }
+  return patterns;
 }
 
 }  // namespace
@@ -283,39 +310,16 @@ void HostContentSettingsMap::SetWebsiteSettingDefaultScope(
     ContentSettingsType content_type,
     const std::string& resource_identifier,
     base::Value* value) {
-  using content_settings::WebsiteSettingsInfo;
-
   const WebsiteSettingsInfo* info =
       content_settings::WebsiteSettingsRegistry::GetInstance()->Get(
           content_type);
-  ContentSettingsPattern primary_pattern;
-  ContentSettingsPattern secondary_pattern;
-  switch (info->scoping_type()) {
-    case WebsiteSettingsInfo::TOP_LEVEL_DOMAIN_ONLY_SCOPE:
-      primary_pattern = ContentSettingsPattern::FromURL(top_level_url);
-      secondary_pattern = ContentSettingsPattern::Wildcard();
-      DCHECK(requesting_url.is_empty());
-      break;
-    case WebsiteSettingsInfo::REQUESTING_DOMAIN_ONLY_SCOPE:
-      primary_pattern = ContentSettingsPattern::FromURL(requesting_url);
-      secondary_pattern = ContentSettingsPattern::Wildcard();
-      DCHECK(top_level_url.is_empty());
-      break;
-    case WebsiteSettingsInfo::REQUESTING_ORIGIN_ONLY_SCOPE:
-      primary_pattern =
-          ContentSettingsPattern::FromURLNoWildcard(requesting_url);
-      secondary_pattern = ContentSettingsPattern::Wildcard();
-      DCHECK(top_level_url.is_empty());
-      break;
-    case WebsiteSettingsInfo::REQUESTING_ORIGIN_AND_TOP_LEVEL_ORIGIN_SCOPE:
-      primary_pattern =
-          ContentSettingsPattern::FromURLNoWildcard(requesting_url);
-      secondary_pattern =
-          ContentSettingsPattern::FromURLNoWildcard(top_level_url);
-      break;
-  }
+  content_settings::PatternPair patterns = GetPatternsFromScopingType(
+      info->scoping_type(), requesting_url, top_level_url);
+  ContentSettingsPattern primary_pattern = patterns.first;
+  ContentSettingsPattern secondary_pattern = patterns.second;
   if (!primary_pattern.IsValid() || !secondary_pattern.IsValid())
     return;
+
   SetWebsiteSettingCustomScope(primary_pattern, secondary_pattern, content_type,
                                resource_identifier, make_scoped_ptr(value));
 }
@@ -435,6 +439,30 @@ void HostContentSettingsMap::SetContentSetting(
   }
   SetWebsiteSettingCustomScope(primary_pattern, secondary_pattern, content_type,
                                resource_identifier, std::move(value));
+}
+
+void HostContentSettingsMap::SetContentSettingDefaultScope(
+    const GURL& primary_url,
+    const GURL& secondary_url,
+    ContentSettingsType content_type,
+    const std::string& resource_identifier,
+    ContentSetting setting) {
+  using content_settings::ContentSettingsInfo;
+  const ContentSettingsInfo* info =
+      content_settings::ContentSettingsRegistry::GetInstance()->Get(
+          content_type);
+  DCHECK(info);
+
+  content_settings::PatternPair patterns =
+      GetPatternsFromScopingType(info->website_settings_info()->scoping_type(),
+                                 primary_url, secondary_url);
+  ContentSettingsPattern primary_pattern = patterns.first;
+  ContentSettingsPattern secondary_pattern = patterns.second;
+  if (!primary_pattern.IsValid() || !secondary_pattern.IsValid())
+    return;
+
+  SetContentSetting(primary_pattern, secondary_pattern, content_type,
+                    resource_identifier, setting);
 }
 
 ContentSetting HostContentSettingsMap::GetContentSettingAndMaybeUpdateLastUsage(

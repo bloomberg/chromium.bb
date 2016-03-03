@@ -134,19 +134,40 @@ class HostContentSettingsMap : public content_settings::Observer,
   // Sets the content |setting| for the given patterns, |content_type| and
   // |resource_identifier|. Setting the value to CONTENT_SETTING_DEFAULT causes
   // the default setting for that type to be used when loading pages matching
-  // this pattern.
+  // this pattern. Unless adding a custom-scoped setting, most developers will
+  // want to use SetContentSettingDefaultScope() instead.
+  //
   // NOTICE: This is just a convenience method for content types that use
   // |CONTENT_SETTING| as their data type. For content types that use other
   // data types please use the method SetWebsiteSettingDefaultScope().
   //
   // This should only be called on the UI thread.
-  // TODO(raymes): Create a version of this function which uses the default
-  // scope.
   void SetContentSetting(const ContentSettingsPattern& primary_pattern,
                          const ContentSettingsPattern& secondary_pattern,
                          ContentSettingsType content_type,
                          const std::string& resource_identifier,
                          ContentSetting setting);
+
+  // Sets the content |setting| for the default scope of the url that is
+  // appropriate for the given |content_type| and |resource_identifier|.
+  // Setting the value to CONTENT_SETTING_DEFAULT causes the default setting
+  // for that type to be used.
+  //
+  // NOTICE: This is just a convenience method for content types that use
+  // |CONTENT_SETTING| as their data type. For content types that use other
+  // data types please use the method SetWebsiteSettingDefaultScope().
+  //
+  // This should only be called on the UI thread.
+  //
+  // Internally this will call SetContentSetting() with the default scope
+  // patterns for the given |content_type|. Developers will generally want
+  // to use this function instead of SetContentSetting() unless they need
+  // to specify custom scoping.
+  void SetContentSettingDefaultScope(const GURL& primary_url,
+                                     const GURL& secondary_url,
+                                     ContentSettingsType content_type,
+                                     const std::string& resource_identifier,
+                                     ContentSetting setting);
 
   // Sets the |value| for the default scope of the url that is appropriate for
   // the given |content_type| and |resource_identifier|. Setting the value to

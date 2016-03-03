@@ -46,21 +46,15 @@ class ContentSettingsUsagesStateTests : public testing::Test {
         CreateDetailsWithURL(url_0);
     state.DidNavigate(details);
 
-    HostContentSettingsMapFactory::GetForProfile(&profile)->SetContentSetting(
-        ContentSettingsPattern::FromURLNoWildcard(url_0),
-        ContentSettingsPattern::FromURLNoWildcard(url_0),
-        type,
-        std::string(),
-        CONTENT_SETTING_ALLOW);
+    HostContentSettingsMapFactory::GetForProfile(&profile)
+        ->SetContentSettingDefaultScope(url_0, url_0, type, std::string(),
+                                        CONTENT_SETTING_ALLOW);
     state.OnPermissionSet(url_0, true);
 
     GURL url_1("http://www.example1.com");
-    HostContentSettingsMapFactory::GetForProfile(&profile)->SetContentSetting(
-        ContentSettingsPattern::FromURLNoWildcard(url_1),
-        ContentSettingsPattern::FromURLNoWildcard(url_0),
-        type,
-        std::string(),
-        CONTENT_SETTING_BLOCK);
+    HostContentSettingsMapFactory::GetForProfile(&profile)
+        ->SetContentSettingDefaultScope(url_1, url_0, type, std::string(),
+                                        CONTENT_SETTING_BLOCK);
     state.OnPermissionSet(url_1, false);
 
     ContentSettingsUsagesState::StateMap state_map =
@@ -152,30 +146,21 @@ class ContentSettingsUsagesStateTests : public testing::Test {
         CreateDetailsWithURL(url_0);
     state.DidNavigate(details);
 
-    HostContentSettingsMapFactory::GetForProfile(&profile)->SetContentSetting(
-        ContentSettingsPattern::FromURLNoWildcard(url_0),
-        ContentSettingsPattern::FromURLNoWildcard(url_0),
-        type,
-        std::string(),
-        CONTENT_SETTING_ALLOW);
+    HostContentSettingsMapFactory::GetForProfile(&profile)
+        ->SetContentSettingDefaultScope(url_0, url_0, type, std::string(),
+                                        CONTENT_SETTING_ALLOW);
     state.OnPermissionSet(url_0, true);
 
     GURL url_1("https://www.example.com");
-    HostContentSettingsMapFactory::GetForProfile(&profile)->SetContentSetting(
-        ContentSettingsPattern::FromURLNoWildcard(url_1),
-        ContentSettingsPattern::FromURLNoWildcard(url_0),
-        type,
-        std::string(),
-        CONTENT_SETTING_ALLOW);
+    HostContentSettingsMapFactory::GetForProfile(&profile)
+        ->SetContentSettingDefaultScope(url_1, url_0, type, std::string(),
+                                        CONTENT_SETTING_ALLOW);
     state.OnPermissionSet(url_1, true);
 
     GURL url_2("http://www.example1.com");
-    HostContentSettingsMapFactory::GetForProfile(&profile)->SetContentSetting(
-        ContentSettingsPattern::FromURLNoWildcard(url_2),
-        ContentSettingsPattern::FromURLNoWildcard(url_0),
-        type,
-        std::string(),
-        CONTENT_SETTING_ALLOW);
+    HostContentSettingsMapFactory::GetForProfile(&profile)
+        ->SetContentSettingDefaultScope(url_2, url_0, type, std::string(),
+                                        CONTENT_SETTING_ALLOW);
     state.OnPermissionSet(url_2, true);
 
     ContentSettingsUsagesState::StateMap state_map =
