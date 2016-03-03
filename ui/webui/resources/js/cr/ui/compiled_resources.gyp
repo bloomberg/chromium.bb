@@ -18,6 +18,7 @@
       'variables': {
         'depends': [
           '../../cr.js',
+          '../../promise_resolver.js',
           '../../util.js',
         ],
         'externs': [

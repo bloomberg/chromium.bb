@@ -19,6 +19,7 @@
           '../../../../ui/webui/resources/js/cr/ui/page_manager/page.js',
           '../../../../ui/webui/resources/js/cr/ui/page_manager/page_manager.js',
           '../../../../ui/webui/resources/js/event_tracker.js',
+          '../../../../ui/webui/resources/js/promise_resolver.js',
           '../../../../ui/webui/resources/js/util.js',
           '../../../../chrome/browser/resources/help/channel_change_page.js',
           '../../../../chrome/browser/resources/help/help_page.js',

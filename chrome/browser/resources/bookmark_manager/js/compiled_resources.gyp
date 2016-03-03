@@ -31,6 +31,7 @@
           '../../../../../ui/webui/resources/js/event_tracker.js',
           '../../../../../ui/webui/resources/js/compiled_resources.gyp:i18n_template_no_process',
           '../../../../../ui/webui/resources/js/load_time_data.js',
+          '../../../../../ui/webui/resources/js/promise_resolver.js',
           '../../../../../ui/webui/resources/js/util.js',
           '../../../../../chrome/browser/resources/bookmark_manager/js/bmm.js',
           '../../../../../chrome/browser/resources/bookmark_manager/js/bmm/bookmark_list.js',

@@ -15,6 +15,7 @@
           # Referenced in common/js/util.js.
           '../../../webui/resources/js/cr/ui/dialogs.js',
           '../../../webui/resources/js/load_time_data.js',
+          '../../../webui/resources/js/promise_resolver.js',
           '../../../webui/resources/js/util.js',
           '../../file_manager/common/js/util.js',
           '../../file_manager/common/js/async_util.js',
@@ -66,6 +67,7 @@
           '../../../webui/resources/js/cr/ui/array_data_model.js',
           '../../../webui/resources/js/cr/ui/dialogs.js',
           '../../../webui/resources/js/load_time_data.js',
+          '../../../webui/resources/js/promise_resolver.js',
           '../../../webui/resources/js/util.js',
           '../../file_manager/common/js/async_util.js',
           '../../file_manager/common/js/file_type.js',

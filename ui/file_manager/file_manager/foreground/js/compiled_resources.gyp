@@ -11,6 +11,7 @@
           '../../../../../third_party/jstemplate/compiled_resources.gyp:jstemplate',
           '../../../../../ui/webui/resources/js/load_time_data.js',
           '../../../../../ui/webui/resources/js/cr.js',
+          '../../../../../ui/webui/resources/js/promise_resolver.js',
           '../../../../../ui/webui/resources/js/util.js',
           '../../../../../ui/webui/resources/js/compiled_resources.gyp:i18n_template_no_process',
           '../../../../../ui/webui/resources/js/event_tracker.js',

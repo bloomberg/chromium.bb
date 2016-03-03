@@ -10,6 +10,7 @@
     {
       'target_name': 'cr',
       'variables': {
+        'depends': ['compiled_resources.gyp:promise_resolver'],
         'externs': ['../../../../third_party/closure_compiler/externs/chrome_send.js'],
       },
       'includes': ['../../../../third_party/closure_compiler/compile_js.gypi'],
@@ -40,6 +41,10 @@
     },
     {
       'target_name': 'parse_html_subset',
+      'includes': ['../../../../third_party/closure_compiler/compile_js.gypi'],
+    },
+    {
+      'target_name': 'promise_resolver',
       'includes': ['../../../../third_party/closure_compiler/compile_js.gypi'],
     },
     {

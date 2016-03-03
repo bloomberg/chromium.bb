@@ -14,6 +14,7 @@
     {
       'target_name': 'cr',
       'dependencies': [
+        'promise_resolver',
         '<(EXTERNS_GYP):chrome_send',
         'assert',
       ],
@@ -38,6 +39,10 @@
     },
     {
       'target_name': 'parse_html_subset',
+      'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
+      'target_name': 'promise_resolver',
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {

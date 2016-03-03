@@ -18,6 +18,7 @@
           '../../../../ui/webui/resources/js/cr.js',
           '../../../../ui/webui/resources/js/cr/ui/position_util.js',
           '../../../../ui/webui/resources/js/load_time_data.js',
+          '../../../../ui/webui/resources/js/promise_resolver.js',
           '../../../../ui/webui/resources/js/util.js',
           'history.js',
           'history_item.js',

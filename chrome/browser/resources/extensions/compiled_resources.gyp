@@ -28,6 +28,7 @@
           '../../../../ui/webui/resources/js/cr/ui/overlay.js',
           '../../../../ui/webui/resources/js/event_tracker.js',
           '../../../../ui/webui/resources/js/load_time_data.js',
+          '../../../../ui/webui/resources/js/promise_resolver.js',
           '../../../../ui/webui/resources/js/util.js',
           'focus_row.js',
         ],

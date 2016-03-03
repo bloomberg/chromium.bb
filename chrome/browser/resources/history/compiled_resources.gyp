@@ -24,6 +24,7 @@
           '../../../../ui/webui/resources/js/cr/ui/position_util.js',
           '../../../../ui/webui/resources/js/event_tracker.js',
           '../../../../ui/webui/resources/js/compiled_resources.gyp:load_time_data',
+          '../../../../ui/webui/resources/js/promise_resolver.js',
           '../../../../ui/webui/resources/js/util.js',
           'history_focus_manager.js',
         ],

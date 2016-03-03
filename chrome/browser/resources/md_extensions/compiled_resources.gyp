@@ -12,6 +12,7 @@
           '../../../../ui/webui/resources/js/compiled_resources.gyp:load_time_data',
           '../../../../ui/webui/resources/js/cr.js',
           '../../../../ui/webui/resources/js/i18n_behavior.js',
+          '../../../../ui/webui/resources/js/promise_resolver.js',
           'item.js',
           'item_list.js',
           'manager.js',

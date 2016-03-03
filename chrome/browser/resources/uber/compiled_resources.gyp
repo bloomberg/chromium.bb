@@ -9,6 +9,7 @@
         'depends': [
           '../../../../ui/webui/resources/js/cr.js',
           '../../../../ui/webui/resources/js/compiled_resources.gyp:load_time_data',
+          '../../../../ui/webui/resources/js/promise_resolver.js',
           '../../../../ui/webui/resources/js/util.js',
         ],
         'externs': ['<(EXTERNS_DIR)/chrome_send.js'],
@@ -21,6 +22,7 @@
         'depends': [
           '../../../../ui/webui/resources/js/cr.js',
           '../../../../ui/webui/resources/js/compiled_resources.gyp:load_time_data',
+          '../../../../ui/webui/resources/js/promise_resolver.js',
           '../../../../ui/webui/resources/js/util.js',
           'uber_utils.js',
         ],

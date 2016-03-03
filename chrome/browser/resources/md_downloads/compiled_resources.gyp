@@ -15,6 +15,7 @@
           '../../../../ui/webui/resources/js/event_tracker.js',
           '../../../../ui/webui/resources/js/cr/ui.js',
           '../../../../ui/webui/resources/js/cr/ui/command.js',
+          '../../../../ui/webui/resources/js/promise_resolver.js',
           '../../../../ui/webui/resources/js/util.js',
           '../../../../third_party/polymer/v1_0/components-chromium/iron-a11y-keys-behavior/iron-a11y-keys-behavior-extracted.js',
           '../../../../third_party/polymer/v1_0/components-chromium/iron-behaviors/iron-button-state-extracted.js',
