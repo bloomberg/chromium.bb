@@ -76,7 +76,7 @@ SVGPath::SVGPath(PassRefPtrWillBeRawPtr<CSSPathValue> pathValue)
     : SVGPropertyBase(classType())
     , m_pathValue(pathValue)
 {
-    ASSERT(pathValue);
+    ASSERT(m_pathValue);
 }
 
 SVGPath::~SVGPath()
