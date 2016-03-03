@@ -235,9 +235,11 @@ bool FeatureSwitch::IsEnabled() const {
     for (const std::string& field_trial_name : required_field_trials_) {
       std::string group_name =
           base::FieldTrialList::FindFullName(field_trial_name);
-      if (group_name != "Enabled") {
+      if (!base::StartsWith(group_name, "Enabled",
+                            base::CompareCase::SENSITIVE)) {
         enabled_by_field_trial = false;
-        if (group_name == "Disabled") {
+        if (base::StartsWith(group_name, "Disabled",
+                             base::CompareCase::SENSITIVE)) {
           disabled_by_field_trial = true;
           break;
         }
