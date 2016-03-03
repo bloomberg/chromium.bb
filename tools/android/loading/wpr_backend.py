@@ -39,7 +39,7 @@ class WprUrlEntry(object):
     """
     headers = collections.defaultdict(list)
     for (key, value) in self._wpr_response.headers:
-      headers[key].append(value)
+      headers[key.lower()].append(value)
     return {k: ','.join(v) for (k, v) in headers.items()}
 
   def SetResponseHeader(self, name, value):
@@ -53,14 +53,15 @@ class WprUrlEntry(object):
       name: The name of the response header to set.
       value: The value of the response header to set.
     """
+    assert name.islower()
     new_headers = []
     new_header_set = False
     for header in self._wpr_response.headers:
-      if header[0] != name:
+      if header[0].lower() != name:
         new_headers.append(header)
       elif not new_header_set:
         new_header_set = True
-        new_headers.append((name, value))
+        new_headers.append((header[0], value))
     if new_header_set:
       self._wpr_response.headers = new_headers
     else:
@@ -76,8 +77,9 @@ class WprUrlEntry(object):
     Args:
       name: The name of the response header field to delete.
     """
+    assert name.islower()
     self._wpr_response.headers = \
-        [x for x in self._wpr_response.headers if x[0] != name]
+        [x for x in self._wpr_response.headers if x[0].lower() != name]
 
   @classmethod
   def _ExtractUrl(cls, request_string):
