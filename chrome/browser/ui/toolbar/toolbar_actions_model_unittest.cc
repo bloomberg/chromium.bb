@@ -42,6 +42,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/feature_switch.h"
+#include "extensions/common/manifest.h"
 #include "extensions/common/value_builder.h"
 
 namespace {
@@ -170,6 +171,9 @@ class ToolbarActionsModelUnitTest
   const std::string GetActionIdAtIndex(size_t index,
                                        const ToolbarActionsModel* model) const;
   const std::string GetActionIdAtIndex(size_t index) const;
+
+  // Returns true if the |toobar_model_| has an action with the given |id|.
+  bool ModelHasActionForId(const std::string& id) const;
 
   void SetMockActionsFactory(MockComponentToolbarActionsFactory* factory);
 
@@ -382,6 +386,15 @@ const std::string ToolbarActionsModelUnitTest::GetActionIdAtIndex(
 const std::string ToolbarActionsModelUnitTest::GetActionIdAtIndex(
     size_t index) const {
   return GetActionIdAtIndex(index, toolbar_model_);
+}
+
+bool ToolbarActionsModelUnitTest::ModelHasActionForId(
+    const std::string& id) const {
+  for (const auto& item : toolbar_model_->toolbar_items()) {
+    if (item.id == id)
+      return true;
+  }
+  return false;
 }
 
 testing::AssertionResult ToolbarActionsModelUnitTest::AddAndVerifyExtensions(
@@ -921,6 +934,44 @@ TEST_F(ToolbarActionsModelUnitTest, TestToolbarExtensionTypesSwitch) {
   EXPECT_EQ(browser_action()->id(), GetActionIdAtIndex(0u));
   EXPECT_EQ(page_action()->id(), GetActionIdAtIndex(1u));
   EXPECT_EQ(no_action()->id(), GetActionIdAtIndex(2u));
+
+  // Extensions that are installed by default shouldn't be given an icon.
+  extensions::DictionaryBuilder default_installed_manifest;
+  default_installed_manifest.Set("name", "default installed")
+      .Set("description", "A default installed extension")
+      .Set("manifest_version", 2)
+      .Set("version", "1.0.0.0");
+  scoped_refptr<const extensions::Extension> default_installed_extension =
+      extensions::ExtensionBuilder()
+          .SetManifest(default_installed_manifest.Build())
+          .SetID(crx_file::id_util::GenerateId("default"))
+          .SetLocation(extensions::Manifest::INTERNAL)
+          .AddFlags(extensions::Extension::WAS_INSTALLED_BY_DEFAULT)
+          .Build();
+  EXPECT_TRUE(AddExtension(default_installed_extension.get()));
+  EXPECT_EQ(3u, num_toolbar_items());
+  EXPECT_FALSE(ModelHasActionForId(default_installed_extension->id()));
+
+  // Component extensions shouldn't be given an icon.
+  scoped_refptr<const extensions::Extension> component_extension_no_action =
+      extensions::extension_action_test_util::CreateActionExtension(
+          "component ext no action",
+          extensions::extension_action_test_util::NO_ACTION,
+          extensions::Manifest::COMPONENT);
+  EXPECT_TRUE(AddExtension(component_extension_no_action.get()));
+  EXPECT_EQ(3u, num_toolbar_items());
+  EXPECT_FALSE(ModelHasActionForId(component_extension_no_action->id()));
+
+  // Sanity check: A new extension that's installed from the webstore should
+  // have an icon.
+  scoped_refptr<const extensions::Extension> internal_extension_no_action =
+      extensions::extension_action_test_util::CreateActionExtension(
+          "internal ext no action",
+          extensions::extension_action_test_util::NO_ACTION,
+          extensions::Manifest::INTERNAL);
+  EXPECT_TRUE(AddExtension(internal_extension_no_action.get()));
+  EXPECT_EQ(4u, num_toolbar_items());
+  EXPECT_TRUE(ModelHasActionForId(internal_extension_no_action->id()));
 }
 
 // Test that hiding actions on the toolbar results in their removal from the

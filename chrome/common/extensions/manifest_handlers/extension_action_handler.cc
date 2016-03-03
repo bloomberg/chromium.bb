@@ -63,6 +63,8 @@ bool ExtensionActionHandler::Parse(Extension* extension,
       return true;  // Do nothing if the switch is off.
     if (Manifest::IsComponentLocation(extension->location()))
       return true;  // Don't synthesize actions for component extensions.
+    if (extension->was_installed_by_default())
+      return true;  // Don't synthesize actions for default extensions.
     if (extension->manifest()->HasKey(
             manifest_keys::kSynthesizeExtensionAction)) {
       *error = base::ASCIIToUTF16(base::StringPrintf(
