@@ -29,6 +29,7 @@ const WhitelistEntry kEventArgsWhitelist[] = {
 
 const char* kMetadataWhitelist[] = {
   "command_line",
+  "config",
   "cpu-*",
   "field-trials",
   "gpu-*",
