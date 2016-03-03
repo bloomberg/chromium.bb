@@ -189,7 +189,7 @@ class ContextualSearchFakeServer
             mManagerTest.clickNode(getNodeId());
             mManagerTest.waitForSelectionToBe(mSearchTerm);
 
-            if (mPolicy.shouldPreviousTapResolve(getBasePageUrl())) {
+            if (mPolicy.shouldPreviousTapResolve()) {
                 // Now wait for the Search Term Resolution to start.
                 mManagerTest.waitForSearchTermResolutionToStart(this);
 
@@ -296,7 +296,7 @@ class ContextualSearchFakeServer
             mManagerTest.clickNode(getNodeId());
             mManagerTest.waitForSelectionToBe(mSearchTerm);
 
-            if (mPolicy.shouldPreviousTapResolve(getBasePageUrl())) {
+            if (mPolicy.shouldPreviousTapResolve()) {
                 // Now wait for the Search Term Resolution to start.
                 mManagerTest.waitForSearchTermResolutionToStart(this);
             } else {

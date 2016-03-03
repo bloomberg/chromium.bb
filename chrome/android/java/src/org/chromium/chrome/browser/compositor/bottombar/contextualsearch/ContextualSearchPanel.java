@@ -158,13 +158,6 @@ public class ContextualSearchPanel extends OverlayPanel {
         }
     }
 
-    /**
-     * @return The {@code ContextualSearchManagementDelegate} associated with this Layout.
-     */
-    public ContextualSearchManagementDelegate getManagementDelegate() {
-        return mManagementDelegate;
-    }
-
     // ============================================================================================
     // Logging of panel state information.
     // ============================================================================================
@@ -247,7 +240,7 @@ public class ContextualSearchPanel extends OverlayPanel {
             if (isCoordinateInsideCloseButton(x)) {
                 closePanel(StateChangeReason.CLOSE_BUTTON, true);
             } else if (!mActivity.isCustomTab()) {
-                getManagementDelegate().promoteToTab();
+                mManagementDelegate.promoteToTab();
             }
         }
     }

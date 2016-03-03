@@ -6,20 +6,18 @@ package org.chromium.chrome.browser.contextualsearch;
 
 import android.content.Context;
 
-import org.chromium.chrome.browser.contextualsearch.ContextualSearchSelectionController.SelectionType;
-
 /**
  * A mock ContextualSearchPolicy class that excludes any business logic.
  * TODO(mdjones): Allow the return values of these function to be set.
  */
 public class MockContextualSearchPolicy extends ContextualSearchPolicy {
     public MockContextualSearchPolicy(Context context) {
-        super(context);
+        super(context, null, null);
     }
 
     @Override
-    public boolean shouldPrefetchSearchResult(boolean isTapTriggered) {
-        return isTapTriggered;
+    public boolean shouldPrefetchSearchResult() {
+        return false;
     }
 
     @Override
@@ -28,14 +26,12 @@ public class MockContextualSearchPolicy extends ContextualSearchPolicy {
     }
 
     @Override
-    public boolean isPeekPromoConditionSatisfied(
-            ContextualSearchSelectionController controller) {
+    public boolean isPeekPromoConditionSatisfied() {
         return false;
     }
 
     @Override
-    public boolean shouldAnimateSearchProviderIcon(SelectionType selectionType,
-            boolean isShowing) {
+    public boolean shouldAnimateSearchProviderIcon() {
         return false;
     }
 

@@ -20,16 +20,6 @@ public interface ContextualSearchManagementDelegate {
     ChromeActivity getChromeActivity();
 
     /**
-     * @return Whether the Search Panel is showing.
-     */
-    boolean isShowingSearchPanel();
-
-    /**
-     * @return Whether the Opt-out promo is available to be be shown in the panel.
-     */
-    boolean isPromoAvailable();
-
-    /**
      * Called when the promo Panel gets closed, to log the outcome.
      */
     void logPromoOutcome();
@@ -41,7 +31,7 @@ public interface ContextualSearchManagementDelegate {
 
     /**
      * Sets the handle to the ContextualSearchPanel.
-     * @param delegate The ContextualSearchPanel.
+     * @param panel The ContextualSearchPanel.
      */
     void setContextualSearchPanel(ContextualSearchPanel panel);
 

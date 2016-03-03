@@ -9,10 +9,10 @@ import android.text.TextUtils;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeVersionInfo;
+import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchSelectionController.SelectionType;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
-import org.chromium.content.browser.ContentViewCore;
 
 import java.net.URL;
 import java.util.List;
@@ -34,6 +34,9 @@ class ContextualSearchPolicy {
     private static final int TAP_RESOLVE_PREFETCH_LIMIT_FOR_UNDECIDED = 20;
 
     private final ChromePreferenceManager mPreferenceManager;
+    private final ContextualSearchSelectionController mSelectionController;
+    private ContextualSearchNetworkCommunicator mNetworkCommunicator;
+    private ContextualSearchPanel mSearchPanel;
 
     // Members used only for testing purposes.
     private boolean mDidOverrideDecidedStateForTesting;
@@ -45,8 +48,21 @@ class ContextualSearchPolicy {
     /**
      * @param context The Android Context.
      */
-    public ContextualSearchPolicy(Context context) {
+    public ContextualSearchPolicy(Context context,
+                                  ContextualSearchSelectionController selectionController,
+                                  ContextualSearchNetworkCommunicator networkCommunicator) {
         mPreferenceManager = ChromePreferenceManager.getInstance(context);
+
+        mSelectionController = selectionController;
+        mNetworkCommunicator = networkCommunicator;
+    }
+
+    /**
+     * Sets the handle to the ContextualSearchPanel.
+     * @param panel The ContextualSearchPanel.
+     */
+    public void setContextualSearchPanel(ContextualSearchPanel panel) {
+        mSearchPanel = panel;
     }
 
     // TODO(donnd): Consider adding a test-only constructor that uses dependency injection of a
@@ -97,7 +113,9 @@ class ContextualSearchPolicy {
      * @return whether or not the Contextual Search Result should be preloaded before the user
      *         explicitly interacts with the feature.
      */
-    boolean shouldPrefetchSearchResult(boolean isTapTriggered) {
+    boolean shouldPrefetchSearchResult() {
+        boolean isTapTriggered = mSelectionController.getSelectionType() == SelectionType.TAP;
+
         if (!PrefServiceBridge.getInstance().getNetworkPredictionEnabled()) {
             return false;
         }
@@ -113,7 +131,9 @@ class ContextualSearchPolicy {
      * Returns whether the previous tap (the tap last counted) should resolve.
      * @return Whether the previous tap should resolve.
      */
-    boolean shouldPreviousTapResolve(@Nullable URL url) {
+    boolean shouldPreviousTapResolve() {
+        URL url = mNetworkCommunicator.getBasePageUrl();
+
         if (!ContextualSearchFieldTrial.isSearchTermResolutionEnabled()) {
             return false;
         }
@@ -128,14 +148,15 @@ class ContextualSearchPolicy {
 
     /**
      * Returns whether surrounding context can be accessed by other systems or not.
-     * @baseContentViewUrl The URL of the base page.
      * @return Whether surroundings are available.
      */
-    boolean canSendSurroundings(@Nullable URL baseContentViewUrl) {
+    boolean canSendSurroundings() {
+        URL url = mNetworkCommunicator.getBasePageUrl();
+
         if (isUserUndecided()) return false;
 
         if (isPromoAvailable()) {
-            return isBasePageHTTP(baseContentViewUrl);
+            return isBasePageHTTP(url);
         }
 
         return true;
@@ -149,24 +170,22 @@ class ContextualSearchPolicy {
     }
 
     /**
-     * @param controller The {@link ContextualSearchSelectionController} instance.
      * @return Whether the Peek promo is available to be shown above the Search Bar.
      */
-    public boolean isPeekPromoAvailable(ContextualSearchSelectionController controller) {
+    public boolean isPeekPromoAvailable() {
         // Allow Promo to be forcefully enabled for testing.
         if (ContextualSearchFieldTrial.isPeekPromoForced()) return true;
 
         // Enabled by Finch.
         if (!ContextualSearchFieldTrial.isPeekPromoEnabled()) return false;
 
-        return isPeekPromoConditionSatisfied(controller);
+        return isPeekPromoConditionSatisfied();
     }
 
     /**
-     * @param controller The {@link ContextualSearchSelectionController} instance.
      * @return Whether the condition to show the Peek promo is satisfied.
      */
-    public boolean isPeekPromoConditionSatisfied(ContextualSearchSelectionController controller) {
+    public boolean isPeekPromoConditionSatisfied() {
         // Check for several conditions to determine whether the Peek Promo can be shown.
 
         // 1) If the Panel was never opened.
@@ -176,7 +195,7 @@ class ContextualSearchPolicy {
         if (!isUserUndecided()) return false;
 
         // 3) Selection was caused by a long press.
-        if (controller.getSelectionType() != SelectionType.LONG_PRESS) return false;
+        if (mSelectionController.getSelectionType() != SelectionType.LONG_PRESS) return false;
 
         // 4) Promo was not shown more than the maximum number of times defined by Finch.
         final int maxShowCount = ContextualSearchFieldTrial.getPeekPromoMaxShowCount();
@@ -254,13 +273,11 @@ class ContextualSearchPolicy {
      * @return Whether a verbatim request should be made for the given base page, assuming there
      *         is no exiting request.
      */
-    boolean shouldCreateVerbatimRequest(ContextualSearchSelectionController controller,
-            @Nullable URL basePageUrl) {
-        // TODO(donnd): refactor to make the controller a member of this class?
-        return (controller.getSelectedText() != null
-                && (controller.getSelectionType() == SelectionType.LONG_PRESS
-                || (controller.getSelectionType() == SelectionType.TAP
-                        && !shouldPreviousTapResolve(basePageUrl))));
+    boolean shouldCreateVerbatimRequest() {
+        SelectionType selectionType = mSelectionController.getSelectionType();
+        return (mSelectionController.getSelectedText() != null
+                && (selectionType == SelectionType.LONG_PRESS
+                || (selectionType == SelectionType.TAP && !shouldPreviousTapResolve())));
     }
 
     /**
@@ -275,11 +292,7 @@ class ContextualSearchPolicy {
     /**
      * Logs the current user's state, including preference, tap and open counters, etc.
      */
-    void logCurrentState(@Nullable ContentViewCore cvc) {
-        if (cvc == null || !ContextualSearchFieldTrial.isEnabled(cvc.getContext())) {
-            return;
-        }
-
+    void logCurrentState() {
         ContextualSearchUma.logPreferenceState();
 
         // Log the number of promo taps remaining.
@@ -303,15 +316,15 @@ class ContextualSearchPolicy {
      * Logs details about the Search Term Resolution.
      * Should only be called when a search term has been resolved.
      * @param searchTerm The Resolved Search Term.
-     * @param basePageUrl The URL of the base page.
      */
-    void logSearchTermResolutionDetails(String searchTerm, @Nullable URL basePageUrl) {
+    void logSearchTermResolutionDetails(String searchTerm) {
         // Only log for decided users so the data reflect fully-enabled behavior.
         // Otherwise we'll get skewed data; more HTTP pages than HTTPS (since those don't resolve),
         // and it's also possible that public pages, e.g. news, have more searches for multi-word
         // entities like people.
         if (!isUserUndecided()) {
-            ContextualSearchUma.logBasePageProtocol(isBasePageHTTP(basePageUrl));
+            URL url = mNetworkCommunicator.getBasePageUrl();
+            ContextualSearchUma.logBasePageProtocol(isBasePageHTTP(url));
             boolean isSingleWord = !CONTAINS_WHITESPACE_PATTERN.matcher(searchTerm.trim()).find();
             ContextualSearchUma.logSearchTermResolvedWords(isSingleWord);
         }
@@ -334,15 +347,14 @@ class ContextualSearchPolicy {
      * The search provider icon is animated every time on long press if the user has never opened
      * the panel before and once a day on tap.
      *
-     * @param selectionType The type of selection made by the user.
-     * @param isShowing Whether the panel is showing.
      * @return Whether the search provider icon should be animated.
      */
-    boolean shouldAnimateSearchProviderIcon(SelectionType selectionType, boolean isShowing) {
-        if (isShowing) {
+    boolean shouldAnimateSearchProviderIcon() {
+        if (mSearchPanel.isShowing()) {
             return false;
         }
 
+        SelectionType selectionType = mSelectionController.getSelectionType();
         if (selectionType == SelectionType.TAP) {
             long currentTimeMillis = System.currentTimeMillis();
             long lastAnimatedTimeMillis =
@@ -536,5 +548,18 @@ class ContextualSearchPolicy {
         } else {
             return TAP_RESOLVE_PREFETCH_LIMIT_FOR_UNDECIDED;
         }
+    }
+
+    // --------------------------------------------------------------------------------------------
+    // Testing helpers.
+    // --------------------------------------------------------------------------------------------
+
+    /**
+     * Sets the {@link ContextualSearchNetworkCommunicator} to use for server requests.
+     * @param networkCommunicator The communicator for all future requests.
+     */
+    @VisibleForTesting
+    public void setNetworkCommunicator(ContextualSearchNetworkCommunicator networkCommunicator) {
+        mNetworkCommunicator = networkCommunicator;
     }
 }
