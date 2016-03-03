@@ -322,6 +322,13 @@ camera.views.Camera = function(context, router) {
   this.taking_ = false;
 
   /**
+   * Contains uncompleted fly-away animations for taken pictures.
+   * @type {Array.<function()>}
+   * @private
+   */
+  this.flyAnimations_ = [];
+
+  /**
    * Timer used to automatically collapse the tools.
    * @type {?number}
    * @private
@@ -1096,6 +1103,13 @@ camera.views.Camera.prototype.onKeyPressed = function(event) {
       this.setCurrentEffect_(this.effectProcessors_.length - 1);
       event.preventDefault();
       break;
+    case 'U+001B':  // Escape.
+      // Complete all fly-away animations immediately.
+      while (this.flyAnimations_.length) {
+        this.flyAnimations_[0]();
+      }
+      event.preventDefault();
+      break;
     case 'U+0020':  // Space key for taking the picture.
       document.querySelector('#take-picture').click();
       event.stopPropagation();
@@ -1468,7 +1482,12 @@ camera.views.Camera.prototype.takePictureImmediately_ = function(opt_callback) {
     }.bind(this));
 
     // Create the fly-away animation after two second.
-    setTimeout(function() {
+    var flyAnimation = function() {
+      var removal = this.flyAnimations_.indexOf(flyAnimation);
+      if (removal == -1)
+        return;
+      this.flyAnimations_.splice(removal, 1);
+
       img.classList.remove('activated');
 
       var sourceRect = img.getBoundingClientRect();
@@ -1489,11 +1508,13 @@ camera.views.Camera.prototype.takePictureImmediately_ = function(opt_callback) {
       }
       img.style.opacity = 0;
 
-      camera.util.waitForTransitionCompletion(img, 1500, function() {
+      camera.util.waitForTransitionCompletion(img, 1200, function() {
         img.parentNode.removeChild(img);
         this.taking_ = false;
       }.bind(this));
-    }.bind(this), 2000);
+    }.bind(this);
+    this.flyAnimations_.push(flyAnimation);
+    setTimeout(flyAnimation, 2000);
 
     var onPointerDown = function() {
       img.classList.add('activated');
