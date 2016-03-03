@@ -2428,10 +2428,6 @@
         ],
       }],
 
-      ['OS=="win" and (clang==1 or asan==1)', {
-        'chromium_win_pch': 0,
-      }],
-
       ['host_clang==1', {
         'host_cc': '<(make_clang_dir)/bin/clang',
         'host_cxx': '<(make_clang_dir)/bin/clang++',
