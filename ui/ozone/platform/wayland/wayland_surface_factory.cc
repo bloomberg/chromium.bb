@@ -160,6 +160,8 @@ scoped_refptr<NativePixmap> WaylandSurfaceFactory::CreateNativePixmap(
 }
 
 scoped_refptr<NativePixmap> WaylandSurfaceFactory::CreateNativePixmapFromHandle(
+    gfx::Size size,
+    gfx::BufferFormat format,
     const gfx::NativePixmapHandle& handle) {
   NOTIMPLEMENTED();
   return nullptr;
