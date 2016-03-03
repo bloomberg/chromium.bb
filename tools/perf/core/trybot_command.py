@@ -10,7 +10,12 @@ import subprocess
 import urllib2
 import json
 
+from core import path_util
+
+from telemetry import benchmark
+from telemetry.core import discover
 from telemetry.util import command_line
+from telemetry.util import matching
 
 
 CHROMIUM_CONFIG_FILENAME = 'tools/run-perf-test.cfg'
@@ -163,10 +168,22 @@ class Trybot(command_line.ArgParseCommand):
 
   @classmethod
   def ProcessCommandLineArgs(cls, parser, options, extra_args, environment):
-    del options, environment  # unused
+    del environment  # unused
     for arg in extra_args:
       if arg == '--browser' or arg.startswith('--browser='):
         parser.error('--browser=... is not allowed when running trybot.')
+    all_benchmarks = discover.DiscoverClasses(
+        start_dir=path_util.GetPerfBenchmarksDir(),
+        top_level_dir=path_util.GetPerfDir(),
+        base_class=benchmark.Benchmark).values()
+    all_benchmark_names = [b.Name() for b in all_benchmarks]
+    if options.benchmark_name not in all_benchmark_names:
+      possible_benchmark_names = matching.GetMostLikelyMatchedObject(
+          all_benchmark_names, options.benchmark_name)
+      parser.error(
+         'No benchmark named "%s". Do you mean any of those benchmarks '
+         'below?\n%s' %
+         (options.benchmark_name, '\n'.join(possible_benchmark_names)))
 
   @classmethod
   def AddCommandLineArgs(cls, parser, environment):
