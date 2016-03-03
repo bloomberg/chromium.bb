@@ -26,7 +26,7 @@ DeviceLocalAccountExternalPolicyLoader::
 }
 
 bool DeviceLocalAccountExternalPolicyLoader::IsCacheRunning() const {
-  return external_cache_;
+  return external_cache_ != nullptr;
 }
 
 void DeviceLocalAccountExternalPolicyLoader::StartCache(

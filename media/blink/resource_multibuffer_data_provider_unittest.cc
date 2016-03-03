@@ -207,7 +207,7 @@ class ResourceMultiBufferDataProviderTest : public testing::Test {
     EXPECT_EQ(0, memcmp(buffer, data_ + pos, size));
   }
 
-  bool HasActiveLoader() { return loader_->active_loader_; }
+  bool HasActiveLoader() { return loader_->active_loader_ != nullptr; }
   MOCK_METHOD1(RedirectCallback, void(const scoped_refptr<UrlData>&));
 
   void SetUrlData(const scoped_refptr<UrlData>& new_url_data) {

@@ -124,8 +124,8 @@ std::vector<uint8_t> GetOwnerPublicKey() {
 bool CreateOwnerKeyInSlot(PK11SlotInfo* slot) {
   const std::vector<uint8_t> key(
       kOwnerPrivateKey, kOwnerPrivateKey + arraysize(kOwnerPrivateKey));
-  return crypto::ImportNSSKeyFromPrivateKeyInfo(slot, key,
-                                                true /* permanent */);
+  return crypto::ImportNSSKeyFromPrivateKeyInfo(
+             slot, key, true /* permanent */) != nullptr;
 }
 
 }  // namespace

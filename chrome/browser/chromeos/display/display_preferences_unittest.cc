@@ -141,7 +141,7 @@ class DisplayPreferencesTest : public ash::test::AshTestBase {
     } else {
       scoped_ptr<base::DictionaryValue> layout_value(
           new base::DictionaryValue());
-      layout_value->SetBoolean(key, value);
+      layout_value->SetBoolean(key, value != nullptr);
       pref_data->Set(name, layout_value.release());
     }
   }

@@ -39,7 +39,7 @@ class BrlapiConnectionImpl : public BrlapiConnection,
 
   ConnectResult Connect(const OnDataReadyCallback& on_data_ready) override;
   void Disconnect() override;
-  bool Connected() override { return handle_; }
+  bool Connected() override { return handle_ != nullptr; }
   brlapi_error_t* BrlapiError() override;
   std::string BrlapiStrError() override;
   bool GetDisplaySize(size_t* size) override;

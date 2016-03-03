@@ -103,13 +103,9 @@
 #include "base/macros.h"
 #include "base/move.h"
 #include "base/template_util.h"
+#include "build/build_config.h"
 
 namespace base {
-
-namespace subtle {
-class RefCountedBase;
-class RefCountedThreadSafeBase;
-}  // namespace subtle
 
 // Function object which invokes 'free' on its parameter, which must be
 // a pointer. Can be used to store malloc-allocated pointers in scoped_ptr:
@@ -121,6 +117,63 @@ struct FreeDeleter {
     free(ptr);
   }
 };
+
+}  // namespace base
+
+// Now that scoped_ptr is almost 100% compatible with std::unique_ptr, we're
+// incrementally migrating scoped_ptr to just be a type alias for
+// std::unique_ptr. The eventual goal is to delete scoped_ptr altogether.
+#if defined(OS_LINUX)
+template <typename T, typename D = std::default_delete<T>>
+using scoped_ptr = std::unique_ptr<T, D>;
+
+// Versions of libstdc++ 4.8 lack overloads for <, <=, >, and >= when comparing
+// a std::unique_ptr and nullptr_t.
+#if defined(__GLIBCXX__) && __GLIBCXX__ < 20150426
+template <class T, class D>
+bool operator<(const scoped_ptr<T, D>& p, std::nullptr_t) {
+  return p.get() < nullptr;
+}
+template <class T, class D>
+bool operator<(std::nullptr_t, const scoped_ptr<T, D>& p) {
+  return nullptr < p.get();
+}
+
+template <class T, class D>
+bool operator>(const scoped_ptr<T, D>& p, std::nullptr_t) {
+  return nullptr < p;
+}
+template <class T, class D>
+bool operator>(std::nullptr_t, const scoped_ptr<T, D>& p) {
+  return p < nullptr;
+}
+
+template <class T, class D>
+bool operator<=(const scoped_ptr<T, D>& p, std::nullptr_t) {
+  return !(p > nullptr);
+}
+template <class T, class D>
+bool operator<=(std::nullptr_t, const scoped_ptr<T, D>& p) {
+  return !(nullptr > p);
+}
+
+template <class T, class D>
+bool operator>=(const scoped_ptr<T, D>& p, std::nullptr_t) {
+  return !(p < nullptr);
+}
+template <class T, class D>
+bool operator>=(std::nullptr_t, const scoped_ptr<T, D>& p) {
+  return !(nullptr < p);
+}
+#endif  // defined(__GLIBCXX__) && __GLIBCX__ < 20150426
+
+#else
+namespace base {
+
+namespace subtle {
+class RefCountedBase;
+class RefCountedThreadSafeBase;
+}  // namespace subtle
 
 namespace internal {
 
@@ -610,17 +663,18 @@ bool operator>=(std::nullptr_t, const scoped_ptr<T, D>& p) {
   return !(nullptr < p);
 }
 
+template <typename T>
+std::ostream& operator<<(std::ostream& out, const scoped_ptr<T>& p) {
+  return out << p.get();
+}
+#endif  // defined(OS_LINUX)
+
 // A function to convert T* into scoped_ptr<T>
 // Doing e.g. make_scoped_ptr(new FooBarBaz<type>(arg)) is a shorter notation
 // for scoped_ptr<FooBarBaz<type> >(new FooBarBaz<type>(arg))
 template <typename T>
 scoped_ptr<T> make_scoped_ptr(T* ptr) {
   return scoped_ptr<T>(ptr);
-}
-
-template <typename T>
-std::ostream& operator<<(std::ostream& out, const scoped_ptr<T>& p) {
-  return out << p.get();
 }
 
 #endif  // BASE_MEMORY_SCOPED_PTR_H_

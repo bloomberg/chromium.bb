@@ -408,7 +408,8 @@ bool WebcamPrivateResetFunction::RunAsync() {
     return false;
   }
 
-  webcam->Reset(params->config.pan, params->config.tilt, params->config.zoom,
+  webcam->Reset(params->config.pan != nullptr, params->config.tilt != nullptr,
+                params->config.zoom != nullptr,
                 base::Bind(&WebcamPrivateResetFunction::OnResetWebcam, this));
 
   return true;

@@ -6,8 +6,6 @@
 
 #include <stddef.h>
 
-#include <sstream>
-
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/macros.h"
@@ -648,19 +646,6 @@ TEST(ScopedPtrTest, Conversion) {
   // Upcast with an rvalue works.
   scoped_ptr<Super> super2 = SubClassReturn();
   super2 = SubClassReturn();
-}
-
-// Logging a scoped_ptr<T> to an ostream shouldn't convert it to a boolean
-// value first.
-TEST(ScopedPtrTest, LoggingDoesntConvertToBoolean) {
-  scoped_ptr<int> x(new int);
-  std::stringstream s1;
-  s1 << x;
-
-  std::stringstream s2;
-  s2 << x.get();
-
-  EXPECT_EQ(s2.str(), s1.str());
 }
 
 TEST(ScopedPtrTest, ReferenceCycle) {

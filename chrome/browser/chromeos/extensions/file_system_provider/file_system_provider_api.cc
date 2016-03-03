@@ -149,11 +149,11 @@ bool FileSystemProviderMountFunction::RunSync() {
   MountOptions options;
   options.file_system_id = params->options.file_system_id;
   options.display_name = params->options.display_name;
-  options.writable = params->options.writable;
+  options.writable = params->options.writable != nullptr;
   options.opened_files_limit = params->options.opened_files_limit.get()
                                    ? *params->options.opened_files_limit.get()
                                    : 0;
-  options.supports_notify_tag = params->options.supports_notify_tag;
+  options.supports_notify_tag = params->options.supports_notify_tag != nullptr;
 
   const base::File::Error result =
       service->MountFileSystem(extension_id(), options);

@@ -70,7 +70,9 @@ class CONTENT_EXPORT MouseWheelEventQueue {
   }
 
   size_t queued_size() const { return wheel_queue_.size(); }
-  bool event_in_flight() const { return event_sent_for_gesture_ack_; }
+  bool event_in_flight() const {
+    return event_sent_for_gesture_ack_ != nullptr;
+  }
 
  private:
   void TryForwardNextEventToRenderer();

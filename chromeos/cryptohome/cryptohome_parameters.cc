@@ -109,10 +109,10 @@ KeyDefinition::ProviderData::~ProviderData() {
 }
 
 bool KeyDefinition::ProviderData::operator==(const ProviderData& other) const {
-  const bool has_number = number;
-  const bool other_has_number = other.number;
-  const bool has_bytes = bytes;
-  const bool other_has_bytes = other.bytes;
+  const bool has_number = number != nullptr;
+  const bool other_has_number = other.number != nullptr;
+  const bool has_bytes = bytes != nullptr;
+  const bool other_has_bytes = other.bytes != nullptr;
   return name == other.name &&
          has_number == other_has_number &&
          has_bytes == other_has_bytes &&

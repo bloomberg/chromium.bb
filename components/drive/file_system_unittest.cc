@@ -206,7 +206,7 @@ class FileSystemTest : public testing::Test {
 
   // Returns true if an entry exists at |file_path|.
   bool EntryExists(const base::FilePath& file_path) {
-    return GetResourceEntrySync(file_path);
+    return GetResourceEntrySync(file_path) != nullptr;
   }
 
   // Flag for specifying the timestamp of the test filesystem cache.

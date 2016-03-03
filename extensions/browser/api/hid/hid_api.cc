@@ -20,6 +20,27 @@
 #include "extensions/common/api/hid.h"
 #include "net/base/io_buffer.h"
 
+// The normal EXTENSION_FUNCTION_VALIDATE macro doesn't work well here. It's
+// used in functions that returns a bool. However, EXTENSION_FUNCTION_VALIDATE
+// returns a smart pointer on failure.
+//
+// With C++11, this is problematic since a smart pointer that uses explicit
+// operator bool won't allow this conversion, since it's not in a context (such
+// as a conditional) where a contextual conversion to bool would be allowed.
+// TODO(rdevlin.cronin): restructure this code to remove the need for the
+// additional macro.
+#ifdef NDEBUG
+#define EXTENSION_FUNCTION_VALIDATE_RETURN_FALSE_ON_ERROR(test) \
+  do {                                                          \
+    if (!(test)) {                                              \
+      this->bad_message_ = true;                                \
+      return false;                                             \
+    }                                                           \
+  } while (0)
+#else  // NDEBUG
+#define EXTENSION_FUNCTION_VALIDATE_RETURN_FALSE_ON_ERROR(test) CHECK(test)
+#endif  // NDEBUG
+
 namespace hid = extensions::api::hid;
 
 using device::HidConnection;
@@ -250,7 +271,7 @@ HidReceiveFunction::~HidReceiveFunction() {}
 
 bool HidReceiveFunction::ValidateParameters() {
   parameters_ = hid::Receive::Params::Create(*args_);
-  EXTENSION_FUNCTION_VALIDATE(parameters_);
+  EXTENSION_FUNCTION_VALIDATE_RETURN_FALSE_ON_ERROR(parameters_);
   set_connection_id(parameters_->connection_id);
   return true;
 }
@@ -280,7 +301,7 @@ HidSendFunction::~HidSendFunction() {}
 
 bool HidSendFunction::ValidateParameters() {
   parameters_ = hid::Send::Params::Create(*args_);
-  EXTENSION_FUNCTION_VALIDATE(parameters_);
+  EXTENSION_FUNCTION_VALIDATE_RETURN_FALSE_ON_ERROR(parameters_);
   set_connection_id(parameters_->connection_id);
   return true;
 }
@@ -309,7 +330,7 @@ HidReceiveFeatureReportFunction::~HidReceiveFeatureReportFunction() {}
 
 bool HidReceiveFeatureReportFunction::ValidateParameters() {
   parameters_ = hid::ReceiveFeatureReport::Params::Create(*args_);
-  EXTENSION_FUNCTION_VALIDATE(parameters_);
+  EXTENSION_FUNCTION_VALIDATE_RETURN_FALSE_ON_ERROR(parameters_);
   set_connection_id(parameters_->connection_id);
   return true;
 }
@@ -338,7 +359,7 @@ HidSendFeatureReportFunction::~HidSendFeatureReportFunction() {}
 
 bool HidSendFeatureReportFunction::ValidateParameters() {
   parameters_ = hid::SendFeatureReport::Params::Create(*args_);
-  EXTENSION_FUNCTION_VALIDATE(parameters_);
+  EXTENSION_FUNCTION_VALIDATE_RETURN_FALSE_ON_ERROR(parameters_);
   set_connection_id(parameters_->connection_id);
   return true;
 }

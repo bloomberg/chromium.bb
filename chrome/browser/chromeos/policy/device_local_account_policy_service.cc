@@ -165,7 +165,7 @@ void DeviceLocalAccountPolicyBroker::Initialize() {
 }
 
 bool DeviceLocalAccountPolicyBroker::HasInvalidatorForTest() const {
-  return invalidator_;
+  return invalidator_ != nullptr;
 }
 
 void DeviceLocalAccountPolicyBroker::ConnectIfPossible(
