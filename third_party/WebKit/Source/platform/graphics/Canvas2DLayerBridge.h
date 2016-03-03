@@ -126,6 +126,16 @@ public:
     void setLoggerForTesting(PassOwnPtr<Logger>);
 
 private:
+    struct MailboxInfo {
+        DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+        WebExternalTextureMailbox m_mailbox;
+        RefPtr<SkImage> m_image;
+        RefPtr<Canvas2DLayerBridge> m_parentLayerBridge;
+
+        MailboxInfo(const MailboxInfo&);
+        MailboxInfo() {}
+    };
+
     Canvas2DLayerBridge(PassOwnPtr<WebGraphicsContext3DProvider>, const IntSize&, int msaaSampleCount, OpacityMode, AccelerationMode);
     WebGraphicsContext3D* context();
     void startRecording();
@@ -140,6 +150,18 @@ private:
 
     SkSurface* getOrCreateSurface(AccelerationHint = PreferAcceleration);
     bool shouldAccelerate(AccelerationHint) const;
+
+    // Returns the GL filter associated with |m_filterQuality|.
+    GLenum getGLFilter();
+
+    // Prepends a new MailboxInfo object to |m_mailboxes|, and returns a
+    // reference. The reference is no longer valid after |m_mailboxes| is
+    // mutated.
+    MailboxInfo& createMailboxInfo();
+
+    // Returns whether the mailbox was successfully prepared from the SkImage.
+    // The mailbox is an out parameter only populated on success.
+    bool prepareMailboxFromImage(PassRefPtr<SkImage>, WebExternalTextureMailbox*);
 
     OwnPtr<SkPictureRecorder> m_recorder;
     RefPtr<SkSurface> m_surface;
@@ -165,16 +187,6 @@ private:
     bool m_hibernationScheduled = false;
 
     friend class Canvas2DLayerBridgeTest;
-
-    struct MailboxInfo {
-        DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-        WebExternalTextureMailbox m_mailbox;
-        RefPtr<SkImage> m_image;
-        RefPtr<Canvas2DLayerBridge> m_parentLayerBridge;
-
-        MailboxInfo(const MailboxInfo&);
-        MailboxInfo() {}
-    };
 
     uint32_t m_lastImageId;
 

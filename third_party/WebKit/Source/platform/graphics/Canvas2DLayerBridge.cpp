@@ -196,6 +196,81 @@ bool Canvas2DLayerBridge::isAccelerated() const
     return shouldAccelerate(PreferAcceleration);
 }
 
+GLenum Canvas2DLayerBridge::getGLFilter()
+{
+    return m_filterQuality == kNone_SkFilterQuality ? GL_NEAREST : GL_LINEAR;
+}
+
+Canvas2DLayerBridge::MailboxInfo& Canvas2DLayerBridge::createMailboxInfo()
+{
+    MailboxInfo tmp;
+    tmp.m_parentLayerBridge = this;
+    m_mailboxes.prepend(tmp);
+    MailboxInfo& mailboxInfo = m_mailboxes.first();
+    return mailboxInfo;
+}
+
+bool Canvas2DLayerBridge::prepareMailboxFromImage(PassRefPtr<SkImage> image, WebExternalTextureMailbox* outMailbox)
+{
+    MailboxInfo& mailboxInfo = createMailboxInfo();
+    mailboxInfo.m_mailbox.nearestNeighbor = getGLFilter() == GL_NEAREST;
+    mailboxInfo.m_image = image;
+
+    GrContext* grContext = m_contextProvider->grContext();
+    if (!grContext)
+        return true; // for testing: skip gl stuff when using a mock graphics context.
+
+    if (RuntimeEnabledFeatures::forceDisable2dCanvasCopyOnWriteEnabled())
+        m_surface->notifyContentWillChange(SkSurface::kRetain_ContentChangeMode);
+
+    // Need to flush skia's internal queue because texture is about to be accessed directly
+    grContext->flush();
+
+    // Because of texture sharing with the compositor, we must invalidate
+    // the state cached in skia so that the deferred copy on write
+    // in SkSurface_Gpu does not make any false assumptions.
+    mailboxInfo.m_image->getTexture()->textureParamsModified();
+    mailboxInfo.m_mailbox.textureTarget = GL_TEXTURE_2D;
+
+    WebGraphicsContext3D* webContext = context();
+    GLuint textureID = skia::GrBackendObjectToGrGLTextureInfo(mailboxInfo.m_image->getTextureHandle(true))->fID;
+    webContext->bindTexture(GL_TEXTURE_2D, textureID);
+    webContext->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, getGLFilter());
+    webContext->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, getGLFilter());
+    webContext->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    webContext->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+    // Re-use the texture's existing mailbox, if there is one.
+    if (mailboxInfo.m_image->getTexture()->getCustomData()) {
+        ASSERT(mailboxInfo.m_image->getTexture()->getCustomData()->size() == sizeof(mailboxInfo.m_mailbox.name));
+        memcpy(&mailboxInfo.m_mailbox.name[0], mailboxInfo.m_image->getTexture()->getCustomData()->data(), sizeof(mailboxInfo.m_mailbox.name));
+    } else {
+        context()->genMailboxCHROMIUM(mailboxInfo.m_mailbox.name);
+        RefPtr<SkData> mailboxNameData = adoptRef(SkData::NewWithCopy(&mailboxInfo.m_mailbox.name[0], sizeof(mailboxInfo.m_mailbox.name)));
+        mailboxInfo.m_image->getTexture()->setCustomData(mailboxNameData.get());
+        webContext->produceTextureCHROMIUM(GL_TEXTURE_2D, mailboxInfo.m_mailbox.name);
+    }
+
+    if (isHidden()) {
+        // With hidden canvases, we release the SkImage immediately because
+        // there is no need for animations to be double buffered.
+        mailboxInfo.m_image.clear();
+    } else {
+        // FIXME: We'd rather insert a syncpoint than perform a flush here,
+        // but currently the canvas will flicker if we don't flush here.
+        const WGC3Duint64 fenceSync = webContext->insertFenceSyncCHROMIUM();
+        webContext->flush();
+        mailboxInfo.m_mailbox.validSyncToken = webContext->genSyncTokenCHROMIUM(fenceSync, mailboxInfo.m_mailbox.syncToken);
+    }
+    webContext->bindTexture(GL_TEXTURE_2D, 0);
+    // Because we are changing the texture binding without going through skia,
+    // we must dirty the context.
+    grContext->resetContext(kTextureBinding_GrGLBackendState);
+
+    *outMailbox = mailboxInfo.m_mailbox;
+    return true;
+}
+
 static void hibernateWrapper(WeakPtr<Canvas2DLayerBridge> bridge, double /*idleDeadline*/)
 {
     if (bridge) {
@@ -616,75 +691,14 @@ bool Canvas2DLayerBridge::prepareMailbox(WebExternalTextureMailbox* outMailbox, 
     if (!image || !image->getTexture())
         return false;
 
-    WebGraphicsContext3D* webContext = context();
-
-    // Early exit if canvas was not drawn to since last prepareMailbox
-    GLenum filter = m_filterQuality == kNone_SkFilterQuality ? GL_NEAREST : GL_LINEAR;
+    // Early exit if canvas was not drawn to since last prepareMailbox.
+    GLenum filter = getGLFilter();
     if (image->uniqueID() == m_lastImageId && filter == m_lastFilter)
         return false;
     m_lastImageId = image->uniqueID();
     m_lastFilter = filter;
 
-    {
-        MailboxInfo tmp;
-        tmp.m_image = image;
-        tmp.m_parentLayerBridge = this;
-        m_mailboxes.prepend(tmp);
-    }
-    MailboxInfo& mailboxInfo = m_mailboxes.first();
-
-    mailboxInfo.m_mailbox.nearestNeighbor = filter == GL_NEAREST;
-
-    GrContext* grContext = m_contextProvider->grContext();
-    if (!grContext)
-        return true; // for testing: skip gl stuff when using a mock graphics context.
-
-    if (RuntimeEnabledFeatures::forceDisable2dCanvasCopyOnWriteEnabled())
-        m_surface->notifyContentWillChange(SkSurface::kRetain_ContentChangeMode);
-
-    // Because of texture sharing with the compositor, we must invalidate
-    // the state cached in skia so that the deferred copy on write
-    // in SkSurface_Gpu does not make any false assumptions.
-    mailboxInfo.m_image->getTexture()->textureParamsModified();
-    mailboxInfo.m_mailbox.textureTarget = GL_TEXTURE_2D;
-
-    // Passing true because we need to flush skia's internal queue since texture is about to be accessed directly
-    GLuint textureID = skia::GrBackendObjectToGrGLTextureInfo(mailboxInfo.m_image->getTextureHandle(true))->fID;
-    webContext->bindTexture(GL_TEXTURE_2D, textureID);
-    webContext->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter);
-    webContext->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter);
-    webContext->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    webContext->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-    // Re-use the texture's existing mailbox, if there is one.
-    if (image->getTexture()->getCustomData()) {
-        ASSERT(image->getTexture()->getCustomData()->size() == sizeof(mailboxInfo.m_mailbox.name));
-        memcpy(&mailboxInfo.m_mailbox.name[0], image->getTexture()->getCustomData()->data(), sizeof(mailboxInfo.m_mailbox.name));
-    } else {
-        context()->genMailboxCHROMIUM(mailboxInfo.m_mailbox.name);
-        RefPtr<SkData> mailboxNameData = adoptRef(SkData::NewWithCopy(&mailboxInfo.m_mailbox.name[0], sizeof(mailboxInfo.m_mailbox.name)));
-        image->getTexture()->setCustomData(mailboxNameData.get());
-        webContext->produceTextureCHROMIUM(GL_TEXTURE_2D, mailboxInfo.m_mailbox.name);
-    }
-
-    if (isHidden()) {
-        // With hidden canvases, we release the SkImage immediately because
-        // there is no need for animations to be double buffered.
-        mailboxInfo.m_image.clear();
-    } else {
-        // FIXME: We'd rather insert a syncpoint than perform a flush here,
-        // but currently the canvas will flicker if we don't flush here.
-        const WGC3Duint64 fenceSync = webContext->insertFenceSyncCHROMIUM();
-        webContext->flush();
-        mailboxInfo.m_mailbox.validSyncToken = webContext->genSyncTokenCHROMIUM(fenceSync, mailboxInfo.m_mailbox.syncToken);
-    }
-    webContext->bindTexture(GL_TEXTURE_2D, 0);
-    // Because we are changing the texture binding without going through skia,
-    // we must dirty the context.
-    grContext->resetContext(kTextureBinding_GrGLBackendState);
-
-    *outMailbox = mailboxInfo.m_mailbox;
-    return true;
+    return prepareMailboxFromImage(image.release(), outMailbox);
 }
 
 void Canvas2DLayerBridge::mailboxReleased(const WebExternalTextureMailbox& mailbox, bool lostResource)
