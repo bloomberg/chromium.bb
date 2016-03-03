@@ -150,7 +150,7 @@ class Connector : public MessageReceiver {
   void WaitToReadMore();
 
   // Returns false if |this| was destroyed during message dispatch.
-  MOJO_WARN_UNUSED_RESULT bool ReadSingleMessage(MojoResult* read_result);
+  WARN_UNUSED_RESULT bool ReadSingleMessage(MojoResult* read_result);
 
   // |this| can be destroyed during message dispatch.
   void ReadAllAvailableMessages();

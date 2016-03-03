@@ -160,7 +160,7 @@ TEST(PlatformSharedBufferTest, MappingsDistinct) {
 
 TEST(PlatformSharedBufferTest, BufferZeroInitialized) {
   static const size_t kSizes[] = {10, 100, 1000, 10000, 100000};
-  for (size_t i = 0; i < MOJO_ARRAYSIZE(kSizes); i++) {
+  for (size_t i = 0; i < arraysize(kSizes); i++) {
     scoped_refptr<PlatformSharedBuffer> buffer(
         PlatformSharedBuffer::Create(kSizes[i]));
     scoped_ptr<PlatformSharedBufferMapping> mapping(buffer->Map(0, kSizes[i]));

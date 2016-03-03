@@ -19,16 +19,6 @@
 namespace mojo {
 namespace {
 
-int MustUseReturnedResult() MOJO_WARN_UNUSED_RESULT;
-int MustUseReturnedResult() {
-  return 456;
-}
-
-TEST(MacrosTest, WarnUnusedResult) {
-  if (!MustUseReturnedResult())
-    abort();
-}
-
 // First test |MOJO_STATIC_ASSERT()| in a global scope.
 MOJO_STATIC_ASSERT(sizeof(int64_t) == 2 * sizeof(int32_t),
                    "Bad static_assert() failure in global scope");

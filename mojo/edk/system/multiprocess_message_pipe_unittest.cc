@@ -235,7 +235,7 @@ DEFINE_TEST_CLIENT_WITH_PIPE(CheckSharedBuffer, MultiprocessMessagePipeTest,
   std::string read_buffer(100, '\0');
   uint32_t num_bytes = static_cast<uint32_t>(read_buffer.size());
   MojoHandle handles[10];
-  uint32_t num_handlers = MOJO_ARRAYSIZE(handles);  // Maximum number to receive
+  uint32_t num_handlers = arraysize(handles);  // Maximum number to receive
   CHECK_EQ(MojoReadMessage(h, &read_buffer[0],
                            &num_bytes, &handles[0],
                            &num_handlers, MOJO_READ_MESSAGE_FLAG_NONE),
@@ -323,7 +323,7 @@ TEST_F(MultiprocessMessagePipeTest, MAYBE_SharedBufferPassing) {
     ASSERT_EQ(MOJO_RESULT_OK,
               MojoWriteMessage(h, &go1[0],
                                static_cast<uint32_t>(go1.size()), &handles[0],
-                               MOJO_ARRAYSIZE(handles),
+                               arraysize(handles),
                                MOJO_WRITE_MESSAGE_FLAG_NONE));
 
     // Wait for a message from the child.
@@ -388,7 +388,7 @@ DEFINE_TEST_CLIENT_WITH_PIPE(CheckPlatformHandleFile,
   std::string read_buffer(100, '\0');
   uint32_t num_bytes = static_cast<uint32_t>(read_buffer.size());
   MojoHandle handles[255];  // Maximum number to receive.
-  uint32_t num_handlers = MOJO_ARRAYSIZE(handles);
+  uint32_t num_handlers = arraysize(handles);
 
   CHECK_EQ(MojoReadMessage(h, &read_buffer[0],
                            &num_bytes, &handles[0],
@@ -493,7 +493,7 @@ DEFINE_TEST_CLIENT_WITH_PIPE(CheckMessagePipe, MultiprocessMessagePipeTest, h) {
 
   // It should have a message pipe.
   MojoHandle handles[10];
-  uint32_t num_handlers = MOJO_ARRAYSIZE(handles);
+  uint32_t num_handlers = arraysize(handles);
   CHECK_EQ(MojoReadMessage(h, nullptr,
                            nullptr, &handles[0],
                            &num_handlers, MOJO_READ_MESSAGE_FLAG_NONE),
@@ -636,7 +636,7 @@ DEFINE_TEST_CLIENT_WITH_PIPE(DataPipeConsumer, MultiprocessMessagePipeTest, h) {
 
   // It should have a message pipe.
   MojoHandle handles[10];
-  uint32_t num_handlers = MOJO_ARRAYSIZE(handles);
+  uint32_t num_handlers = arraysize(handles);
   CHECK_EQ(MojoReadMessage(h, nullptr,
                            nullptr, &handles[0],
                            &num_handlers, MOJO_READ_MESSAGE_FLAG_NONE),

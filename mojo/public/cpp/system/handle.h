@@ -107,7 +107,7 @@ class ScopedHandleBase {
 
   void swap(ScopedHandleBase& other) { handle_.swap(other.handle_); }
 
-  HandleType release() MOJO_WARN_UNUSED_RESULT {
+  HandleType release() WARN_UNUSED_RESULT {
     HandleType rv;
     rv.swap(handle_);
     return rv;

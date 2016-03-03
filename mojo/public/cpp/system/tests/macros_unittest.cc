@@ -56,19 +56,6 @@ TEST(MacrosCppTest, Override) {
   x.AlsoToBeOverridden();
 }
 
-// Test that |MOJO_ARRAYSIZE()| works in a |static_assert()|.
-const int kGlobalArray[5] = {1, 2, 3, 4, 5};
-static_assert(MOJO_ARRAYSIZE(kGlobalArray) == 5u,
-              "MOJO_ARRAY_SIZE() failed in static_assert()");
-
-TEST(MacrosCppTest, ArraySize) {
-  double local_array[4] = {6.7, 7.8, 8.9, 9.0};
-  // MSVS considers this local variable unused since MOJO_ARRAYSIZE only takes
-  // the size of the type of the local and not the values itself.
-  ALLOW_UNUSED_LOCAL(local_array);
-  EXPECT_EQ(4u, MOJO_ARRAYSIZE(local_array));
-}
-
 // Note: MSVS is very strict (and arguably buggy) about warnings for classes
 // defined in a local scope, so define these globally.
 class MoveOnlyInt {
@@ -124,8 +111,8 @@ TEST(MacrosCppTest, StaticConstMemberDefinition) {
 }
 
 // The test for |ignore_result()| is also just a compilation test. (Note that
-// |MOJO_WARN_UNUSED_RESULT| can only be used in the prototype.
-int ReturnsIntYouMustUse() MOJO_WARN_UNUSED_RESULT;
+// |WARN_UNUSED_RESULT| can only be used in the prototype.
+int ReturnsIntYouMustUse() WARN_UNUSED_RESULT;
 
 int ReturnsIntYouMustUse() {
   return 123;

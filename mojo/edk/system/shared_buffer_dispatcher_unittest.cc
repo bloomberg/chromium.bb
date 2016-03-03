@@ -64,7 +64,7 @@ TEST_F(SharedBufferDispatcherTest, ValidateCreateOptionsValid) {
   // Different flags.
   MojoCreateSharedBufferOptionsFlags flags_values[] = {
       MOJO_CREATE_SHARED_BUFFER_OPTIONS_FLAG_NONE};
-  for (size_t i = 0; i < MOJO_ARRAYSIZE(flags_values); i++) {
+  for (size_t i = 0; i < arraysize(flags_values); i++) {
     const MojoCreateSharedBufferOptionsFlags flags = flags_values[i];
 
     // Different capacities (size 1).
@@ -221,7 +221,7 @@ TEST_F(SharedBufferDispatcherTest, DuplicateBufferHandleOptionsValid) {
       {sizeof(MojoDuplicateBufferHandleOptions),
        MOJO_DUPLICATE_BUFFER_HANDLE_OPTIONS_FLAG_NONE},
       {sizeof(MojoDuplicateBufferHandleOptionsFlags), ~0u}};
-  for (size_t i = 0; i < MOJO_ARRAYSIZE(options); i++) {
+  for (size_t i = 0; i < arraysize(options); i++) {
     scoped_refptr<Dispatcher> dispatcher2;
     EXPECT_EQ(MOJO_RESULT_OK, dispatcher1->DuplicateBufferHandle(
                                   &options[i], &dispatcher2));

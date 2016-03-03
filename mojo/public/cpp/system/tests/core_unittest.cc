@@ -306,9 +306,9 @@ TEST(CoreCppTest, Basic) {
 
       memset(buffer, 0, sizeof(buffer));
       buffer_size = static_cast<uint32_t>(sizeof(buffer));
-      for (size_t i = 0; i < MOJO_ARRAYSIZE(handles); i++)
+      for (size_t i = 0; i < arraysize(handles); i++)
         handles[i] = kInvalidHandleValue;
-      handles_count = static_cast<uint32_t>(MOJO_ARRAYSIZE(handles));
+      handles_count = static_cast<uint32_t>(arraysize(handles));
       EXPECT_EQ(MOJO_RESULT_OK,
                 ReadMessageRaw(h0.get(),
                                buffer,
@@ -334,9 +334,9 @@ TEST(CoreCppTest, Basic) {
 
       memset(buffer, 0, sizeof(buffer));
       buffer_size = static_cast<uint32_t>(sizeof(buffer));
-      for (size_t i = 0; i < MOJO_ARRAYSIZE(handles); i++)
+      for (size_t i = 0; i < arraysize(handles); i++)
         handles[i] = kInvalidHandleValue;
-      handles_count = static_cast<uint32_t>(MOJO_ARRAYSIZE(handles));
+      handles_count = static_cast<uint32_t>(arraysize(handles));
       EXPECT_EQ(MOJO_RESULT_OK,
                 ReadMessageRaw(mp.handle1.get(),
                                buffer,

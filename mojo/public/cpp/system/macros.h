@@ -13,20 +13,6 @@
 
 #include "mojo/public/c/system/macros.h"  // Symbols exposed.
 
-// Used to calculate the number of elements in an array.
-// (See |arraysize()| in Chromium's base/macros.h for more details.)
-namespace mojo {
-namespace internal {
-template <typename T, size_t N>
-char(&ArraySizeHelper(T(&array)[N]))[N];
-#if !defined(_MSC_VER)
-template <typename T, size_t N>
-char(&ArraySizeHelper(const T(&array)[N]))[N];
-#endif
-}  // namespace internal
-}  // namespace mojo
-#define MOJO_ARRAYSIZE(array) (sizeof(::mojo::internal::ArraySizeHelper(array)))
-
 // Used to make a type non-copyable. See Chromium's base/move.h for more
 // details. The MoveOnlyTypeForCPP03 typedef is for Chromium's base/callback.h
 // to tell that this type is move-only, allowing these types to be bound or
@@ -68,7 +54,7 @@ namespace mojo {
 
 // Used to explicitly mark the return value of a function as unused. (You this
 // if you are really sure you don't want to do anything with the return value of
-// a function marked with |MOJO_WARN_UNUSED_RESULT|.
+// a function marked with |WARN_UNUSED_RESULT|.
 template <typename T>
 inline void ignore_result(const T&) {
 }

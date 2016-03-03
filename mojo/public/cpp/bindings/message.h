@@ -106,7 +106,7 @@ class MessageReceiver {
   // The receiver may mutate the given message.  Returns true if the message
   // was accepted and false otherwise, indicating that the message was invalid
   // or malformed.
-  virtual bool Accept(Message* message) MOJO_WARN_UNUSED_RESULT = 0;
+  virtual bool Accept(Message* message) WARN_UNUSED_RESULT = 0;
 };
 
 class MessageReceiverWithResponder : public MessageReceiver {
@@ -124,7 +124,7 @@ class MessageReceiverWithResponder : public MessageReceiver {
   //
   // TODO(yzshen): consider changing |responder| to scoped_ptr<MessageReceiver>.
   virtual bool AcceptWithResponder(Message* message, MessageReceiver* responder)
-      MOJO_WARN_UNUSED_RESULT = 0;
+      WARN_UNUSED_RESULT = 0;
 };
 
 // A MessageReceiver that is also able to provide status about the state
@@ -158,7 +158,7 @@ class MessageReceiverWithResponderStatus : public MessageReceiver {
   // TODO(yzshen): consider changing |responder| to scoped_ptr<MessageReceiver>.
   virtual bool AcceptWithResponder(Message* message,
                                    MessageReceiverWithStatus* responder)
-      MOJO_WARN_UNUSED_RESULT = 0;
+      WARN_UNUSED_RESULT = 0;
 };
 
 // Read a single message from the pipe. The caller should have created the

@@ -40,7 +40,7 @@ class MOJO_SYSTEM_IMPL_EXPORT ScopedPlatformHandle {
     other.handle_ = temp;
   }
 
-  PlatformHandle release() MOJO_WARN_UNUSED_RESULT {
+  PlatformHandle release() WARN_UNUSED_RESULT {
     PlatformHandle rv = handle_;
     handle_ = PlatformHandle();
     return rv;

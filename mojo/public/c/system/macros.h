@@ -7,16 +7,6 @@
 
 #include <stddef.h>
 
-// Annotate a function indicating that the caller must examine the return value.
-// Use like:
-//   int foo() MOJO_WARN_UNUSED_RESULT;
-// Note that it can only be used on the prototype, and not the definition.
-#if defined(__GNUC__)
-#define MOJO_WARN_UNUSED_RESULT __attribute__((warn_unused_result))
-#else
-#define MOJO_WARN_UNUSED_RESULT
-#endif
-
 #ifdef __cplusplus
 // Used to explicitly mark the return value of a function as unused. If you are
 // really sure you don't want to do anything with the return value of a function
