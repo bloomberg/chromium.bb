@@ -219,7 +219,10 @@ void ImageBitmapFactories::ImageBitmapLoader::decodeImageOnDecoderThread(WebTask
     ASSERT(!isMainThread());
     RefPtr<SharedBuffer> sharedBuffer = SharedBuffer::create((char*)m_loader.arrayBufferResult()->data(), static_cast<size_t>(m_loader.arrayBufferResult()->byteLength()));
 
-    OwnPtr<ImageDecoder> decoder(ImageDecoder::create(*sharedBuffer, ImageDecoder::AlphaPremultiplied, ImageDecoder::GammaAndColorProfileApplied));
+    ImageDecoder::AlphaOption alphaOp = ImageDecoder::AlphaPremultiplied;
+    if (m_options.premultiplyAlpha() == "none")
+        alphaOp = ImageDecoder::AlphaNotPremultiplied;
+    OwnPtr<ImageDecoder> decoder(ImageDecoder::create(*sharedBuffer, alphaOp, ImageDecoder::GammaAndColorProfileApplied));
     if (decoder)
         decoder->setData(sharedBuffer.get(), true);
     taskRunner->postTask(BLINK_FROM_HERE, threadSafeBind(&ImageBitmapFactories::ImageBitmapLoader::resolvePromiseOnOriginalThread, AllowCrossThreadAccess(this), decoder.release()));

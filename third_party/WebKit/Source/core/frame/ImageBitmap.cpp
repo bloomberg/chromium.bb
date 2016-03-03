@@ -307,7 +307,7 @@ ImageBitmap::ImageBitmap(PassRefPtr<StaticBitmapImage> image, const IntRect& cro
 {
     bool flipY;
     parseOptions(options, flipY);
-    m_image = cropImage(image.get(), cropRect, flipY, m_isPremultiplied);
+    m_image = cropImage(image.get(), cropRect, flipY, m_isPremultiplied, PremultiplyAlpha);
     if (!m_image)
         return;
     m_image->setOriginClean(image->originClean());
