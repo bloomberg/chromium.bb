@@ -117,7 +117,7 @@ TEST_F(ActivityLogConverterStrategyTest, ConversionTest) {
         "empty_dictionary: {},"
         "list: [ \"monkey\", \"balls\" ],"
         "empty_list: [],"
-        "function: function() {},"
+        "function: (0, function() {}),"  // ensure function is anonymous
         "named_function: foo"
       "};"
       "})();";
