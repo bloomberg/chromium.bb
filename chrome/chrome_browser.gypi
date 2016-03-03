@@ -1402,6 +1402,8 @@
       'browser/hang_monitor/hung_window_detector.h',
       'browser/password_manager/password_manager_util_win.cc',
       'browser/password_manager/password_manager_util_win.h',
+      'browser/themes/theme_service_win.cc',
+      'browser/themes/theme_service_win.h',
     ],
     'chrome_browser_non_win_sources': [
       'browser/profile_resetter/triggered_profile_resetter_stub.cc',
