@@ -6,7 +6,7 @@
 
 namespace base {
 
-namespace internal {
+namespace test {
 
 TaskTracker::TaskTracker() : task_runs_(0), task_runs_cv_(&lock_) {}
 
@@ -43,6 +43,6 @@ void ExpectRunsTasksOnCurrentThread(
   EXPECT_EQ(expected_value, task_runner->RunsTasksOnCurrentThread());
 }
 
-}  // namespace internal
+}  // namespace test
 
 }  // namespace base

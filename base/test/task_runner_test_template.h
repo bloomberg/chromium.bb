@@ -72,7 +72,7 @@
 
 namespace base {
 
-namespace internal {
+namespace test {
 
 // Utility class that keeps track of how many times particular tasks
 // are run.
@@ -105,14 +105,14 @@ class TaskTracker : public RefCountedThreadSafe<TaskTracker> {
   DISALLOW_COPY_AND_ASSIGN(TaskTracker);
 };
 
-}  // namespace internal
+}  // namespace test
 
 template <typename TaskRunnerTestDelegate>
 class TaskRunnerTest : public testing::Test {
  protected:
-  TaskRunnerTest() : task_tracker_(new internal::TaskTracker()) {}
+  TaskRunnerTest() : task_tracker_(new test::TaskTracker()) {}
 
-  const scoped_refptr<internal::TaskTracker> task_tracker_;
+  const scoped_refptr<test::TaskTracker> task_tracker_;
   TaskRunnerTestDelegate delegate_;
 };
 
@@ -171,7 +171,7 @@ TYPED_TEST_P(TaskRunnerTest, Delayed) {
 // task runner in order to be conformant.
 REGISTER_TYPED_TEST_CASE_P(TaskRunnerTest, Basic, Delayed);
 
-namespace internal {
+namespace test {
 
 // Calls RunsTasksOnCurrentThread() on |task_runner| and expects it to
 // equal |expected_value|.
@@ -179,7 +179,7 @@ void ExpectRunsTasksOnCurrentThread(
     bool expected_value,
     const scoped_refptr<TaskRunner>& task_runner);
 
-}  // namespace internal
+}  // namespace test
 
 template <typename TaskRunnerTestDelegate>
 class TaskRunnerAffinityTest : public TaskRunnerTest<TaskRunnerTestDelegate> {};
@@ -201,16 +201,10 @@ TYPED_TEST_P(TaskRunnerAffinityTest, RunsTasksOnCurrentThread) {
   // Post each ith task i+1 times on the task runner and i+1 times on
   // the non-task-runner thread.
   for (int i = 0; i < 20; ++i) {
-    const Closure& ith_task_runner_task =
-        this->task_tracker_->WrapTask(
-            Bind(&internal::ExpectRunsTasksOnCurrentThread,
-                 true, task_runner),
-            i);
-    const Closure& ith_non_task_runner_task =
-        this->task_tracker_->WrapTask(
-            Bind(&internal::ExpectRunsTasksOnCurrentThread,
-                 false, task_runner),
-            i);
+    const Closure& ith_task_runner_task = this->task_tracker_->WrapTask(
+        Bind(&test::ExpectRunsTasksOnCurrentThread, true, task_runner), i);
+    const Closure& ith_non_task_runner_task = this->task_tracker_->WrapTask(
+        Bind(&test::ExpectRunsTasksOnCurrentThread, false, task_runner), i);
     for (int j = 0; j < i + 1; ++j) {
       task_runner->PostTask(FROM_HERE, ith_task_runner_task);
       thread.task_runner()->PostTask(FROM_HERE, ith_non_task_runner_task);
