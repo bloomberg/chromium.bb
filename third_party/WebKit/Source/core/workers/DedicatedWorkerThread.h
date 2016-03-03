@@ -40,7 +40,7 @@ class WorkerThreadStartupData;
 
 class DedicatedWorkerThread final : public WorkerThread {
 public:
-    static PassRefPtr<DedicatedWorkerThread> create(PassRefPtr<WorkerLoaderProxy>, WorkerObjectProxy&, double timeOrigin);
+    static PassOwnPtr<DedicatedWorkerThread> create(PassRefPtr<WorkerLoaderProxy>, WorkerObjectProxy&, double timeOrigin);
     WorkerObjectProxy& workerObjectProxy() const { return m_workerObjectProxy; }
     ~DedicatedWorkerThread() override;
 

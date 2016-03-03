@@ -18,7 +18,7 @@ public:
 protected:
     ~CompositorWorkerMessagingProxy() override;
 
-    PassRefPtr<WorkerThread> createWorkerThread(double originTime) override;
+    PassOwnPtr<WorkerThread> createWorkerThread(double originTime) override;
 };
 
 } // namespace blink

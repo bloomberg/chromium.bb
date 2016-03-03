@@ -116,9 +116,9 @@ void WorkerMessagingProxy::startWorkerGlobalScope(const KURL& scriptURL, const S
     double originTime = document->loader() ? document->loader()->timing().referenceMonotonicTime() : monotonicallyIncreasingTime();
 
     m_loaderProxy = WorkerLoaderProxy::create(this);
-    RefPtr<WorkerThread> thread = createWorkerThread(originTime);
-    thread->start(startupData.release());
-    workerThreadCreated(thread);
+    m_workerThread = createWorkerThread(originTime);
+    m_workerThread->start(startupData.release());
+    workerThreadCreated();
     m_workerInspectorProxy->workerThreadCreated(m_executionContext.get(), m_workerThread.get(), scriptURL);
 }
 
@@ -191,10 +191,10 @@ void WorkerMessagingProxy::reportConsoleMessage(MessageSource source, MessageLev
     frame->console().addMessage(consoleMessage.release());
 }
 
-void WorkerMessagingProxy::workerThreadCreated(PassRefPtr<WorkerThread> workerThread)
+void WorkerMessagingProxy::workerThreadCreated()
 {
     ASSERT(!m_askedToTerminate);
-    m_workerThread = workerThread;
+    ASSERT(m_workerThread);
 
     ASSERT(!m_unconfirmedMessageCount);
     m_unconfirmedMessageCount = m_queuedEarlyTasks.size();

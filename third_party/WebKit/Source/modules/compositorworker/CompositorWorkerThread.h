@@ -15,7 +15,7 @@ class WorkerObjectProxy;
 // This class is overridden in unit-tests.
 class MODULES_EXPORT CompositorWorkerThread : public WorkerThread {
 public:
-    static PassRefPtr<CompositorWorkerThread> create(PassRefPtr<WorkerLoaderProxy>, WorkerObjectProxy&, double timeOrigin);
+    static PassOwnPtr<CompositorWorkerThread> create(PassRefPtr<WorkerLoaderProxy>, WorkerObjectProxy&, double timeOrigin);
     ~CompositorWorkerThread() override;
 
     WorkerObjectProxy& workerObjectProxy() const { return m_workerObjectProxy; }

@@ -18,7 +18,7 @@ DedicatedWorkerMessagingProxy::~DedicatedWorkerMessagingProxy()
 {
 }
 
-PassRefPtr<WorkerThread> DedicatedWorkerMessagingProxy::createWorkerThread(double originTime)
+PassOwnPtr<WorkerThread> DedicatedWorkerMessagingProxy::createWorkerThread(double originTime)
 {
     return DedicatedWorkerThread::create(loaderProxy(), workerObjectProxy(), originTime);
 }

@@ -38,7 +38,6 @@
 #include "wtf/Functional.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
 #include <v8.h>
 
 namespace blink {
@@ -57,7 +56,7 @@ enum WorkerThreadStartMode {
 };
 
 // TODO(sadrul): Rename to WorkerScript.
-class CORE_EXPORT WorkerThread : public RefCounted<WorkerThread> {
+class CORE_EXPORT WorkerThread {
 public:
     virtual ~WorkerThread();
 

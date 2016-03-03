@@ -35,9 +35,9 @@
 
 namespace blink {
 
-PassRefPtr<ServiceWorkerThread> ServiceWorkerThread::create(PassRefPtr<WorkerLoaderProxy> workerLoaderProxy, WorkerReportingProxy& workerReportingProxy)
+PassOwnPtr<ServiceWorkerThread> ServiceWorkerThread::create(PassRefPtr<WorkerLoaderProxy> workerLoaderProxy, WorkerReportingProxy& workerReportingProxy)
 {
-    return adoptRef(new ServiceWorkerThread(workerLoaderProxy, workerReportingProxy));
+    return adoptPtr(new ServiceWorkerThread(workerLoaderProxy, workerReportingProxy));
 }
 
 ServiceWorkerThread::ServiceWorkerThread(PassRefPtr<WorkerLoaderProxy> workerLoaderProxy, WorkerReportingProxy& workerReportingProxy)

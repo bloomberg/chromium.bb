@@ -110,7 +110,6 @@ public:
 private:
     ~WebSharedWorkerImpl() override;
 
-    void setWorkerThread(PassRefPtr<WorkerThread> thread) { m_workerThread = thread; }
     WorkerThread* workerThread() { return m_workerThread.get(); }
 
     // Shuts down the worker thread.
@@ -145,7 +144,7 @@ private:
 
     OwnPtrWillBePersistent<WorkerInspectorProxy> m_workerInspectorProxy;
 
-    RefPtr<WorkerThread> m_workerThread;
+    OwnPtr<WorkerThread> m_workerThread;
 
     WebSharedWorkerClient* m_client;
 

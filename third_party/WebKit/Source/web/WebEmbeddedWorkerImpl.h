@@ -106,7 +106,7 @@ private:
     // Kept around only while main script loading is ongoing.
     RefPtr<WorkerScriptLoader> m_mainScriptLoader;
 
-    RefPtr<WorkerThread> m_workerThread;
+    OwnPtr<WorkerThread> m_workerThread;
     RefPtr<WorkerLoaderProxy> m_loaderProxy;
     OwnPtrWillBePersistent<ServiceWorkerGlobalScopeProxy> m_workerGlobalScopeProxy;
     OwnPtrWillBePersistent<WorkerInspectorProxy> m_workerInspectorProxy;

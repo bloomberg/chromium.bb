@@ -153,7 +153,7 @@ public:
         m_mockWorkerLoaderProxyProvider = adoptPtr(new MockWorkerLoaderProxyProvider());
         m_mockWorkerReportingProxy = adoptPtr(new MockWorkerReportingProxy());
         m_securityOrigin = SecurityOrigin::create(KURL(ParsedURLString, "http://fake.url/"));
-        m_workerThread = adoptRef(new WorkerThreadForTest(
+        m_workerThread = adoptPtr(new WorkerThreadForTest(
             m_mockWorkerLoaderProxyProvider.get(),
             *m_mockWorkerReportingProxy));
     }
@@ -207,7 +207,7 @@ protected:
     RefPtr<SecurityOrigin> m_securityOrigin;
     OwnPtr<MockWorkerLoaderProxyProvider> m_mockWorkerLoaderProxyProvider;
     OwnPtr<MockWorkerReportingProxy> m_mockWorkerReportingProxy;
-    RefPtr<WorkerThreadForTest> m_workerThread;
+    OwnPtr<WorkerThreadForTest> m_workerThread;
 };
 
 TEST_F(WorkerThreadTest, StartAndStop)

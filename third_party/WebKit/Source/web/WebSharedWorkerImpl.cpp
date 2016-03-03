@@ -344,7 +344,7 @@ void WebSharedWorkerImpl::onScriptLoaderFinished()
         starterOrigin,
         workerClients.release());
     m_loaderProxy = WorkerLoaderProxy::create(this);
-    setWorkerThread(SharedWorkerThread::create(m_name, m_loaderProxy, *this));
+    m_workerThread = SharedWorkerThread::create(m_name, m_loaderProxy, *this);
     InspectorInstrumentation::scriptImported(m_loadingDocument.get(), m_mainScriptLoader->identifier(), m_mainScriptLoader->script());
     m_mainScriptLoader.clear();
 

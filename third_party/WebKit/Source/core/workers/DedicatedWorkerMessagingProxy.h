@@ -17,7 +17,7 @@ public:
     DedicatedWorkerMessagingProxy(InProcessWorkerBase*, PassOwnPtrWillBeRawPtr<WorkerClients>);
     ~DedicatedWorkerMessagingProxy() override;
 
-    PassRefPtr<WorkerThread> createWorkerThread(double originTime) override;
+    PassOwnPtr<WorkerThread> createWorkerThread(double originTime) override;
 };
 
 } // namespace blink

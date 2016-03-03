@@ -72,8 +72,7 @@ public:
     void reportPendingActivity(bool hasPendingActivity);
     void workerGlobalScopeClosed();
     void workerThreadTerminated();
-
-    void workerThreadCreated(PassRefPtr<WorkerThread>);
+    void workerThreadCreated();
 
     ExecutionContext* executionContext() const { return m_executionContext.get(); }
 
@@ -81,7 +80,7 @@ protected:
     WorkerMessagingProxy(InProcessWorkerBase*, PassOwnPtrWillBeRawPtr<WorkerClients>);
     ~WorkerMessagingProxy() override;
 
-    virtual PassRefPtr<WorkerThread> createWorkerThread(double originTime) = 0;
+    virtual PassOwnPtr<WorkerThread> createWorkerThread(double originTime) = 0;
 
     PassRefPtr<WorkerLoaderProxy> loaderProxy() { return m_loaderProxy; }
     WorkerObjectProxy& workerObjectProxy() { return *m_workerObjectProxy.get(); }
@@ -100,7 +99,7 @@ private:
     OwnPtr<WorkerObjectProxy> m_workerObjectProxy;
     WeakPersistent<InProcessWorkerBase> m_workerObject;
     bool m_mayBeDestroyed;
-    RefPtr<WorkerThread> m_workerThread;
+    OwnPtr<WorkerThread> m_workerThread;
 
     unsigned m_unconfirmedMessageCount; // Unconfirmed messages from worker object to worker thread.
     bool m_workerThreadHadPendingActivity; // The latest confirmation from worker thread reported that it was still active.
