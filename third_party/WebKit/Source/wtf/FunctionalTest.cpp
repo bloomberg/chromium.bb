@@ -351,7 +351,7 @@ private:
     int m_value;
 };
 
-int singleMoveOnly(MoveOnly& moveOnly)
+int singleMoveOnlyByLvalueReference(MoveOnly& moveOnly)
 {
     int value = moveOnly.value();
     // If you ever want to move out a bound parameter, that's possible by moving the non-const lvalue reference.
@@ -359,7 +359,7 @@ int singleMoveOnly(MoveOnly& moveOnly)
     return value;
 }
 
-int tripleMoveOnlys(MoveOnly& first, MoveOnly& second, MoveOnly& third)
+int tripleMoveOnlysByLvalueReferences(MoveOnly& first, MoveOnly& second, MoveOnly& third)
 {
     int value = first.value() + second.value() + third.value();
     MoveOnly(std::move(first));
@@ -371,12 +371,12 @@ int tripleMoveOnlys(MoveOnly& first, MoveOnly& second, MoveOnly& third)
 TEST(FunctionalTest, BindMoveOnlyObjects)
 {
     MoveOnly one(1);
-    OwnPtr<Function<int()>> bound = bind(singleMoveOnly, std::move(one));
+    OwnPtr<Function<int()>> bound = bind(singleMoveOnlyByLvalueReference, std::move(one));
     EXPECT_EQ(0, one.value()); // Should be moved away.
     EXPECT_EQ(1, (*bound)());
     EXPECT_EQ(0, (*bound)()); // The stored value must be cleared in the first function call.
 
-    bound = bind(tripleMoveOnlys, MoveOnly(1), MoveOnly(2), MoveOnly(3));
+    bound = bind(tripleMoveOnlysByLvalueReferences, MoveOnly(1), MoveOnly(2), MoveOnly(3));
     EXPECT_EQ(6, (*bound)());
     EXPECT_EQ(0, (*bound)());
 }
@@ -420,6 +420,61 @@ TEST(FunctionalTest, CountCopiesOfBoundArguments)
 
     bound = bind(takeCountCopyAsValue, CountCopy());
     EXPECT_EQ(3, (*bound)());
+}
+
+int singleMoveOnlyByRvalueReference(MoveOnly&& moveOnly)
+{
+    int value = moveOnly.value();
+    MoveOnly(std::move(moveOnly));
+    return value;
+}
+
+int tripleMoveOnlysByRvalueReferences(MoveOnly&& first, MoveOnly&& second, MoveOnly&& third)
+{
+    int value = first.value() + second.value() + third.value();
+    MoveOnly(std::move(first));
+    MoveOnly(std::move(second));
+    MoveOnly(std::move(third));
+    return value;
+}
+
+int singleMoveOnlyByValue(MoveOnly moveOnly)
+{
+    return moveOnly.value();
+}
+
+int tripleMoveOnlysByValues(MoveOnly first, MoveOnly second, MoveOnly third)
+{
+    return first.value() + second.value() + third.value();
+}
+
+TEST(FunctionalTest, MoveUnboundArgumentsByRvalueReference)
+{
+    OwnPtr<Function<int(MoveOnly&&)>> boundSingle = bind<MoveOnly&&>(singleMoveOnlyByRvalueReference);
+    EXPECT_EQ(1, (*boundSingle)(MoveOnly(1)));
+    EXPECT_EQ(42, (*boundSingle)(MoveOnly(42)));
+
+    OwnPtr<Function<int(MoveOnly&&, MoveOnly&&, MoveOnly&&)>> boundTriple = bind<MoveOnly&&, MoveOnly&&, MoveOnly&&>(tripleMoveOnlysByRvalueReferences);
+    EXPECT_EQ(6, (*boundTriple)(MoveOnly(1), MoveOnly(2), MoveOnly(3)));
+    EXPECT_EQ(666, (*boundTriple)(MoveOnly(111), MoveOnly(222), MoveOnly(333)));
+
+    OwnPtr<Function<int(MoveOnly)>> boundSingleByValue = bind<MoveOnly>(singleMoveOnlyByValue);
+    EXPECT_EQ(1, (*boundSingleByValue)(MoveOnly(1)));
+
+    OwnPtr<Function<int(MoveOnly, MoveOnly, MoveOnly)>> boundTripleByValue = bind<MoveOnly, MoveOnly, MoveOnly>(tripleMoveOnlysByValues);
+    EXPECT_EQ(6, (*boundTripleByValue)(MoveOnly(1), MoveOnly(2), MoveOnly(3)));
+}
+
+TEST(FunctionalTest, CountCopiesOfUnboundArguments)
+{
+    CountCopy lvalue;
+    OwnPtr<Function<int(const CountCopy&)>> bound1 = bind<const CountCopy&>(takeCountCopyAsConstReference);
+    EXPECT_EQ(0, (*bound1)(lvalue)); // No copies!
+    EXPECT_EQ(0, (*bound1)(CountCopy()));
+
+    OwnPtr<Function<int(CountCopy)>> bound2 = bind<CountCopy>(takeCountCopyAsValue);
+    EXPECT_EQ(2, (*bound2)(lvalue)); // At PartBoundFunctionImpl::operator() and at the destination function.
+    EXPECT_LE((*bound2)(CountCopy()), 2); // Compiler is allowed to optimize one copy away if the argument is rvalue.
 }
 
 } // anonymous namespace

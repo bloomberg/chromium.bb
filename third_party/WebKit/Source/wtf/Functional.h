@@ -45,10 +45,25 @@ namespace WTF {
 // Use threadSafeBind() or createCrossThreadTask() if the function/task is
 // called on a (potentially) different thread from the current thread.
 
-// Bind and rvalue references:
+// WTF::bind() and move semantics
+// ==============================
 //
-// For unbound parameters (arguments supplied later on the bound functor), we don't support moving-in and moving-out
-// at this moment, but we are willing to support that soon.
+// For unbound parameters (arguments supplied later on the bound functor directly), there are two ways to pass movable
+// arguments:
+//
+//     1) Pass by rvalue reference.
+//
+//            void yourFunction(Argument&& argument) { ... }
+//            OwnPtr<Function<void(Argument&&)>> functor = bind<Argument&&>(yourFunction);
+//
+//     2) Pass by value.
+//
+//            void yourFunction(Argument argument) { ... }
+//            OwnPtr<Function<void(Argument)>> functor = bind<Argument>(yourFunction);
+//
+// Note that with the latter there will be *two* move constructions happening, because there needs to be at least one
+// intermediary function call taking an argument of type "Argument" (i.e. passed by value). The former case does not
+// require any move constructions inbetween.
 //
 // For bound parameters (arguments supplied on the creation of a functor), you can move your argument into the internal
 // storage of the functor by supplying an rvalue to that argument (this is done in wrap() of ParamStorageTraits).
@@ -214,15 +229,15 @@ public:
     {
         // What we really want to do is to call m_functionWrapper(m_bound..., unbound...), but to do that we need to
         // pass a list of indices to a worker function template.
-        return callInternal(unbound..., base::MakeIndexSequence<sizeof...(BoundParameters)>());
+        return callInternal(base::MakeIndexSequence<sizeof...(BoundParameters)>(), std::forward<UnboundParameters>(unbound)...);
     }
 
 private:
-    template <std::size_t... boundIndices>
-    typename FunctionWrapper::ResultType callInternal(UnboundParameters... unbound, const base::IndexSequence<boundIndices...>&)
+    template <std::size_t... boundIndices, typename... IncomingUnboundParameters>
+        typename FunctionWrapper::ResultType callInternal(const base::IndexSequence<boundIndices...>&, IncomingUnboundParameters&&... unbound)
     {
         // Get each element in m_bound, unwrap them, and call the function with the desired arguments.
-        return m_functionWrapper(ParamStorageTraits<typename std::decay<BoundParameters>::type>::unwrap(std::get<boundIndices>(m_bound))..., unbound...);
+        return m_functionWrapper(ParamStorageTraits<typename std::decay<BoundParameters>::type>::unwrap(std::get<boundIndices>(m_bound))..., std::forward<IncomingUnboundParameters>(unbound)...);
     }
 
     FunctionWrapper m_functionWrapper;
