@@ -9,9 +9,11 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "sync/api/entity_change.h"
 #include "sync/api/metadata_batch.h"
 #include "sync/api/sync_error.h"
 #include "sync/internal_api/public/data_batch_impl.h"
+#include "sync/internal_api/public/simple_metadata_change_list.h"
 #include "sync/protocol/data_type_state.pb.h"
 #include "sync/protocol/sync.pb.h"
 
@@ -19,6 +21,7 @@ namespace sync_driver_v2 {
 
 using syncer::SyncError;
 using syncer_v2::DataBatchImpl;
+using syncer_v2::EntityChange;
 using syncer_v2::EntityChangeList;
 using syncer_v2::EntityData;
 using syncer_v2::EntityDataMap;
@@ -27,11 +30,14 @@ using syncer_v2::MetadataChangeList;
 using syncer_v2::ModelTypeStore;
 using syncer_v2::SimpleMetadataChangeList;
 using sync_driver::DeviceInfo;
+using sync_pb::DataTypeState;
 using sync_pb::DeviceInfoSpecifics;
+using sync_pb::EntitySpecifics;
 
 using Record = ModelTypeStore::Record;
 using RecordList = ModelTypeStore::RecordList;
 using Result = ModelTypeStore::Result;
+using WriteBatch = ModelTypeStore::WriteBatch;
 
 DeviceInfoService::DeviceInfoService(
     sync_driver::LocalDeviceInfoProvider* local_device_info_provider,
@@ -70,7 +76,43 @@ SyncError DeviceInfoService::MergeSyncData(
 SyncError DeviceInfoService::ApplySyncChanges(
     scoped_ptr<MetadataChangeList> metadata_change_list,
     EntityChangeList entity_changes) {
-  // TODO(skym): crbug.com/543406: Implementation.
+  if (!has_provider_initialized_ || !has_data_loaded_) {
+    return SyncError(
+        FROM_HERE, SyncError::DATATYPE_ERROR,
+        "Cannot call ApplySyncChanges before provider and data have loaded.",
+        syncer::DEVICE_INFO);
+  }
+
+  scoped_ptr<WriteBatch> batch = store_->CreateWriteBatch();
+  static_cast<SimpleMetadataChangeList*>(metadata_change_list.get())
+      ->TransferChanges(store_.get(), batch.get());
+  bool has_changes = false;
+  for (EntityChange& change : entity_changes) {
+    const std::string tag = change.client_tag();
+    // Each device is the authoritative source for itself, ignore any remote
+    // changes that have our local cache guid.
+    if (tag == local_device_info_provider_->GetLocalDeviceInfo()->guid()) {
+      continue;
+    }
+
+    if (change.type() == EntityChange::ACTION_DELETE) {
+      has_changes |= DeleteSpecifics(tag, batch.get());
+    } else {
+      const DeviceInfoSpecifics& specifics =
+          change.data().specifics.device_info();
+      DCHECK(tag == specifics.cache_guid());
+      StoreSpecifics(make_scoped_ptr(new DeviceInfoSpecifics(specifics)),
+                     batch.get());
+      has_changes = true;
+    }
+  }
+
+  store_->CommitWriteBatch(
+      std::move(batch),
+      base::Bind(&DeviceInfoService::OnCommit, weak_factory_.GetWeakPtr()));
+  if (has_changes) {
+    NotifyObservers();
+  }
   return SyncError();
 }
 
@@ -203,18 +245,26 @@ scoped_ptr<EntityData> DeviceInfoService::CopyIntoNewEntityData(
 }
 
 void DeviceInfoService::StoreSpecifics(
-    scoped_ptr<DeviceInfoSpecifics> specifics) {
+    scoped_ptr<DeviceInfoSpecifics> specifics,
+    WriteBatch* batch) {
+  const std::string tag = specifics->cache_guid();
   DVLOG(1) << "Storing DEVICE_INFO for " << specifics->client_name()
-           << " with ID " << specifics->cache_guid();
-  all_data_[specifics->cache_guid()] = std::move(specifics);
+           << " with ID " << tag;
+  store_->WriteData(batch, tag, specifics->SerializeAsString());
+  all_data_[tag] = std::move(specifics);
 }
 
-void DeviceInfoService::DeleteSpecifics(const std::string& client_id) {
-  ClientIdToSpecifics::const_iterator iter = all_data_.find(client_id);
+bool DeviceInfoService::DeleteSpecifics(const std::string& tag,
+                                        WriteBatch* batch) {
+  ClientIdToSpecifics::const_iterator iter = all_data_.find(tag);
   if (iter != all_data_.end()) {
     DVLOG(1) << "Deleting DEVICE_INFO for " << iter->second->client_name()
-             << " with ID " << client_id;
+             << " with ID " << tag;
+    store_->DeleteData(batch, tag);
     all_data_.erase(iter);
+    return true;
+  } else {
+    return false;
   }
 }
 
@@ -276,7 +326,7 @@ void DeviceInfoService::OnReadAllMetadata(
     return;
   }
   scoped_ptr<MetadataBatch> batch(new MetadataBatch());
-  sync_pb::DataTypeState state;
+  DataTypeState state;
   if (state.ParseFromString(global_metadata)) {
     batch->SetDataTypeState(state);
   } else {
@@ -300,6 +350,12 @@ void DeviceInfoService::OnReadAllMetadata(
     }
   }
   change_processor()->OnMetadataLoaded(std::move(batch));
+}
+
+void DeviceInfoService::OnCommit(Result result) {
+  if (result != Result::SUCCESS) {
+    LOG(WARNING) << "Failed a write to store.";
+  }
 }
 
 void DeviceInfoService::TryReconcileLocalAndStored() {

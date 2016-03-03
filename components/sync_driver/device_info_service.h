@@ -84,10 +84,13 @@ class DeviceInfoService : public syncer_v2::ModelTypeService,
   static scoped_ptr<syncer_v2::EntityData> CopyIntoNewEntityData(
       const sync_pb::DeviceInfoSpecifics& specifics);
 
-  // Store SyncData in the cache.
-  void StoreSpecifics(scoped_ptr<sync_pb::DeviceInfoSpecifics> specifics);
-  // Delete SyncData from the cache.
-  void DeleteSpecifics(const std::string& client_id);
+  // Store SyncData in the cache and durable storage.
+  void StoreSpecifics(scoped_ptr<sync_pb::DeviceInfoSpecifics> specifics,
+                      syncer_v2::ModelTypeStore::WriteBatch* batch);
+  // Delete SyncData from the cache and durable storage, returns true if there
+  // was actually anything at the given tag.
+  bool DeleteSpecifics(const std::string& tag,
+                       syncer_v2::ModelTypeStore::WriteBatch* batch);
 
   // Notify all registered observers.
   void NotifyObservers();
@@ -105,6 +108,7 @@ class DeviceInfoService : public syncer_v2::ModelTypeService,
       syncer_v2::ModelTypeStore::Result result,
       scoped_ptr<syncer_v2::ModelTypeStore::RecordList> metadata_records,
       const std::string& global_metadata);
+  void OnCommit(syncer_v2::ModelTypeStore::Result result);
 
   // Checks if conditions have been met to perform reconciliation between the
   // locally provide device info and the stored device info data. If conditions

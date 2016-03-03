@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
@@ -23,8 +24,12 @@
 
 namespace sync_driver_v2 {
 
+using syncer::SyncError;
 using syncer_v2::DataBatch;
+using syncer_v2::EntityChange;
+using syncer_v2::EntityChangeList;
 using syncer_v2::EntityData;
+using syncer_v2::EntityDataPtr;
 using syncer_v2::MetadataBatch;
 using syncer_v2::MetadataChangeList;
 using syncer_v2::ModelTypeChangeProcessor;
@@ -40,6 +45,7 @@ using sync_pb::DeviceInfoSpecifics;
 using sync_pb::EntitySpecifics;
 
 using ClientTagList = ModelTypeService::ClientTagList;
+using RecordList = ModelTypeStore::RecordList;
 using Result = ModelTypeStore::Result;
 using WriteBatch = ModelTypeStore::WriteBatch;
 
@@ -69,14 +75,13 @@ void AssertEqual(const DeviceInfoSpecifics& specifics,
             model.signin_scoped_device_id());
 }
 
-void AssertErrorFromDataBatch(syncer::SyncError error,
-                              scoped_ptr<DataBatch> batch) {
+void AssertErrorFromDataBatch(SyncError error, scoped_ptr<DataBatch> batch) {
   ASSERT_TRUE(error.IsSet());
 }
 
 void AssertExpectedFromDataBatch(
     std::map<std::string, DeviceInfoSpecifics> expected,
-    syncer::SyncError error,
+    SyncError error,
     scoped_ptr<DataBatch> batch) {
   ASSERT_FALSE(error.IsSet());
   while (batch->HasNext()) {
@@ -103,12 +108,12 @@ class FakeModelTypeChangeProcessor : public ModelTypeChangeProcessor {
 
   void Put(const std::string& client_tag,
            scoped_ptr<EntityData> entity_data,
-           MetadataChangeList* metadata_change_list) override {
+           MetadataChangeList* metadata_changes) override {
     put_map_.insert(std::make_pair(client_tag, std::move(entity_data)));
   }
 
   void Delete(const std::string& client_tag,
-              MetadataChangeList* metadata_change_list) override {
+              MetadataChangeList* metadata_changes) override {
     delete_set_.insert(client_tag);
   }
 
@@ -128,6 +133,8 @@ class FakeModelTypeChangeProcessor : public ModelTypeChangeProcessor {
   scoped_ptr<MetadataBatch> metadata_;
 };
 
+}  // namespace
+
 class DeviceInfoServiceTest : public testing::Test,
                               public DeviceInfoTracker::Observer {
  protected:
@@ -140,11 +147,11 @@ class DeviceInfoServiceTest : public testing::Test,
     base::RunLoop().RunUntilIdle();
   }
 
-  void OnDeviceInfoChange() override { num_device_info_changed_callbacks_++; }
+  void OnDeviceInfoChange() override { change_count_++; }
 
  protected:
   DeviceInfoServiceTest()
-      : num_device_info_changed_callbacks_(0),
+      : change_count_(0),
         store_(ModelTypeStoreTestUtil::CreateInMemoryStoreForTest()),
         local_device_(new LocalDeviceInfoProviderMock(
             "guid_1",
@@ -172,12 +179,18 @@ class DeviceInfoServiceTest : public testing::Test,
     base::RunLoop().RunUntilIdle();
   }
 
+  // Creates a new processor and sets it on the service. We typically need to
+  // pump in this scenario because metadata is going to need to be loading from
+  // the store and given to the processor, which is async.
   void SetProcessorAndPump() {
     processor_ = new FakeModelTypeChangeProcessor();
     service()->set_change_processor(make_scoped_ptr(processor_));
     base::RunLoop().RunUntilIdle();
   }
 
+  // Generates a specifics object with slightly differing values. Will generate
+  // the same values on each run of a test because a simple counter is used to
+  // vary field values.
   DeviceInfoSpecifics GenerateTestSpecifics() {
     int label = ++generated_count_;
     DeviceInfoSpecifics specifics;
@@ -193,6 +206,25 @@ class DeviceInfoServiceTest : public testing::Test,
     return specifics;
   }
 
+  // Helper method to reduce duplicated code between tests. Wraps the given
+  // specifics object in an EntityData and EntityChange of type ACTION_ADD, and
+  // pushes them onto the given change list. The corresponding client tag the
+  // service determines is returned. Instance method because we need access to
+  // service to generate the tag.
+  std::string PushBackEntityChangeAdd(const DeviceInfoSpecifics& specifics,
+                                      EntityChangeList* changes) {
+    EntityData data;
+    // These tests do not care about the tag hash, but EntityData and friends
+    // cannot differentiate between the default EntityData object if the hash
+    // is unset, which causes pass/copy operations to no-op and things start to
+    // break, so we throw in a junk value and forget about it.
+    data.client_tag_hash = "junk";
+    *data.specifics.mutable_device_info() = specifics;
+    const std::string tag = service()->GetClientTag(data);
+    changes->push_back(EntityChange::CreateAdd(tag, data.PassToPtr()));
+    return tag;
+  }
+
   // Allows access to the store before that will ultimately be used to
   // initialize the service.
   ModelTypeStore* store() {
@@ -201,9 +233,7 @@ class DeviceInfoServiceTest : public testing::Test,
   }
 
   // Get the number of times the service notifies observers of changes.
-  int num_device_info_changed_callbacks() {
-    return num_device_info_changed_callbacks_;
-  }
+  int change_count() { return change_count_; }
 
   // Allows overriding the provider before the service is initialized.
   void set_local_device(scoped_ptr<LocalDeviceInfoProviderMock> provider) {
@@ -223,8 +253,18 @@ class DeviceInfoServiceTest : public testing::Test,
     return processor_;
   }
 
+  // Should only be called after the service has been initialized. Will first
+  // recover the service's store, so another can be initialized later, and then
+  // deletes the service.
+  void ShutdownService() {
+    ASSERT_TRUE(service_);
+    std::swap(store_, service_->store_);
+    service_->RemoveObserver(this);
+    service_.reset();
+  }
+
  private:
-  int num_device_info_changed_callbacks_;
+  int change_count_;
 
   // Although we never use this in this class, the in memory model type store
   // grabs the current task runner from a static accessor which point at this
@@ -232,7 +272,7 @@ class DeviceInfoServiceTest : public testing::Test,
   // CreateInMemoryStoreForTest.
   base::MessageLoop message_loop_;
 
-  // Temporarily holds the store before the service is initialized.
+  // Holds the store while the service is not initialized.
   scoped_ptr<ModelTypeStore> store_;
 
   scoped_ptr<LocalDeviceInfoProviderMock> local_device_;
@@ -249,6 +289,8 @@ class DeviceInfoServiceTest : public testing::Test,
   // that is slightly different from eachother.
   int generated_count_ = 0;
 };
+
+namespace {
 
 TEST_F(DeviceInfoServiceTest, EmptyDataReconciliation) {
   InitializeService();
@@ -412,6 +454,110 @@ TEST_F(DeviceInfoServiceTest, GetAllData) {
 TEST_F(DeviceInfoServiceTest, GetAllDataNotInitialized) {
   InitializeService();
   service()->GetAllData(base::Bind(&AssertErrorFromDataBatch));
+}
+
+TEST_F(DeviceInfoServiceTest, ApplySyncChangesBeforeInit) {
+  InitializeService();
+  const SyncError error = service()->ApplySyncChanges(
+      service()->CreateMetadataChangeList(), EntityChangeList());
+  EXPECT_TRUE(error.IsSet());
+  EXPECT_EQ(0, change_count());
+}
+
+TEST_F(DeviceInfoServiceTest, ApplySyncChangesEmpty) {
+  InitializeAndPump();
+  const SyncError error = service()->ApplySyncChanges(
+      service()->CreateMetadataChangeList(), EntityChangeList());
+  EXPECT_FALSE(error.IsSet());
+  EXPECT_EQ(0, change_count());
+}
+
+TEST_F(DeviceInfoServiceTest, ApplySyncChangesInMemory) {
+  InitializeAndPump();
+
+  DeviceInfoSpecifics specifics = GenerateTestSpecifics();
+  EntityChangeList add_changes;
+  const std::string tag = PushBackEntityChangeAdd(specifics, &add_changes);
+  SyncError error = service()->ApplySyncChanges(
+      service()->CreateMetadataChangeList(), add_changes);
+
+  EXPECT_FALSE(error.IsSet());
+  scoped_ptr<DeviceInfo> info = service()->GetDeviceInfo(tag);
+  ASSERT_TRUE(info);
+  AssertEqual(specifics, *info.get());
+  EXPECT_EQ(1, change_count());
+
+  EntityChangeList delete_changes;
+  delete_changes.push_back(EntityChange::CreateDelete(tag));
+  error = service()->ApplySyncChanges(service()->CreateMetadataChangeList(),
+                                      delete_changes);
+
+  EXPECT_FALSE(error.IsSet());
+  EXPECT_FALSE(service()->GetDeviceInfo(tag));
+  EXPECT_EQ(2, change_count());
+}
+
+TEST_F(DeviceInfoServiceTest, ApplySyncChangesStore) {
+  InitializeAndPump();
+
+  DeviceInfoSpecifics specifics = GenerateTestSpecifics();
+  EntityChangeList data_changes;
+  const std::string tag = PushBackEntityChangeAdd(specifics, &data_changes);
+
+  DataTypeState state;
+  state.set_encryption_key_name("ekn");
+  scoped_ptr<MetadataChangeList> metadata_changes(
+      service()->CreateMetadataChangeList());
+  metadata_changes->UpdateDataTypeState(state);
+
+  const SyncError error =
+      service()->ApplySyncChanges(std::move(metadata_changes), data_changes);
+  EXPECT_FALSE(error.IsSet());
+  EXPECT_EQ(1, change_count());
+
+  // Force write/commit tasks to finish before shutdown.
+  base::RunLoop().RunUntilIdle();
+  ShutdownService();
+  InitializeAndPump();
+  SetProcessorAndPump();
+
+  scoped_ptr<DeviceInfo> info = service()->GetDeviceInfo(tag);
+  ASSERT_TRUE(info);
+  AssertEqual(specifics, *info.get());
+  EXPECT_TRUE(processor()->metadata());
+  // TODO(skym): Uncomment once SimpleMetadataChangeList::TransferChanges is
+  // implemented.
+  // EXPECT_EQ(state.encryption_key_name(),
+  // processor()->metadata()->GetDataTypeState().encryption_key_name());
+}
+
+TEST_F(DeviceInfoServiceTest, ApplySyncChangesWithLocalGuid) {
+  InitializeAndPump();
+
+  // The point of this test is to try to apply remote changes that have the same
+  // cache guid as the local device. The service should ignore these changes
+  // since only it should be performing writes on its data.
+  DeviceInfoSpecifics specifics = GenerateTestSpecifics();
+  specifics.set_cache_guid(local_device()->GetLocalDeviceInfo()->guid());
+
+  EntityChangeList data_changes;
+  const std::string tag = PushBackEntityChangeAdd(specifics, &data_changes);
+  const SyncError error = service()->ApplySyncChanges(
+      service()->CreateMetadataChangeList(), data_changes);
+
+  EXPECT_FALSE(error.IsSet());
+  EXPECT_FALSE(service()->GetDeviceInfo(tag));
+  EXPECT_EQ(0, change_count());
+}
+
+TEST_F(DeviceInfoServiceTest, ApplyDeleteNonexistent) {
+  InitializeAndPump();
+  EntityChangeList delete_changes;
+  delete_changes.push_back(EntityChange::CreateDelete("tag"));
+  const SyncError error = service()->ApplySyncChanges(
+      service()->CreateMetadataChangeList(), delete_changes);
+  EXPECT_FALSE(error.IsSet());
+  EXPECT_EQ(0, change_count());
 }
 
 }  // namespace
