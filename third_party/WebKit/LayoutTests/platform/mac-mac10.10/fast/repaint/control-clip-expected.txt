@@ -1,0 +1,31 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [85, 114, 46, 13],
+        [81, 114, 54, 13],
+        [16, 114, 184, 13],
+        [9, 84, 198, 14],
+        [9, 84, 53, 14],
+        [9, 84, 45, 14]
+      ],
+      "paintInvalidationClients": [
+        "InlineTextBox ''",
+        "RootInlineBox",
+        "InlineTextBox ''",
+        "RootInlineBox",
+        "LayoutBlockFlow (anonymous)",
+        "LayoutText (anonymous)",
+        "InlineTextBox 'SUCCESS'",
+        "LayoutBlockFlow (anonymous)",
+        "LayoutText #text",
+        "InlineTextBox 'SUCCESS'"
+      ]
+    }
+  ]
+}
+

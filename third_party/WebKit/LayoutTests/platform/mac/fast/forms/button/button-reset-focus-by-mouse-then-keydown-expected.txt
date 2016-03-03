@@ -6,9 +6,9 @@
       "contentsOpaque": true,
       "drawsContent": true,
       "repaintRects": [
-        [16, 11, 29, 13],
-        [16, 11, 29, 13],
-        [3, 4, 55, 29]
+        [16, 11, 30, 13],
+        [16, 11, 30, 13],
+        [3, 4, 56, 29]
       ],
       "paintInvalidationClients": [
         "LayoutButton BUTTON",

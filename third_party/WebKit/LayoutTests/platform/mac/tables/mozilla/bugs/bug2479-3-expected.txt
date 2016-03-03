@@ -66,22 +66,22 @@ layer at (0,0) size 785x659 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         LayoutBlockFlow {P} at (0,0) size 769x19
           LayoutText {#text} at (0,0) size 267x18
             text run at (0,0) width 267: "How does your browser fare on this test? "
-          LayoutMenuList {SELECT} at (266.59,1) size 231x18 [bgcolor=#F8F8F8]
-            LayoutBlockFlow (anonymous) at (0,0) size 231x18
-              LayoutText (anonymous) at (8,2) size 130x13
-                text run at (8,2) width 130: "The test renders correctly."
-          LayoutText {#text} at (497,0) size 5x18
-            text run at (497,0) width 5: " "
+          LayoutMenuList {SELECT} at (266.59,1) size 238x18 [bgcolor=#F8F8F8]
+            LayoutBlockFlow (anonymous) at (0,0) size 238x18
+              LayoutText (anonymous) at (8,2) size 138x13
+                text run at (8,2) width 138: "The test renders correctly."
+          LayoutText {#text} at (504,0) size 5x18
+            text run at (504,0) width 5: " "
           LayoutInline {LABEL} at (0,0) size 204x18
-            LayoutText {#text} at (501,0) size 73x18
-              text run at (501,0) width 73: "Comment: "
-            LayoutTextControl {INPUT} at (573.14,0) size 131x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-          LayoutText {#text} at (704,0) size 5x18
-            text run at (704,0) width 5: " "
-          LayoutButton {INPUT} at (708.14,1) size 51.64x18 [bgcolor=#C0C0C0]
-            LayoutBlockFlow (anonymous) at (8,2) size 35.64x13
-              LayoutText {#text} at (0,0) size 36x13
-                text run at (0,0) width 36: "Submit"
+            LayoutText {#text} at (508,0) size 73x18
+              text run at (508,0) width 73: "Comment: "
+            LayoutTextControl {INPUT} at (580.14,0) size 131x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+          LayoutText {#text} at (711,0) size 5x18
+            text run at (711,0) width 5: " "
+          LayoutButton {INPUT} at (715.14,1) size 52.47x18 [bgcolor=#C0C0C0]
+            LayoutBlockFlow (anonymous) at (8,2) size 36.47x13
+              LayoutText {#text} at (0,0) size 37x13
+                text run at (0,0) width 37: "Submit"
           LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {HR} at (0,483.06) size 769x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow {P} at (0,501.06) size 769x18
@@ -116,5 +116,5 @@ layer at (0,0) size 785x659 backgroundClip at (0,0) size 785x600 clip at (0,0) s
       LayoutBlockFlow {P} at (0,603.06) size 769x18
         LayoutText {#text} at (0,0) size 185x18
           text run at (0,0) width 185: "Last updated in March 1999."
-layer at (584,473) size 125x13
+layer at (591,473) size 125x13
   LayoutBlockFlow {DIV} at (3,3) size 125x13

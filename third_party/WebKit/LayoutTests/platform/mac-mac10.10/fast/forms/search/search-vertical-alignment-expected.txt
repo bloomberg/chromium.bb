@@ -1,0 +1,70 @@
+CONSOLE WARNING: 'results' attribute is deprecated and will be removed in M53, around September 2016. See https://www.chromestatus.com/features/5738199536107520 for more details.
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x576
+      LayoutBlockFlow {P} at (0,0) size 784x36
+        LayoutText {#text} at (0,0) size 772x36
+          text run at (0,0) width 431: "Test that search field text is vertically centered if the search field is "
+          text run at (430,0) width 342: "taller than the text. In each of the following pairs of a"
+          text run at (0,18) width 105: "search field and "
+          text run at (104,18) width 366: "a text field, the vertical position of the text should be the "
+          text run at (469,18) width 125: "same in both fields."
+      LayoutBlockFlow {P} at (0,52) size 784x45
+        LayoutTextControl {INPUT} at (0,0) size 131x45 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+          LayoutFlexibleBox {DIV} at (3,16) size 125x13
+            LayoutBlockFlow {DIV} at (0,0) size 16x13
+            LayoutBlockFlow {DIV} at (16,0) size 97x13
+        LayoutText {#text} at (131,13) size 4x18
+          text run at (131,13) width 4: " "
+        LayoutTextControl {INPUT} at (135,0) size 131x45 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        LayoutText {#text} at (0,0) size 0x0
+      LayoutBlockFlow {P} at (0,113) size 784x18
+        LayoutTextControl {INPUT} at (0,2) size 131x16 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+          LayoutFlexibleBox {DIV} at (3,1.50) size 125x13
+            LayoutBlockFlow {DIV} at (0,0) size 16x13
+            LayoutBlockFlow {DIV} at (16,0) size 97x13
+        LayoutText {#text} at (131,0) size 4x18
+          text run at (131,0) width 4: " "
+        LayoutTextControl {INPUT} at (135,2) size 131x16 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        LayoutText {#text} at (0,0) size 0x0
+      LayoutBlockFlow {P} at (0,147) size 784x18
+        LayoutTextControl {INPUT} at (0,4) size 131x12 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+          LayoutFlexibleBox {DIV} at (3,-0.50) size 125x13
+            LayoutBlockFlow {DIV} at (0,0) size 16x13
+            LayoutBlockFlow {DIV} at (16,0) size 97x13
+        LayoutText {#text} at (131,0) size 4x18
+          text run at (131,0) width 4: " "
+        LayoutTextControl {INPUT} at (135,4) size 131x12 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        LayoutText {#text} at (0,0) size 0x0
+layer at (27,76) size 97x13
+  LayoutBlockFlow {DIV} at (0,0) size 97x13
+    LayoutText {#text} at (0,0) size 21x13
+      text run at (0,0) width 21: "Text"
+layer at (146,76) size 125x13
+  LayoutBlockFlow {DIV} at (3,16) size 125x13
+    LayoutText {#text} at (0,0) size 21x13
+      text run at (0,0) width 21: "Text"
+layer at (27,125) size 97x13
+  LayoutBlockFlow {DIV} at (0,0) size 97x13
+    LayoutText {#text} at (0,0) size 21x13
+      text run at (0,0) width 21: "Text"
+layer at (146,125) size 125x13
+  LayoutBlockFlow {DIV} at (3,1.50) size 125x13
+    LayoutText {#text} at (0,0) size 21x13
+      text run at (0,0) width 21: "Text"
+layer at (27,159) size 97x13
+  LayoutBlockFlow {DIV} at (0,0) size 97x13
+    LayoutText {#text} at (0,0) size 21x13
+      text run at (0,0) width 21: "Text"
+layer at (146,159) size 125x13
+  LayoutBlockFlow {DIV} at (3,-0.50) size 125x13
+    LayoutText {#text} at (0,0) size 21x13
+      text run at (0,0) width 21: "Text"
+layer at (125,77) size 11x11 transparent
+  LayoutBlockFlow {DIV} at (114,1) size 11x11
+layer at (125,126) size 11x11 transparent
+  LayoutBlockFlow {DIV} at (114,1) size 11x11
+layer at (125,160) size 11x11 transparent
+  LayoutBlockFlow {DIV} at (114,1) size 11x11

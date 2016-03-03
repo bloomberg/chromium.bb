@@ -51,34 +51,34 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {DIV} at (10,366) size 450x21 [border: (1px solid #FF0000)]
         LayoutText {#text} at (1,1) size 8x18
           text run at (1,1) width 8: "a"
-        LayoutBlockFlow {INPUT} at (10.97,5) size 12x12
+        LayoutBlockFlow {INPUT} at (10.98,5) size 12x12
         LayoutText {#text} at (25,1) size 67x18
           text run at (25,1) width 67: "checkbox "
-        LayoutBlockFlow {INPUT} at (94.02,5) size 12x12 [color=#545454]
+        LayoutBlockFlow {INPUT} at (94.06,5) size 12x12 [color=#545454]
         LayoutText {#text} at (108,1) size 9x18
           text run at (108,1) width 9: "b"
       LayoutBlockFlow {DIV} at (10,397) size 450x21 [border: (1px solid #FF0000)]
         LayoutText {#text} at (1,1) size 8x18
           text run at (1,1) width 8: "a"
-        LayoutBlockFlow {INPUT} at (10.97,4) size 12x13
+        LayoutBlockFlow {INPUT} at (10.98,4) size 12x13
         LayoutText {#text} at (25,1) size 38x18
           text run at (25,1) width 38: "radio "
-        LayoutBlockFlow {INPUT} at (65.59,4) size 12x13 [color=#545454]
+        LayoutBlockFlow {INPUT} at (65.64,4) size 12x13 [color=#545454]
         LayoutText {#text} at (80,1) size 9x18
           text run at (80,1) width 9: "b"
-layer at (29,328) size 125x13 scrollWidth 152
+layer at (29,328) size 125x13 scrollWidth 159
   LayoutBlockFlow {DIV} at (3,3) size 125x13
-    LayoutText {#text} at (0,0) size 152x13
-      text run at (0,0) width 152: "foobarbazfoobarbazfoobarbaz"
+    LayoutText {#text} at (0,0) size 158x13
+      text run at (0,0) width 158: "foobarbazfoobarbazfoobarbaz"
 layer at (188,328) size 125x13
   LayoutBlockFlow {DIV} at (3,3) size 125x13
     LayoutText {#text} at (0,0) size 17x13
       text run at (0,0) width 17: "foo"
 layer at (338,328) size 125x13
   LayoutBlockFlow {DIV} at (3,3) size 125x13
-    LayoutText {#text} at (0,0) size 19x13
-      text run at (0,0) width 19: "\x{2022}\x{2022}\x{2022}"
+    LayoutText {#text} at (0,0) size 17x13
+      text run at (0,0) width 17: "\x{2022}\x{2022}\x{2022}"
 layer at (86,347) size 125x13
   LayoutBlockFlow {DIV} at (3,3) size 125x13
-    LayoutText {#text} at (0,0) size 19x13
-      text run at (0,0) width 19: "\x{2022}\x{2022}\x{2022}"
+    LayoutText {#text} at (0,0) size 17x13
+      text run at (0,0) width 17: "\x{2022}\x{2022}\x{2022}"

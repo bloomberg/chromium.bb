@@ -24,6 +24,6 @@ layer at (152,105) size 131x19
   LayoutTextControl (relative positioned) {INPUT} at (143.73,97) size 131x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
 layer at (155,108) size 125x13
   LayoutBlockFlow {DIV} at (3,3) size 125x13
-    LayoutText {#text} at (0,0) size 36x13
-      text run at (0,0) width 36: "Testing"
+    LayoutText {#text} at (0,0) size 38x13
+      text run at (0,0) width 38: "Testing"
 caret: position 7 of child 0 {#text} of child 0 {DIV} of {#document-fragment} of child 1 {INPUT} of child 1 {DIV} of body

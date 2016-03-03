@@ -1,0 +1,23 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [16, 11, 29, 13],
+        [16, 11, 29, 13],
+        [3, 4, 55, 29]
+      ],
+      "paintInvalidationClients": [
+        "LayoutButton BUTTON",
+        "LayoutBlockFlow (anonymous)",
+        "RootInlineBox",
+        "LayoutText #text",
+        "InlineTextBox 'Reset'"
+      ]
+    }
+  ]
+}
+

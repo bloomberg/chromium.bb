@@ -27,12 +27,12 @@ layer at (0,0) size 800x600
               LayoutTextControl {INPUT} at (3.50,0) size 71x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
               LayoutImage {INPUT} at (74.50,1) size 25x18
             LayoutTableCell {TD} at (477,70) size 136x25 [bgcolor=#CCCCCC] [r=1 c=3 rs=1 cs=1]
-              LayoutBlockFlow {INPUT} at (2.88,5) size 12x13
-              LayoutImage {IMG} at (17.75,0) size 40x25
-              LayoutBlockFlow {INPUT} at (60.63,5) size 12x13
+              LayoutBlockFlow {INPUT} at (2.89,5) size 12x13
+              LayoutImage {IMG} at (17.78,0) size 40x25
+              LayoutBlockFlow {INPUT} at (60.67,5) size 12x13
               LayoutText {#text} at (75,2) size 5x18
                 text run at (75,2) width 5: " "
-              LayoutBlockFlow {IMG} at (79.50,0) size 46x25
+              LayoutBlockFlow {IMG} at (79.56,0) size 46x25
 layer at (134,8) size 468x60
   LayoutIFrame (floating) {IFRAME} at (0,0) size 468x60
     layer at (0,0) size 468x60

@@ -24,10 +24,10 @@ layer at (0,0) size 800x686 backgroundClip at (0,0) size 800x600 clip at (0,0) s
             LayoutText {#text} at (94,1) size 36x198
               text run at (94,1) width 198: "Hello world"
           LayoutBR {BR} at (112,198) size 0x1
-          LayoutInline {SPAN} at (0,0) size 36x198
-            LayoutText {#text} at (148,1) size 36x198
-              text run at (148,1) width 198: "Hello world"
-          LayoutBR {BR} at (166,198) size 0x1
+          LayoutInline {SPAN} at (0,0) size 36x396
+            LayoutText {#text} at (148,1) size 36x396
+              text run at (148,1) width 396: "Hello world"
+          LayoutBR {BR} at (166,397) size 0x0
         LayoutText {#text} at (0,0) size 0x0
         LayoutBlockFlow {DIV} at (194,0) size 194x442 [border: (1px solid #008000)]
           LayoutInline {SPAN} at (0,0) size 40x173
@@ -42,8 +42,8 @@ layer at (0,0) size 800x686 backgroundClip at (0,0) size 800x600 clip at (0,0) s
             LayoutText {#text} at (94,1) size 36x198
               text run at (94,1) width 198: "Hello world"
           LayoutBR {BR} at (112,198) size 0x1
-          LayoutInline {SPAN} at (0,0) size 36x198
-            LayoutText {#text} at (148,1) size 36x198
-              text run at (148,1) width 198: "Hello world"
-          LayoutBR {BR} at (166,198) size 0x1
+          LayoutInline {SPAN} at (0,0) size 36x396
+            LayoutText {#text} at (148,1) size 36x396
+              text run at (148,1) width 396: "Hello world"
+          LayoutBR {BR} at (166,397) size 0x0
         LayoutText {#text} at (0,0) size 0x0

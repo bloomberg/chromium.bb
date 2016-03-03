@@ -97,16 +97,16 @@ layer at (0,0) size 800x553
                     LayoutTextControl {INPUT} at (0,8) size 107x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
             LayoutText {#text} at (0,0) size 0x0
           LayoutBlockFlow {P} at (0,253) size 568x32
-            LayoutButton {INPUT} at (0,9) size 54.53x18 [bgcolor=#C0C0C0]
-              LayoutBlockFlow (anonymous) at (8,2) size 38.53x13
-                LayoutText {#text} at (0,0) size 39x13
-                  text run at (0,0) width 39: "Submit!"
-            LayoutText {#text} at (54,6) size 7x19
-              text run at (54,6) width 7: " "
-            LayoutButton {INPUT} at (60.16,9) size 71.48x18 [bgcolor=#C0C0C0]
-              LayoutBlockFlow (anonymous) at (8,2) size 55.48x13
-                LayoutText {#text} at (0,0) size 56x13
-                  text run at (0,0) width 56: "Clear Form"
+            LayoutButton {INPUT} at (0,9) size 55.89x18 [bgcolor=#C0C0C0]
+              LayoutBlockFlow (anonymous) at (8,2) size 39.89x13
+                LayoutText {#text} at (0,0) size 40x13
+                  text run at (0,0) width 40: "Submit!"
+            LayoutText {#text} at (55,6) size 7x19
+              text run at (55,6) width 7: " "
+            LayoutButton {INPUT} at (61.52,9) size 72.97x18 [bgcolor=#C0C0C0]
+              LayoutBlockFlow (anonymous) at (8,2) size 56.97x13
+                LayoutText {#text} at (0,0) size 57x13
+                  text run at (0,0) width 57: "Clear Form"
             LayoutText {#text} at (0,0) size 0x0
 layer at (159,291) size 101x13
   LayoutBlockFlow {DIV} at (3,3) size 101x13

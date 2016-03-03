@@ -1,0 +1,39 @@
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutText {#text} at (0,0) size 336x18
+        text run at (0,0) width 336: "This tests that you can set the placeholder text color."
+      LayoutBR {BR} at (335,14) size 1x0
+      LayoutText {#text} at (141,36) size 4x18
+        text run at (141,36) width 4: " "
+      LayoutText {#text} at (286,36) size 4x18
+        text run at (286,36) width 4: " "
+      LayoutText {#text} at (431,36) size 4x18
+        text run at (431,36) width 4: " "
+      LayoutText {#text} at (0,0) size 0x0
+layer at (8,26) size 141x32 clip at (9,27) size 139x30
+  LayoutTextControl {TEXTAREA} at (0,18) size 141x32 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+    LayoutBlockFlow {DIV} at (3,3) size 135x13 [color=#640000]
+      LayoutText {#text} at (0,0) size 19x13
+        text run at (0,0) width 19: "text"
+    LayoutBlockFlow {DIV} at (3,3) size 135x13
+layer at (153,26) size 141x32 clip at (154,27) size 139x30
+  LayoutTextControl {TEXTAREA} at (145,18) size 141x32 [color=#545454] [bgcolor=#FFFFFF] [border: (1px solid #545454)]
+    LayoutBlockFlow {DIV} at (3,3) size 135x13 [color=#640000]
+      LayoutText {#text} at (0,0) size 65x13
+        text run at (0,0) width 65: "disabled text"
+    LayoutBlockFlow {DIV} at (3,3) size 135x13
+layer at (298,26) size 141x32 clip at (299,27) size 139x30
+  LayoutTextControl {TEXTAREA} at (290,18) size 141x32 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+    LayoutBlockFlow {DIV} at (3,3) size 135x13 [color=#A9A9A9]
+      LayoutText {#text} at (0,0) size 35x13
+        text run at (0,0) width 35: "default"
+    LayoutBlockFlow {DIV} at (3,3) size 135x13
+layer at (443,26) size 141x32 clip at (444,27) size 139x30
+  LayoutTextControl {TEXTAREA} at (435,18) size 141x32 [color=#545454] [bgcolor=#FFFFFF] [border: (1px solid #545454)]
+    LayoutBlockFlow {DIV} at (3,3) size 135x13 [color=#A9A9A9]
+      LayoutText {#text} at (0,0) size 80x13
+        text run at (0,0) width 80: "default disabled"
+    LayoutBlockFlow {DIV} at (3,3) size 135x13

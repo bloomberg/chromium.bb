@@ -33,10 +33,10 @@ layer at (8,526) size 304x154 backgroundClip at (0,0) size 785x600 clip at (0,0)
         LayoutBlockFlow {DIV} at (0,18) size 135x500
         LayoutBlockFlow (anonymous) at (0,518) size 135x36
           LayoutBR {BR} at (0,0) size 0x18
-          LayoutButton {INPUT} at (0,18) size 49.56x18 [bgcolor=#C0C0C0]
-            LayoutBlockFlow (anonymous) at (8,2) size 33.56x13
-              LayoutText {#text} at (0,0) size 34x13
-                text run at (0,0) width 34: "Button"
+          LayoutButton {INPUT} at (0,18) size 50.48x18 [bgcolor=#C0C0C0]
+            LayoutBlockFlow (anonymous) at (8,2) size 34.48x13
+              LayoutText {#text} at (0,0) size 35x13
+                text run at (0,0) width 35: "Button"
           LayoutText {#text} at (0,0) size 0x0
         LayoutBlockFlow {DIV} at (0,554) size 135x300
 scrolled to 0,5

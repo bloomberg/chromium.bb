@@ -1,0 +1,85 @@
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutMenuList {SELECT} at (0,0) size 60x18 [color=#808080] [bgcolor=#F8F8F8]
+        LayoutBlockFlow (anonymous) at (0,0) size 60x18
+          LayoutText (anonymous) at (8,2) size 29x13
+            text run at (8,2) width 29: "PASS"
+      LayoutBR {BR} at (60,13) size 0x0
+      LayoutMenuList {SELECT} at (0,18) size 60x18 [color=#808080] [bgcolor=#F8F8F8]
+        LayoutBlockFlow (anonymous) at (0,0) size 60x18
+          LayoutText (anonymous) at (8,2) size 29x13
+            text run at (8,2) width 29: "PASS"
+      LayoutBR {BR} at (60,31) size 0x0
+      LayoutMenuList {SELECT} at (0,36) size 60x18 [bgcolor=#F8F8F8]
+        LayoutBlockFlow (anonymous) at (0,0) size 60x18
+          LayoutText (anonymous) at (8,2) size 29x13
+            text run at (8,2) width 29: "PASS"
+      LayoutBR {BR} at (60,49) size 0x0
+      LayoutMenuList {SELECT} at (0,54) size 60x18 [bgcolor=#F8F8F8]
+        LayoutBlockFlow (anonymous) at (0,0) size 60x18
+          LayoutText (anonymous) at (8,2) size 29x13
+            text run at (8,2) width 29: "PASS"
+      LayoutBR {BR} at (60,67) size 0x0
+      LayoutBR {BR} at (45,98) size 1x0
+      LayoutBR {BR} at (45,128) size 1x0
+      LayoutBR {BR} at (45,158) size 1x0
+      LayoutBR {BR} at (45,188) size 1x0
+      LayoutText {#text} at (0,192) size 495x18
+        text run at (0,192) width 495: "PASS: sel1 correctly set to selectedIndex 1 by sel1.options[1].selected = true."
+      LayoutBR {BR} at (494,206) size 1x0
+      LayoutText {#text} at (0,210) size 445x18
+        text run at (0,210) width 445: "PASS: sel2 correctly set to selectedIndex 1 by sel2.selectedIndex = 1."
+      LayoutBR {BR} at (444,224) size 1x0
+      LayoutText {#text} at (0,228) size 495x18
+        text run at (0,228) width 495: "PASS: sel3 correctly set to selectedIndex 1 by sel3.options[1].selected = true."
+      LayoutBR {BR} at (494,242) size 1x0
+      LayoutText {#text} at (0,246) size 445x18
+        text run at (0,246) width 445: "PASS: sel4 correctly set to selectedIndex 1 by sel4.selectedIndex = 1."
+      LayoutBR {BR} at (444,260) size 1x0
+      LayoutText {#text} at (0,264) size 495x18
+        text run at (0,264) width 495: "PASS: sel5 correctly set to selectedIndex 1 by sel5.options[1].selected = true."
+      LayoutBR {BR} at (494,278) size 1x0
+      LayoutText {#text} at (0,282) size 445x18
+        text run at (0,282) width 445: "PASS: sel6 correctly set to selectedIndex 1 by sel6.selectedIndex = 1."
+      LayoutBR {BR} at (444,296) size 1x0
+      LayoutText {#text} at (0,300) size 495x18
+        text run at (0,300) width 495: "PASS: sel7 correctly set to selectedIndex 1 by sel7.options[1].selected = true."
+      LayoutBR {BR} at (494,314) size 1x0
+      LayoutText {#text} at (0,318) size 445x18
+        text run at (0,318) width 445: "PASS: sel8 correctly set to selectedIndex 1 by sel8.selectedIndex = 1."
+      LayoutBR {BR} at (444,332) size 1x0
+layer at (8,80) size 45x30 clip at (9,81) size 32x28
+  LayoutListBox {SELECT} at (0,71.63) size 45.16x30.38 [color=#7F7F7F] [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+    LayoutBlockFlow {OPTION} at (1,1) size 32.16x14.19
+      LayoutText {#text} at (2,0) size 23x13
+        text run at (2,0) width 23: "FAIL"
+    LayoutBlockFlow {OPTION} at (1,15.19) size 32.16x14.19 [color=#808080] [bgcolor=#D4D4D4]
+      LayoutText {#text} at (2,0) size 29x13
+        text run at (2,0) width 29: "PASS"
+layer at (8,110) size 45x30 clip at (9,111) size 32x28
+  LayoutListBox {SELECT} at (0,101.63) size 45.16x30.38 [color=#7F7F7F] [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+    LayoutBlockFlow {OPTION} at (1,1) size 32.16x14.19
+      LayoutText {#text} at (2,0) size 23x13
+        text run at (2,0) width 23: "FAIL"
+    LayoutBlockFlow {OPTION} at (1,15.19) size 32.16x14.19 [color=#808080] [bgcolor=#D4D4D4]
+      LayoutText {#text} at (2,0) size 29x13
+        text run at (2,0) width 29: "PASS"
+layer at (8,140) size 45x30 clip at (9,141) size 32x28
+  LayoutListBox {SELECT} at (0,131.63) size 45.16x30.38 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+    LayoutBlockFlow {OPTION} at (1,1) size 32.16x14.19
+      LayoutText {#text} at (2,0) size 23x13
+        text run at (2,0) width 23: "FAIL"
+    LayoutBlockFlow {OPTION} at (1,15.19) size 32.16x14.19 [color=#808080] [bgcolor=#D4D4D4]
+      LayoutText {#text} at (2,0) size 29x13
+        text run at (2,0) width 29: "PASS"
+layer at (8,170) size 45x30 clip at (9,171) size 32x28
+  LayoutListBox {SELECT} at (0,161.63) size 45.16x30.38 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+    LayoutBlockFlow {OPTION} at (1,1) size 32.16x14.19
+      LayoutText {#text} at (2,0) size 23x13
+        text run at (2,0) width 23: "FAIL"
+    LayoutBlockFlow {OPTION} at (1,15.19) size 32.16x14.19 [color=#808080] [bgcolor=#D4D4D4]
+      LayoutText {#text} at (2,0) size 29x13
+        text run at (2,0) width 29: "PASS"

@@ -21,21 +21,21 @@ layer at (0,0) size 800x600
                 text run at (2,2) width 245: "foo bar foo bar foo bar foo bar foo bar"
       LayoutBlockFlow (anonymous) at (0,65) size 784x37
         LayoutBR {BR} at (0,0) size 0x18
-        LayoutButton {INPUT} at (0,19) size 51.20x18 [bgcolor=#C0C0C0]
-          LayoutBlockFlow (anonymous) at (8,2) size 35.20x13
+        LayoutButton {INPUT} at (0,19) size 51.41x18 [bgcolor=#C0C0C0]
+          LayoutBlockFlow (anonymous) at (8,2) size 35.41x13
             LayoutText {#text} at (0,0) size 36x13
               text run at (0,0) width 36: "Reload"
         LayoutText {#text} at (51,18) size 9x18
           text run at (51,18) width 9: "  "
-        LayoutButton {INPUT} at (59.20,19) size 80.61x18 [bgcolor=#C0C0C0]
-          LayoutBlockFlow (anonymous) at (8,2) size 64.61x13
-            LayoutText {#text} at (0,0) size 65x13
-              text run at (0,0) width 65: "Change Font"
-        LayoutText {#text} at (139,18) size 9x18
-          text run at (139,18) width 9: "  "
-        LayoutTextControl {INPUT} at (147.81,18) size 131x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        LayoutButton {INPUT} at (59.41,19) size 82.20x18 [bgcolor=#C0C0C0]
+          LayoutBlockFlow (anonymous) at (8,2) size 66.20x13
+            LayoutText {#text} at (0,0) size 67x13
+              text run at (0,0) width 67: "Change Font"
+        LayoutText {#text} at (141,18) size 9x18
+          text run at (141,18) width 9: "  "
+        LayoutTextControl {INPUT} at (149.61,18) size 131x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         LayoutText {#text} at (0,0) size 0x0
-layer at (159,94) size 125x13
+layer at (161,94) size 125x13
   LayoutBlockFlow {DIV} at (3,3) size 125x13
     LayoutText {#text} at (0,0) size 7x13
       text run at (0,0) width 7: "6"

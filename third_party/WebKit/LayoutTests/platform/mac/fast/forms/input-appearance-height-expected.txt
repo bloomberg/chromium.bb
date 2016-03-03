@@ -21,20 +21,20 @@ layer at (0,0) size 800x600
         LayoutBR {BR} at (162,33) size 1x0
         LayoutText {#text} at (0,38) size 66x18
           text run at (0,38) width 66: "checkbox "
-        LayoutBlockFlow {INPUT} at (68.17,42) size 12x12
+        LayoutBlockFlow {INPUT} at (68.19,42) size 12x12
         LayoutText {#text} at (83,38) size 5x18
           text run at (83,38) width 5: " "
         LayoutBR {BR} at (87,52) size 1x0
         LayoutText {#text} at (0,57) size 25x18
           text run at (0,57) width 25: "file "
-        LayoutFileUploadControl {INPUT} at (24.44,58) size 212x18 "No file chosen"
-          LayoutButton {INPUT} at (0,0) size 75.22x18 [bgcolor=#C0C0C0]
-            LayoutBlockFlow (anonymous) at (8,2) size 59.22x13
-              LayoutText {#text} at (0,0) size 60x13
-                text run at (0,0) width 60: "Choose File"
-        LayoutText {#text} at (236,57) size 5x18
-          text run at (236,57) width 5: " "
-        LayoutBR {BR} at (240,71) size 1x0
+        LayoutFileUploadControl {INPUT} at (24.44,58) size 236x18 "No file chosen"
+          LayoutButton {INPUT} at (0,0) size 76.61x18 [bgcolor=#C0C0C0]
+            LayoutBlockFlow (anonymous) at (8,2) size 60.61x13
+              LayoutText {#text} at (0,0) size 61x13
+                text run at (0,0) width 61: "Choose File"
+        LayoutText {#text} at (260,57) size 5x18
+          text run at (260,57) width 5: " "
+        LayoutBR {BR} at (264,71) size 1x0
         LayoutText {#text} at (0,76) size 44x18
           text run at (0,76) width 44: "image "
         LayoutImage {INPUT} at (43.09,89) size 10x1
@@ -43,7 +43,7 @@ layer at (0,0) size 800x600
         LayoutBR {BR} at (57,90) size 1x0
         LayoutText {#text} at (0,94) size 37x18
           text run at (0,94) width 37: "radio "
-        LayoutBlockFlow {INPUT} at (39.75,97) size 12x13
+        LayoutBlockFlow {INPUT} at (39.77,97) size 12x13
         LayoutText {#text} at (54,94) size 5x18
           text run at (54,94) width 5: " "
         LayoutBR {BR} at (58,108) size 1x0
@@ -58,22 +58,22 @@ layer at (0,0) size 800x600
         LayoutBR {BR} at (176,130) size 1x0
         LayoutText {#text} at (0,134) size 35x18
           text run at (0,134) width 35: "reset "
-        LayoutButton {INPUT} at (34.20,135) size 44.78x18 [bgcolor=#C0C0C0]
-          LayoutBlockFlow (anonymous) at (8,2) size 28.78x13
-            LayoutText {#text} at (0,0) size 29x13
-              text run at (0,0) width 29: "Reset"
-        LayoutText {#text} at (78,134) size 5x18
-          text run at (78,134) width 5: " "
-        LayoutBR {BR} at (82,148) size 1x0
+        LayoutButton {INPUT} at (34.20,135) size 45.36x18 [bgcolor=#C0C0C0]
+          LayoutBlockFlow (anonymous) at (8,2) size 29.36x13
+            LayoutText {#text} at (0,0) size 30x13
+              text run at (0,0) width 30: "Reset"
+        LayoutText {#text} at (79,134) size 5x18
+          text run at (79,134) width 5: " "
+        LayoutBR {BR} at (83,148) size 1x0
         LayoutText {#text} at (0,153) size 48x18
           text run at (0,153) width 48: "submit "
-        LayoutButton {INPUT} at (47.56,154) size 51.64x18 [bgcolor=#C0C0C0]
-          LayoutBlockFlow (anonymous) at (8,2) size 35.64x13
-            LayoutText {#text} at (0,0) size 36x13
-              text run at (0,0) width 36: "Submit"
-        LayoutText {#text} at (99,153) size 5x18
-          text run at (99,153) width 5: " "
-        LayoutBR {BR} at (103,167) size 1x0
+        LayoutButton {INPUT} at (47.56,154) size 52.47x18 [bgcolor=#C0C0C0]
+          LayoutBlockFlow (anonymous) at (8,2) size 36.47x13
+            LayoutText {#text} at (0,0) size 37x13
+              text run at (0,0) width 37: "Submit"
+        LayoutText {#text} at (100,153) size 5x18
+          text run at (100,153) width 5: " "
+        LayoutBR {BR} at (104,167) size 1x0
         LayoutText {#text} at (0,172) size 51x18
           text run at (0,172) width 51: "isindex "
         LayoutTextControl {INPUT} at (50.22,172) size 131x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
