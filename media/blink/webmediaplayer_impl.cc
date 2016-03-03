@@ -352,7 +352,7 @@ void WebMediaPlayerImpl::play() {
   if (playback_rate_ > 0) {
     // Resume the player if playback was initiated in the foreground.
     if (suspended_ && !resuming_ && delegate_ && !delegate_->IsHidden()) {
-      Resume();
+      ScheduleResume();
       return;
     }
 
@@ -450,7 +450,7 @@ void WebMediaPlayerImpl::seek(double seconds) {
       // Resume the pipeline if the seek is initiated in the foreground so that
       // the correct frame is displayed.
       if (delegate_ && !delegate_->IsHidden())
-        Resume();
+        ScheduleResume();
     }
 
     return;
