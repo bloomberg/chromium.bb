@@ -37,8 +37,11 @@ class MEDIA_EXPORT DemuxerHost {
   // Duration may be kInfiniteDuration() if the duration is not known.
   virtual void SetDuration(base::TimeDelta duration) = 0;
 
-  // Stops execution of the pipeline due to a fatal error.  Do not call this
-  // method with PIPELINE_OK.
+  // Stops execution of the pipeline due to a fatal error. Do not call this
+  // method with PIPELINE_OK. Stopping is not immediate so demuxers must be
+  // prepared to soft fail on subsequent calls. E.g., if Demuxer::Seek() is
+  // called after an unrecoverable error the provided PipelineStatusCB must be
+  // called with an error.
   virtual void OnDemuxerError(PipelineStatus error) = 0;
 
   // Add |text_stream| to the collection managed by the text renderer.

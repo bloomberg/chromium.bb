@@ -187,7 +187,8 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       volume_(1.0),
       volume_multiplier_(1.0),
       renderer_factory_(std::move(renderer_factory)),
-      surface_manager_(params.surface_manager()) {
+      surface_manager_(params.surface_manager()),
+      suppress_destruction_errors_(false) {
   DCHECK(!adjust_allocated_memory_cb_.is_null());
   DCHECK(renderer_factory_);
 
@@ -224,6 +225,7 @@ WebMediaPlayerImpl::~WebMediaPlayerImpl() {
   }
 
   // Abort any pending IO so stopping the pipeline doesn't get blocked.
+  suppress_destruction_errors_ = true;
   if (data_source_)
     data_source_->Abort();
   if (chunk_demuxer_) {
@@ -977,6 +979,11 @@ void WebMediaPlayerImpl::OnPipelineError(PipelineStatus error) {
   DVLOG(1) << __FUNCTION__;
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   DCHECK_NE(error, PIPELINE_OK);
+
+  if (suppress_destruction_errors_)
+    return;
+
+  media_log_->AddEvent(media_log_->CreatePipelineErrorEvent(error));
 
   if (ready_state_ == WebMediaPlayer::ReadyStateHaveNothing) {
     // Any error that occurs before reaching ReadyStateHaveMetadata should

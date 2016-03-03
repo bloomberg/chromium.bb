@@ -583,10 +583,16 @@ void PipelineImpl::ErrorChangedTask(PipelineStatus error) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_NE(PIPELINE_OK, error) << "PIPELINE_OK isn't an error!";
 
-  media_log_->AddEvent(media_log_->CreatePipelineErrorEvent(error));
+  // Don't report pipeline error events to the media log here. The embedder will
+  // log this when |error_cb_| is called. If the pipeline is already stopped or
+  // stopping we also don't want to log any event. In case we are suspending or
+  // suspended, the error may be recoverable, so don't propagate it now, instead
+  // let the subsequent seek during resume propagate it if it's unrecoverable.
 
-  if (state_ == kStopping || state_ == kStopped)
+  if (state_ == kStopping || state_ == kStopped || state_ == kSuspending ||
+      state_ == kSuspended) {
     return;
+  }
 
   SetState(kStopping);
   pending_callbacks_.reset();

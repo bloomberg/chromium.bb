@@ -867,7 +867,7 @@ class PipelineTeardownTest : public PipelineImplTest {
 
       case kPlaying:
         DoInitialize(state, stop_or_error);
-        DoStopOrError(stop_or_error);
+        DoStopOrError(stop_or_error, true);
         break;
 
       case kSuspending:
@@ -1030,21 +1030,22 @@ class PipelineTeardownTest : public PipelineImplTest {
   void DoSuspend(TeardownState state, StopOrError stop_or_error) {
     PipelineStatus status = SetSuspendExpectations(state, stop_or_error);
 
-    if (state != kSuspended) {
-      // DoStopOrError() handles these for kSuspended.
+    if (state == kResuming) {
       EXPECT_CALL(*demuxer_, Stop());
-      if (status == PIPELINE_OK) {
+      if (status == PIPELINE_OK)
         ExpectPipelineStopAndDestroyPipeline();
-      }
     }
 
     PipelineImplTest::DoSuspend();
 
-    if (state == kSuspended) {
-      DoStopOrError(stop_or_error);
-    } else if (state == kResuming) {
+    if (state == kResuming) {
       PipelineImplTest::DoResume(base::TimeDelta());
+      return;
     }
+
+    // kSuspended, kSuspending never throw errors, since Resume() is always able
+    // to restore the pipeline to a pristine state.
+    DoStopOrError(stop_or_error, false);
   }
 
   PipelineStatus SetSuspendExpectations(TeardownState state,
@@ -1054,67 +1055,53 @@ class PipelineTeardownTest : public PipelineImplTest {
         base::Bind(&CallbackHelper::OnStop, base::Unretained(&callbacks_));
 
     EXPECT_CALL(*renderer_, SetPlaybackRate(0));
-    if (state == kSuspended || state == kResuming) {
-      EXPECT_CALL(*renderer_, Flush(_))
-          .WillOnce(DoAll(
-              SetBufferingState(&buffering_state_cb_, BUFFERING_HAVE_NOTHING),
-              RunClosure<0>()));
-      EXPECT_CALL(callbacks_, OnBufferingStateChange(BUFFERING_HAVE_NOTHING));
-      EXPECT_CALL(callbacks_, OnSuspend(PIPELINE_OK));
-      if (state == kResuming) {
-        if (stop_or_error == kStop) {
-          EXPECT_CALL(*demuxer_, Seek(_, _))
-              .WillOnce(DoAll(Stop(pipeline_.get(), stop_cb),
-                              RunCallback<1>(PIPELINE_OK)));
-          EXPECT_CALL(callbacks_, OnResume(PIPELINE_OK));
-        } else {
-          status = PIPELINE_ERROR_READ;
-          EXPECT_CALL(*demuxer_, Seek(_, _)).WillOnce(RunCallback<1>(status));
-          EXPECT_CALL(callbacks_, OnResume(status));
-        }
-      }
-      return status;
-    } else if (state == kSuspending) {
+    EXPECT_CALL(callbacks_, OnBufferingStateChange(BUFFERING_HAVE_NOTHING));
+    EXPECT_CALL(callbacks_, OnSuspend(PIPELINE_OK));
+    EXPECT_CALL(*renderer_, Flush(_))
+        .WillOnce(DoAll(
+            SetBufferingState(&buffering_state_cb_, BUFFERING_HAVE_NOTHING),
+            RunClosure<0>()));
+    if (state == kResuming) {
       if (stop_or_error == kStop) {
-        EXPECT_CALL(*renderer_, Flush(_))
-            .WillOnce(DoAll(
-                Stop(pipeline_.get(), stop_cb),
-                SetBufferingState(&buffering_state_cb_, BUFFERING_HAVE_NOTHING),
-                RunClosure<0>()));
-        EXPECT_CALL(callbacks_, OnBufferingStateChange(BUFFERING_HAVE_NOTHING));
-        EXPECT_CALL(callbacks_, OnSuspend(PIPELINE_OK));
+        EXPECT_CALL(*demuxer_, Seek(_, _))
+            .WillOnce(DoAll(Stop(pipeline_.get(), stop_cb),
+                            RunCallback<1>(PIPELINE_OK)));
+        EXPECT_CALL(callbacks_, OnResume(PIPELINE_OK));
       } else {
         status = PIPELINE_ERROR_READ;
-        EXPECT_CALL(*renderer_, Flush(_))
-            .WillOnce(SetError(pipeline_.get(), status));
-        EXPECT_CALL(callbacks_, OnSuspend(status));
+        EXPECT_CALL(*demuxer_, Seek(_, _)).WillOnce(RunCallback<1>(status));
+        EXPECT_CALL(callbacks_, OnResume(status));
       }
-      return status;
+    } else if (state != kSuspended && state != kSuspending) {
+      NOTREACHED() << "State not supported: " << state;
     }
 
-    NOTREACHED() << "State not supported: " << state;
     return status;
   }
 
-  void DoStopOrError(StopOrError stop_or_error) {
+  void DoStopOrError(StopOrError stop_or_error, bool expect_errors) {
     InSequence s;
-
-    EXPECT_CALL(*demuxer_, Stop());
 
     switch (stop_or_error) {
       case kStop:
+        EXPECT_CALL(*demuxer_, Stop());
         ExpectPipelineStopAndDestroyPipeline();
         pipeline_->Stop(
             base::Bind(&CallbackHelper::OnStop, base::Unretained(&callbacks_)));
         break;
 
       case kError:
-        EXPECT_CALL(callbacks_, OnError(PIPELINE_ERROR_READ));
+        if (expect_errors) {
+          EXPECT_CALL(*demuxer_, Stop());
+          EXPECT_CALL(callbacks_, OnError(PIPELINE_ERROR_READ));
+        }
         pipeline_->SetErrorForTesting(PIPELINE_ERROR_READ);
         break;
 
       case kErrorAndStop:
-        EXPECT_CALL(callbacks_, OnError(PIPELINE_ERROR_READ));
+        EXPECT_CALL(*demuxer_, Stop());
+        if (expect_errors)
+          EXPECT_CALL(callbacks_, OnError(PIPELINE_ERROR_READ));
         ExpectPipelineStopAndDestroyPipeline();
         pipeline_->SetErrorForTesting(PIPELINE_ERROR_READ);
         message_loop_.RunUntilIdle();

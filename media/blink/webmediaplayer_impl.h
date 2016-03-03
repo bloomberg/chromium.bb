@@ -454,6 +454,11 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // This will be null everywhere but Android.
   SurfaceManager* surface_manager_;
 
+  // Suppresses calls to OnPipelineError() after destruction / shutdown has been
+  // started; prevents us from spuriously logging errors that are transient or
+  // unimportant.
+  bool suppress_destruction_errors_;
+
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerImpl);
 };
 
