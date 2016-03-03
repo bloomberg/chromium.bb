@@ -5533,4 +5533,78 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CrossSiteIframeDisplayNone) {
   observer->Wait();
 }
 
+// Test that a cross-origin iframe can be blocked by X-Frame-Options and CSP
+// frame-ancestors.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       CrossSiteIframeBlockedByXFrameOptionsOrCSP) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(a)"));
+  NavigateToURL(shell(), main_url);
+
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  // Add a load event handler for the iframe element.
+  EXPECT_TRUE(ExecuteScript(shell()->web_contents(),
+                            "document.querySelector('iframe').onload = "
+                            "    function() { document.title = 'loaded'; };"));
+
+  GURL blocked_urls[] = {
+    embedded_test_server()->GetURL("b.com", "/frame-ancestors-none.html"),
+    embedded_test_server()->GetURL("b.com", "/x-frame-options-deny.html")
+  };
+
+  for (size_t i = 0; i < arraysize(blocked_urls); ++i) {
+    EXPECT_TRUE(ExecuteScript(shell()->web_contents(),
+                              "document.title = 'not loaded';"));
+    base::string16 expected_title(base::UTF8ToUTF16("loaded"));
+    TitleWatcher title_watcher(shell()->web_contents(), expected_title);
+
+    // Navigate the subframe to a blocked URL.
+    TestNavigationObserver load_observer(shell()->web_contents());
+    EXPECT_TRUE(ExecuteScript(
+        shell()->web_contents(),
+        "frames[0].location.href = '" + blocked_urls[i].spec() + "';"));
+    load_observer.Wait();
+
+    // The blocked frame's origin should become unique.
+    EXPECT_EQ("null", root->child_at(0)->current_origin().Serialize());
+
+    // The blocked frame should still fire a load event in its parent's process.
+    EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
+
+    // Check that the current RenderFrameHost has stopped loading.
+    EXPECT_FALSE(root->child_at(0)->current_frame_host()->is_loading());
+
+    // The blocked navigation should behave like an empty 200 response. Make
+    // sure that the frame's document.title is empty: this double-checks both
+    // that the blocked URL's contents wasn't loaded, and that the old page
+    // isn't active anymore (both of these pages have non-empty titles).
+    std::string frame_title;
+    EXPECT_TRUE(ExecuteScriptAndExtractString(
+        root->child_at(0)->current_frame_host(),
+        "domAutomationController.send(document.title)",
+        &frame_title));
+    EXPECT_EQ("", frame_title);
+
+    // Navigate the subframe to another cross-origin page and ensure that this
+    // navigation succeeds.  Use a renderer-initiated navigation to test the
+    // transfer logic, which used to have some issues with this.
+    GURL c_url(embedded_test_server()->GetURL("c.com", "/title1.html"));
+    EXPECT_TRUE(NavigateIframeToURL(shell()->web_contents(), "child-0", c_url));
+    EXPECT_EQ(c_url, root->child_at(0)->current_url());
+
+    // When a page gets blocked due to XFO or CSP, it is sandboxed with the
+    // SandboxOrigin flag (i.e., its origin is set to be unique) to ensure that
+    // the blocked page is seen as cross-origin. However, those flags shouldn't
+    // affect future navigations for a frame. Verify this for the above
+    // navigation.
+    EXPECT_EQ(c_url.GetOrigin().spec(),
+              root->child_at(0)->current_origin().Serialize() + "/");
+    EXPECT_EQ(blink::WebSandboxFlags::None,
+              root->child_at(0)->effective_sandbox_flags());
+  }
+}
+
 }  // namespace content
