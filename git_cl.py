@@ -1235,7 +1235,7 @@ or verify this branch is set up to track another (via the --track argument to
     if props.get('closed'):
       # Issue is closed.
       return 'closed'
-    if props.get('commit'):
+    if props.get('commit') and not props.get('cq_dry_run', False):
       # Issue is in the commit queue.
       return 'commit'
 
