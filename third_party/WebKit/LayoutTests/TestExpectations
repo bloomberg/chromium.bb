@@ -141,11 +141,6 @@ crbug.com/582836 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reft
 crbug.com/582836 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/variables/variable-font-face-01.html [ Failure ]
 crbug.com/582836 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/variables/variable-font-face-02.html [ Failure ]
 
-crbug.com/586181 fast/gradients/crash-on-zero-radius.html [ NeedsRebaseline ]
-crbug.com/586181 fast/gradients/generated-gradients.html [ NeedsRebaseline ]
-crbug.com/586181 fast/gradients/list-item-gradient.html [ NeedsRebaseline ]
-crbug.com/586181 fast/gradients/simple-gradients.html [ NeedsRebaseline ]
-
 crbug.com/280342 [ Linux Win ] http/tests/media/progress-events-generated-correctly.html [ Failure ]
 
 crbug.com/520739 [ Mac ] http/tests/websocket/close-code-and-reason.html [ Failure Pass Timeout ]
