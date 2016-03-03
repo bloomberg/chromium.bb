@@ -121,7 +121,6 @@ class EVENTS_BASE_EXPORT LatencyInfo {
   // Empirically determined constant based on a typical scroll sequence.
   enum { kTypicalMaxComponentsPerLatencyInfo = 10 };
 
-  enum { kMaxCoalescedEventTimestamps = 2 };
   enum { kMaxInputCoordinates = 2 };
 
   // Map a Latency Component (with a component-specific int64_t id) to a
@@ -193,18 +192,11 @@ class EVENTS_BASE_EXPORT LatencyInfo {
     return input_coordinates_;
   }
 
-  // Returns true if there is still room for keeping the |timestamp|,
-  // false otherwise.
-  bool AddCoalescedEventTimestamp(double timestamp);
-
-  uint32_t coalesced_events_size() const { return coalesced_events_size_; }
-  const double* timestamps_of_coalesced_events() const {
-    return timestamps_of_coalesced_events_;
-  }
-
   const LatencyMap& latency_components() const { return latency_components_; }
 
   bool terminated() const { return terminated_; }
+  void set_coalesced() { coalesced_ = true; }
+  bool coalesced() const { return coalesced_; }
   int64_t trace_id() const { return trace_id_; }
 
  private:
@@ -230,11 +222,10 @@ class EVENTS_BASE_EXPORT LatencyInfo {
   uint32_t input_coordinates_size_;
   InputCoordinate input_coordinates_[kMaxInputCoordinates];
 
-  uint32_t coalesced_events_size_;
-  double timestamps_of_coalesced_events_[kMaxCoalescedEventTimestamps];
-
   // The unique id for matching the ASYNC_BEGIN/END trace event.
   int64_t trace_id_;
+  // Whether this event has been coalesced into another event.
+  bool coalesced_;
   // Whether a terminal component has been added.
   bool terminated_;
 

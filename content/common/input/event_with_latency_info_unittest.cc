@@ -61,8 +61,6 @@ TEST_F(EventWithLatencyInfoTest, TimestampCoalescingForMouseEvent) {
   mouse_0.CoalesceWith(mouse_1);
   // Coalescing WebMouseEvent preserves newer timestamp.
   EXPECT_EQ(10.0, mouse_0.event.timeStampSeconds);
-  ASSERT_EQ(1u, mouse_0.latency.coalesced_events_size());
-  EXPECT_EQ(5.0, mouse_0.latency.timestamps_of_coalesced_events()[0]);
 }
 
 TEST_F(EventWithLatencyInfoTest, TimestampCoalescingForMouseWheelEvent) {
@@ -73,8 +71,6 @@ TEST_F(EventWithLatencyInfoTest, TimestampCoalescingForMouseWheelEvent) {
   mouse_wheel_0.CoalesceWith(mouse_wheel_1);
   // Coalescing WebMouseWheelEvent preserves newer timestamp.
   EXPECT_EQ(10.0, mouse_wheel_0.event.timeStampSeconds);
-  ASSERT_EQ(1u, mouse_wheel_0.latency.coalesced_events_size());
-  EXPECT_EQ(5.0, mouse_wheel_0.latency.timestamps_of_coalesced_events()[0]);
 }
 
 TEST_F(EventWithLatencyInfoTest, TimestampCoalescingForTouchEvent) {
@@ -87,8 +83,6 @@ TEST_F(EventWithLatencyInfoTest, TimestampCoalescingForTouchEvent) {
   touch_0.CoalesceWith(touch_1);
   // Coalescing WebTouchEvent preserves newer timestamp.
   EXPECT_EQ(10.0, touch_0.event.timeStampSeconds);
-  ASSERT_EQ(1u, touch_0.latency.coalesced_events_size());
-  EXPECT_EQ(5.0, touch_0.latency.timestamps_of_coalesced_events()[0]);
 }
 
 TEST_F(EventWithLatencyInfoTest, TimestampCoalescingForGestureEvent) {
@@ -101,8 +95,27 @@ TEST_F(EventWithLatencyInfoTest, TimestampCoalescingForGestureEvent) {
   scroll_0.CoalesceWith(scroll_1);
   // Coalescing WebGestureEvent preserves newer timestamp.
   EXPECT_EQ(10.0, scroll_0.event.timeStampSeconds);
-  ASSERT_EQ(1u, scroll_0.latency.coalesced_events_size());
-  EXPECT_EQ(5.0, scroll_0.latency.timestamps_of_coalesced_events()[0]);
+}
+
+TEST_F(EventWithLatencyInfoTest, LatencyInfoCoalescing) {
+    MouseEventWithLatencyInfo mouse_0 = CreateMouseEvent(
+      WebInputEvent::MouseMove, 5.0);
+  mouse_0.latency.AddLatencyNumberWithTimestamp(
+      ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, 0, 0, base::TimeTicks(), 1);
+  MouseEventWithLatencyInfo mouse_1 = CreateMouseEvent(
+      WebInputEvent::MouseMove, 10.0);
+
+  ASSERT_TRUE(mouse_0.CanCoalesceWith(mouse_1));
+
+  ui::LatencyInfo::LatencyComponent component;
+  EXPECT_FALSE(mouse_1.latency.FindLatency(
+      ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, 0, &component));
+
+  mouse_0.CoalesceWith(mouse_1);
+
+  // Coalescing WebMouseEvent preservers older LatencyInfo.
+  EXPECT_TRUE(mouse_1.latency.FindLatency(
+      ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, 0, &component));
 }
 
 }  // namespace

@@ -143,19 +143,16 @@ LatencyInfo::InputCoordinate::InputCoordinate(float x, float y) : x(x), y(y) {
 
 LatencyInfo::LatencyInfo()
     : input_coordinates_size_(0),
-      coalesced_events_size_(0),
       trace_id_(-1),
-      terminated_(false) {
-}
+      coalesced_(false),
+      terminated_(false) {}
 
 LatencyInfo::LatencyInfo(const LatencyInfo& other) = default;
 
-LatencyInfo::~LatencyInfo() {
-}
+LatencyInfo::~LatencyInfo() {}
 
 LatencyInfo::LatencyInfo(int64_t trace_id, bool terminated)
     : input_coordinates_size_(0),
-      coalesced_events_size_(0),
       trace_id_(trace_id),
       terminated_(terminated) {}
 
@@ -379,13 +376,6 @@ bool LatencyInfo::AddInputCoordinate(const InputCoordinate& input_coordinate) {
   if (input_coordinates_size_ >= kMaxInputCoordinates)
     return false;
   input_coordinates_[input_coordinates_size_++] = input_coordinate;
-  return true;
-}
-
-bool LatencyInfo::AddCoalescedEventTimestamp(double timestamp) {
-  if (coalesced_events_size_ >= kMaxCoalescedEventTimestamps)
-    return false;
-  timestamps_of_coalesced_events_[coalesced_events_size_++] = timestamp;
   return true;
 }
 

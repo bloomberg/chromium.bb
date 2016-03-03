@@ -64,7 +64,7 @@ class CONTENT_EXPORT RenderWidgetHostLatencyTracker {
   int64_t last_event_id_;
   int64_t latency_component_id_;
   float device_scale_factor_;
-  bool has_seent_first_gesture_scroll_update_;
+  bool has_seen_first_gesture_scroll_update_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostLatencyTracker);
 };

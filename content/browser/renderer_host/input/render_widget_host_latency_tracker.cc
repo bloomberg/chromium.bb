@@ -78,6 +78,9 @@ void UpdateLatencyCoordinates(const WebInputEvent& event,
 void ComputeInputLatencyHistograms(WebInputEvent::Type type,
                                    int64_t latency_component_id,
                                    const LatencyInfo& latency) {
+  if (latency.coalesced())
+    return;
+
   LatencyInfo::LatencyComponent rwh_component;
   if (!latency.FindLatency(ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
                            latency_component_id, &rwh_component)) {
@@ -157,21 +160,24 @@ void ComputeScrollLatencyHistograms(
     const LatencyInfo::LatencyComponent& gpu_swap_end_component,
     int64_t latency_component_id,
     const LatencyInfo& latency) {
+  DCHECK(!latency.coalesced());
+  if (latency.coalesced())
+    return;
+
   DCHECK(!gpu_swap_begin_component.event_time.is_null());
   DCHECK(!gpu_swap_end_component.event_time.is_null());
-  LatencyInfo::LatencyComponent first_original_component, original_component;
+  LatencyInfo::LatencyComponent original_component;
   if (latency.FindLatency(
           ui::INPUT_EVENT_LATENCY_FIRST_SCROLL_UPDATE_ORIGINAL_COMPONENT,
-          latency_component_id, &first_original_component)) {
+          latency_component_id, &original_component)) {
     // This UMA metric tracks the time between the final frame swap for the
     // first scroll event in a sequence and the original timestamp of that
     // scroll event's underlying touch event.
-    for (size_t i = 0; i < first_original_component.event_count; i++) {
+    for (size_t i = 0; i < original_component.event_count; i++) {
       UMA_HISTOGRAM_TOUCH_TO_SCROLL_LATENCY(
           "Event.Latency.TouchToFirstScrollUpdateSwapBegin",
-          first_original_component, gpu_swap_begin_component);
+          original_component, gpu_swap_begin_component);
     }
-    original_component = first_original_component;
   } else if (!latency.FindLatency(
                  ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT,
                  latency_component_id, &original_component)) {
@@ -179,8 +185,7 @@ void ComputeScrollLatencyHistograms(
   }
 
   // This UMA metric tracks the time from when the original touch event is
-  // created (averaged if there are multiple) to when the scroll gesture
-  // results in final frame swap.
+  // created to when the scroll gesture results in final frame swap.
   for (size_t i = 0; i < original_component.event_count; i++) {
     UMA_HISTOGRAM_TOUCH_TO_SCROLL_LATENCY(
         "Event.Latency.TouchToScrollUpdateSwapBegin", original_component,
@@ -282,7 +287,7 @@ RenderWidgetHostLatencyTracker::RenderWidgetHostLatencyTracker()
     : last_event_id_(0),
       latency_component_id_(0),
       device_scale_factor_(1),
-      has_seent_first_gesture_scroll_update_(false) {
+      has_seen_first_gesture_scroll_update_(false) {
 }
 
 RenderWidgetHostLatencyTracker::~RenderWidgetHostLatencyTracker() {
@@ -335,7 +340,7 @@ void RenderWidgetHostLatencyTracker::OnInputEvent(
   UpdateLatencyCoordinates(event, device_scale_factor_, latency);
 
   if (event.type == blink::WebInputEvent::GestureScrollBegin) {
-    has_seent_first_gesture_scroll_update_ = false;
+    has_seen_first_gesture_scroll_update_ = false;
   } else if (event.type == blink::WebInputEvent::GestureScrollUpdate) {
     // Make a copy of the INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT with a
     // different name INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT.
@@ -344,14 +349,14 @@ void RenderWidgetHostLatencyTracker::OnInputEvent(
     if (latency->FindLatency(ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, 0,
                              &original_component)) {
       latency->AddLatencyNumberWithTimestamp(
-          has_seent_first_gesture_scroll_update_
+          has_seen_first_gesture_scroll_update_
               ? ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT
               : ui::INPUT_EVENT_LATENCY_FIRST_SCROLL_UPDATE_ORIGINAL_COMPONENT,
           latency_component_id_, original_component.sequence_number,
           original_component.event_time, original_component.event_count);
     }
 
-    has_seent_first_gesture_scroll_update_ = true;
+    has_seen_first_gesture_scroll_update_ = true;
   }
 }
 

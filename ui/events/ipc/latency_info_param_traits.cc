@@ -36,10 +36,6 @@ void ParamTraits<ui::LatencyInfo>::Write(base::Pickle* m, const param_type& p) {
   for (size_t i = 0; i < p.input_coordinates_size_; i++) {
     WriteParam(m, p.input_coordinates_[i]);
   }
-  WriteParam(m, p.coalesced_events_size_);
-  for (size_t i = 0; i < p.coalesced_events_size_; i++) {
-    WriteParam(m, p.timestamps_of_coalesced_events_[i]);
-  }
   WriteParam(m, p.trace_id_);
   WriteParam(m, p.terminated_);
 }
@@ -63,17 +59,6 @@ bool ParamTraits<ui::LatencyInfo>::Read(const base::Pickle* m,
       return false;
   }
 
-  double timestamp;
-  uint32_t coalesced_events_size;
-  if (!ReadParam(m, iter, &coalesced_events_size))
-    return false;
-  for (size_t i = 0; i < coalesced_events_size; i++) {
-    if (!ReadParam(m, iter, &timestamp))
-      return false;
-    if (!p->AddCoalescedEventTimestamp(timestamp))
-      return false;
-  }
-
   if (!ReadParam(m, iter, &p->trace_id_))
     return false;
   if (!ReadParam(m, iter, &p->terminated_))
@@ -92,12 +77,6 @@ void ParamTraits<ui::LatencyInfo>::Log(const param_type& p,
   l->append(" ");
   for (size_t i = 0; i < p.input_coordinates_size_; i++) {
     LogParam(p.input_coordinates_[i], l);
-    l->append(" ");
-  }
-  LogParam(p.coalesced_events_size_, l);
-  l->append(" ");
-  for (size_t i = 0; i < p.coalesced_events_size_; i++) {
-    LogParam(p.timestamps_of_coalesced_events_[i], l);
     l->append(" ");
   }
   LogParam(p.trace_id_, l);
