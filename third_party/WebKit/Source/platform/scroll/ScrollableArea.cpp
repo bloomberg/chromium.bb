@@ -614,8 +614,6 @@ int ScrollableArea::documentStep(ScrollbarOrientation orientation) const
 
 float ScrollableArea::pixelStep(ScrollbarOrientation) const
 {
-    if (HostWindow* window = hostWindow())
-        return window->windowToViewportScalar(1);
     return 1;
 }
 

@@ -282,6 +282,12 @@ crbug.com/567837 [ Mac Android ] virtual/scalefactor200withzoom/fast/hidpi/stati
 # TODO(oshima): Fix the popup's size adjustmenet.
 crbug.com/567837 [ Mac ] virtual/scalefactor200withzoom/fast/hidpi/static/data-suggestion-picker-appearance.html [ Skip ]
 
+# TODO(oshima): Move the event scaling code to eventSender and remove this.
+crbug.com/495750 virtual/scalefactor200/fast/hidpi/static/mousewheel-scroll-amount.html [ Skip ]
+crbug.com/495750 virtual/scalefactor200/fast/hidpi/static/gesture-scroll-amount.html [ Skip ]
+crbug.com/495750 virtual/scalefactor150/fast/hidpi/static/mousewheel-scroll-amount.html [ Skip ]
+crbug.com/495750 virtual/scalefactor150/fast/hidpi/static/gesture-scroll-amount.html [ Skip ]
+
 # TODO(ojan): These tests aren't flaky. See crbug.com/517144.
 # Release trybots run asserts, but the main waterfall ones don't. So, even
 # though this is a non-flaky assert failure, we need to mark it [ Pass Crash ].
