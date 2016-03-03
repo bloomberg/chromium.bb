@@ -3,49 +3,27 @@
 # found in the LICENSE file.
 {
   'conditions': [
-    ['OS=="linux"', {
+    ['OS=="linux" or OS=="mac" or OS=="win"', {
       'variables': {
         'command': [
           'telemetry/run_benchmark',
-          '--browser=exact',
-          '--browser-executable=<(PRODUCT_DIR)/chrome<(EXECUTABLE_SUFFIX)',
+          '--browser=release',
           '--also-run-disabled-tests',
           '-v',
           '--output-format=chartjson',
           '--output-dir=${ISOLATED_OUTDIR}',
         ],
         'files': [
+          '<(PRODUCT_DIR)/mr_extension/',
           '../../../third_party/catapult/',
           '../../../tools/perf/',
           '../../../tools/variations/fieldtrial_util.py',
-          '<(PRODUCT_DIR)/chrome<(EXECUTABLE_SUFFIX)',
-          '<(PRODUCT_DIR)/chrome_100_percent.pak',
-          '<(PRODUCT_DIR)/chrome_200_percent.pak',
-          '<(PRODUCT_DIR)/libosmesa.so',
-          '<(PRODUCT_DIR)/locales/en-US.pak',
-          '<(PRODUCT_DIR)/mr_extension/',
-          '<(PRODUCT_DIR)/nacl_helper',
-          '<(PRODUCT_DIR)/nacl_helper_bootstrap',
-          '<(PRODUCT_DIR)/nacl_irt_x86_64.nexe',
-          '<(PRODUCT_DIR)/natives_blob.bin',
-          '<(PRODUCT_DIR)/pnacl/',
-          '<(PRODUCT_DIR)/resources.pak',
-          '<(PRODUCT_DIR)/snapshot_blob.bin',
-          '<(PRODUCT_DIR)/xdisplaycheck<(EXECUTABLE_SUFFIX)',
           'telemetry/',
-        ],
-      },
-    }],
-    ['OS=="linux" and component=="shared_library"', {
-      'variables': {
-        'files': [
-          '<(PRODUCT_DIR)/lib/',
-          '<(PRODUCT_DIR)/lib64/',
         ],
       },
     }],
   ],
   'includes': [
-    '../../../base/base.isolate',
+    '../../chrome.isolate',
   ],
 }

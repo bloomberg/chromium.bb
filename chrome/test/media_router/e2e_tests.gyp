@@ -23,7 +23,7 @@
           'target_name': 'media_router_perf_tests_run',
           'type': 'none',
           'dependencies': [
-            '../../chrome.gyp:chrome',
+            '../../chrome.gyp:chrome_run',
           ],
           'includes': [
             '../../../build/isolate.gypi',
