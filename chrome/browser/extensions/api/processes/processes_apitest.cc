@@ -14,7 +14,8 @@
 
 using ProcessesApiTest = ExtensionApiTest;
 
-IN_PROC_BROWSER_TEST_F(ProcessesApiTest, Processes) {
+// Fails on some MSan bots crbug.com/591581.
+IN_PROC_BROWSER_TEST_F(ProcessesApiTest, DISABLED_Processes) {
   ASSERT_TRUE(RunExtensionTest("processes/api")) << message_;
 }
 
