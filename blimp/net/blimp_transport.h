@@ -35,7 +35,7 @@ class BlimpTransport {
   virtual scoped_ptr<BlimpConnection> TakeConnection() = 0;
 
   // Gets transport name, e.g. "TCP", "SSL", "mock", etc.
-  virtual const std::string GetName() const = 0;
+  virtual const char* GetName() const = 0;
 };
 
 }  // namespace blimp

@@ -35,10 +35,10 @@ class TCPTransportTest : public testing::Test {
     engine_.reset(new TCPEngineTransport(local_address, nullptr));
   }
 
-  net::AddressList GetLocalAddressList() const {
+  net::IPEndPoint GetLocalEndpoint() const {
     net::IPEndPoint local_address;
-    engine_->GetLocalAddressForTesting(&local_address);
-    return net::AddressList(local_address);
+    CHECK_EQ(net::OK, engine_->GetLocalAddressForTesting(&local_address));
+    return local_address;
   }
 
   base::MessageLoopForIO message_loop_;
@@ -50,7 +50,7 @@ TEST_F(TCPTransportTest, Connect) {
   engine_->Connect(accept_callback.callback());
 
   net::TestCompletionCallback connect_callback;
-  TCPClientTransport client(GetLocalAddressList(), nullptr);
+  TCPClientTransport client(GetLocalEndpoint(), nullptr);
   client.Connect(connect_callback.callback());
 
   EXPECT_EQ(net::OK, connect_callback.WaitForResult());
@@ -63,11 +63,11 @@ TEST_F(TCPTransportTest, TwoClientConnections) {
   engine_->Connect(accept_callback1.callback());
 
   net::TestCompletionCallback connect_callback1;
-  TCPClientTransport client1(GetLocalAddressList(), nullptr);
+  TCPClientTransport client1(GetLocalEndpoint(), nullptr);
   client1.Connect(connect_callback1.callback());
 
   net::TestCompletionCallback connect_callback2;
-  TCPClientTransport client2(GetLocalAddressList(), nullptr);
+  TCPClientTransport client2(GetLocalEndpoint(), nullptr);
   client2.Connect(connect_callback2.callback());
 
   EXPECT_EQ(net::OK, connect_callback1.WaitForResult());
@@ -86,7 +86,7 @@ TEST_F(TCPTransportTest, ExchangeMessages) {
   net::TestCompletionCallback accept_callback;
   engine_->Connect(accept_callback.callback());
   net::TestCompletionCallback client_connect_callback;
-  TCPClientTransport client(GetLocalAddressList(), nullptr /* NetLog */);
+  TCPClientTransport client(GetLocalEndpoint(), nullptr /* NetLog */);
   client.Connect(client_connect_callback.callback());
   EXPECT_EQ(net::OK, client_connect_callback.WaitForResult());
   EXPECT_EQ(net::OK, accept_callback.WaitForResult());

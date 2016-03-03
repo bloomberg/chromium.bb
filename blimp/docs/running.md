@@ -21,10 +21,15 @@ Set up any command line flags with:
 ./build/android/adb_blimp_command_line --your-flag-here
 ```
 
-To have the client connect to a custom engine use the `--blimplet-endpoint`
-flag.  This takes values in the form of scheme:ip:port.  The possible valid
-schemes are 'tcp', 'quic', and 'ssl'.  An example valid endpoint would be
-`--blimplet-endpoint=tcp:127.0.0.1:25467`.
+To have the client connect to a custom engine use the `--engine-ip`,
+`--engine-port`, and `--engine-transport` flags. The possible valid
+values for `--engine-transport` are 'tcp' and 'ssl'.
+An example valid endpoint would be
+`--engine-ip=127.0.0.1 --engine-port=1234 --engine-transport=tcp`.
+
+SSL-encrypted connections take an additional flag
+`--engine-cert-path` which specifies a path to a PEM-encoded certificate
+file (e.g. `--engine-cert-path=/path/to/file.pem`.)
 
 To see your current command line, run `adb_blimp_command_line` without any
 arguments.

@@ -5,68 +5,80 @@
 #include "blimp/client/session/assignment_source.h"
 
 #include "base/command_line.h"
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
+#include "base/message_loop/message_loop.h"
+#include "base/path_service.h"
+#include "base/run_loop.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "blimp/client/app/blimp_client_switches.h"
 #include "blimp/common/protocol_version.h"
+#include "components/safe_json/testing_json_parser.h"
+#include "net/base/test_data_directory.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::_;
+using testing::DoAll;
 using testing::InSequence;
+using testing::NotNull;
+using testing::Return;
+using testing::SetArgPointee;
 
 namespace blimp {
 namespace client {
 namespace {
 
+const uint8_t kTestIpAddress[] = {127, 0, 0, 1};
+const uint16_t kTestPort = 8086;
+const char kTestIpAddressString[] = "127.0.0.1";
+const char kTcpTransportName[] = "tcp";
+const char kSslTransportName[] = "ssl";
+const char kCertRelativePath[] =
+    "blimp/client/session/test_selfsigned_cert.pem";
+const char kTestClientToken[] = "secrett0ken";
+const char kTestAuthToken[] = "UserAuthT0kenz";
+
 MATCHER_P(AssignmentEquals, assignment, "") {
   return arg.transport_protocol == assignment.transport_protocol &&
-         arg.ip_endpoint == assignment.ip_endpoint &&
+         arg.engine_endpoint == assignment.engine_endpoint &&
          arg.client_token == assignment.client_token &&
-         arg.certificate == assignment.certificate &&
-         arg.certificate_fingerprint == assignment.certificate_fingerprint;
+         ((!assignment.cert && !arg.cert) ||
+          (arg.cert && assignment.cert &&
+           arg.cert->Equals(assignment.cert.get())));
 }
 
-net::IPEndPoint BuildIPEndPoint(const std::string& ip, int port) {
-  net::IPAddress ip_address;
-  EXPECT_TRUE(ip_address.AssignFromIPLiteral(ip));
-
-  return net::IPEndPoint(ip_address, port);
-}
-
-Assignment BuildValidAssignment() {
-  Assignment assignment;
-  assignment.transport_protocol = Assignment::TransportProtocol::SSL;
-  assignment.ip_endpoint = BuildIPEndPoint("100.150.200.250", 500);
-  assignment.client_token = "SecretT0kenz";
-  assignment.certificate_fingerprint = "WhaleWhaleWhale";
-  assignment.certificate = "whaaaaaaaaaaaaale";
-  return assignment;
-}
-
-std::string BuildResponseFromAssignment(const Assignment& assignment) {
-  base::DictionaryValue dict;
-  dict.SetString("clientToken", assignment.client_token);
-  dict.SetString("host", assignment.ip_endpoint.address().ToString());
-  dict.SetInteger("port", assignment.ip_endpoint.port());
-  dict.SetString("certificateFingerprint", assignment.certificate_fingerprint);
-  dict.SetString("certificate", assignment.certificate);
-
+// Converts |value| to a JSON string.
+std::string ValueToString(const base::Value& value) {
   std::string json;
-  base::JSONWriter::Write(dict, &json);
+  base::JSONWriter::Write(value, &json);
   return json;
 }
 
 class AssignmentSourceTest : public testing::Test {
  public:
   AssignmentSourceTest()
-      : task_runner_(new base::TestSimpleTaskRunner),
-        task_runner_handle_(task_runner_),
-        source_(task_runner_, task_runner_) {}
+      : source_(message_loop_.task_runner(), message_loop_.task_runner()) {}
+
+  void SetUp() override {
+    base::FilePath src_root;
+    PathService::Get(base::DIR_SOURCE_ROOT, &src_root);
+    ASSERT_FALSE(src_root.empty());
+    cert_path_ = src_root.Append(kCertRelativePath);
+    ASSERT_TRUE(base::ReadFileToString(cert_path_, &cert_pem_));
+    net::CertificateList cert_list =
+        net::X509Certificate::CreateCertificateListFromBytes(
+            cert_pem_.data(), cert_pem_.size(),
+            net::X509Certificate::FORMAT_PEM_CERT_SEQUENCE);
+    ASSERT_FALSE(cert_list.empty());
+    cert_ = std::move(cert_list[0]);
+    ASSERT_TRUE(cert_);
+  }
 
   // This expects the AssignmentSource::GetAssignment to return a custom
   // endpoint without having to hit the network.  This will typically be used
@@ -77,7 +89,7 @@ class AssignmentSourceTest : public testing::Test {
                           base::Bind(&AssignmentSourceTest::AssignmentResponse,
                                      base::Unretained(this)));
     EXPECT_EQ(nullptr, factory_.GetFetcherByID(0));
-    task_runner_->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   // See net/base/net_errors.h for possible status errors.
@@ -90,10 +102,9 @@ class AssignmentSourceTest : public testing::Test {
     source_.GetAssignment(client_auth_token,
                           base::Bind(&AssignmentSourceTest::AssignmentResponse,
                                      base::Unretained(this)));
+    base::RunLoop().RunUntilIdle();
 
     net::TestURLFetcher* fetcher = factory_.GetFetcherByID(0);
-
-    task_runner_->RunUntilIdle();
 
     EXPECT_NE(nullptr, fetcher);
     EXPECT_EQ(kDefaultAssignerURL, fetcher->GetOriginalURL().spec());
@@ -125,30 +136,74 @@ class AssignmentSourceTest : public testing::Test {
     fetcher->SetResponseString(response);
     fetcher->delegate()->OnURLFetchComplete(fetcher);
 
-    task_runner_->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   MOCK_METHOD2(AssignmentResponse,
                void(AssignmentSource::Result, const Assignment&));
 
  protected:
+  Assignment BuildSslAssignment();
+
+  // Builds simulated JSON response from the Assigner service.
+  scoped_ptr<base::DictionaryValue> BuildAssignerResponse();
+
   // Used to drive all AssignmentSource tasks.
-  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
-  base::ThreadTaskRunnerHandle task_runner_handle_;
+  // MessageLoop is required by TestingJsonParser's self-deletion logic.
+  // TODO(bauerb): Replace this with a TestSimpleTaskRunner once
+  // TestingJsonParser no longer requires having a MessageLoop.
+  base::MessageLoop message_loop_;
 
   net::TestURLFetcherFactory factory_;
 
+  // Path to the PEM-encoded certificate chain.
+  base::FilePath cert_path_;
+
+  // Payload of PEM certificate chain at |cert_path_|.
+  std::string cert_pem_;
+
+  // X509 certificate decoded from |cert_path_|.
+  scoped_refptr<net::X509Certificate> cert_;
+
   AssignmentSource source_;
+
+  // Allows safe_json to parse JSON in-process, instead of depending on a
+  // utility proces.
+  safe_json::TestingJsonParser::ScopedFactoryOverride json_parsing_factory_;
 };
+
+Assignment AssignmentSourceTest::BuildSslAssignment() {
+  Assignment assignment;
+  assignment.transport_protocol = Assignment::TransportProtocol::SSL;
+  assignment.engine_endpoint = net::IPEndPoint(kTestIpAddress, kTestPort);
+  assignment.client_token = kTestClientToken;
+  assignment.cert = cert_;
+  return assignment;
+}
+
+scoped_ptr<base::DictionaryValue>
+AssignmentSourceTest::BuildAssignerResponse() {
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
+  dict->SetString("clientToken", kTestClientToken);
+  dict->SetString("host", kTestIpAddressString);
+  dict->SetInteger("port", kTestPort);
+  dict->SetString("certificate", cert_pem_);
+  return dict;
+}
 
 TEST_F(AssignmentSourceTest, TestTCPAlternateEndpointSuccess) {
   Assignment assignment;
   assignment.transport_protocol = Assignment::TransportProtocol::TCP;
-  assignment.ip_endpoint = BuildIPEndPoint("100.150.200.250", 500);
+  assignment.engine_endpoint = net::IPEndPoint(kTestIpAddress, kTestPort);
   assignment.client_token = kDummyClientToken;
+  assignment.cert = scoped_refptr<net::X509Certificate>(nullptr);
 
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kBlimpletEndpoint, "tcp:100.150.200.250:500");
+      switches::kEngineIP, kTestIpAddressString);
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kEnginePort, std::to_string(kTestPort));
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kEngineTransport, kTcpTransportName);
 
   EXPECT_CALL(*this, AssignmentResponse(AssignmentSource::Result::RESULT_OK,
                                         AssignmentEquals(assignment)))
@@ -160,27 +215,18 @@ TEST_F(AssignmentSourceTest, TestTCPAlternateEndpointSuccess) {
 TEST_F(AssignmentSourceTest, TestSSLAlternateEndpointSuccess) {
   Assignment assignment;
   assignment.transport_protocol = Assignment::TransportProtocol::SSL;
-  assignment.ip_endpoint = BuildIPEndPoint("100.150.200.250", 500);
+  assignment.engine_endpoint = net::IPEndPoint(kTestIpAddress, kTestPort);
   assignment.client_token = kDummyClientToken;
+  assignment.cert = cert_;
 
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kBlimpletEndpoint, "ssl:100.150.200.250:500");
-
-  EXPECT_CALL(*this, AssignmentResponse(AssignmentSource::Result::RESULT_OK,
-                                        AssignmentEquals(assignment)))
-      .Times(1);
-
-  GetAlternateAssignment();
-}
-
-TEST_F(AssignmentSourceTest, TestQUICAlternateEndpointSuccess) {
-  Assignment assignment;
-  assignment.transport_protocol = Assignment::TransportProtocol::QUIC;
-  assignment.ip_endpoint = BuildIPEndPoint("100.150.200.250", 500);
-  assignment.client_token = kDummyClientToken;
-
+      switches::kEngineIP, kTestIpAddressString);
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kBlimpletEndpoint, "quic:100.150.200.250:500");
+      switches::kEnginePort, std::to_string(kTestPort));
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kEngineTransport, kSslTransportName);
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kEngineCertPath, cert_path_.value());
 
   EXPECT_CALL(*this, AssignmentResponse(AssignmentSource::Result::RESULT_OK,
                                         AssignmentEquals(assignment)))
@@ -190,44 +236,20 @@ TEST_F(AssignmentSourceTest, TestQUICAlternateEndpointSuccess) {
 }
 
 TEST_F(AssignmentSourceTest, TestSuccess) {
-  Assignment assignment = BuildValidAssignment();
+  Assignment assignment = BuildSslAssignment();
 
   EXPECT_CALL(*this, AssignmentResponse(AssignmentSource::Result::RESULT_OK,
                                         AssignmentEquals(assignment)))
       .Times(1);
 
   GetNetworkAssignmentAndWaitForResponse(
-      net::HTTP_OK, net::Error::OK, BuildResponseFromAssignment(assignment),
-      "UserAuthT0kenz", kEngineVersion);
-}
-
-TEST_F(AssignmentSourceTest, TestSecondRequestInterruptsFirst) {
-  InSequence sequence;
-  Assignment assignment = BuildValidAssignment();
-
-  source_.GetAssignment("",
-                        base::Bind(&AssignmentSourceTest::AssignmentResponse,
-                                   base::Unretained(this)));
-
-  EXPECT_CALL(*this, AssignmentResponse(
-                         AssignmentSource::Result::RESULT_SERVER_INTERRUPTED,
-                         AssignmentEquals(Assignment())))
-      .Times(1)
-      .RetiresOnSaturation();
-
-  EXPECT_CALL(*this, AssignmentResponse(AssignmentSource::Result::RESULT_OK,
-                                        AssignmentEquals(assignment)))
-      .Times(1)
-      .RetiresOnSaturation();
-
-  GetNetworkAssignmentAndWaitForResponse(
-      net::HTTP_OK, net::Error::OK, BuildResponseFromAssignment(assignment),
-      "UserAuthT0kenz", kEngineVersion);
+      net::HTTP_OK, net::Error::OK, ValueToString(*BuildAssignerResponse()),
+      kTestAuthToken, kEngineVersion);
 }
 
 TEST_F(AssignmentSourceTest, TestValidAfterError) {
   InSequence sequence;
-  Assignment assignment = BuildValidAssignment();
+  Assignment assignment = BuildSslAssignment();
 
   EXPECT_CALL(*this, AssignmentResponse(
                          AssignmentSource::Result::RESULT_NETWORK_FAILURE, _))
@@ -241,11 +263,11 @@ TEST_F(AssignmentSourceTest, TestValidAfterError) {
 
   GetNetworkAssignmentAndWaitForResponse(net::HTTP_OK,
                                          net::Error::ERR_INSUFFICIENT_RESOURCES,
-                                         "", "UserAuthT0kenz", kEngineVersion);
+                                         "", kTestAuthToken, kEngineVersion);
 
   GetNetworkAssignmentAndWaitForResponse(
-      net::HTTP_OK, net::Error::OK, BuildResponseFromAssignment(assignment),
-      "UserAuthT0kenz", kEngineVersion);
+      net::HTTP_OK, net::Error::OK, ValueToString(*BuildAssignerResponse()),
+      kTestAuthToken, kEngineVersion);
 }
 
 TEST_F(AssignmentSourceTest, TestNetworkFailure) {
@@ -253,14 +275,14 @@ TEST_F(AssignmentSourceTest, TestNetworkFailure) {
                          AssignmentSource::Result::RESULT_NETWORK_FAILURE, _));
   GetNetworkAssignmentAndWaitForResponse(net::HTTP_OK,
                                          net::Error::ERR_INSUFFICIENT_RESOURCES,
-                                         "", "UserAuthT0kenz", kEngineVersion);
+                                         "", kTestAuthToken, kEngineVersion);
 }
 
 TEST_F(AssignmentSourceTest, TestBadRequest) {
   EXPECT_CALL(*this, AssignmentResponse(
                          AssignmentSource::Result::RESULT_BAD_REQUEST, _));
   GetNetworkAssignmentAndWaitForResponse(net::HTTP_BAD_REQUEST, net::Error::OK,
-                                         "", "UserAuthT0kenz", kEngineVersion);
+                                         "", kTestAuthToken, kEngineVersion);
 }
 
 TEST_F(AssignmentSourceTest, TestUnauthorized) {
@@ -268,21 +290,21 @@ TEST_F(AssignmentSourceTest, TestUnauthorized) {
               AssignmentResponse(
                   AssignmentSource::Result::RESULT_EXPIRED_ACCESS_TOKEN, _));
   GetNetworkAssignmentAndWaitForResponse(net::HTTP_UNAUTHORIZED, net::Error::OK,
-                                         "", "UserAuthT0kenz", kEngineVersion);
+                                         "", kTestAuthToken, kEngineVersion);
 }
 
 TEST_F(AssignmentSourceTest, TestForbidden) {
   EXPECT_CALL(*this, AssignmentResponse(
                          AssignmentSource::Result::RESULT_USER_INVALID, _));
   GetNetworkAssignmentAndWaitForResponse(net::HTTP_FORBIDDEN, net::Error::OK,
-                                         "", "UserAuthT0kenz", kEngineVersion);
+                                         "", kTestAuthToken, kEngineVersion);
 }
 
 TEST_F(AssignmentSourceTest, TestTooManyRequests) {
   EXPECT_CALL(*this, AssignmentResponse(
                          AssignmentSource::Result::RESULT_OUT_OF_VMS, _));
   GetNetworkAssignmentAndWaitForResponse(static_cast<net::HttpStatusCode>(429),
-                                         net::Error::OK, "", "UserAuthT0kenz",
+                                         net::Error::OK, "", kTestAuthToken,
                                          kEngineVersion);
 }
 
@@ -290,7 +312,7 @@ TEST_F(AssignmentSourceTest, TestInternalServerError) {
   EXPECT_CALL(*this, AssignmentResponse(
                          AssignmentSource::Result::RESULT_SERVER_ERROR, _));
   GetNetworkAssignmentAndWaitForResponse(net::HTTP_INTERNAL_SERVER_ERROR,
-                                         net::Error::OK, "", "UserAuthT0kenz",
+                                         net::Error::OK, "", kTestAuthToken,
                                          kEngineVersion);
 }
 
@@ -298,56 +320,62 @@ TEST_F(AssignmentSourceTest, TestUnexpectedNetCodeFallback) {
   EXPECT_CALL(*this, AssignmentResponse(
                          AssignmentSource::Result::RESULT_BAD_RESPONSE, _));
   GetNetworkAssignmentAndWaitForResponse(net::HTTP_NOT_IMPLEMENTED,
-                                         net::Error::OK, "", "UserAuthT0kenz",
+                                         net::Error::OK, "", kTestAuthToken,
                                          kEngineVersion);
 }
 
 TEST_F(AssignmentSourceTest, TestInvalidJsonResponse) {
-  Assignment assignment = BuildValidAssignment();
+  Assignment assignment = BuildSslAssignment();
 
   // Remove half the response.
-  std::string response = BuildResponseFromAssignment(assignment);
+  std::string response = ValueToString(*BuildAssignerResponse());
   response = response.substr(response.size() / 2);
 
   EXPECT_CALL(*this, AssignmentResponse(
                          AssignmentSource::Result::RESULT_BAD_RESPONSE, _));
   GetNetworkAssignmentAndWaitForResponse(net::HTTP_OK, net::Error::OK, response,
-                                         "UserAuthT0kenz", kEngineVersion);
+                                         kTestAuthToken, kEngineVersion);
 }
 
 TEST_F(AssignmentSourceTest, TestMissingResponsePort) {
-  // Purposely do not add the 'port' field to the response.
-  base::DictionaryValue dict;
-  dict.SetString("clientToken", "SecretT0kenz");
-  dict.SetString("host", "happywhales");
-  dict.SetString("certificateFingerprint", "WhaleWhaleWhale");
-  dict.SetString("certificate", "whaaaaaaaaaaaaale");
-
-  std::string response;
-  base::JSONWriter::Write(dict, &response);
-
+  scoped_ptr<base::DictionaryValue> response = BuildAssignerResponse();
+  response->Remove("port", nullptr);
   EXPECT_CALL(*this, AssignmentResponse(
                          AssignmentSource::Result::RESULT_BAD_RESPONSE, _));
-  GetNetworkAssignmentAndWaitForResponse(net::HTTP_OK, net::Error::OK, response,
-                                         "UserAuthT0kenz", kEngineVersion);
+  GetNetworkAssignmentAndWaitForResponse(net::HTTP_OK, net::Error::OK,
+                                         ValueToString(*response),
+                                         kTestAuthToken, kEngineVersion);
 }
 
 TEST_F(AssignmentSourceTest, TestInvalidIPAddress) {
-  // Purposely add an invalid IP field to the response.
-  base::DictionaryValue dict;
-  dict.SetString("clientToken", "SecretT0kenz");
-  dict.SetString("host", "happywhales");
-  dict.SetInteger("port", 500);
-  dict.SetString("certificateFingerprint", "WhaleWhaleWhale");
-  dict.SetString("certificate", "whaaaaaaaaaaaaale");
-
-  std::string response;
-  base::JSONWriter::Write(dict, &response);
+  scoped_ptr<base::DictionaryValue> response = BuildAssignerResponse();
+  response->SetString("host", "happywhales.test");
 
   EXPECT_CALL(*this, AssignmentResponse(
                          AssignmentSource::Result::RESULT_BAD_RESPONSE, _));
-  GetNetworkAssignmentAndWaitForResponse(net::HTTP_OK, net::Error::OK, response,
-                                         "UserAuthT0kenz", kEngineVersion);
+  GetNetworkAssignmentAndWaitForResponse(net::HTTP_OK, net::Error::OK,
+                                         ValueToString(*response),
+                                         kTestAuthToken, kEngineVersion);
+}
+
+TEST_F(AssignmentSourceTest, TestMissingCert) {
+  scoped_ptr<base::DictionaryValue> response = BuildAssignerResponse();
+  response->Remove("certificate", nullptr);
+  EXPECT_CALL(*this, AssignmentResponse(
+                         AssignmentSource::Result::RESULT_BAD_RESPONSE, _));
+  GetNetworkAssignmentAndWaitForResponse(net::HTTP_OK, net::Error::OK,
+                                         ValueToString(*response),
+                                         kTestAuthToken, kEngineVersion);
+}
+
+TEST_F(AssignmentSourceTest, TestInvalidCert) {
+  scoped_ptr<base::DictionaryValue> response = BuildAssignerResponse();
+  response->SetString("certificate", "h4x0rz!");
+  EXPECT_CALL(*this, AssignmentResponse(
+                         AssignmentSource::Result::RESULT_INVALID_CERT, _));
+  GetNetworkAssignmentAndWaitForResponse(net::HTTP_OK, net::Error::OK,
+                                         ValueToString(*response),
+                                         kTestAuthToken, kEngineVersion);
 }
 
 }  // namespace

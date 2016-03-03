@@ -2,7 +2,8 @@ include_rules = [
   "+base",
   "+cc",
   "-cc/blink",
-  "-chrome"
+  "-chrome",
+  "+components/safe_json",
   "-content",
   "+gpu",
   "+jni",

@@ -26,7 +26,7 @@ scoped_ptr<BlimpConnection> MockTransport::TakeConnection() {
   return make_scoped_ptr(TakeConnectionPtr());
 }
 
-const std::string MockTransport::GetName() const {
+const char* MockTransport::GetName() const {
   return "mock";
 }
 
