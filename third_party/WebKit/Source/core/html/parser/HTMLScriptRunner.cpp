@@ -66,13 +66,13 @@ PassOwnPtr<TracedValue> getTraceArgsForScriptElement(Element* element, const Tex
     return value.release();
 }
 
-bool doExecuteScript(Element* scriptElement, const ScriptSourceCode& sourceCode, const TextPosition& textPosition, double* compilationFinishTime = nullptr)
+bool doExecuteScript(Element* scriptElement, const ScriptSourceCode& sourceCode, const TextPosition& textPosition)
 {
     ScriptLoader* scriptLoader = toScriptLoaderIfPossible(scriptElement);
     ASSERT(scriptLoader);
     TRACE_EVENT_WITH_FLOW1("blink", "HTMLScriptRunner ExecuteScript", scriptElement, TRACE_EVENT_FLAG_FLOW_IN,
         "data", getTraceArgsForScriptElement(scriptElement, textPosition));
-    return scriptLoader->executeScript(sourceCode, compilationFinishTime);
+    return scriptLoader->executeScript(sourceCode);
 }
 
 void traceParserBlockingScript(const PendingScript* pendingScript, bool waitingForResources)
@@ -137,7 +137,6 @@ HTMLScriptRunner::HTMLScriptRunner(Document* document, HTMLScriptRunnerHost* hos
     , m_parserBlockingScript(PendingScript::create(nullptr, nullptr))
     , m_scriptNestingLevel(0)
     , m_hasScriptsWaitingForResources(false)
-    , m_parserBlockingScriptAlreadyLoaded(false)
 {
     ASSERT(m_host);
 #if ENABLE(OILPAN)
@@ -189,7 +188,6 @@ void HTMLScriptRunner::executeParsingBlockingScript()
 void HTMLScriptRunner::executePendingScriptAndDispatchEvent(PendingScript* pendingScript, ScriptStreamer::Type pendingScriptType)
 {
     bool errorOccurred = false;
-    double loadFinishTime = pendingScript->resource() && pendingScript->resource()->url().protocolIsInHTTPFamily() ? pendingScript->resource()->loadFinishTime() : 0;
     ScriptSourceCode sourceCode = pendingScript->getSource(documentURLForScriptExecution(m_document), errorOccurred);
 
     // Stop watching loads before executeScript to prevent recursion if the script reloads itself.
@@ -208,7 +206,6 @@ void HTMLScriptRunner::executePendingScriptAndDispatchEvent(PendingScript* pendi
     TextPosition scriptStartPosition = pendingScript->startingPosition();
     // Clear the pending script before possible re-entrancy from executeScript()
     RefPtrWillBeRawPtr<Element> element = pendingScript->releaseElementAndClear();
-    double compilationFinishTime = 0;
     if (ScriptLoader* scriptLoader = toScriptLoaderIfPossible(element.get())) {
         NestingLevelIncrementer nestingLevelIncrementer(m_scriptNestingLevel);
         IgnoreDestructiveWriteCountIncrementer ignoreDestructiveWriteCountIncrementer(m_document);
@@ -218,19 +215,12 @@ void HTMLScriptRunner::executePendingScriptAndDispatchEvent(PendingScript* pendi
             scriptLoader->dispatchErrorEvent();
         } else {
             ASSERT(isExecutingScript());
-            if (!doExecuteScript(element.get(), sourceCode, scriptStartPosition, &compilationFinishTime)) {
+            if (!doExecuteScript(element.get(), sourceCode, scriptStartPosition)) {
                 scriptLoader->dispatchErrorEvent();
             } else {
                 element->dispatchEvent(Event::create(EventTypeNames::load));
             }
         }
-    }
-    // The exact value doesn't matter; valid time stamps are much bigger than this value.
-    const double epsilon = 1;
-    if (pendingScriptType == ScriptStreamer::ParsingBlocking && !m_parserBlockingScriptAlreadyLoaded && compilationFinishTime > epsilon && loadFinishTime > epsilon) {
-        int duration = (compilationFinishTime - loadFinishTime) * 1000;
-        DEFINE_STATIC_LOCAL(CustomCountHistogram, loadAndCompileHistogram, ("WebCore.Scripts.ParsingBlocking.TimeBetweenLoadedAndCompiled", 0, 10000, 50));
-        loadAndCompileHistogram.count(duration);
     }
 
     ASSERT(!isExecutingScript());
