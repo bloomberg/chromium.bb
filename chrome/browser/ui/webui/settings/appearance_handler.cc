@@ -76,7 +76,7 @@ void AppearanceHandler::GetResetThemeEnabled(const base::ListValue* args) {
   CHECK(args->Get(0, &callback_id));
 
   base::FundamentalValue enabled(QueryResetThemeEnabledState());
-  CallJavascriptCallback(*callback_id, enabled);
+  ResolveJavascriptCallback(*callback_id, enabled);
 }
 
 }  // namespace settings

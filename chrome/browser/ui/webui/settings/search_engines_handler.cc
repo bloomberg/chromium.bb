@@ -199,7 +199,7 @@ void SearchEnginesHandler::HandleGetSearchEnginesList(
   CHECK_EQ(1U, args->GetSize());
   const base::Value* callback_id;
   CHECK(args->Get(0, &callback_id));
-  CallJavascriptCallback(*callback_id, *GetSearchEnginesList());
+  ResolveJavascriptCallback(*callback_id, *GetSearchEnginesList());
 }
 
 void SearchEnginesHandler::HandleSetDefaultSearchEngine(
@@ -278,7 +278,7 @@ void SearchEnginesHandler::HandleValidateSearchEngineInput(
   CHECK(args->Get(0, &callback_id));
   CHECK(args->GetString(1, &field_name));
   CHECK(args->GetString(2, &field_value));
-  CallJavascriptCallback(
+  ResolveJavascriptCallback(
       *callback_id,
       base::FundamentalValue(CheckFieldValidity(field_name, field_value)));
 }

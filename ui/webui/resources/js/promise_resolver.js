@@ -16,9 +16,7 @@
  *  resolver.resolve({hello: 'world'});
  */
 
-/**
- * @constructor
- */
+/** @constructor */
 function PromiseResolver() {
   /** @type {!Function} */
   this.resolve;

@@ -35,7 +35,7 @@ WebUIResourceAsyncTest.prototype = {
   extraLibraries: [
     ROOT_PATH + 'third_party/mocha/mocha.js',
     ROOT_PATH + 'chrome/test/data/webui/mocha_adapter.js',
-    ROOT_PATH + 'chrome/test/data/webui/promise_resolver.js',
+    ROOT_PATH + 'ui/webui/resources/js/promise_resolver.js',
     ROOT_PATH + 'ui/webui/resources/js/cr.js',
   ],
 };
@@ -54,12 +54,18 @@ TEST_F('WebUIResourceAsyncTest', 'SendWithPromise', function() {
   }
 
   suite('SendWithPromise', function() {
+    var rejectPromises = false;
+
     setup(function() {
       // Simulate a WebUI handler that echoes back all parameters passed to it.
+      // Rejects the promise depending on |rejectPromises|.
       whenChromeSendCalled(CHROME_SEND_NAME).then(function(args) {
-        cr.webUIResponse.apply(null, args);
+        var callbackId = args[0];
+        cr.webUIResponse.apply(
+            null, [callbackId, !rejectPromises].concat(args.slice(1)));
       });
     });
+    teardown(function() { rejectPromises = false; });
 
     test('sendWithPromise_ResponseObject', function() {
       var expectedResponse = {'foo': 'bar'};
@@ -91,6 +97,18 @@ TEST_F('WebUIResourceAsyncTest', 'SendWithPromise', function() {
       return cr.sendWithPromise(CHROME_SEND_NAME).then(function(response) {
         assertEquals(undefined, response);
       });
+    });
+
+    test('sendWithPromise_Reject', function() {
+      rejectPromises = true;
+      var expectedResponse = 1234;
+      return cr.sendWithPromise(CHROME_SEND_NAME, expectedResponse).then(
+          function() {
+            assertNotReached('should have rejected promise');
+          },
+          function(error) {
+            assertEquals(expectedResponse, error);
+          });
     });
   });
 

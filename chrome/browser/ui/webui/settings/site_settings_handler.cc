@@ -145,7 +145,7 @@ void SiteSettingsHandler::HandleGetDefaultValueForContentType(
   else
       enabled = setting != CONTENT_SETTING_BLOCK;
 
-  CallJavascriptCallback(*callback_id, base::FundamentalValue(enabled));
+  ResolveJavascriptCallback(*callback_id, base::FundamentalValue(enabled));
 }
 
 }  // namespace settings

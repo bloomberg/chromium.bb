@@ -29,9 +29,16 @@ class SettingsPageUIHandler : public content::WebUIMessageHandler {
 
  protected:
   // Helper method for responding to JS requests initiated with
-  // cr.sendWithPromise().
-  void CallJavascriptCallback(const base::Value& callback_id,
-                              const base::Value& response);
+  // cr.sendWithPromise(), for the case where the returned promise should be
+  // resolved (request succeeded).
+  void ResolveJavascriptCallback(const base::Value& callback_id,
+                                 const base::Value& response);
+
+  // Helper method for responding to JS requests initiated with
+  // cr.sendWithPromise(), for the case where the returned promise should be
+  // rejected (request failed).
+  void RejectJavascriptCallback(const base::Value& callback_id,
+                                const base::Value& response);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SettingsPageUIHandler);
