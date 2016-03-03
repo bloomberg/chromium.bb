@@ -62,7 +62,7 @@ FeatureMode GetOfflinePageFeatureMode() {
                        base::CompareCase::SENSITIVE)) {
     return FeatureMode::ENABLED_AS_SAVED_PAGES;
   }
-  return FeatureMode::DISABLED;
+  return FeatureMode::ENABLED_AS_BOOKMARKS;
 }
 
 bool IsOfflinePagesEnabled() {

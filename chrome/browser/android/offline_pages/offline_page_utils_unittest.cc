@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/callback.h"
-#include "base/command_line.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -19,7 +18,6 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/offline_pages/offline_page_model.h"
-#include "components/offline_pages/offline_page_switches.h"
 #include "components/offline_pages/offline_page_test_archiver.h"
 #include "components/offline_pages/offline_page_test_store.h"
 #include "net/base/filename_util.h"
@@ -87,10 +85,6 @@ OfflinePageUtilsTest::OfflinePageUtilsTest()
 OfflinePageUtilsTest::~OfflinePageUtilsTest() {}
 
 void OfflinePageUtilsTest::SetUp() {
-  // Enable offline pages feature.
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableOfflinePages);
-
   // Set up the factory for testing.
   OfflinePageModelFactory::GetInstance()->SetTestingFactoryAndUse(
       &profile_, BuildTestOfflinePageModel);
