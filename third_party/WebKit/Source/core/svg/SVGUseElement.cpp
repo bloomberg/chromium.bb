@@ -356,19 +356,16 @@ void SVGUseElement::buildPendingResource()
     ASSERT(!m_needsShadowTreeRecreation);
 }
 
-static PassRefPtrWillBeRawPtr<Node> cloneNodeAndAssociate(Node& toClone)
+static void associateCorrespondingElements(SVGElement& targetRoot, SVGElement& instanceRoot)
 {
-    RefPtrWillBeRawPtr<Node> clone = toClone.cloneNode(false);
-    if (!clone->isSVGElement())
-        return clone.release();
-
-    SVGElement& svgElement = toSVGElement(toClone);
-    ASSERT(!svgElement.correspondingElement());
-    toSVGElement(clone.get())->setCorrespondingElement(&svgElement);
-    TrackExceptionState exceptionState;
-    for (RefPtrWillBeRawPtr<Node> node = toClone.firstChild(); node && !exceptionState.hadException(); node = node->nextSibling())
-        clone->appendChild(cloneNodeAndAssociate(*node), exceptionState);
-    return clone.release();
+    auto targetRange = Traversal<SVGElement>::inclusiveDescendantsOf(targetRoot);
+    auto targetIterator = targetRange.begin();
+    for (SVGElement& instance : Traversal<SVGElement>::inclusiveDescendantsOf(instanceRoot)) {
+        ASSERT(!instance.correspondingElement());
+        instance.setCorrespondingElement(&*targetIterator);
+        ++targetIterator;
+    }
+    ASSERT(!(targetIterator != targetRange.end()));
 }
 
 void SVGUseElement::buildShadowAndInstanceTree(SVGElement& target)
@@ -629,13 +626,13 @@ bool SVGUseElement::expandUseElementsInShadowTree()
         moveChildrenToReplacementElement(*use, *cloneParent);
 
         if (target) {
-            RefPtrWillBeRawPtr<Node> newChild = cloneNodeAndAssociate(*target);
-            ASSERT(newChild->isSVGElement());
-            transferUseWidthAndHeightIfNeeded(*use, toSVGElement(*newChild), *target);
-            cloneParent->appendChild(newChild.release());
+            RefPtrWillBeRawPtr<Element> instanceRoot = target->cloneElementWithChildren();
+            ASSERT(instanceRoot->isSVGElement());
+            associateCorrespondingElements(*target, toSVGElement(*instanceRoot));
+            transferUseWidthAndHeightIfNeeded(*use, toSVGElement(*instanceRoot), *target);
+            removeDisallowedElementsFromSubtree(toSVGElement(*instanceRoot));
+            cloneParent->appendChild(instanceRoot.release());
         }
-
-        removeDisallowedElementsFromSubtree(*cloneParent);
 
         RefPtrWillBeRawPtr<SVGElement> replacingElement(cloneParent.get());
 
