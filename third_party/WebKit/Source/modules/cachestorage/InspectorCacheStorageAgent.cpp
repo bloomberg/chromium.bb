@@ -13,6 +13,7 @@
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebPassOwnPtr.h"
+#include "public/platform/WebSecurityOrigin.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/WebVector.h"
@@ -76,8 +77,7 @@ PassOwnPtr<WebServiceWorkerCacheStorage> assertCacheStorage(ErrorString* errorSt
         return nullptr;
     }
 
-    String identifier = createDatabaseIdentifierFromSecurityOrigin(secOrigin.get());
-    OwnPtr<WebServiceWorkerCacheStorage> cache = adoptPtr(Platform::current()->cacheStorage(identifier));
+    OwnPtr<WebServiceWorkerCacheStorage> cache = adoptPtr(Platform::current()->cacheStorage(WebSecurityOrigin(secOrigin)));
     if (!cache)
         *errorString = "Could not find cache storage.";
     return cache.release();

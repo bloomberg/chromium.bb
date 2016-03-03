@@ -11,8 +11,8 @@
 #include "modules/cachestorage/CacheStorage.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
-#include "platform/weborigin/DatabaseIdentifier.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebSecurityOrigin.h"
 
 namespace blink {
 
@@ -52,9 +52,7 @@ public:
         }
 
         if (!m_caches) {
-            String identifier = createDatabaseIdentifierFromSecurityOrigin(context->securityOrigin());
-            ASSERT(!identifier.isEmpty());
-            m_caches = CacheStorage::create(GlobalFetch::ScopedFetcher::from(fetchingScope), Platform::current()->cacheStorage(identifier));
+            m_caches = CacheStorage::create(GlobalFetch::ScopedFetcher::from(fetchingScope), Platform::current()->cacheStorage(WebSecurityOrigin(context->securityOrigin())));
         }
         return m_caches;
     }

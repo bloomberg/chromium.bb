@@ -232,7 +232,7 @@ public:
     // Cache Storage ----------------------------------------------------------
 
     // The caller is responsible for deleting the returned object.
-    virtual WebServiceWorkerCacheStorage* cacheStorage(const WebString& originIdentifier) { return nullptr; }
+    virtual WebServiceWorkerCacheStorage* cacheStorage(const WebSecurityOrigin&) { return nullptr; }
 
     // Gamepad -------------------------------------------------------------
 

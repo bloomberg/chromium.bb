@@ -121,7 +121,7 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   blink::WebScrollbarBehavior* scrollbarBehavior() override;
   blink::WebIDBFactory* idbFactory() override;
   blink::WebServiceWorkerCacheStorage* cacheStorage(
-      const blink::WebString& origin_identifier) override;
+      const blink::WebSecurityOrigin& security_origin) override;
   blink::WebFileSystem* fileSystem() override;
   bool canAccelerate2dCanvas() override;
   bool isThreadedCompositingEnabled() override;

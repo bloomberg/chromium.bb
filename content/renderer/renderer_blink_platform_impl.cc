@@ -435,9 +435,8 @@ WebIDBFactory* RendererBlinkPlatformImpl::idbFactory() {
 //------------------------------------------------------------------------------
 
 blink::WebServiceWorkerCacheStorage* RendererBlinkPlatformImpl::cacheStorage(
-    const WebString& origin_identifier) {
-  const GURL origin =
-      storage::GetOriginFromIdentifier(origin_identifier.utf8());
+    const blink::WebSecurityOrigin& security_origin) {
+  const GURL origin = blink::WebStringToGURL(security_origin.toString());
   return new WebServiceWorkerCacheStorageImpl(thread_safe_sender_.get(),
                                               origin);
 }
