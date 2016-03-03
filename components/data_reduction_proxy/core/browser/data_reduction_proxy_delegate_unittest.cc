@@ -417,9 +417,6 @@ TEST_F(DataReductionProxyDelegateTest, HTTPRequests) {
           "http://www.example.com/", true, false, true,
       },
       {
-          "http://www.example.com/", false, false, false,
-      },
-      {
           "https://www.example.com/", false, true, false,
       },
       {
@@ -437,6 +434,8 @@ TEST_F(DataReductionProxyDelegateTest, HTTPRequests) {
   };
 
   for (size_t i = 0; i < arraysize(tests); ++i) {
+    ASSERT_TRUE(tests[i].use_direct_proxy || tests[i].enabled_by_user);
+    ASSERT_TRUE(tests[i].enabled_by_user || !tests[i].expect_histogram);
     base::HistogramTester histogram_tester;
     GURL url(tests[i].url);
 

@@ -120,9 +120,10 @@ void OnResolveProxyHandler(const GURL& url,
          !config->IsDataReductionProxy(result->proxy_server().host_port_pair(),
                                        NULL));
   bool data_saver_proxy_used = true;
-  if (!result->proxy_server().is_direct() || result->proxy_list().size() != 1 ||
-      url.SchemeIsWSOrWSS())
+  if (result->is_empty() || !result->proxy_server().is_direct() ||
+      result->proxy_list().size() != 1 || url.SchemeIsWSOrWSS()) {
     return;
+  }
 
   if (data_reduction_proxy_config.is_valid()) {
     net::ProxyInfo data_reduction_proxy_info;
