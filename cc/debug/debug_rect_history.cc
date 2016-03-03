@@ -9,6 +9,7 @@
 #include "cc/base/math_util.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/layers/layer_iterator.h"
+#include "cc/layers/layer_list_iterator.h"
 #include "cc/layers/layer_utils.h"
 #include "cc/layers/render_surface_impl.h"
 #include "cc/trees/damage_tracker.h"
@@ -65,23 +66,22 @@ void DebugRectHistory::SaveDebugRectsForCurrentFrame(
     SaveLayerAnimationBoundsRects(render_surface_layer_list);
 }
 
-void DebugRectHistory::SavePaintRects(LayerImpl* layer) {
+void DebugRectHistory::SavePaintRects(LayerImpl* root_layer) {
   // We would like to visualize where any layer's paint rect (update rect) has
   // changed, regardless of whether this layer is skipped for actual drawing or
-  // not. Therefore we traverse recursively over all layers, not just the render
-  // surface list.
+  // not. Therefore we traverse over all layers, not just the render surface
+  // list.
+  for (auto* layer : *root_layer->layer_tree_impl()) {
+    Region invalidation_region = layer->GetInvalidationRegion();
+    if (invalidation_region.IsEmpty() || !layer->DrawsContent())
+      continue;
 
-  Region invalidation_region = layer->GetInvalidationRegion();
-  if (!invalidation_region.IsEmpty() && layer->DrawsContent()) {
     for (Region::Iterator it(invalidation_region); it.has_rect(); it.next()) {
       debug_rects_.push_back(DebugRect(
           PAINT_RECT_TYPE, MathUtil::MapEnclosingClippedRect(
                                layer->ScreenSpaceTransform(), it.rect())));
     }
   }
-
-  for (unsigned i = 0; i < layer->children().size(); ++i)
-    SavePaintRects(layer->children()[i].get());
 }
 
 void DebugRectHistory::SavePropertyChangedRects(
