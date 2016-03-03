@@ -1,0 +1,109 @@
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x174
+  LayoutBlockFlow {HTML} at (0,0) size 800x174
+    LayoutBlockFlow {BODY} at (8,8) size 784x158
+      LayoutBlockFlow {DIV} at (0,0) size 784x18
+        LayoutText {#text} at (0,0) size 610x18
+          text run at (0,0) width 610: "When the caret is scrolled out, on starting typing it must be brought to the center of the control."
+      LayoutBlockFlow (anonymous) at (0,18) size 784x140
+        LayoutText {#text} at (0,0) size 0x0
+        LayoutText {#text} at (0,0) size 0x0
+layer at (8,26) size 81x136 clip at (9,27) size 64x134 scrollY 98.00 scrollHeight 420
+  LayoutTextControl {TEXTAREA} at (0,0) size 81x136 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+    LayoutBlockFlow {DIV} at (3,3) size 60x416
+      LayoutText {#text} at (0,0) size 13x13
+        text run at (0,0) width 13: "00"
+      LayoutBR {BR} at (12,0) size 1x13
+      LayoutText {#text} at (0,13) size 13x13
+        text run at (0,13) width 13: "01"
+      LayoutBR {BR} at (12,13) size 1x13
+      LayoutText {#text} at (0,26) size 13x13
+        text run at (0,26) width 13: "02"
+      LayoutBR {BR} at (12,26) size 1x13
+      LayoutText {#text} at (0,39) size 13x13
+        text run at (0,39) width 13: "03"
+      LayoutBR {BR} at (12,39) size 1x13
+      LayoutText {#text} at (0,52) size 13x13
+        text run at (0,52) width 13: "04"
+      LayoutBR {BR} at (12,52) size 1x13
+      LayoutText {#text} at (0,65) size 13x13
+        text run at (0,65) width 13: "05"
+      LayoutBR {BR} at (12,65) size 1x13
+      LayoutText {#text} at (0,78) size 13x13
+        text run at (0,78) width 13: "06"
+      LayoutBR {BR} at (12,78) size 1x13
+      LayoutText {#text} at (0,91) size 13x13
+        text run at (0,91) width 13: "07"
+      LayoutBR {BR} at (12,91) size 1x13
+      LayoutText {#text} at (0,104) size 13x13
+        text run at (0,104) width 13: "08"
+      LayoutBR {BR} at (12,104) size 1x13
+      LayoutText {#text} at (0,117) size 13x13
+        text run at (0,117) width 13: "09"
+      LayoutBR {BR} at (12,117) size 1x13
+      LayoutText {#text} at (0,130) size 13x13
+        text run at (0,130) width 13: "10"
+      LayoutBR {BR} at (12,130) size 1x13
+      LayoutText {#text} at (0,143) size 13x13
+        text run at (0,143) width 13: "11"
+      LayoutBR {BR} at (12,143) size 1x13
+      LayoutText {#text} at (0,156) size 20x13
+        text run at (0,156) width 20: ">12"
+      LayoutBR {BR} at (19,156) size 1x13
+      LayoutText {#text} at (0,169) size 13x13
+        text run at (0,169) width 13: "13"
+      LayoutBR {BR} at (12,169) size 1x13
+      LayoutText {#text} at (0,182) size 13x13
+        text run at (0,182) width 13: "14"
+      LayoutBR {BR} at (12,182) size 1x13
+      LayoutText {#text} at (0,195) size 13x13
+        text run at (0,195) width 13: "15"
+      LayoutBR {BR} at (12,195) size 1x13
+      LayoutText {#text} at (0,208) size 13x13
+        text run at (0,208) width 13: "16"
+      LayoutBR {BR} at (12,208) size 1x13
+      LayoutText {#text} at (0,221) size 13x13
+        text run at (0,221) width 13: "17"
+      LayoutBR {BR} at (12,221) size 1x13
+      LayoutText {#text} at (0,234) size 13x13
+        text run at (0,234) width 13: "18"
+      LayoutBR {BR} at (12,234) size 1x13
+      LayoutText {#text} at (0,247) size 13x13
+        text run at (0,247) width 13: "19"
+      LayoutBR {BR} at (12,247) size 1x13
+      LayoutText {#text} at (0,260) size 13x13
+        text run at (0,260) width 13: "20"
+      LayoutBR {BR} at (12,260) size 1x13
+      LayoutText {#text} at (0,273) size 13x13
+        text run at (0,273) width 13: "21"
+      LayoutBR {BR} at (12,273) size 1x13
+      LayoutText {#text} at (0,286) size 13x13
+        text run at (0,286) width 13: "22"
+      LayoutBR {BR} at (12,286) size 1x13
+      LayoutText {#text} at (0,299) size 13x13
+        text run at (0,299) width 13: "23"
+      LayoutBR {BR} at (12,299) size 1x13
+      LayoutText {#text} at (0,312) size 13x13
+        text run at (0,312) width 13: "24"
+      LayoutBR {BR} at (12,312) size 1x13
+      LayoutText {#text} at (0,325) size 13x13
+        text run at (0,325) width 13: "25"
+      LayoutBR {BR} at (12,325) size 1x13
+      LayoutText {#text} at (0,338) size 13x13
+        text run at (0,338) width 13: "26"
+      LayoutBR {BR} at (12,338) size 1x13
+      LayoutText {#text} at (0,351) size 13x13
+        text run at (0,351) width 13: "27"
+      LayoutBR {BR} at (12,351) size 1x13
+      LayoutText {#text} at (0,364) size 13x13
+        text run at (0,364) width 13: "28"
+      LayoutBR {BR} at (12,364) size 1x13
+      LayoutText {#text} at (0,377) size 13x13
+        text run at (0,377) width 13: "29"
+      LayoutBR {BR} at (12,377) size 1x13
+      LayoutText {#text} at (0,390) size 13x13
+        text run at (0,390) width 13: "30"
+      LayoutBR {BR} at (12,390) size 1x13
+      LayoutBR {BR} at (0,403) size 0x13
+caret: position 1 of child 24 {#text} of child 0 {DIV} of {#document-fragment} of child 3 {TEXTAREA} of body

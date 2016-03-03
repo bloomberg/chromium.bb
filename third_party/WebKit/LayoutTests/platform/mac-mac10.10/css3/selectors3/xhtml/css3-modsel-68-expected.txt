@@ -1,0 +1,19 @@
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x73
+  LayoutBlockFlow {html} at (0,0) size 800x73
+    LayoutBlockFlow {body} at (8,16) size 784x41
+      LayoutBlockFlow {p} at (0,0) size 784x41
+        LayoutButton {button} at (0,0) size 228.25x22 [color=#7F7F7F] [bgcolor=#00FF00] [border: (2px outset #C0C0C0)]
+          LayoutBlockFlow (anonymous) at (8,4) size 212.25x13
+            LayoutText {#text} at (0,0) size 213x13
+              text run at (0,0) width 213: "A button (disabled) with green background"
+        LayoutText {#text} at (228,1) size 5x18
+          text run at (228,1) width 5: " "
+        LayoutBR {br} at (0,0) size 0x0
+        LayoutTextControl {input} at (0,22) size 227x19 [color=#545454] [bgcolor=#00FF00] [border: (2px inset #EEEEEE)]
+        LayoutText {#text} at (0,0) size 0x0
+layer at (11,41) size 221x13 scrollWidth 222
+  LayoutBlockFlow {div} at (3,3) size 221x13
+    LayoutText {#text} at (0,0) size 222x13
+      text run at (0,0) width 222: "a text area (disabled) with green background"

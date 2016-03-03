@@ -1,0 +1,31 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [13, 218, 190, 350],
+        [13, 124, 190, 351],
+        [13, 124, 190, 351],
+        [13, 121, 190, 351],
+        [8, 213, 200, 355],
+        [8, 119, 200, 356],
+        [8, 119, 200, 356],
+        [8, 119, 200, 94],
+        [8, 116, 200, 356],
+        [8, 116, 200, 4]
+      ],
+      "paintInvalidationClients": [
+        "LayoutBlockFlow DIV id='left'",
+        "LayoutBlockFlow DIV id='content'",
+        "LayoutBlockFlow DIV",
+        "LayoutBlockFlow DIV id='left'",
+        "LayoutBlockFlow DIV id='content'",
+        "LayoutBlockFlow DIV"
+      ]
+    }
+  ]
+}
+

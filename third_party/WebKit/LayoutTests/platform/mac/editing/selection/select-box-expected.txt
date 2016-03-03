@@ -64,8 +64,8 @@ layer at (0,0) size 800x600
             text run at (0,0) width 73: "select box: "
           LayoutMenuList {SELECT} at (72.86,1) size 38x18 [bgcolor=#F8F8F8]
             LayoutBlockFlow (anonymous) at (0,0) size 38x18
-              LayoutText (anonymous) at (8,2) size 7x13
-                text run at (8,2) width 7: "1"
+              LayoutText (anonymous) at (8,2) size 6x13
+                text run at (8,2) width 6: "1"
           LayoutText {#text} at (110,0) size 68x18
             text run at (110,0) width 68: " the end ..."
 caret: position 1 of child 0 {#text} of child 1 {DIV} of child 3 {DIV} of body

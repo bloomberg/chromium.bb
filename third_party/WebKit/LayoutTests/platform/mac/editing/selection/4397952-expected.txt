@@ -11,12 +11,12 @@ layer at (0,0) size 800x600
           text run at (0,0) width 271: "This tests caret movement across buttons. "
           text run at (270,0) width 308: "The caret should be just after the second button."
       LayoutBlockFlow {DIV} at (0,34) size 784x18
-        LayoutButton {INPUT} at (0,0) size 35.25x18 [bgcolor=#C0C0C0]
-          LayoutBlockFlow (anonymous) at (8,2) size 19.25x13
+        LayoutButton {INPUT} at (0,0) size 35.30x18 [bgcolor=#C0C0C0]
+          LayoutBlockFlow (anonymous) at (8,2) size 19.30x13
             LayoutText {#text} at (0,0) size 20x13
               text run at (0,0) width 20: "Foo"
-        LayoutButton {INPUT} at (35.25,0) size 33.39x18 [bgcolor=#C0C0C0]
-          LayoutBlockFlow (anonymous) at (8,2) size 17.39x13
+        LayoutButton {INPUT} at (35.30,0) size 33.50x18 [bgcolor=#C0C0C0]
+          LayoutBlockFlow (anonymous) at (8,2) size 17.50x13
             LayoutText {#text} at (0,0) size 18x13
               text run at (0,0) width 18: "Bar"
         LayoutText {#text} at (0,0) size 0x0
