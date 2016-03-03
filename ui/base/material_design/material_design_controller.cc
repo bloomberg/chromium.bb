@@ -44,6 +44,8 @@ MaterialDesignController::Mode MaterialDesignController::DefaultMode() {
     return Mode::MATERIAL_HYBRID;
   }
   return Mode::MATERIAL_NORMAL;
+#elif defined(OS_LINUX)
+  return Mode::MATERIAL_NORMAL;
 #else
   return Mode::NON_MATERIAL;
 #endif  // defined(OS_CHROMEOS)
