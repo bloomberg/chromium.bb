@@ -85,8 +85,11 @@ class PipelineIntegrationTestBase {
   bool Suspend();
   bool Resume(base::TimeDelta seek_time);
   void Stop();
-  bool WaitUntilCurrentTimeIsAfter(const base::TimeDelta& wait_time);
 
+  // Fails the test with |status|.
+  void FailTest(PipelineStatus status);
+
+  bool WaitUntilCurrentTimeIsAfter(const base::TimeDelta& wait_time);
   bool WaitUntilOnEnded();
   PipelineStatus WaitUntilEndedOrError();
 
@@ -104,6 +107,13 @@ class PipelineIntegrationTestBase {
   // Returns the time taken to render the complete audio file.
   // Pipeline must have been started with clockless playback enabled.
   base::TimeDelta GetAudioTime();
+
+  // Sets a callback to handle EME "encrypted" event. Must be called to test
+  // potentially encrypted media.
+  void set_encrypted_media_init_data_cb(
+      const Demuxer::EncryptedMediaInitDataCB& encrypted_media_init_data_cb) {
+    encrypted_media_init_data_cb_ = encrypted_media_init_data_cb;
+  }
 
  protected:
   base::MessageLoop message_loop_;
@@ -137,10 +147,6 @@ class PipelineIntegrationTestBase {
   void OnStatusCallback(PipelineStatus status);
   void DemuxerEncryptedMediaInitDataCB(EmeInitDataType type,
                                        const std::vector<uint8_t>& init_data);
-  void set_encrypted_media_init_data_cb(
-      const Demuxer::EncryptedMediaInitDataCB& encrypted_media_init_data_cb) {
-    encrypted_media_init_data_cb_ = encrypted_media_init_data_cb;
-  }
 
   void OnEnded();
   void OnError(PipelineStatus status);

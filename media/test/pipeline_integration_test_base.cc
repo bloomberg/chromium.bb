@@ -228,6 +228,11 @@ void PipelineIntegrationTestBase::Stop() {
   message_loop_.Run();
 }
 
+void PipelineIntegrationTestBase::FailTest(PipelineStatus status) {
+  DCHECK_NE(PIPELINE_OK, status);
+  OnError(status);
+}
+
 void PipelineIntegrationTestBase::QuitAfterCurrentTimeTask(
     const base::TimeDelta& quit_time) {
   if (pipeline_->GetMediaTime() >= quit_time ||
