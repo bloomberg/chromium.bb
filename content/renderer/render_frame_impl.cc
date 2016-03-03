@@ -2872,23 +2872,29 @@ void RenderFrameImpl::willSendSubmitEvent(const blink::WebFormElement& form) {
 }
 
 void RenderFrameImpl::willSubmitForm(const blink::WebFormElement& form) {
-  DocumentState* document_state =
-      DocumentState::FromDataSource(frame_->provisionalDataSource());
-  NavigationStateImpl* navigation_state =
-      static_cast<NavigationStateImpl*>(document_state->navigation_state());
-  InternalDocumentStateData* internal_data =
-      InternalDocumentStateData::FromDocumentState(document_state);
+  // With PlzNavigate-enabled, this will be called before a DataSource has been
+  // set-up.
+  // TODO(clamy): make sure the internal state is properly updated at some
+  // point in the navigation.
+  if (!IsBrowserSideNavigationEnabled()) {
+    DocumentState* document_state =
+        DocumentState::FromDataSource(frame_->provisionalDataSource());
+    NavigationStateImpl* navigation_state =
+        static_cast<NavigationStateImpl*>(document_state->navigation_state());
+    InternalDocumentStateData* internal_data =
+        InternalDocumentStateData::FromDocumentState(document_state);
 
-  if (ui::PageTransitionCoreTypeIs(navigation_state->GetTransitionType(),
-                                   ui::PAGE_TRANSITION_LINK)) {
-    navigation_state->set_transition_type(ui::PAGE_TRANSITION_FORM_SUBMIT);
+    if (ui::PageTransitionCoreTypeIs(navigation_state->GetTransitionType(),
+                                     ui::PAGE_TRANSITION_LINK)) {
+      navigation_state->set_transition_type(ui::PAGE_TRANSITION_FORM_SUBMIT);
+    }
+
+    // Save these to be processed when the ensuing navigation is committed.
+    WebSearchableFormData web_searchable_form_data(form);
+    internal_data->set_searchable_form_url(web_searchable_form_data.url());
+    internal_data->set_searchable_form_encoding(
+        web_searchable_form_data.encoding().utf8());
   }
-
-  // Save these to be processed when the ensuing navigation is committed.
-  WebSearchableFormData web_searchable_form_data(form);
-  internal_data->set_searchable_form_url(web_searchable_form_data.url());
-  internal_data->set_searchable_form_encoding(
-      web_searchable_form_data.encoding().utf8());
 
   FOR_EACH_OBSERVER(RenderFrameObserver, observers_, WillSubmitForm(form));
 }
