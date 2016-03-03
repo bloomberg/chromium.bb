@@ -536,8 +536,7 @@ PassRefPtr<ShapeResult> HarfBuzzShaper::shapeResult()
         0,
         USCRIPT_INVALID_CODE,
         OrientationIterator::OrientationInvalid,
-        SmallCapsIterator::SmallCapsSameCase,
-        FontFallbackPriority::Invalid };
+        SmallCapsIterator::SmallCapsSameCase };
     RunSegmenter runSegmenter(
         m_normalizedBuffer.get(),
         m_normalizedBufferLength,
@@ -549,9 +548,7 @@ PassRefPtr<ShapeResult> HarfBuzzShaper::shapeResult()
     // TODO: Check whether this treatAsZerowidthspace from the previous script
     // segmentation plays a role here, does the new scriptRuniterator handle that correctly?
     while (runSegmenter.consume(&segmentRange)) {
-        RefPtr<FontFallbackIterator> fallbackIterator =
-            m_font->createFontFallbackIterator(
-            segmentRange.fontFallbackPriority);
+        RefPtr<FontFallbackIterator> fallbackIterator = m_font->createFontFallbackIterator();
 
         appendToHolesQueue(HolesQueueNextFont, 0, 0);
         appendToHolesQueue(HolesQueueRange, segmentRange.start, segmentRange.end - segmentRange.start);

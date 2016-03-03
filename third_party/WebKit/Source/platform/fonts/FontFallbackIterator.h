@@ -6,7 +6,6 @@
 #define FontFallbackIterator_h
 
 #include "platform/fonts/FontDataRange.h"
-#include "platform/fonts/FontFallbackPriority.h"
 #include "wtf/HashMap.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -28,8 +27,7 @@ class FontFallbackIterator : public RefCounted<FontFallbackIterator> {
     WTF_MAKE_NONCOPYABLE(FontFallbackIterator);
 
 public:
-    static PassRefPtr<FontFallbackIterator> create(const FontDescription&, PassRefPtr<FontFallbackList>,
-        FontFallbackPriority);
+    static PassRefPtr<FontFallbackIterator> create(const FontDescription&, PassRefPtr<FontFallbackList>);
 
     // Returns whether a list of all remaining characters to be shaped is
     // needed.  Needed by the FontfallbackIterator in order to check whether a
@@ -44,13 +42,11 @@ public:
     const FontDataRange next(const Vector<UChar32>& hintList);
 
 private:
-    FontFallbackIterator(const FontDescription&, PassRefPtr<FontFallbackList>,
-        FontFallbackPriority);
+    FontFallbackIterator(const FontDescription&, PassRefPtr<FontFallbackList>);
     bool rangeContributesForHint(const Vector<UChar32> hintList, const FontDataRange&);
     bool alreadyLoadingRangeForHintChar(UChar32 hintChar);
     void willUseRange(const AtomicString& family, const FontDataRange&);
 
-    const PassRefPtr<SimpleFontData> fallbackPriorityFont(UChar32 hint);
     const PassRefPtr<SimpleFontData> uniqueSystemFontForHint(UChar32 hint);
 
     const FontDescription& m_fontDescription;
@@ -59,7 +55,6 @@ private:
     unsigned m_segmentedIndex;
 
     enum FallbackStage {
-        FallbackPriorityFonts,
         FontGroupFonts,
         SegmentedFace,
         PreferencesFonts,
@@ -70,7 +65,6 @@ private:
     FallbackStage m_fallbackStage;
     HashMap<UChar32, RefPtr<SimpleFontData>> m_visitedSystemFonts;
     Vector<FontDataRange> m_loadingCustomFontForRanges;
-    FontFallbackPriority m_fontFallbackPriority;
 };
 
 } // namespace blink

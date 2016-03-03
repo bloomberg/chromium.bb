@@ -508,12 +508,9 @@ static inline GlyphData glyphDataForNonCJKCharacterWithGlyphOrientation(UChar32 
     return data;
 }
 
-PassRefPtr<FontFallbackIterator> Font::createFontFallbackIterator(
-    FontFallbackPriority fallbackPriority) const
+PassRefPtr<FontFallbackIterator> Font::createFontFallbackIterator() const
 {
-    return FontFallbackIterator::create(m_fontDescription,
-        m_fontFallbackList,
-        fallbackPriority);
+    return FontFallbackIterator::create(m_fontDescription, m_fontFallbackList);
 }
 
 GlyphData Font::glyphDataForCharacter(UChar32& c, bool mirror, bool normalizeSpace, FontDataVariant variant) const
