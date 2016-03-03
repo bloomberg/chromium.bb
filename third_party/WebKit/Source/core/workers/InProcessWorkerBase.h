@@ -6,7 +6,7 @@
 #define InProcessWorkerBase_h
 
 #include "core/CoreExport.h"
-#include "core/dom/ContextLifecycleObserver.h"
+#include "core/dom/ActiveDOMObject.h"
 #include "core/dom/MessagePort.h"
 #include "core/events/EventListener.h"
 #include "core/events/EventTarget.h"
@@ -33,10 +33,8 @@ public:
     void postMessage(ExecutionContext*, PassRefPtr<SerializedScriptValue> message, const MessagePortArray*, ExceptionState&);
     void terminate();
 
-    // Inherit from ContextLifecycleObserver.
-    void contextDestroyed() override;
-
-    // Inherit from ScriptWrappable.
+    // ActiveDOMObject
+    void stop() override;
     bool hasPendingActivity() const override;
 
     ContentSecurityPolicy* contentSecurityPolicy();

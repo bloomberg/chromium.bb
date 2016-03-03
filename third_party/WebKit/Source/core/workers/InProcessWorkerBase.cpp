@@ -44,6 +44,8 @@ void InProcessWorkerBase::postMessage(ExecutionContext* context, PassRefPtr<Seri
 
 bool InProcessWorkerBase::initialize(ExecutionContext* context, const String& url, ExceptionState& exceptionState)
 {
+    suspendIfNeeded();
+
     KURL scriptURL = resolveURL(url, exceptionState);
     if (scriptURL.isEmpty())
         return false;
@@ -67,7 +69,7 @@ void InProcessWorkerBase::terminate()
         m_contextProxy->terminateWorkerGlobalScope();
 }
 
-void InProcessWorkerBase::contextDestroyed()
+void InProcessWorkerBase::stop()
 {
     terminate();
 }

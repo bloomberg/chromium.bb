@@ -67,6 +67,8 @@ SharedWorker* SharedWorker::create(ExecutionContext* context, const String& url,
     OwnPtr<WebMessagePortChannel> remotePort = channel->port2()->disentangle();
     ASSERT(remotePort);
 
+    worker->suspendIfNeeded();
+
     // We don't currently support nested workers, so workers can only be created from documents.
     Document* document = toDocument(context);
     if (!document->securityOrigin()->canAccessSharedWorkers()) {
