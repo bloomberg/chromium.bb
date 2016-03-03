@@ -74,7 +74,6 @@
             ],
             'include_dirs': [
                 '<(angle_path)/include',
-                '<(DEPTH)/third_party/skia/include/utils',
             ],
             'defines': [
                 'BLINK_WEB_IMPLEMENTATION=1',

@@ -31,8 +31,6 @@ component("web") {
     "//v8",
   ]
 
-  include_dirs = [ "//third_party/skia/include/utils" ]
-
   configs += [
     "//third_party/WebKit/Source:config",
     "//third_party/WebKit/Source:inside_blink",
