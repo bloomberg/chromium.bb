@@ -686,8 +686,15 @@ bool XkbKeyboardLayoutEngine::SetCurrentLayoutByName(
       true);
   return true;
 #else
-  // NOTIMPLEMENTED();
-  return false;
+  // Required by ozone-wayland (at least) for non ChromeOS builds. See
+  // http://xkbcommon.org/doc/current/md_doc_quick-guide.html for further info.
+  xkb_keymap* keymap = xkb_keymap_new_from_string(
+      xkb_context_.get(), layout_name.c_str(), XKB_KEYMAP_FORMAT_TEXT_V1,
+      XKB_KEYMAP_COMPILE_NO_FLAGS);
+  if (!keymap)
+    return false;
+  SetKeymap(keymap);
+  return true;
 #endif  // defined(OS_CHROMEOS)
 }
 
