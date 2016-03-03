@@ -20,6 +20,10 @@ import path_util
 
 import print_style
 
+
+HISTOGRAMS_PATH = path_util.GetHistogramsFile()
+
+
 class UserError(Exception):
   def __init__(self, message):
     Exception.__init__(self, message)
@@ -142,15 +146,12 @@ def UpdateHistogramDefinitions(histogram_enum_name, source_enum_values,
     enum_node.appendChild(new_item_nodes[value])
 
 
-def UpdateHistogramFromDict(histogram_enum_name, source_enum_values,
-                            source_enum_path):
-  """Updates |histogram_enum_name| enum in histograms.xml file with values
-  from the {value: 'key'} dictionary |source_enum_values|. A comment is added
-  to histograms.xml citing that the values in |histogram_enum_name| were
-  sourced from |source_enum_path|.
+def _GetOldAndUpdatedXml(histogram_enum_name, source_enum_values,
+                         source_enum_path):
+  """Reads old histogram from |histogram_enum_name| from |HISTOGRAMS_PATH|, and
+  calculates new histogram from |source_enum_values| from |source_enum_path|,
+  and returns both in XML format.
   """
-  HISTOGRAMS_PATH = path_util.GetHistogramsFile()
-
   Log('Reading existing histograms from "{0}".'.format(HISTOGRAMS_PATH))
   with open(HISTOGRAMS_PATH, 'rb') as f:
     histograms_doc = minidom.parse(f)
@@ -161,8 +162,41 @@ def UpdateHistogramFromDict(histogram_enum_name, source_enum_values,
   UpdateHistogramDefinitions(histogram_enum_name, source_enum_values,
                              source_enum_path, histograms_doc)
 
-  Log('Writing out new histograms file.')
   new_xml = print_style.GetPrintStyle().PrettyPrintNode(histograms_doc)
+  return (xml, new_xml)
+
+
+def HistogramNeedsUpdate(histogram_enum_name, source_enum_path, start_marker,
+                         end_marker):
+  """Reads a C++ enum from a .h file and does a dry run of updating
+  histograms.xml to match. Returns true if the histograms.xml file would be
+  changed.
+
+  Args:
+      histogram_enum_name: The name of the XML <enum> attribute to update.
+      source_enum_path: A unix-style path, relative to src/, giving
+          the C++ header file from which to read the enum.
+      start_marker: A regular expression that matches the start of the C++ enum.
+      end_marker: A regular expression that matches the end of the C++ enum.
+  """
+  Log('Reading histogram enum definition from "{0}".'.format(source_enum_path))
+  source_enum_values = ReadHistogramValues(source_enum_path, start_marker,
+                                           end_marker)
+
+  (xml, new_xml) = _GetOldAndUpdatedXml(histogram_enum_name, source_enum_values,
+                                        source_enum_path)
+  return xml != new_xml
+
+
+def UpdateHistogramFromDict(histogram_enum_name, source_enum_values,
+                            source_enum_path):
+  """Updates |histogram_enum_name| enum in histograms.xml file with values
+  from the {value: 'key'} dictionary |source_enum_values|. A comment is added
+  to histograms.xml citing that the values in |histogram_enum_name| were
+  sourced from |source_enum_path|.
+  """
+  (xml, new_xml) = _GetOldAndUpdatedXml(histogram_enum_name, source_enum_values,
+                                        source_enum_path)
   if not diff_util.PromptUserToAcceptDiff(
       xml, new_xml, 'Is the updated version acceptable?'):
     Log('Cancelled.')
