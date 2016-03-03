@@ -195,8 +195,8 @@ bool ImageBuffer::copyToPlatformTexture(WebGraphicsContext3D* context, Platform3
 
     ASSERT(textureImage->isTextureBacked()); // isAccelerated() check above should guarantee this
     // Get the texture ID, flushing pending operations if needed.
-    Platform3DObject textureId = skia::GrBackendObjectToGrGLTextureInfo(textureImage->getTextureHandle(true))->fID;
-    if (!textureId)
+    const GrGLTextureInfo* textureInfo = skia::GrBackendObjectToGrGLTextureInfo(textureImage->getTextureHandle(true));
+    if (!textureInfo || !textureInfo->fID)
         return false;
 
     OwnPtr<WebGraphicsContext3DProvider> provider = adoptPtr(Platform::current()->createSharedOffscreenGraphicsContext3DProvider());
@@ -210,7 +210,7 @@ bool ImageBuffer::copyToPlatformTexture(WebGraphicsContext3D* context, Platform3
 
     // Contexts may be in a different share group. We must transfer the texture through a mailbox first
     sharedContext->genMailboxCHROMIUM(mailbox->name);
-    sharedContext->produceTextureDirectCHROMIUM(textureId, GL_TEXTURE_2D, mailbox->name);
+    sharedContext->produceTextureDirectCHROMIUM(textureInfo->fID, textureInfo->fTarget, mailbox->name);
     const WGC3Duint64 sharedFenceSync = sharedContext->insertFenceSyncCHROMIUM();
     sharedContext->flush();
 
@@ -218,7 +218,7 @@ bool ImageBuffer::copyToPlatformTexture(WebGraphicsContext3D* context, Platform3
     if (mailbox->validSyncToken)
         context->waitSyncTokenCHROMIUM(mailbox->syncToken);
 
-    Platform3DObject sourceTexture = context->createAndConsumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox->name);
+    Platform3DObject sourceTexture = context->createAndConsumeTextureCHROMIUM(textureInfo->fTarget, mailbox->name);
 
     // The canvas is stored in a premultiplied format, so unpremultiply if necessary.
     // The canvas is stored in an inverted position, so the flip semantics are reversed.
