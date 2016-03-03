@@ -14,7 +14,7 @@ namespace edk {
 namespace {
 
 base::LazyInstance<base::ThreadLocalPointer<RequestContext>>::Leaky
-    g_current_context;
+    g_current_context = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
