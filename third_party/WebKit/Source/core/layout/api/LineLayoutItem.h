@@ -418,6 +418,7 @@ protected:
 private:
     LayoutObject* m_layoutObject;
 
+    friend class LayoutBlockFlow;
     friend class LineLayoutAPIShim;
     friend class LineLayoutBlockFlow;
     friend class LineLayoutRubyRun;

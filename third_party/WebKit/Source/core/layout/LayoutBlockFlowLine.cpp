@@ -416,7 +416,7 @@ void LayoutBlockFlow::setMarginsForRubyRun(BidiRun* run, LayoutRubyRun* layoutRu
     LayoutObject* nextObject = nullptr;
     for (BidiRun* runWithNextObject = run->next(); runWithNextObject; runWithNextObject = runWithNextObject->next()) {
         if (!runWithNextObject->m_lineLayoutItem.isOutOfFlowPositioned() && !runWithNextObject->m_box->isLineBreak()) {
-            nextObject = runWithNextObject->m_lineLayoutItem;
+            nextObject = runWithNextObject->m_lineLayoutItem.layoutObject();
             break;
         }
     }
@@ -614,7 +614,7 @@ BidiRun* LayoutBlockFlow::computeInlineDirectionPositionsForSegment(RootInlineBo
     LayoutUnit totalLogicalWidth = lineBox->getFlowSpacingLogicalWidth();
     bool isAfterExpansion = true;
     ExpansionOpportunities expansions;
-    LineLayoutItem previousObject(nullptr);
+    LayoutObject* previousObject = nullptr;
     TextJustify textJustify = style()->getTextJustify();
 
     BidiRun* r = firstRun;
@@ -642,7 +642,7 @@ BidiRun* LayoutBlockFlow::computeInlineDirectionPositionsForSegment(RootInlineBo
         } else {
             isAfterExpansion = false;
             if (!r->m_lineLayoutItem.isLayoutInline()) {
-                LayoutBox* layoutBox = toLayoutBox(r->m_lineLayoutItem);
+                LayoutBox* layoutBox = toLayoutBox(r->m_lineLayoutItem.layoutObject());
                 if (layoutBox->isRubyRun())
                     setMarginsForRubyRun(r, toLayoutRubyRun(layoutBox), previousObject, lineInfo);
                 r->m_box->setLogicalWidth(logicalWidthForChild(*layoutBox));
@@ -652,7 +652,7 @@ BidiRun* LayoutBlockFlow::computeInlineDirectionPositionsForSegment(RootInlineBo
         }
 
         totalLogicalWidth += r->m_box->logicalWidth();
-        previousObject = r->m_lineLayoutItem;
+        previousObject = r->m_lineLayoutItem.layoutObject();
     }
 
     if (isAfterExpansion)
@@ -684,9 +684,9 @@ void LayoutBlockFlow::computeBlockDirectionPositionsForLine(RootInlineBox* lineB
         // Position is used to properly position both replaced elements and
         // to update the static normal flow x/y of positioned elements.
         if (r->m_lineLayoutItem.isText())
-            toLayoutText(r->m_lineLayoutItem)->positionLineBox(r->m_box);
+            toLayoutText(r->m_lineLayoutItem.layoutObject())->positionLineBox(r->m_box);
         else if (r->m_lineLayoutItem.isBox())
-            toLayoutBox(r->m_lineLayoutItem)->positionLineBox(r->m_box);
+            toLayoutBox(r->m_lineLayoutItem.layoutObject())->positionLineBox(r->m_box);
     }
 }
 
@@ -803,7 +803,7 @@ void LayoutBlockFlow::appendFloatsToLastLine(LineLayoutState& layoutState, const
     for (; it != end; ++it) {
         FloatingObject& floatingObject = *it->get();
         // If we've reached the start of clean lines any remaining floating children belong to them.
-        if (floatingObject.layoutObject() == cleanLineStart.getLineLayoutItem() && layoutState.endLine()) {
+        if (cleanLineStart.getLineLayoutItem().isEqual(floatingObject.layoutObject()) && layoutState.endLine()) {
             layoutState.setEndLineMatched(layoutState.endLineMatched() || matchedEndLine(layoutState, resolver, cleanLineStart, cleanLineBidiStatus));
             if (layoutState.endLineMatched()) {
                 layoutState.setLastFloat(&floatingObject);
@@ -1560,7 +1560,7 @@ void LayoutBlockFlow::layoutInlineChildren(bool relayoutChildren, LayoutUnit& pa
         // elements at the same time.
         Vector<LayoutBox*> replacedChildren;
         for (InlineWalker walker(this); !walker.atEnd(); walker.advance()) {
-            LayoutObject* o = walker.current();
+            LayoutObject* o = walker.current().layoutObject();
 
             if (!layoutState.hasInlineChild() && o->isInline())
                 layoutState.setHasInlineChild(true);
@@ -1683,7 +1683,7 @@ RootInlineBox* LayoutBlockFlow::determineStartPosition(LineLayoutState& layoutSt
             // We have a dirty line.
             if (RootInlineBox* prevRootBox = curr->prevRootBox()) {
                 // We have a previous line.
-                if (!prevRootBox->endsWithBreak() || !prevRootBox->lineBreakObj() || (prevRootBox->lineBreakObj().isText() && prevRootBox->lineBreakPos() >= toLayoutText(prevRootBox->lineBreakObj())->textLength())) {
+                if (!prevRootBox->endsWithBreak() || !prevRootBox->lineBreakObj() || (prevRootBox->lineBreakObj().isText() && prevRootBox->lineBreakPos() >= toLayoutText(prevRootBox->lineBreakObj().layoutObject())->textLength())) {
                     // The previous line didn't break cleanly or broke at a newline
                     // that has been deleted, so treat it as dirty too.
                     curr = prevRootBox;
@@ -1896,7 +1896,7 @@ void LayoutBlockFlow::addOverflowFromInlineChildren()
     // Add outline rects of continuations of descendant inlines into visual overflow of this block.
     LayoutRect outlineBoundsOfAllContinuations;
     for (InlineWalker walker(this); !walker.atEnd(); walker.advance()) {
-        const LayoutObject& o = *walker.current();
+        const LayoutObject& o = *walker.current().layoutObject();
         if (!isInlineWithOutlineAndContinuation(o))
             continue;
 
