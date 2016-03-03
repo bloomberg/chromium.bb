@@ -114,9 +114,6 @@ camera.views.Browser.prototype.onEnter = function(opt_arguments) {
 
   this.onResize();
   this.scrollTracker_.start();
-  this.updateButtons_();
-  if (!this.scroller_.animating)
-    this.updatePicturesResolutions_();
   document.body.classList.add('browser');
 };
 
@@ -232,6 +229,15 @@ camera.views.Browser.prototype.updateButtons_ = function() {
 };
 
 /**
+ * Updates visibility of the scrollbar thumb.
+ * @private
+ */
+camera.views.Browser.prototype.updateScrollbarThumb_ = function() {
+  // Hide the scrollbar thumb if there is only one picture.
+  this.scrollBar_.setThumbHidden(this.pictures.length < 2);
+};
+
+/**
  * Updates resolutions of the pictures. The selected picture will be high
  * resolution, and all the rest low. This method waits until CSS transitions
  * are finished (if any).
@@ -337,6 +343,14 @@ camera.views.Browser.prototype.onKeyPressed = function(event) {
 /**
  * @override
  */
+camera.views.Browser.prototype.onPictureDeleting = function(picture) {
+  camera.views.GalleryBase.prototype.onPictureDeleting.apply(this, arguments);
+  this.updateScrollbarThumb_();
+};
+
+/**
+ * @override
+ */
 camera.views.Browser.prototype.addPictureToDOM = function(picture) {
   var browser = document.querySelector('#browser .padder');
   var boundsPadder = browser.querySelector('.bounds-padder');
@@ -350,6 +364,7 @@ camera.views.Browser.prototype.addPictureToDOM = function(picture) {
   // Add to the collection.
   var domPicture = new camera.views.GalleryBase.DOMPicture(picture, img);
   this.pictures.push(domPicture);
+  this.updateScrollbarThumb_();
 
   img.addEventListener('mousedown', function(event) {
     event.preventDefault();  // Prevent focusing.

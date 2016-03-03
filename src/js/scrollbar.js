@@ -45,6 +45,12 @@ camera.ScrollBar = function(scroller) {
   this.thumb = document.createElement('div');
 
   /**
+   * @type {boolean}
+   * @private
+   */
+  this.thumbHidden_ = false;
+
+  /**
    * @type {MutationObserver}
    * @private
    */
@@ -72,7 +78,16 @@ camera.ScrollBar = function(scroller) {
       this.scroller.element, {subtree: true, attributes: true});
 
   this.redraw_();
- };
+};
+
+/**
+ * Sets the scrollbar thumb hidden even for a scrollable area.
+ * @param {boolean} hidden True if hides the thumb, false otherwise.
+ */
+camera.ScrollBar.prototype.setThumbHidden = function(hidden) {
+  this.thumbHidden_ = hidden;
+  this.redraw_();
+};
 
 /**
  * Scroll handler.
@@ -220,7 +235,7 @@ camera.ScrollBar.prototype.redraw_ = function() {
   var clientTotal = this.getClientTotal();
   var scrollTotal = this.getScrollTotal();
 
-  this.thumb.hidden = scrollTotal <= clientTotal;
+  this.thumb.hidden = this.thumbHidden_ || scrollTotal <= clientTotal;
 
   var thumbSize = Math.max(50, clientTotal / scrollTotal * clientTotal);
   var thumbPosition = this.getScrollPosition() / (scrollTotal - clientTotal) *
