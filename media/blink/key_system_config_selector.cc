@@ -277,20 +277,25 @@ KeySystemConfigSelector::KeySystemConfigSelector(
 KeySystemConfigSelector::~KeySystemConfigSelector() {
 }
 
-bool IsSupportedClearMediaFormat(const std::string& container_mime_type,
-                                 const std::string& codecs) {
+bool IsSupportedMediaFormat(const std::string& container_mime_type,
+                            const std::string& codecs,
+                            bool use_aes_decryptor) {
   std::vector<std::string> codec_vector;
-  media::ParseCodecString(codecs, &codec_vector, false);
-  media::SupportsType support_result =
-      media::IsSupportedEncryptedMediaFormat(container_mime_type, codec_vector);
+  ParseCodecString(codecs, &codec_vector, false);
+  // AesDecryptor decrypts the stream in the demuxer before it reaches the
+  // decoder so check whether the media format is supported when clear.
+  SupportsType support_result =
+      use_aes_decryptor
+          ? IsSupportedMediaFormat(container_mime_type, codec_vector)
+          : IsSupportedEncryptedMediaFormat(container_mime_type, codec_vector);
   switch (support_result) {
-    case media::IsSupported:
+    case IsSupported:
       return true;
-    case media::MayBeSupported:
+    case MayBeSupported:
       // If no codecs were specified, the best possible result is
       // MayBeSupported, indicating support for the container.
       return codec_vector.empty();
-    case media::IsNotSupported:
+    case IsNotSupported:
       return false;
   }
   NOTREACHED();
@@ -309,8 +314,10 @@ bool KeySystemConfigSelector::IsSupportedContentType(
   // is done primarily to validate extended codecs, but it also ensures that the
   // CDM cannot support codecs that Chrome does not (which could complicate the
   // robustness algorithm).
-  if (!IsSupportedClearMediaFormat(container_mime_type, codecs))
+  if (!IsSupportedMediaFormat(container_mime_type, codecs,
+                              CanUseAesDecryptor(key_system))) {
     return false;
+  }
 
   // TODO(servolk): Converting |container_mime_type| to lower-case could be
   // moved to KeySystemsImpl::GetContentTypeConfigRule, plus we could add some
@@ -321,7 +328,7 @@ bool KeySystemConfigSelector::IsSupportedContentType(
   // This check does not handle extended codecs, so extended codec information
   // is stripped (extended codec information was checked above).
   std::vector<std::string> stripped_codec_vector;
-  media::ParseCodecString(codecs, &stripped_codec_vector, true);
+  ParseCodecString(codecs, &stripped_codec_vector, true);
   EmeConfigRule codecs_rule = key_systems_->GetContentTypeConfigRule(
       key_system, media_type, container_lower, stripped_codec_vector);
   if (!config_state->IsRuleSupported(codecs_rule))

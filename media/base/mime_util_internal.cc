@@ -274,10 +274,7 @@ MimeUtil::MimeUtil() : allow_proprietary_codecs_(false) {
   // When the unified media pipeline is enabled, we need support for both GPU
   // video decoders and MediaCodec; indicated by HasPlatformDecoderSupport().
   // When the Android pipeline is used, we only need access to MediaCodec.
-  platform_info_.has_platform_decoders =
-      platform_info_.is_unified_media_pipeline_enabled
-          ? HasPlatformDecoderSupport()
-          : MediaCodecUtil::IsMediaCodecAvailable();
+  platform_info_.has_platform_decoders = ArePlatformDecodersAvailable();
   platform_info_.has_platform_vp8_decoder =
       MediaCodecUtil::IsVp8DecoderAvailable();
   platform_info_.supports_opus = PlatformHasOpusSupport();

@@ -55,9 +55,9 @@ class MEDIA_EXPORT MediaDrmBridge : public MediaKeys, public PlayerTracker {
   using MediaCryptoReadyCB = base::Callback<void(JavaObjectPtr media_crypto,
                                                  bool needs_protected_surface)>;
 
-  // Checks whether MediaDRM is available.
-  // All other static methods check IsAvailable() internally. There's no need
-  // to check IsAvailable() explicitly before calling them.
+  // Checks whether MediaDRM is available and usable, including for decoding.
+  // All other static methods check IsAvailable() or equivalent internally.
+  // There is no need to check IsAvailable() explicitly before calling them.
   static bool IsAvailable();
 
   static bool RegisterMediaDrmBridge(JNIEnv* env);
@@ -242,6 +242,16 @@ class MEDIA_EXPORT MediaDrmBridge : public MediaKeys, public PlayerTracker {
  private:
   // For DeleteSoon() in DeleteOnCorrectThread().
   friend class base::DeleteHelper<MediaDrmBridge>;
+
+  static scoped_refptr<MediaDrmBridge> CreateInternal(
+      const std::string& key_system,
+      SecurityLevel security_level,
+      const CreateFetcherCB& create_fetcher_cb,
+      const SessionMessageCB& session_message_cb,
+      const SessionClosedCB& session_closed_cb,
+      const LegacySessionErrorCB& legacy_session_error_cb,
+      const SessionKeysChangeCB& session_keys_change_cb,
+      const SessionExpirationUpdateCB& session_expiration_update_cb);
 
   // Constructs a MediaDrmBridge for |scheme_uuid| and |security_level|. The
   // default security level will be used if |security_level| is

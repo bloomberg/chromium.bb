@@ -115,6 +115,12 @@ bool IsUnifiedMediaPipelineEnabledForMse() {
              switches::kEnableUnifiedMediaPipeline) ||
          !MediaCodecUtil::IsMediaCodecAvailable();
 }
+
+bool ArePlatformDecodersAvailable() {
+  return IsUnifiedMediaPipelineEnabled()
+             ? HasPlatformDecoderSupport()
+             : MediaCodecUtil::IsMediaCodecAvailable();
+}
 #endif
 
 }  // namespace media

@@ -15,6 +15,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "media/base/key_system_info.h"
+#include "media/base/media.h"
 #include "media/base/media_client.h"
 #include "media/cdm/key_system_names.h"
 #include "third_party/widevine/cdm/widevine_cdm_common.h"
@@ -409,6 +410,16 @@ void KeySystemsImpl::AddSupportedKeySystems(
 
     DCHECK_EQ(key_system_map_.count(info.key_system), 0u)
         << "Key system '" << info.key_system << "' already registered";
+
+#if defined(OS_ANDROID)
+    // Ensure that the renderer can access the decoders necessary to use the
+    // key system.
+    if (!info.use_aes_decryptor && !ArePlatformDecodersAvailable()) {
+      DLOG(WARNING) << info.key_system << " not registered";
+      continue;
+    }
+#endif  // defined(OS_ANDROID)
+
     key_system_map_[info.key_system] = info;
   }
 }
