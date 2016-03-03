@@ -857,10 +857,9 @@ InjectedScript.prototype = {
 
     /**
      * @param {?Object} callFrame
-     * @param {number} asyncOrdinal
      * @return {!Array.<!InjectedScript.CallFrameProxy>|boolean}
      */
-    wrapCallFrames: function(callFrame, asyncOrdinal)
+    wrapCallFrames: function(callFrame)
     {
         if (!callFrame)
             return false;
@@ -868,7 +867,7 @@ InjectedScript.prototype = {
         var result = [];
         var depth = 0;
         do {
-            result[depth] = new InjectedScript.CallFrameProxy(depth, callFrame, asyncOrdinal);
+            result[depth] = new InjectedScript.CallFrameProxy(depth, callFrame);
             callFrame = callFrame.caller;
             ++depth;
         } while (callFrame);
@@ -1487,11 +1486,10 @@ InjectedScript.RemoteObject.prototype = {
  * @constructor
  * @param {number} ordinal
  * @param {!JavaScriptCallFrame} callFrame
- * @param {number} asyncOrdinal
  */
-InjectedScript.CallFrameProxy = function(ordinal, callFrame, asyncOrdinal)
+InjectedScript.CallFrameProxy = function(ordinal, callFrame)
 {
-    this.callFrameId = "{\"ordinal\":" + ordinal + ",\"injectedScriptId\":" + injectedScriptId + (asyncOrdinal ? ",\"asyncOrdinal\":" + asyncOrdinal : "") + "}";
+    this.callFrameId = "{\"ordinal\":" + ordinal + ",\"injectedScriptId\":" + injectedScriptId + "}";
     this.functionName = callFrame.functionName;
     this.functionLocation = { scriptId: toString(callFrame.sourceID), lineNumber: callFrame.functionLine, columnNumber: callFrame.functionColumn, __proto__: null };
     this.location = { scriptId: toString(callFrame.sourceID), lineNumber: callFrame.line, columnNumber: callFrame.column, __proto__: null };

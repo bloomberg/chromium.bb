@@ -173,7 +173,7 @@ void InspectorDebuggerAgent::setScriptSource(ErrorString* errorString,
     const Maybe<bool>& inPreview,
     Maybe<Array<protocol::Debugger::CallFrame>>* optOutCallFrames,
     Maybe<bool>* optOutStackChanged,
-    Maybe<protocol::Debugger::StackTrace>* optOutAsyncStackTrace,
+    Maybe<protocol::Runtime::StackTrace>* optOutAsyncStackTrace,
     Maybe<protocol::Debugger::SetScriptSourceError>* optOutCompileError)
 {
     m_v8DebuggerAgent->setScriptSource(errorString, inScriptId, inScriptSource, inPreview, optOutCallFrames, optOutStackChanged, optOutAsyncStackTrace, optOutCompileError);
@@ -182,7 +182,7 @@ void InspectorDebuggerAgent::setScriptSource(ErrorString* errorString,
 void InspectorDebuggerAgent::restartFrame(ErrorString* errorString,
     const String& inCallFrameId,
     OwnPtr<Array<protocol::Debugger::CallFrame>>* outCallFrames,
-    Maybe<protocol::Debugger::StackTrace>* optOutAsyncStackTrace)
+    Maybe<protocol::Runtime::StackTrace>* optOutAsyncStackTrace)
 {
     m_v8DebuggerAgent->restartFrame(errorString, inCallFrameId, outCallFrames, optOutAsyncStackTrace);
 }
@@ -257,7 +257,7 @@ void InspectorDebuggerAgent::getStepInPositions(ErrorString* errorString,
 
 void InspectorDebuggerAgent::getBacktrace(ErrorString* errorString,
     OwnPtr<Array<protocol::Debugger::CallFrame>>* outCallFrames,
-    Maybe<protocol::Debugger::StackTrace>* optOutAsyncStackTrace)
+    Maybe<protocol::Runtime::StackTrace>* optOutAsyncStackTrace)
 {
     m_v8DebuggerAgent->getBacktrace(errorString, outCallFrames, optOutAsyncStackTrace);
 }

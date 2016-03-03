@@ -82,7 +82,6 @@ public:
 
     bool setScriptSource(const String& sourceID, const String& newContent, bool preview, String* error, Maybe<protocol::Debugger::SetScriptSourceError>*, v8::Global<v8::Object>* newCallFrames, Maybe<bool>* stackChanged);
     v8::Local<v8::Object> currentCallFrames();
-    v8::Local<v8::Object> currentCallFramesForAsyncStack();
     PassRefPtr<JavaScriptCallFrame> callFrameNoScopes(int index);
     int frameCount();
 
@@ -128,8 +127,7 @@ private:
 
     v8::Local<v8::String> v8InternalizedString(const char*) const;
 
-    v8::Local<v8::Object> currentCallFramesInner(bool includeScopes);
-    PassRefPtr<JavaScriptCallFrame> wrapCallFrames(int maximumLimit, bool includeScopes);
+    PassRefPtr<JavaScriptCallFrame> wrapCallFrames();
     void handleV8AsyncTaskEvent(V8DebuggerAgentImpl*, v8::Local<v8::Context>, v8::Local<v8::Object> executionState, v8::Local<v8::Object> eventData);
     void handleV8PromiseEvent(V8DebuggerAgentImpl*, v8::Local<v8::Context>, v8::Local<v8::Object> executionState, v8::Local<v8::Object> eventData);
 

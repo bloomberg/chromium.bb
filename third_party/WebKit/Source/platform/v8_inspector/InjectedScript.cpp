@@ -342,12 +342,11 @@ v8::MaybeLocal<v8::Value> InjectedScript::runCompiledScript(v8::Local<v8::Script
     return maybeValue;
 }
 
-PassOwnPtr<Array<CallFrame>> InjectedScript::wrapCallFrames(v8::Local<v8::Object> callFrames, int asyncOrdinal)
+PassOwnPtr<Array<CallFrame>> InjectedScript::wrapCallFrames(v8::Local<v8::Object> callFrames)
 {
     v8::HandleScope handles(m_isolate);
     V8FunctionCall function(m_client, context(), v8Value(), "wrapCallFrames");
     function.appendArgument(callFrames);
-    function.appendArgument(asyncOrdinal);
     bool hadException = false;
     v8::Local<v8::Value> callFramesValue = callFunctionWithEvalEnabled(function, hadException);
     ASSERT(!hadException);

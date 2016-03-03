@@ -46,13 +46,11 @@ public:
     ~RemoteCallFrameId() { }
 
     int frameOrdinal() const { return m_frameOrdinal; }
-    int asyncStackOrdinal() const { return m_asyncStackOrdinal; }
 
 private:
     RemoteCallFrameId();
 
     int m_frameOrdinal;
-    int m_asyncStackOrdinal;
 };
 
 } // namespace blink

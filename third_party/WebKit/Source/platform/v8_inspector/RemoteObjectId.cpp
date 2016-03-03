@@ -42,7 +42,7 @@ PassOwnPtr<RemoteObjectId> RemoteObjectId::parse(const String& objectId)
     return nullptr;
 }
 
-RemoteCallFrameId::RemoteCallFrameId() : RemoteObjectIdBase(), m_frameOrdinal(0), m_asyncStackOrdinal(0) { }
+RemoteCallFrameId::RemoteCallFrameId() : RemoteObjectIdBase(), m_frameOrdinal(0) { }
 
 PassOwnPtr<RemoteCallFrameId> RemoteCallFrameId::parse(const String& objectId)
 {
@@ -55,9 +55,6 @@ PassOwnPtr<RemoteCallFrameId> RemoteCallFrameId::parse(const String& objectId)
     if (!success)
         return nullptr;
 
-    protocol::Value* value = parsedObjectId->get("asyncOrdinal");
-    if (value &&!value->asNumber(&result->m_asyncStackOrdinal))
-        return nullptr;
     return result.release();
 }
 

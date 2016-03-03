@@ -458,16 +458,14 @@ int V8DebuggerImpl::frameCount()
     return 0;
 }
 
-PassRefPtr<JavaScriptCallFrame> V8DebuggerImpl::wrapCallFrames(int maximumLimit, bool includeScopes)
+PassRefPtr<JavaScriptCallFrame> V8DebuggerImpl::wrapCallFrames()
 {
-    ASSERT(maximumLimit >= 0);
-    int data = (maximumLimit << 1) | (includeScopes ? 1 : 0);
     v8::Local<v8::Value> currentCallFrameV8;
     if (m_executionState.IsEmpty()) {
         v8::Local<v8::Function> currentCallFrameFunction = v8::Local<v8::Function>::Cast(m_debuggerScript.Get(m_isolate)->Get(v8InternalizedString("currentCallFrame")));
-        currentCallFrameV8 = v8::Debug::Call(debuggerContext(), currentCallFrameFunction, v8::Integer::New(m_isolate, data)).ToLocalChecked();
+        currentCallFrameV8 = v8::Debug::Call(debuggerContext(), currentCallFrameFunction).ToLocalChecked();
     } else {
-        v8::Local<v8::Value> argv[] = { m_executionState, v8::Integer::New(m_isolate, data) };
+        v8::Local<v8::Value> argv[] = { m_executionState };
         currentCallFrameV8 = callDebuggerMethod("currentCallFrame", WTF_ARRAY_LENGTH(argv), argv).ToLocalChecked();
     }
     ASSERT(!currentCallFrameV8.IsEmpty());
@@ -476,7 +474,7 @@ PassRefPtr<JavaScriptCallFrame> V8DebuggerImpl::wrapCallFrames(int maximumLimit,
     return JavaScriptCallFrame::create(m_client, debuggerContext(), v8::Local<v8::Object>::Cast(currentCallFrameV8));
 }
 
-v8::Local<v8::Object> V8DebuggerImpl::currentCallFramesInner(bool includeScopes)
+v8::Local<v8::Object> V8DebuggerImpl::currentCallFrames()
 {
     if (!m_isolate->InContext())
         return v8::Local<v8::Object>();
@@ -486,7 +484,7 @@ v8::Local<v8::Object> V8DebuggerImpl::currentCallFramesInner(bool includeScopes)
     if (!stackTrace->GetFrameCount())
         return v8::Local<v8::Object>();
 
-    RefPtr<JavaScriptCallFrame> currentCallFrame = wrapCallFrames(0, includeScopes);
+    RefPtr<JavaScriptCallFrame> currentCallFrame = wrapCallFrames();
     if (!currentCallFrame)
         return v8::Local<v8::Object>();
 
@@ -495,16 +493,6 @@ v8::Local<v8::Object> V8DebuggerImpl::currentCallFramesInner(bool includeScopes)
     v8::Context::Scope scope(context);
     v8::Local<v8::Object> wrapper = V8JavaScriptCallFrame::wrap(m_client, wrapperTemplate, context, currentCallFrame.release());
     return wrapper;
-}
-
-v8::Local<v8::Object> V8DebuggerImpl::currentCallFrames()
-{
-    return currentCallFramesInner(true);
-}
-
-v8::Local<v8::Object> V8DebuggerImpl::currentCallFramesForAsyncStack()
-{
-    return currentCallFramesInner(false);
 }
 
 PassRefPtr<JavaScriptCallFrame> V8DebuggerImpl::callFrameNoScopes(int index)

@@ -82,7 +82,7 @@ function deleteItem()
     var store = trans.objectStore("foo");
     var request = store.delete(1);
     request.onsuccess = onSuccessDeleteItem;
-    request.onerror = onError;    
+    request.onerror = onError;
 }
 
 function onSuccessDeleteItem()

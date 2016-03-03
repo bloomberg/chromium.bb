@@ -1025,8 +1025,6 @@
       'transforms/TransformationMatrix.h',
       'transforms/TranslateTransformOperation.cpp',
       'transforms/TranslateTransformOperation.h',
-      'v8_inspector/AsyncCallChain.cpp',
-      'v8_inspector/AsyncCallChain.h',
       'v8_inspector/InspectorWrapper.cpp',
       'v8_inspector/InspectorWrapper.h',
       'v8_inspector/IgnoreExceptionsScope.h',

@@ -62,8 +62,8 @@ public:
     void stepIntoAsync(ErrorString*) override;
     void searchInContent(ErrorString*, const String& scriptId, const String& query, const Maybe<bool>& caseSensitive, const Maybe<bool>& isRegex, OwnPtr<protocol::Array<protocol::Debugger::SearchMatch>>* result) override;
     void canSetScriptSource(ErrorString*, bool* result) override;
-    void setScriptSource(ErrorString*, const String& scriptId, const String& scriptSource, const Maybe<bool>& preview, Maybe<protocol::Array<protocol::Debugger::CallFrame>>* callFrames, Maybe<bool>* stackChanged, Maybe<protocol::Debugger::StackTrace>* asyncStackTrace, Maybe<protocol::Debugger::SetScriptSourceError>* compileError) override;
-    void restartFrame(ErrorString*, const String& callFrameId, OwnPtr<protocol::Array<protocol::Debugger::CallFrame>>* callFrames, Maybe<protocol::Debugger::StackTrace>* asyncStackTrace) override;
+    void setScriptSource(ErrorString*, const String& scriptId, const String& scriptSource, const Maybe<bool>& preview, Maybe<protocol::Array<protocol::Debugger::CallFrame>>* callFrames, Maybe<bool>* stackChanged, Maybe<protocol::Runtime::StackTrace>* asyncStackTrace, Maybe<protocol::Debugger::SetScriptSourceError>* compileError) override;
+    void restartFrame(ErrorString*, const String& callFrameId, OwnPtr<protocol::Array<protocol::Debugger::CallFrame>>* callFrames, Maybe<protocol::Runtime::StackTrace>* asyncStackTrace) override;
     void getScriptSource(ErrorString*, const String& scriptId, String* scriptSource) override;
     void getFunctionDetails(ErrorString*, const String& functionId, OwnPtr<protocol::Debugger::FunctionDetails>*) override;
     void getGeneratorObjectDetails(ErrorString*, const String& objectId, OwnPtr<protocol::Debugger::GeneratorObjectDetails>*) override;
@@ -72,7 +72,7 @@ public:
     void evaluateOnCallFrame(ErrorString*, const String& callFrameId, const String& expression, const Maybe<String>& objectGroup, const Maybe<bool>& includeCommandLineAPI, const Maybe<bool>& doNotPauseOnExceptionsAndMuteConsole, const Maybe<bool>& returnByValue, const Maybe<bool>& generatePreview, OwnPtr<protocol::Runtime::RemoteObject>* result, Maybe<bool>* wasThrown, Maybe<protocol::Runtime::ExceptionDetails>*) override;
     void setVariableValue(ErrorString*, int scopeNumber, const String& variableName, PassOwnPtr<protocol::Runtime::CallArgument> newValue, const Maybe<String>& callFrameId, const Maybe<String>& functionObjectId) override;
     void getStepInPositions(ErrorString*, const String& callFrameId, Maybe<protocol::Array<protocol::Debugger::Location>>* stepInPositions) override;
-    void getBacktrace(ErrorString*, OwnPtr<protocol::Array<protocol::Debugger::CallFrame>>* callFrames, Maybe<protocol::Debugger::StackTrace>* asyncStackTrace) override;
+    void getBacktrace(ErrorString*, OwnPtr<protocol::Array<protocol::Debugger::CallFrame>>* callFrames, Maybe<protocol::Runtime::StackTrace>* asyncStackTrace) override;
     void setAsyncCallStackDepth(ErrorString*, int maxDepth) override;
     void enablePromiseTracker(ErrorString*, const Maybe<bool>& captureStacks) override;
     void disablePromiseTracker(ErrorString*) override;

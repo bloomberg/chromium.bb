@@ -84,36 +84,56 @@ PassOwnPtr<protocol::Runtime::CallFrame> V8StackTraceImpl::Frame::buildInspector
         .build();
 }
 
-PassOwnPtr<V8StackTraceImpl> V8StackTraceImpl::create(V8DebuggerAgentImpl* agent, v8::Local<v8::StackTrace> stackTrace, size_t maxStackSize)
+PassOwnPtr<V8StackTraceImpl> V8StackTraceImpl::create(V8DebuggerAgentImpl* agent, v8::Local<v8::StackTrace> stackTrace, size_t maxStackSize, const String& description)
 {
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
-    ASSERT(isolate->InContext());
-    ASSERT(!stackTrace.IsEmpty());
-
     v8::HandleScope scope(isolate);
     Vector<V8StackTraceImpl::Frame> scriptCallFrames;
-    toCallFramesVector(stackTrace, scriptCallFrames, maxStackSize, isolate);
+    if (!stackTrace.IsEmpty())
+        toCallFramesVector(stackTrace, scriptCallFrames, maxStackSize, isolate);
 
-    OwnPtr<V8StackTraceImpl> callStack;
-    if (agent && maxStackSize > 1)
-        callStack = agent->currentAsyncStackTraceForRuntime();
-    return V8StackTraceImpl::create(String(), scriptCallFrames, callStack.release());
+    OwnPtr<V8StackTraceImpl> asyncCallStack;
+    if (agent && agent->trackingAsyncCalls() && maxStackSize > 1)
+        asyncCallStack = agent->currentAsyncStackTraceForRuntime();
+
+    if (stackTrace.IsEmpty() && !asyncCallStack)
+        return nullptr;
+
+    return V8StackTraceImpl::create(description, scriptCallFrames, asyncCallStack.release());
 }
 
-PassOwnPtr<V8StackTraceImpl> V8StackTraceImpl::capture(V8DebuggerAgentImpl* agent, size_t maxStackSize)
+PassOwnPtr<V8StackTraceImpl> V8StackTraceImpl::capture(V8DebuggerAgentImpl* agent, size_t maxStackSize, const String& description)
 {
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
-    if (!isolate->InContext())
-        return nullptr;
     v8::HandleScope handleScope(isolate);
-    isolate->GetCpuProfiler()->CollectSample();
-    v8::Local<v8::StackTrace> stackTrace(v8::StackTrace::CurrentStackTrace(isolate, maxStackSize, stackTraceOptions));
-    return V8StackTraceImpl::create(agent, stackTrace, maxStackSize);
+    v8::Local<v8::StackTrace> stackTrace;
+    if (isolate->InContext()) {
+        isolate->GetCpuProfiler()->CollectSample();
+        stackTrace = v8::StackTrace::CurrentStackTrace(isolate, maxStackSize, stackTraceOptions);
+    }
+    return V8StackTraceImpl::create(agent, stackTrace, maxStackSize, description);
 }
 
 PassOwnPtr<V8StackTraceImpl> V8StackTraceImpl::create(const String& description, Vector<Frame>& frames, PassOwnPtr<V8StackTraceImpl> parent)
 {
     return adoptPtr(new V8StackTraceImpl(description, frames, parent));
+}
+
+PassOwnPtr<V8StackTraceImpl> V8StackTraceImpl::clone(V8StackTraceImpl* origin, size_t maxStackSize)
+{
+    if (!origin)
+        return nullptr;
+
+    // TODO(dgozman): move this check to call-site.
+    if (!origin->m_frames.size())
+        return V8StackTraceImpl::clone(origin->m_parent.get(), maxStackSize);
+
+    OwnPtr<V8StackTraceImpl> parent;
+    if (origin->m_parent && maxStackSize)
+        parent = V8StackTraceImpl::clone(origin->m_parent.get(), maxStackSize - 1);
+
+    Vector<Frame> frames(origin->m_frames);
+    return adoptPtr(new V8StackTraceImpl(origin->m_description, frames, parent.release()));
 }
 
 V8StackTraceImpl::V8StackTraceImpl(const String& description, Vector<Frame>& frames, PassOwnPtr<V8StackTraceImpl> parent)

@@ -5,7 +5,6 @@
 #include "platform/v8_inspector/V8DebuggerAgentImpl.h"
 
 #include "platform/inspector_protocol/Values.h"
-#include "platform/v8_inspector/AsyncCallChain.h"
 #include "platform/v8_inspector/IgnoreExceptionsScope.h"
 #include "platform/v8_inspector/InjectedScript.h"
 #include "platform/v8_inspector/InjectedScriptHost.h"
@@ -38,7 +37,7 @@ using blink::protocol::Debugger::FunctionDetails;
 using blink::protocol::Debugger::GeneratorObjectDetails;
 using blink::protocol::Debugger::PromiseDetails;
 using blink::protocol::Runtime::ScriptId;
-using blink::protocol::Debugger::StackTrace;
+using blink::protocol::Runtime::StackTrace;
 using blink::protocol::Runtime::RemoteObject;
 
 namespace blink {
@@ -82,28 +81,6 @@ static String breakpointIdSuffix(V8DebuggerAgentImpl::BreakpointSource source)
 static String generateBreakpointId(const String& scriptId, int lineNumber, int columnNumber, V8DebuggerAgentImpl::BreakpointSource source)
 {
     return scriptId + ':' + String::number(lineNumber) + ':' + String::number(columnNumber) + breakpointIdSuffix(source);
-}
-
-static V8StackTraceImpl::Frame toScriptCallFrame(JavaScriptCallFrame* callFrame)
-{
-    String scriptId = String::number(callFrame->sourceID());
-    // FIXME(WK62725): Debugger line/column are 0-based, while console ones are 1-based.
-    int line = callFrame->line() + 1;
-    int column = callFrame->column() + 1;
-    return V8StackTraceImpl::Frame(callFrame->functionName(), scriptId, callFrame->scriptName(), line, column);
-}
-
-static void toScriptCallFrames(JavaScriptCallFrame* callFrame, Vector<V8StackTraceImpl::Frame>& frames)
-{
-    for (; callFrame; callFrame = callFrame->caller())
-        frames.append(toScriptCallFrame(callFrame));
-}
-
-static PassRefPtr<JavaScriptCallFrame> toJavaScriptCallFrame(v8::Local<v8::Context> context, v8::Local<v8::Object> value)
-{
-    if (value.IsEmpty())
-        return nullptr;
-    return V8JavaScriptCallFrame::unwrap(context, value);
 }
 
 static bool positionComparator(const std::pair<int, int>& a, const std::pair<int, int>& b)
@@ -961,11 +938,6 @@ void V8DebuggerAgentImpl::evaluateOnCallFrame(ErrorString* errorString,
         return;
     }
 
-    if (remoteId->asyncStackOrdinal()) {
-        *errorString = "Can't evaluate on async callframe";
-        return;
-    }
-
     v8::HandleScope scope(m_isolate);
     v8::Local<v8::Object> callStack = m_currentCallStack.Get(m_isolate);
 
@@ -1075,22 +1047,18 @@ void V8DebuggerAgentImpl::didUpdatePromise(const String& eventType, PassOwnPtr<p
 int V8DebuggerAgentImpl::traceAsyncOperationStarting(const String& description)
 {
     v8::HandleScope scope(m_isolate);
-    v8::Local<v8::Object> callFrames = debugger().currentCallFramesForAsyncStack();
-    RefPtr<AsyncCallChain> chain;
-    if (callFrames.IsEmpty()) {
-        if (m_currentAsyncCallChain)
-            chain = AsyncCallChain::create(m_currentAsyncCallChain.get()->creationContext(m_isolate), nullptr, m_currentAsyncCallChain.get(), m_maxAsyncCallStackDepth);
-    } else {
-        chain = AsyncCallChain::create(debugger().isPaused() ? debugger().pausedContext() : m_isolate->GetCurrentContext(), adoptRef(new AsyncCallStack(description, callFrames)), m_currentAsyncCallChain.get(), m_maxAsyncCallStackDepth);
-    }
+    OwnPtr<V8StackTraceImpl> chain = V8StackTraceImpl::capture(this, V8StackTrace::maxCallStackSizeToCapture, description);
+
     do {
         ++m_lastAsyncOperationId;
         if (m_lastAsyncOperationId <= 0)
             m_lastAsyncOperationId = 1;
     } while (m_asyncOperations.contains(m_lastAsyncOperationId));
-    m_asyncOperations.set(m_lastAsyncOperationId, chain);
-    if (chain)
+
+    if (chain) {
         m_asyncOperationNotifications.add(m_lastAsyncOperationId);
+        m_asyncOperations.set(m_lastAsyncOperationId, chain.release());
+    }
 
     if (m_startingStepIntoAsync) {
         // We have successfully started a StepIntoAsync, so revoke the debugger's StepInto
@@ -1112,7 +1080,7 @@ int V8DebuggerAgentImpl::traceAsyncOperationStarting(const String& description)
 void V8DebuggerAgentImpl::traceAsyncCallbackStarting(int operationId)
 {
     ASSERT(operationId > 0 || operationId == unknownAsyncOperationId);
-    AsyncCallChain* chain = operationId > 0 ? m_asyncOperations.get(operationId) : nullptr;
+    V8StackTraceImpl* chain = operationId > 0 ? m_asyncOperations.get(operationId) : nullptr;
     // FIXME: extract recursion check into a delegate.
     bool hasRecursionLevel = m_debugger->client()->hasRecursionLevel();
     if (chain && !hasRecursionLevel) {
@@ -1131,7 +1099,7 @@ void V8DebuggerAgentImpl::traceAsyncCallbackStarting(int operationId)
 
         // Current AsyncCallChain corresponds to the bottommost JS call frame.
         ASSERT(!m_currentAsyncCallChain);
-        m_currentAsyncCallChain = chain;
+        m_currentAsyncCallChain = V8StackTraceImpl::clone(chain, m_maxAsyncCallStackDepth - 1);
         m_currentAsyncOperationId = operationId;
         m_pendingTraceAsyncOperationCompleted = false;
         m_nestedAsyncCallCount = 1;
@@ -1200,27 +1168,13 @@ void V8DebuggerAgentImpl::flushAsyncOperationEvents(ErrorString*)
         return;
 
     for (int operationId : m_asyncOperationNotifications) {
-        RefPtr<AsyncCallChain> chain = m_asyncOperations.get(operationId);
+        V8StackTraceImpl* chain = m_asyncOperations.get(operationId);
         ASSERT(chain);
-        const AsyncCallStackVector& callStacks = chain->callStacks();
-        ASSERT(!callStacks.isEmpty());
 
-        OwnPtr<V8StackTraceImpl> stack;
-        v8::HandleScope scope(m_isolate);
-        for (int i = callStacks.size() - 1; i >= 0; --i) {
-            v8::Local<v8::Object> callFrames = callStacks.at(i)->callFrames(m_isolate);
-            RefPtr<JavaScriptCallFrame> jsCallFrame = toJavaScriptCallFrame(chain->creationContext(m_isolate), callFrames);
-            if (!jsCallFrame)
-                continue;
-            Vector<V8StackTraceImpl::Frame> frames;
-            toScriptCallFrames(jsCallFrame.get(), frames);
-            stack = V8StackTraceImpl::create(callStacks.at(i)->description(), frames, stack.release());
-        }
-
-        if (stack) {
+        if (!chain->isEmpty()) {
             OwnPtr<AsyncOperation> operation = AsyncOperation::create()
                 .setId(operationId)
-                .setStack(stack->buildInspectorObject()).build();
+                .setStack(chain->buildInspectorObject()).build();
             m_frontend->asyncOperationStarted(operation.release());
         }
     }
@@ -1380,60 +1334,24 @@ PassOwnPtr<Array<CallFrame>> V8DebuggerAgentImpl::currentCallFrames()
     }
 
     v8::Local<v8::Object> currentCallStack = m_currentCallStack.Get(m_isolate);
-    return injectedScript->wrapCallFrames(currentCallStack, 0);
+    return injectedScript->wrapCallFrames(currentCallStack);
 }
 
 PassOwnPtr<StackTrace> V8DebuggerAgentImpl::currentAsyncStackTrace()
 {
-    if (m_pausedContext.IsEmpty() || !trackingAsyncCalls())
+    if (m_pausedContext.IsEmpty() || !trackingAsyncCalls() || !m_currentAsyncCallChain)
         return nullptr;
-    const AsyncCallChain* chain = m_currentAsyncCallChain.get();
-    if (!chain)
-        return nullptr;
-    const AsyncCallStackVector& callStacks = chain->callStacks();
-    if (callStacks.isEmpty())
-        return nullptr;
-    OwnPtr<StackTrace> result;
-    int asyncOrdinal = callStacks.size();
-    for (AsyncCallStackVector::const_reverse_iterator it = callStacks.rbegin(); it != callStacks.rend(); ++it, --asyncOrdinal) {
-        v8::HandleScope scope(m_isolate);
-        v8::Local<v8::Object> callFrames = (*it)->callFrames(m_isolate);
-        InjectedScript* injectedScript = m_injectedScriptManager->injectedScriptFor(callFrames->CreationContext());
-        if (!injectedScript) {
-            result.clear();
-            continue;
-        }
-        OwnPtr<StackTrace> next = StackTrace::create()
-            .setCallFrames(injectedScript->wrapCallFrames(callFrames, asyncOrdinal))
-            .setDescription((*it)->description()).build();
-        if (result)
-            next->setAsyncStackTrace(result.release());
-        result.swap(next);
-    }
-    return result.release();
+
+    return m_currentAsyncCallChain->buildInspectorObject();
 }
 
 PassOwnPtr<V8StackTraceImpl> V8DebuggerAgentImpl::currentAsyncStackTraceForRuntime()
 {
     if (!trackingAsyncCalls())
         return nullptr;
-    const AsyncCallChain* chain = m_currentAsyncCallChain.get();
-    if (!chain)
-        return nullptr;
-    const AsyncCallStackVector& callStacks = chain->callStacks();
-    if (callStacks.isEmpty())
-        return nullptr;
-    OwnPtr<V8StackTraceImpl> result;
-    v8::HandleScope scope(m_isolate);
-    for (AsyncCallStackVector::const_reverse_iterator it = callStacks.rbegin(); it != callStacks.rend(); ++it) {
-        RefPtr<JavaScriptCallFrame> callFrame = toJavaScriptCallFrame(chain->creationContext(m_isolate), (*it)->callFrames(m_isolate));
-        if (!callFrame)
-            break;
-        Vector<V8StackTraceImpl::Frame> frames;
-        toScriptCallFrames(callFrame.get(), frames);
-        result = V8StackTraceImpl::create((*it)->description(), frames, result.release());
-    }
-    return result.release();
+
+    // TODO(dgozman): -1 is here to not exceed max async depth. Clean this up between V8StackTraceImpl and agent.
+    return V8StackTraceImpl::clone(m_currentAsyncCallChain.get(), m_maxAsyncCallStackDepth - 1);
 }
 
 void V8DebuggerAgentImpl::didParseSource(const V8DebuggerParsedScript& parsedScript)

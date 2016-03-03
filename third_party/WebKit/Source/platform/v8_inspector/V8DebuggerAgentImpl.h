@@ -20,8 +20,6 @@
 
 namespace blink {
 
-class AsyncCallChain;
-class AsyncCallStack;
 class DevToolsFunctionInfo;
 class InjectedScript;
 class InjectedScriptManager;
@@ -96,7 +94,7 @@ public:
         Maybe<protocol::Array<protocol::Debugger::Location>>* positions) override;
     void getBacktrace(ErrorString*,
         OwnPtr<protocol::Array<protocol::Debugger::CallFrame>>*,
-        Maybe<protocol::Debugger::StackTrace>*) override;
+        Maybe<protocol::Runtime::StackTrace>*) override;
     void searchInContent(ErrorString*,
         const String& scriptId,
         const String& query,
@@ -110,12 +108,12 @@ public:
         const Maybe<bool>& inPreview,
         Maybe<protocol::Array<protocol::Debugger::CallFrame>>* optOutCallFrames,
         Maybe<bool>* optOutStackChanged,
-        Maybe<protocol::Debugger::StackTrace>* optOutAsyncStackTrace,
+        Maybe<protocol::Runtime::StackTrace>* optOutAsyncStackTrace,
         Maybe<protocol::Debugger::SetScriptSourceError>* optOutCompileError) override;
     void restartFrame(ErrorString*,
         const String& callFrameId,
         OwnPtr<protocol::Array<protocol::Debugger::CallFrame>>* newCallFrames,
-        Maybe<protocol::Debugger::StackTrace>* asyncStackTrace) override;
+        Maybe<protocol::Runtime::StackTrace>* asyncStackTrace) override;
     void getScriptSource(ErrorString*, const String& scriptId, String* scriptSource) override;
     void getFunctionDetails(ErrorString*,
         const String& functionId,
@@ -212,7 +210,7 @@ private:
     void schedulePauseOnNextStatementIfSteppingInto();
 
     PassOwnPtr<protocol::Array<protocol::Debugger::CallFrame>> currentCallFrames();
-    PassOwnPtr<protocol::Debugger::StackTrace> currentAsyncStackTrace();
+    PassOwnPtr<protocol::Runtime::StackTrace> currentAsyncStackTrace();
 
     void clearCurrentAsyncOperation();
     void resetAsyncCallTracker();
@@ -278,14 +276,14 @@ private:
     OwnPtr<V8AsyncCallTracker> m_v8AsyncCallTracker;
     OwnPtr<PromiseTracker> m_promiseTracker;
 
-    using AsyncOperationIdToAsyncCallChain = HashMap<int, RefPtr<AsyncCallChain>>;
-    AsyncOperationIdToAsyncCallChain m_asyncOperations;
+    using AsyncOperationIdToStackTrace = HashMap<int, OwnPtr<V8StackTraceImpl>>;
+    AsyncOperationIdToStackTrace m_asyncOperations;
     int m_lastAsyncOperationId;
     ListHashSet<int> m_asyncOperationNotifications;
     HashSet<int> m_asyncOperationBreakpoints;
     HashSet<int> m_pausingAsyncOperations;
     unsigned m_maxAsyncCallStackDepth;
-    RefPtr<AsyncCallChain> m_currentAsyncCallChain;
+    OwnPtr<V8StackTraceImpl> m_currentAsyncCallChain;
     unsigned m_nestedAsyncCallCount;
     int m_currentAsyncOperationId;
     bool m_pendingTraceAsyncOperationCompleted;

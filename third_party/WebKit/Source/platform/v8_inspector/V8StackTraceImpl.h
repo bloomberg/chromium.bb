@@ -46,8 +46,9 @@ public:
     };
 
     static PassOwnPtr<V8StackTraceImpl> create(const String& description, Vector<Frame>&, PassOwnPtr<V8StackTraceImpl>);
-    static PassOwnPtr<V8StackTraceImpl> create(V8DebuggerAgentImpl*, v8::Local<v8::StackTrace>, size_t maxStackSize);
-    static PassOwnPtr<V8StackTraceImpl> capture(V8DebuggerAgentImpl*, size_t maxStackSize);
+    static PassOwnPtr<V8StackTraceImpl> create(V8DebuggerAgentImpl*, v8::Local<v8::StackTrace>, size_t maxStackSize, const String& description = String());
+    static PassOwnPtr<V8StackTraceImpl> capture(V8DebuggerAgentImpl*, size_t maxStackSize, const String& description = String());
+    static PassOwnPtr<V8StackTraceImpl> clone(V8StackTraceImpl*, size_t maxAsyncStackSize);
 
     ~V8StackTraceImpl() override;
 

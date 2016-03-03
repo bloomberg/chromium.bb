@@ -243,18 +243,13 @@ DebuggerScript.frameCount = function(execState)
     return execState.frameCount();
 }
 
-DebuggerScript.currentCallFrame = function(execState, data)
+DebuggerScript.currentCallFrame = function(execState)
 {
-    var maximumLimit = data >> 1;
-    var scopeDetailsLevel = data & 1;
-
     var frameCount = execState.frameCount();
-    if (maximumLimit && maximumLimit < frameCount)
-        frameCount = maximumLimit;
     var topFrame = undefined;
     for (var i = frameCount - 1; i >= 0; i--) {
         var frameMirror = execState.frame(i);
-        topFrame = DebuggerScript._frameMirrorToJSCallFrame(frameMirror, topFrame, scopeDetailsLevel);
+        topFrame = DebuggerScript._frameMirrorToJSCallFrame(frameMirror, topFrame);
     }
     return topFrame;
 }
@@ -378,7 +373,7 @@ DebuggerScript.isEvalCompilation = function(eventData)
 // NOTE: This function is performance critical, as it can be run on every
 // statement that generates an async event (like addEventListener) to support
 // asynchronous call stacks. Thus, when possible, initialize the data lazily.
-DebuggerScript._frameMirrorToJSCallFrame = function(frameMirror, callerFrame, includeScopes)
+DebuggerScript._frameMirrorToJSCallFrame = function(frameMirror, callerFrame)
 {
     // Stuff that can not be initialized lazily (i.e. valid while paused with a valid break_id).
     // The frameMirror and scopeMirror can be accessed only while paused on the debugger.
@@ -391,7 +386,7 @@ DebuggerScript._frameMirrorToJSCallFrame = function(frameMirror, callerFrame, in
     var isAtReturn = !!frameDetails.isAtReturn();
     var returnValue = isAtReturn ? frameDetails.returnValue() : undefined;
 
-    var scopeMirrors = includeScopes ? frameMirror.allScopes(false) : [];
+    var scopeMirrors = frameMirror.allScopes(false);
     var scopeTypes = new Array(scopeMirrors.length);
     var scopeObjects = new Array(scopeMirrors.length);
     var scopeNames = new Array(scopeMirrors.length);
