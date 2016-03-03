@@ -2127,12 +2127,14 @@ void RenderFrameHostImpl::CommitNavigation(
   stream_handle_ = std::move(body);
 
   // When navigating to a Javascript url, no commit is expected from the
-  // RenderFrameHost, nor should the throbber start.
+  // RenderFrameHost, nor should the throbber start. The NavigationRequest is
+  // also not stored in the FrameTreeNode. Therefore do not reset it, as this
+  // could cancel an existing pending navigation.
   if (!common_params.url.SchemeIs(url::kJavaScriptScheme)) {
     pending_commit_ = true;
     is_loading_ = true;
+    frame_tree_node_->ResetNavigationRequest(true);
   }
-  frame_tree_node_->ResetNavigationRequest(true);
 }
 
 void RenderFrameHostImpl::FailedNavigation(

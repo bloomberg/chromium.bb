@@ -225,7 +225,7 @@ void NavigationRequest::BeginNavigation() {
   // it immediately.
   state_ = RESPONSE_STARTED;
   frame_tree_node_->navigator()->CommitNavigation(
-      frame_tree_node_, nullptr, scoped_ptr<StreamHandle>());
+      this, nullptr, scoped_ptr<StreamHandle>());
 }
 
 void NavigationRequest::CreateNavigationHandle(int pending_nav_entry_id) {
@@ -286,7 +286,7 @@ void NavigationRequest::OnResponseStarted(
     common_params_.lofi_state = LOFI_OFF;
 
   frame_tree_node_->navigator()->CommitNavigation(
-      frame_tree_node_, response.get(), std::move(body));
+      this, response.get(), std::move(body));
 }
 
 void NavigationRequest::OnRequestFailed(bool has_stale_copy_in_cache,

@@ -42,7 +42,7 @@ void Navigator::OnBeginNavigation(
     scoped_refptr<ResourceRequestBody> body) {
 }
 
-void Navigator::CommitNavigation(FrameTreeNode* frame_tree_node,
+void Navigator::CommitNavigation(NavigationRequest* navigation_request,
                                  ResourceResponse* response,
                                  scoped_ptr<StreamHandle> body) {
 }

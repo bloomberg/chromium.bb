@@ -339,66 +339,63 @@ bool NavigatorImpl::NavigateToEntry(
           "FrameTreeNode id", frame_tree_node->frame_tree_node_id());
     }
 
-    // Notify observers about navigation if this is for the pending entry.
-    if (delegate_ && is_pending_entry)
-      delegate_->DidStartNavigationToPendingEntry(dest_url, reload_type);
-
-    return true;
-  }
-
-  RenderFrameHostImpl* dest_render_frame_host =
-      frame_tree_node->render_manager()->Navigate(dest_url, frame_entry, entry);
-  if (!dest_render_frame_host)
-    return false;  // Unable to create the desired RenderFrameHost.
-
-  // Make sure no code called via RFHM::Navigate clears the pending entry.
-  if (is_pending_entry)
-    CHECK_EQ(controller_->GetPendingEntry(), &entry);
-
-  // For security, we should never send non-Web-UI URLs to a Web UI renderer.
-  // Double check that here.
-  CheckWebUIRendererDoesNotDisplayNormalURL(dest_render_frame_host, dest_url);
-
-  // In the case of a transfer navigation, set the destination RenderFrameHost
-  // as loading.  This ensures that the RenderFrameHost gets in a loading state
-  // without emitting a spurious DidStartLoading notification at the
-  // FrameTreeNode level (since the FrameTreeNode was already loading). Note
-  // that this works both for a transfer to a different RenderFrameHost and in
-  // the rare case where the navigation is transferred back to the same
-  // RenderFrameHost.
-  bool is_transfer = entry.transferred_global_request_id().child_id != -1;
-  if (is_transfer)
-    dest_render_frame_host->set_is_loading(true);
-
-  // Navigate in the desired RenderFrameHost.
-  // We can skip this step in the rare case that this is a transfer navigation
-  // which began in the chosen RenderFrameHost, since the request has already
-  // been issued.  In that case, simply resume the response.
-  bool is_transfer_to_same = is_transfer &&
-                             entry.transferred_global_request_id().child_id ==
-                                 dest_render_frame_host->GetProcess()->GetID();
-  if (!is_transfer_to_same) {
-    navigation_data_.reset(new NavigationMetricsData(navigation_start, dest_url,
-                                                     entry.restore_type()));
-    // Create the navigation parameters.
-    FrameMsg_Navigate_Type::Value navigation_type =
-        GetNavigationType(controller_->GetBrowserContext(), entry, reload_type);
-    dest_render_frame_host->Navigate(
-        entry.ConstructCommonNavigationParams(dest_url, dest_referrer,
-                                              navigation_type, lofi_state,
-                                              navigation_start),
-        entry.ConstructStartNavigationParams(),
-        entry.ConstructRequestNavigationParams(
-            frame_entry, is_same_document_history_load,
-            frame_tree_node->has_committed_real_load(),
-            controller_->GetPendingEntryIndex() == -1,
-            controller_->GetIndexOfEntry(&entry),
-            controller_->GetLastCommittedEntryIndex(),
-            controller_->GetEntryCount()));
   } else {
-    // No need to navigate again.  Just resume the deferred request.
-    dest_render_frame_host->GetProcess()->ResumeDeferredNavigation(
-        entry.transferred_global_request_id());
+    RenderFrameHostImpl* dest_render_frame_host =
+        frame_tree_node->render_manager()->Navigate(dest_url, frame_entry,
+                                                    entry);
+    if (!dest_render_frame_host)
+      return false;  // Unable to create the desired RenderFrameHost.
+
+    // Make sure no code called via RFHM::Navigate clears the pending entry.
+    if (is_pending_entry)
+      CHECK_EQ(controller_->GetPendingEntry(), &entry);
+
+    // For security, we should never send non-Web-UI URLs to a Web UI renderer.
+    // Double check that here.
+    CheckWebUIRendererDoesNotDisplayNormalURL(dest_render_frame_host, dest_url);
+
+    // In the case of a transfer navigation, set the destination
+    // RenderFrameHost as loading.  This ensures that the RenderFrameHost gets
+    // in a loading state without emitting a spurious DidStartLoading
+    // notification at the FrameTreeNode level (since the FrameTreeNode was
+    // already loading). Note that this works both for a transfer to a
+    // different RenderFrameHost and in the rare case where the navigation is
+    // transferred back to the same RenderFrameHost.
+    bool is_transfer = entry.transferred_global_request_id().child_id != -1;
+    if (is_transfer)
+      dest_render_frame_host->set_is_loading(true);
+
+    // Navigate in the desired RenderFrameHost.
+    // We can skip this step in the rare case that this is a transfer navigation
+    // which began in the chosen RenderFrameHost, since the request has already
+    // been issued.  In that case, simply resume the response.
+    bool is_transfer_to_same =
+        is_transfer &&
+        entry.transferred_global_request_id().child_id ==
+            dest_render_frame_host->GetProcess()->GetID();
+    if (!is_transfer_to_same) {
+      navigation_data_.reset(new NavigationMetricsData(
+          navigation_start, dest_url, entry.restore_type()));
+      // Create the navigation parameters.
+      FrameMsg_Navigate_Type::Value navigation_type = GetNavigationType(
+          controller_->GetBrowserContext(), entry, reload_type);
+      dest_render_frame_host->Navigate(
+          entry.ConstructCommonNavigationParams(dest_url, dest_referrer,
+                                                navigation_type, lofi_state,
+                                                navigation_start),
+          entry.ConstructStartNavigationParams(),
+          entry.ConstructRequestNavigationParams(
+              frame_entry, is_same_document_history_load,
+              frame_tree_node->has_committed_real_load(),
+              controller_->GetPendingEntryIndex() == -1,
+              controller_->GetIndexOfEntry(&entry),
+              controller_->GetLastCommittedEntryIndex(),
+              controller_->GetEntryCount()));
+    } else {
+      // No need to navigate again.  Just resume the deferred request.
+      dest_render_frame_host->GetProcess()->ResumeDeferredNavigation(
+          entry.transferred_global_request_id());
+    }
   }
 
   // Make sure no code called via RFH::Navigate clears the pending entry.
@@ -862,13 +859,14 @@ void NavigatorImpl::OnBeginNavigation(
 }
 
 // PlzNavigate
-void NavigatorImpl::CommitNavigation(FrameTreeNode* frame_tree_node,
+void NavigatorImpl::CommitNavigation(NavigationRequest* navigation_request,
                                      ResourceResponse* response,
                                      scoped_ptr<StreamHandle> body) {
   CHECK(IsBrowserSideNavigationEnabled());
 
-  NavigationRequest* navigation_request = frame_tree_node->navigation_request();
   DCHECK(navigation_request);
+  FrameTreeNode* frame_tree_node = navigation_request->frame_tree_node();
+  DCHECK(frame_tree_node);
   DCHECK(response ||
          !ShouldMakeNetworkRequestForURL(
              navigation_request->common_params().url));
@@ -1005,12 +1003,20 @@ void NavigatorImpl::RequestNavigation(
       frame_tree_node->current_frame_host()->ShouldDispatchBeforeUnload();
   FrameMsg_Navigate_Type::Value navigation_type =
       GetNavigationType(controller_->GetBrowserContext(), entry, reload_type);
-  frame_tree_node->CreatedNavigationRequest(
+  scoped_ptr<NavigationRequest> scoped_request =
       NavigationRequest::CreateBrowserInitiated(
           frame_tree_node, dest_url, dest_referrer, frame_entry, entry,
           navigation_type, lofi_state, is_same_document_history_load,
-          navigation_start, controller_));
-  NavigationRequest* navigation_request = frame_tree_node->navigation_request();
+          navigation_start, controller_);
+  NavigationRequest* navigation_request = scoped_request.get();
+
+  // For Javascript navigations, do not assign the NavigationRequest to the
+  // FrameTreeNode, as navigating to a Javascript URL should not interrupt a
+  // previous navigation. BeginNavigation will have it commit, and the
+  // scoped_request will be destroyed at the end of this function.
+  if (!dest_url.SchemeIs(url::kJavaScriptScheme))
+    frame_tree_node->CreatedNavigationRequest(std::move(scoped_request));
+
   navigation_request->CreateNavigationHandle(entry.GetUniqueID());
 
   // Have the current renderer execute its beforeunload event if needed. If it

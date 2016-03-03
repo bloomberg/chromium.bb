@@ -100,6 +100,8 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
 
   NavigationState state() const { return state_; }
 
+  FrameTreeNode* frame_tree_node() const { return frame_tree_node_; }
+
   SiteInstanceImpl* source_site_instance() const {
     return source_site_instance_.get();
   }

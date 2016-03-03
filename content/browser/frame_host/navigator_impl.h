@@ -77,7 +77,7 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
                          const CommonNavigationParams& common_params,
                          const BeginNavigationParams& begin_params,
                          scoped_refptr<ResourceRequestBody> body) override;
-  void CommitNavigation(FrameTreeNode* frame_tree_node,
+  void CommitNavigation(NavigationRequest* navigation_request,
                         ResourceResponse* response,
                         scoped_ptr<StreamHandle> body) override;
   void FailedNavigation(FrameTreeNode* frame_tree_node,

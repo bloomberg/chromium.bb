@@ -151,7 +151,7 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
   // PlzNavigate
   // Signal |render_frame_host| that a navigation is ready to commit (the
   // response to the navigation request has been received).
-  virtual void CommitNavigation(FrameTreeNode* frame_tree_node,
+  virtual void CommitNavigation(NavigationRequest* navigation_request,
                                 ResourceResponse* response,
                                 scoped_ptr<StreamHandle> body);
 

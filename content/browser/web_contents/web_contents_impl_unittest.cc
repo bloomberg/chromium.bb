@@ -3433,16 +3433,12 @@ TEST_F(WebContentsImplTest, ResetJavaScriptDialogOnUserNavigate) {
   contents()->SetJavaScriptDialogManagerForTesting(delegate.get());
 
   // A user-initiated navigation.
-
-  contents()->GetMainFrame()->PrepareForCommit();
   contents()->TestDidNavigate(contents()->GetMainFrame(), 1, 0, true,
                               GURL("about:whatever"),
                               ui::PAGE_TRANSITION_TYPED);
   EXPECT_EQ(1u, delegate->reset_count());
 
   // An automatic navigation.
-
-  contents()->GetMainFrame()->PrepareForCommit();
   contents()->GetMainFrame()->SendNavigateWithModificationCallback(
       2, 0, true, GURL(url::kAboutBlankURL), base::Bind(SetAsNonUserGesture));
 

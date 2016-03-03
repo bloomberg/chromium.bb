@@ -15,8 +15,10 @@
 #include "content/browser/frame_host/frame_navigation_entry.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
+#include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/site_isolation_policy.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_controller.h"
 #include "content/public/browser/resource_dispatcher_host.h"
@@ -25,6 +27,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/bindings_policy.h"
+#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -3107,6 +3110,15 @@ class FailureWatcher : public WebContentsObserver {
     message_loop_runner_->Quit();
   }
 
+  void DidFinishNavigation(NavigationHandle* handle) override {
+    if (handle->GetFrameTreeNodeId() != frame_tree_node_id_)
+      return;
+    if (handle->HasCommitted())
+      return;
+
+    message_loop_runner_->Quit();
+  }
+
   // The id of the FrameTreeNode whose navigations to observe.
   int frame_tree_node_id_;
 
@@ -3131,7 +3143,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
       "/navigation_controller/simple_page_1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), url1));
 
-  // Have the user decide to go to a different page which is very slow.
+  // Have the user decide to go to a different page which will not commit.
   GURL url2(embedded_test_server()->GetURL(
       "/navigation_controller/simple_page_2.html"));
   NavigationStallDelegate stall_delegate(url2);
@@ -3151,8 +3163,10 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
     // This LoadURL ends up purging the pending entry, which is why this is
     // tricky.
     EXPECT_EQ(nullptr, controller.GetPendingEntry());
+    EXPECT_TRUE(shell()->web_contents()->IsLoading());
     shell()->web_contents()->Stop();
     watcher.Wait();
+    EXPECT_FALSE(shell()->web_contents()->IsLoading());
   }
 
   ResourceDispatcherHost::Get()->SetDelegate(nullptr);
