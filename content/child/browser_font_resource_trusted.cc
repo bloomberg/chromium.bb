@@ -20,10 +20,10 @@
 #include "third_party/WebKit/public/platform/WebCanvas.h"
 #include "third_party/WebKit/public/platform/WebFloatPoint.h"
 #include "third_party/WebKit/public/platform/WebFloatRect.h"
+#include "third_party/WebKit/public/platform/WebFont.h"
+#include "third_party/WebKit/public/platform/WebFontDescription.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
-#include "third_party/WebKit/public/web/WebFont.h"
-#include "third_party/WebKit/public/web/WebFontDescription.h"
-#include "third_party/WebKit/public/web/WebTextRun.h"
+#include "third_party/WebKit/public/platform/WebTextRun.h"
 #include "third_party/icu/source/common/unicode/ubidi.h"
 #include "third_party/skia/include/core/SkRect.h"
 

@@ -31,7 +31,7 @@
 #ifndef WebFontDescription_h
 #define WebFontDescription_h
 
-#include "../platform/WebString.h"
+#include "WebString.h"
 
 namespace blink {
 
@@ -92,9 +92,9 @@ struct WebFontDescription {
     short letterSpacing;
     short wordSpacing;
 
-#if BLINK_IMPLEMENTATION
-    WebFontDescription(const FontDescription&);
-    operator FontDescription() const;
+#if INSIDE_BLINK
+    BLINK_PLATFORM_EXPORT WebFontDescription(const FontDescription&);
+    BLINK_PLATFORM_EXPORT operator FontDescription() const;
 #endif
 };
 

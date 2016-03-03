@@ -28,44 +28,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebFontImpl_h
-#define WebFontImpl_h
+#include "public/platform/WebTextRun.h"
 
-#include "platform/fonts/Font.h"
-#include "platform/graphics/paint/DisplayItemClient.h"
-#include "public/web/WebFont.h"
+#include "platform/text/TextRun.h"
 
 namespace blink {
 
-class FontDescription;
-
-class WebFontImpl final : public WebFont, public DisplayItemClient {
-public:
-    explicit WebFontImpl(const FontDescription&);
-
-    WebFontDescription fontDescription() const override;
-
-    int ascent() const override;
-    int descent() const override;
-    int height() const override;
-    int lineSpacing() const override;
-    float xHeight() const override;
-
-    void drawText(WebCanvas*, const WebTextRun&, const WebFloatPoint& leftBaseline, WebColor,
-        const WebRect& clip) const override;
-
-    int calculateWidth(const WebTextRun&) const override;
-    int offsetForPosition(const WebTextRun&, float position) const override;
-    WebFloatRect selectionRectForText(const WebTextRun&, const WebFloatPoint& leftBaseline,
-        int height, int from = 0, int to = -1) const override;
-
-    String debugName() const final { return "WebFontImpl"; }
-    LayoutRect visualRect() const override;
-
-private:
-    Font m_font;
-};
+WebTextRun::operator TextRun() const
+{
+    return TextRun(text, 0, 0, TextRun::AllowTrailingExpansion, rtl ? RTL : LTR, directionalOverride);
+}
 
 } // namespace blink
-
-#endif

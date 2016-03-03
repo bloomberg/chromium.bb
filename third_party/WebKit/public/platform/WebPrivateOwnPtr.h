@@ -78,6 +78,12 @@ public:
         return adoptPtr(ptr);
     }
 
+    T& operator*() const
+    {
+        BLINK_ASSERT(m_ptr);
+        return *m_ptr;
+    }
+
     T* operator->() const
     {
         BLINK_ASSERT(m_ptr);

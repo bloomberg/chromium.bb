@@ -31,7 +31,8 @@
 #ifndef WebTextRun_h
 #define WebTextRun_h
 
-#include "../platform/WebString.h"
+#include "WebCommon.h"
+#include "WebString.h"
 
 namespace blink {
 
@@ -54,10 +55,10 @@ struct WebTextRun {
     bool rtl;
     bool directionalOverride;
 
-#if BLINK_IMPLEMENTATION
+#if INSIDE_BLINK
     // The resulting blink::TextRun will refer to the text in this
     // struct, so "this" must outlive the WebCore text run.
-    operator TextRun() const;
+    BLINK_PLATFORM_EXPORT operator TextRun() const;
 #endif
 };
 

@@ -28,15 +28,42 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "public/web/WebTextRun.h"
+#include "public/platform/WebFontDescription.h"
 
-#include "platform/text/TextRun.h"
+#include "platform/fonts/FontDescription.h"
 
 namespace blink {
 
-WebTextRun::operator TextRun() const
+WebFontDescription::WebFontDescription(const FontDescription& desc)
 {
-    return TextRun(text, 0, 0, TextRun::AllowTrailingExpansion, rtl ? RTL : LTR, directionalOverride);
+    family = desc.family().family();
+    genericFamily = static_cast<GenericFamily>(desc.genericFamily());
+    size = desc.specifiedSize();
+    italic = desc.style() == FontStyleItalic;
+    smallCaps = desc.variant() == FontVariantSmallCaps;
+    weight = static_cast<Weight>(desc.weight());
+    smoothing = static_cast<Smoothing>(desc.fontSmoothing());
+    letterSpacing = desc.letterSpacing();
+    wordSpacing = desc.wordSpacing();
+}
+
+WebFontDescription::operator FontDescription() const
+{
+    FontFamily fontFamily;
+    fontFamily.setFamily(family);
+
+    FontDescription desc;
+    desc.setFamily(fontFamily);
+    desc.setGenericFamily(static_cast<FontDescription::GenericFamilyType>(genericFamily));
+    desc.setSpecifiedSize(size);
+    desc.setComputedSize(size);
+    desc.setStyle(italic ? FontStyleItalic : FontStyleNormal);
+    desc.setVariant(smallCaps ? FontVariantSmallCaps : FontVariantNormal);
+    desc.setWeight(static_cast<FontWeight>(weight));
+    desc.setFontSmoothing(static_cast<FontSmoothingMode>(smoothing));
+    desc.setLetterSpacing(letterSpacing);
+    desc.setWordSpacing(wordSpacing);
+    return desc;
 }
 
 } // namespace blink
