@@ -11,6 +11,7 @@
 #include <limits>
 #include <set>
 
+#include "base/containers/adapters.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/trace_event/trace_event.h"
@@ -30,6 +31,7 @@
 #include "cc/layers/heads_up_display_layer_impl.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_iterator.h"
+#include "cc/layers/layer_list_iterator.h"
 #include "cc/layers/render_surface_impl.h"
 #include "cc/layers/scrollbar_layer_impl_base.h"
 #include "cc/resources/ui_resource_request.h"
@@ -368,8 +370,8 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
 
   if (hud_layer())
     target_tree->set_hud_layer(static_cast<HeadsUpDisplayLayerImpl*>(
-        LayerTreeHostCommon::FindLayerInSubtree(
-            target_tree->root_layer(), hud_layer()->id())));
+        LayerTreeHostCommon::FindLayerInSubtree(target_tree->root_layer(),
+                                                hud_layer()->id())));
   else
     target_tree->set_hud_layer(NULL);
 
@@ -902,8 +904,8 @@ bool LayerTreeImpl::UpdateDrawProperties(bool update_lcd_text) {
                      "layers_updated_count", layers_updated_count);
   }
 
-  DCHECK(!needs_update_draw_properties_) <<
-      "CalcDrawProperties should not set_needs_update_draw_properties()";
+  DCHECK(!needs_update_draw_properties_)
+      << "CalcDrawProperties should not set_needs_update_draw_properties()";
   return true;
 }
 
@@ -1415,10 +1417,9 @@ void LayerTreeImpl::RemoveLayerWithCopyOutputRequest(LayerImpl* layer) {
   // they are aborted if not serviced during draw.
   DCHECK(IsActiveTree());
 
-  std::vector<LayerImpl*>::iterator it = std::find(
-      layers_with_copy_output_request_.begin(),
-      layers_with_copy_output_request_.end(),
-      layer);
+  std::vector<LayerImpl*>::iterator it =
+      std::find(layers_with_copy_output_request_.begin(),
+                layers_with_copy_output_request_.end(), layer);
   DCHECK(it != layers_with_copy_output_request_.end());
   layers_with_copy_output_request_.erase(it);
 
@@ -1613,8 +1614,8 @@ static bool PointHitsLayer(const LayerImpl* layer,
   return true;
 }
 
-struct FindClosestMatchingLayerDataForRecursion {
-  FindClosestMatchingLayerDataForRecursion()
+struct FindClosestMatchingLayerState {
+  FindClosestMatchingLayerState()
       : closest_match(NULL),
         closest_distance(-std::numeric_limits<float>::infinity()) {}
   LayerImpl* closest_match;
@@ -1624,46 +1625,40 @@ struct FindClosestMatchingLayerDataForRecursion {
 };
 
 template <typename Functor>
-static void FindClosestMatchingLayer(
-    const gfx::PointF& screen_space_point,
-    LayerImpl* layer,
-    const Functor& func,
-    const TransformTree& transform_tree,
-    const ClipTree& clip_tree,
-    FindClosestMatchingLayerDataForRecursion* data_for_recursion) {
-  size_t children_size = layer->children().size();
-  for (size_t i = 0; i < children_size; ++i) {
-    size_t index = children_size - 1 - i;
-    FindClosestMatchingLayer(screen_space_point, layer->children()[index].get(),
-                             func, transform_tree, clip_tree,
-                             data_for_recursion);
-  }
+static void FindClosestMatchingLayer(const gfx::PointF& screen_space_point,
+                                     LayerImpl* root_layer,
+                                     const Functor& func,
+                                     const TransformTree& transform_tree,
+                                     const ClipTree& clip_tree,
+                                     FindClosestMatchingLayerState* state) {
+  // We want to iterate from front to back when hit testing.
+  for (auto* layer : base::Reversed(*root_layer->layer_tree_impl())) {
+    if (!func(layer))
+      continue;
 
-  if (!func(layer))
-    return;
+    float distance_to_intersection = 0.f;
+    bool hit = false;
+    if (layer->Is3dSorted())
+      hit = PointHitsLayer(layer, screen_space_point, &distance_to_intersection,
+                           transform_tree, clip_tree);
+    else
+      hit = PointHitsLayer(layer, screen_space_point, nullptr, transform_tree,
+                           clip_tree);
 
-  float distance_to_intersection = 0.f;
-  bool hit = false;
-  if (layer->Is3dSorted())
-    hit = PointHitsLayer(layer, screen_space_point, &distance_to_intersection,
-                         transform_tree, clip_tree);
-  else
-    hit = PointHitsLayer(layer, screen_space_point, nullptr, transform_tree,
-                         clip_tree);
+    if (!hit)
+      continue;
 
-  if (!hit)
-    return;
+    bool in_front_of_previous_candidate =
+        state->closest_match &&
+        layer->sorting_context_id() ==
+            state->closest_match->sorting_context_id() &&
+        distance_to_intersection >
+            state->closest_distance + std::numeric_limits<float>::epsilon();
 
-  bool in_front_of_previous_candidate =
-      data_for_recursion->closest_match &&
-      layer->sorting_context_id() ==
-          data_for_recursion->closest_match->sorting_context_id() &&
-      distance_to_intersection > data_for_recursion->closest_distance +
-                                     std::numeric_limits<float>::epsilon();
-
-  if (!data_for_recursion->closest_match || in_front_of_previous_candidate) {
-    data_for_recursion->closest_distance = distance_to_intersection;
-    data_for_recursion->closest_match = layer;
+    if (!state->closest_match || in_front_of_previous_candidate) {
+      state->closest_distance = distance_to_intersection;
+      state->closest_match = layer;
+    }
   }
 }
 
@@ -1677,8 +1672,7 @@ static bool ScrollsAnyDrawnRenderSurfaceLayerListMember(LayerImpl* layer) {
     return false;
   for (std::set<LayerImpl*>::const_iterator it =
            layer->scroll_children()->begin();
-       it != layer->scroll_children()->end();
-       ++it) {
+       it != layer->scroll_children()->end(); ++it) {
     if ((*it)->layer_or_descendant_is_drawn())
       return true;
   }
@@ -1693,12 +1687,11 @@ struct FindScrollingLayerFunctor {
 
 LayerImpl* LayerTreeImpl::FindFirstScrollingLayerThatIsHitByPoint(
     const gfx::PointF& screen_space_point) {
-  FindClosestMatchingLayerDataForRecursion data_for_recursion;
-  FindClosestMatchingLayer(screen_space_point, root_layer(),
-                           FindScrollingLayerFunctor(),
-                           property_trees_.transform_tree,
-                           property_trees_.clip_tree, &data_for_recursion);
-  return data_for_recursion.closest_match;
+  FindClosestMatchingLayerState state;
+  FindClosestMatchingLayer(
+      screen_space_point, root_layer(), FindScrollingLayerFunctor(),
+      property_trees_.transform_tree, property_trees_.clip_tree, &state);
+  return state.closest_match;
 }
 
 struct HitTestVisibleScrollableOrTouchableFunctor {
@@ -1719,12 +1712,12 @@ LayerImpl* LayerTreeImpl::FindLayerThatIsHitByPoint(
   bool update_lcd_text = false;
   if (!UpdateDrawProperties(update_lcd_text))
     return NULL;
-  FindClosestMatchingLayerDataForRecursion data_for_recursion;
+  FindClosestMatchingLayerState state;
   FindClosestMatchingLayer(screen_space_point, root_layer(),
                            HitTestVisibleScrollableOrTouchableFunctor(),
                            property_trees_.transform_tree,
-                           property_trees_.clip_tree, &data_for_recursion);
-  return data_for_recursion.closest_match;
+                           property_trees_.clip_tree, &state);
+  return state.closest_match;
 }
 
 static bool LayerHasTouchEventHandlersAt(const gfx::PointF& screen_space_point,
@@ -1769,11 +1762,11 @@ LayerImpl* LayerTreeImpl::FindLayerThatIsHitByPointInTouchHandlerRegion(
   FindTouchEventLayerFunctor func = {screen_space_point,
                                      property_trees_.transform_tree,
                                      property_trees_.clip_tree};
-  FindClosestMatchingLayerDataForRecursion data_for_recursion;
+  FindClosestMatchingLayerState state;
   FindClosestMatchingLayer(screen_space_point, root_layer(), func,
                            property_trees_.transform_tree,
-                           property_trees_.clip_tree, &data_for_recursion);
-  return data_for_recursion.closest_match;
+                           property_trees_.clip_tree, &state);
+  return state.closest_match;
 }
 
 void LayerTreeImpl::RegisterSelection(const LayerSelection& selection) {
@@ -1878,7 +1871,7 @@ void LayerTreeImpl::SetPendingPageScaleAnimation(
 }
 
 scoped_ptr<PendingPageScaleAnimation>
-    LayerTreeImpl::TakePendingPageScaleAnimation() {
+LayerTreeImpl::TakePendingPageScaleAnimation() {
   return std::move(pending_page_scale_animation_);
 }
 
