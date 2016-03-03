@@ -161,7 +161,7 @@ void CSSParserImpl::parseStyleSheet(const String& string, const CSSParserContext
 {
     TRACE_EVENT_BEGIN2(
         "blink,blink_style", "CSSParserImpl::parseStyleSheet",
-        "baseUrl", context.baseURL().string().utf8(),
+        "baseUrl", context.baseURL().getString().utf8(),
         "mode", context.mode());
 
     TRACE_EVENT_BEGIN0("blink,blink_style", "CSSParserImpl::parseStyleSheet.tokenize");

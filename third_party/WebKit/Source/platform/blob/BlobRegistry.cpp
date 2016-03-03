@@ -80,13 +80,13 @@ static void saveToOriginMap(SecurityOrigin* origin, const KURL& url)
     // security origin or file URL, save the mapping between url and origin so
     // that the origin can be retrived when doing security origin check.
     if (origin && BlobURL::getOrigin(url) == "null")
-        originMap()->add(url.string(), origin);
+        originMap()->add(url.getString(), origin);
 }
 
 static void removeFromOriginMap(const KURL& url)
 {
     if (BlobURL::getOrigin(url) == "null")
-        originMap()->remove(url.string());
+        originMap()->remove(url.getString());
 }
 
 void BlobRegistry::registerBlobData(const String& uuid, PassOwnPtr<BlobData> data)
@@ -226,7 +226,7 @@ BlobOriginCache::BlobOriginCache()
 SecurityOrigin* BlobOriginCache::cachedOrigin(const KURL& url)
 {
     if (url.protocolIs("blob"))
-        return originMap()->get(url.string());
+        return originMap()->get(url.getString());
     return 0;
 }
 

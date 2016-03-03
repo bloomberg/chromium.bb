@@ -51,7 +51,7 @@ String BlobURL::getOrigin(const KURL& url)
 
     unsigned startIndex = url.pathStart();
     unsigned endIndex = url.pathAfterLastSlash();
-    return url.string().substring(startIndex, endIndex - startIndex - 1);
+    return url.getString().substring(startIndex, endIndex - startIndex - 1);
 }
 
 KURL BlobURL::createInternalStreamURL()

@@ -49,7 +49,7 @@ public:
     static PassRefPtrWillBeRawPtr<XSLStyleSheet> createEmbedded(ProcessingInstruction* parentNode, const KURL& finalURL)
     {
         ASSERT(RuntimeEnabledFeatures::xsltEnabled());
-        return adoptRefWillBeNoop(new XSLStyleSheet(parentNode, finalURL.string(), finalURL, true));
+        return adoptRefWillBeNoop(new XSLStyleSheet(parentNode, finalURL.getString(), finalURL, true));
     }
 
     // Taking an arbitrary node is unsafe, because owner node pointer can become

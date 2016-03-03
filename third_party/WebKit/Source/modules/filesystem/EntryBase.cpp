@@ -56,7 +56,7 @@ String EntryBase::toURL() const
     if (!m_fileSystem->supportsToURL())
         m_cachedURL = emptyString();
     else
-        m_cachedURL = m_fileSystem->createFileSystemURL(this).string();
+        m_cachedURL = m_fileSystem->createFileSystemURL(this).getString();
     return m_cachedURL;
 }
 

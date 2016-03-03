@@ -22,7 +22,7 @@ public:
     void checkDeepCopied(const KURL& a, const KURL& b)
     {
         EXPECT_EQ(a, b);
-        checkDeepCopied(a.string(), b.string());
+        checkDeepCopied(a.getString(), b.getString());
         if (a.innerURL() && b.innerURL())
             checkDeepCopied(*a.innerURL(), *b.innerURL());
     }
@@ -99,9 +99,9 @@ TEST_F(EncodedFormDataTest, DeepCopy)
             EXPECT_TRUE(copyElements[i].m_blobUUID.impl()->hasOneRef());
         }
 
-        if (copyElements[i].m_fileSystemURL.string().impl()) {
-            EXPECT_NE(originalElements[i].m_fileSystemURL.string().impl(), copyElements[i].m_fileSystemURL.string().impl());
-            EXPECT_TRUE(copyElements[i].m_fileSystemURL.string().impl()->hasOneRef());
+        if (copyElements[i].m_fileSystemURL.getString().impl()) {
+            EXPECT_NE(originalElements[i].m_fileSystemURL.getString().impl(), copyElements[i].m_fileSystemURL.getString().impl());
+            EXPECT_TRUE(copyElements[i].m_fileSystemURL.getString().impl()->hasOneRef());
         }
 
         EXPECT_EQ(nullptr, copyElements[i].m_fileSystemURL.innerURL());

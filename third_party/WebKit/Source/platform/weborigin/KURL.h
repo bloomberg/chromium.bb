@@ -66,7 +66,7 @@ public:
     // Creates an isolated URL object suitable for sending to another thread.
     static KURL createIsolated(ParsedURLStringTag, const String&);
 
-    bool isHashTableDeletedValue() const { return string().isHashTableDeletedValue(); }
+    bool isHashTableDeletedValue() const { return getString().isHashTableDeletedValue(); }
 
     // Resolves the relative URL with the given base URL. If provided, the
     // TextEncoding is used to encode non-ASCII characers. The base URL can be
@@ -113,7 +113,7 @@ public:
     bool canSetPathname() const { return isHierarchical(); }
     bool isHierarchical() const;
 
-    const String& string() const { return m_string; }
+    const String& getString() const { return m_string; }
 
     String elidedString() const;
 
@@ -176,7 +176,7 @@ public:
     unsigned pathEnd() const;
     unsigned pathAfterLastSlash() const;
 
-    operator const String&() const { return string(); }
+    operator const String&() const { return getString(); }
 
     const url::Parsed& parsed() const { return m_parsed; }
 
@@ -239,32 +239,32 @@ PLATFORM_EXPORT String encodeWithURLEscapeSequences(const String&);
 
 inline bool operator==(const KURL& a, const KURL& b)
 {
-    return a.string() == b.string();
+    return a.getString() == b.getString();
 }
 
 inline bool operator==(const KURL& a, const String& b)
 {
-    return a.string() == b;
+    return a.getString() == b;
 }
 
 inline bool operator==(const String& a, const KURL& b)
 {
-    return a == b.string();
+    return a == b.getString();
 }
 
 inline bool operator!=(const KURL& a, const KURL& b)
 {
-    return a.string() != b.string();
+    return a.getString() != b.getString();
 }
 
 inline bool operator!=(const KURL& a, const String& b)
 {
-    return a.string() != b;
+    return a.getString() != b;
 }
 
 inline bool operator!=(const String& a, const KURL& b)
 {
-    return a != b.string();
+    return a != b.getString();
 }
 
 } // namespace blink

@@ -116,11 +116,11 @@ String MarkupFormatter::resolveURLIfNeeded(const Element& element, const String&
 {
     switch (m_resolveURLsMethod) {
     case ResolveAllURLs:
-        return element.document().completeURL(urlString).string();
+        return element.document().completeURL(urlString).getString();
 
     case ResolveNonLocalURLs:
         if (!element.document().url().isLocalFile())
-            return element.document().completeURL(urlString).string();
+            return element.document().completeURL(urlString).getString();
         break;
 
     case DoNotResolveURLs:

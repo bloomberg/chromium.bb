@@ -26,7 +26,7 @@ void DevToolsHostFileSystem::upgradeDraggedFileSystemPermissions(DevToolsHost& h
     message->setString("method", "upgradeDraggedFileSystemPermissions");
     RefPtr<JSONArray> params = JSONArray::create();
     message->setArray("params", params);
-    params->pushString(domFileSystem->rootURL().string());
+    params->pushString(domFileSystem->rootURL().getString());
     host.sendMessageToEmbedder(message->toJSONString());
 }
 

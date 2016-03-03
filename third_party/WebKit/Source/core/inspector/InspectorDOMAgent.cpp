@@ -1410,12 +1410,12 @@ String InspectorDOMAgent::documentURLString(Document* document)
 {
     if (!document || document->url().isNull())
         return "";
-    return document->url().string();
+    return document->url().getString();
 }
 
 static String documentBaseURLString(Document* document)
 {
-    return document->baseURLForOverride(document->baseURL()).string();
+    return document->baseURLForOverride(document->baseURL()).getString();
 }
 
 static protocol::DOM::ShadowRootType shadowRootType(ShadowRoot* shadowRoot)

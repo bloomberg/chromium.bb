@@ -222,7 +222,7 @@ void HTMLImportChild::showThis()
         isFirst,
         m_customElementMicrotaskStep.get(),
         isSync() ? "Y" : "N",
-        url().string().utf8().data());
+        url().getString().utf8().data());
 }
 #endif
 

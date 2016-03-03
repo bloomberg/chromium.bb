@@ -34,8 +34,8 @@ MediaStream* HTMLMediaElementCapture::captureStream(HTMLMediaElement& element, E
     }
 
     // If |element| is actually playing a MediaStream, just clone it.
-    if (HTMLMediaElement::isMediaStreamURL(element.currentSrc().string())) {
-        return MediaStream::create(element.executionContext(), MediaStreamRegistry::registry().lookupMediaStreamDescriptor(element.currentSrc().string()));
+    if (HTMLMediaElement::isMediaStreamURL(element.currentSrc().getString())) {
+        return MediaStream::create(element.executionContext(), MediaStreamRegistry::registry().lookupMediaStreamDescriptor(element.currentSrc().getString()));
     }
 
     // TODO(mcasas): Only <video> tags are supported at the moment.

@@ -43,13 +43,13 @@ void MediaStreamRegistry::registerURL(SecurityOrigin*, const KURL& url, URLRegis
 {
     ASSERT(&stream->registry() == this);
     ASSERT(isMainThread());
-    m_streamDescriptors.set(url.string(), static_cast<MediaStream*>(stream)->descriptor());
+    m_streamDescriptors.set(url.getString(), static_cast<MediaStream*>(stream)->descriptor());
 }
 
 void MediaStreamRegistry::unregisterURL(const KURL& url)
 {
     ASSERT(isMainThread());
-    m_streamDescriptors.remove(url.string());
+    m_streamDescriptors.remove(url.getString());
 }
 
 bool MediaStreamRegistry::contains(const String& url)

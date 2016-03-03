@@ -287,7 +287,7 @@ void LocalFrame::navigate(Document& originDocument, const KURL& url, bool replac
         request.resourceRequest().setHasUserGesture(userGestureStatus == UserGestureStatus::Active);
         m_loader.load(request);
     } else {
-        m_navigationScheduler->scheduleLocationChange(&originDocument, url.string(), replaceCurrentItem);
+        m_navigationScheduler->scheduleLocationChange(&originDocument, url.getString(), replaceCurrentItem);
     }
 }
 
@@ -377,8 +377,8 @@ void LocalFrame::printNavigationErrorMessage(const Frame& targetFrame, const cha
 {
     // URLs aren't available for RemoteFrames, so the error message uses their
     // origin instead.
-    String targetFrameDescription = targetFrame.isLocalFrame() ? "with URL '" + toLocalFrame(targetFrame).document()->url().string() + "'" : "with origin '" + targetFrame.securityContext()->securityOrigin()->toString() + "'";
-    String message = "Unsafe JavaScript attempt to initiate navigation for frame " + targetFrameDescription + " from frame with URL '" + document()->url().string() + "'. " + reason + "\n";
+    String targetFrameDescription = targetFrame.isLocalFrame() ? "with URL '" + toLocalFrame(targetFrame).document()->url().getString() + "'" : "with origin '" + targetFrame.securityContext()->securityOrigin()->toString() + "'";
+    String message = "Unsafe JavaScript attempt to initiate navigation for frame " + targetFrameDescription + " from frame with URL '" + document()->url().getString() + "'. " + reason + "\n";
 
     localDOMWindow()->printErrorMessage(message);
 }

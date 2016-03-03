@@ -86,7 +86,7 @@ static bool verifyCustomHandlerURL(const Document& document, const String& url, 
     KURL kurl = document.completeURL(url);
 
     if (kurl.isEmpty() || !kurl.isValid()) {
-        exceptionState.throwDOMException(SyntaxError, "The custom handler URL created by removing '%s' and prepending '" + document.baseURL().string() + "' is invalid.");
+        exceptionState.throwDOMException(SyntaxError, "The custom handler URL created by removing '%s' and prepending '" + document.baseURL().getString() + "' is invalid.");
         return false;
     }
 

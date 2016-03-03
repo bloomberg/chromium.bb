@@ -41,12 +41,12 @@ struct KURLHash {
     STATIC_ONLY(KURLHash);
     static unsigned hash(const KURL& key)
     {
-        return key.string().impl()->hash();
+        return key.getString().impl()->hash();
     }
 
     static bool equal(const KURL& a, const KURL& b)
     {
-        return StringHash::equal(a.string(), b.string());
+        return StringHash::equal(a.getString(), b.getString());
     }
 
     static const bool safeToCompareToEmptyOrDeleted = false;

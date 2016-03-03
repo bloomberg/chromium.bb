@@ -119,7 +119,7 @@ void PresentationController::setDefaultRequestUrl(const KURL& url)
         return;
 
     if (url.isValid())
-        m_client->setDefaultPresentationUrl(url.string());
+        m_client->setDefaultPresentationUrl(url.getString());
     else
         m_client->setDefaultPresentationUrl(blink::WebString());
 }

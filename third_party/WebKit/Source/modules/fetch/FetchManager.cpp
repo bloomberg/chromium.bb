@@ -242,7 +242,7 @@ void FetchManager::Loader::didReceiveResponse(unsigned long, const ResourceRespo
             case WebURLRequest::FetchRequestModeCORS:
             case WebURLRequest::FetchRequestModeCORSWithForcedPreflight:
             case WebURLRequest::FetchRequestModeNavigate:
-                performNetworkError("Fetch API cannot load " + m_request->url().string() + ". Redirects to data: URL are allowed only when mode is \"no-cors\".");
+                performNetworkError("Fetch API cannot load " + m_request->url().getString() + ". Redirects to data: URL are allowed only when mode is \"no-cors\".");
                 return;
             }
         }
@@ -367,7 +367,7 @@ void FetchManager::Loader::didFailAccessControlCheck(const ResourceError& error)
 
 void FetchManager::Loader::didFailRedirectCheck()
 {
-    failed("Fetch API cannot load " + m_request->url().string() + ". Redirect failed.");
+    failed("Fetch API cannot load " + m_request->url().getString() + ". Redirect failed.");
 }
 
 Document* FetchManager::Loader::document() const
@@ -388,7 +388,7 @@ void FetchManager::Loader::loadSucceeded()
         && m_responseHttpStatusCode >= 200 && m_responseHttpStatusCode < 300) {
         document()->frame()->page()->chromeClient().ajaxSucceeded(document()->frame());
     }
-    InspectorInstrumentation::didFinishFetch(m_executionContext, this, m_request->method(), m_request->url().string());
+    InspectorInstrumentation::didFinishFetch(m_executionContext, this, m_request->method(), m_request->url().getString());
     notifyFinished();
 }
 
@@ -441,7 +441,7 @@ void FetchManager::Loader::start()
     // "- |request|'s mode is |same-origin|"
     if (m_request->mode() == WebURLRequest::FetchRequestModeSameOrigin) {
         // "A network error."
-        performNetworkError("Fetch API cannot load " + m_request->url().string() + ". Request mode is \"same-origin\" but the URL\'s origin is not same as the request origin " + m_request->origin()->toString() + ".");
+        performNetworkError("Fetch API cannot load " + m_request->url().getString() + ". Request mode is \"same-origin\" but the URL\'s origin is not same as the request origin " + m_request->origin()->toString() + ".");
         return;
     }
 
@@ -459,7 +459,7 @@ void FetchManager::Loader::start()
     // to SchemeRegistry::registerURLSchemeAsSupportingFetchAPI.
     if (!SchemeRegistry::shouldTreatURLSchemeAsSupportingFetchAPI(m_request->url().protocol())) {
         // "A network error."
-        performNetworkError("Fetch API cannot load " + m_request->url().string() + ". URL scheme must be \"http\" or \"https\" for CORS request.");
+        performNetworkError("Fetch API cannot load " + m_request->url().getString() + ". URL scheme must be \"http\" or \"https\" for CORS request.");
         return;
     }
 
@@ -511,7 +511,7 @@ void FetchManager::Loader::performBasicFetch()
         performHTTPFetch(false, false);
     } else {
         // FIXME: implement other protocols.
-        performNetworkError("Fetch API cannot load " + m_request->url().string() + ". URL scheme \"" + m_request->url().protocol() + "\" is not supported.");
+        performNetworkError("Fetch API cannot load " + m_request->url().getString() + ". URL scheme \"" + m_request->url().protocol() + "\" is not supported.");
     }
 }
 

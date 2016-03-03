@@ -68,7 +68,7 @@ static void finishPingRequestInitialization(ResourceRequest& request, LocalFrame
 void PingLoader::loadImage(LocalFrame* frame, const KURL& url)
 {
     if (!frame->document()->securityOrigin()->canDisplay(url)) {
-        FrameLoader::reportLocalLoadFailed(frame, url.string());
+        FrameLoader::reportLocalLoadFailed(frame, url.getString());
         return;
     }
 
@@ -96,11 +96,11 @@ void PingLoader::sendLinkAuditPing(LocalFrame* frame, const KURL& pingURL, const
     // but the spec omits the referrer.
     request.clearHTTPReferrer();
 
-    request.setHTTPHeaderField(HTTPNames::Ping_To, AtomicString(destinationURL.string()));
+    request.setHTTPHeaderField(HTTPNames::Ping_To, AtomicString(destinationURL.getString()));
 
     // Ping-From follows the same rules as the default referrer beahavior for subresource requests.
-    if (!SecurityPolicy::shouldHideReferrer(pingURL, frame->document()->url().string()))
-        request.setHTTPHeaderField(HTTPNames::Ping_From, AtomicString(frame->document()->url().string()));
+    if (!SecurityPolicy::shouldHideReferrer(pingURL, frame->document()->url().getString()))
+        request.setHTTPHeaderField(HTTPNames::Ping_From, AtomicString(frame->document()->url().getString()));
 
     FetchInitiatorInfo initiatorInfo;
     initiatorInfo.name = FetchInitiatorTypeNames::ping;

@@ -86,7 +86,7 @@ void CustomContextMenuProvider::appendMenuItem(HTMLMenuItemElement* menuItem, Co
         // To obtain the absolute URL of the icon when the attribute's value is not the empty string,
         // the attribute's value must be resolved relative to the element.
         KURL iconURL = KURL(menuItem->baseURI(), icon);
-        icon = iconURL.string();
+        icon = iconURL.getString();
     }
     ContextMenuAction action = static_cast<ContextMenuAction>(ContextMenuItemBaseCustomTag + m_menuItems.size() - 1);
     if (equalIgnoringCase(menuItem->fastGetAttribute(typeAttr), "checkbox") || equalIgnoringCase(menuItem->fastGetAttribute(typeAttr), "radio"))

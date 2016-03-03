@@ -48,7 +48,7 @@ static double monotonicTimeToDOMHighResTimeStamp(double timeOrigin, double secon
 }
 
 PerformanceResourceTiming::PerformanceResourceTiming(const ResourceTimingInfo& info, double timeOrigin, double startTime, double lastRedirectEndTime, bool allowTimingDetails, bool allowRedirectDetails)
-    : PerformanceEntry(info.initialRequest().url().string(), "resource", monotonicTimeToDOMHighResTimeStamp(timeOrigin, startTime), monotonicTimeToDOMHighResTimeStamp(timeOrigin, info.loadFinishTime()))
+    : PerformanceEntry(info.initialRequest().url().getString(), "resource", monotonicTimeToDOMHighResTimeStamp(timeOrigin, startTime), monotonicTimeToDOMHighResTimeStamp(timeOrigin, info.loadFinishTime()))
     , m_initiatorType(info.initiatorType())
     , m_timeOrigin(timeOrigin)
     , m_timing(info.finalResponse().resourceLoadTiming())

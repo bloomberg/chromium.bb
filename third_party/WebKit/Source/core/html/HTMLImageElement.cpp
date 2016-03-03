@@ -492,7 +492,7 @@ const String& HTMLImageElement::currentSrc() const
     if (!imageLoader().image() || !imageLoader().image()->image() || !imageLoader().image()->image()->width())
         return emptyAtom;
 
-    return imageLoader().image()->url().string();
+    return imageLoader().image()->url().getString();
 }
 
 bool HTMLImageElement::isURLAttribute(const Attribute& attribute) const

@@ -55,7 +55,7 @@ public:
         EXPECT_FALSE(m_preloadRequest->isPreconnect());
         EXPECT_EQ(type, m_preloadRequest->resourceType());
         EXPECT_STREQ(url, m_preloadRequest->resourceURL().ascii().data());
-        EXPECT_STREQ(baseURL, m_preloadRequest->baseURL().string().ascii().data());
+        EXPECT_STREQ(baseURL, m_preloadRequest->baseURL().getString().ascii().data());
         EXPECT_EQ(width, m_preloadRequest->resourceWidth());
         EXPECT_EQ(preferences.shouldSendDPR(), m_preloadRequest->preferences().shouldSendDPR());
         EXPECT_EQ(preferences.shouldSendResourceWidth(), m_preloadRequest->preferences().shouldSendResourceWidth());

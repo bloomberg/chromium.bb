@@ -343,7 +343,7 @@ static inline String formSignature(const HTMLFormElement& form)
 
     StringBuilder builder;
     if (!actionURL.isEmpty())
-        builder.append(actionURL.string());
+        builder.append(actionURL.getString());
 
     recordFormStructure(form, builder);
     return builder.toString();

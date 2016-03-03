@@ -61,7 +61,7 @@ PassRefPtrWillBeRawPtr<V8LazyEventListener> createAttributeEventListener(Node* n
         if (!scriptController.canExecuteScripts(AboutToExecuteScript))
             return nullptr;
         position = scriptController.eventHandlerPosition();
-        sourceURL = node->document().url().string();
+        sourceURL = node->document().url().getString();
     } else {
         isolate = v8::Isolate::GetCurrent();
     }
@@ -82,7 +82,7 @@ PassRefPtrWillBeRawPtr<V8LazyEventListener> createAttributeEventListener(LocalFr
         return nullptr;
 
     TextPosition position = scriptController.eventHandlerPosition();
-    String sourceURL = frame->document()->url().string();
+    String sourceURL = frame->document()->url().getString();
 
     return V8LazyEventListener::create(name.localName(), eventParameterName, value, sourceURL, position, 0, toIsolate(frame));
 }

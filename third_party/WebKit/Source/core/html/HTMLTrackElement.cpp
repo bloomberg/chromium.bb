@@ -43,9 +43,9 @@ static String urlForLoggingTrack(const KURL& url)
 {
     static const unsigned maximumURLLengthForLogging = 128;
 
-    if (url.string().length() < maximumURLLengthForLogging)
-        return url.string();
-    return url.string().substring(0, maximumURLLengthForLogging) + "...";
+    if (url.getString().length() < maximumURLLengthForLogging)
+        return url.getString();
+    return url.getString().substring(0, maximumURLLengthForLogging) + "...";
 }
 #endif
 

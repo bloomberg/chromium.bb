@@ -37,7 +37,7 @@ namespace blink {
 CSSImageValue::CSSImageValue(const AtomicString& rawValue, const KURL& url, StyleFetchedImage* image)
     : CSSValue(ImageClass)
     , m_relativeURL(rawValue)
-    , m_absoluteURL(url.string())
+    , m_absoluteURL(url.getString())
     , m_isCachePending(!image)
     , m_cachedImage(image)
 {
@@ -125,7 +125,7 @@ DEFINE_TRACE_AFTER_DISPATCH(CSSImageValue)
 void CSSImageValue::reResolveURL(const Document& document)
 {
     KURL url = document.completeURL(m_relativeURL);
-    AtomicString urlString(url.string());
+    AtomicString urlString(url.getString());
     if (urlString == m_absoluteURL)
         return;
     m_absoluteURL = urlString;

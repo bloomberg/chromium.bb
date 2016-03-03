@@ -66,7 +66,7 @@ WebString WebHistoryItem::urlString() const
 
 void WebHistoryItem::setURLString(const WebString& url)
 {
-    m_private->setURLString(KURL(ParsedURLString, url).string());
+    m_private->setURLString(KURL(ParsedURLString, url).getString());
 }
 
 WebString WebHistoryItem::referrer() const

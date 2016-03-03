@@ -44,7 +44,7 @@ MediaElementAudioSourceHandler::MediaElementAudioSourceHandler(AudioNode& node, 
     , m_sourceSampleRate(0)
     , m_passesCurrentSrcCORSAccessCheck(passesCurrentSrcCORSAccessCheck(mediaElement.currentSrc()))
     , m_maybePrintCORSMessage(!m_passesCurrentSrcCORSAccessCheck)
-    , m_currentSrcString(mediaElement.currentSrc().string())
+    , m_currentSrcString(mediaElement.currentSrc().getString())
 {
     ASSERT(isMainThread());
     // Default to stereo. This could change depending on what the media element
@@ -129,7 +129,7 @@ void MediaElementAudioSourceHandler::onCurrentSrcChanged(const KURL& currentSrc)
     // message.  Need to wait until later to print the message in case HTMLMediaElement allows
     // access.
     m_maybePrintCORSMessage = !m_passesCurrentSrcCORSAccessCheck;
-    m_currentSrcString = currentSrc.string();
+    m_currentSrcString = currentSrc.getString();
 }
 
 bool MediaElementAudioSourceHandler::passesCurrentSrcCORSAccessCheck(const KURL& currentSrc)

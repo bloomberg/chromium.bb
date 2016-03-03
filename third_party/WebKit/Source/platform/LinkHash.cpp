@@ -41,7 +41,7 @@ static bool resolveRelative(const KURL& base, const String& relative, url::RawCa
 {
     // We use these low-level GURL functions to avoid converting back and forth from UTF-8 unnecessarily.
     url::Parsed parsed;
-    StringUTF8Adaptor baseUTF8(base.string());
+    StringUTF8Adaptor baseUTF8(base.getString());
     if (relative.is8Bit()) {
         StringUTF8Adaptor relativeUTF8(relative);
         return url::ResolveRelative(baseUTF8.data(), baseUTF8.length(), base.parsed(), relativeUTF8.data(), relativeUTF8.length(), 0, buffer, &parsed);

@@ -7625,7 +7625,7 @@ TEST_F(WebFrameSwapTest, WindowOpenOnRemoteFrame)
     LocalDOMWindow* mainWindow = toWebLocalFrameImpl(mainFrame())->frame()->localDOMWindow();
 
     KURL destination = toKURL("data:text/html:destination");
-    mainWindow->open(destination.string(), "frame1", "", mainWindow, mainWindow);
+    mainWindow->open(destination.getString(), "frame1", "", mainWindow, mainWindow);
     ASSERT_FALSE(remoteClient.lastRequest().isNull());
     EXPECT_EQ(remoteClient.lastRequest().url(), WebURL(destination));
 

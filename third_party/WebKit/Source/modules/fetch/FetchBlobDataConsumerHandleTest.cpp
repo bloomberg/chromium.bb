@@ -116,7 +116,7 @@ TEST_F(FetchBlobDataConsumerHandleTest, CreateLoader)
     testing::runPendingTasks();
     checkpoint.Call(2);
 
-    EXPECT_TRUE(request.url().string().startsWith("blob:"));
+    EXPECT_TRUE(request.url().getString().startsWith("blob:"));
     EXPECT_TRUE(request.useStreamOnResponse());
 
     EXPECT_EQ(ConsiderPreflight, options.preflightPolicy);

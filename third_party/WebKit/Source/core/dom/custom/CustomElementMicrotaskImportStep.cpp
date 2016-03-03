@@ -96,7 +96,7 @@ DEFINE_TRACE(CustomElementMicrotaskImportStep)
 #if !defined(NDEBUG)
 void CustomElementMicrotaskImportStep::show(unsigned indent)
 {
-    fprintf(stderr, "%*sImport(wait=%d sync=%d, url=%s)\n", indent, "", shouldWaitForImport(), m_import && m_import->isSync(), m_import ? m_import->url().string().utf8().data() : "null");
+    fprintf(stderr, "%*sImport(wait=%d sync=%d, url=%s)\n", indent, "", shouldWaitForImport(), m_import && m_import->isSync(), m_import ? m_import->url().getString().utf8().data() : "null");
     m_queue->show(indent + 1);
 }
 #endif

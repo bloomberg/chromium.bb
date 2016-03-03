@@ -703,7 +703,7 @@ PassOwnPtr<protocol::Page::Frame> InspectorPageAgent::buildObjectForFrame(LocalF
     OwnPtr<protocol::Page::Frame> frameObject = protocol::Page::Frame::create()
         .setId(frameId(frame))
         .setLoaderId(IdentifiersFactory::loaderId(frame->loader().documentLoader()))
-        .setUrl(urlWithoutFragment(frame->document()->url()).string())
+        .setUrl(urlWithoutFragment(frame->document()->url()).getString())
         .setMimeType(frame->loader().documentLoader()->responseMIMEType())
         .setSecurityOrigin(frame->document()->securityOrigin()->toRawString()).build();
     // FIXME: This doesn't work for OOPI.
@@ -728,7 +728,7 @@ PassOwnPtr<protocol::Page::FrameResourceTree> InspectorPageAgent::buildObjectFor
     WillBeHeapVector<RawPtrWillBeMember<Resource>> allResources = cachedResourcesForFrame(frame, true);
     for (Resource* cachedResource : allResources) {
         OwnPtr<protocol::Page::FrameResource> resourceObject = protocol::Page::FrameResource::create()
-            .setUrl(urlWithoutFragment(cachedResource->url()).string())
+            .setUrl(urlWithoutFragment(cachedResource->url()).getString())
             .setType(cachedResourceTypeJson(*cachedResource))
             .setMimeType(cachedResource->response().mimeType()).build();
         if (cachedResource->wasCanceled())
@@ -741,7 +741,7 @@ PassOwnPtr<protocol::Page::FrameResourceTree> InspectorPageAgent::buildObjectFor
     WillBeHeapVector<RawPtrWillBeMember<Document>> allImports = InspectorPageAgent::importsForFrame(frame);
     for (Document* import : allImports) {
         OwnPtr<protocol::Page::FrameResource> resourceObject = protocol::Page::FrameResource::create()
-            .setUrl(urlWithoutFragment(import->url()).string())
+            .setUrl(urlWithoutFragment(import->url()).getString())
             .setType(resourceTypeJson(InspectorPageAgent::DocumentResource))
             .setMimeType(import->suggestedMIMEType()).build();
         subresources->addItem(resourceObject.release());

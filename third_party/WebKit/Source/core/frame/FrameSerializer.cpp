@@ -392,7 +392,7 @@ bool FrameSerializer::shouldAddURL(const KURL& url)
 void FrameSerializer::addToResources(Resource* resource, PassRefPtr<SharedBuffer> data, const KURL& url)
 {
     if (!data) {
-        WTF_LOG_ERROR("No data for resource %s", url.string().utf8().data());
+        WTF_LOG_ERROR("No data for resource %s", url.getString().utf8().data());
         return;
     }
 
@@ -467,7 +467,7 @@ String FrameSerializer::markOfTheWebDeclaration(const KURL& url)
 {
     StringBuilder builder;
     bool emitsMinus = false;
-    CString orignalUrl = url.string().ascii();
+    CString orignalUrl = url.getString().ascii();
     for (const char* string = orignalUrl.data(); *string; ++string) {
         const char ch = *string;
         if (ch == '-' && emitsMinus) {

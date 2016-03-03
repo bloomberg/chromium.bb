@@ -148,7 +148,7 @@ void DocumentThreadableLoader::start(const ResourceRequest& request)
     if (!m_sameOriginRequest && m_options.crossOriginRequestPolicy == DenyCrossOriginRequests) {
         ThreadableLoaderClient* client = m_client;
         clear();
-        client->didFail(ResourceError(errorDomainBlinkInternal, 0, request.url().string(), "Cross origin requests are not supported."));
+        client->didFail(ResourceError(errorDomainBlinkInternal, 0, request.url().getString(), "Cross origin requests are not supported."));
         // |this| may be dead here.
         return;
     }
@@ -244,7 +244,7 @@ void DocumentThreadableLoader::makeCrossOriginAccessRequest(const ResourceReques
     if (!SchemeRegistry::shouldTreatURLSchemeAsCORSEnabled(request.url().protocol())) {
         ThreadableLoaderClient* client = m_client;
         clear();
-        client->didFailAccessControlCheck(ResourceError(errorDomainBlinkInternal, 0, request.url().string(), "Cross origin requests are only supported for protocol schemes: " + SchemeRegistry::listOfCORSEnabledURLSchemes() + "."));
+        client->didFailAccessControlCheck(ResourceError(errorDomainBlinkInternal, 0, request.url().getString(), "Cross origin requests are only supported for protocol schemes: " + SchemeRegistry::listOfCORSEnabledURLSchemes() + "."));
         // |this| may be dead here in async mode.
         return;
     }
@@ -342,7 +342,7 @@ void DocumentThreadableLoader::cancelWithError(const ResourceError& error)
     ResourceError errorForCallback = error;
     if (errorForCallback.isNull()) {
         // FIXME: This error is sent to the client in didFail(), so it should not be an internal one. Use FrameLoaderClient::cancelledError() instead.
-        errorForCallback = ResourceError(errorDomainBlinkInternal, 0, resource()->url().string(), "Load cancelled");
+        errorForCallback = ResourceError(errorDomainBlinkInternal, 0, resource()->url().getString(), "Load cancelled");
         errorForCallback.setIsCancellation(true);
     }
 
@@ -385,7 +385,7 @@ void DocumentThreadableLoader::redirectReceived(Resource* resource, ResourceRequ
     if (!m_actualRequest.isNull()) {
         reportResponseReceived(resource->identifier(), redirectResponse);
 
-        handlePreflightFailure(redirectResponse.url().string(), "Response for preflight is invalid (redirect)");
+        handlePreflightFailure(redirectResponse.url().getString(), "Response for preflight is invalid (redirect)");
         // |this| may be dead here.
 
         request = ResourceRequest();
@@ -454,7 +454,7 @@ void DocumentThreadableLoader::redirectReceived(Resource* resource, ResourceRequ
         // Non-simple cross origin requests (both preflight and actual one) are
         // not allowed to follow redirect.
         if (m_crossOriginNonSimpleRequest) {
-            accessControlErrorDescription = "The request was redirected to '"+ request.url().string() + "', which is disallowed for cross-origin requests that require preflight.";
+            accessControlErrorDescription = "The request was redirected to '"+ request.url().getString() + "', which is disallowed for cross-origin requests that require preflight.";
         } else {
             // The redirect response must pass the access control check if the
             // original request was not same-origin.
@@ -496,7 +496,7 @@ void DocumentThreadableLoader::redirectReceived(Resource* resource, ResourceRequ
 
         ThreadableLoaderClient* client = m_client;
         clear();
-        client->didFailAccessControlCheck(ResourceError(errorDomainBlinkInternal, 0, redirectResponse.url().string(), accessControlErrorDescription));
+        client->didFailAccessControlCheck(ResourceError(errorDomainBlinkInternal, 0, redirectResponse.url().getString(), accessControlErrorDescription));
         // |this| may be dead here.
     } else {
         ThreadableLoaderClient* client = m_client;
@@ -556,13 +556,13 @@ void DocumentThreadableLoader::handlePreflightResponse(const ResourceResponse& r
     String accessControlErrorDescription;
 
     if (!passesAccessControlCheck(response, effectiveAllowCredentials(), securityOrigin(), accessControlErrorDescription, m_requestContext)) {
-        handlePreflightFailure(response.url().string(), "Response to preflight request doesn't pass access control check: " + accessControlErrorDescription);
+        handlePreflightFailure(response.url().getString(), "Response to preflight request doesn't pass access control check: " + accessControlErrorDescription);
         // |this| may be dead here in async mode.
         return;
     }
 
     if (!passesPreflightStatusCheck(response, accessControlErrorDescription)) {
-        handlePreflightFailure(response.url().string(), accessControlErrorDescription);
+        handlePreflightFailure(response.url().getString(), accessControlErrorDescription);
         // |this| may be dead here in async mode.
         return;
     }
@@ -571,7 +571,7 @@ void DocumentThreadableLoader::handlePreflightResponse(const ResourceResponse& r
     if (!preflightResult->parse(response, accessControlErrorDescription)
         || !preflightResult->allowsCrossOriginMethod(m_actualRequest.httpMethod(), accessControlErrorDescription)
         || !preflightResult->allowsCrossOriginHeaders(m_actualRequest.httpHeaderFields(), accessControlErrorDescription)) {
-        handlePreflightFailure(response.url().string(), accessControlErrorDescription);
+        handlePreflightFailure(response.url().getString(), accessControlErrorDescription);
         // |this| may be dead here in async mode.
         return;
     }
@@ -644,7 +644,7 @@ void DocumentThreadableLoader::handleResponse(unsigned long identifier, const Re
 
             ThreadableLoaderClient* client = m_client;
             clear();
-            client->didFailAccessControlCheck(ResourceError(errorDomainBlinkInternal, 0, response.url().string(), accessControlErrorDescription));
+            client->didFailAccessControlCheck(ResourceError(errorDomainBlinkInternal, 0, response.url().getString(), accessControlErrorDescription));
             // |this| may be dead here.
             return;
         }
@@ -827,7 +827,7 @@ void DocumentThreadableLoader::loadRequest(const ResourceRequest& request, Resou
         if (!resource()) {
             ThreadableLoaderClient* client = m_client;
             clear();
-            client->didFail(ResourceError(errorDomainBlinkInternal, 0, requestURL.string(), "Failed to start loading."));
+            client->didFail(ResourceError(errorDomainBlinkInternal, 0, requestURL.getString(), "Failed to start loading."));
             // |this| may be dead here.
             return;
         }

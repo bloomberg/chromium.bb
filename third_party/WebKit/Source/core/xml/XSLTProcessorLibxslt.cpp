@@ -233,7 +233,7 @@ static xsltStylesheetPtr xsltStylesheetPointer(Document* document, RefPtrWillBeM
         cachedStylesheet = XSLStyleSheet::createForXSLTProcessor(
             stylesheetRootNode->parentNode() ? &stylesheetRootNode->parentNode()->document() : document,
             stylesheetRootNode,
-            stylesheetRootNode->document().url().string(),
+            stylesheetRootNode->document().url().getString(),
             stylesheetRootNode->document().url()); // FIXME: Should we use baseURL here?
 
         // According to Mozilla documentation, the node must be a Document node,
@@ -258,7 +258,7 @@ static inline xmlDocPtr xmlDocPtrFromNode(Node* sourceNode, bool& shouldDelete)
         sourceDoc = (xmlDocPtr)ownerDocument->transformSource()->platformSource();
     if (!sourceDoc) {
         sourceDoc = (xmlDocPtr)xmlDocPtrForString(ownerDocument.get(), createMarkup(sourceNode),
-            sourceIsDocument ? ownerDocument->url().string() : String());
+            sourceIsDocument ? ownerDocument->url().getString() : String());
         shouldDelete = sourceDoc;
     }
     return sourceDoc;

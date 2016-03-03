@@ -237,12 +237,12 @@ bool CrossOriginAccessControl::isLegalRedirectLocation(const KURL& requestURL, S
 {
     // CORS restrictions imposed on Location: URL -- http://www.w3.org/TR/cors/#redirect-steps (steps 2 + 3.)
     if (!SchemeRegistry::shouldTreatURLSchemeAsCORSEnabled(requestURL.protocol())) {
-        errorDescription = "The request was redirected to a URL ('" + requestURL.string() + "') which has a disallowed scheme for cross-origin requests.";
+        errorDescription = "The request was redirected to a URL ('" + requestURL.getString() + "') which has a disallowed scheme for cross-origin requests.";
         return false;
     }
 
     if (!(requestURL.user().isEmpty() && requestURL.pass().isEmpty())) {
-        errorDescription = "The request was redirected to a URL ('" + requestURL.string() + "') containing userinfo, which is disallowed for cross-origin requests.";
+        errorDescription = "The request was redirected to a URL ('" + requestURL.getString() + "') containing userinfo, which is disallowed for cross-origin requests.";
         return false;
     }
 

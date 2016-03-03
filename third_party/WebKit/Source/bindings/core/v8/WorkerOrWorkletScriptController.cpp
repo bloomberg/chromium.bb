@@ -229,7 +229,7 @@ bool WorkerOrWorkletScriptController::evaluate(const ScriptSourceCode& sourceCod
         return false;
 
     ExecutionState state(this);
-    evaluate(sourceCode.source(), sourceCode.url().string(), sourceCode.startPosition(), cacheHandler, v8CacheOptions);
+    evaluate(sourceCode.source(), sourceCode.url().getString(), sourceCode.startPosition(), cacheHandler, v8CacheOptions);
     if (isExecutionForbidden())
         return false;
     if (state.hadException) {

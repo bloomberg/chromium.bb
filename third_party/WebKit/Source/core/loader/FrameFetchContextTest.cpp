@@ -202,7 +202,7 @@ protected:
 
         fetchContext->upgradeInsecureRequest(fetchRequest);
 
-        EXPECT_STREQ(expectedURL.string().utf8().data(), fetchRequest.resourceRequest().url().string().utf8().data());
+        EXPECT_STREQ(expectedURL.getString().utf8().data(), fetchRequest.resourceRequest().url().getString().utf8().data());
         EXPECT_EQ(expectedURL.protocol(), fetchRequest.resourceRequest().url().protocol());
         EXPECT_EQ(expectedURL.host(), fetchRequest.resourceRequest().url().host());
         EXPECT_EQ(expectedURL.port(), fetchRequest.resourceRequest().url().port());

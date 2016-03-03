@@ -115,7 +115,7 @@ bool MHTMLFrameSerializerDelegate::rewriteLink(
     ASSERT(cidURI.isValid());
 
     if (isHTMLFrameElementBase(&element)) {
-        rewrittenLink = cidURI.string();
+        rewrittenLink = cidURI.getString();
         return true;
     }
 
@@ -124,7 +124,7 @@ bool MHTMLFrameSerializerDelegate::rewriteLink(
         bool isHandledBySerializer = doc->isHTMLDocument()
             || doc->isXHTMLDocument() || doc->isImageDocument();
         if (isHandledBySerializer) {
-            rewrittenLink = cidURI.string();
+            rewrittenLink = cidURI.getString();
             return true;
         }
     }

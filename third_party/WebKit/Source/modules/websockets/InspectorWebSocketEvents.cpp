@@ -13,7 +13,7 @@ PassOwnPtr<TracedValue> InspectorWebSocketCreateEvent::data(Document* document, 
 {
     OwnPtr<TracedValue> value = TracedValue::create();
     value->setInteger("identifier", identifier);
-    value->setString("url", url.string());
+    value->setString("url", url.getString());
     value->setString("frame", toHexString(document->frame()));
     if (!protocol.isNull())
         value->setString("webSocketProtocol", protocol);

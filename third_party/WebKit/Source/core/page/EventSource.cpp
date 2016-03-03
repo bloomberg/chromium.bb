@@ -172,7 +172,7 @@ void EventSource::connectTimerFired(Timer<EventSource>*)
 
 String EventSource::url() const
 {
-    return m_url.string();
+    return m_url.getString();
 }
 
 bool EventSource::withCredentials() const

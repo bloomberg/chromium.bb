@@ -163,7 +163,7 @@ v8::MaybeLocal<v8::Value> ScriptController::callFunction(ExecutionContext* conte
 
 v8::Local<v8::Value> ScriptController::executeScriptAndReturnValue(v8::Local<v8::Context> context, const ScriptSourceCode& source, AccessControlStatus accessControlStatus, double* compilationFinishTime)
 {
-    TRACE_EVENT1("devtools.timeline", "EvaluateScript", "data", InspectorEvaluateScriptEvent::data(frame(), source.url().string(), source.startPosition()));
+    TRACE_EVENT1("devtools.timeline", "EvaluateScript", "data", InspectorEvaluateScriptEvent::data(frame(), source.url().getString(), source.startPosition()));
     InspectorInstrumentation::willEvaluateScript(frame()->document());
 
     v8::Local<v8::Value> result;
@@ -506,7 +506,7 @@ bool ScriptController::executeScriptIfJavaScriptURL(const KURL& url)
 
     bool locationChangeBefore = frame()->navigationScheduler().locationChangePending();
 
-    String decodedURL = decodeURLEscapeSequences(url.string());
+    String decodedURL = decodeURLEscapeSequences(url.getString());
     v8::HandleScope handleScope(isolate());
     v8::Local<v8::Value> result = evaluateScriptInMainWorld(ScriptSourceCode(decodedURL.substring(javascriptSchemeLength)), NotSharableCrossOrigin, DoNotExecuteScriptWhenScriptsDisabled);
 

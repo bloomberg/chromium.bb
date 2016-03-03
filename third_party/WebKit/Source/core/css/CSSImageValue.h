@@ -39,7 +39,7 @@ class CORE_EXPORT CSSImageValue : public CSSValue {
 public:
     static PassRefPtrWillBeRawPtr<CSSImageValue> create(const KURL& url, StyleFetchedImage* image = 0)
     {
-        return create(url.string(), url, image);
+        return create(url.getString(), url, image);
     }
     static PassRefPtrWillBeRawPtr<CSSImageValue> create(const String& rawValue, const KURL& url, StyleFetchedImage* image = 0)
     {

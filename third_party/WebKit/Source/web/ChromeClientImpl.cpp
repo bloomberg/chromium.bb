@@ -564,7 +564,7 @@ void ChromeClientImpl::showMouseOverURL(const HitTestResult& result)
 
     WebURL url;
     // Find out if the mouse is over a link, and if so, let our UI know...
-    if (result.isLiveLink() && !result.absoluteLinkURL().string().isEmpty()) {
+    if (result.isLiveLink() && !result.absoluteLinkURL().getString().isEmpty()) {
         url = result.absoluteLinkURL();
     } else if (result.innerNode()
         && (isHTMLObjectElement(*result.innerNode())

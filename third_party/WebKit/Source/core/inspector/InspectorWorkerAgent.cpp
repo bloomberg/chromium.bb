@@ -145,9 +145,9 @@ bool InspectorWorkerAgent::shouldPauseDedicatedWorkerOnStart()
 void InspectorWorkerAgent::didStartWorker(WorkerInspectorProxy* workerInspectorProxy, const KURL& url)
 {
     String id = "dedicated:" + IdentifiersFactory::createIdentifier();
-    m_workerInfos.set(workerInspectorProxy, WorkerInfo(url.string(), id));
+    m_workerInfos.set(workerInspectorProxy, WorkerInfo(url.getString(), id));
     if (frontend() && m_state->booleanProperty(WorkerAgentState::workerInspectionEnabled, false))
-        createWorkerAgentClient(workerInspectorProxy, url.string(), id);
+        createWorkerAgentClient(workerInspectorProxy, url.getString(), id);
     if (!m_tracingSessionId.isEmpty())
         workerInspectorProxy->writeTimelineStartedEvent(m_tracingSessionId, id);
 }

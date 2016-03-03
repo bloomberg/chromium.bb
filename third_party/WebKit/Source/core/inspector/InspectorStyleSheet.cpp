@@ -956,7 +956,7 @@ DEFINE_TRACE(InspectorStyleSheet)
 static String styleSheetURL(CSSStyleSheet* pageStyleSheet)
 {
     if (pageStyleSheet && !pageStyleSheet->contents()->baseURL().isEmpty())
-        return pageStyleSheet->contents()->baseURL().string();
+        return pageStyleSheet->contents()->baseURL().getString();
     return emptyString();
 }
 

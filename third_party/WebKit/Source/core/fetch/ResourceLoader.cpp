@@ -220,7 +220,7 @@ void ResourceLoader::cancel(const ResourceError& error)
 
     ResourceError nonNullError = error.isNull() ? ResourceError::cancelledError(m_request.url()) : error;
 
-    WTF_LOG(ResourceLoading, "Cancelled load of '%s'.\n", m_resource->url().string().latin1().data());
+    WTF_LOG(ResourceLoading, "Cancelled load of '%s'.\n", m_resource->url().getString().latin1().data());
     m_state = ConnectionStateCanceled;
     m_resource->setResourceError(nonNullError);
 
@@ -386,9 +386,10 @@ void ResourceLoader::didReceiveData(WebURLLoader*, const char* data, int length,
 
 void ResourceLoader::didFinishLoading(WebURLLoader*, double finishTime, int64_t encodedDataLength)
 {
+
     RELEASE_ASSERT(m_state == ConnectionStateReceivedResponse || m_state == ConnectionStateReceivingData);
     m_state = ConnectionStateFinishedLoading;
-    WTF_LOG(ResourceLoading, "Received '%s'.", m_resource->url().string().latin1().data());
+    WTF_LOG(ResourceLoading, "Received '%s'.", m_resource->url().getString().latin1().data());
 
     RefPtrWillBeRawPtr<Resource> protectResource(m_resource.get());
     m_resource->setLoadFinishTime(finishTime);
@@ -406,9 +407,10 @@ void ResourceLoader::didFinishLoading(WebURLLoader*, double finishTime, int64_t 
 
 void ResourceLoader::didFail(WebURLLoader*, const WebURLError& error)
 {
+
     ASSERT(m_state != ConnectionStateReleased);
     m_state = ConnectionStateFailed;
-    WTF_LOG(ResourceLoading, "Failed to load '%s'.\n", m_resource->url().string().latin1().data());
+    WTF_LOG(ResourceLoading, "Failed to load '%s'.\n", m_resource->url().getString().latin1().data());
 
     RefPtrWillBeRawPtr<Resource> protectResource(m_resource.get());
     m_resource->setResourceError(error);

@@ -508,7 +508,7 @@ bool HTMLPlugInElement::loadPlugin(const KURL& url, const String& mimeType, cons
         return false;
 
     WTF_LOG(Plugins, "%p Plugin URL: %s", this, m_url.utf8().data());
-    WTF_LOG(Plugins, "   Loaded URL: %s", url.string().utf8().data());
+    WTF_LOG(Plugins, "   Loaded URL: %s", url.getString().utf8().data());
     m_loadedUrl = url;
 
     if (m_persistedPluginWidget) {
@@ -584,7 +584,7 @@ bool HTMLPlugInElement::allowedToLoadObject(const KURL& url, const String& mimeT
         return false;
 
     if (!document().securityOrigin()->canDisplay(url)) {
-        FrameLoader::reportLocalLoadFailed(frame, url.string());
+        FrameLoader::reportLocalLoadFailed(frame, url.getString());
         return false;
     }
 

@@ -624,7 +624,7 @@ static bool isLibxmlDefaultCatalogFile(const String& urlString)
 
 static bool shouldAllowExternalLoad(const KURL& url)
 {
-    String urlString = url.string();
+    String urlString = url.getString();
 
     // This isn't really necessary now that initializeLibXMLIfNecessary
     // disables catalog support in libxml, but keeping it for defense in depth.
@@ -1534,7 +1534,7 @@ void XMLDocumentParser::doEnd()
         document()->setIsViewSource(true);
         V8Document::PrivateScript::transformDocumentToTreeViewMethod(document()->frame(), document(), noStyleMessage);
     } else if (m_sawXSLTransform) {
-        xmlDocPtr doc = xmlDocPtrForString(document(), m_originalSourceForTransform.toString(), document()->url().string());
+        xmlDocPtr doc = xmlDocPtrForString(document(), m_originalSourceForTransform.toString(), document()->url().getString());
         document()->setTransformSource(adoptPtr(new TransformSource(doc)));
         // Make the document think it's done, so it will apply XSL stylesheets.
         document()->setParsingState(Document::FinishedParsing);

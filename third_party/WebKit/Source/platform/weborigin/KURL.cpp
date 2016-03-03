@@ -145,9 +145,9 @@ String KURL::strippedForUseAsReferrer() const
         referrer.setUser(String());
         referrer.setPass(String());
         referrer.removeFragmentIdentifier();
-        return referrer.string();
+        return referrer.getString();
     }
-    return string();
+    return getString();
 }
 
 String KURL::strippedForUseAsHref() const
@@ -156,9 +156,9 @@ String KURL::strippedForUseAsHref() const
         KURL href(*this);
         href.setUser(String());
         href.setPass(String());
-        return href.string();
+        return href.getString();
     }
-    return string();
+    return getString();
 }
 
 bool KURL::isLocalFile() const
@@ -199,10 +199,10 @@ bool KURL::isAboutSrcdocURL() const
 
 String KURL::elidedString() const
 {
-    if (string().length() <= 1024)
-        return string();
+    if (getString().length() <= 1024)
+        return getString();
 
-    return string().left(511) + "..." + string().right(510);
+    return getString().left(511) + "..." + getString().right(510);
 }
 
 KURL::KURL()
@@ -801,7 +801,7 @@ void KURL::init(const KURL& base, const CHAR* relative, int relativeLength, cons
     KURLCharsetConverter charsetConverterObject(queryEncoding);
     KURLCharsetConverter* charsetConverter = (!queryEncoding || isUnicodeEncoding(queryEncoding)) ? 0 : &charsetConverterObject;
 
-    StringUTF8Adaptor baseUTF8(base.string());
+    StringUTF8Adaptor baseUTF8(base.getString());
 
     url::RawCanonOutputT<char> output;
     m_isValid = url::ResolveRelative(baseUTF8.data(), baseUTF8.length(), base.m_parsed, relative, relativeLength, charsetConverter, &output, &m_parsed);
@@ -898,7 +898,7 @@ String KURL::componentString(const url::Component& component) const
     // byte) will be longer than what's needed by 'mid'. However, mid
     // truncates len to avoid go past the end of a string so that we can
     // get away without doing anything here.
-    return string().substring(component.begin, component.len);
+    return getString().substring(component.begin, component.len);
 }
 
 template<typename CHAR>

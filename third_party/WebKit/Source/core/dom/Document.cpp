@@ -3104,9 +3104,9 @@ void Document::maybeHandleHttpRefresh(const String& content, HttpRefreshType htt
     if (!parseHTTPRefresh(content, httpRefreshType == HttpRefreshFromMetaTag, delay, refreshURL))
         return;
     if (refreshURL.isEmpty())
-        refreshURL = url().string();
+        refreshURL = url().getString();
     else
-        refreshURL = completeURL(refreshURL).string();
+        refreshURL = completeURL(refreshURL).getString();
 
     if (protocolIsJavaScript(refreshURL)) {
         String message = "Refused to refresh " + m_url.elidedString() + " to a javascript: URL";
@@ -5177,7 +5177,7 @@ void Document::addConsoleMessage(PassRefPtrWillBeRawPtr<ConsoleMessage> consoleM
         return;
 
     if (!consoleMessage->scriptState() && consoleMessage->url().isNull() && !consoleMessage->lineNumber()) {
-        consoleMessage->setURL(url().string());
+        consoleMessage->setURL(url().getString());
         if (!isInDocumentWrite() && scriptableDocumentParser()) {
             ScriptableDocumentParser* parser = scriptableDocumentParser();
             if (parser->isParsingAtLineNumber())
@@ -5992,6 +5992,6 @@ void showLiveDocumentInstances()
     Document::WeakDocumentSet& set = Document::liveDocumentSet();
     fprintf(stderr, "There are %u documents currently alive:\n", set.size());
     for (Document* document : set)
-        fprintf(stderr, "- Document %p URL: %s\n", document, document->url().string().utf8().data());
+        fprintf(stderr, "- Document %p URL: %s\n", document, document->url().getString().utf8().data());
 }
 #endif

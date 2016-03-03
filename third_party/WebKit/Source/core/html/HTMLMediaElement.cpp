@@ -124,9 +124,9 @@ String urlForLoggingMedia(const KURL& url)
 {
     static const unsigned maximumURLLengthForLogging = 128;
 
-    if (url.string().length() < maximumURLLengthForLogging)
-        return url.string();
-    return url.string().substring(0, maximumURLLengthForLogging) + "...";
+    if (url.getString().length() < maximumURLLengthForLogging)
+        return url.getString();
+    return url.getString().substring(0, maximumURLLengthForLogging) + "...";
 }
 
 const char* boolString(bool val)
@@ -233,7 +233,7 @@ bool canLoadURL(const KURL& url, const ContentType& contentType)
     // If the MIME type is missing or is not meaningful, try to figure it out from the URL.
     if (contentMIMEType.isEmpty() || contentMIMEType == "application/octet-stream" || contentMIMEType == "text/plain") {
         if (url.protocolIsData())
-            contentMIMEType = mimeTypeFromDataURL(url.string());
+            contentMIMEType = mimeTypeFromDataURL(url.getString());
     }
 
     // If no MIME type is specified, always attempt to load.
@@ -956,10 +956,10 @@ void HTMLMediaElement::loadResource(const KURL& url, ContentType& contentType)
     bool attemptLoad = true;
 
     if (url.protocolIs(mediaSourceBlobProtocol)) {
-        if (isMediaStreamURL(url.string())) {
+        if (isMediaStreamURL(url.getString())) {
             m_userGestureRequiredForPlay = false;
         } else {
-            m_mediaSource = HTMLMediaSource::lookup(url.string());
+            m_mediaSource = HTMLMediaSource::lookup(url.getString());
 
             if (m_mediaSource) {
                 if (!m_mediaSource->attachToElement(this)) {
@@ -1133,7 +1133,7 @@ WebMediaPlayer::LoadType HTMLMediaElement::loadType() const
     if (m_mediaSource)
         return WebMediaPlayer::LoadTypeMediaSource;
 
-    if (isMediaStreamURL(m_currentSrc.string()))
+    if (isMediaStreamURL(m_currentSrc.getString()))
         return WebMediaPlayer::LoadTypeMediaStream;
 
     return WebMediaPlayer::LoadTypeURL;

@@ -318,7 +318,7 @@ void ResourceFetcher::requestLoadStarted(Resource* resource, const FetchRequest&
 static PassOwnPtr<TracedValue> urlForTraceEvent(const KURL& url)
 {
     OwnPtr<TracedValue> value = TracedValue::create();
-    value->setString("url", url.string());
+    value->setString("url", url.getString());
     return value.release();
 }
 
@@ -522,7 +522,7 @@ PassRefPtrWillBeRawPtr<Resource> ResourceFetcher::requestResource(FetchRequest& 
 
     requestLoadStarted(resource.get(), request, policy == Use ? ResourceLoadingFromCache : ResourceLoadingFromNetwork, isStaticData);
 
-    ASSERT(resource->url() == url.string());
+    ASSERT(resource->url() == url.getString());
     m_documentResources.set(resource->url(), resource->asWeakPtr());
     return resource;
 }
@@ -981,7 +981,7 @@ void ResourceFetcher::didReceiveResponse(const Resource* resource, const Resourc
         if (!originalURL.isEmpty() && !context().allowResponse(resource->getType(), resource->resourceRequest(), originalURL, resource->options())) {
             resource->loader()->cancel();
             bool isInternalRequest = resource->options().initiatorInfo.name == FetchInitiatorTypeNames::internal;
-            context().dispatchDidFail(resource->identifier(), ResourceError(errorDomainBlinkInternal, 0, originalURL.string(), "Unsafe attempt to load URL " + originalURL.elidedString() + " fetched by a ServiceWorker."), isInternalRequest);
+            context().dispatchDidFail(resource->identifier(), ResourceError(errorDomainBlinkInternal, 0, originalURL.getString(), "Unsafe attempt to load URL " + originalURL.elidedString() + " fetched by a ServiceWorker."), isInternalRequest);
             return;
         }
     }
@@ -1039,7 +1039,7 @@ void ResourceFetcher::willStartLoadingResource(Resource* resource, ResourceReque
 {
     context().willStartLoadingResource(request);
     storeResourceTimingInitiatorInformation(resource);
-    TRACE_EVENT_ASYNC_BEGIN2("blink.net", "Resource", resource, "url", resource->url().string().ascii(), "priority", resource->resourceRequest().priority());
+    TRACE_EVENT_ASYNC_BEGIN2("blink.net", "Resource", resource, "url", resource->url().getString().ascii(), "priority", resource->resourceRequest().priority());
 }
 
 void ResourceFetcher::stopFetching()

@@ -77,7 +77,7 @@ void InspectorApplicationCacheAgent::updateApplicationCacheStatus(LocalFrame* fr
     ApplicationCacheHost::Status status = host->getStatus();
     ApplicationCacheHost::CacheInfo info = host->applicationCacheInfo();
 
-    String manifestURL = info.m_manifest.string();
+    String manifestURL = info.m_manifest.getString();
     String frameId = IdentifiersFactory::frameId(frame);
     frontend()->applicationCacheStatusUpdated(frameId, manifestURL, static_cast<int>(status));
 }
@@ -99,7 +99,7 @@ void InspectorApplicationCacheAgent::getFramesWithManifests(ErrorString*, OwnPtr
 
         ApplicationCacheHost* host = documentLoader->applicationCacheHost();
         ApplicationCacheHost::CacheInfo info = host->applicationCacheInfo();
-        String manifestURL = info.m_manifest.string();
+        String manifestURL = info.m_manifest.getString();
         if (!manifestURL.isEmpty()) {
             OwnPtr<protocol::ApplicationCache::FrameWithManifest> value = protocol::ApplicationCache::FrameWithManifest::create()
                 .setFrameId(IdentifiersFactory::frameId(frame))
@@ -131,7 +131,7 @@ void InspectorApplicationCacheAgent::getManifestForFrame(ErrorString* errorStrin
         return;
 
     ApplicationCacheHost::CacheInfo info = documentLoader->applicationCacheHost()->applicationCacheInfo();
-    *manifestURL = info.m_manifest.string();
+    *manifestURL = info.m_manifest.getString();
 }
 
 void InspectorApplicationCacheAgent::getApplicationCacheForFrame(ErrorString* errorString, const String& frameId, OwnPtr<protocol::ApplicationCache::ApplicationCache>* applicationCache)
@@ -152,7 +152,7 @@ void InspectorApplicationCacheAgent::getApplicationCacheForFrame(ErrorString* er
 PassOwnPtr<protocol::ApplicationCache::ApplicationCache> InspectorApplicationCacheAgent::buildObjectForApplicationCache(const ApplicationCacheHost::ResourceInfoList& applicationCacheResources, const ApplicationCacheHost::CacheInfo& applicationCacheInfo)
 {
     return protocol::ApplicationCache::ApplicationCache::create()
-        .setManifestURL(applicationCacheInfo.m_manifest.string())
+        .setManifestURL(applicationCacheInfo.m_manifest.getString())
         .setSize(applicationCacheInfo.m_size)
         .setCreationTime(applicationCacheInfo.m_creationTime)
         .setUpdateTime(applicationCacheInfo.m_updateTime)
@@ -191,7 +191,7 @@ PassOwnPtr<protocol::ApplicationCache::ApplicationCacheResource> InspectorApplic
         builder.appendLiteral("Explicit ");
 
     OwnPtr<protocol::ApplicationCache::ApplicationCacheResource> value = protocol::ApplicationCache::ApplicationCacheResource::create()
-        .setUrl(resourceInfo.m_resource.string())
+        .setUrl(resourceInfo.m_resource.getString())
         .setSize(static_cast<int>(resourceInfo.m_size))
         .setType(builder.toString()).build();
     return value.release();

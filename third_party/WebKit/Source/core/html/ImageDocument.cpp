@@ -235,7 +235,7 @@ void ImageDocument::createDocumentStructure(bool loadingMultipartContent)
     // ImageDocument, so that it requests the image normally.
     if (!loadingMultipartContent)
         m_imageElement->setLoadingImageDocument();
-    m_imageElement->setSrc(url().string());
+    m_imageElement->setSrc(url().getString());
     body->appendChild(m_imageElement.get());
 
     if (shouldShrinkToFit()) {

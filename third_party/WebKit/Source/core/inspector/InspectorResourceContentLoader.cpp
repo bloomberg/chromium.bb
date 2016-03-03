@@ -110,8 +110,8 @@ void InspectorResourceContentLoader::start()
         }
         resourceRequest.setRequestContext(WebURLRequest::RequestContextInternal);
 
-        if (!resourceRequest.url().string().isEmpty()) {
-            urlsToFetch.add(resourceRequest.url().string());
+        if (!resourceRequest.url().getString().isEmpty()) {
+            urlsToFetch.add(resourceRequest.url().getString());
             FetchRequest request(resourceRequest, FetchInitiatorTypeNames::internal);
             RefPtrWillBeRawPtr<Resource> resource = RawResource::fetch(request, document->fetcher());
             if (resource) {

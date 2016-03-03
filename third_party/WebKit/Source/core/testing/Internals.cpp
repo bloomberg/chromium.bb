@@ -1774,7 +1774,7 @@ Vector<String> Internals::iconURLs(Document* document, int iconTypesMask) const
     Vector<String> array;
 
     for (auto& iconURL : iconURLs)
-        array.append(iconURL.m_iconURL.string());
+        array.append(iconURL.m_iconURL.getString());
 
     return array;
 }

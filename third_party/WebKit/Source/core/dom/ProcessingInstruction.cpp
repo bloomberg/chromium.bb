@@ -162,7 +162,7 @@ void ProcessingInstruction::process(const String& href, const String& charset)
 
     clearResource();
 
-    String url = document().completeURL(href).string();
+    String url = document().completeURL(href).getString();
 
     RefPtrWillBeRawPtr<StyleSheetResource> resource = nullptr;
     FetchRequest request(ResourceRequest(document().completeURL(href)), FetchInitiatorTypeNames::processinginstruction);

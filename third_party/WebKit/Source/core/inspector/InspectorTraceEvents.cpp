@@ -406,7 +406,7 @@ PassOwnPtr<TracedValue> InspectorSendRequestEvent::data(unsigned long identifier
     OwnPtr<TracedValue> value = TracedValue::create();
     value->setString("requestId", requestId);
     value->setString("frame", toHexString(frame));
-    value->setString("url", request.url().string());
+    value->setString("url", request.url().getString());
     value->setString("requestMethod", request.httpMethod());
     const char* priority = 0;
     switch (request.priority()) {
@@ -541,7 +541,7 @@ PassOwnPtr<TracedValue> InspectorParseHtmlEvent::beginData(Document* document, u
     OwnPtr<TracedValue> value = TracedValue::create();
     value->setInteger("startLine", startLine);
     value->setString("frame", toHexString(document->frame()));
-    value->setString("url", document->url().string());
+    value->setString("url", document->url().getString());
     setCallStack(value.get());
     return value.release();
 }
@@ -556,14 +556,14 @@ PassOwnPtr<TracedValue> InspectorParseHtmlEvent::endData(unsigned endLine)
 PassOwnPtr<TracedValue> InspectorParseAuthorStyleSheetEvent::data(const CSSStyleSheetResource* cachedStyleSheet)
 {
     OwnPtr<TracedValue> value = TracedValue::create();
-    value->setString("styleSheetUrl", cachedStyleSheet->url().string());
+    value->setString("styleSheetUrl", cachedStyleSheet->url().getString());
     return value.release();
 }
 
 PassOwnPtr<TracedValue> InspectorXhrReadyStateChangeEvent::data(ExecutionContext* context, XMLHttpRequest* request)
 {
     OwnPtr<TracedValue> value = TracedValue::create();
-    value->setString("url", request->url().string());
+    value->setString("url", request->url().getString());
     value->setInteger("readyState", request->readyState());
     if (LocalFrame* frame = frameForExecutionContext(context))
         value->setString("frame", toHexString(frame));
@@ -574,7 +574,7 @@ PassOwnPtr<TracedValue> InspectorXhrReadyStateChangeEvent::data(ExecutionContext
 PassOwnPtr<TracedValue> InspectorXhrLoadEvent::data(ExecutionContext* context, XMLHttpRequest* request)
 {
     OwnPtr<TracedValue> value = TracedValue::create();
-    value->setString("url", request->url().string());
+    value->setString("url", request->url().getString());
     if (LocalFrame* frame = frameForExecutionContext(context))
         value->setString("frame", toHexString(frame));
     setCallStack(value.get());
@@ -700,7 +700,7 @@ PassOwnPtr<TracedValue> InspectorPaintImageEvent::data(const LayoutImage& layout
     OwnPtr<TracedValue> value = TracedValue::create();
     setGeneratingNodeInfo(value.get(), &layoutImage, "nodeId");
     if (const ImageResource* resource = layoutImage.cachedImage())
-        value->setString("url", resource->url().string());
+        value->setString("url", resource->url().getString());
     return value.release();
 }
 
@@ -709,7 +709,7 @@ PassOwnPtr<TracedValue> InspectorPaintImageEvent::data(const LayoutObject& ownin
     OwnPtr<TracedValue> value = TracedValue::create();
     setGeneratingNodeInfo(value.get(), &owningLayoutObject, "nodeId");
     if (const ImageResource* resource = styleImage.cachedImage())
-        value->setString("url", resource->url().string());
+        value->setString("url", resource->url().getString());
     return value.release();
 }
 
@@ -717,7 +717,7 @@ PassOwnPtr<TracedValue> InspectorPaintImageEvent::data(const LayoutObject* ownin
 {
     OwnPtr<TracedValue> value = TracedValue::create();
     setGeneratingNodeInfo(value.get(), owningLayoutObject, "nodeId");
-    value->setString("url", imageResource.url().string());
+    value->setString("url", imageResource.url().getString());
     return value.release();
 }
 

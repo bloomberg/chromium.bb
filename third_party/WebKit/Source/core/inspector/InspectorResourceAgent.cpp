@@ -274,7 +274,7 @@ static PassOwnPtr<protocol::Network::ResourceTiming> buildObjectForTiming(const 
 static PassOwnPtr<protocol::Network::Request> buildObjectForResourceRequest(const ResourceRequest& request)
 {
     OwnPtr<protocol::Network::Request> requestObject = protocol::Network::Request::create()
-        .setUrl(urlWithoutFragment(request.url()).string())
+        .setUrl(urlWithoutFragment(request.url()).getString())
         .setMethod(request.httpMethod())
         .setHeaders(buildObjectForHeaders(request.httpHeaderFields()))
         .setInitialPriority(resourcePriorityJSON(request.priority())).build();
@@ -336,7 +336,7 @@ static PassOwnPtr<protocol::Network::Response> buildObjectForResourceResponse(co
         *isEmpty = !status && mimeType.isEmpty() && !headersMap.size();
 
     OwnPtr<protocol::Network::Response> responseObject = protocol::Network::Response::create()
-        .setUrl(urlWithoutFragment(response.url()).string())
+        .setUrl(urlWithoutFragment(response.url()).getString())
         .setStatus(status)
         .setStatusText(statusText)
         .setHeaders(buildObjectForHeaders(headersMap))
@@ -441,7 +441,8 @@ bool InspectorResourceAgent::shouldBlockRequest(const ResourceRequest& request)
     protocol::DictionaryValue* blockedURLs = m_state->getObject(ResourceAgentState::blockedURLs);
     if (!blockedURLs)
         return false;
-    String url = request.url().string();
+
+    String url = request.url().getString();
     for (size_t i = 0; i < blockedURLs->size(); ++i) {
         auto entry = blockedURLs->at(i);
         if (matches(url, entry.first))
@@ -488,7 +489,7 @@ void InspectorResourceAgent::willSendRequestInternal(LocalFrame* frame, unsigned
     requestInfo->setMixedContentType(mixedContentTypeForContextType(MixedContentChecker::contextTypeForInspector(frame, request)));
 
     String resourceType = InspectorPageAgent::resourceTypeJson(type);
-    frontend()->requestWillBeSent(requestId, frameId, loaderId, urlWithoutFragment(loader->url()).string(), requestInfo.release(), monotonicallyIncreasingTime(), currentTime(), initiatorObject.release(), buildObjectForResourceResponse(redirectResponse), resourceType);
+    frontend()->requestWillBeSent(requestId, frameId, loaderId, urlWithoutFragment(loader->url()).getString(), requestInfo.release(), monotonicallyIncreasingTime(), currentTime(), initiatorObject.release(), buildObjectForResourceResponse(redirectResponse), resourceType);
     if (m_pendingXHRReplayData && !m_pendingXHRReplayData->async())
         frontend()->flush();
 }
@@ -795,7 +796,7 @@ PassOwnPtr<protocol::Network::Initiator> InspectorResourceAgent::buildInitiatorO
     if (document && document->scriptableDocumentParser()) {
         OwnPtr<protocol::Network::Initiator> initiatorObject = protocol::Network::Initiator::create()
             .setType(protocol::Network::Initiator::TypeEnum::Parser).build();
-        initiatorObject->setUrl(urlWithoutFragment(document->url()).string());
+        initiatorObject->setUrl(urlWithoutFragment(document->url()).getString());
         if (TextPosition::belowRangePosition() != initiatorInfo.position)
             initiatorObject->setLineNumber(initiatorInfo.position.m_line.oneBasedInt());
         else
@@ -812,7 +813,7 @@ PassOwnPtr<protocol::Network::Initiator> InspectorResourceAgent::buildInitiatorO
 
 void InspectorResourceAgent::didCreateWebSocket(Document*, unsigned long identifier, const KURL& requestURL, const String&)
 {
-    frontend()->webSocketCreated(IdentifiersFactory::requestId(identifier), urlWithoutFragment(requestURL).string());
+    frontend()->webSocketCreated(IdentifiersFactory::requestId(identifier), urlWithoutFragment(requestURL).getString());
 }
 
 void InspectorResourceAgent::willSendWebSocketHandshakeRequest(Document*, unsigned long identifier, const WebSocketHandshakeRequest* request)

@@ -43,7 +43,7 @@ static double monotonicTimeToDocumentMilliseconds(Document* document, double sec
 }
 
 PerformanceCompositeTiming::PerformanceCompositeTiming(Document* requestingDocument, unsigned sourceFrame, double startTime)
-    : PerformanceEntry(requestingDocument->url().string(), "composite", monotonicTimeToDocumentMilliseconds(requestingDocument, startTime), monotonicTimeToDocumentMilliseconds(requestingDocument, startTime))
+    : PerformanceEntry(requestingDocument->url().getString(), "composite", monotonicTimeToDocumentMilliseconds(requestingDocument, startTime), monotonicTimeToDocumentMilliseconds(requestingDocument, startTime))
     , m_sourceFrame(sourceFrame)
     , m_requestingDocument(requestingDocument)
 {

@@ -1176,7 +1176,7 @@ void GraphicsContext::setURLForRect(const KURL& link, const IntRect& destRect)
         return;
     ASSERT(m_canvas);
 
-    SkAutoDataUnref url(SkData::NewWithCString(link.string().utf8().data()));
+    SkAutoDataUnref url(SkData::NewWithCString(link.getString().utf8().data()));
     SkAnnotateRectWithURL(m_canvas, destRect, url.get());
 }
 

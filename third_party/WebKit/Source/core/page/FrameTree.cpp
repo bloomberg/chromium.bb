@@ -412,7 +412,7 @@ static void printFrames(const blink::Frame* frame, const blink::Frame* targetFra
     printIndent(indent);
     printf("  document=%p\n", frame->isLocalFrame() ? toLocalFrame(frame)->document() : 0);
     printIndent(indent);
-    printf("  uri=%s\n\n", frame->isLocalFrame() ? toLocalFrame(frame)->document()->url().string().utf8().data() : 0);
+    printf("  uri=%s\n\n", frame->isLocalFrame() ? toLocalFrame(frame)->document()->url().getString().utf8().data() : 0);
 
     for (blink::Frame* child = frame->tree().firstChild(); child; child = child->tree().nextSibling())
         printFrames(child, targetFrame, indent + 1);

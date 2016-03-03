@@ -495,7 +495,7 @@ WebString WebPluginContainerImpl::executeScriptURL(const WebURL& url, bool popup
     ASSERT(kurl.protocolIs("javascript"));
 
     String script = decodeURLEscapeSequences(
-        kurl.string().substring(strlen("javascript:")));
+        kurl.getString().substring(strlen("javascript:")));
 
     UserGestureIndicator gestureIndicator(popupsAllowed ? DefinitelyProcessingNewUserGesture : PossiblyProcessingUserGesture);
     v8::HandleScope handleScope(toIsolate(frame));

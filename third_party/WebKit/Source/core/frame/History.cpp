@@ -52,8 +52,8 @@ bool equalIgnoringPathQueryAndFragment(const KURL& a, const KURL& b)
     if (aLength != bLength)
         return false;
 
-    const String& aString = a.string();
-    const String& bString = b.string();
+    const String& aString = a.getString();
+    const String& bString = b.getString();
     for (int i = 0; i < aLength; ++i) {
         if (aString[i] != bString[i])
             return false;

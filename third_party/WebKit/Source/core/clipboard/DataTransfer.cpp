@@ -342,7 +342,7 @@ void DataTransfer::writeURL(const KURL& url, const String& title)
     m_dataObject->setURLAndTitle(url, title);
 
     // The URL can also be used as plain text.
-    m_dataObject->setData(mimeTypeTextPlain, url.string());
+    m_dataObject->setData(mimeTypeTextPlain, url.getString());
 
     // The URL can also be used as an HTML fragment.
     m_dataObject->setHTMLAndBaseURL(urlToMarkup(url, title), url);

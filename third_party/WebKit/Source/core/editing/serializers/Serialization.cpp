@@ -117,7 +117,7 @@ static void completeURLs(DocumentFragment& fragment, const String& baseURL)
         // AttributeCollection::iterator end = attributes.end();
         for (const auto& attribute : attributes) {
             if (element.isURLAttribute(attribute) && !attribute.value().isEmpty())
-                changes.append(AttributeChange(&element, attribute.name(), KURL(parsedBaseURL, attribute.value()).string()));
+                changes.append(AttributeChange(&element, attribute.name(), KURL(parsedBaseURL, attribute.value()).getString()));
         }
     }
 
@@ -521,7 +521,7 @@ String urlToMarkup(const KURL& url, const String& title)
 {
     StringBuilder markup;
     markup.appendLiteral("<a href=\"");
-    markup.append(url.string());
+    markup.append(url.getString());
     markup.appendLiteral("\">");
     MarkupFormatter::appendCharactersReplacingEntities(markup, title, 0, title.length(), EntityMaskInPCDATA);
     markup.appendLiteral("</a>");

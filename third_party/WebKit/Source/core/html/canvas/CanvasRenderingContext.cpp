@@ -65,9 +65,9 @@ bool CanvasRenderingContext::wouldTaintOrigin(CanvasImageSource* imageSource)
     bool hasURL = (sourceURL.isValid() && !sourceURL.isAboutBlankURL());
 
     if (hasURL) {
-        if (sourceURL.protocolIsData() || m_cleanURLs.contains(sourceURL.string()))
+        if (sourceURL.protocolIsData() || m_cleanURLs.contains(sourceURL.getString()))
             return false;
-        if (m_dirtyURLs.contains(sourceURL.string()))
+        if (m_dirtyURLs.contains(sourceURL.getString()))
             return true;
     }
 
@@ -75,9 +75,9 @@ bool CanvasRenderingContext::wouldTaintOrigin(CanvasImageSource* imageSource)
 
     if (hasURL) {
         if (taintOrigin)
-            m_dirtyURLs.add(sourceURL.string());
+            m_dirtyURLs.add(sourceURL.getString());
         else
-            m_cleanURLs.add(sourceURL.string());
+            m_cleanURLs.add(sourceURL.getString());
     }
     return taintOrigin;
 }

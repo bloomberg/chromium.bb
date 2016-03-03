@@ -117,7 +117,7 @@ protected:
 
     void serialize(const char* url)
     {
-        FrameTestHelpers::loadFrame(m_helper.webView()->mainFrame(), KURL(m_baseUrl, url).string().utf8().data());
+        FrameTestHelpers::loadFrame(m_helper.webView()->mainFrame(), KURL(m_baseUrl, url).getString().utf8().data());
         FrameSerializer serializer(m_resources, *this);
         Frame* frame = m_helper.webViewImpl()->mainFrameImpl()->frame();
         for (; frame; frame = frame->tree().traverseNext()) {

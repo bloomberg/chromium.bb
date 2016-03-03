@@ -81,7 +81,7 @@ String DOMURL::createPublicURL(ExecutionContext* executionContext, URLRegistrabl
 
     executionContext->publicURLManager().registerURL(executionContext->securityOrigin(), publicURL, registrable, uuid);
 
-    return publicURL.string();
+    return publicURL.getString();
 }
 
 void DOMURL::revokeObjectURL(ExecutionContext* executionContext, const String& urlString)

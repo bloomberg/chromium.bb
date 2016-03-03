@@ -469,7 +469,7 @@ String XMLHttpRequest::responseURL()
     KURL responseURL(m_response.url());
     if (!responseURL.isNull())
         responseURL.removeFragmentIdentifier();
-    return responseURL.string();
+    return responseURL.getString();
 }
 
 XMLHttpRequestUpload* XMLHttpRequest::upload()

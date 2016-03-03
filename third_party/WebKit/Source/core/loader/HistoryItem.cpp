@@ -83,7 +83,7 @@ void HistoryItem::setURLString(const String& urlString)
 
 void HistoryItem::setURL(const KURL& url)
 {
-    setURLString(url.string());
+    setURLString(url.getString());
 }
 
 void HistoryItem::setReferrer(const Referrer& referrer)

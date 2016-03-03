@@ -163,7 +163,7 @@ void MemoryCache::add(Resource* resource)
     resources->set(resource->url(), MemoryCacheEntry::create(resource));
     update(resource, 0, resource->size(), true);
 
-    WTF_LOG(ResourceLoading, "MemoryCache::add Added '%s', resource %p\n", resource->url().string().latin1().data(), resource);
+    WTF_LOG(ResourceLoading, "MemoryCache::add Added '%s', resource %p\n", resource->url().getString().latin1().data(), resource);
 }
 
 void MemoryCache::remove(Resource* resource)
@@ -358,7 +358,7 @@ void MemoryCache::evict(MemoryCacheEntry* entry)
     ASSERT(WTF::isMainThread());
 
     Resource* resource = entry->m_resource.get();
-    WTF_LOG(ResourceLoading, "Evicting resource %p for '%s' from cache", resource, resource->url().string().latin1().data());
+    WTF_LOG(ResourceLoading, "Evicting resource %p for '%s' from cache", resource, resource->url().getString().latin1().data());
     // The resource may have already been removed by someone other than our caller,
     // who needed a fresh copy for a reload. See <http://bugs.webkit.org/show_bug.cgi?id=12479#c6>.
     update(resource, resource->size(), 0, false);

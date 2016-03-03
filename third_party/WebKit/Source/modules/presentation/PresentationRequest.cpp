@@ -107,7 +107,7 @@ ScriptPromise PresentationRequest::start(ScriptState* scriptState)
         resolver->reject(DOMException::create(InvalidStateError, "The PresentationRequest is no longer associated to a frame."));
         return promise;
     }
-    client->startSession(m_url.string(), new PresentationConnectionCallbacks(resolver, this));
+    client->startSession(m_url.getString(), new PresentationConnectionCallbacks(resolver, this));
 
     return promise;
 }
@@ -122,7 +122,7 @@ ScriptPromise PresentationRequest::reconnect(ScriptState* scriptState, const Str
         resolver->reject(DOMException::create(InvalidStateError, "The PresentationRequest is no longer associated to a frame."));
         return promise;
     }
-    client->joinSession(m_url.string(), id, new PresentationConnectionCallbacks(resolver, this));
+    client->joinSession(m_url.getString(), id, new PresentationConnectionCallbacks(resolver, this));
 
     return promise;
 }
@@ -137,7 +137,7 @@ ScriptPromise PresentationRequest::getAvailability(ScriptState* scriptState)
         resolver->reject(DOMException::create(InvalidStateError, "The object is no longer associated to a frame."));
         return promise;
     }
-    client->getAvailability(m_url.string(), new PresentationAvailabilityCallbacks(resolver, m_url));
+    client->getAvailability(m_url.getString(), new PresentationAvailabilityCallbacks(resolver, m_url));
     return promise;
 }
 

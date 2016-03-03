@@ -343,7 +343,7 @@ void DocumentLoader::redirectReceived(Resource* resource, ResourceRequest& reque
     const KURL& requestURL = m_request.url();
     RefPtr<SecurityOrigin> redirectingOrigin = SecurityOrigin::create(redirectResponse.url());
     if (!redirectingOrigin->canDisplay(requestURL)) {
-        FrameLoader::reportLocalLoadFailed(m_frame, requestURL.string());
+        FrameLoader::reportLocalLoadFailed(m_frame, requestURL.getString());
         cancelMainResourceLoad(ResourceError::cancelledError(requestURL));
         return;
     }

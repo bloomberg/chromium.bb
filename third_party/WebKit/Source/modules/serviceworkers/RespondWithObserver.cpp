@@ -27,7 +27,7 @@ namespace {
 // Returns the error message to let the developer know about the reason of the unusual failures.
 const String getMessageForResponseError(WebServiceWorkerResponseError error, const KURL& requestURL)
 {
-    String errorMessage = "The FetchEvent for \"" + requestURL.string() + "\" resulted in a network error response: ";
+    String errorMessage = "The FetchEvent for \"" + requestURL.getString() + "\" resulted in a network error response: ";
     switch (error) {
     case WebServiceWorkerResponseErrorPromiseRejected:
         errorMessage = errorMessage + "the promise was rejected.";

@@ -35,7 +35,7 @@
 namespace blink {
 
 WebURL::WebURL(const KURL& url)
-    : m_string(url.string())
+    : m_string(url.getString())
     , m_parsed(url.parsed())
     , m_isValid(url.isValid())
 {
@@ -43,7 +43,7 @@ WebURL::WebURL(const KURL& url)
 
 WebURL& WebURL::operator=(const KURL& url)
 {
-    m_string = url.string();
+    m_string = url.getString();
     m_parsed = url.parsed();
     m_isValid = url.isValid();
     return *this;

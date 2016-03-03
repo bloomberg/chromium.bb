@@ -43,7 +43,7 @@ static double monotonicTimeToDocumentMilliseconds(Document* document, double sec
 }
 
 PerformanceRenderTiming::PerformanceRenderTiming(Document* requestingDocument, unsigned sourceFrame, double startTime, double finishTime)
-    : PerformanceEntry(requestingDocument->url().string(), "render", monotonicTimeToDocumentMilliseconds(requestingDocument, startTime), monotonicTimeToDocumentMilliseconds(requestingDocument, finishTime))
+    : PerformanceEntry(requestingDocument->url().getString(), "render", monotonicTimeToDocumentMilliseconds(requestingDocument, startTime), monotonicTimeToDocumentMilliseconds(requestingDocument, finishTime))
     , m_sourceFrame(sourceFrame)
     , m_requestingDocument(requestingDocument)
 {

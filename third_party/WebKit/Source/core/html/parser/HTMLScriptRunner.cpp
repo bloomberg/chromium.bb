@@ -56,7 +56,7 @@ PassOwnPtr<TracedValue> getTraceArgsForScriptElement(Element* element, const Tex
     OwnPtr<TracedValue> value = TracedValue::create();
     ScriptLoader* scriptLoader = toScriptLoaderIfPossible(element);
     if (scriptLoader && scriptLoader->resource())
-        value->setString("url", scriptLoader->resource()->url().string());
+        value->setString("url", scriptLoader->resource()->url().getString());
     if (element->ownerDocument() && element->ownerDocument()->frame())
         value->setString("frame", String::format("0x%" PRIx64, static_cast<uint64_t>(reinterpret_cast<intptr_t>(element->ownerDocument()->frame()))));
     if (textPosition.m_line.zeroBasedInt() > 0 || textPosition.m_column.zeroBasedInt() > 0) {

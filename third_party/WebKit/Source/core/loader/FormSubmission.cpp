@@ -195,7 +195,7 @@ PassRefPtrWillBeRawPtr<FormSubmission> FormSubmission::create(HTMLFormElement* f
     }
 
     Document& document = form->document();
-    KURL actionURL = document.completeURL(copiedAttributes.action().isEmpty() ? document.url().string() : copiedAttributes.action());
+    KURL actionURL = document.completeURL(copiedAttributes.action().isEmpty() ? document.url().getString() : copiedAttributes.action());
     bool isMailtoForm = actionURL.protocolIs("mailto");
     bool isMultiPartForm = false;
     AtomicString encodingType = copiedAttributes.encodingType();

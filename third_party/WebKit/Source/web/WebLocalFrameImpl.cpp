@@ -1817,7 +1817,7 @@ void WebLocalFrameImpl::loadJavaScriptURL(const KURL& url)
     if (SchemeRegistry::shouldTreatURLSchemeAsNotAllowingJavascriptURLs(frame()->document()->url().protocol()))
         return;
 
-    String script = decodeURLEscapeSequences(url.string().substring(strlen("javascript:")));
+    String script = decodeURLEscapeSequences(url.getString().substring(strlen("javascript:")));
     UserGestureIndicator gestureIndicator(DefinitelyProcessingNewUserGesture);
     v8::HandleScope handleScope(toIsolate(frame()));
     v8::Local<v8::Value> result = frame()->script().executeScriptInMainWorldAndReturnValue(ScriptSourceCode(script));

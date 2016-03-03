@@ -379,7 +379,7 @@ void XSSAuditor::setEncoding(const WTF::TextEncoding& encoding)
 
     m_encoding = encoding;
 
-    m_decodedURL = canonicalize(m_documentURL.string(), NoTruncation);
+    m_decodedURL = canonicalize(m_documentURL.getString(), NoTruncation);
     if (m_decodedURL.find(isRequiredForInjection) == kNotFound)
         m_decodedURL = String();
 
@@ -493,9 +493,9 @@ bool XSSAuditor::filterScriptToken(const FilterTokenRequest& request)
     bool didBlockScript = false;
     m_scriptTagFoundInRequest = isContainedInRequest(canonicalizedSnippetForTagName(request));
     if (m_scriptTagFoundInRequest) {
-        didBlockScript |= eraseAttributeIfInjected(request, srcAttr, blankURL().string(), SrcLikeAttributeTruncation);
-        didBlockScript |= eraseAttributeIfInjected(request, SVGNames::hrefAttr, blankURL().string(), SrcLikeAttributeTruncation);
-        didBlockScript |= eraseAttributeIfInjected(request, XLinkNames::hrefAttr, blankURL().string(), SrcLikeAttributeTruncation);
+        didBlockScript |= eraseAttributeIfInjected(request, srcAttr, blankURL().getString(), SrcLikeAttributeTruncation);
+        didBlockScript |= eraseAttributeIfInjected(request, SVGNames::hrefAttr, blankURL().getString(), SrcLikeAttributeTruncation);
+        didBlockScript |= eraseAttributeIfInjected(request, XLinkNames::hrefAttr, blankURL().getString(), SrcLikeAttributeTruncation);
     }
     return didBlockScript;
 }
@@ -507,7 +507,7 @@ bool XSSAuditor::filterObjectToken(const FilterTokenRequest& request)
 
     bool didBlockScript = false;
     if (isContainedInRequest(canonicalizedSnippetForTagName(request))) {
-        didBlockScript |= eraseAttributeIfInjected(request, dataAttr, blankURL().string(), SrcLikeAttributeTruncation);
+        didBlockScript |= eraseAttributeIfInjected(request, dataAttr, blankURL().getString(), SrcLikeAttributeTruncation);
         didBlockScript |= eraseAttributeIfInjected(request, typeAttr);
         didBlockScript |= eraseAttributeIfInjected(request, classidAttr);
     }
@@ -527,7 +527,7 @@ bool XSSAuditor::filterParamToken(const FilterTokenRequest& request)
     if (!HTMLParamElement::isURLParameter(nameAttribute.value()))
         return false;
 
-    return eraseAttributeIfInjected(request, valueAttr, blankURL().string(), SrcLikeAttributeTruncation);
+    return eraseAttributeIfInjected(request, valueAttr, blankURL().getString(), SrcLikeAttributeTruncation);
 }
 
 bool XSSAuditor::filterEmbedToken(const FilterTokenRequest& request)
@@ -538,7 +538,7 @@ bool XSSAuditor::filterEmbedToken(const FilterTokenRequest& request)
     bool didBlockScript = false;
     if (isContainedInRequest(canonicalizedSnippetForTagName(request))) {
         didBlockScript |= eraseAttributeIfInjected(request, codeAttr, String(), SrcLikeAttributeTruncation);
-        didBlockScript |= eraseAttributeIfInjected(request, srcAttr, blankURL().string(), SrcLikeAttributeTruncation);
+        didBlockScript |= eraseAttributeIfInjected(request, srcAttr, blankURL().getString(), SrcLikeAttributeTruncation);
         didBlockScript |= eraseAttributeIfInjected(request, typeAttr);
     }
     return didBlockScript;
@@ -806,7 +806,7 @@ bool XSSAuditor::isLikelySafeResource(const String& url)
     // Give empty URLs and about:blank a pass. Making a resourceURL from an
     // empty string below will likely later fail the "no query args test" as
     // it inherits the document's query args.
-    if (url.isEmpty() || url == blankURL().string())
+    if (url.isEmpty() || url == blankURL().getString())
         return true;
 
     // If the resource is loaded from the same host as the enclosing page, it's

@@ -159,7 +159,7 @@ static void preconnectIfNeeded(const LinkRelAttribute& relAttribute, const KURL&
         ASSERT(RuntimeEnabledFeatures::linkPreconnectEnabled());
         Settings* settings = document.settings();
         if (settings && settings->logDnsPrefetchAndPreconnect()) {
-            document.addConsoleMessage(ConsoleMessage::create(OtherMessageSource, DebugMessageLevel, String("Preconnect triggered for ") + href.string()));
+            document.addConsoleMessage(ConsoleMessage::create(OtherMessageSource, DebugMessageLevel, String("Preconnect triggered for ") + href.getString()));
             if (crossOrigin != CrossOriginAttributeNotSet) {
                 document.addConsoleMessage(ConsoleMessage::create(OtherMessageSource, DebugMessageLevel,
                     String("Preconnect CORS setting is ") + String((crossOrigin == CrossOriginAttributeAnonymous) ? "anonymous" : "use-credentials")));

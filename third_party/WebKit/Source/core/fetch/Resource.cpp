@@ -772,7 +772,7 @@ void Resource::onMemoryDump(WebMemoryDumpLevelOfDetail levelOfDetail, WebProcess
     }
 
     if (levelOfDetail == WebMemoryDumpLevelOfDetail::Detailed) {
-        String urlToReport = url().string();
+        String urlToReport = url().getString();
         if (urlToReport.length() > kMaxURLReportLength) {
             urlToReport.truncate(kMaxURLReportLength);
             urlToReport = urlToReport + "...";
@@ -911,7 +911,7 @@ bool Resource::lock()
 size_t Resource::overheadSize() const
 {
     static const int kAverageClientsHashMapSize = 384;
-    return sizeof(Resource) + m_response.memoryUsage() + kAverageClientsHashMapSize + m_resourceRequest.url().string().length() * 2;
+    return sizeof(Resource) + m_response.memoryUsage() + kAverageClientsHashMapSize + m_resourceRequest.url().getString().length() * 2;
 }
 
 void Resource::didChangePriority(ResourceLoadPriority loadPriority, int intraPriorityValue)

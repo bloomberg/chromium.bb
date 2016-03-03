@@ -76,7 +76,7 @@ void HTMLFrameElementBase::openURL(bool replaceCurrentItem)
         return;
 
     if (m_URL.isEmpty())
-        m_URL = AtomicString(blankURL().string());
+        m_URL = AtomicString(blankURL().getString());
 
     LocalFrame* parentFrame = document().frame();
     if (!parentFrame)
@@ -109,7 +109,7 @@ void HTMLFrameElementBase::parseAttribute(const QualifiedName& name, const Atomi
 {
     if (name == srcdocAttr) {
         if (!value.isNull()) {
-            setLocation(srcdocURL().string());
+            setLocation(srcdocURL().getString());
         } else {
             const AtomicString& srcValue = fastGetAttribute(srcAttr);
             if (!srcValue.isNull())

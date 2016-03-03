@@ -178,7 +178,7 @@ PassOwnPtr<DragImage> DragImage::create(const KURL& url, const String& inLabel, 
     bool clipLabelString = false;
     float maxDragLabelStringWidthDIP = kMaxDragLabelStringWidth / deviceScaleFactor;
 
-    String urlString = url.string();
+    String urlString = url.getString();
     String label = inLabel.stripWhiteSpace();
     if (label.isEmpty()) {
         drawURLString = false;

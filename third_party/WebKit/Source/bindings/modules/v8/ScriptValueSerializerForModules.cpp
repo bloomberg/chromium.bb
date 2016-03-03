@@ -86,7 +86,7 @@ ScriptValueSerializer::StateBase* ScriptValueSerializerForModules::writeDOMFileS
     if (!fs->clonable())
         return handleError(DataCloneError, "A FileSystem object could not be cloned.", next);
 
-    toSerializedScriptValueWriterForModules(writer()).writeDOMFileSystem(fs->type(), fs->name(), fs->rootURL().string());
+    toSerializedScriptValueWriterForModules(writer()).writeDOMFileSystem(fs->type(), fs->name(), fs->rootURL().getString());
     return 0;
 }
 

@@ -151,7 +151,7 @@ void Location::setProtocol(LocalDOMWindow* currentWindow, LocalDOMWindow* entere
         exceptionState.throwDOMException(SyntaxError, "'" + protocol + "' is an invalid protocol.");
         return;
     }
-    setLocation(url.string(), currentWindow, enteredWindow);
+    setLocation(url.getString(), currentWindow, enteredWindow);
 }
 
 void Location::setHost(LocalDOMWindow* currentWindow, LocalDOMWindow* enteredWindow, const String& host)
@@ -160,7 +160,7 @@ void Location::setHost(LocalDOMWindow* currentWindow, LocalDOMWindow* enteredWin
         return;
     KURL url = toLocalFrame(m_frame)->document()->url();
     url.setHostAndPort(host);
-    setLocation(url.string(), currentWindow, enteredWindow);
+    setLocation(url.getString(), currentWindow, enteredWindow);
 }
 
 void Location::setHostname(LocalDOMWindow* currentWindow, LocalDOMWindow* enteredWindow, const String& hostname)
@@ -169,7 +169,7 @@ void Location::setHostname(LocalDOMWindow* currentWindow, LocalDOMWindow* entere
         return;
     KURL url = toLocalFrame(m_frame)->document()->url();
     url.setHost(hostname);
-    setLocation(url.string(), currentWindow, enteredWindow);
+    setLocation(url.getString(), currentWindow, enteredWindow);
 }
 
 void Location::setPort(LocalDOMWindow* currentWindow, LocalDOMWindow* enteredWindow, const String& portString)
@@ -178,7 +178,7 @@ void Location::setPort(LocalDOMWindow* currentWindow, LocalDOMWindow* enteredWin
         return;
     KURL url = toLocalFrame(m_frame)->document()->url();
     url.setPort(portString);
-    setLocation(url.string(), currentWindow, enteredWindow);
+    setLocation(url.getString(), currentWindow, enteredWindow);
 }
 
 void Location::setPathname(LocalDOMWindow* currentWindow, LocalDOMWindow* enteredWindow, const String& pathname)
@@ -187,7 +187,7 @@ void Location::setPathname(LocalDOMWindow* currentWindow, LocalDOMWindow* entere
         return;
     KURL url = toLocalFrame(m_frame)->document()->url();
     url.setPath(pathname);
-    setLocation(url.string(), currentWindow, enteredWindow);
+    setLocation(url.getString(), currentWindow, enteredWindow);
 }
 
 void Location::setSearch(LocalDOMWindow* currentWindow, LocalDOMWindow* enteredWindow, const String& search)
@@ -196,7 +196,7 @@ void Location::setSearch(LocalDOMWindow* currentWindow, LocalDOMWindow* enteredW
         return;
     KURL url = toLocalFrame(m_frame)->document()->url();
     url.setQuery(search);
-    setLocation(url.string(), currentWindow, enteredWindow);
+    setLocation(url.getString(), currentWindow, enteredWindow);
 }
 
 void Location::setHash(LocalDOMWindow* currentWindow, LocalDOMWindow* enteredWindow, const String& hash)
@@ -214,7 +214,7 @@ void Location::setHash(LocalDOMWindow* currentWindow, LocalDOMWindow* enteredWin
     // cases where fragment identifiers are ignored or invalid.
     if (equalIgnoringNullity(oldFragmentIdentifier, url.fragmentIdentifier()))
         return;
-    setLocation(url.string(), currentWindow, enteredWindow);
+    setLocation(url.getString(), currentWindow, enteredWindow);
 }
 
 void Location::assign(LocalDOMWindow* currentWindow, LocalDOMWindow* enteredWindow, const String& url)

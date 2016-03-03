@@ -51,15 +51,15 @@ void PublicURLManager::registerURL(SecurityOrigin* origin, const KURL& url, URLR
 
     RegistryURLMap::ValueType* found = m_registryToURL.add(&registrable->registry(), URLMap()).storedValue;
     found->key->registerURL(origin, url, registrable);
-    found->value.add(url.string(), uuid);
+    found->value.add(url.getString(), uuid);
 }
 
 void PublicURLManager::revoke(const KURL& url)
 {
     for (auto& registryUrl : m_registryToURL) {
-        if (registryUrl.value.contains(url.string())) {
+        if (registryUrl.value.contains(url.getString())) {
             registryUrl.key->unregisterURL(url);
-            registryUrl.value.remove(url.string());
+            registryUrl.value.remove(url.getString());
             break;
         }
     }

@@ -178,7 +178,7 @@ Request* Request::createRequestWithRequestOrString(ScriptState* scriptState, Req
                 return nullptr;
             } else {
                 // "Set |request|'s referrer to |parsedReferrer|."
-                request->setReferrerString(AtomicString(parsedReferrer.string()));
+                request->setReferrerString(AtomicString(parsedReferrer.getString()));
             }
         }
         request->setReferrerPolicy(init.referrer.referrerPolicy);
