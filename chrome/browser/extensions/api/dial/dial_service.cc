@@ -474,8 +474,7 @@ void DialServiceImpl::SendNetworkList(const NetworkInterfaceList& networks) {
   for (NetworkInterfaceList::const_iterator iter = networks.begin();
        iter != networks.end(); ++iter) {
     net::AddressFamily addr_family = net::GetAddressFamily(iter->address);
-    VLOG(2) << "Found " << iter->name << ", "
-            << net::IPAddressToString(iter->address)
+    VLOG(2) << "Found " << iter->name << ", " << iter->address.ToString()
             << ", address family: " << addr_family;
     if (addr_family == net::ADDRESS_FAMILY_IPV4) {
       InterfaceIndexAddressFamily interface_index_addr_family =
@@ -489,9 +488,9 @@ void DialServiceImpl::SendNetworkList(const NetworkInterfaceList& networks) {
         VLOG(2) << "Encountered "
                 << "interface index: " << iter->interface_index << ", "
                 << "address family: " << addr_family << " for the first time, "
-                << "adding IP address " << net::IPAddressToString(iter->address)
+                << "adding IP address " << iter->address.ToString()
                 << " to list.";
-        ip_addresses.push_back(iter->address);
+        ip_addresses.push_back(iter->address.bytes());
       } else {
         VLOG(2) << "Already encountered "
                 << "interface index: " << iter->interface_index << ", "

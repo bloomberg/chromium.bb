@@ -90,8 +90,8 @@ class IPAttributesGetterTest : public internal::IPAttributesGetterMac {
 bool FillIfaddrs(ifaddrs* interfaces,
                  const char* ifname,
                  uint flags,
-                 const IPAddressNumber& ip_address,
-                 const IPAddressNumber& ip_netmask,
+                 const IPAddress& ip_address,
+                 const IPAddress& ip_netmask,
                  sockaddr_storage sock_addrs[2]) {
   interfaces->ifa_next = NULL;
   interfaces->ifa_name = const_cast<char*>(ifname);
@@ -130,17 +130,9 @@ TEST(NetworkInterfacesTest, GetNetworkList) {
     EXPECT_FALSE(it->friendly_name.empty());
 
     // Verify that the address is correct.
-    EXPECT_TRUE(it->address.size() == kIPv4AddressSize ||
-                it->address.size() == kIPv6AddressSize)
-        << "Invalid address of size " << it->address.size();
-    bool all_zeroes = true;
-    for (size_t i = 0; i < it->address.size(); ++i) {
-      if (it->address[i] != 0) {
-        all_zeroes = false;
-        break;
-      }
-    }
-    EXPECT_FALSE(all_zeroes);
+    EXPECT_TRUE(it->address.IsValid()) << "Invalid address of size "
+                                       << it->address.size();
+    EXPECT_FALSE(it->address.IsZero());
     EXPECT_GT(it->prefix_length, 1u);
     EXPECT_LE(it->prefix_length, it->address.size() * 8);
 
@@ -233,9 +225,8 @@ char* GetInterfaceNameVM(int interface_index, char* ifname) {
 }
 
 TEST(NetworkInterfacesTest, GetNetworkListTrimming) {
-  IPAddressNumber ipv6_local_address(
-      kIPv6LocalAddr, kIPv6LocalAddr + arraysize(kIPv6LocalAddr));
-  IPAddressNumber ipv6_address(kIPv6Addr, kIPv6Addr + arraysize(kIPv6Addr));
+  IPAddress ipv6_local_address(kIPv6LocalAddr);
+  IPAddress ipv6_address(kIPv6Addr);
 
   NetworkInterfaceList results;
   ::base::hash_set<int> online_links;
@@ -251,7 +242,8 @@ TEST(NetworkInterfacesTest, GetNetworkListTrimming) {
   };
 
   // Address of offline links should be ignored.
-  ASSERT_TRUE(address_map.insert(std::make_pair(ipv6_address, msg)).second);
+  ASSERT_TRUE(
+      address_map.insert(std::make_pair(ipv6_address.bytes(), msg)).second);
   EXPECT_TRUE(internal::GetNetworkListImpl(
       &results, INCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES, online_links,
       address_map, GetInterfaceName));
@@ -263,7 +255,8 @@ TEST(NetworkInterfacesTest, GetNetworkListTrimming) {
   // Local address should be trimmed out.
   address_map.clear();
   ASSERT_TRUE(
-      address_map.insert(std::make_pair(ipv6_local_address, msg)).second);
+      address_map.insert(std::make_pair(ipv6_local_address.bytes(), msg))
+          .second);
   EXPECT_TRUE(internal::GetNetworkListImpl(
       &results, INCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES, online_links,
       address_map, GetInterfaceName));
@@ -271,7 +264,8 @@ TEST(NetworkInterfacesTest, GetNetworkListTrimming) {
 
   // vmware address should return by default.
   address_map.clear();
-  ASSERT_TRUE(address_map.insert(std::make_pair(ipv6_address, msg)).second);
+  ASSERT_TRUE(
+      address_map.insert(std::make_pair(ipv6_address.bytes(), msg)).second);
   EXPECT_TRUE(internal::GetNetworkListImpl(
       &results, INCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES, online_links,
       address_map, GetInterfaceNameVM));
@@ -283,7 +277,8 @@ TEST(NetworkInterfacesTest, GetNetworkListTrimming) {
 
   // vmware address should be trimmed out if policy specified so.
   address_map.clear();
-  ASSERT_TRUE(address_map.insert(std::make_pair(ipv6_address, msg)).second);
+  ASSERT_TRUE(
+      address_map.insert(std::make_pair(ipv6_address.bytes(), msg)).second);
   EXPECT_TRUE(internal::GetNetworkListImpl(
       &results, EXCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES, online_links,
       address_map, GetInterfaceNameVM));
@@ -293,7 +288,8 @@ TEST(NetworkInterfacesTest, GetNetworkListTrimming) {
   // Addresses with banned attributes should be ignored.
   address_map.clear();
   msg.ifa_flags = IFA_F_TENTATIVE;
-  ASSERT_TRUE(address_map.insert(std::make_pair(ipv6_address, msg)).second);
+  ASSERT_TRUE(
+      address_map.insert(std::make_pair(ipv6_address.bytes(), msg)).second);
   EXPECT_TRUE(internal::GetNetworkListImpl(
       &results, INCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES, online_links,
       address_map, GetInterfaceName));
@@ -304,7 +300,8 @@ TEST(NetworkInterfacesTest, GetNetworkListTrimming) {
   // attributes should be translated correctly.
   address_map.clear();
   msg.ifa_flags = IFA_F_TEMPORARY;
-  ASSERT_TRUE(address_map.insert(std::make_pair(ipv6_address, msg)).second);
+  ASSERT_TRUE(
+      address_map.insert(std::make_pair(ipv6_address.bytes(), msg)).second);
   EXPECT_TRUE(internal::GetNetworkListImpl(
       &results, INCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES, online_links,
       address_map, GetInterfaceName));
@@ -319,7 +316,8 @@ TEST(NetworkInterfacesTest, GetNetworkListTrimming) {
   // attributes should be translated correctly.
   address_map.clear();
   msg.ifa_flags = IFA_F_DEPRECATED;
-  ASSERT_TRUE(address_map.insert(std::make_pair(ipv6_address, msg)).second);
+  ASSERT_TRUE(
+      address_map.insert(std::make_pair(ipv6_address.bytes(), msg)).second);
   EXPECT_TRUE(internal::GetNetworkListImpl(
       &results, INCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES, online_links,
       address_map, GetInterfaceName));
@@ -334,11 +332,9 @@ TEST(NetworkInterfacesTest, GetNetworkListTrimming) {
 #elif defined(OS_MACOSX)
 
 TEST(NetworkInterfacesTest, GetNetworkListTrimming) {
-  IPAddressNumber ipv6_local_address(
-      kIPv6LocalAddr, kIPv6LocalAddr + arraysize(kIPv6LocalAddr));
-  IPAddressNumber ipv6_address(kIPv6Addr, kIPv6Addr + arraysize(kIPv6Addr));
-  IPAddressNumber ipv6_netmask(kIPv6Netmask,
-                               kIPv6Netmask + arraysize(kIPv6Netmask));
+  IPAddress ipv6_local_address(kIPv6LocalAddr);
+  IPAddress ipv6_address(kIPv6Addr);
+  IPAddress ipv6_netmask(kIPv6Netmask);
 
   NetworkInterfaceList results;
   IPAttributesGetterTest ip_attributes_getter;
@@ -432,8 +428,8 @@ TEST(NetworkInterfacesTest, GetNetworkListTrimming) {
 // |adapter_address| once the function is returned.
 bool FillAdapterAddress(IP_ADAPTER_ADDRESSES* adapter_address,
                         const char* ifname,
-                        const IPAddressNumber& ip_address,
-                        const IPAddressNumber& ip_netmask,
+                        const IPAddress& ip_address,
+                        const IPAddress& ip_netmask,
                         sockaddr_storage sock_addrs[2]) {
   adapter_address->AdapterName = const_cast<char*>(ifname);
   adapter_address->FriendlyName = const_cast<PWCHAR>(L"interface");
@@ -481,11 +477,9 @@ bool FillAdapterAddress(IP_ADAPTER_ADDRESSES* adapter_address,
 }
 
 TEST(NetworkInterfacesTest, GetNetworkListTrimming) {
-  IPAddressNumber ipv6_local_address(
-      kIPv6LocalAddr, kIPv6LocalAddr + arraysize(kIPv6LocalAddr));
-  IPAddressNumber ipv6_address(kIPv6Addr, kIPv6Addr + arraysize(kIPv6Addr));
-  IPAddressNumber ipv6_prefix(kIPv6AddrPrefix,
-                              kIPv6AddrPrefix + arraysize(kIPv6AddrPrefix));
+  IPAddress ipv6_local_address(kIPv6LocalAddr);
+  IPAddress ipv6_address(kIPv6Addr);
+  IPAddress ipv6_prefix(kIPv6AddrPrefix);
 
   NetworkInterfaceList results;
   sockaddr_storage addresses[2];

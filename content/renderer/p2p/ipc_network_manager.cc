@@ -90,7 +90,7 @@ void IpcNetworkManager::OnNetworkListChanged(
   for (net::NetworkInterfaceList::const_iterator it = list.begin();
        it != list.end(); it++) {
     rtc::IPAddress ip_address =
-        jingle_glue::IPAddressNumberToIPAddress(it->address);
+        jingle_glue::IPAddressNumberToIPAddress(it->address.bytes());
     DCHECK(!ip_address.IsNil());
 
     rtc::IPAddress prefix = rtc::TruncateIP(ip_address, it->prefix_length);
@@ -100,11 +100,12 @@ void IpcNetworkManager::OnNetworkListChanged(
     network->set_default_local_address_provider(this);
 
     rtc::InterfaceAddress iface_addr;
-    if (it->address.size() == net::kIPv4AddressSize) {
-      use_default_ipv4_address |= (default_ipv4_local_address == it->address);
+    if (it->address.IsIPv4()) {
+      use_default_ipv4_address |=
+          (default_ipv4_local_address == it->address.bytes());
       iface_addr = rtc::InterfaceAddress(ip_address);
     } else {
-      DCHECK(it->address.size() == net::kIPv6AddressSize);
+      DCHECK(it->address.IsIPv6());
       iface_addr = rtc::InterfaceAddress(ip_address, it->ip_address_attributes);
 
       // Only allow non-private, non-deprecated IPv6 addresses which don't
@@ -115,7 +116,8 @@ void IpcNetworkManager::OnNetworkListChanged(
         continue;
       }
 
-      use_default_ipv6_address |= (default_ipv6_local_address == it->address);
+      use_default_ipv6_address |=
+          (default_ipv6_local_address == it->address.bytes());
     }
     network->AddIP(iface_addr);
     networks.push_back(network.release());

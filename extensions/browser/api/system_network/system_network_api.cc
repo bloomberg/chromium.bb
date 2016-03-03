@@ -70,7 +70,7 @@ void SystemNetworkGetNetworkInterfacesFunction::SendResponseOnUIThread(
     linked_ptr<api::system_network::NetworkInterface> info =
         make_linked_ptr(new api::system_network::NetworkInterface);
     info->name = i->name;
-    info->address = net::IPAddressToString(i->address);
+    info->address = i->address.ToString();
     info->prefix_length = i->prefix_length;
     create_arg.push_back(info);
   }

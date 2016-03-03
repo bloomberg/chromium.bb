@@ -28,14 +28,28 @@ NetworkInterface::NetworkInterface(const std::string& name,
                                    const IPAddressNumber& address,
                                    uint32_t prefix_length,
                                    int ip_address_attributes)
+    : NetworkInterface(name,
+                       friendly_name,
+                       interface_index,
+                       type,
+                       IPAddress(address),
+                       prefix_length,
+                       ip_address_attributes) {}
+
+NetworkInterface::NetworkInterface(const std::string& name,
+                                   const std::string& friendly_name,
+                                   uint32_t interface_index,
+                                   NetworkChangeNotifier::ConnectionType type,
+                                   const IPAddress& address,
+                                   uint32_t prefix_length,
+                                   int ip_address_attributes)
     : name(name),
       friendly_name(friendly_name),
       interface_index(interface_index),
       type(type),
       address(address),
       prefix_length(prefix_length),
-      ip_address_attributes(ip_address_attributes) {
-}
+      ip_address_attributes(ip_address_attributes) {}
 
 NetworkInterface::NetworkInterface(const NetworkInterface& other) = default;
 

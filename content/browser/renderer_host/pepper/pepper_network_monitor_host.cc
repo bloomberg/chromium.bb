@@ -106,7 +106,7 @@ void PepperNetworkMonitorHost::SendNetworkList(
     network_copy.addresses.resize(
         1, ppapi::NetAddressPrivateImpl::kInvalidNetAddress);
     bool result = ppapi::NetAddressPrivateImpl::IPEndPointToNetAddress(
-        network.address, 0, &(network_copy.addresses[0]));
+        network.address.bytes(), 0, &(network_copy.addresses[0]));
     DCHECK(result);
 
     // TODO(sergeyu): Currently net::NetworkInterfaceList provides
