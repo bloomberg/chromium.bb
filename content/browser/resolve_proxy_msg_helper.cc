@@ -92,7 +92,7 @@ void ResolveProxyMsgHelper::StartPendingRequest() {
 
   // Start the request.
   int result = proxy_service_->ResolveProxy(
-      req.url, net::LOAD_NORMAL, &proxy_info_,
+      req.url, std::string(), net::LOAD_NORMAL, &proxy_info_,
       base::Bind(&ResolveProxyMsgHelper::OnResolveProxyCompleted,
                  base::Unretained(this)),
       &req.pac_req, NULL, net::BoundNetLog());

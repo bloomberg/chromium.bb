@@ -5,6 +5,7 @@
 #include "jingle/glue/proxy_resolving_client_socket.h"
 
 #include <stdint.h>
+#include <string>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -139,6 +140,7 @@ int ProxyResolvingClientSocket::Connect(
   // First we try and resolve the proxy.
   int status = network_session_->proxy_service()->ResolveProxy(
       proxy_url_,
+      std::string(),
       net::LOAD_NORMAL,
       &proxy_info_,
       proxy_resolve_callback_,
@@ -290,7 +292,7 @@ int ProxyResolvingClientSocket::ReconsiderProxyAfterError(int error) {
   }
 
   int rv = network_session_->proxy_service()->ReconsiderProxyAfterError(
-      proxy_url_, net::LOAD_NORMAL, error, &proxy_info_,
+      proxy_url_, std::string(), net::LOAD_NORMAL, error, &proxy_info_,
       proxy_resolve_callback_, &pac_request_, NULL, bound_net_log_);
   if (rv == net::OK || rv == net::ERR_IO_PENDING) {
     CloseTransportSocket();

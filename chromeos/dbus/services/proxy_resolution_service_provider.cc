@@ -4,6 +4,7 @@
 
 #include "chromeos/dbus/services/proxy_resolution_service_provider.h"
 
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -133,8 +134,9 @@ class ProxyResolverImpl : public ProxyResolverInterface {
                    base::Unretained(request),
                    origin_thread);
     const int result = proxy_service->ResolveProxy(
-        GURL(request->source_url_), net::LOAD_NORMAL, &request->proxy_info_,
-        completion_callback, NULL, NULL, net::BoundNetLog());
+        GURL(request->source_url_), std::string(), net::LOAD_NORMAL,
+        &request->proxy_info_, completion_callback, NULL, NULL,
+        net::BoundNetLog());
     if (result != net::ERR_IO_PENDING) {
       VLOG(1) << "Network proxy resolution completed synchronously.";
       completion_callback.Run(result);

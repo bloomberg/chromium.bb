@@ -5,6 +5,8 @@
 #ifndef NET_BASE_PROXY_DELEGATE_H_
 #define NET_BASE_PROXY_DELEGATE_H_
 
+#include <string>
+
 #include "base/macros.h"
 #include "net/base/net_export.h"
 
@@ -29,10 +31,13 @@ class NET_EXPORT ProxyDelegate {
   virtual ~ProxyDelegate() {
   }
 
-  // Called as the proxy is being resolved for |url|. Allows the delegate to
-  // override the proxy resolution decision made by ProxyService. The delegate
-  // may override the decision by modifying the ProxyInfo |result|.
+  // Called as the proxy is being resolved for |url| for a |method| request.
+  // The caller may pass an empty string to get method agnostic resoulution.
+  // Allows the delegate to override the proxy resolution decision made by
+  // ProxyService. The delegate may override the decision by modifying the
+  // ProxyInfo |result|.
   virtual void OnResolveProxy(const GURL& url,
+                              const std::string& method,
                               int load_flags,
                               const ProxyService& proxy_service,
                               ProxyInfo* result) = 0;

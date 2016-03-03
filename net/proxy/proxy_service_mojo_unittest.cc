@@ -156,9 +156,9 @@ TEST_F(ProxyServiceMojoTest, Basic) {
   ProxyInfo info;
   TestCompletionCallback callback;
   EXPECT_EQ(ERR_IO_PENDING,
-            proxy_service_->ResolveProxy(GURL("http://foo"), LOAD_NORMAL, &info,
-                                         callback.callback(), nullptr, nullptr,
-                                         BoundNetLog()));
+            proxy_service_->ResolveProxy(
+                GURL("http://foo"), std::string(), LOAD_NORMAL, &info,
+                callback.callback(), nullptr, nullptr, BoundNetLog()));
 
   // Proxy script fetcher should have a fetch triggered by the first
   // |ResolveProxy()| request.
@@ -178,9 +178,9 @@ TEST_F(ProxyServiceMojoTest, DnsResolution) {
   TestCompletionCallback callback;
   BoundTestNetLog bound_net_log;
   EXPECT_EQ(ERR_IO_PENDING,
-            proxy_service_->ResolveProxy(GURL("http://foo"), LOAD_NORMAL, &info,
-                                         callback.callback(), nullptr, nullptr,
-                                         bound_net_log.bound()));
+            proxy_service_->ResolveProxy(
+                GURL("http://foo"), std::string(), LOAD_NORMAL, &info,
+                callback.callback(), nullptr, nullptr, bound_net_log.bound()));
 
   // Proxy script fetcher should have a fetch triggered by the first
   // |ResolveProxy()| request.
@@ -209,9 +209,9 @@ TEST_F(ProxyServiceMojoTest, Error) {
   TestCompletionCallback callback;
   BoundTestNetLog bound_net_log;
   EXPECT_EQ(ERR_IO_PENDING,
-            proxy_service_->ResolveProxy(GURL("http://foo"), LOAD_NORMAL, &info,
-                                         callback.callback(), nullptr, nullptr,
-                                         bound_net_log.bound()));
+            proxy_service_->ResolveProxy(
+                GURL("http://foo"), std::string(), LOAD_NORMAL, &info,
+                callback.callback(), nullptr, nullptr, bound_net_log.bound()));
 
   // Proxy script fetcher should have a fetch triggered by the first
   // |ResolveProxy()| request.
@@ -238,9 +238,9 @@ TEST_F(ProxyServiceMojoTest, ErrorOnInitialization) {
   ProxyInfo info;
   TestCompletionCallback callback;
   EXPECT_EQ(ERR_IO_PENDING,
-            proxy_service_->ResolveProxy(GURL("http://foo"), LOAD_NORMAL, &info,
-                                         callback.callback(), nullptr, nullptr,
-                                         BoundNetLog()));
+            proxy_service_->ResolveProxy(
+                GURL("http://foo"), std::string(), LOAD_NORMAL, &info,
+                callback.callback(), nullptr, nullptr, BoundNetLog()));
 
   // Proxy script fetcher should have a fetch triggered by the first
   // |ResolveProxy()| request.

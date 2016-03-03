@@ -101,14 +101,10 @@ void URLRequestFtpJob::Start() {
   } else {
     DCHECK_EQ(request_->context()->proxy_service(), proxy_service_);
     rv = proxy_service_->ResolveProxy(
-        request_->url(),
-        request_->load_flags(),
-        &proxy_info_,
+        request_->url(), "GET", request_->load_flags(), &proxy_info_,
         base::Bind(&URLRequestFtpJob::OnResolveProxyComplete,
                    base::Unretained(this)),
-        &pac_request_,
-        NULL,
-        request_->net_log());
+        &pac_request_, NULL, request_->net_log());
 
     if (rv == ERR_IO_PENDING)
       return;

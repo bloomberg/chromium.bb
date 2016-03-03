@@ -49,11 +49,13 @@ DataReductionProxyDelegate::~DataReductionProxyDelegate() {
 
 void DataReductionProxyDelegate::OnResolveProxy(
     const GURL& url,
+    const std::string& method,
     int load_flags,
     const net::ProxyService& proxy_service,
     net::ProxyInfo* result) {
   DCHECK(result);
-  OnResolveProxyHandler(url, load_flags, configurator_->GetProxyConfig(),
+  OnResolveProxyHandler(url, method, load_flags,
+                        configurator_->GetProxyConfig(),
                         proxy_service.proxy_retry_info(), config_, result);
 }
 
@@ -110,6 +112,7 @@ void DataReductionProxyDelegate::OnTunnelHeadersReceived(
 }
 
 void OnResolveProxyHandler(const GURL& url,
+                           const std::string& method,
                            int load_flags,
                            const net::ProxyConfig& data_reduction_proxy_config,
                            const net::ProxyRetryInfoMap& proxy_retry_info,
@@ -121,7 +124,8 @@ void OnResolveProxyHandler(const GURL& url,
                                        NULL));
   bool data_saver_proxy_used = true;
   if (result->is_empty() || !result->proxy_server().is_direct() ||
-      result->proxy_list().size() != 1 || url.SchemeIsWSOrWSS()) {
+      result->proxy_list().size() != 1 || url.SchemeIsWSOrWSS() ||
+      method == "POST") {
     return;
   }
 

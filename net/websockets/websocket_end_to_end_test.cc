@@ -9,6 +9,7 @@
 // require special server configurations.
 
 #include <stdint.h>
+
 #include <string>
 
 #include "base/bind.h"
@@ -210,6 +211,7 @@ class TestProxyDelegateWithProxyInfo : public ProxyDelegate {
 
  protected:
   void OnResolveProxy(const GURL& url,
+                      const std::string& method,
                       int load_flags,
                       const ProxyService& proxy_service,
                       ProxyInfo* result) override {

@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_DELEGATE_H_
 #define COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_DELEGATE_H_
 
+#include <string>
+
 #include "base/macros.h"
 #include "net/base/proxy_delegate.h"
 #include "net/proxy/proxy_retry_info.h"
@@ -46,6 +48,7 @@ class DataReductionProxyDelegate : public net::ProxyDelegate {
 
   // net::ProxyDelegate implementation:
   void OnResolveProxy(const GURL& url,
+                      const std::string& method,
                       int load_flags,
                       const net::ProxyService& proxy_service,
                       net::ProxyInfo* result) override;
@@ -81,6 +84,7 @@ class DataReductionProxyDelegate : public net::ProxyDelegate {
 // |result|'s current proxy is the data reduction proxy
 // This is visible for test purposes.
 void OnResolveProxyHandler(const GURL& url,
+                           const std::string& method,
                            int load_flags,
                            const net::ProxyConfig& data_reduction_proxy_config,
                            const net::ProxyRetryInfoMap& proxy_retry_info,

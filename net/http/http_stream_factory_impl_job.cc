@@ -869,9 +869,11 @@ int HttpStreamFactoryImpl::Job::DoResolveProxy() {
     replacements.SetPortStr(new_port);
     url_for_proxy = url_for_proxy.ReplaceComponents(replacements);
   }
+
   return session_->proxy_service()->ResolveProxy(
-      url_for_proxy, request_info_.load_flags, &proxy_info_, io_callback_,
-      &pac_request_, session_->params().proxy_delegate, net_log_);
+      url_for_proxy, request_info_.method, request_info_.load_flags,
+      &proxy_info_, io_callback_, &pac_request_,
+      session_->params().proxy_delegate, net_log_);
 }
 
 int HttpStreamFactoryImpl::Job::DoResolveProxyComplete(int result) {
@@ -1619,8 +1621,9 @@ int HttpStreamFactoryImpl::Job::ReconsiderProxyAfterError(int error) {
   }
 
   int rv = session_->proxy_service()->ReconsiderProxyAfterError(
-      request_info_.url, request_info_.load_flags, error, &proxy_info_,
-      io_callback_, &pac_request_, session_->params().proxy_delegate, net_log_);
+      request_info_.url, request_info_.method, request_info_.load_flags, error,
+      &proxy_info_, io_callback_, &pac_request_,
+      session_->params().proxy_delegate, net_log_);
   if (rv == OK || rv == ERR_IO_PENDING) {
     // If the error was during connection setup, there is no socket to
     // disconnect.

@@ -4,6 +4,8 @@
 
 #include "google_apis/gcm/engine/connection_factory_impl.h"
 
+#include <string>
+
 #include "base/location.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
@@ -307,6 +309,7 @@ void ConnectionFactoryImpl::ConnectImpl() {
   RebuildNetworkSessionAuthCache();
   int status = gcm_network_session_->proxy_service()->ResolveProxy(
       current_endpoint,
+      std::string(),
       net::LOAD_NORMAL,
       &proxy_info_,
       base::Bind(&ConnectionFactoryImpl::OnProxyResolveDone,
@@ -530,7 +533,8 @@ int ConnectionFactoryImpl::ReconsiderProxyAfterError(int error) {
   }
 
   int status = gcm_network_session_->proxy_service()->ReconsiderProxyAfterError(
-      GetCurrentEndpoint(), net::LOAD_NORMAL, error, &proxy_info_,
+      GetCurrentEndpoint(),
+      std::string(), net::LOAD_NORMAL, error, &proxy_info_,
       base::Bind(&ConnectionFactoryImpl::OnProxyResolveDone,
                  weak_ptr_factory_.GetWeakPtr()),
       &pac_request_,

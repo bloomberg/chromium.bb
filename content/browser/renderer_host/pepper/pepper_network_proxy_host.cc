@@ -149,6 +149,7 @@ void PepperNetworkProxyHost::TryToSendUnsentRequests() {
                      request.reply_context,
                      base::Owned(proxy_info));
       int result = proxy_service_->ResolveProxy(request.url,
+                                                std::string(),
                                                 net::LOAD_NORMAL,
                                                 proxy_info,
                                                 callback,
