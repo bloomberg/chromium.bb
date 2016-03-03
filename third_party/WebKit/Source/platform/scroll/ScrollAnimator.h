@@ -32,11 +32,11 @@
 #define ScrollAnimator_h
 
 #include "platform/Timer.h"
+#include "platform/animation/CompositorAnimationDelegate.h"
 #include "platform/animation/CompositorAnimationPlayerClient.h"
 #include "platform/animation/CompositorScrollOffsetAnimationCurve.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/scroll/ScrollAnimatorBase.h"
-#include "public/platform/WebCompositorAnimationDelegate.h"
 
 namespace blink {
 

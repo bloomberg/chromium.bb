@@ -47,8 +47,6 @@
         'web_layer_impl_fixed_bounds.h',
         'web_scrollbar_layer_impl.cc',
         'web_scrollbar_layer_impl.h',
-        'web_to_cc_animation_delegate_adapter.cc',
-        'web_to_cc_animation_delegate_adapter.h',
       ],
     },
   ]

@@ -30,7 +30,6 @@
       "platform/WebColor.h",
       "platform/WebCommon.h",
       "platform/WebCompositeAndReadbackAsyncCallback.h",
-      "platform/WebCompositorAnimationDelegate.h",
       "platform/WebCompositorSupport.h",
       "platform/WebConnectionType.h",
       "platform/WebContentDecryptionModule.h",

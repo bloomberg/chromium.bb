@@ -152,6 +152,7 @@
       'animation/CompositorAnimation.h',
       'animation/CompositorAnimationCurve.cpp',
       'animation/CompositorAnimationCurve.h',
+      'animation/CompositorAnimationDelegate.h',      
       'animation/CompositorAnimationPlayer.cpp',
       'animation/CompositorAnimationPlayer.h',
       'animation/CompositorAnimationPlayerClient.cpp',

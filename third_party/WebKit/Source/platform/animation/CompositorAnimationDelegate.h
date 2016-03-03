@@ -1,18 +1,19 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebCompositorAnimationDelegate_h
-#define WebCompositorAnimationDelegate_h
+#ifndef CompositorAnimationDelegate_h
+#define CompositorAnimationDelegate_h
 
-#include "WebCommon.h"
+#include "base/memory/scoped_ptr.h"
 #include "cc/animation/animation_curve.h"
+#include "platform/PlatformExport.h"
 
 namespace blink {
 
-class BLINK_PLATFORM_EXPORT WebCompositorAnimationDelegate {
+class PLATFORM_EXPORT CompositorAnimationDelegate {
 public:
-    virtual ~WebCompositorAnimationDelegate() { }
+    virtual ~CompositorAnimationDelegate() { }
 
     virtual void notifyAnimationStarted(double monotonicTime, int group) = 0;
     virtual void notifyAnimationFinished(double monotonicTime, int group) = 0;
@@ -29,4 +30,4 @@ public:
 
 } // namespace blink
 
-#endif // WebCompositorAnimationDelegate_h
+#endif // CompositorAnimationDelegate_h

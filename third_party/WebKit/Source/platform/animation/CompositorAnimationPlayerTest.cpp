@@ -6,21 +6,21 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
+#include "platform/animation/CompositorAnimationDelegate.h"
 #include "platform/animation/CompositorTargetProperty.h"
-#include "public/platform/WebCompositorAnimationDelegate.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::TimeTicks;
-using blink::WebCompositorAnimationDelegate;
+using blink::CompositorAnimationDelegate;
 using cc::Animation;
 using testing::_;
 
 namespace blink {
 
-class MockWebCompositorAnimationDelegate : public WebCompositorAnimationDelegate {
+class MockCompositorAnimationDelegate : public CompositorAnimationDelegate {
 public:
-    MockWebCompositorAnimationDelegate() {}
+    MockCompositorAnimationDelegate() {}
 
     MOCK_METHOD2(notifyAnimationStarted, void(double, int));
     MOCK_METHOD2(notifyAnimationFinished, void(double, int));
@@ -29,11 +29,11 @@ public:
 
 // Test that when the animation delegate is null, the animation player
 // doesn't forward the finish notification.
-TEST(WebCompositorAnimationPlayerTest, NullDelegate)
+TEST(CompositorAnimationPlayerTest, NullDelegate)
 {
-    scoped_ptr<WebCompositorAnimationDelegate> delegate(
-        new MockWebCompositorAnimationDelegate);
-    EXPECT_CALL(*static_cast<MockWebCompositorAnimationDelegate*>(delegate.get()),
+    scoped_ptr<CompositorAnimationDelegate> delegate(
+        new MockCompositorAnimationDelegate);
+    EXPECT_CALL(*static_cast<MockCompositorAnimationDelegate*>(delegate.get()),
         notifyAnimationFinished(_, _))
         .Times(1);
 

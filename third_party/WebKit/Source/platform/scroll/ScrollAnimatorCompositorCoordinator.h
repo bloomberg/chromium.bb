@@ -8,9 +8,9 @@
 #include "base/gtest_prod_util.h"
 #include "cc/animation/animation_curve.h"
 #include "platform/PlatformExport.h"
+#include "platform/animation/CompositorAnimationDelegate.h"
 #include "platform/animation/CompositorAnimationPlayerClient.h"
 #include "platform/heap/Handle.h"
-#include "public/platform/WebCompositorAnimationDelegate.h"
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/OwnPtr.h"
@@ -22,7 +22,7 @@ class CompositorAnimation;
 class CompositorAnimationPlayer;
 class CompositorAnimationTimeline;
 
-class PLATFORM_EXPORT ScrollAnimatorCompositorCoordinator : public NoBaseWillBeGarbageCollectedFinalized<ScrollAnimatorCompositorCoordinator>, private CompositorAnimationPlayerClient, WebCompositorAnimationDelegate {
+class PLATFORM_EXPORT ScrollAnimatorCompositorCoordinator : public NoBaseWillBeGarbageCollectedFinalized<ScrollAnimatorCompositorCoordinator>, private CompositorAnimationPlayerClient, CompositorAnimationDelegate {
     USING_FAST_MALLOC_WILL_BE_REMOVED(ScrollAnimatorCompositorCoordinator);
     WTF_MAKE_NONCOPYABLE(ScrollAnimatorCompositorCoordinator);
     WILL_BE_USING_PRE_FINALIZER(ScrollAnimatorCompositorCoordinator, dispose);
@@ -57,7 +57,7 @@ protected:
     // Returns true if the compositor player was attached to a new layer.
     bool reattachCompositorPlayerIfNeeded(CompositorAnimationTimeline*);
 
-    // WebCompositorAnimationDelegate implementation.
+    // CompositorAnimationDelegate implementation.
     void notifyAnimationStarted(double monotonicTime, int group) override;
     void notifyAnimationFinished(double monotonicTime, int group) override;
     void notifyAnimationAborted(double monotonicTime, int group) override;

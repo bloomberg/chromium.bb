@@ -40,9 +40,9 @@
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/DOMException.h"
 #include "core/events/EventTarget.h"
+#include "platform/animation/CompositorAnimationDelegate.h"
 #include "platform/animation/CompositorAnimationPlayerClient.h"
 #include "platform/heap/Handle.h"
-#include "public/platform/WebCompositorAnimationDelegate.h"
 #include "wtf/RefPtr.h"
 
 namespace blink {
@@ -55,7 +55,7 @@ class ExceptionState;
 class CORE_EXPORT Animation final
     : public RefCountedGarbageCollectedEventTargetWithInlineData<Animation>
     , public ContextLifecycleObserver
-    , public WebCompositorAnimationDelegate
+    , public CompositorAnimationDelegate
     , public CompositorAnimationPlayerClient {
     DEFINE_WRAPPERTYPEINFO();
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(Animation);
@@ -206,7 +206,7 @@ private:
     void detachCompositorTimeline();
     void attachCompositedLayers();
     void detachCompositedLayers();
-    // WebCompositorAnimationDelegate implementation.
+    // CompositorAnimationDelegate implementation.
     void notifyAnimationStarted(double monotonicTime, int group) override;
     void notifyAnimationFinished(double monotonicTime, int group) override { }
     void notifyAnimationAborted(double monotonicTime, int group) override { }
