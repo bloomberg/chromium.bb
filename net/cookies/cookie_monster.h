@@ -125,11 +125,9 @@ class NET_EXPORT CookieMonster : public CookieStore {
   static const size_t kPurgeCookies;
 
   // Quota for cookies with {low, medium, high} priorities within a domain.
-  // The quota is specified as a percentage of the total number of cookies we
-  // intend to retain for a domain.
-  static const double kDomainCookiesQuotaLow;
-  static const double kDomainCookiesQuotaMedium;
-  static const double kDomainCookiesQuotaHigh;
+  static const size_t kDomainCookiesQuotaLow;
+  static const size_t kDomainCookiesQuotaMedium;
+  static const size_t kDomainCookiesQuotaHigh;
 
   // The store passed in should not have had Init() called on it yet. This
   // class will take care of initializing it. The backing store is NOT owned by
@@ -361,8 +359,6 @@ class NET_EXPORT CookieMonster : public CookieStore {
     COOKIE_DELETE_EQUIVALENT_LAST_ENTRY
   };
 
-  enum GCType { GC_NONSECURE, GC_SECURE };
-
   // The strategy for fetching cookies. Controlled by Finch experiment.
   enum FetchStrategy {
     // Fetches all cookies only when they're needed.
@@ -574,27 +570,6 @@ class NET_EXPORT CookieMonster : public CookieStore {
                                              const base::Time& safe_date,
                                              size_t purge_goal,
                                              CookieItVector cookie_its);
-
-  // Helper for GarbageCollect(). Deletes |purge_goal| cookies of type |type|
-  // from the ranges specified in |it_bdd|. Returns the number of cookies
-  // deleted.
-  //
-  // |it_bdd| is a bit of a complicated beast: it must be a 7-element array
-  // of 'CookieItVector::Iterator' objects that demarcate the boundaries of
-  // a list of cookies sorted first by secure/non-secure, and then by priority,
-  // low to high. That is, it ought to look something like:
-  //
-  // LLLLMMMMHHHHHLLLLMMMMHHHH
-  // ^   ^   ^    ^   ^   ^   ^
-  // 0   1   2    3   4   5   6
-  //
-  // TODO(mkwst): This is super-complicated. We should determine whether we
-  // can simplify our implementation of "priority".
-  size_t GarbageCollectNumFromRangeWithQuota(const base::Time& current,
-                                             const base::Time& safe_date,
-                                             size_t purge_goal,
-                                             CookieItVector::iterator* it_bdd,
-                                             GCType type);
 
   // Find the key (for lookup in cookies_) based on the given domain.
   // See comment on keys before the CookieMap typedef.
