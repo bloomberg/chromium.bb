@@ -90,6 +90,33 @@ void RunCallbacks(ServiceWorkerVersion* version,
     callback.Run(arg);
 }
 
+template <typename IDMAP, typename... Params>
+void RunIDMapCallbacks(IDMAP* requests, const Params&... params) {
+  typename IDMAP::iterator iter(requests);
+  while (!iter.IsAtEnd()) {
+    TRACE_EVENT_ASYNC_END0("ServiceWorker", "ServiceWorkerVersion::Request",
+                           iter.GetCurrentValue());
+    iter.GetCurrentValue()->callback.Run(params...);
+    iter.Advance();
+  }
+  requests->Clear();
+}
+
+template <typename CallbackType, typename... Params>
+bool RunIDMapCallback(IDMap<CallbackType, IDMapOwnPointer>* requests,
+                      int request_id,
+                      const Params&... params) {
+  CallbackType* request = requests->Lookup(request_id);
+  if (!request)
+    return false;
+
+  TRACE_EVENT_ASYNC_END0("ServiceWorker", "ServiceWorkerVersion::Request",
+                         request);
+  request->callback.Run(params...);
+  requests->Remove(request_id);
+  return true;
+}
+
 void RunStartWorkerCallback(
     const StatusCallback& callback,
     scoped_refptr<ServiceWorkerRegistration> protect,
@@ -459,9 +486,17 @@ void ServiceWorkerVersion::DeferScheduledUpdate() {
 int ServiceWorkerVersion::StartRequest(
     ServiceWorkerMetrics::EventType event_type,
     const StatusCallback& error_callback) {
-  return StartRequestWithCustomTimeout(
-      event_type, error_callback,
-      base::TimeDelta::FromMinutes(kRequestTimeoutMinutes), KILL_ON_TIMEOUT);
+  OnBeginEvent();
+  DCHECK_EQ(RUNNING, running_status())
+      << "Can only start a request with a running worker.";
+  DCHECK(event_type == ServiceWorkerMetrics::EventType::INSTALL ||
+         event_type == ServiceWorkerMetrics::EventType::ACTIVATE ||
+         event_type == ServiceWorkerMetrics::EventType::MESSAGE ||
+         status() == ACTIVATED)
+      << "Event of type " << static_cast<int>(event_type)
+      << " can only be dispatched to an active worker: " << status();
+  return AddRequest(error_callback, &custom_requests_, REQUEST_CUSTOM,
+                    event_type);
 }
 
 int ServiceWorkerVersion::StartRequestWithCustomTimeout(
@@ -472,23 +507,9 @@ int ServiceWorkerVersion::StartRequestWithCustomTimeout(
   OnBeginEvent();
   DCHECK_EQ(RUNNING, running_status())
       << "Can only start a request with a running worker.";
-  DCHECK(event_type == ServiceWorkerMetrics::EventType::INSTALL ||
-         event_type == ServiceWorkerMetrics::EventType::ACTIVATE ||
-         event_type == ServiceWorkerMetrics::EventType::MESSAGE ||
-         status() == ACTIVATED)
-      << "Event of type " << static_cast<int>(event_type)
-      << " can only be dispatched to an active worker: " << status();
-
-  PendingRequest<StatusCallback>* request = new PendingRequest<StatusCallback>(
-      error_callback, base::TimeTicks::Now(), event_type);
-  int request_id = custom_requests_.Add(request);
-  TRACE_EVENT_ASYNC_BEGIN2("ServiceWorker", "ServiceWorkerVersion::Request",
-                           request, "Request id", request_id, "Event type",
-                           ServiceWorkerMetrics::EventTypeToString(event_type));
-  base::TimeTicks expiration_time = base::TimeTicks::Now() + timeout;
-  requests_.push(
-      RequestInfo(request_id, event_type, expiration_time, timeout_behavior));
-  return request_id;
+  return AddRequestWithExpiration(
+      error_callback, &custom_requests_, REQUEST_CUSTOM, event_type,
+      base::TimeTicks::Now() + timeout, timeout_behavior);
 }
 
 bool ServiceWorkerVersion::FinishRequest(int request_id, bool was_handled) {
@@ -500,16 +521,7 @@ bool ServiceWorkerVersion::FinishRequest(int request_id, bool was_handled) {
   ServiceWorkerMetrics::RecordEventDuration(
       request->event_type, base::TimeTicks::Now() - request->start_time,
       was_handled);
-
-  RestartTick(&idle_time_);
-  TRACE_EVENT_ASYNC_END1("ServiceWorker", "ServiceWorkerVersion::Request",
-                         request, "Handled", was_handled);
-  custom_requests_.Remove(request_id);
-  if (is_redundant()) {
-    // The stop should be already scheduled, but try to stop immediately, in
-    // order to release worker resources soon.
-    StopWorkerIfIdle();
-  }
+  RemoveCallbackAndStopIfRedundant(&custom_requests_, request_id);
   return true;
 }
 
@@ -735,10 +747,12 @@ ServiceWorkerVersion::GetMainScriptHttpResponseInfo() {
 
 ServiceWorkerVersion::RequestInfo::RequestInfo(
     int id,
+    RequestType type,
     ServiceWorkerMetrics::EventType event_type,
     const base::TimeTicks& expiration,
     TimeoutBehavior timeout_behavior)
     : id(id),
+      type(type),
       event_type(event_type),
       expiration(expiration),
       timeout_behavior(timeout_behavior) {}
@@ -769,8 +783,8 @@ ServiceWorkerVersion::BaseMojoServiceWrapper::~BaseMojoServiceWrapper() {
   while (!iter.IsAtEnd()) {
     PendingRequest<StatusCallback>* request = iter.GetCurrentValue();
     if (request->mojo_service == service_name_) {
-      TRACE_EVENT_ASYNC_END1("ServiceWorker", "ServiceWorkerVersion::Request",
-                             request, "Error", "Service Disconnected");
+      TRACE_EVENT_ASYNC_END0("ServiceWorker", "ServiceWorkerVersion::Request",
+                             request);
       request->callback.Run(SERVICE_WORKER_ERROR_FAILED);
       worker_->custom_requests_.Remove(iter.GetCurrentKey());
     }
@@ -1573,16 +1587,65 @@ void ServiceWorkerVersion::RecordStartWorkerResult(
                             EmbeddedWorkerInstance::STARTING_PHASE_MAX_VALUE);
 }
 
-bool ServiceWorkerVersion::MaybeTimeOutRequest(const RequestInfo& info) {
-  PendingRequest<StatusCallback>* request = custom_requests_.Lookup(info.id);
-  if (!request)
-    return false;
+template <typename IDMAP>
+void ServiceWorkerVersion::RemoveCallbackAndStopIfRedundant(IDMAP* callbacks,
+                                                            int request_id) {
+  RestartTick(&idle_time_);
+  auto* request = callbacks->Lookup(request_id);
+  if (request) {
+    TRACE_EVENT_ASYNC_END0("ServiceWorker", "ServiceWorkerVersion::Request",
+                           request);
+  }
+  callbacks->Remove(request_id);
+  if (is_redundant()) {
+    // The stop should be already scheduled, but try to stop immediately, in
+    // order to release worker resources soon.
+    StopWorkerIfIdle();
+  }
+}
 
-  TRACE_EVENT_ASYNC_END1("ServiceWorker", "ServiceWorkerVersion::Request",
-                         request, "Error", "Timeout");
-  request->callback.Run(SERVICE_WORKER_ERROR_TIMEOUT);
-  custom_requests_.Remove(info.id);
-  return true;
+template <typename CallbackType>
+int ServiceWorkerVersion::AddRequest(
+    const CallbackType& callback,
+    IDMap<PendingRequest<CallbackType>, IDMapOwnPointer>* callback_map,
+    RequestType request_type,
+    ServiceWorkerMetrics::EventType event_type) {
+  base::TimeTicks expiration_time =
+      base::TimeTicks::Now() +
+      base::TimeDelta::FromMinutes(kRequestTimeoutMinutes);
+  return AddRequestWithExpiration(callback, callback_map, request_type,
+                                  event_type, expiration_time, KILL_ON_TIMEOUT);
+}
+
+template <typename CallbackType>
+int ServiceWorkerVersion::AddRequestWithExpiration(
+    const CallbackType& callback,
+    IDMap<PendingRequest<CallbackType>, IDMapOwnPointer>* callback_map,
+    RequestType request_type,
+    ServiceWorkerMetrics::EventType event_type,
+    base::TimeTicks expiration,
+    TimeoutBehavior timeout_behavior) {
+  PendingRequest<CallbackType>* request = new PendingRequest<CallbackType>(
+      callback, base::TimeTicks::Now(), event_type);
+  int request_id = callback_map->Add(request);
+  TRACE_EVENT_ASYNC_BEGIN2("ServiceWorker", "ServiceWorkerVersion::Request",
+                           request, "Request id", request_id, "Event type",
+                           ServiceWorkerMetrics::EventTypeToString(event_type));
+  requests_.push(RequestInfo(request_id, request_type, event_type, expiration,
+                             timeout_behavior));
+  return request_id;
+}
+
+bool ServiceWorkerVersion::MaybeTimeOutRequest(const RequestInfo& info) {
+  switch (info.type) {
+    case REQUEST_CUSTOM:
+      return RunIDMapCallback(&custom_requests_, info.id,
+                              SERVICE_WORKER_ERROR_TIMEOUT);
+    case NUM_REQUEST_TYPES:
+      break;
+  }
+  NOTREACHED() << "Got unexpected request type: " << info.type;
+  return false;
 }
 
 void ServiceWorkerVersion::SetAllRequestExpirations(
@@ -1686,15 +1749,7 @@ void ServiceWorkerVersion::OnStoppedInternal(
   // Let all message callbacks fail (this will also fire and clear all
   // callbacks for events).
   // TODO(kinuko): Consider if we want to add queue+resend mechanism here.
-  IDMap<PendingRequest<StatusCallback>, IDMapOwnPointer>::iterator iter(
-      &custom_requests_);
-  while (!iter.IsAtEnd()) {
-    TRACE_EVENT_ASYNC_END1("ServiceWorker", "ServiceWorkerVersion::Request",
-                           iter.GetCurrentValue(), "Error", "Worker Stopped");
-    iter.GetCurrentValue()->callback.Run(SERVICE_WORKER_ERROR_FAILED);
-    iter.Advance();
-  }
-  custom_requests_.Clear();
+  RunIDMapCallbacks(&custom_requests_, SERVICE_WORKER_ERROR_FAILED);
 
   // Close all mojo services. This will also fire and clear all callbacks
   // for messages that are still outstanding for those services.

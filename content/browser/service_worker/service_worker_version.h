@@ -380,14 +380,21 @@ class CONTENT_EXPORT ServiceWorkerVersion
   class Metrics;
   class PingController;
 
+  enum RequestType {
+    REQUEST_CUSTOM,
+    NUM_REQUEST_TYPES
+  };
+
   struct RequestInfo {
     RequestInfo(int id,
+                RequestType type,
                 ServiceWorkerMetrics::EventType event_type,
                 const base::TimeTicks& expiration,
                 TimeoutBehavior timeout_behavior);
     ~RequestInfo();
     bool operator>(const RequestInfo& other) const;
     int id;
+    RequestType type;
     ServiceWorkerMetrics::EventType event_type;
     base::TimeTicks expiration;
     TimeoutBehavior timeout_behavior;
@@ -600,6 +607,25 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // RecordStartWorkerResult is added as a start callback by StartTimeoutTimer
   // and records metrics about startup.
   void RecordStartWorkerResult(ServiceWorkerStatusCode status);
+
+  template <typename IDMAP>
+  void RemoveCallbackAndStopIfRedundant(IDMAP* callbacks, int request_id);
+
+  template <typename CallbackType>
+  int AddRequest(
+      const CallbackType& callback,
+      IDMap<PendingRequest<CallbackType>, IDMapOwnPointer>* callback_map,
+      RequestType request_type,
+      ServiceWorkerMetrics::EventType event_type);
+
+  template <typename CallbackType>
+  int AddRequestWithExpiration(
+      const CallbackType& callback,
+      IDMap<PendingRequest<CallbackType>, IDMapOwnPointer>* callback_map,
+      RequestType request_type,
+      ServiceWorkerMetrics::EventType event_type,
+      base::TimeTicks expiration,
+      TimeoutBehavior timeout_behavior);
 
   bool MaybeTimeOutRequest(const RequestInfo& info);
   void SetAllRequestExpirations(const base::TimeTicks& expiration);
