@@ -64,9 +64,8 @@ using extensions::Extension;
 using extensions::UnloadedExtensionInfo;
 using ui::ResourceBundle;
 
-// The default theme if we haven't installed a theme yet or if we've clicked
-// the "Use Classic" button.
-const char ThemeService::kDefaultThemeID[] = "";
+
+// Helpers --------------------------------------------------------------------
 
 namespace {
 
@@ -108,6 +107,46 @@ bool IsColorGrayscale(SkColor color) {
 }
 
 }  // namespace
+
+
+// ThemeService::BrowserThemeProvider -----------------------------------------
+
+ThemeService::BrowserThemeProvider::BrowserThemeProvider(
+    const ThemeService& theme_service,
+    bool incognito)
+    : theme_service_(theme_service), incognito_(incognito) {}
+
+ThemeService::BrowserThemeProvider::~BrowserThemeProvider() {}
+
+gfx::ImageSkia* ThemeService::BrowserThemeProvider::GetImageSkiaNamed(
+    int id) const {
+  return theme_service_.GetImageSkiaNamed(id, incognito_);
+}
+
+SkColor ThemeService::BrowserThemeProvider::GetColor(int id) const {
+  return theme_service_.GetColor(id, incognito_);
+}
+
+int ThemeService::BrowserThemeProvider::GetDisplayProperty(int id) const {
+  return theme_service_.GetDisplayProperty(id);
+}
+
+bool ThemeService::BrowserThemeProvider::ShouldUseNativeFrame() const {
+  return theme_service_.ShouldUseNativeFrame();
+}
+
+bool ThemeService::BrowserThemeProvider::HasCustomImage(int id) const {
+  return theme_service_.HasCustomImage(id);
+}
+
+base::RefCountedMemory* ThemeService::BrowserThemeProvider::GetRawData(
+    int id,
+    ui::ScaleFactor scale_factor) const {
+  return theme_service_.GetRawData(id, scale_factor);
+}
+
+
+// ThemeService::ThemeObserver ------------------------------------------------
 
 #if defined(ENABLE_EXTENSIONS)
 class ThemeService::ThemeObserver
@@ -160,6 +199,13 @@ class ThemeService::ThemeObserver
 };
 #endif  // defined(ENABLE_EXTENSIONS)
 
+
+// ThemeService ---------------------------------------------------------------
+
+// The default theme if we haven't installed a theme yet or if we've clicked
+// the "Use Classic" button.
+const char ThemeService::kDefaultThemeID[] = "";
+
 ThemeService::ThemeService()
     : ready_(false),
       rb_(ResourceBundle::GetSharedInstance()),
@@ -185,10 +231,6 @@ void ThemeService::Init(Profile* profile) {
                  content::Source<Profile>(profile_));
 
   theme_syncable_service_.reset(new ThemeSyncableService(profile_, this));
-}
-
-bool ThemeService::IsSystemThemeDistinctFromDefaultTheme() const {
-  return false;
 }
 
 void ThemeService::Shutdown() {
@@ -256,15 +298,50 @@ void ThemeService::SetTheme(const Extension* extension) {
   }
 }
 
-void ThemeService::SetCustomDefaultTheme(
-    scoped_refptr<CustomThemeSupplier> theme_supplier) {
+void ThemeService::UseDefaultTheme() {
+  if (ready_)
+    content::RecordAction(UserMetricsAction("Themes_Reset"));
+#if defined(ENABLE_SUPERVISED_USERS)
+  if (IsSupervisedUser()) {
+    SetSupervisedUserTheme();
+    return;
+  }
+#endif
   ClearAllThemeData();
-  SwapThemeSupplier(theme_supplier);
   NotifyThemeChanged();
 }
 
-bool ThemeService::ShouldInitWithSystemTheme() const {
+void ThemeService::UseSystemTheme() {
+  UseDefaultTheme();
+}
+
+bool ThemeService::IsSystemThemeDistinctFromDefaultTheme() const {
   return false;
+}
+
+bool ThemeService::UsingDefaultTheme() const {
+  std::string id = GetThemeID();
+  return id == ThemeService::kDefaultThemeID ||
+      id == kDefaultThemeGalleryID;
+}
+
+bool ThemeService::UsingSystemTheme() const {
+  return UsingDefaultTheme();
+}
+
+std::string ThemeService::GetThemeID() const {
+  return profile_->GetPrefs()->GetString(prefs::kCurrentThemeID);
+}
+
+void ThemeService::OnInfobarDisplayed() {
+  number_of_infobars_++;
+}
+
+void ThemeService::OnInfobarDestroyed() {
+  number_of_infobars_--;
+
+  if (number_of_infobars_ == 0)
+    RemoveUnusedThemes(false);
 }
 
 void ThemeService::RemoveUnusedThemes(bool ignore_infobars) {
@@ -312,31 +389,28 @@ void ThemeService::RemoveUnusedThemes(bool ignore_infobars) {
   }
 }
 
-void ThemeService::UseDefaultTheme() {
-  if (ready_)
-    content::RecordAction(UserMetricsAction("Themes_Reset"));
-#if defined(ENABLE_SUPERVISED_USERS)
-  if (IsSupervisedUser()) {
-    SetSupervisedUserTheme();
-    return;
-  }
-#endif
+ThemeSyncableService* ThemeService::GetThemeSyncableService() const {
+  return theme_syncable_service_.get();
+}
+
+// static
+const ui::ThemeProvider& ThemeService::GetThemeProviderForProfile(
+    Profile* profile) {
+  ThemeService* service = ThemeServiceFactory::GetForProfile(profile);
+  bool incognito = profile->GetProfileType() == Profile::INCOGNITO_PROFILE;
+  return incognito ? service->incognito_theme_provider_
+                   : service->original_theme_provider_;
+}
+
+void ThemeService::SetCustomDefaultTheme(
+    scoped_refptr<CustomThemeSupplier> theme_supplier) {
   ClearAllThemeData();
+  SwapThemeSupplier(theme_supplier);
   NotifyThemeChanged();
 }
 
-void ThemeService::UseSystemTheme() {
-  UseDefaultTheme();
-}
-
-bool ThemeService::UsingDefaultTheme() const {
-  std::string id = GetThemeID();
-  return id == ThemeService::kDefaultThemeID ||
-      id == kDefaultThemeGalleryID;
-}
-
-std::string ThemeService::GetThemeID() const {
-  return profile_->GetPrefs()->GetString(prefs::kCurrentThemeID);
+bool ThemeService::ShouldInitWithSystemTheme() const {
+  return false;
 }
 
 color_utils::HSL ThemeService::GetTint(int id, bool incognito) const {
@@ -438,10 +512,6 @@ void ThemeService::FreePlatformCaches() {
   // Views (Skia) has no platform image cache to clear.
 }
 #endif
-
-bool ThemeService::UsingSystemTheme() const {
-  return UsingDefaultTheme();
-}
 
 gfx::ImageSkia* ThemeService::GetImageSkiaNamed(int id, bool incognito) const {
   gfx::Image image = GetImageNamed(id, incognito);
@@ -737,61 +807,3 @@ void ThemeService::SetSupervisedUserTheme() {
   SetCustomDefaultTheme(new SupervisedUserTheme);
 }
 #endif
-
-void ThemeService::OnInfobarDisplayed() {
-  number_of_infobars_++;
-}
-
-void ThemeService::OnInfobarDestroyed() {
-  number_of_infobars_--;
-
-  if (number_of_infobars_ == 0)
-    RemoveUnusedThemes(false);
-}
-
-ThemeSyncableService* ThemeService::GetThemeSyncableService() const {
-  return theme_syncable_service_.get();
-}
-
-// static
-const ui::ThemeProvider& ThemeService::GetThemeProviderForProfile(
-    Profile* profile) {
-  ThemeService* service = ThemeServiceFactory::GetForProfile(profile);
-  bool incognito = profile->GetProfileType() == Profile::INCOGNITO_PROFILE;
-  return incognito ? service->incognito_theme_provider_
-                   : service->original_theme_provider_;
-}
-
-ThemeService::BrowserThemeProvider::BrowserThemeProvider(
-    const ThemeService& theme_service,
-    bool incognito)
-    : theme_service_(theme_service), incognito_(incognito) {}
-
-ThemeService::BrowserThemeProvider::~BrowserThemeProvider() {}
-
-gfx::ImageSkia* ThemeService::BrowserThemeProvider::GetImageSkiaNamed(
-    int id) const {
-  return theme_service_.GetImageSkiaNamed(id, incognito_);
-}
-
-SkColor ThemeService::BrowserThemeProvider::GetColor(int id) const {
-  return theme_service_.GetColor(id, incognito_);
-}
-
-int ThemeService::BrowserThemeProvider::GetDisplayProperty(int id) const {
-  return theme_service_.GetDisplayProperty(id);
-}
-
-bool ThemeService::BrowserThemeProvider::ShouldUseNativeFrame() const {
-  return theme_service_.ShouldUseNativeFrame();
-}
-
-bool ThemeService::BrowserThemeProvider::HasCustomImage(int id) const {
-  return theme_service_.HasCustomImage(id);
-}
-
-base::RefCountedMemory* ThemeService::BrowserThemeProvider::GetRawData(
-    int id,
-    ui::ScaleFactor scale_factor) const {
-  return theme_service_.GetRawData(id, scale_factor);
-}

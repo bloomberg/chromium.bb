@@ -206,8 +206,6 @@ class ThemeService : public base::NonThreadSafe,
   friend class BrowserThemeProvider;
   friend class theme_service_internal::ThemeServiceTest;
 
-  const ui::ThemeProvider& GetOrCreateThemeProviderForProfile(Profile* profile);
-
   // These methods provide the implementation for ui::ThemeProvider (exposed
   // via BrowserThemeProvider).
   gfx::ImageSkia* GetImageSkiaNamed(int id, bool incognito) const;
