@@ -217,8 +217,7 @@ void SetDeviceScaleFactor(RenderView* render_view, float factor) {
 
 void SetDeviceColorProfile(RenderView* render_view, const std::string& name) {
   if (name == "reset") {
-    static_cast<RenderViewImpl*>(render_view)->
-        ResetDeviceColorProfileForTesting();
+    render_view->GetWidget()->ResetDeviceColorProfileForTesting();
     return;
   }
 
@@ -350,8 +349,7 @@ void SetDeviceColorProfile(RenderView* render_view, const std::string& name) {
     color_profile.assign(test.data(), test.data() + test.size());
   }
 
-  static_cast<RenderViewImpl*>(render_view)->
-      SetDeviceColorProfileForTesting(color_profile);
+  render_view->GetWidget()->SetDeviceColorProfileForTesting(color_profile);
 }
 
 void SetBluetoothAdapter(int render_process_id,

@@ -87,6 +87,7 @@ class ImeEventGuard;
 class RenderFrameImpl;
 class RenderFrameProxy;
 class RenderWidgetCompositor;
+class RenderWidgetOwnerDelegate;
 class RenderWidgetScreenMetricsEmulator;
 class ResizingModeSelector;
 struct ContextMenuParams;
@@ -148,6 +149,13 @@ class CONTENT_EXPORT RenderWidget
   gfx::Point host_context_menu_location() {
     return host_context_menu_location_;
   }
+
+  void set_owner_delegate(RenderWidgetOwnerDelegate* owner_delegate) {
+    DCHECK(!owner_delegate_);
+    owner_delegate_ = owner_delegate;
+  }
+
+  RenderWidgetOwnerDelegate* owner_delegate() { return owner_delegate_; }
 
   // ScreenInfo exposed so it can be passed to subframe RenderWidgets.
   blink::WebScreenInfo screen_info() const { return screen_info_; }
@@ -356,6 +364,10 @@ class CONTENT_EXPORT RenderWidget
   // handle composition range and composition character bounds.
   void UpdateCompositionInfo(bool should_update_range);
 
+  // Change the device ICC color profile while running a layout test.
+  void SetDeviceColorProfileForTesting(const std::vector<char>& color_profile);
+  void ResetDeviceColorProfileForTesting();
+
  protected:
   // Friend RefCounted so that the dtor can be non-public. Using this class
   // without ref-counting is an error.
@@ -477,8 +489,7 @@ class CONTENT_EXPORT RenderWidget
   void AutoResizeCompositor();
 
   virtual void SetDeviceScaleFactor(float device_scale_factor);
-  virtual bool SetDeviceColorProfile(const std::vector<char>& color_profile);
-  virtual void ResetDeviceColorProfileForTesting();
+  bool SetDeviceColorProfile(const std::vector<char>& color_profile);
 
   virtual void OnOrientationChange();
 
@@ -574,6 +585,9 @@ class CONTENT_EXPORT RenderWidget
   // We are responsible for destroying this object via its Close method.
   // May be NULL when the window is closing.
   blink::WebWidget* webwidget_;
+
+  // The delegate of the owner of this object.
+  RenderWidgetOwnerDelegate* owner_delegate_;
 
   // This is lazily constructed and must not outlive webwidget_.
   scoped_ptr<RenderWidgetCompositor> compositor_;

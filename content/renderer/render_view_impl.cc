@@ -647,6 +647,7 @@ RenderViewImpl::RenderViewImpl(CompositorDependencies* compositor_deps,
 #endif
       enumeration_completion_id_(0),
       session_storage_namespace_id_(params.session_storage_namespace_id) {
+  GetWidget()->set_owner_delegate(this);
 }
 
 void RenderViewImpl::Initialize(const ViewMsg_New_Params& params,
@@ -3048,20 +3049,18 @@ void RenderViewImpl::OnImeConfirmComposition(
                                         keep_selection);
 }
 
-bool RenderViewImpl::SetDeviceColorProfile(
+void RenderViewImpl::RenderWidgetDidSetColorProfile(
     const std::vector<char>& profile) {
-  bool changed = RenderWidget::SetDeviceColorProfile(profile);
-  if (changed && webview()) {
-    WebVector<char> colorProfile = profile;
-    webview()->setDeviceColorProfile(colorProfile);
-  }
-  return changed;
-}
+  if (webview()) {
+    bool was_reset = (profile.size() == 1 && profile[0] == '0');
 
-void RenderViewImpl::ResetDeviceColorProfileForTesting() {
-  RenderWidget::ResetDeviceColorProfileForTesting();
-  if (webview())
-    webview()->resetDeviceColorProfileForTesting();
+    if (was_reset) {
+      webview()->resetDeviceColorProfileForTesting();
+    } else {
+      WebVector<char> colorProfile = profile;
+      webview()->setDeviceColorProfile(colorProfile);
+    }
+  }
 }
 
 ui::TextInputType RenderViewImpl::GetTextInputType() {
@@ -3473,11 +3472,6 @@ void RenderViewImpl::SetDeviceScaleFactorForTesting(float factor) {
   params.is_fullscreen_granted = is_fullscreen_granted();
   params.display_mode = display_mode_;
   OnResize(params);
-}
-
-void RenderViewImpl::SetDeviceColorProfileForTesting(
-    const std::vector<char>& color_profile) {
-  SetDeviceColorProfile(color_profile);
 }
 
 void RenderViewImpl::ForceResizeForTesting(const gfx::Size& new_size) {

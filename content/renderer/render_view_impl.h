@@ -42,6 +42,7 @@
 #include "content/renderer/mouse_lock_dispatcher.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_widget.h"
+#include "content/renderer/render_widget_owner_delegate.h"
 #include "content/renderer/stats_collection_observer.h"
 #include "ipc/ipc_platform_file.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
@@ -154,6 +155,7 @@ class WebMediaPlayerProxyAndroid;
 class CONTENT_EXPORT RenderViewImpl
     : public RenderWidget,
       NON_EXPORTED_BASE(public blink::WebViewClient),
+      public RenderWidgetOwnerDelegate,
       public RenderView,
       public base::SupportsWeakPtr<RenderViewImpl> {
  public:
@@ -304,10 +306,6 @@ class CONTENT_EXPORT RenderViewImpl
 
   // Change the device scale factor and force the compositor to resize.
   void SetDeviceScaleFactorForTesting(float factor);
-
-  // Change the device ICC color profile while running a layout test.
-  void SetDeviceColorProfileForTesting(const std::vector<char>& color_profile);
-  void ResetDeviceColorProfileForTesting() override;
 
   // Used to force the size of a window when running layout tests.
   void ForceResizeForTesting(const gfx::Size& new_size);
@@ -489,7 +487,6 @@ class CONTENT_EXPORT RenderViewImpl
   void OnImeConfirmComposition(const base::string16& text,
                                const gfx::Range& replacement_range,
                                bool keep_selection) override;
-  bool SetDeviceColorProfile(const std::vector<char>& color_profile) override;
   void OnOrientationChange() override;
   ui::TextInputType GetTextInputType() override;
   void GetSelectionBounds(gfx::Rect* start, gfx::Rect* end) override;
@@ -580,6 +577,11 @@ class CONTENT_EXPORT RenderViewImpl
     HTTP_404,
     CONNECTION_ERROR,
   };
+
+  // RenderWidgetOwnerDelegate implementation ----------------------------------
+
+  void RenderWidgetDidSetColorProfile(
+      const std::vector<char>& color_profile) override;
 
   // Old WebFrameClient implementations ----------------------------------------
 

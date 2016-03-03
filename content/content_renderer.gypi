@@ -407,6 +407,7 @@
       'renderer/render_widget.h',
       'renderer/render_widget_fullscreen.cc',
       'renderer/render_widget_fullscreen.h',
+      'renderer/render_widget_owner_delegate.h',
       'renderer/renderer_blink_platform_impl.cc',
       'renderer/renderer_blink_platform_impl.h',
       'renderer/renderer_clipboard_delegate.cc',

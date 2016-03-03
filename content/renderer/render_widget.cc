@@ -57,6 +57,7 @@
 #include "content/renderer/render_process.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
+#include "content/renderer/render_widget_owner_delegate.h"
 #include "content/renderer/renderer_blink_platform_impl.h"
 #include "content/renderer/resizing_mode_selector.h"
 #include "ipc/ipc_sync_message.h"
@@ -214,6 +215,7 @@ RenderWidget::RenderWidget(CompositorDependencies* compositor_deps,
     : routing_id_(MSG_ROUTING_NONE),
       compositor_deps_(compositor_deps),
       webwidget_(nullptr),
+      owner_delegate_(nullptr),
       opener_id_(MSG_ROUTING_NONE),
       top_controls_shrink_blink_size_(false),
       top_controls_height_(0.f),
@@ -1661,13 +1663,11 @@ bool RenderWidget::SetDeviceColorProfile(
     return false;
 
   device_color_profile_ = color_profile;
-  return true;
-}
 
-void RenderWidget::ResetDeviceColorProfileForTesting() {
-  if (!device_color_profile_.empty())
-    device_color_profile_.clear();
-  device_color_profile_.push_back('0');
+  if (owner_delegate_)
+    owner_delegate_->RenderWidgetDidSetColorProfile(color_profile);
+
+  return true;
 }
 
 void RenderWidget::OnOrientationChange() {
@@ -1805,6 +1805,17 @@ void RenderWidget::UpdateSelectionBounds() {
   }
 
   UpdateCompositionInfo(false);
+}
+
+void RenderWidget::SetDeviceColorProfileForTesting(
+    const std::vector<char>& color_profile) {
+  SetDeviceColorProfile(color_profile);
+}
+
+void RenderWidget::ResetDeviceColorProfileForTesting() {
+  std::vector<char> color_profile;
+  color_profile.push_back('0');
+  SetDeviceColorProfile(color_profile);
 }
 
 // Check blink::WebTextInputType and ui::TextInputType is kept in sync.
