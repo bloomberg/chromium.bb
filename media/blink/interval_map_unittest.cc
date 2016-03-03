@@ -7,8 +7,8 @@
 #include <string>
 
 #include "base/strings/stringprintf.h"
+#include "media/base/test_random.h"
 #include "media/blink/interval_map.h"
-#include "media/blink/test_random.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {

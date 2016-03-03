@@ -371,6 +371,7 @@ source_set("test_support") {
     "test_data_util.h",
     "test_helpers.cc",
     "test_helpers.h",
+    "test_random.h",
   ]
   configs += [ "//media:media_config" ]
   deps = [

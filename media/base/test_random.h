@@ -7,6 +7,8 @@
 
 #include <stdint.h>
 
+#include "base/logging.h"
+
 // Vastly simplified ACM random class meant to only be used for testing.
 // This class is meant to generate predictable sequences of pseudorandom
 // numbers, unlike the classes in base/rand_util.h which are meant to generate

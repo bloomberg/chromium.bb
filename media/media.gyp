@@ -1610,6 +1610,7 @@
         'base/test_data_util.h',
         'base/test_helpers.cc',
         'base/test_helpers.h',
+        'base/test_random.h',
         'renderers/mock_gpu_memory_buffer_video_frame_pool.cc',
         'renderers/mock_gpu_memory_buffer_video_frame_pool.h',
         'renderers/mock_gpu_video_accelerator_factories.cc',

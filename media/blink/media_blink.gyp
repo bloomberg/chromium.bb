@@ -143,7 +143,6 @@
         'multibuffer_unittest.cc',
         'resource_multibuffer_data_provider_unittest.cc',
         'run_all_unittests.cc',
-        'test_random.h',
         'test_response_generator.cc',
         'test_response_generator.h',
         'url_index_unittest.cc',

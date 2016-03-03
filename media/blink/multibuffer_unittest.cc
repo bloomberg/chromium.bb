@@ -12,9 +12,9 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/message_loop/message_loop.h"
+#include "media/base/test_random.h"
 #include "media/blink/multibuffer.h"
 #include "media/blink/multibuffer_reader.h"
-#include "media/blink/test_random.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 const int kBlockSizeShift = 8;
