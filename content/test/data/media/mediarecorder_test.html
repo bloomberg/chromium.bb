@@ -49,8 +49,7 @@ function setupPeerConnection(stream) {
       remotePeerConnection.createAnswer(function(description) {
         remotePeerConnection.setLocalDescription(description);
         localPeerConnection.setRemoteDescription(description);
-      }, function(error) {
-      });
+      }, function(error) { failTest(error.toString()); });
     }
 
     localPeerConnection.onicecandidate = function(event) {
@@ -66,10 +65,9 @@ function setupPeerConnection(stream) {
       }
     };
     remotePeerConnection.onaddstream = function(event) {
-      document.getElementById("remoteVideo").src = URL.createObjectURL(
+      document.getElementById('remoteVideo').src = URL.createObjectURL(
           event.stream);
-      remoteStream = event.stream;
-      resolve(remoteStream);
+      resolve(event.stream);
     };
 
     localPeerConnection.addStream(localStream);
@@ -78,10 +76,10 @@ function setupPeerConnection(stream) {
       localPeerConnection.setLocalDescription(description);
       remotePeerConnection.setRemoteDescription(description);
       createAnswer(description);
-    }, function(error) {
-    });
+    }, function(error) { failTest(error.toString()); });
 
-    document.getElementById("video").src = URL.createObjectURL(localStream);
+    document.getElementById('video').src = URL.createObjectURL(
+        localStream);
   });
 }
 
@@ -342,7 +340,7 @@ function testPauseAndRecorderState() {
         recorder.onpause = function(event) {
           pauseEventReceived = true;
           assertEquals('paused', recorder.state);
-        }
+        };
         recorder.pause();
       })
       .then(function() {
@@ -430,7 +428,7 @@ function testRecordRemotePeerConnection() {
       .then(function(recorder) {
         recorder.ondataavailable = function(event) {
           timeStamps.push(event.timeStamp);
-          videoSize  += event.data.size;
+          videoSize += event.data.size;
         };
         recorder.start();
       })
