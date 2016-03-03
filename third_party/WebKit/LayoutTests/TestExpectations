@@ -1201,7 +1201,6 @@ crbug.com/521730 [ Win10 ] fast/writing-mode/japanese-ruby-vertical-lr.html [ Fa
 crbug.com/521730 [ Win10 ] media/track/track-cue-rendering-vertical.html [ Failure ]
 crbug.com/521730 [ Win10 ] fast/css/line-height-determined-by-primary-font.html [ Failure ]
 crbug.com/521730 [ Win10 ] fast/forms/month/month-appearance-pseudo-elements.html [ Failure ]
-crbug.com/521730 [ Win10 ] fast/inline/justify-emphasis-inline-box.html [ Failure ]
 crbug.com/521730 [ Win10 ] fast/ruby/nested-ruby.html [ Failure ]
 crbug.com/521730 [ Win10 ] fast/text-autosizing/display-type-change.html [ Failure ]
 crbug.com/521730 [ Win10 ] fast/text-autosizing/tables/css-table-single-cell-lots-of-text.html [ Failure ]
@@ -1253,6 +1252,7 @@ crbug.com/591500 [ Win10 ] virtual/threaded/printing/iframe-print.html [ Skip ]
 
 crbug.com/571233 compositing/background-color/background-color-outside-document.html [ Skip ]
 
+crbug.com/331582 fast/inline/justify-emphasis-inline-box.html [ Failure ]
 crbug.com/474759 fast/writing-mode/vertical-rl-replaced-selection.html [ Failure ]
 
 crbug.com/353746 virtual/android/fullscreen/video-specified-size.html [ Failure Pass ]
