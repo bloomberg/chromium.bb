@@ -82,7 +82,12 @@ public:
 
     virtual String resultForDialogSubmit();
 
+    // Return true if this control type can be a submit button.  This doesn't
+    // check |disabled|, and this doesn't check if this is the first submit
+    // button.
     virtual bool canBeSuccessfulSubmitButton() const { return false; }
+    // Return true if this control can submit a form.
+    // i.e. canBeSuccessfulSubmitButton() && !isDisabledFormControl().
     bool isSuccessfulSubmitButton() const;
     virtual bool isActivatedSubmit() const { return false; }
     virtual void setActivatedSubmit(bool) { }

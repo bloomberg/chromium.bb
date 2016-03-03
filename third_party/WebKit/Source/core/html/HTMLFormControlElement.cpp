@@ -633,7 +633,9 @@ bool HTMLFormControlElement::isSuccessfulSubmitButton() const
 
 bool HTMLFormControlElement::isDefaultButtonForForm() const
 {
-    return isSuccessfulSubmitButton() && form() && form()->defaultButton() == this;
+    // HTMLFormElement::defaultButton() traverses the tree. So we check
+    // canBeSuccessfulSubmitButton() first for early return.
+    return canBeSuccessfulSubmitButton() && form() && form()->defaultButton() == this;
 }
 
 HTMLFormControlElement* HTMLFormControlElement::enclosingFormControlElement(Node* node)

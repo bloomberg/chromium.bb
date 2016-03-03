@@ -678,7 +678,7 @@ HTMLFormControlElement* HTMLFormElement::defaultButton() const
         if (!elements[i]->isFormControlElement())
             continue;
         HTMLFormControlElement* control = toHTMLFormControlElement(elements[i]);
-        if (control->isSuccessfulSubmitButton())
+        if (control->canBeSuccessfulSubmitButton())
             return control;
     }
 

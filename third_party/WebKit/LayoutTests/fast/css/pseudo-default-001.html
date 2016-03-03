@@ -1,26 +1,20 @@
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
 <html>
-<head>
-<script src="../../resources/js-test.js"></script>
-<style>
- input:default { background: lime; }
- button:default { background: lime; }
- input { background: red; }
- button { background: red; }
-</style>
-</head>
 <body>
-<p id="description"></p>
+<script src="../../resources/js-test.js"></script>
 <form method="get">
-<input name="victim" type="submit" value="Submit" />
+<input name="victim" type="submit" value="Submit" id="enabledSubmit"/>
 </form>
-<div id="console"></div>
+<form method="get">
+<input name="victim" type="submit" value="Submit" disabled id="disabledSubmit"/>
+</form>
 <script>
 description("This test performs a simple check for the :default CSS selector.");
 
-v = document.getElementsByName("victim");
-for (i = 0; i < v.length; i++)
-    shouldBe("document.defaultView.getComputedStyle(v[i], null).getPropertyValue('background-color')", "'rgb(0, 255, 0)'");
+var v = document.querySelectorAll(":default");
+shouldBe("v.length", "2");
+shouldBeEqualToString("v[0].id", "enabledSubmit");
+shouldBeEqualToString("v[1].id", "disabledSubmit");
 </script>
 </body>
 </html>
