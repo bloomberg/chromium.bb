@@ -4,6 +4,9 @@
 
 #include "chrome/browser/ui/browser_finder.h"
 
+#include "ash/shell.h"
+#include "ash/test/ash_test_helper.h"
+#include "ash/test/test_session_state_delegate.h"
 #include "base/macros.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
@@ -27,10 +30,12 @@ class BrowserFinderChromeOSTest : public BrowserWithTestWindowTest {
  protected:
   BrowserFinderChromeOSTest() : multi_user_window_manager_(nullptr) {}
 
-  TestingProfile* CreateMultiUserProfile(const std::string& user_email) {
+  TestingProfile* CreateMultiUserProfile(const AccountId& account_id) {
     TestingProfile* profile =
-        profile_manager_->CreateTestingProfile(user_email);
+        profile_manager_->CreateTestingProfile(account_id.GetUserEmail());
     GetUserWindowManager()->AddUser(profile);
+    ash::test::AshTestHelper::GetTestSessionStateDelegate()->AddUser(
+        account_id);
     return profile;
   }
 
@@ -59,7 +64,7 @@ class BrowserFinderChromeOSTest : public BrowserWithTestWindowTest {
     profile_manager_->SetLoggedIn(true);
     chromeos::WallpaperManager::Initialize();
     BrowserWithTestWindowTest::SetUp();
-    second_profile_ = CreateMultiUserProfile(test_account_id2_.GetUserEmail());
+    second_profile_ = CreateMultiUserProfile(test_account_id2_);
   }
 
   void TearDown() override {
@@ -73,7 +78,7 @@ class BrowserFinderChromeOSTest : public BrowserWithTestWindowTest {
   }
 
   TestingProfile* CreateProfile() override {
-    return CreateMultiUserProfile(test_account_id1_.GetUserEmail());
+    return CreateMultiUserProfile(test_account_id1_);
   }
 
   void DestroyProfile(TestingProfile* test_profile) override {

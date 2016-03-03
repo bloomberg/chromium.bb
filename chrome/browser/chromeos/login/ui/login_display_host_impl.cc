@@ -125,6 +125,12 @@ const int kLoginFadeoutTransitionDurationMs = 700;
 // Number of times we try to reload OOBE/login WebUI if it crashes.
 const int kCrashCountLimit = 5;
 
+// The default fade out animation time in ms.
+const int kDefaultFadeTimeMs = 200;
+
+// The fade out animation time used when adding another user into session.
+const int kUserAddFadeTimeMs = 300;
+
 // Whether to enable tnitializing WebUI in hidden state (see
 // |initialize_webui_hidden_|) by default.
 const bool kHiddenWebUIInitializationDefault = true;
@@ -432,9 +438,14 @@ void LoginDisplayHostImpl::BeforeSessionStart() {
 
 void LoginDisplayHostImpl::Finalize() {
   DVLOG(1) << "Session starting";
-  if (ash::Shell::HasInstance()) {
-    ash::Shell::GetInstance()->
-        desktop_background_controller()->MoveDesktopToUnlockedContainer();
+  // When adding another user into the session, we defer the background
+  // wallpaper's animation in order to prevent the flashing of the previous
+  // user's windows. See crbug.com/541864.
+  if (ash::Shell::HasInstance() &&
+      finalize_animation_type_ != ANIMATION_ADD_USER) {
+    ash::Shell::GetInstance()
+        ->desktop_background_controller()
+        ->MoveDesktopToUnlockedContainer();
   }
   if (wizard_controller_.get())
     wizard_controller_->OnSessionStart();
@@ -452,7 +463,10 @@ void LoginDisplayHostImpl::Finalize() {
     case ANIMATION_FADE_OUT:
       // Display host is deleted once animation is completed
       // since sign in screen widget has to stay alive.
-      ScheduleFadeOutAnimation();
+      ScheduleFadeOutAnimation(kDefaultFadeTimeMs);
+      break;
+    case ANIMATION_ADD_USER:
+      ScheduleFadeOutAnimation(kUserAddFadeTimeMs);
       break;
   }
 }
@@ -527,7 +541,7 @@ void LoginDisplayHostImpl::StartUserAdding(
 
   restore_path_ = RESTORE_ADD_USER_INTO_SESSION;
   completion_callback_ = completion_callback;
-  finalize_animation_type_ = ANIMATION_NONE;
+  finalize_animation_type_ = ANIMATION_ADD_USER;
   VLOG(1) << "Login WebUI >> user adding";
   if (!login_window_)
     LoadURL(GURL(kUserAddingURL));
@@ -916,6 +930,13 @@ void LoginDisplayHostImpl::ShutdownDisplayHost(bool post_quit_task) {
 
   if (!completion_callback_.is_null())
     base::MessageLoop::current()->PostTask(FROM_HERE, completion_callback_);
+
+  if (ash::Shell::HasInstance() &&
+      finalize_animation_type_ == ANIMATION_ADD_USER) {
+    ash::Shell::GetInstance()
+        ->desktop_background_controller()
+        ->MoveDesktopToUnlockedContainer();
+  }
 }
 
 void LoginDisplayHostImpl::ScheduleWorkspaceAnimation() {
@@ -933,13 +954,15 @@ void LoginDisplayHostImpl::ScheduleWorkspaceAnimation() {
     ash::Shell::GetInstance()->DoInitialWorkspaceAnimation();
 }
 
-void LoginDisplayHostImpl::ScheduleFadeOutAnimation() {
+void LoginDisplayHostImpl::ScheduleFadeOutAnimation(int animation_speed_ms) {
   ui::Layer* layer = login_window_->GetLayer();
   ui::ScopedLayerAnimationSettings animation(layer->GetAnimator());
   animation.AddObserver(new AnimationObserver(
       base::Bind(&LoginDisplayHostImpl::ShutdownDisplayHost,
                  animation_weak_ptr_factory_.GetWeakPtr(),
                  false)));
+  animation.SetTransitionDuration(
+      base::TimeDelta::FromMilliseconds(animation_speed_ms));
   layer->SetOpacity(0);
 }
 

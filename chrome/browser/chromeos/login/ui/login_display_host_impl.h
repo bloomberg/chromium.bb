@@ -152,6 +152,8 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
     ANIMATION_WORKSPACE,  // Use initial workspace animation (drop and
                           // and fade in workspace). Used for user login.
     ANIMATION_FADE_OUT,   // Fade out login screen. Used for app launch.
+    ANIMATION_ADD_USER,   // Use fade out animation for adding user into
+                          // session.
   };
 
   // Marks display host for deletion.
@@ -162,7 +164,7 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
   void ScheduleWorkspaceAnimation();
 
   // Schedules fade out animation.
-  void ScheduleFadeOutAnimation();
+  void ScheduleFadeOutAnimation(int animation_speed_ms);
 
   // Loads given URL. Creates WebUILoginView if needed.
   void LoadURL(const GURL& url);

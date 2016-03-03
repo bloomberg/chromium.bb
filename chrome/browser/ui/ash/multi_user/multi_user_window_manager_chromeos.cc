@@ -420,20 +420,6 @@ void MultiUserWindowManagerChromeOS::AddUser(content::BrowserContext* context) {
     if ((*browser_it)->profile()->GetOriginalProfile() == profile)
       AddBrowserWindow(*browser_it);
   }
-  // When adding another user to the session, we auto switch users.
-  if (account_id_to_app_observer_.size() == 1)
-    return;
-
-  // Don't do anything special in case of user session restore after crash.
-  // In that case session restore process will automatically switch to the
-  // last active user session after whole process is complete.
-  if (!chromeos::UserSessionManager::GetInstance()->
-      UserSessionsRestoreInProgress()) {
-    // Immediately hide the windows of the current user.
-    base::AutoReset<AnimationSpeed> animation_speed(&animation_speed_,
-                                                    ANIMATION_SPEED_DISABLED);
-    ActiveUserChanged(account_id);
-  }
 }
 
 void MultiUserWindowManagerChromeOS::AddObserver(Observer* observer) {

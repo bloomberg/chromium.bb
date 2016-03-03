@@ -38,19 +38,31 @@ namespace chromeos {
 class UserAddingScreenTest : public LoginManagerTest,
                              public UserAddingScreen::Observer {
  public:
-  UserAddingScreenTest() : LoginManagerTest(false),
-                           user_adding_started_(0),
-                           user_adding_finished_(0) {
-  }
+  UserAddingScreenTest() : LoginManagerTest(false) {}
 
   void SetUpInProcessBrowserTestFixture() override {
     LoginManagerTest::SetUpInProcessBrowserTestFixture();
     UserAddingScreen::Get()->AddObserver(this);
   }
 
-  void OnUserAddingFinished() override { ++user_adding_finished_; }
+  void WaitUntilUserAddingFinishedOrCancelled() {
+    if (finished_)
+      return;
+    run_loop_.reset(new base::RunLoop());
+    run_loop_->Run();
+  }
 
-  void OnUserAddingStarted() override { ++user_adding_started_; }
+  void OnUserAddingFinished() override {
+    ++user_adding_finished_;
+    finished_ = true;
+    if (run_loop_)
+      run_loop_->Quit();
+  }
+
+  void OnUserAddingStarted() override {
+    ++user_adding_started_;
+    finished_ = false;
+  }
 
   void SetUserCanLock(user_manager::User* user, bool can_lock) {
     user->set_can_lock(can_lock);
@@ -79,8 +91,11 @@ class UserAddingScreenTest : public LoginManagerTest,
   int user_adding_finished() { return user_adding_finished_; }
 
  private:
-  int user_adding_started_;
-  int user_adding_finished_;
+  int user_adding_started_ = 0;
+  int user_adding_finished_ = 0;
+  scoped_ptr<base::RunLoop> run_loop_;
+  bool finished_ = false;  // True if OnUserAddingFinished() has been called
+                           // before WaitUntilUserAddingFinishedOrCancelled().
 
   DISALLOW_COPY_AND_ASSIGN(UserAddingScreenTest);
 };
@@ -114,6 +129,7 @@ IN_PROC_BROWSER_TEST_F(UserAddingScreenTest, CancelAdding) {
                 GetSessionState());
 
   UserAddingScreen::Get()->Cancel();
+  WaitUntilUserAddingFinishedOrCancelled();
   content::RunAllPendingInMessageLoop();
   EXPECT_EQ(1, user_adding_finished());
   EXPECT_EQ(ash::SessionStateDelegate::SESSION_STATE_ACTIVE,
@@ -152,6 +168,8 @@ IN_PROC_BROWSER_TEST_F(UserAddingScreenTest, AddingSeveralUsers) {
               ash::Shell::GetInstance()->session_state_delegate()->
                   GetSessionState());
     AddUser(kTestUsers[i]);
+    WaitUntilUserAddingFinishedOrCancelled();
+    content::RunAllPendingInMessageLoop();
     EXPECT_EQ(i, user_adding_finished());
     EXPECT_EQ(ash::SessionStateDelegate::SESSION_STATE_ACTIVE,
               ash::Shell::GetInstance()->session_state_delegate()->
@@ -251,6 +269,7 @@ IN_PROC_BROWSER_TEST_F(UserAddingScreenTest, ScreenVisibility) {
   content::RunAllPendingInMessageLoop();
   CheckScreenIsVisible();
   UserAddingScreen::Get()->Cancel();
+  WaitUntilUserAddingFinishedOrCancelled();
   content::RunAllPendingInMessageLoop();
 
   ScreenLocker::Show();
@@ -267,6 +286,7 @@ IN_PROC_BROWSER_TEST_F(UserAddingScreenTest, ScreenVisibility) {
   content::RunAllPendingInMessageLoop();
   CheckScreenIsVisible();
   UserAddingScreen::Get()->Cancel();
+  WaitUntilUserAddingFinishedOrCancelled();
   content::RunAllPendingInMessageLoop();
 }
 
