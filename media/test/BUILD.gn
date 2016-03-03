@@ -115,7 +115,7 @@ source_set("mojo_pipeline_integration_tests") {
   }
 }
 
-fuzzer_test("pipeline_integration_fuzzertest") {
+fuzzer_test("media_pipeline_integration_fuzzer") {
   sources = [
     "pipeline_integration_fuzzertest.cc",
   ]
