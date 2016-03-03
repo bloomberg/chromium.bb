@@ -34,64 +34,95 @@ void IntersectionObservation::applyRootMargin(LayoutRect& rect) const
         m_observer->applyRootMargin(rect);
 }
 
-void IntersectionObservation::initializeGeometry(IntersectionGeometry& geometry) const
+void IntersectionObservation::initializeTargetRect(LayoutRect& rect) const
 {
     ASSERT(m_target);
     LayoutObject* targetLayoutObject = target()->layoutObject();
-    if (targetLayoutObject->isBoxModelObject())
-        geometry.targetRect = toLayoutBoxModelObject(targetLayoutObject)->visualOverflowRect();
-    else
-        geometry.targetRect = toLayoutText(targetLayoutObject)->visualOverflowRect();
-    if (!geometry.targetRect.size().width())
-        geometry.targetRect.setWidth(LayoutUnit(1));
-    if (!geometry.targetRect.size().height())
-        geometry.targetRect.setHeight(LayoutUnit(1));
-    geometry.intersectionRect = geometry.targetRect;
+    ASSERT(targetLayoutObject && targetLayoutObject->isBoxModelObject());
+    rect = toLayoutBoxModelObject(targetLayoutObject)->visualOverflowRect();
+
+    // TODO(szager): Properly support intersection observations for zero-area targets
+    //   by using edge-inclusive geometry.
+    if (!rect.size().width())
+        rect.setWidth(LayoutUnit(1));
+    if (!rect.size().height())
+        rect.setHeight(LayoutUnit(1));
 }
 
-void IntersectionObservation::clipToRoot(LayoutRect& rect) const
+void IntersectionObservation::initializeRootRect(LayoutRect& rect) const
+{
+    LayoutObject* rootLayoutObject = m_observer->rootLayoutObject();
+    if (rootLayoutObject->isLayoutView())
+        rect = LayoutRect(toLayoutView(rootLayoutObject)->frameView()->visibleContentRect());
+    // TODO(szager): Obey the spec -- use content box for a scrolling element, border box otherwise.
+    else if (rootLayoutObject->isBox())
+        rect = LayoutRect(toLayoutBox(rootLayoutObject)->contentBoxRect());
+    else
+        rect = LayoutRect(toLayoutBoxModelObject(rootLayoutObject)->borderBoundingBox());
+    applyRootMargin(rect);
+}
+
+void IntersectionObservation::clipToRoot(LayoutRect& rect, const LayoutRect& rootRect) const
 {
     // Map and clip rect into root element coordinates.
     // TODO(szager): the writing mode flipping needs a test.
     ASSERT(m_target);
     LayoutObject* rootLayoutObject = m_observer->rootLayoutObject();
     LayoutObject* targetLayoutObject = target()->layoutObject();
+
     targetLayoutObject->mapToVisibleRectInAncestorSpace(toLayoutBoxModelObject(rootLayoutObject), rect, nullptr);
-    if (rootLayoutObject->hasOverflowClip()) {
-        LayoutBox* rootLayoutBox = toLayoutBox(rootLayoutObject);
-        LayoutRect clipRect(LayoutPoint(), LayoutSize(rootLayoutBox->layer()->size()));
-        applyRootMargin(clipRect);
-        rootLayoutBox->flipForWritingMode(rect);
-        rect.intersect(clipRect);
-        rootLayoutBox->flipForWritingMode(rect);
-    }
+    LayoutRect rootClipRect(rootRect);
+    toLayoutBox(rootLayoutObject)->flipForWritingMode(rootClipRect);
+    rect.intersect(rootClipRect);
 }
 
-void IntersectionObservation::clipToFrameView(IntersectionGeometry& geometry) const
+static void mapRectUpToDocument(LayoutRect& rect, const LayoutObject& layoutObject, const Document& document)
 {
-    Node* rootNode = m_observer->rootNode();
-    LayoutObject* rootLayoutObject = m_observer->rootLayoutObject();
-    if (rootLayoutObject->isLayoutView()) {
-        geometry.rootRect = LayoutRect(toLayoutView(rootLayoutObject)->frameView()->visibleContentRect());
-        applyRootMargin(geometry.rootRect);
-        geometry.intersectionRect.intersect(geometry.rootRect);
-    } else {
-        if (rootLayoutObject->isBox())
-            geometry.rootRect = LayoutRect(toLayoutBox(rootLayoutObject)->absoluteContentBox());
-        else
-            geometry.rootRect = LayoutRect(rootLayoutObject->absoluteBoundingBoxRect());
-        applyRootMargin(geometry.rootRect);
-    }
-
-    LayoutPoint scrollPosition(rootNode->document().view()->scrollPosition());
-    geometry.targetRect.moveBy(-scrollPosition);
-    geometry.intersectionRect.moveBy(-scrollPosition);
-    geometry.rootRect.moveBy(-scrollPosition);
+    FloatQuad mappedQuad = layoutObject.localToAbsoluteQuad(
+        FloatQuad(FloatRect(rect)),
+        UseTransforms | ApplyContainerFlip);
+    rect = LayoutRect(mappedQuad.boundingBox());
 }
 
-static void mapRectToDocumentCoordinates(LayoutObject& layoutObject, LayoutRect& rect)
+static void mapRectDownToDocument(LayoutRect& rect, LayoutBoxModelObject& layoutObject, const Document& document)
 {
-    rect = LayoutRect(layoutObject.localToAbsoluteQuad(FloatQuad(FloatRect(rect)), UseTransforms | ApplyContainerFlip | TraverseDocumentBoundaries).boundingBox());
+    FloatQuad mappedQuad = document.layoutView()->ancestorToLocalQuad(
+        &layoutObject,
+        FloatQuad(FloatRect(rect)),
+        UseTransforms | ApplyContainerFlip | TraverseDocumentBoundaries);
+    rect = LayoutRect(mappedQuad.boundingBox());
+}
+
+void IntersectionObservation::mapTargetRectToTargetFrameCoordinates(LayoutRect& rect) const
+{
+    LayoutObject& targetLayoutObject = *target()->layoutObject();
+    Document& targetDocument = target()->document();
+    LayoutSize scrollPosition = LayoutSize(toIntSize(targetDocument.view()->scrollPosition()));
+    mapRectUpToDocument(rect, targetLayoutObject, targetDocument);
+    rect.move(-scrollPosition);
+}
+
+void IntersectionObservation::mapRootRectToRootFrameCoordinates(LayoutRect& rect) const
+{
+    LayoutObject& rootLayoutObject = *m_observer->rootLayoutObject();
+    Document& rootDocument = rootLayoutObject.document();
+    LayoutSize scrollPosition = LayoutSize(toIntSize(rootDocument.view()->scrollPosition()));
+    mapRectUpToDocument(rect, rootLayoutObject, rootLayoutObject.document());
+    rect.move(-scrollPosition);
+}
+
+void IntersectionObservation::mapRootRectToTargetFrameCoordinates(LayoutRect& rect) const
+{
+    LayoutObject& rootLayoutObject = *m_observer->rootLayoutObject();
+    Document& targetDocument = target()->document();
+    LayoutSize scrollPosition = LayoutSize(toIntSize(targetDocument.view()->scrollPosition()));
+
+    if (&targetDocument == &rootLayoutObject.document())
+        mapRectUpToDocument(rect, rootLayoutObject, targetDocument);
+    else
+        mapRectDownToDocument(rect, toLayoutBoxModelObject(rootLayoutObject), targetDocument);
+
+    rect.move(-scrollPosition);
 }
 
 static bool isContainingBlockChainDescendant(LayoutObject* descendant, LayoutObject* ancestor)
@@ -133,25 +164,18 @@ bool IntersectionObservation::computeGeometry(IntersectionGeometry& geometry) co
     if (!isContainingBlockChainDescendant(targetLayoutObject, rootLayoutObject))
         return false;
 
-    // Initialize targetRect and intersectionRect to bounds of target, in target's coordinate space.
-    initializeGeometry(geometry);
+    initializeTargetRect(geometry.targetRect);
+    geometry.intersectionRect = geometry.targetRect;
+    initializeRootRect(geometry.rootRect);
 
-    // TODO(szager): Support intersection observations for zero-area targets.  For now, we just
-    // punt on the observation.
-    if (!geometry.targetRect.size().width() || !geometry.targetRect.size().height())
-        return false;
+    clipToRoot(geometry.intersectionRect, geometry.rootRect);
 
-    // Clip intersectionRect to the root, and map it to root coordinates.
-    clipToRoot(geometry.intersectionRect);
-
-    // Map targetRect into document coordinates.
-    mapRectToDocumentCoordinates(*targetLayoutObject, geometry.targetRect);
-
-    // Map intersectionRect into document coordinates.
-    mapRectToDocumentCoordinates(*rootLayoutObject, geometry.intersectionRect);
-
-    // Clip intersectionRect to FrameView visible area if necessary, and map all geometry to frame coordinates.
-    clipToFrameView(geometry);
+    // TODO(szager): there are some simple optimizations that can be done here:
+    //   - Don't transform rootRect if it's not going to be reported
+    //   - Don't transform intersectionRect if it's empty
+    mapTargetRectToTargetFrameCoordinates(geometry.targetRect);
+    mapRootRectToTargetFrameCoordinates(geometry.intersectionRect);
+    mapRootRectToRootFrameCoordinates(geometry.rootRect);
 
     if (geometry.intersectionRect.size().isZero())
         geometry.intersectionRect = LayoutRect();

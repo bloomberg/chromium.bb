@@ -39,9 +39,12 @@ public:
 
 private:
     void applyRootMargin(LayoutRect&) const;
-    void initializeGeometry(IntersectionGeometry&) const;
-    void clipToRoot(LayoutRect&) const;
-    void clipToFrameView(IntersectionGeometry&) const;
+    void initializeTargetRect(LayoutRect&) const;
+    void initializeRootRect(LayoutRect&) const;
+    void clipToRoot(LayoutRect&, const LayoutRect&) const;
+    void mapTargetRectToTargetFrameCoordinates(LayoutRect&) const;
+    void mapRootRectToRootFrameCoordinates(LayoutRect&) const;
+    void mapRootRectToTargetFrameCoordinates(LayoutRect&) const;
     bool computeGeometry(IntersectionGeometry&) const;
 
     Member<IntersectionObserver> m_observer;
