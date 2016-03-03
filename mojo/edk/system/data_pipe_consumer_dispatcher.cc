@@ -484,6 +484,10 @@ void DataPipeConsumerDispatcher::NotifyRead(uint32_t num_bytes) {
 }
 
 void DataPipeConsumerDispatcher::OnPortStatusChanged() {
+  // This has to be outside |lock_| because the watch callback can call data
+  // pipe functions which then try to acquire |lock_|.
+  RequestContext request_context;
+
   base::AutoLock lock(lock_);
 
   // We stop observing the control port as soon it's transferred, but this can
@@ -498,8 +502,6 @@ void DataPipeConsumerDispatcher::OnPortStatusChanged() {
 }
 
 void DataPipeConsumerDispatcher::UpdateSignalsStateNoLock() {
-  RequestContext request_context;
-
   lock_.AssertAcquired();
 
   bool was_peer_closed = peer_closed_;
