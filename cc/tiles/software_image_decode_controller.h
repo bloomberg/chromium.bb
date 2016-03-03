@@ -200,8 +200,7 @@ class CC_EXPORT SoftwareImageDecodeController : public ImageDecodeController {
   // exception of possibly prerolling them). Over time these should return
   // "false" in less cases, as the ImageDecodeController should start handling
   // more of them.
-  bool CanHandleImage(const ImageKey& key, const DrawImage& image);
-  bool CanHandleFilterQuality(SkFilterQuality filter_quality);
+  bool CanHandleImage(const ImageKey& key);
 
   std::unordered_map<ImageKey, scoped_refptr<ImageDecodeTask>, ImageKeyHash>
       pending_image_tasks_;

@@ -138,7 +138,7 @@ bool SoftwareImageDecodeController::GetTaskForImageAndRef(
   // image the first time we see it. This doesn't need to account for memory.
   // TODO(vmpstr): We can also lock the original sized image, in which case it
   // does require memory bookkeeping.
-  if (!CanHandleImage(key, image)) {
+  if (!CanHandleImage(key)) {
     base::AutoLock lock(lock_);
     if (prerolled_images_.count(key.image_id()) == 0) {
       scoped_refptr<ImageDecodeTask>& existing_task = pending_image_tasks_[key];
@@ -224,7 +224,7 @@ void SoftwareImageDecodeController::UnrefImage(const DrawImage& image) {
   //       it yet (or failed to decode it).
   //   2b. Unlock the image but keep it in list.
   const ImageKey& key = ImageKey::FromDrawImage(image);
-  DCHECK(CanHandleImage(key, image));
+  DCHECK(CanHandleImage(key));
   TRACE_EVENT1("disabled-by-default-cc.debug",
                "SoftwareImageDecodeController::UnrefImage", "key",
                key.ToString());
@@ -255,7 +255,7 @@ void SoftwareImageDecodeController::DecodeImage(const ImageKey& key,
                                                 const DrawImage& image) {
   TRACE_EVENT1("cc", "SoftwareImageDecodeController::DecodeImage", "key",
                key.ToString());
-  if (!CanHandleImage(key, image)) {
+  if (!CanHandleImage(key)) {
     image.image()->preroll();
 
     base::AutoLock lock(lock_);
@@ -508,7 +508,7 @@ DecodedDrawImage SoftwareImageDecodeController::GetDecodedImageForDraw(
   if (key.target_size().IsEmpty())
     return DecodedDrawImage(nullptr, kNone_SkFilterQuality);
 
-  if (!CanHandleImage(key, draw_image))
+  if (!CanHandleImage(key))
     return DecodedDrawImage(draw_image.image(), draw_image.filter_quality());
 
   return GetDecodedImageForDrawInternal(key, draw_image);
@@ -613,7 +613,7 @@ void SoftwareImageDecodeController::DrawWithImageFinished(
                "SoftwareImageDecodeController::DrawWithImageFinished", "key",
                ImageKey::FromDrawImage(image).ToString());
   ImageKey key = ImageKey::FromDrawImage(image);
-  if (!decoded_image.image() || !CanHandleImage(key, image))
+  if (!decoded_image.image() || !CanHandleImage(key))
     return;
 
   if (decoded_image.is_at_raster_decode())
@@ -680,18 +680,9 @@ void SoftwareImageDecodeController::UnrefAtRasterImage(const ImageKey& key) {
   }
 }
 
-bool SoftwareImageDecodeController::CanHandleImage(const ImageKey& key,
-                                                   const DrawImage& image) {
-  if (!CanHandleFilterQuality(key.filter_quality()))
-    return false;
-  return true;
-}
-
-bool SoftwareImageDecodeController::CanHandleFilterQuality(
-    SkFilterQuality filter_quality) {
-  // TODO(vmpstr): We need to start caching mipmaps for medium quality and
-  // caching the interpolated values from those. For now, we don't have this.
-  return filter_quality != kMedium_SkFilterQuality;
+bool SoftwareImageDecodeController::CanHandleImage(const ImageKey& key) {
+  // TODO(vmpstr): Start handling medium filter quality as well.
+  return key.filter_quality() != kMedium_SkFilterQuality;
 }
 
 void SoftwareImageDecodeController::ReduceCacheUsage() {
