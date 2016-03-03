@@ -4891,6 +4891,37 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_EQ(1, child_count);
 }
 
+// Similar to NavigateProxyAndDetachBeforeCommit, but uses a synchronous
+// navigation to about:blank and the parent removes the child frame in a load
+// event handler for the subframe.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, NavigateAboutBlankAndDetach) {
+  GURL main_url(
+      embedded_test_server()->GetURL("a.com", "/remove_frame_on_load.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  WebContents* contents = shell()->web_contents();
+  FrameTreeNode* root =
+      static_cast<WebContentsImpl*>(contents)->GetFrameTree()->root();
+  EXPECT_EQ(1U, root->child_count());
+  FrameTreeNode* child = root->child_at(0);
+  EXPECT_NE(shell()->web_contents()->GetSiteInstance(),
+            child->current_frame_host()->GetSiteInstance());
+
+  // Navigate the child frame to "about:blank" from the parent document.
+  TestNavigationObserver observer(shell()->web_contents());
+  EXPECT_TRUE(
+      ExecuteScript(root->current_frame_host(),
+                    base::StringPrintf("f.src = '%s'", url::kAboutBlankURL)));
+  observer.Wait();
+
+  // Make sure the a.com renderer does not crash and the frame is removed.
+  int child_count = 0;
+  EXPECT_TRUE(ExecuteScriptAndExtractInt(
+      root->current_frame_host(), "domAutomationController.send(frames.length)",
+      &child_count));
+  EXPECT_EQ(0, child_count);
+}
+
 // Test for https://crbug.com/568670.  In A-embed-B, simultaneously have B
 // create a new (local) child frame, and have A detach B's proxy.  The child
 // frame creation sends an IPC to create a new proxy in A's process, and if

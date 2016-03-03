@@ -5515,9 +5515,18 @@ void RenderFrameImpl::NavigateInternal(
                   item_for_history_navigation, history_load_type,
                   is_client_redirect);
     } else {
+      // The load of the URL can result in this frame being removed. Use a
+      // WeakPtr as an easy way to detect whether this has occured. If so, this
+      // method should return immediately and not touch any part of the object,
+      // otherwise it will result in a use-after-free bug.
+      base::WeakPtr<RenderFrameImpl> weak_this = weak_factory_.GetWeakPtr();
+
       // Load the request.
       frame_->load(request, load_type, item_for_history_navigation,
                    history_load_type, is_client_redirect);
+
+      if (!weak_this)
+        return;
     }
   } else {
     // The browser expects the frame to be loading this navigation. Inform it
