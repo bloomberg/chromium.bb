@@ -105,8 +105,7 @@ AST_MATCHER(clang::CXXMethodDecl, isBlinkOrWTFMethod) {
 
 // Helper to convert from a camelCaseName to camel_case_name. It uses some
 // heuristics to try to handle acronyms in camel case names correctly.
-std::string CamelCaseToUnderscoreCase(StringRef input,
-                                      bool numbers_are_separated) {
+std::string CamelCaseToUnderscoreCase(StringRef input) {
   std::string output;
   bool needs_underscore = false;
   bool was_lowercase = false;
@@ -125,11 +124,6 @@ std::string CamelCaseToUnderscoreCase(StringRef input,
     // needed to handle names with acronyms, e.g. handledHTTPRequest needs a '_'
     // in 'dH'. This is a complement to the non-acronym case further down.
     if (was_uppercase && is_lowercase)
-      needs_underscore = true;
-    // If enabled, when entering or exiting a set of numbers, insert a '_'.
-    else if (!first_char && numbers_are_separated && !was_number && is_number)
-      needs_underscore = true;
-    else if (numbers_are_separated && was_number && !is_number)
       needs_underscore = true;
     if (needs_underscore) {
       output += '_';
@@ -205,19 +199,39 @@ bool GetNameForDecl(const clang::EnumConstantDecl& decl,
                     std::string& name) {
   StringRef original_name = decl.getName();
 
-  bool already_shouty = true;
+  // If it's already correct leave it alone.
+  if (original_name.size() >= 2 && original_name[0] == 'k' &&
+      clang::isUppercase(original_name[1]))
+    return false;
+
+  bool is_shouty = true;
   for (char c : original_name) {
     if (!clang::isUppercase(c) && !clang::isDigit(c) && c != '_') {
-      already_shouty = false;
+      is_shouty = false;
       break;
     }
   }
-  if (already_shouty)
-    return false;
 
-  name = CamelCaseToUnderscoreCase(original_name, true);
-  for (auto& c : name)
-    c = clang::toUppercase(c);
+  name = 'k';  // k prefix on enum values.
+  if (!is_shouty) {
+    name += original_name;
+    name[1] = clang::toUppercase(name[1]);
+    return true;
+  }
+
+  // If it's shouty make it camel case.
+  bool start_word = true;
+  for (auto c : original_name) {
+    if (c == '_') {
+      start_word = true;
+      continue;
+    }
+    if (start_word)
+      name += clang::toUppercase(c);
+    else
+      name += clang::toLowercase(c);
+    start_word = false;
+  }
   return true;
 }
 
@@ -262,7 +276,7 @@ bool GetNameForDecl(const clang::FieldDecl& decl,
   StringRef rename_part = !member_prefix
                               ? original_name
                               : original_name.substr(strlen(kBlinkFieldPrefix));
-  name = CamelCaseToUnderscoreCase(rename_part, false);
+  name = CamelCaseToUnderscoreCase(rename_part);
 
   // Assume that prefix of m_ was intentional and always replace it with a
   // suffix _.
@@ -309,7 +323,7 @@ bool GetNameForDecl(const clang::VarDecl& decl,
     name.append(original_name.data(), original_name.size());
     name[1] = clang::toUppercase(name[1]);
   } else {
-    name = CamelCaseToUnderscoreCase(original_name, false);
+    name = CamelCaseToUnderscoreCase(original_name);
   }
 
   // Static members end with _ just like other members, but constants should
