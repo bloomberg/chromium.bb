@@ -31,6 +31,7 @@ import org.chromium.chrome.browser.widget.EmptyAlertEditText;
 import org.chromium.chrome.browser.widget.TintedDrawable;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.net.NetworkChangeNotifier;
 
 /**
  * The activity that enables the user to modify the title, url and parent folder of a bookmark.
@@ -59,6 +60,7 @@ public class BookmarkEditActivity extends BookmarkActivityBase {
 
     private MenuItem mDeleteButton;
 
+    private NetworkChangeNotifier.ConnectionTypeObserver mConnectionObserver;
     private OfflineButtonType mOfflineButtonType = OfflineButtonType.NONE;
     private OfflinePageModelObserver mOfflinePageModelObserver;
 
@@ -107,6 +109,14 @@ public class BookmarkEditActivity extends BookmarkActivityBase {
 
         if (OfflinePageBridge.isEnabled() && OfflinePageBridge.canSavePage(
                 mModel.getBookmarkById(mBookmarkId).getUrl())) {
+            mConnectionObserver = new NetworkChangeNotifier.ConnectionTypeObserver() {
+                public void onConnectionTypeChanged(int connectionType) {
+                    updateOfflineSection();
+                }
+            };
+            NetworkChangeNotifier.init(this);
+            NetworkChangeNotifier.getInstance().addConnectionTypeObserver(mConnectionObserver);
+
             mOfflinePageModelObserver = new OfflinePageModelObserver() {
                 @Override
                 public void offlinePageDeleted(BookmarkId bookmarkId) {
@@ -209,6 +219,11 @@ public class BookmarkEditActivity extends BookmarkActivityBase {
             mModel.getOfflinePageBridge().removeObserver(
                     mOfflinePageModelObserver);
         }
+
+        if (mConnectionObserver != null) {
+            NetworkChangeNotifier.getInstance().removeConnectionTypeObserver(mConnectionObserver);
+        }
+
         mModel.removeObserver(mBookmarkModelObserver);
         mModel.destroy();
         mModel = null;
@@ -236,18 +251,25 @@ public class BookmarkEditActivity extends BookmarkActivityBase {
                                       R.string.offline_pages_as_bookmarks_offline_page_size),
                             Formatter.formatFileSize(this, offlinePage.getFileSize())));
             updateButtonToDeleteOfflinePage(saveRemoveVisitButton);
+            saveRemoveVisitButton.setVisibility(View.VISIBLE);
         } else if (mWebContents != null && !mWebContents.isDestroyed()
                 && offlinePageBridge.canSavePage(mWebContents.getLastCommittedUrl())) {
             // Offline page is not saved, but a bookmarked page is opened. Show save button.
             offlinePageInfoTextView.setText(
                     getString(OfflinePageUtils.getStringId(R.string.bookmark_offline_page_none)));
             updateButtonToSaveOfflinePage(saveRemoveVisitButton);
+            saveRemoveVisitButton.setVisibility(View.VISIBLE);
         } else {
             // Offline page is not saved, and edit page was opened from the bookmarks UI, which
             // means there is no action the user can take any action - hide button.
             offlinePageInfoTextView.setText(getString(OfflinePageUtils.getStringId(
                     R.string.offline_pages_as_bookmarks_offline_page_visit)));
             updateButtonToVisitOfflinePage(saveRemoveVisitButton);
+            if (NetworkChangeNotifier.isOnline()) {
+                saveRemoveVisitButton.setVisibility(View.VISIBLE);
+            } else {
+                saveRemoveVisitButton.setVisibility(View.GONE);
+            }
         }
     }
 
