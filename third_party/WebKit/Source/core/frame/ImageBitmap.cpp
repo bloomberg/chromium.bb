@@ -66,11 +66,11 @@ static void swizzleImageData(unsigned char* srcAddr, int height, int bytesPerRow
     }
 }
 
-static PassRefPtr<SkImage> flipSkImageVertically(SkImage* input)
+static PassRefPtr<SkImage> flipSkImageVertically(SkImage* input, AlphaDisposition alphaOp)
 {
     int width = input->width();
     int height = input->height();
-    SkImageInfo info = SkImageInfo::MakeN32Premul(width, height);
+    SkImageInfo info = SkImageInfo::MakeN32(width, height, (alphaOp == PremultiplyAlpha) ? kPremul_SkAlphaType : kUnpremul_SkAlphaType);
     int imageRowBytes = width * info.bytesPerPixel();
     OwnPtr<uint8_t[]> imagePixels = copySkImageData(input, info);
     for (int i = 0; i < height / 2; i++) {
@@ -134,7 +134,7 @@ static PassRefPtr<StaticBitmapImage> cropImage(Image* image, const IntRect& crop
 
     if (cropRect == srcRect) {
         if (flipY)
-            return StaticBitmapImage::create(flipSkImageVertically(skiaImage->newSubset(srcRect)));
+            return StaticBitmapImage::create(flipSkImageVertically(skiaImage->newSubset(srcRect), premultiplyAlpha ? PremultiplyAlpha : DontPremultiplyAlpha));
         return StaticBitmapImage::create(adoptRef(skiaImage->newSubset(srcRect)));
     }
 
@@ -152,7 +152,7 @@ static PassRefPtr<StaticBitmapImage> cropImage(Image* image, const IntRect& crop
         dstTop = -cropRect.y();
     surface->getCanvas()->drawImage(skiaImage.get(), dstLeft, dstTop);
     if (flipY)
-        skiaImage = flipSkImageVertically(surface->newImageSnapshot());
+        skiaImage = flipSkImageVertically(surface->newImageSnapshot(), PremultiplyAlpha);
     else
         skiaImage = adoptRef(surface->newImageSnapshot());
     if (premultiplyAlpha)
@@ -192,7 +192,7 @@ ImageBitmap::ImageBitmap(HTMLVideoElement* video, const IntRect& cropRect, Docum
     if (flipY || !m_isPremultiplied) {
         RefPtr<SkImage> skiaImage = buffer->newSkImageSnapshot(PreferNoAcceleration, SnapshotReasonUnknown);
         if (flipY)
-            skiaImage = flipSkImageVertically(skiaImage.get());
+            skiaImage = flipSkImageVertically(skiaImage.get(), PremultiplyAlpha);
         if (!m_isPremultiplied)
             skiaImage = premulSkImageToUnPremul(skiaImage.get());
         m_image = StaticBitmapImage::create(skiaImage.release());
@@ -288,7 +288,7 @@ ImageBitmap::ImageBitmap(ImageData* data, const IntRect& cropRect, const ImageBi
         dstPoint.setY(-cropRect.y());
     buffer->putByteArray(Unmultiplied, data->data()->data(), data->size(), srcRect, dstPoint);
     if (flipY)
-        m_image = StaticBitmapImage::create(flipSkImageVertically(buffer->newSkImageSnapshot(PreferNoAcceleration, SnapshotReasonUnknown).get()));
+        m_image = StaticBitmapImage::create(flipSkImageVertically(buffer->newSkImageSnapshot(PreferNoAcceleration, SnapshotReasonUnknown).get(), PremultiplyAlpha));
     else
         m_image = StaticBitmapImage::create(buffer->newSkImageSnapshot(PreferNoAcceleration, SnapshotReasonUnknown));
 }
