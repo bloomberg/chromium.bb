@@ -134,3 +134,31 @@ TEST_F('CrSettingsSearchEnginesTest', 'SearchEngines', function() {
   settings_search_engines_page.registerPageTests();
   mocha.run();
 });
+
+GEN('#if defined(OS_CHROMEOS)');
+/**
+ * Test fixture for device-page.
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+*/
+function CrSettingsDevicePageTest() {}
+
+CrSettingsDevicePageTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload:
+      'chrome://md-settings/device_page/device_page.html',
+
+  /** @override */
+  extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
+    '../fake_chrome_event.js',
+    'fake_settings_private.js',
+    'device_page_tests.js',
+  ]),
+};
+
+TEST_F('CrSettingsDevicePageTest', 'DevicePage', function() {
+  mocha.run();
+});
+GEN('#endif');

@@ -37,4 +37,12 @@ Polymer({
   onTouchpadTap_: function() {
     this.$.pages.setSubpageChain(['touchpad']);
   },
+
+  /**
+   * Handler for tapping the Keyboard settings menu item.
+   * @private
+   */
+  onKeyboardTap_: function() {
+    this.$.pages.setSubpageChain(['keyboard']);
+  },
 });

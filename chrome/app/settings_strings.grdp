@@ -958,5 +958,32 @@
     <message name="IDS_SETTINGS_KEYBOARD_TITLE" desc="In Device Settings, the title for keyboard settings.">
       Keyboard settings
     </message>
+    <message name="IDS_SETTINGS_KEYBOARD_KEY_SEARCH" desc="In Device Settings, the label and dropdown list item for the Search key.">
+      Search
+    </message>
+    <message name="IDS_SETTINGS_KEYBOARD_KEY_LEFT_CTRL" desc="In Device Settings, the label and dropdown list item for the Ctrl key.">
+      Ctrl
+    </message>
+    <message name="IDS_SETTINGS_KEYBOARD_KEY_LEFT_ALT" desc="In Device Settings, the label and dropdown list item for the Alt key.">
+      Alt
+    </message>
+    <message name="IDS_SETTINGS_KEYBOARD_KEY_CAPS_LOCK" desc="In Device Settings, the label and dropdown list item for the Caps Lock key.">
+      Caps Lock
+    </message>
+    <message name="IDS_SETTINGS_KEYBOARD_KEY_DIAMOND" desc="In Device Settings, the label for the Diamond key.">
+      Diamond
+    </message>
+    <message name="IDS_SETTINGS_KEYBOARD_KEY_ESCAPE" desc="In Device Settings, the dropdown list item for the Escape key.">
+      Escape
+    </message>
+    <message name="IDS_SETTINGS_KEYBOARD_KEY_DISABLED" desc="In Device Settings, the dropdown list item for a disabled key.">
+      Disabled
+    </message>
+    <message name="IDS_SETTINGS_KEYBOARD_SEND_FUNCTION_KEYS" desc="In Device Settings, the checkbox label for interpreting the top-row keys as function keys instead.">
+      Treat top-row keys as function keys
+    </message>
+    <message name="IDS_SETTINGS_KEYBOARD_SEND_FUNCTION_KEYS_DESCRIPTION" desc="In Device Settings, the label describing how to use the top-row keys' original actions when they are set to behave like function keys.">
+      Hold the Search key to switch the behavior of the top-row keys.
+    </message>
   </if>
 </grit-part>

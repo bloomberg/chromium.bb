@@ -305,6 +305,25 @@ void AddDeviceStrings(content::WebUIDataSource* html_source) {
       "traditionalScrollLabel", IDS_SETTINGS_TRADITIONAL_SCROLL_LABEL);
   html_source->AddLocalizedString(
       "keyboardTitle", IDS_SETTINGS_KEYBOARD_TITLE);
+  html_source->AddLocalizedString(
+      "keyboardKeySearch", IDS_SETTINGS_KEYBOARD_KEY_SEARCH);
+  html_source->AddLocalizedString(
+      "keyboardKeyCtrl", IDS_SETTINGS_KEYBOARD_KEY_LEFT_CTRL);
+  html_source->AddLocalizedString(
+      "keyboardKeyAlt", IDS_SETTINGS_KEYBOARD_KEY_LEFT_ALT);
+  html_source->AddLocalizedString(
+      "keyboardKeyCapsLock", IDS_SETTINGS_KEYBOARD_KEY_CAPS_LOCK);
+  html_source->AddLocalizedString(
+      "keyboardKeyDiamond", IDS_SETTINGS_KEYBOARD_KEY_DIAMOND);
+  html_source->AddLocalizedString(
+      "keyboardKeyEscape", IDS_SETTINGS_KEYBOARD_KEY_ESCAPE);
+  html_source->AddLocalizedString(
+      "keyboardKeyDisabled", IDS_SETTINGS_KEYBOARD_KEY_DISABLED);
+  html_source->AddLocalizedString(
+      "keyboardSendFunctionKeys", IDS_SETTINGS_KEYBOARD_SEND_FUNCTION_KEYS);
+  html_source->AddLocalizedString(
+      "keyboardSendFunctionKeysDescription",
+      IDS_SETTINGS_KEYBOARD_SEND_FUNCTION_KEYS_DESCRIPTION);
 }
 #endif
 

@@ -396,6 +396,13 @@ Polymer({
       subpage: ['touchpad'],
       subpageTitles: ['touchpadTitle'],
     },
+    {
+      url: '/keyboard-overlay',
+      page: 'basic',
+      section: 'device',
+      subpage: ['keyboard'],
+      subpageTitles: ['keyboardTitle'],
+    },
 </if>
   ],
 

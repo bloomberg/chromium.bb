@@ -2005,6 +2005,8 @@
       'browser/ui/webui/settings/appearance_handler.h',
       'browser/ui/webui/settings/chromeos/change_picture_handler.cc',
       'browser/ui/webui/settings/chromeos/change_picture_handler.h',
+      'browser/ui/webui/settings/chromeos/device_keyboard_handler.cc',
+      'browser/ui/webui/settings/chromeos/device_keyboard_handler.h',
       'browser/ui/webui/settings/chromeos/easy_unlock_settings_handler.cc',
       'browser/ui/webui/settings/chromeos/easy_unlock_settings_handler.h',
       'browser/ui/webui/settings/downloads_handler.cc',
