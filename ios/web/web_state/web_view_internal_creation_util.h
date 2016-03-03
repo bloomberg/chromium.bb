@@ -21,14 +21,14 @@ class BrowserState;
 // user agent for it. The returned UIWebView will have a user agent string that
 // includes the |request_group_id|.
 // Note: Callers are responsible for releasing the returned UIWebView.
-// TODO(shreyasv): Rename to CreateUIWebView.
+// DEPRECATED: Please use the WKWebView equivalent instead.
 UIWebView* CreateWebView(CGRect frame,
                          NSString* request_group_id,
                          BOOL use_desktop_user_agent);
 
 // Returns a new UIWebView for displaying regular web content.
 // Note: Callers are responsible for releasing the returned UIWebView.
-// TODO(shreyasv): Rename to CreateUIWebView.
+// DEPRECATED: Please use the WKWebView equivalent instead.
 UIWebView* CreateWebView(CGRect frame);
 
 // Creates a new WKWebView for displaying regular web content and registers a
@@ -65,19 +65,24 @@ NSUInteger GetActiveWKWebViewsCount();
 // Returns a CRWSimpleWebViewController for managing/showing a web view.
 // The BrowsingDataPartition must be synchronized before this method is called.
 // Note: Callers are responsible for releasing the CRWSimpleWebViewController.
+// DEPRECATED: The usage of |WebViewType| param is deprecated.
+// TODO(crbug.com/579697): By default the controller is backed by a WKWebView.
+// Remove the |WebViewType| param once all clients have stopped using it.
 id<CRWSimpleWebViewController> CreateSimpleWebViewController(
     CGRect frame,
     BrowserState* browser_state,
-    WebViewType web_view_type);
+    WebViewType web_view_type = WK_WEB_VIEW_TYPE);
 
 // Returns a new CRWSimpleWebViewController subclass displaying static HTML file
 // content stored in the application bundle.
 // The BrowsingDataPartition must be synchronized before this method is called.
 // Note: Callers are responsible for releasing the returned ViewController.
+// TODO(crbug.com/579697): By default the controller is backed by a WKWebView.
+// Remove the |WebViewType| param once all clients have stopped using it.
 id<CRWSimpleWebViewController> CreateStaticFileSimpleWebViewController(
     CGRect frame,
     BrowserState* browser_state,
-    WebViewType web_view_type);
+    WebViewType web_view_type = WK_WEB_VIEW_TYPE);
 
 // Returns a new UIWebView subclass for displaying static HTML file content
 // stored in the application bundle. if |browser_state| is nullptr, requests
@@ -85,11 +90,15 @@ id<CRWSimpleWebViewController> CreateStaticFileSimpleWebViewController(
 // requests are made with global request context, requests such as file://
 // will fail.
 // Note: Callers are responsible for releasing the returned UIWebView.
+// DEPRECATED: Please use the |CreateStaticFileSimpleWebViewController|
+// equivalent instead.
 UIWebView* CreateStaticFileWebView(CGRect frame, BrowserState* browser_state);
 
 // A convenience method that returns a static file web view with
 // CGRectZero and |nullptr| browser state.
 // Note: Callers are responsible for releasing the returned UIWebView.
+// DEPRECATED: Please use the |CreateStaticFileSimpleWebViewController|
+// equivalent instead.
 UIWebView* CreateStaticFileWebView();
 
 #if !defined(NDEBUG)
