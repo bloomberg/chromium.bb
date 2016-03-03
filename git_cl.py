@@ -3834,7 +3834,7 @@ def CMDformat(parser, args):
         command.append('-w')
       command.extend(dart_diff_files)
 
-      stdout = RunCommand(command, cwd=top_dir, env=env)
+      stdout = RunCommand(command, cwd=top_dir)
       if opts.dry_run and stdout:
         return_value = 2
     except dart_format.NotFoundError as e:
