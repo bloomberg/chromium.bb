@@ -25,6 +25,7 @@
 #include "content/public/common/content_constants.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerProviderClient.h"
+#include "url/url_constants.h"
 
 using blink::WebServiceWorkerError;
 using blink::WebServiceWorkerProvider;
@@ -110,8 +111,8 @@ void ServiceWorkerDispatcher::RegisterServiceWorker(
     WebServiceWorkerRegistrationCallbacks* callbacks) {
   DCHECK(callbacks);
 
-  if (pattern.possibly_invalid_spec().size() > kMaxURLChars ||
-      script_url.possibly_invalid_spec().size() > kMaxURLChars) {
+  if (pattern.possibly_invalid_spec().size() > url::kMaxURLChars ||
+      script_url.possibly_invalid_spec().size() > url::kMaxURLChars) {
     scoped_ptr<WebServiceWorkerRegistrationCallbacks>
         owned_callbacks(callbacks);
     std::string error_message(kServiceWorkerRegisterErrorPrefix);
@@ -161,7 +162,7 @@ void ServiceWorkerDispatcher::GetRegistration(
     WebServiceWorkerGetRegistrationCallbacks* callbacks) {
   DCHECK(callbacks);
 
-  if (document_url.possibly_invalid_spec().size() > kMaxURLChars) {
+  if (document_url.possibly_invalid_spec().size() > url::kMaxURLChars) {
     scoped_ptr<WebServiceWorkerGetRegistrationCallbacks> owned_callbacks(
         callbacks);
     std::string error_message(kServiceWorkerGetRegistrationErrorPrefix);

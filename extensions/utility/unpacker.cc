@@ -20,7 +20,6 @@
 #include "base/threading/thread.h"
 #include "base/values.h"
 #include "content/public/child/image_decoder_utils.h"
-#include "content/public/common/common_param_traits.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_l10n_util.h"

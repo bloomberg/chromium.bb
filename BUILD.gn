@@ -195,6 +195,7 @@ group("both_gn_and_gyp") {
       "//ui/events:events_unittests",
       "//ui/gl:gl_unittests",
       "//ui/touch_selection:ui_touch_selection_unittests",
+      "//url/ipc:url_ipc_unittests",
     ]
   } else {
     deps += [

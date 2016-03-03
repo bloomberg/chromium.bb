@@ -128,9 +128,9 @@
           'dependencies': [
             'content_settings_core_common',
             '../base/base.gyp:base',
-            '../content/content.gyp:content_common',
             '../ipc/ipc.gyp:ipc',
             '../url/url.gyp:url_lib',
+            '../url/ipc/url_ipc.gyp:url_ipc',
           ],
           'include_dirs': [
             '..',

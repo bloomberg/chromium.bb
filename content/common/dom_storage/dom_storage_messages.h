@@ -7,11 +7,11 @@
 #include <stdint.h>
 
 #include "content/common/dom_storage/dom_storage_types.h"
-#include "content/public/common/common_param_traits.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_param_traits.h"
 #include "third_party/WebKit/public/platform/WebStorageArea.h"
 #include "url/gurl.h"
+#include "url/ipc/url_param_traits.h"
 
 #define IPC_MESSAGE_START DOMStorageMsgStart
 

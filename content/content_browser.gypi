@@ -63,6 +63,7 @@
     '../ui/snapshot/snapshot.gyp:snapshot',
     '../ui/surface/surface.gyp:surface',
     '../ui/touch_selection/ui_touch_selection.gyp:ui_touch_selection',
+    '../url/ipc/url_ipc.gyp:url_ipc',
     'app/resources/content_resources.gyp:content_resources',
     'app/strings/content_strings.gyp:content_strings',
     'browser/background_sync/background_sync_proto.gyp:background_sync_proto',

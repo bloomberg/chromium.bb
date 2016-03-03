@@ -24,6 +24,7 @@
     '../ui/gfx/gfx.gyp:gfx',
     '../ui/gfx/gfx.gyp:gfx_geometry',
     '../url/url.gyp:url_lib',
+    '../url/ipc/url_ipc.gyp:url_ipc',
     'app/resources/content_resources.gyp:content_resources',
     'app/strings/content_strings.gyp:content_strings',
     'content_common_mojo_bindings.gyp:content_common_mojo_bindings',

@@ -358,6 +358,7 @@
         '<(DEPTH)/ui/gfx/ipc/gfx_ipc.gyp:gfx_ipc',
         '<(DEPTH)/ui/resources/ui_resources.gyp:ui_resources',
         '<(DEPTH)/url/url.gyp:url_lib',
+        '<(DEPTH)/url/ipc/url_ipc.gyp:url_ipc',
       ],
       'sources': [
         '<@(chrome_common_sources)'
@@ -496,7 +497,10 @@
           ],
         }, {
           # Non-Android.
-          'sources': [ '<@(chrome_common_importer_sources)' ]
+          'sources': [ '<@(chrome_common_importer_sources)' ],
+          'dependencies': [
+            '<(DEPTH)/url/ipc/url_ipc.gyp:url_ipc',
+	  ],
         }],
         ['OS=="win"', {
           'include_dirs': [

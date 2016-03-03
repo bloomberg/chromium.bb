@@ -334,6 +334,7 @@
         ['OS!="ios"', {
           'dependencies': [
             '../ui/gl/gl_tests.gyp:gl_unittests',
+	    '../url/ipc/url_ipc.gyp:url_ipc_unittests',
           ],
         }],
         ['OS!="ios" and OS!="mac"', {

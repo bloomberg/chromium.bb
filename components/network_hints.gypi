@@ -14,6 +14,7 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../ui/accessibility/accessibility.gyp:accessibility',
+        '../url/ipc/url_ipc.gyp:url_ipc',
       ],
       'sources': [
         'network_hints/common/network_hints_common.cc',

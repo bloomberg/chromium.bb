@@ -10,6 +10,7 @@
 #include "ipc/ipc_message_macros.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/ipc/gfx_param_traits.h"
+#include "url/ipc/url_param_traits.h"
 
 #define IPC_MESSAGE_START ExtensionUtilityMsgStart
 

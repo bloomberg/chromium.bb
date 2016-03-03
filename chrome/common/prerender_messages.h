@@ -6,13 +6,13 @@
 
 #include <stdint.h>
 
-#include "content/public/common/common_param_traits.h"
 #include "content/public/common/referrer.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_param_traits.h"
 #include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
+#include "url/ipc/url_param_traits.h"
 
 #define IPC_MESSAGE_START PrerenderMsgStart
 
