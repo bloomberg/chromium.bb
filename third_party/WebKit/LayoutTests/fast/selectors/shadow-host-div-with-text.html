@@ -2,7 +2,7 @@
 <html>
 <head>
   <style>
-    body, input {
+    body, #host {
       border: 0;
       margin: 0;
       padding: 0;
@@ -19,11 +19,11 @@
       Some hearts are diamonds some hearts are stones
     </span>
   </template>
-  <input>
+  <div id=host></div>
   <script>
-    var input = document.querySelector('input');
+    var host = document.querySelector('#host');
     var template = document.querySelector('template');
-    var root = input.createShadowRoot();
+    var root = host.createShadowRoot();
     root.appendChild(template.content);
     var span = root.querySelector('span');
     

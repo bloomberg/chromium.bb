@@ -1,5 +1,3 @@
-CONSOLE WARNING: Calling Element.createShadowRoot() for an element which already hosts a user-agent shadow root is deprecated. See https://www.chromestatus.com/features/4668884095336448 for more details.
-CONSOLE WARNING: <shadow> doesn't work for DETAILS element host.
 CONSOLE WARNING: Calling Element.createShadowRoot() for an element which already hosts a shadow root is deprecated. See https://www.chromestatus.com/features/4668884095336448 for more details.
 Tests for a shadow element's getDistributedNodes().
 
@@ -23,10 +21,6 @@ PASS distributedNodes.item(0) is getNodeInComposedTree(expectedDistributedNodes[
 getDistributedNodes() for "host/shadow" should return [host-child]
 PASS distributedNodes.length is expectedDistributedNodes.length
 PASS distributedNodes.item(0) is getNodeInComposedTree(expectedDistributedNodes[0])
-
-getDistributedNodes() for "details//shadow" should return []
-PASS distributedNodes.length is expectedDistributedNodes.length
-Since shadow insertion points don't work for DETAILS elements, this causes a warning message.
 
 getDistributedNodes() for "host//shadow" should return [host/older-child]
 PASS distributedNodes.length is expectedDistributedNodes.length

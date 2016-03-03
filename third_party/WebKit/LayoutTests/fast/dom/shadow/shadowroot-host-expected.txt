@@ -1,4 +1,3 @@
-CONSOLE WARNING: Calling Element.createShadowRoot() for an element which already hosts a user-agent shadow root is deprecated. See https://www.chromestatus.com/features/4668884095336448 for more details.
 CONSOLE WARNING: Calling Element.createShadowRoot() for an element which already hosts a shadow root is deprecated. See https://www.chromestatus.com/features/4668884095336448 for more details.
 Tests ShadowRoot.host property
 
@@ -6,7 +5,6 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 
 
-PASS root.host is host
 PASS root.host is host
 PASS roots[0].host is host
 PASS roots[1].host is host

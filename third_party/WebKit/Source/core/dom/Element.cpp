@@ -1900,10 +1900,15 @@ CustomElementDefinition* Element::customElementDefinition() const
 PassRefPtrWillBeRawPtr<ShadowRoot> Element::createShadowRoot(const ScriptState* scriptState, ExceptionState& exceptionState)
 {
     OriginsUsingFeatures::countMainWorldOnly(scriptState, document(), OriginsUsingFeatures::Feature::ElementCreateShadowRoot);
-    ShadowRoot* root = shadowRoot();
-    if (root && (root->type() == ShadowRootType::Open || root->type() == ShadowRootType::Closed)) {
-        exceptionState.throwDOMException(InvalidStateError, "Shadow root cannot be created on a host which already hosts this type of shadow tree.");
-        return nullptr;
+    if (ShadowRoot* root = shadowRoot()) {
+        if (root->isV1()) {
+            exceptionState.throwDOMException(InvalidStateError, "Shadow root cannot be created on a host which already hosts a v1 shadow tree.");
+            return nullptr;
+        }
+        if (root->type() == ShadowRootType::UserAgent) {
+            exceptionState.throwDOMException(InvalidStateError, "Shadow root cannot be created on a host which already hosts an user-agent shadow tree.");
+            return nullptr;
+        }
     }
     return createShadowRootInternal(ShadowRootType::V0, exceptionState);
 }

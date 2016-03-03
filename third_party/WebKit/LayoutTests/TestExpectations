@@ -475,6 +475,7 @@ crbug.com/505364 imported/web-platform-tests/shadow-dom/untriaged/events/retarge
 crbug.com/505364 imported/web-platform-tests/shadow-dom/untriaged/html-elements-and-their-shadow-trees/test-001.html [ Failure Crash ]
 crbug.com/505364 imported/web-platform-tests/shadow-dom/untriaged/html-elements-and-their-shadow-trees/test-002.html [ Failure ]
 crbug.com/505364 imported/web-platform-tests/shadow-dom/untriaged/html-elements-and-their-shadow-trees/test-003.html [ Failure ]
+crbug.com/505364 imported/web-platform-tests/shadow-dom/untriaged/html-elements-and-their-shadow-trees/test-004.html  [ Failure ]
 crbug.com/505364 imported/web-platform-tests/shadow-dom/untriaged/html-elements-in-shadow-trees/html-forms/test-003.html [ Failure ]
 crbug.com/505364 imported/web-platform-tests/shadow-dom/untriaged/shadow-trees/custom-pseudo-elements/test-001.html [ Failure ]
 crbug.com/505364 imported/web-platform-tests/shadow-dom/untriaged/styles/css-variables/test-001.html [ Failure ]

@@ -62,15 +62,6 @@ prepareTree(
 assertDistributedNodes('host/shadow', ['host-child']);
 
 prepareTree(
-    createDOM('details', {'id': 'details'},
-              createShadowRoot(
-                  createDOM('shadow', {'id': 'shadow'})),
-              createDOM('div', {'id': 'details-child'})));
-// A <detail> element has one UA shadow root.
-assertDistributedNodes('details//shadow', []);
-debug("Since shadow insertion points don't work for DETAILS elements, this causes a warning message.");
-
-prepareTree(
     createDOM('div', {'id': 'host'},
               createShadowRoot(
                   createDOM('div', {'id': 'older-child'})),

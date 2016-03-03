@@ -28,10 +28,6 @@ var elementsToSuccess = [
     document.createElement('span'),
     document.createElement('a'),
     document.createElement('section'),
-    document.createElement('input'),
-    document.createElement('applet'),
-    document.createElement('embed'),
-    document.createElement('object'),
     document.getElementById('g'),
     document.getElementById('rect'),
     document.getElementById('svg'),
@@ -39,6 +35,9 @@ var elementsToSuccess = [
 
 // See crbug.com/234020 .
 var elementsToFail = [
+    document.createElement('input'),
+    document.createElement('embed'),
+    document.createElement('object'),
     document.createElement('audio'),
     document.createElement('video'),
     document.createElement('select'),

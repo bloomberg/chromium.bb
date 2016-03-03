@@ -20,11 +20,6 @@ var host = document.createElement('table');
 var root = host.createShadowRoot();
 shouldBe('root.host', 'host');
 
-// For elements which has UA shadow root.
-host = document.createElement('details');
-root = host.createShadowRoot();
-shouldBe('root.host', 'host');
-
 // Multiple shadow roots.
 host = document.createElement('div');
 document.body.appendChild(host);

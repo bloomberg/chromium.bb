@@ -59,12 +59,10 @@ shouldThrow('div.attachShadow({mode: "closed"})');
 youngestShadowRootShouldBe('div', 'shadow1');
 
 
-debug('V1 shadow root cannot be created on UA shadow root');
+debug('V0 shadow root cannot be created on UA shadow root');
 var input = document.createElement('input');
 shouldBeUserAgentShadowRoot('internals.shadowRoot(input)');
-shadow1 = input.createShadowRoot();
-youngestShadowRootShouldBe('input', 'shadow1');
-shouldBeV0ShadowRoot('shadow1');
+shouldThrow('input.createShadowRoot()');
 
 input = document.createElement('input');
 shouldThrow('input.attachShadow({mode: "open"})');
