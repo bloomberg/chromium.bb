@@ -30,7 +30,7 @@
 #include "chrome/browser/ui/bookmarks/bookmark_bar_constants.h"
 #include "chrome/browser/ui/sync/sync_promo_ui.h"
 #include "chrome/browser/ui/webui/app_launcher_login_handler.h"
-#include "chrome/browser/ui/webui/ntp/new_tab_page_handler.h"
+#include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -479,7 +479,7 @@ void NTPResourceCache::CreateNewTabHTML() {
   load_time_data.SetBoolean("canShowAppInfoDialog",
                             CanShowAppInfoDialog());
 
-  NewTabPageHandler::GetLocalizedValues(profile_, &load_time_data);
+  AppLauncherHandler::GetLocalizedValues(profile_, &load_time_data);
   AppLauncherLoginHandler::GetLocalizedValues(profile_, &load_time_data);
 
   webui::SetLoadTimeDataDefaults(app_locale, &load_time_data);

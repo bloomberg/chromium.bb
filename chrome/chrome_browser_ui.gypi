@@ -1880,8 +1880,6 @@
       'browser/ui/webui/ntp/core_app_launcher_handler.h',
       'browser/ui/webui/ntp/favicon_webui_handler.cc',
       'browser/ui/webui/ntp/favicon_webui_handler.h',
-      'browser/ui/webui/ntp/new_tab_page_handler.cc',
-      'browser/ui/webui/ntp/new_tab_page_handler.h',
       'browser/ui/webui/ntp/new_tab_page_sync_handler.cc',
       'browser/ui/webui/ntp/new_tab_page_sync_handler.h',
       'browser/ui/webui/ntp/new_tab_ui.cc',

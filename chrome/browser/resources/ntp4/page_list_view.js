@@ -108,14 +108,8 @@ cr.define('ntp', function() {
     trash: undefined,
 
     /**
-     * The type of page that is currently shown. The value is a numerical ID.
-     * @type {number}
-     */
-    shownPage: 0,
-
-    /**
-     * The index of the page that is currently shown, within the page type.
-     * For example if the third Apps page is showing, this will be 2.
+     * The index of the page that is currently shown. For example if the third
+     * page is showing, this will be 2.
      * @type {number}
      */
     shownPageIndex: 0,
@@ -166,7 +160,6 @@ cr.define('ntp', function() {
       if (this.pageSwitcherEnd)
         ntp.initializePageSwitcher(this.pageSwitcherEnd);
 
-      this.shownPage = loadTimeData.getInteger('shown_page_type');
       this.shownPageIndex = loadTimeData.getInteger('shown_page_index');
 
       // TODO(dbeam): remove showApps and everything that says if (apps).
@@ -450,8 +443,7 @@ cr.define('ntp', function() {
         app.replaceAppData(appData);
       } else if (opt_highlight) {
         page.insertAndHighlightApp(appData);
-        this.setShownPage_(loadTimeData.getInteger('apps_page_id'),
-                           appData.page_index);
+        this.setShownPage_(appData.page_index);
       } else {
         page.insertApp(appData, false);
       }
@@ -488,11 +480,11 @@ cr.define('ntp', function() {
     /**
      * Updates the hidden state of the app launcher promo based on the page
      * shown and load data content.
+     * @private
      */
     updateAppLauncherPromoHiddenState_: function() {
       $('app-launcher-promo').hidden =
-          !loadTimeData.getBoolean('showAppLauncherPromo') ||
-          this.shownPage != loadTimeData.getInteger('apps_page_id');
+          !loadTimeData.getBoolean('showAppLauncherPromo');
     },
 
     /**
@@ -504,8 +496,7 @@ cr.define('ntp', function() {
                                         this.tilePages.length - 1));
       this.cardSlider.setCards(Array.prototype.slice.call(this.tilePages),
                                pageNo);
-      if (this.shownPage == loadTimeData.getInteger('apps_page_id') &&
-          loadTimeData.getBoolean('showApps')) {
+      if (loadTimeData.getBoolean('showApps')) {
         this.cardSlider.selectCardByValue(
             this.appsPages[Math.min(this.shownPageIndex,
                                     this.appsPages.length - 1)]);
@@ -632,12 +623,11 @@ cr.define('ntp', function() {
       // Don't change shownPage until startup is done (and page changes actually
       // reflect user actions).
       if (!this.isStartingUp_()) {
-        if (page.classList.contains('apps-page')) {
-          this.setShownPage_(loadTimeData.getInteger('apps_page_id'),
-                             this.getAppsPageIndex(page));
-        } else {
+        // TODO(dbeam): is this ever false?
+        if (page.classList.contains('apps-page'))
+          this.setShownPage_(this.getAppsPageIndex(page));
+        else
           console.error('unknown page selected');
-        }
       }
 
       // Update the active dot
@@ -650,15 +640,13 @@ cr.define('ntp', function() {
 
     /**
      * Saves/updates the newly selected page to open when first loading the NTP.
-     * @param {number} shownPage The new shown page type.
      * @param {number} shownPageIndex The new shown page index.
      * @private
      */
-    setShownPage_: function(shownPage, shownPageIndex) {
+    setShownPage_: function(shownPageIndex) {
       assert(shownPageIndex >= 0);
-      this.shownPage = shownPage;
       this.shownPageIndex = shownPageIndex;
-      chrome.send('pageSelected', [this.shownPage, this.shownPageIndex]);
+      chrome.send('pageSelected', [this.shownPageIndex]);
       this.updateAppLauncherPromoHiddenState_();
     },
 

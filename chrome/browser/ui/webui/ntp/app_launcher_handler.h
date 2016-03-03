@@ -33,6 +33,10 @@ namespace favicon_base {
 struct FaviconImageResult;
 }
 
+namespace user_prefs {
+class PrefRegistrySyncable;
+}
+
 // The handler for Javascript messages related to the "apps" view.
 class AppLauncherHandler
     : public content::WebUIMessageHandler,
@@ -49,6 +53,13 @@ class AppLauncherHandler
       const extensions::Extension* extension,
       ExtensionService* service,
       base::DictionaryValue* value);
+
+  // Registers values (strings etc.) for the page.
+  static void GetLocalizedValues(Profile* profile,
+      base::DictionaryValue* values);
+
+  // Register per-profile preferences.
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // WebUIMessageHandler:
   void RegisterMessages() override;
@@ -120,9 +131,14 @@ class AppLauncherHandler
   // page_index].
   void HandleGenerateAppForLink(const base::ListValue* args);
 
-  // Other registered message callbacks with unused |args|.
-  void StopShowingAppLauncherPromo(const base::ListValue* args);
-  void OnLearnMore(const base::ListValue* args);
+  // Handles "stopShowingAppLauncherPromo" message with unused |args|.
+  void HandleStopShowingAppLauncherPromo(const base::ListValue* args);
+
+  // Handles "learnMore" message with unused |args|.
+  void HandleOnLearnMore(const base::ListValue* args);
+
+  // Handles "pageSelected" message with |args| containing [page_index].
+  void HandlePageSelected(const base::ListValue* args);
 
  private:
   struct AppInstallInfo {

@@ -48,6 +48,7 @@
 #include "chrome/common/web_application_info.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/favicon_base/favicon_types.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "content/public/browser/notification_service.h"
@@ -79,17 +80,22 @@ using extensions::ExtensionSystem;
 
 namespace {
 
+// The purpose of this enum is to track which page on the NTP is showing.
+// The lower 10 bits of kNtpShownPage are used for the index within the page
+// group, and the rest of the bits are used for the page group ID (defined
+// here).
+static const int kPageIdOffset = 10;
+enum {
+  INDEX_MASK = (1 << kPageIdOffset) - 1,
+  APPS_PAGE_ID = 2 << kPageIdOffset,
+};
+
 void RecordAppLauncherPromoHistogram(
       apps::AppLauncherPromoHistogramValues value) {
   DCHECK_LT(value, apps::APP_LAUNCHER_PROMO_MAX);
   UMA_HISTOGRAM_ENUMERATION(
       "Apps.AppLauncherPromo", value, apps::APP_LAUNCHER_PROMO_MAX);
 }
-
-// This is used to avoid a DCHECK due to an unhandled WebUI callback. The
-// JavaScript used to switch between pages sends "pageSelected" which is used
-// in the context of the NTP for recording metrics we don't need here.
-void NoOpCallback(const base::ListValue* args) {}
 
 }  // namespace
 
@@ -206,6 +212,20 @@ void AppLauncherHandler::CreateAppInfo(
   value->SetString("app_launch_ordinal", app_launch_ordinal.ToInternalValue());
 }
 
+// static
+void AppLauncherHandler::GetLocalizedValues(Profile* profile,
+                                            base::DictionaryValue* values) {
+  PrefService* prefs = profile->GetPrefs();
+  int shown_page = prefs->GetInteger(prefs::kNtpShownPage);
+  values->SetInteger("shown_page_index", shown_page & INDEX_MASK);
+}
+
+// static
+void AppLauncherHandler::RegisterProfilePrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterIntegerPref(prefs::kNtpShownPage, APPS_PAGE_ID);
+}
+
 void AppLauncherHandler::RegisterMessages() {
   registrar_.Add(this, chrome::NOTIFICATION_APP_INSTALLED_TO_NTP,
       content::Source<WebContents>(web_ui()->GetWebContents()));
@@ -251,12 +271,14 @@ void AppLauncherHandler::RegisterMessages() {
       base::Bind(&AppLauncherHandler::HandleGenerateAppForLink,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("stopShowingAppLauncherPromo",
-      base::Bind(&AppLauncherHandler::StopShowingAppLauncherPromo,
+      base::Bind(&AppLauncherHandler::HandleStopShowingAppLauncherPromo,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("onLearnMore",
-      base::Bind(&AppLauncherHandler::OnLearnMore,
+      base::Bind(&AppLauncherHandler::HandleOnLearnMore,
                  base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("pageSelected", base::Bind(&NoOpCallback));
+  web_ui()->RegisterMessageCallback("pageSelected",
+      base::Bind(&AppLauncherHandler::HandlePageSelected,
+                 base::Unretained(this)));
 }
 
 void AppLauncherHandler::Observe(int type,
@@ -710,7 +732,7 @@ void AppLauncherHandler::HandleGenerateAppForLink(const base::ListValue* args) {
       &cancelable_task_tracker_);
 }
 
-void AppLauncherHandler::StopShowingAppLauncherPromo(
+void AppLauncherHandler::HandleStopShowingAppLauncherPromo(
     const base::ListValue* args) {
 #if defined(ENABLE_APP_LIST)
   g_browser_process->local_state()->SetBoolean(
@@ -719,8 +741,17 @@ void AppLauncherHandler::StopShowingAppLauncherPromo(
 #endif
 }
 
-void AppLauncherHandler::OnLearnMore(const base::ListValue* args) {
+void AppLauncherHandler::HandleOnLearnMore(const base::ListValue* args) {
   RecordAppLauncherPromoHistogram(apps::APP_LAUNCHER_PROMO_LEARN_MORE);
+}
+
+void AppLauncherHandler::HandlePageSelected(const base::ListValue* args) {
+  double index_double;
+  CHECK(args->GetDouble(0, &index_double));
+  int index = static_cast<int>(index_double);
+
+  PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
+  prefs->SetInteger(prefs::kNtpShownPage, APPS_PAGE_ID | index);
 }
 
 void AppLauncherHandler::OnFaviconForApp(
