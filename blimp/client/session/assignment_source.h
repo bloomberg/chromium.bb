@@ -8,21 +8,17 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/memory/weak_ptr.h"
 #include "blimp/client/blimp_client_export.h"
 #include "net/base/ip_endpoint.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
 namespace base {
-class FilePath;
 class SingleThreadTaskRunner;
-class Value;
 }
 
 namespace net {
 class URLFetcher;
 class URLRequestContextGetter;
-class X509Certificate;
 }
 
 namespace blimp {
@@ -42,26 +38,21 @@ struct BLIMP_CLIENT_EXPORT Assignment {
     UNKNOWN = 0,
     SSL = 1,
     TCP = 2,
+    QUIC = 3,
   };
 
   Assignment();
   ~Assignment();
 
+  TransportProtocol transport_protocol;
+  net::IPEndPoint ip_endpoint;
+  std::string client_token;
+  std::string certificate;
+  std::string certificate_fingerprint;
+
   // Returns true if the net::IPEndPoint has an unspecified IP, port, or
   // transport protocol.
-  bool IsValid() const;
-
-  // Specifies the transport to use to connect to the engine.
-  TransportProtocol transport_protocol;
-
-  // Specifies the IP address and port on which to reach the engine.
-  net::IPEndPoint engine_endpoint;
-
-  // Used to authenticate to the specified engine.
-  std::string client_token;
-
-  // Specifies the X.509 certificate that the engine must report.
-  scoped_refptr<net::X509Certificate> cert;
+  bool is_null() const;
 };
 
 // AssignmentSource provides functionality to find out how a client should
@@ -81,21 +72,18 @@ class BLIMP_CLIENT_EXPORT AssignmentSource : public net::URLFetcherDelegate {
     RESULT_OUT_OF_VMS = 7,
     RESULT_SERVER_ERROR = 8,
     RESULT_SERVER_INTERRUPTED = 9,
-    RESULT_NETWORK_FAILURE = 10,
-    RESULT_INVALID_CERT = 11,
+    RESULT_NETWORK_FAILURE = 10
   };
 
   typedef base::Callback<void(AssignmentSource::Result, const Assignment&)>
       AssignmentCallback;
 
-  // |network_task_runner|: The task runner to use for querying the Assigner API
-  // over the network.
-  // |file_task_runner|: The task runner to use for reading cert files from disk
-  // (specified on the command line.)
+  // The |main_task_runner| should be the task runner for the UI thread because
+  // this will in some cases be used to trigger user interaction on the UI
+  // thread.
   AssignmentSource(
-      const scoped_refptr<base::SingleThreadTaskRunner>& network_task_runner,
-      const scoped_refptr<base::SingleThreadTaskRunner>& file_task_runner);
-
+      const scoped_refptr<base::SingleThreadTaskRunner>& main_task_runner,
+      const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner);
   ~AssignmentSource() override;
 
   // Retrieves a valid assignment for the client and posts the result to the
@@ -106,25 +94,20 @@ class BLIMP_CLIENT_EXPORT AssignmentSource : public net::URLFetcherDelegate {
   void GetAssignment(const std::string& client_auth_token,
                      const AssignmentCallback& callback);
 
- private:
-  void OnGetAssignmentFromCommandLineDone(const std::string& client_auth_token,
-                                          Assignment parsed_assignment);
-  void QueryAssigner(const std::string& client_auth_token);
-  void ParseAssignerResponse();
-  void OnJsonParsed(scoped_ptr<base::Value> json);
-  void OnJsonParseError(const std::string& error);
-
   // net::URLFetcherDelegate implementation:
   void OnURLFetchComplete(const net::URLFetcher* source) override;
 
-  // GetAssignment() callback, invoked after URLFetcher completion.
-  AssignmentCallback callback_;
+ private:
+  void ParseAssignerResponse();
 
-  scoped_refptr<base::SingleThreadTaskRunner> file_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
+
   scoped_refptr<net::URLRequestContextGetter> url_request_context_;
   scoped_ptr<net::URLFetcher> url_fetcher_;
 
-  base::WeakPtrFactory<AssignmentSource> weak_factory_;
+  // This callback is set during a call to GetAssignment() and is cleared after
+  // the request has completed (whether it be a success or failure).
+  AssignmentCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(AssignmentSource);
 };

@@ -7,13 +7,11 @@
 namespace blimp {
 namespace switches {
 
-const char kEngineCertPath[] = "engine-cert-path";
-
-const char kEngineIP[] = "engine-ip";
-
-const char kEnginePort[] = "engine-port";
-
-const char kEngineTransport[] = "engine-transport";
+// Specifies the blimplet scheme, IP-address and port to connect to, e.g.:
+// --blimplet-host="tcp:127.0.0.1:25467".  Valid schemes are "ssl",
+// "tcp", and "quic".
+// TODO(nyquist): Add support for DNS-lookup. See http://crbug.com/576857.
+const char kBlimpletEndpoint[] = "blimplet-endpoint";
 
 }  // namespace switches
 }  // namespace blimp

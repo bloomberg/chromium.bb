@@ -61,7 +61,7 @@ scoped_ptr<BlimpConnection> TCPEngineTransport::TakeConnection() {
       new StreamSocketConnection(std::move(accepted_socket_)));
 }
 
-const char* TCPEngineTransport::GetName() const {
+const std::string TCPEngineTransport::GetName() const {
   return "TCP";
 }
 

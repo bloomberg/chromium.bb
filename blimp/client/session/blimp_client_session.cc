@@ -22,7 +22,6 @@
 #include "blimp/net/client_connection_manager.h"
 #include "blimp/net/common.h"
 #include "blimp/net/null_blimp_message_processor.h"
-#include "blimp/net/ssl_client_transport.h"
 #include "blimp/net/tcp_client_transport.h"
 #include "net/base/address_list.h"
 #include "net/base/ip_address.h"
@@ -67,6 +66,7 @@ class ClientNetworkComponents {
   // they are used from the UI thread.
   std::vector<scoped_ptr<BlimpMessageThreadPipe>> outgoing_pipes_;
   std::vector<scoped_ptr<BlimpMessageProcessor>> outgoing_message_processors_;
+
   DISALLOW_COPY_AND_ASSIGN(ClientNetworkComponents);
 };
 
@@ -81,20 +81,8 @@ void ClientNetworkComponents::ConnectWithAssignment(
   DCHECK(connection_manager_);
   connection_manager_->set_client_token(assignment.client_token);
 
-  switch (assignment.transport_protocol) {
-    case Assignment::SSL:
-      DCHECK(assignment.cert);
-      connection_manager_->AddTransport(make_scoped_ptr(new SSLClientTransport(
-          assignment.engine_endpoint, std::move(assignment.cert), nullptr)));
-      break;
-    case Assignment::TCP:
-      connection_manager_->AddTransport(make_scoped_ptr(
-          new TCPClientTransport(assignment.engine_endpoint, nullptr)));
-      break;
-    case Assignment::UNKNOWN:
-      DLOG(FATAL) << "Uknown transport type.";
-      break;
-  }
+  connection_manager_->AddTransport(make_scoped_ptr(new TCPClientTransport(
+      net::AddressList(assignment.ip_endpoint), nullptr)));
 
   connection_manager_->Connect();
 }
@@ -130,8 +118,8 @@ BlimpClientSession::BlimpClientSession()
   options.message_loop_type = base::MessageLoop::TYPE_IO;
   io_thread_.StartWithOptions(options);
 
-  assignment_source_.reset(
-      new AssignmentSource(io_thread_.task_runner(), io_thread_.task_runner()));
+  assignment_source_.reset(new AssignmentSource(
+      base::ThreadTaskRunnerHandle::Get(), io_thread_.task_runner()));
 
   // Register features' message senders and receivers.
   tab_control_feature_->set_outgoing_message_processor(

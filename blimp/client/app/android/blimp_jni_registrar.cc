@@ -10,7 +10,6 @@
 #include "blimp/client/app/android/blimp_view.h"
 #include "blimp/client/app/android/tab_control_feature_android.h"
 #include "blimp/client/app/android/toolbar.h"
-#include "components/safe_json/android/component_jni_registrar.h"
 
 namespace blimp {
 namespace client {
@@ -21,7 +20,6 @@ base::android::RegistrationMethod kBlimpRegistrationMethods[] = {
     {"Toolbar", Toolbar::RegisterJni},
     {"BlimpView", BlimpView::RegisterJni},
     {"BlimpClientSessionAndroid", BlimpClientSessionAndroid::RegisterJni},
-    {"SafeJson", safe_json::android::RegisterSafeJsonJni},
     {"TabControlFeatureAndroid", TabControlFeatureAndroid::RegisterJni},
 };
 

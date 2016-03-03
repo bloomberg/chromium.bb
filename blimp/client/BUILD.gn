@@ -27,7 +27,6 @@ source_set("blimp_client") {
   defines = [ "BLIMP_CLIENT_IMPLEMENTATION=1" ]
 
   public_deps = [
-    "//components/safe_json",
     "//ui/events",
   ]
 
@@ -50,6 +49,12 @@ source_set("blimp_client_unit_tests") {
 
   sources = []
 
+  # TODO(dtrainor): Fix the test harness to allow this to run on Android.
+  # See crbug.com/588240.
+  if (is_linux) {
+    sources += [ "session/assignment_source_unittest.cc" ]
+  }
+
   deps = [
     ":blimp_client",
     "//base",
@@ -58,19 +63,6 @@ source_set("blimp_client_unit_tests") {
     "//testing/gmock",
     "//testing/gtest",
   ]
-
-  data = []
-
-  # TODO(dtrainor): Fix the test harness to allow this to run on Android.
-  # See crbug.com/588240.
-  if (is_linux) {
-    sources += [ "session/assignment_source_unittest.cc" ]
-    deps += [
-      "//components/safe_json:test_support",
-      "//net:test_support",
-    ]
-    data += [ "session/test_selfsigned_cert.pem" ]
-  }
 }
 
 source_set("app_unit_tests") {
@@ -350,7 +342,6 @@ if (is_android) {
       "//base",
       "//blimp/common/proto",
       "//blimp/net:blimp_net",
-      "//components/safe_json/android:safe_json_jni_headers",
       "//skia",
       "//ui/gfx/geometry",
       "//ui/gl",
@@ -384,7 +375,6 @@ if (is_android) {
       ":blimp_java",
       ":blimp_java_resources",
       "//base:base_java",
-      "//components/safe_json/android:safe_json_java",
       "//net/android:net_java",
       google_play_services_resources,
     ]
