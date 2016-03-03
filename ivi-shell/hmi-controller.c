@@ -655,7 +655,7 @@ set_notification_configure_surface(struct ivi_layout_surface *ivisurf,
 	struct hmi_controller_layer *layer_link = NULL;
 	struct ivi_layout_layer *application_layer = NULL;
 	struct weston_surface *surface;
-	struct ivi_layout_surface **ivisurfs;
+	struct ivi_layout_surface **ivisurfs = NULL;
 	int32_t length = 0;
 	int32_t i;
 
@@ -690,9 +690,12 @@ set_notification_configure_surface(struct ivi_layout_surface *ivisurf,
 				 * commit_changes to apply source_rectangle.
 				 */
 				ivi_layout_interface->commit_changes();
+				free(ivisurfs);
 				return;
 			}
 		}
+		free(ivisurfs);
+		ivisurfs = NULL;
 	}
 
 	switch_mode(hmi_ctrl, hmi_ctrl->layout_mode);
