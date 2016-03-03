@@ -22,6 +22,31 @@ crbug.com/589709 [ Mac10.11 ] http/tests/navigation/navigation-redirect-schedule
 crbug.com/589709 [ Mac10.11 ] http/tests/security/contentTypeOptions/nosniff-script-without-content-type-blocked.html [ Failure ]
 
 #
+# Needs more triage from dpranke (failures may have been only local)
+#
+
+# possibly all mac, unrelated?
+crbug.com/589709 [ Mac ] fast/repaint/push-block-with-first-line.html [ Failure ]
+
+# possibly just 10.10 (and Retina)?
+crbug.com/589709 [ Mac10.10 ] fast/forms/text/textfield-overflow-by-value-update.html [ Failure ]
+
+# possibly just 10.9 (and Retina)?
+crbug.com/589709 [ Mac10.9 ] fast/forms/textarea/textarea-newline.html [ Failure ]
+
+crbug.com/589709 [ Mac10.11 ] fast/css/text-overflow-input.html [ Failure ]
+crbug.com/589709 [ Mac10.11 ] fast/forms/control-restrict-line-height.html [ Failure ]
+crbug.com/589709 [ Mac10.11 ] fast/forms/input-appearance-height.html [ Failure ]
+crbug.com/589709 [ Mac10.11 ] fast/forms/placeholder-position.html [ Failure ]
+crbug.com/589709 [ Mac10.11 ] fast/forms/search/search-appearance-basic.html [ Failure ]
+crbug.com/589709 [ Mac10.11 ] fast/forms/search/search-cancel-button-style-sharing.html [ Failure ]
+crbug.com/589709 [ Mac10.11 ] fast/forms/search/search-display-none-cancel-button.html [ Failure ]
+crbug.com/589709 [ Mac10.11 ] fast/forms/search/search-rtl.html [ Failure ]
+crbug.com/589709 [ Mac10.11 ] fast/forms/search/searchfield-heights.html [ Failure ]
+crbug.com/589709 [ Mac10.11 ] fast/forms/text/placeholder-pseudo-style.html [ Failure ]
+
+# possibly unrelated?
+
 # Needs triage from expert.
 #
 crbug.com/589709 [ Mac10.11 ] compositing/layer-creation/compositing-reason-removed.html [ Failure ]
