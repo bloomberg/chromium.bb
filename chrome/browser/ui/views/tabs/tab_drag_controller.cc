@@ -9,6 +9,7 @@
 
 #include "base/auto_reset.h"
 #include "base/callback.h"
+#include "base/debug/alias.h"
 #include "base/i18n/rtl.h"
 #include "base/macros.h"
 #include "build/build_config.h"
@@ -858,6 +859,15 @@ TabStrip* TabDragController::GetTabStripForWindow(gfx::NativeWindow window) {
   TabStrip* tab_strip =
       attached_tabstrip_ ? attached_tabstrip_ : source_tabstrip_;
   DCHECK(tab_strip);
+
+  CHECK(instance_);
+  if (!other_tabstrip->controller() || !tab_strip->controller()) {
+    base::debug::Alias(attached_tabstrip_);
+    base::debug::Alias(source_tabstrip_);
+    base::debug::Alias(other_tabstrip);
+    CHECK(other_tabstrip->controller());
+    CHECK(tab_strip->controller());
+  }
 
   return other_tabstrip->controller()->IsCompatibleWith(tab_strip) ?
       other_tabstrip : NULL;
