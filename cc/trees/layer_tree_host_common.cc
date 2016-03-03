@@ -14,8 +14,6 @@
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/layers/layer_iterator.h"
-#include "cc/layers/render_surface_draw_properties.h"
-#include "cc/layers/render_surface_impl.h"
 #include "cc/proto/begin_main_frame_and_commit_state.pb.h"
 #include "cc/proto/gfx_conversions.h"
 #include "cc/trees/draw_property_utils.h"
@@ -272,7 +270,7 @@ static bool IsLayerBackFaceVisible(LayerImpl* layer,
   // are in a 3d rendering context by checking if the parent preserves 3d.
 
   if (LayerIsInExisting3DRenderingContext(layer)) {
-    return DrawTransformFromPropertyTrees(layer, transform_tree)
+    return draw_property_utils::DrawTransform(layer, transform_tree)
         .IsBackFaceVisible();
   }
 
@@ -767,22 +765,8 @@ void CalculateRenderSurfaceLayerListInternal(
 
   if (render_to_separate_surface) {
     DCHECK(layer->render_surface());
-    RenderSurfaceDrawProperties draw_properties;
-    ComputeSurfaceDrawPropertiesUsingPropertyTrees(
-        layer->render_surface(), property_trees, &draw_properties);
-    // TODO(ajuma): Once property tree verification is removed, make the above
-    // call directly set the surface's properties, so that the copying below
-    // is no longer needed.
-    layer->render_surface()->SetIsClipped(draw_properties.is_clipped);
-    layer->render_surface()->SetDrawOpacity(draw_properties.draw_opacity);
-    layer->render_surface()->SetDrawTransform(draw_properties.draw_transform);
-    layer->render_surface()->SetScreenSpaceTransform(
-        draw_properties.screen_space_transform);
-    layer->render_surface()->SetReplicaDrawTransform(
-        draw_properties.replica_draw_transform);
-    layer->render_surface()->SetReplicaScreenSpaceTransform(
-        draw_properties.replica_screen_space_transform);
-    layer->render_surface()->SetClipRect(draw_properties.clip_rect);
+    draw_property_utils::ComputeSurfaceDrawProperties(property_trees,
+                                                      layer->render_surface());
 
     if (!layer->double_sided() &&
         IsSurfaceBackFaceVisible(layer,
@@ -1002,7 +986,7 @@ void CalculateDrawPropertiesInternal(
             "LayerTreeHostCommon::ComputeVisibleRectsWithPropertyTrees");
       }
 
-      BuildPropertyTreesAndComputeVisibleRects(
+      draw_property_utils::BuildPropertyTreesAndComputeVisibleRects(
           inputs->root_layer, inputs->page_scale_layer,
           inputs->inner_viewport_scroll_layer,
           inputs->outer_viewport_scroll_layer,
@@ -1035,11 +1019,11 @@ void CalculateDrawPropertiesInternal(
       // on the active tree immediately affect the pending tree, so instead of
       // trying to update property trees whenever these values change, we
       // update property trees before using them.
-      UpdatePageScaleFactorInPropertyTrees(
+      draw_property_utils::UpdatePageScaleFactor(
           inputs->property_trees, inputs->page_scale_layer,
           inputs->page_scale_factor, inputs->device_scale_factor,
           inputs->device_transform);
-      UpdateElasticOverscrollInPropertyTrees(
+      draw_property_utils::UpdateElasticOverscroll(
           inputs->property_trees, inputs->elastic_overscroll_application_layer,
           inputs->elastic_overscroll);
       // Similarly, the device viewport and device transform are shared
@@ -1050,7 +1034,7 @@ void CalculateDrawPropertiesInternal(
           inputs->device_transform, inputs->root_layer->position());
       inputs->property_trees->transform_tree.SetDeviceTransformScaleFactor(
           inputs->device_transform);
-      ComputeVisibleRectsUsingPropertyTrees(
+      draw_property_utils::ComputeVisibleRects(
           inputs->root_layer, inputs->property_trees,
           inputs->can_render_to_separate_surface, &visible_layer_list);
       break;
@@ -1066,9 +1050,9 @@ void CalculateDrawPropertiesInternal(
          inputs->property_trees->non_root_surfaces_enabled);
   CalculateRenderTarget(inputs);
   for (LayerImpl* layer : visible_layer_list) {
-    ComputeLayerDrawPropertiesUsingPropertyTrees(
+    draw_property_utils::ComputeLayerDrawProperties(
         layer, inputs->property_trees, inputs->layers_always_allowed_lcd_text,
-        inputs->can_use_lcd_text, &layer->draw_properties());
+        inputs->can_use_lcd_text);
     if (layer->mask_layer())
       ComputeMaskLayerDrawProperties(layer, layer->mask_layer());
     LayerImpl* replica_mask_layer =
@@ -1097,7 +1081,7 @@ void LayerTreeHostCommon::CalculateDrawProperties(
       inputs->root_layer->layer_tree_host()->property_trees();
   Layer* overscroll_elasticity_layer = nullptr;
   gfx::Vector2dF elastic_overscroll;
-  BuildPropertyTreesAndComputeVisibleRects(
+  draw_property_utils::BuildPropertyTreesAndComputeVisibleRects(
       inputs->root_layer, inputs->page_scale_layer,
       inputs->inner_viewport_scroll_layer, inputs->outer_viewport_scroll_layer,
       overscroll_elasticity_layer, elastic_overscroll,

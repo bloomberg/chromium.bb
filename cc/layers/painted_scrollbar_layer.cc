@@ -193,7 +193,7 @@ void PaintedScrollbarLayer::UpdateInternalContentScale() {
           ->settings()
           .layer_transforms_should_scale_layer_contents) {
     gfx::Transform transform;
-    transform = DrawTransformFromPropertyTrees(
+    transform = draw_property_utils::DrawTransform(
         this, layer_tree_host()->property_trees()->transform_tree);
 
     gfx::Vector2dF transform_scales =

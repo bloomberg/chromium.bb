@@ -873,10 +873,10 @@ void BuildPropertyTreesTopLevelInternal(
     PropertyTrees* property_trees,
     SkColor color) {
   if (!property_trees->needs_rebuild) {
-    UpdatePageScaleFactorInPropertyTrees(property_trees, page_scale_layer,
-                                         page_scale_factor, device_scale_factor,
-                                         device_transform);
-    UpdateElasticOverscrollInPropertyTrees(
+    draw_property_utils::UpdatePageScaleFactor(
+        property_trees, page_scale_layer, page_scale_factor,
+        device_scale_factor, device_transform);
+    draw_property_utils::UpdateElasticOverscroll(
         property_trees, overscroll_elasticity_layer, elastic_overscroll);
     property_trees->clip_tree.SetViewportClip(gfx::RectF(viewport));
     property_trees->transform_tree.SetDeviceTransform(device_transform,

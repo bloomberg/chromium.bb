@@ -2075,13 +2075,13 @@ bool Layer::sorted_for_recursion() {
 
 gfx::Transform Layer::draw_transform() const {
   DCHECK_NE(transform_tree_index_, -1);
-  return DrawTransformFromPropertyTrees(
+  return draw_property_utils::DrawTransform(
       this, layer_tree_host_->property_trees()->transform_tree);
 }
 
 gfx::Transform Layer::screen_space_transform() const {
   DCHECK_NE(transform_tree_index_, -1);
-  return ScreenSpaceTransformFromPropertyTrees(
+  return draw_property_utils::ScreenSpaceTransform(
       this, layer_tree_host_->property_trees()->transform_tree);
 }
 

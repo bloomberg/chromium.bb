@@ -184,19 +184,11 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
     return offset_to_transform_parent_;
   }
 
-  const gfx::Rect& visible_rect_from_property_trees() const {
-    return visible_rect_from_property_trees_;
+  gfx::Rect clip_rect_in_target_space() const {
+    return clip_rect_in_target_space_;
   }
-  void set_visible_rect_from_property_trees(const gfx::Rect& rect) {
-    visible_rect_from_property_trees_ = rect;
-  }
-
-  const gfx::Rect& clip_rect_in_target_space_from_property_trees() const {
-    return clip_rect_in_target_space_from_property_trees_;
-  }
-  void set_clip_rect_in_target_space_from_property_trees(
-      const gfx::Rect& rect) {
-    clip_rect_in_target_space_from_property_trees_ = rect;
+  void set_clip_rect_in_target_space(const gfx::Rect& clip_rect) {
+    clip_rect_in_target_space_ = clip_rect;
   }
 
   void set_should_flatten_transform_from_property_tree(bool should_flatten) {
@@ -419,6 +411,11 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   gfx::Transform ScreenSpaceTransform() const;
   PerformanceProperties<LayerImpl>& performance_properties() {
     return performance_properties_;
+  }
+
+  // Setter for draw_properties_.
+  void set_visible_layer_rect(const gfx::Rect& visible_rect) {
+    draw_properties_.visible_layer_rect = visible_rect;
   }
 
   // The following are shortcut accessors to get various information from
@@ -808,8 +805,7 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
 
   int num_descendants_that_draw_content_;
 
-  gfx::Rect visible_rect_from_property_trees_;
-  gfx::Rect clip_rect_in_target_space_from_property_trees_;
+  gfx::Rect clip_rect_in_target_space_;
   int transform_tree_index_;
   int effect_tree_index_;
   int clip_tree_index_;

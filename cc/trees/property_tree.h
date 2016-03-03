@@ -425,7 +425,7 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
   }
 
   // We store the page scale factor on the transform tree so that it can be
-  // easily be retrieved and updated in UpdatePageScaleInPropertyTrees.
+  // easily be retrieved and updated in UpdatePageScale.
   void set_page_scale_factor(float page_scale_factor) {
     page_scale_factor_ = page_scale_factor;
   }
@@ -461,6 +461,8 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
       const {
     return nodes_affected_by_outer_viewport_bounds_delta_;
   }
+
+  gfx::Transform ToScreenSpaceTransformWithoutSublayerScale(int id) const;
 
   void ToProtobuf(proto::PropertyTree* proto) const;
   void FromProtobuf(const proto::PropertyTree& proto);

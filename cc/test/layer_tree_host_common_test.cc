@@ -117,7 +117,7 @@ void LayerTreeHostCommonTestBase::
   gfx::Size device_viewport_size =
       gfx::Size(root_layer->bounds().width() * device_scale_factor,
                 root_layer->bounds().height() * device_scale_factor);
-  BuildPropertyTreesAndComputeVisibleRects(
+  draw_property_utils::BuildPropertyTreesAndComputeVisibleRects(
       root_layer, page_scale_layer, inner_viewport_scroll_layer,
       outer_viewport_scroll_layer, overscroll_elasticity_layer,
       elastic_overscroll, page_scale_factor, device_scale_factor,
@@ -151,7 +151,7 @@ void LayerTreeHostCommonTestBase::
       gfx::Size(root_layer->bounds().width() * device_scale_factor,
                 root_layer->bounds().height() * device_scale_factor);
   update_layer_list_impl_.reset(new LayerImplList);
-  BuildPropertyTreesAndComputeVisibleRects(
+  draw_property_utils::BuildPropertyTreesAndComputeVisibleRects(
       root_layer, page_scale_layer, inner_viewport_scroll_layer,
       outer_viewport_scroll_layer, overscroll_elasticity_layer,
       elastic_overscroll, page_scale_factor, device_scale_factor,

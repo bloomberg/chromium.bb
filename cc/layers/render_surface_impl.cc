@@ -31,9 +31,7 @@ namespace cc {
 RenderSurfaceImpl::RenderSurfaceImpl(LayerImpl* owning_layer)
     : owning_layer_(owning_layer),
       surface_property_changed_(false),
-      is_clipped_(false),
       contributes_to_drawn_surface_(false),
-      draw_opacity_(1),
       nearest_occlusion_immune_ancestor_(nullptr),
       target_render_surface_layer_index_history_(0),
       current_layer_index_history_(0) {
@@ -42,12 +40,19 @@ RenderSurfaceImpl::RenderSurfaceImpl(LayerImpl* owning_layer)
 
 RenderSurfaceImpl::~RenderSurfaceImpl() {}
 
+RenderSurfaceImpl::DrawProperties::DrawProperties() {
+  draw_opacity = 1.f;
+  is_clipped = false;
+}
+
+RenderSurfaceImpl::DrawProperties::~DrawProperties() {}
+
 gfx::RectF RenderSurfaceImpl::DrawableContentRect() const {
   gfx::RectF drawable_content_rect =
-      MathUtil::MapClippedRect(draw_transform_, gfx::RectF(content_rect_));
+      MathUtil::MapClippedRect(draw_transform(), gfx::RectF(content_rect()));
   if (owning_layer_->has_replica()) {
     drawable_content_rect.Union(MathUtil::MapClippedRect(
-        replica_draw_transform_, gfx::RectF(content_rect_)));
+        replica_draw_transform(), gfx::RectF(content_rect())));
   }
   if (!owning_layer_->filters().IsEmpty()) {
     int left, top, right, bottom;
@@ -108,19 +113,19 @@ int RenderSurfaceImpl::EffectTreeIndex() const {
 }
 
 void RenderSurfaceImpl::SetClipRect(const gfx::Rect& clip_rect) {
-  if (clip_rect_ == clip_rect)
+  if (clip_rect == draw_properties_.clip_rect)
     return;
 
   surface_property_changed_ = true;
-  clip_rect_ = clip_rect;
+  draw_properties_.clip_rect = clip_rect;
 }
 
 void RenderSurfaceImpl::SetContentRect(const gfx::Rect& content_rect) {
-  if (content_rect_ == content_rect)
+  if (content_rect == draw_properties_.content_rect)
     return;
 
   surface_property_changed_ = true;
-  content_rect_ = content_rect;
+  draw_properties_.content_rect = content_rect;
 }
 
 void RenderSurfaceImpl::SetAccumulatedContentRect(
@@ -159,11 +164,10 @@ RenderPassId RenderSurfaceImpl::GetRenderPassId() {
 
 void RenderSurfaceImpl::AppendRenderPasses(RenderPassSink* pass_sink) {
   scoped_ptr<RenderPass> pass = RenderPass::Create(layer_list_.size());
-  pass->SetNew(GetRenderPassId(),
-               content_rect_,
-               gfx::IntersectRects(content_rect_,
+  pass->SetNew(GetRenderPassId(), content_rect(),
+               gfx::IntersectRects(content_rect(),
                                    damage_tracker_->current_damage_rect()),
-               screen_space_transform_);
+               draw_properties_.screen_space_transform);
   pass_sink->AppendRenderPass(std::move(pass));
 }
 
@@ -176,21 +180,22 @@ void RenderSurfaceImpl::AppendQuads(RenderPass* render_pass,
                                     AppendQuadsData* append_quads_data,
                                     RenderPassId render_pass_id) {
   gfx::Rect visible_layer_rect =
-      occlusion_in_content_space.GetUnoccludedContentRect(content_rect_);
+      occlusion_in_content_space.GetUnoccludedContentRect(content_rect());
   if (visible_layer_rect.IsEmpty())
     return;
 
   SharedQuadState* shared_quad_state =
       render_pass->CreateAndAppendSharedQuadState();
-  shared_quad_state->SetAll(draw_transform, content_rect_.size(), content_rect_,
-                            clip_rect_, is_clipped_, draw_opacity_,
-                            owning_layer_->blend_mode(),
-                            owning_layer_->sorting_context_id());
+  shared_quad_state->SetAll(
+      draw_transform, content_rect().size(), content_rect(),
+      draw_properties_.clip_rect, draw_properties_.is_clipped,
+      draw_properties_.draw_opacity, owning_layer_->blend_mode(),
+      owning_layer_->sorting_context_id());
 
   if (owning_layer_->ShowDebugBorders()) {
     DebugBorderDrawQuad* debug_border_quad =
         render_pass->CreateAndAppendDrawQuad<DebugBorderDrawQuad>();
-    debug_border_quad->SetNew(shared_quad_state, content_rect_,
+    debug_border_quad->SetNew(shared_quad_state, content_rect(),
                               visible_layer_rect, debug_border_color,
                               debug_border_width);
   }
@@ -218,7 +223,7 @@ void RenderSurfaceImpl::AppendQuads(RenderPass* render_pass,
 
   RenderPassDrawQuad* quad =
       render_pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
-  quad->SetNew(shared_quad_state, content_rect_, visible_layer_rect,
+  quad->SetNew(shared_quad_state, content_rect(), visible_layer_rect,
                render_pass_id, mask_resource_id, mask_uv_scale,
                mask_texture_size, owning_layer_->filters(),
                owning_layer_to_target_scale,

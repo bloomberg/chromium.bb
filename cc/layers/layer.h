@@ -495,21 +495,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
     return offset_to_transform_parent_;
   }
 
-  // TODO(enne): Once LayerImpl only uses property trees, remove these
-  // functions.
-  const gfx::Rect& visible_rect_from_property_trees() const {
-    return visible_layer_rect();
-  }
-  void set_visible_rect_from_property_trees(const gfx::Rect& rect) {
-    set_visible_layer_rect(rect);
-  }
-  const gfx::Rect& clip_rect_in_target_space_from_property_trees() const {
-    return clip_rect();
-  }
-  void set_clip_rect_in_target_space_from_property_trees(
-      const gfx::Rect& rect) {
-    set_clip_rect(rect);
-  }
   // TODO(enne): This needs a different name.  It is a calculated value
   // from the property tree builder and not a synonym for "should
   // flatten transform".
@@ -528,8 +513,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
     visible_layer_rect_ = rect;
   }
 
-  const gfx::Rect& clip_rect() const { return clip_rect_; }
-  void set_clip_rect(const gfx::Rect& rect) { clip_rect_ = rect; }
+  void set_clip_rect_in_target_space(const gfx::Rect& rect) {}
 
   // This should only be called during BeginMainFrame since it does not trigger
   // a Commit. This is called right after property tree being built and should
@@ -785,7 +769,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
 
   // These all act like draw properties, so don't need push properties.
   gfx::Rect visible_layer_rect_;
-  gfx::Rect clip_rect_;
   size_t num_unclipped_descendants_;
 
   std::vector<FrameTimingRequest> frame_timing_requests_;

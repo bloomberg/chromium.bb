@@ -592,7 +592,7 @@ class PropertyTreeTestTransformsWithFlattening : public PropertyTreeTest {
 
     tree.set_needs_update(true);
     tree = TransformTreeForTest(tree);
-    ComputeTransforms(&tree);
+    draw_property_utils::ComputeTransforms(&tree);
 
     gfx::Transform flattened_rotation_about_x = rotation_about_x;
     flattened_rotation_about_x.FlattenTo2d();
@@ -623,7 +623,7 @@ class PropertyTreeTestTransformsWithFlattening : public PropertyTreeTest {
     tree.Node(grand_child)->data.flattens_inherited_transform = false;
     tree.set_needs_update(true);
     tree = TransformTreeForTest(tree);
-    ComputeTransforms(&tree);
+    draw_property_utils::ComputeTransforms(&tree);
 
     EXPECT_TRANSFORMATION_MATRIX_EQ(rotation_about_x * rotation_about_x,
                                     tree.Node(grand_child)->data.to_target);
@@ -889,7 +889,7 @@ class PropertyTreeTestComputeTransformToTargetWithZeroSublayerScale
     tree.set_needs_update(true);
     tree = TransformTreeForTest(tree);
 
-    ComputeTransforms(&tree);
+    draw_property_utils::ComputeTransforms(&tree);
 
     success = tree.ComputeTransform(child_id, grand_parent_id, &transform);
     EXPECT_TRUE(success);
@@ -901,7 +901,7 @@ class PropertyTreeTestComputeTransformToTargetWithZeroSublayerScale
     tree.set_needs_update(true);
     tree = TransformTreeForTest(tree);
 
-    ComputeTransforms(&tree);
+    draw_property_utils::ComputeTransforms(&tree);
 
     success = tree.ComputeTransform(child_id, grand_parent_id, &transform);
     EXPECT_TRUE(success);
@@ -945,7 +945,7 @@ class PropertyTreeTestFlatteningWhenDestinationHasOnlyFlatAncestors
 
     tree.set_needs_update(true);
     tree = TransformTreeForTest(tree);
-    ComputeTransforms(&tree);
+    draw_property_utils::ComputeTransforms(&tree);
 
     gfx::Transform flattened_rotation_about_x = rotation_about_x;
     flattened_rotation_about_x.FlattenTo2d();
@@ -977,13 +977,13 @@ class PropertyTreeTestScreenSpaceOpacityUpdateTest : public PropertyTreeTest {
     tree.Node(parent)->data.opacity = 0.5f;
     tree.set_needs_update(true);
     tree = EffectTreeForTest(tree);
-    ComputeEffects(&tree);
+    draw_property_utils::ComputeEffects(&tree);
     EXPECT_EQ(tree.Node(child)->data.screen_space_opacity, 0.5f);
 
     tree.Node(child)->data.opacity = 0.5f;
     tree.set_needs_update(true);
     tree = EffectTreeForTest(tree);
-    ComputeEffects(&tree);
+    draw_property_utils::ComputeEffects(&tree);
     EXPECT_EQ(tree.Node(child)->data.screen_space_opacity, 0.25f);
   }
 };
@@ -1008,7 +1008,7 @@ class PropertyTreeTestNonIntegerTranslationTest : public PropertyTreeTest {
     tree.Node(child)->data.local.Translate(1, 1);
     tree.set_needs_update(true);
     tree = TransformTreeForTest(tree);
-    ComputeTransforms(&tree);
+    draw_property_utils::ComputeTransforms(&tree);
     EXPECT_FALSE(tree.Node(parent)
                      ->data.node_and_ancestors_have_only_integer_translation);
     EXPECT_FALSE(tree.Node(child)
@@ -1018,7 +1018,7 @@ class PropertyTreeTestNonIntegerTranslationTest : public PropertyTreeTest {
     tree.Node(child)->data.local.Translate(0.5f, 0.5f);
     tree.set_needs_update(true);
     tree = TransformTreeForTest(tree);
-    ComputeTransforms(&tree);
+    draw_property_utils::ComputeTransforms(&tree);
     EXPECT_TRUE(tree.Node(parent)
                     ->data.node_and_ancestors_have_only_integer_translation);
     EXPECT_FALSE(tree.Node(child)
@@ -1028,7 +1028,7 @@ class PropertyTreeTestNonIntegerTranslationTest : public PropertyTreeTest {
     tree.Node(child)->data.target_id = child;
     tree.set_needs_update(true);
     tree = TransformTreeForTest(tree);
-    ComputeTransforms(&tree);
+    draw_property_utils::ComputeTransforms(&tree);
     EXPECT_TRUE(tree.Node(parent)
                     ->data.node_and_ancestors_have_only_integer_translation);
     EXPECT_TRUE(tree.Node(child)
@@ -1060,7 +1060,7 @@ class PropertyTreeTestSingularTransformSnapTest : public PropertyTreeTest {
     tree.set_needs_update(true);
 
     tree = TransformTreeForTest(tree);
-    ComputeTransforms(&tree);
+    draw_property_utils::ComputeTransforms(&tree);
 
     gfx::Transform from_target;
     EXPECT_FALSE(child_node->data.to_target.GetInverse(&from_target));

@@ -229,10 +229,10 @@ TEST_F(LayerTreeHostCommonTest, TransformsForSingleLayer) {
                                gfx::PointF(), gfx::Size(10, 12), true, false);
   ExecuteCalculateDrawProperties(root.get());
   EXPECT_TRANSFORMATION_MATRIX_EQ(
-      identity_matrix, DrawTransformFromPropertyTrees(layer.get(), tree));
+      identity_matrix, draw_property_utils::DrawTransform(layer.get(), tree));
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       identity_matrix,
-      ScreenSpaceTransformFromPropertyTrees(layer.get(), tree));
+      draw_property_utils::ScreenSpaceTransform(layer.get(), tree));
 
   // Case 3: The anchor point by itself (without a layer transform) should have
   // no effect on the transforms.
@@ -241,10 +241,10 @@ TEST_F(LayerTreeHostCommonTest, TransformsForSingleLayer) {
                                gfx::Size(10, 12), true, false);
   ExecuteCalculateDrawProperties(root.get());
   EXPECT_TRANSFORMATION_MATRIX_EQ(
-      identity_matrix, DrawTransformFromPropertyTrees(layer.get(), tree));
+      identity_matrix, draw_property_utils::DrawTransform(layer.get(), tree));
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       identity_matrix,
-      ScreenSpaceTransformFromPropertyTrees(layer.get(), tree));
+      draw_property_utils::ScreenSpaceTransform(layer.get(), tree));
 
   // Case 4: A change in actual position affects both the draw transform and
   // screen space transform.
@@ -255,10 +255,11 @@ TEST_F(LayerTreeHostCommonTest, TransformsForSingleLayer) {
       gfx::PointF(0.f, 1.2f), gfx::Size(10, 12), true, false);
   ExecuteCalculateDrawProperties(root.get());
   EXPECT_TRANSFORMATION_MATRIX_EQ(
-      position_transform, DrawTransformFromPropertyTrees(layer.get(), tree));
+      position_transform,
+      draw_property_utils::DrawTransform(layer.get(), tree));
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       position_transform,
-      ScreenSpaceTransformFromPropertyTrees(layer.get(), tree));
+      draw_property_utils::ScreenSpaceTransform(layer.get(), tree));
 
   // Case 5: In the correct sequence of transforms, the layer transform should
   // pre-multiply the translation_to_center. This is easily tested by using a
@@ -269,10 +270,10 @@ TEST_F(LayerTreeHostCommonTest, TransformsForSingleLayer) {
                                gfx::PointF(), gfx::Size(10, 12), true, false);
   ExecuteCalculateDrawProperties(root.get());
   EXPECT_TRANSFORMATION_MATRIX_EQ(
-      layer_transform, DrawTransformFromPropertyTrees(layer.get(), tree));
+      layer_transform, draw_property_utils::DrawTransform(layer.get(), tree));
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       layer_transform,
-      ScreenSpaceTransformFromPropertyTrees(layer.get(), tree));
+      draw_property_utils::ScreenSpaceTransform(layer.get(), tree));
 
   // Case 6: The layer transform should occur with respect to the anchor point.
   gfx::Transform translation_to_anchor;
@@ -284,10 +285,10 @@ TEST_F(LayerTreeHostCommonTest, TransformsForSingleLayer) {
                                gfx::Size(10, 12), true, false);
   ExecuteCalculateDrawProperties(root.get());
   EXPECT_TRANSFORMATION_MATRIX_EQ(
-      expected_result, DrawTransformFromPropertyTrees(layer.get(), tree));
+      expected_result, draw_property_utils::DrawTransform(layer.get(), tree));
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       expected_result,
-      ScreenSpaceTransformFromPropertyTrees(layer.get(), tree));
+      draw_property_utils::ScreenSpaceTransform(layer.get(), tree));
 
   // Case 7: Verify that position pre-multiplies the layer transform.  The
   // current implementation of CalculateDrawProperties does this implicitly, but
@@ -299,10 +300,10 @@ TEST_F(LayerTreeHostCommonTest, TransformsForSingleLayer) {
       gfx::PointF(0.f, 1.2f), gfx::Size(10, 12), true, false);
   ExecuteCalculateDrawProperties(root.get());
   EXPECT_TRANSFORMATION_MATRIX_EQ(
-      expected_result, DrawTransformFromPropertyTrees(layer.get(), tree));
+      expected_result, draw_property_utils::DrawTransform(layer.get(), tree));
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       expected_result,
-      ScreenSpaceTransformFromPropertyTrees(layer.get(), tree));
+      draw_property_utils::ScreenSpaceTransform(layer.get(), tree));
 }
 
 TEST_F(LayerTreeHostCommonTest, TransformsAboutScrollOffset) {
@@ -427,15 +428,16 @@ TEST_F(LayerTreeHostCommonTest, TransformsForSimpleHierarchy) {
   ExecuteCalculateDrawProperties(root.get());
 
   EXPECT_TRANSFORMATION_MATRIX_EQ(
-      identity_matrix, DrawTransformFromPropertyTrees(child.get(), tree));
+      identity_matrix, draw_property_utils::DrawTransform(child.get(), tree));
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       identity_matrix,
-      ScreenSpaceTransformFromPropertyTrees(child.get(), tree));
-  EXPECT_TRANSFORMATION_MATRIX_EQ(
-      identity_matrix, DrawTransformFromPropertyTrees(grand_child.get(), tree));
+      draw_property_utils::ScreenSpaceTransform(child.get(), tree));
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       identity_matrix,
-      ScreenSpaceTransformFromPropertyTrees(grand_child.get(), tree));
+      draw_property_utils::DrawTransform(grand_child.get(), tree));
+  EXPECT_TRANSFORMATION_MATRIX_EQ(
+      identity_matrix,
+      draw_property_utils::ScreenSpaceTransform(grand_child.get(), tree));
 
   // Case 2: parent's position affects child and grand_child.
   gfx::Transform parent_position_transform;
@@ -451,16 +453,16 @@ TEST_F(LayerTreeHostCommonTest, TransformsForSimpleHierarchy) {
   ExecuteCalculateDrawProperties(root.get());
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       parent_position_transform,
-      DrawTransformFromPropertyTrees(child.get(), tree));
+      draw_property_utils::DrawTransform(child.get(), tree));
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       parent_position_transform,
-      ScreenSpaceTransformFromPropertyTrees(child.get(), tree));
+      draw_property_utils::ScreenSpaceTransform(child.get(), tree));
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       parent_position_transform,
-      DrawTransformFromPropertyTrees(grand_child.get(), tree));
+      draw_property_utils::DrawTransform(grand_child.get(), tree));
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       parent_position_transform,
-      ScreenSpaceTransformFromPropertyTrees(grand_child.get(), tree));
+      draw_property_utils::ScreenSpaceTransform(grand_child.get(), tree));
 
   // Case 3: parent's local transform affects child and grandchild
   gfx::Transform parent_layer_transform;
@@ -481,16 +483,16 @@ TEST_F(LayerTreeHostCommonTest, TransformsForSimpleHierarchy) {
   ExecuteCalculateDrawProperties(root.get());
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       parent_composite_transform,
-      DrawTransformFromPropertyTrees(child.get(), tree));
+      draw_property_utils::DrawTransform(child.get(), tree));
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       parent_composite_transform,
-      ScreenSpaceTransformFromPropertyTrees(child.get(), tree));
+      draw_property_utils::ScreenSpaceTransform(child.get(), tree));
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       parent_composite_transform,
-      DrawTransformFromPropertyTrees(grand_child.get(), tree));
+      draw_property_utils::DrawTransform(grand_child.get(), tree));
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       parent_composite_transform,
-      ScreenSpaceTransformFromPropertyTrees(grand_child.get(), tree));
+      draw_property_utils::ScreenSpaceTransform(grand_child.get(), tree));
 }
 
 TEST_F(LayerTreeHostCommonTest, TransformsForSingleRenderSurface) {
@@ -1034,7 +1036,7 @@ TEST_F(LayerTreeHostCommonTest, LayerFullyContainedWithinClipInTargetSpace) {
   // that is fully contained within the target's bounds, so grand_child should
   // be considered fully visible.
   EXPECT_EQ(gfx::Rect(grand_child->bounds()),
-            grand_child->visible_rect_from_property_trees());
+            grand_child->visible_layer_rect());
 }
 
 TEST_F(LayerTreeHostCommonTest, TransformsForDegenerateIntermediateLayer) {
@@ -3076,7 +3078,7 @@ TEST_F(LayerTreeHostCommonTest, VisibleContentRectWithClippingAndScaling) {
   // The visible rect is expanded to integer coordinates in target space before
   // being projected back to layer space, where it is once again expanded to
   // integer coordinates.
-  EXPECT_EQ(gfx::Rect(49, 49), grand_child->visible_rect_from_property_trees());
+  EXPECT_EQ(gfx::Rect(49, 49), grand_child->visible_layer_rect());
 }
 
 TEST_F(LayerTreeHostCommonTest,
@@ -4572,17 +4574,17 @@ TEST_F(LayerTreeHostCommonTest, BackFaceCullingWithAnimatingTransforms) {
   EXPECT_TRUE(UpdateLayerListContains(child2->id()));
   EXPECT_TRUE(UpdateLayerListContains(child_of_animating_surface->id()));
 
-  EXPECT_FALSE(child2->visible_rect_from_property_trees().IsEmpty());
+  EXPECT_FALSE(child2->visible_layer_rect().IsEmpty());
 
   // The animating layers should have a visible content rect that represents the
   // area of the front face that is within the viewport.
-  EXPECT_EQ(animating_child->visible_rect_from_property_trees(),
+  EXPECT_EQ(animating_child->visible_layer_rect(),
             gfx::Rect(animating_child->bounds()));
-  EXPECT_EQ(animating_surface->visible_rect_from_property_trees(),
+  EXPECT_EQ(animating_surface->visible_layer_rect(),
             gfx::Rect(animating_surface->bounds()));
   // And layers in the subtree of the animating layer should have valid visible
   // content rects also.
-  EXPECT_EQ(child_of_animating_surface->visible_rect_from_property_trees(),
+  EXPECT_EQ(child_of_animating_surface->visible_layer_rect(),
             gfx::Rect(child_of_animating_surface->bounds()));
 }
 
@@ -5881,7 +5883,7 @@ TEST_F(LayerTreeHostCommonTest, VisibleContentRectInsideSurface) {
   // The visible_layer_rect for the |surface_child| should not be clipped by
   // the viewport.
   EXPECT_EQ(gfx::Rect(50, 50).ToString(),
-            surface_child->visible_rect_from_property_trees().ToString());
+            surface_child->visible_layer_rect().ToString());
 }
 
 TEST_F(LayerTreeHostCommonTest, TransformedClipParent) {
@@ -7038,22 +7040,22 @@ TEST_F(LayerTreeHostCommonTest, FixedPositionWithInterveningRenderSurface) {
   gfx::Transform expected_fixed_draw_transform;
   expected_fixed_draw_transform.Translate(10.f, 15.f);
   EXPECT_EQ(expected_fixed_draw_transform,
-            DrawTransformFromPropertyTrees(fixed.get(), tree));
+            draw_property_utils::DrawTransform(fixed.get(), tree));
 
   gfx::Transform expected_fixed_screen_space_transform;
   expected_fixed_screen_space_transform.Translate(17.f, 24.f);
   EXPECT_EQ(expected_fixed_screen_space_transform,
-            ScreenSpaceTransformFromPropertyTrees(fixed.get(), tree));
+            draw_property_utils::ScreenSpaceTransform(fixed.get(), tree));
 
   gfx::Transform expected_child_draw_transform;
   expected_child_draw_transform.Translate(11.f, 17.f);
   EXPECT_EQ(expected_child_draw_transform,
-            DrawTransformFromPropertyTrees(child.get(), tree));
+            draw_property_utils::DrawTransform(child.get(), tree));
 
   gfx::Transform expected_child_screen_space_transform;
   expected_child_screen_space_transform.Translate(18.f, 26.f);
   EXPECT_EQ(expected_child_screen_space_transform,
-            ScreenSpaceTransformFromPropertyTrees(child.get(), tree));
+            draw_property_utils::ScreenSpaceTransform(child.get(), tree));
 }
 
 TEST_F(LayerTreeHostCommonTest, ScrollCompensationWithRounding) {
@@ -8204,13 +8206,11 @@ TEST_F(LayerTreeHostCommonTest, VisibleContentRectInChildRenderSurface) {
 
   // Layers in the root render surface have their visible content rect clipped
   // by the viewport.
-  EXPECT_EQ(gfx::Rect(768 / 2, 582 / 2),
-            root->visible_rect_from_property_trees());
+  EXPECT_EQ(gfx::Rect(768 / 2, 582 / 2), root->visible_layer_rect());
 
   // Layers drawing to a child render surface should still have their visible
   // content rect clipped by the viewport.
-  EXPECT_EQ(gfx::Rect(768 / 2, 582 / 2),
-            content->visible_rect_from_property_trees());
+  EXPECT_EQ(gfx::Rect(768 / 2, 582 / 2), content->visible_layer_rect());
 }
 
 TEST_F(LayerTreeHostCommonTest, BoundsDeltaAffectVisibleContentRect) {
@@ -8367,7 +8367,7 @@ TEST_F(LayerTreeHostCommonTest, VisibleContentRectForAnimatedLayer) {
   }
   ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
 
-  EXPECT_FALSE(animated->visible_rect_from_property_trees().IsEmpty());
+  EXPECT_FALSE(animated->visible_layer_rect().IsEmpty());
 }
 
 TEST_F(LayerTreeHostCommonTest,
@@ -8425,13 +8425,12 @@ TEST_F(LayerTreeHostCommonTest,
 
   // The animated layer has a singular transform and maps to a non-empty rect in
   // clipped target space, so is treated as fully visible.
-  EXPECT_EQ(gfx::Rect(120, 120), animated->visible_rect_from_property_trees());
+  EXPECT_EQ(gfx::Rect(120, 120), animated->visible_layer_rect());
 
   // The singular transform on |animated| is flattened when inherited by
   // |surface|, and this happens to make it invertible.
-  EXPECT_EQ(gfx::Rect(2, 2), surface->visible_rect_from_property_trees());
-  EXPECT_EQ(gfx::Rect(2, 2),
-            descendant_of_animation->visible_rect_from_property_trees());
+  EXPECT_EQ(gfx::Rect(2, 2), surface->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(2, 2), descendant_of_animation->visible_layer_rect());
 
   gfx::Transform zero_matrix;
   zero_matrix.Scale3d(0.f, 0.f, 0.f);
@@ -8442,14 +8441,13 @@ TEST_F(LayerTreeHostCommonTest,
 
   // The animated layer maps to the empty rect in clipped target space, so is
   // treated as having an empty visible rect.
-  EXPECT_EQ(gfx::Rect(), animated->visible_rect_from_property_trees());
+  EXPECT_EQ(gfx::Rect(), animated->visible_layer_rect());
 
   // This time, flattening does not make |animated|'s transform invertible. This
   // means the clip cannot be projected into |surface|'s space, so we treat
   // |surface| and layers that draw into it as having empty visible rect.
-  EXPECT_EQ(gfx::Rect(), surface->visible_rect_from_property_trees());
-  EXPECT_EQ(gfx::Rect(),
-            descendant_of_animation->visible_rect_from_property_trees());
+  EXPECT_EQ(gfx::Rect(), surface->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(), descendant_of_animation->visible_layer_rect());
 }
 
 // Verify that having an animated filter (but no current filter, as these
@@ -8583,8 +8581,7 @@ TEST_F(LayerTreeHostCommonTest, PropertyTreesAccountForFixedParentOffset) {
 
   ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
 
-  EXPECT_EQ(gfx::Rect(0, 0, 50, 50),
-            grandchild->visible_rect_from_property_trees());
+  EXPECT_EQ(gfx::Rect(0, 0, 50, 50), grandchild->visible_layer_rect());
 }
 
 // Ensures that the property tree code accounts for offsets between fixed
@@ -8623,8 +8620,7 @@ TEST_F(LayerTreeHostCommonTest,
 
   ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
 
-  EXPECT_EQ(gfx::Rect(0, 0, 50, 50),
-            grandchild->visible_rect_from_property_trees());
+  EXPECT_EQ(gfx::Rect(0, 0, 50, 50), grandchild->visible_layer_rect());
 }
 
 TEST_F(LayerTreeHostCommonTest, CombineClipsUsingContentTarget) {
@@ -8714,7 +8710,7 @@ TEST_F(LayerTreeHostCommonTest, OnlyApplyFixedPositioningOnce) {
   ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
 
   gfx::Rect expected(0, 0, 100, 100);
-  EXPECT_EQ(expected, fixed->visible_rect_from_property_trees());
+  EXPECT_EQ(expected, fixed->visible_layer_rect());
 }
 
 TEST_F(LayerTreeHostCommonTest,
@@ -8770,10 +8766,10 @@ TEST_F(LayerTreeHostCommonTest,
   ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
 
   gfx::Rect expected(0, 0, 50, 50);
-  EXPECT_EQ(expected, fixed->visible_rect_from_property_trees());
+  EXPECT_EQ(expected, fixed->visible_layer_rect());
 
   expected = gfx::Rect(0, 0, 10, 10);
-  EXPECT_EQ(expected, fixed_child->visible_rect_from_property_trees());
+  EXPECT_EQ(expected, fixed_child->visible_layer_rect());
 }
 
 TEST_F(LayerTreeHostCommonTest, FixedClipsShouldBeAssociatedWithTheRightNode) {
@@ -8820,7 +8816,7 @@ TEST_F(LayerTreeHostCommonTest, FixedClipsShouldBeAssociatedWithTheRightNode) {
   ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
 
   gfx::Rect expected(0, 0, 50, 50);
-  EXPECT_EQ(expected, fixed->visible_rect_from_property_trees());
+  EXPECT_EQ(expected, fixed->visible_layer_rect());
 }
 
 TEST_F(LayerTreeHostCommonTest, ChangingAxisAlignmentTriggersRebuild) {
@@ -8865,12 +8861,12 @@ TEST_F(LayerTreeHostCommonTest, ChangeTransformOrigin) {
                                gfx::PointF(), gfx::Size(10, 10), true, false);
 
   ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
-  EXPECT_EQ(gfx::Rect(10, 10), child->visible_rect_from_property_trees());
+  EXPECT_EQ(gfx::Rect(10, 10), child->visible_layer_rect());
 
   child->SetTransformOrigin(gfx::Point3F(10.f, 10.f, 10.f));
 
   ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
-  EXPECT_EQ(gfx::Rect(5, 5, 5, 5), child->visible_rect_from_property_trees());
+  EXPECT_EQ(gfx::Rect(5, 5, 5, 5), child->visible_layer_rect());
 }
 
 TEST_F(LayerTreeHostCommonTest, UpdateScrollChildPosition) {
@@ -8899,14 +8895,12 @@ TEST_F(LayerTreeHostCommonTest, UpdateScrollChildPosition) {
                                true, false);
 
   ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
-  EXPECT_EQ(gfx::Rect(25, 25),
-            scroll_child->visible_rect_from_property_trees());
+  EXPECT_EQ(gfx::Rect(25, 25), scroll_child->visible_layer_rect());
 
   scroll_child->SetPosition(gfx::PointF(0, -10.f));
   scroll_parent->SetScrollOffset(gfx::ScrollOffset(0.f, 10.f));
   ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
-  EXPECT_EQ(gfx::Rect(0, 5, 25, 25),
-            scroll_child->visible_rect_from_property_trees());
+  EXPECT_EQ(gfx::Rect(0, 5, 25, 25), scroll_child->visible_layer_rect());
 }
 
 static void CopyOutputCallback(scoped_ptr<CopyOutputResult> result) {
@@ -8974,24 +8968,24 @@ TEST_F(LayerTreeHostCommonTest, SkippingSubtreeMain) {
 
   // Check the non-skipped case.
   ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
-  EXPECT_EQ(gfx::Rect(10, 10), grandchild->visible_rect_from_property_trees());
+  EXPECT_EQ(gfx::Rect(10, 10), grandchild->visible_layer_rect());
 
   // Now we will reset the visible rect from property trees for the grandchild,
   // and we will configure |child| in several ways that should force the subtree
   // to be skipped. The visible content rect for |grandchild| should, therefore,
   // remain empty.
-  grandchild->set_visible_rect_from_property_trees(gfx::Rect());
+  grandchild->set_visible_layer_rect(gfx::Rect());
   gfx::Transform singular;
   singular.matrix().set(0, 0, 0);
 
   child->SetTransform(singular);
   ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
-  EXPECT_EQ(gfx::Rect(0, 0), grandchild->visible_rect_from_property_trees());
+  EXPECT_EQ(gfx::Rect(0, 0), grandchild->visible_layer_rect());
   child->SetTransform(identity);
 
   child->SetHideLayerAndSubtree(true);
   ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
-  EXPECT_EQ(gfx::Rect(0, 0), grandchild->visible_rect_from_property_trees());
+  EXPECT_EQ(gfx::Rect(0, 0), grandchild->visible_layer_rect());
   child->SetHideLayerAndSubtree(false);
 
   gfx::Transform zero_z_scale;
@@ -9013,8 +9007,8 @@ TEST_F(LayerTreeHostCommonTest, SkippingSubtreeMain) {
     child->AddAnimation(std::move(animation));
   }
   ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
-  EXPECT_EQ(gfx::Rect(10, 10), grandchild->visible_rect_from_property_trees());
-  grandchild->set_visible_rect_from_property_trees(gfx::Rect());
+  EXPECT_EQ(gfx::Rect(10, 10), grandchild->visible_layer_rect());
+  grandchild->set_visible_layer_rect(gfx::Rect());
 
   if (layer_settings().use_compositor_animation_timelines) {
     RemoveAnimationFromLayerWithExistingPlayer(child->id(), timeline(),
@@ -9025,7 +9019,7 @@ TEST_F(LayerTreeHostCommonTest, SkippingSubtreeMain) {
   child->SetTransform(identity);
   child->SetOpacity(0.f);
   ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
-  EXPECT_EQ(gfx::Rect(0, 0), grandchild->visible_rect_from_property_trees());
+  EXPECT_EQ(gfx::Rect(0, 0), grandchild->visible_layer_rect());
 
   // Now, even though child has zero opacity, we will configure |grandchild| and
   // |greatgrandchild| in several ways that should force the subtree to be
@@ -9033,8 +9027,8 @@ TEST_F(LayerTreeHostCommonTest, SkippingSubtreeMain) {
   grandchild->RequestCopyOfOutput(
       CopyOutputRequest::CreateBitmapRequest(base::Bind(&CopyOutputCallback)));
   ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
-  EXPECT_EQ(gfx::Rect(10, 10), grandchild->visible_rect_from_property_trees());
-  greatgrandchild->set_visible_rect_from_property_trees(gfx::Rect());
+  EXPECT_EQ(gfx::Rect(10, 10), grandchild->visible_layer_rect());
+  greatgrandchild->set_visible_layer_rect(gfx::Rect());
 
   // Add an opacity animation with a start delay.
   animation_id = 1;
@@ -9050,7 +9044,7 @@ TEST_F(LayerTreeHostCommonTest, SkippingSubtreeMain) {
     child->AddAnimation(std::move(animation));
   }
   ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
-  EXPECT_EQ(gfx::Rect(10, 10), grandchild->visible_rect_from_property_trees());
+  EXPECT_EQ(gfx::Rect(10, 10), grandchild->visible_layer_rect());
 }
 
 TEST_F(LayerTreeHostCommonTest, SkippingSubtreeImpl) {
@@ -9091,33 +9085,29 @@ TEST_F(LayerTreeHostCommonTest, SkippingSubtreeImpl) {
 
   // Check the non-skipped case.
   ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
-  EXPECT_EQ(gfx::Rect(10, 10),
-            grandchild_ptr->visible_rect_from_property_trees());
+  EXPECT_EQ(gfx::Rect(10, 10), grandchild_ptr->visible_layer_rect());
 
   // Now we will reset the visible rect from property trees for the grandchild,
   // and we will configure |child| in several ways that should force the subtree
   // to be skipped. The visible content rect for |grandchild| should, therefore,
   // remain empty.
-  grandchild_ptr->set_visible_rect_from_property_trees(gfx::Rect());
+  grandchild_ptr->set_visible_layer_rect(gfx::Rect());
   gfx::Transform singular;
   singular.matrix().set(0, 0, 0);
 
   child_ptr->SetTransform(singular);
   ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
-  EXPECT_EQ(gfx::Rect(0, 0),
-            grandchild_ptr->visible_rect_from_property_trees());
+  EXPECT_EQ(gfx::Rect(0, 0), grandchild_ptr->visible_layer_rect());
   child_ptr->SetTransform(identity);
 
   child_ptr->SetHideLayerAndSubtree(true);
   ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
-  EXPECT_EQ(gfx::Rect(0, 0),
-            grandchild_ptr->visible_rect_from_property_trees());
+  EXPECT_EQ(gfx::Rect(0, 0), grandchild_ptr->visible_layer_rect());
   child_ptr->SetHideLayerAndSubtree(false);
 
   child_ptr->SetOpacity(0.f);
   ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
-  EXPECT_EQ(gfx::Rect(0, 0),
-            grandchild_ptr->visible_rect_from_property_trees());
+  EXPECT_EQ(gfx::Rect(0, 0), grandchild_ptr->visible_layer_rect());
 
   // Now, even though child has zero opacity, we will configure |grandchild| and
   // |greatgrandchild| in several ways that should force the subtree to be
@@ -9128,8 +9118,7 @@ TEST_F(LayerTreeHostCommonTest, SkippingSubtreeImpl) {
   grandchild_ptr->PassCopyRequests(&requests);
   root.get()->layer_tree_impl()->property_trees()->needs_rebuild = true;
   ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
-  EXPECT_EQ(gfx::Rect(10, 10),
-            grandchild_ptr->visible_rect_from_property_trees());
+  EXPECT_EQ(gfx::Rect(10, 10), grandchild_ptr->visible_layer_rect());
 }
 
 TEST_F(LayerTreeHostCommonTest, SkippingLayer) {
@@ -9148,17 +9137,17 @@ TEST_F(LayerTreeHostCommonTest, SkippingLayer) {
   host()->SetRootLayer(root);
 
   ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
-  EXPECT_EQ(gfx::Rect(10, 10), child->visible_rect_from_property_trees());
-  child->set_visible_rect_from_property_trees(gfx::Rect());
+  EXPECT_EQ(gfx::Rect(10, 10), child->visible_layer_rect());
+  child->set_visible_layer_rect(gfx::Rect());
 
   child->SetHideLayerAndSubtree(true);
   ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
-  EXPECT_EQ(gfx::Rect(0, 0), child->visible_rect_from_property_trees());
+  EXPECT_EQ(gfx::Rect(0, 0), child->visible_layer_rect());
   child->SetHideLayerAndSubtree(false);
 
   child->SetBounds(gfx::Size());
   ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
-  EXPECT_EQ(gfx::Rect(0, 0), child->visible_rect_from_property_trees());
+  EXPECT_EQ(gfx::Rect(0, 0), child->visible_layer_rect());
   child->SetBounds(gfx::Size(10, 10));
 
   gfx::Transform rotate;
@@ -9166,13 +9155,13 @@ TEST_F(LayerTreeHostCommonTest, SkippingLayer) {
   rotate.RotateAboutXAxis(180.f);
   child->SetTransform(rotate);
   ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
-  EXPECT_EQ(gfx::Rect(0, 0), child->visible_rect_from_property_trees());
+  EXPECT_EQ(gfx::Rect(0, 0), child->visible_layer_rect());
   child->SetDoubleSided(true);
   child->SetTransform(identity);
 
   child->SetOpacity(0.f);
   ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
-  EXPECT_EQ(gfx::Rect(0, 0), child->visible_rect_from_property_trees());
+  EXPECT_EQ(gfx::Rect(0, 0), child->visible_layer_rect());
 }
 
 TEST_F(LayerTreeHostCommonTest, LayerTreeRebuildTest) {
@@ -9354,7 +9343,7 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceClipsSubtree) {
   ClipTree clip_tree = root->layer_tree_impl()->property_trees()->clip_tree;
   ClipNode* clip_node = clip_tree.Node(render_surface->clip_tree_index());
   EXPECT_FALSE(clip_node->data.applies_local_clip);
-  EXPECT_EQ(gfx::Rect(22, 21), test_layer->visible_rect_from_property_trees());
+  EXPECT_EQ(gfx::Rect(22, 21), test_layer->visible_layer_rect());
 }
 
 TEST_F(LayerTreeHostCommonTest, TransformOfParentClipNodeAncestorOfTarget) {
@@ -9387,7 +9376,7 @@ TEST_F(LayerTreeHostCommonTest, TransformOfParentClipNodeAncestorOfTarget) {
                                false);
   ExecuteCalculateDrawProperties(root);
 
-  EXPECT_EQ(gfx::Rect(30, 30), test_layer->visible_rect_from_property_trees());
+  EXPECT_EQ(gfx::Rect(30, 30), test_layer->visible_layer_rect());
 }
 
 TEST_F(LayerTreeHostCommonTest,

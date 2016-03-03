@@ -953,7 +953,7 @@ bool LayerTreeHost::DoUpdateLayers(Layer* root_layer) {
                  "LayerTreeHostCommon::ComputeVisibleRectsWithPropertyTrees");
     LayerTreeHostCommon::PreCalculateMetaInformation(root_layer);
     bool can_render_to_separate_surface = true;
-    BuildPropertyTreesAndComputeVisibleRects(
+    draw_property_utils::BuildPropertyTreesAndComputeVisibleRects(
         root_layer, page_scale_layer, inner_viewport_scroll_layer_.get(),
         outer_viewport_scroll_layer_.get(), overscroll_elasticity_layer_.get(),
         elastic_overscroll_, page_scale_factor_, device_scale_factor_,

@@ -38,15 +38,17 @@ class CC_EXPORT RenderSurfaceImpl {
   virtual ~RenderSurfaceImpl();
 
   gfx::PointF ContentRectCenter() const {
-    return gfx::RectF(content_rect_).CenterPoint();
+    return gfx::RectF(content_rect()).CenterPoint();
   }
 
   // Returns the rect that encloses the RenderSurfaceImpl including any
   // reflection.
   gfx::RectF DrawableContentRect() const;
 
-  void SetDrawOpacity(float opacity) { draw_opacity_ = opacity; }
-  float draw_opacity() const { return draw_opacity_; }
+  void SetDrawOpacity(float opacity) {
+    draw_properties_.draw_opacity = opacity;
+  }
+  float draw_opacity() const { return draw_properties_.draw_opacity; }
 
   void SetNearestOcclusionImmuneAncestor(RenderSurfaceImpl* surface) {
     nearest_occlusion_immune_ancestor_ = surface;
@@ -62,37 +64,42 @@ class CC_EXPORT RenderSurfaceImpl {
   float GetReplicaDebugBorderWidth() const;
 
   void SetDrawTransform(const gfx::Transform& draw_transform) {
-    draw_transform_ = draw_transform;
+    draw_properties_.draw_transform = draw_transform;
   }
-  const gfx::Transform& draw_transform() const { return draw_transform_; }
+  const gfx::Transform& draw_transform() const {
+    return draw_properties_.draw_transform;
+  }
 
   void SetScreenSpaceTransform(const gfx::Transform& screen_space_transform) {
-    screen_space_transform_ = screen_space_transform;
+    draw_properties_.screen_space_transform = screen_space_transform;
   }
   const gfx::Transform& screen_space_transform() const {
-    return screen_space_transform_;
+    return draw_properties_.screen_space_transform;
   }
 
   void SetReplicaDrawTransform(const gfx::Transform& replica_draw_transform) {
-    replica_draw_transform_ = replica_draw_transform;
+    draw_properties_.replica_draw_transform = replica_draw_transform;
   }
   const gfx::Transform& replica_draw_transform() const {
-    return replica_draw_transform_;
+    return draw_properties_.replica_draw_transform;
   }
 
   void SetReplicaScreenSpaceTransform(
       const gfx::Transform& replica_screen_space_transform) {
-    replica_screen_space_transform_ = replica_screen_space_transform;
+    draw_properties_.replica_screen_space_transform =
+        replica_screen_space_transform;
   }
   const gfx::Transform& replica_screen_space_transform() const {
-    return replica_screen_space_transform_;
+    return draw_properties_.replica_screen_space_transform;
   }
 
-  void SetIsClipped(bool is_clipped) { is_clipped_ = is_clipped; }
-  bool is_clipped() const { return is_clipped_; }
+  void SetIsClipped(bool is_clipped) {
+    draw_properties_.is_clipped = is_clipped;
+  }
+  bool is_clipped() const { return draw_properties_.is_clipped; }
 
   void SetClipRect(const gfx::Rect& clip_rect);
-  gfx::Rect clip_rect() const { return clip_rect_; }
+  gfx::Rect clip_rect() const { return draw_properties_.clip_rect; }
 
   // When false, the RenderSurface does not contribute to another target
   // RenderSurface that is being drawn for the current frame. It could still be
@@ -106,7 +113,7 @@ class CC_EXPORT RenderSurfaceImpl {
   }
 
   void SetContentRect(const gfx::Rect& content_rect);
-  gfx::Rect content_rect() const { return content_rect_; }
+  gfx::Rect content_rect() const { return draw_properties_.content_rect; }
 
   void SetAccumulatedContentRect(const gfx::Rect& content_rect);
   gfx::Rect accumulated_content_rect() const {
@@ -152,23 +159,42 @@ class CC_EXPORT RenderSurfaceImpl {
  private:
   LayerImpl* owning_layer_;
 
-  // Uses this surface's space.
-  gfx::Rect content_rect_;
+  // Container for properties that render surfaces need to compute before they
+  // can be drawn.
+  struct DrawProperties {
+    DrawProperties();
+    ~DrawProperties();
+
+    float draw_opacity;
+
+    // Transforms from the surface's own space to the space of its target
+    // surface.
+    gfx::Transform draw_transform;
+    // Transforms from the surface's own space to the viewport.
+    gfx::Transform screen_space_transform;
+
+    // If the surface has a replica, these transform from the replica's space to
+    // the space of the target surface and the viewport.
+    gfx::Transform replica_draw_transform;
+    gfx::Transform replica_screen_space_transform;
+
+    // This is in the surface's own space.
+    gfx::Rect content_rect;
+
+    // This is in the space of the surface's target surface.
+    gfx::Rect clip_rect;
+
+    // True if the surface needs to be clipped by clip_rect.
+    bool is_clipped : 1;
+  };
+
+  DrawProperties draw_properties_;
+
   // Is used to calculate the content rect from property trees.
   gfx::Rect accumulated_content_rect_;
   bool surface_property_changed_ : 1;
 
-  bool is_clipped_ : 1;
   bool contributes_to_drawn_surface_ : 1;
-
-  float draw_opacity_;
-  gfx::Transform draw_transform_;
-  gfx::Transform screen_space_transform_;
-  gfx::Transform replica_draw_transform_;
-  gfx::Transform replica_screen_space_transform_;
-
-  // Uses the space of the surface's target surface.
-  gfx::Rect clip_rect_;
 
   LayerImplList layer_list_;
   Occlusion occlusion_in_content_space_;

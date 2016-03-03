@@ -1093,6 +1093,21 @@ bool TransformTree::HasNodesAffectedByOuterViewportBoundsDelta() const {
   return !nodes_affected_by_outer_viewport_bounds_delta_.empty();
 }
 
+gfx::Transform TransformTree::ToScreenSpaceTransformWithoutSublayerScale(
+    int id) const {
+  DCHECK_GT(id, 0);
+  if (id == 1) {
+    return gfx::Transform();
+  }
+  const TransformNode* node = Node(id);
+  gfx::Transform screen_space_transform = node->data.to_screen;
+  if (node->data.sublayer_scale.x() != 0.0 &&
+      node->data.sublayer_scale.y() != 0.0)
+    screen_space_transform.Scale(1.0 / node->data.sublayer_scale.x(),
+                                 1.0 / node->data.sublayer_scale.y());
+  return screen_space_transform;
+}
+
 bool TransformTree::operator==(const TransformTree& other) const {
   return PropertyTree::operator==(other) &&
          source_to_parent_updates_allowed_ ==

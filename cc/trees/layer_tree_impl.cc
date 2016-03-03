@@ -520,7 +520,7 @@ void LayerTreeImpl::SetPageScaleOnActiveTree(float active_page_scale) {
           ClampPageScaleFactorToLimits(active_page_scale))) {
     DidUpdatePageScale();
     if (PageScaleLayer()) {
-      UpdatePageScaleFactorInPropertyTrees(
+      draw_property_utils::UpdatePageScaleFactor(
           property_trees(), PageScaleLayer(), current_page_scale_factor(),
           device_scale_factor(), layer_tree_host_impl_->DrawTransform());
     } else {
@@ -568,7 +568,7 @@ void LayerTreeImpl::PushPageScaleFactorAndLimits(const float* page_scale_factor,
 
   if (page_scale_factor) {
     if (PageScaleLayer()) {
-      UpdatePageScaleFactorInPropertyTrees(
+      draw_property_utils::UpdatePageScaleFactor(
           property_trees(), PageScaleLayer(), current_page_scale_factor(),
           device_scale_factor(), layer_tree_host_impl_->DrawTransform());
     } else {
@@ -1530,8 +1530,8 @@ static const gfx::Transform SurfaceScreenSpaceTransform(
   DCHECK(layer->render_surface());
   return layer->IsDrawnRenderSurfaceLayerListMember()
              ? layer->render_surface()->screen_space_transform()
-             : SurfaceScreenSpaceTransformFromPropertyTrees(
-                   layer->render_surface(), transform_tree);
+             : transform_tree.ToScreenSpaceTransformWithoutSublayerScale(
+                   layer->render_surface()->TransformTreeIndex());
 }
 
 static bool PointIsClippedByAncestorClipNode(

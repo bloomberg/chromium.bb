@@ -1782,10 +1782,10 @@ gfx::Transform LayerImpl::DrawTransform() const {
   // Only drawn layers have up-to-date draw properties.
   if (!IsDrawnRenderSurfaceLayerListMember()) {
     if (layer_tree_impl()->property_trees()->non_root_surfaces_enabled) {
-      return DrawTransformFromPropertyTrees(
+      return draw_property_utils::DrawTransform(
           this, layer_tree_impl()->property_trees()->transform_tree);
     } else {
-      return ScreenSpaceTransformFromPropertyTrees(
+      return draw_property_utils::ScreenSpaceTransform(
           this, layer_tree_impl()->property_trees()->transform_tree);
     }
   }
@@ -1796,7 +1796,7 @@ gfx::Transform LayerImpl::DrawTransform() const {
 gfx::Transform LayerImpl::ScreenSpaceTransform() const {
   // Only drawn layers have up-to-date draw properties.
   if (!IsDrawnRenderSurfaceLayerListMember()) {
-    return ScreenSpaceTransformFromPropertyTrees(
+    return draw_property_utils::ScreenSpaceTransform(
         this, layer_tree_impl()->property_trees()->transform_tree);
   }
 

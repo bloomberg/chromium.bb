@@ -224,8 +224,6 @@
         'layers/picture_layer_impl.cc',
         'layers/picture_layer_impl.h',
         'layers/render_pass_sink.h',
-        'layers/render_surface_draw_properties.cc',
-        'layers/render_surface_draw_properties.h',
         'layers/render_surface_impl.cc',
         'layers/render_surface_impl.h',
         'layers/scrollbar_layer_impl_base.cc',

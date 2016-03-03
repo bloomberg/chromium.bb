@@ -133,8 +133,7 @@ TEST_F(LayerTreeImplTest, UpdateViewportAndHitTest) {
   EXPECT_EQ(
       gfx::RectF(gfx::SizeF(bounds)),
       host_impl->active_tree()->property_trees()->clip_tree.ViewportClip());
-  EXPECT_EQ(gfx::Rect(bounds),
-            host_impl->RootLayer()->visible_rect_from_property_trees());
+  EXPECT_EQ(gfx::Rect(bounds), host_impl->RootLayer()->visible_layer_rect());
 
   gfx::Size new_bounds(50, 50);
   host_impl->SetViewportSize(new_bounds);
@@ -144,7 +143,7 @@ TEST_F(LayerTreeImplTest, UpdateViewportAndHitTest) {
       gfx::RectF(gfx::SizeF(new_bounds)),
       host_impl->active_tree()->property_trees()->clip_tree.ViewportClip());
   EXPECT_EQ(gfx::Rect(new_bounds),
-            host_impl->RootLayer()->visible_rect_from_property_trees());
+            host_impl->RootLayer()->visible_layer_rect());
 }
 
 TEST_F(LayerTreeImplTest, HitTestingForSingleLayerAndHud) {
@@ -2007,7 +2006,7 @@ TEST_F(LayerTreeImplTest, HitTestingTouchHandlerRegionsForLayerThatIsNotDrawn) {
   EXPECT_FALSE(test_layer->IsDrawnRenderSurfaceLayerListMember());
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       expected_screen_space_transform,
-      ScreenSpaceTransformFromPropertyTrees(
+      draw_property_utils::ScreenSpaceTransform(
           test_layer,
           host_impl().active_tree()->property_trees()->transform_tree));
 
@@ -2029,7 +2028,7 @@ TEST_F(LayerTreeImplTest, HitTestingTouchHandlerRegionsForLayerThatIsNotDrawn) {
   EXPECT_FALSE(result_layer->IsDrawnRenderSurfaceLayerListMember());
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       expected_screen_space_transform,
-      ScreenSpaceTransformFromPropertyTrees(
+      draw_property_utils::ScreenSpaceTransform(
           test_layer,
           host_impl().active_tree()->property_trees()->transform_tree));
 }
