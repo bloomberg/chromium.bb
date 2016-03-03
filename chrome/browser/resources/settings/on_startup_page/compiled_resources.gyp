@@ -21,8 +21,9 @@
       'target_name': 'startup_urls_page',
       'variables': {
         'depends': [
-          '../../../../../ui/webui/resources/js/compiled_resources.gyp:load_time_data',
+          '../../../../../ui/webui/resources/js/compiled_resources.gyp:assert',
           '../../../../../ui/webui/resources/js/compiled_resources.gyp:cr',
+          '../../../../../ui/webui/resources/js/compiled_resources.gyp:load_time_data',
         ],
         'externs': [
           '../../../../../third_party/closure_compiler/externs/settings_private.js'
