@@ -228,7 +228,6 @@ class SimpleBuilder(generic_builders.Builder):
       self._RunStage(build_stages.RegenPortageCacheStage)
     self._RunStage(test_stages.BinhostTestStage)
     self._RunStage(test_stages.BranchUtilTestStage)
-    self._RunStage(artifact_stages.MasterUploadPrebuiltsStage)
 
   def RunEarlySyncAndSetupStages(self):
     """Runs through the early sync and board setup stages."""

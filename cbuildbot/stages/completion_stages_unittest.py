@@ -16,6 +16,7 @@ from chromite.cbuildbot import config_lib
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import failures_lib
 from chromite.cbuildbot import manifest_version
+from chromite.cbuildbot import prebuilts
 from chromite.cbuildbot import results_lib
 from chromite.cbuildbot.stages import completion_stages
 from chromite.cbuildbot.stages import generic_stages_unittest
@@ -725,6 +726,7 @@ class PublishUprevChangesStageTest(
                      '_GetPortageEnvVar')
     self.PatchObject(completion_stages.PublishUprevChangesStage,
                      '_ExtractOverlays', return_value=[['foo'], ['bar']])
+    self.PatchObject(prebuilts.BinhostConfWriter, 'Perform')
     self.push_mock = self.PatchObject(commands, 'UprevPush')
 
   def ConstructStage(self):

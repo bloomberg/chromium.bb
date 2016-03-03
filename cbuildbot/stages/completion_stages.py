@@ -13,6 +13,7 @@ from chromite.cbuildbot import failures_lib
 from chromite.cbuildbot import results_lib
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import manifest_version
+from chromite.cbuildbot import prebuilts
 from chromite.cbuildbot import tree_status
 from chromite.cbuildbot.stages import generic_stages
 from chromite.cbuildbot.stages import sync_stages
@@ -875,5 +876,9 @@ class PublishUprevChangesStage(generic_stages.BuilderStage):
       if self._run.options.uprev and self._run.config.uprev:
         commands.UprevPackages(self._build_root, self._boards, overlays)
 
-    # Push the uprev commit.
+    if self.success and self._run.config.prebuilts:
+      confwriter = prebuilts.BinhostConfWriter(self._run)
+      confwriter.Perform()
+
+    # Push the uprev and binhost commits.
     commands.UprevPush(self._build_root, push_overlays, self._run.options.debug)

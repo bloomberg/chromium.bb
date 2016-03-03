@@ -215,3 +215,110 @@ def _UploadPrebuilts(buildroot, board, extra_args):
     cmd.extend(['--board', board])
   cmd.extend(extra_args)
   commands.RunBuildScript(buildroot, cmd, chromite_cmd=True)
+
+
+class BinhostConfWriter(object):
+  """Writes *BINHOST.conf commits on master, on behalf of slaves."""
+  # TODO(mtennant): This class represents logic spun out from
+  # UploadPrebuiltsStage that is specific to a master builder. This is
+  # currently used by the Commit Queue and the Master PFQ builder, but
+  # could be used by other master builders that upload prebuilts,
+  # e.g., x86-alex-pre-flight-branch. When completed the
+  # UploadPrebuiltsStage code can be thinned significantly.
+
+  def __init__(self, builder_run):
+    """BinhostConfWriter constructor.
+
+    Args:
+      builder_run: BuilderRun instance of the currently running build.
+    """
+    self._run = builder_run
+    self._prebuilt_type = self._run.config.build_type
+    self._chrome_rev = (self._run.options.chrome_rev or
+                        self._run.config.chrome_rev)
+    self._build_root = os.path.abspath(self._run.buildroot)
+
+  def _GenerateCommonArgs(self):
+    """Generate common prebuilt arguments."""
+    generated_args = []
+    if self._run.options.debug:
+      generated_args.extend(['--debug', '--dry-run'])
+
+    profile = self._run.options.profile or self._run.config['profile']
+    if profile:
+      generated_args.extend(['--profile', profile])
+
+    # Generate the version if we are a manifest_version build.
+    if self._run.config.manifest_version:
+      version = self._run.GetVersion()
+      generated_args.extend(['--set-version', version])
+
+    return generated_args
+
+  @staticmethod
+  def _AddOptionsForSlave(slave_config):
+    """Private helper method to add upload_prebuilts args for a slave builder.
+
+    Args:
+      slave_config: The build config of a slave builder.
+
+    Returns:
+      An array of options to add to upload_prebuilts array that allow a master
+      to submit prebuilt conf modifications on behalf of a slave.
+    """
+    args = []
+    if slave_config['prebuilts']:
+      for slave_board in slave_config['boards']:
+        args.extend(['--slave-board', slave_board])
+        slave_profile = slave_config['profile']
+        if slave_profile:
+          args.extend(['--slave-profile', slave_profile])
+
+    return args
+
+  def Perform(self):
+    """Write and commit *BINHOST.conf files."""
+    # Common args we generate for all types of builds.
+    generated_args = self._GenerateCommonArgs()
+    # Args we specifically add for public/private build types.
+    public_args, private_args = [], []
+    # Gather public/private (slave) builders.
+    public_builders, private_builders = [], []
+
+    # Distributed builders that use manifest-versions to sync with one another
+    # share prebuilt logic by passing around versions.
+    assert config_lib.IsPFQType(self._prebuilt_type)
+
+    # Public pfqs should upload host preflight prebuilts.
+    public_args.append('--sync-host')
+
+    # Update all the binhost conf files.
+    generated_args.append('--sync-binhost-conf')
+
+    slave_configs = self._run.site_config.GetSlavesForMaster(
+        self._run.config, self._run.options)
+    for slave_config in slave_configs:
+      if slave_config['prebuilts'] == constants.PUBLIC:
+        public_builders.append(slave_config['name'])
+        public_args.extend(self._AddOptionsForSlave(slave_config))
+      elif slave_config['prebuilts'] == constants.PRIVATE:
+        private_builders.append(slave_config['name'])
+        private_args.extend(self._AddOptionsForSlave(slave_config))
+
+    # Upload the public prebuilts, if any.
+    if public_builders:
+      UploadPrebuilts(
+          category=self._prebuilt_type, chrome_rev=self._chrome_rev,
+          private_bucket=False, buildroot=self._build_root, board=None,
+          extra_args=generated_args + public_args)
+
+    # Upload the private prebuilts, if any.
+    if private_builders:
+      UploadPrebuilts(
+          category=self._prebuilt_type, chrome_rev=self._chrome_rev,
+          private_bucket=True, buildroot=self._build_root, board=None,
+          extra_args=generated_args + private_args)
+
+    # If we're the Chrome PFQ master, update our binhost JSON file.
+    if self._run.config.build_type == constants.CHROME_PFQ_TYPE:
+      commands.UpdateBinhostJson(self._build_root)

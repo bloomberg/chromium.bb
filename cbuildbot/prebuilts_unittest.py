@@ -9,11 +9,14 @@ from __future__ import print_function
 import mock
 import os
 
+from chromite.cbuildbot import cbuildbot_unittest
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import prebuilts
+from chromite.cbuildbot.stages import generic_stages_unittest
 from chromite.lib import cros_build_lib_unittest
 from chromite.lib import osutils
 
+DEFAULT_CHROME_BRANCH = '27'
 
 # pylint: disable=W0212
 class PrebuiltTest(cros_build_lib_unittest.RunCommandTempDirTestCase):
@@ -127,3 +130,95 @@ ca-t3/pk-g4-4.0.1-r333
     """Test that we raise an exception when the installer file is missing."""
     self.assertRaises(prebuilts.PackageFileMissing,
                       self.testDevInstallerPrebuilts, packages=())
+
+
+# pylint: disable=too-many-ancestors
+class BinhostConfWriterTest(
+    generic_stages_unittest.RunCommandAbstractStageTestCase,
+    cbuildbot_unittest.SimpleBuilderTestCase):
+  """Tests for the BinhostConfWriter class."""
+
+  cmd = 'upload_prebuilts'
+  RELEASE_TAG = '1234.5.6'
+  VERSION = 'R%s-%s' % (DEFAULT_CHROME_BRANCH, RELEASE_TAG)
+
+  def _Prepare(self, bot_id=None, **kwargs):
+    super(BinhostConfWriterTest, self)._Prepare(bot_id, **kwargs)
+    self.cmd = os.path.join(self.build_root, constants.CHROMITE_BIN_SUBDIR,
+                            'upload_prebuilts')
+    self._run.options.prebuilts = True
+
+  def _Run(self, build_config):
+    """Prepare and run a BinhostConfWriter.
+
+    Args:
+      build_config: Name of build config to run for.
+    """
+    self._Prepare(build_config)
+    confwriter = prebuilts.BinhostConfWriter(self._run)
+    confwriter.Perform()
+
+  def ConstructStage(self):
+    pass
+
+  def _VerifyResults(self, public_slave_boards=(), private_slave_boards=()):
+    """Verify that the expected prebuilt commands were run.
+
+    Do various assertions on the two RunCommands that were run by stage.
+    There should be one private (--private) and one public (default) run.
+
+    Args:
+      public_slave_boards: List of public slave boards.
+      private_slave_boards: List of private slave boards.
+    """
+    # TODO(mtennant): Add functionality in partial_mock to support more flexible
+    # asserting.  For example here, asserting that '--sync-host' appears in
+    # the command that did not include '--public'.
+
+    # Some args are expected for any public run.
+    if public_slave_boards:
+      # It would be nice to confirm that --private is not in command, but note
+      # that --sync-host should not appear in the --private command.
+      cmd = [self.cmd, '--sync-binhost-conf', '--sync-host']
+      self.assertCommandContains(cmd, expected=True)
+
+    # Some args are expected for any private run.
+    if private_slave_boards:
+      cmd = [self.cmd, '--sync-binhost-conf', '--private']
+      self.assertCommandContains(cmd, expected=True)
+
+    # Assert public slave boards are mentioned in public run.
+    for board in public_slave_boards:
+      # This check does not actually confirm that this board was in the public
+      # run rather than the private run, unfortunately.
+      cmd = [self.cmd, '--slave-board', board]
+      self.assertCommandContains(cmd, expected=True)
+
+    # Assert private slave boards are mentioned in private run.
+    for board in private_slave_boards:
+      cmd = [self.cmd, '--slave-board', board, '--private']
+      self.assertCommandContains(cmd, expected=True)
+
+    # We expect --set-version so long as build config has manifest_version=True.
+    self.assertCommandContains([self.cmd, '--set-version', self.VERSION],
+                               expected=self._run.config.manifest_version)
+
+  def testMasterPaladinUpload(self):
+    self._Run('master-paladin')
+
+    # Provide a sample of private/public slave boards that are expected.
+    public_slave_boards = ('amd64-generic', 'x86-generic')
+    private_slave_boards = ('x86-mario', 'x86-alex', 'lumpy', 'daisy_spring')
+
+    self._VerifyResults(public_slave_boards=public_slave_boards,
+                        private_slave_boards=private_slave_boards)
+
+  def testMasterChromiumPFQUpload(self):
+    self._Run('master-chromium-pfq')
+
+    # Provide a sample of private/public slave boards that are expected.
+    public_slave_boards = ('amd64-generic', 'x86-generic', 'daisy')
+    private_slave_boards = ('x86-alex', 'lumpy', 'daisy_skate', 'falco')
+
+    self._VerifyResults(public_slave_boards=public_slave_boards,
+                        private_slave_boards=private_slave_boards)

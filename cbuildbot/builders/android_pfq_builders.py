@@ -9,7 +9,6 @@ from __future__ import print_function
 from chromite.cbuildbot import results_lib
 from chromite.cbuildbot.builders import simple_builders
 from chromite.cbuildbot.stages import android_stages
-from chromite.cbuildbot.stages import artifact_stages
 from chromite.cbuildbot.stages import build_stages
 from chromite.cbuildbot.stages import chrome_stages
 from chromite.cbuildbot.stages import completion_stages
@@ -119,7 +118,6 @@ class AndroidPFQMasterBuilder(simple_builders.DistributedBuilder):
       self._RunStage(android_stages.SyncAndroidStage)
       self._RunStage(test_stages.BinhostTestStage)
       self._RunStage(test_stages.BranchUtilTestStage)
-      self._RunStage(artifact_stages.MasterUploadPrebuiltsStage)
       was_build_successful = results_lib.Results.BuildSucceededSoFar()
       build_finished = True
 
