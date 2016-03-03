@@ -29,6 +29,7 @@ class Channel : public base::RefCountedThreadSafe<Channel> {
 
   // A message to be written to a channel.
   struct Message {
+#pragma pack(push, 1)
     struct Header {
       enum class MessageType : uint16_t {
         // A normal message.
@@ -44,17 +45,33 @@ class Channel : public base::RefCountedThreadSafe<Channel> {
       // Message size in bytes, including the header.
       uint32_t num_bytes;
 
+#if defined(OS_CHROMEOS)
+      // Old message wire format for ChromeOS.
       // Number of attached handles.
       uint16_t num_handles;
 
       MessageType message_type;
+#else
+      // Total size of header, including extra header data (i.e. HANDLEs on
+      // windows).
+      uint16_t num_header_bytes;
+
+      // Number of attached handles. May be less than the reserved handle
+      // storage size in this message on platforms that serialise handles as
+      // data (i.e. HANDLEs on Windows, Mach ports on OSX).
+      uint16_t num_handles;
+
+      MessageType message_type;
+
+      char padding[6];
+#endif  // defined(OS_CHROMEOS)
     };
+#pragma pack(pop)
 
     // Allocates and owns a buffer for message data with enough capacity for
-    // |payload_size| bytes plus a header. Takes ownership of |handles|, which
-    // may be null.
+    // |payload_size| bytes plus a header, plus |max_handles| platform handles.
     Message(size_t payload_size,
-            size_t num_handles,
+            size_t max_handles,
             Header::MessageType message_type = Header::MessageType::NORMAL);
 
     ~Message();
@@ -65,15 +82,30 @@ class Channel : public base::RefCountedThreadSafe<Channel> {
     const void* data() const { return data_; }
     size_t data_num_bytes() const { return size_; }
 
+#if defined(OS_CHROMEOS)
     void* mutable_payload() { return static_cast<void*>(header_ + 1); }
     const void* payload() const {
       return static_cast<const void*>(header_ + 1);
     }
     size_t payload_size() const;
+#else
+    const void* extra_header() const { return data_ + sizeof(Header); }
+    void* mutable_extra_header() { return data_ + sizeof(Header); }
+    size_t extra_header_size() const {
+      return header_->num_header_bytes - sizeof(Header);
+    }
+
+    void* mutable_payload() { return data_ + header_->num_header_bytes; }
+    const void* payload() const { return data_ + header_->num_header_bytes; }
+    size_t payload_size() const;
+#endif  // defined(OS_CHROMEOS)
 
     size_t num_handles() const { return header_->num_handles; }
     bool has_handles() const { return header_->num_handles > 0; }
     PlatformHandle* handles();
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+    bool has_mach_ports() const;
+#endif
 
     // Note: SetHandles() and TakeHandles() invalidate any previous value of
     // handles().
@@ -94,6 +126,7 @@ class Channel : public base::RefCountedThreadSafe<Channel> {
 
    private:
     size_t size_;
+    size_t max_handles_;
     char* data_;
     Header* header_;
 
@@ -175,17 +208,16 @@ class Channel : public base::RefCountedThreadSafe<Channel> {
   // OK to call this synchronously from any public interface methods.
   void OnError();
 
-  // Retrieves the set of platform handles read for a given message. |payload|
-  // and |payload_size| correspond to the full message body. Depending on
-  // the Channel implementation, this body may encode platform handles, or
-  // handles may be stored and managed elsewhere by the implementation.
-  // If |num_handles| handles cannot be returned, this must return null.
-  // The implementation may also adjust the values of |*payload| and/or
-  // |*payload_size| to hide handle data from the user.
+  // Retrieves the set of platform handles read for a given message.
+  // |extra_header| and |extra_header_size| correspond to the extra header data.
+  // Depending on the Channel implementation, this body may encode platform
+  // handles, or handles may be stored and managed elsewhere by the
+  // implementation.  If |num_handles| handles cannot be returned, this must
+  // return null.
   virtual ScopedPlatformHandleVectorPtr GetReadPlatformHandles(
       size_t num_handles,
-      void** payload,
-      size_t* payload_size) = 0;
+      const void* extra_header,
+      size_t extra_header_size) = 0;
 
   virtual void OnControlMessage(Message::Header::MessageType message_type,
                                 const void* payload,
