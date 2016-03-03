@@ -1821,13 +1821,13 @@ CommandLineAPIImpl.prototype = {
 
     /**
      * @param {!Node} node
-     * @return {!Array.<!{type: string, listener: function(), useCapture: boolean, remove: function()}>|undefined}
+     * @return {!Object|undefined}
      */
     getEventListeners: function(node)
     {
         var result = nullifyObjectProto(InjectedScriptHost.getEventListeners(node));
         if (!result)
-            return result;
+            return;
         /** @this {{type: string, listener: function(), useCapture: boolean}} */
         var removeFunc = function()
         {

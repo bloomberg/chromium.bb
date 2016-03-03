@@ -73,7 +73,7 @@ InjectedScriptHostClass.prototype.getInternalProperties = function(obj) {}
 
 /**
  * @param {!EventTarget} target
- * @return {!Array.<*>}
+ * @return {!Object|undefined}
  */
 InjectedScriptHostClass.prototype.getEventListeners = function(target) {}
 
