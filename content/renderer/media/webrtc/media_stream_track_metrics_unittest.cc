@@ -21,7 +21,7 @@ using webrtc::MediaStreamInterface;
 using webrtc::ObserverInterface;
 using webrtc::PeerConnectionInterface;
 using webrtc::VideoRendererInterface;
-using webrtc::VideoSourceInterface;
+using webrtc::VideoTrackSourceInterface;
 using webrtc::VideoTrackInterface;
 
 namespace content {
@@ -66,7 +66,7 @@ class MockVideoTrackInterface : public VideoTrackInterface {
   MOCK_METHOD1(set_state, bool(TrackState));
   MOCK_METHOD1(AddRenderer, void(VideoRendererInterface*));
   MOCK_METHOD1(RemoveRenderer, void(VideoRendererInterface*));
-  MOCK_CONST_METHOD0(GetSource, VideoSourceInterface*());
+  MOCK_CONST_METHOD0(GetSource, VideoTrackSourceInterface*());
 
  private:
   std::string id_;

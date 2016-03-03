@@ -24,8 +24,8 @@ namespace content {
 // The class is created and destroyed on the main render thread.
 // PeerConnection access cricket::VideoCapturer from a libJingle worker thread.
 // An instance of WebRtcVideoCapturerAdapter is owned by an instance of
-// webrtc::VideoSourceInterface in libJingle. The implementation of
-// webrtc::VideoSourceInterface guarantees that this object is not deleted
+// webrtc::VideoTrackSourceInterface in libJingle. The implementation of
+// webrtc::VideoTrackSourceInterface guarantees that this object is not deleted
 // while it is still used in libJingle.
 class CONTENT_EXPORT WebRtcVideoCapturerAdapter
     : NON_EXPORTED_BASE(public cricket::VideoCapturer) {

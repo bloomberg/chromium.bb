@@ -305,7 +305,7 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
     scoped_refptr<webrtc::MediaStreamInterface> stream(
         mock_dependency_factory_->CreateLocalMediaStream(stream_label));
     if (!video_track_label.empty()) {
-      webrtc::VideoSourceInterface* source = NULL;
+      webrtc::VideoTrackSourceInterface* source = NULL;
       scoped_refptr<webrtc::VideoTrackInterface> video_track(
           mock_dependency_factory_->CreateLocalVideoTrack(
               video_track_label, source));

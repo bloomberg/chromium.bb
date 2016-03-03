@@ -28,7 +28,7 @@ using webrtc::MediaStreamInterface;
 using webrtc::ObserverInterface;
 using webrtc::SessionDescriptionInterface;
 using webrtc::VideoRendererInterface;
-using webrtc::VideoSourceInterface;
+using webrtc::VideoTrackSourceInterface;
 using webrtc::VideoTrackInterface;
 using webrtc::VideoTrackVector;
 
@@ -196,13 +196,12 @@ bool MockAudioSource::remote() const {
 
 MockWebRtcVideoTrack::MockWebRtcVideoTrack(
     const std::string& id,
-    webrtc::VideoSourceInterface* source)
+    webrtc::VideoTrackSourceInterface* source)
     : enabled_(false),
       id_(id),
       state_(MediaStreamTrackInterface::kLive),
       source_(source),
-      renderer_(NULL) {
-}
+      renderer_(NULL) {}
 
 MockWebRtcVideoTrack::~MockWebRtcVideoTrack() {}
 
@@ -251,7 +250,7 @@ void MockWebRtcVideoTrack::UnregisterObserver(ObserverInterface* observer) {
   observers_.erase(observer);
 }
 
-VideoSourceInterface* MockWebRtcVideoTrack::GetSource() const {
+VideoTrackSourceInterface* MockWebRtcVideoTrack::GetSource() const {
   return source_.get();
 }
 
@@ -361,7 +360,7 @@ MockPeerConnectionDependencyFactory::CreateVideoCapturer(
   return new MockRtcVideoCapturer(is_screen_capture);
 }
 
-scoped_refptr<webrtc::VideoSourceInterface>
+scoped_refptr<webrtc::VideoTrackSourceInterface>
 MockPeerConnectionDependencyFactory::CreateVideoSource(
     cricket::VideoCapturer* capturer,
     const blink::WebMediaConstraints& constraints) {
@@ -386,7 +385,7 @@ MockPeerConnectionDependencyFactory::CreateLocalMediaStream(
 scoped_refptr<webrtc::VideoTrackInterface>
 MockPeerConnectionDependencyFactory::CreateLocalVideoTrack(
     const std::string& id,
-    webrtc::VideoSourceInterface* source) {
+    webrtc::VideoTrackSourceInterface* source) {
   scoped_refptr<webrtc::VideoTrackInterface> track(
       new rtc::RefCountedObject<MockWebRtcVideoTrack>(
           id, source));

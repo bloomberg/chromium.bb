@@ -71,7 +71,7 @@ class MockAudioSource : public webrtc::AudioSourceInterface {
 class MockWebRtcVideoTrack : public webrtc::VideoTrackInterface {
  public:
   MockWebRtcVideoTrack(const std::string& id,
-                      webrtc::VideoSourceInterface* source);
+                       webrtc::VideoTrackSourceInterface* source);
   void AddRenderer(webrtc::VideoRendererInterface* renderer) override;
   void RemoveRenderer(webrtc::VideoRendererInterface* renderer) override;
   std::string kind() const override;
@@ -82,7 +82,7 @@ class MockWebRtcVideoTrack : public webrtc::VideoTrackInterface {
   bool set_state(TrackState new_state) override;
   void RegisterObserver(webrtc::ObserverInterface* observer) override;
   void UnregisterObserver(webrtc::ObserverInterface* observer) override;
-  webrtc::VideoSourceInterface* GetSource() const override;
+  webrtc::VideoTrackSourceInterface* GetSource() const override;
 
  protected:
   ~MockWebRtcVideoTrack() override;
@@ -91,7 +91,7 @@ class MockWebRtcVideoTrack : public webrtc::VideoTrackInterface {
   bool enabled_;
   std::string id_;
   TrackState state_;
-  scoped_refptr<webrtc::VideoSourceInterface> source_;
+  scoped_refptr<webrtc::VideoTrackSourceInterface> source_;
   ObserverSet observers_;
   webrtc::VideoRendererInterface* renderer_;
 };
@@ -144,7 +144,7 @@ class MockPeerConnectionDependencyFactory
       const webrtc::MediaConstraintsInterface* constraints) override;
   WebRtcVideoCapturerAdapter* CreateVideoCapturer(
       bool is_screen_capture) override;
-  scoped_refptr<webrtc::VideoSourceInterface> CreateVideoSource(
+  scoped_refptr<webrtc::VideoTrackSourceInterface> CreateVideoSource(
       cricket::VideoCapturer* capturer,
       const blink::WebMediaConstraints& constraints) override;
   scoped_refptr<WebAudioCapturerSource> CreateWebAudioSource(
@@ -153,7 +153,7 @@ class MockPeerConnectionDependencyFactory
       const std::string& label) override;
   scoped_refptr<webrtc::VideoTrackInterface> CreateLocalVideoTrack(
       const std::string& id,
-      webrtc::VideoSourceInterface* source) override;
+      webrtc::VideoTrackSourceInterface* source) override;
   scoped_refptr<webrtc::VideoTrackInterface> CreateLocalVideoTrack(
       const std::string& id,
       cricket::VideoCapturer* capturer) override;

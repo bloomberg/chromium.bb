@@ -36,7 +36,7 @@ class MediaStreamVideoWebRtcSink::WebRtcVideoSourceAdapter
   WebRtcVideoSourceAdapter(
       const scoped_refptr<base::SingleThreadTaskRunner>&
           libjingle_worker_thread,
-      const scoped_refptr<webrtc::VideoSourceInterface>& source,
+      const scoped_refptr<webrtc::VideoTrackSourceInterface>& source,
       WebRtcVideoCapturerAdapter* capture_adapter);
 
   // MediaStreamVideoWebRtcSink can be destroyed on the main render thread or
@@ -67,7 +67,7 @@ class MediaStreamVideoWebRtcSink::WebRtcVideoSourceAdapter
   // IO-thread.
   scoped_refptr<base::SingleThreadTaskRunner> libjingle_worker_thread_;
 
-  scoped_refptr<webrtc::VideoSourceInterface> video_source_;
+  scoped_refptr<webrtc::VideoTrackSourceInterface> video_source_;
 
   // Used to protect |capture_adapter_|. It is taken by libjingle's worker
   // thread for each video frame that is delivered but only taken on the
@@ -80,7 +80,7 @@ class MediaStreamVideoWebRtcSink::WebRtcVideoSourceAdapter
 
 MediaStreamVideoWebRtcSink::WebRtcVideoSourceAdapter::WebRtcVideoSourceAdapter(
     const scoped_refptr<base::SingleThreadTaskRunner>& libjingle_worker_thread,
-    const scoped_refptr<webrtc::VideoSourceInterface>& source,
+    const scoped_refptr<webrtc::VideoTrackSourceInterface>& source,
     WebRtcVideoCapturerAdapter* capture_adapter)
     : render_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       libjingle_worker_thread_(libjingle_worker_thread),
@@ -144,7 +144,7 @@ MediaStreamVideoWebRtcSink::MediaStreamVideoWebRtcSink(
       factory->CreateVideoCapturer(is_screencast);
 
   // |video_source| owns |capture_adapter|
-  scoped_refptr<webrtc::VideoSourceInterface> video_source(
+  scoped_refptr<webrtc::VideoTrackSourceInterface> video_source(
       factory->CreateVideoSource(capture_adapter,
                                  track.source().constraints()));
 

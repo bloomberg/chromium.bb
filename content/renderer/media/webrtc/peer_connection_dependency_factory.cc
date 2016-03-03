@@ -230,12 +230,12 @@ PeerConnectionDependencyFactory::CreateVideoCapturer(
   return new WebRtcVideoCapturerAdapter(is_screeencast);
 }
 
-scoped_refptr<webrtc::VideoSourceInterface>
+scoped_refptr<webrtc::VideoTrackSourceInterface>
 PeerConnectionDependencyFactory::CreateVideoSource(
     cricket::VideoCapturer* capturer,
     const blink::WebMediaConstraints& constraints) {
   RTCMediaConstraints webrtc_constraints(constraints);
-  scoped_refptr<webrtc::VideoSourceInterface> source =
+  scoped_refptr<webrtc::VideoTrackSourceInterface> source =
       GetPcFactory()->CreateVideoSource(capturer, &webrtc_constraints).get();
   return source;
 }
@@ -623,7 +623,7 @@ PeerConnectionDependencyFactory::CreateWebAudioSource(
 scoped_refptr<webrtc::VideoTrackInterface>
 PeerConnectionDependencyFactory::CreateLocalVideoTrack(
     const std::string& id,
-    webrtc::VideoSourceInterface* source) {
+    webrtc::VideoTrackSourceInterface* source) {
   return GetPcFactory()->CreateVideoTrack(id, source).get();
 }
 
@@ -636,7 +636,7 @@ PeerConnectionDependencyFactory::CreateLocalVideoTrack(
   }
 
   // Create video source from the |capturer|.
-  scoped_refptr<webrtc::VideoSourceInterface> source =
+  scoped_refptr<webrtc::VideoTrackSourceInterface> source =
       GetPcFactory()->CreateVideoSource(capturer, NULL).get();
 
   // Create native track from the source.

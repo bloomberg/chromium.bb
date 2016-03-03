@@ -85,7 +85,7 @@ class CONTENT_EXPORT PeerConnectionDependencyFactory
       MediaStreamAudioSource* source_data);
 
   // Creates an implementation of a cricket::VideoCapturer object that can be
-  // used when creating a libjingle webrtc::VideoSourceInterface object.
+  // used when creating a libjingle webrtc::VideoTrackSourceInterface object.
   virtual WebRtcVideoCapturerAdapter* CreateVideoCapturer(
       bool is_screen_capture);
 
@@ -98,15 +98,15 @@ class CONTENT_EXPORT PeerConnectionDependencyFactory
   void CreateRemoteAudioTrack(const blink::WebMediaStreamTrack& track);
 
   // Asks the PeerConnection factory to create a Local VideoTrack object.
-  virtual scoped_refptr<webrtc::VideoTrackInterface>
-      CreateLocalVideoTrack(const std::string& id,
-                            webrtc::VideoSourceInterface* source);
+  virtual scoped_refptr<webrtc::VideoTrackInterface> CreateLocalVideoTrack(
+      const std::string& id,
+      webrtc::VideoTrackSourceInterface* source);
 
   // Asks the PeerConnection factory to create a Video Source.
   // The video source takes ownership of |capturer|.
-  virtual scoped_refptr<webrtc::VideoSourceInterface>
-      CreateVideoSource(cricket::VideoCapturer* capturer,
-                        const blink::WebMediaConstraints& constraints);
+  virtual scoped_refptr<webrtc::VideoTrackSourceInterface> CreateVideoSource(
+      cricket::VideoCapturer* capturer,
+      const blink::WebMediaConstraints& constraints);
 
   // Asks the libjingle PeerConnection factory to create a libjingle
   // PeerConnection object.
