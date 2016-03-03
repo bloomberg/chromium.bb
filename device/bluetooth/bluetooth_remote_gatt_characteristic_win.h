@@ -75,6 +75,12 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicWin
                                   uint16_t num,
                                   BluetoothRemoteGattDescriptorWin* descriptor);
 
+  void OnReadRemoteCharacteristicValueCallback(
+      scoped_ptr<BTH_LE_GATT_CHARACTERISTIC_VALUE> value,
+      HRESULT hr);
+  void OnWriteRemoteCharacteristicValueCallback(HRESULT hr);
+  BluetoothGattService::GattErrorCode HRESULTToGattErrorCode(HRESULT hr);
+
   BluetoothRemoteGattServiceWin* parent_service_;
   scoped_refptr<BluetoothTaskManagerWin> task_manager_;
 
@@ -95,6 +101,14 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicWin
   // Flag indicates if characteristic added notification of this characteristic
   // has been sent out to avoid duplicate notification.
   bool characteristic_added_notified_;
+
+  // ReadRemoteCharacteristic request callbacks.
+  std::pair<ValueCallback, ErrorCallback> read_characteristic_value_callbacks_;
+
+  // WriteRemoteCharacteristic request callbacks.
+  std::pair<base::Closure, ErrorCallback> write_characteristic_value_callbacks_;
+
+  bool characteristic_value_read_or_write_in_progress_;
 
   base::WeakPtrFactory<BluetoothRemoteGattCharacteristicWin> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(BluetoothRemoteGattCharacteristicWin);

@@ -789,5 +789,53 @@ HRESULT BluetoothLowEnergyWrapper::ReadDescriptorsOfACharacteristic(
   return hr;
 }
 
+HRESULT BluetoothLowEnergyWrapper::ReadCharacteristicValue(
+    base::FilePath& service_path,
+    const PBTH_LE_GATT_CHARACTERISTIC characteristic,
+    scoped_ptr<BTH_LE_GATT_CHARACTERISTIC_VALUE>* out_value) {
+  base::File file(service_path, base::File::FLAG_OPEN | base::File::FLAG_READ);
+  if (!file.IsValid())
+    return HRESULT_FROM_WIN32(ERROR_OPEN_FAILED);
+
+  USHORT allocated_length = 0;
+  HRESULT hr = BluetoothGATTGetCharacteristicValue(
+      file.GetPlatformFile(), characteristic, 0, NULL, &allocated_length,
+      BLUETOOTH_GATT_FLAG_NONE);
+  if (hr != HRESULT_FROM_WIN32(ERROR_MORE_DATA))
+    return hr;
+
+  out_value->reset(
+      (PBTH_LE_GATT_CHARACTERISTIC_VALUE)(new UCHAR[allocated_length]));
+  USHORT out_length = 0;
+  hr = BluetoothGATTGetCharacteristicValue(
+      file.GetPlatformFile(), characteristic, (ULONG)allocated_length,
+      out_value->get(), &out_length, BLUETOOTH_GATT_FLAG_NONE);
+  if (SUCCEEDED(hr) && allocated_length != out_length) {
+    LOG(ERROR) << "Retrieved characteristic value size is not equal to expected"
+               << " allocated_length " << allocated_length << " got "
+               << out_length;
+    hr = HRESULT_FROM_WIN32(ERROR_INVALID_USER_BUFFER);
+  }
+
+  if (FAILED(hr)) {
+    out_value->reset(nullptr);
+  }
+  return hr;
+}
+
+HRESULT BluetoothLowEnergyWrapper::WriteCharacteristicValue(
+    base::FilePath& service_path,
+    const PBTH_LE_GATT_CHARACTERISTIC characteristic,
+    PBTH_LE_GATT_CHARACTERISTIC_VALUE new_value) {
+  base::File file(service_path, base::File::FLAG_OPEN | base::File::FLAG_READ |
+                                    base::File::FLAG_WRITE);
+  if (!file.IsValid())
+    return HRESULT_FROM_WIN32(ERROR_OPEN_FAILED);
+
+  return BluetoothGATTSetCharacteristicValue(file.GetPlatformFile(),
+                                             characteristic, new_value, NULL,
+                                             BLUETOOTH_GATT_FLAG_NONE);
+}
+
 }  // namespace win
 }  // namespace device

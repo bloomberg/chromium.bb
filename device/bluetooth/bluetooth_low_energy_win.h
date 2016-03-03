@@ -162,6 +162,20 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothLowEnergyWrapper {
       scoped_ptr<BTH_LE_GATT_DESCRIPTOR>* out_included_descriptors,
       USHORT* out_counts);
 
+  // Reads |characteristic| value in service with service device path
+  // |service_path|. The result will be stored in |*out_value|.
+  virtual HRESULT ReadCharacteristicValue(
+      base::FilePath& service_path,
+      const PBTH_LE_GATT_CHARACTERISTIC characteristic,
+      scoped_ptr<BTH_LE_GATT_CHARACTERISTIC_VALUE>* out_value);
+
+  // Writes |characteristic| value in service with service device path
+  // |service_path| to |*new_value|.
+  virtual HRESULT WriteCharacteristicValue(
+      base::FilePath& service_path,
+      const PBTH_LE_GATT_CHARACTERISTIC characteristic,
+      PBTH_LE_GATT_CHARACTERISTIC_VALUE new_value);
+
  protected:
   BluetoothLowEnergyWrapper();
   virtual ~BluetoothLowEnergyWrapper();

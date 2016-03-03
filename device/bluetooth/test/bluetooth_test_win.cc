@@ -5,8 +5,11 @@
 #include "device/bluetooth/test/bluetooth_test_win.h"
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/test/test_pending_task.h"
+#include "base/time/time.h"
 #include "device/bluetooth/bluetooth_adapter_win.h"
 #include "device/bluetooth/bluetooth_low_energy_win.h"
 #include "device/bluetooth/bluetooth_remote_gatt_characteristic_win.h"
@@ -99,6 +102,7 @@ void BluetoothTestWin::InitWithoutDefaultAdapter() {
 void BluetoothTestWin::InitWithFakeAdapter() {
   fake_bt_classic_wrapper_ = new win::BluetoothClassicWrapperFake();
   fake_bt_le_wrapper_ = new win::BluetoothLowEnergyWrapperFake();
+  fake_bt_le_wrapper_->AddObserver(this);
   win::BluetoothClassicWrapper::SetInstanceForTest(fake_bt_classic_wrapper_);
   win::BluetoothLowEnergyWrapper::SetInstanceForTest(fake_bt_le_wrapper_);
   fake_bt_classic_wrapper_->SimulateARadio(
@@ -109,6 +113,7 @@ void BluetoothTestWin::InitWithFakeAdapter() {
       &BluetoothTestWin::AdapterInitCallback, base::Unretained(this)));
   adapter_win_ = static_cast<BluetoothAdapterWin*>(adapter_.get());
   adapter_win_->InitForTest(nullptr, bluetooth_task_runner_);
+  adapter_win_->GetWinBluetoothTaskManager()->AddObserver(this);
   FinishPendingTasks();
 }
 
@@ -282,6 +287,71 @@ void BluetoothTestWin::SimulateGattCharacteristicRemoved(
   ForceRefreshDevice();
 }
 
+void BluetoothTestWin::RememberCharacteristicForSubsequentAction(
+    BluetoothGattCharacteristic* characteristic) {
+  remembered_characteristic_ =
+      static_cast<BluetoothRemoteGattCharacteristicWin*>(characteristic);
+}
+
+void BluetoothTestWin::SimulateGattCharacteristicRead(
+    BluetoothGattCharacteristic* characteristic,
+    const std::vector<uint8_t>& value) {
+  BluetoothGattCharacteristic* target_characteristic = characteristic;
+  if (target_characteristic == nullptr)
+    target_characteristic = remembered_characteristic_;
+  CHECK(target_characteristic);
+
+  win::GattCharacteristic* target_simulated_characteristic =
+      GetSimulatedCharacteristic(target_characteristic);
+  if (target_simulated_characteristic == nullptr)
+    return;
+
+  fake_bt_le_wrapper_->SimulateGattCharacteristicValue(
+      target_simulated_characteristic, value);
+
+  RunPendingTasksUntilCallback();
+}
+
+void BluetoothTestWin::SimulateGattCharacteristicReadError(
+    BluetoothGattCharacteristic* characteristic,
+    BluetoothGattService::GattErrorCode error_code) {
+  win::GattCharacteristic* target_characteristic =
+      GetSimulatedCharacteristic(characteristic);
+  CHECK(target_characteristic);
+  HRESULT hr = ERROR_SEM_TIMEOUT;
+  if (error_code == BluetoothGattService::GATT_ERROR_INVALID_LENGTH)
+    hr = E_BLUETOOTH_ATT_INVALID_ATTRIBUTE_VALUE_LENGTH;
+  fake_bt_le_wrapper_->SimulateGattCharacteristicReadError(
+      target_characteristic, hr);
+
+  FinishPendingTasks();
+}
+
+void BluetoothTestWin::SimulateGattCharacteristicWrite(
+    BluetoothGattCharacteristic* characteristic) {
+  RunPendingTasksUntilCallback();
+}
+
+void BluetoothTestWin::SimulateGattCharacteristicWriteError(
+    BluetoothGattCharacteristic* characteristic,
+    BluetoothGattService::GattErrorCode error_code) {
+  win::GattCharacteristic* target_characteristic =
+      GetSimulatedCharacteristic(characteristic);
+  CHECK(target_characteristic);
+  HRESULT hr = ERROR_SEM_TIMEOUT;
+  if (error_code == BluetoothGattService::GATT_ERROR_INVALID_LENGTH)
+    hr = E_BLUETOOTH_ATT_INVALID_ATTRIBUTE_VALUE_LENGTH;
+  fake_bt_le_wrapper_->SimulateGattCharacteristicWriteError(
+      target_characteristic, hr);
+
+  FinishPendingTasks();
+}
+
+void BluetoothTestWin::DeleteDevice(BluetoothDevice* device) {
+  CHECK(device);
+  fake_bt_le_wrapper_->RemoveSimulatedBLEDevice(device->GetAddress());
+}
+
 void BluetoothTestWin::SimulateGattDescriptor(
     BluetoothGattCharacteristic* characteristic,
     const std::string& uuid) {
@@ -292,6 +362,21 @@ void BluetoothTestWin::SimulateGattDescriptor(
       characteristic->GetService()->GetDevice()->GetAddress(),
       target_characteristic, CanonicalStringToBTH_LE_UUID(uuid));
   ForceRefreshDevice();
+}
+
+void BluetoothTestWin::OnAttemptReadGattCharacteristic() {
+  gatt_read_characteristic_attempts_++;
+}
+
+void BluetoothTestWin::OnAttemptWriteGattCharacteristic() {
+  gatt_write_characteristic_attempts_++;
+}
+
+void BluetoothTestWin::onWriteGattCharacteristicValue(
+    const PBTH_LE_GATT_CHARACTERISTIC_VALUE value) {
+  last_write_value_.clear();
+  for (ULONG i = 0; i < value->DataSize; i++)
+    last_write_value_.push_back(value->Data[i]);
 }
 
 win::GattService* BluetoothTestWin::GetSimulatedService(
@@ -331,6 +416,31 @@ win::GattCharacteristic* BluetoothTestWin::GetSimulatedCharacteristic(
     return nullptr;
   return fake_bt_le_wrapper_->GetSimulatedGattCharacteristic(
       target_service, std::to_string(win_characteristic->GetAttributeHandle()));
+}
+
+void BluetoothTestWin::RunPendingTasksUntilCallback() {
+  std::deque<base::TestPendingTask> tasks =
+      bluetooth_task_runner_->GetPendingTasks();
+  bluetooth_task_runner_->ClearPendingTasks();
+  int original_callback_count = callback_count_;
+  int original_error_callback_count = error_callback_count_;
+  do {
+    base::TestPendingTask task = tasks.front();
+    tasks.pop_front();
+    task.task.Run();
+    base::RunLoop().RunUntilIdle();
+  } while (tasks.size() && callback_count_ == original_callback_count &&
+           error_callback_count_ == original_error_callback_count);
+
+  // Put the rest of pending tasks back to Bluetooth task runner.
+  for (const auto& task : tasks) {
+    if (task.delay.is_zero()) {
+      bluetooth_task_runner_->PostTask(task.location, task.task);
+    } else {
+      bluetooth_task_runner_->PostDelayedTask(task.location, task.task,
+                                              task.delay);
+    }
+  }
 }
 
 void BluetoothTestWin::ForceRefreshDevice() {

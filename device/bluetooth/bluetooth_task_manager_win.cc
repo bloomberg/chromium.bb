@@ -809,6 +809,41 @@ void BluetoothTaskManagerWin::GetGattIncludedDescriptors(
                             number_of_descriptors, hr));
 }
 
+void BluetoothTaskManagerWin::ReadGattCharacteristicValue(
+    base::FilePath service_path,
+    BTH_LE_GATT_CHARACTERISTIC characteristic,
+    const ReadGattCharacteristicValueCallback& callback) {
+  scoped_ptr<BTH_LE_GATT_CHARACTERISTIC_VALUE> win_characteristic_value;
+  HRESULT hr =
+      win::BluetoothLowEnergyWrapper::GetInstance()->ReadCharacteristicValue(
+          service_path, (PBTH_LE_GATT_CHARACTERISTIC)(&characteristic),
+          &win_characteristic_value);
+
+  ui_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(callback, base::Passed(&win_characteristic_value), hr));
+}
+
+void BluetoothTaskManagerWin::WriteGattCharacteristicValue(
+    base::FilePath service_path,
+    BTH_LE_GATT_CHARACTERISTIC characteristic,
+    std::vector<uint8_t> new_value,
+    const HResultCallback& callback) {
+  ULONG length = (ULONG)(sizeof(ULONG) + new_value.size());
+  scoped_ptr<BTH_LE_GATT_CHARACTERISTIC_VALUE> win_new_value(
+      (PBTH_LE_GATT_CHARACTERISTIC_VALUE)(new UCHAR[length]));
+  win_new_value->DataSize = (ULONG)new_value.size();
+  for (ULONG i = 0; i < new_value.size(); i++)
+    win_new_value->Data[i] = new_value[i];
+
+  HRESULT hr =
+      win::BluetoothLowEnergyWrapper::GetInstance()->WriteCharacteristicValue(
+          service_path, (PBTH_LE_GATT_CHARACTERISTIC)(&characteristic),
+          win_new_value.get());
+
+  ui_task_runner_->PostTask(FROM_HERE, base::Bind(callback, hr));
+}
+
 void BluetoothTaskManagerWin::PostGetGattIncludedCharacteristics(
     const base::FilePath& service_path,
     const BluetoothUUID& uuid,
@@ -830,6 +865,33 @@ void BluetoothTaskManagerWin::PostGetGattIncludedDescriptors(
       FROM_HERE,
       base::Bind(&BluetoothTaskManagerWin::GetGattIncludedDescriptors, this,
                  service_path, *characteristic, callback));
+}
+
+void BluetoothTaskManagerWin::PostReadGattCharacteristicValue(
+    const base::FilePath& service_path,
+    const PBTH_LE_GATT_CHARACTERISTIC characteristic,
+    const ReadGattCharacteristicValueCallback& callback) {
+  DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
+  bluetooth_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&BluetoothTaskManagerWin::ReadGattCharacteristicValue, this,
+                 service_path, *characteristic, callback));
+  FOR_EACH_OBSERVER(BluetoothTaskManagerWin::Observer, observers_,
+                    OnAttemptReadGattCharacteristic());
+}
+
+void BluetoothTaskManagerWin::PostWriteGattCharacteristicValue(
+    const base::FilePath& service_path,
+    const PBTH_LE_GATT_CHARACTERISTIC characteristic,
+    const std::vector<uint8_t>& new_value,
+    const HResultCallback& callback) {
+  DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
+  bluetooth_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&BluetoothTaskManagerWin::WriteGattCharacteristicValue, this,
+                 service_path, *characteristic, new_value, callback));
+  FOR_EACH_OBSERVER(BluetoothTaskManagerWin::Observer, observers_,
+                    OnAttemptWriteGattCharacteristic());
 }
 
 }  // namespace device

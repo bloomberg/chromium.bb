@@ -99,6 +99,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothTaskManagerWin
      // discovery session, the "friendly" name may initially be "unknown" before
      // the actual name is retrieved in subsequent poll events.
      virtual void DevicesPolled(const ScopedVector<DeviceState>& devices) {}
+     virtual void OnAttemptReadGattCharacteristic() {}
+     virtual void OnAttemptWriteGattCharacteristic() {}
   };
 
   explicit BluetoothTaskManagerWin(
@@ -123,12 +125,16 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothTaskManagerWin
   void PostStopDiscoveryTask();
 
   // Callbacks of asynchronous operations of GATT service.
+  typedef base::Callback<void(HRESULT)> HResultCallback;
   typedef base::Callback<
       void(scoped_ptr<BTH_LE_GATT_CHARACTERISTIC>, uint16_t, HRESULT)>
       GetGattIncludedCharacteristicsCallback;
   typedef base::Callback<
       void(scoped_ptr<BTH_LE_GATT_DESCRIPTOR>, uint16_t, HRESULT)>
       GetGattIncludedDescriptorsCallback;
+  typedef base::Callback<void(scoped_ptr<BTH_LE_GATT_CHARACTERISTIC_VALUE>,
+                              HRESULT)>
+      ReadGattCharacteristicValueCallback;
 
   // Get all included characteristics of a given service. The service is
   // uniquely identified by its |uuid| and |attribute_handle| with service
@@ -147,6 +153,22 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothTaskManagerWin
       const base::FilePath& service_path,
       const PBTH_LE_GATT_CHARACTERISTIC characteristic,
       const GetGattIncludedDescriptorsCallback& callback);
+
+  // Post read the value of a given |characteristic| in service with
+  // |service_path|. The result is returned asynchronously through |callback|.
+  void PostReadGattCharacteristicValue(
+      const base::FilePath& device_path,
+      const PBTH_LE_GATT_CHARACTERISTIC characteristic,
+      const ReadGattCharacteristicValueCallback& callback);
+
+  // Post write the value of a given |characteristic| in service with
+  // |service_path| to |new_value|. The operation result is returned
+  // asynchronously through |callback|.
+  void PostWriteGattCharacteristicValue(
+      const base::FilePath& service_path,
+      const PBTH_LE_GATT_CHARACTERISTIC characteristic,
+      const std::vector<uint8_t>& new_value,
+      const HResultCallback& callback);
 
  private:
   friend class base::RefCountedThreadSafe<BluetoothTaskManagerWin>;
@@ -248,6 +270,14 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothTaskManagerWin
       base::FilePath service_path,
       BTH_LE_GATT_CHARACTERISTIC characteristic,
       const GetGattIncludedDescriptorsCallback& callback);
+  void ReadGattCharacteristicValue(
+      base::FilePath device_path,
+      BTH_LE_GATT_CHARACTERISTIC characteristic,
+      const ReadGattCharacteristicValueCallback& callback);
+  void WriteGattCharacteristicValue(base::FilePath service_path,
+                                    BTH_LE_GATT_CHARACTERISTIC characteristic,
+                                    std::vector<uint8_t> new_value,
+                                    const HResultCallback& callback);
 
   // UI task runner reference.
   scoped_refptr<base::SequencedTaskRunner> ui_task_runner_;

@@ -53,6 +53,8 @@ struct GattCharacteristic {
   scoped_ptr<BTH_LE_GATT_CHARACTERISTIC> characteristic_info;
   scoped_ptr<BTH_LE_GATT_CHARACTERISTIC_VALUE> value;
   GattDescriptorsMap included_descriptors;
+  std::vector<HRESULT> read_errors;
+  std::vector<HRESULT> write_errors;
 };
 
 struct GattDescriptor {
@@ -65,6 +67,15 @@ struct GattDescriptor {
 // Fake implementation of BluetoothLowEnergyWrapper. Used for BluetoothTestWin.
 class BluetoothLowEnergyWrapperFake : public BluetoothLowEnergyWrapper {
  public:
+  class Observer {
+   public:
+    Observer() {}
+    ~Observer() {}
+
+    virtual void onWriteGattCharacteristicValue(
+        const PBTH_LE_GATT_CHARACTERISTIC_VALUE value) = 0;
+  };
+
   BluetoothLowEnergyWrapperFake();
   ~BluetoothLowEnergyWrapperFake() override;
 
@@ -89,10 +100,19 @@ class BluetoothLowEnergyWrapperFake : public BluetoothLowEnergyWrapper {
       const PBTH_LE_GATT_CHARACTERISTIC characteristic,
       scoped_ptr<BTH_LE_GATT_DESCRIPTOR>* out_included_descriptors,
       USHORT* out_counts) override;
+  HRESULT ReadCharacteristicValue(
+      base::FilePath& service_path,
+      const PBTH_LE_GATT_CHARACTERISTIC characteristic,
+      scoped_ptr<BTH_LE_GATT_CHARACTERISTIC_VALUE>* out_value) override;
+  HRESULT WriteCharacteristicValue(
+      base::FilePath& service_path,
+      const PBTH_LE_GATT_CHARACTERISTIC characteristic,
+      PBTH_LE_GATT_CHARACTERISTIC_VALUE new_value) override;
 
   BLEDevice* SimulateBLEDevice(std::string device_name,
                                BLUETOOTH_ADDRESS device_address);
   BLEDevice* GetSimulatedBLEDevice(std::string device_address);
+  void RemoveSimulatedBLEDevice(std::string device_address);
 
   // Note: |parent_service| may be nullptr to indicate a primary service.
   GattService* SimulateGattService(BLEDevice* device,
@@ -119,9 +139,16 @@ class BluetoothLowEnergyWrapperFake : public BluetoothLowEnergyWrapper {
   GattCharacteristic* GetSimulatedGattCharacteristic(
       GattService* parent_service,
       std::string attribute_handle);
+  void SimulateGattCharacteristicValue(GattCharacteristic* characteristic,
+                                       const std::vector<uint8_t>& value);
+  void SimulateGattCharacteristicReadError(GattCharacteristic* characteristic,
+                                           HRESULT error);
+  void SimulateGattCharacteristicWriteError(GattCharacteristic* characteristic,
+                                            HRESULT error);
   void SimulateGattDescriptor(std::string device_address,
                               GattCharacteristic* characteristic,
                               const BTH_LE_UUID& uuid);
+  void AddObserver(Observer* observer);
 
  private:
   // Get simulated characteristic by |service_path| and |characteristic| info.
@@ -158,6 +185,7 @@ class BluetoothLowEnergyWrapperFake : public BluetoothLowEnergyWrapper {
   // Table to store allocated attribute handle for a device.
   BLEAttributeHandleTable attribute_handle_table_;
   BLEDevicesMap simulated_devices_;
+  Observer* observer_;
 };
 
 }  // namespace win
