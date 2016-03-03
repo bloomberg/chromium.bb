@@ -977,11 +977,19 @@ class LayerTreeHostAnimationTestAnimatedLayerRemovedAndAdded
 
   void DidCommit() override {
     switch (layer_tree_host()->source_frame_number()) {
+      case 0:
+        EXPECT_TRUE(
+            layer_tree_host()->animation_registrar()->needs_animate_layers());
+        break;
       case 1:
         layer_->RemoveFromParent();
+        EXPECT_TRUE(
+            layer_tree_host()->animation_registrar()->needs_animate_layers());
         break;
       case 2:
         layer_tree_host()->root_layer()->AddChild(layer_);
+        EXPECT_TRUE(
+            layer_tree_host()->animation_registrar()->needs_animate_layers());
         break;
     }
   }
