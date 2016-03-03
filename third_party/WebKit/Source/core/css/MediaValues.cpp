@@ -211,7 +211,7 @@ bool MediaValues::computeLengthImpl(double value, CSSPrimitiveValue::UnitType ty
         return false;
     }
 
-    ASSERT(factor > 0);
+    ASSERT(factor >= 0);
     result = value * factor;
     return true;
 }
