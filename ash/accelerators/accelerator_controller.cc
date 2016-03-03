@@ -1050,8 +1050,9 @@ bool AcceleratorController::CanPerformAction(
     case TOUCH_HUD_CLEAR:
     case TOUCH_HUD_MODE_CHANGE:
       return CanHandleTouchHud();
+    case SWAP_PRIMARY_DISPLAY:
+      return gfx::Screen::GetScreen()->GetNumDisplays() > 1;
 #endif
-
     case CYCLE_BACKWARD_MRU:
     case CYCLE_FORWARD_MRU:
     case EXIT:
@@ -1099,7 +1100,6 @@ bool AcceleratorController::CanPerformAction(
     case OPEN_GET_HELP:
     case POWER_PRESSED:
     case POWER_RELEASED:
-    case SWAP_PRIMARY_DISPLAY:
     case TOGGLE_MIRROR_MODE:
     case TOGGLE_SPOKEN_FEEDBACK:
     case TOGGLE_WIFI:
