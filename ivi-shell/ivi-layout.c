@@ -2417,10 +2417,8 @@ ivi_layout_layer_add_surface(struct ivi_layout_layer *ivilayer,
 		return IVI_FAILED;
 	}
 
-	if (addsurf->on_layer == ivilayer) {
-		weston_log("ivi_layout_layer_add_surface: addsurf is already available\n");
+	if (addsurf->on_layer == ivilayer)
 		return IVI_SUCCEEDED;
-	}
 
 	wl_list_for_each_safe(ivisurf, next, &layout->surface_list, link) {
 		if (ivisurf->id_surface == addsurf->id_surface) {
