@@ -46,7 +46,7 @@ class TestRunLoopHandler : public RunLoopHandler {
   int error_count_;
   MojoResult last_error_result_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(TestRunLoopHandler);
+  DISALLOW_COPY_AND_ASSIGN(TestRunLoopHandler);
 };
 
 class RunLoopTest : public testing::Test {
@@ -63,7 +63,7 @@ class RunLoopTest : public testing::Test {
   }
 
  private:
-  MOJO_DISALLOW_COPY_AND_ASSIGN(RunLoopTest);
+  DISALLOW_COPY_AND_ASSIGN(RunLoopTest);
 };
 
 // Trivial test to verify Run() with no added handles returns.
@@ -88,7 +88,7 @@ class RemoveOnReadyRunLoopHandler : public TestRunLoopHandler {
  private:
   RunLoop* run_loop_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(RemoveOnReadyRunLoopHandler);
+  DISALLOW_COPY_AND_ASSIGN(RemoveOnReadyRunLoopHandler);
 };
 
 // Verifies RunLoop quits when no more handles (handle is removed when ready).
@@ -123,7 +123,7 @@ class QuitOnReadyRunLoopHandler : public TestRunLoopHandler {
  private:
   RunLoop* run_loop_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(QuitOnReadyRunLoopHandler);
+  DISALLOW_COPY_AND_ASSIGN(QuitOnReadyRunLoopHandler);
 };
 
 // Verifies Quit() from OnHandleReady() quits the loop.
@@ -158,7 +158,7 @@ class QuitOnErrorRunLoopHandler : public TestRunLoopHandler {
  private:
   RunLoop* run_loop_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(QuitOnErrorRunLoopHandler);
+  DISALLOW_COPY_AND_ASSIGN(QuitOnErrorRunLoopHandler);
 };
 
 // Verifies Quit() when the deadline is reached works.
@@ -211,7 +211,7 @@ class RemoveManyRunLoopHandler : public TestRunLoopHandler {
   std::vector<Handle> handles_;
   RunLoop* run_loop_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(RemoveManyRunLoopHandler);
+  DISALLOW_COPY_AND_ASSIGN(RemoveManyRunLoopHandler);
 };
 
 // Test that handlers are notified of loop destruction.
@@ -261,7 +261,7 @@ class AddHandlerOnErrorHandler : public TestRunLoopHandler {
  private:
   RunLoop* run_loop_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(AddHandlerOnErrorHandler);
+  DISALLOW_COPY_AND_ASSIGN(AddHandlerOnErrorHandler);
 };
 
 TEST_F(RunLoopTest, AddHandlerOnError) {
@@ -356,7 +356,7 @@ class NestingRunLoopHandler : public TestRunLoopHandler {
   size_t depth_;
   bool reached_depth_limit_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(NestingRunLoopHandler);
+  DISALLOW_COPY_AND_ASSIGN(NestingRunLoopHandler);
 };
 
 const size_t NestingRunLoopHandler::kDepthLimit = 10;

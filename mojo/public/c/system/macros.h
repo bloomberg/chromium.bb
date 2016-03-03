@@ -7,12 +7,6 @@
 
 #include <stddef.h>
 
-// Annotate a variable indicating it's okay if it's unused.
-// Use like:
-//   int x = ...;
-//   MOJO_ALLOW_UNUSED_LOCAL(x);
-#define MOJO_ALLOW_UNUSED_LOCAL(x) false ? (void)x : (void)0
-
 // Annotate a function indicating that the caller must examine the return value.
 // Use like:
 //   int foo() MOJO_WARN_UNUSED_RESULT;

@@ -328,7 +328,7 @@ class Window {
 
   std::map<const void*, Value> prop_map_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(Window);
+  DISALLOW_COPY_AND_ASSIGN(Window);
 };
 
 }  // namespace mus

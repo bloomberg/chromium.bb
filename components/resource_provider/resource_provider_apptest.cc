@@ -73,7 +73,7 @@ class ResourceProviderApplicationTest : public mojo::test::ApplicationTestBase {
   }
 
  private:
-  MOJO_DISALLOW_COPY_AND_ASSIGN(ResourceProviderApplicationTest);
+  DISALLOW_COPY_AND_ASSIGN(ResourceProviderApplicationTest);
 };
 
 TEST_F(ResourceProviderApplicationTest, FetchOneResource) {

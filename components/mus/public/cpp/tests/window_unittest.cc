@@ -174,7 +174,7 @@ class TestProperty {
 
  private:
   static TestProperty* last_deleted_;
-  MOJO_DISALLOW_COPY_AND_ASSIGN(TestProperty);
+  DISALLOW_COPY_AND_ASSIGN(TestProperty);
 };
 
 TestProperty* TestProperty::last_deleted_ = NULL;
@@ -246,7 +246,7 @@ class TreeChangeObserver : public WindowObserver {
   Window* observee_;
   std::vector<TreeChangeParams> received_params_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(TreeChangeObserver);
+  DISALLOW_COPY_AND_ASSIGN(TreeChangeObserver);
 };
 
 // Adds/Removes w11 to w1.
@@ -487,7 +487,7 @@ class OrderChangeObserver : public WindowObserver {
   Window* observee_;
   Changes changes_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(OrderChangeObserver);
+  DISALLOW_COPY_AND_ASSIGN(OrderChangeObserver);
 };
 
 }  // namespace
@@ -633,7 +633,7 @@ class BoundsChangeObserver : public WindowObserver {
   Window* window_;
   Changes changes_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(BoundsChangeObserver);
+  DISALLOW_COPY_AND_ASSIGN(BoundsChangeObserver);
 };
 
 }  // namespace
@@ -688,7 +688,7 @@ class VisibilityChangeObserver : public WindowObserver {
   Window* window_;
   Changes changes_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(VisibilityChangeObserver);
+  DISALLOW_COPY_AND_ASSIGN(VisibilityChangeObserver);
 };
 
 }  // namespace
@@ -800,7 +800,7 @@ class SharedPropertyChangeObserver : public WindowObserver {
   Window* window_;
   Changes changes_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(SharedPropertyChangeObserver);
+  DISALLOW_COPY_AND_ASSIGN(SharedPropertyChangeObserver);
 };
 
 }  // namespace
@@ -886,7 +886,7 @@ class LocalPropertyChangeObserver : public WindowObserver {
   const void* property_key_;
   intptr_t old_property_value_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(LocalPropertyChangeObserver);
+  DISALLOW_COPY_AND_ASSIGN(LocalPropertyChangeObserver);
 };
 
 }  // namespace

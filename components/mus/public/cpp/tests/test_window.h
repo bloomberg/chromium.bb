@@ -19,7 +19,7 @@ class TestWindow : public Window {
   ~TestWindow() {}
 
  private:
-  MOJO_DISALLOW_COPY_AND_ASSIGN(TestWindow);
+  DISALLOW_COPY_AND_ASSIGN(TestWindow);
 };
 
 }  // namespace mus

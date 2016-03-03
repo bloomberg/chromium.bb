@@ -52,7 +52,7 @@ class GLES2Context : public CommandBufferDelegate,
   MojoGLES2ContextLost lost_callback_;
   void* closure_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(GLES2Context);
+  DISALLOW_COPY_AND_ASSIGN(GLES2Context);
 };
 
 }  // namespace gles2

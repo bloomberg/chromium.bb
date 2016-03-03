@@ -5,6 +5,7 @@
 #ifndef MOJO_EDK_SYSTEM_TEST_UTILS_H_
 #define MOJO_EDK_SYSTEM_TEST_UTILS_H_
 
+#include "base/macros.h"
 #include "base/time/time.h"
 #include "mojo/public/c/system/types.h"
 #include "mojo/public/cpp/system/macros.h"
@@ -49,7 +50,7 @@ class Stopwatch {
  private:
   base::TimeTicks start_time_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(Stopwatch);
+  DISALLOW_COPY_AND_ASSIGN(Stopwatch);
 };
 
 }  // namespace test

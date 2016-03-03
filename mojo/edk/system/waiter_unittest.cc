@@ -85,7 +85,7 @@ class WaitingThread : public base::SimpleThread {
   uintptr_t context_;
   MojoDeadline elapsed_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(WaitingThread);
+  DISALLOW_COPY_AND_ASSIGN(WaitingThread);
 };
 
 TEST(WaiterTest, Basic) {

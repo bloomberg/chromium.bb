@@ -293,7 +293,7 @@ class KeepAwakable : public Awakable {
 
   int awake_count;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(KeepAwakable);
+  DISALLOW_COPY_AND_ASSIGN(KeepAwakable);
 };
 
 class RemoveAwakable : public Awakable {
@@ -307,7 +307,7 @@ class RemoveAwakable : public Awakable {
 
   int awake_count;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(RemoveAwakable);
+  DISALLOW_COPY_AND_ASSIGN(RemoveAwakable);
 };
 
 TEST(AwakableListTest, KeepAwakablesReturningTrue) {

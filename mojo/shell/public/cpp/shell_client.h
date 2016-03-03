@@ -49,7 +49,7 @@ class ShellClient {
   virtual bool ShellConnectionLost();
 
  private:
-  MOJO_DISALLOW_COPY_AND_ASSIGN(ShellClient);
+  DISALLOW_COPY_AND_ASSIGN(ShellClient);
 };
 
 }  // namespace mojo

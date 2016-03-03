@@ -17,6 +17,7 @@
 #include <algorithm>
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "mojo/edk/system/system_impl_export.h"
 #include "mojo/public/c/system/types.h"
 #include "mojo/public/cpp/system/macros.h"
@@ -76,7 +77,7 @@ class UserOptionsReader {
 
   const Options* options_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(UserOptionsReader);
+  DISALLOW_COPY_AND_ASSIGN(UserOptionsReader);
 };
 
 // Macro to invoke |UserOptionsReader<Options>::HasMember()| parametrized by

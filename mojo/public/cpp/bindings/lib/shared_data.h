@@ -7,6 +7,7 @@
 
 #include <assert.h>
 
+#include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "mojo/public/cpp/system/macros.h"
 
@@ -96,7 +97,7 @@ class SharedData {
    private:
     int ref_count_;
     base::ThreadChecker thread_checker_;
-    MOJO_DISALLOW_COPY_AND_ASSIGN(Holder);
+    DISALLOW_COPY_AND_ASSIGN(Holder);
   };
 
   void LazyInit() const {

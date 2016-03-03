@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "mojo/edk/embedder/embedder_internal.h"
 #include "mojo/edk/system/configuration.h"
@@ -140,7 +141,7 @@ class MockDispatcher : public Dispatcher {
 
   CoreTestBase::MockHandleInfo* const info_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(MockDispatcher);
+  DISALLOW_COPY_AND_ASSIGN(MockDispatcher);
 };
 
 }  // namespace

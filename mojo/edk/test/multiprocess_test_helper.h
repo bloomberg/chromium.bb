@@ -8,10 +8,10 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/process/process.h"
 #include "base/test/multiprocess_test.h"
 #include "base/test/test_timeouts.h"
-#include "mojo/public/cpp/system/macros.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "testing/multiprocess_func_list.h"
 
@@ -68,7 +68,7 @@ class MultiprocessTestHelper {
   // Valid after |StartChild()| and before |WaitForChildShutdown()|.
   base::Process test_child_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(MultiprocessTestHelper);
+  DISALLOW_COPY_AND_ASSIGN(MultiprocessTestHelper);
 };
 
 }  // namespace test

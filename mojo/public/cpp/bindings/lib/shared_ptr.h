@@ -5,6 +5,7 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_LIB_SHARED_PTR_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_LIB_SHARED_PTR_H_
 
+#include "base/macros.h"
 #include "mojo/public/cpp/bindings/lib/shared_data.h"
 
 namespace mojo {
@@ -45,7 +46,7 @@ class SharedPtr {
     P* ptr;
 
    private:
-    MOJO_DISALLOW_COPY_AND_ASSIGN(Impl);
+    DISALLOW_COPY_AND_ASSIGN(Impl);
   };
 
   SharedData<Impl> impl_;

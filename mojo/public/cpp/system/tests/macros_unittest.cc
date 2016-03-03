@@ -17,6 +17,7 @@
 #include <stdlib.h>
 #include <utility>
 
+#include "base/compiler_specific.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
@@ -55,25 +56,6 @@ TEST(MacrosCppTest, Override) {
   x.AlsoToBeOverridden();
 }
 
-// Note: MSVS is very strict (and arguably buggy) about warnings for classes
-// defined in a local scope, so define these globally.
-class TestDisallowCopyAndAssignClass {
- public:
-  TestDisallowCopyAndAssignClass() {}
-  explicit TestDisallowCopyAndAssignClass(int) {}
-  void NoOp() {}
-
- private:
-  MOJO_DISALLOW_COPY_AND_ASSIGN(TestDisallowCopyAndAssignClass);
-};
-
-TEST(MacrosCppTest, DisallowCopyAndAssign) {
-  TestDisallowCopyAndAssignClass x;
-  x.NoOp();
-  TestDisallowCopyAndAssignClass y(789);
-  y.NoOp();
-}
-
 // Test that |MOJO_ARRAYSIZE()| works in a |static_assert()|.
 const int kGlobalArray[5] = {1, 2, 3, 4, 5};
 static_assert(MOJO_ARRAYSIZE(kGlobalArray) == 5u,
@@ -83,7 +65,7 @@ TEST(MacrosCppTest, ArraySize) {
   double local_array[4] = {6.7, 7.8, 8.9, 9.0};
   // MSVS considers this local variable unused since MOJO_ARRAYSIZE only takes
   // the size of the type of the local and not the values itself.
-  MOJO_ALLOW_UNUSED_LOCAL(local_array);
+  ALLOW_UNUSED_LOCAL(local_array);
   EXPECT_EQ(4u, MOJO_ARRAYSIZE(local_array));
 }
 

@@ -32,7 +32,7 @@ class BindingTestBase : public testing::Test {
  private:
   base::MessageLoop loop_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(BindingTestBase);
+  DISALLOW_COPY_AND_ASSIGN(BindingTestBase);
 };
 
 class ServiceImpl : public sample::Service {
@@ -56,7 +56,7 @@ class ServiceImpl : public sample::Service {
 
   bool* const was_deleted_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(ServiceImpl);
+  DISALLOW_COPY_AND_ASSIGN(ServiceImpl);
 };
 
 // BindingTest -----------------------------------------------------------------
@@ -181,7 +181,7 @@ class ServiceImplWithBinding : public ServiceImpl {
   Binding<sample::Service> binding_;
   base::Closure closure_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(ServiceImplWithBinding);
+  DISALLOW_COPY_AND_ASSIGN(ServiceImplWithBinding);
 };
 
 // Tests that the binding may be deleted in the connection error handler.
@@ -251,7 +251,7 @@ class IntegerAccessorImpl : public sample::IntegerAccessor {
   }
   void SetInteger(int64_t data, sample::Enum type) override {}
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(IntegerAccessorImpl);
+  DISALLOW_COPY_AND_ASSIGN(IntegerAccessorImpl);
 };
 
 TEST_F(BindingTest, SetInterfacePtrVersion) {
@@ -362,7 +362,7 @@ class ServiceImplWithStrongBinding : public ServiceImpl {
  private:
   StrongBinding<sample::Service> binding_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(ServiceImplWithStrongBinding);
+  DISALLOW_COPY_AND_ASSIGN(ServiceImplWithStrongBinding);
 };
 
 // Tests the typical case, where the implementation object owns the

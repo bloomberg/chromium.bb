@@ -29,7 +29,7 @@ class TestAsyncWaitCallback {
   int result_count_;
   MojoResult last_result_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(TestAsyncWaitCallback);
+  DISALLOW_COPY_AND_ASSIGN(TestAsyncWaitCallback);
 };
 
 // Manual code to create a callback since we don't have mojo::Bind yet.
@@ -52,7 +52,7 @@ class AsyncWaiterTest : public testing::Test {
   Environment environment_;
   RunLoop run_loop_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(AsyncWaiterTest);
+  DISALLOW_COPY_AND_ASSIGN(AsyncWaiterTest);
 };
 
 // Verifies AsyncWaitCallback is notified when pipe is ready.

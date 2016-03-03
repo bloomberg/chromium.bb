@@ -14,6 +14,7 @@ source_set("system") {
   ]
 
   public_deps = [
+    "//base",
     "//mojo/public/c/system",
   ]
 }

@@ -71,7 +71,7 @@ class ConnectionImpl : public Connection {
 
   base::WeakPtrFactory<ConnectionImpl> weak_factory_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(ConnectionImpl);
+  DISALLOW_COPY_AND_ASSIGN(ConnectionImpl);
 };
 
 }  // namespace internal

@@ -6,6 +6,8 @@
 
 #include <assert.h>
 
+#include "base/compiler_specific.h"
+
 namespace mojo {
 
 Thread::Thread() : options_(), thread_(), started_(false), joined_(false) {
@@ -26,7 +28,7 @@ void Thread::Start() {
 
   pthread_attr_t attr;
   int rv = pthread_attr_init(&attr);
-  MOJO_ALLOW_UNUSED_LOCAL(rv);
+  ALLOW_UNUSED_LOCAL(rv);
   assert(rv == 0);
 
   // Non-default stack size?
@@ -50,7 +52,7 @@ void Thread::Join() {
 
   joined_ = true;
   int rv = pthread_join(thread_, nullptr);
-  MOJO_ALLOW_UNUSED_LOCAL(rv);
+  ALLOW_UNUSED_LOCAL(rv);
   assert(rv == 0);
 }
 

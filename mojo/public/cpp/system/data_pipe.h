@@ -15,6 +15,7 @@
 #include <assert.h>
 #include <stdint.h>
 
+#include "base/compiler_specific.h"
 #include "mojo/public/c/system/data_pipe.h"
 #include "mojo/public/cpp/system/handle.h"
 #include "mojo/public/cpp/system/macros.h"
@@ -144,14 +145,14 @@ class DataPipe {
 inline DataPipe::DataPipe() {
   MojoResult result =
       CreateDataPipe(nullptr, &producer_handle, &consumer_handle);
-  MOJO_ALLOW_UNUSED_LOCAL(result);
+  ALLOW_UNUSED_LOCAL(result);
   assert(result == MOJO_RESULT_OK);
 }
 
 inline DataPipe::DataPipe(const MojoCreateDataPipeOptions& options) {
   MojoResult result =
       CreateDataPipe(&options, &producer_handle, &consumer_handle);
-  MOJO_ALLOW_UNUSED_LOCAL(result);
+  ALLOW_UNUSED_LOCAL(result);
   assert(result == MOJO_RESULT_OK);
 }
 

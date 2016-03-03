@@ -26,7 +26,7 @@ struct EmployeeInfo {
   Array<uint8_t> finger_print;
 
  private:
-  MOJO_DISALLOW_COPY_AND_ASSIGN(EmployeeInfo);
+  DISALLOW_COPY_AND_ASSIGN(EmployeeInfo);
 };
 
 class HumanResourceDatabaseImpl : public HumanResourceDatabase {

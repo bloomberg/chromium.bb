@@ -32,7 +32,7 @@ class PingServiceImpl : public test::PingService {
   void Ping(const Callback<void()>& callback) override;
 
  private:
-  MOJO_DISALLOW_COPY_AND_ASSIGN(PingServiceImpl);
+  DISALLOW_COPY_AND_ASSIGN(PingServiceImpl);
 };
 
 void PingServiceImpl::Ping(const Callback<void()>& callback) {
@@ -52,7 +52,7 @@ class PingPongTest {
   unsigned int iterations_to_run_;
   unsigned int current_iterations_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(PingPongTest);
+  DISALLOW_COPY_AND_ASSIGN(PingPongTest);
 };
 
 PingPongTest::PingPongTest(test::PingServicePtr service)

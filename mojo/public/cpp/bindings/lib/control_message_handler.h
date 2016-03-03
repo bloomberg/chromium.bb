@@ -33,7 +33,7 @@ class ControlMessageHandler : public MessageReceiverWithResponderStatus {
 
   uint32_t interface_version_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(ControlMessageHandler);
+  DISALLOW_COPY_AND_ASSIGN(ControlMessageHandler);
 };
 
 }  // namespace internal

@@ -30,7 +30,7 @@ class VersioningApplicationTest : public ApplicationTestBase {
   HumanResourceDatabasePtr database_;
 
  private:
-  MOJO_DISALLOW_COPY_AND_ASSIGN(VersioningApplicationTest);
+  DISALLOW_COPY_AND_ASSIGN(VersioningApplicationTest);
 };
 
 TEST_F(VersioningApplicationTest, Struct) {

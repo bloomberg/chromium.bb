@@ -151,7 +151,7 @@ class RunLoop {
   typedef std::priority_queue<PendingTask> DelayedTaskQueue;
   DelayedTaskQueue delayed_tasks_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(RunLoop);
+  DISALLOW_COPY_AND_ASSIGN(RunLoop);
 };
 
 }  // namespace mojo

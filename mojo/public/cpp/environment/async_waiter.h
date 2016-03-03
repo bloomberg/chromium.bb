@@ -32,7 +32,7 @@ class AsyncWaiter {
   MojoAsyncWaitID id_;
   const Callback callback_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(AsyncWaiter);
+  DISALLOW_COPY_AND_ASSIGN(AsyncWaiter);
 };
 
 }  // namespace mojo

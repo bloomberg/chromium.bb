@@ -42,7 +42,7 @@ class ArrayValidateParams {
   ArrayValidateParams* element_validate_params;
 
  private:
-  MOJO_DISALLOW_COPY_AND_ASSIGN(ArrayValidateParams);
+  DISALLOW_COPY_AND_ASSIGN(ArrayValidateParams);
 };
 
 }  // namespace internal

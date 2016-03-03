@@ -94,7 +94,7 @@ class LoggingTest : public testing::Test {
   static std::string last_message_;
   static bool not_called_condition_was_called_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(LoggingTest);
+  DISALLOW_COPY_AND_ASSIGN(LoggingTest);
 };
 
 // static

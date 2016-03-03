@@ -10,11 +10,11 @@
 
 #include <vector>
 
+#include "base/macros.h"
 #include "mojo/edk/system/system_impl_export.h"
 #include "mojo/edk/system/watcher.h"
 #include "mojo/edk/system/watcher_set.h"
 #include "mojo/public/c/system/types.h"
-#include "mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 namespace edk {
@@ -63,7 +63,7 @@ class MOJO_SYSTEM_IMPL_EXPORT AwakableList {
   // dispatchers.
   WatcherSet watchers_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(AwakableList);
+  DISALLOW_COPY_AND_ASSIGN(AwakableList);
 };
 
 }  // namespace edk

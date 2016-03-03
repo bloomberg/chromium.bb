@@ -20,7 +20,7 @@ class WindowServerTestSuite : public base::TestSuite {
   void Initialize() override;
 
  private:
-  MOJO_DISALLOW_COPY_AND_ASSIGN(WindowServerTestSuite);
+  DISALLOW_COPY_AND_ASSIGN(WindowServerTestSuite);
 };
 
 }  // namespace mus

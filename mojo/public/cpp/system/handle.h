@@ -9,6 +9,8 @@
 #include <stdint.h>
 #include <limits>
 
+#include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "mojo/public/c/system/functions.h"
 #include "mojo/public/c/system/types.h"
 #include "mojo/public/cpp/system/macros.h"
@@ -123,7 +125,7 @@ class ScopedHandleBase {
     if (!handle_.is_valid())
       return;
     MojoResult result = MojoClose(handle_.value());
-    MOJO_ALLOW_UNUSED_LOCAL(result);
+    ALLOW_UNUSED_LOCAL(result);
     assert(result == MOJO_RESULT_OK);
   }
 

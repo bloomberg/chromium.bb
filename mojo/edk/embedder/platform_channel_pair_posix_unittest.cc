@@ -21,6 +21,7 @@
 #include "base/files/scoped_file.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "mojo/edk/embedder/platform_channel_utils_posix.h"
 #include "mojo/edk/embedder/platform_handle.h"
 #include "mojo/edk/embedder/platform_handle_vector.h"
@@ -60,7 +61,7 @@ class PlatformChannelPairPosixTest : public testing::Test {
  private:
   struct sigaction old_action_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(PlatformChannelPairPosixTest);
+  DISALLOW_COPY_AND_ASSIGN(PlatformChannelPairPosixTest);
 };
 
 TEST_F(PlatformChannelPairPosixTest, NoSigPipe) {

@@ -78,7 +78,7 @@ class ScopedTreeNotifier {
  private:
   WindowObserver::TreeChangeParams params_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(ScopedTreeNotifier);
+  DISALLOW_COPY_AND_ASSIGN(ScopedTreeNotifier);
 };
 
 void RemoveChildImpl(Window* child, Window::Children* children) {
@@ -117,7 +117,7 @@ class OrderChangedNotifier {
   Window* relative_window_;
   mojom::OrderDirection direction_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(OrderChangedNotifier);
+  DISALLOW_COPY_AND_ASSIGN(OrderChangedNotifier);
 };
 
 class ScopedSetBoundsNotifier {
@@ -140,7 +140,7 @@ class ScopedSetBoundsNotifier {
   const gfx::Rect old_bounds_;
   const gfx::Rect new_bounds_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(ScopedSetBoundsNotifier);
+  DISALLOW_COPY_AND_ASSIGN(ScopedSetBoundsNotifier);
 };
 
 // Some operations are only permitted in the connection that created the window.

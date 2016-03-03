@@ -5,8 +5,8 @@
 #ifndef MOJO_EDK_EMBEDDER_PROCESS_DELEGATE_H_
 #define MOJO_EDK_EMBEDDER_PROCESS_DELEGATE_H_
 
+#include "base/macros.h"
 #include "mojo/edk/system/system_impl_export.h"
-#include "mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 namespace edk {
@@ -22,7 +22,7 @@ class MOJO_SYSTEM_IMPL_EXPORT ProcessDelegate {
   virtual ~ProcessDelegate() {}
 
  private:
-  MOJO_DISALLOW_COPY_AND_ASSIGN(ProcessDelegate);
+  DISALLOW_COPY_AND_ASSIGN(ProcessDelegate);
 };
 
 }  // namespace edk

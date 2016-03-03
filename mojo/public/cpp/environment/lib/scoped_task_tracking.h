@@ -5,8 +5,8 @@
 #ifndef MOJO_PUBLIC_CPP_ENVIRONMENT_LIB_SCOPED_TASK_TRACKING_H_
 #define MOJO_PUBLIC_CPP_ENVIRONMENT_LIB_SCOPED_TASK_TRACKING_H_
 
+#include "base/macros.h"
 #include "mojo/public/cpp/environment/task_tracker.h"
-#include "mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 namespace internal {
@@ -25,7 +25,7 @@ class ScopedTaskTracking {
 
  private:
   TaskTrackingId id_;
-  MOJO_DISALLOW_COPY_AND_ASSIGN(ScopedTaskTracking);
+  DISALLOW_COPY_AND_ASSIGN(ScopedTaskTracking);
 };
 
 }  // namespace internal

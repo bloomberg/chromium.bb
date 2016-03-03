@@ -40,7 +40,7 @@ class TestServiceImpl : public TestService {
   scoped_ptr<TrackedService> tracking_;
   StrongBinding<TestService> binding_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(TestServiceImpl);
+  DISALLOW_COPY_AND_ASSIGN(TestServiceImpl);
 };
 
 }  // namespace test

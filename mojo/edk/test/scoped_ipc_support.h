@@ -34,7 +34,7 @@ class ScopedIPCSupportHelper {
 
   base::RunLoop run_loop_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(ScopedIPCSupportHelper);
+  DISALLOW_COPY_AND_ASSIGN(ScopedIPCSupportHelper);
 };
 
 }  // namespace internal
@@ -54,7 +54,7 @@ class ScopedIPCSupport : public ProcessDelegate {
 
   internal::ScopedIPCSupportHelper helper_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(ScopedIPCSupport);
+  DISALLOW_COPY_AND_ASSIGN(ScopedIPCSupport);
 };
 
 }  // namespace test

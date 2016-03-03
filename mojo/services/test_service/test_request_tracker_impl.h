@@ -43,7 +43,7 @@ class TestRequestTrackerImpl : public TestRequestTracker {
   TrackingContext* context_;
   StrongBinding<TestRequestTracker> binding_;
   base::WeakPtrFactory<TestRequestTrackerImpl> weak_factory_;
-  MOJO_DISALLOW_COPY_AND_ASSIGN(TestRequestTrackerImpl);
+  DISALLOW_COPY_AND_ASSIGN(TestRequestTrackerImpl);
 };
 
 class TestTrackedRequestServiceImpl : public TestTrackedRequestService {
@@ -61,7 +61,7 @@ class TestTrackedRequestServiceImpl : public TestTrackedRequestService {
   TrackingContext* context_;
   StrongBinding<TestTrackedRequestService> binding_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(TestTrackedRequestServiceImpl);
+  DISALLOW_COPY_AND_ASSIGN(TestTrackedRequestServiceImpl);
 };
 
 }  // namespace test

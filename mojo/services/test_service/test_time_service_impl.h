@@ -35,7 +35,7 @@ class TestTimeServiceImpl : public TestTimeService {
   Connector* connector_;
   scoped_ptr<TrackedService> tracking_;
   StrongBinding<TestTimeService> binding_;
-  MOJO_DISALLOW_COPY_AND_ASSIGN(TestTimeServiceImpl);
+  DISALLOW_COPY_AND_ASSIGN(TestTimeServiceImpl);
 };
 
 }  // namespace test

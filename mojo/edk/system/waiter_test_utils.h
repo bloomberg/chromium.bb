@@ -59,7 +59,7 @@ class SimpleWaiterThread : public base::SimpleThread {
   uintptr_t* const context_;
   Waiter waiter_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(SimpleWaiterThread);
+  DISALLOW_COPY_AND_ASSIGN(SimpleWaiterThread);
 };
 
 // This is a more complex and realistic thread that has a |Waiter|, on which it
@@ -94,7 +94,7 @@ class WaiterThread : public base::SimpleThread {
 
   Waiter waiter_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(WaiterThread);
+  DISALLOW_COPY_AND_ASSIGN(WaiterThread);
 };
 
 }  // namespace test

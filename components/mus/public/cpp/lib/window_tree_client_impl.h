@@ -293,7 +293,7 @@ class WindowTreeClientImpl : public WindowTreeConnection,
       window_manager_internal_;
   mojom::WindowManagerClientAssociatedPtr window_manager_internal_client_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(WindowTreeClientImpl);
+  DISALLOW_COPY_AND_ASSIGN(WindowTreeClientImpl);
 };
 
 }  // namespace mus

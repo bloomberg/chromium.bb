@@ -105,7 +105,7 @@ class WindowServerTestBase
 
   bool window_tree_connection_destroyed_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(WindowServerTestBase);
+  DISALLOW_COPY_AND_ASSIGN(WindowServerTestBase);
 };
 
 }  // namespace mus

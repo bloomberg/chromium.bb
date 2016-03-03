@@ -5,7 +5,7 @@
 #ifndef MOJO_PUBLIC_CPP_ENVIRONMENT_ENVIRONMENT_H_
 #define MOJO_PUBLIC_CPP_ENVIRONMENT_ENVIRONMENT_H_
 
-#include "mojo/public/cpp/system/macros.h"
+#include "base/macros.h"
 
 struct MojoAsyncWaiter;
 struct MojoLogger;
@@ -45,7 +45,7 @@ class Environment {
   static void DestroyDefaultRunLoop();
 
  private:
-  MOJO_DISALLOW_COPY_AND_ASSIGN(Environment);
+  DISALLOW_COPY_AND_ASSIGN(Environment);
 };
 
 }  // namespace mojo

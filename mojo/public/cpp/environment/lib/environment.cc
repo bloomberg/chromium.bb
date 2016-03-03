@@ -79,7 +79,7 @@ void Environment::InstantiateDefaultRunLoop() {
   assert(!RunLoop::current());
   // Not leaked: accessible from |RunLoop::current()|.
   RunLoop* run_loop = new RunLoop();
-  MOJO_ALLOW_UNUSED_LOCAL(run_loop);
+  ALLOW_UNUSED_LOCAL(run_loop);
   assert(run_loop == RunLoop::current());
 }
 

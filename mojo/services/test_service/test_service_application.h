@@ -42,7 +42,7 @@ class TestServiceApplication : public ShellClient,
   int ref_count_;
   Connector* connector_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(TestServiceApplication);
+  DISALLOW_COPY_AND_ASSIGN(TestServiceApplication);
 };
 
 }  // namespace test

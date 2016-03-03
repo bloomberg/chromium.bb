@@ -5,6 +5,7 @@
 #ifndef MOJO_EDK_EMBEDDER_PLATFORM_CHANNEL_PAIR_H_
 #define MOJO_EDK_EMBEDDER_PLATFORM_CHANNEL_PAIR_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/process/launch.h"
 #include "build/build_config.h"
@@ -95,7 +96,7 @@ class MOJO_SYSTEM_IMPL_EXPORT PlatformChannelPair {
   ScopedPlatformHandle server_handle_;
   ScopedPlatformHandle client_handle_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(PlatformChannelPair);
+  DISALLOW_COPY_AND_ASSIGN(PlatformChannelPair);
 };
 
 }  // namespace edk

@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
@@ -104,7 +105,7 @@ class MOJO_SYSTEM_IMPL_EXPORT PlatformSharedBuffer
   base::Lock lock_;
   scoped_ptr<base::SharedMemory> shared_memory_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(PlatformSharedBuffer);
+  DISALLOW_COPY_AND_ASSIGN(PlatformSharedBuffer);
 };
 
 // A mapping of a |PlatformSharedBuffer| (compararable to a "file view" in
@@ -145,7 +146,7 @@ class MOJO_SYSTEM_IMPL_EXPORT PlatformSharedBufferMapping {
   // created from a duplicate handle.
   base::SharedMemory shared_memory_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(PlatformSharedBufferMapping);
+  DISALLOW_COPY_AND_ASSIGN(PlatformSharedBufferMapping);
 };
 
 }  // namespace edk

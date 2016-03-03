@@ -45,7 +45,7 @@ class TestRequestTrackerApplication
  private:
   Connector* connector_;
   TrackingContext context_;
-  MOJO_DISALLOW_COPY_AND_ASSIGN(TestRequestTrackerApplication);
+  DISALLOW_COPY_AND_ASSIGN(TestRequestTrackerApplication);
 };
 
 }  // namespace test

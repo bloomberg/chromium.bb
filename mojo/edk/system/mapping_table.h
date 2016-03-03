@@ -48,7 +48,7 @@ class MOJO_SYSTEM_IMPL_EXPORT MappingTable {
       base::hash_map<void*, PlatformSharedBufferMapping*>;
   AddressToMappingMap address_to_mapping_map_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(MappingTable);
+  DISALLOW_COPY_AND_ASSIGN(MappingTable);
 };
 
 }  // namespace edk

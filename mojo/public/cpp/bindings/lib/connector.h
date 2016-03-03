@@ -194,7 +194,7 @@ class Connector : public MessageReceiver {
 
   base::WeakPtrFactory<Connector> weak_factory_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(Connector);
+  DISALLOW_COPY_AND_ASSIGN(Connector);
 };
 
 }  // namespace internal

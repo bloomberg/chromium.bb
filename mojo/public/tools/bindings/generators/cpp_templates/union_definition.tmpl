@@ -29,7 +29,7 @@ bool {{class_name}}::Validate(const void* data,
     return false;
   }
   const {{class_name}}* object = static_cast<const {{class_name}}*>(data);
-  MOJO_ALLOW_UNUSED_LOCAL(object);
+  ALLOW_UNUSED_LOCAL(object);
 
   switch (object->tag) {
 {%  for field in union.fields %}

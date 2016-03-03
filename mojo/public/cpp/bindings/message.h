@@ -96,7 +96,7 @@ class Message {
   scoped_ptr<internal::PickleBuffer> buffer_;
   std::vector<Handle> handles_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(Message);
+  DISALLOW_COPY_AND_ASSIGN(Message);
 };
 
 class MessageReceiver {

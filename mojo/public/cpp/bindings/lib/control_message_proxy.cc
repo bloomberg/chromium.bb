@@ -28,7 +28,7 @@ class RunResponseForwardToCallback : public MessageReceiver {
 
  private:
   RunCallback callback_;
-  MOJO_DISALLOW_COPY_AND_ASSIGN(RunResponseForwardToCallback);
+  DISALLOW_COPY_AND_ASSIGN(RunResponseForwardToCallback);
 };
 
 bool RunResponseForwardToCallback::Accept(Message* message) {
@@ -77,7 +77,7 @@ void SendRunOrClosePipeMessage(MessageReceiverWithResponder* receiver,
   Serialize_(std::move(params_ptr), builder.buffer(), &params, nullptr);
   params->EncodePointersAndHandles(builder.message()->mutable_handles());
   bool ok = receiver->Accept(builder.message());
-  MOJO_ALLOW_UNUSED_LOCAL(ok);
+  ALLOW_UNUSED_LOCAL(ok);
 }
 
 }  // namespace

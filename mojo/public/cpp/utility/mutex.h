@@ -11,6 +11,7 @@
 
 #include <pthread.h>
 
+#include "base/macros.h"
 #include "mojo/public/cpp/system/macros.h"
 
 namespace mojo {
@@ -48,7 +49,7 @@ class Mutex {
  private:
   pthread_mutex_t mutex_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(Mutex);
+  DISALLOW_COPY_AND_ASSIGN(Mutex);
 };
 
 class MutexLock {
@@ -59,7 +60,7 @@ class MutexLock {
  private:
   Mutex* const mutex_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(MutexLock);
+  DISALLOW_COPY_AND_ASSIGN(MutexLock);
 };
 
 // Catch bug where variable name is omitted (e.g., |MutexLock (&mu)|).

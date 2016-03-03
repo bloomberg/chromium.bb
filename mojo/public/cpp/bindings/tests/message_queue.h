@@ -7,7 +7,7 @@
 
 #include <queue>
 
-#include "mojo/public/cpp/system/macros.h"
+#include "base/macros.h"
 
 namespace mojo {
 class Message;
@@ -36,7 +36,7 @@ class MessageQueue {
 
   std::queue<Message*> queue_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(MessageQueue);
+  DISALLOW_COPY_AND_ASSIGN(MessageQueue);
 };
 
 }  // namespace test

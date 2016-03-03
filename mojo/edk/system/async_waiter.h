@@ -6,10 +6,10 @@
 #define MOJO_EDK_SYSTEM_ASYNC_WAITER_H_
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "mojo/edk/system/awakable.h"
 #include "mojo/edk/system/system_impl_export.h"
 #include "mojo/public/c/system/types.h"
-#include "mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 namespace edk {
@@ -29,7 +29,7 @@ class MOJO_SYSTEM_IMPL_EXPORT AsyncWaiter final : public Awakable {
 
   AwakeCallback callback_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(AsyncWaiter);
+  DISALLOW_COPY_AND_ASSIGN(AsyncWaiter);
 };
 
 }  // namespace edk

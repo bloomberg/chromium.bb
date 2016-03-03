@@ -60,7 +60,7 @@ class WindowTrackerTemplate : public TObserver {
  private:
   WindowList windows_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(WindowTrackerTemplate);
+  DISALLOW_COPY_AND_ASSIGN(WindowTrackerTemplate);
 };
 
 }  // namespace mus

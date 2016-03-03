@@ -30,7 +30,7 @@ class InterfaceFactoryBinder : public InterfaceBinder {
 
  private:
   InterfaceFactory<Interface>* factory_;
-  MOJO_DISALLOW_COPY_AND_ASSIGN(InterfaceFactoryBinder);
+  DISALLOW_COPY_AND_ASSIGN(InterfaceFactoryBinder);
 };
 
 }  // namespace internal

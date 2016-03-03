@@ -14,6 +14,7 @@
 
 #include <sstream>
 
+#include "base/macros.h"
 #include "mojo/public/c/environment/logger.h"
 #include "mojo/public/cpp/environment/environment.h"
 #include "mojo/public/cpp/system/macros.h"
@@ -81,7 +82,7 @@ class LogMessage {
   const int line_;
   std::ostringstream stream_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(LogMessage);
+  DISALLOW_COPY_AND_ASSIGN(LogMessage);
 };
 
 // Used to ignore a stream.

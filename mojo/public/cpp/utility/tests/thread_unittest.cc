@@ -32,7 +32,7 @@ class SetIntThread : public Thread {
   int* const int_to_set_;
   const int value_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(SetIntThread);
+  DISALLOW_COPY_AND_ASSIGN(SetIntThread);
 };
 
 TEST(ThreadTest, CreateAndJoin) {

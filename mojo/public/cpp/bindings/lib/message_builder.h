@@ -30,7 +30,7 @@ class MessageBuilder {
 
   Message message_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(MessageBuilder);
+  DISALLOW_COPY_AND_ASSIGN(MessageBuilder);
 };
 
 class MessageWithRequestIDBuilder : public MessageBuilder {

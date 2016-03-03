@@ -29,7 +29,7 @@ class ControlMessageProxy {
   // Not owned.
   MessageReceiverWithResponder* receiver_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(ControlMessageProxy);
+  DISALLOW_COPY_AND_ASSIGN(ControlMessageProxy);
 };
 
 }  // namespace internal

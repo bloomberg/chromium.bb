@@ -90,7 +90,7 @@ class WindowPrivate {
  private:
   Window* window_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(WindowPrivate);
+  DISALLOW_COPY_AND_ASSIGN(WindowPrivate);
 };
 
 }  // namespace mus

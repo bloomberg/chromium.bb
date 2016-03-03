@@ -51,7 +51,7 @@ class MessagePipeTest : public test::MojoTestBase {
   MojoHandle pipe0_, pipe1_;
 
  private:
-  MOJO_DISALLOW_COPY_AND_ASSIGN(MessagePipeTest);
+  DISALLOW_COPY_AND_ASSIGN(MessagePipeTest);
 };
 
 TEST_F(MessagePipeTest, WriteData) {

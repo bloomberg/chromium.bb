@@ -35,7 +35,7 @@ class TestAsyncWaitCallback {
   int result_count_;
   MojoResult last_result_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(TestAsyncWaitCallback);
+  DISALLOW_COPY_AND_ASSIGN(TestAsyncWaitCallback);
 };
 
 MojoAsyncWaitID CallAsyncWait(const Handle& handle,
@@ -61,7 +61,7 @@ class AsyncWaitTest : public testing::Test {
   Environment environment_;
   RunLoop run_loop_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(AsyncWaitTest);
+  DISALLOW_COPY_AND_ASSIGN(AsyncWaitTest);
 };
 
 // Verifies AsyncWaitCallback is notified when pipe is ready.

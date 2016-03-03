@@ -8,7 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "mojo/public/cpp/system/macros.h"
+#include "base/macros.h"
 
 namespace mojo {
 
@@ -55,7 +55,7 @@ class BoundsChecker {
   uint32_t handle_begin_;
   uint32_t handle_end_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(BoundsChecker);
+  DISALLOW_COPY_AND_ASSIGN(BoundsChecker);
 };
 
 }  // namespace internal

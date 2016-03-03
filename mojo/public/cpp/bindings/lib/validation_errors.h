@@ -87,7 +87,7 @@ class ValidationErrorObserverForTesting {
   ValidationError last_error_;
   Callback<void()> callback_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(ValidationErrorObserverForTesting);
+  DISALLOW_COPY_AND_ASSIGN(ValidationErrorObserverForTesting);
 };
 
 // Used only by MOJO_INTERNAL_DLOG_SERIALIZATION_WARNING. Don't use it directly.
@@ -109,7 +109,7 @@ class SerializationWarningObserverForTesting {
  private:
   ValidationError last_warning_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(SerializationWarningObserverForTesting);
+  DISALLOW_COPY_AND_ASSIGN(SerializationWarningObserverForTesting);
 };
 
 }  // namespace internal

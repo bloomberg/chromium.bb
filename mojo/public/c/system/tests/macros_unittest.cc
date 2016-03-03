@@ -19,12 +19,6 @@
 namespace mojo {
 namespace {
 
-TEST(MacrosTest, AllowUnused) {
-  // Test that no warning/error is issued even though |x| is unused.
-  int x = 123;
-  MOJO_ALLOW_UNUSED_LOCAL(x);
-}
-
 int MustUseReturnedResult() MOJO_WARN_UNUSED_RESULT;
 int MustUseReturnedResult() {
   return 456;

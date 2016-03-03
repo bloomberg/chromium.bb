@@ -15,6 +15,7 @@
 #include <assert.h>
 #include <stdint.h>
 
+#include "base/compiler_specific.h"
 #include "mojo/public/c/system/message_pipe.h"
 #include "mojo/public/cpp/system/handle.h"
 #include "mojo/public/cpp/system/macros.h"
@@ -102,13 +103,13 @@ class MessagePipe {
 
 inline MessagePipe::MessagePipe() {
   MojoResult result = CreateMessagePipe(nullptr, &handle0, &handle1);
-  MOJO_ALLOW_UNUSED_LOCAL(result);
+  ALLOW_UNUSED_LOCAL(result);
   assert(result == MOJO_RESULT_OK);
 }
 
 inline MessagePipe::MessagePipe(const MojoCreateMessagePipeOptions& options) {
   MojoResult result = CreateMessagePipe(&options, &handle0, &handle1);
-  MOJO_ALLOW_UNUSED_LOCAL(result);
+  ALLOW_UNUSED_LOCAL(result);
   assert(result == MOJO_RESULT_OK);
 }
 

@@ -55,7 +55,7 @@ class ApplicationRunner {
   // Whether Run() has been called.
   bool has_run_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(ApplicationRunner);
+  DISALLOW_COPY_AND_ASSIGN(ApplicationRunner);
 };
 
 }  // namespace mojo

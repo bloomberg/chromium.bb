@@ -48,7 +48,7 @@ class SharedBufferDispatcherTest : public testing::Test {
   ~SharedBufferDispatcherTest() override {}
 
  private:
-  MOJO_DISALLOW_COPY_AND_ASSIGN(SharedBufferDispatcherTest);
+  DISALLOW_COPY_AND_ASSIGN(SharedBufferDispatcherTest);
 };
 
 // Tests valid inputs to |ValidateCreateOptions()|.

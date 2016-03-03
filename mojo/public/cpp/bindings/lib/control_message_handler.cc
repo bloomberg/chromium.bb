@@ -64,7 +64,7 @@ bool ControlMessageHandler::Run(Message* message,
   response_params->EncodePointersAndHandles(
       builder.message()->mutable_handles());
   bool ok = responder->Accept(builder.message());
-  MOJO_ALLOW_UNUSED_LOCAL(ok);
+  ALLOW_UNUSED_LOCAL(ok);
   delete responder;
 
   return true;

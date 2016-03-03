@@ -8,6 +8,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "mojo/edk/embedder/embedder.h"
@@ -128,7 +129,7 @@ class DataPipeTest : public test::MojoTestBase {
   MojoHandle producer_, consumer_;
 
  private:
-  MOJO_DISALLOW_COPY_AND_ASSIGN(DataPipeTest);
+  DISALLOW_COPY_AND_ASSIGN(DataPipeTest);
 };
 
 TEST_F(DataPipeTest, Basic) {

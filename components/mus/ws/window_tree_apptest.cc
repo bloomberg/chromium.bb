@@ -616,7 +616,7 @@ class WindowTreeAppTest : public mojo::test::ApplicationTestBase,
   int connection_id_2_;
   Id root_window_id_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(WindowTreeAppTest);
+  DISALLOW_COPY_AND_ASSIGN(WindowTreeAppTest);
 };
 
 // Verifies two clients/connections get different ids.

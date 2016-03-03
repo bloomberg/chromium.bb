@@ -183,7 +183,7 @@ void {{proxy_name}}::{{method.name}}(
   bool ok = receiver_->Accept(builder.message());
   // This return value may be ignored as !ok implies the Connector has
   // encountered an error, which will be visible through other means.
-  MOJO_ALLOW_UNUSED_LOCAL(ok);
+  ALLOW_UNUSED_LOCAL(ok);
 {%- endif %}
 }
 {%- endfor %}
@@ -242,7 +242,7 @@ void {{class_name}}_{{method.name}}_ProxyToResponder::Run(
   {{build_message(response_params_struct, "in_%s", params_description,
                   "&serialization_context_")}}
   bool ok = responder_->Accept(builder.message());
-  MOJO_ALLOW_UNUSED_LOCAL(ok);
+  ALLOW_UNUSED_LOCAL(ok);
   // TODO(darin): !ok returned here indicates a malformed message, and that may
   // be good reason to close the connection. However, we don't have a way to do
   // that from here. We should add a way.

@@ -10,6 +10,7 @@
 
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "mojo/public/cpp/system/macros.h"
 #include "mojo/public/cpp/utility/thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -92,7 +93,7 @@ class Fiddler {
       (rand() % 10) * kNanosPerMilli // Nanoseconds.
     };
     int rv = nanosleep(&req, nullptr);
-    MOJO_ALLOW_UNUSED_LOCAL(rv);
+    ALLOW_UNUSED_LOCAL(rv);
     assert(rv == 0);
   }
 
@@ -102,7 +103,7 @@ class Fiddler {
   Mutex* const mutex_;
   int* const shared_value_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(Fiddler);
+  DISALLOW_COPY_AND_ASSIGN(Fiddler);
 };
 
 class FiddlerThread : public Thread {
@@ -119,7 +120,7 @@ class FiddlerThread : public Thread {
  private:
   Fiddler* const fiddler_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(FiddlerThread);
+  DISALLOW_COPY_AND_ASSIGN(FiddlerThread);
 };
 
 // This does a stress test (that also checks exclusion).
@@ -180,7 +181,7 @@ class TryThread : public Thread {
   Mutex* const mutex_;
   bool try_lock_succeeded_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(TryThread);
+  DISALLOW_COPY_AND_ASSIGN(TryThread);
 };
 
 TEST(MutexTest, TryLock) {

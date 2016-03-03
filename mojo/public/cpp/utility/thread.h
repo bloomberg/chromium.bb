@@ -12,7 +12,7 @@
 #include <pthread.h>
 #include <stddef.h>
 
-#include "mojo/public/cpp/system/macros.h"
+#include "base/macros.h"
 
 namespace mojo {
 
@@ -54,7 +54,7 @@ class Thread {
   bool started_;
   bool joined_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(Thread);
+  DISALLOW_COPY_AND_ASSIGN(Thread);
 };
 
 }  // namespace mojo

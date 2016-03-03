@@ -7,7 +7,7 @@
 
 #include <stdio.h>
 
-#include "mojo/public/cpp/system/macros.h"
+#include "base/macros.h"
 #include "mojo/public/tests/test_support_private.h"
 
 namespace mojo {
@@ -28,7 +28,7 @@ class TestSupportImpl : public mojo::test::TestSupport {
       const char* relative_path) override;
 
  private:
-  MOJO_DISALLOW_COPY_AND_ASSIGN(TestSupportImpl);
+  DISALLOW_COPY_AND_ASSIGN(TestSupportImpl);
 };
 
 }  // namespace test

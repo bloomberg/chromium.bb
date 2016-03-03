@@ -51,7 +51,7 @@ class RunLoopHandlerImpl : public RunLoopHandler {
   MojoAsyncWaitCallback callback_;
   void* closure_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(RunLoopHandlerImpl);
+  DISALLOW_COPY_AND_ASSIGN(RunLoopHandlerImpl);
 };
 
 MojoAsyncWaitID AsyncWait(MojoHandle handle,

@@ -74,7 +74,7 @@ class BoundsChangeObserver : public WindowObserver {
 
   Window* window_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(BoundsChangeObserver);
+  DISALLOW_COPY_AND_ASSIGN(BoundsChangeObserver);
 };
 
 // Wait until the bounds of the supplied window change; returns false on
@@ -103,7 +103,7 @@ class ClientAreaChangeObserver : public WindowObserver {
 
   Window* window_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(ClientAreaChangeObserver);
+  DISALLOW_COPY_AND_ASSIGN(ClientAreaChangeObserver);
 };
 
 // Wait until the bounds of the supplied window change; returns false on
@@ -143,7 +143,7 @@ class TreeSizeMatchesObserver : public WindowObserver {
   Window* tree_;
   size_t tree_size_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(TreeSizeMatchesObserver);
+  DISALLOW_COPY_AND_ASSIGN(TreeSizeMatchesObserver);
 };
 
 // Wait until |window| has |tree_size| descendants; returns false on timeout.
@@ -173,7 +173,7 @@ class OrderChangeObserver : public WindowObserver {
 
   Window* window_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(OrderChangeObserver);
+  DISALLOW_COPY_AND_ASSIGN(OrderChangeObserver);
 };
 
 // Wait until |window|'s tree size matches |tree_size|; returns false on
@@ -205,7 +205,7 @@ class WindowTracker : public WindowObserver {
 
   Window* window_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(WindowTracker);
+  DISALLOW_COPY_AND_ASSIGN(WindowTracker);
 };
 
 }  // namespace
@@ -328,7 +328,7 @@ class WindowServerTest : public WindowServerTestBase {
 
   scoped_ptr<EmbedDetails> embed_details_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(WindowServerTest);
+  DISALLOW_COPY_AND_ASSIGN(WindowServerTest);
 };
 
 TEST_F(WindowServerTest, RootWindow) {
@@ -540,7 +540,7 @@ class VisibilityChangeObserver : public WindowObserver {
 
   Window* window_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(VisibilityChangeObserver);
+  DISALLOW_COPY_AND_ASSIGN(VisibilityChangeObserver);
 };
 
 }  // namespace
@@ -604,7 +604,7 @@ class DrawnChangeObserver : public WindowObserver {
 
   Window* window_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(DrawnChangeObserver);
+  DISALLOW_COPY_AND_ASSIGN(DrawnChangeObserver);
 };
 
 }  // namespace
@@ -675,7 +675,7 @@ class FocusChangeObserver : public WindowObserver {
   Window* last_lost_focus_;
   bool quit_on_change_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(FocusChangeObserver);
+  DISALLOW_COPY_AND_ASSIGN(FocusChangeObserver);
 };
 
 class NullFocusChangeObserver : public WindowTreeConnectionObserver {
@@ -696,7 +696,7 @@ class NullFocusChangeObserver : public WindowTreeConnectionObserver {
 
   WindowTreeConnection* connection_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(NullFocusChangeObserver);
+  DISALLOW_COPY_AND_ASSIGN(NullFocusChangeObserver);
 };
 
 bool WaitForWindowToHaveFocus(Window* window) {
@@ -904,7 +904,7 @@ class DestroyedChangedObserver : public WindowObserver {
   Window* window_;
   bool* got_destroy_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(DestroyedChangedObserver);
+  DISALLOW_COPY_AND_ASSIGN(DestroyedChangedObserver);
 };
 
 }  // namespace
@@ -963,7 +963,7 @@ class WindowRemovedFromParentObserver : public WindowObserver {
   Window* window_;
   bool was_removed_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(WindowRemovedFromParentObserver);
+  DISALLOW_COPY_AND_ASSIGN(WindowRemovedFromParentObserver);
 };
 
 TEST_F(WindowServerTest, EmbedRemovesChildren) {
@@ -1012,7 +1012,7 @@ class DestroyObserver : public WindowObserver {
   WindowServerTestBase* test_;
   bool* got_destroy_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(DestroyObserver);
+  DISALLOW_COPY_AND_ASSIGN(DestroyObserver);
 };
 
 }  // namespace

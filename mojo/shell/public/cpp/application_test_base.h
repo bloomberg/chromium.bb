@@ -49,7 +49,7 @@ class TestHelper {
   uint32_t instance_id_;
   uint32_t userid_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(TestHelper);
+  DISALLOW_COPY_AND_ASSIGN(TestHelper);
 };
 
 // A GTEST base class for application testing executed in mojo_shell.
@@ -89,7 +89,7 @@ class ApplicationTestBase : public testing::Test {
  private:
   scoped_ptr<TestHelper> test_helper_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(ApplicationTestBase);
+  DISALLOW_COPY_AND_ASSIGN(ApplicationTestBase);
 };
 
 }  // namespace test

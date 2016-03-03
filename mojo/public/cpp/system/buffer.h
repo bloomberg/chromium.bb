@@ -15,6 +15,7 @@
 #include <assert.h>
 #include <stdint.h>
 
+#include "base/compiler_specific.h"
 #include "mojo/public/c/system/buffer.h"
 #include "mojo/public/cpp/system/handle.h"
 #include "mojo/public/cpp/system/macros.h"
@@ -113,7 +114,7 @@ class SharedBuffer {
 
 inline SharedBuffer::SharedBuffer(uint64_t num_bytes) {
   MojoResult result = CreateSharedBuffer(nullptr, num_bytes, &handle);
-  MOJO_ALLOW_UNUSED_LOCAL(result);
+  ALLOW_UNUSED_LOCAL(result);
   assert(result == MOJO_RESULT_OK);
 }
 
@@ -121,7 +122,7 @@ inline SharedBuffer::SharedBuffer(
     uint64_t num_bytes,
     const MojoCreateSharedBufferOptions& options) {
   MojoResult result = CreateSharedBuffer(&options, num_bytes, &handle);
-  MOJO_ALLOW_UNUSED_LOCAL(result);
+  ALLOW_UNUSED_LOCAL(result);
   assert(result == MOJO_RESULT_OK);
 }
 

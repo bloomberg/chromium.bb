@@ -81,7 +81,7 @@ class ShellConnection : public shell::mojom::ShellClient {
   scoped_ptr<Connector> connector_;
   base::WeakPtrFactory<ShellConnection> weak_factory_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(ShellConnection);
+  DISALLOW_COPY_AND_ASSIGN(ShellConnection);
 };
 
 }  // namespace mojo
