@@ -24,10 +24,13 @@ namespace {
 int g_close_menu_delay = 300;
 }
 
-ExtensionToolbarMenuView::ExtensionToolbarMenuView(Browser* browser,
-                                                   AppMenu* app_menu)
+ExtensionToolbarMenuView::ExtensionToolbarMenuView(
+    Browser* browser,
+    AppMenu* app_menu,
+    views::MenuItemView* menu_item)
     : browser_(browser),
       app_menu_(app_menu),
+      menu_item_(menu_item),
       container_(nullptr),
       max_height_(0),
       toolbar_actions_bar_observer_(this),
@@ -124,12 +127,12 @@ void ExtensionToolbarMenuView::CloseAppMenu() {
 void ExtensionToolbarMenuView::Redraw() {
   // In a case where the size of the container may have changed (e.g., by a row
   // being added or removed), we need to re-layout the menu in order to resize
-  // the view (calling Layout() on this is insufficient because other items may
-  // need to shift up or down).
-  parent()->parent()->Layout();
-  // The Menus layout code doesn't recursively call layout on its children like
-  // the default View code. Explicitly layout this view.
+  // the view. This may result in redrawing the window. Luckily, this happens
+  // only in the case of a row being aded or removed (very rare), and
+  // typically happens near menu initialization (rather than once the menu is
+  // fully open).
   Layout();
+  menu_item_->GetParentMenuItem()->ChildrenChanged();
 }
 
 int ExtensionToolbarMenuView::start_padding() const {
