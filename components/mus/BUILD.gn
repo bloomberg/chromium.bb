@@ -75,6 +75,9 @@ source_set("lib") {
     "mus_app.h",
   ]
 
+  public_deps = [
+    "//components/mus/common:mus_common",
+  ]
   deps = [
     ":resources_100",
     ":resources_200",
@@ -82,7 +85,6 @@ source_set("lib") {
     "//base",
     "//cc",
     "//cc/surfaces",
-    "//components/mus/common",
     "//components/mus/gles2",
     "//components/mus/public/interfaces",
     "//components/mus/surfaces",
@@ -103,9 +105,7 @@ source_set("lib") {
 
   if (use_x11) {
     public_configs = [ "//build/config/linux:x11" ]
-    public_deps = [
-      "//ui/events/platform/x11",
-    ]
+    public_deps += [ "//ui/events/platform/x11" ]
   }
 
   if (use_ozone) {
