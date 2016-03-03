@@ -67,10 +67,15 @@ class FakeAppInstance : public AppInstance {
   void Init(AppHostPtr host_ptr) override {}
   void RefreshAppList() override;
   void LaunchApp(const mojo::String& package_name,
-                 const mojo::String& activity) override;
+                 const mojo::String& activity,
+                 ScreenRectPtr dimension) override;
   void RequestAppIcon(const mojo::String& package_name,
                       const mojo::String& activity,
                       ScaleFactor scale_factor) override;
+  void CanHandleResolution(const mojo::String& package_name,
+      const mojo::String& activity,
+      ScreenRectPtr dimension,
+      const CanHandleResolutionCallback& callback) override;
 
   // Methods to reply messages.
   void SendRefreshAppList(const std::vector<AppInfo>& apps);

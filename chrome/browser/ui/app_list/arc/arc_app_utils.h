@@ -7,13 +7,29 @@
 
 #include <string>
 
+#include "base/callback.h"
+#include "ui/gfx/geometry/rect.h"
+
 namespace content {
 class BrowserContext;
 }
 
 namespace arc {
+using CanHandleResolutionCallback = base::Callback<void(bool)>;
+}
+
+namespace arc {
 
 bool LaunchApp(content::BrowserContext* context, const std::string& app_id);
+
+// Tests if the application can use the given target resolution.
+// The callback will receive the information once known.
+// A false will get returned if the result cannot be determined in which case
+// the callback will not be called.
+bool CanHandleResolution(content::BrowserContext* context,
+    const std::string& app_id,
+    const gfx::Rect& rect,
+    const CanHandleResolutionCallback callback);
 
 }  // namespace arc
 

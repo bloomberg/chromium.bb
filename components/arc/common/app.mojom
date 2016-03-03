@@ -27,6 +27,14 @@ struct AppInfo {
   string activity;
 };
 
+// Represents a rectangle to specify screen coordinates.
+struct ScreenRect {
+  int32 left;
+  int32 top;
+  int32 right;
+  int32 bottom;
+};
+
 interface AppHost {
   // Receives a list of available ARC apps to Chrome. Members of AppInfo must
   // contain non-empty string.
@@ -56,8 +64,10 @@ interface AppInstance {
   Init(AppHost host_ptr);
 
   // Sends a request to ARC to launch an ARC app defined by |package_name| and
-  // |activity|, which cannot be empty.
-  LaunchApp(string package_name, string activity);
+  // |activity|, which cannot be empty. |dimension_on_screen| can be null to
+  // indicate to use the entire screen.
+  LaunchApp(string package_name, string activity,
+            [MinVersion=1] ScreenRect? dimension);
 
   // Sends a request to ARC to refresh a list of ARC apps.
   // OnRefreshAppsList is expected in response to this message. However,
@@ -68,5 +78,11 @@ interface AppInstance {
   // Sends a request to ARC for the ARC app icon of a required scale factor.
   // Scale factor is an enum defined at ui/base/layout.h. App is defined by
   // |package_name| and |activity|, which cannot be empty.
-  RequestAppIcon(string package_name, string activity, ScaleFactor scale_factor);
+  RequestAppIcon(string package_name, string activity,
+                 ScaleFactor scale_factor);
+
+  // Query if a given resolution can be handled by the application. Returns true
+  // if it can.
+  [MinVersion=1] CanHandleResolution(string package_name, string activity,
+                                     ScreenRect dimension) => (bool success);
 };
