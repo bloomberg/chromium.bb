@@ -397,7 +397,7 @@ InspectorTest.loadTimeline = function(timelineData)
     }
 
     InspectorTest.override(WebInspector.TimelineLoader, "_createFileReader", createFileReader);
-    WebInspector.TimelineLoader.loadFromFile(InspectorTest.timelineModel(), {}, new WebInspector.Progress());
+    timeline._loadFromFile({});
 }
 
 };

@@ -2,18 +2,23 @@ Tests tracing based Timeline save/load functionality.
 
 
 Running: testNormal
+TimelineLifecycleDelegate.loadingStarted()
+TimelineLifecycleDelegate.loadingProgress()
+TimelineLifecycleDelegate.loadingComplete(true)
 Saved data is equal to restored data: true
 
 Running: testJSONObjectFormat
+TimelineLifecycleDelegate.loadingStarted()
+TimelineLifecycleDelegate.loadingProgress()
+TimelineLifecycleDelegate.loadingComplete(true)
 Saved data is equal to restored data: true
 
 Running: testBroken
-error: TracingStartedInPage event not found.
+TimelineLifecycleDelegate.loadingStarted()
+TimelineLifecycleDelegate.loadingComplete(true)
 Model is empty: true
 
 Running: testMalformedJSON
-error: TracingStartedInPage event not found.
-error: TracingStartedInPage event not found.
-error: TracingStartedInPage event not found.
+TimelineLifecycleDelegate.loadingComplete(false)
 Model is empty: true
 
