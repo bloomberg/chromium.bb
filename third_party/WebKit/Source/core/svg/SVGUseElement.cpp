@@ -253,20 +253,20 @@ void SVGUseElement::svgAttributeChanged(const QualifiedName& attrName)
     SVGGraphicsElement::svgAttributeChanged(attrName);
 }
 
-static bool isDisallowedElement(const Node* node)
+static bool isDisallowedElement(const Node& node)
 {
     // Spec: "Any 'svg', 'symbol', 'g', graphics element or other 'use' is potentially a template object that can be re-used
     // (i.e., "instanced") in the SVG document via a 'use' element."
     // "Graphics Element" is defined as 'circle', 'ellipse', 'image', 'line', 'path', 'polygon', 'polyline', 'rect', 'text'
     // Excluded are anything that is used by reference or that only make sense to appear once in a document.
     // We must also allow the shadow roots of other use elements.
-    if (node->isShadowRoot() || node->isTextNode())
+    if (node.isShadowRoot() || node.isTextNode())
         return false;
 
-    if (!node->isSVGElement())
+    if (!node.isSVGElement())
         return true;
 
-    const Element* element = toElement(node);
+    const Element& element = toElement(node);
 
     DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, allowedElementTags, ());
     if (allowedElementTags.isEmpty()) {
@@ -291,20 +291,7 @@ static bool isDisallowedElement(const Node* node)
         allowedElementTags.add(SVGNames::tspanTag);
         allowedElementTags.add(SVGNames::useTag);
     }
-    return !allowedElementTags.contains<SVGAttributeHashTranslator>(element->tagQName());
-}
-
-static bool subtreeContainsDisallowedElement(const Node* start)
-{
-    if (isDisallowedElement(start))
-        return true;
-
-    for (const Node* cur = start->firstChild(); cur; cur = cur->nextSibling()) {
-        if (subtreeContainsDisallowedElement(cur))
-            return true;
-    }
-
-    return false;
+    return !allowedElementTags.contains<SVGAttributeHashTranslator>(element.tagQName());
 }
 
 void SVGUseElement::scheduleShadowTreeRecreation()
@@ -398,7 +385,7 @@ void SVGUseElement::buildShadowAndInstanceTree(SVGElement* target)
 
     // Do not allow self-referencing.
     // 'target' may be null, if it's a non SVG namespaced element.
-    if (!target || target == this || isDisallowedElement(target))
+    if (!target || target == this || isDisallowedElement(*target))
         return;
 
     // Set up root SVG element in shadow tree.
@@ -506,7 +493,7 @@ void SVGUseElement::buildShadowTree(SVGElement* target, SVGElement* targetInstan
 {
     ASSERT(target);
     ASSERT(targetInstance);
-    ASSERT(!isDisallowedElement(target));
+    ASSERT(!isDisallowedElement(*target));
 
     // Spec: If the referenced object is itself a 'use', or if there are 'use' subelements within the referenced
     // object, the instance tree will contain recursive expansion of the indirect references to form a complete tree.
@@ -523,7 +510,7 @@ void SVGUseElement::buildShadowTree(SVGElement* target, SVGElement* targetInstan
 
     for (RefPtrWillBeRawPtr<Node> child = target->firstChild(); child; child = child->nextSibling()) {
         // Skip any disallowed element.
-        if (isDisallowedElement(child.get()))
+        if (isDisallowedElement(*child))
             continue;
 
         RefPtrWillBeRawPtr<Node> newChild = child->cloneNode(false);
@@ -570,12 +557,18 @@ bool SVGUseElement::hasCycleUseReferencing(SVGUseElement* use, ContainerNode* ta
     return false;
 }
 
-static inline void removeDisallowedElementsFromSubtree(Element& subtree)
+// We don't walk the target tree element-by-element, and clone each element,
+// but instead use cloneNode(deep=true). This is an optimization for the common
+// case where <use> doesn't contain disallowed elements (ie. <foreignObject>).
+// Though if there are disallowed elements in the subtree, we have to remove
+// them.  For instance: <use> on <g> containing <foreignObject> (indirect
+// case).
+static inline void removeDisallowedElementsFromSubtree(SVGElement& subtree)
 {
     ASSERT(!subtree.inDocument());
     Element* element = ElementTraversal::firstWithin(subtree);
     while (element) {
-        if (isDisallowedElement(element)) {
+        if (isDisallowedElement(*element)) {
             Element* next = ElementTraversal::nextSkippingChildren(*element, &subtree);
             // The subtree is not in document so this won't generate events that could mutate the tree.
             element->parentNode()->removeChild(element);
@@ -625,7 +618,7 @@ bool SVGUseElement::expandUseElementsInShadowTree()
         if (hasCycleUseReferencing(toSVGUseElement(use->correspondingElement()), use.get(), target))
             return false;
 
-        if (target && isDisallowedElement(target))
+        if (target && isDisallowedElement(*target))
             return false;
         // Don't ASSERT(target) here, it may be "pending", too.
         // Setup sub-shadow tree root node
@@ -646,13 +639,7 @@ bool SVGUseElement::expandUseElementsInShadowTree()
             cloneParent->appendChild(newChild.release());
         }
 
-        // We don't walk the target tree element-by-element, and clone each element,
-        // but instead use cloneElementWithChildren(). This is an optimization for the common
-        // case where <use> doesn't contain disallowed elements (ie. <foreignObject>).
-        // Though if there are disallowed elements in the subtree, we have to remove them.
-        // For instance: <use> on <g> containing <foreignObject> (indirect case).
-        if (subtreeContainsDisallowedElement(cloneParent.get()))
-            removeDisallowedElementsFromSubtree(*cloneParent);
+        removeDisallowedElementsFromSubtree(*cloneParent);
 
         RefPtrWillBeRawPtr<SVGElement> replacingElement(cloneParent.get());
 
@@ -683,13 +670,7 @@ void SVGUseElement::expandSymbolElementsInShadowTree()
         // Move already cloned elements to the new <svg> element.
         moveChildrenToReplacementElement(*symbol, *svgElement);
 
-        // We don't walk the target tree element-by-element, and clone each element,
-        // but instead use cloneNode(deep=true). This is an optimization for the common
-        // case where <use> doesn't contain disallowed elements (ie. <foreignObject>).
-        // Though if there are disallowed elements in the subtree, we have to remove them.
-        // For instance: <use> on <g> containing <foreignObject> (indirect case).
-        if (subtreeContainsDisallowedElement(svgElement.get()))
-            removeDisallowedElementsFromSubtree(*svgElement);
+        removeDisallowedElementsFromSubtree(*svgElement);
 
         RefPtrWillBeRawPtr<SVGElement> replacingElement(svgElement.get());
 
