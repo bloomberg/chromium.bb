@@ -854,6 +854,20 @@ void WebGL2RenderingContextBase::texImage2D(GLenum target, GLint level, GLint in
     webContext()->texImage2D(target, level, convertTexInternalFormat(internalformat, type), width, height, border, format, type, reinterpret_cast<const void *>(offset));
 }
 
+void WebGL2RenderingContextBase::texSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, GLintptr offset)
+{
+    if (isContextLost())
+        return;
+    if (!validateTexture2DBinding("texSubImage2D", target))
+        return;
+    if (!validateTexFunc("texSubImage2D", TexSubImage, SourceUnpackBuffer, target, level, 0, width, height, 1, 0, format, type, xoffset, yoffset, 0))
+        return;
+    if (!validateValueFitNonNegInt32("texSubImage2D", "offset", offset))
+        return;
+
+    webContext()->texSubImage2D(target, level, xoffset, yoffset, width, height, format, type, reinterpret_cast<const void*>(offset));
+}
+
 void WebGL2RenderingContextBase::texImage2D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, DOMArrayBufferView* data)
 {
     WebGLRenderingContextBase::texImage2D(target, level, internalformat, width, height, border, format, type, data);
@@ -884,6 +898,42 @@ void WebGL2RenderingContextBase::texImage2D(GLenum target, GLint level, GLint in
     WebGLRenderingContextBase::texImage2D(target, level, internalformat, format, type, imageBitMap, exceptionState);
 }
 
+void WebGL2RenderingContextBase::texSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset,
+    GLsizei width, GLsizei height, GLenum format, GLenum type, DOMArrayBufferView* pixels)
+{
+    WebGLRenderingContextBase::texSubImage2D(target, level, xoffset, yoffset, width, height, format, type, pixels);
+}
+
+void WebGL2RenderingContextBase::texSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset,
+    GLenum format, GLenum type, ImageData* pixels)
+{
+    WebGLRenderingContextBase::texSubImage2D(target, level, xoffset, yoffset, format, type, pixels);
+}
+
+void WebGL2RenderingContextBase::texSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset,
+    GLenum format, GLenum type, HTMLImageElement* image, ExceptionState& exceptionState)
+{
+    WebGLRenderingContextBase::texSubImage2D(target, level, xoffset, yoffset, format, type, image, exceptionState);
+}
+
+void WebGL2RenderingContextBase::texSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset,
+    GLenum format, GLenum type, HTMLCanvasElement* canvas, ExceptionState& exceptionState)
+{
+    WebGLRenderingContextBase::texSubImage2D(target, level, xoffset, yoffset, format, type, canvas, exceptionState);
+}
+
+void WebGL2RenderingContextBase::texSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset,
+    GLenum format, GLenum type, HTMLVideoElement* video, ExceptionState& exceptionState)
+{
+    WebGLRenderingContextBase::texSubImage2D(target, level, xoffset, yoffset, format, type, video, exceptionState);
+}
+
+void WebGL2RenderingContextBase::texSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset,
+    GLenum format, GLenum type, PassRefPtrWillBeRawPtr<ImageBitmap> bitmap, ExceptionState& exceptionState)
+{
+    WebGLRenderingContextBase::texSubImage2D(target, level, xoffset, yoffset, format, type, bitmap, exceptionState);
+}
+
 void WebGL2RenderingContextBase::texStorage2D(GLenum target, GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height)
 {
     if (isContextLost() || !validateTexStorage("texStorage2D", target, levels, internalformat, width, height, 1, TexStorageType2D))
@@ -908,7 +958,7 @@ void WebGL2RenderingContextBase::texImage3D(GLenum target, GLint level, GLint in
         return;
     if (!validateTexFunc("texImage3D", TexImage, SourceArrayBufferView, target, level, internalformat, width, height, depth, border, format, type, 0, 0, 0))
         return;
-    if (!validateTexFuncData("texImage3D", level, width, height, depth, format, type, pixels, NullAllowed))
+    if (!validateTexFuncData("texImage3D", Tex3D, level, width, height, depth, format, type, pixels, NullAllowed))
         return;
 
     void* data = pixels ? pixels->baseAddress() : 0;
@@ -976,7 +1026,7 @@ void WebGL2RenderingContextBase::texSubImage3D(GLenum target, GLint level, GLint
         return;
     if (!validateTexFunc("texSubImage3D", TexSubImage, SourceArrayBufferView, target, level, 0, width, height, depth, 0, format, type, xoffset, yoffset, zoffset))
         return;
-    if (!validateTexFuncData("texSubImage3D", level, width, height, depth, format, type, pixels, NullNotAllowed))
+    if (!validateTexFuncData("texSubImage3D", Tex3D, level, width, height, depth, format, type, pixels, NullNotAllowed))
         return;
 
     void* data = pixels->baseAddress();
@@ -992,6 +1042,20 @@ void WebGL2RenderingContextBase::texSubImage3D(GLenum target, GLint level, GLint
     webContext()->texSubImage3D(target, level, xoffset, yoffset, zoffset, width, height, depth, format, type, data);
     if (changeUnpackParameters)
         restoreUnpackParameters();
+}
+
+void WebGL2RenderingContextBase::texSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type, GLintptr offset)
+{
+    if (isContextLost())
+        return;
+    if (!validateTexture3DBinding("texSubImage3D", target))
+        return;
+    if (!validateTexFunc("texSubImage3D", TexSubImage, SourceUnpackBuffer, target, level, 0, width, height, depth, 0, format, type, xoffset, yoffset, zoffset))
+        return;
+    if (!validateValueFitNonNegInt32("texSubImage3D", "offset", offset))
+        return;
+
+    webContext()->texSubImage3D(target, level, xoffset, yoffset, zoffset, width, height, depth, format, type, reinterpret_cast<const void*>(offset));
 }
 
 void WebGL2RenderingContextBase::texSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLenum format, GLenum type, ImageData* pixels)
@@ -3515,15 +3579,17 @@ WebGLImageConversion::PixelStoreParams WebGL2RenderingContextBase::getPackPixelS
     return params;
 }
 
-WebGLImageConversion::PixelStoreParams WebGL2RenderingContextBase::getUnpackPixelStoreParams()
+WebGLImageConversion::PixelStoreParams WebGL2RenderingContextBase::getUnpackPixelStoreParams(TexImageDimension dimension)
 {
     WebGLImageConversion::PixelStoreParams params;
     params.alignment = m_unpackAlignment;
     params.rowLength = m_unpackRowLength;
-    params.imageHeight = m_unpackImageHeight;
     params.skipPixels = m_unpackSkipPixels;
     params.skipRows = m_unpackSkipRows;
-    params.skipImages = m_unpackSkipImages;
+    if (dimension == Tex3D) {
+        params.imageHeight = m_unpackImageHeight;
+        params.skipImages = m_unpackSkipImages;
+    }
     return params;
 }
 

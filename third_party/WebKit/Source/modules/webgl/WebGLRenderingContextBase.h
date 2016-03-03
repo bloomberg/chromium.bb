@@ -804,13 +804,17 @@ protected:
         TexSubImage2DByGPU,
         TexSubImage3DByGPU
     };
+    enum TexImageDimension {
+        Tex2D,
+        Tex3D
+    };
     // Copy from the canvas element directly to the texture via the GPU, without a read-back to system memory.
     void texImageCanvasByGPU(TexImageByGPUType, WebGLTexture*, GLenum target, GLint level,
         GLint internalformat, GLenum type, GLint xoffset, GLint yoffset, GLint zoffset, HTMLCanvasElement*);
     bool canUseTexImageCanvasByGPU(GLint internalformat, GLenum type);
 
     virtual WebGLImageConversion::PixelStoreParams getPackPixelStoreParams();
-    virtual WebGLImageConversion::PixelStoreParams getUnpackPixelStoreParams();
+    virtual WebGLImageConversion::PixelStoreParams getUnpackPixelStoreParams(TexImageDimension);
 
     // Helper function for copyTex{Sub}Image, check whether the internalformat
     // and the color buffer format of the current bound framebuffer combination
@@ -898,7 +902,7 @@ protected:
     // Helper function to validate that the given ArrayBufferView
     // is of the correct type and contains enough data for the texImage call.
     // Generates GL error and returns false if parameters are invalid.
-    bool validateTexFuncData(const char* functionName, GLint level, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type, DOMArrayBufferView* pixels, NullDisposition);
+    bool validateTexFuncData(const char* functionName, TexImageDimension, GLint level, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type, DOMArrayBufferView* pixels, NullDisposition);
 
     // Helper function to validate a given texture format is settable as in
     // you can supply data to texImage2D, or call texImage2D, copyTexImage2D and

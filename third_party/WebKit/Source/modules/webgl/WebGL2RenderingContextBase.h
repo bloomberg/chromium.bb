@@ -45,8 +45,9 @@ public:
 
     /* Texture objects */
     void texImage2D(GLenum, GLint, GLint, GLsizei, GLsizei, GLint, GLenum, GLenum, GLintptr);
-    // Have to re-declair/re-define the following texImage2D functions from base class.
-    // This is because the above texImage2D() hides the name from base class.
+    void texSubImage2D(GLenum, GLint, GLint, GLint, GLsizei, GLsizei, GLenum, GLenum, GLintptr);
+    // Have to re-declare/re-define the following tex{Sub}Image2D functions from base class.
+    // This is because the above tex{Sub}Image2D() hides the name from base class.
     void texImage2D(GLenum target, GLint level, GLint internalformat,
         GLsizei width, GLsizei height, GLint border,
         GLenum format, GLenum type, DOMArrayBufferView*);
@@ -60,12 +61,26 @@ public:
         GLenum format, GLenum type, HTMLVideoElement*, ExceptionState&);
     void texImage2D(GLenum target, GLint level, GLint internalformat,
         GLenum format, GLenum type, PassRefPtrWillBeRawPtr<ImageBitmap>, ExceptionState&);
+    void texSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset,
+        GLsizei width, GLsizei height,
+        GLenum format, GLenum type, DOMArrayBufferView*);
+    void texSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset,
+        GLenum format, GLenum type, ImageData*);
+    void texSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset,
+        GLenum format, GLenum type, HTMLImageElement*, ExceptionState&);
+    void texSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset,
+        GLenum format, GLenum type, HTMLCanvasElement*, ExceptionState&);
+    void texSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset,
+        GLenum format, GLenum type, HTMLVideoElement*, ExceptionState&);
+    void texSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset,
+        GLenum format, GLenum type, PassRefPtrWillBeRawPtr<ImageBitmap>, ExceptionState&);
 
     void texStorage2D(GLenum, GLsizei, GLenum, GLsizei, GLsizei);
     void texStorage3D(GLenum, GLsizei, GLenum, GLsizei, GLsizei, GLsizei);
     void texImage3D(GLenum, GLint, GLint, GLsizei, GLsizei, GLsizei, GLint, GLenum, GLenum, DOMArrayBufferView*);
     void texImage3D(GLenum, GLint, GLint, GLsizei, GLsizei, GLsizei, GLint, GLenum, GLenum, GLintptr);
     void texSubImage3D(GLenum, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GLenum, GLenum, DOMArrayBufferView*);
+    void texSubImage3D(GLenum, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GLenum, GLenum, GLintptr);
     void texSubImage3D(GLenum, GLint, GLint, GLint, GLint, GLenum, GLenum, ImageData*);
     void texSubImage3D(GLenum, GLint, GLint, GLint, GLint, GLenum, GLenum, HTMLImageElement*, ExceptionState&);
     void texSubImage3D(GLenum, GLint, GLint, GLint, GLint, GLenum, GLenum, HTMLCanvasElement*, ExceptionState&);
@@ -232,7 +247,7 @@ protected:
     bool validateAndUpdateBufferBindBaseTarget(const char* functionName, GLenum, GLuint, WebGLBuffer*);
 
     WebGLImageConversion::PixelStoreParams getPackPixelStoreParams() override;
-    WebGLImageConversion::PixelStoreParams getUnpackPixelStoreParams() override;
+    WebGLImageConversion::PixelStoreParams getUnpackPixelStoreParams(TexImageDimension) override;
 
     bool checkAndTranslateAttachments(const char* functionName, GLenum, const Vector<GLenum>&, Vector<GLenum>&);
 
