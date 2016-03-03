@@ -1509,6 +1509,7 @@ void Tab::PaintIcon(gfx::Canvas* canvas) {
 void Tab::AdvanceLoadingAnimation() {
   const TabRendererData::NetworkState state = data().network_state;
   if (controller_->IsImmersiveStyle()) {
+    throbber_->SetVisible(false);
     if (state == TabRendererData::NETWORK_STATE_WAITING) {
       // Waiting steps backwards.
       immersive_loading_step_ =

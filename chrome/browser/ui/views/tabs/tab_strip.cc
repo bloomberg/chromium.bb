@@ -1379,9 +1379,13 @@ bool TabStrip::ShouldPaintTab(const Tab* tab, gfx::Rect* clip) {
 
 bool TabStrip::CanPaintThrobberToLayer() const {
   // Disable layer-painting of throbbers if dragging, if any tab animation is in
-  // progress, or if stacked tabs are enabled.
+  // progress, or if stacked tabs are enabled. Also disable in fullscreen: when
+  // "immersive" the tab strip could be sliding in or out while transitioning to
+  // or away from |immersive_style_| and, for other modes, there's no tab strip.
   const bool dragging = drag_controller_ && drag_controller_->started_drag();
-  return !touch_layout_ && !dragging && !IsAnimating();
+  const views::Widget* widget = GetWidget();
+  return widget && !touch_layout_ && !dragging && !IsAnimating() &&
+         !widget->IsFullscreen();
 }
 
 bool TabStrip::IsIncognito() const {
