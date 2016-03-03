@@ -91,6 +91,9 @@ class GCM_EXPORT HeartbeatManager : public base::PowerObserver {
   // Restarts the heartbeat timer.
   void RestartTimer();
 
+  // Calculates and sets the current heartbeat interval.
+  void UpdateHeartbeatInterval();
+
   // Calculates default heartbeat interval, depending on current network.
   int GetDefaultHeartbeatInterval();
 

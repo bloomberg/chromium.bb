@@ -287,6 +287,29 @@ TEST_F(HeartbeatManagerTest, ClientIntervalInvalid) {
       manager()->GetMaxClientHeartbeatIntervalMs()));
 }
 
+// Verifies that client interval is reset appropriately after the heartbeat is
+// triggered. See http://crbug.com/591490 for details.
+TEST_F(HeartbeatManagerTest, ClientIntervalAfterHeartbeatTriggered) {
+  const int kCustomIntervalMs = 180 * 1000;  // 180 seconds.
+  manager()->SetClientHeartbeatIntervalMs(kCustomIntervalMs);
+  StartManager();
+
+  // This changes the interval as manager awaits a heartbeat ack.
+  manager()->TriggerHearbeat();
+  const int kDefaultAckIntervalMs = 60 * 1000;  // 60 seconds.
+  base::TimeTicks heartbeat = manager()->GetNextHeartbeatTime();
+  EXPECT_LE(heartbeat - base::TimeTicks::Now(),
+            base::TimeDelta::FromMilliseconds(kDefaultAckIntervalMs));
+
+  // This should reset the interval to the custom interval.
+  manager()->OnHeartbeatAcked();
+  heartbeat = manager()->GetNextHeartbeatTime();
+  EXPECT_GT(heartbeat - base::TimeTicks::Now(),
+            base::TimeDelta::FromMilliseconds(kDefaultAckIntervalMs));
+  EXPECT_LE(heartbeat - base::TimeTicks::Now(),
+            base::TimeDelta::FromMilliseconds(kCustomIntervalMs));
+}
+
 }  // namespace
 
 }  // namespace gcm

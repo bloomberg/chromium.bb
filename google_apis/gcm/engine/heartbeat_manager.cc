@@ -71,6 +71,9 @@ void HeartbeatManager::Start(
   if (monitor)
     monitor->AddObserver(this);
 
+  // Calculated the heartbeat interval just before we start the timer.
+  UpdateHeartbeatInterval();
+
   // Kicks off the timer.
   waiting_for_ack_ = false;
   RestartTimer();
@@ -106,6 +109,10 @@ void HeartbeatManager::UpdateHeartbeatConfig(
   }
   DVLOG(1) << "Updating server heartbeat interval to " << config.interval_ms();
   server_interval_ms_ = config.interval_ms();
+
+  // Make sure heartbeat interval is recalculated when new server interval is
+  // available.
+  UpdateHeartbeatInterval();
 }
 
 base::TimeTicks HeartbeatManager::GetNextHeartbeatTime() const {
@@ -166,39 +173,20 @@ void HeartbeatManager::OnHeartbeatTriggered() {
 }
 
 void HeartbeatManager::RestartTimer() {
-  if (!waiting_for_ack_) {
-    // Recalculate the timer interval based network type.
-    // Server interval takes precedence over client interval, even if the latter
-    // is less.
-    if (server_interval_ms_ != 0) {
-      // If a server interval is set, it overrides any local one.
-      heartbeat_interval_ms_ = server_interval_ms_;
-    } else if (HasClientHeartbeatInterval()) {
-      // Client interval might have been adjusted up, which should only take
-      // effect during a reconnection.
-      if (client_interval_ms_ < heartbeat_interval_ms_ ||
-          heartbeat_interval_ms_ == 0) {
-        heartbeat_interval_ms_ = client_interval_ms_;
-      }
-    } else {
-      heartbeat_interval_ms_ = GetDefaultHeartbeatInterval();
-    }
-    DVLOG(1) << "Sending next heartbeat in "
-             << heartbeat_interval_ms_ << " ms.";
+  int interval_ms = heartbeat_interval_ms_;
+  if (waiting_for_ack_) {
+    interval_ms = kHeartbeatAckDefaultMs;
+    DVLOG(1) << "Resetting timer for ack within " << interval_ms << " ms.";
   } else {
-    heartbeat_interval_ms_ = kHeartbeatAckDefaultMs;
-    DVLOG(1) << "Resetting timer for ack with "
-             << heartbeat_interval_ms_ << " ms interval.";
+    DVLOG(1) << "Sending next heartbeat in " << interval_ms << " ms.";
   }
 
   heartbeat_expected_time_ =
-      base::Time::Now() +
-      base::TimeDelta::FromMilliseconds(heartbeat_interval_ms_);
+      base::Time::Now() + base::TimeDelta::FromMilliseconds(interval_ms);
   heartbeat_timer_->Start(FROM_HERE,
-                         base::TimeDelta::FromMilliseconds(
-                             heartbeat_interval_ms_),
-                         base::Bind(&HeartbeatManager::OnHeartbeatTriggered,
-                                    weak_ptr_factory_.GetWeakPtr()));
+                          base::TimeDelta::FromMilliseconds(interval_ms),
+                          base::Bind(&HeartbeatManager::OnHeartbeatTriggered,
+                                     weak_ptr_factory_.GetWeakPtr()));
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   // Windows, Mac, Android, iOS, and Chrome OS all provide a way to be notified
@@ -233,6 +221,25 @@ void HeartbeatManager::CheckForMissedHeartbeat() {
                  weak_ptr_factory_.GetWeakPtr()),
       base::TimeDelta::FromMilliseconds(kHeartbeatMissedCheckMs));
 #endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
+}
+
+void HeartbeatManager::UpdateHeartbeatInterval() {
+  // Server interval takes precedence over client interval, even if the latter
+  // is less.
+  if (server_interval_ms_ != 0) {
+    // If a server interval is set, it overrides any local one.
+    heartbeat_interval_ms_ = server_interval_ms_;
+  } else if (HasClientHeartbeatInterval() &&
+             (client_interval_ms_ < heartbeat_interval_ms_ ||
+              heartbeat_interval_ms_ == 0)) {
+    // Client interval might have been adjusted up, which should only take
+    // effect during a reconnection.
+    heartbeat_interval_ms_ = client_interval_ms_;
+  } else if (heartbeat_interval_ms_ == 0) {
+    // If interval is still 0, recalculate it based on network type.
+    heartbeat_interval_ms_ = GetDefaultHeartbeatInterval();
+  }
+  DCHECK_GT(heartbeat_interval_ms_, 0);
 }
 
 int HeartbeatManager::GetDefaultHeartbeatInterval() {
