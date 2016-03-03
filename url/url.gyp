@@ -40,14 +40,18 @@
       'target_name': 'url_unittests',
       'type': 'executable',
       'dependencies': [
-        '../base/base.gyp:run_all_unittests',
+        '../base/base.gyp:test_support_base',
+        '../mojo/mojo_edk.gyp:mojo_common_test_support',
         '../testing/gtest.gyp:gtest',
         '../third_party/icu/icu.gyp:icuuc',
+        'url_test_mojom',
         'url_lib',
       ],
       'sources': [
         'gurl_unittest.cc',
+        'mojo/url_gurl_struct_traits_unittest.cc',
         'origin_unittest.cc',
+        'run_all_unittests.cc',
         'scheme_host_port_unittest.cc',
         'url_canon_icu_unittest.cc',
         'url_canon_unittest.cc',
@@ -57,6 +61,73 @@
       ],
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
       'msvs_disabled_warnings': [4267, ],
+    },
+    {
+      'target_name': 'url_interfaces_mojom',
+      'type': 'none',
+      'variables': {
+        'mojom_files': [
+          'mojo/url.mojom',
+        ],
+      },
+      'includes': [ '../mojo/mojom_bindings_generator_explicit.gypi' ],
+    },
+    {
+      'target_name': 'url_mojom_chromium',
+      'type': 'none',
+      'variables': {
+        'mojom_variant': 'chromium',
+        'mojom_extra_generator_args': [
+          '--typemap', '<(DEPTH)/url/mojo/gurl.typemap',
+        ],
+        'mojom_files': [
+          'mojo/url.mojom',
+        ],
+      },
+      'includes': [ '../mojo/mojom_bindings_generator_explicit.gypi' ],
+      'dependencies': [
+        'url_interfaces_mojom',
+      ],
+    },
+    {
+      'target_name': 'url_mojom',
+      'type': 'static_library',
+      'export_dependent_settings': [
+        '../mojo/mojo_public.gyp:mojo_cpp_bindings',
+      ],
+      'dependencies': [
+        '../mojo/mojo_public.gyp:mojo_cpp_bindings',
+        'url_interfaces_mojom',
+      ],
+    },
+    {
+      'target_name': 'url_test_interfaces_mojom',
+      'type': 'none',
+      'variables': {
+        'mojom_extra_generator_args': [
+          '--typemap', '<(DEPTH)/url/mojo/gurl.typemap',
+        ],
+        'mojom_files': [
+          'mojo/url_test.mojom',
+        ],
+      },
+      'includes': [ '../mojo/mojom_bindings_generator_explicit.gypi' ],
+      'dependencies': [
+        '../mojo/mojo_public.gyp:mojo_cpp_bindings',
+        'url_mojom_chromium',
+      ],
+    },
+    {
+      'target_name': 'url_test_mojom',
+      'type': 'static_library',
+      'export_dependent_settings': [
+        '../mojo/mojo_public.gyp:mojo_cpp_bindings',
+      ],
+      'dependencies': [
+        '../mojo/mojo_public.gyp:mojo_cpp_bindings',
+        'url_mojom',
+        'url_test_interfaces_mojom',
+      ],
     },
   ],
   'conditions': [

@@ -118,7 +118,9 @@ if (!is_android) {
   test("url_unittests") {
     sources = [
       "gurl_unittest.cc",
+      "mojo/url_gurl_struct_traits_unittest.cc",
       "origin_unittest.cc",
+      "run_all_unittests.cc",
       "scheme_host_port_unittest.cc",
       "url_canon_icu_unittest.cc",
       "url_canon_unittest.cc",
@@ -133,9 +135,12 @@ if (!is_android) {
     deps = [
       ":url",
       "//base",
-      "//base/test:run_all_unittests",
+      "//base/test:test_support",
+      "//mojo/edk/system",
+      "//mojo/edk/test:test_support",
       "//testing/gtest",
       "//third_party/icu:icuuc",
+      "//url/mojo:test_url_mojom_gurl",
     ]
   }
 }
