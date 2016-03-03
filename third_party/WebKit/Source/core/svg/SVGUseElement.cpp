@@ -155,28 +155,27 @@ Document* SVGUseElement::externalDocument() const
     return m_resource->document();
 }
 
-void transferUseWidthAndHeightIfNeeded(const SVGUseElement& use, SVGElement* shadowElement, const SVGElement& originalElement)
+static void transferUseWidthAndHeightIfNeeded(const SVGUseElement& use, SVGElement& shadowElement, const SVGElement& originalElement)
 {
     DEFINE_STATIC_LOCAL(const AtomicString, hundredPercentString, ("100%", AtomicString::ConstructFromLiteral));
-    ASSERT(shadowElement);
-    if (isSVGSymbolElement(*shadowElement)) {
+    if (isSVGSymbolElement(shadowElement)) {
         // Spec (<use> on <symbol>): This generated 'svg' will always have explicit values for attributes width and height.
         // If attributes width and/or height are provided on the 'use' element, then these attributes
         // will be transferred to the generated 'svg'. If attributes width and/or height are not specified,
         // the generated 'svg' element will use values of 100% for these attributes.
-        shadowElement->setAttribute(SVGNames::widthAttr, use.width()->isSpecified() ? AtomicString(use.width()->currentValue()->valueAsString()) : hundredPercentString);
-        shadowElement->setAttribute(SVGNames::heightAttr, use.height()->isSpecified() ? AtomicString(use.height()->currentValue()->valueAsString()) : hundredPercentString);
-    } else if (isSVGSVGElement(*shadowElement)) {
+        shadowElement.setAttribute(SVGNames::widthAttr, use.width()->isSpecified() ? AtomicString(use.width()->currentValue()->valueAsString()) : hundredPercentString);
+        shadowElement.setAttribute(SVGNames::heightAttr, use.height()->isSpecified() ? AtomicString(use.height()->currentValue()->valueAsString()) : hundredPercentString);
+    } else if (isSVGSVGElement(shadowElement)) {
         // Spec (<use> on <svg>): If attributes width and/or height are provided on the 'use' element, then these
         // values will override the corresponding attributes on the 'svg' in the generated tree.
         if (use.width()->isSpecified())
-            shadowElement->setAttribute(SVGNames::widthAttr, AtomicString(use.width()->currentValue()->valueAsString()));
+            shadowElement.setAttribute(SVGNames::widthAttr, AtomicString(use.width()->currentValue()->valueAsString()));
         else
-            shadowElement->setAttribute(SVGNames::widthAttr, originalElement.getAttribute(SVGNames::widthAttr));
+            shadowElement.setAttribute(SVGNames::widthAttr, originalElement.getAttribute(SVGNames::widthAttr));
         if (use.height()->isSpecified())
-            shadowElement->setAttribute(SVGNames::heightAttr, AtomicString(use.height()->currentValue()->valueAsString()));
+            shadowElement.setAttribute(SVGNames::heightAttr, AtomicString(use.height()->currentValue()->valueAsString()));
         else
-            shadowElement->setAttribute(SVGNames::heightAttr, originalElement.getAttribute(SVGNames::heightAttr));
+            shadowElement.setAttribute(SVGNames::heightAttr, originalElement.getAttribute(SVGNames::heightAttr));
     }
 }
 
@@ -223,7 +222,7 @@ void SVGUseElement::svgAttributeChanged(const QualifiedName& attrName)
         updateRelativeLengthsInformation();
         if (m_targetElementInstance) {
             ASSERT(m_targetElementInstance->correspondingElement());
-            transferUseWidthAndHeightIfNeeded(*this, m_targetElementInstance.get(), *m_targetElementInstance->correspondingElement());
+            transferUseWidthAndHeightIfNeeded(*this, *m_targetElementInstance, *m_targetElementInstance->correspondingElement());
         }
 
         LayoutObject* object = this->layoutObject();
@@ -350,7 +349,7 @@ void SVGUseElement::buildPendingResource()
     }
 
     if (target->isSVGElement()) {
-        buildShadowAndInstanceTree(toSVGElement(target));
+        buildShadowAndInstanceTree(toSVGElement(*target));
         invalidateDependentShadowTrees();
     }
 
@@ -372,7 +371,7 @@ static PassRefPtrWillBeRawPtr<Node> cloneNodeAndAssociate(Node& toClone)
     return clone.release();
 }
 
-void SVGUseElement::buildShadowAndInstanceTree(SVGElement* target)
+void SVGUseElement::buildShadowAndInstanceTree(SVGElement& target)
 {
     ASSERT(!m_targetElementInstance);
     ASSERT(!m_needsShadowTreeRecreation);
@@ -384,12 +383,11 @@ void SVGUseElement::buildShadowAndInstanceTree(SVGElement* target)
         return;
 
     // Do not allow self-referencing.
-    // 'target' may be null, if it's a non SVG namespaced element.
-    if (!target || target == this || isDisallowedElement(*target))
+    if (&target == this || isDisallowedElement(target))
         return;
 
     // Set up root SVG element in shadow tree.
-    RefPtrWillBeRawPtr<Element> newChild = target->cloneElementWithoutChildren();
+    RefPtrWillBeRawPtr<Element> newChild = target.cloneElementWithoutChildren();
     m_targetElementInstance = toSVGElement(newChild.get());
     ShadowRoot* shadowTreeRootElement = userAgentShadowRoot();
     shadowTreeRootElement->appendChild(newChild.release());
@@ -398,7 +396,7 @@ void SVGUseElement::buildShadowAndInstanceTree(SVGElement* target)
 
     // SVG specification does not say a word about <use> & cycles. My view on this is: just ignore it!
     // Non-appearing <use> content is easier to debug, then half-appearing content.
-    buildShadowTree(target, m_targetElementInstance.get(), false);
+    buildShadowTree(target, *m_targetElementInstance, false);
 
     if (instanceTreeIsLoading(m_targetElementInstance.get())) {
         cloneNonMarkupEventListeners();
@@ -408,7 +406,7 @@ void SVGUseElement::buildShadowAndInstanceTree(SVGElement* target)
     // Assure shadow tree building was successful.
     ASSERT(m_targetElementInstance);
     ASSERT(m_targetElementInstance->correspondingUseElement() == this);
-    ASSERT(m_targetElementInstance->correspondingElement() == target);
+    ASSERT(m_targetElementInstance->correspondingElement() == &target);
 
     // Expand all <use> elements in the shadow tree.
     // Expand means: replace the actual <use> element by what it references.
@@ -422,7 +420,7 @@ void SVGUseElement::buildShadowAndInstanceTree(SVGElement* target)
     expandSymbolElementsInShadowTree();
 
     m_targetElementInstance = toSVGElement(shadowTreeRootElement->firstChild());
-    transferUseWidthAndHeightIfNeeded(*this, m_targetElementInstance.get(), *m_targetElementInstance->correspondingElement());
+    transferUseWidthAndHeightIfNeeded(*this, *m_targetElementInstance, *m_targetElementInstance->correspondingElement());
     cloneNonMarkupEventListeners();
 
     ASSERT(m_targetElementInstance->parentNode() == shadowTreeRootElement);
@@ -489,35 +487,33 @@ SVGGraphicsElement* SVGUseElement::targetGraphicsElementForClipping() const
     return &toSVGGraphicsElement(element);
 }
 
-void SVGUseElement::buildShadowTree(SVGElement* target, SVGElement* targetInstance, bool foundUse)
+void SVGUseElement::buildShadowTree(SVGElement& target, SVGElement& targetInstance, bool foundUse)
 {
-    ASSERT(target);
-    ASSERT(targetInstance);
-    ASSERT(!isDisallowedElement(*target));
+    ASSERT(!isDisallowedElement(target));
 
     // Spec: If the referenced object is itself a 'use', or if there are 'use' subelements within the referenced
     // object, the instance tree will contain recursive expansion of the indirect references to form a complete tree.
-    if (isSVGUseElement(*target)) {
+    if (isSVGUseElement(target)) {
         // We only need to track first degree <use> dependencies. Indirect references are handled
         // as the invalidation bubbles up the dependency chain.
         if (!foundUse && !isStructurallyExternal()) {
-            addReferenceTo(target);
+            addReferenceTo(&target);
             foundUse = true;
         }
     }
 
-    targetInstance->setCorrespondingElement(target);
+    targetInstance.setCorrespondingElement(&target);
 
-    for (RefPtrWillBeRawPtr<Node> child = target->firstChild(); child; child = child->nextSibling()) {
+    for (RefPtrWillBeRawPtr<Node> child = target.firstChild(); child; child = child->nextSibling()) {
         // Skip any disallowed element.
         if (isDisallowedElement(*child))
             continue;
 
         RefPtrWillBeRawPtr<Node> newChild = child->cloneNode(false);
-        targetInstance->appendChild(newChild.get());
+        targetInstance.appendChild(newChild.get());
         if (newChild->isSVGElement()) {
             // Enter recursion, appending new instance tree nodes to the "instance" object.
-            buildShadowTree(toSVGElement(child), toSVGElement(newChild), foundUse);
+            buildShadowTree(toSVGElement(*child), toSVGElement(*newChild), foundUse);
         }
     }
 }
@@ -530,10 +526,10 @@ void SVGUseElement::cloneNonMarkupEventListeners()
     }
 }
 
-bool SVGUseElement::hasCycleUseReferencing(SVGUseElement* use, ContainerNode* targetInstance, SVGElement*& newTarget)
+bool SVGUseElement::hasCycleUseReferencing(const SVGUseElement& use, const ContainerNode& targetInstance, SVGElement*& newTarget) const
 {
     ASSERT(referencedScope());
-    Element* targetElement = SVGURIReference::targetElementFromIRIString(use->hrefString(), *referencedScope());
+    Element* targetElement = SVGURIReference::targetElementFromIRIString(use.hrefString(), *referencedScope());
     newTarget = 0;
     if (targetElement && targetElement->isSVGElement())
         newTarget = toSVGElement(targetElement);
@@ -546,7 +542,7 @@ bool SVGUseElement::hasCycleUseReferencing(SVGUseElement* use, ContainerNode* ta
         return true;
 
     AtomicString targetId = newTarget->getIdAttribute();
-    ContainerNode* instance = targetInstance->parentNode();
+    ContainerNode* instance = targetInstance.parentNode();
     while (instance && instance->isSVGElement()) {
         SVGElement* element = toSVGElement(instance);
         if (element->hasID() && element->getIdAttribute() == targetId && element->document() == newTarget->document())
@@ -615,7 +611,7 @@ bool SVGUseElement::expandUseElementsInShadowTree()
         ASSERT(!use->resourceIsStillLoading());
 
         SVGElement* target = 0;
-        if (hasCycleUseReferencing(toSVGUseElement(use->correspondingElement()), use.get(), target))
+        if (hasCycleUseReferencing(toSVGUseElement(*use->correspondingElement()), *use, target))
             return false;
 
         if (target && isDisallowedElement(*target))
@@ -635,7 +631,7 @@ bool SVGUseElement::expandUseElementsInShadowTree()
         if (target) {
             RefPtrWillBeRawPtr<Node> newChild = cloneNodeAndAssociate(*target);
             ASSERT(newChild->isSVGElement());
-            transferUseWidthAndHeightIfNeeded(*use, toSVGElement(newChild.get()), *target);
+            transferUseWidthAndHeightIfNeeded(*use, toSVGElement(*newChild), *target);
             cloneParent->appendChild(newChild.release());
         }
 

@@ -89,11 +89,11 @@ private:
     bool selfHasRelativeLengths() const override;
 
     // Instance tree handling
-    void buildShadowAndInstanceTree(SVGElement* target);
+    void buildShadowAndInstanceTree(SVGElement& target);
     void clearInstanceRoot();
-    void buildShadowTree(SVGElement* target, SVGElement* targetInstance, bool foundUse);
+    void buildShadowTree(SVGElement& target, SVGElement& targetInstance, bool foundUse);
     void clearShadowTree();
-    bool hasCycleUseReferencing(SVGUseElement*, ContainerNode* targetInstance, SVGElement*& newTarget);
+    bool hasCycleUseReferencing(const SVGUseElement&, const ContainerNode& targetInstance, SVGElement*& newTarget) const;
     bool expandUseElementsInShadowTree();
     void expandSymbolElementsInShadowTree();
     void cloneNonMarkupEventListeners();
