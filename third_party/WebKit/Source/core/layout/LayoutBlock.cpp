@@ -1045,7 +1045,7 @@ bool LayoutBlock::createsNewFormattingContext() const
 {
     return isInlineBlockOrInlineTable() || isFloatingOrOutOfFlowPositioned() || hasOverflowClip() || isFlexItemIncludingDeprecated()
         || style()->specifiesColumns() || isLayoutFlowThread() || isTableCell() || isTableCaption() || isFieldset() || isWritingModeRoot()
-        || isDocumentElement() || isColumnSpanAll() || isGridItem() || style()->containsPaint();
+        || isDocumentElement() || isColumnSpanAll() || isGridItem() || style()->containsPaint() || style()->containsLayout();
 }
 
 static inline bool changeInAvailableLogicalHeightAffectsChild(LayoutBlock* parent, LayoutBox& child)
@@ -1967,6 +1967,10 @@ int LayoutBlock::columnGap() const
 
 void LayoutBlock::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const
 {
+    // Layout-contained elements don't consider their contents for preferred sizing.
+    if (style()->containsLayout())
+        return;
+
     if (childrenInline()) {
         // FIXME: Remove this const_cast.
         toLayoutBlockFlow(const_cast<LayoutBlock*>(this))->computeInlinePreferredLogicalWidths(minLogicalWidth, maxLogicalWidth);
@@ -2254,8 +2258,11 @@ int LayoutBlock::inlineBlockBaseline(LineDirectionMode lineDirection) const
     // either no in-flow line boxes or if its 'overflow' property has a computed
     // value other than 'visible', in which case the baseline is the bottom
     // margin edge.
+    // We likewise avoid using the last line box in the case of layout containment,
+    // where the block's contents shouldn't be considered when laying out its
+    // ancestors or siblings.
 
-    if (!style()->isOverflowVisible() && !shouldIgnoreOverflowPropertyForInlineBlockBaseline()) {
+    if ((!style()->isOverflowVisible() && !shouldIgnoreOverflowPropertyForInlineBlockBaseline()) || style()->containsLayout()) {
         // We are not calling LayoutBox::baselinePosition here because the caller should add the margin-top/margin-right, not us.
         return lineDirection == HorizontalLine ? size().height() + marginBottom() : size().width() + marginLeft();
     }

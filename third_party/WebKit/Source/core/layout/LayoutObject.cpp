@@ -734,6 +734,9 @@ static inline bool objectIsRelayoutBoundary(const LayoutObject* object)
     if (object->isSVGRoot())
         return true;
 
+    if (object->style()->containsLayout())
+        return true;
+
     if (!object->hasOverflowClip())
         return false;
 
