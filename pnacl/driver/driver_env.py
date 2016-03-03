@@ -31,7 +31,7 @@ INITIAL_ENV = {
   'CLANG_VER'       : '3.7.0', # Included in path to compiler-owned libs/headers
   'BPREFIXES'       : '', # Prefixes specified using the -B flag.
   'BASE_LLVM'       : '${@FindBaseHost:clang}',
-  'BASE_BINUTILS'   : '${@FindBaseHost:le32-nacl-ar}',
+  'BASE_BINUTILS'   : '${@FindBaseHost:arm-nacl-ar}',
 
   'BASE_LIB_NATIVE' : '${BASE}/translator/',
 
@@ -183,7 +183,7 @@ INITIAL_ENV = {
   'LLVM_MC'       : '${BASE_LLVM_BIN}/llvm-mc${EXEC_EXT}',
 
   # Binutils
-  'BINUTILS_BASE'  : '${BASE_BINUTILS}/bin/le32-nacl-',
+  'BINUTILS_BASE'  : '${BASE_BINUTILS}/bin/arm-nacl-',
   'OBJDUMP'        : '${BINUTILS_BASE}objdump${EXEC_EXT}',
   'NM'             : '${BINUTILS_BASE}nm${EXEC_EXT}',
   'AR'             : '${BINUTILS_BASE}ar${EXEC_EXT}',

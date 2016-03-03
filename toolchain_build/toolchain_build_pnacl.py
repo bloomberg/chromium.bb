@@ -467,7 +467,7 @@ def ConfigureBinutilsCommon(host, options, is_pnacl):
 
   host_arch_flags, inputs, deps = ConfigureHostArchFlags(
       host, warning_flags, options,
-      options.binutils_pnacl_extra_configure if is_pnacl else None)
+      options.binutils_extra_configure if is_pnacl else None)
 
   flags = [
       '--with-pkgversion=' + PACKAGE_NAME,
@@ -570,7 +570,7 @@ def HostToolsSources(GetGitSyncCmds):
           'output_dirname': 'libcxxabi',
           'commands': GetGitSyncCmds('libcxxabi'),
       },
-      'binutils_pnacl_src': {
+      'binutils_src': {
           'type': 'source',
           'output_dirname': 'binutils',
           'commands': GetGitSyncCmds('binutils'),
@@ -753,27 +753,26 @@ def HostTools(host, options):
   binutils_inputs['macros'] = os.path.join(
       NACL_DIR, 'pnacl', 'support', 'clang_direct', 'nacl-arm-macros.s')
   tools = {
-      # The binutils_pnacl package is used both for bitcode linking (gold) and
-      # for its conventional use with arm-nacl-clang.
-      H('binutils_pnacl'): {
-          'dependencies': (['binutils_pnacl_src'] +
+      # The binutils package is used both for bitcode linking (gold) and
+      # for its conventional use with arm-nacl-clang and mipsel-nacl-clang.
+      H('binutils'): {
+          'dependencies': (['binutils_src'] +
                            extra_gold_deps + binutils_deps),
           'type': 'build',
           'inputs' : binutils_inputs,
           'commands': [
               command.SkipForIncrementalCommand([
                   'sh',
-                  '%(binutils_pnacl_src)s/configure'] + binutils_flags +
+                  '%(binutils_src)s/configure'] + binutils_flags +
                   [
-                  '--enable-gold=yes',
+                  '--enable-gold',
                   '--enable-plugins',
-                  '--enable-shared=no',
+                  '--disable-shared',
                   '--enable-targets=arm-nacl,i686-nacl,x86_64-nacl,mipsel-nacl',
                   '--enable-werror=' + ('yes' if binutils_do_werror else 'no'),
-                  '--program-prefix=le32-nacl-',
+                  '--program-prefix=arm-nacl-',
                   '--target=arm-nacl',
-                  '--with-sysroot=/le32-nacl',
-                  '--without-gas'
+                  '--with-sysroot=/arm-nacl',
                   ], path_dirs=GomaPathDirs(host, options))] +
               DummyDirCommands(binutils_dummy_dirs) + [
               command.Command(MakeCommand(host, options),
@@ -782,36 +781,37 @@ def HostTools(host, options):
               [command.RemoveDirectory(os.path.join('%(output)s', dir))
                for dir in ('lib', 'lib32')] +
               # Since it has dual use, just create links for both sets of names
-              # (i.e. le32-nacl-foo and arm-nacl-foo)
+              # (i.e. arm-nacl-foo and mipsel-nacl-foo)
               # TODO(dschuff): Use the redirector scripts here like binutils_x86
               [command.Command([
                   'ln', '-f',
-                  command.path.join('%(output)s', 'bin', 'le32-nacl-' + tool),
-                  command.path.join('%(output)s', 'bin', 'arm-nacl-' + tool)])
-               for tool in BINUTILS_PROGS] +
-              [command.Command([
-                  'ln', '-f',
-                   command.path.join('%(output)s', 'bin', 'le32-nacl-' + tool),
+                   command.path.join('%(output)s', 'bin', 'arm-nacl-' + tool),
                    command.path.join('%(output)s', 'bin',
                                                    'mipsel-nacl-' + tool)])
                for tool in BINUTILS_PROGS] +
-               # Gold is the default linker for PNaCl, but BFD ld is the default
-               # for nacl-clang, so re-link the version that arm-nacl-clang will
-               # use.
-               [command.Command([
-                   'ln', '-f',
-                   command.path.join('%(output)s', 'arm-nacl', 'bin', 'ld.bfd'),
-                   command.path.join('%(output)s', 'arm-nacl', 'bin', 'ld')]),
-                command.Copy(
-                    '%(macros)s',
-                    os.path.join(
-                        '%(output)s', 'arm-nacl', 'lib', 'nacl-arm-macros.s'))]
-               # Gold is the mipsel-nacl linker (do not rely on PNaCl default.)
-               + [command.Command([
-                 'ln', '-f',
+              # BFD ld is the default for nacl-clang.
+              [command.Command([
+                  'ln', '-f',
+                  command.path.join('%(output)s', 'arm-nacl', 'bin', 'ld.bfd'),
+                  command.path.join('%(output)s', 'arm-nacl', 'bin', 'ld')]),
+               command.Copy(
+                  '%(macros)s',
+                  os.path.join(
+                      '%(output)s', 'arm-nacl', 'lib', 'nacl-arm-macros.s'))] +
+              # Gold is the mipsel-nacl linker.
+              [command.Command([
+                  'ln', '-f',
                   command.path.join('%(output)s', 'bin', 'mipsel-nacl-ld.gold'),
-                  command.path.join('%(output)s', 'bin', 'mipsel-nacl-ld')])]
-
+                  command.path.join('%(output)s', 'bin', 'mipsel-nacl-ld')])] +
+              # Gold is used as a linker for PNaCl
+              [command.Command([
+                  'ln', '-f',
+                  command.path.join('%(output)s', 'bin', 'arm-nacl-ld.gold'),
+                  command.path.join('%(output)s', 'bin', 'le32-nacl-ld.gold')]),
+               command.Command([
+                  'ln', '-f',
+                  command.path.join('%(output)s', 'bin', 'le32-nacl-ld.gold'),
+                  command.path.join('%(output)s', 'bin', 'le32-nacl-ld')])]
       },
       H('driver'): {
         'type': 'build',
@@ -855,7 +855,7 @@ def HostTools(host, options):
   llvm_inputs['test_xfails'] = os.path.join(NACL_DIR, 'pnacl', 'scripts')
   llvm_cmake = {
       H('llvm'): {
-          'dependencies': ['clang_src', 'llvm_src', 'binutils_pnacl_src',
+          'dependencies': ['clang_src', 'llvm_src', 'binutils_src',
                            'subzero_src'] + llvm_deps,
           'inputs': llvm_inputs,
           'type': 'build',
@@ -870,7 +870,7 @@ def HostTools(host, options):
                   '-DCMAKE_INSTALL_PREFIX=%(output)s',
                   '-DCMAKE_INSTALL_RPATH=$ORIGIN/../lib',
                   '-DLLVM_APPEND_VC_REV=ON',
-                  '-DLLVM_BINUTILS_INCDIR=%(abs_binutils_pnacl_src)s/include',
+                  '-DLLVM_BINUTILS_INCDIR=%(abs_binutils_src)s/include',
                   '-DLLVM_BUILD_TESTS=ON',
                   '-DLLVM_ENABLE_ASSERTIONS=ON',
                   '-DLLVM_ENABLE_LIBCXX=OFF',
@@ -906,7 +906,7 @@ def HostTools(host, options):
                                                   'pnacl', 'scripts')})
   llvm_autoconf = {
       H('llvm'): {
-          'dependencies': ['clang_src', 'llvm_src', 'binutils_pnacl_src',
+          'dependencies': ['clang_src', 'llvm_src', 'binutils_src',
                            'subzero_src'] + llvm_deps,
           'inputs': llvm_inputs,
           'type': 'build',
@@ -941,7 +941,7 @@ def HostTools(host, options):
                                              else 'yes'),
                    '--prefix=/',
                    '--program-prefix=',
-                   '--with-binutils-include=%(abs_binutils_pnacl_src)s/include',
+                   '--with-binutils-include=%(abs_binutils_src)s/include',
                    '--with-clang-srcdir=%(abs_clang_src)s',
                    'ac_cv_have_decl_strerror_s=no',
                   ] + shared,
@@ -988,11 +988,11 @@ def TargetLibCompiler(host, options):
       'target_lib_compiler': {
           'type': 'work',
           'output_subdir': 'target_lib_compiler',
-          'dependencies': [ H('binutils_pnacl'), H('llvm'), H('binutils_x86') ],
+          'dependencies': [ H('binutils'), H('binutils_x86'), H('llvm') ],
           'inputs': { 'driver': PNACL_DRIVER_DIR },
           'commands': [
               command.CopyRecursive('%(' + t + ')s', '%(output)s')
-              for t in [H('llvm'), H('binutils_pnacl'), H('binutils_x86')]] + [
+              for t in [H('llvm'), H('binutils'), H('binutils_x86')]] + [
               command.Runnable(
                   None, pnacl_commands.InstallDriverScripts,
                   '%(driver)s', os.path.join('%(output)s', 'bin'),
@@ -1252,7 +1252,7 @@ def GetUploadPackageTargets():
     triple = pynacl.platform.PlatformTriple(os_name, arch)
     legal_triple = pynacl.gsd_storage.LegalizeName(triple)
     host_packages.setdefault(os_name, []).extend(
-        ['binutils_pnacl_%s' % legal_triple,
+        ['binutils_%s' % legal_triple,
          'binutils_x86_%s' % legal_triple,
          'llvm_%s' % legal_triple,
          'driver_%s' % legal_triple])
@@ -1318,9 +1318,9 @@ def main():
   parser.add_argument('--extra-configure-arg', dest='extra_configure_args',
                       default=[], action='append',
                       help='Extra arguments to pass pass to host configure')
-  parser.add_argument('--binutils-pnacl-extra-configure',
+  parser.add_argument('--binutils-extra-configure',
                       default=[], action='append',
-                      help='Extra binutils-pnacl arguments '
+                      help='Extra binutils arguments '
                            'to pass pass to host configure')
   parser.add_argument('--host-flavor', choices=['debug', 'release'],
                       dest='host_flavor',

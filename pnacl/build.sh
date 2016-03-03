@@ -50,7 +50,7 @@ PNACL_PRUNE=${PNACL_PRUNE:-true}
 
 # TODO(pdox): Decide what the target should really permanently be
 readonly CROSS_TARGET_ARM=arm-none-linux-gnueabi
-readonly REAL_CROSS_TARGET=le32-nacl
+readonly REAL_CROSS_TARGET=arm-nacl
 
 readonly DRIVER_DIR="${PNACL_ROOT}/driver"
 
