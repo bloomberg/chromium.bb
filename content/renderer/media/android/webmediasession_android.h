@@ -22,9 +22,11 @@ class CONTENT_EXPORT WebMediaSessionAndroid : public blink::WebMediaSession {
   void deactivate(blink::WebMediaSessionDeactivateCallback*) override;
   void setMetadata(const blink::WebMediaMetadata*) override;
 
+  int media_session_id() const { return media_session_id_; }
+
  private:
   RendererMediaSessionManager* const session_manager_;
-  int session_id_;
+  int media_session_id_;
 
   DISALLOW_COPY_AND_ASSIGN(WebMediaSessionAndroid);
 };

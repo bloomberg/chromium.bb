@@ -385,6 +385,13 @@ class WebMediaPlayerAndroid
   // Player ID assigned by the |player_manager_|.
   int player_id_;
 
+  // User created media session id, if any.
+  //
+  // blink::WebMediaSession::DefaultID represents the non web
+  // exposed default media session. User created session ids are
+  // greater than blink::WebMediaSession::DefaultID.
+  const int media_session_id_;
+
   // Current player states.
   blink::WebMediaPlayer::NetworkState network_state_;
   blink::WebMediaPlayer::ReadyState ready_state_;

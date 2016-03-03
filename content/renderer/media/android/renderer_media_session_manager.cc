@@ -12,12 +12,10 @@
 
 namespace content {
 
-static const int kDefaultMediaSessionID = 0;
-
 RendererMediaSessionManager::RendererMediaSessionManager(
     RenderFrame* render_frame)
     : RenderFrameObserver(render_frame),
-      next_session_id_(kDefaultMediaSessionID + 1) {}
+      next_session_id_(blink::WebMediaSession::DefaultID + 1) {}
 
 RendererMediaSessionManager::~RendererMediaSessionManager() {
   DCHECK(sessions_.empty())

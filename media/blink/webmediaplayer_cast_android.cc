@@ -13,6 +13,7 @@
 #include "media/blink/webmediaplayer_impl.h"
 #include "media/blink/webmediaplayer_params.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayerClient.h"
+#include "third_party/WebKit/public/platform/modules/mediasession/WebMediaSession.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -174,7 +175,8 @@ void WebMediaPlayerCast::Initialize(const GURL& url,
                                     int delegate_id) {
   player_manager_->Initialize(MEDIA_PLAYER_TYPE_REMOTE_ONLY, player_id_, url,
                               frame->document().firstPartyForCookies(), 0,
-                              frame->document().url(), true, delegate_id);
+                              frame->document().url(), true, delegate_id,
+                              blink::WebMediaSession::DefaultID);
   is_player_initialized_ = true;
 }
 

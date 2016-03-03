@@ -26,6 +26,7 @@
 #include "content/public/renderer/render_frame.h"
 #include "content/renderer/media/android/renderer_demuxer_android.h"
 #include "content/renderer/media/android/renderer_media_player_manager.h"
+#include "content/renderer/media/android/webmediasession_android.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
@@ -193,6 +194,11 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
       seeking_(false),
       did_loading_progress_(false),
       player_manager_(player_manager),
+      media_session_id_(params.media_session()
+                            ? static_cast<const WebMediaSessionAndroid*>(
+                                  params.media_session())
+                                  ->media_session_id()
+                            : blink::WebMediaSession::DefaultID),
       network_state_(WebMediaPlayer::NetworkStateEmpty),
       ready_state_(WebMediaPlayer::ReadyStateHaveNothing),
       texture_id_(0),
@@ -1138,7 +1144,8 @@ void WebMediaPlayerAndroid::InitializePlayer(
   allow_stored_credentials_ = allow_stored_credentials;
   player_manager_->Initialize(
       player_type_, player_id_, url, first_party_for_cookies, demuxer_client_id,
-      frame_->document().url(), allow_stored_credentials, delegate_id_);
+      frame_->document().url(), allow_stored_credentials, delegate_id_,
+      media_session_id_);
   is_player_initialized_ = true;
 
   if (is_fullscreen_)

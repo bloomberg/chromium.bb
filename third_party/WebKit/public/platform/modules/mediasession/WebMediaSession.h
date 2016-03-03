@@ -17,6 +17,10 @@ struct WebMediaMetadata;
 
 class WebMediaSession {
 public:
+    enum {
+        DefaultID = 0
+    };
+
     virtual ~WebMediaSession() = default;
 
     // Tries to activate the session by requesting audio focus from
@@ -32,7 +36,7 @@ public:
     virtual void deactivate(WebMediaSessionDeactivateCallback*) = 0;
 
     // Updates the metadata associated with the WebMediaSession. The metadata
-    // can be a nullptr in which case the associated metadata should be reset.
+    // can be a nullptr in which case the assouciated metadata should be reset.
     // The pointer is not owned by the WebMediaSession implementation.
     virtual void setMetadata(const WebMediaMetadata*) = 0;
 };
