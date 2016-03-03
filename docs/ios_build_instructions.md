@@ -7,12 +7,12 @@ the web layer), and various unit tests.
 
 ## Prerequisites
 
--   A Mac with a version of OS X capable of running the latest version
+*   A Mac with a version of OS X capable of running the latest version
     of Xcode.
--   The latest version of [Xcode](https://developer.apple.com/xcode/),
+*   The latest version of [Xcode](https://developer.apple.com/xcode/),
     including the current iOS SDK.
--   The current version of the JDK (required for the closure compiler).
--   [depot\_tools](http://dev.chromium.org/developers/how-tos/install-depot-tools).
+*   The current version of the JDK (required for the closure compiler).
+*   [depot\_tools](http://dev.chromium.org/developers/how-tos/install-depot-tools).
 
 ## Setting Up
 
