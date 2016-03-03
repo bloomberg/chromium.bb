@@ -17,6 +17,8 @@ STORAGE_COMMON_EXPORT std::string GetIdentifierFromOrigin(
     const GURL& origin);
 STORAGE_COMMON_EXPORT GURL GetOriginFromIdentifier(
     const std::string& identifier);
+STORAGE_COMMON_EXPORT bool IsValidOriginIdentifier(
+    const std::string& identifier);
 
 class STORAGE_COMMON_EXPORT DatabaseIdentifier {
  public:

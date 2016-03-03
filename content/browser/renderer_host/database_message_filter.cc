@@ -305,7 +305,7 @@ void DatabaseMessageFilter::OnDatabaseOpened(
     int64_t estimated_size) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
-  if (!DatabaseUtil::IsValidOriginIdentifier(origin_identifier)) {
+  if (!storage::IsValidOriginIdentifier(origin_identifier)) {
     bad_message::ReceivedBadMessage(this,
                                     bad_message::DBMF_INVALID_ORIGIN_ON_OPEN);
     return;
@@ -357,7 +357,7 @@ void DatabaseMessageFilter::OnHandleSqliteError(
     const base::string16& database_name,
     int error) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-  if (!DatabaseUtil::IsValidOriginIdentifier(origin_identifier)) {
+  if (!storage::IsValidOriginIdentifier(origin_identifier)) {
     bad_message::ReceivedBadMessage(
         this, bad_message::DBMF_INVALID_ORIGIN_ON_SQLITE_ERROR);
     return;

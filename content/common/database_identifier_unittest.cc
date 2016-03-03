@@ -255,5 +255,33 @@ TEST(DatabaseIdentifierTest, ExtractOriginDataFromIdentifier) {
   }
 }
 
+static GURL ToAndFromOriginIdentifier(const GURL origin_url) {
+  std::string id = storage::GetIdentifierFromOrigin(origin_url);
+  return storage::GetOriginFromIdentifier(id);
+}
+
+static void TestValidOriginIdentifier(bool expected_result,
+                                      const std::string& id) {
+  EXPECT_EQ(expected_result,
+            storage::IsValidOriginIdentifier(id));
+}
+
+TEST(DatabaseIdentifierTest, OriginIdentifiers) {
+  const GURL kFileOrigin(GURL("file:///").GetOrigin());
+  const GURL kHttpOrigin(GURL("http://bar/").GetOrigin());
+  EXPECT_EQ(kFileOrigin, ToAndFromOriginIdentifier(kFileOrigin));
+  EXPECT_EQ(kHttpOrigin, ToAndFromOriginIdentifier(kHttpOrigin));
+}
+
+TEST(DatabaseIdentifierTest, IsValidOriginIdentifier) {
+  TestValidOriginIdentifier(true,  "http_bar_0");
+  TestValidOriginIdentifier(false,  "");
+  TestValidOriginIdentifier(false, "bad..id");
+  TestValidOriginIdentifier(false, "bad/id");
+  TestValidOriginIdentifier(false, "bad\\id");
+  TestValidOriginIdentifier(false, "http_bad:0_2");
+  TestValidOriginIdentifier(false, std::string("bad\0id", 6));
+}
+
 }  // namespace
 }  // namespace content

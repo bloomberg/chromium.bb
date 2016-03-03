@@ -31,7 +31,6 @@ class STORAGE_EXPORT DatabaseUtil {
   static base::FilePath GetFullFilePathForVfsFile(
       DatabaseTracker* db_tracker,
       const base::string16& vfs_file_name);
-  static bool IsValidOriginIdentifier(const std::string& origin_identifier);
 };
 
 }  // namespace storage

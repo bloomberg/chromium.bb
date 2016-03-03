@@ -101,9 +101,4 @@ base::FilePath DatabaseUtil::GetFullFilePathForVfsFile(
   return full_path;
 }
 
-bool DatabaseUtil::IsValidOriginIdentifier(
-    const std::string& origin_identifier) {
-  return GetOriginFromIdentifier(origin_identifier).is_valid();
-}
-
 }  // namespace storage

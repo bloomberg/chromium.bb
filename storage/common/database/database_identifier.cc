@@ -55,6 +55,11 @@ GURL GetOriginFromIdentifier(const std::string& identifier) {
   return DatabaseIdentifier::Parse(identifier).ToOrigin();
 }
 
+// static
+bool IsValidOriginIdentifier(const std::string& identifier) {
+  return GetOriginFromIdentifier(identifier).is_valid();
+}
+
 static bool SchemeIsUnique(const std::string& scheme) {
   return scheme == "about" || scheme == "data" || scheme == "javascript";
 }
