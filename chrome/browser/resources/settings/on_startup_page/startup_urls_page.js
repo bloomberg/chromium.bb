@@ -38,8 +38,10 @@ Polymer({
       notify: true,
     },
 
-    newUrl: {
+    /** @private {string} */
+    newUrl_: {
       type: String,
+      value: '',
     },
 
     /**
@@ -68,6 +70,7 @@ Polymer({
 
   /** @private */
   onAddPageTap_: function() {
+    this.newUrl_ = '';
     this.$.addUrlDialog.open();
   },
 
@@ -81,13 +84,18 @@ Polymer({
     this.$.addUrlDialog.close();
   },
 
+  /**
+   * @return {boolean} Whether tapping the OK button should be allowed.
+   * @private
+   */
+  isOkAllowed_: function() {
+    return this.newUrl_.trim().length > 0;
+  },
+
   /** @private */
   onOkTap_: function() {
-    var value = this.newUrl && this.newUrl.trim();
-    if (!value)
-      return;
-    chrome.send('addStartupPage', [value]);
-    this.newUrl = '';
+    assert(this.isOkAllowed_());
+    chrome.send('addStartupPage', [this.newUrl_.trim()]);
     this.$.addUrlDialog.close();
   },
 
