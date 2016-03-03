@@ -14570,15 +14570,6 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
       Adjusts scroll position to prevent visible jumps when offscreen content changes.
     </message>
 
-    <if expr="not is_android">
-      <message name="IDS_FLAGS_DISABLE_UI_COMPOSITOR_ANIMATION_TIMELINES" desc="Name of the 'Disable UI Compositor animation timelines' lab.">
-        Disable UI compositor animation timelines
-      </message>
-      <message name="IDS_FLAGS_DISABLE_UI_COMPOSITOR_ANIMATION_TIMELINES_DESCRIPTION" desc="Description of the 'Disable UI Compositor animation timelines' lab.">
-        Use old intrusive animation subsystem for composited animations in UI.
-      </message>
-    </if>
-
     <if expr="is_android">
       <message name="IDS_FLAGS_ENABLE_NTP_SNIPPETS_NAME" desc="Name for the flag to enable snippets on the New Tab page." translateable="false">
         Show content snippets on the New Tab page

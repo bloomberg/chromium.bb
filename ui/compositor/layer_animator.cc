@@ -54,10 +54,8 @@ LayerAnimator::LayerAnimator(base::TimeDelta transition_duration)
       is_started_(false),
       disable_timer_for_test_(false),
       adding_animations_(false) {
-  if (Layer::UILayerSettings().use_compositor_animation_timelines) {
-    animation_player_ =
-        cc::AnimationPlayer::Create(cc::AnimationIdProvider::NextPlayerId());
-  }
+  animation_player_ =
+      cc::AnimationPlayer::Create(cc::AnimationIdProvider::NextPlayerId());
 }
 
 LayerAnimator::~LayerAnimator() {

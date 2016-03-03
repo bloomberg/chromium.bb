@@ -1781,13 +1781,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-scroll-anchoring", IDS_FLAGS_ENABLE_SCROLL_ANCHORING_NAME,
      IDS_FLAGS_ENABLE_SCROLL_ANCHORING_DESCRIPTION, kOsAll,
      FEATURE_VALUE_TYPE(features::kScrollAnchoring)},
-#if !defined(OS_ANDROID)
-    {"ui-disable-compositor-animation-timelines",
-     IDS_FLAGS_DISABLE_UI_COMPOSITOR_ANIMATION_TIMELINES,
-     IDS_FLAGS_DISABLE_UI_COMPOSITOR_ANIMATION_TIMELINES_DESCRIPTION,
-     kOsDesktop, SINGLE_DISABLE_VALUE_TYPE(
-                     switches::kUIDisableCompositorAnimationTimelines)},
-#endif  // !defined(OS_ANDROID)
     {"enable-audio-support-for-desktop-share",
      IDS_FLAG_ENABLE_AUDIO_FOR_DESKTOP_SHARE,
      IDS_FLAG_ENABLE_AUDIO_FOR_DESKTOP_SHARE_DESCRIPTION,

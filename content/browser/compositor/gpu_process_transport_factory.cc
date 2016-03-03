@@ -99,7 +99,6 @@ GpuProcessTransportFactory::GpuProcessTransportFactory()
     : next_surface_id_namespace_(1u),
       task_graph_runner_(new cc::SingleThreadTaskGraphRunner),
       callback_factory_(this) {
-  ui::Layer::InitializeUILayerSettings();
   cc::SetClientNameForMetrics("Browser");
 
   surface_manager_ = make_scoped_ptr(new cc::SurfaceManager);

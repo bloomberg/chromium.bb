@@ -35,8 +35,6 @@ void CompositorTestSuite::Initialize() {
   gfx::SetDefaultDeviceScaleFactor(1.0f);
 #endif
 
-  ui::Layer::InitializeUILayerSettings();
-
   message_loop_.reset(new base::MessageLoopForUI);
 }
 

@@ -94,8 +94,6 @@ InProcessContextFactory::InProcessContextFactory(
   DCHECK_NE(gfx::GetGLImplementation(), gfx::kGLImplementationNone)
       << "If running tests, ensure that main() is calling "
       << "gfx::GLSurfaceTestSupport::InitializeOneOff()";
-
-  Layer::InitializeUILayerSettings();
 }
 
 InProcessContextFactory::~InProcessContextFactory() {

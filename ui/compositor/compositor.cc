@@ -24,6 +24,7 @@
 #include "cc/base/switches.h"
 #include "cc/input/input_handler.h"
 #include "cc/layers/layer.h"
+#include "cc/layers/layer_settings.h"
 #include "cc/output/begin_frame_args.h"
 #include "cc/output/context_provider.h"
 #include "cc/output/latency_info_swap_promise.h"
@@ -87,7 +88,7 @@ Compositor::Compositor(ui::ContextFactory* context_factory,
       compositor_lock_(NULL),
       layer_animator_collection_(this),
       weak_ptr_factory_(this) {
-  root_web_layer_ = cc::Layer::Create(Layer::UILayerSettings());
+  root_web_layer_ = cc::Layer::Create(cc::LayerSettings());
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 
@@ -171,9 +172,6 @@ Compositor::Compositor(ui::ContextFactory* context_factory,
   // Note: Only enable image decode tasks if we have more than one worker
   // thread.
   settings.image_decode_tasks_enabled = false;
-
-  settings.use_compositor_animation_timelines = !command_line->HasSwitch(
-      switches::kUIDisableCompositorAnimationTimelines);
 
 #if !defined(OS_ANDROID)
   // TODO(sohanjg): Revisit this memory usage in tile manager.

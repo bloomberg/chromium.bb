@@ -27,7 +27,6 @@
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer_animation_delegate.h"
 #include "ui/compositor/layer_delegate.h"
-#include "ui/compositor/layer_threaded_animation_delegate.h"
 #include "ui/compositor/layer_type.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image_skia.h"
@@ -53,6 +52,7 @@ namespace ui {
 class Compositor;
 class LayerAnimator;
 class LayerOwner;
+class LayerThreadedAnimationDelegate;
 
 // Layer manages a texture, transform and a set of child Layers. Any View that
 // has enabled layers ends up creating a Layer to manage the texture.
@@ -66,7 +66,6 @@ class LayerOwner;
 // NULL, but the children are not deleted.
 class COMPOSITOR_EXPORT Layer
     : public LayerAnimationDelegate,
-      public LayerThreadedAnimationDelegate,
       NON_EXPORTED_BASE(public cc::ContentLayerClient),
       NON_EXPORTED_BASE(public cc::TextureLayerClient),
       NON_EXPORTED_BASE(public cc::LayerClient) {
@@ -74,9 +73,6 @@ class COMPOSITOR_EXPORT Layer
   Layer();
   explicit Layer(LayerType type);
   ~Layer() override;
-
-  static const cc::LayerSettings& UILayerSettings();
-  static void InitializeUILayerSettings();
 
   // Retrieves the Layer's compositor. The Layer will walk up its parent chain
   // to locate it. Returns NULL if the Layer is not attached to a compositor.
@@ -406,10 +402,6 @@ class COMPOSITOR_EXPORT Layer
   LayerThreadedAnimationDelegate* GetThreadedAnimationDelegate() override;
   LayerAnimatorCollection* GetLayerAnimatorCollection() override;
 
-  // Implementation of LayerThreadedAnimationDelegate.
-  void AddThreadedAnimation(scoped_ptr<cc::Animation> animation) override;
-  void RemoveThreadedAnimation(int animation_id) override;
-
   // Creates a corresponding composited layer for |type_|.
   void CreateCcLayer();
 
@@ -425,12 +417,6 @@ class COMPOSITOR_EXPORT Layer
 
   // Cleanup |cc_layer_| and replaces it with |new_layer|.
   void SwitchToLayer(scoped_refptr<cc::Layer> new_layer);
-
-  // We cannot send animations to our cc_layer_ until we have been added to a
-  // layer tree. Instead, we hold on to these animations in
-  // pending_threaded_animations_, and expect SendPendingThreadedAnimations to
-  // be called once we have been added to a tree.
-  void SendPendingThreadedAnimations();
 
   void SetCompositorForAnimatorsInTree(Compositor* compositor);
   void ResetCompositorForAnimatorsInTree(Compositor* compositor);
@@ -492,10 +478,6 @@ class COMPOSITOR_EXPORT Layer
   LayerOwner* owner_;
 
   scoped_refptr<LayerAnimator> animator_;
-
-  // Animations that are passed to AddThreadedAnimation before this layer is
-  // added to a tree.
-  std::vector<scoped_ptr<cc::Animation>> pending_threaded_animations_;
 
   // Ownership of the layer is held through one of the strongly typed layer
   // pointers, depending on which sort of layer this is.

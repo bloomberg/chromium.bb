@@ -10,7 +10,6 @@
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/json/json_writer.h"
-#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/trace_event/trace_event.h"
@@ -45,9 +44,6 @@ const ui::Layer* GetRoot(const ui::Layer* layer) {
     layer = layer->parent();
   return layer;
 }
-
-base::LazyInstance<cc::LayerSettings> g_ui_layer_settings =
-    LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
@@ -120,19 +116,6 @@ Layer::~Layer() {
   cc_layer_->RemoveFromParent();
 }
 
-// static
-const cc::LayerSettings& Layer::UILayerSettings() {
-  return g_ui_layer_settings.Get();
-}
-
-// static
-void Layer::InitializeUILayerSettings() {
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  g_ui_layer_settings.Get().use_compositor_animation_timelines =
-      !command_line->HasSwitch(
-          switches::kUIDisableCompositorAnimationTimelines);
-}
-
 const Compositor* Layer::GetCompositor() const {
   return GetRoot(this)->compositor_;
 }
@@ -155,7 +138,6 @@ void Layer::SetCompositor(Compositor* compositor,
 
   root_layer->AddChild(cc_layer_);
   SetCompositorForAnimatorsInTree(compositor);
-  SendPendingThreadedAnimations();
 }
 
 void Layer::ResetCompositor() {
@@ -175,10 +157,8 @@ void Layer::Add(Layer* child) {
   cc_layer_->AddChild(child->cc_layer_);
   child->OnDeviceScaleFactorChanged(device_scale_factor_);
   Compositor* compositor = GetCompositor();
-  if (compositor) {
+  if (compositor)
     child->SetCompositorForAnimatorsInTree(compositor);
-    child->SendPendingThreadedAnimations();
-  }
 }
 
 void Layer::Remove(Layer* child) {
@@ -536,15 +516,12 @@ void Layer::SwitchToLayer(scoped_refptr<cc::Layer> new_layer) {
 }
 
 bool Layer::HasPendingThreadedAnimationsForTesting() const {
-  if (UILayerSettings().use_compositor_animation_timelines)
-    return animator_->HasPendingThreadedAnimationsForTesting();
-  else
-    return !pending_threaded_animations_.empty();
+  return animator_->HasPendingThreadedAnimationsForTesting();
 }
 
 void Layer::SwitchCCLayerForTest() {
   scoped_refptr<cc::Layer> new_layer =
-      cc::PictureLayer::Create(UILayerSettings(), this);
+      cc::PictureLayer::Create(cc::LayerSettings(), this);
   SwitchToLayer(new_layer);
   content_layer_ = new_layer;
 }
@@ -558,7 +535,7 @@ void Layer::SetTextureMailbox(
   DCHECK(release_callback);
   if (!texture_layer_.get()) {
     scoped_refptr<cc::TextureLayer> new_layer =
-        cc::TextureLayer::CreateForMailbox(UILayerSettings(), this);
+        cc::TextureLayer::CreateForMailbox(cc::LayerSettings(), this);
     new_layer->SetFlipped(true);
     SwitchToLayer(new_layer);
     texture_layer_ = new_layer;
@@ -602,7 +579,7 @@ void Layer::SetShowSurface(
   DCHECK(type_ == LAYER_TEXTURED || type_ == LAYER_SOLID_COLOR);
 
   scoped_refptr<cc::SurfaceLayer> new_layer = cc::SurfaceLayer::Create(
-      UILayerSettings(), satisfy_callback, require_callback);
+      cc::LayerSettings(), satisfy_callback, require_callback);
   new_layer->SetSurfaceId(surface_id, scale, surface_size);
   SwitchToLayer(new_layer);
   surface_layer_ = new_layer;
@@ -618,7 +595,7 @@ void Layer::SetShowSolidColorContent() {
     return;
 
   scoped_refptr<cc::SolidColorLayer> new_layer =
-      cc::SolidColorLayer::Create(UILayerSettings());
+      cc::SolidColorLayer::Create(cc::LayerSettings());
   SwitchToLayer(new_layer);
   solid_color_layer_ = new_layer;
 
@@ -971,36 +948,6 @@ float Layer::GetDeviceScaleFactor() const {
   return device_scale_factor_;
 }
 
-void Layer::AddThreadedAnimation(scoped_ptr<cc::Animation> animation) {
-  DCHECK(cc_layer_);
-  DCHECK(!UILayerSettings().use_compositor_animation_timelines);
-  // Until this layer has a compositor (and hence cc_layer_ has a
-  // LayerTreeHost), addAnimation will fail.
-  if (GetCompositor()) {
-    cc_layer_->AddAnimation(std::move(animation));
-  } else {
-    pending_threaded_animations_.push_back(std::move(animation));
-  }
-}
-
-void Layer::RemoveThreadedAnimation(int animation_id) {
-  DCHECK(cc_layer_);
-  DCHECK(!UILayerSettings().use_compositor_animation_timelines);
-  if (pending_threaded_animations_.size() == 0) {
-    cc_layer_->RemoveAnimation(animation_id);
-    return;
-  }
-
-  pending_threaded_animations_.erase(
-      std::remove_if(
-          pending_threaded_animations_.begin(),
-          pending_threaded_animations_.end(),
-          [animation_id](const scoped_ptr<cc::Animation>& animation) {
-            return animation->id() == animation_id;
-          }),
-      pending_threaded_animations_.end());
-}
-
 LayerAnimatorCollection* Layer::GetLayerAnimatorCollection() {
   Compositor* compositor = GetCompositor();
   return compositor ? compositor->layer_animator_collection() : NULL;
@@ -1011,37 +958,19 @@ cc::Layer* Layer::GetCcLayer() const {
 }
 
 LayerThreadedAnimationDelegate* Layer::GetThreadedAnimationDelegate() {
-  if (UILayerSettings().use_compositor_animation_timelines) {
-    DCHECK(animator_);
-    return animator_.get();
-  } else {
-    return this;
-  }
-}
-
-void Layer::SendPendingThreadedAnimations() {
-  if (UILayerSettings().use_compositor_animation_timelines) {
-    DCHECK(pending_threaded_animations_.empty());
-    return;
-  }
-
-  for (auto& animation : pending_threaded_animations_)
-    cc_layer_->AddAnimation(std::move(animation));
-  pending_threaded_animations_.clear();
-
-  for (auto* child : children_)
-    child->SendPendingThreadedAnimations();
+  DCHECK(animator_);
+  return animator_.get();
 }
 
 void Layer::CreateCcLayer() {
   if (type_ == LAYER_SOLID_COLOR) {
-    solid_color_layer_ = cc::SolidColorLayer::Create(UILayerSettings());
+    solid_color_layer_ = cc::SolidColorLayer::Create(cc::LayerSettings());
     cc_layer_ = solid_color_layer_.get();
   } else if (type_ == LAYER_NINE_PATCH) {
-    nine_patch_layer_ = cc::NinePatchLayer::Create(UILayerSettings());
+    nine_patch_layer_ = cc::NinePatchLayer::Create(cc::LayerSettings());
     cc_layer_ = nine_patch_layer_.get();
   } else {
-    content_layer_ = cc::PictureLayer::Create(UILayerSettings(), this);
+    content_layer_ = cc::PictureLayer::Create(cc::LayerSettings(), this);
     cc_layer_ = content_layer_.get();
   }
   cc_layer_->SetTransformOrigin(gfx::Point3F());
