@@ -80,6 +80,7 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl,
       is_affected_by_page_scale_(true),
       was_ever_ready_since_last_transform_animation_(true),
       background_color_(0),
+      safe_opaque_background_color_(0),
       opacity_(1.0),
       blend_mode_(SkXfermode::kSrcOver_Mode),
       draw_blend_mode_(SkXfermode::kSrcOver_Mode),
@@ -525,6 +526,7 @@ void LayerImpl::set_main_thread_scrolling_reasons(
 void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   layer->SetTransformOrigin(transform_origin_);
   layer->SetBackgroundColor(background_color_);
+  layer->SetSafeOpaqueBackgroundColor(safe_opaque_background_color_);
   layer->SetBounds(bounds_);
   layer->SetDoubleSided(double_sided_);
   layer->SetDrawsContent(DrawsContent());
@@ -1111,22 +1113,20 @@ void LayerImpl::SetBackgroundColor(SkColor background_color) {
   NoteLayerPropertyChanged();
 }
 
+void LayerImpl::SetSafeOpaqueBackgroundColor(SkColor background_color) {
+  if (background_color == safe_opaque_background_color_)
+    return;
+
+  safe_opaque_background_color_ = background_color;
+  SetNeedsPushProperties();
+}
+
 SkColor LayerImpl::SafeOpaqueBackgroundColor() const {
+  if (contents_opaque())
+    return safe_opaque_background_color_;
   SkColor color = background_color();
-  if (SkColorGetA(color) == 255 && !contents_opaque()) {
+  if (SkColorGetA(color) == 255)
     color = SK_ColorTRANSPARENT;
-  } else if (SkColorGetA(color) != 255 && contents_opaque()) {
-    for (const LayerImpl* layer = parent(); layer;
-         layer = layer->parent()) {
-      color = layer->background_color();
-      if (SkColorGetA(color) == 255)
-        break;
-    }
-    if (SkColorGetA(color) != 255)
-      color = layer_tree_impl()->background_color();
-    if (SkColorGetA(color) != 255)
-      color = SkColorSetA(color, 255);
-  }
   return color;
 }
 

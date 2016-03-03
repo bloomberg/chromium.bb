@@ -2108,6 +2108,8 @@ TEST_F(LayerTest, SafeOpaqueBackgroundColor) {
         layer_tree_host->set_background_color(
             host_opaque ? SK_ColorRED : SK_ColorTRANSPARENT);
 
+        layer_tree_host->property_trees()->needs_rebuild = true;
+        layer_tree_host->BuildPropertyTreesForTesting();
         SkColor safe_color = layer->SafeOpaqueBackgroundColor();
         if (contents_opaque) {
           EXPECT_EQ(SkColorGetA(safe_color), 255u)

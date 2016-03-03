@@ -69,10 +69,11 @@ message LayerProperties {
   optional PictureLayerProperties picture = 6;
 }
 
-// NEXT ID: 53
+// NEXT ID: 54
 message BaseLayerProperties {
   optional Point3F transform_origin = 1;
   optional uint32 background_color = 2;
+  optional uint32 safe_opaque_background_color = 53;
   optional Size bounds = 3;
   optional int64 transform_free_index = 4;
   optional int64 effect_tree_index = 5;

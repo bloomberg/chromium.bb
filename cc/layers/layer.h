@@ -120,6 +120,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
 
   virtual void SetBackgroundColor(SkColor background_color);
   SkColor background_color() const { return background_color_; }
+  void SetSafeOpaqueBackgroundColor(SkColor background_color);
   // If contents_opaque(), return an opaque color else return a
   // non-opaque color.  Tries to return background_color(), if possible.
   SkColor SafeOpaqueBackgroundColor() const;
@@ -745,6 +746,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   Region touch_event_handler_region_;
   gfx::PointF position_;
   SkColor background_color_;
+  SkColor safe_opaque_background_color_;
   float opacity_;
   SkXfermode::Mode blend_mode_;
   // draw_blend_mode may be different than blend_mode_,

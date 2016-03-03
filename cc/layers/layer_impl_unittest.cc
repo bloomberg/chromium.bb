@@ -412,7 +412,9 @@ TEST(LayerImplTest, SafeOpaqueBackgroundColor) {
                                   &task_graph_runner);
   host_impl.SetVisible(true);
   EXPECT_TRUE(host_impl.InitializeRenderer(output_surface.get()));
-  scoped_ptr<LayerImpl> layer = LayerImpl::Create(host_impl.active_tree(), 1);
+  host_impl.active_tree()->SetRootLayer(
+      LayerImpl::Create(host_impl.active_tree(), 1));
+  LayerImpl* layer = host_impl.active_tree()->root_layer();
 
   for (int contents_opaque = 0; contents_opaque < 2; ++contents_opaque) {
     for (int layer_opaque = 0; layer_opaque < 2; ++layer_opaque) {
@@ -422,6 +424,8 @@ TEST(LayerImplTest, SafeOpaqueBackgroundColor) {
                                                : SK_ColorTRANSPARENT);
         host_impl.active_tree()->set_background_color(
             host_opaque ? SK_ColorRED : SK_ColorTRANSPARENT);
+        host_impl.active_tree()->property_trees()->needs_rebuild = true;
+        host_impl.active_tree()->BuildPropertyTreesForTesting();
 
         SkColor safe_color = layer->SafeOpaqueBackgroundColor();
         if (contents_opaque) {

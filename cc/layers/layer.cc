@@ -89,6 +89,7 @@ Layer::Layer(const LayerSettings& settings)
       has_render_surface_(false),
       subtree_property_changed_(false),
       background_color_(0),
+      safe_opaque_background_color_(0),
       opacity_(1.f),
       blend_mode_(SkXfermode::kSrcOver_Mode),
       draw_blend_mode_(SkXfermode::kSrcOver_Mode),
@@ -430,22 +431,20 @@ void Layer::SetBackgroundColor(SkColor background_color) {
   SetNeedsCommit();
 }
 
+void Layer::SetSafeOpaqueBackgroundColor(SkColor background_color) {
+  DCHECK(IsPropertyChangeAllowed());
+  if (safe_opaque_background_color_ == background_color)
+    return;
+  safe_opaque_background_color_ = background_color;
+  SetNeedsPushProperties();
+}
+
 SkColor Layer::SafeOpaqueBackgroundColor() const {
+  if (contents_opaque())
+    return safe_opaque_background_color_;
   SkColor color = background_color();
-  if (SkColorGetA(color) == 255 && !contents_opaque()) {
+  if (SkColorGetA(color) == 255)
     color = SK_ColorTRANSPARENT;
-  } else if (SkColorGetA(color) != 255 && contents_opaque()) {
-    for (const Layer* layer = parent(); layer;
-         layer = layer->parent()) {
-      color = layer->background_color();
-      if (SkColorGetA(color) == 255)
-        break;
-    }
-    if (SkColorGetA(color) != 255)
-      color = layer_tree_host_->background_color();
-    if (SkColorGetA(color) != 255)
-      color = SkColorSetA(color, 255);
-  }
   return color;
 }
 
@@ -1226,6 +1225,7 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
 
   layer->SetTransformOrigin(transform_origin_);
   layer->SetBackgroundColor(background_color_);
+  layer->SetSafeOpaqueBackgroundColor(safe_opaque_background_color_);
   layer->SetBounds(use_paint_properties ? paint_properties_.bounds
                                         : bounds_);
 
@@ -1524,6 +1524,7 @@ void Layer::LayerSpecificPropertiesToProto(proto::LayerProperties* proto) {
 
   Point3FToProto(transform_origin_, base->mutable_transform_origin());
   base->set_background_color(background_color_);
+  base->set_safe_opaque_background_color(safe_opaque_background_color_);
   SizeToProto(use_paint_properties ? paint_properties_.bounds : bounds_,
               base->mutable_bounds());
 
@@ -1614,6 +1615,7 @@ void Layer::FromLayerSpecificPropertiesProto(
 
   transform_origin_ = ProtoToPoint3F(base.transform_origin());
   background_color_ = base.background_color();
+  safe_opaque_background_color_ = base.safe_opaque_background_color();
   bounds_ = ProtoToSize(base.bounds());
 
   transform_tree_index_ = base.transform_free_index();

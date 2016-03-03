@@ -14,6 +14,7 @@
 #include "cc/layers/layer_impl.h"
 #include "cc/trees/draw_property_utils.h"
 #include "cc/trees/layer_tree_host.h"
+#include "cc/trees/layer_tree_impl.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
 
@@ -57,6 +58,7 @@ struct DataForRecursion {
   gfx::Transform compound_transform_since_render_target;
   bool axis_align_since_render_target;
   int sequence_number;
+  SkColor safe_opaque_background_color;
 };
 
 template <typename LayerType>
@@ -755,6 +757,20 @@ void SetBackfaceVisibilityTransform(LayerType* layer,
   }
 }
 
+template <typename LayerType>
+void SetSafeOpaqueBackgroundColor(
+    const DataForRecursion<LayerType>& data_from_ancestor,
+    LayerType* layer,
+    DataForRecursion<LayerType>* data_for_children) {
+  SkColor background_color = layer->background_color();
+  data_for_children->safe_opaque_background_color =
+      SkColorGetA(background_color) == 255
+          ? background_color
+          : data_from_ancestor.safe_opaque_background_color;
+  layer->SetSafeOpaqueBackgroundColor(
+      data_for_children->safe_opaque_background_color);
+}
+
 static void SetLayerPropertyChangedForChild(Layer* parent, Layer* child) {
   if (parent->subtree_property_changed())
     child->SetSubtreePropertyChanged();
@@ -793,6 +809,7 @@ void BuildPropertyTreesInternal(
   AddScrollNodeIfNeeded(data_from_parent, layer, &data_for_children);
 
   SetBackfaceVisibilityTransform(layer, created_transform_node);
+  SetSafeOpaqueBackgroundColor(data_from_parent, layer, &data_for_children);
 
   for (size_t i = 0; i < layer->children().size(); ++i) {
     SetLayerPropertyChangedForChild(layer, layer->child_at(i));
@@ -853,7 +870,8 @@ void BuildPropertyTreesTopLevelInternal(
     float device_scale_factor,
     const gfx::Rect& viewport,
     const gfx::Transform& device_transform,
-    PropertyTrees* property_trees) {
+    PropertyTrees* property_trees,
+    SkColor color) {
   if (!property_trees->needs_rebuild) {
     UpdatePageScaleFactorInPropertyTrees(property_trees, page_scale_layer,
                                          page_scale_factor, device_scale_factor,
@@ -906,6 +924,7 @@ void BuildPropertyTreesTopLevelInternal(
   data_for_recursion.sequence_number = property_trees->sequence_number;
   data_for_recursion.transform_tree->set_device_scale_factor(
       device_scale_factor);
+  data_for_recursion.safe_opaque_background_color = color;
 
   ClipNode root_clip;
   root_clip.data.resets_clip = true;
@@ -940,11 +959,14 @@ void PropertyTreeBuilder::BuildPropertyTrees(
     const gfx::Rect& viewport,
     const gfx::Transform& device_transform,
     PropertyTrees* property_trees) {
+  SkColor color = root_layer->layer_tree_host()->background_color();
+  if (SkColorGetA(color) != 255)
+    color = SkColorSetA(color, 255);
   BuildPropertyTreesTopLevelInternal(
       root_layer, page_scale_layer, inner_viewport_scroll_layer,
       outer_viewport_scroll_layer, overscroll_elasticity_layer,
       elastic_overscroll, page_scale_factor, device_scale_factor, viewport,
-      device_transform, property_trees);
+      device_transform, property_trees, color);
 }
 
 void PropertyTreeBuilder::BuildPropertyTrees(
@@ -959,11 +981,14 @@ void PropertyTreeBuilder::BuildPropertyTrees(
     const gfx::Rect& viewport,
     const gfx::Transform& device_transform,
     PropertyTrees* property_trees) {
+  SkColor color = root_layer->layer_tree_impl()->background_color();
+  if (SkColorGetA(color) != 255)
+    color = SkColorSetA(color, 255);
   BuildPropertyTreesTopLevelInternal(
       root_layer, page_scale_layer, inner_viewport_scroll_layer,
       outer_viewport_scroll_layer, overscroll_elasticity_layer,
       elastic_overscroll, page_scale_factor, device_scale_factor, viewport,
-      device_transform, property_trees);
+      device_transform, property_trees, color);
 }
 
 }  // namespace cc
