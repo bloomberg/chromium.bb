@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/tiles/image_decode_controller.h"
+#include "cc/tiles/software_image_decode_controller.h"
 
 #include <stdint.h>
 
@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/discardable_memory.h"
 #include "cc/debug/devtools_instrumentation.h"
+#include "cc/raster/tile_task_runner.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "ui/gfx/skia_util.h"
@@ -33,8 +34,8 @@ const size_t kMaxItemsInCache = 100;
 
 class ImageDecodeTaskImpl : public ImageDecodeTask {
  public:
-  ImageDecodeTaskImpl(ImageDecodeController* controller,
-                      const ImageDecodeController::ImageKey& image_key,
+  ImageDecodeTaskImpl(SoftwareImageDecodeController* controller,
+                      const SoftwareImageDecodeController::ImageKey& image_key,
                       const DrawImage& image,
                       uint64_t source_prepare_tiles_id)
       : controller_(controller),
@@ -45,8 +46,9 @@ class ImageDecodeTaskImpl : public ImageDecodeTask {
 
   // Overridden from Task:
   void RunOnWorkerThread() override {
-    TRACE_EVENT1("cc", "ImageDecodeTaskImpl::RunOnWorkerThread",
-                 "source_prepare_tiles_id", source_prepare_tiles_id_);
+    TRACE_EVENT2("cc", "ImageDecodeTaskImpl::RunOnWorkerThread", "mode",
+                 "software", "source_prepare_tiles_id",
+                 source_prepare_tiles_id_);
     devtools_instrumentation::ScopedImageDecodeTask image_decode_task(
         image_ref_.get());
     controller_->DecodeImage(image_key_, image_);
@@ -62,8 +64,8 @@ class ImageDecodeTaskImpl : public ImageDecodeTask {
   ~ImageDecodeTaskImpl() override {}
 
  private:
-  ImageDecodeController* controller_;
-  ImageDecodeController::ImageKey image_key_;
+  SoftwareImageDecodeController* controller_;
+  SoftwareImageDecodeController::ImageKey image_key_;
   DrawImage image_;
   skia::RefPtr<const SkImage> image_ref_;
   uint64_t source_prepare_tiles_id_;
@@ -101,16 +103,15 @@ SkFilterQuality GetDecodedFilterQuality(const ImageDecodeControllerKey& key) {
 
 }  // namespace
 
-ImageDecodeController::ImageDecodeController()
-    : is_using_gpu_rasterization_(false),
-      locked_images_budget_(kLockedMemoryLimitBytes) {}
+SoftwareImageDecodeController::SoftwareImageDecodeController()
+    : locked_images_budget_(kLockedMemoryLimitBytes) {}
 
-ImageDecodeController::~ImageDecodeController() {
+SoftwareImageDecodeController::~SoftwareImageDecodeController() {
   DCHECK_EQ(0u, decoded_images_ref_counts_.size());
   DCHECK_EQ(0u, at_raster_decoded_images_ref_counts_.size());
 }
 
-bool ImageDecodeController::GetTaskForImageAndRef(
+bool SoftwareImageDecodeController::GetTaskForImageAndRef(
     const DrawImage& image,
     uint64_t prepare_tiles_id,
     scoped_refptr<ImageDecodeTask>* task) {
@@ -123,7 +124,7 @@ bool ImageDecodeController::GetTaskForImageAndRef(
   // the cache.
   ImageKey key = ImageKey::FromDrawImage(image);
   TRACE_EVENT1("disabled-by-default-cc.debug",
-               "ImageDecodeController::GetTaskForImageAndRef", "key",
+               "SoftwareImageDecodeController::GetTaskForImageAndRef", "key",
                key.ToString());
 
   // If the target size is empty, we can skip this image during draw (and thus
@@ -203,9 +204,10 @@ bool ImageDecodeController::GetTaskForImageAndRef(
   return true;
 }
 
-void ImageDecodeController::RefImage(const ImageKey& key) {
+void SoftwareImageDecodeController::RefImage(const ImageKey& key) {
   TRACE_EVENT1("disabled-by-default-cc.debug",
-               "ImageDecodeController::RefImage", "key", key.ToString());
+               "SoftwareImageDecodeController::RefImage", "key",
+               key.ToString());
   lock_.AssertAcquired();
   int ref = ++decoded_images_ref_counts_[key];
   if (ref == 1) {
@@ -214,7 +216,7 @@ void ImageDecodeController::RefImage(const ImageKey& key) {
   }
 }
 
-void ImageDecodeController::UnrefImage(const DrawImage& image) {
+void SoftwareImageDecodeController::UnrefImage(const DrawImage& image) {
   // When we unref the image, there are several situations we need to consider:
   // 1. The ref did not reach 0, which means we have to keep the image locked.
   // 2. The ref reached 0, we should unlock it.
@@ -224,7 +226,8 @@ void ImageDecodeController::UnrefImage(const DrawImage& image) {
   const ImageKey& key = ImageKey::FromDrawImage(image);
   DCHECK(CanHandleImage(key, image));
   TRACE_EVENT1("disabled-by-default-cc.debug",
-               "ImageDecodeController::UnrefImage", "key", key.ToString());
+               "SoftwareImageDecodeController::UnrefImage", "key",
+               key.ToString());
 
   base::AutoLock lock(lock_);
   auto ref_count_it = decoded_images_ref_counts_.find(key);
@@ -248,9 +251,9 @@ void ImageDecodeController::UnrefImage(const DrawImage& image) {
   SanityCheckState(__LINE__, true);
 }
 
-void ImageDecodeController::DecodeImage(const ImageKey& key,
-                                        const DrawImage& image) {
-  TRACE_EVENT1("cc", "ImageDecodeController::DecodeImage", "key",
+void SoftwareImageDecodeController::DecodeImage(const ImageKey& key,
+                                                const DrawImage& image) {
+  TRACE_EVENT1("cc", "SoftwareImageDecodeController::DecodeImage", "key",
                key.ToString());
   if (!CanHandleImage(key, image)) {
     image.image()->preroll();
@@ -318,11 +321,12 @@ void ImageDecodeController::DecodeImage(const ImageKey& key,
   SanityCheckState(__LINE__, true);
 }
 
-scoped_refptr<ImageDecodeController::DecodedImage>
-ImageDecodeController::DecodeImageInternal(const ImageKey& key,
-                                           const DrawImage& draw_image) {
+scoped_refptr<SoftwareImageDecodeController::DecodedImage>
+SoftwareImageDecodeController::DecodeImageInternal(
+    const ImageKey& key,
+    const DrawImage& draw_image) {
   TRACE_EVENT1("disabled-by-default-cc.debug",
-               "ImageDecodeController::DecodeImageInternal", "key",
+               "SoftwareImageDecodeController::DecodeImageInternal", "key",
                key.ToString());
   const SkImage* image = draw_image.image();
 
@@ -333,17 +337,19 @@ ImageDecodeController::DecodeImageInternal(const ImageKey& key,
         SkImageInfo::MakeN32Premul(image->width(), image->height());
     scoped_ptr<base::DiscardableMemory> decoded_pixels;
     {
-      TRACE_EVENT0("disabled-by-default-cc.debug",
-                   "ImageDecodeController::DecodeImageInternal - allocate "
-                   "decoded pixels");
+      TRACE_EVENT0(
+          "disabled-by-default-cc.debug",
+          "SoftwareImageDecodeController::DecodeImageInternal - allocate "
+          "decoded pixels");
       decoded_pixels =
           base::DiscardableMemoryAllocator::GetInstance()
               ->AllocateLockedDiscardableMemory(decoded_info.minRowBytes() *
                                                 decoded_info.height());
     }
     {
-      TRACE_EVENT0("disabled-by-default-cc.debug",
-                   "ImageDecodeController::DecodeImageInternal - read pixels");
+      TRACE_EVENT0(
+          "disabled-by-default-cc.debug",
+          "SoftwareImageDecodeController::DecodeImageInternal - read pixels");
       bool result = image->readPixels(decoded_info, decoded_pixels->data(),
                                       decoded_info.minRowBytes(), 0, 0,
                                       SkImage::kDisallow_CachingHint);
@@ -399,15 +405,17 @@ ImageDecodeController::DecodeImageInternal(const ImageKey& key,
     SkImageInfo decoded_info = SkImageInfo::MakeN32Premul(
         key.src_rect().width(), key.src_rect().height());
     {
-      TRACE_EVENT0("disabled-by-default-cc.debug",
-                   "ImageDecodeController::DecodeImageInternal - allocate "
-                   "decoded pixels");
+      TRACE_EVENT0(
+          "disabled-by-default-cc.debug",
+          "SoftwareImageDecodeController::DecodeImageInternal - allocate "
+          "decoded pixels");
       decoded_subrect_pixels.reset(
           new uint8_t[decoded_info.minRowBytes() * decoded_info.height()]);
     }
     {
-      TRACE_EVENT0("disabled-by-default-cc.debug",
-                   "ImageDecodeController::DecodeImageInternal - read pixels");
+      TRACE_EVENT0(
+          "disabled-by-default-cc.debug",
+          "SoftwareImageDecodeController::DecodeImageInternal - read pixels");
       result =
           image->readPixels(decoded_info, decoded_subrect_pixels.get(),
                             decoded_info.minRowBytes(), key.src_rect().x(),
@@ -422,18 +430,19 @@ ImageDecodeController::DecodeImageInternal(const ImageKey& key,
         key.src_rect().width(), key.src_rect().height());
     scoped_ptr<base::DiscardableMemory> discardable_subrect_pixels;
     {
-      TRACE_EVENT0("disabled-by-default-cc.debug",
-                   "ImageDecodeController::DecodeImageInternal - allocate "
-                   "discardable subrect pixels");
+      TRACE_EVENT0(
+          "disabled-by-default-cc.debug",
+          "SoftwareImageDecodeController::DecodeImageInternal - allocate "
+          "discardable subrect pixels");
       discardable_subrect_pixels =
           base::DiscardableMemoryAllocator::GetInstance()
               ->AllocateLockedDiscardableMemory(decoded_info.minRowBytes() *
                                                 decoded_info.height());
     }
     {
-      TRACE_EVENT0(
-          "disabled-by-default-cc.debug",
-          "ImageDecodeController::DecodeImageInternal - read subrect pixels");
+      TRACE_EVENT0("disabled-by-default-cc.debug",
+                   "SoftwareImageDecodeController::DecodeImageInternal - read "
+                   "subrect pixels");
       result =
           image->readPixels(decoded_info, discardable_subrect_pixels->data(),
                             decoded_info.minRowBytes(), key.src_rect().x(),
@@ -458,9 +467,10 @@ ImageDecodeController::DecodeImageInternal(const ImageKey& key,
       key.target_size().width(), key.target_size().height());
   scoped_ptr<base::DiscardableMemory> scaled_pixels;
   {
-    TRACE_EVENT0("disabled-by-default-cc.debug",
-                 "ImageDecodeController::DecodeImageInternal - allocate "
-                 "scaled pixels");
+    TRACE_EVENT0(
+        "disabled-by-default-cc.debug",
+        "SoftwareImageDecodeController::DecodeImageInternal - allocate "
+        "scaled pixels");
     scaled_pixels = base::DiscardableMemoryAllocator::GetInstance()
                         ->AllocateLockedDiscardableMemory(
                             scaled_info.minRowBytes() * scaled_info.height());
@@ -470,8 +480,9 @@ ImageDecodeController::DecodeImageInternal(const ImageKey& key,
   // TODO(vmpstr): Start handling more than just high filter quality.
   DCHECK_EQ(kHigh_SkFilterQuality, key.filter_quality());
   {
-    TRACE_EVENT0("disabled-by-default-cc.debug",
-                 "ImageDecodeController::DecodeImageInternal - scale pixels");
+    TRACE_EVENT0(
+        "disabled-by-default-cc.debug",
+        "SoftwareImageDecodeController::DecodeImageInternal - scale pixels");
     bool result =
         decoded_pixmap.scalePixels(scaled_pixmap, key.filter_quality());
     DCHECK(result);
@@ -487,11 +498,11 @@ ImageDecodeController::DecodeImageInternal(const ImageKey& key,
                        SkSize::Make(-key.src_rect().x(), -key.src_rect().y())));
 }
 
-DecodedDrawImage ImageDecodeController::GetDecodedImageForDraw(
+DecodedDrawImage SoftwareImageDecodeController::GetDecodedImageForDraw(
     const DrawImage& draw_image) {
   ImageKey key = ImageKey::FromDrawImage(draw_image);
   TRACE_EVENT1("disabled-by-default-cc.debug",
-               "ImageDecodeController::GetDecodedImageForDraw", "key",
+               "SoftwareImageDecodeController::GetDecodedImageForDraw", "key",
                key.ToString());
   // If the target size is empty, we can skip this image draw.
   if (key.target_size().IsEmpty())
@@ -503,12 +514,12 @@ DecodedDrawImage ImageDecodeController::GetDecodedImageForDraw(
   return GetDecodedImageForDrawInternal(key, draw_image);
 }
 
-DecodedDrawImage ImageDecodeController::GetDecodedImageForDrawInternal(
+DecodedDrawImage SoftwareImageDecodeController::GetDecodedImageForDrawInternal(
     const ImageKey& key,
     const DrawImage& draw_image) {
   TRACE_EVENT1("disabled-by-default-cc.debug",
-               "ImageDecodeController::GetDecodedImageForDrawInternal", "key",
-               key.ToString());
+               "SoftwareImageDecodeController::GetDecodedImageForDrawInternal",
+               "key", key.ToString());
   base::AutoLock lock(lock_);
   auto decoded_images_it = FindImage(&decoded_images_, key);
   // If we found the image and it's locked, then return it. If it's not locked,
@@ -595,11 +606,11 @@ DecodedDrawImage ImageDecodeController::GetDecodedImageForDrawInternal(
   return decoded_draw_image;
 }
 
-void ImageDecodeController::DrawWithImageFinished(
+void SoftwareImageDecodeController::DrawWithImageFinished(
     const DrawImage& image,
     const DecodedDrawImage& decoded_image) {
   TRACE_EVENT1("disabled-by-default-cc.debug",
-               "ImageDecodeController::DrawWithImageFinished", "key",
+               "SoftwareImageDecodeController::DrawWithImageFinished", "key",
                ImageKey::FromDrawImage(image).ToString());
   ImageKey key = ImageKey::FromDrawImage(image);
   if (!decoded_image.image() || !CanHandleImage(key, image))
@@ -612,18 +623,18 @@ void ImageDecodeController::DrawWithImageFinished(
   SanityCheckState(__LINE__, false);
 }
 
-void ImageDecodeController::RefAtRasterImage(const ImageKey& key) {
+void SoftwareImageDecodeController::RefAtRasterImage(const ImageKey& key) {
   TRACE_EVENT1("disabled-by-default-cc.debug",
-               "ImageDecodeController::RefAtRasterImage", "key",
+               "SoftwareImageDecodeController::RefAtRasterImage", "key",
                key.ToString());
   DCHECK(FindImage(&at_raster_decoded_images_, key) !=
          at_raster_decoded_images_.end());
   ++at_raster_decoded_images_ref_counts_[key];
 }
 
-void ImageDecodeController::UnrefAtRasterImage(const ImageKey& key) {
+void SoftwareImageDecodeController::UnrefAtRasterImage(const ImageKey& key) {
   TRACE_EVENT1("disabled-by-default-cc.debug",
-               "ImageDecodeController::UnrefAtRasterImage", "key",
+               "SoftwareImageDecodeController::UnrefAtRasterImage", "key",
                key.ToString());
   base::AutoLock lock(lock_);
 
@@ -669,25 +680,22 @@ void ImageDecodeController::UnrefAtRasterImage(const ImageKey& key) {
   }
 }
 
-bool ImageDecodeController::CanHandleImage(const ImageKey& key,
-                                           const DrawImage& image) {
-  // TODO(vmpstr): Handle GPU rasterization.
-  if (is_using_gpu_rasterization_)
-    return false;
+bool SoftwareImageDecodeController::CanHandleImage(const ImageKey& key,
+                                                   const DrawImage& image) {
   if (!CanHandleFilterQuality(key.filter_quality()))
     return false;
   return true;
 }
 
-bool ImageDecodeController::CanHandleFilterQuality(
+bool SoftwareImageDecodeController::CanHandleFilterQuality(
     SkFilterQuality filter_quality) {
   // TODO(vmpstr): We need to start caching mipmaps for medium quality and
   // caching the interpolated values from those. For now, we don't have this.
   return filter_quality != kMedium_SkFilterQuality;
 }
 
-void ImageDecodeController::ReduceCacheUsage() {
-  TRACE_EVENT0("cc", "ImageDecodeController::ReduceCacheUsage");
+void SoftwareImageDecodeController::ReduceCacheUsage() {
+  TRACE_EVENT0("cc", "SoftwareImageDecodeController::ReduceCacheUsage");
   base::AutoLock lock(lock_);
   size_t num_to_remove = (decoded_images_.size() > kMaxItemsInCache)
                              ? (decoded_images_.size() - kMaxItemsInCache)
@@ -704,35 +712,13 @@ void ImageDecodeController::ReduceCacheUsage() {
   }
 }
 
-void ImageDecodeController::RemovePendingTask(const ImageKey& key) {
+void SoftwareImageDecodeController::RemovePendingTask(const ImageKey& key) {
   base::AutoLock lock(lock_);
   pending_image_tasks_.erase(key);
 }
 
-void ImageDecodeController::SetIsUsingGpuRasterization(
-    bool is_using_gpu_rasterization) {
-  if (is_using_gpu_rasterization_ == is_using_gpu_rasterization)
-    return;
-  is_using_gpu_rasterization_ = is_using_gpu_rasterization;
-
-  base::AutoLock lock(lock_);
-
-  DCHECK_EQ(0u, decoded_images_ref_counts_.size());
-  DCHECK_EQ(0u, at_raster_decoded_images_ref_counts_.size());
-  DCHECK(std::find_if(decoded_images_.begin(), decoded_images_.end(),
-                      [](const AnnotatedDecodedImage& image) {
-                        return image.second->is_locked();
-                      }) == decoded_images_.end());
-  DCHECK(std::find_if(at_raster_decoded_images_.begin(),
-                      at_raster_decoded_images_.end(),
-                      [](const AnnotatedDecodedImage& image) {
-                        return image.second->is_locked();
-                      }) == at_raster_decoded_images_.end());
-  decoded_images_.clear();
-  at_raster_decoded_images_.clear();
-}
-
-void ImageDecodeController::SanityCheckState(int line, bool lock_acquired) {
+void SoftwareImageDecodeController::SanityCheckState(int line,
+                                                     bool lock_acquired) {
 #if DCHECK_IS_ON()
   if (!lock_acquired) {
     base::AutoLock lock(lock_);
@@ -766,7 +752,7 @@ void ImageDecodeController::SanityCheckState(int line, bool lock_acquired) {
 #endif  // DCHECK_IS_ON()
 }
 
-// ImageDecodeControllerKey
+// SoftwareImageDecodeControllerKey
 ImageDecodeControllerKey ImageDecodeControllerKey::FromDrawImage(
     const DrawImage& image) {
   const SkSize& scale = image.scale();
@@ -880,7 +866,7 @@ std::string ImageDecodeControllerKey::ToString() const {
 }
 
 // DecodedImage
-ImageDecodeController::DecodedImage::DecodedImage(
+SoftwareImageDecodeController::DecodedImage::DecodedImage(
     const SkImageInfo& info,
     scoped_ptr<base::DiscardableMemory> memory,
     const SkSize& src_rect_offset)
@@ -893,11 +879,11 @@ ImageDecodeController::DecodedImage::DecodedImage(
       [](const void* pixels, void* context) {}, nullptr));
 }
 
-ImageDecodeController::DecodedImage::~DecodedImage() {
+SoftwareImageDecodeController::DecodedImage::~DecodedImage() {
   DCHECK(!locked_);
 }
 
-bool ImageDecodeController::DecodedImage::Lock() {
+bool SoftwareImageDecodeController::DecodedImage::Lock() {
   DCHECK(!locked_);
   bool success = memory_->Lock();
   if (!success)
@@ -906,35 +892,37 @@ bool ImageDecodeController::DecodedImage::Lock() {
   return true;
 }
 
-void ImageDecodeController::DecodedImage::Unlock() {
+void SoftwareImageDecodeController::DecodedImage::Unlock() {
   DCHECK(locked_);
   memory_->Unlock();
   locked_ = false;
 }
 
 // MemoryBudget
-ImageDecodeController::MemoryBudget::MemoryBudget(size_t limit_bytes)
+SoftwareImageDecodeController::MemoryBudget::MemoryBudget(size_t limit_bytes)
     : limit_bytes_(limit_bytes), current_usage_bytes_(0u) {}
 
-size_t ImageDecodeController::MemoryBudget::AvailableMemoryBytes() const {
+size_t SoftwareImageDecodeController::MemoryBudget::AvailableMemoryBytes()
+    const {
   size_t usage = GetCurrentUsageSafe();
   return usage >= limit_bytes_ ? 0u : (limit_bytes_ - usage);
 }
 
-void ImageDecodeController::MemoryBudget::AddUsage(size_t usage) {
+void SoftwareImageDecodeController::MemoryBudget::AddUsage(size_t usage) {
   current_usage_bytes_ += usage;
 }
 
-void ImageDecodeController::MemoryBudget::SubtractUsage(size_t usage) {
+void SoftwareImageDecodeController::MemoryBudget::SubtractUsage(size_t usage) {
   DCHECK_GE(current_usage_bytes_.ValueOrDefault(0u), usage);
   current_usage_bytes_ -= usage;
 }
 
-void ImageDecodeController::MemoryBudget::ResetUsage() {
+void SoftwareImageDecodeController::MemoryBudget::ResetUsage() {
   current_usage_bytes_ = 0;
 }
 
-size_t ImageDecodeController::MemoryBudget::GetCurrentUsageSafe() const {
+size_t SoftwareImageDecodeController::MemoryBudget::GetCurrentUsageSafe()
+    const {
   return current_usage_bytes_.ValueOrDie();
 }
 

@@ -8,6 +8,7 @@
 #include <set>
 #include <vector>
 
+#include "cc/tiles/software_image_decode_controller.h"
 #include "cc/tiles/tile_manager.h"
 
 namespace cc {
@@ -25,6 +26,9 @@ class FakeTileManager : public TileManager {
   void Release(Tile* tile) override;
 
   std::vector<Tile*> tiles_for_raster;
+
+ private:
+  SoftwareImageDecodeController image_decode_controller_;
 };
 
 }  // namespace cc

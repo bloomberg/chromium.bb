@@ -117,6 +117,7 @@ class CC_EXPORT TileManager {
   // SetResources.
   void SetResources(ResourcePool* resource_pool,
                     TileTaskRunner* tile_task_runner,
+                    ImageDecodeController* image_decode_controller,
                     size_t scheduled_raster_task_limit,
                     bool use_gpu_rasterization);
 
@@ -131,10 +132,6 @@ class CC_EXPORT TileManager {
 
   bool IsReadyToActivate() const;
   bool IsReadyToDraw() const;
-
-  ImageDecodeController* GetImageDecodeController() {
-    return &image_decode_controller_;
-  }
 
   scoped_ptr<base::trace_event::ConvertableToTraceFormat> BasicStateAsValue()
       const;
@@ -302,7 +299,7 @@ class CC_EXPORT TileManager {
   bool did_check_for_completed_tasks_since_last_schedule_tasks_;
   bool did_oom_on_last_assign_;
 
-  ImageDecodeController image_decode_controller_;
+  ImageDecodeController* image_decode_controller_;
 
   RasterTaskCompletionStats flush_stats_;
 

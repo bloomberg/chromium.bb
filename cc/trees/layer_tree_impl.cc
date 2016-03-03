@@ -1032,6 +1032,10 @@ TileManager* LayerTreeImpl::tile_manager() const {
   return layer_tree_host_impl_->tile_manager();
 }
 
+ImageDecodeController* LayerTreeImpl::image_decode_controller() const {
+  return layer_tree_host_impl_->image_decode_controller();
+}
+
 FrameRateCounter* LayerTreeImpl::frame_rate_counter() const {
   return layer_tree_host_impl_->fps_counter();
 }

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/tiles/image_decode_controller.h"
+#include "cc/tiles/software_image_decode_controller.h"
 
 #include "cc/playback/draw_image.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -17,7 +17,7 @@ skia::RefPtr<SkImage> CreateImage(int width, int height) {
   return skia::AdoptRef(SkImage::NewFromBitmap(bitmap));
 }
 
-TEST(ImageDecodeControllerTest, ImageKeyLowQuality) {
+TEST(SoftwareImageDecodeControllerTest, ImageKeyLowQuality) {
   skia::RefPtr<SkImage> image = CreateImage(100, 100);
   bool has_perspective = false;
   bool is_decomposable = true;
@@ -39,7 +39,7 @@ TEST(ImageDecodeControllerTest, ImageKeyLowQuality) {
   }
 }
 
-TEST(ImageDecodeControllerTest, ImageKeyMediumQuality) {
+TEST(SoftwareImageDecodeControllerTest, ImageKeyMediumQuality) {
   skia::RefPtr<SkImage> image = CreateImage(100, 100);
   bool has_perspective = false;
   bool is_decomposable = true;
@@ -58,7 +58,8 @@ TEST(ImageDecodeControllerTest, ImageKeyMediumQuality) {
   EXPECT_EQ(50u * 150u * 4u, key.locked_bytes());
 }
 
-TEST(ImageDecodeControllerTest, ImageKeyMediumQualityEvenWithPerspective) {
+TEST(SoftwareImageDecodeControllerTest,
+     ImageKeyMediumQualityEvenWithPerspective) {
   skia::RefPtr<SkImage> image = CreateImage(100, 100);
   bool has_perspective = true;
   bool is_decomposable = true;
@@ -77,7 +78,8 @@ TEST(ImageDecodeControllerTest, ImageKeyMediumQualityEvenWithPerspective) {
   EXPECT_EQ(50u * 150u * 4u, key.locked_bytes());
 }
 
-TEST(ImageDecodeControllerTest, ImageKeyMediumQualityDropToLowIfEnlarging) {
+TEST(SoftwareImageDecodeControllerTest,
+     ImageKeyMediumQualityDropToLowIfEnlarging) {
   skia::RefPtr<SkImage> image = CreateImage(100, 100);
   bool has_perspective = false;
   bool is_decomposable = true;
@@ -96,7 +98,8 @@ TEST(ImageDecodeControllerTest, ImageKeyMediumQualityDropToLowIfEnlarging) {
   EXPECT_EQ(100u * 100u * 4u, key.locked_bytes());
 }
 
-TEST(ImageDecodeControllerTest, ImageKeyMediumQualityDropToLowIfIdentity) {
+TEST(SoftwareImageDecodeControllerTest,
+     ImageKeyMediumQualityDropToLowIfIdentity) {
   skia::RefPtr<SkImage> image = CreateImage(100, 100);
   bool has_perspective = false;
   bool is_decomposable = true;
@@ -115,7 +118,7 @@ TEST(ImageDecodeControllerTest, ImageKeyMediumQualityDropToLowIfIdentity) {
   EXPECT_EQ(100u * 100u * 4u, key.locked_bytes());
 }
 
-TEST(ImageDecodeControllerTest,
+TEST(SoftwareImageDecodeControllerTest,
      ImageKeyMediumQualityDropToLowIfNearlyIdentity) {
   skia::RefPtr<SkImage> image = CreateImage(100, 100);
   bool has_perspective = false;
@@ -135,7 +138,7 @@ TEST(ImageDecodeControllerTest,
   EXPECT_EQ(100u * 100u * 4u, key.locked_bytes());
 }
 
-TEST(ImageDecodeControllerTest,
+TEST(SoftwareImageDecodeControllerTest,
      ImageKeyMediumQualityDropToLowIfNearlyIdentity2) {
   skia::RefPtr<SkImage> image = CreateImage(100, 100);
   bool has_perspective = false;
@@ -155,7 +158,7 @@ TEST(ImageDecodeControllerTest,
   EXPECT_EQ(100u * 100u * 4u, key.locked_bytes());
 }
 
-TEST(ImageDecodeControllerTest,
+TEST(SoftwareImageDecodeControllerTest,
      ImageKeyMediumQualityDropToLowIfNotDecomposable) {
   skia::RefPtr<SkImage> image = CreateImage(100, 100);
   bool has_perspective = false;
@@ -175,7 +178,7 @@ TEST(ImageDecodeControllerTest,
   EXPECT_EQ(100u * 100u * 4u, key.locked_bytes());
 }
 
-TEST(ImageDecodeControllerTest, ImageKeyHighQuality) {
+TEST(SoftwareImageDecodeControllerTest, ImageKeyHighQuality) {
   skia::RefPtr<SkImage> image = CreateImage(100, 100);
   bool has_perspective = false;
   bool is_decomposable = true;
@@ -194,7 +197,7 @@ TEST(ImageDecodeControllerTest, ImageKeyHighQuality) {
   EXPECT_EQ(50u * 150u * 4u, key.locked_bytes());
 }
 
-TEST(ImageDecodeControllerTest,
+TEST(SoftwareImageDecodeControllerTest,
      ImageKeyHighQualityDropToMediumWithPerspective) {
   skia::RefPtr<SkImage> image = CreateImage(100, 100);
   bool has_perspective = true;
@@ -214,7 +217,8 @@ TEST(ImageDecodeControllerTest,
   EXPECT_EQ(50u * 150u * 4u, key.locked_bytes());
 }
 
-TEST(ImageDecodeControllerTest, ImageKeyHighQualityDropToMediumIfTooLarge) {
+TEST(SoftwareImageDecodeControllerTest,
+     ImageKeyHighQualityDropToMediumIfTooLarge) {
   // Just over 64MB when scaled.
   skia::RefPtr<SkImage> image = CreateImage(4555, 2048);
   bool has_perspective = false;
@@ -236,7 +240,8 @@ TEST(ImageDecodeControllerTest, ImageKeyHighQualityDropToMediumIfTooLarge) {
   EXPECT_EQ(4100u * 4096u * 4u, key.locked_bytes());
 }
 
-TEST(ImageDecodeControllerTest, ImageKeyHighQualityDropToLowIfNotDecomposable) {
+TEST(SoftwareImageDecodeControllerTest,
+     ImageKeyHighQualityDropToLowIfNotDecomposable) {
   skia::RefPtr<SkImage> image = CreateImage(100, 100);
   bool has_perspective = false;
   bool is_decomposable = false;
@@ -255,7 +260,8 @@ TEST(ImageDecodeControllerTest, ImageKeyHighQualityDropToLowIfNotDecomposable) {
   EXPECT_EQ(100u * 100u * 4u, key.locked_bytes());
 }
 
-TEST(ImageDecodeControllerTest, ImageKeyHighQualityDropToLowIfIdentity) {
+TEST(SoftwareImageDecodeControllerTest,
+     ImageKeyHighQualityDropToLowIfIdentity) {
   skia::RefPtr<SkImage> image = CreateImage(100, 100);
   bool has_perspective = false;
   bool is_decomposable = true;
@@ -274,7 +280,8 @@ TEST(ImageDecodeControllerTest, ImageKeyHighQualityDropToLowIfIdentity) {
   EXPECT_EQ(100u * 100u * 4u, key.locked_bytes());
 }
 
-TEST(ImageDecodeControllerTest, ImageKeyHighQualityDropToLowIfNearlyIdentity) {
+TEST(SoftwareImageDecodeControllerTest,
+     ImageKeyHighQualityDropToLowIfNearlyIdentity) {
   skia::RefPtr<SkImage> image = CreateImage(100, 100);
   bool has_perspective = false;
   bool is_decomposable = true;
@@ -293,7 +300,8 @@ TEST(ImageDecodeControllerTest, ImageKeyHighQualityDropToLowIfNearlyIdentity) {
   EXPECT_EQ(100u * 100u * 4u, key.locked_bytes());
 }
 
-TEST(ImageDecodeControllerTest, ImageKeyHighQualityDropToLowIfNearlyIdentity2) {
+TEST(SoftwareImageDecodeControllerTest,
+     ImageKeyHighQualityDropToLowIfNearlyIdentity2) {
   skia::RefPtr<SkImage> image = CreateImage(100, 100);
   bool has_perspective = false;
   bool is_decomposable = true;
@@ -312,7 +320,7 @@ TEST(ImageDecodeControllerTest, ImageKeyHighQualityDropToLowIfNearlyIdentity2) {
   EXPECT_EQ(100u * 100u * 4u, key.locked_bytes());
 }
 
-TEST(ImageDecodeControllerTest, OriginalDecodesAreEqual) {
+TEST(SoftwareImageDecodeControllerTest, OriginalDecodesAreEqual) {
   skia::RefPtr<SkImage> image = CreateImage(100, 100);
   bool has_perspective = false;
   bool is_decomposable = true;
@@ -346,7 +354,7 @@ TEST(ImageDecodeControllerTest, OriginalDecodesAreEqual) {
   EXPECT_TRUE(key == another_key);
 }
 
-TEST(ImageDecodeControllerTest, ImageRectDoesNotContainSrcRect) {
+TEST(SoftwareImageDecodeControllerTest, ImageRectDoesNotContainSrcRect) {
   skia::RefPtr<SkImage> image = CreateImage(100, 100);
   bool has_perspective = false;
   bool is_decomposable = true;
@@ -365,7 +373,8 @@ TEST(ImageDecodeControllerTest, ImageRectDoesNotContainSrcRect) {
   EXPECT_EQ(100u * 100u * 4u, key.locked_bytes());
 }
 
-TEST(ImageDecodeControllerTest, ImageRectDoesNotContainSrcRectWithScale) {
+TEST(SoftwareImageDecodeControllerTest,
+     ImageRectDoesNotContainSrcRectWithScale) {
   skia::RefPtr<SkImage> image = CreateImage(100, 100);
   bool has_perspective = false;
   bool is_decomposable = true;
@@ -384,8 +393,8 @@ TEST(ImageDecodeControllerTest, ImageRectDoesNotContainSrcRectWithScale) {
   EXPECT_EQ(40u * 35u * 4u, key.locked_bytes());
 }
 
-TEST(ImageDecodeControllerTest, GetTaskForImageSameImage) {
-  ImageDecodeController controller;
+TEST(SoftwareImageDecodeControllerTest, GetTaskForImageSameImage) {
+  SoftwareImageDecodeController controller;
   skia::RefPtr<SkImage> image = CreateImage(100, 100);
   bool has_perspective = false;
   bool is_decomposable = true;
@@ -414,8 +423,9 @@ TEST(ImageDecodeControllerTest, GetTaskForImageSameImage) {
   controller.UnrefImage(draw_image);
 }
 
-TEST(ImageDecodeControllerTest, GetTaskForImageSameImageDifferentQuality) {
-  ImageDecodeController controller;
+TEST(SoftwareImageDecodeControllerTest,
+     GetTaskForImageSameImageDifferentQuality) {
+  SoftwareImageDecodeController controller;
   skia::RefPtr<SkImage> image = CreateImage(100, 100);
   bool has_perspective = false;
   bool is_decomposable = true;
@@ -461,8 +471,8 @@ TEST(ImageDecodeControllerTest, GetTaskForImageSameImageDifferentQuality) {
   controller.UnrefImage(low_quality_draw_image);
 }
 
-TEST(ImageDecodeControllerTest, GetTaskForImageSameImageDifferentSize) {
-  ImageDecodeController controller;
+TEST(SoftwareImageDecodeControllerTest, GetTaskForImageSameImageDifferentSize) {
+  SoftwareImageDecodeController controller;
   skia::RefPtr<SkImage> image = CreateImage(100, 100);
   bool has_perspective = false;
   bool is_decomposable = true;
@@ -492,8 +502,8 @@ TEST(ImageDecodeControllerTest, GetTaskForImageSameImageDifferentSize) {
   controller.UnrefImage(quarter_size_draw_image);
 }
 
-TEST(ImageDecodeControllerTest, GetTaskForImageDifferentImage) {
-  ImageDecodeController controller;
+TEST(SoftwareImageDecodeControllerTest, GetTaskForImageDifferentImage) {
+  SoftwareImageDecodeController controller;
   bool has_perspective = false;
   bool is_decomposable = true;
   uint64_t prepare_tiles_id = 1;
@@ -526,8 +536,8 @@ TEST(ImageDecodeControllerTest, GetTaskForImageDifferentImage) {
   controller.UnrefImage(second_draw_image);
 }
 
-TEST(ImageDecodeControllerTest, GetTaskForImageAlreadyDecoded) {
-  ImageDecodeController controller;
+TEST(SoftwareImageDecodeControllerTest, GetTaskForImageAlreadyDecoded) {
+  SoftwareImageDecodeController controller;
   bool has_perspective = false;
   bool is_decomposable = true;
   uint64_t prepare_tiles_id = 1;
@@ -562,8 +572,8 @@ TEST(ImageDecodeControllerTest, GetTaskForImageAlreadyDecoded) {
   controller.UnrefImage(draw_image);
 }
 
-TEST(ImageDecodeControllerTest, GetTaskForImageAlreadyPrerolled) {
-  ImageDecodeController controller;
+TEST(SoftwareImageDecodeControllerTest, GetTaskForImageAlreadyPrerolled) {
+  SoftwareImageDecodeController controller;
   bool has_perspective = false;
   bool is_decomposable = true;
   uint64_t prepare_tiles_id = 1;
@@ -605,8 +615,8 @@ TEST(ImageDecodeControllerTest, GetTaskForImageAlreadyPrerolled) {
   controller.UnrefImage(draw_image);
 }
 
-TEST(ImageDecodeControllerTest, GetTaskForImageCanceledGetsNewTask) {
-  ImageDecodeController controller;
+TEST(SoftwareImageDecodeControllerTest, GetTaskForImageCanceledGetsNewTask) {
+  SoftwareImageDecodeController controller;
   bool has_perspective = false;
   bool is_decomposable = true;
   uint64_t prepare_tiles_id = 1;
@@ -652,8 +662,9 @@ TEST(ImageDecodeControllerTest, GetTaskForImageCanceledGetsNewTask) {
   controller.UnrefImage(draw_image);
 }
 
-TEST(ImageDecodeControllerTest, GetTaskForImageCanceledWhileReffedGetsNewTask) {
-  ImageDecodeController controller;
+TEST(SoftwareImageDecodeControllerTest,
+     GetTaskForImageCanceledWhileReffedGetsNewTask) {
+  SoftwareImageDecodeController controller;
   bool has_perspective = false;
   bool is_decomposable = true;
   uint64_t prepare_tiles_id = 1;
@@ -699,8 +710,8 @@ TEST(ImageDecodeControllerTest, GetTaskForImageCanceledWhileReffedGetsNewTask) {
   controller.UnrefImage(draw_image);
 }
 
-TEST(ImageDecodeControllerTest, GetDecodedImageForDraw) {
-  ImageDecodeController controller;
+TEST(SoftwareImageDecodeControllerTest, GetDecodedImageForDraw) {
+  SoftwareImageDecodeController controller;
   bool has_perspective = false;
   bool is_decomposable = true;
   uint64_t prepare_tiles_id = 1;
@@ -741,8 +752,9 @@ TEST(ImageDecodeControllerTest, GetDecodedImageForDraw) {
   controller.UnrefImage(draw_image);
 }
 
-TEST(ImageDecodeControllerTest, GetDecodedImageForDrawWithNonContainedSrcRect) {
-  ImageDecodeController controller;
+TEST(SoftwareImageDecodeControllerTest,
+     GetDecodedImageForDrawWithNonContainedSrcRect) {
+  SoftwareImageDecodeController controller;
   bool has_perspective = false;
   bool is_decomposable = true;
   uint64_t prepare_tiles_id = 1;
@@ -783,8 +795,8 @@ TEST(ImageDecodeControllerTest, GetDecodedImageForDrawWithNonContainedSrcRect) {
   controller.UnrefImage(draw_image);
 }
 
-TEST(ImageDecodeControllerTest, GetDecodedImageForDrawAtRasterDecode) {
-  ImageDecodeController controller;
+TEST(SoftwareImageDecodeControllerTest, GetDecodedImageForDrawAtRasterDecode) {
+  SoftwareImageDecodeController controller;
   bool has_perspective = false;
   bool is_decomposable = true;
   SkFilterQuality quality = kHigh_SkFilterQuality;
@@ -808,9 +820,9 @@ TEST(ImageDecodeControllerTest, GetDecodedImageForDrawAtRasterDecode) {
   controller.DrawWithImageFinished(draw_image, decoded_draw_image);
 }
 
-TEST(ImageDecodeControllerTest,
+TEST(SoftwareImageDecodeControllerTest,
      GetDecodedImageForDrawAtRasterDecodeMultipleTimes) {
-  ImageDecodeController controller;
+  SoftwareImageDecodeController controller;
   bool has_perspective = false;
   bool is_decomposable = true;
   SkFilterQuality quality = kHigh_SkFilterQuality;
@@ -840,9 +852,9 @@ TEST(ImageDecodeControllerTest,
   controller.DrawWithImageFinished(draw_image, another_decoded_draw_image);
 }
 
-TEST(ImageDecodeControllerTest,
+TEST(SoftwareImageDecodeControllerTest,
      GetDecodedImageForDrawAtRasterDecodeDoesNotPreventTasks) {
-  ImageDecodeController controller;
+  SoftwareImageDecodeController controller;
   bool has_perspective = false;
   bool is_decomposable = true;
   uint64_t prepare_tiles_id = 1;
@@ -895,9 +907,9 @@ TEST(ImageDecodeControllerTest,
   controller.UnrefImage(draw_image);
 }
 
-TEST(ImageDecodeControllerTest,
+TEST(SoftwareImageDecodeControllerTest,
      GetDecodedImageForDrawAtRasterDecodeIsUsedForLockedCache) {
-  ImageDecodeController controller;
+  SoftwareImageDecodeController controller;
   bool has_perspective = false;
   bool is_decomposable = true;
   uint64_t prepare_tiles_id = 1;
@@ -951,8 +963,8 @@ TEST(ImageDecodeControllerTest,
   controller.UnrefImage(draw_image);
 }
 
-TEST(ImageDecodeControllerTest, ZeroSizedImagesAreSkipped) {
-  ImageDecodeController controller;
+TEST(SoftwareImageDecodeControllerTest, ZeroSizedImagesAreSkipped) {
+  SoftwareImageDecodeController controller;
   bool has_perspective = false;
   bool is_decomposable = true;
   uint64_t prepare_tiles_id = 1;
@@ -976,8 +988,8 @@ TEST(ImageDecodeControllerTest, ZeroSizedImagesAreSkipped) {
   controller.DrawWithImageFinished(draw_image, decoded_draw_image);
 }
 
-TEST(ImageDecodeControllerTest, NonOverlappingSrcRectImagesAreSkipped) {
-  ImageDecodeController controller;
+TEST(SoftwareImageDecodeControllerTest, NonOverlappingSrcRectImagesAreSkipped) {
+  SoftwareImageDecodeController controller;
   bool has_perspective = false;
   bool is_decomposable = true;
   uint64_t prepare_tiles_id = 1;
@@ -1001,8 +1013,8 @@ TEST(ImageDecodeControllerTest, NonOverlappingSrcRectImagesAreSkipped) {
   controller.DrawWithImageFinished(draw_image, decoded_draw_image);
 }
 
-TEST(ImageDecodeControllerTest, LowQualityFilterIsHandled) {
-  ImageDecodeController controller;
+TEST(SoftwareImageDecodeControllerTest, LowQualityFilterIsHandled) {
+  SoftwareImageDecodeController controller;
   bool has_perspective = false;
   bool is_decomposable = true;
   uint64_t prepare_tiles_id = 1;
@@ -1030,8 +1042,8 @@ TEST(ImageDecodeControllerTest, LowQualityFilterIsHandled) {
   controller.UnrefImage(draw_image);
 }
 
-TEST(ImageDecodeControllerTest, LowQualityScaledSubrectIsHandled) {
-  ImageDecodeController controller;
+TEST(SoftwareImageDecodeControllerTest, LowQualityScaledSubrectIsHandled) {
+  SoftwareImageDecodeController controller;
   bool has_perspective = false;
   bool is_decomposable = true;
   uint64_t prepare_tiles_id = 1;
@@ -1061,8 +1073,8 @@ TEST(ImageDecodeControllerTest, LowQualityScaledSubrectIsHandled) {
   controller.UnrefImage(draw_image);
 }
 
-TEST(ImageDecodeControllerTest, NoneQualityScaledSubrectIsHandled) {
-  ImageDecodeController controller;
+TEST(SoftwareImageDecodeControllerTest, NoneQualityScaledSubrectIsHandled) {
+  SoftwareImageDecodeController controller;
   bool has_perspective = false;
   bool is_decomposable = true;
   uint64_t prepare_tiles_id = 1;

@@ -208,9 +208,13 @@ TEST(PictureLayerTest, NoTilesIfEmptyBounds) {
   FakeImplTaskRunnerProvider impl_task_runner_provider;
 
   TestSharedBitmapManager shared_bitmap_manager;
+  scoped_ptr<FakeOutputSurface> output_surface =
+      FakeOutputSurface::CreateSoftware(
+          make_scoped_ptr(new SoftwareOutputDevice));
   FakeLayerTreeHostImpl host_impl(LayerTreeSettingsForTesting(),
                                   &impl_task_runner_provider,
                                   &shared_bitmap_manager, &task_graph_runner);
+  host_impl.InitializeRenderer(output_surface.get());
   host_impl.CreatePendingTree();
   scoped_ptr<FakePictureLayerImpl> layer_impl =
       FakePictureLayerImpl::Create(host_impl.pending_tree(), 1);

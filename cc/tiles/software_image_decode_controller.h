@@ -1,0 +1,228 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CC_TILES_SOFTWARE_IMAGE_DECODE_CONTROLLER_H_
+#define CC_TILES_SOFTWARE_IMAGE_DECODE_CONTROLLER_H_
+
+#include <stdint.h>
+
+#include <unordered_map>
+#include <unordered_set>
+
+#include "base/hash.h"
+#include "base/memory/discardable_memory_allocator.h"
+#include "base/memory/ref_counted.h"
+#include "base/numerics/safe_math.h"
+#include "base/threading/thread_checker.h"
+#include "cc/base/cc_export.h"
+#include "cc/playback/decoded_draw_image.h"
+#include "cc/playback/draw_image.h"
+#include "cc/raster/tile_task_runner.h"
+#include "cc/tiles/image_decode_controller.h"
+#include "skia/ext/refptr.h"
+
+namespace cc {
+
+// ImageDecodeControllerKey is a class that gets a cache key out of a given draw
+// image. That is, this key uniquely identifies an image in the cache. Note that
+// it's insufficient to use SkImage's unique id, since the same image can appear
+// in the cache multiple times at different scales and filter qualities.
+class CC_EXPORT ImageDecodeControllerKey {
+ public:
+  static ImageDecodeControllerKey FromDrawImage(const DrawImage& image);
+
+  bool operator==(const ImageDecodeControllerKey& other) const {
+    // The image_id always has to be the same. However, after that all original
+    // decodes are the same, so if we can use the original decode, return true.
+    // If not, then we have to compare every field.
+    return image_id_ == other.image_id_ &&
+           can_use_original_decode_ == other.can_use_original_decode_ &&
+           (can_use_original_decode_ ||
+            (src_rect_ == other.src_rect_ &&
+             target_size_ == other.target_size_ &&
+             filter_quality_ == other.filter_quality_));
+  }
+
+  bool operator!=(const ImageDecodeControllerKey& other) const {
+    return !(*this == other);
+  }
+
+  uint32_t image_id() const { return image_id_; }
+  SkFilterQuality filter_quality() const { return filter_quality_; }
+  gfx::Rect src_rect() const { return src_rect_; }
+  gfx::Size target_size() const { return target_size_; }
+
+  bool can_use_original_decode() const { return can_use_original_decode_; }
+  size_t get_hash() const { return hash_; }
+
+  // Helper to figure out how much memory the locked image represented by this
+  // key would take.
+  size_t locked_bytes() const {
+    // TODO(vmpstr): Handle formats other than RGBA.
+    base::CheckedNumeric<size_t> result = 4;
+    result *= target_size_.width();
+    result *= target_size_.height();
+    return result.ValueOrDefault(std::numeric_limits<size_t>::max());
+  }
+
+  std::string ToString() const;
+
+ private:
+  ImageDecodeControllerKey(uint32_t image_id,
+                           const gfx::Rect& src_rect,
+                           const gfx::Size& size,
+                           SkFilterQuality filter_quality,
+                           bool can_use_original_decode);
+
+  uint32_t image_id_;
+  gfx::Rect src_rect_;
+  gfx::Size target_size_;
+  SkFilterQuality filter_quality_;
+  bool can_use_original_decode_;
+  size_t hash_;
+};
+
+// Hash function for the above ImageDecodeControllerKey.
+struct ImageDecodeControllerKeyHash {
+  size_t operator()(const ImageDecodeControllerKey& key) const {
+    return key.get_hash();
+  }
+};
+
+class CC_EXPORT SoftwareImageDecodeController : public ImageDecodeController {
+ public:
+  using ImageKey = ImageDecodeControllerKey;
+  using ImageKeyHash = ImageDecodeControllerKeyHash;
+
+  SoftwareImageDecodeController();
+  ~SoftwareImageDecodeController() override;
+
+  // ImageDecodeController overrides.
+  bool GetTaskForImageAndRef(const DrawImage& image,
+                             uint64_t prepare_tiles_id,
+                             scoped_refptr<ImageDecodeTask>* task) override;
+  void UnrefImage(const DrawImage& image) override;
+  DecodedDrawImage GetDecodedImageForDraw(const DrawImage& image) override;
+  void DrawWithImageFinished(const DrawImage& image,
+                             const DecodedDrawImage& decoded_image) override;
+  void ReduceCacheUsage() override;
+
+  // Decode the given image and store it in the cache. This is only called by an
+  // image decode task from a worker thread.
+  void DecodeImage(const ImageKey& key, const DrawImage& image);
+
+  void RemovePendingTask(const ImageKey& key);
+
+ private:
+  // DecodedImage is a convenience storage for discardable memory. It can also
+  // construct an image out of SkImageInfo and stored discardable memory.
+  // TODO(vmpstr): Make this scoped_ptr.
+  class DecodedImage : public base::RefCounted<DecodedImage> {
+   public:
+    DecodedImage(const SkImageInfo& info,
+                 scoped_ptr<base::DiscardableMemory> memory,
+                 const SkSize& src_rect_offset);
+
+    SkImage* image() const {
+      DCHECK(locked_);
+      return image_.get();
+    }
+
+    const SkSize& src_rect_offset() const { return src_rect_offset_; }
+
+    bool is_locked() const { return locked_; }
+    bool Lock();
+    void Unlock();
+
+   private:
+    friend class base::RefCounted<DecodedImage>;
+
+    ~DecodedImage();
+
+    bool locked_;
+    SkImageInfo image_info_;
+    scoped_ptr<base::DiscardableMemory> memory_;
+    skia::RefPtr<SkImage> image_;
+    SkSize src_rect_offset_;
+  };
+
+  // MemoryBudget is a convenience class for memory bookkeeping and ensuring
+  // that we don't go over the limit when pre-decoding.
+  // TODO(vmpstr): Add memory infra to keep track of memory usage of this class.
+  class MemoryBudget {
+   public:
+    explicit MemoryBudget(size_t limit_bytes);
+
+    size_t AvailableMemoryBytes() const;
+    void AddUsage(size_t usage);
+    void SubtractUsage(size_t usage);
+    void ResetUsage();
+
+   private:
+    size_t GetCurrentUsageSafe() const;
+
+    size_t limit_bytes_;
+    base::CheckedNumeric<size_t> current_usage_bytes_;
+  };
+
+  using AnnotatedDecodedImage =
+      std::pair<ImageKey, scoped_refptr<DecodedImage>>;
+
+  // Looks for the key in the cache and returns true if it was found and was
+  // successfully locked (or if it was already locked). Note that if this
+  // function returns true, then a ref count is increased for the image.
+  bool LockDecodedImageIfPossibleAndRef(const ImageKey& key);
+
+  // Actually decode the image. Note that this function can (and should) be
+  // called with no lock acquired, since it can do a lot of work. Note that it
+  // can also return nullptr to indicate the decode failed.
+  scoped_refptr<DecodedImage> DecodeImageInternal(const ImageKey& key,
+                                                  const DrawImage& draw_image);
+
+  // Get the decoded draw image for the given key and draw_image. Note that this
+  // function has to be called with no lock acquired, since it will acquire its
+  // own locks and might call DecodeImageInternal above. Also note that this
+  // function will use the provided key, even if
+  // ImageKey::FromDrawImage(draw_image) would return a different key.
+  // Note that when used internally, we still require that
+  // DrawWithImageFinished() is called afterwards.
+  DecodedDrawImage GetDecodedImageForDrawInternal(const ImageKey& key,
+                                                  const DrawImage& draw_image);
+
+  void SanityCheckState(int line, bool lock_acquired);
+  void RefImage(const ImageKey& key);
+  void RefAtRasterImage(const ImageKey& key);
+  void UnrefAtRasterImage(const ImageKey& key);
+
+  // These functions indicate whether the images can be handled and cached by
+  // ImageDecodeController or whether they will fall through to Skia (with
+  // exception of possibly prerolling them). Over time these should return
+  // "false" in less cases, as the ImageDecodeController should start handling
+  // more of them.
+  bool CanHandleImage(const ImageKey& key, const DrawImage& image);
+  bool CanHandleFilterQuality(SkFilterQuality filter_quality);
+
+  std::unordered_map<ImageKey, scoped_refptr<ImageDecodeTask>, ImageKeyHash>
+      pending_image_tasks_;
+
+  // The members below this comment can only be accessed if the lock is held to
+  // ensure that they are safe to access on multiple threads.
+  base::Lock lock_;
+
+  std::deque<AnnotatedDecodedImage> decoded_images_;
+  std::unordered_map<ImageKey, int, ImageKeyHash> decoded_images_ref_counts_;
+  std::deque<AnnotatedDecodedImage> at_raster_decoded_images_;
+  std::unordered_map<ImageKey, int, ImageKeyHash>
+      at_raster_decoded_images_ref_counts_;
+  MemoryBudget locked_images_budget_;
+
+  // Note that this is used for cases where the only thing we do is preroll the
+  // image the first time we see it. This mimics the previous behavior and
+  // should over time change as the compositor starts to handle more cases.
+  std::unordered_set<uint32_t> prerolled_images_;
+};
+
+}  // namespace cc
+
+#endif  // CC_TILES_SOFTWARE_IMAGE_DECODE_CONTROLLER_H_

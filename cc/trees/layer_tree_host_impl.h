@@ -36,6 +36,7 @@
 #include "cc/scheduler/commit_earlyout_reason.h"
 #include "cc/scheduler/draw_result.h"
 #include "cc/scheduler/video_frame_controller.h"
+#include "cc/tiles/image_decode_controller.h"
 #include "cc/tiles/tile_manager.h"
 #include "cc/trees/layer_tree_settings.h"
 #include "cc/trees/mutator_host_client.h"
@@ -402,6 +403,9 @@ class CC_EXPORT LayerTreeHostImpl
   }
   ResourcePool* resource_pool() { return resource_pool_.get(); }
   Renderer* renderer() { return renderer_.get(); }
+  ImageDecodeController* image_decode_controller() {
+    return image_decode_controller_.get();
+  }
   const RendererCapabilitiesImpl& GetRendererCapabilities() const;
 
   virtual bool SwapBuffers(const FrameData& frame);
@@ -731,6 +735,7 @@ class CC_EXPORT LayerTreeHostImpl
   scoped_ptr<TileTaskWorkerPool> tile_task_worker_pool_;
   scoped_ptr<ResourcePool> resource_pool_;
   scoped_ptr<Renderer> renderer_;
+  scoped_ptr<ImageDecodeController> image_decode_controller_;
 
   GlobalStateThatImpactsTilePriority global_tile_state_;
 

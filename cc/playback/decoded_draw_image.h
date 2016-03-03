@@ -6,6 +6,7 @@
 #define CC_PLAYBACK_DECODED_DRAW_IMAGE_H_
 
 #include <cfloat>
+#include <cmath>
 
 #include "third_party/skia/include/core/SkFilterQuality.h"
 #include "third_party/skia/include/core/SkImage.h"

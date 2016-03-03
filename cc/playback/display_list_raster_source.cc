@@ -521,10 +521,6 @@ DisplayListRasterSource::CreateCloneWithoutLCDText() const {
 void DisplayListRasterSource::SetImageDecodeController(
     ImageDecodeController* image_decode_controller) {
   DCHECK(image_decode_controller);
-  // Note that although this function should only be called once, tests tend to
-  // call it several times using the same controller.
-  DCHECK(!image_decode_controller_ ||
-         image_decode_controller_ == image_decode_controller);
   image_decode_controller_ = image_decode_controller;
 }
 

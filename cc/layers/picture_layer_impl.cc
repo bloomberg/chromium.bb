@@ -544,7 +544,7 @@ void PictureLayerImpl::UpdateRasterSource(
   // Only set the image decode controller when we're committing.
   if (!pending_set) {
     raster_source_->SetImageDecodeController(
-        layer_tree_impl()->tile_manager()->GetImageDecodeController());
+        layer_tree_impl()->image_decode_controller());
   }
 
   // The |new_invalidation| must be cleared before updating tilings since they
@@ -638,6 +638,10 @@ void PictureLayerImpl::ReleaseResources() {
 
 void PictureLayerImpl::RecreateResources() {
   tilings_ = CreatePictureLayerTilingSet();
+  if (raster_source_) {
+    raster_source_->SetImageDecodeController(
+        layer_tree_impl()->image_decode_controller());
+  }
 
   // To avoid an edge case after lost context where the tree is up to date but
   // the tilings have not been managed, request an update draw properties

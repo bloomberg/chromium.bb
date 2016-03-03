@@ -333,6 +333,7 @@ void TileManager::FinishTasksAndCleanUp() {
 
 void TileManager::SetResources(ResourcePool* resource_pool,
                                TileTaskRunner* tile_task_runner,
+                               ImageDecodeController* image_decode_controller,
                                size_t scheduled_raster_task_limit,
                                bool use_gpu_rasterization) {
   DCHECK(!tile_task_runner_);
@@ -342,7 +343,7 @@ void TileManager::SetResources(ResourcePool* resource_pool,
   scheduled_raster_task_limit_ = scheduled_raster_task_limit;
   resource_pool_ = resource_pool;
   tile_task_runner_ = tile_task_runner;
-  image_decode_controller_.SetIsUsingGpuRasterization(use_gpu_rasterization_);
+  image_decode_controller_ = image_decode_controller;
 }
 
 void TileManager::Release(Tile* tile) {
@@ -793,7 +794,7 @@ void TileManager::ScheduleTasks(
   // We must reduce the amount of unused resoruces before calling
   // ScheduleTasks to prevent usage from rising above limits.
   resource_pool_->ReduceResourceUsage();
-  image_decode_controller_.ReduceCacheUsage();
+  image_decode_controller_->ReduceCacheUsage();
 
   // Schedule running of |raster_queue_|. This replaces any previously
   // scheduled tasks and effectively cancels all tasks not present
@@ -847,7 +848,7 @@ scoped_refptr<RasterTask> TileManager::CreateRasterTask(
   for (auto it = images.begin(); it != images.end();) {
     scoped_refptr<ImageDecodeTask> task;
     bool need_to_unref_when_finished =
-        image_decode_controller_.GetTaskForImageAndRef(
+        image_decode_controller_->GetTaskForImageAndRef(
             *it, prepare_tiles_count_, &task);
     if (task)
       decode_tasks.push_back(task);
@@ -885,7 +886,7 @@ void TileManager::OnRasterTaskCompleted(
   auto images_it = scheduled_draw_images_.find(tile->id());
   const std::vector<DrawImage>& images = images_it->second;
   for (const auto& image : images)
-    image_decode_controller_.UnrefImage(image);
+    image_decode_controller_->UnrefImage(image);
   scheduled_draw_images_.erase(images_it);
 
   if (was_canceled) {
@@ -1039,7 +1040,7 @@ void TileManager::CheckIfMoreTilesNeedToBePrepared() {
   FreeResourcesForReleasedTiles();
 
   resource_pool_->ReduceResourceUsage();
-  image_decode_controller_.ReduceCacheUsage();
+  image_decode_controller_->ReduceCacheUsage();
 
   signals_.all_tile_tasks_completed = true;
   signals_check_notifier_.Schedule();
