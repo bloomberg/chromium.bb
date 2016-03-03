@@ -280,8 +280,7 @@ crbug.com/495750 virtual/scalefactor150/fast/hidpi/static/ [ NeedsRebaseline ]
 crbug.com/495750 [ Win Linux ] virtual/scalefactor200withzoom/fast/hidpi/static/ [ NeedsRebaseline ]
 crbug.com/495750 [ Mac Android ] virtual/scalefactor200withzoom/fast/hidpi/static [ Skip ]
 # TODO(oshima): Fix the popup's size adjustmenet.
-crbug.com/495750 virtual/scalefactor200/fast/hidpi/static/data-suggestion-picker-appearance.html [ Skip ]
-crbug.com/495750 virtual/scalefactor200withzoom/fast/hidpi/static/data-suggestion-picker-appearance.html [ Skip ]
+crbug.com/495750 [ Mac ] virtual/scalefactor200withzoom/fast/hidpi/static/data-suggestion-picker-appearance.html [ Skip ]
 
 # TODO(ojan): These tests aren't flaky. See crbug.com/517144.
 # Release trybots run asserts, but the main waterfall ones don't. So, even
