@@ -5,6 +5,7 @@
 {
   'variables': {
     'nacl_win64_target': 0,
+    'build_angle_deqp_tests%': 0,
   },
   'includes': [
     'gpu_common.gypi',
@@ -918,7 +919,7 @@
         },
       ],
     }],
-    ['(OS == "win" or OS == "linux") and archive_gpu_tests==1', {
+    ['build_angle_deqp_tests==1', {
       'targets': [
         {
           # Only build dEQP on test configs. Note that dEQP is test-only code,

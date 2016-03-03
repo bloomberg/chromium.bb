@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 {
   'variables': {
+    'build_angle_deqp_tests%': 0,
     'chrome_browser_extensions_test_support_sources': [
       # A list of sources which is shared between different browser tests.
       'browser/apps/app_browsertest_util.cc',
@@ -3470,7 +3471,7 @@
                 },
               ],
             }],
-            ['OS=="win" or OS=="linux"', {
+            ['build_angle_deqp_tests==1', {
               'targets': [
                 {
                   'target_name': 'angle_deqp_gles2_tests_run',
