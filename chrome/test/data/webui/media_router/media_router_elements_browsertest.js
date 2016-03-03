@@ -24,6 +24,12 @@ MediaRouterElementsBrowserTest.prototype = {
   /** @override */
   browsePreload: 'chrome://media-router/',
 
+  /** @override */
+  runAccessibilityChecks: true,
+
+  /** @override */
+  accessibilityIssuesAreErrors: true,
+
   commandLineSwitches: [{
     switchName: 'media-router', switchValue: '1'
   }],
@@ -39,6 +45,41 @@ MediaRouterElementsBrowserTest.prototype = {
     'media_router_search_highlighter.js',
     'route_details_tests.js',
   ]),
+
+  /** @override */
+  setUp: function() {
+    PolymerTest.prototype.setUp.call(this);
+
+    // Enable when failure is resolved.
+    // AX_ARIA_02: http://crbug.com/591547
+    this.accessibilityAuditConfig.ignoreSelectors(
+        'nonExistentAriaRelatedElement', '#input');
+
+    // Enable when failure is resolved.
+    // AX_ARIA_04: http://crbug.com/591550
+    this.accessibilityAuditConfig.ignoreSelectors(
+        'badAriaAttributeValue', '#input');
+
+    var requiredOwnedAriaRoleMissingSelectors = [
+      '#cast-mode-list',
+      '#sink-list'
+    ];
+
+    // Enable when failure is resolved.
+    // AX_ARIA_08: http://crbug.com/591552
+    this.accessibilityAuditConfig.ignoreSelectors(
+        'requiredOwnedAriaRoleMissing', requiredOwnedAriaRoleMissingSelectors);
+
+    // Enable when warning is resolved.
+    // AX_FOCUS_01: http://crbug.com/591553
+    this.accessibilityAuditConfig.ignoreSelectors(
+        'focusableElementNotVisibleAndNotAriaHidden', '#device-missing > A');
+
+    // Enable when warning is resolved.
+    // AX_TEXT_04: http://crbug.com/591554
+    this.accessibilityAuditConfig.ignoreSelectors(
+        'linkWithUnclearPurpose', '#device-missing > A');
+  },
 };
 
 TEST_F('MediaRouterElementsBrowserTest', 'MediaRouterElementsTestIssueBanner',
