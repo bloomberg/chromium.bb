@@ -42,7 +42,7 @@ public:
         ThreadState* state = ThreadStateFor<ThreadingTrait<T>::Affinity>::state();
         ASSERT(state->isAllocationAllowed());
         size_t gcInfoIndex = GCInfoTrait<HeapVectorBacking<T, VectorTraits<T>>>::index();
-        NormalPageHeap* heap = static_cast<NormalPageHeap*>(state->vectorBackingHeap(gcInfoIndex));
+        NormalPageHeap* heap = static_cast<NormalPageHeap*>(state->vectorBackingArena(gcInfoIndex));
         return reinterpret_cast<T*>(heap->allocateObject(Heap::allocationSizeFromSize(size), gcInfoIndex));
     }
     template <typename T>
@@ -62,7 +62,7 @@ public:
     {
         size_t gcInfoIndex = GCInfoTrait<HeapVectorBacking<T, VectorTraits<T>>>::index();
         ThreadState* state = ThreadStateFor<ThreadingTrait<T>::Affinity>::state();
-        return reinterpret_cast<T*>(Heap::allocateOnHeapIndex(state, size, BlinkGC::InlineVectorHeapIndex, gcInfoIndex));
+        return reinterpret_cast<T*>(Heap::allocateOnArenaIndex(state, size, BlinkGC::InlineVectorArenaIndex, gcInfoIndex));
     }
     static void freeInlineVectorBacking(void*);
     static bool expandInlineVectorBacking(void*, size_t);
@@ -73,7 +73,7 @@ public:
     {
         size_t gcInfoIndex = GCInfoTrait<HeapHashTableBacking<HashTable>>::index();
         ThreadState* state = ThreadStateFor<ThreadingTrait<T>::Affinity>::state();
-        return reinterpret_cast<T*>(Heap::allocateOnHeapIndex(state, size, BlinkGC::HashTableHeapIndex, gcInfoIndex));
+        return reinterpret_cast<T*>(Heap::allocateOnArenaIndex(state, size, BlinkGC::HashTableArenaIndex, gcInfoIndex));
     }
     template <typename T, typename HashTable>
     static T* allocateZeroedHashTableBacking(size_t size)

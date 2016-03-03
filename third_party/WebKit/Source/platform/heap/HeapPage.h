@@ -352,7 +352,7 @@ inline bool isPageHeaderAddress(Address address)
 class BasePage {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
-    BasePage(PageMemory*, BaseHeap*);
+    BasePage(PageMemory*, BaseArena*);
     virtual ~BasePage() { }
 
     void link(BasePage** previousNext)
@@ -408,8 +408,8 @@ public:
 
     Address getAddress() { return reinterpret_cast<Address>(this); }
     PageMemory* storage() const { return m_storage; }
-    BaseHeap* heap() const { return m_heap; }
-    bool orphaned() { return !m_heap; }
+    BaseArena* arena() const { return m_arena; }
+    bool orphaned() { return !m_arena; }
     bool terminating() { return m_terminating; }
     void setTerminating() { m_terminating = true; }
 
@@ -430,7 +430,7 @@ public:
 
 private:
     PageMemory* m_storage;
-    BaseHeap* m_heap;
+    BaseArena* m_arena;
     BasePage* m_next;
     // Whether the page is part of a terminating thread or not.
     bool m_terminating;
@@ -441,12 +441,12 @@ private:
     // Set to false at the start of a sweep, true  upon completion
     // of lazy sweeping.
     bool m_swept;
-    friend class BaseHeap;
+    friend class BaseArena;
 };
 
 class NormalPage final : public BasePage {
 public:
-    NormalPage(PageMemory*, BaseHeap*);
+    NormalPage(PageMemory*, BaseArena*);
 
     Address payload()
     {
@@ -492,7 +492,7 @@ public:
     }
 
 
-    NormalPageHeap* heapForNormalPage();
+    NormalPageHeap* arenaForNormalPage();
 
 private:
     HeapObjectHeader* findHeaderFromAddress(Address);
@@ -509,7 +509,7 @@ private:
 // object.
 class LargeObjectPage final : public BasePage {
 public:
-    LargeObjectPage(PageMemory*, BaseHeap*, size_t);
+    LargeObjectPage(PageMemory*, BaseArena*, size_t);
 
     Address payload() { return heapObjectHeader()->payload(); }
     size_t payloadSize() { return m_payloadSize; }
@@ -649,18 +649,18 @@ private:
     friend class NormalPageHeap;
 };
 
-// Each thread has a number of thread heaps (e.g., Generic heaps,
-// typed heaps for Node, heaps for collection backings etc)
-// and BaseHeap represents each thread heap.
+// Each thread has a number of thread arenas (e.g., Generic arenas,
+// typed arenas for Node, arenas for collection backings etc)
+// and BaseArena represents each thread heap.
 //
-// BaseHeap is a parent class of NormalPageHeap and LargeObjectHeap.
+// BaseArena is a parent class of NormalPageHeap and LargeObjectHeap.
 // NormalPageHeap represents a heap that contains NormalPages
 // and LargeObjectHeap represents a heap that contains LargeObjectPages.
-class PLATFORM_EXPORT BaseHeap {
-    USING_FAST_MALLOC(BaseHeap);
+class PLATFORM_EXPORT BaseArena {
+    USING_FAST_MALLOC(BaseArena);
 public:
-    BaseHeap(ThreadState*, int);
-    virtual ~BaseHeap();
+    BaseArena(ThreadState*, int);
+    virtual ~BaseArena();
     void cleanupPages();
 
     void takeSnapshot(const String& dumpBaseName, ThreadState::GCSnapshotInfo&);
@@ -688,7 +688,7 @@ public:
     void completeSweep();
 
     ThreadState* threadState() { return m_threadState; }
-    int heapIndex() const { return m_index; }
+    int arenaIndex() const { return m_index; }
 
 protected:
     BasePage* m_firstPage;
@@ -704,7 +704,7 @@ private:
     int m_index;
 };
 
-class PLATFORM_EXPORT NormalPageHeap final : public BaseHeap {
+class PLATFORM_EXPORT NormalPageHeap final : public BaseArena {
 public:
     NormalPageHeap(ThreadState*, int);
     void addToFreeList(Address address, size_t size)
@@ -759,7 +759,7 @@ private:
     size_t m_promptlyFreedSize;
 };
 
-class LargeObjectHeap final : public BaseHeap {
+class LargeObjectHeap final : public BaseArena {
 public:
     LargeObjectHeap(ThreadState*, int);
     Address allocateLargeObjectPage(size_t, size_t gcInfoIndex);
@@ -775,7 +775,7 @@ private:
 // Mask an address down to the enclosing oilpan heap base page.  All oilpan heap
 // pages are aligned at blinkPageBase plus the size of a guard size.
 // FIXME: Remove PLATFORM_EXPORT once we get a proper public interface to our
-// typed heaps.  This is only exported to enable tests in HeapTest.cpp.
+// typed arenas.  This is only exported to enable tests in HeapTest.cpp.
 PLATFORM_EXPORT inline BasePage* pageFromObject(const void* object)
 {
     Address address = reinterpret_cast<Address>(const_cast<void*>(object));

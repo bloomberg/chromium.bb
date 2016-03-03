@@ -126,7 +126,7 @@ void CrossThreadPersistentRegion::prepareForThreadStateTermination(ThreadState* 
             // but not invalidate its CrossThreadPersistent<>s.
             if (page->orphaned())
                 continue;
-            if (page->heap()->threadState() == threadState)
+            if (page->arena()->threadState() == threadState)
                 persistent->clear();
         }
         slots = slots->m_next;

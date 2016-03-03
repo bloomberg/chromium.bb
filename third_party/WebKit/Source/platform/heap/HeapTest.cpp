@@ -775,7 +775,7 @@ public:
     void* operator new(size_t size)
     {
         ThreadState* state = ThreadState::current();
-        return Heap::allocateOnHeapIndex(state, size, BlinkGC::NodeHeapIndex, GCInfoTrait<IntNode>::index());
+        return Heap::allocateOnArenaIndex(state, size, BlinkGC::NodeArenaIndex, GCInfoTrait<IntNode>::index());
     }
 
     static IntNode* create(int i)
@@ -2107,7 +2107,7 @@ TEST(HeapTest, Finalization)
     EXPECT_EQ(3, HeapTestSuperClass::s_destructorCalls);
 }
 
-TEST(HeapTest, TypedHeapSanity)
+TEST(HeapTest, TypedArenaSanity)
 {
     // We use TraceCounter for allocating an object on the general heap.
     Persistent<TraceCounter> generalHeapObject = TraceCounter::create();
@@ -5701,7 +5701,7 @@ public:
             EXPECT_EQ(0, DestructorLockingObject::s_destructorCalls);
         }
         // At this point the main thread releases the global lock and the worker
-        // can acquire it and do its sweep of its heaps. Just wait for the worker
+        // can acquire it and do its sweep of its arenas. Just wait for the worker
         // to complete its sweep and check the result.
         parkMainThread();
         EXPECT_EQ(1, DestructorLockingObject::s_destructorCalls);
@@ -5777,7 +5777,7 @@ private:
 
         // Start up a worker thread and have it detach after the main thread has.
         // Do this to verify that CrossThreadPersistent<>s referring to objects
-        // on one of the main thread's heaps does not upset the CTP invalidation
+        // on one of the main thread's arenas does not upset the CTP invalidation
         // pass that ThreadState::detach() performs.
         ThreadState::attach();
 

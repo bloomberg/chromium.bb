@@ -34,7 +34,7 @@ protected:
         // the dangling pointer.
         // Release builds don't have the ASSERT, but it is OK because
         // release builds will crash in the following header->isMarked()
-        // because all the entries of the orphaned heaps are zapped.
+        // because all the entries of the orphaned arenas are zapped.
         ASSERT(!pageFromObject(objectPointer)->orphaned());
 
         if (header->isMarked())

@@ -270,7 +270,7 @@ void Heap::pushThreadLocalWeakCallback(void* closure, void* object, WeakCallback
 
     // Trace should never reach an orphaned page.
     ASSERT(!Heap::orphanedPagePool()->contains(object));
-    ThreadState* state = pageFromObject(object)->heap()->threadState();
+    ThreadState* state = pageFromObject(object)->arena()->threadState();
     state->pushThreadLocalWeakCallback(closure, callback);
 }
 

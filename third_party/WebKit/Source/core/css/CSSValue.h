@@ -44,7 +44,7 @@ public:
     static void* allocateObject(size_t size, bool isEager)
     {
         ThreadState* state = ThreadStateFor<ThreadingTrait<CSSValue>::Affinity>::state();
-        return Heap::allocateOnHeapIndex(state, size, isEager ? BlinkGC::EagerSweepHeapIndex : BlinkGC::CSSValueHeapIndex, GCInfoTrait<CSSValue>::index());
+        return Heap::allocateOnArenaIndex(state, size, isEager ? BlinkGC::EagerSweepArenaIndex : BlinkGC::CSSValueArenaIndex, GCInfoTrait<CSSValue>::index());
     }
 #else
     USING_FAST_MALLOC_WITH_TYPE_NAME(blink::CSSValue);

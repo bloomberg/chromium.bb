@@ -84,7 +84,7 @@ public:
         // the dangling pointer.
         // Release builds don't have the ASSERT, but it is OK because
         // release builds will crash at the following self->adjustAndMark
-        // because all the entries of the orphaned heaps are zeroed out and
+        // because all the entries of the orphaned arenas are zeroed out and
         // thus the item does not have a valid vtable.
         ASSERT(!pageFromObject(self)->orphaned());
         self->adjustAndMark(visitor);

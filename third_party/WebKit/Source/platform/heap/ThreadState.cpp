@@ -95,8 +95,8 @@ ThreadState::ThreadState()
     , m_noAllocationCount(0)
     , m_gcForbiddenCount(0)
     , m_accumulatedSweepingTime(0)
-    , m_vectorBackingHeapIndex(BlinkGC::Vector1HeapIndex)
-    , m_currentHeapAges(0)
+    , m_vectorBackingArenaIndex(BlinkGC::Vector1ArenaIndex)
+    , m_currentArenaAges(0)
     , m_isTerminating(false)
     , m_gcMixinMarker(nullptr)
     , m_shouldFlushHeapDoesNotContainCache(false)
@@ -124,12 +124,12 @@ ThreadState::ThreadState()
             s_mainThreadUnderestimatedStackSize = underestimatedStackSize - sizeof(void*);
     }
 
-    for (int heapIndex = 0; heapIndex < BlinkGC::LargeObjectHeapIndex; heapIndex++)
-        m_heaps[heapIndex] = new NormalPageHeap(this, heapIndex);
-    m_heaps[BlinkGC::LargeObjectHeapIndex] = new LargeObjectHeap(this, BlinkGC::LargeObjectHeapIndex);
+    for (int arenaIndex = 0; arenaIndex < BlinkGC::LargeObjectArenaIndex; arenaIndex++)
+        m_arenas[arenaIndex] = new NormalPageHeap(this, arenaIndex);
+    m_arenas[BlinkGC::LargeObjectArenaIndex] = new LargeObjectHeap(this, BlinkGC::LargeObjectArenaIndex);
 
     m_likelyToBePromptlyFreed = adoptArrayPtr(new int[likelyToBePromptlyFreedArraySize]);
-    clearHeapAges();
+    clearArenaAges();
 
     // There is little use of weak references and collections off the main thread;
     // use a much lower initial block reservation.
@@ -142,8 +142,8 @@ ThreadState::~ThreadState()
     ASSERT(checkThread());
     delete m_threadLocalWeakCallbackStack;
     m_threadLocalWeakCallbackStack = nullptr;
-    for (int i = 0; i < BlinkGC::NumberOfHeaps; ++i)
-        delete m_heaps[i];
+    for (int i = 0; i < BlinkGC::NumberOfArenas; ++i)
+        delete m_arenas[i];
 
     **s_threadSpecific = nullptr;
     if (isMainThread()) {
@@ -256,8 +256,8 @@ void ThreadState::attach()
 void ThreadState::cleanupPages()
 {
     ASSERT(checkThread());
-    for (int i = 0; i < BlinkGC::NumberOfHeaps; ++i)
-        m_heaps[i]->cleanupPages();
+    for (int i = 0; i < BlinkGC::NumberOfArenas; ++i)
+        m_arenas[i]->cleanupPages();
 }
 
 void ThreadState::cleanup()
@@ -304,7 +304,7 @@ void ThreadState::cleanup()
         RELEASE_ASSERT(gcState() == NoGCScheduled);
 
         // Add pages to the orphaned page pool to ensure any global GCs from this point
-        // on will not trace objects on this thread's heaps.
+        // on will not trace objects on this thread's arenas.
         cleanupPages();
 
         ASSERT(attachedThreads().contains(this));
@@ -777,12 +777,12 @@ void ThreadState::performIdleLazySweep(double deadlineSeconds)
         double startTime = WTF::currentTimeMS();
         ScriptForbiddenIfMainThreadScope scriptForbiddenScope;
 
-        for (int i = 0; i < BlinkGC::NumberOfHeaps; i++) {
+        for (int i = 0; i < BlinkGC::NumberOfArenas; i++) {
             // lazySweepWithDeadline() won't check the deadline until it sweeps
             // 10 pages. So we give a small slack for safety.
             double slack = 0.001;
             double remainingBudget = deadlineSeconds - slack - monotonicallyIncreasingTime();
-            if (remainingBudget <= 0 || !m_heaps[i]->lazySweepWithDeadline(deadlineSeconds)) {
+            if (remainingBudget <= 0 || !m_arenas[i]->lazySweepWithDeadline(deadlineSeconds)) {
                 // We couldn't finish the sweeping within the deadline.
                 // We request another idle task for the remaining sweeping.
                 scheduleIdleLazySweep();
@@ -955,15 +955,15 @@ void ThreadState::makeConsistentForGC()
 {
     ASSERT(isInGC());
     TRACE_EVENT0("blink_gc", "ThreadState::makeConsistentForGC");
-    for (int i = 0; i < BlinkGC::NumberOfHeaps; ++i)
-        m_heaps[i]->makeConsistentForGC();
+    for (int i = 0; i < BlinkGC::NumberOfArenas; ++i)
+        m_arenas[i]->makeConsistentForGC();
 }
 
 void ThreadState::makeConsistentForMutator()
 {
     ASSERT(isInGC());
-    for (int i = 0; i < BlinkGC::NumberOfHeaps; ++i)
-        m_heaps[i]->makeConsistentForMutator();
+    for (int i = 0; i < BlinkGC::NumberOfArenas; ++i)
+        m_arenas[i]->makeConsistentForMutator();
 }
 
 void ThreadState::preGC()
@@ -972,14 +972,14 @@ void ThreadState::preGC()
     setGCState(GCRunning);
     makeConsistentForGC();
     flushHeapDoesNotContainCacheIfNeeded();
-    clearHeapAges();
+    clearArenaAges();
 }
 
 void ThreadState::postGC(BlinkGC::GCType gcType)
 {
     ASSERT(isInGC());
-    for (int i = 0; i < BlinkGC::NumberOfHeaps; i++)
-        m_heaps[i]->prepareForSweep();
+    for (int i = 0; i < BlinkGC::NumberOfArenas; i++)
+        m_arenas[i]->prepareForSweep();
 
     if (gcType == BlinkGC::GCWithSweep) {
         setGCState(EagerSweepScheduled);
@@ -1020,7 +1020,7 @@ void ThreadState::preSweep()
     m_accumulatedSweepingTime = 0;
 
 #if defined(ADDRESS_SANITIZER)
-    poisonEagerHeap(BlinkGC::SetPoison);
+    poisonEagerArena(BlinkGC::SetPoison);
 #endif
     eagerSweep();
 #if defined(ADDRESS_SANITIZER)
@@ -1041,19 +1041,19 @@ void ThreadState::poisonAllHeaps()
 {
     // TODO(Oilpan): enable the poisoning always.
 #if ENABLE(OILPAN)
-    // Unpoison the live objects remaining in the eager heaps..
-    poisonEagerHeap(BlinkGC::ClearPoison);
-    // ..along with poisoning all unmarked objects in the other heaps.
-    for (int i = 1; i < BlinkGC::NumberOfHeaps; i++)
-        m_heaps[i]->poisonHeap(BlinkGC::UnmarkedOnly, BlinkGC::SetPoison);
+    // Unpoison the live objects remaining in the eager arenas..
+    poisonEagerArena(BlinkGC::ClearPoison);
+    // ..along with poisoning all unmarked objects in the other arenas.
+    for (int i = 1; i < BlinkGC::NumberOfArenas; i++)
+        m_arenas[i]->poisonHeap(BlinkGC::UnmarkedOnly, BlinkGC::SetPoison);
 #endif
 }
 
-void ThreadState::poisonEagerHeap(BlinkGC::Poisoning poisoning)
+void ThreadState::poisonEagerArena(BlinkGC::Poisoning poisoning)
 {
     // TODO(Oilpan): enable the poisoning always.
 #if ENABLE(OILPAN)
-    m_heaps[BlinkGC::EagerSweepHeapIndex]->poisonHeap(BlinkGC::MarkedAndUnmarked, poisoning);
+    m_arenas[BlinkGC::EagerSweepArenaIndex]->poisonHeap(BlinkGC::MarkedAndUnmarked, poisoning);
 #endif
 }
 #endif
@@ -1074,7 +1074,7 @@ void ThreadState::eagerSweep()
     ScriptForbiddenIfMainThreadScope scriptForbiddenScope;
 
     double startTime = WTF::currentTimeMS();
-    m_heaps[BlinkGC::EagerSweepHeapIndex]->completeSweep();
+    m_arenas[BlinkGC::EagerSweepArenaIndex]->completeSweep();
     accumulateSweepingTime(WTF::currentTimeMS() - startTime);
 }
 
@@ -1098,9 +1098,9 @@ void ThreadState::completeSweep()
         TRACE_EVENT0("blink_gc,devtools.timeline", "ThreadState::completeSweep");
         double startTime = WTF::currentTimeMS();
 
-        static_assert(BlinkGC::EagerSweepHeapIndex == 0, "Eagerly swept heaps must be processed first.");
-        for (int i = 0; i < BlinkGC::NumberOfHeaps; i++)
-            m_heaps[i]->completeSweep();
+        static_assert(BlinkGC::EagerSweepArenaIndex == 0, "Eagerly swept arenas must be processed first.");
+        for (int i = 0; i < BlinkGC::NumberOfArenas; i++)
+            m_arenas[i]->completeSweep();
 
         double timeForCompleteSweep = WTF::currentTimeMS() - startTime;
         accumulateSweepingTime(timeForCompleteSweep);
@@ -1162,15 +1162,15 @@ void ThreadState::postSweep()
 void ThreadState::prepareForThreadStateTermination()
 {
     ASSERT(checkThread());
-    for (int i = 0; i < BlinkGC::NumberOfHeaps; ++i)
-        m_heaps[i]->prepareHeapForTermination();
+    for (int i = 0; i < BlinkGC::NumberOfArenas; ++i)
+        m_arenas[i]->prepareHeapForTermination();
 }
 
 #if ENABLE(ASSERT)
 BasePage* ThreadState::findPageFromAddress(Address address)
 {
-    for (int i = 0; i < BlinkGC::NumberOfHeaps; ++i) {
-        if (BasePage* page = m_heaps[i]->findPageFromAddress(address))
+    for (int i = 0; i < BlinkGC::NumberOfArenas; ++i) {
+        if (BasePage* page = m_arenas[i]->findPageFromAddress(address))
             return page;
     }
     return nullptr;
@@ -1180,8 +1180,8 @@ BasePage* ThreadState::findPageFromAddress(Address address)
 size_t ThreadState::objectPayloadSizeForTesting()
 {
     size_t objectPayloadSize = 0;
-    for (int i = 0; i < BlinkGC::NumberOfHeaps; ++i)
-        objectPayloadSize += m_heaps[i]->objectPayloadSizeForTesting();
+    for (int i = 0; i < BlinkGC::NumberOfArenas; ++i)
+        objectPayloadSize += m_arenas[i]->objectPayloadSizeForTesting();
     return objectPayloadSize;
 }
 
@@ -1426,50 +1426,50 @@ void ThreadState::invokePreFinalizers()
     }
 }
 
-void ThreadState::clearHeapAges()
+void ThreadState::clearArenaAges()
 {
-    memset(m_heapAges, 0, sizeof(size_t) * BlinkGC::NumberOfHeaps);
+    memset(m_arenaAges, 0, sizeof(size_t) * BlinkGC::NumberOfArenas);
     memset(m_likelyToBePromptlyFreed.get(), 0, sizeof(int) * likelyToBePromptlyFreedArraySize);
-    m_currentHeapAges = 0;
+    m_currentArenaAges = 0;
 }
 
-int ThreadState::heapIndexOfVectorHeapLeastRecentlyExpanded(int beginHeapIndex, int endHeapIndex)
+int ThreadState::arenaIndexOfVectorArenaLeastRecentlyExpanded(int beginArenaIndex, int endArenaIndex)
 {
-    size_t minHeapAge = m_heapAges[beginHeapIndex];
-    int heapIndexWithMinHeapAge = beginHeapIndex;
-    for (int heapIndex = beginHeapIndex + 1; heapIndex <= endHeapIndex; heapIndex++) {
-        if (m_heapAges[heapIndex] < minHeapAge) {
-            minHeapAge = m_heapAges[heapIndex];
-            heapIndexWithMinHeapAge = heapIndex;
+    size_t minArenaAge = m_arenaAges[beginArenaIndex];
+    int arenaIndexWithMinArenaAge = beginArenaIndex;
+    for (int arenaIndex = beginArenaIndex + 1; arenaIndex <= endArenaIndex; arenaIndex++) {
+        if (m_arenaAges[arenaIndex] < minArenaAge) {
+            minArenaAge = m_arenaAges[arenaIndex];
+            arenaIndexWithMinArenaAge = arenaIndex;
         }
     }
-    ASSERT(isVectorHeapIndex(heapIndexWithMinHeapAge));
-    return heapIndexWithMinHeapAge;
+    ASSERT(isVectorArenaIndex(arenaIndexWithMinArenaAge));
+    return arenaIndexWithMinArenaAge;
 }
 
-BaseHeap* ThreadState::expandedVectorBackingHeap(size_t gcInfoIndex)
+BaseArena* ThreadState::expandedVectorBackingHeap(size_t gcInfoIndex)
 {
     ASSERT(checkThread());
     size_t entryIndex = gcInfoIndex & likelyToBePromptlyFreedArrayMask;
     --m_likelyToBePromptlyFreed[entryIndex];
-    int heapIndex = m_vectorBackingHeapIndex;
-    m_heapAges[heapIndex] = ++m_currentHeapAges;
-    m_vectorBackingHeapIndex = heapIndexOfVectorHeapLeastRecentlyExpanded(BlinkGC::Vector1HeapIndex, BlinkGC::Vector4HeapIndex);
-    return m_heaps[heapIndex];
+    int arenaIndex = m_vectorBackingArenaIndex;
+    m_arenaAges[arenaIndex] = ++m_currentArenaAges;
+    m_vectorBackingArenaIndex = arenaIndexOfVectorArenaLeastRecentlyExpanded(BlinkGC::Vector1ArenaIndex, BlinkGC::Vector4ArenaIndex);
+    return m_arenas[arenaIndex];
 }
 
-void ThreadState::allocationPointAdjusted(int heapIndex)
+void ThreadState::allocationPointAdjusted(int arenaIndex)
 {
-    m_heapAges[heapIndex] = ++m_currentHeapAges;
-    if (m_vectorBackingHeapIndex == heapIndex)
-        m_vectorBackingHeapIndex = heapIndexOfVectorHeapLeastRecentlyExpanded(BlinkGC::Vector1HeapIndex, BlinkGC::Vector4HeapIndex);
+    m_arenaAges[arenaIndex] = ++m_currentArenaAges;
+    if (m_vectorBackingArenaIndex == arenaIndex)
+        m_vectorBackingArenaIndex = arenaIndexOfVectorArenaLeastRecentlyExpanded(BlinkGC::Vector1ArenaIndex, BlinkGC::Vector4ArenaIndex);
 }
 
 void ThreadState::promptlyFreed(size_t gcInfoIndex)
 {
     ASSERT(checkThread());
     size_t entryIndex = gcInfoIndex & likelyToBePromptlyFreedArrayMask;
-    // See the comment in vectorBackingHeap() for why this is +3.
+    // See the comment in vectorBackingArena() for why this is +3.
     m_likelyToBePromptlyFreed[entryIndex] += 3;
 }
 
@@ -1485,15 +1485,15 @@ void ThreadState::takeSnapshot(SnapshotType type)
     const String classesDumpName = threadDumpName + "/classes";
 
     int numberOfHeapsReported = 0;
-#define SNAPSHOT_HEAP(HeapType)                                                                \
+#define SNAPSHOT_HEAP(ArenaType)                                                                \
     {                                                                                          \
         numberOfHeapsReported++;                                                               \
         switch (type) {                                                                        \
         case SnapshotType::HeapSnapshot:                                                       \
-            m_heaps[BlinkGC::HeapType##HeapIndex]->takeSnapshot(heapsDumpName + "/" #HeapType, info);   \
+            m_arenas[BlinkGC::ArenaType##ArenaIndex]->takeSnapshot(heapsDumpName + "/" #ArenaType, info);   \
             break;                                                                             \
         case SnapshotType::FreelistSnapshot:                                                   \
-            m_heaps[BlinkGC::HeapType##HeapIndex]->takeFreelistSnapshot(heapsDumpName + "/" #HeapType); \
+            m_arenas[BlinkGC::ArenaType##ArenaIndex]->takeFreelistSnapshot(heapsDumpName + "/" #ArenaType); \
             break;                                                                             \
         default:                                                                               \
             ASSERT_NOT_REACHED();                                                              \
@@ -1512,9 +1512,9 @@ void ThreadState::takeSnapshot(SnapshotType type)
     SNAPSHOT_HEAP(InlineVector);
     SNAPSHOT_HEAP(HashTable);
     SNAPSHOT_HEAP(LargeObject);
-    FOR_EACH_TYPED_HEAP(SNAPSHOT_HEAP);
+    FOR_EACH_TYPED_ARENA(SNAPSHOT_HEAP);
 
-    ASSERT(numberOfHeapsReported == BlinkGC::NumberOfHeaps);
+    ASSERT(numberOfHeapsReported == BlinkGC::NumberOfArenas);
 
 #undef SNAPSHOT_HEAP
 

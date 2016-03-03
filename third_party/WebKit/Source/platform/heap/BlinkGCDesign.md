@@ -192,9 +192,9 @@ Each thread has its dedicated heap so that the thread can allocate an object
 without acquiring a lock. For example, an object allocated on thread 1 goes
 to a different heap than an object allocated on thread 2.
 
-In addition, each thread provides multiple heaps to group objects by their type
+In addition, each thread provides multiple arenas to group objects by their type
 and thus improves locality.
 For example, a Node object allocated on thread 1 goes to a different heap than
 a CSSValue object allocated on thread 1. (See BlinkGC.h to get the list of
-the typed heaps.)
+the typed arenas.)
 

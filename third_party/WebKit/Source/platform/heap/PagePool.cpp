@@ -12,7 +12,7 @@ namespace blink {
 
 FreePagePool::~FreePagePool()
 {
-    for (int index = 0; index < BlinkGC::NumberOfHeaps; ++index) {
+    for (int index = 0; index < BlinkGC::NumberOfArenas; ++index) {
         while (PoolEntry* entry = m_pool[index]) {
             m_pool[index] = entry->next;
             PageMemory* memory = entry->data;
@@ -53,7 +53,7 @@ PageMemory* FreePagePool::takeFreePage(int index)
 
 OrphanedPagePool::~OrphanedPagePool()
 {
-    for (int index = 0; index < BlinkGC::NumberOfHeaps; ++index) {
+    for (int index = 0; index < BlinkGC::NumberOfArenas; ++index) {
         while (PoolEntry* entry = m_pool[index]) {
             m_pool[index] = entry->next;
             BasePage* page = entry->data;
@@ -84,7 +84,7 @@ void OrphanedPagePool::decommitOrphanedPages()
         ASSERT(state->isAtSafePoint());
 #endif
 
-    for (int index = 0; index < BlinkGC::NumberOfHeaps; ++index) {
+    for (int index = 0; index < BlinkGC::NumberOfArenas; ++index) {
         PoolEntry* entry = m_pool[index];
         PoolEntry** prevNext = &m_pool[index];
         while (entry) {
@@ -139,7 +139,7 @@ void OrphanedPagePool::clearMemory(PageMemory* memory)
 #if ENABLE(ASSERT)
 bool OrphanedPagePool::contains(void* object)
 {
-    for (int index = 0; index < BlinkGC::NumberOfHeaps; ++index) {
+    for (int index = 0; index < BlinkGC::NumberOfArenas; ++index) {
         for (PoolEntry* entry = m_pool[index]; entry; entry = entry->next) {
             BasePage* page = entry->data;
             if (page->contains(reinterpret_cast<Address>(object)))

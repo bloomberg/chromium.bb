@@ -20,7 +20,7 @@ class PagePool {
 protected:
     PagePool()
     {
-        for (int i = 0; i < BlinkGC::NumberOfHeaps; ++i)
+        for (int i = 0; i < BlinkGC::NumberOfArenas; ++i)
             m_pool[i] = nullptr;
     }
 
@@ -36,14 +36,14 @@ protected:
         PoolEntry* next;
     };
 
-    PoolEntry* m_pool[BlinkGC::NumberOfHeaps];
+    PoolEntry* m_pool[BlinkGC::NumberOfArenas];
 };
 
 // Once pages have been used for one type of thread heap they will never be
 // reused for another type of thread heap.  Instead of unmapping, we add the
 // pages to a pool of pages to be reused later by a thread heap of the same
 // type. This is done as a security feature to avoid type confusion.  The
-// heaps are type segregated by having separate thread heaps for different
+// heaps are type segregated by having separate thread arenas for different
 // types of objects.  Holding on to pages ensures that the same virtual address
 // space cannot be used for objects of another type than the type contained
 // in this page to begin with.
@@ -54,7 +54,7 @@ public:
     PageMemory* takeFreePage(int);
 
 private:
-    Mutex m_mutex[BlinkGC::NumberOfHeaps];
+    Mutex m_mutex[BlinkGC::NumberOfArenas];
 };
 
 class OrphanedPagePool : public PagePool<BasePage> {

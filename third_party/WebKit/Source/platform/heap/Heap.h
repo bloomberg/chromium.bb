@@ -178,7 +178,7 @@ public:
         BasePage* page = pageFromObject(objectPointer);
         if (page->hasBeenSwept())
             return false;
-        ASSERT(page->heap()->threadState()->isSweepingInProgress());
+        ASSERT(page->arena()->threadState()->isSweepingInProgress());
 
         return !Heap::isHeapObjectAlive(const_cast<T*>(objectPointer));
     }
@@ -239,7 +239,7 @@ public:
         allocationSize = (allocationSize + allocationMask) & ~allocationMask;
         return allocationSize;
     }
-    static Address allocateOnHeapIndex(ThreadState*, size_t, int heapIndex, size_t gcInfoIndex);
+    static Address allocateOnArenaIndex(ThreadState*, size_t, int arenaIndex, size_t gcInfoIndex);
     template<typename T> static Address allocate(size_t, bool eagerlySweep = false);
     template<typename T> static Address reallocate(void* previous, size_t);
 
@@ -316,8 +316,8 @@ private:
     // Reset counters that track live and allocated-since-last-GC sizes.
     static void resetHeapCounters();
 
-    static int heapIndexForObjectSize(size_t);
-    static bool isNormalHeapIndex(int);
+    static int arenaIndexForObjectSize(size_t);
+    static bool isNormalArenaIndex(int);
 
     static void decommitCallbackStacks();
 
@@ -408,17 +408,17 @@ protected:
     }
 };
 
-// Assigning class types to their heaps.
+// Assigning class types to their arenas.
 //
-// We use sized heaps for most 'normal' objects to improve memory locality.
+// We use sized arenas for most 'normal' objects to improve memory locality.
 // It seems that the same type of objects are likely to be accessed together,
 // which means that we want to group objects by type. That's one reason
-// why we provide dedicated heaps for popular types (e.g., Node, CSSValue),
-// but it's not practical to prepare dedicated heaps for all types.
+// why we provide dedicated arenas for popular types (e.g., Node, CSSValue),
+// but it's not practical to prepare dedicated arenas for all types.
 // Thus we group objects by their sizes, hoping that this will approximately
 // group objects by their types.
 //
-// An exception to the use of sized heaps is made for class types that
+// An exception to the use of sized arenas is made for class types that
 // require prompt finalization after a garbage collection. That is, their
 // instances have to be finalized early and cannot be delayed until lazy
 // sweeping kicks in for their heap and page. The EAGERLY_FINALIZE()
@@ -427,21 +427,21 @@ protected:
 // for a class.
 //
 
-inline int Heap::heapIndexForObjectSize(size_t size)
+inline int Heap::arenaIndexForObjectSize(size_t size)
 {
     if (size < 64) {
         if (size < 32)
-            return BlinkGC::NormalPage1HeapIndex;
-        return BlinkGC::NormalPage2HeapIndex;
+            return BlinkGC::NormalPage1ArenaIndex;
+        return BlinkGC::NormalPage2ArenaIndex;
     }
     if (size < 128)
-        return BlinkGC::NormalPage3HeapIndex;
-    return BlinkGC::NormalPage4HeapIndex;
+        return BlinkGC::NormalPage3ArenaIndex;
+    return BlinkGC::NormalPage4ArenaIndex;
 }
 
-inline bool Heap::isNormalHeapIndex(int index)
+inline bool Heap::isNormalArenaIndex(int index)
 {
-    return index >= BlinkGC::NormalPage1HeapIndex && index <= BlinkGC::NormalPage4HeapIndex;
+    return index >= BlinkGC::NormalPage1ArenaIndex && index <= BlinkGC::NormalPage4ArenaIndex;
 }
 
 #define DECLARE_EAGER_FINALIZATION_OPERATOR_NEW() \
@@ -452,7 +452,7 @@ public:                                           \
         return allocateObject(size, true);        \
     }
 
-#define IS_EAGERLY_FINALIZED() (pageFromObject(this)->heap()->heapIndex() == BlinkGC::EagerSweepHeapIndex)
+#define IS_EAGERLY_FINALIZED() (pageFromObject(this)->arena()->arenaIndex() == BlinkGC::EagerSweepArenaIndex)
 #if ENABLE(ASSERT) && ENABLE(OILPAN)
 class VerifyEagerFinalization {
     DISALLOW_NEW();
@@ -485,11 +485,11 @@ public:                                                \
 #define EAGERLY_FINALIZE_WILL_BE_REMOVED()
 #endif
 
-inline Address Heap::allocateOnHeapIndex(ThreadState* state, size_t size, int heapIndex, size_t gcInfoIndex)
+inline Address Heap::allocateOnArenaIndex(ThreadState* state, size_t size, int arenaIndex, size_t gcInfoIndex)
 {
     ASSERT(state->isAllocationAllowed());
-    ASSERT(heapIndex != BlinkGC::LargeObjectHeapIndex);
-    NormalPageHeap* heap = static_cast<NormalPageHeap*>(state->heap(heapIndex));
+    ASSERT(arenaIndex != BlinkGC::LargeObjectArenaIndex);
+    NormalPageHeap* heap = static_cast<NormalPageHeap*>(state->arena(arenaIndex));
     return heap->allocateObject(allocationSizeFromSize(size), gcInfoIndex);
 }
 
@@ -497,7 +497,7 @@ template<typename T>
 Address Heap::allocate(size_t size, bool eagerlySweep)
 {
     ThreadState* state = ThreadStateFor<ThreadingTrait<T>::Affinity>::state();
-    Address address = Heap::allocateOnHeapIndex(state, size, eagerlySweep ? BlinkGC::EagerSweepHeapIndex : Heap::heapIndexForObjectSize(size), GCInfoTrait<T>::index());
+    Address address = Heap::allocateOnArenaIndex(state, size, eagerlySweep ? BlinkGC::EagerSweepArenaIndex : Heap::arenaIndexForObjectSize(size), GCInfoTrait<T>::index());
     const char* typeName = WTF_HEAP_PROFILER_TYPE_NAME(T);
     HeapAllocHooks::allocationHookIfEnabled(address, size, typeName);
     return address;
@@ -519,16 +519,16 @@ Address Heap::reallocate(void* previous, size_t size)
     HeapObjectHeader* previousHeader = HeapObjectHeader::fromPayload(previous);
     BasePage* page = pageFromObject(previousHeader);
     ASSERT(page);
-    int heapIndex = page->heap()->heapIndex();
+    int arenaIndex = page->arena()->arenaIndex();
     // Recompute the effective heap index if previous allocation
-    // was on the normal heaps or a large object.
-    if (isNormalHeapIndex(heapIndex) || heapIndex == BlinkGC::LargeObjectHeapIndex)
-        heapIndex = heapIndexForObjectSize(size);
+    // was on the normal arenas or a large object.
+    if (isNormalArenaIndex(arenaIndex) || arenaIndex == BlinkGC::LargeObjectArenaIndex)
+        arenaIndex = arenaIndexForObjectSize(size);
 
     // TODO(haraken): We don't support reallocate() for finalizable objects.
     ASSERT(!Heap::gcInfo(previousHeader->gcInfoIndex())->hasFinalizer());
     ASSERT(previousHeader->gcInfoIndex() == GCInfoTrait<T>::index());
-    Address address = Heap::allocateOnHeapIndex(state, size, heapIndex, GCInfoTrait<T>::index());
+    Address address = Heap::allocateOnArenaIndex(state, size, arenaIndex, GCInfoTrait<T>::index());
     size_t copySize = previousHeader->payloadSize();
     if (copySize > size)
         copySize = size;

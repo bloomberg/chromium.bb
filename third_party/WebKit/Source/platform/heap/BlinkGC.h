@@ -25,16 +25,16 @@ using WeakCallback = VisitorCallback;
 using EphemeronCallback = VisitorCallback;
 using PreFinalizerCallback = bool(*)(void*);
 
-// List of typed heaps. The list is used to generate the implementation
-// of typed heap related methods.
+// List of typed arenas. The list is used to generate the implementation
+// of typed arena related methods.
 //
-// To create a new typed heap add a H(<ClassName>) to the
-// FOR_EACH_TYPED_HEAP macro below.
-#define FOR_EACH_TYPED_HEAP(H)              \
+// To create a new typed arena add a H(<ClassName>) to the
+// FOR_EACH_TYPED_ARENA macro below.
+#define FOR_EACH_TYPED_ARENA(H)              \
     H(Node)                                 \
     H(CSSValue)
 
-#define TypedHeapEnumName(Type) Type##HeapIndex,
+#define TypedArenaEnumName(Type) Type##ArenaIndex,
 
 class PLATFORM_EXPORT BlinkGC final {
     STATIC_ONLY(BlinkGC);
@@ -80,21 +80,21 @@ public:
     };
 
     enum HeapIndices {
-        EagerSweepHeapIndex = 0,
-        NormalPage1HeapIndex,
-        NormalPage2HeapIndex,
-        NormalPage3HeapIndex,
-        NormalPage4HeapIndex,
-        Vector1HeapIndex,
-        Vector2HeapIndex,
-        Vector3HeapIndex,
-        Vector4HeapIndex,
-        InlineVectorHeapIndex,
-        HashTableHeapIndex,
-        FOR_EACH_TYPED_HEAP(TypedHeapEnumName)
-        LargeObjectHeapIndex,
+        EagerSweepArenaIndex = 0,
+        NormalPage1ArenaIndex,
+        NormalPage2ArenaIndex,
+        NormalPage3ArenaIndex,
+        NormalPage4ArenaIndex,
+        Vector1ArenaIndex,
+        Vector2ArenaIndex,
+        Vector3ArenaIndex,
+        Vector4ArenaIndex,
+        InlineVectorArenaIndex,
+        HashTableArenaIndex,
+        FOR_EACH_TYPED_ARENA(TypedArenaEnumName)
+        LargeObjectArenaIndex,
         // Values used for iteration of heap segments.
-        NumberOfHeaps,
+        NumberOfArenas,
     };
 
 #if defined(ADDRESS_SANITIZER)
