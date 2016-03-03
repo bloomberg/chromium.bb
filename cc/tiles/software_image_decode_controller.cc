@@ -75,12 +75,9 @@ class ImageDecodeTaskImpl : public ImageDecodeTask {
 
 SkSize GetScaleAdjustment(const ImageDecodeControllerKey& key) {
   // If the requested filter quality did not require scale, then the adjustment
-  // is identity. Note that we still might have extracted a subrect, so
-  // can_use_original_decode is not a sufficient check.
-  if (key.filter_quality() == kLow_SkFilterQuality ||
-      key.filter_quality() == kNone_SkFilterQuality) {
+  // is identity.
+  if (key.can_use_original_decode())
     return SkSize::Make(1.f, 1.f);
-  }
 
   float x_scale =
       key.target_size().width() / static_cast<float>(key.src_rect().width());
@@ -394,8 +391,10 @@ SoftwareImageDecodeController::DecodeImageInternal(
   bool result;
   if (key.src_rect() == full_image_rect) {
     result = decoded_draw_image.image()->peekPixels(&decoded_pixmap);
-  } else if (key.filter_quality() != kNone_SkFilterQuality &&
-             key.filter_quality() != kLow_SkFilterQuality) {
+  } else {
+    // TODO(vmpstr): We don't need to allocate memory here, we can use some
+    // pointer math to get the subrect from the original. This is possible
+    // because we know the original can peek pixels.
     SkImageInfo decoded_info = SkImageInfo::MakeN32Premul(
         key.src_rect().width(), key.src_rect().height());
     {
@@ -417,36 +416,6 @@ SoftwareImageDecodeController::DecodeImageInternal(
     }
     decoded_pixmap = SkPixmap(decoded_info, decoded_subrect_pixels.get(),
                               decoded_info.minRowBytes());
-  } else {
-    // In a low and none filter quality cases if we need a subrect, we need to
-    // extract it but then we don't need to scale it.
-    SkImageInfo decoded_info = SkImageInfo::MakeN32Premul(
-        key.src_rect().width(), key.src_rect().height());
-    scoped_ptr<base::DiscardableMemory> discardable_subrect_pixels;
-    {
-      TRACE_EVENT0(
-          "disabled-by-default-cc.debug",
-          "SoftwareImageDecodeController::DecodeImageInternal - allocate "
-          "discardable subrect pixels");
-      discardable_subrect_pixels =
-          base::DiscardableMemoryAllocator::GetInstance()
-              ->AllocateLockedDiscardableMemory(decoded_info.minRowBytes() *
-                                                decoded_info.height());
-    }
-    {
-      TRACE_EVENT0("disabled-by-default-cc.debug",
-                   "SoftwareImageDecodeController::DecodeImageInternal - read "
-                   "subrect pixels");
-      result =
-          image->readPixels(decoded_info, discardable_subrect_pixels->data(),
-                            decoded_info.minRowBytes(), key.src_rect().x(),
-                            key.src_rect().y(), SkImage::kDisallow_CachingHint);
-    }
-    DCHECK(result);
-    DrawWithImageFinished(original_size_draw_image, decoded_draw_image);
-    return make_scoped_refptr(new DecodedImage(
-        decoded_info, std::move(discardable_subrect_pixels),
-        SkSize::Make(-key.src_rect().x(), -key.src_rect().y())));
   }
 
   // Since the decoded_draw_image has locked memory, it should always succeed on
@@ -782,21 +751,15 @@ ImageDecodeControllerKey ImageDecodeControllerKey::FromDrawImage(
     }
   }
 
-  gfx::Size full_image_size(image.image()->width(), image.image()->height());
-  gfx::Rect full_image_rect(full_image_size);
-  bool scale_needs_caching =
-      quality != kLow_SkFilterQuality && quality != kNone_SkFilterQuality;
-  bool is_full_image_rect = full_image_rect == src_rect;
-  bool scale_is_required = src_rect.width() != target_size.width() ||
-                           src_rect.height() != target_size.height();
   bool can_use_original_decode =
-      !scale_needs_caching && (is_full_image_rect || !scale_is_required);
+      quality == kLow_SkFilterQuality || quality == kNone_SkFilterQuality;
+
   // If we're going to use the original decode, then the target size should be
   // the full image size, since that will allow for proper memory accounting.
   // Note we skip the decode if the target size is empty altogether, so don't
   // update the target size in that case.
   if (can_use_original_decode && !target_size.IsEmpty())
-    target_size = full_image_size;
+    target_size = gfx::Size(image.image()->width(), image.image()->height());
 
   return ImageDecodeControllerKey(image.image()->uniqueID(), src_rect,
                                   target_size, quality,
