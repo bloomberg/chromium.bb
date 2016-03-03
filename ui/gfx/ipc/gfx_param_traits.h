@@ -48,7 +48,6 @@ struct GFX_IPC_EXPORT ParamTraits<gfx::Point> {
 template <>
 struct GFX_IPC_EXPORT ParamTraits<gfx::PointF> {
   typedef gfx::PointF param_type;
-  static void GetSize(base::PickleSizer* s, const param_type& p);
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,
@@ -89,7 +88,6 @@ struct GFX_IPC_EXPORT ParamTraits<gfx::SizeF> {
 template <>
 struct GFX_IPC_EXPORT ParamTraits<gfx::Vector2d> {
   typedef gfx::Vector2d param_type;
-  static void GetSize(base::PickleSizer* s, const param_type& p);
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,
@@ -120,7 +118,6 @@ struct GFX_IPC_EXPORT ParamTraits<gfx::Rect> {
 template <>
 struct GFX_IPC_EXPORT ParamTraits<gfx::RectF> {
   typedef gfx::RectF param_type;
-  static void GetSize(base::PickleSizer* s, const param_type& p);
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,

@@ -26,7 +26,7 @@ source_set("lib") {
     "//ash",
     "//cc",
     "//cc/surfaces",
-    "//components/mus/common:mus_common",
+    "//components/mus/common",
     "//components/mus/public/cpp",
     "//components/mus/public/interfaces",
     "//components/user_manager",

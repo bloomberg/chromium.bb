@@ -312,7 +312,6 @@
       'sources': [
         'ipc/latency_info_param_traits.cc',
         'ipc/latency_info_param_traits.h',
-        'ipc/latency_info_param_traits_macros.h',
       ],
     },
     {

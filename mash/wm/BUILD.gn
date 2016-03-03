@@ -70,7 +70,7 @@ source_set("lib") {
 
   deps = [
     "//base",
-    "//components/mus/common:mus_common",
+    "//components/mus/common",
     "//components/mus/public/cpp",
     "//components/mus/public/interfaces",
     "//mash/shell/public/interfaces",

@@ -3,12 +3,11 @@
 // found in the LICENSE file.
 
 #include "components/mus/common/args.h"
-#include "components/mus/common/mus_common_export.h"
 
 namespace mus {
 
 // Initializes X11 in threaded mode, and sets the |override_redirect| flag when
 // creating X11 windows.
-const char MUS_COMMON_EXPORT kUseX11TestConfig[] = "use-x11-test-config";
+const char kUseX11TestConfig[] = "use-x11-test-config";
 
 }  // namespace mus
