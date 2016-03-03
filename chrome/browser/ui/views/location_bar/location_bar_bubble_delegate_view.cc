@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 #include "content/public/browser/notification_source.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/gfx/geometry/rect.h"
 
 LocationBarBubbleDelegateView::LocationBarBubbleDelegateView(
@@ -31,8 +32,10 @@ LocationBarBubbleDelegateView::~LocationBarBubbleDelegateView() {}
 
 void LocationBarBubbleDelegateView::ShowForReason(DisplayReason reason) {
   if (reason == USER_GESTURE) {
-    // TODO(estade): re-enable this when crbug.com/518941 is fixed.
-    // SetArrowPaintType(views::BubbleBorder::PAINT_TRANSPARENT);
+    // In the USER_GESTURE case, the icon will be in an active state so the
+    // bubble doesn't need an arrow.
+    if (ui::MaterialDesignController::IsModeMaterial())
+      SetArrowPaintType(views::BubbleBorder::PAINT_TRANSPARENT);
     GetWidget()->Show();
   } else {
     GetWidget()->ShowInactive();
