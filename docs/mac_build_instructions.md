@@ -5,13 +5,8 @@
 ## Prerequisites
 
 *   A Mac running 10.9+.
-*   [Xcode](https://developer.apple.com/xcode), 5+.
-*   Install
-    [gclient](http://dev.chromium.org/developers/how-tos/install-depot-tools),
-    part of the
-    [depot_tools](http://dev.chromium.org/developers/how-tos/depottools) package
-    ([download](http://dev.chromium.org/developers/how-tos/install-depot-tools)).
-    gclient is a wrapper around svn that we use to manage our working copies.
+*   [Xcode](https://developer.apple.com/xcode) 5+.
+*   [depot\_tools](http://dev.chromium.org/developers/how-tos/depottools).
 *   Install Xcode's "Command Line Tools" via Xcode menu -> Preferences ->
     Downloads
 *   The OSX 10.10 SDK. Run
