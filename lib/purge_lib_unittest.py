@@ -6,6 +6,9 @@
 
 from __future__ import print_function
 
+import datetime
+import mock
+
 from chromite.lib import cros_test_lib
 from chromite.lib import gs
 from chromite.lib import gs_unittest
@@ -90,9 +93,32 @@ class TestBucketSearches(gs_unittest.AbstractGSContextTest):
   """Test GS interactions in purge_lib."""
   def setUp(self):
     self.maxDiff = None
+    self.expireDate = datetime.datetime.now()
+    self.preExpire = self.expireDate + datetime.timedelta(minutes=5)
+    self.postExpire = self.expireDate - datetime.timedelta(minutes=5)
 
-  def mockResult(self, url):
-    return gs.GSListResult(url, None, None, None, None)
+    self.file_no_timestamp = gs.GSListResult(
+        'gs://chromeos-releases/canary-channel/plain_file',
+        None, None, None, None)
+
+    self.file_with_timestamp = self.mockResult(
+        'gs://chromeos-releases/canary-channel/plain_file')
+
+    self.directory = self.mockResult(
+        'gs://chromeos-releases/canary-channel/x86-alex/1.2.3/')
+
+  def mockResult(self, url, expired=True):
+    if url.endswith('/'):
+      creation_time = None
+    else:
+      creation_time = self.postExpire if expired else self.preExpire
+
+    return gs.GSListResult(
+        content_length=0,
+        creation_time=creation_time,
+        url=url,
+        generation=0,
+        metageneration=0)
 
   def patchSafeList(self):
     listResults = {
@@ -198,9 +224,11 @@ class TestBucketSearches(gs_unittest.AbstractGSContextTest):
             self.mockResult(
                 'gs://chromeos-releases/canary-channel/x86-alex/1.2.3/a'),
             self.mockResult(
-                'gs://chromeos-releases/canary-channel/x86-alex/1.2.3/b'),
+                'gs://chromeos-releases/canary-channel/x86-alex/1.2.3/b',
+                expired=False),
             self.mockResult(
-                'gs://chromeos-releases/canary-channel/x86-alex/1.2.3/nested/deep'),
+                'gs://chromeos-releases/canary-channel/x86-alex/1.2.3/'
+                'nest/deep'),
         ],
         'gs://chromeos-releases/canary-channel/x86-alex/1.2.4/**': [
             self.mockResult(
@@ -257,11 +285,7 @@ class TestBucketSearches(gs_unittest.AbstractGSContextTest):
         self.mockResult(
             'gs://chromeos-image-archive/foo-paladin/plain_file'),
         self.mockResult(
-            'gs://chromeos-image-archive/foo-paladin/1.2.3/a'),
-        self.mockResult(
-            'gs://chromeos-image-archive/foo-paladin/1.2.3/b'),
-        self.mockResult(
-            'gs://chromeos-image-archive/foo-paladin/1.2.3/nested/c'),
+            'gs://chromeos-image-archive/foo-paladin/1.2.3/'),
     ])
 
 
@@ -284,29 +308,122 @@ class TestBucketSearches(gs_unittest.AbstractGSContextTest):
 
     self.assertEqual(list(result), [
         self.mockResult(
-            'gs://chromeos-releases/canary-channel/arkham/6301.0.0/a'),
+            'gs://chromeos-releases/canary-channel/arkham/6301.0.0/'),
         self.mockResult(
-            'gs://chromeos-releases/canary-channel/arkham/6301.0.0/b'),
+            'gs://chromeos-releases/canary-channel/arkham/7023.0.0/'),
         self.mockResult(
-            'gs://chromeos-releases/canary-channel/arkham/7023.0.0/a'),
-        self.mockResult(
-            'gs://chromeos-releases/canary-channel/arkham/7023.0.0/b'),
-        self.mockResult(
-            'gs://chromeos-releases/canary-channel/arkham/noparse/a'),
-        self.mockResult(
-            'gs://chromeos-releases/canary-channel/arkham/noparse/b'),
+            'gs://chromeos-releases/canary-channel/arkham/noparse/'),
         self.mockResult(
             'gs://chromeos-releases/canary-channel/plain_file'),
         self.mockResult(
-            'gs://chromeos-releases/canary-channel/x86-alex/1.2.3/a'),
+            'gs://chromeos-releases/canary-channel/x86-alex/1.2.3/'),
         self.mockResult(
-            'gs://chromeos-releases/canary-channel/x86-alex/1.2.3/b'),
-        self.mockResult(
-            'gs://chromeos-releases/canary-channel/x86-alex/1.2.3/nested/deep'),
-        self.mockResult(
-            'gs://chromeos-releases/canary-channel/x86-alex/1.2.4/a'),
-        self.mockResult(
-            'gs://chromeos-releases/canary-channel/x86-alex/1.2.4/b'),
+            'gs://chromeos-releases/canary-channel/x86-alex/1.2.4/'),
         self.mockResult(
             'gs://chromeos-releases/top-level-file'),
+    ])
+
+  def testExpand(self):
+    self.patchSafeList()
+
+    result = purge_lib.Expand(self.ctx, self.file_no_timestamp)
+    self.assertEqual(result, [self.file_with_timestamp])
+
+    result = purge_lib.Expand(self.ctx, self.file_with_timestamp)
+    self.assertEqual(result, [self.file_with_timestamp])
+
+    result = purge_lib.Expand(self.ctx, self.directory)
+    self.assertEqual(result, [
+        self.mockResult(
+            'gs://chromeos-releases/canary-channel/x86-alex/1.2.3/a'),
+        self.mockResult(
+            'gs://chromeos-releases/canary-channel/x86-alex/1.2.3/b',
+            expired=False),
+        self.mockResult(
+            'gs://chromeos-releases/canary-channel/x86-alex/1.2.3/nest/deep'),
+    ])
+
+  def testExpire(self):
+    # Dryrun, move nothing.
+    purge_lib.Expire(self.ctx, dryrun=True, url='gs://foo/bar')
+    purge_lib.Expire(self.ctx, dryrun=True,
+                     url='gs://chromeos-releases/deep/nested/file')
+
+    self.assertEqual(self.gs_mock.call_args_list, [])
+
+    # Really move stuff.
+    purge_lib.Expire(self.ctx, dryrun=False, url='gs://foo/bar')
+    purge_lib.Expire(self.ctx, dryrun=False,
+                     url='gs://chromeos-releases/deep/nested/file')
+
+    self.assertEqual(self.gs_mock.call_args_list, [
+        mock.call(self.ctx, [
+            'mv', '--', 'gs://foo/bar', 'gs://foo-backup/bar',
+        ]),
+        mock.call(self.ctx, [
+            'mv', '--', 'gs://chromeos-releases/deep/nested/file',
+            'gs://chromeos-releases-backup/deep/nested/file',
+        ]),
+    ])
+
+  def testExpireAndExpandDryrun(self):
+    self.patchSafeList()
+
+    purge_lib.ExpandAndExpire(self.ctx, True, self.expireDate,
+                              self.file_no_timestamp)
+    purge_lib.ExpandAndExpire(self.ctx, True, self.expireDate,
+                              self.file_with_timestamp)
+    purge_lib.ExpandAndExpire(self.ctx, True, self.expireDate,
+                              self.directory)
+
+    self.assertEqual(self.gs_mock.call_args_list, [])
+
+  def testExpireAndExpandNoTimestamp(self):
+    self.patchSafeList()
+
+    # File with no timestamp.
+    purge_lib.ExpandAndExpire(self.ctx, False, self.expireDate,
+                              self.file_no_timestamp)
+
+    self.assertEqual(self.gs_mock.call_args_list, [
+        mock.call(self.ctx, [
+            'mv', '--',
+            'gs://chromeos-releases/canary-channel/plain_file',
+            'gs://chromeos-releases-backup/canary-channel/plain_file',
+        ]),
+    ])
+
+  def testExpireAndExpandWithTimestamp(self):
+    self.patchSafeList()
+
+    # File with timestamp.
+    purge_lib.ExpandAndExpire(self.ctx, False, self.expireDate,
+                              self.file_with_timestamp)
+
+    self.assertEqual(self.gs_mock.call_args_list, [
+        mock.call(self.ctx, [
+            'mv', '--',
+            'gs://chromeos-releases/canary-channel/plain_file',
+            'gs://chromeos-releases-backup/canary-channel/plain_file',
+        ]),
+    ])
+
+  def testExpireAndExpandDirectory(self):
+    self.patchSafeList()
+
+    purge_lib.ExpandAndExpire(self.ctx, False, self.expireDate,
+                              self.directory)
+
+    self.assertEqual(self.gs_mock.call_args_list, [
+        mock.call(self.ctx, [
+            'mv', '--',
+            'gs://chromeos-releases/canary-channel/x86-alex/1.2.3/a',
+            'gs://chromeos-releases-backup/canary-channel/x86-alex/1.2.3/a',
+        ]),
+        mock.call(self.ctx, [
+            'mv', '--',
+            'gs://chromeos-releases/canary-channel/x86-alex/1.2.3/nest/deep',
+            'gs://chromeos-releases-backup/canary-channel/x86-alex/1.2.3/'
+            'nest/deep',
+        ]),
     ])

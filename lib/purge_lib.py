@@ -10,6 +10,7 @@ Classify what type of build it was.
 from __future__ import print_function
 
 import re
+import urlparse
 
 from chromite.cbuildbot import constants
 from chromite.lib import cros_logging as logging
@@ -287,14 +288,9 @@ def ProduceFilteredCandidates(ctx, root_url, prefixes, search_depth):
   logging.info('Examining: "%s"', root_url)
 
   # How many directory levels down do we have to go.
-  search_depth = depth(root_url) + search_depth
-  prefix_depth = max(depth(p) for p in prefixes)
-  assert prefix_depth <= search_depth, (
-      'prefix_depth(%s) must be <= search_depth(%s)' %
-      (prefix_depth, search_depth))
-
-  logging.debug('Using search_depth %d with prefix_depth %d',
-                search_depth, prefix_depth)
+  search_depth = max(depth(root_url) + search_depth,
+                     max(depth(p) for p in prefixes))
+  logging.debug('Using search_depth %d.', search_depth)
 
   def recurse(base_url):
     for result in SafeList(ctx, base_url):
@@ -303,22 +299,18 @@ def ProduceFilteredCandidates(ctx, root_url, prefixes, search_depth):
       if prefix_re.match(url):
         continue
 
-      if url.endswith('/'):
-        if depth(url) < search_depth:
-          # If we are not deep enough to match all possible patterns, recurse.
-          for u in recurse(url):
-            yield u
-        else:
-          for u in SafeList(ctx, url + '**'):
-            yield u
+      if url.endswith('/') and depth(url) < search_depth:
+        # If we are not deep enough to match all possible patterns, recurse.
+        for u in recurse(url):
+          yield u
       else:
-        # If it's just a file, it's a result.
+        # If it's a file, or we are deep enough, return.
         yield result
 
   return recurse(root_url)
 
 
-def ExpandCandidate(ctx, candidate):
+def Expand(ctx, candidate):
   """Given a gs.GSListResult object, expand to a list of testable objects.
 
   Will return an iterable of gs.GSListResult of files with the creation_time
@@ -345,3 +337,41 @@ def ExpandCandidate(ctx, candidate):
     url += '**'
 
   return SafeList(ctx, url)
+
+
+def Expire(ctx, dryrun, url):
+  """Given a url, move it to the backup buckets.
+
+  Args:
+    ctx: GS context.
+    dryrun: Do we actually move the file?
+    url: Address of file to move.
+  """
+  logging.info('Expiring: %s', url)
+  # Move gs://foo/some/file -> gs://foo-backup/some/file
+  parts = urlparse.urlparse(url)
+  expired_parts = list(parts)
+  expired_parts[1] = parts.netloc + '-backup'
+  target_url = urlparse.urlunparse(expired_parts)
+  if dryrun:
+    logging.notice('gsutil mv %s %s', url, target_url)
+  else:
+    try:
+      ctx.Move(url, target_url)
+    except Exception as e:
+      # We can fail for lots of repeated random reasons.
+      logging.warn('Move of "%s" failed, ignoring: "%s"', url, e)
+
+
+def ExpandAndExpire(ctx, dryrun, expired_cutoff, candidate):
+  """Given a list of candidate, expand to files, and expire if needed.
+
+  Args:
+    ctx: GS context.
+    dryrun: Flag to turn on/off bucket updates.
+    expired_cutoff: datetime.datetime of cutoff for expiring candidates.
+    candidate: gs.GSListResult object of a file or directory.
+  """
+  for file_candidate in Expand(ctx, candidate):
+    if file_candidate.creation_time < expired_cutoff:
+      Expire(ctx, dryrun, file_candidate.url)

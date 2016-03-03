@@ -18,11 +18,11 @@ See go/cros-gs-cleanup-design for an overview.
 from __future__ import print_function
 
 import datetime
-import urlparse
 
 from chromite.lib import commandline
 from chromite.lib import cros_logging as logging
 from chromite.lib import gs
+from chromite.lib import parallel
 from chromite.lib import purge_lib
 
 # Roughly 6 months.
@@ -50,42 +50,20 @@ def GetParser():
   return parser
 
 
-def Expire(ctx, url, dryrun):
-  """Given a url, move it to the backup buckets.
-
-  Args:
-    ctx: GS context.
-    url: Address of file to move.
-    dryrun: Do we actually move the file?
-  """
-  logging.info('Expiring: %s', url)
-  # Move gs://foo/some/file -> gs://foo-backup/some/file
-  parts = urlparse.urlparse(url)
-  expired_parts = list(parts)
-  expired_parts[1] = parts.netloc + '-backup'
-  target_url = urlparse.urlunparse(expired_parts)
-  if dryrun:
-    logging.notice('gsutil mv %s %s', url, target_url)
-  else:
-    try:
-      ctx.Move(url, target_url)
-    except Exception as e:
-      # We can fail for lots of repeated random reasons.
-      logging.warn('Move of "%s" failed, ignoring: "%s"', url, e)
-
-
-def Examine(ctx, expired_cutoff, candidates, dryrun):
+def Examine(ctx, dryrun, expired_cutoff, candidates):
   """Given a list of candidates to move, move them to the backup buckets.
 
   Args:
     ctx: GS context.
+    dryrun: Flag to turn on/off bucket updates.
     expired_cutoff: datetime.datetime of cutoff for expiring candidates.
     candidates: Iterable of gs.GSListResult objects.
-    dryrun: Flag to turn on/off bucket updates.
   """
-  for candidate in candidates:
-    if candidate.creation_time < expired_cutoff:
-      Expire(ctx, candidate.url, dryrun)
+  with parallel.BackgroundTaskRunner(purge_lib.ExpandAndExpire,
+                                     ctx, dryrun, expired_cutoff,
+                                     processes=40) as expire_queue:
+    for candidate in candidates:
+      expire_queue.put((candidate,))
 
 
 def main(argv):
@@ -106,7 +84,7 @@ def main(argv):
 
     archiveCandidates = purge_lib.ProduceFilteredCandidates(
         ctx, 'gs://chromeos-image-archive/', archiveExcludes, 2)
-    Examine(ctx, expired_cutoff, archiveCandidates, dryrun=options.dry_run)
+    Examine(ctx, options.dry_run, expired_cutoff, archiveCandidates)
 
   if options.chromeos_releases:
     remote_branches = purge_lib.ListRemoteBranches()
@@ -120,6 +98,6 @@ def main(argv):
 
     releasesCandidates = purge_lib.ProduceFilteredCandidates(
         ctx, 'gs://chromeos-releases/', releasesExcludes, 3)
-    Examine(ctx, expired_cutoff, releasesCandidates, dryrun=options.dry_run)
+    Examine(ctx, options.dry_run, expired_cutoff, releasesCandidates)
 
   return
