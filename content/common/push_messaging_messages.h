@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "content/public/common/push_messaging_status.h"
+#include "content/public/common/push_subscription_options.h"
 #include "ipc/ipc_message_macros.h"
 #include "third_party/WebKit/public/platform/modules/push_messaging/WebPushError.h"
 #include "third_party/WebKit/public/platform/modules/push_messaging/WebPushPermissionStatus.h"
@@ -28,6 +29,11 @@ IPC_ENUM_TRAITS_MAX_VALUE(
 IPC_ENUM_TRAITS_MAX_VALUE(
     blink::WebPushError::ErrorType,
     blink::WebPushError::ErrorType::ErrorTypeLast)
+
+IPC_STRUCT_TRAITS_BEGIN(content::PushSubscriptionOptions)
+  IPC_STRUCT_TRAITS_MEMBER(user_visible_only)
+  IPC_STRUCT_TRAITS_MEMBER(sender_info)
+IPC_STRUCT_TRAITS_END()
 
 // Messages sent from the browser to the child process.
 
@@ -80,17 +86,16 @@ IPC_MESSAGE_CONTROL2(PushMessagingMsg_GetPermissionStatusError,
 
 // Messages sent from the child process to the browser.
 
-IPC_MESSAGE_CONTROL5(PushMessagingHostMsg_SubscribeFromDocument,
+IPC_MESSAGE_CONTROL4(PushMessagingHostMsg_SubscribeFromDocument,
                      int32_t /* render_frame_id */,
                      int32_t /* request_id */,
-                     std::string /* sender_id */,
-                     bool /* user_visible */,
+                     content::PushSubscriptionOptions /* options */,
                      int64_t /* service_worker_registration_id */)
 
 IPC_MESSAGE_CONTROL3(PushMessagingHostMsg_SubscribeFromWorker,
                      int32_t /* request_id */,
                      int64_t /* service_worker_registration_id */,
-                     bool /* user_visible */)
+                     content::PushSubscriptionOptions /* options */)
 
 IPC_MESSAGE_CONTROL2(PushMessagingHostMsg_Unsubscribe,
                      int32_t /* request_id */,

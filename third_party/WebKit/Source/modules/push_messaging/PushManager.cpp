@@ -34,11 +34,29 @@ WebPushProvider* pushProvider()
     return webPushProvider;
 }
 
-WebPushSubscriptionOptions toWebPushSubscriptionOptions(const PushSubscriptionOptions& options)
+String bufferSourceToString(const ArrayBufferOrArrayBufferView& applicationServerKey, ExceptionState& exceptionState)
 {
-    WebPushSubscriptionOptions webOptions;
-    webOptions.userVisibleOnly = options.userVisibleOnly();
-    return webOptions;
+    // Check the validity of the sender info. It must be a 65 byte unencrypted key,
+    // which has the byte 0x04 as the first byte as a marker.
+    char* input;
+    int length;
+    if (applicationServerKey.isArrayBuffer()) {
+        input = static_cast<char*>(
+            applicationServerKey.getAsArrayBuffer()->data());
+        length = applicationServerKey.getAsArrayBuffer()->byteLength();
+    } else if (applicationServerKey.isArrayBufferView()) {
+        input = static_cast<char*>(
+            applicationServerKey.getAsArrayBufferView()->buffer()->data());
+        length = applicationServerKey.getAsArrayBufferView()->buffer()->byteLength();
+    } else {
+        ASSERT_NOT_REACHED();
+        return String();
+    }
+
+    if (length == 65 && input[0] == 0x04)
+        return WebString::fromUTF8(input, length);
+    exceptionState.throwDOMException(InvalidAccessError, "The provided applicationServerKey is not valid.");
+    return String();
 }
 
 } // namespace
@@ -49,10 +67,25 @@ PushManager::PushManager(ServiceWorkerRegistration* registration)
     ASSERT(registration);
 }
 
-ScriptPromise PushManager::subscribe(ScriptState* scriptState, const PushSubscriptionOptions& options)
+WebPushSubscriptionOptions PushManager::toWebPushSubscriptionOptions(const PushSubscriptionOptions& options, ExceptionState& exceptionState)
+{
+    WebPushSubscriptionOptions webOptions;
+    webOptions.userVisibleOnly = options.userVisibleOnly();
+    if (options.hasApplicationServerKey()) {
+        webOptions.applicationServerKey = bufferSourceToString(options.applicationServerKey(),
+            exceptionState);
+    }
+    return webOptions;
+}
+
+ScriptPromise PushManager::subscribe(ScriptState* scriptState, const PushSubscriptionOptions& options, ExceptionState& exceptionState)
 {
     if (!m_registration->active())
         return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(AbortError, "Subscription failed - no active Service Worker"));
+
+    const WebPushSubscriptionOptions& webOptions = toWebPushSubscriptionOptions(options, exceptionState);
+    if (exceptionState.hadException())
+        return ScriptPromise();
 
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
@@ -64,9 +97,9 @@ ScriptPromise PushManager::subscribe(ScriptState* scriptState, const PushSubscri
         Document* document = toDocument(scriptState->executionContext());
         if (!document->domWindow() || !document->frame())
             return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(InvalidStateError, "Document is detached from window."));
-        PushController::clientFrom(document->frame()).subscribe(m_registration->webRegistration(), toWebPushSubscriptionOptions(options), new PushSubscriptionCallbacks(resolver, m_registration));
+        PushController::clientFrom(document->frame()).subscribe(m_registration->webRegistration(), webOptions, new PushSubscriptionCallbacks(resolver, m_registration));
     } else {
-        pushProvider()->subscribe(m_registration->webRegistration(), toWebPushSubscriptionOptions(options), new PushSubscriptionCallbacks(resolver, m_registration));
+        pushProvider()->subscribe(m_registration->webRegistration(), webOptions, new PushSubscriptionCallbacks(resolver, m_registration));
     }
 
     return promise;
@@ -81,7 +114,7 @@ ScriptPromise PushManager::getSubscription(ScriptState* scriptState)
     return promise;
 }
 
-ScriptPromise PushManager::permissionState(ScriptState* scriptState, const PushSubscriptionOptions& options)
+ScriptPromise PushManager::permissionState(ScriptState* scriptState, const PushSubscriptionOptions& options, ExceptionState& exceptionState)
 {
     if (scriptState->executionContext()->isDocument()) {
         Document* document = toDocument(scriptState->executionContext());
@@ -92,7 +125,7 @@ ScriptPromise PushManager::permissionState(ScriptState* scriptState, const PushS
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
-    pushProvider()->getPermissionStatus(m_registration->webRegistration(), toWebPushSubscriptionOptions(options), new PushPermissionStatusCallbacks(resolver));
+    pushProvider()->getPermissionStatus(m_registration->webRegistration(), toWebPushSubscriptionOptions(options, exceptionState), new PushPermissionStatusCallbacks(resolver));
     return promise;
 }
 

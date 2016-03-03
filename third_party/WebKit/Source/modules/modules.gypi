@@ -1953,6 +1953,7 @@
       'mediastream/RTCDataChannelTest.cpp',
       'notifications/NotificationDataTest.cpp',
       'presentation/PresentationAvailabilityTest.cpp',
+      'push_messaging/PushManagerTest.cpp',
       'push_messaging/PushMessageDataTest.cpp',
       'serviceworkers/ServiceWorkerContainerTest.cpp',
       'webaudio/AudioBasicProcessorHandlerTest.cpp',

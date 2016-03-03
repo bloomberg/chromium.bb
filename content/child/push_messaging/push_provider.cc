@@ -75,8 +75,11 @@ void PushProvider::subscribe(
   subscription_callbacks_.AddWithID(callbacks, request_id);
   int64_t service_worker_registration_id =
       GetServiceWorkerRegistrationId(service_worker_registration);
+  PushSubscriptionOptions content_options;
+  content_options.user_visible_only = options.userVisibleOnly;
+  content_options.sender_info = options.applicationServerKey.utf8();
   thread_safe_sender_->Send(new PushMessagingHostMsg_SubscribeFromWorker(
-      request_id, service_worker_registration_id, options.userVisibleOnly));
+      request_id, service_worker_registration_id, content_options));
 }
 
 void PushProvider::unsubscribe(
