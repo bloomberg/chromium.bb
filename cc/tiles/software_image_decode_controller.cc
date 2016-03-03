@@ -73,14 +73,6 @@ class ImageDecodeTaskImpl : public ImageDecodeTask {
   DISALLOW_COPY_AND_ASSIGN(ImageDecodeTaskImpl);
 };
 
-template <typename Type>
-typename std::deque<Type>::iterator FindImage(
-    std::deque<Type>* collection,
-    const ImageDecodeControllerKey& key) {
-  return std::find_if(collection->begin(), collection->end(),
-                      [key](const Type& image) { return image.first == key; });
-}
-
 SkSize GetScaleAdjustment(const ImageDecodeControllerKey& key) {
   // If the requested filter quality did not require scale, then the adjustment
   // is identity. Note that we still might have extracted a subrect, so
@@ -104,7 +96,9 @@ SkFilterQuality GetDecodedFilterQuality(const ImageDecodeControllerKey& key) {
 }  // namespace
 
 SoftwareImageDecodeController::SoftwareImageDecodeController()
-    : locked_images_budget_(kLockedMemoryLimitBytes) {}
+    : decoded_images_(ImageMRUCache::NO_AUTO_EVICT),
+      at_raster_decoded_images_(ImageMRUCache::NO_AUTO_EVICT),
+      locked_images_budget_(kLockedMemoryLimitBytes) {}
 
 SoftwareImageDecodeController::~SoftwareImageDecodeController() {
   DCHECK_EQ(0u, decoded_images_ref_counts_.size());
@@ -156,7 +150,7 @@ bool SoftwareImageDecodeController::GetTaskForImageAndRef(
   base::AutoLock lock(lock_);
 
   // If we already have the image in cache, then we can return it.
-  auto decoded_it = FindImage(&decoded_images_, key);
+  auto decoded_it = decoded_images_.Get(key);
   bool new_image_fits_in_memory =
       locked_images_budget_.AvailableMemoryBytes() >= key.locked_bytes();
   if (decoded_it != decoded_images_.end()) {
@@ -170,7 +164,7 @@ bool SoftwareImageDecodeController::GetTaskForImageAndRef(
     // If the image fits in memory, then we at least tried to lock it and
     // failed. This means that it's not valid anymore.
     if (new_image_fits_in_memory)
-      decoded_images_.erase(decoded_it);
+      decoded_images_.Erase(decoded_it);
   }
 
   // If the task exists, return it.
@@ -238,7 +232,7 @@ void SoftwareImageDecodeController::UnrefImage(const DrawImage& image) {
     decoded_images_ref_counts_.erase(ref_count_it);
     locked_images_budget_.SubtractUsage(key.locked_bytes());
 
-    auto decoded_image_it = FindImage(&decoded_images_, key);
+    auto decoded_image_it = decoded_images_.Peek(key);
     // If we've never decoded the image before ref reached 0, then we wouldn't
     // have it in our cache. This would happen if we canceled tasks.
     if (decoded_image_it == decoded_images_.end()) {
@@ -271,13 +265,13 @@ void SoftwareImageDecodeController::DecodeImage(const ImageKey& key,
 
   base::AutoLock lock(lock_);
 
-  auto image_it = FindImage(&decoded_images_, key);
+  auto image_it = decoded_images_.Peek(key);
   if (image_it != decoded_images_.end()) {
     if (image_it->second->is_locked() || image_it->second->Lock()) {
       pending_image_tasks_.erase(key);
       return;
     }
-    decoded_images_.erase(image_it);
+    decoded_images_.Erase(image_it);
   }
 
   scoped_refptr<DecodedImage> decoded_image;
@@ -299,14 +293,14 @@ void SoftwareImageDecodeController::DecodeImage(const ImageKey& key,
   // place by an already running raster task from a previous schedule. If that's
   // the case, then it would have already been placed into the cache (possibly
   // locked). Remove it if that was the case.
-  image_it = FindImage(&decoded_images_, key);
+  image_it = decoded_images_.Peek(key);
   if (image_it != decoded_images_.end()) {
     if (image_it->second->is_locked() || image_it->second->Lock()) {
       // Make sure to unlock the decode we did in this function.
       decoded_image->Unlock();
       return;
     }
-    decoded_images_.erase(image_it);
+    decoded_images_.Erase(image_it);
   }
 
   // We could have finished all of the raster tasks (cancelled) while this image
@@ -317,7 +311,7 @@ void SoftwareImageDecodeController::DecodeImage(const ImageKey& key,
     decoded_image->Unlock();
   }
 
-  decoded_images_.push_back(AnnotatedDecodedImage(key, decoded_image));
+  decoded_images_.Put(key, std::move(decoded_image));
   SanityCheckState(__LINE__, true);
 }
 
@@ -521,7 +515,7 @@ DecodedDrawImage SoftwareImageDecodeController::GetDecodedImageForDrawInternal(
                "SoftwareImageDecodeController::GetDecodedImageForDrawInternal",
                "key", key.ToString());
   base::AutoLock lock(lock_);
-  auto decoded_images_it = FindImage(&decoded_images_, key);
+  auto decoded_images_it = decoded_images_.Get(key);
   // If we found the image and it's locked, then return it. If it's not locked,
   // erase it from the cache since it might be put into the at-raster cache.
   scoped_refptr<DecodedImage> decoded_image;
@@ -534,13 +528,13 @@ DecodedDrawImage SoftwareImageDecodeController::GetDecodedImageForDrawInternal(
           decoded_image->image(), decoded_image->src_rect_offset(),
           GetScaleAdjustment(key), GetDecodedFilterQuality(key));
     } else {
-      decoded_images_.erase(decoded_images_it);
+      decoded_images_.Erase(decoded_images_it);
     }
   }
 
   // See if another thread already decoded this image at raster time. If so, we
   // can just use that result directly.
-  auto at_raster_images_it = FindImage(&at_raster_decoded_images_, key);
+  auto at_raster_images_it = at_raster_decoded_images_.Get(key);
   if (at_raster_images_it != at_raster_decoded_images_.end()) {
     DCHECK(at_raster_images_it->second->is_locked());
     RefAtRasterImage(key);
@@ -578,7 +572,7 @@ DecodedDrawImage SoftwareImageDecodeController::GetDecodedImageForDrawInternal(
   // first.
   bool need_to_add_image_to_cache = true;
   if (check_at_raster_cache) {
-    at_raster_images_it = FindImage(&at_raster_decoded_images_, key);
+    at_raster_images_it = at_raster_decoded_images_.Get(key);
     if (at_raster_images_it != at_raster_decoded_images_.end()) {
       // We have to drop our decode, since the one in the cache is being used by
       // another thread.
@@ -590,10 +584,8 @@ DecodedDrawImage SoftwareImageDecodeController::GetDecodedImageForDrawInternal(
 
   // If we really are the first ones, or if the other thread already unlocked
   // the image, then put our work into at-raster time cache.
-  if (need_to_add_image_to_cache) {
-    at_raster_decoded_images_.push_back(
-        AnnotatedDecodedImage(key, decoded_image));
-  }
+  if (need_to_add_image_to_cache)
+    at_raster_decoded_images_.Put(key, decoded_image);
 
   DCHECK(decoded_image);
   DCHECK(decoded_image->is_locked());
@@ -627,7 +619,7 @@ void SoftwareImageDecodeController::RefAtRasterImage(const ImageKey& key) {
   TRACE_EVENT1("disabled-by-default-cc.debug",
                "SoftwareImageDecodeController::RefAtRasterImage", "key",
                key.ToString());
-  DCHECK(FindImage(&at_raster_decoded_images_, key) !=
+  DCHECK(at_raster_decoded_images_.Peek(key) !=
          at_raster_decoded_images_.end());
   ++at_raster_decoded_images_ref_counts_[key];
 }
@@ -643,7 +635,7 @@ void SoftwareImageDecodeController::UnrefAtRasterImage(const ImageKey& key) {
   --ref_it->second;
   if (ref_it->second == 0) {
     at_raster_decoded_images_ref_counts_.erase(ref_it);
-    auto at_raster_image_it = FindImage(&at_raster_decoded_images_, key);
+    auto at_raster_image_it = at_raster_decoded_images_.Peek(key);
     DCHECK(at_raster_image_it != at_raster_decoded_images_.end());
 
     // The ref for our image reached 0 and it's still locked. We need to figure
@@ -660,23 +652,23 @@ void SoftwareImageDecodeController::UnrefAtRasterImage(const ImageKey& key) {
     //       2b1. ... its ref count is 0: unlock our image and replace the
     //       existing one with ours.
     //       2b2. ... its ref count is not 0: this shouldn't be possible.
-    auto image_it = FindImage(&decoded_images_, key);
+    auto image_it = decoded_images_.Peek(key);
     if (image_it == decoded_images_.end()) {
       if (decoded_images_ref_counts_.find(key) ==
           decoded_images_ref_counts_.end()) {
         at_raster_image_it->second->Unlock();
       }
-      decoded_images_.push_back(*at_raster_image_it);
+      decoded_images_.Put(key, at_raster_image_it->second);
     } else if (image_it->second->is_locked()) {
       at_raster_image_it->second->Unlock();
     } else {
       DCHECK(decoded_images_ref_counts_.find(key) ==
              decoded_images_ref_counts_.end());
       at_raster_image_it->second->Unlock();
-      decoded_images_.erase(image_it);
-      decoded_images_.push_back(*at_raster_image_it);
+      decoded_images_.Erase(image_it);
+      decoded_images_.Put(key, at_raster_image_it->second);
     }
-    at_raster_decoded_images_.erase(at_raster_image_it);
+    at_raster_decoded_images_.Erase(at_raster_image_it);
   }
 }
 
@@ -691,14 +683,14 @@ void SoftwareImageDecodeController::ReduceCacheUsage() {
   size_t num_to_remove = (decoded_images_.size() > kMaxItemsInCache)
                              ? (decoded_images_.size() - kMaxItemsInCache)
                              : 0;
-  for (auto it = decoded_images_.begin();
-       num_to_remove != 0 && it != decoded_images_.end();) {
+  for (auto it = decoded_images_.rbegin();
+       num_to_remove != 0 && it != decoded_images_.rend();) {
     if (it->second->is_locked()) {
       ++it;
       continue;
     }
 
-    it = decoded_images_.erase(it);
+    it = decoded_images_.Erase(it);
     --num_to_remove;
   }
 }
@@ -718,22 +710,17 @@ void SoftwareImageDecodeController::SanityCheckState(int line,
   }
 
   MemoryBudget budget(kLockedMemoryLimitBytes);
-  for (const auto& annotated_image : decoded_images_) {
-    DCHECK_EQ(1, std::count_if(
-                     decoded_images_.begin(), decoded_images_.end(),
-                     [&annotated_image](const AnnotatedDecodedImage& image) {
-                       return image.first == annotated_image.first;
-                     }))
-        << line;
-    auto key = annotated_image.first;
+  for (const auto& image_pair : decoded_images_) {
+    const auto& key = image_pair.first;
+    const auto& image = image_pair.second;
+
     auto ref_it = decoded_images_ref_counts_.find(key);
-    if (annotated_image.second->is_locked()) {
-      budget.AddUsage(annotated_image.first.locked_bytes());
+    if (image->is_locked()) {
+      budget.AddUsage(key.locked_bytes());
       DCHECK(ref_it != decoded_images_ref_counts_.end()) << line;
     } else {
       DCHECK(ref_it == decoded_images_ref_counts_.end() ||
-             pending_image_tasks_.find(annotated_image.first) !=
-                 pending_image_tasks_.end())
+             pending_image_tasks_.find(key) != pending_image_tasks_.end())
           << line;
     }
   }

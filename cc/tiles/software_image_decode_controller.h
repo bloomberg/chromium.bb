@@ -10,6 +10,7 @@
 #include <unordered_map>
 #include <unordered_set>
 
+#include "base/containers/mru_cache.h"
 #include "base/hash.h"
 #include "base/memory/discardable_memory_allocator.h"
 #include "base/memory/ref_counted.h"
@@ -166,9 +167,6 @@ class CC_EXPORT SoftwareImageDecodeController : public ImageDecodeController {
     base::CheckedNumeric<size_t> current_usage_bytes_;
   };
 
-  using AnnotatedDecodedImage =
-      std::pair<ImageKey, scoped_refptr<DecodedImage>>;
-
   // Looks for the key in the cache and returns true if it was found and was
   // successfully locked (or if it was already locked). Note that if this
   // function returns true, then a ref count is increased for the image.
@@ -209,11 +207,19 @@ class CC_EXPORT SoftwareImageDecodeController : public ImageDecodeController {
   // ensure that they are safe to access on multiple threads.
   base::Lock lock_;
 
-  std::deque<AnnotatedDecodedImage> decoded_images_;
+  using ImageMRUCache = base::HashingMRUCache<ImageKey,
+                                              scoped_refptr<DecodedImage>,
+                                              ImageKeyHash>;
+
+  // Decoded images and ref counts (predecode path).
+  ImageMRUCache decoded_images_;
   std::unordered_map<ImageKey, int, ImageKeyHash> decoded_images_ref_counts_;
-  std::deque<AnnotatedDecodedImage> at_raster_decoded_images_;
+
+  // Decoded image and ref counts (at-raster decode path).
+  ImageMRUCache at_raster_decoded_images_;
   std::unordered_map<ImageKey, int, ImageKeyHash>
       at_raster_decoded_images_ref_counts_;
+
   MemoryBudget locked_images_budget_;
 
   // Note that this is used for cases where the only thing we do is preroll the
