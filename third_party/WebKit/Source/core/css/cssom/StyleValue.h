@@ -27,7 +27,6 @@ public:
 
     virtual StyleValueType type() const = 0;
 
-    static StyleValue* create(const CSSValue&);
     static ScriptValue parse(ScriptState*, const String& property, const String& cssText);
 
     virtual PassRefPtrWillBeRawPtr<CSSValue> toCSSValue() const = 0;

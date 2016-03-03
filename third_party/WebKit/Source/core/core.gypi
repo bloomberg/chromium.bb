@@ -1320,6 +1320,8 @@
             'css/cssom/StylePropertyMap.h',
             'css/cssom/StyleValue.cpp',
             'css/cssom/StyleValue.h',
+            'css/cssom/StyleValueFactory.cpp',
+            'css/cssom/StyleValueFactory.h',
             'css/cssom/TransformComponent.h',
             'css/cssom/TransformValue.cpp',
             'css/cssom/TransformValue.h',

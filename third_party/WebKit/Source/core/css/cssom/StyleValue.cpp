@@ -5,14 +5,9 @@
 #include "core/css/cssom/StyleValue.h"
 
 #include "bindings/core/v8/ScriptValue.h"
+#include "core/css/cssom/SimpleLength.h"
 
 namespace blink {
-
-StyleValue* StyleValue::create(const CSSValue& val)
-{
-    // TODO: implement.
-    return nullptr;
-}
 
 ScriptValue StyleValue::parse(ScriptState* state, const String& property, const String& cssText)
 {
