@@ -293,12 +293,17 @@ void DisplayListRasterSource::PlaybackToCanvas(
   PrepareForPlaybackToCanvas(raster_canvas, canvas_bitmap_rect,
                              canvas_playback_rect, contents_scale);
 
-  SkImageInfo info = raster_canvas->imageInfo();
-  ImageHijackCanvas canvas(info.width(), info.height(),
-                           image_decode_controller_);
-  canvas.addCanvas(raster_canvas);
-  RasterCommon(&canvas, NULL, canvas_bitmap_rect, canvas_playback_rect,
-               contents_scale);
+  if (display_list_->MayHaveDiscardableImages()) {
+    const SkImageInfo& info = raster_canvas->imageInfo();
+    ImageHijackCanvas canvas(info.width(), info.height(),
+                             image_decode_controller_);
+    canvas.addCanvas(raster_canvas);
+    RasterCommon(&canvas, nullptr, canvas_bitmap_rect, canvas_playback_rect,
+                 contents_scale);
+  } else {
+    RasterCommon(raster_canvas, nullptr, canvas_bitmap_rect,
+                 canvas_playback_rect, contents_scale);
+  }
 }
 
 void DisplayListRasterSource::PrepareForPlaybackToCanvas(
