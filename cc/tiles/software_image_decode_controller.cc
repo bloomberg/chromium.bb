@@ -386,45 +386,17 @@ SoftwareImageDecodeController::DecodeImageInternal(
     return nullptr;
   }
 
-  scoped_ptr<uint8_t[]> decoded_subrect_pixels;
   SkPixmap decoded_pixmap;
-  bool result;
-  if (key.src_rect() == full_image_rect) {
-    result = decoded_draw_image.image()->peekPixels(&decoded_pixmap);
-  } else {
-    // TODO(vmpstr): We don't need to allocate memory here, we can use some
-    // pointer math to get the subrect from the original. This is possible
-    // because we know the original can peek pixels.
-    SkImageInfo decoded_info = SkImageInfo::MakeN32Premul(
-        key.src_rect().width(), key.src_rect().height());
-    {
-      TRACE_EVENT0(
-          "disabled-by-default-cc.debug",
-          "SoftwareImageDecodeController::DecodeImageInternal - allocate "
-          "decoded pixels");
-      decoded_subrect_pixels.reset(
-          new uint8_t[decoded_info.minRowBytes() * decoded_info.height()]);
-    }
-    {
-      TRACE_EVENT0(
-          "disabled-by-default-cc.debug",
-          "SoftwareImageDecodeController::DecodeImageInternal - read pixels");
-      result =
-          image->readPixels(decoded_info, decoded_subrect_pixels.get(),
-                            decoded_info.minRowBytes(), key.src_rect().x(),
-                            key.src_rect().y(), SkImage::kDisallow_CachingHint);
-    }
-    decoded_pixmap = SkPixmap(decoded_info, decoded_subrect_pixels.get(),
-                              decoded_info.minRowBytes());
+  bool result = decoded_draw_image.image()->peekPixels(&decoded_pixmap);
+  DCHECK(result);
+  if (key.src_rect() != full_image_rect) {
+    result = decoded_pixmap.extractSubset(&decoded_pixmap,
+                                          gfx::RectToSkIRect(key.src_rect()));
+    DCHECK(result);
   }
 
-  // Since the decoded_draw_image has locked memory, it should always succeed on
-  // both peekPixels and readPixels.
-  DCHECK(result);
-
   // Now we have a decoded_pixmap which represents the src_rect at the
-  // original
-  // scale. All we need to do is scale it.
+  // original scale. All we need to do is scale it.
   DCHECK(!key.target_size().IsEmpty());
   SkImageInfo scaled_info = SkImageInfo::MakeN32Premul(
       key.target_size().width(), key.target_size().height());
