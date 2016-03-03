@@ -801,6 +801,8 @@ void HostProcess::CreateAuthenticatorFactory() {
 
     host_->set_pairing_registry(pairing_registry);
   } else {
+    // ThirdPartyAuthConfig::Parse() leaves the config in a valid state, so
+    // these URLs are both valid.
     DCHECK(third_party_auth_config_.token_url.is_valid());
     DCHECK(third_party_auth_config_.token_validation_url.is_valid());
 
@@ -1372,6 +1374,9 @@ bool HostProcess::OnHostTokenUrlPolicyUpdate(base::DictionaryValue* policies) {
       return true;
     case ThirdPartyAuthConfig::InvalidPolicy:
     default:
+      // Unreachable, because PolicyWatcher::OnPolicyUpdated() enforces that
+      // the policy is well-formed (including checks specific to
+      // ThirdPartyAuthConfig), before notifying of policy updates.
       NOTREACHED();
       return false;
   }
