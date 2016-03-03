@@ -28,12 +28,24 @@ namespace ui {
 GbmBuffer::GbmBuffer(const scoped_refptr<GbmDevice>& gbm,
                      gbm_bo* bo,
                      gfx::BufferFormat format,
-                     gfx::BufferUsage usage)
-    : GbmBufferBase(gbm, bo, format, usage), format_(format), usage_(usage) {}
+                     gfx::BufferUsage usage,
+                     base::ScopedFD fd)
+    : GbmBufferBase(gbm, bo, format, usage),
+      format_(format),
+      usage_(usage),
+      fd_(std::move(fd)) {}
 
 GbmBuffer::~GbmBuffer() {
   if (bo())
     gbm_bo_destroy(bo());
+}
+
+int GbmBuffer::GetFd() const {
+  return fd_.get();
+}
+
+int GbmBuffer::GetStride() const {
+  return gbm_bo_get_stride(bo());
 }
 
 // static
@@ -63,7 +75,17 @@ scoped_refptr<GbmBuffer> GbmBuffer::CreateBuffer(
   if (!bo)
     return nullptr;
 
-  scoped_refptr<GbmBuffer> buffer(new GbmBuffer(gbm, bo, format, usage));
+  // The fd returned by gbm_bo_get_fd is not ref-counted and need to be
+  // kept open for the lifetime of the buffer.
+  base::ScopedFD fd(gbm_bo_get_fd(bo));
+  if (!fd.is_valid()) {
+    PLOG(ERROR) << "Failed to export buffer to dma_buf";
+    gbm_bo_destroy(bo);
+    return nullptr;
+  }
+
+  scoped_refptr<GbmBuffer> buffer(
+      new GbmBuffer(gbm, bo, format, usage, std::move(fd)));
   if (usage == gfx::BufferUsage::SCANOUT && !buffer->GetFramebufferId())
     return nullptr;
 
@@ -95,35 +117,26 @@ scoped_refptr<GbmBuffer> GbmBuffer::CreateBufferFromFD(
   unsigned flags = 0;
   if (use_scanout)
     flags = GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING;
+
+  // The fd passed to gbm_bo_import is not ref-counted and need to be
+  // kept open for the lifetime of the buffer.
   gbm_bo* bo = gbm_bo_import(gbm->device(), GBM_BO_IMPORT_FD, &fd_data, flags);
   if (!bo)
     return nullptr;
 
-  scoped_refptr<GbmBuffer> buffer(
-      new GbmBuffer(gbm, bo, format, use_scanout ? gfx::BufferUsage::SCANOUT
-                                                 : gfx::BufferUsage::GPU_READ));
+  scoped_refptr<GbmBuffer> buffer(new GbmBuffer(
+      gbm, bo, format,
+      use_scanout ? gfx::BufferUsage::SCANOUT : gfx::BufferUsage::GPU_READ,
+      std::move(fd)));
   if (use_scanout && !buffer->GetFramebufferId())
     return nullptr;
 
   return buffer;
 }
 
-GbmPixmap::GbmPixmap(GbmSurfaceFactory* surface_manager)
-    : surface_manager_(surface_manager) {}
-
-bool GbmPixmap::Initialize(const scoped_refptr<GbmBuffer>& buffer) {
-  // We want to use the GBM API because it's going to call into libdrm
-  // which might do some optimizations on buffer allocation,
-  // especially when sharing buffers via DMABUF.
-  base::ScopedFD dma_buf(gbm_bo_get_fd(buffer->bo()));
-  if (!dma_buf.is_valid()) {
-    PLOG(ERROR) << "Failed to export buffer to dma_buf";
-    return false;
-  }
-  dma_buf_ = std::move(dma_buf);
-  buffer_ = buffer;
-  return true;
-}
+GbmPixmap::GbmPixmap(GbmSurfaceFactory* surface_manager,
+                     const scoped_refptr<GbmBuffer>& buffer)
+    : surface_manager_(surface_manager), buffer_(buffer) {}
 
 void GbmPixmap::SetProcessingCallback(
     const ProcessingCallback& processing_callback) {
@@ -134,14 +147,14 @@ void GbmPixmap::SetProcessingCallback(
 gfx::NativePixmapHandle GbmPixmap::ExportHandle() {
   gfx::NativePixmapHandle handle;
 
-  base::ScopedFD dmabuf_fd(HANDLE_EINTR(dup(dma_buf_.get())));
-  if (!dmabuf_fd.is_valid()) {
+  base::ScopedFD fd(HANDLE_EINTR(dup(buffer_->GetFd())));
+  if (!fd.is_valid()) {
     PLOG(ERROR) << "dup";
     return handle;
   }
 
-  handle.fd = base::FileDescriptor(dmabuf_fd.release(), true /* auto_close */);
-  handle.stride = gbm_bo_get_stride(buffer_->bo());
+  handle.fd = base::FileDescriptor(fd.release(), true /* auto_close */);
+  handle.stride = buffer_->GetStride();
   return handle;
 }
 
@@ -153,11 +166,11 @@ void* GbmPixmap::GetEGLClientBuffer() const {
 }
 
 int GbmPixmap::GetDmaBufFd() const {
-  return dma_buf_.get();
+  return buffer_->GetFd();
 }
 
 int GbmPixmap::GetDmaBufPitch() const {
-  return gbm_bo_get_stride(buffer_->bo());
+  return buffer_->GetStride();
 }
 
 gfx::BufferFormat GbmPixmap::GetBufferFormat() const {
@@ -173,12 +186,6 @@ bool GbmPixmap::ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
                                      gfx::OverlayTransform plane_transform,
                                      const gfx::Rect& display_bounds,
                                      const gfx::RectF& crop_rect) {
-  // TODO(reveman): Add support for imported buffers. crbug.com/541558
-  if (!buffer_) {
-    PLOG(ERROR) << "ScheduleOverlayPlane requires a buffer.";
-    return false;
-  }
-
   DCHECK(buffer_->GetUsage() == gfx::BufferUsage::SCANOUT);
   surface_manager_->GetSurface(widget)->QueueOverlayPlane(
       OverlayPlane(buffer_, plane_z_order, plane_transform, display_bounds,
@@ -200,13 +207,13 @@ scoped_refptr<ScanoutBuffer> GbmPixmap::ProcessBuffer(const gfx::Size& size,
 
     scoped_refptr<GbmBuffer> buffer = GbmBuffer::CreateBuffer(
         buffer_->drm().get(), buffer_format, size, buffer_->GetUsage());
+    if (!buffer)
+      return nullptr;
 
     // ProcessBuffer is called on DrmThread. We could have used
     // CreateNativePixmap to initialize the pixmap, however it posts a
     // synchronous task to DrmThread resulting in a deadlock.
-    processed_pixmap_ = new GbmPixmap(surface_manager_);
-    if (!processed_pixmap_->Initialize(buffer))
-      return nullptr;
+    processed_pixmap_ = new GbmPixmap(surface_manager_, buffer);
   }
 
   DCHECK(!processing_callback_.is_null());

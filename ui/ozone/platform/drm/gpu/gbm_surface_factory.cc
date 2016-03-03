@@ -105,11 +105,7 @@ scoped_refptr<ui::NativePixmap> GbmSurfaceFactory::CreateNativePixmap(
   if (!buffer.get())
     return nullptr;
 
-  scoped_refptr<GbmPixmap> pixmap(new GbmPixmap(this));
-  if (!pixmap->Initialize(buffer))
-    return nullptr;
-
-  return pixmap;
+  return make_scoped_refptr(new GbmPixmap(this, buffer));
 }
 
 scoped_refptr<ui::NativePixmap> GbmSurfaceFactory::CreateNativePixmapFromHandle(
@@ -121,11 +117,7 @@ scoped_refptr<ui::NativePixmap> GbmSurfaceFactory::CreateNativePixmapFromHandle(
   if (!buffer)
     return nullptr;
 
-  scoped_refptr<GbmPixmap> pixmap(new GbmPixmap(this));
-  if (!pixmap->Initialize(buffer))
-    return nullptr;
-
-  return pixmap;
+  return make_scoped_refptr(new GbmPixmap(this, buffer));
 }
 
 }  // namespace ui
