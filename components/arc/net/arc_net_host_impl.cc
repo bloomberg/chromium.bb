@@ -52,11 +52,36 @@ void ArcNetHostImpl::OnNetInstanceReady() {
   arc_bridge_service()->net_instance()->Init(std::move(host));
 }
 
-void ArcNetHostImpl::GetNetworks(bool configured_only,
-                                 bool visible_only,
+void ArcNetHostImpl::GetNetworksDeprecated(
+    bool configured_only,
+    bool visible_only,
+    const GetNetworksDeprecatedCallback& callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (configured_only && visible_only) {
+    VLOG(1) << "Illegal arguments - both configured and visible networks "
+               "requested.";
+    return;
+  }
+
+  GetNetworksRequestType type = GetNetworksRequestType::CONFIGURED_ONLY;
+  if (visible_only) {
+    type = GetNetworksRequestType::VISIBLE_ONLY;
+  }
+
+  GetNetworks(type, callback);
+}
+
+void ArcNetHostImpl::GetNetworks(GetNetworksRequestType type,
                                  const GetNetworksCallback& callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   NetworkDataPtr data = NetworkData::New();
-  data->status = NetworkResult::SUCCESS;
+  bool configured_only = true;
+  bool visible_only = false;
+  if (type == GetNetworksRequestType::VISIBLE_ONLY) {
+    configured_only = false;
+    visible_only = true;
+  }
 
   // Retrieve list of nearby wifi networks
   chromeos::NetworkTypePattern network_pattern =

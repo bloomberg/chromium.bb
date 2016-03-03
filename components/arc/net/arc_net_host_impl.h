@@ -33,8 +33,13 @@ class ArcNetHostImpl : public ArcService,
   ~ArcNetHostImpl() override;
 
   // Called when a GetNetworks call is sent from ARC.
-  void GetNetworks(bool configured_only,
-                   bool visible_only,
+  void GetNetworksDeprecated(
+      bool configured_only,
+      bool visible_only,
+      const GetNetworksDeprecatedCallback& callback) override;
+
+  // Called when a GetNetworks call is sent from ARC.
+  void GetNetworks(GetNetworksRequestType type,
                    const GetNetworksCallback& callback) override;
 
   // Called when a GetWifiEnabledState call is sent from ARC.
