@@ -293,7 +293,6 @@
       'tests/WebSelectorTest.cpp',
       'tests/WebURLRequestTest.cpp',
       'tests/WebURLResponseTest.cpp',
-      'tests/WebUnitTests.cpp',
       'tests/WebUserGestureTokenTest.cpp',
       'tests/WebViewTest.cpp',
       'tests/sim/SimCanvas.cpp',

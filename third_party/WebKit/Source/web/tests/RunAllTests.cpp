@@ -28,28 +28,43 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "public/platform/Platform.h"
-#include "public/web/WebKit.h"
-#include "web/tests/WebUnitTests.h"
-#include <content/test/blink_test_environment.h>
+#include "base/bind.h"
+#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
+#include "base/test/launcher/unit_test_launcher.h"
+#include "base/test/test_suite.h"
+#include "bindings/core/v8/V8GCController.h"
+#include "content/test/blink_test_environment.h"
+#include "platform/weborigin/SchemeRegistry.h"
+#include <v8.h>
 
 namespace {
 
-// Test helpers to support the fact that blink tests are gloriously complicated
-// in a shared library build. See WebUnitTests.h for more details.
-void preTestHook()
+int runHelper(base::TestSuite* testSuite)
 {
     content::SetUpBlinkTestEnvironment();
-}
+    blink::SchemeRegistry::initialize();
 
-void postTestHook()
-{
+    int result = testSuite->Run();
+
+    // Tickle EndOfTaskRunner which among other things will flush the queue
+    // of error messages via V8Initializer::reportRejectedPromisesOnMainThread.
+    base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(&base::DoNothing));
+    base::RunLoop().RunUntilIdle();
+
+    // Collect garbage in order to release mock objects referred from v8 or
+    // Oilpan heap. Otherwise false mock leaks will be reported.
+    blink::V8GCController::collectAllGarbageForTesting(v8::Isolate::GetCurrent());
+
     content::TearDownBlinkTestEnvironment();
+
+    return result;
 }
 
 } // namespace
 
 int main(int argc, char** argv)
 {
-    return blink::runWebTests(argc, argv, &preTestHook, &postTestHook);
+    base::TestSuite testSuite(argc, argv);
+    return base::LaunchUnitTests(argc, argv, base::Bind(&runHelper, base::Unretained(&testSuite)));
 }
