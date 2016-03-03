@@ -495,6 +495,10 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
   // properties, which updates property tree indices.
   sync_tree->UpdatePropertyTreeScrollingAndAnimationFromMainThread();
 
+  // This must happen after synchronizing property trees and after pushing
+  // properties, which updates the clobber_active_value flag.
+  sync_tree->UpdatePropertyTreeScrollOffset(&property_trees_);
+
   micro_benchmark_controller_.ScheduleImplBenchmarks(host_impl);
   // We don't track changes to effect tree on main thread. But, to preserve any
   // change tracking done on active tree's effect tree, we copy it to the main

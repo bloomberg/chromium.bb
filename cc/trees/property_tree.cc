@@ -10,11 +10,15 @@
 #include "base/logging.h"
 #include "cc/base/math_util.h"
 #include "cc/input/main_thread_scrolling_reason.h"
+#include "cc/layers/layer_impl.h"
 #include "cc/proto/gfx_conversions.h"
 #include "cc/proto/property_tree.pb.h"
 #include "cc/proto/scroll_offset.pb.h"
+#include "cc/proto/synced_property_conversions.h"
 #include "cc/proto/transform.pb.h"
 #include "cc/proto/vector2df.pb.h"
+#include "cc/trees/layer_tree_host_common.h"
+#include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/property_tree.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
 
@@ -1302,13 +1306,46 @@ void EffectTree::FromProtobuf(const proto::PropertyTree& proto) {
   PropertyTree::FromProtobuf(proto);
 }
 
-ScrollTree::ScrollTree() : currently_scrolling_node_id_(-1) {}
+ScrollTree::ScrollTree()
+    : currently_scrolling_node_id_(-1),
+      layer_id_to_scroll_offset_map_(ScrollTree::ScrollOffsetMap()) {}
 
 ScrollTree::~ScrollTree() {}
 
+ScrollTree& ScrollTree::operator=(const ScrollTree& from) {
+  PropertyTree::operator=(from);
+  currently_scrolling_node_id_ = -1;
+  // layer_id_to_scroll_offset_map_ is intentionally omitted in operator=,
+  // because we do not want to simply copy the map when property tree is
+  // propagating from pending to active.
+  // In the main to pending case, we do want to copy it, but this can be done by
+  // calling UpdateScrollOffsetMap after the assignment;
+  // In the other case, we want pending and active property trees to share the
+  // same map.
+  return *this;
+}
+
 bool ScrollTree::operator==(const ScrollTree& other) const {
-  return PropertyTree::operator==(other) &&
-         CurrentlyScrollingNode() == other.CurrentlyScrollingNode();
+  const ScrollTree::ScrollOffsetMap& other_scroll_offset_map =
+      other.scroll_offset_map();
+  if (layer_id_to_scroll_offset_map_.size() != other_scroll_offset_map.size())
+    return false;
+
+  for (auto map_entry : layer_id_to_scroll_offset_map_) {
+    int key = map_entry.first;
+    if (other_scroll_offset_map.find(key) == other_scroll_offset_map.end() ||
+        map_entry.second != layer_id_to_scroll_offset_map_.at(key))
+      return false;
+  }
+
+  bool is_currently_scrolling_node_equal =
+      (currently_scrolling_node_id_ == -1)
+          ? (!other.CurrentlyScrollingNode())
+          : (other.CurrentlyScrollingNode() &&
+             currently_scrolling_node_id_ ==
+                 other.CurrentlyScrollingNode()->id);
+
+  return PropertyTree::operator==(other) && is_currently_scrolling_node_equal;
 }
 
 void ScrollTree::ToProtobuf(proto::PropertyTree* proto) const {
@@ -1319,6 +1356,14 @@ void ScrollTree::ToProtobuf(proto::PropertyTree* proto) const {
   proto::ScrollTreeData* data = proto->mutable_scroll_tree_data();
 
   data->set_currently_scrolling_node_id(currently_scrolling_node_id_);
+  for (auto i : layer_id_to_scroll_offset_map_) {
+    data->add_layer_id_to_scroll_offset_map();
+    proto::ScrollOffsetMapEntry* entry =
+        data->mutable_layer_id_to_scroll_offset_map(
+            data->layer_id_to_scroll_offset_map_size() - 1);
+    entry->set_layer_id(i.first);
+    SyncedScrollOffsetToProto(*i.second.get(), entry->mutable_scroll_offset());
+  }
 }
 
 void ScrollTree::FromProtobuf(const proto::PropertyTree& proto) {
@@ -1329,6 +1374,24 @@ void ScrollTree::FromProtobuf(const proto::PropertyTree& proto) {
   const proto::ScrollTreeData& data = proto.scroll_tree_data();
 
   currently_scrolling_node_id_ = data.currently_scrolling_node_id();
+
+  for (int i = 0; i < data.layer_id_to_scroll_offset_map_size(); ++i) {
+    const proto::ScrollOffsetMapEntry entry =
+        data.layer_id_to_scroll_offset_map(i);
+    layer_id_to_scroll_offset_map_[entry.layer_id()] = new SyncedScrollOffset();
+    ProtoToSyncedScrollOffset(
+        entry.scroll_offset(),
+        layer_id_to_scroll_offset_map_[entry.layer_id()].get());
+  }
+}
+
+void ScrollTree::clear() {
+  PropertyTree<ScrollNode>::clear();
+
+  if (property_trees()->is_main_thread) {
+    currently_scrolling_node_id_ = -1;
+    layer_id_to_scroll_offset_map_.clear();
+  }
 }
 
 gfx::ScrollOffset ScrollTree::MaxScrollOffset(int scroll_node_id) const {
@@ -1414,12 +1477,130 @@ gfx::Transform ScrollTree::ScreenSpaceTransform(int scroll_node_id) const {
   return screen_space_transform;
 }
 
+// TODO(sunxd): Make this function private once scroll offset access is fully
+// directed to scroll tree.
+SyncedScrollOffset* ScrollTree::synced_scroll_offset(int layer_id) {
+  if (layer_id_to_scroll_offset_map_.find(layer_id) ==
+      layer_id_to_scroll_offset_map_.end()) {
+    layer_id_to_scroll_offset_map_[layer_id] = new SyncedScrollOffset;
+  }
+  return layer_id_to_scroll_offset_map_[layer_id].get();
+}
+
+gfx::ScrollOffset ScrollTree::PullDeltaForMainThread(
+    SyncedScrollOffset* scroll_offset) {
+  // TODO(miletus): Remove all this temporary flooring machinery when
+  // Blink fully supports fractional scrolls.
+  gfx::ScrollOffset current_offset =
+      scroll_offset->Current(property_trees()->is_active);
+  gfx::ScrollOffset current_delta = property_trees()->is_active
+                                        ? scroll_offset->Delta()
+                                        : scroll_offset->PendingDelta().get();
+  gfx::ScrollOffset floored_delta(floor(current_delta.x()),
+                                  floor(current_delta.y()));
+  gfx::ScrollOffset diff_delta = floored_delta - current_delta;
+  gfx::ScrollOffset tmp_offset = current_offset + diff_delta;
+  scroll_offset->SetCurrent(tmp_offset);
+  gfx::ScrollOffset delta = scroll_offset->PullDeltaForMainThread();
+  scroll_offset->SetCurrent(current_offset);
+  return delta;
+}
+
+void ScrollTree::CollectScrollDeltas(ScrollAndScaleSet* scroll_info) {
+  for (auto map_entry : layer_id_to_scroll_offset_map_) {
+    gfx::ScrollOffset scroll_delta =
+        PullDeltaForMainThread(map_entry.second.get());
+
+    if (!scroll_delta.IsZero()) {
+      LayerTreeHostCommon::ScrollUpdateInfo scroll;
+      scroll.layer_id = map_entry.first;
+      scroll.scroll_delta = gfx::Vector2d(scroll_delta.x(), scroll_delta.y());
+      scroll_info->scrolls.push_back(scroll);
+    }
+  }
+}
+
+void ScrollTree::UpdateScrollOffsetMapEntry(
+    int key,
+    ScrollTree::ScrollOffsetMap* new_scroll_offset_map,
+    LayerTreeImpl* layer_tree_impl) {
+  bool changed = false;
+  // If we are pushing scroll offset from main to pending tree, we create a new
+  // instance of synced scroll offset; if we are pushing from pending to active,
+  // we reuse the pending tree's value in the map.
+  if (!property_trees()->is_active) {
+    changed = synced_scroll_offset(key)->PushFromMainThread(
+        new_scroll_offset_map->at(key)->PendingBase());
+
+    if (new_scroll_offset_map->at(key)->clobber_active_value()) {
+      synced_scroll_offset(key)->set_clobber_active_value();
+    }
+    if (changed)
+      layer_tree_impl->LayerById(key)->DidUpdateScrollOffset();
+  } else {
+    layer_id_to_scroll_offset_map_[key] = new_scroll_offset_map->at(key);
+    changed |= synced_scroll_offset(key)->PushPendingToActive();
+    if (changed)
+      layer_tree_impl->LayerById(key)->DidUpdateScrollOffset();
+  }
+}
+
+void ScrollTree::UpdateScrollOffsetMap(
+    ScrollTree::ScrollOffsetMap* new_scroll_offset_map,
+    LayerTreeImpl* layer_tree_impl) {
+  if (layer_tree_impl && layer_tree_impl->root_layer()) {
+    DCHECK(!property_trees()->is_main_thread);
+    for (auto map_entry = layer_id_to_scroll_offset_map_.begin();
+         map_entry != layer_id_to_scroll_offset_map_.end();) {
+      int key = map_entry->first;
+      if (new_scroll_offset_map->find(key) != new_scroll_offset_map->end()) {
+        UpdateScrollOffsetMapEntry(key, new_scroll_offset_map, layer_tree_impl);
+        ++map_entry;
+      } else {
+        map_entry = layer_id_to_scroll_offset_map_.erase(map_entry);
+      }
+    }
+
+    for (auto& map_entry : *new_scroll_offset_map) {
+      int key = map_entry.first;
+      if (layer_id_to_scroll_offset_map_.find(key) ==
+          layer_id_to_scroll_offset_map_.end())
+        UpdateScrollOffsetMapEntry(key, new_scroll_offset_map, layer_tree_impl);
+    }
+  }
+}
+
+ScrollTree::ScrollOffsetMap& ScrollTree::scroll_offset_map() {
+  return layer_id_to_scroll_offset_map_;
+}
+
+const ScrollTree::ScrollOffsetMap& ScrollTree::scroll_offset_map() const {
+  return layer_id_to_scroll_offset_map_;
+}
+
+void ScrollTree::ApplySentScrollDeltasFromAbortedCommit() {
+  DCHECK(property_trees()->is_active);
+  for (auto& map_entry : layer_id_to_scroll_offset_map_)
+    map_entry.second->AbortCommit();
+}
+
+bool ScrollTree::SetScrollOffset(int layer_id,
+                                 const gfx::ScrollOffset& scroll_offset) {
+  if (property_trees()->is_main_thread)
+    return synced_scroll_offset(layer_id)->PushFromMainThread(scroll_offset);
+  else if (property_trees()->is_active)
+    return synced_scroll_offset(layer_id)->SetCurrent(scroll_offset);
+  return false;
+}
+
 PropertyTrees::PropertyTrees()
     : needs_rebuild(true),
       non_root_surfaces_enabled(true),
       changed(false),
       full_tree_damaged(false),
-      sequence_number(0) {
+      sequence_number(0),
+      is_main_thread(true),
+      is_active(false) {
   transform_tree.SetPropertyTrees(this);
   effect_tree.SetPropertyTrees(this);
   clip_tree.SetPropertyTrees(this);
@@ -1434,6 +1615,8 @@ bool PropertyTrees::operator==(const PropertyTrees& other) const {
          scroll_tree == other.scroll_tree &&
          needs_rebuild == other.needs_rebuild && changed == other.changed &&
          full_tree_damaged == other.full_tree_damaged &&
+         is_main_thread == other.is_main_thread &&
+         is_active == other.is_active &&
          non_root_surfaces_enabled == other.non_root_surfaces_enabled &&
          sequence_number == other.sequence_number;
 }
@@ -1448,6 +1631,8 @@ PropertyTrees& PropertyTrees::operator=(const PropertyTrees& from) {
   full_tree_damaged = from.full_tree_damaged;
   non_root_surfaces_enabled = from.non_root_surfaces_enabled;
   sequence_number = from.sequence_number;
+  is_main_thread = from.is_main_thread;
+  is_active = from.is_active;
   inner_viewport_container_bounds_delta_ =
       from.inner_viewport_container_bounds_delta();
   outer_viewport_container_bounds_delta_ =
@@ -1472,6 +1657,8 @@ void PropertyTrees::ToProtobuf(proto::PropertyTrees* proto) const {
   proto->set_changed(changed);
   proto->set_full_tree_damaged(full_tree_damaged);
   proto->set_non_root_surfaces_enabled(non_root_surfaces_enabled);
+  proto->set_is_main_thread(is_main_thread);
+  proto->set_is_active(is_active);
 
   // TODO(khushalsagar): Consider using the sequence number to decide if
   // property trees need to be serialized again for a commit. See crbug/555370.
@@ -1490,6 +1677,8 @@ void PropertyTrees::FromProtobuf(const proto::PropertyTrees& proto) {
   full_tree_damaged = proto.full_tree_damaged();
   non_root_surfaces_enabled = proto.non_root_surfaces_enabled();
   sequence_number = proto.sequence_number();
+  is_main_thread = proto.is_main_thread();
+  is_active = proto.is_active();
 
   transform_tree.SetPropertyTrees(this);
   effect_tree.SetPropertyTrees(this);

@@ -43,13 +43,7 @@
 #include "ui/gfx/geometry/vector2d_conversions.h"
 
 namespace cc {
-LayerImpl::LayerImpl(LayerTreeImpl* layer_impl, int id)
-    : LayerImpl(layer_impl, id, new LayerImpl::SyncedScrollOffset) {
-}
-
-LayerImpl::LayerImpl(LayerTreeImpl* tree_impl,
-                     int id,
-                     scoped_refptr<SyncedScrollOffset> scroll_offset)
+LayerImpl::LayerImpl(LayerTreeImpl* tree_impl, int id)
     : parent_(nullptr),
       scroll_parent_(nullptr),
       clip_parent_(nullptr),
@@ -57,7 +51,6 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl,
       replica_layer_id_(-1),
       layer_id_(id),
       layer_tree_impl_(tree_impl),
-      scroll_offset_(scroll_offset),
       scroll_clip_layer_id_(Layer::INVALID_ID),
       main_thread_scrolling_reasons_(
           MainThreadScrollingReason::kNotScrollingOnMain),
@@ -490,17 +483,12 @@ bool LayerImpl::user_scrollable(ScrollbarOrientation orientation) const {
                                      : user_scrollable_vertical_;
 }
 
-void LayerImpl::ApplySentScrollDeltasFromAbortedCommit() {
-  DCHECK(layer_tree_impl()->IsActiveTree());
-  scroll_offset_->AbortCommit();
-}
-
 skia::RefPtr<SkPicture> LayerImpl::GetPicture() {
   return skia::RefPtr<SkPicture>();
 }
 
 scoped_ptr<LayerImpl> LayerImpl::CreateLayerImpl(LayerTreeImpl* tree_impl) {
-  return LayerImpl::Create(tree_impl, layer_id_, scroll_offset_);
+  return LayerImpl::Create(tree_impl, layer_id_);
 }
 
 void LayerImpl::set_main_thread_scrolling_reasons(
@@ -572,8 +560,6 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   layer->set_user_scrollable_vertical(user_scrollable_vertical_);
 
   layer->SetScrollCompensationAdjustment(scroll_compensation_adjustment_);
-
-  layer->PushScrollOffset(nullptr);
 
   layer->Set3dSortingContextId(sorting_context_id_);
   layer->SetNumDescendantsThatDrawContent(num_descendants_that_draw_content_);
@@ -1302,6 +1288,16 @@ void LayerImpl::GatherFrameTimingRequestIds(std::vector<int64_t>* request_ids) {
     request_ids->push_back(request.id());
 }
 
+const SyncedScrollOffset* LayerImpl::synced_scroll_offset() const {
+  return layer_tree_impl()->property_trees()->scroll_tree.synced_scroll_offset(
+      id());
+}
+
+SyncedScrollOffset* LayerImpl::synced_scroll_offset() {
+  return layer_tree_impl()->property_trees()->scroll_tree.synced_scroll_offset(
+      id());
+}
+
 void LayerImpl::SetTransform(const gfx::Transform& transform) {
   if (transform_ == transform)
     return;
@@ -1446,74 +1442,45 @@ void LayerImpl::AddDamageRect(const gfx::Rect& damage_rect) {
 
 void LayerImpl::SetCurrentScrollOffset(const gfx::ScrollOffset& scroll_offset) {
   DCHECK(IsActive());
-  if (scroll_offset_->SetCurrent(scroll_offset))
+  if (synced_scroll_offset()->SetCurrent(scroll_offset))
     DidUpdateScrollOffset();
 }
 
-void LayerImpl::PushScrollOffsetFromMainThread(
-    const gfx::ScrollOffset& scroll_offset) {
-  PushScrollOffset(&scroll_offset);
-}
-
-void LayerImpl::PushScrollOffsetFromMainThreadAndClobberActiveValue(
-    const gfx::ScrollOffset& scroll_offset) {
-  scroll_offset_->set_clobber_active_value();
-  PushScrollOffset(&scroll_offset);
-}
-
-gfx::ScrollOffset LayerImpl::PullDeltaForMainThread() {
-  // TODO(miletus): Remove all this temporary flooring machinery when
-  // Blink fully supports fractional scrolls.
-  gfx::ScrollOffset current_offset = CurrentScrollOffset();
-  gfx::ScrollOffset current_delta = IsActive()
-      ? scroll_offset_->Delta()
-      : scroll_offset_->PendingDelta().get();
-  gfx::ScrollOffset floored_delta(floor(current_delta.x()),
-                                  floor(current_delta.y()));
-  gfx::ScrollOffset diff_delta = floored_delta - current_delta;
-  gfx::ScrollOffset tmp_offset = current_offset + diff_delta;
-  scroll_offset_->SetCurrent(tmp_offset);
-  gfx::ScrollOffset delta = scroll_offset_->PullDeltaForMainThread();
-  scroll_offset_->SetCurrent(current_offset);
-  return delta;
-}
-
 gfx::ScrollOffset LayerImpl::CurrentScrollOffset() const {
-  return scroll_offset_->Current(IsActive());
+  return synced_scroll_offset()->Current(IsActive());
 }
 
 gfx::Vector2dF LayerImpl::ScrollDelta() const {
   if (IsActive())
-    return gfx::Vector2dF(scroll_offset_->Delta().x(),
-                          scroll_offset_->Delta().y());
+    return gfx::Vector2dF(synced_scroll_offset()->Delta().x(),
+                          synced_scroll_offset()->Delta().y());
   else
-    return gfx::Vector2dF(scroll_offset_->PendingDelta().get().x(),
-                          scroll_offset_->PendingDelta().get().y());
+    return gfx::Vector2dF(synced_scroll_offset()->PendingDelta().get().x(),
+                          synced_scroll_offset()->PendingDelta().get().y());
 }
 
 void LayerImpl::SetScrollDelta(const gfx::Vector2dF& delta) {
   DCHECK(IsActive());
   DCHECK(scrollable() || delta.IsZero());
-  SetCurrentScrollOffset(scroll_offset_->ActiveBase() +
+  SetCurrentScrollOffset(synced_scroll_offset()->ActiveBase() +
                          gfx::ScrollOffset(delta));
 }
 
 gfx::ScrollOffset LayerImpl::BaseScrollOffset() const {
   if (IsActive())
-    return scroll_offset_->ActiveBase();
+    return synced_scroll_offset()->ActiveBase();
   else
-    return scroll_offset_->PendingBase();
+    return synced_scroll_offset()->PendingBase();
 }
 
-void LayerImpl::PushScrollOffset(const gfx::ScrollOffset* scroll_offset) {
-  DCHECK(scroll_offset || IsActive());
+void LayerImpl::PushScrollOffsetFromMainThread(
+    const gfx::ScrollOffset& scroll_offset) {
   bool changed = false;
-  if (scroll_offset) {
-    DCHECK(!IsActive() || !layer_tree_impl_->FindPendingTreeLayerById(id()));
-    changed |= scroll_offset_->PushFromMainThread(*scroll_offset);
-  }
+  DCHECK(!IsActive() || !layer_tree_impl_->FindPendingTreeLayerById(id()));
+  changed |= synced_scroll_offset()->PushFromMainThread(scroll_offset);
+
   if (IsActive()) {
-    changed |= scroll_offset_->PushPendingToActive();
+    changed |= synced_scroll_offset()->PushPendingToActive();
   }
 
   if (changed)
@@ -1527,7 +1494,8 @@ void LayerImpl::UpdatePropertyTreeScrollOffset() {
     TransformTree& transform_tree =
         layer_tree_impl()->property_trees()->transform_tree;
     TransformNode* node = transform_tree.Node(transform_tree_index_);
-    gfx::ScrollOffset current_offset = scroll_offset_->Current(IsActive());
+    gfx::ScrollOffset current_offset =
+        synced_scroll_offset()->Current(IsActive());
     if (node->data.scroll_offset != current_offset) {
       node->data.scroll_offset = current_offset;
       node->data.needs_local_transform_update = true;
@@ -1537,8 +1505,6 @@ void LayerImpl::UpdatePropertyTreeScrollOffset() {
 }
 
 void LayerImpl::DidUpdateScrollOffset() {
-  DCHECK(scroll_offset_);
-
   layer_tree_impl()->DidUpdateScrollState(id());
 
   if (transform_tree_index_ != -1) {
@@ -1653,10 +1619,11 @@ void LayerImpl::AsValueInto(base::trace_event::TracedValue* state) const {
     state->SetInteger("mutable_properties", mutable_properties_);
   }
 
-  MathUtil::AddToTracedValue(
-      "scroll_offset", scroll_offset_ ? scroll_offset_->Current(IsActive())
-                                      : gfx::ScrollOffset(),
-      state);
+  MathUtil::AddToTracedValue("scroll_offset",
+                             synced_scroll_offset()
+                                 ? synced_scroll_offset()->Current(IsActive())
+                                 : gfx::ScrollOffset(),
+                             state);
 
   MathUtil::AddToTracedValue("transform_origin", transform_origin_, state);
 

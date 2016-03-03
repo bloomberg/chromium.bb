@@ -113,6 +113,7 @@ class SyncedProperty : public base::RefCounted<SyncedProperty<T>> {
   }
 
   void set_clobber_active_value() { clobber_active_value_ = true; }
+  bool clobber_active_value() const { return clobber_active_value_; }
 
  private:
   // Value last committed to the pending tree.

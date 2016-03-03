@@ -337,8 +337,7 @@ TEST(LayerImplTest, VerifyNeedsUpdateDrawProperties) {
       layer->SetScrollDelta(arbitrary_vector2d));
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->PushScrollOffsetFromMainThread(
       gfx::ScrollOffset(arbitrary_vector2d)));
-  VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(layer->PushScrollOffsetFromMainThread(
-      gfx::ScrollOffset(arbitrary_vector2d)));
+  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->DidUpdateScrollOffset());
 
   // Unrelated functions, always set to new values, always set needs update.
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(
@@ -570,7 +569,7 @@ TEST_F(LayerImplScrollTest, ApplySentScrollsNoListener) {
 
   layer()->PushScrollOffsetFromMainThread(scroll_offset);
   layer()->ScrollBy(sent_scroll_delta);
-  layer()->PullDeltaForMainThread();
+  layer()->synced_scroll_offset()->PullDeltaForMainThread();
   layer()->SetCurrentScrollOffset(scroll_offset +
                                   gfx::ScrollOffset(scroll_delta));
 
@@ -579,7 +578,7 @@ TEST_F(LayerImplScrollTest, ApplySentScrollsNoListener) {
   EXPECT_VECTOR_EQ(scroll_delta, layer()->ScrollDelta());
   EXPECT_VECTOR_EQ(scroll_offset, layer()->BaseScrollOffset());
 
-  layer()->ApplySentScrollDeltasFromAbortedCommit();
+  layer()->synced_scroll_offset()->AbortCommit();
 
   EXPECT_VECTOR_EQ(gfx::ScrollOffsetWithDelta(scroll_offset, scroll_delta),
                    layer()->CurrentScrollOffset());
@@ -612,10 +611,10 @@ TEST_F(LayerImplScrollTest, PushPropertiesToMirrorsCurrentScrollOffset) {
   EXPECT_VECTOR_EQ(gfx::Vector2dF(0, 0), unscrolled);
   EXPECT_VECTOR_EQ(gfx::Vector2dF(22, 23), layer()->CurrentScrollOffset());
 
-  layer()->PullDeltaForMainThread();
+  layer()->synced_scroll_offset()->PullDeltaForMainThread();
 
-  scoped_ptr<LayerImpl> pending_layer = LayerImpl::Create(
-      host_impl().sync_tree(), layer()->id(), layer()->synced_scroll_offset());
+  scoped_ptr<LayerImpl> pending_layer =
+      LayerImpl::Create(host_impl().sync_tree(), layer()->id());
   pending_layer->PushScrollOffsetFromMainThread(layer()->CurrentScrollOffset());
 
   pending_layer->PushPropertiesTo(layer());

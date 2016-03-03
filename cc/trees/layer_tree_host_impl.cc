@@ -3249,16 +3249,9 @@ static void CollectScrollDeltas(ScrollAndScaleSet* scroll_info,
   if (!root_layer)
     return;
 
-  for (auto* layer : *root_layer->layer_tree_impl()) {
-    gfx::ScrollOffset scroll_delta = layer->PullDeltaForMainThread();
-
-    if (!scroll_delta.IsZero()) {
-      LayerTreeHostCommon::ScrollUpdateInfo scroll;
-      scroll.layer_id = layer->id();
-      scroll.scroll_delta = gfx::Vector2d(scroll_delta.x(), scroll_delta.y());
-      scroll_info->scrolls.push_back(scroll);
-    }
-  }
+  return root_layer->layer_tree_impl()
+      ->property_trees()
+      ->scroll_tree.CollectScrollDeltas(scroll_info);
 }
 
 scoped_ptr<ScrollAndScaleSet> LayerTreeHostImpl::ProcessScrollDeltas() {

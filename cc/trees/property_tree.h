@@ -7,9 +7,11 @@
 
 #include <stddef.h>
 
+#include <unordered_map>
 #include <vector>
 
 #include "cc/base/cc_export.h"
+#include "cc/base/synced_property.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/scroll_offset.h"
 #include "ui/gfx/transform.h"
@@ -27,12 +29,17 @@ class TransformTreeData;
 class TreeNode;
 }
 
+class LayerTreeImpl;
+struct ScrollAndScaleSet;
+
 // ------------------------------*IMPORTANT*---------------------------------
 // Each class declared here has a corresponding proto defined in
 // cc/proto/property_tree.proto. When making any changes to a class structure
 // including addition/deletion/updation of a field, please also make the
 // change to its proto and the ToProtobuf and FromProtobuf methods for that
 // class.
+
+typedef SyncedProperty<AdditionGroup<gfx::ScrollOffset>> SyncedScrollOffset;
 
 template <typename T>
 struct CC_EXPORT TreeNode {
@@ -551,10 +558,16 @@ class CC_EXPORT ScrollTree final : public PropertyTree<ScrollNode> {
   ScrollTree();
   ~ScrollTree() override;
 
+  ScrollTree& operator=(const ScrollTree& from);
   bool operator==(const ScrollTree& other) const;
 
   void ToProtobuf(proto::PropertyTree* proto) const;
   void FromProtobuf(const proto::PropertyTree& proto);
+
+  void clear() override;
+
+  typedef std::unordered_map<int, scoped_refptr<SyncedScrollOffset>>
+      ScrollOffsetMap;
 
   gfx::ScrollOffset MaxScrollOffset(int scroll_node_id) const;
   gfx::Size scroll_clip_layer_bounds(int scroll_node_id) const;
@@ -563,8 +576,24 @@ class CC_EXPORT ScrollTree final : public PropertyTree<ScrollNode> {
   void set_currently_scrolling_node(int scroll_node_id);
   gfx::Transform ScreenSpaceTransform(int scroll_node_id) const;
 
+  // synced_scroll_offset is supposed to be called by Layer/LayerImpl only
+  SyncedScrollOffset* synced_scroll_offset(int layer_id);
+  void CollectScrollDeltas(ScrollAndScaleSet* scroll_info);
+  void UpdateScrollOffsetMap(ScrollOffsetMap* new_scroll_offset_map,
+                             LayerTreeImpl* layer_tree_impl);
+  ScrollOffsetMap& scroll_offset_map();
+  const ScrollOffsetMap& scroll_offset_map() const;
+  void ApplySentScrollDeltasFromAbortedCommit();
+  bool SetScrollOffset(int layer_id, const gfx::ScrollOffset& scroll_offset);
+
  private:
   int currently_scrolling_node_id_;
+  ScrollOffsetMap layer_id_to_scroll_offset_map_;
+
+  gfx::ScrollOffset PullDeltaForMainThread(SyncedScrollOffset* scroll_offset);
+  void UpdateScrollOffsetMapEntry(int key,
+                                  ScrollOffsetMap* new_scroll_offset_map,
+                                  LayerTreeImpl* layer_tree_impl);
 };
 
 class CC_EXPORT PropertyTrees final {
@@ -596,6 +625,8 @@ class CC_EXPORT PropertyTrees final {
   // individual nodes.
   bool full_tree_damaged;
   int sequence_number;
+  bool is_main_thread;
+  bool is_active;
   enum ResetFlags { EFFECT_TREE, TRANSFORM_TREE, ALL_TREES };
 
   void SetInnerViewportContainerBoundsDelta(gfx::Vector2dF bounds_delta);

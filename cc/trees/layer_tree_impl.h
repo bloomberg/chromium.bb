@@ -135,8 +135,10 @@ class CC_EXPORT LayerTreeImpl {
   void SetRootLayer(scoped_ptr<LayerImpl>);
   scoped_ptr<LayerImpl> DetachLayerTree();
 
-  void SetPropertyTrees(const PropertyTrees& property_trees) {
+  void SetPropertyTrees(const PropertyTrees property_trees) {
     property_trees_ = property_trees;
+    property_trees_.is_main_thread = false;
+    property_trees_.is_active = IsActiveTree();
     property_trees_.transform_tree.set_source_to_parent_updates_allowed(false);
   }
   PropertyTrees* property_trees() { return &property_trees_; }
@@ -216,6 +218,10 @@ class CC_EXPORT LayerTreeImpl {
   }
 
   void UpdatePropertyTreeScrollingAndAnimationFromMainThread();
+  void UpdatePropertyTreeScrollOffset(PropertyTrees* property_trees) {
+    property_trees_.scroll_tree.UpdateScrollOffsetMap(
+        &property_trees->scroll_tree.scroll_offset_map(), this);
+  }
   void SetPageScaleOnActiveTree(float active_page_scale);
   void PushPageScaleFromMainThread(float page_scale_factor,
                                    float min_page_scale_factor,

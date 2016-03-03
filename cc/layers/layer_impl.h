@@ -83,19 +83,11 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
                             public LayerAnimationValueProvider,
                             public AnimationDelegate {
  public:
-  typedef SyncedProperty<AdditionGroup<gfx::ScrollOffset>> SyncedScrollOffset;
   typedef LayerImplList RenderSurfaceListType;
   typedef LayerImplList LayerListType;
   typedef RenderSurfaceImpl RenderSurfaceType;
 
   enum RenderingContextConstants { NO_RENDERING_CONTEXT = 0 };
-
-  static scoped_ptr<LayerImpl> Create(
-      LayerTreeImpl* tree_impl,
-      int id,
-      scoped_refptr<SyncedScrollOffset> scroll_offset) {
-    return make_scoped_ptr(new LayerImpl(tree_impl, id, scroll_offset));
-  }
 
   static scoped_ptr<LayerImpl> Create(LayerTreeImpl* tree_impl, int id) {
     return make_scoped_ptr(new LayerImpl(tree_impl, id));
@@ -460,13 +452,12 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   gfx::Vector2dF bounds_delta() const { return bounds_delta_; }
 
   void SetCurrentScrollOffset(const gfx::ScrollOffset& scroll_offset);
+  // must only be called by tests when updating scroll offset of a single layer,
+  // the standard process to update scroll offsets is to call
+  // ScrollTree::UpdateScrollOffsetMap() which updates scroll offsets of all
+  // layers.
   void PushScrollOffsetFromMainThread(const gfx::ScrollOffset& scroll_offset);
-  // This method is similar to PushScrollOffsetFromMainThread but will cause the
-  // scroll offset given to clobber any scroll changes on the active tree in the
-  // time until this value is pushed to the active tree.
-  void PushScrollOffsetFromMainThreadAndClobberActiveValue(
-      const gfx::ScrollOffset& scroll_offset);
-  gfx::ScrollOffset PullDeltaForMainThread();
+
   gfx::ScrollOffset CurrentScrollOffset() const;
   gfx::ScrollOffset BaseScrollOffset() const;
   gfx::Vector2dF ScrollDelta() const;
@@ -503,8 +494,6 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   bool user_scrollable_vertical() const { return user_scrollable_vertical_; }
 
   bool user_scrollable(ScrollbarOrientation orientation) const;
-
-  void ApplySentScrollDeltasFromAbortedCommit();
 
   void set_main_thread_scrolling_reasons(
       uint32_t main_thread_scrolling_reasons);
@@ -634,7 +623,8 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   }
   void GatherFrameTimingRequestIds(std::vector<int64_t>* request_ids);
 
-  SyncedScrollOffset* synced_scroll_offset() { return scroll_offset_.get(); }
+  const SyncedScrollOffset* synced_scroll_offset() const;
+  SyncedScrollOffset* synced_scroll_offset();
 
   // Get the correct invalidation region instead of conservative Rect
   // for layers that provide it.
@@ -684,6 +674,7 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   }
 
   void NoteLayerPropertyChanged();
+  void DidUpdateScrollOffset();
 
   void PushLayerPropertyChangedForSubtree();
 
@@ -712,8 +703,6 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
  private:
   void ValidateQuadResourcesInternal(DrawQuad* quad) const;
 
-  void PushScrollOffset(const gfx::ScrollOffset* scroll_offset);
-  void DidUpdateScrollOffset();
   void NoteLayerPropertyChangedForDescendantsInternal();
   void PushLayerPropertyChangedForSubtreeInternal();
 
@@ -743,8 +732,6 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   int layer_id_;
   LayerTreeImpl* layer_tree_impl_;
 
-  // Properties dynamically changeable on active tree.
-  scoped_refptr<SyncedScrollOffset> scroll_offset_;
   gfx::Vector2dF bounds_delta_;
 
   // Properties synchronized from the associated Layer.

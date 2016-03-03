@@ -92,6 +92,7 @@
       'proto/gfx_conversions_unittest.cc',
       'proto/gpu_conversions_unittest.cc',
       'proto/skia_conversions_unittest.cc',
+      'proto/synced_property_conversions_unittest.cc',
       'quads/draw_polygon_unittest.cc',
       'quads/draw_quad_unittest.cc',
       'quads/render_pass_unittest.cc',

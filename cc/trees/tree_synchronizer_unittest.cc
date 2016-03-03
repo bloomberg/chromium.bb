@@ -219,6 +219,24 @@ class TreeSynchronizerTest : public testing::Test {
   TestTaskGraphRunner task_graph_runner_;
   scoped_ptr<FakeLayerTreeHost> host_;
   LayerSettings layer_settings_;
+
+  bool is_equal(ScrollTree::ScrollOffsetMap map,
+                ScrollTree::ScrollOffsetMap other) {
+    if (map.size() != other.size())
+      return false;
+    for (auto& map_entry : map) {
+      if (other.find(map_entry.first) == other.end())
+        return false;
+      SyncedScrollOffset& from_map = *map_entry.second.get();
+      SyncedScrollOffset& from_other = *other[map_entry.first].get();
+      if (from_map.PendingBase() != from_other.PendingBase() ||
+          from_map.ActiveBase() != from_other.ActiveBase() ||
+          from_map.Delta() != from_other.Delta() ||
+          from_map.PendingDelta().get() != from_other.PendingDelta().get())
+        return false;
+    }
+    return true;
+  }
 };
 
 // Attempts to synchronizes a null tree. This should not crash, and should
@@ -798,6 +816,103 @@ TEST_F(TreeSynchronizerTest, SynchronizeCurrentlyScrollingNode) {
 
   EXPECT_EQ(scroll_layer->id(),
             host_impl->active_tree()->CurrentlyScrollingLayer()->id());
+}
+
+TEST_F(TreeSynchronizerTest, SynchronizeScrollTreeScrollOffsetMap) {
+  host_->InitializeSingleThreaded(&client_, base::ThreadTaskRunnerHandle::Get(),
+                                  nullptr);
+  LayerTreeSettings settings;
+  FakeLayerTreeHostImplClient client;
+  FakeImplTaskRunnerProvider task_runner_provider;
+  FakeRenderingStatsInstrumentation stats_instrumentation;
+  TestSharedBitmapManager shared_bitmap_manager;
+  TestTaskGraphRunner task_graph_runner;
+  FakeLayerTreeHostImpl* host_impl = host_->host_impl();
+  host_impl->CreatePendingTree();
+
+  scoped_refptr<Layer> layer_tree_root = Layer::Create(layer_settings_);
+  scoped_refptr<Layer> scroll_clip_layer = Layer::Create(layer_settings_);
+  scoped_refptr<Layer> scroll_layer = Layer::Create(layer_settings_);
+  scoped_refptr<Layer> transient_scroll_clip_layer =
+      Layer::Create(layer_settings_);
+  scoped_refptr<Layer> transient_scroll_layer = Layer::Create(layer_settings_);
+
+  layer_tree_root->AddChild(transient_scroll_clip_layer);
+  transient_scroll_clip_layer->AddChild(transient_scroll_layer);
+  transient_scroll_layer->AddChild(scroll_clip_layer);
+  scroll_clip_layer->AddChild(scroll_layer);
+
+  transient_scroll_layer->SetScrollClipLayerId(
+      transient_scroll_clip_layer->id());
+  scroll_layer->SetScrollClipLayerId(scroll_clip_layer->id());
+  transient_scroll_layer->SetScrollOffset(gfx::ScrollOffset(1, 2));
+  scroll_layer->SetScrollOffset(gfx::ScrollOffset(10, 20));
+
+  host_->SetRootLayer(layer_tree_root);
+  host_->BuildPropertyTreesForTesting();
+  host_->CommitAndCreatePendingTree();
+  host_impl->ActivateSyncTree();
+
+  ExpectTreesAreIdentical(layer_tree_root.get(),
+                          host_impl->active_tree()->root_layer(),
+                          host_impl->active_tree());
+
+  // After the initial commit, scroll_offset_map in scroll_tree is expected to
+  // have one entry for scroll_layer and one entry for transient_scroll_layer,
+  // the pending base and active base must be the same at this stage.
+  ScrollTree::ScrollOffsetMap scroll_offset_map;
+  scroll_offset_map[scroll_layer->id()] = new SyncedScrollOffset;
+  scroll_offset_map[transient_scroll_layer->id()] = new SyncedScrollOffset;
+  scroll_offset_map[scroll_layer->id()]->PushFromMainThread(
+      scroll_layer->scroll_offset());
+  scroll_offset_map[scroll_layer->id()]->PushPendingToActive();
+  scroll_offset_map[transient_scroll_layer->id()]->PushFromMainThread(
+      transient_scroll_layer->scroll_offset());
+  scroll_offset_map[transient_scroll_layer->id()]->PushPendingToActive();
+  EXPECT_TRUE(
+      is_equal(scroll_offset_map, host_impl->active_tree()
+                                      ->property_trees()
+                                      ->scroll_tree.scroll_offset_map()));
+
+  // Set ScrollOffset active delta: gfx::ScrollOffset(10, 10)
+  LayerImpl* scroll_layer_impl =
+      host_impl->active_tree()->LayerById(scroll_layer->id());
+  ScrollTree& scroll_tree =
+      host_impl->active_tree()->property_trees()->scroll_tree;
+  scroll_tree.synced_scroll_offset(scroll_layer_impl->id())
+      ->SetCurrent(gfx::ScrollOffset(20, 30));
+
+  // Pull ScrollOffset delta for main thread, and change offset on main thread
+  scoped_ptr<ScrollAndScaleSet> scroll_info(new ScrollAndScaleSet());
+  scroll_tree.CollectScrollDeltas(scroll_info.get());
+  host_->proxy()->SetNeedsCommit();
+  host_->ApplyScrollAndScale(scroll_info.get());
+  EXPECT_EQ(gfx::ScrollOffset(20, 30), scroll_layer->scroll_offset());
+  scroll_layer->SetScrollOffset(gfx::ScrollOffset(100, 100));
+
+  // More update to ScrollOffset active delta: gfx::ScrollOffset(20, 20)
+  scroll_tree.synced_scroll_offset(scroll_layer_impl->id())
+      ->SetCurrent(gfx::ScrollOffset(40, 50));
+  host_impl->active_tree()->SetCurrentlyScrollingLayer(scroll_layer_impl);
+
+  // Make one layer unscrollable so that scroll tree topology changes
+  transient_scroll_layer->SetScrollClipLayerId(Layer::INVALID_ID);
+  host_->BuildPropertyTreesForTesting();
+
+  host_impl->CreatePendingTree();
+  host_->CommitAndCreatePendingTree();
+  host_impl->ActivateSyncTree();
+
+  EXPECT_EQ(scroll_layer->id(),
+            host_impl->active_tree()->CurrentlyScrollingLayer()->id());
+  scroll_offset_map.erase(transient_scroll_layer->id());
+  scroll_offset_map[scroll_layer->id()]->SetCurrent(gfx::ScrollOffset(20, 30));
+  scroll_offset_map[scroll_layer->id()]->PullDeltaForMainThread();
+  scroll_offset_map[scroll_layer->id()]->SetCurrent(gfx::ScrollOffset(40, 50));
+  scroll_offset_map[scroll_layer->id()]->PushFromMainThread(
+      gfx::ScrollOffset(100, 100));
+  scroll_offset_map[scroll_layer->id()]->PushPendingToActive();
+  EXPECT_TRUE(is_equal(scroll_offset_map, scroll_tree.scroll_offset_map()));
 }
 
 }  // namespace

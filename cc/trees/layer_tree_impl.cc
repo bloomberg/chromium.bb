@@ -320,6 +320,7 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
   LayerImpl* layer = target_tree->CurrentlyScrollingLayer();
   target_tree->SetPropertyTrees(property_trees_);
   target_tree->SetCurrentlyScrollingLayer(layer);
+  target_tree->UpdatePropertyTreeScrollOffset(&property_trees_);
 
   if (next_activation_forces_redraw_) {
     target_tree->ForceRedrawNextActivation();
@@ -687,10 +688,7 @@ void LayerTreeImpl::ApplySentScrollAndScaleDeltasFromAbortedCommit() {
   if (!root_layer())
     return;
 
-  LayerTreeHostCommon::CallFunctionForSubtree(
-      root_layer(), [](LayerImpl* layer) {
-        layer->ApplySentScrollDeltasFromAbortedCommit();
-      });
+  property_trees()->scroll_tree.ApplySentScrollDeltasFromAbortedCommit();
 }
 
 void LayerTreeImpl::SetViewportLayersFromIds(

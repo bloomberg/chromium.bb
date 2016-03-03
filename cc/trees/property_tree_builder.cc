@@ -715,6 +715,11 @@ void AddScrollNodeIfNeeded(
         node.data.main_thread_scrolling_reasons;
     data_for_children->scroll_tree_parent_created_by_uninheritable_criteria =
         scroll_node_uninheritable_criteria;
+
+    if (node.data.scrollable) {
+      data_for_children->scroll_tree->synced_scroll_offset(layer->id())
+          ->PushFromMainThread(layer->CurrentScrollOffset());
+    }
   }
 
   layer->SetScrollTreeIndex(data_for_children->scroll_tree_parent);
@@ -959,6 +964,8 @@ void PropertyTreeBuilder::BuildPropertyTrees(
     const gfx::Rect& viewport,
     const gfx::Transform& device_transform,
     PropertyTrees* property_trees) {
+  property_trees->is_main_thread = true;
+  property_trees->is_active = false;
   SkColor color = root_layer->layer_tree_host()->background_color();
   if (SkColorGetA(color) != 255)
     color = SkColorSetA(color, 255);
@@ -981,6 +988,8 @@ void PropertyTreeBuilder::BuildPropertyTrees(
     const gfx::Rect& viewport,
     const gfx::Transform& device_transform,
     PropertyTrees* property_trees) {
+  property_trees->is_main_thread = false;
+  property_trees->is_active = root_layer->IsActive();
   SkColor color = root_layer->layer_tree_impl()->background_color();
   if (SkColorGetA(color) != 255)
     color = SkColorSetA(color, 255);

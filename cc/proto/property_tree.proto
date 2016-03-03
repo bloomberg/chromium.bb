@@ -7,6 +7,7 @@ syntax = "proto2";
 import "rectf.proto";
 import "scroll_offset.proto";
 import "size.proto";
+import "synced_property.proto";
 import "transform.proto";
 import "vector2df.proto";
 
@@ -156,9 +157,15 @@ message PropertyTree {
   optional ScrollTreeData scroll_tree_data = 1001;
 }
 
+message ScrollOffsetMapEntry {
+  required int64 layer_id = 1;
+  optional SyncedProperty scroll_offset = 2;
+}
+
 // Proto for data members of class ScrollTree
 message ScrollTreeData {
   optional int64 currently_scrolling_node_id = 1;
+  repeated ScrollOffsetMapEntry layer_id_to_scroll_offset_map = 2;
 }
 
 // Proto for data members of class TransformTree.
@@ -174,7 +181,7 @@ message TransformTreeData {
 }
 
 // Proto for class PropertyTrees.
-// NEXT ID: 13
+// NEXT ID: 14
 message PropertyTrees {
   optional PropertyTree transform_tree = 1;
   optional PropertyTree effect_tree = 2;
@@ -186,6 +193,8 @@ message PropertyTrees {
   optional bool changed = 11;
   optional bool full_tree_damaged = 12;
   optional int64 sequence_number = 6;
+  optional bool is_main_thread = 13;
+  optional bool is_active = 14;
 
   optional Vector2dF inner_viewport_container_bounds_delta = 8;
   optional Vector2dF outer_viewport_container_bounds_delta = 9;

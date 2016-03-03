@@ -239,6 +239,7 @@ class PictureLayerImplTest : public testing::Test {
       if (!tile_size.IsEmpty())
         pending_layer->set_fixed_tile_size(tile_size);
       pending_layer->SetDrawsContent(true);
+      pending_layer->SetScrollClipLayer(pending_root->id());
     } else {
       pending_layer.reset(static_cast<FakePictureLayerImpl*>(
           pending_root->RemoveChild(pending_root->children()[0].get())

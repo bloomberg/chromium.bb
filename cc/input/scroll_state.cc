@@ -10,7 +10,8 @@
 
 namespace cc {
 
-ScrollState::ScrollState(ScrollStateData data) : data_(data) {}
+ScrollState::ScrollState(ScrollStateData data)
+    : data_(data), layer_tree_impl_(nullptr) {}
 
 ScrollState::ScrollState(const ScrollState& other) = default;
 

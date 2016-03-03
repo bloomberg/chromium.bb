@@ -2033,7 +2033,7 @@ TEST_F(LayerTreeHostImplTest, PinchGesture) {
     host_impl_->active_tree()->PushPageScaleFromMainThread(1.f, min_page_scale,
                                                            max_page_scale);
     scroll_layer->SetScrollDelta(gfx::Vector2d());
-    scroll_layer->PullDeltaForMainThread();
+    scroll_layer->synced_scroll_offset()->PullDeltaForMainThread();
     scroll_layer->PushScrollOffsetFromMainThread(gfx::ScrollOffset(50, 50));
 
     float page_scale_delta = 0.1f;
@@ -2056,7 +2056,7 @@ TEST_F(LayerTreeHostImplTest, PinchGesture) {
     host_impl_->active_tree()->PushPageScaleFromMainThread(1.f, min_page_scale,
                                                            max_page_scale);
     scroll_layer->SetScrollDelta(gfx::Vector2d());
-    scroll_layer->PullDeltaForMainThread();
+    scroll_layer->synced_scroll_offset()->PullDeltaForMainThread();
     scroll_layer->PushScrollOffsetFromMainThread(gfx::ScrollOffset(20, 20));
 
     float page_scale_delta = 1.f;
@@ -2079,7 +2079,7 @@ TEST_F(LayerTreeHostImplTest, PinchGesture) {
     host_impl_->active_tree()->PushPageScaleFromMainThread(1.f, min_page_scale,
                                                            max_page_scale);
     scroll_layer->SetScrollDelta(gfx::Vector2d());
-    scroll_layer->PullDeltaForMainThread();
+    scroll_layer->synced_scroll_offset()->PullDeltaForMainThread();
     scroll_layer->PushScrollOffsetFromMainThread(gfx::ScrollOffset(20, 20));
 
     float page_scale_delta = 1.f;
@@ -2104,7 +2104,7 @@ TEST_F(LayerTreeHostImplTest, PinchGesture) {
   {
     host_impl_->active_tree()->PushPageScaleFromMainThread(0.5f, 0.5f, 4.f);
     scroll_layer->SetScrollDelta(gfx::Vector2d());
-    scroll_layer->PullDeltaForMainThread();
+    scroll_layer->synced_scroll_offset()->PullDeltaForMainThread();
     scroll_layer->PushScrollOffsetFromMainThread(gfx::ScrollOffset(0, 0));
 
     host_impl_->ScrollBegin(BeginState(gfx::Point(0, 0)).get(),
@@ -10192,12 +10192,27 @@ TEST_F(LayerTreeHostImplTest, JitterTest) {
 
     LayerTreeImpl* pending_tree = host_impl_->pending_tree();
     pending_tree->PushPageScaleFromMainThread(1.f, 1.f, 1.f);
-    pending_tree->property_trees()->needs_rebuild = true;
-    pending_tree->BuildPropertyTreesForTesting();
-    pending_tree->set_needs_update_draw_properties();
-    pending_tree->UpdateDrawProperties(false);
     LayerImpl* last_scrolled_layer = pending_tree->LayerById(
         host_impl_->active_tree()->LastScrolledLayerId());
+
+    // When building property trees from impl side, the builder uses the scroll
+    // offset of layer_impl to initialize the scroll offset in scroll tree:
+    //  scroll_tree.synced_scroll_offset.PushFromMainThread(
+    //                                   layer->CurrentScrollOffset()).
+    // However, layer_impl does not store scroll_offset, so it is using scroll
+    // tree's scroll offset to initialize itself. Usually this approach works
+    // because this is a simple assignment. However if scroll_offset's pending
+    // delta is not zero, the delta would be counted twice.
+    // This hacking here is to restore the damaged scroll offset.
+    gfx::ScrollOffset pending_base =
+        last_scrolled_layer->synced_scroll_offset()->PendingBase();
+    pending_tree->property_trees()->needs_rebuild = true;
+    pending_tree->BuildPropertyTreesForTesting();
+    last_scrolled_layer->synced_scroll_offset()->PushFromMainThread(
+        pending_base);
+
+    pending_tree->set_needs_update_draw_properties();
+    pending_tree->UpdateDrawProperties(false);
     float jitter =
         LayerTreeHostCommon::CalculateFrameJitter(last_scrolled_layer);
     // There should not be any jitter measured till we hit the fixed point hits

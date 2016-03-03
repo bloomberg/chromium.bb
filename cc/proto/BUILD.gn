@@ -58,6 +58,7 @@ proto_library("proto_internal") {
     "skregion.proto",
     "skrrect.proto",
     "skxfermode.proto",
+    "synced_property.proto",
     "transform.proto",
     "vector2d.proto",
     "vector2df.proto",

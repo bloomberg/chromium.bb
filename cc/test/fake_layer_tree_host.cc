@@ -91,6 +91,7 @@ LayerImpl* FakeLayerTreeHost::CommitAndCreateLayerImplTree() {
   TreeSynchronizer::PushProperties(root_layer(), layer_impl.get());
 
   active_tree()->SetRootLayer(std::move(layer_impl));
+  active_tree()->UpdatePropertyTreeScrollOffset(property_trees());
 
   if (page_scale_layer() && inner_viewport_scroll_layer()) {
     active_tree()->SetViewportLayersFromIds(
@@ -114,6 +115,7 @@ LayerImpl* FakeLayerTreeHost::CommitAndCreatePendingTree() {
   TreeSynchronizer::PushProperties(root_layer(), layer_impl.get());
 
   pending_tree()->SetRootLayer(std::move(layer_impl));
+  pending_tree()->UpdatePropertyTreeScrollOffset(property_trees());
   return pending_tree()->root_layer();
 }
 

@@ -30,13 +30,10 @@ class CC_EXPORT PictureLayerImpl
     : public LayerImpl,
       NON_EXPORTED_BASE(public PictureLayerTilingClient) {
  public:
-  static scoped_ptr<PictureLayerImpl> Create(
-      LayerTreeImpl* tree_impl,
-      int id,
-      bool is_mask,
-      scoped_refptr<SyncedScrollOffset> scroll_offset) {
-    return make_scoped_ptr(
-        new PictureLayerImpl(tree_impl, id, is_mask, scroll_offset));
+  static scoped_ptr<PictureLayerImpl> Create(LayerTreeImpl* tree_impl,
+                                             int id,
+                                             bool is_mask) {
+    return make_scoped_ptr(new PictureLayerImpl(tree_impl, id, is_mask));
   }
   ~PictureLayerImpl() override;
 
@@ -103,10 +100,7 @@ class CC_EXPORT PictureLayerImpl
   friend class LayerRasterTileIterator;
   using TileRequirementCheck = bool (PictureLayerTiling::*)(const Tile*) const;
 
-  PictureLayerImpl(LayerTreeImpl* tree_impl,
-                   int id,
-                   bool is_mask,
-                   scoped_refptr<SyncedScrollOffset> scroll_offset);
+  PictureLayerImpl(LayerTreeImpl* tree_impl, int id, bool is_mask);
   PictureLayerTiling* AddTiling(float contents_scale);
   void RemoveAllTilings();
   void AddTilingsForRasterScale();

@@ -884,6 +884,10 @@ void Layer::SetScrollOffset(const gfx::ScrollOffset& scroll_offset) {
   if (!layer_tree_host_)
     return;
 
+  if (scroll_tree_index() != -1 && scrollable())
+    layer_tree_host_->property_trees()->scroll_tree.SetScrollOffset(
+        id(), scroll_offset);
+
   if (TransformNode* transform_node =
           layer_tree_host_->property_trees()->transform_tree.Node(
               transform_tree_index())) {
@@ -923,6 +927,11 @@ void Layer::SetScrollOffsetFromImplSide(
   SetNeedsPushProperties();
 
   bool needs_rebuild = true;
+
+  if (scroll_tree_index() != -1 && scrollable())
+    layer_tree_host_->property_trees()->scroll_tree.SetScrollOffset(
+        id(), scroll_offset);
+
   if (TransformNode* transform_node =
           layer_tree_host_->property_trees()->transform_tree.Node(
               transform_tree_index())) {
@@ -1338,9 +1347,10 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   // active tree. To do so, avoid scrolling the pending tree along with it
   // instead of trying to undo that scrolling later.
   if (ScrollOffsetAnimationWasInterrupted())
-    layer->PushScrollOffsetFromMainThreadAndClobberActiveValue(scroll_offset_);
-  else
-    layer->PushScrollOffsetFromMainThread(scroll_offset_);
+    layer_tree_host()
+        ->property_trees()
+        ->scroll_tree.synced_scroll_offset(layer->id())
+        ->set_clobber_active_value();
   layer->SetScrollCompensationAdjustment(ScrollCompensationAdjustment());
 
   {
@@ -1703,8 +1713,7 @@ void Layer::FromLayerSpecificPropertiesProto(
 }
 
 scoped_ptr<LayerImpl> Layer::CreateLayerImpl(LayerTreeImpl* tree_impl) {
-  return LayerImpl::Create(tree_impl, layer_id_,
-                           new LayerImpl::SyncedScrollOffset);
+  return LayerImpl::Create(tree_impl, layer_id_);
 }
 
 bool Layer::DrawsContent() const {

@@ -1481,7 +1481,7 @@ TEST_F(TileManagerTilePriorityQueueTest, NoRasterTasksforSolidColorTiles) {
   tiling_client.SetTileSize(size);
 
   scoped_ptr<PictureLayerImpl> layer_impl =
-      PictureLayerImpl::Create(host_impl_.active_tree(), 1, false, nullptr);
+      PictureLayerImpl::Create(host_impl_.active_tree(), 1, false);
   PictureLayerTilingSet* tiling_set = layer_impl->picture_layer_tiling_set();
 
   PictureLayerTiling* tiling = tiling_set->AddTiling(1.0f, raster_source);
@@ -1700,7 +1700,7 @@ TEST_F(TileManagerTest, LowResHasNoImage) {
     tiling_client.SetTileSize(size);
 
     scoped_ptr<PictureLayerImpl> layer =
-        PictureLayerImpl::Create(host_impl_->active_tree(), 1, false, nullptr);
+        PictureLayerImpl::Create(host_impl_->active_tree(), 1, false);
     PictureLayerTilingSet* tiling_set = layer->picture_layer_tiling_set();
 
     auto* tiling = tiling_set->AddTiling(1.0f, raster);

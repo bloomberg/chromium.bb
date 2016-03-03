@@ -219,6 +219,7 @@ TEST_F(ScrollbarLayerTest, ScrollOffsetSynchronization) {
   layer_tree_root->SavePaintProperties();
   content_layer->SavePaintProperties();
 
+  layer_tree_host_->UpdateLayers();
   LayerImpl* layer_impl_tree_root =
       layer_tree_host_->CommitAndCreateLayerImplTree();
 
@@ -330,6 +331,7 @@ TEST_F(ScrollbarLayerTest, ThumbRect) {
   scrollbar_layer->fake_scrollbar()->set_track_rect(gfx::Rect(30, 10, 50, 10));
   scrollbar_layer->fake_scrollbar()->set_thumb_thickness(10);
   scrollbar_layer->fake_scrollbar()->set_thumb_length(4);
+  layer_tree_host_->UpdateLayers();
   LayerImpl* root_clip_layer_impl = nullptr;
   LayerImpl* root_layer_impl = nullptr;
   PaintedScrollbarLayerImpl* scrollbar_layer_impl = nullptr;

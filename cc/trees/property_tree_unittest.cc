@@ -260,7 +260,9 @@ TEST(PropertyTreeSerializationTest, ScrollNodeSerialization) {
 }
 
 TEST(PropertyTreeSerializationTest, ScrollTreeSerialization) {
-  ScrollTree original;
+  PropertyTrees property_trees;
+  property_trees.is_main_thread = true;
+  ScrollTree& original = property_trees.scroll_tree;
   ScrollNode second;
   second.data.scrollable = true;
   second.data.bounds = gfx::Size(15, 15);
@@ -269,6 +271,9 @@ TEST(PropertyTreeSerializationTest, ScrollTreeSerialization) {
 
   original.Insert(second, 0);
   original.Insert(third, 1);
+
+  original.set_currently_scrolling_node(1);
+  original.synced_scroll_offset(1)->PushFromMainThread(gfx::ScrollOffset(1, 2));
 
   proto::PropertyTree proto;
   original.ToProtobuf(&proto);

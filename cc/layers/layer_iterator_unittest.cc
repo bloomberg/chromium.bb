@@ -35,7 +35,7 @@ class TestLayerImpl : public LayerImpl {
 
  private:
   explicit TestLayerImpl(LayerTreeImpl* tree, int id)
-      : LayerImpl(tree, id, new SyncedScrollOffset),
+      : LayerImpl(tree, id),
         count_representing_target_surface_(-1),
         count_representing_contributing_surface_(-1),
         count_representing_itself_(-1) {
