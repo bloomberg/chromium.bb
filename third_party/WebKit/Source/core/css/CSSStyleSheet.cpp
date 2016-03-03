@@ -413,11 +413,6 @@ void CSSStyleSheet::setAllowRuleAccessFromOrigin(PassRefPtr<SecurityOrigin> allo
     m_allowRuleAccessFromOrigin = allowedOrigin;
 }
 
-void CSSStyleSheet::clearChildRuleCSSOMWrappers()
-{
-    m_childRuleCSSOMWrappers.clear();
-}
-
 bool CSSStyleSheet::sheetLoaded()
 {
     ASSERT(m_ownerNode);
@@ -442,6 +437,15 @@ void CSSStyleSheet::setLoadCompleted(bool completed)
         m_contents->clientLoadCompleted(this);
     else
         m_contents->clientLoadStarted(this);
+}
+
+void CSSStyleSheet::setText(const String& text)
+{
+    m_childRuleCSSOMWrappers.clear();
+
+    CSSStyleSheet::RuleMutationScope mutationScope(this);
+    m_contents->clearRules();
+    m_contents->parseString(text);
 }
 
 DEFINE_TRACE(CSSStyleSheet)

@@ -966,28 +966,18 @@ String InspectorStyleSheet::finalURL()
     return url.isEmpty() ? m_documentURL : url;
 }
 
-bool InspectorStyleSheet::setText(const String& text, ExceptionState& exceptionState)
+bool InspectorStyleSheet::setText(const String& text, ExceptionState&)
 {
     innerSetText(text, true);
 
     if (listener())
         listener()->willReparseStyleSheet();
 
-    {
-        // Have a separate scope for clearRules() (bug 95324).
-        CSSStyleSheet::RuleMutationScope mutationScope(m_pageStyleSheet.get());
-        m_pageStyleSheet->contents()->clearRules();
-        m_pageStyleSheet->clearChildRuleCSSOMWrappers();
-    }
-    {
-        CSSStyleSheet::RuleMutationScope mutationScope(m_pageStyleSheet.get());
-        m_pageStyleSheet->contents()->parseString(text);
-    }
+    m_pageStyleSheet->setText(text);
 
     if (listener())
         listener()->didReparseStyleSheet();
     onStyleSheetTextChanged();
-    m_pageStyleSheet->ownerDocument()->styleEngine().resolverChanged(FullStyleUpdate);
     return true;
 }
 

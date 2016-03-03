@@ -108,8 +108,6 @@ public:
     void didMutateRules();
     void didMutate(StyleSheetUpdateType = PartialRuleUpdate);
 
-    void clearChildRuleCSSOMWrappers();
-
     StyleSheetContents* contents() const { return m_contents.get(); }
 
     bool isInline() const { return m_isInlineStylesheet; }
@@ -118,6 +116,7 @@ public:
     bool sheetLoaded();
     bool loadCompleted() const { return m_loadCompleted; }
     void startLoadingDynamicSheet();
+    void setText(const String&);
 
     DECLARE_VIRTUAL_TRACE();
 
