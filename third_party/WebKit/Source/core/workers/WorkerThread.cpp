@@ -217,6 +217,8 @@ WorkerThread::WorkerThread(PassRefPtr<WorkerLoaderProxy> workerLoaderProxy, Work
     , m_terminated(false)
     , m_shutdown(false)
     , m_pausedInDebugger(false)
+    , m_runningDebuggerTask(false)
+    , m_shouldTerminateV8Execution(false)
     , m_debuggerTaskQueue(adoptPtr(new DebuggerTaskQueue))
     , m_workerLoaderProxy(workerLoaderProxy)
     , m_workerReportingProxy(workerReportingProxy)
@@ -422,7 +424,14 @@ void WorkerThread::terminateInternal()
 
     // Ensure that tasks are being handled by thread event loop. If script execution weren't forbidden, a while(1) loop in JS could keep the thread alive forever.
     m_workerGlobalScope->scriptController()->willScheduleExecutionTermination();
-    terminateV8Execution();
+
+    // Terminating during debugger task may lead to crash due to heavy use of v8 api in debugger.
+    // Any debugger task is guaranteed to finish, so we can postpone termination after task has finished.
+    // Note: m_runningDebuggerTask and m_shouldTerminateV8Execution access must be guarded by the lock.
+    if (m_runningDebuggerTask)
+        m_shouldTerminateV8Execution = true;
+    else
+        terminateV8Execution();
 
     InspectorInstrumentation::didKillAllExecutionContextTasks(m_workerGlobalScope.get());
     m_debuggerTaskQueue->kill();
@@ -510,7 +519,6 @@ void WorkerThread::destroyIsolate()
 
 void WorkerThread::terminateV8Execution()
 {
-    ASSERT(isMainThread());
     m_isolate->TerminateExecution();
 }
 
@@ -546,9 +554,21 @@ WorkerThread::TaskQueueResult WorkerThread::runDebuggerTask(WaitMode waitMode)
     }
 
     if (result == TaskReceived) {
+        {
+            MutexLocker lock(m_threadStateMutex);
+            m_runningDebuggerTask = true;
+        }
         InspectorInstrumentation::willProcessTask(workerGlobalScope());
         (*task)();
         InspectorInstrumentation::didProcessTask(workerGlobalScope());
+        {
+            MutexLocker lock(m_threadStateMutex);
+            m_runningDebuggerTask = false;
+            if (m_shouldTerminateV8Execution) {
+                m_shouldTerminateV8Execution = false;
+                terminateV8Execution();
+            }
+        }
     }
 
     return result;

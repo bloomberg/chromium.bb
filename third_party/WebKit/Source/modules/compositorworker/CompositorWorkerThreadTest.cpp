@@ -44,8 +44,11 @@ private:
     {
         m_startEvent->signal();
     }
+
     void terminateV8Execution() override
     {
+        // This could be called on worker thread, but not in the test.
+        ASSERT(isMainThread());
         CompositorWorkerThread::terminateV8Execution();
         if (m_v8TerminationCallback)
             (*m_v8TerminationCallback)();

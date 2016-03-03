@@ -108,7 +108,7 @@ public:
     void terminateV8Execution()
     {
         MutexLocker lock(m_mutex);
-        ASSERT(isMainThread());
+        ASSERT(isMainThread() || m_thread->isCurrentThread());
         if (m_workerCount > 1)
             return;
 

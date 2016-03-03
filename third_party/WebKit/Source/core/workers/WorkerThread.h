@@ -132,6 +132,8 @@ protected:
     virtual v8::Isolate* initializeIsolate();
     virtual void willDestroyIsolate();
     virtual void destroyIsolate();
+
+    // Can be called either on main or worker thread.
     virtual void terminateV8Execution();
 
 private:
@@ -164,6 +166,8 @@ private:
     bool m_terminated;
     bool m_shutdown;
     bool m_pausedInDebugger;
+    bool m_runningDebuggerTask;
+    bool m_shouldTerminateV8Execution;
     OwnPtr<DebuggerTaskQueue> m_debuggerTaskQueue;
     OwnPtr<InspectorTaskRunner> m_inspectorTaskRunner;
     OwnPtr<WebThread::TaskObserver> m_microtaskRunner;
@@ -172,7 +176,7 @@ private:
     WorkerReportingProxy& m_workerReportingProxy;
     RawPtr<WebScheduler> m_webScheduler; // Not owned.
 
-    // This lock protects |m_workerGlobalScope|, |m_terminated|, |m_shutdown|, |m_isolate| and |m_microtaskRunner|.
+    // This lock protects |m_workerGlobalScope|, |m_terminated|, |m_shutdown|, |m_isolate|, |m_runningDebuggerTask|, |m_shouldTerminateV8Execution| and |m_microtaskRunner|.
     Mutex m_threadStateMutex;
 
     RefPtrWillBePersistent<WorkerGlobalScope> m_workerGlobalScope;
