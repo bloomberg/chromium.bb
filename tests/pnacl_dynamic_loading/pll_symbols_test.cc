@@ -188,16 +188,24 @@ int main(int argc, char **argv) {
   DumpImportedSymbols(pll_root);
 
   TestImportReloc(pll_root, "imported_var", 0, "reloc_var", 0);
+  TestImportReloc(pll_root, "imported_var", 0, "reloc_var_const", 0);
   TestImportReloc(pll_root, "imported_var_addend", sizeof(int),
                   "reloc_var_addend", 0);
+  TestImportReloc(pll_root, "imported_var_addend", sizeof(int),
+                  "reloc_var_const_addend", 0);
   TestImportReloc(pll_root, "imported_var2", sizeof(int) * 100,
                   "reloc_var_offset", sizeof(int));
   TestImportReloc(pll_root, "imported_var3", sizeof(int) * 200,
                   "reloc_var_offset", sizeof(int) * 2);
-  // For the 4 calls to TestImportReloc().
-  int expected_imports = 4;
-  // For "reloc_var", "reloc_var_addend" and "reloc_var_offset".
-  expected_exports += 3;
+  TestImportReloc(pll_root, "imported_var", sizeof(int) * 300,
+                  "reloc_var_const_offset", sizeof(int));
+  TestImportReloc(pll_root, "imported_var", sizeof(int) * 400,
+                  "reloc_var_const_offset", sizeof(int) * 2);
+  // For the 8 calls to TestImportReloc().
+  int expected_imports = 8;
+  // For "reloc_var", "reloc_var_const", "reloc_var_addend",
+  // "reloc_var_addend_const", "reloc_var_offset" and "reloc_var_const_offset".
+  expected_exports += 6;
 
   // Test that local (non-imported) relocations still work and that they
   // don't get mixed up with relocations for imports.

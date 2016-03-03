@@ -15,11 +15,19 @@ extern int imported_var3;
 
 /* Relocation without an addend. */
 int *reloc_var = &imported_var;
+/* Const relocation without an addend. */
+int *const reloc_var_const = &imported_var;
 /* Relocation with an addend. */
 int *reloc_var_addend = &imported_var_addend + 1;
+/* Const relocation with an addend. */
+int *const reloc_var_const_addend = &imported_var_addend + 1;
 
 /* Relocations in a compound initializer, with addends. */
 int *reloc_var_offset[] = { 0, &imported_var2 + 100, &imported_var3 + 200, 0 };
+
+/* Const relocations in a compound initializer, with addends. */
+int *const reloc_var_const_offset[] = { 0, &imported_var + 300,
+                                        &imported_var + 400, 0 };
 
 /*
  * Local (non-imported) relocation.  Test that these still work and that
