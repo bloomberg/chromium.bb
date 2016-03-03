@@ -677,16 +677,13 @@ void LinkStyle::setDisabledState(bool disabled)
             return;
         }
 
-        if (m_sheet)
+        if (m_sheet) {
             m_sheet->setDisabled(disabled);
-
-        // Load the sheet, since it's never been loaded before.
-        if (!m_sheet && m_disabledState == EnabledViaScript) {
-            if (m_owner->shouldProcessStyle())
-                process();
-        } else {
-            m_owner->document().styleEngine().resolverChanged(FullStyleUpdate);
+            return;
         }
+
+        if (m_disabledState == EnabledViaScript && m_owner->shouldProcessStyle())
+            process();
     }
 }
 
