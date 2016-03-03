@@ -194,102 +194,6 @@ bool MockAudioSource::remote() const {
   return remote_;
 }
 
-MockVideoSource::MockVideoSource(bool remote)
-    : state_(MediaSourceInterface::kInitializing), remote_(remote) {
-}
-
-MockVideoSource::~MockVideoSource() {}
-
-void MockVideoSource::SetVideoCapturer(cricket::VideoCapturer* capturer) {
-  capturer_.reset(capturer);
-}
-
-cricket::VideoCapturer* MockVideoSource::GetVideoCapturer() {
-  return capturer_.get();
-}
-
-void MockVideoSource::AddSink(
-    rtc::VideoSinkInterface<cricket::VideoFrame>* output) {
-  NOTIMPLEMENTED();
-}
-
-void MockVideoSource::RemoveSink(
-    rtc::VideoSinkInterface<cricket::VideoFrame>* output) {
-  NOTIMPLEMENTED();
-}
-
-void MockVideoSource::Stop() {
-  NOTIMPLEMENTED();
-}
-void MockVideoSource::Restart() {
-  NOTIMPLEMENTED();
-}
-
-void MockVideoSource::RegisterObserver(webrtc::ObserverInterface* observer) {
-  observers_.push_back(observer);
-}
-
-void MockVideoSource::UnregisterObserver(webrtc::ObserverInterface* observer) {
-  for (std::vector<ObserverInterface*>::iterator it = observers_.begin();
-       it != observers_.end(); ++it) {
-    if (*it == observer) {
-      observers_.erase(it);
-      break;
-    }
-  }
-}
-
-void MockVideoSource::FireOnChanged() {
-  std::vector<ObserverInterface*> observers(observers_);
-  for (std::vector<ObserverInterface*>::iterator it = observers.begin();
-       it != observers.end(); ++it) {
-    (*it)->OnChanged();
-  }
-}
-
-void MockVideoSource::SetLive() {
-  DCHECK(state_ == MediaSourceInterface::kInitializing ||
-         state_ == MediaSourceInterface::kLive);
-  state_ = MediaSourceInterface::kLive;
-  FireOnChanged();
-}
-
-void MockVideoSource::SetEnded() {
-  DCHECK_NE(MediaSourceInterface::kEnded, state_);
-  state_ = MediaSourceInterface::kEnded;
-  FireOnChanged();
-}
-
-webrtc::MediaSourceInterface::SourceState MockVideoSource::state() const {
-  return state_;
-}
-
-bool MockVideoSource::remote() const {
-  return remote_;
-}
-
-const cricket::VideoOptions* MockVideoSource::options() const {
-  NOTIMPLEMENTED();
-  return NULL;
-}
-
-int MockVideoSource::GetLastFrameWidth() const {
-  DCHECK(capturer_);
-  return
-      static_cast<MockRtcVideoCapturer*>(capturer_.get())->GetLastFrameWidth();
-}
-
-int MockVideoSource::GetLastFrameHeight() const {
-  DCHECK(capturer_);
-  return
-      static_cast<MockRtcVideoCapturer*>(capturer_.get())->GetLastFrameHeight();
-}
-
-int MockVideoSource::GetFrameNum() const {
-  DCHECK(capturer_);
-  return static_cast<MockRtcVideoCapturer*>(capturer_.get())->GetFrameNum();
-}
-
 MockWebRtcVideoTrack::MockWebRtcVideoTrack(
     const std::string& id,
     webrtc::VideoSourceInterface* source)
@@ -461,9 +365,10 @@ scoped_refptr<webrtc::VideoSourceInterface>
 MockPeerConnectionDependencyFactory::CreateVideoSource(
     cricket::VideoCapturer* capturer,
     const blink::WebMediaConstraints& constraints) {
-  last_video_source_ = new rtc::RefCountedObject<MockVideoSource>(false);
-  last_video_source_->SetVideoCapturer(capturer);
-  return last_video_source_;
+  // Video source normally take ownership of |capturer|.
+  delete capturer;
+  NOTIMPLEMENTED();
+  return nullptr;
 }
 
 scoped_refptr<WebAudioCapturerSource>
@@ -492,11 +397,7 @@ scoped_refptr<webrtc::VideoTrackInterface>
 MockPeerConnectionDependencyFactory::CreateLocalVideoTrack(
     const std::string& id,
     cricket::VideoCapturer* capturer) {
-  scoped_refptr<MockVideoSource> source =
-      new rtc::RefCountedObject<MockVideoSource>(false);
-  source->SetVideoCapturer(capturer);
-
-  return new rtc::RefCountedObject<MockWebRtcVideoTrack>(id, source.get());
+  return new rtc::RefCountedObject<MockWebRtcVideoTrack>(id, nullptr);
 }
 
 SessionDescriptionInterface*

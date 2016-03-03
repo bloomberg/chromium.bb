@@ -33,47 +33,6 @@ class MockVideoRenderer : public cricket::VideoRenderer {
   int num_;
 };
 
-class MockVideoSource : public webrtc::VideoSourceInterface {
- public:
-  MockVideoSource(bool remote);
-
-  void RegisterObserver(webrtc::ObserverInterface* observer) override;
-  void UnregisterObserver(webrtc::ObserverInterface* observer) override;
-  MediaSourceInterface::SourceState state() const override;
-  bool remote() const override;
-  cricket::VideoCapturer* GetVideoCapturer() override;
-  void AddSink(rtc::VideoSinkInterface<cricket::VideoFrame>* output) override;
-  void RemoveSink(
-      rtc::VideoSinkInterface<cricket::VideoFrame>* output) override;
-  const cricket::VideoOptions* options() const override;
-  void Stop() override;
-  void Restart() override;
-
-  // Changes the state of the source to live and notifies the observer.
-  void SetLive();
-  // Changes the state of the source to ended and notifies the observer.
-  void SetEnded();
-  // Set the video capturer.
-  void SetVideoCapturer(cricket::VideoCapturer* capturer);
-
-  // Test helpers.
-  int GetLastFrameWidth() const;
-  int GetLastFrameHeight() const;
-  int GetFrameNum() const;
-
- protected:
-  ~MockVideoSource() override;
-
- private:
-  void FireOnChanged();
-
-  std::vector<webrtc::ObserverInterface*> observers_;
-  MediaSourceInterface::SourceState state_;
-  bool remote_;
-  scoped_ptr<cricket::VideoCapturer> capturer_;
-  MockVideoRenderer renderer_;
-};
-
 class MockAudioSource : public webrtc::AudioSourceInterface {
  public:
   explicit MockAudioSource(
@@ -219,12 +178,10 @@ class MockPeerConnectionDependencyFactory
   void StartLocalAudioTrack(WebRtcLocalAudioTrack* audio_track) override;
 
   MockAudioSource* last_audio_source() { return last_audio_source_.get(); }
-  MockVideoSource* last_video_source() { return last_video_source_.get(); }
 
  private:
   bool fail_to_create_next_audio_capturer_;
   scoped_refptr <MockAudioSource> last_audio_source_;
-  scoped_refptr <MockVideoSource> last_video_source_;
 
   DISALLOW_COPY_AND_ASSIGN(MockPeerConnectionDependencyFactory);
 };
