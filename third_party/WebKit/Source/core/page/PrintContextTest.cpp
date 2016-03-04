@@ -49,6 +49,22 @@ public:
 
     MockCanvas() : SkCanvas(kPageWidth, kPageHeight) { }
 
+#ifdef SK_SUPPORT_NEW_ANNOTATION_CANVAS_VIRTUAL
+    void onDrawAnnotation(const SkRect& rect, const char key[], SkData* value) override
+    {
+        if (rect.width() == 0 && rect.height()) {
+            ASSERT_EQ(1u, count);
+            SkPoint point = getTotalMatrix().mapXY(rect.x(), rect.y());
+            Operation operation = {
+                DrawPoint, SkRect::MakeXYWH(point.x(), point.y(), 0, 0) };
+        m_recordedOperations.append(operation);
+        } else {
+            Operation operation = { DrawRect, rect };
+            getTotalMatrix().mapRect(&operation.rect);
+            m_recordedOperations.append(operation);
+        }
+    }
+#else
     void onDrawRect(const SkRect& rect, const SkPaint& paint) override
     {
         if (!paint.getAnnotation())
@@ -64,9 +80,11 @@ public:
             return;
         ASSERT_EQ(1u, count); // Only called from drawPoint().
         SkPoint point = getTotalMatrix().mapXY(pts[0].x(), pts[0].y());
-        Operation operation = { DrawPoint, SkRect::MakeXYWH(point.x(), point.y(), 0, 0) };
+        Operation operation = {
+            DrawPoint, SkRect::MakeXYWH(point.x(), point.y(), 0, 0) };
         m_recordedOperations.append(operation);
     }
+#endif
 
     const Vector<Operation>& recordedOperations() const { return m_recordedOperations; }
 
