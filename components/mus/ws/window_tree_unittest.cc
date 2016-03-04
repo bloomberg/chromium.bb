@@ -10,7 +10,6 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
-#include "cc/output/copy_output_request.h"
 #include "components/mus/common/types.h"
 #include "components/mus/common/util.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
@@ -24,6 +23,7 @@
 #include "components/mus/ws/server_window.h"
 #include "components/mus/ws/server_window_surface_manager_test_api.h"
 #include "components/mus/ws/test_change_tracker.h"
+#include "components/mus/ws/test_utils.h"
 #include "components/mus/ws/window_tree_host_connection.h"
 #include "components/mus/ws/window_tree_impl.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
@@ -33,17 +33,9 @@
 #include "ui/events/event_utils.h"
 #include "ui/gfx/geometry/rect.h"
 
-using mojo::Array;
-using mojo::InterfaceRequest;
-using mojo::String;
-using mus::mojom::Event;
-using mus::mojom::EventPtr;
-using mus::mojom::LocationData;
-using mus::mojom::PointerData;
-using mus::mojom::WindowDataPtr;
-
 namespace mus {
 namespace ws {
+namespace test {
 namespace {
 
 std::string WindowIdToString(const WindowId& id) {
@@ -102,181 +94,6 @@ class TestWindowManager : public mojom::WindowManager {
 
 // -----------------------------------------------------------------------------
 
-// WindowTreeClient implementation that logs all calls to a TestChangeTracker.
-// TODO(sky): refactor so both this and WindowTreeAppTest share code.
-class TestWindowTreeClient : public mus::mojom::WindowTreeClient {
- public:
-  TestWindowTreeClient() : binding_(this), record_on_change_completed_(false) {}
-  ~TestWindowTreeClient() override {}
-
-  TestChangeTracker* tracker() { return &tracker_; }
-
-  void Bind(mojo::InterfaceRequest<mojom::WindowTreeClient> request) {
-    binding_.Bind(std::move(request));
-  }
-
-  void set_record_on_change_completed(bool value) {
-    record_on_change_completed_ = value;
-  }
-
- private:
-  // WindowTreeClient:
-  void OnEmbed(uint16_t connection_id,
-               WindowDataPtr root,
-               mus::mojom::WindowTreePtr tree,
-               Id focused_window_id,
-               uint32_t access_policy) override {
-    // TODO(sky): add test coverage of |focused_window_id|.
-    tracker_.OnEmbed(connection_id, std::move(root));
-  }
-  void OnEmbeddedAppDisconnected(uint32_t window) override {
-    tracker_.OnEmbeddedAppDisconnected(window);
-  }
-  void OnUnembed(Id window_id) override { tracker_.OnUnembed(window_id); }
-  void OnLostCapture(Id window_id) override {}
-  void OnTopLevelCreated(uint32_t change_id,
-                         mojom::WindowDataPtr data) override {
-    tracker_.OnTopLevelCreated(change_id, std::move(data));
-  }
-  void OnWindowBoundsChanged(uint32_t window,
-                             mojo::RectPtr old_bounds,
-                             mojo::RectPtr new_bounds) override {
-    tracker_.OnWindowBoundsChanged(window, std::move(old_bounds),
-                                   std::move(new_bounds));
-  }
-  void OnClientAreaChanged(
-      uint32_t window_id,
-      mojo::InsetsPtr new_client_area,
-      mojo::Array<mojo::RectPtr> new_additional_client_areas) override {}
-  void OnTransientWindowAdded(uint32_t window_id,
-                              uint32_t transient_window_id) override {}
-  void OnTransientWindowRemoved(uint32_t window_id,
-                                uint32_t transient_window_id) override {}
-  void OnWindowViewportMetricsChanged(
-      mojo::Array<uint32_t> window_ids,
-      mojom::ViewportMetricsPtr old_metrics,
-      mojom::ViewportMetricsPtr new_metrics) override {
-    tracker_.OnWindowViewportMetricsChanged(std::move(old_metrics),
-                                            std::move(new_metrics));
-  }
-  void OnWindowHierarchyChanged(uint32_t window,
-                                uint32_t new_parent,
-                                uint32_t old_parent,
-                                Array<WindowDataPtr> windows) override {
-    tracker_.OnWindowHierarchyChanged(window, new_parent, old_parent,
-                                      std::move(windows));
-  }
-  void OnWindowReordered(uint32_t window_id,
-                         uint32_t relative_window_id,
-                         mojom::OrderDirection direction) override {
-    tracker_.OnWindowReordered(window_id, relative_window_id, direction);
-  }
-  void OnWindowDeleted(uint32_t window) override {
-    tracker_.OnWindowDeleted(window);
-  }
-  void OnWindowVisibilityChanged(uint32_t window, bool visible) override {
-    tracker_.OnWindowVisibilityChanged(window, visible);
-  }
-  void OnWindowDrawnStateChanged(uint32_t window, bool drawn) override {
-    tracker_.OnWindowDrawnStateChanged(window, drawn);
-  }
-  void OnWindowSharedPropertyChanged(uint32_t window,
-                                     const String& name,
-                                     Array<uint8_t> new_data) override {
-    tracker_.OnWindowSharedPropertyChanged(window, name, std::move(new_data));
-  }
-  void OnWindowInputEvent(uint32_t event_id,
-                          uint32_t window,
-                          EventPtr event) override {
-    tracker_.OnWindowInputEvent(window, std::move(event));
-  }
-  void OnWindowFocused(uint32_t focused_window_id) override {
-    tracker_.OnWindowFocused(focused_window_id);
-  }
-  void OnWindowPredefinedCursorChanged(uint32_t window_id,
-                                       mojom::Cursor cursor_id) override {
-    tracker_.OnWindowPredefinedCursorChanged(window_id, cursor_id);
-  }
-  void OnChangeCompleted(uint32_t change_id, bool success) override {
-    if (record_on_change_completed_)
-      tracker_.OnChangeCompleted(change_id, success);
-  }
-  void RequestClose(uint32_t window_id) override {}
-  void GetWindowManager(mojo::AssociatedInterfaceRequest<mojom::WindowManager>
-                            internal) override {}
-
-  TestChangeTracker tracker_;
-
-  mojo::Binding<mojom::WindowTreeClient> binding_;
-  bool record_on_change_completed_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestWindowTreeClient);
-};
-
-// -----------------------------------------------------------------------------
-
-// ClientConnection implementation that vends TestWindowTreeClient.
-class TestClientConnection : public ClientConnection {
- public:
-  TestClientConnection() : ClientConnection(&client_), is_paused_(false) {}
-  ~TestClientConnection() override {}
-
-  TestWindowTreeClient* client() { return &client_; }
-
-  bool is_paused() const { return is_paused_; }
-
-  // ClientConnection:
-  mojom::WindowManager* GetWindowManager() override {
-    NOTREACHED();
-    return nullptr;
-  }
-  void SetIncomingMethodCallProcessingPaused(bool paused) override {
-    is_paused_ = paused;
-  }
-
- private:
-  TestWindowTreeClient client_;
-  bool is_paused_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestClientConnection);
-};
-
-// -----------------------------------------------------------------------------
-
-// Empty implementation of ConnectionManagerDelegate.
-class TestConnectionManagerDelegate : public ConnectionManagerDelegate {
- public:
-  TestConnectionManagerDelegate() : last_connection_(nullptr) {}
-  ~TestConnectionManagerDelegate() override {}
-
-  TestWindowTreeClient* last_client() {
-    return last_connection_ ? last_connection_->client() : nullptr;
-  }
-
-  TestClientConnection* last_connection() { return last_connection_; }
-
- private:
-  // ConnectionManagerDelegate:
-  void OnNoMoreRootConnections() override {}
-  scoped_ptr<ClientConnection> CreateClientConnectionForEmbedAtWindow(
-      ws::ConnectionManager* connection_manager,
-      ws::WindowTreeImpl* tree,
-      mojom::WindowTreeRequest tree_request,
-      mojom::WindowTreeClientPtr client) override {
-    scoped_ptr<TestClientConnection> connection(new TestClientConnection);
-    last_connection_ = connection.get();
-    return std::move(connection);
-  }
-  void CreateDefaultWindowTreeHosts() override { NOTREACHED(); }
-
-  TestClientConnection* last_connection_;
-  WindowTreeHostImpl* window_tree_host_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestConnectionManagerDelegate);
-};
-
-// -----------------------------------------------------------------------------
-
 class TestWindowTreeHostConnection : public WindowTreeHostConnection {
  public:
   TestWindowTreeHostConnection(WindowTreeHostImpl* host_impl,
@@ -296,68 +113,6 @@ class TestWindowTreeHostConnection : public WindowTreeHostConnection {
   ConnectionManager* connection_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWindowTreeHostConnection);
-};
-
-// -----------------------------------------------------------------------------
-// Empty implementation of DisplayManager.
-class TestDisplayManager : public DisplayManager {
- public:
-  explicit TestDisplayManager(int32_t* cursor_id_storage)
-      : cursor_id_storage_(cursor_id_storage) {}
-  ~TestDisplayManager() override {}
-
-  // DisplayManager:
-  void Init(DisplayManagerDelegate* delegate) override {
-    // It is necessary to tell the delegate about the ViewportMetrics to make
-    // sure that the WindowTreeHostConnection is correctly initialized (and a
-    // root-window is created).
-    mojom::ViewportMetrics metrics;
-    metrics.size_in_pixels = mojo::Size::From(gfx::Size(400, 300));
-    metrics.device_pixel_ratio = 1.f;
-    delegate->OnViewportMetricsChanged(mojom::ViewportMetrics(), metrics);
-  }
-  void SchedulePaint(const ServerWindow* window,
-                     const gfx::Rect& bounds) override {}
-  void SetViewportSize(const gfx::Size& size) override {}
-  void SetTitle(const base::string16& title) override {}
-  void SetCapture() override {}
-  void ReleaseCapture() override {}
-  void SetCursorById(int32_t cursor) override { *cursor_id_storage_ = cursor; }
-  mojom::Rotation GetRotation() override { return mojom::Rotation::VALUE_0; }
-  const mojom::ViewportMetrics& GetViewportMetrics() override {
-    return display_metrices_;
-  }
-  void UpdateTextInputState(const ui::TextInputState& state) override {}
-  void SetImeVisibility(bool visible) override {}
-  bool IsFramePending() const override { return false; }
-  void RequestCopyOfOutput(
-      scoped_ptr<cc::CopyOutputRequest> output_request) override {}
-
- private:
-  mojom::ViewportMetrics display_metrices_;
-
-  int32_t* cursor_id_storage_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestDisplayManager);
-};
-
-// Factory that dispenses TestDisplayManagers.
-class TestDisplayManagerFactory : public DisplayManagerFactory {
- public:
-  explicit TestDisplayManagerFactory(int32_t* cursor_id_storage)
-      : cursor_id_storage_(cursor_id_storage) {}
-  ~TestDisplayManagerFactory() {}
-  DisplayManager* CreateDisplayManager(
-      mojo::Connector* connector,
-      const scoped_refptr<GpuState>& gpu_state,
-      const scoped_refptr<mus::SurfacesState>& surfaces_state) override {
-    return new TestDisplayManager(cursor_id_storage_);
-  }
-
- private:
-  int32_t* cursor_id_storage_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestDisplayManagerFactory);
 };
 
 ui::PointerEvent CreatePointerDownEvent(int x, int y) {
@@ -441,17 +196,18 @@ class WindowTreeTest : public testing::Test {
   TestWindowTreeHostConnection* host_connection() { return host_connection_; }
 
   void DispatchEventWithoutAck(const ui::Event& event) {
-    window_tree_host_->OnEvent(event);
+    WindowTreeHostTestApi(window_tree_host_).OnEvent(event);
   }
 
   void set_window_manager_internal(WindowTreeImpl* connection,
                                    mojom::WindowManager* wm_internal) {
-    connection->window_manager_internal_ = wm_internal;
+    WindowTreeTestApi(connection).set_window_manager_internal(wm_internal);
   }
 
   void AckPreviousEvent() {
-    while (window_tree_host_->tree_awaiting_input_ack_)
-      window_tree_host_->tree_awaiting_input_ack_->OnWindowInputEventAck(0);
+    WindowTreeHostTestApi test_api(window_tree_host_);
+    while (test_api.tree_awaiting_input_ack())
+      test_api.tree_awaiting_input_ack()->OnWindowInputEventAck(0);
   }
 
   void DispatchEventAndAckImmediately(const ui::Event& event) {
@@ -469,14 +225,11 @@ class WindowTreeTest : public testing::Test {
   // testing::Test:
   void SetUp() override {
     DisplayManager::set_factory_for_testing(&display_manager_factory_);
-    // TODO(fsamuel): This is probably broken. We need a root.
     connection_manager_.reset(
         new ConnectionManager(&delegate_, scoped_refptr<SurfacesState>()));
     window_tree_host_ = new WindowTreeHostImpl(
         connection_manager_.get(), nullptr, scoped_refptr<GpuState>(),
         scoped_refptr<mus::SurfacesState>());
-    // TODO(fsamuel): This is way too magical. We need to find a better way to
-    // manage lifetime.
     host_connection_ = new TestWindowTreeHostConnection(
         window_tree_host_, connection_manager_.get());
     window_tree_host_->Init(make_scoped_ptr(host_connection_));
@@ -489,6 +242,7 @@ class WindowTreeTest : public testing::Test {
   int32_t cursor_id_;
   TestDisplayManagerFactory display_manager_factory_;
   TestConnectionManagerDelegate delegate_;
+  // Owned by ConnectionManager.
   TestWindowTreeHostConnection* host_connection_;
   WindowTreeHostImpl* window_tree_host_ = nullptr;
   scoped_ptr<ConnectionManager> connection_manager_;
@@ -513,8 +267,7 @@ void WindowTreeTest::SetupEventTargeting(
                                          embed_window_id));
   window_tree_host_->root_window()->SetBounds(gfx::Rect(0, 0, 100, 100));
   mojom::WindowTreeClientPtr client;
-  mojo::InterfaceRequest<mojom::WindowTreeClient> client_request =
-      GetProxy(&client);
+  mojom::WindowTreeClientRequest client_request = GetProxy(&client);
   wm_client()->Bind(std::move(client_request));
   ConnectionSpecificId connection_id = 0;
   wm_connection()->Embed(embed_window_id, std::move(client),
@@ -565,8 +318,7 @@ TEST_F(WindowTreeTest, FocusOnPointer) {
   EXPECT_TRUE(wm_connection()->AddWindow(wm_root_id, embed_window_id));
   window_tree_host_->root_window()->SetBounds(gfx::Rect(0, 0, 100, 100));
   mojom::WindowTreeClientPtr client;
-  mojo::InterfaceRequest<mojom::WindowTreeClient> client_request =
-      GetProxy(&client);
+  mojom::WindowTreeClientRequest client_request = GetProxy(&client);
   wm_client()->Bind(std::move(client_request));
   ConnectionSpecificId connection_id = 0;
   wm_connection()->Embed(embed_window_id, std::move(client),
@@ -939,5 +691,6 @@ TEST_F(WindowTreeTest, ExplicitSetCapture) {
   EXPECT_EQ(nullptr, host->GetCaptureWindow());
 }
 
+}  // namespace test
 }  // namespace ws
 }  // namespace mus

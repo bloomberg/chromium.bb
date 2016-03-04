@@ -24,6 +24,8 @@
 #include "components/mus/ws/server_window.h"
 #include "components/mus/ws/server_window_observer.h"
 #include "components/mus/ws/server_window_tracker.h"
+#include "components/mus/ws/user_id_tracker_observer.h"
+#include "components/mus/ws/window_manager_factory_registry_observer.h"
 
 namespace mus {
 namespace ws {
@@ -33,6 +35,10 @@ class FocusController;
 class WindowManagerState;
 class WindowTreeHostConnection;
 class WindowTreeImpl;
+
+namespace test {
+class WindowTreeHostTestApi;
+}
 
 // WindowTreeHostImpl is an implementation of the WindowTreeHost interface.
 // It serves as a top level root window for a window. Its lifetime is managed by
@@ -53,7 +59,9 @@ class WindowTreeHostImpl : public DisplayManagerDelegate,
                            public FocusControllerObserver,
                            public FocusControllerDelegate,
                            public EventDispatcherDelegate,
-                           public ServerWindowObserver {
+                           public ServerWindowObserver,
+                           public UserIdTrackerObserver,
+                           public WindowManagerFactoryRegistryObserver {
  public:
   // TODO(fsamuel): All these parameters are just plumbing for creating
   // DisplayManagers. We should probably just store these common parameters
@@ -105,6 +113,10 @@ class WindowTreeHostImpl : public DisplayManagerDelegate,
   WindowManagerState* GetWindowManagerStateWithRoot(const ServerWindow* window);
   // TODO(sky): this is wrong, plumb through user_id.
   WindowManagerState* GetFirstWindowManagerState();
+  WindowManagerState* GetWindowManagerStateForUser(UserId user_id);
+  size_t num_window_manger_states() const {
+    return window_manager_state_map_.size();
+  }
 
   void SetCapture(ServerWindow* window, bool in_nonclient_area);
 
@@ -149,7 +161,8 @@ class WindowTreeHostImpl : public DisplayManagerDelegate,
 
  private:
   class ProcessedEventTarget;
-  friend class WindowTreeTest;
+  friend class test::WindowTreeHostTestApi;
+
   using WindowManagerStateMap =
       std::map<uint32_t, scoped_ptr<WindowManagerState>>;
 
@@ -192,6 +205,9 @@ class WindowTreeHostImpl : public DisplayManagerDelegate,
   // WindowManagerFactoryRegistry.
   void CreateWindowManagerStatesFromRegistry();
 
+  void CreateWindowManagerStateFromService(
+      WindowManagerFactoryService* service);
+
   void UpdateNativeCursor(int32_t cursor_id);
 
   // DisplayManagerDelegate:
@@ -228,6 +244,14 @@ class WindowTreeHostImpl : public DisplayManagerDelegate,
 
   // ServerWindowObserver:
   void OnWindowDestroyed(ServerWindow* window) override;
+
+  // UserIdTrackerObserver:
+  void OnActiveUserIdChanged(UserId id) override;
+  void OnUserIdAdded(UserId id) override;
+  void OnUserIdRemoved(UserId id) override;
+
+  // WindowManagerFactoryRegistryObserver:
+  void OnWindowManagerFactorySet(WindowManagerFactoryService* service) override;
 
   const uint32_t id_;
   scoped_ptr<WindowTreeHostConnection> window_tree_host_connection_;

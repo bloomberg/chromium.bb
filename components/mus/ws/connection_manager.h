@@ -23,6 +23,7 @@
 #include "components/mus/ws/operation.h"
 #include "components/mus/ws/server_window_delegate.h"
 #include "components/mus/ws/server_window_observer.h"
+#include "components/mus/ws/user_id_tracker.h"
 #include "components/mus/ws/window_manager_factory_registry.h"
 #include "components/mus/ws/window_tree_host_impl.h"
 #include "mojo/converters/surfaces/custom_surface_converter.h"
@@ -71,10 +72,13 @@ class ConnectionManager : public ServerWindowDelegate,
 
   ConnectionManagerDelegate* delegate() { return delegate_; }
 
+  UserIdTracker* user_id_tracker() { return &user_id_tracker_; }
+
   // Adds/removes a WindowTreeHost. ConnectionManager owns the
   // WindowTreeHostImpls.
   void AddHost(WindowTreeHostImpl* host);
   void DestroyHost(WindowTreeHostImpl* host);
+  std::set<WindowTreeHostImpl*> hosts() { return hosts_; }
 
   // Creates a new ServerWindow. The return value is owned by the caller, but
   // must be destroyed before ConnectionManager.
@@ -108,6 +112,8 @@ class ConnectionManager : public ServerWindowDelegate,
 
   // Returns the connection by id.
   WindowTreeImpl* GetConnection(ConnectionSpecificId connection_id);
+
+  size_t num_trees() const { return tree_map_.size(); }
 
   // Returns the Window identified by |id|.
   ServerWindow* GetWindow(const WindowId& id);
@@ -161,10 +167,7 @@ class ConnectionManager : public ServerWindowDelegate,
   void AddDisplayManagerBinding(
       mojo::InterfaceRequest<mojom::DisplayManager> request);
 
-  void CreateWindowManagerFactoryService(
-      const uint32_t user_id,
-      mojo::InterfaceRequest<mojom::WindowManagerFactoryService> request);
-  void OnWindowManagerFactorySet();
+  void OnFirstWindowManagerFactorySet();
 
   WindowManagerFactoryRegistry* window_manager_factory_registry() {
     return &window_manager_factory_registry_;
@@ -314,6 +317,8 @@ class ConnectionManager : public ServerWindowDelegate,
 
   // Overriden from mojom::DisplayManager:
   void AddObserver(mojom::DisplayManagerObserverPtr observer) override;
+
+  UserIdTracker user_id_tracker_;
 
   ConnectionManagerDelegate* delegate_;
 

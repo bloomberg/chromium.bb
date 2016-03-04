@@ -35,7 +35,7 @@ ConnectionManager::ConnectionManager(
       in_destructor_(false),
       next_wm_change_id_(0),
       got_valid_frame_decorations_(false),
-      window_manager_factory_registry_(this) {}
+      window_manager_factory_registry_(this, &user_id_tracker_) {}
 
 ConnectionManager::~ConnectionManager() {
   in_destructor_ = true;
@@ -312,13 +312,7 @@ void ConnectionManager::AddDisplayManagerBinding(
   display_manager_bindings_.AddBinding(this, std::move(request));
 }
 
-void ConnectionManager::CreateWindowManagerFactoryService(
-    uint32_t user_id,
-    mojo::InterfaceRequest<mojom::WindowManagerFactoryService> request) {
-  window_manager_factory_registry_.Register(user_id, std::move(request));
-}
-
-void ConnectionManager::OnWindowManagerFactorySet() {
+void ConnectionManager::OnFirstWindowManagerFactorySet() {
   if (!hosts_.empty() || !pending_hosts_.empty())
     return;
 

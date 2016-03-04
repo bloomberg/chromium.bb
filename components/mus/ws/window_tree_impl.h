@@ -39,6 +39,10 @@ class TargetedEvent;
 class WindowTreeHostImpl;
 class WindowTreeTest;
 
+namespace test {
+class WindowTreeTestApi;
+}
+
 // An instance of WindowTreeImpl is created for every WindowTree request.
 // WindowTreeImpl tracks all the state and windows created by a client.
 // WindowTreeImpl coordinates with ConnectionManager to update the client (and
@@ -181,7 +185,7 @@ class WindowTreeImpl : public mojom::WindowTree,
                                      bool originated_change);
 
  private:
-  friend class WindowTreeTest;
+  friend class test::WindowTreeTestApi;
 
   struct WaitingForTopLevelWindowInfo {
     WaitingForTopLevelWindowInfo(const ClientWindowId& client_window_id,

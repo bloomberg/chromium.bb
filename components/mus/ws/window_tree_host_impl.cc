@@ -104,17 +104,25 @@ WindowTreeHostImpl::WindowTreeHostImpl(
   frame_decoration_values_->max_title_bar_button_width = 0u;
 
   display_manager_->Init(this);
+
+  connection_manager_->window_manager_factory_registry()->AddObserver(this);
 }
 
 WindowTreeHostImpl::~WindowTreeHostImpl() {
+  connection_manager_->window_manager_factory_registry()->RemoveObserver(this);
+
   DestroyFocusController();
   for (ServerWindow* window : windows_needing_frame_destruction_)
     window->RemoveObserver(this);
 
-  // TODO(sky): this may leave the WindowTreeImpls associated with the
-  // WindowManagerStates still alive. The shutdown ordering is a bit iffy,
-  // figure out what it should be. ConnectionManager::OnConnectionError()
-  // has a check that effects this too.
+  // Destroy any trees, which triggers destroying the WindowManagerState. Copy
+  // off the WindowManagerStates as destruction mutates
+  // |window_manager_state_map_|.
+  std::set<WindowManagerState*> states;
+  for (auto& pair : window_manager_state_map_)
+    states.insert(pair.second.get());
+  for (WindowManagerState* state : states)
+    connection_manager_->DestroyTree(state->tree());
 }
 
 void WindowTreeHostImpl::Init(scoped_ptr<WindowTreeHostConnection> connection) {
@@ -178,6 +186,12 @@ WindowManagerState* WindowTreeHostImpl::GetFirstWindowManagerState() {
   return window_manager_state_map_.empty()
              ? nullptr
              : window_manager_state_map_.begin()->second.get();
+}
+
+WindowManagerState* WindowTreeHostImpl::GetWindowManagerStateForUser(
+    UserId user_id) {
+  auto iter = window_manager_state_map_.find(user_id);
+  return iter == window_manager_state_map_.end() ? nullptr : iter->second.get();
 }
 
 void WindowTreeHostImpl::SetCapture(ServerWindow* window,
@@ -375,13 +389,19 @@ void WindowTreeHostImpl::CreateWindowManagerStatesFromRegistry() {
   std::vector<WindowManagerFactoryService*> services =
       connection_manager_->window_manager_factory_registry()->GetServices();
   for (WindowManagerFactoryService* service : services) {
-    scoped_ptr<WindowManagerState> wms_ptr(
-        new WindowManagerState(this, service->user_id()));
-    WindowManagerState* wms = wms_ptr.get();
-    window_manager_state_map_[service->user_id()] = std::move(wms_ptr);
-    wms->tree_ = connection_manager_->CreateTreeForWindowManager(
-        this, service->window_manager_factory(), wms->root());
+    if (service->window_manager_factory())
+      CreateWindowManagerStateFromService(service);
   }
+}
+
+void WindowTreeHostImpl::CreateWindowManagerStateFromService(
+    WindowManagerFactoryService* service) {
+  scoped_ptr<WindowManagerState> wms_ptr(
+      new WindowManagerState(this, service->user_id()));
+  WindowManagerState* wms = wms_ptr.get();
+  window_manager_state_map_[service->user_id()] = std::move(wms_ptr);
+  wms->tree_ = connection_manager_->CreateTreeForWindowManager(
+      this, service->window_manager_factory(), wms->root());
 }
 
 void WindowTreeHostImpl::UpdateNativeCursor(int32_t cursor_id) {
@@ -603,6 +623,31 @@ void WindowTreeHostImpl::DispatchInputEventToWindow(ServerWindow* target,
 void WindowTreeHostImpl::OnWindowDestroyed(ServerWindow* window) {
   windows_needing_frame_destruction_.erase(window);
   window->RemoveObserver(this);
+}
+
+void WindowTreeHostImpl::OnActiveUserIdChanged(UserId id) {
+  // TODO(sky): this likely needs to cancel any pending events and all that.
+}
+
+void WindowTreeHostImpl::OnUserIdAdded(UserId id) {}
+
+void WindowTreeHostImpl::OnUserIdRemoved(UserId id) {
+  if (window_tree_host_connection_)
+    return;
+
+  WindowManagerState* state = GetWindowManagerStateForUser(id);
+  if (!state)
+    return;
+
+  // DestroyTree() calls back to OnWindowTreeConnectionError() and the
+  // WindowManagerState is destroyed (and removed).
+  connection_manager_->DestroyTree(state->tree());
+  DCHECK_EQ(0u, window_manager_state_map_.count(id));
+}
+
+void WindowTreeHostImpl::OnWindowManagerFactorySet(
+    WindowManagerFactoryService* service) {
+  CreateWindowManagerStateFromService(service);
 }
 
 }  // namespace ws

@@ -12,20 +12,36 @@ namespace ws {
 
 WindowManagerFactoryService::WindowManagerFactoryService(
     WindowManagerFactoryRegistry* registry,
-    uint32_t user_id,
+    UserId user_id,
     mojo::InterfaceRequest<mojom::WindowManagerFactoryService> request)
     : registry_(registry),
       user_id_(user_id),
-      binding_(this, std::move(request)) {}
+      binding_(this, std::move(request)),
+      window_manager_factory_(nullptr) {}
 
 WindowManagerFactoryService::~WindowManagerFactoryService() {}
 
 void WindowManagerFactoryService::SetWindowManagerFactory(
     mojom::WindowManagerFactoryPtr factory) {
-  window_manager_factory_ = std::move(factory);
-  registry_->OnWindowManagerFactorySet();
+  window_manager_factory_ptr_ = std::move(factory);
   binding_.set_connection_error_handler(base::Bind(
       &WindowManagerFactoryService::OnConnectionLost, base::Unretained(this)));
+  SetWindowManagerFactoryImpl(window_manager_factory_ptr_.get());
+}
+
+WindowManagerFactoryService::WindowManagerFactoryService(
+    WindowManagerFactoryRegistry* registry,
+    UserId user_id)
+    : registry_(registry),
+      user_id_(user_id),
+      binding_(this),
+      window_manager_factory_(nullptr) {}
+
+void WindowManagerFactoryService::SetWindowManagerFactoryImpl(
+    mojom::WindowManagerFactory* factory) {
+  DCHECK(!window_manager_factory_);
+  window_manager_factory_ = factory;
+  registry_->OnWindowManagerFactorySet(this);
 }
 
 void WindowManagerFactoryService::OnConnectionLost() {

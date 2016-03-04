@@ -5,31 +5,33 @@
 #include "components/mus/ws/window_manager_factory_registry.h"
 
 #include "components/mus/ws/connection_manager.h"
+#include "components/mus/ws/user_id_tracker_observer.h"
+#include "components/mus/ws/window_manager_factory_registry_observer.h"
 #include "components/mus/ws/window_manager_factory_service.h"
 
 namespace mus {
 namespace ws {
 
 WindowManagerFactoryRegistry::WindowManagerFactoryRegistry(
-    ConnectionManager* connection_manager)
-    : connection_manager_(connection_manager) {}
+    ConnectionManager* connection_manager,
+    UserIdTracker* id_tracker)
+    : id_tracker_(id_tracker), connection_manager_(connection_manager) {
+  id_tracker_->AddObserver(this);
+}
 
-WindowManagerFactoryRegistry::~WindowManagerFactoryRegistry() {}
+WindowManagerFactoryRegistry::~WindowManagerFactoryRegistry() {
+  id_tracker_->RemoveObserver(this);
+}
 
 void WindowManagerFactoryRegistry::Register(
-    uint32_t user_id,
+    UserId user_id,
     mojo::InterfaceRequest<mojom::WindowManagerFactoryService> request) {
-  for (auto& service_ptr : services_) {
-    if (service_ptr->user_id() == user_id) {
-      LOG(ERROR) << "WindowManagerFactoryService already registered for "
-                 << user_id;
-      return;
-    }
-  }
+  if (ContainsServiceForUser(user_id))
+    return;
 
   scoped_ptr<WindowManagerFactoryService> service(
       new WindowManagerFactoryService(this, user_id, std::move(request)));
-  services_.push_back(std::move(service));
+  AddServiceImpl(std::move(service));
 }
 
 std::vector<WindowManagerFactoryService*>
@@ -38,6 +40,33 @@ WindowManagerFactoryRegistry::GetServices() {
   for (auto& service_ptr : services_)
     result.push_back(service_ptr.get());
   return result;
+}
+
+void WindowManagerFactoryRegistry::AddObserver(
+    WindowManagerFactoryRegistryObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void WindowManagerFactoryRegistry::RemoveObserver(
+    WindowManagerFactoryRegistryObserver* observer) {
+  observers_.RemoveObserver(observer);
+}
+
+void WindowManagerFactoryRegistry::AddServiceImpl(
+    scoped_ptr<WindowManagerFactoryService> service) {
+  services_.push_back(std::move(service));
+}
+
+bool WindowManagerFactoryRegistry::ContainsServiceForUser(
+    UserId user_id) const {
+  for (auto& service_ptr : services_) {
+    if (service_ptr->user_id() == user_id) {
+      LOG(ERROR) << "WindowManagerFactoryService already registered for "
+                 << user_id;
+      return true;
+    }
+  }
+  return false;
 }
 
 void WindowManagerFactoryRegistry::OnWindowManagerFactoryConnectionLost(
@@ -50,8 +79,31 @@ void WindowManagerFactoryRegistry::OnWindowManagerFactoryConnectionLost(
   }
 }
 
-void WindowManagerFactoryRegistry::OnWindowManagerFactorySet() {
-  connection_manager_->OnWindowManagerFactorySet();
+void WindowManagerFactoryRegistry::OnWindowManagerFactorySet(
+    WindowManagerFactoryService* service) {
+  DCHECK(service->window_manager_factory());
+  const bool is_first_valid_factory = !got_valid_factory_;
+  got_valid_factory_ = true;
+  FOR_EACH_OBSERVER(WindowManagerFactoryRegistryObserver, observers_,
+                    OnWindowManagerFactorySet(service));
+
+  // Notify after other observers as ConnectionManager triggers other
+  // observers being added, which will have already processed the add.
+  if (is_first_valid_factory)
+    connection_manager_->OnFirstWindowManagerFactorySet();
+}
+
+void WindowManagerFactoryRegistry::OnActiveUserIdChanged(UserId id) {}
+
+void WindowManagerFactoryRegistry::OnUserIdAdded(UserId id) {}
+
+void WindowManagerFactoryRegistry::OnUserIdRemoved(UserId id) {
+  for (auto iter = services_.begin(); iter != services_.end(); ++iter) {
+    if ((*iter)->user_id() == id) {
+      services_.erase(iter);
+      return;
+    }
+  }
 }
 
 }  // namespace ws

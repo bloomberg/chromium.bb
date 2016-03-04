@@ -34,6 +34,7 @@ using mus::mojom::WindowTreeClient;
 
 namespace mus {
 namespace ws {
+namespace test {
 
 namespace {
 
@@ -1927,5 +1928,6 @@ TEST_F(WindowTreeAppTest, DISABLED_ExplicitCapturePropagation) {
 // manager
 // tests.
 
+}  // namespace test
 }  // namespace ws
 }  // namespace mus

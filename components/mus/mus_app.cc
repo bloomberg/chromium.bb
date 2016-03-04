@@ -149,6 +149,7 @@ void MandolineUIServicesApp::OnFirstRootConnectionCreated() {
   PendingRequests requests;
   requests.swap(pending_requests_);
   for (auto& request : requests) {
+    // TODO(sky): this needs to cache user id too!
     if (request->dm_request)
       Create(nullptr, std::move(*request->dm_request));
     else
@@ -192,7 +193,7 @@ void MandolineUIServicesApp::Create(mojo::Connection* connection,
 void MandolineUIServicesApp::Create(
     mojo::Connection* connection,
     mojom::WindowManagerFactoryServiceRequest request) {
-  connection_manager_->CreateWindowManagerFactoryService(
+  connection_manager_->window_manager_factory_registry()->Register(
       connection->GetRemoteUserID(), std::move(request));
 }
 

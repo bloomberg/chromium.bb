@@ -12,7 +12,6 @@
 #include "components/mus/ws/ids.h"
 
 namespace mus {
-
 namespace ws {
 
 class ServerWindow;
@@ -72,7 +71,6 @@ class AccessPolicy {
 };
 
 }  // namespace ws
-
 }  // namespace mus
 
 #endif  // COMPONENTS_MUS_WS_ACCESS_POLICY_H_
