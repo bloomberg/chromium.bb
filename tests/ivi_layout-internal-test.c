@@ -257,7 +257,8 @@ test_layer_position(struct test_context *ctx)
 	iassert(prop->dest_x == 0);
 	iassert(prop->dest_y == 0);
 
-	iassert(lyt->layer_set_position(ivilayer, 20, 30) == IVI_SUCCEEDED);
+	iassert(lyt->layer_set_destination_rectangle(ivilayer, 20, 30,
+			prop->dest_width, prop->dest_height) == IVI_SUCCEEDED);
 
 	iassert(prop->dest_x == 0);
 	iassert(prop->dest_y == 0);
@@ -435,22 +436,6 @@ test_layer_bad_dimension(struct test_context *ctx)
 }
 
 static void
-test_layer_bad_position(struct test_context *ctx)
-{
-	const struct ivi_layout_interface *lyt = ctx->layout_interface;
-	struct ivi_layout_layer *ivilayer;
-
-	ivilayer = lyt->layer_create_with_dimension(IVI_TEST_LAYER_ID(0), 200, 300);
-	iassert(ivilayer != NULL);
-
-	iassert(lyt->layer_set_position(NULL, 20, 30) == IVI_FAILED);
-
-	lyt->commit_changes();
-
-	lyt->layer_destroy(ivilayer);
-}
-
-static void
 test_layer_bad_source_rectangle(struct test_context *ctx)
 {
 	const struct ivi_layout_interface *lyt = ctx->layout_interface;
@@ -521,20 +506,6 @@ test_commit_changes_after_dimension_set_layer_destroy(struct test_context *ctx)
 	iassert(ivilayer != NULL);
 
 	iassert(lyt->layer_set_dimension(ivilayer, 200, 300) == IVI_SUCCEEDED);
-	lyt->layer_destroy(ivilayer);
-	lyt->commit_changes();
-}
-
-static void
-test_commit_changes_after_position_set_layer_destroy(struct test_context *ctx)
-{
-	const struct ivi_layout_interface *lyt = ctx->layout_interface;
-	struct ivi_layout_layer *ivilayer;
-
-	ivilayer = lyt->layer_create_with_dimension(IVI_TEST_LAYER_ID(0), 200, 300);
-	iassert(ivilayer != NULL);
-
-	iassert(lyt->layer_set_position(ivilayer, 20, 30) == IVI_SUCCEEDED);
 	lyt->layer_destroy(ivilayer);
 	lyt->commit_changes();
 }
@@ -1048,14 +1019,12 @@ run_internal_tests(void *data)
 	test_layer_bad_destination_rectangle(ctx);
 	test_layer_bad_orientation(ctx);
 	test_layer_bad_dimension(ctx);
-	test_layer_bad_position(ctx);
 	test_layer_bad_source_rectangle(ctx);
 	test_layer_bad_properties(ctx);
 	test_commit_changes_after_visibility_set_layer_destroy(ctx);
 	test_commit_changes_after_opacity_set_layer_destroy(ctx);
 	test_commit_changes_after_orientation_set_layer_destroy(ctx);
 	test_commit_changes_after_dimension_set_layer_destroy(ctx);
-	test_commit_changes_after_position_set_layer_destroy(ctx);
 	test_commit_changes_after_source_rectangle_set_layer_destroy(ctx);
 	test_commit_changes_after_destination_rectangle_set_layer_destroy(ctx);
 	test_layer_create_duplicate(ctx);

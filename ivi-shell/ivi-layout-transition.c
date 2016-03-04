@@ -664,7 +664,8 @@ transition_move_layer_user_frame(struct ivi_layout_transition *transition)
 	const int32_t dest_y = data->start_y +
 		(data->end_y - data->start_y) * current;
 
-	ivi_layout_layer_set_position(layer, dest_x, dest_y);
+	ivi_layout_layer_set_destination_rectangle(layer, dest_x, dest_y,
+			layer->prop.dest_width, layer->prop.dest_height);
 }
 
 static void

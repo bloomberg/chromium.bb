@@ -200,8 +200,9 @@ int32_t
 ivi_layout_layer_set_visibility(struct ivi_layout_layer *ivilayer,
 				bool newVisibility);
 int32_t
-ivi_layout_layer_set_position(struct ivi_layout_layer *ivilayer,
-			      int32_t dest_x, int32_t dest_y);
+ivi_layout_layer_set_destination_rectangle(struct ivi_layout_layer *ivilayer,
+					   int32_t x, int32_t y,
+					   int32_t width, int32_t height);
 int32_t
 ivi_layout_layer_set_render_order(struct ivi_layout_layer *ivilayer,
 				  struct ivi_layout_surface **pSurface,

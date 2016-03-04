@@ -1838,7 +1838,7 @@ ivi_layout_layer_set_source_rectangle(struct ivi_layout_layer *ivilayer,
 	return IVI_SUCCEEDED;
 }
 
-static int32_t
+int32_t
 ivi_layout_layer_set_destination_rectangle(struct ivi_layout_layer *ivilayer,
 					   int32_t x, int32_t y,
 					   int32_t width, int32_t height)
@@ -1887,29 +1887,6 @@ ivi_layout_layer_set_dimension(struct ivi_layout_layer *ivilayer,
 		ivilayer->event_mask |= IVI_NOTIFICATION_DIMENSION;
 	else
 		ivilayer->event_mask &= ~IVI_NOTIFICATION_DIMENSION;
-
-	return IVI_SUCCEEDED;
-}
-
-int32_t
-ivi_layout_layer_set_position(struct ivi_layout_layer *ivilayer,
-			      int32_t dest_x, int32_t dest_y)
-{
-	struct ivi_layout_layer_properties *prop = NULL;
-
-	if (ivilayer == NULL) {
-		weston_log("ivi_layout_layer_set_position: invalid argument\n");
-		return IVI_FAILED;
-	}
-
-	prop = &ivilayer->pending.prop;
-	prop->dest_x = dest_x;
-	prop->dest_y = dest_y;
-
-	if (ivilayer->prop.dest_x != dest_x || ivilayer->prop.dest_y != dest_y)
-		ivilayer->event_mask |= IVI_NOTIFICATION_POSITION;
-	else
-		ivilayer->event_mask &= ~IVI_NOTIFICATION_POSITION;
 
 	return IVI_SUCCEEDED;
 }
@@ -2627,7 +2604,6 @@ static struct ivi_layout_interface ivi_layout_interface = {
 	.layer_set_opacity			= ivi_layout_layer_set_opacity,
 	.layer_set_source_rectangle		= ivi_layout_layer_set_source_rectangle,
 	.layer_set_destination_rectangle	= ivi_layout_layer_set_destination_rectangle,
-	.layer_set_position			= ivi_layout_layer_set_position,
 	.layer_set_dimension			= ivi_layout_layer_set_dimension,
 	.layer_set_orientation			= ivi_layout_layer_set_orientation,
 	.layer_add_surface			= ivi_layout_layer_add_surface,

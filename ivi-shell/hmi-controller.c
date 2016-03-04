@@ -1566,12 +1566,16 @@ static void
 layer_set_pos(struct ivi_layout_layer *layer, wl_fixed_t pos_x,
 	      wl_fixed_t pos_y)
 {
+	const struct ivi_layout_layer_properties *prop;
 	int32_t layout_pos_x = 0;
 	int32_t layout_pos_y = 0;
 
+	prop = ivi_layout_interface->get_properties_of_layer(layer);
+
 	layout_pos_x = wl_fixed_to_int(pos_x);
 	layout_pos_y = wl_fixed_to_int(pos_y);
-	ivi_layout_interface->layer_set_position(layer, layout_pos_x, layout_pos_y);
+	ivi_layout_interface->layer_set_destination_rectangle(layer,
+			layout_pos_x, layout_pos_y, prop->dest_width, prop->dest_height);
 	ivi_layout_interface->commit_changes();
 }
 
