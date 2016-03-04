@@ -58,6 +58,7 @@
 #include "core/html/HTMLSpanElement.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutText.h"
+#include "platform/TraceEvent.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/Vector.h"
 
@@ -155,6 +156,7 @@ ReplacementFragment::ReplacementFragment(Document* document, DocumentFragment* f
     if (!m_fragment || !m_fragment->hasChildren())
         return;
 
+    TRACE_EVENT0("blink", "ReplacementFragment constructor");
     RefPtrWillBeRawPtr<Element> editableRoot = selection.rootEditableElement();
     ASSERT(editableRoot);
     if (!editableRoot)
@@ -257,6 +259,7 @@ void ReplacementFragment::insertNodeBefore(PassRefPtrWillBeRawPtr<Node> node, No
 
 PassRefPtrWillBeRawPtr<HTMLElement> ReplacementFragment::insertFragmentForTestRendering(Element* rootEditableElement)
 {
+    TRACE_EVENT0("blink", "ReplacementFragment::insertFragmentForTestRendering");
     ASSERT(m_document);
     RefPtrWillBeRawPtr<HTMLElement> holder = createDefaultParagraphElement(*m_document.get());
 
@@ -948,6 +951,7 @@ static inline HTMLElement* elementToSplitToAvoidPastingIntoInlineElementsWithSty
 
 void ReplaceSelectionCommand::doApply(EditingState* editingState)
 {
+    TRACE_EVENT0("blink", "ReplaceSelectionCommand::doApply");
     const VisibleSelection selection = endingSelection();
     ASSERT(selection.isCaretOrRange());
     ASSERT(selection.start().anchorNode());
