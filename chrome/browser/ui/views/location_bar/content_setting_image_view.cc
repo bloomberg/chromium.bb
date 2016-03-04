@@ -259,6 +259,10 @@ void ContentSettingImageView::OnClick() {
     views::Widget* bubble_widget =
         parent_->delegate()->CreateViewsBubble(bubble_view_);
     bubble_widget->AddObserver(this);
+    // This is triggered by an input event, the icon will be in an active state
+    // so the bubble doesn't need an arrow.
+    if (ui::MaterialDesignController::IsModeMaterial())
+      bubble_view_->SetArrowPaintType(views::BubbleBorder::PAINT_TRANSPARENT);
     bubble_widget->Show();
   }
 }
