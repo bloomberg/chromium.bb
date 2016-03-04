@@ -11,6 +11,7 @@
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/threading/thread.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/geolocation_provider.h"
@@ -53,7 +54,8 @@ class CONTENT_EXPORT GeolocationProviderImpl
   ~GeolocationProviderImpl() override;
 
   // Useful for injecting mock geolocation arbitrator in tests.
-  virtual LocationArbitrator* CreateArbitrator();
+  // TODO(mvanouwerkerk): Use something like SetArbitratorForTesting instead.
+  virtual scoped_ptr<LocationArbitrator> CreateArbitrator();
 
  private:
   bool OnGeolocationThread() const;
@@ -90,7 +92,7 @@ class CONTENT_EXPORT GeolocationProviderImpl
   bool ignore_location_updates_;
 
   // Only to be used on the geolocation thread.
-  LocationArbitrator* arbitrator_;
+  scoped_ptr<LocationArbitrator> arbitrator_;
 
   DISALLOW_COPY_AND_ASSIGN(GeolocationProviderImpl);
 };

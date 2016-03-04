@@ -19,18 +19,18 @@ namespace content {
 class LocationProviderAndroid;
 struct Geoposition;
 
-// Interacts with JNI and reports back to AndroidLocationProvider.
-// This class creates a LocationProvider java object and listens for
-// updates.
+// Interacts with JNI and reports back to LocationProviderAndroid. This class
+// creates a LocationProvider java object and listens for updates.
 // The simplified flow is:
-// GeolocationProvider runs in a Geolocation Thread and fetches geolocation data
-// from a LocationProvider.
-// AndroidLocationProvider access a singleton AndroidLocationApiAdapter
-// AndroidLocationApiAdapter calls via JNI and uses the main thread Looper
-// in the java side to listen for location updates. We then bounce these updates
-// to the Geolocation thread.
+//   - GeolocationProvider runs in a Geolocation Thread and fetches geolocation
+//     data from a LocationProvider.
+//   - LocationProviderAndroid accesses a singleton AndroidLocationApiAdapter.
+//   - AndroidLocationApiAdapter calls via JNI and uses the main thread Looper
+//     in the java side to listen for location updates. We then bounce these
+//     updates to the Geolocation thread.
+//
 // Note that AndroidLocationApiAdapter is a singleton and there's at most only
-// one AndroidLocationProvider that has called Start().
+// one LocationProviderAndroid that has called Start().
 class AndroidLocationApiAdapter {
  public:
   // Starts the underlying location provider, returns true if successful.
@@ -71,7 +71,8 @@ class AndroidLocationApiAdapter {
 
   base::android::ScopedJavaGlobalRef<jobject>
       java_location_provider_android_object_;
-  LocationProviderAndroid* location_provider_;
+  // TODO(mvanouwerkerk): Use a callback instead of holding a pointer.
+  LocationProviderAndroid* location_provider_;  // Owned by the arbitrator.
 
   // Guards against the following member which is accessed on Geolocation
   // thread and the JNI main thread looper.

@@ -14,7 +14,7 @@ using testing::Invoke;
 
 namespace content {
 
-FakeAccessTokenStore::FakeAccessTokenStore() : originating_task_runner_(NULL) {
+FakeAccessTokenStore::FakeAccessTokenStore() {
   ON_CALL(*this, LoadAccessTokens(_))
       .WillByDefault(Invoke(this,
                             &FakeAccessTokenStore::DefaultLoadAccessTokens));
@@ -38,7 +38,7 @@ void FakeAccessTokenStore::NotifyDelegateTokensLoaded() {
 
 void FakeAccessTokenStore::DefaultLoadAccessTokens(
     const LoadAccessTokensCallback& callback) {
-  originating_task_runner_ = base::ThreadTaskRunnerHandle::Get().get();
+  originating_task_runner_ = base::ThreadTaskRunnerHandle::Get();
   callback_ = callback;
 }
 

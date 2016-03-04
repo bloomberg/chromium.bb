@@ -151,7 +151,7 @@ bool AndroidLocationApiAdapter::RegisterGeolocationService(JNIEnv* env) {
 }
 
 void AndroidLocationApiAdapter::CreateJavaObject(JNIEnv* env) {
-  // Create the Java AndroidLocationProvider object.
+  // Create the Java LocationProviderAdapter object.
   java_location_provider_android_object_.Reset(
       Java_LocationProviderAdapter_create(env,
           base::android::GetApplicationContext()));

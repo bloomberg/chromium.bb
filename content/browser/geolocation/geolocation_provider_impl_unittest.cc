@@ -38,16 +38,18 @@ class LocationProviderForTestArbitrator : public GeolocationProviderImpl {
 
  protected:
   // GeolocationProviderImpl implementation:
-  LocationArbitrator* CreateArbitrator() override;
+  scoped_ptr<LocationArbitrator> CreateArbitrator() override;
 
  private:
+  // An alias to the arbitrator stored in the super class, where it is owned.
   MockLocationArbitrator* mock_arbitrator_;
 };
 
-LocationArbitrator* LocationProviderForTestArbitrator::CreateArbitrator() {
+scoped_ptr<LocationArbitrator>
+LocationProviderForTestArbitrator::CreateArbitrator() {
   DCHECK(mock_arbitrator_ == NULL);
   mock_arbitrator_ = new MockLocationArbitrator;
-  return mock_arbitrator_;
+  return make_scoped_ptr(mock_arbitrator_);
 }
 
 class GeolocationObserver {

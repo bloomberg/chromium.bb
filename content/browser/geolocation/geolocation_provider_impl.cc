@@ -75,8 +75,7 @@ GeolocationProviderImpl* GeolocationProviderImpl::GetInstance() {
 GeolocationProviderImpl::GeolocationProviderImpl()
     : base::Thread("Geolocation"),
       user_did_opt_into_location_services_(false),
-      ignore_location_updates_(false),
-      arbitrator_(NULL) {
+      ignore_location_updates_(false) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   high_accuracy_callbacks_.set_removal_callback(
       base::Bind(&GeolocationProviderImpl::OnClientsChanged,
@@ -167,14 +166,13 @@ void GeolocationProviderImpl::Init() {
 
 void GeolocationProviderImpl::CleanUp() {
   DCHECK(OnGeolocationThread());
-  delete arbitrator_;
-  arbitrator_ = NULL;
+  arbitrator_.reset();
 }
 
-LocationArbitrator* GeolocationProviderImpl::CreateArbitrator() {
+scoped_ptr<LocationArbitrator> GeolocationProviderImpl::CreateArbitrator() {
   LocationArbitratorImpl::LocationUpdateCallback callback = base::Bind(
       &GeolocationProviderImpl::OnLocationUpdate, base::Unretained(this));
-  return new LocationArbitratorImpl(callback);
+  return make_scoped_ptr(new LocationArbitratorImpl(callback));
 }
 
 }  // namespace content
