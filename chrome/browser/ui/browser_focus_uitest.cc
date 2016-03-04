@@ -738,4 +738,29 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, DISABLED_FocusOnNavigate) {
   EXPECT_FALSE(IsViewFocused(VIEW_ID_OMNIBOX));
 }
 
+// Ensure that crbug.com/567445 does not regress. This test checks that the
+// Omnibox does not get focused when loading about:blank in a case where it's
+// not the startup URL, e.g. when a page opens a popup to about:blank, with a
+// null opener, and then navigates it. This is a potential security issue; see
+// comments in |WebContentsImpl::FocusLocationBarByDefault|.
+IN_PROC_BROWSER_TEST_F(BrowserFocusTest, AboutBlankNavigationLocationTest) {
+  const GURL url1(embedded_test_server()->GetURL("/title1.html"));
+  ui_test_utils::NavigateToURL(browser(), url1);
+
+  TabStripModel* tab_strip = browser()->tab_strip_model();
+  WebContents* web_contents = tab_strip->GetActiveWebContents();
+
+  const GURL url2(embedded_test_server()->GetURL("/title2.html"));
+  const std::string spoof("var w = window.open('about:blank'); w.opener = null;"
+                          "w.document.location = '" + url2.spec() + "';");
+
+  ASSERT_TRUE(content::ExecuteScript(web_contents, spoof));
+  EXPECT_EQ(url1, web_contents->GetVisibleURL());
+  // After running the spoof code, |GetActiveWebContents| returns the new tab,
+  // not the same as |web_contents|.
+  ASSERT_NO_FATAL_FAILURE(content::WaitForLoadStop(
+      browser()->tab_strip_model()->GetActiveWebContents()));
+  EXPECT_FALSE(IsViewFocused(VIEW_ID_OMNIBOX));
+}
+
 }  // namespace

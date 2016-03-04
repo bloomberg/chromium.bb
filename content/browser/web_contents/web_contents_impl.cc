@@ -2947,9 +2947,28 @@ void WebContentsImpl::ResumeLoadingCreatedWebContents() {
 }
 
 bool WebContentsImpl::FocusLocationBarByDefault() {
-  NavigationEntry* entry = controller_.GetVisibleEntry();
-  if (entry && entry->GetURL() == GURL(url::kAboutBlankURL))
+  // When the browser is started with about:blank as the startup URL, focus
+  // the location bar (which will also select its contents) so people can
+  // simply begin typing to navigate elsewhere.
+  //
+  // We need to be careful not to trigger this for anything other than the
+  // startup navigation. In particular, if we allow an attacker to open a
+  // popup to about:blank, then navigate, focusing the Omnibox will cause the
+  // end of the new URL to be scrolled into view instead of the start,
+  // allowing the attacker to spoof other URLs. The conditions checked here
+  // are all aimed at ensuring no such attacker-controlled navigation can
+  // trigger this.
+  //
+  // Note that we check the pending entry instead of the visible one; for the
+  // startup URL case these are the same, but for the attacker-controlled
+  // navigation case the visible entry is the committed "about:blank" URL and
+  // the pending entry is the problematic navigation elsewhere.
+  NavigationEntryImpl* entry = controller_.GetPendingEntry();
+  if (controller_.IsInitialNavigation() && entry &&
+      !entry->is_renderer_initiated() &&
+      entry->GetURL() == GURL(url::kAboutBlankURL)) {
     return true;
+  }
   return delegate_ && delegate_->ShouldFocusLocationBarByDefault(this);
 }
 
