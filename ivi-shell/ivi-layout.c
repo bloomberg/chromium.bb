@@ -2132,17 +2132,6 @@ ivi_layout_surface_set_orientation(struct ivi_layout_surface *ivisurf,
 	return IVI_SUCCEEDED;
 }
 
-static enum wl_output_transform
-ivi_layout_surface_get_orientation(struct ivi_layout_surface *ivisurf)
-{
-	if (ivisurf == NULL) {
-		weston_log("ivi_layout_surface_get_orientation: invalid argument\n");
-		return 0;
-	}
-
-	return ivisurf->prop.orientation;
-}
-
 static int32_t
 ivi_layout_screen_add_layer(struct ivi_layout_screen *iviscrn,
 			    struct ivi_layout_layer *addlayer)
@@ -2647,7 +2636,6 @@ static struct ivi_layout_interface ivi_layout_interface = {
 	.surface_set_position			= ivi_layout_surface_set_position,
 	.surface_set_dimension			= ivi_layout_surface_set_dimension,
 	.surface_set_orientation		= ivi_layout_surface_set_orientation,
-	.surface_get_orientation		= ivi_layout_surface_get_orientation,
 	.surface_set_content_observer		= ivi_layout_surface_set_content_observer,
 	.surface_add_notification		= ivi_layout_surface_add_notification,
 	.surface_remove_notification		= ivi_layout_surface_remove_notification,

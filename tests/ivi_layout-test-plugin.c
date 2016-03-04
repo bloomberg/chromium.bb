@@ -402,22 +402,17 @@ RUNNER_TEST(surface_orientation)
 	ivisurf = lyt->get_surface_from_id(IVI_TEST_SURFACE_ID(0));
 	runner_assert(ivisurf != NULL);
 
-	runner_assert(lyt->surface_get_orientation(ivisurf) ==
-		      WL_OUTPUT_TRANSFORM_NORMAL);
+	prop = lyt->get_properties_of_surface(ivisurf);
+	runner_assert_or_return(prop);
+	runner_assert(prop->orientation == WL_OUTPUT_TRANSFORM_NORMAL);
 
 	runner_assert(lyt->surface_set_orientation(
 		      ivisurf, WL_OUTPUT_TRANSFORM_90) == IVI_SUCCEEDED);
 
-	runner_assert(lyt->surface_get_orientation(ivisurf) ==
-		      WL_OUTPUT_TRANSFORM_NORMAL);
+	runner_assert(prop->orientation == WL_OUTPUT_TRANSFORM_NORMAL);
 
 	lyt->commit_changes();
 
-	runner_assert(lyt->surface_get_orientation(
-		      ivisurf) == WL_OUTPUT_TRANSFORM_90);
-
-	prop = lyt->get_properties_of_surface(ivisurf);
-	runner_assert_or_return(prop);
 	runner_assert(prop->orientation == WL_OUTPUT_TRANSFORM_90);
 }
 

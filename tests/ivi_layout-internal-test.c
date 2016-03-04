@@ -88,8 +88,6 @@ test_surface_bad_orientation(struct test_context *ctx)
 	const struct ivi_layout_interface *lyt = ctx->layout_interface;
 
 	iassert(lyt->surface_set_orientation(NULL, WL_OUTPUT_TRANSFORM_90) == IVI_FAILED);
-
-	iassert(lyt->surface_get_orientation(NULL) == WL_OUTPUT_TRANSFORM_NORMAL);
 }
 
 static void

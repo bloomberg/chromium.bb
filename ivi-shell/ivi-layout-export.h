@@ -339,16 +339,6 @@ struct ivi_layout_interface {
 					   enum wl_output_transform orientation);
 
 	/**
-	 * \brief Gets the orientation of a surface.
-	 *
-	 * \return (enum wl_output_transform)
-	 *              if the method call was successful
-	 * \return WL_OUTPUT_TRANSFORM_NORMAL if the method call was failed
-	 */
-	enum wl_output_transform
-		(*surface_get_orientation)(struct ivi_layout_surface *ivisurf);
-
-	/**
 	 * \brief Set an observer callback for ivi_surface content status change.
 	 *
 	 * \return IVI_SUCCEEDED if the method call was successful
