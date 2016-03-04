@@ -53,8 +53,6 @@ public:
     static HTMLParserThread* shared();
 
     void postTask(PassOwnPtr<Closure>);
-    WebThread& platformThread();
-    bool isRunning();
 
 private:
     HTMLParserThread();
