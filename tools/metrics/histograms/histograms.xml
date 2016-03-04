@@ -62351,6 +62351,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="13" label="Drawer - Rendering"/>
   <int value="14" label="Drawer - Sensors"/>
   <int value="15" label="Drawer - Search"/>
+  <int value="16" label="Security"/>
 </enum>
 
 <enum name="DevToolsSetting" type="int">

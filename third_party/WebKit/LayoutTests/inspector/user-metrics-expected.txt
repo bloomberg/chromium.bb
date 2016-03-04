@@ -38,6 +38,7 @@ recordPanelShown:
     network : 3
     profiles : 6
     resources : 2
+    security : 16
     sources : 4
     timeline : 5
 }
