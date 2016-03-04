@@ -14,12 +14,17 @@ namespace url {
 
 class UrlTestImpl : public mojom::UrlTest {
  public:
-  explicit UrlTestImpl(mojo::InterfaceRequest<url::mojom::UrlTest> request)
+  explicit UrlTestImpl(mojo::InterfaceRequest<mojom::UrlTest> request)
       : binding_(this, std::move(request)) {
   }
 
   // UrlTest:
-  void Bounce(const GURL& in, const BounceCallback& callback) override {
+  void BounceUrl(const GURL& in, const BounceUrlCallback& callback) override {
+    callback.Run(in);
+  }
+
+  void BounceOrigin(const Origin& in,
+                    const BounceOriginCallback& callback) override {
     callback.Run(in);
   }
 
@@ -27,9 +32,8 @@ class UrlTestImpl : public mojom::UrlTest {
   mojo::Binding<UrlTest> binding_;
 };
 
-// Mojo version of chrome IPC test in
-// content/common/common_param_traits_unittest.cc
-TEST(MojoUrlGURLStructTraitsTest, Basic) {
+// Mojo version of chrome IPC test in url/ipc/url_param_traits_unittest.cc.
+TEST(MojoGURLStructTraitsTest, Basic) {
   base::MessageLoop message_loop;
 
   mojom::UrlTestPtr proxy;
@@ -43,7 +47,7 @@ TEST(MojoUrlGURLStructTraitsTest, Basic) {
   for (size_t i = 0; i < arraysize(serialize_cases); i++) {
     GURL input(serialize_cases[i]);
     GURL output;
-    EXPECT_TRUE(proxy->Bounce(input, &output));
+    EXPECT_TRUE(proxy->BounceUrl(input, &output));
 
     // We want to test each component individually to make sure its range was
     // correctly serialized and deserialized, not just the spec.
@@ -62,12 +66,24 @@ TEST(MojoUrlGURLStructTraitsTest, Basic) {
   // Test an excessively long GURL.
   {
     const std::string url = std::string("http://example.org/").append(
-        mojo::kMaxUrlChars + 1, 'a');
+        kMaxURLChars + 1, 'a');
     GURL input(url.c_str());
     GURL output;
-    EXPECT_TRUE(proxy->Bounce(input, &output));
+    EXPECT_TRUE(proxy->BounceUrl(input, &output));
     EXPECT_TRUE(output.is_empty());
   }
+
+  // Test basic Origin serialization.
+  Origin non_unique = Origin::UnsafelyCreateOriginWithoutNormalization(
+    "http", "www.google.com", 80);
+  Origin output;
+  EXPECT_TRUE(proxy->BounceOrigin(non_unique, &output));
+  EXPECT_EQ(non_unique, output);
+  EXPECT_FALSE(non_unique.unique());
+
+  Origin unique;
+  EXPECT_TRUE(proxy->BounceOrigin(unique, &output));
+  EXPECT_TRUE(output.unique());
 }
 
 }  // namespace url

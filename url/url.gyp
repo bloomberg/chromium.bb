@@ -73,6 +73,7 @@
       'type': 'none',
       'variables': {
         'mojom_files': [
+          'mojo/origin.mojom',
           'mojo/url.mojom',
         ],
       },
@@ -88,6 +89,23 @@
         ],
         'mojom_files': [
           'mojo/url.mojom',
+        ],
+      },
+      'includes': [ '../mojo/mojom_bindings_generator_explicit.gypi' ],
+      'dependencies': [
+        'url_interfaces_mojom',
+      ],
+    },
+    {
+      'target_name': 'origin_mojom_chromium',
+      'type': 'none',
+      'variables': {
+        'mojom_variant': 'chromium',
+        'mojom_extra_generator_args': [
+          '--typemap', '<(DEPTH)/url/mojo/origin.typemap',
+        ],
+        'mojom_files': [
+          'mojo/origin.mojom',
         ],
       },
       'includes': [ '../mojo/mojom_bindings_generator_explicit.gypi' ],
@@ -112,6 +130,7 @@
       'variables': {
         'mojom_extra_generator_args': [
           '--typemap', '<(DEPTH)/url/mojo/gurl.typemap',
+          '--typemap', '<(DEPTH)/url/mojo/origin.typemap',
         ],
         'mojom_files': [
           'mojo/url_test.mojom',
@@ -120,6 +139,7 @@
       'includes': [ '../mojo/mojom_bindings_generator_explicit.gypi' ],
       'dependencies': [
         '../mojo/mojo_public.gyp:mojo_cpp_bindings',
+        'origin_mojom_chromium',
         'url_mojom_chromium',
       ],
     },

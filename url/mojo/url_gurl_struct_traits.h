@@ -2,20 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef URL_MOJO_URL_GURL_STRUCT_TRAITS_H_
+#define URL_MOJO_URL_GURL_STRUCT_TRAITS_H_
+
 #include "base/strings/string_piece.h"
 #include "url/gurl.h"
 #include "url/mojo/url.mojom.h"
+#include "url/url_constants.h"
 
 namespace mojo {
-
-// copied from content/public/common/content_constants.cc: make that file use
-// this definition.
-const size_t kMaxUrlChars = 2 * 1024 * 1024;
 
 template <>
 struct StructTraits<url::mojom::Url, GURL> {
   static base::StringPiece url(const GURL& r) {
-    if (r.possibly_invalid_spec().length() > kMaxUrlChars || !r.is_valid()) {
+    if (r.possibly_invalid_spec().length() > url::kMaxURLChars ||
+        !r.is_valid()) {
       return base::StringPiece();
     }
 
@@ -23,7 +24,7 @@ struct StructTraits<url::mojom::Url, GURL> {
                              r.possibly_invalid_spec().length());
   }
   static bool Read(url::mojom::Url::Reader r, GURL* out) {
-    if (r.url().length() > kMaxUrlChars) {
+    if (r.url().length() > url::kMaxURLChars) {
       *out = GURL();
       return false;
     }
@@ -37,3 +38,5 @@ struct StructTraits<url::mojom::Url, GURL> {
 };
 
 }
+
+#endif  // URL_MOJO_URL_GURL_STRUCT_TRAITS_H_
