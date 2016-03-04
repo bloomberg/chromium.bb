@@ -301,3 +301,13 @@ fuzzer_test("v8_wasm_asmjs_fuzzer") {
     "//v8:wasm_asmjs_fuzzer",
   ]
 }
+
+fuzzer_test("third_party_re2_fuzzer") {
+  sources = [
+    "re2_fuzzer.cc",
+  ]
+  deps = [
+    "//third_party/re2:re2",
+  ]
+  libfuzzer_options = "re2_fuzzer.options"
+}

@@ -1,0 +1,3 @@
+[libfuzzer]
+# re2_fuzzer is very slow and almost useless for long inputs.
+max_len = random(4, 32)
