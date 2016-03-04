@@ -31,7 +31,6 @@
 #define PaintLayerFilterInfo_h
 
 #include "core/dom/Element.h"
-#include "core/fetch/DocumentResource.h"
 #include "core/svg/SVGResourceClient.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/filters/FilterOperation.h"
@@ -61,7 +60,7 @@ typedef HashMap<const PaintLayer*, PaintLayerFilterInfo*> PaintLayerFilterInfoMa
 // PaintLayerFilterInfo is allocated when filters are present and stored in an
 // internal map (s_filterMap) to save memory as 'filter' should be a rare
 // property.
-class PaintLayerFilterInfo final : public DocumentResourceClient, public SVGResourceClient {
+class PaintLayerFilterInfo final : public SVGResourceClient {
     USING_FAST_MALLOC(PaintLayerFilterInfo);
     WTF_MAKE_NONCOPYABLE(PaintLayerFilterInfo);
 public:
@@ -84,9 +83,6 @@ public:
     void setBuilder(PassRefPtrWillBeRawPtr<FilterEffectBuilder>);
 
     void updateReferenceFilterClients(const FilterOperations&);
-    void notifyFinished(Resource*) override;
-    String debugName() const override { return "PaintLayerFilterInfo"; }
-    void removeReferenceFilterClients();
 
     void filterNeedsInvalidation() override;
 
@@ -99,10 +95,6 @@ private:
     RefPtrWillBePersistent<FilterEffectBuilder> m_builder;
 
     static PaintLayerFilterInfoMap* s_filterMap;
-
-    // This stores SVG reference filters (filter: url(#someElement)) where the
-    // reference belongs to a different document.
-    WillBePersistentHeapVector<RefPtrWillBeMember<DocumentResource>> m_externalSVGReferences;
 };
 
 } // namespace blink

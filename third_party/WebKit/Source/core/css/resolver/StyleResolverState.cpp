@@ -67,4 +67,9 @@ CSSToLengthConversionData StyleResolverState::fontSizeConversionData() const
     return CSSToLengthConversionData(style(), fontSizes, viewportSize, 1);
 }
 
+void StyleResolverState::loadPendingResources()
+{
+    m_elementStyleResources.loadPendingResources(style());
+}
+
 } // namespace blink

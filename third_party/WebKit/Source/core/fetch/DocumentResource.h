@@ -33,7 +33,7 @@ class Document;
 class FetchRequest;
 class ResourceFetcher;
 
-class DocumentResource final : public Resource {
+class CORE_EXPORT DocumentResource final : public Resource {
 public:
     using ClientType = ResourceClient;
 
@@ -70,7 +70,7 @@ private:
 DEFINE_TYPE_CASTS(DocumentResource, Resource, resource, resource->getType() == Resource::SVGDocument, resource.getType() == Resource::SVGDocument); \
 inline DocumentResource* toDocumentResource(const RefPtrWillBeRawPtr<Resource>& ptr) { return toDocumentResource(ptr.get()); }
 
-class DocumentResourceClient : public ResourceClient {
+class CORE_EXPORT DocumentResourceClient : public ResourceClient {
 public:
     ~DocumentResourceClient() override {}
     static bool isExpectedType(ResourceClient* client) { return client->getResourceClientType() == DocumentType; }

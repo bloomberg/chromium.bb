@@ -4,7 +4,9 @@
 
 #include "core/svg/SVGResourceClient.h"
 
+#include "core/fetch/DocumentResourceReference.h"
 #include "core/layout/svg/LayoutSVGResourceContainer.h"
+#include "core/layout/svg/ReferenceFilterBuilder.h"
 
 namespace blink {
 
@@ -12,29 +14,56 @@ SVGResourceClient::~SVGResourceClient()
 {
 }
 
-void SVGResourceClient::addFilterReference(SVGFilterElement* filter)
+void SVGResourceClient::addFilterReferences(const FilterOperations& operations, const Document& document)
 {
-    if (filter->layoutObject())
-        toLayoutSVGResourceContainer(filter->layoutObject())->addResourceClient(this);
-    else
-        filter->addClient(this);
-    m_filterReferences.add(filter);
+    for (size_t i = 0; i < operations.size(); ++i) {
+        RefPtrWillBeRawPtr<FilterOperation> filterOperation = operations.operations().at(i);
+        if (filterOperation->type() != FilterOperation::REFERENCE)
+            continue;
+        ReferenceFilterOperation* referenceFilterOperation = toReferenceFilterOperation(filterOperation.get());
+        DocumentResourceReference* documentReference = ReferenceFilterBuilder::documentResourceReference(referenceFilterOperation);
+        DocumentResource* cachedSVGDocument = documentReference ? documentReference->document() : 0;
+
+        if (cachedSVGDocument) {
+            cachedSVGDocument->addClient(this);
+            m_externalFilterReferences.append(cachedSVGDocument);
+        } else {
+            Element* element = document.getElementById(referenceFilterOperation->fragment());
+            if (!isSVGFilterElement(element))
+                continue;
+            SVGFilterElement* filter = toSVGFilterElement(element);
+            if (filter->layoutObject())
+                toLayoutSVGResourceContainer(filter->layoutObject())->addResourceClient(this);
+            else
+                filter->addClient(this);
+            m_internalFilterReferences.add(filter);
+        }
+    }
 }
 
 void SVGResourceClient::clearFilterReferences()
 {
-    for (SVGFilterElement* filter : m_filterReferences) {
+    for (SVGFilterElement* filter : m_internalFilterReferences) {
         if (filter->layoutObject())
             toLayoutSVGResourceContainer(filter->layoutObject())->removeResourceClient(this);
         else
             filter->removeClient(this);
     }
-    m_filterReferences.clear();
+    m_internalFilterReferences.clear();
+
+    for (RefPtrWillBeRawPtr<DocumentResource> documentResource : m_externalFilterReferences)
+        documentResource->removeClient(this);
+    m_externalFilterReferences.clear();
 }
 
 void SVGResourceClient::filterWillBeDestroyed(SVGFilterElement* filter)
 {
-    m_filterReferences.remove(filter);
+    m_internalFilterReferences.remove(filter);
+    filterNeedsInvalidation();
+}
+
+void SVGResourceClient::notifyFinished(Resource*)
+{
     filterNeedsInvalidation();
 }
 

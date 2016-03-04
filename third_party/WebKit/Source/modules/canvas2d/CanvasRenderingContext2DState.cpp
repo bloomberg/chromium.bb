@@ -296,19 +296,7 @@ void CanvasRenderingContext2DState::resetTransform()
 static void updateFilterReferences(HTMLCanvasElement* canvasElement, CanvasRenderingContext2D* context, const FilterOperations& filters)
 {
     context->clearFilterReferences();
-    for (RefPtrWillBeRawPtr<FilterOperation> filterOperation : filters.operations()) {
-        if (filterOperation->type() != FilterOperation::REFERENCE)
-            continue;
-
-        ReferenceFilterOperation* referenceFilterOperation = toReferenceFilterOperation(filterOperation.get());
-
-        // TODO(ajuma): Handle the case of filters defined in external documents
-        // (crbug.com/581135).
-        Element* filter = canvasElement->document().getElementById(referenceFilterOperation->fragment());
-        if (!isSVGFilterElement(filter))
-            continue;
-        context->addFilterReference(toSVGFilterElement(filter));
-    }
+    context->addFilterReferences(filters, canvasElement->document());
 }
 
 SkImageFilter* CanvasRenderingContext2DState::getFilter(Element* styleResolutionHost, const Font& font, IntSize canvasSize, CanvasRenderingContext2D* context) const
@@ -325,6 +313,7 @@ SkImageFilter* CanvasRenderingContext2DState::getFilter(Element* styleResolution
         resolverState.setStyle(filterStyle);
 
         StyleBuilder::applyProperty(CSSPropertyWebkitFilter, resolverState, m_filterValue.get());
+        resolverState.loadPendingResources();
         RefPtrWillBeRawPtr<FilterEffectBuilder> filterEffectBuilder = FilterEffectBuilder::create();
 
         // We can't reuse m_fillPaint and m_strokePaint for the filter, since these incorporate

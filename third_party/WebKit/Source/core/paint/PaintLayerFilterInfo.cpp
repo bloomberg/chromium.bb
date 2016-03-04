@@ -89,7 +89,7 @@ PaintLayerFilterInfo::PaintLayerFilterInfo(PaintLayer* layer)
 
 PaintLayerFilterInfo::~PaintLayerFilterInfo()
 {
-    removeReferenceFilterClients();
+    clearFilterReferences();
 }
 
 void PaintLayerFilterInfo::setBuilder(PassRefPtrWillBeRawPtr<FilterEffectBuilder> builder)
@@ -97,43 +97,10 @@ void PaintLayerFilterInfo::setBuilder(PassRefPtrWillBeRawPtr<FilterEffectBuilder
     m_builder = builder;
 }
 
-void PaintLayerFilterInfo::notifyFinished(Resource*)
-{
-    m_layer->filterNeedsPaintInvalidation();
-}
-
 void PaintLayerFilterInfo::updateReferenceFilterClients(const FilterOperations& operations)
 {
-    removeReferenceFilterClients();
-    for (size_t i = 0; i < operations.size(); ++i) {
-        RefPtrWillBeRawPtr<FilterOperation> filterOperation = operations.operations().at(i);
-        if (filterOperation->type() != FilterOperation::REFERENCE)
-            continue;
-        ReferenceFilterOperation* referenceFilterOperation = toReferenceFilterOperation(filterOperation.get());
-        DocumentResourceReference* documentReference = ReferenceFilterBuilder::documentResourceReference(referenceFilterOperation);
-        DocumentResource* cachedSVGDocument = documentReference ? documentReference->document() : 0;
-
-        if (cachedSVGDocument) {
-            // Reference is external; wait for notifyFinished().
-            cachedSVGDocument->addClient(this);
-            m_externalSVGReferences.append(cachedSVGDocument);
-        } else {
-            // Reference is internal; add layer as a client so we can trigger
-            // filter paint invalidation on SVG attribute change.
-            Element* filter = m_layer->layoutObject()->document().getElementById(referenceFilterOperation->fragment());
-            if (!isSVGFilterElement(filter))
-                continue;
-            addFilterReference(toSVGFilterElement(filter));
-        }
-    }
-}
-
-void PaintLayerFilterInfo::removeReferenceFilterClients()
-{
-    for (size_t i = 0; i < m_externalSVGReferences.size(); ++i)
-        m_externalSVGReferences.at(i)->removeClient(this);
-    m_externalSVGReferences.clear();
     clearFilterReferences();
+    addFilterReferences(operations, m_layer->layoutObject()->document());
 }
 
 void PaintLayerFilterInfo::filterNeedsInvalidation()

@@ -2646,7 +2646,7 @@ void PaintLayer::updateOrRemoveFilterClients()
     if (layoutObject()->style()->filter().hasReferenceFilter())
         ensureFilterInfo()->updateReferenceFilterClients(layoutObject()->style()->filter());
     else if (hasFilterInfo())
-        filterInfo()->removeReferenceFilterClients();
+        filterInfo()->clearFilterReferences();
 }
 
 FilterEffectBuilder* PaintLayer::updateFilterEffectBuilder() const
