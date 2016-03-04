@@ -23,6 +23,7 @@ class GURL;
 class Profile;
 
 namespace content {
+class RenderFrameHost;
 class WebContents;
 }
 
@@ -58,8 +59,11 @@ class ImeWindow : public content::NotificationObserver,
   // Takes |url| as string instead of GURL because resolving GURL requires
   // |extension|. As the client code already passes in |extension|, it'd be
   // better to simply the client code.
+  // |opener_render_frame_host| is the RenderFrameHost from where the IME window
+  // is opened so that the security origin can be correctly set.
   ImeWindow(Profile* profile,
             const extensions::Extension* extension,
+            content::RenderFrameHost* opener_render_frame_host,
             const std::string& url,
             Mode mode,
             const gfx::Rect& bounds);

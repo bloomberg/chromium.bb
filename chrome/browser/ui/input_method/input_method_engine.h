@@ -12,6 +12,10 @@
 #include "chrome/browser/ui/ime/ime_window_observer.h"
 #include "chrome/browser/ui/input_method/input_method_engine_base.h"
 
+namespace content {
+class RenderFrameHost;
+}  // namespace content
+
 namespace input_method {
 
 class InputMethodEngine : public InputMethodEngineBase,
@@ -30,6 +34,7 @@ class InputMethodEngine : public InputMethodEngineBase,
   // Creates and shows the IME window.
   // Returns 0 for errors and |error| will contains the error message.
   int CreateImeWindow(const extensions::Extension* extension,
+                      content::RenderFrameHost* render_frame_host,
                       const std::string& url,
                       ui::ImeWindow::Mode mode,
                       const gfx::Rect& bounds,

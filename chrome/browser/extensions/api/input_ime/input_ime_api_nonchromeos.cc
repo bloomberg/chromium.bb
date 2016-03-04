@@ -224,7 +224,8 @@ ExtensionFunction::ResponseAction InputImeCreateWindowFunction::Run() {
     return RespondNow(Error(kErrorNoActiveEngine));
 
   int frame_id = engine->CreateImeWindow(
-      extension(), options.url.get() ? *options.url : url::kAboutBlankURL,
+      extension(), render_frame_host(),
+      options.url.get() ? *options.url : url::kAboutBlankURL,
       options.window_type == input_ime::WINDOW_TYPE_FOLLOWCURSOR
           ? ui::ImeWindow::FOLLOW_CURSOR
           : ui::ImeWindow::NORMAL,

@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/ime/ime_window_observer.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
@@ -28,6 +29,7 @@ namespace ui {
 
 ImeWindow::ImeWindow(Profile* profile,
                      const extensions::Extension* extension,
+                     content::RenderFrameHost* opener_render_frame_host,
                      const std::string& url,
                      Mode mode,
                      const gfx::Rect& bounds)
@@ -46,9 +48,19 @@ ImeWindow::ImeWindow(Profile* profile,
   if (!gurl.is_valid())
     gurl = extension->GetResourceURL(url);
 
-  content::SiteInstance* instance =
-      content::SiteInstance::CreateForURL(profile, gurl);
-  content::WebContents::CreateParams create_params(profile, instance);
+  content::SiteInstance* site_instance = opener_render_frame_host
+      ? opener_render_frame_host->GetSiteInstance() : nullptr;
+  if (!site_instance ||
+      site_instance->GetSiteURL().GetOrigin() != gurl.GetOrigin()) {
+    site_instance = content::SiteInstance::CreateForURL(profile, gurl);
+  }
+  content::WebContents::CreateParams create_params(profile, site_instance);
+  if (opener_render_frame_host) {
+    create_params.opener_render_process_id =
+        opener_render_frame_host->GetProcess()->GetID();
+    create_params.opener_render_frame_id =
+        opener_render_frame_host->GetRoutingID();
+  }
   web_contents_.reset(content::WebContents::Create(create_params));
   web_contents_->SetDelegate(this);
   content::OpenURLParams params(gurl, content::Referrer(), SINGLETON_TAB,

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/input_method/input_method_engine.h"
 
+#include "content/public/browser/render_frame_host.h"
 #include "ui/base/ime/composition_text.h"
 #include "ui/base/ime/ime_bridge.h"
 #include "ui/base/ime/ime_input_context_handler_interface.h"
@@ -44,11 +45,13 @@ std::string InputMethodEngine::GetExtensionId() const {
   return extension_id_;
 }
 
-int InputMethodEngine::CreateImeWindow(const extensions::Extension* extension,
-                                       const std::string& url,
-                                       ui::ImeWindow::Mode mode,
-                                       const gfx::Rect& bounds,
-                                       std::string* error) {
+int InputMethodEngine::CreateImeWindow(
+    const extensions::Extension* extension,
+    content::RenderFrameHost* render_frame_host,
+    const std::string& url,
+    ui::ImeWindow::Mode mode,
+    const gfx::Rect& bounds,
+    std::string* error) {
   if (mode == ui::ImeWindow::FOLLOW_CURSOR) {
     if (follow_cursor_window_) {
       *error = kErrorFollowCursorWindowExists;
@@ -67,8 +70,8 @@ int InputMethodEngine::CreateImeWindow(const extensions::Extension* extension,
   }
 
   // ui::ImeWindow manages its own lifetime.
-  ui::ImeWindow* ime_window =
-      new ui::ImeWindow(profile_, extension, url, mode, bounds);
+  ui::ImeWindow* ime_window = new ui::ImeWindow(
+      profile_, extension, render_frame_host, url, mode, bounds);
   ime_window->AddObserver(this);
   ime_window->Show();
   if (mode == ui::ImeWindow::FOLLOW_CURSOR) {

@@ -40,7 +40,7 @@ class ImeWindowBrowserTest : public InProcessBrowserTest,
 
   void CreateImeWindow(const gfx::Rect& bounds, bool follow_cursor) {
     ime_window_ = new ImeWindow(
-        browser()->profile(), nullptr, "about:blank",
+        browser()->profile(), nullptr, nullptr, "about:blank",
         follow_cursor ? ImeWindow::FOLLOW_CURSOR : ImeWindow::NORMAL, bounds);
     ime_window_->AddObserver(this);
     EXPECT_FALSE(ime_window_->ime_native_window()->IsVisible());

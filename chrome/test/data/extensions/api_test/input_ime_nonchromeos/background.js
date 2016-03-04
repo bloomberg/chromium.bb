@@ -32,6 +32,10 @@ chrome.test.runTests([
       chrome.test.assertTrue(!!win);
       chrome.test.assertTrue(win instanceof Window);
       chrome.test.assertFalse(win.document.webkitHidden);
+      // Test for security origin.
+      // If security origin is not correctly set, there will be securtiy
+      // exceptions when accessing DOM or add event listeners.
+      win.addEventListener('unload', function() {});
       chrome.test.succeed();
     });
   },
@@ -40,7 +44,12 @@ chrome.test.runTests([
     chrome.input.ime.createWindow(options, function(win) {
       chrome.test.assertNoLastError()
       chrome.test.assertTrue(!!win);
+      chrome.test.assertTrue(win instanceof Window);
       chrome.test.assertFalse(win.document.webkitHidden);
+      // test for security origin.
+      // If security origin is not correctly set, there will be securtiy
+      // exceptions when accessing DOM or add event listeners.
+      win.addEventListener('unload', function() {});
       chrome.test.succeed();
     });
   }
