@@ -10,6 +10,7 @@ from __future__ import print_function
 import datetime
 import os
 import sys
+import StringIO
 
 from chromite.cbuildbot import cbuildbot_run
 from chromite.cbuildbot import commands
@@ -759,7 +760,10 @@ class ReportStage(generic_stages.BuilderStage,
 
       # Dump performance stats for this build versus recent builds.
       if db:
-        self.CollectComparativeBuildTimings(sys.stdout, build_id, db)
+        output = StringIO.StringIO()
+        self.CollectComparativeBuildTimings(output, build_id, db)
+        # Bunch up our output, so it doesn't interleave with CIDB logs.
+        sys.output.write(output.getvalue())
 
   def _HandleStageException(self, exc_info):
     """Override and don't set status to FAIL but FORGIVEN instead."""
