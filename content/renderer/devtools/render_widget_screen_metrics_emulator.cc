@@ -22,7 +22,6 @@ RenderWidgetScreenMetricsEmulator::RenderWidgetScreenMetricsEmulator(
       original_resize_params_(resize_params),
       original_view_screen_rect_(view_screen_rect),
       original_window_screen_rect_(window_screen_rect) {
-  Apply();
 }
 
 RenderWidgetScreenMetricsEmulator::~RenderWidgetScreenMetricsEmulator() {

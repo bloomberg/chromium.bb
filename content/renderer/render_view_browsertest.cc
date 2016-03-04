@@ -17,8 +17,10 @@
 #include "base/time/time.h"
 #include "base/win/windows_version.h"
 #include "build/build_config.h"
+#include "cc/trees/layer_tree_host.h"
 #include "content/child/request_extra_data.h"
 #include "content/child/service_worker/service_worker_network_provider.h"
+#include "content/common/content_switches_internal.h"
 #include "content/common/frame_messages.h"
 #include "content/common/frame_replication_state.h"
 #include "content/common/site_isolation_policy.h"
@@ -42,6 +44,7 @@
 #include "content/public/test/test_utils.h"
 #include "content/renderer/accessibility/renderer_accessibility.h"
 #include "content/renderer/devtools/devtools_agent.h"
+#include "content/renderer/gpu/render_widget_compositor.h"
 #include "content/renderer/history_controller.h"
 #include "content/renderer/history_serialization.h"
 #include "content/renderer/navigation_state_impl.h"
@@ -421,7 +424,7 @@ class RenderViewImplBlinkSettingsTest : public RenderViewImplTest {
 };
 
 class RenderViewImplScaleFactorTest : public RenderViewImplBlinkSettingsTest {
- public:
+ protected:
   void SetDeviceScaleFactor(float dsf) {
     ResizeParams params;
     params.screen_info.deviceScaleFactor = dsf;
@@ -431,6 +434,33 @@ class RenderViewImplScaleFactorTest : public RenderViewImplBlinkSettingsTest {
     params.needs_resize_ack = false;
     view()->OnResize(params);
     ASSERT_EQ(dsf, view()->device_scale_factor_);
+  }
+
+  void TestEmulatedSizeDprDsf(int width, int height, float dpr,
+                              float compositor_dsf) {
+    static base::string16 get_width =
+        base::ASCIIToUTF16("Number(window.innerWidth)");
+    static base::string16 get_height =
+        base::ASCIIToUTF16("Number(window.innerHeight)");
+    static base::string16 get_dpr =
+        base::ASCIIToUTF16("Number(window.devicePixelRatio * 10)");
+
+    int emulated_width, emulated_height;
+    int emulated_dpr;
+    blink::WebDeviceEmulationParams params;
+    params.viewSize.width = width;
+    params.viewSize.height = height;
+    params.deviceScaleFactor = dpr;
+    view()->OnEnableDeviceEmulation(params);
+    EXPECT_TRUE(ExecuteJavaScriptAndReturnIntValue(get_width, &emulated_width));
+    EXPECT_EQ(width, emulated_width);
+    EXPECT_TRUE(ExecuteJavaScriptAndReturnIntValue(get_height,
+                                                   &emulated_height));
+    EXPECT_EQ(height, emulated_height);
+    EXPECT_TRUE(ExecuteJavaScriptAndReturnIntValue(get_dpr, &emulated_dpr));
+    EXPECT_EQ(static_cast<int>(dpr * 10), emulated_dpr);
+    EXPECT_EQ(compositor_dsf,
+              view()->compositor()->layer_tree_host()->device_scale_factor());
   }
 };
 
@@ -2456,36 +2486,6 @@ TEST_F(RenderViewImplTest, OnSetAccessibilityMode) {
   ASSERT_NE((RendererAccessibility*) NULL, frame()->renderer_accessibility());
 }
 
-TEST_F(RenderViewImplTest, ScreenMetricsEmulation) {
-  LoadHTML("<body style='min-height:1000px;'></body>");
-
-  blink::WebDeviceEmulationParams params;
-  base::string16 get_width = base::ASCIIToUTF16("Number(window.innerWidth)");
-  base::string16 get_height = base::ASCIIToUTF16("Number(window.innerHeight)");
-  int width, height;
-
-  params.viewSize.width = 327;
-  params.viewSize.height = 415;
-  view()->OnEnableDeviceEmulation(params);
-  EXPECT_TRUE(ExecuteJavaScriptAndReturnIntValue(get_width, &width));
-  EXPECT_EQ(params.viewSize.width, width);
-  EXPECT_TRUE(ExecuteJavaScriptAndReturnIntValue(get_height, &height));
-  EXPECT_EQ(params.viewSize.height, height);
-
-  params.viewSize.width = 1005;
-  params.viewSize.height = 1102;
-  view()->OnEnableDeviceEmulation(params);
-  EXPECT_TRUE(ExecuteJavaScriptAndReturnIntValue(get_width, &width));
-  EXPECT_EQ(params.viewSize.width, width);
-  EXPECT_TRUE(ExecuteJavaScriptAndReturnIntValue(get_height, &height));
-  EXPECT_EQ(params.viewSize.height, height);
-
-  view()->OnDisableDeviceEmulation();
-
-  view()->OnEnableDeviceEmulation(params);
-  // Don't disable here to test that emulation is being shutdown properly.
-}
-
 // Sanity check for the Navigation Timing API |navigationStart| override. We
 // are asserting only most basic constraints, as TimeTicks (passed as the
 // override) are not comparable with the wall time (returned by the Blink API).
@@ -2654,10 +2654,10 @@ TEST_F(RenderViewImplBlinkSettingsTest, Negative) {
   EXPECT_TRUE(settings()->viewportEnabled());
 }
 
-#if !defined(OS_CHROMEOS)
-// UseZoomForDSF is enabled on ChromeOS.
 TEST_F(RenderViewImplScaleFactorTest, ConverViewportToWindowWithoutZoomForDSF) {
   DoSetUp();
+  if (IsUseZoomForDSFEnabled())
+    return;
   SetDeviceScaleFactor(2.f);
   blink::WebRect rect(20, 10, 200, 100);
   view()->convertViewportToWindow(&rect);
@@ -2666,7 +2666,66 @@ TEST_F(RenderViewImplScaleFactorTest, ConverViewportToWindowWithoutZoomForDSF) {
   EXPECT_EQ(200, rect.width);
   EXPECT_EQ(100, rect.height);
 }
-#endif
+
+TEST_F(RenderViewImplScaleFactorTest, ScreenMetricsEmulationWithOriginalDSF1) {
+  DoSetUp();
+  SetDeviceScaleFactor(1.f);
+
+  LoadHTML("<body style='min-height:1000px;'></body>");
+  {
+    SCOPED_TRACE("327x415 1dpr");
+    TestEmulatedSizeDprDsf(327, 415, 1.f, 1.f);
+  }
+  {
+    SCOPED_TRACE("327x415 1.5dpr");
+    TestEmulatedSizeDprDsf(327, 415, 1.5f, 1.f);
+  }
+  {
+    SCOPED_TRACE("1005x1102 2dpr");
+    TestEmulatedSizeDprDsf(1005, 1102, 2.f, 1.f);
+  }
+  {
+    SCOPED_TRACE("1005x1102 3dpr");
+    TestEmulatedSizeDprDsf(1005, 1102, 3.f, 1.f);
+  }
+
+  view()->OnDisableDeviceEmulation();
+
+  blink::WebDeviceEmulationParams params;
+  view()->OnEnableDeviceEmulation(params);
+  // Don't disable here to test that emulation is being shutdown properly.
+}
+
+TEST_F(RenderViewImplScaleFactorTest, ScreenMetricsEmulationWithOriginalDSF2) {
+  DoSetUp();
+  SetDeviceScaleFactor(2.f);
+  float compositor_dsf =
+      IsUseZoomForDSFEnabled() ? 1.f : 2.f;
+
+  LoadHTML("<body style='min-height:1000px;'></body>");
+  {
+    SCOPED_TRACE("327x415 1dpr");
+    TestEmulatedSizeDprDsf(327, 415, 1.f, compositor_dsf);
+  }
+  {
+    SCOPED_TRACE("327x415 1.5dpr");
+    TestEmulatedSizeDprDsf(327, 415, 1.5f, compositor_dsf);
+  }
+  {
+    SCOPED_TRACE("1005x1102 2dpr");
+    TestEmulatedSizeDprDsf(1005, 1102, 2.f, compositor_dsf);
+  }
+  {
+    SCOPED_TRACE("1005x1102 3dpr");
+    TestEmulatedSizeDprDsf(1005, 1102, 3.f, compositor_dsf);
+  }
+
+  view()->OnDisableDeviceEmulation();
+
+  blink::WebDeviceEmulationParams params;
+  view()->OnEnableDeviceEmulation(params);
+  // Don't disable here to test that emulation is being shutdown properly.
+}
 
 TEST_F(RenderViewImplScaleFactorTest, ConverViewportToWindowWithZoomForDSF) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(

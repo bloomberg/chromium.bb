@@ -410,7 +410,7 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     , m_zoomLevel(0)
     , m_minimumZoomLevel(zoomFactorToZoomLevel(minTextSizeMultiplier))
     , m_maximumZoomLevel(zoomFactorToZoomLevel(maxTextSizeMultiplier))
-    , m_zoomFactorForDeviceScaleFactor(1.f)
+    , m_zoomFactorForDeviceScaleFactor(0.f)
     , m_maximumLegibleScale(1)
     , m_doubleTapZoomPageScaleFactor(0)
     , m_doubleTapZoomPending(false)
@@ -3055,7 +3055,16 @@ double WebViewImpl::setZoomLevel(double zoomLevel)
     LocalFrame* frame = mainFrameImpl()->frame();
     if (!WebLocalFrameImpl::pluginContainerFromFrame(frame)) {
         float zoomFactor = m_zoomFactorOverride ? m_zoomFactorOverride : static_cast<float>(zoomLevelToZoomFactor(m_zoomLevel));
-        zoomFactor *= m_zoomFactorForDeviceScaleFactor;
+        if (m_zoomFactorForDeviceScaleFactor) {
+            if (m_compositorDeviceScaleFactorOverride) {
+                // Adjust the page's DSF so that DevicePixelRatio becomes m_zoomFactorForDeviceScaleFactor.
+                page()->setDeviceScaleFactor(m_zoomFactorForDeviceScaleFactor / m_compositorDeviceScaleFactorOverride);
+                zoomFactor *= m_compositorDeviceScaleFactorOverride;
+            } else {
+                page()->setDeviceScaleFactor(1.f);
+                zoomFactor *= m_zoomFactorForDeviceScaleFactor;
+            }
+        }
         frame->setPageZoomFactor(zoomFactor);
     }
 
@@ -3772,6 +3781,10 @@ void WebViewImpl::setCompositorDeviceScaleFactorOverride(float deviceScaleFactor
     if (m_compositorDeviceScaleFactorOverride == deviceScaleFactor)
         return;
     m_compositorDeviceScaleFactorOverride = deviceScaleFactor;
+    if (m_zoomFactorForDeviceScaleFactor) {
+        setZoomLevel(zoomLevel());
+        return;
+    }
     if (page() && m_layerTreeView)
         updateLayerTreeDeviceScaleFactor();
 }

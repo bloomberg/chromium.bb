@@ -59,10 +59,10 @@ class RenderWidgetScreenMetricsEmulator {
   void OnShowContextMenu(ContextMenuParams* params);
   gfx::Rect AdjustValidationMessageAnchor(const gfx::Rect& anchor);
 
- private:
-  // Apply original_resize_params_
+  // Apply parameters to the render widget.
   void Apply();
 
+ private:
   RenderWidgetScreenMetricsEmulatorDelegate* const delegate_;
 
   // Parameters as passed by RenderWidget::EnableScreenMetricsEmulation.

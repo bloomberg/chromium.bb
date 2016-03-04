@@ -6,6 +6,7 @@
 #define CONTENT_COMMON_CONTENT_SWITCHES_INTERNAL_H_
 
 #include "build/build_config.h"
+#include "content/common/content_export.h"
 #include "content/public/common/web_preferences.h"
 
 namespace content {
@@ -20,7 +21,7 @@ bool IsWin32kRendererLockdownEnabled();
 #endif
 V8CacheOptions GetV8CacheOptions();
 
-bool IsUseZoomForDSFEnabled();
+CONTENT_EXPORT bool IsUseZoomForDSFEnabled();
 
 } // namespace content
 

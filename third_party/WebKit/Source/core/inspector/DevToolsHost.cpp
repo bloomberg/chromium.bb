@@ -164,16 +164,14 @@ void DevToolsHost::disconnectClient()
 
 float DevToolsHost::zoomFactor()
 {
-    return m_frontendFrame ? m_frontendFrame->pageZoomFactor() : 1;
-}
-
-float DevToolsHost::convertLengthForEmbedder(float length)
-{
     if (!m_frontendFrame)
-        return length;
+        return 1;
+    float zoomFactor = m_frontendFrame->pageZoomFactor();
+    // Cancel the device scale factor applied to the zoom factor in
+    // use-zoom-for-dsf mode.
     const HostWindow* hostWindow = m_frontendFrame->view()->hostWindow();
-    IntRect screen = hostWindow->viewportToScreen(IntRect(0, 0, length, 0));
-    return screen.width();
+    float windowToViewportRatio = hostWindow->windowToViewportScalar(1.0f);
+    return zoomFactor / windowToViewportRatio;
 }
 
 void DevToolsHost::setInjectedScriptForOrigin(const String& origin, const String& script)

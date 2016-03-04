@@ -547,7 +547,10 @@ class CONTENT_EXPORT RenderViewImpl
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest,
                            GetCompositionCharacterBoundsTest);
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, OnNavigationHttpPost);
-  FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, ScreenMetricsEmulation);
+  FRIEND_TEST_ALL_PREFIXES(RenderViewImplScaleFactorTest,
+                           ScreenMetricsEmulationWithOriginalDSF1);
+  FRIEND_TEST_ALL_PREFIXES(RenderViewImplScaleFactorTest,
+                           ScreenMetricsEmulationWithOriginalDSF2);
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest,
                            DecideNavigationPolicyHandlesAllTopLevel);
 #if defined(OS_MACOSX)

@@ -780,6 +780,10 @@ class CONTENT_EXPORT RenderWidget
   scoped_ptr<scheduler::RenderWidgetSchedulingState>
       render_widget_scheduling_state_;
 
+ private:
+  // When emulated, this returns original device scale factor.
+  float GetOriginalDeviceScaleFactor() const;
+
   DISALLOW_COPY_AND_ASSIGN(RenderWidget);
 };
 
