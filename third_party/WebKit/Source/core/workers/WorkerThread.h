@@ -106,9 +106,6 @@ public:
     // Can be called only on the worker thread, WorkerGlobalScope is not thread safe.
     WorkerGlobalScope* workerGlobalScope();
 
-    // Can be called on any thread.
-    InspectorTaskRunner* inspectorTaskRunner();
-
     // Returns true once one of the terminate* methods is called.
     bool terminated();
 

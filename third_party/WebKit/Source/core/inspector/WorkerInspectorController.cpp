@@ -92,7 +92,6 @@ WorkerInspectorController::~WorkerInspectorController()
 void WorkerInspectorController::connectFrontend()
 {
     ASSERT(!m_frontend);
-    InspectorTaskRunner::IgnoreInterruptsScope scope(m_workerGlobalScope->thread()->inspectorTaskRunner());
     m_frontend = adoptPtr(new protocol::Frontend(this));
     m_backendDispatcher = protocol::Dispatcher::create(this);
     m_agents.registerInDispatcher(m_backendDispatcher.get());
@@ -104,7 +103,6 @@ void WorkerInspectorController::disconnectFrontend()
 {
     if (!m_frontend)
         return;
-    InspectorTaskRunner::IgnoreInterruptsScope scope(m_workerGlobalScope->thread()->inspectorTaskRunner());
     m_backendDispatcher->clearFrontend();
     m_backendDispatcher.clear();
     m_agents.clearFrontend();
@@ -114,7 +112,6 @@ void WorkerInspectorController::disconnectFrontend()
 
 void WorkerInspectorController::dispatchMessageFromFrontend(const String& message)
 {
-    InspectorTaskRunner::IgnoreInterruptsScope scope(m_workerGlobalScope->thread()->inspectorTaskRunner());
     if (m_backendDispatcher) {
         // sessionId will be overwritten by WebDevToolsAgent::sendProtocolNotifications call.
         m_backendDispatcher->dispatch(0, message);

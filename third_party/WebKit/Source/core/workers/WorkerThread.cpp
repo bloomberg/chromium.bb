@@ -385,11 +385,6 @@ WorkerGlobalScope* WorkerThread::workerGlobalScope()
     return m_workerGlobalScope.get();
 }
 
-InspectorTaskRunner* WorkerThread::inspectorTaskRunner()
-{
-    return m_inspectorTaskRunner.get();
-}
-
 bool WorkerThread::terminated()
 {
     MutexLocker lock(m_threadStateMutex);
@@ -554,6 +549,7 @@ WorkerThread::TaskQueueResult WorkerThread::runDebuggerTask(WaitMode waitMode)
     }
 
     if (result == TaskReceived) {
+        InspectorTaskRunner::IgnoreInterruptsScope scope(m_inspectorTaskRunner.get());
         {
             MutexLocker lock(m_threadStateMutex);
             m_runningDebuggerTask = true;
