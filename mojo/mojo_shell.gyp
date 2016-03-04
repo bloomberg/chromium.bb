@@ -79,6 +79,7 @@
       'mojo_runner_common_lib',
       '<(DEPTH)/base/base.gyp:base',
       '<(DEPTH)/mojo/mojo_base.gyp:mojo_application_base',
+      '<(DEPTH)/mojo/mojo_base.gyp:mojo_application_bindings',
       '<(DEPTH)/mojo/mojo_edk.gyp:mojo_system_impl',
       '<(DEPTH)/mojo/mojo_platform_handle.gyp:platform_handle',
       '<(DEPTH)/mojo/mojo_public.gyp:mojo_message_pump_lib',
