@@ -85,16 +85,16 @@ Polymer({
   },
 
   /**
-   * @return {boolean} Whether tapping the OK button should be allowed.
+   * @return {boolean} Whether tapping the Add button should be allowed.
    * @private
    */
-  isOkAllowed_: function() {
+  isAddEnabled_: function() {
     return this.newUrl_.trim().length > 0;
   },
 
   /** @private */
-  onOkTap_: function() {
-    assert(this.isOkAllowed_());
+  onAddTap_: function() {
+    assert(this.isAddEnabled_());
     chrome.send('addStartupPage', [this.newUrl_.trim()]);
     this.$.addUrlDialog.close();
   },
