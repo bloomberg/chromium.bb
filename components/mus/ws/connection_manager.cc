@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "base/stl_util.h"
-#include "components/mus/ws/client_connection.h"
 #include "components/mus/ws/connection_manager_delegate.h"
 #include "components/mus/ws/display_binding.h"
 #include "components/mus/ws/operation.h"
@@ -14,7 +13,8 @@
 #include "components/mus/ws/window_coordinate_conversions.h"
 #include "components/mus/ws/window_manager_factory_service.h"
 #include "components/mus/ws/window_manager_state.h"
-#include "components/mus/ws/window_tree_impl.h"
+#include "components/mus/ws/window_tree.h"
+#include "components/mus/ws/window_tree_binding.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/converters/input_events/input_events_type_converters.h"
 #include "mojo/converters/surfaces/surfaces_type_converters.h"
@@ -95,59 +95,55 @@ uint16_t ConnectionManager::GetAndAdvanceNextRootId() {
   return id;
 }
 
-WindowTreeImpl* ConnectionManager::EmbedAtWindow(
+WindowTree* ConnectionManager::EmbedAtWindow(
     ServerWindow* root,
     uint32_t policy_bitmask,
     mojom::WindowTreeClientPtr client) {
-  scoped_ptr<WindowTreeImpl> tree_ptr(
-      new ws::WindowTreeImpl(this, root, policy_bitmask));
-  WindowTreeImpl* tree = tree_ptr.get();
+  scoped_ptr<WindowTree> tree_ptr(
+      new ws::WindowTree(this, root, policy_bitmask));
+  WindowTree* tree = tree_ptr.get();
 
   mojom::WindowTreePtr window_tree_ptr;
-  scoped_ptr<ClientConnection> client_connection =
-      delegate_->CreateClientConnectionForEmbedAtWindow(
+  scoped_ptr<WindowTreeBinding> binding =
+      delegate_->CreateWindowTreeBindingForEmbedAtWindow(
           this, tree, GetProxy(&window_tree_ptr), std::move(client));
 
-  AddTree(std::move(tree_ptr), std::move(client_connection),
-          std::move(window_tree_ptr));
-  OnConnectionMessagedClient(tree->id());
+  AddTree(std::move(tree_ptr), std::move(binding), std::move(window_tree_ptr));
+  OnTreeMessagedClient(tree->id());
   return tree;
 }
 
-WindowTreeImpl* ConnectionManager::AddTree(
-    scoped_ptr<WindowTreeImpl> tree_impl_ptr,
-    scoped_ptr<ClientConnection> connection,
-    mojom::WindowTreePtr tree_ptr) {
+WindowTree* ConnectionManager::AddTree(scoped_ptr<WindowTree> tree_impl_ptr,
+                                       scoped_ptr<WindowTreeBinding> binding,
+                                       mojom::WindowTreePtr tree_ptr) {
   CHECK_EQ(0u, tree_map_.count(tree_impl_ptr->id()));
-  WindowTreeImpl* tree = tree_impl_ptr.get();
+  WindowTree* tree = tree_impl_ptr.get();
   tree_map_[tree->id()] = std::move(tree_impl_ptr);
-  tree->Init(std::move(connection), std::move(tree_ptr));
+  tree->Init(std::move(binding), std::move(tree_ptr));
   return tree;
 }
 
-WindowTreeImpl* ConnectionManager::CreateTreeForWindowManager(
+WindowTree* ConnectionManager::CreateTreeForWindowManager(
     Display* display,
     mojom::WindowManagerFactory* factory,
     ServerWindow* root) {
   mojom::DisplayPtr display_ptr = DisplayToMojomDisplay(display);
   mojom::WindowTreeClientPtr tree_client;
   factory->CreateWindowManager(std::move(display_ptr), GetProxy(&tree_client));
-  scoped_ptr<ws::WindowTreeImpl> tree_ptr(new ws::WindowTreeImpl(
+  scoped_ptr<ws::WindowTree> tree_ptr(new ws::WindowTree(
       this, root, mojom::WindowTree::kAccessPolicyEmbedRoot));
-  ws::WindowTreeImpl* tree = tree_ptr.get();
-  scoped_ptr<ws::DefaultClientConnection> connection(
-      new ws::DefaultClientConnection(tree_ptr.get(), this,
-                                      std::move(tree_client)));
-  mojom::WindowTreePtr window_tree_ptr =
-      connection->CreateInterfacePtrAndBind();
-  AddTree(std::move(tree_ptr), std::move(connection),
-          std::move(window_tree_ptr));
+  ws::WindowTree* tree = tree_ptr.get();
+  scoped_ptr<ws::DefaultWindowTreeBinding> binding(
+      new ws::DefaultWindowTreeBinding(tree_ptr.get(), this,
+                                       std::move(tree_client)));
+  mojom::WindowTreePtr window_tree_ptr = binding->CreateInterfacePtrAndBind();
+  AddTree(std::move(tree_ptr), std::move(binding), std::move(window_tree_ptr));
   tree->ConfigureWindowManager();
   return tree;
 }
 
-void ConnectionManager::DestroyTree(WindowTreeImpl* tree) {
-  scoped_ptr<WindowTreeImpl> tree_ptr;
+void ConnectionManager::DestroyTree(WindowTree* tree) {
+  scoped_ptr<WindowTree> tree_ptr;
   {
     auto iter = tree_map_.find(tree->id());
     DCHECK(iter != tree_map_.end());
@@ -180,7 +176,7 @@ void ConnectionManager::DestroyTree(WindowTreeImpl* tree) {
     in_flight_wm_change_map_.erase(id);
 }
 
-WindowTreeImpl* ConnectionManager::GetConnection(
+WindowTree* ConnectionManager::GetTreeWithId(
     ConnectionSpecificId connection_id) {
   auto iter = tree_map_.find(connection_id);
   return iter == tree_map_.end() ? nullptr : iter->second.get();
@@ -195,8 +191,8 @@ ServerWindow* ConnectionManager::GetWindow(const WindowId& id) {
         return window;
     }
   }
-  WindowTreeImpl* service = GetConnection(id.connection_id);
-  return service ? service->GetWindow(id) : nullptr;
+  WindowTree* tree = GetTreeWithId(id.connection_id);
+  return tree ? tree->GetWindow(id) : nullptr;
 }
 
 void ConnectionManager::SchedulePaint(const ServerWindow* window,
@@ -217,14 +213,13 @@ void ConnectionManager::OnDisplayAcceleratedWidgetAvailable(Display* display) {
     delegate_->OnFirstDisplayReady();
 }
 
-void ConnectionManager::OnConnectionMessagedClient(ConnectionSpecificId id) {
+void ConnectionManager::OnTreeMessagedClient(ConnectionSpecificId id) {
   if (current_operation_)
-    current_operation_->MarkConnectionAsMessaged(id);
+    current_operation_->MarkTreeAsMessaged(id);
 }
 
-bool ConnectionManager::DidConnectionMessageClient(
-    ConnectionSpecificId id) const {
-  return current_operation_ && current_operation_->DidMessageConnection(id);
+bool ConnectionManager::DidTreeMessageClient(ConnectionSpecificId id) const {
+  return current_operation_ && current_operation_->DidMessageTree(id);
 }
 
 mojom::ViewportMetricsPtr ConnectionManager::GetViewportMetricsForWindow(
@@ -241,7 +236,7 @@ mojom::ViewportMetricsPtr ConnectionManager::GetViewportMetricsForWindow(
   return metrics;
 }
 
-const WindowTreeImpl* ConnectionManager::GetConnectionWithRoot(
+const WindowTree* ConnectionManager::GetTreeWithRoot(
     const ServerWindow* window) const {
   if (!window)
     return nullptr;
@@ -321,7 +316,7 @@ void ConnectionManager::OnFirstWindowManagerFactorySet() {
 }
 
 uint32_t ConnectionManager::GenerateWindowManagerChangeId(
-    WindowTreeImpl* source,
+    WindowTree* source,
     uint32_t client_change_id) {
   const uint32_t wm_change_id = next_wm_change_id_++;
   in_flight_wm_change_map_[wm_change_id] = {source->id(), client_change_id};
@@ -337,12 +332,12 @@ void ConnectionManager::WindowManagerChangeCompleted(
     return;
   }
 
-  WindowTreeImpl* connection = GetConnection(change.connection_id);
-  connection->OnChangeCompleted(change.client_change_id, success);
+  WindowTree* tree = GetTreeWithId(change.connection_id);
+  tree->OnChangeCompleted(change.client_change_id, success);
 }
 
 void ConnectionManager::WindowManagerCreatedTopLevelWindow(
-    WindowTreeImpl* wm_connection,
+    WindowTree* wm_tree,
     uint32_t window_manager_change_id,
     const ServerWindow* window) {
   InFlightWindowManagerChange change;
@@ -355,18 +350,18 @@ void ConnectionManager::WindowManagerCreatedTopLevelWindow(
     return;
   }
 
-  WindowTreeImpl* connection = GetConnection(change.connection_id);
+  WindowTree* tree = GetTreeWithId(change.connection_id);
   // The window manager should have created the window already, and it should
   // be ready for embedding.
-  if (!connection->IsWaitingForNewTopLevelWindow(window_manager_change_id) ||
-      !window || window->id().connection_id != wm_connection->id() ||
-      !window->children().empty() || GetConnectionWithRoot(window)) {
+  if (!tree->IsWaitingForNewTopLevelWindow(window_manager_change_id) ||
+      !window || window->id().connection_id != wm_tree->id() ||
+      !window->children().empty() || GetTreeWithRoot(window)) {
     WindowManagerSentBogusMessage();
     return;
   }
 
-  connection->OnWindowManagerCreatedTopLevelWindow(
-      window_manager_change_id, change.client_change_id, window);
+  tree->OnWindowManagerCreatedTopLevelWindow(window_manager_change_id,
+                                             change.client_change_id, window);
 }
 
 mojom::DisplayPtr ConnectionManager::DisplayToMojomDisplay(Display* display) {
@@ -600,7 +595,7 @@ ServerWindow* ConnectionManager::FindWindowForSurface(
     const ServerWindow* ancestor,
     mojom::SurfaceType surface_type,
     const ClientWindowId& client_window_id) {
-  WindowTreeImpl* window_tree;
+  WindowTree* window_tree;
   if (ancestor->id().connection_id == kInvalidConnectionId) {
     WindowManagerAndDisplay wm_and_display =
         GetWindowManagerAndDisplay(ancestor);
@@ -608,15 +603,15 @@ ServerWindow* ConnectionManager::FindWindowForSurface(
                       ? wm_and_display.window_manager_state->tree()
                       : nullptr;
   } else {
-    window_tree = GetConnection(ancestor->id().connection_id);
+    window_tree = GetTreeWithId(ancestor->id().connection_id);
   }
   if (!window_tree)
     return nullptr;
   if (surface_type == mojom::SurfaceType::DEFAULT) {
     // At embed points the default surface comes from the embedded app.
-    WindowTreeImpl* connection_with_root = GetConnectionWithRoot(ancestor);
-    if (connection_with_root)
-      window_tree = connection_with_root;
+    WindowTree* tree_with_root = GetTreeWithRoot(ancestor);
+    if (tree_with_root)
+      window_tree = tree_with_root;
   }
   return window_tree->GetWindowByClientId(client_window_id);
 }

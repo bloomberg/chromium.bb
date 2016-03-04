@@ -96,7 +96,7 @@ PlatformDisplay* TestPlatformDisplayFactory::CreatePlatformDisplay(
 
 // WindowTreeTestApi  ---------------------------------------------------------
 
-WindowTreeTestApi::WindowTreeTestApi(WindowTreeImpl* tree) : tree_(tree) {}
+WindowTreeTestApi::WindowTreeTestApi(WindowTree* tree) : tree_(tree) {}
 WindowTreeTestApi::~WindowTreeTestApi() {}
 
 // DisplayTestApi  ------------------------------------------------------------
@@ -229,16 +229,16 @@ void TestWindowTreeClient::RequestClose(uint32_t window_id) {}
 void TestWindowTreeClient::GetWindowManager(
     mojo::AssociatedInterfaceRequest<mojom::WindowManager> internal) {}
 
-// TestClientConnection --------------------------------------------------------
+// TestWindowTreeBinding ------------------------------------------------------
 
-TestClientConnection::TestClientConnection() : ClientConnection(&client_) {}
-TestClientConnection::~TestClientConnection() {}
+TestWindowTreeBinding::TestWindowTreeBinding() : WindowTreeBinding(&client_) {}
+TestWindowTreeBinding::~TestWindowTreeBinding() {}
 
-mojom::WindowManager* TestClientConnection::GetWindowManager() {
+mojom::WindowManager* TestWindowTreeBinding::GetWindowManager() {
   NOTREACHED();
   return nullptr;
 }
-void TestClientConnection::SetIncomingMethodCallProcessingPaused(bool paused) {
+void TestWindowTreeBinding::SetIncomingMethodCallProcessingPaused(bool paused) {
   is_paused_ = paused;
 }
 
@@ -251,15 +251,15 @@ void TestConnectionManagerDelegate::OnNoMoreRootConnections() {
   got_on_no_more_connections_ = true;
 }
 
-scoped_ptr<ClientConnection>
-TestConnectionManagerDelegate::CreateClientConnectionForEmbedAtWindow(
+scoped_ptr<WindowTreeBinding>
+TestConnectionManagerDelegate::CreateWindowTreeBindingForEmbedAtWindow(
     ws::ConnectionManager* connection_manager,
-    ws::WindowTreeImpl* tree,
+    ws::WindowTree* tree,
     mojom::WindowTreeRequest tree_request,
     mojom::WindowTreeClientPtr client) {
-  scoped_ptr<TestClientConnection> connection(new TestClientConnection);
-  last_connection_ = connection.get();
-  return std::move(connection);
+  scoped_ptr<TestWindowTreeBinding> binding(new TestWindowTreeBinding);
+  last_binding_ = binding.get();
+  return std::move(binding);
 }
 
 void TestConnectionManagerDelegate::CreateDefaultDisplays() {

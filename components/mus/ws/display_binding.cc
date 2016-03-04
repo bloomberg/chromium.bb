@@ -6,7 +6,7 @@
 
 #include "components/mus/ws/connection_manager.h"
 #include "components/mus/ws/display.h"
-#include "components/mus/ws/window_tree_impl.h"
+#include "components/mus/ws/window_tree.h"
 
 namespace mus {
 namespace ws {
@@ -21,8 +21,8 @@ DisplayBindingImpl::DisplayBindingImpl(mojom::WindowTreeHostRequest request,
 
 DisplayBindingImpl::~DisplayBindingImpl() {}
 
-WindowTreeImpl* DisplayBindingImpl::CreateWindowTree(ServerWindow* root) {
-  WindowTreeImpl* tree = connection_manager_->EmbedAtWindow(
+WindowTree* DisplayBindingImpl::CreateWindowTree(ServerWindow* root) {
+  WindowTree* tree = connection_manager_->EmbedAtWindow(
       root, mojom::WindowTree::kAccessPolicyEmbedRoot, std::move(client_));
   tree->ConfigureWindowManager();
   return tree;

@@ -5,7 +5,7 @@
 #include "components/mus/ws/window_manager_factory_service.h"
 
 #include "components/mus/ws/connection_manager.h"
-#include "components/mus/ws/window_tree_impl.h"
+#include "components/mus/ws/window_tree.h"
 
 namespace mus {
 namespace ws {

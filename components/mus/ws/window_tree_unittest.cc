@@ -14,7 +14,6 @@
 #include "components/mus/common/util.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "components/mus/surfaces/surfaces_state.h"
-#include "components/mus/ws/client_connection.h"
 #include "components/mus/ws/connection_manager.h"
 #include "components/mus/ws/connection_manager_delegate.h"
 #include "components/mus/ws/display_binding.h"
@@ -25,7 +24,8 @@
 #include "components/mus/ws/server_window_surface_manager_test_api.h"
 #include "components/mus/ws/test_change_tracker.h"
 #include "components/mus/ws/test_utils.h"
-#include "components/mus/ws/window_tree_impl.h"
+#include "components/mus/ws/window_tree.h"
+#include "components/mus/ws/window_tree_binding.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/services/network/public/interfaces/url_loader.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -42,12 +42,12 @@ std::string WindowIdToString(const WindowId& id) {
   return base::StringPrintf("%d,%d", id.connection_id, id.window_id);
 }
 
-ClientWindowId BuildClientWindowId(WindowTreeImpl* tree,
+ClientWindowId BuildClientWindowId(WindowTree* tree,
                                    ConnectionSpecificId window_id) {
   return ClientWindowId(WindowIdToTransportId(WindowId(tree->id(), window_id)));
 }
 
-ClientWindowId ClientWindowIdForWindow(WindowTreeImpl* tree,
+ClientWindowId ClientWindowIdForWindow(WindowTree* tree,
                                        const ServerWindow* window) {
   ClientWindowId client_window_id;
   // If window isn't known we'll return 0, which should then error out.
@@ -102,7 +102,7 @@ class TestDisplayBinding : public DisplayBinding {
 
  private:
   // DisplayBinding:
-  WindowTreeImpl* CreateWindowTree(ServerWindow* root) override {
+  WindowTree* CreateWindowTree(ServerWindow* root) override {
     return connection_manager_->EmbedAtWindow(
         root, mus::mojom::WindowTree::kAccessPolicyEmbedRoot,
         mus::mojom::WindowTreeClientPtr());
@@ -144,15 +144,13 @@ ui::PointerEvent CreateMouseUpEvent(int x, int y) {
                      ui::EF_LEFT_MOUSE_BUTTON));
 }
 
-const ServerWindow* FirstRoot(WindowTreeImpl* connection) {
-  return connection->roots().size() == 1u ? *(connection->roots().begin())
-                                          : nullptr;
+const ServerWindow* FirstRoot(WindowTree* tree) {
+  return tree->roots().size() == 1u ? *(tree->roots().begin()) : nullptr;
 }
 
-ClientWindowId FirstRootId(WindowTreeImpl* connection) {
-  return connection->roots().size() == 1u
-             ? ClientWindowIdForWindow(connection,
-                                       *(connection->roots().begin()))
+ClientWindowId FirstRootId(WindowTree* tree) {
+  return tree->roots().size() == 1u
+             ? ClientWindowIdForWindow(tree, *(tree->roots().begin()))
              : ClientWindowId();
 }
 
@@ -168,18 +166,14 @@ class WindowTreeTest : public testing::Test {
         platform_display_factory_(&cursor_id_) {}
   ~WindowTreeTest() override {}
 
-  // WindowTreeImpl for the window manager.
-  WindowTreeImpl* wm_connection() {
-    return connection_manager_->GetConnection(1);
-  }
+  // WindowTree for the window manager.
+  WindowTree* wm_tree() { return connection_manager_->GetTreeWithId(1); }
 
   TestWindowTreeClient* last_window_tree_client() {
     return delegate_.last_client();
   }
 
-  TestClientConnection* last_client_connection() {
-    return delegate_.last_connection();
-  }
+  TestWindowTreeBinding* last_binding() { return delegate_.last_binding(); }
 
   ConnectionManager* connection_manager() { return connection_manager_.get(); }
 
@@ -196,9 +190,9 @@ class WindowTreeTest : public testing::Test {
     DisplayTestApi(display_).OnEvent(event);
   }
 
-  void set_window_manager_internal(WindowTreeImpl* connection,
+  void set_window_manager_internal(WindowTree* tree,
                                    mojom::WindowManager* wm_internal) {
-    WindowTreeTestApi(connection).set_window_manager_internal(wm_internal);
+    WindowTreeTestApi(tree).set_window_manager_internal(wm_internal);
   }
 
   void AckPreviousEvent() {
@@ -212,10 +206,10 @@ class WindowTreeTest : public testing::Test {
     AckPreviousEvent();
   }
 
-  // Creates a new window from wm_connection() and embeds a new connection in
+  // Creates a new window from wm_tree() and embeds a new connection in
   // it.
   void SetupEventTargeting(TestWindowTreeClient** out_client,
-                           WindowTreeImpl** window_tree_connection,
+                           WindowTree** window_tree,
                            ServerWindow** window);
 
  protected:
@@ -248,44 +242,38 @@ class WindowTreeTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(WindowTreeTest);
 };
 
-// Creates a new window in wm_connection(), adds it to the root, embeds a
+// Creates a new window in wm_tree(), adds it to the root, embeds a
 // new client in the window and creates a child of said window. |window| is
-// set to the child of |window_tree_connection| that is created.
-void WindowTreeTest::SetupEventTargeting(
-    TestWindowTreeClient** out_client,
-    WindowTreeImpl** window_tree_connection,
-    ServerWindow** window) {
-  const ClientWindowId embed_window_id =
-      BuildClientWindowId(wm_connection(), 1);
+// set to the child of |window_tree| that is created.
+void WindowTreeTest::SetupEventTargeting(TestWindowTreeClient** out_client,
+                                         WindowTree** window_tree,
+                                         ServerWindow** window) {
+  const ClientWindowId embed_window_id = BuildClientWindowId(wm_tree(), 1);
   EXPECT_TRUE(
-      wm_connection()->NewWindow(embed_window_id, ServerWindow::Properties()));
-  EXPECT_TRUE(wm_connection()->SetWindowVisibility(embed_window_id, true));
-  EXPECT_TRUE(wm_connection()->AddWindow(FirstRootId(wm_connection()),
-                                         embed_window_id));
+      wm_tree()->NewWindow(embed_window_id, ServerWindow::Properties()));
+  EXPECT_TRUE(wm_tree()->SetWindowVisibility(embed_window_id, true));
+  EXPECT_TRUE(wm_tree()->AddWindow(FirstRootId(wm_tree()), embed_window_id));
   display_->root_window()->SetBounds(gfx::Rect(0, 0, 100, 100));
   mojom::WindowTreeClientPtr client;
   mojom::WindowTreeClientRequest client_request = GetProxy(&client);
   wm_client()->Bind(std::move(client_request));
   ConnectionSpecificId connection_id = 0;
-  wm_connection()->Embed(embed_window_id, std::move(client),
-                         mojom::WindowTree::kAccessPolicyDefault,
-                         &connection_id);
-  ServerWindow* embed_window =
-      wm_connection()->GetWindowByClientId(embed_window_id);
-  WindowTreeImpl* connection1 =
-      connection_manager()->GetConnectionWithRoot(embed_window);
-  ASSERT_TRUE(connection1 != nullptr);
-  ASSERT_NE(connection1, wm_connection());
+  wm_tree()->Embed(embed_window_id, std::move(client),
+                   mojom::WindowTree::kAccessPolicyDefault, &connection_id);
+  ServerWindow* embed_window = wm_tree()->GetWindowByClientId(embed_window_id);
+  WindowTree* tree1 = connection_manager()->GetTreeWithRoot(embed_window);
+  ASSERT_TRUE(tree1 != nullptr);
+  ASSERT_NE(tree1, wm_tree());
 
   embed_window->SetBounds(gfx::Rect(0, 0, 50, 50));
 
-  const ClientWindowId child1_id(BuildClientWindowId(connection1, 1));
-  EXPECT_TRUE(connection1->NewWindow(child1_id, ServerWindow::Properties()));
-  ServerWindow* child1 = connection1->GetWindowByClientId(child1_id);
+  const ClientWindowId child1_id(BuildClientWindowId(tree1, 1));
+  EXPECT_TRUE(tree1->NewWindow(child1_id, ServerWindow::Properties()));
+  ServerWindow* child1 = tree1->GetWindowByClientId(child1_id);
   ASSERT_TRUE(child1);
-  EXPECT_TRUE(connection1->AddWindow(
-      ClientWindowIdForWindow(connection1, embed_window), child1_id));
-  connection1->GetDisplay(embed_window)->AddActivationParent(embed_window);
+  EXPECT_TRUE(tree1->AddWindow(ClientWindowIdForWindow(tree1, embed_window),
+                               child1_id));
+  tree1->GetDisplay(embed_window)->AddActivationParent(embed_window);
 
   child1->SetVisible(true);
   child1->SetBounds(gfx::Rect(20, 20, 20, 20));
@@ -296,59 +284,55 @@ void WindowTreeTest::SetupEventTargeting(
   wm_client()->tracker()->changes()->clear();
 
   *out_client = embed_connection;
-  *window_tree_connection = connection1;
+  *window_tree = tree1;
   *window = child1;
 }
 
 // Verifies focus correctly changes on pointer events.
 TEST_F(WindowTreeTest, FocusOnPointer) {
-  const ClientWindowId embed_window_id =
-      BuildClientWindowId(wm_connection(), 1);
+  const ClientWindowId embed_window_id = BuildClientWindowId(wm_tree(), 1);
   EXPECT_TRUE(
-      wm_connection()->NewWindow(embed_window_id, ServerWindow::Properties()));
-  ServerWindow* embed_window =
-      wm_connection()->GetWindowByClientId(embed_window_id);
+      wm_tree()->NewWindow(embed_window_id, ServerWindow::Properties()));
+  ServerWindow* embed_window = wm_tree()->GetWindowByClientId(embed_window_id);
   ASSERT_TRUE(embed_window);
-  EXPECT_TRUE(wm_connection()->SetWindowVisibility(embed_window_id, true));
-  ASSERT_TRUE(FirstRoot(wm_connection()));
-  const ClientWindowId wm_root_id = FirstRootId(wm_connection());
-  EXPECT_TRUE(wm_connection()->AddWindow(wm_root_id, embed_window_id));
+  EXPECT_TRUE(wm_tree()->SetWindowVisibility(embed_window_id, true));
+  ASSERT_TRUE(FirstRoot(wm_tree()));
+  const ClientWindowId wm_root_id = FirstRootId(wm_tree());
+  EXPECT_TRUE(wm_tree()->AddWindow(wm_root_id, embed_window_id));
   display_->root_window()->SetBounds(gfx::Rect(0, 0, 100, 100));
   mojom::WindowTreeClientPtr client;
   mojom::WindowTreeClientRequest client_request = GetProxy(&client);
   wm_client()->Bind(std::move(client_request));
   ConnectionSpecificId connection_id = 0;
-  wm_connection()->Embed(embed_window_id, std::move(client),
-                         mojom::WindowTree::kAccessPolicyDefault,
-                         &connection_id);
-  WindowTreeImpl* connection1 =
-      connection_manager()->GetConnectionWithRoot(embed_window);
-  ASSERT_TRUE(connection1 != nullptr);
-  ASSERT_NE(connection1, wm_connection());
+  wm_tree()->Embed(embed_window_id, std::move(client),
+                   mojom::WindowTree::kAccessPolicyDefault, &connection_id);
+  WindowTree* tree1 = connection_manager()->GetTreeWithRoot(embed_window);
+  ASSERT_TRUE(tree1 != nullptr);
+  ASSERT_NE(tree1, wm_tree());
 
   embed_window->SetBounds(gfx::Rect(0, 0, 50, 50));
 
-  const ClientWindowId child1_id(BuildClientWindowId(connection1, 1));
-  EXPECT_TRUE(connection1->NewWindow(child1_id, ServerWindow::Properties()));
-  EXPECT_TRUE(connection1->AddWindow(
-      ClientWindowIdForWindow(connection1, embed_window), child1_id));
-  ServerWindow* child1 = connection1->GetWindowByClientId(child1_id);
+  const ClientWindowId child1_id(BuildClientWindowId(tree1, 1));
+  EXPECT_TRUE(tree1->NewWindow(child1_id, ServerWindow::Properties()));
+  EXPECT_TRUE(tree1->AddWindow(ClientWindowIdForWindow(tree1, embed_window),
+                               child1_id));
+  ServerWindow* child1 = tree1->GetWindowByClientId(child1_id);
   ASSERT_TRUE(child1);
   child1->SetVisible(true);
   child1->SetBounds(gfx::Rect(20, 20, 20, 20));
   EnableHitTest(child1);
 
-  TestWindowTreeClient* connection1_client = last_window_tree_client();
-  connection1_client->tracker()->changes()->clear();
+  TestWindowTreeClient* tree1_client = last_window_tree_client();
+  tree1_client->tracker()->changes()->clear();
   wm_client()->tracker()->changes()->clear();
 
   // Focus should not go to |child1| yet, since the parent still doesn't allow
   // active children.
   DispatchEventAndAckImmediately(CreatePointerDownEvent(21, 22));
-  Display* display1 = connection1->GetDisplay(embed_window);
+  Display* display1 = tree1->GetDisplay(embed_window);
   EXPECT_EQ(nullptr, display1->GetFocusedWindow());
   DispatchEventAndAckImmediately(CreatePointerUpEvent(21, 22));
-  connection1_client->tracker()->changes()->clear();
+  tree1_client->tracker()->changes()->clear();
   wm_client()->tracker()->changes()->clear();
 
   display1->AddActivationParent(embed_window);
@@ -360,14 +344,13 @@ TEST_F(WindowTreeTest, FocusOnPointer) {
   ASSERT_GE(wm_client()->tracker()->changes()->size(), 1u);
   EXPECT_EQ("Focused id=2,1",
             ChangesToDescription1(*wm_client()->tracker()->changes())[0]);
-  ASSERT_GE(connection1_client->tracker()->changes()->size(), 1u);
-  EXPECT_EQ(
-      "Focused id=2,1",
-      ChangesToDescription1(*connection1_client->tracker()->changes())[0]);
+  ASSERT_GE(tree1_client->tracker()->changes()->size(), 1u);
+  EXPECT_EQ("Focused id=2,1",
+            ChangesToDescription1(*tree1_client->tracker()->changes())[0]);
 
   DispatchEventAndAckImmediately(CreatePointerUpEvent(21, 22));
   wm_client()->tracker()->changes()->clear();
-  connection1_client->tracker()->changes()->clear();
+  tree1_client->tracker()->changes()->clear();
 
   // Press outside of the embedded window. Note that root cannot be focused
   // (because it cannot be activated). So the focus would not move in this case.
@@ -376,7 +359,7 @@ TEST_F(WindowTreeTest, FocusOnPointer) {
 
   DispatchEventAndAckImmediately(CreatePointerUpEvent(21, 22));
   wm_client()->tracker()->changes()->clear();
-  connection1_client->tracker()->changes()->clear();
+  tree1_client->tracker()->changes()->clear();
 
   // Press in the same location. Should not get a focus change event (only input
   // event).
@@ -386,15 +369,15 @@ TEST_F(WindowTreeTest, FocusOnPointer) {
       << SingleChangeToDescription(*wm_client()->tracker()->changes());
   EXPECT_EQ("InputEvent window=0,3 event_action=4",
             ChangesToDescription1(*wm_client()->tracker()->changes())[0]);
-  EXPECT_TRUE(connection1_client->tracker()->changes()->empty());
+  EXPECT_TRUE(tree1_client->tracker()->changes()->empty());
 }
 
 TEST_F(WindowTreeTest, BasicInputEventTarget) {
   TestWindowTreeClient* embed_connection = nullptr;
-  WindowTreeImpl* window_tree_connection = nullptr;
+  WindowTree* tree = nullptr;
   ServerWindow* window = nullptr;
   EXPECT_NO_FATAL_FAILURE(
-      SetupEventTargeting(&embed_connection, &window_tree_connection, &window));
+      SetupEventTargeting(&embed_connection, &tree, &window));
 
   // Send an event to |v1|. |embed_connection| should get the event, not
   // |wm_client|, since |v1| lives inside an embedded window.
@@ -411,10 +394,10 @@ TEST_F(WindowTreeTest, BasicInputEventTarget) {
 
 TEST_F(WindowTreeTest, CursorChangesWhenMouseOverWindowAndWindowSetsCursor) {
   TestWindowTreeClient* embed_connection = nullptr;
-  WindowTreeImpl* window_tree_connection = nullptr;
+  WindowTree* tree = nullptr;
   ServerWindow* window = nullptr;
   EXPECT_NO_FATAL_FAILURE(
-      SetupEventTargeting(&embed_connection, &window_tree_connection, &window));
+      SetupEventTargeting(&embed_connection, &tree, &window));
 
   // Like in BasicInputEventTarget, we send a pointer down event to be
   // dispatched. This is only to place the mouse cursor over that window though.
@@ -429,10 +412,10 @@ TEST_F(WindowTreeTest, CursorChangesWhenMouseOverWindowAndWindowSetsCursor) {
 
 TEST_F(WindowTreeTest, CursorChangesWhenEnteringWindowWithDifferentCursor) {
   TestWindowTreeClient* embed_connection = nullptr;
-  WindowTreeImpl* window_tree_connection = nullptr;
+  WindowTree* tree = nullptr;
   ServerWindow* window = nullptr;
   EXPECT_NO_FATAL_FAILURE(
-      SetupEventTargeting(&embed_connection, &window_tree_connection, &window));
+      SetupEventTargeting(&embed_connection, &tree, &window));
 
   // Let's create a pointer event outside the window and then move the pointer
   // inside.
@@ -446,10 +429,10 @@ TEST_F(WindowTreeTest, CursorChangesWhenEnteringWindowWithDifferentCursor) {
 
 TEST_F(WindowTreeTest, TouchesDontChangeCursor) {
   TestWindowTreeClient* embed_connection = nullptr;
-  WindowTreeImpl* window_tree_connection = nullptr;
+  WindowTree* tree = nullptr;
   ServerWindow* window = nullptr;
   EXPECT_NO_FATAL_FAILURE(
-      SetupEventTargeting(&embed_connection, &window_tree_connection, &window));
+      SetupEventTargeting(&embed_connection, &tree, &window));
 
   // Let's create a pointer event outside the window and then move the pointer
   // inside.
@@ -464,10 +447,10 @@ TEST_F(WindowTreeTest, TouchesDontChangeCursor) {
 
 TEST_F(WindowTreeTest, DragOutsideWindow) {
   TestWindowTreeClient* embed_connection = nullptr;
-  WindowTreeImpl* window_tree_connection = nullptr;
+  WindowTree* tree = nullptr;
   ServerWindow* window = nullptr;
   EXPECT_NO_FATAL_FAILURE(
-      SetupEventTargeting(&embed_connection, &window_tree_connection, &window));
+      SetupEventTargeting(&embed_connection, &tree, &window));
 
   // Start with the cursor outside the window. Setting the cursor shouldn't
   // change the cursor.
@@ -495,10 +478,10 @@ TEST_F(WindowTreeTest, DragOutsideWindow) {
 
 TEST_F(WindowTreeTest, ChangingWindowBoundsChangesCursor) {
   TestWindowTreeClient* embed_connection = nullptr;
-  WindowTreeImpl* window_tree_connection = nullptr;
+  WindowTree* tree = nullptr;
   ServerWindow* window = nullptr;
   EXPECT_NO_FATAL_FAILURE(
-      SetupEventTargeting(&embed_connection, &window_tree_connection, &window));
+      SetupEventTargeting(&embed_connection, &tree, &window));
 
   // Put the cursor just outside the bounds of the window.
   DispatchEventAndAckImmediately(CreateMouseMoveEvent(41, 41));
@@ -517,20 +500,18 @@ TEST_F(WindowTreeTest, ChangingWindowBoundsChangesCursor) {
 
 TEST_F(WindowTreeTest, WindowReorderingChangesCursor) {
   TestWindowTreeClient* embed_connection = nullptr;
-  WindowTreeImpl* window_tree_connection = nullptr;
+  WindowTree* tree = nullptr;
   ServerWindow* window1 = nullptr;
-  EXPECT_NO_FATAL_FAILURE(SetupEventTargeting(
-      &embed_connection, &window_tree_connection, &window1));
+  EXPECT_NO_FATAL_FAILURE(
+      SetupEventTargeting(&embed_connection, &tree, &window1));
 
   // Create a second window right over the first.
-  const ClientWindowId embed_window_id(FirstRootId(window_tree_connection));
-  const ClientWindowId child2_id(
-      BuildClientWindowId(window_tree_connection, 2));
-  EXPECT_TRUE(
-      window_tree_connection->NewWindow(child2_id, ServerWindow::Properties()));
-  ServerWindow* child2 = window_tree_connection->GetWindowByClientId(child2_id);
+  const ClientWindowId embed_window_id(FirstRootId(tree));
+  const ClientWindowId child2_id(BuildClientWindowId(tree, 2));
+  EXPECT_TRUE(tree->NewWindow(child2_id, ServerWindow::Properties()));
+  ServerWindow* child2 = tree->GetWindowByClientId(child2_id);
   ASSERT_TRUE(child2);
-  EXPECT_TRUE(window_tree_connection->AddWindow(embed_window_id, child2_id));
+  EXPECT_TRUE(tree->AddWindow(embed_window_id, child2_id));
   child2->SetVisible(true);
   child2->SetBounds(gfx::Rect(20, 20, 20, 20));
   EnableHitTest(child2);
@@ -549,14 +530,12 @@ TEST_F(WindowTreeTest, WindowReorderingChangesCursor) {
 }
 
 TEST_F(WindowTreeTest, EventAck) {
-  const ClientWindowId embed_window_id =
-      BuildClientWindowId(wm_connection(), 1);
+  const ClientWindowId embed_window_id = BuildClientWindowId(wm_tree(), 1);
   EXPECT_TRUE(
-      wm_connection()->NewWindow(embed_window_id, ServerWindow::Properties()));
-  EXPECT_TRUE(wm_connection()->SetWindowVisibility(embed_window_id, true));
-  ASSERT_TRUE(FirstRoot(wm_connection()));
-  EXPECT_TRUE(wm_connection()->AddWindow(FirstRootId(wm_connection()),
-                                         embed_window_id));
+      wm_tree()->NewWindow(embed_window_id, ServerWindow::Properties()));
+  EXPECT_TRUE(wm_tree()->SetWindowVisibility(embed_window_id, true));
+  ASSERT_TRUE(FirstRoot(wm_tree()));
+  EXPECT_TRUE(wm_tree()->AddWindow(FirstRootId(wm_tree()), embed_window_id));
   display_->root_window()->SetBounds(gfx::Rect(0, 0, 100, 100));
 
   wm_client()->tracker()->changes()->clear();
@@ -581,12 +560,12 @@ TEST_F(WindowTreeTest, EventAck) {
 // sure client paused.
 TEST_F(WindowTreeTest, NewTopLevelWindow) {
   TestWindowManager wm_internal;
-  set_window_manager_internal(wm_connection(), &wm_internal);
+  set_window_manager_internal(wm_tree(), &wm_internal);
   TestWindowTreeClient* embed_connection = nullptr;
-  WindowTreeImpl* window_tree_connection = nullptr;
+  WindowTree* tree = nullptr;
   ServerWindow* window = nullptr;
   ASSERT_NO_FATAL_FAILURE(
-      SetupEventTargeting(&embed_connection, &window_tree_connection, &window));
+      SetupEventTargeting(&embed_connection, &tree, &window));
   embed_connection->tracker()->changes()->clear();
   embed_connection->set_record_on_change_completed(true);
 
@@ -595,27 +574,24 @@ TEST_F(WindowTreeTest, NewTopLevelWindow) {
   const uint32_t initial_change_id = 17;
   // Explicitly use an id that does not contain the connection id.
   const ClientWindowId embed_window_id2_in_child(45 << 16 | 27);
-  static_cast<mojom::WindowTree*>(window_tree_connection)
-      ->NewTopLevelWindow(initial_change_id, embed_window_id2_in_child.id,
-                          std::move(properties));
+  static_cast<mojom::WindowTree*>(tree)->NewTopLevelWindow(
+      initial_change_id, embed_window_id2_in_child.id, std::move(properties));
 
   // The binding should be paused until the wm acks the change.
   uint32_t wm_change_id = 0u;
   ASSERT_TRUE(wm_internal.did_call_create_top_level_window(&wm_change_id));
-  EXPECT_TRUE(last_client_connection()->is_paused());
+  EXPECT_TRUE(last_binding()->is_paused());
 
   // Create the window for |embed_window_id2_in_child|.
-  const ClientWindowId embed_window_id2 =
-      BuildClientWindowId(wm_connection(), 2);
+  const ClientWindowId embed_window_id2 = BuildClientWindowId(wm_tree(), 2);
   EXPECT_TRUE(
-      wm_connection()->NewWindow(embed_window_id2, ServerWindow::Properties()));
-  EXPECT_TRUE(wm_connection()->AddWindow(FirstRootId(wm_connection()),
-                                         embed_window_id2));
+      wm_tree()->NewWindow(embed_window_id2, ServerWindow::Properties()));
+  EXPECT_TRUE(wm_tree()->AddWindow(FirstRootId(wm_tree()), embed_window_id2));
 
   // Ack the change, which should resume the binding.
-  static_cast<mojom::WindowManagerClient*>(wm_connection())
+  static_cast<mojom::WindowManagerClient*>(wm_tree())
       ->OnWmCreatedTopLevelWindow(wm_change_id, embed_window_id2.id);
-  EXPECT_FALSE(last_client_connection()->is_paused());
+  EXPECT_FALSE(last_binding()->is_paused());
   EXPECT_EQ("TopLevelCreated id=17 window_id=" +
                 WindowIdToString(
                     WindowIdFromTransportId(embed_window_id2_in_child.id)),
@@ -624,12 +600,11 @@ TEST_F(WindowTreeTest, NewTopLevelWindow) {
 
   // Change the visibility of the window from the owner and make sure the
   // client sees the right id.
-  ServerWindow* embed_window =
-      wm_connection()->GetWindowByClientId(embed_window_id2);
+  ServerWindow* embed_window = wm_tree()->GetWindowByClientId(embed_window_id2);
   ASSERT_TRUE(embed_window);
   EXPECT_FALSE(embed_window->visible());
-  ASSERT_TRUE(wm_connection()->SetWindowVisibility(
-      ClientWindowIdForWindow(wm_connection(), embed_window), true));
+  ASSERT_TRUE(wm_tree()->SetWindowVisibility(
+      ClientWindowIdForWindow(wm_tree(), embed_window), true));
   EXPECT_TRUE(embed_window->visible());
   EXPECT_EQ("VisibilityChanged window=" +
                 WindowIdToString(
@@ -638,8 +613,7 @@ TEST_F(WindowTreeTest, NewTopLevelWindow) {
             SingleChangeToDescription(*embed_connection->tracker()->changes()));
 
   // Set the visibility from the child using the client assigned id.
-  ASSERT_TRUE(window_tree_connection->SetWindowVisibility(
-      embed_window_id2_in_child, false));
+  ASSERT_TRUE(tree->SetWindowVisibility(embed_window_id2_in_child, false));
   EXPECT_FALSE(embed_window->visible());
 }
 
@@ -647,23 +621,20 @@ TEST_F(WindowTreeTest, NewTopLevelWindow) {
 // processed, and the only the capture window can release capture.
 TEST_F(WindowTreeTest, ExplicitSetCapture) {
   TestWindowTreeClient* embed_connection = nullptr;
-  WindowTreeImpl* window_tree_connection = nullptr;
+  WindowTree* tree = nullptr;
   ServerWindow* window = nullptr;
   EXPECT_NO_FATAL_FAILURE(
-      SetupEventTargeting(&embed_connection, &window_tree_connection, &window));
-  const ServerWindow* root_window = *window_tree_connection->roots().begin();
-  window_tree_connection->AddWindow(
-      FirstRootId(window_tree_connection),
-      ClientWindowIdForWindow(window_tree_connection, window));
+      SetupEventTargeting(&embed_connection, &tree, &window));
+  const ServerWindow* root_window = *tree->roots().begin();
+  tree->AddWindow(FirstRootId(tree), ClientWindowIdForWindow(tree, window));
   window->SetBounds(gfx::Rect(0, 0, 100, 100));
-  ASSERT_TRUE(window_tree_connection->GetDisplay(window));
+  ASSERT_TRUE(tree->GetDisplay(window));
 
   // Setting capture should fail when there are no active events
-  mojom::WindowTree* mojom_window_tree =
-      static_cast<mojom::WindowTree*>(window_tree_connection);
+  mojom::WindowTree* mojom_window_tree = static_cast<mojom::WindowTree*>(tree);
   uint32_t change_id = 42;
   mojom_window_tree->SetCapture(change_id, WindowIdToTransportId(window->id()));
-  Display* display = window_tree_connection->GetDisplay(window);
+  Display* display = tree->GetDisplay(window);
   EXPECT_NE(window, display->GetCaptureWindow());
 
   // Setting capture after the event is acknowledged should fail

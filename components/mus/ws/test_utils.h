@@ -8,14 +8,14 @@
 #include <stdint.h>
 
 #include "components/mus/public/interfaces/window_tree.mojom.h"
-#include "components/mus/ws/client_connection.h"
 #include "components/mus/ws/connection_manager_delegate.h"
 #include "components/mus/ws/display.h"
 #include "components/mus/ws/platform_display.h"
 #include "components/mus/ws/platform_display_factory.h"
 #include "components/mus/ws/test_change_tracker.h"
 #include "components/mus/ws/window_manager_factory_registry.h"
-#include "components/mus/ws/window_tree_impl.h"
+#include "components/mus/ws/window_tree.h"
+#include "components/mus/ws/window_tree_binding.h"
 
 namespace mus {
 namespace ws {
@@ -40,7 +40,7 @@ class WindowManagerFactoryRegistryTestApi {
 
 class WindowTreeTestApi {
  public:
-  WindowTreeTestApi(WindowTreeImpl* tree);
+  WindowTreeTestApi(WindowTree* tree);
   ~WindowTreeTestApi();
 
   void set_window_manager_internal(mojom::WindowManager* wm_internal) {
@@ -48,7 +48,7 @@ class WindowTreeTestApi {
   }
 
  private:
-  WindowTreeImpl* tree_;
+  WindowTree* tree_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowTreeTestApi);
 };
@@ -169,17 +169,17 @@ class TestWindowTreeClient : public mus::mojom::WindowTreeClient {
 
 // -----------------------------------------------------------------------------
 
-// ClientConnection implementation that vends TestWindowTreeClient.
-class TestClientConnection : public ClientConnection {
+// WindowTreeBinding implementation that vends TestWindowTreeBinding.
+class TestWindowTreeBinding : public WindowTreeBinding {
  public:
-  TestClientConnection();
-  ~TestClientConnection() override;
+  TestWindowTreeBinding();
+  ~TestWindowTreeBinding() override;
 
   TestWindowTreeClient* client() { return &client_; }
 
   bool is_paused() const { return is_paused_; }
 
-  // ClientConnection:
+  // WindowTreeBinding:
   mojom::WindowManager* GetWindowManager() override;
   void SetIncomingMethodCallProcessingPaused(bool paused) override;
 
@@ -187,7 +187,7 @@ class TestClientConnection : public ClientConnection {
   TestWindowTreeClient client_;
   bool is_paused_ = false;
 
-  DISALLOW_COPY_AND_ASSIGN(TestClientConnection);
+  DISALLOW_COPY_AND_ASSIGN(TestWindowTreeBinding);
 };
 
 // -----------------------------------------------------------------------------
@@ -207,9 +207,9 @@ class TestConnectionManagerDelegate : public ConnectionManagerDelegate {
   }
 
   TestWindowTreeClient* last_client() {
-    return last_connection_ ? last_connection_->client() : nullptr;
+    return last_binding_ ? last_binding_->client() : nullptr;
   }
-  TestClientConnection* last_connection() { return last_connection_; }
+  TestWindowTreeBinding* last_binding() { return last_binding_; }
 
   bool got_on_no_more_connections() const {
     return got_on_no_more_connections_;
@@ -217,9 +217,9 @@ class TestConnectionManagerDelegate : public ConnectionManagerDelegate {
 
   // ConnectionManagerDelegate:
   void OnNoMoreRootConnections() override;
-  scoped_ptr<ClientConnection> CreateClientConnectionForEmbedAtWindow(
+  scoped_ptr<WindowTreeBinding> CreateWindowTreeBindingForEmbedAtWindow(
       ws::ConnectionManager* connection_manager,
-      ws::WindowTreeImpl* tree,
+      ws::WindowTree* tree,
       mojom::WindowTreeRequest tree_request,
       mojom::WindowTreeClientPtr client) override;
   void CreateDefaultDisplays() override;
@@ -228,7 +228,7 @@ class TestConnectionManagerDelegate : public ConnectionManagerDelegate {
   // If CreateDefaultDisplays() this is the number of Displays that are
   // created. The default is 0, which results in a DCHECK.
   int num_displays_to_create_ = 0;
-  TestClientConnection* last_connection_ = nullptr;
+  TestWindowTreeBinding* last_binding_ = nullptr;
   Display* display_ = nullptr;
   ConnectionManager* connection_manager_ = nullptr;
   bool got_on_no_more_connections_ = false;

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_MUS_WS_CLIENT_CONNECTION_H_
-#define COMPONENTS_MUS_WS_CLIENT_CONNECTION_H_
+#ifndef COMPONENTS_MUS_WS_WINDOW_TREE_BINDING_H_
+#define COMPONENTS_MUS_WS_WINDOW_TREE_BINDING_H_
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -14,15 +14,15 @@ namespace mus {
 namespace ws {
 
 class ConnectionManager;
-class WindowTreeImpl;
+class WindowTree;
 
-// ClientConnection encapsulates the state needed for a single client connected
-// to the window manager. ClientConnection is owned by the WindowTreeImpl the
-// ClientConnection is associated with.
-class ClientConnection {
+// WindowTreeBinding manages the binding between a WindowTree and its mojo
+// clients. WindowTreeBinding exists so that the client can be mocked for
+// tests. WindowTree owns its associated WindowTreeBinding.
+class WindowTreeBinding {
  public:
-  explicit ClientConnection(mojom::WindowTreeClient* client);
-  virtual ~ClientConnection();
+  explicit WindowTreeBinding(mojom::WindowTreeClient* client);
+  virtual ~WindowTreeBinding();
 
   mojom::WindowTreeClient* client() { return client_; }
 
@@ -34,26 +34,26 @@ class ClientConnection {
  private:
   mojom::WindowTreeClient* client_;
 
-  DISALLOW_COPY_AND_ASSIGN(ClientConnection);
+  DISALLOW_COPY_AND_ASSIGN(WindowTreeBinding);
 };
 
-// Bindings implementation of ClientConnection.
-class DefaultClientConnection : public ClientConnection {
+// Bindings implementation of WindowTreeBinding.
+class DefaultWindowTreeBinding : public WindowTreeBinding {
  public:
-  DefaultClientConnection(WindowTreeImpl* tree,
-                          ConnectionManager* connection_manager,
-                          mojom::WindowTreeRequest service_request,
-                          mojom::WindowTreeClientPtr client);
-  DefaultClientConnection(WindowTreeImpl* tree,
-                          ConnectionManager* connection_manager,
-                          mojom::WindowTreeClientPtr client);
-  ~DefaultClientConnection() override;
+  DefaultWindowTreeBinding(WindowTree* tree,
+                           ConnectionManager* connection_manager,
+                           mojom::WindowTreeRequest service_request,
+                           mojom::WindowTreeClientPtr client);
+  DefaultWindowTreeBinding(WindowTree* tree,
+                           ConnectionManager* connection_manager,
+                           mojom::WindowTreeClientPtr client);
+  ~DefaultWindowTreeBinding() override;
 
   // Use when created with the constructor that does not take a
   // WindowTreeRequest.
   mojom::WindowTreePtr CreateInterfacePtrAndBind();
 
-  // ClientConnection:
+  // WindowTreeBinding:
   mojom::WindowManager* GetWindowManager() override;
   void SetIncomingMethodCallProcessingPaused(bool paused) override;
 
@@ -63,10 +63,10 @@ class DefaultClientConnection : public ClientConnection {
   mojom::WindowTreeClientPtr client_;
   mojom::WindowManagerAssociatedPtr window_manager_internal_;
 
-  DISALLOW_COPY_AND_ASSIGN(DefaultClientConnection);
+  DISALLOW_COPY_AND_ASSIGN(DefaultWindowTreeBinding);
 };
 
 }  // namespace ws
 }  // namespace mus
 
-#endif  // COMPONENTS_MUS_WS_CLIENT_CONNECTION_H_
+#endif  // COMPONENTS_MUS_WS_WINDOW_TREE_BINDING_H_

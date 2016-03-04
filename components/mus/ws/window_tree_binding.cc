@@ -2,26 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/mus/ws/client_connection.h"
+#include "components/mus/ws/window_tree_binding.h"
 
 #include "base/bind.h"
 #include "components/mus/ws/connection_manager.h"
-#include "components/mus/ws/window_tree_impl.h"
+#include "components/mus/ws/window_tree.h"
 
 namespace mus {
 namespace ws {
 
-ClientConnection::ClientConnection(mojom::WindowTreeClient* client)
+WindowTreeBinding::WindowTreeBinding(mojom::WindowTreeClient* client)
     : client_(client) {}
 
-ClientConnection::~ClientConnection() {}
+WindowTreeBinding::~WindowTreeBinding() {}
 
-DefaultClientConnection::DefaultClientConnection(
-    WindowTreeImpl* tree,
+DefaultWindowTreeBinding::DefaultWindowTreeBinding(
+    WindowTree* tree,
     ConnectionManager* connection_manager,
     mojom::WindowTreeRequest service_request,
     mojom::WindowTreeClientPtr client)
-    : ClientConnection(client.get()),
+    : WindowTreeBinding(client.get()),
       connection_manager_(connection_manager),
       binding_(tree, std::move(service_request)),
       client_(std::move(client)) {
@@ -31,18 +31,18 @@ DefaultClientConnection::DefaultClientConnection(
                  base::Unretained(connection_manager), base::Unretained(tree)));
 }
 
-DefaultClientConnection::DefaultClientConnection(
-    WindowTreeImpl* tree,
+DefaultWindowTreeBinding::DefaultWindowTreeBinding(
+    WindowTree* tree,
     ConnectionManager* connection_manager,
     mojom::WindowTreeClientPtr client)
-    : ClientConnection(client.get()),
+    : WindowTreeBinding(client.get()),
       connection_manager_(connection_manager),
       binding_(tree),
       client_(std::move(client)) {}
 
-DefaultClientConnection::~DefaultClientConnection() {}
+DefaultWindowTreeBinding::~DefaultWindowTreeBinding() {}
 
-void DefaultClientConnection::SetIncomingMethodCallProcessingPaused(
+void DefaultWindowTreeBinding::SetIncomingMethodCallProcessingPaused(
     bool paused) {
   if (paused)
     binding_.PauseIncomingMethodCallProcessing();
@@ -50,12 +50,12 @@ void DefaultClientConnection::SetIncomingMethodCallProcessingPaused(
     binding_.ResumeIncomingMethodCallProcessing();
 }
 
-mojom::WindowTreePtr DefaultClientConnection::CreateInterfacePtrAndBind() {
+mojom::WindowTreePtr DefaultWindowTreeBinding::CreateInterfacePtrAndBind() {
   DCHECK(!binding_.is_bound());
   return binding_.CreateInterfacePtrAndBind();
 }
 
-mojom::WindowManager* DefaultClientConnection::GetWindowManager() {
+mojom::WindowManager* DefaultWindowTreeBinding::GetWindowManager() {
   client_->GetWindowManager(
       GetProxy(&window_manager_internal_, client_.associated_group()));
   return window_manager_internal_.get();

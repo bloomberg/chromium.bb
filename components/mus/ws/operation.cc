@@ -5,16 +5,16 @@
 #include "components/mus/ws/operation.h"
 
 #include "components/mus/ws/connection_manager.h"
-#include "components/mus/ws/window_tree_impl.h"
+#include "components/mus/ws/window_tree.h"
 
 namespace mus {
 namespace ws {
 
-Operation::Operation(WindowTreeImpl* connection,
+Operation::Operation(WindowTree* tree,
                      ConnectionManager* connection_manager,
                      OperationType operation_type)
     : connection_manager_(connection_manager),
-      source_connection_id_(connection->id()),
+      source_tree_id_(tree->id()),
       operation_type_(operation_type) {
   DCHECK(operation_type != OperationType::NONE);
   // Tell the connection manager about the operation currently in flight.

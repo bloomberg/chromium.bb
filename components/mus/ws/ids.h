@@ -17,22 +17,22 @@
 namespace mus {
 namespace ws {
 
-// Connection id is used to indicate no connection. That is, no WindowTreeImpl
+// Connection id is used to indicate no connection. That is, no WindowTree
 // ever gets this id.
 const ConnectionSpecificId kInvalidConnectionId = 0;
 
 // Every window has a unique id associated with it (WindowId). The id is a
 // combination of the id assigned to the connection (the high order bits) and
-// a unique id for the window. Each client (WindowTreeImpl) refers to the
-// window by an id assigned by the client (ClientWindowId). To facilitate this
-// WindowTreeImpl maintains a mapping between WindowId and ClientWindowId.
+// a unique id for the window. Each client (WindowTree) refers to the window
+// by an id assigned by the client (ClientWindowId). To facilitate this
+// WindowTree maintains a mapping between WindowId and ClientWindowId.
 //
 // This model works when the client initiates creation of windows, which is
 // the typical use case. Embed roots and the WindowManager are special, they
 // get access to windows created by other connections. These clients see the
 // id assigned on the server. Such clients have to take care that they only
 // create windows using their connection id. To do otherwise could result in
-// multiple windows having the same ClientWindowId. WindowTreeImpl enforces
+// multiple windows having the same ClientWindowId. WindowTree enforces
 // that embed roots use the connection id in creating the window id to avoid
 // possible conflicts.
 struct WindowId {

@@ -19,7 +19,7 @@ class ServerWindow;
 // Delegate used by the AccessPolicy implementations to get state.
 class AccessPolicyDelegate {
  public:
-  // Returns true if the connection has |window| as one of its roots.
+  // Returns true if the tree has |window| as one of its roots.
   virtual bool HasRootForAccessPolicy(const ServerWindow* window) const = 0;
 
   // Returns true if |window| has been exposed to the client.
@@ -27,7 +27,7 @@ class AccessPolicyDelegate {
       const ServerWindow* window) const = 0;
 
   // Returns true if Embed(window) has been invoked on |window|.
-  virtual bool IsWindowRootOfAnotherConnectionForAccessPolicy(
+  virtual bool IsWindowRootOfAnotherTreeForAccessPolicy(
       const ServerWindow* window) const = 0;
 
   // Returns true if SetEmbedRoot() was invoked and |window| is a descendant of

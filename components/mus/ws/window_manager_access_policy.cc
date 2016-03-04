@@ -84,7 +84,7 @@ bool WindowManagerAccessPolicy::CanSetWindowSurface(
   if (surface_type == mojom::SurfaceType::UNDERLAY)
     return window->id().connection_id == connection_id_;
 
-  if (delegate_->IsWindowRootOfAnotherConnectionForAccessPolicy(window))
+  if (delegate_->IsWindowRootOfAnotherTreeForAccessPolicy(window))
     return false;
   return window->id().connection_id == connection_id_ ||
          (delegate_->HasRootForAccessPolicy(window));

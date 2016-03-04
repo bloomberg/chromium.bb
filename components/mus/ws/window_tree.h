@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_MUS_WS_WINDOW_TREE_IMPL_H_
-#define COMPONENTS_MUS_WS_WINDOW_TREE_IMPL_H_
+#ifndef COMPONENTS_MUS_WS_WINDOW_TREE_H_
+#define COMPONENTS_MUS_WS_WINDOW_TREE_H_
 
 #include <stdint.h>
 
@@ -20,8 +20,8 @@
 #include "components/mus/public/interfaces/surface_id.mojom.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "components/mus/ws/access_policy_delegate.h"
-#include "components/mus/ws/client_connection.h"
 #include "components/mus/ws/ids.h"
+#include "components/mus/ws/window_tree_binding.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 
 namespace gfx {
@@ -43,34 +43,38 @@ namespace test {
 class WindowTreeTestApi;
 }
 
-// An instance of WindowTreeImpl is created for every WindowTree request.
-// WindowTreeImpl tracks all the state and windows created by a client.
-// WindowTreeImpl coordinates with ConnectionManager to update the client (and
-// internal state) as necessary.
-class WindowTreeImpl : public mojom::WindowTree,
-                       public AccessPolicyDelegate,
-                       public mojom::WindowManagerClient {
+// WindowTree represents a view onto portions of the window tree. The parts of
+// the tree exposed to the client start at the root windows. A WindowTree may
+// have any number of roots (including none). A WindowTree may not have
+// visibility of all the descendants of its roots.
+//
+// WindowTree notifies its client as changes happen to windows exposed to the
+// the client.
+//
+// See ids.h for details on how WindowTree handles identity of windows.
+class WindowTree : public mojom::WindowTree,
+                   public AccessPolicyDelegate,
+                   public mojom::WindowManagerClient {
  public:
-  WindowTreeImpl(ConnectionManager* connection_manager,
-                 ServerWindow* root,
-                 uint32_t policy_bitmask);
-  ~WindowTreeImpl() override;
+  WindowTree(ConnectionManager* connection_manager,
+             ServerWindow* root,
+             uint32_t policy_bitmask);
+  ~WindowTree() override;
 
-  void Init(scoped_ptr<ClientConnection> client_connection,
-            mojom::WindowTreePtr tree);
+  void Init(scoped_ptr<WindowTreeBinding> binding, mojom::WindowTreePtr tree);
 
-  // Called if this WindowTreeImpl hosts the WindowManager. This happens if
-  // this WindowTreeImpl serves as the root of a WindowTreeHost.
+  // Called if this WindowTree hosts the WindowManager. This happens if
+  // this WindowTree serves as the root of a WindowTreeHost.
   void ConfigureWindowManager();
 
   ConnectionSpecificId id() const { return id_; }
 
-  mojom::WindowTreeClient* client() { return client_connection_->client(); }
+  mojom::WindowTreeClient* client() { return binding_->client(); }
 
   // Returns the Window with the specified id.
   ServerWindow* GetWindow(const WindowId& id) {
     return const_cast<ServerWindow*>(
-        const_cast<const WindowTreeImpl*>(this)->GetWindow(id));
+        const_cast<const WindowTree*>(this)->GetWindow(id));
   }
   const ServerWindow* GetWindow(const WindowId& id) const;
 
@@ -78,20 +82,20 @@ class WindowTreeImpl : public mojom::WindowTree,
   // client, returns null if not known.
   ServerWindow* GetWindowByClientId(const ClientWindowId& id) {
     return const_cast<ServerWindow*>(
-        const_cast<const WindowTreeImpl*>(this)->GetWindowByClientId(id));
+        const_cast<const WindowTree*>(this)->GetWindowByClientId(id));
   }
   const ServerWindow* GetWindowByClientId(const ClientWindowId& id) const;
 
   bool IsWindowKnown(const ServerWindow* window) const {
     return IsWindowKnown(window, nullptr);
   }
-  // Returns whether |window| is known to this connection. If |window| is
-  // known and |client_window_id| is non-null |client_window_id| is set to
-  // the ClientWindowId of the window.
+  // Returns whether |window| is known to this tree. If |window| is known and
+  // |client_window_id| is non-null |client_window_id| is set to the
+  // ClientWindowId of the window.
   bool IsWindowKnown(const ServerWindow* window,
                      ClientWindowId* client_window_id) const;
 
-  // Returns true if |window| is one of this connections roots.
+  // Returns true if |window| is one of this trees roots.
   bool HasRoot(const ServerWindow* window) const;
 
   std::set<const ServerWindow*> roots() { return roots_; }
@@ -101,11 +105,11 @@ class WindowTreeImpl : public mojom::WindowTree,
   const Display* GetDisplay(const ServerWindow* window) const;
   Display* GetDisplay(const ServerWindow* window) {
     return const_cast<Display*>(
-        const_cast<const WindowTreeImpl*>(this)->GetDisplay(window));
+        const_cast<const WindowTree*>(this)->GetDisplay(window));
   }
 
-  // Invoked when a connection is about to be destroyed.
-  void OnWindowDestroyingTreeImpl(WindowTreeImpl* connection);
+  // Invoked when a tree is about to be destroyed.
+  void OnWindowDestroyingTreeImpl(WindowTree* tree);
 
   void OnWillDestroyDisplay(Display* display);
 
@@ -221,14 +225,14 @@ class WindowTreeImpl : public mojom::WindowTree,
   WindowId GenerateNewWindowId();
 
   // These functions return true if the corresponding mojom function is allowed
-  // for this connection.
+  // for this tree.
   bool CanReorderWindow(const ServerWindow* window,
                         const ServerWindow* relative_window,
                         mojom::OrderDirection direction) const;
 
-  // Deletes a window owned by this connection. Returns true on success.
-  // |source| is the connection that originated the change.
-  bool DeleteWindowImpl(WindowTreeImpl* source, ServerWindow* window);
+  // Deletes a window owned by this tree. Returns true on success. |source| is
+  // the tree that originated the change.
+  bool DeleteWindowImpl(WindowTree* source, ServerWindow* window);
 
   // If |window| is known does nothing. Otherwise adds |window| to |windows|,
   // marks |window| as known and recurses.
@@ -240,12 +244,13 @@ class WindowTreeImpl : public mojom::WindowTree,
   bool RemoveFromMaps(const ServerWindow* window);
 
   // Removes |window| and all its descendants from the necessary maps. This
-  // does not recurse through windows that were created by this connection. All
-  // windows owned by this connection are added to |local_windows|.
+  // does not recurse through windows that were created by this tree. All
+  // windows owned by this tree are added to |local_windows|.
   void RemoveFromKnown(const ServerWindow* window,
                        std::vector<ServerWindow*>* local_windows);
 
-  // Resets the root of this connection.
+  // Removes a root from set of roots of this tree. This does not remove
+  // the window from the window tree, only from the set of roots.
   void RemoveRoot(const ServerWindow* window, RemoveRootReason reason);
 
   // Converts Window(s) to WindowData(s) for transport. This assumes all the
@@ -366,26 +371,26 @@ class WindowTreeImpl : public mojom::WindowTree,
   // AccessPolicyDelegate:
   bool HasRootForAccessPolicy(const ServerWindow* window) const override;
   bool IsWindowKnownForAccessPolicy(const ServerWindow* window) const override;
-  bool IsWindowRootOfAnotherConnectionForAccessPolicy(
+  bool IsWindowRootOfAnotherTreeForAccessPolicy(
       const ServerWindow* window) const override;
   bool IsDescendantOfEmbedRoot(const ServerWindow* window) override;
 
   ConnectionManager* connection_manager_;
 
-  // Id of this connection as assigned by ConnectionManager.
+  // Id of this tree as assigned by ConnectionManager.
   const ConnectionSpecificId id_;
 
   ConnectionSpecificId next_window_id_;
 
-  scoped_ptr<ClientConnection> client_connection_;
+  scoped_ptr<WindowTreeBinding> binding_;
 
   scoped_ptr<mus::ws::AccessPolicy> access_policy_;
 
-  // The roots, or embed points, of this connection. A WindowTreeImpl may have
-  // any number of roots, including 0.
+  // The roots, or embed points, of this tree. A WindowTree may have any
+  // number of roots, including 0.
   std::set<const ServerWindow*> roots_;
 
-  // The windows created by this connection. This connection owns these objects.
+  // The windows created by this tree. This tree owns these objects.
   base::hash_map<WindowId, ServerWindow*> created_window_map_;
 
   // The client is allowed to assign ids. These two maps providing the mapping
@@ -409,10 +414,10 @@ class WindowTreeImpl : public mojom::WindowTree,
 
   scoped_ptr<WaitingForTopLevelWindowInfo> waiting_for_top_level_window_info_;
 
-  DISALLOW_COPY_AND_ASSIGN(WindowTreeImpl);
+  DISALLOW_COPY_AND_ASSIGN(WindowTree);
 };
 
 }  // namespace ws
 }  // namespace mus
 
-#endif  // COMPONENTS_MUS_WS_WINDOW_TREE_IMPL_H_
+#endif  // COMPONENTS_MUS_WS_WINDOW_TREE_H_

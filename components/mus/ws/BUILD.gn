@@ -11,8 +11,6 @@ source_set("lib") {
   sources = [
     "access_policy.h",
     "access_policy_delegate.h",
-    "client_connection.cc",
-    "client_connection.h",
     "connection_manager.cc",
     "connection_manager.h",
     "connection_manager_delegate.cc",
@@ -65,10 +63,12 @@ source_set("lib") {
     "window_manager_factory_service.h",
     "window_manager_state.cc",
     "window_manager_state.h",
+    "window_tree.cc",
+    "window_tree.h",
+    "window_tree_binding.cc",
+    "window_tree_binding.h",
     "window_tree_factory.cc",
     "window_tree_factory.h",
-    "window_tree_impl.cc",
-    "window_tree_impl.h",
   ]
 
   deps = [

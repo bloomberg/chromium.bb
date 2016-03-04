@@ -12,7 +12,6 @@
 #include "components/mus/common/util.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "components/mus/surfaces/surfaces_state.h"
-#include "components/mus/ws/client_connection.h"
 #include "components/mus/ws/connection_manager.h"
 #include "components/mus/ws/connection_manager_delegate.h"
 #include "components/mus/ws/ids.h"
@@ -21,7 +20,8 @@
 #include "components/mus/ws/server_window.h"
 #include "components/mus/ws/test_utils.h"
 #include "components/mus/ws/window_manager_state.h"
-#include "components/mus/ws/window_tree_impl.h"
+#include "components/mus/ws/window_tree.h"
+#include "components/mus/ws/window_tree_binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -52,34 +52,6 @@ class DisplayTest : public testing::Test {
  public:
   DisplayTest() : cursor_id_(0), platform_display_factory_(&cursor_id_) {}
   ~DisplayTest() override {}
-
-  // WindowTreeImpl for the window manager.
-  WindowTreeImpl* wm_connection() {
-    return connection_manager_->GetConnection(1);
-  }
-
-  TestWindowTreeClient* last_window_tree_client() {
-    return connection_manager_delegate_.last_client();
-  }
-
-  TestClientConnection* last_client_connection() {
-    return connection_manager_delegate_.last_connection();
-  }
-
-  ConnectionManager* connection_manager() { return connection_manager_.get(); }
-
-  ServerWindow* GetWindowById(const WindowId& id) {
-    return connection_manager_->GetWindow(id);
-  }
-
-  mus::mojom::Cursor cursor_id() {
-    return static_cast<mus::mojom::Cursor>(cursor_id_);
-  }
-
-  void set_window_manager_internal(WindowTreeImpl* connection,
-                                   mojom::WindowManager* wm_internal) {
-    WindowTreeTestApi(connection).set_window_manager_internal(wm_internal);
-  }
 
  protected:
   // testing::Test:

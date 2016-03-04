@@ -14,7 +14,7 @@ namespace ws {
 
 class Display;
 class ServerWindow;
-class WindowTreeImpl;
+class WindowTree;
 
 // Manages the state associated with a connection to a WindowManager for
 // a specific user.
@@ -30,8 +30,8 @@ class WindowManagerState {
   ServerWindow* root() { return root_.get(); }
   const ServerWindow* root() const { return root_.get(); }
 
-  WindowTreeImpl* tree() { return tree_; }
-  const WindowTreeImpl* tree() const { return tree_; }
+  WindowTree* tree() { return tree_; }
+  const WindowTree* tree() const { return tree_; }
 
  private:
   friend class Display;
@@ -45,7 +45,7 @@ class WindowManagerState {
   const bool is_user_id_valid_;
   const uint32_t user_id_;
   scoped_ptr<ServerWindow> root_;
-  WindowTreeImpl* tree_ = nullptr;
+  WindowTree* tree_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(WindowManagerState);
 };

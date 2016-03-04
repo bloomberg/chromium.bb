@@ -34,7 +34,7 @@ class ConnectionManager;
 class DisplayBinding;
 class FocusController;
 class WindowManagerState;
-class WindowTreeImpl;
+class WindowTree;
 
 namespace test {
 class DisplayTestApi;
@@ -138,7 +138,7 @@ class Display : public PlatformDisplayDelegate,
 
   // Called just before |tree| is destroyed after its connection encounters an
   // error.
-  void OnWindowTreeConnectionError(WindowTreeImpl* tree);
+  void OnWindowTreeConnectionError(WindowTree* tree);
 
   // Called when a client updates a cursor. This will update the cursor on the
   // native display if the cursor is currently under |window|.

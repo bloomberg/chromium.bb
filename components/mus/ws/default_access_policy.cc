@@ -31,7 +31,7 @@ bool DefaultAccessPolicy::CanAddWindow(const ServerWindow* parent,
   return WasCreatedByThisConnection(child) &&
          (delegate_->HasRootForAccessPolicy(parent) ||
           (WasCreatedByThisConnection(parent) &&
-           !delegate_->IsWindowRootOfAnotherConnectionForAccessPolicy(parent)));
+           !delegate_->IsWindowRootOfAnotherTreeForAccessPolicy(parent)));
 }
 
 bool DefaultAccessPolicy::CanAddTransientWindow(
@@ -72,7 +72,7 @@ bool DefaultAccessPolicy::CanGetWindowTree(const ServerWindow* window) const {
 bool DefaultAccessPolicy::CanDescendIntoWindowForWindowTree(
     const ServerWindow* window) const {
   return (WasCreatedByThisConnection(window) &&
-          !delegate_->IsWindowRootOfAnotherConnectionForAccessPolicy(window)) ||
+          !delegate_->IsWindowRootOfAnotherTreeForAccessPolicy(window)) ||
          delegate_->HasRootForAccessPolicy(window) ||
          delegate_->IsDescendantOfEmbedRoot(window);
 }
@@ -102,7 +102,7 @@ bool DefaultAccessPolicy::CanSetWindowSurface(
   // Once a window embeds another app, the embedder app is no longer able to
   // call SetWindowSurfaceId() - this ability is transferred to the embedded
   // app.
-  if (delegate_->IsWindowRootOfAnotherConnectionForAccessPolicy(window))
+  if (delegate_->IsWindowRootOfAnotherTreeForAccessPolicy(window))
     return false;
   return WasCreatedByThisConnection(window) ||
          delegate_->HasRootForAccessPolicy(window);

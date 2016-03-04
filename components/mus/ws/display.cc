@@ -7,7 +7,6 @@
 #include "base/debug/debugger.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/mus/common/types.h"
-#include "components/mus/ws/client_connection.h"
 #include "components/mus/ws/connection_manager.h"
 #include "components/mus/ws/connection_manager_delegate.h"
 #include "components/mus/ws/display_binding.h"
@@ -15,7 +14,8 @@
 #include "components/mus/ws/platform_display.h"
 #include "components/mus/ws/window_manager_factory_service.h"
 #include "components/mus/ws/window_manager_state.h"
-#include "components/mus/ws/window_tree_impl.h"
+#include "components/mus/ws/window_tree.h"
+#include "components/mus/ws/window_tree_binding.h"
 #include "mojo/common/common_type_converters.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/converters/input_events/input_events_type_converters.h"
@@ -245,7 +245,7 @@ void Display::SetImeVisibility(ServerWindow* window, bool visible) {
   platform_display_->SetImeVisibility(visible);
 }
 
-void Display::OnWindowTreeConnectionError(WindowTreeImpl* tree) {
+void Display::OnWindowTreeConnectionError(WindowTree* tree) {
   for (auto it = window_manager_state_map_.begin();
        it != window_manager_state_map_.end(); ++it) {
     if (it->second->tree() == tree) {
@@ -360,13 +360,13 @@ void Display::DispatchInputEventToWindowImpl(ServerWindow* target,
   // If the event is in the non-client area the event goes to the owner of
   // the window. Otherwise if the window is an embed root, forward to the
   // embedded window.
-  WindowTreeImpl* connection =
+  WindowTree* tree =
       in_nonclient_area
-          ? connection_manager_->GetConnection(target->id().connection_id)
-          : connection_manager_->GetConnectionWithRoot(target);
-  if (!connection) {
+          ? connection_manager_->GetTreeWithId(target->id().connection_id)
+          : connection_manager_->GetTreeWithRoot(target);
+  if (!tree) {
     DCHECK(!in_nonclient_area);
-    connection = connection_manager_->GetConnection(target->id().connection_id);
+    tree = connection_manager_->GetTreeWithId(target->id().connection_id);
   }
 
   // TOOD(sad): Adjust this delay, possibly make this dynamic.
@@ -376,8 +376,8 @@ void Display::DispatchInputEventToWindowImpl(ServerWindow* target,
   event_ack_timer_.Start(FROM_HERE, max_delay, this,
                          &Display::OnEventAckTimeout);
 
-  tree_awaiting_input_ack_ = connection;
-  connection->DispatchInputEvent(target, mojom::Event::From(event));
+  tree_awaiting_input_ack_ = tree;
+  tree->DispatchInputEvent(target, mojom::Event::From(event));
 }
 
 void Display::CreateWindowManagerStatesFromRegistry() {
@@ -497,58 +497,56 @@ void Display::OnFocusChanged(FocusControllerChangeSource change_source,
   // . the connection with |new_focused_window| as its root.
   // Some of these connections may be the same. The following takes care to
   // notify each only once.
-  WindowTreeImpl* owning_connection_old = nullptr;
-  WindowTreeImpl* embedded_connection_old = nullptr;
+  WindowTree* owning_tree_old = nullptr;
+  WindowTree* embedded_tree_old = nullptr;
 
   if (old_focused_window) {
-    owning_connection_old = connection_manager_->GetConnection(
+    owning_tree_old = connection_manager_->GetTreeWithId(
         old_focused_window->id().connection_id);
-    if (owning_connection_old) {
-      owning_connection_old->ProcessFocusChanged(old_focused_window,
-                                                 new_focused_window);
+    if (owning_tree_old) {
+      owning_tree_old->ProcessFocusChanged(old_focused_window,
+                                           new_focused_window);
     }
-    embedded_connection_old =
-        connection_manager_->GetConnectionWithRoot(old_focused_window);
-    if (embedded_connection_old) {
-      DCHECK_NE(owning_connection_old, embedded_connection_old);
-      embedded_connection_old->ProcessFocusChanged(old_focused_window,
-                                                   new_focused_window);
+    embedded_tree_old =
+        connection_manager_->GetTreeWithRoot(old_focused_window);
+    if (embedded_tree_old) {
+      DCHECK_NE(owning_tree_old, embedded_tree_old);
+      embedded_tree_old->ProcessFocusChanged(old_focused_window,
+                                             new_focused_window);
     }
   }
-  WindowTreeImpl* owning_connection_new = nullptr;
-  WindowTreeImpl* embedded_connection_new = nullptr;
+  WindowTree* owning_tree_new = nullptr;
+  WindowTree* embedded_tree_new = nullptr;
   if (new_focused_window) {
-    owning_connection_new = connection_manager_->GetConnection(
+    owning_tree_new = connection_manager_->GetTreeWithId(
         new_focused_window->id().connection_id);
-    if (owning_connection_new &&
-        owning_connection_new != owning_connection_old &&
-        owning_connection_new != embedded_connection_old) {
-      owning_connection_new->ProcessFocusChanged(old_focused_window,
-                                                 new_focused_window);
+    if (owning_tree_new && owning_tree_new != owning_tree_old &&
+        owning_tree_new != embedded_tree_old) {
+      owning_tree_new->ProcessFocusChanged(old_focused_window,
+                                           new_focused_window);
     }
-    embedded_connection_new =
-        connection_manager_->GetConnectionWithRoot(new_focused_window);
-    if (embedded_connection_new &&
-        embedded_connection_new != owning_connection_old &&
-        embedded_connection_new != embedded_connection_old) {
-      DCHECK_NE(owning_connection_new, embedded_connection_new);
-      embedded_connection_new->ProcessFocusChanged(old_focused_window,
-                                                   new_focused_window);
+    embedded_tree_new =
+        connection_manager_->GetTreeWithRoot(new_focused_window);
+    if (embedded_tree_new && embedded_tree_new != owning_tree_old &&
+        embedded_tree_new != embedded_tree_old) {
+      DCHECK_NE(owning_tree_new, embedded_tree_new);
+      embedded_tree_new->ProcessFocusChanged(old_focused_window,
+                                             new_focused_window);
     }
   }
 
   // WindowManagers are always notified of focus changes.
-  WindowTreeImpl* wms_tree_with_old_focused_window = nullptr;
+  WindowTree* wms_tree_with_old_focused_window = nullptr;
   if (old_focused_window) {
     WindowManagerState* wms =
         connection_manager_->GetWindowManagerAndDisplay(old_focused_window)
             .window_manager_state;
     wms_tree_with_old_focused_window = wms ? wms->tree() : nullptr;
     if (wms_tree_with_old_focused_window &&
-        wms_tree_with_old_focused_window != owning_connection_old &&
-        wms_tree_with_old_focused_window != embedded_connection_old &&
-        wms_tree_with_old_focused_window != owning_connection_new &&
-        wms_tree_with_old_focused_window != embedded_connection_new) {
+        wms_tree_with_old_focused_window != owning_tree_old &&
+        wms_tree_with_old_focused_window != embedded_tree_old &&
+        wms_tree_with_old_focused_window != owning_tree_new &&
+        wms_tree_with_old_focused_window != embedded_tree_new) {
       wms_tree_with_old_focused_window->ProcessFocusChanged(old_focused_window,
                                                             new_focused_window);
     }
@@ -557,12 +555,10 @@ void Display::OnFocusChanged(FocusControllerChangeSource change_source,
     WindowManagerState* wms =
         connection_manager_->GetWindowManagerAndDisplay(new_focused_window)
             .window_manager_state;
-    WindowTreeImpl* wms_tree = wms ? wms->tree() : nullptr;
+    WindowTree* wms_tree = wms ? wms->tree() : nullptr;
     if (wms_tree && wms_tree != wms_tree_with_old_focused_window &&
-        wms_tree != owning_connection_old &&
-        wms_tree != embedded_connection_old &&
-        wms_tree != owning_connection_new &&
-        wms_tree != embedded_connection_new) {
+        wms_tree != owning_tree_old && wms_tree != embedded_tree_old &&
+        wms_tree != owning_tree_new && wms_tree != embedded_tree_new) {
       wms_tree->ProcessFocusChanged(old_focused_window, new_focused_window);
     }
   }

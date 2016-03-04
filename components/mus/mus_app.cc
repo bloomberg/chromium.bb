@@ -12,12 +12,12 @@
 #include "build/build_config.h"
 #include "components/mus/common/args.h"
 #include "components/mus/gles2/gpu_impl.h"
-#include "components/mus/ws/client_connection.h"
 #include "components/mus/ws/connection_manager.h"
 #include "components/mus/ws/display.h"
 #include "components/mus/ws/display_binding.h"
+#include "components/mus/ws/window_tree.h"
+#include "components/mus/ws/window_tree_binding.h"
 #include "components/mus/ws/window_tree_factory.h"
-#include "components/mus/ws/window_tree_impl.h"
 #include "components/resource_provider/public/cpp/resource_loader.h"
 #include "mojo/public/c/system/main.h"
 #include "mojo/services/tracing/public/cpp/tracing_impl.h"
@@ -161,13 +161,13 @@ void MandolineUIServicesApp::OnNoMoreRootConnections() {
   base::MessageLoop::current()->QuitWhenIdle();
 }
 
-scoped_ptr<ws::ClientConnection>
-MandolineUIServicesApp::CreateClientConnectionForEmbedAtWindow(
+scoped_ptr<ws::WindowTreeBinding>
+MandolineUIServicesApp::CreateWindowTreeBindingForEmbedAtWindow(
     ws::ConnectionManager* connection_manager,
-    ws::WindowTreeImpl* tree,
+    ws::WindowTree* tree,
     mojom::WindowTreeRequest tree_request,
     mojom::WindowTreeClientPtr client) {
-  return make_scoped_ptr(new ws::DefaultClientConnection(
+  return make_scoped_ptr(new ws::DefaultWindowTreeBinding(
       tree, connection_manager, std::move(tree_request), std::move(client)));
 }
 

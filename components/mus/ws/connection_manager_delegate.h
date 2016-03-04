@@ -24,11 +24,11 @@ class WindowTree;
 
 namespace ws {
 
-class ClientConnection;
 class ConnectionManager;
 class Display;
 class ServerWindow;
-class WindowTreeImpl;
+class WindowTree;
+class WindowTreeBinding;
 
 class ConnectionManagerDelegate {
  public:
@@ -37,11 +37,11 @@ class ConnectionManagerDelegate {
 
   virtual void OnNoMoreRootConnections() = 0;
 
-  // Creates a ClientConnection in response to Embed() calls on the
+  // Creates a WindowTreeBinding in response to Embed() calls on the
   // ConnectionManager.
-  virtual scoped_ptr<ClientConnection> CreateClientConnectionForEmbedAtWindow(
+  virtual scoped_ptr<WindowTreeBinding> CreateWindowTreeBindingForEmbedAtWindow(
       ws::ConnectionManager* connection_manager,
-      ws::WindowTreeImpl* tree,
+      ws::WindowTree* tree,
       mojom::WindowTreeRequest tree_request,
       mojom::WindowTreeClientPtr client) = 0;
 

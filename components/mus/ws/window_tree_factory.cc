@@ -4,9 +4,9 @@
 
 #include "components/mus/ws/window_tree_factory.h"
 
-#include "components/mus/ws/client_connection.h"
 #include "components/mus/ws/connection_manager.h"
-#include "components/mus/ws/window_tree_impl.h"
+#include "components/mus/ws/window_tree.h"
+#include "components/mus/ws/window_tree_binding.h"
 
 namespace mus {
 namespace ws {
@@ -24,14 +24,13 @@ void WindowTreeFactory::AddBinding(
 void WindowTreeFactory::CreateWindowTree(
     mojo::InterfaceRequest<mojom::WindowTree> tree_request,
     mojom::WindowTreeClientPtr client) {
-  scoped_ptr<ws::WindowTreeImpl> service(new ws::WindowTreeImpl(
+  scoped_ptr<ws::WindowTree> service(new ws::WindowTree(
       connection_manager_, nullptr, mojom::WindowTree::kAccessPolicyDefault));
-  scoped_ptr<ws::DefaultClientConnection> client_connection(
-      new ws::DefaultClientConnection(service.get(), connection_manager_,
-                                      std::move(tree_request),
-                                      std::move(client)));
-  connection_manager_->AddTree(std::move(service), std::move(client_connection),
-                               nullptr);
+  scoped_ptr<ws::DefaultWindowTreeBinding> binding(
+      new ws::DefaultWindowTreeBinding(service.get(), connection_manager_,
+                                       std::move(tree_request),
+                                       std::move(client)));
+  connection_manager_->AddTree(std::move(service), std::move(binding), nullptr);
 }
 
 }  // namespace ws

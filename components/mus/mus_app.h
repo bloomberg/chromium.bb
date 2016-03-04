@@ -70,9 +70,9 @@ class MandolineUIServicesApp
   // ConnectionManagerDelegate:
   void OnFirstDisplayReady() override;
   void OnNoMoreRootConnections() override;
-  scoped_ptr<ws::ClientConnection> CreateClientConnectionForEmbedAtWindow(
+  scoped_ptr<ws::WindowTreeBinding> CreateWindowTreeBindingForEmbedAtWindow(
       ws::ConnectionManager* connection_manager,
-      ws::WindowTreeImpl* tree,
+      ws::WindowTree* tree,
       mojom::WindowTreeRequest tree_request,
       mojom::WindowTreeClientPtr client) override;
   void CreateDefaultDisplays() override;

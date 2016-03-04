@@ -16,7 +16,7 @@ namespace ws {
 
 class ServerWindow;
 
-// AccessPolicy is used by WindowTreeImpl to determine what a connection is
+// AccessPolicy is used by WindowTree to determine what the WindowTree is
 // allowed to do.
 class AccessPolicy {
  public:

@@ -16,7 +16,7 @@ namespace ws {
 
 class ConnectionManager;
 class ServerWindow;
-class WindowTreeImpl;
+class WindowTree;
 
 // DisplayBinding manages the binding between a Display and it's mojo clients.
 // DisplayBinding is used when a Display is created via a
@@ -27,7 +27,7 @@ class DisplayBinding {
  public:
   virtual ~DisplayBinding() {}
 
-  virtual WindowTreeImpl* CreateWindowTree(ServerWindow* root) = 0;
+  virtual WindowTree* CreateWindowTree(ServerWindow* root) = 0;
 };
 
 // Live implementation of DisplayBinding.
@@ -41,7 +41,7 @@ class DisplayBindingImpl : public DisplayBinding {
 
  private:
   // DisplayBinding:
-  WindowTreeImpl* CreateWindowTree(ServerWindow* root) override;
+  WindowTree* CreateWindowTree(ServerWindow* root) override;
 
   ConnectionManager* connection_manager_;
   mojo::Binding<mojom::WindowTreeHost> binding_;
