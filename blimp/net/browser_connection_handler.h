@@ -25,6 +25,8 @@ class BlimpMessageProcessor;
 // messages out via underlying BlimpConnection.
 // A BrowserConnectionHandler is created on browser startup, and persists for
 // the lifetime of the application.
+// BrowserConnectionHandler is created on the UI thread, and then used and
+// destroyed on the IO thread.
 class BLIMP_NET_EXPORT BrowserConnectionHandler
     : public ConnectionHandler,
       public ConnectionErrorObserver {
@@ -38,7 +40,7 @@ class BLIMP_NET_EXPORT BrowserConnectionHandler
   // this object is in-use.
   //
   // Returns a BlimpMessageProcessor object for sending messages of type |type|.
-  scoped_ptr<BlimpMessageProcessor> RegisterFeature(
+  virtual scoped_ptr<BlimpMessageProcessor> RegisterFeature(
       BlimpMessage::Type type,
       BlimpMessageProcessor* incoming_processor);
 

@@ -53,6 +53,7 @@ namespace blimp {
 class BlimpConnection;
 class BlimpMessage;
 class BlimpMessageThreadPipe;
+class ThreadPipeManager;
 
 namespace engine {
 
@@ -88,12 +89,9 @@ class BlimpEngineSession
                       const net::CompletionCallback& callback) override;
 
  private:
-  // Registers a message processor which will receive all messages of the |type|
-  // specified.  Returns a BlimpMessageProcessor object for sending messages of
-  // type |type|.
-  scoped_ptr<BlimpMessageProcessor> RegisterFeature(
-      BlimpMessage::Type type,
-      BlimpMessageProcessor* incoming_processor);
+  // Creates ThreadPipeManager, registers features, and then starts to accept
+  // incoming connection.
+  void RegisterFeatures();
 
   // TabControlMessage handler methods.
   // Creates a new WebContents, which will be indexed by |target_tab_id|.
@@ -183,10 +181,7 @@ class BlimpEngineSession
   // this object is destroyed there.
   scoped_ptr<EngineNetworkComponents> net_components_;
 
-  // Pipes for receiving BlimpMessages from IO thread.
-  // Incoming messages are only routed to the UI thread since all features run
-  // there.
-  std::vector<scoped_ptr<BlimpMessageThreadPipe>> incoming_pipes_;
+  scoped_ptr<ThreadPipeManager> thread_pipe_manager_;
 
   // Used to send TAB_CONTROL or NAVIGATION messages to client.
   scoped_ptr<BlimpMessageProcessor> tab_control_message_sender_;

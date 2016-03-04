@@ -17,6 +17,8 @@ class BlimpMessageProcessor;
 
 // Creates MessageProcessors that receive outgoing messages and put them
 // onto a multiplexed message stream.
+// BlimpMessageMultiplexer is created on the UI thread, and then used and
+// destroyed on the IO thread.
 class BLIMP_NET_EXPORT BlimpMessageMultiplexer {
  public:
   // |output_processor|: A pointer to the MessageProcessor that will receive the

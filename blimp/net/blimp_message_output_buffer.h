@@ -28,6 +28,8 @@ class BlimpConnection;
 // message acknowledgment.
 // (Redelivery will be used in a future CL to implement Fast Recovery
 // of dropped connections.)
+// BlimpMessageOutputBuffer is created on the UI thread, and then used and
+// destroyed on the IO thread.
 class BLIMP_NET_EXPORT BlimpMessageOutputBuffer
     : public BlimpMessageProcessor,
       public BlimpMessageCheckpointObserver {

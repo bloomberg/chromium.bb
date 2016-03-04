@@ -23,6 +23,8 @@ class BlimpMessageCheckpointObserver;
 // Checkpoint/ACK message dispatch may be deferred for a second or
 // two to avoid saturating the link with ACK traffic; feature implementations
 // need to account for this latency in their design.
+// BlimpMessageCheckpointer is created on the UI thread, and then used and
+// destroyed on the IO thread.
 class BLIMP_NET_EXPORT BlimpMessageCheckpointer : public BlimpMessageProcessor {
  public:
   BlimpMessageCheckpointer(BlimpMessageProcessor* incoming_processor,

@@ -18,6 +18,8 @@ namespace blimp {
 
 // Multiplexing BlimpMessageProcessor which routes BlimpMessages to message
 // processors based on |message.type|.
+// BlimpMessageDemultiplexer is created on the UI thread, and then used and
+// destroyed on the IO thread.
 class BLIMP_NET_EXPORT BlimpMessageDemultiplexer
     : public BlimpMessageProcessor {
  public:

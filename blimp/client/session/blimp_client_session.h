@@ -5,6 +5,8 @@
 #ifndef BLIMP_CLIENT_SESSION_BLIMP_CLIENT_SESSION_H_
 #define BLIMP_CLIENT_SESSION_BLIMP_CLIENT_SESSION_H_
 
+#include <string>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -24,6 +26,7 @@ class BlimpMessageProcessor;
 class BlimpMessageThreadPipe;
 class BrowserConnectionHandler;
 class ClientConnectionManager;
+class ThreadPipeManager;
 
 namespace client {
 
@@ -68,12 +71,7 @@ class BLIMP_CLIENT_EXPORT BlimpClientSession {
   virtual void OnAssignmentConnectionAttempted(AssignmentSource::Result result);
 
  private:
-  // Registers a message processor which will receive all messages of the |type|
-  // specified.  Returns a BlimpMessageProcessor object for sending messages of
-  // type |type|.
-  scoped_ptr<BlimpMessageProcessor> RegisterFeature(
-      BlimpMessage::Type type,
-      BlimpMessageProcessor* incoming_processor);
+  void RegisterFeatures();
 
   base::Thread io_thread_;
   scoped_ptr<TabControlFeature> tab_control_feature_;
@@ -88,10 +86,7 @@ class BLIMP_CLIENT_EXPORT BlimpClientSession {
   // Must be deleted on the IO thread.
   scoped_ptr<ClientNetworkComponents> net_components_;
 
-  // Pipes for receiving BlimpMessages from IO thread.
-  // Incoming messages are only routed to the UI thread since all features run
-  // on the UI thread.
-  std::vector<scoped_ptr<BlimpMessageThreadPipe>> incoming_pipes_;
+  scoped_ptr<ThreadPipeManager> thread_pipe_manager_;
 
   base::WeakPtrFactory<BlimpClientSession> weak_factory_;
 

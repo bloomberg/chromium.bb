@@ -54,6 +54,8 @@ component("blimp_net") {
     "tcp_client_transport.h",
     "tcp_engine_transport.cc",
     "tcp_engine_transport.h",
+    "thread_pipe_manager.cc",
+    "thread_pipe_manager.h",
   ]
 
   defines = [ "BLIMP_NET_IMPLEMENTATION=1" ]
@@ -102,6 +104,7 @@ source_set("unit_tests") {
     "stream_packet_reader_unittest.cc",
     "stream_packet_writer_unittest.cc",
     "tcp_transport_unittest.cc",
+    "thread_pipe_manager_unittest.cc",
   ]
 
   deps = [
