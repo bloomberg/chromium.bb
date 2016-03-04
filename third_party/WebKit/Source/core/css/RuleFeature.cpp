@@ -326,8 +326,7 @@ InvalidationSet* RuleFeatureSet::invalidationSetForSelector(const CSSSelector& s
         case CSSSelector::PseudoActive:
         case CSSSelector::PseudoChecked:
         case CSSSelector::PseudoEnabled:
-        // TODO(rune@opera.com): crbug.com/557683 :default is currently not updated dynamically.
-        // case CSSSelector::Default:
+        case CSSSelector::PseudoDefault:
         case CSSSelector::PseudoDisabled:
         case CSSSelector::PseudoOptional:
         case CSSSelector::PseudoPlaceholderShown:

@@ -117,6 +117,7 @@ public:
     const WillBeHeapVector<RawPtrWillBeMember<HTMLImageElement>>& imageElements();
 
     void anonymousNamedGetter(const AtomicString& name, RadioNodeListOrElement&);
+    void invalidateDefaultButtonStyle() const;
 
 private:
     explicit HTMLFormElement(Document&);
@@ -173,6 +174,7 @@ private:
     bool m_associatedElementsAreDirty : 1;
     bool m_imageElementsAreDirty : 1;
     bool m_hasElementsAssociatedByParser : 1;
+    bool m_hasElementsAssociatedByFormAttribute : 1;
     bool m_didFinishParsingChildren : 1;
 
     bool m_wasUserSubmitted : 1;

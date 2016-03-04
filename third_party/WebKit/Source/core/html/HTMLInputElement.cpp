@@ -475,6 +475,7 @@ void HTMLInputElement::updateType()
 
     bool didStoreValue = m_inputType->storesValueSeparateFromAttribute();
     bool didRespectHeightAndWidth = m_inputType->shouldRespectHeightAndWidthAttributes();
+    bool couldBeSuccessfulSubmitButton = canBeSuccessfulSubmitButton();
 
     m_inputTypeView->destroyShadowSubtree();
     lazyReattachIfAttached();
@@ -529,6 +530,8 @@ void HTMLInputElement::updateType()
     addToRadioButtonGroup();
 
     setNeedsValidityCheck();
+    if ((couldBeSuccessfulSubmitButton || canBeSuccessfulSubmitButton()) && formOwner() && inDocument())
+        formOwner()->invalidateDefaultButtonStyle();
     notifyFormStateChanged();
 }
 

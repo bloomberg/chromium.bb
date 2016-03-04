@@ -101,6 +101,8 @@ void HTMLButtonElement::parseAttribute(const QualifiedName& name, const AtomicSt
         else
             m_type = SUBMIT;
         setNeedsWillValidateCheck();
+        if (formOwner() && inDocument())
+            formOwner()->invalidateDefaultButtonStyle();
     } else {
         if (name == formactionAttr)
             logUpdateAttributeIfIsolatedWorldAndInDocument("button", formactionAttr, oldValue, value);

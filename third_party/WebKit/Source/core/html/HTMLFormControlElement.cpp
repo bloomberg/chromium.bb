@@ -301,12 +301,16 @@ void HTMLFormControlElement::willChangeForm()
 {
     FormAssociatedElement::willChangeForm();
     formOwnerSetNeedsValidityCheck();
+    if (formOwner() && canBeSuccessfulSubmitButton())
+        formOwner()->invalidateDefaultButtonStyle();
 }
 
 void HTMLFormControlElement::didChangeForm()
 {
     FormAssociatedElement::didChangeForm();
     formOwnerSetNeedsValidityCheck();
+    if (formOwner() && inDocument() && canBeSuccessfulSubmitButton())
+        formOwner()->invalidateDefaultButtonStyle();
 }
 
 void HTMLFormControlElement::formOwnerSetNeedsValidityCheck()

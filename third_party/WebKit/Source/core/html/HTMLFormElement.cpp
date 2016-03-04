@@ -31,7 +31,6 @@
 #include "core/dom/Attribute.h"
 #include "core/dom/Document.h"
 #include "core/dom/ElementTraversal.h"
-#include "core/dom/IdTargetObserverRegistry.h"
 #include "core/dom/NodeListsNodeData.h"
 #include "core/events/AutocompleteErrorEvent.h"
 #include "core/events/Event.h"
@@ -71,6 +70,7 @@ HTMLFormElement::HTMLFormElement(Document& document)
     , m_associatedElementsAreDirty(false)
     , m_imageElementsAreDirty(false)
     , m_hasElementsAssociatedByParser(false)
+    , m_hasElementsAssociatedByFormAttribute(false)
     , m_didFinishParsingChildren(false)
     , m_wasUserSubmitted(false)
     , m_isSubmittingOrInUserJSSubmitEvent(false)
@@ -529,6 +529,8 @@ void HTMLFormElement::associate(FormAssociatedElement& e)
 {
     m_associatedElementsAreDirty = true;
     m_associatedElements.clear();
+    if (toHTMLElement(e).fastHasAttribute(formAttr))
+        m_hasElementsAssociatedByFormAttribute = true;
 }
 
 void HTMLFormElement::disassociate(FormAssociatedElement& e)
@@ -607,7 +609,7 @@ const FormAssociatedElement::List& HTMLFormElement::associatedElements() const
     Node* scope = mutableThis;
     if (m_hasElementsAssociatedByParser)
         scope = &NodeTraversal::highestAncestorOrSelf(*mutableThis);
-    if (inDocument() && treeScope().idTargetObserverRegistry().hasObservers(fastGetAttribute(idAttr)))
+    if (inDocument() && m_hasElementsAssociatedByFormAttribute)
         scope = &treeScope().rootNode();
     ASSERT(scope);
     collectAssociatedElements(*scope, mutableThis->m_associatedElements);
@@ -835,6 +837,16 @@ void HTMLFormElement::setDemoted(bool demoted)
     if (demoted)
         UseCounter::count(document(), UseCounter::DemotedFormElement);
     m_wasDemoted = demoted;
+}
+
+void HTMLFormElement::invalidateDefaultButtonStyle() const
+{
+    for (const auto& control : associatedElements()) {
+        if (!control->isFormControlElement())
+            continue;
+        if (toHTMLFormControlElement(control)->canBeSuccessfulSubmitButton())
+            toHTMLFormControlElement(control)->pseudoStateChanged(CSSSelector::PseudoDefault);
+    }
 }
 
 } // namespace blink

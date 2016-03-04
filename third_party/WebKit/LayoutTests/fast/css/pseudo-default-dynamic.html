@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<div id="log"></div>
+<div id="container"></div>
+<style>
+button, input { background: red; }
+button:default, input:default { background: green; }
+</style>
+<script>
+// TODO(tkent): This should be merged to web-platform-tests/html/semantics/selectors/pseudo-classes/default.html.
+
+var container = document.querySelector('#container');
+const DEFAULT = 'rgb(0, 128, 0)';
+const NOT_DEFAULT = 'rgb(255, 0, 0)';
+
+function background(id) {
+    return document.defaultView.getComputedStyle(document.getElementById(id), null).getPropertyValue('background-color');
+}
+
+test(function() {
+    container.innerHTML = '<form><input type=submit id=removed><object></object><input type=submit id=second></form>';
+    assert_equals(background('removed'), DEFAULT);
+    assert_equals(background('second'), NOT_DEFAULT);
+    document.querySelector('#removed').type = 'text';
+    assert_equals(background('removed'), NOT_DEFAULT);
+    assert_equals(background('second'), DEFAULT);
+
+    container.innerHTML = '<form><button type=submit id=removed></button><input type=submit id=second></form>';
+    assert_equals(background('removed'), DEFAULT);
+    assert_equals(background('second'), NOT_DEFAULT);
+    document.querySelector('#removed').type = 'reset';
+    assert_equals(background('removed'), NOT_DEFAULT);
+    assert_equals(background('second'), DEFAULT);
+
+    container.innerHTML = '<form id=f1><input type=submit id=removed></form><input type=submit id=second form=f1>';
+    assert_equals(background('removed'), DEFAULT);
+    assert_equals(background('second'), NOT_DEFAULT);
+    document.querySelector('#removed').type = 'reset';
+    assert_equals(background('removed'), NOT_DEFAULT);
+    assert_equals(background('second'), DEFAULT);
+}, 'Removing the :default button by updating type attribute should update the default button.');
+
+test(function() {
+    container.innerHTML = '<form><input type=submit id=removed><input type=submit id=second></form>';
+    assert_equals(background('removed'), DEFAULT);
+    assert_equals(background('second'), NOT_DEFAULT);
+    document.querySelector('#removed').remove();
+    assert_equals(background('second'), DEFAULT);
+}, 'Removing the :default button by detaching should update the default button.');
+
+test(function() {
+    container.innerHTML = '<input type=submit id=removed form=f1><form id=f1><input type=submit id=second></form>';
+    assert_equals(background('removed'), DEFAULT);
+    assert_equals(background('second'), NOT_DEFAULT);
+    document.querySelector('#removed').removeAttribute('form');
+    assert_equals(background('removed'), NOT_DEFAULT);
+    assert_equals(background('second'), DEFAULT);
+}, 'Removing the :default button by updating form content attribute should update the default button.');
+
+test(function() {
+    container.innerHTML = '<form><input type=text id=added><input type=submit id=second></form>';
+    assert_equals(background('added'), NOT_DEFAULT);
+    assert_equals(background('second'), DEFAULT);
+    document.querySelector('#added').type = 'image';
+    assert_equals(background('added'), DEFAULT);
+    assert_equals(background('second'), NOT_DEFAULT);
+}, 'Adding a button by updating type attribute should update the default button.');
+
+test(function() {
+    container.innerHTML = '<form><input type=submit id=second></form>';
+    assert_equals(background('second'), DEFAULT);
+    var button = document.createElement('button');
+    button.id = 'added'
+    document.querySelector('form').insertBefore(button, document.querySelector('#second'));
+    assert_equals(background('added'), DEFAULT);
+    assert_equals(background('second'), NOT_DEFAULT);
+}, 'Adding a button to a DOM tree should update the default button.');
+
+test(function() {
+    container.innerHTML = '<input type=submit id=added><form id=f1><input type=submit id=second></form>';
+    assert_equals(background('added'), NOT_DEFAULT);
+    assert_equals(background('second'), DEFAULT);
+    document.querySelector('#added').setAttribute('form', 'f1');
+    assert_equals(background('added'), DEFAULT, 'added button should be default.');
+    assert_equals(background('second'), NOT_DEFAULT);
+}, 'Adding a button by form content attribute should update the default button.');
+
+</script>
