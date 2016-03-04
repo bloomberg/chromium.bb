@@ -249,6 +249,13 @@ if (enable_webrtc) {
     "-D",
     "enable_webrtc",
   ]
+  import("//third_party/webrtc/build/webrtc.gni")
+  if (rtc_use_h264) {
+    grit_defines += [
+      "-D",
+      "rtc_use_h264",
+    ]
+  }
 }
 if (enable_hangout_services_extension) {
   grit_defines += [

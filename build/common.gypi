@@ -2180,6 +2180,14 @@
       }],
       ['enable_webrtc==1', {
         'grit_defines': ['-D', 'enable_webrtc'],
+        'includes': [
+          '../third_party/webrtc/build/common.gypi',
+        ],
+        'conditions': [
+          ['rtc_use_h264==1', {
+            'grit_defines': ['-D', 'rtc_use_h264'],
+          }],
+        ],
       }],
       ['enable_hangout_services_extension==1', {
         'grit_defines': ['-D', 'enable_hangout_services_extension'],
