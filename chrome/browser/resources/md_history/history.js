@@ -50,23 +50,6 @@ window.addEventListener('delete-selected', function() {
   chrome.send('removeVisits', toBeRemoved);
 });
 
-/**
- * Listens for any keyboard presses which will close the overflow menu.
- */
-window.addEventListener('keydown', function(e) {
-  // Escape button on keyboard
-  if (e.keyCode == 27) {
-    $('history-list').closeMenu();
-  }
-});
-
-/**
- * Resizing browser window will cause the overflow menu to close.
- */
-window.addEventListener('resize', function() {
-  $('history-list').closeMenu();
-});
-
 // Chrome Callbacks-------------------------------------------------------------
 
 /**

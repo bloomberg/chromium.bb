@@ -103,12 +103,8 @@ Polymer({
    * the history item and where the menu should appear.
    */
   onMenuButtonTap_: function(e) {
-    var position = this.$['menu-button'].getBoundingClientRect();
-
     this.fire('toggle-menu', {
-      x: position.left,
-      y: position.top,
-      accessTime: this.timestamp
+      target: Polymer.dom(e).localTarget,
     });
 
     // Stops the 'tap' event from closing the menu when it opens.

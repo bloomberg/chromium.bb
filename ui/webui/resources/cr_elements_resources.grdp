@@ -117,6 +117,12 @@
   <structure name="IDR_CR_ELEMENTS_CR_SEARCH_FIELD_JS"
              file="../../webui/resources/cr_elements/cr_search_field/cr_search_field.js"
              type="chrome_html" />
+  <structure name="IDR_CR_ELEMENTS_CR_SHARED_MENU_HTML"
+             file="../../webui/resources/cr_elements/cr_shared_menu/cr_shared_menu.html"
+             type="chrome_html" />
+  <structure name="IDR_CR_ELEMENTS_CR_SHARED_MENU_JS"
+             file="../../webui/resources/cr_elements/cr_shared_menu/cr_shared_menu.js"
+             type="chrome_html" />
   <structure name="IDR_CR_ELEMENTS_SHARED_CSS"
              file="../../webui/resources/cr_elements/shared.css"
              type="chrome_html" />

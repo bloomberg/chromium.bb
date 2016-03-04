@@ -18,36 +18,24 @@ Polymer({
       value: 0
     },
 
-    menuOpen: {
-      type: Boolean,
-      value: false,
-      reflectToAttribute: true
-    },
-
-    menuIdentifier: {
-      type: Number,
-      value: 0
-    },
-
     resultLoadingDisabled_: {
       type: Boolean,
       value: false
-    }
+    },
   },
 
-  /** @const @private */
-  X_OFFSET_: 30,
-
   listeners: {
-    'tap': 'closeMenu',
-    'toggle-menu': 'toggleMenu_'
+    'infinite-list.scroll': 'closeMenu_',
+    'tap': 'closeMenu_',
+    'toggle-menu': 'toggleMenu_',
   },
 
   /**
    * Closes the overflow menu.
+   * @private
    */
-  closeMenu: function() {
-    this.menuOpen = false;
+  closeMenu_: function() {
+    this.$.sharedMenu.closeMenu();
   },
 
   /**
@@ -57,20 +45,7 @@ Polymer({
    * @private
    */
   toggleMenu_: function(e) {
-    var menu = this.$['overflow-menu'];
-
-    // Menu closes if the same button is clicked.
-    if (this.menuOpen && this.menuIdentifier == e.detail.accessTime) {
-      this.closeMenu();
-    } else {
-      this.menuOpen = true;
-      this.menuIdentifier = e.detail.accessTime;
-
-      cr.ui.positionPopupAtPoint(e.detail.x + this.X_OFFSET_, e.detail.y, menu,
-          cr.ui.AnchorType.BEFORE);
-
-      menu.focus();
-    }
+    this.$.sharedMenu.toggleMenu(e.detail.target);
   },
 
   /**
@@ -221,9 +196,6 @@ Polymer({
    * @private
    */
   scrollHandler_: function() {
-    // Close overflow menu on scroll.
-    this.closeMenu();
-
     if (this.resultLoadingDisabled_)
       return;
 

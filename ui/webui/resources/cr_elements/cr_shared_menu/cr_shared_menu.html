@@ -1,0 +1,27 @@
+<link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/shadow.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-menu/paper-menu.html">
+<link rel="import" href="chrome://resources/html/assert.html">
+<link rel="import" href="chrome://resources/html/cr.html">
+<link rel="import" href="chrome://resources/html/cr/ui/position_util.html">
+<link rel="import" href="chrome://resources/html/util.html">
+
+<dom-module id="cr-shared-menu">
+  <template>
+    <style>
+      :host {
+        @apply(--shadow-elevation-2dp);
+        display: none;
+        position: absolute;
+      }
+
+      :host([menu-open]) {
+        display: block;
+      }
+    </style>
+    <paper-menu id="menu">
+      <content></content>
+    </paper-menu>
+  </template>
+  <script src="cr_shared_menu.js"></script>
+</dom-module>

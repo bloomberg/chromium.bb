@@ -1,8 +1,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-list/iron-list.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-item/paper-item.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-menu/paper-menu.html">
-<link rel="import" href="chrome://resources/html/cr/ui/position_util.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_shared_menu/cr_shared_menu.html">
 <link rel="import" href="chrome://history/history_item.html">
 
 <dom-module id="history-list">
@@ -11,19 +10,6 @@
       :host {
         display: flex;
         flex-direction: column;
-      }
-
-      #overflow-menu {
-        @apply(--shadow-elevation-2dp);
-        border-radius: 2px;
-        display: none;
-        left: 0;
-        position: absolute;
-        top: 0;
-      }
-
-      :host([menu-open]) #overflow-menu {
-        display: block;
       }
 
       #infinite-list {
@@ -58,13 +44,13 @@
         </history-item>
       </template>
     </iron-list>
-    <paper-menu id="overflow-menu">
+    <cr-shared-menu id="sharedMenu">
       <paper-item i18n-content="moreFromSite" on-tap="onMoreFromSiteTap_">
       </paper-item>
       <paper-item i18n-content="removeFromHistory"
           on-tap="onRemoveFromHistoryTap_">
       </paper-item>
-    </paper-menu>
+    </cr-shared-menu>
   </template>
   <script src="chrome://history/history_list.js"></script>
 </dom-module>
