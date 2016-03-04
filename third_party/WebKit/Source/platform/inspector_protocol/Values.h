@@ -7,10 +7,8 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/inspector_protocol/Allocator.h"
-#include "wtf/HashMap.h"
+#include "platform/inspector_protocol/Collections.h"
 #include "wtf/PassOwnPtr.h"
-#include "wtf/TypeTraits.h"
-#include "wtf/Vector.h"
 #include "wtf/text/StringHash.h"
 #include "wtf/text/WTFString.h"
 
@@ -178,9 +176,9 @@ public:
 private:
     DictionaryValue();
 
-    using Dictionary = HashMap<String, OwnPtr<Value>>;
+    using Dictionary = protocol::HashMap<String, OwnPtr<Value>>;
     Dictionary m_data;
-    Vector<String> m_order;
+    protocol::Vector<String> m_order;
 };
 
 class PLATFORM_EXPORT ListValue : public Value {
@@ -214,7 +212,7 @@ public:
 
 private:
     ListValue();
-    Vector<OwnPtr<Value>> m_data;
+    protocol::Vector<OwnPtr<Value>> m_data;
 };
 
 } // namespace protocol

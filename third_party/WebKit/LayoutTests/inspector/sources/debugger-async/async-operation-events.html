@@ -109,7 +109,7 @@ function test()
         var callFrame = operation.stack ? operation.stack.callFrames[0] : null;
         if (callFrame) {
             var url = WebInspector.displayNameForURL(callFrame.url);
-            link = " " + callFrame.functionName + " @ " + url + ":" + callFrame.lineNumber;
+            link = " " + callFrame.functionName + " @ " + url;
         }
         return ("[" + operation.stack.description + "]" + link);
     }

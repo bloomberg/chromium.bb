@@ -5,9 +5,9 @@
 #ifndef V8StackTraceImpl_h
 #define V8StackTraceImpl_h
 
+#include "platform/inspector_protocol/Collections.h"
 #include "platform/v8_inspector/public/V8StackTrace.h"
 #include "wtf/PassOwnPtr.h"
-#include "wtf/Vector.h"
 
 namespace blink {
 
@@ -41,7 +41,7 @@ public:
         int m_columnNumber;
     };
 
-    static PassOwnPtr<V8StackTraceImpl> create(const String& description, Vector<Frame>&, PassOwnPtr<V8StackTraceImpl>);
+    static PassOwnPtr<V8StackTraceImpl> create(const String& description, protocol::Vector<Frame>&, PassOwnPtr<V8StackTraceImpl>);
     static PassOwnPtr<V8StackTraceImpl> create(V8DebuggerAgentImpl*, v8::Local<v8::StackTrace>, size_t maxStackSize, const String& description = String());
     static PassOwnPtr<V8StackTraceImpl> capture(V8DebuggerAgentImpl*, size_t maxStackSize, const String& description = String());
     static PassOwnPtr<V8StackTraceImpl> clone(V8StackTraceImpl*, size_t maxAsyncStackSize);
@@ -59,10 +59,10 @@ public:
     String toString() const override;
 
 private:
-    V8StackTraceImpl(const String& description, Vector<Frame>& frames, PassOwnPtr<V8StackTraceImpl> parent);
+    V8StackTraceImpl(const String& description, protocol::Vector<Frame>& frames, PassOwnPtr<V8StackTraceImpl> parent);
 
     String m_description;
-    Vector<Frame> m_frames;
+    protocol::Vector<Frame> m_frames;
     OwnPtr<V8StackTraceImpl> m_parent;
 };
 

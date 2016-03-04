@@ -6,8 +6,8 @@
 #define V8AsyncCallTracker_h
 
 #include "platform/inspector_protocol/Allocator.h"
+#include "platform/inspector_protocol/Collections.h"
 #include "platform/v8_inspector/V8DebuggerAgentImpl.h"
-#include "wtf/HashMap.h"
 
 #include <v8.h>
 
@@ -32,7 +32,7 @@ public:
 
 private:
     struct Operations {
-        HashMap<String, int> map;
+        protocol::HashMap<String, int> map;
         int contextId;
         V8AsyncCallTracker* target;
         v8::Global<v8::Context> context;
@@ -44,10 +44,10 @@ private:
 
     void didEnqueueV8AsyncTask(v8::Local<v8::Context>, const String& eventName, int id);
     void willHandleV8AsyncTask(v8::Local<v8::Context>, const String& eventName, int id);
-    void completeOperations(const HashMap<String, int>& contextCallChains);
+    void completeOperations(const protocol::HashMap<String, int>& contextCallChains);
 
     V8DebuggerAgentImpl* m_debuggerAgent;
-    HashMap<int, OwnPtr<Operations>> m_idToOperations;
+    protocol::HashMap<int, OwnPtr<Operations>> m_idToOperations;
 };
 
 } // namespace blink

@@ -435,7 +435,6 @@ def main():
 #ifndef InspectorProtocolVersion_h
 #define InspectorProtocolVersion_h
 
-#include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -446,29 +445,10 @@ int inspectorProtocolVersionMajor() { return %s; }
 
 int inspectorProtocolVersionMinor() { return %s; }
 
-bool supportsInspectorProtocolVersion(const String& version)
-{
-    Vector<String> tokens;
-    version.split(".", tokens);
-    if (tokens.size() != 2)
-        return false;
-
-    bool ok = true;
-    int major = tokens[0].toInt(&ok);
-    if (!ok || major != %s)
-        return false;
-
-    int minor = tokens[1].toInt(&ok);
-    if (!ok || minor > %s)
-        return false;
-
-    return true;
-}
-
 }
 
 #endif // !defined(InspectorProtocolVersion_h)
-""" % (version, major, minor, major, minor))
+""" % (version, major, minor))
 
     output_file.close()
 

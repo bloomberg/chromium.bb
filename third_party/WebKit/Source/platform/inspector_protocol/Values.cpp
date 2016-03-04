@@ -186,21 +186,21 @@ void DictionaryValue::setString(const String& name, const String& value)
 void DictionaryValue::setValue(const String& name, PassOwnPtr<Value> value)
 {
     ASSERT(value);
-    if (m_data.set(name, value).isNewEntry)
+    if (m_data.set(name, value))
         m_order.append(name);
 }
 
 void DictionaryValue::setObject(const String& name, PassOwnPtr<DictionaryValue> value)
 {
     ASSERT(value);
-    if (m_data.set(name, value).isNewEntry)
+    if (m_data.set(name, value))
         m_order.append(name);
 }
 
 void DictionaryValue::setArray(const String& name, PassOwnPtr<ListValue> value)
 {
     ASSERT(value);
-    if (m_data.set(name, value).isNewEntry)
+    if (m_data.set(name, value))
         m_order.append(name);
 }
 
@@ -235,7 +235,7 @@ protocol::Value* DictionaryValue::get(const String& name) const
     Dictionary::const_iterator it = m_data.find(name);
     if (it == m_data.end())
         return nullptr;
-    return it->value.get();
+    return it->second;
 }
 
 DictionaryValue::Entry DictionaryValue::at(size_t index) const
@@ -270,9 +270,9 @@ void DictionaryValue::writeJSON(StringBuilder* output) const
         ASSERT_WITH_SECURITY_IMPLICATION(it != m_data.end());
         if (i)
             output->append(',');
-        doubleQuoteStringForJSON(it->key, output);
+        doubleQuoteStringForJSON(it->first, output);
         output->append(':');
-        it->value->writeJSON(output);
+        it->second->writeJSON(output);
     }
     output->append('}');
 }
@@ -281,17 +281,16 @@ PassOwnPtr<Value> DictionaryValue::clone() const
 {
     OwnPtr<DictionaryValue> result = DictionaryValue::create();
     for (size_t i = 0; i < m_order.size(); ++i) {
-        Dictionary::const_iterator it = m_data.find(m_order[i]);
-        ASSERT(it != m_data.end());
-        result->setValue(it->key, it->value->clone());
+        String key = m_order[i];
+        Value* value = m_data.get(key);
+        ASSERT(value);
+        result->setValue(key, value->clone());
     }
     return result.release();
 }
 
 DictionaryValue::DictionaryValue()
     : Value(TypeObject)
-    , m_data()
-    , m_order()
 {
 }
 
@@ -320,7 +319,6 @@ PassOwnPtr<Value> ListValue::clone() const
 
 ListValue::ListValue()
     : Value(TypeArray)
-    , m_data()
 {
 }
 

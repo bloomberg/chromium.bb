@@ -5,7 +5,6 @@
 #include "platform/v8_inspector/InjectedScriptNative.h"
 
 #include "platform/inspector_protocol/Values.h"
-#include "wtf/Vector.h"
 
 namespace blink {
 
@@ -67,11 +66,12 @@ void InjectedScriptNative::addObjectToGroup(int objectId, const String& groupNam
     if (objectId <= 0)
         return;
     m_idToObjectGroupName.set(objectId, groupName);
-    NameToObjectGroup::iterator groupIt = m_nameToObjectGroup.find(groupName);
-    if (groupIt == m_nameToObjectGroup.end())
-        m_nameToObjectGroup.set(groupName, Vector<int>()).storedValue->value.append(objectId);
-    else
-        groupIt->value.append(objectId);
+    auto it = m_nameToObjectGroup.find(groupName);
+    if (it == m_nameToObjectGroup.end()) {
+        m_nameToObjectGroup.set(groupName, protocol::Vector<int>());
+        it = m_nameToObjectGroup.find(groupName);
+    }
+    it->second->append(objectId);
 }
 
 void InjectedScriptNative::releaseObjectGroup(const String& groupName)
@@ -81,9 +81,9 @@ void InjectedScriptNative::releaseObjectGroup(const String& groupName)
     NameToObjectGroup::iterator groupIt = m_nameToObjectGroup.find(groupName);
     if (groupIt == m_nameToObjectGroup.end())
         return;
-    for (int id : groupIt->value)
+    for (int id : *groupIt->second)
         unbind(id);
-    m_nameToObjectGroup.remove(groupIt);
+    m_nameToObjectGroup.remove(groupName);
 }
 
 String InjectedScriptNative::groupName(int objectId) const

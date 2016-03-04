@@ -26,7 +26,7 @@ PassOwnPtr<protocol::Array<protocol::Profiler::PositionTickInfo>> buildInspector
     if (!lineCount)
         return array.release();
 
-    Vector<v8::CpuProfileNode::LineTick> entries(lineCount);
+    protocol::Vector<v8::CpuProfileNode::LineTick> entries(lineCount);
     if (node->GetLineTicks(&entries[0], lineCount)) {
         for (unsigned i = 0; i < lineCount; i++) {
             OwnPtr<protocol::Profiler::PositionTickInfo> line = protocol::Profiler::PositionTickInfo::create()
@@ -185,8 +185,8 @@ void V8ProfilerAgentImpl::enable(ErrorString*)
 
 void V8ProfilerAgentImpl::disable(ErrorString* errorString)
 {
-    for (Vector<ProfileDescriptor>::reverse_iterator it = m_startedProfiles.rbegin(); it != m_startedProfiles.rend(); ++it)
-        stopProfiling(it->m_id, false);
+    for (size_t i = m_startedProfiles.size(); i > 0; --i)
+        stopProfiling(m_startedProfiles[i - 1].m_id, false);
     m_startedProfiles.clear();
     stop(nullptr, nullptr);
     m_enabled = false;

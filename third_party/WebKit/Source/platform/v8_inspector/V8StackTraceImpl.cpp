@@ -35,7 +35,7 @@ V8StackTraceImpl::Frame toCallFrame(v8::Local<v8::StackFrame> frame)
     return V8StackTraceImpl::Frame(functionName, scriptId, sourceName, sourceLineNumber, sourceColumn);
 }
 
-void toCallFramesVector(v8::Local<v8::StackTrace> stackTrace, Vector<V8StackTraceImpl::Frame>& scriptCallFrames, size_t maxStackSize, v8::Isolate* isolate)
+void toCallFramesVector(v8::Local<v8::StackTrace> stackTrace, protocol::Vector<V8StackTraceImpl::Frame>& scriptCallFrames, size_t maxStackSize, v8::Isolate* isolate)
 {
     ASSERT(isolate->InContext());
     int frameCount = stackTrace->GetFrameCount();
@@ -88,7 +88,7 @@ PassOwnPtr<V8StackTraceImpl> V8StackTraceImpl::create(V8DebuggerAgentImpl* agent
 {
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     v8::HandleScope scope(isolate);
-    Vector<V8StackTraceImpl::Frame> scriptCallFrames;
+    protocol::Vector<V8StackTraceImpl::Frame> scriptCallFrames;
     if (!stackTrace.IsEmpty())
         toCallFramesVector(stackTrace, scriptCallFrames, maxStackSize, isolate);
 
@@ -114,7 +114,7 @@ PassOwnPtr<V8StackTraceImpl> V8StackTraceImpl::capture(V8DebuggerAgentImpl* agen
     return V8StackTraceImpl::create(agent, stackTrace, maxStackSize, description);
 }
 
-PassOwnPtr<V8StackTraceImpl> V8StackTraceImpl::create(const String& description, Vector<Frame>& frames, PassOwnPtr<V8StackTraceImpl> parent)
+PassOwnPtr<V8StackTraceImpl> V8StackTraceImpl::create(const String& description, protocol::Vector<Frame>& frames, PassOwnPtr<V8StackTraceImpl> parent)
 {
     return adoptPtr(new V8StackTraceImpl(description, frames, parent));
 }
@@ -132,11 +132,11 @@ PassOwnPtr<V8StackTraceImpl> V8StackTraceImpl::clone(V8StackTraceImpl* origin, s
     if (origin->m_parent && maxStackSize)
         parent = V8StackTraceImpl::clone(origin->m_parent.get(), maxStackSize - 1);
 
-    Vector<Frame> frames(origin->m_frames);
+    protocol::Vector<Frame> frames(origin->m_frames);
     return adoptPtr(new V8StackTraceImpl(origin->m_description, frames, parent.release()));
 }
 
-V8StackTraceImpl::V8StackTraceImpl(const String& description, Vector<Frame>& frames, PassOwnPtr<V8StackTraceImpl> parent)
+V8StackTraceImpl::V8StackTraceImpl(const String& description, protocol::Vector<Frame>& frames, PassOwnPtr<V8StackTraceImpl> parent)
     : m_description(description)
     , m_parent(parent)
 {

@@ -5,8 +5,8 @@
 #ifndef V8EventListenerInfo_h
 #define V8EventListenerInfo_h
 
-#include "wtf/Vector.h"
-#include "wtf/text/AtomicString.h"
+#include "platform/inspector_protocol/Collections.h"
+#include "wtf/text/WTFString.h"
 
 #include <v8.h>
 
@@ -14,20 +14,20 @@ namespace blink {
 
 class V8EventListenerInfo {
 public:
-    V8EventListenerInfo(const AtomicString& eventType, bool useCapture, v8::Local<v8::Object> handler)
+    V8EventListenerInfo(const String& eventType, bool useCapture, v8::Local<v8::Object> handler)
         : eventType(eventType)
         , useCapture(useCapture)
         , handler(handler)
     {
     }
 
-    const AtomicString eventType;
+    const String eventType;
     bool useCapture;
     v8::Local<v8::Object> handler;
 
 };
 
-using V8EventListenerInfoMap = HashMap<String, OwnPtr<Vector<V8EventListenerInfo>>>;
+using V8EventListenerInfoMap = protocol::HashMap<String, OwnPtr<protocol::Vector<V8EventListenerInfo>>>;
 
 } // namespace blink
 

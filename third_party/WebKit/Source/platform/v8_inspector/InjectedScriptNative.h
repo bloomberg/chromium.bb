@@ -5,9 +5,8 @@
 #ifndef InjectedScriptNative_h
 #define InjectedScriptNative_h
 
-#include "wtf/HashMap.h"
+#include "platform/inspector_protocol/Collections.h"
 #include "wtf/PassOwnPtr.h"
-#include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 #include <v8.h>
 
@@ -33,10 +32,10 @@ private:
 
     int m_lastBoundObjectId;
     v8::Isolate* m_isolate;
-    HashMap<int, OwnPtr<v8::Global<v8::Value>>> m_idToWrappedObject;
-    typedef HashMap<int, String> IdToObjectGroupName;
+    protocol::HashMap<int, OwnPtr<v8::Global<v8::Value>>> m_idToWrappedObject;
+    typedef protocol::HashMap<int, String> IdToObjectGroupName;
     IdToObjectGroupName m_idToObjectGroupName;
-    typedef HashMap<String, Vector<int>> NameToObjectGroup;
+    typedef protocol::HashMap<String, protocol::Vector<int>> NameToObjectGroup;
     NameToObjectGroup m_nameToObjectGroup;
 };
 

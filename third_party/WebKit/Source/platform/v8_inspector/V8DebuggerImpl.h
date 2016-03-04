@@ -108,7 +108,7 @@ private:
     // Each script inherits debug data from v8::Context where it has been compiled.
     // Only scripts whose debug data matches |contextGroupId| will be reported.
     // Passing 0 will result in reporting all scripts.
-    void getCompiledScripts(int contextGroupId, Vector<V8DebuggerParsedScript>&);
+    void getCompiledScripts(int contextGroupId, protocol::Vector<V8DebuggerParsedScript>&);
     V8DebuggerAgentImpl* getAgentForContext(v8::Local<v8::Context>);
 
     void compileDebuggerScript();
@@ -132,7 +132,7 @@ private:
 
     v8::Isolate* m_isolate;
     V8DebuggerClient* m_client;
-    using AgentsMap = HashMap<int, V8DebuggerAgentImpl*>;
+    using AgentsMap = protocol::HashMap<int, V8DebuggerAgentImpl*>;
     AgentsMap m_agentsMap;
     bool m_breakpointsActivated;
     v8::Global<v8::FunctionTemplate> m_breakProgramCallbackTemplate;

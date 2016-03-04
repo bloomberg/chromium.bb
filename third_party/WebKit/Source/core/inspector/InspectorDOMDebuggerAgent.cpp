@@ -123,7 +123,7 @@ void InspectorDOMDebuggerAgent::eventListenersInfoForTarget(v8::Isolate* isolate
             if (handler.IsEmpty())
                 continue;
             if (!eventInformation.get(type))
-                eventInformation.set(type, adoptPtr(new Vector<V8EventListenerInfo>()));
+                eventInformation.set(type, adoptPtr(new protocol::Vector<V8EventListenerInfo>()));
             eventInformation.get(type)->append(V8EventListenerInfo(type, listeners->at(k).useCapture, handler));
         }
     }
@@ -376,14 +376,14 @@ void InspectorDOMDebuggerAgent::eventListeners(v8::Local<v8::Context> context, v
     V8EventListenerInfoMap eventInformation;
     InspectorDOMDebuggerAgent::eventListenersInfoForTarget(context->GetIsolate(), object, eventInformation);
     for (const auto& it : eventInformation) {
-        for (const auto& it2 : *it.value) {
+        for (const auto& it2 : *it.second) {
             if (!it2.useCapture)
                 continue;
             OwnPtr<protocol::DOMDebugger::EventListener> listenerObject = buildObjectForEventListener(context, it2, objectGroup);
             if (listenerObject)
                 listenersArray->addItem(listenerObject.release());
         }
-        for (auto& it2 : *it.value) {
+        for (auto& it2 : *it.second) {
             if (it2.useCapture)
                 continue;
             OwnPtr<protocol::DOMDebugger::EventListener> listenerObject = buildObjectForEventListener(context, it2, objectGroup);

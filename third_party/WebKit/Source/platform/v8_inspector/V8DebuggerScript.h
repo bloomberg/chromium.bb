@@ -31,7 +31,6 @@
 #define V8DebuggerScript_h
 
 #include "platform/inspector_protocol/Allocator.h"
-#include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 #include <v8.h>
 

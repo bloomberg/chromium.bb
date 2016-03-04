@@ -93,9 +93,9 @@ String createSearchRegexSource(const String& text)
     return result.toString();
 }
 
-PassOwnPtr<Vector<unsigned>> lineEndings(const String& text)
+PassOwnPtr<protocol::Vector<unsigned>> lineEndings(const String& text)
 {
-    OwnPtr<Vector<unsigned>> result(adoptPtr(new Vector<unsigned>()));
+    OwnPtr<protocol::Vector<unsigned>> result(adoptPtr(new protocol::Vector<unsigned>()));
 
     unsigned start = 0;
     while (start < text.length()) {
@@ -111,13 +111,13 @@ PassOwnPtr<Vector<unsigned>> lineEndings(const String& text)
     return result.release();
 }
 
-Vector<std::pair<int, String>> scriptRegexpMatchesByLines(const V8Regex& regex, const String& text)
+protocol::Vector<std::pair<int, String>> scriptRegexpMatchesByLines(const V8Regex& regex, const String& text)
 {
-    Vector<std::pair<int, String>> result;
+    protocol::Vector<std::pair<int, String>> result;
     if (text.isEmpty())
         return result;
 
-    OwnPtr<Vector<unsigned>> endings(lineEndings(text));
+    OwnPtr<protocol::Vector<unsigned>> endings(lineEndings(text));
     unsigned size = endings->size();
     unsigned start = 0;
     for (unsigned lineNumber = 0; lineNumber < size; ++lineNumber) {
@@ -194,7 +194,7 @@ PassOwnPtr<protocol::Array<protocol::Debugger::SearchMatch>> searchInTextByLines
 {
     OwnPtr<protocol::Array<protocol::Debugger::SearchMatch>> result = protocol::Array<protocol::Debugger::SearchMatch>::create();
     OwnPtr<V8Regex> regex = createSearchRegex(static_cast<V8DebuggerImpl*>(debugger), query, caseSensitive, isRegex);
-    Vector<std::pair<int, String>> matches = scriptRegexpMatchesByLines(*regex.get(), text);
+    protocol::Vector<std::pair<int, String>> matches = scriptRegexpMatchesByLines(*regex.get(), text);
 
     for (const auto& match : matches)
         result->addItem(buildObjectForSearchMatch(match.first, match.second));

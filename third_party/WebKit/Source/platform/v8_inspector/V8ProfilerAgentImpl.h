@@ -56,7 +56,7 @@ private:
     bool m_enabled;
     bool m_recordingCPUProfile;
     class ProfileDescriptor;
-    Vector<ProfileDescriptor> m_startedProfiles;
+    protocol::Vector<ProfileDescriptor> m_startedProfiles;
     String m_frontendInitiatedProfileId;
 };
 

@@ -6,10 +6,10 @@
 #define Array_h
 
 #include "platform/PlatformExport.h"
+#include "platform/inspector_protocol/Collections.h"
 #include "platform/inspector_protocol/ErrorSupport.h"
 #include "platform/inspector_protocol/ValueConversions.h"
 #include "platform/inspector_protocol/Values.h"
-#include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -67,7 +67,7 @@ public:
     }
 
 private:
-    Vector<T> m_vector;
+    protocol::Vector<T> m_vector;
 };
 
 template<> class Array<String> : public ArrayBase<String> {};
@@ -125,7 +125,7 @@ public:
     }
 
 private:
-    Vector<OwnPtr<T>> m_vector;
+    protocol::Vector<OwnPtr<T>> m_vector;
 };
 
 } // namespace platform

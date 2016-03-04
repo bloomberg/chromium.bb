@@ -6,9 +6,9 @@
 
 #include "platform/inspector_protocol/{{class_name}}.h"
 
+#include "platform/inspector_protocol/Collections.h"
 #include "platform/inspector_protocol/FrontendChannel.h"
 #include "platform/inspector_protocol/Parser.h"
-#include "wtf/HashSet.h"
 
 namespace blink {
 namespace protocol {
@@ -39,7 +39,7 @@ public:
   {% for command in domain.commands %}
     {% if "redirect" in command %}{% continue %}{% endif %}
     {% if "handlers" in command and not ("renderer" in command["handlers"]) %}{% continue %}{% endif %}
-        m_dispatchMap.add("{{domain.domain}}.{{command.name}}", &DispatcherImpl::{{domain.domain}}_{{command.name}});
+        m_dispatchMap.set("{{domain.domain}}.{{command.name}}", &DispatcherImpl::{{domain.domain}}_{{command.name}});
   {% endfor %}
 {% endfor %}
 
@@ -58,7 +58,7 @@ public:
     {
         m_frontendChannel = nullptr;
         for (auto& weak : m_weakPtrs)
-            weak->dispose();
+            weak.first->dispose();
         m_weakPtrs.clear();
     }
 
@@ -83,7 +83,7 @@ private:
     friend class CallbackBase;
     friend class DispatcherImplWeakPtr;
     using CallHandler = void (DispatcherImpl::*)(int sessionId, int callId, PassOwnPtr<DictionaryValue> messageObject, ErrorSupport* errors);
-    using DispatchMap = HashMap<String, CallHandler>;
+    using DispatchMap = protocol::HashMap<String, CallHandler>;
 
 {% for domain in api.domains %}
   {% for command in domain.commands %}
@@ -112,8 +112,8 @@ private:
     static const char InvalidParamsFormatString[];
 
     DispatchMap m_dispatchMap;
-    Vector<int> m_commonErrors;
-    HashSet<DispatcherImplWeakPtr*> m_weakPtrs;
+    protocol::Vector<int> m_commonErrors;
+    protocol::HashSet<DispatcherImplWeakPtr*> m_weakPtrs;
 };
 
 DispatcherImplWeakPtr::~DispatcherImplWeakPtr()
@@ -262,14 +262,14 @@ void DispatcherImpl::dispatch(int sessionId, const String& message)
     success = methodValue && methodValue->asString(&method);
     ASSERT_UNUSED(success, success);
 
-    HashMap<String, CallHandler>::iterator it = m_dispatchMap.find(method);
+    protocol::HashMap<String, CallHandler>::iterator it = m_dispatchMap.find(method);
     if (it == m_dispatchMap.end()) {
         reportProtocolError(sessionId, callId, MethodNotFound, "'" + method + "' wasn't found");
         return;
     }
 
     protocol::ErrorSupport errors;
-    ((*this).*it->value)(sessionId, callId, messageObject.release(), &errors);
+    ((*this).*(*it->second))(sessionId, callId, messageObject.release(), &errors);
 }
 
 void DispatcherImpl::sendResponse(int sessionId, int callId, const ErrorString& invocationError, ErrorSupport* errors, PassOwnPtr<protocol::DictionaryValue> result)

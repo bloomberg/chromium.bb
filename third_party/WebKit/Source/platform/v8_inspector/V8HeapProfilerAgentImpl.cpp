@@ -57,7 +57,7 @@ public:
     }
 
 private:
-    Vector<CString> m_strings;
+    protocol::Vector<CString> m_strings;
     V8RuntimeAgentImpl* m_runtimeAgent;
 };
 

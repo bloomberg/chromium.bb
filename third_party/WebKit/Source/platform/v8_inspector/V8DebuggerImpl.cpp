@@ -40,7 +40,6 @@
 #include "platform/v8_inspector/V8StackTraceImpl.h"
 #include "platform/v8_inspector/V8StringUtil.h"
 #include "platform/v8_inspector/public/V8DebuggerClient.h"
-#include "wtf/Vector.h"
 
 namespace blink {
 
@@ -156,7 +155,7 @@ void V8DebuggerImpl::addAgent(int contextGroupId, V8DebuggerAgentImpl* agent)
         enable();
     m_agentsMap.set(contextGroupId, agent);
 
-    Vector<V8DebuggerParsedScript> compiledScripts;
+    protocol::Vector<V8DebuggerParsedScript> compiledScripts;
     getCompiledScripts(contextGroupId, compiledScripts);
     for (size_t i = 0; i < compiledScripts.size(); i++)
         agent->didParseSource(compiledScripts[i]);
@@ -185,7 +184,7 @@ V8DebuggerAgentImpl* V8DebuggerImpl::getAgentForContext(v8::Local<v8::Context> c
     return m_agentsMap.get(groupId);
 }
 
-void V8DebuggerImpl::getCompiledScripts(int contextGroupId, Vector<V8DebuggerParsedScript>& result)
+void V8DebuggerImpl::getCompiledScripts(int contextGroupId, protocol::Vector<V8DebuggerParsedScript>& result)
 {
     v8::HandleScope scope(m_isolate);
     v8::Context::Scope contextScope(debuggerContext());
@@ -199,9 +198,9 @@ void V8DebuggerImpl::getCompiledScripts(int contextGroupId, Vector<V8DebuggerPar
         return;
     ASSERT(value->IsArray());
     v8::Local<v8::Array> scriptsArray = v8::Local<v8::Array>::Cast(value);
-    result.reserveCapacity(scriptsArray->Length());
+    result.resize(scriptsArray->Length());
     for (unsigned i = 0; i < scriptsArray->Length(); ++i)
-        result.append(createParsedScript(v8::Local<v8::Object>::Cast(scriptsArray->Get(v8::Integer::New(m_isolate, i))), true));
+        result[i] = createParsedScript(v8::Local<v8::Object>::Cast(scriptsArray->Get(v8::Integer::New(m_isolate, i))), true);
 }
 
 String V8DebuggerImpl::setBreakpoint(const String& sourceID, const ScriptBreakpoint& scriptBreakpoint, int* actualLineNumber, int* actualColumnNumber, bool interstatementLocation)
@@ -540,7 +539,7 @@ void V8DebuggerImpl::handleProgramBreak(v8::Local<v8::Context> pausedContext, v8
     if (!agent)
         return;
 
-    Vector<String> breakpointIds;
+    protocol::Vector<String> breakpointIds;
     if (!hitBreakpointNumbers.IsEmpty()) {
         breakpointIds.resize(hitBreakpointNumbers->Length());
         for (size_t i = 0; i < hitBreakpointNumbers->Length(); i++) {

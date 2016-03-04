@@ -31,7 +31,7 @@
 #define InjectedScriptManager_h
 
 #include "platform/inspector_protocol/Allocator.h"
-#include "wtf/HashMap.h"
+#include "platform/inspector_protocol/Collections.h"
 #include "wtf/text/WTFString.h"
 #include <v8.h>
 
@@ -66,7 +66,7 @@ private:
 
     v8::Local<v8::Object> createInjectedScript(const String& source, v8::Local<v8::Context>, int id, InjectedScriptNative*);
 
-    typedef HashMap<int, OwnPtr<InjectedScript>> IdToInjectedScriptMap;
+    typedef protocol::HashMap<int, OwnPtr<InjectedScript>> IdToInjectedScriptMap;
     IdToInjectedScriptMap m_idToInjectedScript;
     OwnPtr<InjectedScriptHost> m_injectedScriptHost;
     bool m_customObjectFormatterEnabled;

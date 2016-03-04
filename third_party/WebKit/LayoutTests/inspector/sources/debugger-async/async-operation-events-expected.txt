@@ -3,7 +3,7 @@ Tests debugger AsyncOperation events while in a debugger stepping session.
 Set timer for test function.
 Executing StepOver...
 Executing StepOver...
-==> AsyncOperationStarted: [setTimeout] testFunction @ async-operation-events.html:10
+==> AsyncOperationStarted: [setTimeout] testFunction @ async-operation-events.html
 Executing StepOver...
 Call stack:
     0) callback1 (async-operation-events.html:13)
@@ -12,13 +12,13 @@ Call stack:
 
 Executing StepOver...
 Executing StepOver...
-==> AsyncOperationStarted: [setTimeout] callback1 @ async-operation-events.html:15
+==> AsyncOperationStarted: [setTimeout] callback1 @ async-operation-events.html
 Executing StepOver...
-==> AsyncOperationStarted: [Promise.resolve] callback1 @ async-operation-events.html:17
+==> AsyncOperationStarted: [Promise.resolve] callback1 @ async-operation-events.html
 Executing StepOver...
-==> AsyncOperationCompleted: [setTimeout] testFunction @ async-operation-events.html:10
+==> AsyncOperationCompleted: [setTimeout] testFunction @ async-operation-events.html
 Executing StepOver...
-==> AsyncOperationCompleted: [Promise.resolve] callback1 @ async-operation-events.html:17
+==> AsyncOperationCompleted: [Promise.resolve] callback1 @ async-operation-events.html
 Call stack:
     0) callback2 (async-operation-events.html:20)
     [setTimeout]
@@ -28,17 +28,17 @@ Call stack:
 
 Executing StepOver...
 Executing StepOver...
-==> AsyncOperationStarted: [setTimeout] callback2 @ async-operation-events.html:22
+==> AsyncOperationStarted: [setTimeout] callback2 @ async-operation-events.html
 Executing Resume...
-==> AsyncOperationCompleted: [setTimeout] callback1 @ async-operation-events.html:15
-==> AsyncOperationCompleted: [setTimeout] callback2 @ async-operation-events.html:22
-==> AsyncOperationStarted: [setTimeout]  @ async-operation-events.html:36
+==> AsyncOperationCompleted: [setTimeout] callback1 @ async-operation-events.html
+==> AsyncOperationCompleted: [setTimeout] callback2 @ async-operation-events.html
+==> AsyncOperationStarted: [setTimeout]  @ async-operation-events.html
 Executing Resume...
-==> AsyncOperationCompleted: [setTimeout]  @ async-operation-events.html:36
+==> AsyncOperationCompleted: [setTimeout]  @ async-operation-events.html
 Scheduling few setInterval's...
 All setInterval's were scheduled.
 Requesting all pending AsyncOperation events from backend...
-==> AsyncOperationStarted: [setInterval] runIntervals @ async-operation-events.html:48
-==> AsyncOperationStarted: [setInterval] runIntervals @ async-operation-events.html:49
-==> AsyncOperationStarted: [setInterval] runIntervals @ async-operation-events.html:50
+==> AsyncOperationStarted: [setInterval] runIntervals @ async-operation-events.html
+==> AsyncOperationStarted: [setInterval] runIntervals @ async-operation-events.html
+==> AsyncOperationStarted: [setInterval] runIntervals @ async-operation-events.html
 

@@ -6,6 +6,7 @@
 #define ErrorSupport_h
 
 #include "platform/PlatformExport.h"
+#include "platform/inspector_protocol/Collections.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -25,8 +26,8 @@ public:
     String errors();
 
 private:
-    Vector<String> m_path;
-    Vector<String> m_errors;
+    protocol::Vector<String> m_path;
+    protocol::Vector<String> m_errors;
     String* m_errorString;
 };
 

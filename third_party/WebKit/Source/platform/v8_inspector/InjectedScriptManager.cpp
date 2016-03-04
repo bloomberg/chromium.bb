@@ -69,7 +69,7 @@ InjectedScript* InjectedScriptManager::findInjectedScript(int id) const
 {
     IdToInjectedScriptMap::const_iterator it = m_idToInjectedScript.find(id);
     if (it != m_idToInjectedScript.end())
-        return it->value.get();
+        return it->second;
     return nullptr;
 }
 
@@ -97,12 +97,12 @@ void InjectedScriptManager::discardInjectedScript(int contextId)
 
 void InjectedScriptManager::releaseObjectGroup(const String& objectGroup)
 {
-    Vector<int> keys;
-    keys.appendRange(m_idToInjectedScript.keys().begin(), m_idToInjectedScript.keys().end());
+    protocol::Vector<int> keys;
+    for (auto& it : m_idToInjectedScript)
+        keys.append(it.first);
     for (auto& key : keys) {
-        IdToInjectedScriptMap::iterator s = m_idToInjectedScript.find(key);
-        if (s != m_idToInjectedScript.end())
-            s->value->releaseObjectGroup(objectGroup); // m_idToInjectedScript may change here.
+        if (m_idToInjectedScript.contains(key)) // m_idToInjectedScript may change here.
+            m_idToInjectedScript.get(key)->releaseObjectGroup(objectGroup);
     }
 }
 
@@ -111,7 +111,7 @@ void InjectedScriptManager::setCustomObjectFormatterEnabled(bool enabled)
     m_customObjectFormatterEnabled = enabled;
     IdToInjectedScriptMap::iterator end = m_idToInjectedScript.end();
     for (IdToInjectedScriptMap::iterator it = m_idToInjectedScript.begin(); it != end; ++it) {
-        it->value->setCustomObjectFormatterEnabled(enabled);
+        it->second->setCustomObjectFormatterEnabled(enabled);
     }
 }
 
@@ -122,7 +122,7 @@ InjectedScript* InjectedScriptManager::injectedScriptFor(v8::Local<v8::Context> 
 
     IdToInjectedScriptMap::iterator it = m_idToInjectedScript.find(contextId);
     if (it != m_idToInjectedScript.end())
-        return it->value.get();
+        return it->second;
 
     v8::Local<v8::Context> callingContext = context->GetIsolate()->GetCallingContext();
     if (!callingContext.IsEmpty() && !m_client->callingContextCanAccessContext(callingContext, context))
@@ -137,6 +137,7 @@ InjectedScript* InjectedScriptManager::injectedScriptFor(v8::Local<v8::Context> 
     if (m_customObjectFormatterEnabled)
         result->setCustomObjectFormatterEnabled(m_customObjectFormatterEnabled);
     m_idToInjectedScript.set(contextId, result.release());
+
     return resultPtr;
 }
 

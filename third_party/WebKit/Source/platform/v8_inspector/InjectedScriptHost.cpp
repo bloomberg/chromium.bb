@@ -57,12 +57,12 @@ InjectedScriptHost::~InjectedScriptHost()
 
 void InjectedScriptHost::setClearConsoleCallback(PassOwnPtr<V8RuntimeAgent::ClearConsoleCallback> callback)
 {
-    m_clearConsoleCallback = std::move(callback);
+    m_clearConsoleCallback = callback;
 }
 
 void InjectedScriptHost::setInspectObjectCallback(PassOwnPtr<V8RuntimeAgent::InspectCallback> callback)
 {
-    m_inspectCallback = std::move(callback);
+    m_inspectCallback = callback;
 }
 
 void InjectedScriptHost::disconnect()

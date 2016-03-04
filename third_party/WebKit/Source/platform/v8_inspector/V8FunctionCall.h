@@ -31,7 +31,8 @@
 #ifndef V8FunctionCall_h
 #define V8FunctionCall_h
 
-#include "wtf/Vector.h"
+#include "platform/inspector_protocol/Collections.h"
+
 #include "wtf/text/WTFString.h"
 #include <v8.h>
 
@@ -58,7 +59,7 @@ public:
 protected:
     V8DebuggerClient* m_client;
     v8::Local<v8::Context> m_context;
-    Vector<v8::Local<v8::Value>> m_arguments;
+    protocol::Vector<v8::Local<v8::Value>> m_arguments;
     v8::Local<v8::String> m_name;
     v8::Local<v8::Value> m_value;
 };

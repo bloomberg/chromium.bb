@@ -136,7 +136,7 @@ private:
     OwnPtr<InjectedScriptManager> m_injectedScriptManager;
     V8DebuggerImpl* m_debugger;
     bool m_enabled;
-    HashMap<String, OwnPtr<v8::Global<v8::Script>>> m_compiledScripts;
+    protocol::HashMap<String, OwnPtr<v8::Global<v8::Script>>> m_compiledScripts;
 };
 
 } // namespace blink

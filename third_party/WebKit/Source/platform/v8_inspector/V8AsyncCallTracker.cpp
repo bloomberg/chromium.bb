@@ -4,7 +4,7 @@
 
 #include "platform/v8_inspector/V8AsyncCallTracker.h"
 
-#include "wtf/HashMap.h"
+#include "platform/inspector_protocol/Collections.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/StringHash.h"
 #include "wtf/text/WTFString.h"
@@ -45,7 +45,7 @@ void V8AsyncCallTracker::asyncCallTrackingStateChanged(bool)
 void V8AsyncCallTracker::resetAsyncOperations()
 {
     for (auto& it : m_idToOperations)
-        completeOperations(it.value->map);
+        completeOperations(it.second->map);
     m_idToOperations.clear();
 }
 
@@ -87,7 +87,8 @@ void V8AsyncCallTracker::didEnqueueV8AsyncTask(v8::Local<v8::Context> context, c
         newOperations->contextId = contextId;
         newOperations->target = this;
         newOperations->context.Reset(context->GetIsolate(), context);
-        operations = m_idToOperations.set(contextId, newOperations.release()).storedValue->value.get();
+        operations = newOperations.get();
+        m_idToOperations.set(contextId, newOperations.release());
         operations->context.SetWeak(operations, V8AsyncCallTracker::weakCallback, v8::WeakCallbackType::kParameter);
     }
     operations->map.set(makeV8AsyncTaskUniqueId(eventName, id), operationId);
@@ -109,10 +110,10 @@ void V8AsyncCallTracker::willHandleV8AsyncTask(v8::Local<v8::Context> context, c
     }
 }
 
-void V8AsyncCallTracker::completeOperations(const HashMap<String, int>& contextCallChains)
+void V8AsyncCallTracker::completeOperations(const protocol::HashMap<String, int>& contextCallChains)
 {
-    for (auto& it : contextCallChains)
-        m_debuggerAgent->traceAsyncOperationCompleted(it.value);
+    for (const auto& it : contextCallChains)
+        m_debuggerAgent->traceAsyncOperationCompleted(*it.second);
 }
 
 } // namespace blink

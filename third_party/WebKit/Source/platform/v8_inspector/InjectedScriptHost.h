@@ -30,9 +30,9 @@
 #ifndef InjectedScriptHost_h
 #define InjectedScriptHost_h
 
+#include "platform/inspector_protocol/Collections.h"
 #include "platform/v8_inspector/public/V8RuntimeAgent.h"
 #include "wtf/PassOwnPtr.h"
-#include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 #include <v8.h>
 
@@ -87,7 +87,7 @@ private:
     V8DebuggerAgentImpl* m_debuggerAgent;
     OwnPtr<V8RuntimeAgent::InspectCallback> m_inspectCallback;
     OwnPtr<V8RuntimeAgent::ClearConsoleCallback> m_clearConsoleCallback;
-    Vector<OwnPtr<V8RuntimeAgent::Inspectable>> m_inspectedObjects;
+    protocol::Vector<OwnPtr<V8RuntimeAgent::Inspectable>> m_inspectedObjects;
     v8::Global<v8::FunctionTemplate> m_wrapperTemplate;
 };
 

@@ -14,7 +14,6 @@
 #include "platform/v8_inspector/public/V8DebuggerClient.h"
 #include "platform/v8_inspector/public/V8EventListenerInfo.h"
 #include "platform/v8_inspector/public/V8ToProtocolValue.h"
-#include "wtf/HashSet.h"
 #include "wtf/text/WTFString.h"
 #include <algorithm>
 
@@ -222,7 +221,7 @@ void V8InjectedScriptHost::getInternalPropertiesCallback(const v8::FunctionCallb
     v8SetReturnValue(info, properties);
 }
 
-static v8::Local<v8::Array> wrapListenerFunctions(v8::Isolate* isolate, const Vector<V8EventListenerInfo>& listeners)
+static v8::Local<v8::Array> wrapListenerFunctions(v8::Isolate* isolate, const protocol::Vector<V8EventListenerInfo>& listeners)
 {
     v8::Local<v8::Array> result = v8::Array::New(isolate);
     size_t handlersCount = listeners.size();
@@ -249,9 +248,9 @@ void V8InjectedScriptHost::getEventListenersCallback(const v8::FunctionCallbackI
     client->eventListeners(info[0], listenerInfo);
 
     v8::Local<v8::Object> result = v8::Object::New(info.GetIsolate());
-    Vector<String> types;
+    protocol::Vector<String> types;
     for (auto& it : listenerInfo)
-        types.append(it.key);
+        types.append(it.first);
     std::sort(types.begin(), types.end(), WTF::codePointCompareLessThan);
     for (const String& type : types) {
         v8::Local<v8::Array> listeners = wrapListenerFunctions(info.GetIsolate(), *listenerInfo.get(type));
@@ -544,7 +543,7 @@ v8::Local<v8::Symbol> V8Debugger::commandLineAPISymbol(v8::Isolate* isolate)
 
 bool V8Debugger::isCommandLineAPIMethod(const AtomicString& name)
 {
-    DEFINE_STATIC_LOCAL(HashSet<String>, methods, ());
+    DEFINE_STATIC_LOCAL(protocol::HashSet<String>, methods, ());
     if (methods.size() == 0) {
         const char* members[] = { "$", "$$", "$x", "dir", "dirxml", "keys", "values", "profile", "profileEnd",
             "monitorEvents", "unmonitorEvents", "inspect", "copy", "clear", "getEventListeners",
@@ -593,9 +592,9 @@ const InjectedScriptHostWrapper::V8MethodConfiguration V8InjectedScriptHostMetho
 
 v8::Local<v8::FunctionTemplate> V8InjectedScriptHost::createWrapperTemplate(v8::Isolate* isolate)
 {
-    Vector<InspectorWrapperBase::V8MethodConfiguration> methods(WTF_ARRAY_LENGTH(V8InjectedScriptHostMethods));
+    protocol::Vector<InspectorWrapperBase::V8MethodConfiguration> methods(WTF_ARRAY_LENGTH(V8InjectedScriptHostMethods));
     std::copy(V8InjectedScriptHostMethods, V8InjectedScriptHostMethods + WTF_ARRAY_LENGTH(V8InjectedScriptHostMethods), methods.begin());
-    Vector<InspectorWrapperBase::V8AttributeConfiguration> attributes;
+    protocol::Vector<InspectorWrapperBase::V8AttributeConfiguration> attributes;
     return InjectedScriptHostWrapper::createWrapperTemplate(isolate, methods, attributes);
 }
 

@@ -196,9 +196,9 @@ const JavaScriptCallFrameWrapper::V8MethodConfiguration V8JavaScriptCallFrameMet
 
 v8::Local<v8::FunctionTemplate> V8JavaScriptCallFrame::createWrapperTemplate(v8::Isolate* isolate)
 {
-    Vector<InspectorWrapperBase::V8MethodConfiguration> methods(WTF_ARRAY_LENGTH(V8JavaScriptCallFrameMethods));
+    protocol::Vector<InspectorWrapperBase::V8MethodConfiguration> methods(WTF_ARRAY_LENGTH(V8JavaScriptCallFrameMethods));
     std::copy(V8JavaScriptCallFrameMethods, V8JavaScriptCallFrameMethods + WTF_ARRAY_LENGTH(V8JavaScriptCallFrameMethods), methods.begin());
-    Vector<InspectorWrapperBase::V8AttributeConfiguration> attributes(WTF_ARRAY_LENGTH(V8JavaScriptCallFrameAttributes));
+    protocol::Vector<InspectorWrapperBase::V8AttributeConfiguration> attributes(WTF_ARRAY_LENGTH(V8JavaScriptCallFrameAttributes));
     std::copy(V8JavaScriptCallFrameAttributes, V8JavaScriptCallFrameAttributes + WTF_ARRAY_LENGTH(V8JavaScriptCallFrameAttributes), attributes.begin());
     return JavaScriptCallFrameWrapper::createWrapperTemplate(isolate, methods, attributes);
 }

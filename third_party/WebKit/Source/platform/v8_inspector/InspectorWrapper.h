@@ -5,8 +5,8 @@
 #ifndef InspectorWrapper_h
 #define InspectorWrapper_h
 
+#include "platform/inspector_protocol/Collections.h"
 #include "wtf/PassOwnPtr.h"
-#include "wtf/Vector.h"
 #include <v8.h>
 
 namespace blink {
@@ -25,7 +25,7 @@ public:
         v8::AccessorNameGetterCallback callback;
     };
 
-    static v8::Local<v8::FunctionTemplate> createWrapperTemplate(v8::Isolate*, const char* className, const Vector<V8MethodConfiguration>& methods, const Vector<V8AttributeConfiguration>& attributes);
+    static v8::Local<v8::FunctionTemplate> createWrapperTemplate(v8::Isolate*, const char* className, const protocol::Vector<V8MethodConfiguration>& methods, const protocol::Vector<V8AttributeConfiguration>& attributes);
 
 protected:
     static v8::Local<v8::Object> createWrapper(V8DebuggerClient*, v8::Local<v8::FunctionTemplate>, v8::Local<v8::Context>);
@@ -66,7 +66,7 @@ public:
         v8::Global<v8::Object> m_persistent;
     };
 
-    static v8::Local<v8::FunctionTemplate> createWrapperTemplate(v8::Isolate* isolate, const Vector<V8MethodConfiguration>& methods, const Vector<V8AttributeConfiguration>& attributes)
+    static v8::Local<v8::FunctionTemplate> createWrapperTemplate(v8::Isolate* isolate, const protocol::Vector<V8MethodConfiguration>& methods, const protocol::Vector<V8AttributeConfiguration>& attributes)
     {
         return InspectorWrapperBase::createWrapperTemplate(isolate, className, methods, attributes);
     }

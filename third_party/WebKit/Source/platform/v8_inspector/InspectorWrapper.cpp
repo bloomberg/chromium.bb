@@ -10,7 +10,7 @@
 
 namespace blink {
 
-v8::Local<v8::FunctionTemplate> InspectorWrapperBase::createWrapperTemplate(v8::Isolate* isolate, const char* className, const Vector<V8MethodConfiguration>& methods, const Vector<V8AttributeConfiguration>& attributes)
+v8::Local<v8::FunctionTemplate> InspectorWrapperBase::createWrapperTemplate(v8::Isolate* isolate, const char* className, const protocol::Vector<V8MethodConfiguration>& methods, const protocol::Vector<V8AttributeConfiguration>& attributes)
 {
     v8::Local<v8::FunctionTemplate> functionTemplate = v8::FunctionTemplate::New(isolate);
 

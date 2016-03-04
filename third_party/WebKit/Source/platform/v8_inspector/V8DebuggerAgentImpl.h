@@ -5,15 +5,12 @@
 #ifndef V8DebuggerAgentImpl_h
 #define V8DebuggerAgentImpl_h
 
+#include "platform/inspector_protocol/Collections.h"
 #include "platform/inspector_protocol/Dispatcher.h"
 #include "platform/inspector_protocol/Frontend.h"
 #include "platform/v8_inspector/ScriptBreakpoint.h"
 #include "platform/v8_inspector/V8DebuggerImpl.h"
 #include "platform/v8_inspector/public/V8DebuggerAgent.h"
-#include "wtf/HashMap.h"
-#include "wtf/HashSet.h"
-#include "wtf/ListHashSet.h"
-#include "wtf/Vector.h"
 #include "wtf/text/StringHash.h"
 
 namespace blink {
@@ -185,7 +182,7 @@ public:
     void reset() override;
 
     // Interface for V8DebuggerImpl
-    SkipPauseRequest didPause(v8::Local<v8::Context>, v8::Local<v8::Object> callFrames, v8::Local<v8::Value> exception, const Vector<String>& hitBreakpoints, bool isPromiseRejection);
+    SkipPauseRequest didPause(v8::Local<v8::Context>, v8::Local<v8::Object> callFrames, v8::Local<v8::Value> exception, const protocol::Vector<String>& hitBreakpoints, bool isPromiseRejection);
     void didContinue();
     void didParseSource(const V8DebuggerParsedScript&);
     bool v8AsyncTaskEventsEnabled() const;
@@ -202,7 +199,6 @@ private:
 
     SkipPauseRequest shouldSkipExceptionPause();
     SkipPauseRequest shouldSkipStepPause();
-    bool isMuteBreakpointInstalled();
 
     void schedulePauseOnNextStatementIfSteppingInto();
 
@@ -229,10 +225,10 @@ private:
     void internalSetAsyncCallStackDepth(int);
     void increaseCachedSkipStackGeneration();
 
-    using ScriptsMap = HashMap<String, V8DebuggerScript>;
-    using BreakpointIdToDebuggerBreakpointIdsMap = HashMap<String, Vector<String>>;
-    using DebugServerBreakpointToBreakpointIdAndSourceMap = HashMap<String, std::pair<String, BreakpointSource>>;
-    using MuteBreakpoins = HashMap<String, std::pair<String, int>>;
+    using ScriptsMap = protocol::HashMap<String, V8DebuggerScript>;
+    using BreakpointIdToDebuggerBreakpointIdsMap = protocol::HashMap<String, protocol::Vector<String>>;
+    using DebugServerBreakpointToBreakpointIdAndSourceMap = protocol::HashMap<String, std::pair<String, BreakpointSource>>;
+    using MuteBreakpoins = protocol::HashMap<String, std::pair<String, int>>;
 
     enum DebuggerStep {
         NoStep = 0,
@@ -253,7 +249,6 @@ private:
     ScriptsMap m_scripts;
     BreakpointIdToDebuggerBreakpointIdsMap m_breakpointIdToDebuggerBreakpointIds;
     DebugServerBreakpointToBreakpointIdAndSourceMap m_serverBreakpoints;
-    MuteBreakpoins m_muteBreakpoints;
     String m_continueToLocationBreakpointId;
     String m_breakReason;
     OwnPtr<protocol::DictionaryValue> m_breakAuxData;
@@ -273,19 +268,19 @@ private:
     OwnPtr<V8AsyncCallTracker> m_v8AsyncCallTracker;
     OwnPtr<PromiseTracker> m_promiseTracker;
 
-    using AsyncOperationIdToStackTrace = HashMap<int, OwnPtr<V8StackTraceImpl>>;
+    using AsyncOperationIdToStackTrace = protocol::HashMap<int, OwnPtr<V8StackTraceImpl>>;
     AsyncOperationIdToStackTrace m_asyncOperations;
     int m_lastAsyncOperationId;
-    ListHashSet<int> m_asyncOperationNotifications;
-    HashSet<int> m_asyncOperationBreakpoints;
-    HashSet<int> m_pausingAsyncOperations;
+    protocol::HashSet<int> m_asyncOperationNotifications;
+    protocol::HashSet<int> m_asyncOperationBreakpoints;
+    protocol::HashSet<int> m_pausingAsyncOperations;
     unsigned m_maxAsyncCallStackDepth;
     OwnPtr<V8StackTraceImpl> m_currentAsyncCallChain;
     unsigned m_nestedAsyncCallCount;
     int m_currentAsyncOperationId;
     bool m_pendingTraceAsyncOperationCompleted;
     bool m_startingStepIntoAsync;
-    HashMap<String, Vector<std::pair<int, int>>> m_blackboxedPositions;
+    protocol::HashMap<String, protocol::Vector<std::pair<int, int>>> m_blackboxedPositions;
 };
 
 } // namespace blink

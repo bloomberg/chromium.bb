@@ -6,11 +6,10 @@
 #define PromiseTracker_h
 
 #include "platform/inspector_protocol/Allocator.h"
+#include "platform/inspector_protocol/Collections.h"
 #include "platform/inspector_protocol/Frontend.h"
 #include "platform/inspector_protocol/TypeBuilder.h"
-#include "wtf/HashMap.h"
 #include "wtf/PassOwnPtr.h"
-#include "wtf/Vector.h"
 #include <v8.h>
 
 namespace blink {
@@ -51,7 +50,7 @@ private:
     v8::Isolate* m_isolate;
     v8::Persistent<v8::NativeWeakMap> m_promiseToId;
 
-    HashMap<int, OwnPtr<PromiseWrapper>> m_idToPromise;
+    protocol::HashMap<int, OwnPtr<PromiseWrapper>> m_idToPromise;
 };
 
 } // namespace blink
