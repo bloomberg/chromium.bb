@@ -26,10 +26,13 @@
 #include "content/browser/frame_host/render_frame_proxy_host.h"
 #include "content/browser/frame_host/render_widget_host_view_child_frame.h"
 #include "content/browser/gpu/compositor_util.h"
+#include "content/browser/renderer_host/input/synthetic_tap_gesture.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
+#include "content/browser/renderer_host/render_widget_host_view_aura.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/frame_messages.h"
+#include "content/common/input/synthetic_tap_gesture_params.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_service.h"
@@ -4575,6 +4578,239 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       root->child_at(0)->current_frame_host(),
       "window.domAutomationController.send(getLastTouchEvent());", &result));
   EXPECT_EQ("touchstart", result);
+}
+
+namespace {
+
+// Declared here to be close to the SubframeGestureEventRouting test.
+void OnSyntheticGestureCompleted(scoped_refptr<MessageLoopRunner> runner,
+                                 SyntheticGesture::Result result) {
+  EXPECT_EQ(SyntheticGesture::GESTURE_FINISHED, result);
+  runner->Quit();
+}
+
+}  // namespace anonymous
+
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       SubframeGestureEventRouting) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "/frame_tree/page_with_positioned_nested_frames.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  FrameTreeNode* root = web_contents->GetFrameTree()->root();
+  ASSERT_EQ(1U, root->child_count());
+
+  GURL frame_url(
+      embedded_test_server()->GetURL("b.com", "/page_with_click_handler.html"));
+  NavigateFrameToURL(root->child_at(0), frame_url);
+  auto child_frame_host = root->child_at(0)->current_frame_host();
+  EXPECT_TRUE(WaitForRenderFrameReady(child_frame_host));
+
+  // Synchronize with the child and parent renderers to guarantee that the
+  // surface information required for event hit testing is ready.
+  RenderWidgetHostViewBase* child_rwhv = static_cast<RenderWidgetHostViewBase*>(
+      child_frame_host->GetView());
+  SurfaceHitTestReadyNotifier notifier(
+      static_cast<RenderWidgetHostViewChildFrame*>(child_rwhv));
+  notifier.WaitForSurfaceReady();
+
+  // There have been no GestureTaps sent yet.
+  {
+    std::string result;
+    EXPECT_TRUE(ExecuteScriptAndExtractString(
+        child_frame_host,
+        "window.domAutomationController.send(getClickStatus());", &result));
+    EXPECT_EQ("0 clicks received", result);
+  }
+
+  // Simulate touch sequence to send GestureTap to sub-frame.
+  SyntheticTapGestureParams params;
+  params.gesture_source_type = SyntheticGestureParams::TOUCH_INPUT;
+  gfx::Point center(150, 150);
+  params.position = gfx::PointF(center.x(), center.y());
+  params.duration_ms = 100;
+  scoped_ptr<SyntheticTapGesture> gesture(new SyntheticTapGesture(params));
+
+  scoped_refptr<MessageLoopRunner> runner = new MessageLoopRunner();
+
+  RenderWidgetHostImpl* render_widget_host =
+      root->current_frame_host()->GetRenderWidgetHost();
+  // TODO(wjmaclean): Convert the call to base::Bind() to a lambda someday.
+  render_widget_host->QueueSyntheticGesture(
+      std::move(gesture), base::Bind(OnSyntheticGestureCompleted, runner));
+
+  // We need to run the message loop while we wait for the synthetic gesture
+  // to be processed; the callback registered above will get us out of the
+  // message loop when that happens.
+  runner->Run();
+  runner = nullptr;
+
+  // Verify click handler in subframe was invoked
+  {
+    std::string result;
+    EXPECT_TRUE(ExecuteScriptAndExtractString(
+        child_frame_host,
+        "window.domAutomationController.send(getClickStatus());", &result));
+    EXPECT_EQ("1 click received", result);
+  }
+}
+
+namespace {
+
+// Defined here to be close to
+// SitePerProcessBrowserTest.InputEventRouterGestureTargetQueueTest.
+void SendTouchTapWithExpectedTarget(
+    RenderWidgetHostViewBase* root_view,
+    const gfx::Point& touch_point,
+    RenderWidgetHostViewBase*& router_touch_target,
+    const RenderWidgetHostViewBase* expected_target) {
+  auto root_view_aura = static_cast<RenderWidgetHostViewAura*>(root_view);
+  ui::TouchEvent touch_event_pressed(ui::ET_TOUCH_PRESSED, touch_point, 0,
+                                     0, ui::EventTimeForNow(), 30.f, 30.f, 0.f,
+                                     0.f);
+  root_view_aura->OnTouchEvent(&touch_event_pressed);
+  EXPECT_EQ(expected_target, router_touch_target);
+  ui::TouchEvent touch_event_released(ui::ET_TOUCH_RELEASED, touch_point,
+                                      0, 0, ui::EventTimeForNow(), 30.f, 30.f,
+                                      0.f, 0.f);
+  root_view_aura->OnTouchEvent(&touch_event_released);
+  EXPECT_EQ(nullptr, router_touch_target);
+}
+
+void SendGestureTapSequenceWithExpectedTarget(
+    RenderWidgetHostViewBase* root_view,
+    gfx::Point gesture_point,
+    RenderWidgetHostViewBase*& router_gesture_target,
+    const RenderWidgetHostViewBase* old_expected_target,
+    const RenderWidgetHostViewBase* expected_target) {
+  auto root_view_aura = static_cast<RenderWidgetHostViewAura*>(root_view);
+
+  ui::GestureEvent gesture_begin_event(
+      gesture_point.x(), gesture_point.y(), 0, ui::EventTimeForNow(),
+      ui::GestureEventDetails(ui::ET_GESTURE_BEGIN));
+  root_view_aura->OnGestureEvent(&gesture_begin_event);
+  // We expect to still have the old gesture target in place for the
+  // GestureFlingCancel that will be inserted before GestureTapDown.
+  // Note: the GestureFlingCancel is inserted by RenderWidgetHostViewAura::
+  // OnGestureEvent() when it sees ui::ET_GESTURE_TAP_DOWN, so we don't
+  // explicitly add it here.
+  EXPECT_EQ(old_expected_target, router_gesture_target);
+
+  ui::GestureEvent gesture_tap_down_event(
+      gesture_point.x(), gesture_point.y(), 0, ui::EventTimeForNow(),
+      ui::GestureEventDetails(ui::ET_GESTURE_TAP_DOWN));
+  root_view_aura->OnGestureEvent(&gesture_tap_down_event);
+  EXPECT_EQ(expected_target, router_gesture_target);
+
+  ui::GestureEvent gesture_show_press_event(
+      gesture_point.x(), gesture_point.y(), 0, ui::EventTimeForNow(),
+      ui::GestureEventDetails(ui::ET_GESTURE_SHOW_PRESS));
+  root_view_aura->OnGestureEvent(&gesture_show_press_event);
+  EXPECT_EQ(expected_target, router_gesture_target);
+
+  ui::GestureEventDetails gesture_tap_details(ui::ET_GESTURE_TAP);
+  gesture_tap_details.set_tap_count(1);
+  ui::GestureEvent gesture_tap_event(
+      gesture_point.x(), gesture_point.y(), 0, ui::EventTimeForNow(),
+      gesture_tap_details);
+  root_view_aura->OnGestureEvent(&gesture_tap_event);
+  EXPECT_EQ(expected_target, router_gesture_target);
+
+  ui::GestureEvent gesture_end_event(
+      gesture_point.x(), gesture_point.y(), 0, ui::EventTimeForNow(),
+      ui::GestureEventDetails(ui::ET_GESTURE_END));
+  root_view_aura->OnGestureEvent(&gesture_end_event);
+  EXPECT_EQ(expected_target, router_gesture_target);
+}
+
+}  // namespace anonymous
+
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       InputEventRouterGestureTargetQueueTest) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "/frame_tree/page_with_positioned_nested_frames.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  FrameTreeNode* root = web_contents->GetFrameTree()->root();
+  ASSERT_EQ(1U, root->child_count());
+
+  GURL frame_url(
+      embedded_test_server()->GetURL("b.com", "/page_with_click_handler.html"));
+  NavigateFrameToURL(root->child_at(0), frame_url);
+  auto child_frame_host = root->child_at(0)->current_frame_host();
+  EXPECT_TRUE(WaitForRenderFrameReady(child_frame_host));
+
+  // Synchronize with the child and parent renderers to guarantee that the
+  // surface information required for event hit testing is ready.
+  auto rwhv_child =
+      static_cast<RenderWidgetHostViewBase*>(child_frame_host->GetView());
+  SurfaceHitTestReadyNotifier notifier(
+      static_cast<RenderWidgetHostViewChildFrame*>(rwhv_child));
+  notifier.WaitForSurfaceReady();
+
+  // All touches & gestures are sent to the main frame's view, and should be
+  // routed appropriately from there.
+  auto rwhv_parent = static_cast<RenderWidgetHostViewBase*>(
+      web_contents->GetRenderWidgetHostView());
+
+  RenderWidgetHostInputEventRouter* router =
+      web_contents->GetInputEventRouter();
+  EXPECT_TRUE(router->gesture_target_queue_.empty());
+  EXPECT_EQ(nullptr, router->gesture_target_);
+
+  // Send touch sequence to main-frame.
+  gfx::Point main_frame_point(25, 25);
+  SendTouchTapWithExpectedTarget(rwhv_parent, main_frame_point,
+                                 router->touch_target_, rwhv_parent);
+  EXPECT_EQ(1LU, router->gesture_target_queue_.size());
+  EXPECT_EQ(nullptr, router->gesture_target_);
+
+
+  // Send touch sequence to child.
+  gfx::Point child_center(150, 150);
+  SendTouchTapWithExpectedTarget(rwhv_parent, child_center,
+                                 router->touch_target_, rwhv_child);
+  EXPECT_EQ(2LU, router->gesture_target_queue_.size());
+  EXPECT_EQ(nullptr, router->gesture_target_);
+
+  // Send another touch sequence to main frame.
+  SendTouchTapWithExpectedTarget(rwhv_parent, main_frame_point,
+                                 router->touch_target_, rwhv_parent);
+  EXPECT_EQ(3LU, router->gesture_target_queue_.size());
+  EXPECT_EQ(nullptr, router->gesture_target_);
+
+  // Send Gestures to clear GestureTargetQueue.
+
+  // The first touch sequence should generate a GestureTapDown, sent to the
+  // main frame.
+  SendGestureTapSequenceWithExpectedTarget(rwhv_parent, main_frame_point,
+                                           router->gesture_target_, nullptr,
+                                           rwhv_parent);
+  EXPECT_EQ(2LU, router->gesture_target_queue_.size());
+  // Note: rwhv_parent is the target used for GestureFlingCancel sent by
+  // RenderWidgetHostViewAura::OnGestureEvent() at the start of the next gesture
+  // sequence; the sequence itself goes to rwhv_child.
+  EXPECT_EQ(rwhv_parent, router->gesture_target_);
+
+  // The second touch sequence should generate a GestureTapDown, sent to the
+  // child frame.
+  SendGestureTapSequenceWithExpectedTarget(rwhv_parent, child_center,
+                                           router->gesture_target_, rwhv_parent,
+                                           rwhv_child);
+  EXPECT_EQ(1LU, router->gesture_target_queue_.size());
+  EXPECT_EQ(rwhv_child, router->gesture_target_);
+
+  // The third touch sequence should generate a GestureTapDown, sent to the
+  // main frame.
+  SendGestureTapSequenceWithExpectedTarget(rwhv_parent, main_frame_point,
+                                           router->gesture_target_, rwhv_child,
+                                           rwhv_parent);
+  EXPECT_EQ(0LU, router->gesture_target_queue_.size());
+  EXPECT_EQ(rwhv_parent, router->gesture_target_);
 }
 #endif  // defined(USE_AURA)
 

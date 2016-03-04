@@ -1615,6 +1615,12 @@ void RenderWidgetHostViewMac::ProcessTouchEvent(
   render_widget_host_->ForwardTouchEventWithLatencyInfo(event, latency);
 }
 
+void RenderWidgetHostViewMac::ProcessGestureEvent(
+    const blink::WebGestureEvent& event,
+    const ui::LatencyInfo& latency) {
+  render_widget_host_->ForwardGestureEventWithLatencyInfo(event, latency);
+}
+
 void RenderWidgetHostViewMac::TransformPointToLocalCoordSpace(
     const gfx::Point& point,
     cc::SurfaceId original_surface,

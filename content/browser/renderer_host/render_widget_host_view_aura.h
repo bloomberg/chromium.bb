@@ -202,6 +202,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   void ProcessMouseWheelEvent(const blink::WebMouseWheelEvent& event) override;
   void ProcessTouchEvent(const blink::WebTouchEvent& event,
                          const ui::LatencyInfo& latency) override;
+  void ProcessGestureEvent(const blink::WebGestureEvent& event,
+                           const ui::LatencyInfo& latency) override;
   void TransformPointToLocalCoordSpace(const gfx::Point& point,
                                        cc::SurfaceId original_surface,
                                        gfx::Point* transformed_point) override;
@@ -702,6 +704,11 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   bool set_focus_on_mouse_down_or_key_event_;
 
   float device_scale_factor_;
+
+  // Allows tests to send gesture events for testing without first sending a
+  // corresponding touch sequence, as would be required by
+  // RenderWidgetHostInputEventRouter.
+  bool disable_input_event_router_for_testing_;
 
   base::WeakPtrFactory<RenderWidgetHostViewAura> weak_ptr_factory_;
 

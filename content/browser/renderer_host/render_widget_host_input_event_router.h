@@ -6,9 +6,12 @@
 #define CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_INPUT_EVENT_ROUTER_H_
 
 #include <stdint.h>
+
+#include <deque>
 #include <unordered_map>
 
 #include "base/containers/hash_tables.h"
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "cc/surfaces/surface_hittest_delegate.h"
 #include "cc/surfaces/surface_id.h"
@@ -19,6 +22,7 @@
 struct FrameHostMsg_HittestData_Params;
 
 namespace blink {
+class WebGestureEvent;
 class WebMouseEvent;
 class WebMouseWheelEvent;
 class WebTouchEvent;
@@ -55,6 +59,9 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
                        blink::WebMouseEvent* event);
   void RouteMouseWheelEvent(RenderWidgetHostViewBase* root_view,
                             blink::WebMouseWheelEvent* event);
+  void RouteGestureEvent(RenderWidgetHostViewBase* root_view,
+                         blink::WebGestureEvent* event,
+                         const ui::LatencyInfo& latency);
   void RouteTouchEvent(RenderWidgetHostViewBase* root_view,
                        blink::WebTouchEvent *event,
                        const ui::LatencyInfo& latency);
@@ -89,6 +96,14 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
 
   using SurfaceIdNamespaceOwnerMap =
       base::hash_map<uint32_t, RenderWidgetHostViewBase*>;
+  struct GestureTargetData {
+    RenderWidgetHostViewBase* target;
+    const gfx::Vector2d delta;
+
+    GestureTargetData(RenderWidgetHostViewBase* target, gfx::Vector2d delta)
+        : target(target), delta(delta) {}
+  };
+  using GestureTargetQueue = std::deque<GestureTargetData>;
 
   void ClearAllObserverRegistrations();
 
@@ -97,13 +112,18 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
                                             gfx::Point* transformed_point);
 
   SurfaceIdNamespaceOwnerMap owner_map_;
-  RenderWidgetHostViewBase* current_touch_target_;
+  GestureTargetQueue gesture_target_queue_;
+  RenderWidgetHostViewBase* touch_target_;
+  RenderWidgetHostViewBase* gesture_target_;
   gfx::Vector2d touch_delta_;
+  gfx::Vector2d gesture_delta_;
   int active_touches_;
   std::unordered_map<cc::SurfaceId, HittestData, cc::SurfaceIdHash>
       hittest_data_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostInputEventRouter);
+  FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest,
+                           InputEventRouterGestureTargetQueueTest);
 };
 
 }  // namespace content

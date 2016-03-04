@@ -38,9 +38,23 @@ void RenderWidgetHostInputEventRouter::OnRenderWidgetHostViewBaseDestroyed(
     }
   }
 
-  if (view == current_touch_target_) {
-    current_touch_target_ = nullptr;
+  if (view == touch_target_) {
+    touch_target_ = nullptr;
+    touch_delta_ = gfx::Vector2d();
     active_touches_ = 0;
+  }
+
+  // If the target that's being destroyed is in the gesture target queue, we
+  // replace it with nullptr so that we maintain the 1:1 correspondence between
+  // queue entries and the touch sequences that underly them.
+  for (size_t i = 0; i < gesture_target_queue_.size(); ++i) {
+    if (gesture_target_queue_[i].target == view)
+      gesture_target_queue_[i].target = nullptr;
+  }
+
+  if (view == gesture_target_) {
+    gesture_target_ = nullptr;
+    gesture_delta_ = gfx::Vector2d();
   }
 }
 
@@ -74,7 +88,9 @@ bool RenderWidgetHostInputEventRouter::HittestDelegate::AcceptHitTarget(
 }
 
 RenderWidgetHostInputEventRouter::RenderWidgetHostInputEventRouter()
-    : current_touch_target_(nullptr), active_touches_(0) {}
+    : touch_target_(nullptr),
+      gesture_target_(nullptr),
+      active_touches_(0) {}
 
 RenderWidgetHostInputEventRouter::~RenderWidgetHostInputEventRouter() {
   // We may be destroyed before some of the owners in the map, so we must
@@ -144,6 +160,31 @@ void RenderWidgetHostInputEventRouter::RouteMouseWheelEvent(
   target->ProcessMouseWheelEvent(*event);
 }
 
+void RenderWidgetHostInputEventRouter::RouteGestureEvent(
+    RenderWidgetHostViewBase* root_view,
+    blink::WebGestureEvent* event,
+    const ui::LatencyInfo& latency) {
+  // We use GestureTapDown to detect the start of a gesture sequence since there
+  // is no WebGestureEvent equivalent for ET_GESTURE_BEGIN. Note that this
+  // means the GestureFlingCancel that always comes between ET_GESTURE_BEGIN and
+  // GestureTapDown is sent to the previous target, in case it is still in a
+  // fling.
+  if (event->type == blink::WebInputEvent::GestureTapDown) {
+    DCHECK(!gesture_target_queue_.empty());
+    const GestureTargetData& data = gesture_target_queue_.front();
+    gesture_target_ = data.target;
+    gesture_delta_ = data.delta;
+    gesture_target_queue_.pop_front();
+  }
+
+  if (!gesture_target_)
+    return;
+
+  event->x += gesture_delta_.x();
+  event->y += gesture_delta_.y();
+  gesture_target_->ProcessGestureEvent(*event, latency);
+}
+
 void RenderWidgetHostInputEventRouter::RouteTouchEvent(
     RenderWidgetHostViewBase* root_view,
     blink::WebTouchEvent* event,
@@ -153,46 +194,48 @@ void RenderWidgetHostInputEventRouter::RouteTouchEvent(
       if (!active_touches_) {
         // Since this is the first touch, it defines the target for the rest
         // of this sequence.
-        DCHECK(!current_touch_target_);
+        DCHECK(!touch_target_);
         gfx::Point transformed_point;
         gfx::Point original_point(event->touches[0].position.x,
                                   event->touches[0].position.y);
-        current_touch_target_ =
+        touch_target_ =
             FindEventTarget(root_view, original_point, &transformed_point);
-        if (!current_touch_target_)
-          return;
 
         // TODO(wjmaclean): Instead of just computing a delta, we should extract
         // the complete transform. We assume it doesn't change for the duration
         // of the touch sequence, though this could be wrong; a better approach
-        // might be to always transform each point to the current_touch_target_
+        // might be to always transform each point to the touch_target_
         // for the duration of the sequence.
         touch_delta_ = transformed_point - original_point;
+        gesture_target_queue_.emplace_back(touch_target_, touch_delta_);
+
+        if (!touch_target_)
+          return;
       }
       ++active_touches_;
-      if (current_touch_target_) {
+      if (touch_target_) {
         TransformEventTouchPositions(event, touch_delta_);
-        current_touch_target_->ProcessTouchEvent(*event, latency);
+        touch_target_->ProcessTouchEvent(*event, latency);
       }
       break;
     }
     case blink::WebInputEvent::TouchMove:
-      if (current_touch_target_) {
+      if (touch_target_) {
         TransformEventTouchPositions(event, touch_delta_);
-        current_touch_target_->ProcessTouchEvent(*event, latency);
+        touch_target_->ProcessTouchEvent(*event, latency);
       }
       break;
     case blink::WebInputEvent::TouchEnd:
     case blink::WebInputEvent::TouchCancel:
-      if (!current_touch_target_)
+      if (!touch_target_)
         break;
 
       DCHECK(active_touches_);
       TransformEventTouchPositions(event, touch_delta_);
-      current_touch_target_->ProcessTouchEvent(*event, latency);
+      touch_target_->ProcessTouchEvent(*event, latency);
       --active_touches_;
       if (!active_touches_) {
-        current_touch_target_ = nullptr;
+        touch_target_ = nullptr;
         touch_delta_ = gfx::Vector2d();
       }
       break;

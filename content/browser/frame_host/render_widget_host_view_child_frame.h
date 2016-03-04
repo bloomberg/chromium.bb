@@ -141,6 +141,8 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   void ProcessMouseWheelEvent(const blink::WebMouseWheelEvent& event) override;
   void ProcessTouchEvent(const blink::WebTouchEvent& event,
                          const ui::LatencyInfo& latency) override;
+  void ProcessGestureEvent(const blink::WebGestureEvent& event,
+                           const ui::LatencyInfo& latency) override;
   gfx::Point TransformPointToRootCoordSpace(const gfx::Point& point) override;
 
 #if defined(OS_MACOSX)

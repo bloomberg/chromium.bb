@@ -362,6 +362,8 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   void ProcessMouseWheelEvent(const blink::WebMouseWheelEvent& event) override;
   void ProcessTouchEvent(const blink::WebTouchEvent& event,
                          const ui::LatencyInfo& latency) override;
+  void ProcessGestureEvent(const blink::WebGestureEvent& event,
+                           const ui::LatencyInfo& latency) override;
   void TransformPointToLocalCoordSpace(const gfx::Point& point,
                                        cc::SurfaceId original_surface,
                                        gfx::Point* transformed_point) override;

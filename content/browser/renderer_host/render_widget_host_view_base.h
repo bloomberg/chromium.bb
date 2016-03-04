@@ -221,7 +221,9 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   virtual void ProcessMouseEvent(const blink::WebMouseEvent& event) {}
   virtual void ProcessMouseWheelEvent(const blink::WebMouseWheelEvent& event) {}
   virtual void ProcessTouchEvent(const blink::WebTouchEvent& event,
-                         const ui::LatencyInfo& latency) {}
+                                 const ui::LatencyInfo& latency) {}
+  virtual void ProcessGestureEvent(const blink::WebGestureEvent& event,
+                                   const ui::LatencyInfo& latency) {}
 
   // Transform a point that is in the coordinate space of a Surface that is
   // embedded within the RenderWidgetHostViewBase's Surface to the

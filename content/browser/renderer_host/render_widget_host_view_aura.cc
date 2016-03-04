@@ -481,6 +481,7 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host,
       begin_frame_observer_proxy_(this),
       set_focus_on_mouse_down_or_key_event_(false),
       device_scale_factor_(0.0f),
+      disable_input_event_router_for_testing_(false),
       weak_ptr_factory_(this) {
   if (!is_guest_view_hack_)
     host_->SetView(this);
@@ -869,7 +870,8 @@ bool RenderWidgetHostViewAura::ShouldRouteEvent(const ui::Event* event) const {
   //    frame. TODO(wjmaclean): At present, this doesn't work for OOPIF, but
   //    it should be a simple extension to modify RenderWidgetHostViewChildFrame
   //    in a similar manner to RenderWidgetHostViewGuest.
-  bool result = host_->delegate() && host_->delegate()->GetInputEventRouter();
+  bool result = host_->delegate() && host_->delegate()->GetInputEventRouter() &&
+                !disable_input_event_router_for_testing_;
   if (event->IsMouseEvent())
     result = result && SiteIsolationPolicy::AreCrossProcessFramesPossible();
   return result;
@@ -2260,6 +2262,12 @@ void RenderWidgetHostViewAura::ProcessTouchEvent(
   host_->ForwardTouchEventWithLatencyInfo(event, latency);
 }
 
+void RenderWidgetHostViewAura::ProcessGestureEvent(
+    const blink::WebGestureEvent& event,
+    const ui::LatencyInfo& latency) {
+  host_->ForwardGestureEventWithLatencyInfo(event, latency);
+}
+
 void RenderWidgetHostViewAura::TransformPointToLocalCoordSpace(
     const gfx::Point& point,
     cc::SurfaceId original_surface,
@@ -2368,11 +2376,21 @@ void RenderWidgetHostViewAura::OnGestureEvent(ui::GestureEvent* event) {
     blink::WebGestureEvent fling_cancel = gesture;
     fling_cancel.type = blink::WebInputEvent::GestureFlingCancel;
     fling_cancel.sourceDevice = blink::WebGestureDeviceTouchscreen;
-    host_->ForwardGestureEvent(fling_cancel);
+    if (ShouldRouteEvent(event)) {
+      host_->delegate()->GetInputEventRouter()->RouteGestureEvent(
+          this, &fling_cancel, ui::LatencyInfo());
+    } else {
+      host_->ForwardGestureEvent(fling_cancel);
+    }
   }
 
   if (gesture.type != blink::WebInputEvent::Undefined) {
-    host_->ForwardGestureEventWithLatencyInfo(gesture, *event->latency());
+    if (ShouldRouteEvent(event)) {
+      host_->delegate()->GetInputEventRouter()->RouteGestureEvent(
+          this, &gesture, *event->latency());
+    } else {
+      host_->ForwardGestureEventWithLatencyInfo(gesture, *event->latency());
+    }
 
     if (event->type() == ui::ET_GESTURE_SCROLL_BEGIN ||
         event->type() == ui::ET_GESTURE_SCROLL_UPDATE ||
@@ -2738,6 +2756,7 @@ void RenderWidgetHostViewAura::SetSelectionControllerClientForTest(
     scoped_ptr<TouchSelectionControllerClientAura> client) {
   selection_controller_client_.swap(client);
   CreateSelectionController();
+  disable_input_event_router_for_testing_ = true;
 }
 
 void RenderWidgetHostViewAura::InternalSetBounds(const gfx::Rect& rect) {
