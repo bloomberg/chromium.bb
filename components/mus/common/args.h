@@ -5,11 +5,13 @@
 #ifndef COMPONENTS_MUS_COMMON_ARGS_H_
 #define COMPONENTS_MUS_COMMON_ARGS_H_
 
+#include "components/mus/common/mus_common_export.h"
+
 namespace mus {
 
 // All args in alphabetical order. The switches should be documented
 // alongside the definition of their values in the .cc file.
-extern const char kUseX11TestConfig[];
+extern const char MUS_COMMON_EXPORT kUseX11TestConfig[];
 
 }  // namespace mus
 

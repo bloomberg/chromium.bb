@@ -844,6 +844,9 @@ bool KeyEvent::IsRepeated(const KeyEvent& event) {
   return false;
 }
 
+KeyEvent::KeyEvent(EventType type, base::TimeDelta time_stamp, int flags)
+    : Event(type, time_stamp, flags) {}
+
 KeyEvent::KeyEvent(const base::NativeEvent& native_event)
     : Event(native_event,
             EventTypeFromNative(native_event),

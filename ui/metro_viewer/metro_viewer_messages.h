@@ -15,22 +15,6 @@
 
 #define IPC_MESSAGE_START MetroViewerMsgStart
 
-IPC_ENUM_TRAITS(ui::EventType)
-IPC_ENUM_TRAITS(ui::EventFlags)
-
-// Contains the parameters sent for a mousebutton message.
-IPC_STRUCT_BEGIN(MetroViewerHostMsg_MouseButtonParams)
-
-  IPC_STRUCT_MEMBER(int32_t, x)
-  IPC_STRUCT_MEMBER(int32_t, y)
-  IPC_STRUCT_MEMBER(int32_t, extra)
-  IPC_STRUCT_MEMBER(ui::EventType, event_type)
-  IPC_STRUCT_MEMBER(uint32_t, flags)
-  IPC_STRUCT_MEMBER(ui::EventFlags, changed_button)
-  IPC_STRUCT_MEMBER(bool, is_horizontal_wheel)
-
-IPC_STRUCT_END()
-
 // Messages sent from the viewer to the browser:
 
 // Inform the browser of the surface to target for compositing.
@@ -42,9 +26,6 @@ IPC_MESSAGE_CONTROL3(MetroViewerHostMsg_MouseMoved,
                      int32_t, /* x-coordinate */
                      int32_t, /* y-coordinate */
                      int32_t /* flags */)
-// Informs the brower that a mouse button was pressed.
-IPC_MESSAGE_CONTROL1(MetroViewerHostMsg_MouseButton,
-                     MetroViewerHostMsg_MouseButtonParams)
 // Informs the browser that a key was pressed.
 IPC_MESSAGE_CONTROL4(MetroViewerHostMsg_KeyDown,
                      uint32_t, /* virtual key */
