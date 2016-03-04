@@ -18,7 +18,6 @@
 #include "media/base/decoder_buffer.h"
 #include "media/base/decryptor.h"
 #include "media/base/demuxer.h"
-#include "media/base/pipeline.h"
 #include "media/base/pipeline_status.h"
 #include "media/base/renderer.h"
 #include "media/base/text_track.h"
@@ -30,72 +29,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace media {
-
-class MockPipeline : public Pipeline {
- public:
-  MockPipeline();
-  virtual ~MockPipeline();
-
-  // Note: Start() and Resume() declarations are not actually overrides; they
-  // take scoped_ptr* instead of scoped_ptr so that they can be mock methods.
-  // Private stubs for Start() and Resume() implement the actual Pipeline
-  // interface by forwarding to these mock methods.
-  MOCK_METHOD10(Start,
-                void(Demuxer*,
-                     scoped_ptr<Renderer>*,
-                     const base::Closure&,
-                     const PipelineStatusCB&,
-                     const PipelineStatusCB&,
-                     const PipelineMetadataCB&,
-                     const BufferingStateCB&,
-                     const base::Closure&,
-                     const AddTextTrackCB&,
-                     const base::Closure&));
-  MOCK_METHOD1(Stop, void(const base::Closure&));
-  MOCK_METHOD2(Seek, void(base::TimeDelta, const PipelineStatusCB&));
-  MOCK_METHOD1(Suspend, void(const PipelineStatusCB&));
-  MOCK_METHOD3(Resume,
-               void(scoped_ptr<Renderer>*,
-                    base::TimeDelta,
-                    const PipelineStatusCB&));
-
-  // TODO(sandersd): This should automatically return true between Start() and
-  // Stop(). (Or better, remove it from the interface entirely.)
-  MOCK_CONST_METHOD0(IsRunning, bool());
-
-  // TODO(sandersd): These should be regular getters/setters.
-  MOCK_CONST_METHOD0(GetPlaybackRate, double());
-  MOCK_METHOD1(SetPlaybackRate, void(double));
-  MOCK_CONST_METHOD0(GetVolume, float());
-  MOCK_METHOD1(SetVolume, void(float));
-
-  // TODO(sandersd): These should probably have setters too.
-  MOCK_CONST_METHOD0(GetMediaTime, base::TimeDelta());
-  MOCK_CONST_METHOD0(GetBufferedTimeRanges, Ranges<base::TimeDelta>());
-  MOCK_CONST_METHOD0(GetMediaDuration, base::TimeDelta());
-  MOCK_METHOD0(DidLoadingProgress, bool());
-  MOCK_CONST_METHOD0(GetStatistics, PipelineStatistics());
-
-  MOCK_METHOD2(SetCdm, void(CdmContext*, const CdmAttachedCB&));
-
- private:
-  // Forwarding stubs (see comment above).
-  void Start(Demuxer* demuxer,
-             scoped_ptr<Renderer> renderer,
-             const base::Closure& ended_cb,
-             const PipelineStatusCB& error_cb,
-             const PipelineStatusCB& seek_cb,
-             const PipelineMetadataCB& metadata_cb,
-             const BufferingStateCB& buffering_state_cb,
-             const base::Closure& duration_change_cb,
-             const AddTextTrackCB& add_text_track_cb,
-             const base::Closure& waiting_for_decryption_key_cb) override;
-  void Resume(scoped_ptr<Renderer> renderer,
-              base::TimeDelta timestamp,
-              const PipelineStatusCB& seek_cb) override;
-
-  DISALLOW_COPY_AND_ASSIGN(MockPipeline);
-};
 
 class MockDemuxer : public Demuxer {
  public:
