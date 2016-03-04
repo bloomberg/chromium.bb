@@ -39,7 +39,7 @@ See also:
 ## Assumptions
 
 A working Chrome checkout. See here:
-http://www.chromium.org/developers/how-tos/get-the-code
+https://www.chromium.org/developers/how-tos/get-the-code
 
 ## Typechecking Your Javascript
 

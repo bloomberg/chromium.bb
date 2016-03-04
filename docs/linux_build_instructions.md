@@ -4,7 +4,7 @@
 
 ## Get the code
 
-[Get the Code](http://dev.chromium.org/developers/how-tos/get-the-code). The
+[Get the Code](https://www.chromium.org/developers/how-tos/get-the-code). The
 general instructions on the "Get the code" page cover basic Linux build setup
 and configuration.
 

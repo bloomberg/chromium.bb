@@ -6,7 +6,7 @@ Chromium product. This page has more advanced information about the build
 system.
 
 If you're new to Chromium development, read the
-[getting started guides](http://dev.chromium.org/developers/how-tos/get-the-code).
+[getting started guides](https://www.chromium.org/developers/how-tos/get-the-code).
 
 There is some additional documentation on
 [setting GYP build parameters](http://dev.chromium.org/developers/gyp-environment-variables).

@@ -18,7 +18,7 @@
 
 ## Getting the code
 
-[Check out the source code](http://dev.chromium.org/developers/how-tos/get-the-code)
+[Check out the source code](https://www.chromium.org/developers/how-tos/get-the-code)
 using Git.
 
 Before checking out, go to the

@@ -18,7 +18,7 @@ don’t mind erasing all data, rooting, and installing a userdebug build on.
 
 1.  Get the code! You’ll want a second checkout as this will be
     android-specific. You know the drill:
-    http://dev.chromium.org/developers/how-tos/get-the-code
+    https://www.chromium.org/developers/how-tos/get-the-code
 1.  Append this to your `.gclient` file: `target_os = ['android']`
 1.  Create `chromium.gyp_env` next to your `.gclient` file:
     `echo "{ 'GYP_DEFINES': 'OS=android', }" > chromium.gyp_env`
