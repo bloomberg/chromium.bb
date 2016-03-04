@@ -9,6 +9,7 @@
 #include "base/sys_byteorder.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
+#include "net/base/ip_address.h"
 #include "net/dns/dns_config_service_posix.h"
 #include "net/dns/dns_protocol.h"
 
@@ -117,8 +118,8 @@ void InitializeExpectedConfig(DnsConfig* config) {
 
   config->nameservers.clear();
   for (unsigned i = 0; i < arraysize(kNameserversIPv4) && i < MAXNS; ++i) {
-    IPAddressNumber ip;
-    ParseIPLiteralToNumber(kNameserversIPv4[i], &ip);
+    IPAddress ip;
+    EXPECT_TRUE(ip.AssignFromIPLiteral(kNameserversIPv4[i]));
     config->nameservers.push_back(IPEndPoint(ip, NS_DEFAULTPORT + i));
   }
 
@@ -126,8 +127,8 @@ void InitializeExpectedConfig(DnsConfig* config) {
   for (unsigned i = 0; i < arraysize(kNameserversIPv6) && i < MAXNS; ++i) {
     if (!kNameserversIPv6[i])
       continue;
-    IPAddressNumber ip;
-    ParseIPLiteralToNumber(kNameserversIPv6[i], &ip);
+    IPAddress ip;
+    EXPECT_TRUE(ip.AssignFromIPLiteral(kNameserversIPv6[i]));
     config->nameservers[i] = IPEndPoint(ip, NS_DEFAULTPORT - i);
   }
 #endif
@@ -211,11 +212,11 @@ class DnsConfigServicePosixTest : public testing::Test {
   }
 
   void MockDNSConfig(const char* dns_server) {
-    IPAddressNumber dns_number;
-    ASSERT_TRUE(ParseIPLiteralToNumber(dns_server, &dns_number));
+    IPAddress dns_address;
+    ASSERT_TRUE(dns_address.AssignFromIPLiteral(dns_server));
     test_config_.nameservers.clear();
     test_config_.nameservers.push_back(
-        IPEndPoint(dns_number, dns_protocol::kDefaultPort));
+        IPEndPoint(dns_address, dns_protocol::kDefaultPort));
     service_->SetDnsConfigForTesting(&test_config_);
   }
 

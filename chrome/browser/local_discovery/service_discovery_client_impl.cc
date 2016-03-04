@@ -498,7 +498,7 @@ net::IPAddress ServiceResolverImpl::RecordToIPAddress(
   DCHECK(record->type() == net::dns_protocol::kTypeA);
   const net::ARecordRdata* a_rdata = record->rdata<net::ARecordRdata>();
   DCHECK(a_rdata);
-  return net::IPAddress(a_rdata->address());
+  return a_rdata->address();
 }
 
 LocalDomainResolverImpl::LocalDomainResolverImpl(
@@ -545,11 +545,11 @@ void LocalDomainResolverImpl::OnTransactionComplete(
   if (result == net::MDnsTransaction::RESULT_RECORD) {
     if (record->type() == net::dns_protocol::kTypeA) {
       const net::ARecordRdata* rdata = record->rdata<net::ARecordRdata>();
-      address_ipv4_ = net::IPAddress(rdata->address());
+      address_ipv4_ = rdata->address();
     } else {
       DCHECK_EQ(net::dns_protocol::kTypeAAAA, record->type());
       const net::AAAARecordRdata* rdata = record->rdata<net::AAAARecordRdata>();
-      address_ipv6_ = net::IPAddress(rdata->address());
+      address_ipv6_ = rdata->address();
     }
   }
 

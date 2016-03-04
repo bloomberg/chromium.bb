@@ -18,6 +18,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/dns/dns_hosts.h"
 #include "net/dns/dns_protocol.h"
@@ -172,18 +173,18 @@ ConfigParsePosixResult ReadDnsConfig(DnsConfig* dns_config) {
   if (dns1_string.length() == 0 && dns2_string.length() == 0)
     return CONFIG_PARSE_POSIX_NO_NAMESERVERS;
 
-  IPAddressNumber dns1_number, dns2_number;
-  bool parsed1 = ParseIPLiteralToNumber(dns1_string, &dns1_number);
-  bool parsed2 = ParseIPLiteralToNumber(dns2_string, &dns2_number);
+  IPAddress dns1_address, dns2_address;
+  bool parsed1 = dns1_address.AssignFromIPLiteral(dns1_string);
+  bool parsed2 = dns2_address.AssignFromIPLiteral(dns2_string);
   if (!parsed1 && !parsed2)
     return CONFIG_PARSE_POSIX_BAD_ADDRESS;
 
   if (parsed1) {
-    IPEndPoint dns1(dns1_number, dns_protocol::kDefaultPort);
+    IPEndPoint dns1(dns1_address, dns_protocol::kDefaultPort);
     dns_config->nameservers.push_back(dns1);
   }
   if (parsed2) {
-    IPEndPoint dns2(dns2_number, dns_protocol::kDefaultPort);
+    IPEndPoint dns2(dns2_address, dns_protocol::kDefaultPort);
     dns_config->nameservers.push_back(dns2);
   }
 
@@ -541,9 +542,8 @@ ConfigParsePosixResult ConvertResStateToDnsConfig(const struct __res_state& res,
 
   // If any name server is 0.0.0.0, assume the configuration is invalid.
   // TODO(szym): Measure how often this happens. http://crbug.com/125599
-  const IPAddressNumber kEmptyAddress(kIPv4AddressSize);
   for (unsigned i = 0; i < dns_config->nameservers.size(); ++i) {
-    if (dns_config->nameservers[i].address().bytes() == kEmptyAddress)
+    if (dns_config->nameservers[i].address().IsZero())
       return CONFIG_PARSE_POSIX_NULL_ADDRESS;
   }
   return CONFIG_PARSE_POSIX_OK;

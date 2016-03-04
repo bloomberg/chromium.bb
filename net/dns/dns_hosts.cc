@@ -134,7 +134,7 @@ void ParseHostsWithCommaMode(const std::string& contents,
   CHECK(dns_hosts);
 
   StringPiece ip_text;
-  IPAddressNumber ip;
+  IPAddress ip;
   AddressFamily family = ADDRESS_FAMILY_IPV4;
   HostsParser parser(contents, comma_mode);
   while (parser.Advance()) {
@@ -144,11 +144,11 @@ void ParseHostsWithCommaMode(const std::string& contents,
       // the same IP address (usually 127.0.0.1).  Don't bother parsing the IP
       // again if it's the same as the one above it.
       if (new_ip_text != ip_text) {
-        IPAddressNumber new_ip;
-        if (ParseIPLiteralToNumber(parser.token().as_string(), &new_ip)) {
+        IPAddress new_ip;
+        if (new_ip.AssignFromIPLiteral(parser.token())) {
           ip_text = new_ip_text;
-          ip.swap(new_ip);
-          family = (ip.size() == 4) ? ADDRESS_FAMILY_IPV4 : ADDRESS_FAMILY_IPV6;
+          ip = new_ip;
+          family = (ip.IsIPv4()) ? ADDRESS_FAMILY_IPV4 : ADDRESS_FAMILY_IPV6;
         } else {
           parser.SkipRestOfLine();
         }
@@ -156,7 +156,7 @@ void ParseHostsWithCommaMode(const std::string& contents,
     } else {
       DnsHostsKey key(parser.token().as_string(), family);
       key.first = base::ToLowerASCII(key.first);
-      IPAddressNumber* mapped_ip = &(*dns_hosts)[key];
+      IPAddress* mapped_ip = &(*dns_hosts)[key];
       if (mapped_ip->empty())
         *mapped_ip = ip;
       // else ignore this entry (first hit counts)

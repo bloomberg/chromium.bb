@@ -65,16 +65,12 @@ ARecordRdata::~ARecordRdata() {
 scoped_ptr<ARecordRdata> ARecordRdata::Create(
     const base::StringPiece& data,
     const DnsRecordParser& parser) {
-  if (data.size() != kIPv4AddressSize)
+  if (data.size() != IPAddress::kIPv4AddressSize)
     return scoped_ptr<ARecordRdata>();
 
   scoped_ptr<ARecordRdata> rdata(new ARecordRdata);
-
-  rdata->address_.resize(kIPv4AddressSize);
-  for (unsigned i = 0; i < kIPv4AddressSize; ++i) {
-    rdata->address_[i] = data[i];
-  }
-
+  rdata->address_ =
+      IPAddress(reinterpret_cast<const uint8_t*>(data.data()), data.length());
   return rdata;
 }
 
@@ -98,16 +94,12 @@ AAAARecordRdata::~AAAARecordRdata() {
 scoped_ptr<AAAARecordRdata> AAAARecordRdata::Create(
     const base::StringPiece& data,
     const DnsRecordParser& parser) {
-  if (data.size() != kIPv6AddressSize)
+  if (data.size() != IPAddress::kIPv6AddressSize)
     return scoped_ptr<AAAARecordRdata>();
 
   scoped_ptr<AAAARecordRdata> rdata(new AAAARecordRdata);
-
-  rdata->address_.resize(kIPv6AddressSize);
-  for (unsigned i = 0; i < kIPv6AddressSize; ++i) {
-    rdata->address_[i] = data[i];
-  }
-
+  rdata->address_ =
+      IPAddress(reinterpret_cast<const uint8_t*>(data.data()), data.length());
   return rdata;
 }
 

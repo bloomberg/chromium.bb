@@ -228,6 +228,46 @@ TEST(IPAddressTest, ConvertIPv4MappedIPv6ToIPv4) {
   EXPECT_EQ(expected, result);
 }
 
+TEST(IPAddressTest, IPAddressStartsWith) {
+  IPAddress ipv4_address(192, 168, 10, 5);
+
+  uint8_t ipv4_prefix1[] = {192, 168, 10};
+  EXPECT_TRUE(IPAddressStartsWith(ipv4_address, ipv4_prefix1));
+
+  uint8_t ipv4_prefix3[] = {192, 168, 10, 5};
+  EXPECT_TRUE(IPAddressStartsWith(ipv4_address, ipv4_prefix3));
+
+  uint8_t ipv4_prefix2[] = {192, 168, 10, 10};
+  EXPECT_FALSE(IPAddressStartsWith(ipv4_address, ipv4_prefix2));
+
+  // Prefix is longer than the address.
+  uint8_t ipv4_prefix4[] = {192, 168, 10, 10, 0};
+  EXPECT_FALSE(IPAddressStartsWith(ipv4_address, ipv4_prefix4));
+
+  IPAddress ipv6_address;
+  EXPECT_TRUE(ipv6_address.AssignFromIPLiteral("2a00:1450:400c:c09::64"));
+
+  uint8_t ipv6_prefix1[] = {42, 0, 20, 80, 64, 12, 12, 9};
+  EXPECT_TRUE(IPAddressStartsWith(ipv6_address, ipv6_prefix1));
+
+  uint8_t ipv6_prefix2[] = {41, 0, 20, 80, 64, 12, 12, 9,
+                            0,  0, 0,  0,  0,  0,  100};
+  EXPECT_FALSE(IPAddressStartsWith(ipv6_address, ipv6_prefix2));
+
+  uint8_t ipv6_prefix3[] = {42, 0, 20, 80, 64, 12, 12, 9,
+                            0,  0, 0,  0,  0,  0,  0,  100};
+  EXPECT_TRUE(IPAddressStartsWith(ipv6_address, ipv6_prefix3));
+
+  uint8_t ipv6_prefix4[] = {42, 0, 20, 80, 64, 12, 12, 9,
+                            0,  0, 0,  0,  0,  0,  0,  0};
+  EXPECT_FALSE(IPAddressStartsWith(ipv6_address, ipv6_prefix4));
+
+  // Prefix is longer than the address.
+  uint8_t ipv6_prefix5[] = {42, 0, 20, 80, 64, 12, 12, 9, 0,
+                            0,  0, 0,  0,  0,  0,  0,  10};
+  EXPECT_FALSE(IPAddressStartsWith(ipv6_address, ipv6_prefix5));
+}
+
 }  // anonymous namespace
 
 }  // namespace net

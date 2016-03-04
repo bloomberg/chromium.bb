@@ -4,6 +4,7 @@
 
 #include "net/dns/mdns_client.h"
 
+#include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_interfaces.h"
 #include "net/dns/dns_protocol.h"
@@ -17,9 +18,8 @@ const char kMDnsMulticastGroupIPv4[] = "224.0.0.251";
 const char kMDnsMulticastGroupIPv6[] = "FF02::FB";
 
 IPEndPoint GetMDnsIPEndPoint(const char* address) {
-  IPAddressNumber multicast_group_number;
-  bool success = ParseIPLiteralToNumber(address,
-                                        &multicast_group_number);
+  IPAddress multicast_group_number;
+  bool success = multicast_group_number.AssignFromIPLiteral(address);
   DCHECK(success);
   return IPEndPoint(multicast_group_number,
                     dns_protocol::kDefaultPortMulticast);
@@ -28,7 +28,7 @@ IPEndPoint GetMDnsIPEndPoint(const char* address) {
 int Bind(const IPEndPoint& multicast_addr,
          uint32_t interface_index,
          DatagramServerSocket* socket) {
-  IPAddressNumber address_any(multicast_addr.address().size());
+  IPAddress address_any(std::vector<uint8_t>(multicast_addr.address().size()));
   IPEndPoint bind_endpoint(address_any, multicast_addr.port());
 
   socket->AllowAddressReuse();

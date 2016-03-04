@@ -42,9 +42,8 @@ class NameServerClassifierTest : public testing::Test {
       if (server_str.empty())
         continue;
 
-      IPAddressNumber address;
-      bool parsed = ParseIPLiteralToNumber(server_str, &address);
-      EXPECT_TRUE(parsed);
+      IPAddress address;
+      EXPECT_TRUE(address.AssignFromIPLiteral(server_str));
       servers.push_back(IPEndPoint(address, dns_protocol::kDefaultPort));
     }
 
@@ -157,9 +156,8 @@ class DnsConfigServiceTest : public testing::Test {
   // Generate a config using the given seed..
   DnsConfig MakeConfig(unsigned seed) {
     DnsConfig config;
-    IPAddressNumber ip;
-    CHECK(ParseIPLiteralToNumber("1.2.3.4", &ip));
-    config.nameservers.push_back(IPEndPoint(ip, seed & 0xFFFF));
+    config.nameservers.push_back(
+        IPEndPoint(IPAddress(1, 2, 3, 4), seed & 0xFFFF));
     EXPECT_TRUE(config.IsValid());
     return config;
   }

@@ -17,6 +17,7 @@
 #include "base/strings/string_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/platform_thread.h"
+#include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
@@ -44,12 +45,12 @@ int ParseAddressList(const std::string& host_list,
   addrlist->set_canonical_name(canonical_name);
   for (const base::StringPiece& address : base::SplitStringPiece(
            host_list, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
-    IPAddressNumber ip_number;
-    if (!ParseIPLiteralToNumber(address, &ip_number)) {
+    IPAddress ip_address;
+    if (!ip_address.AssignFromIPLiteral(address)) {
       LOG(WARNING) << "Not a supported IP literal: " << address.as_string();
       return ERR_UNEXPECTED;
     }
-    addrlist->push_back(IPEndPoint(ip_number, 0));
+    addrlist->push_back(IPEndPoint(ip_address, 0));
   }
   return OK;
 }
@@ -154,15 +155,15 @@ MockHostResolverBase::MockHostResolverBase(bool use_caching)
 
 int MockHostResolverBase::ResolveFromIPLiteralOrCache(const RequestInfo& info,
                                                       AddressList* addresses) {
-  IPAddressNumber ip;
-  if (ParseIPLiteralToNumber(info.hostname(), &ip)) {
+  IPAddress ip_address;
+  if (ip_address.AssignFromIPLiteral(info.hostname())) {
     // This matches the behavior HostResolverImpl.
     if (info.address_family() != ADDRESS_FAMILY_UNSPECIFIED &&
-        info.address_family() != GetAddressFamily(ip)) {
+        info.address_family() != GetAddressFamily(ip_address)) {
       return ERR_NAME_NOT_RESOLVED;
     }
 
-    *addresses = AddressList::CreateFromIPAddress(ip, info.port());
+    *addresses = AddressList::CreateFromIPAddress(ip_address, info.port());
     if (info.host_resolver_flags() & HOST_RESOLVER_CANONNAME)
       addresses->SetDefaultCanonicalName();
     return OK;
@@ -284,8 +285,8 @@ void RuleBasedHostResolverProc::AddIPLiteralRule(
     const std::string& canonical_name) {
   // Literals are always resolved to themselves by HostResolverImpl,
   // consequently we do not support remapping them.
-  IPAddressNumber ip_number;
-  DCHECK(!ParseIPLiteralToNumber(host_pattern, &ip_number));
+  IPAddress ip_address;
+  DCHECK(!ip_address.AssignFromIPLiteral(host_pattern));
   HostResolverFlags flags = HOST_RESOLVER_LOOPBACK_ONLY |
       HOST_RESOLVER_DEFAULT_FAMILY_SET_DUE_TO_NO_IPV6;
   if (!canonical_name.empty())

@@ -16,7 +16,6 @@
 #include "base/strings/string_piece.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/time/time.h"
-#include "net/base/ip_address_number.h"
 #include "net/base/net_export.h"
 #include "net/base/network_change_notifier.h"
 #include "net/dns/host_cache.h"
@@ -28,6 +27,7 @@ namespace net {
 class AddressList;
 class BoundNetLog;
 class DnsClient;
+class IPAddress;
 class NetLog;
 
 // For each hostname that is requested, HostResolver creates a
@@ -169,7 +169,7 @@ class NET_EXPORT HostResolverImpl
   // HOSTS and is not localhost.
   int ResolveHelper(const Key& key,
                     const RequestInfo& info,
-                    const IPAddressNumber* ip_address,
+                    const IPAddress* ip_address,
                     AddressList* addresses,
                     const BoundNetLog& request_net_log);
 
@@ -177,7 +177,7 @@ class NET_EXPORT HostResolverImpl
   // succeeds, returns false otherwise.
   bool ResolveAsIP(const Key& key,
                    const RequestInfo& info,
-                   const IPAddressNumber* ip_address,
+                   const IPAddress* ip_address,
                    int* net_error,
                    AddressList* addresses);
 
@@ -208,7 +208,7 @@ class NET_EXPORT HostResolverImpl
   // "effective" address family by inheriting the resolver's default address
   // family when the request leaves it unspecified.
   Key GetEffectiveKeyForRequest(const RequestInfo& info,
-                                const IPAddressNumber* ip_number,
+                                const IPAddress* ip_address,
                                 const BoundNetLog& net_log);
 
   // Probes IPv6 support and returns true if IPv6 support is enabled.

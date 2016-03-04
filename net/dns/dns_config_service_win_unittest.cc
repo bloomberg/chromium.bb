@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/win/windows_version.h"
+#include "net/base/ip_address.h"
 #include "net/dns/dns_protocol.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -96,8 +97,8 @@ scoped_ptr<IP_ADAPTER_ADDRESSES, base::FreeDeleter> CreateAdapterAddresses(
         // Note that |address| is moving backwards.
         address = address->Next = address - 1;
       }
-      IPAddressNumber ip;
-      CHECK(ParseIPLiteralToNumber(info.dns_server_addresses[j], &ip));
+      IPAddress ip;
+      CHECK(ip.AssignFromIPLiteral(info.dns_server_addresses[j]));
       IPEndPoint ipe = IPEndPoint(ip, info.ports[j]);
       address->Address.lpSockaddr =
           reinterpret_cast<LPSOCKADDR>(storage + num_addresses);
@@ -173,8 +174,8 @@ TEST(DnsConfigServiceWinTest, ConvertAdapterAddresses) {
     // Default settings for the rest.
     std::vector<IPEndPoint> expected_nameservers;
     for (size_t j = 0; !t.expected_nameservers[j].empty(); ++j) {
-      IPAddressNumber ip;
-      ASSERT_TRUE(ParseIPLiteralToNumber(t.expected_nameservers[j], &ip));
+      IPAddress ip;
+      ASSERT_TRUE(ip.AssignFromIPLiteral(t.expected_nameservers[j]));
       uint16_t port = t.expected_ports[j];
       if (!port)
         port = dns_protocol::kDefaultPort;

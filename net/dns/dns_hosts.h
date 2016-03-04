@@ -15,7 +15,7 @@
 #include "base/containers/hash_tables.h"
 #include "base/files/file_path.h"
 #include "net/base/address_family.h"
-#include "net/base/ip_address_number.h"
+#include "net/base/ip_address.h"
 #include "net/base/net_export.h"
 
 namespace net {
@@ -57,11 +57,11 @@ enum ParseHostsCommaMode {
 // 10.0.0.1 localhost
 // The expected resolution of localhost is 127.0.0.1.
 #if !defined(OS_ANDROID)
-typedef base::hash_map<DnsHostsKey, IPAddressNumber> DnsHosts;
+typedef base::hash_map<DnsHostsKey, IPAddress> DnsHosts;
 #else
 // Android's hash_map doesn't support ==, so fall back to map.  (Chromium on
 // Android doesn't use the built-in DNS resolver anyway, so it's irrelevant.)
-typedef std::map<DnsHostsKey, IPAddressNumber> DnsHosts;
+typedef std::map<DnsHostsKey, IPAddress> DnsHosts;
 #endif
 
 // Parses |contents| (as read from /etc/hosts or equivalent) and stores results

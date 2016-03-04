@@ -14,6 +14,7 @@
 #include "base/rand_util.h"
 #include "base/sys_byteorder.h"
 #include "base/test/test_timeouts.h"
+#include "net/base/ip_address.h"
 #include "net/dns/dns_protocol.h"
 #include "net/dns/dns_query.h"
 #include "net/dns/dns_response.h"
@@ -333,15 +334,9 @@ class DnsTransactionTest : public testing::Test {
   void ConfigureNumServers(unsigned num_servers) {
     CHECK_LE(num_servers, 255u);
     config_.nameservers.clear();
-    IPAddressNumber dns_ip;
-    {
-      bool rv = ParseIPLiteralToNumber("192.168.1.0", &dns_ip);
-      EXPECT_TRUE(rv);
-    }
     for (unsigned i = 0; i < num_servers; ++i) {
-      dns_ip[3] = i;
-      config_.nameservers.push_back(IPEndPoint(dns_ip,
-                                               dns_protocol::kDefaultPort));
+      config_.nameservers.push_back(
+          IPEndPoint(IPAddress(192, 168, 1, i), dns_protocol::kDefaultPort));
     }
   }
 

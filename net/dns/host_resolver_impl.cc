@@ -39,6 +39,7 @@
 #include "net/base/address_family.h"
 #include "net/base/address_list.h"
 #include "net/base/host_port_pair.h"
+#include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/base/url_util.h"
@@ -167,7 +168,7 @@ enum DnsResolveStatus {
 // possible to navigate to http://127.0.53.53/ directly.
 //
 // For more details: https://www.icann.org/news/announcement-2-2014-08-01-en
-const unsigned char kIcanNameCollisionIp[] = {127, 0, 53, 53};
+const uint8_t kIcanNameCollisionIp[] = {127, 0, 53, 53};
 
 void UmaAsyncDnsResolveStatus(DnsResolveStatus result) {
   UMA_HISTOGRAM_ENUMERATION("AsyncDNS.ResolveStatus",
@@ -195,8 +196,7 @@ bool ResemblesMulticastDNSName(const std::string& hostname) {
 }
 
 // Attempts to connect a UDP socket to |dest|:53.
-bool IsGloballyReachable(const IPAddressNumber& dest,
-                         const BoundNetLog& net_log) {
+bool IsGloballyReachable(const IPAddress& dest, const BoundNetLog& net_log) {
   // TODO(eroman): Remove ScopedTracker below once crbug.com/455942 is fixed.
   tracked_objects::ScopedTracker tracking_profile_1(
       FROM_HERE_WITH_EXPLICIT_FUNCTION("455942 IsGloballyReachable"));
@@ -215,16 +215,17 @@ bool IsGloballyReachable(const IPAddressNumber& dest,
   if (rv != OK)
     return false;
   DCHECK_EQ(ADDRESS_FAMILY_IPV6, endpoint.GetFamily());
-  const IPAddressNumber& address = endpoint.address().bytes();
-  bool is_link_local = (address[0] == 0xFE) && ((address[1] & 0xC0) == 0x80);
+  const IPAddress& address = endpoint.address();
+
+  bool is_link_local =
+      (address.bytes()[0] == 0xFE) && ((address.bytes()[1] & 0xC0) == 0x80);
   if (is_link_local)
     return false;
+
   const uint8_t kTeredoPrefix[] = {0x20, 0x01, 0, 0};
-  bool is_teredo = std::equal(kTeredoPrefix,
-                              kTeredoPrefix + arraysize(kTeredoPrefix),
-                              address.begin());
-  if (is_teredo)
+  if (IPAddressStartsWith(address, kTeredoPrefix))
     return false;
+
   return true;
 }
 
@@ -299,10 +300,10 @@ AddressList EnsurePortOnAddressList(const AddressList& list, uint16_t port) {
 // Returns true if |addresses| contains only IPv4 loopback addresses.
 bool IsAllIPv4Loopback(const AddressList& addresses) {
   for (unsigned i = 0; i < addresses.size(); ++i) {
-    const IPAddressNumber& address = addresses[i].address().bytes();
+    const IPAddress& address = addresses[i].address();
     switch (addresses[i].GetFamily()) {
       case ADDRESS_FAMILY_IPV4:
-        if (address[0] != 127)
+        if (address.bytes()[0] != 127)
           return false;
         break;
       case ADDRESS_FAMILY_IPV6:
@@ -493,25 +494,15 @@ class PriorityTracker {
 bool ResolveLocalHostname(base::StringPiece host,
                           uint16_t port,
                           AddressList* address_list) {
-  static const unsigned char kLocalhostIPv4[] = {127, 0, 0, 1};
-  static const unsigned char kLocalhostIPv6[] = {
-      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1};
-
   address_list->clear();
 
   bool is_local6;
   if (!IsLocalHostname(host, &is_local6))
     return false;
 
-  address_list->push_back(
-      IPEndPoint(IPAddressNumber(kLocalhostIPv6,
-                                 kLocalhostIPv6 + arraysize(kLocalhostIPv6)),
-                 port));
+  address_list->push_back(IPEndPoint(IPAddress::IPv6Localhost(), port));
   if (!is_local6) {
-    address_list->push_back(
-        IPEndPoint(IPAddressNumber(kLocalhostIPv4,
-                                   kLocalhostIPv4 + arraysize(kLocalhostIPv4)),
-                   port));
+    address_list->push_back(IPEndPoint(IPAddress::IPv4Localhost(), port));
   }
 
   return true;
@@ -738,9 +729,8 @@ class HostResolverImpl::ProcTask
     // Fail the resolution if the result contains 127.0.53.53. See the comment
     // block of kIcanNameCollisionIp for details on why.
     for (const auto& it : results) {
-      const IPAddressNumber& cur = it.address().bytes();
-      if (cur.size() == arraysize(kIcanNameCollisionIp) &&
-          0 == memcmp(&cur.front(), kIcanNameCollisionIp, cur.size())) {
+      const IPAddress& cur = it.address();
+      if (cur.IsIPv4() && IPAddressStartsWith(cur, kIcanNameCollisionIp)) {
         error = ERR_ICANN_NAME_COLLISION;
         break;
       }
@@ -1939,16 +1929,16 @@ int HostResolverImpl::Resolve(const RequestInfo& info,
 
   LogStartRequest(source_net_log, info);
 
-  IPAddressNumber ip_number;
-  IPAddressNumber* ip_number_ptr = nullptr;
-  if (ParseIPLiteralToNumber(info.hostname(), &ip_number))
-    ip_number_ptr = &ip_number;
+  IPAddress ip_address;
+  IPAddress* ip_address_ptr = nullptr;
+  if (ip_address.AssignFromIPLiteral(info.hostname()))
+    ip_address_ptr = &ip_address;
 
   // Build a key that identifies the request in the cache and in the
   // outstanding jobs map.
-  Key key = GetEffectiveKeyForRequest(info, ip_number_ptr, source_net_log);
+  Key key = GetEffectiveKeyForRequest(info, ip_address_ptr, source_net_log);
 
-  int rv = ResolveHelper(key, info, ip_number_ptr, addresses, source_net_log);
+  int rv = ResolveHelper(key, info, ip_address_ptr, addresses, source_net_log);
   if (rv != ERR_DNS_CACHE_MISS) {
     LogFinishRequest(source_net_log, info, rv);
     RecordTotalTime(HaveDnsConfig(), info.is_speculative(), base::TimeDelta());
@@ -1994,7 +1984,7 @@ int HostResolverImpl::Resolve(const RequestInfo& info,
 
 int HostResolverImpl::ResolveHelper(const Key& key,
                                     const RequestInfo& info,
-                                    const IPAddressNumber* ip_number,
+                                    const IPAddress* ip_address,
                                     AddressList* addresses,
                                     const BoundNetLog& source_net_log) {
   // The result of |getaddrinfo| for empty hosts is inconsistent across systems.
@@ -2004,7 +1994,7 @@ int HostResolverImpl::ResolveHelper(const Key& key,
     return ERR_NAME_NOT_RESOLVED;
 
   int net_error = ERR_UNEXPECTED;
-  if (ResolveAsIP(key, info, ip_number, &net_error, addresses))
+  if (ResolveAsIP(key, info, ip_address, &net_error, addresses))
     return net_error;
   if (ServeFromCache(key, info, &net_error, addresses)) {
     source_net_log.AddEvent(NetLog::TYPE_HOST_RESOLVER_IMPL_CACHE_HIT);
@@ -2032,14 +2022,14 @@ int HostResolverImpl::ResolveFromCache(const RequestInfo& info,
   // Update the net log and notify registered observers.
   LogStartRequest(source_net_log, info);
 
-  IPAddressNumber ip_number;
-  IPAddressNumber* ip_number_ptr = nullptr;
-  if (ParseIPLiteralToNumber(info.hostname(), &ip_number))
-    ip_number_ptr = &ip_number;
+  IPAddress ip_address;
+  IPAddress* ip_address_ptr = nullptr;
+  if (ip_address.AssignFromIPLiteral(info.hostname()))
+    ip_address_ptr = &ip_address;
 
-  Key key = GetEffectiveKeyForRequest(info, ip_number_ptr, source_net_log);
+  Key key = GetEffectiveKeyForRequest(info, ip_address_ptr, source_net_log);
 
-  int rv = ResolveHelper(key, info, ip_number_ptr, addresses, source_net_log);
+  int rv = ResolveHelper(key, info, ip_address_ptr, addresses, source_net_log);
   LogFinishRequest(source_net_log, info, rv);
   return rv;
 }
@@ -2084,12 +2074,12 @@ scoped_ptr<base::Value> HostResolverImpl::GetDnsConfigAsValue() const {
 
 bool HostResolverImpl::ResolveAsIP(const Key& key,
                                    const RequestInfo& info,
-                                   const IPAddressNumber* ip_number,
+                                   const IPAddress* ip_address,
                                    int* net_error,
                                    AddressList* addresses) {
   DCHECK(addresses);
   DCHECK(net_error);
-  if (ip_number == nullptr)
+  if (ip_address == nullptr)
     return false;
 
   DCHECK_EQ(key.host_resolver_flags &
@@ -2098,13 +2088,13 @@ bool HostResolverImpl::ResolveAsIP(const Key& key,
             0) << " Unhandled flag";
 
   *net_error = OK;
-  AddressFamily family = GetAddressFamily(*ip_number);
+  AddressFamily family = GetAddressFamily(*ip_address);
   if (key.address_family != ADDRESS_FAMILY_UNSPECIFIED &&
       key.address_family != family) {
     // Don't return IPv6 addresses for IPv4 queries, and vice versa.
     *net_error = ERR_NAME_NOT_RESOLVED;
   } else {
-    *addresses = AddressList::CreateFromIPAddress(*ip_number, info.port());
+    *addresses = AddressList::CreateFromIPAddress(*ip_address, info.port());
     if (key.host_resolver_flags & HOST_RESOLVER_CANONNAME)
       addresses->SetDefaultCanonicalName();
   }
@@ -2235,7 +2225,7 @@ void HostResolverImpl::SetHaveOnlyLoopbackAddresses(bool result) {
 
 HostResolverImpl::Key HostResolverImpl::GetEffectiveKeyForRequest(
     const RequestInfo& info,
-    const IPAddressNumber* ip_number,
+    const IPAddress* ip_address,
     const BoundNetLog& net_log) {
   HostResolverFlags effective_flags =
       info.host_resolver_flags() | additional_resolver_flags_;
@@ -2249,7 +2239,7 @@ HostResolverImpl::Key HostResolverImpl::GetEffectiveKeyForRequest(
         // that this query is UNSPECIFIED (see info.address_family()
         // check above) so the code requesting the resolution should be amenable
         // to receiving a IPv6 resolution.
-        ip_number == nullptr) {
+        ip_address == nullptr) {
       if (!IsIPv6Reachable(net_log)) {
         effective_address_family = ADDRESS_FAMILY_IPV4;
         effective_flags |= HOST_RESOLVER_DEFAULT_FAMILY_SET_DUE_TO_NO_IPV6;
@@ -2264,9 +2254,8 @@ bool HostResolverImpl::IsIPv6Reachable(const BoundNetLog& net_log) {
   base::TimeTicks now = base::TimeTicks::Now();
   bool cached = true;
   if ((now - last_ipv6_probe_time_).InMilliseconds() > kIPv6ProbePeriodMs) {
-    IPAddressNumber address(kIPv6ProbeAddress,
-                            kIPv6ProbeAddress + arraysize(kIPv6ProbeAddress));
-    last_ipv6_probe_result_ = IsGloballyReachable(address, net_log);
+    last_ipv6_probe_result_ =
+        IsGloballyReachable(IPAddress(kIPv6ProbeAddress), net_log);
     last_ipv6_probe_time_ = now;
     cached = false;
   }

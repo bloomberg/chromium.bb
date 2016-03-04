@@ -28,6 +28,7 @@
 #include "base/values.h"
 #include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
+#include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/dns/dns_protocol.h"
@@ -57,8 +58,8 @@ int CountLabels(const std::string& name) {
 }
 
 bool IsIPLiteral(const std::string& hostname) {
-  IPAddressNumber ip;
-  return ParseIPLiteralToNumber(hostname, &ip);
+  IPAddress ip;
+  return ip.AssignFromIPLiteral(hostname);
 }
 
 scoped_ptr<base::Value> NetLogStartCallback(

@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
+#include "net/base/ip_address.h"
 #include "net/dns/dns_protocol.h"
 #include "net/dns/dns_socket_pool.h"
 #include "net/log/net_log.h"
@@ -113,12 +114,9 @@ class MockDnsSocketPool : public DnsSocketPool {
 void DnsSessionTest::Initialize(unsigned num_servers) {
   CHECK(num_servers < 256u);
   config_.nameservers.clear();
-  IPAddressNumber dns_ip;
-  bool rv = ParseIPLiteralToNumber("192.168.1.0", &dns_ip);
-  EXPECT_TRUE(rv);
   for (unsigned char i = 0; i < num_servers; ++i) {
-    dns_ip[3] = i;
-    IPEndPoint dns_endpoint(dns_ip, dns_protocol::kDefaultPort);
+    IPEndPoint dns_endpoint(IPAddress(192, 168, 1, i),
+                            dns_protocol::kDefaultPort);
     config_.nameservers.push_back(dns_endpoint);
   }
 

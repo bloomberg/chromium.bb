@@ -4,6 +4,7 @@
 
 #include "net/dns/dns_hosts.h"
 
+#include "net/base/ip_address.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -21,9 +22,9 @@ void PopulateExpectedHosts(const ExpectedHostsEntry* entries,
                            DnsHosts* expected_hosts_out) {
   for (size_t i = 0; i < num_entries; ++i) {
     DnsHostsKey key(entries[i].host, entries[i].family);
-    IPAddressNumber& ip_ref = (*expected_hosts_out)[key];
+    IPAddress& ip_ref = (*expected_hosts_out)[key];
     ASSERT_TRUE(ip_ref.empty());
-    ASSERT_TRUE(ParseIPLiteralToNumber(entries[i].ip, &ip_ref));
+    ASSERT_TRUE(ip_ref.AssignFromIPLiteral(entries[i].ip));
     ASSERT_EQ(ip_ref.size(),
         (entries[i].family == ADDRESS_FAMILY_IPV4) ? 4u : 16u);
   }

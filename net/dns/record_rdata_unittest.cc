@@ -5,7 +5,6 @@
 #include "net/dns/record_rdata.h"
 
 #include "base/memory/scoped_ptr.h"
-#include "net/base/ip_address_number.h"
 #include "net/dns/dns_response.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -76,7 +75,7 @@ TEST(RecordRdataTest, ParseARecord) {
   record_obj = ARecordRdata::Create(record_strpiece, parser);
   ASSERT_TRUE(record_obj != NULL);
 
-  ASSERT_EQ("127.0.0.1", IPAddressToString(record_obj->address()));
+  ASSERT_EQ("127.0.0.1", record_obj->address().ToString());
 
   ASSERT_TRUE(record_obj->IsEqual(record_obj.get()));
 }
@@ -98,8 +97,7 @@ TEST(RecordRdataTest, ParseAAAARecord) {
   record_obj = AAAARecordRdata::Create(record_strpiece, parser);
   ASSERT_TRUE(record_obj != NULL);
 
-  ASSERT_EQ("1234:5678::9",
-            IPAddressToString(record_obj->address()));
+  ASSERT_EQ("1234:5678::9", record_obj->address().ToString());
 
   ASSERT_TRUE(record_obj->IsEqual(record_obj.get()));
 }

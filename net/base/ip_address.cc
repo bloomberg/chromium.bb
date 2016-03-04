@@ -74,6 +74,19 @@ bool IPAddress::AssignFromIPLiteral(const base::StringPiece& ip_literal) {
   return true;
 }
 
+// static
+IPAddress IPAddress::IPv4Localhost() {
+  static const uint8_t kLocalhostIPv4[] = {127, 0, 0, 1};
+  return IPAddress(kLocalhostIPv4);
+}
+
+// static
+IPAddress IPAddress::IPv6Localhost() {
+  static const uint8_t kLocalhostIPv6[] = {0, 0, 0, 0, 0, 0, 0, 0,
+                                           0, 0, 0, 0, 0, 0, 0, 1};
+  return IPAddress(kLocalhostIPv6);
+}
+
 bool IPAddress::operator==(const IPAddress& that) const {
   return ip_address_ == that.ip_address_;
 }

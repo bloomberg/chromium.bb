@@ -26,6 +26,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "net/base/address_list.h"
+#include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
 #include "net/dns/dns_client.h"
 #include "net/dns/dns_test_util.h"
@@ -189,8 +190,8 @@ class MockHostResolverProc : public HostResolverProc {
 bool AddressListContains(const AddressList& list,
                          const std::string& address,
                          uint16_t port) {
-  IPAddressNumber ip;
-  bool rv = ParseIPLiteralToNumber(address, &ip);
+  IPAddress ip;
+  bool rv = ip.AssignFromIPLiteral(address);
   DCHECK(rv);
   return std::find(list.begin(),
                    list.end(),
@@ -446,9 +447,6 @@ class TestHostResolverImpl : public HostResolverImpl {
   }
 };
 
-const unsigned char kLocalhostIPv4[] = {127, 0, 0, 1};
-const unsigned char kLocalhostIPv6[] =
-    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1};
 const uint16_t kLocalhostLookupPort = 80;
 
 bool HasEndpoint(const IPEndPoint& endpoint, const AddressList& addresses) {
@@ -460,14 +458,8 @@ bool HasEndpoint(const IPEndPoint& endpoint, const AddressList& addresses) {
 }
 
 void TestBothLoopbackIPs(const std::string& host) {
-  IPEndPoint localhost_ipv4(
-      IPAddressNumber(kLocalhostIPv4,
-                      kLocalhostIPv4 + arraysize(kLocalhostIPv4)),
-      kLocalhostLookupPort);
-  IPEndPoint localhost_ipv6(
-      IPAddressNumber(kLocalhostIPv6,
-                      kLocalhostIPv6 + arraysize(kLocalhostIPv6)),
-      kLocalhostLookupPort);
+  IPEndPoint localhost_ipv4(IPAddress::IPv4Localhost(), kLocalhostLookupPort);
+  IPEndPoint localhost_ipv6(IPAddress::IPv6Localhost(), kLocalhostLookupPort);
 
   AddressList addresses;
   EXPECT_TRUE(ResolveLocalHostname(host, kLocalhostLookupPort, &addresses));
@@ -477,10 +469,7 @@ void TestBothLoopbackIPs(const std::string& host) {
 }
 
 void TestIPv6LoopbackOnly(const std::string& host) {
-  IPEndPoint localhost_ipv6(
-      IPAddressNumber(kLocalhostIPv6,
-                      kLocalhostIPv6 + arraysize(kLocalhostIPv6)),
-      kLocalhostLookupPort);
+  IPEndPoint localhost_ipv6(IPAddress::IPv6Localhost(), kLocalhostLookupPort);
 
   AddressList addresses;
   EXPECT_TRUE(ResolveLocalHostname(host, kLocalhostLookupPort, &addresses));
@@ -1447,10 +1436,7 @@ TEST_F(HostResolverImplTest, IsIPv6Reachable) {
 }
 
 DnsConfig CreateValidDnsConfig() {
-  IPAddressNumber dns_ip;
-  bool rv = ParseIPLiteralToNumber("192.168.1.0", &dns_ip);
-  EXPECT_TRUE(rv);
-
+  IPAddress dns_ip(192, 168, 1, 0);
   DnsConfig config;
   config.nameservers.push_back(IPEndPoint(dns_ip, dns_protocol::kDefaultPort));
   EXPECT_TRUE(config.IsValid());
@@ -1687,9 +1673,8 @@ TEST_F(HostResolverImplDnsTest, ServeFromHosts) {
   EXPECT_EQ(ERR_IO_PENDING, req0->Resolve());
   EXPECT_EQ(ERR_NAME_NOT_RESOLVED, req0->WaitForResult());
 
-  IPAddressNumber local_ipv4, local_ipv6;
-  ASSERT_TRUE(ParseIPLiteralToNumber("127.0.0.1", &local_ipv4));
-  ASSERT_TRUE(ParseIPLiteralToNumber("::1", &local_ipv6));
+  IPAddress local_ipv4 = IPAddress::IPv4Localhost();
+  IPAddress local_ipv6 = IPAddress::IPv6Localhost();
 
   DnsHosts hosts;
   hosts[DnsHostsKey("nx_ipv4", ADDRESS_FAMILY_IPV4)] = local_ipv4;
@@ -1878,9 +1863,8 @@ TEST_F(HostResolverImplDnsTest, DualFamilyLocalhost) {
   // Configure DnsClient with dual-host HOSTS file.
   DnsConfig config_hosts = CreateValidDnsConfig();
   DnsHosts hosts;
-  IPAddressNumber local_ipv4, local_ipv6;
-  ASSERT_TRUE(ParseIPLiteralToNumber("127.0.0.1", &local_ipv4));
-  ASSERT_TRUE(ParseIPLiteralToNumber("::1", &local_ipv6));
+  IPAddress local_ipv4 = IPAddress::IPv4Localhost();
+  IPAddress local_ipv6 = IPAddress::IPv6Localhost();
   if (saw_ipv4)
     hosts[DnsHostsKey("localhost", ADDRESS_FAMILY_IPV4)] = local_ipv4;
   if (saw_ipv6)

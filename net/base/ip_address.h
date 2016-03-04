@@ -87,6 +87,12 @@ class NET_EXPORT IPAddress {
   // Returns the underlying byte vector.
   const std::vector<uint8_t>& bytes() const { return ip_address_; };
 
+  // Returns an IPAddress instance representing the 127.0.0.1 address.
+  static IPAddress IPv4Localhost();
+
+  // Returns an IPAddress instance representing the ::1 address.
+  static IPAddress IPv6Localhost();
+
   bool operator==(const IPAddress& that) const;
   bool operator!=(const IPAddress& that) const;
   bool operator<(const IPAddress& that) const;
@@ -132,6 +138,16 @@ NET_EXPORT IPAddress ConvertIPv4MappedIPv6ToIPv4(const IPAddress& address);
 NET_EXPORT bool IPAddressMatchesPrefix(const IPAddress& ip_address,
                                        const IPAddress& ip_prefix,
                                        size_t prefix_length_in_bits);
+
+// Checks whether |address| starts with |prefix|. This provides similar
+// functionality as IPAddressMatchesPrefix() but doesn't perform automatic IPv4
+// to IPv4MappedIPv6 conversions and only checks against full bytes.
+template <size_t N>
+bool IPAddressStartsWith(const IPAddress& address, const uint8_t (&prefix)[N]) {
+  if (address.size() < N)
+    return false;
+  return std::equal(prefix, prefix + N, address.bytes().begin());
+}
 
 }  // namespace net
 

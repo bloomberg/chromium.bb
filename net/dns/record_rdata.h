@@ -14,7 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"
-#include "net/base/ip_address_number.h"
+#include "net/base/ip_address.h"
 #include "net/base/net_export.h"
 #include "net/dns/dns_protocol.h"
 
@@ -83,12 +83,12 @@ class NET_EXPORT_PRIVATE ARecordRdata : public RecordRdata {
   bool IsEqual(const RecordRdata* other) const override;
   uint16_t Type() const override;
 
-  const IPAddressNumber& address() const { return address_; }
+  const IPAddress& address() const { return address_; }
 
  private:
   ARecordRdata();
 
-  IPAddressNumber address_;
+  IPAddress address_;
 
   DISALLOW_COPY_AND_ASSIGN(ARecordRdata);
 };
@@ -105,12 +105,12 @@ class NET_EXPORT_PRIVATE AAAARecordRdata : public RecordRdata {
   bool IsEqual(const RecordRdata* other) const override;
   uint16_t Type() const override;
 
-  const IPAddressNumber& address() const { return address_; }
+  const IPAddress& address() const { return address_; }
 
  private:
   AAAARecordRdata();
 
-  IPAddressNumber address_;
+  IPAddress address_;
 
   DISALLOW_COPY_AND_ASSIGN(AAAARecordRdata);
 };

@@ -15,6 +15,7 @@
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
 #include "base/timer/mock_timer.h"
+#include "net/base/ip_address.h"
 #include "net/base/rand_callback.h"
 #include "net/base/test_completion_callback.h"
 #include "net/dns/mdns_client_impl.h"
@@ -930,13 +931,13 @@ TEST_F(MDnsTest, ListenerReentrantDelete) {
 
 ACTION_P(SaveIPAddress, ip_container) {
   ::testing::StaticAssertTypeEq<const RecordParsed*, arg1_type>();
-  ::testing::StaticAssertTypeEq<IPAddressNumber*, ip_container_type>();
+  ::testing::StaticAssertTypeEq<IPAddress*, ip_container_type>();
 
   *ip_container = arg1->template rdata<ARecordRdata>()->address();
 }
 
 TEST_F(MDnsTest, DoubleRecordDisagreeing) {
-  IPAddressNumber address;
+  IPAddress address;
   StrictMock<MockListenerDelegate> delegate_privet;
 
   scoped_ptr<MDnsListener> listener_privet = test_client_->CreateListener(
@@ -951,7 +952,7 @@ TEST_F(MDnsTest, DoubleRecordDisagreeing) {
   SimulatePacketReceive(kCorruptedPacketDoubleRecord,
                         sizeof(kCorruptedPacketDoubleRecord));
 
-  EXPECT_EQ("2.3.4.5", IPAddressToString(address));
+  EXPECT_EQ("2.3.4.5", address.ToString());
 }
 
 TEST_F(MDnsTest, NsecWithListener) {
