@@ -127,7 +127,7 @@ bool IsValidSourceSubstitution(SubstitutionType type) {
          type == SUBSTITUTION_SOURCE_OUT_DIR;
 }
 
-bool IsValidToolSubstutition(SubstitutionType type) {
+bool IsValidToolSubstitution(SubstitutionType type) {
   return type == SUBSTITUTION_LITERAL ||
          type == SUBSTITUTION_OUTPUT ||
          type == SUBSTITUTION_LABEL ||
@@ -140,7 +140,7 @@ bool IsValidToolSubstutition(SubstitutionType type) {
 }
 
 bool IsValidCompilerSubstitution(SubstitutionType type) {
-  return IsValidToolSubstutition(type) ||
+  return IsValidToolSubstitution(type) ||
          IsValidSourceSubstitution(type) ||
          type == SUBSTITUTION_SOURCE ||
          type == SUBSTITUTION_ASMFLAGS ||
@@ -155,12 +155,12 @@ bool IsValidCompilerSubstitution(SubstitutionType type) {
 
 bool IsValidCompilerOutputsSubstitution(SubstitutionType type) {
   // All tool types except "output" (which would be infinitely recursive).
-  return (IsValidToolSubstutition(type) && type != SUBSTITUTION_OUTPUT) ||
+  return (IsValidToolSubstitution(type) && type != SUBSTITUTION_OUTPUT) ||
          IsValidSourceSubstitution(type);
 }
 
 bool IsValidLinkerSubstitution(SubstitutionType type) {
-  return IsValidToolSubstutition(type) ||
+  return IsValidToolSubstitution(type) ||
          type == SUBSTITUTION_LINKER_INPUTS ||
          type == SUBSTITUTION_LINKER_INPUTS_NEWLINE ||
          type == SUBSTITUTION_LDFLAGS ||
@@ -176,7 +176,7 @@ bool IsValidLinkerOutputsSubstitution(SubstitutionType type) {
 }
 
 bool IsValidCopySubstitution(SubstitutionType type) {
-  return IsValidToolSubstutition(type) ||
+  return IsValidToolSubstitution(type) ||
          type == SUBSTITUTION_SOURCE;
 }
 
@@ -187,7 +187,7 @@ bool EnsureValidSourcesSubstitutions(
   for (size_t i = 0; i < types.size(); i++) {
     if (!IsValidSourceSubstitution(types[i])) {
       *err = Err(origin, "Invalid substitution type.",
-          "The substitution " + std::string(kSubstitutionNames[i]) +
+          "The substitution " + std::string(kSubstitutionNames[types[i]]) +
           " isn't valid for something\n"
           "operating on a source file such as this.");
       return false;

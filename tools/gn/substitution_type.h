@@ -11,7 +11,7 @@ class Err;
 class ParseNode;
 
 // Keep kSubstitutionNames, kSubstitutionNinjaNames and the
-// IsValid*Substutition functions in sync if you change anything here.
+// IsValid*Substitution functions in sync if you change anything here.
 enum SubstitutionType {
   SUBSTITUTION_LITERAL = 0,
 
@@ -93,13 +93,13 @@ struct SubstitutionBits {
 
 // Returns true if the given substitution pattern references the output
 // directory. This is used to check strings that begin with a substitution to
-// verify that the produce a file in the output directory.
+// verify that they produce a file in the output directory.
 bool SubstitutionIsInOutputDir(SubstitutionType type);
 
 // Returns true if the given substitution is valid for the named purpose.
 bool IsValidSourceSubstitution(SubstitutionType type);
 // Both compiler and linker tools.
-bool IsValidToolSubstutition(SubstitutionType type);
+bool IsValidToolSubstitution(SubstitutionType type);
 bool IsValidCompilerSubstitution(SubstitutionType type);
 bool IsValidCompilerOutputsSubstitution(SubstitutionType type);
 bool IsValidLinkerSubstitution(SubstitutionType type);

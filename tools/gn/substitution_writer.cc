@@ -69,7 +69,7 @@ const char kSourceExpansion_Help[] =
     "  {{source_name_part}}\n"
     "      The filename part of the source file with no directory or\n"
     "      extension. This will generally be used for specifying a\n"
-    "      transformation from a soruce file to a destination file with the\n"
+    "      transformation from a source file to a destination file with the\n"
     "      same name but different extension.\n"
     "        \"//foo/bar/baz.txt\" => \"baz\"\n"
     "\n"
@@ -174,7 +174,7 @@ void SubstitutionWriter::GetListAsSourceFiles(
   for (const auto& pattern : list.list()) {
     CHECK(pattern.ranges().size() == 1 &&
           pattern.ranges()[0].type == SUBSTITUTION_LITERAL)
-        << "The substitution patterm \""
+        << "The substitution pattern \""
         << pattern.AsString()
         << "\" was expected to be a literal with no {{substitutions}}.";
     const std::string& literal = pattern.ranges()[0].literal;

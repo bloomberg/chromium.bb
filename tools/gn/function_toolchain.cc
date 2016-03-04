@@ -816,8 +816,8 @@ Value RunTool(Scope* scope,
     subst_validator = &IsValidCopySubstitution;
     subst_output_validator = &IsValidCopySubstitution;
   } else {
-    subst_validator = &IsValidToolSubstutition;
-    subst_output_validator = &IsValidToolSubstutition;
+    subst_validator = &IsValidToolSubstitution;
+    subst_output_validator = &IsValidToolSubstitution;
   }
 
   scoped_ptr<Tool> tool(new Tool);

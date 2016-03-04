@@ -21,8 +21,6 @@ class CopyTargetGenerator : public TargetGenerator {
   void DoRun() override;
 
  private:
-  void FillDestDir();
-
   DISALLOW_COPY_AND_ASSIGN(CopyTargetGenerator);
 };
 

@@ -115,7 +115,7 @@ class SubstitutionWriter {
       std::vector<OutputFile>* output);
 
   // Like ApplyListToSource but applies the list to all sources and replaces
-  // rather than appesnds the output (this produces the complete output).
+  // rather than appends the output (this produces the complete output).
   static void ApplyListToSources(
       const Settings* settings,
       const SubstitutionList& list,
